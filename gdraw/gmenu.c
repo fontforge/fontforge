@@ -110,6 +110,7 @@ typedef struct gmenu {
     GWindow owner;
     GTimer *scrollit;
     FontInstance *font;
+    void (*donecallback)(GWindow owner);
 } GMenu;
 
 static void shorttext(GMenuItem *gi,unichar_t *buf) {
@@ -808,6 +809,8 @@ static int gmenu_destroy(struct gmenu *m) {
 #endif
     if ( most_recent_popup_menu==m )
 	most_recent_popup_menu = NULL;
+    if ( m->donecallback )
+	(m->donecallback)(m->owner);
     if ( m->freemi )
 	GMenuItemArrayFree(m->mi);
     free(m);
@@ -958,7 +961,8 @@ static GMenu *GMenuCreatePulldownMenu(GMenuBar *mb,GMenuItem *mi,int disabled) {
 return( m );
 }
 
-GWindow GMenuCreatePopupMenu(GWindow owner,GEvent *event, GMenuItem *mi) {
+GWindow _GMenuCreatePopupMenu(GWindow owner,GEvent *event, GMenuItem *mi,
+	void (*donecallback)(GWindow) ) {
     GPoint p;
     GMenu *m;
     GEvent e;
@@ -975,9 +979,14 @@ GWindow GMenuCreatePopupMenu(GWindow owner,GEvent *event, GMenuItem *mi) {
     GDrawGetPointerPosition(m->w,&e);
     if ( e.u.mouse.state & (ksm_button1|ksm_button2|ksm_button3) )
 	m->pressed = m->initial_press = true;
+    m->donecallback = donecallback;
     m->freemi = true;
     most_recent_popup_menu = m;
 return( m->w );
+}
+
+GWindow GMenuCreatePopupMenu(GWindow owner,GEvent *event, GMenuItem *mi) {
+return( _GMenuCreatePopupMenu(owner,event,mi,NULL));
 }
 
 int GMenuPopupCheckKey(GEvent *event) {

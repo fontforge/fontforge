@@ -76,6 +76,7 @@ static void GMatrixEdit_destroy(GGadget *g) {
     GMatrixEdit *gme = (GMatrixEdit *) g;
     int c;
 
+    free(gme->newtext);
     /* The textfield lives in the nested window and doesn't need to be destroyed */
     /* if ( gme->tf!=NULL ) */
 	/* GGadgetDestroy(gme->tf);*/
@@ -129,11 +130,22 @@ static void GMatrixEdit_Move(GGadget *g, int32 x, int32 y) {
     _ggadget_move(g,x,y);
 }
 
+static GMenuItem *FindMi(GMenuItem *mi, int val ) {
+    int i;
+
+    for ( i=0; mi[i].ti.text!=NULL || mi[i].ti.line; ++i ) {
+	if ( mi[i].ti.userdata == (void *) val && mi[i].ti.text!=NULL )
+return( &mi[i] );
+    }
+return( NULL );
+}
+
 static int GME_ColWidth(GMatrixEdit *gme, int c) {
     int width=0, max, cur;
     FontInstance *old = GDrawSetFont(gme->g.base,gme->font);
     char *str, *pt;
-    int i, r;
+    int r;
+    GMenuItem *mi;
 
     switch ( gme->col_data[c].me_type ) {
       case me_int:
@@ -144,6 +156,17 @@ static int GME_ColWidth(GMatrixEdit *gme, int c) {
       break;
       case me_enum:
 	max = 0;
+	for ( r=0; r<gme->rows; ++r ) {
+	    mi = FindMi(gme->col_data[c].enum_vals,gme->data[r*gme->cols+c].u.md_ival);
+	    if ( mi!=NULL ) {
+		if ( mi->ti.text_is_1byte )
+		    cur = GDrawGetText8Width(gme->g.base,(char *)mi->ti.text,-1,NULL);
+		else
+		    cur = GDrawGetTextWidth(gme->g.base,mi->ti.text,-1,NULL);
+		if ( cur>max ) max = cur;
+	    }
+	}
+#if 0
 	if ( gme->col_data[c].enum_vals!=NULL ) {
 	    GMenuItem *mi = gme->col_data[c].enum_vals;
 	    for ( i=0; mi[i].ti.text!=NULL || mi[i].ti.line ; ++i ) {
@@ -153,6 +176,7 @@ static int GME_ColWidth(GMatrixEdit *gme, int c) {
 		}
 	    }
 	}
+#endif
 	cur = 6 * GDrawGetText8Width(gme->g.base,"n", 1, NULL );
 	if ( max<cur )
 	    max = cur;
@@ -166,6 +190,8 @@ static int GME_ColWidth(GMatrixEdit *gme, int c) {
 	    str = gme->data[r*gme->cols+c].u.md_str;
 	    if ( str==NULL && gme->col_data[c].me_type==me_func )
 		str = freeme = (gme->col_data[c].func)(&gme->g,r,c);
+	    if ( str==NULL )
+	continue;
 	    pt = strchr(str,'\n');
 	    cur = GDrawGetText8Width(gme->g.base,str, pt==NULL ? -1: pt-str, NULL );
 	    if ( cur>max ) max = cur;
@@ -235,6 +261,10 @@ static void GMatrixEdit_GetDesiredSize(GGadget *g,GRect *outer,GRect *inner) {
     if ( gme->del )
 	height += gme->del->r.height+DEL_SPACE;
 
+    if ( gme->desired_width>2*bp )
+	width = gme->desired_width-2*bp;
+    if ( gme->desired_height>2*bp )
+	height = gme->desired_height-2*bp;
     if ( inner!=NULL ) {
 	inner->x = inner->y = 0;
 	inner->width = width;
@@ -244,6 +274,19 @@ static void GMatrixEdit_GetDesiredSize(GGadget *g,GRect *outer,GRect *inner) {
 	outer->x = outer->y = 0;
 	outer->width = width + 2*bp;
 	outer->height = height + 2*bp;
+    }
+}
+
+static void GMatrixEdit_SetDesiredSize(GGadget *g,GRect *outer,GRect *inner) {
+    GMatrixEdit *gme = (GMatrixEdit *) g;
+
+    if ( outer!=NULL ) {
+	gme->desired_width = outer->width;
+	gme->desired_height = outer->height;
+    } else if ( inner!=NULL ) {
+	int bp = GBoxBorderWidth(g->base,g->box);
+	gme->desired_width = inner->width + 2*bp;
+	gme->desired_height = inner->height + 2*bp;
     }
 }
 
@@ -399,6 +442,12 @@ static void GMatrixEdit_SetVisible(GGadget *g, int visible ) {
     _ggadget_setvisible(g,visible);
 }
 
+static void GMatrixEdit_Redraw(GGadget *g ) {
+    GMatrixEdit *gme = (GMatrixEdit *) g;
+    GDrawRequestExpose(gme->nested,NULL,false);
+    _ggadget_redraw(g);
+}
+
 static void GMatrixEdit_SetFont(GGadget *g,FontInstance *new) {
     GMatrixEdit *gme = (GMatrixEdit *) g;
     int as, ds, ld;
@@ -443,7 +492,7 @@ struct gfuncs gmatrixedit_funcs = {
     NULL,
     NULL,
 
-    _ggadget_redraw,
+    GMatrixEdit_Redraw,
     GMatrixEdit_Move,
     GMatrixEdit_Resize,
     GMatrixEdit_SetVisible,
@@ -474,19 +523,9 @@ struct gfuncs gmatrixedit_funcs = {
     NULL,
 
     GMatrixEdit_GetDesiredSize,
-    NULL,
+    GMatrixEdit_SetDesiredSize,
     GMatrixEdit_FillsWindow
 };
-
-static GMenuItem *FindMi(GMenuItem *mi, int val ) {
-    int i;
-
-    for ( i=0; mi[i].ti.text==NULL || mi[i].ti.line; ++i ) {
-	if ( mi[i].ti.userdata == (void *) val && mi[i].ti.text!=NULL )
-return( &mi[i] );
-    }
-return( NULL );
-}
 
 static void GME_PositionEdit(GMatrixEdit *gme) {
     int x,y,end;
@@ -526,6 +565,7 @@ static int GME_SetValue(GMatrixEdit *gme,GGadget *g ) {
     double dval;
     char *end;
     char *str = GGadgetGetTitle8(g);
+    int kludge;
 
     switch ( gme->col_data[c].me_type ) {
       case me_enum:
@@ -536,7 +576,7 @@ static int GME_SetValue(GMatrixEdit *gme,GGadget *g ) {
 		if ( u_strcmp(ustr,test)==0 ) {
 		    gme->data[r*gme->cols+c].u.md_ival = (intpt) gme->col_data[c].enum_vals[i].ti.userdata;
 		    free(str);
-return( true );
+  goto good;
 		}
 	    }
 	}
@@ -551,7 +591,7 @@ return( false );
 	}
 	gme->data[r*gme->cols+c].u.md_ival = ival;
 	free(str);
-return( true );
+  goto good;
       case me_real:
 	dval = strtod(str,&end);
 	if ( *end!='\0' ) {
@@ -562,12 +602,12 @@ return( false );
 	}
 	gme->data[r*gme->cols+c].u.md_real = dval;
 	free(str);
-return( true );
+  goto good;
       case me_string: case me_bigstr: case me_func:
 	free(gme->data[r*gme->cols+c].u.md_str);
 	gme->data[r*gme->cols+c].u.md_str = str;
 	/* Used to delete the row if this were a null string. seems extreme */
-return( true );
+  goto good;
       default:
 	/* Eh? Can't happen */
 	GTextFieldSelect(g,0,-1);
@@ -575,6 +615,12 @@ return( true );
 	free(str);
 return( false );
     }
+  good:
+    kludge = gme->edit_active; gme->edit_active = false;
+    if ( gme->finishedit != NULL )
+	(gme->finishedit)(&gme->g,r,c,gme->wasnew);
+    gme->edit_active = kludge;
+return( true );
 }
 
 static int GME_FinishEdit(GMatrixEdit *gme) {
@@ -583,18 +629,30 @@ static int GME_FinishEdit(GMatrixEdit *gme) {
 return( true );
     if ( !GME_SetValue(gme,gme->tf))
 return( false );
-    GGadgetSetVisible(gme->tf,false);
     gme->edit_active = false;
+    GGadgetSetVisible(gme->tf,false);
     GME_AdjustCol(gme,gme->active_col);
 
     gme->wasnew = false;
 return( true );
 }
 
+static void GME_EnableDelete(GMatrixEdit *gme) {
+    int enabled = false;
+
+    if ( gme->active_row>=0 && gme->active_row<gme->rows ) {
+	enabled = true;
+	if ( gme->candelete!=NULL && !(gme->candelete)(&gme->g,gme->active_row))
+	    enabled = false;
+    }
+    GGadgetSetEnabled(gme->del,enabled);
+}
+
 static void GME_DeleteActive(GMatrixEdit *gme) {
     int r, c;
 
     if ( gme->active_row==-1 || (gme->candelete && !(gme->candelete)(&gme->g,gme->active_row))) {
+	GGadgetSetEnabled(gme->del,false);
 	GDrawBeep(NULL);
 return;
     }
@@ -613,17 +671,7 @@ return;
     if ( gme->active_row>=gme->rows ) gme->active_row = -1;
     GScrollBarSetBounds(gme->vsb,0,gme->rows,gme->vsb->inner.height/gme->fh);
     GDrawRequestExpose(gme->nested,NULL,false);
-}
-
-static void GME_EnableDelete(GMatrixEdit *gme) {
-    int enabled = false;
-
-    if ( gme->active_row>=0 && gme->active_row<gme->rows ) {
-	enabled = true;
-	if ( gme->candelete!=NULL && !(gme->candelete)(&gme->g,gme->active_row))
-	    enabled = false;
-    }
-    GGadgetSetEnabled(gme->del,enabled);
+    GME_EnableDelete(gme);
 }
 
 #define CID_OK		1001
@@ -748,8 +796,20 @@ static void GME_EnumDispatch(GWindow gw, GMenuItem *mi, GEvent *e) {
     GMatrixEdit *gme = GDrawGetUserData(gw);
 
     gme->data[gme->active_row*gme->cols+gme->active_col].u.md_ival = (intpt) mi->ti.userdata;
+    if ( gme->finishedit != NULL )
+	(gme->finishedit)(&gme->g,gme->active_row,gme->active_col,gme->wasnew);
     GME_AdjustCol(gme,gme->active_col);
     gme->wasnew = false;
+}
+
+static void GME_FinishChoice(GWindow gw) {
+    GMatrixEdit *gme = GDrawGetUserData(gw);
+
+    /* If wasnew is still set then they didn't pick anything, so remove the row */
+    if ( gme->wasnew && gme->active_col==0 )
+	GME_DeleteActive(gme);
+    gme->wasnew = false;
+    GDrawRequestExpose(gme->nested,NULL,false);
 }
 
 static void GME_Choices(GMatrixEdit *gme,GEvent *event,int r,int c) {
@@ -758,16 +818,10 @@ static void GME_Choices(GMatrixEdit *gme,GEvent *event,int r,int c) {
     int i;
 
     for ( i=0; mi[i].ti.text!=NULL || mi[i].ti.line || mi[i].ti.image!=NULL; ++i )
-	mi[i].ti.selected = mi[i].ti.checked = (mi[i].ti.userdata == (void *) val);
+	mi[i].ti.selected = mi[i].ti.checked = !gme->wasnew && (mi[i].ti.userdata == (void *) val);
     if ( gme->col_data[c].enable_enum!=NULL )
 	(gme->col_data[c].enable_enum)(&gme->g,mi,r,c);
-    GMenuCreatePopupMenu(gme->nested,event, mi);
-
-    /* If wasnew is still set then they didn't pick anything, so remove the row */
-    if ( gme->wasnew && c==0 )
-	GME_DeleteActive(gme);
-    gme->wasnew = false;
-    GDrawRequestExpose(gme->nested,NULL,false);
+    _GMenuCreatePopupMenu(gme->nested,event, mi, GME_FinishChoice);
 }
 
 static char *MD_Text(GMatrixEdit *gme,int r, int c ) {
@@ -840,8 +894,8 @@ return;
     } else {
 	char *str = MD_Text(gme,gme->active_row,gme->active_col);
 	if ( str==NULL )
-return;
-	else if ( str!=NULL &&
+	    str = copy("");
+	if ( str!=NULL &&
 		(strlen(str)>40 || strchr(str,'\n')!=NULL || gme->col_data[c].me_type == me_bigstr))
 	    GME_StrBigEdit(gme,str);
 	else
@@ -867,7 +921,7 @@ return;
 }
 
 static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event) {
-    int k, r,c;
+    int k, r,c, kludge;
     char buf[20];
     char *str, *freeme, *pt;
     GRect size;
@@ -902,7 +956,9 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 	clip.height = gme->fh;
 	if ( r+gme->off_top==gme->rows ) {
 	    buf[0] = '<';
-	    if ( _ggadget_use_gettext )
+	    if ( gme->newtext!=NULL )
+		strncpy(buf+1,gme->newtext,sizeof(buf)-2);
+	    else if ( _ggadget_use_gettext )
 		strncpy(buf+1,S_("Row|New"),sizeof(buf)-2);
 	    else
 		u2utf8_strcpy(buf+1,GStringGetResource(_STR_New,NULL));
@@ -925,12 +981,17 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 	      case me_enum:
 		mi = FindMi(gme->col_data[c].enum_vals,data->u.md_ival);
 		if ( mi!=NULL ) {
-		    GDrawDrawText(pixmap,clip.x,y,mi->ti.text,-1,NULL,fg);
+		    if ( mi->ti.text_is_1byte )
+			GDrawDrawText8(pixmap,clip.x,y,(char *)mi->ti.text,-1,NULL,fg);
+		    else
+			GDrawDrawText(pixmap,clip.x,y,mi->ti.text,-1,NULL,fg);
 	    break;
 		}
 		/* Fall through into next case */
 	      default:
+		kludge = gme->edit_active; gme->edit_active = false;
 	        str = MD_Text(gme,r+gme->off_top,c);
+		gme->edit_active = kludge;
 	      break;
 	    }
 	    if ( str!=NULL ) {
@@ -1137,6 +1198,9 @@ static GMenuItem *GMenuItemFromTI(GTextInfo *ti) {
     mi = gcalloc((cnt+1),sizeof(GMenuItem));
     for ( cnt=0; ti[cnt].text!=NULL || ti[cnt].line; ++cnt ) {
 	mi[cnt].ti = ti[cnt];
+	if ( ti[cnt].bg == ti[cnt].fg )
+	    mi[cnt].ti.bg = ti[cnt].fg = COLOR_DEFAULT;
+	mi[cnt].ti.checkable = true;
 	if ( mi[cnt].ti.text!=NULL ) {
 	    if ( ti[cnt].text_is_1byte )
 		mi[cnt].ti.text = (unichar_t *) copy( (char *) mi[cnt].ti.text );
@@ -1215,6 +1279,7 @@ GGadget *GMatrixEditCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     gme->pressed_col = -1;
     gme->active_col = gme->active_row = -1;
     gme->initrow = matrix->initrow;
+    gme->finishedit = matrix->finishedit;
     gme->candelete = matrix->candelete;
     gme->popupmenu = matrix->popupmenu;
     gme->handle_key = matrix->handle_key;
@@ -1223,8 +1288,12 @@ GGadget *GMatrixEditCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     GMatrixEdit_GetDesiredSize(&gme->g,&outer,NULL);
     if ( gme->g.r.width==0 )
 	gme->g.r.width = outer.width;
+    else
+	gme->desired_width = gme->g.r.width;
     if ( gme->g.r.height==0 )
 	gme->g.r.height = outer.height;
+    else
+	gme->desired_height = gme->g.r.height;
     bp = GBoxBorderWidth(gme->g.base,gme->g.box);
     gme->g.inner.x = gme->g.r.x + bp;
     gme->g.inner.y = gme->g.r.y + bp;
@@ -1236,7 +1305,7 @@ GGadget *GMatrixEditCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     sub_gd.pos.x = sub_gd.pos.y = 1; sub_gd.pos.width = sub_gd.pos.height = 0;
     label.text = (unichar_t *) _("Delete");
     label.text_is_1byte = true;
-    sub_gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
+    sub_gd.flags = gg_visible | gg_pos_in_pixels;
     sub_gd.label = &label;
     sub_gd.handle_controlevent = _GME_DeleteActive;
     gme->del = GButtonCreate(base,&sub_gd,gme);
@@ -1354,4 +1423,11 @@ return( NULL );
     
     *rows = gme->rows;
 return( gme->data );
+}
+
+void GMatrixEditSetNewText(GGadget *g, char *text) {
+    GMatrixEdit *gme = (GMatrixEdit *) g;
+
+    free(gme->newtext);
+    gme->newtext = copy(text);
 }

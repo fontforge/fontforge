@@ -189,10 +189,11 @@ struct matrixinit {
 	    char *md_str;
 	} u;
 	uint8 frozen;
+	uint8 user_bits;
     } *matrix_data;
     void (*initrow)(GGadget *g,int row);
     int  (*candelete)(GGadget *g,int row);
-    void (*enablemenu)(GGadget *g,GMenuItem *,int row,int col);
+    void (*finishedit)(GGadget *g,int r, int c, int wasnew);
     void (*popupmenu)(GGadget *g,GEvent *e,int row,int col);
     int  (*handle_key)(GGadget *g,GEvent *e);
     char *(*bigedittitle)(GGadget *g,int r, int c);
@@ -339,6 +340,7 @@ void GMatrixEditSet(GGadget *g,struct matrix_data *data, int rows, int copy_it);
 struct matrix_data *GMatrixEditGet(GGadget *g, int *rows);
 void GMatrixEditDeleteRow(GGadget *g,int row);
 int GMatrixEditStringDlg(GGadget *g,int row,int col);
+void GMatrixEditSetNewText(GGadget *g, char *text);
 
 extern void GGadgetPreparePopup(GWindow base,const unichar_t *msg);
 extern void GGadgetPreparePopupR(GWindow base,int msg);
@@ -354,6 +356,8 @@ enum fchooserret GFileChooserDefFilter(GGadget *g,struct gdirentry *ent,
 	const unichar_t *dir);
 
 GWindow GMenuCreatePopupMenu(GWindow owner,GEvent *event, GMenuItem *mi);
+GWindow _GMenuCreatePopupMenu(GWindow owner,GEvent *event, GMenuItem *mi,
+	void (*donecallback)(GWindow owner));
 
 GGadget *GLineCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GGroupCreate(struct gwindow *base, GGadgetData *gd,void *data);
