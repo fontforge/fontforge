@@ -6039,6 +6039,66 @@ return;
     }
 }
 
+static void bAddSizeFeature(Context *c) {
+    int i, found_english;
+    struct array *arr, *subarr;
+    struct otfname *cur, *last;
+    SplineFont *sf = c->curfv->sf;
+
+    sf->fontstyle_id = sf->design_range_bottom = sf->design_range_top = 0;
+    OtfNameListFree(sf->fontstyle_name);
+    sf->fontstyle_name = NULL;
+
+    if ( c->a.argc!=6 && c->a.argc!=2 )
+	ScriptError( c, "Wrong number of arguments");
+    else if ( (c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_real ) ||
+	    (c->a.argc==6 && ((c->a.vals[2].type!=v_int && c->a.vals[2].type!=v_real ) ||
+			      (c->a.vals[3].type!=v_int && c->a.vals[3].type!=v_real ) ||
+			       c->a.vals[4].type!=v_int ||
+			      (c->a.vals[5].type!=v_arr && c->a.vals[5].type!=v_arrfree))))
+	ScriptError( c, "Bad type for argument");
+    else if ( c->a.vals[1].type==v_int )
+	sf->design_size = c->a.vals[1].u.ival*10;
+    else if ( c->a.vals[1].type==v_real )
+	sf->design_size = rint(c->a.vals[1].u.fval*10);
+
+    if ( c->a.argc==6 ) {
+	sf->design_range_bottom = c->a.vals[2].type==v_int
+		? c->a.vals[2].u.ival*10
+		: rint(c->a.vals[2].u.fval*10);
+	sf->design_range_top = c->a.vals[3].type==v_int
+		? c->a.vals[3].u.ival*10
+		: rint(c->a.vals[3].u.fval*10);
+	if ( sf->design_size < sf->design_range_bottom ||
+		sf->design_size > sf->design_range_top )
+	    ScriptError( c, "Design size must be between design range bounds");
+	sf->fontstyle_id = c->a.vals[4].u.ival;
+	arr = c->a.vals[5].u.aval;
+	found_english = false;
+	last = NULL;
+	for ( i=0; i<arr->argc; ++i ) {
+	    if ( arr->vals[i].type!=v_arr && arr->vals[i].type!=v_arrfree )
+		ScriptError( c, "Array must be an array of arrays");
+	    subarr = arr->vals[i].u.aval;
+	    if ( subarr->argc!=2 || subarr->vals[0].type!=v_int ||
+		    subarr->vals[1].type!=v_str )
+		ScriptError( c,"Array must consist of lanuage-id, string pairs" );
+	    if ( subarr->vals[0].u.ival==0x409 )
+		found_english = true;
+	    cur = chunkalloc(sizeof(*cur));
+	    cur->lang = subarr->vals[0].u.ival;
+	    cur->name = copy(subarr->vals[1].u.sval);
+	    if ( last==NULL )
+		sf->fontstyle_name = cur;
+	    else
+		last->next = cur;
+	    last = cur;
+	}
+	if ( !found_english )
+	    ScriptError( c, "Array must contain an English language entry" );
+    }
+}
+
 static void FigureSplExt(SplineSet *spl,int pos,int xextrema, double minmax[2]) {
     Spline *s, *first;
     extended ts[3];
@@ -6857,6 +6917,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "AddAnchorClass", bAddAnchorClass },
     { "RemoveAnchorClass", bRemoveAnchorClass },
     { "AddAnchorPoint", bAddAnchorPoint },
+    { "AddSizeFeature", bAddSizeFeature },
     { "BuildComposit", bBuildComposit },
     { "BuildComposite", bBuildComposit },
     { "BuildAccented", bBuildAccented },

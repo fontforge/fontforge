@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 9-Apr-2006 -->
-  <!-- AP: Last modified: 9-Sep-2006 -->
+  <!-- AP: Last modified: 21-Sep-2006 -->
   <TITLE>Scripting functions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -194,6 +194,67 @@ Generate(filename[,bitmaptype[,fmflags[,res[,mult-sfd-file[,namelist-name]]]]])
 	    already present.<BR>
 	    And instrs is a string containing fontforge's human readable version of tt
 	    instructions, as "<CODE>IUP[x]\nIUP[y]</CODE>"
+	  <DT>
+	    <A NAME="AddSizeFeature">A</A>ddSizeFeature(default-size[,range-bottom,range-top,style-id,array-of-lang-names])
+	  <DD>
+	    This allows you to specify an OpenType 'size' feature. It will also set the
+	    TeX design size header value.<BR>
+	    The 'size' feature has two formats. The simplest one specifies the optical
+	    design size for the font, the more complex one specifies that as well as
+	    a design range, a style id, and a list of language/name pairs (at least one
+	    of which must be in English).<BR>
+	    The design range is a range of point sizes for which this font is to be
+	    preferred. For instance you might have a family of fonts with the following
+	    attributes:
+	    <TABLE BORDER CELLPADDING="2">
+	      <TR>
+		<TH>Optical design size</TH>
+		<TH>Bottom of range</TH>
+		<TH>Top of range</TH>
+		<TH>Style name</TH>
+	      </TR>
+	      <TR>
+		<TD>18</TD>
+		<TD>13</TD>
+		<TD>72</TD>
+		<TD>Title</TD>
+	      </TR>
+	      <TR>
+		<TD>10</TD>
+		<TD>12.9</TD>
+		<TD>8.0</TD>
+		<TD>Text</TD>
+	      </TR>
+	      <TR>
+		<TD>6</TD>
+		<TD>7.9</TD>
+		<TD>5</TD>
+		<TD>Tiny</TD>
+	      </TR>
+	    </TABLE>
+	    <P>
+	    The list of language/name pairs should be an array of arrays. All the sub-arrays
+	    should have two entries, the first, an integer which represents an MS
+	    language id, the second a string containing the name of the style in that language.
+	    <BLOCKQUOTE>
+	      <PRE>New()
+AddSizeFeature(10,8,12.9,211,[[0x409,"Text"],[0x40c,"Texte"]])
+</PRE>
+	    </BLOCKQUOTE>
+	    <P>
+	    This will set the current font to have a design size of 10 points, this font
+	    will then be used in preference to other fonts in its family if the requested
+	    size is between 8 and 12.9 points. The 211 is used by applications to associate
+	    font families into smaller groups based on optical size. The final argument
+	    specifies that this size be called "Text" in English and "Texte" in French
+	    (0x409 is the ms language code for US English, 0x40c is the code for French
+	    from France).
+	    <UL>
+	      <LI>
+		<A HREF="http://partners.adobe.com/public/developer/opentype/index_tag8.html#size">The size feature is documented by Adobe</A>
+	      <LI>
+		<A HREF="http://partners.adobe.com/public/developer/opentype/index_name.html#lang3">MS language values are documented with the 'name' table</A>
+	    </UL>
 	  <DT>
 	    <A NAME="AddVHint" HREF="hintsmenu.html#VHint">AddVHint</A>(start,width)
 	  <DD>
