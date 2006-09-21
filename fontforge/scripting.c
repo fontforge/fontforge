@@ -657,6 +657,197 @@ static void bStrskipint(Context *c) {
     c->return_val.u.ival = end-c->a.vals[1].u.sval;
 }
 
+static void bisupper(Context *c) {
+    const char *pt;
+    int ch;
+
+    c->return_val.type = v_int;
+    if ( c->a.argc!=2 )
+	ScriptError( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type==v_str ) {
+	pt = c->a.vals[1].u.sval;
+	ch = utf8_ildb(&pt);
+	c->return_val.u.ival = ch>=0 && ch<=0x10000?isupper(ch):0;
+    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
+	c->return_val.u.ival = isupper(c->a.vals[1].u.ival);
+    else
+	ScriptError( c, "Bad type for argument" );
+}
+
+static void bislower(Context *c) {
+    const char *pt;
+    int ch;
+
+    c->return_val.type = v_int;
+    if ( c->a.argc!=2 )
+	ScriptError( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type==v_str ) {
+	pt = c->a.vals[1].u.sval;
+	ch = utf8_ildb(&pt);
+	c->return_val.u.ival = ch>=0 && ch<=0x10000?islower(ch):0;
+    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
+	c->return_val.u.ival = islower(c->a.vals[1].u.ival);
+    else
+	ScriptError( c, "Bad type for argument" );
+}
+
+static void bisdigit(Context *c) {
+    const char *pt;
+    int ch;
+
+    c->return_val.type = v_int;
+    if ( c->a.argc!=2 )
+	ScriptError( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type==v_str ) {
+	pt = c->a.vals[1].u.sval;
+	ch = utf8_ildb(&pt);
+	c->return_val.u.ival = ch>=0 && ch<=0x10000?isdigit(ch):0;
+    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
+	c->return_val.u.ival = isdigit(c->a.vals[1].u.ival);
+    else
+	ScriptError( c, "Bad type for argument" );
+}
+
+static void bishexdigit(Context *c) {
+    const char *pt;
+    int ch;
+
+    c->return_val.type = v_int;
+    if ( c->a.argc!=2 )
+	ScriptError( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type==v_str ) {
+	pt = c->a.vals[1].u.sval;
+	ch = utf8_ildb(&pt);
+	c->return_val.u.ival = ch>=0 && ch<=0x10000?ishexdigit(ch):0;
+    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
+	c->return_val.u.ival = ishexdigit(c->a.vals[1].u.ival);
+    else
+	ScriptError( c, "Bad type for argument" );
+}
+
+static void bisalpha(Context *c) {
+    const char *pt;
+    int ch;
+
+    c->return_val.type = v_int;
+    if ( c->a.argc!=2 )
+	ScriptError( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type==v_str ) {
+	pt = c->a.vals[1].u.sval;
+	ch = utf8_ildb(&pt);
+	c->return_val.u.ival = ch>=0 && ch<=0x10000?isalpha(ch):0;
+    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
+	c->return_val.u.ival = isalpha(c->a.vals[1].u.ival);
+    else
+	ScriptError( c, "Bad type for argument" );
+}
+
+static void bisalnum(Context *c) {
+    const char *pt;
+    int ch;
+
+    c->return_val.type = v_int;
+    if ( c->a.argc!=2 )
+	ScriptError( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type==v_str ) {
+	pt = c->a.vals[1].u.sval;
+	ch = utf8_ildb(&pt);
+	c->return_val.u.ival = ch>=0 && ch<=0x10000?isalnum(ch):0;
+    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
+	c->return_val.u.ival = isalnum(c->a.vals[1].u.ival);
+    else
+	ScriptError( c, "Bad type for argument" );
+}
+
+static void bisspace(Context *c) {
+    const char *pt;
+    int ch;
+
+    c->return_val.type = v_int;
+    if ( c->a.argc!=2 )
+	ScriptError( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type==v_str ) {
+	pt = c->a.vals[1].u.sval;
+	ch = utf8_ildb(&pt);
+	c->return_val.u.ival = ch>=0 && ch<=0x10000?isspace(ch):0;
+    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
+	c->return_val.u.ival = isspace(c->a.vals[1].u.ival);
+    else
+	ScriptError( c, "Bad type for argument" );
+}
+
+static void btoupper(Context *c) {
+    char *pt; const char *ipt;
+    int ch;
+
+    if ( c->a.argc!=2 )
+	ScriptError( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type==v_str ) {
+	c->return_val.type = v_str;
+	c->return_val.u.sval = pt = copy(ipt = c->a.vals[1].u.sval);
+	while ( *ipt ) {
+	    ch = utf8_ildb(&ipt);
+	    if ( ch==-1 )
+	break;
+	    if ( ch<0x10000 ) ch = toupper(ch);
+	    pt = utf8_idpb(pt,ch);
+	}
+	*pt = '\0';
+    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode ) {
+	c->return_val.type = v_int;
+	c->return_val.u.ival = c->a.vals[1].u.ival<0x10000?toupper(c->a.vals[1].u.ival): c->a.vals[1].u.ival;
+    } else
+	ScriptError( c, "Bad type for argument" );
+}
+
+static void btolower(Context *c) {
+    char *pt; const char *ipt;
+    int ch;
+
+    if ( c->a.argc!=2 )
+	ScriptError( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type==v_str ) {
+	c->return_val.type = v_str;
+	c->return_val.u.sval = pt = copy(ipt = c->a.vals[1].u.sval);
+	while ( *ipt ) {
+	    ch = utf8_ildb(&ipt);
+	    if ( ch==-1 )
+	break;
+	    if ( ch<0x10000 ) ch = tolower(ch);
+	    pt = utf8_idpb(pt,ch);
+	}
+	*pt = '\0';
+    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode ) {
+	c->return_val.type = v_int;
+	c->return_val.u.ival = c->a.vals[1].u.ival<0x10000?tolower(c->a.vals[1].u.ival): c->a.vals[1].u.ival;
+    } else
+	ScriptError( c, "Bad type for argument" );
+}
+
+static void btomirror(Context *c) {
+    char *pt; const char *ipt;
+    int ch;
+
+    if ( c->a.argc!=2 )
+	ScriptError( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type==v_str ) {
+	c->return_val.type = v_str;
+	c->return_val.u.sval = pt = copy(ipt = c->a.vals[1].u.sval);
+	while ( *ipt ) {
+	    ch = utf8_ildb(&ipt);
+	    if ( ch==-1 )
+	break;
+	    if ( ch<0x10000 ) ch = tomirror(ch);
+	    pt = utf8_idpb(pt,ch);
+	}
+	*pt = '\0';
+    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode ) {
+	c->return_val.type = v_int;
+	c->return_val.u.ival = c->a.vals[1].u.ival<0x10000?tomirror(c->a.vals[1].u.ival): c->a.vals[1].u.ival;
+    } else
+	ScriptError( c, "Bad type for argument" );
+}
+
 static void bLoadPrefs(Context *c) {
 
     if ( c->a.argc!=1 )
@@ -6746,6 +6937,16 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "Strtol", bStrtol, 1 },
     { "Strtod", bStrtod, 1 },
     { "Strskipint", bStrskipint, 1 },
+    { "IsUpper", bisupper, 1 },
+    { "IsLower", bislower, 1 },
+    { "IsDigit", bisdigit, 1 },
+    { "IsHexDigit", bishexdigit, 1 },
+    { "IsAlpha", bisalpha, 1 },
+    { "IsAlNum", bisalnum, 1 },
+    { "IsSpace", bisspace, 1 },
+    { "ToUpper", btoupper, 1 },
+    { "ToLower", btolower, 1 },
+    { "ToMirror", btomirror, 1 },
     { "LoadPrefs", bLoadPrefs, 1 },
     { "SavePrefs", bSavePrefs, 1 },
     { "GetPref", bGetPrefs, 1 },

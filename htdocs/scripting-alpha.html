@@ -234,8 +234,8 @@ Generate(filename[,bitmaptype[,fmflags[,res[,mult-sfd-file[,namelist-name]]]]])
 	    </TABLE>
 	    <P>
 	    The list of language/name pairs should be an array of arrays. All the sub-arrays
-	    should have two entries, the first, an integer which represents an MS
-	    language id, the second a string containing the name of the style in that language.
+	    should have two entries, the first, an integer which represents an MS language
+	    id, the second a string containing the name of the style in that language.
 	    <BLOCKQUOTE>
 	      <PRE>New()
 AddSizeFeature(10,8,12.9,211,[[0x409,"Text"],[0x40c,"Texte"]])
@@ -251,9 +251,11 @@ AddSizeFeature(10,8,12.9,211,[[0x409,"Text"],[0x40c,"Texte"]])
 	    from France).
 	    <UL>
 	      <LI>
-		<A HREF="http://partners.adobe.com/public/developer/opentype/index_tag8.html#size">The size feature is documented by Adobe</A>
+		<A HREF="http://partners.adobe.com/public/developer/opentype/index_tag8.html#size">The
+		size feature is documented by Adobe</A>
 	      <LI>
-		<A HREF="http://partners.adobe.com/public/developer/opentype/index_name.html#lang3">MS language values are documented with the 'name' table</A>
+		<A HREF="http://partners.adobe.com/public/developer/opentype/index_name.html#lang3">MS
+		language values are documented with the 'name' table</A>
 	    </UL>
 	  <DT>
 	    <A NAME="AddVHint" HREF="hintsmenu.html#VHint">AddVHint</A>(start,width)
@@ -1584,14 +1586,56 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	    to set the fontname of this new font. The flag argument is the same as for
 	    Open.
 	  <DT>
+	    <A NAME="IsAlNum">IsAlNum</A>(val)
+	  <DD>
+	    Returns whether val is an alpha-numberic character. Val may be either an
+	    integer, a unicode or a string. The first two cases are treated as unicode
+	    code points, the third looks at the first (utf8) character in the string.
+	    It can execute with no current font.
+	  <DT>
+	    <A NAME="IsAlpha">IsAlpha</A>(val)
+	  <DD>
+	    Returns whether val is an alphabetic character. Val may be either an integer,
+	    a unicode or a string. The first two cases are treated as unicode code points,
+	    the third looks at the first (utf8) character in the string. It can execute
+	    with no current font.
+	  <DT>
+	    <A NAME="IsDigit">IsDigit</A>(val)
+	  <DD>
+	    Returns whether val is a digit. Val may be either an integer, a unicode or
+	    a string. The first two cases are treated as unicode code points, the third
+	    looks at the first (utf8) character in the string. It can execute with no
+	    current font.
+	  <DT>
 	    <A NAME="IsFinite">I</A>sFinite(real)
 	  <DD>
 	    Returns whether the value is finite (not infinite and not a nan). It can
 	    execute with no current font.
 	  <DT>
+	    <A NAME="IsHexDigit">IsHexDigit</A>(val)
+	  <DD>
+	    Returns whether val is a hex-digit. Val may be either an integer, a unicode
+	    or a string. The first two cases are treated as unicode code points, the
+	    third looks at the first (utf8) character in the string. It can execute with
+	    no current font.
+	  <DT>
+	    <A NAME="IsLower">IsLower</A>(val)
+	  <DD>
+	    Returns whether val is a lower case letter. Val may be either an integer,
+	    a unicode or a string. The first two cases are treated as unicode code points,
+	    the third looks at the first (utf8) character in the string. It can execute
+	    with no current font.
+	  <DT>
 	    <A NAME="IsNan">I</A>sNan(real)
 	  <DD>
 	    Returns whether the value is a nan. It can execute with no current font.
+	  <DT>
+	    <A NAME="IsUpper">IsUpper</A>(val)
+	  <DD>
+	    Returns whether val is an upper case letter. Val may be either an integer,
+	    a unicode or a string. The first two cases are treated as unicode code points,
+	    the third looks at the first (utf8) character in the string. It can execute
+	    with no current font.
 	</DL>
       </TD>
     </TR>
@@ -2824,10 +2868,32 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	  <DD>
 	    Returns the tangent of val. It can execute with no current font.
 	  <DT>
+	    <A NAME="ToLower">ToLower</A>(val)
+	  <DD>
+	    Converts value to a lower case letter. Val may be either an integer, a unicode
+	    or a string. The first two cases are treated as unicode code points, in the
+	    third the entire string will be converted. It can execute with no current
+	    font.
+	  <DT>
+	    <A NAME="ToMirror">ToMirror</A>(val)
+	  <DD>
+	    Converts value to a mirror form (used in r2l scripts where the latin open
+	    parenthesis looks like a close parenthesis). Val may be either an integer,
+	    a unicode or a string. The first two cases are treated as unicode code points,
+	    in the third the entire string will be converted. It can execute with no
+	    current font.
+	  <DT>
 	    <A NAME="ToString">T</A>oString(arg)
 	  <DD>
 	    Converts its argument to a string. (the output is what the Print() command
 	    would print) It can execute with no current font.
+	  <DT>
+	    <A NAME="ToUpper">ToUpper</A>(val)
+	  <DD>
+	    Converts value to an upper case letter. Val may be either an integer, a unicode
+	    or a string. The first two cases are treated as unicode code points, in the
+	    third the entire string will be converted. It can execute with no current
+	    font.
 	  <DT>
 	    <A NAME="Transform" HREF="elementmenu.html#Transform">Transform</A>(t1,t2,t3,t4,t5,t6)
 	  <DD>
