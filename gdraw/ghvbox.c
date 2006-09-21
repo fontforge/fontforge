@@ -28,6 +28,8 @@
 #include "ggadgetP.h"
 #include <string.h>
 
+/* If the locale is hebrew or arabic should we lay out boxes right to left???*/
+
 #define GG_Glue		((GGadget *) -1)	/* Special entries */
 #define GG_ColSpan	((GGadget *) -2)	/* for box elements */
 #define GG_RowSpan	((GGadget *) -3)	/* Must match those in ggadget.h */
