@@ -2925,6 +2925,8 @@ static void AskForLangName(GGadget *list,int sel) {
     GTextInfo **ti;
     char *temp;
 
+    for ( i=sizeof(mslanguages)/sizeof(mslanguages[0])-1; i>=0 ; --i )
+	mslanguages[i].fg = mslanguages[i].bg = COLOR_DEFAULT;
     if ( sel==-1 ) {
 	for ( i=0; i<len; ++i )
 	    if ( old[i]->userdata == (void *) 0x409 )
@@ -4960,7 +4962,7 @@ return(true);
 #endif
 	vmetrics = GGadgetIsChecked(GWidgetGetControl(gw,CID_HasVerticalMetrics));
 	upos = GetReal8(gw,CID_UPos, _("Underline _Position:"),&err);
-	uwid = GetReal8(gw,CID_UWidth,_("_Height:"),&err);
+	uwid = GetReal8(gw,CID_UWidth,S_("Underline|_Height:"),&err);
 	GetInt8(gw,CID_Em,_("_Em Size:"),&err);	/* just check for errors. redundant info */
 	as = GetInt8(gw,CID_Ascent,_("_Ascent:"),&err);
 	des = GetInt8(gw,CID_Descent,_("_Descent:"),&err);
@@ -6071,6 +6073,7 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     static int done = false;
     char **nlnames;
     char createtime[200], modtime[200];
+    unichar_t *tmpcreatetime, *tmpmodtime;
     time_t t;
     const struct tm *tm;
     struct matrixinit mi;
@@ -6492,7 +6495,7 @@ return;
 
     psgcd[12].gd.pos.x = 155; psgcd[12].gd.pos.y = psgcd[11].gd.pos.y;
     psgcd[12].gd.flags = gg_visible | gg_enabled;
-    pslabel[12].text = (unichar_t *) _("_Height:");
+    pslabel[12].text = (unichar_t *) S_("Underline|_Height:");
     pslabel[12].text_is_1byte = true;
     pslabel[12].text_in_resource = true;
     psgcd[12].gd.label = &pslabel[12];
@@ -8498,10 +8501,10 @@ return;
     t = sf->creationtime;
     tm = localtime(&t);
     strftime(createtime,sizeof(createtime),"%c",tm);
+    tmpcreatetime = def2u_copy(createtime);
     dgcd[1].gd.pos.x = 115; dgcd[1].gd.pos.y = dgcd[0].gd.pos.y;
     dgcd[1].gd.flags = gg_visible | gg_enabled;
-    dlabel[1].text = (unichar_t *) createtime;
-    dlabel[1].text_is_1byte = true;
+    dlabel[1].text = tmpcreatetime;
     dgcd[1].gd.label = &dlabel[1];
     dgcd[1].creator = GLabelCreate;
 
@@ -8516,10 +8519,10 @@ return;
     t = sf->modificationtime;
     tm = localtime(&t);
     strftime(modtime,sizeof(modtime),"%c",tm);
+    tmpmodtime = def2u_copy(createtime);
     dgcd[3].gd.pos.x = 115; dgcd[3].gd.pos.y = dgcd[2].gd.pos.y;
     dgcd[3].gd.flags = gg_visible | gg_enabled;
-    dlabel[3].text = (unichar_t *) modtime;
-    dlabel[3].text_is_1byte = true;
+    dlabel[3].text = tmpmodtime;
     dgcd[3].gd.label = &dlabel[3];
     dgcd[3].creator = GLabelCreate;
 
@@ -8812,6 +8815,9 @@ return;
     for ( i=0; i<mi.initial_row_cnt; ++i )
 	free( mi.matrix_data[3*i+2].u.md_str );
     free( mi.matrix_data );
+
+    free(tmpcreatetime);
+    free(tmpmodtime);
 
     GHVBoxFitWindow(mb[0].ret);
 #if 0
