@@ -44,6 +44,7 @@ static SearchView *searcher=NULL;
 #define CID_Replace	1007
 #define CID_ReplaceAll	1008
 #define CID_Cancel	1009
+#define CID_TopBox	1010
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static int CoordMatches(real real_off, real search_off, SearchView *s) {
@@ -1057,19 +1058,21 @@ return( true );
 }
 
 static void SVResize(SearchView *sv, GEvent *event) {
-    GRect size;
-    int i, xoff, yoff;
     int width, height;
 
     if ( !event->u.resize.sized )
 return;
 
+    GGadgetMove(GWidgetGetControl(sv->gw,CID_TopBox),4,4);
+    GGadgetResize(GWidgetGetControl(sv->gw,CID_TopBox),
+	    event->u.resize.size.width-8,
+	    event->u.resize.size.height-12);
+    
     width = (event->u.resize.size.width-40)/2;
     height = (event->u.resize.size.height-sv->cv_y-sv->button_height-8);
-    if ( width<70 || height<80 || event->u.resize.size.width<sv->button_width+10 ) {
+    if ( width<70 || height<80 ) {
 	if ( width<70 ) width = 70;
 	width = 2*width+40;
-	if ( width<sv->button_width+10 ) width = sv->button_width+10;
 	if ( height<80 ) height = 80;
 	height += sv->cv_y+sv->button_height+8;
 	GDrawResize(sv->gw,width,height);
@@ -1083,6 +1086,7 @@ return;
 	GDrawMove(sv->cv_rpl.gw,sv->rpl_x,sv->cv_y);
     }
 
+#if 0
     GGadgetGetSize(GWidgetGetControl(sv->gw,CID_Allow),&size);
     yoff = event->u.resize.size.height-sv->button_height-size.y;
     if ( yoff!=0 ) {
@@ -1100,6 +1104,7 @@ return;
 	    GGadgetMove(GWidgetGetControl(sv->gw,i),size.x+xoff,size.y);
 	}
     }
+#endif
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);
     GDrawRequestExpose(sv->gw,NULL,false);
@@ -1377,10 +1382,10 @@ return( sv );
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 SearchView *SVCreate(FontView *fv) {
     SearchView *sv;
-    GRect pos, size;
+    GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[12];
+    GGadgetCreateData gcd[12], boxes[4], *butarray[14], *allowarray[6], *varray[8];
     GTextInfo label[12];
     FontRequest rq;
     int as, ds, ld;
@@ -1425,6 +1430,7 @@ return( NULL );
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
+    memset(&boxes,0,sizeof(boxes));
 
     label[0].text = (unichar_t *) _("Allow:");
     label[0].text_is_1byte = true;
@@ -1434,6 +1440,7 @@ return( NULL );
     gcd[0].gd.cid = CID_Allow;
     gcd[0].gd.popup_msg = (unichar_t *) _("Allow a match even if the search pattern has\nto be transformed by a combination of the\nfollowing transformations.");
     gcd[0].creator = GLabelCreate;
+    allowarray[0] = &gcd[0];
 
     label[1].text = (unichar_t *) _("Flipping");
     label[1].text_is_1byte = true;
@@ -1443,6 +1450,7 @@ return( NULL );
     gcd[1].gd.cid = CID_Flipping;
     gcd[1].gd.popup_msg = (unichar_t *) _("Allow a match even if the search pattern has\nto be transformed by a combination of the\nfollowing transformations.");
     gcd[1].creator = GCheckBoxCreate;
+    allowarray[1] = &gcd[1];
 
     label[2].text = (unichar_t *) _("Scaling");
     label[2].text_is_1byte = true;
@@ -1452,6 +1460,7 @@ return( NULL );
     gcd[2].gd.cid = CID_Scaling;
     gcd[2].gd.popup_msg = (unichar_t *) _("Allow a match even if the search pattern has\nto be transformed by a combination of the\nfollowing transformations.");
     gcd[2].creator = GCheckBoxCreate;
+    allowarray[2] = &gcd[2];
 
     label[3].text = (unichar_t *) _("Rotating");
     label[3].text_is_1byte = true;
@@ -1461,6 +1470,7 @@ return( NULL );
     gcd[3].gd.cid = CID_Rotating;
     gcd[3].gd.popup_msg = (unichar_t *) _("Allow a match even if the search pattern has\nto be transformed by a combination of the\nfollowing transformations.");
     gcd[3].creator = GCheckBoxCreate;
+    allowarray[3] = &gcd[3]; allowarray[4] = GCD_Glue; allowarray[5] = NULL;
 
     label[4].text = (unichar_t *) _("Search Selected Chars");
     label[4].text_is_1byte = true;
@@ -1479,6 +1489,7 @@ return( NULL );
     gcd[5].gd.cid = CID_Find;
     gcd[5].gd.handle_controlevent = SV_Find;
     gcd[5].creator = GButtonCreate;
+    butarray[0] = GCD_Glue; butarray[1] = GCD_Glue; butarray[2] = &gcd[5];
 
     label[6].text = (unichar_t *) _("Find All");
     label[6].text_is_1byte = true;
@@ -1488,6 +1499,7 @@ return( NULL );
     gcd[6].gd.cid = CID_FindAll;
     gcd[6].gd.handle_controlevent = SV_FindAll;
     gcd[6].creator = GButtonCreate;
+    butarray[3] = GCD_Glue; butarray[4] = &gcd[6];
 
     label[7].text = (unichar_t *) _("Replace");
     label[7].text_is_1byte = true;
@@ -1497,6 +1509,7 @@ return( NULL );
     gcd[7].gd.cid = CID_Replace;
     gcd[7].gd.handle_controlevent = SV_RplFind;
     gcd[7].creator = GButtonCreate;
+    butarray[5] = GCD_Glue; butarray[6] = &gcd[7];
 
     label[8].text = (unichar_t *) _("Replace All");
     label[8].text_is_1byte = true;
@@ -1506,6 +1519,7 @@ return( NULL );
     gcd[8].gd.cid = CID_ReplaceAll;
     gcd[8].gd.handle_controlevent = SV_RplAll;
     gcd[8].creator = GButtonCreate;
+    butarray[7] = GCD_Glue; butarray[8] = &gcd[8];
 
     label[9].text = (unichar_t *) _("_Cancel");
     label[9].text_is_1byte = true;
@@ -1516,21 +1530,39 @@ return( NULL );
     gcd[9].gd.cid = CID_Cancel;
     gcd[9].gd.handle_controlevent = SV_Cancel;
     gcd[9].creator = GButtonCreate;
+    butarray[9] = GCD_Glue; butarray[10] = &gcd[9];
+    butarray[11] = GCD_Glue; butarray[12] = GCD_Glue; butarray[13] = NULL;
 
-    GGadgetsCreate(gw,gcd);
+    boxes[2].gd.flags = gg_enabled|gg_visible;
+    boxes[2].gd.u.boxelements = allowarray;
+    boxes[2].creator = GHBoxCreate;
+
+    boxes[3].gd.flags = gg_enabled|gg_visible;
+    boxes[3].gd.u.boxelements = butarray;
+    boxes[3].creator = GHBoxCreate;
+
+    varray[0] = GCD_Glue; varray[1] = &boxes[2];
+    varray[2] = &gcd[4]; varray[3] = GCD_Glue;
+    varray[4] = &boxes[3]; varray[5] = NULL;
+
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = varray;
+    boxes[0].gd.cid = CID_TopBox;
+    boxes[0].creator = GVBoxCreate;
+
+    GGadgetsCreate(gw,boxes);
+
+    GHVBoxSetExpandableRow(boxes[0].ret,0);
+    GHVBoxSetPadding(boxes[2].ret,6,3);
+    GHVBoxSetExpandableCol(boxes[2].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(boxes[3].ret,gb_expandglue);
+    GGadgetResize(boxes[0].ret,pos.width,pos.height);
 
     GGadgetSetTitle8(GWidgetGetControl(gw,CID_Find),_("Find"));
     sv->showsfindnext = false;
     GDrawRequestTimer(gw,1000,1000,NULL);
-
-    GGadgetGetSize(GWidgetGetControl(gw,CID_Cancel),&size);
-    pos.height = size.y+size.height+13;
-    pos.width = size.x+size.width+5;
-    if ( sv->rpl_x+sv->cv_width+20 > pos.width )
-	pos.width = sv->rpl_x+sv->cv_width+20;
-    GDrawResize(gw,pos.width,pos.height);
-    sv->button_height = pos.height-(sv->cv_y+sv->cv_height+8);
-    sv->button_width = size.x+size.width-5;
+    sv->button_height = GDrawPointsToPixels(gw,64);
+    GDrawResize(gw,650,400);		/* Force a resize event */
 
     GDrawSetVisible(sv->gw,true);
 return( sv );
