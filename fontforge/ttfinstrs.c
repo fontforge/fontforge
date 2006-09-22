@@ -475,7 +475,7 @@ typedef struct instrdlg {
     struct instrdata *instrdata;
     struct instrinfo instrinfo;
     int oc_height;
-    GGadget *ok, *cancel, *edit, *parse, *text;
+    GGadget *ok, *cancel, *edit, *parse, *text, *topbox;
 } InstrDlg;
 
 static void instr_typify(struct instrinfo *instrinfo) {
@@ -532,10 +532,15 @@ static void instr_typify(struct instrinfo *instrinfo) {
 }
 
 static void instr_resize(InstrDlg *iv,GEvent *event) {
-    GRect pos, size;
+    GRect size;
     int lh;
     struct instrinfo *ii = &iv->instrinfo;
 
+    GGadgetGetSize(iv->text,&size);
+    GDrawMove(ii->v,size.x,size.y);
+    GDrawResize(ii->v,size.width,size.height);
+    ii->vheight = size.height; ii->vwidth = size.width;
+#if 0
     /* Multiple of the number of lines we've got */
     if ( (event->u.resize.size.height-iv->oc_height-4)%ii->fh!=0 ) {
 	int lc = (event->u.resize.size.height-iv->oc_height+ii->fh/2)/ii->fh;
@@ -561,6 +566,7 @@ return;
     GGadgetMove(iv->parse,(event->u.resize.size.width-size.width)/2,event->u.resize.size.height-iv->oc_height+9);
 
     ii->vheight = pos.height; ii->vwidth = pos.width;
+#endif
     lh = ii->lheight;
 
     GScrollBarSetBounds(ii->vsb,0,lh+2,ii->vheight/ii->fh);
@@ -1115,8 +1121,10 @@ static int iv_e_h(GWindow gw, GEvent *event) {
 
     switch ( event->type ) {
       case et_expose:
+#if 0
 	  GDrawDrawLine(gw,0,iv->instrinfo.vheight,
 		  iv->instrinfo.vwidth+400,iv->instrinfo.vheight,0x000000);
+#endif
       break;
       case et_resize:
 	instr_resize(iv,event);
@@ -1146,10 +1154,11 @@ static int iv_e_h(GWindow gw, GEvent *event) {
 		else if ( !IVParse(iv))
       break;
 		GGadgetSetVisible(iv->parse,toedit);
-		GGadgetSetVisible(iv->text,toedit);
+		/*GGadgetSetVisible(iv->text,toedit);*/
 		GGadgetSetVisible(iv->edit,!toedit);
 		GGadgetSetVisible(iv->instrinfo.vsb,!toedit);
 		GDrawSetVisible(iv->instrinfo.v,!toedit);
+		GHVBoxFitWindow(iv->topbox);
 		iv->inedit = toedit;
 	    }
 	  break;
@@ -1183,9 +1192,9 @@ static void InstrDlgCreate(struct instrdata *id,char *title) {
     FontRequest rq;
     static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','u','n','i','f','o','n','t', '\0' };
     int as,ds,ld, lh;
-    GGadgetData gd;
+    GGadgetCreateData gcd[11], *butarray[9], *harray[3], *varray[8];
     GGadget *sb;
-    GTextInfo label;
+    GTextInfo label[6];
 
     instrhelpsetup();
 
@@ -1220,48 +1229,101 @@ static void InstrDlgCreate(struct instrdata *id,char *title) {
     iv->gw = gw = GDrawCreateTopWindow(NULL,&pos,iv_e_h,iv,&wattrs);
 
     memset(&label,0,sizeof(label));
-    memset(&gd,0,sizeof(gd));
-    gd.pos.x = 5; gd.pos.y = 105;
-    gd.pos.width = -1;
-    label.text = (unichar_t *) _("_OK");
-    label.text_is_1byte = true;
-    label.text_in_resource = true;
-    gd.label = &label;
-    gd.flags = gg_visible|gg_enabled|gg_but_default;
-    iv->ok = GButtonCreate(gw,&gd,iv);
-    gd.pos.x = -8; gd.pos.y += 3;
-    gd.pos.width = -1;
-    label.text = (unichar_t *) _("_Cancel");
-    label.text_is_1byte = true;
-    label.text_in_resource = true;
-    gd.label = &label;
-    gd.flags = gg_visible|gg_enabled|gg_but_cancel;
-    iv->cancel = GButtonCreate(gw,&gd,iv);
+    memset(&gcd,0,sizeof(gcd));
+    gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 105;
+    gcd[0].gd.pos.width = -1;
+    label[0].text = (unichar_t *) _("_OK");
+    label[0].text_is_1byte = true;
+    label[0].text_in_resource = true;
+    gcd[0].gd.label = &label[0];
+    gcd[0].gd.flags = gg_visible|gg_enabled|gg_but_default;
+    gcd[0].creator = GButtonCreate;
+    gcd[0].data = iv;
 
-    label.text = (unichar_t *) _("_Edit");
-    label.text_is_1byte = true;
-    label.text_in_resource = true;
-    gd.flags = gg_visible|gg_enabled;
-    iv->edit = GButtonCreate(gw,&gd,iv);
-    label.text = (unichar_t *) _("_Parse");
-    gd.flags = gg_enabled;
-    iv->parse = GButtonCreate(gw,&gd,iv);
+    gcd[1].gd.pos.x = -8; gcd[1].gd.pos.y = 3;
+    gcd[1].gd.pos.width = -1;
+    label[1].text = (unichar_t *) _("_Cancel");
+    label[1].text_is_1byte = true;
+    label[1].text_in_resource = true;
+    gcd[1].gd.label = &label[1];
+    gcd[1].gd.flags = gg_visible|gg_enabled|gg_but_cancel;
+    gcd[1].creator = GButtonCreate;
+    gcd[1].data = iv;
 
-    gd.label = NULL;
-    gd.pos.x = 0; gd.pos.y = 0;
-    gd.pos.width = pos.width; gd.pos.height = pos.height-GDrawPointsToPixels(NULL,40);
-    gd.flags = gg_enabled|gg_pos_in_pixels|gg_textarea_wrap|gg_pos_use0;
-    iv->text = GTextAreaCreate(gw,&gd,iv);
+    gcd[2] = gcd[1];
+    label[2].text = (unichar_t *) _("_Edit");
+    label[2].text_is_1byte = true;
+    label[2].text_in_resource = true;
+    gcd[2].gd.flags = gg_visible|gg_enabled;
+    gcd[2].gd.label = &label[2];
+    gcd[2].creator = GButtonCreate;
+    gcd[2].data = iv;
 
-    gd.pos.y = 0; gd.pos.height = pos.height-GDrawPointsToPixels(NULL,40);
-    gd.pos.width = GDrawPointsToPixels(gw,_GScrollBar_Width);
-    gd.pos.x = pos.width-gd.pos.width;
-    gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_sb_vert;
-    iv->instrinfo.vsb = sb = GScrollBarCreate(gw,&gd,iv);
+    gcd[3] = gcd[1];
+    label[3] = label[2];
+    label[3].text = (unichar_t *) _("_Parse");
+    gcd[3].gd.flags = gg_enabled;
+    gcd[3].gd.label = &label[3];
+    gcd[3].creator = GButtonCreate;
+    gcd[3].data = iv;
+
+    butarray[0] = GCD_Glue; butarray[1] = &gcd[0];
+    butarray[2] = GCD_Glue; butarray[3] = &gcd[2];
+    butarray[4] = &gcd[3]; butarray[5] = GCD_Glue;
+    butarray[6] = &gcd[1]; butarray[7] = GCD_Glue;
+    butarray[8] = NULL;
+    gcd[4].gd.flags = gg_enabled|gg_visible;
+    gcd[4].gd.u.boxelements = butarray;
+    gcd[4].creator = GHBoxCreate;
+
+    gcd[5].gd.pos.x = 0; gcd[5].gd.pos.y = 0;
+    gcd[5].gd.pos.width = pos.width; gcd[5].gd.pos.height = pos.height-GDrawPointsToPixels(NULL,40);
+    gcd[5].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_textarea_wrap|gg_pos_use0;
+    gcd[5].creator = GTextAreaCreate;
+    gcd[5].data = iv;
+    harray[0] = &gcd[5];
+
+    gcd[6].gd.pos.y = 0; gcd[6].gd.pos.height = pos.height-GDrawPointsToPixels(NULL,40);
+    gcd[6].gd.pos.width = GDrawPointsToPixels(gw,_GScrollBar_Width);
+    gcd[6].gd.pos.x = pos.width-gcd[6].gd.pos.width;
+    gcd[6].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_sb_vert;
+    gcd[6].creator = GScrollBarCreate;
+    gcd[6].data = iv;
+    harray[1] = &gcd[6]; harray[2] = NULL;
+
+    gcd[7].gd.flags = gg_enabled|gg_visible;
+    gcd[7].gd.u.boxelements = harray;
+    gcd[7].creator = GHBoxCreate;
+
+    varray[0] = &gcd[7]; varray[1] = NULL;
+    varray[2] = &gcd[8]; varray[3] = NULL;
+    varray[4] = &gcd[4]; varray[5] = NULL;
+    varray[6] = NULL;
+
+    gcd[8].gd.flags = gg_enabled|gg_visible;
+    gcd[8].gd.pos.width = 100;
+    gcd[8].creator = GLineCreate;
+
+    gcd[9].gd.pos.x = gcd[9].gd.pos.y = 2;
+    gcd[9].gd.flags = gg_enabled|gg_visible;
+    gcd[9].gd.u.boxelements = varray;
+    gcd[9].creator = GHVGroupCreate;
+
+    GGadgetsCreate(gw,&gcd[9]);
+    GHVBoxSetExpandableRow(gcd[9].ret,0);
+    GHVBoxSetExpandableCol(gcd[7].ret,0);
+    GHVBoxSetExpandableCol(gcd[4].ret,gb_expandgluesame);
+
+    iv->ok = gcd[0].ret;
+    iv->cancel = gcd[1].ret;
+    iv->edit = gcd[2].ret;
+    iv->parse = gcd[3].ret;
+    iv->text = gcd[5].ret;
+    iv->instrinfo.vsb = sb = gcd[6].ret;
+    iv->topbox = gcd[9].ret;
 
     wattrs.mask = wam_events|wam_cursor;
-    pos.x = 0; pos.y = 0;
-    pos.width = gd.pos.x; pos.height = gd.pos.height;
+    pos = gcd[5].gd.pos;
     iv->instrinfo.v = GWidgetCreateSubWindow(gw,&pos,ii_v_e_h,&iv->instrinfo,&wattrs);
     GDrawSetVisible(iv->instrinfo.v,true);
 
@@ -1280,7 +1342,7 @@ static void InstrDlgCreate(struct instrdata *id,char *title) {
     lh = iv->instrinfo.lheight;
     if ( lh>40 ) lh = 40;
     if ( lh<4 ) lh = 4;
-    GDrawResize(iv->gw,pos.width+gd.pos.width,iv->oc_height+lh*iv->instrinfo.fh+4);
+    GDrawResize(iv->gw,pos.width+gcd[6].gd.pos.width,iv->oc_height+lh*iv->instrinfo.fh+4);
 
     GDrawSetVisible(gw,true);
 }
@@ -1737,8 +1799,9 @@ static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
     FontRequest rq;
     static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','u','n','i','f','o','n','t', '\0' };
     int as,ds,ld, lh;
+    GGadgetCreateData gcd[9], *butarray[8], *harray[4], *harray2[3], *varray[7];
+    GTextInfo label[5], lab;
     GGadgetData gd;
-    GTextInfo lab;
     GGadget *sb;
     static unichar_t num[] = { '0',  '\0' };
     int numlen;
@@ -1784,39 +1847,91 @@ static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
     pos.height = GDrawPointsToPixels(NULL,200);
     sv->gw = gw = GDrawCreateTopWindow(NULL,&pos,sv_e_h,sv,&wattrs);
 
-    memset(&gd,0,sizeof(gd));
-    memset(&lab,0,sizeof(lab));
-    gd.pos.x = 5; gd.pos.y = 105;
-    gd.pos.width = -1;
-    lab.text = (unichar_t *) _("_OK");
-    lab.text_is_1byte = true;
-    lab.text_in_resource = true;
-    gd.label = &lab;
-    gd.flags = gg_visible|gg_enabled|gg_but_default;
-    gd.handle_controlevent = SV_OK;
-    sv->ok = GButtonCreate(gw,&gd,sv);
-    gd.pos.x = -8; gd.pos.y += 3;
-    gd.pos.width = -1;
-    lab.text = (unichar_t *) _("_Cancel");
-    lab.text_is_1byte = true;
-    lab.text_in_resource = true;
-    gd.label = &lab;
-    gd.flags = gg_visible|gg_enabled|gg_but_cancel;
-    gd.handle_controlevent = SV_Cancel;
-    sv->cancel = GButtonCreate(gw,&gd,sv);
-    lab.text = (unichar_t *) _("Change Length");
-    gd.pos.width = 90;
-    gd.flags = gg_visible|gg_enabled;
+    memset(&gcd,0,sizeof(gcd));
+    memset(&label,0,sizeof(label));
+
+    gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 105;
+    gcd[0].gd.pos.width = -1;
+    label[0].text = (unichar_t *) _("_OK");
+    label[0].text_is_1byte = true;
+    label[0].text_in_resource = true;
+    gcd[0].gd.label = &label[0];
+    gcd[0].gd.flags = gg_visible|gg_enabled|gg_but_default;
+    gcd[0].creator = GButtonCreate;
+    gcd[0].data = sv;
+    gcd[0].gd.handle_controlevent = SV_OK;
+
+    gcd[1].gd.pos.x = -8; gcd[1].gd.pos.y = 3;
+    gcd[1].gd.pos.width = -1;
+    label[1].text = (unichar_t *) _("_Cancel");
+    label[1].text_is_1byte = true;
+    label[1].text_in_resource = true;
+    gcd[1].gd.label = &label[1];
+    gcd[1].gd.flags = gg_visible|gg_enabled|gg_but_cancel;
+    gcd[1].creator = GButtonCreate;
+    gcd[1].data = sv;
+    gcd[1].gd.handle_controlevent = SV_Cancel;
+
+    gcd[2] = gcd[1];
+    label[2].text = (unichar_t *) _("Change Length");
+    label[2].text_is_1byte = true;
+    label[2].text_in_resource = true;
+    gcd[2].gd.flags = gg_visible|gg_enabled;
+    gcd[2].gd.label = &label[2];
+    gcd[2].creator = GButtonCreate;
+    gcd[2].data = sv;
     gd.handle_controlevent = SV_ChangeLength;
-    sv->setsize = GButtonCreate(gw,&gd,sv);
+
+    butarray[0] = GCD_Glue; butarray[1] = &gcd[0]; butarray[2] = GCD_Glue; 
+    butarray[3] = GCD_Glue; butarray[4] = &gcd[1]; butarray[5] = GCD_Glue;
+    butarray[6] = NULL;
+
+    harray[0] = GCD_Glue; harray[1] = &gcd[2]; harray[2] = GCD_Glue;
+    harray[3] = NULL;
+
+    gcd[3].gd.flags = gg_enabled|gg_visible;
+    gcd[3].gd.u.boxelements = butarray;
+    gcd[3].creator = GHBoxCreate;
+
+    gcd[4].gd.flags = gg_enabled|gg_visible;
+    gcd[4].gd.u.boxelements = harray;
+    gcd[4].creator = GHBoxCreate;
+
     sv->bh = GDrawPointsToPixels(gw,64);
 
-    gd.pos.y = 0; gd.pos.height = pos.height-sv->bh;
-    gd.pos.width = GDrawPointsToPixels(gw,_GScrollBar_Width);
-    gd.pos.x = pos.width-gd.pos.width;
-    gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_sb_vert;
-    gd.handle_controlevent = NULL;
-    sv->vsb = sb = GScrollBarCreate(gw,&gd,sv);
+    gcd[5].gd.pos.y = 0; gcd[5].gd.pos.height = pos.height-sv->bh;
+    gcd[5].gd.pos.width = GDrawPointsToPixels(gw,_GScrollBar_Width);
+    gcd[5].gd.pos.x = pos.width-gcd[5].gd.pos.width;
+    gcd[5].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_sb_vert;
+    gcd[5].gd.handle_controlevent = NULL;
+    gcd[5].creator = GScrollBarCreate;
+    gcd[5].data = sv;
+    harray2[0] = GCD_Glue; harray2[1] = &gcd[5]; harray2[2] = NULL;
+
+    gcd[6].gd.flags = gg_enabled|gg_visible;
+    gcd[6].gd.u.boxelements = harray2;
+    gcd[6].creator = GHBoxCreate;
+
+    varray[0] = &gcd[6]; varray[1] = NULL;
+    varray[2] = &gcd[4]; varray[3] = NULL;
+    varray[4] = &gcd[3]; varray[5] = NULL;
+    varray[6] = NULL;
+
+    /*gcd[7].gd.pos.x = gcd[7].gd.pos.y = 2;*/
+    gcd[7].gd.flags = gg_enabled|gg_visible;
+    gcd[7].gd.u.boxelements = varray;
+    gcd[7].creator = GHVBoxCreate;
+
+    GGadgetsCreate(gw,&gcd[7]);
+    GHVBoxSetExpandableRow(gcd[7].ret,0);
+    GHVBoxSetExpandableCol(gcd[6].ret,0);
+    GHVBoxSetExpandableCol(gcd[3].ret,gb_expandgluesame);
+    GHVBoxSetExpandableCol(gcd[4].ret,gb_expandglue);
+
+    sv->vsb = sb = gcd[5].ret;
+    sv->ok = gcd[0].ret;
+    sv->cancel = gcd[1].ret;
+    sv->setsize = gcd[2].ret;
     GGadgetGetSize(sv->vsb,&gsize);
     sv->sbw = gsize.width;
 
@@ -1840,6 +1955,7 @@ static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
     sv->addrend = 6*numlen + ADDR_SPACER + EDGE_SPACER;
 
     tfbox.main_background = tfbox.main_foreground = COLOR_DEFAULT;
+    memset(&gd,0,sizeof(gd));
     gd.pos.y = -100; gd.pos.height = sv->fh;
     gd.pos.x = sv->addrend;
     memset(&lab,'\0',sizeof(lab));
@@ -2010,11 +2126,11 @@ static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
     GWindow gw;
     GWindowAttrs wattrs;
     struct maxp_data mp;
-    GGadgetCreateData gcd[17];
+    GGadgetCreateData gcd[17], boxes[4], *hvarray[16], *butarray[8], *varray[7];
     GTextInfo label[17];
     uint8 dummy[32], *data;
     char buffer[6][20];
-    int k;
+    int k, hv;
 
     if ( tab==NULL && sf->mm!=NULL && sf->mm->apple ) {
 	sf = sf->mm->normal;
@@ -2053,8 +2169,9 @@ static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
 
     memset(label,0,sizeof(label));
     memset(gcd,0,sizeof(gcd));
+    memset(boxes,0,sizeof(boxes));
 
-	k=0;
+	k=hv=0;
 	label[k].text = (unichar_t *) _("_Zones:");
 	label[k].text_is_1byte = true;
 	label[k].text_in_resource = true;
@@ -2063,6 +2180,7 @@ static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
 	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k].gd.cid = CID_Zones+1000;
 	gcd[k++].creator = GLabelCreate;
+	hvarray[hv++] = &gcd[k-1];
 
 	sprintf( buffer[0], "%d", (data[14]<<8)|data[14+1] );
 	label[k].text = (unichar_t *) buffer[0];
@@ -2073,6 +2191,7 @@ static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
 	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k].gd.cid = CID_Zones;
 	gcd[k++].creator = GTextFieldCreate;
+	hvarray[hv++] = &gcd[k-1];
 
 	label[k].text = (unichar_t *) _("_Twilight Pnt Cnt:");
 	label[k].text_is_1byte = true;
@@ -2082,6 +2201,7 @@ static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
 	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k].gd.cid = CID_TPoints+1000;
 	gcd[k++].creator = GLabelCreate;
+	hvarray[hv++] = &gcd[k-1];
 
 	sprintf( buffer[1], "%d", (data[16]<<8)|data[16+1] );
 	label[k].text = (unichar_t *) buffer[1];
@@ -2092,6 +2212,7 @@ static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
 	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k].gd.cid = CID_TPoints;
 	gcd[k++].creator = GTextFieldCreate;
+	hvarray[hv++] = &gcd[k-1]; hvarray[hv++] = NULL;
 
 	label[k].text = (unichar_t *) _("St_orage:");
 	label[k].text_in_resource = true;
@@ -2101,6 +2222,7 @@ static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
 	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k].gd.cid = CID_Storage;
 	gcd[k++].creator = GLabelCreate;
+	hvarray[hv++] = &gcd[k-1];
 
 	sprintf( buffer[2], "%d", (data[18]<<8)|data[18+1] );
 	label[k].text = (unichar_t *) buffer[2];
@@ -2111,6 +2233,7 @@ static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
 	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k].gd.cid = CID_Storage;
 	gcd[k++].creator = GTextFieldCreate;
+	hvarray[hv++] = &gcd[k-1];
 
 	label[k].text = (unichar_t *) _("Max _Stack Depth:");
 	label[k].text_in_resource = true;
@@ -2120,6 +2243,7 @@ static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
 	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k].gd.cid = CID_SEl+1000;
 	gcd[k++].creator = GLabelCreate;
+	hvarray[hv++] = &gcd[k-1];
 
 	sprintf( buffer[3], "%d", (data[24]<<8)|data[24+1] );
 	label[k].text = (unichar_t *) buffer[3];
@@ -2130,6 +2254,7 @@ static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
 	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k].gd.cid = CID_SEl;
 	gcd[k++].creator = GTextFieldCreate;
+	hvarray[hv++] = &gcd[k-1]; hvarray[hv++] = NULL;
 
 	label[k].text = (unichar_t *) _("_FDEF");
 	label[k].text_in_resource = true;
@@ -2139,6 +2264,7 @@ static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
 	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k].gd.cid = CID_FDefs+1000;
 	gcd[k++].creator = GLabelCreate;
+	hvarray[hv++] = &gcd[k-1];
 
 	sprintf( buffer[4], "%d", (data[20]<<8)|data[20+1] );
 	label[k].text = (unichar_t *) buffer[4];
@@ -2148,6 +2274,7 @@ static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
 	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k].gd.cid = CID_FDefs;
 	gcd[k++].creator = GTextFieldCreate;
+	hvarray[hv++] = &gcd[k-1];
 
 	label[k].text = (unichar_t *) _("_IDEFs");
 	label[k].text_in_resource = true;
@@ -2157,6 +2284,7 @@ static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
 	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k].gd.cid = CID_IDefs+1000;
 	gcd[k++].creator = GLabelCreate;
+	hvarray[hv++] = &gcd[k-1];
 
 	sprintf( buffer[5], "%d", (data[22]<<8)|data[22+1] );
 	label[k].text = (unichar_t *) buffer[5];
@@ -2166,7 +2294,13 @@ static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
 	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k].gd.cid = CID_IDefs;
 	gcd[k++].creator = GTextFieldCreate;
+	hvarray[hv++] = &gcd[k-1]; hvarray[hv++] = NULL; hvarray[hv++] = NULL;
 
+	boxes[2].gd.flags = gg_enabled|gg_visible;
+	boxes[2].gd.u.boxelements = hvarray;
+	boxes[2].creator = GHVBoxCreate;
+	varray[0] = &boxes[2]; varray[1] = NULL;
+	varray[2] = GCD_Glue; varray[3] = NULL;
 
     gcd[k].gd.pos.x = 20-3; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+35-3;
     gcd[k].gd.pos.width = -1; gcd[k].gd.pos.height = 0;
@@ -2177,6 +2311,7 @@ static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.handle_controlevent = Maxp_OK;
     gcd[k++].creator = GButtonCreate;
+    butarray[0] = GCD_Glue; butarray[1] = &gcd[k-1]; butarray[2] = GCD_Glue;
 
     gcd[k].gd.pos.x = -20; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;
     gcd[k].gd.pos.width = -1; gcd[k].gd.pos.height = 0;
@@ -2187,13 +2322,24 @@ static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.handle_controlevent = Maxp_Cancel;
     gcd[k++].creator = GButtonCreate;
+    butarray[3] = GCD_Glue; butarray[4] = &gcd[k-1]; butarray[5] = GCD_Glue;
+    butarray[6] = NULL;
 
-    gcd[k].gd.pos.x = 2; gcd[k].gd.pos.y = 2;
-    gcd[k].gd.pos.width = pos.width-4; gcd[k].gd.pos.height = pos.height-4;
-    gcd[k].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
-    gcd[k].creator = GGroupCreate;
+    boxes[3].gd.flags = gg_enabled|gg_visible;
+    boxes[3].gd.u.boxelements = butarray;
+    boxes[3].creator = GHBoxCreate;
+    varray[4] = &boxes[3]; varray[5] = NULL;
+    varray[6] = NULL;
 
-    GGadgetsCreate(gw,gcd);
+    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = varray;
+    boxes[0].creator = GHVGroupCreate;
+
+    GGadgetsCreate(gw,boxes);
+    GHVBoxSetExpandableRow(boxes[0].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(boxes[3].ret,gb_expandgluesame);
+    GHVBoxFitWindow(boxes[0].ret);
     GDrawSetVisible(gw,true);
     while ( !mp.done )
 	GDrawProcessOneEvent(NULL);
