@@ -1940,7 +1940,10 @@ return;
     for ( prev=NULL, altuni=sc->altuni; altuni!=NULL && altuni->unienc!=uni;
 	    prev = altuni, altuni = altuni->next );
     if ( altuni ) {
-	prev->next = altuni->next;
+	if ( prev==NULL )
+	    sc->altuni = altuni->next;
+	else
+	    prev->next = altuni->next;
 	altuni->next = NULL;
 	AltUniFree(altuni);
     }

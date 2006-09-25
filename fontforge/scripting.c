@@ -2821,6 +2821,7 @@ return;
 
 static void bDetachGlyphs(Context *c) {
     FontView *fv = c->curfv;
+    SplineFont *sf = fv->sf;
     int i, j, gid;
     EncMap *map = fv->map;
     int altered = false;
@@ -2832,6 +2833,8 @@ static void bDetachGlyphs(Context *c) {
 	    for ( j=map->enccount-1; j>=0 && map->map[j]!=gid; --j );
 	    map->backmap[gid] = j;
 	}
+	if ( sf->glyphs[gid]!=NULL && sf->glyphs[gid]->altuni != NULL && map->enc!=&custom )
+	    AltUniRemove(sf->glyphs[gid],UniFromEnc(i,map->enc));
     }
 }
 
