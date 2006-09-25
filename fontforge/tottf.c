@@ -2590,8 +2590,6 @@ return( false );
     if ( (at->charstrings = dumpcffstrings(chrs = CID2Chrs2(sf,at->fds,at->gi.flags)))==NULL )
 return( false );
 #endif
-    for ( i=0; i<sf->subfontcnt; ++i )
-	PSCharsFree(at->fds[i].subrs);
     dumpcffcidtopdict(sf,at);
     finishupcid(sf,at);
 
