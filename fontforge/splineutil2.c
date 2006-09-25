@@ -2432,7 +2432,7 @@ return;
 	/*  else we get lots of nans (or only two points) */
     if ( spl->first->next == NULL )
 return;
-    for ( sp = spl->first->next->to; sp!=spl->last && sp->next!=NULL; sp = next ) {
+    for ( sp = spl->first->next->to; sp->next!=NULL; sp = next ) {
 	SplineIsLinearMake(sp->prev);		/* First see if we can turn it*/
 				/* into a line, then try to merge two splines */
 	next = sp->next->to;
@@ -2466,6 +2466,8 @@ return;
 	    if ( next==NULL )
     break;
 	}
+	if ( next->prev!=NULL && next->prev->from==spl->last )
+    break;
     }
     if ( smpl->flags!=sf_cleanup && (smpl->flags&sf_smoothcurves))
 	SPLSmoothControlPoints(spl,smpl->tan_bounds,smpl->flags&sf_choosehv);
