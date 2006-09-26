@@ -990,6 +990,7 @@ static struct pschars *initsubrs(int needsflex,MMSet *mm) {
 	sub->values[i] = (uint8 *) copyn((const char *) subrs[i],subrslens[i]);
 	sub->lens[i] = subrslens[i];
     }
+    sub->next = 5;
     if ( mm!=NULL ) {
 	static int cnts[] = { 1,2,3,4,6 };
 	for ( ; i<10 && cnts[i-5]*mm->instance_count<22; ++i ) {
@@ -998,6 +999,7 @@ static struct pschars *initsubrs(int needsflex,MMSet *mm) {
 	    sub->values[i][0] += cnts[i-5]*mm->instance_count;
 	    sub->lens[i] = subrslens[i];
 	}
+	sub->next = 10;
     }
 return( sub );
 }
@@ -1308,19 +1310,13 @@ return( false );
     }
 
     if ( incid==NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	gwwv_progress_next_stage();
-	gwwv_progress_change_line1(_("Converting Postscript"));
-#elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	gwwv_progress_next_stage();
 	gwwv_progress_change_line1(_("Converting Postscript"));
 #endif
-	if ( (chars = SplineFont2Chrs(sf,iscjk,subrs,flags,format))==NULL )
+	if ( (chars = SplineFont2ChrsSubrs(sf,iscjk,subrs,flags,format))==NULL )
 return( false );
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	gwwv_progress_next_stage();
-	gwwv_progress_change_line1(_("Saving Postscript Font"));
-#elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	gwwv_progress_next_stage();
 	gwwv_progress_change_line1(_("Saving Postscript Font"));
 #endif
@@ -2235,17 +2231,12 @@ return( NULL );
 	else
 	    fd->leniv = 4;
     }
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gwwv_progress_change_line1(_("Converting Postscript"));
-#elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_change_line1(_("Converting Postscript"));
 #endif
-    if ( (chars = CID2Chrs(cidmaster,cidbytes,flags))==NULL )
+    if ( (chars = CID2ChrsSubrs(cidmaster,cidbytes,flags))==NULL )
 return( NULL );
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gwwv_progress_next_stage();
-    gwwv_progress_change_line1(_("Saving Postscript Font"));
-#elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_next_stage();
     gwwv_progress_change_line1(_("Saving Postscript Font"));
 #endif

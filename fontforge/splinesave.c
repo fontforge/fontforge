@@ -70,7 +70,7 @@
 /*  refering character contain no hints */
 
 /* That's very complex. And it doesn't do a very good job. */
-/* For type2 let's take all strings bounded by either moveto or hintmask operators */
+/* Instead let's take all strings bounded by either moveto or hintmask operators */
 /*  store these as potential subroutines. So a glyph becomes a sequence of    */
 /*  potential subroutine calls preceded by the glyph header (width, hint decl,*/
 /*  counter declarations, etc.) and intersperced by hintmask/moveto operators */
@@ -81,6 +81,9 @@
 /* Then each glyph. We insert the preamble. We check of the potential subroutine */
 /*  became a real subroutine. If so we call it, else we insert the data inline*/
 /*  Do the same for the next hintmask/moveto and potential subroutine...      */
+
+/* Then, on top of that I tried generating some full glyph subroutines, and   */
+/*  to my surprise, it just made things worse.                                */
 
 typedef struct growbuf {
     unsigned char *pt;
@@ -102,6 +105,9 @@ typedef struct glyphinfo {
 	int fd;			/* Which sub font is it in */
 				/* -1 => used in more than one */
 	int next;
+	int full_glyph_index;	/* Into the glyphbits array */
+				/* for full references */
+	BasePoint *startstop;	/* Again for full references */
     } *psubrs;
     int pcnt, pmax;
     int hashed[HSH_SIZE];
@@ -114,6 +120,7 @@ typedef struct glyphinfo {
 	    int dlen;
 	    int psub_index;
 	} *bits;
+	uint8 wasseac;
     } *gb, *active;
     SplineFont *sf;
     int glyphcnt;
@@ -122,7 +129,70 @@ typedef struct glyphinfo {
     struct bits *bits;		/* For current glyph */
     const int *bygid;
     int justbroken;
+    int instance_count;
 } GlyphInfo;
+
+struct mhlist {
+    uint8 mask[HntMax/8];
+    int subr;
+    struct mhlist *next;
+};
+
+struct hintdb {
+    uint8 mask[HntMax/8];
+    int cnt;				/* number of hints */
+    struct mhlist *sublist;
+    struct pschars *subrs;
+    /*SplineChar *sc;*/
+    SplineChar **scs;
+    int instance_count;
+    unsigned int iscjk: 1;		/* If cjk then don't do stem3 hints */
+					/* Will be done with counters instead */
+	/* actually, most of the time we can't use stem3s, only if those three*/
+	/* stems are always active and there are no other stems !(h/v)hasoverlap*/
+    unsigned int noconflicts: 1;
+    unsigned int startset: 1;
+    unsigned int skiphm: 1;		/* Set when coming back to the start point of a contour. hintmask should be set the first time, not the second */
+    unsigned int donefirsthm: 1;
+    int cursub;				/* Current subr number */
+    BasePoint current;
+    GlyphInfo *gi;
+};
+
+static void GIContentsFree(GlyphInfo *gi,SplineChar *dummynotdef) {
+    int i,j;
+
+    if ( gi->glyphcnt>0 && gi->gb[0].sc == dummynotdef ) {
+	SplinePointListsFree(dummynotdef->layers[ly_fore].splines);
+	if ( dummynotdef->hstem!=NULL )
+	    StemInfoFree(dummynotdef->hstem);
+	if ( dummynotdef->vstem!=NULL )
+	    StemInfoFree(dummynotdef->vstem);
+    }
+
+    for ( i=0; i<gi->pcnt; ++i ) {
+	free(gi->psubrs[i].data);
+	free(gi->psubrs[i].startstop);
+    }
+    for ( i=0; i<gi->glyphcnt; ++i ) {
+	for ( j=0; j<gi->gb[i].bcnt; ++j )
+	    free(gi->gb[i].bits[j].data);
+	free(gi->gb[i].bits);
+    }
+
+    gi->pcnt = 0;
+    gi->bcnt = 0;
+    gi->justbroken = 0;
+}
+
+static void GIFree(GlyphInfo *gi,SplineChar *dummynotdef) {
+
+    GIContentsFree(gi,dummynotdef);
+
+    free(gi->gb);
+    free(gi->psubrs);
+    free(gi->bits);
+}
 
 static void GrowBuffer(GrowBuf *gb) {
     if ( gb->base==NULL ) {
@@ -135,6 +205,101 @@ static void GrowBuffer(GrowBuf *gb) {
 	gb->end = gb->base + len;
 	gb->pt = gb->base+off;
     }
+}
+
+static void StartNextSubroutine(GrowBuf *gb,struct hintdb *hdb) {
+    GlyphInfo *gi;
+
+    if ( hdb==NULL )
+return;
+    gi = hdb->gi;
+    if ( gi==NULL )
+return;
+    /* Store everything in the grow buf into the data/dlen of the next bit */
+    if ( gi->bcnt==-1 ) gi->bcnt = 0;
+    if ( gi->bcnt>=gi->bmax )
+	gi->bits = grealloc(gi->bits,(gi->bmax+=20)*sizeof(struct bits));
+    gi->bits[gi->bcnt].dlen = gb->pt-gb->base;
+    gi->bits[gi->bcnt].data = galloc(gi->bits[gi->bcnt].dlen);
+    gi->bits[gi->bcnt].psub_index = -1;
+    memcpy(gi->bits[gi->bcnt].data,gb->base,gi->bits[gi->bcnt].dlen);
+    gb->pt = gb->base;
+    gi->justbroken = false;
+}
+
+static int hashfunc(uint8 *data, int len) {
+    uint8 *end = data+len;
+    unsigned int hash = 0, r;
+
+    while ( data<end ) {
+	r = (hash>>30)&3;
+	hash <<= 2;
+	hash = (hash|r)&0xffffffff;
+	hash ^= *data++;
+    }
+return( hash%HSH_SIZE );
+}
+
+static void BreakSubroutine(GrowBuf *gb,struct hintdb *hdb) {
+    GlyphInfo *gi;
+    struct potentialsubrs *ps;
+    int hash;
+    int pi;
+
+    if ( hdb==NULL )
+return;
+    gi = hdb->gi;
+    if ( gi==NULL )
+return;
+    /* The stuff before the first moveto in a glyph (the header that sets */
+    /*  the width, sets up the hints, counters, etc.) can't go into a subr */
+    if ( gi->bcnt==-1 ) {
+	gi->bcnt=0;
+	gi->justbroken = true;
+return;
+    } else if ( gi->justbroken )
+return;
+    /* Otherwise stuff everything in the growbuffer into a subr */
+    hash = hashfunc(gb->base,gb->pt-gb->base);
+    ps = NULL;
+    for ( pi=gi->hashed[hash]; pi!=-1; pi=gi->psubrs[pi].next ) {
+	ps = &gi->psubrs[pi];
+	if ( ps->len==gb->pt-gb->base && memcmp(ps->data,gb->base,gb->pt-gb->base)==0 )
+    break;
+    }
+    if ( pi==-1 ) {
+	if ( gi->pcnt>=gi->pmax )
+	    gi->psubrs = grealloc(gi->psubrs,(gi->pmax+=gi->glyphcnt)*sizeof(struct potentialsubrs));
+	ps = &gi->psubrs[gi->pcnt];
+	memset(ps,0,sizeof(*ps));	/* set cnt to 0 */
+	ps->idx = gi->pcnt++;
+	ps->len = gb->pt-gb->base;
+	ps->data = galloc(ps->len);
+	memcpy(ps->data,gb->base,ps->len);
+	ps->next = gi->hashed[hash];
+	gi->hashed[hash] = ps->idx;
+	ps->fd = gi->active->fd;
+	ps->full_glyph_index = -1;
+    }
+    if ( ps->fd!=gi->active->fd )
+	ps->fd = -1;			/* used in multiple cid sub-fonts */
+    gi->bits[gi->bcnt].psub_index = ps->idx;
+    ++ps->cnt;
+    gb->pt = gb->base;
+    ++gi->bcnt;
+    gi->justbroken = true;
+}
+
+static void MoveSubrsToChar(GlyphInfo *gi) {
+    struct glyphbits *active;
+
+    if ( gi==NULL )
+return;
+    active = gi->active;
+    active->bcnt = gi->bcnt;
+    active->bits = galloc(active->bcnt*sizeof(struct bits));
+    memcpy(active->bits,gi->bits,active->bcnt*sizeof(struct bits));
+    gi->bcnt = 0;
 }
 
 static int NumberHints(SplineChar *scs[MmMax], int instance_count) {
@@ -191,33 +356,6 @@ static void MarkTranslationRefs(SplineFont *sf) {
 /* ************************************************************************** */
 /* ********************** Type1 PostScript CharStrings ********************** */
 /* ************************************************************************** */
-
-struct mhlist {
-    uint8 mask[HntMax/8];
-    int subr;
-    struct mhlist *next;
-};
-
-struct hintdb {
-    uint8 mask[HntMax/8];
-    int cnt;				/* number of hints */
-    struct mhlist *sublist;
-    struct pschars *subrs;
-    /*SplineChar *sc;*/
-    SplineChar **scs;
-    int instance_count;
-    unsigned int iscjk: 1;		/* If cjk then don't do stem3 hints */
-					/* Will be done with counters instead */
-	/* actually, most of the time we can't use stem3s, only if those three*/
-	/* stems are always active and there are no other stems !(h/v)hasoverlap*/
-    unsigned int noconflicts: 1;
-    unsigned int startset: 1;
-    unsigned int skiphm: 1;		/* Set when coming back to the start point of a contour. hintmask should be set the first time, not the second */
-    unsigned int donefirsthm: 1;
-    int cursub;				/* Current subr number */
-    BasePoint current;
-    GlyphInfo *gi;
-};
 
 static real myround( real pos, int round ) {
     if ( round )
@@ -548,19 +686,23 @@ static void SubrsCheck(struct pschars *subrs) {
 static int FindOrBuildHintSubr(struct hintdb *hdb, uint8 mask[12], int round) {
     struct mhlist *mh;
     GrowBuf gb;
-    int i;
 
     for ( mh=hdb->sublist; mh!=NULL; mh=mh->next ) {
 	if ( memcmp(mask,mh->mask,sizeof(mask))==0 )
 return( mh->subr );
+#if 0
 	/* If we find a subr for which we have all the bits set (with extras */
 	/*  since we didn't match) then it is safe to replace the old subr */
 	/*  with ours. This will save use one subr entry, and maybe a call */
+
+	/* Hmm. Adobe doesn't do this in their code. Doubtless they know more */
+	/*  about what hints imply about counters than I do */
 	for ( i=0; i<12; ++i )
 	    if ( (mh->mask[i]&mask[i])!=mh->mask[i] )
 	break;
 	if ( i==12 )
     break;
+#endif
     }
     SubrsCheck(hdb->subrs);
 
@@ -615,7 +757,7 @@ return;
 }
 
 static void HintSetup(GrowBuf *gb,struct hintdb *hdb, SplinePoint *to,
-	int round ) {
+	int round, int break_subr ) {
     int s;
     int i;
 
@@ -635,12 +777,17 @@ return;
 return;						/* the subroutine currently */
     }						/* active then we are done */
 
+    if ( break_subr )
+	BreakSubroutine(gb,hdb);
+
     AddNumber(gb,s,round);
     AddNumber(gb,4,round);		/* subr 4 is (my) magic subr that does the hint subs call */
     if ( gb->pt+1 >= gb->end )
 	GrowBuffer(gb);
     *gb->pt++ = 10;			/* callsubr */
     hdb->cursub = s;
+    if ( break_subr )
+	StartNextSubroutine(gb,hdb);
 }
 
 static void _moveto(GrowBuf *gb,BasePoint *current,BasePoint *to,int instance_count,
@@ -687,6 +834,8 @@ static void _moveto(GrowBuf *gb,BasePoint *current,BasePoint *to,int instance_co
     }
     for ( i=0; i<instance_count; ++i )
 	current[i] = to[i];
+    if ( !line )
+	StartNextSubroutine(gb,hdb);
 }
 
 static void moveto(GrowBuf *gb,BasePoint *current,Spline *splines[MmMax],
@@ -694,7 +843,8 @@ static void moveto(GrowBuf *gb,BasePoint *current,Spline *splines[MmMax],
     BasePoint to[MmMax];
     int i;
 
-    if ( hdb!=NULL ) HintSetup(gb,hdb,splines[0]->to,round);
+    if ( !line) BreakSubroutine(gb,hdb);
+    if ( hdb!=NULL ) HintSetup(gb,hdb,splines[0]->to,round,line);
     for ( i=0; i<instance_count; ++i )
 	to[i] = splines[i]->to->me;
     _moveto(gb,current,to,instance_count,line,round,hdb);
@@ -705,7 +855,8 @@ static void splmoveto(GrowBuf *gb,BasePoint *current,SplineSet *spl[MmMax],
     BasePoint to[MmMax];
     int i;
 
-    if ( hdb!=NULL ) HintSetup(gb,hdb,spl[0]->first,round);
+    if ( !line) BreakSubroutine(gb,hdb);
+    if ( hdb!=NULL ) HintSetup(gb,hdb,spl[0]->first,round,line);
     for ( i=0; i<instance_count; ++i )
 	to[i] = spl[i]->first->me;
     _moveto(gb,current,to,instance_count,line,round,hdb);
@@ -746,6 +897,7 @@ static void refmoveto(GrowBuf *gb,BasePoint *current,BasePoint rpos[MmMax],
     BasePoint to[MmMax];
     int i;
 
+    if ( !line) BreakSubroutine(gb,hdb);
     for ( i=0; i<instance_count; ++i ) {
 	to[i] = rpos[i];
 	if ( refs!=NULL ) {
@@ -763,7 +915,7 @@ static void curveto(GrowBuf *gb,BasePoint *current,Spline *splines[MmMax],int in
     int i, op, opcnt;
     int vh, hv;
 
-    if ( hdb!=NULL ) HintSetup(gb,hdb,splines[0]->to,round);
+    if ( hdb!=NULL ) HintSetup(gb,hdb,splines[0]->to,round,true);
 
     if ( gb->pt+50 >= gb->end )
 	GrowBuffer(gb);
@@ -894,7 +1046,7 @@ static void flexto(GrowBuf *gb,BasePoint current[MmMax],Spline *pspline[MmMax],
     }
 
     if ( hdb!=NULL )
-	HintSetup(gb,hdb,pspline[0]->to->next->to,round);
+	HintSetup(gb,hdb,pspline[0]->to->next->to,round,false);
 
     if ( gb->pt+2 >= gb->end )
 	GrowBuffer(gb);
@@ -929,7 +1081,7 @@ static void flexto(GrowBuf *gb,BasePoint current[MmMax],Spline *pspline[MmMax],
 
 static void _CvtPsSplineSet(GrowBuf *gb, SplinePointList *spl[MmMax], int instance_count,
 	BasePoint current[MmMax],
-	int round, struct hintdb *hdb, BasePoint *start, int is_order2, int stroked ) {
+	int round, struct hintdb *hdb, int is_order2, int stroked ) {
     Spline *spline[MmMax], *first;
     SplinePointList temp[MmMax], *freeme=NULL;
     int i;
@@ -964,16 +1116,7 @@ static void _CvtPsSplineSet(GrowBuf *gb, SplinePointList *spl[MmMax], int instan
 		}
 	    }
 	}
-	if ( start==NULL || hdb->startset )
-	    splmoveto(gb,current,spl,instance_count,false,round,hdb);
-	else {
-	    if ( hdb!=NULL ) HintSetup(gb,hdb,spl[0]->first,round);
-	    for ( i=0; i<instance_count; ++i ) {
-		current[i].x = start[2*i].x = myround(spl[i]->first->me.x,round);
-		current[i].y = start[2*i].y = myround(spl[i]->first->me.y,round);
-	    }
-	    hdb->startset = true;
-	}
+	splmoveto(gb,current,spl,instance_count,false,round,hdb);
 	for ( i=0; i<instance_count; ++i )
 	    spline[i] = spl[i]->first->next;
 	while ( spline[0]!=NULL && spline[0]!=first ) {
@@ -1233,7 +1376,7 @@ return( false );
 
 static void ExpandRef1(GrowBuf *gb, SplineChar *scs[MmMax], int instance_count,
 	struct hintdb *hdb, RefChar *r[MmMax], BasePoint trans[MmMax],
-	BasePoint *startend, BasePoint current[MmMax],
+	BasePoint current[MmMax],
 	struct pschars *subrs, int round, int iscjk) {
     BasePoint *bpt;
     BasePoint rtrans[MmMax], rpos[MmMax];
@@ -1248,6 +1391,7 @@ static void ExpandRef1(GrowBuf *gb, SplineChar *scs[MmMax], int instance_count,
 	}
     }
 
+    BreakSubroutine(gb,hdb);
     if ( r[0]->sc == scs[0] ) {
 	/* Hints for self */
 	if ( hdb->cnt>0 && !hdb->noconflicts && NeverConflicts(r,instance_count)) {
@@ -1264,23 +1408,29 @@ static void ExpandRef1(GrowBuf *gb, SplineChar *scs[MmMax], int instance_count,
 	    CallTransformedHintSubr(gb,hdb,scs,r,trans,instance_count,round);
     }
 
-    bpt = (BasePoint *) (subrs->keys[r[0]->sc->ttf_glyph]);
+    if ( hdb!=NULL && hdb->gi!=NULL )
+	bpt = hdb->gi->psubrs[r[0]->sc->ttf_glyph].startstop;
+    else
+	bpt = (BasePoint *) (subrs->keys[r[0]->sc->ttf_glyph]);
     for ( i=0; i<instance_count; ++i ) {
 	rpos[i].x = bpt[2*i].x + rtrans[i].x;
 	rpos[i].y = bpt[2*i].y + rtrans[i].y;
     }
-    if ( startend==NULL || hdb->startset )
-	refmoveto(gb,current,rpos, instance_count,false,round,NULL,NULL);
-    else {
-	for ( i=0; i<instance_count; ++i )
-	    startend[2*i] = rpos[i];
-    }
+    refmoveto(gb,current,rpos, instance_count,false,round,hdb,NULL);
     hdb->startset = true;
 
-    AddNumber(gb,r[0]->sc->ttf_glyph,round);
-    if ( gb->pt+1>=gb->end )
-	GrowBuffer(gb);
-    *gb->pt++ = 10;
+    if ( hdb!=NULL && hdb->gi!=NULL ) {
+	GlyphInfo *gi = hdb->gi;
+	StartNextSubroutine(gb,hdb);
+	gi->bits[gi->bcnt].psub_index = r[0]->sc->ttf_glyph;
+	++gi->bcnt;
+	gi->justbroken = true;
+    } else {
+	AddNumber(gb,r[0]->sc->ttf_glyph,round);
+	if ( gb->pt+1>=gb->end )
+	    GrowBuffer(gb);
+	*gb->pt++ = 10;
+    }
 
     for ( i=0; i<instance_count; ++i ) {
 	current[i].x = bpt[2*i+1].x + rtrans[i].x;
@@ -1288,25 +1438,9 @@ static void ExpandRef1(GrowBuf *gb, SplineChar *scs[MmMax], int instance_count,
     }
 }
 
-static void ExpandSelf1(GrowBuf *gb, SplineChar *scs[MmMax], int instance_count,
-	struct hintdb *hdb, BasePoint trans[MmMax],
-	BasePoint *startend, BasePoint current[MmMax],
-	struct pschars *subrs, int round, int iscjk) {
-    RefChar rs[MmMax], *refs[MmMax];
-    int i;
-
-    memset(rs,0,sizeof(rs));
-    for ( i=0; i<instance_count; ++i ) {
-	rs[i].sc = scs[i];
-	refs[i] = &rs[i];
-    }
-    ExpandRef1(gb,scs,instance_count,hdb,refs,trans,startend,
-	    current,subrs,round,iscjk);
-}
-
 static void RSC2PS1(GrowBuf *gb, SplineChar *base[MmMax],SplineChar *rsc[MmMax],
 	struct hintdb *hdb, BasePoint *trans, struct pschars *subrs,
-	BasePoint current[MmMax], BasePoint *startend, int flags, int iscjk,
+	BasePoint current[MmMax], int flags, int iscjk,
 	int instance_count ) {
     BasePoint subtrans[MmMax];
     SplineChar *rscs[MmMax];
@@ -1321,7 +1455,7 @@ static void RSC2PS1(GrowBuf *gb, SplineChar *base[MmMax],SplineChar *rsc[MmMax],
 	if ( base[0]!=rsc[0] )
 	    spls[i] = freeme[i] = SPLCopyTranslatedHintMasks(spls[i],base[i],rsc[i],&trans[i]);
     }
-    _CvtPsSplineSet(gb,spls,instance_count,current,round,hdb,startend,
+    _CvtPsSplineSet(gb,spls,instance_count,current,round,hdb,
 	    base[0]->parent->order2,base[0]->parent->strokedfont);
     if ( base[0]!=rsc[0] )
 	for ( i=0; i<instance_count; ++i )
@@ -1338,7 +1472,7 @@ static void RSC2PS1(GrowBuf *gb, SplineChar *base[MmMax],SplineChar *rsc[MmMax],
 	    if ( NeverConflicts(refs,instance_count) && !hdb->noconflicts &&
 		    refs[0]->transform[1]==0 && refs[0]->transform[2]==0 )
 		CallTransformedHintSubr(gb,hdb,base,refs,trans,instance_count,round);
-	    _CvtPsSplineSet(gb,spls,instance_count,current,round,hdb,startend,
+	    _CvtPsSplineSet(gb,spls,instance_count,current,round,hdb,
 		    base[0]->parent->order2,base[0]->parent->strokedfont);
 	    for ( i=0; i<instance_count; ++i )
 		SplinePointListsFree(freeme[i]);
@@ -1349,7 +1483,7 @@ static void RSC2PS1(GrowBuf *gb, SplineChar *base[MmMax],SplineChar *rsc[MmMax],
 		((flags&ps_flag_nohints) ||
 		 NeverConflicts(refs,instance_count) ||
 		 AllStationary(refs,trans,instance_count)) ) {
-	    ExpandRef1(gb,base,instance_count,hdb,refs,trans,startend,
+	    ExpandRef1(gb,base,instance_count,hdb,refs,trans,
 		    current,subrs,round,iscjk);
 	} else {
 	    for ( i=0; i<instance_count; ++i ) {
@@ -1361,7 +1495,7 @@ static void RSC2PS1(GrowBuf *gb, SplineChar *base[MmMax],SplineChar *rsc[MmMax],
 		CallTransformedHintSubr(gb,hdb,base,refs,trans,instance_count,round);
 		hdb->noconflicts = true;
 	    }
-	    RSC2PS1(gb,base,rscs,hdb,subtrans,subrs,current,startend,flags,iscjk,
+	    RSC2PS1(gb,base,rscs,hdb,subtrans,subrs,current,flags,iscjk,
 		    instance_count);
 	    hdb->noconflicts = wasntconflicted;
 	}
@@ -1371,7 +1505,8 @@ static void RSC2PS1(GrowBuf *gb, SplineChar *base[MmMax],SplineChar *rsc[MmMax],
 }
 
 static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
-	struct pschars *subrs,BasePoint *startend,int flags,enum fontformat format) {
+	struct pschars *subrs,int flags,enum fontformat format,
+	GlyphInfo *gi) {
     DBounds b;
     GrowBuf gb;
     BasePoint current[MmMax];
@@ -1431,59 +1566,54 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
 	data[i][0] = b.minx;
 	data[i][1] = scs[i]->width;
     }
-    if ( startend==NULL ) {
-	AddData(&gb,data,instance_count,2,round);
-	*gb.pt++ = 13;				/* hsbw, lbearing & width */
-    }
+    AddData(&gb,data,instance_count,2,round);
+    *gb.pt++ = 13;				/* hsbw, lbearing & width */
 
     memset(&hintdb,0,sizeof(hintdb));
     hintdb.subrs = subrs; hintdb.iscjk = iscjk&~0x100; hintdb.scs = scs;
     hintdb.instance_count = instance_count;
     hintdb.cnt = NumberHints(scs,instance_count);
     hintdb.noconflicts = true;
+    hintdb.gi = gi;
     for ( i=0; i<instance_count; ++i )
 	if ( scs[i]->hconflicts || scs[i]->vconflicts )
 	    hintdb.noconflicts = false;
     hdb = &hintdb;
+    if ( gi!=NULL )
+	gi->bcnt = -1;
 
     /* If this char is being placed in a subroutine, then we don't want to */
     /*  use seac because somebody is going to call that subroutine and */
     /*  add another reference to it later. CID keyed fonts also can't use */
     /*  seac (they have no encoding so it doesn't work), that's what iscjk&0x100 */
     /*  tests for */
-    if ( startend==NULL && !(iscjk&0x100) &&
+    if ( scs[0]->ttf_glyph==0x7fff && !(iscjk&0x100) && !(flags&ps_flag_noseac) &&
 	    IsSeacable(&gb,scs,instance_count,round)) {
 	wasseac = true;
+	if ( gi )
+	    gi->active->wasseac = true;
 	/* in MM fonts, all should share the same refs, so all should be */
 	/* seac-able if one is */
     } else {
 	iscjk &= ~0x100;
-	if ( startend==NULL ) {
-	    if ( iscjk && instance_count==1 )
-		CounterHints1(&gb,sc,round);	/* Must come immediately after hsbw */
-	    if ( hintdb.noconflicts ) {
-		CvtPsHints(&gb,scs,instance_count,true,round,iscjk,NULL);
-		CvtPsHints(&gb,scs,instance_count,false,round,iscjk,NULL);
-	    }
+	if ( iscjk && instance_count==1 )
+	    CounterHints1(&gb,sc,round);	/* Must come immediately after hsbw */
+	if ( hintdb.noconflicts ) {
+	    CvtPsHints(&gb,scs,instance_count,true,round,iscjk,NULL);
+	    CvtPsHints(&gb,scs,instance_count,false,round,iscjk,NULL);
 	}
 	memset(&trans,0,sizeof(trans));
-	if ( scs[0]->ttf_glyph!=0x7fff ) {
-	    ExpandSelf1(&gb,scs,instance_count,hdb,trans,startend,
-		    current,subrs,round,iscjk);
-	} else {
-	    RSC2PS1(&gb,scs,scs,hdb,trans,subrs,current,startend,flags,iscjk,
-		    instance_count);
-	}
-	if ( startend!=NULL )
-	    for ( i=0; i<instance_count; ++i )
-		startend[2*i+1] = current[i];
+	RSC2PS1(&gb,scs,scs,hdb,trans,subrs,current,flags,iscjk,
+		instance_count);
     }
-    if ( gb.pt+1>=gb.end )
-	GrowBuffer(&gb);
-    if ( !wasseac )
-	*gb.pt++ = startend==NULL ? 14 : 11;	/* endchar / return */
-    ret = (unsigned char *) copyn((char *) gb.base,gb.pt-gb.base);
-    *len = gb.pt-gb.base;
+    if ( gi->bcnt==-1 ) {	/* If it's whitespace */
+	gi->bcnt = 0;
+	StartNextSubroutine(&gb,hdb);
+    }
+    BreakSubroutine(&gb,hdb);
+    MoveSubrsToChar(gi);
+    ret = NULL;
+
     if ( hdb!=NULL ) {
 	struct mhlist *mh, *mhnext;
 	for ( mh=hdb->sublist; mh!=NULL; mh=mhnext ) {
@@ -1504,11 +1634,14 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
 return( ret );
 }
 
-static int AlwaysSeacable(SplineChar *sc) {
+#ifdef FONTFORGE_CONFIG_PS_REFS_GET_SUBRS
+static int AlwaysSeacable(SplineChar *sc,int flags) {
     struct splinecharlist *d;
     RefChar *r;
 
     if ( sc->parent->cidmaster!=NULL )	/* Can't use seac in CID fonts, no encoding */
+return( false );
+    if ( flags&ps_flag_noseac )
 return( false );
 
     for ( d=sc->dependents; d!=NULL; d = d->next ) {
@@ -1568,33 +1701,105 @@ return( true );
 return( false );
 }
 
-static void SplineFont2Subrs1(SplineFont *sf,int round, int iscjk,
-	struct pschars *subrs,int flags,enum fontformat format) {
-    int i,cnt, anydone;
+static BasePoint *FigureStartStop(SplineChar *sc, GlyphInfo *gi ) {
+    int m, didfirst;
+    SplineChar *msc;
+    SplineSet *spl;
+    RefChar *r;
+    BasePoint *startstop;
+
+    /* We need to know the location of the first point on the */
+    /*  first path (need to rmoveto it, and the location of the */
+    /*  last point on the last path (will need to move from it */
+    /*  for the next component) */
+
+    startstop = gcalloc(2*gi->instance_count,sizeof(BasePoint));
+    for ( m=0; m<gi->instance_count; ++m ) {
+	if ( gi->instance_count==1 || sc->parent->mm==NULL )
+	    msc = sc;
+	else
+	    msc = sc->parent->mm->instances[m]->glyphs[sc->orig_pos];
+	didfirst = false;
+	spl = msc->layers[ly_fore].splines;
+	if ( spl!=NULL ) {
+	    startstop[0] = spl->first->me;
+	    didfirst = true;
+	    while ( spl!=NULL ) {
+		/* Closepath does NOT set the current point */
+		/* Remember we reverse PostScript */
+		if ( spl->last==spl->first && spl->first->next!=NULL &&
+			spl->first->next->knownlinear )
+		    startstop[1] = spl->first->next->to->me;
+		else
+		    startstop[1] = spl->last->me;
+		spl = spl->next;
+	    }
+	}
+	for ( r=msc->layers[ly_fore].refs; r!=NULL; r=r->next ) {
+	    spl = r->layers[0].splines;
+	    if ( spl!=NULL ) {
+		if ( !didfirst )
+		    startstop[0] = spl->first->me;
+		didfirst = true;
+	    }
+	    while ( spl!=NULL ) {
+		/* Closepath does NOT set the current point */
+		/* Remember we reverse PostScript */
+		if ( spl->last==spl->first && spl->first->next!=NULL &&
+			spl->first->next->knownlinear )
+		    startstop[1] = spl->first->next->to->me;
+		else
+		    startstop[1] = spl->last->me;
+		spl = spl->next;
+	    }
+	}
+    }
+return( startstop );
+}
+#endif	/* FONTFORGE_CONFIG_PS_REFS_GET_SUBRS */
+
+/* Mark those glyphs which can live totally in subrs */
+static void SplineFont2FullSubrs1(int flags,GlyphInfo *gi) {
+    int i;
     SplineChar *sc;
-    uint8 *temp;
-    int len;
-    MMSet *mm = (format==ff_mma || format==ff_mmb) ? sf->mm : NULL;
-    int instance_count = mm!=NULL ? mm->instance_count : 1;
+#ifdef FONTFORGE_CONFIG_PS_REFS_GET_SUBRS
+    int anydone, cc;
+    struct potentialsubrs *ps;
+    SplineSet *spl;
+    RefChar *r;
+#endif	/* FONTFORGE_CONFIG_PS_REFS_GET_SUBRS */
 
     if ( !autohint_before_generate && !(flags&ps_flag_nohints))
-	SplineFontAutoHintRefs(sf);
-    for ( i=cnt=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL )
+	SplineFontAutoHintRefs(gi->sf);
+    for ( i=0; i<gi->glyphcnt; ++i ) if ( (sc=gi->gb[i].sc)!=NULL )
 	sc->ttf_glyph = 0x7fff;
 
+#ifdef FONTFORGE_CONFIG_PS_REFS_GET_SUBRS
     anydone = true;
     while ( anydone ) {
 	anydone = false;
-	for ( i=cnt=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
+	for ( i=0; i<gi->glyphcnt; ++i ) if ( (sc=gi->gb[i].sc)!=NULL ) {
 	    if ( !SCWorthOutputting(sc) || sc->ttf_glyph!=0x7fff )
+	continue;
+	    /* if the glyph is a single contour with no hintmasks then */
+	    /*  our single contour code will find it. If we do it here too */
+	    /*  we'll get a subr which points to another subr. Very dull and */
+	    /*  a waste of space */
+	    cc = 0;
+	    for ( spl=sc->layers[ly_fore].splines; spl!=NULL; spl=spl->next )
+		++cc;
+	    for ( r= sc->layers[ly_fore].refs; r!=NULL && cc<2 ; r=r->next ) {
+		for ( spl=r->layers[0].splines; spl!=NULL; spl=spl->next )
+		    ++cc;
+	    }
+	    if ( cc<2 )
 	continue;
 	    /* Put the */
 	    /*  character into a subr if it is referenced by other characters */
 	    if ( (sc->dependents!=NULL &&
 		     ((!sc->hconflicts && !sc->vconflicts && !sc->anyflexes) ||
 			 SpecialCaseConflicts(sc)) &&
-		     !AlwaysSeacable(sc))) {
-		BasePoint *bp;
+		     !AlwaysSeacable(sc,flags))) {
 		RefChar *r;
 
 		for ( r=sc->layers[ly_fore].refs; r!=NULL; r=r->next )
@@ -1604,26 +1809,19 @@ static void SplineFont2Subrs1(SplineFont *sf,int round, int iscjk,
 	continue;		/* not in a sub itself. Skip it for now, we'll*/
 				/* come back to it next pass when perhaps the */
 			        /* reference will be nicely ensconsed itself */
-
-		bp = gcalloc(2*instance_count,sizeof(BasePoint));
-		    /* This contains the start and stop points of the splinesets */
-		    /* we need this later when we invoke the subrs */
-
-		/* None of the generated subrs starts with a moveto operator */
-		/*  The invoker is expected to move to the appropriate place */
-		temp = SplineChar2PS(sc,&len,round,iscjk,subrs,bp,flags,format);
-
-		SubrsCheck(subrs);
-		subrs->values[subrs->next] = temp;
-		subrs->lens[subrs->next] = len;
-		if ( subrs->keys==NULL )
-		    subrs->keys = gcalloc(subrs->cnt,sizeof(char *));
-		subrs->keys[subrs->next] = (void *) bp;
-		sc->ttf_glyph = subrs->next++;
+		if ( gi->pcnt>=gi->pmax )
+		    gi->psubrs = grealloc(gi->psubrs,(gi->pmax+=gi->glyphcnt)*sizeof(struct potentialsubrs));
+		ps = &gi->psubrs[gi->pcnt];
+		memset(ps,0,sizeof(*ps));	/* set cnt to 0 */
+		ps->idx = gi->pcnt++;
+		ps->full_glyph_index = i;
+		sc->ttf_glyph = gi->pcnt-1;
+		ps->startstop = FigureStartStop(sc,gi);
 		anydone = true;
 	    }
 	}
     }
+#endif	/* FONTFORGE_CONFIG_PS_REFS_GET_SUBRS */
 }
 
 int SFOneWidth(SplineFont *sf) {
@@ -1715,7 +1913,135 @@ return( !SCWorthOutputting(SFGetChar(sf,'A',NULL)) &&
 return( false );
 }
 
-struct pschars *SplineFont2Chrs(SplineFont *sf, int iscjk,
+static void SetupType1Subrs(struct pschars *subrs,GlyphInfo *gi) {
+    int scnt, call_size;
+    int i;
+
+    scnt = subrs->next;
+    call_size = gi->pcnt+scnt<1131 ? 3 : 6;
+    for ( i=0; i<gi->pcnt; ++i ) {
+	/* A subroutine call takes somewhere between 2 and 6 bytes itself. */
+	/*  and we must add a return statement to the end. We don't want to */
+	/*  make things bigger */
+	if ( gi->psubrs[i].full_glyph_index!=-1 )
+	    gi->psubrs[i].idx = scnt++;
+	else if ( gi->psubrs[i].cnt*gi->psubrs[i].len>(gi->psubrs[i].cnt*call_size)+gi->psubrs[i].len+1 )
+	    gi->psubrs[i].idx = scnt++;
+	else
+	    gi->psubrs[i].idx = -1;
+    }
+
+    subrs->cnt = scnt;
+    subrs->next = scnt;
+    subrs->lens = grealloc(subrs->lens,scnt*sizeof(int));
+    subrs->values = grealloc(subrs->values,scnt*sizeof(unsigned char *));
+
+    for ( i=0; i<gi->pcnt; ++i ) {
+	scnt = gi->psubrs[i].idx;
+	if ( scnt==-1 || gi->psubrs[i].full_glyph_index != -1 )
+    continue;
+	subrs->lens[scnt] = gi->psubrs[i].len+1;
+	subrs->values[scnt] = galloc(subrs->lens[scnt]);
+	memcpy(subrs->values[scnt],gi->psubrs[i].data,gi->psubrs[i].len);
+	subrs->values[scnt][gi->psubrs[i].len] = 11;	/* Add a return to end of subr */
+    }
+}
+
+static void SetupType1Chrs(struct pschars *chrs,struct pschars *subrs,GlyphInfo *gi, int iscid) {
+    int i,k,j;
+
+    /* If a glyph lives entirely in a subroutine then we need to create both */
+    /*  the subroutine entry, and the char entry which calls the subr. */
+    /* The subroutine entry will be everything EXCEPT the glyph header */
+    /* the char entry will be the glyph header and a subroutine call */
+    /* If the glyph does not go into a subr then everything goes into the char */
+    for ( i=0; i<gi->glyphcnt; ++i ) {
+	int len=0;
+	struct glyphbits *gb = &gi->gb[i];
+	if ( gb->sc==NULL )
+    continue;
+	if ( !iscid )
+	    chrs->keys[i] = copy(gb->sc->name);
+	for ( k=0; k<2; ++k ) if ( k!=0 || gb->sc->ttf_glyph!=0x7fff ) {
+	    uint8 *vals;
+	    for ( j=0; j<gb->bcnt; ++j ) {
+		if ( k!=0 || j!=0 )
+		    len += gb->bits[j].dlen;
+		if ( k==1 && gb->sc->ttf_glyph!=0x7fff ) {
+		    int si = gi->psubrs[ gb->sc->ttf_glyph ].idx;
+		    len += 1 + (si<=107?1:si<=1131?2:5);
+	    break;
+		}
+		if ( gi->psubrs[ gb->bits[j].psub_index ].idx==-1 )
+		    len += gi->psubrs[ gb->bits[j].psub_index ].len;
+		else {
+		    int si = gi->psubrs[ gb->bits[j].psub_index ].idx;
+		    len += 1 + (si<=107?1:si<=1131?2:5);
+		    /* Space for a subr call & the sub number to call */
+		}
+	    }
+	    if ( k==0 ) {
+		int si = gi->psubrs[ gb->sc->ttf_glyph ].idx;
+		subrs->lens[si] = len+1;
+		vals = subrs->values[si] = galloc(len+2);
+	    } else {
+		/* Don't need or want and endchar if we are using seac */
+		chrs->lens[i] = len + !gb->wasseac;
+		vals = chrs->values[i] = galloc(len+2); /* space for endchar and a final NUL (which is really meaningless, but makes me feel better) */
+	    }
+
+	    len = 0;
+	    for ( j=0; j<gb->bcnt; ++j ) {
+		int si;
+		if ( k!=0 || j!=0 ) {
+		    memcpy(vals+len,gb->bits[j].data,gb->bits[j].dlen);
+		    len += gb->bits[j].dlen;
+		}
+		si = -1;
+		if ( k==1 && gb->sc->ttf_glyph!=0x7fff )
+		    si = gi->psubrs[ gb->sc->ttf_glyph ].idx;
+		else if ( gi->psubrs[ gb->bits[j].psub_index ].idx==-1 ) {
+		    memcpy(vals+len,gi->psubrs[ gb->bits[j].psub_index ].data,
+			    gi->psubrs[ gb->bits[j].psub_index ].len);
+		    len += gi->psubrs[ gb->bits[j].psub_index ].len;
+		} else
+		    si = gi->psubrs[ gb->bits[j].psub_index ].idx;
+		if ( si!=-1 ) {
+		    /* space for the number (subroutine index) */
+		    if ( si<=107 )
+			vals[len++] = si+139;
+		    else if ( si>0 && si<=1131 ) {
+			si-=108;
+			vals[len++] = (si>>8)+247;
+			vals[len++] = si&0xff;
+		    } else {
+			vals[len++] = '\377';
+			vals[len++] = (si>>24)&0xff;
+			vals[len++] = (si>>16)&0xff;
+			vals[len++] = (si>>8)&0xff;
+			vals[len++] = si&0xff;
+		    }
+		    /* space for the subroutine operator */
+		    vals[len++] = 10;
+		}
+		if ( k==1 && gb->sc->ttf_glyph!=0x7fff )
+	    break;
+	    }
+	    if ( k==0 ) {
+		vals[len++] = 11;	/* return */
+		vals[len] = '\0';
+	    } else if ( gb->wasseac ) {
+		/* Don't want an endchar */
+		vals[len] = '\0';
+	    } else {
+		vals[len++] = 14;	/* endchar */
+		vals[len] = '\0';
+	    }
+	}
+    }
+}
+
+struct pschars *SplineFont2ChrsSubrs(SplineFont *sf, int iscjk,
 	struct pschars *subrs,int flags, enum fontformat format) {
     struct pschars *chrs = gcalloc(1,sizeof(struct pschars));
     int i, cnt, instance_count;
@@ -1723,8 +2049,12 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int iscjk,
     int notdef_pos;
     MMSet *mm = sf->mm;
     real data[MmMax][6];
-    GrowBuf gb;
     int round = (flags&ps_flag_round)? true : false;
+    GlyphInfo gi;
+    SplineChar dummynotdef, *sc;
+#ifdef FONTFORGE_CONFIG_TYPE3
+    Layer dummylayers[2];
+#endif
 
     if ( (format==ff_mma || format==ff_mmb) && mm!=NULL ) {
 	instance_count = mm->instance_count;
@@ -1763,148 +2093,169 @@ struct pschars *SplineFont2Chrs(SplineFont *sf, int iscjk,
     if ( notdef_pos==-1 )
 	++cnt;		/* one notdef entry */
 
-    chrs->cnt = cnt;
-    chrs->keys = galloc(cnt*sizeof(char *));
-    chrs->lens = galloc(cnt*sizeof(int));
-    chrs->values = galloc(cnt*sizeof(unsigned char *));
+    memset(&gi,0,sizeof(gi));
+    memset(&gi.hashed,-1,sizeof(gi.hashed));
+    gi.instance_count = 1;
+    gi.sf = sf;
+    gi.glyphcnt = cnt;
+    gi.gb = gcalloc(cnt,sizeof(struct glyphbits));
+    gi.pmax = 3*cnt;
+    gi.psubrs = galloc(gi.pmax*sizeof(struct potentialsubrs));
+    gi.instance_count = instance_count;
 
-    SplineFont2Subrs1(sf,round,iscjk,subrs,flags,format);
-
-    cnt = 0;
-    chrs->keys[0] = copy(".notdef");
     if ( notdef_pos==-1 ) {
-	memset(&gb,'\0',sizeof(gb));
-	GrowBuffer(&gb);
-	*gb.pt++ = '\213';		/* 0 */	/* left side bearing */
-	AddData(&gb,data,instance_count,1,round);
-	if ( gb.pt+4>gb.end )
-	    GrowBuffer(&gb);
-	*gb.pt++ = '\015';	/* hsbw */
-	*gb.pt++ = '\016';	/* endchar */
-	*gb.pt = '\0';
-	chrs->values[0] = (unsigned char *) copyn((char *) gb.base,gb.pt-gb.base);	/* 0 <w> hsbw endchar */
-	chrs->lens[0] = gb.pt-gb.base;
-	free(gb.base);
-    } else {
-	chrs->values[0] = SplineChar2PS(sf->glyphs[notdef_pos],&chrs->lens[0],
-		round,iscjk,subrs,NULL,flags,format);
-    }
+	memset(&dummynotdef,0,sizeof(dummynotdef));
+	dummynotdef.name = ".notdef";
+	dummynotdef.parent = sf;
+	dummynotdef.layer_cnt = 2;
+#ifdef FONTFORGE_CONFIG_TYPE3
+	dummynotdef.layers = dummylayers;
+	memset(dummylayers,0,sizeof(dummylayers));
+#endif
+	dummynotdef.width = SFOneWidth(sf);
+	if ( dummynotdef.width==-1 )
+	    dummynotdef.width = (sf->ascent+sf->descent)/2;
+	gi.gb[0].sc = &dummynotdef;
+    } else
+	gi.gb[0].sc = sf->glyphs[notdef_pos];
     cnt = 1;
-    for ( i=0 ; i<sf->glyphcnt; ++i ) if ( i!=notdef_pos ) {
+    for ( i=0 ; i<sf->glyphcnt; ++i ) {
 #if HANYANG
 	if ( sf->glyphs[i]!=NULL && sf->glyphs[i]->compositionunit )
 	    /* don't output it, should be in a subroutine */;
 	else
 #endif
 	if ( SCWorthOutputting(sf->glyphs[i]) &&
-		( i==notdef_pos || strcmp(sf->glyphs[i]->name,".notdef")!=0)) {
-	    chrs->keys[cnt] = copy(sf->glyphs[i]->name);
-	    chrs->values[cnt] = SplineChar2PS(sf->glyphs[i],&chrs->lens[cnt],
-		    round,iscjk,subrs,NULL,flags,format);
-	    ++cnt;
-	}
+		strcmp(sf->glyphs[i]->name,".notdef")!=0)	/* We've already added .notdef */
+	    gi.gb[cnt++].sc = sf->glyphs[i];
+    }
+
+    SplineFont2FullSubrs1(flags,&gi);
+
+    for ( i=0; i<cnt; ++i ) {
+	if ( (sc = gi.gb[i].sc)==NULL )
+    continue;
+	gi.active = &gi.gb[i];
+	SplineChar2PS(sc,NULL, round,iscjk,subrs,flags,format,&gi);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !gwwv_progress_next()) {
-#elif defined(FONTFORGE_CONFIG_GTK)
-	if ( !gwwv_progress_next()) {
-#endif
 	    PSCharsFree(chrs);
+	    GIFree(&gi,&dummynotdef);
 return( NULL );
 	}
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
+
+    SetupType1Subrs(subrs,&gi);
+
+    chrs->cnt = cnt;
+    chrs->keys = galloc(cnt*sizeof(char *));
+    chrs->lens = galloc(cnt*sizeof(int));
+    chrs->values = galloc(cnt*sizeof(unsigned char *));
+
+    SetupType1Chrs(chrs,subrs,&gi,false);
+
+    GIFree(&gi,&dummynotdef);
+
     chrs->next = cnt;
     if ( chrs->next>chrs->cnt )
 	IError("Character estimate failed, about to die..." );
 return( chrs );
 }
 
-struct pschars *CID2Chrs(SplineFont *cidmaster,struct cidbytes *cidbytes,int flags) {
+struct pschars *CID2ChrsSubrs(SplineFont *cidmaster,struct cidbytes *cidbytes,int flags) {
     struct pschars *chrs = gcalloc(1,sizeof(struct pschars));
     int i, cnt, cid;
-    char notdefentry[20];
     SplineFont *sf = NULL;
     struct fddata *fd;
     int round = (flags&ps_flag_round)? true : false;
     /* I don't support mm cid files. I don't think adobe does either */
+    GlyphInfo gi;
+    int notdef_subfont;
+    SplineChar dummynotdef, *sc;
+#ifdef FONTFORGE_CONFIG_TYPE3
+    Layer dummylayers[2];
+#endif
 
-    cnt = 0;
-    for ( i=0; i<cidmaster->subfontcnt; ++i )
+    cnt = 0; notdef_subfont = -1;
+    for ( i=0; i<cidmaster->subfontcnt; ++i ) {
 	if ( cnt<cidmaster->subfonts[i]->glyphcnt )
 	    cnt = cidmaster->subfonts[i]->glyphcnt;
+	if ( cidmaster->subfonts[i]->glyphcnt>0 &&
+		SCWorthOutputting(cidmaster->subfonts[i]->glyphs[0]) )
+	    notdef_subfont = i;
+    }
     cidbytes->cidcnt = cnt;
 
-    for ( i=0; i<cidmaster->subfontcnt; ++i ) {
-	sf = cidmaster->subfonts[i];
-	MarkTranslationRefs(sf);
-	fd = &cidbytes->fds[i];
-	SplineFont2Subrs1(sf,round,fd->iscjk|0x100,fd->subrs,flags,ff_cid);
+    if ( notdef_subfont==-1 ) {
+	memset(&dummynotdef,0,sizeof(dummynotdef));
+	dummynotdef.name = ".notdef";
+	dummynotdef.parent = cidmaster->subfonts[0];
+	dummynotdef.layer_cnt = 2;
+#ifdef FONTFORGE_CONFIG_TYPE3
+	dummynotdef.layers = dummylayers;
+	memset(dummylayers,0,sizeof(dummylayers));
+#endif
+	dummynotdef.width = SFOneWidth(dummynotdef.parent);
+	if ( dummynotdef.width==-1 )
+	    dummynotdef.width = (dummynotdef.parent->ascent+dummynotdef.parent->descent);
     }
+
+    memset(&gi,0,sizeof(gi));
+    gi.instance_count = 1;
+    gi.glyphcnt = cnt;
+    gi.gb = galloc(cnt*sizeof(struct glyphbits));
+    gi.pmax = 3*cnt;
+    gi.psubrs = galloc(gi.pmax*sizeof(struct potentialsubrs));
 
     chrs->cnt = cnt;
-    chrs->lens = galloc(cnt*sizeof(int));
-    chrs->values = galloc(cnt*sizeof(unsigned char *));
+    chrs->lens = gcalloc(cnt,sizeof(int));
+    chrs->values = gcalloc(cnt,sizeof(unsigned char *));
     cidbytes->fdind = galloc(cnt*sizeof(unsigned char *));
+    memset(cidbytes->fdind,-1,cnt*sizeof(unsigned char *));
 
-    for ( cid = 0; cid<cnt; ++cid ) {
-	sf = NULL;
-	for ( i=0; i<cidmaster->subfontcnt; ++i ) {
-	    sf = cidmaster->subfonts[i];
-	    if ( cid<sf->glyphcnt && SCWorthOutputting(sf->glyphs[cid]) )
-	break;
+    /* In a type1 CID-keyed font we must handle subroutines subfont by subfont*/
+    /*  as there are no global subrs */
+    for ( i=0; i<cidmaster->subfontcnt; ++i ) {
+	gi.sf = sf = cidmaster->subfonts[i];
+	MarkTranslationRefs(sf);
+	fd = &cidbytes->fds[i];
+	memset(&gi.hashed,-1,sizeof(gi.hashed));
+	gi.instance_count = 1;
+	gi.glyphcnt = sf->glyphcnt;
+	memset(gi.gb,0,sf->glyphcnt*sizeof(struct glyphbits));
+	for ( cid=0; cid<cnt && cid<sf->glyphcnt; ++cid ) {
+	    if ( cid==0 && notdef_subfont==-1 && i==cidmaster->subfontcnt-1 )
+		gi.gb[0].sc = &dummynotdef;
+	    else if ( SCWorthOutputting(sf->glyphs[cid]) &&
+		    strcmp(sf->glyphs[cid]->name,".notdef")!=0)	/* We've already added .notdef */
+		gi.gb[cid].sc = sf->glyphs[cid];
+	    if ( gi.gb[cid].sc!=NULL )
+		cidbytes->fdind[cid] = i;
 	}
-	if ( cid!=0 && i==cidmaster->subfontcnt ) {
-	    chrs->lens[cid] = 0;
-	    chrs->values[cid] = NULL;
-	    cidbytes->fdind[cid] = -1;		/* that's what Adobe uses */
-	} else if ( i==cidmaster->subfontcnt ) {
-	    /* Must have something for .notdef */
-	    /* sf corresponds to cidmaster->subfontcnt-1, generally the kanji font */
-	    int w = sf->ascent+sf->descent; char *pt = notdefentry;
-	    *pt++ = '\213';		/* 0 */
-	    if ( w>=-107 && w<=107 )
-		*pt++ = w+139;
-	    else if ( w>=108 && w<=1131 ) {
-		w -= 108;
-		*pt++ = (w>>8)+247;
-		*pt++ = w&0xff;
-	    } else if ( w>=-1131 && w<=-108 ) {
-		w = -w;
-		w -= 108;
-		*pt++ = (w>>8)+251;
-		*pt++ = w&0xff;
-	    } else {
-		*pt++ = '\377';
-		*pt++ = (w>>24)&0xff;
-		*pt++ = (w>>16)&0xff;
-		*pt++ = (w>>8)&0xff;
-		*pt++ = w&0xff;
-	    }
-	    *pt++ = '\015';	/* hsbw */
-	    *pt++ = '\016';	/* endchar */
-	    *pt = '\0';
-	    chrs->values[0] = (unsigned char *) copyn(notdefentry,pt-notdefentry);	/* 0 <w> hsbw endchar */
-	    chrs->lens[0] = pt-notdefentry;
-	    cidbytes->fdind[0] = cidmaster->subfontcnt-1;
-	} else {
-	    fd = &cidbytes->fds[i];
-	    cidbytes->fdind[cid] = i;
-	    chrs->values[cid] = SplineChar2PS(sf->glyphs[cid],&chrs->lens[cid],
-		    round,fd->iscjk|0x100,fd->subrs,NULL,flags,ff_cid);
-	}
+	SplineFont2FullSubrs1(flags,&gi);
+
+	for ( cid=0; cid<cnt && cid<sf->glyphcnt; ++cid ) {
+	    if ( (sc = gi.gb[cid].sc)==NULL )
+	continue;
+	    gi.active = &gi.gb[cid];
+	    SplineChar2PS(sc,NULL, round,fd->iscjk|0x100,fd->subrs,
+		    flags,ff_cid,&gi);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	if ( !gwwv_progress_next()) {
-#elif defined(FONTFORGE_CONFIG_GTK)
-	if ( !gwwv_progress_next()) {
-#endif
-	    PSCharsFree(chrs);
+	    if ( !gwwv_progress_next()) {
+		PSCharsFree(chrs);
+		GIFree(&gi,&dummynotdef);
 return( NULL );
-	}
+	    }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+	
+	}
+
+	SetupType1Subrs(fd->subrs,&gi);
+	SetupType1Chrs(chrs,fd->subrs,&gi,true);
+	GIContentsFree(&gi,&dummynotdef);
     }
-    chrs->next = cid;
+    chrs->next = cnt;
 return( chrs );
 }
 
@@ -1924,7 +2275,7 @@ return( rint(65536*pos)/65536 );
 }
 
 static void AddNumber2(GrowBuf *gb, real pos, int round) {
-    int val;
+    int val, factor;
     unsigned char *str;
 
     if ( gb->pt+5>=gb->end )
@@ -1933,31 +2284,26 @@ static void AddNumber2(GrowBuf *gb, real pos, int round) {
     pos = rint(65536*pos)/65536;
     if ( round )
 	pos = rint(pos);
-    if ( pos>65535 || pos<-65536 ) {
-	LogError( _("Number out of range: %g in type2 output (must be [-65536,65535])\n"),
-		pos );
-	if ( pos>0 ) pos = 65535; else pos = -65536;
-    }
 
     str = gb->pt;
-    if ( pos!=floor(pos )) {
-#if 0
-	if ( !real_warn ) {
-	    gwwv_post_notice(_("Not integral"),_("This font contains at least one non-integral coordinate.\nThis is perfectly legal, but it is unusual and does\nincrease the size of the generated font file. You might\nwant to try using\n  Element->Round To Int\non the entire font."));
-	    real_warn = true;
+    if ( pos>32767.99 || pos<-32768 ) {
+	/* same logic for big ints and reals */
+	if ( pos>0x3fffffff || pos<-0x40000000 ) {
+	    LogError( _("Number out of range: %g in type2 output (must be [-65536,65535])\n"),
+		    pos );
+	    if ( pos>0 ) pos = 0x3fffffff; else pos = -0x40000000;
 	}
-#endif
-
+	for ( factor=2; factor<32768; factor<<=2 )
+	    if ( pos/factor<32767.99 && pos/factor>-32768 )
+	break;
+	AddNumber2(gb,pos/factor,false);
+	AddNumber2(gb,factor,false);
+	if ( gb->pt+2>=gb->end )
+	    GrowBuffer(gb);
+	*(gb->pt++) = 0x0c;		/* Multiply operator */
+	*(gb->pt++) = 0x18;
+    } else if ( pos!=floor(pos )) {
 	val = pos*65536;
-#ifdef PSFixed_Is_TTF	/* The type2 spec is contradictory. It says this is a */
-			/*  two's complement number, but it also says it is a */
-			/*  Fixed, which in truetype is not two's complement */
-			/*  (mantisa is always unsigned) */
-	if ( val<0 ) {
-	    int mant = (-val)&0xffff;
-	    val = (val&0xffff0000) | mant;
-	}
-#endif
 	*str++ = '\377';
 	*str++ = (val>>24)&0xff;
 	*str++ = (val>>16)&0xff;
@@ -2000,93 +2346,6 @@ static void CounterHints2(GrowBuf *gb, SplineChar *sc, int hcnt) {
 
     for ( i=0; i<sc->countermask_cnt; ++i )
 	AddMask2(gb,sc->countermasks[i],hcnt,20);	/* cntrmask */
-}
-
-static void StartNextSubroutine(GrowBuf *gb,struct hintdb *hdb) {
-    GlyphInfo *gi = hdb->gi;
-
-    if ( gi==NULL )
-return;
-    /* Store everything in the grow buf into the data/dlen of the next bit */
-    if ( gi->bcnt>=gi->bmax )
-	gi->bits = grealloc(gi->bits,(gi->bmax+=20)*sizeof(struct bits));
-    gi->bits[gi->bcnt].dlen = gb->pt-gb->base;
-    gi->bits[gi->bcnt].data = galloc(gi->bits[gi->bcnt].dlen);
-    gi->bits[gi->bcnt].psub_index = -1;
-    memcpy(gi->bits[gi->bcnt].data,gb->base,gi->bits[gi->bcnt].dlen);
-    gb->pt = gb->base;
-    gi->justbroken = false;
-}
-
-static int hashfunc(uint8 *data, int len) {
-    uint8 *end = data+len;
-    unsigned int hash = 0, r;
-
-    while ( data<end ) {
-	r = (hash>>30)&3;
-	hash <<= 2;
-	hash = (hash|r)&0xffffffff;
-	hash ^= *data++;
-    }
-return( hash%HSH_SIZE );
-}
-
-static void BreakSubroutine(GrowBuf *gb,struct hintdb *hdb) {
-    GlyphInfo *gi = hdb->gi;
-    struct potentialsubrs *ps;
-    int hash;
-    int pi;
-
-    if ( gi==NULL )
-return;
-    /* The stuff before the first moveto in a glyph (the header that sets */
-    /*  the width, sets up the hints, counters, etc.) can't go into a subr */
-    if ( gi->bcnt==-1 ) {
-	gi->bcnt=0;
-	gi->justbroken = true;
-return;
-    } else if ( gi->justbroken )
-return;
-    /* Otherwise stuff everything in the growbuffer into a subr */
-    hash = hashfunc(gb->base,gb->pt-gb->base);
-    ps = NULL;
-    for ( pi=gi->hashed[hash]; pi!=-1; pi=gi->psubrs[pi].next ) {
-	ps = &gi->psubrs[pi];
-	if ( ps->len==gb->pt-gb->base && memcmp(ps->data,gb->base,gb->pt-gb->base)==0 )
-    break;
-    }
-    if ( pi==-1 ) {
-	if ( gi->pcnt>=gi->pmax )
-	    gi->psubrs = grealloc(gi->psubrs,(gi->pmax+=gi->glyphcnt)*sizeof(struct potentialsubrs));
-	ps = &gi->psubrs[gi->pcnt];
-	memset(ps,0,sizeof(*ps));	/* set cnt to 0 */
-	ps->idx = gi->pcnt++;
-	ps->len = gb->pt-gb->base;
-	ps->data = galloc(ps->len);
-	memcpy(ps->data,gb->base,ps->len);
-	ps->next = gi->hashed[hash];
-	gi->hashed[hash] = ps->idx;
-	ps->fd = gi->active->fd;
-    }
-    if ( ps->fd!=gi->active->fd )
-	ps->fd = -1;			/* used in multiple cid sub-fonts */
-    gi->bits[gi->bcnt].psub_index = ps->idx;
-    ++ps->cnt;
-    gb->pt = gb->base;
-    ++gi->bcnt;
-    gi->justbroken = true;
-}
-
-static void MoveSubrsToChar(GlyphInfo *gi) {
-    struct glyphbits *active;
-
-    if ( gi==NULL )
-return;
-    active = gi->active;
-    active->bcnt = gi->bcnt;
-    active->bits = galloc(active->bcnt*sizeof(struct bits));
-    memcpy(active->bits,gi->bits,active->bcnt*sizeof(struct bits));
-    gi->bcnt = 0;
 }
 
 static int HintSetup2(GrowBuf *gb,struct hintdb *hdb, SplinePoint *to, int break_subr ) {
@@ -2405,7 +2664,7 @@ static void flexto2(GrowBuf *gb,struct hintdb *hdb,Spline *pspline,int round) {
 }
 
 static void CvtPsSplineSet2(GrowBuf *gb, SplinePointList *spl,
-	struct hintdb *hdb, BasePoint *start,int is_order2,int round ) {
+	struct hintdb *hdb, int is_order2,int round ) {
     Spline *spline, *first;
     SplinePointList temp, *freeme = NULL;
     int unhinted = true;;
@@ -2438,16 +2697,11 @@ static void CvtPsSplineSet2(GrowBuf *gb, SplinePointList *spl,
 		spl->first->flexx = spl->first->flexy = false;
 	    }
 	}
-	if ( start==NULL || hdb->startset ) {
-	    if ( unhinted && hdb->cnt>0 && spl->first->hintmask!=NULL ) {
-		hdb->mask[0] = ~(*spl->first->hintmask)[0];	/* Make it different */
-		unhinted = false;
-	    }
-	    moveto2(gb,hdb,spl->first,round);
-	} else {
-	    hdb->current = *start = spl->first->me;
-	    hdb->startset = true;
+	if ( unhinted && hdb->cnt>0 && spl->first->hintmask!=NULL ) {
+	    hdb->mask[0] = ~(*spl->first->hintmask)[0];	/* Make it different */
+	    unhinted = false;
 	}
+	moveto2(gb,hdb,spl->first,round);
 	for ( spline = spl->first->next; spline!=NULL && spline!=first; ) {
 	    if ( first==NULL ) first = spline;
 	    else if ( first->from==spline->to )
@@ -2597,10 +2851,11 @@ static void SetTransformedHintMask(GrowBuf *gb,struct hintdb *hdb,
 }
 
 static void ExpandRef2(GrowBuf *gb, SplineChar *sc, struct hintdb *hdb,
-	RefChar *r, BasePoint *trans, BasePoint *startend,
+	RefChar *r, BasePoint *trans,
 	struct pschars *subrs, int round) {
     BasePoint *bpt;
     BasePoint temp, rtrans;
+    GlyphInfo *gi;
     /* The only refs I deal with here have no hint conflicts within them */
     
     rtrans.x = r->transform[4]+trans->x;
@@ -2610,42 +2865,40 @@ static void ExpandRef2(GrowBuf *gb, SplineChar *sc, struct hintdb *hdb,
 	rtrans.y = rint(rtrans.y);
     }
 
+    BreakSubroutine(gb,hdb);
     if ( hdb->cnt>0 && !hdb->noconflicts )
 	DumpRefsHints(gb,hdb,r,sc->hstem,sc->vstem,&rtrans,round);
 
     /* Translate from end of last character to where this one should */
     /*  start (we must have one moveto operator to start off, none */
     /*  in the subr) */
-    bpt = (BasePoint *) (subrs->keys[r->sc->lsidebearing+subrs->bias]);
+    bpt = hdb->gi->psubrs[r->sc->lsidebearing].startstop;
     temp.x = bpt[0].x+rtrans.x;
     temp.y = bpt[0].y+rtrans.y;
-    if ( startend == NULL || hdb->startset ) {
-	if ( hdb->current.x!=temp.x )
-	    AddNumber2(gb,temp.x-hdb->current.x,round);
-	if ( hdb->current.y!=temp.y || hdb->current.x==temp.x )
-	    AddNumber2(gb,temp.y-hdb->current.y,round);
-	if ( gb->pt+1>=gb->end )
-	    GrowBuffer(gb);
-	*gb->pt++ = hdb->current.x==temp.x?4:	/* vmoveto */
-		    hdb->current.y==temp.y?22:	/* hmoveto */
-		    21;				/* rmoveto */
-    } else {
-	hdb->startset = true;
-	startend[0] = temp;
-    }
-    if ( r->sc->lsidebearing==0x7fff )
-	IError("Attempt to reference an unreferenceable glyph %s", r->sc->name );
-    AddNumber2(gb,r->sc->lsidebearing,round);
+    if ( hdb->current.x!=temp.x )
+	AddNumber2(gb,temp.x-hdb->current.x,round);
+    if ( hdb->current.y!=temp.y || hdb->current.x==temp.x )
+	AddNumber2(gb,temp.y-hdb->current.y,round);
     if ( gb->pt+1>=gb->end )
 	GrowBuffer(gb);
-    *gb->pt++ = 10;					/* callsubr */
+    *gb->pt++ = hdb->current.x==temp.x?4:	/* vmoveto */
+		hdb->current.y==temp.y?22:	/* hmoveto */
+		21;				/* rmoveto */
+    if ( r->sc->lsidebearing==0x7fff )
+	IError("Attempt to reference an unreferenceable glyph %s", r->sc->name );
+
+    gi = hdb->gi;
+    StartNextSubroutine(gb,hdb);
+    gi->bits[gi->bcnt].psub_index = r->sc->lsidebearing;
+    ++gi->bcnt;
+    gi->justbroken = true;
     hdb->current.x = bpt[1].x+rtrans.x;
     hdb->current.y = bpt[1].y+rtrans.y;
 }
 
 static void RSC2PS2(GrowBuf *gb, SplineChar *base,SplineChar *rsc,
 	struct hintdb *hdb, BasePoint *trans, struct pschars *subrs,
-	BasePoint *startend, int flags ) {
+	int flags ) {
     BasePoint subtrans;
     int stationary = trans->x==0 && trans->y==0;
     RefChar *r, *unsafe=NULL;
@@ -2680,9 +2933,9 @@ static void RSC2PS2(GrowBuf *gb, SplineChar *base,SplineChar *rsc,
 
     if ( unsafe && allwithouthints ) {
 	if ( unsafe->sc->lsidebearing!=0x7fff ) {
-	    ExpandRef2(gb,base,hdb,unsafe,trans,startend,subrs,round);
+	    ExpandRef2(gb,base,hdb,unsafe,trans,subrs,round);
 	} else if ( unsafe->transform[4]==0 && unsafe->transform[5]==0 )
-	    RSC2PS2(gb,base,unsafe->sc,hdb,trans,subrs,startend,flags);
+	    RSC2PS2(gb,base,unsafe->sc,hdb,trans,subrs,flags);
 	else
 	    unsafe = NULL;
     } else
@@ -2692,7 +2945,7 @@ static void RSC2PS2(GrowBuf *gb, SplineChar *base,SplineChar *rsc,
     freeme = NULL; temp = rsc->layers[ly_fore].splines;
     if ( base!=rsc )
 	temp = freeme = SPLCopyTranslatedHintMasks(temp,base,rsc,trans);
-    CvtPsSplineSet2(gb,temp,hdb,startend,rsc->parent->order2,round);
+    CvtPsSplineSet2(gb,temp,hdb,rsc->parent->order2,round);
     SplinePointListsFree(freeme);
 
     for ( r = rsc->layers[ly_fore].refs; r!=NULL; r = r->next ) if ( r!=unsafe ) {
@@ -2703,11 +2956,12 @@ static void RSC2PS2(GrowBuf *gb, SplineChar *base,SplineChar *rsc,
 	    if ( !hdb->donefirsthm )
 		DummyHintmask(gb,hdb);
 	    temp = SPLCopyTransformedHintMasks(r,base,trans);
-	    CvtPsSplineSet2(gb,temp,hdb,startend,rsc->parent->order2,round);
+	    CvtPsSplineSet2(gb,temp,hdb,rsc->parent->order2,round);
 	    SplinePointListsFree(temp);
 	} else if ( r->sc->lsidebearing!=0x7fff &&
-		((flags&ps_flag_nohints) ||(!r->sc->hconflicts && !r->sc->vconflicts)) ) {
-	    ExpandRef2(gb,base,hdb,r,trans,startend,subrs,round);
+		((flags&ps_flag_nohints) ||
+		 (!r->sc->hconflicts && !r->sc->vconflicts)) ) {
+	    ExpandRef2(gb,base,hdb,r,trans,subrs,round);
 	} else {
 	    subtrans.x = trans->x + r->transform[4];
 	    subtrans.y = trans->y + r->transform[5];
@@ -2715,7 +2969,7 @@ static void RSC2PS2(GrowBuf *gb, SplineChar *base,SplineChar *rsc,
 		SetTransformedHintMask(gb,hdb,base,r,trans,round);
 		hdb->noconflicts = true;
 	    }
-	    RSC2PS2(gb,base,r->sc,hdb,&subtrans,subrs,startend,flags);
+	    RSC2PS2(gb,base,r->sc,hdb,&subtrans,subrs,flags);
 	    hdb->noconflicts = wasntconflicted;
 	}
     }
@@ -2727,7 +2981,7 @@ static void RSC2PS2(GrowBuf *gb, SplineChar *base,SplineChar *rsc,
 }
 
 static unsigned char *SplineChar2PS2(SplineChar *sc,int *len, int nomwid,
-	int defwid, struct pschars *subrs, BasePoint *startend, int flags,
+	int defwid, struct pschars *subrs, int flags,
 	GlyphInfo *gi) {
     GrowBuf gb;
     unsigned char *ret;
@@ -2759,13 +3013,12 @@ static unsigned char *SplineChar2PS2(SplineChar *sc,int *len, int nomwid,
     memset(&gb,'\0',sizeof(gb));
 
     GrowBuffer(&gb);
-    if ( startend==NULL ) {
-	/* store the width on the stack */
-	if ( sc->width==defwid )
-	    /* Don't need to do anything for the width */;
-	else
-	    AddNumber2(&gb,sc->width-nomwid,round);
-    }
+
+    /* store the width on the stack */
+    if ( sc->width==defwid )
+	/* Don't need to do anything for the width */;
+    else
+	AddNumber2(&gb,sc->width-nomwid,round);
 
     memset(&trans,'\0',sizeof(trans));
     memset(&hdb,'\0',sizeof(hdb));
@@ -2776,39 +3029,21 @@ static unsigned char *SplineChar2PS2(SplineChar *sc,int *len, int nomwid,
     scs[0] = sc;
     hdb.noconflicts = !sc->hconflicts && !sc->vconflicts;
     hdb.cnt = NumberHints(hdb.scs,1);
-    if ( startend==NULL ) {
-	DumpHints(&gb,sc->hstem,sc->hconflicts || sc->vconflicts?18:1,
-				sc->hconflicts || sc->vconflicts?18:1,round);
-	DumpHints(&gb,sc->vstem,sc->hconflicts || sc->vconflicts?-1:3,
-				sc->hconflicts || sc->vconflicts?23:3,round);
-	CounterHints2(&gb, sc, hdb.cnt );
-    }
-    if ( startend==NULL && sc->lsidebearing!=0x7fff ) {
-	RefChar ref;
-	memset(&ref,'\0',sizeof(ref));
-	ref.sc = sc;
-	ref.transform[0] = ref.transform[3] = 1.0;
-	ExpandRef2(&gb,sc,&hdb,&ref,&trans,startend,subrs,round);
-    } else
-	RSC2PS2(&gb,sc,sc,&hdb,&trans,subrs,startend,flags);
+    DumpHints(&gb,sc->hstem,sc->hconflicts || sc->vconflicts?18:1,
+			    sc->hconflicts || sc->vconflicts?18:1,round);
+    DumpHints(&gb,sc->vstem,sc->hconflicts || sc->vconflicts?-1:3,
+			    sc->hconflicts || sc->vconflicts?23:3,round);
+    CounterHints2(&gb, sc, hdb.cnt );
+    RSC2PS2(&gb,sc,sc,&hdb,&trans,subrs,flags);
 
-    if ( gi!=NULL ) {
-	if ( gi->bcnt==-1 ) {	/* If it's whitespace */
-	    gi->bcnt = 0;
-	    StartNextSubroutine(&gb,&hdb);
-	}
-	BreakSubroutine(&gb,&hdb);
-	MoveSubrsToChar(gi);
-	ret = NULL;
-    } else {
-	if ( gb.pt+1>=gb.end )
-	    GrowBuffer(&gb);
-	*gb.pt++ = startend==NULL?14:11;		/* endchar / return */
-	ret = (unsigned char *) copyn((char *) gb.base,gb.pt-gb.base);
-	*len = gb.pt-gb.base;
+    if ( gi->bcnt==-1 ) {	/* If it's whitespace */
+	gi->bcnt = 0;
+	StartNextSubroutine(&gb,&hdb);
     }
-    if ( startend!=NULL )
-	startend[1] = hdb.current;
+    BreakSubroutine(&gb,&hdb);
+    MoveSubrsToChar(gi);
+    ret = NULL;
+
     free(gb.base);
     if ( flags&ps_flag_nohints ) {
 	sc->hstem = oldh; sc->vstem = oldv;
@@ -2816,253 +3051,6 @@ static unsigned char *SplineChar2PS2(SplineChar *sc,int *len, int nomwid,
     } else if ( hm!=NULL )
 	sc->layers[ly_fore].splines->first->hintmask = hm;
 return( ret );
-}
-
-/* This char has hint conflicts. Check to see if we can put it into a subr */
-/*  in spite of that. If there is at least one dependent character which: */
-/*	refers to us without translating us */
-/*	and all its other refs contain no hints at all */
-static int Type2SpecialCase(SplineChar *sc) {
-    struct splinecharlist *d;
-    RefChar *r;
-
-    for ( d=sc->dependents; d!=NULL; d=d->next ) {
-	for ( r=d->sc->layers[ly_fore].refs; r!=NULL; r = r->next ) {
-	    if ( autohint_before_generate && r->sc!=NULL &&
-		    r->sc->changedsincelasthinted && !r->sc->manualhints )
-		SplineCharAutoHint(r->sc,NULL);
-	    if ( r->transform[0]!=1 || r->transform[1]!=0 ||
-		    r->transform[2]!=0 || r->transform[3]!=1 )
-	break;
-	    if ( r->sc!=sc && (r->sc->hstem!=NULL || r->sc->vstem!=NULL))
-	break;
-	    if ( r->sc==sc && (r->transform[4]!=0 || r->transform[5]!=0))
-	break;
-	}
-	if ( r==NULL )
-return( true );
-    }
-return( false );
-}
-
-struct pschars *SplineFont2Subrs2(SplineFont *sf,int flags) {
-    struct pschars *subrs = gcalloc(1,sizeof(struct pschars));
-    int i,cnt;
-    SplineChar *sc;
-
-    if ( !autohint_before_generate && !(flags&ps_flag_nohints))
-	SplineFontAutoHintRefs(sf);
-
-    /* We don't allow refs to refs. It confuses the hintmask operators */
-    /*  instead we track down to the base ref */
-    for ( i=cnt=0; i<sf->glyphcnt; ++i ) {
-	sc = sf->glyphs[i];
-	if ( autohint_before_generate && sc!=NULL &&
-		sc->changedsincelasthinted && !sc->manualhints &&
-		!(flags&ps_flag_nohints))
-	    SplineCharAutoHint(sc,NULL);
-	if ( sc==NULL )
-	    /* Do Nothing */;
-	else if ( SCWorthOutputting(sc) &&
-	    (( sc->layers[ly_fore].refs==NULL && sc->dependents!=NULL &&
-		    ( (!sc->hconflicts && !sc->vconflicts) ||
-			Type2SpecialCase(sc)) )  )) {
-	/* Put the */
-	/*  character into a subr if it is referenced by other characters */
-	    ++cnt;
-	    sc->lsidebearing = 0;	/* anything other than 0x7fff */
-	} else
-	    sc->lsidebearing = 0x7fff;
-    }
-
-    subrs->cnt = cnt;
-    if ( cnt==0 )
-return( subrs);
-    subrs->lens = galloc(cnt*sizeof(int));
-    subrs->values = galloc(cnt*sizeof(unsigned char *));
-    subrs->keys = galloc(cnt*sizeof(BasePoint *));
-    subrs->bias = cnt<1240 ? 107 :
-		  cnt<33900 ? 1131 : 32768;
-
-    for ( i=cnt=0; i<sf->glyphcnt; ++i ) {
-	sc = sf->glyphs[i];
-	if ( sc==NULL )
-	    /* Do Nothing */;
-	else if ( sc->lsidebearing!=0x7fff ) {
-	    subrs->keys[cnt] = gcalloc(2,sizeof(BasePoint));
-	    subrs->values[cnt] = SplineChar2PS2(sc,&subrs->lens[cnt],0,0,
-			subrs,(BasePoint *) (subrs->keys[cnt]),flags,NULL);
-	    sc->lsidebearing = cnt++ - subrs->bias;
-	}
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	if ( !gwwv_progress_next()) {
-	    PSCharsFree(subrs);
-return( NULL );
-	}
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-    }
-    subrs->next = cnt;
-return( subrs );
-}
-
-struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
-	struct pschars *subrs,int flags,const int *bygid, int cnt) {
-    struct pschars *chrs = gcalloc(1,sizeof(struct pschars));
-    int i;
-    char notdefentry[20];
-    SplineChar *sc;
-    int fixed = SFOneWidth(sf), notdefwidth;
-
-    MarkTranslationRefs(sf);
-
-    notdefwidth = fixed;
-    if ( notdefwidth==-1 ) notdefwidth = sf->ascent+sf->descent;
-
-/* only honor the width on .notdef in non-fixed pitch fonts (or ones where there is an actual outline in notdef) */
-    chrs->cnt = cnt;
-    chrs->lens = galloc(cnt*sizeof(int));
-    chrs->values = galloc(cnt*sizeof(unsigned char *));
-
-    /* notdef needs to be glyph 0 in an sfnt */
-    if ( bygid[0]!=-1 ) {
-	chrs->values[0] = SplineChar2PS2(sf->glyphs[bygid[0]],&chrs->lens[0],nomwid,defwid,subrs,NULL,flags,NULL);
-    } else {
-	char *pt = notdefentry;
-	if ( notdefwidth==defwid )
-	    /* Don't need to specify it */;
-	else {
-	    notdefwidth -= nomwid;
-	    if ( notdefwidth>=-107 && notdefwidth<=107 )
-		*pt++ = notdefwidth+139;
-	    else if ( notdefwidth>=108 && notdefwidth<=1131 ) {
-		notdefwidth -= 108;
-		*pt++ = (notdefwidth>>8)+247;
-		*pt++ = notdefwidth&0xff;
-	    } else if ( notdefwidth>=-1131 && notdefwidth<=-108 ) {
-		notdefwidth = -notdefwidth;
-		notdefwidth -= 108;
-		*pt++ = (notdefwidth>>8)+251;
-		*pt++ = notdefwidth&0xff;
-	    } else {
-		*pt++ = 28;
-		*pt++ = (notdefwidth>>8)&0xff;
-		*pt++ = notdefwidth&0xff;
-	    }
-	}
-	*pt++ = '\016';	/* endchar */
-	*pt = '\0';
-	chrs->values[0] = (unsigned char *) copyn(notdefentry,pt-notdefentry);	/* 0 <w> hsbw endchar */
-	chrs->lens[0] = pt-notdefentry;
-    }
-    for ( i=1 ; i<cnt; ++i ) {
-	sc = sf->glyphs[bygid[i]];
-	chrs->values[i] = SplineChar2PS2(sc,&chrs->lens[i],nomwid,defwid,subrs,NULL,flags,NULL);
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	if ( !gwwv_progress_next()) {
-	    PSCharsFree(chrs);
-return( NULL );
-	}
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-    }
-    chrs->next = cnt;
-return( chrs );
-}
-
-struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds,int flags) {
-    struct pschars *chrs = gcalloc(1,sizeof(struct pschars));
-    int i, cnt, cid, max;
-    char notdefentry[20];
-    SplineChar *sc;
-    SplineFont *sf = NULL;
-    /* In a cid-keyed font, cid 0 is defined to be .notdef so there are no */
-    /*  special worries. If it is defined we use it. If it is not defined */
-    /*  we add it. */
-
-    /* real_warn = false; */
-
-    max = 0;
-    for ( i=0; i<cidmaster->subfontcnt; ++i ) {
-	if ( max<cidmaster->subfonts[i]->glyphcnt )
-	    max = cidmaster->subfonts[i]->glyphcnt;
-	MarkTranslationRefs(cidmaster->subfonts[i]);
-    }
-    cnt = 1;			/* for .notdef */
-    for ( cid = 1; cid<max; ++cid ) {
-	for ( i=0; i<cidmaster->subfontcnt; ++i ) {
-	    sf = cidmaster->subfonts[i];
-	    if ( cid<sf->glyphcnt && SCWorthOutputting(sf->glyphs[cid])) {
-		++cnt;
-	break;
-	    }
-	}
-    }
-
-    chrs->cnt = cnt;
-    chrs->lens = galloc(cnt*sizeof(int));
-    chrs->values = galloc(cnt*sizeof(unsigned char *));
-
-    for ( i=0; i<cidmaster->subfontcnt; ++i ) {
-	sf = cidmaster->subfonts[i];
-	for ( cid=0; cid<sf->glyphcnt; ++cid ) if ( sf->glyphs[cid]!=NULL )
-	    sf->glyphs[cid]->ttf_glyph = -1;
-    }
-
-    for ( cid = cnt = 0; cid<max; ++cid ) {
-	sf = NULL;
-	for ( i=0; i<cidmaster->subfontcnt; ++i ) {
-	    sf = cidmaster->subfonts[i];
-	    if ( cid<sf->glyphcnt && SCWorthOutputting(sf->glyphs[cid]) )
-	break;
-	}
-	if ( cid!=0 && i==cidmaster->subfontcnt ) {
-	    /* Do nothing */;
-	} else if ( i==cidmaster->subfontcnt ) {
-	    /* They didn't define CID 0 */
-	    /* Place it in the final subfont (which is what sf points to) */
-	    int w = sf->ascent+sf->descent; char *pt = notdefentry;
-	    --i;
-	    if ( w==fds[i].defwid )
-		/* Don't need to specify it */;
-	    else {
-		w -= fds[i].nomwid;
-		if ( w>=-107 && w<=107 )
-		    *pt++ = w+139;
-		else if ( w>=108 && w<=1131 ) {
-		    w -= 108;
-		    *pt++ = (w>>8)+247;
-		    *pt++ = w&0xff;
-		} else if ( w>=-1131 && w<=-108 ) {
-		    w = -w;
-		    w -= 108;
-		    *pt++ = (w>>8)+251;
-		    *pt++ = w&0xff;
-		} else {
-		    *pt++ = 28;
-		    *pt++ = (w>>8)&0xff;
-		    *pt++ = w&0xff;
-		}
-	    }
-	    *pt++ = '\016';	/* endchar */
-	    *pt = '\0';
-	    chrs->values[0] = (unsigned char *) copyn(notdefentry,pt-notdefentry);	/* 0 <w> hsbw endchar */
-	    chrs->lens[0] = pt-notdefentry;
-	    ++cnt;
-#if 0 && HANYANG			/* Too much stuff knows the glyph cnt, can't refigure it here at the end */
-	} else if ( sf->glyphs[cid]->compositionunit ) {
-	    /* don't output it, should be in a subroutine */;
-#endif
-	} else {
-	    sc = sf->glyphs[cid];
-	    chrs->values[cnt] = SplineChar2PS2(sc,&chrs->lens[cnt],
-		    fds[i].nomwid,fds[i].defwid,fds[i].subrs,NULL,flags,NULL);
-	    sc->ttf_glyph = cnt++;
-	}
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	gwwv_progress_next();
-#endif
-    }
-    chrs->next = cnt;
-return( chrs );
 }
 
 static SplinePoint *LineTo(SplinePoint *last, int x, int y) {
@@ -3117,10 +3105,94 @@ static void Type2NotDefSplines(SplineFont *sf,SplineChar *sc) {
     sc->hstem = hints;
 }
 
+#ifdef FONTFORGE_CONFIG_PS_REFS_GET_SUBRS
+/* This char has hint conflicts. Check to see if we can put it into a subr */
+/*  in spite of that. If there is at least one dependent character which: */
+/*	refers to us without translating us */
+/*	and all its other refs contain no hints at all */
+static int Type2SpecialCase(SplineChar *sc) {
+    struct splinecharlist *d;
+    RefChar *r;
+
+    for ( d=sc->dependents; d!=NULL; d=d->next ) {
+	for ( r=d->sc->layers[ly_fore].refs; r!=NULL; r = r->next ) {
+	    if ( autohint_before_generate && r->sc!=NULL &&
+		    r->sc->changedsincelasthinted && !r->sc->manualhints )
+		SplineCharAutoHint(r->sc,NULL);
+	    if ( r->transform[0]!=1 || r->transform[1]!=0 ||
+		    r->transform[2]!=0 || r->transform[3]!=1 )
+	break;
+	    if ( r->sc!=sc && (r->sc->hstem!=NULL || r->sc->vstem!=NULL))
+	break;
+	    if ( r->sc==sc && (r->transform[4]!=0 || r->transform[5]!=0))
+	break;
+	}
+	if ( r==NULL )
+return( true );
+    }
+return( false );
+}
+#endif	/* FONTFORGE_CONFIG_PS_REFS_GET_SUBRS */
+
+/* Mark those glyphs which can live totally in subrs */
+static void SplineFont2FullSubrs2(int flags,GlyphInfo *gi) {
+    int i;
+    SplineChar *sc;
+#ifdef FONTFORGE_CONFIG_PS_REFS_GET_SUBRS
+    int cc;
+    RefChar *r;
+    struct potentialsubrs *ps;
+    SplineSet *spl;
+#endif	/* FONTFORGE_CONFIG_PS_REFS_GET_SUBRS */
+
+    if ( !autohint_before_generate && !(flags&ps_flag_nohints))
+	SplineFontAutoHintRefs(gi->sf);
+
+    for ( i=0; i<gi->glyphcnt; ++i ) if ( (sc=gi->gb[i].sc)!=NULL )
+	sc->lsidebearing = 0x7fff;
+
+/* This code allows us to put whole glyphs into subroutines */
+/* I found slight improvements in space on some fonts, and large increases */
+/*  in others. So I'm disabling it for now */
+#ifdef FONTFORGE_CONFIG_PS_REFS_GET_SUBRS
+    /* We don't allow refs to refs. It's too complex */
+    for ( i=0; i<gi->glyphcnt; ++i ) if ( (sc=gi->gb[i].sc)!=NULL ) {
+	if ( SCWorthOutputting(sc) &&
+	    (( sc->layers[ly_fore].refs==NULL && sc->dependents!=NULL &&
+		    ( (!sc->hconflicts && !sc->vconflicts) ||
+			Type2SpecialCase(sc)) )  )) {
+	    /* if the glyph is a single contour with no hintmasks then */
+	    /*  our single contour code will find it. If we do it here too */
+	    /*  we'll get a subr which points to another subr. Very dull and */
+	    /*  a waste of space */
+	    cc = 0;
+	    for ( spl=sc->layers[ly_fore].splines; spl!=NULL; spl=spl->next )
+		++cc;
+	    for ( r= sc->layers[ly_fore].refs; r!=NULL && cc<2 ; r=r->next ) {
+		for ( spl=r->layers[0].splines; spl!=NULL; spl=spl->next )
+		    ++cc;
+	    }
+	    if ( cc<2 )
+    continue;
+	    /* Put the */
+	    /*  character into a subr if it is referenced by other characters */
+	    if ( gi->pcnt>=gi->pmax )
+		gi->psubrs = grealloc(gi->psubrs,(gi->pmax+=gi->glyphcnt)*sizeof(struct potentialsubrs));
+	    ps = &gi->psubrs[gi->pcnt];
+	    memset(ps,0,sizeof(*ps));	/* set cnt to 0 */
+	    ps->idx = gi->pcnt++;
+	    ps->full_glyph_index = i;
+	    sc->lsidebearing = gi->pcnt-1;
+	    ps->startstop = FigureStartStop(sc,gi);
+	}
+    }
+#endif	/* FONTFORGE_CONFIG_PS_REFS_GET_SUBRS */
+}
+
 struct pschars *SplineFont2ChrsSubrs2(SplineFont *sf, int nomwid, int defwid,
 	const int *bygid, int cnt, int flags, struct pschars **_subrs) {
     struct pschars *subrs, *chrs;
-    int i,j,scnt;
+    int i,j,k,scnt;
     SplineChar *sc;
     GlyphInfo gi;
     SplineChar dummynotdef;
@@ -3133,6 +3205,7 @@ struct pschars *SplineFont2ChrsSubrs2(SplineFont *sf, int nomwid, int defwid,
 
     memset(&gi,0,sizeof(gi));
     memset(&gi.hashed,-1,sizeof(gi.hashed));
+    gi.instance_count = 1;
     gi.sf = sf;
     gi.glyphcnt = cnt;
     gi.bygid = bygid;
@@ -3167,12 +3240,13 @@ struct pschars *SplineFont2ChrsSubrs2(SplineFont *sf, int nomwid, int defwid,
 	sc->lsidebearing = 0x7fff;
     }
     MarkTranslationRefs(sf);
+    SplineFont2FullSubrs2(flags,&gi);
 
     for ( i=0; i<cnt; ++i ) {
 	if ( (sc = gi.gb[i].sc)==NULL )
     continue;
 	gi.active = &gi.gb[i];
-	SplineChar2PS2(sc,NULL,nomwid,defwid,NULL,NULL,flags,&gi);
+	SplineChar2PS2(sc,NULL,nomwid,defwid,NULL,flags,&gi);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	gwwv_progress_next();
 #endif
@@ -3182,7 +3256,10 @@ struct pschars *SplineFont2ChrsSubrs2(SplineFont *sf, int nomwid, int defwid,
 	/* A subroutine call takes somewhere between 2 and 4 bytes itself. */
 	/*  and we must add a return statement to the end. We don't want to */
 	/*  make things bigger */
-	if ( gi.psubrs[i].cnt*gi.psubrs[i].len>(gi.psubrs[i].cnt*4)+gi.psubrs[i].len+1 )
+	/* if we have more than 65535 subrs a subr call can take 9 bytes */
+	if ( gi.psubrs[i].full_glyph_index!=-1 )
+	    gi.psubrs[i].idx = scnt++;
+	else if ( gi.psubrs[i].cnt*gi.psubrs[i].len>(gi.psubrs[i].cnt*4)+gi.psubrs[i].len+1 )
 	    gi.psubrs[i].idx = scnt++;
 	else
 	    gi.psubrs[i].idx = -1;
@@ -3212,77 +3289,107 @@ struct pschars *SplineFont2ChrsSubrs2(SplineFont *sf, int nomwid, int defwid,
     chrs->keys = galloc(cnt*sizeof(char *));
     for ( i=0; i<cnt; ++i ) {
 	int len=0;
+	uint8 *vals;
 	struct glyphbits *gb = &gi.gb[i];
+	if ( gb->sc==NULL )
+    continue;
 	chrs->keys[i] = copy(gb->sc->name);
-	for ( j=0; j<gb->bcnt; ++j ) {
-	    len += gb->bits[j].dlen;
-	    if ( gi.psubrs[ gb->bits[j].psub_index ].idx==-1 )
-		len += gi.psubrs[ gb->bits[j].psub_index ].len;
-	    else {
-		int si = gi.psubrs[ gb->bits[j].psub_index ].idx - subrs->bias;
-		/* space for the number (subroutine index) */
-		if ( si>=-107 && si<=107 )
-		    ++len;
-		else if ( si>=-1131 && si<=1131 )
-		    len += 2;
-		else
-		    len += 3;
-		/* space for the subroutine operator */
-		++len;
-	    }
-	}
-	chrs->lens[i] = len+1;
-	chrs->values[i] = galloc(len+2); /* space for endchar and a final NUL (which is really meaningless, but makes me feel better) */
-
-	len = 0;
-	for ( j=0; j<gb->bcnt; ++j ) {
-	    memcpy(chrs->values[i]+len,gb->bits[j].data,gb->bits[j].dlen);
-	    len += gb->bits[j].dlen;
-	    if ( gi.psubrs[ gb->bits[j].psub_index ].idx==-1 ) {
-		memcpy(chrs->values[i]+len,gi.psubrs[ gb->bits[j].psub_index ].data,
-			gi.psubrs[ gb->bits[j].psub_index ].len);
-		len += gi.psubrs[ gb->bits[j].psub_index ].len;
-	    } else {
-		int si = gi.psubrs[ gb->bits[j].psub_index ].idx - subrs->bias;
-		/* space for the number (subroutine index) */
-		if ( si>=-107 && si<=107 )
-		    chrs->values[i][len++] = si+139;
-		else if ( si>0 && si<=1131 ) {
-		    si-=108;
-		    chrs->values[i][len++] = (si>>8)+247;
-		    chrs->values[i][len++] = si&0xff;
-		} else if ( si>=-1131 && si<0 ) {
-		    si=(-si)-108;
-		    chrs->values[i][len++] = (si>>8)+251;
-		    chrs->values[i][len++] = si&0xff;
-		} else {
-		    chrs->values[i][len++] = 28;
-		    chrs->values[i][len++] = (si>>8)&0xff;
-		    chrs->values[i][len++] = si&0xff;
+	for ( k=0; k<2; ++k ) if ( k!=0 || gb->sc->lsidebearing!=0x7fff ) {
+	    for ( j=0; j<gb->bcnt; ++j ) {
+		if ( k!=0 || j!=0 )
+		    len += gb->bits[j].dlen;
+		if ( k==1 && gb->sc->lsidebearing!=0x7fff ) {
+		    int si = gi.psubrs[ gb->sc->lsidebearing ].idx;
+		    len += 1 + (si<=107 && si>=-107?1:si<=1131 && si>=-1131?2:si>=-32768 && si<32767?3:8);
+	    break;
 		}
-		/* space for the subroutine operator */
-		chrs->values[i][len++] = 10;
+		if ( gi.psubrs[ gb->bits[j].psub_index ].idx==-1 )
+		    len += gi.psubrs[ gb->bits[j].psub_index ].len;
+		else {
+		    int si = gi.psubrs[ gb->bits[j].psub_index ].idx - subrs->bias;
+		    /* space for the number (subroutine index) */
+		    if ( si>=-107 && si<=107 )
+			++len;
+		    else if ( si>=-1131 && si<=1131 )
+			len += 2;
+		    else if ( si>=-32768 && si<=32767 )
+			len += 3;
+		    else
+			len += 8;
+		    /* space for the subroutine operator */
+		    ++len;
+		}
+	    }
+	    if ( k==0 ) {
+		int si = gi.psubrs[ gb->sc->lsidebearing ].idx;
+		subrs->lens[si] = len+1;
+		vals = subrs->values[si] = galloc(len+2);
+	    } else {
+		chrs->lens[i] = len+1;
+		vals = chrs->values[i] = galloc(len+2); /* space for endchar and a final NUL (which is really meaningless, but makes me feel better) */
+	    }
+
+	    len = 0;
+	    for ( j=0; j<gb->bcnt; ++j ) {
+		int si;
+		if ( k!=0 || j!=0 ) {
+		    memcpy(vals+len,gb->bits[j].data,gb->bits[j].dlen);
+		    len += gb->bits[j].dlen;
+		}
+		si = 0x80000000;
+		if ( k==1 && gb->sc->lsidebearing!=0x7fff )
+		    si = gi.psubrs[ gb->sc->lsidebearing ].idx - subrs->bias;
+		else if ( gi.psubrs[ gb->bits[j].psub_index ].idx==-1 ) {
+		    memcpy(vals+len,gi.psubrs[ gb->bits[j].psub_index ].data,
+			    gi.psubrs[ gb->bits[j].psub_index ].len);
+		    len += gi.psubrs[ gb->bits[j].psub_index ].len;
+		} else
+		    si = gi.psubrs[ gb->bits[j].psub_index ].idx - subrs->bias;
+		if ( si!=0x80000000 ) {
+		    /* space for the number (subroutine index) */
+		    if ( si>=-107 && si<=107 )
+			vals[len++] = si+139;
+		    else if ( si>0 && si<=1131 ) {
+			si-=108;
+			vals[len++] = (si>>8)+247;
+			vals[len++] = si&0xff;
+		    } else if ( si>=-1131 && si<0 ) {
+			si=(-si)-108;
+			vals[len++] = (si>>8)+251;
+			vals[len++] = si&0xff;
+		    } else if ( si>=-32768 && si<=32767 ) {
+			vals[len++] = 28;
+			vals[len++] = (si>>8)&0xff;
+			vals[len++] = si&0xff;
+		    } else {
+			/* store as fixed point, then multiply by 64. Takes 8 bytes */
+			si *= (65536/64);
+			vals[len++] = '\377';
+			vals[len++] = (si>>24)&0xff;
+			vals[len++] = (si>>16)&0xff;
+			vals[len++] = (si>>8)&0xff;
+			vals[len++] = si&0xff;
+			vals[len++] = 64 + 139;
+			vals[len++] = 0xc; vals[len++] = 0x18;	/* Multiply */
+		    }
+    
+		    /* space for the subroutine operator */
+		    vals[len++] = 10;
+		}
+		if ( k==1 && gb->sc->lsidebearing!=0x7fff )
+	    break;
+	    }
+	    if ( k==0 ) {
+		vals[len++] = 11;	/* return */
+		vals[len] = '\0';
+	    } else {
+		vals[len++] = 14;	/* endchar */
+		vals[len] = '\0';
 	    }
 	}
-	chrs->values[i][len++] = 14;	/* endchar */
-	chrs->values[i][len] = '\0';
     }
-    for ( i=0; i<gi.pcnt; ++i ) {
-	free(gi.psubrs[i].data);
-    }
-    for ( i=0; i<cnt; ++i ) {
-	for ( j=0; j<gi.gb[i].bcnt; ++j )
-	    free(gi.gb[i].bits[j].data);
-	free(gi.gb[i].bits);
-    }
-    if ( cnt>0 && gi.gb[0].sc == &dummynotdef ) {
-	SplinePointListsFree(dummynotdef.layers[ly_fore].splines);
-	StemInfoFree(dummynotdef.hstem);
-	StemInfoFree(dummynotdef.vstem);
-    }
-    free(gi.gb);
-    free(gi.psubrs);
-    free(gi.bits);
+    
+    GIFree(&gi,&dummynotdef);
     *_subrs = subrs;
 return( chrs );
 }
@@ -3325,6 +3432,7 @@ struct pschars *CID2ChrsSubrs2(SplineFont *cidmaster,struct fd2data *fds,
 
     memset(&gi,0,sizeof(gi));
     memset(&gi.hashed,-1,sizeof(gi.hashed));
+    gi.instance_count = 1;
     gi.sf = sf;
     gi.glyphcnt = cnt;
     gi.bygid = NULL;
@@ -3371,7 +3479,7 @@ struct pschars *CID2ChrsSubrs2(SplineFont *cidmaster,struct fd2data *fds,
 	    sc->lsidebearing = 0x7fff;
 	    gi.active = &gi.gb[cnt];
 	    sc->ttf_glyph = cnt++;
-	    SplineChar2PS2(sc,NULL,fds[i].nomwid,fds[i].defwid,NULL,NULL,flags,&gi);
+	    SplineChar2PS2(sc,NULL,fds[i].nomwid,fds[i].defwid,NULL,flags,&gi);
 	}
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	gwwv_progress_next();
@@ -3437,8 +3545,10 @@ struct pschars *CID2ChrsSubrs2(SplineFont *cidmaster,struct fd2data *fds,
 		    ++len;
 		else if ( si>=-1131 && si<=1131 )
 		    len += 2;
-		else
+		else if ( si>=-32768 && si<=32767 )
 		    len += 3;
+		else
+		    len += 8;
 		/* space for the subroutine operator */
 		++len;
 	    }
@@ -3468,10 +3578,20 @@ struct pschars *CID2ChrsSubrs2(SplineFont *cidmaster,struct fd2data *fds,
 		    si=(-si)-108;
 		    chrs->values[i][len++] = (si>>8)+251;
 		    chrs->values[i][len++] = si&0xff;
-		} else {
+		} else if ( si>=-32768 && si<=32767 ) {
 		    chrs->values[i][len++] = 28;
 		    chrs->values[i][len++] = (si>>8)&0xff;
 		    chrs->values[i][len++] = si&0xff;
+		} else {
+		    /* store as fixed point, then multiply by 64. Takes 8 bytes */
+		    si *= (65536/64);
+		    chrs->values[i][len++] = '\377';
+		    chrs->values[i][len++] = (si>>24)&0xff;
+		    chrs->values[i][len++] = (si>>16)&0xff;
+		    chrs->values[i][len++] = (si>>8)&0xff;
+		    chrs->values[i][len++] = si&0xff;
+		    chrs->values[i][len++] = 64 + 139;
+		    chrs->values[i][len++] = 0xc; chrs->values[i][len++] = 0x18;	/* Multiply */
 		}
 		/* space for the subroutine operator */
 		if ( gi.psubrs[ gb->bits[j].psub_index ].fd==-1 ) {
@@ -3483,22 +3603,7 @@ struct pschars *CID2ChrsSubrs2(SplineFont *cidmaster,struct fd2data *fds,
 	chrs->values[i][len++] = 14;	/* endchar */
 	chrs->values[i][len] = '\0';
     }
-    for ( i=0; i<gi.pcnt; ++i ) {
-	free(gi.psubrs[i].data);
-    }
-    for ( i=0; i<cnt; ++i ) {
-	for ( j=0; j<gi.gb[i].bcnt; ++j )
-	    free(gi.gb[i].bits[j].data);
-	free(gi.gb[i].bits);
-    }
-    if ( cnt>0 && gi.gb[0].sc == &dummynotdef ) {
-	SplinePointListsFree(dummynotdef.layers[ly_fore].splines);
-	StemInfoFree(dummynotdef.hstem);
-	StemInfoFree(dummynotdef.vstem);
-    }
-    free(gi.gb);
-    free(gi.psubrs);
-    free(gi.bits);
+    GIFree(&gi,&dummynotdef);
     *_glbls = glbls;
 return( chrs );
 }

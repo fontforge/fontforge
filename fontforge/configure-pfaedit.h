@@ -170,13 +170,13 @@
 /*									      */
 
 
-/* FontForge used to do a fairly bad job of using subroutines in otf output   */
-/*  only using them when we had references and only if the refs matched all   */
-/*  sorts of archane restrictions. I think I've an algorithm which works much */
-/*  better now (still not as good as Adobe's). But just in case there's a     */
-/*  horrible flaw of which I'm unaware, I'll make it configurable	      */
+/* In addition to placing snippets of charstrings into subrs, I tried adding  */
+/*  whole glyphs (when that was possible). To my surprise, it made things     */
+/*  in one of my test cases, and barely registered an improvement in another  */
+/*  So I think we're better off without it. But I don't understand why things */
+/*  are worse so I'm leaving the code in to play with                         */
 /*									      */
-#define FONTFORGE_CONFIG_OTF_USE_SUBRS
+/* #define FONTFORGE_CONFIG_PS_REFS_GET_SUBRS				      */
 /*									      */
 
 

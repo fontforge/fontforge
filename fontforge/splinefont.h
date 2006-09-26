@@ -1213,6 +1213,7 @@ enum ps_flags { ps_flag_nohintsubs = 0x10000, ps_flag_noflex=0x20000,
 /* in type42 cid fonts we sometimes want an identity map from gid to cid */
 		    ps_flag_identitycidmap = 0x2000000,
 		    ps_flag_afmwithmarks = 0x4000000,
+		    ps_flag_noseac = 0x8000000,
 		    ps_flag_mask = (ps_flag_nohintsubs|ps_flag_noflex|
 			ps_flag_afm|ps_flag_pfm|ps_flag_tfm|ps_flag_round)
 		};
@@ -1248,7 +1249,7 @@ enum fontformat { ff_pfa, ff_pfb, ff_pfbmacbin, ff_multiple, ff_mma, ff_mmb,
 	ff_type42, ff_type42cid,
 	ff_ttf, ff_ttfsym, ff_ttfmacbin, ff_ttfdfont, ff_otf, ff_otfdfont,
 	ff_otfcid, ff_otfciddfont, ff_svg, ff_none };
-extern struct pschars *SplineFont2Chrs(SplineFont *sf, int iscjk,
+extern struct pschars *SplineFont2ChrsSubrs(SplineFont *sf, int iscjk,
 	struct pschars *subrs,int flags,enum fontformat format);
 extern int CanonicalCombiner(int uni);
 struct cidbytes;
@@ -1260,17 +1261,12 @@ struct glyphdata;
 extern int UnitsParallel(BasePoint *u1,BasePoint *u2);
 extern int CvtPsStem3(struct growbuf *gb, SplineChar *scs[MmMax], int instance_count,
 	int ishstem, int round);
-extern struct pschars *CID2Chrs(SplineFont *cidmaster,struct cidbytes *cidbytes,int flags);
-extern struct pschars *SplineFont2Subrs2(SplineFont *sf,int flags);
-extern struct pschars *SplineFont2Chrs2(SplineFont *sf, int nomwid, int defwid,
-	struct pschars *subrs,int flags/*, enum fontformat format*/,
-	const int *bygids,int gcnt);
+extern struct pschars *CID2ChrsSubrs(SplineFont *cidmaster,struct cidbytes *cidbytes,int flags);
 extern struct pschars *SplineFont2ChrsSubrs2(SplineFont *sf, int nomwid,
 	int defwid, const int *bygid, int cnt, int flags,
 	struct pschars **_subrs);
 extern struct pschars *CID2ChrsSubrs2(SplineFont *cidmaster,struct fd2data *fds,
 	int flags, struct pschars **_glbls);
-extern struct pschars *CID2Chrs2(SplineFont *cidmaster,struct fd2data *fds,int flags);
 enum bitmapformat { bf_bdf, bf_ttf, bf_sfnt_dfont, bf_sfnt_ms, bf_otb,
 	bf_nfntmacbin, /*bf_nfntdfont, */bf_fon, bf_fnt, bf_palm,
 	bf_ptype3,
