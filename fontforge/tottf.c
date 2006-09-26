@@ -2502,21 +2502,13 @@ static int dumptype2glyphs(SplineFont *sf,struct alltabs *at) {
 #endif
 
     ATFigureDefWidth(sf,at,-1);
-#if defined(FONTFORGE_CONFIG_OTF_USE_SUBRS)
     if ((chrs =SplineFont2ChrsSubrs2(sf,at->nomwid,at->defwid,at->gi.bygid,at->gi.gcnt,at->gi.flags,&subrs))==NULL )
 return( false );
-#else
-    if ((subrs = SplineFont2Subrs2(sf,at->gi.flags))==NULL )
-return( false );
-#endif
     dumpcffprivate(sf,at,-1,subrs->next);
     if ( subrs->next!=0 )
 	_dumpcffstrings(at->private,subrs);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_next_stage();
-#endif
-#if !defined(FONTFORGE_CONFIG_OTF_USE_SUBRS)
-    chrs = SplineFont2Chrs2(sf,at->nomwid,at->defwid,subrs,at->gi.flags,at->gi.bygid,at->gi.gcnt);
 #endif
     at->charstrings = dumpcffstrings(chrs);
     PSCharsFree(subrs);
@@ -2556,7 +2548,6 @@ static int dumpcidglyphs(SplineFont *sf,struct alltabs *at) {
 	at->fds[i].private = tmpfile();
 	ATFigureDefWidth(sf->subfonts[i],at,i);
     }
-#if defined(FONTFORGE_CONFIG_OTF_USE_SUBRS)
     if ( (chrs = CID2ChrsSubrs2(sf,at->fds,at->gi.flags,&glbls))==NULL )
 return( false );
     for ( i=0; i<sf->subfontcnt; ++i ) {
@@ -2567,29 +2558,14 @@ return( false );
     }
     _dumpcffstrings(at->globalsubrs,glbls);
     PSCharsFree(glbls);
-#else
-    for ( i=0; i<sf->subfontcnt; ++i ) {
-	if ( (at->fds[i].subrs = SplineFont2Subrs2(sf->subfonts[i],at->gi.flags))==NULL )
-return( false );
-	dumpcffprivate(sf->subfonts[i],at,i,at->fds[i].subrs->next);
-	if ( at->fds[i].subrs->next!=0 )
-	    _dumpcffstrings(at->fds[i].private,at->fds[i].subrs);
-	PSCharsFree(at->fds[i].subrs);
-    }
-    putshort(at->globalsubrs,0);		/* No globals */
-#endif
 
     dumpcffheader(sf,at->cfff);
     dumpcffnames(sf,at->cfff);
     dumpcffcidset(sf,at);
     dumpcfffdselect(sf,at);
     dumpcffdictindex(sf,at);
-#if defined(FONTFORGE_CONFIG_OTF_USE_SUBRS)
     if ( (at->charstrings = dumpcffstrings(chrs))==NULL )
-#else
-    if ( (at->charstrings = dumpcffstrings(chrs = CID2Chrs2(sf,at->fds,at->gi.flags)))==NULL )
 return( false );
-#endif
     dumpcffcidtopdict(sf,at);
     finishupcid(sf,at);
 
