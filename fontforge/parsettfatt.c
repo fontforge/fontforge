@@ -2242,11 +2242,11 @@ return;
     break;
     }
     if ( i==2 ) {
-	LogError(_("The 'size' feature does not seem to follow the standard,\nnor does it conform to Adobe's early misinterpretation of\nthe standard. I cannot parse it.") );
+	LogError(_("The 'size' feature does not seem to follow the standard,\nnor does it conform to Adobe's early misinterpretation of\nthe standard. I cannot parse it.\n") );
 	info->design_size = info->design_range_bottom = info->design_range_top = info->fontstyle_id = 0;
 	info->fontstyle_name = NULL;
     } else if ( i==1 ) {
-	LogError(_("The 'size' feature of this font conforms to Adobe's early misinterpretation of the otf standard.") );
+	LogError(_("The 'size' feature of this font conforms to Adobe's early misinterpretation of the otf standard.\n") );
     }
     fseek(ttf,here,SEEK_SET);
 
