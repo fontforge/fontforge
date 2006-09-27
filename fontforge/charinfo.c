@@ -3305,6 +3305,7 @@ static unichar_t *AskPosTag(char *title,unichar_t *def,uint32 def_tag, uint16 fl
     GDrawSetVisible(gw,true);
     GWidgetIndicateFocusGadget(gcd[1].ret);
  tryagain:
+    ptd.done = false;
     while ( !ptd.done )
 	GDrawProcessOneEvent(NULL);
     if ( ptd.ok ) {
@@ -3403,7 +3404,7 @@ static unichar_t *AskPosTag(char *title,unichar_t *def,uint32 def_tag, uint16 fl
 		    script_lang_index,
 		    dx, dy, dxa, dya );
 	}
-	ret = uc_copy(buf);
+	ret = utf82u_copy(buf);
     } else
 	ret = NULL;
     GDrawDestroyWindow(gw);
