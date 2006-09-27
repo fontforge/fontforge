@@ -730,7 +730,7 @@ return( NULL );
     break;
     }
     *len = icnt;
-return( grealloc(instrs,icnt));
+return( grealloc(instrs,icnt==0?1:icnt));	/* some versions of realloc abort on 0 */
 }
 
 static int IVParse(InstrDlg *iv) {
@@ -824,7 +824,7 @@ static void IVBuildEdit(InstrDlg *iv) {
     unichar_t *ubuf, *pt, *offset, *scroll;
     int i,l;
 
-    pt = ubuf = offset = scroll = galloc(iv->instrdata->instr_cnt*20*sizeof(unichar_t));
+    pt = ubuf = offset = scroll = galloc((iv->instrdata->instr_cnt*20+1)*sizeof(unichar_t));
     for ( i=l=0; i<iv->instrdata->instr_cnt; ++i ) {
 	if ( iv->instrinfo.lpos == l )
 	    scroll = pt;
