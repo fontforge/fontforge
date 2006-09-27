@@ -1366,7 +1366,7 @@ return;
 	buf[5] = '\'';
 	buf[6] = ' ';
 	if ( languages[j].text!=NULL ) {
-	    strcpy(buf+7,(char *) languages[j].text);
+	    strcpy(buf+7,S_((char *) languages[j].text));
 	    strcat(buf," ");
 	} else
 	    buf[7]='\0';
@@ -1888,7 +1888,7 @@ return;
 	buf[5] = '\'';
 	buf[6] = ' ';
 	if ( scripts[j].text!=NULL ) {
-	    strcpy(buf+7,(char*) scripts[j].text);
+	    strcpy(buf+7,S_((char*) scripts[j].text));
 	    strcat(buf," ");
 	} else
 	    buf[7]='\0';
