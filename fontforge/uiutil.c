@@ -46,7 +46,7 @@ void Protest8(char *label) {
 	buf[strlen(buf)-1]='\0';
     if ( buf[strlen(buf)-1]==':' )
 	buf[strlen(buf)-1]='\0';
-    gwwv_post_notice(buf,buf);
+    ff_post_notice(buf,buf);
 }
 
 real GetCalmReal8(GWindow gw,int cid,char *name,int *err) {
@@ -399,9 +399,9 @@ return;
 	    pt, fullspec);
 	system(temp);
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	gwwv_post_notice(_("Leave X"),_("A browser is probably running in the native Mac windowing system. You must leave the X environment to view it. Try Cmd-Opt-A"));
+	ff_post_notice(_("Leave X"),_("A browser is probably running in the native Mac windowing system. You must leave the X environment to view it. Try Cmd-Opt-A"));
 #elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_notice(_("Leave X"),_("A browser is probably running in the native Mac windowing system. You must leave the X environment to view it. Try Cmd-Opt-A"));
+	ff_post_notice(_("Leave X"),_("A browser is probably running in the native Mac windowing system. You must leave the X environment to view it. Try Cmd-Opt-A"));
 #endif
     } else {
 #elif __Mac
@@ -411,9 +411,9 @@ return;
 	sprintf( temp, "open \"%s\" &", fullspec );
 	system(temp);
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	gwwv_post_notice(_("Leave X"),_("A browser is probably running in the native Mac windowing system. You must leave the X environment to view it. Try Cmd-Opt-A"));
+	ff_post_notice(_("Leave X"),_("A browser is probably running in the native Mac windowing system. You must leave the X environment to view it. Try Cmd-Opt-A"));
 #elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_notice(_("Leave X"),_("A browser is probably running in the native Mac windowing system. You must leave the X environment to view it. Try Cmd-Opt-A"));
+	ff_post_notice(_("Leave X"),_("A browser is probably running in the native Mac windowing system. You must leave the X environment to view it. Try Cmd-Opt-A"));
 #endif
     } else {
 #elif __CygWin
@@ -687,11 +687,8 @@ return;
 }
 #endif
 
-void LogError(const char *format,...) {
-    va_list ap;
+static void _LogError(const char *format,va_list ap) {
     char buffer[400], *str;
-
-    va_start(ap,format);
     vsnprintf(buffer,sizeof(buffer),format,ap);
 #if defined( FONTFORGE_CONFIG_NO_WINDOWING_UI )
     str = utf82def_copy(buffer);
@@ -707,6 +704,31 @@ void LogError(const char *format,...) {
 	    CreateErrorWindow();
 	AppendToErrorWindow(buffer);
 	ShowErrorWindow();
+    }
+#endif
+}
+
+void LogError(const char *format,...) {
+    va_list ap;
+
+    va_start(ap,format);
+    _LogError(format,ap);
+    va_end(ap);
+}
+
+void ff_post_notice(const char *title,const char *statement,...) {
+    va_list ap;
+    va_start(ap,statement);
+#if defined( FONTFORGE_CONFIG_NO_WINDOWING_UI )
+    _LogError(statement,ap);
+#else
+    if ( no_windowing_ui ) {
+	_LogError(statement,ap);
+    } else {
+	if ( GWidgetPostNoticeActive8(title))
+	    _LogError(statement,ap);
+	else
+	    _GWidgetPostNotice8(title,statement,ap);
     }
 #endif
     va_end(ap);

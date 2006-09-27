@@ -7122,9 +7122,9 @@ return;
     free(ret); free(temp);
     if ( nl->uses_unicode ) {
 	if ( nl->a_utf8_name!=NULL )
-	    gwwv_post_notice(_("Non-ASCII glyphnames"),_("This namelist contains at least one non-ASCII glyph name, namely: %s"), nl->a_utf8_name );
+	    ff_post_notice(_("Non-ASCII glyphnames"),_("This namelist contains at least one non-ASCII glyph name, namely: %s"), nl->a_utf8_name );
 	else
-	    gwwv_post_notice(_("Non-ASCII glyphnames"),_("This namelist is based on a namelist which contains non-ASCII glyph names"));
+	    ff_post_notice(_("Non-ASCII glyphnames"),_("This namelist is based on a namelist which contains non-ASCII glyph names"));
     }
 
     new = fopen( buffer,"w");

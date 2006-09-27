@@ -1993,12 +1993,12 @@ return( false );
 				found[m++] = l;
 			    else if ( !warned ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-				gwwv_post_notice(_("MultipleEncodingIgnored"),
+				ff_post_notice(_("MultipleEncodingIgnored"),
 					_("The glyph at CID %d is mapped to more than %d encodings. Only the first %d are handled."), i,
 					sizeof(found)/sizeof(found[0]),
 					sizeof(found)/sizeof(found[0]));
 #elif defined(FONTFORGE_CONFIG_GTK)
-				gwwv_post_notice(_("MultipleEncodingIgnored"),
+				ff_post_notice(_("MultipleEncodingIgnored"),
 					_("The glyph at CID %d is mapped to more than %d encodings. Only the first %d are handled."), i,
 					sizeof(found)/sizeof(found[0]),
 					sizeof(found)/sizeof(found[0]));

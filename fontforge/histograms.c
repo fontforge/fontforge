@@ -698,9 +698,9 @@ static void CheckSmallSelection(uint8 *selected,EncMap *map,SplineFont *sf) {
     }
     if ( (cnt==1 && tot>1) || (cnt<8 && tot>30) )
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	gwwv_post_notice(_("Tiny Selection"),_("There are so few glyphs selected that it seems unlikely to me that you will get a representative sample of this aspect of your font. If you deselect everything the command will apply to all glyphs in the font"));
+	ff_post_notice(_("Tiny Selection"),_("There are so few glyphs selected that it seems unlikely to me that you will get a representative sample of this aspect of your font. If you deselect everything the command will apply to all glyphs in the font"));
 #elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_notice(_("Tiny Selection"),_("There are so few characters selected that it seems unlikely to me that you will get a representative sample of this aspect of your font. If you deselect everything the command will apply to all characters in the font"));
+	ff_post_notice(_("Tiny Selection"),_("There are so few characters selected that it seems unlikely to me that you will get a representative sample of this aspect of your font. If you deselect everything the command will apply to all characters in the font"));
 #endif
 }
 

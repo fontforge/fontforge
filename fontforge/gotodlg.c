@@ -233,7 +233,7 @@ static int Goto_OK(GGadget *g, GEvent *e) {
 	    if ( d->ret<0 || d->ret>=d->map->enccount )
 		d->ret = -1;
 	    if ( d->ret==-1 ) {
-		gwwv_post_notice(_("Goto"),_("Could not find the glyph: %.70s"),ret);
+		ff_post_notice(_("Goto"),_("Could not find the glyph: %.70s"),ret);
 	    } else
 		d->done = true;
 	} else
@@ -267,7 +267,7 @@ return(-1);
 	if ( enc<0 || enc>=map->enccount )
 	    enc = -1;
 	if ( enc==-1 )
-	    gwwv_post_notice(_("Goto"),_("Could not find the glyph: %.70s"),ret);
+	    ff_post_notice(_("Goto"),_("Could not find the glyph: %.70s"),ret);
 	free(ret);
 return( enc );
     } else {

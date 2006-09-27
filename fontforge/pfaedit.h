@@ -51,6 +51,7 @@ extern void IError(const char *fmt,...);
 extern int ErrorWindowExists(void);
 extern void ShowErrorWindow(void);
 extern void LogError(const char *format,...);
+extern void ff_post_notice(const char *title,const char *statement,...);
 
 extern void CheckIsScript(int argc, char *argv[]);
 

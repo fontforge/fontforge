@@ -467,9 +467,9 @@ return( true );
 
     if ( test==base && map->enc->char_cnt>=256 )
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	gwwv_post_notice(_("Bad Metrics"),_("Only the first 256 glyphs in the encoding will be used"));
+	ff_post_notice(_("Bad Metrics"),_("Only the first 256 glyphs in the encoding will be used"));
 #elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_notice(_("Bad Metrics"),_("Only the first 256 glyphs in the encoding will be used"));
+	ff_post_notice(_("Bad Metrics"),_("Only the first 256 glyphs in the encoding will be used"));
 #endif
 
     for ( i=0; i<map->enccount && i<256; ++i ) if ( (gid=map->map[i])!=-1 && (test->glyphs[gid]!=NULL || base->glyphs[gid]!=NULL )) {
@@ -478,7 +478,7 @@ return( true );
 	    gwwv_post_error(_("Bad Metrics"),_("One of the fonts %1$d,%2$d is missing glyph %3$d"),
 		    test->pixelsize,base->pixelsize, i);
 #elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_notice(_("Bad Metrics"),_("One of the fonts %d,%d is missing glyph %d"),
+	    ff_post_notice(_("Bad Metrics"),_("One of the fonts %d,%d is missing glyph %d"),
 		    temp->pixelsize,base->pixelsize,i);
 #endif
 return( false );
@@ -489,7 +489,7 @@ return( false );
 		 test->glyphs[gid]->ymax>=test->ascent ||
 		 test->glyphs[gid]->ymin<-test->descent)) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	    gwwv_post_notice(_("Bad Metrics"),_("In font %1$d the glyph %2$.30s either starts before 0, or extends after the advance width or is above the ascent or below the descent"),
+	    ff_post_notice(_("Bad Metrics"),_("In font %1$d the glyph %2$.30s either starts before 0, or extends after the advance width or is above the ascent or below the descent"),
 		    test->pixelsize,test->glyphs[gid]->sc->name);
 #elif defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Bad Metrics"),_("In font %d the glyph %.30s either starts before 0, or extends after the advance width or is above the ascent or below the descent"),
@@ -499,10 +499,10 @@ return( false );
 	}
 	if ( !wwarned && test->glyphs[gid]->width!=den*base->glyphs[gid]->width ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	    gwwv_post_notice(_("Bad Metrics"),_("In font %1$d the advance width of glyph %2$.30s does not scale the base advance width properly, it shall be forced to the proper value"),
+	    ff_post_notice(_("Bad Metrics"),_("In font %1$d the advance width of glyph %2$.30s does not scale the base advance width properly, it shall be forced to the proper value"),
 		    test->pixelsize,test->glyphs[gid]->sc->name);
 #elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_notice(_("Bad Metrics"),_("In font %d the advance width of glyph %.30s does not scale the base advance width properly, it shall be forced to the proper value"),
+	    ff_post_notice(_("Bad Metrics"),_("In font %d the advance width of glyph %.30s does not scale the base advance width properly, it shall be forced to the proper value"),
 		    temp->pixelsize,test->glyphs[gid]->sc->name);
 #endif
 	    wwarned = true;

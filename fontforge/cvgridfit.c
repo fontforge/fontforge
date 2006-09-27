@@ -71,7 +71,7 @@ return;
     FreeTypeFreeContext(single_glyph_context);
     GDrawRequestExpose(cv->v,NULL,false);
     if ( cv->sc->instructions_out_of_date && cv->sc->ttf_instrs_len!=0 )
-	gwwv_post_notice(_("Instructions out of date"),
+	ff_post_notice(_("Instructions out of date"),
 	    _("The points have been changed. This may mean that the truetype instructions now refer to the wrong points and they may cause unexpected results."));
 }
 

@@ -421,7 +421,7 @@ static void bPostNotice(Context *c) {
 	    loc = u2utf8_copy(t1);
 	    free(t1);
 	}
-	gwwv_post_notice(_("Attention"), "%.200s", loc );
+	ff_post_notice(_("Attention"), "%.200s", loc );
 	if ( loc != c->a.vals[1].u.sval )
 	    free(loc);
     } else

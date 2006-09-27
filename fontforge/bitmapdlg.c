@@ -290,10 +290,10 @@ static int FVRegenBitmaps(CreateBitmapData *bd,int32 *sizes,int usefreetype) {
 		bdf=bdf->next );
 	if ( bdf==NULL ) {
 #if defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_notice(_("Missing Bitmap"),_("Attempt to regenerate a pixel size that has not been created (%d@%d)",
+	    ff_post_notice(_("Missing Bitmap"),_("Attempt to regenerate a pixel size that has not been created (%d@%d)",
 			    sizes[i]&0xffff, sizes[i]>>16);
 #else
-	    gwwv_post_notice(_("Missing Bitmap"),_("Attempt to regenerate a pixel size that has not been created (%d@%d)"),
+	    ff_post_notice(_("Missing Bitmap"),_("Attempt to regenerate a pixel size that has not been created (%d@%d)"),
 		    sizes[i]&0xffff, sizes[i]>>16);
 #endif
 return( false );

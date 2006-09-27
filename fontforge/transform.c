@@ -260,9 +260,9 @@ return(true);
 
 	if (( transform[1]!=0 || transform[2]!=0 ) && !warned ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	    gwwv_post_notice(_("Warning"),_("After rotating or skewing a glyph you should probably apply Element->Add Extrema"));
+	    ff_post_notice(_("Warning"),_("After rotating or skewing a glyph you should probably apply Element->Add Extrema"));
 #elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_notice(_("Warning"),_("After rotating or skewing a character you should probably apply Element->Add Extrema"));
+	    ff_post_notice(_("Warning"),_("After rotating or skewing a character you should probably apply Element->Add Extrema"));
 #endif
 	    warned = true;
 	}

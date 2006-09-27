@@ -981,7 +981,7 @@ static int AI_New(GGadget *g, GEvent *e) {
 	if ( sf->cidmaster ) sf = sf->cidmaster;
 
 	if ( AnchorClassUnused(ci->sc,&waslig)==NULL ) {
-	    gwwv_post_notice(_("Make a new anchor class"),_("I cannot find an unused anchor class\nto assign a new point to. If you\nwish a new anchor point you must\ndefine a new anchor class with\nElement->Font Info"));
+	    ff_post_notice(_("Make a new anchor class"),_("I cannot find an unused anchor class\nto assign a new point to. If you\nwish a new anchor point you must\ndefine a new anchor class with\nElement->Font Info"));
 	    FontInfo(sf,8,true);		/* Anchor Class */
 	    if ( AnchorClassUnused(ci->sc,&waslig)==NULL )
 return(true);

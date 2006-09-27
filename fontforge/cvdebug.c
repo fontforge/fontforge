@@ -1935,7 +1935,7 @@ void CVDebugReInit(CharView *cv,int restart_debug,int dbg_fpgm) {
     if ( restart_debug ) {
 	scale = (cv->sc->parent->ascent+cv->sc->parent->descent)/(rint(cv->ft_pointsize*cv->ft_dpi/72.0)) / (1<<6);
 	if ( cv->sc->instructions_out_of_date && cv->sc->ttf_instrs_len!=0 )
-	    gwwv_post_notice(_("Instructions out of date"),
+	    ff_post_notice(_("Instructions out of date"),
 		_("The points have been changed. This may mean that the truetype instructions now refer to the wrong points and they may cause unexpected results."));
     }
     if ( !restart_debug ) {

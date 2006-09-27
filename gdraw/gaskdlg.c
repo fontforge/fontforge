@@ -33,6 +33,9 @@
 #include "ggadget.h"
 #include "ggadgetP.h"
 
+static GWindow last;
+static const char *last_title;
+
 struct dlg_info {
     int done;
     int ret;
@@ -85,6 +88,11 @@ static int w_e_h(GWindow gw, GEvent *event) {
 	GDrawRaise(gw);
     } else if ( event->type == et_char ) {
 return( false );
+    } else if ( event->type == et_destroy ) {
+	if ( last==gw ) {
+	    last = NULL;
+	    last_title = NULL;
+	}
     }
 return( true );
 }
@@ -1096,25 +1104,36 @@ return( copy(def ));
 return(ret);
 }
 
-void GWidgetPostNotice8(const char *title,const char *statement,...) {
+void _GWidgetPostNotice8(const char *title,const char *statement,va_list ap) {
     GWindow gw;
     char *ob[2];
-    va_list ap;
 
     ob[1]=NULL;
     if ( _ggadget_use_gettext )
 	ob[0] = _("_OK");
     else
 	ob[0] = u2utf8_copy(GStringGetResource( _STR_OK, NULL));
-    va_start(ap,statement);
     gw = DlgCreate8(title,statement,ap,(const char **) ob,0,0,NULL,false,false,true);
-    va_end(ap);
     if ( gw!=NULL ) 
 	GDrawRequestTimer(gw,40*1000,0,NULL);
     /* Continue merrily on our way. Window will destroy itself in 40 secs */
     /*  or when user kills it. We can ignore it */
     if ( !_ggadget_use_gettext )
 	free(ob[0]);
+    last = gw;
+    last_title = title;
+}
+
+void GWidgetPostNotice8(const char *title,const char *statement,...) {
+    va_list ap;
+
+    va_start(ap,statement);
+    _GWidgetPostNotice8(title,statement,ap);
+    va_end(ap);
+}
+
+int GWidgetPostNoticeActive8(const char *title) {
+return( last!=NULL && last_title == title );
 }
 
 void GWidgetError8(const char *title,const char *statement, ...) {

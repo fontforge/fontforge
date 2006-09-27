@@ -915,7 +915,7 @@ static int DoFindOne(SearchView *sv,int startafter) {
 	startafter = false;
     }
     if ( i>=sv->fv->map->enccount ) {
-	gwwv_post_notice(_("Not Found"),sv->showsfindnext?_("The search pattern was not found again in the font %.100s"):_("The search pattern was not found in the font %.100s"),sv->fv->sf->fontname);
+	ff_post_notice(_("Not Found"),sv->showsfindnext?_("The search pattern was not found again in the font %.100s"):_("The search pattern was not found in the font %.100s"),sv->fv->sf->fontname);
 	sv->curchar = startcur;
 	GGadgetSetTitle8(GWidgetGetControl(sv->gw,CID_Find),_("Find"));
 	sv->showsfindnext = false;
@@ -940,9 +940,9 @@ static void DoFindAll(SearchView *sv) {
     GDrawRequestExpose(sv->fv->v,NULL,false);
     if ( !any )
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	gwwv_post_notice(_("Not Found"),_("The search pattern was not found in the font %.100s"),sv->fv->sf->fontname);
+	ff_post_notice(_("Not Found"),_("The search pattern was not found in the font %.100s"),sv->fv->sf->fontname);
 #elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_notice(_("Not Found"),_("The search pattern was not found in the font %.100s"),sv->fv->sf->fontname);
+	ff_post_notice(_("Not Found"),_("The search pattern was not found in the font %.100s"),sv->fv->sf->fontname);
 #endif
 }
 
@@ -1654,10 +1654,10 @@ void FVReplaceOutlineWithReference( FontView *fv, double fudge ) {
 	SVResetPaths(sv);
 	if ( !_DoFindAll(sv) && selcnt==1 )
 #if defined(FONTFORGE_CONFIG_GDRAW)
-	    gwwv_post_notice(_("Not Found"),_("The outlines of glyph %2$.30s were not found in the font %1$.60s"),
+	    ff_post_notice(_("Not Found"),_("The outlines of glyph %2$.30s were not found in the font %1$.60s"),
 		    sf->fontname,sf->glyphs[gid]->name);
 #elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_notice(_("Not Found"),_("The outlines of glyph %2$.30s were not found in the font %1$.60s"),
+	    ff_post_notice(_("Not Found"),_("The outlines of glyph %2$.30s were not found in the font %1$.60s"),
 		    sf->fontname,sf->glyphs[gid]->name);
 #endif
 	for ( j=0; j<fv->map->enccount; ++j )

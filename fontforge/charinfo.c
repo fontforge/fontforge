@@ -5501,7 +5501,7 @@ static int CI_CharChanged(GGadget *g, GEvent *e) {
 	if ( ret[0]=='\0' )
 return( true );
 	else if ( ret[1]!='\0' ) {
-	    gwwv_post_notice(_("Only a single character allowed"),_("Only a single character allowed"));
+	    ff_post_notice(_("Only a single character allowed"),_("Only a single character allowed"));
 	    ubuf[0] = ret[0];
 	    ubuf[1] = '\0';
 	    GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_UChar),ubuf);
@@ -6646,7 +6646,7 @@ return( false );
     if ( first!=-1 )
 	FVScrollToChar(fv,first);
     else if ( !no_windowing_ui )
-	gwwv_post_notice(_("Select By ATT..."),_("No glyphs matched"));
+	ff_post_notice(_("Select By ATT..."),_("No glyphs matched"));
     if (  !no_windowing_ui )
 	GDrawRequestExpose(fv->v,NULL,false);
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
