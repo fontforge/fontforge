@@ -2863,7 +2863,7 @@ int SFGenerateFont(SplineFont *sf,int family,EncMap *map) {
     static int done=false;
     extern NameList *force_names_when_saving;
     char **nlnames;
-    int cnt;
+    int cnt, any;
     GTextInfo *namelistnames;
 
     if ( !done ) {
@@ -3058,8 +3058,14 @@ return( 0 );
     gcd[6].gd.u.list = formattypes;
     gcd[6].creator = GListButtonCreate;
     hvarray[0] = &gcd[6]; hvarray[1] = GCD_ColSpan;
+
+    any = false;
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sf->glyphs[i])) {
+	any = true;
+    break;
+    }
     for ( i=0; i<sizeof(formattypes)/sizeof(formattypes[0])-1; ++i )
-	formattypes[i].disabled = sf->onlybitmaps;
+	formattypes[i].disabled = !any;
     formattypes[ff_ptype0].disabled = sf->onlybitmaps || map->enc->only_1byte;
     formattypes[ff_mma].disabled = formattypes[ff_mmb].disabled =
 	     sf->mm==NULL || sf->mm->apple || !MMValid(sf->mm,false);
