@@ -27,6 +27,7 @@
 #ifndef _GWIDGET_H
 #define _GWIDGET_H
 
+#include <stdarg.h>
 #include "gdraw.h"
 #include "gprogress.h"
 #include "ggadget.h"
@@ -128,6 +129,8 @@ int GWidgetAskCentered8(const char *title,
 char *GWidgetAskString8(const char *title,
 	const char *def,const char *question,...);
 void GWidgetPostNotice8(const char *title,const char *statement,...);
+void _GWidgetPostNotice8(const char *title,const char *statement,va_list ap);
+int GWidgetPostNoticeActive8(const char *title);
 void GWidgetError8(const char *title,const char *statement,...);
 
 int GWidgetChoicesR(int title, const unichar_t **choices,int cnt, int def,int question,...);

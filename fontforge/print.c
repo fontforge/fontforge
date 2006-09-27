@@ -1380,7 +1380,7 @@ static void PIFontDisplay(PI *pi) {
 	    ;
     
 	if ( pi->chline==0 )
-	    gwwv_post_notice(_("Print Failed"),_("Warning: Font contained no glyphs"));
+	    ff_post_notice(_("Print Failed"),_("Warning: Font contained no glyphs"));
 	else
 	    dump_trailer(pi);
     }

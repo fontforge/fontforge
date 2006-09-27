@@ -1276,14 +1276,14 @@ return( false );
 		(bdf->pixelsize!=(sizes[i]&0xffff) || BDFDepth(bdf)!=(sizes[i]>>16));
 		bdf=bdf->next );
 	if ( bdf==NULL ) {
-	    gwwv_post_notice(_("Missing Bitmap"),_("Attempt to save a pixel size that has not been created (%d@%d)"),
+	    ff_post_notice(_("Missing Bitmap"),_("Attempt to save a pixel size that has not been created (%d@%d)"),
 		    sizes[i]&0xffff, sizes[i]>>16);
 	    free(buf);
 return( false );
 	}
 
 	if ( bf==bf_ptype3 && bdf->clut!=NULL ) {
-	    gwwv_post_notice(_("Missing Bitmap"),_("Currently, FontForge only supports bitmap (not bytemap) type3 output") );
+	    ff_post_notice(_("Missing Bitmap"),_("Currently, FontForge only supports bitmap (not bytemap) type3 output") );
 return( false );
 	}
 
@@ -2428,14 +2428,14 @@ return;
 return;
     if ( oldbitmapstate==bf_nfntmacbin && oldformatstate!=ff_pfbmacbin && !nfnt_warned ) {
 	nfnt_warned = true;
-	gwwv_post_notice(_("The 'NFNT' bitmap format is obsolete"),_("The 'NFNT' bitmap format is not used under OS/X (though you still need to create a (useless) bitmap font if you are saving a type1 PostScript resource)"));
+	ff_post_notice(_("The 'NFNT' bitmap format is obsolete"),_("The 'NFNT' bitmap format is not used under OS/X (though you still need to create a (useless) bitmap font if you are saving a type1 PostScript resource)"));
     } else if ( oldformatstate==ff_pfbmacbin &&
 	    (oldbitmapstate!=bf_nfntmacbin || sizes[0]==0)) {
 	gwwv_post_error(_("Needs bitmap font"),_("When generating a Mac Type1 resource font, you MUST generate at least one NFNT bitmap font to go with it. If you have not created any bitmaps for this font, cancel this dlg and use the Element->Bitmaps Available command to create one"));
 return;
     } else if ( oldformatstate==ff_pfbmacbin && !post_warned) {
 	post_warned = true;
-	gwwv_post_notice(_("The 'POST' type1 format is probably deprecated"),_("The 'POST' type1 format is probably depreciated and may not work in future version of the mac."));
+	ff_post_notice(_("The 'POST' type1 format is probably deprecated"),_("The 'POST' type1 format is probably depreciated and may not work in future version of the mac."));
     }
 
     if ( d->family ) {
@@ -2603,7 +2603,7 @@ static void GFD_dircreatefailed(GIOControl *gio) {
     struct gfc_data *d = gio->userdata;
     char *temp;
 
-    gwwv_post_notice(_("Couldn't create directory"),_("Couldn't create directory: %s"),
+    ff_post_notice(_("Couldn't create directory"),_("Couldn't create directory: %s"),
 		temp = u2utf8_copy(u_GFileNameTail(gio->path)));
     free(temp);
     GFileChooserReplaceIO(d->gfc,NULL);

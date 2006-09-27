@@ -1706,7 +1706,7 @@ return( false );
 	    } else if ( kbuf[kerns]&1 ) {
 		kbuf[kerns] &= ~1;
 		if ( !oddcomplain )
-		    gwwv_post_notice(_("Kerning values must be even"),_("Kerning values must be even"));
+		    ff_post_notice(_("Kerning values must be even"),_("Kerning values must be even"));
 		oddcomplain = true;
 	    }
 	    ++kerns;

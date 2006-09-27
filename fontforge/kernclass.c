@@ -996,7 +996,7 @@ static void KCD_EditOffset(KernClassDlg *kcd) {
     static unichar_t nullstr[] = { 0 };
 
     if ( second==0 )
-	gwwv_post_notice(_("Class 0"),_("The kerning values for class 0 (\"Everything Else\") should always be 0"));
+	ff_post_notice(_("Class 0"),_("The kerning values for class 0 (\"Everything Else\") should always be 0"));
     GGadgetSetList(GWidgetGetControl(kcd->kw,CID_First),
 	    ti = TiNamesFromClass(GWidgetGetControl(kcd->gw,CID_ClassList),first),false);
     GGadgetSetTitle(GWidgetGetControl(kcd->kw,CID_First),

@@ -1575,7 +1575,7 @@ static void TestForBadDirections(Intersection *ilist) {
 	}
 #if 0
 	if ( cnt>=4 && ncnt==cnt ) {
-	    gwwv_post_notice(_("Warning"),_("Glyph %.40s contains an overlapped region where two contours with opposite orientations intersect. This will not be removed. In many cases doing Element->Correct Direction before Remove Overlap will improve matters."),
+	    ff_post_notice(_("Warning"),_("Glyph %.40s contains an overlapped region where two contours with opposite orientations intersect. This will not be removed. In many cases doing Element->Correct Direction before Remove Overlap will improve matters."),
 		    glyphname );
 	    fprintf( stderr, "%s: Fully needed intersection at (%g,%g)\n",
 		    glyphname,

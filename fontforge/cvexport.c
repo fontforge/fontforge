@@ -899,7 +899,7 @@ static void GFD_dircreatefailed(GIOControl *gio) {
     struct gfc_data *d = gio->userdata;
     char *temp;
 
-    gwwv_post_notice(_("Couldn't create directory"),_("Couldn't create directory: %s"),
+    ff_post_notice(_("Couldn't create directory"),_("Couldn't create directory: %s"),
 		temp = u2utf8_copy(u_GFileNameTail(gio->path)));
     free(temp);
     GFileChooserReplaceIO(d->gfc,NULL);

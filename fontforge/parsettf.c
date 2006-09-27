@@ -713,7 +713,7 @@ static void readttfmaxp(FILE *ttf,struct ttfinfo *info) {
 	info->onlystrikes = true;
     } else if ( cnt!=info->glyph_cnt && info->loca_length!=0 ) {
 #if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
-	gwwv_post_notice(_("Bad Glyph Count"), _("Font file has bad glyph count field. maxp says: %d sizeof(loca)=>%d"), cnt, info->glyph_cnt);
+	ff_post_notice(_("Bad Glyph Count"), _("Font file has bad glyph count field. maxp says: %d sizeof(loca)=>%d"), cnt, info->glyph_cnt);
 #endif
 	if ( cnt>info->glyph_cnt )
 	    cnt = info->glyph_cnt;		/* Use the smaller of the two values */

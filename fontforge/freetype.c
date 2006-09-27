@@ -755,9 +755,9 @@ return( NULL );
 	bc_checked = true;
 	if ( !hasFreeTypeByteCode())
 #if defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_notice(_("No ByteCode Interpreter"),_("These results are those of the freetype autohinter. They do not reflect the truetype instructions."));
+	    ff_post_notice(_("No ByteCode Interpreter"),_("These results are those of the freetype autohinter. They do not reflect the truetype instructions."));
 #else
-	    gwwv_post_notice(_("No ByteCode Interpreter"),_("These results are those of the freetype autohinter. They do not reflect the truetype instructions."));
+	    ff_post_notice(_("No ByteCode Interpreter"),_("These results are those of the freetype autohinter. They do not reflect the truetype instructions."));
 #endif
     }
 
@@ -1373,9 +1373,9 @@ return( TT_Err_Execution_Too_Long );
 		(exc->curRange==tt_coderange_glyph && exc->IP==exc->codeSize)) {
 	    if ( dc->found_wp ) {
 #if defined(FONTFORGE_CONFIG_GDRAW)
-		gwwv_post_notice(_("Hit Watch Point"),_("Point %d was moved by the previous instruction"),dc->wp_ptindex);
+		ff_post_notice(_("Hit Watch Point"),_("Point %d was moved by the previous instruction"),dc->wp_ptindex);
 #elif defined(FONTFORGE_CONFIG_GTK)
-		gwwv_post_notice(_("Hit Watch Point"),_("Point %d was moved by the previous instruction"),dc->wp_ptindex);
+		ff_post_notice(_("Hit Watch Point"),_("Point %d was moved by the previous instruction"),dc->wp_ptindex);
 #endif
 		dc->found_wp = true;
 	    }

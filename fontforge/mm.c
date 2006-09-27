@@ -819,9 +819,9 @@ return( false );
 
     if ( complain )
 #if defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_notice(_("OK"),_("No problems detected"));
+	ff_post_notice(_("OK"),_("No problems detected"));
 #else
-	gwwv_post_notice(_("OK"),_("No problems detected"));
+	ff_post_notice(_("OK"),_("No problems detected"));
 #endif
 return( true );
 }

@@ -3362,7 +3362,7 @@ return( NULL );
 	    break;
 	    if ( i>=0 ) {
 		if ( !any ) {
-		    gwwv_post_notice(_("Lookup potentially too big"),
+		    ff_post_notice(_("Lookup potentially too big"),
 			    _("One of the lookups for the '%c%c%c%c' feature has an\noffset bigger than 65535 bytes. This means\nFontForge must use an extension lookup to output it.\nNot all applications support extension lookups."),
 			    (cl->lookups[i]->feature_tag>>24)&0xff,
 			    (cl->lookups[i]->feature_tag>>16)&0xff,

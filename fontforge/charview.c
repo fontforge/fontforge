@@ -3091,8 +3091,9 @@ return;
     else if ( sc->complained_about_ptnums )
 	/* It's annoying to get the same message over and over again as you edit a glyph */;
     else if ( had_ap || had_dep || had_instrs ) {
-	gwwv_post_notice(_("You changed the point numbering"),
-		_("You have just changed the point numbering of this glyph.%s%s%s"),
+	ff_post_notice(_("You changed the point numbering"),
+		_("You have just changed the point numbering of glyph %s.%s%s%s"),
+			sc->name,
 			had_instrs==0 ? "" :
 			had_instrs==1 ? _(" Instructions in this glyph (or one that refers to it) have been lost.") :
 			                _(" Instructions in this glyph (or one that refers to it) are now out of date."),
@@ -6757,7 +6758,7 @@ void CVAddAnchor(CharView *cv) {
     int waslig;
 
     if ( AnchorClassUnused(cv->sc,&waslig)==NULL ) {
-	gwwv_post_notice(_("Make a new anchor class"),_("I cannot find an unused anchor class\nto assign a new point to. If you\nwish a new anchor point you must\ndefine a new anchor class with\nElement->Font Info"));
+	ff_post_notice(_("Make a new anchor class"),_("I cannot find an unused anchor class\nto assign a new point to. If you\nwish a new anchor point you must\ndefine a new anchor class with\nElement->Font Info"));
 	FontInfo(cv->sc->parent,8,true);		/* Anchor Class */
 	if ( AnchorClassUnused(cv->sc,&waslig)==NULL )
 return;
