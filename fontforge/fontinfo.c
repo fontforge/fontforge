@@ -8519,7 +8519,7 @@ return;
     t = sf->modificationtime;
     tm = localtime(&t);
     strftime(modtime,sizeof(modtime),"%c",tm);
-    tmpmodtime = def2u_copy(createtime);
+    tmpmodtime = def2u_copy(modtime);
     dgcd[3].gd.pos.x = 115; dgcd[3].gd.pos.y = dgcd[2].gd.pos.y;
     dgcd[3].gd.flags = gg_visible | gg_enabled;
     dlabel[3].text = tmpmodtime;
