@@ -2436,7 +2436,7 @@ static void dumpg___ContextChainCoverage(FILE *lfile,FPST *fpst,SplineFont *sf,
 	}
 	for ( i=0; i<fpst->rules[0].u.coverage.ncnt; ++i ) {
 	    uint32 pos = ftell(lfile);
-	    fseek(lfile,base+4+2*i,SEEK_SET);
+	    fseek(lfile,base+6+2*i,SEEK_SET);
 	    putshort(lfile,pos-base);
 	    fseek(lfile,pos,SEEK_SET);
 	    glyphs = OrderedGlyphsFromNames(sf,fpst->rules[0].u.coverage.ncovers[i]);
