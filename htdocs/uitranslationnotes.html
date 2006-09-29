@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 19-Aug-2006 -->
-  <!-- AP: Last modified: 17-Sep-2006 -->
+  <!-- AP: Last modified: 28-Sep-2006 -->
   <TITLE>User Interface Translation Notes</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -33,6 +33,8 @@
       Examples,
       <A HREF="http://fontforge.cvs.sourceforge.net/fontforge/fontforge/po">browse
       the CVS tree</A>
+    <LI>
+      <A HREF="#More">Still more strings to translate!</A>
   </UL>
   <BLOCKQUOTE>
     <TABLE>
@@ -48,7 +50,7 @@
 	  Shakespeare</SMALL></TD>
       </TR>
       <TR BGCOLOR="#ccccff" VALIGN="Bottom">
-	<TD><SMALL><B>CHAPLAIN:</B></SMALL>...and so forth<BR>
+	<TD><SMALL><B>CHAPLAIN:</B></SMALL>...legal matters and so forth<BR>
 	  Are Greek to me; except of course<BR>
 	  That I understand Greek.</TD>
 	<TD><I><SMALL>The Lady's not for Burning</SMALL></I><SMALL>, Act II<BR>
@@ -189,7 +191,7 @@ msgstr "<FONT COLOR="Red">_Annuler</FONT>"
   </BLOCKQUOTE>
   <P>
   So the translation goes into the msgstr line. (The comment lines above indicate
-  in what source files and on what lines the "_Cancel" string as used -- this
+  in what source files and on what lines the "_Cancel" string is used -- this
   information may be helpful if you want more information about context). If
   you don't want to translate a string just leave the msgstr as a null-string,
   and the English text will be used ("OK" seems to be left untranslated in
@@ -276,9 +278,10 @@ msgstr[1] "<FONT COLOR="Red">%d Groupes</FONT>"
   </H2>
   <P>
   After a few months, you will probably find that I've added some additional
-  strings to FontForge, and you may what to update your original po file.
+  strings to FontForge, and you may want to update your original po file.
   <P>
-  Once again you grab a current "pot" file and you type:
+  Once again you <A HREF="uitranslationnotes.html#Obtaining">grab a current
+  "pot" file</A> and you type:
   <BLOCKQUOTE>
     <PRE><FONT COLOR="Gray">$ </FONT>msgmerge <FONT COLOR="Red">fr</FONT>.po FontForge.pot
 </PRE>
@@ -337,7 +340,7 @@ msgstr[1] "<FONT COLOR="Red">%d Groupes</FONT>"
   </OL>
   <P>
   Then make sure your locale is set properly and start fontforge. You should
-  see your messages
+  see your translation
   <BLOCKQUOTE>
     <PRE><FONT COLOR="Gray">$ </FONT>LANG=<FONT COLOR="Red">fr_FR.UTF-8</FONT>; export LANG
 <FONT COLOR="Gray">$ </FONT>fontforge -new
@@ -345,5 +348,29 @@ msgstr[1] "<FONT COLOR="Red">%d Groupes</FONT>"
   </BLOCKQUOTE>
   <P>
   <IMG SRC="fontview.fr.png" WIDTH="423" HEIGHT="226">
+    <HR>
+  <H2>
+    Still <A NAME="More">more</A> strings to translate!
+  </H2>
+  <P>
+  FontForge has some strings that do not fit into the standard gettext mechanism.
+  These are strings for which fontforge wants to know all translations at all
+  times. For exampe the truetype 'name' table encourages designers to provide
+  a translation for the stylistic variant of the font into as many languages
+  as possible. So if you had a Bold font it would be nice if the 'name' table
+  contained: An English entry, "Bold"; A French entry, "Gras"; A German entry,
+  "Fett". To make this easier on the designer FontForge would like to have
+  all translations of "Bold" built into it at all times, all translations of
+  "Italic", "Condensed", and so forth.
+  <P>
+  <A HREF="fontinfo.html#Style">There is a table of the stylistic names FontForge
+  recognizes on the Font Info page.</A>
+  <P>
+  There is a second list of names for which FontForge would like multiple
+  translations because these also appear in the 'name' table translated into
+  as many languages as possible. These are the names of the mac's Feature/Setting
+  strings, and they may be found on
+  <A HREF="http://developer.apple.com/fonts/Registry/index.html">Apple's Font
+  Feature registry</A>.
 </DIV>
 </BODY></HTML>
