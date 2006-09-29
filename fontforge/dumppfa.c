@@ -1156,7 +1156,7 @@ return;
 }
 
 double BlueScaleFigure(struct psdict *private,real bluevalues[], real otherblues[]) {
-    double max_diff=0, p1, p2;;
+    double max_diff=0, p1, p2;
     char *pt, *end;
     int i;
 
