@@ -750,7 +750,7 @@ void SFHistogram(SplineFont *sf,struct psdict *private, uint8 *selected,
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
     wattrs.utf8_window_title =  which==hist_hstem?_("HStem") :
-					      which==hist_vstem?_("_VStem"):
+					      which==hist_vstem?_("VStem"):
 							  _("Blues");
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
