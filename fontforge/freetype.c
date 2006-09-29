@@ -1630,8 +1630,8 @@ return( dc->debug_fpgm );
 struct freetype_raster *DebuggerCurrentRaster(TT_ExecContext exc,int depth) {
     FT_Outline outline;
     FT_Bitmap bitmap;
-    int i, err, k, first;
-    DBounds b;
+    int i, err, j, k, first, xoff, yoff;
+    IBounds b;
     struct freetype_raster *ret;
 
     outline.n_contours = exc->pts.n_contours;
@@ -1642,8 +1642,6 @@ struct freetype_raster *DebuggerCurrentRaster(TT_ExecContext exc,int depth) {
     outline.points = exc->pts.cur;
     outline.flags = FT_OUTLINE_NONE;
 
-    b.minx = b.maxx = outline.points[0].x;
-    b.miny = b.maxy = outline.points[0].y;
     first = true;
     for ( k=0; k<outline.n_contours; ++k ) {
 	if ( outline.contours[k] - (k==0?-1:outline.contours[k-1])>1 ) {
@@ -1665,14 +1663,16 @@ struct freetype_raster *DebuggerCurrentRaster(TT_ExecContext exc,int depth) {
 	}
     }
 
-    b.minx = (1<<6) * floor( b.minx * (1.0 / (1<<6)) );
-    b.miny = (1<<6) * floor( b.miny * (1.0 / (1<<6)) );
-    b.maxx = (1<<6) * ceil( b.maxx * (1.0 / (1<<6)) );
-    b.maxy = (1<<6) * ceil( b.maxy * (1.0 / (1<<6)) );
-
     memset(&bitmap,0,sizeof(bitmap));
-    bitmap.rows = (((int) (b.maxy-b.miny))>>6);
-    bitmap.width = (((int) (b.maxx-b.minx))>>6);
+    bitmap.rows = (((int) (ceil(b.maxy/64.0)-floor(b.miny/64.0)))) +1;
+    bitmap.width = (((int) (ceil(b.maxx/64.0)-floor(b.minx/64.0)))) +1;
+
+    xoff = 64*floor(b.minx/64.0);
+    yoff = 64*floor(b.miny/64.0);
+    for ( i=0; i<=outline.contours[outline.n_contours-1]; ++i ) {
+	outline.points[i].x -= xoff;
+	outline.points[i].y -= yoff;
+    }
 
     if ( depth==8 ) {
 	bitmap.pitch = bitmap.width;
@@ -1687,16 +1687,20 @@ struct freetype_raster *DebuggerCurrentRaster(TT_ExecContext exc,int depth) {
 
     err = (_FT_Outline_Get_Bitmap)(context,&outline,&bitmap);
 
+    for ( i=0; i<=outline.contours[outline.n_contours-1]; ++i ) {
+	outline.points[i].x += xoff;
+	outline.points[i].y += yoff;
+    }
+
     ret = galloc(sizeof(struct freetype_raster));
-#if 0
+#if 1
     /* I'm not sure why I need these, but it seems I do */
-	for ( k=0; k<(((int) (b.maxy-b.miny))>>6); ++k ) {
+	for ( k=0; k<bitmap.rows; ++k ) {
 	    for ( j=bitmap.pitch-1; j>=0 && bitmap.buffer[k*bitmap.pitch+j]==0; --j );
 	    if ( j!=-1 )
 	break;
 	}
-	if ( k!=(((int) (b.maxy-b.miny))>>6) )
-	    b.maxy += k<<6;
+	b.maxy += k<<6;
 	if ( depth==8 ) {
 	    for ( j=0; j<bitmap.pitch; ++j ) {
 		for ( k=(((int) (b.maxy-b.miny))>>6)-1; k>=0; --k ) {
@@ -1717,8 +1721,8 @@ struct freetype_raster *DebuggerCurrentRaster(TT_ExecContext exc,int depth) {
 	    }
 	}
 	b.minx -= j*64;
-    ret->as = ceil(b.maxy/64.0);
-    ret->lb = floor(b.minx/64.0);
+    ret->as = rint(b.maxy/64.0);
+    ret->lb = rint(b.minx/64.0);
 #else
     ret->as = bitmap.rows + rint(b.miny/64.0);
     ret->lb = rint(b.minx/64.0);
