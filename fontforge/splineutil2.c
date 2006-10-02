@@ -2440,9 +2440,14 @@ return;
 		(sp->next!=NULL && sp->next->to->next!=NULL &&
 		    sp->next->to->next->to == sp ))
 return;
-	if ( smpl->flags!=sf_cleanup )
-	    SplinesRemoveMidMaybe(sc,sp,smpl->flags,smpl->err,lenmax2);
-	else {
+	if ( smpl->flags!=sf_cleanup ) {
+	    if ( SplinesRemoveMidMaybe(sc,sp,smpl->flags,smpl->err,lenmax2) ) {
+		if ( spl->first==sp )
+		    spl->first = next;
+		if ( spl->last==sp )
+		    spl->last = next;
+	    }
+	} else {
 	    while ( sp->me.x==next->me.x && sp->me.y==next->me.y &&
 		    sp->nextcp.x>sp->me.x-1 && sp->nextcp.x<sp->me.x+1 &&
 		    sp->nextcp.y>sp->me.y-1 && sp->nextcp.y<sp->me.y+1 &&
