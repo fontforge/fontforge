@@ -856,7 +856,8 @@ static void GMatrixEdit_StartSubGadgets(GMatrixEdit *gme,int r, int c,GEvent *ev
     struct matrix_data *d;
 
     /* new row */
-    if ( c==0 && r==gme->rows && event->u.mouse.button==1 ) {
+    if ( c==0 && r==gme->rows && event->type == et_mousedown &&
+	    event->u.mouse.button==1 ) {
 	if ( gme->rows>=gme->row_max )
 	    gme->data = grealloc(gme->data,(gme->row_max+=10)*gme->cols*sizeof(struct matrix_data));
 	++gme->rows;
@@ -875,6 +876,7 @@ static void GMatrixEdit_StartSubGadgets(GMatrixEdit *gme,int r, int c,GEvent *ev
 	if ( gme->initrow!=NULL )
 	    (gme->initrow)(&gme->g,r);
 	GME_FixScrollBars(gme);
+	GDrawRequestExpose(gme->nested,NULL,false);
 	gme->wasnew = true;
     }
 
@@ -1034,11 +1036,13 @@ return( GGadgetDispatchEvent(gme->vsb,event));
 	    if ( (!gme->edit_active || GME_FinishEdit(gme)) &&
 		    gme->active_row>0 )
 		GMatrixEdit_StartSubGadgets(gme,gme->active_row-1,gme->active_col,event);
+return( true );
 	  break;
 	  case GK_Down: case GK_KP_Down:
 	    if ( (!gme->edit_active || GME_FinishEdit(gme)) &&
 		    gme->active_row<gme->rows-(gme->active_col!=0) )
 		GMatrixEdit_StartSubGadgets(gme,gme->active_row+1,gme->active_col,event);
+return( true );
 	  break;
 	  case GK_Left: case GK_KP_Left:
 	  case GK_BackTab:
@@ -1046,6 +1050,7 @@ return( GGadgetDispatchEvent(gme->vsb,event));
 	    if ( (!gme->edit_active || GME_FinishEdit(gme)) &&
 		    gme->active_col>0 )
 		GMatrixEdit_StartSubGadgets(gme,gme->active_row,gme->active_col-1,event);
+return( true );
 	  break;
 	  case GK_Tab:
 	    if ( event->u.chr.state&ksm_shift )
@@ -1055,6 +1060,7 @@ return( GGadgetDispatchEvent(gme->vsb,event));
 	    if ( (!gme->edit_active || GME_FinishEdit(gme)) &&
 		    gme->active_col<gme->cols-1 )
 		GMatrixEdit_StartSubGadgets(gme,gme->active_row,gme->active_col+1,event);
+return( true );
 	  break;
 	  case GK_Return: case GK_KP_Enter:
 	    if ( gme->edit_active )
