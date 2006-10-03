@@ -1018,30 +1018,59 @@ static const char condensedhu[] = "Keskeny";
 static const char expandedhu[] = "Széles";
 static const char outlinehu[] = "Kontúros";
 
+static const char regularpl[] = "zwykła";
+static const char demiboldpl[] = "półgruba";
+static const char boldpl[] = "pogrubiona";
+static const char thinpl[] = "cienka";
+static const char lightpl[] = "bardzo cienka";
+static const char heavypl[] = "bardzo grub";
+static const char italicpl[] = "pochyła";
+static const char obliquepl[] = "pochylona";
+static const char condensedpl[] = "wąska";
+static const char expandedpl[] = "szeroka";
+static const char outlinepl[] = "konturowa";
+
+
 static struct langstyle regs[] = { {0x409, regulareng}, { 0x40c, regularfren }, { 0x410, regularital }, { 0x407, regulargerm }, { 0x40a, regularspan }, { 0x419, regularru }, { 0x40e, regularhu },
-	{ 0x413, regulardutch}, { 0x41d, regularswed }, { 0x414, regularnor }, { 0x406, regulardanish}, { 0 }};
+	{ 0x413, regulardutch}, { 0x41d, regularswed }, { 0x414, regularnor },
+	{ 0x406, regulardanish}, {0x415, regularpl }, { 0 }};
 static struct langstyle meds[] = { {0x409, mediumeng}, { 0x410, mediumital }, { 0x40c, mediumfren }, { 0x407, mediumgerm }, { 0x40e, mediumhu }, { 0x406, mediumdanish}, { 0 }};
 static struct langstyle books[] = { {0x409, bookeng}, { 0x410, bookital }, { 0x407, bookgerm }, { 0x40e, bookhu }, { 0x40e, bookhu2 }, { 0 }};
 static struct langstyle bolds[] = { {0x409, boldeng}, { 0x410, boldital }, { 0x40c, boldfren }, { 0x407, boldgerm }, { 0x407, boldgerm2 }, { 0x40a, boldspan}, { 0x419, boldru }, { 0x40e, boldhu }, { 0x40e, boldhu2 }, 
-	{ 0x413, bolddutch}, { 0x41d, boldswed }, { 0x414, boldnor }, { 0x406, bolddanish}, { 0 }};
+	{ 0x413, bolddutch}, { 0x41d, boldswed }, { 0x414, boldnor },
+	{ 0x406, bolddanish}, { 0x415, boldpl}, { 0 }};
 static struct langstyle italics[] = { {0x409, italiceng}, { 0x410, italicital }, { 0x40c, italicfren }, { 0x407, italicgerm }, { 0x40a, italicspan}, { 0x419, italicru }, { 0x40e, italichu },
-	{ 0x413, italicdutch}, { 0x41d, italicswed }, { 0x414, italicnor },  { 0x406, italicdanish}, { 0 }};
-static struct langstyle obliques[] = { {0x409, obliqueeng}, { 0x410, obliqueital }, { 0x40c, obliquefren }, { 0x407, obliquegerm }, { 0x419, obliqueru }, { 0x40e, obliquehu }, { 0x40e, obliquehu2 }, { 0 }};
+	{ 0x413, italicdutch}, { 0x41d, italicswed }, { 0x414, italicnor },
+	{ 0x406, italicdanish}, { 0x415, italicpl}, { 0 }};
+static struct langstyle obliques[] = { {0x409, obliqueeng}, { 0x410, obliqueital },
+	{ 0x40c, obliquefren }, { 0x407, obliquegerm }, { 0x419, obliqueru },
+	{ 0x40e, obliquehu }, { 0x40e, obliquehu2 }, {0x415, obliquepl}, { 0 }};
 static struct langstyle demibolds[] = { {0x409, demiboldeng}, {0x409, demiboldeng3}, {0x409, demiboldeng5},
 	{ 0x410, demiboldital }, { 0x40c, demiboldfren }, { 0x40c, demiboldfren2 }, { 0x407, demiboldgerm }, { 0x407, demiboldgerm2 },
-	{ 0x419, demiboldru }, { 0x40e, demiboldhu }, { 0x40e, demiboldhu2 }, { 0x406, demibolddanish}, { 0 }};
-static struct langstyle heavys[] = { {0x409, heavyeng}, { 0x410, heavyital }, { 0x419, heavyru }, { 0x40e, heavyhu }, { 0x40e, heavyhu2 }, { 0 }};
+	{ 0x419, demiboldru }, { 0x40e, demiboldhu }, { 0x40e, demiboldhu2 },
+	{ 0x406, demibolddanish}, { 0x415, demiboldpl }, { 0 }};
+static struct langstyle heavys[] = { {0x409, heavyeng}, { 0x410, heavyital },
+	{ 0x419, heavyru }, { 0x40e, heavyhu }, { 0x40e, heavyhu2 },
+	{ 0x415, heavypl }, { 0 }};
 static struct langstyle blacks[] = { {0x409, blackeng}, { 0x410, blackital }, { 0x40c, blackfren }, { 0x407, blackgerm }, { 0x419, blackru }, { 0x40e, blackhu }, { 0x40e, blackhu2 }, { 0x40a, blackspan }, 
-	{ 0x413, blackdutch}, { 0x41d, blackswed }, { 0x414, blacknor }, { 0x406, blackdanish}, { 0 }};
-static struct langstyle thins[] = { {0x409, thineng}, { 0x410, thinital }, { 0x419, thinru }, { 0x40e, thinhu }, { 0 }};
+	{ 0x413, blackdutch}, { 0x41d, blackswed }, { 0x414, blacknor }, { 0x406, blackdanish}, 
+	{ 0x415, heavypl },  0 };
+static struct langstyle thins[] = { {0x409, thineng}, { 0x410, thinital },
+	{ 0x419, thinru }, { 0x40e, thinhu }, { 0x415, thinpl}, { 0 }};
 static struct langstyle extralights[] = { {0x409, extralighteng}, {0x409, extralighteng2}, {0}};
 static struct langstyle lights[] = { {0x409, lighteng}, {0x410, lightital}, {0x40c, lightfren}, {0x407, lightgerm}, { 0x419, lightru }, { 0x40e, lighthu }, { 0x40a, lightspan }, 
-	{ 0x413, lightdutch}, { 0x41d, lightswed }, { 0x414, lightnor }, { 0x406, lightdanish}, { 0 }};
+	{ 0x413, lightdutch}, { 0x41d, lightswed }, { 0x414, lightnor },
+	{ 0x406, lightdanish}, { 0x415, lightpl}, { 0 }};
 static struct langstyle condenseds[] = { {0x409, condensedeng}, {0x410, condensedital}, {0x40c, condensedfren}, {0x407, condensedgerm}, { 0x419, condensedru }, { 0x40e, condensedhu }, { 0x40a, condensedspan }, 
-	{ 0x413, condenseddutch}, { 0x41d, condensedswed }, { 0x414, condensednor }, { 0x406, condenseddanish}, { 0 }};
+	{ 0x413, condenseddutch}, { 0x41d, condensedswed },
+	{ 0x414, condensednor }, { 0x406, condenseddanish},
+	{ 0x415, condensedpl }, { 0 }};
 static struct langstyle expandeds[] = { {0x409, expandedeng}, {0x410, expandedital}, {0x40c, expandedfren}, {0x407, expandedgerm}, { 0x419, expandedru }, { 0x40e, expandedhu }, { 0x40a, expandedspan }, 
-	{ 0x413, expandeddutch}, { 0x41d, expandedswed }, { 0x414, expandednor }, { 0x406, expandeddanish}, { 0 }};
-static struct langstyle outlines[] = { {0x409, outlineeng}, {0x40c, outlinefren}, {0x407, outlinegerm}, {0x40e, outlinehu}, { 0x406, outlinedanish}, { 0 }};
+	{ 0x413, expandeddutch}, { 0x41d, expandedswed }, { 0x414, expandednor },
+	{ 0x406, expandeddanish}, { 0x415, expandedpl }, { 0 }};
+static struct langstyle outlines[] = { {0x409, outlineeng}, {0x40c, outlinefren},
+	{0x407, outlinegerm}, {0x40e, outlinehu}, { 0x406, outlinedanish},
+	{0x415, outlinepl}, { 0 }};
 static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, heavys, blacks,
 	extralights, lights, thins, italics, obliques, condenseds, expandeds, outlines, NULL };
 
@@ -4353,7 +4382,13 @@ static int CheckActiveStyleTranslation(struct gfi_data *d,
 		if ( pt==new && strlen(stylelist[i][j].str)==strlen(new) ) {
 		    free(new);
 		    free(strings[3*r+2].u.md_str);
-		    strings[3*r+2].u.md_str = copy(stylelist[i][other_pos].str);
+		    if ( other_lang==0x415 ) {
+			/* polish needs a word before the translation */
+			strings[3*r+2].u.md_str = galloc(strlen("odmiana ")+strlen(stylelist[i][other_pos].str)+1);
+			strcpy(strings[3*r+2].u.md_str,"odmiana ");
+			strcat(strings[3*r+2].u.md_str,stylelist[i][other_pos].str);
+		    } else
+			strings[3*r+2].u.md_str = copy(stylelist[i][other_pos].str);
 return( true );
 		}
 		temp = galloc((strlen(new)
@@ -4372,7 +4407,14 @@ return( true );
     }
     if ( changed ) {
 	free(strings[3*r+2].u.md_str);
-	strings[3*r+2].u.md_str = new;
+	if ( other_lang==0x415 ) {
+	    /* polish needs a word before the translation */
+	    strings[3*r+2].u.md_str = galloc(strlen("odmiana ")+strlen(new)+1);
+	    strcpy(strings[3*r+2].u.md_str,"odmiana ");
+	    strcat(strings[3*r+2].u.md_str,new);
+	    free(new);
+	} else
+	    strings[3*r+2].u.md_str = new;
     } else
 	free(new);
 return( changed );
