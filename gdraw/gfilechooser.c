@@ -49,6 +49,8 @@ static unichar_t *SubMatch(unichar_t *pattern, unichar_t *eop, unichar_t *name,i
 
     while ( pattern<eop && ( ch = *pattern)!='\0' ) {
 	if ( ch=='*' ) {
+	    if ( pattern[1]=='\0' )
+return( name+u_strlen(name));
 	    for ( npt=name; ; ++npt ) {
 		if ( (eon = SubMatch(pattern+1,eop,npt,ignorecase))!= NULL )
 return( eon );
