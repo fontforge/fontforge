@@ -469,6 +469,9 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	  case CHR('c','m','a','p'):
 	    info->encoding_start = offset;
 	  break;
+	  case CHR('g','a','s','p'):
+	    info->gasp_start = offset;
+	  break;
 	  case CHR('g','l','y','f'):
 	    info->glyph_start = offset;
 	    info->glyph_length = length;
@@ -4361,6 +4364,25 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 #endif
 }
 
+static void readttfgasp(FILE *ttf,struct ttfinfo *info) {
+    int i, cnt;
+
+    if ( info->gasp_start==0 )
+return;
+
+    fseek(ttf,info->gasp_start,SEEK_SET);
+    if ( getushort(ttf)!=0 )
+return;			/* We only support 'gasp' version 0 (no other version currently) */
+    info->gasp_cnt = cnt = getushort(ttf);
+    if ( cnt==0 )
+return;
+    info->gasp = galloc(cnt*sizeof(struct gasp));
+    for ( i=0; i<cnt; ++i ) {
+	info->gasp[i].ppem = getushort(ttf);
+	info->gasp[i].flags = getushort(ttf);
+    }
+}
+
 static void UnfigureControls(Spline *spline,BasePoint *pos) {
     pos->x = rint( (spline->splines[0].c+2*spline->splines[0].d)/2 );
     pos->y = rint( (spline->splines[1].c+2*spline->splines[1].d)/2 );
@@ -4603,6 +4625,8 @@ return( 0 );
 	if ( info->lcar_start!=0 )
 	    readttflcar(ttf,info);
     }
+    if ( info->gasp_start!=0 )
+	readttfgasp(ttf,info);
     /* read the cvt table before reading variation data */
     if ( info->to_order2 ) {
 	    /* Yes, even though we've looked at maxp already, let's make a blind */
@@ -4962,6 +4986,9 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->design_range_top = info->design_range_top;
     sf->fontstyle_id = info->fontstyle_id;
     sf->fontstyle_name = info->fontstyle_name;
+
+    sf->gasp_cnt = info->gasp_cnt;
+    sf->gasp = info->gasp;
 
     sf->texdata = info->texdata;
 

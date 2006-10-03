@@ -637,6 +637,28 @@ return( false );
 return( true );
 }
 
+/* Sometimes our data moves underneath us (if the validate function does */
+/*  something weird). See if we can move the current row with the data */
+static int GME_FinishEditPreserve(GMatrixEdit *gme,int r) {
+    int i;
+
+    if ( r!=gme->rows ) {
+	for ( i=0; i<gme->rows; ++i )
+	    gme->data[i*gme->cols].current = 0;
+	gme->data[r*gme->cols].current = 1;
+    }
+    if ( !GME_FinishEdit(gme))
+return( -1 );
+    if ( r==gme->rows )
+return( r );
+    for ( i=0; i<gme->rows; ++i )
+	if ( gme->data[i*gme->cols].current )
+return( i );
+
+    /* Quite lost */
+return( r );
+}
+
 static void GME_EnableDelete(GMatrixEdit *gme) {
     int enabled = false;
 
@@ -912,7 +934,7 @@ static void GMatrixEdit_SubGadgets(GMatrixEdit *gme,GEvent *event) {
     int c;
 
     if ( gme->edit_active ) {
-	if ( !GME_FinishEdit(gme) )
+	if ( (r = GME_FinishEditPreserve(gme,r))== -1 )
 return;
     }
     for ( c=0; c<gme->cols; ++c ) {
@@ -1008,6 +1030,7 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 
 static int matrixeditsub_e_h(GWindow gw, GEvent *event) {
     GMatrixEdit *gme = (GMatrixEdit *) GDrawGetUserData(gw);
+    int r;
 
     GGadgetPopupExternalEvent(event);
     if (( event->type==et_mouseup || event->type==et_mousedown ) &&
@@ -1031,6 +1054,7 @@ return( GGadgetDispatchEvent(gme->vsb,event));
       case et_mouseup:
       break;
       case et_char:
+	r = gme->active_row;
 	switch ( event->u.chr.keysym ) {
 	  case GK_Up: case GK_KP_Up:
 	    if ( (!gme->edit_active || GME_FinishEdit(gme)) &&
@@ -1047,9 +1071,9 @@ return( true );
 	  case GK_Left: case GK_KP_Left:
 	  case GK_BackTab:
 	  backtab:
-	    if ( (!gme->edit_active || GME_FinishEdit(gme)) &&
+	    if ( (!gme->edit_active || (r=GME_FinishEditPreserve(gme,r))!=-1) &&
 		    gme->active_col>0 )
-		GMatrixEdit_StartSubGadgets(gme,gme->active_row,gme->active_col-1,event);
+		GMatrixEdit_StartSubGadgets(gme,r,gme->active_col-1,event);
 return( true );
 	  break;
 	  case GK_Tab:
@@ -1057,9 +1081,9 @@ return( true );
 	  goto backtab;
 	    /* Else fall through */
 	  case GK_Right: case GK_KP_Right:
-	    if ( (!gme->edit_active || GME_FinishEdit(gme)) &&
+	    if ( (!gme->edit_active || (r=GME_FinishEditPreserve(gme,r))!=-1) &&
 		    gme->active_col<gme->cols-1 )
-		GMatrixEdit_StartSubGadgets(gme,gme->active_row,gme->active_col+1,event);
+		GMatrixEdit_StartSubGadgets(gme,r,gme->active_col+1,event);
 return( true );
 	  break;
 	  case GK_Return: case GK_KP_Enter:

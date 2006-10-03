@@ -1131,6 +1131,11 @@ typedef struct splinefont {
 #endif
     short os2_version;			/* 0 means default rather than the real version 0 */
     short compression;			/* If we opened a compressed sfd file, then save it out compressed too */
+    int gasp_cnt;
+    struct gasp {
+	uint16 ppem;
+	uint16 flags;
+    } *gasp;
 } SplineFont;
 
 /* I am going to simplify my life and not encourage intermediate designs */

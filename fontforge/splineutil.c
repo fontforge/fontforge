@@ -5237,6 +5237,7 @@ return;
     }
     free( sf->mark_classes );
     free( sf->mark_class_names );
+    free( sf->gasp );
     free(sf);
 }
 

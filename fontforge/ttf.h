@@ -123,6 +123,8 @@ struct ttfinfo {
     uint32 cff_length;
     		/* cmap */
     uint32 encoding_start;	/* Offset from sof to start of encoding table */
+		/* gasp */
+    uint32 gasp_start;
 		/* glyf */
     uint32 glyph_start;		/* Offset from sof to start of glyph table */
     uint32 glyph_length;
@@ -264,6 +266,8 @@ struct ttfinfo {
     long creationtime;
     long modificationtime;
 #endif
+    int gasp_cnt;
+    struct gasp *gasp;
 };
 
 #define MAX_TAB	48

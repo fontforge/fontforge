@@ -3428,48 +3428,24 @@ static int icomp(const void *a, const void *b) {
 #endif
 
 static void dumpgasp(struct alltabs *at, SplineFont *sf) {
-#if 1
-    at->gaspf = tmpfile();
-    putshort(at->gaspf,0);	/* Version number */
-    putshort(at->gaspf,1);
-#else		/* What was I thinking? I don't check which bitmaps we are outputting even */
-    BDFFont *bdf;
-    int i, nbitmaps = 0, rangecnt = 0;
-    int *bitmapsizes;
-
-    for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next )
-	if ( BDFDepth(bdf)==1 ) nbitmaps++;
-    bitmapsizes = gcalloc( nbitmaps, sizeof(int) );
-    for ( i=0, bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next )
-	if ( BDFDepth(bdf)==1 ) bitmapsizes[i++] = bdf->pixelsize;
-    qsort ( bitmapsizes, nbitmaps, sizeof(int), icomp );
-    rangecnt = 1;
-    if ( nbitmaps>0 && bitmapsizes[0]>1 ) rangecnt++;
-    for ( i=0; i<nbitmaps; i++ ) {
-        if ( i>0 && bitmapsizes[i-1]+1<bitmapsizes[i] ) rangecnt++;
-	if ( i==nbitmaps-1 || bitmapsizes[i]+1<bitmapsizes[i+1] ) rangecnt++;
-    }
+    int i;
 
     at->gaspf = tmpfile();
     putshort(at->gaspf,0);	/* Version number */
-    putshort(at->gaspf,rangecnt);
-    for ( i=0; i<nbitmaps; i++ ) {
-	if ( (i==0 && bitmapsizes[i]>1) || 
-	     (i>0 && bitmapsizes[i-1]+1<bitmapsizes[i]) ) {
-	    putshort(at->gaspf,bitmapsizes[i]-1);
-	    putshort(at->gaspf,0x2);	/* Grey scale, no gridfitting */
-	}
-	if ( (i<nbitmaps-1 && bitmapsizes[i]+1<bitmapsizes[i+1]) ||
-	      i==nbitmaps-1 ) {
-	    putshort(at->gaspf,bitmapsizes[i]);
-	    putshort(at->gaspf,0x0);	/* No grey scale, no gridfitting */
+    if ( sf->gasp_cnt==0 ) {
+	/* For fonts with no instructions always dump a gasp table which */
+	/*  asks for grey and no grid fit */
+	putshort(at->gaspf,1);
+	putshort(at->gaspf,0xffff);	/* Upper bound on pixels/em for this range */
+	putshort(at->gaspf,0x2);	/* Grey scale, no gridfitting */
+					/* No hints, so no grids to fit */
+    } else {
+	putshort(at->gaspf,sf->gasp_cnt);
+	for ( i=0; i<sf->gasp_cnt; ++i ) {
+	    putshort(at->gaspf,sf->gasp[i].ppem);
+	    putshort(at->gaspf,sf->gasp[i].flags);
 	}
     }
-    gfree(bitmapsizes);
-#endif
-    putshort(at->gaspf,0xffff);	/* Upper bound on pixels/em for this range */
-    putshort(at->gaspf,0x2);	/* Grey scale, no gridfitting */
-				    /* No hints, so no grids to fit */
     at->gasplen = ftell(at->gaspf);
 	/* This table is always 32 bit aligned */
 }
@@ -4996,7 +4972,8 @@ return( false );
 	redoos2(at);
     }
     if ( format!=ff_otf && format!=ff_otfcid && format!=ff_none ) {
-	if ( !SFHasInstructions(sf) && format!=ff_type42 && format!=ff_type42cid )
+	if (( sf->gasp_cnt!=0 || !SFHasInstructions(sf))
+		&& format!=ff_type42 && format!=ff_type42cid )
 	    dumpgasp(at, sf);
 	at->fpgmf = dumpstoredtable(sf,CHR('f','p','g','m'),&at->fpgmlen);
 	at->prepf = dumpstoredtable(sf,CHR('p','r','e','p'),&at->preplen);

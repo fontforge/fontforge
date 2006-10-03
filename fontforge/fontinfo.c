@@ -866,6 +866,19 @@ static struct col_init ci[3] = {
     { me_enum, NULL, ttfnameids, TN_StrIDEnable, N_("String ID") },
     { me_func, TN_DefaultName, NULL, NULL, N_("String") }
     };
+static GTextInfo gridfit[] = {
+    { (unichar_t *) N_("No Grid Fit"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 1, 0, 1},
+    { (unichar_t *) N_("Grid Fit"), NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { NULL }};
+static GTextInfo antialias[] = {
+    { (unichar_t *) N_("No Anti-Alias"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 1, 0, 1},
+    { (unichar_t *) N_("Anti-Alias"), NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { NULL }};
+static struct col_init gaspci[3] = {
+    { me_int , NULL, NULL, NULL, N_("Pixels Per EM") },
+    { me_enum, NULL, gridfit, NULL, N_("Grid Fit") },
+    { me_enum, NULL, antialias, NULL, N_("Anti-Alias") }
+    };
 
 struct langstyle { int lang; const char *str; };
 static const char regulareng[] = "Regular";
@@ -1147,6 +1160,8 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_TNames		5005
 
 #define CID_Language		5006	/* Used by AskForLangNames */
+
+#define CID_Gasp		5100
 
 #define CID_Comment		6001
 
@@ -4620,6 +4635,61 @@ static void TNMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
     mi->bigedittitle = TN_BigEditTitle;
 }
 
+static int Gasp_CanDelete(GGadget *g,int row) {
+    int rows;
+    struct matrix_data *gasp = GMatrixEditGet(g, &rows);
+    if ( gasp==NULL )
+return( false );
+
+return( gasp[3*row].u.md_ival!=0xffff );
+}
+
+static int gasp_comp(const void *_md1, const void *_md2) {
+    const struct matrix_data *md1 = _md1, *md2 = _md2;
+return( md1->u.md_ival - md2->u.md_ival );
+}
+
+static void Gasp_FinishEdit(GGadget *g,int row,int col,int wasnew) {
+    int rows;
+    struct matrix_data *gasp = GMatrixEditGet(g, &rows);
+
+    if ( col==0 ) {
+	qsort(gasp,rows,3*sizeof(struct matrix_data),gasp_comp);
+	GGadgetRedraw(g);
+    }
+}
+
+static void GaspMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
+    SplineFont *sf = d->sf;
+    int i;
+    struct matrix_data *md;
+
+    memset(mi,0,sizeof(*mi));
+    mi->col_cnt = 3;
+    mi->col_init = gaspci;
+
+    if ( sf->gasp_cnt==0 ) {
+	md = gcalloc(3,sizeof(struct matrix_data));
+	md[0].u.md_ival = 0xffff;
+	md[1].u.md_ival = 1;
+	md[2].u.md_ival = 1;
+	mi->initial_row_cnt = 1;
+    } else {
+	md = gcalloc(3*sf->gasp_cnt,sizeof(struct matrix_data));
+	for ( i=0; i<sf->gasp_cnt; ++i ) {
+	    md[3*i  ].u.md_ival = sf->gasp[i].ppem;
+	    md[3*i+1].u.md_ival = (sf->gasp[i].flags&1)?1:0;
+	    md[3*i+2].u.md_ival = (sf->gasp[i].flags&2)?1:0;
+	}
+	mi->initial_row_cnt = sf->gasp_cnt;
+    }
+    mi->matrix_data = md;
+
+    mi->finishedit = Gasp_FinishEdit;
+    mi->candelete = Gasp_CanDelete;
+    mi->handle_key = TN_PassChar;
+}
+
 static int GFI_SortBy(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
 	struct gfi_data *d = (struct gfi_data *) GDrawGetUserData(GGadgetGetWindow(g));
@@ -4919,11 +4989,16 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	NameList *nl;
 	extern int allow_utf8_glyphnames;
 	int os2version;
-	int rows;
+	int rows, gasprows;
 	struct matrix_data *strings = GMatrixEditGet(GWidgetGetControl(d->gw,CID_TNames), &rows);
+	struct matrix_data *gasp    = GMatrixEditGet(GWidgetGetControl(d->gw,CID_Gasp), &gasprows);
 
-	if ( strings==NULL )
+	if ( strings==NULL || gasp==NULL )
 return( true );
+	if ( gasp[3*gasprows-3].u.md_ival!=65535 ) {
+	    gwwv_post_error(_("Bad Grid Fiting table"),_("The 'gasp' (Grid Fit) table must end with a pixel entry of 65535"));
+return( true );
+	}
 	if ( !CheckNames(d))
 return( true );
 	if ( !PIFinishFormer(d))
@@ -5133,6 +5208,14 @@ return(true);
 	} else {
 	    free(sf->xuid);
 	    sf->xuid = *txt=='\0'?NULL:cu_copy(txt);
+	}
+
+	free(sf->gasp);
+	sf->gasp = galloc(gasprows*sizeof(struct gasp));
+	sf->gasp_cnt = gasprows;
+	for ( i=0; i<gasprows; ++i ) {
+	    sf->gasp[i].ppem = gasp[3*i].u.md_ival;
+	    sf->gasp[i].flags = gasp[3*i+1].u.md_ival | (gasp[3*i+2].u.md_ival<<1);
 	}
 
 	OtfNameListFree(sf->fontstyle_name);
@@ -6012,12 +6095,12 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GTabInfo aspects[20], conaspects[7], smaspects[5], vaspects[5];
+    GTabInfo aspects[21], conaspects[7], smaspects[5], vaspects[5];
     GGadgetCreateData mgcd[10], ngcd[17], psgcd[30], tngcd[8],
 	pgcd[8], vgcd[19], pangcd[22], comgcd[3], atgcd[7], txgcd[23],
 	congcd[3], csubgcd[fpst_max-pst_contextpos][6], smgcd[3], smsubgcd[4][6],
 	mfgcd[8], mcgcd[8], szgcd[19], mkgcd[5], metgcd[29], vagcd[3], ssgcd[23],
-	xugcd[7], dgcd[6], ugcd[4];
+	xugcd[7], dgcd[6], ugcd[4], gaspgcd[2];
     GGadgetCreateData mb[2], mb2, nb[2], nb2, nb3, xub[2], psb[2], psb2[3], ppbox[3],
 	    vbox[4], metbox[2], ssbox[2], panbox[2], combox[2], atbox[4], mkbox[3],
 	    txbox[5], ubox[2], dbox[2], conbox[fpst_max-pst_contextpos][4],
@@ -6076,7 +6159,7 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     unichar_t *tmpcreatetime, *tmpmodtime;
     time_t t;
     const struct tm *tm;
-    struct matrixinit mi;
+    struct matrixinit mi, gaspmi;
 
     FontInfoInit();
     if ( !done ) {
@@ -7729,6 +7812,25 @@ return;
     vagcd[0].creator = GTabSetCreate;
 
 /******************************************************************************/
+    memset(&gaspgcd,0,sizeof(gaspgcd));
+
+    GaspMatrixInit(&gaspmi,d);
+
+    gaspgcd[0].gd.pos.x = 10; gaspgcd[0].gd.pos.y = 5;
+    gaspgcd[0].gd.pos.width = 300; tngcd[0].gd.pos.height = 200;
+    gaspgcd[0].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gaspgcd[0].gd.cid = CID_Gasp;
+    gaspgcd[0].gd.u.matrix = &gaspmi;
+    gaspgcd[0].gd.popup_msg = (unichar_t *) _(
+	"The 'gasp' table gives you control over when grid-fitting and\n"
+	"anti-aliased rasterizing are done.\n"
+	"The table consists of an (ordered) list of pixel sizes each with\n"
+	"a set of flags. Those flags apply to all pixel sizes bigger than\n"
+	"the previous table entry but less than or equal to the current.\n"
+	"The list must be terminated with a pixel size of 65535.");
+    gaspgcd[0].data = d;
+    gaspgcd[0].creator = GMatrixEditCreate;
+/******************************************************************************/
     memset(&tnlabel,0,sizeof(tnlabel));
     memset(&tngcd,0,sizeof(tngcd));
     memset(&tnboxes,0,sizeof(tnboxes));
@@ -8604,6 +8706,11 @@ return;
     aspects[i].text_is_1byte = true;
     aspects[i++].gcd = tnboxes;
 
+    if ( sf->cidmaster!=NULL ) aspects[i].disabled = true;
+    aspects[i].text = (unichar_t *) _("Grid Fitting");
+    aspects[i].text_is_1byte = true;
+    aspects[i++].gcd = gaspgcd;
+
     d->tx_aspect = i;
 /* xgettext won't use non-ASCII messages */
     aspects[i].text = (unichar_t *) U_("ΤεΧ");	/* Tau epsilon Chi, in greek */
@@ -8721,6 +8828,7 @@ return;
 
     GGadgetsCreate(gw,mb);
     GMatrixEditSetNewText(tngcd[4].ret,S_("TrueTypeName|New"));
+    GMatrixEditSetNewText(gaspgcd[0].ret,S_("gaspTableEntry|New"));
 
     GHVBoxSetExpandableRow(mb[0].ret,0);
     GHVBoxSetExpandableCol(mb2.ret,gb_expandgluesame);
@@ -8858,7 +8966,7 @@ void FontInfoInit(void) {
 	macstyles, widthclass, weightclass, fstype, pfmfamily, ibmfamily,
 	panfamily, panserifs, panweight, panprop, pancontrast, panstrokevar,
 	panarmstyle, panletterform, panmidline, panxheight, mslanguages,
-	ttfnameids, interpretations,
+	ttfnameids, interpretations, gridfit, antialias,
 	NULL
     };
     static char **needswork2[] = { texparams, texpopups,
@@ -8876,8 +8984,13 @@ return;
 	for ( i=0; needswork2[j][i]!=NULL; ++i )
 	    needswork2[j][i] = _(needswork2[j][i]);
     }
+
     ci[0].title = _(ci[0].title);
     ci[1].title = _(ci[1].title);
     ci[2].title = _(ci[2].title);
+
+    gaspci[0].title = _(gaspci[0].title);
+    gaspci[1].title = _(gaspci[1].title);
+    gaspci[2].title = _(gaspci[2].title);
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
