@@ -190,6 +190,7 @@ struct matrixinit {
 	} u;
 	uint8 frozen;
 	uint8 user_bits;
+	uint8 current;
     } *matrix_data;
     void (*initrow)(GGadget *g,int row);
     int  (*candelete)(GGadget *g,int row);

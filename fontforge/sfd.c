@@ -1192,6 +1192,18 @@ static void SFDDumpLangName(FILE *sfd, struct ttflangname *ln) {
     putc('\n',sfd);
 }
 
+static void SFDDumpGasp(FILE *sfd, SplineFont *sf) {
+    int i;
+
+    if ( sf->gasp_cnt==0 )
+return;
+
+    fprintf( sfd, "GaspTable: %d", sf->gasp_cnt );
+    for ( i=0; i<sf->gasp_cnt; ++i )
+	fprintf( sfd, " %d %d", sf->gasp[i].ppem, sf->gasp[i].flags );
+    putc('\n',sfd);
+}
+
 static void SFDDumpDesignSize(FILE *sfd, SplineFont *sf) {
     struct otfname *on;
 
@@ -1640,6 +1652,8 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal) {
 	SFDDumpTtfTable(sfd,tab);
     for ( ln = sf->names; ln!=NULL; ln=ln->next )
 	SFDDumpLangName(sfd,ln);
+    if ( sf->gasp_cnt!=0 )
+	SFDDumpGasp(sfd,sf);
     if ( sf->design_size!=0 )
 	SFDDumpDesignSize(sfd,sf);
     if ( sf->subfontcnt!=0 ) {
@@ -3779,6 +3793,17 @@ return( cur );
 return( old );
 }
 
+static void SFDGetGasp(FILE *sfd,SplineFont *sf) {
+    int i;
+
+    getsint(sfd,(int16 *) &sf->gasp_cnt);
+    sf->gasp = galloc(sf->gasp_cnt*sizeof(struct gasp));
+    for ( i=0; i<sf->gasp_cnt; ++i ) {
+	getsint(sfd,(int16 *) &sf->gasp[i].ppem);
+	getsint(sfd,(int16 *) &sf->gasp[i].flags);
+    }
+}
+
 static void SFDGetDesignSize(FILE *sfd,SplineFont *sf) {
     int ch;
     struct otfname *cur;
@@ -4384,6 +4409,8 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    sf->pfminfo.pfmset = true;
 	} else if ( strmatch(tok,"LangName:")==0 ) {
 	    sf->names = SFDGetLangName(sfd,sf->names);
+	} else if ( strmatch(tok,"GaspTable:")==0 ) {
+	    SFDGetGasp(sfd,sf);
 	} else if ( strmatch(tok,"DesignSize:")==0 ) {
 	    SFDGetDesignSize(sfd,sf);
 	} else if ( strmatch(tok,"PfmWeight:")==0 || strmatch(tok,"TTFWeight:")==0 ) {

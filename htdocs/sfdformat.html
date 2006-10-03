@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 10-Sep-2006 -->
+  <!-- AP: Last modified: 2-Oct-2006 -->
   <TITLE>Spline Font Database File Format</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -14,7 +14,7 @@
   </H1>
   <P>
   <FONT COLOR="Red"><STRONG>This page is often grievously out of date. It was
-  a fair approximation to reality on 5 August 2006.</STRONG></FONT> Even if
+  a fair approximation to reality on 2 October 2006.</STRONG></FONT> Even if
   out of date it should be helpful, but if you really need to know the current
   format look at
   <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/fontforge/sfd.c">sfd.c</A>
@@ -95,6 +95,7 @@ MacStyle: 0
 TeXData: 1 10485760 0 269484 134742 89828 526385 1048576 89828
 CreationTime: 1151539072
 ModificationTime: 11516487392
+GaspTable 3 8 2 16 1 65535 3
 </PRE>
   </BLOCKQUOTE>
   <P>
@@ -158,6 +159,11 @@ CIDVersion: 1.2
     <DD>
       These two dates are expressed as seconds since 00:00:00, 1 January, 1970
       -- standard unix dates.
+    <DT>
+      GaspTable
+    <DD>
+      The first number following the keyword gives the number of ppem/flag pairs
+      on the line. The next two numbers are the first ppem and first flag.
   </DL>
   <P>
   Some fonts will have some TrueType information in them too (look at the
