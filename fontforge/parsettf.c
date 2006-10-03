@@ -3615,6 +3615,7 @@ static int PickCMap(struct cmap_encs *cmap_encs,int enccnt,int def) {
 return( ret );
 }
 
+/* 'cmap' table: readttfcmap */
 static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
     int i,j, def, unicode_cmap, unicode4_cmap, dcnt, dcmap_cnt, dc;
     int nencs, version, usable_encs;
@@ -3915,7 +3916,7 @@ return;
 	    free(endchars);
 	    free(used);
 	} else if ( format==6 ) {
-	    /* array unicode format */
+	    /* trimmed array format */
 	    /* Well, the docs say it's for 2byte encodings, but Apple actually*/
 	    /*  uses it for 1 byte encodings which don't fit into the require-*/
 	    /*  ments for a format 0 sub-table. See Zapfino.dfont */

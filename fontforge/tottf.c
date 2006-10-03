@@ -4429,7 +4429,8 @@ static void dumpcmap(struct alltabs *at, SplineFont *sf,enum fontformat format) 
     }
     for ( i=0; i<256 ; ++i ) {
 	extern unichar_t MacRomanEnc[];
-	sc = SFFindExistingCharMac(sf,map,MacRomanEnc[i]);
+	/* sc = SFFindExistingCharMac(sf,map,MacRomanEnc[i]); */
+	sc = SFGetChar(sf,MacRomanEnc[i],NULL);
 	if ( sc!=NULL && sc->ttf_glyph!=-1 )
 	    table[i] = sc->ttf_glyph;
     }
@@ -4522,6 +4523,7 @@ static void dumpcmap(struct alltabs *at, SplineFont *sf,enum fontformat format) 
 	applecjklen = cjklen;
     } else
 	applecjkpos = cjkpos + cjklen;
+	/* applecjklen set above */
     if ( hasmac&1 ) {
 	/* big mac table, just a copy of the ms table */
 	putshort(at->cmap,0);	/* mac unicode platform */
