@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 9-Apr-2006 -->
-  <!-- AP: Last modified: 21-Sep-2006 -->
+  <!-- AP: Last modified: 4-Oct-2006 -->
   <TITLE>Scripting functions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -2496,6 +2496,15 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	    <A NAME="SetCharName" HREF="charinfo.html#Unicode">SetCharName</A>(name[,set-from-name-flag])
 	  <DD>
 	    Deprecated name for <A HREF="#SetGlyphName">SetGlyphName</A>
+	  <DT>
+	    <A NAME="SetGasp">S</A>etGasp([ppem,flag[,ppem2,flag[,...]]])
+	  <DD>
+	    With no arguments gives the font an empty gasp table.<BR>
+	    With an even number of integer arguments it sets the gasp table to the given
+	    pixel size/flag value pairs. These must be ordered by pixel size (smallest
+	    first) and must end with an entry for pixel size 65535.<BR>
+	    With exactly one argument it must be an array containing an ordered list
+	    of pixel size/flag value pairs (as above).
 	  <DT>
 	    <A NAME="SetGlyphColor">S</A>etGlyphColor(color)
 	  <DD>
