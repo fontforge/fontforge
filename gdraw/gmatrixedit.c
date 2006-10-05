@@ -216,23 +216,37 @@ return( width );
 }
 
 static void GME_RedrawTitles(GMatrixEdit *gme);
-static void GME_AdjustCol(GMatrixEdit *gme,int col) {
-    int new_width, x,c;
+static int GME_AdjustCol(GMatrixEdit *gme,int col) {
+    int new_width, x,c, changed;
 
-    if ( !gme->col_data[col].fixed ) {
+    changed = false;
+    if ( col==-1 ) {
+	for ( c=0; c<gme->cols; ++c ) if ( !gme->col_data[c].fixed ) {
+	    new_width = GME_ColWidth(gme,c);
+	    if ( new_width!=gme->col_data[c].width ) {
+		gme->col_data[c].width = new_width;
+		changed = true;
+	    }
+	}
+	col = 0;
+    } else if ( !gme->col_data[col].fixed ) {
 	new_width = GME_ColWidth(gme,col);
 	if ( new_width!=gme->col_data[col].width ) {
 	    gme->col_data[col].width = new_width;
-	    x = gme->col_data[col].x;
-	    for ( c=col; c<gme->cols; ++c ) {
-		gme->col_data[c].x = x;
-		x += gme->col_data[c].width + gme->hpad;
-	    }
-	    GME_FixScrollBars(gme);
-	    GDrawRequestExpose(gme->nested,NULL,false);
-	    GME_RedrawTitles(gme);
+	    changed = true;
 	}
     }
+    if ( changed ) {
+	x = gme->col_data[col].x;
+	for ( c=col; c<gme->cols; ++c ) {
+	    gme->col_data[c].x = x;
+	    x += gme->col_data[c].width + gme->hpad;
+	}
+	GME_FixScrollBars(gme);
+	GDrawRequestExpose(gme->nested,NULL,false);
+	GME_RedrawTitles(gme);
+    }
+return( changed );
 }
 
 static void GMatrixEdit_GetDesiredSize(GGadget *g,GRect *outer,GRect *inner) {
@@ -1414,6 +1428,13 @@ void GMatrixEditSet(GGadget *g,struct matrix_data *data, int rows, int copy_it) 
 		    gme->data[r*gme->cols+c].u.md_str = copy(gme->data[r*gme->cols+c].u.md_str);
 	    }
 	}
+    }
+
+    gme->active_row = gme->active_col = -1;
+    GME_EnableDelete(gme);
+    if ( !GME_AdjustCol(gme,-1)) {
+	GME_FixScrollBars(gme);
+	GDrawRequestExpose(gme->nested,NULL,false);
     }
 }
 
