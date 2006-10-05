@@ -2062,4 +2062,6 @@ extern char *utf7toutf8_copy(const char *_str);
 
 extern void SFSetModTime(SplineFont *sf);
 extern void SFTimesFromFile(SplineFont *sf,FILE *);
+
+extern int SFHasInstructions(SplineFont *sf);
 #endif

@@ -4727,7 +4727,7 @@ static void AbortTTF(struct alltabs *at, SplineFont *sf) {
     free( at->gi.bygid );
 }
 
-static int SFHasInstructions(SplineFont *sf) {
+int SFHasInstructions(SplineFont *sf) {
     int i;
 
     if ( sf->mm!=NULL && sf->mm->apple )

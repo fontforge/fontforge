@@ -4677,13 +4677,40 @@ static void TNMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
     mi->bigedittitle = TN_BigEditTitle;
 }
 
+static int Gasp_Default(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	GGadget *gg = GWidgetGetControl(GGadgetGetWindow(g),CID_Gasp);
+	int rows;
+	struct matrix_data *gasp;
+
+	if ( !SFHasInstructions(d->sf)) {
+	    rows = 1;
+	    gasp = gcalloc(3,sizeof(struct matrix_data));
+	    gasp[0].u.md_ival = 65535;
+	    gasp[1].u.md_ival = 0;	/* no grid fit (we have no instructions, we can't grid fit) */
+	    gasp[2].u.md_ival = 1;	/* do anti-alias */
+	} else {
+	    rows = 3;
+	    gasp = gcalloc(9,sizeof(struct matrix_data));
+	    gasp[0].u.md_ival = 8;     gasp[1].u.md_ival = 0; gasp[2].u.md_ival = 1;
+	    gasp[3].u.md_ival = 16;    gasp[4].u.md_ival = 1; gasp[5].u.md_ival = 0;
+	    gasp[6].u.md_ival = 65535; gasp[7].u.md_ival = 1; gasp[8].u.md_ival = 1;
+	}
+	GMatrixEditSet(gg,gasp,rows,false);
+    }
+return( true );
+}
+
 static int Gasp_CanDelete(GGadget *g,int row) {
     int rows;
     struct matrix_data *gasp = GMatrixEditGet(g, &rows);
     if ( gasp==NULL )
 return( false );
 
-return( gasp[3*row].u.md_ival!=0xffff );
+    /* Only allow them to delete the sentinal entry if that would give us an */
+    /* empty gasp table */
+return( gasp[3*row].u.md_ival!=0xffff || rows==1 );
 }
 
 static int gasp_comp(const void *_md1, const void *_md2) {
@@ -4712,10 +4739,12 @@ static void GaspMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
 
     if ( sf->gasp_cnt==0 ) {
 	md = gcalloc(3,sizeof(struct matrix_data));
+#if 0
 	md[0].u.md_ival = 0xffff;
 	md[1].u.md_ival = 1;
 	md[2].u.md_ival = 1;
-	mi->initial_row_cnt = 1;
+#endif
+	mi->initial_row_cnt = 0;
     } else {
 	md = gcalloc(3*sf->gasp_cnt,sizeof(struct matrix_data));
 	for ( i=0; i<sf->gasp_cnt; ++i ) {
@@ -5037,7 +5066,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 
 	if ( strings==NULL || gasp==NULL )
 return( true );
-	if ( gasp[3*gasprows-3].u.md_ival!=65535 ) {
+	if ( gasprows>0 && gasp[3*gasprows-3].u.md_ival!=65535 ) {
 	    gwwv_post_error(_("Bad Grid Fiting table"),_("The 'gasp' (Grid Fit) table must end with a pixel entry of 65535"));
 return( true );
 	}
@@ -5253,11 +5282,15 @@ return(true);
 	}
 
 	free(sf->gasp);
-	sf->gasp = galloc(gasprows*sizeof(struct gasp));
 	sf->gasp_cnt = gasprows;
-	for ( i=0; i<gasprows; ++i ) {
-	    sf->gasp[i].ppem = gasp[3*i].u.md_ival;
-	    sf->gasp[i].flags = gasp[3*i+1].u.md_ival | (gasp[3*i+2].u.md_ival<<1);
+	if ( gasprows==0 )
+	    sf->gasp = NULL;
+	else {
+	    sf->gasp = galloc(gasprows*sizeof(struct gasp));
+	    for ( i=0; i<gasprows; ++i ) {
+		sf->gasp[i].ppem = gasp[3*i].u.md_ival;
+		sf->gasp[i].flags = gasp[3*i+1].u.md_ival | (gasp[3*i+2].u.md_ival<<1);
+	    }
 	}
 
 	OtfNameListFree(sf->fontstyle_name);
@@ -6146,7 +6179,7 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     GGadgetCreateData mb[2], mb2, nb[2], nb2, nb3, xub[2], psb[2], psb2[3], ppbox[3],
 	    vbox[4], metbox[2], ssbox[2], panbox[2], combox[2], atbox[4], mkbox[3],
 	    txbox[5], ubox[2], dbox[2], conbox[fpst_max-pst_contextpos][4],
-	    smbox[4][4], mcbox[3], mfbox[3], szbox[6], tnboxes[3];
+	    smbox[4][4], mcbox[3], mfbox[3], szbox[6], tnboxes[3], gaspboxes[3];
     GGadgetCreateData *marray[7], *marray2[9], *narray[26], *narray2[7], *narray3[3],
 	*xuarray[13], *psarray[10], *psarray2[21], *psarray3[3], *psarray4[10],
 	*ppbuttons[5], *pparray[4], *vradio[5], *vbutton[4], *varray[38], *metarray[46],
@@ -6156,12 +6189,13 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
 	*conarray2[fpst_max-pst_contextpos][6], *conarray3[fpst_max-pst_contextpos][4],
 	*smarray[4][4], *smarray2[4][6], *smarray3[4][4], *mcarray[13], *mcarray2[7],
 	*mfarray[14], *szarray[7], *szarray2[5], *szarray3[7],
-	*szarray4[4], *szarray5[6], *tnvarray[4], *tnharray[5];
+	*szarray4[4], *szarray5[6], *tnvarray[4], *tnharray[5], *gaspharray[4],
+	*gaspvarray[3];
     GTextInfo mlabel[10], nlabel[16], pslabel[30], tnlabel[7],
 	plabel[8], vlabel[19], panlabel[22], comlabel[3], atlabel[7], txlabel[23],
 	csublabel[fpst_max-pst_contextpos][6], smsublabel[4][6],
 	mflabel[8], mclabel[8], szlabel[17], mklabel[5], metlabel[28],
-	sslabel[23], xulabel[6], dlabel[5], ulabel[1];
+	sslabel[23], xulabel[6], dlabel[5], ulabel[1], gasplabel[2];
     GTextInfo *namelistnames;
     struct gfi_data *d;
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20],
@@ -7855,6 +7889,8 @@ return;
 
 /******************************************************************************/
     memset(&gaspgcd,0,sizeof(gaspgcd));
+    memset(&gasplabel,0,sizeof(gasplabel));
+    memset(&gaspboxes,0,sizeof(gaspboxes));
 
     GaspMatrixInit(&gaspmi,d);
 
@@ -7869,9 +7905,30 @@ return;
 	"The table consists of an (ordered) list of pixel sizes each with\n"
 	"a set of flags. Those flags apply to all pixel sizes bigger than\n"
 	"the previous table entry but less than or equal to the current.\n"
-	"The list must be terminated with a pixel size of 65535.");
+	"The list must be terminated with a pixel size of 65535.\n\n"
+	"The 'gasp' table only applies to truetype fonts.");
     gaspgcd[0].data = d;
     gaspgcd[0].creator = GMatrixEditCreate;
+
+    gaspgcd[1].gd.flags = gg_visible | gg_enabled;
+    gasplabel[1].text = (unichar_t *) S_("Gasp|_Default");
+    gasplabel[1].text_is_1byte = true;
+    gasplabel[1].text_in_resource = true;
+    gaspgcd[1].gd.label = &gasplabel[1];
+    gaspgcd[1].gd.handle_controlevent = Gasp_Default;
+    gaspgcd[1].creator = GButtonCreate;
+    gaspharray[0] = GCD_Glue; gaspharray[1] = &gaspgcd[1]; gaspharray[2] = GCD_Glue;
+    gaspharray[3] = NULL;
+
+    gaspboxes[2].gd.flags = gg_enabled|gg_visible;
+    gaspboxes[2].gd.u.boxelements = gaspharray;
+    gaspboxes[2].creator = GHBoxCreate;
+
+    gaspvarray[0] = &gaspgcd[0]; gaspvarray[1] = &gaspboxes[2]; gaspvarray[2] = NULL;
+
+    gaspboxes[0].gd.flags = gg_enabled|gg_visible;
+    gaspboxes[0].gd.u.boxelements = gaspvarray;
+    gaspboxes[0].creator = GVBoxCreate;
 /******************************************************************************/
     memset(&tnlabel,0,sizeof(tnlabel));
     memset(&tngcd,0,sizeof(tngcd));
@@ -8751,7 +8808,7 @@ return;
     if ( sf->cidmaster!=NULL ) aspects[i].disabled = true;
     aspects[i].text = (unichar_t *) _("Grid Fitting");
     aspects[i].text_is_1byte = true;
-    aspects[i++].gcd = gaspgcd;
+    aspects[i++].gcd = gaspboxes;
 
     d->tx_aspect = i;
 /* xgettext won't use non-ASCII messages */
@@ -8940,6 +8997,8 @@ return;
     GHVBoxSetExpandableRow(mfbox[0].ret,0);
     GHVBoxSetExpandableRow(mfbox[2].ret,gb_expandglue);
 
+    GHVBoxSetExpandableRow(gaspboxes[0].ret,0);
+    GHVBoxSetExpandableCol(gaspboxes[2].ret,gb_expandglue);
     for ( i=0; i<4; ++i ) {
 	GHVBoxSetExpandableRow(smbox[i][0].ret,0);
 	GHVBoxSetExpandableCol(smbox[i][2].ret,gb_expandglue);
