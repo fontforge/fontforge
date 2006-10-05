@@ -2873,6 +2873,15 @@ return( false );
 return( true );
 }
 
+#define CID_POSX	2
+#define CID_PAIRX	9
+#define CID_POSY	4
+#define CID_PAIRY	10
+#define CID_POSXWID	6
+#define CID_PAIRXWID	11
+#define CID_POSYWID	8
+#define CID_PAIRYWID	12
+
 static unichar_t *AskPosTag(char *title,unichar_t *def,uint32 def_tag, uint16 flags,
 	int script_lang_index, enum possub_type type,SplineFont *sf,
 	SplineChar *default_script) {
@@ -3025,7 +3034,7 @@ static unichar_t *AskPosTag(char *title,unichar_t *def,uint32 def_tag, uint16 fl
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = 70; gcd[i].gd.pos.y = 5; gcd[i].gd.pos.width = 50;
 	gcd[i].gd.flags = gg_enabled|gg_visible;
-	gcd[i].gd.cid = i+1;
+	gcd[i].gd.cid = CID_POSX;
 	hvarray[k++] = &gcd[i];
 	gcd[i++].creator = GTextFieldCreate;
 
@@ -3034,7 +3043,7 @@ static unichar_t *AskPosTag(char *title,unichar_t *def,uint32 def_tag, uint16 fl
 	    gcd[i].gd.label = &label[i];
 	    gcd[i].gd.pos.x = 130; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y; gcd[i].gd.pos.width = 50;
 	    gcd[i].gd.flags = gg_enabled|gg_visible;
-	    gcd[i].gd.cid = i+1;
+	    gcd[i].gd.cid = CID_PAIRX;
 	    hvarray[k++] = &gcd[i];
 	    gcd[i++].creator = GTextFieldCreate;
 	}
@@ -3052,7 +3061,7 @@ static unichar_t *AskPosTag(char *title,unichar_t *def,uint32 def_tag, uint16 fl
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = gcd[i-2].gd.pos.x; gcd[i].gd.pos.y = gcd[i-2].gd.pos.y+26; gcd[i].gd.pos.width = gcd[i-2].gd.pos.width;
 	gcd[i].gd.flags = gg_enabled|gg_visible;
-	gcd[i].gd.cid = i+1;
+	gcd[i].gd.cid = CID_POSY;
 	hvarray[k++] = &gcd[i];
 	gcd[i++].creator = GTextFieldCreate;
 
@@ -3061,7 +3070,7 @@ static unichar_t *AskPosTag(char *title,unichar_t *def,uint32 def_tag, uint16 fl
 	    gcd[i].gd.label = &label[i];
 	    gcd[i].gd.pos.x = gcd[i-1].gd.pos.x; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y; gcd[i].gd.pos.width = gcd[i-2].gd.pos.width;
 	    gcd[i].gd.flags = gg_enabled|gg_visible;
-	    gcd[i].gd.cid = i+1;
+	    gcd[i].gd.cid = CID_PAIRY;
 	    hvarray[k++] = &gcd[i];
 	    gcd[i++].creator = GTextFieldCreate;
 	}
@@ -3079,7 +3088,7 @@ static unichar_t *AskPosTag(char *title,unichar_t *def,uint32 def_tag, uint16 fl
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = gcd[i-2].gd.pos.x; gcd[i].gd.pos.y = gcd[i-2].gd.pos.y+26; gcd[i].gd.pos.width = gcd[i-2].gd.pos.width;
 	gcd[i].gd.flags = gg_enabled|gg_visible;
-	gcd[i].gd.cid = i+1;
+	gcd[i].gd.cid = CID_POSXWID;
 	hvarray[k++] = &gcd[i];
 	gcd[i++].creator = GTextFieldCreate;
 
@@ -3088,7 +3097,7 @@ static unichar_t *AskPosTag(char *title,unichar_t *def,uint32 def_tag, uint16 fl
 	    gcd[i].gd.label = &label[i];
 	    gcd[i].gd.pos.x = gcd[i-2].gd.pos.x; gcd[i].gd.pos.y = gcd[i-5].gd.pos.y; gcd[i].gd.pos.width = gcd[i-2].gd.pos.width;
 	    gcd[i].gd.flags = gg_enabled|gg_visible;
-	    gcd[i].gd.cid = i+1;
+	    gcd[i].gd.cid = CID_PAIRXWID;
 	    hvarray[k++] = &gcd[i];
 	    gcd[i++].creator = GTextFieldCreate;
 	}
@@ -3106,7 +3115,7 @@ static unichar_t *AskPosTag(char *title,unichar_t *def,uint32 def_tag, uint16 fl
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = gcd[i-2].gd.pos.x; gcd[i].gd.pos.y = gcd[i-2].gd.pos.y+26; gcd[i].gd.pos.width = gcd[i-2].gd.pos.width;
 	gcd[i].gd.flags = gg_enabled|gg_visible;
-	gcd[i].gd.cid = i+1;
+	gcd[i].gd.cid = CID_POSYWID;
 	hvarray[k++] = &gcd[i];
 	gcd[i++].creator = GTextFieldCreate;
 
@@ -3115,7 +3124,7 @@ static unichar_t *AskPosTag(char *title,unichar_t *def,uint32 def_tag, uint16 fl
 	    gcd[i].gd.label = &label[i];
 	    gcd[i].gd.pos.x = gcd[i-3].gd.pos.x; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y; gcd[i].gd.pos.width = gcd[i-2].gd.pos.width;
 	    gcd[i].gd.flags = gg_enabled|gg_visible;
-	    gcd[i].gd.cid = i+1;
+	    gcd[i].gd.cid = CID_PAIRYWID;
 	    hvarray[k++] = &gcd[i]; hvarray[k++] = NULL;
 	    gcd[i++].creator = GTextFieldCreate;
 
@@ -3311,15 +3320,15 @@ static unichar_t *AskPosTag(char *title,unichar_t *def,uint32 def_tag, uint16 fl
     if ( ptd.ok ) {
 	int err=false;
 	char *other;
-	dx = GetInt8(gw,2, U_("∆X:"),&err);
-	dy = GetInt8(gw,4, U_("∆Y:"),&err);
-	dxa = GetInt8(gw,6, U_("∆XAdvance:"),&err);
-	dya = GetInt8(gw,8, U_("∆YAdvance:"),&err);
+	dx = GetInt8(gw,CID_POSX, U_("∆X:"),&err);
+	dy = GetInt8(gw,CID_POSY, U_("∆Y:"),&err);
+	dxa = GetInt8(gw,CID_POSXWID, U_("∆XAdvance:"),&err);
+	dya = GetInt8(gw,CID_POSYWID, U_("∆YAdvance:"),&err);
 	if ( ptd.ispair ) {
-	    dx2 = GetInt8(gw,9, U_("∆X:"),&err);
-	    dy2 = GetInt8(gw,10, U_("∆Y:"),&err);
-	    dxa2 = GetInt8(gw,11, U_("∆XAdvance:"),&err);
-	    dya2 = GetInt8(gw,12, U_("∆YAdvance:"),&err);
+	    dx2 = GetInt8(gw,CID_PAIRX, U_("∆X:"),&err);
+	    dy2 = GetInt8(gw,CID_PAIRY, U_("∆Y:"),&err);
+	    dxa2 = GetInt8(gw,CID_PAIRXWID, U_("∆XAdvance:"),&err);
+	    dya2 = GetInt8(gw,CID_PAIRYWID, U_("∆YAdvance:"),&err);
 	    other = cu_copy(_GGadgetGetTitle(GWidgetGetControl(gw,14)));
 	    if ( *other=='\0' ) {
 		gwwv_post_error(_("Missing paired glyph"),_("You must specify a name by which to identify the paired glyph"));
