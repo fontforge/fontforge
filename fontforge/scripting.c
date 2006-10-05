@@ -3084,6 +3084,48 @@ static void bSetFontHasVerticalMetrics(Context *c) {
     c->curfv->sf->hasvmetrics = (c->a.vals[1].u.ival!=0);
 }
 
+static void bSetGasp(Context *c) {
+    int i, base;
+    struct array *arr;
+    SplineFont *sf = c->curfv->sf;
+
+    if ( c->a.argc==2 && (c->a.vals[1].type==v_arr || c->a.vals[1].type==v_arrfree)) {
+	arr = c->a.vals[1].u.aval;
+	if ( arr->argc&1 )
+	    ScriptError( c, "Bad array size");
+	base = 0;
+    } else if ( (c->a.argc&1)==0 )
+	ScriptError( c, "Wrong number of arguments");
+    else { 
+	arr = &c->a;
+	base = 1;
+    }
+    for ( i=base; i<arr->argc; i += 2 ) {
+	if ( arr->vals[i].type!=v_int || arr->vals[i+1].type!=v_int )
+	    ScriptError(c,"Bad argument type");
+	if ( arr->vals[i].u.ival<=0 || arr->vals[i].u.ival>65535 )
+	    ScriptError(c,"'gasp' Pixel size out of range");
+	if ( i!=base && arr->vals[i].u.ival<=arr->vals[i-2].u.ival )
+	    ScriptError(c,"'gasp' Pixel size out of order");
+	if ( arr->vals[i+1].u.ival<0 || arr->vals[i+1].u.ival>3 )
+	    ScriptError(c,"'gasp' flag out of range");
+    }
+    if ( arr->argc>=2 && arr->vals[arr->argc-2].u.ival!=65535 )
+	ScriptError(c,"'gasp' Final pixel size must be 65535");
+
+    free(sf->gasp);
+    sf->gasp_cnt = (arr->argc-base)/2;
+    if ( sf->gasp_cnt!=0 ) {
+	sf->gasp = gcalloc(sf->gasp_cnt,sizeof(struct gasp));
+	for ( i=base; i<arr->argc; i += 2 ) {
+	    int g = (i-base)/2;
+	    sf->gasp[g].ppem = arr->vals[i].u.ival;
+	    sf->gasp[g].flags = arr->vals[i+1].u.ival;
+	}
+    } else
+	sf->gasp = NULL;
+}
+
 static void _SetFontNames(Context *c,SplineFont *sf) {
     int i;
 
@@ -7053,6 +7095,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "RemovePreservedTable", bRemovePreservedTable },
     { "HasPreservedTable", bHasPreservedTable },
     { "LoadEncodingFile", bLoadEncodingFile, 1 },
+    { "SetGasp", bSetGasp },
     { "SetFontOrder", bSetFontOrder },
     { "SetFontHasVerticalMetrics", bSetFontHasVerticalMetrics },
     { "SetFontNames", bSetFontNames },
