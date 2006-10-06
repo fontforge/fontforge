@@ -10793,7 +10793,11 @@ return( NULL );
 	sf = SFFromBDF(fullname,1,true);
     } else if ( strmatch(fullname+strlen(fullname)-2, "gf")==0 ) {
 	sf = SFFromBDF(fullname,3,true);
-    } else if ( strmatch(fullname+strlen(fullname)-4, ".pcf")==0 ) {
+    } else if ( strmatch(fullname+strlen(fullname)-4, ".pcf")==0 ||
+		 strmatch(fullname+strlen(fullname)-4, ".pmf")==0 ) {
+	/* Sun seems to use a variant of the pcf format which they call pmf */
+	/*  the encoding actually starts at 0x2000 and the one I examined was */
+	/*  for a pixel size of 200. Some sort of printer font? */
 	sf = SFFromBDF(fullname,2,false);
     } else if ( strmatch(fullname+strlen(strippedname)-4, ".bin")==0 ||
 		strmatch(fullname+strlen(strippedname)-4, ".hqx")==0 ||
