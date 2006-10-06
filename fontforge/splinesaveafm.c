@@ -2595,9 +2595,9 @@ static void FindCharlists(SplineFont *sf,int *charlistindex,EncMap *map,int maxc
 		sc = SFGetChar(sf,-1,pt);
 		*end = ch;
 		while ( *end==' ' ) ++end;
-		if ( sc!=NULL && map->map[sc->orig_pos]<maxc ) {
-		    charlistindex[last] = map->map[sc->orig_pos];
-		    last = map->map[sc->orig_pos];
+		if ( sc!=NULL && map->backmap[sc->orig_pos]<maxc ) {
+		    charlistindex[last] = map->backmap[sc->orig_pos];
+		    last = map->backmap[sc->orig_pos];
 		}
 	    }
 	}
@@ -2629,9 +2629,9 @@ static int FindExtensions(SplineFont *sf,struct extension *extensions,int *exten
 		sc = SFGetChar(sf,-1,pt);
 		*end = ch;
 		while ( *end==' ' ) ++end;
-		if ( sc!=NULL && map->map[sc->orig_pos]<maxc ) {
+		if ( sc!=NULL && map->backmap[sc->orig_pos]<maxc ) {
 		    if ( fcnt<4 )
-			founds[fcnt++] = map->map[sc->orig_pos];
+			founds[fcnt++] = map->backmap[sc->orig_pos];
 		} else
 		    founds[fcnt++] = 0;
 	    }
