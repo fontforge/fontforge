@@ -844,6 +844,8 @@ return( true );
 	lenx = sp->me.x - sp->prev->from->me.x;
 	leny = sp->me.y - sp->prev->from->me.y;
     } else {
+	if ( sp->next==NULL )
+return( true );
 	lenx = sp->me.x - sp->next->to->me.x;
 	leny = sp->me.y - sp->next->to->me.y;
     }
