@@ -1018,24 +1018,30 @@ static const char condensedhu[] = "Keskeny";
 static const char expandedhu[] = "Széles";
 static const char outlinehu[] = "Kontúros";
 
-static const char regularpl[] = "zwykła";
+static const char regularpl[] = "podstawowa";
 static const char demiboldpl[] = "półgruba";
 static const char boldpl[] = "pogrubiona";
 static const char thinpl[] = "cienka";
 static const char lightpl[] = "bardzo cienka";
 static const char heavypl[] = "bardzo grub";
 static const char italicpl[] = "pochyła";
-static const char obliquepl[] = "pochylona";
+static const char obliquepl[] = "pochyła";
 static const char condensedpl[] = "wąska";
 static const char expandedpl[] = "szeroka";
 static const char outlinepl[] = "konturowa";
+static const char mediumpl[] = "zwykła";
+static const char bookpl[] = "zwykła";
 
 
 static struct langstyle regs[] = { {0x409, regulareng}, { 0x40c, regularfren }, { 0x410, regularital }, { 0x407, regulargerm }, { 0x40a, regularspan }, { 0x419, regularru }, { 0x40e, regularhu },
 	{ 0x413, regulardutch}, { 0x41d, regularswed }, { 0x414, regularnor },
 	{ 0x406, regulardanish}, {0x415, regularpl }, { 0 }};
-static struct langstyle meds[] = { {0x409, mediumeng}, { 0x410, mediumital }, { 0x40c, mediumfren }, { 0x407, mediumgerm }, { 0x40e, mediumhu }, { 0x406, mediumdanish}, { 0 }};
-static struct langstyle books[] = { {0x409, bookeng}, { 0x410, bookital }, { 0x407, bookgerm }, { 0x40e, bookhu }, { 0x40e, bookhu2 }, { 0 }};
+static struct langstyle meds[] = { {0x409, mediumeng}, { 0x410, mediumital },
+	{ 0x40c, mediumfren }, { 0x407, mediumgerm }, { 0x40e, mediumhu },
+	{ 0x406, mediumdanish}, {0x415, mediumpl }, { 0 }};
+static struct langstyle books[] = { {0x409, bookeng}, { 0x410, bookital },
+	{ 0x407, bookgerm }, { 0x40e, bookhu }, { 0x40e, bookhu2 },
+	{ 0x415, bookpl}, { 0 }};
 static struct langstyle bolds[] = { {0x409, boldeng}, { 0x410, boldital }, { 0x40c, boldfren }, { 0x407, boldgerm }, { 0x407, boldgerm2 }, { 0x40a, boldspan}, { 0x419, boldru }, { 0x40e, boldhu }, { 0x40e, boldhu2 }, 
 	{ 0x413, bolddutch}, { 0x41d, boldswed }, { 0x414, boldnor },
 	{ 0x406, bolddanish}, { 0x415, boldpl}, { 0 }};
