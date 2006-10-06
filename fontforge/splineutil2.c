@@ -2916,6 +2916,23 @@ return(s);
 	/*  (we do a little fudging near the endpoints so we don't get confused */
 	/*   by rounding errors) */
 	for ( i=0; i<p; ++i ) {
+	    if ( t[i]>0 && t[i]<.05 ) {
+		BasePoint test;
+		/* Expand strong gets very confused on zero-length splines so */
+		/*  don't let that happen */
+		test.x = ((s->splines[0].a*t[i]+s->splines[0].b)*t[i]+s->splines[0].c)*t[i]+s->splines[0].d;
+		test.y = ((s->splines[1].a*t[i]+s->splines[1].b)*t[i]+s->splines[1].c)*t[i]+s->splines[1].d;
+		if ( test.x== s->from->me.x && test.y==s->from->me.y )
+		    t[i] = 0;		/* Throw it out */
+	    }
+	    if ( t[i]<1 && t[i]>.95 ) {
+		BasePoint test;
+		test.x = ((s->splines[0].a*t[i]+s->splines[0].b)*t[i]+s->splines[0].c)*t[i]+s->splines[0].d;
+		test.y = ((s->splines[1].a*t[i]+s->splines[1].b)*t[i]+s->splines[1].c)*t[i]+s->splines[1].d;
+		if ( test.x== s->to->me.x && test.y==s->to->me.y )
+		    t[i] = 1.0;		/* Throw it out */
+	    }
+		
 	    if ( t[i]<.0001 || t[i]>.9999 ) {
 		--p;
 		for ( j=i; j<p; ++j ) {
