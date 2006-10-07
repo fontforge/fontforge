@@ -718,7 +718,8 @@ void SplineCharFindBounds(SplineChar *sc,DBounds *bounds) {
 	_SplineSetFindBounds(sc->layers[i].splines,bounds);
 #endif
     }
-    if ( sc->parent->strokedfont && (bounds->minx!=bounds->maxx || bounds->miny!=bounds->maxy)) {
+    if ( sc->parent!=NULL && sc->parent->strokedfont &&
+	    (bounds->minx!=bounds->maxx || bounds->miny!=bounds->maxy)) {
 	real sw = sc->parent->strokewidth;
 	bounds->minx -= sw; bounds->miny -= sw;
 	bounds->maxx += sw; bounds->maxy += sw;
