@@ -5209,6 +5209,7 @@ return( NULL );
     if ( cur_sf->cidmaster ) cur_sf = cur_sf->cidmaster;
     sf.sli_cnt = cur_sf->sli_cnt;
     sf.script_lang = cur_sf->script_lang;
+    sf.anchor = cur_sf->anchor;
     if ( SFDStartsCorrectly(sfd,tok) ) {
 	pos = ftell(sfd);
 	while ( getname(sfd,tok)!=-1 ) {
