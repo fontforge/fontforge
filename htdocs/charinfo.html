@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 3-Jul-2006 -->
+  <!-- AP: Last modified: 9-Oct-2006 -->
   <TITLE>Char Info</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -39,6 +39,8 @@
       <A HREF="charinfo.html#components">Components</A>
     <LI>
       <A HREF="#CounterMasks">Counter Masks</A>
+    <LI>
+      <A HREF="#TeX">TeX</A>
   </UL>
   <P>
   <A NAME="Unicode">This dialog </A>allows you to set the name and unicode
@@ -149,6 +151,17 @@
   glyph. The information displayed here is informative only, you may not change
   this field directly (it changes when you change the unicode value or glyph
   name associated with this glyph).<BR CLEAR=ALL>
+  <P>
+  <IMG SRC="charinfo-tex.png" ALIGN="Right" WIDTH="429" HEIGHT="333"> The
+  <A NAME="TeX">TeX</A> pane allows you to specify glyph specific information
+  used in TeX tmf files. The height and depth fields are often the same as
+  the glyph's bounding box (if you don't fill these in that's what fontforge
+  will use by default), but they should be corrected for optical distortion,
+  so in glyphs like "o" these fields should be clipped to the x-height and
+  baseline (ff isn't smart enough to do this for you).
+  <P>
+  The Subscript and Superscript Positions are only used in TeX Math (and
+  Math-extension) fonts.<BR CLEAR=ALL>
   <P>
   The Next and Prev buttons allow you to move from one glyph to the next (if,
   for example, you need to enter encodings for a range of glyphs).
