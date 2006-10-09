@@ -5831,6 +5831,7 @@ void SCCharInfo(SplineChar *sc,EncMap *map,int enc) {
     static int boxset=0;
     FontRequest rq;
     GFont *font;
+    int is_math = sc->parent->texdata.type==tex_math || sc->parent->texdata.type==tex_mathext;
 
     CharInfoInit();
 
@@ -6192,19 +6193,21 @@ return;
 	tlabel[4].text_is_1byte = true;
 	tgcd[4].gd.label = &tlabel[4];
 	tgcd[4].gd.pos.x = 5; tgcd[4].gd.pos.y = 57+4; 
-	tgcd[4].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	tgcd[4].gd.flags = is_math ? (gg_enabled|gg_visible|gg_utf8_popup) :
+		(gg_visible|gg_utf8_popup);
 	tgcd[4].gd.popup_msg = tgcd[0].gd.popup_msg;
 	tgcd[4].creator = GLabelCreate;
 	thvarray[6] = &tgcd[4];
 
 	tgcd[5].gd.pos.x = 85; tgcd[5].gd.pos.y = 57;
-	tgcd[5].gd.flags = gg_enabled|gg_visible|gg_text_xim;
+	tgcd[5].gd.flags = is_math ? (gg_enabled|gg_visible|gg_text_xim) :
+		(gg_visible);
 	tgcd[5].gd.cid = CID_TeX_Sub;
 	tgcd[5].creator = GTextFieldCreate;
 	thvarray[7] = &tgcd[5]; thvarray[8] = NULL;
 
 	tgcd[6].gd.pos.x = 5; tgcd[6].gd.pos.y = 83+4;
-	tgcd[6].gd.flags = gg_visible | gg_enabled|gg_utf8_popup;
+	tgcd[6].gd.flags = tgcd[4].gd.flags;
 	tlabel[6].text = (unichar_t *) _("Sup Pos:");
 	tlabel[6].text_is_1byte = true;
 	tgcd[6].gd.label = &tlabel[6];
@@ -6213,7 +6216,7 @@ return;
 	thvarray[9] = &tgcd[6];
 
 	tgcd[7].gd.pos.x = 85; tgcd[7].gd.pos.y = 83;
-	tgcd[7].gd.flags = gg_visible | gg_enabled;
+	tgcd[7].gd.flags = tgcd[5].gd.flags;
 	tgcd[7].gd.cid = CID_TeX_Super;
 	tgcd[7].creator = GTextFieldCreate;
 	thvarray[10] = &tgcd[7]; thvarray[11] = NULL;
