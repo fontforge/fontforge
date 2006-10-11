@@ -183,12 +183,13 @@ static int figureProperEncoding(SplineFont *sf,EncMap *map, BDFFont *b, int enc,
     int i = -1, gid;
 
     if ( strcmp(name,".notdef")==0 ) {
-	if ( enc<32 || (enc>=127 && enc<0xa0)) i=enc;
-	else if ( map->enc==&custom ) i = enc;
-	else if ( sf->onlybitmaps && ((sf->bitmaps==b && b->next==NULL) || sf->bitmaps==NULL) ) i = enc;
-	gid = ( i>=map->enccount || i<0 ) ? -1 : map->map[i];
+	gid = ( enc>=map->enccount || enc<0 ) ? -1 : map->map[enc];
 	if ( gid==-1 || sf->glyphs[gid]==NULL || strcmp(sf->glyphs[gid]->name,name)!=0 ) {
 	    SplineChar *sc;
+	    if ( enc==-1 ) {
+		if ( (enc = SFFindSlot(sf,map,-1,name))==-1 )
+		    enc = map->enccount;
+	    }
 	    MakeEncChar(sf,map,enc,name);
 	    sc = SFMakeChar(sf,map,enc);
 	    if ( sf->onlybitmaps || !sc->widthset ) {
