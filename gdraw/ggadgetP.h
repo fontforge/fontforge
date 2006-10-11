@@ -384,6 +384,8 @@ typedef struct gmatrixedit {
     int off_top, off_left;
     GGadget *vsb, *hsb;
     GGadget *del;
+    GGadget *up, *down;
+    GGadget **buttonlist;
     GWindow nested;
     int16 desired_width, desired_height;
     char *newtext;
@@ -393,6 +395,8 @@ typedef struct gmatrixedit {
     int  (*handle_key)(GGadget *g,GEvent *e);
     char *(*bigedittitle)(GGadget *g,int r, int c);
     void (*finishedit)(GGadget *g,int r, int c, int wasnew);
+    char *(*validatestr)(GGadget *g,int r, int c, int wasnew, char *str);
+    void (*setotherbuttons)(GGadget *g, int r, int c);
 } GMatrixEdit;
 
 typedef struct rowcol {

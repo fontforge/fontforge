@@ -529,11 +529,11 @@ return( true );
 	    GMenuDismissAll(m);
 	else if ( l==0 && m->offtop!=0 ) {
 	    GMenuChangeSelection(m,-1,event);
-	    m->scrollit = GDrawRequestTimer(m->w,_GScrollBar_RepeatTime,_GScrollBar_RepeatTime,m);
+	    m->scrollit = GDrawRequestTimer(m->w,_GScrollBar_RepeatTime/2,_GScrollBar_RepeatTime/2,m);
 	    m->scrollup = true;
-	} else if ( l==m->lcnt-1 && m->offtop+m->lcnt<m->mcnt ) {
+	} else if ( l>=m->lcnt-1 && m->offtop+m->lcnt<m->mcnt ) {
 	    GMenuChangeSelection(m,-1,event);
-	    m->scrollit = GDrawRequestTimer(m->w,_GScrollBar_RepeatTime,_GScrollBar_RepeatTime,m);
+	    m->scrollit = GDrawRequestTimer(m->w,_GScrollBar_RepeatTime/2,_GScrollBar_RepeatTime/2,m);
 	    m->scrollup = false;
 	} else if ( event->type == et_mousedown && m->child!=NULL &&
 		i == m->line_with_mouse ) {
