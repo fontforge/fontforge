@@ -6192,11 +6192,11 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
 	pgcd[8], vgcd[19], pangcd[22], comgcd[3], atgcd[7], txgcd[23],
 	congcd[3], csubgcd[fpst_max-pst_contextpos][6], smgcd[3], smsubgcd[4][6],
 	mfgcd[8], mcgcd[8], szgcd[19], mkgcd[5], metgcd[29], vagcd[3], ssgcd[23],
-	xugcd[7], dgcd[6], ugcd[4], gaspgcd[2];
+	xugcd[7], dgcd[6], ugcd[4], gaspgcd[2], gaspgcd_def[2];
     GGadgetCreateData mb[2], mb2, nb[2], nb2, nb3, xub[2], psb[2], psb2[3], ppbox[3],
 	    vbox[4], metbox[2], ssbox[2], panbox[2], combox[2], atbox[4], mkbox[3],
 	    txbox[5], ubox[2], dbox[2], conbox[fpst_max-pst_contextpos][4],
-	    smbox[4][4], mcbox[3], mfbox[3], szbox[6], tnboxes[3], gaspboxes[3];
+	    smbox[4][4], mcbox[3], mfbox[3], szbox[6], tnboxes[3];
     GGadgetCreateData *marray[7], *marray2[9], *narray[26], *narray2[7], *narray3[3],
 	*xuarray[13], *psarray[10], *psarray2[21], *psarray3[3], *psarray4[10],
 	*ppbuttons[5], *pparray[4], *vradio[5], *vbutton[4], *varray[38], *metarray[46],
@@ -6206,8 +6206,7 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
 	*conarray2[fpst_max-pst_contextpos][6], *conarray3[fpst_max-pst_contextpos][4],
 	*smarray[4][4], *smarray2[4][6], *smarray3[4][4], *mcarray[13], *mcarray2[7],
 	*mfarray[14], *szarray[7], *szarray2[5], *szarray3[7],
-	*szarray4[4], *szarray5[6], *tnvarray[4], *tnharray[5], *gaspharray[4],
-	*gaspvarray[3];
+	*szarray4[4], *szarray5[6], *tnvarray[4], *tnharray[5];
     GTextInfo mlabel[10], nlabel[16], pslabel[30], tnlabel[7],
 	plabel[8], vlabel[19], panlabel[22], comlabel[3], atlabel[7], txlabel[23],
 	csublabel[fpst_max-pst_contextpos][6], smsublabel[4][6],
@@ -7907,7 +7906,7 @@ return;
 /******************************************************************************/
     memset(&gaspgcd,0,sizeof(gaspgcd));
     memset(&gasplabel,0,sizeof(gasplabel));
-    memset(&gaspboxes,0,sizeof(gaspboxes));
+    memset(&gaspgcd_def,0,sizeof(gaspgcd_def));
 
     GaspMatrixInit(&gaspmi,d);
 
@@ -7927,25 +7926,13 @@ return;
     gaspgcd[0].data = d;
     gaspgcd[0].creator = GMatrixEditCreate;
 
-    gaspgcd[1].gd.flags = gg_visible | gg_enabled;
+    gaspgcd_def[0].gd.flags = gg_visible | gg_enabled;
     gasplabel[1].text = (unichar_t *) S_("Gasp|_Default");
     gasplabel[1].text_is_1byte = true;
     gasplabel[1].text_in_resource = true;
-    gaspgcd[1].gd.label = &gasplabel[1];
-    gaspgcd[1].gd.handle_controlevent = Gasp_Default;
-    gaspgcd[1].creator = GButtonCreate;
-    gaspharray[0] = GCD_Glue; gaspharray[1] = &gaspgcd[1]; gaspharray[2] = GCD_Glue;
-    gaspharray[3] = NULL;
-
-    gaspboxes[2].gd.flags = gg_enabled|gg_visible;
-    gaspboxes[2].gd.u.boxelements = gaspharray;
-    gaspboxes[2].creator = GHBoxCreate;
-
-    gaspvarray[0] = &gaspgcd[0]; gaspvarray[1] = &gaspboxes[2]; gaspvarray[2] = NULL;
-
-    gaspboxes[0].gd.flags = gg_enabled|gg_visible;
-    gaspboxes[0].gd.u.boxelements = gaspvarray;
-    gaspboxes[0].creator = GVBoxCreate;
+    gaspgcd_def[0].gd.label = &gasplabel[1];
+    gaspgcd_def[0].gd.handle_controlevent = Gasp_Default;
+    gaspgcd_def[0].creator = GButtonCreate;
 /******************************************************************************/
     memset(&tnlabel,0,sizeof(tnlabel));
     memset(&tngcd,0,sizeof(tngcd));
@@ -8825,7 +8812,7 @@ return;
     if ( sf->cidmaster!=NULL ) aspects[i].disabled = true;
     aspects[i].text = (unichar_t *) _("Grid Fitting");
     aspects[i].text_is_1byte = true;
-    aspects[i++].gcd = gaspboxes;
+    aspects[i++].gcd = gaspgcd;
 
     d->tx_aspect = i;
 /* xgettext won't use non-ASCII messages */
@@ -8945,6 +8932,7 @@ return;
     GGadgetsCreate(gw,mb);
     GMatrixEditSetNewText(tngcd[4].ret,S_("TrueTypeName|New"));
     GMatrixEditSetNewText(gaspgcd[0].ret,S_("gaspTableEntry|New"));
+    GMatrixEditAddButtons(gaspgcd[0].ret,gaspgcd_def);
 
     GHVBoxSetExpandableRow(mb[0].ret,0);
     GHVBoxSetExpandableCol(mb2.ret,gb_expandgluesame);
@@ -9014,8 +9002,6 @@ return;
     GHVBoxSetExpandableRow(mfbox[0].ret,0);
     GHVBoxSetExpandableRow(mfbox[2].ret,gb_expandglue);
 
-    GHVBoxSetExpandableRow(gaspboxes[0].ret,0);
-    GHVBoxSetExpandableCol(gaspboxes[2].ret,gb_expandglue);
     for ( i=0; i<4; ++i ) {
 	GHVBoxSetExpandableRow(smbox[i][0].ret,0);
 	GHVBoxSetExpandableCol(smbox[i][2].ret,gb_expandglue);

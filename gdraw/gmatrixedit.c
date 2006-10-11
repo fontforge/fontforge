@@ -74,7 +74,7 @@ static void MatrixDataFree(GMatrixEdit *gme) {
 
 static void GMatrixEdit_destroy(GGadget *g) {
     GMatrixEdit *gme = (GMatrixEdit *) g;
-    int c;
+    int c, i;
 
     free(gme->newtext);
     /* The textfield lives in the nested window and doesn't need to be destroyed */
@@ -86,6 +86,13 @@ static void GMatrixEdit_destroy(GGadget *g) {
 	GGadgetDestroy(gme->hsb);
     if ( gme->del!=NULL )
 	GGadgetDestroy(gme->del);
+    if ( gme->up!=NULL )
+	GGadgetDestroy(gme->up);
+    if ( gme->down!=NULL )
+	GGadgetDestroy(gme->down);
+    if ( gme->buttonlist!=NULL )
+	for ( i=0; gme->buttonlist[i]!=NULL; ++i )
+	    GGadgetDestroy(gme->buttonlist[i]);
     if ( gme->nested!=NULL ) {
 	GDrawSetUserData(gme->nested,NULL);
 	GDrawDestroyWindow(gme->nested);
@@ -113,8 +120,9 @@ static void GME_FixScrollBars(GMatrixEdit *gme) {
 
 static void GMatrixEdit_Move(GGadget *g, int32 x, int32 y) {
     GMatrixEdit *gme = (GMatrixEdit *) g;
+    int i;
 
-    /* I don't need to move the textfieldbecause they is */
+    /* I don't need to move the textfield because it is */
     /* nested within the window, and I'm moving the window */
     if ( gme->vsb!=NULL )
 	_ggadget_move((GGadget *) (gme->vsb),x+(gme->vsb->r.x-g->r.x),
@@ -125,6 +133,17 @@ static void GMatrixEdit_Move(GGadget *g, int32 x, int32 y) {
     if ( gme->del!=NULL )
 	_ggadget_move((GGadget *) (gme->del),x+(gme->del->r.x-g->r.x),
 					     y+(gme->del->r.y-g->r.y));
+    if ( gme->up!=NULL )
+	_ggadget_move((GGadget *) (gme->up),x+(gme->up->r.x-g->r.x),
+					     y+(gme->up->r.y-g->r.y));
+    if ( gme->down!=NULL )
+	_ggadget_move((GGadget *) (gme->down),x+(gme->down->r.x-g->r.x),
+					     y+(gme->down->r.y-g->r.y));
+    if ( gme->buttonlist!=NULL )
+	for ( i=0; gme->buttonlist[i]!=NULL; ++i )
+	    if ( gme->buttonlist[i]!=NULL )
+		_ggadget_move((GGadget *) (gme->buttonlist[i]),x+(gme->buttonlist[i]->r.x-g->r.x),
+						     y+(gme->buttonlist[i]->r.y-g->r.y));
     GDrawMove(gme->nested,x+(g->inner.x-g->r.x),y+(g->inner.y-g->r.y+
 	    (gme->has_titles?gme->fh:0)));
     _ggadget_move(g,x,y);
@@ -253,9 +272,10 @@ static void GMatrixEdit_GetDesiredSize(GGadget *g,GRect *outer,GRect *inner) {
     GMatrixEdit *gme = (GMatrixEdit *) g;
     int width, height;
     int bp = GBoxBorderWidth(g->base,g->box);
-    int c, rows;
+    int c, rows, i;
     FontInstance *old = GDrawSetFont(gme->g.base,gme->font);
     int sbwidth = GDrawPointsToPixels(g->base,_GScrollBar_Width);
+    int butwidth = 0;
 
     width = 1;
     for ( c=0; c<gme->cols; ++c ) {
@@ -272,8 +292,18 @@ static void GMatrixEdit_GetDesiredSize(GGadget *g,GRect *outer,GRect *inner) {
     if ( gme->has_titles )
 	height += gme->fh;
     height += sbwidth;
-    if ( gme->del )
+    if ( gme->del ) {
 	height += gme->del->r.height+DEL_SPACE;
+	butwidth += gme->del->r.width + 10;
+    }
+    if ( gme->up && gme->up->state!=gs_invisible )
+	butwidth += gme->up->r.width+5;
+    if ( gme->down && gme->down->state!=gs_invisible )
+	butwidth += gme->down->r.width+5;
+    if ( gme->buttonlist!=NULL )
+	for ( i=0; gme->buttonlist[i]!=NULL; ++i )
+	    if ( gme->buttonlist[i] && gme->buttonlist[i]->state!=gs_invisible )
+		butwidth += gme->buttonlist[i]->r.width+5;
 
     if ( gme->desired_width>2*bp )
 	width = gme->desired_width-2*bp;
@@ -310,6 +340,7 @@ static void GMatrixEdit_Resize(GGadget *g, int32 width, int32 height ) {
     int bp = GBoxBorderWidth(g->base,g->box);
     int subheight, subwidth;
     /*int plus, extra,x,c;*/
+    int bcnt, i;
 
     width -= 2*bp; height -= 2*bp;
 
@@ -325,8 +356,38 @@ static void GMatrixEdit_Resize(GGadget *g, int32 width, int32 height ) {
     GGadgetMove(gme->hsb,gme->g.inner.x,
 			 gme->g.inner.y + height - (gme->del->r.height+DEL_SPACE) - gme->hsb->r.height);
     GME_FixScrollBars(gme);
-    GGadgetMove(gme->del,gme->g.inner.x + (width-gme->del->r.width)/2,
-			     gme->g.inner.y + height - (gme->del->r.height+DEL_SPACE/2));
+
+    bcnt = 1;	/* delete */
+    if ( gme->up && gme->up->state!=gs_invisible )
+	bcnt += 2;
+    if ( gme->buttonlist!=NULL ) {
+	for ( i=0; gme->buttonlist[i]!=NULL; ++i )
+	    if ( gme->buttonlist[i]->state!=gs_invisible )
+		++bcnt;
+    }
+    if ( bcnt==1 ) {
+	GGadgetMove(gme->del,gme->g.inner.x + (width-gme->del->r.width)/2,
+				 gme->g.inner.y + height - (gme->del->r.height+DEL_SPACE/2));
+    } else {
+	int y = gme->g.inner.y + height - (gme->del->r.height+DEL_SPACE/2);
+	int x = gme->g.inner.x + gme->g.inner.width-5;
+	GGadgetMove(gme->del,gme->g.inner.x + 5, y);
+	if ( gme->up && gme->up->state!=gs_invisible ) {
+	    x -= gme->down->r.width;
+	    GGadgetMove(gme->down, x, y);
+	    x -= 5 + gme->up->r.width;
+	    GGadgetMove(gme->up, x, y);
+	    x -= 10;
+	}
+	if ( gme->buttonlist!=NULL ) {
+	    for ( i=0; gme->buttonlist[i]!=NULL; ++i )
+		if ( gme->buttonlist[i]->state!=gs_invisible ) {
+		    x -= gme->buttonlist[i]->r.width;
+		    GGadgetMove(gme->buttonlist[i], x, y);
+		    x -= 5;
+		}
+	}
+    }
 
 #if 0		/* Leave columns as they are. scrollbar will work */
     plus = (width-gme->g.inner.width)/gme->cols;
@@ -450,8 +511,17 @@ static void GME_RedrawTitles(GMatrixEdit *gme) {
 
 static void GMatrixEdit_SetVisible(GGadget *g, int visible ) {
     GMatrixEdit *gme = (GMatrixEdit *) g;
+    int i;
+
     if ( gme->vsb!=NULL ) _ggadget_setvisible(gme->vsb,visible);
+    if ( gme->hsb!=NULL ) _ggadget_setvisible(gme->hsb,visible);
     if ( gme->del!=NULL ) _ggadget_setvisible(gme->del,visible);
+    if ( gme->up!=NULL )  _ggadget_setvisible(gme->up,visible);
+    if ( gme->down!=NULL ) _ggadget_setvisible(gme->down,visible);
+    if ( gme->buttonlist!=NULL )
+	for ( i=0; gme->buttonlist[i]!=NULL; ++i )
+	    _ggadget_setvisible(gme->buttonlist[i],visible);
+
     GDrawSetVisible(gme->nested,visible);
     _ggadget_setvisible(g,visible);
 }
@@ -577,7 +647,7 @@ static int GME_SetValue(GMatrixEdit *gme,GGadget *g ) {
     int r = gme->active_row;
     int ival;
     double dval;
-    char *end;
+    char *end="";
     char *str = GGadgetGetTitle8(g);
     int kludge;
 
@@ -588,15 +658,21 @@ static int GME_SetValue(GMatrixEdit *gme,GGadget *g ) {
 	    int i;
 	    for ( i=0; (test=gme->col_data[c].enum_vals[i].ti.text)!=NULL || gme->col_data[c].enum_vals[i].ti.line ; ++i ) {
 		if ( u_strcmp(ustr,test)==0 ) {
-		    gme->data[r*gme->cols+c].u.md_ival = (intpt) gme->col_data[c].enum_vals[i].ti.userdata;
+		    if ( (intpt) gme->col_data[c].enum_vals[i].ti.userdata != GME_NoChange )
+			gme->data[r*gme->cols+c].u.md_ival =
+				(intpt) gme->col_data[c].enum_vals[i].ti.userdata;
 		    free(str);
   goto good;
 		}
 	    }
 	}
 	/* Didn't match any of the enums try as a direct integer */
+	/* Fall through */
       case me_int:
-	ival = strtol(str,&end,10);
+	if ( gme->validatestr!=NULL )
+	    end = (gme->validatestr)(&gme->g,gme->active_row,gme->active_col,gme->wasnew,str);
+	if ( *end=='\0' )
+	    ival = strtol(str,&end,10);
 	if ( *end!='\0' ) {
 	    GTextFieldSelect(g,end-str,-1);
 	    free(str);
@@ -607,7 +683,10 @@ return( false );
 	free(str);
   goto good;
       case me_real:
-	dval = strtod(str,&end);
+	if ( gme->validatestr!=NULL )
+	    end = (gme->validatestr)(&gme->g,gme->active_row,gme->active_col,gme->wasnew,str);
+	if ( *end=='\0' )
+	    dval = strtod(str,&end);
 	if ( *end!='\0' ) {
 	    GTextFieldSelect(g,end-str,-1);
 	    free(str);
@@ -618,6 +697,15 @@ return( false );
 	free(str);
   goto good;
       case me_string: case me_bigstr: case me_func:
+	if ( gme->validatestr!=NULL )
+	    end = (gme->validatestr)(&gme->g,gme->active_row,gme->active_col,gme->wasnew,str);
+	if ( *end!='\0' ) {
+	    GTextFieldSelect(g,end-str,-1);
+	    free(str);
+	    GDrawBeep(NULL);
+return( false );
+	}
+
 	free(gme->data[r*gme->cols+c].u.md_str);
 	gme->data[r*gme->cols+c].u.md_str = str;
 	/* Used to delete the row if this were a null string. seems extreme */
@@ -676,12 +764,19 @@ return( r );
 static void GME_EnableDelete(GMatrixEdit *gme) {
     int enabled = false;
 
+    if ( gme->setotherbuttons )
+	(gme->setotherbuttons)(&gme->g,gme->active_row,gme->active_col);
     if ( gme->active_row>=0 && gme->active_row<gme->rows ) {
 	enabled = true;
 	if ( gme->candelete!=NULL && !(gme->candelete)(&gme->g,gme->active_row))
 	    enabled = false;
     }
     GGadgetSetEnabled(gme->del,enabled);
+
+    if ( gme->up!=NULL ) {
+	GGadgetSetEnabled(gme->up,gme->active_row>=1 && gme->active_row<gme->rows);
+	GGadgetSetEnabled(gme->up,gme->active_row>=0 && gme->active_row<gme->rows-1);
+    }
 }
 
 static void GME_DeleteActive(GMatrixEdit *gme) {
@@ -708,6 +803,59 @@ return;
     GScrollBarSetBounds(gme->vsb,0,gme->rows,gme->vsb->inner.height/gme->fh);
     GDrawRequestExpose(gme->nested,NULL,false);
     GME_EnableDelete(gme);
+}
+
+void GMatrixEditUp(GGadget *g) {
+    GMatrixEdit *gme = (GMatrixEdit *) g;
+    GRect r;
+    int i;
+
+    if ( gme->active_row<1 || gme->active_row>=gme->rows )
+return;
+    for ( i=0; i<gme->cols; ++i ) {
+	struct matrix_data md = gme->data[gme->active_row*gme->cols+i];
+	gme->data[gme->active_row*gme->cols+i] = gme->data[(gme->active_row-1)*gme->cols+i];
+	gme->data[(gme->active_row-1)*gme->cols+i] = md;
+    }
+    --gme->active_row;;
+    GGadgetGetSize(gme->tf,&r);
+    GGadgetMove(gme->tf,r.x,r.y-(gme->fh+1));
+    GME_EnableDelete(gme);
+    GDrawRequestExpose(gme->nested,NULL,false);
+}
+
+static int _GME_Up(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GMatrixEditUp( g->data );
+    }
+return( true );
+}
+
+void GMatrixEditDown(GGadget *g) {
+    GMatrixEdit *gme = (GMatrixEdit *) g;
+    GRect r;
+    int i;
+
+    if ( gme->active_row<0 || gme->active_row>=gme->rows-1 )
+return;
+    for ( i=0; i<gme->cols; ++i ) {
+	struct matrix_data md = gme->data[gme->active_row*gme->cols+i];
+	gme->data[gme->active_row*gme->cols+i] = gme->data[(gme->active_row+1)*gme->cols+i];
+	gme->data[(gme->active_row+1)*gme->cols+i] = md;
+    }
+    ++gme->active_row;;
+    GGadgetGetSize(gme->tf,&r);
+    GGadgetMove(gme->tf,r.x,r.y-(gme->fh+1));
+    GME_EnableDelete(gme);
+    GDrawRequestExpose(gme->nested,NULL,false);
+return;
+}
+
+static int _GME_Down(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GMatrixEditDown( g->data );
+    }
+return( true );
 }
 
 #define CID_OK		1001
@@ -831,7 +979,11 @@ static void GME_StrBigEdit(GMatrixEdit *gme,char *str) {
 static void GME_EnumDispatch(GWindow gw, GMenuItem *mi, GEvent *e) {
     GMatrixEdit *gme = GDrawGetUserData(gw);
 
+    if ( (intpt) mi->ti.userdata == GME_NoChange )
+return;
+
     gme->data[gme->active_row*gme->cols+gme->active_col].u.md_ival = (intpt) mi->ti.userdata;
+
     if ( gme->finishedit != NULL )
 	(gme->finishedit)(&gme->g,gme->active_row,gme->active_col,gme->wasnew);
     GME_AdjustCol(gme,gme->active_col);
@@ -1476,9 +1628,94 @@ return( NULL );
 return( gme->data );
 }
 
+int GMatrixEditGetActiveRow(GGadget *g) {
+    GMatrixEdit *gme = (GMatrixEdit *) g;
+
+return( gme->active_row );
+}
+
+int GMatrixEditGetActiveCol(GGadget *g) {
+    GMatrixEdit *gme = (GMatrixEdit *) g;
+
+return( gme->active_col );
+}
+
 void GMatrixEditSetNewText(GGadget *g, char *text) {
     GMatrixEdit *gme = (GMatrixEdit *) g;
 
     free(gme->newtext);
     gme->newtext = copy(text);
+}
+
+void GMatrixEditSetOtherButtonEnable(GGadget *g, void (*sob)(GGadget *g, int r, int c)) {
+    GMatrixEdit *gme = (GMatrixEdit *) g;
+
+    gme->setotherbuttons = sob;
+}
+
+void GMatrixEditSetValidateStr(GGadget *g, char *(*validate)(GGadget *g, int r, int c, int wasnew, char *str)) {
+    GMatrixEdit *gme = (GMatrixEdit *) g;
+
+    gme->validatestr = validate;
+}
+
+void GMatrixEditSetUpDownVisible(GGadget *g, int visible) {
+    GMatrixEdit *gme = (GMatrixEdit *) g;
+    GGadgetCreateData gcd[3];
+    GTextInfo label[2];
+    int i;
+
+    if ( gme->up==NULL ) {
+	if ( !visible )
+return;
+
+	memset(gcd,0,sizeof(gcd));
+	memset(label,0,sizeof(label));
+	i = 0;
+
+/* I want the 2 pronged arrow, but gdraw can't find a nice one */
+/*	label[i].text = (unichar_t *) "⇑";	*//* Up Arrow */
+	label[i].text = (unichar_t *) "↑";	/* Up Arrow */
+	label[i].text_is_1byte = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.flags = gg_visible | gg_enabled ;
+	gcd[i].gd.handle_controlevent = _GME_Up;
+	gcd[i].data = gme;
+	gcd[i++].creator = GButtonCreate;
+
+/* I want the 2 pronged arrow, but gdraw can't find a nice one */
+/*	label[i].text = (unichar_t *) "⇓";	*//* Down Arrow */
+	label[i].text = (unichar_t *) "↓";	/* Down Arrow */
+	label[i].text_is_1byte = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.flags = gg_visible | gg_enabled ;
+	gcd[i].gd.handle_controlevent = _GME_Down;
+	gcd[i].data = gme;
+	gcd[i++].creator = GButtonCreate;
+	GGadgetsCreate(g->base,gcd);
+
+	gme->up = gcd[0].ret;
+	gme->down = gcd[1].ret;
+	gme->up->contained = gme->down->contained = true;
+    } else {
+	GGadgetSetVisible(gme->up,visible);
+	GGadgetSetVisible(gme->down,visible);
+    }
+}
+
+void GMatrixEditAddButtons(GGadget *g, GGadgetCreateData *gcd) {
+    GMatrixEdit *gme = (GMatrixEdit *) g;
+    int i, base=0;
+
+    if ( gme->buttonlist!=NULL ) {
+	for ( base=0; gme->buttonlist[base]!=NULL; ++base );
+    }
+    for ( i=0; gcd[i].creator!=NULL; ++i );
+    gme->buttonlist = grealloc(gme->buttonlist,(i+base+1)*sizeof(GGadget *));
+    GGadgetsCreate(g->base,gcd);
+    for ( i=0; gcd[i].creator!=NULL; ++i ) {
+	gme->buttonlist[base+i] = gcd[i].ret;
+	gcd[i].ret->contained = true;
+    }
+    gme->buttonlist[base+i] = NULL;
 }

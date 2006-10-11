@@ -200,6 +200,8 @@ struct matrixinit {
     char *(*bigedittitle)(GGadget *g,int r, int c);
 };
 
+#define GME_NoChange	0x80000000
+
 struct gdirentry;
 typedef enum fchooserret (*GFileChooserFilterType)(GGadget *g,struct gdirentry *ent,
 	const unichar_t *dir);
@@ -339,9 +341,18 @@ void GHVBoxFitWindow(GGadget *g);
 
 void GMatrixEditSet(GGadget *g,struct matrix_data *data, int rows, int copy_it);
 struct matrix_data *GMatrixEditGet(GGadget *g, int *rows);
+int GMatrixEditGetActiveRow(GGadget *g);
+int GMatrixEditGetActiveCol(GGadget *g);
 void GMatrixEditDeleteRow(GGadget *g,int row);
 int GMatrixEditStringDlg(GGadget *g,int row,int col);
 void GMatrixEditSetNewText(GGadget *g, char *text);
+void GMatrixEditSetOtherButtonEnable(GGadget *g, void (*sob)(GGadget *g, int r, int c));
+void GMatrixEditSetValidateStr(GGadget *g, char *(*validate)(GGadget *g, int r, int c, int wasnew, char *str));
+void GMatrixEditUp(GGadget *g);
+void GMatrixEditDown(GGadget *g);
+void GMatrixEditSetUpDownVisible(GGadget *g, int enabled);
+void GMatrixEditAddButtons(GGadget *g, GGadgetCreateData *gcd);
+
 
 extern void GGadgetPreparePopup(GWindow base,const unichar_t *msg);
 extern void GGadgetPreparePopupR(GWindow base,int msg);
