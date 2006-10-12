@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 26-Oct-2005 -->
-  <!-- AP: Last modified: 14-Jan-2006 -->
+  <!-- AP: Last modified: 12-Oct-2006 -->
   <TITLE>Starting fontforge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -53,20 +53,29 @@
   <P>
   Before you can start fontforge on cygwin you must start the X11 server.
   <P>
-  Open a cygwin window and type
+  On recent versions of cygwin this may be done by invoking
   <BLOCKQUOTE>
-    <PRE><FONT COLOR="Gray">$ </FONT>xinit
+    <PRE>C:\cygwin\usr\X11R6\bin\startxwin.bat
 </PRE>
   </BLOCKQUOTE>
   <P>
-  This should create a task window that covers your entire screen, inside of
-  which there should be an xterm (sort of like the cygwin window earlier).
-  Be prepared to type commands in this window.
-  <P>
-  You should then type
+  On older systems:
   <BLOCKQUOTE>
-    <PRE><FONT COLOR="Gray">$ </FONT>twm &amp;
+    Open a cygwin window and type
+    <BLOCKQUOTE>
+      <PRE><FONT COLOR="Gray">$ </FONT>xinit
 </PRE>
+    </BLOCKQUOTE>
+    <P>
+    This should create a task window that covers your entire screen, inside of
+    which there should be an xterm (sort of like the cygwin window earlier).
+    Be prepared to type commands in this window.
+    <P>
+    You should then type
+    <BLOCKQUOTE>
+      <PRE><FONT COLOR="Gray">$ </FONT>twm &amp;
+</PRE>
+    </BLOCKQUOTE>
   </BLOCKQUOTE>
   <H3>
     Notes on the <A NAME="PATH">PATH</A> variable

@@ -179,11 +179,19 @@ MANPATH=${MANPATH:-}:/usr/local/man ; export MANPATH
     </BLOCKQUOTE>
   <LI>
     Then each time you want to run fontforge, type:
+    <UL>
+  <LI> On recent cygwin systems you may start X by invoking:
+    <BLOCKQUOTE>
+      <PRE>C:\cygwin\usr\X11R6\bin\startxwin.bat
+</PRE>
+    </BLOCKQUOTE>
+  <LI>While on older systems try:
     <BLOCKQUOTE>
       <PRE><FONT COLOR="Gray">$ </FONT>xinit
 </PRE>
     </BLOCKQUOTE>
   <LI>
+  </UL>
     This should bring up X in a large window that covers the screen and within
     that should be a subwindow, an xterm, running bash.
   <LI>
@@ -697,7 +705,18 @@ to find documentation online.
   Before starting fontforge on <A NAME="run-cygwin">cygwin</A>
 </H3>
 <P>
-Before you can start fontforge on cygwin you must start the X11 server.
+Before you can start fontforge on cygwin you must start the X11 server.<BR>
+There are many ways to do this. Here are two.
+<OL>
+<LI>
+On recent cygwin systems just invoke
+<BLOCKQUOTE>
+  <PRE>C:\cygwin\usr\X11R6\bin\startxwin.bat
+</PRE>
+</BLOCKQUOTE>
+<LI>
+On older systems try:
+<BLOCKQUOTE>
 <P>
 Open a cygwin window and type
 <BLOCKQUOTE>
@@ -714,6 +733,7 @@ you to move windows around and gives you title bars)
 <BLOCKQUOTE>
   <PRE><FONT COLOR="Gray">$ </FONT>twm &amp;
 </PRE>
+</BLOCKQUOTE>
 </BLOCKQUOTE>
 <H3>
   Notes on the <A NAME="PATH">PATH</A> variable
