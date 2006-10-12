@@ -419,6 +419,7 @@ return;
 #elif __CygWin
     if ( browser[0]=='\0' ) {
 	do_windows_browser(fullspec);
+	temp = NULL;
     } else {
 #else
     {
