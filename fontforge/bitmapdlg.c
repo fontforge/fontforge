@@ -575,10 +575,10 @@ return( true );
 void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[17];
+    GGadgetCreateData gcd[17], boxes[8], *varray[30], *harray[6][7];
     GTextInfo label[17];
     CreateBitmapData bd;
-    int i,j,y;
+    int i,j,k,y;
     int32 *sizes;
     BDFFont *bdf;
     static int done= false;
@@ -624,7 +624,9 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
+    memset(&boxes,0,sizeof(boxes));
 
+    k=0;
     if ( isavail ) {
 	label[0].text = (unichar_t *) _("The list of current pixel bitmap sizes");
 	label[0].text_is_1byte = true;
@@ -632,6 +634,7 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
 	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5; 
 	gcd[0].gd.flags = gg_enabled|gg_visible|gg_cb_on;
 	gcd[0].creator = GLabelCreate;
+	varray[k++] = &gcd[0]; varray[k++] = NULL;
 
 	label[1].text = (unichar_t *) _(" Removing a size will delete it.");
 	label[1].text_is_1byte = true;
@@ -639,6 +642,7 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
 	gcd[1].gd.pos.x = 5; gcd[1].gd.pos.y = 5+13;
 	gcd[1].gd.flags = gg_enabled|gg_visible;
 	gcd[1].creator = GLabelCreate;
+	varray[k++] = &gcd[1]; varray[k++] = NULL;
 
 	if ( bd.sf->onlybitmaps && bd.sf->bitmaps!=NULL )
 	    label[2].text = (unichar_t *) _(" Adding a size will create it by scaling.");
@@ -649,6 +653,7 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
 	gcd[2].gd.pos.x = 5; gcd[2].gd.pos.y = 5+26;
 	gcd[2].gd.flags = gg_enabled|gg_visible;
 	gcd[2].creator = GLabelCreate;
+	varray[k++] = &gcd[2]; varray[k++] = NULL;
 	j = 3; y = 5+39+3;
     } else {
 	label[0].text = (unichar_t *) _("Specify bitmap sizes to be regenerated");
@@ -657,6 +662,7 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
 	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5; 
 	gcd[0].gd.flags = gg_enabled|gg_visible|gg_cb_on;
 	gcd[0].creator = GLabelCreate;
+	varray[k++] = &gcd[0]; varray[k++] = NULL;
 
 	if ( lastwhich==bd_current && sc==NULL )
 	    lastwhich = bd_selected;
@@ -668,6 +674,12 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
 	gcd[1].creator = GListButtonCreate;
 	which[bd_current].disabled = sc==NULL;
 	which[lastwhich].selected = true;
+	harray[0][0] = &gcd[1]; harray[0][1] = GCD_Glue; harray[0][2] = NULL;
+
+	boxes[2].gd.flags = gg_enabled|gg_visible;
+	boxes[2].gd.u.boxelements = harray[0];
+	boxes[2].creator = GHBoxCreate;
+	varray[k++] = &boxes[2]; varray[k++] = NULL;
 
 	j=2; y = 5+13+28;
     }
@@ -680,6 +692,7 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     gcd[j].gd.cid = CID_X;
     gcd[j].gd.handle_controlevent = CB_SystemChange;
     gcd[j++].creator = GRadioCreate;
+    harray[1][0] = &gcd[j-1];
 
     label[j].text = (unichar_t *) _("Win");
     label[j].text_is_1byte = true;
@@ -689,6 +702,7 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     gcd[j].gd.cid = CID_Win;
     gcd[j].gd.handle_controlevent = CB_SystemChange;
     gcd[j++].creator = GRadioCreate;
+    harray[1][1] = &gcd[j-1];
 
     label[j].text = (unichar_t *) _("Mac");
     label[j].text_is_1byte = true;
@@ -700,6 +714,13 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     gcd[j++].creator = GRadioCreate;
     y += 26;
     gcd[j-3+oldsystem].gd.flags |= gg_cb_on;
+    harray[1][2] = &gcd[j-1]; harray[1][3] = GCD_Glue; harray[1][4] = NULL;
+
+    boxes[3].gd.flags = gg_enabled|gg_visible;
+    boxes[3].gd.u.boxelements = harray[1];
+    boxes[3].creator = GHBoxCreate;
+    varray[k++] = &boxes[3]; varray[k++] = NULL;
+    varray[k++] = GCD_Glue; varray[k++] = NULL;
 
     label[j].text = (unichar_t *) _("Point sizes on a 75 dpi screen");
     label[j].text_is_1byte = true;
@@ -708,6 +729,7 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     gcd[j].gd.flags = gg_enabled|gg_visible;
     gcd[j].gd.cid = CID_75Lab;
     gcd[j++].creator = GLabelCreate;
+    varray[k++] = &gcd[j-1]; varray[k++] = NULL;
     y += 13;
 
     label[j].text = GenText(sizes,oldsystem==0?72./75.:oldsystem==1?72/96.:1.);
@@ -719,6 +741,12 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     gcd[j].gd.handle_controlevent = CB_TextChange;
     gcd[j++].creator = GTextFieldCreate;
     y += 26;
+    harray[2][0] = GCD_HPad10; harray[2][1] = &gcd[j-1]; harray[2][2] = NULL;
+
+    boxes[4].gd.flags = gg_enabled|gg_visible;
+    boxes[4].gd.u.boxelements = harray[2];
+    boxes[4].creator = GHBoxCreate;
+    varray[k++] = &boxes[4]; varray[k++] = NULL;
 
     label[j].text = (unichar_t *) _("Point sizes on a 100 dpi screen");
     label[j].text_is_1byte = true;
@@ -728,6 +756,7 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     gcd[j].gd.cid = CID_100Lab;
     gcd[j++].creator = GLabelCreate;
     y += 13;
+    varray[k++] = &gcd[j-1]; varray[k++] = NULL;
 
     label[j].text = GenText(sizes,oldsystem==1?72./120.:72/100.);
     gcd[j].gd.label = &label[j];
@@ -740,6 +769,12 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     gcd[j].gd.handle_controlevent = CB_TextChange;
     gcd[j++].creator = GTextFieldCreate;
     y += 26;
+    harray[3][0] = GCD_HPad10; harray[3][1] = &gcd[j-1]; harray[3][2] = NULL;
+
+    boxes[5].gd.flags = gg_enabled|gg_visible;
+    boxes[5].gd.u.boxelements = harray[3];
+    boxes[5].creator = GHBoxCreate;
+    varray[k++] = &boxes[5]; varray[k++] = NULL;
 
     label[j].text = (unichar_t *) _("Pixel Sizes:");
     label[j].text_is_1byte = true;
@@ -748,6 +783,7 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     gcd[j].gd.flags = gg_enabled|gg_visible;
     gcd[j++].creator = GLabelCreate;
     y += 13;
+    varray[k++] = &gcd[j-1]; varray[k++] = NULL;
 
     label[j].text = GenText(sizes,1.);
     gcd[j].gd.label = &label[j];
@@ -758,6 +794,12 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     gcd[j].gd.handle_controlevent = CB_TextChange;
     gcd[j++].creator = GTextFieldCreate;
     y += 26;
+    harray[4][0] = GCD_HPad10; harray[4][1] = &gcd[j-1]; harray[4][2] = NULL;
+
+    boxes[6].gd.flags = gg_enabled|gg_visible;
+    boxes[6].gd.u.boxelements = harray[4];
+    boxes[6].creator = GHBoxCreate;
+    varray[k++] = &boxes[6]; varray[k++] = NULL;
 
     label[j].text = (unichar_t *) _("Use FreeType");
     label[j].text_is_1byte = true;
@@ -773,6 +815,8 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     gcd[j].gd.handle_controlevent = CB_SystemChange;
     gcd[j++].creator = GCheckBoxCreate;
     y += 26;
+    varray[k++] = &gcd[j-1]; varray[k++] = NULL;
+    varray[k++] = GCD_Glue; varray[k++] = NULL;
 
     gcd[j].gd.pos.x = 2; gcd[j].gd.pos.y = 2;
     gcd[j].gd.pos.width = pos.width-4;
@@ -790,6 +834,7 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     gcd[j].gd.label = &label[j];
     gcd[j].gd.handle_controlevent = CB_OK;
     gcd[j++].creator = GButtonCreate;
+    harray[5][0] = GCD_Glue; harray[5][1] = &gcd[j-1]; harray[5][2] = GCD_Glue;
 
     gcd[j].gd.pos.x = -20; gcd[j].gd.pos.y = 252-32;
     gcd[j].gd.pos.width = -1; gcd[j].gd.pos.height = 0;
@@ -801,8 +846,27 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     gcd[j].gd.mnemonic = 'C';
     gcd[j].gd.handle_controlevent = CB_Cancel;
     gcd[j++].creator = GButtonCreate;
+    harray[5][3] = GCD_Glue; harray[5][4] = &gcd[j-1]; harray[5][5] = GCD_Glue;
+    harray[5][6] = NULL;
 
-    GGadgetsCreate(bd.gw,gcd);
+    boxes[7].gd.flags = gg_enabled|gg_visible;
+    boxes[7].gd.u.boxelements = harray[5];
+    boxes[7].creator = GHBoxCreate;
+    varray[k++] = &boxes[7]; varray[k++] = NULL;
+    varray[k] = NULL;
+
+    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = varray;
+    boxes[0].creator = GHVGroupCreate;
+
+    GGadgetsCreate(bd.gw,boxes);
+    GHVBoxSetExpandableRow(boxes[0].ret,gb_expandglue);
+    if ( !isavail )
+	GHVBoxSetExpandableCol(boxes[3].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(boxes[3].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(boxes[7].ret,gb_expandgluesame);
+    GHVBoxFitWindow(boxes[0].ret);
     which[lastwhich].selected = false;
     _CB_SystemChange(&bd);
 
