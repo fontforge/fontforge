@@ -24024,7 +24024,7 @@ fi
 if test "$gww_has_gettext" = "yes" >/dev/null 2>&1 ; then
  mofiles=""
  for localefile in po/*.po; do
-   locale=`echo $localefile | sed 's/po\/// ; s/\.po//'`
+   locale=`echo $localefile | sed 's/po\///' | sed 's/\.po//'`
    mofiles="$mofiles $locale.mo"
  done
 
@@ -24047,7 +24047,7 @@ if test "$gww_has_gettext" = "yes" >/dev/null 2>&1 ; then
  echo 'install:' >> po/Makefile.in
 
  for localefile in po/*.po; do
-   locale=`echo $localefile | sed 's/po\/// ; s/\.po//'`
+   locale=`echo $localefile | sed 's/po\///' | sed 's/\.po//'`
    echo '	mkdir -p $(localedir)/'$locale'/LC_MESSAGES' >> po/Makefile.in
    echo '	$(INSTALL_DATA)' $locale.mo '$(localedir)/'$locale'/LC_MESSAGES/FontForge.mo' >> po/Makefile.in
  done
