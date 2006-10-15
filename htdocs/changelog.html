@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 22-Aug-2006 -->
+  <!-- AP: Last modified: 14-Oct-2006 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -50,7 +50,6 @@
     <LI>
       22-Aug-2006
       <UL>
-	<LI>Initial Greek translation.
 	<LI>
 	  Add a pane to the Preference dlg allowing user to control some of fontforge's
 	  hint creation.
@@ -288,7 +287,7 @@
 	  Names p ane and weren't visible or modifyable. Give them their own pane now.
 	<LI>
 	  Apply some patches (with some changes) from Nathan Summers to the truetype
-	  debug ger.
+	  debugger.
 	<LI>
 	  The property count in BDF fonts is wrong.
 	<LI>
@@ -400,7 +399,8 @@
 	  Pressing the help key in the main windows went to the overview page, not
 	  to the contextual help for the window.
 	<LI>
-	  Add a warning when 'CFF ' widths and 'hmtx' widths differ.
+	  Add a warning when 'CFF ' widths and 'hmtx' widths differ (when loading a
+	  font).
 	<LI>
 	  Set the default and normative widths too late after the cff subroutine change.
 	<LI>
@@ -475,17 +475,17 @@
 	<LI>
 	  Hmm. sizeof(point)==8 on AMD64, but structures are aligned to 4. This means
 	  our chunk alloc routines complain. So if we're given something that isn't
-	  in units o f sizeof(pointer) then just round it up.
+	  in units of sizeof(pointer) then just round it up.
 	<LI>
 	  lookup ordering within GSUB has been totally broken at least since I added
-	  the c ode to coalesce lookups for kerning.
+	  the code to coalesce lookups for kerning.
 	<LI>
 	  Kanou suggests changing function name that includes Char to be Glyph. Well
 	  a few do really mean Char, but the rest should be Glyph. Leave the old names
 	  there bu t document them as deprecated.
 	<LI>
 	  Make CID keyed fonts use the new subroutine mechanism too. We can use global
-	  sub rs now too!
+	  subrs now too!
 	<LI>
 	  Oops. Familyname can be NULL, and we were indescriminately checking to make
 	  sure its length was less than 31.
@@ -902,7 +902,7 @@
 	  In Font Info-&gt;PS Private, if we selected OtherBlues and pressed [Guess]
 	  it did not change the OtherBlues value.
 	<LI>
-	  The gettext patch change Histograms-&gt;Blue Values menu item into a line.
+	  The gettext patch changed Histograms-&gt;Blue Values menu item into a line.
 	<LI>
 	  When changing the order of a font, ff would ask if you minded losing the
 	  undoes. There's no point in asking the question if the font hasn't been modified
