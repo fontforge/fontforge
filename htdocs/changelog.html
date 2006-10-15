@@ -51,6 +51,221 @@
       22-Aug-2006
       <UL>
 	<LI>
+	  New translations: Greek, Simplified Chinese, German, Polish. 
+	<LI>
+	  Using the help command would generally crash fontforge on cygwin.
+	<LI>
+	  Adobe uses the American spelling of diaeresis (that is dieresis), but some
+	  fonts contain glyph names with the European spelling. So add that as an
+	  alternate.
+	<LI>
+	  If a bdf font contained an unencoded .notdef glyph, then we crashed.
+	<LI>
+	  Adding Greek translations for font styles. (Thanks to Apostolos)
+	<LI>
+	  If we aren't dealing with a TeX math font, then the "Sub/super"script positioning
+	  fields of Glyph Info-&gt;TeX aren't meaningful. So grey them out.
+	<LI>
+	  Remove internal/external did the wrong thing in expand stroke if we also
+	  removed overlap and had counter-clockwise splines.
+	<LI>
+	  Alexej Kryukov points out that reverting a glyph with anchors lost the anchors.
+	<LI>
+	  Add simplified Chinese style names to our built-in lists.
+	<LI>
+	  Problem reading autotraced input.
+	<LI>
+	  The encoding change of last summer broke tfm output with glyph lists or extension
+	  characters.
+	<LI>
+	  If add extrema added a point too close to a start/end point expand stroke
+	  could generate NaNs.
+	<LI>
+	  FF could crash when adding extrema to an open contour.
+	<LI>
+	  Add Polish styles to the translation list.
+	<LI>
+	  Add a scripting function to set the gasp table.
+	<LI>
+	  Add support for the 'gasp' table.
+	<LI>
+	  Alexej Kryukov wants format 6 cmap tables.
+	<LI>
+	  After editing instructions the debugger would incorrectly complain that
+	  instructions were out of date.
+	<LI>
+	  Michal Nowakowski complains that "Instructions are out of date" warning appears
+	  too many times when doing a global transformation. Make it only pop up as
+	  a dlg once and thereafter occur as a LogError.
+	<LI>
+	  If a font contained only space glyphs it could still be marked onlybitmaps
+	  and not allow outline generation.
+	<LI>
+	  Show ATT did not translate scripts &amp; languages.
+	<LI>
+	  Parsing an empty list of ttf instructions crashed Michael Zedler's machine.
+	<LI>
+	  Make type1 generation use (essentially) the same subroutine mechanism as
+	  type2.
+	<LI>
+	  Local subroutines were being freed twice in cff cid-keyed font generation.
+	<LI>
+	  Removing an alternate unicode encoding (Detach Glyphs) was broken in some
+	  cases.
+	<LI>
+	  FF failed to perform some simplifications on the last spline of a closed
+	  contour.
+	<LI>
+	  Various fixes for Michal N.
+	<LI>
+	  Add scripting interfaces to many of the ctype functions.
+	<LI>
+	  Add a scripting interface to the 'size' feature, now that Adobe has finally
+	  decided what to do about 'size'.
+	<LI>
+	  Had the wrong title for kerning state machine dlgs.
+	<LI>
+	  Redo the preference dlg.
+	<LI>
+	  The two preference items, AlwaysGenApple, and AlwaysGenOpenType, were a bad
+	  choice on my part and have lead to considerable confusion. I mentioned some
+	  time ago that I would remove them if there were no objection.
+	  <P>
+	  There was no objection.
+	  <P>
+	  I have now removed them.
+	  <P>
+	  I also made the SetPrefs scripting function sort of work if the user tries
+	  to set one of these (it will set the appropriate flags in the default option
+	  set used by generate).
+	  <P>
+	  The defaults of these flags were different on the Mac from everywhere else.
+	  This meant that a script could do different things on the Mac and on linux.
+	  That seems like a bad idea. I have changed things so that the default options
+	  setting for generate is always OpenType.
+	  <P>
+	  <STRONG>THIS IS AN INCOMPATIBLE CHANGE AND SCRIPTS ON THE MAC COULD NOW BEHAVE
+	  DIFFERENTLY.</STRONG>
+	<LI>
+	  Patch from Michal Nowakowski to have ff number points after conversion to
+	  quadratic.
+	<LI>
+	  Try to provide disambiguation for all strings "New" so that in languages
+	  where "New" must agree in gender with the thing being created translators
+	  will be happier.
+	<LI>
+	  Remove the po/Makefile.in and redo the configure script to build it (so that
+	  I don't have to modify it each time I get a new language).
+	<LI>
+	  Extend the knife tool so that if Meta (Alt) is held down it will move any
+	  spline it intersects (rather than cutting the spline).
+	<LI>
+	  FF would crash if $HOME (the directory that is, not the environment variable)
+	  did not exist.
+	<LI>
+	  I guess it makes sense that if ff read in a compressed sfd file then using
+	  a simple File-&gt;Save command (not Save As) should produce another compressed
+	  sfd file.
+	<LI>
+	  When scaling a reference in otf output we had problems if the reference had
+	  more than one contour.
+	<LI>
+	  If we deleted many glyphs from a font we are sometimes left with kern pairs
+	  pointing to things not worth outputting. Make sure we don't generate kerning
+	  info for them.
+	<LI>
+	  Ligature carets were not being scaled by scale to em.
+	<LI>
+	  Patch from mfabian at suse.
+	<LI>
+	  If a user has a font with a glyph that is bigger than 16*em-size (in many
+	  dimensions) and that user generates a tfm file, then warn him that the glyph
+	  can't be expressed in a tfm file and truncate the size to the biggest legal
+	  value.
+	<LI>
+	  Attempt to mitigate the effects of X claiming to have a font when it doesn't.
+	<LI>
+	  Saving CID keyed fonts would look at garbage memory for its encoding data
+	  if not saved from the biggest subfont.
+	<LI>
+	  Add support for version 4 of the OS/2 table.
+	<LI>
+	  If Interpretation was set in a font then when generating a 8/16 type cmap
+	  fontforge always went down the traditional chinese (big5) branch.
+	<LI>
+	  MS has changed their indic shaping engine. It still uses the same features
+	  but they are applied differently. To disambiguate this change they have created
+	  a parallel set of script tags for the indic writing system. FontForge should
+	  recognize these and use them when appropriate.
+	<LI>
+	  When Adobe first released fonts with a 'size' feature they did not follow
+	  the opentype specification. In August of 2006 they announced an incompatible
+	  change to bring fonts produced after that date in line with the specification.
+	  Unfortunately there are programs which depend on the old, broken format.
+	  <P>
+	  Legacy programs will not work when given a font in the correct format. New
+	  programs should be able to handle either correct or broken 'size' features.
+	  <P>
+	  FontForge should now be able to read in a size feature in either format and
+	  gives the user the option of producing 'size' features in either format on
+	  output.
+	<LI>
+	  For Japanese fonts we tried to use cp932 (a variant of sjis) but then halfway
+	  through didn't know what to do with it.
+	<LI>
+	  Another fix for saving sub-opentype fonts from a cid font.
+	<LI>
+	  From a script, if a user asks to generate a ttf outline font with ttf bitmaps
+	  from a database with no outlines then technically this isn't supposed to
+	  work. But it used to and it's easy enough to tweak so that it works again.
+	<LI>
+	  <STRONG>Update to Unicode 5.0</STRONG>
+	<LI>
+	  Again when adding accents to the left of a glyph we should shift the glyph
+	  over to give it a reasonable lbearing.
+	<LI>
+	  When building an accented glyph, we generally want use_my_metrics set on
+	  the reference. But if we add an accent to right (horn) or left (psili/varia
+	  on cap greeks) we want to turn it off. We did turn it off on the right side,
+	  but not on the left.
+	<LI>
+	  Philipp Poll points out that ScaleToEm doesn't scale the OS/2 metrics (and
+	  some other stuff). Actually it does, but font info did the scaling BEFORE
+	  setting the values. So the metrics get scaled, and then reset to the values
+	  in fontinfo (which usually means they don't get changed).
+	<LI>
+	  Fix some memory leaks.
+	<LI>
+	  Some fixes for pcf loading.
+	<LI>
+	  Various fixes to CID keyed fonts.
+	<LI>
+	  Even the pretty ttf approximation routines need to worry about diametrically
+	  opposed control points.
+	<LI>
+	  When generating multiple type1 fonts, output the bounding box of each as
+	  that of the full font. This will make it vaguely likely that applications
+	  will get the same line spacing.
+	<LI>
+	  Oops. The vertical metrics bit wasn't preserved when flattening a cid font.
+	<LI>
+	  Ack! Window titles and such were being interpreted in Latin1 and not in UTF-8.
+	<LI>
+	  Interpretation of PostScript arc operator failed if the two angles were 360
+	  degrees apart. Normalization made them both the same.
+	<LI>
+	  Try to clean up bitmap only sfnt generation.
+	<LI>
+	  pcf wasn't in the Open Font dialog format list (nor was pmf, nor pdf)<BR>
+	  Add a filter for TeX bitmap fonts.
+	<LI>
+	  Provide a mechanism (if a preference item is set) for picking a cmap when
+	  loading a font.
+      </UL>
+    <LI>
+      22-Aug-2006
+      <UL>
+	<LI>
 	  Add a pane to the Preference dlg allowing user to control some of fontforge's
 	  hint creation.
 	<LI>
