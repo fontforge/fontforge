@@ -122,6 +122,7 @@ struct openfilefilters def_font_filters[] = {
 	 N_("SVG"), "*.svg{.gz,.Z,.bz2,}",
 #endif
 	 N_("FontForge's SFD"), "*.sfd{.gz,.Z,.bz2,}",
+	 N_("Extract from PDF"), "*.pdf{.gz,.Z,.bz2,}",
 	 "-", NULL,
 	 N_("All Files"), "*",
 	 NULL };
