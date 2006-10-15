@@ -148,6 +148,7 @@ AC_CHECK_LIB(xml2, xmlParseFile, : , AC_DEFINE(_NO_LIBXML), -lz -lm)
 if test "$gww_uselessiconv" = "no" ; then
  AC_CHECK_HEADERS([iconv.h])
 fi
+AC_CHECK_HEADERS([langinfo.h])
 
 dnl many systems have freetype on /usr/X11R6/lib which isn't in the standard search path
 

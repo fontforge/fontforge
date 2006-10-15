@@ -42,6 +42,10 @@
 
 #include "ttf.h"
 
+#if HAVE_LANGINFO_H
+# include <langinfo.h>
+#endif
+
 int adjustwidth = true;
 int adjustlbearing = true;
 Encoding *default_encoding = NULL;
@@ -678,12 +682,19 @@ static int encmatch(const char *enc,int subok) {
 	{ NULL }};
     int i;
     static char *last_complaint;
+    char buffer[80];
 
 #if HAVE_ICONV_H
     iconv_t test;
     free(iconv_local_encoding_name);
     iconv_local_encoding_name= NULL;
 #endif
+
+    if ( strchr(enc,'@')!=NULL && strlen(enc)<sizeof(buffer)-1 ) {
+	strcpy(buffer,enc);
+	*strchr(buffer,'@') = '\0';
+	enc = buffer;
+    }
 
     for ( i=0; encs[i].name!=NULL; ++i )
 	if ( strmatch(enc,encs[i].name)==0 )
@@ -723,9 +734,16 @@ return( e_unknown );
 }
 
 static int DefaultEncoding(void) {
-    const char *loc = getenv("LC_ALL");
+    const char *loc;
     int enc;
 
+#if HAVE_LANGINFO_H
+    loc = nl_langinfo(CODESET);
+    enc = encmatch(loc,false);
+    if ( enc!=e_unknown )
+return( enc );
+#endif
+    loc = getenv("LC_ALL");
     if ( loc==NULL ) loc = getenv("LC_CTYPE");
     /*if ( loc==NULL ) loc = getenv("LC_MESSAGES");*/
     if ( loc==NULL ) loc = getenv("LANG");

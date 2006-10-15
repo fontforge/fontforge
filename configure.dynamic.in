@@ -200,6 +200,7 @@ esac
 if test "$gww_uselessiconv" = "no" ; then
  AC_CHECK_HEADERS([iconv.h])
 fi
+AC_CHECK_HEADERS([langinfo.h])
 
 dnl linux has isnan in math.h, solaris puts it in ieeeefp.h
 
