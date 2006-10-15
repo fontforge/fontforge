@@ -2505,6 +2505,17 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	    first) and must end with an entry for pixel size 65535.<BR>
 	    With exactly one argument it must be an array containing an ordered list
 	    of pixel size/flag value pairs (as above).
+	    <BLOCKQUOTE>
+	      <PRE>SetGasp(8,2,16,1,65535,3)
+SetGasp([8,2,16,1,65535,3])
+</PRE>
+	    </BLOCKQUOTE>
+	    <P>
+	    A flag value of 0 means neither grid-fit nor anti-alias<BR>
+	    A flag value of 1 means grid-fit but no anti-alias.<BR>
+	    A flag value of 2 means no grid-fit but anti-alias.<BR>
+	    A flag value of 3 means both grid-fit and anti-alias.<BR>
+	    On other values are currently documented.
 	  <DT>
 	    <A NAME="SetGlyphColor">S</A>etGlyphColor(color)
 	  <DD>
