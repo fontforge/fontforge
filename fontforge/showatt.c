@@ -1505,7 +1505,7 @@ static void BuildGdefs(struct node *node,struct att_dlg *att) {
 			gdefc==1 ? _("Base") :
 			gdefc==2 ? _("Ligature") :
 			gdefc==3 ? _("Mark") :
-			    _("Componant") );
+			    _("Component") );
 		    chars[ccnt].parent = node;
 		    chars[ccnt].label = copy(buffer);;
 		}
