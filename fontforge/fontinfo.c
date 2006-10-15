@@ -875,9 +875,9 @@ static GTextInfo antialias[] = {
     { (unichar_t *) N_("Anti-Alias"), NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
 static struct col_init gaspci[3] = {
-    { me_int , NULL, NULL, NULL, N_("Pixels Per EM") },
-    { me_enum, NULL, gridfit, NULL, N_("Grid Fit") },
-    { me_enum, NULL, antialias, NULL, N_("Anti-Alias") }
+    { me_int , NULL, NULL, NULL, N_("Gasp|Pixels Per EM") },
+    { me_enum, NULL, gridfit, NULL, N_("Gasp|Grid Fit") },
+    { me_enum, NULL, antialias, NULL, N_("Gasp|Anti-Alias") }
     };
 
 struct langstyle { int lang; const char *str; };
@@ -7685,7 +7685,7 @@ return;
     panarray[j++] = GCD_Glue; panarray[j++] = NULL;
 
     pangcd[i].gd.pos.x = 20; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y+14+4;
-    panlabel[i].text = (unichar_t *) _("_Family");
+    panlabel[i].text = (unichar_t *) _("Panose|_Family");
     panlabel[i].text_is_1byte = true;
     panlabel[i].text_in_resource = true;
     pangcd[i].gd.label = &panlabel[i];
@@ -7721,7 +7721,7 @@ return;
     panarray[j++] = NULL;
 
     pangcd[i].gd.pos.x = 20; pangcd[i].gd.pos.y = pangcd[i-1].gd.pos.y+26+5;
-    panlabel[i].text = (unichar_t *) _("_Weight");
+    panlabel[i].text = (unichar_t *) _("Panose|_Weight");
     panlabel[i].text_is_1byte = true;
     panlabel[i].text_in_resource = true;
     pangcd[i].gd.label = &panlabel[i];
@@ -9089,12 +9089,12 @@ return;
 	    needswork2[j][i] = _(needswork2[j][i]);
     }
 
-    ci[0].title = _(ci[0].title);
-    ci[1].title = _(ci[1].title);
-    ci[2].title = _(ci[2].title);
+    ci[0].title = S_(ci[0].title);
+    ci[1].title = S_(ci[1].title);
+    ci[2].title = S_(ci[2].title);
 
-    gaspci[0].title = _(gaspci[0].title);
-    gaspci[1].title = _(gaspci[1].title);
-    gaspci[2].title = _(gaspci[2].title);
+    gaspci[0].title = S_(gaspci[0].title);
+    gaspci[1].title = S_(gaspci[1].title);
+    gaspci[2].title = S_(gaspci[2].title);
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
