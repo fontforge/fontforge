@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 13-Oct-2006 -->
-  <!-- AP: Last modified: 15-Oct-2006 -->
+  <!-- AP: Last modified: 16-Oct-2006 -->
   <TITLE>The history of the development of FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -51,7 +51,7 @@
   <P>
   Then a friend, Godfrey DiGiorgi, recommended that I buy a copy of Fontographer
   and design PostScript fonts. I was leary initially. How could a rasterizer
-  match the quality of a hand crafted bitmap? But eventually I succombed to
+  match the quality of a hand crafted bitmap? But eventually I succumbed to
   the attractions of the cubic spline.
   <P>
   In the meantime I had studied calligraphy, and once I had Fontographer began
@@ -216,7 +216,7 @@
   <P>
   Yannis was also working on a book, <I>Fontes &amp; codages</I> in which FontForge
   figures. He spent a lot of time making suggestions and finding bugs. He
-  encouraged me to support multi-master fonts and by Febuary of 2004 I had
+  encouraged me to support multi-master fonts and by February of 2004 I had
   done so. Then I started working on Apple's distortable font technology (which
   has many similarities to Adobe's multi-master, but is rather badly documented)
   and, with help from Apple, had them working in April of 2004. I then extended
@@ -234,35 +234,87 @@
   editing mode which provided a rather clumsy interface to some of the facilities
   of vector graphics programs.
   <P>
+  In 2005 a Korean company asked me to do something. We had some difficulty
+  communicating (I don't speak Korean), but eventually I figured out that they
+  wanted to be able to group glyphs together. Prior to this FontForge handled
+  encodings as an integral part of the font, which didn't seem right, and it
+  made implementing groups impossible. So I had to rewrite much of the internals
+  of FontForge to redo encodings before I could even start on groups. This
+  took longer than I had thought it would, and by the time I finished (in July
+  of 2005) the Koreans seemed to have lost interest. Ah well.
+  <P>
+  I got interested in pdf files in October of 2005, and gave FontForge's Print
+  command the ability to print to a pdf file. Then I thought it would be kind
+  of fun to be able to read a font out of a pdf file. I was a little worried
+  about implementing this because I know that most fonts stored in pdf files
+  are sub-sets, and only contain the glyphs actually used in the pdf file itself.
+  I was convinced that I'd get lots of bug reports from people complaining
+  that FontForge didn't read the entire font. Nevertheless my sense of fun
+  overcame my fear of silly bug reports and I implemented it.
+  <P>
+  And I did get bug reports complaining that FontForge did not read the fonts
+  correctly. <BR>
+  And I don't think I was able to convince some of the complainers that the
+  fonts were incomplete in the pdf file. Ah well.
+  <P>
+  The X11 folk want to move away from the bdf format, so they came up with
+  their own format (call opentype bitmap, with extension "otb") which was
+  essentially an sfnt wrapper around a series of bitmap strikes with no outline
+  font. I implemented that back in July of 2003. But then in July of 2005 they
+  wanted to preserve the BDF properties as well. So we worked out a new table
+  (called 'BDF ') to contain the properties from all the strikes in the font.
+  Now it should be possible to make a round trip conversion of
+  bdf-&gt;otb-&gt;bdf and not lose any information.
+  <P>
+  Many people complained about FontForge's ability to edit quadratic splines.
+  I had no experience editing quadratic splines before I wrote my original
+  version, I just made it behave like the cubic spline editor (which seemed
+  obvious). But doing the obvious makes it hard to create a font that uses
+  some of the optimizations in the ttf file, and made instructing the font
+  confusing. So between January and February of 2006 FontForge's quadratic
+  editing capabilities underwent an evolutionary change as people complained
+  and I tried to fix things.
+  <P>
+  I have a testsuite for fontforge. Obviously. Originally it was very simple:
+  a set of script files which did various actions. If FontForge didn't crash,
+  then I presumed it worked. That was about all I could test, and although
+  that's important, there are a few other things which might be examined. So
+  I wrote a command to compare two fonts and see if they were equivalent.
+  Originally this had been a separate command (called sfddiff), but if I integrated
+  it into FontForge I could increase the abilities of the tests I wrote.
+  <P>
+  FontForge produced some rather naif type1 and type2 fonts which did not make
+  good use of the PostScript concept of subroutines. In June of 2006 did a
+  substantial rewrite of the type2 output code and decreased the size of my
+  output fonts considerably. My new comparison command was helpful in debugging.
+  Nonetheless I introduced a number of bugs. Which got fixed, of course. But
+  it made me leary of doing the same thing for type1 output. After all, Adobe
+  doesn't even produce type1 fonts any more, so surely I don't need to optimize
+  them. Michael Zedler said otherwise, and after great effort on his part induced
+  me (in October 2006) to make better use of subroutines in Type1 output also.
+  No bugs yet... (but it's still October of 2006).
+  <P>
+  All of FontForge's dialogs had a fixed layout. Which works fine if you've
+  only got one language to support, but which looks really ugly (and worse
+  can be totally illegible) when the dialog is translated into a different
+  language and labels suddenly become longer (or shorter) and spill over into
+  the textfield they identify. There has been a sudden burst of people willing
+  to do translations recently. This mattered. So I stole the concept of boxes
+  from gtk and implemented them in my widget set (in August of 2006), allowing
+  a dialog to do its own layout to match the size of the things in it.
+  <P>
   The pace of change seems to have slowed recently as all of the large tasks
   have either been done or proved insurmountable. As more people use the program
-  they find more bugs and I have less time to do development. There have also
-  been large internal changes which (I hope) are practically invisible to users
-  and cosmetic changes which make the dialogs look nicer and more comprehensible
-  but which aren't functional.
-  <UL>
-    <LI>
-      Added support for reading fonts from, and printing font samples to pdf files
-      (Oct-2005).
-    <LI>
-      Added a table to preserve BDF properties in sfnt files (the X11 folks want
-      this as they switch to otb bitmap fonts) (Jan-2006)
-    <LI>
-      Redid the user interface for editing quadratic (truetype) fonts (Feb-2006)
-    <LI>
-      Added a command to compare fonts (and glyphs). This used to be a separate
-      program called sfddiff. (Apr-2006)
-    <LI>
-      Made better use of subroutines in generating Type2 and later Type1 fonts
-      (June-Oct of 2006)
-  </UL>
-  <P>
+  they find more bugs and I have less time to do development. In the last few
+  years there have also been large internal changes which (I hope) are practically
+  invisible to users and cosmetic changes which make the dialogs look nicer
+  and more comprehensible but which aren't functional. 
     <HR>
   <P>
   I have received many suggestions from many people, too many to enumerate
   here, and FontForge is the better for their requests. Often I have reacted
   badly to these suggestions (because they always mean more work for me), and
-  I appologize for that, but mostly I wish to thank those who have helped make
+  I apologize for that, but mostly I wish to thank those who have helped make
   FontForge what it is today.
   <P>
   Currently, probably the biggest complaint about FontForge is the choice of
