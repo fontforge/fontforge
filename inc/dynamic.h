@@ -7,10 +7,11 @@
 # define __DYNAMIC_H
 
 #  ifdef __Mac
+extern const void *gwwv_NSAddImage(char *name,uint32_t options);
 #   include <mach-o/dyld.h>
 #   define SO_EXT	".dylib"
 /*   man NSModule */
-#   define dlopen(name,foo) NSAddImage(name,NSADDIMAGE_OPTION_WITH_SEARCHING|NSADDIMAGE_OPTION_RETURN_ON_ERROR)
+#   define dlopen(name,foo) gwwv_NSAddImage(name,NSADDIMAGE_OPTION_WITH_SEARCHING|NSADDIMAGE_OPTION_RETURN_ON_ERROR)
 /*   It would have been nice if the Mac's docs had mentioned that the linker adds*/
 /*   an underscore to symbol names.... */
 #   define dlsym(image,symname) NSAddressOfSymbol(NSLookupSymbolInImage(image,"_" symname,NSLOOKUPSYMBOLINIMAGE_OPTION_BIND|NSLOOKUPSYMBOLINIMAGE_OPTION_RETURN_ON_ERROR))

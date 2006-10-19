@@ -709,6 +709,91 @@ char *sgettext(const char *msgid) {
 return msgval;
 }
 
+#if defined( HAVE_LIBINTL_H ) && !defined( NODYNAMIC ) && !defined ( _STATIC_LIBINTL )
+#  include <dynamic.h>
+
+static DL_CONST void *libintl = NULL;
+
+static char *(*_bind_textdomain_codeset)(const char *, const char *);
+static char *(*_bindtextdomain)(const char *, const char *);
+static char *(*_textdomain)(const char *);
+static char *(*_gettext)(const char *);
+static char *(*_ngettext)(const char *, const char *, unsigned long int);
+
+static int init_gettext(void) {
+
+    if ( libintl == (void *) -1 )
+return( false );
+    else if ( libintl !=NULL )
+return( true );
+
+    libintl = dlopen("libintl" SO_EXT,RTLD_LAZY);
+    if ( libintl==NULL ) {
+	libintl = (void *) -1;
+return( false );
+    }
+
+    _bind_textdomain_codeset = (char *(*)(const char *, const char *)) dlsym(libintl,"bind_textdomain_codeset");
+    _bindtextdomain = (char *(*)(const char *, const char *)) dlsym(libintl,"bindtextdomain");
+    _textdomain = (char *(*)(const char *)) dlsym(libintl,"textdomain");
+    _gettext = (char *(*)(const char *)) dlsym(libintl,"gettext");
+    _ngettext = (char *(*)(const char *, const char *, unsigned long int)) dlsym(libintl,"ngettext");
+
+    if ( _bind_textdomain_codeset==NULL || _bindtextdomain==NULL ||
+	    _textdomain==NULL || _gettext==NULL || _ngettext==NULL ) {
+	libintl = (void *) -1;
+	fprintf( stderr, "Found a copy of libintl but could not use it.\n" );
+return( false );
+    }
+return( true );
+}
+
+char *gwwv_bind_textdomain_codeset(const char *domain, const char *dir) {
+    if ( libintl==NULL )
+	init_gettext();
+    if ( libintl!=(void *) -1 )
+return( (_bind_textdomain_codeset)(domain,dir));
+
+return( NULL );
+}
+
+char *gwwv_bindtextdomain(const char *domain, const char *dir) {
+    if ( libintl==NULL )
+	init_gettext();
+    if ( libintl!=(void *) -1 )
+return( (_bindtextdomain)(domain,dir));
+
+return( NULL );
+}
+
+char *gwwv_textdomain(const char *domain) {
+    if ( libintl==NULL )
+	init_gettext();
+    if ( libintl!=(void *) -1 )
+return( (_textdomain)(domain));
+
+return( NULL );
+}
+
+char *gwwv_gettext(const char *msg) {
+    if ( libintl==NULL )
+	init_gettext();
+    if ( libintl!=(void *) -1 )
+return( (_gettext)(msg));
+
+return( (char *) msg );
+}
+
+char *gwwv_ngettext(const char *msg, const char *pmsg,unsigned long int n) {
+    if ( libintl==NULL )
+	init_gettext();
+    if ( libintl!=(void *) -1 )
+return( (_ngettext)(msg,pmsg,n));
+
+return( (char *) (n==1?msg:pmsg) );
+}
+#endif
+
 int _ggadget_use_gettext = false;
 void GResourceUseGetText(void) {
     _ggadget_use_gettext = true;
