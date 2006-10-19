@@ -127,4 +127,24 @@ return( dlopen( ret,flags ));
 
 return( dlopen(filename,flags) );	/* This will almost certainly fail, but it will provide an error for dlerror() */
 }
+#elif defined( __Mac )
+#  include <basics.h>
+#  include <dynamic.h>
+#  include <stdio.h>
+#  include <string.h>
+
+const void *gwwv_NSAddImage(char *name,uint32_t options) {
+    const void *lib = NSAddImage(name,options);
+    char *temp;
+
+    if (( lib!=NULL || lib!=(void *) -1) || name==NULL || *name=='/' )
+return( lib );
+
+    temp = galloc( strlen("/sw/lib/") + strlen(name) +1 );
+    strcpy(temp,"/sw/lib/");
+    strcat(temp,name);
+    lib = NSAddImage(temp,options);
+    free(temp);
+return( lib );
+}
 #endif

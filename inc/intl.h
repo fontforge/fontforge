@@ -27,14 +27,7 @@
 #ifndef _INTL_H
 #define _INTL_H
 
-#if HAVE_LIBINTL_H
-# include <libintl.h>
-# define _(str)			gettext(str)
-# define P_(str1,str_non1,n)	ngettext(str1,str_non1,n)
-/* For messages including utf8 characters. xgettext won't handle them */
-/*  so we must do something special. Not sure what yet */
-# define U_(str)		gettext(str)
-#else
+#if !defined( HAVE_LIBINTL_H )
 # define _(str)			(str)
 # define P_(str1,str_non1,n)	((n)==1?str1:str_non1)
 # define U_(str)		(str)
@@ -42,6 +35,32 @@
 # define bindtextdomain(domain,dir)
 # define bind_textdomain_codeset(domain,enc)
 # define textdomain(domain)
+
+#elif defined( NODYNAMIC ) || defined ( _STATIC_LIBINTL )
+
+# include <libintl.h>
+# define _(str)			gettext(str)
+# define P_(str1,str_non1,n)	ngettext(str1,str_non1,n)
+/* For messages including utf8 characters. old xgettexts won't handle them */
+/*  so we must do something special. */
+# define U_(str)		gettext(str)
+
+#else
+
+# include <libintl.h>
+# define _(str)			gwwv_gettext(str)
+# define P_(str1,str_non1,n)	gwwv_ngettext(str1,str_non1,n)
+# define U_(str)		gwwv_gettext(str)
+
+# define bindtextdomain(domain,dir)		gwwv_bindtextdomain(domain,dir)
+# define bind_textdomain_codeset(domain,enc)	gwwv_bind_textdomain_codeset(domain,enc)
+# define textdomain(domain)			gwwv_textdomain(domain)
+
+char *gwwv_bindtextdomain(const char *, const char *);
+char *gwwv_bind_textdomain_codeset(const char *, const char *);
+char *gwwv_textdomain(const char *);
+char *gwwv_gettext(const char *);
+char *gwwv_ngettext(const char *,const char *, unsigned long int);
 #endif
 /* For messages including utf8 sequences that need gettext_noop treatment */
 #define NU_(str)	(str)
