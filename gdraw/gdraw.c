@@ -775,7 +775,7 @@ void GDrawCreateDisplays(char *displayname,char *programname) {
 	fprintf( stderr, "Could not open screen.\n" );
 #if __Mac
 	fprintf( stderr, "You must start X11 before you can start %s\n", programname);
-	fprintf( stderr, " X11 may be obtained from http://www.apple.com/macosx/x11/download/\n" );
+	fprintf( stderr, " X11 is optional software found on your install DVD.\n" );
 #elif __CygWin
 	fprintf( stderr, "You must start X11 before you can start %s\n", programname);
 	fprintf( stderr, " X11 may be obtained from the cygwin site in a seperate package.\n" );

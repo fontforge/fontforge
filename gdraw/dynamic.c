@@ -137,7 +137,7 @@ const void *gwwv_NSAddImage(char *name,uint32_t options) {
     const void *lib = NSAddImage(name,options);
     char *temp;
 
-    if (( lib!=NULL || lib!=(void *) -1) || name==NULL || *name=='/' )
+    if (( lib!=NULL && lib!=(void *) -1) || name==NULL || *name=='/' )
 return( lib );
 
     temp = galloc( strlen("/sw/lib/") + strlen(name) +1 );

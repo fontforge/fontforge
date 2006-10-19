@@ -7,8 +7,8 @@
 # define __DYNAMIC_H
 
 #  ifdef __Mac
-extern const void *gwwv_NSAddImage(char *name,uint32_t options);
 #   include <mach-o/dyld.h>
+extern const void *gwwv_NSAddImage(char *name,uint32_t options);
 #   define SO_EXT	".dylib"
 /*   man NSModule */
 #   define dlopen(name,foo) gwwv_NSAddImage(name,NSADDIMAGE_OPTION_WITH_SEARCHING|NSADDIMAGE_OPTION_RETURN_ON_ERROR)
