@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 15-Oct-2006 -->
+  <!-- AP: Last modified: 19-Oct-2006 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -30,10 +30,14 @@
 	  -- <SMALL>A Pheonix too Frequent<BR>
 	  Christopher Fry, 1950</SMALL></TD>
       </TR>
-      <TR><TD COLSPAN=3><HR></TD></TR>
       <TR>
-	<TD>"The trouble is," he said, "is that things <I>never</I> get better,<BR> they
-	  just stay the same, only more so.</TD>
+	<TD COLSPAN=3>
+	    <HR>
+	</TD>
+      </TR>
+      <TR>
+	<TD>"The trouble is," he said, "is that things <I>never</I> get better,<BR>
+	  they just stay the same, only more so.</TD>
 	<TD>&nbsp; &nbsp; &nbsp; &nbsp;</TD>
 	<TD VALIGN="Bottom"><P ALIGN=Right>
 	  -- <SMALL><STRIKE>Faust</STRIKE> <FONT COLOR="Red">Eric</FONT><BR>
@@ -43,7 +47,28 @@
   </BLOCKQUOTE>
   <UL>
     <LI>
-      22-Aug-2006
+      19-Oct-2006
+      <UL>
+	<LI>
+	  Patch from Mike FABIAN, array overflow in creating PS Private dialog
+	<LI>
+	  The instructions out of date flag was only getting reset if the user made
+	  a change in the edit instrs dialog. If s/he just pressed [OK] it would remain
+	  on.
+	<LI>
+	  Make libintl be another library we'll try to dlopen. This is complicated
+	  because on linux libintl is part of libc so there we must link directly.
+	  Further complicated because fink install script has a bug and doesn't put
+	  /sw/lib in DYLD_LIBRARY_PATH so we have to look there ourselves.
+	<LI>
+	  Locale strings aren't required to contain an encoding (which the locale docs
+	  incorrectly call a charset). Michal Nowakowski points me to nl_langinfo which
+	  will give me the encoding even if not specified in the locale.
+	<LI>
+	  Add pdf files to the standard format list for openfontdlg
+      </UL>
+    <LI>
+      14-Oct-2006
       <UL>
 	<LI>
 	  New translations: Greek, Simplified Chinese, German, Polish.
