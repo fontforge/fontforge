@@ -1458,7 +1458,7 @@ static char *AskKey(SplineFont *sf) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[8], boxes[3], *varray[9], *harray[6];
+    GGadgetCreateData gcd[8], boxes[3], *varray[9], *harray[7];
     GTextInfo label[8];
     struct ask_data d;
     char *ret;
