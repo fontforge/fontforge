@@ -48,9 +48,16 @@ unichar_t *encoding2u_strncpy(unichar_t *uto, const char *_from, int n, enum enc
 
     if ( cs<e_first2byte ) {
 	table = unicode_from_alphabets[cs];
-	while ( *from && n>0 ) {
-	    *upt ++ = table[*(unsigned char *) (from++)];
-	    --n;
+	if ( table==NULL ) {
+	    while ( *from && n>0 ) {
+		*upt++ = *(unsigned char *) (from++);
+		--n;
+	    }
+	} else {
+	    while ( *from && n>0 ) {
+		*upt ++ = table[*(unsigned char *) (from++)];
+		--n;
+	    }
 	}
     } else if ( cs<e_unicode ) {
 	*uto = '\0';
@@ -200,15 +207,26 @@ char *u2encoding_strncpy(char *to, const unichar_t *ufrom, int n, enum encoding 
 	struct charmap *table = NULL;
 	unsigned char *plane;
 	table = alphabets_from_unicode[cs];
-	while ( *ufrom && n>0 ) {
-	    int highch = *ufrom>>8, ch;
-	    if ( highch>=table->first && highch<=table->last &&
-			(plane = table->table[highch])!=NULL &&
-			(ch=plane[*ufrom&0xff])!=0 ) {
-		*pt++ = ch;
-		--n;
+	if ( table==NULL ) {	/* ASCII */
+	    while ( *ufrom && n>0 ) {
+		int ch = *ufrom;
+		if ( ch<127 ) {
+		    *pt++ = ch;
+		    --n;
+		}
+		++ufrom;
 	    }
-	    ++ufrom;
+	} else {
+	    while ( *ufrom && n>0 ) {
+		int highch = *ufrom>>8, ch;
+		if ( highch>=table->first && highch<=table->last &&
+			    (plane = table->table[highch])!=NULL &&
+			    (ch=plane[*ufrom&0xff])!=0 ) {
+		    *pt++ = ch;
+		    --n;
+		}
+		++ufrom;
+	    }
 	}
 	if ( n>0 )
 	    *pt = '\0';
