@@ -130,6 +130,7 @@ void FVToggleCharChanged(SplineChar *sc) {
 	    if ( i>=0 && i<=fv->rowcnt ) {
 # ifdef FONTFORGE_CONFIG_GDRAW
 		GRect r;
+#if 0
 		Color bg;
 		if ( sc->color!=COLOR_DEFAULT )
 		    bg = sc->color;
@@ -137,12 +138,16 @@ void FVToggleCharChanged(SplineChar *sc) {
 		    bg = 0x808080;
 		else
 		    bg = GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(fv->v));
+#endif
 		r.x = j*fv->cbw+1; r.width = fv->cbw-1;
 		r.y = i*fv->cbh+1; r.height = FV_LAB_HEIGHT-1;
+		GDrawRequestExpose(fv->v,&r,false);
+#if 0
 		GDrawSetXORBase(fv->v,bg);
 		GDrawSetXORMode(fv->v);
 		GDrawFillRect(fv->v,&r,0x000000);
 		GDrawSetCopyMode(fv->v);
+#endif
 # elif defined(FONTFORGE_CONFIG_GTK)
 		GdkGC *gc = fv->v->style->fg_gc[fv->v->state];
 		GdkGCValues values;

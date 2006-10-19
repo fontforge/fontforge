@@ -770,7 +770,9 @@ return( true );
 static void IVOk(InstrDlg *iv) {
     struct instrdata *id = iv->instrdata;
 
-    if ( id->changed ) {
+    /* We need to update bits like instructions_out_of_date even if they */
+    /* make no change. */
+    if ( /*id->changed*/true ) {
 	if ( id->sc!=NULL ) {
 	    SplineChar *sc = id->sc;
 	    CharView *cv;
@@ -787,6 +789,7 @@ static void IVOk(InstrDlg *iv) {
 	    sc->instructions_out_of_date = true;
 	    SCCharChangedUpdate(sc);
 	    sc->instructions_out_of_date = false;
+	    GDrawRequestExpose(sc->parent->fv->v,NULL,false);
 	} else {
 	    struct ttf_table *tab, *prev;
 	    if ( id->instr_cnt==0 ) {
