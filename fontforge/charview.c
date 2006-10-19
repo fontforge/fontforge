@@ -3102,6 +3102,8 @@ return;
 			had_ap ? _(" At least one anchor point used point matching. It may be out of date now.")
 				: "" );
 	sc->complained_about_ptnums = true;
+	if ( had_instrs==2 )
+	    GDrawRequestExpose(sc->parent->fv->v,NULL,false);
     }
 }
 
