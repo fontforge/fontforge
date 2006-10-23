@@ -103,7 +103,7 @@ static int svg_outfontheader(FILE *file, SplineFont *sf) {
     else if ( MacStyleCode(sf,NULL)&sf_italic )
 	fprintf( file, "    font-style=\"italic\"\n" );
     if ( strstrmatch(sf->fontname,"small") || strstrmatch(sf->fontname,"cap") )
-	fprintf( file, "    font-variant=small-caps\n" );
+	fprintf( file, "    font-variant=\"small-caps\"\n" );
     fprintf( file, "    font-stretch=\"%s\"\n", condexp[info.width]);
     fprintf( file, "    units-per-em=\"%d\"\n", sf->ascent+sf->descent );
     fprintf( file, "    panose-1=\"%d %d %d %d %d %d %d %d %d %d\"\n", info.panose[0],
@@ -490,13 +490,13 @@ static void svg_scdump(FILE *file, SplineChar *sc,int defwid, int encuni) {
 	fprintf( file, "orientation=\"v\" " );
     if ( encuni!=-1 && encuni<0x10000 ) {
 	if ( isarabinitial(encuni))
-	    fprintf( file,"arabic-form=initial " );
+	    fprintf( file,"arabic-form=\"initial\" " );
 	else if ( isarabmedial(encuni))
-	    fprintf( file,"arabic-form=medial ");
+	    fprintf( file,"arabic-form=\"medial\" ");
 	else if ( isarabfinal(encuni))
-	    fprintf( file,"arabic-form=final ");
+	    fprintf( file,"arabic-form=\"final\" ");
 	else if ( isarabisolated(encuni))
-	    fprintf( file,"arabic-form=isolated ");
+	    fprintf( file,"arabic-form=\"isolated\" ");
     }
     putc('\n',file);
     svg_scpathdump(file,sc," </glyph>\n");
