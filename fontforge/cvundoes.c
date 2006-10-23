@@ -66,6 +66,31 @@ return( NULL );
 return( head );
 }
 
+static SplinePointList *RefCharsCopyUnlinked(SplinePointList *sofar, SplineChar *sc,int layer) {
+    RefChar *crefs;
+    SplinePointList *last = NULL, *new;
+    int l;
+
+    if ( layer<0 || sc->layers[layer].refs==NULL )
+return( sofar );
+    if ( sofar!=NULL )
+	for ( last=sofar; last->next!=NULL; last=last->next );
+    for ( crefs = sc->layers[layer].refs; crefs!=NULL; crefs=crefs->next ) {
+	for ( l=0; l<crefs->layer_cnt; ++l ) {
+	    new = SplinePointListCopy(crefs->layers[l].splines);
+	    if ( sofar!=NULL ) {
+		last->next = new;
+		for ( ; last->next!=NULL; last=last->next );
+	    } else {
+		sofar = new;
+		if ( new!=NULL )
+		    for ( last=sofar; last->next!=NULL; last=last->next );
+	    }
+	}
+    }
+return( sofar );
+}
+
 static MinimumDistance *MDsCopyState(SplineChar *sc,SplineSet *rpl) {
     MinimumDistance *head=NULL, *last, *md, *cur;
 
@@ -1670,6 +1695,10 @@ static Undoes *SCCopyAll(SplineChar *sc,int full) {
     Undoes *cur;
     RefChar *ref;
     extern int copymetadata, copyttfinstr;
+    /* If full==1 copy the glyph as is. */
+    /* If full==0 put a reference to the glyph in the clipboard */
+    /* If full==2 copy the glyph, but unlink any references it contains */
+    /*	so we end up with no references and a bunch of splines */
 
     cur = chunkalloc(sizeof(Undoes));
     if ( sc==NULL ) {
@@ -1681,7 +1710,10 @@ static Undoes *SCCopyAll(SplineChar *sc,int full) {
 	if ( full ) {
 	    cur->undotype = copymetadata ? ut_statename : ut_statehint;
 	    cur->u.state.splines = SplinePointListCopy(sc->layers[layer].splines);
-	    cur->u.state.refs = RefCharsCopyState(sc,layer);
+	    if ( full==2 )
+		cur->u.state.splines = RefCharsCopyUnlinked(cur->u.state.splines,sc,layer);
+	    else
+		cur->u.state.refs = RefCharsCopyState(sc,layer);
 	    cur->u.state.anchor = AnchorPointsCopy(sc->anchor);
 	    cur->u.state.hints = UHintCopy(sc,true);
 	    if ( copyttfinstr ) {
@@ -1735,7 +1767,7 @@ static Undoes *SCCopyAll(SplineChar *sc,int full) {
     } else {
 	ret->undotype = ut_layers;
 	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
-	    cur = SCCopyAllLayer(sc,true,layer);
+	    cur = SCCopyAllLayer(sc,full,layer);
 	    if ( ret->u.multiple.mult==NULL )
 		ret->u.multiple.mult = cur;
 	    else
@@ -2732,6 +2764,10 @@ void FVCopy(FontView *fv, int fullcopy) {
     extern int onlycopydisplayed;
     int gid;
     SplineChar *sc;
+    /* If fullcopy==1 copy the glyph as is. */
+    /* If fullcopy==0 put a reference to the glyph in the clipboard */
+    /* If fullcopy==2 copy the glyph, but unlink any references it contains */
+    /*	so we end up with no references and a bunch of splines */
 
     for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] ) {
 	any = true;

@@ -2159,6 +2159,12 @@ static void bCopyReference(Context *c) {
     doEdit(c,2);
 }
 
+static void bCopyUnlinked(Context *c) {
+    if ( c->a.argc!=1 )
+	ScriptError( c, "Wrong number of arguments");
+    FVCopy(c->curfv,2);
+}
+
 static void bCopyWidth(Context *c) {
     doEdit(c,3);
 }
@@ -7051,6 +7057,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "Cut", bCut },
     { "Copy", bCopy },
     { "CopyReference", bCopyReference },
+    { "CopyUnlinked", bCopyUnlinked },
     { "CopyWidth", bCopyWidth },
     { "CopyVWidth", bCopyVWidth },
     { "CopyLBearing", bCopyLBearing },
