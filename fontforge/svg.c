@@ -434,6 +434,16 @@ static PST *HasLigature(SplineChar *sc) {
 return( best );
 }
 
+static SplineChar *HasSubs(SplineChar *sc, uint32 tag) {
+    PST *pst;
+
+    for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
+	if ( pst->type==pst_substitution && pst->tag==tag )
+return( SFGetChar(sc->parent,-1,pst->u.subs.variant));
+    }
+return( NULL );
+}
+
 static void svg_scdump(FILE *file, SplineChar *sc,int defwid, int encuni) {
     PST *best=NULL;
     const unichar_t *alt;
@@ -500,6 +510,7 @@ static void svg_scdump(FILE *file, SplineChar *sc,int defwid, int encuni) {
     }
     putc('\n',file);
     svg_scpathdump(file,sc," </glyph>\n");
+    sc->ticked = true;
 }
 
 static void svg_notdefdump(FILE *file, SplineFont *sf,int defwid) {
@@ -617,6 +628,9 @@ static void svg_sfdump(FILE *file,SplineFont *sf) {
 
     oldloc = setlocale(LC_NUMERIC,"C");
 
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
+	sf->glyphs[i]->ticked = false;
+
     defwid = svg_outfontheader(file,sf);
     svg_notdefdump(file,sf,defwid);
 
@@ -627,15 +641,37 @@ static void svg_sfdump(FILE *file,SplineFont *sf) {
     }
     /* And formed arabic before unformed */
     for ( i=0; i<sf->glyphcnt; ++i ) {
-	if ( SCWorthOutputting(sf->glyphs[i]) && !HasLigature(sf->glyphs[i]) &&
-		(formeduni = AnyArabicForm(sf->glyphs[i]))!=-1 )
-	    svg_scdump(file, sf->glyphs[i],defwid,formeduni);
+	SplineChar *sc = sf->glyphs[i];
+	if ( SCWorthOutputting(sc) && !sc->ticked ) {
+	    if ( (formeduni = AnyArabicForm(sc))!=-1 )
+		svg_scdump(file, sc,defwid,formeduni);
+	    else if ( sc->unicodeenc>=0x0600 && sc->unicodeenc<=0x06ff ) {
+		/* The conventions now (as I understand them) suggest that */
+		/*  fonts not use the unicode encodings for formed arabic */
+		/*  but should use simple substitutions instead */
+		int arab_off = sc->unicodeenc-0x600;
+		SplineChar *formed;
+		formed = HasSubs(sc,CHR('i','n','i','t'));
+		if ( SCWorthOutputting(formed) && formed->unicodeenc==-1 &&
+			!formed->ticked && ArabicForms[arab_off].initial!=0 )
+		    svg_scdump(file,formed,defwid,ArabicForms[arab_off].initial);
+		formed = HasSubs(sc,CHR('m','e','d','i'));
+		if ( SCWorthOutputting(formed) && formed->unicodeenc==-1 &&
+			!formed->ticked && ArabicForms[arab_off].medial!=0 )
+		    svg_scdump(file,formed,defwid,ArabicForms[arab_off].medial);
+		formed = HasSubs(sc,CHR('f','i','n','a'));
+		if ( SCWorthOutputting(formed) && formed->unicodeenc==-1 &&
+			!formed->ticked && ArabicForms[arab_off].final!=0 )
+		    svg_scdump(file,formed,defwid,ArabicForms[arab_off].final);
+		formed = HasSubs(sc,CHR('i','s','o','l'));
+		if ( SCWorthOutputting(formed) && formed->unicodeenc==-1 &&
+			!formed->ticked && ArabicForms[arab_off].isolated!=0 )
+		    svg_scdump(file,formed,defwid,ArabicForms[arab_off].isolated);
+	    }
+	}
     }
     for ( i=0; i<sf->glyphcnt; ++i ) {
-	if ( sf->glyphs[i]!=NULL && strcmp(sf->glyphs[i]->name,".notdef")==0 )
-    continue;
-	if ( SCWorthOutputting(sf->glyphs[i]) && !HasLigature(sf->glyphs[i]) &&
-		strcmp(sf->glyphs[i]->name,".notdef")!=0 ) {
+	if ( SCWorthOutputting(sf->glyphs[i]) && !sf->glyphs[i]->ticked ) {
 	    if ( UnformedUni(sf->glyphs[i]->unicodeenc) )
 		svg_scdump(file, sf->glyphs[i],defwid,sf->glyphs[i]->unicodeenc);
 	    for ( altuni = sf->glyphs[i]->altuni; altuni!=NULL; altuni = altuni->next )
