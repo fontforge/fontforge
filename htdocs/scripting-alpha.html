@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 9-Apr-2006 -->
-  <!-- AP: Last modified: 4-Oct-2006 -->
+  <!-- AP: Last modified: 23-Oct-2006 -->
   <TITLE>Scripting functions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -779,6 +779,13 @@ a[4][0] = "Nested array";
 	    <A NAME="CopyReference" HREF="editmenu.html#Reference">CopyReference</A>
 	  <DD>
 	    Makes references to all selected glyphs and stores them in the clipboard.
+	  <DT>
+	    <A NAME="CopyUnlinked">CopyUnlinked</A>
+	  <DD>
+	    Makes a copy of all selected glyphs, just as
+	    <A HREF="editmenu.html#Copy">Copy</A> does. However if a glyph contains a
+	    reference, then the reference will be unlinked (turned into splines) before
+	    it is added to the clipboard.
 	  <DT>
 	    <A NAME="CopyVWidth" HREF="editmenu.html#VWidth">CopyVWidth</A>
 	  <DD>
