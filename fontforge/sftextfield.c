@@ -97,6 +97,7 @@ typedef struct sftextarea {
     void *cbcontext;
     void (*changefontcallback)(void *,SplineFont *,enum sftf_fonttype,int size,int aa);
     FontData *last_fd;
+    GImage *img;
 } SFTextArea;
 
 void SFTextAreaShow(GGadget *g,int pos);
@@ -206,7 +207,45 @@ return( -1 );
 return( gid );
 }
 
-static int FDDrawChar(GWindow pixmap,FontData *fd,int gid,int x,int y,Color col) {
+static void GImageDrawRect(GImage *img,GRect *r,Color col) {
+    struct _GImage *base;
+    int i;
+
+    base = img->u.image;
+    for ( i=0; i<r->width; ++i ) {
+	base->data[r->y*base->bytes_per_line + i + r->x] = col;
+	base->data[(r->y+r->height-1)*base->bytes_per_line + i + r->x] = col;
+    }
+    for ( i=0; i<r->height; ++i ) {
+	base->data[(r->y+i)*base->bytes_per_line + r->x] = col;
+	base->data[(r->y+i)*base->bytes_per_line + r->x+r->width-1] = col;
+    }
+}
+
+static void GImageDrawImage(GImage *dest,GImage *src,int x, int y) {
+    struct _GImage *sbase, *dbase;
+    int i,j, di, sbi, dbi, val;
+
+    dbase = dest->u.image;
+    sbase =  src->u.image;
+
+    for ( i=0; i<sbase->height; ++i ) {
+	di = y + i;
+	if ( di<0 || di>=dbase->height )
+    continue;
+	sbi = i*sbase->bytes_per_line;
+	dbi = di*dbase->bytes_per_line;
+	for ( j=0; j<sbase->width; ++j ) {
+	    if ( x+j<0 || x+j>=dbase->width )
+	continue;
+	    val = dbase->data[dbi+x+j] + sbase->data[sbi+j];
+	    if ( val>255 ) val = 255;
+	    dbase->data[dbi+x+j] = val;
+	}
+    }
+}
+
+static int FDDrawChar(GWindow pixmap,GImage *img,FontData *fd,int gid,int x,int y,Color col) {
     BDFChar *bdfc;
 
     if ( gid!=-1 && fd->bdf->glyphs[gid]==NULL )
@@ -216,7 +255,10 @@ static int FDDrawChar(GWindow pixmap,FontData *fd,int gid,int x,int y,Color col)
 	    GRect r;
 	    r.x = x+1; r.width= fd->bdf->ascent/2-2;
 	    r.height = (2*fd->bdf->ascent/3); r.y = y-r.height;
-	    GDrawDrawRect(pixmap,&r,col);
+	    if ( img!=NULL )
+		GImageDrawRect(img,&r,col);
+	    else
+		GDrawDrawRect(pixmap,&r,col);
 	}
 	x += fd->bdf->ascent/2;
     } else {
@@ -227,7 +269,10 @@ static int FDDrawChar(GWindow pixmap,FontData *fd,int gid,int x,int y,Color col)
 	    fd->base.bytes_per_line = bdfc->bytes_per_line;
 	    fd->base.width = bdfc->xmax-bdfc->xmin+1;
 	    fd->base.height = bdfc->ymax-bdfc->ymin+1;
-	    GDrawDrawImage(pixmap,&fd->gi,NULL,x+bdfc->xmin, y-bdfc->ymax);
+	    if ( img!=NULL )
+		GImageDrawImage(img,&fd->gi,x+bdfc->xmin, y-bdfc->ymax);
+	    else
+		GDrawDrawImage(pixmap,&fd->gi,NULL,x+bdfc->xmin, y-bdfc->ymax);
 	    fd->base.clut->trans_index = -1;
 	}
 	x += bdfc->width;
@@ -235,7 +280,7 @@ static int FDDrawChar(GWindow pixmap,FontData *fd,int gid,int x,int y,Color col)
 return( x );
 }
 
-static int STDrawText(SFTextArea *st,GWindow pixmap,int x,int y,
+static int STDrawText(SFTextArea *st,GWindow pixmap,GImage *img, int x,int y,
 	int pos, int len, Color col ) {
     struct fontlist *fl, *sub;
     int gid, npos;
@@ -256,7 +301,7 @@ return(x);
 	break;
 	    if ( st->text[pos]!='\n' ) {
 		gid = FDMap(fl->fd,st->text[pos]);
-		x = FDDrawChar(pixmap,fl->fd,gid,x,y,col);
+		x = FDDrawChar(pixmap,img,fl->fd,gid,x,y,col);
 	    }
 	    ++pos;
 	    --len;
@@ -269,7 +314,7 @@ return(x);
 	    break;
 	    if ( sub!=NULL && st->bidata.text[pos]!='\n') {
 		gid = FDMap(sub->fd,st->bidata.text[pos]);
-		x = FDDrawChar(pixmap,sub->fd,gid,x,y,col);
+		x = FDDrawChar(pixmap,img,sub->fd,gid,x,y,col);
 	    }
 	    ++pos;
 	    --len;
@@ -279,7 +324,7 @@ return( x );
 }
 
 static int STGetTextWidth(SFTextArea *st, int pos, int len ) {
-return( STDrawText(st,NULL,0,-1,pos,len,-1));
+return( STDrawText(st,NULL,NULL,0,-1,pos,len,-1));
 }
 
 static void STGetTextPtAfterPos(SFTextArea *st, unichar_t *pt, int cnt, int max, unichar_t **end ) {
@@ -1037,13 +1082,92 @@ return;
     }
     free(cret);
 
-    putc(0xfeff>>8,file);		/* Zero width something or other. Marks this as unicode */
-    putc(0xfeff&0xff,file);
-    for ( pt = st->text ; *pt; ++pt ) {
-	putc(*pt>>8,file);
-	putc(*pt&0xff,file);
-    }
+	putc(0xef,file);		/* Zero width something or other. Marks this as unicode, utf8 */
+	putc(0xbb,file);
+	putc(0xbf,file);
+	for ( pt = st->text ; *pt; ++pt ) {
+	    if ( *pt<0x80 )
+		putc(*pt,file);
+	    else if ( *pt<0x800 ) {
+		putc(0xc0 | (*pt>>6), file);
+		putc(0x80 | (*pt&0x3f), file);
+	    } else if ( *pt>=0xd800 && *pt<0xdc00 && pt[1]>=0xdc00 && pt[1]<0xe000 ) {
+		int u = ((*pt>>6)&0xf)+1, y = ((*pt&3)<<4) | ((pt[1]>>6)&0xf);
+		putc( 0xf0 | (u>>2),file );
+		putc( 0x80 | ((u&3)<<4) | ((*pt>>2)&0xf),file );
+		putc( 0x80 | y,file );
+		putc( 0x80 | (pt[1]&0x3f),file );
+	    } else {
+		putc( 0xe0 | (*pt>>12),file );
+		putc( 0x80 | ((*pt>>6)&0x3f),file );
+		putc( 0x80 | (*pt&0x3f),file );
+	    }
+	}
     fclose(file);
+}
+
+static void SFTextAreaSaveImage(SFTextArea *st) {
+    char *cret;
+    GImage *image;
+    struct _GImage *base;
+    char *basename;
+    int i,ll,ret;
+
+    if ( st->lcnt==0 )
+return;
+
+    basename = NULL;
+    if ( st->fontlist!=NULL ) {
+	basename = galloc(strlen(st->fontlist->fd->sf->fontname)+8);
+	strcpy(basename, st->fontlist->fd->sf->fontname);
+#ifdef _NO_LIBPNG
+	strcat(basename,".bmp");
+#else
+	strcat(basename,".png");
+#endif
+    }
+#ifdef _NO_LIBPNG
+    cret = gwwv_save_filename(_("Save Image"),basename, "*.bmp");
+#else
+    cret = gwwv_save_filename(_("Save Image"),basename, "*.{bmp,png}");
+#endif
+    free(basename);
+    if ( cret==NULL )
+return;
+
+    image = GImageCreate(it_index,st->g.inner.width+2,
+	    st->lineheights[st->lcnt-1].y+st->lineheights[st->lcnt-1].fh+2);
+    base = image->u.image;
+    memset(base->data,0,base->bytes_per_line*base->height);
+    for ( i=0; i<256; ++i )
+	base->clut->clut[i] = (255-i)*0x010101;
+    base->clut->is_grey = true;
+    base->clut->clut_len = 256;
+
+    for ( i=0; st->lines[i]!=-1; ++i ) {
+	ll = st->lines[i+1]==-1?-1:st->lines[i+1]-st->lines[i];
+	STDrawText(st,NULL,image,1,st->lineheights[i].y+st->lineheights[i].as+1,
+		st->lines[i],ll, 0xff );
+    }
+#ifndef _NO_LIBPNG
+    if ( strstrmatch(cret,".png")!=NULL )
+	ret = GImageWritePng(image,cret,false);
+    else
+#endif
+    if ( strstrmatch(cret,".bmp")!=NULL )
+	ret = GImageWriteBmp(image,cret);
+    else
+	gwwv_post_error(_("Unsupported image format"),
+#ifndef _NO_LIBPNG
+		_("Unsupported image format must be bmp or png")
+#else
+		_("Unsupported image format must be bmp")
+#endif
+	    );
+    if ( !ret )
+	gwwv_post_error(_("Could not write"),_("Could not write %.100s"),cret);
+    free( cret );
+    GImageDestroy(image);
 }
 
 #define MID_Cut		1
@@ -1056,6 +1180,8 @@ return;
 #define MID_Import	6
 
 #define MID_Undo	7
+
+#define MID_SaveImage	8
 
 static SFTextArea *popup_kludge;
 
@@ -1087,6 +1213,9 @@ return;
       case MID_Import:
 	SFTextAreaImport(st);
       break;
+      case MID_SaveImage:
+	SFTextAreaSaveImage(st);
+      break;
     }
 }
 
@@ -1097,8 +1226,10 @@ static GMenuItem sftf_popuplist[] = {
     { { (unichar_t *) N_("_Copy"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, 'C', ksm_control, NULL, NULL, SFTFPopupInvoked, MID_Copy },
     { { (unichar_t *) N_("_Paste"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, 'V', ksm_control, NULL, NULL, SFTFPopupInvoked, MID_Paste },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("_Save"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, 'S', ksm_control, NULL, NULL, SFTFPopupInvoked, MID_Save },
+    { { (unichar_t *) N_("_Save As..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, 'S', ksm_control, NULL, NULL, SFTFPopupInvoked, MID_Save },
     { { (unichar_t *) N_("_Import..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, 'I', ksm_control, NULL, NULL, SFTFPopupInvoked, MID_Import },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) N_("Save As _Image..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, 'S', ksm_control|ksm_shift, NULL, NULL, SFTFPopupInvoked, MID_SaveImage },
     { NULL }
 };
 
@@ -1120,6 +1251,7 @@ static void SFTFPopupMenu(SFTextArea *st, GEvent *event) {
     sftf_popuplist[4].ti.disabled = !GDrawSelectionHasType(st->g.base,sn_clipboard,"text/plain;charset=ISO-10646-UCS-2") &&
 	    !GDrawSelectionHasType(st->g.base,sn_clipboard,"UTF8_STRING") &&
 	    !GDrawSelectionHasType(st->g.base,sn_clipboard,"STRING");
+    sftf_popuplist[9].ti.disabled = (st->lcnt<=0);
     popup_kludge = st;
     GMenuCreatePopupMenu(st->g.base,event, sftf_popuplist);
 }
@@ -1475,7 +1607,7 @@ static void SFTextAreaDrawLineSel(GWindow pixmap, SFTextArea *st, int line, Colo
 	else
 	    GDrawDrawRect(pixmap,&selr,st->g.box->active_border);
 	if ( sel!=fg ) {
-	    STDrawText(st,pixmap,selr.x,y+st->as, s,e-s, sel );
+	    STDrawText(st,pixmap,NULL,selr.x,y+st->as, s,e-s, sel );
 	}
     } else {
 	/* in bidirectional text the selection can be all over the */
@@ -1495,7 +1627,7 @@ static void SFTextAreaDrawLineSel(GWindow pixmap, SFTextArea *st, int line, Colo
 		else
 		    GDrawDrawRect(pixmap,&selr,st->g.box->active_border);
 		if ( sel!=fg )
-		    STDrawText(st,pixmap,selr.x,y+st->as, i,j-i, sel );
+		    STDrawText(st,pixmap,NULL,selr.x,y+st->as, i,j-i, sel );
 		i = j-1;
 	    }
 	}
@@ -1546,7 +1678,7 @@ return( false );
 		sel = g->state==gs_disabled?g->box->disabled_background:
 				g->box->main_background==COLOR_DEFAULT?GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(pixmap)):
 				g->box->main_background;
-		STDrawText(st,pixmap,g->inner.x-st->xoff_left,y+st->lineheights[i].as,
+		STDrawText(st,pixmap,NULL,g->inner.x-st->xoff_left,y+st->lineheights[i].as,
 			st->lines[i],ll, fg );
 	    }
 	    SFTextAreaDrawLineSel(pixmap,st,i,fg,sel);
@@ -1554,7 +1686,7 @@ return( false );
 	if ( sel==fg ) {
 	    if ( i!=0 && (*(bitext+st->lines[i]+ll-1)=='\n' || *(bitext+st->lines[i]+ll-1)=='\r' ))
 		--ll;
-	    STDrawText(st,pixmap,g->inner.x-st->xoff_left,y+st->lineheights[i].as,
+	    STDrawText(st,pixmap,NULL,g->inner.x-st->xoff_left,y+st->lineheights[i].as,
 		    st->lines[i],ll, fg );
 	}
     }
@@ -2104,8 +2236,11 @@ static void sftextarea_resize(GGadget *g, int32 width, int32 height ) {
 	GScrollBarSetBounds(&st->vsb->g,0,st->lineheights[st->lcnt-1].y,st->g.inner.height);
 	if ( st->loff_top>=st->lcnt )
 	    st->loff_top = st->lcnt-1;
-	for ( l = st->loff_top; l>=0 && st->lineheights[st->lcnt-1].y-st->lineheights[l].y<=st->g.inner.height; --l );
-	++l;
+	l = st->loff_top;
+	if ( st->lineheights[st->lcnt-1].y-st->lineheights[st->loff_top].y<=st->g.inner.height ) {
+	    for ( ; l>=0 && st->lineheights[st->lcnt-1].y-st->lineheights[l].y<=st->g.inner.height; --l );
+	    ++l;
+	}
 	if ( l<0 ) l = 0;
 	if ( l!=st->loff_top ) {
 	    st->loff_top = l;
