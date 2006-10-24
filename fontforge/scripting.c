@@ -130,6 +130,18 @@ static Array *arraycopy(Array *a) {
 return( c );
 }
 
+static void array_copy_into(Array *dest,int offset,Array *src) {
+    int i;
+
+    memcpy(dest->vals+offset,src->vals,src->argc*sizeof(Val));
+    for ( i=0; i<src->argc; ++i ) {
+	if ( src->vals[i].type==v_str )
+	    dest->vals[i+offset].u.sval = copy(src->vals[i].u.sval);
+	else if ( src->vals[i].type==v_arr )
+	    dest->vals[i+offset].u.aval = arraycopy(src->vals[i].u.aval);
+    }
+}
+
 void DictionaryFree(struct dictionary *dica) {
     int i;
 
@@ -1575,6 +1587,18 @@ static void bClose(Context *c) {
 	FontViewFree(c->curfv);
     }
     c->curfv = NULL;
+}
+
+static void bRevert(Context *c) {
+    if ( c->a.argc!=1 )
+	ScriptError( c, "Wrong number of arguments");
+    FVRevert(c->curfv);
+}
+
+static void bRevertToBackup(Context *c) {
+    if ( c->a.argc!=1 )
+	ScriptError( c, "Wrong number of arguments");
+    FVRevertBackup(c->curfv);
 }
 
 static void bSave(Context *c) {
@@ -7085,6 +7109,8 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "Open", bOpen, 1 },
     { "New", bNew, 1 },
     { "Close", bClose },
+    { "Revert", bRevert },
+    { "RevertToBackup", bRevertToBackup },
     { "Save", bSave },
     { "Generate", bGenerate },
     { "GenerateFamily", bGenerateFamily },
@@ -7832,13 +7858,14 @@ static void docall(Context *c,char *name,Val *val) {
 
 static void buildarray(Context *c,Val *val) {
     /* Be prepared for c->donteval */
-    Val *body;
-    int cnt, max;
+    Val *body=NULL;
+    int cnt, max=0;
     int tok;
 
     tok = NextToken(c);
     if ( tok==tt_rbracket )
-	ScriptError(c,"This array doesn't have any elements");
+	/* ScriptError(c,"This array doesn't have any elements"); */
+	cnt = 0;
     else {
 	backuptok(c);
 	max = 0;
@@ -8312,6 +8339,28 @@ static void add(Context *c,Val *val) {
 		if ( other.type==v_str ) free(other.u.sval);
 		free(val->u.sval);
 		val->u.sval = ret;
+	    } else if ( val->type==v_arr || val->type==v_arrfree ) {
+		Array *arr;
+		arr = galloc(sizeof(Array));
+		arr->argc = val->u.aval->argc +
+			((other.type==v_arr || other.type== v_arrfree)?
+			    other.u.aval->argc:
+			    1);
+		arr->vals = galloc(arr->argc*sizeof(Val));
+		array_copy_into(arr,0,val->u.aval);
+		if ( other.type==v_arr || other.type == v_arrfree ) {
+		    array_copy_into(arr,val->u.aval->argc,other.u.aval);
+		    if ( other.type==v_arrfree )
+			arrayfree(other.u.aval);
+		} else {
+		    arr->vals[val->u.aval->argc] = other;
+		    /* can't be an array */
+		    /* don't need to copy a string, we'd just free it */
+		}
+		if ( val->type==v_arrfree )
+		    arrayfree(val->u.aval);
+		val->u.aval = arr;
+		val->type = v_arrfree;
 	    } else if (( val->type==v_int || val->type==v_unicode ) &&
 		    ( other.type==v_int || other.type==v_unicode )) {
 		if ( tok==tt_plus )
