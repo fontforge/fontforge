@@ -92,6 +92,8 @@ typedef struct context {
     jmp_buf *err_env;			/* place to longjump to on an error */
 } Context;
 
+void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height);
+
  /* Adds a user defined scripting function to the interpretter */
  /* (you can't override a built-in name) */
  /* (you can replace a previous user defined function */
@@ -123,5 +125,4 @@ void ScriptErrorString( Context *c, const char *msg, const char *name);
 void ScriptErrorF( Context *c, const char *fmt, ... );
 	/* Standard printf-style spec. All string arguments assumed to be in */
 	/* utf8 */
-
 #endif	/* _SCRIPTING_H */

@@ -25,7 +25,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <gkeysym.h>
 
 #include "../gdraw/ggadgetP.h"
@@ -97,7 +96,6 @@ typedef struct sftextarea {
     void *cbcontext;
     void (*changefontcallback)(void *,SplineFont *,enum sftf_fonttype,int size,int aa);
     FontData *last_fd;
-    GImage *img;
 } SFTextArea;
 
 void SFTextAreaShow(GGadget *g,int pos);
@@ -113,34 +111,6 @@ static unichar_t nullstr[] = { 0 },
 
 static int SFTextArea_Show(SFTextArea *st, int pos);
 static void GTPositionGIC(SFTextArea *st);
-
-static void SFTextAreaChanged(SFTextArea *st,int src) {
-    GEvent e;
-
-    e.type = et_controlevent;
-    e.w = st->g.base;
-    e.u.control.subtype = et_textchanged;
-    e.u.control.g = &st->g;
-    e.u.control.u.tf_changed.from_pulldown = src;
-    if ( st->g.handle_controlevent != NULL )
-	(st->g.handle_controlevent)(&st->g,&e);
-    else
-	GDrawPostEvent(&e);
-}
-
-static void SFTextAreaFocusChanged(SFTextArea *st,int gained) {
-    GEvent e;
-
-    e.type = et_controlevent;
-    e.w = st->g.base;
-    e.u.control.subtype = et_textfocuschanged;
-    e.u.control.g = &st->g;
-    e.u.control.u.tf_focus.gained_focus = gained;
-    if ( st->g.handle_controlevent != NULL )
-	(st->g.handle_controlevent)(&st->g,&e);
-    else
-	GDrawPostEvent(&e);
-}
 
 static void SFTextAreaProcessBi(SFTextArea *st, int start_of_change) {
     int i, pos;
@@ -212,13 +182,22 @@ static void GImageDrawRect(GImage *img,GRect *r,Color col) {
     int i;
 
     base = img->u.image;
+    if ( r->y>=base->height || r->x>=base->width )
+return;
+
     for ( i=0; i<r->width; ++i ) {
+	if ( i+r->x>=base->width )
+    break;
 	base->data[r->y*base->bytes_per_line + i + r->x] = col;
-	base->data[(r->y+r->height-1)*base->bytes_per_line + i + r->x] = col;
+	if ( r->y+r->height-1<base->height )
+	    base->data[(r->y+r->height-1)*base->bytes_per_line + i + r->x] = col;
     }
     for ( i=0; i<r->height; ++i ) {
+	if ( i+r->y>=base->height )
+    break;
 	base->data[(r->y+i)*base->bytes_per_line + r->x] = col;
-	base->data[(r->y+i)*base->bytes_per_line + r->x+r->width-1] = col;
+	if ( r->x+r->width-1<base->width )
+	    base->data[(r->y+i)*base->bytes_per_line + r->x+r->width-1] = col;
     }
 }
 
@@ -389,7 +368,6 @@ static void SFTextAreaRefigureLines(SFTextArea *st, int start_of_change) {
     int i, dobitext;
     unichar_t *pt, *ept, *end, *temp;
 
-    GDrawSetFont(st->g.base,st->font);
     if ( st->lines==NULL ) {
 	st->lines = galloc(10*sizeof(int32));
 	st->lineheights = galloc(10*sizeof(struct lineheights));
@@ -463,6 +441,8 @@ return;
 	st->lineheights[i-1].y = st->lineheights[i-2].y+st->lineheights[i-2].fh;
     else
 	st->lineheights[i-1].y = 0;
+    st->lineheights[i-1].as = st->lineheights[i-1].fh = 0;
+
     if ( st->lcnt!=i ) { int page;
 	st->lcnt = i;
 	if ( st->vsb!=NULL )
@@ -509,6 +489,7 @@ return;
     }
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void fontlistfree(struct fontlist *fl ) {
     struct fontlist *nfl;
 
@@ -516,6 +497,34 @@ static void fontlistfree(struct fontlist *fl ) {
 	nfl = fl->next;
 	chunkfree(fl,sizeof(struct fontlist));
     }
+}
+
+static void SFTextAreaChanged(SFTextArea *st,int src) {
+    GEvent e;
+
+    e.type = et_controlevent;
+    e.w = st->g.base;
+    e.u.control.subtype = et_textchanged;
+    e.u.control.g = &st->g;
+    e.u.control.u.tf_changed.from_pulldown = src;
+    if ( st->g.handle_controlevent != NULL )
+	(st->g.handle_controlevent)(&st->g,&e);
+    else
+	GDrawPostEvent(&e);
+}
+
+static void SFTextAreaFocusChanged(SFTextArea *st,int gained) {
+    GEvent e;
+
+    e.type = et_controlevent;
+    e.w = st->g.base;
+    e.u.control.subtype = et_textfocuschanged;
+    e.u.control.g = &st->g;
+    e.u.control.u.tf_focus.gained_focus = gained;
+    if ( st->g.handle_controlevent != NULL )
+	(st->g.handle_controlevent)(&st->g,&e);
+    else
+	GDrawPostEvent(&e);
 }
 
 static struct fontlist *fontlistcopy(struct fontlist *fl ) {
@@ -2090,6 +2099,7 @@ return( false );
 
 return( true );
 }
+#endif
 
 static void sftextarea_destroy(GGadget *g) {
     SFTextArea *st = (SFTextArea *) g;
@@ -2131,6 +2141,7 @@ return;
     _ggadget_destroy(g);
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void SFTextAreaSetTitle(GGadget *g,const unichar_t *tit) {
     SFTextArea *st = (SFTextArea *) g;
     unichar_t *old = st->oldtext;
@@ -2558,6 +2569,7 @@ GGadget *SFTextAreaCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 
 return( &st->g );
 }
+#endif
 
 static struct sfmaps *SFMapOfSF(SFTextArea *st,SplineFont *sf) {
     struct sfmaps *sfmaps;
@@ -2654,6 +2666,7 @@ return( NULL );
 return( ret );
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 int SFTFSetFont(GGadget *g, int start, int end, SplineFont *sf,
 	enum sftf_fonttype fonttype, int size, int antialias) {
     /* Sets the font for the region between start and end. If start==-1 it */
@@ -2734,3 +2747,86 @@ void SFTFRegisterCallback(GGadget *g, void *cbcontext,
     st->changefontcallback = changefontcallback;
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+
+#include "scripting.h"
+void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height) {
+    SFTextArea *st = gcalloc(1,sizeof(SFTextArea));
+    int cnt, len, i, ll, ret;
+    struct fontlist *last;
+    enum sftf_fonttype type = sf->order2 ? sftf_ttf : sftf_otf;
+    GImage *image;
+    struct _GImage *base;
+
+    st->multi_line = true;
+    st->accepts_returns = true;
+    st->wrap = true;
+    SFMapOfSF(st,sf);
+
+    cnt = arr->argc/2;
+    len = 1;
+    for ( i=0; i<cnt; ++i )
+	len += utf8_strlen( arr->vals[2*i+1].u.sval )+1;
+    
+    st->text = galloc(len*sizeof(unichar_t));
+    len = 0;
+    last = NULL;
+    for ( i=0; i<cnt; ++i ) {
+	if ( last==NULL )
+	    last = st->fontlist = gcalloc(1,sizeof(struct fontlist));
+	else {
+	    last->next = gcalloc(1,sizeof(struct fontlist));
+	    last = last->next;
+	}
+	last->fd = FindFontData(st,sf,type,arr->vals[2*i].u.ival,true);
+	last->start = len;
+
+	utf82u_strcpy(st->text+len,arr->vals[2*i+1].u.sval);
+	len += utf8_strlen( arr->vals[2*i+1].u.sval );
+	st->text[len++] = '\n';
+
+	last->end = len;
+    }
+    st->text[len++] = '\0';
+    
+    st->g.inner.width = st->g.r.width = width==-1 ? 0xff00 : width;
+    st->g.inner.height = st->g.r.height = 1000;	/* should not matter */
+    SFTextAreaRefigureLines(st,0);
+    if ( width==-1 )
+	width = st->xmax+2;
+    if ( height==-1 && st->lcnt!=0 )
+	height = st->lineheights[st->lcnt-1].y + st->lineheights[st->lcnt-1].fh + 2;
+
+    image = GImageCreate(it_index,width,height);
+    base = image->u.image;
+    memset(base->data,0,base->bytes_per_line*base->height);
+    for ( i=0; i<256; ++i )
+	base->clut->clut[i] = (255-i)*0x010101;
+    base->clut->is_grey = true;
+    base->clut->clut_len = 256;
+
+    for ( i=0; st->lines[i]!=-1; ++i ) {
+	ll = st->lines[i+1]==-1?-1:st->lines[i+1]-st->lines[i];
+	STDrawText(st,NULL,image,1,st->lineheights[i].y+st->lineheights[i].as+1,
+		st->lines[i],ll, 0xff );
+    }
+#ifndef _NO_LIBPNG
+    if ( strstrmatch(filename,".png")!=NULL )
+	ret = GImageWritePng(image,filename,false);
+    else
+#endif
+    if ( strstrmatch(filename,".bmp")!=NULL )
+	ret = GImageWriteBmp(image,filename);
+    else
+	gwwv_post_error(_("Unsupported image format"),
+#ifndef _NO_LIBPNG
+		_("Unsupported image format must be bmp or png")
+#else
+		_("Unsupported image format must be bmp")
+#endif
+	    );
+    if ( !ret )
+	gwwv_post_error(_("Could not write"),_("Could not write %.100s"),filename);
+    GImageDestroy(image);
+
+    sftextarea_destroy(&st->g);
+}
