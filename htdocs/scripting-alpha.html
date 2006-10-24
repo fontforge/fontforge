@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 9-Apr-2006 -->
-  <!-- AP: Last modified: 23-Oct-2006 -->
+  <!-- AP: Last modified: 24-Oct-2006 -->
   <TITLE>Scripting functions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -1019,6 +1019,21 @@ a[4][0] = "Nested array";
 	    execute with no current font.<BR>
 	    See Also <A HREF="#Ceil">Ceil</A>, <A HREF="#Int">Int</A>,
 	    <A HREF="#Round">Round</A>
+	  <DT>
+	    FontImage(filename,array[,width[,height]])
+	  <DD>
+	    Produces a thumbnail image of the font and stores it in the given filename.
+	    Images may be stored in either png or bmp format (png requires that you have
+	    libpng on your system). The array is a list of pairs of [pointsize, utf8-string]
+	    each of which specifies a line of text for the image. The width need not
+	    be specified, if omitted (or specified as -1) the image will be just wide
+	    enough to contain the longest string. The height need not be specified, if
+	    omitted (or specified as -1) it will be just long enough to contain all the
+	    lines.<BR>
+	    &nbsp; &nbsp;
+	    <CODE>FontImage("FontImage.png",[17,"abcd",38,"ABCD"])</CODE><BR>
+	    produces<BR>
+	    <IMG SRC="FontImage.png" WIDTH="73" HEIGHT="57">
 	  <DT>
 	    <A NAME="FontsInFile">F</A>ontsInFile(filename)
 	  <DD>
@@ -2231,6 +2246,14 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	    where the first specifies the numerator and the second the denominator of
 	    the fudge (=arg1/arg2). Left over from the days when ff did not support real
 	    numbers.
+	  <DT>
+	    <A NAME="Revert" HREF="filemenu.html#Revert">Revert</A>()
+	  <DD>
+	    Reverts the current font to the last version.
+	  <DT>
+	    <A NAME="RevertToBackup" HREF="filemenu.html#RevertBackup">RevertToBackup</A>()
+	  <DD>
+	    Reverts the current font to a backup sfd file (if any)
 	  <DT>
 	    <A NAME="Rotate">R</A>otate(angle[,ox,oy])
 	  <DD>

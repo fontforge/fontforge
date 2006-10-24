@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 23-Oct-2006 -->
+  <!-- AP: Last modified: 24-Oct-2006 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -177,7 +177,11 @@
       +, - (binary arithmetic operators)<BR>
       If the first operand of + is a string then + will be treated as concatenation
       rather than addition. If the second operand is a number it will be converted
-      to a string (decimal representation) and then concatenated.
+      to a string (decimal representation) and then concatenated. If the first
+      operand of + is an array then + will do array concatenation -- if the second
+      argment is also an array the two will be concatenated ([1,2] + [3,4] yields
+      [1,2,3,4], while [1,2] + 3 yields [1,2,3]). Otherwise these are the normal
+      arithmetric operations.
     <LI>
       ==, !=, &gt;, &lt;, &gt;=, &lt;= (comparison operators, may be applied to
       either two integers or two strings)
@@ -644,6 +648,10 @@ endloop
     <LI>
       <A HREF="scripting-alpha.html#Quit">Quit(status)</A>
     <LI>
+      <A HREF="scripting-alpha.html#Revert">Revert()</A>
+    <LI>
+      <A HREF="scripting-alpha.html#RevertToBackup">RevertToBackup()</A>
+    <LI>
       <A HREF="scripting-alpha.html#Save">Save([filename])</A>
   </UL>
   <H3 ALIGN=Center>
@@ -652,6 +660,8 @@ endloop
   <UL>
     <LI>
       <A HREF="scripting-alpha.html#FileAccess">FileAccess(filename[,prot])</A>
+    <LI>
+      <A HREF="scripting-alpha.html#FontImage">FontImage(filename,array[,width[,height]])</A>
     <LI>
       <A HREF="scripting-alpha.html#LoadStringFromFile">LoadStringFromFile("filename")</A>
     <LI>
