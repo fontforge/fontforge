@@ -2757,6 +2757,11 @@ void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height) {
     GImage *image;
     struct _GImage *base;
 
+    if ( !hasFreeType())
+	type = sftf_pfaedit;
+    if ( sf->onlybitmaps && sf->bitmaps!=NULL )
+	type = sftf_bitmap;
+
     st->multi_line = true;
     st->accepts_returns = true;
     st->wrap = true;
