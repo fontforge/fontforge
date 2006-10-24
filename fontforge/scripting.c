@@ -2039,6 +2039,50 @@ static void bExport(Context *c) {
 	free(format_spec);
 }
 
+/* FontImage("Outputfilename",array of [pointsize,string][,width[,height]]) */
+static void bFontImage(Context *c) {
+    int i ;
+    char *pt, *t;
+    int width = -1, height = -1;
+    Array *arr;
+
+    if ( c->a.argc<3 || c->a.argc>5 )
+	ScriptError( c, "Wrong number of arguments");
+    if ( c->a.vals[1].type!=v_str ||
+	    (c->a.vals[2].type!=v_arr && c->a.vals[2].type!=v_arrfree) ||
+	    (c->a.argc>=4 && c->a.vals[3].type!=v_int ) ||
+	    (c->a.argc>=5 && c->a.vals[4].type!=v_int ) )
+	ScriptError( c, "Bad type of arguments");
+
+    t = script2utf8_copy(c->a.vals[1].u.sval);
+    pt = strrchr(t,'.');
+    if ( pt==NULL || (strmatch(pt,".bmp")!=0
+#ifndef _NO_LIBPNG
+	    && strmatch(pt,".png")!=0
+#endif
+	    ))
+	ScriptError( c, "Unsupported image format");
+
+    if ( c->a.argc>=4 )
+	width = c->a.vals[3].u.ival;
+    if ( c->a.argc>=5 )
+	height = c->a.vals[4].u.ival;
+
+    arr = c->a.vals[2].u.aval;
+    if ( (arr->argc&1) || arr->argc==0 )
+	ScriptError(c, "Second argument must be an array with an even number of entries");
+    for ( i=0; i<arr->argc; i+=2 ) {
+	if ( arr->vals[i].type != v_int )
+	    ScriptError( c, "Second argument must be an array where each even numbered entry is an integer pixelsize" );
+	if ( arr->vals[i+1].type != v_str )
+	    ScriptError( c, "Second argument must be an array where each odd numbered entry is a string" );
+    }
+
+    FontImage(c->curfv->sf,t,arr,width,height);
+
+    free(t);
+}
+
 static void bMergeKern(Context *c) {
     char *t; char *locfilename;
 
@@ -7050,6 +7094,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
 #endif
     { "Import", bImport },
     { "Export", bExport },
+    { "FontImage", bFontImage },
     { "MergeKern", bMergeKern },
     { "PrintSetup", bPrintSetup, 1 },
     { "PrintFont", bPrintFont },
