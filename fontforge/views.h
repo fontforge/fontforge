@@ -1175,7 +1175,7 @@ extern void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv);
 
 #if defined(FONTFORGE_CONFIG_GTK)
 #elif defined(FONTFORGE_CONFIG_GDRAW)
-enum sftf_fonttype { sftf_pfb, sftf_ttf, sftf_httf, sftf_otf, sftf_bitmap, sftf_pfaedit };
+enum sftf_fonttype { sftf_pfb, sftf_ttf, sftf_otf, sftf_bitmap, sftf_pfaedit };
 extern int SFTFSetFont(GGadget *g, int start, int end, SplineFont *sf,
 	enum sftf_fonttype, int size, int antialias);
 extern void SFTFRegisterCallback(GGadget *g, void *cbcontext,
