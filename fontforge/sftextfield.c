@@ -2487,9 +2487,9 @@ return( NULL );
 	if ( test )
 	    ftc = test->bdf->freetype_context;
 	if ( ftc==NULL ) {
-	    int flags = fonttype==sftf_httf ? 0 : ttf_flag_nohints;
+	    int flags = 0;
 	    int ff = fonttype==sftf_pfb ? ff_pfb :
-		     fonttype==sftf_ttf || fonttype==sftf_httf ? ff_ttf :
+		     fonttype==sftf_ttf ? ff_ttf :
 		     ff_otf;
 	    ftc = _FreeTypeFontContext(sf,NULL,NULL,ff,flags,NULL);
 	}
