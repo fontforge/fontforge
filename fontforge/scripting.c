@@ -7874,6 +7874,7 @@ static void buildarray(Context *c,Val *val) {
 	    if ( cnt>=max )
 		body = grealloc(body,(max+=20)*sizeof(Val));
 	    expr(c,&body[cnt]);
+	    dereflvalif(&body[cnt]);
 	    tok = NextToken(c);
 	    if ( tok!=tt_comma )
 		expect(c,tt_rbracket,tok);
