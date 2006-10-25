@@ -434,7 +434,7 @@ static PST *HasLigature(SplineChar *sc) {
 return( best );
 }
 
-static SplineChar *HasSubs(SplineChar *sc, uint32 tag) {
+SplineChar *SCHasSubs(SplineChar *sc, uint32 tag) {
     PST *pst;
 
     for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
@@ -651,19 +651,19 @@ static void svg_sfdump(FILE *file,SplineFont *sf) {
 		/*  but should use simple substitutions instead */
 		int arab_off = sc->unicodeenc-0x600;
 		SplineChar *formed;
-		formed = HasSubs(sc,CHR('i','n','i','t'));
+		formed = SCHasSubs(sc,CHR('i','n','i','t'));
 		if ( SCWorthOutputting(formed) && formed->unicodeenc==-1 &&
 			!formed->ticked && ArabicForms[arab_off].initial!=0 )
 		    svg_scdump(file,formed,defwid,ArabicForms[arab_off].initial);
-		formed = HasSubs(sc,CHR('m','e','d','i'));
+		formed = SCHasSubs(sc,CHR('m','e','d','i'));
 		if ( SCWorthOutputting(formed) && formed->unicodeenc==-1 &&
 			!formed->ticked && ArabicForms[arab_off].medial!=0 )
 		    svg_scdump(file,formed,defwid,ArabicForms[arab_off].medial);
-		formed = HasSubs(sc,CHR('f','i','n','a'));
+		formed = SCHasSubs(sc,CHR('f','i','n','a'));
 		if ( SCWorthOutputting(formed) && formed->unicodeenc==-1 &&
 			!formed->ticked && ArabicForms[arab_off].final!=0 )
 		    svg_scdump(file,formed,defwid,ArabicForms[arab_off].final);
-		formed = HasSubs(sc,CHR('i','s','o','l'));
+		formed = SCHasSubs(sc,CHR('i','s','o','l'));
 		if ( SCWorthOutputting(formed) && formed->unicodeenc==-1 &&
 			!formed->ticked && ArabicForms[arab_off].isolated!=0 )
 		    svg_scdump(file,formed,defwid,ArabicForms[arab_off].isolated);

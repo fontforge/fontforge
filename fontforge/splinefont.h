@@ -2064,4 +2064,6 @@ extern void SFSetModTime(SplineFont *sf);
 extern void SFTimesFromFile(SplineFont *sf,FILE *);
 
 extern int SFHasInstructions(SplineFont *sf);
+
+extern SplineChar *SCHasSubs(SplineChar *sc,uint32 tag);
 #endif

@@ -28,8 +28,9 @@
 #include <gkeysym.h>
 
 #include "../gdraw/ggadgetP.h"
-#include "ustring.h"
-#include "utype.h"
+#include <ustring.h>
+#include <utype.h>
+#include <chardata.h>
 
 typedef struct fontdata {
     SplineFont *sf;
@@ -164,7 +165,7 @@ static void SFTextAreaProcessBi(SFTextArea *st, int start_of_change) {
     }
 }
 
-static int FDMap(FontData *fd,int uenc) {
+static int _FDMap(FontData *fd,int uenc) {
     /* given a unicode code point, find the encoding in this font */
     int gid;
 
@@ -173,6 +174,40 @@ return( -1 );
     gid = fd->sfmap->map->map[uenc];
     if ( gid==-1 || fd->sf->glyphs[gid]==NULL )
 return( -1 );
+
+return( gid );
+}
+
+static int FDMap(FontData *fd,int uenc) {
+    /* given a unicode code point, find the encoding in this font */
+    /* We've already converted arabic to its forms... but we did that to */
+    /*  the deprecated unicode code points. If those don't work see if we */
+    /*  can find a substitution lookup. */
+    int gid;
+    const unichar_t *alt;
+    SplineChar *sc = NULL;
+
+    gid = _FDMap(fd,uenc);
+    if ( gid!=-1 || uenc<0 || uenc>0x10000 )
+return( gid );
+
+    alt = unicode_alternates[uenc>>8][uenc&0xff];
+    if ( alt==NULL || alt[1]!=0 || alt[0]<0x600 || alt[0]>0x6ff )
+return( -1 );
+    gid = _FDMap(fd,alt[0]);
+    if ( gid==-1 )
+return( -1 );
+    sc = fd->sf->glyphs[gid];
+    if ( ArabicForms[alt[0]-0x600].initial == uenc )
+	sc = SCHasSubs(sc,CHR('i','n','i','t'));
+    else if ( ArabicForms[alt[0]-0x600].medial == uenc )
+	sc = SCHasSubs(sc,CHR('m','e','d','i'));
+    else if ( ArabicForms[alt[0]-0x600].final == uenc )
+	sc = SCHasSubs(sc,CHR('f','i','n','a'));
+    else if ( ArabicForms[alt[0]-0x600].isolated == uenc )
+	sc = SCHasSubs(sc,CHR('i','s','o','l'));
+    if ( sc!=NULL )
+return( sc->orig_pos );
 
 return( gid );
 }
@@ -262,7 +297,7 @@ return( x );
 static int STDrawText(SFTextArea *st,GWindow pixmap,GImage *img, int x,int y,
 	int pos, int len, Color col ) {
     struct fontlist *fl, *sub;
-    int gid, npos;
+    int gid;
 
     if ( len==-1 )
 	len = u_strlen(st->text)-pos;
@@ -280,20 +315,24 @@ return(x);
 	break;
 	    if ( st->text[pos]!='\n' ) {
 		gid = FDMap(fl->fd,st->text[pos]);
-		x = FDDrawChar(pixmap,img,fl->fd,gid,x,y,col);
+/* VOLT demo fonts have glyphs for zero width non joiner & friends */
+/* And they aren't zero-width either. I don't want to display them */
+		if ( st->text[pos]< 0x200c || st->text[pos]>0x200f )
+		    x = FDDrawChar(pixmap,img,fl->fd,gid,x,y,col);
 	    }
 	    ++pos;
 	    --len;
 	}
     } else {
 	while ( len>0 ) {
-	    npos = st->bidata.original[pos]-st->text;
+	    /*npos = st->bidata.original[pos]-st->text;*/
 	    for ( sub=fl; sub!=NULL; sub=sub->next )
 		if ( sub->start<=pos && sub->end>pos )
 	    break;
 	    if ( sub!=NULL && st->bidata.text[pos]!='\n') {
 		gid = FDMap(sub->fd,st->bidata.text[pos]);
-		x = FDDrawChar(pixmap,img,sub->fd,gid,x,y,col);
+		if ( st->bidata.text[pos]<0x200c || st->bidata.text[pos]>0x200f )
+		    x = FDDrawChar(pixmap,img,sub->fd,gid,x,y,col);
 	    }
 	    ++pos;
 	    --len;
