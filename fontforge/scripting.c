@@ -998,6 +998,25 @@ static void bUtf8(Context *c) {
 	ScriptError( c, "Bad type for argument" );
 }
 
+static void bUCS4(Context *c) {
+
+    if ( c->a.argc!=2 )
+	ScriptError( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type==v_str ) {
+	const char *pt = c->a.vals[1].u.sval;
+	int i, len = utf8_strlen(pt);
+	c->return_val.type = v_arrfree;
+	c->return_val.u.aval = galloc(sizeof(Array));
+	c->return_val.u.aval->argc = len;
+	c->return_val.u.aval->vals = galloc(len*sizeof(Val));
+	for ( i=0; i<len; ++i ) {
+	    c->return_val.u.aval->vals[i].type = v_int;
+	    c->return_val.u.aval->vals[i].u.ival = utf8_ildb(&pt);
+	}
+    } else
+	ScriptError( c, "Bad type for argument" );
+}
+
 static void bOrd(Context *c) {
     if ( c->a.argc!=2 && c->a.argc!=3 )
 	ScriptError( c, "Wrong number of arguments" );
@@ -7094,6 +7113,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "Cos", bCos, 1 },
     { "Tan", bTan, 1 },
     { "ATan2", bATan2, 1 },
+    { "Ucs4", bUCS4, 1 },
     { "Utf8", bUtf8, 1 },
     { "Rand", bRand, 1 },
     { "FileAccess", bFileAccess, 1 },

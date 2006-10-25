@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 9-Apr-2006 -->
-  <!-- AP: Last modified: 24-Oct-2006 -->
+  <!-- AP: Last modified: 25-Oct-2006 -->
   <TITLE>Scripting functions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -1944,10 +1944,10 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	  <DT>
 	    <A NAME="Ord">O</A>rd(string[,pos])
 	  <DD>
-	    Returns an array of integers representing the encoding of the characters
-	    in the string. If pos is given it should be an integer less than the string
-	    length and the function will return the integer encoding of that character
-	    in the string. It can execute with no current font.
+	    Returns an array of integers representing the bytes in the string. If pos
+	    is given it should be an integer less than the string length and the function
+	    will return the integer representing that byte in the string. It can execute
+	    with no current font.
 	  <DT>
 	    <A NAME="Outline" HREF="elementmenu.html#Outline">Outline</A>(width)
 	  <DD>
@@ -3028,6 +3028,11 @@ SetGasp([8,2,16,1,65535,3])
 	    <A NAME="UnlinkReference" HREF="editmenu.html#Unlink">UnlinkReference</A>
 	  <DD>
 	    Unlinks all references within all selected glyphs
+	  <DT>
+	    <A NAME="Ucs4">U</A>cs4(str)
+	  <DD>
+	    Takes a string in Utf8 encoding and returns an array of integers, one for
+	    each unicode character in the string.
 	  <DT>
 	    <A NAME="Utf8">U</A>tf8(int)
 	  <DD>
