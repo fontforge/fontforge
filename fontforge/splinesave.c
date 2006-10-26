@@ -1306,12 +1306,14 @@ return( false );
 	rt = r1; r1 = r2; r2 = rt;
 	swap = !swap;
     }
-    if ( r1->sc->width!=scs[0]->width && r2->sc->width==scs[0]->width &&
+    if ( (r1->sc->width!=scs[0]->width || r1->sc->lsidebearing!=scs[0]->lsidebearing) &&
+	 r2->sc->width==scs[0]->width && r2->sc->lsidebearing==scs[0]->lsidebearing &&
 	    r2->transform[4]==0 && r2->transform[5]==0 ) {
 	rt = r1; r1 = r2; r2 = rt;
 	swap = !swap;
     }
-    if ( r1->sc->width!=scs[0]->width || r1->transform[4]!=0 || r1->transform[5]!=0 )
+    if ( r1->sc->width!=scs[0]->width || r1->sc->lsidebearing!=scs[0]->lsidebearing ||
+	 r1->transform[4]!=0 || r1->transform[5]!=0 )
 return( false );
 
     for ( j=0; j<instance_count; ++j ) {
