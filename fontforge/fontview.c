@@ -5113,26 +5113,33 @@ void FontViewMenu_VKernFromH(GtkMenuItem *menuitem, gpointer user_data) {
 static void FVAutoHint(FontView *fv) {
     int i, cnt=0, gid;
     BlueData *bd = NULL, _bd;
+    SplineChar *sc;
 
     if ( fv->sf->mm==NULL ) {
 	QuickBlues(fv->sf,&_bd);
 	bd = &_bd;
     }
 
+    /* Tick the ones we don't want to AH, untick the ones that need AH */
+    for ( gid = 0; gid<fv->sf->glyphcnt; ++gid ) if ( (sc = fv->sf->glyphs[gid])!=NULL )
+	sc->ticked = true;
+
     for ( i=0; i<fv->map->enccount; ++i )
 	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
-		SCWorthOutputting(fv->sf->glyphs[gid]) )
+		SCWorthOutputting(sc = fv->sf->glyphs[gid]) ) {
 	    ++cnt;
+	    sc->ticked = false;
+	}
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_start_indicator(10,_("Auto Hinting Font..."),_("Auto Hinting Font..."),0,cnt,1);
 # endif
 
     for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
 	    (gid = fv->map->map[i])!=-1 && SCWorthOutputting(fv->sf->glyphs[gid]) ) {
-	SplineChar *sc = fv->sf->glyphs[gid];
+	sc = fv->sf->glyphs[gid];
 	sc->manualhints = false;
 	/* Hint undoes are done in _SplineCharAutoHint */
-	SplineCharAutoHint(sc,bd);
+	SFSCAutoHint(sc,bd);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	if ( !gwwv_progress_next())
     break;
