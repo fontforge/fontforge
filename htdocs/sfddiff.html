@@ -2,64 +2,73 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 9-Mar-2002 -->
-  <!-- AP: Last modified: 2-Mar-2004 -->
-  <LINK REL="icon" href="ffanvil16.png">
+  <!-- AP: Last modified: 26-Oct-2006 -->
   <TITLE>sfddiff -- A program for comparing fonts</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
 <DIV id="in">
-<H1 ALIGN=Center>
-  sfddiff<BR>
-  <SMALL>A program for comparing fonts</SMALL>
-</H1>
-<P>
-<CODE>sfddiff [-merge outfile] [-ignorehints] [-version] [-help] sfdfile1
-sfdfile2</CODE>
-<P>
-<EM>Sfddiff</EM> compares (or merges) two of
-<A HREF="overview.html">fontforge</A>'s sfd files and checks for differences.
-<P>
-It will notice:
-<OL>
-  <LI>
-    if the two fonts have different encodings
-  <LI>
-    any characters present in one font but not in the other
-  <LI>
-    any characters present in both fonts but which have different sets of outlines
-    or references.
-  <LI>
-    optionally will check if the hints are different.
-</OL>
-<P>
-If the <CODE>-merge</CODE> flag is specified the following argument should
-be the name of an output file into which sfddiff will store a merged version
-of the two fonts. This will contain everything from sfdfile1 as well as any
-characters present in sfdfile2 but not in sfdfile1. For any characters with
-different outlines or references, the background of the the character will
-contain the splines from sfdfile2 (sadly references can not be placed in
-the background).
-<P>
-If the <CODE>-ignorehints</CODE> flag is specified, then no hint differences
-will be reported.
-<P>
-<CODE>-help</CODE> will provide a mini description and will list the available
-options.
-<P>
-<CODE>-usage</CODE> will list the available options.
-<P>
-<CODE>-version</CODE> will display the current version of <EM>sfddiff</EM>
-(a six digit string containing the date stamp of the source files).
-<H3>
-  Bugs
-</H3>
-<P>
-Doesn't work on CID keyed fonts yet.
-<H3>
-  See Also
-</H3>
-<P>
-<A HREF="overview.html">FontForge</A>
+  <H1 ALIGN=Center>
+    sfddiff<BR>
+    <SMALL>A program for comparing fonts</SMALL>
+  </H1>
+  <P>
+  <CODE>sfddiff [-merge outfile] [-ignorehints] [-ignorenames] [-ignoregpos]
+  [-ignoregsub] [-ignorebitmaps] [-exact] [-warn] [-version] [-help] fontfile1
+  fontfile2</CODE>
+  <P>
+  <EM>Sfddiff</EM> compares (or merges) two font files (in any format
+  <A HREF="overview.html">fontforge</A> can read) and checks for differences.
+  <P>
+  It will notice:
+  <OL>
+    <LI>
+      any characters present in one font but not in the other
+    <LI>
+      any characters present in both fonts but which have different sets of outlines
+      or references. The outlines may be compared so that only exact matches are
+      accepted, or so that a fuzzier match is used (useful in compare that a truetype
+      and postscript font are the same). Similarly references may be matched exactly
+      or may match after an unlink.
+    <LI>
+      optionally will check if the postscript hints or truetype instructions are
+      different.
+    <LI>
+      if the truetype 'name' tables match
+    <LI>
+      if kerning (and other 'GPOS' data) match
+    <LI>
+      if ligatures (and other 'GSUB' data) match
+    <LI>
+      Any bitmap strikes present in one font but not the other
+    <LI>
+      Any bitmap characters present in one font but not the other
+    <LI>
+      Any bitmap characters which differ
+  </OL>
+  <P>
+  If the <CODE>-merge</CODE> flag is specified the following argument should
+  be the name of an output file into which sfddiff will store a merged version
+  of the two fonts. This will contain everything from fontfile1 as well as
+  any characters present in fontfile2 but not in fontfile1. For any characters
+  with different outlines or references, the background of the the character
+  will contain the splines from fontfile2 (sadly references can not be placed
+  in the background).
+  <P>
+  If the <CODE>-ignorehints</CODE> flag is specified, then no hint differences
+  will be reported.
+  <P>
+  <CODE>-help</CODE> will provide a mini description and will list the available
+  options.
+  <P>
+  <CODE>-usage</CODE> will list the available options.
+  <P>
+  <CODE>-version</CODE> will display the current version of <EM>sfddiff</EM>.
+  <H3>
+    See Also
+  </H3>
+  <P>
+  <A HREF="overview.html">FontForge</A>
 </DIV>
 </BODY></HTML>

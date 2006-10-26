@@ -1,0 +1,158 @@
+
+if ( Strtol($version)<20061025 )
+  Error( "Please upgrade to a more recent version of fontforge" )
+endif
+
+lines=[]
+width = -1
+height = -1
+outfile = ""
+pixelsize = 16
+foundfont = 0
+
+while ( $argc > 1 )
+  if ( Strsub($1,0,1)!='-' )
+    if ( foundfont )
+      Print("Warning: Multiple font files have been given. Only the last will be used." )
+    endif
+    foundfont = 1
+    Open($1)
+  else
+    temp = $1
+    if ( Strsub(temp,1,2)=='-' )
+      temp = Strsub(temp,1)
+    endif
+
+    if ( temp=="-width" && $argc>2 )
+      shift
+      width = Strtol($1)
+    elseif ( temp=="-height" && $argc>2 )
+      shift
+      height = Strtol($1)
+    elseif ( temp=="-pixelsize" && $argc>2 )
+      shift
+      pixelsize = Strtol($1)
+    elseif ( temp=="-o" && $argc>2 )
+      shift
+      if ( outfile!="" )
+        Print("Multiple output files given; only the last will be used")
+      endif
+      outfile = $1
+    elseif ( temp=="-text" && $argc>2 )
+      shift
+      lines = lines + [ pixelsize, $1 ]
+    elseif ( temp=="-version" )
+      Print( "Version 1.0" )
+return(0)
+    else
+      Print( "fontimage: [--version] [--width num] [--height num] [--pixelsize num] [--text str] [-o outputfilename] fontfile" )
+      Print( " Produces an image containing representative glyphs of the font" )
+      Print( " --width num  Specifies the number of pixels wide to make the" )
+      Print( "    output image. If this is omitted (or specified as -1) then" )
+      Print( "    the image will be made as wide as it needs to be." )
+      Print( " --height num Specifies the number of pixels high to make the" )
+      Print( "    output image. If this is omitted (or specified as -1) then" )
+      Print( "    the image will be made as high as it needs to be." )
+      Print( " --text str   Specifies a line of text to be printed on the image." )
+      Print( "    This may be specified multiple times to get multiple lines." )
+      Print( "    If this is omitted fontimage will chose a default set of strings" )
+      Print( "    based on what characters it thinks are likely to be interesting." )
+       Print( " --pixelsize num  Specifies the size at which the next piece(s) of" )
+      Print( "    text will be printed. This may also be specified multiple times." )
+      Print( " --o outputfilename  Specifies the name of the output image file." )
+      Print( "    It must have an extension of either '.png' or '.bmp'." )
+      Print( "    The image format will be determined by the extension." )
+      Print( "    If omitted fontimage will chose a filename based on the font name." )
+      Print( "    (png files are only supported if fontforge were compiled with png" )
+      Print( "     support and has access to a png library)" )
+return( 0 )
+    endif
+  endif
+  shift
+endloop
+
+if ( !foundfont )
+  Error( "You must specify a font." )
+endif
+
+if ( SizeOf(lines)==0 )
+#  They didn't specify any text see what we can find.
+  lines = lines + [ pixelsize*3/2, $fontname ]
+#  Ok, we've given them some latin glyphs. So latin is probably the
+#  least interesting alphabet we could show here. Start with some
+#  others
+
+  if ( WorthOutputting(0U393) )
+#Greek
+    lines = lines + [ pixelsize, "ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ αβγδεζηθικλμνξοπρστυφχψω" ]
+  endif
+
+  if ( WorthOutputting(0U411) )
+#Cyrillic
+    lines = lines + [ pixelsize, "АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ абвгдежзийклмнопрстуфхцчшщъыьэюя" ]
+  endif
+
+  if ( WorthOutputting(0U5d0) )
+#Hebrew
+    lines = lines + [ pixelsize, "אבגדהוזחטיךכלםמןנסעףפץצקרשת" ]
+  endif
+
+  if ( WorthOutputting(0U621) )
+#Arabic (with ZWNJ)
+    lines = lines + [ pixelsize, "‌س‌ز‌ر‌ذ‌ت‌ء‌ا‌ب‌ث‌ج‌ح‌خ‌د‌ش‌ص‌ض‌ط‌ظ‌ع‌غ‌ف‌ق‌ك‌ل‌م‌ن‌ه‌و‌ي" ]
+  endif
+
+  if ( WorthOutputting(0U710) )
+#Syriac
+    lines = lines + [ pixelsize, "ܘ‌ܐ‌ܑ‌ܒ‌ܓ‌ܔ‌ܕ‌ܖ‌ܗ‌ܙ" ]
+  endif
+
+  if ( WorthOutputting(0U905) )
+#Devanagari
+    lines = lines + [ pixelsize, "अ‌आ‌इ‌ई‌उ‌"+"ऊ‌ऋ‌ऌ‌ऍ‌ऎ‌ए‌"+"ऐ‌ऑ‌ऒ‌ओ‌औ‌क‌ख‌ग‌घ‌ङ‌"+ "च‌छ‌ज‌झ‌ञ‌ट‌ठ‌ड‌ढ‌"+"ण‌त‌थ‌द‌ध‌न‌ऩ‌प‌फ‌ब‌म‌"+"य‌ऱ‌ल‌ळ‌ऴ‌व‌श‌ष‌"+"स‌ह‌र‌भ" ]
+  endif
+
+  if ( WorthOutputting(0U0e01) )
+#Thai
+    lines = lines + [ pixelsize, "กขฃคฅฆงจฉชซฌญ"+"ฎฏฐฑฒณดตถทธนบปผฝ"+"พฟภมยรฤลฦวศษสหฬอ"+"ฮฯะัาำิีึืฺุู" ]
+  endif
+
+  temp = Ucs4("道可道非常道，名可名非常名。")
+  if ( WorthOutputting(UCodePoint(temp[0])) && WorthOutputting(UCodePoint(temp[1])) && WorthOutputting(UCodePoint(temp[2])) )
+#Chinese Traditional
+    lines = lines + [ pixelsize, "道可道非常道，名可名非常名。" ]
+  endif
+
+  if ( WorthOutputting(0U3042) )
+#Hiragana
+    lines = lines + [ pixelsize, "あいうえおかがきぎくぐけこさざしじすせそただちぢつてとなにぬねのはばぱひふへほまみむ" ]
+  endif
+  if ( WorthOutputting(0U30a2) )
+#Katakana
+    lines = lines + [ pixelsize, "アイウエオカガキギクケコサザシジスセソタダチヂツテトナニヌネノハバパヒフヘホマミムメモ" ]
+  endif
+  temp = Ucs4("吾輩は猫で∂る（夏ｭﾚ漱⽯）")
+  if ( WorthOutputting(UCodePoint(temp[0])) && WorthOutputting(UCodePoint(temp[1])) && WorthOutputting(UCodePoint(temp[2])) )
+#Japanese Kanji
+    lines = lines + [ pixelsize, "吾輩は猫で∂る（夏ｭﾚ漱⽯）：吾輩は猫で∂る" ]
+  endif
+
+  if ( WorthOutputting(0UAC00) )
+#Hangul
+    lines = lines + [ pixelsize, "어버이 살아신 제 섬길 일란 다 하여라" ]
+  endif
+
+  if ( WorthOutputting(0U41) )
+    lines = lines + [ pixelsize, "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz" ]
+  endif
+
+  if ( WorthOutputting(0U30) )
+    lines = lines + [ pixelsize, "0123456789" ]
+  endif
+endif
+
+if ( outfile=="" )
+  outfile = $fontname + ".png"
+endif
+
+FontImage(outfile,lines,width,height)
