@@ -47,6 +47,53 @@
   </BLOCKQUOTE>
   <UL>
     <LI>
+      26-Oct-2006
+      <UL>
+	<LI>
+	  If a large group of glyphs were autohinted at once, and one of those glyphs
+	  contained a reference to a glyph that appeared after it in the font, then
+	  that glyph would still end up with the dirty hint mark set.
+	<LI>
+	  It was impossible to set preferences on the Accents pane. They would either
+	  always be 0 (or false), or make spurious complaints.
+	<LI>
+	  Add a Ucs4 scripting command (reverses Utf8).
+	<LI>
+	  when creating an array with [...] notation (in scripting) I forgot to dereference
+	  lvalues.
+	<LI>
+	  Add scripting commands
+	  <UL>
+	    <LI>
+	      Revert
+	    <LI>
+	      RevertToBackup
+	  </UL>
+	  <P>
+	  Make the "+" operator concatenate arrays
+	  <PRE>
+  [1,2] + [3,4] == [1,2,3,4]
+  [1,2] + 3 == [1,2,3]
+</PRE>
+	<LI>
+	  Add a scripting command, FontImage, which generates a font thumbnail.
+	<LI>
+	  Make it possible to save the Font Display dlg as an image.
+	<LI>
+	  Clean up the Display dialog a bit. The concept of "unhinted" truetype is
+	  obsolete. Remove it.
+	<LI>
+	  At Andrey V. Panov's request I have added a scripting command "CopyUnlinked"
+	  which behaves like Copy except that any references will be unlinked (turned
+	  into splines) as they are placed in the clipboard.
+	<LI>
+	  I believe OpenType would prefer if formed arabic glyphs didn't use their
+	  unicode encodings, but used simple substitutions instead. Accept both for
+	  svg output (previously we only accepted unicode encodings).
+	<LI>
+	  Patch from debian (bug392688) from Wojciech Mu*a and K*stutis Bili*nas
+      </UL>
+    <LI>
       19-Oct-2006
       <UL>
 	<LI>
