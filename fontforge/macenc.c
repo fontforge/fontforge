@@ -2358,6 +2358,7 @@ return( (char *) maclanguages[i].text );
 return( _("Unknown Language"));
 }
 
+    /* These first three must match the values in prefs.c */
 #define CID_Features	101
 #define CID_FeatureDel	103
 #define CID_FeatureEdit	105

@@ -136,6 +136,7 @@ static int alwaysgenapple=false, alwaysgenopentype=false;
 
 static int pointless;
 
+    /* These first three must match the values in macenc.c */
 #define CID_Features	101
 #define CID_FeatureDel	103
 #define CID_FeatureEdit	105
@@ -143,6 +144,14 @@ static int pointless;
 #define CID_Mapping	102
 #define CID_MappingDel	104
 #define CID_MappingEdit	106
+
+#define CID_ScriptMNameBase	200
+#define CID_ScriptMFileBase	(200+SCRIPT_MENU_MAX)
+#define CID_ScriptMBrowseBase	(200+2*SCRIPT_MENU_MAX)
+
+#define CID_PrefsBase	1000
+#define CID_PrefsOffset	100
+#define CID_PrefsBrowseOffset	(CID_PrefsOffset/2)
 
 /* ************************************************************************** */
 /* *****************************    mac data    ***************************** */
@@ -1040,7 +1049,7 @@ struct pref_data {
 static int Prefs_ScriptBrowse(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GWindow gw = GGadgetGetWindow(g);
-	GGadget *tf = GWidgetGetControl(gw,GGadgetGetCid(g)-100);
+	GGadget *tf = GWidgetGetControl(gw,GGadgetGetCid(g)-SCRIPT_MENU_MAX);
 	char *cur = GGadgetGetTitle8(tf); char *ret;
 
 	if ( *cur=='\0' ) cur=NULL;
@@ -1057,7 +1066,7 @@ return( true );
 static int Prefs_BrowseFile(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GWindow gw = GGadgetGetWindow(g);
-	GGadget *tf = GWidgetGetControl(gw,GGadgetGetCid(g)-20000);
+	GGadget *tf = GWidgetGetControl(gw,GGadgetGetCid(g)-CID_PrefsBrowseOffset);
 	char *cur = GGadgetGetTitle8(tf); char *ret;
 	struct prefs_list *pl = GGadgetGetUserData(tf);
 
@@ -1444,8 +1453,8 @@ static int Prefs_Ok(GGadget *g, GEvent *e) {
 	gw = GGadgetGetWindow(g);
 	p = GDrawGetUserData(gw);
 	for ( i=0; i<SCRIPT_MENU_MAX; ++i ) {
-	    names[i] = _GGadgetGetTitle(GWidgetGetControl(gw,8000+i));
-	    scripts[i] = _GGadgetGetTitle(GWidgetGetControl(gw,8100+i));
+	    names[i] = _GGadgetGetTitle(GWidgetGetControl(gw,CID_ScriptMNameBase+i));
+	    scripts[i] = _GGadgetGetTitle(GWidgetGetControl(gw,CID_ScriptMFileBase+i));
 	    if ( *names[i]=='\0' ) names[i] = NULL;
 	    if ( *scripts[i]=='\0' ) scripts[i] = NULL;
 	    if ( scripts[i]==NULL && names[i]!=NULL ) {
@@ -1470,9 +1479,9 @@ return( true );
 	    if ( pl->dontdisplay )
 	continue;
 	    if ( pl->type==pr_int ) {
-		GetInt8(gw,j*1000+1000+i,pl->name,&err);
+		GetInt8(gw,j*CID_PrefsOffset+CID_PrefsBase+i,pl->name,&err);
 	    } else if ( pl->type==pr_int ) {
-		GetReal8(gw,j*1000+1000+i,pl->name,&err);
+		GetReal8(gw,j*CID_PrefsOffset+CID_PrefsBase+i,pl->name,&err);
 	    }
 	}
 	if ( err )
@@ -1484,17 +1493,17 @@ return( true );
 	continue;
 	    switch( pl->type ) {
 	      case pr_int:
-	        *((int *) (pl->val)) = GetInt8(gw,j*1000+1000+i,pl->name,&err);
+	        *((int *) (pl->val)) = GetInt8(gw,j*CID_PrefsOffset+CID_PrefsBase+i,pl->name,&err);
 	      break;
 	      case pr_bool:
-	        *((int *) (pl->val)) = GGadgetIsChecked(GWidgetGetControl(gw,j*1000+1000+i));
+	        *((int *) (pl->val)) = GGadgetIsChecked(GWidgetGetControl(gw,j*CID_PrefsOffset+CID_PrefsBase+i));
 	      break;
 	      case pr_real:
-	        *((float *) (pl->val)) = GetReal8(gw,j*1000+1000+i,pl->name,&err);
+	        *((float *) (pl->val)) = GetReal8(gw,j*CID_PrefsOffset+CID_PrefsBase+i,pl->name,&err);
 	      break;
 	      case pr_encoding:
 		{ Encoding *e;
-		    e = ParseEncodingNameFromList(GWidgetGetControl(gw,j*1000+1000+i));
+		    e = ParseEncodingNameFromList(GWidgetGetControl(gw,j*CID_PrefsOffset+CID_PrefsBase+i));
 		    if ( e!=NULL )
 			*((Encoding **) (pl->val)) = e;
 		    enc = 1;	/* So gcc doesn't complain about unused. It is unused, but why add the ifdef and make the code even messier? */
@@ -1502,7 +1511,7 @@ return( true );
 	      break;
 	      case pr_namelist:
 		{ NameList *nl;
-		  GTextInfo *ti = GGadgetGetListItemSelected(GWidgetGetControl(gw,j*1000+1000+i));
+		  GTextInfo *ti = GGadgetGetListItemSelected(GWidgetGetControl(gw,j*CID_PrefsOffset+CID_PrefsBase+i));
 		  if ( ti!=NULL ) {
 			char *name = u2utf8_copy(ti->text);
 			nl = NameListByName(name);
@@ -1515,7 +1524,7 @@ return( true );
 		}
 	      break;
 	      case pr_string: case pr_file:
-	        ret = _GGadgetGetTitle(GWidgetGetControl(gw,j*1000+1000+i));
+	        ret = _GGadgetGetTitle(GWidgetGetControl(gw,j*CID_PrefsOffset+CID_PrefsBase+i));
 		if ( pl->val!=NULL ) {
 		    free( *((char **) (pl->val)) );
 		    *((char **) (pl->val)) = NULL;
@@ -1786,7 +1795,7 @@ void DoPrefs(void) {
 	sgcd[sgc].gd.flags = gg_visible | gg_enabled | gg_text_xim;
 	slabel[sgc].text = script_menu_names[i]==NULL?nullstr:script_menu_names[i];
 	sgcd[sgc].gd.label = &slabel[sgc];
-	sgcd[sgc].gd.cid = i+8000;
+	sgcd[sgc].gd.cid = i+CID_ScriptMNameBase;
 	sgcd[sgc++].creator = GTextFieldCreate;
 	sarray[si++] = &sgcd[sgc-1];
 
@@ -1795,7 +1804,7 @@ void DoPrefs(void) {
 	slabel[sgc].text = (unichar_t *) (script_filenames[i]==NULL?"":script_filenames[i]);
 	slabel[sgc].text_is_1byte = true;
 	sgcd[sgc].gd.label = &slabel[sgc];
-	sgcd[sgc].gd.cid = i+8100;
+	sgcd[sgc].gd.cid = i+CID_ScriptMFileBase;
 	sgcd[sgc++].creator = GTextFieldCreate;
 	sarray[si++] = &sgcd[sgc-1];
 
@@ -1804,7 +1813,7 @@ void DoPrefs(void) {
 	slabel[sgc].text = (unichar_t *) _("...");
 	slabel[sgc].text_is_1byte = true;
 	sgcd[sgc].gd.label = &slabel[sgc];
-	sgcd[sgc].gd.cid = i+8200;
+	sgcd[sgc].gd.cid = i+CID_ScriptMBrowseBase;
 	sgcd[sgc].gd.handle_controlevent = Prefs_ScriptBrowse;
 	sgcd[sgc++].creator = GButtonCreate;
 	sarray[si++] = &sgcd[sgc-1];
@@ -1863,7 +1872,7 @@ void DoPrefs(void) {
 	    pgcd[gc].gd.pos.y = y;
 	    pgcd[gc].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
 	    pgcd[gc].data = pl;
-	    pgcd[gc].gd.cid = k*1000+1000+i;
+	    pgcd[gc].gd.cid = k*CID_PrefsOffset+CID_PrefsBase+i;
 	    switch ( pl->type ) {
 	      case pr_bool:
 		plabel[gc].text = (unichar_t *) _("On");
@@ -1961,7 +1970,7 @@ void DoPrefs(void) {
 		    pgcd[gc-1].gd.pos.width = 140;
 		    hvarray[si++] = GCD_ColSpan;
 		    pgcd[gc].gd.pos.x += 145;
-		    pgcd[gc].gd.cid += 20000;
+		    pgcd[gc].gd.cid += CID_PrefsBrowseOffset;
 		    pgcd[gc].gd.label = &plabel[gc];
 		    plabel[gc].text = (unichar_t *) "...";
 		    plabel[gc].text_is_1byte = true;
