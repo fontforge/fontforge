@@ -1,0 +1,83 @@
+.\" Manual page for fontimage by George Williams
+.\" Copyright © 2006 by George Williams.
+.TH SFDDIFF 1 "26 October 2006"
+.SH NAME
+.B fontimage - produce a font thumbnail image
+.SH SYNOPSIS
+.B fontimage
+.RB [ \--help ]
+.RB [ \--width 
+.IR num ]
+.RB [ \--height
+.IR num ]
+.RB [ \--pixelsize
+.IR num ]
+.RB [ \--text
+.IR string ]
+.RB [ \--o
+.IR outputfile ]
+.RB [ \--usage ]
+.RB [ \--version ]
+.I fontfile
+.SH DESCRIPTION
+The program
+.B fontimage
+loads a font, which may be in any format
+.IR fontforge (1)
+can read, and then produces an image showing representative glyphs of the font.
+
+.SH OPTIONS
+.TP
+.B \--help
+Provide a description with a list of the available options.
+.TP
+.B \--width num
+Specifies the width of the output image. If this is omitted the image will
+be as wide as necesary to display the text.
+.TP
+.B \--height num
+Specifies the height of the output image. If this is omitted the image will be
+as high as necessary to display the text.
+.TP
+.B \--pixelsize num
+Specifies the pixelsize used to display the text. This argument may be specified
+multiple times and each refers to any \--text lines that follow it.
+.TP
+.B \--text string
+Specifies a line of text to be displayed. The string must be in UTF-8.
+This argument may be specified multiple times to
+provide several lines of text. If no \--text arguments are supplied
+.IR fontimage
+will examine the font, looking for various scripts it knows about, and will
+try to display something appropriate for each.
+.TP
+.B \-o " outfile"
+Specifies the output filename for the image. The type of image will be determined
+by the file's extension. Currently only ".bmp" and ".png" are recognized. If
+omitted
+.IR fontimage
+will choose an output name based on the font's fontname field.
+.TP
+.B \--usage
+Display the usage description.
+.TP
+.B \--version
+Display the current version
+.\" .SH ENVIRONMENT
+.\" .SH FILES
+.\" .SH EXAMPLES
+.\" .SH DIAGNOSTICS
+.SH "SEE ALSO"
+.BR fontforge (1)
+.LP
+The HTML version of the
+.I fontforge
+manual at:
+.br
+\fChttp://fontforge.sourceforge.net/\fP
+.\" .SH STANDARDS
+.\" .SH HISTORY
+.SH AUTHOR
+Copyright (C) 2006 by George Williams (gww@silcom.com).
+.\" .SH BUGS
+.\" end of file

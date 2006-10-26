@@ -1,0 +1,71 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 26-Oct-2006 -->
+  <!-- AP: Last modified: 26-Oct-2006 -->
+  <TITLE>fontimage -- generate a font thumbnail image</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+  <H1 ALIGN=Center>
+    fontimage<BR>
+    <SMALL>generate a font thumbnail image</SMALL>
+  </H1>
+  <P>
+  <CODE>fontimage [--o outfile] [--width num] [--height num] [--pixelsize num]
+  [--text string] [--version] [--help] fontfile</CODE>
+  <P>
+  <EM>Fontimage</EM> produces a thumbnail image of a font (which may be in
+  any format <A HREF="overview.html">fontforge</A> can read).
+  <P>
+  You may either explicitly specify text to be displayed in the font, or rely
+  on fontimage's default behavior, which is to check for various scripts it
+  knows about and display something appropriate for each one present.
+  <DL>
+    <DT>
+      --help
+    <DD>
+      Displays a list of arguments and descriptions of each.
+    <DT>
+      --width num
+    <DD>
+      Specifies the width (in pixels) of the output image. If omitted the image
+      will be as wide as it needs to be to display the text.
+    <DT>
+      --height num
+    <DD>
+      Specifies the height (in pixels) of the output image. If omitted the image
+      will be as high as it needs to be to display the text.
+    <DT>
+      --o outputfile
+    <DD>
+      Specifies the name of the output image file. The format is determined by
+      the extension. Currently only ".bmp" and ".png" are supported. If omitted,
+      fontimage will choose a filename based on the fontname of the font.
+    <DT>
+      --pixelsize num
+    <DD>
+      Specifies the pixelsize at which to display text. This may be specified multiple
+      times. Each specification applies to any --text arguments which occur after
+      it.
+    <DT>
+      --text string
+    <DD>
+      Specifies a string to be displayed. The string <EM>must</EM> be in UTF-8.
+      This option may be provided multiple times to supply more than one line of
+      text. If omitted entirely, fontimage will examine the scripts it knows about
+      in the font and will display text appropriate to each one present.
+    <DT>
+      --version
+    <DD>
+      Displays the fontimage version.
+  </DL>
+  <H3>
+    See Also
+  </H3>
+  <P>
+  <A HREF="overview.html">FontForge</A>
+</DIV>
+</BODY></HTML>

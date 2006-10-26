@@ -75,6 +75,7 @@ install: $(sharedir) all install_libs install_po
 	mkdir -p $(sharedir)
 	$(LIBTOOL) --mode=install $(INSTALL) -c fontforge/fontforge $(bindir)
 	$(LIBTOOL) --mode=install $(INSTALL) -c fontforge/sfddiff $(bindir)
+	$(LIBTOOL) --mode=install $(INSTALL) -c fontforge/fontimage $(bindir)
 #	-rm -f $(bindir)/pfaedit
 #	(cd $(bindir) ; ln -s fontforge pfaedit)
 #	$(INSTALL_DATA) fontforge/pfaedit-*.ui $(sharedir)
@@ -84,6 +85,7 @@ install: $(sharedir) all install_libs install_po
 	-$(INSTALL_DATA) $(srcdir)/cidmap/*.cidmap $(sharedir) >/dev/null 2>&1
 	$(INSTALL_DATA) $(srcdir)/fontforge/fontforge.1 $(mandir)/man1
 	$(INSTALL_DATA) $(srcdir)/fontforge/sfddiff.1 $(mandir)/man1
+	$(INSTALL_DATA) $(srcdir)/fontforge/fontimage.1 $(mandir)/man1
 #explicit use of sh to make sure we don't invoke csh with different "if" syntax
 	sh -c "if test -d $(srcdir)/htdocs >/dev/null ; then $(MAKE) install_docs ; fi"
 	sh < systemspecific
