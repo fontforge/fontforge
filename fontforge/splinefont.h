@@ -1679,6 +1679,7 @@ extern void SCFigureCounterMasks(SplineChar *sc);
 extern void SCFigureHintMasks(SplineChar *sc);
 extern void _SplineCharAutoHint( SplineChar *sc, BlueData *bd, struct glyphdata *gd2 );
 extern void SplineCharAutoHint( SplineChar *sc,BlueData *bd);
+extern void SFSCAutoHint( SplineChar *sc,BlueData *bd);
 extern void SplineFontAutoHint( SplineFont *sf);
 extern void SplineFontAutoHintRefs( SplineFont *sf);
 extern StemInfo *HintCleanup(StemInfo *stem,int dosort,int instance_count);

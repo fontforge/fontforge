@@ -3031,6 +3031,19 @@ void SplineCharAutoHint( SplineChar *sc, BlueData *bd ) {
     SCUpdateAll(sc);
 }
 
+void SFSCAutoHint( SplineChar *sc, BlueData *bd ) {
+    RefChar *ref;
+
+    if ( sc->ticked )
+return;
+    for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
+	if ( !ref->sc->ticked )
+	    SFSCAutoHint(ref->sc,bd);
+    }
+    sc->ticked = true;
+    SplineCharAutoHint(sc,bd);
+}
+
 int SFNeedsAutoHint( SplineFont *_sf) {
     int i,k;
     SplineFont *sf;
@@ -3052,11 +3065,21 @@ void SplineFontAutoHint( SplineFont *_sf) {
     int i,k;
     SplineFont *sf;
     BlueData *bd = NULL, _bd;
+    SplineChar *sc;
 
     if ( _sf->mm==NULL ) {
 	QuickBlues(_sf,&_bd);
 	bd = &_bd;
     }
+
+    /* Tick the ones we don't want to AH, untick the ones that need AH */
+    k=0;
+    do {
+	sf = _sf->subfontcnt==0 ? _sf : _sf->subfonts[k];
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc = sf->glyphs[i])!=NULL )
+	    sc->ticked = ( !sc->changedsincelasthinted || sc->manualhints );
+	++k;
+    } while ( k<_sf->subfontcnt );
 
     k=0;
     do {
@@ -3064,7 +3087,7 @@ void SplineFontAutoHint( SplineFont *_sf) {
 	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
 	    if ( sf->glyphs[i]->changedsincelasthinted &&
 		    !sf->glyphs[i]->manualhints )
-		SplineCharAutoHint(sf->glyphs[i],bd);
+		SFSCAutoHint(sf->glyphs[i],bd);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	    if ( !gwwv_progress_next()) {
 		k = _sf->subfontcnt+1;
