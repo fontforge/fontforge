@@ -736,6 +736,7 @@ extern SplineSet *ClipBoardToSplineSet(void);
 extern void BCCopySelected(BDFChar *bc,int pixelsize,int depth);
 extern void PasteToBC(BDFChar *bc,int pixelsize,int depth,FontView *fv);
 extern void FVCopyWidth(FontView *fv,enum undotype ut);
+extern void FVCopyAnchors(FontView *fv);
 extern void FVCopy(FontView *fv, int fullcopy);
 extern void PasteIntoFV(FontView *fv, int pasteinto, real trans[6]);
 

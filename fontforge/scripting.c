@@ -2270,6 +2270,12 @@ static void bCopyRBearing(Context *c) {
     doEdit(c,12);
 }
 
+static void bCopyAnchors(Context *c) {
+    if ( c->a.argc!=1 )
+	ScriptError( c, "Wrong number of arguments");
+    FVCopyAnchors(c->curfv);
+}
+
 static int GetOneSelCharIndex(Context *c) {
     FontView *fv = c->curfv;
     EncMap *map = fv->map;
@@ -7153,6 +7159,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "CopyVWidth", bCopyVWidth },
     { "CopyLBearing", bCopyLBearing },
     { "CopyRBearing", bCopyRBearing },
+    { "CopyAnchors", bCopyAnchors },
     { "CopyGlyphFeatures", bCopyGlyphFeatures },
     { "Paste", bPaste },
     { "PasteInto", bPasteInto },

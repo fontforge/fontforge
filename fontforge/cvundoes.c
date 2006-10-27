@@ -402,7 +402,7 @@ void UndoesFree(Undoes *undo) {
 	    /* Nothing else to free */;
 	  break;
 	  case ut_state: case ut_tstate: case ut_statehint: case ut_statename:
-	  case ut_hints:
+	  case ut_hints: case ut_anchors:
 	    SplinePointListsFree(undo->u.state.splines);
 	    RefCharsFree(undo->u.state.refs);
 	    MinimumDistancesFree(undo->u.state.md);
@@ -1023,7 +1023,7 @@ void CopyBufferFree(void) {
 	UHintListFree(copybuffer.u.state.hints);
 	free(copybuffer.u.state.instrs);
       break;
-      case ut_state: case ut_statehint:
+      case ut_state: case ut_statehint: case ut_anchors:
 	SplinePointListsFree(copybuffer.u.state.splines);
 	RefCharsFree(copybuffer.u.state.refs);
 	AnchorPointsFree(copybuffer.u.state.anchor);
@@ -1475,7 +1475,7 @@ return( cur->undotype==ut_state || cur->undotype==ut_tstate ||
 	cur->undotype==ut_width || cur->undotype==ut_vwidth ||
 	cur->undotype==ut_lbearing || cur->undotype==ut_rbearing ||
 	cur->undotype==ut_hints || cur->undotype==ut_possub ||
-	cur->undotype==ut_noop );
+	cur->undotype==ut_anchors || cur->undotype==ut_noop );
 }
 
 int CopyContainsBitmap(void) {
@@ -2112,6 +2112,10 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
     switch ( paster->undotype ) {
       case ut_noop:
       break;
+      case ut_anchors:
+	if ( !sc->searcherdummy )
+	    APMerge(sc,paster->u.state.anchor);
+      break;
       case ut_state: case ut_statehint: case ut_statename:
 	if ( paster->u.state.splines!=NULL || paster->u.state.refs!=NULL )
 	    sc->parent->onlybitmaps = false;
@@ -2388,6 +2392,9 @@ return;
     cv->lastselpt = NULL;
     switch ( paster->undotype ) {
       case ut_noop:
+      break;
+      case ut_anchors:
+	APMerge(cvsc,paster->u.state.anchor);
       break;
       case ut_state: case ut_statehint: case ut_statename:
 	wasempty =cv->drawmode==dm_fore && cvsc->layers[ly_fore].splines==NULL &&
@@ -2752,7 +2759,34 @@ void FVCopyWidth(FontView *fv,enum undotype ut) {
     copybuffer.undotype = ut_multiple;
     copybuffer.u.multiple.mult = head;
     if ( !any )
-	fprintf( stderr, "No selection\n" );
+	LogError( _("No selection\n") );
+}
+
+void FVCopyAnchors(FontView *fv) {
+    Undoes *head=NULL, *last=NULL, *cur;
+    int i, any=false, gid;
+    SplineChar *sc;
+
+    CopyBufferFreeGrab();
+
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] ) {
+	any = true;
+	cur = chunkalloc(sizeof(Undoes));
+	if ( (gid=fv->map->map[i])!=-1 && (sc=fv->sf->glyphs[gid])!=NULL ) {
+	    cur->undotype = ut_anchors;
+	    cur->u.state.anchor = AnchorPointsCopy(sc->anchor);
+	} else
+	    cur->undotype = ut_noop;
+	if ( head==NULL )
+	    head = cur;
+	else
+	    last->next = cur;
+	last = cur;
+    }
+    copybuffer.undotype = ut_multiple;
+    copybuffer.u.multiple.mult = head;
+    if ( !any )
+	LogError( _("No selection\n") );
 }
 
 void FVCopy(FontView *fv, int fullcopy) {
@@ -2987,7 +3021,7 @@ return;
 	      case ut_state: case ut_width: case ut_vwidth:
 	      case ut_lbearing: case ut_rbearing: case ut_possub:
 	      case ut_statehint: case ut_statename:
-	      case ut_layers:
+	      case ut_layers: case ut_anchors:
 		if ( !sf->hasvmetrics && cur->undotype==ut_vwidth) {
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 		    gwwv_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled.\nUse Element->Font Info to enable them."));
