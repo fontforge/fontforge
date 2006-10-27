@@ -1306,6 +1306,12 @@ return( false );
 	rt = r1; r1 = r2; r2 = rt;
 	swap = !swap;
     }
+
+    SplineCharFindBounds(r1->sc,&b);
+    r1->sc->lsidebearing = round?rint(b.minx):b.minx;
+    SplineCharFindBounds(r2->sc,&b);
+    r2->sc->lsidebearing = round?rint(b.minx):b.minx;
+
     if ( (r1->sc->width!=scs[0]->width || r1->sc->lsidebearing!=scs[0]->lsidebearing) &&
 	 r2->sc->width==scs[0]->width && r2->sc->lsidebearing==scs[0]->lsidebearing &&
 	    r2->transform[4]==0 && r2->transform[5]==0 ) {
