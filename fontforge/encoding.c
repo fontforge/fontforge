@@ -391,7 +391,7 @@ return( NULL );
     *enc = temp;
     enc->enc_name = copy(name);
     if ( iconv_name!=name )
-	enc->iconv_name = copy(name);
+	enc->iconv_name = copy(iconv_name);
     enc->next = enclist;
     enc->builtin = true;
     enclist = enc;
