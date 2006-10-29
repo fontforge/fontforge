@@ -1140,7 +1140,7 @@ return( NULL );
 	inlen = strlen(in);
 	outlen = (inlen+1)*4;
 	out = (char *) (ret = galloc(outlen+2));
-	iconv(enc->tounicode,&in,&inlen,&out,&outlen);
+	iconv(toutf8,&in,&inlen,&out,&outlen);
 	out[0] = '\0';
 	iconv_close(toutf8);
 return( ret );
@@ -2395,6 +2395,8 @@ static GTextInfo *Pref_MacNamesList(struct macname *all) {
 
     for ( i=0, mn=all; mn!=NULL; mn=mn->next, ++i ) {
 	temp = MacStrToUtf8(mn->name,mn->enc,mn->lang);
+	if ( temp==NULL )
+    continue;
 	for ( j=0 ; maclanguages[j].text!=0; ++j )
 	    if ( maclanguages[j].userdata == (void *) (intpt) (mn->lang ))
 	break;
