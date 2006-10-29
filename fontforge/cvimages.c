@@ -1084,6 +1084,8 @@ return(false);
 	}
     }
     GImageDestroy(image);
+    if ( bc->sc!=NULL )
+	bc->sc->widthset = true;
     BCCharChangedUpdate(bc);
 return( true );
 }
