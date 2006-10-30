@@ -1053,8 +1053,9 @@ static void MVSetPos(MetricsView *mv,int i,SplineChar *sc) {
 	bdfc = MVRasterize(mv,sc);
 	BDFCharFree(mv->perchar[i].show);
 	mv->perchar[i].show = bdfc;
-    } else
+    } else {
 	bdfc = mv->bdf->glyphs[mv->perchar[i].sc->orig_pos];
+    }
     mv->perchar[i].dwidth = bdfc->width;
     if ( mv->vertical )
 	mv->perchar[i].dheight = rint(bdfc->sc->vwidth*mv->pixelsize/(double) (mv->fv->sf->ascent+mv->fv->sf->descent));
@@ -1117,13 +1118,18 @@ static void MVToggleVertical(MetricsView *mv) {
     MVSetAnchor(mv);
 }
 
-static SplineChar *SCFromUnicode(SplineFont *sf, EncMap *map, int ch) {
+static SplineChar *SCFromUnicode(SplineFont *sf, EncMap *map, int ch,BDFFont *bdf) {
     int i = SFFindSlot(sf,map,ch,NULL);
+    SplineChar *sc;
 
     if ( i==-1 )
 return( NULL );
-    else
-return( SFMakeChar(sf,map,i) );
+    else {
+	sc = SFMakeChar(sf,map,i);
+	if ( bdf!=NULL )
+	    BDFMakeChar(bdf,map,i);
+    }
+return( sc );
 }
 
 static void MVMoveFieldsBy(MetricsView *mv,int diff) {
@@ -1426,7 +1432,7 @@ return;					/* Nothing changed */
 	mv->charcnt += diff;
     }
     for ( j=i; pt<ept; ++pt ) {
-	SplineChar *sc = SCFromUnicode(mv->fv->sf,mv->fv->map,*pt);
+	SplineChar *sc = SCFromUnicode(mv->fv->sf,mv->fv->map,*pt,mv->bdf);
 	if ( sc!=NULL )
 	    MVSetPos(mv,j++,sc);
     }
