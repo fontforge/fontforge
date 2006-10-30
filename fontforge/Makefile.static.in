@@ -1,8 +1,11 @@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
 sharedir = @prefix@/share/fontforge
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
 VPATH = @srcdir@
-prefix = @prefix@
+
 bindir = @bindir@
 
 CC = @CC@

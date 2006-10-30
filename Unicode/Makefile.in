@@ -1,8 +1,10 @@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
 top_srcdir = @top_srcdir@
 top_builddir = ..
 libdir = @libdir@
 VPATH = @srcdir@
-prefix = @prefix@
 bindir = @bindir@
 
 GU_VERSION=2
