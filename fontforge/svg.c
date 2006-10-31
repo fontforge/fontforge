@@ -2327,6 +2327,7 @@ return;
 	    sc1->kerns = kp;
 	}
 	free(c1); free(c2);
+	kp->sli = SCDefaultSLI(sf,sc1!=NULL ? sc1 : sc2 );
     } else {
 	KernClass *kc = chunkalloc(sizeof(KernClass));
 	if ( isv ) {
@@ -2627,7 +2628,7 @@ return( ret );
 return( -1 );    
 }
 
-static int SFFindOrder(SplineFont *sf) {
+int SFFindOrder(SplineFont *sf) {
     int i, ret;
 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
@@ -2691,7 +2692,7 @@ static void EntSetOrder(Entity *ent,int order2) {
     }
 }
 
-static void SFSetOrder(SplineFont *sf,int order2) {
+void SFSetOrder(SplineFont *sf,int order2) {
     int i,j;
 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {

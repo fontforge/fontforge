@@ -1254,7 +1254,7 @@ enum fontformat { ff_pfa, ff_pfb, ff_pfbmacbin, ff_multiple, ff_mma, ff_mmb,
 	ff_ptype3, ff_ptype0, ff_cid, ff_cff, ff_cffcid,
 	ff_type42, ff_type42cid,
 	ff_ttf, ff_ttfsym, ff_ttfmacbin, ff_ttfdfont, ff_otf, ff_otfdfont,
-	ff_otfcid, ff_otfciddfont, ff_svg, ff_none };
+	ff_otfcid, ff_otfciddfont, ff_svg, ff_ufo, ff_none };
 extern struct pschars *SplineFont2ChrsSubrs(SplineFont *sf, int iscjk,
 	struct pschars *subrs,int flags,enum fontformat format);
 extern int CanonicalCombiner(int uni);
@@ -1300,6 +1300,7 @@ extern int WriteMacFamily(char *filename,struct sflist *sfs,enum fontformat form
 	enum bitmapformat bf,int flags,EncMap *enc);
 extern long mactime(void);
 extern int WriteSVGFont(char *fontname,SplineFont *sf,enum fontformat format,int flags,EncMap *enc);
+extern int WriteUFOFont(char *fontname,SplineFont *sf,enum fontformat format,int flags,EncMap *enc);
 extern void SfListFree(struct sflist *sfs);
 extern void TTF_PSDupsDefault(SplineFont *sf);
 extern void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf);
@@ -1726,6 +1727,7 @@ extern SplineFont *_SFReadTTF(FILE *ttf,int flags,enum openflags openflags,
 	char *filename,struct fontdict *fd);
 extern SplineFont *SFReadTTF(char *filename,int flags,enum openflags openflags);
 extern SplineFont *SFReadSVG(char *filename,int flags);
+extern SplineFont *SFReadUFO(char *filename,int flags);
 extern SplineFont *_CFFParse(FILE *temp,int len,char *fontsetname);
 extern SplineFont *CFFParse(char *filename);
 extern SplineFont *SFReadMacBinary(char *filename,int flags,enum openflags openflags);
@@ -1748,7 +1750,11 @@ extern char **NamesReadCFF(char *filename);
 extern char **NamesReadPostscript(char *filename);
 extern char **_NamesReadPostscript(FILE *ps);
 extern char **NamesReadSVG(char *filename);
+extern char **NamesReadUFO(char *filename);
 extern char **NamesReadMacBinary(char *filename);
+
+extern void SFSetOrder(SplineFont *sf,int order2);
+extern int SFFindOrder(SplineFont *sf);
 
 extern const char *UnicodeRange(int unienc);
 extern SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,EncMap *map,int i);
@@ -1792,6 +1798,7 @@ extern int getAdobeEnc(char *name);
 extern void SFSplinesFromLayers(SplineFont *sf,int tostroke);
 extern void SFSetLayerWidthsStroked(SplineFont *sf, real strokewidth);
 extern SplineSet *SplinePointListInterpretSVG(char *filename,char *memory, int memlen, int em_size, int ascent,int stroked);
+extern SplineSet *SplinePointListInterpretGlif(char *filename,char *memory, int memlen, int em_size, int ascent,int stroked);
 extern SplinePointList *SplinePointListInterpretPS(FILE *ps,int flags,int stroked);
 extern void PSFontInterpretPS(FILE *ps,struct charprocs *cp,char **encoding);
 extern struct enc *PSSlurpEncodings(FILE *file);

@@ -1467,36 +1467,46 @@ return( fv );
 }
 
 char **GetFontNames(char *filename) {
-    FILE *foo = fopen(filename,"rb");
+    FILE *foo;
     char **ret = NULL;
 
-    if ( foo!=NULL ) {
-	/* Try to guess the file type from the first few characters... */
-	int ch1 = getc(foo);
-	int ch2 = getc(foo);
-	int ch3 = getc(foo);
-	int ch4 = getc(foo);
-	int ch5, ch6;
-	fseek(foo, 98, SEEK_SET);
-	ch5 = getc(foo);
-	ch6 = getc(foo);
-	fclose(foo);
-	if (( ch1==0 && ch2==1 && ch3==0 && ch4==0 ) ||
-		(ch1=='O' && ch2=='T' && ch3=='T' && ch4=='O') ||
-		(ch1=='t' && ch2=='r' && ch3=='u' && ch4=='e') ||
-		(ch1=='t' && ch2=='t' && ch3=='c' && ch4=='f') ) {
-	    ret = NamesReadTTF(filename);
-	} else if (( ch1=='%' && ch2=='!' ) ||
-		    ( ch1==0x80 && ch2=='\01' ) ) {	/* PFB header */
-	    ret = NamesReadPostscript(filename);
-	} else if ( ch1=='<' && ch2=='?' && (ch3=='x'||ch3=='X') && (ch4=='m'||ch4=='M') ) {
-	    ret = NamesReadSVG(filename);
-	} else if ( ch1=='S' && ch2=='p' && ch3=='l' && ch4=='i' ) {
-	    ret = NamesReadSFD(filename);
-	} else if ( ch1==1 && ch2==0 && ch3==4 ) {
-	    ret = NamesReadCFF(filename);
-	} else /* Too hard to figure out a valid mark for a mac resource file */
-	    ret = NamesReadMacBinary(filename);
+    if ( GFileIsDir(filename)) {
+	char *temp = galloc(strlen(filename)+strlen("/glyphs/contents.plist")+1);
+	strcpy(temp,filename);
+	strcat(temp,"/glyphs/contents.plist");
+	if ( GFileExists(temp))
+	    ret = NamesReadUFO(filename);
+	free(temp);
+    } else {
+	foo = fopen(filename,"rb");
+	if ( foo!=NULL ) {
+	    /* Try to guess the file type from the first few characters... */
+	    int ch1 = getc(foo);
+	    int ch2 = getc(foo);
+	    int ch3 = getc(foo);
+	    int ch4 = getc(foo);
+	    int ch5, ch6;
+	    fseek(foo, 98, SEEK_SET);
+	    ch5 = getc(foo);
+	    ch6 = getc(foo);
+	    fclose(foo);
+	    if (( ch1==0 && ch2==1 && ch3==0 && ch4==0 ) ||
+		    (ch1=='O' && ch2=='T' && ch3=='T' && ch4=='O') ||
+		    (ch1=='t' && ch2=='r' && ch3=='u' && ch4=='e') ||
+		    (ch1=='t' && ch2=='t' && ch3=='c' && ch4=='f') ) {
+		ret = NamesReadTTF(filename);
+	    } else if (( ch1=='%' && ch2=='!' ) ||
+			( ch1==0x80 && ch2=='\01' ) ) {	/* PFB header */
+		ret = NamesReadPostscript(filename);
+	    } else if ( ch1=='<' && ch2=='?' && (ch3=='x'||ch3=='X') && (ch4=='m'||ch4=='M') ) {
+		ret = NamesReadSVG(filename);
+	    } else if ( ch1=='S' && ch2=='p' && ch3=='l' && ch4=='i' ) {
+		ret = NamesReadSFD(filename);
+	    } else if ( ch1==1 && ch2==0 && ch3==4 ) {
+		ret = NamesReadCFF(filename);
+	    } else /* Too hard to figure out a valid mark for a mac resource file */
+		ret = NamesReadMacBinary(filename);
+	}
     }
 return( ret );
 }
@@ -2048,15 +2058,17 @@ static void bExport(Context *c) {
 	format = 1;
     else if ( strmatch(pt,"svg")==0 )
 	format = 2;
-    else if ( strmatch(pt,"pdf")==0 )
+    else if ( strmatch(pt,"glif")==0 )
 	format = 3;
-    else if ( strmatch(pt,"xbm")==0 )
+    else if ( strmatch(pt,"pdf")==0 )
 	format = 4;
-    else if ( strmatch(pt,"bmp")==0 )
+    else if ( strmatch(pt,"xbm")==0 )
 	format = 5;
+    else if ( strmatch(pt,"bmp")==0 )
+	format = 6;
 #ifndef _NO_LIBPNG
     else if ( strmatch(pt,"png")==0 )
-	format = 6;
+	format = 7;
     else
 	ScriptError( c, "Bad format (first arg must be eps/fig/xbm/bmp/png)");
 #else

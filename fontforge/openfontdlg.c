@@ -51,6 +51,7 @@ struct openfilefilters def_font_filters[] = {
 	   "gai,"
 #ifndef _NO_LIBXML
 	   "svg,"
+	   "ufo,"
 #endif
 	   "pf3,"
 	   "ttc,"
@@ -84,6 +85,7 @@ struct openfilefilters def_font_filters[] = {
 	   "gai,"
 #ifndef _NO_LIBXML
 	   "svg,"
+	   "ufo,"
 #endif
 	   "pf3,"
 	   "ttc,"

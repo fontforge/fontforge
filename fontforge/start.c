@@ -348,16 +348,26 @@ static int ParseArgs( gpointer data ) {
 	    GFileGetAbsoluteName(argv[i],buffer,sizeof(buffer));
 	    if ( GFileIsDir(buffer)) {
 		char *fname;
-		if ( buffer[strlen(buffer)-1]!='/' ) {
-		    /* If dirname doesn't end in "/" we'll be looking in parent dir */
-		    buffer[strlen(buffer)+1]='\0';
-		    buffer[strlen(buffer)] = '/';
+		fname = galloc(strlen(buffer)+strlen("glyphs/contents.plist")+1);
+		strcpy(fname,buffer); strcat(fname,"glyphs/contents.plist");
+		if ( GFileExists(fname)) {
+		    /* It's probably a Unified Font Object directory */
+		    free(fname);
+		    if ( ViewPostscriptFont(buffer) )
+			any = 1;
+		} else {
+		    free(fname);
+		    if ( buffer[strlen(buffer)-1]!='/' ) {
+			/* If dirname doesn't end in "/" we'll be looking in parent dir */
+			buffer[strlen(buffer)+1]='\0';
+			buffer[strlen(buffer)] = '/';
+		    }
+		    fname = GetPostscriptFontName(buffer,false);
+		    if ( fname!=NULL )
+			ViewPostscriptFont(fname);
+		    any = 1;	/* Even if we didn't get a font, don't bring up dlg again */
+		    free(fname);
 		}
-		fname = GetPostscriptFontName(buffer,false);
-		if ( fname!=NULL )
-		    ViewPostscriptFont(fname);
-		any = 1;	/* Even if we didn't get a font, don't bring up dlg again */
-		free(fname);
 	    } else if ( ViewPostscriptFont(buffer)!=0 )
 		any = 1;
 	}
@@ -797,16 +807,26 @@ int FontForgeMain( int argc, char **argv ) {
 	    GFileGetAbsoluteName(argv[i],buffer,sizeof(buffer));
 	    if ( GFileIsDir(buffer)) {
 		char *fname;
-		if ( buffer[strlen(buffer)-1]!='/' ) {
-		    /* If dirname doesn't end in "/" we'll be looking in parent dir */
-		    buffer[strlen(buffer)+1]='\0';
-		    buffer[strlen(buffer)] = '/';
+		fname = galloc(strlen(buffer)+strlen("/glyphs/contents.plist")+1);
+		strcpy(fname,buffer); strcat(fname,"/glyphs/contents.plist");
+		if ( GFileExists(fname)) {
+		    /* It's probably a Unified Font Object directory */
+		    free(fname);
+		    if ( ViewPostscriptFont(buffer) )
+			any = 1;
+		} else {
+		    free(fname);
+		    if ( buffer[strlen(buffer)-1]!='/' ) {
+			/* If dirname doesn't end in "/" we'll be looking in parent dir */
+			buffer[strlen(buffer)+1]='\0';
+			buffer[strlen(buffer)] = '/';
+		    }
+		    fname = GetPostscriptFontName(buffer,false);
+		    if ( fname!=NULL )
+			ViewPostscriptFont(fname);
+		    any = 1;	/* Even if we didn't get a font, don't bring up dlg again */
+		    free(fname);
 		}
-		fname = GetPostscriptFontName(buffer,false);
-		if ( fname!=NULL )
-		    ViewPostscriptFont(fname);
-		any = 1;	/* Even if we didn't get a font, don't bring up dlg again */
-		free(fname);
 	    } else if ( ViewPostscriptFont(buffer)!=0 )
 		any = 1;
 	}

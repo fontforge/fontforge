@@ -96,7 +96,7 @@ static char *extensions[] = { ".pfa", ".pfb", ".res", "%s.pfb", ".pfa", ".pfb", 
 	".cid", ".cff", ".cid.cff",
 	".t42", ".cid.t42",
 	".ttf", ".ttf", ".suit", ".dfont", ".otf", ".otf.dfont", ".otf",
-	".otf.dfont", ".svg", NULL };
+	".otf.dfont", ".svg", ".ufo", NULL };
 # ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static char *bitmapextensions[] = { "-*.bdf", ".ttf", ".dfont", ".ttf", ".otb", ".bmap", ".dfont", ".fon", "-*.fnt", ".pdb", "-*.pt3", ".none", NULL };
 # endif
@@ -105,7 +105,7 @@ static char *extensions[] = { ".pfa", ".pfb", ".bin", "%s.pfb", ".pfa", ".pfb", 
 	".cid", ".cff", ".cid.cff",
 	".t42", ".cid.t42",
 	".ttf", ".ttf", ".ttf.bin", ".dfont", ".otf", ".otf.dfont", ".otf",
-	".otf.dfont", ".svg", NULL };
+	".otf.dfont", ".svg", ".ufo", NULL };
 # ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static char *bitmapextensions[] = { "-*.bdf", ".ttf", ".dfont", ".ttf", ".otb", ".bmap.bin", ".fon", "-*.fnt", ".pdb", "-*.pt3", ".none", NULL };
 # endif
@@ -146,6 +146,7 @@ static GTextInfo formattypes[] = {
     { (unichar_t *) N_("OpenType CID"), NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("OpenType CID (dfont)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("SVG font"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Unified Font Object"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("No Outline Font"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }
 };
@@ -1899,6 +1900,7 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,NULL,map));
 		  oldformatstate==ff_otfcid || oldformatstate==ff_otfciddfont ?_("Saving CID keyed font") :
 		  oldformatstate==ff_mma || oldformatstate==ff_mmb ?_("Saving multi-master font") :
 		  oldformatstate==ff_svg ?_("Saving SVG font") :
+		  oldformatstate==ff_ufo ?_("Saving Unified Font Object") :
 		 _("Saving PostScript Font"),
 	    path,sf->glyphcnt,1);
     free(path);
@@ -1936,6 +1938,9 @@ return( true );
 return( true );
 #endif
 	    oerr = !WriteSVGFont(newname,sf,oldformatstate,flags,map);
+	  break;
+	  case ff_ufo:
+	    oerr = !WriteUFOFont(newname,sf,oldformatstate,flags,map);
 	  break;
 	}
 	if ( oerr ) {
@@ -2393,7 +2398,7 @@ return;
 return;
 	    psfnlenwarned = true;
 	}
-    } else if ( oldformatstate!=ff_none && oldformatstate!=ff_svg ) {
+    } else if ( oldformatstate!=ff_none && oldformatstate!=ff_svg  && oldformatstate!=ff_ufo ) {
 	int val = d->sf->ascent+d->sf->descent;
 	int bit;
 	for ( bit=0x800000; bit!=0; bit>>=1 )
@@ -3104,6 +3109,7 @@ return( 0 );
 	formattypes[ff_otf].disabled = true;
 	formattypes[ff_otfcid].disabled = true;
 	formattypes[ff_cffcid].disabled = true;
+	formattypes[ff_ufo].disabled = true;
 	if ( ofs!=ff_svg )
 	    ofs = ff_ptype3;
     } else if ( sf->strokedfont ) {
@@ -3111,6 +3117,7 @@ return( 0 );
 	formattypes[ff_ttfsym].disabled = true;
 	formattypes[ff_ttfmacbin].disabled = true;
 	formattypes[ff_ttfdfont].disabled = true;
+	formattypes[ff_ufo].disabled = true;
 	if ( ofs==ff_ttf || ofs==ff_ttfsym || ofs==ff_ttfmacbin || ofs==ff_ttfdfont )
 	    ofs = ff_otf;
     }
@@ -3140,6 +3147,7 @@ return( 0 );
 	formattypes[ff_cff].disabled = true;
 	formattypes[ff_cffcid].disabled = true;
 	formattypes[ff_svg].disabled = true;
+	formattypes[ff_ufo].disabled = true;
     }
     for ( i=0; i<sizeof(formattypes)/sizeof(formattypes[0]); ++i )
 	formattypes[i].selected = false;
