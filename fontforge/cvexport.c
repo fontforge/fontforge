@@ -258,6 +258,18 @@ return(0);
 return( ret );
 }
 
+static int ExportGlif(char *filename,SplineChar *sc) {
+    FILE *glif;
+    int ret;
+
+    glif = fopen(filename,"w");
+    if ( glif==NULL ) {
+return(0);
+    }
+    ret = _ExportGlif(glif,sc);
+return( ret );
+}
+
 static void FigDumpPt(FILE *fig,BasePoint *me,real scale,real ascent) {
     fprintf( fig, "%d %d ", (int) rint(me->x*scale), (int) rint(ascent-me->y*scale));
 }
@@ -742,9 +754,11 @@ return;
     else if ( format==2 )
 	good = ExportSVG(buffer,sc);
     else if ( format==3 )
+	good = ExportGlif(buffer,sc);
+    else if ( format==4 )
 	good = ExportPDF(buffer,sc);
     else if ( bc!=NULL )
-	good = BCExportXBM(buffer,bc,format-4);
+	good = BCExportXBM(buffer,bc,format-5);
     if ( !good )
 	gwwv_post_error(_("Save Failed"),_("Save Failed"));
 }
@@ -772,6 +786,7 @@ static GTextInfo formats[] = {
     { (unichar_t *) N_("EPS"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 1, 0, 1 },
     { (unichar_t *) N_("XFig"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("SVG"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Glif"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("PDF"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("X Bitmap"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("BMP"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
@@ -798,9 +813,11 @@ static void DoExport(struct gfc_data *d,unichar_t *path) {
     else if ( format==2 )
 	good = ExportSVG(temp,d->sc);
     else if ( format==3 )
+	good = ExportGlif(temp,d->sc);
+    else if ( format==4 )
 	good = ExportPDF(temp,d->sc);
     else
-	good = ExportXBM(temp,d->sc,format-4);
+	good = ExportXBM(temp,d->sc,format-5);
     if ( !good )
 	gwwv_post_error(_("Save Failed"),_("Save Failed"));
     free(temp);
@@ -863,7 +880,7 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	unichar_t *pt, *file, *f2;
 	int format = GGadgetGetFirstListSelectedItem(g);
 	file = GGadgetGetTitle(d->gfc);
-	f2 = galloc(sizeof(unichar_t) * (u_strlen(file)+5));
+	f2 = galloc(sizeof(unichar_t) * (u_strlen(file)+6));
 	u_strcpy(f2,file);
 	free(file);
 	pt = u_strrchr(f2,'.');
@@ -875,9 +892,10 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	    uc_strcpy(pt,format==0?".eps":
 			 format==1?".fig":
 			 format==2?".svg":
-			 format==3?".pdf":
-			 format==4?".xbm":
-			 format==5?".bmp":
+			 format==3?".glif":
+			 format==4?".pdf":
+			 format==5?".xbm":
+			 format==6?".bmp":
 				   ".png");
 	GGadgetSetTitle(d->gfc,f2);
 	free(f2);
@@ -1065,7 +1083,8 @@ static int _Export(SplineChar *sc,BDFChar *bc) {
 	ext = _format==0 ? "xbm" : _format==1 ? "bmp" : "png";
     else
 	ext = _format==0?"eps":_format==1?"fig":_format==2?"svg":
-		_format==3?"pdf":_format==4?"xbm":_format==5?"bmp":"png";
+		_format==3?"glif":
+		_format==4?"pdf":_format==5?"xbm":_format==6?"bmp":"png";
 #if defined( __CygWin ) || defined(__Mac)
     /* Windows file systems are not case conscious */
     { char *pt, *bpt, *end;

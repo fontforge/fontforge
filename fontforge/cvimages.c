@@ -62,8 +62,10 @@ static unichar_t wildtemplate[] = { '{','u','n','i',',','u',',','c','i','d',',',
 /* Hmm. Mac seems to use the extension 'art' for eps files sometimes */
 static unichar_t wildepstemplate[] = { '{','u','n','i',',','u',',','c','i','d',',','e','n','c','}','[','0','-','9','a','-','f','A','-','F',']','*', '.', '{', 'p','s',',', 'e','p','s',',','a','r','t','}',  0 };
 static unichar_t wildsvgtemplate[] = { '{','u','n','i',',','u',',','c','i','d',',','e','n','c','}','[','0','-','9','a','-','f','A','-','F',']','*', '.', 's', 'v','g',  0 };
+static unichar_t wildgliftemplate[] = { '{','u','n','i',',','u',',','c','i','d',',','e','n','c','}','[','0','-','9','a','-','f','A','-','F',']','*', '.', 'g', 'l','i','f',  0 };
 static unichar_t wildps[] = { '*', '.', '{', 'p','s',',', 'e','p','s',',', 'a','r','t','}', '\0' };
 static unichar_t wildsvg[] = { '*', '.', 's','v','g',  '\0' };
+static unichar_t wildglif[] = { '*', '.', 'g','l','i','f',  '\0' };
 static unichar_t wildfig[] = { '*', '.', '{', 'f','i','g',',','x','f','i','g','}',  '\0' };
 static unichar_t wildbdf[] = { '*', '.', 'b', 'd','{', 'f', ',','f','.','g','z',',','f','.','Z',',','f','.','b','z','2','}',  '\0' };
 static unichar_t wildpcf[] = { '*', '.', 'p', '{', 'c',',','m','}','{', 'f', ',','f','.','g','z',',','f','.','Z',',','f','.','b','z','2','}',  '\0' };
@@ -75,6 +77,7 @@ static unichar_t wildpalm[] = { '*', 'p', 'd', 'b',  '\0' };
 static unichar_t *wildchr[] = { wildimg, wildps,
 #ifndef _NO_LIBXML
 wildsvg,
+wildglif,
 #endif
 wildfig };
 static unichar_t *wildfnt[] = { wildbdf, wildttf, wildpk, wildpcf, wildmac,
@@ -82,6 +85,7 @@ wildwin, wildpalm,
 wildimg, wildtemplate, wildps, wildepstemplate
 #ifndef _NO_LIBXML
 , wildsvg, wildsvgtemplate
+, wildglif, wildgliftemplate
 #endif
 };
 
@@ -403,6 +407,42 @@ return;
 # ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void ImportSVG(CharView *cv,char *path) {
     SCImportSVG(cv->sc,CVLayer(cv),path,NULL,0,false);
+}
+# endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+
+void SCImportGlif(SplineChar *sc,int layer,char *path,char *memory, int memlen, int doclear) {
+    SplinePointList *spl, *espl, **head;
+
+    spl = SplinePointListInterpretGlif(path,memory,memlen,sc->parent->ascent+sc->parent->descent,
+	    sc->parent->ascent,sc->parent->strokedfont);
+    for ( espl = spl; espl!=NULL && espl->first->next==NULL; espl=espl->next );
+    if ( espl!=NULL )
+	if ( espl->first->next->order2!=sc->parent->order2 )
+	    spl = SplineSetsConvertOrder(spl,sc->parent->order2);
+    if ( spl==NULL ) {
+	gwwv_post_error(_("Too Complex or Bad"),_("I'm sorry this file is too complex for me to understand (or is erroneous)"));
+return;
+    }
+    for ( espl=spl; espl->next!=NULL; espl = espl->next );
+    if ( layer==ly_grid )
+	head = &sc->parent->grid.splines;
+    else {
+	SCPreserveLayer(sc,layer,false);
+	head = &sc->layers[layer].splines;
+    }
+    if ( doclear ) {
+	SplinePointListsFree(*head);
+	*head = NULL;
+    }
+    espl->next = *head;
+    *head = spl;
+
+    SCCharChangedUpdate(sc);
+}
+
+# ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+static void ImportGlif(CharView *cv,char *path) {
+    SCImportGlif(cv->sc,CVLayer(cv),path,NULL,0,false);
 }
 # endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 #endif
@@ -1120,6 +1160,9 @@ return(false);
 	} else if ( format==fv_svg ) {
 	    SCImportSVG(sc,toback?ly_back:ly_fore,start,NULL,0,flags&sf_clearbeforeinput);
 	    ++tot;
+	} else if ( format==fv_glif ) {
+	    SCImportGlif(sc,toback?ly_back:ly_fore,start,NULL,0,flags&sf_clearbeforeinput);
+	    ++tot;
 #endif
 	} else if ( format==fv_eps ) {
 	    SCImportPS(sc,toback?ly_back:ly_fore,start,flags&sf_clearbeforeinput,flags&~sf_clearbeforeinput);
@@ -1226,6 +1269,9 @@ return( false );
 	} else if ( format==fv_svgtemplate ) {
 	    SCImportSVG(sc,toback?ly_back:ly_fore,start,NULL,0,flags&sf_clearbeforeinput);
 	    ++tot;
+	} else if ( format==fv_gliftemplate ) {
+	    SCImportGlif(sc,toback?ly_back:ly_fore,start,NULL,0,flags&sf_clearbeforeinput);
+	    ++tot;
 #endif
 	} else {
 	    SCImportPS(sc,toback?ly_back:ly_fore,start,flags&sf_clearbeforeinput,flags&~sf_clearbeforeinput);
@@ -1257,6 +1303,7 @@ static GTextInfo formats[] = {
     { (unichar_t *) N_("EPS"), NULL, 0, 0, (void *) fv_eps, 0, 0, 0, 0, 0, 0, 0, 1 },
 #ifndef _NO_LIBXML
     { (unichar_t *) N_("SVG"), NULL, 0, 0, (void *) fv_svg, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Glif"), NULL, 0, 0, (void *) fv_glif, 0, 0, 0, 0, 0, 0, 0, 1 },
 #endif
     { (unichar_t *) N_("XFig"), NULL, 0, 0, (void *) fv_fig, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }};
@@ -1276,6 +1323,8 @@ static GTextInfo fvformats[] = {
 #ifndef _NO_LIBXML
     { (unichar_t *) N_("SVG"), NULL, 0, 0, (void *) fv_svg, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("SVG Template"), NULL, 0, 0, (void *) fv_svgtemplate, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Glif"), NULL, 0, 0, (void *) fv_glif, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Glif Template"), NULL, 0, 0, (void *) fv_gliftemplate, 0, 0, 0, 0, 0, 0, 0, 1 },
 #endif
     { NULL }};
 
@@ -1327,6 +1376,10 @@ return( true );
 		d->done = FVImportImages(d->fv,temp,format,toback,-1);
 	    else if ( format==fv_svgtemplate )
 		d->done = FVImportImageTemplate(d->fv,temp,format,toback,-1);
+	    else if ( format==fv_glif )
+		d->done = FVImportImages(d->fv,temp,format,toback,-1);
+	    else if ( format==fv_gliftemplate )
+		d->done = FVImportImageTemplate(d->fv,temp,format,toback,-1);
 	} else if ( d->bv!=NULL )
 	    d->done = BVImportImage(d->bv,temp);
 	else {
@@ -1338,6 +1391,8 @@ return( true );
 #ifndef _NO_LIBXML
 	    else if ( format==fv_svg )
 		ImportSVG(d->cv,temp);
+	    else if ( format==fv_glif )
+		ImportGlif(d->cv,temp);
 #endif
 	    else
 		ImportFig(d->cv,temp);
@@ -1372,7 +1427,8 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 		GGadgetSetChecked(d->background,true);
 		GGadgetSetEnabled(d->background,true);
 	    } else if ( format==fv_eps || format==fv_epstemplate ||
-			format==fv_svg || format==fv_svgtemplate ) {
+			format==fv_svg || format==fv_svgtemplate ||
+			format==fv_glif || format==fv_gliftemplate ) {
 		GGadgetSetChecked(d->background,false);
 		GGadgetSetEnabled(d->background,true);
 	    } else {			/* Images */

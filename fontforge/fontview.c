@@ -10728,7 +10728,18 @@ return( NULL );
     sf = NULL;
     foo = fopen(strippedname,"rb");
     checked = false;
-    if ( foo!=NULL ) {
+    if ( GFileIsDir(strippedname) ) {
+	char *temp = galloc(strlen(strippedname)+strlen("/glyphs/contents.plist")+1);
+	strcpy(temp,strippedname);
+	strcat(temp,"/glyphs/contents.plist");
+	if ( GFileExists(temp)) {
+	    sf = SFReadUFO(strippedname,0);
+	    checked = 'u';
+	}
+	free(temp);
+	if ( foo!=NULL )
+	    fclose(foo);
+    } else if ( foo!=NULL ) {
 	/* Try to guess the file type from the first few characters... */
 	int ch1 = getc(foo);
 	int ch2 = getc(foo);
@@ -10786,6 +10797,7 @@ return( NULL );
 	    sf = SFReadIkarus(fullname);
 	} /* Too hard to figure out a valid mark for a mac resource file */
     }
+
     if ( sf!=NULL )
 	/* good */;
     else if (( strmatch(fullname+strlen(fullname)-4, ".sfd")==0 ||
@@ -10798,8 +10810,10 @@ return( NULL );
 		strmatch(fullname+strlen(fullname)-4, ".otf")==0 ||
 		strmatch(fullname+strlen(fullname)-4, ".otb")==0 ) && checked!='t') {
 	sf = SFReadTTF(fullname,0,openflags);
-    } else if ( strmatch(fullname+strlen(fullname)-4, ".svg")==0 && checked!='s' ) {
+    } else if ( strmatch(fullname+strlen(fullname)-4, ".svg")==0 && checked!='S' ) {
 	sf = SFReadSVG(fullname,0);
+    } else if ( strmatch(fullname+strlen(fullname)-4, ".ufo")==0 && checked!='u' ) {
+	sf = SFReadUFO(fullname,0);
     } else if ( strmatch(fullname+strlen(fullname)-4, ".bdf")==0 && checked!='b' ) {
 	sf = SFFromBDF(fullname,0,false);
     } else if ( strmatch(fullname+strlen(fullname)-2, "pk")==0 ) {
