@@ -34,16 +34,16 @@
 #include "ustring.h"
 
 GBox _ggadget_Default_Box = { bt_raised, bs_rect, 2, 2, 0, 0, 
-    COLOR_CREATE(0xdd,0xdd,0xdd),		/* border left */
-    COLOR_CREATE(0xf7,0xf7,0xf7),		/* border top */
+    COLOR_CREATE(0xff,0xff,0xdd),		/* border left */
+    COLOR_CREATE(0xff,0xff,0xf7),		/* border top */
     COLOR_CREATE(0x80,0x80,0x80),		/* border right */
     COLOR_CREATE(0x66,0x66,0x66),		/* border bottom */
     COLOR_DEFAULT,				/* normal background */
     COLOR_DEFAULT,				/* normal foreground */
-    COLOR_CREATE(0xd0,0xd0,0xd0),		/* disabled background */
+    COLOR_CREATE(0xff,0xff,0xd0),		/* disabled background */
     COLOR_CREATE(0x66,0x66,0x66),		/* disabled foreground */
     COLOR_CREATE(0xff,0xff,0x00),		/* active border */
-    COLOR_CREATE(0x90,0x90,0x90)		/* pressed background */
+    COLOR_CREATE(0xcc,0xcc,0x66)		/* pressed background */
 };
 GBox _GListMark_Box = { /* Don't initialize here */ 0 };
 FontInstance *_ggadget_default_font = NULL;
