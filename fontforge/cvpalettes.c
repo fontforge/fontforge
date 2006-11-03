@@ -682,7 +682,7 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
     temp.x = 52-16; temp.y = i*27; temp.width = 16; temp.height = 4*12;
     GDrawFillRect(pixmap,&temp,GDrawGetDefaultBackground(NULL));
     for ( j=0; j<4; ++j ) {
-	GDrawDrawText(pixmap,2,i*27+j*12+10,_Mouse[j],-1,NULL,0x000000);
+	GDrawDrawText(pixmap,2,i*27+j*12+10,_Mouse[j],-1,NULL,GDrawGetDefaultForeground(NULL));
 	if ( (&cv->b1_tool)[j]!=cvt_none )
 	    GDrawDrawImage(pixmap,smalls[(&cv->b1_tool)[j]],NULL,52-16,i*27+j*12);
     }
@@ -1128,7 +1128,7 @@ return;
 	    r.x = 30; r.width = layer2.sb_start-r.x;
 	    r.y = CV_LAYERS2_HEADER_HEIGHT + i*CV_LAYERS2_LINE_HEIGHT;
 	    r.height = CV_LAYERS2_LINE_HEIGHT;
-	    GDrawFillRect(pixmap,&r,0x000000);
+	    GDrawFillRect(pixmap,&r,GDrawGetDefaultForeground(NULL));
 	}
 	GDrawDrawLine(pixmap,r.x,CV_LAYERS2_HEADER_HEIGHT+i*CV_LAYERS2_LINE_HEIGHT,
 		r.x+r.width,CV_LAYERS2_HEADER_HEIGHT+i*CV_LAYERS2_LINE_HEIGHT,
@@ -1136,7 +1136,7 @@ return;
 	if ( i==0 || i==1 ) {
 	    str = i==0?_("_Guide") : _("_Back");
 	    GDrawDrawText8(pixmap,r.x+2,CV_LAYERS2_HEADER_HEIGHT + i*CV_LAYERS2_LINE_HEIGHT + (CV_LAYERS2_LINE_HEIGHT-12)/2+12,
-		    str,-1,NULL,ll==layer2.active?0xffffff:0x000000);
+		    str,-1,NULL,ll==layer2.active?0xffffff:GDrawGetDefaultForeground(NULL));
 	} else if ( layer2.offtop+i>=layer2.current_layers ) {
     break;
 	} else if ( layer2.layers[layer2.offtop+i]!=NULL ) {

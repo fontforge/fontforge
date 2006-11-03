@@ -9127,8 +9127,9 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
     GImage *rotated=NULL;
     int em = fv->sf->ascent+fv->sf->descent;
     int yorg = fv->magnify*(fv->show->ascent-fv->sf->vertical_origin*fv->show->pixelsize/em);
-    Color bg;
+    Color bg, def_fg;
 
+    def_fg = GDrawGetDefaultForeground(NULL);
     memset(&gi,'\0',sizeof(gi));
     memset(&base,'\0',sizeof(base));
     if ( fv->show->clut!=NULL ) {
@@ -9152,11 +9153,11 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
     GDrawPushClip(pixmap,&event->u.expose.rect,&old);
     GDrawFillRect(pixmap,NULL,GDrawGetDefaultBackground(NULL));
     for ( i=0; i<=fv->rowcnt; ++i ) {
-	GDrawDrawLine(pixmap,0,i*fv->cbh,fv->width,i*fv->cbh,0);
+	GDrawDrawLine(pixmap,0,i*fv->cbh,fv->width,i*fv->cbh,def_fg);
 	GDrawDrawLine(pixmap,0,i*fv->cbh+fv->lab_height,fv->width,i*fv->cbh+fv->lab_height,0x808080);
     }
     for ( i=0; i<=fv->colcnt; ++i )
-	GDrawDrawLine(pixmap,i*fv->cbw,0,i*fv->cbw,fv->height,0);
+	GDrawDrawLine(pixmap,i*fv->cbw,0,i*fv->cbw,fv->height,def_fg);
     for ( i=event->u.expose.rect.y/fv->cbh; i<=fv->rowcnt && 
 	    (event->u.expose.rect.y+event->u.expose.rect.height+fv->cbh-1)/fv->cbh; ++i ) for ( j=0; j<fv->colcnt; ++j ) {
 	int index = (i+fv->rowoff)*fv->colcnt+j;
@@ -9185,7 +9186,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	    if ( ( fv->map->enc==&custom && index<256 ) ||
 		 ( fv->map->enc!=&custom && index<fv->map->enc->char_cnt ) ||
 		 ( cidmap!=NULL && index<MaxCID(cidmap) ))
-		fg = 0x000000;
+		fg = def_fg;
 	    else
 		fg = 0x505050;
 	    if ( sc==NULL )
@@ -9296,7 +9297,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 			if ( strstr(pt,".vert")!=NULL )
 			    rotated = UniGetRotatedGlyph(fv,sc,buf[0]!='?'?buf[0]:-1);
 			if ( buf[0]!='?' ) {
-			    fg = 0;
+			    fg = def_fg;
 			    if ( strstr(pt,".italic")!=NULL )
 				styles = _uni_italic|_uni_mono;
 			}
@@ -9308,7 +9309,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 			int uni=-1;
 			sscanf(sc->name,"italicuni%x", (unsigned *) &uni );
 			if ( uni!=-1 ) { buf[0] = uni; styles=_uni_italic|_uni_mono; }
-			fg = 0x000000;
+			fg = def_fg;
 		    } else if ( strncmp(sc->name,"vertcid_",8)==0 ||
 			    strncmp(sc->name,"vertuni",7)==0 ) {
 			rotated = UniGetRotatedGlyph(fv,sc,-1);

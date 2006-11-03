@@ -77,7 +77,7 @@ Color nextcpcol = 0x007090;
 Color prevcpcol = 0xcc00cc;
 static Color selectedcpcol = 0xffffff;
 static Color coordcol = 0x808080;
-static Color widthcol = 0x000000;
+Color widthcol = 0x000000;
 static Color widthselcol = 0x00ff00;
 static Color widthgridfitcol = 0x009800;
 static Color lcaretcol = 0x909040;
@@ -241,7 +241,7 @@ static void CVDrawBB(CharView *cv, GWindow pixmap, DBounds *bb) {
     r.width = rint((bb->maxx-bb->minx)*cv->scale);
     r.height = rint((bb->maxy-bb->miny)*cv->scale);
     GDrawSetDashedLine(pixmap,1,1,off);
-    GDrawDrawRect(pixmap,&r,0x000000);
+    GDrawDrawRect(pixmap,&r,GDrawGetDefaultForeground(NULL));
     GDrawSetDashedLine(pixmap,0,0,0);
 }
 
@@ -2256,6 +2256,7 @@ static void CVCharUp(CharView *cv, GEvent *event ) {
 static void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
     GRect r;
     Color bg = GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(pixmap));
+    Color fg = GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap));
     char buffer[50];
     unichar_t ubuffer[50];
     int ybase = cv->mbh+(cv->infoh-cv->sfh)/2+cv->sas;
@@ -2288,14 +2289,14 @@ static void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
 	    sprintf(buffer,"%.4g%s%.4g", (double) cv->info.x, coord_sep, (double) cv->info.y );
 	buffer[11] = '\0';
 	uc_strcpy(ubuffer,buffer);
-	GDrawDrawText(pixmap,RPT_DATA,ybase,ubuffer,-1,NULL,0);
+	GDrawDrawText(pixmap,RPT_DATA,ybase,ubuffer,-1,NULL,fg);
     }
     if ( cv->scale>=.25 )
 	sprintf( buffer, "%d%%", (int) (100*cv->scale));
     else
 	sprintf( buffer, "%.3g%%", (double) (100*cv->scale));
     uc_strcpy(ubuffer,buffer);
-    GDrawDrawText(pixmap,MAG_DATA,ybase,ubuffer,-1,NULL,0);
+    GDrawDrawText(pixmap,MAG_DATA,ybase,ubuffer,-1,NULL,fg);
     GDrawDrawText8(pixmap,LAYER_DATA,ybase,
 /* GT: Foreground, make it short */
 		cv->drawmode==dm_fore ? _("Fore") :
@@ -2303,12 +2304,12 @@ static void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
 		cv->drawmode==dm_back ? _("Back") :
 /* GT: Guide layer, make it short */
 		_("Guide"),
-	    -1,NULL,0);
+	    -1,NULL,fg);
     if ( cv->coderange!=cr_none )
 	GDrawDrawText8(pixmap,CODERANGE_DATA,ybase,
 		cv->coderange==cr_fpgm ? _("'fpgm'") :
 		cv->coderange==cr_prep ? _("'prep'") : _("Glyph"),
-	    -1,NULL,0);
+	    -1,NULL,fg);
     sp = cv->p.sp!=NULL ? cv->p.sp : cv->lastselpt;
     if ( sp==NULL ) if ( cv->active_tool==cvt_rect || cv->active_tool==cvt_elipse ||
 	    cv->active_tool==cvt_poly || cv->active_tool==cvt_star ) {
@@ -2333,7 +2334,7 @@ static void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
 	    sprintf(buffer,"%.4g%s%.4g", (double) selx, coord_sep, (double) sely );
 	buffer[11] = '\0';
 	uc_strcpy(ubuffer,buffer);
-	GDrawDrawText(pixmap,SPT_DATA,ybase,ubuffer,-1,NULL,0);
+	GDrawDrawText(pixmap,SPT_DATA,ybase,ubuffer,-1,NULL,fg);
     } else if ( cv->widthsel && cv->info_within ) {
 	xdiff = cv->info.x-cv->p.cx;
 	ydiff = 0;
@@ -2351,15 +2352,15 @@ return;
 	sprintf(buffer,"%.4g%s%.4g", (double) xdiff, coord_sep, (double) ydiff );
     buffer[11] = '\0';
     uc_strcpy(ubuffer,buffer);
-    GDrawDrawText(pixmap,SOF_DATA,ybase,ubuffer,-1,NULL,0);
+    GDrawDrawText(pixmap,SOF_DATA,ybase,ubuffer,-1,NULL,fg);
 
     sprintf( buffer, "%.1f", sqrt(xdiff*xdiff+ydiff*ydiff));
     uc_strcpy(ubuffer,buffer);
-    GDrawDrawText(pixmap,SDS_DATA,ybase,ubuffer,-1,NULL,0);
+    GDrawDrawText(pixmap,SDS_DATA,ybase,ubuffer,-1,NULL,fg);
 
     sprintf( buffer, "%d\260", (int) rint(180*atan2(ydiff,xdiff)/3.1415926535897932));
     uc_strcpy(ubuffer,buffer);
-    GDrawDrawText(pixmap,SAN_DATA,ybase,ubuffer,-1,NULL,0);
+    GDrawDrawText(pixmap,SAN_DATA,ybase,ubuffer,-1,NULL,fg);
 }
 
 static void CVInfoDrawRulers(CharView *cv, GWindow pixmap ) {
@@ -3847,7 +3848,7 @@ static void CVDrawNum(CharView *cv,GWindow pixmap,int x, int y, char *format,rea
 	else
 	    x-=len;
     }
-    GDrawDrawText(pixmap,x,y,ubuf,-1,NULL,0x000000);
+    GDrawDrawText(pixmap,x,y,ubuf,-1,NULL,GDrawGetDefaultForeground(NULL));
 }
 
 static void CVDrawVNum(CharView *cv,GWindow pixmap,int x, int y, char *format,real val, int align) {
@@ -3866,7 +3867,7 @@ static void CVDrawVNum(CharView *cv,GWindow pixmap,int x, int y, char *format,re
 	    y-=len;
     }
     for ( upt=ubuf; *upt; ++upt ) {
-	GDrawDrawText(pixmap,x,y,upt,1,NULL,0x000000);
+	GDrawDrawText(pixmap,x,y,upt,1,NULL,GDrawGetDefaultForeground(NULL));
 	y += cv->sfh;
     }
 }
@@ -3879,6 +3880,7 @@ static void CVExposeRulers(CharView *cv, GWindow pixmap ) {
     int ybase = cv->mbh+cv->infoh;
     int x,y;
     GRect rect;
+    Color def_fg = GDrawGetDefaultForeground(NULL);
 
     xmin = -cv->xoff/cv->scale;
     xmax = (cv->width-cv->xoff)/cv->scale;
@@ -3914,8 +3916,8 @@ static void CVExposeRulers(CharView *cv, GWindow pixmap ) {
     rect.y = ybase; rect.height = cv->height+cv->rulerh; rect.x = 0; rect.width = cv->rulerh;
     GDrawFillRect(pixmap,&rect,GDrawGetDefaultBackground(NULL));
     GDrawSetLineWidth(pixmap,0);
-    GDrawDrawLine(pixmap,cv->rulerh,cv->mbh+cv->infoh+cv->rulerh-1,8096,cv->mbh+cv->infoh+cv->rulerh-1,0x000000);
-    GDrawDrawLine(pixmap,cv->rulerh-1,cv->mbh+cv->infoh+cv->rulerh,cv->rulerh-1,8096,0x000000);
+    GDrawDrawLine(pixmap,cv->rulerh,cv->mbh+cv->infoh+cv->rulerh-1,8096,cv->mbh+cv->infoh+cv->rulerh-1,def_fg);
+    GDrawDrawLine(pixmap,cv->rulerh-1,cv->mbh+cv->infoh+cv->rulerh,cv->rulerh-1,8096,def_fg);
 
     GDrawSetFont(pixmap,cv->small);
     if ( xmax-xmin<1 && cv->width>100 ) {
@@ -3930,21 +3932,21 @@ static void CVExposeRulers(CharView *cv, GWindow pixmap ) {
 	if ( littleunits!=0 ) {
 	    for ( pos=littleunits*ceil(xmin/littleunits); pos<xmax; pos += littleunits ) {
 		x = cv->xoff + rint(pos*cv->scale);
-		GDrawDrawLine(pixmap,x+cv->rulerh,ybase+cv->rulerh-4,x+cv->rulerh,ybase+cv->rulerh, 0x000000);
+		GDrawDrawLine(pixmap,x+cv->rulerh,ybase+cv->rulerh-4,x+cv->rulerh,ybase+cv->rulerh, def_fg);
 	    }
 	    for ( pos=littleunits*ceil(ymin/littleunits); pos<ymax; pos += littleunits ) {
 		y = -cv->yoff + cv->height - rint(pos*cv->scale);
-		GDrawDrawLine(pixmap,cv->rulerh-4,ybase+cv->rulerh+y,cv->rulerh,ybase+cv->rulerh+y, 0x000000);
+		GDrawDrawLine(pixmap,cv->rulerh-4,ybase+cv->rulerh+y,cv->rulerh,ybase+cv->rulerh+y, def_fg);
 	    }
 	}
 	for ( pos=units*ceil(xmin/units); pos<xmax; pos += units ) {
 	    x = cv->xoff + rint(pos*cv->scale);
-	    GDrawDrawLine(pixmap,x+cv->rulerh,ybase+cv->rulerh-6,x+cv->rulerh,ybase+cv->rulerh, 0x000000);
+	    GDrawDrawLine(pixmap,x+cv->rulerh,ybase+cv->rulerh-6,x+cv->rulerh,ybase+cv->rulerh, def_fg);
 	    CVDrawNum(cv,pixmap,x+cv->rulerh,ybase+cv->sas,"%g",pos,1);
 	}
 	for ( pos=units*ceil(ymin/units); pos<ymax; pos += units ) {
 	    y = -cv->yoff + cv->height - rint(pos*cv->scale);
-	    GDrawDrawLine(pixmap,cv->rulerh-6,ybase+cv->rulerh+y,cv->rulerh,ybase+cv->rulerh+y, 0x000000);
+	    GDrawDrawLine(pixmap,cv->rulerh-6,ybase+cv->rulerh+y,cv->rulerh,ybase+cv->rulerh+y, def_fg);
 	    CVDrawVNum(cv,pixmap,1,y+ybase+cv->rulerh+cv->sas,"%g",pos,1);
 	}
     }
@@ -3952,6 +3954,7 @@ static void CVExposeRulers(CharView *cv, GWindow pixmap ) {
 
 static void InfoExpose(CharView *cv, GWindow pixmap, GEvent *expose) {
     GRect old1, old2, r;
+    Color def_fg = GDrawGetDefaultForeground(NULL);
 
     if ( expose->u.expose.rect.y + expose->u.expose.rect.height < cv->mbh ||
 	    (!cv->showrulers && expose->u.expose.rect.y >= cv->mbh+cv->infoh ))
@@ -3964,7 +3967,7 @@ return;
 	r.y = cv->mbh; r.height = cv->infoh;
 	GDrawPushClip(pixmap,&expose->u.expose.rect,&old2);
     
-	GDrawDrawLine(pixmap,0,cv->mbh+cv->infoh-1,8096,cv->mbh+cv->infoh-1,0);
+	GDrawDrawLine(pixmap,0,cv->mbh+cv->infoh-1,8096,cv->mbh+cv->infoh-1,def_fg);
 	GDrawDrawImage(pixmap,&GIcon_rightpointer,NULL,RPT_BASE,cv->mbh+2);
 	GDrawDrawImage(pixmap,&GIcon_selectedpoint,NULL,SPT_BASE,cv->mbh+2);
 	GDrawDrawImage(pixmap,&GIcon_sel2ptr,NULL,SOF_BASE,cv->mbh+2);
