@@ -100,7 +100,6 @@ struct openfilefilters def_font_filters[] = {
 	     "{.gz,.Z,.bz2,}",
 	N_("Bitmap Fonts"), "*.{"
 	   "bdf,"
-	   "pdf,"
 	   "otb,"
 	   "bin,"
 	   "hqx,"
