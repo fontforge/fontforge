@@ -468,6 +468,7 @@ static void BVExpose(BitmapView *bv, GWindow pixmap, GEvent *event ) {
     BDFChar *bc = bv->bc;
     BDFFont *bdf = bv->bdf;
     RefChar *refs;
+    extern Color widthcol;
 
     GDrawPushClip(pixmap,&event->u.expose.rect,&old);
     GDrawSetLineWidth(pixmap,0);
@@ -514,13 +515,15 @@ static void BVExpose(BitmapView *bv, GWindow pixmap, GEvent *event ) {
 	GDrawDrawLine(pixmap,0,-bv->yoff+bv->height+bv->bdf->descent*bv->scale,
 		bv->width,-bv->yoff+bv->height+bv->bdf->descent*bv->scale,0x404040);
 	GDrawDrawLine(pixmap,bv->xoff+0*bv->scale,0, bv->xoff+0*bv->scale,bv->height,0x404040);
-	GDrawDrawLine(pixmap,bv->xoff+bv->bc->width*bv->scale,0, bv->xoff+bv->bc->width*bv->scale,bv->height,0x000000);
+	GDrawDrawLine(pixmap,bv->xoff+bv->bc->width*bv->scale,0, bv->xoff+bv->bc->width*bv->scale,bv->height,widthcol);
 	if ( bv->bdf->sf->hasvmetrics )
 	    GDrawDrawLine(pixmap,0,-bv->yoff+bv->height-(bv->bdf->ascent-bc->vwidth)*bv->scale,
-		    bv->width,-bv->yoff+bv->height-(bv->bdf->ascent-bc->vwidth)*bv->scale,0x000000);
+		    bv->width,-bv->yoff+bv->height-(bv->bdf->ascent-bc->vwidth)*bv->scale,widthcol);
     }
     if ( bv->showoutline ) {
-	Color col = bv->bc->byte_data ? 0x008800 : 0x004400;
+	Color col = (GDrawGetDefaultForeground(NULL)<0x808080)
+		? (bv->bc->byte_data ? 0x008800 : 0x004400 )
+		: (bv->bc->byte_data ? 0x00ff00 : 0x00ff00 );
 	memset(&cvtemp,'\0',sizeof(cvtemp));
 	cvtemp.v = bv->v;
 	cvtemp.width = bv->width;
@@ -575,13 +578,13 @@ static void BVInfoDrawText(BitmapView *bv, GWindow pixmap ) {
     sprintf(buffer,"%d%s%d", bv->info_x, coord_sep, bv->info_y );
     buffer[11] = '\0';
     uc_strcpy(ubuffer,buffer);
-    GDrawDrawText(pixmap,bv->infoh+RPT_DATA,ybase,ubuffer,-1,NULL,0);
+    GDrawDrawText(pixmap,bv->infoh+RPT_DATA,ybase,ubuffer,-1,NULL,GDrawGetDefaultForeground(NULL));
 
     if ( bv->active_tool!=cvt_none ) {
 	sprintf(buffer,"%d%s%d", bv->info_x-bv->pressed_x, coord_sep, bv->info_y-bv->pressed_y );
 	buffer[11] = '\0';
 	uc_strcpy(ubuffer,buffer);
-	GDrawDrawText(pixmap,bv->infoh+RPT_DATA,ybase+bv->sfh+10,ubuffer,-1,NULL,0);
+	GDrawDrawText(pixmap,bv->infoh+RPT_DATA,ybase+bv->sfh+10,ubuffer,-1,NULL,GDrawGetDefaultForeground(NULL));
     }
 }
 
@@ -640,7 +643,7 @@ return;
 
 	GDrawDrawImage(pixmap,&GIcon_press2ptr,NULL,bv->infoh+RPT_BASE,bv->mbh+18+bv->sfh);
     }
-    GDrawDrawLine(pixmap,0,bv->mbh+bv->infoh-1,bv->width+300,bv->mbh+bv->infoh-1,0);
+    GDrawDrawLine(pixmap,0,bv->mbh+bv->infoh-1,bv->width+300,bv->mbh+bv->infoh-1,GDrawGetDefaultForeground(NULL));
 
     r.x = bv->width; r.y = bv->height+bv->infoh+bv->mbh;
     LogoExpose(pixmap,event,&r,dm_fore);

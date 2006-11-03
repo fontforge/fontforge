@@ -154,6 +154,7 @@ extern Encoding *ParseEncodingNameFromList(GGadget *listfield);
 extern GTextInfo *GetEncodingTypes(void);
 
 extern void InitCursors(void);
+extern void InitToolIconClut(Color bg);
 
 extern real GetReal(GWindow gw,int cid,char *name,int *err);
 extern int GetInt(GWindow gw,int cid,char *name,int *err);

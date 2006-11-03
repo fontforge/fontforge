@@ -21,7 +21,7 @@ X_PRE_LIBS = @X_PRE_LIBS@
 STATIC_LIBS = @STATIC_LIBS@
 
 fontforge_LIBOBJECTS =  autohint.o autosave.o autowidth.o bitmapdlg.o \
- bitmapview.o bvedit.o charview.o charviewicons.o cursors.o \
+ bitmapview.o bvedit.o charview.o cursors.o \
  cvaddpoints.o cvexport.o cvgetinfo.o cvhints.o cvimages.o cvknife.o \
  cvpalettes.o cvpointer.o cvruler.o cvshapes.o cvstroke.o cvtranstools.o \
  cvundoes.o dumpbdf.o dumppfa.o fontinfo.o fontview.o fvcomposit.o \

@@ -580,7 +580,7 @@ static uint8 rotate0_data[] = {
 };
 
 static GClut rotate0_clut = { 6, 0, 0,
-    0xc0c0c0, 0xff0000, 0x0, 0xff00, 0xff, 0x4040ff };
+    0xc0c0c0, 0xff0000, 0x0, 0x00ff00, 0x0000ff, 0x4040ff };
 
 static struct _GImage rotate0_base = {
     it_index,
@@ -3404,4 +3404,160 @@ GImage GIcon_menumark = { 0, &menumark_base };
 
 GImage GIcon_up = { 0, &upicon0_base };
 GImage GIcon_down = { 0, &downicon0_base };
+
+static GClut clut = { 2, 0, 1,
+    0x0, 0xb0b0b0 };
+
+static uint8 rightpointer0_data[] = {
+    0xfb, 
+    0xf3, 
+    0xe3, 
+    0xc3, 
+    0x83, 
+    0x3, 
+    0xc3, 
+    0xcb, 
+    0x9b, 
+    0x9f, 
+};
+
+static struct _GImage rightpointer0_base = {
+    it_mono,
+    2081,8,10,1,
+    (uint8 *) rightpointer0_data,
+    &clut,
+    1
+};
+
+static uint8 sel2ptr0_data[] = {
+    0xff, 0xe5, 
+    0xff, 0x39, 
+    0xf9, 0xf1, 
+    0x8f, 0xe1, 
+    0x77, 0xc1, 
+    0x77, 0x81, 
+    0x77, 0xe1, 
+    0x8f, 0xe5, 
+    0xff, 0xcd, 
+    0xff, 0xcf, 
+};
+
+static struct _GImage sel2ptr0_base = {
+    it_mono,
+    2081,16,10,2,
+    (uint8 *) sel2ptr0_data,
+    &clut,
+    1
+};
+
+static uint8 selectedpoint0_data[] = {
+    0xdf, 
+    0xef, 
+    0xef, 
+    0xc7, 
+    0xbb, 
+    0xbb, 
+    0xbb, 
+    0xc7, 
+    0xef, 
+    0xef, 
+};
+
+static struct _GImage selectedpoint0_base = {
+    it_mono,
+    2081,8,10,1,
+    (uint8 *) selectedpoint0_data,
+    &clut,
+    1
+};
+
+static uint8 distance0_data[] = {
+    0xff, 0xff, 
+    0xbf, 0xfe, 
+    0xbb, 0xee, 
+    0xb7, 0xf6, 
+    0xaa, 0xaa, 
+    0xb7, 0xf6, 
+    0xbb, 0xee, 
+    0xbf, 0xfe, 
+    0xbf, 0xfe, 
+    0xff, 0xff, 
+};
+
+static struct _GImage distance0_base = {
+    it_mono,
+    2081,16,10,2,
+    (uint8 *) distance0_data,
+    &clut,
+    1
+};
+
+static uint8 angle0_data[] = {
+    0xff, 0xff, 
+    0xff, 0xcf, 
+    0xff, 0x9f, 
+    0xfe, 0x6f, 
+    0xfd, 0xef, 
+    0xf3, 0xf7, 
+    0xef, 0xf7, 
+    0x9f, 0xf7, 
+    0x0, 0x1, 
+    0xff, 0xff, 
+};
+
+static struct _GImage angle0_base = {
+    it_mono,
+    2081,16,10,2,
+    (uint8 *) angle0_data,
+    &clut,
+    1
+};
+
+static uint8 magicon0_data[] = {
+    0xc7, 
+    0xbb, 
+    0x6d, 
+    0x45, 
+    0x6d, 
+    0xbb, 
+    0xc3, 
+    0xfb, 
+    0xfd, 
+    0xfd, 
+};
+
+static struct _GImage magicon0_base = {
+    it_mono,
+    2069,8,10,1,
+    (uint8 *) magicon0_data,
+    &clut,
+    1
+};
+
+GImage GIcon_mag = { 0, &magicon0_base };
+GImage GIcon_angle = { 0, &angle0_base };
+GImage GIcon_distance = { 0, &distance0_base };
+GImage GIcon_selectedpoint = { 0, &selectedpoint0_base };
+GImage GIcon_sel2ptr = { 0, &sel2ptr0_base };
+GImage GIcon_rightpointer = { 0, &rightpointer0_base };
+
+void InitToolIconClut(Color bg) {
+    if ( bg==0x000000 ) {
+	magnify0_clut.clut[0] = 0xffffff;
+	corner0_clut.clut[0] = 0xffffff;
+	rotate0_clut.clut[2] = 0xffffff;
+	pencil0_clut.clut[0] = 0x000000;
+	pencil0_clut.clut[1] = 0xffffff;
+	smallcurve0_clut.clut[0] = 0xffffff;
+	watchpnt_clut.clut[0] = 0xffffff;
+	menumark_clut.clut[0] = 0xffffff;
+	corner0_clut.clut[0] = 0xffffff;
+	corner0_clut.clut[0] = 0xffffff;
+	corner0_clut.clut[0] = 0xffffff;
+	clut.clut[0] = 0xffffff;
+    } else if ( COLOR_GREEN(bg)>COLOR_BLUE(bg) ) {
+	rotate0_clut.clut[3] = 0x0000ff;
+	rotate0_clut.clut[4] = 0x00ff00;
+    }
+}
 #endif
