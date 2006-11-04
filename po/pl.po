@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: FontForge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2006-10-13 07:16+0200\n"
+"POT-Creation-Date: 2006-11-04 20:47+0100\n"
 "PO-Revision-Date: 2006-09-16 10:22+0200\n"
 "Last-Translator: Michal Nowakowski\n"
 "Language-Team: Polish <pl@li.org>\n"
@@ -19,7 +19,7 @@ msgstr ""
 "100>=20) ? 1 : 2\n"
 
 #: alignment.c:289 anchorsaway.c:851 combinations.c:1209 cvhints.c:284 cvhints.c:491
-#: cvhints.c:678 cvhints.c:776 displayfonts.c:339 displayfonts.c:543
+#: cvhints.c:678 cvhints.c:776 displayfonts.c:334 displayfonts.c:528
 msgid "_Size:"
 msgstr "_Rozmiar"
 
@@ -47,22 +47,22 @@ msgstr ""
 
 #: alignment.c:395 anchorsaway.c:969 autowidth.c:1746 bdfinfo.c:1696 bitmapdlg.c:830
 #: charinfo.c:1405 charinfo.c:1601 charinfo.c:1890 charinfo.c:2692 charinfo.c:3271
-#: charinfo.c:3587 charinfo.c:6347 charinfo.c:6870 charview.c:6627 combinations.c:1256
-#: contextchain.c:1602 contextchain.c:2432 cvexport.c:488 cvgetinfo.c:524 cvgetinfo.c:635
+#: charinfo.c:3587 charinfo.c:6347 charinfo.c:6870 charview.c:6632 combinations.c:1256
+#: contextchain.c:1602 contextchain.c:2432 cvexport.c:500 cvgetinfo.c:524 cvgetinfo.c:635
 #: cvgetinfo.c:1556 cvgetinfo.c:3107 cvgridfit.c:220 cvhints.c:508 cvhints.c:795
-#: cvimages.c:211 cvpalettes.c:434 cvpointer.c:1452 cvstroke.c:843 cvstroke.c:1491
-#: cvundoes.c:1846 effects.c:378 effects.c:1288 fontinfo.c:1529 fontinfo.c:1629
+#: cvimages.c:215 cvpalettes.c:434 cvpointer.c:1452 cvstroke.c:843 cvstroke.c:1491
+#: cvundoes.c:1878 effects.c:378 effects.c:1288 fontinfo.c:1529 fontinfo.c:1629
 #: fontinfo.c:1802 fontinfo.c:2616 fontinfo.c:3054 fontinfo.c:3807 fontinfo.c:4072
-#: fontinfo.c:5102 fontinfo.c:5938 fontinfo.c:8887 fontview.c:1448 fontview.c:4682
+#: fontinfo.c:5102 fontinfo.c:5938 fontinfo.c:8887 fontview.c:1453 fontview.c:4688
 #: fvfonts.c:1166 fvfonts.c:1697 fvimportbdf.c:1874 fvmetrics.c:228 gotodlg.c:335
 #: groups.c:1427 groups.c:1653 histograms.c:887 kernclass.c:2138 kernclass.c:2325
-#: macenc.c:2654 macenc.c:3011 macenc.c:3364 metafont.c:2221 mm.c:1942 mm.c:1994
-#: mm.c:2288 mm.c:3783 nonlineartrans.c:888 nonlineartrans.c:1236 openfontdlg.c:347
-#: openfontdlg.c:669 prefs.c:1285 prefs.c:2051 print.c:2590 print.c:3658 problems.c:3279
-#: savefontdlg.c:992 savefontdlg.c:1177 scripting.c:9084 showatt.c:2802 showatt.c:3287
+#: macenc.c:2657 macenc.c:3014 macenc.c:3367 metafont.c:2221 mm.c:1942 mm.c:1994
+#: mm.c:2288 mm.c:3783 nonlineartrans.c:888 nonlineartrans.c:1236 openfontdlg.c:349
+#: openfontdlg.c:671 prefs.c:1312 prefs.c:2078 print.c:2590 print.c:3658 problems.c:3279
+#: savefontdlg.c:993 savefontdlg.c:1178 scripting.c:9225 showatt.c:2802 showatt.c:3287
 #: simplifydlg.c:370 statemachine.c:1376 statemachine.c:2090 statemachine.c:3079
-#: tilepath.c:810 tottfgpos.c:4570 transform.c:730 ttfinstrs.c:1235 ttfinstrs.c:1855
-#: ttfinstrs.c:1989 ttfinstrs.c:2308 typofeatures.c:1440 ../gdraw/gaskdlg.c:1083
+#: tilepath.c:810 tottfgpos.c:4570 transform.c:730 ttfinstrs.c:1238 ttfinstrs.c:1858
+#: ttfinstrs.c:1992 ttfinstrs.c:2311 typofeatures.c:1440 ../gdraw/gaskdlg.c:1083
 #: ../gdraw/gaskdlg.c:1113 ../gdraw/gaskdlg.c:1147 ../gdraw/gaskdlg.c:1356
 #: ../gdraw/gaskdlg.c:1415 ../gdraw/gfiledlg.c:122 ../gdraw/gmatrixedit.c:930
 msgid "_OK"
@@ -71,26 +71,26 @@ msgstr "_OK"
 #: alignment.c:406 anchorsaway.c:979 autowidth.c:1758 bdfinfo.c:1707 bitmapdlg.c:842
 #: charinfo.c:1417 charinfo.c:1613 charinfo.c:1902 charinfo.c:2703 charinfo.c:2912
 #: charinfo.c:3283 charinfo.c:3598 charinfo.c:3661 charinfo.c:4174 charinfo.c:6881
-#: charview.c:6638 charview.c:6816 combinations.c:1268 contextchain.c:1612
-#: contextchain.c:2466 cvexport.c:499 cvexport.c:825 cvexport.c:1015 cvgetinfo.c:277
+#: charview.c:6643 charview.c:6821 combinations.c:1268 contextchain.c:1612
+#: contextchain.c:2466 cvexport.c:511 cvexport.c:842 cvexport.c:1033 cvgetinfo.c:277
 #: cvgetinfo.c:535 cvgetinfo.c:1568 cvgetinfo.c:3119 cvgetinfo.c:3234 cvgetinfo.c:3313
-#: cvgridfit.c:231 cvhints.c:519 cvhints.c:806 cvimages.c:1478 cvpalettes.c:445
+#: cvgridfit.c:231 cvhints.c:519 cvhints.c:806 cvimages.c:1536 cvpalettes.c:445
 #: cvpointer.c:1462 cvstroke.c:854 cvstroke.c:1501 effects.c:389 effects.c:1299
 #: encoding.c:821 fontinfo.c:1540 fontinfo.c:1629 fontinfo.c:1802 fontinfo.c:2626
 #: fontinfo.c:3064 fontinfo.c:3399 fontinfo.c:3807 fontinfo.c:4072 fontinfo.c:5102
-#: fontinfo.c:5276 fontinfo.c:5948 fontinfo.c:8898 fontview.c:510 fontview.c:529
-#: fontview.c:1449 fontview.c:3787 fontview.c:4692 fontview.c:5773 fontview.c:6915
-#: fontview.c:7098 fvfonts.c:1177 fvfonts.c:1708 fvimportbdf.c:1875 fvmetrics.c:239
+#: fontinfo.c:5276 fontinfo.c:5948 fontinfo.c:8898 fontview.c:515 fontview.c:534
+#: fontview.c:1454 fontview.c:3793 fontview.c:4698 fontview.c:5786 fontview.c:6928
+#: fontview.c:7111 fvfonts.c:1177 fvfonts.c:1708 fvimportbdf.c:1875 fvmetrics.c:239
 #: gotodlg.c:346 groups.c:1437 groups.c:1663 histograms.c:897 kernclass.c:2150
-#: kernclass.c:2336 macenc.c:2665 macenc.c:3022 macenc.c:3375 metafont.c:2231
-#: metricsview.c:1697 metricsview.c:2128 mm.c:1952 mm.c:2004 mm.c:2298 mm.c:3817
-#: nonlineartrans.c:898 nonlineartrans.c:1246 openfontdlg.c:358 openfontdlg.c:706
-#: parsettf.c:4556 prefs.c:1295 prefs.c:2063 print.c:2601 print.c:3670 problems.c:3290
-#: savefontdlg.c:1003 savefontdlg.c:1189 savefontdlg.c:1327 savefontdlg.c:1353
-#: savefontdlg.c:2415 savefontdlg.c:2525 savefontdlg.c:3020 scripting.c:9096
+#: kernclass.c:2336 macenc.c:2668 macenc.c:3025 macenc.c:3378 metafont.c:2231
+#: metricsview.c:1703 metricsview.c:2134 mm.c:1952 mm.c:2004 mm.c:2298 mm.c:3817
+#: nonlineartrans.c:898 nonlineartrans.c:1246 openfontdlg.c:360 openfontdlg.c:708
+#: parsettf.c:4556 prefs.c:1322 prefs.c:2090 print.c:2601 print.c:3670 problems.c:3290
+#: savefontdlg.c:1004 savefontdlg.c:1190 savefontdlg.c:1328 savefontdlg.c:1354
+#: savefontdlg.c:2420 savefontdlg.c:2530 savefontdlg.c:3025 scripting.c:9237
 #: search.c:1524 showatt.c:3297 simplifydlg.c:381 statemachine.c:1386 statemachine.c:1526
 #: statemachine.c:2100 statemachine.c:3090 tilepath.c:821 tottfgpos.c:4578
-#: transform.c:742 ttfinstrs.c:1245 ttfinstrs.c:1866 ttfinstrs.c:1990 ttfinstrs.c:2319
+#: transform.c:742 ttfinstrs.c:1248 ttfinstrs.c:1869 ttfinstrs.c:1993 ttfinstrs.c:2322
 #: typofeatures.c:1450 ../gdraw/gaskdlg.c:1084 ../gdraw/gaskdlg.c:1357
 #: ../gdraw/gaskdlg.c:1416 ../gdraw/gfiledlg.c:152 ../gdraw/gmatrixedit.c:943
 #: ../gdraw/gsavefiledlg.c:280
@@ -109,7 +109,7 @@ msgstr "Nie można zrównoleglić"
 msgid "These two lines share a common endpoint, I can't make them parallel"
 msgstr "Te dwie linie mają wspólny punkt końcowy, nie mogę uczynić ich równoległymi"
 
-#: anchorsaway.c:667 charview.c:6476 kernclass.c:783
+#: anchorsaway.c:667 charview.c:6481 kernclass.c:783
 msgid "Out of Range"
 msgstr "Wartość spoza zakresu"
 
@@ -209,7 +209,7 @@ msgid "ЂЄ-ІЈ-ЋЏ-ИК-Яа-ик-яђє-іј-ћџ"
 msgstr "ЂЄ-ІЈ-ЋЏ-ИК-Яа-ик-яђє-іј-ћџ"
 
 #: autowidth.c:84 autowidth.c:91 autowidth.c:101 autowidth.c:1139 charinfo.c:1133
-#: fontview.c:6518 fontview.c:6653 metricsview.c:2765 windowmenu.c:251 windowmenu.c:434
+#: fontview.c:6531 fontview.c:6666 metricsview.c:2771 windowmenu.c:251 windowmenu.c:434
 msgid "All"
 msgstr "Wszystkie"
 
@@ -334,10 +334,10 @@ msgstr "To nie ASCII"
 msgid "All characters in the value must be in ASCII"
 msgstr "Dopuszczalne są tylko znaki z ASCII"
 
-#: bdfinfo.c:1017 bvedit.c:45 cvstroke.c:1029 fontview.c:333 fontview.c:5852
-#: fontview.c:6771 fvimportbdf.c:1863 kernclass.c:406 kernclass.c:408 macenc.c:2872
-#: macenc.c:2874 macenc.c:3179 macenc.c:3181 prefs.c:1150 prefs.c:1156 ttfinstrs.c:1486
-#: ttfinstrs.c:1528
+#: bdfinfo.c:1017 bvedit.c:45 cvstroke.c:1029 fontview.c:338 fontview.c:5865
+#: fontview.c:6784 fvimportbdf.c:1863 kernclass.c:406 kernclass.c:408 macenc.c:2875
+#: macenc.c:2877 macenc.c:3182 macenc.c:3184 prefs.c:1177 prefs.c:1183 ttfinstrs.c:1489
+#: ttfinstrs.c:1531
 msgid "Bad Number"
 msgstr "Błędna liczba"
 
@@ -402,7 +402,7 @@ msgstr "Bieżący glif"
 msgid "Scaling Bitmaps"
 msgstr "Skalowanie bitmap"
 
-#: bitmapdlg.c:293 bitmapdlg.c:296 savefontdlg.c:1279 savefontdlg.c:1286 winfonts.c:850
+#: bitmapdlg.c:293 bitmapdlg.c:296 savefontdlg.c:1280 savefontdlg.c:1287 winfonts.c:850
 msgid "Missing Bitmap"
 msgstr "Brakujący rozmiar bitmap"
 
@@ -472,7 +472,7 @@ msgstr "X"
 msgid "Win"
 msgstr "Win"
 
-#: bitmapdlg.c:707 fontinfo.c:8843 prefs.c:2027
+#: bitmapdlg.c:707 fontinfo.c:8843 prefs.c:2054
 msgid "Mac"
 msgstr "Mac"
 
@@ -492,307 +492,307 @@ msgstr "Użyj FreeType"
 msgid "%1$.80s at %2$d size %3$d from %4$.80s"
 msgstr "%1$.80s na pozycji %2$d rozmiaru %3$d z fontu %4$.80s"
 
-#: bitmapview.c:1433 fvmetrics.c:140
+#: bitmapview.c:1436 fvmetrics.c:140
 msgid "Set Width..."
 msgstr "Ustaw szerokość..."
 
-#: bitmapview.c:1436
+#: bitmapview.c:1439
 msgid "Set Vertical Width..."
 msgstr "Ustaw wysokość..."
 
-#: bitmapview.c:1640 charview.c:7544 fontview.c:7665 metricsview.c:2606
+#: bitmapview.c:1643 charview.c:7549 fontview.c:7678 metricsview.c:2612
 msgid "New O_utline Window"
 msgstr "Nowe okno obrys_u"
 
-#: bitmapview.c:1641 charview.c:7545 fontview.c:7666 metricsview.c:2607
+#: bitmapview.c:1644 charview.c:7550 fontview.c:7679 metricsview.c:2613
 msgid "New _Bitmap Window"
 msgstr "Nowe okno _bitmapy "
 
-#: bitmapview.c:1642 charview.c:7546 fontview.c:7667 metricsview.c:2608
+#: bitmapview.c:1645 charview.c:7551 fontview.c:7680 metricsview.c:2614
 msgid "New _Metrics Window"
 msgstr "Nowe okno _metryczne"
 
-#: bitmapview.c:1644 charview.c:7548 fontview.c:7669 metricsview.c:2610 uiutil.c:616
+#: bitmapview.c:1647 charview.c:7553 fontview.c:7682 metricsview.c:2616 uiutil.c:616
 msgid "Warnings"
 msgstr "Ostrzeżenia"
 
-#: bitmapview.c:1669
+#: bitmapview.c:1672
 msgid "Flip Horizontally"
 msgstr "Odbij poziomo"
 
-#: bitmapview.c:1669
+#: bitmapview.c:1672
 msgid "Flip Vertically"
 msgstr "Odbij pionowo"
 
 #. GT: "CW" means Clockwise
-#: bitmapview.c:1671
+#: bitmapview.c:1674
 msgid "Rotate 90° CW"
 msgstr "Obróć o 90° w prawo"
 
 #. GT: "CW" means Counter-Clockwise
-#: bitmapview.c:1673
+#: bitmapview.c:1676
 msgid "Rotate 90° CCW"
 msgstr "Obróć o 90° w lewo"
 
-#: bitmapview.c:1674
+#: bitmapview.c:1677
 msgid "Rotate 180°"
 msgstr "Obróć o 180°"
 
-#: bitmapview.c:1675 transform.c:99
+#: bitmapview.c:1678 transform.c:99
 msgid "Skew..."
 msgstr "Pochyl..."
 
-#: bitmapview.c:1677 bitmapview.c:1679 charview.c:7583 charview.c:7585 charview.c:8703
-#: fontview.c:6411 fontview.c:6413 metricsview.c:2642 metricsview.c:2644
-#: openfontdlg.c:681
+#: bitmapview.c:1680 bitmapview.c:1682 charview.c:7588 charview.c:7590 charview.c:8708
+#: fontview.c:6424 fontview.c:6426 metricsview.c:2648 metricsview.c:2650
+#: openfontdlg.c:683
 msgid "Font|_New"
 msgstr "_Nowy"
 
-#: bitmapview.c:1680 charview.c:7586 charview.c:8704 fontview.c:6417 metricsview.c:2645
+#: bitmapview.c:1683 charview.c:7591 charview.c:8709 fontview.c:6430 metricsview.c:2651
 #: ../gdraw/gtextfield.c:793
 msgid "_Open"
 msgstr "_Otwórz"
 
-#: bitmapview.c:1681 charview.c:7587 charview.c:8705 fontview.c:6418 metricsview.c:2646
+#: bitmapview.c:1684 charview.c:7592 charview.c:8710 fontview.c:6431 metricsview.c:2652
 msgid "Recen_t"
 msgstr "Ostatnio otwi_erane"
 
-#: bitmapview.c:1682 charview.c:7588 charview.c:8706 fontview.c:6419 metricsview.c:2647
+#: bitmapview.c:1685 charview.c:7593 charview.c:8711 fontview.c:6432 metricsview.c:2653
 msgid "_Close"
 msgstr "Z_amknij"
 
-#: bitmapview.c:1684 charview.c:7590 charview.c:8708 cvexport.c:997 fontview.c:509
-#: fontview.c:6421 metricsview.c:2649 savefontdlg.c:2997 sftextfield.c:1100
-#: ../gdraw/gsavefiledlg.c:233 ../gdraw/gtextfield.c:826
+#: bitmapview.c:1687 charview.c:7595 charview.c:8713 cvexport.c:1015 fontview.c:514
+#: fontview.c:6434 metricsview.c:2655 savefontdlg.c:3002 ../gdraw/gsavefiledlg.c:233
+#: ../gdraw/gtextfield.c:826
 msgid "_Save"
 msgstr "_Zapisz"
 
-#: bitmapview.c:1685 charview.c:7591 charview.c:8709 fontview.c:6422 metricsview.c:2650
+#: bitmapview.c:1688 charview.c:7596 charview.c:8714 fontview.c:6435 metricsview.c:2656
 msgid "S_ave as..."
 msgstr "Zapisz _jako..."
 
-#: bitmapview.c:1686 charview.c:7592 charview.c:8710 fontview.c:6424 metricsview.c:2651
+#: bitmapview.c:1689 charview.c:7597 charview.c:8715 fontview.c:6437 metricsview.c:2657
 msgid "_Generate Fonts..."
 msgstr "_Generuj fonty..."
 
-#: bitmapview.c:1687 charview.c:7593 fontview.c:6425 metricsview.c:2652
+#: bitmapview.c:1690 charview.c:7598 fontview.c:6438 metricsview.c:2658
 msgid "Generate Mac _Family..."
 msgstr "Generuj rodzinę _macową..."
 
-#: bitmapview.c:1688 charview.c:7594
+#: bitmapview.c:1691 charview.c:7599
 msgid "Expor_t..."
 msgstr "Ekspor_tuj..."
 
-#: bitmapview.c:1690 charview.c:7596 fontview.c:6427 sftextfield.c:1101
+#: bitmapview.c:1693 charview.c:7601 fontview.c:6440 sftextfield.c:1278
 msgid "_Import..."
 msgstr "_Importuj..."
 
-#: bitmapview.c:1691 charview.c:7597 fontview.c:6429
+#: bitmapview.c:1694 charview.c:7602 fontview.c:6442
 msgid "_Revert File"
 msgstr "Przyw_róć plik"
 
-#: bitmapview.c:1693 charview.c:7603 fontview.c:6439 metricsview.c:2659
+#: bitmapview.c:1696 charview.c:7608 fontview.c:6452 metricsview.c:2665
 msgid "Pr_eferences..."
 msgstr "_Ustawienia..."
 
-#: bitmapview.c:1695 charview.c:7605 charview.c:8712 fontview.c:6441 metricsview.c:2661
+#: bitmapview.c:1698 charview.c:7610 charview.c:8717 fontview.c:6454 metricsview.c:2667
 msgid "_Quit"
 msgstr "Za_kończ"
 
-#: bitmapview.c:1700 charview.c:7633 charview.c:8730 fontview.c:6483 metricsview.c:2666
-#: sftextfield.c:1094 ../gdraw/gtextfield.c:948
+#: bitmapview.c:1703 charview.c:7638 charview.c:8735 fontview.c:6496 metricsview.c:2672
+#: sftextfield.c:1271 ../gdraw/gtextfield.c:948
 msgid "_Undo"
 msgstr "_Cofnij"
 
-#: bitmapview.c:1701 charview.c:7634 charview.c:8731 fontview.c:6484 metricsview.c:2667
+#: bitmapview.c:1704 charview.c:7639 charview.c:8736 fontview.c:6497 metricsview.c:2673
 msgid "_Redo"
 msgstr "_Ponów"
 
-#: bitmapview.c:1703 charview.c:7636 charview.c:8733 fontview.c:6486 fontview.c:7705
-#: metricsview.c:2669 sftextfield.c:1096 ../gdraw/gtextfield.c:949
+#: bitmapview.c:1706 charview.c:7641 charview.c:8738 fontview.c:6499 fontview.c:7718
+#: metricsview.c:2675 sftextfield.c:1273 ../gdraw/gtextfield.c:949
 msgid "Cu_t"
 msgstr "_Wytnij"
 
-#: bitmapview.c:1704 charinfo.c:6099 charview.c:7637 charview.c:8734 fontview.c:6487
-#: fontview.c:7706 metricsview.c:2670 sftextfield.c:1097 ../gdraw/gtextfield.c:950
+#: bitmapview.c:1707 charinfo.c:6099 charview.c:7642 charview.c:8739 fontview.c:6500
+#: fontview.c:7719 metricsview.c:2676 sftextfield.c:1274 ../gdraw/gtextfield.c:950
 msgid "_Copy"
 msgstr "_Kopiuj"
 
-#: bitmapview.c:1705 charinfo.c:6112 charview.c:7643 charview.c:8735 fontview.c:6494
-#: fontview.c:7709 metricsview.c:2676 sftextfield.c:1098 ../gdraw/gtextfield.c:951
+#: bitmapview.c:1708 charinfo.c:6112 charview.c:7648 charview.c:8740 fontview.c:6507
+#: fontview.c:7722 metricsview.c:2682 sftextfield.c:1275 ../gdraw/gtextfield.c:951
 msgid "_Paste"
 msgstr "Wkl_ej"
 
-#: bitmapview.c:1706 charview.c:7644 charview.c:8736 combinations.c:996 fontview.c:6500
-#: fontview.c:7710 metricsview.c:2677
+#: bitmapview.c:1709 charview.c:7649 charview.c:8741 combinations.c:996 fontview.c:6513
+#: fontview.c:7723 metricsview.c:2683
 msgid "C_lear"
 msgstr "W_yczyść"
 
-#: bitmapview.c:1708 charview.c:7610 charview.c:8717 fontview.c:6468 metricsview.c:2680
+#: bitmapview.c:1711 charview.c:7615 charview.c:8722 fontview.c:6481 metricsview.c:2686
 #: ../gdraw/gaskdlg.c:1277
 msgid "Select _All"
 msgstr "_Zaznacz wszystko"
 
-#: bitmapview.c:1710 charview.c:7659 charview.c:8745 fontview.c:6513
+#: bitmapview.c:1713 charview.c:7664 charview.c:8750 fontview.c:6526
 msgid "Remo_ve Undoes"
 msgstr "Zapomni_j historię"
 
-#: bitmapview.c:1715
+#: bitmapview.c:1718
 msgid "Flip _Horizontally"
 msgstr "Odbij po_ziomo"
 
-#: bitmapview.c:1716
+#: bitmapview.c:1719
 msgid "Flip _Vertically"
 msgstr "Odbij pio_nowo"
 
-#: bitmapview.c:1717
+#: bitmapview.c:1720
 msgid "_Rotate 90° CW"
 msgstr "Ob_róć o 90° w prawo"
 
-#: bitmapview.c:1718
+#: bitmapview.c:1721
 msgid "Rotate _90° CCW"
 msgstr "Obróć o _90° w lewo"
 
-#: bitmapview.c:1719
+#: bitmapview.c:1722
 msgid "Rotate _180°"
 msgstr "Obróć o _180°"
 
-#: bitmapview.c:1720
+#: bitmapview.c:1723
 msgid "_Skew..."
 msgstr "_Pochyl..."
 
-#: bitmapview.c:1725 charview.c:7806 charview.c:8769 fontview.c:6619 metricsview.c:2737
+#: bitmapview.c:1728 charview.c:7811 charview.c:8774 fontview.c:6632 metricsview.c:2743
 msgid "_Font Info..."
 msgstr "Właściwości _fontu..."
 
-#: bitmapview.c:1726 charview.c:7807 fontview.c:6620 fontview.c:7714 metricsview.c:2738
+#: bitmapview.c:1729 charview.c:7812 fontview.c:6633 fontview.c:7727 metricsview.c:2744
 msgid "Glyph _Info..."
 msgstr "Właściwości _glifu..."
 
-#: bitmapview.c:1727 fontview.c:6621
+#: bitmapview.c:1730 fontview.c:6634
 msgid "BDF Info..."
 msgstr "Właściwości _BDF..."
 
-#: bitmapview.c:1729 charview.c:7812 fontview.c:6626 metricsview.c:2742
+#: bitmapview.c:1732 charview.c:7817 fontview.c:6639 metricsview.c:2748
 msgid "Bitm_aps Available..."
 msgstr "_Menedżer bitmap..."
 
-#: bitmapview.c:1730 charview.c:7813 fontview.c:6627 metricsview.c:2743
+#: bitmapview.c:1733 charview.c:7818 fontview.c:6640 metricsview.c:2749
 msgid "Regenerate _Bitmaps..."
 msgstr "_Przebuduj bitmapy..."
 
-#: bitmapview.c:1732 charview.c:7815 fontview.c:6629
+#: bitmapview.c:1735 charview.c:7820 fontview.c:6642
 msgid "_Transformations"
 msgstr "Przeksz_tałcenia"
 
-#: bitmapview.c:1737 charview.c:7881 charview.c:8789
+#: bitmapview.c:1740 charview.c:7886 charview.c:8794
 msgid "_Tools"
 msgstr "_Narzędzia"
 
-#: bitmapview.c:1738 charview.c:7882 charview.c:8790
+#: bitmapview.c:1741 charview.c:7887 charview.c:8795
 msgid "_Layers"
 msgstr "_Warstwy"
 
-#: bitmapview.c:1739
+#: bitmapview.c:1742
 msgid "_Shades"
 msgstr "Odcienie"
 
-#: bitmapview.c:1741 charview.c:7884 charview.c:8791
+#: bitmapview.c:1744 charview.c:7889 charview.c:8796
 msgid "_Docked Palettes"
 msgstr "Za_dokowane"
 
-#: bitmapview.c:1746 charview.c:7904 charview.c:8796
+#: bitmapview.c:1749 charview.c:7909 charview.c:8801
 msgid "_Fit"
 msgstr "Dopasuj powiększenie do okna"
 
-#: bitmapview.c:1747 charview.c:7905 charview.c:8797 metricsview.c:2826
+#: bitmapview.c:1750 charview.c:7910 charview.c:8802 metricsview.c:2832
 msgid "Z_oom out"
 msgstr "P_omniejsz"
 
-#: bitmapview.c:1748 charview.c:7906 charview.c:8798 metricsview.c:2827
+#: bitmapview.c:1751 charview.c:7911 charview.c:8803 metricsview.c:2833
 msgid "Zoom _in"
 msgstr "Pow_iększ"
 
-#: bitmapview.c:1750 charview.c:7912 fontview.c:7321 metricsview.c:2832
+#: bitmapview.c:1753 charview.c:7917 fontview.c:7334 metricsview.c:2838
 msgid "_Next Glyph"
 msgstr "_Następny glif"
 
-#: bitmapview.c:1751 charview.c:7913 fontview.c:7322 metricsview.c:2833
+#: bitmapview.c:1754 charview.c:7918 fontview.c:7335 metricsview.c:2839
 msgid "_Prev Glyph"
 msgstr "_Poprzedni glif"
 
-#: bitmapview.c:1752 charview.c:7914 fontview.c:7323 metricsview.c:2834
+#: bitmapview.c:1755 charview.c:7919 fontview.c:7336 metricsview.c:2840
 msgid "Next _Defined Glyph"
 msgstr "Następny z_definiowany glif"
 
-#: bitmapview.c:1753 charview.c:7915 fontview.c:7324 metricsview.c:2835
+#: bitmapview.c:1756 charview.c:7920 fontview.c:7337 metricsview.c:2841
 msgid "Prev Defined Gl_yph"
 msgstr "Poprzedni zdefiniowan_y glif"
 
-#: bitmapview.c:1754 charview.c:7917 fontview.c:7325
+#: bitmapview.c:1757 charview.c:7922 fontview.c:7338
 msgid "_Goto"
 msgstr "Idź do _glifu..."
 
-#: bitmapview.c:1755 charview.c:7918 metricsview.c:2836
+#: bitmapview.c:1758 charview.c:7923 metricsview.c:2842
 msgid "Find In Font _View"
 msgstr "Zaznacz w widoku _fontu"
 
-#: bitmapview.c:1757
+#: bitmapview.c:1760
 msgid "_Bigger Pixel Size"
 msgstr "_Większy rozmiar bitmap"
 
-#: bitmapview.c:1758
+#: bitmapview.c:1761
 msgid "_Smaller Pixel Size"
 msgstr "_Mniejszy rozmiar bitmap"
 
-#: bitmapview.c:1760 charview.c:8804
+#: bitmapview.c:1763 charview.c:8809
 msgid "_Palettes"
 msgstr "Przyborni_ki"
 
-#: bitmapview.c:1765 charview.c:7866 cvpalettes.c:2866 fontview.c:7505 fontview.c:7726
+#: bitmapview.c:1768 charview.c:7871 cvpalettes.c:2866 fontview.c:7518 fontview.c:7739
 msgid "Set _Width..."
 msgstr "Ustaw _szerokość..."
 
-#: bitmapview.c:1766
+#: bitmapview.c:1769
 msgid "Set _Vertical Width..."
 msgstr "Ustaw wysokość..."
 
-#: bitmapview.c:1771 charview.c:8087 charview.c:8102 charview.c:8810 fontview.c:7732
-#: metricsview.c:3093
+#: bitmapview.c:1774 charview.c:8092 charview.c:8107 charview.c:8815 fontview.c:7745
+#: metricsview.c:3099
 msgid "_File"
 msgstr "_Plik"
 
-#: bitmapview.c:1772 charinfo.c:1868 charview.c:8088 charview.c:8103 charview.c:8811
-#: contextchain.c:2152 contextchain.c:2266 fontview.c:7733 metricsview.c:3094
-#: statemachine.c:3029 ttfinstrs.c:1254
+#: bitmapview.c:1775 charinfo.c:1868 charview.c:8093 charview.c:8108 charview.c:8816
+#: contextchain.c:2152 contextchain.c:2266 fontview.c:7746 metricsview.c:3100
+#: statemachine.c:3029 ttfinstrs.c:1257
 msgid "_Edit"
 msgstr "_Edycja"
 
-#: bitmapview.c:1773 charview.c:8090 charview.c:8105 charview.c:8813 fontview.c:7734
-#: metricsview.c:3095
+#: bitmapview.c:1776 charview.c:8095 charview.c:8110 charview.c:8818 fontview.c:7747
+#: metricsview.c:3101
 msgid "E_lement"
 msgstr "E_lement"
 
-#: bitmapview.c:1774 charview.c:8025 charview.c:8092 charview.c:8107 charview.c:8814
-#: fontview.c:7737 metricsview.c:3096
+#: bitmapview.c:1777 charview.c:8030 charview.c:8097 charview.c:8112 charview.c:8819
+#: fontview.c:7750 metricsview.c:3102
 msgid "_View"
 msgstr "_Widok"
 
-#: bitmapview.c:1775 charview.c:8093 charview.c:8108 fontview.c:7738 metricsview.c:3097
+#: bitmapview.c:1778 charview.c:8098 charview.c:8113 fontview.c:7751 metricsview.c:3103
 msgid "_Metrics"
 msgstr "_Metryczne"
 
-#: bitmapview.c:1776 charview.c:8096 charview.c:8109 charview.c:8815 fontview.c:7742
-#: metricsview.c:3098
+#: bitmapview.c:1779 charview.c:8101 charview.c:8114 charview.c:8820 fontview.c:7755
+#: metricsview.c:3104
 msgid "_Window"
 msgstr "_Okna"
 
-#: bitmapview.c:1777 charview.c:8097 charview.c:8110 charview.c:8816 fontview.c:7696
-#: fontview.c:7743 metricsview.c:3099
+#: bitmapview.c:1780 charview.c:8102 charview.c:8115 charview.c:8821 fontview.c:7709
+#: fontview.c:7756 metricsview.c:3105
 msgid "_Help"
 msgstr "_Pomoc"
 
-#: bitmapview.c:1889
+#: bitmapview.c:1892
 msgid "Recalculate Bitmaps"
 msgstr "Utwórz bitmapy ponownie"
 
@@ -804,7 +804,7 @@ msgstr "Pochyl"
 msgid "Skew Ratio"
 msgstr "Stopień pochylenia"
 
-#: charinfo.c:82 fontinfo.c:208 fontinfo.c:8534
+#: charinfo.c:82 fontinfo.c:8534
 msgid "Automatic"
 msgstr "Automatyczna"
 
@@ -824,11 +824,11 @@ msgstr "Ligatura podstawowa"
 msgid "Mark"
 msgstr "Znak diaktryczny"
 
-#: charinfo.c:87
+#: charinfo.c:87 showatt.c:1508
 msgid "Component"
 msgstr "Składnik"
 
-#: charinfo.c:92 fontview.c:6456
+#: charinfo.c:92 fontview.c:6469
 msgid "Color|Default"
 msgstr "domyślny"
 
@@ -2761,23 +2761,23 @@ msgstr "zuluski"
 msgid "Ancient Ligatures"
 msgstr "Ligatury starożytne"
 
-#: charinfo.c:609 fontview.c:6524
+#: charinfo.c:609 fontview.c:6537
 msgid "Discretionary Ligatures"
 msgstr "Ligatury ozdobne"
 
-#: charinfo.c:610 fontview.c:6523
+#: charinfo.c:610 fontview.c:6536
 msgid "Historic Ligatures"
 msgstr "Ligatury historyczne"
 
-#: charinfo.c:611 fontview.c:6522
+#: charinfo.c:611 fontview.c:6535
 msgid "Required Ligatures"
 msgstr "Ligatury wymagane"
 
-#: charinfo.c:612 fontview.c:6521
+#: charinfo.c:612 fontview.c:6534
 msgid "Standard Ligatures"
 msgstr "Ligatury zwykłe"
 
-#: charinfo.c:613 charinfo.c:678 fontview.c:6525
+#: charinfo.c:613 charinfo.c:678 fontview.c:6538
 msgid "Diagonal Fractions"
 msgstr "Ułamki ukośne"
 
@@ -2871,7 +2871,7 @@ msgstr "Warianty wersalikowe"
 msgid "Capital Spacing"
 msgstr "Światło wersalikowe"
 
-#: charinfo.c:641 charinfo.c:679 fontview.c:6537
+#: charinfo.c:641 charinfo.c:679 fontview.c:6550
 msgid "Full Widths"
 msgstr "Formy pełnej szerokości"
 
@@ -2879,11 +2879,11 @@ msgstr "Formy pełnej szerokości"
 msgid "Alternative Half Widths"
 msgstr ""
 
-#: charinfo.c:643 charinfo.c:683 fontview.c:6538
+#: charinfo.c:643 charinfo.c:683 fontview.c:6551
 msgid "Half Widths"
 msgstr "Formy ½ szerokości"
 
-#: charinfo.c:644 fontview.c:6544
+#: charinfo.c:644 fontview.c:6557
 msgid "Left Bounds"
 msgstr ""
 
@@ -2899,7 +2899,7 @@ msgstr ""
 msgid "Quarter Widths"
 msgstr "Formy ¼ szerokości"
 
-#: charinfo.c:648 fontview.c:6545
+#: charinfo.c:648 fontview.c:6558
 msgid "Right Bounds"
 msgstr ""
 
@@ -2947,7 +2947,7 @@ msgstr ""
 msgid "Capitals to Petite Capitals"
 msgstr "Wersaliki na mikrokapitaliki"
 
-#: charinfo.c:674 fontview.c:6531
+#: charinfo.c:674 fontview.c:6544
 msgid "Capitals to Small Capitals"
 msgstr "Wersaliki na kapitaliki"
 
@@ -2959,7 +2959,7 @@ msgstr ""
 msgid "Expert Forms"
 msgstr "Formy eksperckie"
 
-#: charinfo.c:677 fontview.c:6541
+#: charinfo.c:677 fontview.c:6554
 msgid "Terminal Forms"
 msgstr "Formy końcowe"
 
@@ -2975,11 +2975,11 @@ msgstr ""
 msgid "Hanja to Hangul"
 msgstr "Hanja na Hangyl"
 
-#: charinfo.c:684 fontview.c:6539
+#: charinfo.c:684 fontview.c:6552
 msgid "Initial Forms"
 msgstr "Formy początkowe"
 
-#: charinfo.c:685 fontview.c:6542
+#: charinfo.c:685 fontview.c:6555
 msgid "Isolated Forms"
 msgstr "Formy izolowane"
 
@@ -3007,7 +3007,7 @@ msgstr ""
 msgid "Localized Forms"
 msgstr "Formy lokalizowane"
 
-#: charinfo.c:692 fontview.c:6540
+#: charinfo.c:692 fontview.c:6553
 msgid "Medial Forms"
 msgstr "Formy środkowe"
 
@@ -3023,7 +3023,7 @@ msgstr ""
 msgid "Numerators"
 msgstr ""
 
-#: charinfo.c:696 fontview.c:6532
+#: charinfo.c:696 fontview.c:6545
 msgid "Oldstyle Figures"
 msgstr "Cyfry nautyczne"
 
@@ -3039,11 +3039,11 @@ msgstr "Tekstowe na mikrokapitaliki"
 msgid "Proportional Numbers"
 msgstr ""
 
-#: charinfo.c:700 fontview.c:6536
+#: charinfo.c:700 fontview.c:6549
 msgid "Proportional Width"
 msgstr ""
 
-#: charinfo.c:702 fontview.c:6528
+#: charinfo.c:702 fontview.c:6541
 msgid "Right to Left Alternates"
 msgstr ""
 
@@ -3059,7 +3059,7 @@ msgstr "Alternatywy stylistyczne"
 msgid "Scientific Inferiors"
 msgstr "Indeksy naukowe"
 
-#: charinfo.c:706 fontview.c:6530
+#: charinfo.c:706 fontview.c:6543
 msgid "Lowercase to Small Capitals"
 msgstr "Tekstowe na kapitaliki"
 
@@ -3087,15 +3087,15 @@ msgstr "Styl 4"
 msgid "Style Set 5"
 msgstr "Styl 5"
 
-#: charinfo.c:714 fontinfo.c:5181 fontinfo.c:7476 fontview.c:6534
+#: charinfo.c:714 fontinfo.c:5181 fontinfo.c:7476 fontview.c:6547
 msgid "Subscript"
 msgstr "Indeks dolny"
 
-#: charinfo.c:715 fontinfo.c:5183 fontinfo.c:7554 fontview.c:6533
+#: charinfo.c:715 fontinfo.c:5183 fontinfo.c:7554 fontview.c:6546
 msgid "Superscript"
 msgstr "Indeks górny"
 
-#: charinfo.c:716 charinfo.c:742 fontview.c:6535
+#: charinfo.c:716 charinfo.c:742 fontview.c:6548
 msgid "Swash"
 msgstr ""
 
@@ -3123,7 +3123,7 @@ msgstr ""
 msgid "Vertical Alternates (obs)"
 msgstr ""
 
-#: charinfo.c:724 fontview.c:6529
+#: charinfo.c:724 fontview.c:6542
 msgid "Vertical Rotation & Alternates"
 msgstr ""
 
@@ -3368,7 +3368,7 @@ msgstr "Nowa klasa kotwic"
 msgid "Anchor Class Name:"
 msgstr "Nazwa klasy:"
 
-#: charinfo.c:2482 charinfo.c:2546 fontview.c:2777 fontview.c:6547
+#: charinfo.c:2482 charinfo.c:2546 fontview.c:2782 fontview.c:6560
 msgid "Suffix to Tag..."
 msgstr ""
 
@@ -3380,7 +3380,7 @@ msgstr ""
 msgid "Components"
 msgstr "Składniki"
 
-#: charinfo.c:2507 charinfo.c:3156 charinfo.c:6813 contextchain.c:1585 prefs.c:1266
+#: charinfo.c:2507 charinfo.c:3156 charinfo.c:6813 contextchain.c:1585 prefs.c:1293
 #: typofeatures.c:1213
 msgid "_Tag:"
 msgstr "_Tag"
@@ -3445,11 +3445,11 @@ msgstr ""
 msgid "Missing Feature Tag"
 msgstr "Brakuje tagu funkcji"
 
-#: charinfo.c:2771 charinfo.c:3362 contextchain.c:1643 prefs.c:1190 prefs.c:1192
+#: charinfo.c:2771 charinfo.c:3362 contextchain.c:1643 prefs.c:1217 prefs.c:1219
 msgid "Tag too long"
 msgstr "Zbyt długi tag"
 
-#: charinfo.c:2771 charinfo.c:3362 prefs.c:1190 prefs.c:1192
+#: charinfo.c:2771 charinfo.c:3362 prefs.c:1217 prefs.c:1219
 msgid "Feature tags must be exactly 4 ASCII characters"
 msgstr "Tagi funkcji muszą składać się z dokładnie 4 znaków ASCII"
 
@@ -3462,11 +3462,11 @@ msgid "You may not reuse a tag that has already been used for a nested feature"
 msgstr ""
 
 #: charinfo.c:2911 charinfo.c:3660 charinfo.c:4161 charinfo.c:4174 charinfo.c:4558
-#: contextchain.c:836 cvgetinfo.c:953 cvpalettes.c:1171 cvpointer.c:1113 cvundoes.c:1861
-#: cvundoes.c:2044 cvundoes.c:2840 fontview.c:2187 fontview.c:3950 fontview.c:10892
-#: fvmetrics.c:68 metricsview.c:847 metricsview.c:1696 mm.c:3216 parsettfbmf.c:442
-#: prefs.c:1166 problems.c:2303 savefontdlg.c:1326 savefontdlg.c:1352 savefontdlg.c:2328
-#: savefontdlg.c:2414 tottf.c:4382
+#: contextchain.c:836 cvgetinfo.c:953 cvpalettes.c:1171 cvpointer.c:1113 cvundoes.c:1893
+#: cvundoes.c:2076 cvundoes.c:2910 fontview.c:2192 fontview.c:3956 fontview.c:10920
+#: fvmetrics.c:68 metricsview.c:847 metricsview.c:1702 mm.c:3216 parsettfbmf.c:442
+#: prefs.c:1193 problems.c:2303 savefontdlg.c:1327 savefontdlg.c:1353 savefontdlg.c:2333
+#: savefontdlg.c:2419 tottf.c:4382
 msgid "_Yes"
 msgstr "_Tak"
 
@@ -3504,18 +3504,20 @@ msgid ""
 "The paired glyph's name (%.50s) does not match any glyph in the font. Is that what you "
 "want?"
 msgstr ""
+"Nazwa glifu do pary (%.50s) nie odpowiada żadnemu glifowi w foncie. Czy właśnie tego "
+"chcesz?"
 
 #: charinfo.c:3551
 msgid "New Counter Mask"
-msgstr ""
+msgstr "Nowa maska świateł"
 
 #: charinfo.c:3551
 msgid "Edit Counter Mask"
-msgstr ""
+msgstr "Edytuj maskę świateł"
 
 #: charinfo.c:3567
 msgid "Select hints between which counters are formed"
-msgstr ""
+msgstr "Wybierz hinty między którymi ma zostać utrzymane światło"
 
 #: charinfo.c:3676 charinfo.c:3696 charinfo.c:4165 charinfo.c:4178
 msgid "Multiple"
@@ -3561,11 +3563,11 @@ msgstr "Podstawienie proste używa pojedynczego składnika, a wskazano ich kilka
 msgid "Bad GPOS/GSUB"
 msgstr "Błąd w GPOS/GSUB"
 
-#: charinfo.c:4161 charinfo.c:4558 charview.c:6815 contextchain.c:836 cvgetinfo.c:953
-#: cvpalettes.c:1171 cvpointer.c:1114 cvundoes.c:1862 cvundoes.c:2044 cvundoes.c:2841
-#: fontview.c:2188 fontview.c:3951 fontview.c:10892 fvmetrics.c:69 metricsview.c:848
-#: metricsview.c:2127 mm.c:3216 parsettfbmf.c:443 prefs.c:1167 problems.c:2304
-#: savefontdlg.c:2329 tottf.c:4382
+#: charinfo.c:4161 charinfo.c:4558 charview.c:6820 contextchain.c:836 cvgetinfo.c:953
+#: cvpalettes.c:1171 cvpointer.c:1114 cvundoes.c:1894 cvundoes.c:2076 cvundoes.c:2911
+#: fontview.c:2193 fontview.c:3957 fontview.c:10920 fvmetrics.c:69 metricsview.c:848
+#: metricsview.c:2133 mm.c:3216 parsettfbmf.c:443 prefs.c:1194 problems.c:2304
+#: savefontdlg.c:2334 tottf.c:4382
 msgid "_No"
 msgstr "_Nie"
 
@@ -3727,14 +3729,14 @@ msgstr "_Nowa..."
 
 #: charinfo.c:6068 contextchain.c:2163 contextchain.c:2277 cvgetinfo.c:1499
 #: encoding.c:832 encoding.c:1427 encoding.c:2085 fontinfo.c:8053 fontinfo.c:8371
-#: fontinfo.c:8463 fontinfo.c:8627 groups.c:1325 kernclass.c:2656 macenc.c:2810
-#: macenc.c:3342 macenc.c:3536 mm.c:4214 prefs.c:1694 statemachine.c:3040
+#: fontinfo.c:8463 fontinfo.c:8627 groups.c:1325 kernclass.c:2656 macenc.c:2813
+#: macenc.c:3345 macenc.c:3539 mm.c:4214 prefs.c:1721 statemachine.c:3040
 msgid "_Delete"
 msgstr "_Usuń"
 
 #: charinfo.c:6081 fontinfo.c:8064 fontinfo.c:8135 fontinfo.c:8383 fontinfo.c:8474
-#: fontinfo.c:8638 kernclass.c:2667 macenc.c:2821 macenc.c:3353 macenc.c:3548 mm.c:4225
-#: prefs.c:1706
+#: fontinfo.c:8638 kernclass.c:2667 macenc.c:2824 macenc.c:3356 macenc.c:3551 mm.c:4225
+#: prefs.c:1733
 msgid "_Edit..."
 msgstr "_Edytuj..."
 
@@ -3810,7 +3812,7 @@ msgstr "< _Poprzedni"
 msgid "_Next >"
 msgstr "_Następny >"
 
-#: charinfo.c:6359 displayfonts.c:660 kernclass.c:2683
+#: charinfo.c:6359 displayfonts.c:651 kernclass.c:2683
 msgid "_Done"
 msgstr "_Dość"
 
@@ -3850,7 +3852,7 @@ msgstr "Klasy kotwic"
 msgid "Ligature Caret"
 msgstr "Karetki ligatur"
 
-#: charinfo.c:6586 charinfo.c:6602 charinfo.c:6617 fontview.c:6478
+#: charinfo.c:6586 charinfo.c:6602 charinfo.c:6617 fontview.c:6491
 msgid "Selec_t By ATT..."
 msgstr "Zaznacz po A_TT..."
 
@@ -3953,101 +3955,101 @@ msgstr ""
 #: charview.c:1914
 #, c-format
 msgid "%1$.80s at %2$d from %3$.90s"
-msgstr "%1$.80s na pozycji %2$d  z fontu %3$.90s"
+msgstr "%1$.80s na pozycji %2$d z fontu %3$.90s"
 
 #. GT: Foreground, make it short
-#: charview.c:2301
+#: charview.c:2302
 msgid "Fore"
 msgstr "Plan 1."
 
 #. GT: Background, make it short
-#: charview.c:2303
+#: charview.c:2304
 msgid "Back"
 msgstr "Tło"
 
 #. GT: Guide layer, make it short
-#: charview.c:2305
+#: charview.c:2306
 msgid "Guide"
 msgstr ""
 
-#: charview.c:2309
+#: charview.c:2310
 msgid "'fpgm'"
 msgstr "fpgm"
 
-#: charview.c:2310
+#: charview.c:2311
 msgid "'prep'"
 msgstr "prep"
 
-#: charview.c:2310
+#: charview.c:2311
 msgid "Glyph"
 msgstr "Glif"
 
-#: charview.c:3094
+#: charview.c:3095
 msgid "You changed the point numbering"
 msgstr ""
 
-#: charview.c:3095
+#: charview.c:3096
 #, c-format
 msgid "You have just changed the point numbering of glyph %s.%s%s%s"
 msgstr ""
 
-#: charview.c:3098
+#: charview.c:3099
 msgid " Instructions in this glyph (or one that refers to it) have been lost."
 msgstr ""
 
-#: charview.c:3099
+#: charview.c:3100
 msgid " Instructions in this glyph (or one that refers to it) are now out of date."
 msgstr ""
 
-#: charview.c:3100
+#: charview.c:3101
 msgid ""
 " At least one reference to this glyph used point matching. That match is now out of "
 "date."
 msgstr ""
 
-#: charview.c:3102
+#: charview.c:3103
 msgid " At least one anchor point used point matching. It may be out of date now."
 msgstr ""
 
-#: charview.c:3686
+#: charview.c:3689
 msgid "Not Foreground"
 msgstr ""
 
-#: charview.c:3686
+#: charview.c:3689
 msgid "References may be dragged only to the foreground layer"
 msgstr "Odwołania mogą być umieszczane tylko na warstwie pierwszego planu"
 
-#: charview.c:4518 fontview.c:1131
+#: charview.c:4523 fontview.c:1136
 msgid "Can't Find Glyph"
 msgstr ""
 
-#: charview.c:4518 fontview.c:1131
+#: charview.c:4523 fontview.c:1136
 #, c-format
 msgid "The glyph, %.80s, can't be found in the sfd file"
 msgstr ""
 
-#: charview.c:6476
+#: charview.c:6481
 #, c-format
 msgid "The spline does not reach %g"
 msgstr ""
 
-#: charview.c:6578
+#: charview.c:6583
 msgid "Insert a point on the given spline at either..."
 msgstr ""
 
-#: charview.c:6588 cvgetinfo.c:1314 cvpointer.c:1345
+#: charview.c:6593 cvgetinfo.c:1314 cvpointer.c:1345
 msgid "_X:"
 msgstr "_X:"
 
-#: charview.c:6599 cvgetinfo.c:1333 cvpointer.c:1358
+#: charview.c:6604 cvgetinfo.c:1333 cvpointer.c:1358
 msgid "_Y:"
 msgstr "_Y:"
 
-#: charview.c:6761 cvgetinfo.c:984
+#: charview.c:6766 cvgetinfo.c:984
 msgid "Make a new anchor class"
 msgstr "Stwórz nową klasę kotwic"
 
-#: charview.c:6761 cvgetinfo.c:984
+#: charview.c:6766 cvgetinfo.c:984
 msgid ""
 "I cannot find an unused anchor class\n"
 "to assign a new point to. If you\n"
@@ -4060,15 +4062,15 @@ msgstr ""
 "wcześniej stworzyć dla niej klasę w\n"
 "Element->Właściwości fontu"
 
-#: charview.c:6813 metricsview.c:1694 metricsview.c:2125
+#: charview.c:6818 metricsview.c:1700 metricsview.c:2131
 msgid "_Unlink"
 msgstr "_Odłącz"
 
-#: charview.c:6822 fontview.c:3794 metricsview.c:2134
+#: charview.c:6827 fontview.c:3800 metricsview.c:2140
 msgid "Flipped Reference"
 msgstr "Odbite odwołanie"
 
-#: charview.c:6822 fontview.c:3794 metricsview.c:2134
+#: charview.c:6827 fontview.c:3800 metricsview.c:2140
 #, c-format
 msgid ""
 "%.50s contains a flipped reference. This cannot be corrected as is. Would you like me "
@@ -4077,587 +4079,587 @@ msgstr ""
 "%.50s zawiera odbite odwołanie. Nie istineje metoda poprawienia tego. Czy mam odłączyć "
 "odwołanie i wtedy poprawić?"
 
-#: charview.c:7290
+#: charview.c:7295
 msgid "Deselect Width"
 msgstr "Odznacz wysokość"
 
-#: charview.c:7290 cvpointer.c:1262
+#: charview.c:7295 cvpointer.c:1262
 msgid "Width"
 msgstr "Szerokość"
 
-#: charview.c:7297
+#: charview.c:7302
 msgid "Deselect VWidth"
 msgstr "Odznacz szerokość"
 
-#: charview.c:7297
+#: charview.c:7302
 msgid "VWidth"
 msgstr "Wysokość"
 
-#: charview.c:7425
+#: charview.c:7430
 msgid "Hide Points"
 msgstr "Ukryj punkty"
 
-#: charview.c:7425
+#: charview.c:7430
 msgid "Show Points"
 msgstr "Pokaż punkty"
 
-#: charview.c:7429
+#: charview.c:7434
 msgid "Hide Rulers"
 msgstr "Ukryj linijki"
 
-#: charview.c:7429
+#: charview.c:7434
 msgid "Show Rulers"
 msgstr "Pokaż linijki"
 
-#: charview.c:7598 fontview.c:6431
+#: charview.c:7603 fontview.c:6444
 msgid "Revert Gl_yph"
 msgstr "Prz_ywróć glif"
 
-#: charview.c:7600 fontview.c:6433 metricsview.c:2656
+#: charview.c:7605 fontview.c:6446 metricsview.c:2662
 msgid "_Print..."
 msgstr "_Drukuj"
 
-#: charview.c:7601 fontview.c:6434 metricsview.c:2657
+#: charview.c:7606 fontview.c:6447 metricsview.c:2663
 msgid "_Display..."
 msgstr "_Wyświetl..."
 
-#: charview.c:7611 fontview.c:6469
+#: charview.c:7616 fontview.c:6482
 msgid "_Invert Selection"
 msgstr "_Odwróć zaznaczenie"
 
-#: charview.c:7612 charview.c:8718 fontview.c:6470
+#: charview.c:7617 charview.c:8723 fontview.c:6483
 msgid "_Deselect All"
 msgstr "O_dznacz wszystko"
 
-#: charview.c:7614 charview.c:8720
+#: charview.c:7619 charview.c:8725
 msgid "_First Point"
 msgstr "P_ierwszy punkt"
 
-#: charview.c:7615 charview.c:8721
+#: charview.c:7620 charview.c:8726
 msgid "First P_oint, Next Contour"
 msgstr "Pierwszy punkt następnego k_onturu"
 
-#: charview.c:7616 charview.c:8722
+#: charview.c:7621 charview.c:8727
 msgid "_Next Point"
 msgstr "_Następny punkt"
 
-#: charview.c:7617 charview.c:8723
+#: charview.c:7622 charview.c:8728
 msgid "_Prev Point"
 msgstr "_Poprzedni punkt"
 
-#: charview.c:7618 charview.c:8724
+#: charview.c:7623 charview.c:8729
 msgid "Ne_xt Control Point"
 msgstr "Następny punkt kontrolny"
 
-#: charview.c:7619 charview.c:8725
+#: charview.c:7624 charview.c:8730
 msgid "P_rev Control Point"
 msgstr "Poprzedni punkt kontrolny"
 
-#: charview.c:7620
+#: charview.c:7625
 msgid "Points on Selected _Contours"
 msgstr "Punkty na wybranych _konturach"
 
-#: charview.c:7621
+#: charview.c:7626
 msgid "Point A_t"
 msgstr "Punkty w o_bszarze"
 
-#: charview.c:7623
+#: charview.c:7628
 msgid "Select All _Points & Refs"
 msgstr "Wszystkie _punkty i odwołania"
 
-#: charview.c:7624
+#: charview.c:7629
 msgid "Sele_ct Anchors"
 msgstr "Kotwi_ce"
 
-#: charview.c:7625 cvstroke.c:997
+#: charview.c:7630 cvstroke.c:997
 msgid "_Width"
 msgstr "_Szerokośc"
 
-#: charview.c:7626
+#: charview.c:7631
 msgid "_VWidth"
 msgstr "_Wysokość"
 
-#: charview.c:7628
+#: charview.c:7633
 msgid "Select Points Affected by HM"
 msgstr "Punkty bieżącej hintmaski"
 
-#: charview.c:7638 fontview.c:6488 fontview.c:7707 metricsview.c:2671
+#: charview.c:7643 fontview.c:6501 fontview.c:7720 metricsview.c:2677
 msgid "C_opy Reference"
 msgstr "Kopiuj _odwołanie"
 
-#: charview.c:7639 fontview.c:6489 fontview.c:7708 metricsview.c:2672
+#: charview.c:7644 fontview.c:6502 fontview.c:7721 metricsview.c:2678
 msgid "Copy _Width"
 msgstr "Kopiuj _szerokość"
 
-#: charview.c:7640 fontview.c:6491 metricsview.c:2674
+#: charview.c:7645 fontview.c:6504 metricsview.c:2680
 msgid "Co_py LBearing"
 msgstr "Kopiuj _lewą odsadkę"
 
-#: charview.c:7641 fontview.c:6492 metricsview.c:2675
+#: charview.c:7646 fontview.c:6505 metricsview.c:2681
 msgid "Copy RBearin_g"
 msgstr "Kopiuj p_rawą odsadkę"
 
-#: charview.c:7642 fontview.c:6493
+#: charview.c:7647 fontview.c:6506
 msgid "Copy Glyph Features..."
 msgstr "Kopiuj _funkcje zecerskie..."
 
-#: charview.c:7645 fontview.c:6501
+#: charview.c:7650 fontview.c:6514
 msgid "Clear _Background"
 msgstr "Wyczyść _tło"
 
-#: charview.c:7646 charview.c:8737
+#: charview.c:7651 charview.c:8742
 msgid "_Merge"
 msgstr "Usuń punkty _gładko"
 
-#: charview.c:7647 charview.c:8738
+#: charview.c:7652 charview.c:8743
 msgid "_Elide"
 msgstr "_Usuń punkty"
 
-#: charview.c:7648 charview.c:8739 fontview.c:6503 metricsview.c:2678
+#: charview.c:7653 charview.c:8744 fontview.c:6516 metricsview.c:2684
 msgid "_Join"
 msgstr "Łącz krzywe"
 
-#: charview.c:7649 fontview.c:6502 fontview.c:7711
+#: charview.c:7654 fontview.c:6515 fontview.c:7724
 msgid "Copy _Fg To Bg"
 msgstr "Kopiuj do tła"
 
-#: charview.c:7651
+#: charview.c:7656
 msgid "Cop_y Bg To Fg"
 msgstr "Kopiuj _z tła"
 
-#: charview.c:7653
+#: charview.c:7658
 msgid "Copy Gri_d Fit"
 msgstr "Kopiuj z r_astra"
 
-#: charview.c:7655 charview.c:8741 fontview.c:6505
+#: charview.c:7660 charview.c:8746 fontview.c:6518
 msgid "_Select"
 msgstr "_Zaznacz"
 
-#: charview.c:7657 charview.c:8743 fontview.c:6509 fontview.c:7712 metricsview.c:2682
+#: charview.c:7662 charview.c:8748 fontview.c:6522 fontview.c:7725 metricsview.c:2688
 msgid "U_nlink Reference"
 msgstr "Odłącz odwoł_anie"
 
-#: charview.c:7664 charview.c:8750
+#: charview.c:7669 charview.c:8755
 msgid "_Curve"
 msgstr "_Gładki"
 
-#: charview.c:7665 charview.c:8751 cvpalettes.c:523
+#: charview.c:7670 charview.c:8756 cvpalettes.c:523
 msgid "C_orner"
 msgstr "_Narożny"
 
-#: charview.c:7666 charview.c:8752 simplifydlg.c:85
+#: charview.c:7671 charview.c:8757 simplifydlg.c:85
 msgid "_Tangent"
 msgstr "_Przejściowy"
 
 #. GT: Make this (selected) point the first point in the glyph
-#: charview.c:7669 charview.c:8754
+#: charview.c:7674 charview.c:8759
 msgid "_Make First"
 msgstr "_Uczyń pierwszym"
 
-#: charview.c:7671
+#: charview.c:7676
 msgid "Can Be _Interpolated"
 msgstr "_Można interpolować"
 
-#: charview.c:7672
+#: charview.c:7677
 msgid "Can't Be _Interpolated"
 msgstr "N_ie można interpolować"
 
-#: charview.c:7674
+#: charview.c:7679
 msgid "_Add Anchor"
 msgstr "_Dodaj kotwicę"
 
-#: charview.c:7676
+#: charview.c:7681
 msgid "Make _Line"
 msgstr "_Wyprostuj krzywą"
 
-#: charview.c:7677
+#: charview.c:7682
 msgid "Insert Point On _Spline At..."
 msgstr "W_staw punkt na krzywej..."
 
-#: charview.c:7678
+#: charview.c:7683
 msgid "Center _Between Control Points"
 msgstr "_Centruj między kontrolnymi"
 
 #. GT: Align these points to their average position
-#: charview.c:7684 charview.c:8760
+#: charview.c:7689 charview.c:8765
 msgid "_Average Points"
 msgstr "_Rozmieść wzdłuż osi"
 
-#: charview.c:7685 charview.c:8761
+#: charview.c:7690 charview.c:8766
 msgid "_Space Points"
 msgstr "R_ozmieść równomiernie"
 
-#: charview.c:7686 charview.c:8762
+#: charview.c:7691 charview.c:8767
 msgid "Space _Regions..."
 msgstr "Ro_zmieść kawałki..."
 
-#: charview.c:7688 charview.c:8764
+#: charview.c:7693 charview.c:8769
 msgid "Make _Parallel..."
 msgstr "Roz_mieść równolegle..."
 
-#: charview.c:7693 charview.c:7821 charview.c:8775 fontview.c:6552 fontview.c:6635
-#: metricsview.c:2687 metricsview.c:2751
+#: charview.c:7698 charview.c:7826 charview.c:8780 fontview.c:6565 fontview.c:6648
+#: metricsview.c:2693 metricsview.c:2757
 msgid "_Simplify"
 msgstr "_Uprość"
 
-#: charview.c:7694 fontview.c:6553 metricsview.c:2688
+#: charview.c:7699 fontview.c:6566 metricsview.c:2694
 msgid "Simplify More..."
 msgstr "Uprość jeszcze bardziej..."
 
-#: charview.c:7695 charview.c:8776 fontview.c:6554 metricsview.c:2689
+#: charview.c:7700 charview.c:8781 fontview.c:6567 metricsview.c:2695
 msgid "Clea_nup Glyph"
 msgstr "_Przeczyść glif"
 
-#: charview.c:7696 fontview.c:6555
+#: charview.c:7701 fontview.c:6568
 msgid "Canonical Start _Point"
 msgstr "Kanoniczne _punkty początkowe"
 
-#: charview.c:7697 fontview.c:6556
+#: charview.c:7702 fontview.c:6569
 msgid "Canonical _Contours"
 msgstr "Kanoniczna kolejność _konturów"
 
-#: charview.c:7722 cvpalettes.c:1250 encoding.c:609
+#: charview.c:7727 cvpalettes.c:1250 encoding.c:609
 msgid "_First"
 msgstr "_Pierwszy"
 
-#: charview.c:7723 cvpalettes.c:1250
+#: charview.c:7728 cvpalettes.c:1250
 msgid "_Earlier"
 msgstr "_Wcześniej"
 
-#: charview.c:7724 cvpalettes.c:1250
+#: charview.c:7729 cvpalettes.c:1250
 msgid "L_ater"
 msgstr "_Dalej"
 
-#: charview.c:7725 cvpalettes.c:1250
+#: charview.c:7730 cvpalettes.c:1250
 msgid "_Last"
 msgstr "_Ostatni"
 
-#: charview.c:7764 charview.c:8774 fontview.c:6561 metricsview.c:2694 metricsview.c:2750
+#: charview.c:7769 charview.c:8779 fontview.c:6574 metricsview.c:2700 metricsview.c:2756
 msgid "_Remove Overlap"
 msgstr "_Dodaj"
 
-#: charview.c:7765 fontview.c:6562 metricsview.c:2695
+#: charview.c:7770 fontview.c:6575 metricsview.c:2701
 msgid "_Intersect"
 msgstr "_Przetnij"
 
-#: charview.c:7766
+#: charview.c:7771
 msgid "_Exclude"
 msgstr "_Odejmij"
 
-#: charview.c:7767 fontview.c:6563 metricsview.c:2696
+#: charview.c:7772 fontview.c:6576 metricsview.c:2702
 msgid "_Find Intersections"
 msgstr "_Znajdź przecięcia"
 
-#: charview.c:7772 fontview.c:6568 metricsview.c:2701
+#: charview.c:7777 fontview.c:6581 metricsview.c:2707
 msgid "_Inline"
 msgstr "Ś_rodek"
 
-#: charview.c:7773 fontview.c:6569 metricsview.c:2702 metricsview.c:2846
+#: charview.c:7778 fontview.c:6582 metricsview.c:2708 metricsview.c:2852
 msgid "_Outline"
 msgstr "_Obrys"
 
-#: charview.c:7774 fontview.c:6570 metricsview.c:2703
+#: charview.c:7779 fontview.c:6583 metricsview.c:2709
 msgid "_Shadow"
 msgstr "_Cień"
 
-#: charview.c:7775 fontview.c:6571 metricsview.c:2704
+#: charview.c:7780 fontview.c:6584 metricsview.c:2710
 msgid "_Wireframe"
 msgstr "_Siatka"
 
-#: charview.c:7780 fontview.c:6576 metricsview.c:2709
+#: charview.c:7785 fontview.c:6589 metricsview.c:2715
 msgid "_Build Accented Glyph"
 msgstr "_Buduj glif akcentowany"
 
-#: charview.c:7781 fontview.c:6577 metricsview.c:2710
+#: charview.c:7786 fontview.c:6590 metricsview.c:2716
 msgid "Build _Composite Glyph"
 msgstr "Buduj glif _kompozytowy"
 
-#: charview.c:7786 fontview.c:6599
+#: charview.c:7791 fontview.c:6612
 msgid "_References..."
 msgstr "_Odwołania..."
 
-#: charview.c:7787 fontview.c:6600
+#: charview.c:7792 fontview.c:6613
 msgid "_Substitutions..."
 msgstr "_Podstawienia..."
 
-#: charview.c:7792 charview.c:8772 fontview.c:6605 fontview.c:7715 metricsview.c:2745
+#: charview.c:7797 charview.c:8777 fontview.c:6618 fontview.c:7728 metricsview.c:2751
 msgid "_Transform..."
 msgstr "_Przekształć..."
 
-#: charview.c:7793 fontview.c:6606
+#: charview.c:7798 fontview.c:6619
 msgid "_Point of View Projection..."
 msgstr "P_rojekcja perspektywiczna..."
 
-#: charview.c:7794 fontview.c:6607
+#: charview.c:7799 fontview.c:6620
 msgid "_Non Linear Transform..."
 msgstr "Przekształcenie _nieliniowe..."
 
-#: charview.c:7799 charview.c:8780 fontview.c:6612 fontview.c:7720 metricsview.c:2753
+#: charview.c:7804 charview.c:8785 fontview.c:6625 fontview.c:7733 metricsview.c:2759
 msgid "To _Int"
 msgstr "Do _całkowitych"
 
-#: charview.c:7800 fontview.c:6613
+#: charview.c:7805 fontview.c:6626
 msgid "To _Hundredths"
 msgstr "Do _tysięcznych"
 
-#: charview.c:7801 fontview.c:6614
+#: charview.c:7806 fontview.c:6627
 msgid "_Cluster"
 msgstr "_Grupuj"
 
-#: charview.c:7808 charview.c:8770
+#: charview.c:7813 charview.c:8775
 msgid "Get _Info..."
 msgstr "Właśc_iwości obiektu..."
 
-#: charview.c:7809 fontview.c:6623 metricsview.c:2739
+#: charview.c:7814 fontview.c:6636 metricsview.c:2745
 msgid "S_how Dependent"
 msgstr "Pokaż za_leżne"
 
-#: charview.c:7810 fontview.c:6624 metricsview.c:2740
+#: charview.c:7815 fontview.c:6637 metricsview.c:2746
 msgid "Find Pr_oblems..."
 msgstr "_Szukaj problemów..."
 
-#: charview.c:7816 charview.c:8773 fontview.c:6630 fontview.c:7716 metricsview.c:2746
+#: charview.c:7821 charview.c:8778 fontview.c:6643 fontview.c:7729 metricsview.c:2752
 msgid "_Expand Stroke..."
 msgstr "_Rysuj po krzywej..."
 
-#: charview.c:7818 fontview.c:6632 metricsview.c:2748
+#: charview.c:7823 fontview.c:6645 metricsview.c:2754
 msgid "Tile _Path..."
 msgstr "_Wklej wzdłuż krzywej"
 
-#: charview.c:7820 fontview.c:6634
+#: charview.c:7825 fontview.c:6647
 msgid "O_verlap"
 msgstr "_Operacje boolowskie"
 
-#: charview.c:7822 charview.c:8777 fontview.c:6636 metricsview.c:2752
+#: charview.c:7827 charview.c:8782 fontview.c:6649 metricsview.c:2758
 msgid "Add E_xtrema"
 msgstr "_Dodaj ekstrema"
 
-#: charview.c:7823 fontview.c:6638 metricsview.c:2754
+#: charview.c:7828 fontview.c:6651 metricsview.c:2760
 msgid "Effects"
 msgstr "_Efekty"
 
-#: charview.c:7824 fontview.c:6639 metricsview.c:2755
+#: charview.c:7829 fontview.c:6652 metricsview.c:2761
 msgid "_Meta Font..."
 msgstr "Met_amorfoza..."
 
-#: charview.c:7825 fontview.c:6640 metricsview.c:2756
+#: charview.c:7830 fontview.c:6653 metricsview.c:2762
 msgid "Autot_race"
 msgstr "_Wektoryzuj"
 
-#: charview.c:7827 charview.c:8779
+#: charview.c:7832 charview.c:8784
 msgid "A_lign"
 msgstr "Ro_zmieść"
 
-#: charview.c:7828 fontview.c:6637
+#: charview.c:7833 fontview.c:6650
 msgid "Roun_d"
 msgstr "Zaokrągli_j"
 
-#: charview.c:7829
+#: charview.c:7834
 msgid "Order"
 msgstr "Kolejność"
 
-#: charview.c:7831 charview.c:8782
+#: charview.c:7836 charview.c:8787
 msgid "Cl_ockwise"
 msgstr "Prawoskręt_ny"
 
-#: charview.c:7832 charview.c:8783
+#: charview.c:7837 charview.c:8788
 msgid "Cou_nter Clockwise"
 msgstr "Lewoskrętn_y"
 
-#: charview.c:7833 charview.c:8784 cvimages.c:180 fontview.c:6642 fontview.c:7721
-#: metricsview.c:2758
+#: charview.c:7838 charview.c:8789 cvimages.c:184 fontview.c:6655 fontview.c:7734
+#: metricsview.c:2764
 msgid "_Correct Direction"
 msgstr "S_kieruj poprawnie"
 
-#: charview.c:7835 fontview.c:6644 metricsview.c:2760
+#: charview.c:7840 fontview.c:6657 metricsview.c:2766
 msgid "B_uild"
 msgstr "Buduj"
 
-#: charview.c:7840 fontview.c:7481 fontview.c:7723
+#: charview.c:7845 fontview.c:7494 fontview.c:7736
 msgid "Auto_Hint"
 msgstr "_Hintuj automatycznie"
 
-#: charview.c:7841 fontview.c:7482
+#: charview.c:7846 fontview.c:7495
 msgid "Hint _Substitution Pts"
 msgstr "_Znajdź punkty podstawień"
 
-#: charview.c:7842 fontview.c:7483
+#: charview.c:7847 fontview.c:7496
 msgid "Auto _Counter Hint"
 msgstr "Hintuj proporcje _automatycznie"
 
-#: charview.c:7843 fontview.c:7484
+#: charview.c:7848 fontview.c:7497
 msgid "_Don't AutoHint"
 msgstr "_Nie hintuj automatycznie"
 
-#: charview.c:7845 fontview.c:7486
+#: charview.c:7850 fontview.c:7499
 msgid "Auto_Instr"
 msgstr "_Instruuj automatycznie"
 
-#: charview.c:7846 fontview.c:7487
+#: charview.c:7851 fontview.c:7500
 msgid "_Edit Instructions..."
 msgstr "_Edytuj instrukcje..."
 
-#: charview.c:7847
+#: charview.c:7852
 msgid "_Debug..."
 msgstr "_Debuguj..."
 
-#: charview.c:7849
+#: charview.c:7854
 msgid "_Clear HStem"
 msgstr "Usuń hinty _poziome"
 
-#: charview.c:7850
+#: charview.c:7855
 msgid "Clear _VStem"
 msgstr "Usuń hinty pi_onowe"
 
-#: charview.c:7851 fontview.c:7496
+#: charview.c:7856 fontview.c:7509
 msgid "Clear Instructions"
 msgstr "Usuń instrukcje"
 
-#: charview.c:7853
+#: charview.c:7858
 msgid "_Add HHint"
 msgstr "Hintuj element po_ziomy"
 
-#: charview.c:7854
+#: charview.c:7859
 msgid "Add VHi_nt"
 msgstr "Hintuj element piono_wy"
 
-#: charview.c:7855
+#: charview.c:7860
 msgid "Add DHint"
 msgstr "Hintuj element u_kośny"
 
-#: charview.c:7856
+#: charview.c:7861
 msgid "Crea_te HHint..."
 msgstr "Dodaj hin_t pozio_my..."
 
-#: charview.c:7857
+#: charview.c:7862
 msgid "Cr_eate VHint..."
 msgstr "Dodaj hint pionow_y..."
 
-#: charview.c:7859
+#: charview.c:7864
 msgid "_Review Hints..."
 msgstr "P_rzejrzyj hinty..."
 
-#: charview.c:7864 fontview.c:7503 fontview.c:7725 metricsview.c:2863
+#: charview.c:7869 fontview.c:7516 fontview.c:7738 metricsview.c:2869
 msgid "_Center in Width"
 msgstr "_Centruj"
 
-#: charview.c:7865 fontview.c:7504 metricsview.c:2864
+#: charview.c:7870 fontview.c:7517 metricsview.c:2870
 msgid "_Thirds in Width"
 msgstr "Us_taw w ⅓"
 
-#: charview.c:7867 fontview.c:7506
+#: charview.c:7872 fontview.c:7519
 msgid "Set _LBearing..."
 msgstr "Ustaw _lewą odsadkę..."
 
-#: charview.c:7868 fontview.c:7507
+#: charview.c:7873 fontview.c:7520
 msgid "Set _RBearing..."
 msgstr "Ustaw p_rawą odsadke..."
 
-#: charview.c:7870
+#: charview.c:7875
 msgid "Remove Kern _Pairs"
 msgstr "Usuń kernin_g"
 
-#: charview.c:7871
+#: charview.c:7876
 msgid "Remove VKern Pairs"
 msgstr "Usuń kerning pionow_y"
 
-#: charview.c:7872 fontview.c:7515 kernclass.c:2762 metricsview.c:2869
+#: charview.c:7877 fontview.c:7528 kernclass.c:2762 metricsview.c:2875
 msgid "Kern Pair Closeup..."
 msgstr "Pokaż parę kerningu..."
 
-#: charview.c:7874 fontview.c:7509 fontview.c:7727
+#: charview.c:7879 fontview.c:7522 fontview.c:7740
 msgid "Set _Vertical Advance..."
 msgstr "Ustaw _wysokość"
 
-#: charview.c:7876
+#: charview.c:7881
 msgid "_Anchor Control..."
 msgstr "Prze_jrzyj kotwice..."
 
-#: charview.c:7889 fontview.c:6671 metricsview.c:2783
+#: charview.c:7894 fontview.c:6684 metricsview.c:2789
 msgid "_Kern Pairs"
 msgstr "Pary _kerningu"
 
-#: charview.c:7890 fontview.c:6672 metricsview.c:2784
+#: charview.c:7895 fontview.c:6685 metricsview.c:2790
 msgid "_Anchored Pairs"
 msgstr "Pary k_otwiczone"
 
-#: charview.c:7891 fontview.c:6519 fontview.c:6673 metricsview.c:2785 typofeatures.c:1089
+#: charview.c:7896 fontview.c:6532 fontview.c:6686 metricsview.c:2791 typofeatures.c:1089
 msgid "_Ligatures"
 msgstr "_Ligatury"
 
-#: charview.c:7896
+#: charview.c:7901
 msgid "PointNumbers|_None"
 msgstr "_Brak"
 
-#: charview.c:7897 openfontdlg.c:116 savefontdlg.c:136 savefontdlg.c:848
+#: charview.c:7902 openfontdlg.c:117 savefontdlg.c:136 savefontdlg.c:849
 msgid "TrueType"
 msgstr "TrueType"
 
-#: charview.c:7898 savefontdlg.c:738
+#: charview.c:7903 savefontdlg.c:739
 msgid "PostScript®"
 msgstr "PostScript®"
 
-#: charview.c:7899 cvexport.c:774 cvimages.c:1257 cvimages.c:1275 openfontdlg.c:122
+#: charview.c:7904 cvexport.c:788 cvimages.c:1305 cvimages.c:1324 openfontdlg.c:123
 msgid "SVG"
 msgstr "SVG"
 
-#: charview.c:7909
+#: charview.c:7914
 msgid "_Display Compositions..."
 msgstr ""
 
-#: charview.c:7916
+#: charview.c:7921
 msgid "Form_er Glyph"
 msgstr "Wcz_eśniejszy glif"
 
-#: charview.c:7920 charview.c:8800
+#: charview.c:7925 charview.c:8805
 msgid "Hide Poin_ts"
 msgstr "Ukryj punk_ty"
 
-#: charview.c:7921
+#: charview.c:7926
 msgid "_Number Points"
 msgstr "N_umery punktów"
 
-#: charview.c:7922 charview.c:8801
+#: charview.c:7927 charview.c:8806
 msgid "_Mark Extrema"
 msgstr "Zaznacz ekstre_ma"
 
-#: charview.c:7923
+#: charview.c:7928
 msgid "M_ark Points of Inflection"
 msgstr "Z_aznacz punkty przegięć"
 
-#: charview.c:7924
+#: charview.c:7929
 msgid "Show _Control Point Info"
 msgstr "Poka_zuj dane punktów"
 
-#: charview.c:7925 cvstroke.c:1128
+#: charview.c:7930 cvstroke.c:1128
 msgid "Fi_ll"
 msgstr "_Wypełnij kontur"
 
-#: charview.c:7926
+#: charview.c:7931
 msgid "Sho_w Grid Fit..."
 msgstr "Pokaż w _rastrze..."
 
-#: charview.c:7928 fontview.c:7329 metricsview.c:2839
+#: charview.c:7933 fontview.c:7342 metricsview.c:2845
 msgid "Com_binations"
 msgstr "Kom_binacje"
 
-#: charview.c:7930
+#: charview.c:7935
 msgid "Palette_s"
 msgstr "Przyborni_ki"
 
-#: charview.c:7931 charview.c:8805
+#: charview.c:7936 charview.c:8810
 msgid "Hide _Rulers"
 msgstr "Ukryj lini_jki"
 
-#: charview.c:7952
+#: charview.c:7957
 msgid "SubFonts|_All"
 msgstr "_Wszystkie"
 
-#: charview.c:7953
+#: charview.c:7958
 msgid "SubFonts|_None"
 msgstr "_Żaden"
 
-#: charview.c:8017 mm.c:522 mm.c:524 mm.c:529 mm.c:531 mm.c:544 mm.c:546 mm.c:556
+#: charview.c:8022 mm.c:522 mm.c:524 mm.c:529 mm.c:531 mm.c:544 mm.c:546 mm.c:556
 #: mm.c:558 mm.c:565 mm.c:567 mm.c:577 mm.c:579 mm.c:589 mm.c:591 mm.c:607 mm.c:609
 #: mm.c:614 mm.c:616 mm.c:628 mm.c:630 mm.c:642 mm.c:644 mm.c:654 mm.c:656 mm.c:665
 #: mm.c:667 mm.c:676 mm.c:678 mm.c:687 mm.c:689 mm.c:698 mm.c:700 mm.c:709 mm.c:711
@@ -4670,20 +4672,20 @@ msgid "Bad Multiple Master Font"
 msgstr "Błędny font Multiple Master"
 
 #. GT: Here (and following) MM means "MultiMaster"
-#: charview.c:8023
+#: charview.c:8028
 msgid "MM _Reblend"
 msgstr ""
 
-#: charview.c:8089 charview.c:8104 charview.c:8812
+#: charview.c:8094 charview.c:8109 charview.c:8817
 msgid "_Point"
 msgstr "_Punkt"
 
-#: charview.c:8091 charview.c:8106 fontview.c:7735
+#: charview.c:8096 charview.c:8111 fontview.c:7748
 msgid "H_ints"
 msgstr "_Hinting"
 
 #. GT: Here (and following) MM means "MultiMaster"
-#: charview.c:8095 fontview.c:7741
+#: charview.c:8100 fontview.c:7754
 msgid "MM"
 msgstr "MM"
 
@@ -5096,7 +5098,7 @@ msgstr "Rejestry"
 msgid "Stack"
 msgstr "Stos"
 
-#: cvdebug.c:871 ttfinstrs.c:2075
+#: cvdebug.c:871 ttfinstrs.c:2078
 msgid "Storage"
 msgstr "Pamięć"
 
@@ -5168,7 +5170,7 @@ msgstr ""
 msgid "Transformed"
 msgstr ""
 
-#: cvdebug.c:1938 cvgridfit.c:74 savefontdlg.c:2366
+#: cvdebug.c:1938 cvgridfit.c:74 savefontdlg.c:2371
 msgid "Instructions out of date"
 msgstr "Nieaktualne instrukcje"
 
@@ -5214,95 +5216,99 @@ msgstr "Wyjdź z debugera"
 msgid "Instruction Gloss (TrueType)"
 msgstr "Słownik instrukcji TrueType"
 
-#: cvexport.c:395 cvexport.c:455 fvimportbdf.c:1856
+#: cvexport.c:407 cvexport.c:467 fvimportbdf.c:1856
 msgid "Pixel size:"
 msgstr ""
 
-#: cvexport.c:396 cvexport.c:470
+#: cvexport.c:408 cvexport.c:482
 msgid "Bits/Pixel:"
 msgstr ""
 
-#: cvexport.c:400
+#: cvexport.c:412
 msgid "The only valid values for bits/pixel are 1, 2, 4 or 8"
 msgstr ""
 
-#: cvexport.c:445 cvexport.c:537
+#: cvexport.c:457 cvexport.c:549
 msgid "Pixel size?"
 msgstr ""
 
-#: cvexport.c:749 cvexport.c:805 fontview.c:686 savefontdlg.c:1769 savefontdlg.c:1942
+#: cvexport.c:763 cvexport.c:822 fontview.c:691 savefontdlg.c:1770 savefontdlg.c:1947
 #: showatt.c:2353
 msgid "Save Failed"
 msgstr "Zapis nie powiódł się"
 
-#: cvexport.c:764 cvexport.c:776
+#: cvexport.c:778 cvexport.c:791
 msgid "X Bitmap"
 msgstr "Bitmapa X"
 
-#: cvexport.c:765 cvexport.c:777
+#: cvexport.c:779 cvexport.c:792
 msgid "BMP"
 msgstr "bmp"
 
-#: cvexport.c:767 cvexport.c:779
+#: cvexport.c:781 cvexport.c:794
 msgid "png"
 msgstr "png"
 
-#: cvexport.c:772 cvimages.c:1255 cvimages.c:1272
+#: cvexport.c:786 cvimages.c:1303 cvimages.c:1321
 msgid "EPS"
 msgstr "EPS"
 
-#: cvexport.c:773 cvimages.c:1259
+#: cvexport.c:787 cvimages.c:1308
 msgid "XFig"
 msgstr "XFig"
 
-#: cvexport.c:775
+#: cvexport.c:789 cvimages.c:1306 cvimages.c:1326
+msgid "Glif"
+msgstr "Glif"
+
+#: cvexport.c:790
 msgid "PDF"
 msgstr "PDF"
 
-#: cvexport.c:824 fontview.c:7096 savefontdlg.c:2524
+#: cvexport.c:841 fontview.c:7109 savefontdlg.c:2529
 msgid "_Replace"
 msgstr "_Nadpisz"
 
-#: cvexport.c:827 savefontdlg.c:2527 ../gdraw/gsavefiledlg.c:75
+#: cvexport.c:844 savefontdlg.c:2532 ../gdraw/gsavefiledlg.c:75
 msgid "File Exists"
 msgstr "Plik istnieje"
 
-#: cvexport.c:827 savefontdlg.c:2527 ../gdraw/gsavefiledlg.c:75
+#: cvexport.c:844 savefontdlg.c:2532 ../gdraw/gsavefiledlg.c:75
 #, c-format
 msgid "File, %s, exists. Replace it?"
 msgstr "Plik %s istnieje. Nadpisać go?"
 
-#: cvexport.c:902 savefontdlg.c:2606 ../gdraw/gsavefiledlg.c:137
+#: cvexport.c:920 savefontdlg.c:2611 ../gdraw/gsavefiledlg.c:137
 msgid "Couldn't create directory"
 msgstr "Nie udało się utworzyć katalogu"
 
-#: cvexport.c:902 savefontdlg.c:2606
+#: cvexport.c:920 savefontdlg.c:2611
 #, c-format
 msgid "Couldn't create directory: %s"
 msgstr "Nie udało się utworzyć katalogu: %s"
 
-#: cvexport.c:915 savefontdlg.c:2617 ../gdraw/gsavefiledlg.c:153
+#: cvexport.c:933 savefontdlg.c:2622 ../gdraw/gsavefiledlg.c:153
 msgid "Create directory..."
 msgstr "Utwórz katalog..."
 
-#: cvexport.c:915 savefontdlg.c:2617 ../gdraw/gsavefiledlg.c:153
+#: cvexport.c:933 savefontdlg.c:2622 ../gdraw/gsavefiledlg.c:153
 msgid "Directory name?"
 msgstr "Nazwa katalogu:"
 
-#: cvexport.c:981
+#: cvexport.c:999
 msgid "Export..."
 msgstr "Eksportuj..."
 
-#: cvexport.c:1006 cvimages.c:1467 openfontdlg.c:694 savefontdlg.c:3009
+#: cvexport.c:1024 cvimages.c:1525 openfontdlg.c:696 savefontdlg.c:3014
 #: ../gdraw/gfiledlg.c:137 ../gdraw/gsavefiledlg.c:248
 msgid "_Filter"
 msgstr "_Filtruj"
 
-#: cvexport.c:1024 savefontdlg.c:3031 ../gdraw/gsavefiledlg.c:263
+#: cvexport.c:1042 savefontdlg.c:3036 ../gdraw/gsavefiledlg.c:263
 msgid "Directory|_New"
 msgstr "_Nowy"
 
-#: cvexport.c:1035 cvimages.c:1489
+#: cvexport.c:1053 cvimages.c:1547
 msgid "Format:"
 msgstr "Format:"
 
@@ -5432,17 +5438,17 @@ msgstr "Właściwości obrazu"
 #: cvgetinfo.c:603
 #, c-format
 msgid "Image at:      (%.0f,%.0f)"
-msgstr "Obraz na pozycji:     (%.0f,%.0f)"
+msgstr "Obraz na pozycji:  (%.0f,%.0f)"
 
 #: cvgetinfo.c:613
 #, c-format
 msgid "Scaled by:    (%.2f,%.2f)"
-msgstr "Przeskalowany o:    (%.2f,%.2f)"
+msgstr "Przeskalowany o:  (%.2f,%.2f)"
 
 #: cvgetinfo.c:622
 #, c-format
 msgid "Image Size:  %d x %d  pixels"
-msgstr "Rozmiar obrazu:     %d x %d  pikseli"
+msgstr "Rozmiar obrazu:    %d x %d  pikseli"
 
 #: cvgetinfo.c:957
 msgid "Last Anchor Point"
@@ -5728,11 +5734,11 @@ msgstr "Wygł_adzony"
 msgid "Review Hints..."
 msgstr "Przejrzyj hinty..."
 
-#: cvhints.c:527 fontview.c:7474
+#: cvhints.c:527 fontview.c:7487
 msgid "_HStem"
 msgstr "_Poziome"
 
-#: cvhints.c:537 fontview.c:7475
+#: cvhints.c:537 fontview.c:7488
 msgid "_VStem"
 msgstr "P_ionowe"
 
@@ -5769,7 +5775,7 @@ msgstr "Dodaj hint poziomy"
 msgid "Create Vertical Stem Hint"
 msgstr "Dodaj hint pionowy"
 
-#: cvimages.c:129
+#: cvimages.c:133
 msgid "PS Interpretion"
 msgstr ""
 
@@ -5777,186 +5783,190 @@ msgstr ""
 #. GT: translated, and then broken into lines by hand. I'm sure it would
 #. GT: be better to specify this all as one string, but my widgets won't support
 #. GT: that
-#: cvimages.c:144
+#: cvimages.c:148
 msgid "FontForge has some bugs in its remove overlap"
 msgstr ""
 
-#: cvimages.c:151
+#: cvimages.c:155
 msgid "function which may cause you problems, so"
 msgstr ""
 
-#: cvimages.c:158
+#: cvimages.c:162
 msgid "I give you the option of turning it off."
 msgstr ""
 
-#: cvimages.c:165
+#: cvimages.c:169
 msgid "Leave it on if possible though, it is useful."
 msgstr ""
 
-#: cvimages.c:189 cvstroke.c:830
+#: cvimages.c:193 cvstroke.c:830
 msgid "Cleanup Self Intersect"
 msgstr "Usuń przecięcia"
 
-#: cvimages.c:195 cvstroke.c:837
+#: cvimages.c:199 cvstroke.c:837
 msgid ""
 "When FontForge detects that an expanded stroke will self-intersect,\n"
 "then setting this option will cause it to try to make things nice\n"
 "by removing the intersections"
 msgstr ""
 
-#: cvimages.c:199
+#: cvimages.c:203
 msgid "Handle Erasers"
 msgstr ""
 
-#: cvimages.c:205
+#: cvimages.c:209
 msgid ""
 "Certain programs use pens with white ink as erasers\n"
 "If you select (blacken) this checkbox, FontForge will\n"
 "attempt to simulate that."
 msgstr ""
 
-#: cvimages.c:323 cvimages.c:383
+#: cvimages.c:327 cvimages.c:387 cvimages.c:423
 msgid "Too Complex or Bad"
 msgstr ""
 
-#: cvimages.c:323
+#: cvimages.c:327
 msgid ""
 "I'm sorry this file is too complex for me to understand (or is erroneous, or is empty)"
 msgstr ""
 
-#: cvimages.c:383
+#: cvimages.c:387 cvimages.c:423
 msgid "I'm sorry this file is too complex for me to understand (or is erroneous)"
 msgstr ""
 
-#: cvimages.c:882 cvimages.c:884
+#: cvimages.c:922 cvimages.c:924
 msgid "Can't find the file"
 msgstr ""
 
-#: cvimages.c:890 cvimages.c:892
+#: cvimages.c:930 cvimages.c:932
 msgid "Bad xfig file"
 msgstr ""
 
-#: cvimages.c:1003 cvimages.c:1022 cvimages.c:1108 cvimages.c:1208 cvimages.c:1213
+#: cvimages.c:1043 cvimages.c:1062 cvimages.c:1150 cvimages.c:1253 cvimages.c:1258
 msgid "Bad image file"
 msgstr ""
 
-#: cvimages.c:1003 cvimages.c:1022 cvimages.c:1108 cvimages.c:1208
+#: cvimages.c:1043 cvimages.c:1062 cvimages.c:1150 cvimages.c:1253
 #, c-format
 msgid "Bad image file: %.100s"
 msgstr ""
 
-#: cvimages.c:1131 groups.c:1596 groups.c:1599
+#: cvimages.c:1176 groups.c:1596 groups.c:1599
 msgid "Nothing Selected"
 msgstr "Niczego nie wybrano"
 
-#: cvimages.c:1131
+#: cvimages.c:1176
 msgid "You must select a glyph before you can import an image into it"
 msgstr "Musisz wybrać glif do którego mam zaimportować obraz."
 
-#: cvimages.c:1133
+#: cvimages.c:1178
 msgid "More Images Than Selected Glyphs"
 msgstr ""
 
-#: cvimages.c:1152 cvimages.c:1160
+#: cvimages.c:1197 cvimages.c:1205
 msgid "Bad Template"
 msgstr ""
 
-#: cvimages.c:1152
+#: cvimages.c:1197
 msgid "Bad template, no extension"
 msgstr ""
 
-#: cvimages.c:1160
+#: cvimages.c:1205
 msgid "Bad template, unrecognized format"
 msgstr ""
 
-#: cvimages.c:1171 cvimages.c:1234
+#: cvimages.c:1216 cvimages.c:1282
 msgid "Nothing Loaded"
 msgstr ""
 
-#: cvimages.c:1192
+#: cvimages.c:1237
 msgid "Unicode value not in font"
 msgstr ""
 
-#: cvimages.c:1192
+#: cvimages.c:1237
 #, c-format
 msgid "Unicode value (%x) not in font, ignored"
 msgstr ""
 
-#: cvimages.c:1200
+#: cvimages.c:1245
 msgid "Encoding value not in font"
 msgstr ""
 
-#: cvimages.c:1200
+#: cvimages.c:1245
 #, c-format
 msgid "Encoding value (%x) not in font, ignored"
 msgstr ""
 
-#: cvimages.c:1213
+#: cvimages.c:1258
 #, c-format
 msgid "Bad image file, not a bitmap: %.100s"
 msgstr ""
 
-#: cvimages.c:1254 cvimages.c:1270
+#: cvimages.c:1302 cvimages.c:1319
 msgid "Image"
 msgstr "Obraz"
 
-#: cvimages.c:1263 savefontdlg.c:153
+#: cvimages.c:1312 savefontdlg.c:154
 msgid "BDF"
 msgstr "BDF"
 
-#: cvimages.c:1264
+#: cvimages.c:1313
 msgid "TTF"
 msgstr "TTF"
 
-#: cvimages.c:1265 openfontdlg.c:114
+#: cvimages.c:1314 openfontdlg.c:115
 msgid "ΤεΧ Bitmap Fonts"
 msgstr "Fonty bitmapowe ΤεΧ-a"
 
-#: cvimages.c:1266
+#: cvimages.c:1315
 msgid "PCF (pmf)"
-msgstr ""
+msgstr "PCF (pmf)"
 
-#: cvimages.c:1267
+#: cvimages.c:1316
 msgid "Mac Bitmap"
 msgstr "Bitmapa macowa"
 
-#: cvimages.c:1268 savefontdlg.c:165
+#: cvimages.c:1317 savefontdlg.c:166
 msgid "Win FON"
 msgstr "Windowsowy FON"
 
-#: cvimages.c:1269
+#: cvimages.c:1318
 msgid "palm"
 msgstr ""
 
-#: cvimages.c:1271
+#: cvimages.c:1320
 msgid "Image Template"
 msgstr ""
 
-#: cvimages.c:1273
+#: cvimages.c:1322
 msgid "EPS Template"
 msgstr ""
 
-#: cvimages.c:1276
+#: cvimages.c:1325
 msgid "SVG Template"
 msgstr ""
 
-#: cvimages.c:1301
+#: cvimages.c:1327
+msgid "Glif Template"
+msgstr ""
+
+#: cvimages.c:1352
 msgid "Only One Font"
 msgstr ""
 
-#: cvimages.c:1301
+#: cvimages.c:1352
 msgid "Only one font may be imported into the background"
 msgstr ""
 
-#: cvimages.c:1435
+#: cvimages.c:1493
 msgid "Import..."
 msgstr "Importuj..."
 
-#: cvimages.c:1457 ../gdraw/gtextfield.c:954
+#: cvimages.c:1515 ../gdraw/gtextfield.c:954
 msgid "_Import"
 msgstr "_Importuj"
 
-#: cvimages.c:1523
+#: cvimages.c:1581
 msgid "As Background"
 msgstr "Jako tło"
 
@@ -6215,7 +6225,7 @@ msgstr "Dodaj kotwicę"
 msgid "Bitmap"
 msgstr "Bitmapa"
 
-#: cvpalettes.c:2398 effects.c:320 fontinfo.c:94
+#: cvpalettes.c:2398 effects.c:320
 msgid "Outline"
 msgstr "Obrys"
 
@@ -6366,7 +6376,7 @@ msgstr ""
 #: cvruler.c:338
 #, c-format
 msgid "∆Curvature: %g"
-msgstr ""
+msgstr "∆Krzywizny: %g"
 
 #: cvruler.c:355
 msgid " Next CP"
@@ -6554,15 +6564,15 @@ msgstr ""
 msgid "_Transform Pen:"
 msgstr ""
 
-#: cvundoes.c:1846 cvundoes.c:1848
+#: cvundoes.c:1878 cvundoes.c:1880
 msgid "Don't Warn Again"
 msgstr ""
 
-#: cvundoes.c:1850 cvundoes.c:1868 fontview.c:2197 metricsview.c:1703 search.c:1288
+#: cvundoes.c:1882 cvundoes.c:1900 fontview.c:2202 metricsview.c:1709 search.c:1288
 msgid "Bad Reference"
 msgstr ""
 
-#: cvundoes.c:1850
+#: cvundoes.c:1882
 #, c-format
 msgid ""
 "You are attempting to paste a reference to %1$s into %2$s.\n"
@@ -6571,15 +6581,15 @@ msgid ""
 "It will not be copied."
 msgstr ""
 
-#: cvundoes.c:1857 cvundoes.c:2846
+#: cvundoes.c:1889 cvundoes.c:2916
 msgid "Yes to All"
 msgstr "Tak na wszystkie"
 
-#: cvundoes.c:1858 cvundoes.c:2847
+#: cvundoes.c:1890 cvundoes.c:2917
 msgid "No to All"
 msgstr "Nie na wszystkie"
 
-#: cvundoes.c:1868
+#: cvundoes.c:1900
 #, c-format
 msgid ""
 "You are attempting to paste a reference to %1$s into %2$s.\n"
@@ -6587,116 +6597,119 @@ msgid ""
 "Would you like to copy the original splines (or delete the reference)?"
 msgstr ""
 
-#: cvundoes.c:1994
+#: cvundoes.c:2026
 msgid "Anchor Lost"
 msgstr "Stracono kotwicę"
 
-#: cvundoes.c:1994
+#: cvundoes.c:2026
 msgid ""
 "At least one anchor point was lost when pasting from one font to another because no "
 "matching anchor class could be found in the new font."
 msgstr ""
 
-#: cvundoes.c:2016
+#: cvundoes.c:2048
 msgid "Duplicate Anchor"
 msgstr ""
 
-#: cvundoes.c:2016
+#: cvundoes.c:2048
 #, c-format
 msgid "There is already an anchor point named %1$.40s in %2$.40s."
 msgstr ""
 
-#: cvundoes.c:2048
+#: cvundoes.c:2080
 msgid "Yes to all"
 msgstr "Tak na wszystkie"
 
-#: cvundoes.c:2049
+#: cvundoes.c:2081
 msgid "No to all"
 msgstr "Nie na wszystkie"
 
-#: cvundoes.c:2050
+#: cvundoes.c:2082
 msgid "Different Fonts"
 msgstr ""
 
-#: cvundoes.c:2050
+#: cvundoes.c:2082
 msgid ""
 "You are attempting to paste glyph instructions from one font to another. Generally this "
 "will not work unless the 'prep', 'fpgm' and 'cvt ' tables are the same.\n"
 "Do you want to continue anyway?"
 msgstr ""
 
-#: cvundoes.c:2219 cvundoes.c:2423 search.c:1026
+#: cvundoes.c:2255 cvundoes.c:2462 search.c:1026
 msgid "Self-referential character"
 msgstr ""
 
-#: cvundoes.c:2219 cvundoes.c:2423 search.c:1026
+#: cvundoes.c:2255 cvundoes.c:2462 search.c:1026
 msgid "Attempt to make a character that refers to itself"
 msgstr ""
 
-#: cvundoes.c:2221 search.c:1024
+#: cvundoes.c:2257 search.c:1024
 msgid "Self-referential glyph"
 msgstr ""
 
-#: cvundoes.c:2221 search.c:1024
+#: cvundoes.c:2257 search.c:1024
 msgid "Attempt to make a glyph that refers to itself"
 msgstr ""
 
-#: cvundoes.c:2265 cvundoes.c:2267 cvundoes.c:2507 cvundoes.c:2509 cvundoes.c:2957
-#: cvundoes.c:3053 cvundoes.c:3055
+#: cvundoes.c:2301 cvundoes.c:2303 cvundoes.c:2546 cvundoes.c:2548 cvundoes.c:3027
+#: cvundoes.c:3123 cvundoes.c:3125
 msgid "No Vertical Metrics"
 msgstr ""
 
-#: cvundoes.c:2265 cvundoes.c:2267 cvundoes.c:2507 cvundoes.c:2509 cvundoes.c:2957
-#: cvundoes.c:3053 cvundoes.c:3055
+#: cvundoes.c:2301 cvundoes.c:2303 cvundoes.c:2546 cvundoes.c:2548 cvundoes.c:3027
+#: cvundoes.c:3123 cvundoes.c:3125
 msgid ""
 "This font does not have vertical metrics enabled.\n"
 "Use Element->Font Info to enable them."
 msgstr ""
 
-#: cvundoes.c:2849
+#: cvundoes.c:2762 cvundoes.c:2789
+msgid "No selection\n"
+msgstr "Niczego nie wybrano\n"
+
+#: cvundoes.c:2919
 msgid "Bitmap Paste"
 msgstr "Wklej bitmapę"
 
-#: cvundoes.c:2923
+#: cvundoes.c:2993
 msgid "Pasting..."
 msgstr "Wklejanie..."
 
-#: displayfonts.c:167 displayfonts.c:169
+#: displayfonts.c:165 displayfonts.c:167
 msgid "Bad Font"
 msgstr "Zły font"
 
-#: displayfonts.c:373 displayfonts.c:375
+#: displayfonts.c:368 displayfonts.c:370
 msgid "Bad Size"
 msgstr "Zły rozmiar"
 
-#: displayfonts.c:373 displayfonts.c:375
+#: displayfonts.c:368 displayfonts.c:370
 #, c-format
 msgid "Requested bitmap size not available in font. Font supports %s"
 msgstr "W foncie nie ma bitmap o żądanym rozmiarze. Font obsługuje %s"
 
-#: displayfonts.c:509
+#: displayfonts.c:491
 msgid "Display..."
 msgstr "Wyświetl..."
 
-#: displayfonts.c:529
+#: displayfonts.c:513
 msgid "_AA"
 msgstr "_AA"
 
-#: displayfonts.c:538
+#: displayfonts.c:522
 msgid "AntiAlias (greymap) characters, or bitmap characters"
 msgstr "Wygładź wyświetlane znaki (zastosuj antyaliasing)"
 
-#: displayfonts.c:550 displayfonts.c:566
+#: displayfonts.c:535 displayfonts.c:552
 msgid "Specifies the pixel size of the characters on display"
 msgstr "Wybór rozmiaru w pikselach wyświetlanych znaków."
 
-#: displayfonts.c:577 displayfonts.c:589 displayfonts.c:601 displayfonts.c:613
-#: displayfonts.c:626 displayfonts.c:639
+#: displayfonts.c:569 displayfonts.c:582 displayfonts.c:595 displayfonts.c:609
+#: displayfonts.c:623
 msgid ""
 "Specifies file format used to pass the font to freetype\n"
 "  pfb -- is the standard postscript type1\n"
 "  ttf -- is truetype\n"
-"  httf-- is hinted truetype\n"
 "  otf -- is opentype\n"
 "  bitmap -- not passed to freetype for rendering\n"
 "    bitmap fonts must already be generated\n"
@@ -6706,7 +6719,6 @@ msgstr ""
 "Wybór trybu pracy rasteryzatora freetype:\n"
 "  pfb -- standardowy postscriptowy type1\n"
 "  ttf -- truetype\n"
-"  httf-- pohintowany truetype\n"
 "  otf -- opentype\n"
 "  bitmap -- wyświeltane samodzielnie przez FontForge,\n"
 "    bitmapy muszą być utworzone wcześniej.\n"
@@ -6723,7 +6735,7 @@ msgstr ""
 msgid "Failed to write %s\n"
 msgstr ""
 
-#: dumppfa.c:1263 dumppfa.c:1265 fontview.c:5122 tottf.c:1913
+#: dumppfa.c:1263 dumppfa.c:1265 fontview.c:5135 tottf.c:1913
 msgid "Auto Hinting Font..."
 msgstr "Automatyczne hintowanie fontu..."
 
@@ -6783,7 +6795,7 @@ msgstr "Długość cienia:"
 msgid "Light Angle:"
 msgstr "Kąt oświetlenia:"
 
-#: effects.c:1215 fontinfo.c:95
+#: effects.c:1215
 msgid "Shadow"
 msgstr "Cień"
 
@@ -6941,7 +6953,7 @@ msgstr ""
 msgid "Find an adobe CMap file..."
 msgstr ""
 
-#: encoding.c:1951 encoding.c:1953 savefontdlg.c:2420
+#: encoding.c:1951 encoding.c:1953 savefontdlg.c:2425
 msgid "Encoding Too Large"
 msgstr ""
 
@@ -7115,25 +7127,33 @@ msgstr "chiński tradycyjny"
 msgid "Simplified Chinese"
 msgstr "chiński uproszczony"
 
-#: fontinfo.c:89 fontinfo.c:263
-msgid "Bold"
-msgstr "Pismo pogrubione"
-
-#: fontinfo.c:90
-msgid "Italic"
-msgstr "Pismo pochyłe"
-
-#: fontinfo.c:91 metafont.c:1870
-msgid "Condense"
+#: fontinfo.c:89
+msgid "MacStyles|Bold"
 msgstr ""
 
-#: fontinfo.c:92 metafont.c:1871
-msgid "Expand"
+#: fontinfo.c:90
+msgid "MacStyles|Italic"
+msgstr "Pismo pochyłe"
+
+#: fontinfo.c:91
+msgid "MacStyles|Condense"
+msgstr ""
+
+#: fontinfo.c:92
+msgid "MacStyles|Expand"
 msgstr ""
 
 #: fontinfo.c:93
-msgid "Underline"
-msgstr "Podkreślone"
+msgid "MacStyles|Underline"
+msgstr "Pismo podkreślone"
+
+#: fontinfo.c:94
+msgid "MacStyles|Outline"
+msgstr "Pismo konturowe"
+
+#: fontinfo.c:95
+msgid "MacStyles|Shadow"
+msgstr "Pismo z cieniem"
 
 #: fontinfo.c:98
 msgid "Ultra-Condensed (50%)"
@@ -7511,6 +7531,10 @@ msgstr ""
 msgid "Sy Miscellaneous"
 msgstr ""
 
+#: fontinfo.c:208
+msgid "OS2Version|Automatic"
+msgstr "Automatycznie"
+
 #: fontinfo.c:209
 msgid "1"
 msgstr "1"
@@ -7523,23 +7547,29 @@ msgstr "2"
 msgid "4"
 msgstr "4"
 
-#: fontinfo.c:215 fontinfo.c:237 fontinfo.c:255 fontinfo.c:273 fontinfo.c:291
-#: fontinfo.c:309 fontinfo.c:327 fontinfo.c:345 fontinfo.c:363 fontinfo.c:381
-msgid "Any"
-msgstr "Cokolwiek"
+#: fontinfo.c:215
+msgid "PanoseFamily|Any"
+msgstr "Jakikolwiek"
 
-#: fontinfo.c:216 fontinfo.c:238 fontinfo.c:256 fontinfo.c:274 fontinfo.c:292
-#: fontinfo.c:310 fontinfo.c:328 fontinfo.c:346 fontinfo.c:364 fontinfo.c:382
-msgid "No Fit"
+#: fontinfo.c:216
+msgid "PanoseFamily|No Fit"
 msgstr "Nic nie pasuje"
 
 #: fontinfo.c:217
 msgid "Text & Display"
-msgstr ""
+msgstr "Pismo zwykłe (do druku i wyświetlania)"
 
 #: fontinfo.c:224
 msgid "Pictorial"
-msgstr ""
+msgstr "Pismo obrazkowe"
+
+#: fontinfo.c:237
+msgid "PanoseSerifs|Any"
+msgstr "Jakiekolwiek"
+
+#: fontinfo.c:238
+msgid "PanoseSerifs|No Fit"
+msgstr "Nic nie pasuje"
 
 #: fontinfo.c:239
 msgid "Cove"
@@ -7558,12 +7588,12 @@ msgid "Obtuse Square Cove"
 msgstr ""
 
 #: fontinfo.c:243
-msgid "Square"
+msgid "PanoseSerivfs|Square"
 msgstr ""
 
-#: fontinfo.c:244 fontinfo.c:259 metafont.c:1869
-msgid "Thin"
-msgstr "Pismo cienkie"
+#: fontinfo.c:244
+msgid "PanoseSerifs|Thin"
+msgstr ""
 
 #: fontinfo.c:245
 msgid "Bone"
@@ -7594,8 +7624,16 @@ msgid "Flared"
 msgstr ""
 
 #: fontinfo.c:252
-msgid "Rounded"
+msgid "PanoseSerivfs|Rounded"
 msgstr ""
+
+#: fontinfo.c:255
+msgid "PanoseWeight|Any"
+msgstr "Jakakolwiek"
+
+#: fontinfo.c:256
+msgid "PanoseWeight|No Fit"
+msgstr "Nic nie pasuje"
 
 #: fontinfo.c:257
 msgid "Very Light"
@@ -7605,17 +7643,25 @@ msgstr "Pismo bardzo cienkie"
 msgid "Light"
 msgstr "Pismo dość cienkie"
 
+#: fontinfo.c:259
+msgid "PanoseWeight|Thin"
+msgstr "Pismo cienkie"
+
 #: fontinfo.c:260
 msgid "Book"
 msgstr "Pismo zwykłe książkowe"
 
-#: fontinfo.c:261 fontinfo.c:297
+#: fontinfo.c:261
 msgid "Medium"
 msgstr "Pismo zwykłe"
 
 #: fontinfo.c:262
 msgid "Demi"
 msgstr "Pismo półgrube"
+
+#: fontinfo.c:263
+msgid "Bold"
+msgstr "Pismo pogrubione"
 
 #: fontinfo.c:264
 msgid "Heavy"
@@ -7628,6 +7674,14 @@ msgstr "Pismo bardzo grube"
 #: fontinfo.c:266
 msgid "Nord"
 msgstr "Pismo wyjątkowo grube"
+
+#: fontinfo.c:273
+msgid "PanoseProportion|Any"
+msgstr "Jakiekolwiek"
+
+#: fontinfo.c:274
+msgid "PanoseProportion|No Fit"
+msgstr "Nic nie pasuje"
 
 #: fontinfo.c:275
 msgid "Old Style"
@@ -7661,33 +7715,53 @@ msgstr ""
 msgid "Monospaced"
 msgstr ""
 
+#: fontinfo.c:291
+msgid "PanoseContrast|Any"
+msgstr "Jakikolwiek"
+
+#: fontinfo.c:292
+msgid "PanoseContrast|No Fit"
+msgstr "Nic nie pasuje"
+
 #: fontinfo.c:293
-msgid "Contrast|None"
+msgid "PanoseContrast|None"
 msgstr "Brak"
 
 #: fontinfo.c:294
-msgid "Very Low"
-msgstr ""
+msgid "PanoseContrast|Very Low"
+msgstr "Bardzo niski"
 
 #: fontinfo.c:295
-msgid "Low"
-msgstr ""
+msgid "PanoseContrast|Low"
+msgstr "Niski"
 
 #: fontinfo.c:296
-msgid "Medium Low"
-msgstr ""
+msgid "PanoseContrast|Medium Low"
+msgstr "Obniżony"
+
+#: fontinfo.c:297
+msgid "PanoseContrast|Medium"
+msgstr "Średni"
 
 #: fontinfo.c:298
-msgid "Medium High"
-msgstr ""
+msgid "PanoseContrast|Medium High"
+msgstr "Podwyższony"
 
 #: fontinfo.c:299
-msgid "High"
-msgstr ""
+msgid "PanoseContrast|High"
+msgstr "Wysoki"
 
 #: fontinfo.c:300
-msgid "Very High"
-msgstr ""
+msgid "PanoseContrast|Very High"
+msgstr "Bardzo wysoki"
+
+#: fontinfo.c:309
+msgid "PanoseStrokeVariation|Any"
+msgstr "Jakiekolwiek"
+
+#: fontinfo.c:310
+msgid "PanoseStrokeVariation|No Fit"
+msgstr "Nic nie pasuje"
 
 #: fontinfo.c:311
 msgid "Gradual/Diagonal"
@@ -7716,6 +7790,14 @@ msgstr ""
 #: fontinfo.c:317
 msgid "Instant/Vertical"
 msgstr ""
+
+#: fontinfo.c:327
+msgid "PanoseArmStyle|Any"
+msgstr ""
+
+#: fontinfo.c:328
+msgid "PanoseArmStyle|No Fit"
+msgstr "Nic nie pasuje"
 
 #: fontinfo.c:329
 msgid "Straight Arms/Horizontal"
@@ -7756,6 +7838,14 @@ msgstr ""
 #: fontinfo.c:338
 msgid "Non-Straight Arms/Double Serif"
 msgstr ""
+
+#: fontinfo.c:345
+msgid "PanoseLetterform|Any"
+msgstr "Jakakolwiek"
+
+#: fontinfo.c:346
+msgid "PanoseLetterform|No Fit"
+msgstr "Nic nie pasuje"
 
 #: fontinfo.c:347
 msgid "Normal/Contact"
@@ -7809,76 +7899,92 @@ msgstr ""
 msgid "Oblique/Square"
 msgstr ""
 
+#: fontinfo.c:363
+msgid "PanoseMidline|Any"
+msgstr ""
+
+#: fontinfo.c:364
+msgid "PanoseMidline|No Fit"
+msgstr "Nic nie pasuje"
+
 #: fontinfo.c:365
-msgid "Standard/Trimmed"
+msgid "PanoseMidline|Standard/Trimmed"
 msgstr ""
 
 #: fontinfo.c:366
-msgid "Standard/Pointed"
+msgid "PanoseMidline|Standard/Pointed"
 msgstr ""
 
 #: fontinfo.c:367
-msgid "Standard/Serifed"
+msgid "PanoseMidline|Standard/Serifed"
 msgstr ""
 
 #: fontinfo.c:368
-msgid "High/Trimmed"
+msgid "PanoseMidline|High/Trimmed"
 msgstr ""
 
 #: fontinfo.c:369
-msgid "High/Pointed"
+msgid "PanoseMidline|High/Pointed"
 msgstr ""
 
 #: fontinfo.c:370
-msgid "High/Serifed"
+msgid "PanoseMidline|High/Serifed"
 msgstr ""
 
 #: fontinfo.c:371
-msgid "Constant/Trimmed"
+msgid "PanoseMidline|Constant/Trimmed"
 msgstr ""
 
 #: fontinfo.c:372
-msgid "Constant/Pointed"
+msgid "PanoseMidline|Constant/Pointed"
 msgstr ""
 
 #: fontinfo.c:373
-msgid "Constant/Serifed"
+msgid "PanoseMidline|Constant/Serifed"
 msgstr ""
 
 #: fontinfo.c:374
-msgid "Low/Trimmed"
+msgid "PanoseMidline|Low/Trimmed"
 msgstr ""
 
 #: fontinfo.c:375
-msgid "Low/Pointed"
+msgid "PanoseMidline|Low/Pointed"
 msgstr ""
 
 #: fontinfo.c:376
-msgid "Low/Serifed"
+msgid "PanoseMidline|Low/Serifed"
 msgstr ""
 
+#: fontinfo.c:381
+msgid "PanoseXHeight|Any"
+msgstr "Jakakolwiek"
+
+#: fontinfo.c:382
+msgid "PanoseXHeight|No Fit"
+msgstr "Nic nie pasuje"
+
 #: fontinfo.c:383
-msgid "Constant/Small"
+msgid "PanoseXHeight|Constant/Small"
 msgstr ""
 
 #: fontinfo.c:384
-msgid "Constant/Standard"
+msgid "PanoseXHeight|Constant/Standard"
 msgstr ""
 
 #: fontinfo.c:385
-msgid "Constant/Large"
+msgid "PanoseXHeight|Constant/Large"
 msgstr ""
 
 #: fontinfo.c:386
-msgid "Ducking/Small"
+msgid "PanoseXHeight|Ducking/Small"
 msgstr ""
 
 #: fontinfo.c:387
-msgid "Ducking/Standard"
+msgid "PanoseXHeight|Ducking/Standard"
 msgstr ""
 
 #: fontinfo.c:388
-msgid "Ducking/Large"
+msgid "PanoseXHeight|Ducking/Large"
 msgstr ""
 
 #: fontinfo.c:616
@@ -8238,11 +8344,11 @@ msgid "Portuguese (Brasil)"
 msgstr "portugalski (Brazylia)"
 
 #: fontinfo.c:758
-msgid "Punjabi (India"
+msgid "Punjabi (India)"
 msgstr "pundżabi (Indie)"
 
 #: fontinfo.c:759
-msgid "Punjabi (Pakistan"
+msgid "Punjabi (Pakistan)"
 msgstr "pundżabi (Pakistan)"
 
 #: fontinfo.c:760
@@ -8545,7 +8651,7 @@ msgstr "Wartość"
 msgid "No Grid Fit"
 msgstr "Hintuj"
 
-#: fontinfo.c:871 fontinfo.c:879
+#: fontinfo.c:871
 msgid "Grid Fit"
 msgstr "Nie hintuj"
 
@@ -8553,13 +8659,21 @@ msgstr "Nie hintuj"
 msgid "No Anti-Alias"
 msgstr "Wygładzaj"
 
-#: fontinfo.c:875 fontinfo.c:880
+#: fontinfo.c:875
 msgid "Anti-Alias"
 msgstr "Nie wygładzaj"
 
 #: fontinfo.c:878
-msgid "Pixels Per EM"
+msgid "Gasp|Pixels Per EM"
 msgstr "Piksele na firet"
+
+#: fontinfo.c:879
+msgid "Gasp|Grid Fit"
+msgstr "Hinting"
+
+#: fontinfo.c:880
+msgid "Gasp|Anti-Alias"
+msgstr "Wygładzanie"
 
 #: fontinfo.c:1277 fontinfo.c:1293 parsettf.c:3599
 msgid "Unknown"
@@ -8673,29 +8787,29 @@ msgstr ""
 
 #: fontinfo.c:2770 fontinfo.c:3434 fontinfo.c:8074
 msgid "Show First Mark"
-msgstr ""
+msgstr "Pokaż pierwszy diaktryk"
 
 #: fontinfo.c:2770 fontinfo.c:3436 fontinfo.c:8083
 msgid "Show First Base"
-msgstr ""
+msgstr "Pokaż pierwszy glif podstawowy"
 
 #: fontinfo.c:2771
 msgid "There are no more marks associated with this anchor class"
-msgstr ""
+msgstr "Nie ma więcej diaktryków związanych z tą klasą kotwic"
 
 #: fontinfo.c:2771
 msgid "There are no more base glyphs associated with this anchor class"
-msgstr ""
+msgstr "Nie ma więcej glifów podstawowych związanych z tą klasą kotwic"
 
 #: fontinfo.c:2789
 msgid "Show Next Mark"
-msgstr ""
+msgstr "Pokaż następny diaktryk"
 
 #: fontinfo.c:2789
 msgid "Show Next Base"
-msgstr ""
+msgstr "Pokaż następny glif podstawowy"
 
-#: fontinfo.c:3035 macenc.c:2632 macenc.c:2997 macenc.c:3304
+#: fontinfo.c:3035 macenc.c:2635 macenc.c:3000 macenc.c:3307
 msgid "_Name:"
 msgstr "_Nazwa:"
 
@@ -8762,7 +8876,7 @@ msgid "Bad Family Name, must begin with an alphabetic character."
 msgstr ""
 
 #: fontinfo.c:4078 fontinfo.c:4100 fontinfo.c:4103 fontinfo.c:4118 fontinfo.c:4126
-#: parsettf.c:822 parsettf.c:834 parsettf.c:846 savefontdlg.c:2392
+#: parsettf.c:822 parsettf.c:834 parsettf.c:846 savefontdlg.c:2397
 msgid "Bad Font Name"
 msgstr ""
 
@@ -8792,7 +8906,7 @@ msgid ""
 "longer than 31 characters. Do you want to continue anyway?"
 msgstr ""
 
-#: fontinfo.c:4100 savefontdlg.c:2392
+#: fontinfo.c:4100 savefontdlg.c:2397
 msgid ""
 "Some versions of Windows will refuse to install postscript fonts if the fontname is "
 "longer than 31 characters. Do you want to continue anyway?"
@@ -9065,7 +9179,7 @@ msgstr ""
 msgid "A style may not have both condense and extend set (it makes no sense)"
 msgstr ""
 
-#: fontinfo.c:5237 fontview.c:7164 openfontdlg.c:420 prefs.c:1493 savefontdlg.c:2340
+#: fontinfo.c:5237 fontview.c:7177 openfontdlg.c:422 prefs.c:1520 savefontdlg.c:2345
 msgid "Namelist contains non-ASCII names"
 msgstr ""
 
@@ -9357,7 +9471,7 @@ msgstr "Nazwa _rodziny:"
 msgid "Name For Human_s:"
 msgstr "Nazwa dla _ludzi:"
 
-#: fontinfo.c:6364 fontinfo.c:7724
+#: fontinfo.c:6364
 msgid "_Weight"
 msgstr "_Grubość:"
 
@@ -9406,7 +9520,7 @@ msgstr "_Wys. pola znaku:"
 msgid "_Scale Outlines"
 msgstr "_Skaluj obrysy"
 
-#: fontinfo.c:6643 fontinfo.c:6932 savefontdlg.c:1138
+#: fontinfo.c:6643 fontinfo.c:6932 savefontdlg.c:1139
 msgid "_Guess"
 msgstr "_Oblicz"
 
@@ -9473,7 +9587,7 @@ msgstr "_Hist."
 msgid "Histogram Dialog"
 msgstr ""
 
-#: fontinfo.c:6957 fontview.c:5773 fontview.c:6914
+#: fontinfo.c:6957 fontview.c:5786 fontview.c:6927
 msgid "_Remove"
 msgstr "_Usuń"
 
@@ -9644,12 +9758,16 @@ msgid "PanoseUse|Default"
 msgstr "Domyślna"
 
 #: fontinfo.c:7688
-msgid "_Family"
+msgid "Panose|_Family"
 msgstr "_Rodzaj"
 
 #: fontinfo.c:7706
 msgid "_Serifs"
 msgstr "_Szeryfy"
+
+#: fontinfo.c:7724
+msgid "Panose|_Weight"
+msgstr "_Grubość:"
 
 #: fontinfo.c:7742
 msgid "_Proportion"
@@ -9661,7 +9779,7 @@ msgstr "_Kontrast"
 
 #: fontinfo.c:7778
 msgid "Stroke _Variation"
-msgstr ""
+msgstr "Pro_wadzenie kresek"
 
 #: fontinfo.c:7796
 msgid "_Arm Style"
@@ -9910,19 +10028,19 @@ msgstr "Nowa"
 msgid "gaspTableEntry|New"
 msgstr "Nowy"
 
-#: fontview.c:324
+#: fontview.c:329
 msgid "Select all instances of the named glyph"
 msgstr ""
 
-#: fontview.c:515
+#: fontview.c:520
 msgid "_Don't Save"
 msgstr "_Nie zapisuj"
 
-#: fontview.c:517 fontview.c:535
+#: fontview.c:522 fontview.c:540
 msgid "Font changed"
 msgstr "Font uleg zmianie"
 
-#: fontview.c:517
+#: fontview.c:522
 #, c-format
 msgid ""
 "Font %1$.40s in file %2$.40s has been changed.\n"
@@ -9931,11 +10049,11 @@ msgstr ""
 "Font %1$.40s z pliku %2$.40s został zmieniony.\n"
 "Czy chcesz zapisać zmiany?"
 
-#: fontview.c:528
+#: fontview.c:533
 msgid "_Revert"
 msgstr "_Przywróć"
 
-#: fontview.c:535
+#: fontview.c:540
 #, c-format
 msgid ""
 "Font %1$.40s in file %2$.40s has been changed.\n"
@@ -9946,15 +10064,15 @@ msgstr ""
 "Przywrócenie pliku oznacza utratę zmian.\n"
 "Czy właśnie tego chcesz?"
 
-#: fontview.c:613
+#: fontview.c:618
 msgid "Save as..."
 msgstr "Zapisz jako..."
 
-#: fontview.c:1123
+#: fontview.c:1128
 msgid "Glyph Name Changed"
 msgstr "Zmieniono nazwę glifu"
 
-#: fontview.c:1123
+#: fontview.c:1128
 #, c-format
 msgid ""
 "The name of glyph %.40s has changed. This is what I use to find the glyph in the file, "
@@ -9962,789 +10080,789 @@ msgid ""
 "(You will not be warned for subsequent glyphs.)"
 msgstr ""
 
-#: fontview.c:1261 fontview.c:1305 prefs.c:409
+#: fontview.c:1266 fontview.c:1310 prefs.c:422
 msgid "Open Font"
 msgstr "Otwórz font"
 
-#: fontview.c:1276 fontview.c:1323
+#: fontview.c:1281 fontview.c:1328
 msgid "Merge Kern Info"
 msgstr "Dołącz dane kerningu"
 
-#: fontview.c:1283 fontview.c:1336
+#: fontview.c:1288 fontview.c:1341
 #, c-format
 msgid "Failed to load kern data from %s"
 msgstr ""
 
-#: fontview.c:1336
+#: fontview.c:1341
 msgid "Load of Kerning Metrics Failed"
 msgstr ""
 
-#: fontview.c:1454
+#: fontview.c:1459
 msgid "Many Windows"
 msgstr ""
 
-#: fontview.c:1454
+#: fontview.c:1459
 msgid ""
 "This involves opening more than 10 windows.\n"
 "Is that really what you want?"
 msgstr ""
 
-#: fontview.c:2193
+#: fontview.c:2198
 msgid "Yes to _All"
 msgstr ""
 
-#: fontview.c:2194
+#: fontview.c:2199
 msgid "_Unlink All"
 msgstr ""
 
-#: fontview.c:2195
+#: fontview.c:2200
 msgid "No _to All"
 msgstr ""
 
-#: fontview.c:2197 metricsview.c:1703
+#: fontview.c:2202 metricsview.c:1709
 #, c-format
 msgid ""
 "You are attempting to clear %.30s which is referred to by\n"
 "another character. Are you sure you want to clear it?"
 msgstr ""
 
-#: fontview.c:2606
+#: fontview.c:2611
 msgid "Select Color"
 msgstr ""
 
-#: fontview.c:2836 fontview.c:2843 fontview.c:2861 fontview.c:2867 typofeatures.c:1511
+#: fontview.c:2841 fontview.c:2848 fontview.c:2866 fontview.c:2872 typofeatures.c:1511
 #: typofeatures.c:1513
 msgid "No Features Removed"
 msgstr ""
 
-#: fontview.c:3148
+#: fontview.c:3154
 msgid "Transforming..."
 msgstr "Przekształcanie..."
 
-#: fontview.c:3485
+#: fontview.c:3491
 msgid "Removing overlaps..."
 msgstr "Usuwanie przecięć..."
 
-#: fontview.c:3605
+#: fontview.c:3611
 msgid "Simplifying..."
 msgstr "Upraszczanie..."
 
-#: fontview.c:3719
+#: fontview.c:3725
 msgid "Adding points at Extrema..."
 msgstr "Dodawanie punków w ekstremach..."
 
-#: fontview.c:3769
+#: fontview.c:3775
 msgid "Correcting Direction..."
 msgstr "Poprawianie kierunku splajnów..."
 
-#: fontview.c:3791
+#: fontview.c:3797
 msgid "Unlink All"
 msgstr ""
 
-#: fontview.c:3792
+#: fontview.c:3798
 msgid "Unlink"
 msgstr ""
 
-#: fontview.c:3839 fontview.c:3885
+#: fontview.c:3845 fontview.c:3891
 msgid "Rounding to integer..."
 msgstr "Zaokrglanie do cakowitych..."
 
-#: fontview.c:3931 fontview.c:3932
+#: fontview.c:3937 fontview.c:3938
 msgid "Building accented glyphs"
 msgstr ""
 
-#: fontview.c:3956
+#: fontview.c:3962
 msgid "Replace Å"
 msgstr ""
 
-#: fontview.c:3956
+#: fontview.c:3962
 msgid ""
 "Are you sure you want to replace Å?\n"
 "The ring will not join to the A."
 msgstr ""
 
-#: fontview.c:4021 fontview.c:4022
+#: fontview.c:4027 fontview.c:4028
 msgid "Building duplicate encodings"
 msgstr ""
 
-#: fontview.c:4497
+#: fontview.c:4503
 msgid "Display Substitutions..."
 msgstr "Pokaż podstawienia..."
 
-#: fontview.c:4639
+#: fontview.c:4645
 msgid "Show H. Metrics..."
 msgstr "Pokaż wymiary poziome..."
 
-#: fontview.c:4639
+#: fontview.c:4645
 msgid "Show V. Metrics..."
 msgstr "Pokaż wymiary pionowe..."
 
-#: fontview.c:4648
+#: fontview.c:4654
 msgid "Baseline"
 msgstr "Linia podstawowa"
 
-#: fontview.c:4656
+#: fontview.c:4662
 msgid "Origin"
 msgstr "Początek"
 
-#: fontview.c:4664
+#: fontview.c:4670
 msgid "Advance Width as a Line"
 msgstr "Zaznacz linią graniczną"
 
-#: fontview.c:4670
+#: fontview.c:4676
 msgid ""
 "Display the advance width as a line\n"
 "perpendicular to the advance direction"
 msgstr "Zaznacz granicę danego wymiaru."
 
-#: fontview.c:4673
+#: fontview.c:4679
 msgid "Advance Width as a Bar"
 msgstr "Zaznacz linią wzdłuż"
 
-#: fontview.c:4679
+#: fontview.c:4685
 msgid ""
 "Display the advance width as a bar under the glyph\n"
 "showing the extent of the advance"
 msgstr "Rysuj linię wzdłuż wymiaru."
 
-#: fontview.c:4718
+#: fontview.c:4724
 msgid "Show Vertical Metrics"
 msgstr "Pokaż wymiary pionowe"
 
-#: fontview.c:5164
+#: fontview.c:5177
 msgid "Finding Substitution Points..."
 msgstr "Znajdowanie punktów podstawień..."
 
-#: fontview.c:5202
+#: fontview.c:5215
 msgid "Finding Counter Masks..."
 msgstr ""
 
-#: fontview.c:5263
+#: fontview.c:5276
 msgid "Auto Instructing Font..."
 msgstr "Automatyczne instruowanie fontu..."
 
-#: fontview.c:5713
+#: fontview.c:5726
 msgid "Please close font"
 msgstr "Proszę zamknąć font"
 
-#: fontview.c:5713
+#: fontview.c:5726
 #, c-format
 msgid "Please close %s before inserting it into a CID font"
 msgstr ""
 
-#: fontview.c:5775 fontview.c:7532
+#: fontview.c:5788 fontview.c:7545
 msgid "_Remove Font"
 msgstr ""
 
-#: fontview.c:5775
+#: fontview.c:5788
 #, c-format
 msgid "Are you sure you wish to remove sub-font %1$.40s from the CID font %2$.40s"
 msgstr ""
 
-#: fontview.c:5845
+#: fontview.c:5858
 msgid "Change Supplement..."
 msgstr ""
 
-#: fontview.c:5845
+#: fontview.c:5858
 #, c-format
 msgid "Please specify a new supplement for %.20s-%.20s"
 msgstr ""
 
-#: fontview.c:6327
+#: fontview.c:6340
 msgid "_New Composition..."
 msgstr ""
 
-#: fontview.c:6328
+#: fontview.c:6341
 msgid "_Modify Composition..."
 msgstr ""
 
-#: fontview.c:6330
+#: fontview.c:6343
 msgid "_Build Syllables"
 msgstr ""
 
-#: fontview.c:6415
+#: fontview.c:6428
 msgid "_Hangul"
 msgstr "_Hangul"
 
-#: fontview.c:6423
+#: fontview.c:6436
 msgid "Save A_ll"
 msgstr "Zapisz w_szystko"
 
-#: fontview.c:6428 metricsview.c:2654
+#: fontview.c:6441 metricsview.c:2660
 msgid "_Merge Kern Info..."
 msgstr "Dołącz dane kerningu..."
 
-#: fontview.c:6430
+#: fontview.c:6443
 msgid "Revert To _Backup"
 msgstr "Przywróć z _backupu"
 
-#: fontview.c:6436
+#: fontview.c:6449
 msgid "E_xecute Script..."
 msgstr "Wykonaj skry_pt"
 
-#: fontview.c:6437 prefs.c:2008
+#: fontview.c:6450 prefs.c:2035
 msgid "Script Menu"
 msgstr "Menu skryptów"
 
-#: fontview.c:6446
+#: fontview.c:6459
 msgid "_All Fonts"
 msgstr "_Wszystkie fonty"
 
-#: fontview.c:6447
+#: fontview.c:6460
 msgid "_Displayed Font"
 msgstr "_Bieżący font"
 
-#: fontview.c:6449
+#: fontview.c:6462
 msgid "Glyph _Metadata"
 msgstr "_Metadane glifu"
 
-#: fontview.c:6451
+#: fontview.c:6464
 msgid "_TrueType Instructions"
 msgstr "_Instrukcje TrueType"
 
-#: fontview.c:6471
+#: fontview.c:6484
 msgid "_Select by Color"
 msgstr "Zaznacz po _kolorze"
 
-#: fontview.c:6472
+#: fontview.c:6485
 msgid "Select by _Name..."
 msgstr "Zaznacz po _nazwie"
 
-#: fontview.c:6474
+#: fontview.c:6487
 msgid "_Glyphs Worth Outputting"
 msgstr "Zaznacz _istotne"
 
-#: fontview.c:6475
+#: fontview.c:6488
 msgid "_Changed Glyphs"
 msgstr "Zaznacz _zmienione"
 
-#: fontview.c:6476
+#: fontview.c:6489
 msgid "_Hinting Needed"
 msgstr "Wymagające _hintingu"
 
-#: fontview.c:6490 metricsview.c:2673
+#: fontview.c:6503 metricsview.c:2679
 msgid "Copy _VWidth"
 msgstr "Kop_iuj wysokość"
 
-#: fontview.c:6495
+#: fontview.c:6508
 msgid "Paste Into"
 msgstr "Wklej _do"
 
-#: fontview.c:6497
+#: fontview.c:6510
 msgid "Paste After"
 msgstr "Wklej wzdł_uż"
 
-#: fontview.c:6499
+#: fontview.c:6512
 msgid "Sa_me Glyph As"
 msgstr "Ten sa_m glif"
 
-#: fontview.c:6506
+#: fontview.c:6519
 msgid "F_ind / Replace..."
 msgstr "Z_najdź / zastąp"
 
-#: fontview.c:6507 search.c:1639 search.c:1640 search.c:1642
+#: fontview.c:6520 search.c:1639 search.c:1640 search.c:1642
 msgid "Replace with Reference"
 msgstr "Zastąp odwołaniem"
 
-#: fontview.c:6511
+#: fontview.c:6524
 msgid "Copy _From"
 msgstr "Kopiuj z..."
 
-#: fontview.c:6526
+#: fontview.c:6539
 msgid "Unicode Decomposition (Mac Only)"
 msgstr ""
 
-#: fontview.c:6578
+#: fontview.c:6591
 msgid "Buil_d Duplicate Glyph"
 msgstr "_Podstaw podobny glif"
 
-#: fontview.c:6587
+#: fontview.c:6600
 msgid "_Copy Feature(s) To Font..."
 msgstr "_Kopiuj funkcje do fontu..."
 
-#: fontview.c:6588
+#: fontview.c:6601
 msgid "_Default ATT"
 msgstr "_Domyślne ATT"
 
-#: fontview.c:6590
+#: fontview.c:6603
 msgid "_Remove All Features"
 msgstr "_Usuń wszystkie funkcje"
 
-#: fontview.c:6591
+#: fontview.c:6604
 msgid "R_emove Feature(s)..."
 msgstr "Usuń _niektóre funkcje..."
 
-#: fontview.c:6592
+#: fontview.c:6605
 msgid "Remove U_nused Nested"
 msgstr "Usuń nieużywane _zagnieżdżone"
 
-#: fontview.c:6594
+#: fontview.c:6607
 msgid "Re_tag Feature(s)..."
 msgstr "Prze_taguj funkcje..."
 
-#: fontview.c:6622
+#: fontview.c:6635
 msgid "T_ypo. Features"
 msgstr "Funkcje _zecerskie"
 
-#: fontview.c:6646
+#: fontview.c:6659
 msgid "_Merge Fonts..."
 msgstr "Połącz font_y..."
 
-#: fontview.c:6647
+#: fontview.c:6660
 msgid "Interpo_late Fonts..."
 msgstr "_Interpoluj fonty..."
 
-#: fontview.c:6648
+#: fontview.c:6661
 msgid "Compare Fonts..."
 msgstr "Porównaj fonty..."
 
-#: fontview.c:6716
+#: fontview.c:6729
 msgid "_Glyph Image"
 msgstr "Obraz _Glifu"
 
-#: fontview.c:6717
+#: fontview.c:6730
 msgid "_Name"
 msgstr "_Nazwa"
 
-#: fontview.c:6718
+#: fontview.c:6731
 msgid "_Unicode"
 msgstr "_Unikod"
 
-#: fontview.c:6719
+#: fontview.c:6732
 msgid "_Encoding Hex"
 msgstr "Kod sz_esnastkowy"
 
-#: fontview.c:6765
+#: fontview.c:6778
 msgid "Add Encoding Slots..."
 msgstr ""
 
-#: fontview.c:6765
+#: fontview.c:6778
 msgid "How many CID slots do you wish to add?"
 msgstr ""
 
-#: fontview.c:6765
+#: fontview.c:6778
 msgid "How many unencoded glyph slots do you wish to add?"
 msgstr ""
 
-#: fontview.c:6919 fontview.c:7254
+#: fontview.c:6932 fontview.c:7267
 msgid "Detach & Remo_ve Glyphs..."
 msgstr ""
 
-#: fontview.c:6919
+#: fontview.c:6932
 msgid "Are you sure you wish to remove these glyphs? This operation cannot be undone."
 msgstr ""
 
-#: fontview.c:6958
+#: fontview.c:6971
 msgid "Add Encoding Name..."
 msgstr ""
 
-#: fontview.c:6958
+#: fontview.c:6971
 msgid ""
 "Please provide the name of an encoding in the iconv database which you want in the menu."
 msgstr ""
 
-#: fontview.c:6963
+#: fontview.c:6976
 msgid "Invalid Encoding"
 msgstr "Błędne kodowanie"
 
-#: fontview.c:7039
+#: fontview.c:7052
 msgid "Make Namelist"
 msgstr ""
 
-#: fontview.c:7051
+#: fontview.c:7064
 msgid "Namelist creation failed"
 msgstr ""
 
-#: fontview.c:7051 fontview.c:7132
+#: fontview.c:7064 fontview.c:7145
 #, c-format
 msgid "Could not write %s"
 msgstr ""
 
-#: fontview.c:7074
+#: fontview.c:7087
 msgid "Load Namelist"
 msgstr ""
 
-#: fontview.c:7103 problems.c:2051 search.c:1504 ../gdraw/gsavefiledlg.c:72
+#: fontview.c:7116 problems.c:2051 search.c:1504 ../gdraw/gsavefiledlg.c:72
 msgid "Replace"
 msgstr "Zamień"
 
-#: fontview.c:7103
+#: fontview.c:7116
 msgid "A name list with this name already exists. Replace it?"
 msgstr ""
 
-#: fontview.c:7113 fontview.c:7203
+#: fontview.c:7126 fontview.c:7216
 msgid "No such file"
 msgstr ""
 
-#: fontview.c:7113 fontview.c:7203
+#: fontview.c:7126 fontview.c:7216
 #, c-format
 msgid "Could not read %s"
 msgstr ""
 
-#: fontview.c:7118
+#: fontview.c:7131
 msgid "Bad namelist file"
 msgstr ""
 
-#: fontview.c:7118
+#: fontview.c:7131
 #, c-format
 msgid "Could not parse %s"
 msgstr ""
 
-#: fontview.c:7125 fontview.c:7127
+#: fontview.c:7138 fontview.c:7140
 msgid "Non-ASCII glyphnames"
 msgstr ""
 
-#: fontview.c:7125
+#: fontview.c:7138
 #, c-format
 msgid "This namelist contains at least one non-ASCII glyph name, namely: %s"
 msgstr ""
 
-#: fontview.c:7127
+#: fontview.c:7140
 msgid "This namelist is based on a namelist which contains non-ASCII glyph names"
 msgstr ""
 
-#: fontview.c:7132
+#: fontview.c:7145
 msgid "Create failed"
 msgstr ""
 
-#: fontview.c:7156
+#: fontview.c:7169
 msgid "Rename by NameList"
 msgstr ""
 
-#: fontview.c:7156
+#: fontview.c:7169
 msgid "Rename the glyphs in this font to the names found in the selected namelist"
 msgstr ""
 
-#: fontview.c:7164 openfontdlg.c:420 prefs.c:1493 savefontdlg.c:2340
+#: fontview.c:7177 openfontdlg.c:422 prefs.c:1520 savefontdlg.c:2345
 msgid ""
 "Glyph names should be limited to characters in the ASCII character set, but there are "
 "names in this namelist which use characters outside that range."
 msgstr ""
 
-#: fontview.c:7186
+#: fontview.c:7199
 msgid "Load glyph names"
 msgstr ""
 
-#: fontview.c:7247
+#: fontview.c:7260
 msgid "_Reencode"
 msgstr "P_rzekoduj"
 
-#: fontview.c:7248
+#: fontview.c:7261
 msgid "_Compact"
 msgstr "Widok _kompaktowy"
 
-#: fontview.c:7249
+#: fontview.c:7262
 msgid "_Force Encoding"
 msgstr "Nazwy znaków według"
 
-#: fontview.c:7251
+#: fontview.c:7264
 msgid "_Add Encoding Slots..."
 msgstr ""
 
-#: fontview.c:7252
+#: fontview.c:7265
 msgid "Remove _Unused Slots"
 msgstr ""
 
-#: fontview.c:7253
+#: fontview.c:7266
 msgid "_Detach Glyphs"
 msgstr ""
 
-#: fontview.c:7256
+#: fontview.c:7269
 msgid "Add E_ncoding Name..."
 msgstr ""
 
-#: fontview.c:7257
+#: fontview.c:7270
 msgid "_Load Encoding..."
 msgstr ""
 
-#: fontview.c:7258
+#: fontview.c:7271
 msgid "Ma_ke From Font..."
 msgstr ""
 
-#: fontview.c:7259
+#: fontview.c:7272
 msgid "Remove En_coding..."
 msgstr ""
 
-#: fontview.c:7261
+#: fontview.c:7274
 msgid "Display By _Groups..."
 msgstr ""
 
-#: fontview.c:7262
+#: fontview.c:7275
 msgid "D_efine Groups..."
 msgstr ""
 
-#: fontview.c:7264
+#: fontview.c:7277
 msgid "_Save Namelist of Font..."
 msgstr ""
 
-#: fontview.c:7265
+#: fontview.c:7278
 msgid "L_oad Namelist..."
 msgstr ""
 
-#: fontview.c:7266
+#: fontview.c:7279
 msgid "Rename Gl_yphs..."
 msgstr ""
 
-#: fontview.c:7267
+#: fontview.c:7280
 msgid "Cre_ate Named Glyphs..."
 msgstr ""
 
-#: fontview.c:7327
+#: fontview.c:7340
 msgid "_Show ATT"
 msgstr "Pokaż A_TT"
 
-#: fontview.c:7328
+#: fontview.c:7341
 msgid "Display S_ubstitutions..."
 msgstr "Pokaż pod_stawienia..."
 
-#: fontview.c:7331
+#: fontview.c:7344
 msgid "_Label Glyph By"
 msgstr "Etykieta g_lifu"
 
-#: fontview.c:7333
+#: fontview.c:7346
 msgid "S_how H. Metrics..."
 msgstr "Pokaż wymiary pozio_me"
 
-#: fontview.c:7334
+#: fontview.c:7347
 msgid "Show _V. Metrics..."
 msgstr "Pokaż wymiary piono_we"
 
-#: fontview.c:7336
+#: fontview.c:7349
 msgid "32x8 cell window"
 msgstr "32x8 komórek"
 
-#: fontview.c:7337
+#: fontview.c:7350
 msgid "1_6x4 cell window"
 msgstr "1_6x4 komórek"
 
-#: fontview.c:7338
+#: fontview.c:7351
 msgid "_8x2  cell window"
 msgstr "_8x2 komórek"
 
-#: fontview.c:7340
+#: fontview.c:7353
 msgid "_24 pixel outline"
 msgstr "_24-pikselowy obrys"
 
-#: fontview.c:7341
+#: fontview.c:7354
 msgid "_36 pixel outline"
 msgstr "_36-pikselowy obrys"
 
-#: fontview.c:7342
+#: fontview.c:7355
 msgid "_48 pixel outline"
 msgstr "_48-pikselowy obrys"
 
-#: fontview.c:7343
+#: fontview.c:7356
 msgid "_72 pixel outline"
 msgstr "_72-pikselowy obrys"
 
-#: fontview.c:7344
+#: fontview.c:7357
 msgid "_96 pixel outline"
 msgstr "_96-pikselowy obrys"
 
-#: fontview.c:7345 metricsview.c:2842
+#: fontview.c:7358 metricsview.c:2848
 msgid "_Anti Alias"
 msgstr "Wygł_adź"
 
-#: fontview.c:7346 fontview.c:7372
+#: fontview.c:7359 fontview.c:7385
 msgid "_Fit to em"
 msgstr "Dopasuj pola _znaków"
 
-#: fontview.c:7388 fontview.c:8107 metricsview.c:3063 parsettfbmf.c:578
+#: fontview.c:7401 fontview.c:8120 metricsview.c:3069 parsettfbmf.c:578
 #, c-format
 msgid "%d pixel bitmap"
 msgstr "%d-pikselowa bitmapa"
 
-#: fontview.c:7390 fontview.c:8109 metricsview.c:3065
+#: fontview.c:7403 fontview.c:8122 metricsview.c:3071
 #, c-format
 msgid "%d@%d pixel bitmap"
 msgstr "%d@%d-pikselowa bitmapa"
 
-#: fontview.c:7476
+#: fontview.c:7489
 msgid "BlueValues"
 msgstr ""
 
-#: fontview.c:7488
+#: fontview.c:7501
 msgid "Edit 'fpgm'..."
 msgstr "Edytuj „fpgm”..."
 
-#: fontview.c:7489
+#: fontview.c:7502
 msgid "Edit 'prep'..."
 msgstr "Edytuj „prep”..."
 
-#: fontview.c:7490
+#: fontview.c:7503
 msgid "Edit 'maxp'..."
 msgstr "Edytuj „maxp”..."
 
-#: fontview.c:7491
+#: fontview.c:7504
 msgid "Edit 'cvt '..."
 msgstr "Edytuj „cvt”..."
 
-#: fontview.c:7492
+#: fontview.c:7505
 msgid "Private to 'cvt'"
 msgstr "_Przepisz słownik PS do „cvt”"
 
-#: fontview.c:7494
+#: fontview.c:7507
 msgid "_Clear Hints"
 msgstr "_Usuń hinty"
 
-#: fontview.c:7495
+#: fontview.c:7508
 msgid "Clear _Width MD"
 msgstr "Usuń znaczniki M_D"
 
-#: fontview.c:7498
+#: fontview.c:7511
 msgid "Histograms"
 msgstr "Histogramy"
 
-#: fontview.c:7511
+#: fontview.c:7524
 msgid "_Auto Width..."
 msgstr "S_zerokość automatyczna..."
 
-#: fontview.c:7512
+#: fontview.c:7525
 msgid "Auto _Kern..."
 msgstr "_Kerning automatyczny..."
 
-#: fontview.c:7513 metricsview.c:2866
+#: fontview.c:7526 metricsview.c:2872
 msgid "Ker_n By Classes..."
 msgstr "Ker_ning z użyciem klas..."
 
-#: fontview.c:7514
+#: fontview.c:7527
 msgid "Remove All Kern _Pairs"
 msgstr "Usuń cały kernin_g"
 
-#: fontview.c:7517 kernclass.c:2625 metricsview.c:2867
+#: fontview.c:7530 kernclass.c:2625 metricsview.c:2873
 msgid "VKern By Classes..."
 msgstr "Kerning pionowy z użyciem klas..."
 
-#: fontview.c:7518 metricsview.c:2868
+#: fontview.c:7531 metricsview.c:2874
 msgid "VKern From HKern"
 msgstr "Kerning pionowy z poziomego"
 
-#: fontview.c:7519
+#: fontview.c:7532
 msgid "Remove All VKern Pairs"
 msgstr "Usuń cały kerning pionow_y"
 
-#: fontview.c:7524
+#: fontview.c:7537
 msgid "_Convert to CID"
 msgstr ""
 
-#: fontview.c:7525
+#: fontview.c:7538
 msgid "Convert By C_Map"
 msgstr ""
 
-#: fontview.c:7527
+#: fontview.c:7540
 msgid "_Flatten"
 msgstr ""
 
-#: fontview.c:7528
+#: fontview.c:7541
 msgid "Fl_attenByCMap"
 msgstr ""
 
-#: fontview.c:7530
+#: fontview.c:7543
 msgid "Insert F_ont..."
 msgstr ""
 
-#: fontview.c:7531
+#: fontview.c:7544
 msgid "Insert _Blank"
 msgstr ""
 
-#: fontview.c:7534
+#: fontview.c:7547
 msgid "_Change Supplement..."
 msgstr ""
 
-#: fontview.c:7535
+#: fontview.c:7548
 msgid "C_ID Font Info..."
 msgstr ""
 
 #. GT: Here (and following) MM means "MultiMaster"
-#: fontview.c:7602
+#: fontview.c:7615
 msgid "_Create MM..."
 msgstr ""
 
-#: fontview.c:7603
+#: fontview.c:7616
 msgid "MM _Validity Check"
 msgstr ""
 
-#: fontview.c:7604 mm.c:3770
+#: fontview.c:7617 mm.c:3770
 msgid "MM _Info..."
 msgstr ""
 
-#: fontview.c:7605
+#: fontview.c:7618
 msgid "_Blend to New Font..."
 msgstr ""
 
-#: fontview.c:7606
+#: fontview.c:7619
 msgid "MM Change Default _Weights..."
 msgstr ""
 
-#: fontview.c:7697
+#: fontview.c:7710
 msgid "_Overview"
 msgstr "P_rzegląd"
 
-#: fontview.c:7698
+#: fontview.c:7711
 msgid "_Index"
 msgstr "_Indeks"
 
-#: fontview.c:7699
+#: fontview.c:7712
 msgid "_About..."
 msgstr "_O programie..."
 
-#: fontview.c:7700
+#: fontview.c:7713
 msgid "_License..."
 msgstr "_Licencja"
 
-#: fontview.c:7736
+#: fontview.c:7749
 msgid "E_ncoding"
 msgstr "_Kodowanie"
 
-#: fontview.c:7739
+#: fontview.c:7752
 msgid "_CID"
 msgstr "_CID"
 
-#: fontview.c:10627 fontview.c:10632 sfd.c:5104 sfd.c:5106
+#: fontview.c:10641 fontview.c:10646 sfd.c:5104 sfd.c:5106
 msgid "Interpreting Glyphs"
 msgstr ""
 
-#: fontview.c:10681 fvimportbdf.c:2139
+#: fontview.c:10695 fvimportbdf.c:2139
 msgid "Decompress Failed!"
 msgstr ""
 
-#: fontview.c:10696
+#: fontview.c:10710
 msgid "Loading font from "
 msgstr ""
 
-#: fontview.c:10708 fvimportbdf.c:2232 fvimportbdf.c:2325
+#: fontview.c:10722 fvimportbdf.c:2232 fvimportbdf.c:2325
 msgid "Loading..."
 msgstr ""
 
-#: fontview.c:10708 fvimportbdf.c:2232 fvimportbdf.c:2325
+#: fontview.c:10722 fvimportbdf.c:2232 fvimportbdf.c:2325
 msgid "Reading Glyphs"
 msgstr ""
 
-#: fontview.c:10862 fontview.c:10864 fontview.c:10868 fontview.c:10870 fontview.c:10874
-#: fontview.c:10876
+#: fontview.c:10890 fontview.c:10892 fontview.c:10896 fontview.c:10898 fontview.c:10902
+#: fontview.c:10904
 msgid "Couldn't open font"
 msgstr ""
 
-#: fontview.c:10862 fontview.c:10864
+#: fontview.c:10890 fontview.c:10892
 #, c-format
 msgid "The requested file, %.100s, does not exist"
 msgstr ""
 
-#: fontview.c:10868 fontview.c:10870
+#: fontview.c:10896 fontview.c:10898
 #, c-format
 msgid "You do not have permission to read %.100s"
 msgstr ""
 
-#: fontview.c:10874 fontview.c:10876
+#: fontview.c:10902 fontview.c:10904
 #, c-format
 msgid "%.100s is not in a known format (or is so badly corrupted as to be unreadable)"
 msgstr ""
 
-#: fontview.c:10893 fontview.c:10896
+#: fontview.c:10921 fontview.c:10924
 msgid "Restricted Font"
 msgstr ""
 
-#: fontview.c:10893 fontview.c:10896
+#: fontview.c:10921 fontview.c:10924
 msgid ""
 "This font is marked with an FSType of 2 (Restricted\n"
 "License). That means it is not editable without the\n"
@@ -10821,7 +10939,7 @@ msgid ""
 "the merger."
 msgstr ""
 
-#: fvfonts.c:1054 savefontdlg.c:1230
+#: fvfonts.c:1054 savefontdlg.c:1231
 msgid "Other ..."
 msgstr ""
 
@@ -11074,12 +11192,11 @@ msgstr "Ustaw prawą odsadkę..."
 msgid "Set Vertical Advance..."
 msgstr "Ustaw wysokość..."
 
-#: genttfinstrs.c:1698 genttfinstrs.c:1711 genttfinstrs.old.c:1698
-#: genttfinstrs.old.c:1711 ttfinstrs.c:1370 ttfinstrs.c:1383
+#: genttfinstrs.c:1698 genttfinstrs.c:1711 ttfinstrs.c:1373 ttfinstrs.c:1386
 msgid "Can't instruct this glyph"
 msgstr "Nie moge instruować tego glifu"
 
-#: genttfinstrs.c:1699 genttfinstrs.old.c:1699 ttfinstrs.c:1371
+#: genttfinstrs.c:1699 ttfinstrs.c:1374
 #, c-format
 msgid ""
 "TrueType does not support mixed references and contours.\n"
@@ -11089,7 +11206,7 @@ msgid ""
 "    glyph) and make a reference to that."
 msgstr ""
 
-#: genttfinstrs.c:1712 genttfinstrs.old.c:1712 ttfinstrs.c:1384
+#: genttfinstrs.c:1712 ttfinstrs.c:1387
 #, c-format
 msgid ""
 "TrueType does not support references which\n"
@@ -11510,7 +11627,7 @@ msgid ""
 "When loading glyphs from the selection you must specify which format is desired."
 msgstr ""
 
-#: groups.c:1374 openfontdlg.c:259
+#: groups.c:1374 openfontdlg.c:261
 msgid "Name"
 msgstr "Nazwa"
 
@@ -11765,22 +11882,22 @@ msgstr ""
 msgid "Out of memory\n"
 msgstr "Za mało pamięci\n"
 
-#: macbinary.c:2101 macbinary.c:2599 parsepdf.c:1453 parsettf.c:339 svg.c:908
+#: macbinary.c:2101 macbinary.c:2599 parsepdf.c:1453 parsettf.c:339 svg.c:944
 msgid "Not in Collection"
 msgstr ""
 
-#: macbinary.c:2101 macbinary.c:2599 parsepdf.c:1453 svg.c:908
+#: macbinary.c:2101 macbinary.c:2599 parsepdf.c:1453 svg.c:944
 #, c-format
 msgid "%s is not in %.100s"
 msgstr ""
 
 #: macbinary.c:2110 macbinary.c:2610 parsepdf.c:1471 parsettf.c:351 parsettf.c:379
-#: parsettf.c:4557 parsettf.c:4560 svg.c:916
+#: parsettf.c:4557 parsettf.c:4560 svg.c:952
 msgid "Pick a font, any font..."
 msgstr "Wybierz którykolwiek font..."
 
 #: macbinary.c:2110 macbinary.c:2611 parsepdf.c:1471 parsettf.c:351 parsettf.c:380
-#: svg.c:916
+#: svg.c:952
 msgid "There are multiple fonts in this file, pick one"
 msgstr "W tym pliku jest więcej niż jeden font, wybierz któryś."
 
@@ -11901,63 +12018,63 @@ msgstr ""
 msgid "Unknown Language"
 msgstr "Nieznany język"
 
-#: macenc.c:2513
+#: macenc.c:2516
 msgid "Bad Language"
 msgstr "Błędny język"
 
-#: macenc.c:2530 macenc.c:3190 macenc.c:3192
+#: macenc.c:2533 macenc.c:3193 macenc.c:3195
 msgid "This feature code is already used"
 msgstr "Ten kod funkcji jest już zajęty"
 
-#: macenc.c:2598 macenc.c:2962 prefs.c:1251
+#: macenc.c:2601 macenc.c:2965 prefs.c:1278
 msgid "Setting"
 msgstr "Ustawienie"
 
-#: macenc.c:2608
+#: macenc.c:2611
 msgid "_Language:"
 msgstr "_Język:"
 
-#: macenc.c:2799
+#: macenc.c:2802
 msgid "MacName|_New..."
 msgstr "_Nowa..."
 
-#: macenc.c:2883 macenc.c:2885
+#: macenc.c:2886 macenc.c:2888
 msgid "This setting is already used"
 msgstr ""
 
-#: macenc.c:2972
+#: macenc.c:2975
 msgid "Setting Id:"
 msgstr ""
 
-#: macenc.c:2988
+#: macenc.c:2991
 msgid "_Enabled"
 msgstr "W_łączone"
 
-#: macenc.c:3270
+#: macenc.c:3273
 msgid "Feature"
 msgstr "Ustawienia funkcji"
 
-#: macenc.c:3280
+#: macenc.c:3283
 msgid "Feature _Id:"
 msgstr "_Id funkcji"
 
-#: macenc.c:3296
+#: macenc.c:3299
 msgid "Mutually Exclusive"
 msgstr "Wzajemnie wykluczające"
 
-#: macenc.c:3314
+#: macenc.c:3317
 msgid "Settings"
 msgstr "Ustawienia"
 
-#: macenc.c:3332
+#: macenc.c:3335
 msgid "MacSetting|_New..."
 msgstr "_Nowe"
 
-#: macenc.c:3524
+#: macenc.c:3527
 msgid "MacFeature|_New..."
 msgstr "_Nowa"
 
-#: macenc.c:3560
+#: macenc.c:3563
 msgid "MacFeature|Default"
 msgstr "Domyślna"
 
@@ -11983,6 +12100,18 @@ msgstr "Zaawansowana"
 #: metafont.c:1868
 msgid "Embolden"
 msgstr "Pogrub"
+
+#: metafont.c:1869
+msgid "Thin"
+msgstr "Pismo cienkie"
+
+#: metafont.c:1870
+msgid "Condense"
+msgstr ""
+
+#: metafont.c:1871
+msgid "Expand"
+msgstr ""
 
 #: metafont.c:1902 metafont.c:2147
 msgid "Scale Stems By:"
@@ -12066,56 +12195,56 @@ msgstr ""
 msgid "Kern:"
 msgstr ""
 
-#: metricsview.c:2460
+#: metricsview.c:2466
 msgid "Could not find the glyph"
 msgstr ""
 
-#: metricsview.c:2460
+#: metricsview.c:2466
 #, c-format
 msgid "Could not find substitution glyph: %.40s"
 msgstr ""
 
-#: metricsview.c:2548
+#: metricsview.c:2554
 msgid "Revert Substitution"
 msgstr ""
 
-#: metricsview.c:2581
+#: metricsview.c:2587
 msgid "Plain"
 msgstr ""
 
-#: metricsview.c:2829
+#: metricsview.c:2835
 msgid "Insert Glyph _After..."
 msgstr "Wstaw glif _za..."
 
-#: metricsview.c:2830
+#: metricsview.c:2836
 msgid "Insert Glyph _Before..."
 msgstr "Wstaw glif p_rzed..."
 
-#: metricsview.c:2831
+#: metricsview.c:2837
 msgid "_Replace Glyph..."
 msgstr "Za_mień glif..."
 
-#: metricsview.c:2837
+#: metricsview.c:2843
 msgid "_Substitutions"
 msgstr "Pod_stawienia"
 
-#: metricsview.c:2841
+#: metricsview.c:2847
 msgid "Hide _Grid"
 msgstr "Schowaj siat_kę"
 
-#: metricsview.c:2844
+#: metricsview.c:2850
 msgid "_Vertical"
 msgstr "Piono_we"
 
-#: metricsview.c:3022
+#: metricsview.c:3028
 msgid "Hide Grid"
 msgstr "Schowaj siatkę"
 
-#: metricsview.c:3022
+#: metricsview.c:3028
 msgid "Show _Grid"
 msgstr "Pokaż siat_kę"
 
-#: metricsview.c:3963
+#: metricsview.c:3969
 #, c-format
 msgid "Metrics For %.50s"
 msgstr "Metryczne dla %.50s"
@@ -12510,7 +12639,7 @@ msgstr ""
 msgid "Adobe"
 msgstr "Adobe"
 
-#: mm.c:3863 parsettf.c:3594 savefontdlg.c:883
+#: mm.c:3863 parsettf.c:3594 savefontdlg.c:884
 msgid "Apple"
 msgstr "Apple"
 
@@ -12558,79 +12687,80 @@ msgstr ""
 msgid "Convert Design Vector Function:"
 msgstr ""
 
-#: namelist.c:571
+#: namelist.c:571 namelist.old.c:571
 msgid "NameList base missing"
 msgstr ""
 
-#: namelist.c:571
+#: namelist.c:571 namelist.old.c:571
 #, c-format
 msgid "NameList %s based on %s which could not be found"
 msgstr ""
 
-#: namelist.c:575
+#: namelist.c:575 namelist.old.c:575
 msgid "NameList based twice"
 msgstr ""
 
-#: namelist.c:575
+#: namelist.c:575 namelist.old.c:575
 #, c-format
 msgid "NameList %s based on two NameLists"
 msgstr ""
 
 #: namelist.c:584 namelist.c:593 namelist.c:610 namelist.c:617 namelist.c:626
-#: namelist.c:646
+#: namelist.c:646 namelist.old.c:584 namelist.old.c:593 namelist.old.c:610
+#: namelist.old.c:617 namelist.old.c:626 namelist.old.c:646
 msgid "NameList parsing error"
 msgstr ""
 
-#: namelist.c:584 namelist.c:593
+#: namelist.c:584 namelist.c:593 namelist.old.c:584 namelist.old.c:593
 #, c-format
 msgid ""
 "Missing rename \"to\" name %s\n"
 "%s"
 msgstr ""
 
-#: namelist.c:610
+#: namelist.c:610 namelist.old.c:610
 #, c-format
 msgid ""
 "Bad unicode value when parsing %s\n"
 "%s"
 msgstr ""
 
-#: namelist.c:617
+#: namelist.c:617 namelist.old.c:617
 #, c-format
 msgid "Missing name when parsing %s for unicode %x"
 msgstr ""
 
-#: namelist.c:626
+#: namelist.c:626 namelist.old.c:626
 #, c-format
 msgid "Bad name when parsing %s for unicode %x"
 msgstr ""
 
-#: namelist.c:646
+#: namelist.c:646 namelist.old.c:646
 #, c-format
 msgid "Multiple names when parsing %s for unicode %x"
 msgstr ""
 
-#: namelist.c:3942
+#: namelist.c:3942 namelist.old.c:3942
 msgid "AGL without afii"
 msgstr "AGL bez nazw typu „afii”"
 
-#: namelist.c:6020
+#: namelist.c:6020 namelist.old.c:6020
 msgid "Adobe Glyph List"
 msgstr "Lista Adobe (AGL)"
 
-#: namelist.c:7321
+#: namelist.c:7321 namelist.old.c:7321
 msgid "AGL with PUA"
 msgstr "AGL z Unicode PUA"
 
-#: namelist.c:7845
+#: namelist.c:7845 namelist.old.c:7845
 msgid "Greek small caps"
 msgstr "Greckie kapitaliki"
 
-#: namelist.c:10959
+#: namelist.c:10959 namelist.old.c:10959
 msgid "ΤεΧ Names"
 msgstr "Nazwy Tεχ-owe"
 
-#: namelist.c:14332
+#: namelist.c:14332 namelist.old.c:14332
 msgid "AMS Names"
 msgstr "Nazwy AMS"
 
@@ -12806,75 +12936,79 @@ msgstr ""
 msgid "All Fonts"
 msgstr "Wszystkie fonty"
 
-#: openfontdlg.c:74
+#: openfontdlg.c:75
 msgid "Outline Fonts"
 msgstr "Fonty obrysowe"
 
-#: openfontdlg.c:99
+#: openfontdlg.c:101
 msgid "Bitmap Fonts"
 msgstr "Fonty bitmapowe"
 
-#: openfontdlg.c:115
+#: openfontdlg.c:116
 msgid "PostScript"
 msgstr "PostScriptowe"
 
-#: openfontdlg.c:117 prefs.c:419 savefontdlg.c:894
+#: openfontdlg.c:118 prefs.c:432 savefontdlg.c:895
 msgid "OpenType"
 msgstr "OpenType"
 
-#: openfontdlg.c:118
+#: openfontdlg.c:119
 msgid "Type1"
 msgstr "PS typ 1"
 
-#: openfontdlg.c:119
+#: openfontdlg.c:120
 msgid "Type2"
 msgstr "PS typ 2"
 
-#: openfontdlg.c:120
+#: openfontdlg.c:121
 msgid "Type3"
 msgstr "PS typ 3"
 
-#: openfontdlg.c:124
+#: openfontdlg.c:125
 msgid "FontForge's SFD"
 msgstr "Pliki FontForge (SFD)"
 
 #: openfontdlg.c:126
+msgid "Extract from PDF"
+msgstr "Wczytaj z PDF-a"
+
+#: openfontdlg.c:128
 msgid "All Files"
 msgstr "Wszystkie pliki"
 
-#: openfontdlg.c:176
+#: openfontdlg.c:178
 msgid "Edit Filter List"
 msgstr "Edytuj listę filtrów"
 
-#: openfontdlg.c:260
+#: openfontdlg.c:262
 msgid "Filter"
 msgstr "Filtr"
 
-#: openfontdlg.c:325
+#: openfontdlg.c:327
 msgid "Edit Font Filters"
 msgstr "Edytuj listę filtrów"
 
-#: openfontdlg.c:383
+#: openfontdlg.c:385
 msgid "Filter|New"
 msgstr "Nowy"
 
-#: openfontdlg.c:604
+#: openfontdlg.c:606
 msgid "Filter:"
 msgstr "Filtr:"
 
-#: openfontdlg.c:609 openfontdlg.c:615
+#: openfontdlg.c:611 openfontdlg.c:617
 msgid "Display files of this type"
 msgstr ""
 
-#: openfontdlg.c:625 savefontdlg.c:3219
+#: openfontdlg.c:627 savefontdlg.c:3227
 msgid "Force glyph names to:"
 msgstr "Nazwy glifów według:"
 
-#: openfontdlg.c:630 openfontdlg.c:636 savefontdlg.c:3224 savefontdlg.c:3231
+#: openfontdlg.c:632 openfontdlg.c:638 savefontdlg.c:3232 savefontdlg.c:3239
 msgid "In the saved font, force all glyph names to match those in the specified namelist"
 msgstr ""
 
-#: openfontdlg.c:641 savefontdlg.c:3236
+#: openfontdlg.c:643 savefontdlg.c:3244
 msgid "No Rename"
 msgstr "Oryginalne"
 
@@ -13536,11 +13670,11 @@ msgid ""
 "(And if so, which)"
 msgstr ""
 
-#: parsettfbmf.c:1203 savefontdlg.c:1998 winfonts.c:839
+#: parsettfbmf.c:1203 savefontdlg.c:2003 winfonts.c:839
 msgid "Saving Bitmap Font(s)"
 msgstr ""
 
-#: parsettfbmf.c:1244 savefontdlg.c:1896
+#: parsettfbmf.c:1244 savefontdlg.c:1897
 msgid "Saving TrueType Font"
 msgstr ""
 
@@ -14060,11 +14194,11 @@ msgstr ""
 msgid "Processing Variations"
 msgstr ""
 
-#: prefs.c:255
+#: prefs.c:268
 msgid "ResourceFile"
 msgstr "Plik zasobów"
 
-#: prefs.c:255
+#: prefs.c:268
 msgid ""
 "When FontForge starts up, it loads display related resources from a\n"
 "property on the screen. Sometimes it is useful to be able to store\n"
@@ -14077,11 +14211,11 @@ msgstr ""
 "są czytane tylko raz, przy uruchomieniu; ich zmiana zadziała dopiero po\n"
 "zamknięciu programu i ponownym uruchomieniu."
 
-#: prefs.c:256
+#: prefs.c:269
 msgid "HelpDir"
 msgstr "Folder dokumentacji"
 
-#: prefs.c:256
+#: prefs.c:269
 msgid ""
 "The directory on your local system in which FontForge will search for help\n"
 "files.  If a file is not found there, then FontForge will look for it on the net."
@@ -14089,11 +14223,11 @@ msgstr ""
 "Folder dyskowy w którym Fontforge ma szukać plików pomocy. Jeśli te pliki\n"
 "nie zostaną znalezione, FontForge poszuka ich na swoich stronach w sieci."
 
-#: prefs.c:257
+#: prefs.c:270
 msgid "OtherSubrsFile"
 msgstr "Plik OtherSubrs"
 
-#: prefs.c:257
+#: prefs.c:270
 #, c-format
 msgid ""
 "If you wish to replace Adobe's OtherSubrs array (for Type1 fonts)\n"
@@ -14114,11 +14248,11 @@ msgstr ""
 "czternasta (numer 13, numeracja zaczyna się od zera) jest do hintów „counter”.\n"
 "Funkcje NIE POWINNY być otoczone żadnymi nawiasami [ ]."
 
-#: prefs.c:258
+#: prefs.c:271
 msgid "FreeTypeInFontView"
 msgstr "Używaj FreeType"
 
-#: prefs.c:258
+#: prefs.c:271
 msgid ""
 "Use the FreeType rasterizer (when available)\n"
 "to rasterize glyphs in the font view.\n"
@@ -14128,39 +14262,39 @@ msgstr ""
 "do wyświetlania glifów w oknie widoku fontu.\n"
 "To skutkuje lepszą jakością podglądu znaków."
 
-#: prefs.c:259
+#: prefs.c:272
 msgid "AutoHint"
 msgstr "Domyślny hinting"
 
-#: prefs.c:259
+#: prefs.c:272
 msgid "AutoHint before rasterizing"
 msgstr ""
 "Automatycznie hintuj wymagające\n"
 "tego znaki przed rasteryzacją"
 
-#: prefs.c:263
+#: prefs.c:276
 msgid "NewCharset"
 msgstr "Domyślne kodowanie"
 
-#: prefs.c:263
+#: prefs.c:276
 msgid ""
 "Default encoding for\n"
 "new fonts"
 msgstr "Domyślne kodowanie dla nowych fontów"
 
-#: prefs.c:264
+#: prefs.c:277
 msgid "NewEmSize"
 msgstr "Wymiar pola znaku"
 
-#: prefs.c:264
+#: prefs.c:277
 msgid "The default size of the Em-Square in a newly created font."
 msgstr "Domyślna rozdzielczość pionowa pól znaków w nowo tworzonych fontach."
 
-#: prefs.c:265
+#: prefs.c:278
 msgid "NewFontsQuadratic"
 msgstr "Krzywe stopnia 2"
 
-#: prefs.c:265
+#: prefs.c:278
 msgid ""
 "Whether new fonts should contain splines of quadratic (truetype)\n"
 "or cubic (postscript & opentype)."
@@ -14168,11 +14302,11 @@ msgstr ""
 "Wybór typu obrysów używanych w nowo tworzonych fontach: truetypowe\n"
 "(krzywe stopnia drugiego) lub postscriptowe (stopnia trzeciego)."
 
-#: prefs.c:266
+#: prefs.c:279
 msgid "LoadedFontsAsNew"
 msgstr "Konwertuj obrysy"
 
-#: prefs.c:266
+#: prefs.c:279
 msgid ""
 "Whether fonts loaded from the disk should retain their splines\n"
 "with the original order (quadratic or cubic), or whether the\n"
@@ -14183,11 +14317,11 @@ msgstr ""
 "domyślnego rodzaju krzywych, czy mają zachować oryginalną postać?\n"
 "Patrz też: Domyślnie TrueType."
 
-#: prefs.c:270
+#: prefs.c:283
 msgid "PreferCJKEncodings"
 msgstr "Używaj kodowania CJK"
 
-#: prefs.c:270
+#: prefs.c:283
 msgid ""
 "When loading a truetype or opentype font which has both a unicode\n"
 "and a CJK encoding table, use this flag to specify which\n"
@@ -14196,11 +14330,11 @@ msgstr ""
 "Niektóre fonty TTF i OTF z chińskimi znakami są kodowane jednocześnie\n"
 "w CJK i unikodowo. Użycie tej opcji spowoduje wybranie kodowania CJK."
 
-#: prefs.c:271
+#: prefs.c:284
 msgid "AskUserForCMap"
 msgstr "Pytaj o cmap"
 
-#: prefs.c:271
+#: prefs.c:284
 msgid ""
 "When loading a font in sfnt format (TrueType, OpenType, etc.),\n"
 "ask the user to specify which cmap to use initially."
@@ -14208,11 +14342,11 @@ msgstr ""
 "Przy ładowaniu fontów TrueType i OpenType umożliwia wybór tablicy\n"
 "kodów numerycznych glifów (cmap), jeśli zastosowano kilka jej wersji."
 
-#: prefs.c:272
+#: prefs.c:285
 msgid "PreserveTables"
 msgstr "Zachowaj tablice"
 
-#: prefs.c:272
+#: prefs.c:285
 msgid ""
 "Enter a list of 4 letter table tags, separated by commas.\n"
 "FontForge will make a binary copy of these tables when it\n"
@@ -14225,11 +14359,11 @@ msgstr ""
 "ma później nietknięte dodać przy ponownym generowaniu tego fontu.\n"
 "Lepiej wpisać tu tylko te tablice których FontForge „nie rozumie”."
 
-#: prefs.c:276
+#: prefs.c:289
 msgid "GlyphAutoGoto"
 msgstr "Szybka nawigacja"
 
-#: prefs.c:276
+#: prefs.c:289
 msgid ""
 "Typing a normal character in the glyph view window changes the window to look at that "
 "character"
@@ -14237,11 +14371,11 @@ msgstr ""
 "Czy w oknie widoku glifu klawisze klawiatury\n"
 "mają przełączać ten widok na odpowiedni znak?"
 
-#: prefs.c:280
+#: prefs.c:293
 msgid "ItalicConstrained"
 msgstr "Trzymaj pochylenie"
 
-#: prefs.c:280
+#: prefs.c:293
 msgid ""
 "In the Outline View, the Shift key constrains motion to be parallel to the ItalicAngle "
 "rather than constraining it to be vertical."
@@ -14249,19 +14383,19 @@ msgstr ""
 "Czy w widoku obrysu Shift ma ograniczać ruch kursora\n"
 "do prostej o nachyleniu odmiany pochyłej czy do pionu?"
 
-#: prefs.c:281
+#: prefs.c:294
 msgid "ArrowMoveSize"
 msgstr "Precyzja kursora"
 
-#: prefs.c:281
+#: prefs.c:294
 msgid "The number of em-units by which an arrow key will move a selected point"
 msgstr "Co ile jednostek kursor myszy ma przesuwać zaznaczony punkt?"
 
-#: prefs.c:282
+#: prefs.c:295
 msgid "SnapDistance"
 msgstr "Precyzja przyciągania"
 
-#: prefs.c:282
+#: prefs.c:295
 msgid ""
 "When the mouse pointer is within this many pixels\n"
 "of one of the various interesting features (baseline,\n"
@@ -14271,11 +14405,11 @@ msgstr ""
 "Zasięg, w jakim kursor myszy będzie przyciągany\n"
 "do różnych interesujących rzeczy."
 
-#: prefs.c:283
+#: prefs.c:296
 msgid "JoinSnap"
 msgstr "Precyzja łączenia"
 
-#: prefs.c:283
+#: prefs.c:296
 msgid ""
 "The Edit->Join command will join points which are this close together\n"
 "A value of 0 means they must be coincident"
@@ -14283,11 +14417,11 @@ msgstr ""
 "Zasięg w jakim komenda Edycja->Dołącz ma łączyć ze sobą dwa punkty.\n"
 "Zero oznacza, że punkty muszą się dokładnie pokrywać aby zostać połączone."
 
-#: prefs.c:284
+#: prefs.c:297
 msgid "StopAtJoin"
 msgstr "Zatrzymaj przy łączeniu"
 
-#: prefs.c:284
+#: prefs.c:297
 msgid ""
 "When dragging points in the outline view a join may occur\n"
 "(two open contours may connect at their endpoints). When\n"
@@ -14300,11 +14434,11 @@ msgstr ""
 "Wybór tej opcji spowoduje, że FontForge zatrzyma wtedy kursor.\n"
 "Przydatne, jeśli palce mają tendencję do drżenia."
 
-#: prefs.c:285
+#: prefs.c:298
 msgid "CopyMetaData"
 msgstr "Kopiuj metadane"
 
-#: prefs.c:285 prefs.c:297
+#: prefs.c:298 prefs.c:310
 msgid ""
 "When copying glyphs from the font view, also copy the\n"
 "glyphs' metadata (name, encoding, comment, etc)."
@@ -14312,27 +14446,27 @@ msgstr ""
 "Czy przy kopiowaniu glifów w widokach fontów kopiować\n"
 "również ich metadane (nazwa, kodowanie, komentarze itd.)?"
 
-#: prefs.c:286
+#: prefs.c:299
 msgid "UndoDepth"
 msgstr "Pamięć historii"
 
-#: prefs.c:286
+#: prefs.c:299
 msgid "The maximum number of Undoes/Redoes stored in a glyph"
 msgstr "Maksymalna ilość operacji Cofnij/Ponów dla każdego glifu."
 
-#: prefs.c:287
+#: prefs.c:300
 msgid "UpdateFlex"
 msgstr "Odświeżaj Flexy"
 
-#: prefs.c:287
+#: prefs.c:300
 msgid "Figure out flex hints after every change"
 msgstr "Odświeżaj hinty „flex” przy zmianach obrysu."
 
-#: prefs.c:291
+#: prefs.c:304
 msgid "AutoWidthSync"
 msgstr "Synchronizuj szerokość"
 
-#: prefs.c:291
+#: prefs.c:304
 msgid ""
 "Changing the width of a glyph\n"
 "changes the widths of all accented\n"
@@ -14341,11 +14475,11 @@ msgstr ""
 "Czy zmiana szerokości pola glifu ma powodować analogiczną\n"
 "zmianę szerokości pól glifów akcentowanych bazujących na nim?"
 
-#: prefs.c:292
+#: prefs.c:305
 msgid "AutoLBearingSync"
 msgstr "Synchronizuj lewą odsadkę"
 
-#: prefs.c:292
+#: prefs.c:305
 msgid ""
 "Changing the left side bearing\n"
 "of a glyph adjusts the lbearing\n"
@@ -14355,11 +14489,11 @@ msgstr ""
 "Czy zmiana lewej odsadki glifu ma powodować analogiczną\n"
 "zmianę lewych odsadek glifów akcentowanych bazujących na nim?"
 
-#: prefs.c:296
+#: prefs.c:309
 msgid "ClearInstrsBigChanges"
 msgstr "Usuń nieaktualne instrukcje"
 
-#: prefs.c:296
+#: prefs.c:309
 msgid ""
 "Instructions in a TrueType font refer to\n"
 "points by number, so if you edit a glyph\n"
@@ -14379,26 +14513,26 @@ msgstr ""
 "bezwartościowymi. FontForge domyślnie je usuwa, ale\n"
 "można to wyłączyć ― tylko ostrożnie!"
 
-#: prefs.c:297
+#: prefs.c:310
 msgid "CopyTTFInstrs"
 msgstr "Kopiuj instrukcje TTF"
 
-#: prefs.c:301
+#: prefs.c:314
 msgid "AccentOffsetPercent"
 msgstr "Przesunięcie akcentów"
 
-#: prefs.c:301
+#: prefs.c:314
 msgid ""
 "The percentage of an em by which an accent is offset from its base glyph in Build Accent"
 msgstr ""
 "Procent wysokości pola znaku o jaki akcenty mają\n"
 "być wyżej od swoich glifów podstawowych."
 
-#: prefs.c:302
+#: prefs.c:315
 msgid "AccentCenterLowest"
 msgstr "Centruj wg najniższego"
 
-#: prefs.c:302 prefs.c:397
+#: prefs.c:315 prefs.c:410
 msgid ""
 "When placing grave and acute accents above letters, should\n"
 "FontForge center them based on their full width, or\n"
@@ -14409,11 +14543,11 @@ msgstr ""
 "użyć położenia najniższego punktu obrysu akcentu, czy należy\n"
 "brać pod uwagę całą szerokość akcentu?"
 
-#: prefs.c:303
+#: prefs.c:316
 msgid "CharCenterHighest"
 msgstr "Centruj nad najwyższym"
 
-#: prefs.c:303
+#: prefs.c:316
 msgid ""
 "When centering an accent over a glyph, should the accent\n"
 "be centered on the highest point(s) of the glyph,\n"
@@ -14423,11 +14557,11 @@ msgstr ""
 "użyć położenia nawyższego punktu obrysu glifu, czy\n"
 "należy brać pod uwagę całą szerokość glifu?"
 
-#: prefs.c:304
+#: prefs.c:317
 msgid "PreferSpacingAccents"
 msgstr "Akcenty nieskładające"
 
-#: prefs.c:304
+#: prefs.c:317
 msgid ""
 "Use spacing accents (Unicode: 02C0-02FF) rather than\n"
 "combining accents (Unicode: 0300-036F) when\n"
@@ -14437,11 +14571,11 @@ msgstr ""
 "szerokości (Unicode: 02C0-02FF), a nie akcentów składających\n"
 "(Unicode: 0300-036F)"
 
-#: prefs.c:308
+#: prefs.c:321
 msgid "PreferPotrace"
 msgstr "Wybieraj Potrace"
 
-#: prefs.c:308
+#: prefs.c:321
 msgid ""
 "FontForge supports two different helper applications to do autotracing\n"
 " autotrace and potrace\n"
@@ -14453,45 +14587,45 @@ msgstr ""
 "Jeśli w systemie jest tylko jeden z nich, zostanie użyty. Jeśli są dwa,\n"
 "ta opcja pozwala określić, który z nich będzie preferowany."
 
-#: prefs.c:309
+#: prefs.c:322
 msgid "AutotraceArgs"
 msgstr "Opcje wektoryzacji"
 
-#: prefs.c:309
+#: prefs.c:322
 msgid ""
 "Extra arguments for configuring the autotrace program\n"
 "(either autotrace or potrace)"
 msgstr "Dodatkowe parametry programu wektoryzującego (autotrace albo potrace)"
 
-#: prefs.c:310
+#: prefs.c:323
 msgid "AutotraceAsk"
 msgstr "Pytaj przy Autotrace"
 
-#: prefs.c:310
+#: prefs.c:323
 msgid "Ask the user for autotrace arguments each time autotrace is invoked"
 msgstr "Pytaj o dodatkowe parametry przed każdym wywołaniem autotrace"
 
-#: prefs.c:311
+#: prefs.c:324
 msgid "MfArgs"
 msgstr "Opcje mf"
 
-#: prefs.c:311
+#: prefs.c:324
 msgid "Commands to pass to mf (metafont) program, the filename will follow these"
 msgstr "Dodatkowe parametry programu mf (metafont), podawane przed nazwa pliku"
 
-#: prefs.c:312
+#: prefs.c:325
 msgid "MfAsk"
 msgstr "Pytaj przy mf"
 
-#: prefs.c:312
+#: prefs.c:325
 msgid "Ask the user for mf commands each time mf is invoked"
 msgstr "Pytaj o dodatkowe parametry przed każdym wywołaniem mf"
 
-#: prefs.c:313
+#: prefs.c:326
 msgid "MfClearBg"
 msgstr "Czyść tło przed mf"
 
-#: prefs.c:313
+#: prefs.c:326
 msgid ""
 "FontForge loads large images into the background of each glyph\n"
 "prior to autotracing them. You may retain those\n"
@@ -14502,11 +14636,11 @@ msgstr ""
 "Możesz je zachować aby przyjrzeć się rezultatom lub usunąć\n"
 "aby oszczędzić na zajmowanej pamięci i rozmiarze pliku."
 
-#: prefs.c:314
+#: prefs.c:327
 msgid "MfShowErr"
 msgstr "Pokazuj komunikaty mf"
 
-#: prefs.c:314
+#: prefs.c:327
 msgid ""
 "MetaFont (mf) generates lots of verbiage to stdout.\n"
 "Most of the time I find it an annoyance but it is\n"
@@ -14515,21 +14649,21 @@ msgstr ""
 "MetaFont (mf) wyświetla bardzo dużo komunikatów na stdout.\n"
 "Zwykle denerwujące, ale bywa przydatne w razie wystąpienia błędów."
 
-#: prefs.c:318
+#: prefs.c:331
 msgid "FoundryName"
 msgstr "Nazwa wytwórcy"
 
-#: prefs.c:318
+#: prefs.c:331
 msgid ""
 "Name used for foundry field in bdf\n"
 "font generation"
 msgstr "Nazwa używana w polu „foundry” plików BDF"
 
-#: prefs.c:319
+#: prefs.c:332
 msgid "TTFFoundry"
 msgstr "Nazwa wytwórcy TTF"
 
-#: prefs.c:319
+#: prefs.c:332
 msgid ""
 "Name used for Vendor ID field in\n"
 "ttf (OS/2 table) font generation.\n"
@@ -14538,11 +14672,11 @@ msgstr ""
 "Nazwa użyta w polu „Vendor ID” tablicy „OS/2”\n"
 "w fontach TTF i OTF, nie dłuższa niż 4 znaki."
 
-#: prefs.c:320
+#: prefs.c:333
 msgid "NewFontNameList"
 msgstr "Nazwy znaków według:"
 
-#: prefs.c:320
+#: prefs.c:333
 msgid ""
 "FontForge will use this namelist when assigning\n"
 "glyph names to code points in a new font."
@@ -14550,11 +14684,11 @@ msgstr ""
 "FontForge będzie stosował nazewnictwo z tej listy\n"
 "dla glifów o kodach numerycznych w nowych fontach."
 
-#: prefs.c:321
+#: prefs.c:334
 msgid "RecognizePUANames"
 msgstr "Rozpoznawaj nazwy PUA"
 
-#: prefs.c:321
+#: prefs.c:334
 msgid ""
 "Once upon a time, Adobe assigned PUA (public use area) encodings\n"
 "for many stylistic variants of characters (small caps, old style\n"
@@ -14585,11 +14719,11 @@ msgstr ""
 "Uwaga: ta opcja nie wpływa na rozpoznawanie numeru unikodowego znaku\n"
 "z kodowania fontu, a tylko z nazwy glifu."
 
-#: prefs.c:322
+#: prefs.c:335
 msgid "UnicodeGlyphNames"
 msgstr "Unikod w nazwach glifów"
 
-#: prefs.c:322
+#: prefs.c:335
 msgid ""
 "Allow the full unicode character set in glyph names.\n"
 "This does not conform to adobe's glyph name standard.\n"
@@ -14601,11 +14735,11 @@ msgstr ""
 "służyć tylko do użytku wewnętrznego i NIE POWINNY być stosowane\n"
 "w fontach przeznaczonych do szerszej dystrybucji."
 
-#: prefs.c:323
+#: prefs.c:336
 msgid "XUID-Base"
 msgstr "Podstawa XUID"
 
-#: prefs.c:323
+#: prefs.c:336
 msgid ""
 "If specified this should be a space separated list of integers each\n"
 "less than 16777216 which uniquely identify your organization\n"
@@ -14615,11 +14749,11 @@ msgstr ""
 "nie większych niż 16777216, jednoznacznie identyfikująca wytwórnię.\n"
 "FontForge dostawi do podstawy losową liczbę."
 
-#: prefs.c:327
+#: prefs.c:340
 msgid "AskBDFResolution"
 msgstr "Pytaj o rozdzielczość BDF"
 
-#: prefs.c:327
+#: prefs.c:340
 msgid ""
 "When generating a set of BDF fonts ask the user\n"
 "to specify the screen resolution of the fonts\n"
@@ -14629,19 +14763,19 @@ msgstr ""
 "o rozdzielczość w jakiej mają vyć używane, albo wywnioskuje\n"
 "ją sam na podstawie wysokości pola znaków w pikselach."
 
-#: prefs.c:328
+#: prefs.c:341
 msgid "HintForGen"
 msgstr "Hintuj tworzony font"
 
-#: prefs.c:328
+#: prefs.c:341
 msgid "AutoHint changed glyphs before generating a font"
 msgstr "Automatycznie hintuj zmienione glify przed utworzeniem fontu"
 
-#: prefs.c:332
+#: prefs.c:345
 msgid "HintBoundingBoxes"
 msgstr "Hintuj prostokąt opisany"
 
-#: prefs.c:332
+#: prefs.c:345
 msgid ""
 "FontForge will place vertical or horizontal hints to describe the bounding boxes of "
 "suitable glyphs."
@@ -14649,29 +14783,29 @@ msgstr ""
 "FontForge użyje hintów poziomych lub pionowych dla zaznaczenia prostokąta opisanego na "
 "danym glifie, jeśli będzie to konieczne."
 
-#: prefs.c:333
+#: prefs.c:346
 msgid "HintDiagonalEnds"
 msgstr "Hintuj końce ukośnych"
 
-#: prefs.c:333
+#: prefs.c:346
 msgid "FontForge will place vertical or horizontal hints at the ends of diagonal stems."
 msgstr "FontForge użyje hintów poziomych lub pionowych na końcach kresek ukośnych."
 
-#: prefs.c:334
+#: prefs.c:347
 msgid "HintDiagonalInter"
 msgstr "Hintuj przecięcia ukośnych"
 
-#: prefs.c:334
+#: prefs.c:347
 msgid ""
 "FontForge will place vertical or horizontal hints at the intersections of diagonal "
 "stems."
 msgstr "FontForge użyje hintów poziomych lub pionowych na przecięciach kresek ukośnych."
 
-#: prefs.c:338
+#: prefs.c:351
 msgid "UseNewIndicScripts"
 msgstr "Nowe tagi indyjskie"
 
-#: prefs.c:338
+#: prefs.c:351
 msgid ""
 "MS has changed (in August 2006) the inner workings of their Indic shaping\n"
 "engine, and to disambiguate this change has created a parallel set of script\n"
@@ -14685,11 +14819,11 @@ msgstr ""
 "Jeśli pracujesz według nowej specyfikacji, ustaw tą opcję. Jeśli nie masz nic\n"
 "wspólnego z pismami indyjskimi, ta opcja Cię nie dotyczy."
 
-#: prefs.c:360
+#: prefs.c:373
 msgid "Display rulers in the Outline Glyph View"
 msgstr "Wyświetlaj linijki w oknie widoku obrysu."
 
-#: prefs.c:395 savefontdlg.c:967
+#: prefs.c:408 savefontdlg.c:968
 msgid ""
 "When generating a truetype or opentype font it is occasionally\n"
 "useful to know the mapping between truetype glyph ids and\n"
@@ -14697,7 +14831,7 @@ msgid ""
 "produce a file (with extension .g2n) containing those data."
 msgstr ""
 
-#: prefs.c:398
+#: prefs.c:411
 msgid ""
 "Apple and MS/Adobe differ about the format of truetype and opentype files.\n"
 "This controls the default setting of the Apple checkbox in the\n"
@@ -14721,7 +14855,7 @@ msgstr ""
 " Użycie raczej GDEF niż lcar/prop\n"
 "Jeśli wybrane są obie pozycje, font będzie zgodny z oboma standardami."
 
-#: prefs.c:399
+#: prefs.c:412
 msgid ""
 "Apple and MS/Adobe differ about the format of truetype and opentype files.\n"
 "This controls the default setting of the OpenType checkbox in the\n"
@@ -14745,97 +14879,97 @@ msgstr ""
 " Użycie raczej GDEF niż lcar/prop\n"
 "Jeśli wybrane są obie pozycje, font bedzie zgodny z oboma standardami."
 
-#: prefs.c:407
+#: prefs.c:420
 msgid "Generic"
 msgstr "Ogólne"
 
-#: prefs.c:408
+#: prefs.c:421
 msgid "New Font"
 msgstr "Nowy font"
 
-#: prefs.c:410
+#: prefs.c:423
 msgid "Navigation"
 msgstr "Nawigacja"
 
-#: prefs.c:411
+#: prefs.c:424
 msgid "Editing"
 msgstr "Edycja"
 
-#: prefs.c:412
+#: prefs.c:425
 msgid "Synchronize"
 msgstr "Synchronizuj"
 
-#: prefs.c:413
+#: prefs.c:426
 msgid "TT"
 msgstr "TTF"
 
-#: prefs.c:414
+#: prefs.c:427
 msgid "Accents"
 msgstr "Akcenty"
 
-#: prefs.c:415
+#: prefs.c:428
 msgid "Apps"
 msgstr "Aplikacje"
 
-#: prefs.c:416
+#: prefs.c:429
 msgid "Font Info"
 msgstr "O foncie"
 
-#: prefs.c:417
+#: prefs.c:430
 msgid "Generate"
 msgstr "Generuj"
 
-#: prefs.c:418
+#: prefs.c:431
 msgid "PS Hints"
 msgstr "Hinting PS"
 
-#: prefs.c:1029 scripting.c:8930
+#: prefs.c:1056 scripting.c:9071
 msgid "Call Script"
 msgstr "Wykonaj skrypt"
 
-#: prefs.c:1172
+#: prefs.c:1199
 msgid "This feature, setting combination is already used"
 msgstr "Ta para (funkcja, ustawienie) jest już użyta."
 
-#: prefs.c:1173
+#: prefs.c:1200
 msgid ""
 "This feature, setting combination is already used\n"
 "Do you really wish to reuse it?"
 msgstr ""
 
-#: prefs.c:1229 prefs.c:2016
+#: prefs.c:1256 prefs.c:2043
 msgid "Mapping"
 msgstr "Mapowania"
 
-#: prefs.c:1239
+#: prefs.c:1266
 msgid "_Feature:"
 msgstr "_Funkcja"
 
-#: prefs.c:1434
+#: prefs.c:1461
 msgid "Menu name with no associated script"
 msgstr "Nie przypisano pliku ze skryptem pozycji w menu"
 
-#: prefs.c:1437
+#: prefs.c:1464
 msgid "Script with no associated menu name"
 msgstr "Nie przypisano nazwy pozycji w menu"
 
-#: prefs.c:1651
+#: prefs.c:1678
 msgid "Preferences..."
 msgstr "Ustawienia..."
 
-#: prefs.c:1683
+#: prefs.c:1710
 msgid "MacMap|_New..."
 msgstr "_Nowe"
 
-#: prefs.c:1718
+#: prefs.c:1745
 msgid "MacMapping|Default"
 msgstr "Domyślne"
 
-#: prefs.c:1742
+#: prefs.c:1769
 msgid "Menu Name"
 msgstr "Nazwa skryptu"
 
-#: prefs.c:1745
+#: prefs.c:1772
 msgid ""
 "You may create a script menu containing up to 10 frequently used scripts.\n"
 "Each entry in the menu needs both a name to display in the menu and\n"
@@ -14846,11 +14980,11 @@ msgstr ""
 "Każda pozycja w menu wymaga pliku z przypisanym sobie skryptem oraz nazwy. Nazwa\n"
 "może zawierać znaki unikodowe. Przycisk podpisany „...” pozwoli na wybór pliku skryptu."
 
-#: prefs.c:1752
+#: prefs.c:1779
 msgid "Script File"
 msgstr "Plik ze skryptem"
 
-#: prefs.c:1755
+#: prefs.c:1782
 msgid ""
 "You may create a script menu containing up to 10 frequently used scripts\n"
 "Each entry in the menu needs both a name to display in the menu and\n"
@@ -14861,15 +14995,15 @@ msgstr ""
 "Każda pozycja w menu wymaga pliku z przypisanym sobie skryptem oraz nazwy. Nazwa\n"
 "może zawierać znaki unikodowe. Przycisk podpisany „...” pozwoli na wybór pliku skryptu."
 
-#: prefs.c:1786
+#: prefs.c:1813
 msgid "..."
 msgstr "..."
 
-#: prefs.c:1851
+#: prefs.c:1878
 msgid "On"
 msgstr "Wł."
 
-#: prefs.c:1859
+#: prefs.c:1886
 msgid "Off"
 msgstr "Wył."
 
@@ -14879,31 +15013,31 @@ msgstr "Wył."
 #. GT: (after striping off "Prefs|App|") together, translated, and then broken up
 #. GT: to fit the dialog. There is an extra blank line, not used in English,
 #. GT: into which your text may extend if needed.
-#: prefs.c:1976
+#: prefs.c:2003
 msgid "Prefs|App|Normally FontForge will find applications by searching for"
 msgstr " "
 
-#: prefs.c:1977
+#: prefs.c:2004
 msgid "Prefs|App|them in your PATH environment variable, if you want"
 msgstr "Zwykle FontForge szuka aplikacji pomocniczych korzystając ze zmiennej"
 
-#: prefs.c:1978
+#: prefs.c:2005
 msgid "Prefs|App|to alter that behavior you may set an environment"
 msgstr "środowiskowej PATH. Aby to zmienić, wystarczy ustawić i wyeksportować"
 
-#: prefs.c:1979
+#: prefs.c:2006
 msgid "Prefs|App|variable giving the full path spec of the application."
 msgstr "zmienne środowiskowe zawierające pełne ścieżki do tych programów."
 
-#: prefs.c:1980
+#: prefs.c:2007
 msgid "Prefs|App|FontForge recognizes BROWSER, MF and AUTOTRACE."
 msgstr "FontForge rozpoznaje zmienne BROWSER, MF i AUTOTRACE."
 
-#: prefs.c:1981
+#: prefs.c:2008
 msgid "Prefs|App| "
 msgstr " "
 
-#: prefs.c:2012
+#: prefs.c:2039
 msgid "Features"
 msgstr "Funkcje"
 
@@ -14951,7 +15085,7 @@ msgstr "Do _Pliku"
 msgid "To P_DF File"
 msgstr "Do pliku P_DF"
 
-#: print.c:2479 savefontdlg.c:1151 savefontdlg.c:1232
+#: print.c:2479 savefontdlg.c:1152 savefontdlg.c:1233
 msgid "_Other"
 msgstr "_Inny"
 
@@ -15449,11 +15583,11 @@ msgstr ""
 
 #: problems.c:2405
 msgid "This blank outline glyph has an unexpected bitmap version"
-msgstr ""
+msgstr "Ten glif bez jakichkolwiek obrysów ma niepustą wersję bitmapową"
 
 #: problems.c:2413
 msgid "No problems found"
-msgstr ""
+msgstr "Nie znaleziono żadnych problemów"
 
 #: problems.c:2507 problems.c:2626
 msgid "_X near¹"
@@ -15465,36 +15599,36 @@ msgstr "_Y blisko¹"
 
 #: problems.c:2511 problems.c:2513 problems.c:2515 problems.c:2941
 msgid "Hint _Width Near¹"
-msgstr "_grubość hinty blisko¹"
+msgstr "_Grubość hinty blisko¹"
 
 #: problems.c:2517 problems.c:2798
 msgid "_More points than:"
-msgstr ""
+msgstr "_Więcej punktów niż:"
 
 #: problems.c:2519 problems.c:2991
 msgid "_More hints than:"
-msgstr ""
+msgstr "_Więcej hintów niż:"
 
 #. GT: Refs is an abbreviation for References. Space is somewhat constrained here
 #: problems.c:2522 problems.c:2877
 msgid "Refs neste_d deeper than:"
-msgstr ""
+msgstr "Odwołania zagnieżdżone głębiej niż:"
 
 #: problems.c:2524 problems.c:2719
 msgid "Irrelevant _Factor:"
-msgstr ""
+msgstr "Próg odległości:"
 
 #: problems.c:2525
 msgid "Near"
-msgstr ""
+msgstr "Blisko"
 
 #: problems.c:2605
 msgid "Find Problems..."
-msgstr ""
+msgstr "Szukaj problemów..."
 
 #: problems.c:2614
 msgid "Poin_ts too close"
-msgstr ""
+msgstr "Punk_ty zbyt blisko"
 
 #: problems.c:2622
 msgid ""
@@ -15502,6 +15636,9 @@ msgid ""
 "emunits apart they will cause problems for some of FontForge's\n"
 "commands. PostScript shouldn't care though."
 msgstr ""
+"Jeśli sąsiednie punkty na krzywej są bliżej niż kilka jednostek od siebie,\n"
+"będą sprawiały kłopoty niektórym funkcjom FontForge. Interpreter\n"
+"PostScriptu nie powinien jednak protestować."
 
 #: problems.c:2634
 msgid ""
@@ -15525,14 +15662,17 @@ msgid ""
 "off from the baseline, xheight, cap height,\n"
 "ascender, descender heights."
 msgstr ""
+"Pozwala wyłapać punkty, które znajdują się lekko\n"
+"poza właściwym położeniem na linachi podstawowej,\n"
+"środkowej, dolnych lub górnych pisma."
 
 #: problems.c:2684
 msgid "_Control Points near horizontal/vertical"
-msgstr ""
+msgstr "_Punkty kontrolne blisko poziomu/pionu"
 
 #: problems.c:2684
 msgid "Control Points near horizontal/vertical/italic"
-msgstr ""
+msgstr "Punkty kontrolne blisko poziomu/pionu/pochylenia"
 
 #: problems.c:2692
 msgid ""
@@ -15541,10 +15681,13 @@ msgid ""
 "from their base point\n"
 "(or at the italic angle)."
 msgstr ""
+"Pozwala wyłapać punkty kontrolne, które prowadzą krzywą\n"
+"prawie (niedokładnie) poziomo, pionowo lub zgodnie z kątem\n"
+"pochylenia pisma."
 
 #: problems.c:2696
 msgid "Control Points _beyond spline"
-msgstr ""
+msgstr "Punkty _kontrolne poza krzywą"
 
 #: problems.c:2704
 msgid ""
@@ -15552,46 +15695,53 @@ msgid ""
 "onto the line segment between the two end points lie\n"
 "outside of those end points"
 msgstr ""
+"Pozwala wyłapać punkty kontrolne które lezą poza własną krzywą,\n"
+"czyli takie, które rzutowane na prostą wyznaczoną przez odcinek\n"
+"między końcami krzywej nie mieszczą się w tym odcinku."
 
 #: problems.c:2708
 msgid "Check for _irrelevant control points"
-msgstr ""
+msgstr "_Niepotrzebne punkty kontrolne"
 
 #: problems.c:2715
 msgid ""
 "Control points are irrelevant if they are too close to the main\n"
 "point to make a significant difference in the shape of the curve."
 msgstr ""
+"Pozwala wyłapać punkty kontrolne które leżą zbyt blisko\n"
+"końca krzywej, żeby wnosić cokolwiek do jej kształtu."
 
 #: problems.c:2724 problems.c:2734 problems.c:2743
 msgid ""
 "A control point is deemed irrelevant if the distance between it and the main\n"
 "(end) point is less than this times the distance between the two end points"
 msgstr ""
+"Punkt kontrolny jest uznawany za niepotrzebny, jeśli jest odległy od konca\n"
+"krzywej o mniej niż określony procent odległości między końcami krzywej."
 
 #: problems.c:2751
 msgid "O_pen Paths"
-msgstr ""
+msgstr "Krzywe _otwarte"
 
 #: problems.c:2759
 msgid "All paths should be closed loops, there should be no exposed endpoints"
-msgstr ""
+msgstr "Wszystkie krzywe powinny być zamknięte, nie powinno być żadnych wolnych końców."
 
 #: problems.c:2763
 msgid "Intersecting Paths"
-msgstr ""
+msgstr "Przecinające się krzywe"
 
 #: problems.c:2770
 msgid "No paths with within a glyph should intersect"
-msgstr ""
+msgstr "Żadne krzywe w glifie nie powinny się przecinać"
 
 #: problems.c:2774
 msgid "_Edges near horizontal/vertical"
-msgstr ""
+msgstr "_Krawędzie blisko poziomu/pionu"
 
 #: problems.c:2774
 msgid "Edges near horizontal/vertical/italic"
-msgstr ""
+msgstr "_Krawędzie blisko poziomu/pionu/pochylenia"
 
 #: problems.c:2782
 msgid ""
@@ -15599,10 +15749,13 @@ msgid ""
 "but not quite horizontal or vertical\n"
 "(or at the italic angle)."
 msgstr ""
+"Pozwala wyłapać krawędzie (krzywe) biegnące\n"
+"prawie (niedokładnie) poziomo, pionowo lub\n"
+"zgodnie z kątem pochylenia pisma."
 
 #: problems.c:2786
 msgid "Check _outermost paths clockwise"
-msgstr ""
+msgstr "Czy _zewnętrzne kontury są prawostronne"
 
 #: problems.c:2794
 msgid ""
@@ -15612,6 +15765,10 @@ msgid ""
 " Before doing this test insure that\n"
 "no paths self-intersect"
 msgstr ""
+"Postscript i TrueType wymagają aby zewnętrzne kontury glifów\n"
+"były rysowane zgodnie z kierunkiem ruchu wskazówek zegara.\n"
+"Ta opcja pozwala się upewnić, czy to wymaganie jest spełnione.\n"
+"Wcześniej jednak nalezy się upewnić, czy kontury nie przecinają się."
 
 #: problems.c:2806 problems.c:2817
 msgid ""
@@ -15623,10 +15780,16 @@ msgid ""
 "(Note a truetype font after conversion to PS will contain\n"
 "twice as many control points)"
 msgstr ""
+"W Podręczniku (PostScript Language Reference manual, Dodatek B)\n"
+"można wyczytać, że interpreter nie musi obsługiwać glifów liczących\n"
+"więcej niż 1500 punktów. Sądzę, że w tej liczbie znajdują się również\n"
+"punkty kontrolne. Nowe interpretery Postscriptu zwykle pozwalają\n"
+"przekroczyć to ograniczenie. Istotna uwaga: obrysy truetypowe po\n"
+"konwersji do Postscriptu mają dwukrotnie więcej punktów kontrolnych."
 
 #: problems.c:2826
 msgid "Check _flipped references"
-msgstr ""
+msgstr "Czy występują _odbite odwołania"
 
 #: problems.c:2834
 msgid ""
@@ -15636,32 +15799,39 @@ msgid ""
 "probably be counter-clockwise. You should unlink it and do\n"
 "Element->Correct direction on it."
 msgstr ""
+"Postscript i TrueType wymagają aby zewnętrzne kontury glifów\n"
+"były rysowane zgodnie z kierunkiem ruchu wskazówek zegara.\n"
+"Jeśli w glifie znajduje się odwołanie odbite lustrzanie wzdłuż jednej\n"
+"osi, to raczej nie spełnia ono tego wymagania. Zaleca się odłączenie\n"
+"takiego odwołania i skierowanie powstałego obrysu poprawnie."
 
 #. GT: Refs is an abbreviation for References. Space is somewhat constrained here
 #: problems.c:2839
 msgid "Refs with bad tt transformation matrices"
-msgstr ""
+msgstr "Czy poprawna macierz transformacji TTF"
 
 #: problems.c:2847
 msgid ""
 "TrueType requires that all scaling and rotational\n"
 "entries in a transformation matrix be between -2 and 2"
 msgstr ""
+"TrueType wymaga aby współczynniki odpowiedzialne w macierzy\n"
+"przekształceń za skalowanie i obrót mieściły się w zakresie -2...2"
 
 #: problems.c:2851
 msgid "Mixed contours and references"
-msgstr ""
+msgstr "Czy nie wymieszano konturów i odwołań"
 
 #: problems.c:2859
 msgid ""
 "TrueType glyphs can either contain references or contours.\n"
 "Not both."
-msgstr ""
+msgstr "TrueType pozwala budować glify albo tylko z konturów, albo tylko z odwołań."
 
 #. GT: Refs is an abbreviation for References. Space is somewhat constrained here
 #: problems.c:2864
 msgid "Refs with bad ps transformation matrices"
-msgstr ""
+msgstr "Czy poprawna macierz transformacji PS"
 
 #: problems.c:2872
 msgid ""
@@ -15669,6 +15839,8 @@ msgid ""
 "The first four entries of the transformation matix should be\n"
 "[1 0 0 1]."
 msgstr ""
+"Fonty typu 1 i 2 zezwalają tylko na przesunięcia odwołań. Pierwszy\n"
+"wiersz macierzy przekształceń powinien być postaci [1 0 0 1]."
 
 #: problems.c:2885 problems.c:2896
 msgid ""
@@ -15680,7 +15852,7 @@ msgstr ""
 
 #: problems.c:2900
 msgid "Refs with out of date point matching"
-msgstr ""
+msgstr "Czy przystawanie punktów aktualne?"
 
 #: problems.c:2908
 msgid ""
@@ -15841,14 +16013,14 @@ msgstr ""
 
 #: problems.c:3191
 msgid "Paths"
-msgstr ""
+msgstr "Krzywe"
 
 #. GT: Refs is an abbreviation for References. Space is tight here
 #: problems.c:3196
 msgid "Refs"
-msgstr ""
+msgstr "Odwołania"
 
-#: problems.c:3200 savefontdlg.c:763 savefontdlg.c:863
+#: problems.c:3200 savefontdlg.c:764 savefontdlg.c:864
 msgid "Hints"
 msgstr "Hinty"
 
@@ -15862,15 +16034,15 @@ msgstr "CID"
 
 #: problems.c:3213
 msgid "Random"
-msgstr ""
+msgstr "Różne"
 
 #: problems.c:3226
 msgid "Clear All"
-msgstr ""
+msgstr "Wyczyść wszystkie"
 
 #: problems.c:3238
 msgid "Set All"
-msgstr ""
+msgstr "Ustaw wszystkie"
 
 #: problems.c:3252
 msgid "¹ \"Near\" means within"
@@ -15904,7 +16076,7 @@ msgstr ""
 
 #: psread.c:565
 msgid "Attempt to invert a singular matrix\n"
-msgstr ""
+msgstr "Próba znalezienia odwrotności macierzy jednostkowej\n"
 
 #. GT: Here "def" is a PostScript keyword, (meaning define).
 #. GT: This "def" should not be translated as it is part of the PostScript language.
@@ -16305,112 +16477,116 @@ msgid "SVG font"
 msgstr "Font SVG"
 
 #: savefontdlg.c:149
+msgid "Unified Font Object"
+msgstr ""
+
+#: savefontdlg.c:150
 msgid "No Outline Font"
 msgstr "Bez obrysowych"
 
-#: savefontdlg.c:154
+#: savefontdlg.c:155
 msgid "In TTF/OTF"
 msgstr "W foncie TTF/OTF"
 
-#: savefontdlg.c:155
+#: savefontdlg.c:156
 msgid "Apple bitmap only sfnt (dfont)"
 msgstr ""
 
-#: savefontdlg.c:156
+#: savefontdlg.c:157
 msgid "(faked) MS bitmap only sfnt (ttf)"
 msgstr ""
 
-#: savefontdlg.c:157
+#: savefontdlg.c:158
 msgid "X11 bitmap only sfnt (otb)"
 msgstr ""
 
-#: savefontdlg.c:159
+#: savefontdlg.c:160
 msgid "NFNT (Resource)"
 msgstr "NFNT (zasób)"
 
-#: savefontdlg.c:161
+#: savefontdlg.c:162
 msgid "NFNT (MacBin)"
 msgstr "NFNT (binarny macowy)"
 
-#: savefontdlg.c:166
+#: savefontdlg.c:167
 msgid "Win FNT"
 msgstr "Windowsowy FNT"
 
-#: savefontdlg.c:167
+#: savefontdlg.c:168
 msgid "Palm OS Bitmap"
 msgstr "Bitmapa PalmOSa"
 
-#: savefontdlg.c:168
+#: savefontdlg.c:169
 msgid "PS Type3 Bitmap"
 msgstr "Bitmapa PS typ 3"
 
-#: savefontdlg.c:169
+#: savefontdlg.c:170
 msgid "No Bitmap Fonts"
 msgstr "Bez bitmapowych"
 
-#: savefontdlg.c:204 savefontdlg.c:2426 savefontdlg.c:2455
+#: savefontdlg.c:205 savefontdlg.c:2431 savefontdlg.c:2460
 msgid "Pixel List"
 msgstr ""
 
-#: savefontdlg.c:245
+#: savefontdlg.c:246
 msgid "Saving AFM File"
 msgstr "Zapisywanie pliku AFM"
 
-#: savefontdlg.c:317
+#: savefontdlg.c:318
 msgid "Saving TFM File"
 msgstr "Zapisywanie pliku TFM"
 
-#: savefontdlg.c:380
+#: savefontdlg.c:381
 msgid "Saving OFM File"
 msgstr "Zapisywanie pliku OFM"
 
-#: savefontdlg.c:721 savefontdlg.c:3048
+#: savefontdlg.c:722 savefontdlg.c:3053
 msgid "Options"
 msgstr "Opcje"
 
-#: savefontdlg.c:753
+#: savefontdlg.c:754
 msgid "Round"
 msgstr "Zaokrąglij"
 
-#: savefontdlg.c:755
+#: savefontdlg.c:756
 msgid "Do you want to round coordinates to integers (this saves space)?"
 msgstr "Czy zaokrąglić współrzędne punktów do liczb całkowitych? To oszczędza miejsce."
 
-#: savefontdlg.c:765
+#: savefontdlg.c:766
 msgid "Do you want the font file to contain PostScript hints?"
 msgstr "Czy wynikowy font postscriptowy ma zawierać hinting?"
 
-#: savefontdlg.c:774
+#: savefontdlg.c:775
 msgid "Flex Hints"
 msgstr "Hinty „flex”"
 
-#: savefontdlg.c:776
+#: savefontdlg.c:777
 msgid "Do you want the font file to contain PostScript flex hints?"
 msgstr "Czy wynikowy font postscriptowy ma zawierać hinting typu „flex”?"
 
-#: savefontdlg.c:785
+#: savefontdlg.c:786
 msgid "Hint Substitution"
 msgstr "Podstawianie hintów"
 
-#: savefontdlg.c:787
+#: savefontdlg.c:788
 msgid "Do you want the font file to do hint substitution?"
 msgstr "Czy wynikowy font ma korzystać z podstawiania hintów?"
 
-#: savefontdlg.c:794
+#: savefontdlg.c:795
 msgid "First 256"
 msgstr "Maks. 256 glifów"
 
-#: savefontdlg.c:796
+#: savefontdlg.c:797
 msgid ""
 "Limit the font so that only the glyphs referenced in the first 256 encodings\n"
 "will be included in the file"
 msgstr "Zapisz do fontu tylko pierwszych 256 glifów użytych w bieżącym kodowaniu."
 
-#: savefontdlg.c:803
+#: savefontdlg.c:804
 msgid "Output AFM"
 msgstr "Zapisz AFM"
 
-#: savefontdlg.c:805
+#: savefontdlg.c:806
 msgid ""
 "The AFM file contains metrics information that many word-processors will read when "
 "using a PostScript® font."
@@ -16418,11 +16594,11 @@ msgstr ""
 "Plik AFM przechowuje informacje metryczne używane przez wiele edytorów przy korzystaniu "
 "z fontów PostScriptowych"
 
-#: savefontdlg.c:813
+#: savefontdlg.c:814
 msgid "Composites in AFM"
 msgstr "Kompozyty w AFM"
 
-#: savefontdlg.c:815
+#: savefontdlg.c:816
 msgid ""
 "The AFM format allows some information about composites\n"
 "(roughly the same as mark to base anchor classes) to be\n"
@@ -16433,27 +16609,27 @@ msgstr ""
 "o glifach kompozytowych. To powoduje jednak gwałtowny wzrost\n"
 "objętości, gdyż te informacje nie są zapisywane w kompaktowy sposób."
 
-#: savefontdlg.c:823
+#: savefontdlg.c:824
 msgid "Output PFM"
 msgstr "Zapisz PFM"
 
-#: savefontdlg.c:825
+#: savefontdlg.c:826
 msgid "The PFM file contains information Windows needs to install a PostScript® font."
 msgstr ""
 "Pliki PFM przechowują informacje potrzebne dla Windows do zainstalowania fontów "
 "PostScriptowych"
 
-#: savefontdlg.c:833
+#: savefontdlg.c:834
 msgid "Output TFM & ENC"
 msgstr "Zapisz TFM i ENC"
 
-#: savefontdlg.c:835
+#: savefontdlg.c:836
 msgid "The tfm and enc files contain information TeX needs to install a PostScript® font."
 msgstr ""
 "Pliki TFM i ENC przechowują informacje potrzebne Tεχ-owi do zainstalowania fontów "
 "PostScriptowych"
 
-#: savefontdlg.c:865
+#: savefontdlg.c:866
 msgid ""
 "Do you want the font file to contain truetype hints? This will not\n"
 "generate new instructions, it will just make use of whatever is associated\n"
@@ -16462,15 +16638,15 @@ msgstr ""
 "Czy font ma zawierac hinting truetypowy? Włączenie tej opcji nie spowoduje\n"
 "wygenerowania nowych instrukcji, zostaną użyte te które już są w foncie."
 
-#: savefontdlg.c:873
+#: savefontdlg.c:874
 msgid "PS Glyph Names"
 msgstr "Nazwy glifów"
 
-#: savefontdlg.c:875
+#: savefontdlg.c:876
 msgid "Do you want the font file to contain the names of each glyph in the font?"
 msgstr "Czy wynikowy font ma zawierać nazwy glifów?"
 
-#: savefontdlg.c:885
+#: savefontdlg.c:886
 msgid ""
 "Apple and MS/Adobe differ about the format of truetype and opentype files\n"
 "This allows you to select which standard to follow for your font.\n"
@@ -16492,7 +16668,7 @@ msgstr ""
 " Użycie raczej GPOS niż kern/opbd\n"
 " Użycie raczej GDEF niż lcar/prop"
 
-#: savefontdlg.c:896
+#: savefontdlg.c:897
 msgid ""
 "Apple and MS/Adobe differ about the format of truetype and opentype files\n"
 "This allows you to select which standard to follow for your font.\n"
@@ -16514,11 +16690,11 @@ msgstr ""
 " Użycie raczej GPOS niż kern/opbd\n"
 " Użycie raczej GDEF niż lcar/prop"
 
-#: savefontdlg.c:904
+#: savefontdlg.c:905
 msgid "Old style 'kern'"
 msgstr "Tradycyjna „kern”"
 
-#: savefontdlg.c:906
+#: savefontdlg.c:907
 msgid ""
 "Many applications still don't support 'GPOS' kerning.\n"
 "If you want to include both 'GPOS' and old-style 'kern'\n"
@@ -16531,11 +16707,11 @@ msgstr ""
 "„kern”, używanej dawniej do przechowywania informacji o kerningu. To może\n"
 "jednak zmylić niektóre aplikacje. Nie wolno tego stosować razem z opcją „apple”."
 
-#: savefontdlg.c:915
+#: savefontdlg.c:916
 msgid "Broken 'size'"
 msgstr "Błędna „size”"
 
-#: savefontdlg.c:917
+#: savefontdlg.c:918
 msgid ""
 "When Adobe first released fonts with a 'size' feature they did\n"
 "not follow the opentype specification. In August of 2006 they\n"
@@ -16552,11 +16728,11 @@ msgstr ""
 "programy spodziewające się błędnego formatu „size” mogą nie działać z nowymi\n"
 "fontami. Nowe aplikacje zapewne obsłużą oba formaty w trosce o kompatybilność."
 
-#: savefontdlg.c:925
+#: savefontdlg.c:926
 msgid "PfaEdit Table"
 msgstr "Tablica PfEd"
 
-#: savefontdlg.c:927
+#: savefontdlg.c:928
 msgid ""
 "The PfaEdit table is an extension to the TrueType format\n"
 "and contains various data used by FontForge\n"
@@ -16567,27 +16743,27 @@ msgstr ""
 "różne dane używane przez FontForge (powinna się nazywać FFrg\n"
 "od „FontForge”, ale z przyczyn historycznych tak nie jest)."
 
-#: savefontdlg.c:935
+#: savefontdlg.c:936
 msgid "Save Comments"
 msgstr "Zapisz komentarze"
 
-#: savefontdlg.c:937
+#: savefontdlg.c:938
 msgid "Save glyph comments in the PfEd table"
 msgstr "Zapisz komentarze wszystkich glifów w tablicy PfEd"
 
-#: savefontdlg.c:945
+#: savefontdlg.c:946
 msgid "Save Colors"
 msgstr "Zapisz kolory"
 
-#: savefontdlg.c:947
+#: savefontdlg.c:948
 msgid "Save glyph colors in the PfEd table"
 msgstr "Zapisz kolory wszystkich glifów w tablicy PfEd"
 
-#: savefontdlg.c:955
+#: savefontdlg.c:956
 msgid "TeX Table"
 msgstr "Tablica TeX"
 
-#: savefontdlg.c:957
+#: savefontdlg.c:958
 msgid ""
 "The TeX table is an extension to the TrueType format\n"
 "and the various data you would expect to find in\n"
@@ -16598,77 +16774,77 @@ msgstr ""
 "różne dane dla ΤεΧ-a, których nie ma w oryginalnej specyfikacji\n"
 "TrueType, a które zwykle znajdują się w plikach TFM.\n"
 
-#: savefontdlg.c:965
+#: savefontdlg.c:966
 msgid "Output Glyph Map"
 msgstr "Zapisz mapę glifów"
 
-#: savefontdlg.c:975
+#: savefontdlg.c:976
 msgid "Output OFM & CFG"
 msgstr "Zapisz OFM i CFG"
 
-#: savefontdlg.c:977
+#: savefontdlg.c:978
 msgid "The ofm and cfg files contain information Omega needs to process a font."
 msgstr "Pliki OFM i CFG zawierają informacji potrzebne Omedze do przetwarzania fontu."
 
-#: savefontdlg.c:1086 savefontdlg.c:1101
+#: savefontdlg.c:1087 savefontdlg.c:1102
 msgid "BDF Resolution"
 msgstr "Rozdzielczość BDF"
 
-#: savefontdlg.c:1147
+#: savefontdlg.c:1148
 msgid "Guess each font's resolution based on its pixel size"
 msgstr ""
 
-#: savefontdlg.c:1279 winfonts.c:850
+#: savefontdlg.c:1280 winfonts.c:850
 #, c-format
 msgid "Attempt to save a pixel size that has not been created (%d@%d)"
 msgstr "Próba zapisu bitmapy nieistniejącego rozmiaru (%d@%d)"
 
-#: savefontdlg.c:1286
+#: savefontdlg.c:1287
 msgid "Currently, FontForge only supports bitmap (not bytemap) type3 output"
 msgstr ""
 
-#: savefontdlg.c:1337 savefontdlg.c:1363
+#: savefontdlg.c:1338 savefontdlg.c:1364
 msgid "Bad Drawing Operation"
 msgstr ""
 
-#: savefontdlg.c:1337
+#: savefontdlg.c:1338
 msgid ""
 "This font contains at least one translucent layer, but type3 does not support that "
 "(anything translucent or transparent is treated as opaque). Do you want to proceed "
 "anyway?"
 msgstr ""
 
-#: savefontdlg.c:1363
+#: savefontdlg.c:1364
 msgid ""
 "This font contains at least one foreground image, but svg does not support that. Do you "
 "want to proceed anyway?"
 msgstr ""
 
-#: savefontdlg.c:1491
+#: savefontdlg.c:1492
 msgid "Find Sub Font Definition file"
 msgstr ""
 
-#: savefontdlg.c:1513
+#: savefontdlg.c:1514
 msgid "No Sub Font Definition file"
 msgstr ""
 
-#: savefontdlg.c:1536
+#: savefontdlg.c:1537
 msgid "Wrong type of SFD file"
 msgstr ""
 
-#: savefontdlg.c:1536
+#: savefontdlg.c:1537
 msgid ""
 "This looks like one of FontForge's SplineFont DataBase files.\n"
 "Not one of TeX's SubFont Definition files.\n"
 "An unfortunate confusion of extensions."
 msgstr ""
 
-#: savefontdlg.c:1585
+#: savefontdlg.c:1586
 #, c-format
 msgid "Bad offset: %d for subfont %s\n"
 msgstr ""
 
-#: savefontdlg.c:1616
+#: savefontdlg.c:1617
 #, c-format
 msgid ""
 "Warning: Encoding %d (%x) is mapped to at least two locations (%s@0x%02x and %s@0x%"
@@ -16676,72 +16852,76 @@ msgid ""
 " Only one will be used here.\n"
 msgstr ""
 
-#: savefontdlg.c:1627
+#: savefontdlg.c:1628
 #, c-format
 msgid "More than 256 entries in subfont %s\n"
 msgstr "Więcej niż 256 znaków w podfoncie %s\n"
 
-#: savefontdlg.c:1776 savefontdlg.c:1961
+#: savefontdlg.c:1777 savefontdlg.c:1966
 msgid "Afm Save Failed"
 msgstr "Zapis pliku AFM nie powiódł się"
 
-#: savefontdlg.c:1782 savefontdlg.c:1948
+#: savefontdlg.c:1783 savefontdlg.c:1953
 msgid "Tfm Save Failed"
 msgstr "Zapis pliku TFM nie powiódł się"
 
-#: savefontdlg.c:1827
+#: savefontdlg.c:1828
 msgid "Bad Extension"
 msgstr "Nieprawidłowe rozszerzenie pliku"
 
-#: savefontdlg.c:1827
+#: savefontdlg.c:1828
 msgid "You must specify a standard type1 extension (.pfb or .pfa)"
 msgstr "Musisz podać standardowe rozszerzenie typu 1 (.pfb lub .pfa)"
 
-#: savefontdlg.c:1853 savefontdlg.c:1894
+#: savefontdlg.c:1854 savefontdlg.c:1895
 msgid "Saving font"
 msgstr "Zapisywanie fontu"
 
-#: savefontdlg.c:1854
+#: savefontdlg.c:1855
 msgid "Saving Multiple Postscript Fonts"
 msgstr "Zapisywanie fontów postscriptowych"
 
-#: savefontdlg.c:1897 tottf.c:1948
+#: savefontdlg.c:1898 tottf.c:1948
 msgid "Saving OpenType Font"
 msgstr "Zapisywanie fontu OpenType"
 
-#: savefontdlg.c:1899
+#: savefontdlg.c:1900
 msgid "Saving CID keyed font"
 msgstr "Zapisywanie fontu CID"
 
-#: savefontdlg.c:1900
+#: savefontdlg.c:1901
 msgid "Saving multi-master font"
 msgstr "Zapisywanie fontu MultipleMaster"
 
-#: savefontdlg.c:1901
+#: savefontdlg.c:1902
 msgid "Saving SVG font"
 msgstr "Zapisywanie fontu SVG"
 
-#: savefontdlg.c:1902
+#: savefontdlg.c:1903
+msgid "Saving Unified Font Object"
+msgstr "Zapisywanie fontu UFO"
+
+#: savefontdlg.c:1904
 msgid "Saving PostScript Font"
 msgstr "Zapisywanie fontu postscriptowego"
 
-#: savefontdlg.c:1954
+#: savefontdlg.c:1959
 msgid "Ofm Save Failed"
 msgstr "Zapis pliku OFM nie powiódł się"
 
-#: savefontdlg.c:1966
+#: savefontdlg.c:1971
 msgid "Saving PFM File"
 msgstr "Zapisywanie pliku PFM"
 
-#: savefontdlg.c:1969
+#: savefontdlg.c:1974
 msgid "Pfm Save Failed"
 msgstr "Zapis pliku PFM nie powiódł się"
 
-#: savefontdlg.c:2349
+#: savefontdlg.c:2354
 msgid "Notdef name"
 msgstr ""
 
-#: savefontdlg.c:2349
+#: savefontdlg.c:2354
 #, c-format
 msgid ""
 "The glyph at encoding %d is named \".notdef\" but contains an outline. Because it is "
@@ -16750,29 +16930,29 @@ msgid ""
 "character)?"
 msgstr ""
 
-#: savefontdlg.c:2358
+#: savefontdlg.c:2363
 msgid "Not a CID format"
 msgstr ""
 
-#: savefontdlg.c:2358
+#: savefontdlg.c:2363
 msgid ""
 "You are attempting to save a CID font in a non-CID format. This is ok, but it means "
 "that only the current sub-font will be saved.\n"
 "Is that what you want?"
 msgstr ""
 
-#: savefontdlg.c:2366
+#: savefontdlg.c:2371
 #, c-format
 msgid ""
 "The truetype instructions on glyph %s are out of date.\n"
 "Do you want to proceed anyway?"
 msgstr ""
 
-#: savefontdlg.c:2374
+#: savefontdlg.c:2379
 msgid "Reference point match out of date"
 msgstr ""
 
-#: savefontdlg.c:2374
+#: savefontdlg.c:2379
 #, c-format
 msgid ""
 "In glyph %s the reference to %s is positioned by point matching, and the point numbers "
@@ -16780,11 +16960,11 @@ msgid ""
 "Do you want to proceed anyway?"
 msgstr ""
 
-#: savefontdlg.c:2386 savefontdlg.c:2403
+#: savefontdlg.c:2391 savefontdlg.c:2408
 msgid "Non-standard Em-Size"
 msgstr ""
 
-#: savefontdlg.c:2386
+#: savefontdlg.c:2391
 #, c-format
 msgid ""
 "The convention is that PostScript fonts should have an Em-Size of 1000. But this font "
@@ -16793,7 +16973,7 @@ msgid ""
 "Do you wish to continue to generate your font in spite of this?"
 msgstr ""
 
-#: savefontdlg.c:2403
+#: savefontdlg.c:2408
 #, c-format
 msgid ""
 "The convention is that TrueType fonts should have an Em-Size which is a power of 2. But "
@@ -16802,7 +16982,7 @@ msgid ""
 "Do you wish to continue to generate your font in spite of this?"
 msgstr ""
 
-#: savefontdlg.c:2420
+#: savefontdlg.c:2425
 msgid ""
 "Your font has a 2 byte encoding, but you are attempting to save it in a format that "
 "only supports one byte encodings. This means that you won't be able to access anything "
@@ -16811,42 +16991,42 @@ msgid ""
 "Do you want to proceed anyway?"
 msgstr ""
 
-#: savefontdlg.c:2431
+#: savefontdlg.c:2436
 msgid "The 'NFNT' bitmap format is obsolete"
 msgstr ""
 
-#: savefontdlg.c:2431
+#: savefontdlg.c:2436
 msgid ""
 "The 'NFNT' bitmap format is not used under OS/X (though you still need to create a "
 "(useless) bitmap font if you are saving a type1 PostScript resource)"
 msgstr ""
 
-#: savefontdlg.c:2434
+#: savefontdlg.c:2439
 msgid "Needs bitmap font"
 msgstr ""
 
-#: savefontdlg.c:2434
+#: savefontdlg.c:2439
 msgid ""
 "When generating a Mac Type1 resource font, you MUST generate at least one NFNT bitmap "
 "font to go with it. If you have not created any bitmaps for this font, cancel this dlg "
 "and use the Element->Bitmaps Available command to create one"
 msgstr ""
 
-#: savefontdlg.c:2438
+#: savefontdlg.c:2443
 msgid "The 'POST' type1 format is probably deprecated"
 msgstr ""
 
-#: savefontdlg.c:2438
+#: savefontdlg.c:2443
 msgid ""
 "The 'POST' type1 format is probably depreciated and may not work in future version of "
 "the mac."
 msgstr ""
 
-#: savefontdlg.c:2948 savefontdlg.c:2952 savefontdlg.c:2957
+#: savefontdlg.c:2953 savefontdlg.c:2957 savefontdlg.c:2962
 msgid "Bad Mac Family"
 msgstr "Błędna rodzina makowa"
 
-#: savefontdlg.c:2948
+#: savefontdlg.c:2953
 msgid ""
 "To generate a Mac family file, the current font must have plain (Normal, Regular, etc.) "
 "style, and there must be other open fonts with the same family name."
@@ -16854,7 +17034,7 @@ msgstr ""
 "Aby wygenerować rodzinę macową, bieżący font musi mieć „podstawowy” styl (Normal, "
 "Regular...), muszą być też otwarte pozostałe fonty tej rodziny."
 
-#: savefontdlg.c:2952
+#: savefontdlg.c:2957
 #, c-format
 msgid ""
 "There are two open fonts with the current family name and the same style. %.30s and "
@@ -16863,91 +17043,91 @@ msgstr ""
 "Są otwarte dwa fonty o tym samym stylu i nazwie rodziny:\n"
 "%.30s i %.30s"
 
-#: savefontdlg.c:2957
+#: savefontdlg.c:2962
 #, c-format
 msgid "The font %1$.30s has a different encoding than that of %2$.30s"
 msgstr "Font %1$.30s ma inne kodowanie niż %2$.30s"
 
-#: savefontdlg.c:2970
+#: savefontdlg.c:2975
 msgid "Generate Mac Family..."
 msgstr "Generuj rodzinę macową..."
 
-#: savefontdlg.c:2970
+#: savefontdlg.c:2975
 msgid "Generate Fonts..."
 msgstr "Generuj fonty..."
 
-#: savefontdlg.c:3050
+#: savefontdlg.c:3055
 msgid "Allows you to select optional behavior when generating the font"
 msgstr ""
 
-#: scripting.c:198
+#: scripting.c:210
 msgid "Called from...\n"
 msgstr ""
 
-#: scripting.c:199
+#: scripting.c:211
 #, c-format
 msgid " %s: line %d\n"
 msgstr ""
 
-#: scripting.c:227
+#: scripting.c:239
 #, c-format
 msgid "%s: %d Expected %s, got %s"
 msgstr ""
 
-#: scripting.c:231
+#: scripting.c:243
 #, c-format
 msgid "%1$s: %2$d. Expected %3$s got %4$s"
 msgstr ""
 
-#: scripting.c:242
+#: scripting.c:254
 #, c-format
 msgid "%s: %d Unexpected %s found"
 msgstr ""
 
-#: scripting.c:264 scripting.c:309
+#: scripting.c:276 scripting.c:321
 #, c-format
 msgid "%s line: %d %s\n"
 msgstr ""
 
-#: scripting.c:284
+#: scripting.c:296
 #, c-format
 msgid "%s line: %d %s: %s\n"
 msgstr ""
 
-#: scripting.c:424
+#: scripting.c:436
 msgid "Attention"
 msgstr ""
 
-#: scripting.c:1701
+#: scripting.c:1754
 #, c-format
 msgid "Warning: %s has a different family name than does %s (GenerateFamily)\n"
 msgstr ""
 
-#: scripting.c:1733
+#: scripting.c:1786
 #, c-format
 msgid "%s(%s) and %s(%s) 0x%x in FOND %s\n"
 msgstr ""
 
-#: scripting.c:5187
+#: scripting.c:5298
 #, c-format
 msgid "Warning: No characters selected in AddHint(%d,%d,%d)\n"
 msgstr ""
 
-#: scripting.c:5625
+#: scripting.c:5736
 #, c-format
 msgid "Warning: %dth axis value (%g) is outside the allowed range [%g,%g]\n"
 msgstr ""
 
-#: scripting.c:7639
+#: scripting.c:7756
 #, c-format
 msgid "%s:%d Unexpected character %c (%d)\n"
 msgstr ""
 
-#: scripting.c:9066
+#: scripting.c:9207
 msgid "Execute Script..."
 msgstr "Wykonaj skrypt..."
 
-#: scripting.c:9108
+#: scripting.c:9249
 msgid "C_all..."
 msgstr ""
 
@@ -17094,28 +17274,61 @@ msgstr ""
 "Próba automagicznego odzyskania zmian w %.80s nie powiodła się.\n"
 "Czy FontForge powinien spróbować ponownie przy następnym uruchomieniu?"
 
-#: sftextfield.c:1008
+#: sftextfield.c:1101
 msgid "Open"
 msgstr "Otwórz"
 
-#: sftextfield.c:1016 sftextfield.c:1034
+#: sftextfield.c:1109 sftextfield.c:1127
 msgid "Could not open"
 msgstr "Nie udało się otworzyć"
 
-#: sftextfield.c:1016 sftextfield.c:1034 ../gdraw/gtextfield.c:808
+#: sftextfield.c:1109 sftextfield.c:1127 ../gdraw/gtextfield.c:808
 #: ../gdraw/gtextfield.c:840
 #, c-format
 msgid "Could not open %.100s"
 msgstr "Nie udało się otworzyć %.100s"
 
-#: sftextfield.c:1026 showatt.c:2339 showatt.c:2392
+#: sftextfield.c:1119 showatt.c:2339 showatt.c:2392
 msgid "Save"
 msgstr "Zapisz"
+
+#: sftextfield.c:1178 sftextfield.c:1180
+msgid "Save Image"
+msgstr "Zapisz obraz"
+
+#: sftextfield.c:1208 sftextfield.c:2864
+msgid "Unsupported image format"
+msgstr ""
+
+#: sftextfield.c:1210 sftextfield.c:2866
+msgid "Unsupported image format must be bmp or png"
+msgstr ""
+
+#: sftextfield.c:1212 sftextfield.c:2868
+msgid "Unsupported image format must be bmp"
+msgstr ""
+
+#: sftextfield.c:1216 sftextfield.c:2872
+msgid "Could not write"
+msgstr "Nie udało się zapisać"
+
+#: sftextfield.c:1216 sftextfield.c:2872
+#, c-format
+msgid "Could not write %.100s"
+msgstr "Nie udało się zapisać %.100s"
+
+#: sftextfield.c:1277
+msgid "_Save As..."
+msgstr "_Zapisz jako..."
+
+#: sftextfield.c:1280
+msgid "Save As _Image..."
+msgstr "Zapisz jako _obraz..."
 
 #: showatt.c:119
 #, c-format
 msgid "Component %d %.30s (%d,%d)"
-msgstr ""
+msgstr "Składnik %d %.30s (%d,%d)"
 
 #: showatt.c:158
 msgid "Base Glyphs"
@@ -17327,10 +17540,6 @@ msgstr ""
 
 #: showatt.c:1504
 msgid "Not classified"
-msgstr ""
-
-#: showatt.c:1508
-msgid "Componant"
 msgstr ""
 
 #: showatt.c:1566
@@ -17814,7 +18023,7 @@ msgid ""
 "%g, italic correction=%g"
 msgstr ""
 
-#: splinesave.c:2292
+#: splinesave.c:2300
 #, c-format
 msgid "Number out of range: %g in type2 output (must be [-65536,65535])\n"
 msgstr "Wartośc spoza zakresu: %.g w foncie Type2 (dozwolony zakres to -65536...65535)\n"
@@ -17897,7 +18106,7 @@ msgstr ""
 #. GT: is intended as a satire
 #. GT: These strings are for fun. If they are offensive of incomprehensible
 #. GT: simply translate them as something dull like: "FontForge"
-#: start.c:223 start.c:224 start.c:470 start.c:471
+#: start.c:223 start.c:224 start.c:480 start.c:481
 msgid ""
 "A free press discriminates\n"
 "against the illiterate."
@@ -17909,12 +18118,12 @@ msgstr ""
 #. GT:  language and then twisting it might be closer to the original intent.
 #. GT:  Or just translate them all as FontForge and don't worry about them.
 #. GT: Misquotation of an old latin drinking song
-#: start.c:231 start.c:232 start.c:472 start.c:473
+#: start.c:231 start.c:232 start.c:482 start.c:483
 msgid "Gaudeamus Ligature!"
 msgstr "Gaudeamus Ligatur!"
 
 #. GT: Misquotation of the Gospel of John
-#: start.c:234 start.c:474
+#: start.c:234 start.c:484
 msgid "In the beginning was the letter..."
 msgstr "Na początku była czcionka..."
 
@@ -18187,33 +18396,33 @@ msgstr "Klasa 2: {usunięty glif}"
 msgid "Class 3: {End of Line}"
 msgstr "Klasa 3: {koniec wiersza}"
 
-#: svg.c:1299
+#: svg.c:1335
 #, c-format
 msgid "Unknown type '%c' found in path specification\n"
 msgstr ""
 
-#: svg.c:1780
+#: svg.c:1816
 #, c-format
 msgid "Failed to parse color %s\n"
 msgstr ""
 
-#: svg.c:2359
+#: svg.c:2396
 msgid "This font does not specify units-per-em\n"
 msgstr ""
 
-#: svg.c:2494
+#: svg.c:2531
 msgid "This font does not specify font-face\n"
 msgstr ""
 
-#: svg.c:2676 svg.c:2738 svg.c:2781
+#: svg.c:2713 svg.c:2775 svg.c:2818 ufo.c:878 ufo.c:1001
 msgid "Can't find libxml2.\n"
 msgstr "Nie znaleziono libxml2.\n"
 
-#: svg.c:2697
+#: svg.c:2734
 msgid "This file contains no SVG fonts.\n"
 msgstr "Ten plik nie zawiera fontów SVG.\n"
 
-#: svg.c:2795
+#: svg.c:2832
 #, c-format
 msgid "%s does not contain an <svg> element at the top\n"
 msgstr ""
@@ -18559,73 +18768,73 @@ msgstr "Brakuje prawego nawiasu w mnemoniku (lub błędna wartość lub kolejno�
 msgid "Bracketted value is too large"
 msgstr "Wartość w nawiasach jest zbyt duża"
 
-#: ttfinstrs.c:1264
+#: ttfinstrs.c:1267
 msgid "_Parse"
 msgstr "_Parsuj"
 
-#: ttfinstrs.c:1402 ttfinstrs.c:2385
+#: ttfinstrs.c:1405 ttfinstrs.c:2388
 #, c-format
 msgid "TrueType Instructions for %.50s"
 msgstr "Instrukcje TrueType dla %.50s"
 
-#: ttfinstrs.c:1522 ttfinstrs.c:1876
+#: ttfinstrs.c:1525 ttfinstrs.c:1879
 msgid "Change Length"
 msgstr "Zmień długość"
 
-#: ttfinstrs.c:1522
+#: ttfinstrs.c:1525
 msgid "How many entries should there be in the cvt table?"
 msgstr "Jak dużo liczb powinna liczyć tablica cvt?"
 
-#: ttfinstrs.c:2016 ttfinstrs.c:2028
+#: ttfinstrs.c:2019 ttfinstrs.c:2031
 msgid "Instructions were changed"
 msgstr "instrukcje uległy zmianie"
 
-#: ttfinstrs.c:2016 ttfinstrs.c:2028
+#: ttfinstrs.c:2019 ttfinstrs.c:2031
 #, c-format
 msgid "The instructions for %.80s have changed. Do you want to lose those changes?"
 msgstr "instrukcje w %.80s uległy zmianie. Czy chcesz porzucić zmiany?"
 
-#: ttfinstrs.c:2073
+#: ttfinstrs.c:2076
 msgid "Zones"
 msgstr "Liczba stref"
 
-#: ttfinstrs.c:2074
+#: ttfinstrs.c:2077
 msgid "Twilight Zone Point Count"
 msgstr "Maksymalna liczba punktów półcienia"
 
-#: ttfinstrs.c:2076
+#: ttfinstrs.c:2079
 msgid "Max Stack Depth"
 msgstr "Maksymalna głegokość stosu argumentów"
 
-#: ttfinstrs.c:2077
+#: ttfinstrs.c:2080
 msgid "Max # Functions"
 msgstr "Maksymalna liczba funkcji"
 
-#: ttfinstrs.c:2078
+#: ttfinstrs.c:2081
 msgid "Max Instruction Defines"
 msgstr "Maksymalna liczba definicji instrukcji"
 
-#: ttfinstrs.c:2175
+#: ttfinstrs.c:2178
 msgid "_Zones:"
 msgstr "_Strefy:"
 
-#: ttfinstrs.c:2196
+#: ttfinstrs.c:2199
 msgid "_Twilight Pnt Cnt:"
 msgstr "_Punkty półcienia:"
 
-#: ttfinstrs.c:2217
+#: ttfinstrs.c:2220
 msgid "St_orage:"
 msgstr "P_amięć:"
 
-#: ttfinstrs.c:2238
+#: ttfinstrs.c:2241
 msgid "Max _Stack Depth:"
 msgstr "_Rozmiar stosu:"
 
-#: ttfinstrs.c:2259
+#: ttfinstrs.c:2262
 msgid "_FDEF"
 msgstr "_FDEFy"
 
-#: ttfinstrs.c:2279
+#: ttfinstrs.c:2282
 msgid "_IDEFs"
 msgstr "_IDEFy"
 
@@ -18640,12 +18849,12 @@ msgstr ""
 #: ttfspecial.c:400
 #, c-format
 msgid "Unknown subtable '%c%c%c%c' in 'PfEd' table, ignored\n"
-msgstr ""
+msgstr "Nieznana podtablica „%c%c%c%c” w tablicy „PfEd”, zignorowano\n"
 
 #: ttfspecial.c:726
 #, c-format
 msgid "Unknown subtable '%c%c%c%c' in 'TeX ' table, ignored\n"
-msgstr ""
+msgstr "Nieznana podtablica „%c%c%c%c” w tablicy „TeX”, zignorowano\n"
 
 #: typofeatures.c:1184 typofeatures.c:1186
 msgid "Bad Tag"
@@ -18690,6 +18899,36 @@ msgstr "Nie przejopiowano żadnych funkcji"
 #: typofeatures.c:1529 typofeatures.c:1531
 msgid "No Features Retagged"
 msgstr "Nie przetagowano żadnych funkcji"
+
+#: ufo.c:541
+msgid "Expected glyph file with format==1\n"
+msgstr ""
+
+#: ufo.c:588
+msgid "component with no base glyph"
+msgstr ""
+
+#: ufo.c:701
+#, c-format
+msgid "Bad glif file %s\n"
+msgstr ""
+
+#: ufo.c:719
+#, c-format
+msgid "Failed to find glyph %s when fixing up references\n"
+msgstr ""
+
+#: ufo.c:750
+msgid "Bad contents.plist\n"
+msgstr ""
+
+#: ufo.c:756 ufo.c:816 ufo.c:901
+msgid "Expected property list file"
+msgstr ""
+
+#: ufo.c:954
+msgid "This font does not specify unitsPerEm\n"
+msgstr ""
 
 #: uiutil.c:129
 #, c-format
@@ -19615,23 +19854,4 @@ msgstr "65"
 #. GT: might be 116*100/67 = 173
 #: ../gdraw/gtextinfo.c:525
 msgid "GGadget|ScaleFactor|100"
-msgstr "130"
-
-#~ msgid "PCF"
-#~ msgstr "PCF"
-
-#~ msgid "Not integral"
-#~ msgstr "Wartośc ułamkowa"
-
-#~ msgid ""
-#~ "This font contains at least one non-integral coordinate.\n"
-#~ "This is perfectly legal, but it is unusual and does\n"
-#~ "increase the size of the generated font file. You might\n"
-#~ "want to try using\n"
-#~ "  Element->Round To Int\n"
-#~ "on the entire font."
-#~ msgstr ""
-#~ "Ten font zawiera gdzieś przynajmniej jedną współrzędną ułamkową.\n"
-#~ "Jest to poprawne, jednak rzadko stosowane z uwagi na duże rozmiary\n"
-#~ "generowanych fontów. Być może wskazane jest użycie dla całego fontu\n"
-#~ "komendy Element->Zaokrąglij->Do całkowitych"
+msgstr "100"
