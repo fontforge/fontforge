@@ -270,7 +270,7 @@ static void FilterDlg(void) {
     };
     struct matrix_data *md;
     int k, cnt, i, ptwidth;
-    GGadgetCreateData gcd[3], boxes[3], *varray[7], *harray[6];
+    GGadgetCreateData gcd[3], boxes[3], *varray[7], *harray[7];
     GTextInfo label[3];
     GRect pos;
     GWindow gw;
