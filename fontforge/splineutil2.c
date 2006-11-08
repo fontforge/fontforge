@@ -2510,6 +2510,7 @@ SplineSet *SplineCharSimplify(SplineChar *sc,SplineSet *head,
 	}
     }
     SplineSetsRemoveAnnoyingExtrema(head,.3);
+    SPLCatagorizePoints(head);
 #if 0
  printf( "nocnt=%d totcnt=%d curdif=%d incr=%d\n", nocnt_cnt, totcnt_cnt, curdiff_cnt, incr_cnt );
 #endif
