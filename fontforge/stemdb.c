@@ -654,6 +654,25 @@ return( NULL );
 return( MonotonicFindAlong(&myline,gd->stspace,cnt,s,other_t));
 }
 
+static int StillStem(struct glyphdata *gd, double t, int isnext,
+	BasePoint *pos, struct stemdata *stem ) {
+    Spline myline;
+    SplinePoint end1, end2;
+    int cnt, ret, neg;
+
+    neg = 0;
+    if ( stem->width<0 ) {
+	neg = 1;
+	stem->width = -stem->width;
+    }
+    MakeVirtualLine(gd,pos,&stem->unit,&myline,&end1,&end2);
+    cnt = MonotonicOrder(gd->sspace,&myline,gd->stspace);
+    ret = MonotonicFindStemBounds(&myline,gd->stspace,cnt,stem);
+    if ( neg )
+	stem->width = -stem->width;
+return( ret );
+}
+
 /* In TrueType I want to make sure that everything on a diagonal line remains */
 /*  on the same line. Hence we compute the line. Also we are interested in */
 /*  points that are on the intersection of two lines */
@@ -1592,7 +1611,7 @@ return( MonotonicFindStemBounds(&myline,gd->stspace,cnt,stem));
     }
 }
 
-static int WalkSpline(SplinePoint *sp,int gonext,struct stemdata *stem,BasePoint *res) {
+static int WalkSpline(struct glyphdata *gd, SplinePoint *sp,int gonext,struct stemdata *stem,BasePoint *res) {
     int i;
     double off,diff;
     double incr;
@@ -1619,7 +1638,7 @@ static int WalkSpline(SplinePoint *sp,int gonext,struct stemdata *stem,BasePoint
 	pos.y = ((s->splines[1].a*t+s->splines[1].b)*t+s->splines[1].c)*t+s->splines[1].d;
 	diff = (pos.x-sp->me.x)*stem->l_to_r.x +
 		(pos.y-sp->me.y)*stem->l_to_r.y;
-	if ( diff>=-dist_error_hv && diff<dist_error_hv ) {
+	if ( diff>=-dist_error_hv && diff<dist_error_hv && StillStem(gd,t,gonext,&pos,stem)) {
 	    good = pos;
 	    t += incr;
 	} else
@@ -1670,17 +1689,17 @@ return( cnt );
 	    end = &nsp->me;
 	    if ( nsp->next!=NULL && !nsp->next->knownlinear && !nsp->ticked &&
 		    UnitsParallel(&gd->points[nsp->ttfindex].nextunit,&stem->unit)) {
-		WalkSpline(nsp,true,stem,&etemp);
+		WalkSpline(gd,nsp,true,stem,&etemp);
 		end = &etemp;
 		nsp->ticked = true;
 	    }
 	} else {
-	    WalkSpline(sp,true,stem,&etemp);
+	    WalkSpline(gd,sp,true,stem,&etemp);
 	    ecurved = true;
 	    end = &etemp;
 	}
     } else {
-	if ( !WalkSpline(sp,true,stem,&etemp))
+	if ( !WalkSpline(gd,sp,true,stem,&etemp))
 	    end = &etemp;
     }
     if ( UnitsParallel(&pd->prevunit,&stem->unit)) {
@@ -1689,17 +1708,17 @@ return( cnt );
 	    start = &psp->me;
 	    if ( psp->prev!=NULL && !psp->prev->knownlinear && !psp->ticked &&
 		    UnitsParallel(&gd->points[psp->ttfindex].prevunit,&stem->unit)) {
-		WalkSpline(psp,false,stem,&stemp);
+		WalkSpline(gd,psp,false,stem,&stemp);
 		start = &stemp;
 		psp->ticked = true;
 	    }
 	} else {
-	    WalkSpline(sp,false,stem,&stemp);
+	    WalkSpline(gd,sp,false,stem,&stemp);
 	    scurved = true;
 	    start = &stemp;
 	}
     } else {
-	if ( !WalkSpline(sp,false,stem,&stemp))
+	if ( !WalkSpline(gd,sp,false,stem,&stemp))
 	    start = &stemp;
     }
 
