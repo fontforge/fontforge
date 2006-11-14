@@ -32,7 +32,11 @@
 #include <utype.h>
 #include <unistd.h>
 #include <locale.h>
+#include <gfile.h>
 #include <gwidget.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <dirent.h>
 
 /* I will retain this list in case there are still some really old sfd files */
 /*  including numeric encodings.  This table maps them to string encodings */
@@ -49,6 +53,27 @@ static const char *charset_names[] = {
 
 static const char *unicode_interp_names[] = { "none", "adobe", "greek",
     "japanese", "tradchinese", "simpchinese", "korean", "ams", NULL };
+
+/* sfdir files and extensions */
+#define FONT_PROPS	"font.props"
+#define STRIKE_PROPS	"strike.props"
+#ifndef	VMS
+# define EXT_CHAR	'.'
+# define GLYPH_EXT	".glyph"
+# define BITMAP_EXT	".bitmap"
+# define STRIKE_EXT	".strike"
+# define SUBFONT_EXT	".subfont"
+# define INSTANCE_EXT	".instance"
+#else
+/* Under VMS directories can't have extensions (or rather they must end in .dir) */
+/* So let's be consistent and use fake extensions for everything. */
+# define EXT_CHAR	'$'
+# define GLYPH_EXT	"$glyph"
+# define BITMAP_EXT	"$bitmap"
+# define STRIKE_EXT	"$strike"
+# define SUBFONT_EXT	"$subfont"
+# define INSTANCE_EXT	"$instance"
+#endif
 
 signed char inbase64[256] = {
         -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -1137,8 +1162,57 @@ static void SFDDumpBitmapChar(FILE *sfd,BDFChar *bfc, int enc,int *newgids) {
 #endif
 }
 
-static void SFDDumpBitmapFont(FILE *sfd,BDFFont *bdf,EncMap *encm,int *newgids) {
+static void appendnames(char *dest,char *dir,char *dir_char,char *name,char *ext ) {
+    strcpy(dest,dir);
+    dest += strlen(dest);
+    strcpy(dest,dir_char);
+    dest += strlen(dest);
+    /* Windows, Mac & VMS all ignore case in the file system so we can't just */
+    /* copy the glyph name blindly (else "A" and "a" would map to the same file */
+    /* VMS also can't handle multiple "."s in a filename */
+    forever {
+	if ( strncmp(name,"uni",3)==0 && ishexdigit(name[3]) && ishexdigit(name[4]) &&
+		ishexdigit(name[5]) && ishexdigit(name[6])) {
+	    /* but in a name like uni00AD case is irrelevant. Even under unix its */
+	    /*  the same as uni00ad -- and it looks ugly */
+	    strncpy(dest,name,7);
+	    dest += 7; name += 7;
+	    while ( ishexdigit(name[0]) && ishexdigit(name[1]) &&
+		    ishexdigit(name[2]) && ishexdigit(name[3]) ) {
+		strncpy(dest,name,4);
+		dest += 4; name += 4;
+	    }
+	} else if ( name[0]=='u' && ishexdigit(name[1]) && ishexdigit(name[2]) &&
+		ishexdigit(name[3]) && ishexdigit(name[4]) &&
+		ishexdigit(name[5]) ) {
+	    strncpy(dest,name,5);
+	    dest += 5; name += 5;
+	} else
+    break;
+	if ( *name!='_' )
+    break;
+	*dest++ = '_';
+	++name;
+    }
+    while ( *name ) {
+	if ( isupper(*name)) {
+	    *dest++ = '_';
+	    *dest++ = *name;
+#ifdef VMS
+	} else if ( *name=='.' ) {
+	    *dest++ = '@';
+#endif
+	} else
+	    *dest++ = *name;
+	++name;
+    }
+    strcpy(dest,ext);
+}
+
+static int SFDDumpBitmapFont(FILE *sfd,BDFFont *bdf,EncMap *encm,int *newgids,
+	int todir, char *dirname) {
     int i;
+    int err = false;
 
     gwwv_progress_next_stage();
     fprintf( sfd, "BitmapFont: %d %d %d %d %d %s\n", bdf->pixelsize, bdf->glyphcnt,
@@ -1161,11 +1235,26 @@ static void SFDDumpBitmapFont(FILE *sfd,BDFFont *bdf,EncMap *encm,int *newgids) 
     if ( bdf->res>20 )
 	fprintf( sfd, "Resolution: %d\n", bdf->res );
     for ( i=0; i<bdf->glyphcnt; ++i ) {
-	if ( bdf->glyphs[i]!=NULL )
-	    SFDDumpBitmapChar(sfd,bdf->glyphs[i],encm->backmap[i],newgids);
+	if ( bdf->glyphs[i]!=NULL ) {
+	    if ( todir ) {
+		char *glyphfile = galloc(strlen(dirname)+2*strlen(bdf->glyphs[i]->sc->name)+20);
+		FILE *gsfd;
+		appendnames(glyphfile,dirname,"/",bdf->glyphs[i]->sc->name,BITMAP_EXT );
+		gsfd = fopen(glyphfile,"w");
+		if ( gsfd!=NULL ) {
+		    SFDDumpBitmapChar(gsfd,bdf->glyphs[i],encm->backmap[i],newgids);
+		    if ( ferror(gsfd)) err = true;
+		    if ( fclose(gsfd)) err = true;
+		} else
+		    err = true;
+		free(glyphfile);
+	    } else
+		SFDDumpBitmapChar(sfd,bdf->glyphs[i],encm->backmap[i],newgids);
+	}
 	gwwv_progress_next();
     }
     fprintf( sfd, "EndBitmapFont\n" );
+return( err );
 }
 
 static void SFDDumpPrivate(FILE *sfd,struct psdict *private) {
@@ -1290,7 +1379,8 @@ return;
     fprintf( sfd,"EndMacFeatures\n" );
 }
 
-static void SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal) {
+static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
+	int todir, char *dirname) {
     int i, j, realcnt;
     BDFFont *bdf;
     struct ttflangname *ln;
@@ -1301,6 +1391,7 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal) {
     ASM *sm;
     int isv;
     int *newgids = NULL;
+    int err = false;
 
     if ( normal!=NULL )
 	map = normal;
@@ -1725,14 +1816,35 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal) {
     }
 
     if ( sf->subfontcnt!=0 ) {
-	int max;
-	for ( i=max=0; i<sf->subfontcnt; ++i )
-	    if ( max<sf->subfonts[i]->glyphcnt )
-		max = sf->subfonts[i]->glyphcnt;
-	fprintf(sfd, "BeginSubFonts: %d %d\n", sf->subfontcnt, max );
-	for ( i=0; i<sf->subfontcnt; ++i )
-	    SFD_Dump(sfd,sf->subfonts[i],map,NULL);
-	fprintf(sfd, "EndSubFonts\n" );
+	if ( todir ) {
+	    for ( i=0; i<sf->subfontcnt; ++i ) {
+		char *subfont = galloc(strlen(dirname)+1+strlen(sf->subfonts[i]->fontname)+20);
+		char *fontprops;
+		FILE *ssfd;
+		sprintf( subfont,"%s/%s" SUBFONT_EXT, dirname, sf->subfonts[i]->fontname );
+		mkdir(subfont,0755);
+		fontprops = galloc(strlen(subfont)+strlen("/" FONT_PROPS)+1);
+		strcpy(fontprops,subfont); strcat(fontprops,"/" FONT_PROPS);
+		ssfd = fopen( fontprops,"w");
+		if ( ssfd!=NULL ) {
+		    err |= SFD_Dump(ssfd,sf->subfonts[i],map,NULL,todir,subfont);
+		    if ( ferror(ssfd) ) err = true;
+		    if ( fclose(ssfd)) err = true;
+		} else
+		    err = true;
+		free(fontprops);
+		free(subfont);
+	    }
+	} else {
+	    int max;
+	    for ( i=max=0; i<sf->subfontcnt; ++i )
+		if ( max<sf->subfonts[i]->glyphcnt )
+		    max = sf->subfonts[i]->glyphcnt;
+	    fprintf(sfd, "BeginSubFonts: %d %d\n", sf->subfontcnt, max );
+	    for ( i=0; i<sf->subfontcnt; ++i )
+		SFD_Dump(sfd,sf->subfonts[i],map,NULL,false, NULL);
+	    fprintf(sfd, "EndSubFonts\n" );
+	}
     } else {
 	int enccount = map->enccount;
 	if ( sf->cidmaster!=NULL ) {
@@ -1752,41 +1864,100 @@ static void SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal) {
 			newgids[i] = realcnt++;
 	    }
 	}
-	fprintf(sfd, "BeginChars: %d %d\n", enccount, realcnt );
+	if ( !todir )
+	    fprintf(sfd, "BeginChars: %d %d\n", enccount, realcnt );
 	for ( i=0; i<sf->glyphcnt; ++i ) {
-	    if ( !SFDOmit(sf->glyphs[i]) )
-		SFDDumpChar(sfd,sf->glyphs[i],map,newgids);
-#if defined(FONTFORGE_CONFIG_GDRAW)
+	    if ( !SFDOmit(sf->glyphs[i]) ) {
+		if ( !todir )
+		    SFDDumpChar(sfd,sf->glyphs[i],map,newgids);
+		else {
+		    char *glyphfile = galloc(strlen(dirname)+2*strlen(sf->glyphs[i]->name)+20);
+		    FILE *gsfd;
+		    appendnames(glyphfile,dirname,"/",sf->glyphs[i]->name,GLYPH_EXT );
+		    gsfd = fopen(glyphfile,"w");
+		    if ( gsfd!=NULL ) {
+			SFDDumpChar(gsfd,sf->glyphs[i],map,newgids);
+			if ( ferror(gsfd)) err = true;
+			if ( fclose(gsfd)) err = true;
+		    } else
+			err = true;
+		    free(glyphfile);
+		}
+	    }
 	    gwwv_progress_next();
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_progress_next();
-#endif
 	}
-	fprintf(sfd, "EndChars\n" );
-	for ( i=0; i<map->enccount; ++i ) {
-	    if ( map->map[i]!=-1 && map->backmap[map->map[i]]!=i &&
-		    !SFDOmit(sf->glyphs[map->map[i]]) )
-		fprintf( sfd, "DupEnc: %d %d\n", i,
-			(int) (newgids!=NULL?newgids[map->map[i]]: map->map[i]));
+	if ( !todir ) {
+	    fprintf(sfd, "EndChars\n" );
+#if 0
+	    for ( i=0; i<map->enccount; ++i ) {
+		if ( map->map[i]!=-1 && map->backmap[map->map[i]]!=i &&
+			!SFDOmit(sf->glyphs[map->map[i]]) )
+		    fprintf( sfd, "DupEnc: %d %d\n", i,
+			    (int) (newgids!=NULL?newgids[map->map[i]]: map->map[i]));
+	    }
+#endif
 	}
     }
 
     if ( sf->bitmaps!=NULL )
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	gwwv_progress_change_line2(_("Saving Bitmaps"));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_progress_change_line2(_("Saving Bitmaps"));
-#endif
-    for ( bdf = sf->bitmaps; bdf!=NULL; bdf=bdf->next )
-	SFDDumpBitmapFont(sfd,bdf,map,newgids);
+    for ( bdf = sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+	if ( todir ) {
+	    char *strike = galloc(strlen(dirname)+1+20+20);
+	    char *strikeprops;
+	    FILE *ssfd;
+	    sprintf( strike,"%s/%d" STRIKE_EXT, dirname, bdf->pixelsize );
+	    mkdir(strike,0755);
+	    strikeprops = galloc(strlen(strike)+strlen("/" STRIKE_PROPS)+1);
+	    strcpy(strikeprops,strike); strcat(strikeprops,"/" STRIKE_PROPS);
+	    ssfd = fopen( strikeprops,"w");
+	    if ( ssfd!=NULL ) {
+		err |= SFDDumpBitmapFont(ssfd,bdf,map,newgids,todir,strike);
+		if ( ferror(ssfd) ) err = true;
+		if ( fclose(ssfd)) err = true;
+	    } else
+		err = true;
+	    free(strikeprops);
+	    free(strike);
+	} else
+	    SFDDumpBitmapFont(sfd,bdf,map,newgids,todir,dirname);
+    }
     fprintf(sfd, sf->cidmaster==NULL?"EndSplineFont\n":"EndSubSplineFont\n" );
     if ( newgids!=NULL )
 	free(newgids);
+return( err );
 }
 
-static void SFD_MMDump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal) {
+static int SFD_MIDump(SplineFont *sf,EncMap *map,EncMap *normal, char *dirname,
+	int mm_pos) {
+    char *instance = galloc(strlen(dirname)+1+10+20);
+    char *fontprops;
+    FILE *ssfd;
+    int err = false;
+
+    /* I'd like to use the font name, but the order of the instances is */
+    /*  crucial and I must enforce an ordering on them */
+    sprintf( instance,"%s/mm%d" INSTANCE_EXT, dirname, mm_pos );
+    mkdir(instance,0755);
+    fontprops = galloc(strlen(instance)+strlen("/" FONT_PROPS)+1);
+    strcpy(fontprops,instance); strcat(fontprops,"/" FONT_PROPS);
+    ssfd = fopen( fontprops,"w");
+    if ( ssfd!=NULL ) {
+	err |= SFD_Dump(ssfd,sf,map,NULL,true,instance);
+	if ( ferror(ssfd) ) err = true;
+	if ( fclose(ssfd)) err = true;
+    } else
+	err = true;
+    free(fontprops);
+    free(instance);
+return( err );
+}
+
+static int SFD_MMDump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
+	int todir, char *dirname) {
     MMSet *mm = sf->mm;
     int max, i, j;
+    int err = false;
 
     fprintf( sfd, "MMCounts: %d %d %d %d\n", mm->instance_count, mm->axis_count,
 	    mm->apple, mm->named_instance_count );
@@ -1827,19 +1998,28 @@ static void SFD_MMDump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal) {
 	SFDDumpMacName(sfd,mm->named_instances[i].names);
     }
 
-    for ( i=max=0; i<mm->instance_count; ++i )
-	if ( max<mm->instances[i]->glyphcnt )
-	    max = mm->instances[i]->glyphcnt;
-    fprintf(sfd, "BeginMMFonts: %d %d\n", mm->instance_count+1, max );
-    for ( i=0; i<mm->instance_count; ++i )
-	SFD_Dump(sfd,mm->instances[i],map,normal);
-    SFD_Dump(sfd,mm->normal,map,normal);
+    if ( todir ) {
+	for ( i=0; i<mm->instance_count; ++i )
+	    err |= SFD_MIDump(mm->instances[i],map,normal,dirname,i+1);
+	err |= SFD_MIDump(mm->normal,map,normal,dirname,0);
+    } else {
+	for ( i=max=0; i<mm->instance_count; ++i )
+	    if ( max<mm->instances[i]->glyphcnt )
+		max = mm->instances[i]->glyphcnt;
+	fprintf(sfd, "BeginMMFonts: %d %d\n", mm->instance_count+1, max );
+	for ( i=0; i<mm->instance_count; ++i )
+	    SFD_Dump(sfd,mm->instances[i],map,normal,todir,dirname);
+	SFD_Dump(sfd,mm->normal,map,normal,todir,dirname);
+    }
     fprintf(sfd, "EndMMFonts\n" );
+return( err );
 }
 
-static void SFDDump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal) {
+static int SFDDump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
+	int todir, char *dirname) {
     int i, realcnt;
     BDFFont *bdf;
+    int err = false;
 
     realcnt = sf->glyphcnt;
     if ( sf->subfontcnt!=0 ) {
@@ -1859,23 +2039,103 @@ static void SFDDump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal) {
 #endif
     fprintf(sfd, "SplineFontDB: %.1f\n", 1.0 );
     if ( sf->mm != NULL )
-	SFD_MMDump(sfd,sf->mm->normal,map,normal);
+	err = SFD_MMDump(sfd,sf->mm->normal,map,normal,todir,dirname);
     else
-	SFD_Dump(sfd,sf,map,normal);
-#if defined(FONTFORGE_CONFIG_GDRAW)
+	err = SFD_Dump(sfd,sf,map,normal,todir,dirname);
     gwwv_progress_end_indicator();
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gwwv_progress_end_indicator();
-#endif
+return( err );
 }
 
-int SFDWrite(char *filename,SplineFont *sf,EncMap *map,EncMap *normal) {
-    FILE *sfd = fopen(filename,"w");
+static void SFDirClean(char *filename) {
+    DIR *dir;
+    struct dirent *ent;
+    char *buffer, *pt;
+
+    unlink(filename);		/* Just in case it's a normal file, it shouldn't be, but just in case... */
+    dir = opendir(filename);
+    if ( dir==NULL )
+return;
+    buffer = galloc(strlen(filename)+1+NAME_MAX+1);
+    while ( (ent = readdir(dir))!=NULL ) {
+	if ( strcmp(ent->d_name,".")==0 || strcmp(ent->d_name,"..")==0 )
+    continue;
+	pt = strrchr(ent->d_name,EXT_CHAR);
+	if ( pt==NULL )
+    continue;
+	sprintf( buffer,"%s/%s", filename, ent->d_name );
+	if ( strcmp(pt,".props")==0 ||
+		strcmp(pt,GLYPH_EXT)==0 ||
+		strcmp(pt,BITMAP_EXT)==0 )
+	    unlink( buffer );
+	else if ( strcmp(pt,STRIKE_EXT)==0 ||
+		strcmp(pt,SUBFONT_EXT)==0 ||
+		strcmp(pt,INSTANCE_EXT)==0 )
+	    SFDirClean(buffer);
+	/* If there are filenames we don't recognize, leave them. They might contain version control info */
+    }
+    free(buffer);
+    closedir(dir);
+}
+
+static void SFFinalDirClean(char *filename) {
+    DIR *dir;
+    struct dirent *ent;
+    char *buffer, *markerfile, *pt;
+
+    /* we did not unlink sub-directories in case they contained version control */
+    /*  files. We did remove all our files from them, however.  If the user */
+    /*  removed a bitmap strike or a cid-subfont those sub-dirs will now be */
+    /*  empty. If the user didn't remove them then they will contain our marker */
+    /*  files. So if we find a subdir with no marker files in it, remove it */
+    dir = opendir(filename);
+    if ( dir==NULL )
+return;
+    buffer = galloc(strlen(filename)+1+NAME_MAX+1);
+    markerfile = galloc(strlen(filename)+2+2*NAME_MAX+1);
+    while ( (ent = readdir(dir))!=NULL ) {
+	if ( strcmp(ent->d_name,".")==0 || strcmp(ent->d_name,"..")==0 )
+    continue;
+	pt = strrchr(ent->d_name,EXT_CHAR);
+	if ( pt==NULL )
+    continue;
+	sprintf( buffer,"%s/%s", filename, ent->d_name );
+	if ( strcmp(pt,".strike")==0 ||
+		strcmp(pt,SUBFONT_EXT)==0 ||
+		strcmp(pt,INSTANCE_EXT)==0 ) {
+	    if ( strcmp(pt,".strike")==0 )
+		sprintf( markerfile,"%s/" STRIKE_PROPS, buffer );
+	    else
+		sprintf( markerfile,"%s/" FONT_PROPS, buffer );
+	    if ( !GFileExists(markerfile)) {
+		sprintf( markerfile, "rm -rf %s", buffer );
+		system( buffer );
+	    }
+	}
+    }
+    free(buffer);
+    free(markerfile);
+    closedir(dir);
+}
+    
+int SFDWrite(char *filename,SplineFont *sf,EncMap *map,EncMap *normal,int todir) {
+    FILE *sfd;;
     char *oldloc;
     int i, gc;
+    char *tempfilename = filename;
+    int err = false;
 
+    if ( todir ) {
+	SFDirClean(filename);
+	mkdir(filename,0755);		/* this will fail if directory already exists. That's ok */
+	tempfilename = galloc(strlen(filename)+strlen("/" FONT_PROPS)+1);
+	strcpy(tempfilename,filename); strcat(tempfilename,"/" FONT_PROPS);
+    }
+
+    sfd = fopen(tempfilename,"w");
+    if ( tempfilename!=filename ) free(tempfilename);
     if ( sfd==NULL )
 return( 0 );
+    
     oldloc = setlocale(LC_NUMERIC,"C");
     if ( sf->cidmaster!=NULL ) {
 	sf=sf->cidmaster;
@@ -1884,12 +2144,16 @@ return( 0 );
 	    if ( sf->subfonts[i]->glyphcnt > gc )
 		gc = sf->subfonts[i]->glyphcnt;
 	map = EncMap1to1(gc);
-	SFDDump(sfd,sf,map,NULL);
+	err = SFDDump(sfd,sf,map,NULL,todir,filename);
 	EncMapFree(map);
     } else
-	SFDDump(sfd,sf,map,normal);
+	err = SFDDump(sfd,sf,map,normal,todir,filename);
     setlocale(LC_NUMERIC,oldloc);
-return( !ferror(sfd) && fclose(sfd)==0 );
+    if ( ferror(sfd) ) err = true;
+    if ( fclose(sfd) ) err = true;
+    if ( todir )
+	SFFinalDirClean(filename);
+return( !err );
 }
 
 int SFDWriteBak(SplineFont *sf,EncMap *map,EncMap *normal) {
@@ -1897,45 +2161,49 @@ int SFDWriteBak(SplineFont *sf,EncMap *map,EncMap *normal) {
     extern struct compressors compressors[];
     int ret;
 
-    if ( sf->cidmaster!=NULL )
-	sf=sf->cidmaster;
-    buf = galloc(strlen(sf->filename)+10);
-    if ( sf->compression!=0 ) {
-	buf2 = galloc(strlen(sf->filename)+10);
-	strcpy(buf2,sf->filename);
-	strcat(buf2,compressors[sf->compression-1].ext);
-	strcpy(buf,buf2);
-	strcat(buf,"~");
-	if ( rename(buf2,buf)==0 )
-	    sf->backedup = bs_backedup;
-    } else {
+    if ( sf->save_to_dir )
+	ret = SFDWrite(sf->filename,sf,map,normal,true);
+    else {
+	if ( sf->cidmaster!=NULL )
+	    sf=sf->cidmaster;
+	buf = galloc(strlen(sf->filename)+10);
+	if ( sf->compression!=0 ) {
+	    buf2 = galloc(strlen(sf->filename)+10);
+	    strcpy(buf2,sf->filename);
+	    strcat(buf2,compressors[sf->compression-1].ext);
+	    strcpy(buf,buf2);
+	    strcat(buf,"~");
+	    if ( rename(buf2,buf)==0 )
+		sf->backedup = bs_backedup;
+	} else {
 #if 1
-	strcpy(buf,sf->filename);
-	strcat(buf,"~");
+	    strcpy(buf,sf->filename);
+	    strcat(buf,"~");
 #else
-	pt = strrchr(sf->filename,'.');
-	if ( pt==NULL || pt<strrchr(sf->filename,'/'))
-	    pt = sf->filename+strlen(sf->filename);
-	strcpy(buf,sf->filename);
-	bpt = buf + (pt-sf->filename);
-	*bpt++ = '~';
-	strcpy(bpt,pt);
+	    pt = strrchr(sf->filename,'.');
+	    if ( pt==NULL || pt<strrchr(sf->filename,'/'))
+		pt = sf->filename+strlen(sf->filename);
+	    strcpy(buf,sf->filename);
+	    bpt = buf + (pt-sf->filename);
+	    *bpt++ = '~';
+	    strcpy(bpt,pt);
 #endif
-	if ( rename(sf->filename,buf)==0 )
-	    sf->backedup = bs_backedup;
-    }
-    free(buf);
-
-    ret = SFDWrite(sf->filename,sf,map,normal);
-    if ( ret && sf->compression!=0 ) {
-	unlink(buf2);
-	buf = galloc(strlen(sf->filename)+40);
-	sprintf( buf, "%s %s", compressors[sf->compression-1].recomp, sf->filename );
-	if ( system( buf )!=0 )
-	    sf->compression = 0;
+	    if ( rename(sf->filename,buf)==0 )
+		sf->backedup = bs_backedup;
+	}
 	free(buf);
+
+	ret = SFDWrite(sf->filename,sf,map,normal,false);
+	if ( ret && sf->compression!=0 ) {
+	    unlink(buf2);
+	    buf = galloc(strlen(sf->filename)+40);
+	    sprintf( buf, "%s %s", compressors[sf->compression-1].recomp, sf->filename );
+	    if ( system( buf )!=0 )
+		sf->compression = 0;
+	    free(buf);
+	}
+	free(buf2);
     }
-    free(buf2);
 return( ret );
 }
 
@@ -3508,7 +3776,7 @@ return( 0 );
 return( 1 );
 }
 
-static int SFDGetBitmapFont(FILE *sfd,SplineFont *sf) {
+static int SFDGetBitmapFont(FILE *sfd,SplineFont *sf,int fromdir,char *dirname) {
     BDFFont *bdf, *prev;
     char tok[200];
     int pixelsize, ascent, descent, depth=1;
@@ -3562,6 +3830,34 @@ return( 0 );
 	else if ( strcmp(tok,"EndBitmapFont")==0 )
     break;
     }
+    if ( fromdir ) {
+	DIR *dir;
+	struct dirent *ent;
+	char *name;
+
+	dir = opendir(dirname);
+	if ( dir==NULL )
+return( 0 );
+	name = galloc(strlen(dirname)+NAME_MAX+3);
+
+	while ( (ent=readdir(dir))!=NULL ) {
+	    char *pt = strrchr(ent->d_name,EXT_CHAR);
+	    if ( pt==NULL )
+		/* Nothing interesting */;
+	    else if ( strcmp(pt,BITMAP_EXT)==0 ) {
+		FILE *gsfd;
+		sprintf(name,"%s/%s", dirname, ent->d_name);
+		gsfd = fopen(name,"r");
+		if ( gsfd!=NULL ) {
+		    if ( getname(gsfd,tok) && strcmp(tok,"BDFChar:")==0)
+			SFDGetChar(gsfd,sf);
+		    fclose(gsfd);
+		    gwwv_progress_next();
+		}
+	    }
+	}
+    }
+	
 return( 1 );
 }
 
@@ -3617,97 +3913,113 @@ static void SFDFixupRefs(SplineFont *sf) {
     KernPair *kp, *prev, *next;
     EncMap *map = sf->map;
     int layer;
+    int k,l;
+    SplineFont *cidmaster = sf, *ksf;
 
-    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
-	SplineChar *sc = sf->glyphs[i];
-	/* A changed character is one that has just been recovered */
-	/*  unchanged characters will already have been fixed up */
-	/* Er... maybe not. If the character being recovered is refered to */
-	/*  by another character then we need to fix up that other char too*/
-	/*if ( isautorecovery && !sc->changed )*/
-    /*continue;*/
-	for ( layer = ly_fore; layer<sc->layer_cnt; ++layer ) {
-	    rprev = NULL;
-	    for ( refs = sc->layers[layer].refs; refs!=NULL; refs=rnext ) {
-		rnext = refs->next;
-		if ( refs->encoded ) {		/* Old sfd format */
-		    if ( refs->orig_pos<map->encmax && map->map[refs->orig_pos]!=-1 )
-			refs->orig_pos = map->map[refs->orig_pos];
-		    else
-			refs->orig_pos = sf->glyphcnt;
-		    refs->encoded = false;
-		}
-		if ( refs->orig_pos<sf->glyphcnt && refs->orig_pos>=0 )
-		    refs->sc = sf->glyphs[refs->orig_pos];
-		if ( refs->sc!=NULL ) {
-		    refs->unicode_enc = refs->sc->unicodeenc;
-		    refs->adobe_enc = getAdobeEnc(refs->sc->name);
-		    rprev = refs;
-		} else {
-		    RefCharFree(refs);
-		    if ( rprev!=NULL )
-			rprev->next = rnext;
-		    else
-			sc->layers[layer].refs = rnext;
-		}
-	    }
-	}
-	/* In old sfd files we used a peculiar idiom to represent a multiply */
-	/*  encoded glyph. Fix it up now. Remove the fake glyph and adjust the*/
-	/*  map */
-	/*if ( isautorecovery && !sc->changed )*/
-    /*continue;*/
-	for ( isv=0; isv<2; ++isv ) {
-	    for ( prev = NULL, kp=isv?sc->vkerns : sc->kerns; kp!=NULL; kp=next ) {
-		int index = (intpt) (kp->sc);
-		next = kp->next;
-		if ( !kp->kcid ) {	/* It's encoded (old sfds), else orig */
-		    if ( ((intpt) (kp->sc))>=map->encmax || map->map[(intpt) (kp->sc)]==-1 )
-			index = sf->glyphcnt;
-		    else
-			index = map->map[(intpt) (kp->sc)];
-		}
-		if ( index>=sf->glyphcnt || sf->glyphs[index]==NULL ) {
-		    IError( "Bad kerning information in glyph %s\n", sc->name );
-		    kp->sc = NULL;
-		} else
-		    kp->sc = sf->glyphs[index];
-		if ( kp->sc!=NULL )
-		    prev = kp;
-		else{
-		    if ( prev!=NULL )
-			prev->next = next;
-		    else if ( isv )
-			sc->vkerns = next;
-		    else
-			sc->kerns = next;
-		    chunkfree(kp,sizeof(KernPair));
+    k = 1;
+    if ( sf->subfontcnt!=0 )
+	sf = sf->subfonts[0];
+
+    gwwv_progress_change_line2(_("Interpreting Glyphs"));
+    forever {
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	    SplineChar *sc = sf->glyphs[i];
+	    /* A changed character is one that has just been recovered */
+	    /*  unchanged characters will already have been fixed up */
+	    /* Er... maybe not. If the character being recovered is refered to */
+	    /*  by another character then we need to fix up that other char too*/
+	    /*if ( isautorecovery && !sc->changed )*/
+	/*continue;*/
+	    for ( layer = ly_fore; layer<sc->layer_cnt; ++layer ) {
+		rprev = NULL;
+		for ( refs = sc->layers[layer].refs; refs!=NULL; refs=rnext ) {
+		    rnext = refs->next;
+		    if ( refs->encoded ) {		/* Old sfd format */
+			if ( refs->orig_pos<map->encmax && map->map[refs->orig_pos]!=-1 )
+			    refs->orig_pos = map->map[refs->orig_pos];
+			else
+			    refs->orig_pos = sf->glyphcnt;
+			refs->encoded = false;
+		    }
+		    if ( refs->orig_pos<sf->glyphcnt && refs->orig_pos>=0 )
+			refs->sc = sf->glyphs[refs->orig_pos];
+		    if ( refs->sc!=NULL ) {
+			refs->unicode_enc = refs->sc->unicodeenc;
+			refs->adobe_enc = getAdobeEnc(refs->sc->name);
+			rprev = refs;
+		    } else {
+			RefCharFree(refs);
+			if ( rprev!=NULL )
+			    rprev->next = rnext;
+			else
+			    sc->layers[layer].refs = rnext;
+		    }
 		}
 	    }
+	    /* In old sfd files we used a peculiar idiom to represent a multiply */
+	    /*  encoded glyph. Fix it up now. Remove the fake glyph and adjust the*/
+	    /*  map */
+	    /*if ( isautorecovery && !sc->changed )*/
+	/*continue;*/
+	    for ( isv=0; isv<2; ++isv ) {
+		for ( prev = NULL, kp=isv?sc->vkerns : sc->kerns; kp!=NULL; kp=next ) {
+		    int index = (intpt) (kp->sc);
+		    next = kp->next;
+		    if ( !kp->kcid ) {	/* It's encoded (old sfds), else orig */
+			if ( index>=map->encmax || map->map[index]==-1 )
+			    index = sf->glyphcnt;
+			else
+			    index = map->map[index];
+		    }
+		    ksf = sf;
+		    if ( cidmaster!=sf ) {
+			for ( l=0; l<cidmaster->subfontcnt; ++l ) {
+			    ksf = cidmaster->subfonts[l];
+			    if ( index<ksf->glyphcnt && ksf->glyphs[index]!=NULL )
+		    break;
+			}
+		    }
+		    if ( index>=ksf->glyphcnt || ksf->glyphs[index]==NULL ) {
+			IError( "Bad kerning information in glyph %s\n", sc->name );
+			kp->sc = NULL;
+		    } else
+			kp->sc = ksf->glyphs[index];
+		    if ( kp->sc!=NULL )
+			prev = kp;
+		    else{
+			if ( prev!=NULL )
+			    prev->next = next;
+			else if ( isv )
+			    sc->vkerns = next;
+			else
+			    sc->kerns = next;
+			chunkfree(kp,sizeof(KernPair));
+		    }
+		}
+	    }
+	    if ( SCDuplicate(sc)!=sc ) {
+		SplineChar *base = SCDuplicate(sc);
+		int orig = sc->orig_pos, enc = sf->map->backmap[orig], uni = sc->unicodeenc;
+		SplineCharFree(sc);
+		sf->glyphs[i]=NULL;
+		sf->map->backmap[orig] = -1;
+		sf->map->map[enc] = base->orig_pos;
+		AltUniAdd(base,uni);
+	    }
 	}
-	if ( SCDuplicate(sc)!=sc ) {
-	    SplineChar *base = SCDuplicate(sc);
-	    int orig = sc->orig_pos, enc = sf->map->backmap[orig], uni = sc->unicodeenc;
-	    SplineCharFree(sc);
-	    sf->glyphs[i]=NULL;
-	    sf->map->backmap[orig] = -1;
-	    sf->map->map[enc] = base->orig_pos;
-	    AltUniAdd(base,uni);
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	    for ( refs = sf->glyphs[i]->layers[ly_fore].refs; refs!=NULL; refs=refs->next ) {
+		SFDFixupRef(sf->glyphs[i],refs);
+	    }
+	    gwwv_progress_next();
 	}
+	if ( sf->cidmaster==NULL )
+	    for ( i=sf->glyphcnt-1; i>=0 && sf->glyphs[i]==NULL; --i )
+		sf->glyphcnt = i;
+	if ( k>=cidmaster->subfontcnt )
+    break;
+	sf = cidmaster->subfonts[k++];
     }
-    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
-	for ( refs = sf->glyphs[i]->layers[ly_fore].refs; refs!=NULL; refs=refs->next ) {
-	    SFDFixupRef(sf->glyphs[i],refs);
-	}
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	gwwv_progress_next();
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_progress_next();
-#endif
-    }
-    if ( sf->cidmaster==NULL )
-	for ( i=sf->glyphcnt-1; i>=0 && sf->glyphs[i]==NULL; --i )
-	    sf->glyphcnt = i;
 }
 
 /* When we recover from an autosaved file we must be careful. If that file */
@@ -4332,7 +4644,182 @@ static void SFDSizeMap(EncMap *map,int glyphcnt,int enccnt) {
     }
 }
 
-static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
+static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
+	int fromdir, char *dirname);
+
+static SplineFont *SFD_FigureDirType(SplineFont *sf,char *tok, char *dirname,
+	Encoding *enc, struct remap *remap) {
+    /* In a sfdir a directory will either contain glyph files */
+    /*                                            subfont dirs */
+    /*                                            instance dirs */
+    /* (or bitmap files, but we don't care about them here */
+    /* It will not contain some glyph and some subfont nor instance files */
+    int gc=0, sc=0, ic=0, bc=0;
+    DIR *dir;
+    struct dirent *ent;
+    char *name, *props, *pt;
+
+    dir = opendir(dirname);
+    if ( dir==NULL )
+return( sf );
+    sf->save_to_dir = true;
+    while ( (ent=readdir(dir))!=NULL ) {
+	pt = strrchr(ent->d_name,EXT_CHAR);
+	if ( pt==NULL )
+	    /* Nothing interesting */;
+	else if ( strcmp(pt,GLYPH_EXT)==0 )
+	    ++gc;
+	else if ( strcmp(pt,SUBFONT_EXT)==0 )
+	    ++sc;
+	else if ( strcmp(pt,INSTANCE_EXT)==0 )
+	    ++ic;
+	else if ( strcmp(pt,STRIKE_EXT)==0 )
+	    ++bc;
+    }
+    rewinddir(dir);
+    name = galloc(strlen(dirname)+NAME_MAX+3);
+    props = galloc(strlen(dirname)+2*NAME_MAX+4);
+    if ( gc!=0 ) {
+	sf->glyphcnt = 0;
+	sf->glyphmax = gc;
+	sf->glyphs = gcalloc(gc,sizeof(SplineChar *));
+	gwwv_progress_change_total(gc);
+	if ( sf->cidmaster!=NULL ) {
+	    sf->map = sf->cidmaster->map;
+	} else {
+	    sf->map = EncMapNew(enc->char_cnt>gc?enc->char_cnt:gc,gc,enc);
+	    sf->map->remap = remap;
+	}
+	SFDSizeMap(sf->map,sf->glyphcnt,enc->char_cnt>gc?enc->char_cnt:gc);
+
+	while ( (ent=readdir(dir))!=NULL ) {
+	    pt = strrchr(ent->d_name,EXT_CHAR);
+	    if ( pt==NULL )
+		/* Nothing interesting */;
+	    else if ( strcmp(pt,GLYPH_EXT)==0 ) {
+		FILE *gsfd;
+		sprintf(name,"%s/%s", dirname, ent->d_name);
+		gsfd = fopen(name,"r");
+		if ( gsfd!=NULL ) {
+		    SFDGetChar(gsfd,sf);
+		    gwwv_progress_next();
+		    fclose(gsfd);
+		}
+	    }
+	}
+	gwwv_progress_next_stage();
+    } else if ( sc!=0 ) {
+	int i=0;
+	sf->subfontcnt = sc;
+	sf->subfonts = gcalloc(sf->subfontcnt,sizeof(SplineFont *));
+	sf->map = EncMap1to1(1000);
+	gwwv_progress_change_stages(2*sc);
+
+	while ( (ent=readdir(dir))!=NULL ) {
+	    pt = strrchr(ent->d_name,EXT_CHAR);
+	    if ( pt==NULL )
+		/* Nothing interesting */;
+	    else if ( strcmp(pt,SUBFONT_EXT)==0 && i<sc ) {
+		FILE *ssfd;
+		sprintf(name,"%s/%s", dirname, ent->d_name);
+		sprintf(props,"%s/" FONT_PROPS, name);
+		ssfd = fopen(props,"r");
+		if ( ssfd!=NULL ) {
+		    if ( i!=0 )
+			gwwv_progress_next_stage();
+		    sf->subfonts[i++] = SFD_GetFont(ssfd,sf,tok,true,name);
+		    fclose(ssfd);
+		}
+	    }
+	}
+    } else if ( ic!=0 ) {
+	MMSet *mm = sf->mm;
+	int ipos, i=0;
+
+	MMInferStuff(sf->mm);
+	gwwv_progress_change_stages(2*(mm->instance_count+1));
+	while ( (ent=readdir(dir))!=NULL ) {
+	    pt = strrchr(ent->d_name,EXT_CHAR);
+	    if ( pt==NULL )
+		/* Nothing interesting */;
+	    else if ( strcmp(pt,INSTANCE_EXT)==0 && sscanf( ent->d_name, "mm%d", &ipos)==1 ) {
+		FILE *ssfd;
+		if ( i!=0 )
+		    gwwv_progress_next_stage();
+		sprintf(name,"%s/%s", dirname, ent->d_name);
+		sprintf(props,"%s/" FONT_PROPS, name);
+		ssfd = fopen(props,"r");
+		if ( ssfd!=NULL ) {
+		    SplineFont *mmsf;
+		    mmsf = SFD_GetFont(ssfd,NULL,tok,true,name);
+		    if ( ipos!=0 ) {
+			EncMapFree(mmsf->map);
+			mmsf->map=NULL;
+		    }
+		    mmsf->mm = mm;
+		    if ( ipos == 0 )
+			mm->normal = mmsf;
+		    else
+			mm->instances[ipos-1] = mmsf;
+		    fclose(ssfd);
+		}
+	    }
+	}
+	gwwv_progress_next_stage();
+	sf->mm = NULL;
+	SplineFontFree(sf);
+	sf = mm->normal;
+	if ( sf->map->enc!=&custom ) {
+	    EncMap *map;
+	    MMMatchGlyphs(mm);		/* sfd files from before the encoding change can have mismatched orig pos */
+	    map = EncMapFromEncoding(sf,sf->map->enc);
+	    EncMapFree(sf->map);
+	    sf->map = map;
+	}
+    }
+
+    if ( bc!=0 ) {
+	rewinddir(dir);
+	while ( (ent=readdir(dir))!=NULL ) {
+	    pt = strrchr(ent->d_name,EXT_CHAR);
+	    if ( pt==NULL )
+		/* Nothing interesting */;
+	    else if ( strcmp(pt,STRIKE_EXT)==0 ) {
+		FILE *ssfd;
+		sprintf(name,"%s/%s", dirname, ent->d_name);
+		sprintf(props,"%s/" STRIKE_PROPS, name);
+		ssfd = fopen(props,"r");
+		if ( ssfd!=NULL ) {
+		    if ( getname(ssfd,tok)==1 && strcmp(tok,"BitmapFont:")==0 )
+			SFDGetBitmapFont(ssfd,sf,true,name);
+		    fclose(ssfd);
+		}
+	    }
+	}
+	SFOrderBitmapList(sf);
+    }
+    closedir(dir);
+    free(name);
+    free(props);
+return( sf );
+}
+
+static void SFD_DoAltUnis(SplineFont *sf) {
+    int i;
+    struct altuni *alt;
+    SplineChar *sc;
+
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc = sf->glyphs[i])!=NULL ) {
+	for ( alt = sc->altuni; alt!=NULL; alt = alt->next ) {
+	    int enc = EncFromUni(alt->unienc,sf->map->enc);
+	    if ( enc!=-1 )
+		SFDSetEncMap(sf,sc->orig_pos,enc);
+	}
+    }
+}
+
+static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
+	int fromdir, char *dirname) {
     SplineFont *sf;
     SplineChar *sc;
     int realcnt, i, eof, mappos=-1, ch, ch2;
@@ -4346,7 +4833,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
     int pushedbacktok = false;
     Encoding *enc = &custom;
     struct remap *remap = NULL;
-    int hadtimes=false;
+    int hadtimes=false, haddupenc;
 
     orig_pos = 0;		/* Only used for compatibility with extremely old sfd files */
 
@@ -4976,16 +5463,8 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    int cnt;
 	    getint(sfd,&cnt);
 	    getint(sfd,&realcnt);
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	    gwwv_progress_change_stages(cnt);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_progress_change_stages(cnt);
-#endif
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	    gwwv_progress_change_total(realcnt);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_progress_change_total(realcnt);
-#endif
 	    MMInferStuff(sf->mm);
     break;
 	} else if ( strmatch(tok,"BeginSubFonts:")==0 ) {
@@ -4993,16 +5472,8 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	    sf->subfonts = gcalloc(sf->subfontcnt,sizeof(SplineFont *));
 	    getint(sfd,&realcnt);
 	    sf->map = EncMap1to1(realcnt);
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	    gwwv_progress_change_stages(2);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_progress_change_stages(2);
-#endif
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	    gwwv_progress_change_total(realcnt);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_progress_change_total(realcnt);
-#endif
     break;
 	} else if ( strmatch(tok,"BeginChars:")==0 ) {
 	    int charcnt;
@@ -5011,11 +5482,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 		realcnt = charcnt;
 	    else
 		++realcnt;		/* value saved is max glyph, not glyph cnt */
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	    gwwv_progress_change_total(realcnt);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_progress_change_total(realcnt);
-#endif
 	    sf->glyphcnt = sf->glyphmax = realcnt;
 	    sf->glyphs = gcalloc(realcnt,sizeof(SplineChar *));
 	    if ( cidmaster!=NULL ) {
@@ -5036,46 +5503,27 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	}
     }
 
-    if ( sf->subfontcnt!=0 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
+    if ( fromdir )
+	sf = SFD_FigureDirType(sf,tok,dirname,enc,remap);
+    else if ( sf->subfontcnt!=0 ) {
 	gwwv_progress_change_stages(2*sf->subfontcnt);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_progress_change_stages(2*sf->subfontcnt);
-#endif
 	for ( i=0; i<sf->subfontcnt; ++i ) {
 	    if ( i!=0 )
-#if defined(FONTFORGE_CONFIG_GDRAW)
 		gwwv_progress_next_stage();
-#elif defined(FONTFORGE_CONFIG_GTK)
-		gwwv_progress_next_stage();
-#endif
-	    sf->subfonts[i] = SFD_GetFont(sfd,sf,tok);
+	    sf->subfonts[i] = SFD_GetFont(sfd,sf,tok,fromdir,dirname);
 	}
     } else if ( sf->mm!=NULL ) {
 	MMSet *mm = sf->mm;
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	gwwv_progress_change_stages(2*(mm->instance_count+1));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_progress_change_stages(2*(mm->instance_count+1));
-#endif
 	for ( i=0; i<mm->instance_count; ++i ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	    if ( i!=0 )
 		gwwv_progress_next_stage();
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    if ( i!=0 )
-		gwwv_progress_next_stage();
-#endif
-	    mm->instances[i] = SFD_GetFont(sfd,NULL,tok);
+	    mm->instances[i] = SFD_GetFont(sfd,NULL,tok,fromdir,dirname);
 	    EncMapFree(mm->instances[i]->map); mm->instances[i]->map=NULL;
 	    mm->instances[i]->mm = mm;
 	}
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	gwwv_progress_next_stage();
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_progress_next_stage();
-#endif
-	mm->normal = SFD_GetFont(sfd,NULL,tok);
+	mm->normal = SFD_GetFont(sfd,NULL,tok,fromdir,dirname);
 	mm->normal->mm = mm;
 	sf->mm = NULL;
 	SplineFontFree(sf);
@@ -5089,36 +5537,29 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok) {
 	}
     } else {
 	while ( (sc = SFDGetChar(sfd,sf))!=NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	    gwwv_progress_next();
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_progress_next();
-#endif
 	}
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	gwwv_progress_next_stage();
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_progress_next_stage();
-#endif
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	gwwv_progress_change_line2(_("Interpreting Glyphs"));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_progress_change_line2(_("Interpreting Glyphs"));
-#endif
-	SFDFixupRefs(sf);
     }
+    haddupenc = false;
     while ( getname(sfd,tok)==1 ) {
 	if ( strcmp(tok,"EndSplineFont")==0 || strcmp(tok,"EndSubSplineFont")==0 )
     break;
 	else if ( strcmp(tok,"BitmapFont:")==0 )
-	    SFDGetBitmapFont(sfd,sf);
+	    SFDGetBitmapFont(sfd,sf,false,NULL);
 	else if ( strmatch(tok,"DupEnc:")==0 ) {
 	    int enc, orig;
+	    haddupenc = true;
 	    if ( getint(sfd,&enc) && getint(sfd,&orig) && sf->map!=NULL ) {
 		SFDSetEncMap(sf,orig,enc);
 	    }
 	}
     }
+    if ( sf->cidmaster==NULL )
+	SFDFixupRefs(sf);
+    
+    if ( !haddupenc )
+	SFD_DoAltUnis(sf);
     SFDCleanupFont(sf);
     if ( !hadtimes )
 	SFTimesFromFile(sf,sfd);
@@ -5152,19 +5593,24 @@ return( false );
 return( true );
 }
 
-SplineFont *SFDRead(char *filename) {
-    FILE *sfd = fopen(filename,"r");
+static SplineFont *SFD_Read(char *filename,int fromdir) {
+    FILE *sfd;
     SplineFont *sf=NULL;
     char *oldloc;
     char tok[2000];
     int version;
 
+    if ( fromdir ) {
+	snprintf(tok,sizeof(tok),"%s/" FONT_PROPS, filename );
+	sfd = fopen(tok,"r");
+    } else
+	sfd = fopen(filename,"r");
     if ( sfd==NULL )
 return( NULL );
     oldloc = setlocale(LC_NUMERIC,"C");
     gwwv_progress_change_stages(2);
     if ( (version = SFDStartsCorrectly(sfd,tok)) )
-	sf = SFD_GetFont(sfd,NULL,tok);
+	sf = SFD_GetFont(sfd,NULL,tok,fromdir,filename);
     setlocale(LC_NUMERIC,oldloc);
     if ( sf!=NULL ) {
 	sf->filename = copy(filename);
@@ -5192,14 +5638,27 @@ return( NULL );
 return( sf );
 }
 
+SplineFont *SFDRead(char *filename) {
+return( SFD_Read(filename,false));
+}
+
+SplineFont *SFDirRead(char *filename) {
+return( SFD_Read(filename,true));
+}
+
 SplineChar *SFDReadOneChar(SplineFont *cur_sf,const char *name) {
-    FILE *sfd = fopen(cur_sf->filename,"r");
+    FILE *sfd;
     SplineChar *sc=NULL;
     char *oldloc;
     char tok[2000];
     uint32 pos;
     SplineFont sf;
 
+    if ( cur_sf->save_to_dir ) {
+	snprintf(tok,sizeof(tok),"%s/" FONT_PROPS,cur_sf->filename);
+	sfd = fopen(tok,"r");
+    } else
+	sfd = fopen(cur_sf->filename,"r");
     if ( sfd==NULL )
 return( NULL );
     oldloc = setlocale(LC_NUMERIC,"C");
@@ -5239,9 +5698,19 @@ return( NULL );
 	    pos = ftell(sfd);
 	}
     }
+    fclose(sfd);
+    if ( cur_sf->save_to_dir ) {
+	if ( sc!=NULL ) IError("Read a glyph from font.props");
+	/* Doesn't work for CID keyed, nor for mm */
+	snprintf(tok,sizeof(tok),"%s/%s" GLYPH_EXT,cur_sf->filename,name);
+	sfd = fopen(tok,"r");
+	if ( sfd!=NULL ) {
+	    sc = SFDGetChar(sfd,&sf);
+	    fclose(sfd);
+	}
+    }
 
     setlocale(LC_NUMERIC,oldloc);
-    fclose(sfd);
 return( sc );
 }
 

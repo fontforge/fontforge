@@ -78,6 +78,7 @@ int default_fv_col_count = 16;
 extern int default_fv_showhmetrics;	/* in fontview */
 extern int default_fv_showvmetrics;	/* in fontview */
 extern int default_fv_glyphlabel;	/* in fontview */
+int save_to_dir = 0;			/* in fontview, use sfdir rather than sfd */
 extern int palettes_docked;		/* in cvpalettes */
 extern int cvvisible[2], bvvisible[3];	/* in cvpalettes.c */
 extern int maxundoes;			/* in cvundoes */
@@ -360,6 +361,7 @@ static struct prefs_list {
 	{ "DefaultFVRowCount", pr_int, &default_fv_row_count, NULL, NULL, 'S', NULL, 1 },
 	{ "DefaultFVColCount", pr_int, &default_fv_col_count, NULL, NULL, 'S', NULL, 1 },
 	{ "DefaultFVGlyphLabel", pr_int, &default_fv_glyphlabel, NULL, NULL, 'S', NULL, 1 },
+	{ "SaveToDir", pr_int, &save_to_dir, NULL, NULL, 'S', NULL, 1 },
 	{ "OnlyCopyDisplayed", pr_bool, &onlycopydisplayed, NULL, NULL, '\0', NULL, 1 },
 	{ "PalettesDocked", pr_bool, &palettes_docked, NULL, NULL, '\0', NULL, 1 },
 	{ "CVVisible0", pr_bool, &cvvisible[0], NULL, NULL, '\0', NULL, 1 },

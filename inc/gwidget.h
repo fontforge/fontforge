@@ -103,8 +103,14 @@ unichar_t *GWidgetOpenFile(const unichar_t *title, const unichar_t *defaultfile,
 	const unichar_t *initial_filter, unichar_t **mimetypes,GFileChooserFilterType filter);
 unichar_t *GWidgetSaveAsFile(const unichar_t *title, const unichar_t *defaultfile,
 	const unichar_t *initial_filter, unichar_t **mimetypes,GFileChooserFilterType filter );
+unichar_t *GWidgetSaveAsFileWithGadget(const unichar_t *title, const unichar_t *defaultfile,
+	const unichar_t *initial_filter, unichar_t **mimetypes,
+	GFileChooserFilterType filter, GGadgetCreateData *optional_gcd);
 char *GWidgetOpenFile8(const char *title, const char *defaultfile,
 	const char *initial_filter, char **mimetypes,GFileChooserFilterType filter);
+char *GWidgetSaveAsFileWithGadget8(const char *title, const char *defaultfile,
+	const char *initial_filter, char **mimetypes,
+	GFileChooserFilterType filter, GGadgetCreateData *optional_gcd);
 char *GWidgetSaveAsFile8(const char *title, const char *defaultfile,
 	const char *initial_filter, char **mimetypes,GFileChooserFilterType filter );
 int GWidgetAsk(const unichar_t *title, const unichar_t **answers, const unichar_t *mn,
@@ -155,6 +161,7 @@ int GWidgetChoicesBM8(char *title, const char **choices,char *sel,
 #define gwwv_post_notice	GWidgetPostNotice8
 #define gwwv_open_filename(tit,def,filter,filtfunc)	GWidgetOpenFile8(tit,def,filter,NULL,filtfunc)
 #define gwwv_save_filename(tit,def,filter)		GWidgetSaveAsFile8(tit,def,filter,NULL,NULL)
+#define gwwv_save_filename_with_gadget(tit,def,filter,gcd)		GWidgetSaveAsFileWithGadget8(tit,def,filter,NULL,NULL,gcd)
 
 void GWidgetCreateInsChar(void);	/* takes input even when a modal dlg is active */
 		/* but is not modal itself */

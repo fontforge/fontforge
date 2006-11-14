@@ -862,7 +862,7 @@ return( NULL );
     free(filename);
     fclose(file);
 
-    if ( !SFDWrite(outline.sf->filename,outline.sf,outline.sf->map,NULL) )
+    if ( !SFDWrite(outline.sf->filename,outline.sf,outline.sf->map,NULL,false) )
 	fprintf( stderr, "Failed to write outputfile %s\n", outline.sf->filename );
     else
 	fprintf( stderr, "Created: %s\n", outline.sf->filename );
