@@ -2877,6 +2877,15 @@ SetGasp([8,2,16,1,65535,3])
 	    string haystack ignoring case in the search (or -1 if not found). It can
 	    execute with no current font.
 	  <DT>
+	    <A NAME="StrJoin">St</A>rJoin(string-array,delimiter)
+	  <DD>
+	    Returns a single string made by concatenating all the strings in the array
+	    together with the delimiter string added after each.
+	    So:<BR>
+	    <CODE>StrJoin(["The","quick","brown","box"]," ")
+	    </CODE>yields<BR>
+	    <CODE>"The quick brown box"</CODE>
+	  <DT>
 	    <A NAME="Strlen">S</A>trlen(str)
 	  <DD>
 	    Returns the length of the string. It can execute with no current font.
@@ -2890,6 +2899,17 @@ SetGasp([8,2,16,1,65535,3])
 	  <DD>
 	    Parses as much of str as possible and returns the offset to the first character
 	    that could not be parsed. It can execute with no current font.
+	  <DT>
+	    StrSplit(str,delimiter[,max-cnt])
+	  <DD>
+	    Splits the string at every occurance of the delimiter and produces an array
+	    of sub-strings.<BR>
+	    <CODE>StrSplit("The quick brown box"," ") </CODE>yields<BR>
+	    <CODE>["The", "quick","brown","box"]</CODE><BR>
+	    If max-cnt is specified then it will limit the number of sub-strings in the
+	    array<BR>
+	    <CODE>StrSplit("The quick brown box"," ",2) </CODE>yields<BR>
+	    <CODE>["The", "quick brown box"]</CODE>
 	  <DT>
 	    <A NAME="Strstr">S</A>trstr(haystack,needle)
 	  <DD>
