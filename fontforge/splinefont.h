@@ -1009,6 +1009,7 @@ typedef struct splinefont {
 			                        /* enough and has created a bit */
 			                        /* to mean "really use them" */
     unsigned int weight_width_slope_only: 1;	/* This bit seems stupid to me */
+    unsigned int save_to_dir: 1;		/* Loaded from an sfdir collection rather than a simple sfd file */
     struct fontview *fv;
     enum uni_interp uni_interp;
     NameList *for_new_glyphs;
@@ -1716,9 +1717,10 @@ extern Encoding *_FindOrMakeEncoding(const char *name,int make_it);
 extern Encoding *FindOrMakeEncoding(const char *name);
 extern void SFDDumpMacFeat(FILE *sfd,MacFeat *mf);
 extern MacFeat *SFDParseMacFeatures(FILE *sfd, char *tok);
-extern int SFDWrite(char *filename,SplineFont *sf,EncMap *map,EncMap *normal);
+extern int SFDWrite(char *filename,SplineFont *sf,EncMap *map,EncMap *normal, int todir);
 extern int SFDWriteBak(SplineFont *sf,EncMap *map,EncMap *normal);
 extern SplineFont *SFDRead(char *filename);
+extern SplineFont *SFDirRead(char *filename);
 extern SplineChar *SFDReadOneChar(SplineFont *sf,const char *name);
 extern char *TTFGetFontName(FILE *ttf,int32 offset,int32 off2);
 extern void TTFLoadBitmaps(FILE *ttf,struct ttfinfo *info, int onlyone);

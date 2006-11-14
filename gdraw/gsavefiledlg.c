@@ -190,17 +190,18 @@ return( GGadgetDispatchEvent((GGadget *) (d->gfc),event));
 return( true );
 }
 
-unichar_t *GWidgetSaveAsFile(const unichar_t *title, const unichar_t *defaultfile,
+unichar_t *GWidgetSaveAsFileWithGadget(const unichar_t *title, const unichar_t *defaultfile,
 	const unichar_t *initial_filter, unichar_t **mimetypes,
-	GFileChooserFilterType filter) {
+	GFileChooserFilterType filter, GGadgetCreateData *optional_gcd) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[7], boxes[3], *varray[5], *harray[10];
+    GGadgetCreateData gcd[7], boxes[3], *varray[7], *harray[10];
     GTextInfo label[5];
     struct gfc_data d;
     GGadget *pulldown, *files, *tf;
     int bs = GIntGetResource(_NUM_Buttonsize), bsbigger, totwid;
+    int vi;
 
     GProgressPauseTimer();
     memset(&wattrs,0,sizeof(wattrs));
@@ -223,8 +224,13 @@ unichar_t *GWidgetSaveAsFile(const unichar_t *title, const unichar_t *defaultfil
     gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6;
     gcd[0].gd.pos.width = 223-24; gcd[0].gd.pos.height = 180;
     gcd[0].gd.flags = gg_visible | gg_enabled;
+    gcd[0].gd.cid = 1000;
     gcd[0].creator = GFileChooserCreate;
-    varray[0] = &gcd[0]; varray[1] = NULL;
+    varray[0] = &gcd[0]; varray[1] = NULL; vi=2;
+
+    if ( optional_gcd!=NULL ) {
+	varray[vi++] = optional_gcd; varray[vi++] = NULL;
+    }
 
     gcd[1].gd.pos.x = 12; gcd[1].gd.pos.y = 222-3;
     gcd[1].gd.pos.width = -1;
@@ -291,8 +297,8 @@ unichar_t *GWidgetSaveAsFile(const unichar_t *title, const unichar_t *defaultfil
     boxes[2].gd.flags = gg_visible | gg_enabled;
     boxes[2].gd.u.boxelements = harray;
     boxes[2].creator = GHBoxCreate;
-    varray[2] = &boxes[2]; varray[3] = NULL;
-    varray[4] = NULL;
+    varray[vi++] = &boxes[2]; varray[vi++] = NULL;
+    varray[vi++] = NULL;
 
     boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
     boxes[0].gd.flags = gg_visible | gg_enabled;
@@ -330,9 +336,16 @@ unichar_t *GWidgetSaveAsFile(const unichar_t *title, const unichar_t *defaultfil
 return(d.ret);
 }
 
-char *GWidgetSaveAsFile8(const char *title, const char *defaultfile,
-	const char *initial_filter, char **mimetypes,
+unichar_t *GWidgetSaveAsFile(const unichar_t *title, const unichar_t *defaultfile,
+	const unichar_t *initial_filter, unichar_t **mimetypes,
 	GFileChooserFilterType filter) {
+return( GWidgetSaveAsFileWithGadget(title,defaultfile,initial_filter,mimetypes,
+		filter, NULL ));
+}
+
+char *GWidgetSaveAsFileWithGadget8(const char *title, const char *defaultfile,
+	const char *initial_filter, char **mimetypes,
+	GFileChooserFilterType filter, GGadgetCreateData *optional_gcd) {
     unichar_t *tit=NULL, *def=NULL, *filt=NULL, **mimes=NULL, *ret;
     char *utf8_ret;
     int i;
@@ -350,7 +363,7 @@ char *GWidgetSaveAsFile8(const char *title, const char *defaultfile,
 	    mimes[i] = utf82u_copy(mimetypes[i]);
 	mimes[i] = NULL;
     }
-    ret = GWidgetSaveAsFile(tit,def,filt,mimes,filter);
+    ret = GWidgetSaveAsFileWithGadget(tit,def,filt,mimes,filter,optional_gcd);
     if ( mimes!=NULL ) {
 	for ( i=0; mimes[i]!=NULL; ++i )
 	    free(mimes[i]);
@@ -360,4 +373,11 @@ char *GWidgetSaveAsFile8(const char *title, const char *defaultfile,
     utf8_ret = u2utf8_copy(ret);
     free(ret);
 return( utf8_ret );
+}
+
+char *GWidgetSaveAsFile8(const char *title, const char *defaultfile,
+	const char *initial_filter, char **mimetypes,
+	GFileChooserFilterType filter) {
+return( GWidgetSaveAsFileWithGadget8(title,defaultfile,initial_filter,mimetypes,
+		filter, NULL ));
 }

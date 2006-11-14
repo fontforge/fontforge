@@ -305,6 +305,7 @@ AC_SUBST(X_11LIB)
 X_11LIB=-lX11
 if test "$no_x" = "yes"; then
  X_11LIB=
+ AC_DEFINE(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 else
  dnl AC_CHECK_HEADER("X11/extensions/XInput.h", : ,AC_DEFINE(_NO_XINPUT),)
  dnl AC_CHECK_HEADER("X11/extensions/XI.h", : ,AC_DEFINE(_NO_XINPUT),)
@@ -469,6 +470,7 @@ AC_ARG_WITH(noui,
  [
     if test "$withval" != "no" >/dev/null 2>&1 ; then
 	AC_DEFINE(FONTFORGE_CONFIG_NO_WINDOWING_UI)
+	X_11LIB=
     fi
  ], : )
 

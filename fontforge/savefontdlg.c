@@ -105,7 +105,14 @@ static char *extensions[] = { ".pfa", ".pfb", ".bin", "%s.pfb", ".pfa", ".pfb", 
 	".cid", ".cff", ".cid.cff",
 	".t42", ".cid.t42",
 	".ttf", ".ttf", ".ttf.bin", ".dfont", ".otf", ".otf.dfont", ".otf",
-	".otf.dfont", ".svg", ".ufo", NULL };
+	".otf.dfont", ".svg",
+#if VMS
+/* this is a directory format, and under vms directories must end in .dir */
+	"_ufo",
+#else
+	".ufo",
+#endif
+NULL };
 # ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static char *bitmapextensions[] = { "-*.bdf", ".ttf", ".dfont", ".ttf", ".otb", ".bmap.bin", ".fon", "-*.fnt", ".pdb", "-*.pt3", ".none", NULL };
 # endif

@@ -574,11 +574,52 @@ void FontViewMenu_GenerateFamily(GtkMenuItem *menuitem, gpointer user_data) {
 }
 # endif
 
+extern int save_to_dir;
+
+static int SaveAs_FormatChange(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	GGadget *fc = GWidgetGetControl(GGadgetGetWindow(g),1000);
+	char *oldname = GGadgetGetTitle8(fc);
+	int *_s2d = GGadgetGetUserData(g);
+	int s2d = GGadgetIsChecked(g);
+	char *pt, *newname = galloc(strlen(oldname)+8);
+#ifdef VMS
+	char *pt2;
+
+	strcpy(newname,oldname);
+	pt = strrchr(newname,'.');
+	pt2 = strrchr(namename,'_');
+	if ( pt==NULL )
+	    pt = pt2;
+	else if ( pt2!=NULL && pt<pt2 )
+	    pt = pt2;
+	if ( pt==NULL )
+	    pt = newname+strlen(newname);
+	strcpy(pt,s2d ? "_sfdir" : ".sfd" );
+#else
+	strcpy(newname,oldname);
+	pt = strrchr(newname,'.');
+	if ( pt==NULL )
+	    pt = newname+strlen(newname);
+	strcpy(pt,s2d ? ".sfdir" : ".sfd" );
+#endif
+	GGadgetSetTitle8(fc,newname);
+	save_to_dir = *_s2d = s2d;
+	SavePrefs();
+    }
+return( true );
+}
+
 int _FVMenuSaveAs(FontView *fv) {
     char *temp;
     char *ret;
     char *filename;
     int ok;
+    int s2d = fv->cidmaster!=NULL ? fv->cidmaster->save_to_dir :
+		fv->sf->mm!=NULL ? fv->sf->mm->normal->save_to_dir :
+		fv->sf->save_to_dir;
+    GGadgetCreateData gcd;
+    GTextInfo label;
 
 # ifdef FONTFORGE_CONFIG_GDRAW
     if ( fv->cidmaster!=NULL && fv->cidmaster->filename!=NULL )
@@ -613,9 +654,26 @@ int _FVMenuSaveAs(FontView *fv) {
 	    strcat(temp,"Var");
 	else
 	    strcat(temp,"MM");
-	strcat(temp,".sfd");
+#ifdef VMS
+	strcat(temp,save_to_dir ? "_sfdir" : ".sfd");
+#else
+	strcat(temp,save_to_dir ? ".sfdir" : ".sfd");
+#endif
+	s2d = save_to_dir;
     }
-    ret = gwwv_save_filename(_("Save as..."),temp,NULL);
+
+    memset(&gcd,0,sizeof(gcd));
+    memset(&label,0,sizeof(label));
+    gcd.gd.flags = s2d ? (gg_visible | gg_enabled | gg_cb_on) : (gg_visible | gg_enabled);
+    label.text = (unichar_t *) _("Save as _Directory");
+    label.text_is_1byte = true;
+    label.text_in_resource = true;
+    gcd.gd.label = &label;
+    gcd.gd.handle_controlevent = SaveAs_FormatChange;
+    gcd.data = &s2d;
+    gcd.creator = GCheckBoxCreate;
+
+    ret = gwwv_save_filename_with_gadget(_("Save as..."),temp,NULL,&gcd);
     free(temp);
     if ( ret==NULL )
 return( 0 );
@@ -627,11 +685,12 @@ return( 0 );
     free(ret);
     FVFlattenAllBitmapSelections(fv);
     fv->sf->compression = 0;
-    ok = SFDWrite(filename,fv->sf,fv->map,fv->normal);
+    ok = SFDWrite(filename,fv->sf,fv->map,fv->normal,s2d);
     if ( ok ) {
 	SplineFont *sf = fv->cidmaster?fv->cidmaster:fv->sf->mm!=NULL?fv->sf->mm->normal:fv->sf;
 	free(sf->filename);
 	sf->filename = filename;
+	sf->save_to_dir = s2d;
 	free(sf->origname);
 	sf->origname = copy(filename);
 	sf->new = false;
@@ -10729,6 +10788,17 @@ return( NULL );
     sf = NULL;
     foo = fopen(strippedname,"rb");
     checked = false;
+/* checked == false => not checked */
+/* checked == 'u'   => UFO */
+/* checked == 't'   => TTF/OTF */
+/* checked == 'p'   => pfb/general postscript */
+/* checked == 'P'   => pdf */
+/* checked == 'c'   => cff */
+/* checked == 'S'   => svg */
+/* checked == 'f'   => sfd */
+/* checked == 'F'   => sfdir */
+/* checked == 'b'   => bdf */
+/* checked == 'i'   => ikarus */
     if ( GFileIsDir(strippedname) ) {
 	char *temp = galloc(strlen(strippedname)+strlen("/glyphs/contents.plist")+1);
 	strcpy(temp,strippedname);
@@ -10736,6 +10806,13 @@ return( NULL );
 	if ( GFileExists(temp)) {
 	    sf = SFReadUFO(strippedname,0);
 	    checked = 'u';
+	} else {
+	    strcpy(temp,strippedname);
+	    strcat(temp,"/font.props");
+	    if ( GFileExists(temp)) {
+		sf = SFDirRead(strippedname);
+		checked = 'F';
+	    }
 	}
 	free(temp);
 	if ( foo!=NULL )

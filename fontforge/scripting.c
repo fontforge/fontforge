@@ -1476,6 +1476,14 @@ char **GetFontNames(char *filename) {
 	strcat(temp,"/glyphs/contents.plist");
 	if ( GFileExists(temp))
 	    ret = NamesReadUFO(filename);
+	else {
+	    strcpy(temp,filename);
+	    strcat(temp,"/font.props");
+	    if ( GFileExists(temp))
+		ret = NamesReadSFD(temp);
+		/* The fonts.prop file will look just like an sfd file as far */
+		/* as fontnames are concerned, we don't need a separate routine*/
+	}
 	free(temp);
     } else {
 	foo = fopen(filename,"rb");
@@ -1632,8 +1640,9 @@ static void bRevertToBackup(Context *c) {
 
 static void bSave(Context *c) {
     SplineFont *sf = c->curfv->sf;
-    char *t;
+    char *t, *pt;
     char *locfilename;
+    int s2d = false;
 
     if ( c->a.argc>2 )
 	ScriptError( c, "Wrong number of arguments");
@@ -1642,8 +1651,18 @@ static void bSave(Context *c) {
 	    ScriptError(c,"If an argument is given to Save it must be a filename");
 	t = script2utf8_copy(c->a.vals[1].u.sval);
 	locfilename = utf82def_copy(t);
-	if ( !SFDWrite(locfilename,sf,c->curfv->map,c->curfv->normal))
+#ifdef VMS
+	pt = strrchr(locfilename,'_');
+	if ( pt!=NULL && strmatch(pt,"_sfdir")==0 )
+	    s2d = true;
+#else
+	pt = strrchr(locfilename,'.');
+	if ( pt!=NULL && strmatch(pt,".sfdir")==0 )
+	    s2d = true;
+#endif
+	if ( !SFDWrite(locfilename,sf,c->curfv->map,c->curfv->normal,s2d))
 	    ScriptError(c,"Save As failed" );
+	/* Hmmm. We don't set the filename, nor the save_to_dir bit */
 	free(t); free(locfilename);
     } else {
 	if ( sf->filename==NULL )
