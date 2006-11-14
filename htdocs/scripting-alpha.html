@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 9-Apr-2006 -->
-  <!-- AP: Last modified: 25-Oct-2006 -->
+  <!-- AP: Last modified: 13-Nov-2006 -->
   <TITLE>Scripting functions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -748,7 +748,11 @@ a[4][0] = "Nested array";
 	  <DD>
 	    Makes a copy of all selected glyphs.
 	  <DT>
-	    <A NAME="CopyFgToBd" HREF="editmenu.html#CopyFg">CopyFgToBd</A>
+	    <A NAME="CopyAnchors">CopyAnchors</A>
+	  <DD>
+	    Copies all the anchor points in a glyph.
+	  <DT>
+	    <A NAME="CopyFgToBg" HREF="editmenu.html#CopyFg">CopyFgToBg</A>
 	  <DD>
 	    Copies all foreground splines into the background in all selected glyphs
 	  <DT>
@@ -767,6 +771,9 @@ a[4][0] = "Nested array";
 	    glyph as the first character of the two. The (made up) feature '_krn' will
 	    match any kerning pair that has the currently selected glyph as the last
 	    character of the two. Similary for 'vkrn' and '_vkn'.
+	    <P>
+	    This command does NOT copy anchor points. It should, but it doesn't. Use
+	    <A HREF="#CopyAnchors">CopyAnchors</A> for that.
 	  <DT>
 	    <A NAME="CopyLBearing" HREF="editmenu.html#LBearing">CopyLBearing</A>
 	  <DD>
@@ -2311,7 +2318,9 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	  <DD>
 	    If no filename is specified then this saves the current font back into its
 	    sfd file (if the font has no sfd file then this is an error). With one argument
-	    it executes a SaveAs command, saving the current font to that filename.
+	    it executes a SaveAs command, saving the current font to that filename.<BR>
+	    If the filename has an extension ".sfdir" then the font will be saved into
+	    a SplineFont Directory.
 	  <DT>
 	    <A NAME="SavePrefs">S</A>avePrefs()
 	  <DD>

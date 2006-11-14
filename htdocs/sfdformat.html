@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 2-Oct-2006 -->
+  <!-- AP: Last modified: 13-Nov-2006 -->
   <TITLE>Spline Font Database File Format</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -40,6 +40,8 @@
       <A HREF="sfdformat.html#CID-keyed-fonts">CID keyed fonts</A>
     <LI>
       <A HREF="sfdformat.html#Multiple-Master-fonts">Multiple Master fonts</A>
+    <LI>
+      <A HREF="#sfdir">SplineFont Directories</A>
     <LI>
       <A HREF="sfdformat.html#Autosave-Format">AutoSave Format</A>
   </UL>
@@ -1153,11 +1155,49 @@ MacName: 0 1 9 "Tr\217s gras"
   points in design space to be given names, here the point Weight=3.2, Width=1
   is named "Black" or "Tr&eacute;s gras".
   <H2>
+    <A NAME="sfdir">SplineFont Directories</A>
+  </H2>
+  <P>
+  In late 2006 some people wanted a font format where each glyph was stored
+  in a single file (to give version control systems a finer granularity and
+  reduce the amount of stuff to download after changes). I have extended the
+  format slightly by creating what I call SplineFont Directories. These are
+  basically sfd files split up into little bits in directories with an extension
+  of ".sfdir". The directory contains the following:
+  <UL>
+    <LI>
+      A file <CODE>font.props </CODE>which contains the
+      <A HREF="sfdformat.html#Font-Header">font header</A> and includes everything
+      up to (but not including) the <CODE>BeginChars</CODE> line
+    <LI>
+      For non-CID-keyed fonts the directory will contain one file for each glyph
+      in the font, these files will be named
+      <CODE><I>&lt;glyph-name&gt;</I>.glyph</CODE> and will be in the format specified
+      for <A HREF="sfdformat.html#Outline-Char-Data">outline data</A>.
+    <LI>
+      If the font contains any bitmap strikes then there will be subdirectories
+      named <CODE><I>&lt;pixel-size&gt;</I>.strike</CODE>. And these directories
+      will contain a <CODE>strike.props </CODE>file and one file per glyph in the
+      strike, these files named
+      <CODE><I>&lt;glyph-name&gt;</I>.bitmap</CODE>. The <CODE>strike.props
+      </CODE>file will contan the bitmap header and bdf properties, while the
+      <CODE>*.bitmap</CODE> files will contain the per-glyph bitmap data. These
+      will be in the format described in the section on
+      <A HREF="sfdformat.html#Bitmap-Fonts">bitmaps</A>.
+    <LI>
+      For CID-keyed fonts there will be subdirectories named
+      <CODE><I>&lt;subfontname&gt;</I>.subfont</CODE>, each subfont will contain
+      its own <CODE>font.props</CODE> file and its own set of glyph files.
+    <LI>
+      For Multiple Master fonts there will be subdirectories named
+      <CODE><I>&lt;instancename&gt;</I>.instance</CODE>
+  </UL>
+  <H2>
     <A NAME="Autosave-Format">Autosave Format</A>
   </H2>
   <P>
   <A HREF="errrecovery.html">Error recovery</A> files are saved in
-  ~/.FontForge/autosave, they have quite random looking names and end in .asfd.
+  ~/.PfaEdit/autosave, they have quite random looking names and end in .asfd.
   They look very similar to .sfd files above.
   <P>
   If an asfd file starts with a line:
