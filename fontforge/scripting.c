@@ -560,6 +560,87 @@ static void bStrstr(Context *c) {
     c->return_val.u.ival = pt==NULL ? -1 : pt-c->a.vals[1].u.sval;
 }
 
+static void bStrSplit(Context *c) {
+    char *pt, *pt2, *str1, *str2;
+    int max=-1, len2, cnt, k;
+
+    if ( c->a.argc!=3 && c->a.argc!=4 )
+	ScriptError( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str )
+	ScriptError( c, "Bad type for argument" );
+    else if ( c->a.argc==4 && c->a.vals[3].type!=v_int )
+	ScriptError( c, "Bad type for argument" );
+    else if ( c->a.argc==4 )
+	max = c->a.vals[3].u.ival;
+
+    str1 = c->a.vals[1].u.sval;
+    str2 = c->a.vals[2].u.sval;
+    len2 = strlen( str2 );
+
+    for ( k=0; k<2; ++k ) {
+	cnt = 0;
+	pt = str1;
+	while ( (pt2 = strstr(pt,str2))!=NULL ) {
+	    if ( k ) {
+		if ( max!=-1 && cnt>=max )
+	break;
+		c->return_val.u.aval->vals[cnt].type = v_str;
+		c->return_val.u.aval->vals[cnt].u.sval = copyn(pt,pt2-pt);
+	    }
+	    ++cnt;
+	    pt = pt2+len2;
+	}
+	if ( !k ) {
+	    if ( *pt!='\0' )
+		++cnt;
+	    if ( max!=-1 && cnt>max )
+		cnt = max;
+	    c->return_val.type = v_arrfree;
+	    c->return_val.u.aval = galloc(sizeof(Array));
+	    c->return_val.u.aval->argc = cnt;
+	    c->return_val.u.aval->vals = galloc(cnt*sizeof(Val));
+	} else {
+	    if ( *pt!='\0' ) {
+		c->return_val.u.aval->vals[cnt].type = v_str;
+		c->return_val.u.aval->vals[cnt].u.sval = copy(pt);
+	    }
+	}
+    }
+}
+
+static void bStrJoin(Context *c) {
+    char *str2;
+    int len, len2, k, i;
+    Array *arr;
+
+    if ( c->a.argc!=3 )
+	ScriptError( c, "Wrong number of arguments" );
+    else if ( (c->a.vals[1].type!=v_arr && c->a.vals[1].type!=v_arrfree) ||
+	    c->a.vals[2].type!=v_str )
+	ScriptError( c, "Bad type for argument" );
+
+    arr = c->a.vals[1].u.aval;
+    str2 = c->a.vals[2].u.sval;
+    len2 = strlen( str2 );
+
+    for ( k=0; k<2; ++k ) {
+	len = 0;
+	for ( i=0; i<arr->argc; ++i ) {
+	    if ( arr->vals[i].type!=v_str )
+		ScriptError( c, "Bad type for array element" );
+	    if ( k ) {
+		strcpy(c->return_val.u.sval+len,arr->vals[i].u.sval);
+		strcat(c->return_val.u.sval+len,str2);
+	    }
+	    len += strlen(arr->vals[i].u.sval) + len2;
+	}
+	if ( !k ) {
+	    c->return_val.type = v_str;
+	    c->return_val.u.sval = galloc(len+1);
+	}
+    }
+}
+
 static void bStrcasestr(Context *c) {
     char *pt;
 
@@ -7105,6 +7186,8 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "TypeOf", bTypeOf, 1 },
     { "Strsub", bStrsub, 1 },
     { "Strlen", bStrlen, 1 },
+    { "StrSplit", bStrSplit, 1 },
+    { "StrJoin", bStrJoin, 1 },
     { "Strstr", bStrstr, 1 },
     { "Strrstr", bStrrstr, 1 },
     { "Strcasestr", bStrcasestr, 1 },
