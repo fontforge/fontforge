@@ -37,6 +37,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <limits.h>		/* For NAME_MAX or _POSIX_NAME_MAX */
+#ifndef NAME_MAX
+# define NAME_MAX _POSIX_NAME_MAX
+#endif
 
 /* I will retain this list in case there are still some really old sfd files */
 /*  including numeric encodings.  This table maps them to string encodings */
