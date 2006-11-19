@@ -1098,8 +1098,8 @@ return( NULL );
 	bitmap.pixel_mode = ft_pixel_mode_grays;
     }
     bitmap.buffer = gcalloc(bitmap.pitch*bitmap.rows,sizeof(uint8));
-#ifdef FONTFORGE_CONFIG_TYPE3
     memset(&temp,0,sizeof(temp));
+#ifdef FONTFORGE_CONFIG_TYPE3
     if ( sc->parent->multilayer && !(sc->layer_cnt==1 &&
 	    !sc->layers[ly_fore].dostroke &&
 	    sc->layers[ly_fore].dofill &&
