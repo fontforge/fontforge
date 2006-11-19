@@ -47,7 +47,7 @@ typedef struct di {
 #define CID_Size	1004
 #define CID_pfb		1005
 #define CID_ttf		1006
-#define CID_otf		1008
+#define CID_otf		1007
 #define CID_bitmap	1009
 #define CID_pfaedit	1010
 #define CID_SampleText	1011
@@ -501,9 +501,12 @@ void DisplayDlg(SplineFont *sf) {
     label[0].text = (unichar_t *) sf->fontname;
     label[0].text_is_1byte = true;
     gcd[0].gd.label = &label[0];
+    gcd[0].gd.popup_msg = (unichar_t *) _("Select some text, then use this list to change the\nfont in which those characters are displayed.");
     gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6; 
     gcd[0].gd.pos.width = 150;
-    gcd[0].gd.flags = gg_visible | gg_enabled;
+    gcd[0].gd.flags = (fv_list==NULL || fv_list->next==NULL) ?
+	    (gg_visible | gg_utf8_popup):
+	    (gg_visible | gg_enabled | gg_utf8_popup);
     gcd[0].gd.cid = CID_Font;
     gcd[0].gd.u.list = FontNames(sf);
     gcd[0].gd.handle_controlevent = DSP_FontChanged;
@@ -519,7 +522,7 @@ void DisplayDlg(SplineFont *sf) {
     gcd[1].gd.flags = gg_visible | gg_enabled | gg_cb_on | gg_utf8_popup;
     if ( sf->bitmaps!=NULL && ( !hasfreetype || sf->onlybitmaps ))
 	gcd[1].gd.flags = DSP_AAState(sf,bestbdf);
-    gcd[1].gd.popup_msg = (unichar_t *) _("AntiAlias (greymap) characters, or bitmap characters");
+    gcd[1].gd.popup_msg = (unichar_t *) _("Select some text, this controls whether those characters will be\nAntiAlias (greymap) characters, or bitmap characters");
     gcd[1].gd.handle_controlevent = DSP_AAChange;
     gcd[1].gd.cid = CID_AA;
     gcd[1].creator = GCheckBoxCreate;
@@ -532,7 +535,7 @@ void DisplayDlg(SplineFont *sf) {
     gcd[2].gd.mnemonic = 'S';
     gcd[2].gd.pos.x = 210; gcd[2].gd.pos.y = gcd[0].gd.pos.y+6; 
     gcd[2].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    gcd[2].gd.popup_msg = (unichar_t *) _("Specifies the pixel size of the characters on display");
+    gcd[2].gd.popup_msg = (unichar_t *) _("Select some text, this specifies the pixel\nsize of those characters");
     gcd[2].gd.cid = CID_SizeLab;
     gcd[2].creator = GLabelCreate;
     harray[4] = &gcd[2];
@@ -549,7 +552,7 @@ void DisplayDlg(SplineFont *sf) {
     gcd[3].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     gcd[3].gd.cid = CID_Size;
     gcd[3].gd.handle_controlevent = DSP_SizeChanged;
-    gcd[3].gd.popup_msg = (unichar_t *) _("Specifies the pixel size of the characters on display");
+    gcd[3].gd.popup_msg = (unichar_t *) _("Select some text, this specifies the pixel\nsize of those characters");
     gcd[3].creator = GTextFieldCreate;
     harray[5] = &gcd[3]; harray[6] = GCD_Glue; harray[7] = NULL;
 
