@@ -35,12 +35,14 @@ clean:
 	( cd fontforge ; $(MAKE) clean )
 	( cd Unicode ; $(MAKE) clean )
 	( cd gdraw ; $(MAKE) clean )
+	( cd plugins ; $(MAKE) clean )
 
 distclean cleaner:
 	( cd fontforge ; $(MAKE) distclean )
 	( cd Unicode ; $(MAKE) distclean )
 	( cd gdraw ; $(MAKE) distclean )
-	-rm Makefile config.cache config.log config.status libtool
+	( cd plugins ; $(MAKE) clean )
+	-rm Makefile config.cache config.log config.status libtool fontforge.pc systemspecific
 
 install_libs: libs
 
