@@ -226,7 +226,7 @@ static void splash_window_tooltip_fun( GtkWidget *splashw ) {
 /* GT:  English literature. Trying to translate them literally may miss the */
 /* GT:  point. Finding something appropriate in the literature of your own */
 /* GT:  language and then twisting it might be closer to the original intent. */
-/* GT:  Or just translate them all as FontForge and don't worry about them. */
+/* GT:  Or just translate them all as "FontForge" and don't worry about them. */
 /* GT: Misquotation of an old latin drinking song */
 	N_("Gaudeamus Ligature!"),
 	N_("Gaudeamus Ligature!"),

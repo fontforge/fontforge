@@ -345,6 +345,7 @@ return( false );
 return( true );
 }
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void BitmapsDoIt(CreateBitmapData *bd,int32 *sizes,int usefreetype) {
 
     if ( bd->isavail && bd->sf->onlybitmaps && bd->sf->bitmaps!=NULL )
@@ -370,7 +371,6 @@ static void BitmapsDoIt(CreateBitmapData *bd,int32 *sizes,int usefreetype) {
     bd->done = true;
 }
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #define CID_Which	1001
 #define CID_Pixel	1002
 #define CID_75		1003
