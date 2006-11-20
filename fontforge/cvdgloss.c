@@ -849,7 +849,7 @@ return(1);
 	    }
 	    val1 = exc->stack[exc->top-2-2*i];
 	    val2 = exc->stack[exc->top-3-2*i];
-	    if ( (val2&0xf)<7 )
+	    if ( (val2&0xf)<=7 )
 		off = -8+(val2&0xf);
 	    else
 		off = -7+(val2&0xf);
@@ -886,7 +886,7 @@ return(1);
 	    }
 	    val1 = exc->stack[exc->top-2-2*i];
 	    val2 = exc->stack[exc->top-3-2*i];
-	    if ( (val2&0xf)<7 )
+	    if ( (val2&0xf)<=7 )
 		off = -8+(val2&0xf);
 	    else
 		off = -7+(val2&0xf);
