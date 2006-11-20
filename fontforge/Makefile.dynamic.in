@@ -92,7 +92,7 @@ splinerefigure.lo: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
 	$(CC) $(CFLAGS) -c $<
 
 clean:
-	-rm -f *.o *.o fontforge sfddiff po/*.mo
+	-rm -f *.o fontforge sfddiff fontimage
 	-rm -rf .libs
 
 distclean cleaner: clean

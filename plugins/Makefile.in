@@ -26,6 +26,12 @@ PLUGINS = gb12345.la
 
 all: $(PLUGINS)
 
+clean:
+	-rm -rf .libs *.la
+
+distclean: clean
+	-rm -rf Makefile
+
 %.lo: %.c
 	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -c $<
 

@@ -37,14 +37,18 @@ clean:
 	( cd fontforge ; $(MAKE) clean )
 	( cd Unicode ; $(MAKE) clean )
 	( cd gdraw ; $(MAKE) clean )
+	( cd plugins ; $(MAKE) clean )
+	-( cd po ; rm *.mo )
 	-rm -rf .libs
 
 distclean cleaner:
 	( cd fontforge ; $(MAKE) distclean )
 	( cd Unicode ; $(MAKE) distclean )
 	( cd gdraw ; $(MAKE) distclean )
+	( cd plugins ; $(MAKE) distclean )
+	-( cd po ; rm *.mo Makefile* )
 	-rm -rf .libs
-	-rm Makefile config.cache config.log config.status libtool
+	-rm Makefile config.cache config.log config.status libtool fontforge.pc systemspecific
 
 install_libs: libs
 # You may need to be root to do the install
