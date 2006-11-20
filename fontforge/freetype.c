@@ -1698,8 +1698,11 @@ struct freetype_raster *DebuggerCurrentRaster(TT_ExecContext exc,int depth) {
     }
 
     ret = galloc(sizeof(struct freetype_raster));
-#if 1
     /* I'm not sure why I need these, but it seems I do */
+    if ( depth==8 ) {
+	ret->as = floor(b.miny/64.0) + bitmap.rows;
+	ret->lb = floor(b.minx/64.0);
+    } else {
 	for ( k=0; k<bitmap.rows; ++k ) {
 	    for ( j=bitmap.pitch-1; j>=0 && bitmap.buffer[k*bitmap.pitch+j]==0; --j );
 	    if ( j!=-1 )
@@ -1726,12 +1729,9 @@ struct freetype_raster *DebuggerCurrentRaster(TT_ExecContext exc,int depth) {
 	    }
 	}
 	b.minx -= j*64;
-    ret->as = rint(b.maxy/64.0);
-    ret->lb = rint(b.minx/64.0);
-#else
-    ret->as = bitmap.rows + rint(b.miny/64.0);
-    ret->lb = rint(b.minx/64.0);
-#endif
+	ret->as = rint(b.maxy/64.0);
+	ret->lb = rint(b.minx/64.0);
+    }
     ret->rows = bitmap.rows;
     ret->cols = bitmap.width;
     ret->bytes_per_row = bitmap.pitch;
