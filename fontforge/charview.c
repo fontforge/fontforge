@@ -2205,6 +2205,7 @@ return;
     } else if ( !(event->u.chr.state&(ksm_control|ksm_meta)) &&
 	    event->type == et_char &&
 	    cv->searcher==NULL &&
+	    cv->dv==NULL &&
 	    event->u.chr.chars[0]>=' ' && event->u.chr.chars[1]=='\0' ) {
 	SplineFont *sf = cv->sc->parent;
 	int i;
