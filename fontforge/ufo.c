@@ -562,13 +562,13 @@ return( NULL );
 	    width = _xmlGetProp(kids,"width");
 	    height = _xmlGetProp(kids,"height");
 	    if ( width!=NULL )
-		sc->width = strtol(width,NULL,10);
+		sc->width = strtol((char *) width,NULL,10);
 	    if ( height!=NULL )
-		sc->vwidth = strtol(height,NULL,10);
+		sc->vwidth = strtol((char *) height,NULL,10);
 	    free(width); free(height);
 	} else if ( _xmlStrcmp(kids->name,(const xmlChar *) "unicode")==0 ) {
 	    u = _xmlGetProp(kids,"hex");
-	    uni = strtol(u,NULL,16);
+	    uni = strtol((char *) u,NULL,16);
 	    if ( sc->unicodeenc == -1 )
 		sc->unicodeenc = uni;
 	    else
@@ -576,13 +576,13 @@ return( NULL );
 	} else if ( _xmlStrcmp(kids->name,(const xmlChar *) "outline")==0 ) {
 	    for ( contour = kids->children; contour!=NULL; contour=contour->next ) {
 		if ( _xmlStrcmp(contour->name,(const xmlChar *) "component")==0 ) {
-		    char *base = _xmlGetProp(contour,"base"),
-			*xs = _xmlGetProp(contour,"xScale"),
-			*ys = _xmlGetProp(contour,"yScale"),
-			*xys = _xmlGetProp(contour,"xyScale"),
-			*yxs = _xmlGetProp(contour,"yxScale"),
-			*xo = _xmlGetProp(contour,"xOffset"),
-			*yo = _xmlGetProp(contour,"yOffset");
+		    char *base = (char *) _xmlGetProp(contour,"base"),
+			*xs = (char *) _xmlGetProp(contour,"xScale"),
+			*ys = (char *) _xmlGetProp(contour,"yScale"),
+			*xys = (char *) _xmlGetProp(contour,"xyScale"),
+			*yxs = (char *) _xmlGetProp(contour,"yxScale"),
+			*xo = (char *) _xmlGetProp(contour,"xOffset"),
+			*yo = (char *) _xmlGetProp(contour,"yOffset");
 		    RefChar *r;
 		    if ( base==NULL )
 			LogError(_("component with no base glyph"));
@@ -616,9 +616,9 @@ return( NULL );
 		    for ( points = contour->children; points!=NULL; points=points->next ) {
 			char *xs, *ys, *type;
 			int x,y;
-			xs = _xmlGetProp(points,"x");
-			ys = _xmlGetProp(points,"y");
-			type = _xmlGetProp(points,"type");
+			xs = (char *) _xmlGetProp(points,"x");
+			ys = (char *) _xmlGetProp(points,"y");
+			type = (char *) _xmlGetProp(points,"type");
 			if ( xs==NULL || ys == NULL )
 		    continue;
 			x = strtod(xs,NULL); y = strtod(ys,NULL);
@@ -770,7 +770,7 @@ return;
 	if ( value==NULL )
     break;
 	if ( _xmlStrcmp(keys->name,(const xmlChar *) "key")==0 ) {
-	    valname = _xmlNodeListGetString(doc,value->children,true);
+	    valname = (char *) _xmlNodeListGetString(doc,value->children,true);
 	    glyphfname = buildname(glyphdir,valname);
 	    free(valname);
 	    sc = UFOLoadGlyph(glyphfname);
@@ -823,7 +823,7 @@ return;
 	if ( value==NULL )
     break;
 	if ( _xmlStrcmp(keys->name,(const xmlChar *) "key")==0 ) {
-	    keyname = _xmlNodeListGetString(doc,keys->children,true);
+	    keyname = (char *) _xmlNodeListGetString(doc,keys->children,true);
 	    sc = SFGetChar(sf,-1,keyname);
 	    free(keyname);
 	    if ( sc==NULL )
@@ -835,13 +835,13 @@ return;
 		if ( value==NULL )
 	    break;
 		if ( _xmlStrcmp(subkeys->name,(const xmlChar *) "key")==0 ) {
-		    keyname = _xmlNodeListGetString(doc,subkeys->children,true);
+		    keyname = (char *) _xmlNodeListGetString(doc,subkeys->children,true);
 		    ssc = SFGetChar(sf,-1,keyname);
 		    free(keyname);
 		    if ( ssc==NULL )
 		continue;
 		    subkeys = value;
-		    valname = _xmlNodeListGetString(doc,value->children,true);
+		    valname = (char *) _xmlNodeListGetString(doc,value->children,true);
 		    offset = strtol(valname,&end,10);
 		    if ( *end=='\0' ) {
 			kp = chunkalloc(sizeof(KernPair));
@@ -868,7 +868,8 @@ SplineFont *SFReadUFO(char *basedir, int flags) {
     xmlNodePtr plist, dict, keys, value;
     xmlDocPtr doc;
     SplineFont *sf;
-    char *temp, *keyname, *valname, *glyphlist, *glyphdir;
+    xmlChar *keyname, *valname;
+    char *temp, *glyphlist, *glyphdir;
     char *oldloc, *end;
     int as = -1, ds= -1, em= -1;
     double ia = 0;
@@ -964,6 +965,7 @@ return( NULL );
     sf->copyright = copyright;
     sf->ascent = as; sf->descent = ds;
     sf->order2 = false;
+    sf->italicangle = ia;
     if ( strmatch(curve,"Quadratic")==0 )
 	sf->order2 = true;
     if ( sf->fontname==NULL )

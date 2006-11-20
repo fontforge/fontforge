@@ -1301,12 +1301,10 @@ void SplinesRemoveBetween(SplineChar *sc, SplinePoint *from, SplinePoint *to,int
     TPoint *tp;
     SplinePoint *np, oldfrom;
     Spline *sp;
-    BasePoint fncp, tpcp;
     int order2 = from->next->order2;
 
     oldfrom = *from;
     tp = SplinesFigureTPsBetween(from,to,&tot);
-    fncp = from->nextcp; tpcp = to->prevcp;
 
     if ( type==1 )
 	ApproximateSplineFromPointsSlopes(from,to,tp,tot-1,order2);
@@ -3786,11 +3784,8 @@ SplineSet *SplineSetsCorrect(SplineSet *base,int *changed) {
     DBounds b;
     Edge *active=NULL, *apt, *pr, *e;
     int i, winding;
-    SplineSet *tbase;
 
     *changed = false;
-
-    tbase = base;
 
     SplineSetsUntick(base);
     for (sscnt=0,spl=base; spl!=NULL; spl=spl->next, ++sscnt );

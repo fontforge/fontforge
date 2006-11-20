@@ -1498,7 +1498,7 @@ static void KCD_Expose(KernClassDlg *kcd,GWindow pixmap,GEvent *event) {
     GRect *area = &event->u.expose.rect;
     GRect rect, select;
     GRect clip,old1,old2;
-    int len, off, i, j, x, y;
+    int len, i, j, x, y;
     unichar_t ubuf[8];
     char buf[100];
     int32 tilen;
@@ -1544,7 +1544,6 @@ return;
 	    sprintf( buf, "%d", i+kcd->offtop );
 	    uc_strcpy(ubuf,buf);
 	    len = GDrawGetTextWidth(pixmap,ubuf,-1,NULL);
-	    off = (kcd->kernh-len*kcd->fh)/2;
 	    GDrawDrawText(pixmap,kcd->xstart+(kcd->kernw-len)/2,kcd->ystart2+i*kcd->kernh+kcd->as+1,
 		    ubuf,-1,NULL,0xff0000);
 	}

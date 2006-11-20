@@ -2016,13 +2016,12 @@ uint16 *props_array(SplineFont *sf,struct glyphinfo *gi) {
     int dir, isfloat, isbracket, offset, doit=false;
     AnchorPoint *ap;
     PST *pst;
-    int l, p;
+    int p;
 
     props = gcalloc(gi->gcnt+1,sizeof(uint16));
     props[gi->gcnt] = -1;
 
     for ( i=0; i<gi->gcnt; ++i ) if ( (p = gi->bygid==NULL ? i : gi->bygid[i])!=-1 ) {
-	l = 0;
 	sc = sf->glyphs[p];
 	if ( sc!=NULL && (gi->bygid==NULL || sc->ttf_glyph!=-1 )) {
 	    dir = 0;

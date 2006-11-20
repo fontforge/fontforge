@@ -104,7 +104,7 @@ int SFRemoveThisFeatureTag(SplineFont *sf, uint32 tag, int sli, int flags) {
     PST *prev, *pst, *next;
     FPST *fprev, *fpst, *fnext;
     ASM *sprev, *sm, *snext;
-    AnchorClass *ac, *aprev, *anext;
+    AnchorClass *ac, *anext;
     KernPair *kp, *kprev, *knext;
     KernClass *kc, *cprev, *cnext;
     SplineFont *_sf;
@@ -197,15 +197,14 @@ int SFRemoveThisFeatureTag(SplineFont *sf, uint32 tag, int sli, int flags) {
 	    fprev = fpst;
     }
 
-    for ( aprev=NULL, ac=sf->anchor; ac!=NULL; ac=anext ) {
+    for ( ac=sf->anchor; ac!=NULL; ac=anext ) {
 	anext = ac->next;
 	if ( ( tag==0xffffffff || tag==ac->feature_tag ) &&
 		( sli==SLI_UNKNOWN || sli==ac->script_lang_index ) &&
 		( flags==-1 || flags==ac->flags )) {
 	    SFRemoveAnchorClass(sf,ac);
 	    any = true;
-	} else
-	    aprev = ac;
+	}
     }
 
     if ( tag!=0xffffffff || (sli==SLI_UNKNOWN && flags==-1)) {

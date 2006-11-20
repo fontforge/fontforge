@@ -3035,10 +3035,8 @@ static void bDetachGlyphs(Context *c) {
     SplineFont *sf = fv->sf;
     int i, j, gid;
     EncMap *map = fv->map;
-    int altered = false;
 
     for ( i=0; i<map->enccount; ++i ) if ( fv->selected[i] && (gid=map->map[i])!=-1 ) {
-	altered = true;
 	map->map[i] = -1;
 	if ( map->backmap[gid]==i ) {
 	    for ( j=map->enccount-1; j>=0 && map->map[j]!=gid; --j );
@@ -3055,10 +3053,9 @@ static void bDetachAndRemoveGlyphs(Context *c) {
     EncMap *map = fv->map;
     SplineFont *sf = fv->sf;
     int flags = -1;
-    int changed = false, altered = false;
+    int changed = false;
 
     for ( i=0; i<map->enccount; ++i ) if ( fv->selected[i] && (gid=map->map[i])!=-1 ) {
-	altered = true;
 	map->map[i] = -1;
 	if ( map->backmap[gid]==i ) {
 	    for ( j=map->enccount-1; j>=0 && map->map[j]!=gid; --j );
@@ -8203,11 +8200,9 @@ static void handlename(Context *c,Val *val) {
 		    val->u.aval->vals[cnt].u.ival = pfminfo.panose[cnt];
 		}
 	    } else if ( strcmp(name,"$selection")==0 ) {
-		SplineFont *sf;
 		EncMap *map;
 		int i;
 		if ( c->curfv==NULL ) ScriptError(c,"No current font");
-		sf = c->curfv->sf;
 		map = c->curfv->map;
 		val->type = v_arrfree;
 		val->u.aval = galloc(sizeof(Array));
@@ -9118,7 +9113,6 @@ void ExecuteScriptFile(FontView *fv, char *filename) {
     Context c;
     Val argv[1];
     Array *dontfree[1];
-    enum token_type tok;
     jmp_buf env;
 
     VerboseCheck();
@@ -9141,7 +9135,7 @@ return;				/* Error return */
 	ScriptError(&c, "No such file");
     else {
 	c.lineno = 1;
-	while ( !c.returned && (tok = NextToken(&c))!=tt_eof ) {
+	while ( !c.returned && NextToken(&c)!=tt_eof ) {
 	    backuptok(&c);
 	    statement(&c);
 	}
@@ -9191,7 +9185,6 @@ static int SD_OK(GGadget *g, GEvent *e) {
 	Val args[1];
 	Array *dontfree[1];
 	jmp_buf env;
-	enum token_type tok;
 
 	memset( &c,0,sizeof(c));
 	memset( args,0,sizeof(args));
@@ -9223,7 +9216,7 @@ return( true );			/* Error return */
 	    rewind(c.script);
 	    VerboseCheck();
 	    c.lineno = 1;
-	    while ( !c.returned && (tok = NextToken(&c))!=tt_eof ) {
+	    while ( !c.returned && NextToken(&c)!=tt_eof ) {
 		backuptok(&c);
 		statement(&c);
 	    }

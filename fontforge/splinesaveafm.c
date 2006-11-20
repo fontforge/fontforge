@@ -1382,12 +1382,11 @@ static void AfmBuildMarkCombos(SplineChar *sc,AnchorPoint *ap, struct cc_contain
 	AnchorPoint *ap;
 	struct cc_data *this = &cc->ccs[cc->cnt++];
 	int acnt=0;
-	int ticks, cnt;
 	AnchorPoint *map;
 
 	this->base = sc;
 	this->accents = NULL;
-	for ( ap=sc->anchor, ticks=0, cnt=1; ap!=NULL; ap=ap->next ) if ( ap->ticked ) {
+	for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) if ( ap->ticked ) {
 	    struct cc_accents *cca = chunkalloc(sizeof(struct cc_accents));
 	    cca->accent = cc->marks[ap->anchor->ac_num][cc->mpos[ap->anchor->ac_num]];
 	    for ( map = cca->accent->anchor; map->anchor!=ap->anchor || map->type!=at_mark;

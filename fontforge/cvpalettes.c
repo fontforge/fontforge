@@ -49,7 +49,6 @@ int cvvisible[2] = { 1, 1}, bvvisible[3]= { 1,1,1 };
 static GWindow cvlayers, cvtools, bvlayers, bvtools, bvshades;
 static GWindow cvlayers2=NULL;
 static GPoint cvtoolsoff = { -9999 }, cvlayersoff = { -9999 }, bvlayersoff = { -9999 }, bvtoolsoff = { -9999 }, bvshadesoff = { -9999 };
-static int palettesmoved=0;
 int palettes_fixed=1;
 static GCursor tools[cvt_max+1] = { ct_pointer };
 
@@ -165,7 +164,6 @@ return;
 	pt.x = screensize.width-pos.width;
     if ( pt.y+pos.height>screensize.height )
 	pt.y = screensize.height-pos.height;
-    palettesmoved = true;
     GDrawTrueMove(palette,pt.x,pt.y);
     GDrawRaise(palette);
 }

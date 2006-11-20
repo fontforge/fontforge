@@ -203,7 +203,6 @@ return( bc );
 
 BDFChar *BDFMakeChar(BDFFont *bdf,EncMap *map,int enc) {
     SplineFont *sf=bdf->sf;
-    SplineChar *sc;
 
     if ( enc==-1 )
 return( NULL );
@@ -220,7 +219,7 @@ return( NULL );
 	}
 	sf = sf->subfonts[j];
     }
-    sc = SFMakeChar(sf,map,enc);
+    SFMakeChar(sf,map,enc);
 return( BDFMakeGID(bdf,map->map[enc]));
 }
 

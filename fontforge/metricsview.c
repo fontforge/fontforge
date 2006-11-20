@@ -2187,16 +2187,14 @@ static void MVMenuBuildComposite(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void MVResetText(MetricsView *mv) {
     unichar_t *new, *pt;
-    int i,si;
+    int i;
 
     new = galloc((mv->charcnt+1)*sizeof(unichar_t));
-    si=-1;
     for ( pt=new, i=0; i<mv->charcnt; ++i ) {
 	if ( mv->perchar[i].sc->unicodeenc==-1 || mv->perchar[i].sc->unicodeenc>=0x10000 )
 	    *pt++ = 0xfffd;
 	else
 	    *pt++ = mv->perchar[i].sc->unicodeenc;
-	if ( mv->perchar[i].selected ) si=i;
     }
     *pt = '\0';
     GGadgetSetTitle(mv->text,new);

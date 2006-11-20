@@ -82,7 +82,7 @@ static void MergeZones(real zone1[5], real zone2[5]) {
 void FindBlues( SplineFont *sf, real blues[14], real otherblues[10]) {
     real caph[5], xh[5], ascenth[5], digith[5], descenth[5], base[5];
     real otherdigits[5];
-    int i, any = 0, j, k;
+    int i, j, k;
     DBounds b;
 
     /* Go through once to get some idea of the average value so we can weed */
@@ -105,7 +105,6 @@ void FindBlues( SplineFont *sf, real blues[14], real otherblues[10]) {
 			(upt =unicode_alternates[enc>>8][enc&0xff])!=NULL &&
 			upt[1]!='\0' )
     continue;
-		any = true;
 		SplineCharFindBounds(sf->glyphs[i],&b);
 		if ( b.miny==0 && b.maxy==0 )
     continue;
@@ -273,7 +272,6 @@ void FindBlues( SplineFont *sf, real blues[14], real otherblues[10]) {
 		    (upt =unicode_alternates[enc>>8][enc&0xff])!=NULL &&
 		    upt[1]!='\0' )
     continue;
-	    any = true;
 	    SplineCharFindBounds(sf->glyphs[i],&b);
 	    if ( b.miny==0 && b.maxy==0 )
     continue;
@@ -786,7 +784,6 @@ void ELOrder(EIList *el, int major ) {
     int other = !major;
     int pos;
     EI *ei, *prev, *test;
-    BasePoint *me;
 
     el->low = floor(el->coordmin[major]); el->high = ceil(el->coordmax[major]);
     el->cnt = el->high-el->low+1;
@@ -794,7 +791,6 @@ void ELOrder(EIList *el, int major ) {
     el->ends = gcalloc(el->cnt,1);
 
     for ( ei = el->edges; ei!=NULL ; ei=ei->next ) {
-	me = &ei->spline->from->me;
 	pos = ceil(ei->coordmax[major])-el->low;
 	el->ends[pos] = true;
 	pos = floor(ei->coordmin[major])-el->low;
@@ -935,7 +931,6 @@ real EITOfNextMajor(EI *e, EIList *el, real sought_m ) {
     real new_t;
     real found_m;
     real t_mmax, t_mmin;
-    real mmax, mmin;
 
     if ( msp->a==0 && msp->b==0 ) {
 	if ( msp->c == 0 ) {
@@ -946,9 +941,7 @@ return( 0 );
 return( new_t );
     }
 
-    mmax = e->coordmax[el->major];
     t_mmax = e->up?e->tmax:e->tmin;
-    mmin = e->coordmin[el->major];
     t_mmin = e->up?e->tmin:e->tmax;
     /* sought_m += el->low; */
 
@@ -958,10 +951,8 @@ return( new_t );
 	if ( found_m>sought_m-.001 && found_m<sought_m+.001 )
 return( new_t );
 	if ( found_m > sought_m ) {
-	    mmax = found_m;
 	    t_mmax = new_t;
 	} else {
-	    mmin = found_m;
 	    t_mmin = new_t;
 	}
 	if ( t_mmax==t_mmin ) {
@@ -1157,7 +1148,7 @@ return( false );
 
 EI *EIActiveEdgesFindStem(EI *apt, real i, int major) {
     int cnt=apt->up?1:-1;
-    EI *pr, *e, *p;
+    EI *e, *p;
 
 	/* If we're at an intersection point and the next spline continues */
 	/*  in about the same direction then this doesn't count as two lines */
@@ -1165,11 +1156,11 @@ EI *EIActiveEdgesFindStem(EI *apt, real i, int major) {
     if ( EISameLine(apt,apt->aenext,i,major))
 	apt = apt->aenext;
 
-    pr=apt; e=apt->aenext;
+    e=apt->aenext;
     if ( e==NULL )
 return( NULL );
 
-    for ( ; e!=NULL && cnt!=0; pr=e, e=e->aenext ) {
+    for ( ; e!=NULL && cnt!=0; e=e->aenext ) {
 	p = e;
 	if ( EISkipExtremum(e,i,major)) {
 	    e = e->aenext;

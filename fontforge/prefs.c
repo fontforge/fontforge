@@ -1508,7 +1508,7 @@ return( true );
 		    e = ParseEncodingNameFromList(GWidgetGetControl(gw,j*CID_PrefsOffset+CID_PrefsBase+i));
 		    if ( e!=NULL )
 			*((Encoding **) (pl->val)) = e;
-		    enc = 1;	/* So gcc doesn't complain about unused. It is unused, but why add the ifdef and make the code even messier? */
+		    enc = 1;	/* So gcc doesn't complain about unused. It is unused, but why add the ifdef and make the code even messier? Sigh. icc complains anyway */
 		}
 	      break;
 	      case pr_namelist:

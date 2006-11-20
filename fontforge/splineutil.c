@@ -1696,10 +1696,10 @@ return( _SPLCopyTransformedHintMasks(r->sc,transform,basesc));
 }
 
 void SplinePointListSelect(SplinePointList *spl,int sel) {
-    Spline *spline, *first, *last;
+    Spline *spline, *first;
 
     for ( ; spl!=NULL; spl = spl->next ) {
-	first = NULL; last = NULL;
+	first = NULL;
 	spl->first->selected = sel;
 	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
 	    spline->to->selected = sel;
@@ -2477,8 +2477,8 @@ return( NULL );
     k=0;
     do {
 	_sf = k<sf->subfontcnt?sf->subfonts[k]:sf;
-	for ( i=0; i<sf->glyphcnt; ++i ) {
-	    if ( (sc = sf->glyphs[i])!=NULL && !sc->hconflicts && !sc->vconflicts &&
+	for ( i=0; i<_sf->glyphcnt; ++i ) {
+	    if ( (sc = _sf->glyphs[i])!=NULL && !sc->hconflicts && !sc->vconflicts &&
 		    sc->layers[ly_fore].splines!=NULL ) {
 		chunkfree( sc->layers[ly_fore].splines->first->hintmask,sizeof(HintMask) );
 		sc->layers[ly_fore].splines->first->hintmask = NULL;
@@ -5551,7 +5551,7 @@ static int SplineRemoveAnnoyingExtrema1(Spline *s,int which,double err_sq) {
     int i;
     BasePoint pos, norm;
     SplinePoint *close, *other;
-    BasePoint *ccp, *ocp;
+    BasePoint *ccp;
     bigreal c_, b_, nextcp, prevcp, prop;
     int changed = false;
 
@@ -5566,12 +5566,10 @@ static int SplineRemoveAnnoyingExtrema1(Spline *s,int which,double err_sq) {
 	    close = s->from;
 	    ccp = &s->from->nextcp;
 	    other = s->to;
-	    ocp = &s->to->prevcp;
 	} else if ( dt<df && dt<err_sq ) {
 	    close = s->to;
 	    ccp = &s->to->prevcp;
 	    other = s->from;
-	    ocp = &s->from->nextcp;
 	} else
     continue;
 	if ( ccp->x==close->me.x && ccp->y==close->me.y )
