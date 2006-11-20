@@ -3186,7 +3186,6 @@ docs are wrong.
 	os2->firstcharindex = 0xf000 + first;	/* This gets mapped to space */
 	os2->lastcharindex  = 0xf000 + last;
     } else {
-	if ( first>13 && format!=ff_otf && format!=ff_otfcid ) first = 13;	/* We give the font an extra char mapped to cr (13) */
 	os2->firstcharindex = first;
 	os2->lastcharindex = last;
 	OS2FigureCodePages(sf, os2->ulCodePage);
