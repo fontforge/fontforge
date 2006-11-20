@@ -3575,7 +3575,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
     SplineChar *ret = SplineCharCreate();
     SplinePointList *cur=NULL, *oldcur=NULL;
     RefChar *r1, *r2, *rlast=NULL;
-    BasePoint current, oldcurrent;
+    BasePoint current;
     real dx, dy, dx2, dy2, dx3, dy3, dx4, dy4, dx5, dy5, dx6, dy6;
     SplinePoint *pt;
     /* subroutines may be nested to a depth of 10 */
@@ -3865,7 +3865,6 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 			/*  which marks the end of the flex sequence */
 			is_type2 = false;
 			if ( cur!=NULL ) {
-			    oldcurrent = current;
 			    oldcur = cur;
 			    cur->next = NULL;
 			} else

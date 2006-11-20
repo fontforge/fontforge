@@ -1529,7 +1529,6 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
     MMSet *mm = sc->parent->mm;
     HintMask *hm[MmMax];
     int fixuphm = false;
-    int wasseac = false;
 
     if ( !(flags&ps_flag_nohints) && SCNeedsSubsPts(sc,format))
 	SCFigureHintMasks(sc);
@@ -1597,7 +1596,6 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
     /*  tests for */
     if ( scs[0]->ttf_glyph==0x7fff && !(iscjk&0x100) && !(flags&ps_flag_noseac) &&
 	    IsSeacable(&gb,scs,instance_count,round)) {
-	wasseac = true;
 	if ( gi )
 	    gi->active->wasseac = true;
 	/* in MM fonts, all should share the same refs, so all should be */
@@ -1632,7 +1630,7 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
     free(gb.base);
     if ( flags&ps_flag_nohints ) {
 	for ( i=0; i<instance_count; ++i ) {
-	    scs[i]->hstem = oldh[i]; scs[i]->vstem = oldv[i] = scs[i]->vstem;
+	    scs[i]->hstem = oldh[i]; scs[i]->vstem = oldv[i];
 	    scs[i]->hconflicts = hc[i]; scs[i]->vconflicts = vc[i];
 	}
     } else if ( fixuphm ) {
@@ -2056,7 +2054,6 @@ struct pschars *SplineFont2ChrsSubrs(SplineFont *sf, int iscjk,
     int fixed;
     int notdef_pos;
     MMSet *mm = sf->mm;
-    real data[MmMax][6];
     int round = (flags&ps_flag_round)? true : false;
     GlyphInfo gi;
     SplineChar dummynotdef, *sc;
@@ -2070,19 +2067,13 @@ struct pschars *SplineFont2ChrsSubrs(SplineFont *sf, int iscjk,
 	fixed = 0;
 	for ( i=0; i<instance_count; ++i ) {
 	    MarkTranslationRefs(mm->instances[i]);
-	    data[i][0] = fixed = SFOneWidth(mm->instances[i]);
+	    fixed = SFOneWidth(mm->instances[i]);
 	    if ( fixed==-1 )
 	break;
 	}
-	if ( fixed==-1 ) {
-	    for ( i=0; i<instance_count; ++i )
-		data[i][0] = mm->instances[i]->ascent+mm->instances[i]->descent;
-	}
     } else {
 	MarkTranslationRefs(sf);
-	data[0][0] = fixed = SFOneWidth(sf);
-	if ( fixed == -1 )
-	    data[0][0] = sf->ascent+sf->descent;
+	fixed = SFOneWidth(sf);
 	instance_count = 1;
     }
 
@@ -2910,7 +2901,7 @@ static void RSC2PS2(GrowBuf *gb, SplineChar *base,SplineChar *rsc,
     BasePoint subtrans;
     int stationary = trans->x==0 && trans->y==0;
     RefChar *r, *unsafe=NULL;
-    int allsafe=true, unsafecnt=0, allwithouthints=true;
+    int unsafecnt=0, allwithouthints=true;
     int round = (flags&ps_flag_round)? true : false;
     StemInfo *oldh, *oldv;
     int hc, vc;
@@ -2928,7 +2919,6 @@ static void RSC2PS2(GrowBuf *gb, SplineChar *base,SplineChar *rsc,
 	continue;
 	    if ( r->sc->hconflicts || r->sc->vconflicts ) {
 		++unsafecnt;
-		allsafe = false;
 		unsafe = r;
 	    } else if ( r->sc->hstem!=NULL || r->sc->vstem!=NULL )
 		allwithouthints = false;

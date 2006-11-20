@@ -1328,7 +1328,7 @@ return j;
 }
 
 static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
-    int i, cnt;
+    int i;
     int fixed = gi->fixed_width;
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -1356,7 +1356,7 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
 	    }
     }
 
-    gi->maxp->numGlyphs = cnt = gi->gcnt;
+    gi->maxp->numGlyphs = gi->gcnt;
     gi->loca = galloc((gi->maxp->numGlyphs+1)*sizeof(uint32));
     gi->pointcounts = galloc((gi->maxp->numGlyphs+1)*sizeof(int32));
     memset(gi->pointcounts,-1,(gi->maxp->numGlyphs+1)*sizeof(int32));
@@ -2945,7 +2945,7 @@ void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontname) {
 }
 
 void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]) {
-    int i, k;
+    int i;
     uint32 latin1[8];
     int has_ascii, has_latin1;
 
@@ -2963,7 +2963,6 @@ void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]) {
     if ( has_ascii ) CodePage[1] |= 1U<<31;		/* US (Ascii I assume) */
     if ( has_latin1 ) CodePage[0] |= 1U<<30;		/* WE/latin1 */
 
-    k=0;
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
 	if ( sf->glyphs[i]->unicodeenc==0xde && has_ascii )
 	    CodePage[0] |= 1<<0;		/* (ANSI) Latin1 */
@@ -5489,7 +5488,7 @@ static int dumpcff(struct alltabs *at,SplineFont *sf,enum fontformat format,
 	len = ftell(at->cfff);
 	rewind(at->cfff);
 	sprintf( buffer, "/%s %ld StartData\n", sf->fontname, len );
-	fprintf(cff,"%%%%BeginData: %ld Binary Bytes\n", len+strlen(buffer) );
+	fprintf(cff,"%%%%BeginData: %ld Binary Bytes\n", (long) (len+strlen(buffer)) );
 	fputs(buffer,cff);
 	if ( !ttfcopyfile(cff,at->cfff,ftell(cff),"CFF"))
 	    at->error = true;

@@ -2860,14 +2860,13 @@ return( _SCRefNumberPoints2(&rss,ref->sc,pnum));
 int SSTtfNumberPoints(SplineSet *ss) {
     int pnum=0;
     SplinePoint *sp;
-    int starts_with_cp, startcnt;
+    int starts_with_cp;
 
     for ( ; ss!=NULL; ss=ss->next ) {
 	starts_with_cp = !ss->first->noprevcp &&
 		((ss->first->ttfindex == pnum+1 && ss->first->prev!=NULL &&
 		  ss->first->prev->from->nextcpindex==pnum ) ||
 		 SPInterpolate( ss->first ));
-	startcnt = pnum;
 	if ( starts_with_cp && ss->first->prev!=NULL )
 	    ss->first->prev->from->nextcpindex = pnum++;
 	for ( sp=ss->first; ; ) {
@@ -3953,7 +3952,7 @@ static void CVExposeRulers(CharView *cv, GWindow pixmap ) {
 }
 
 static void InfoExpose(CharView *cv, GWindow pixmap, GEvent *expose) {
-    GRect old1, old2, r;
+    GRect old1, old2;
     Color def_fg = GDrawGetDefaultForeground(NULL);
 
     if ( expose->u.expose.rect.y + expose->u.expose.rect.height < cv->mbh ||
@@ -3963,8 +3962,10 @@ return;
     GDrawPushClip(pixmap,&expose->u.expose.rect,&old1);
     GDrawSetLineWidth(pixmap,0);
     if ( expose->u.expose.rect.y< cv->mbh+cv->infoh ) {
+#if 0
 	r.x = 0; r.width = 8096;
 	r.y = cv->mbh; r.height = cv->infoh;
+#endif
 	GDrawPushClip(pixmap,&expose->u.expose.rect,&old2);
     
 	GDrawDrawLine(pixmap,0,cv->mbh+cv->infoh-1,8096,cv->mbh+cv->infoh-1,def_fg);
@@ -6950,8 +6951,7 @@ static void delistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv) {
     int anypoints = 0, splinepoints, dir = -2;
-    SplinePointList *spl, *sel;
-    SplinePoint *selpt=NULL;
+    SplinePointList *spl;
     Spline *spline, *first;
     AnchorPoint *ap;
     int order2 = cv->sc->parent->order2;
@@ -6970,13 +6970,12 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	    badsel = true;
 #endif
 
-    sel = NULL;
     for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
 	first = NULL;
 	splinepoints = 0;
-	if ( spl->first->selected ) { splinepoints = 1; sel = spl; selpt = spl->first;}
+	if ( spl->first->selected ) { splinepoints = 1; }
 	for ( spline=spl->first->next; spline!=NULL && spline!=first && !splinepoints; spline = spline->to->next ) {
-	    if ( spline->to->selected ) { ++splinepoints; sel = spl; selpt = spline->to; }
+	    if ( spline->to->selected ) { ++splinepoints; }
 	    if ( first == NULL ) first = spline;
 	}
 	if ( splinepoints ) {

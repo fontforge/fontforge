@@ -633,7 +633,6 @@ static void dumpdeltas(struct alltabs *at,int16 *deltas,int ptcnt) {
 static void ttf_dumpgvar(struct alltabs *at, MMSet *mm) {
     int i,j, last;
     uint32 gcoordoff, glyphoffs, start, here, tupledataend, tupledatastart;
-    SplineFont *sf;
     int16 **deltas;
     int ptcnt;
 
@@ -652,7 +651,6 @@ static void ttf_dumpgvar(struct alltabs *at, MMSet *mm) {
 
     start = ftell( at->gvar );
     last = -1;
-    sf = mm->normal;
     for ( i=0; i<at->gi.gcnt; ++i ) if ( at->gi.bygid[i]!=-1 ) {
 	deltas = SCFindDeltas(mm,at->gi.bygid[i],&ptcnt);
 	if ( deltas==NULL )

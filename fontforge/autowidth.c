@@ -163,8 +163,8 @@ typedef struct widthinfo {
     int threshold;
     SplineFont *sf;
     FontView *fv;
-    int done: 1;
-    int autokern: 1;
+    unsigned int done: 1;
+    unsigned int autokern: 1;
 } WidthInfo;
 
 #define NOTREACHED	-9999.0
@@ -1131,15 +1131,13 @@ static struct charone **BuildCharList(FontView *fv, SplineFont *sf,GWindow gw,
 	int base, int *tot, int *rtot, int *ipos, int iswidth) {
     int i, cnt, rcnt=0, doit, s, e;
     struct charone **ret=NULL;
-    int all, sel, parse=false;
+    int all, sel;
     const unichar_t *str, *pt;
     int gid;
 
     str = _GGadgetGetTitle(GWidgetGetControl(gw,base));
     all = uc_strcmp(str,_("All"))==0;
     sel = uc_strcmp(str,_("Selected"))==0;
-    if ( !all && !sel )
-	parse = true;
 
     for ( doit=0; doit<2; ++doit ) {
 	if ( all ) {

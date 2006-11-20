@@ -405,7 +405,7 @@ return( pt );
 
 char *utf7toutf8_copy(const char *_str) {
     char *buffer = NULL, *pt, *end = NULL;
-    int ch1, ch2, ch3, ch4, done, c;
+    int ch1, ch2, ch3, ch4, done;
     int prev_cnt=0, prev=0, in=0;
     const char *str = _str;
 
@@ -436,17 +436,17 @@ return( NULL );
 		done = true;
 	    } else {
 		ch1 = inbase64[ch1];
-		ch2 = inbase64[c = *str++];
+		ch2 = inbase64[(unsigned char) *str++];
 		if ( ch2==1 ) {
 		    --str;
 		    ch2 = ch3 = ch4 = 0;
 		} else {
-		    ch3 = inbase64[c = *str++];
+		    ch3 = inbase64[(unsigned char) *str++];
 		    if ( ch3==-1 ) {
 			--str;
 			ch3 = ch4 = 0;
 		    } else {
-			ch4 = inbase64[c = *str++];
+			ch4 = inbase64[(unsigned char) *str++];
 			if ( ch4==-1 ) {
 			    --str;
 			    ch4 = 0;
@@ -1797,7 +1797,7 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 	SFDDumpSplineSet(sfd,sf->grid.splines);
     }
     if ( sf->texdata.type!=tex_unset ) {
-	fprintf(sfd, "TeXData: %d %d", sf->texdata.type, (int) ((sf->design_size<<19)+2)/5 );
+	fprintf(sfd, "TeXData: %d %d", (int) sf->texdata.type, (int) ((sf->design_size<<19)+2)/5 );
 	for ( i=0; i<22; ++i )
 	    fprintf(sfd, " %d", (int) sf->texdata.params[i]);
 	putc('\n',sfd);
@@ -4825,7 +4825,6 @@ static void SFD_DoAltUnis(SplineFont *sf) {
 static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
 	int fromdir, char *dirname) {
     SplineFont *sf;
-    SplineChar *sc;
     int realcnt, i, eof, mappos=-1, ch, ch2;
     struct table_ordering *lastord = NULL;
     struct ttf_table *lastttf[2];
@@ -5540,7 +5539,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
 	    sf->map = map;
 	}
     } else {
-	while ( (sc = SFDGetChar(sfd,sf))!=NULL ) {
+	while ( SFDGetChar(sfd,sf)!=NULL ) {
 	    gwwv_progress_next();
 	}
 	gwwv_progress_next_stage();

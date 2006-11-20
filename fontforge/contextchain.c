@@ -351,13 +351,11 @@ return( ret );
 
 static char *ccd_cu_copy(const unichar_t *start) {
     char *ret, *pt;
-    int first;
 
     while ( isspace(*start)) ++start;
     if ( *start=='\0' )
 return( NULL );
     ret = pt = galloc(u_strlen(start)+1);
-    first = true;
     while ( *start ) {
 	while ( !isspace(*start) && *start!='\0' )
 	    *pt++ = *start++;
@@ -2357,7 +2355,6 @@ static void CCD_AddReplacements(GGadgetCreateData *gcd, GTextInfo *label,
 struct contextchaindlg *ContextChainEdit(SplineFont *sf,FPST *fpst,
 	struct gfi_data *gfi, unichar_t *newname) {
     struct contextchaindlg *ccd;
-    int format;
     int i,j,k, space;
     static char *titles[2][5] = {
 	{ N_("Edit Contextual Position"), N_("Edit Contextual Substitution"),
@@ -2400,7 +2397,6 @@ struct contextchaindlg *ContextChainEdit(SplineFont *sf,FPST *fpst,
     ccd->fpst = fpst;
     ccd->newname = newname;
     ccd->isnew = newname!=NULL;
-    format = fpst->format==pst_reversecoverage ? pst_coverage : fpst->format;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;

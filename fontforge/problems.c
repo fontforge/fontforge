@@ -177,7 +177,6 @@ static void FixIt(struct problems *p) {
     SplinePoint *sp;
     /*StemInfo *h;*/
     RefChar *r;
-    int changed;
     int ncp_changed, pcp_changed;
 
 #if 0	/* The ultimate cause (the thing we need to fix) for these two errors */
@@ -212,7 +211,6 @@ return;
 	    ss = p->sc->layers[ly_fore].splines;
 	    p->sc->layers[ly_fore].splines = NULL;
 	    SCRefToSplines(p->sc,r);
-	    changed = false;
 	    for ( spl = p->sc->layers[ly_fore].splines; spl!=NULL; spl=spl->next )
 		SplineSetReverse(spl);
 	    if ( p->sc->layers[ly_fore].splines!=NULL ) {
@@ -220,7 +218,6 @@ return;
 		spl->next = ss;
 	    } else
 		p->sc->layers[ly_fore].splines = ss;
-	    changed = true;
 	    SCCharChangedUpdate(p->sc);
 	} else
 	    IError("Could not find referenc");

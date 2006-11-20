@@ -1146,7 +1146,7 @@ static struct stemdata *HalfStem(struct glyphdata *gd,struct pointdata *pd,
 	BasePoint *dir,Spline *other,double other_t,int is_next) {
     /* Find the spot on other where the slope is the same as dir */
     double t1;
-    double width, offset, err;
+    double width, err;
     BasePoint match;
     struct stemdata *stem = NULL;
     int j;
@@ -1171,7 +1171,7 @@ return( NULL );
     match.y = ((other->splines[1].a*t1+other->splines[1].b)*t1+other->splines[1].c)*t1+other->splines[1].d;
 
     width = (match.x-pd->sp->me.x)*dir->y - (match.y-pd->sp->me.y)*dir->x;
-    offset = (match.x-pd->sp->me.x)*dir->x + (match.y-pd->sp->me.y)*dir->y;
+    /* offset = (match.x-pd->sp->me.x)*dir->x + (match.y-pd->sp->me.y)*dir->y;*/
     if ( width<.5 && width>-.5 )
 return( NULL );		/* Zero width stems aren't interesting */
 

@@ -376,12 +376,10 @@ static void FVSelectColor(FontView *fv, uint32 col, int door) {
 }
 
 static void FVReselect(FontView *fv, int newpos) {
-    int i, start, end;
+    int i;
 
     if ( newpos<0 ) newpos = 0;
     else if ( newpos>=fv->map->enccount ) newpos = fv->map->enccount-1;
-
-    start = fv->pressed_pos; end = fv->end_pos;
 
     if ( fv->pressed_pos<fv->end_pos ) {
 	if ( newpos>fv->end_pos ) {
@@ -7434,12 +7432,6 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     int pos;
     SplineFont *sf = fv->sf;
     EncMap *map = fv->map;
-    int anyglyphs = false;
-
-    for ( i=sf->glyphcnt-1; i>=0 ; --i ) if ( SCWorthOutputting(sf->glyphs[i])) {
-	anyglyphs = true;
-    break;
-    }
 
     for ( i=0; vwlist[i].ti.text==NULL || strcmp((char *) vwlist[i].ti.text, _("_Fit to em"))!=0; ++i );
     base = i+2;
@@ -9607,7 +9599,7 @@ return;
 	    }
 	    ++remap;
 	}
-	sprintf( buffer, "%-5u (0x%04x) ", localenc, localenc );
+	sprintf( buffer, "%-5d (0x%04x) ", localenc, localenc );
     } else if ( map->enc->only_1byte ||
 	    (map->enc->has_1byte && fv->end_pos<256))
 	sprintf( buffer, "%-3d (0x%02x) ", fv->end_pos, fv->end_pos );
@@ -10582,7 +10574,6 @@ FontView *FontViewCreate(SplineFont *sf) {
     GWindow gw;
     GWindowAttrs wattrs;
     GGadgetData gd;
-    GGadget *sb;
     GRect gsize;
     FontRequest rq;
     /* sadly, clearlyu is too big for the space I've got */
@@ -10632,7 +10623,7 @@ FontView *FontViewCreate(SplineFont *sf) {
     gd.pos.width = GDrawPointsToPixels(gw,_GScrollBar_Width);
     gd.pos.x = pos.width;
     gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_sb_vert;
-    fv->vsb = sb = GScrollBarCreate(gw,&gd,fv);
+    fv->vsb = GScrollBarCreate(gw,&gd,fv);
 
     wattrs.mask = wam_events|wam_cursor;
     pos.x = 0; pos.y = fv->mbh+fv->infoh;

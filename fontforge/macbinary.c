@@ -2630,7 +2630,7 @@ return( fond );
 
 static SplineFont *SearchBitmapResources(FILE *f,long rlistpos,int subcnt,long rdata_pos,
 	long name_list,char *filename,FOND *fondlist,int flags) {
-    long here, start = ftell(f);
+    long start = ftell(f);
     long roff;
     int rname = -1;
     int ch1, ch2;
@@ -2698,7 +2698,6 @@ return( NULL );
 	ch1 = getc(f); ch2 = getc(f);
 	roff = rdata_pos+((ch1<<16)|(ch2<<8)|getc(f));
 	/* mbz = */ getlong(f);
-	here = ftell(f);
 	for ( j=fond->assoc_cnt-1; j>=0; --j )
 	    if ( (find_id!=-1 && res_id==find_id) ||
 		    ( fond->assoc[j].style==style && fond->assoc[j].id==res_id &&

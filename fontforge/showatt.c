@@ -2229,9 +2229,9 @@ return( NULL );
 static char *findendquote(char *str) {
     static int endquotes[] = { '"', 0x00bb, 0x2019, 0x201b, 0x201d, 0x201e, 0 };
     char *last, *cur;
-    int i, ch, startquote;
+    int i, ch;
 
-    startquote = utf8_ildb((const char **) &str);
+    /* startquote =*/ utf8_ildb((const char **) &str);
     for ( cur=str; *cur!='\0'; ) {
 	last = cur;
 	ch = utf8_ildb((const char **) &cur);
@@ -2451,7 +2451,7 @@ return;
 }
 
 static void AttMouse(struct att_dlg *att,GEvent *event) {
-    int l, depth, cnt;
+    int l, depth;
     struct node *node;
     GRect r;
 
@@ -2473,7 +2473,7 @@ return;
     }
     node->open = !node->open;
 
-    cnt = SizeCnt(att,att->tables,0);
+    SizeCnt(att,att->tables,0);
 
     r.x = 0; r.width = 3000;
     r.y = l*att->fh; r.height = 3000;

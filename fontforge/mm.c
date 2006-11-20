@@ -1270,7 +1270,7 @@ return( cnt );
 }
 
 static int StandardPositions(MMSet *mm,int instance_count, int axis_count,int isapple) {
-    int i,j,factor,k,v;
+    int i,j,factor,v;
 
     if ( !isapple ) {
 	for ( i=0; i<instance_count; ++i ) {
@@ -1282,8 +1282,6 @@ static int StandardPositions(MMSet *mm,int instance_count, int axis_count,int is
 	for ( i=0; i<instance_count; ++i ) {
 	    factor = 1;
 	    for ( j=0; j<axis_count; ++j ) {
-		k = i==instance_count-1 ? (instance_count-1)/2 :
-			    i>=(instance_count-1)/2 ? i+1 : i;
 		v = (i/factor)%3 -1;
 		if ( mm->positions[i*mm->axis_count+j]!= v )
 return( false );

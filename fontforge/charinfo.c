@@ -2280,7 +2280,6 @@ static void ACD_SelectTag(struct ac_dlg *acd) {
     const unichar_t *utag;
     unichar_t ubuf[8], *end;
     uint32 tag;
-    int macfeature;
     int i,j;
     int32 len;
     GTextInfo **ti;
@@ -2292,12 +2291,12 @@ return;
     else if (( utag[0]=='<' && utag[u_strlen(utag)-1]=='>' ) ||
 	    ((u_strtol(utag,&end,10),*end==',') &&
 	     (u_strtol(end+1,&end,10),*end=='\0')) ) {
-	macfeature = true;
+	/*macfeature = true;*/
 	if ( utag[0]=='<' ) ++utag;
 	tag = u_strtol(utag,&end,10)<<16;
 	tag |= u_strtol(end+1,&end,10);
     } else {
-	macfeature = false;
+	/*macfeature = false;*/
 	if ( utag[0]=='\'' && utag[5]=='\'' ) {
 	    memcpy(ubuf,utag+1,4*sizeof(unichar_t));
 	} else {
@@ -4635,8 +4634,8 @@ static int _CI_OK(CharInfo *ci) {
 return( false );
     tex_height = gettex(ci->gw,CID_TeX_Height,_("Height:"),&err);
     tex_depth  = gettex(ci->gw,CID_TeX_Depth ,_("Depth:") ,&err);
-    tex_sub    = gettex(ci->gw,CID_TeX_Sub   ,_("Sub Pos:"),&err);
-    tex_super  = gettex(ci->gw,CID_TeX_Super ,_("Sup Pos:"),&err);
+    tex_sub    = gettex(ci->gw,CID_TeX_Sub   ,_("Subscript Pos:"),&err);
+    tex_super  = gettex(ci->gw,CID_TeX_Super ,_("Superscript Pos:"),&err);
     if ( err )
 return( false );
     if ( !CI_ProcessPosSubs(ci))
@@ -6189,7 +6188,7 @@ return;
 	tgcd[3].creator = GTextFieldCreate;
 	thvarray[4] = &tgcd[3]; thvarray[5] = NULL;
 
-	tlabel[4].text = (unichar_t *) _("Sub Pos:");
+	tlabel[4].text = (unichar_t *) _("Subscript Position:");
 	tlabel[4].text_is_1byte = true;
 	tgcd[4].gd.label = &tlabel[4];
 	tgcd[4].gd.pos.x = 5; tgcd[4].gd.pos.y = 57+4; 
@@ -6199,7 +6198,7 @@ return;
 	tgcd[4].creator = GLabelCreate;
 	thvarray[6] = &tgcd[4];
 
-	tgcd[5].gd.pos.x = 85; tgcd[5].gd.pos.y = 57;
+	tgcd[5].gd.pos.x = 85; tgcd[5].gd.pos.y = 57; tgcd[5].gd.pos.width = 50;
 	tgcd[5].gd.flags = is_math ? (gg_enabled|gg_visible|gg_text_xim) :
 		(gg_visible);
 	tgcd[5].gd.cid = CID_TeX_Sub;
@@ -6208,14 +6207,14 @@ return;
 
 	tgcd[6].gd.pos.x = 5; tgcd[6].gd.pos.y = 83+4;
 	tgcd[6].gd.flags = tgcd[4].gd.flags;
-	tlabel[6].text = (unichar_t *) _("Sup Pos:");
+	tlabel[6].text = (unichar_t *) _("Superscript Pos:");
 	tlabel[6].text_is_1byte = true;
 	tgcd[6].gd.label = &tlabel[6];
 	tgcd[6].gd.popup_msg = tgcd[0].gd.popup_msg;
 	tgcd[6].creator = GLabelCreate;
 	thvarray[9] = &tgcd[6];
 
-	tgcd[7].gd.pos.x = 85; tgcd[7].gd.pos.y = 83;
+	tgcd[7].gd.pos.x = 85; tgcd[7].gd.pos.y = 83; tgcd[7].gd.pos.width = 50;
 	tgcd[7].gd.flags = tgcd[5].gd.flags;
 	tgcd[7].gd.cid = CID_TeX_Super;
 	tgcd[7].creator = GTextFieldCreate;

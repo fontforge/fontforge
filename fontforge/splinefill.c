@@ -1523,7 +1523,6 @@ BDFFont *SplineFontRasterize(SplineFont *_sf, int pixelsize, int indicate) {
 #endif
     BDFFont *bdf = SplineFontToBDFHeader(_sf,pixelsize,indicate);
     int i,k;
-    real scale;
     SplineFont *sf=_sf;	/* The complexity here is to pick the appropriate subfont of a CID font */
 
     for ( i=0; i<bdf->glyphcnt; ++i ) {
@@ -1533,7 +1532,6 @@ BDFFont *SplineFontRasterize(SplineFont *_sf, int pixelsize, int indicate) {
 		if ( SCWorthOutputting(sf->glyphs[i]))
 	    break;
 	    }
-	    scale = pixelsize / (real) (sf->ascent+sf->descent);
 	}
 #if 0
 	bdf->glyphs[i] = slower ? SplineCharSlowerRasterize(sf->glyphs[i],pixelsize):

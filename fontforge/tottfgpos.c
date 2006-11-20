@@ -725,7 +725,7 @@ return( glyphs );
 
 static SplineChar **OrderedGlyphsFromNames(SplineFont *sf,char *names) {
     SplineChar **glyphs = SFGlyphsFromNames(sf,names);
-    int i,j, end;
+    int i,j;
 
     if ( glyphs==NULL || glyphs[0]==NULL )
 return( glyphs );
@@ -737,7 +737,6 @@ return( glyphs );
 	    glyphs[j] = sc;
 	}
     }
-    end = i;
     if ( glyphs[0]!=NULL ) {		/* Glyphs should not appear twice in the name list, just just in case they do... */
 	for ( i=0; glyphs[i+1]!=NULL; ++i ) {
 	    if ( glyphs[i]==glyphs[i+1] ) {
@@ -1448,7 +1447,7 @@ static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
 	int classcnt, struct glyphinfo *gi) {
     AnchorClass *ac=NULL;
     struct lookup *new;
-    int j,cnt,k,l, pos, offset, suboffset, tot, max;
+    int j,cnt,k,l, pos, offset, tot, max;
     uint32 coverage_offset, markarray_offset;
     AnchorPoint *ap, **aps;
     SplineChar **markglyphs;
@@ -1507,7 +1506,6 @@ static struct lookup *dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
 	}
     } else {
 	offset = 2+2*cnt;
-	suboffset = 0;
 	max = 0;
 	for ( j=0; j<cnt; ++j ) {
 	    putshort(gpos,offset);

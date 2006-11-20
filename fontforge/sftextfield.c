@@ -733,7 +733,6 @@ return( i );
 
 static int SFTextArea_Show(SFTextArea *st, int pos) {
     int i, ll, m, xoff, loff;
-    unichar_t *bitext = st->dobitext ? st->bidata.text:st->text;
     int refresh=false, page;
 
     if ( pos < 0 ) pos = 0;
@@ -757,10 +756,8 @@ static int SFTextArea_Show(SFTextArea *st, int pos) {
 	xoff = 0;
     else {
 	if ( st->dobitext ) {
-	    bitext = st->bidata.text;
 	    pos = SFTextAreaBiPosFromPos(st,i,pos);
-	} else
-	    bitext = st->text;
+	}
 	m = STGetTextWidth(st,st->lines[i],pos-st->lines[i]);
 	if ( m < xoff )
 	    xoff = st->nw*(m/st->nw);
@@ -2497,7 +2494,7 @@ static void SFTextAreaAddHSb(SFTextArea *st) {
 
 static void SFTextAreaFit(SFTextArea *st) {
     GTextBounds bounds;
-    int as=0, ds, ld, fh=0, width=0, temp;
+    int as=0, ds, ld, fh=0, temp;
     GRect needed;
     int extra=0;
 
@@ -2506,7 +2503,7 @@ static void SFTextAreaFit(SFTextArea *st) {
 
     {
 	FontInstance *old = GDrawSetFont(st->g.base,st->font);
-	width = GDrawGetTextBounds(st->g.base,st->text, -1, NULL, &bounds);
+	(void) GDrawGetTextBounds(st->g.base,st->text, -1, NULL, &bounds);
 	GDrawFontMetrics(st->font,&as, &ds, &ld);
 	if ( as<bounds.as ) as = bounds.as;
 	if ( ds<bounds.ds ) ds = bounds.ds;

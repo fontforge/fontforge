@@ -706,8 +706,7 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
 #define OPT_Height	233
 
 static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
-    int flags;
-    int k,group,group2,j;
+    int k,group,group2;
     GWindow gw;
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[28];
@@ -718,7 +717,6 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
 
     d->sod_done = false;
     d->sod_which = which;
-    flags = (&d->ps_flags)[which];
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
@@ -737,7 +735,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     memset(&gcd,0,sizeof(gcd));
     memset(boxes,0,sizeof(boxes));
 
-    k = j = 0;
+    k = 0;
     gcd[k].gd.pos.x = 2; gcd[k].gd.pos.y = 2;
     gcd[k].gd.pos.width = pos.width-4; gcd[k].gd.pos.height = pos.height-4;
     gcd[k].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
@@ -1262,7 +1260,7 @@ static int WriteBitmaps(char *filename,SplineFont *sf, int32 *sizes,int res,
     char *buf = galloc(strlen(filename)+30), *pt, *pt2;
     int i;
     BDFFont *bdf;
-    char buffer[100], *ext;
+    char *ext;
     /* res = -1 => Guess depending on pixel size of font */
     extern int ask_user_for_resolution;
 
@@ -1279,7 +1277,6 @@ return( false );
     for ( i=0; sizes[i]!=0; ++i );
     gwwv_progress_change_stages(i);
     for ( i=0; sizes[i]!=0; ++i ) {
-	buffer[0] = '\0';
 	for ( bdf=sf->bitmaps; bdf!=NULL &&
 		(bdf->pixelsize!=(sizes[i]&0xffff) || BDFDepth(bdf)!=(sizes[i]>>16));
 		bdf=bdf->next );

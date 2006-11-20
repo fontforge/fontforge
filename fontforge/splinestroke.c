@@ -178,7 +178,7 @@ static SplinePoint *StrokeEnd(SplinePoint *base, StrokeInfo *si, int isstart,
 	SplinePoint **_to) {
     BasePoint junk;
     SplinePoint *mid1, *mid2, *cur, *from, *to;
-    real off, len;
+    real len;
     real c,s;
     real angle;
     real sign;
@@ -200,7 +200,6 @@ static SplinePoint *StrokeEnd(SplinePoint *base, StrokeInfo *si, int isstart,
     if ( (len = to->me.x-from->me.x)<0 )
 	len = -len;
     len += ( to->me.y > from->me.y ) ? (to->me.y - from->me.y) : (from->me.y - to->me.y);
-    off = (len==0) ? .05 : 2/len;
 
     if ( si->stroke_type == si_caligraphic ) {
 	int corner;

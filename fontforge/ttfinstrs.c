@@ -1196,7 +1196,6 @@ static void InstrDlgCreate(struct instrdata *id,char *title) {
     static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','u','n','i','f','o','n','t', '\0' };
     int as,ds,ld, lh;
     GGadgetCreateData gcd[11], *butarray[9], *harray[3], *varray[8];
-    GGadget *sb;
     GTextInfo label[6];
 
     instrhelpsetup();
@@ -1322,7 +1321,7 @@ static void InstrDlgCreate(struct instrdata *id,char *title) {
     iv->edit = gcd[2].ret;
     iv->parse = gcd[3].ret;
     iv->text = gcd[5].ret;
-    iv->instrinfo.vsb = sb = gcd[6].ret;
+    iv->instrinfo.vsb = gcd[6].ret;
     iv->topbox = gcd[9].ret;
 
     wattrs.mask = wam_events|wam_cursor;
@@ -1805,7 +1804,6 @@ static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
     GGadgetCreateData gcd[9], *butarray[8], *harray[4], *harray2[3], *varray[7];
     GTextInfo label[5], lab;
     GGadgetData gd;
-    GGadget *sb;
     static unichar_t num[] = { '0',  '\0' };
     int numlen;
     static GBox tfbox;
@@ -1931,7 +1929,7 @@ static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
     GHVBoxSetExpandableCol(gcd[3].ret,gb_expandgluesame);
     GHVBoxSetExpandableCol(gcd[4].ret,gb_expandglue);
 
-    sv->vsb = sb = gcd[5].ret;
+    sv->vsb = gcd[5].ret;
     sv->ok = gcd[0].ret;
     sv->cancel = gcd[1].ret;
     sv->setsize = gcd[2].ret;

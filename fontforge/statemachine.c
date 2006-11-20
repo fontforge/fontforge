@@ -893,14 +893,13 @@ static ASM *ASMFromCoverageFPST(SplineFont *sf,FPST *fpst,int ordered) {
     int **classes, class_cnt, gcnt;
     int i, j, k, match_len;
     struct fpst_rule *r = &fpst->rules[0];
-    int subspos = r->u.coverage.bcnt+r->lookups[0].seq, hasfinal = false;
+    int subspos = r->u.coverage.bcnt+r->lookups[0].seq;
     int substag = r->lookups[0].lookup_tag, finaltag=-1;
     uint16 *map;
     ASM *sm;
 
     /* In one very specific case we can support two substitutions */
     if ( r->lookup_cnt==2 ) {
-	hasfinal = true;
 	if ( r->lookups[0].seq==r->u.coverage.ncnt-1 ) {
 	    finaltag = substag;
 	    subspos = r->u.coverage.bcnt+r->lookups[1].seq;

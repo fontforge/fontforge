@@ -1349,7 +1349,7 @@ static void BdfP_Expose(struct bdf_dlg *bd, GWindow pixmap) {
 	    GDrawDrawText8(pixmap,bd->value_x+2,i*(bd->fh+1)+bd->as,buffer,-1,NULL,0x000000);
 	  break;
 	  case prt_uint:
-	    sprintf( buffer, "%u", bdf->props[i+cur->top_prop].u.val );
+	    sprintf( buffer, "%u", (unsigned) bdf->props[i+cur->top_prop].u.val );
 	    GDrawDrawText8(pixmap,bd->value_x+2,i*(bd->fh+1)+bd->as,buffer,-1,NULL,0x000000);
 	  break;
 	}

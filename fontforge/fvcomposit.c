@@ -2319,7 +2319,7 @@ static void DoRotation(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
     int j,cid;
 
     if ( sf->cidmaster!=NULL && strncmp(sc->name,"vertcid_",8)==0 ) {
-	cid = strtol(sc->name+8,&end,10), j;
+	cid = strtol(sc->name+8,&end,10);
 	if ( *end!='\0' || (j=SFHasCID(sf,cid))==-1)
 return;		/* Can't happen */
 	scbase = sf->cidmaster->subfonts[j]->glyphs[cid];
