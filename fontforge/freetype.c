@@ -1638,7 +1638,10 @@ struct freetype_raster *DebuggerCurrentRaster(TT_ExecContext exc,int depth) {
     outline.tags = (char *) exc->pts.tags;
     outline.contours = (short *) exc->pts.contours;
     /* Rasterizer gets unhappy if we give it the phantom points */
-    outline.n_points = /*exc->pts.n_points*/  outline.contours[outline.n_contours - 1] + 1;
+    if ( outline.n_contours==0 )
+	outline.n_points = 0;
+    else
+	outline.n_points = /*exc->pts.n_points*/  outline.contours[outline.n_contours - 1] + 1;
     outline.points = exc->pts.cur;
     outline.flags = FT_OUTLINE_NONE;
 
@@ -1662,6 +1665,8 @@ struct freetype_raster *DebuggerCurrentRaster(TT_ExecContext exc,int depth) {
 	    }
 	}
     }
+    if ( first )
+	memset(&b,0,sizeof(b));
 
     memset(&bitmap,0,sizeof(bitmap));
     bitmap.rows = (((int) (ceil(b.maxy/64.0)-floor(b.miny/64.0)))) +1;
@@ -1669,7 +1674,7 @@ struct freetype_raster *DebuggerCurrentRaster(TT_ExecContext exc,int depth) {
 
     xoff = 64*floor(b.minx/64.0);
     yoff = 64*floor(b.miny/64.0);
-    for ( i=0; i<=outline.contours[outline.n_contours-1]; ++i ) {
+    for ( i=0; i<outline.n_points; ++i ) {
 	outline.points[i].x -= xoff;
 	outline.points[i].y -= yoff;
     }
@@ -1687,7 +1692,7 @@ struct freetype_raster *DebuggerCurrentRaster(TT_ExecContext exc,int depth) {
 
     err = (_FT_Outline_Get_Bitmap)(context,&outline,&bitmap);
 
-    for ( i=0; i<=outline.contours[outline.n_contours-1]; ++i ) {
+    for ( i=0; i<outline.n_points; ++i ) {
 	outline.points[i].x += xoff;
 	outline.points[i].y += yoff;
     }
