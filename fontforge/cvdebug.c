@@ -2158,35 +2158,57 @@ void CVDebugPointPopup(CharView *cv) {
 		"%.2f, %.2f", (double) (cv->info.x/dv->scale/64.0), (double) (cv->info.y/dv->scale/64.0) );
 
   showit:
-    if ( cv->raster!=NULL && cv->raster->num_greys>2 ) {
+    if ( cv->raster!=NULL ) {
 	int x = cv->info.x/dv->scale/64.0 - cv->raster->lb;
 	int y = cv->raster->as-cv->info.y/dv->scale/64.0;
 	int val;
-	if ( x<0 || x>=cv->raster->cols || y<0 || y>=cv->raster->cols )
-	    val = 0;	/* Not in raster */
-	else
-	    val = cv->raster->bitmap[y*cv->raster->bytes_per_row+x];
+	if ( cv->raster->num_greys>2 ) {
+	    if ( x<0 || x>=cv->raster->cols || y<0 || y>=cv->raster->rows )
+		val = 0;	/* Not in raster */
+	    else
+		val = cv->raster->bitmap[y*cv->raster->bytes_per_row+x];
 #if defined( _NO_SNPRINTF ) || defined( __VMS )
-	sprintf(cspace+strlen(cspace),
+	    sprintf(cspace+strlen(cspace),
 #else
-	snprintf(cspace+strlen(cspace),sizeof(cspace)-strlen(cspace),
+	    snprintf(cspace+strlen(cspace),sizeof(cspace)-strlen(cspace),
 #endif
-		"\nRaster grey=0x%02x", val );
+		    "\nRaster grey=0x%02x (%.2f)", val, val/256.0 );
+	} else {
+	    if ( x<0 || x>=cv->raster->cols || y<0 || y>=cv->raster->rows )
+		val = 0;
+	    else
+		val = cv->raster->bitmap[y*cv->raster->bytes_per_row+(x>>3)] & (1<<(7-(x&7)));
+	    if ( val )
+		strcat(cspace, "\nRaster On");
+	    else
+		strcat(cspace, "\nRaster Off");
+	}
     }
-    if ( cv->oldraster!=NULL && cv->oldraster->num_greys>2 ) {
+    if ( cv->oldraster!=NULL ) {
 	int x = cv->info.x/dv->scale/64.0 - cv->oldraster->lb;
 	int y = cv->oldraster->as-cv->info.y/dv->scale/64.0;
 	int val;
-	if ( x<0 || x>=cv->oldraster->cols || y<0 || y>=cv->oldraster->cols )
-	    val = 0;
-	else
-	    val = cv->oldraster->bitmap[y*cv->oldraster->bytes_per_row+x];
+	if ( cv->oldraster->num_greys>2 ) {
+	    if ( x<0 || x>=cv->oldraster->cols || y<0 || y>=cv->oldraster->rows )
+		val = 0;
+	    else
+		val = cv->oldraster->bitmap[y*cv->oldraster->bytes_per_row+x];
 #if defined( _NO_SNPRINTF ) || defined( __VMS )
-	sprintf(cspace+strlen(cspace),
+	    sprintf(cspace+strlen(cspace),
 #else
-	snprintf(cspace+strlen(cspace),sizeof(cspace)-strlen(cspace),
+	    snprintf(cspace+strlen(cspace),sizeof(cspace)-strlen(cspace),
 #endif
-		"\nOld Raster grey=0x%02x", val );
+		"\nOld Raster grey=0x%02x (%.2f)", val, val/256.0 );
+	} else {
+	    if ( x<0 || x>=cv->oldraster->cols || y<0 || y>=cv->oldraster->rows )
+		val = 0;
+	    else
+		val = cv->oldraster->bitmap[y*cv->oldraster->bytes_per_row+(x>>3)] & (1<<(7-(x&7)));
+	    if ( val )
+		strcat(cspace, "\nOld Raster On");
+	    else
+		strcat(cspace, "\nOld Raster Off");
+	}
     }
     GGadgetPreparePopup8(cv->v,cspace);
 }
