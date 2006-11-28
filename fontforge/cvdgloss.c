@@ -583,7 +583,7 @@ return(1);
         scrprintf(&scr," Write Store" );
 	val2 = exc->stack[exc->top-1];
 	val1 = exc->stack[exc->top-2];
-	scrprintf(&scr,"Pops: %.2f", val2/64.0 );
+	scrprintf(&scr,"Pops: %.2f (%d)", val2/64.0, val2 );
 	scrprintf(&scr,"Pops: %d (store index)", val1 );
       break;
       case 0x43:
