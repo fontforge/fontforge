@@ -583,14 +583,14 @@ return(1);
         scrprintf(&scr," Write Store" );
 	val2 = exc->stack[exc->top-1];
 	val1 = exc->stack[exc->top-2];
-	scrprintf(&scr,"Pops: %.2f (%d)", val2/64.0, val2 );
+	scrprintf(&scr,"Pops: %d (%.2f)", val2, val2/64.0 );
 	scrprintf(&scr,"Pops: %d (store index)", val1 );
       break;
       case 0x43:
 	scrprintf(&scr," Read Store" );
 	val1 = exc->stack[exc->top-1];
 	scrprintf(&scr,"Pop: %d (store index)", val1 );
-	scrprintf(&scr,"Pushes: %.2f (%d)", exc->storage[val1]/64.0, exc->storage[val1] );
+	scrprintf(&scr,"Pushes: %d (%.2f)", exc->storage[val1], exc->storage[val1]/64.0 );
       break;
       case 0x44:
         scrprintf(&scr," Write CVT entry in Pixels" );

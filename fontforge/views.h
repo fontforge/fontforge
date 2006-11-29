@@ -34,6 +34,8 @@
 # include <gdk/gdk.h>
 #elif defined(FONTFORGE_CONFIG_GDRAW)
 # include <ggadget.h>
+#else
+# include <ggadget.h>		/* Need GImage, gettext, etc. even if no UI */
 #endif
 
 struct gfi_data;
@@ -533,6 +535,8 @@ typedef struct fontview {
     int sel_index;
     uint32 cur_feat_tag;
     int cur_sli;
+    void *python_fv_object;
+    void *python_data;
 } FontView;
 
 typedef struct findsel {
@@ -810,6 +814,7 @@ extern int SetPrefs(char *name,Val *val1, Val *val2);	/* for scripting */
 extern int FVImportBDF(FontView *fv, char *filename,int ispk, int toback);
 extern int FVImportMult(FontView *fv, char *filename,int toback,int bf);
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 struct debugger_context;
 extern void DebuggerTerminate(struct debugger_context *dc);
 extern void DebuggerReset(struct debugger_context *dc,real pointsize,int dpi,int dbg_fpgm);
@@ -821,7 +826,12 @@ extern void DebuggerToggleBp(struct debugger_context *dc,int range,int ip);
 extern int DebuggerBpCheck(struct debugger_context *dc,int range,int ip);
 extern void DebuggerSetWatches(struct debugger_context *dc,int n, uint8 *w);
 extern uint8 *DebuggerGetWatches(struct debugger_context *dc, int *n);
+extern void DebuggerSetWatchStores(struct debugger_context *dc,int n, uint8 *w);
+extern uint8 *DebuggerGetWatchStores(struct debugger_context *dc, int *n);
+extern void DebuggerSetWatchCvts(struct debugger_context *dc,int n, uint8 *w);
+extern uint8 *DebuggerGetWatchCvts(struct debugger_context *dc, int *n);
 extern int DebuggingFpgm(struct debugger_context *dc);
+#endif
 
 extern int BitmapControl(FontView *fv,int32 *sizes,int isavail);
 

@@ -258,20 +258,22 @@ static void DVStackExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 static void DVStorageExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
     TT_ExecContext exc = DebuggerGetEContext(dv->dc);
     char buffer[100];
-    unichar_t ubuffer[100];
     int i, y;
 
     GDrawFillRect(pixmap,&event->u.expose.rect,GDrawGetDefaultBackground(screen_display));
     GDrawSetFont(pixmap,dv->ii.gfont);
     y = 3+dv->ii.as - dv->storage_offtop*dv->ii.fh;
     if ( exc==NULL || exc->storeSize==0 ) {
-	uc_strcpy(ubuffer,"<empty>");
-	GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
+	GDrawDrawText8(pixmap,3,y,_("<empty>"),-1,NULL,0);
     } else {
+	int n_watch;
+	uint8 *watches = DebuggerGetWatchStores(dv->dc,&n_watch);
 	for ( i=0; i<exc->storeSize; ++i ) {
 	    sprintf(buffer, "%3d: %3ld (%.2f)", i, exc->storage[i], exc->storage[i]/64.0 );
-	    uc_strcpy(ubuffer,buffer);
-	    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
+	    if ( i<n_watch && watches!=NULL && watches[i] && y>0 )
+		GDrawDrawImage(pixmap,&GIcon_Stop,NULL,3,
+			    y-dv->ii.as-2);
+	    GDrawDrawText8(pixmap,23,y,buffer,-1,NULL,0);
 	    if ( y>event->u.expose.rect.y+event->u.expose.rect.height )
 	break;
 	    y += dv->ii.fh;
@@ -282,21 +284,23 @@ static void DVStorageExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 static void DVCvtExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
     TT_ExecContext exc = DebuggerGetEContext(dv->dc);
     char buffer[100];
-    unichar_t ubuffer[100];
     int i, y;
 
     GDrawFillRect(pixmap,&event->u.expose.rect,GDrawGetDefaultBackground(screen_display));
     GDrawSetFont(pixmap,dv->ii.gfont);
     y = 3+dv->ii.as;
     if ( exc==NULL || exc->cvtSize==0 ) {
-	uc_strcpy(ubuffer,"<empty>");
-	GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
+	GDrawDrawText8(pixmap,3,y,_("<empty>"),-1,NULL,0);
     } else {
+	int n_watch;
+	uint8 *watches = DebuggerGetWatchCvts(dv->dc,&n_watch);
 	for ( i=0; dv->cvt_offtop+i<exc->cvtSize; ++i ) {
 	    sprintf(buffer, "%3d: %3ld (%.2f)", dv->cvt_offtop+i,
 		    exc->cvt[dv->cvt_offtop+i], exc->cvt[dv->cvt_offtop+i]/64.0 );
-	    uc_strcpy(ubuffer,buffer);
-	    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
+	    if ( dv->cvt_offtop+i<n_watch && watches!=NULL && watches[dv->cvt_offtop+i] && y>0 )
+		GDrawDrawImage(pixmap,&GIcon_Stop,NULL,3,
+			    y-dv->ii.as-2);
+	    GDrawDrawText8(pixmap,23,y,buffer,-1,NULL,0);
 	    if ( y>event->u.expose.rect.y+event->u.expose.rect.height )
 	break;
 	    y += dv->ii.fh;
@@ -341,11 +345,9 @@ static int show_twilight = false, show_grid=true, show_current=true, show_transf
 static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
     TT_ExecContext exc = DebuggerGetEContext(dv->dc);
     char buffer[100];
-    unichar_t ubuffer[100];
     int i, l, y, c;
     FT_Vector *pts;
     int n, n_watch, ph;
-    char watched;
     TT_GlyphZoneRec *r;
     uint8 *watches;
     BasePoint me,me2;
@@ -377,23 +379,22 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 
 	GDrawSetFont(pixmap,dv->ii.gfont);
 	for ( i=0; i<n; ++i ) {
-	    if ( i==0 ) l=n-5; else l=i-1;	/* Skip 4 phantom points */
+	    if ( i==0 ) l=n-ph; else l=i-1;	/* Skip 4 phantom points */
 	    if ( !show_twilight && i<n-ph &&
 		    !(r->tags[i]&FT_Curve_Tag_On) && !(r->tags[l]&FT_Curve_Tag_On)) {
 		ScalePoint(&me,&pts[i],dv->scale,actives);
 		ScalePoint(&me2,&pts[l],dv->scale,actives);
 		me.x = (me.x+me2.x)/2;  me.y = (me.y+me2.y)/2;
 		if ( show_grid )
-		    sprintf(buffer, "   : I    %.2f,%.2f",
+		    sprintf(buffer, "   : I   %.2f,%.2f",
 			    (double) (me.x/dv->scale/64.0), (double) (me.y/dv->scale/64.0) );
 		else if ( show_raw )
-		    sprintf(buffer, "   : I    %g,%g",
+		    sprintf(buffer, "   : I   %g,%g",
 			    (double) ((pts[i].x+pts[l].x)/2.0), (double) ((pts[i].y+pts[l].y)/2.0) );
 		else
-		    sprintf(buffer, "   : I    %g,%g", (double) me.x , (double) me.y );
-		uc_strcpy(ubuffer,buffer);
+		    sprintf(buffer, "   : I   %g,%g", (double) me.x , (double) me.y );
 		if ( y>0 )
-		    GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
+		    GDrawDrawText8(pixmap,3+19,y,buffer,-1,NULL,0);
 		y += dv->ii.fh;
 	    }
 	    if ( r->contours!=NULL && i==r->contours[c] ) {	/* No contours in twilight */
@@ -403,32 +404,32 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 			    event->u.expose.rect.x+event->u.expose.rect.width,y+dv->ii.fh-dv->ii.as,
 			    0x000000);
 	    }
-	    watched = i<n_watch && !show_twilight && watches!=NULL && watches[i] ? 'W' : ' ';
+	    if ( i<n_watch && !show_twilight && watches!=NULL && watches[i] && y>0 )
+		GDrawDrawImage(pixmap,&GIcon_Stop,NULL,3,
+			    y-dv->ii.as-2);
 	    ScalePoint(&me,&pts[i],dv->scale,actives);
 	    if ( show_grid )
-		sprintf(buffer, "%3d: %c%c%c%c %.2f,%.2f", i,
+		sprintf(buffer, "%3d: %c%c%c %.2f,%.2f", i,
 			show_twilight ? 'T' : i>=n-ph? 'F' : r->tags[i]&FT_Curve_Tag_On?'P':'C',
-			r->tags[i]&FT_Curve_Tag_Touch_X?'H':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'V':' ', watched,
+			r->tags[i]&FT_Curve_Tag_Touch_X?'H':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'V':' ',
 			(double) (me.x/dv->scale/64.0), (double) (me.y/dv->scale/64.0) );
 	    else if ( show_raw )
-		sprintf(buffer, "%3d: %c%c%c%c %d,%d", i,
-			r->tags[i]&FT_Curve_Tag_On?'P':'C', r->tags[i]&FT_Curve_Tag_Touch_X?'H':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'V':' ', watched,
+		sprintf(buffer, "%3d: %c%c%c %d,%d", i,
+			r->tags[i]&FT_Curve_Tag_On?'P':'C', r->tags[i]&FT_Curve_Tag_Touch_X?'H':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'V':' ',
 			(int) pts[i].x, (int) pts[i].y );
 	    else
-		sprintf(buffer, "%3d: %c%c%c%c %g,%g", i,
-			r->tags[i]&FT_Curve_Tag_On?'P':'C', r->tags[i]&FT_Curve_Tag_Touch_X?'H':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'V':' ', watched,
+		sprintf(buffer, "%3d: %c%c%c %g,%g", i,
+			r->tags[i]&FT_Curve_Tag_On?'P':'C', r->tags[i]&FT_Curve_Tag_Touch_X?'H':' ', r->tags[i]&FT_Curve_Tag_Touch_Y?'V':' ',
 			(double) me.x, (double) me.y );
-	    uc_strcpy(ubuffer,buffer);
 	    if ( y>0 )
-		GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
+		GDrawDrawText8(pixmap,3+19,y,buffer,-1,NULL,0);
 	    if ( y>event->u.expose.rect.y+event->u.expose.rect.height )
 	break;
 	    y += dv->ii.fh;
 	}
     }
     if ( n==0 ) {
-	uc_strcpy(ubuffer,"<none>");
-	GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0);
+	GDrawDrawText8(pixmap,3,y,_("<none>"),-1,NULL,0);
     }
 }
 
@@ -782,11 +783,7 @@ static int DV_WatchPnt(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	dv = GDrawGetUserData(GGadgetGetWindow(g));
 	if ( dv->cv->sc->layers[ly_fore].refs!=NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	    gwwv_post_error(_("No Watch Points"),_("Watch Points not supported in glyphs with references"));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_error(_("No Watch Points"),_("Watch Points not supported in glyphs with references"));
-#endif
 return( true );
 	}
 
@@ -821,7 +818,8 @@ return( true );
 	}
 	DebuggerSetWatches(dv->dc,n,watches);
 	GDrawRequestExpose(dv->cv->v,NULL,false);
-	
+	if ( dv->points!=NULL )
+	    GDrawRequestExpose(dv->points_v,NULL,false);
     }
 return( true );
 }
@@ -1300,7 +1298,25 @@ return( DVChar(dv,event));
       case et_destroy:
 	dv->storage = NULL;
       break;
-      case et_mouseup: case et_mousedown:
+      case et_mouseup: {
+	int i;
+	int n;
+	uint8 *watches;
+	TT_ExecContext exc = DebuggerGetEContext(dv->dc);
+	i = (event->u.mouse.y-3)/dv->ii.fh+dv->storage_offtop;
+	if ( i>=0 && exc!=NULL ) {
+	    watches = DebuggerGetWatchStores(dv->dc,&n);
+	    if ( watches==NULL ) {
+		watches = gcalloc(n,sizeof(uint8));
+		DebuggerSetWatchStores(dv->dc,n,watches);
+	    }
+	    if ( i<n ) {
+		watches[i] = !watches[i];
+		GDrawRequestExpose(dv->storage,NULL,false);
+	    }
+	}
+      } /* Fall through */;
+      case et_mousedown:
       case et_mousemove:
 	GGadgetEndPopup();
       break;
@@ -1321,7 +1337,52 @@ return( true );
       case et_char:
 return( DVChar(dv,event));
       break;
-      case et_mouseup: case et_mousedown:
+      case et_mouseup: {
+	int i,j,k,l,ph;
+	TT_ExecContext exc = DebuggerGetEContext(dv->dc);
+	i = (event->u.mouse.y-3)/dv->ii.fh+dv->points_offtop;
+	if ( i>=0 && exc!=NULL && !GGadgetIsChecked(GWidgetGetControl(dv->points,CID_Twilight)) ) {
+	    ph = FreeTypeAtLeast(2,1,8)?4:2;	/* number of phantom pts */
+	    for ( j=k=0; j<exc->pts.n_points; ++j ) {
+		l = (j==0) ? exc->pts.n_points-ph : j-1;
+		if ( !(exc->pts.tags[j]&FT_Curve_Tag_On) && !(exc->pts.tags[l]&FT_Curve_Tag_On)) {
+		    if ( k==i )
+	    break;
+		    ++k;
+		}
+		if ( k==i ) {
+		    int n;
+		    uint8 *watches;
+		    watches = DebuggerGetWatches(dv->dc,&n);
+		    if ( watches==NULL ) {
+			watches = gcalloc(n,sizeof(uint8));
+			DebuggerSetWatches(dv->dc,n,watches);
+		    }
+		    if ( j<n ) {
+			SplineSet *ss;
+			SplinePoint *sp;
+			watches[j] = !watches[j];
+			for ( ss=dv->cv->sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
+			    for ( sp=ss->first; sp->ttfindex<=j || sp->ttfindex==0xffff; ) {
+				if ( sp->ttfindex==j )
+				    sp->watched = watches[j];
+				if ( sp->next==NULL )
+			    break;
+				sp = sp->next->to;
+			        if ( sp==ss->first )
+			    break;
+			    }
+			}
+		    }
+		    GDrawRequestExpose(dv->points_v,NULL,false);
+		    GDrawRequestExpose(dv->cv->v,NULL,false);
+	    break;
+		}
+		++k;
+	    }
+	}
+      } /* Fall through */;
+      case et_mousedown:
       case et_mousemove:
 	GGadgetEndPopup();
       break;
@@ -1372,7 +1433,7 @@ static void DVPointsFigureSB(DebugView *dv) {
 }
 
 static void dvpts_scroll(DebugView *dv,struct sbevent *sb) {
-    int newpos = dv->cvt_offtop;
+    int newpos = dv->points_offtop;
     GRect size;
     int cnt;
 
@@ -1559,7 +1620,25 @@ return( DVChar(dv,event));
       case et_destroy:
 	dv->cvt = NULL;
       break;
-      case et_mouseup: case et_mousedown:
+      case et_mouseup: {
+	int i;
+	int n;
+	uint8 *watches;
+	TT_ExecContext exc = DebuggerGetEContext(dv->dc);
+	i = (event->u.mouse.y-3)/dv->ii.fh+dv->cvt_offtop;
+	if ( i>=0 && exc!=NULL ) {
+	    watches = DebuggerGetWatchCvts(dv->dc,&n);
+	    if ( watches==NULL ) {
+		watches = gcalloc(n,sizeof(uint8));
+		DebuggerSetWatchCvts(dv->dc,n,watches);
+	    }
+	    if ( i<n ) {
+		watches[i] = !watches[i];
+		GDrawRequestExpose(dv->cvt,NULL,false);
+	    }
+	}
+      } /* Fall through */;
+      case et_mousedown:
       case et_mousemove:
 	GGadgetEndPopup();
       break;
@@ -1646,7 +1725,7 @@ static void DVCreateStore(DebugView *dv) {
     wattrs.cursor = ct_mypointer;
     wattrs.utf8_window_title = _("Storage (TrueType)");
     pos.x = 664; pos.y = 602;
-    pos.width = 133; pos.height = 100;
+    pos.width = 153; pos.height = 100;
     dv->storage = GDrawCreateTopWindow(NULL,&pos,dvstore_e_h,dv,&wattrs);
 
     memset(&gd,0,sizeof(gd));
@@ -1675,7 +1754,7 @@ static void DVCreatePoints(DebugView *dv) {
     wattrs.cursor = ct_mypointer;
     wattrs.utf8_window_title = _("Points (TrueType)");
     pos.x = 664; pos.y = 732;
-    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,132+_GScrollBar_Width));
+    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,129+_GScrollBar_Width)+19);
     pos.height = 269;
     dv->points = GDrawCreateTopWindow(NULL,&pos,dvpoints_e_h,dv,&wattrs);
 
@@ -1789,7 +1868,7 @@ static void DVCreateCvt(DebugView *dv) {
     wattrs.cursor = ct_mypointer;
     wattrs.utf8_window_title = _("Cvt");
     pos.x = 664; pos.y = 732;
-    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,125)); pos.height = 169;
+    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,125))+20; pos.height = 169;
     dv->cvt = GDrawCreateTopWindow(NULL,&pos,dvcvt_e_h,dv,&wattrs);
 
     memset(&gd,0,sizeof(gd));
