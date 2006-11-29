@@ -586,7 +586,7 @@ static int SaveAs_FormatChange(GGadget *g, GEvent *e) {
 
 	strcpy(newname,oldname);
 	pt = strrchr(newname,'.');
-	pt2 = strrchr(namename,'_');
+	pt2 = strrchr(newname,'_');
 	if ( pt==NULL )
 	    pt = pt2;
 	else if ( pt2!=NULL && pt<pt2 )

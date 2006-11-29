@@ -6,7 +6,7 @@ CFLAGS=/nowarn/incl=([-.inc])/name=(as_is,short)/define=(\
 
 fontforge_OBJECTS =  alignment.obj,autohint.obj,autosave.obj,autowidth.obj,\
  bitmapdlg.obj,metafont.obj,parsettfbmf.obj,\
- bitmapview.obj,bvedit.obj,charview.obj,charviewicons.obj,cursors.obj
+ bitmapview.obj,bvedit.obj,charview.obj,cursors.obj
 
 fontforge_OBJECTS1=cvaddpoints.obj,cvexport.obj,cvgetinfo.obj,cvhints.obj,cvimages.obj,cvknife.obj,\
 cvpalettes.obj,cvpointer.obj,cvruler.obj,cvshapes.obj,cvstroke.obj,cvtranstools.obj
@@ -83,7 +83,6 @@ parsettfbmf.obj : parsettfbmf.c
 bitmapview.obj : bitmapview.c
 bvedit.obj : bvedit.c
 charview.obj : charview.c
-charviewicons.obj : charviewicons.c
 cursors.obj : cursors.c
 cvaddpoints.obj : cvaddpoints.c
 cvexport.obj : cvexport.c
