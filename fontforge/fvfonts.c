@@ -111,19 +111,6 @@ return( i );
 return( i );
 }
 
-static int SCFixupSLI(int sli,SplineFont *from,SplineChar *sc) {
-    SplineFont *to = sc->parent;
-
-    /* Find a script lang index in the new font which matches that of the old */
-    /*  font. There are some cases when we don't know what the old font was. */
-    /*  well, just make a reasonable guess */
-
-    if ( from==NULL )
-return( SFFindBiggestScriptLangIndex(to,SCScriptFromUnicode(sc),DEFAULT_LANG));
-
-return( FixupSLI(sli,from,to));
-}
-
 PST *PSTCopy(PST *base,SplineChar *sc,SplineFont *from) {
     PST *head=NULL, *last=NULL, *cur;
 
@@ -131,7 +118,7 @@ PST *PSTCopy(PST *base,SplineChar *sc,SplineFont *from) {
 	cur = chunkalloc(sizeof(PST));
 	*cur = *base;
 	if ( from!=sc->parent && base->script_lang_index<SLI_NESTED )
-	    cur->script_lang_index = SCFixupSLI(cur->script_lang_index,from,sc);
+	    cur->script_lang_index = FixupSLI(cur->script_lang_index,from,sc->parent);
 	if ( cur->type==pst_ligature ) {
 	    cur->u.lig.components = copy(cur->u.lig.components);
 	    cur->u.lig.lig = sc;
@@ -377,7 +364,7 @@ static KernPair *KernsCopy(KernPair *kp,int *mapping,SplineFont *into,SplineFont
 		into->glyphs[index]!=NULL ) {
 	    new = chunkalloc(sizeof(KernPair));
 	    new->off = kp->off;
-	    new->sli = kp->sli;
+	    new->sli = FixupSLI(kp->sli,from,into);
 	    new->sc = into->glyphs[index];
 	    if ( head==NULL )
 		head = new;
