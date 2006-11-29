@@ -1277,8 +1277,10 @@ struct debugger_context {
     unsigned int debug_fpgm: 1;
     unsigned int multi_step: 1;
     unsigned int found_wp: 1;
+    unsigned int found_wps: 1;
+    unsigned int found_wpc: 1;
     unsigned int initted_pts: 1;
-    int wp_ptindex;
+    int wp_ptindex, wp_cvtindex, wp_storeindex;
     real ptsize;
     int dpi;
     TT_ExecContext exc;
@@ -1287,27 +1289,63 @@ struct debugger_context {
     BpData breaks[32];
     int bcnt;
     FT_Vector *oldpts;
+    FT_Long *oldstore;
+    FT_Long *oldcvt;
+    FT_Long oldsval, oldcval;
     int n_points;
-    uint8 *watch;
+    uint8 *watch;		/* exc->pts.n_points */
+    uint8 *watchstorage;	/* exc->storeSize, exc->storage[i] */
+    uint8 *watchcvt;		/* exc->cvtSize, exc->cvt[i] */
 };
 
 static int AtWp(struct debugger_context *dc, TT_ExecContext exc ) {
-    int i, hit=false;
+    int i, hit=false, h;
 
     dc->found_wp = false;
-    if ( dc->watch==NULL )
-return( false );
-
-    for ( i=0; i<exc->pts.n_points; ++i ) {
-	if ( dc->oldpts[i].x!=exc->pts.cur[i].x || dc->oldpts[i].y!=exc->pts.cur[i].y ) {
-	    dc->oldpts[i] = exc->pts.cur[i];
-	    if ( dc->watch[i] ) {
-		hit = true;
-		dc->wp_ptindex = i;
+    if ( dc->watch!=NULL && dc->oldpts!=NULL ) {
+	for ( i=0; i<exc->pts.n_points; ++i ) {
+	    if ( dc->oldpts[i].x!=exc->pts.cur[i].x || dc->oldpts[i].y!=exc->pts.cur[i].y ) {
+		dc->oldpts[i] = exc->pts.cur[i];
+		if ( dc->watch[i] ) {
+		    hit = true;
+		    dc->wp_ptindex = i;
+		}
 	    }
 	}
+	dc->found_wp = hit;
     }
-    dc->found_wp = hit;
+    dc->found_wps = false;
+    if ( dc->watchstorage!=NULL && dc->oldstore!=NULL ) {
+	h = false;
+	for ( i=0; i<exc->storeSize; ++i ) {
+	    if ( dc->oldstore[i]!=exc->storage[i] ) {
+		if ( dc->watchstorage[i] ) {
+		    h = true;
+		    dc->wp_storeindex = i;
+		    dc->oldsval = dc->oldstore[i];
+		}
+		dc->oldstore[i] = exc->storage[i];
+	    }
+	}
+	dc->found_wps = h;
+	hit |= h;
+    }
+    dc->found_wpc = false;
+    if ( dc->watchcvt!=NULL && dc->oldcvt!=NULL ) {
+	h = false;
+	for ( i=0; i<exc->cvtSize; ++i ) {
+	    if ( dc->oldcvt[i]!=exc->cvt[i] ) {
+		if ( dc->watchcvt[i] ) {
+		    h = true;
+		    dc->wp_cvtindex = i;
+		    dc->oldcval = dc->oldcvt[i];
+		}
+		dc->oldcvt[i] = exc->cvt[i];
+	    }
+	}
+	dc->found_wpc = h;
+	hit |= h;
+    }
 return( hit );
 }
 
@@ -1346,9 +1384,15 @@ return( _TT_RunIns(exc));	/* This should run to completion */
 	dc->oldpts = gcalloc(exc->pts.n_points,sizeof(FT_Vector));
 	dc->n_points = exc->pts.n_points;
     }
-    if ( exc->pts.n_points!=0 && !dc->initted_pts ) {
+    if ( dc->oldstore==NULL && exc->storeSize!=0 )
+	dc->oldstore = gcalloc(exc->storeSize,sizeof(FT_Long));
+    if ( dc->oldcvt==NULL && exc->cvtSize!=0 )
+	dc->oldcvt = gcalloc(exc->cvtSize,sizeof(FT_Long));
+    if ( !dc->initted_pts ) {
 	AtWp(dc,exc);
 	dc->found_wp = false;
+	dc->found_wps = false;
+	dc->found_wpc = false;
 	dc->initted_pts = true;
     }
 
@@ -1372,12 +1416,18 @@ return( TT_Err_Execution_Too_Long );
 	if ( AtWp(dc,exc) || !dc->multi_step || AtBp(dc,exc) ||
 		(exc->curRange==tt_coderange_glyph && exc->IP==exc->codeSize)) {
 	    if ( dc->found_wp ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
 		ff_post_notice(_("Hit Watch Point"),_("Point %d was moved by the previous instruction"),dc->wp_ptindex);
-#elif defined(FONTFORGE_CONFIG_GTK)
-		ff_post_notice(_("Hit Watch Point"),_("Point %d was moved by the previous instruction"),dc->wp_ptindex);
-#endif
-		dc->found_wp = true;
+		dc->found_wp = false;
+	    }
+	    if ( dc->found_wps ) {
+		ff_post_notice(_("Watched Store Change"),_("Storage %d was changed from %d (%.2f) to %d (%.2f) by the previous instruction"),
+			dc->wp_storeindex, dc->oldsval, dc->oldsval/64.0,exc->storage[dc->wp_storeindex],exc->storage[dc->wp_storeindex]/64.0);
+		dc->found_wps = false;
+	    }
+	    if ( dc->found_wpc ) {
+		ff_post_notice(_("Watched Cvt Change"),_("Cvt %d was changed from %d (%.2f) to %d (%.2f) by the previous instruction"),
+			dc->wp_cvtindex, dc->oldcval, dc->oldcval/64.0,exc->cvt[dc->wp_cvtindex],exc->cvt[dc->wp_cvtindex]/64.0);
+		dc->found_wpc = false;
 	    }
 	    pthread_mutex_lock(&dc->parent_mutex);
 	    pthread_cond_signal(&dc->parent_cond);
@@ -1594,11 +1644,7 @@ return;
     }
     /* Else add it */
     if ( dc->bcnt>=sizeof(dc->breaks)/sizeof(dc->breaks[0]) ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	gwwv_post_error(_("Too Many Breakpoints"),_("Too Many Breakpoints"));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_error(_("Too Many Breakpoints"),_("Too Many Breakpoints"));
-#endif
 return;
     }
     i = dc->bcnt++;
@@ -1614,6 +1660,8 @@ void DebuggerSetWatches(struct debugger_context *dc,int n, uint8 *w) {
 	if ( dc->exc ) {
 	    AtWp(dc,dc->exc);
 	    dc->found_wp = false;
+	    dc->found_wpc = false;
+	    dc->found_wps = false;
 	}
     }
 }
@@ -1621,6 +1669,44 @@ void DebuggerSetWatches(struct debugger_context *dc,int n, uint8 *w) {
 uint8 *DebuggerGetWatches(struct debugger_context *dc, int *n) {
     *n = dc->n_points;
 return( dc->watch );
+}
+
+void DebuggerSetWatchStores(struct debugger_context *dc,int n, uint8 *w) {
+    free(dc->watchstorage); dc->watchstorage=NULL;
+    if ( n!=dc->exc->storeSize ) IError("Bad watchpoint count");
+    else {
+	dc->watchstorage = w;
+	if ( dc->exc ) {
+	    AtWp(dc,dc->exc);
+	    dc->found_wp = false;
+	    dc->found_wpc = false;
+	    dc->found_wps = false;
+	}
+    }
+}
+
+uint8 *DebuggerGetWatchStores(struct debugger_context *dc, int *n) {
+    *n = dc->exc->storeSize;
+return( dc->watchstorage );
+}
+
+void DebuggerSetWatchCvts(struct debugger_context *dc,int n, uint8 *w) {
+    free(dc->watchcvt); dc->watchcvt=NULL;
+    if ( n!=dc->exc->cvtSize ) IError("Bad watchpoint count");
+    else {
+	dc->watchcvt = w;
+	if ( dc->exc ) {
+	    AtWp(dc,dc->exc);
+	    dc->found_wp = false;
+	    dc->found_wpc = false;
+	    dc->found_wps = false;
+	}
+    }
+}
+
+uint8 *DebuggerGetWatchCvts(struct debugger_context *dc, int *n) {
+    *n = dc->exc->cvtSize;
+return( dc->watchcvt );
 }
 
 int DebuggingFpgm(struct debugger_context *dc) {
@@ -1764,6 +1850,22 @@ void DebuggerSetWatches(struct debugger_context *dc,int n, uint8 *w) {
 }
 
 uint8 *DebuggerGetWatches(struct debugger_context *dc, int *n) {
+    *n = 0;
+return( NULL );
+}
+
+void DebuggerSetWatchStores(struct debugger_context *dc,int n, uint8 *w) {
+}
+
+uint8 *DebuggerGetWatchStores(struct debugger_context *dc, int *n) {
+    *n = 0;
+return( NULL );
+}
+
+void DebuggerSetWatchCvts(struct debugger_context *dc,int n, uint8 *w) {
+}
+
+uint8 *DebuggerGetWatchCvts(struct debugger_context *dc, int *n) {
     *n = 0;
 return( NULL );
 }
