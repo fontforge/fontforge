@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jan-2003 -->
-  <!-- AP: Last modified: 15-Jul-2006 -->
+  <!-- AP: Last modified: 30-Nov-2006 -->
   <TITLE>Special thoughts for special scripts</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -75,6 +75,28 @@
   if one table is present and the other isn't, FontForge will generate a dummy
   version of the other.
   <H3>
+    Common
+  </H3>
+  <P>
+  Many characters are used in more than one script. The digits, marks of
+  punctuation, etc. are said in Unicode to belong to the script "Common". OpenType
+  does not recognize this script. The closest thing it has is the script 'DFLT'.
+  My understanding is that characters in the common script will have the script
+  of adjacent text assigned to them by OpenType.
+  <P>
+  Thus if a font supports latin, greek or cyrillic then digits and punctuation
+  might find themselves in any of those three scripts and all features which
+  apply to any such character should be present in all scripts. For example
+  if the digit 9 kerns with digit 1, then that kerning data should be present
+  in cyrillic and greek as well as latin.
+  <P>
+  However it is possible (and I gather common in Japanese) to use the digits
+  from one font surrounded by Kanji characters from another font. This means
+  the digits may be in a font which does not support Kanji. However OpenType
+  will assign them the Kanji script. Thus no lookups will be applied. Adobe
+  suggests that for most features in scripts should also appear in the fallback
+  script 'DFLT'. I'm not sure that anyone else follows this convention.
+  <H3>
     Latin
   </H3>
   <P>
@@ -87,7 +109,8 @@
   of accented glyphs which could be built -- or you could use mark to base
   positioning. Kerning should be generated for some glyph combinations. A few
   ligatures need to be generated (the "f" ligatures: ff, fi, fl, ffi, ffl and
-  perhaps st).
+  perhaps st -- however for some languages (Turkish) the "fi" ligature should
+  not be built).
   <P>
   You may want to add a set of smallcaps. Adobe has reserved a block in the
   private use area for latin small-caps -- this is now depreciated.
