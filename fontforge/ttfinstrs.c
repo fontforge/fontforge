@@ -659,6 +659,10 @@ return( NULL );
 		instrs[icnt++] = numberstack[nread++];
 	    --push_left;
 	}
+	if ( nread<npos && push_left<=0 ) {
+	    IVError(iv,_("Unexpected number"),pt-text);
+return( NULL );
+	}
 	if ( *pt=='\n' )
     continue;
 	if ( push_left>0 ) {
