@@ -828,6 +828,7 @@ extern void DebuggerSetWatches(struct debugger_context *dc,int n, uint8 *w);
 extern uint8 *DebuggerGetWatches(struct debugger_context *dc, int *n);
 extern void DebuggerSetWatchStores(struct debugger_context *dc,int n, uint8 *w);
 extern uint8 *DebuggerGetWatchStores(struct debugger_context *dc, int *n);
+extern int DebuggerIsStorageSet(struct debugger_context *dc, int index);
 extern void DebuggerSetWatchCvts(struct debugger_context *dc,int n, uint8 *w);
 extern uint8 *DebuggerGetWatchCvts(struct debugger_context *dc, int *n);
 extern int DebuggingFpgm(struct debugger_context *dc);

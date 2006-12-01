@@ -1278,6 +1278,7 @@ struct debugger_context {
     unsigned int multi_step: 1;
     unsigned int found_wp: 1;
     unsigned int found_wps: 1;
+    unsigned int found_wps_uninit: 1;
     unsigned int found_wpc: 1;
     unsigned int initted_pts: 1;
     unsigned int is_bitmap: 1;
@@ -1291,12 +1292,15 @@ struct debugger_context {
     int bcnt;
     FT_Vector *oldpts;
     FT_Long *oldstore;
+    uint8 *storetouched;
+    int storeSize;
     FT_Long *oldcvt;
     FT_Long oldsval, oldcval;
     int n_points;
     uint8 *watch;		/* exc->pts.n_points */
     uint8 *watchstorage;	/* exc->storeSize, exc->storage[i] */
     uint8 *watchcvt;		/* exc->cvtSize, exc->cvt[i] */
+    int uninit_index;
 };
 
 static int AtWp(struct debugger_context *dc, TT_ExecContext exc ) {
@@ -1315,16 +1319,19 @@ static int AtWp(struct debugger_context *dc, TT_ExecContext exc ) {
 	}
 	dc->found_wp = hit;
     }
+    if ( dc->found_wps_uninit )
+	hit = true;
     dc->found_wps = false;
-    if ( dc->watchstorage!=NULL && dc->oldstore!=NULL ) {
+    if ( dc->watchstorage!=NULL && dc->storetouched!=NULL ) {
 	h = false;
 	for ( i=0; i<exc->storeSize; ++i ) {
-	    if ( dc->oldstore[i]!=exc->storage[i] ) {
+	    if ( dc->storetouched[i]&2 ) {
 		if ( dc->watchstorage[i] ) {
 		    h = true;
 		    dc->wp_storeindex = i;
 		    dc->oldsval = dc->oldstore[i];
 		}
+		dc->storetouched[i]&=~2;
 		dc->oldstore[i] = exc->storage[i];
 	    }
 	}
@@ -1365,6 +1372,27 @@ return( true );
 return( false );
 }
 
+static void TestStorage( struct debugger_context *dc, TT_ExecContext exc) {
+    int instr;
+
+    if ( exc->IP==exc->codeSize )
+return;
+    instr = exc->code[exc->IP];
+    if ( instr==0x42 /* Write store */ && exc->top>=2 ) {
+	int store_index = exc->stack[exc->top-2];
+	if ( store_index>=0 && store_index<exc->storeSize )
+	    dc->storetouched[store_index] = 3;	/* 2=>written this instr, 1=>ever written */
+    } else if ( instr==0x43 /* Read Store */ && exc->top>=1 ) {
+	int store_index = exc->stack[exc->top-1];
+	if ( store_index>=0 && store_index<exc->storeSize &&
+		!dc->storetouched[store_index] &&
+		dc->watchstorage!=NULL && dc->watchstorage[store_index] ) {
+	    dc->found_wps_uninit = true;
+	    dc->uninit_index = store_index;
+	}
+    }
+}
+
 static struct debugger_context *massive_kludge;
 
 static FT_Error PauseIns( TT_ExecContext exc ) {
@@ -1376,26 +1404,39 @@ return( TT_Err_Execution_Too_Long );		/* Some random error code, says we're prob
     dc->exc = exc;
     exc->grayscale = !dc->is_bitmap;		/* Not sure why tt_loader_init doesn't do this */
 
-    if ( !dc->debug_fpgm && exc->curRange!=tt_coderange_glyph ) {
-	exc->instruction_trap = 0;
-return( _TT_RunIns(exc));	/* This should run to completion */
-    }
-
     /* Set up for watch points */
     if ( dc->oldpts==NULL && exc->pts.n_points!=0 ) {
 	dc->oldpts = gcalloc(exc->pts.n_points,sizeof(FT_Vector));
 	dc->n_points = exc->pts.n_points;
     }
-    if ( dc->oldstore==NULL && exc->storeSize!=0 )
+    if ( dc->oldstore==NULL && exc->storeSize!=0 ) {
 	dc->oldstore = gcalloc(exc->storeSize,sizeof(FT_Long));
+	dc->storetouched = gcalloc(exc->storeSize,sizeof(uint8));
+	dc->storeSize = exc->storeSize;
+    }
     if ( dc->oldcvt==NULL && exc->cvtSize!=0 )
 	dc->oldcvt = gcalloc(exc->cvtSize,sizeof(FT_Long));
     if ( !dc->initted_pts ) {
 	AtWp(dc,exc);
 	dc->found_wp = false;
 	dc->found_wps = false;
+	dc->found_wps_uninit = false;
 	dc->found_wpc = false;
 	dc->initted_pts = true;
+    }
+
+    if ( !dc->debug_fpgm && exc->curRange!=tt_coderange_glyph ) {
+	exc->instruction_trap = 1;
+	ret = 0;
+	while ( exc->curRange!=tt_coderange_glyph ) {
+	    TestStorage(dc,exc);
+	    ret = _TT_RunIns(exc);
+	    if ( ret==TT_Err_Code_Overflow )
+return( 0 );
+	    if ( ret )
+return( ret );
+	}
+return( ret );
     }
 
     pthread_mutex_lock(&dc->parent_mutex);
@@ -1411,6 +1452,7 @@ return( TT_Err_Execution_Too_Long );
 	    ret = TT_Err_Code_Overflow;
     break;
 	}
+	TestStorage(dc,exc);
 	ret = _TT_RunIns(exc);
 	if ( ret )
     break;
@@ -1425,6 +1467,11 @@ return( TT_Err_Execution_Too_Long );
 		ff_post_notice(_("Watched Store Change"),_("Storage %d was changed from %d (%.2f) to %d (%.2f) by the previous instruction"),
 			dc->wp_storeindex, dc->oldsval, dc->oldsval/64.0,exc->storage[dc->wp_storeindex],exc->storage[dc->wp_storeindex]/64.0);
 		dc->found_wps = false;
+	    }
+	    if ( dc->found_wps_uninit ) {
+		ff_post_notice(_("Read of Uninitialized Store"),_("Storage %d has not been initialized, yet the previous instruction read it"),
+			dc->uninit_index );
+		dc->found_wps_uninit = false;
 	    }
 	    if ( dc->found_wpc ) {
 		ff_post_notice(_("Watched Cvt Change"),_("Cvt %d was changed from %d (%.2f) to %d (%.2f) by the previous instruction"),
@@ -1457,6 +1504,8 @@ static void *StartChar(void *_dc) {
     if ( (dc->ftc = __FreeTypeFontContext(dc->context,dc->sc->parent,dc->sc,NULL,
 	    ff_ttf, 0, NULL))==NULL )
  goto finish;
+    if ( dc->storetouched!=NULL )
+	memset(dc->storetouched,0,dc->storeSize);
 
     massive_kludge = dc;
     if ( _FT_Set_Char_Size(dc->ftc->face,0,(int) (dc->ptsize*64), dc->dpi, dc->dpi))
@@ -1667,6 +1716,7 @@ void DebuggerSetWatches(struct debugger_context *dc,int n, uint8 *w) {
 	    dc->found_wp = false;
 	    dc->found_wpc = false;
 	    dc->found_wps = false;
+	    dc->found_wps_uninit = false;
 	}
     }
 }
@@ -1686,6 +1736,7 @@ void DebuggerSetWatchStores(struct debugger_context *dc,int n, uint8 *w) {
 	    dc->found_wp = false;
 	    dc->found_wpc = false;
 	    dc->found_wps = false;
+	    dc->found_wps_uninit = false;
 	}
     }
 }
@@ -1693,6 +1744,12 @@ void DebuggerSetWatchStores(struct debugger_context *dc,int n, uint8 *w) {
 uint8 *DebuggerGetWatchStores(struct debugger_context *dc, int *n) {
     *n = dc->exc->storeSize;
 return( dc->watchstorage );
+}
+
+int DebuggerIsStorageSet(struct debugger_context *dc, int index) {
+    if ( dc->storetouched==NULL )
+return( false );
+return( dc->storetouched[index]&1 );
 }
 
 void DebuggerSetWatchCvts(struct debugger_context *dc,int n, uint8 *w) {
@@ -1705,6 +1762,7 @@ void DebuggerSetWatchCvts(struct debugger_context *dc,int n, uint8 *w) {
 	    dc->found_wp = false;
 	    dc->found_wpc = false;
 	    dc->found_wps = false;
+	    dc->found_wps_uninit = false;
 	}
     }
 }
@@ -1865,6 +1923,10 @@ void DebuggerSetWatchStores(struct debugger_context *dc,int n, uint8 *w) {
 uint8 *DebuggerGetWatchStores(struct debugger_context *dc, int *n) {
     *n = 0;
 return( NULL );
+}
+
+int DebuggerIsStorageSet(struct debugger_context *dc, int index) {
+return( false );
 }
 
 void DebuggerSetWatchCvts(struct debugger_context *dc,int n, uint8 *w) {

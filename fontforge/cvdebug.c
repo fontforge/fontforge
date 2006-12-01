@@ -269,7 +269,10 @@ static void DVStorageExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 	int n_watch;
 	uint8 *watches = DebuggerGetWatchStores(dv->dc,&n_watch);
 	for ( i=0; i<exc->storeSize; ++i ) {
-	    sprintf(buffer, "%3d: %3ld (%.2f)", i, exc->storage[i], exc->storage[i]/64.0 );
+	    if ( !DebuggerIsStorageSet(dv->dc,i) )
+		sprintf( buffer, _("%3d: <uninitialized>"), i );
+	    else
+		sprintf(buffer, "%3d: %3ld (%.2f)", i, exc->storage[i], exc->storage[i]/64.0 );
 	    if ( i<n_watch && watches!=NULL && watches[i] && y>0 )
 		GDrawDrawImage(pixmap,&GIcon_Stop,NULL,3,
 			    y-dv->ii.as-2);
@@ -1725,7 +1728,7 @@ static void DVCreateStore(DebugView *dv) {
     wattrs.cursor = ct_mypointer;
     wattrs.utf8_window_title = _("Storage (TrueType)");
     pos.x = 664; pos.y = 602;
-    pos.width = 153; pos.height = 100;
+    pos.width = 183; pos.height = 100;
     dv->storage = GDrawCreateTopWindow(NULL,&pos,dvstore_e_h,dv,&wattrs);
 
     memset(&gd,0,sizeof(gd));
