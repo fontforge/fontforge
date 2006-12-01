@@ -817,8 +817,8 @@ extern int FVImportMult(FontView *fv, char *filename,int toback,int bf);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 struct debugger_context;
 extern void DebuggerTerminate(struct debugger_context *dc);
-extern void DebuggerReset(struct debugger_context *dc,real pointsize,int dpi,int dbg_fpgm);
-extern struct debugger_context *DebuggerCreate(SplineChar *sc,real pointsize,int dpi,int dbg_fpgm);
+extern void DebuggerReset(struct debugger_context *dc,real pointsize,int dpi,int dbg_fpgm, int is_bitmap);
+extern struct debugger_context *DebuggerCreate(SplineChar *sc,real pointsize,int dpi,int dbg_fpgm, int is_bitmap);
 enum debug_gotype { dgt_continue, dgt_step, dgt_next, dgt_stepout };
 extern void DebuggerGo(struct debugger_context *dc,enum debug_gotype,DebugView *dv);
 extern struct  TT_ExecContextRec_ *DebuggerGetEContext(struct debugger_context *dc);
