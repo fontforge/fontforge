@@ -1280,6 +1280,7 @@ struct debugger_context {
     unsigned int found_wps: 1;
     unsigned int found_wpc: 1;
     unsigned int initted_pts: 1;
+    unsigned int is_bitmap: 1;
     int wp_ptindex, wp_cvtindex, wp_storeindex;
     real ptsize;
     int dpi;
@@ -1373,6 +1374,7 @@ static FT_Error PauseIns( TT_ExecContext exc ) {
     if ( dc->terminate )
 return( TT_Err_Execution_Too_Long );		/* Some random error code, says we're probably in a infinite loop */
     dc->exc = exc;
+    exc->grayscale = !dc->is_bitmap;		/* Not sure why tt_loader_init doesn't do this */
 
     if ( !dc->debug_fpgm && exc->curRange!=tt_coderange_glyph ) {
 	exc->instruction_trap = 0;
@@ -1461,7 +1463,8 @@ static void *StartChar(void *_dc) {
  goto finish;
 
     massive_kludge = dc;
-    _FT_Load_Glyph(dc->ftc->face,dc->ftc->glyph_indeces[dc->sc->orig_pos],FT_LOAD_NO_BITMAP);
+    _FT_Load_Glyph(dc->ftc->face,dc->ftc->glyph_indeces[dc->sc->orig_pos],
+	    dc->is_bitmap ? (FT_LOAD_NO_BITMAP|FT_LOAD_MONOCHROME) : FT_LOAD_NO_BITMAP);
 
  finish:
     dc->has_finished = true;
@@ -1501,7 +1504,7 @@ void DebuggerTerminate(struct debugger_context *dc) {
     free(dc);
 }
 
-void DebuggerReset(struct debugger_context *dc,real ptsize,int dpi,int dbg_fpgm) {
+void DebuggerReset(struct debugger_context *dc,real ptsize,int dpi,int dbg_fpgm, int is_bitmap) {
     /* Kill off the old thread, and start up a new one working on the given */
     /*  pointsize and resolution */ /* I'm not prepared for errors here */
     /* Note that if we don't want to look at the fpgm/prep code (and we */
@@ -1523,6 +1526,7 @@ void DebuggerReset(struct debugger_context *dc,real ptsize,int dpi,int dbg_fpgm)
     dc->debug_fpgm = dbg_fpgm;
     dc->ptsize = ptsize;
     dc->dpi = dpi;
+    dc->is_bitmap = is_bitmap;
     dc->terminate = dc->has_finished = false;
     dc->initted_pts = false;
 
@@ -1537,7 +1541,7 @@ return;
     pthread_cond_wait(&dc->parent_cond,&dc->parent_mutex);
 }
 
-struct debugger_context *DebuggerCreate(SplineChar *sc,real ptsize,int dpi,int dbg_fpgm) {
+struct debugger_context *DebuggerCreate(SplineChar *sc,real ptsize,int dpi,int dbg_fpgm, int is_bitmap) {
     struct debugger_context *dc;
 
     if ( !hasFreeTypeDebugger())
@@ -1548,6 +1552,7 @@ return( NULL );
     dc->debug_fpgm = dbg_fpgm;
     dc->ptsize = ptsize;
     dc->dpi = dpi;
+    dc->is_bitmap = is_bitmap;
     if ( _FT_Init_FreeType( &dc->context )) {
 	free(dc);
 return( NULL );
@@ -1577,7 +1582,7 @@ void DebuggerGo(struct debugger_context *dc,enum debug_gotype dgt,DebugView *dv)
 
     if ( !dc->has_thread || dc->has_finished || dc->exc==NULL ) {
 	FreeType_FreeRaster(dv->cv->raster); dv->cv->raster = NULL;
-	DebuggerReset(dc,dc->ptsize,dc->dpi,dc->debug_fpgm);
+	DebuggerReset(dc,dc->ptsize,dc->dpi,dc->debug_fpgm,dc->is_bitmap);
     } else {
 	switch ( dgt ) {
 	  case dgt_continue:
@@ -1832,10 +1837,10 @@ struct debugger_context;
 void DebuggerTerminate(struct debugger_context *dc) {
 }
 
-void DebuggerReset(struct debugger_context *dc,real ptsize,int dpi,int dbg_fpgm) {
+void DebuggerReset(struct debugger_context *dc,real ptsize,int dpi,int dbg_fpgm, int is_bitmap) {
 }
 
-struct debugger_context *DebuggerCreate(SplineChar *sc,real pointsize,int dpi, int dbg_fpgm) {
+struct debugger_context *DebuggerCreate(SplineChar *sc,real pointsize,int dpi, int dbg_fpgm, int is_bitmap) {
 return( NULL );
 }
 

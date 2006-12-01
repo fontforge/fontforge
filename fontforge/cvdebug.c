@@ -2026,7 +2026,7 @@ void CVDebugReInit(CharView *cv,int restart_debug,int dbg_fpgm) {
 	dv->dwidth = 260;
 	dv->scale = scale;
 	dv->cv = cv;
-	dv->dc = DebuggerCreate(cv->sc,cv->ft_pointsize,cv->ft_dpi,dbg_fpgm);
+	dv->dc = DebuggerCreate(cv->sc,cv->ft_pointsize,cv->ft_dpi,dbg_fpgm,cv->ft_depth==2);
 	FreeType_FreeRaster(cv->raster); cv->raster = NULL;
 	if ( dv->dc==NULL ) {
 	    free(dv);
@@ -2157,7 +2157,7 @@ return;
 	}
     } else {
 	dv->scale = scale;
-	DebuggerReset(dv->dc,cv->ft_pointsize,cv->ft_dpi,dbg_fpgm);
+	DebuggerReset(dv->dc,cv->ft_pointsize,cv->ft_dpi,dbg_fpgm,cv->ft_depth==2);
 	FreeType_FreeRaster(cv->raster); cv->raster = NULL;
 	if (( exc = DebuggerGetEContext(dv->dc))!=NULL )
 	    DVFigureNewState(dv,exc);
