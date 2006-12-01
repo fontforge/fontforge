@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 1-Nov-2006 -->
+  <!-- AP: Last modified: 1-Dec-2006 -->
   <TITLE>Frequently Asked Questions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -283,6 +283,8 @@
 	  There are lots of latin fonts. There are far fewer greek, cyrillic, indic,
 	  thai, chinese, japanese, korean, unicode...
 	<LI>
+	  There aren't many good quality free fonts available.
+	<LI>
 	  Researchers into old writing systems often need to design their own fonts
 	<LI>
 	  Even for latin, traditionally each new style of art and architecture has
@@ -531,12 +533,13 @@
       <P>
       There is also a measurement scheme based on the x-height of the glyphs.
       <P>
-      In England and the US a point has traditionally meant the pica point (1/72.27th
-      of an inch), while in Europe the point has been the didot point (1/67.54th
-      of an inch). The Europeans have a slightly larger point, but the glyphs of
-      English and European fonts appear the same size. English does not use accents
-      (except in very rare cases) while most European languages do, and the slight
-      increase in the size of the point allows more room for accents.
+      In England and the US a point has traditionally meant the pica point
+      (1/72.27<SUP>th </SUP>of an inch), while in Europe the point has been the
+      didot point (1/67.54<SUP>th</SUP> of an inch). The Europeans have a slightly
+      larger point, but the glyphs of English and European fonts appear the same
+      size. English does not use accents (except in very rare cases) while most
+      European languages do, and the slight increase in the size of the point allows
+      more room for accents.
       <P>
       (Of course now most Europeans are probably forced to use the pica point by
       their desktop software, while most computer fonts now contain accented glyphs,
@@ -575,6 +578,12 @@
 	      could move a glyph so that it extended beyond the bounding box (mark to base
 	      is likely to cause problems). I'm not sure how this applies to cursive
 	      positioning in Urdu where GPOS lookups can make lines arbetrarily tall)
+	      <P>
+	      MicroSoft has added a redundant bit to the OS/2 table, which essentially
+	      tells applications they should follow the standard and use the Typographic
+	      linespacing fields. This bit is called UseTypoMetrics in OpenType, and in
+	      FontForge it is available as Element-&gt;Font Info-&gt;OS/2
+	      -&gt;Metrics-&gt;Really Use Typo Metrics.
 	    <LI>
 	      On linux<BR>
 	      I don't know that there is a general consensus. An application will probably
