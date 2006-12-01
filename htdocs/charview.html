@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 13-Jul-2006 -->
+  <!-- AP: Last modified: 30-Nov-2006 -->
   <TITLE>Outline Glyph View</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -609,10 +609,10 @@
   The fifth button allows you to set a watch point. You select a point (or
   several points) in the left hand pane, and press this button. Thereafter,
   whenever one of those points is moved FontForge will stop the glyph program.
+  (You may also set watch points through the points window).
   <P>
-  Flaw: FontForge only allows you to select a single control point (multiple
-  on-curve points, but only one control point) so currently there is no good
-  way to watch several control points.
+  Similarly you may watch storage and cvt locations by clicking on the appropriate
+  spot in the storage and cvt windows.
   <P>
   You can set a more conventional break point by clicking on an instruction.
   A little red stop sign will appear on top of the address area, and the program
@@ -631,7 +631,7 @@
     <TR VALIGN="Top">
       <TD><IMG SRC="TTRegisters.png" WIDTH="137" HEIGHT="292"></TD>
       <TD><IMG SRC="TTStack.png" WIDTH="137" HEIGHT="292"></TD>
-      <TD><IMG SRC="TTPoints.png" WIDTH="205" HEIGHT="300"></TD>
+      <TD><IMG SRC="TTPoints.png" WIDTH="220" HEIGHT="300"></TD>
     </TR>
     <TR VALIGN="Top">
       <TD>Shows the truetype graphics state.</TD>
@@ -651,18 +651,30 @@
 	point), 'I' means the point is an on-curve point interpolated between two
 	control points, 'F' means a phantom point, 'T' means a twilight point, 'H'
 	means the horizontal touch flag has been set, 'V' means the vertical touch
-	flag has been set and 'W' means that the point has a watch point set on it.
+	flag has been set.
+	<P>
+	A small stop sign indicates the point is being watched (that is execution
+	will stop if the point moves). You may change whether a point is watched
+	by clicking on it.
 	<P>
 	Contours are separated by horizontal lines</TD>
     </TR>
     <TR VALIGN="Top">
-      <TD><IMG SRC="TTStorage.png" WIDTH="137" HEIGHT="123"></TD>
-      <TD><IMG SRC="TTCvt.png" WIDTH="178" HEIGHT="200"></TD>
+      <TD><IMG SRC="TTStorage.png" WIDTH="187" HEIGHT="131"></TD>
+      <TD><IMG SRC="TTCvt.png" WIDTH="198" HEIGHT="200"></TD>
       <TD><IMG SRC="TTRaster.png" WIDTH="54" HEIGHT="81"></TD>
     </TR>
     <TR VALIGN="Top">
-      <TD>Shows the truetype storage locations.</TD>
-      <TD>Shows the current values in the cvt array.</TD>
+      <TD>Shows the truetype storage locations.
+	<P>
+	A small stop sign indicates the storage location is being watched (that is
+	execution will stop if the location changes). You may change whether a location
+	is watched by clicking on it.</TD>
+      <TD>Shows the current values in the cvt array.
+	<P>
+	A small stop sign indicates the cvt location is being watched (that is execution
+	will stop if the value changes). You may change whether a location is watched
+	by clicking on it.</TD>
       <TD>Shows the current raster with no magnificaton</TD>
     </TR>
   </TABLE>
