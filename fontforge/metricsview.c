@@ -1381,7 +1381,7 @@ return;					/* Nothing changed */
 		(*ept!=0xfffd || mv->perchar[ei].sc->unicodeenc!=-1 ))) {
 	    ++ei; ++ept;
     break;
-	} else if ( ei<=i || ept<=pt ) {
+	} else if ( ei<i || ept<pt ) {
 	    ++ei; ++ept;
     break;
 	}
