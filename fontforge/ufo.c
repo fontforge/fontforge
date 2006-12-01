@@ -535,15 +535,15 @@ static SplineChar *_UFOLoadGlyph(xmlDocPtr doc,char *glifname) {
     char *cpt;
 
     glyph = _xmlDocGetRootElement(doc);
-    format = _xmlGetProp(glyph,"format");
+    format = _xmlGetProp(glyph,(xmlChar *) "format");
     if ( _xmlStrcmp(glyph->name,(const xmlChar *) "glyph")!=0 ||
-	    (format!=NULL && _xmlStrcmp(format,"1")!=0)) {
+	    (format!=NULL && _xmlStrcmp(format,(xmlChar *) "1")!=0)) {
 	LogError(_("Expected glyph file with format==1\n"));
 	_xmlFreeDoc(doc);
 	free(format);
 return( NULL );
     }
-    name = (char *) _xmlGetProp(glyph,"name");
+    name = (char *) _xmlGetProp(glyph,(xmlChar *) "name");
     if ( name==NULL && glifname!=NULL ) {
 	char *pt = strrchr(glifname,'/');
 	name = copy(pt+1);
@@ -559,15 +559,15 @@ return( NULL );
 
     for ( kids = glyph->children; kids!=NULL; kids=kids->next ) {
 	if ( _xmlStrcmp(kids->name,(const xmlChar *) "advance")==0 ) {
-	    width = _xmlGetProp(kids,"width");
-	    height = _xmlGetProp(kids,"height");
+	    width = _xmlGetProp(kids,(xmlChar *) "width");
+	    height = _xmlGetProp(kids,(xmlChar *) "height");
 	    if ( width!=NULL )
 		sc->width = strtol((char *) width,NULL,10);
 	    if ( height!=NULL )
 		sc->vwidth = strtol((char *) height,NULL,10);
 	    free(width); free(height);
 	} else if ( _xmlStrcmp(kids->name,(const xmlChar *) "unicode")==0 ) {
-	    u = _xmlGetProp(kids,"hex");
+	    u = _xmlGetProp(kids,(xmlChar *) "hex");
 	    uni = strtol((char *) u,NULL,16);
 	    if ( sc->unicodeenc == -1 )
 		sc->unicodeenc = uni;
@@ -576,13 +576,13 @@ return( NULL );
 	} else if ( _xmlStrcmp(kids->name,(const xmlChar *) "outline")==0 ) {
 	    for ( contour = kids->children; contour!=NULL; contour=contour->next ) {
 		if ( _xmlStrcmp(contour->name,(const xmlChar *) "component")==0 ) {
-		    char *base = (char *) _xmlGetProp(contour,"base"),
-			*xs = (char *) _xmlGetProp(contour,"xScale"),
-			*ys = (char *) _xmlGetProp(contour,"yScale"),
-			*xys = (char *) _xmlGetProp(contour,"xyScale"),
-			*yxs = (char *) _xmlGetProp(contour,"yxScale"),
-			*xo = (char *) _xmlGetProp(contour,"xOffset"),
-			*yo = (char *) _xmlGetProp(contour,"yOffset");
+		    char *base = (char *) _xmlGetProp(contour,(xmlChar *) "base"),
+			*xs = (char *) _xmlGetProp(contour,(xmlChar *) "xScale"),
+			*ys = (char *) _xmlGetProp(contour,(xmlChar *) "yScale"),
+			*xys = (char *) _xmlGetProp(contour,(xmlChar *) "xyScale"),
+			*yxs = (char *) _xmlGetProp(contour,(xmlChar *) "yxScale"),
+			*xo = (char *) _xmlGetProp(contour,(xmlChar *) "xOffset"),
+			*yo = (char *) _xmlGetProp(contour,(xmlChar *) "yOffset");
 		    RefChar *r;
 		    if ( base==NULL )
 			LogError(_("component with no base glyph"));
@@ -616,9 +616,9 @@ return( NULL );
 		    for ( points = contour->children; points!=NULL; points=points->next ) {
 			char *xs, *ys, *type;
 			int x,y;
-			xs = (char *) _xmlGetProp(points,"x");
-			ys = (char *) _xmlGetProp(points,"y");
-			type = (char *) _xmlGetProp(points,"type");
+			xs = (char *) _xmlGetProp(points,(xmlChar *) "x");
+			ys = (char *) _xmlGetProp(points,(xmlChar *) "y");
+			type = (char *) _xmlGetProp(points,(xmlChar *) "type");
 			if ( xs==NULL || ys == NULL )
 		    continue;
 			x = strtod(xs,NULL); y = strtod(ys,NULL);
@@ -914,29 +914,29 @@ return( NULL );
 	    keyname = _xmlNodeListGetString(doc,keys->children,true);
 	    valname = _xmlNodeListGetString(doc,value->children,true);
 	    keys = value;
-	    if ( _xmlStrcmp(keyname,"familyName")==0 )
-		family = valname;
-	    else if ( _xmlStrcmp(keyname,"fullName")==0 )
-		fullname = valname;
-	    else if ( _xmlStrcmp(keyname,"fontName")==0 )
-		fontname = valname;
-	    else if ( _xmlStrcmp(keyname,"weightName")==0 )
-		weight = valname;
-	    else if ( _xmlStrcmp(keyname,"copyright")==0 )
-		copyright = valname;
-	    else if ( _xmlStrcmp(keyname,"curveType")==0 )
-		curve = valname;
-	    else if ( _xmlStrcmp(keyname,"unitsPerEm")==0 ) {
-		em = strtol(valname,&end,10);
+	    if ( _xmlStrcmp(keyname,(xmlChar *) "familyName")==0 )
+		family = (char *) valname;
+	    else if ( _xmlStrcmp(keyname,(xmlChar *) "fullName")==0 )
+		fullname = (char *) valname;
+	    else if ( _xmlStrcmp(keyname,(xmlChar *) "fontName")==0 )
+		fontname = (char *) valname;
+	    else if ( _xmlStrcmp(keyname,(xmlChar *) "weightName")==0 )
+		weight = (char *) valname;
+	    else if ( _xmlStrcmp(keyname,(xmlChar *) "copyright")==0 )
+		copyright = (char *) valname;
+	    else if ( _xmlStrcmp(keyname,(xmlChar *) "curveType")==0 )
+		curve = (char *) valname;
+	    else if ( _xmlStrcmp(keyname,(xmlChar *) "unitsPerEm")==0 ) {
+		em = strtol((char *) valname,&end,10);
 		if ( *end!='\0' ) em = -1;
-	    } else if ( _xmlStrcmp(keyname,"ascender")==0 ) {
-		as = strtol(valname,&end,10);
+	    } else if ( _xmlStrcmp(keyname,(xmlChar *) "ascender")==0 ) {
+		as = strtol((char *) valname,&end,10);
 		if ( *end!='\0' ) as = -1;
-	    } else if ( _xmlStrcmp(keyname,"descender")==0 ) {
-		ds = strtol(valname,&end,10);
+	    } else if ( _xmlStrcmp(keyname,(xmlChar *) "descender")==0 ) {
+		ds = strtol((char *) valname,&end,10);
 		if ( *end!='\0' ) ds = -1;
-	    } else if ( _xmlStrcmp(keyname,"italicAngle")==0 ) {
-		ia = strtod(valname,&end);
+	    } else if ( _xmlStrcmp(keyname,(xmlChar *) "italicAngle")==0 ) {
+		ia = strtod((char *) valname,&end);
 		if ( *end!='\0' ) ia = 0;
 	    } else
 		free(valname);
