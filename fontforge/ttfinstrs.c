@@ -864,6 +864,7 @@ static void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
     char loc[8], ins[8], val[8]; unichar_t uloc[8], uins[8], uname[30];
     int addr_end, num_end;
     static unichar_t nums[] = { '0', '0', '0', '0', '0', '0', '\0' };
+    int indent;
 
     GDrawSetFont(pixmap,ii->gfont);
     GDrawSetLineWidth(pixmap,0);
@@ -891,8 +892,15 @@ static void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
     if ( ii->showhex )
 	GDrawDrawLine(pixmap,num_end,rect->y,num_end,rect->y+rect->height,0x000000);
 
+    indent = 0;
     for ( i=0, y=EDGE_SPACING-ii->lpos*ii->fh; y<low && i<ii->instrdata->instr_cnt; ++i ) {
-	if ( ii->instrdata->bts[i]==bt_wordhi )
+	if ( ii->instrdata->bts[i]==bt_instr ) {
+	    int instr = ii->instrdata->instrs[i];
+	    if ( instr == ttf_if || instr==ttf_idef || instr == ttf_fdef )
+		++indent;
+	    else if ( instr == ttf_eif || instr==ttf_endf )
+		--indent;
+	} else if ( ii->instrdata->bts[i]==bt_wordhi )
 	    ++i;
 	y += ii->fh;
     }
@@ -905,7 +913,9 @@ static void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
 	uc_strcpy(uname,"<no instrs>");
 	GDrawDrawText(pixmap,num_end+EDGE_SPACING,y+ii->as,uname,-1,NULL,0xff0000);
     } else {
+	int temp_indent;
 	for ( ; y<=high && i<ii->instrdata->instr_cnt+1; ++i ) {
+	    temp_indent = indent;
 	    sprintf( loc, "%d", i ); uc_strcpy(uloc,loc);
 	    if ( ii->instrdata->bts[i]==bt_wordhi ) {
 		sprintf( ins, " %02x%02x", ii->instrdata->instrs[i], ii->instrdata->instrs[i+1]); uc_strcpy(uins,ins);
@@ -920,8 +930,16 @@ static void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
 		uc_strcpy(uname,"<return>");
 		uins[0] = '\0';
 	    } else {
-		sprintf( ins, "%02x", ii->instrdata->instrs[i] ); uc_strcpy(uins,ins);
-		uc_strcpy(uname, instrnames[ii->instrdata->instrs[i]]);
+		int instr = ii->instrdata->instrs[i];
+		if ( instr == ttf_eif || instr==ttf_endf )
+		    --indent;
+		temp_indent = indent;
+		if ( instr == ttf_else )
+		    --temp_indent;
+		sprintf( ins, "%02x", instr ); uc_strcpy(uins,ins);
+		uc_strcpy(uname, instrnames[instr]);
+		if ( instr == ttf_if || instr==ttf_idef || instr == ttf_fdef )
+		    ++indent;
 	    }
 
 	    if ( ii->showaddr ) {
@@ -934,7 +952,7 @@ static void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
 	    x = addr_end + EDGE_SPACING;
 	    if ( ii->showhex )
 		GDrawDrawText(pixmap,x,y+ii->as,uins,-1,NULL,0x000000);
-	    GDrawDrawText(pixmap,num_end+EDGE_SPACING,y+ii->as,uname,-1,NULL,0x000000);
+	    GDrawDrawText(pixmap,num_end+EDGE_SPACING+temp_indent*4,y+ii->as,uname,-1,NULL,0x000000);
 	    y += ii->fh;
 	}
 	if ( ii->showaddr && ii->lstopped!=-1 ) {
