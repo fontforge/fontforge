@@ -102,13 +102,14 @@ return( false );
 	for ( spl=sc->layers[ly_fore].splines; spl!=NULL; spl=spl->next ) {
 	    fprintf( glif, "    <contour>\n" );
 	    for ( sp=spl->first; sp!=NULL; ) {
-		fprintf( glif, "      <point x=\"%g\" y=\"%g\" type=\"%s\" smooth=\"%s\"/>\n",
-			sp->me.x, sp->me.y,
-			sp->prev==NULL        ? "move"   :
-			sp->prev->knownlinear ? "line"   :
-			isquad 		      ? "qcurve" :
-						"curve",
-			sp->pointtype!=pt_corner?"yes":"no" );
+		if ( !isquad || sp==spl->first || !SPInterpolate(sp) )
+		    fprintf( glif, "      <point x=\"%g\" y=\"%g\" type=\"%s\" smooth=\"%s\"/>\n",
+			    sp->me.x, sp->me.y,
+			    sp->prev==NULL        ? "move"   :
+			    sp->prev->knownlinear ? "line"   :
+			    isquad 		      ? "qcurve" :
+						    "curve",
+			    sp->pointtype!=pt_corner?"yes":"no" );
 		if ( sp->next==NULL )
 	    break;
 		if ( !sp->next->knownlinear )
@@ -124,6 +125,43 @@ return( false );
 	    fprintf( glif, "    </contour>\n" );
 	}
 	fprintf( glif, "  </outline>\n" );
+    }
+    if ( sc->hstem!=NULL || sc->vstem!=NULL ) {
+	StemInfo *h;
+	/* Not officially part of the UFO/glif spec, but used by robofab */
+	fprintf( glif, "  <lib>\n" );
+	fprintf( glif, "    <dict>\n" );
+	fprintf( glif, "      <key>com.fontlab.hintData</key>\n" );
+	fprintf( glif, "      <dict>\n" );
+	if ( sc->hstem!=NULL ) {
+	    fprintf( glif, "\t<key>hhints</key>\n" );
+	    fprintf( glif, "\t<array>\n" );
+	    for ( h = sc->hstem; h!=NULL; h=h->next ) {
+		fprintf( glif, "\t  <dict>\n" );
+		fprintf( glif, "\t    <key>position</key>" );
+		fprintf( glif, "\t    <integer>%d</integer>\n", (int) rint(h->start));
+		fprintf( glif, "\t    <key>width</key>" );
+		fprintf( glif, "\t    <integer>%d</integer>\n", (int) rint(h->width));
+		fprintf( glif, "\t  </dict>\n" );
+	    }
+	    fprintf( glif, "\t</array>\n" );
+	}
+	if ( sc->vstem!=NULL ) {
+	    fprintf( glif, "\t<key>vhints</key>\n" );
+	    fprintf( glif, "\t<array>\n" );
+	    for ( h = sc->vstem; h!=NULL; h=h->next ) {
+		fprintf( glif, "\t  <dict>\n" );
+		fprintf( glif, "\t    <key>position</key>\n" );
+		fprintf( glif, "\t    <integer>%d</integer>\n", (int) rint(h->start));
+		fprintf( glif, "\t    <key>width</key>\n" );
+		fprintf( glif, "\t    <integer>%d</integer>\n", (int) rint(h->width));
+		fprintf( glif, "\t  </dict>\n" );
+	    }
+	    fprintf( glif, "\t</array>\n" );
+	}
+	fprintf( glif, "      </dict>\n" );
+	fprintf( glif, "    </dict>\n" );
+	fprintf( glif, "  </lib>\n" );
     }
     fprintf( glif, "</glyph>\n" );
     err = ferror(glif);
@@ -526,6 +564,74 @@ return( kids );
 return( NULL );
 }
 
+static StemInfo *GlifParseHints(xmlDocPtr doc,xmlNodePtr dict,char *hinttype) {
+    StemInfo *head=NULL, *last=NULL, *h;
+    xmlNodePtr keys, array, kids, poswidth,temp;
+    double pos, width;
+
+    for ( keys=dict->children; keys!=NULL; keys=keys->next ) {
+	if ( _xmlStrcmp(keys->name,(const xmlChar *) "key")== 0 ) {
+	    char *keyname = (char *) _xmlNodeListGetString(doc,keys->children,true);
+	    int found = strcmp(keyname,hinttype)==0;
+	    free(keyname);
+	    if ( found ) {
+		for ( array=keys->next; array!=NULL; array=array->next ) {
+		    if ( _xmlStrcmp(array->name,(const xmlChar *) "array")==0 )
+		break;
+		}
+		if ( array!=NULL ) {
+		    for ( kids = array->children; kids!=NULL; kids=kids->next ) {
+			if ( _xmlStrcmp(kids->name,(const xmlChar *) "dict")==0 ) {
+			    pos = -88888888; width = 0;
+			    for ( poswidth=kids->children; poswidth!=NULL; poswidth=poswidth->next ) {
+				if ( _xmlStrcmp(poswidth->name,(const xmlChar *) "key")==0 ) {
+				    char *keyname2 = (char *) _xmlNodeListGetString(doc,poswidth->children,true);
+				    int ispos = strcmp(keyname2,"position")==0, iswidth = strcmp(keyname2,"width")==0;
+				    double value;
+				    free(keyname2);
+				    for ( temp=poswidth->next; temp!=NULL; temp=temp->next ) {
+					if ( _xmlStrcmp(temp->name,(const xmlChar *) "text")!=0 )
+				    break;
+				    }
+				    if ( temp!=NULL ) {
+					char *valname = _xmlNodeListGetString(doc,temp->children,true);
+					if ( _xmlStrcmp(temp->name,(const xmlChar *) "integer")==0 )
+					    value = strtol(valname,NULL,10);
+					else if ( _xmlStrcmp(temp->name,(const xmlChar *) "real")==0 )
+					    value = strtod(valname,NULL);
+					else
+					    ispos = iswidth = false;
+					free(valname);
+					if ( ispos )
+					    pos = value;
+					else if ( iswidth )
+					    width = value;
+					poswidth = temp;
+				    }
+				}
+			    }
+			    if ( pos!=-88888888 && width!=0 ) {
+				h = chunkalloc(sizeof(StemInfo));
+			        h->start = pos;
+			        h->width = width;
+			        if ( width==-20 || width==-21 )
+				    h->ghost = true;
+				if ( head==NULL )
+				    head = last = h;
+				else {
+				    last->next = h;
+			            last = h;
+				}
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }
+return( head );
+}
+
 static SplineChar *_UFOLoadGlyph(xmlDocPtr doc,char *glifname) {
     xmlNodePtr glyph, kids, contour, points;
     SplineChar *sc;
@@ -610,12 +716,14 @@ return( NULL );
 		    SplineSet *ss;
 		    SplinePoint *sp;
 		    BasePoint pre[2], init[2];
-		    int precnt=0, initcnt=0, open=0;
+		    int precnt=0, initcnt=0, open=0, wasquad=0;
 
 		    ss = chunkalloc(sizeof(SplineSet));
 		    for ( points = contour->children; points!=NULL; points=points->next ) {
 			char *xs, *ys, *type;
 			int x,y;
+			if ( _xmlStrcmp(points->name,(const xmlChar *) "point")!=0 )
+		    continue;
 			xs = (char *) _xmlGetProp(points,(xmlChar *) "x");
 			ys = (char *) _xmlGetProp(points,(xmlChar *) "y");
 			type = (char *) _xmlGetProp(points,(xmlChar *) "type");
@@ -634,10 +742,13 @@ return( NULL );
 				ss->first = ss->last = sp;
 			        memcpy(init,pre,sizeof(init));
 			        initcnt = precnt;
+			        if ( strcmp(type,"qcurve")==0 )
+				    wasquad = true;
 			    } else if ( strcmp(type,"line")==0 ) {
 				SplineMake(ss->last,sp,false);
 			        ss->last = sp;
 			    } else if ( strcmp(type,"curve")==0 ) {
+				wasquad = false;
 				if ( precnt==2 ) {
 				    ss->last->nextcp = pre[0];
 			            ss->last->nonextcp = false;
@@ -650,6 +761,7 @@ return( NULL );
 				SplineMake(ss->last,sp,false);
 			        ss->last = sp;
 			    } else if ( strcmp(type,"qcurve")==0 ) {
+				wasquad = true;
 				if ( precnt>=1 ) {
 				    ss->last->nextcp = sp->prevcp = pre[0];
 			            ss->last->nonextcp = sp->noprevcp = false;
@@ -659,7 +771,20 @@ return( NULL );
 			    }
 			    precnt = 0;
 			} else {
-			    if ( precnt<2 ) {
+			    if ( wasquad && precnt==1 ) {
+				sp = SplinePointCreate((x+pre[0].x)/2,(y+pre[0].y)/2);
+			        sp->prevcp = pre[0];
+			        sp->noprevcp = false;
+			        pre[0].x = x; pre[0].y = y;
+			        if ( ss->last==NULL )
+				    ss->first = sp;
+				else {
+				    ss->last->nextcp = sp->prevcp;
+			            ss->last->nonextcp = false;
+				    SplineMake(ss->last,sp,true);
+				}
+				ss->last = sp;
+			    } else if ( precnt<2 ) {
 				pre[precnt].x = x;
 			        pre[precnt].y = y;
 			        ++precnt;
@@ -687,9 +812,34 @@ return( NULL );
 		    sc->layers[ly_fore].splines = ss;
 		}
 	    }
+	} else if ( _xmlStrcmp(kids->name,(const xmlChar *) "lib")==0 ) {
+	    xmlNodePtr keys, temp, dict = FindNode(kids->children,"dict");
+	    if ( dict!=NULL ) {
+		for ( keys=dict->children; keys!=NULL; keys=keys->next ) {
+		    if ( _xmlStrcmp(keys->name,(const xmlChar *) "key")== 0 ) {
+			char *keyname = (char *) _xmlNodeListGetString(doc,keys->children,true);
+			int found = strcmp(keyname,"com.fontlab.hintData")==0;
+			free(keyname);
+			if ( found ) {
+			    for ( temp=keys->next; temp!=NULL; temp=temp->next ) {
+				if ( _xmlStrcmp(temp->name,(const xmlChar *) "dict")==0 )
+			    break;
+			    }
+			    if ( temp!=NULL ) {
+				sc->hstem = GlifParseHints(doc,temp,"hhints");
+				sc->vstem = GlifParseHints(doc,temp,"vhints");
+			        SCGuessHHintInstancesList(sc);
+			        SCGuessVHintInstancesList(sc);
+			    }
+		break;
+			}
+		    }
+		}
+	    }
 	}
     }
     _xmlFreeDoc(doc);
+    SPLCatagorizePoints(sc->layers[ly_fore].splines);
 return( sc );
 }
 
@@ -966,7 +1116,7 @@ return( NULL );
     sf->ascent = as; sf->descent = ds;
     sf->order2 = false;
     sf->italicangle = ia;
-    if ( strmatch(curve,"Quadratic")==0 )
+    if ( curve!=NULL && strmatch(curve,"Quadratic")==0 )
 	sf->order2 = true;
     if ( sf->fontname==NULL )
 	sf->fontname = "Untitled";
