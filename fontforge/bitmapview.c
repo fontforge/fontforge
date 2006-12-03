@@ -1340,12 +1340,16 @@ static void BVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *g) {
 	pos = BVCurEnc(bv)-1;
     } else if ( mi->mid == MID_NextDef ) {
 	for ( pos = BVCurEnc(bv)+1; pos<map->enccount &&
-		((gid=map->map[pos])==-1 || sf->glyphs[gid]==NULL); ++pos );
+		    ((gid=map->map[pos])==-1 || !SCWorthOutputting(sf->glyphs[gid]) ||
+			    bv->bdf->glyphs[gid]==NULL) ;
+		++pos );
 	if ( pos==map->enccount )
 return;
     } else if ( mi->mid == MID_PrevDef ) {
 	for ( pos = BVCurEnc(bv)-1; pos>=0 &&
-		((gid=map->map[pos])==-1 || sf->glyphs[gid]==NULL); --pos );
+		    ((gid=map->map[pos])==-1 || !SCWorthOutputting(sf->glyphs[gid]) ||
+			    bv->bdf->glyphs[gid]==NULL) ;
+		    --pos );
 	if ( pos<0 )
 return;
     }
