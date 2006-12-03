@@ -1375,7 +1375,7 @@ return( false );
 static void TestStorage( struct debugger_context *dc, TT_ExecContext exc) {
     int instr;
 
-    if ( exc->IP==exc->codeSize )
+    if ( exc->code==NULL || exc->IP==exc->codeSize )
 return;
     instr = exc->code[exc->IP];
     if ( instr==0x42 /* Write store */ && exc->top>=2 ) {
