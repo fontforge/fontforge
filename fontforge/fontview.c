@@ -4435,7 +4435,8 @@ void FontViewMenu_ChangeChar(GtkMenuItem *menuitem, gpointer user_data) {
 	    --pos;
 	else if ( _CC_ISNextDef ) {
 	    for ( ++pos; pos<map->enccount &&
-		    (map->map[pos]==-1 || !SCWorthOutputting(sf->glyphs[map->map[pos]]));
+		    (map->map[pos]==-1 || !SCWorthOutputting(sf->glyphs[map->map[pos]]) ||
+			(fv->show!=fv->filled && fv->show->glyphs[map->map[pos]]==NULL ));
 		    ++pos );
 	    if ( pos>=map->enccount ) {
 		int selpos = FVAnyCharSelected(fv);
@@ -4476,7 +4477,8 @@ return;
 	    }
 	} else if ( _CC_ISPrevDef ) {
 	    for ( --pos; pos>=0 &&
-		    (map->map[pos]==-1 || !SCWorthOutputting(sf->glyphs[map->map[pos]]));
+		    (map->map[pos]==-1 || !SCWorthOutputting(sf->glyphs[map->map[pos]]) ||
+			(fv->show!=fv->filled && fv->show->glyphs[map->map[pos]]==NULL ));
 		    --pos );
 	    if ( pos<0 )
 return;
