@@ -643,7 +643,7 @@ static void clslistitem2rule(const unichar_t *ret,struct fpst_rule *r) {
 	r->u.class.bclasses[r->u.class.bcnt-1-i] = temp;
     }
 
-    if ( *pt=='\0' )
+    if ( *pt=='\0' || pt[1]=='\0' )
 return;
     ret = pt+2;
     for ( pt = ret, cnt=0; pt!=NULL; pt = u_strchr(pt,',')) {
