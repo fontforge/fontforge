@@ -1143,7 +1143,7 @@ static void gdraw_xbitmap(GXWindow w, XImage *xi, GClut *clut,
 		x,y, src->width, src->height );
 	fg = trans==1?0:_GXDraw_GetScreenPixel(gdisp,clut!=NULL?clut->clut[1]:COLOR_CREATE(0xff,0xff,0xff));
 	bg = trans==0?0:_GXDraw_GetScreenPixel(gdisp,clut!=NULL?clut->clut[0]:COLOR_CREATE(0,0,0));
-	if ( bg!=fg || fg!=0 ) {
+	if ( /*bg!=fg || fg!=0*/ true ) {
 #ifdef _BrokenBitmapImages
 	    /* See the comment at _GXDraw_Image about why this works */
 	    XSetFunction(display,gc,GXxor);
