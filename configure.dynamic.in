@@ -305,6 +305,7 @@ AC_SUBST(X_11LIB)
 X_11LIB=-lX11
 if test "$no_x" = "yes"; then
  X_11LIB=
+ AC_DEFINE(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 else
  dnl AC_CHECK_HEADER("X11/extensions/XInput.h", : ,AC_DEFINE(_NO_XINPUT),)
  dnl AC_CHECK_HEADER("X11/extensions/XI.h", : ,AC_DEFINE(_NO_XINPUT),)
@@ -469,6 +470,7 @@ AC_ARG_WITH(noui,
  [
     if test "$withval" != "no" >/dev/null 2>&1 ; then
 	AC_DEFINE(FONTFORGE_CONFIG_NO_WINDOWING_UI)
+	X_11LIB=
     fi
  ], : )
 
@@ -540,14 +542,11 @@ cp Makefile.dynamic.in Makefile.in
 cp Unicode/Makefile.dynamic.in Unicode/Makefile.in
 cp gdraw/Makefile.dynamic.in gdraw/Makefile.in
 cp fontforge/Makefile.dynamic.in fontforge/Makefile.in
-AC_OUTPUT(Makefile Unicode/Makefile gdraw/Makefile fontforge/Makefile)
-AC_OUTPUT(po/Makefile plugins/Makefile)
-AC_OUTPUT(systemspecific)
+AC_OUTPUT(Makefile Unicode/Makefile gdraw/Makefile fontforge/Makefile po/Makefile plugins/Makefile systemspecific fontforge.pc )
 if test -e umap >/dev/null 2>&1 ; then
   cp umap/Makefile.dynamic.in umap/Makefile.in
   AC_OUTPUT( umap/Makefile )
 fi
-AC_OUTPUT( fontforge.pc )
 
 echo Configuration defines: $DEFS
 echo CFLAGS: $CFLAGS

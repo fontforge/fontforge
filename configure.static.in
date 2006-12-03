@@ -409,13 +409,11 @@ cp Makefile.static.in Makefile.in
 cp Unicode/Makefile.static.in Unicode/Makefile.in
 cp gdraw/Makefile.static.in gdraw/Makefile.in
 cp fontforge/Makefile.static.in fontforge/Makefile.in
-AC_OUTPUT(Makefile Unicode/Makefile gdraw/Makefile fontforge/Makefile po/Makefile)
-AC_OUTPUT(systemspecific)
+AC_OUTPUT(Makefile Unicode/Makefile gdraw/Makefile fontforge/Makefile po/Makefile systemspecific fontforge.pc )
 if test -e umap >/dev/null 2>&1 ; then
-  cp umap/Makefile.static.in umap/Makefile.in
+  cp umap/Makefile.dynamic.in umap/Makefile.in
   AC_OUTPUT( umap/Makefile )
 fi
-AC_OUTPUT( fontforge.pc )
 
 echo Configuration defines: $DEFS
 echo CFLAGS: $CFLAGS
