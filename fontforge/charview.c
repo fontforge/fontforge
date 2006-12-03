@@ -1750,6 +1750,8 @@ static void _CVFit(CharView *cv,DBounds *b) {
     real left, right, top, bottom, hsc, wsc;
     extern int palettes_docked;
     int offset = palettes_docked ? 90 : 0;
+    int em = cv->sc->parent->ascent + cv->sc->parent->descent;
+    int hsmall = true;
 
     if ( offset>cv->width ) offset = 0;
 
@@ -1762,11 +1764,11 @@ static void _CVFit(CharView *cv,DBounds *b) {
     if ( right<left ) IError("Left bigger than right!");
     top -= bottom;
     right -= left;
-    if ( top==0 ) top = 1000;
-    if ( right==0 ) right = 1000;
+    if ( top==0 ) top = em;
+    if ( right==0 ) right = em;
     wsc = (cv->width-offset) / right;
     hsc = cv->height / top;
-    if ( wsc<hsc ) hsc = wsc;
+    if ( wsc<hsc ) { hsc = wsc; hsmall = false ; }
 
     cv->scale = hsc;
     if ( cv->scale > 1.0 ) {
@@ -1775,8 +1777,11 @@ static void _CVFit(CharView *cv,DBounds *b) {
 	cv->scale = 2/ceil(2/cv->scale);
     }
 
-    cv->xoff = -(left - (right/10))*cv->scale + offset;
-    cv->yoff = -(bottom - (top/10))*cv->scale;
+    cv->xoff = -left *cv->scale + offset;
+    if ( hsmall )
+	cv->yoff = -bottom*cv->scale;
+    else
+	cv->yoff = -(left+top/2)*cv->scale + cv->height/2;
 
     CVNewScale(cv);
 }
@@ -1788,6 +1793,8 @@ static void CVFit(CharView *cv) {
     SplineCharFindBounds(cv->sc,&b);
     if ( b.miny>=0 ) b.miny = -cv->sc->parent->descent;
     if ( b.minx>0 ) b.minx = 0;
+    if ( b.maxx<0 ) b.maxx = 0;
+    if ( b.maxy<0 ) b.maxy = 0;
     if ( b.maxx<cv->sc->width ) b.maxx = cv->sc->width;
     /* Now give some extra space around the interesting stuff */
     center = (b.maxx+b.minx)/2;
