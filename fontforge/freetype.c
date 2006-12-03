@@ -1402,7 +1402,7 @@ static FT_Error PauseIns( TT_ExecContext exc ) {
     if ( dc->terminate )
 return( TT_Err_Execution_Too_Long );		/* Some random error code, says we're probably in a infinite loop */
     dc->exc = exc;
-    exc->grayscale = !dc->is_bitmap;		/* Not sure why tt_loader_init doesn't do this */
+    exc->grayscale = !dc->is_bitmap;		/* if we are in 'prep' or 'fpgm' freetype doesn't know this yet */
 
     /* Set up for watch points */
     if ( dc->oldpts==NULL && exc->pts.n_points!=0 ) {
