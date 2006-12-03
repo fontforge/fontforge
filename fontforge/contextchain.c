@@ -988,6 +988,12 @@ static void CCD_FinishEditNew(struct contextchaindlg *ccd) {
     struct fpst_rule dummy;
     GGadget *list = GWidgetGetControl(ccd->gw,CID_GList+ccd->wasoffset);
     int i,tot;
+#if defined(FONTFORGE_CONFIG_GDRAW)
+    char *buts[3];
+    buts[0] = _("_Yes"); buts[1] = _("_No"); buts[2] = NULL;
+#elif defined(FONTFORGE_CONFIG_GTK)
+    static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_NO, NULL };
+#endif
 
     if ( ccd->wasoffset>=300 ) {		/* It's a class */
 	char *ret = GGadgetGetTitle8(GWidgetGetControl(ccd->gw,CID_GlyphList+300));
@@ -1010,7 +1016,10 @@ return;
 	memset(&dummy,0,sizeof(dummy));
 	CCD_ParseLookupList(&dummy,GWidgetGetControl(ccd->gw,CID_LookupList+500));
 	if ( dummy.lookup_cnt==0 ) {
-	    gwwv_post_error(_("Bad Sequence/Lookup List"),_("There must be at least one entry in the Sequence/Lookup List"));
+	    int ans = gwwv_ask(_("No Sequence/Lookups"),
+		    (const char **) buts,0,1,
+		    _("There are no entries in the Sequence/Lookup List, was this intentional?"));
+	    if ( ans==1 )
 return;
 	}
 	if ( !CCD_ReasonableClassNum(
@@ -1078,7 +1087,10 @@ return;
 	free(val);
 	CCD_ParseLookupList(&dummy,GWidgetGetControl(ccd->gw,CID_LookupList));
 	if ( dummy.lookup_cnt==0 ) {
-	    gwwv_post_error(_("Bad Sequence/Lookup List"),_("There must be at least one entry in the Sequence/Lookup List"));
+	    int ans = gwwv_ask(_("No Sequence/Lookups"),
+		    (const char **) buts,0,1,
+		    _("There are no entries in the Sequence/Lookup List, was this intentional?"));
+	    if ( ans==1 )
 return;
 	}
 	dummy.u.glyph.names = ccd_cu_copy(_GGadgetGetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList)));
@@ -1730,6 +1742,12 @@ static void _CCD_Ok(struct contextchaindlg *ccd) {
     GTextInfo **old, **classes;
     struct fpst_rule dummy;
     int has[3];
+#if defined(FONTFORGE_CONFIG_GDRAW)
+    char *buts[3];
+    buts[0] = _("_Yes"); buts[1] = _("_No"); buts[2] = NULL;
+#elif defined(FONTFORGE_CONFIG_GTK)
+    static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_NO, NULL };
+#endif
 
     switch ( ccd->aw ) {
       case aw_glist: {
@@ -1798,7 +1816,10 @@ return;
 	} else {
 	    CCD_ParseLookupList(&dummy,GWidgetGetControl(ccd->gw,CID_LookupList+100));
 	    if ( dummy.lookup_cnt==0 ) {
-		gwwv_post_error(_("Bad Sequence/Lookup List"),_("There must be at least one entry in the Sequence/Lookup List"));
+		int ans = gwwv_ask(_("No Sequence/Lookups"),
+			(const char **) buts,0,1,
+			_("There are no entries in the Sequence/Lookup List, was this intentional?"));
+		if ( ans==1 )
 return;
 	    }
 	}
