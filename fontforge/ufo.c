@@ -102,7 +102,8 @@ return( false );
 	for ( spl=sc->layers[ly_fore].splines; spl!=NULL; spl=spl->next ) {
 	    fprintf( glif, "    <contour>\n" );
 	    for ( sp=spl->first; sp!=NULL; ) {
-		if ( !isquad || sp==spl->first || !SPInterpolate(sp) )
+		/* Undocumented fact: If a contour contains a series of off-curve points with no on-curve then treat as quadratic even if no qcurve */
+		if ( !isquad || /*sp==spl->first ||*/ !SPInterpolate(sp) )
 		    fprintf( glif, "      <point x=\"%g\" y=\"%g\" type=\"%s\" smooth=\"%s\"/>\n",
 			    sp->me.x, sp->me.y,
 			    sp->prev==NULL        ? "move"   :
@@ -639,6 +640,7 @@ static SplineChar *_UFOLoadGlyph(xmlDocPtr doc,char *glifname) {
     char *name;
     int uni;
     char *cpt;
+    int wasquad = -1;	/* Unspecified */
 
     glyph = _xmlDocGetRootElement(doc);
     format = _xmlGetProp(glyph,(xmlChar *) "format");
@@ -715,8 +717,8 @@ return( NULL );
 		} else if ( _xmlStrcmp(contour->name,(const xmlChar *) "contour")==0 ) {
 		    SplineSet *ss;
 		    SplinePoint *sp;
-		    BasePoint pre[2], init[2];
-		    int precnt=0, initcnt=0, open=0, wasquad=0;
+		    BasePoint pre[2], init[4];
+		    int precnt=0, initcnt=0, open=0;
 
 		    ss = chunkalloc(sizeof(SplineSet));
 		    for ( points = contour->children; points!=NULL; points=points->next ) {
@@ -740,7 +742,7 @@ return( NULL );
 			        ss->first = ss->last = sp;
 			    } else if ( ss->first==NULL ) {
 				ss->first = ss->last = sp;
-			        memcpy(init,pre,sizeof(init));
+			        memcpy(init,pre,sizeof(pre));
 			        initcnt = precnt;
 			        if ( strcmp(type,"qcurve")==0 )
 				    wasquad = true;
@@ -762,8 +764,15 @@ return( NULL );
 			        ss->last = sp;
 			    } else if ( strcmp(type,"qcurve")==0 ) {
 				wasquad = true;
-				if ( precnt>=1 ) {
-				    ss->last->nextcp = sp->prevcp = pre[0];
+				if ( precnt==2 ) {
+				    SplinePoint *sp = SplinePointCreate((pre[1].x+pre[0].x)/2,(pre[1].y+pre[0].y)/2);
+				    sp->prevcp = ss->last->nextcp = pre[0];
+				    sp->noprevcp = ss->last->nonextcp = false;
+				    SplineMake(ss->last,sp,true);
+				    ss->last = sp;
+				}
+			        if ( precnt>=1 ) {
+				    ss->last->nextcp = sp->prevcp = pre[precnt-1];
 			            ss->last->nonextcp = sp->noprevcp = false;
 				}
 				SplineMake(ss->last,sp,true);
@@ -771,19 +780,45 @@ return( NULL );
 			    }
 			    precnt = 0;
 			} else {
-			    if ( wasquad && precnt==1 ) {
+			    if ( wasquad==-1 && precnt==2 ) {
+				/* Undocumented fact: If there are no on-curve points (and therefore no indication of quadratic/cubic), assume truetype implied points */
+				memcpy(init,pre,sizeof(pre));
+				initcnt = 1;
+				sp = SplinePointCreate((pre[1].x+pre[0].x)/2,(pre[1].y+pre[0].y)/2);
+			        sp->nextcp = pre[1];
+			        sp->nonextcp = false;
+			        if ( ss->first==NULL )
+				    ss->first = sp;
+				else {
+				    ss->last->nextcp = sp->prevcp = pre[0];
+			            ss->last->nonextcp = sp->noprevcp = false;
+			            initcnt = 0;
+			            SplineMake(ss->last,sp,true);
+				}
+			        ss->last = sp;
+				sp = SplinePointCreate((x+pre[1].x)/2,(y+pre[1].y)/2);
+			        sp->prevcp = pre[1];
+			        sp->noprevcp = false;
+			        SplineMake(ss->last,sp,true);
+			        ss->last = sp;
+			        pre[0].x = x; pre[0].y = y;
+			        precnt = 1;
+				wasquad = true;
+			    } else if ( wasquad==true && precnt==1 ) {
 				sp = SplinePointCreate((x+pre[0].x)/2,(y+pre[0].y)/2);
 			        sp->prevcp = pre[0];
 			        sp->noprevcp = false;
-			        pre[0].x = x; pre[0].y = y;
-			        if ( ss->last==NULL )
+			        if ( ss->last==NULL ) {
 				    ss->first = sp;
-				else {
+			            memcpy(init,pre,sizeof(pre));
+			            initcnt = 1;
+				} else {
 				    ss->last->nextcp = sp->prevcp;
 			            ss->last->nonextcp = false;
 				    SplineMake(ss->last,sp,true);
 				}
 				ss->last = sp;
+			        pre[0].x = x; pre[0].y = y;
 			    } else if ( precnt<2 ) {
 				pre[precnt].x = x;
 			        pre[precnt].y = y;
@@ -793,19 +828,31 @@ return( NULL );
 			free(xs); free(ys); free(type);
 		    }
 		    if ( !open ) {
-			if ( initcnt==0 ) {
-			    memcpy(init,pre,sizeof(init));
-			    initcnt = precnt;
+			if ( precnt!=0 ) {
+			    BasePoint temp[2];
+			    memcpy(temp,init,sizeof(temp));
+			    memcpy(init,pre,sizeof(pre));
+			    memcpy(init+precnt,temp,sizeof(temp));
+			    initcnt += precnt;
 			}
-			if ( initcnt==2 ) {
+			if ( (wasquad==true && initcnt>0) || initcnt==1 ) {
+			    int i;
+			    for ( i=0; i<initcnt-1; ++i ) {
+				sp = SplinePointCreate((init[i+1].x+init[i].x)/2,(init[i+1].y+init[i].y)/2);
+			        sp->prevcp = ss->last->nextcp = init[i];
+			        sp->noprevcp = ss->last->nonextcp = false;
+			        SplineMake(ss->last,sp,true);
+			        ss->last = sp;
+			    }
+			    ss->last->nextcp = ss->first->prevcp = init[initcnt-1];
+			    ss->last->nonextcp = ss->first->noprevcp = false;
+			    wasquad = true;
+			} else if ( initcnt==2 ) {
 			    ss->last->nextcp = init[0];
 			    ss->first->prevcp = init[1];
 			    ss->last->nonextcp = ss->first->noprevcp = false;
-			} else if ( initcnt == 1 ) {
-			    ss->last->nextcp = ss->first->prevcp = init[0];
-			    ss->last->nonextcp = ss->first->noprevcp = false;
 			}
-			SplineMake(ss->last,ss->first,initcnt==1);
+			SplineMake(ss->last,ss->first,wasquad);
 			ss->last = ss->first;
 		    }
 		    ss->next = sc->layers[ly_fore].splines;
