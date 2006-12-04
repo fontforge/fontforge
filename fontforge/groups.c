@@ -1386,21 +1386,19 @@ void DefineGroups(FontView *fv) {
     gcd[k].gd.popup_msg = (unichar_t *) _("Glyphs may be either identified by name or by unicode code point.\nGenerally you control this by what you type in.\nTyping \"A\" would identify a glyph by name.\nTyping \"U+0041\" identifies a glyph by code point.\nWhen loading glyphs from the selection you must specify which format is desired.");
     gcd[k++].creator = GRadioCreate;
 
-    label[k].text = (unichar_t *) _("Set");
+    label[k].text = (unichar_t *) _("Set From Font");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+18;
-    gcd[k].gd.pos.width = -1;
     gcd[k].gd.popup_msg = (unichar_t *) _("Set this glyph list to be the glyphs selected in the fontview");
     gcd[k].gd.flags = gg_visible | gg_utf8_popup;
     gcd[k].gd.handle_controlevent = Group_FromSelection;
     gcd[k++].creator = GButtonCreate;
 
-    label[k].text = (unichar_t *) _("Select");
+    label[k].text = (unichar_t *) _("Select In Font");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 70; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
-    gcd[k].gd.pos.width = -1;
+    gcd[k].gd.pos.x = 110; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
     gcd[k].gd.popup_msg = (unichar_t *) _("Set the fontview's selection to be the glyphs named here");
     gcd[k].gd.flags = gg_visible | gg_utf8_popup;
     gcd[k].gd.handle_controlevent = Group_ToSelection;

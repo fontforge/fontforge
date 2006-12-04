@@ -2581,22 +2581,20 @@ return;
     gcd[k].gd.cid = CID_MCD_Name;
     gcd[k++].creator = GTextFieldCreate;
 
-    label[k].text = (unichar_t *) _("Set");
+    label[k].text = (unichar_t *) _("Set From Font");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+28;
-    gcd[k].gd.pos.width = -1;
     gcd[k].gd.popup_msg = (unichar_t *) _("Set this glyph list to be the glyphs selected in the fontview");
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     gcd[k].gd.handle_controlevent = MCD_FromSelection;
     gcd[k].gd.cid = CID_MCD_Set;
     gcd[k++].creator = GButtonCreate;
 
-    label[k].text = (unichar_t *) _("Select");
+    label[k].text = (unichar_t *) _("Select In Font");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 70; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
-    gcd[k].gd.pos.width = -1;
+    gcd[k].gd.pos.x = 110; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
     gcd[k].gd.popup_msg = (unichar_t *) _("Set the fontview's selection to be the glyphs named here");
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     gcd[k].gd.handle_controlevent = MCD_ToSelection;
