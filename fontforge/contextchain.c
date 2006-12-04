@@ -1296,17 +1296,23 @@ static void _CCD_FromSelection(struct contextchaindlg *ccd,int cid,int order_mat
 	/* also in replacement list */
 	for ( j=1; j<=max; ++j ) {
 	    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i]==j ) {
-		uc_strcpy(pt,sf->glyphs[i]->name);
-		pt += u_strlen(pt);
-		*pt++ = ' ';
+		int gid = fv->map->map[i];
+		if ( gid!=-1 && sf->glyphs[gid]!=NULL ) {
+		    uc_strcpy(pt,sf->glyphs[gid]->name);
+		    pt += u_strlen(pt);
+		    *pt++ = ' ';
+		}
 	    }
 	}
     } else {
 	/* in a coverage table (or class) the order of selection is irrelevant */
 	for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] ) {
-	    uc_strcpy(pt,sf->glyphs[i]->name);
-	    pt += u_strlen(pt);
-	    *pt++ = ' ';
+	    int gid = fv->map->map[i];
+	    if ( gid!=-1 && sf->glyphs[gid]!=NULL ) {
+		uc_strcpy(pt,sf->glyphs[gid]->name);
+		pt += u_strlen(pt);
+		*pt++ = ' ';
+	    }
 	}
     }
     if ( pt>vals ) pt[-1]='\0';
@@ -1645,7 +1651,7 @@ static void _CCD_DoLEditNew(struct contextchaindlg *ccd,int off,int isedit) {
 
     if ( d.ok ) {
 	int err = false;
-	seq = GetInt8(gw,1000,_("Sequence Number:"),&err);
+	seq = GetInt8(gw,1000,_("Sequence Position:"),&err);
 	if ( err )
   goto retry;
 	pt = _GGadgetGetTitle(gcd[3].ret);
@@ -2219,22 +2225,20 @@ static int CCD_AddGlyphList(GGadgetCreateData *gcd, GTextInfo *label,int off,
 	int y, int height) {
     int k = 0;
 
-    label[k].text = (unichar_t *) _("Set");
+    label[k].text = (unichar_t *) _("Set From Font");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = y;
-    gcd[k].gd.pos.width = -1;
     gcd[k].gd.popup_msg = (unichar_t *) _("Set this glyph list to be the characters selected in the fontview");
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     gcd[k].gd.handle_controlevent = CCD_FromSelection;
     gcd[k].gd.cid = CID_Set+off;
     gcd[k++].creator = GButtonCreate;
 
-    label[k].text = (unichar_t *) _("Select");
+    label[k].text = (unichar_t *) _("Select In Font");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 70; gcd[k].gd.pos.y = 4;
-    gcd[k].gd.pos.width = -1;
+    gcd[k].gd.pos.x = 110; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
     gcd[k].gd.popup_msg = (unichar_t *) _("Set the fontview's selection to be the characters named here");
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     gcd[k].gd.handle_controlevent = CCD_ToSelection;
@@ -2339,22 +2343,20 @@ static void CCD_AddReplacements(GGadgetCreateData *gcd, GTextInfo *label,
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k++].creator = GLabelCreate;
 
-    label[k].text = (unichar_t *) _("Set");
+    label[k].text = (unichar_t *) _("Set From Font");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+13;
-    gcd[k].gd.pos.width = -1;
     gcd[k].gd.popup_msg = (unichar_t *) _("Set this glyph list to be the characters selected in the fontview");
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     gcd[k].gd.handle_controlevent = CCD_FromSelection2;
     gcd[k].gd.cid = CID_Set2+off;
     gcd[k++].creator = GButtonCreate;
 
-    label[k].text = (unichar_t *) _("Select");
+    label[k].text = (unichar_t *) _("Select In Font");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 70; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
-    gcd[k].gd.pos.width = -1;
+    gcd[k].gd.pos.x = 110; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
     gcd[k].gd.popup_msg = (unichar_t *) _("Set the fontview's selection to be the characters named here");
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     gcd[k].gd.handle_controlevent = CCD_ToSelection2;
@@ -2699,7 +2701,7 @@ struct contextchaindlg *ContextChainEdit(SplineFont *sf,FPST *fpst,
 	    clabel[i][l].text = (unichar_t *) _("Same as Match Classes");
 	    clabel[i][l].text_is_1byte = true;
 	    cgcd[i][l].gd.label = &clabel[i][l];
-	    cgcd[i][l].gd.pos.x = 185; cgcd[i][l].gd.pos.y = 2;
+	    cgcd[i][l].gd.pos.x = 190; cgcd[i][l].gd.pos.y = 7;
 	    cgcd[i][l].gd.handle_controlevent = CCD_SameAsClasses;
 	    cgcd[i][l].gd.flags = gg_visible | gg_enabled;
 	    cgcd[i][l].gd.cid = CID_SameAsClasses + i*20;

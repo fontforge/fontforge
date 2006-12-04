@@ -3129,22 +3129,20 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     memset(label,0,sizeof(label));
     k = 0;
 
-    label[k].text = (unichar_t *) _("Set");
+    label[k].text = (unichar_t *) _("Set From Font");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = 5;
-    gcd[k].gd.pos.width = -1;
     gcd[k].gd.popup_msg = (unichar_t *) _("Set this glyph list to be the characters selected in the fontview");
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     gcd[k].gd.handle_controlevent = SMD_FromSelection;
     gcd[k].gd.cid = CID_Set;
     gcd[k++].creator = GButtonCreate;
 
-    label[k].text = (unichar_t *) _("Select");
+    label[k].text = (unichar_t *) _("Select In Font");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 70; gcd[k].gd.pos.y = 5;
-    gcd[k].gd.pos.width = -1;
+    gcd[k].gd.pos.x = 110; gcd[k].gd.pos.y = 5;
     gcd[k].gd.popup_msg = (unichar_t *) _("Set the fontview's selection to be the characters named here");
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     gcd[k].gd.handle_controlevent = SMD_ToSelection;
