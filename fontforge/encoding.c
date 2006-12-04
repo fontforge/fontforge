@@ -2833,7 +2833,7 @@ return;
 
 GTextInfo encodingtypes[] = {
     { (unichar_t *) N_("Custom"), NULL, 0, 0, (void *) "Custom", NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("Encoding|Original"), NULL, 0, 0, (void *) "Original", NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Encoding|Glyph Order"), NULL, 0, 0, (void *) "Original", NULL, 0, 0, 0, 0, 0, 0, 1},
     { NULL, NULL, 0, 0, NULL, NULL, 1, 0, 0, 0, 0, 1, 0 },
     { (unichar_t *) N_("ISO 8859-1  (Latin1)"), NULL, 0, 0, (void *) "iso8859-1", NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("ISO 8859-15  (Latin0)"), NULL, 0, 0, (void *) "iso8859-15", NULL, 0, 0, 0, 0, 0, 0, 1},
