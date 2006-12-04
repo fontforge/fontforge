@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 21-Mar-2005 -->
-  <!-- AP: Last modified: 21-Apr-2006 -->
+  <!-- AP: Last modified: 4-Dec-2006 -->
   <TITLE>Contextual features</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -41,9 +41,13 @@
       <A HREF="editexample6-5.html">Conditional features</A>
       <UL>
 	<LI>
-	  <A HREF="editexample6-5.html#OpenType">OpenType</A>
+	  <A HREF="editexample6-5.html#OpenType">OpenType</A> (behavior needed in latin
+	  for script joins)
 	<LI>
-	  <A HREF="editexample6-5.html#Apple">Apple</A>
+	  <A HREF="editexample6-5.html#Apple">Apple</A> (behavior needed in latin for
+	  script joins)
+	<LI>
+	  <A HREF="editexample6-5.html#Greek">OpenType</A> (Greek ligatures)
       </UL>
     <LI>
       <A HREF="editexample7.html#checking">Checking your font</A>
@@ -71,8 +75,9 @@
   and transforms the glyph stream.
   <P>
   Conditional features may involve substitutions, ligatures or kerning (and
-  some more obscure behaviors). I am going to provide an example here of a
-  contextual substitution.
+  some more obscure behaviors). First I shall provide an example of a contextual
+  substitution, later of <A HREF="editexample6-5.html#Greek">contextual
+  ligatures</A>.
   <P>
   <IMG SRC="bed-script.png" WIDTH="259" HEIGHT="81" ALIGN="Right">Instead of
   an Indic or Arabic example, let us take something I'm more familiar with,
@@ -91,29 +96,42 @@
       <FONT COLOR="Red"> <STRONG>Warning</STRONG></FONT>
     </CAPTION>
     <TR>
-      <TD >The following example does not work! The font tables produced by it
-	are all correct, but the designers of OpenType decided that the latin script
-	does not need complex conditional features and implementations of OpenType
-	do not support them for latin. This is not even mentioned in the standard,
-	but is hidden away in supplemental information on microsoft's site.
+      <TD >The following example may not work! The font tables produced by it are
+	all correct, but the designers of OpenType (or its implementors) decided
+	that the latin script does not need complex conditional features and many
+	implementations of OpenType do not support them for latin. This is not even
+	mentioned in the standard, but is hidden away in supplemental information
+	on microsoft's site.
 	<P>
 	Why do I provide an example which doesn't work? It's the best I can do. If
 	I knew enough about Indic or Arabic typesetting I would provide an example
 	for those scripts. But I don't. The procedures are the same. If you follow
 	them for some other scripts they will work.
 	<P>
-	On some systems and in some applications this example can be made to work
-	by replacing the 'calt' feature tag (conditional alternatives) with a Required
-	tag.</TD>
+	On some systems and in some applications 'calt' is supported for latn and
+	this example will work. On other systems/applications the example can be
+	made to work by replacing the 'calt' feature tag (conditional alternatives)
+	with a Required tag (but I gather that is now deprecated).</TD>
     </TR>
   </TABLE>
   <P>
   We divide the set of possible glyphs into three classes: the letters ``bovw'',
   all other letters, and all other glyphs. We need to create two patterns,
-  the first will match a glyph in the ``bovw'' class followed by a glyph in
-  the ``bovw'' class, while the second will match a glyph in the ``bovw'' class
-  followed by any other letter. If either of these matches the second glyph
-  should be transformed into its high variant.
+  the first will match a glyph in the ``bovw'' class followed by another glyph
+  in the ``bovw'' class, while the second will match a glyph in the ``bovw''
+  class followed by any other letter. If either of these matches the second
+  glyph should be transformed into its high variant.
+  <UL>
+    <LI>
+      [bovw] [bovw] =&gt; Apply a substitution to second letter
+    <LI>
+      [bovw] &lt;any other letter&gt; =&gt; Apply a substitution to the second
+      letter
+  </UL>
+  <P>
+  (You might wonder why I don't just have a class of all letters and use one
+  rule instead of two? Because in this case all my classes must be disjoint,
+  I mayn't have one glyph appearing in two classes).
   <P>
   The first thing we must do is create a simple substitution mapping each low
   letter to its high variant. Let us call this substitution by the four character
@@ -144,8 +162,8 @@
   <P>
   <IMG SRC="ott2_5.png" WIDTH="329" HEIGHT="263" ALIGN="Left">The next dialog
   allows you to specify the overall format of the substitution. We want a class
-  based system -- we've already mentioned what the glyph classes will be
-  above.<BR CLEAR=ALL>
+  based system -- we've already mentioned what the glyph classes will
+  be.<BR CLEAR=ALL>
   <P>
   <IMG SRC="ott3.png" WIDTH="330" HEIGHT="357" ALIGN="Right">The next dialog
   finally shows something interesting. At the top are a series of patterns
@@ -262,8 +280,221 @@
   through the transitions of the state machine.
   <P>
   Pressing [OK] many times will extract you from this chain of dialogs and
-  add a new state machine to your font.
+  add a new state machine to your font.<BR CLEAR=ALL>
+  <H2>
+    OpenType, <A NAME="Greek">Greek</A> ligatures
+  </H2>
   <P>
+  I am told that in Greek there are some ligatures that only happen for words.
+  That is there is a special ligature for "kappa" followed by "iota" when the
+  two letters form all of a word which should not be used if the two occur
+  inside a word.
+  <P>
+  <IMG SRC="kappa_iota+word.png" WIDTH="180" HEIGHT="287" ALIGN="Right">So
+  the first thing to do is create the ligature itself. Add an unencoded glyph
+  to your font with
+  <A HREF="encodingmenu.html#AddSlots"><CODE>Encoding-&gt;Add Encoding
+  Slots</CODE></A>, name it "kappa_iota.word" (with
+  <CODE><A HREF="elementmenu.html#CharInfo">Element-&gt;Glyph Info</A></CODE>),
+  then draw your glyph, and finally with
+  <A HREF="elementmenu.html#CharInfo"><CODE>Element-&gt;Glyph Info-&gt;Ligature
+  </CODE></A>make it be a ligature of "kappa" and "iota". As above we make
+  up a tag (in this case called "WORD") and we use Nested for the Script. This
+  feature (lookup actually) will never be used directly -- only under the control
+  of a conditional feature, so we don't want it to look anything like something
+  which might get invoked on its own.
+  <P>
+  Next the conditional bit.
+  <P>
+  I'm going to use the notation &lt;letters&gt; to represent a class consisting
+  of all greek letters.
+  <OL>
+    <LI>
+      &lt;letters&gt; kappa iota =&gt; no substitution
+    <LI>
+      kappa iota &lt;letters&gt; =&gt; no substitution
+    <LI>
+      kappa iota =&gt; apply the ligature "WORD"
+  </OL>
+  <P>
+  These rules will be executed in order, and the first one that matches the
+  input text will be the (one and only) rule applied. Consider these three
+  strings, <IMG SRC="alphakappaiota.png" WIDTH="23" HEIGHT="12">,
+  <IMG SRC="kappaiotatheta.png" WIDTH="24" HEIGHT="12">,
+  <IMG SRC="alphakappaiotatheta.png" WIDTH="30" HEIGHT="12"> all contain kappa
+  and iota but none contains only those two letters, so none should be replaced
+  by the ligature.
+  <UL>
+    <LI>
+      The first string, <IMG SRC="alphakappaiota.png" WIDTH="23" HEIGHT="12">,
+      will match the first rule above (it contains letters before the kappa iota
+      sequence) and no substitution will be done. It also matches the third rule,
+      but we never get that far.
+    <LI>
+      The second string, <IMG SRC="kappaiotatheta.png" WIDTH="24" HEIGHT="12">,
+      will match the second rule above (it contains letters after the sequence)
+      and again no substitution will be done. Again it would match the third rule,
+      but we stop with the first match.
+    <LI>
+      The third string, <IMG SRC="alphakappaiotatheta.png" WIDTH="30" HEIGHT="12">,
+      matches all the rules, but since the search stops at the first match, only
+      the first rule will be applied, and no substitution will be done.
+    <LI>
+      The string, <IMG SRC="spacekappaiotaspace.png" WIDTH="29" HEIGHT="12">, matches
+      neither of the first two rules but does match the last, so here the ligature
+      will be formed.
+  </UL>
+  <P>
+  You might wonder why I don't just have one rule
+  <OL>
+    <LI>
+      &lt;any non-letter&gt; kappa iota &lt;any non-letter&gt; =&gt; apply our
+      ligature
+  </OL>
+  <P>
+  It seems much simpler.
+  <P>
+  Well there's one main reason:
+  <UL>
+    <LI>
+      This does not work if the kappa is at the beginning of the input stream (it
+      will not be preceded by any letters, but might still need replacing), or
+      iota at the end.
+  </UL>
+  <P>
+  Now how do we convert these rules into a contextual feature?
+  <P>
+  <IMG SRC="contextchainnew.png" WIDTH="405" HEIGHT="254" ALIGN="Left">We use
+  <CODE><A HREF="fontinfo.html#Contextual">Element-&gt;Font
+  Info-&gt;Contextual-&gt;Chain Sub</A></CODE> to bring up a list of all Contextual
+  Chaining substitutions in this font (so far there are none).
+  <P>
+  <IMG SRC="contextualhlig.png" WIDTH="180" HEIGHT="249" ALIGN="Right">Then
+  we press the <CODE>[New...] </CODE>button to create our conditional ligature.
+  As always we need to specify a tag an a script. This feature is one we want
+  applied directly, so we want a standard script and tag. The script is greek,
+  and the tag is for Historic Ligatures.
+  <P>
+  After pressing the <CODE>[OK]</CODE> button we will be asked to design the
+  contextual feature itself.<BR CLEAR=ALL>
+  <TABLE BORDER CELLPADDING="2">
+    <TR VALIGN="Top">
+      <TD><IMG SRC="hligbyclasses.png" WIDTH="330" HEIGHT="248"><BR>
+	Since we are planning on using the class of all greek letters we will want
+	to use a class format for this feature. Then we press the <CODE>[Next&gt;]
+	</CODE>button.</TD>
+      <TD><IMG SRC="emptyhlig.png" WIDTH="330" HEIGHT="337"><BR>
+	The main match will be on the letters kappa and iota in all three rules,
+	so we need one class for each of them. So in the Match Classes area we press
+	the <CODE>[New]</CODE> button...</TD>
+    </TR>
+    <TR VALIGN="Top">
+      <TD><IMG SRC="hligkappaclass.png" WIDTH="330" HEIGHT="214"><BR>
+	And type in the word "kappa" and press <CODE>[Next&gt;]</CODE></TD>
+      <TD><IMG SRC="hligkappa.png" WIDTH="330" HEIGHT="362"><BR>
+	Now we have a class containing the single glyph "kappa". We want to do the
+	same thing for "iota" so we press <CODE>[New] </CODE>again.</TD>
+    </TR>
+    <TR VALIGN="Top">
+      <TD><IMG SRC="hligiotaclass.png" WIDTH="330" HEIGHT="208"><BR>
+	Again type in "iota" and press <CODE>[Next&gt;]</CODE></TD>
+      <TD><IMG SRC="hligkappaiota.png" WIDTH="330" HEIGHT="362"><BR>
+	Now we have all the classes we need here. We still need to create classes
+	for the lookahead and backtrack. We only need one class for these groups
+	and that class will consist of all greek letters.</TD>
+    </TR>
+    <TR VALIGN="Top">
+      <TD><IMG SRC="hligback.png" WIDTH="330" HEIGHT="362"><BR>
+	The check box <CODE>[*] Same as Match Classes</CODE> is set, but we don't
+	want that, we want our own classes here. So uncheck it.</TD>
+      <TD><IMG SRC="hligbacknomatch.png" WIDTH="330" HEIGHT="362"><BR>
+	Now the buttons become active and we can create a new class by pressing
+	<CODE>[New]</CODE></TD>
+    </TR>
+    <TR VALIGN="Top">
+      <TD><IMG SRC="allgreek.png" WIDTH="313" HEIGHT="276"><BR>
+	Before doing anything else, go back to the font view and select all the greek
+	letters.</TD>
+      <TD><IMG SRC="hliggreekclass.png" WIDTH="330" HEIGHT="207"><BR>
+	Then, in the dialog, press the <CODE>[Set From Font] </CODE>button, and the
+	font's selection is transfered and becomes the current class. Then press
+	<CODE>[Next&gt;]</CODE>.</TD>
+    </TR>
+    <TR VALIGN="Top">
+      <TD><IMG SRC="hliggreekback.png" WIDTH="330" HEIGHT="357"></TD>
+      <TD VALIGN="Top"><IMG SRC="hliggreekahead.png" WIDTH="330" HEIGHT="357"><BR>
+	Then go through the same process for the look ahead classes (adding one class
+	which consists of all the greek letters.</TD>
+    </TR>
+    <TR VALIGN="Top">
+      <TD>Now we have all our classes defined and are finally ready to create the
+	patterns for our rules. So underneath "List of lists of class numbers" press
+	the <CODE>[New] </CODE>button.<BR>
+	<IMG SRC="hlignewrule.png" WIDTH="330" HEIGHT="357"></TD>
+      <TD>The first rule begins with all the greek letters in the backtrack area,
+	so click on the "Backtrack" tab, and then press on the class consisting of
+	all the greek letters. This puts the class number into the pattern area (the
+	List of class numbers)<BR>
+	<IMG SRC="hligbackrule.png" WIDTH="330" HEIGHT="357"></TD>
+    </TR>
+    <TR VALIGN="Top">
+      <TD>In the match area we want to match kappa and then iota, so click on the
+	Match tab, and then on the entries for "kappa" and "iota".<BR>
+	<IMG SRC="hligrule.png" WIDTH="330" HEIGHT="357"><BR>
+	This rule has no substitutions, so leave the bottom area blank and press
+	<CODE>[Next&gt;]</CODE>.</TD>
+      <TD>We are done with the first rule. It says:
+	<UL>
+	  <LI>
+	    The previous character should match class 1 of the backtrack classes (and
+	    that class contains all greek letters, which is what we want)
+	  <LI>
+	    The current character should match class 1 of the match classes (and that
+	    class contains "kappa")
+	  <LI>
+	    The next character should match class 2 of the match classes (which is iota)
+	  <LI>
+	    And if the match is successful, do absolutely nothing.
+	</UL>
+	<P>
+	<IMG SRC="hligbackruledone.png" WIDTH="330" HEIGHT="357"><BR>
+	We've got two more rules though, so press <CODE>[New] </CODE>again and go
+	through the same steps, except using the lookahead area rather than the
+	backtrack.</TD>
+    </TR>
+    <TR VALIGN="Top">
+      <TD>We are done with the second rule. It says:
+	<UL>
+	  <LI>
+	    The current character should match class 1 of the match classes (and that
+	    class contains "kappa")
+	  <LI>
+	    The next character should match class 2 of the match classes (which is iota)
+	  <LI>
+	    The character after that should match class 1 of the lookahead classes (and
+	    that class contains all the greek letters)
+	  <LI>
+	    And if the match is successful, do absolutely nothing.
+	</UL>
+	<P>
+	<IMG SRC="hligaheadruledone.png"><BR>
+	Press <CODE>[New] </CODE>for the final rule.</TD>
+      <TD><IMG SRC="hligrule.png" WIDTH="330" HEIGHT="357"><BR>
+	This rule does have substitutions -- we want to take the two characters and
+	convert them into a ligature. So Press <CODE>[New] </CODE>under the sequence
+	position list, we want to start at the first character (sequence position
+	0) and apply the ligature we called "WORD":<BR>
+	<IMG SRC="hligseqdlg.png" WIDTH="177" HEIGHT="156"></TD>
+    </TR>
+    <TR VALIGN="Top">
+      <TD>So if anything doesn't match the first two rules, and does contain a
+	kappa followed by an iota, it must be a two letter stand-alone greek word.
+	And we want to apply our ligature to it.<BR>
+	<IMG SRC="hligallrulesdone.png" WIDTH="330" HEIGHT="357"></TD>
+      <TD>Now we are done. Press a series of <CODE>[OK]</CODE>s until all the dialogs
+	have been accepted.</TD>
+    </TR>
+  </TABLE>
   <P>
   <P ALIGN=Center>
   -- <A HREF="editexample6.html">Prev</A> -- <A HREF="overview.html">TOC</A>
