@@ -1008,10 +1008,25 @@ return(1);
       case 0x88:
 	val1 = exc->stack[exc->top-1];
 	scrprintf(&scr," Get Information"); 
-	scrprintf(&scr, "Pops: %d %s%s%s", val1,
-		val1&1 ? "version " : "",
-		val1&2 ? "rotated " : "",
-		val1&4 ? "stretched" : "" ); 
+	scrprintf(&scr, "Pops: %d %s%s%s%s%s%s%s%s", val1,
+		val1&1 ? "version (result in bits 0-7) " : "",
+		val1&2 ? "rotated (result in bit 8)" : "",
+		val1&4 ? "stretched (result in bit 9)" : "",
+		val1&(1<<5) ? "greyscale (result in bit 12)" : "", 
+		val1&(1<<6) ? "ClearType (result in bit 13)" : "", 
+		val1&(1<<7) ? "CT widths compat (result in bit 14)" : "", 
+		val1&(1<<8) ? "CT symetrical smoothing (result in bit 15)" : "",
+		val1&(1<<9) ? "CT processes in BGR(1) or RGB(0) (result in bit 16)" : "");
+	if ( val1&1 ) {
+	    scrprintf(&scr, "  Versions: 1 => Mac OS 6" );
+	    scrprintf(&scr, "            2 => Mac OS 7" );
+	    scrprintf(&scr, "            3 => Win 3.1" );
+	    scrprintf(&scr, "            33=> Win rasterizer 1.5" );
+	    scrprintf(&scr, "            34=> Win rasterizer 1.6" );
+	    scrprintf(&scr, "            35=> Win rasterizer 1.7" );
+	    scrprintf(&scr, "            37=> Win rasterizer 1.8" );
+	    scrprintf(&scr, "            38=> Win rasterizer 1.9" );
+	}
 	scrprintf(&scr,"Pushes: result"); 
       break;
       case 0x89:
