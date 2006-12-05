@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 1-Dec-2006 -->
+  <!-- AP: Last modified: 4-Dec-2006 -->
   <TITLE>Frequently Asked Questions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -277,7 +277,16 @@
       <A NAME="font-editor"><B>Why a font editor, aren't there enough fonts
       already?</B></A>
     <DD>
-      Well... no. Otherwise I wouldn't be writing this.
+      Well... no. Otherwise I wouldn't be writing this, and. more to the point,
+      there wouldn't be thousands of people downloading it every month.
+      <P>
+      I am often asked this question; to me it represents a misapprehension. You
+      wouldn't go up to a paintbrush maker and ask if he thought there were already
+      enough watercolor paintings. A font is a work of art and represents the
+      individual genius of its creator. It is no more redundant than a watercolor.
+      <P>
+      However, accepting the question at face value, here are my attempts to answer
+      it... er, pragmatically.
       <OL>
 	<LI>
 	  There are lots of latin fonts. There are far fewer greek, cyrillic, indic,
@@ -382,6 +391,9 @@
 	<LI>
 	  Converting from one set of widgets to another is tedious. And people send
 	  me bugs which distract me.
+	<LI>
+	  If I spend my time doing that conversion I won't be making FontForge more
+	  functional.
 	<LI>
 	  QT is written in C++, and, <A HREF="faq.html#C-plus-plus">as I explain
 	  below</A>, I don't like C++, so that's out.
@@ -569,10 +581,10 @@
 	      specified in the OS/2 table. And these in turn are supposed to sum to the
 	      emsize. (FontForge sets these values to the ascent/descent values you specify
 	      for your font). Unfortunately most windows applications don't follow this
-	      rule, and instead set them to the Win Ascent/Descent values of the OS/2 table.
-	      These values are supposed to specify a clipping region for the font (not
-	      line spacing). The clipping region should be as big as the font's bounding
-	      box, but in some cases needs to be bigger.
+	      rule, and instead base linespacing on the Win Ascent/Descent values of the
+	      OS/2 table. These values are supposed to specify a clipping region for the
+	      font (not line spacing). The clipping region should be as big as the font's
+	      bounding box, but in some cases needs to be bigger.
 	      <P>
 	      (The clipping region should be bigger than the bounding box if a GPOS lookup
 	      could move a glyph so that it extended beyond the bounding box (mark to base
@@ -630,11 +642,12 @@
       produced for fonts:
       <UL>
 	<LI>
+	  <A HREF="http://scripts.sil.org/OFL" TARGET="_top">The Open Font License
+	  from SIL</A><BR>
+	  The above is the license I would recommend.
+	<LI>
 	  <A HREF="http://www.gnome.org/fonts/#Final_Bitstream_Vera_fonts" TARGET="_top">The
 	  license Bitstream used to release the Vera fonts</A>
-	<LI>
-	  <A HREF="http://scripts.sil.org/OFL" TARGET="_top">The Open Font License
-	  from SIL</A>
       </UL>
     <DT>
       <A NAME="Minimum"><B>Minimum requirements</B></A>
@@ -918,7 +931,7 @@ $ xset fp+ `pwd`
 	  .ttf font files.
 	  <P>
 	  Mac OS/X does not seem to support the old NFNT bitmap format, but it still
-	  requires that an bitmap font in NFNT format be present before it will use
+	  requires that a bitmap font in NFNT format be present before it will use
 	  a resource-based postscript font. (It is probably not the NFNT resource which
 	  is required, but the FOND which goes along with it. But I'm not going to
 	  write something to produce a bare FOND resource -- nothing else does either).
@@ -985,14 +998,14 @@ $ xset fp+ `pwd`
       on the "Light" variant of the font to be Regular (everything unselected)
       and set the style of the "Light-Italic" variant to be "Italic" -- that is,
       forget about the "Light", the FOND can't handle it, that's why we moved it
-      into its own family.
+      into its own FOND.
       <P>
       Having done this setup, the <A HREF="filemenu.html#GenerateMac">Generate
       Mac Family </A>command should be able to put all the fonts into appropriate
       FONDs, and then place all the FONDs into one file, which the Mac should interpret
       correctly.
     <DT>
-      <B><A NAME="Mac-ATM">Why doesn't ATM work on my fonts?</A></B>
+      <B><A NAME="Mac-ATM">Why doesn't ATM work on my (mac) fonts?</A></B>
     <DD>
       Insure that the font has an encoding of Macintosh Latin when you generate
       it.
@@ -1100,7 +1113,7 @@ $ xset fp+ `pwd`
       a computer to do well. You might be advised to examine the results of the
       rasterization in the <A HREF="bitmapview.html" TARGET="_top">bitmap window</A>
       (with <A HREF="windowmenu.html#Bitmap" TARGET="_top">Window-&gt;Open Bitmap
-      Window</A>), possibly fixup the bitmap as you go. Then when done select
+      Window</A>), and possibly fixup the bitmap as you go. Then when done select
       <A HREF="generate.html" TARGET="_top">Element-&gt;Generate Fonts</A>, turn
       off outline font generation (unless you also want an outline font, of course),
       and select the desired bitmap format.
