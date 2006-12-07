@@ -658,6 +658,7 @@ static void BVResize(BitmapView *bv, GEvent *event ) {
     int sbsize = GDrawPointsToPixels(bv->gw,_GScrollBar_Width);
     int newwidth = event->u.resize.size.width-sbsize,
 	newheight = event->u.resize.size.height-sbsize - bv->mbh-bv->infoh;
+    GRect size;
 
     if ( newwidth == bv->width && newheight == bv->height )
 return;
@@ -669,6 +670,9 @@ return;
     GGadgetMove(bv->hsb,0,event->u.resize.size.height-sbsize);
     GGadgetResize(bv->hsb,newwidth,sbsize);
     bv->width = newwidth; bv->height = newheight;
+    GGadgetGetSize(bv->recalc,&size);
+    GGadgetMove(bv->recalc,event->u.resize.size.width - size.width - GDrawPointsToPixels(bv->gw,6),size.y);
+    GDrawRequestExpose(bv->gw,NULL,false);
     BVFit(bv);
 }
 
@@ -1806,7 +1810,7 @@ return;
 
 BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv, int enc) {
     BitmapView *bv = gcalloc(1,sizeof(BitmapView));
-    GRect pos, zoom;
+    GRect pos, zoom, size;
     GWindow gw;
     GWindowAttrs wattrs;
     GGadgetData gd;
@@ -1899,6 +1903,8 @@ BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv, int enc) {
 	gd.flags = gg_pos_in_pixels;
     gd.handle_controlevent = BVRecalc;
     bv->recalc = GButtonCreate(gw,&gd,bv);
+    GGadgetGetSize(bv->recalc,&size);
+    GGadgetMove(bv->recalc,pos.width - size.width - GDrawPointsToPixels(gw,6),size.y);
 
     pos.y = bv->mbh+bv->infoh; pos.height -= bv->mbh + sbsize + bv->infoh;
     pos.x = 0; pos.width -= sbsize;
