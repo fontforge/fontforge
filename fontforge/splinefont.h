@@ -1010,6 +1010,7 @@ typedef struct splinefont {
 			                        /* to mean "really use them" */
     unsigned int weight_width_slope_only: 1;	/* This bit seems stupid to me */
     unsigned int save_to_dir: 1;		/* Loaded from an sfdir collection rather than a simple sfd file */
+    unsigned int head_optimized_for_cleartype: 1;/* Bit in the 'head' flags field, if unset "East Asian fonts in the Windows Presentation Framework (Avalon) will not be hinted" */
     struct fontview *fv;
     enum uni_interp uni_interp;
     NameList *for_new_glyphs;
@@ -1133,7 +1134,8 @@ typedef struct splinefont {
 #endif
     short os2_version;			/* 0 means default rather than the real version 0 */
     short compression;			/* If we opened a compressed sfd file, then save it out compressed too */
-    int gasp_cnt;
+    short gasp_version;			/* 0/1 currently */
+    short gasp_cnt;
     struct gasp {
 	uint16 ppem;
 	uint16 flags;

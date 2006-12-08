@@ -211,6 +211,10 @@ static GTextInfo os2versions[] = {
     { (unichar_t *) N_("3"), NULL, 0, 0, (void *) 3, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("4"), NULL, 0, 0, (void *) 4, NULL, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
+static GTextInfo gaspversions[] = {
+    { (unichar_t *) N_("0"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("1"), NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { NULL }};
 static GTextInfo panfamily[] = {
     { (unichar_t *) N_("PanoseFamily|Any"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("PanoseFamily|No Fit"), NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -1218,6 +1222,8 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_Language		5006	/* Used by AskForLangNames */
 
 #define CID_Gasp		5100
+#define CID_GaspVersion		5101
+#define CID_HeadClearType	5102
 
 #define CID_Comment		6001
 
@@ -4776,8 +4782,8 @@ static void GaspMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
 	    md[5*i  ].u.md_ival = sf->gasp[i].ppem;
 	    md[5*i+1].u.md_ival = (sf->gasp[i].flags&1)?1:0;
 	    md[5*i+2].u.md_ival = (sf->gasp[i].flags&2)?1:0;
-	    md[5*i+3].u.md_ival = (sf->gasp[i].flags&8)?1:0;
-	    md[5*i+4].u.md_ival = (sf->gasp[i].flags&16)?1:0;
+	    md[5*i+3].u.md_ival = (sf->gasp[i].flags&4)?1:0;
+	    md[5*i+4].u.md_ival = (sf->gasp[i].flags&8)?1:0;
 	}
 	mi->initial_row_cnt = sf->gasp_cnt;
     }
@@ -5314,14 +5320,20 @@ return(true);
 	    sf->gasp = NULL;
 	else {
 	    sf->gasp = galloc(gasprows*sizeof(struct gasp));
+	    sf->gasp_version = GGadgetGetFirstListSelectedItem(GWidgetGetControl(gw,CID_GaspVersion));
 	    for ( i=0; i<gasprows; ++i ) {
 		sf->gasp[i].ppem = gasp[5*i].u.md_ival;
-		sf->gasp[i].flags = gasp[5*i+1].u.md_ival |
-			(gasp[5*i+2].u.md_ival<<1) |
-			(gasp[5*i+2].u.md_ival<<3) |
-			(gasp[5*i+2].u.md_ival<<4);
+		if ( sf->gasp_version==0 )
+		    sf->gasp[i].flags = gasp[5*i+1].u.md_ival |
+			    (gasp[5*i+2].u.md_ival<<1);
+		else
+		    sf->gasp[i].flags = gasp[5*i+1].u.md_ival |
+			    (gasp[5*i+2].u.md_ival<<1) |
+			    (gasp[5*i+2].u.md_ival<<2) |
+			    (gasp[5*i+2].u.md_ival<<3);
 	    }
 	}
+	sf->head_optimized_for_cleartype = GGadgetIsChecked(GWidgetGetControl(gw,CID_HeadClearType));
 
 	OtfNameListFree(sf->fontstyle_name);
 	sf->fontstyle_name = OtfNameFromStyleNames(GWidgetGetControl(gw,CID_StyleName));
@@ -6205,11 +6217,11 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
 	pgcd[8], vgcd[19], pangcd[22], comgcd[3], atgcd[7], txgcd[23],
 	congcd[3], csubgcd[fpst_max-pst_contextpos][6], smgcd[3], smsubgcd[4][6],
 	mfgcd[8], mcgcd[8], szgcd[19], mkgcd[5], metgcd[29], vagcd[3], ssgcd[23],
-	xugcd[7], dgcd[6], ugcd[4], gaspgcd[2], gaspgcd_def[2];
+	xugcd[7], dgcd[6], ugcd[4], gaspgcd[5], gaspgcd_def[2];
     GGadgetCreateData mb[2], mb2, nb[2], nb2, nb3, xub[2], psb[2], psb2[3], ppbox[3],
 	    vbox[4], metbox[2], ssbox[2], panbox[2], combox[2], atbox[4], mkbox[3],
 	    txbox[5], ubox[2], dbox[2], conbox[fpst_max-pst_contextpos][4],
-	    smbox[4][4], mcbox[3], mfbox[3], szbox[6], tnboxes[3];
+	    smbox[4][4], mcbox[3], mfbox[3], szbox[6], tnboxes[3], gaspboxes[3];
     GGadgetCreateData *marray[7], *marray2[9], *narray[26], *narray2[7], *narray3[3],
 	*xuarray[13], *psarray[10], *psarray2[21], *psarray3[3], *psarray4[10],
 	*ppbuttons[5], *pparray[4], *vradio[5], *vbutton[4], *varray[38], *metarray[46],
@@ -6219,12 +6231,13 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
 	*conarray2[fpst_max-pst_contextpos][6], *conarray3[fpst_max-pst_contextpos][4],
 	*smarray[4][4], *smarray2[4][6], *smarray3[4][4], *mcarray[13], *mcarray2[7],
 	*mfarray[14], *szarray[7], *szarray2[5], *szarray3[7],
-	*szarray4[4], *szarray5[6], *tnvarray[4], *tnharray[5];
+	*szarray4[4], *szarray5[6], *tnvarray[4], *tnharray[5], *gaspharray[6],
+	*gaspvarray[3];
     GTextInfo mlabel[10], nlabel[16], pslabel[30], tnlabel[7],
 	plabel[8], vlabel[19], panlabel[22], comlabel[3], atlabel[7], txlabel[23],
 	csublabel[fpst_max-pst_contextpos][6], smsublabel[4][6],
 	mflabel[8], mclabel[8], szlabel[17], mklabel[5], metlabel[28],
-	sslabel[23], xulabel[6], dlabel[5], ulabel[1], gasplabel[2];
+	sslabel[23], xulabel[6], dlabel[5], ulabel[1], gasplabel[5];
     GTextInfo *namelistnames;
     struct gfi_data *d;
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20],
@@ -7917,18 +7930,54 @@ return;
     vagcd[0].creator = GTabSetCreate;
 
 /******************************************************************************/
+    memset(&gaspboxes,0,sizeof(gaspboxes));
     memset(&gaspgcd,0,sizeof(gaspgcd));
     memset(&gasplabel,0,sizeof(gasplabel));
     memset(&gaspgcd_def,0,sizeof(gaspgcd_def));
 
     GaspMatrixInit(&gaspmi,d);
 
-    gaspgcd[0].gd.pos.x = 10; gaspgcd[0].gd.pos.y = 5;
-    gaspgcd[0].gd.pos.width = 300; tngcd[0].gd.pos.height = 200;
-    gaspgcd[0].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
-    gaspgcd[0].gd.cid = CID_Gasp;
-    gaspgcd[0].gd.u.matrix = &gaspmi;
-    gaspgcd[0].gd.popup_msg = (unichar_t *) _(
+    i = j = 0;
+
+    gasplabel[i].text = (unichar_t *) S_("Gasp|_Version");
+    gasplabel[i].text_is_1byte = true;
+    gasplabel[i].text_in_resource = true;
+    gaspgcd[i].gd.label = &gasplabel[i];
+    gaspgcd[i].gd.flags = gg_visible | gg_enabled;
+    gaspharray[j++] = &gaspgcd[i];
+    gaspgcd[i++].creator = GLabelCreate;
+
+    gaspgcd[i].gd.flags = gg_visible | gg_enabled;
+    gaspgcd[i].gd.cid = CID_GaspVersion;
+    gaspgcd[i].gd.label = &gaspversions[sf->gasp_version];
+    gaspgcd[i].gd.u.list = gaspversions;
+    gaspharray[j++] = &gaspgcd[i];
+    gaspgcd[i++].creator = GListButtonCreate;
+    gaspharray[j++] = GCD_HPad10;
+
+    gasplabel[i].text = (unichar_t *) _("Optimized For Cleartype");
+    gasplabel[i].text_is_1byte = true;
+    gasplabel[i].text_in_resource = true;
+    gaspgcd[i].gd.label = &gasplabel[i];
+    gaspgcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    if ( sf->head_optimized_for_cleartype )
+	gaspgcd[i].gd.flags |= gg_cb_on;
+    gaspgcd[i].gd.popup_msg = (unichar_t *) _("Actually a bit in the 'head' table.\nIf unset then certain East Asian fonts will not be hinted");
+    gaspharray[j++] = &gaspgcd[i];
+    gaspgcd[i++].creator = GCheckBoxCreate;
+    gaspharray[j++] = NULL;
+
+    gaspboxes[2].gd.flags = gg_enabled|gg_visible;
+    gaspboxes[2].gd.u.boxelements = gaspharray;
+    gaspboxes[2].creator = GHBoxCreate;
+
+    gaspvarray[0] = &gaspboxes[2];
+
+    gaspgcd[i].gd.pos.width = 300; gaspgcd[i].gd.pos.height = 200;
+    gaspgcd[i].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gaspgcd[i].gd.cid = CID_Gasp;
+    gaspgcd[i].gd.u.matrix = &gaspmi;
+    gaspgcd[i].gd.popup_msg = (unichar_t *) _(
 	"The 'gasp' table gives you control over when grid-fitting and\n"
 	"anti-aliased rasterizing are done.\n"
 	"The table consists of an (ordered) list of pixel sizes each with\n"
@@ -7936,14 +7985,20 @@ return;
 	"the previous table entry but less than or equal to the current.\n"
 	"The list must be terminated with a pixel size of 65535.\n\n"
 	"The 'gasp' table only applies to truetype fonts.");
-    gaspgcd[0].data = d;
-    gaspgcd[0].creator = GMatrixEditCreate;
+    gaspgcd[i].data = d;
+    gaspgcd[i].creator = GMatrixEditCreate;
+    gaspvarray[1] = &gaspgcd[i];
+    gaspvarray[2] = NULL;
+
+    gaspboxes[0].gd.flags = gg_enabled|gg_visible;
+    gaspboxes[0].gd.u.boxelements = gaspvarray;
+    gaspboxes[0].creator = GVBoxCreate;
 
     gaspgcd_def[0].gd.flags = gg_visible | gg_enabled;
-    gasplabel[1].text = (unichar_t *) S_("Gasp|_Default");
-    gasplabel[1].text_is_1byte = true;
-    gasplabel[1].text_in_resource = true;
-    gaspgcd_def[0].gd.label = &gasplabel[1];
+    gasplabel[4].text = (unichar_t *) S_("Gasp|_Default");
+    gasplabel[4].text_is_1byte = true;
+    gasplabel[4].text_in_resource = true;
+    gaspgcd_def[0].gd.label = &gasplabel[4];
     gaspgcd_def[0].gd.handle_controlevent = Gasp_Default;
     gaspgcd_def[0].creator = GButtonCreate;
 /******************************************************************************/
@@ -8825,7 +8880,7 @@ return;
     if ( sf->cidmaster!=NULL ) aspects[i].disabled = true;
     aspects[i].text = (unichar_t *) _("Grid Fitting");
     aspects[i].text_is_1byte = true;
-    aspects[i++].gcd = gaspgcd;
+    aspects[i++].gcd = gaspboxes;
 
     d->tx_aspect = i;
 /* xgettext won't use non-ASCII messages */
@@ -8944,8 +8999,11 @@ return;
 
     GGadgetsCreate(gw,mb);
     GMatrixEditSetNewText(tngcd[4].ret,S_("TrueTypeName|New"));
-    GMatrixEditSetNewText(gaspgcd[0].ret,S_("gaspTableEntry|New"));
-    GMatrixEditAddButtons(gaspgcd[0].ret,gaspgcd_def);
+    GGadgetSelectOneListItem(gaspgcd[0].ret,sf->gasp_version);
+    GMatrixEditSetNewText(gaspgcd[3].ret,S_("gaspTableEntry|New"));
+    GMatrixEditAddButtons(gaspgcd[3].ret,gaspgcd_def);
+    GHVBoxSetExpandableCol(gaspboxes[2].ret,2);
+    GHVBoxSetExpandableRow(gaspboxes[0].ret,1);
 
     GHVBoxSetExpandableRow(mb[0].ret,0);
     GHVBoxSetExpandableCol(mb2.ret,gb_expandgluesame);
@@ -9109,5 +9167,7 @@ return;
     gaspci[0].title = S_(gaspci[0].title);
     gaspci[1].title = S_(gaspci[1].title);
     gaspci[2].title = S_(gaspci[2].title);
+    gaspci[3].title = S_(gaspci[3].title);
+    gaspci[4].title = S_(gaspci[4].title);
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
