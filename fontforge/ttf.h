@@ -80,6 +80,7 @@ struct ttfinfo {
     unsigned int strokedfont: 1;		/* painttype==2 for otf */
     unsigned int use_typo_metrics: 1;
     unsigned int weight_width_slope_only: 1;
+    unsigned int optimized_for_cleartype: 1;
     enum openflags openflags;
     /* Mac fonts platform=0/1, platform specific enc id, roman=0, english is lang code 0 */
     /* iso platform=2, platform specific enc id, latin1=0/2, no language */
@@ -101,6 +102,7 @@ struct ttfinfo {
     enum uni_interp uni_interp;
     struct pfminfo pfminfo;
     short os2_version;
+    short gasp_version;
     int dupnamestate;
     struct ttflangname *names;
     char *fontcomments;

@@ -2646,7 +2646,21 @@ void cvt_unix_to_1904( long time, int32 result[2]) {
 
 static void sethead(struct head *head,SplineFont *sf,struct alltabs *at) {
     time_t now;
-    int i, lr, rl;
+    int i, lr, rl, indic_rearrange, arabic, k;
+    ASM *sm;
+
+    lr = rl = arabic = 0;
+    for ( i=0; i<at->gi.gcnt; ++i ) if ( at->gi.bygid[i]!=-1 ) {
+	SplineChar *sc = sf->glyphs[at->gi.bygid[i]];
+	int uni = sc->unicodeenc ;
+	if ( SCRightToLeft(sc) )
+	    rl = 1;
+	else if (( uni!=-1 && uni<0x10000 && islefttoright(uni)) ||
+		 (uni>=0x10300 && uni<0x107ff))
+	    lr = 1;
+	if ( SCScriptFromUnicode(sc)==CHR('a','r','a','b') )
+	    arabic = 1;
+    }
 
     head->version = 0x00010000;
     if ( sf->subfontcnt!=0 ) {
@@ -2668,24 +2682,32 @@ static void sethead(struct head *head,SplineFont *sf,struct alltabs *at) {
     }
     head->checksumAdj = 0;
     head->magicNum = 0x5f0f3cf5;
-    head->flags = 8|3;
+    head->flags = 8|2|1;		/* baseline at 0, lsbline at 0, round ppem */
     if ( AnyInstructions(sf))
-	head->flags = 0x1b;		/* baseline at 0, lsbline at 0, round ppem, instructions change metrics */
+	head->flags = 0x10|8|4|2|1;	/* baseline at 0, lsbline at 0, round ppem, instructions may depend on point size, instructions change metrics */
+/* Apple flags */
+    if ( sf->hasvmetrics )
+	head->flags |= (1<<5);		/* designed to be layed out vertically */
+    /* Bit 6 must be zero */
+    if ( arabic )
+	head->flags |= (1<<7);
+    if ( sf->sm )
+	head->flags |= (1<<8);		/* has metamorphesis effects */
+    if ( rl )
+	head->flags |= (1<<9);
+    indic_rearrange = 0;
+    for ( sm = sf->sm; sm!=NULL; sm=sm->next )
+	if ( sm->type == asm_indic )
+	    indic_rearrange = true;
+    if ( indic_rearrange )
+	head->flags |= (1<<10);
+/* End apple flags */
+    if ( sf->head_optimized_for_cleartype )
+	head->flags |= (1<<13);
     head->emunits = sf->ascent+sf->descent;
     head->macstyle = MacStyleCode(sf,NULL);
     head->lowestreadable = 8;
     head->locais32 = 1;
-    lr = rl = 0;
-
-    for ( i=0; i<at->gi.gcnt; ++i ) if ( at->gi.bygid[i]!=-1 ) {
-	SplineChar *sc = sf->glyphs[at->gi.bygid[i]];
-	int uni = sc->unicodeenc ;
-	if ( SCRightToLeft(sc) )
-	    rl = 1;
-	else if (( uni!=-1 && uni<0x10000 && islefttoright(uni)) ||
-		 (uni>=0x10300 && uni<0x107ff))
-	    lr = 1;
-    }
 
     /* I assume we've always got some neutrals (spaces, punctuation) */
     if ( lr && rl )
@@ -3438,7 +3460,7 @@ static void dumpgasp(struct alltabs *at, SplineFont *sf) {
 	putshort(at->gaspf,0x2);	/* Grey scale, no gridfitting */
 					/* No hints, so no grids to fit */
     } else {
-	putshort(at->gaspf,1);	/* New version number, with clear type info */
+	putshort(at->gaspf,sf->gasp_version);	/* New version number, with clear type info */
 	putshort(at->gaspf,sf->gasp_cnt);
 	for ( i=0; i<sf->gasp_cnt; ++i ) {
 	    putshort(at->gaspf,sf->gasp[i].ppem);

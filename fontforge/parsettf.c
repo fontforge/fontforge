@@ -663,8 +663,11 @@ static void readdate(FILE *ttf,struct ttfinfo *info,int ismod) {
 static void readttfhead(FILE *ttf,struct ttfinfo *info) {
     /* Here I want units per em, and size of loca entries */
     /* oh... also creation/modification times */
-    int i;
-    fseek(ttf,info->head_start+4*4+2,SEEK_SET);		/* skip over the version number and a bunch of junk */
+    int i, flags;
+
+    fseek(ttf,info->head_start+4*4,SEEK_SET);		/* skip over the version number and a bunch of junk */
+    flags = getushort(ttf);
+    info->optimized_for_cleartype = (flags&(1<<13))?1:0;
     info->emsize = getushort(ttf);
     for ( i=0; i<12; ++i )
 	getushort(ttf);
@@ -4371,8 +4374,9 @@ static void readttfgasp(FILE *ttf,struct ttfinfo *info) {
 return;
 
     fseek(ttf,info->gasp_start,SEEK_SET);
-    if ( getushort(ttf)!=0 )
-return;			/* We only support 'gasp' version 0 (no other version currently) */
+    info->gasp_version = getushort(ttf);
+    if ( info->gasp_version!=0 && info->gasp_version!=1 )
+return;			/* We only support 'gasp' versions 0&1 (no other versions currently) */
     info->gasp_cnt = cnt = getushort(ttf);
     if ( cnt==0 )
 return;
@@ -5059,6 +5063,8 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->os2_version = info->os2_version;
     sf->use_typo_metrics = info->use_typo_metrics;
     sf->weight_width_slope_only = info->weight_width_slope_only;
+    sf->head_optimized_for_cleartype = info->optimized_for_cleartype;
+    sf->gasp_version = info->gasp_version;
     sf->names = info->names;
     sf->anchor = info->ahead;
     sf->kerns = info->khead;
