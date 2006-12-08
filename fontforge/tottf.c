@@ -3429,8 +3429,8 @@ static void dumpgasp(struct alltabs *at, SplineFont *sf) {
     int i;
 
     at->gaspf = tmpfile();
-    putshort(at->gaspf,0);	/* Version number */
     if ( sf->gasp_cnt==0 ) {
+	putshort(at->gaspf,0);	/* Old version number */
 	/* For fonts with no instructions always dump a gasp table which */
 	/*  asks for grey and no grid fit */
 	putshort(at->gaspf,1);
@@ -3438,6 +3438,7 @@ static void dumpgasp(struct alltabs *at, SplineFont *sf) {
 	putshort(at->gaspf,0x2);	/* Grey scale, no gridfitting */
 					/* No hints, so no grids to fit */
     } else {
+	putshort(at->gaspf,1);	/* New version number, with clear type info */
 	putshort(at->gaspf,sf->gasp_cnt);
 	for ( i=0; i<sf->gasp_cnt; ++i ) {
 	    putshort(at->gaspf,sf->gasp[i].ppem);
