@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 21-Mar-2005 -->
-  <!-- AP: Last modified: 4-Dec-2006 -->
+  <!-- AP: Last modified: 8-Dec-2006 -->
   <TITLE>Contextual features</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -285,10 +285,11 @@
     OpenType, <A NAME="Greek">Greek</A> ligatures
   </H2>
   <P>
-  I am told that in Greek there are some ligatures that only happen for words.
-  That is there is a special ligature for "kappa" followed by "iota" when the
-  two letters form all of a word which should not be used if the two occur
-  inside a word.
+  Greek has a character (U+03D7) which is equivalent to the Latin ampersand.
+  Just as the ampersand is (originally) a ligature of "E" and "t", so U+03D7
+  is a ligature of "kappa" and "iota". However this ligature should only be
+  used if "kappa" and "iota" make up a word unto themselves, it should not
+  be used for more normal occurances of the two within a longer word.
   <P>
   <IMG SRC="kappa_iota+word.png" WIDTH="180" HEIGHT="287" ALIGN="Right">So
   the first thing to do is create the ligature itself. Add an unencoded glyph
@@ -299,10 +300,10 @@
   then draw your glyph, and finally with
   <A HREF="elementmenu.html#CharInfo"><CODE>Element-&gt;Glyph Info-&gt;Ligature
   </CODE></A>make it be a ligature of "kappa" and "iota". As above we make
-  up a tag (in this case called "WORD") and we use Nested for the Script. This
-  feature (lookup actually) will never be used directly -- only under the control
-  of a conditional feature, so we don't want it to look anything like something
-  which might get invoked on its own.
+  up a tag (in this case called "WORD") and we use "Nested" for the Script.
+  This feature (lookup actually) will never be used directly -- only under
+  the control of another, a conditional feature, so we don't want it to look
+  anything like something which might get invoked on its own.
   <P>
   Next the conditional bit.
   <P>
@@ -333,8 +334,8 @@
     <LI>
       The second string, <IMG SRC="kappaiotatheta.png" WIDTH="24" HEIGHT="12">,
       will match the second rule above (it contains letters after the sequence)
-      and again no substitution will be done. Again it would match the third rule,
-      but we stop with the first match.
+      and again no substitution will be done. It would match the third rule, but
+      we stop with the first match.
     <LI>
       The third string, <IMG SRC="alphakappaiotatheta.png" WIDTH="30" HEIGHT="12">,
       matches all the rules, but since the search stops at the first match, only
