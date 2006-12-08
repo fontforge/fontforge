@@ -874,10 +874,20 @@ static GTextInfo antialias[] = {
     { (unichar_t *) N_("No Anti-Alias"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 1, 0, 1},
     { (unichar_t *) N_("Anti-Alias"), NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
-static struct col_init gaspci[3] = {
+static GTextInfo symsmooth[] = {
+    { (unichar_t *) N_("No Symmetric-Smooth"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 1, 0, 1},
+    { (unichar_t *) N_("Symmetric-Smoothing"), NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { NULL }};
+static GTextInfo gfsymsmooth[] = {
+    { (unichar_t *) N_("No Grid Fit w/ Sym-Smooth"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 1, 0, 1},
+    { (unichar_t *) N_("Grid Fit w/ Sym-Smooth"), NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { NULL }};
+static struct col_init gaspci[5] = {
     { me_int , NULL, NULL, NULL, N_("Gasp|Pixels Per EM") },
     { me_enum, NULL, gridfit, NULL, N_("Gasp|Grid Fit") },
-    { me_enum, NULL, antialias, NULL, N_("Gasp|Anti-Alias") }
+    { me_enum, NULL, antialias, NULL, N_("Gasp|Anti-Alias") },
+    { me_enum, NULL, symsmooth, NULL, N_("Gasp|Symmetric Smoothing") },
+    { me_enum, NULL, gfsymsmooth, NULL, N_("Gasp|Grid Fit w/ Sym Smooth") }
     };
 
 struct langstyle { int lang; const char *str; };
@@ -4701,16 +4711,21 @@ static int Gasp_Default(GGadget *g, GEvent *e) {
 
 	if ( !SFHasInstructions(d->sf)) {
 	    rows = 1;
-	    gasp = gcalloc(3,sizeof(struct matrix_data));
+	    gasp = gcalloc(5,sizeof(struct matrix_data));
 	    gasp[0].u.md_ival = 65535;
 	    gasp[1].u.md_ival = 0;	/* no grid fit (we have no instructions, we can't grid fit) */
 	    gasp[2].u.md_ival = 1;	/* do anti-alias */
+	    gasp[2].u.md_ival = 0;	/* do symmetric smoothing */
+	    gasp[2].u.md_ival = 0;	/* do no grid fit w/ sym smooth */
 	} else {
 	    rows = 3;
-	    gasp = gcalloc(9,sizeof(struct matrix_data));
+	    gasp = gcalloc(5,sizeof(struct matrix_data));
 	    gasp[0].u.md_ival = 8;     gasp[1].u.md_ival = 0; gasp[2].u.md_ival = 1;
-	    gasp[3].u.md_ival = 16;    gasp[4].u.md_ival = 1; gasp[5].u.md_ival = 0;
-	    gasp[6].u.md_ival = 65535; gasp[7].u.md_ival = 1; gasp[8].u.md_ival = 1;
+		    gasp[3].u.md_ival = 0; gasp[4].u.md_ival = 0;
+	    gasp[5].u.md_ival = 16;    gasp[6].u.md_ival = 1; gasp[7].u.md_ival = 0;
+		    gasp[8].u.md_ival = 0; gasp[9].u.md_ival = 0;
+	    gasp[10].u.md_ival = 65535; gasp[11].u.md_ival = 1; gasp[12].u.md_ival = 1;
+		    gasp[13].u.md_ival = 0; gasp[14].u.md_ival = 0;
 	}
 	GMatrixEditSet(gg,gasp,rows,false);
     }
@@ -4725,7 +4740,7 @@ return( false );
 
     /* Only allow them to delete the sentinal entry if that would give us an */
     /* empty gasp table */
-return( gasp[3*row].u.md_ival!=0xffff || rows==1 );
+return( gasp[5*row].u.md_ival!=0xffff || rows==1 );
 }
 
 static int gasp_comp(const void *_md1, const void *_md2) {
@@ -4749,23 +4764,20 @@ static void GaspMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
     struct matrix_data *md;
 
     memset(mi,0,sizeof(*mi));
-    mi->col_cnt = 3;
+    mi->col_cnt = 5;
     mi->col_init = gaspci;
 
     if ( sf->gasp_cnt==0 ) {
-	md = gcalloc(3,sizeof(struct matrix_data));
-#if 0
-	md[0].u.md_ival = 0xffff;
-	md[1].u.md_ival = 1;
-	md[2].u.md_ival = 1;
-#endif
+	md = gcalloc(5,sizeof(struct matrix_data));
 	mi->initial_row_cnt = 0;
     } else {
-	md = gcalloc(3*sf->gasp_cnt,sizeof(struct matrix_data));
+	md = gcalloc(5*sf->gasp_cnt,sizeof(struct matrix_data));
 	for ( i=0; i<sf->gasp_cnt; ++i ) {
-	    md[3*i  ].u.md_ival = sf->gasp[i].ppem;
-	    md[3*i+1].u.md_ival = (sf->gasp[i].flags&1)?1:0;
-	    md[3*i+2].u.md_ival = (sf->gasp[i].flags&2)?1:0;
+	    md[5*i  ].u.md_ival = sf->gasp[i].ppem;
+	    md[5*i+1].u.md_ival = (sf->gasp[i].flags&1)?1:0;
+	    md[5*i+2].u.md_ival = (sf->gasp[i].flags&2)?1:0;
+	    md[5*i+3].u.md_ival = (sf->gasp[i].flags&8)?1:0;
+	    md[5*i+4].u.md_ival = (sf->gasp[i].flags&16)?1:0;
 	}
 	mi->initial_row_cnt = sf->gasp_cnt;
     }
@@ -5081,7 +5093,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 
 	if ( strings==NULL || gasp==NULL )
 return( true );
-	if ( gasprows>0 && gasp[3*gasprows-3].u.md_ival!=65535 ) {
+	if ( gasprows>0 && gasp[5*gasprows-5].u.md_ival!=65535 ) {
 	    gwwv_post_error(_("Bad Grid Fiting table"),_("The 'gasp' (Grid Fit) table must end with a pixel entry of 65535"));
 return( true );
 	}
@@ -5303,8 +5315,11 @@ return(true);
 	else {
 	    sf->gasp = galloc(gasprows*sizeof(struct gasp));
 	    for ( i=0; i<gasprows; ++i ) {
-		sf->gasp[i].ppem = gasp[3*i].u.md_ival;
-		sf->gasp[i].flags = gasp[3*i+1].u.md_ival | (gasp[3*i+2].u.md_ival<<1);
+		sf->gasp[i].ppem = gasp[5*i].u.md_ival;
+		sf->gasp[i].flags = gasp[5*i+1].u.md_ival |
+			(gasp[5*i+2].u.md_ival<<1) |
+			(gasp[5*i+2].u.md_ival<<3) |
+			(gasp[5*i+2].u.md_ival<<4);
 	    }
 	}
 
