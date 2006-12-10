@@ -4794,6 +4794,22 @@ static void GaspMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
     mi->handle_key = TN_PassChar;
 }
 
+static int GFI_GaspVersion(GGadget *g, GEvent *e) {
+    if ( e->u.control.subtype == et_listselected ) {
+	int version = GGadgetGetFirstListSelectedItem(g);
+	GGadget *gasp = GWidgetGetControl(GGadgetGetWindow(g),CID_Gasp);
+	if ( version == 0 ) {
+	    GMatrixEditEnableColumn(gasp,3,false);
+	    GMatrixEditEnableColumn(gasp,4,false);
+	} else {
+	    GMatrixEditEnableColumn(gasp,3,true);
+	    GMatrixEditEnableColumn(gasp,4,true);
+	}
+	GGadgetRedraw(gasp);
+    }
+return( true );
+}
+
 static int GFI_SortBy(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
 	struct gfi_data *d = (struct gfi_data *) GDrawGetUserData(GGadgetGetWindow(g));
@@ -7952,6 +7968,7 @@ return;
     gaspgcd[i].gd.label = &gaspversions[sf->gasp_version];
     gaspgcd[i].gd.u.list = gaspversions;
     gaspharray[j++] = &gaspgcd[i];
+    gaspgcd[i].gd.handle_controlevent = GFI_GaspVersion;
     gaspgcd[i++].creator = GListButtonCreate;
     gaspharray[j++] = GCD_HPad10;
 
@@ -7960,6 +7977,7 @@ return;
     gasplabel[i].text_in_resource = true;
     gaspgcd[i].gd.label = &gasplabel[i];
     gaspgcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gaspgcd[i].gd.cid = CID_HeadClearType;
     if ( sf->head_optimized_for_cleartype )
 	gaspgcd[i].gd.flags |= gg_cb_on;
     gaspgcd[i].gd.popup_msg = (unichar_t *) _("Actually a bit in the 'head' table.\nIf unset then certain East Asian fonts will not be hinted");
@@ -7983,7 +8001,9 @@ return;
 	"The table consists of an (ordered) list of pixel sizes each with\n"
 	"a set of flags. Those flags apply to all pixel sizes bigger than\n"
 	"the previous table entry but less than or equal to the current.\n"
-	"The list must be terminated with a pixel size of 65535.\n\n"
+	"The list must be terminated with a pixel size of 65535.\n"
+	"Version 1 of the table contains two additional flags that\n"
+	"apply to MS's ClearType rasterizer.\n\n"
 	"The 'gasp' table only applies to truetype fonts.");
     gaspgcd[i].data = d;
     gaspgcd[i].creator = GMatrixEditCreate;
@@ -9002,6 +9022,10 @@ return;
     GGadgetSelectOneListItem(gaspgcd[0].ret,sf->gasp_version);
     GMatrixEditSetNewText(gaspgcd[3].ret,S_("gaspTableEntry|New"));
     GMatrixEditAddButtons(gaspgcd[3].ret,gaspgcd_def);
+    if ( sf->gasp_version==0 ) {
+	GMatrixEditEnableColumn(gaspgcd[3].ret,3,false);
+	GMatrixEditEnableColumn(gaspgcd[3].ret,4,false);
+    }
     GHVBoxSetExpandableCol(gaspboxes[2].ret,2);
     GHVBoxSetExpandableRow(gaspboxes[0].ret,1);
 

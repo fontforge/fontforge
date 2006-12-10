@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 5-Oct-2006 -->
+  <!-- AP: Last modified: 10-Dec-2006 -->
   <TITLE>Font Info</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -574,12 +574,14 @@
   <P>
   These names are only meaningful for TrueType and OpenType fonts.
   <H2>
-    <IMG SRC="fontinfo-gasp.png" WIDTH="441" HEIGHT="382" ALIGN="Right"><A NAME="gasp">Grid
+    <IMG SRC="fontinfo-gasp.png" WIDTH="540" HEIGHT="314" ALIGN="Right"><A NAME="gasp">Grid
     Fit ('gasp' table)</A>
   </H2>
   <P>
   The TrueType 'gasp' table gives you control over whether the rasterizer should
-  do grid-fitting or anti-aliasing at any given pixel size.
+  do grid-fitting or anti-aliasing at any given pixel size. Note that this
+  table only applies to <EM>TrueType</EM> fonts, it does not apply to Type2
+  PostScript (fonts with .otf extension).
   <P>
   The table consists of a set of pixel sizes with corresponding flags. For
   each entry in the table the flags apply to all pixel sizes bigger than the
@@ -590,6 +592,12 @@
   If your font contains no instructions this will be different than the 'gasp'
   table for a font with instructions.
   <P>
+  MS has recently expanded the table. Version 0 of the table had two bits for
+  each pixel value, version 1 has four bits, two of which control the behavior
+  of their ClearType rasterizer. They have also added a bit to the 'head' table
+  called optimized_for_cleartype; if this bit is not set then some fonts will
+  not be hinted.
+  <P>
   In the table above:
   <UL>
     <LI>
@@ -599,7 +607,8 @@
       All pixel sizes between 9 and 16 (inclusive) will be grid-fit but not
       anti-aliased.
     <LI>
-      All pixel sizes above 16 will be both grid-fit and anti-aliased.<BR Clear=All>
+      All pixel sizes above 16 will be both grid-fit and anti-aliased, and will
+      have Cleartype Symetric Smoothing done.<BR Clear=All>
   </UL>
   <H2>
     <IMG SRC="fontinfo-tex.png" WIDTH="376" HEIGHT="600" ALIGN="Right"><A NAME="TeX">TeX</A>

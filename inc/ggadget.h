@@ -352,6 +352,7 @@ void GMatrixEditUp(GGadget *g);
 void GMatrixEditDown(GGadget *g);
 void GMatrixEditSetUpDownVisible(GGadget *g, int enabled);
 void GMatrixEditAddButtons(GGadget *g, GGadgetCreateData *gcd);
+void GMatrixEditEnableColumn(GGadget *g, int col, int enabled);
 
 
 extern void GGadgetPreparePopup(GWindow base,const unichar_t *msg);

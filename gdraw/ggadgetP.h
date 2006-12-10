@@ -367,6 +367,7 @@ typedef struct gmatrixedit {
 	char *title;
 	int16 width, x;			/* Relative to inner.x */
 	uint8 fixed;
+	uint8 disabled;
     } *col_data;
     int hpad, vpad;			/* Internal padding */
     unsigned int has_titles: 1;
