@@ -489,8 +489,8 @@ static int GMatrixEdit_Expose(GWindow pixmap, GGadget *g, GEvent *event) {
 	GDrawFillRect(pixmap,&r,0x808080);
 	y = r.y + gme->as;
 	GDrawSetFont(pixmap,gme->titfont);
-	for ( c=0; c<gme->cols; ++c ) if ( gme->col_data[c].title!=NULL ) {
-	    r.x = gme->col_data[c].x + gme->g.inner.x;
+	for ( c=0; c<gme->cols; ++c ) if ( gme->col_data[c].title!=NULL && !gme->col_data[c].disabled ) {
+	    r.x = gme->col_data[c].x + gme->g.inner.x - gme->off_left;
 	    r.width = gme->col_data[c].width;
 	    GDrawPushClip(pixmap,&r,&old);
 	    GDrawDrawText8(pixmap,r.x,y,gme->col_data[c].title,-1,NULL,0x000000);
@@ -1068,7 +1068,7 @@ static void GMatrixEdit_StartSubGadgets(GMatrixEdit *gme,int r, int c,GEvent *ev
 	gme->wasnew = true;
     }
 
-    if ( c==gme->cols || r>=gme->rows )
+    if ( c==gme->cols || r>=gme->rows || gme->col_data[c].disabled )
 return;
     gme->active_col = c; gme->active_row = r;
     GME_EnableDelete(gme);
@@ -1113,7 +1113,7 @@ return;
 static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event) {
     int k, r,c, kludge;
     char buf[20];
-    char *str, *freeme, *pt;
+    char *str, *pt;
     GRect size;
     GRect clip, old;
     Color fg;
@@ -1162,11 +1162,13 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 	for ( c=0; c<gme->cols; ++c ) {
 	    if ( gme->col_data[c].x + gme->col_data[c].width < gme->off_left )
 	continue;
+	    if ( gme->col_data[c].disabled )
+	continue;
 	    clip.x = gme->col_data[c].x-gme->off_left; clip.width = gme->col_data[c].width;
 	    GDrawPushClip(pixmap,&clip,&old);
 	    data = &gme->data[(r+gme->off_top)*gme->cols+c];
 	    fg = data->frozen ? 0xff0000 : 0x000000;
-	    str = freeme = NULL;
+	    str = NULL;
 	    switch ( gme->col_data[c].me_type ) {
 	      case me_enum:
 		mi = FindMi(gme->col_data[c].enum_vals,data->u.md_ival);
@@ -1440,7 +1442,7 @@ GGadget *GMatrixEditCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     gme->row_max = gme->rows;
     gme->hpad = gme->vpad = GDrawPointsToPixels(base,2);
 
-    gme->col_data = galloc(gme->cols*sizeof(struct col_data));
+    gme->col_data = gcalloc(gme->cols,sizeof(struct col_data));
     for ( c=0; c<gme->cols; ++c ) {
 	gme->col_data[c].me_type = matrix->col_init[c].me_type;
 	gme->col_data[c].func = matrix->col_init[c].func;
@@ -1718,4 +1720,14 @@ void GMatrixEditAddButtons(GGadget *g, GGadgetCreateData *gcd) {
 	gcd[i].ret->contained = true;
     }
     gme->buttonlist[base+i] = NULL;
+}
+
+void GMatrixEditEnableColumn(GGadget *g, int col, int enabled) {
+    GMatrixEdit *gme = (GMatrixEdit *) g;
+    /* User must to a refresh of the gadget. Don't want to do it always */
+    /* because multiple calls might cause a flicker */
+
+    if ( col<0 || col>=gme->cols )
+return;
+    gme->col_data[col].disabled = !enabled;
 }

@@ -1008,10 +1008,12 @@ return(1);
       case 0x88:
 	val1 = exc->stack[exc->top-1];
 	scrprintf(&scr," Get Information"); 
-	scrprintf(&scr, "Pops: %d %s%s%s%s%s%s%s%s", val1,
-		val1&1 ? "version (result in bits 0-7) " : "",
-		val1&2 ? "rotated (result in bit 8)" : "",
-		val1&4 ? "stretched (result in bit 9)" : "",
+	scrprintf(&scr, "Pops: %d %s%s%s%s%s%s%s%s%s%s", val1,
+		val1&(1<<0) ? "version (result in bits 0-7) " : "",
+		val1&(1<<1) ? "rotated (result in bit 8)" : "",
+		val1&(1<<2) ? "stretched (result in bit 9)" : "",
+		val1&(1<<3) ? "Undocumented Apple ?variations? (result in bit 10)" : "",
+		val1&(1<<4) ? "Undocumented Apple ?vertical metrics? (result in bit 11)" : "",
 		val1&(1<<5) ? "greyscale (result in bit 12)" : "", 
 		val1&(1<<6) ? "ClearType (result in bit 13)" : "", 
 		val1&(1<<7) ? "CT widths compat (result in bit 14)" : "", 
