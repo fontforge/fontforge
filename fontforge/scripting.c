@@ -2003,8 +2003,9 @@ static void bControlAfmLigatureOutput(Context *c) {
 static void Bitmapper(Context *c,int isavail) {
     int32 *sizes;
     int i;
+    int rasterize = true;
 
-    if ( c->a.argc!=2 )
+    if ( c->a.argc!=2 && (!isavail || c->a.argc!=3))
 	ScriptError( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_arr )
 	ScriptError( c, "Bad type of argument");
@@ -2012,6 +2013,11 @@ static void Bitmapper(Context *c,int isavail) {
 	if ( c->a.vals[1].u.aval->vals[i].type!=v_int ||
 		c->a.vals[1].u.aval->vals[i].u.ival<=2 )
 	    ScriptError( c, "Bad type of array component");
+    if ( c->a.argc==3 ) {
+	if ( c->a.vals[2].type!=v_int )
+	    ScriptError( c, "Bad type of argument");
+	rasterize = c->a.vals[2].u.ival;
+    }
     sizes = galloc((c->a.vals[1].u.aval->argc+1)*sizeof(int32));
     for ( i=0; i<c->a.vals[1].u.aval->argc; ++i ) {
 	sizes[i] = c->a.vals[1].u.aval->vals[i].u.ival;
@@ -2020,7 +2026,7 @@ static void Bitmapper(Context *c,int isavail) {
     }
     sizes[i] = 0;
     
-    if ( !BitmapControl(c->curfv,sizes,isavail) )
+    if ( !BitmapControl(c->curfv,sizes,isavail,rasterize) )
 	ScriptError(c,"Bitmap operation failed");		/* Storage leak here longjmp avoids free */
     free(sizes);
 }

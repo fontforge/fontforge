@@ -834,7 +834,7 @@ extern uint8 *DebuggerGetWatchCvts(struct debugger_context *dc, int *n);
 extern int DebuggingFpgm(struct debugger_context *dc);
 #endif
 
-extern int BitmapControl(FontView *fv,int32 *sizes,int isavail);
+extern int BitmapControl(FontView *fv,int32 *sizes,int isavail,int rasterize);
 
 #if defined(FONTFORGE_CONFIG_GTK)
 extern void ScriptPrint(FontView *fv,int type,int32 *pointsizes,char *samplefile,

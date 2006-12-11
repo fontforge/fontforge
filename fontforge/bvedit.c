@@ -866,7 +866,7 @@ return( new );
 }
 
 BDFFont *BitmapFontScaleTo(BDFFont *old, int to) {
-    BDFFont *new = gcalloc(1,sizeof(BDFFont));
+    BDFFont *new = chunkalloc(sizeof(BDFFont));
     int i;
     int to_depth = (to>>16), old_depth = 1;
     int linear_scale = 1<<(to_depth/2);
