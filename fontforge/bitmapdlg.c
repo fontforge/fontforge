@@ -42,6 +42,7 @@ typedef struct createbitmapdata {
     SplineChar *sc;
     int isavail;
     int which;
+    int rasterize;
 #ifdef FONTFORGE_CONFIG_GDRAW
     GWindow gw;
 #elif defined(FONTFORGE_CONFIG_GTK)
@@ -80,6 +81,22 @@ static void RemoveBDFWindows(BDFFont *bdf) {
     /*  because those routines depend on the bdf existing ... */
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+
+static BDFFont *BDFNew(SplineFont *sf,int pixel_size, int depth) {
+    BDFFont *new = chunkalloc(sizeof(BDFFont));
+    int linear_scale = 1<<(depth/2);
+
+    new->sf = sf;
+    new->glyphcnt = new->glyphmax = sf->glyphcnt;
+    new->glyphs = gcalloc(new->glyphcnt,sizeof(BDFChar *));
+    new->pixelsize = pixel_size;
+    new->ascent = (sf->ascent*pixel_size+.5)/(sf->ascent+sf->descent);
+    new->descent = pixel_size-new->ascent;
+    new->res = -1;
+    if ( linear_scale!=1 )
+	BDFClut(new,linear_scale);
+return( new );
+}
 
 void SFOrderBitmapList(SplineFont *sf) {
     BDFFont *bdf, *prev, *next;
@@ -148,7 +165,7 @@ static void SFRemoveUnwantedBitmaps(SplineFont *sf,int32 *sizes) {
     }
 }
 
-static void SFFigureBitmaps(SplineFont *sf,int32 *sizes,int usefreetype) {
+static void SFFigureBitmaps(SplineFont *sf,int32 *sizes,int usefreetype,int rasterize) {
     BDFFont *bdf;
     int i, first;
     void *freetypecontext = NULL;
@@ -161,7 +178,9 @@ static void SFFigureBitmaps(SplineFont *sf,int32 *sizes,int usefreetype) {
 	    SplineFontAutoHint(sf);
 	if ( first && usefreetype )
 	    freetypecontext = FreeTypeFontContext(sf,NULL,NULL);
-	if ( freetypecontext )
+	if ( !rasterize )
+	    bdf = BDFNew(sf,sizes[i]&0xffff,sizes[i]>>16);
+	else if ( freetypecontext )
 	    bdf = SplineFontFreeTypeRasterize(freetypecontext,sizes[i]&0xffff,sizes[i]>>16);
 	else if ( usefreetype )
 	    bdf = SplineFontFreeTypeRasterizeNoHints(sf,sizes[i]&0xffff,sizes[i]>>16);
@@ -189,38 +208,33 @@ return( true );
 return( false );
 }
 
-static void FVScaleBitmaps(FontView *fv,int32 *sizes) {
+static void FVScaleBitmaps(FontView *fv,int32 *sizes, int rasterize) {
     BDFFont *bdf, *scale;
     int i, cnt=0;
 
     for ( i=0; sizes[i]!=0 ; ++i ) if ( sizes[i]>0 )
 	++cnt;
     scale = fv->show;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gwwv_progress_start_indicator(10,_("Scaling Bitmaps"),_("Scaling Bitmaps"),0,cnt,1);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_start_indicator(10,_("Scaling Bitmaps"),_("Scaling Bitmaps"),0,cnt,1);
 #endif
 
     for ( i=0; sizes[i]!=0 ; ++i ) if ( !SizeExists(fv->sf->bitmaps,sizes[i]) ) {
-	bdf = BitmapFontScaleTo(scale,sizes[i]);
+	if ( rasterize )
+	    bdf = BitmapFontScaleTo(scale,sizes[i]);
+	else
+	    bdf = BDFNew(fv->sf,sizes[i]&0xffff,sizes[i]>>16);
 	if ( bdf==NULL )
     continue;
 	bdf->next = fv->sf->bitmaps;
 	fv->sf->bitmaps = bdf;
 	fv->sf->changed = true;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !gwwv_progress_next())
-#elif defined(FONTFORGE_CONFIG_GTK)
-	if ( !gwwv_progress_next())
-#endif
     break;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gwwv_progress_end_indicator();
-#elif defined(FONTFORGE_CONFIG_GTK)
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_end_indicator();
 #endif
 
@@ -349,9 +363,9 @@ return( true );
 static void BitmapsDoIt(CreateBitmapData *bd,int32 *sizes,int usefreetype) {
 
     if ( bd->isavail && bd->sf->onlybitmaps && bd->sf->bitmaps!=NULL )
-	FVScaleBitmaps(bd->fv,sizes);
+	FVScaleBitmaps(bd->fv,sizes,bd->rasterize);
     else if ( bd->isavail ) {
-	SFFigureBitmaps(bd->sf,sizes,usefreetype);
+	SFFigureBitmaps(bd->sf,sizes,usefreetype,bd->rasterize);
 	/* If we had an empty font, to which we've just added bitmaps, then */
 	/*  presumably we should treat this as a bitmap font and switch the */
 	/*  fontview so that it shows one of the bitmaps */
@@ -381,6 +395,7 @@ static void BitmapsDoIt(CreateBitmapData *bd,int32 *sizes,int usefreetype) {
 #define CID_Win		1008
 #define CID_Mac		1009
 #define CID_FreeType	1010
+#define CID_RasterizedStrikes	1011
 
 static int GetSystem(GWindow gw) {
     if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_X)) )
@@ -456,8 +471,11 @@ static int CB_OK(GGadget *g, GEvent *e) {
 return( true );
 	oldusefreetype = GGadgetIsChecked(GWidgetGetControl(bd->gw,CID_FreeType));
 	oldsystem = GetSystem(bd->gw)-CID_X;
+	bd->rasterize = true;
 	if ( !bd->isavail )
 	    bd->which = GGadgetGetFirstListSelectedItem(GWidgetGetControl(bd->gw,CID_Which));
+	if ( bd->isavail )
+	    bd->rasterize = GGadgetIsChecked(GWidgetGetControl(bd->gw,CID_RasterizedStrikes));
 	BitmapsDoIt(bd,sizes,oldusefreetype);
 	free(sizes);
 	SavePrefs();
@@ -575,8 +593,8 @@ return( true );
 void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[17], boxes[8], *varray[30], *harray[6][7];
-    GTextInfo label[17];
+    GGadgetCreateData gcd[18], boxes[8], *varray[32], *harray[6][7];
+    GTextInfo label[18];
     CreateBitmapData bd;
     int i,j,k,y;
     int32 *sizes;
@@ -816,6 +834,18 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     gcd[j++].creator = GCheckBoxCreate;
     y += 26;
     varray[k++] = &gcd[j-1]; varray[k++] = NULL;
+
+    if ( isavail ) {
+	label[j].text = (unichar_t *) _("Create Rasterized Strikes (Not empty ones)");
+	label[j].text_is_1byte = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = 10; gcd[j].gd.pos.y = y;
+	gcd[j].gd.flags = gg_enabled|gg_visible|gg_cb_on;
+	gcd[j].gd.cid = CID_RasterizedStrikes;
+	gcd[j++].creator = GCheckBoxCreate;
+	y += 26;
+	varray[k++] = &gcd[j-1]; varray[k++] = NULL;
+    }
     varray[k++] = GCD_Glue; varray[k++] = NULL;
 
     gcd[j].gd.pos.x = 2; gcd[j].gd.pos.y = 2;
@@ -878,7 +908,7 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-int BitmapControl(FontView *fv,int32 *sizes,int isavail) {
+int BitmapControl(FontView *fv,int32 *sizes,int isavail,int rasterize) {
     CreateBitmapData bd;
 
     memset(&bd,0,sizeof(bd));
@@ -886,6 +916,7 @@ int BitmapControl(FontView *fv,int32 *sizes,int isavail) {
     bd.sf = fv->sf;
     bd.isavail = isavail;
     bd.which = bd_selected;
+    bd.rasterize = rasterize;
     BitmapsDoIt(&bd,sizes,hasFreeType());
 return( bd.done );
 }
