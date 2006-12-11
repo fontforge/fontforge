@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 9-Apr-2006 -->
-  <!-- AP: Last modified: 13-Nov-2006 -->
+  <!-- AP: Last modified: 11-Dec-2006 -->
   <TITLE>Scripting functions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -346,7 +346,7 @@ a[4][0] = "Nested array";
       <TD BGCOLOR=yellow><A NAME="B">B</A></TD>
       <TD><DL>
 	  <DT>
-	    <A HREF="elementmenu.html#Bitmaps" NAME="BitmapsAvail">BitmapsAvail</A>(sizes)
+	    <A HREF="elementmenu.html#Bitmaps" NAME="BitmapsAvail">BitmapsAvail</A>(sizes[,rasterized])
 	  <DD>
 	    Controls what bitmap sizes are stored in the font's database. It is passed
 	    an array of sizes. If a size is specified which is not in the font database
@@ -356,7 +356,9 @@ a[4][0] = "Nested array";
 	    If you want to specify greymap fonts then the low-order 16 bits will be the
 	    pixel size and the high order 16 bits will specify the bits/pixel. Thus 0x8000c
 	    would be a 12 pixel font with 8 bits per pixel, while either 0xc or 0x1000c
-	    could be used to refer to a 12 pixel bitmap font.
+	    could be used to refer to a 12 pixel bitmap font.<BR>
+	    If you want to create blank strikes (with no glyphs in them) set the optional
+	    rasterized parameter to 0.
 	  <DT>
 	    <A NAME="BitmapsRegen" HREF="elementmenu.html#Regenerate">BitmapsRegen</A>(sizes)
 	  <DD>
@@ -2880,10 +2882,8 @@ SetGasp([8,2,16,1,65535,3])
 	    <A NAME="StrJoin">St</A>rJoin(string-array,delimiter)
 	  <DD>
 	    Returns a single string made by concatenating all the strings in the array
-	    together with the delimiter string added after each.
-	    So:<BR>
-	    <CODE>StrJoin(["The","quick","brown","box"]," ")
-	    </CODE>yields<BR>
+	    together with the delimiter string added after each. So:<BR>
+	    <CODE>StrJoin(["The","quick","brown","box"]," ") </CODE>yields<BR>
 	    <CODE>"The quick brown box"</CODE>
 	  <DT>
 	    <A NAME="Strlen">S</A>trlen(str)
