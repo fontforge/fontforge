@@ -2646,7 +2646,7 @@ void cvt_unix_to_1904( long time, int32 result[2]) {
 
 static void sethead(struct head *head,SplineFont *sf,struct alltabs *at) {
     time_t now;
-    int i, lr, rl, indic_rearrange, arabic, k;
+    int i, lr, rl, indic_rearrange, arabic;
     ASM *sm;
 
     lr = rl = arabic = 0;
@@ -3111,7 +3111,8 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *sf,
     os2->fsSel = (at->head.macstyle&1?32:0)|(at->head.macstyle&2?1:0);
     if ( sf->fullname!=NULL && strstrmatch(sf->fullname,"outline")!=NULL )
 	os2->fsSel |= 8;
-    if ( os2->fsSel==0 ) os2->fsSel = 64;		/* Regular */
+    if ( os2->fsSel==0 && sf->pfminfo.weight==400 )
+	os2->fsSel = 64;		/* Regular */
     if ( os2->version>=4 ) {
 	if ( strstrmatch(sf->fontname,"Obli")==0 ) {
 	    os2->fsSel &= ~1;		/* Turn off Italic */
