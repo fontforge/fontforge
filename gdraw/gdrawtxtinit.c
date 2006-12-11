@@ -201,6 +201,8 @@ return( em_jis201 );
 return( em_jis208 );
 	if ( uc_strstrmatch(setname,"212")!=NULL )
 return( em_jis212 );
+	if ( uc_strstrmatch(setname,"213")!=NULL )	/* I don't support 213 */
+return( em_none );
 
 return( em_jis208 );
     }
