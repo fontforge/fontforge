@@ -4168,10 +4168,7 @@ static void readttfos2metrics(FILE *ttf,struct ttfinfo *info) {
 	info->ascent = info->pfminfo.os2_typoascent;
 	info->descent = -info->pfminfo.os2_typodescent;
     }
-    if ( info->pfminfo.linegap==0 ) {
-	info->pfminfo.linegap = getushort(ttf);
-    } else
-	/* typographic linegap = */ getushort(ttf);
+    info->pfminfo.os2_typolinegap = getushort(ttf);
     info->pfminfo.os2_winascent = getushort(ttf);
     info->pfminfo.os2_windescent = getushort(ttf);
     info->pfminfo.winascent_add = info->pfminfo.windescent_add = false;
