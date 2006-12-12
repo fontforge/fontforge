@@ -168,7 +168,7 @@
   to where you are, or move to the directory containing the tarball (I can't
   provide explicit instructions here, because I don't know where your browser
   put the file) and type (do not type "$"):
-  <BLOCKQUOTE>
+  <BLOCKQUOTE id="shell">
     <PRE><FONT COLOR="Gray">$ </FONT>bunzip2 fontforge*.tar.bz2
 <FONT COLOR="Gray">$ </FONT>tar xf fontforge*.tar
 <FONT COLOR="Gray">$ </FONT>cd fontforge-*
@@ -182,7 +182,7 @@
   tree by many users. To set up your own (local) copy of the cvs tree (including
   documentation), create a new directory, cd into it and type the following
   (do not type "$", when it asks for a password, just hit return):
-  <BLOCKQUOTE>
+  <BLOCKQUOTE id="shell">
     <PRE><FONT COLOR="Gray">$ </FONT>cvs -d:pserver:anonymous@fontforge.cvs.sourceforge.net:/cvsroot/fontforge login
 CVS password:
 <FONT COLOR="Gray">$ </FONT>cvs -d:pserver:anonymous@fontforge.cvs.sourceforge.net:/cvsroot/fontforge checkout fontforge
@@ -192,7 +192,7 @@ CVS password:
   <P>
   Once you have established a directory you may update it to obtain the most
   recent version of the source by typing:
-  <BLOCKQUOTE>
+  <BLOCKQUOTE id="shell">
     <PRE><FONT COLOR="Gray">$ </FONT>cd fontforge
 <FONT COLOR="Gray">$ </FONT>cvs -d:pserver:anonymous@fontforge.cvs.sourceforge.net:/cvsroot/fontforge login
 CVS password:
@@ -214,7 +214,7 @@ CVS password:
   at the top directory of that tree. You need to configure your package (this
   is a little program that figures out how to use your system), and then build
   it (do not type the "$"):
-  <BLOCKQUOTE>
+  <BLOCKQUOTE id="shell">
     <PRE><FONT COLOR="Gray">$ </FONT>./configure
 <FONT COLOR="Gray">$ </FONT>make
 </PRE>
@@ -222,7 +222,7 @@ CVS password:
   <P>
   <A NAME="su">Having</A> done this you will probably want to install what
   you have built. This should be done as root:
-  <BLOCKQUOTE>
+  <BLOCKQUOTE id="shell">
     <PRE><FONT COLOR="Gray">$ </FONT>su
 <FONT COLOR="Gray">password:</FONT> ******
 <FONT COLOR="Gray"># </FONT>make install
@@ -230,7 +230,7 @@ CVS password:
   </BLOCKQUOTE>
   <P>
   On the mac the process is slightly different:
-  <BLOCKQUOTE>
+  <BLOCKQUOTE id="shell">
     <PRE><FONT COLOR="Gray">$ </FONT>sudo make install
 <FONT COLOR="Gray">password:</FONT> ******
 </PRE>
@@ -241,7 +241,7 @@ CVS password:
   <P>
   The configure script allows you to turn off and on various features of fontforge
   that might not be appropriate for your system. Type
-  <BLOCKQUOTE>
+  <BLOCKQUOTE id="shell">
     <PRE><FONT COLOR="Gray">$ </FONT>configure --help
 </PRE>
   </BLOCKQUOTE>
@@ -255,7 +255,7 @@ CVS password:
   a command line tool which can execute scripts to manipulate fonts. FontForge's
   scripting language is described in detail <A HREF="scripting.html">in the
   section on scripting.</A>
-  <BLOCKQUOTE>
+  <BLOCKQUOTE id="shell">
     <PRE><FONT COLOR="Gray">$ </FONT>configure --without-x
 </PRE>
   </BLOCKQUOTE>
@@ -266,7 +266,7 @@ CVS password:
   If you do want to edit PostScript type3 fonts, you can configure fontforge
   to give you access to more drawing modes than are generally available in
   fonts.
-  <BLOCKQUOTE>
+  <BLOCKQUOTE id="shell">
     <PRE><FONT COLOR="Gray">$ </FONT>configure --with-multilayer
 </PRE>
   </BLOCKQUOTE>
@@ -276,7 +276,7 @@ CVS password:
   <P>
   If you do want to create device tables (which allow you to fix up kerning
   data at a specific pixel size) in OpenType fonts
-  <BLOCKQUOTE>
+  <BLOCKQUOTE id="shell">
     <PRE><FONT COLOR="Gray">$ </FONT>configure --with-devicetables
 </PRE>
   </BLOCKQUOTE>
@@ -285,7 +285,7 @@ CVS password:
   </H4>
   <P>
   If you want to install fontforge in a different directory (say in /usr/bin)
-  <BLOCKQUOTE>
+  <BLOCKQUOTE id="shell">
     <PRE><FONT COLOR="Gray">$ </FONT>configure --prefix=/usr
 </PRE>
   </BLOCKQUOTE>
@@ -296,7 +296,7 @@ CVS password:
   <P>
   If you have a copy of the cvs tree on your system then you should be able
   to type
-  <BLOCKQUOTE>
+  <BLOCKQUOTE id="shell">
     <PRE><FONT COLOR="Gray"># </FONT>make install_docs
 </PRE>
   </BLOCKQUOTE>
@@ -522,7 +522,7 @@ CVS password:
   </UL>
   <P>
   To install these, put them in a directory, and in that directory type:
-  <BLOCKQUOTE>
+  <BLOCKQUOTE id="shell">
     <PRE>    <FONT COLOR="Gray">$ </FONT>mkfontdir
     <FONT COLOR="Gray">$ </FONT>xset fp+ `pwd`
 </PRE>
@@ -588,7 +588,7 @@ CVS password:
   <P>
   Once you have downloaded the documentation tarball as described above, you
   should move to the directory containing it, and type:
-  <BLOCKQUOTE>
+  <BLOCKQUOTE id="shell">
     <PRE><FONT COLOR="Gray">$ </FONT>su
 password: ******
 <FONT COLOR="Gray"># </FONT>mkdir -p /usr/local/share/doc/fontforge
