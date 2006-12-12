@@ -69,7 +69,7 @@ struct cvshows CVShows = {
 };
 static Color pointcol = 0xff0000;
 static Color firstpointcol = 0x707000;
-static Color selectedpointcol = 0xffff00;
+static Color selectedpointcol = 0xc8c800;
 static int selectedpointwidth = 2;
 static Color extremepointcol = 0xc00080;
 static Color pointofinflectioncol = 0x008080;
@@ -84,7 +84,7 @@ static Color lcaretcol = 0x909040;
 static Color rastercol = 0xa0a0a0;
 static Color rasternewcol = 0x909090;
 static Color rasteroldcol = 0xc0c0c0;
-static Color rastergridcol = 0x0000ff;
+static Color rastergridcol = 0xb0b0ff;
 static Color rasterdarkcol = 0x606060;
 static Color italiccoordcol = 0x909090;
 static Color metricslabelcol = 0x00000;
