@@ -164,6 +164,7 @@ BDFChar *BDFMakeGID(BDFFont *bdf,int gid) {
     SplineChar *sc;
     BDFChar *bc;
     int i;
+    extern int use_freetype_to_rasterize_fv;
 
     if ( gid==-1 )
 return( NULL );
@@ -191,12 +192,23 @@ return( NULL );
 	bdf->glyphcnt = sf->glyphcnt;
     }
     if ( (bc = bdf->glyphs[gid])==NULL ) {
-	if ( bdf->clut==NULL )
+	if ( use_freetype_to_rasterize_fv ) {
+	    void *freetype_context = FreeTypeFontContext(sf,sc,NULL);
+	    if ( freetype_context != NULL ) {
+		bc = SplineCharFreeTypeRasterize(freetype_context,
+			sc->orig_pos,bdf->pixelsize,bdf->clut?8:1);
+		FreeTypeFreeContext(freetype_context);
+	    }
+	}
+	if ( bc!=NULL )
+	    /* Done */;
+	else if ( bdf->clut==NULL )
 	    bc = SplineCharRasterize(sc,bdf->pixelsize);
 	else
 	    bc = SplineCharAntiAlias(sc,bdf->pixelsize,BDFDepth(bdf));
 	bdf->glyphs[gid] = bc;
 	bc->orig_pos = gid;
+	BCCharChangedUpdate(bc);
     }
 return( bc );
 }
