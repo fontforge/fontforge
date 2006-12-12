@@ -81,6 +81,8 @@ static unsigned char fontview2_bits[] = {
 #endif
 
 extern int _GScrollBar_Width;
+
+static int fv_fontsize = -13, fv_fs_init=0;
 #endif
 
 enum glyphlable { gl_glyph, gl_name, gl_unicode, gl_encoding };
@@ -140,7 +142,7 @@ void FVToggleCharChanged(SplineChar *sc) {
 		    bg = GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(fv->v));
 #endif
 		r.x = j*fv->cbw+1; r.width = fv->cbw-1;
-		r.y = i*fv->cbh+1; r.height = FV_LAB_HEIGHT-1;
+		r.y = i*fv->cbh+1; r.height = fv->lab_height-1;
 		GDrawRequestExpose(fv->v,&r,false);
 #if 0
 		GDrawSetXORBase(fv->v,bg);
@@ -9415,7 +9417,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		    width = fv->cbw-1;
 		}
 		if ( sc->unicodeenc<0x80 || sc->unicodeenc>=0xa0 )
-		    GDrawDrawText8(pixmap,j*fv->cbw+(fv->cbw-1-width)/2-size.lbearing,i*fv->cbh+fv->lab_height-2,utf8_buf,-1,mods,fg);
+		    GDrawDrawText8(pixmap,j*fv->cbw+(fv->cbw-1-width)/2-size.lbearing,i*fv->cbh+fv->lab_as+1,utf8_buf,-1,mods,fg);
 		if ( width >= fv->cbw-1 )
 		    GDrawPopClip(pixmap,&old2);
 		laststyles = styles;
@@ -9427,7 +9429,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		    width = fv->cbw-1;
 		}
 		if ( sc->unicodeenc<0x80 || sc->unicodeenc>=0xa0 )
-		    GDrawDrawText(pixmap,j*fv->cbw+(fv->cbw-1-width)/2,i*fv->cbh+fv->lab_height-2,buf,-1,mods,fg);
+		    GDrawDrawText(pixmap,j*fv->cbw+(fv->cbw-1-width)/2,i*fv->cbh+fv->lab_as+1,buf,-1,mods,fg);
 		if ( width >= fv->cbw-1 )
 		    GDrawPopClip(pixmap,&old2);
 		laststyles = styles;
@@ -9452,7 +9454,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	sc = feat_gid!=-1 ? fv->sf->glyphs[feat_gid]: NULL;
 	if ( !SCWorthOutputting(sc) ) {
 	    int x = j*fv->cbw+1, xend = x+fv->cbw-2;
-	    int y = i*fv->cbh+14+2, yend = y+fv->cbw-1;
+	    int y = i*fv->cbh+fv->lab_height+1, yend = y+fv->cbw-1;
 	    GDrawDrawLine(pixmap,x,y,xend,yend,0xd08080);
 	    GDrawDrawLine(pixmap,x,yend,xend,y,0xd08080);
 	}
@@ -9645,8 +9647,8 @@ return;
 	uc_strncat(ubuffer, UnicodeRange(uni),80);
     }
 
-    tlen = GDrawDrawText(pixmap,10,fv->mbh+11,ubuffer,ulen,NULL,0xff0000);
-    GDrawDrawText(pixmap,10+tlen,fv->mbh+11,ubuffer+ulen,-1,NULL,fg);
+    tlen = GDrawDrawText(pixmap,10,fv->mbh+fv->lab_as,ubuffer,ulen,NULL,0xff0000);
+    GDrawDrawText(pixmap,10+tlen,fv->mbh+fv->lab_as,ubuffer+ulen,-1,NULL,fg);
     GDrawPopClip(pixmap,&old);
 }
 
@@ -10558,6 +10560,7 @@ FontView *FontViewCreate(SplineFont *sf) {
     as = pango_font_metrics_get_ascent(fm);
     ds = pango_font_metrics_get_descent(fm);
     fv->lab_height = (as+ds)/1024;
+    fv->lab_as = as/1024;
 
     g_object_set_data( fv->gw, "data", fv );
     g_object_set_data( fv->v , "data", fv );
@@ -10585,6 +10588,7 @@ FontView *FontViewCreate(SplineFont *sf) {
     static int nexty=0;
     GRect size;
     BDFFont *bdf;
+    int as,ds,ld;
 
     if ( !done ) { FontViewInit(); done=true;}
     if ( icon==NULL ) {
@@ -10611,6 +10615,9 @@ FontView *FontViewCreate(SplineFont *sf) {
     fv->gw = gw = GDrawCreateTopWindow(NULL,&pos,fv_e_h,fv,&wattrs);
     FVSetTitle(fv);
 
+    if ( !fv_fs_init )
+	fv_fontsize = -GResourceFindInt("FontView.FontSize",13);
+
     memset(&gd,0,sizeof(gd));
     gd.flags = gg_visible | gg_enabled;
     helplist[0].invoke = FVMenuContextualHelp;
@@ -10618,8 +10625,8 @@ FontView *FontViewCreate(SplineFont *sf) {
     fv->mb = GMenuBarCreate( gw, &gd, NULL);
     GGadgetGetSize(fv->mb,&gsize);
     fv->mbh = gsize.height;
-    fv->infoh = 14/*GDrawPointsToPixels(fv->gw,14)*/;
-    fv->lab_height = FV_LAB_HEIGHT;
+    fv->infoh = 1-fv_fontsize;
+    fv->lab_height = FV_LAB_HEIGHT-13-fv_fontsize;
 
     gd.pos.y = fv->mbh+fv->infoh; gd.pos.height = pos.height;
     gd.pos.width = GDrawPointsToPixels(gw,_GScrollBar_Width);
@@ -10643,10 +10650,12 @@ FontView *FontViewCreate(SplineFont *sf) {
     fv->fontset = gcalloc(_uni_fontmax,sizeof(GFont *));
     memset(&rq,0,sizeof(rq));
     rq.family_name = fontnames;
-    rq.point_size = -13;
+    rq.point_size = fv_fontsize;
     rq.weight = 400;
     fv->fontset[0] = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
     GDrawSetFont(fv->v,fv->fontset[0]);
+    GDrawFontMetrics(fv->fontset[0],&as,&ds,&ld);
+    fv->lab_as = as;
 #endif
     fv->showhmetrics = default_fv_showhmetrics;
     fv->showvmetrics = default_fv_showvmetrics && sf->hasvmetrics;
