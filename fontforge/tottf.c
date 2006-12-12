@@ -3162,8 +3162,10 @@ docs are wrong.
 		    os2->unicoderange[bit>>5] |= (1<<(bit&31));
 	    break;
 		}
-	    if ( sf->glyphs[i]->unicodeenc<first ) first = sf->glyphs[i]->unicodeenc;
-	    if ( sf->glyphs[i]->unicodeenc>last ) last = sf->glyphs[i]->unicodeenc;
+	    if ( sf->glyphs[i]->ttf_glyph>2 ) {
+		if ( sf->glyphs[i]->unicodeenc<first ) first = sf->glyphs[i]->unicodeenc;
+		if ( sf->glyphs[i]->unicodeenc>last ) last = sf->glyphs[i]->unicodeenc;
+	    }
 	    if ( sf->glyphs[i]->width!=0 ) {
 		avg2 += sf->glyphs[i]->width; ++cnt2;
 	    }
