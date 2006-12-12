@@ -9472,7 +9472,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		    SCWorthOutputting(fv->sf->glyphs[feat_gid]) ) {
 		/* If we have an outline but no bitmap for this slot */
 		box.x = j*fv->cbw+1; box.width = fv->cbw-2;
-		box.y = i*fv->cbh+14+2; box.height = box.width+1;
+		box.y = i*fv->cbh+fv->lab_height+2; box.height = box.width+1;
 		GDrawDrawRect(pixmap,&box,0xff0000);
 		++box.x; ++box.y; box.width -= 2; box.height -= 2;
 		GDrawDrawRect(pixmap,&box,0xff0000);
@@ -9485,7 +9485,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		base.width = bdfc->xmax-bdfc->xmin+1;
 		base.height = bdfc->ymax-bdfc->ymin+1;
 		box.x = j*fv->cbw; box.width = fv->cbw;
-		box.y = i*fv->cbh+14+1; box.height = box.width+1;
+		box.y = i*fv->cbh+fv->lab_height+1; box.height = box.width+1;
 		GDrawPushClip(pixmap,&box,&old2);
 		if ( !fv->sf->onlybitmaps && fv->show!=fv->filled &&
 			sc->layers[ly_fore].splines==NULL && sc->layers[ly_fore].refs==NULL &&
