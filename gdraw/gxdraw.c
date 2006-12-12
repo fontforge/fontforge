@@ -776,7 +776,7 @@ static int myerrorhandler(Display *disp, XErrorEvent *err) {
     fprintf( stderr, "X Error of failed request: %s\n", buffer );
     fprintf( stderr, "  Major opcode of failed request:  %d.%d (%s)\n",
 	    err->request_code, err->minor_code, majorcode );
-    fprintf( stderr, "  Serial number of failed request:  %ld\n", err->serial );
+    fprintf( stderr, "  Serial number of failed request:  %ld\n", (long) err->serial );
     fprintf( stderr, "  Failed resource ID:  %x\n", (unsigned int) err->resourceid );
     raise(SIGABRT);	/* I want something that alerts the debugger, not a semi-successful exit */
 return( 1 );
@@ -4211,7 +4211,7 @@ return( NULL );
     GXResourceInit(gdisp,programname);
 
     gdisp->bs.double_time = GResourceFindInt( "DoubleClickTime", gdisp->bs.double_time );
-    gdisp->def_background = GResourceFindColor( "Background", COLOR_CREATE(0xb0,0xb0,0xf0));
+    gdisp->def_background = GResourceFindColor( "Background", COLOR_CREATE(0xff,0xff,0xff));
     gdisp->def_foreground = GResourceFindColor( "Foreground", COLOR_CREATE(0x00,0x00,0x00));
     if ( GResourceFindBool("Synchronize", false ))
 	XSynchronize(gdisp->display,true);
