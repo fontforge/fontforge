@@ -1671,6 +1671,7 @@ void FontViewMenu_Metafont(GtkMenuItem *menuitem, gpointer user_data) {
 #define MID_32x8	2025
 #define MID_16x4	2026
 #define MID_8x2		2027
+#define MID_BitmapMag	2028
 #define MID_CharInfo	2201
 #define MID_FindProblems 2216
 #define MID_MetaFont	2217
@@ -4583,13 +4584,13 @@ static void FVChangeDisplayFont(FontView *fv,BDFFont *bdf) {
 return;
 
     if ( fv->show!=bdf ) {
-	if ( !first_time && fv->cbw == bdf->pixelsize+1 )
-	    samesize = true;
 	oldc = fv->cbw*fv->colcnt;
 	oldr = fv->cbh*fv->rowcnt;
 
 	fv->show = bdf;
-	if ( bdf->pixelsize<20 ) {
+	if ( fv->user_requested_magnify!=-1 )
+	    fv->magnify=fv->user_requested_magnify;
+	else if ( bdf->pixelsize<20 ) {
 	    if ( bdf->pixelsize<=9 )
 		fv->magnify = 3;
 	    else
@@ -4597,6 +4598,8 @@ return;
 	    samesize = ( fv->show && fv->cbw == (bdf->pixelsize*fv->magnify)+1 );
 	} else
 	    fv->magnify = 1;
+	if ( !first_time && fv->cbw == fv->magnify*bdf->pixelsize+1 )
+	    samesize = true;
 	fv->cbw = (bdf->pixelsize*fv->magnify)+1;
 	fv->cbh = (bdf->pixelsize*fv->magnify)+1+fv->lab_height+1;
 	fv->resize_expected = !samesize;
@@ -4822,6 +4825,7 @@ static void FVMenuSize(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     int changedmodifier = false;
 
     fv->magnify = 1;
+    fv->user_requested_magnify = -1;
     if ( mi->mid == MID_24 )
 	default_fv_font_size = dspsize = 24;
     else if ( mi->mid == MID_36 )
@@ -4841,6 +4845,7 @@ void FontViewMenu_PixelSize(GtkMenuItem *menuitem, gpointer user_data) {
     G_CONST_RETURN gchar *name = gtk_widget_get_name(menuitem);
 
     fv->magnify = 1;
+    fv->user_requested_magnify = -1;
     if ( strstr(name,"24")!=NULL )
 	default_fv_font_size = dspsize = 24;
     else if ( strstr(name,"36")!=NULL )
@@ -4898,6 +4903,29 @@ void FontViewMenu_PixelSize(GtkMenuItem *menuitem, gpointer user_data) {
     }
 }
 
+# if defined(FONTFORGE_CONFIG_GDRAW)
+static void FVMenuMagnify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    int magnify = fv->user_requested_magnify!=-1 ? fv->user_requested_magnify : fv->magnify;
+    char def[20], *end, *ret;
+    int val;
+    BDFFont *show = fv->show;
+
+    sprintf( def, "%d", magnify );
+    ret = gwwv_ask_string(_("Bitmap Magnification..."),def,_("Please specify a bitmap magnification factor."));
+    if ( ret==NULL )
+return;
+    val = strtol(ret,&end,10);
+    if ( val<1 || val>5 || *end!='\0' )
+	gwwv_post_error( _("Bad Number"),_("Bad Number") );
+    else {
+	fv->user_requested_magnify = val;
+	fv->show = fv->filled;
+	FVChangeDisplayFont(fv,show);
+    }
+    free(ret);
+}
+#endif
 
 # if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuWSize(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -4943,7 +4971,6 @@ void FontViewMenu_GlyphLabel(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
     G_CONST_RETURN gchar *name = gtk_widget_get_name(menuitem);
 
-    fv->magnify = 1;
     if ( strstr(name,"glyph_image")!=NULL )
 	default_fv_glyphlabel = fv->glyphlabel = gl_glyph;
     else if ( strstr(name,"glyph_name")!=NULL )
@@ -4976,6 +5003,7 @@ void FVShowFilled(FontView *fv) {
     FontView *fvs;
 
     fv->magnify = 1;
+    fv->user_requested_magnify = 1;
     for ( fvs=fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame )
 	if ( fvs->show!=fvs->filled )
 	    FVChangeDisplayFont(fvs,fvs->filled);
@@ -7418,6 +7446,8 @@ static GMenuItem vwlist[] = {
     { { (unichar_t *) N_("_96 pixel outline"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, '4' }, '9', ksm_control, NULL, NULL, FVMenuSize, MID_96 },
     { { (unichar_t *) N_("_Anti Alias"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'A' }, '5', ksm_control, NULL, NULL, FVMenuSize, MID_AntiAlias },
     { { (unichar_t *) N_("_Fit to em"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'F' }, '6', ksm_control, NULL, NULL, FVMenuSize, MID_FitToEm },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) N_("Bitmap _Magnification..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'F' }, '\0', ksm_control, NULL, NULL, FVMenuMagnify, MID_BitmapMag },
     { NULL },			/* Some extra room to show bitmaps */
     { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
     { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
@@ -7437,18 +7467,15 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     SplineFont *sf = fv->sf;
     EncMap *map = fv->map;
 
-    for ( i=0; vwlist[i].ti.text==NULL || strcmp((char *) vwlist[i].ti.text, _("_Fit to em"))!=0; ++i );
-    base = i+2;
+    for ( i=0; vwlist[i].ti.text==NULL || strcmp((char *) vwlist[i].ti.text, _("Bitmap _Magnification..."))!=0; ++i );
+    base = i+1;
     for ( i=base; vwlist[i].ti.text!=NULL; ++i ) {
 	free( vwlist[i].ti.text);
 	vwlist[i].ti.text = NULL;
     }
 
-    vwlist[base-1].ti.fg = vwlist[base-1].ti.bg = COLOR_DEFAULT;
-    if ( sf->bitmaps==NULL ) {
-	vwlist[base-1].ti.line = false;
-    } else {
-	vwlist[base-1].ti.line = true;
+    vwlist[base-1].ti.disabled = true;
+    if ( sf->bitmaps!=NULL ) {
 	for ( bdf = sf->bitmaps, i=base;
 		i<sizeof(vwlist)/sizeof(vwlist[0])-1 && bdf!=NULL;
 		++i, bdf = bdf->next ) {
@@ -7463,6 +7490,8 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	    vwlist[i].ti.userdata = bdf;
 	    vwlist[i].invoke = FVMenuShowBitmap;
 	    vwlist[i].ti.fg = vwlist[i].ti.bg = COLOR_DEFAULT;
+	    if ( bdf==fv->show )
+		vwlist[base-1].ti.disabled = false;
 	}
     }
     GMenuItemArrayFree(mi->sub);
@@ -10511,6 +10540,7 @@ FontView *_FontViewCreate(SplineFont *sf) {
 	fv->map = EncMap1to1(sf->glyphcnt);
     }
     fv->selected = gcalloc(fv->map->enccount,sizeof(char));
+    fv->user_requested_magnify = -1;
     fv->magnify = (ps<=9)? 3 : (ps<20) ? 2 : 1;
     fv->cbw = (ps*fv->magnify)+1;
     fv->cbh = (ps*fv->magnify)+1+fv->lab_height+1;

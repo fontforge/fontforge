@@ -524,6 +524,7 @@ typedef struct fontview {
 	/*  stays the same size, so kludge things */
     unsigned int glyphlabel: 2;
     int16 magnify;
+    int16 user_requested_magnify;
     SplineFont *cidmaster;
     int32 *mapping;	/* an array mapping grid cells (0=upper left) to font indeces (enc, 0=NUL) */
 		    /* So the default array would contain NUL, ^A, ^B, ... */
