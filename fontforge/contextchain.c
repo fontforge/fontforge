@@ -1843,10 +1843,10 @@ return;
 	    fpst->rules[0].lookup_cnt = dummy.lookup_cnt;
 	    fpst->rules[0].lookups = dummy.lookups;
 	    for ( i=0; i<dummy.lookup_cnt; ++i ) {
-		if ( dummy.lookups[i].seq >= dummy.u.coverage.ncnt ) {
+		if ( dummy.lookups[i].seq >= fpst->rules[0].u.coverage.ncnt ) {
 		    gwwv_post_error(_("Bad Sequence/Lookup List"),
 			    _("Sequence number out of bounds, must be less than %d (number of classes in list above)"),
-			    dummy.u.coverage.ncnt );
+			    fpst->rules[0].u.coverage.ncnt );
 return;
 		}
 	    }
