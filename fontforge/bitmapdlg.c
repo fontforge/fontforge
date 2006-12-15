@@ -293,23 +293,18 @@ return;
 
 static int FVRegenBitmaps(CreateBitmapData *bd,int32 *sizes,int usefreetype) {
     FontView *fv = bd->fv;
-    SplineFont *sf = bd->sf, *subsf;
+    SplineFont *sf = bd->sf, *subsf, *bdfsf = sf->cidmaster!=NULL ? sf->cidmaster : sf;
     int i,j;
     BDFFont *bdf;
     void *freetypecontext=NULL;
 
     for ( i=0; sizes[i]!=0; ++i ) {
-	for ( bdf = sf->bitmaps; bdf!=NULL &&
+	for ( bdf = bdfsf->bitmaps; bdf!=NULL &&
 		(bdf->pixelsize!=(sizes[i]&0xffff) || BDFDepth(bdf)!=(sizes[i]>>16));
 		bdf=bdf->next );
 	if ( bdf==NULL ) {
-#if defined(FONTFORGE_CONFIG_GTK)
-	    ff_post_notice(_("Missing Bitmap"),_("Attempt to regenerate a pixel size that has not been created (%d@%d)",
-			    sizes[i]&0xffff, sizes[i]>>16);
-#else
 	    ff_post_notice(_("Missing Bitmap"),_("Attempt to regenerate a pixel size that has not been created (%d@%d)"),
-		    sizes[i]&0xffff, sizes[i]>>16);
-#endif
+			    sizes[i]&0xffff, sizes[i]>>16);
 return( false );
 	}
     }
@@ -320,12 +315,11 @@ return( false );
 	if ( freetypecontext )
 	    FreeTypeFreeContext(freetypecontext);
     } else {
-	if ( sf->subfontcnt!=0 ) {
-	    for ( j=0 ; j<sf->subfontcnt; ++j ) {
-		subsf = sf->subfonts[j];
+	if ( bdfsf->subfontcnt!=0 && bd->which==bd_all ) {
+	    for ( j=0 ; j<bdfsf->subfontcnt; ++j ) {
+		subsf = bdfsf->subfonts[j];
 		for ( i=0; i<subsf->glyphcnt; ++i ) {
-		    if (( fv->selected[i] || bd->which == bd_all ) &&
-			    SCWorthOutputting(subsf->glyphs[i])) {
+		    if ( SCWorthOutputting(subsf->glyphs[i])) {
 			if ( usefreetype && freetypecontext==NULL )
 			    freetypecontext = FreeTypeFontContext(subsf,NULL,fv);
 			ReplaceBDFC(subsf,sizes,i,freetypecontext,usefreetype);
@@ -359,10 +353,79 @@ return( false );
 return( true );
 }
 
+static void BDFClearGlyph(BDFFont *bdf, int gid, int pass) {
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    BitmapView *bv, *bvnext;
+#endif
+
+    if ( bdf==NULL || bdf->glyphs[gid]==NULL )
+return;
+    if ( pass==0 ) {
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+	for ( bv = bdf->glyphs[gid]->views; bv!=NULL; bv = bvnext ) {
+	    bvnext = bv->next;
+	    GDrawDestroyWindow(bv->gw);
+	}
+	GDrawSync(NULL);
+	GDrawProcessPendingEvents(NULL);
+#endif
+    } else {
+	BDFCharFree(bdf->glyphs[gid]);
+	bdf->glyphs[gid] = NULL;
+    }
+}
+
+
+static int FVRemoveBitmaps(CreateBitmapData *bd,int32 *sizes) {
+    FontView *fv = bd->fv;
+    SplineFont *sf = bd->sf, *bdfsf = sf->cidmaster!=NULL ? sf->cidmaster : sf;
+    int i,j,pass;
+    BDFFont *bdf;
+    int gid;
+
+    /* The two passes are because we want to make sure any windows open on */
+    /*  these bitmaps will get closed before we free any data. Complicated */
+    /*  because the Window manager can delay things */
+    for ( pass=0; pass<2; ++pass ) {
+	for ( i=0; sizes[i]!=0; ++i ) {
+	    for ( bdf = bdfsf->bitmaps; bdf!=NULL &&
+		    (bdf->pixelsize!=(sizes[i]&0xffff) || BDFDepth(bdf)!=(sizes[i]>>16));
+		    bdf=bdf->next );
+	    if ( bdf!=NULL ) {
+		if ( bd->which==bd_current && bd->sc!=NULL )
+		    BDFClearGlyph(bdf,bd->sc->orig_pos,pass);
+		else if ( bd->which==bd_all ) {
+		    for ( j=0; j<bdf->glyphcnt; ++j )
+			BDFClearGlyph(bdf,j,pass);
+		} else {
+		    for ( j=0; j<fv->map->enccount; ++j )
+			if ( fv->selected[j] && (gid = fv->map->map[j])!=-1 )
+			    BDFClearGlyph(bdf,gid,pass);
+		}
+	    }
+	}
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+	GDrawSync(NULL);
+	GDrawProcessPendingEvents(NULL);
+#endif
+    }
+    sf->changed = true;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    if ( fv->show!=fv->filled ) {
+	for ( i=0; sizes[i]!=0 && ((sizes[i]&0xffff)!=fv->show->pixelsize || (sizes[i]>>16)!=BDFDepth(fv->show)); ++i );
+	if ( sizes[i]!=0 && fv->v!=NULL )
+	    GDrawRequestExpose(fv->v,NULL,false );
+    }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+return( true );
+}
+
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void BitmapsDoIt(CreateBitmapData *bd,int32 *sizes,int usefreetype) {
 
-    if ( bd->isavail && bd->sf->onlybitmaps && bd->sf->bitmaps!=NULL )
+    if ( bd->isavail==-1 )
+	FVRemoveBitmaps(bd,sizes);
+    else if ( bd->isavail && bd->sf->onlybitmaps && bd->sf->bitmaps!=NULL )
 	FVScaleBitmaps(bd->fv,sizes,bd->rasterize);
     else if ( bd->isavail ) {
 	SFFigureBitmaps(bd->sf,sizes,usefreetype,bd->rasterize);
@@ -377,10 +440,12 @@ static void BitmapsDoIt(CreateBitmapData *bd,int32 *sizes,int usefreetype) {
 		FVChangeDisplayBitmap(fvs,bdf);
 	}
     } else {
-	if ( !FVRegenBitmaps(bd,sizes,usefreetype))
-	    bd->done = false;
-	else
+	if ( FVRegenBitmaps(bd,sizes,usefreetype))
 	    lastwhich = bd->which;
+	else {
+	    bd->done = false;
+return;
+	}
     }
     bd->done = true;
 }
@@ -472,9 +537,9 @@ return( true );
 	oldusefreetype = GGadgetIsChecked(GWidgetGetControl(bd->gw,CID_FreeType));
 	oldsystem = GetSystem(bd->gw)-CID_X;
 	bd->rasterize = true;
-	if ( !bd->isavail )
+	if ( bd->isavail<true )
 	    bd->which = GGadgetGetFirstListSelectedItem(GWidgetGetControl(bd->gw,CID_Which));
-	if ( bd->isavail )
+	if ( bd->isavail==1 )
 	    bd->rasterize = GGadgetIsChecked(GWidgetGetControl(bd->gw,CID_RasterizedStrikes));
 	BitmapsDoIt(bd,sizes,oldusefreetype);
 	free(sizes);
@@ -614,8 +679,10 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     bd.done = false;
 
     for ( bdf=bd.sf->bitmaps, i=0; bdf!=NULL; bdf=bdf->next, ++i );
+/*
     if ( i==0 && isavail )
 	i = 2;
+*/
     sizes = galloc((i+1)*sizeof(int32));
     for ( bdf=bd.sf->bitmaps, i=0; bdf!=NULL; bdf=bdf->next, ++i )
 	sizes[i] = bdf->pixelsize | (BDFDepth(bdf)<<16);
@@ -633,7 +700,9 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = isavail ? _("Bitmaps Available...") : _("Regenerate Bitmaps...");
+    wattrs.utf8_window_title = isavail==1 ? _("Bitmap Strikes Available...") :
+				isavail==0 ? _("Regenerate Bitmap Glyphs...") :
+					    _("Remove Bitmap Glyphs...");
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,190));
@@ -645,7 +714,7 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     memset(&boxes,0,sizeof(boxes));
 
     k=0;
-    if ( isavail ) {
+    if ( isavail==1 ) {
 	label[0].text = (unichar_t *) _("The list of current pixel bitmap sizes");
 	label[0].text_is_1byte = true;
 	gcd[0].gd.label = &label[0];
@@ -674,7 +743,10 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
 	varray[k++] = &gcd[2]; varray[k++] = NULL;
 	j = 3; y = 5+39+3;
     } else {
-	label[0].text = (unichar_t *) _("Specify bitmap sizes to be regenerated");
+	if ( isavail==0 )
+	    label[0].text = (unichar_t *) _("Specify bitmap sizes to be regenerated");
+	else
+	    label[0].text = (unichar_t *) _("Specify bitmap sizes to be removed");
 	label[0].text_is_1byte = true;
 	gcd[0].gd.label = &label[0];
 	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5; 
@@ -835,7 +907,7 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     y += 26;
     varray[k++] = &gcd[j-1]; varray[k++] = NULL;
 
-    if ( isavail ) {
+    if ( isavail==1 ) {
 	label[j].text = (unichar_t *) _("Create Rasterized Strikes (Not empty ones)");
 	label[j].text_is_1byte = true;
 	gcd[j].gd.label = &label[j];
@@ -892,7 +964,7 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
 
     GGadgetsCreate(bd.gw,boxes);
     GHVBoxSetExpandableRow(boxes[0].ret,gb_expandglue);
-    if ( !isavail )
+    if ( isavail<true )
 	GHVBoxSetExpandableCol(boxes[3].ret,gb_expandglue);
     GHVBoxSetExpandableCol(boxes[3].ret,gb_expandglue);
     GHVBoxSetExpandableCol(boxes[7].ret,gb_expandgluesame);
