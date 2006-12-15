@@ -1,0 +1,245 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 13-Dec-2006 -->
+  <!-- AP: Last modified: 14-Dec-2006 -->
+  <TITLE>Bitmap strikes</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+  <H1 ALIGN=Center>
+    Tutorial #9
+  </H1>
+  <UL>
+    <LI>
+      <A HREF="editexample.html#FontCreate">Font Creation</A>
+    <LI>
+      <A HREF="editexample.html#CharCreate">Creating a glyph (tracing outlines)</A>
+    <LI>
+      <A HREF="editexample2.html#Navigating">Navigating to other glyphs</A>
+    <LI>
+      <A HREF="editexample2.html#Creating-o">On to the next glyph (consistent
+      directions)</A>
+    <LI>
+      <A HREF="editexample3.html#consistent-stems">Consistent serifs and stem
+      widths</A>
+    <LI>
+      <A HREF="editexample4.html#accents">Building accented glyphs</A>
+    <LI>
+      <A HREF="editexample4.html#ligature">Building a ligature</A>
+    <LI>
+      <A HREF="editexample5.html#metrics">Examining metrics</A>
+    <LI>
+      <A HREF="editexample5.html#Kerning">Kerning</A>
+    <LI>
+      <A HREF="editexample6.html#Variants">Glyph variants</A>
+    <LI>
+      <A HREF="editexample6.html#Marks">Anchoring marks</A>
+    <LI>
+      <A HREF="editexample6-5.html#Conditional">Conditional features</A>
+    <LI>
+      <A HREF="editexample7.html#checking">Checking your font</A>
+    <LI>
+      <A HREF="editexample7.html#Bitmaps">Bitmaps</A>
+    <LI>
+      <A HREF="editexample7.html#generating">Generating it</A>
+    <LI>
+      <A HREF="editexample7.html#Families">Font Families</A>
+    <LI>
+      <A HREF="editexample7.html#summary">Final Summary</A>
+    <LI>
+      <A HREF="#Opening">Opening &amp; Importing Bitmap strikes</A>
+    <LI>
+      <A HREF="editexample8.html#Creating">Creating Bitmap Strikes</A>
+    <LI>
+      <A HREF="editexample8.html#Properties">Bitmap Properties</A>
+    <LI>
+      <A HREF="editexample8.html#bitmap-only">Creating a bitmap only font</A>
+    <LI>
+      <A HREF="editexample8.html#FontView">Bitmaps in the Font View</A>
+    <LI>
+      <A HREF="editexample8.html#Editing">Editing Bitmaps</A>
+    <LI>
+      <A HREF="editexample8.html#Sparse">Sparse Bitmap Strikes</A>
+    <LI>
+      <A HREF="scripting-tutorial.html">Scripting Tutorial</A>
+    <LI>
+      <A HREF="scriptnotes.html#Special">Notes on various scripts</A>
+  </UL>
+  <H2>
+    <A NAME="Opening">Opening</A> &amp; Importing Bitmap strikes
+  </H2>
+  <P>
+  FontForge is primarily an outline font editor, but it does have some facility
+  for editing bitmap (and greymap, or anti-aliased) fonts. A useful term here
+  is a "strike"; a strike is one particular size of a bitmap font. When FontForge
+  displays a font, that font will contain at most one outline but potentially
+  many bitmap (or greymap) strikes (for several different pixel sizes).
+  <P>
+  You might wonder if it is really necessary to provide bitmaps along with
+  outlines given the high quality results of modern rasterizers, and for Latin
+  (Greek, Cyrillic) fonts it may not be, but for CJK fonts at small pixel sizes
+  a human eye can still make a better choice than even the best rasterizer.
+  Back in the 1980s when Apple first adopted PostScript fonts they felt it
+  was essential to have bitmaps to go with the outline -- so much so that it
+  was not even possible to use a PostScript font without also providing at
+  least one bitmap with it. Even today, when using a Type1 font on a mac there
+  must be a bitmap font to point to it.
+  <P>
+  Of course Type1 fonts are a bit old-fashioned now, but the sfnt file format
+  (the format used for both OpenType and TrueType fonts) supports embedded
+  bitmap strikes along with the outline version of the font. These strikes
+  will be used in preference to rasterizing the outline in any pixel sizes
+  for which they are present. 
+  <P>
+  If you have an sfnt with both an outline font and bitmap strikes you can
+  open it directly with the <A HREF="filemenu.html#Open">File-&gt;Open</A>
+  command and FontForge will load all the bits and pieces.
+  <P>
+  You can also open a bitmap only font directly with the
+  <A HREF="filemenu.html#Open">File-&gt;Open</A> command, however if you have
+  multiple strikes of the same underlying font in seperate files, you will
+  probably want to open only the first (or only the outline version) with Open,
+  and use <A HREF="filemenu.html#Import">File-&gt;Import</A> to merge the other
+  strikes into one FontForge font.
+  <P>
+  Suppose you have <CODE>Ambrosia.pfb</CODE> (an outline font),
+  <CODE>Ambrosia-12.bdf</CODE>, and <CODE>Ambrosia-24.bdf </CODE>(two bitmap
+  strikes, one 12 pixels high, one 24), and you want them all in one font.
+  First use <A HREF="filemenu.html#Open">File-&gt;Open</A> to open Ambrosia.pfb,
+  then <A HREF="filemenu.html#Import">File-&gt;Import</A> and select both of
+  the bitmap strikes (hold down the shift key).
+  <P>
+  On the other hand, if you have only two bitmaps:
+  <CODE>Ambrosia-12.bdf</CODE>, and <CODE>Ambrosia-24.bdf</CODE>, then use
+  <A HREF="filemenu.html#Open">File-&gt;Open</A> to open either strike, and
+  use <A HREF="filemenu.html#Import">File-&gt;Import</A> and import the other.
+  <P>
+  You may have noticed that Import has a checkbox labeled <CODE>[] As
+  Background</CODE>. If you check this, then your bitmap font will not be loaded
+  as a font itself, but will be loaded into the background of the outline font
+  whence you can
+  <CODE><A HREF="elementmenu.html#AutoTrace">Element-&gt;Autotrace</A></CODE>
+  it to provide an outline font from a bitmap. Be warned: This produces fairly
+  bad results unless you have a large (100+ pixel) font to trace.
+  <H2>
+    <A NAME="Creating">Creating</A> Bitmap strikes
+  </H2>
+  <P>
+  <IMG SRC="bitmapsavail.png" WIDTH="317" HEIGHT="365" ALIGN="Right">If you
+  want to add a bitmap strike with a given pixel size to a font then use
+  <CODE><A HREF="elementmenu.html#Bitmaps">Element-&gt;Bitmap Strikes
+  Available</A></CODE>. Simply add the pixel size you are interested in to
+  the list at the bottom of the screen.
+  <P>
+  If you are more comfortable dealing in point sizes, be aware that those depend
+  on screen resolution. This dialog shows you the conversion between point
+  and pixel sizes for two standard resolutions. The resolutions differ depending
+  on what windowing system you use.
+  <P>
+  You may add more than one pixel size, of course. You may also remove pixel
+  sizes if you no longer want them.
+  <P>
+  Normally when you create a new strike it will be rasterized from the outline
+  font -- if there is no outline font then FontForge will attempt to scale
+  the biggest strike available to the new size (in most cases this will be
+  fairly ugly, but it may be better than nothing.
+  <P>
+  There is also a checkbox <CODE>[*] Create Rasterized Strikes (Not empty
+  ones)</CODE> at the bottom of the dialog. If you turn this off, then the
+  rasterization process described above will not happen, and any new strikes
+  will be created containing no glyphs (you can add glyphs later, of course).
+  <H2>
+    Bitmap <A NAME="Properties">Properties</A>
+  </H2>
+  <P>
+  In the old days of bdf and pcf fonts on X11 each font had a set of properties
+  attached to it. It is not clear to me whether these properties are still
+  useful as X11 moves to OpenType Bitmaps. They may be. At any rate FontForge
+  will store them both in BDF fonts and in OpenType Bitmap fonts. Each strike
+  may have its own set of properties. FontForge will generate them automatically
+  when you create a strike (and will retain them when it reads in a font that
+  has them). You may override the current values with the
+  <A HREF="elementmenu.html#BDF-Info"><CODE>Element-Bdf Info </CODE></A>dialog.
+  <H2>
+    Creating a new bitmap <A NAME="bitmap-only">only</A> font
+  </H2>
+  <P>
+  If you want to create a new font with no outlines, only bitmap strikes, you
+  would use <A HREF="filemenu.html#New">File-&gt;New</A> to create a new font,
+  and then <CODE><A HREF="elementmenu.html#Bitmaps">Element-&gt;Bitmap Strikes
+  Available</A></CODE> to add some (empty) strikes to it. As soon as you add
+  a strike to a new font, the font will become a bitmap only font.
+  <P>
+  Apple has a bitmap only version of the sfnt file format, and X11 does too.
+  Of course the two formats are slightly different. Windows has no support
+  for a bitmap only sfnt format.
+  <H2>
+    Bitmaps in the <A NAME="FontView">Font View</A>
+  </H2>
+  <P>
+  The <A HREF="viewmenu.html#bitmaps"><CODE>View</CODE></A> menu of the Font
+  View (and the Metrics View) contains a list of all bitmap strikes in the
+  font. You may select which one will be displayed in the Font View. You may
+  also change the magnification at which a strike is displayed with
+  <A HREF="viewmenu.html#BitmapMag">View-&gt;Bitmap Magnification...</A> (it
+  can be hard to see the details of an 8 pixel font on a high resolution screen,
+  so you might want to display it at 3 times it's actual size).
+  <P>
+  Many commands in the Font View will apply to all strikes (and the outline)
+  in the font. For instance
+  <A HREF="editmenu.html#Copy"><CODE>Edit-&gt;Copy</CODE></A> will copy the
+  outline glyph and all bitmap glyphs. Sometimes you only want to affect one
+  strike, if so then deselect
+  <A HREF="editmenu.html#Fonts"><CODE>Edit-&gt;Copy From-&gt;All
+  Fonts</CODE></A>.
+  <P>
+  The <A HREF="elementmenu.html#Accented"><CODE>Element-&gt;Build</CODE>
+  </A>commands will build accented bitmap glyphs just as it builds accented
+  outline glyphs.
+  <P>
+  If the Font View is displaying a bitmap strike and you double click on a
+  character, then FontForge will bring up a <A HREF="bitmapview.html">bitmap
+  editing window</A> displaying that character in the current strike (rather
+  than opening an outline editing window). If the character does not have a
+  matching glyph in the current strike FontForge will create one by rasterizing
+  the outline version of the font.
+  <H2>
+    <A NAME="Editing">Editing</A> Bitmaps
+  </H2>
+  <P>
+  <IMG SRC="BitmapView.png" WIDTH="254" HEIGHT="273" ALIGN="Left">The bitmap
+  editing window should be fairly self explanatory. The window is a simple
+  bitmap editor. With the pencil tool, clicking on a pixel will make it change.
+  The line tool will draw a straight line between the start and end points.
+  <P>
+  You can see the outline glyph in the background of the bitmap.
+  <P>
+  You can regenerate the bitmap (by rasterizing the outline) by pressing the
+  <CODE>[Recalculate Bitmaps] </CODE>button.
+  <P>
+  Editing an anti-aliased greymap has the added complexity that you need to
+  select a color (actually a level of greyness) to be applied with the pencil.
+  There will be an additional palette with all possible greys for
+  this.<BR CLEAR=ALL>
+  <H2>
+    <A NAME="Sparse">Sparse</A> Bitmap Strikes
+  </H2>
+  <P>
+  Sometimes you don't need a complete set of bitmap glyphs in a strike. Perhaps
+  the rasterizer does a good job for all glyphs except one. Then you can create
+  an empty strike (with
+  <CODE><A HREF="elementmenu.html#Bitmaps">Element-&gt;Bitmap Strikes
+  Available</A></CODE> unchecking the <CODE>[*] Create Rasterized Strikes</CODE>
+  checkbox) and then select the one glyph you care about and say
+  <A HREF="elementmenu.html#Regenerate"><CODE>Element-&gt;Regenerate Bitmap
+  Glyphs</CODE></A>.
+  <P>
+  Alternately you could create a fully rasterized strike and then select the
+  glyphs you don't need and say
+  <CODE><A HREF="elementmenu.html#RemoveBitmaps">Element-&gt;Remove Bitmap
+  Glyphs</A></CODE>.
+</DIV>
+</BODY></HTML>
