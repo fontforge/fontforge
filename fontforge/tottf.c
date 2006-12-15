@@ -3239,7 +3239,9 @@ docs are wrong.
 	QuickBlues(sf,&bd);		/* This handles cid fonts properly */
 	os2->xHeight = (bd.xheight >= 0.0 ? bd.xheight : 0);
 	os2->capHeight = (bd.caph >= 0.0 ? bd.caph : 0);
-	os2->defChar = ' ';
+	os2->defChar = 0;
+	if ( format==ff_otf || format==ff_otfcid )
+	    os2->defChar = ' ';
 	os2->breakChar = ' ';
 	os2->maxContext = 1;	/* Kerning will set this to 2, ligature to whatever */
     }
