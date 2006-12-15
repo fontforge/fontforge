@@ -1243,7 +1243,7 @@ return( true );
 static void BVMenuClose(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     GDrawDestroyWindow(gw);
 }
-	
+
 static void BVMenuOpenOutline(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
 
@@ -1554,6 +1554,22 @@ static void BVMenuBitmaps(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapDlg(bv->fv,bv->bc->sc,mi->mid==MID_AvailBitmaps );
 }
 
+static void BVMenuRmGlyph(GWindow gw,struct gmenuitem *mi,GEvent *g) {
+    BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
+    BitmapView *bvs, *bvnext;
+    BDFFont *bdf = bv->bdf;
+    BDFChar *bc = bv->bc;
+
+    for ( bvs=bc->views; bvs!=NULL; bvs=bvnext ) {
+	bvnext = bvs->next;
+	GDrawDestroyWindow(bvs->gw);
+    }
+    bdf->glyphs[bc->orig_pos] = NULL;
+    /* Can't free the glyph yet, need to process all the destroy events */
+    /*  which touch bc->views first */
+    DelayEvent( (void (*)(void *))BDFCharFree,bc);
+}
+
 void BVMenuRotateInvoked(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
     BVRotateBitmap(bv,mi->mid);
@@ -1750,6 +1766,7 @@ static GMenuItem ellist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("Bitm_ap Strikes Available..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, 'B', ksm_control|ksm_shift, NULL, NULL, BVMenuBitmaps, MID_AvailBitmaps },
     { { (unichar_t *) N_("Regenerate _Bitmap Glyphs..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, 'B', ksm_control, NULL, NULL, BVMenuBitmaps, MID_RegenBitmaps },
+    { { (unichar_t *) N_("Remove This Glyph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, 'B', ksm_control, NULL, NULL, BVMenuRmGlyph },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Transformations"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'T' }, '\0', 0, trlist, NULL },
     { NULL }
