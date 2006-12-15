@@ -2711,10 +2711,24 @@ static void bSelect(Context *c) {
     bDoSelect(c,true,true,true);
 }
 
+static void bSelectMoreIf(Context *c) {
+    if ( c->a.argc==1 )
+	ScriptError( c, "SelectMore needs at least one argument");
+    c->return_val.type = v_int;
+    c->return_val.u.ival = bDoSelect(c,false,true,true);
+}
+
 static void bSelectMoreSingletons(Context *c) {
     if ( c->a.argc==1 )
 	ScriptError( c, "SelectMore needs at least one argument");
     bDoSelect(c,true,true,false);
+}
+
+static void bSelectMoreSingletonsIf(Context *c) {
+    if ( c->a.argc==1 )
+	ScriptError( c, "SelectMore needs at least one argument");
+    c->return_val.type = v_int;
+    c->return_val.u.ival = bDoSelect(c,false,true,false);
 }
 
 static void bSelectFewerSingletons(Context *c) {
@@ -2726,6 +2740,12 @@ static void bSelectFewerSingletons(Context *c) {
 static void bSelectSingletons(Context *c) {
     memset(c->curfv->selected,0,c->curfv->map->enccount);
     bDoSelect(c,true,true,false);
+}
+
+static void bSelectSingletonsIf(Context *c) {
+    memset(c->curfv->selected,0,c->curfv->map->enccount);
+    c->return_val.type = v_int;
+    c->return_val.u.ival = bDoSelect(c,false,true,false);
 }
 
 static void bSelectAllInstancesOf(Context *c) {
@@ -7306,6 +7326,9 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "SelectSingletons", bSelectSingletons },
     { "SelectAllInstancesOf", bSelectAllInstancesOf },
     { "SelectIf", bSelectIf },
+    { "SelectSingletonsIf", bSelectSingletonsIf },
+    { "SelectMoreSingletonsIf", bSelectMoreSingletonsIf },
+    { "SelectMoreIf", bSelectMoreIf },
     { "SelectChanged", bSelectChanged },
     { "SelectHintingNeeded", bSelectHintingNeeded },
     { "SelectWorthOutputting", bSelectWorthOutputting },

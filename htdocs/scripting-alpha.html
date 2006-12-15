@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 9-Apr-2006 -->
-  <!-- AP: Last modified: 11-Dec-2006 -->
+  <!-- AP: Last modified: 15-Dec-2006 -->
   <TITLE>Scripting functions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -2501,10 +2501,21 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	    The same as in <A HREF="#Select">Select</A> except that it does not clear
 	    the selection initially, so it extends the current selection.
 	  <DT>
+	    <A NAME="SelectMoreIf">S</A>electMoreIf(arg1, arg2, ...)
+	  <DD>
+	    The same as in <A HREF="#SelectMore">SelectMore</A> except that it returns
+	    an error code if one of the glyph(s) does not exist.
+	  <DT>
 	    <A NAME="SelectMoreSingletons">S</A>electMoreSingletons(arg1, ...)
 	  <DD>
 	    Same as <A HREF="scripting-alpha.html#SelectSingletons">SelectSingletons</A>
 	    except it adds single glyphs from the current selection.
+	  <DT>
+	    <A NAME="SelectMoreSingletonsIf">S</A>electMoreSingletonsIf(arg1, ...)
+	  <DD>
+	    Same as
+	    <A HREF="scripting-alpha.html#SelectMoreSingletons">SelectMoreSingletons</A>
+	    except it returns an error code if one of the glyph(s) does not exist.
 	  <DT>
 	    <A NAME="SelectNone" HREF="editmenu.html#Deselect">SelectNone</A>()
 	  <DD>
@@ -2513,6 +2524,11 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	    <A NAME="SelectSingletons">S</A>electSingletons(arg1, ...)
 	  <DD>
 	    Selects its arguments without looking for ranges.
+	  <DT>
+	    <A NAME="SelectSingletonsIf">S</A>electSingletonsIf(arg1, ...)
+	  <DD>
+	    Selects its arguments without looking for ranges, and returns an error code
+	    if a gyph did not exist.
 	  <DT>
 	    <A NAME="SelectWorthOutputting">SelectWorthOutputting</A>()
 	  <DD>
