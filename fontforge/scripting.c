@@ -6416,6 +6416,7 @@ static void bRemoveATT(Context *c) {
     int type, sli;
     struct script_record *sr;
     PST *pst, *prev, *next;
+    int changed;
 
     if ( c->a.argc!=4 )
 	ScriptError( c, "Wrong number of arguments");
@@ -6472,6 +6473,7 @@ return;
 	ftag = 0;			/* Everything */
 
     for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && fv->selected[i] ) {
+	changed = false;
 	for ( prev=NULL, pst = sf->glyphs[gid]->possub; pst!=NULL; pst = next ) {
 	    next = pst->next;
 	    if ( (pst->type==type || type==-1 ) &&
@@ -6483,8 +6485,13 @@ return;
 		    prev->next = next;
 		pst->next = NULL;
 		PSTFree(pst);
+		changed = true;
 	    } else
 		prev = pst;
+	}
+	if ( changed ) {
+	    sf->glyphs[gid]->changed = true;
+	    sf->changed = true;
 	}
     }
 }
