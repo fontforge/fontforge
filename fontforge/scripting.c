@@ -7011,7 +7011,7 @@ static void bGetPosSub(Context *c) {
 			    ret->vals[cnt].type = v_arr;
 			    ret->vals[cnt].u.aval = temp = galloc(sizeof(Array));
 			    temp->argc = 12;
-			    temp->vals = gcalloc(11,sizeof(Val));
+			    temp->vals = gcalloc(temp->argc,sizeof(Val));
 			    temp->vals[0].type = v_str;
 			    temp->vals[0].u.sval = copy(j==0 ? "kern" : "vkrn");
 			    temp->vals[1].type = v_str;
