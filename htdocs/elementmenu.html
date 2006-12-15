@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 11-Dec-2006 -->
+  <!-- AP: Last modified: 14-Dec-2006 -->
   <TITLE>The Element Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -49,9 +49,11 @@
     <LI>
       <A HREF="#Problems">Find Problems...</A>
     <LI>
-      <A HREF="#Bitmaps">Bitmaps Available...</A>
+      <A HREF="#Bitmaps">Bitmap Strikes Available...</A>
     <LI>
-      <A HREF="#Regenerate">Regenerate Bitmaps...</A>
+      <A HREF="#Regenerate">Regenerate Bitmap Glyphs...</A>
+    <LI>
+      <A HREF="#RemoveBitmaps">Remove Bitmap Glyphs...</A>
     <LI>
       Transformations
       <UL>
@@ -305,10 +307,10 @@
       you of each problem found. It brings up the <A HREF="problems.html">Find
       Problem</A> dialog to let you choose what problems to look for.
     <DT>
-      <A NAME="Bitmaps">Bitmaps</A> Available...
+      <A NAME="Bitmaps">Bitmap Strikes</A> Available...
     <DD>
       This brings up a list of pixel sizes for bitmap fonts.<BR>
-      <IMG SRC="bitmapsavail.png" WIDTH="263" HEIGHT="366" ALIGN="Right"> If you
+      <IMG SRC="bitmapsavail.png" WIDTH="317" HEIGHT="365" ALIGN="Right"> If you
       have bitmap fonts this will show their pixel sizes. If you remove a size
       that is in the list then that font will be deleted from the sfd file. If
       you add a size then that size font will be created and stored in the sfd
@@ -402,7 +404,7 @@
       (New greymaps can not be created by scaling old greymaps, if you wish to
       generate a greymap font, you must have an outline font).
     <DT>
-      <A NAME="Regenerate">Regenerate</A> Bitmaps...
+      <A NAME="Regenerate">Regenerate</A> Bitmap Glyphs...
     <DD>
       If you have changed the outline that a bitmap is based one then you should
       (at some point) look into changing the bitmap too. This command allows you
@@ -413,6 +415,12 @@
       from the regenerate list will not delete it).<BR>
       As before, if you wish to change a greymap you should refer to it by
       &lt;pixel-size&gt;@&lt;bits-per-pixel&gt;.
+    <DT>
+      <A NAME="RemoveBitmaps">Remove</A> Bitmap Glyphs...
+    <DD>
+      This command will remove one or several bitmap glyphs from a strike (while
+      leaving the strike otherwise intact). The dialog is similar to the above
+      two. Any indicated glyphs will be removed from the specified strikes.
     <DT>
       Transformations
     <DD>
