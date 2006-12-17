@@ -601,6 +601,11 @@ static struct bdfcharlist *BDFAddDefaultGlyphs(BDFFont *bdf, int format) {
     /*  0, the one used when there is no match, and the other two are varients*/
     /*  on space. These might or might not be in the font.  Add the ones that */
     /*  don't exist */
+    /* Werner tells me he doesn't want them added. He thinks sparse bitmaps */
+    /*  are reasonable. Hadn't occurred to me. So I wanted complete strikes */
+    /* Perhaps a better approach is to give them fake bitmaps if we gave them */
+    /*  fake outlines, so look at the spline font not the bitmap font for the */
+    /*  magic glyphs */
     int width, w, i, j, bit, blpos=0;
     SplineFont *sf = bdf->sf;
     int notdefpos = -1, nullpos = -1, nmretpos = -1;
@@ -615,8 +620,8 @@ static struct bdfcharlist *BDFAddDefaultGlyphs(BDFFont *bdf, int format) {
     break;
 	}
     }
-    for ( i=0; i<bdf->glyphcnt; ++i ) if ( bdf->glyphs[i]!=NULL ) {
-	int ttf_glyph = bdf->glyphs[i]->sc->ttf_glyph;
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	int ttf_glyph = sf->glyphs[i]->ttf_glyph;
 	if ( ttf_glyph==0 )
 	    notdefpos = i;
 	else if ( ttf_glyph==1 )
