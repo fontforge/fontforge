@@ -2067,6 +2067,15 @@ return( true );
 return( false );
 }
 
+static int ui16cmp(const void *_i1, const void *_i2) {
+    if ( *(const uint16 *) _i1 > *(const uint16 *) _i2 )
+return( 1 );
+    if ( *(const uint16 *) _i1 < *(const uint16 *) _i2 )
+return( -1 );
+
+return( 0 );
+}
+
 static uint16 *FigureInitialClasses(FPST *fpst) {
     uint16 *initial = galloc((fpst->nccnt+1)*sizeof(uint16));
     int i, cnt, j;
@@ -2078,6 +2087,7 @@ static uint16 *FigureInitialClasses(FPST *fpst) {
 	if ( j==cnt )
 	    initial[cnt++] = fpst->rules[i].u.class.nclasses[0];
     }
+    qsort(initial,cnt,sizeof(uint16),ui16cmp);
     initial[cnt] = 0xffff;
 return( initial );
 }
