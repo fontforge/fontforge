@@ -1514,11 +1514,18 @@ return;
 	fpst->nccnt = ClassFindCnt(class,info->glyph_cnt);
 	fpst->nclass = ClassToNames(info,fpst->nccnt,class,info->glyph_cnt);
 	free(class);
-	class = getClassDefTable(ttf, stoffset+bclassoff, info->glyph_cnt, info->g_bounds);
+	/* The docs don't mention this, but in mangal.ttf fclassoff==0 NULL */
+	if ( bclassoff!=0 )
+	    class = getClassDefTable(ttf, stoffset+bclassoff, info->glyph_cnt, info->g_bounds);
+	else
+	    class = gcalloc(info->glyph_cnt,sizeof(uint16));
 	fpst->bccnt = ClassFindCnt(class,info->glyph_cnt);
 	fpst->bclass = ClassToNames(info,fpst->bccnt,class,info->glyph_cnt);
 	free(class);
-	class = getClassDefTable(ttf, stoffset+fclassoff, info->glyph_cnt, info->g_bounds);
+	if ( fclassoff!=0 )
+	    class = getClassDefTable(ttf, stoffset+fclassoff, info->glyph_cnt, info->g_bounds);
+	else
+	    class = gcalloc(info->glyph_cnt,sizeof(uint16));
 	fpst->fccnt = ClassFindCnt(class,info->glyph_cnt);
 	fpst->fclass = ClassToNames(info,fpst->fccnt,class,info->glyph_cnt);
 	free(class);
