@@ -1327,7 +1327,7 @@ static void sfnts2tempfile(struct fontparse *fp,FILE *in,char *line) {
     char *pt;
     int instring = false, firstnibble=true, sofar=0, nibble;
     int complained = false;
-    int ch;
+    int ch=0;
 
     fp->sfnts = tmpfile();
 
