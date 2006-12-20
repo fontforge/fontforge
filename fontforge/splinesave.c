@@ -164,20 +164,24 @@ static void GIContentsFree(GlyphInfo *gi,SplineChar *dummynotdef) {
 
     if ( gi->glyphcnt>0 && gi->gb[0].sc == dummynotdef ) {
 	SplinePointListsFree(dummynotdef->layers[ly_fore].splines);
-	if ( dummynotdef->hstem!=NULL )
-	    StemInfoFree(dummynotdef->hstem);
-	if ( dummynotdef->vstem!=NULL )
-	    StemInfoFree(dummynotdef->vstem);
+	StemInfosFree(dummynotdef->hstem);
+	StemInfosFree(dummynotdef->vstem);
+	dummynotdef->layers[ly_fore].splines = NULL;
+	dummynotdef->vstem = dummynotdef->hstem = NULL;
     }
 
     for ( i=0; i<gi->pcnt; ++i ) {
 	free(gi->psubrs[i].data);
 	free(gi->psubrs[i].startstop);
+	gi->psubrs[i].data = NULL;
+	gi->psubrs[i].startstop = NULL;
     }
     for ( i=0; i<gi->glyphcnt; ++i ) {
 	for ( j=0; j<gi->gb[i].bcnt; ++j )
 	    free(gi->gb[i].bits[j].data);
 	free(gi->gb[i].bits);
+	gi->gb[i].bits = NULL;
+	gi->gb[i].bcnt = 0;
     }
 
     gi->pcnt = 0;
@@ -2254,6 +2258,7 @@ return( NULL );
 	SetupType1Chrs(chrs,fd->subrs,&gi,true);
 	GIContentsFree(&gi,&dummynotdef);
     }
+    GIFree(&gi,&dummynotdef);
     chrs->next = cnt;
 return( chrs );
 }
