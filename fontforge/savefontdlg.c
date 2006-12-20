@@ -2302,6 +2302,13 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	} else
 	    SFTemporaryRestoreGlyphNames(sf,former);
     }
+
+    if ( oldbitmapstate!=bf_none ) {
+	if ( sfs!=NULL ) {
+	    for ( sfi=sfs; sfi!=NULL; sfi=sfi->next )
+		free(sfi->sizes);
+	}
+    }
 return( ret );
 }
 
