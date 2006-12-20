@@ -1781,7 +1781,7 @@ static void _CVFit(CharView *cv,DBounds *b) {
     if ( hsmall )
 	cv->yoff = -bottom*cv->scale;
     else
-	cv->yoff = -(left+top/2)*cv->scale + cv->height/2;
+	cv->yoff = -(bottom+top/2)*cv->scale + cv->height/2;
 
     CVNewScale(cv);
 }
