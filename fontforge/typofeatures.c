@@ -1085,7 +1085,7 @@ static GMenuItem *TagMenu(SplineFont *sf) {
     GMenuItem *top;
     extern GTextInfo *pst_tags[];
     static const char *names[] = { N_("Simple Substitution"), N_("Alternate Substitutions"), N_("Multiple Substitution"),
-	    N_("_Ligatures"), N_("Context Sub"), N_("Chain Sub"), N_("Reverse Chain Sub"),
+	    N_("Ligatures"), N_("Context Sub"), N_("Chain Sub"), N_("Reverse Chain Sub"),
 	    N_("Simple Position"), N_("Pairwise Position"), N_("Context Pos"), N_("Chain Pos"),
 	    (char *) -1,
 	    N_("Mac Features"), 0 };
@@ -1099,7 +1099,7 @@ static GMenuItem *TagMenu(SplineFont *sf) {
     for ( i=0; names[i]!=0; ++i );
     top = gcalloc((i+1),sizeof(GMenuItem));
     for ( i=0; names[i]!=(char *) -1; ++i ) {
-	top[i].ti.text = (unichar_t *) _(names[i]);
+	top[i].ti.text = (unichar_t *) copy(_(names[i]));
 	top[i].ti.text_is_1byte = true;
 	top[i].ti.fg = top[i].ti.bg = COLOR_DEFAULT;
 	top[i].sub = TIListToMI(pst_tags[indeces[i]-1],SFD_OpenTypeTag);
@@ -1108,7 +1108,7 @@ static GMenuItem *TagMenu(SplineFont *sf) {
     top[i].ti.fg = top[i].ti.bg = COLOR_DEFAULT;
     top[i++].ti.line = true;
 
-    top[i].ti.text = (unichar_t *) names[i];
+    top[i].ti.text = (unichar_t *) copy(names[i]);
     top[i].ti.text_is_1byte = true;
     top[i].ti.fg = top[i].ti.bg = COLOR_DEFAULT;
     mac = AddMacFeatures(NULL,pst_max,sf);
