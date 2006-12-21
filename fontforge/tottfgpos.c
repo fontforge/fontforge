@@ -193,7 +193,7 @@ static uint32 scripts[][15] = {
 /* Tibetan */	{ CHR('t','i','b','t'), 0x0f00, 0x0fff },
 /* Tifinagh */	{ CHR('t','f','n','g'), 0x2d30, 0x2d7f },
 /* Ugaritic */	{ CHR('u','g','a','r'), 0x10380, 0x1039d },
-/* Yi */	{ CHR('y','i',' ',' '), 0xa000, 0xa73f },
+/* Yi */	{ CHR('y','i',' ',' '), 0xa000, 0xa4c6 },
 		{ 0 }
 };
 
