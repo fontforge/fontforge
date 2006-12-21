@@ -82,6 +82,7 @@ return( buffer );
 /* ************************************************************************** */
 static void KPInsert( SplineChar *sc1, SplineChar *sc2, int off, int isv ) {
     KernPair *kp;
+    int32 script;
 
     if ( sc1!=NULL && sc2!=NULL ) {
 	for ( kp=sc1->kerns; kp!=NULL && kp->sc!=sc2; kp = kp->next );
@@ -91,8 +92,11 @@ static void KPInsert( SplineChar *sc1, SplineChar *sc2, int off, int isv ) {
 	    kp = chunkalloc(sizeof(KernPair));
 	    kp->sc = sc2;
 	    kp->off = off;
+	    script = SCScriptFromUnicode(sc1);
+	    if ( script==DEFAULT_SCRIPT )
+		script = SCScriptFromUnicode(sc2);
 	    kp->sli = SFFindBiggestScriptLangIndex(sc1->parent,
-			    SCScriptFromUnicode(sc1),DEFAULT_LANG);
+			    script,DEFAULT_LANG);
 	    if ( isv ) {
 		kp->next = sc1->vkerns;
 		sc1->vkerns = kp;
