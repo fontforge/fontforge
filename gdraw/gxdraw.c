@@ -1629,7 +1629,16 @@ static void GXDrawGetPointerPosition(GWindow w, GEvent *ret) {
     ret->u.mouse.y = y;
 }
 
+static char *GXDrawGetWindowTitle8(GWindow w);
+
 static unichar_t *GXDrawGetWindowTitle(GWindow w) {
+#if X_HAVE_UTF8_STRING
+    char *ret1 = GXDrawGetWindowTitle8(w);
+    unichar_t *ret = utf82u_copy(ret1);
+
+    free(ret1);
+return( ret );
+#else
     GXWindow gw = (GXWindow) w;
     Display *display = gw->display->display;
     char *pt;
@@ -1639,14 +1648,40 @@ static unichar_t *GXDrawGetWindowTitle(GWindow w) {
     ret = def2u_copy(pt);
     XFree(pt);
 return( ret );
+#endif
 }
 
 static char *GXDrawGetWindowTitle8(GWindow w) {
+#if X_HAVE_UTF8_STRING
+    GXWindow gw = (GXWindow) w;
+    Display *display = gw->display->display;
+    XTextProperty prop;
+    char **propret;
+    int cnt, i, len;
+    char *ret;
+
+    memset(&prop,0,sizeof(prop));
+    XGetTextProperty(display,gw->w, &prop, XA_WM_NAME );
+    if ( prop.value == NULL )
+return( NULL );
+    Xutf8TextPropertyToTextList(display,&prop,&propret,&cnt);
+    XFree(prop.value);
+    for ( i=len=0; i<cnt; ++i )
+	len += strlen( propret[i]);
+    ret = galloc(len+1);
+    for ( i=len=0; i<cnt; ++i ) {
+	strcpy(ret+len,propret[i]);
+	len += strlen( propret[i]);
+    }
+    XFreeStringList( propret );
+return( ret );
+#else
     unichar_t *ret1 = GXDrawGetWindowTitle(w);
     char *ret = u2utf8_copy(ret1);
 
     free(ret1);
 return( ret );
+#endif
 }
 
 static void GXDrawTranslateCoordinates(GWindow _from,GWindow _to, GPoint *pt) {
