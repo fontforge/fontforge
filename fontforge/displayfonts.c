@@ -469,7 +469,7 @@ return( true );
 void DisplayDlg(SplineFont *sf) {
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[15], boxes[5], *harray[8], *farray[6], *barray[4], *varray[9];
+    GGadgetCreateData gcd[15], boxes[5], *harray[8], *farray[7], *barray[4], *varray[9];
     GTextInfo label[15];
     DI di;
     char buf[10];
