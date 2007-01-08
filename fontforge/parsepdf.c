@@ -539,8 +539,10 @@ static int pdf_zfilter(FILE *to,FILE *from) {
     strm.avail_in = 0;
     strm.next_in = Z_NULL;
     ret = _inflateInit(&strm);
-    if (ret != Z_OK)
+    if (ret != Z_OK) {
+	LogError( _("Flate decompression failed.\n") );
 return ret;
+    }
     in = galloc(Z_CHUNK); out = galloc(Z_CHUNK);
 
     do {
@@ -554,6 +556,7 @@ return ret;
             ret = _inflate(&strm, Z_NO_FLUSH);
 	    if ( ret==Z_NEED_DICT || ret==Z_DATA_ERROR || ret==Z_MEM_ERROR ) {
 		(void)_inflateEnd(&strm);
+		LogError( _("Flate decompression failed.\n") );
 return ret;
 	    }
 	    fwrite(out,1,Z_CHUNK-strm.avail_out,to);
