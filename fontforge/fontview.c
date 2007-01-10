@@ -10074,9 +10074,12 @@ return;
 		for ( gid=sf->glyphcnt-1; gid>=0; --gid )
 		    if ( sf->glyphs[gid]!=NULL && sf->glyphs[gid]->views!=NULL )
 		break;
-	    if ( gid!=-1 )
-		CVChangeSC(sf->glyphs[gid]->views,sc);
-	    else
+	    if ( gid!=-1 ) {
+		CharView *cv = sf->glyphs[gid]->views;
+		CVChangeSC(cv,sc);
+		GDrawSetVisible(cv->gw,true);
+		GDrawRaise(cv->gw);
+	    } else
 		CharViewCreate(sc,fv,pos);
 	} else {
 	    BDFFont *bdf = fv->show;
@@ -10086,9 +10089,12 @@ return;
 		for ( gid=bdf->glyphcnt-1; gid>=0; --gid )
 		    if ( bdf->glyphs[gid]!=NULL && bdf->glyphs[gid]->views!=NULL )
 		break;
-	    if ( gid!=-1 )
-		BVChangeBC(bdf->glyphs[gid]->views,bc,true);
-	    else
+	    if ( gid!=-1 ) {
+		BitmapView *bv = bdf->glyphs[gid]->views;
+		BVChangeBC(bv,bc,true);
+		GDrawSetVisible(bv->gw,true);
+		GDrawRaise(bv->gw);
+	    } else
 		BitmapViewCreate(bc,bdf,fv,pos);
 	}
     } else if ( event->type == et_mousemove ) {
