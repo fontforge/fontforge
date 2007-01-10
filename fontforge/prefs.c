@@ -52,6 +52,7 @@ Encoding *default_encoding = NULL;
 int autohint_before_rasterize = 1;
 int autohint_before_generate = 1;
 int use_freetype_to_rasterize_fv = 1;
+int OpenCharsInNewWindow = 1;
 int ItalicConstrained=true;
 int accent_offset = 6;
 int GraveAcuteCenterBottom = 1;
@@ -288,6 +289,7 @@ static struct prefs_list {
 },
   navigation_list[] = {
 	{ N_("GlyphAutoGoto"), pr_bool, &cv_auto_goto, NULL, NULL, '\0', NULL, 0, N_("Typing a normal character in the glyph view window changes the window to look at that character") },
+	{ N_("OpenCharsInNewWindow"), pr_bool, &OpenCharsInNewWindow, NULL, NULL, '\0', NULL, 0, N_("When double clicking on a character in the font view\nopen that character in a new window, otherwise\nreuse an existing one.") },
 	{ NULL }
 },
   editing_list[] = {

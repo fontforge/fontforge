@@ -10041,6 +10041,7 @@ static void FVMouse(FontView *fv,GEvent *event) {
     int realpos = pos;
     SplineChar *sc, dummy;
     int dopopup = true;
+    extern int OpenCharsInNewWindow;
 
     if ( event->type==et_mousedown )
 	CVPaletteDeactivate();
@@ -10067,10 +10068,28 @@ return;
 	    gid = fv->map->map[pos];
 	}
 	if ( fv->show==fv->filled ) {
-	    CharViewCreate(sc,fv,pos);
+	    SplineFont *sf = fv->sf;
+	    gid = -1;
+	    if ( !OpenCharsInNewWindow )
+		for ( gid=sf->glyphcnt-1; gid>=0; --gid )
+		    if ( sf->glyphs[gid]!=NULL && sf->glyphs[gid]->views!=NULL )
+		break;
+	    if ( gid!=-1 )
+		CVChangeSC(sf->glyphs[gid]->views,sc);
+	    else
+		CharViewCreate(sc,fv,pos);
 	} else {
 	    BDFFont *bdf = fv->show;
-	    BitmapViewCreate(BDFMakeGID(bdf,gid),bdf,fv,pos);
+	    BDFChar *bc =BDFMakeGID(bdf,gid);
+	    gid = -1;
+	    if ( !OpenCharsInNewWindow )
+		for ( gid=bdf->glyphcnt-1; gid>=0; --gid )
+		    if ( bdf->glyphs[gid]!=NULL && bdf->glyphs[gid]->views!=NULL )
+		break;
+	    if ( gid!=-1 )
+		BVChangeBC(bdf->glyphs[gid]->views,bc,true);
+	    else
+		BitmapViewCreate(bc,bdf,fv,pos);
 	}
     } else if ( event->type == et_mousemove ) {
 	if ( dopopup )
