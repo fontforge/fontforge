@@ -1867,7 +1867,7 @@ static void dumptype42(FILE *out, SplineFont *sf, int format, int flags,
     double fm[6];
     DBounds b;
     int uniqueid;
-    int i,cnt,gid;
+    int i,cnt,gid,hasnotdef;
     SplineFont *cidmaster;
 
     cidmaster = sf->cidmaster;
@@ -1957,13 +1957,20 @@ static void dumptype42(FILE *out, SplineFont *sf, int format, int flags,
     _WriteType42SFNTS(out,sf,format,flags,map);
     fprintf( out, "  ] def\n" );
     if ( format==ff_type42 ) {
-	for ( i=cnt=0; i<sf->glyphcnt; ++i )
-	    if ( sf->glyphs[i]!=NULL && SCWorthOutputting(sf->glyphs[i]))
+	hasnotdef = false;
+	for ( i=cnt=0; i<sf->glyphcnt; ++i ) {
+	    if ( sf->glyphs[i]!=NULL && SCWorthOutputting(sf->glyphs[i])) {
 		++cnt;
+		if ( strcmp(sf->glyphs[i]->name,".notdef")==0 )
+		    hasnotdef = true;
+	    }
+	}
 	fprintf( out, "  /CharStrings %d dict dup begin\n", cnt+1 );
-	/* Why check to see if there's a not def char in the font? If there is*/
+	/* Why check to see if there's a notdef char in the font? If there is */
 	/*  we can define the dictionary entry twice */
-	fprintf( out, "    /.notdef 0 def\n" );
+	/* We can, yes, but FreeType gets confused if we do. So let's check */
+	if ( !hasnotdef )
+	    fprintf( out, "    /.notdef 0 def\n" );
 	for ( i=0; i<sf->glyphcnt; ++i )
 	    if ( sf->glyphs[i]!=NULL && SCWorthOutputting(sf->glyphs[i]))
 		fprintf( out, "    /%s %d def\n", sf->glyphs[i]->name, sf->glyphs[i]->ttf_glyph );
