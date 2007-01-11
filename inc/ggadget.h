@@ -135,6 +135,7 @@ typedef struct ggadgetdata {
 	gg_group_prevlabel=0x1000, gg_group_end=0x2000,
 	gg_textarea_wrap=0x4000,
 	gg_tabset_scroll=0x8000, gg_tabset_filllines=0x10000, gg_tabset_fill1line = 0x20000,
+	gg_tabset_nowindow=gg_textarea_wrap,
 	gg_rowcol_alphabetic=gg_list_alphabetic,
 	gg_rowcol_vrules=0x40000, gg_rowcol_hrules=0x800000,
 	gg_rowcol_displayonly=0x1000000,
@@ -247,7 +248,9 @@ extern void GResourceUseGetText(void);
 
 void GGadgetDestroy(GGadget *g);
 void GGadgetSetVisible(GGadget *g,int visible);
+int GGadgetIsVisible(GGadget *g);
 void GGadgetSetEnabled(GGadget *g,int enabled);
+int GGadgetIsEnabled(GGadget *g);
 GWindow GGadgetGetWindow(GGadget *g);
 void *GGadgetGetUserData(GGadget *g);
 void GGadgetSetUserData(GGadget *g, void *d);
@@ -304,6 +307,8 @@ GWindow GTabSetGetSubwindow(GGadget *g,int pos);
 int GTabSetGetTabLines(GGadget *g);
 void GTabSetSetNestedExpose(GGadget *g, void (*)(GWindow,GGadget *,GEvent *));
 void GTabSetSetNestedMouse(GGadget *g, int (*)(GGadget *,GEvent *));
+void GTabSetChangeTabName(GGadget *g, char *name, int pos);
+void GTabSetRemetric(GGadget *g);
 
 int32 GScrollBarGetPos(GGadget *g);
 int32 GScrollBarSetPos(GGadget *g,int32 pos);

@@ -861,8 +861,18 @@ void GGadgetSetVisible(GGadget *g,int visible) {
     (g->funcs->setvisible)(g,visible);
 }
 
+int GGadgetIsVisible(GGadget *g) {
+return( g->state!=gs_invisible );
+}
+
 void GGadgetSetEnabled(GGadget *g,int enabled) {
     (g->funcs->setenabled)(g,enabled);
+}
+
+int GGadgetIsEnabled(GGadget *g) {
+    if ( g->state==gs_invisible )
+return( !g->was_disabled );
+return( g->state==gs_enabled );
 }
 
 void GGadgetSetUserData(GGadget *g,void *data) {

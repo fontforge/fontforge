@@ -55,6 +55,7 @@ extern struct cvshows {
     int showblues, showfamilyblues;
     int showanchor;
     int showcpinfo;
+    int showtabs;		/* with the names of former glyphs */
 } CVShows;
 
 extern struct bvshows {
@@ -220,6 +221,8 @@ enum dv_coderange { cr_none=0, cr_fpgm, cr_prep, cr_glyph };	/* cleverly chosen 
 #endif
 
 #if !defined( FONTFORGE_CONFIG_NO_WINDOWING_UI ) || defined(_DEFINE_SEARCHVIEW_)
+#define FORMER_MAX	10
+
 typedef struct charview {
     SplineChar *sc;
     unsigned int showback:1;
@@ -256,18 +259,19 @@ typedef struct charview {
     unsigned int coderange: 2;			/* For the debugger */
     unsigned int autonomous_ruler_w: 1;
     unsigned int showcpinfo: 1;
+    unsigned int showtabs: 1;
     Layer *layerheads[dm_max];
     real scale;
 #if defined(FONTFORGE_CONFIG_GTK)
     GtkWidget *gw, *v;
-    GtkWidget *vsb, *hsb, *mb;
+    GtkWidget *vsb, *hsb, *mb, *tabs;
     PangoFont *small, *normal;
     GtkWindow *icon;		/* Pixmap? */
     guint pressed;		/* glib timer id */
     GtkWindow backimgs;		/* Pixmap? */
 #elif defined(FONTFORGE_CONFIG_GDRAW)
     GWindow gw, v;
-    GGadget *vsb, *hsb, *mb;
+    GGadget *vsb, *hsb, *mb, *tabs;
     GFont *small, *normal;
     GWindow icon;
     GWindow ruler_w;
@@ -352,7 +356,8 @@ typedef struct charview {
     DebugView *dv;
 #endif
     uint32 mmvisible;
-    char *former_name;		/* We never actually look at the string, so we don't copy/free it. */
+    char *former_names[FORMER_MAX];
+    int former_cnt;
 } CharView;
 #endif
 

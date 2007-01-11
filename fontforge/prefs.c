@@ -378,6 +378,7 @@ static struct prefs_list {
 	{ "ShowCPInfo", pr_int, &CVShows.showcpinfo, NULL, NULL, '\0', NULL, 1 },
 	{ "ShowPoints", pr_bool, &CVShows.showpoints, NULL, NULL, '\0', NULL, 1 },
 	{ "ShowFilled", pr_int, &CVShows.showfilled, NULL, NULL, '\0', NULL, 1 },
+	{ "ShowTabs", pr_int, &CVShows.showtabs, NULL, NULL, '\0', NULL, 1 },
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	{ "DefaultScreenDpiSystem", pr_int, &oldsystem, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultOutputFormat", pr_int, &oldformatstate, NULL, NULL, '\0', NULL, 1 },

@@ -296,7 +296,7 @@ static void GTabSetFigureWidths(GTabSet *gts) {
 /*  (initialization, change of font, addition or removal of tab, etc.) */
 /* Figure out how many rows we need and then how best to divide the tabs */
 /*  between those rows, and then the widths of each tab */
-static void GTabSetRemetric(GTabSet *gts) {
+static void GTabSet_Remetric(GTabSet *gts) {
     int bbp = GBoxBorderWidth(gts->g.base,gts->g.box);
     int bp = bbp + GDrawPointsToPixels(gts->g.base,5);
     int r, r2, width, i;
@@ -518,7 +518,7 @@ return;
 static void GTabSetSetFont(GGadget *g,FontInstance *new) {
     GTabSet *gts = (GTabSet *) g;
     gts->font = new;
-    GTabSetRemetric(gts);
+    GTabSet_Remetric(gts);
 }
 
 static FontInstance *GTabSetGetFont(GGadget *g) {
@@ -699,8 +699,12 @@ GGadget *GTabSetCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 	gts->g.r.y = GDrawPointsToPixels(base,2);
     if ( gd->pos.width<=0 )
 	gts->g.r.width = r.width - gts->g.r.x - GDrawPointsToPixels(base,2);
-    if ( gd->pos.height<=0 )
-	gts->g.r.height = r.height - gts->g.r.y - GDrawPointsToPixels(base,26);
+    if ( gd->pos.height<=0 ) {
+	if ( gd->flags&gg_tabset_nowindow )
+	    gts->g.r.height = GDrawPointsToPixels(base,20);
+	else
+	    gts->g.r.height = r.height - gts->g.r.y - GDrawPointsToPixels(base,26);
+    }
 
     for ( i=0; gd->u.tabs[i].text!=NULL; ++i );
     gts->tabcnt = i;
@@ -722,7 +726,7 @@ GGadget *GTabSetCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     if ( gd->flags&gg_tabset_fill1line ) gts->fill1line = true;
     if ( gd->flags&gg_tabset_vert ) gts->vertical = true;
     gts->offset_per_row = GDrawPointsToPixels(base,2);
-    GTabSetRemetric(gts);
+    GTabSet_Remetric(gts);
     _GGadget_FinalPosition(&gts->g,base,gd);
 
     bp = GBoxBorderWidth(base,gts->g.box);
@@ -738,13 +742,16 @@ GGadget *GTabSetCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 	gts->g.inner.y += bp; gts->g.inner.height -= bp;
     }
 
-    for ( i=0; gd->u.tabs[i].text!=NULL; ++i ) if ( gd->u.tabs[i].gcd!=NULL ) {
-	gts->tabs[i].w = GDrawCreateSubWindow(base,&gts->g.inner,sendtoparent_eh,GDrawGetUserData(base),&childattrs);
-	GGadgetsCreate(gts->tabs[i].w,gd->u.tabs[i].gcd);
-	if ( gts->sel==i && (gd->flags & gg_visible ))
-	    GDrawSetVisible(gts->tabs[i].w,true);
-    } else
-	gts->tabs[i].w = NULL;
+    if ( gd->flags&gg_tabset_nowindow ) gts->nowindow = true;
+
+    for ( i=0; gd->u.tabs[i].text!=NULL; ++i )
+	if ( gd->u.tabs[i].gcd!=NULL && !(gd->flags&gg_tabset_nowindow)) {
+	    gts->tabs[i].w = GDrawCreateSubWindow(base,&gts->g.inner,sendtoparent_eh,GDrawGetUserData(base),&childattrs);
+	    GGadgetsCreate(gts->tabs[i].w,gd->u.tabs[i].gcd);
+	    if ( gts->sel==i && (gd->flags & gg_visible ))
+		GDrawSetVisible(gts->tabs[i].w,true);
+	} else
+	    gts->tabs[i].w = NULL;
 
     if ( gd->flags & gg_group_end )
 	_GGadgetCloseGroup(&gts->g);
@@ -771,8 +778,8 @@ void GTabSetSetEnabled(GGadget *g,int pos,int enabled) {
 
     if ( pos>=0 && pos<gts->tabcnt ) {
 	gts->tabs[pos].disabled = !enabled;
-	GDrawRequestExpose(g->base, &g->r, false);
     }
+    GDrawRequestExpose(g->base, &g->r, false);
 }
 
 GWindow GTabSetGetSubwindow(GGadget *g,int pos) {
@@ -797,4 +804,23 @@ void GTabSetSetNestedExpose(GGadget *g, void (*ne)(GWindow,GGadget *,GEvent *)) 
 void GTabSetSetNestedMouse(GGadget *g, int (*nm)(GGadget *,GEvent *)) {
     GTabSet *gts = (GTabSet *) g;
     gts->nested_mouse = nm;
+}
+
+void GTabSetChangeTabName(GGadget *g, char *name, int pos) {
+    GTabSet *gts = (GTabSet *) g;
+
+    if ( pos==gts->tabcnt && gts->nowindow ) {
+	gts->tabs = grealloc(gts->tabs,(pos+1)*sizeof(struct tabs));
+	memset(&gts->tabs[pos],0,sizeof(struct tabs));
+	++gts->tabcnt;
+    }
+    if ( pos<gts->tabcnt ) {
+	free(gts->tabs[pos].name);
+	gts->tabs[pos].name = utf82u_copy(name);
+    }
+}
+
+void GTabSetRemetric(GGadget *g) {
+    GTabSet *gts = (GTabSet *) g;
+    GTabSet_Remetric(gts);
 }
