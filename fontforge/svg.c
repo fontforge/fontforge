@@ -2030,11 +2030,15 @@ static Entity *SVGParseSVG(xmlNodePtr svg,int em_size,int ascent) {
 	sheight = strtod((char *) end+1,&end);
 	_xmlFree(num);
 	if ( width>height ) {
-	    if ( swidth!=0 ) st.transform[0] *= em_size/swidth;
-	    if ( sheight!=0 ) st.transform[3] *= em_size/(sheight*width/height);
+	    if ( swidth!=0 ) {
+		st.transform[0] *= em_size/swidth;
+		st.transform[3] *= em_size/swidth;
+	    }
 	} else {
-	    if ( swidth!=0 ) st.transform[0] *= em_size/(swidth*height/width);
-	    if ( sheight!=0 ) st.transform[3] *= em_size/sheight;
+	    if ( sheight!=0 ) {
+		st.transform[0] *= em_size/sheight;
+		st.transform[3] *= em_size/sheight;
+	    }
 	}
     }
 return( _SVGParseSVG(svg,svg,&st));
