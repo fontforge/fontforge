@@ -65,7 +65,8 @@ struct cvshows CVShows = {
 	1,		/* show blue values */
 	1,		/* show family blues too */
 	1,		/* show anchor points */
-	1		/* show control point info when moving them */
+	1,		/* show control point info when moving them */
+	1		/* show tabs containing names of former glyphs */
 };
 static Color pointcol = 0xff0000;
 static Color firstpointcol = 0x707000;
@@ -1948,11 +1949,43 @@ return;
     }
 }
 
+static void CVChangeTabsVisibility(CharView *cv,int makevisible) {
+    GRect gsize, pos, sbsize;
+
+    if ( cv->tabs==NULL || GGadgetIsVisible(cv->tabs)==makevisible )
+return;
+    GGadgetGetSize(cv->tabs,&gsize);
+    GGadgetGetSize(cv->vsb,&sbsize);
+    if ( makevisible ) {
+	cv->mbh += gsize.height;
+	cv->height -= gsize.height;
+	GGadgetMove(cv->vsb,sbsize.x,sbsize.y+gsize.height);
+	GGadgetResize(cv->vsb,sbsize.width,sbsize.height-gsize.height);
+    } else {
+	cv->mbh -= gsize.height;
+	cv->height += gsize.height;
+	GGadgetMove(cv->vsb,sbsize.x,sbsize.y-gsize.height);
+	GGadgetResize(cv->vsb,sbsize.width,sbsize.height+gsize.height);
+    }
+    GGadgetSetVisible(cv->tabs,makevisible);
+    cv->back_img_out_of_date = true;
+    pos.x = 0; pos.y = cv->mbh+cv->infoh;
+    pos.width = cv->width; pos.height = cv->height;
+    if ( cv->showrulers ) {
+	pos.x += cv->rulerh;
+	pos.y += cv->rulerh;
+    }
+    GDrawMoveResize(cv->v,pos.x,pos.y,pos.width,pos.height);
+    GDrawSync(NULL);
+    GDrawRequestExpose(cv->v,NULL,false);
+    GDrawRequestExpose(cv->gw,NULL,false);
+}
+
 void CVChangeSC(CharView *cv, SplineChar *sc ) {
     char *title;
     char buf[300];
     extern int updateflex;
-    SplineChar *former = cv->sc;
+    int i;
 
     CVDebugFree(cv->dv);
 
@@ -1996,8 +2029,28 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
     free(title);
     _CVPaletteActivate(cv,true);
 
-    if ( former!=NULL )
-	cv->former_name = former->name;
+    if ( cv->tabs!=NULL ) {
+	for ( i=0; i<cv->former_cnt; ++i )
+	    if ( strcmp(cv->former_names[i],sc->name)==0 )
+	break;
+	if ( i!=cv->former_cnt && cv->showtabs )
+	    GTabSetSetSel(cv->tabs,i);
+	else {
+	    if ( cv->former_cnt==FORMER_MAX )
+		free(cv->former_names[FORMER_MAX-1]);
+	    for ( i=cv->former_cnt<FORMER_MAX?cv->former_cnt-1:FORMER_MAX-2; i>=0; --i )
+		cv->former_names[i+1] = cv->former_names[i];
+	    cv->former_names[0] = copy(sc->name);
+	    if ( cv->former_cnt<FORMER_MAX )
+		++cv->former_cnt;
+	    for ( i=0; i<cv->former_cnt; ++i )
+		GTabSetChangeTabName(cv->tabs,cv->former_names[i],i);
+	    GTabSetRemetric(cv->tabs);
+	    GTabSetSetSel(cv->tabs,0);	/* This does a redraw */
+	    if ( !GGadgetIsVisible(cv->tabs) && cv->showtabs )
+		CVChangeTabsVisibility(cv,true);
+	}
+    }
 }
 
 static void CVChangeChar(CharView *cv, int i ) {
@@ -2016,6 +2069,24 @@ return;
     cv->map_of_enc = map;
     cv->enc = i;
     CVChangeSC(cv,sc);
+}
+
+static int CVChangeToFormer( GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	CharView *cv = GDrawGetUserData(GGadgetGetWindow(g));
+	int new_aspect = GTabSetGetSel(g);
+	SplineFont *sf = cv->sc->parent;
+	int gid;
+
+	for ( gid=sf->glyphcnt-1; gid>=0; --gid )
+	    if ( sf->glyphs[gid]!=NULL &&
+		    strcmp(sf->glyphs[gid]->name,cv->former_names[new_aspect])==0 )
+	break;
+	if ( gid<0 )
+return( true );
+	CVChangeSC(cv,sf->glyphs[gid]);
+    }
+return( true );
 }
 
 static void CVClear(GWindow,GMenuItem *mi, GEvent *);
@@ -4318,6 +4389,7 @@ return( true );
 #define MID_Former	2026
 #define MID_MarkPointsOfInflection	2027
 #define MID_ShowCPInfo	2028
+#define MID_ShowTabs	2029
 #define MID_Cut		2101
 #define MID_Copy	2102
 #define MID_Paste	2103
@@ -4727,6 +4799,14 @@ static void CVMenuShowCPInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     /*  which s/he is currently not, s/he is manipulating the menu */
 }
 
+static void CVMenuShowTabs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    CVShows.showtabs = cv->showtabs = !cv->showtabs;
+    CVChangeTabsVisibility(cv,cv->showtabs);
+    SavePrefs();
+}
+
 static void _CVMenuShowHideRulers(CharView *cv) {
     GRect pos;
 
@@ -4857,10 +4937,11 @@ return;
 	if ( pos<0 )
 return;
     } else if ( mi->mid == MID_Former ) {
-	if ( cv->former_name==NULL )
+	if ( cv->former_cnt<=1 )
 return;
 	for ( gid=sf->glyphcnt-1; gid>=0; --gid )
-	    if ( sf->glyphs[gid]!=NULL && sf->glyphs[gid]->name==cv->former_name )
+	    if ( sf->glyphs[gid]!=NULL &&
+		    strcmp(sf->glyphs[gid]->name,cv->former_names[1])==0 )
 	break;
 	if ( gid<0 )
 return;
@@ -7414,10 +7495,10 @@ static void cv_vwlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = cv->searcher!=NULL || CVCurEnc(cv)==0;
 	  break;
 	  case MID_Former:
-	    if ( cv->former_name==NULL )
+	    if ( cv->former_cnt<=1 )
 		pos = -1;
 	    else for ( pos = sf->glyphcnt-1; pos>=0 ; --pos )
-		if ( sf->glyphs[pos]!=NULL && sf->glyphs[pos]->name==cv->former_name )
+		if ( sf->glyphs[pos]!=NULL && strcmp(sf->glyphs[pos]->name,cv->former_names[1])==0 )
 	    break;
 	    mi->ti.disabled = pos==-1 || cv->searcher!=NULL;
 	  break;
@@ -7432,6 +7513,10 @@ static void cv_vwlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_ShowCPInfo:
 	    mi->ti.checked = cv->showcpinfo;
+	  break;
+	  case MID_ShowTabs:
+	    mi->ti.checked = cv->showtabs;
+	    mi->ti.disabled = cv->former_cnt<=1;
 	  break;
 	  case MID_HidePoints:
 	    free(mi->ti.text);
@@ -7942,6 +8027,7 @@ static GMenuItem vwlist[] = {
     { { (unichar_t *) N_("Com_binations"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'b' }, '\0', ksm_shift|ksm_control, cblist, cblistcheck },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
     { { (unichar_t *) N_("Palette_s"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, '\0', 0, pllist, pllistcheck },
+    { { (unichar_t *) N_("S_how Glyph Tabs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'R' }, '\0', ksm_control, NULL, NULL, CVMenuShowTabs, MID_ShowTabs },
     { { (unichar_t *) N_("Hide _Rulers"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'R' }, '\0', ksm_control, NULL, NULL, CVMenuShowHideRulers, MID_HideRulers },
     { NULL }
 };
@@ -8173,6 +8259,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
     cv->showfamilyblues = CVShows.showfamilyblues;
     cv->showanchor = CVShows.showanchor;
     cv->showcpinfo = CVShows.showcpinfo;
+    cv->showtabs = CVShows.showtabs;
 
     cv->infoh = 13;
     cv->rulerh = 13;
@@ -8306,6 +8393,7 @@ CharView *CharViewCreate(SplineChar *sc, FontView *fv,int enc) {
     GRect pos, zoom;
     GWindow gw;
     GGadgetData gd;
+    GTabInfo aspects[2];
     GRect gsize;
     char buf[300];
 
@@ -8346,11 +8434,27 @@ CharView *CharViewCreate(SplineChar *sc, FontView *fv,int enc) {
     GGadgetGetSize(cv->mb,&gsize);
     cv->mbh = gsize.height;
 
+    memset(aspects,0,sizeof(aspects));
+    aspects[0].text = (unichar_t *) sc->name;
+    aspects[0].text_is_1byte = true;
+	/* NOT visible until we add a second glyph to the stack */
+    gd.flags = gg_enabled|gg_tabset_nowindow|gg_tabset_scroll|gg_pos_in_pixels;
+    gd.u.menu = NULL;
+    gd.u.tabs = aspects;
+    gd.pos.x = 0;
+    gd.pos.y = cv->mbh;
+    gd.handle_controlevent = CVChangeToFormer;
+    cv->tabs = GTabSetCreate( gw, &gd, NULL );
+    cv->former_cnt = 1;
+    cv->former_names[0] = copy(sc->name);
+
     _CharViewCreate(cv,sc,fv,enc);
 return( cv );
 }
 
 void CharViewFree(CharView *cv) {
+    int i;
+
     BDFCharFree(cv->filled);
     if ( cv->ruler_w ) {
 	GDrawDestroyWindow(cv->ruler_w);
@@ -8370,6 +8474,9 @@ void CharViewFree(CharView *cv) {
     FreeType_FreeRaster(cv->raster);
 
     CVDebugFree(cv->dv);
+
+    for ( i=0; i<cv->former_cnt; ++i )
+	free(cv->former_names[i]);
 
     free(cv);
 }
