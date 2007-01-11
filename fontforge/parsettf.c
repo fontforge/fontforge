@@ -438,10 +438,8 @@ return( 0 );
     /*  a truetype table structure, but gives no docs on what tables get used */
     /*  or how */
     if ( version==CHR('t','y','p','1')) {
-	if ( filename==NULL ) filename = "it";
-	LogError( _("Interesting, I've never seen an example of this type of font, could you\nsend me a copy of %s?\nThanks\n  gww@silcom.com\n"), filename );
-    }
-    if ( version!=0x00010000 && version!=CHR('t','r','u','e') &&
+	LogError( _("Nifty, you've got one of the old Apple/Adobe type1 sfnts here\n") );
+    } else if ( version!=0x00010000 && version!=CHR('t','r','u','e') &&
 	    version!=0x00020000 &&	/* Windows 3.1 Chinese version used this version for some arphic fonts */
 					/* See discussion on freetype list, july 2004 */
 	    version!=CHR('O','T','T','O'))
@@ -529,6 +527,10 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	  break;
 	  case CHR('O','S','/','2'):
 	    info->os2_start = offset;
+	  break;
+	  case CHR('T','Y','P','1'):
+	    info->typ1_start = offset;
+	    info->typ1_length = length;
 	  break;
 	  case CHR('v','h','e','a'):
 	    info->vhea_start = offset;
@@ -714,7 +716,7 @@ static void readttfmaxp(FILE *ttf,struct ttfinfo *info) {
     fseek(ttf,info->maxp_start+4,SEEK_SET);		/* skip over the version number */
     cnt = getushort(ttf);
     if ( info->glyph_cnt==0 && info->glyph_length==0 && info->loca_length<=4 &&
-	    info->cff_length==0 ) {
+	    info->cff_length==0 && info->typ1_start==0 ) {
 	/* X11 OpenType bitmap format */;
 	info->onlystrikes = true;
     } else if ( cnt!=info->glyph_cnt && info->loca_length!=0 ) {
@@ -1173,10 +1175,13 @@ static void readttfcopyrights(FILE *ttf,struct ttfinfo *info) {
 }
 
 static void readttfpreglyph(FILE *ttf,struct ttfinfo *info) {
-    readttfhead(ttf,info);
-    readttfhhea(ttf,info);
-    readttfmaxp(ttf,info);
-    readttfcopyrights(ttf,info);
+    if ( info->head_start!=0 )
+	readttfhead(ttf,info);
+    if ( info->hhea_start!=0 )
+	readttfhhea(ttf,info);
+    if ( info->maxp_start!=0 )
+	readttfmaxp(ttf,info);
+    readttfcopyrights(ttf,info);	/* This one has internal checks */
 }
 
 #define _On_Curve	1
@@ -3300,6 +3305,33 @@ return( 0 );
 return( 1 );
 }
 
+static int readtyp1glyphs(FILE *ttf,struct ttfinfo *info) {
+    FontDict *fd;
+    FILE *tmp;
+    int i;
+
+    fseek(ttf,info->typ1_start,SEEK_SET);
+    tmp = tmpfile();
+    for ( i=0; i<info->typ1_length; ++i )
+	putc(getc(ttf),tmp);
+    rewind(tmp);
+    fd = _ReadPSFont(tmp);
+    if ( fd!=NULL ) {
+	SplineFont *sf = SplineFontFromPSFont(fd);
+	PSFontFree(fd);
+	info->chars = sf->glyphs;
+	info->glyph_cnt = sf->glyphcnt;
+	info->emsize = (sf->ascent+sf->descent);
+	info->ascent = sf->ascent;
+	info->descent = sf->descent;
+	sf->glyphs = NULL;
+	sf->glyphcnt = 0;
+	SplineFontFree(sf);
+return( true );
+    }
+return( false );
+}
+    
 static void readttfwidths(FILE *ttf,struct ttfinfo *info) {
     int i,j;
     int lastwidth = info->emsize;
@@ -4541,7 +4573,7 @@ return( 0 );
 
     /* If font only contains bitmaps, then only read bitmaps */
     if ( (info->glyphlocations_start==0 || info->glyph_length==0) &&
-	    info->cff_start==0 &&
+	    info->cff_start==0 && info->typ1_start==0 &&
 	    info->bitmapdata_start!=0 && info->bitmaploc_start!=0 )
 	info->onlystrikes = true;
 
@@ -4585,6 +4617,11 @@ return( 0 );
     } else if ( info->cff_start!=0 ) {
 	info->to_order2 = (loaded_fonts_same_as_new && new_fonts_are_order2);
 	if ( !readcffglyphs(ttf,info) ) {
+	    setlocale(LC_NUMERIC,oldloc);
+return( 0 );
+	}
+    } else if ( info->typ1_start!=0 ) {
+	if ( !readtyp1glyphs(ttf,info) ) {
 	    setlocale(LC_NUMERIC,oldloc);
 return( 0 );
 	}

@@ -171,6 +171,9 @@ struct ttfinfo {
     uint32 postscript_start;	/* names for the glyphs, italic angle, etc. */
 		/* OS/2 */
     uint32 os2_start;
+		/* TYP1 */
+    uint32 typ1_start;		/* For Adobe's? Apple's? attempt to stuff a type1 font into an sfnt wrapper */
+    uint32 typ1_length;
 		/* vhea */
     uint32 vhea_start;
 		/* vmtx */
