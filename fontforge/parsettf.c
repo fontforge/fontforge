@@ -3316,6 +3316,7 @@ static int readtyp1glyphs(FILE *ttf,struct ttfinfo *info) {
 	putc(getc(ttf),tmp);
     rewind(tmp);
     fd = _ReadPSFont(tmp);
+    fclose(tmp);
     if ( fd!=NULL ) {
 	SplineFont *sf = SplineFontFromPSFont(fd);
 	PSFontFree(fd);
