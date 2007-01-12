@@ -358,6 +358,8 @@ typedef struct charview {
     uint32 mmvisible;
     char *former_names[FORMER_MAX];
     int former_cnt;
+    AnchorPoint *apmine, *apmatch;
+    SplineChar *apsc;
 } CharView;
 #endif
 
