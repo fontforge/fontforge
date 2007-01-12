@@ -354,6 +354,9 @@ if test "$gww_nodynamic" = "yes" -o "$gww_regular_link" = "yes"; then
  if test "$ac_cv_lib_ungif_DGifOpenFileName" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -lungif"
  fi
+ if test "$ac_cv_lib_gif_DGifOpenFileName" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lgif"
+ fi
  if test "$ac_cv_lib_png_png_create_read_struct" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -lpng -lz"
  fi
