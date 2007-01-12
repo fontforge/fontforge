@@ -102,6 +102,7 @@ static Color conflicthintcol = 0x00ffff;
 static Color hhintactivecol = 0x00a000;
 static Color vhintactivecol = 0x0000ff;
 static Color anchorcol = 0x0040ff;
+static Color anchoredoutlinecol = 0x0040ff;
 static Color templateoutlinecol = 0x009800;
 static Color oldoutlinecol = 0x008000;
 static Color transformorigincol = 0x000000;
@@ -151,6 +152,7 @@ static void CVColInit( void ) {
 	{ "HHintActiveColor", rt_color, &hhintactivecol },
 	{ "VHintActiveColor", rt_color, &vhintactivecol },
 	{ "AnchorColor", rt_color, &anchorcol },
+	{ "AnchoredOutlineColor", rt_color, &anchoredoutlinecol },
 	{ "TemplateOutlineColor", rt_color, &templateoutlinecol },
 	{ "OldOutlineColor", rt_color, &oldoutlinecol },
 	{ "TransformOriginColor", rt_color, &transformorigincol },
@@ -1493,6 +1495,59 @@ static void CVDrawGridRaster(CharView *cv, GWindow pixmap, DRect *clip ) {
     }
 }
 
+static int APinSC(AnchorPoint *ap,SplineChar *sc) {
+    /* Anchor points can be deleted ... */
+    AnchorPoint *test;
+
+    for ( test=sc->anchor; test!=NULL && test!=ap; ap = ap->next );
+return( test==ap );
+}
+
+static void DrawAPMatch(CharView *cv,GWindow pixmap,DRect *clip) {
+    SplineChar *sc = cv->sc, *apsc = cv->apsc;
+    SplineFont *sf = sc->parent;
+    real trans[6];
+    SplineSet *head, *tail, *temp;
+    RefChar *ref;
+
+    /* The other glyph might have been removed from the font */
+    /* Either anchor might have been deleted. Be prepared for that to happen */
+    if ( (apsc->orig_pos>=sf->glyphcnt || apsc->orig_pos<0) ||
+	    sf->glyphs[apsc->orig_pos]!=apsc ||
+	    !APinSC(cv->apmine,sc) || !APinSC(cv->apmatch,apsc)) {
+	cv->apmine = cv->apmatch = NULL;
+	cv->apsc =NULL;
+return;
+    }
+
+    /* Ok this isn't very accurate, but we are going to use the current glyph's*/
+    /*  coordinate system (because we're showing the current glyph), we should */
+    /*  always use the base character's coordinates, but that would screw up   */
+    /*  editing of the current glyph if it happened to be the mark */
+    trans[0] = trans[3] = 1;
+    trans[1] = trans[2] = 0;
+    trans[4] = cv->apmine->me.x - cv->apmatch->me.x;
+    trans[5] = cv->apmine->me.y - cv->apmatch->me.y;
+
+    head = tail = SplinePointListCopy(apsc->layers[ly_fore].splines);
+    for ( ref = apsc->layers[ly_fore].refs; ref!=NULL; ref = ref->next ) {
+	temp = SplinePointListCopy(ref->layers[0].splines);
+	if ( head!=NULL ) {
+	    for ( ; tail->next!=NULL; tail = tail->next );
+	    tail->next = temp;
+	} else
+	    head = tail = temp;
+    }
+    head = SplinePointListTransform(head,trans,true);
+    CVDrawSplineSet(cv,pixmap,head,anchoredoutlinecol,
+	    false,clip);
+    SplinePointListsFree(head);
+    if ( cv->apmine->type==at_mark || cv->apmine->type==at_centry ) {
+	DrawVLine(cv,pixmap,trans[4],anchoredoutlinecol,false);
+	DrawLine(cv,pixmap,-8096,trans[5],8096,trans[5],anchoredoutlinecol);
+    }
+}
+
 static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     SplineFont *sf = cv->sc->parent;
     RefChar *rf;
@@ -1637,6 +1692,8 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		cv->active_shape!=NULL ) &&
 	    cv->p.pressed )
 	DrawTransOrigin(cv,pixmap);
+    if ( cv->apmine!=NULL )
+	DrawAPMatch(cv,pixmap,&clip);
 
     GDrawPopClip(pixmap,&old);
 }
@@ -2011,6 +2068,7 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
     cv->layerheads[dm_back] = &sc->layers[ly_back];
     cv->layerheads[dm_grid] = &sc->parent->grid;
     cv->p.sp = cv->lastselpt = NULL;
+    cv->apmine = cv->apmatch = NULL; cv->apsc = NULL;
     cv->template1 = cv->template2 = NULL;
 #if HANYANG
     if ( cv->sc->parent->rules!=NULL && cv->sc->compositionunit )
@@ -4392,6 +4450,7 @@ return( true );
 #define MID_MarkPointsOfInflection	2027
 #define MID_ShowCPInfo	2028
 #define MID_ShowTabs	2029
+#define MID_AnchorGlyph	2030
 #define MID_Cut		2101
 #define MID_Copy	2102
 #define MID_Paste	2103
@@ -4894,6 +4953,71 @@ static void CVMenuLigatures(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void CVMenuAnchorPairs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     SFShowKernPairs(cv->sc->parent,cv->sc,(AnchorClass *) (-1));
+}
+
+static void CVMenuAPDetach(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    cv->apmine = cv->apmatch = NULL;
+    cv->apsc = NULL;
+    GDrawRequestExpose(cv->v,NULL,false);
+}
+
+static void CVMenuAPAttachSC(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    enum anchor_type type;
+    AnchorPoint *ap;
+    AnchorClass *ac;
+
+    for ( ap = cv->sc->anchor; ap!=NULL && !ap->selected; ap=ap->next );
+    type = ap->type;
+    cv->apmine = ap;
+    ac = ap->anchor;
+    cv->apsc = mi->ti.userdata;
+    for ( ap = cv->apsc->anchor; ap!=NULL ; ap=ap->next ) {
+	if ( ap->anchor==ac &&
+		((type==at_centry && ap->type==at_cexit) ||
+		 (type==at_cexit && ap->type==at_centry) ||
+		 (type==at_mark && ap->type!=at_mark) ||
+		 ((type==at_basechar || type==at_baselig || type==at_basemark) && ap->type==at_mark)) )
+    break;
+    }
+    cv->apmatch = ap;
+    GDrawRequestExpose(cv->v,NULL,false);
+}
+
+static SplineChar **GlyphsMatchingAP(SplineFont *sf, AnchorPoint *ap) {
+    SplineChar *sc;
+    AnchorClass *ac = ap->anchor;
+    enum anchor_type type = ap->type;
+    int i, k, gcnt;
+    SplineChar **glyphs;
+
+    glyphs = NULL;
+    for ( k=0; k<2; ++k ) {
+	gcnt = 0;
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
+	    for ( ap = sc->anchor; ap!=NULL; ap=ap->next ) {
+		if ( ap->anchor == ac &&
+			((type==at_centry && ap->type==at_cexit) ||
+			 (type==at_cexit && ap->type==at_centry) ||
+			 (type==at_mark && ap->type!=at_mark) ||
+			 ((type==at_basechar || type==at_baselig || type==at_basemark) && ap->type==at_mark)) )
+	     break;
+	     }
+	     if ( ap!=NULL ) {
+		 if ( k )
+		     glyphs[gcnt] = sc;
+		 ++gcnt;
+	     }
+	 }
+	 if ( !k ) {
+	     if ( gcnt==0 )
+return( NULL );
+	     glyphs = galloc((gcnt+1)*sizeof(SplineChar *));
+	 } else
+	     glyphs[gcnt] = NULL;
+     }
+return( glyphs );
 }
 
 static void CVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -6641,6 +6765,7 @@ return( false );
     }
 return( true );
 }
+
 static void _CVMenuInsertPt(CharView *cv) {
     SplineSet *spl;
     Spline *s, *found=NULL, *first;
@@ -7412,11 +7537,31 @@ static void cv_cblistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
     SplineFont *sf = sc->parent;
     PST *pst;
     char *name;
+    AnchorPoint *ap, *found;
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_AnchorPairs:
 	    mi->ti.disabled = sc->anchor==NULL;
+	  break;
+	  case MID_AnchorGlyph:
+	    if ( cv->apmine!=NULL )
+		mi->ti.disabled = false;
+	    else {
+		found = NULL;
+		for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
+		    if ( ap->selected ) {
+			if ( found==NULL )
+			    found = ap;
+			else {
+			    /* Can't deal with two selected anchors */
+			    found = NULL;
+		break;
+			}
+		    }
+		}
+		mi->ti.disabled = found==NULL;
+	    }
 	  break;
 	  case MID_KernPairs:
 	    mi->ti.disabled = sc->kerns==NULL;
@@ -7986,9 +8131,69 @@ static GMenuItem pllist[] = {
     { NULL }
 };
 
+static GMenuItem aplist[] = {
+    { { (unichar_t *) N_("_Detach"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'K' }, '\0', 0, NULL, NULL, CVMenuAPDetach },
+    { NULL }
+};
+
+static void aplistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    SplineChar *sc = cv->sc, **glyphs;
+    SplineFont *sf = sc->parent;
+    AnchorPoint *ap, *found;
+    extern void GMenuItemArrayFree(GMenuItem *mi);
+    extern GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt);
+    GMenuItem *mit;
+    int cnt;
+
+    found = NULL;
+    for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
+	if ( ap->selected ) {
+	    if ( found==NULL )
+		found = ap;
+	    else {
+		/* Can't deal with two selected anchors */
+		found = NULL;
+    break;
+	    }
+	}
+    }
+
+    if ( mi->sub!=aplist )
+	GMenuItemArrayFree(mi->sub);
+    if ( found==NULL )
+	glyphs = NULL;
+    else
+	glyphs = GlyphsMatchingAP(sf,found);
+    if ( glyphs==NULL ) {
+	mi->sub = GMenuItemArrayCopy(aplist,NULL);
+	mi->sub->ti.disabled = (cv->apmine==NULL);
+return;
+    }
+
+    for ( cnt = 0; glyphs[cnt]!=NULL; ++cnt );
+    mit = gcalloc(cnt+2,sizeof(GMenuItem));
+    mit[0] = aplist[0];
+    mit[0].ti.text = (unichar_t *) copy( (char *) mit[0].ti.text );
+    mit[0].ti.disabled = (cv->apmine==NULL);
+    for ( cnt = 0; glyphs[cnt]!=NULL; ++cnt ) {
+	mit[cnt+1].ti.text = (unichar_t *) copy(glyphs[cnt]->name);
+	mit[cnt+1].ti.text_is_1byte = true;
+	mit[cnt+1].ti.fg = mit[cnt+1].ti.bg = COLOR_DEFAULT;
+	mit[cnt+1].ti.userdata = glyphs[cnt];
+	mit[cnt+1].invoke = CVMenuAPAttachSC;
+	if ( glyphs[cnt]==cv->apsc )
+	    mit[cnt+1].ti.checked = mit[cnt+1].ti.checkable = true;
+    }
+    free(glyphs);
+    mi->sub = GMenuItemArrayCopy(mit,NULL);
+    GMenuItemArrayFree(mit);
+}
+
 static GMenuItem cblist[] = {
     { { (unichar_t *) N_("_Kern Pairs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'K' }, '\0', 0, NULL, NULL, CVMenuKernPairs, MID_KernPairs },
     { { (unichar_t *) N_("_Anchored Pairs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, '\0', 0, NULL, NULL, CVMenuAnchorPairs, MID_AnchorPairs },
+    { { (unichar_t *) N_("Anchor _Glyph at Point"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, '\0', 0, aplist, aplistcheck, NULL, MID_AnchorGlyph },
     { { (unichar_t *) N_("_Ligatures"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'L' }, '\0', ksm_shift|ksm_control, NULL, NULL, CVMenuLigatures, MID_Ligatures },
     NULL
 };
