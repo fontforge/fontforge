@@ -2016,6 +2016,8 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
     if ( cv->sc->parent->rules!=NULL && cv->sc->compositionunit )
 	Disp_DefaultTemplate(cv);
 #endif
+    if ( cv->showpointnumbers || cv->show_ft_results )
+	SCNumberPoints(sc);
     if ( cv->show_ft_results )
 	CVGridFitChar(cv);
 
