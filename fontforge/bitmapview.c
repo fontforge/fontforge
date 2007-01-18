@@ -1559,6 +1559,7 @@ static void BVMenuRmGlyph(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bvs, *bvnext;
     BDFFont *bdf = bv->bdf;
     BDFChar *bc = bv->bc;
+    FontView *fv;
 
     for ( bvs=bc->views; bvs!=NULL; bvs=bvnext ) {
 	bvnext = bvs->next;
@@ -1568,6 +1569,8 @@ static void BVMenuRmGlyph(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     /* Can't free the glyph yet, need to process all the destroy events */
     /*  which touch bc->views first */
     DelayEvent( (void (*)(void *))BDFCharFree,bc);
+    for ( fv = bdf->sf->fv; fv!=NULL; fv=fv->nextsame )
+	GDrawRequestExpose(fv->v,NULL,false);
 }
 
 void BVMenuRotateInvoked(GWindow gw,struct gmenuitem *mi,GEvent *g) {
