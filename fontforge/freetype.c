@@ -1238,7 +1238,7 @@ return( bdf );
 #endif
 
 void *FreeTypeFontContext(SplineFont *sf,SplineChar *sc,FontView *fv) {
-return( _FreeTypeFontContext(sf,sc,fv,sf->subfontcnt!=0?ff_otfcid:ff_pfb,0,NULL) );
+return( _FreeTypeFontContext(sf,sc,fv,sf->subfontcnt!=0?ff_otfcid:sf->order2?ff_ttf:ff_pfb,0,NULL) );
 }
 
 void FreeType_FreeRaster(struct freetype_raster *raster) {
