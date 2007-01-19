@@ -3228,7 +3228,7 @@ double CheckExtremaForSingleBitErrors(const Spline1D *sp, double t) {
 
     if ( slope<0 ) slope = -slope;
     if ( slope1<0 ) slope1 = -slope1;
-    if ( slopem1<0 ) slopem1 = -slope1;
+    if ( slopem1<0 ) slopem1 = -slopem1;
 
     if ( slope1<slope && slope1<=slopem1 ) {
 	 /* Ok, things got better when we added 1. */
@@ -3825,6 +3825,21 @@ return( 0 );			/* Linear and quadratics can't double back, can't self-intersect 
 	    s1->splines[1].d == s2->splines[1].d )
 return( -1 );			/* Same spline. Intersects everywhere */
 
+    /* Ignore splines which are just a point */
+    if ( s1->knownlinear && s1->splines[0].c==0 && s1->splines[1].c==0 )
+return( 0 );
+    if ( s2->knownlinear && s2->splines[0].c==0 && s2->splines[1].c==0 )
+return( 0 );
+
+    if ( s1->knownlinear )
+	/* Do Nothing */;
+    else if ( s2->knownlinear || (!s1->isquadratic && s2->isquadratic)) {
+	const Spline *stemp = s1;
+	extended *ts = t1s;
+	t1s = t2s; t2s = ts;
+	s1 = s2; s2 = stemp;
+    }
+
     min1 = s1->from->me; max1 = min1;
     min2 = s2->from->me; max2 = min2;
     if ( s1->from->nextcp.x>max1.x ) max1.x = s1->from->nextcp.x;
@@ -3855,21 +3870,6 @@ return( -1 );			/* Same spline. Intersects everywhere */
     if ( min1.x>max2.x || min2.x>max1.x || min1.y>max2.y || min2.y>max1.y )
 return( false );		/* no intersection of bounding boxes */
 
-    /* Ignore splines which are just a point */
-    if ( s1->knownlinear && s1->splines[0].c==0 && s1->splines[1].c==0 )
-return( false );
-    if ( s2->knownlinear && s2->splines[0].c==0 && s2->splines[1].c==0 )
-return( false );
-
-    if ( s1->knownlinear )
-	/* Do Nothing */;
-    else if ( s2->knownlinear || (!s1->isquadratic && s2->isquadratic)) {
-	const Spline *stemp = s1;
-	extended *ts = t1s;
-	t1s = t2s; t2s = ts;
-	s1 = s2; s2 = stemp;
-    }
-
 #if 0
     soln = CheckEndpoint(&s1->from->me,s2,0,pts,t1s,t2s,soln);
     soln = CheckEndpoint(&s1->to->me,s2,1,pts,t1s,t2s,soln);
@@ -3897,7 +3897,7 @@ return( false );
 		t = (x-s1->splines[0].d)/s1->splines[0].c;
 	    else
 		t = (y-s1->splines[1].d)/s1->splines[1].c;
-	    if ( t<-.001 || t>1.001 )
+	    if ( t<-.001 || t>1.001 || x<min1.x-.01 || y<min1.y-.01 || x>max1.x+.01 || y>max1.y+.01 )
 	continue;
 	    if ( t<=0 ) {t=0; x=s1->from->me.x; y = s1->from->me.y; }
 	    else if ( t>=1 ) { t=1; x=s1->to->me.x; y = s1->to->me.y; }
