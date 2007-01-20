@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 9-Apr-2006 -->
-  <!-- AP: Last modified: 15-Dec-2006 -->
+  <!-- AP: Last modified: 19-Jan-2007 -->
   <TITLE>Scripting functions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -946,56 +946,64 @@ a[4][0] = "Nested array";
 	    end with one of
 	    <UL>
 	      <LI>
-		eps -- the selected glyphs will have their splines output into eps files.
-		The files will be named "&lt;glyph-name&gt;_&lt;font-name&gt;.eps".
+		<CODE>eps</CODE> -- the selected glyphs will have their splines output into
+		eps files.
 	      <LI>
-		pdf -- the selected glyphs will have their splines output into pdf files.
-		The files will be named "&lt;glyph-name&gt;_&lt;font-name&gt;.pdf".
+		<CODE>pdf</CODE> -- the selected glyphs will have their splines output into
+		pdf files.
 	      <LI>
-		svg -- the selected glyphs will have their splines output into svg files.
-		The files will be named "&lt;glyph-name&gt;_&lt;font-name&gt;.svg".
+		<CODE>svg</CODE> -- the selected glyphs will have their splines output into
+		svg files.
 	      <LI>
-		fig -- the selected glyphs will have their splines converted (badly) into
-		xfig files. The files will be named
-		"&lt;glyph-name&gt;_&lt;font-name&gt;.fig".
+		<CODE>fig</CODE> -- the selected glyphs will have their splines converted
+		(badly) into xfig files.
 	      <LI>
-		xbm -- The second argument specifies a bitmap font size, the selected glyphs
-		in that bitmap font will be output as xbm files. The files will be named
-		"&lt;glyph-name&gt;_&lt;font-name&gt;.xbm".
+		<CODE>xbm</CODE> -- The second argument specifies a bitmap font size, the
+		selected glyphs in that bitmap font will be output as xbm files.
 	      <LI>
-		bmp -- The second argument specifies a bitmap font size, the selected glyphs
-		in that bitmap font will be output as bmp files. The files will be named
-		"&lt;glyph-name&gt;_&lt;font-name&gt;.bmp".
+		<CODE>bmp</CODE> -- The second argument specifies a bitmap font size, the
+		selected glyphs in that bitmap font will be output as bmp files.
 	      <LI>
-		png -- The second argument specifies a bitmap font size, the selected glyphs
-		in that bitmap font will be output as png files. The files will be named
-		"&lt;glyph-name&gt;_&lt;font-name&gt;.png".
+		<CODE>png</CODE> -- The second argument specifies a bitmap font size, the
+		selected glyphs in that bitmap font will be output as png files.
 	    </UL>
 	    <P>
-	    The format may consist entirely of the filetype (above), or it may include
-	    a full filename (with some format control within it) which has the file type
-	    as an extension:
+	    The format may consist entirely of the filetype (extension, see above), or
+	    it may include a full filename (with some format control within it) which
+	    has the file type as an extension:
 	    <BLOCKQUOTE>
-	      "Glyph %n from font %f.svg"<BR>
-	      "U+%U.bmp"
+	      <CODE>"Glyph %n from font %f.svg"</CODE><BR>
+	      <CODE>"U+%U.bmp"</CODE>
 	    </BLOCKQUOTE>
+	    <P>
+	    If the format constists entirely of a filetype then FontForge will use a
+	    format of <CODE>"%n_%f.&lt;filetype&gt;"</CODE>
 	    <P>
 	    All characters in the format string except for % are copied verbatim. If
 	    there is a % then the following character controls behavior:
 	    <UL>
 	      <LI>
-		%n -- inserts the glyph name (or the first 40 characters of it for long names)
+		<CODE>%n </CODE>-- inserts the glyph name (or the first 40 characters of
+		it for long names)
 	      <LI>
-		%f -- inserts the font name (or the first 40 characters)
+		<CODE>%f </CODE>-- inserts the font name (or the first 40 characters)
 	      <LI>
-		%e -- inserts the glyph's encoding as a decimal integer
+		<CODE>%e </CODE>-- inserts the glyph's encoding as a decimal integer
 	      <LI>
-		%u -- inserts the glyph's unicode code point in lower case hex
+		<CODE>%u </CODE>-- inserts the glyph's unicode code point in lower case hex
 	      <LI>
-		%U -- inserts the glyph's unicode code point in upper case hex
+		<CODE>%U </CODE>-- inserts the glyph's unicode code point in upper case hex
 	      <LI>
-		%% -- inserts a single '%'
+		<CODE>%% </CODE>-- inserts a single '%'
 	    </UL>
+	    <P>
+	    If you select one of the types that generate an image (xbm, bmp, png) then
+	    you must specify a second argument contain a bitmap-size. FontForge will
+	    search the list of bitmap strikes in the font data base and use the images
+	    in the matching strike. It will NOT rasterize an image for you here. For
+	    bitmap strikes just use the pixel size, for grey scale strikes use the
+	    <CODE>(depth of the grey scale&lt;&lt;16) + pixel_size</CODE>, in most cases
+	    the depth will be 8.
 	</DL>
       </TD>
     </TR>
