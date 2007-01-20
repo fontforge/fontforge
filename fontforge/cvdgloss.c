@@ -441,7 +441,7 @@ return(1);
       break;
       case 0x32: case 0x33:
         scrprintf(&scr," Shift point by amount ref point shifted");
-	if ( operator==0x34 ) {
+	if ( operator==0x33 ) {
 	    scrprintf(&scr, "Reference point in rp1: %d (point (%.2f,%.2f))", exc->GS.rp2,
 		    exc->zp0.cur[exc->GS.rp1].x/64.0,exc->zp0.cur[exc->GS.rp1].y/64.0 );
 	    scrprintf(&scr," (in zone from zp0: %s)", exc->GS.gep0?"Normal":"Twilight" );
@@ -462,7 +462,7 @@ return(1);
       break;
       case 0x34: case 0x35:
         scrprintf(&scr," Shift contour by amount ref point shifted");
-	if ( operator==0x34 ) {
+	if ( operator==0x35 ) {
 	    scrprintf(&scr, "Reference point in rp1: %d (point (%.2f,%.2f))", exc->GS.rp2,
 		    exc->zp0.cur[exc->GS.rp1].x/64.0,exc->zp0.cur[exc->GS.rp1].y/64.0 );
 	    scrprintf(&scr," (in zone from zp0: %s)", exc->GS.gep0?"Normal":"Twilight" );
@@ -476,8 +476,8 @@ return(1);
 	scrproj(&scr,exc);
       break;
       case 0x36: case 0x37:
-        scrprintf(&scr," Shift contour by amount ref point shifted");
-	if ( operator==0x36 ) {
+        scrprintf(&scr," Shift zone by amount ref point shifted");
+	if ( operator==0x37 ) {
 	    scrprintf(&scr, "Reference point in rp1: %d (point (%.2f,%.2f))", exc->GS.rp2,
 		    exc->zp0.cur[exc->GS.rp1].x/64.0,exc->zp0.cur[exc->GS.rp1].y/64.0 );
 	    scrprintf(&scr," (in zone from zp0: %s)", exc->GS.gep0?"Normal":"Twilight" );
