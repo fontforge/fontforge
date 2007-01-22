@@ -3931,7 +3931,8 @@ return( GGadgetDispatchEvent(cv->vsb,event));
       break;
       case et_mousedown:
 	CVPaletteActivate(cv);
-	GDrawSetGIC(gw,cv->gic,0,20);
+	if ( cv->gic!=NULL )
+	    GDrawSetGIC(gw,cv->gic,0,20);
 	if ( cv->inactive )
 	    SVMakeActive(cv->searcher,cv);
 	CVMouseDown(cv,event);
@@ -3961,7 +3962,8 @@ return( GGadgetDispatchEvent(cv->vsb,event));
       break;
       case et_focus:
 	if ( event->u.focus.gained_focus ) {
-	    GDrawSetGIC(gw,cv->gic,0,20);
+	    if ( cv->gic!=NULL )
+		GDrawSetGIC(gw,cv->gic,0,20);
 #if 0
 	    CVPaletteActivate(cv);
 #endif
@@ -4414,7 +4416,8 @@ return( GGadgetDispatchEvent(cv->vsb,event));
       break;
       case et_focus:
 	if ( event->u.focus.gained_focus ) {
-	    GDrawSetGIC(gw,cv->gic,0,20);
+	    if ( cv->gic!=NULL )
+		GDrawSetGIC(gw,cv->gic,0,20);
 #if 0
 	    CVPaletteActivate(cv);
 #endif
@@ -8428,6 +8431,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
     extern int updateflex;
     static unichar_t fixed[] = { 'f','i','x','e','d',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t', '\0' };
     static unichar_t *infofamily=NULL;
+    extern int cv_auto_goto;
 
     if ( !cvcolsinited )
 	CVColInit();
@@ -8554,7 +8558,8 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
 
     CVFit(cv);
     GDrawSetVisible(cv->v,true);
-    cv->gic = GDrawCreateInputContext(cv->v,gic_root|gic_orlesser);
+    if ( cv_auto_goto )		/* Chinese input method steals hot key key-strokes */
+	cv->gic = GDrawCreateInputContext(cv->v,gic_root|gic_orlesser);
     GDrawSetVisible(cv->gw,true);
 }
 
