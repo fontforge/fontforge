@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 20-Dec-2006 -->
+  <!-- AP: Last modified: 22-Jan-2007 -->
   <TITLE>Frequently Asked Questions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -239,6 +239,9 @@
     <LI>
       <A HREF="#background">FontForge's grey background distesses me. How do I
       change it?</A>
+    <LI>
+      <A HREF="#fontsize">The fonts FontForge uses in its GUI are too small (too
+      big) how do I change them?</A>
     <LI>
       <A HREF="#monospace">How do I mark a font as monospaced?</A>
     <LI>
@@ -1263,6 +1266,26 @@ $ xset fp+ `pwd`
       Resources page</A>.<BR>
       <A HREF="fontforge-themes.html" TARGET="_top">Here are some combinations
       you might try</A>.
+    <DT>
+      <A NAME="fontsize"><B>The fonts FontForge uses in its GUI are too small (too
+      big) how do I change them?</B></A>
+    <DD>
+      The X server does not have a good idea about screen resolution, and when
+      fontforge asks it, the answer is often wrong. The result is that ff may use
+      fonts that are too small (potentially too big too, but no one has complained
+      about that one yet). You can tell fontforge the true screen size by adding
+      a line like
+      <BLOCKQUOTE>
+	<PRE>Gdraw.ScreenWidthInches: 14.7
+Gdraw.ScreenWidthCentimeters: 37.3
+</PRE>
+      </BLOCKQUOTE>
+      <P>
+      to your <CODE>~/.Xdefaults</CODE> file (The general mechanism is discussed
+      on the <A HREF="xres.html" TARGET="_top">X Resources page</A>). If the GUI
+      fonts are still too small you can lie about the screen size. If you claim
+      the screen is smaller (in inches or centimeters) than it actually is, ff
+      will use a bigger font.
     <DT>
       <B><A NAME="monospace">How do I mark a font as monospaced?</A></B>
     <DD>
