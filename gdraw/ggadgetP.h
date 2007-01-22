@@ -390,6 +390,7 @@ typedef struct gmatrixedit {
     GGadget **buttonlist;
     GWindow nested;
     int16 desired_width, desired_height;
+    int16 mark_length, mark_size, mark_skip;
     char *newtext;
     void (*initrow)(GGadget *g,int row);
     int  (*candelete)(GGadget *g,int row);
