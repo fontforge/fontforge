@@ -66,6 +66,9 @@ static void MatrixDataFree(GMatrixEdit *gme) {
     for ( r=0; r<gme->rows; ++r ) for ( c=0; c<gme->cols; ++c ) {
 	if ( gme->col_data[c].me_type == me_string ||
 		gme->col_data[c].me_type == me_bigstr ||
+		gme->col_data[c].me_type == me_stringchoice ||
+		gme->col_data[c].me_type == me_stringchoicetrans ||
+		gme->col_data[c].me_type == me_funcedit ||
 		gme->col_data[c].me_type == me_func )
 	    free( gme->data[r*gme->cols+c].u.md_str );
     }
@@ -202,6 +205,7 @@ static int GME_ColWidth(GMatrixEdit *gme, int c) {
 	width = max;
       break;
       case me_func:
+      case me_stringchoice: case me_stringchoicetrans: case me_funcedit:
       case me_string: case me_bigstr:
 	max = 0;
 	for ( r=0; r<gme->rows; ++r ) {
@@ -220,6 +224,8 @@ static int GME_ColWidth(GMatrixEdit *gme, int c) {
 	    width = 10*GDrawGetText8Width(gme->g.base,"n", 1, NULL );
 	else
 	    width = max;
+	if ( gme->col_data[c].me_type==me_stringchoice || gme->col_data[c].me_type==me_stringchoicetrans )
+	    width += gme->mark_size + gme->mark_skip;
       break;
       default:
 	width = 0;
@@ -620,6 +626,9 @@ static void GME_PositionEdit(GMatrixEdit *gme) {
 	x = gme->col_data[c].x - gme->off_left;
 	y = (r-gme->off_top)*(gme->fh+gme->vpad);
 	end = x + gme->col_data[c].width;
+	if ( gme->col_data[c].me_type==me_stringchoice ||
+		gme->col_data[c].me_type==me_stringchoicetrans )
+	    end -= gme->mark_size+gme->mark_skip;
 
 	GDrawGetSize(gme->nested,&wsize);
 	if ( end>wsize.width )
@@ -696,6 +705,7 @@ return( false );
 	gme->data[r*gme->cols+c].u.md_real = dval;
 	free(str);
   goto good;
+      case me_stringchoice: case me_stringchoicetrans: case me_funcedit:
       case me_string: case me_bigstr: case me_func:
 	if ( gme->validatestr!=NULL )
 	    end = (gme->validatestr)(&gme->g,gme->active_row,gme->active_col,gme->wasnew,str);
@@ -791,7 +801,9 @@ return;
     gme->edit_active = false;
     GGadgetSetVisible(gme->tf,false);
     for ( c=0; c<gme->cols; ++c ) {
-	if ( gme->col_data[c].me_type == me_string || gme->col_data[c].me_type == me_bigstr )
+	if ( gme->col_data[c].me_type == me_string || gme->col_data[c].me_type == me_bigstr ||
+		gme->col_data[c].me_type == me_func || gme->col_data[c].me_type == me_funcedit ||
+		gme->col_data[c].me_type == me_stringchoice || gme->col_data[c].me_type == me_stringchoicetrans )
 	    free(gme->data[gme->active_row*gme->cols+c].u.md_str);
     }
     for ( r=gme->active_row+1; r<gme->rows; ++r )
@@ -1012,6 +1024,39 @@ static void GME_Choices(GMatrixEdit *gme,GEvent *event,int r,int c) {
     _GMenuCreatePopupMenu(gme->nested,event, mi, GME_FinishChoice);
 }
 
+static void GME_EnumStringDispatch(GWindow gw, GMenuItem *mi, GEvent *e) {
+    GMatrixEdit *gme = GDrawGetUserData(gw);
+    int r = gme->active_row, c = gme->active_col;
+
+    if ( (intpt) mi->ti.userdata == GME_NoChange )
+return;
+
+    free(gme->data[r*gme->cols+c].u.md_str);
+    if ( gme->col_data[c].me_type==me_stringchoicetrans )
+	gme->data[r*gme->cols+c].u.md_str = copy( (char *) mi->ti.userdata );
+    else
+	gme->data[r*gme->cols+c].u.md_str = u2utf8_copy( mi->ti.text );
+
+    if ( gme->finishedit != NULL )
+	(gme->finishedit)(&gme->g,r,c,gme->wasnew);
+    GME_AdjustCol(gme,c);
+    gme->wasnew = false;
+}
+
+static void GME_StringChoices(GMatrixEdit *gme,GEvent *event,int r,int c) {
+    GMenuItem *mi = gme->col_data[c].enum_vals;
+    char *val = gme->data[r*gme->cols+c].u.md_str;
+    int i;
+
+    if ( gme->col_data[c].me_type==me_stringchoicetrans )
+	for ( i=0; mi[i].ti.text!=NULL || mi[i].ti.line || mi[i].ti.image!=NULL; ++i )
+	    mi[i].ti.selected = mi[i].ti.checked = !gme->wasnew && val!=NULL &&
+		    strcmp((char *) mi[i].ti.userdata,val)==0;
+    if ( gme->col_data[c].enable_enum!=NULL )
+	(gme->col_data[c].enable_enum)(&gme->g,mi,r,c);
+    _GMenuCreatePopupMenu(gme->nested,event, mi, GME_FinishChoice);
+}
+
 static char *MD_Text(GMatrixEdit *gme,int r, int c ) {
     char buffer[20], *str= NULL;
     struct matrix_data *d = &gme->data[r*gme->cols+c];
@@ -1028,6 +1073,7 @@ static char *MD_Text(GMatrixEdit *gme,int r, int c ) {
 	str = buffer;
       break;
       case me_string: case me_bigstr:
+      case me_funcedit: case me_stringchoice: case me_stringchoicetrans:
 	str = d->u.md_str;
       break;
       case me_func:
@@ -1054,6 +1100,8 @@ static void GMatrixEdit_StartSubGadgets(GMatrixEdit *gme,int r, int c,GEvent *ev
 	    memset(d,0,sizeof(*d));
 	    switch ( gme->col_data[i].me_type ) {
 	      case me_string: case me_bigstr:
+	      case me_stringchoice: case me_stringchoicetrans:
+	      case me_funcedit:
 		d->u.md_str = copy("");
 	      break;
 	      case me_enum:
@@ -1081,6 +1129,20 @@ return;
 	GDrawBeep(NULL);
     } else if ( gme->col_data[c].me_type==me_enum ) {
 	GME_Choices(gme,event,r,c);
+    } else if ( gme->col_data[c].me_type==me_funcedit ) {
+	char *ret = (gme->col_data[c].func)(&gme->g,r,c);
+	if ( ret!=NULL ) {
+	    /* I don't bother validating it because I expect the function to */
+	    /*  do that for me */
+	    free(gme->data[r*gme->cols+c].u.md_str);
+	    gme->data[r*gme->cols+c].u.md_str = ret;
+	}
+    } else if ( (gme->col_data[c].me_type==me_stringchoice ||
+	    gme->col_data[c].me_type==me_stringchoicetrans) &&
+	    event->type==et_mousedown &&
+	    event->u.mouse.x>gme->col_data[c].x + gme->col_data[c].width -
+		(gme->mark_size+gme->mark_skip) - gme->off_left ) {
+	GME_StringChoices(gme,event,r,c);
     } else {
 	char *str = MD_Text(gme,gme->active_row,gme->active_col);
 	if ( str==NULL )
@@ -1165,6 +1227,8 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 	    if ( gme->col_data[c].disabled )
 	continue;
 	    clip.x = gme->col_data[c].x-gme->off_left; clip.width = gme->col_data[c].width;
+	    if ( gme->col_data[c].me_type == me_stringchoice || gme->col_data[c].me_type == me_stringchoicetrans )
+		clip.width -= gme->mark_size+gme->mark_skip;
 	    GDrawPushClip(pixmap,&clip,&old);
 	    data = &gme->data[(r+gme->off_top)*gme->cols+c];
 	    fg = data->frozen ? 0xff0000 : 0x000000;
@@ -1192,6 +1256,19 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 		free(str);
 	    }
 	    GDrawPopClip(pixmap,&old);
+	    if ( gme->col_data[c].me_type == me_stringchoice || gme->col_data[c].me_type == me_stringchoicetrans ) {
+		GRect r;
+		clip.x += clip.width + gme->mark_skip;
+		clip.width = gme->mark_size;
+		GDrawPushClip(pixmap,&clip,&old);
+		r.width = gme->mark_length;
+		r.x = clip.x + (gme->mark_size - gme->mark_length)/2;
+		r.height = 2*GDrawPointsToPixels(pixmap,_GListMark_Box.border_width) +
+			GDrawPointsToPixels(pixmap,3);
+		r.y = clip.y + (clip.height-r.height)/2;
+		GBoxDrawBorder(pixmap,&r,&_GListMark_Box,gme->g.state,false);
+		GDrawPopClip(pixmap,&old);
+	    }
 	}
     }
 }
@@ -1388,7 +1465,7 @@ static int _GME_DeleteActive(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static GMenuItem *GMenuItemFromTI(GTextInfo *ti) {
+static GMenuItem *GMenuItemFromTI(GTextInfo *ti,int is_enum) {
     int cnt;
     GMenuItem *mi;
 
@@ -1405,7 +1482,7 @@ static GMenuItem *GMenuItemFromTI(GTextInfo *ti) {
 	    else
 		mi[cnt].ti.text = u_copy( mi[cnt].ti.text );
 	    mi[cnt].ti.checkable = true;
-	    mi[cnt].invoke = GME_EnumDispatch;
+	    mi[cnt].invoke = is_enum ? GME_EnumDispatch : GME_EnumStringDispatch;
 	}
     }
 return( mi );
@@ -1447,7 +1524,8 @@ GGadget *GMatrixEditCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 	gme->col_data[c].me_type = matrix->col_init[c].me_type;
 	gme->col_data[c].func = matrix->col_init[c].func;
 	if ( matrix->col_init[c].enum_vals!=NULL )
-	    gme->col_data[c].enum_vals = GMenuItemFromTI(matrix->col_init[c].enum_vals);
+	    gme->col_data[c].enum_vals = GMenuItemFromTI(matrix->col_init[c].enum_vals,
+		    matrix->col_init[c].me_type==me_enum );
 	else
 	    gme->col_data[c].enum_vals = NULL;
 	gme->col_data[c].enable_enum = matrix->col_init[c].enable_enum;
@@ -1460,7 +1538,8 @@ GGadget *GMatrixEditCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     memcpy(gme->data,matrix->matrix_data,gme->rows*gme->cols*sizeof(struct matrix_data));
     for ( c=0; c<gme->cols; ++c ) {
 	enum me_type me_type = gme->col_data[c].me_type;
-	if ( me_type==me_string || me_type==me_bigstr || me_type==me_func ) {
+	if ( me_type==me_string || me_type==me_bigstr || me_type==me_func ||
+		me_type==me_funcedit || me_type==me_stringchoice || me_type==me_stringchoicetrans ) {
 	    for ( r=0; r<gme->rows; ++r )
 		gme->data[r*gme->cols+c].u.md_str = copy(gme->data[r*gme->cols+c].u.md_str);
 	}
@@ -1558,6 +1637,11 @@ GGadget *GMatrixEditCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 	sub_gd.flags = gg_enabled | gg_pos_in_pixels | gg_dontcopybox | gg_text_xim;
 	gme->tf = GTextFieldCreate(gme->nested,&sub_gd,gme);
     }
+
+    gme->mark_length = GDrawPointsToPixels(gme->nested,_GListMarkSize);
+    gme->mark_size = gme->mark_length +
+	    2*GBoxBorderWidth(gme->nested,&_GListMark_Box);
+    gme->mark_skip = GDrawPointsToPixels(gme->nested,_GGadget_TextImageSkip);
     if ( gme->g.state!=gs_invisible )
 	GDrawSetVisible(gme->nested,true);
 return( &gme->g );
@@ -1577,7 +1661,8 @@ void GMatrixEditSet(GGadget *g,struct matrix_data *data, int rows, int copy_it) 
 	memcpy(gme->data,data,rows*gme->cols*sizeof(struct matrix_data));
 	for ( c=0; c<gme->cols; ++c ) {
 	    enum me_type me_type = gme->col_data[c].me_type;
-	    if ( me_type==me_string || me_type==me_bigstr || me_type==me_func ) {
+	    if ( me_type==me_string || me_type==me_bigstr || me_type==me_func ||
+		    me_type==me_funcedit || me_type==me_stringchoice || me_type==me_stringchoicetrans ) {
 		for ( r=0; r<rows; ++r )
 		    gme->data[r*gme->cols+c].u.md_str = copy(gme->data[r*gme->cols+c].u.md_str);
 	    }
