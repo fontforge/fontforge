@@ -124,6 +124,7 @@ typedef struct ggadgetdata {
 	GMenuItem *menu;	/* for menus */
 	struct ggadgetcreatedata **boxelements;	/* An array of things to go in the box */
 	struct matrixinit *matrix;
+	GDrawEH drawable_e_h;	/* Drawable event handler */
     } u;
     enum gg_flags { gg_visible=1, gg_enabled=2, gg_pos_in_pixels=4,
 	gg_sb_vert=8, gg_line_vert=gg_sb_vert,
@@ -399,6 +400,7 @@ GGadget *GVBoxCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GHVBoxCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GHVGroupCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GMatrixEditCreate(struct gwindow *base, GGadgetData *gd,void *data);
+GGadget *GDrawableCreate(struct gwindow *base, GGadgetData *gd,void *data);
 
 GGadget *CreateSlider(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *CreateFileChooser(struct gwindow *base, GGadgetData *gd,void *data);

@@ -401,6 +401,13 @@ typedef struct gmatrixedit {
     void (*setotherbuttons)(GGadget *g, int r, int c);
 } GMatrixEdit;
 
+typedef struct gdrawable {
+    GGadget g;
+    GWindow gw;
+    int16 desired_width, desired_height;
+    GDrawEH e_h;
+} GDrawable;
+
 typedef struct rowcol {
     GGadget g;
     int rows, cols;
