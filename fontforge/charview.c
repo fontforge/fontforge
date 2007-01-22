@@ -2124,7 +2124,7 @@ return;
     if ( gid==-1 || (sc = sf->glyphs[gid])==NULL )
 	sc = SFMakeChar(sf,map,i);
 
-    if ( sc==NULL || cv->sc == sc )
+    if ( sc==NULL || (cv->sc == sc && cv->enc==i ))
 return;
     cv->map_of_enc = map;
     cv->enc = i;
