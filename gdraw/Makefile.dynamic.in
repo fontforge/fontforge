@@ -9,7 +9,7 @@ bindir = @bindir@
 libdir = @libdir@
 
 GD_VERSION=1
-GD_REVISION=13
+GD_REVISION=14
 GD_AGE=0
 
 LIBTOOL = @LIBTOOL@
@@ -36,7 +36,7 @@ libgdraw_OBJECTS =  choosericons.lo divisors.lo drawboxborder.lo \
  gmenu.lo gprogress.lo gpsdraw.lo gpstxtinit.lo gradio.lo gresource.lo \
  gresourceimage.lo gsavefiledlg.lo gscrollbar.lo gtabset.lo \
  gtextfield.lo gtextinfo.lo gwidgets.lo gxdraw.lo dynamic.lo \
- ghvbox.lo gmatrixedit.lo
+ ghvbox.lo gmatrixedit.lo gdrawable.lo
 
 Incs = -I$(top_srcdir)/inc -I/usr/pkg/include -I/usr/pkg/include/giflib
 CFLAGS = @CFLAGS@ @CPPFLAGS@ $(Incs) @WFLAGS@ $(X_CFLAGS) -DNOTHREADS @DEFS@ -DLIBDIR='"$(libdir)"'
