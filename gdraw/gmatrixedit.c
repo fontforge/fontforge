@@ -1816,3 +1816,15 @@ void GMatrixEditEnableColumn(GGadget *g, int col, int enabled) {
 return;
     gme->col_data[col].disabled = !enabled;
 }
+
+void GMatrixEditSetColumnChoices(GGadget *g, int col, GTextInfo *ti) {
+    GMatrixEdit *gme = (GMatrixEdit *) g;
+
+    if ( gme->col_data[col].enum_vals!=NULL )
+	GMenuItemArrayFree(gme->col_data[col].enum_vals);
+    if ( ti!=NULL )
+	gme->col_data[col].enum_vals = GMenuItemFromTI(ti,
+		    gme->col_data[col].me_type==me_enum );
+    else
+	gme->col_data[col].enum_vals = NULL;
+}

@@ -360,6 +360,7 @@ void GMatrixEditDown(GGadget *g);
 void GMatrixEditSetUpDownVisible(GGadget *g, int enabled);
 void GMatrixEditAddButtons(GGadget *g, GGadgetCreateData *gcd);
 void GMatrixEditEnableColumn(GGadget *g, int col, int enabled);
+void GMatrixEditSetColumnChoices(GGadget *g, int col, GTextInfo *ti);
 
 GWindow GDrawableGetWindow(GGadget *g);
 
