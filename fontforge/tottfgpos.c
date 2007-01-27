@@ -1321,7 +1321,7 @@ static void dumpanchor(FILE *gpos,AnchorPoint *ap, int is_ttf ) {
     if ( ap->xadjust.corrections!=NULL || ap->yadjust.corrections!=NULL ) {
 	putshort(gpos,ap->xadjust.corrections==NULL?0:
 		ftell(gpos)-base+4);
-	putshort(gpos,ap->xadjust.corrections==NULL?0:
+	putshort(gpos,ap->yadjust.corrections==NULL?0:
 		ftell(gpos)-base+2+DevTabLen(&ap->xadjust));
 	dumpgposdevicetable(gpos,&ap->xadjust);
 	dumpgposdevicetable(gpos,&ap->yadjust);
