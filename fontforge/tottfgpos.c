@@ -1828,7 +1828,6 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,SplineChar **glyphs,
 			dumpgposdevicetable(gpos,&pst->u.pair.vr[1].adjust->xadv);
 			dumpgposdevicetable(gpos,&pst->u.pair.vr[1].adjust->yadv);
 		    }
-	    break;
 		}
 	    }
 	}
