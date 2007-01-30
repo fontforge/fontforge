@@ -372,9 +372,10 @@ return( NULL );
 	    new = gcalloc(sf->glyphcnt,sizeof(SplineChar *));
 	    if ( sc!=NULL )
 		TransitiveClosureAdd(new,old,sc);
-	    else for ( i=0; i<sf->glyphcnt; ++i )
-		if ( selected[i] && SCWorthOutputting(old[i]))
-		    TransitiveClosureAdd(new,old,old[i]);
+	    else for ( i=0; i<map->enccount; ++i )
+		if ( selected[i] && map->map[i]!=-1 &&
+			SCWorthOutputting(old[map->map[i]]))
+		    TransitiveClosureAdd(new,old,old[map->map[i]]);
 	    /* Add these guys so we'll get reasonable blue values */
 	    /* we won't rasterize them */
 	    if ( PSDictHasEntry(sf->private,"BlueValues")==NULL ) {

@@ -1499,7 +1499,7 @@ static int APinSC(AnchorPoint *ap,SplineChar *sc) {
     /* Anchor points can be deleted ... */
     AnchorPoint *test;
 
-    for ( test=sc->anchor; test!=NULL && test!=ap; ap = ap->next );
+    for ( test=sc->anchor; test!=NULL && test!=ap; test = test->next );
 return( test==ap );
 }
 
@@ -4454,6 +4454,7 @@ return( true );
 #define MID_ShowCPInfo	2028
 #define MID_ShowTabs	2029
 #define MID_AnchorGlyph	2030
+#define MID_AnchorControl 2031
 #define MID_Cut		2101
 #define MID_Copy	2102
 #define MID_Paste	2103
@@ -4956,6 +4957,17 @@ static void CVMenuLigatures(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void CVMenuAnchorPairs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     SFShowKernPairs(cv->sc->parent,cv->sc,(AnchorClass *) (-1));
+}
+
+static void CVMenuAnchorControl(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    AnchorPoint *found;
+
+    for ( found=cv->sc->anchor; found!=NULL; found=found->next )
+	if ( found->selected )
+    break;
+    if ( found!=NULL )
+	AnchorControl(cv->sc,found);
 }
 
 static void CVMenuAPDetach(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -7542,29 +7554,32 @@ static void cv_cblistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
     char *name;
     AnchorPoint *ap, *found;
 
+    found = NULL;
+    for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
+	if ( ap->selected ) {
+	    if ( found==NULL )
+		found = ap;
+	    else {
+		/* Can't deal with two selected anchors */
+		found = NULL;
+    break;
+	    }
+	}
+    }
+
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_AnchorPairs:
 	    mi->ti.disabled = sc->anchor==NULL;
 	  break;
+	  case MID_AnchorControl:
+	    mi->ti.disabled = found==NULL;
+	  break;
 	  case MID_AnchorGlyph:
 	    if ( cv->apmine!=NULL )
 		mi->ti.disabled = false;
-	    else {
-		found = NULL;
-		for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
-		    if ( ap->selected ) {
-			if ( found==NULL )
-			    found = ap;
-			else {
-			    /* Can't deal with two selected anchors */
-			    found = NULL;
-		break;
-			}
-		    }
-		}
+	    else
 		mi->ti.disabled = found==NULL;
-	    }
 	  break;
 	  case MID_KernPairs:
 	    mi->ti.disabled = sc->kerns==NULL;
@@ -8196,6 +8211,7 @@ return;
 static GMenuItem cblist[] = {
     { { (unichar_t *) N_("_Kern Pairs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'K' }, '\0', 0, NULL, NULL, CVMenuKernPairs, MID_KernPairs },
     { { (unichar_t *) N_("_Anchored Pairs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, '\0', 0, NULL, NULL, CVMenuAnchorPairs, MID_AnchorPairs },
+    { { (unichar_t *) N_("_Anchored Control"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, '\0', 0, NULL, NULL, CVMenuAnchorControl, MID_AnchorControl },
     { { (unichar_t *) N_("Anchor _Glyph at Point"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, '\0', 0, aplist, aplistcheck, NULL, MID_AnchorGlyph },
     { { (unichar_t *) N_("_Ligatures"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'L' }, '\0', ksm_shift|ksm_control, NULL, NULL, CVMenuLigatures, MID_Ligatures },
     NULL

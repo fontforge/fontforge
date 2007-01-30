@@ -478,6 +478,7 @@ return;
 	}
     }
     KPSortEm(kpd,sb_first);
+    AnchorRefigure(kpd);
 }
 
 static void KPScrollTo(KPData *kpd, unichar_t uch, enum sortby sort) {
