@@ -382,7 +382,7 @@ return( false );
     }
 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sc=sf->glyphs[i]) ) {
-	gfname = galloc(strlen(gfname)+20);
+	gfname = galloc(strlen(sc->name)+20);
 	if ( isupper(sc->name[0])) {
 	    char *pt;
 	    pt = strchr(sc->name,'.');
