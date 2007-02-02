@@ -412,6 +412,8 @@ static void GHVBoxGetDesiredSize(GGadget *g, GRect *outer, GRect *inner) {
     int bp = GBoxBorderWidth(g->base,g->box);
 
     GHVBoxGatherSizeInfo(gb,&si);
+    if ( g->desired_width>0 ) si.width = g->desired_width;
+    if ( g->desired_height>0 ) si.height = g->desired_height;
 
     if ( inner!=NULL ) {
 	inner->x = inner->y = 0;
@@ -492,7 +494,7 @@ struct gfuncs ghvbox_funcs = {
     NULL,
 
     GHVBoxGetDesiredSize,
-    NULL,
+    _ggadget_setDesiredSize,
     GHVBoxFillsWindow,
     NULL
 };

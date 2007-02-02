@@ -462,16 +462,16 @@ return( dir );
 /* Handle events from the directory dropdown list */
 static int GFileChooserDListChanged(GGadget *pl,GEvent *e) {
     GFileChooser *gfc;
-    int i; int32 len;
+    int i; /*int32 len;*/
     unichar_t *dir;
-    GTextInfo **ti;
+    /*GTextInfo **ti;*/
 
     if ( e->type!=et_controlevent || e->u.control.subtype!=et_listselected )
 return( true );
     i = GGadgetGetFirstListSelectedItem(pl);
     if ( i==-1 )
 return(true);
-    ti = GGadgetGetList(pl,&len);
+    /*ti = GGadgetGetList(pl,&len);*/
     if ( i==0 )		/* Nothing changed */
 return( true );
 
@@ -943,30 +943,16 @@ static void gfilechooser_setenabled(GGadget *g, int enabled ) {
 }
 
 static void GFileChooserGetDesiredSize(GGadget *g,GRect *outer,GRect *inner) {
-    GFileChooser *gfc = (GFileChooser *) g;
     if ( inner!=NULL ) {
 	int bp = GBoxBorderWidth(g->base,g->box);
 	inner->x = inner->y = 0;
-	inner->width = gfc->desired_width - 2*bp;
-	inner->height = gfc->desired_height - 2*bp;
+	inner->width = g->desired_width - 2*bp;
+	inner->height = g->desired_height - 2*bp;
     }
     if ( outer!=NULL ) {
 	outer->x = outer->y = 0;
-	outer->width = gfc->desired_width;
-	outer->height = gfc->desired_height;
-    }
-}
-
-static void GFileChooserSetDesiredSize(GGadget *g,GRect *outer,GRect *inner) {
-    GFileChooser *gfc = (GFileChooser *) g;
-
-    if ( outer!=NULL ) {
-	gfc->desired_width = outer->width;
-	gfc->desired_height = outer->height;
-    } else if ( inner!=NULL ) {
-	int bp = GBoxBorderWidth(g->base,g->box);
-	gfc->desired_width = inner->width + 2*bp;
-	gfc->desired_height = inner->height + 2*bp;
+	outer->width = g->desired_width;
+	outer->height = g->desired_height;
     }
 }
 
@@ -1019,7 +1005,7 @@ struct gfuncs GFileChooser_funcs = {
     NULL,
 
     GFileChooserGetDesiredSize,
-    GFileChooserSetDesiredSize,
+    _ggadget_setDesiredSize,
     gfilechooser_FillsWindow
 };
 
@@ -1089,8 +1075,8 @@ GGadget *GFileChooserCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 	gfc->g.r.width = GGadgetScale(GDrawPointsToPixels(base,140));
     if ( gfc->g.r.height == 0 )
 	gfc->g.r.height = GDrawPointsToPixels(base,100);
-    gfc->desired_width = gfc->g.r.width;
-    gfc->desired_height = gfc->g.r.height;
+    gfc->g.desired_width = gfc->g.r.width;
+    gfc->g.desired_height = gfc->g.r.height;
     gfc->g.inner = gfc->g.r;
     _GGadget_FinalPosition(&gfc->g,base,gd);
 

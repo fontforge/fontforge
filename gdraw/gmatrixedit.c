@@ -224,7 +224,9 @@ static int GME_ColWidth(GMatrixEdit *gme, int c) {
 	    width = 10*GDrawGetText8Width(gme->g.base,"n", 1, NULL );
 	else
 	    width = max;
-	if ( gme->col_data[c].me_type==me_stringchoice || gme->col_data[c].me_type==me_stringchoicetrans )
+	if ( gme->col_data[c].me_type==me_stringchoice ||
+		gme->col_data[c].me_type==me_stringchoicetrans ||
+		gme->col_data[c].me_type==me_funcedit )
 	    width += gme->mark_size + gme->mark_skip;
       break;
       default:
@@ -311,10 +313,10 @@ static void GMatrixEdit_GetDesiredSize(GGadget *g,GRect *outer,GRect *inner) {
 	    if ( gme->buttonlist[i] && gme->buttonlist[i]->state!=gs_invisible )
 		butwidth += gme->buttonlist[i]->r.width+5;
 
-    if ( gme->desired_width>2*bp )
-	width = gme->desired_width-2*bp;
-    if ( gme->desired_height>2*bp )
-	height = gme->desired_height-2*bp;
+    if ( g->desired_width>2*bp )
+	width = g->desired_width-2*bp;
+    if ( g->desired_height>2*bp )
+	height = g->desired_height-2*bp;
     if ( inner!=NULL ) {
 	inner->x = inner->y = 0;
 	inner->width = width;
@@ -324,19 +326,6 @@ static void GMatrixEdit_GetDesiredSize(GGadget *g,GRect *outer,GRect *inner) {
 	outer->x = outer->y = 0;
 	outer->width = width + 2*bp;
 	outer->height = height + 2*bp;
-    }
-}
-
-static void GMatrixEdit_SetDesiredSize(GGadget *g,GRect *outer,GRect *inner) {
-    GMatrixEdit *gme = (GMatrixEdit *) g;
-
-    if ( outer!=NULL ) {
-	gme->desired_width = outer->width;
-	gme->desired_height = outer->height;
-    } else if ( inner!=NULL ) {
-	int bp = GBoxBorderWidth(g->base,g->box);
-	gme->desired_width = inner->width + 2*bp;
-	gme->desired_height = inner->height + 2*bp;
     }
 }
 
@@ -613,7 +602,7 @@ struct gfuncs gmatrixedit_funcs = {
     NULL,
 
     GMatrixEdit_GetDesiredSize,
-    GMatrixEdit_SetDesiredSize,
+    _ggadget_setDesiredSize,
     GMatrixEdit_FillsWindow
 };
 
@@ -627,7 +616,8 @@ static void GME_PositionEdit(GMatrixEdit *gme) {
 	y = (r-gme->off_top)*(gme->fh+gme->vpad);
 	end = x + gme->col_data[c].width;
 	if ( gme->col_data[c].me_type==me_stringchoice ||
-		gme->col_data[c].me_type==me_stringchoicetrans )
+		gme->col_data[c].me_type==me_stringchoicetrans ||
+		gme->col_data[c].me_type==me_funcedit )
 	    end -= gme->mark_size+gme->mark_skip;
 
 	GDrawGetSize(gme->nested,&wsize);
@@ -1129,7 +1119,10 @@ return;
 	GDrawBeep(NULL);
     } else if ( gme->col_data[c].me_type==me_enum ) {
 	GME_Choices(gme,event,r,c);
-    } else if ( gme->col_data[c].me_type==me_funcedit ) {
+    } else if ( gme->col_data[c].me_type==me_funcedit &&
+	    event->type==et_mousedown &&
+	    event->u.mouse.x>gme->col_data[c].x + gme->col_data[c].width -
+		(gme->mark_size+gme->mark_skip) - gme->off_left ) {
 	char *ret = (gme->col_data[c].func)(&gme->g,r,c);
 	if ( ret!=NULL ) {
 	    /* I don't bother validating it because I expect the function to */
@@ -1156,10 +1149,10 @@ return;
     }
 }
 
-static void GMatrixEdit_SubGadgets(GMatrixEdit *gme,GEvent *event) {
+static void GMatrixEdit_MouseEvent(GMatrixEdit *gme,GEvent *event) {
     int r = event->u.mouse.y/(gme->fh+gme->vpad) + gme->off_top;
     int x = event->u.mouse.x + gme->off_left;
-    int c;
+    int c, i;
 
     if ( gme->edit_active ) {
 	if ( (r = GME_FinishEditPreserve(gme,r))== -1 )
@@ -1169,7 +1162,23 @@ return;
 	if ( x>=gme->col_data[c].x && x<=gme->col_data[c].x+gme->col_data[c].width )
     break;
     }
-    GMatrixEdit_StartSubGadgets(gme,r,c,event);
+    if ( event->type==et_mousedown )
+	GMatrixEdit_StartSubGadgets(gme,r,c,event);
+    else if ( event->type==et_mousemove ) {
+	if ( c<gme->cols && gme->col_data[c].me_type==me_stringchoicetrans &&
+		gme->col_data[c].enum_vals!=NULL &&
+		r<gme->rows ) {
+	    char *str = gme->data[r*gme->cols+c].u.md_str;
+	    GMenuItem *enums = gme->col_data[c].enum_vals;
+	    for ( i=0; enums[i].ti.text!=NULL || enums[i].ti.line ; ++i ) {
+		if ( enums[i].ti.userdata!=NULL && strcmp(enums[i].ti.userdata,str)==0 ) {
+		    GGadgetPreparePopup(gme->nested,enums[i].ti.text);
+	    break;
+		}
+	    }
+	} else if ( gme->g.popup_msg!=NULL )
+	    GGadgetPreparePopup(gme->nested,gme->g.popup_msg);
+    }
 }
 
 static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event) {
@@ -1227,7 +1236,9 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 	    if ( gme->col_data[c].disabled )
 	continue;
 	    clip.x = gme->col_data[c].x-gme->off_left; clip.width = gme->col_data[c].width;
-	    if ( gme->col_data[c].me_type == me_stringchoice || gme->col_data[c].me_type == me_stringchoicetrans )
+	    if ( gme->col_data[c].me_type == me_stringchoice ||
+		    gme->col_data[c].me_type == me_stringchoicetrans ||
+		    gme->col_data[c].me_type == me_funcedit )
 		clip.width -= gme->mark_size+gme->mark_skip;
 	    GDrawPushClip(pixmap,&clip,&old);
 	    data = &gme->data[(r+gme->off_top)*gme->cols+c];
@@ -1256,7 +1267,9 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 		free(str);
 	    }
 	    GDrawPopClip(pixmap,&old);
-	    if ( gme->col_data[c].me_type == me_stringchoice || gme->col_data[c].me_type == me_stringchoicetrans ) {
+	    if ( gme->col_data[c].me_type == me_stringchoice ||
+		    gme->col_data[c].me_type == me_stringchoicetrans ||
+		    gme->col_data[c].me_type == me_funcedit ) {
 		GRect r;
 		clip.x += clip.width + gme->mark_skip;
 		clip.width = gme->mark_size;
@@ -1290,15 +1303,15 @@ return( GGadgetDispatchEvent(gme->vsb,event));
 	GMatrixEdit_SubExpose(gme,gw,event);
       break;
       case et_mousedown:
-	GMatrixEdit_SubGadgets(gme,event);
-      break;
-      case et_mousemove:
-	if ( gme->g.popup_msg!=NULL )
-	    GGadgetPreparePopup(gw,gme->g.popup_msg);
-      break;
       case et_mouseup:
+	if ( gme->g.state == gs_disabled )
+return( false );
+      case et_mousemove:
+	GMatrixEdit_MouseEvent(gme,event);
       break;
       case et_char:
+	if ( gme->g.state == gs_disabled )
+return( false );
 	r = gme->active_row;
 	switch ( event->u.chr.keysym ) {
 	  case GK_Up: case GK_KP_Up:
@@ -1566,11 +1579,11 @@ GGadget *GMatrixEditCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     if ( gme->g.r.width==0 )
 	gme->g.r.width = outer.width;
     else
-	gme->desired_width = gme->g.r.width;
+	gme->g.desired_width = gme->g.r.width;
     if ( gme->g.r.height==0 )
 	gme->g.r.height = outer.height;
     else
-	gme->desired_height = gme->g.r.height;
+	gme->g.desired_height = gme->g.r.height;
     bp = GBoxBorderWidth(gme->g.base,gme->g.box);
     gme->g.inner.x = gme->g.r.x + bp;
     gme->g.inner.y = gme->g.r.y + bp;

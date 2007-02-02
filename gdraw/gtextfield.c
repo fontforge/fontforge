@@ -2184,8 +2184,8 @@ static void GTextFieldSetDesiredSize(GGadget *g,GRect *outer,GRect *inner) {
     GTextField *gt = (GTextField *) g;
 
     if ( outer!=NULL ) {
-	gt->desired_width = outer->width;
-	gt->desired_height = outer->height;
+	g->desired_width = outer->width;
+	g->desired_height = outer->height;
     } else if ( inner!=NULL ) {
 	int bp = GBoxBorderWidth(g->base,g->box);
 	int extra=0;
@@ -2195,14 +2195,14 @@ static void GTextFieldSetDesiredSize(GGadget *g,GRect *outer,GRect *inner) {
 		    2*GDrawPointsToPixels(gt->g.base,_GGadget_TextImageSkip) +
 		    GBoxBorderWidth(gt->g.base,&_GListMark_Box);
 	}
-	gt->desired_width = inner->width + 2*bp + extra;
-	gt->desired_height = inner->height + 2*bp;
+	g->desired_width = inner->width + 2*bp + extra;
+	g->desired_height = inner->height + 2*bp;
 	if ( gt->multi_line ) {
 	    int sbadd = GDrawPointsToPixels(gt->g.base,_GScrollBar_Width) +
 		    GDrawPointsToPixels(gt->g.base,1);
-	    gt->desired_width += sbadd;
+	    g->desired_width += sbadd;
 	    if ( !gt->wrap )
-		gt->desired_height += sbadd;
+		g->desired_height += sbadd;
 	}
     }
 }
@@ -2222,8 +2222,8 @@ static void GTextFieldGetDesiredSize(GGadget *g,GRect *outer,GRect *inner) {
     width = GGadgetScale(GDrawPointsToPixels(gt->g.base,80));
     height = gt->multi_line? 4*gt->fh:gt->fh;
 
-    if ( gt->desired_width>extra+2*bp ) width = gt->desired_width - extra - 2*bp;
-    if ( gt->desired_height>2*bp ) height = gt->desired_height - 2*bp;
+    if ( g->desired_width>extra+2*bp ) width = g->desired_width - extra - 2*bp;
+    if ( g->desired_height>2*bp ) height = g->desired_height - 2*bp;
 
     if ( gt->multi_line ) {
 	int sbadd = GDrawPointsToPixels(gt->g.base,_GScrollBar_Width) +
@@ -2430,7 +2430,6 @@ static void GTextFieldFit(GTextField *gt) {
     } else {
 	gt->g.inner.x = gt->g.r.x + bp;
 	gt->g.inner.width = gt->g.r.width - 2*bp;
-	gt->desired_width = gt->g.r.width;
     }
     if ( gt->g.r.height==0 ) {
 	gt->g.r.height = outer.height;
@@ -2439,7 +2438,6 @@ static void GTextFieldFit(GTextField *gt) {
     } else {
 	gt->g.inner.y = gt->g.r.y + bp;
 	gt->g.inner.height = gt->g.r.height - 2*bp;
-	gt->desired_height = gt->g.r.height;
     }
 
     if ( gt->multi_line ) {

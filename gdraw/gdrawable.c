@@ -113,28 +113,15 @@ static void gdrawable_destroy(GGadget *g) {
 }
 
 static void GDrawableGetDesiredSize(GGadget *g, GRect *outer, GRect *inner) {
-    GDrawable *gd = (GDrawable *) g;
     int bp = GBoxBorderWidth(g->base,g->box);
 
     if ( outer!=NULL ) {
 	*outer = g->r;
-	outer->width = gd->desired_width; outer->height = gd->desired_height;
+	outer->width = g->desired_width; outer->height = g->desired_height;
     }
     if ( inner!=NULL ) {
 	*inner = g->inner;
-	inner->width = gd->desired_width-2*bp; inner->height = gd->desired_height-2*bp;
-    }
-}
-
-static void GDrawableSetDesiredSize(GGadget *g, GRect *outer, GRect *inner) {
-    GDrawable *gd = (GDrawable *) g;
-    int bp = GBoxBorderWidth(g->base,g->box);
-
-    if ( outer!=NULL ) {
-	gd->desired_width = outer->width; gd->desired_height = outer->height;
-    }
-    if ( inner!=NULL ) {
-	gd->desired_width = inner->width+2*bp; gd->desired_height = inner->height+2*bp;
+	inner->width = g->desired_width-2*bp; inner->height = g->desired_height-2*bp;
     }
 }
 
@@ -185,7 +172,7 @@ struct gfuncs gdrawable_funcs = {
     NULL,
 
     GDrawableGetDesiredSize,
-    GDrawableSetDesiredSize,
+    _ggadget_setDesiredSize,
     gdrawable_FillsWindow
 };
 
@@ -245,8 +232,8 @@ GGadget *GDrawableCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     gdr->g.inner.x += bp; gdr->g.inner.width -= 2*bp;
     gdr->g.inner.y += bp; gdr->g.inner.height -= 2*bp;
 
-    gdr->desired_width = gdr->g.r.width;
-    gdr->desired_height = gdr->g.r.height;
+    gdr->g.desired_width = gdr->g.r.width;
+    gdr->g.desired_height = gdr->g.r.height;
     gdr->e_h = gd->u.drawable_e_h;
 
     if ( !(gd->flags&gg_tabset_nowindow) ) {
@@ -259,4 +246,9 @@ GGadget *GDrawableCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 	_GGadgetCloseGroup(&gdr->g);
 
 return( &gdr->g );
+}
+
+GWindow GDrawableGetWindow(GGadget *g) {
+    GDrawable *gd = (GDrawable *) g;
+return( gd->gw );
 }

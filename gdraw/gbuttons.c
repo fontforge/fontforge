@@ -436,6 +436,7 @@ static void GButtonGetDesiredSize(GGadget *g, GRect *outer, GRect *inner) {
     int as=0, ds, ld, fh=0, width=0;
     GRect needed;
     int i;
+    int bp = GBoxBorderWidth(g->base,g->box);
 
     if ( gl->image!=NULL ) {
 	iwidth = GImageGetScaledWidth(gl->g.base,gl->image);
@@ -479,6 +480,10 @@ static void GButtonGetDesiredSize(GGadget *g, GRect *outer, GRect *inner) {
     needed.x = needed.y = 0;
     needed.width = width;
     needed.height = iheight;
+    if ( g->desired_width>2*bp )
+	needed.width = g->desired_width-2*bp;
+    if ( g->desired_height>2*bp )
+	needed.height = g->desired_height-2*bp;
     if ( inner!=NULL ) {
 	inner->x = inner->y = 0;
 	inner->width = width;
@@ -552,7 +557,7 @@ struct gfuncs gbutton_funcs = {
     NULL,
 
     GButtonGetDesiredSize,
-    NULL,
+    _ggadget_setDesiredSize,
     NULL,
     GButtonIsDefault
 };
@@ -600,7 +605,8 @@ struct gfuncs glistbutton_funcs = {
     NULL,
     NULL,
 
-    GButtonGetDesiredSize
+    GButtonGetDesiredSize,
+    _ggadget_setDesiredSize		/* GTextField does this right. but this is good enough for now */
 };
 
 void _GButton_SetDefault(GGadget *g,int32 is_default) {

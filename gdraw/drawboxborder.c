@@ -489,11 +489,12 @@ int GBoxDrawHLine(GWindow gw,GRect *pos,GBox *design) {
     Color cols[4];
     Color fg = design->main_foreground==COLOR_DEFAULT?GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(gw)):
 		    design->main_foreground;
+    int bp = GBoxBorderWidth(gw,design);
 
     FigureBorderCols(design,cols);
 
     x = pos->x; xend = x+pos->width -1;
-    y = pos->y;
+    y = pos->y + (pos->height-bp)/2;
 
     if ( (design->flags & box_foreground_border_outer) ) {
 	GDrawSetLineWidth(gw,scale);
@@ -548,10 +549,11 @@ int GBoxDrawVLine(GWindow gw,GRect *pos,GBox *design) {
     Color cols[4];
     Color fg = design->main_foreground==COLOR_DEFAULT?GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(gw)):
 		    design->main_foreground;
+    int bp = GBoxBorderWidth(gw,design);
 
     FigureBorderCols(design,cols);
 
-    x = pos->x;
+    x = pos->x + (pos->width-bp)/2;
     y = pos->y; yend = y+pos->height -1;
 
     if ( (design->flags & box_foreground_border_outer) ) {
@@ -577,7 +579,7 @@ int GBoxDrawVLine(GWindow gw,GRect *pos,GBox *design) {
 	GDrawSetLineWidth(gw,bw/2);
 	GDrawDrawLine(gw,x+bw/4,y,x+bw/4,yend,cols[0]);
 	x += bw/2;
-	GDrawDrawLine(gw,x+bw/4,y,x+bw/4,yend,cols[0]);
+	GDrawDrawLine(gw,x+bw/4,y,x+bw/4,yend,cols[2]);
 	x -= bw/2;
       break;
       case bt_double: {

@@ -592,7 +592,9 @@ static void gtabset_GetDesiredSize(GGadget *g, GRect *outer, GRect *inner) {
     }
     if ( gts->vertical && gts->rcnt*gts->fh+10 > nested.height )
 	nested.height = gts->rcnt*gts->fh+10;
-	
+
+    if ( g->desired_width>=0 ) nested.width = g->desired_width - 2*bp;
+    if ( g->desired_height>=0 ) nested.height = g->desired_height - 2*bp;
     if ( nested.width==0 ) nested.width = 100;
     if ( nested.height==0 ) nested.height = 100;
 
@@ -656,7 +658,7 @@ struct gfuncs gtabset_funcs = {
     NULL,
 
     gtabset_GetDesiredSize,
-    NULL,
+    _ggadget_setDesiredSize,
     gtabset_FillsWindow
 };
 

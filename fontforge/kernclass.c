@@ -102,16 +102,12 @@ typedef struct kernclasslistdlg {
 
 #define CID_OK		1015
 #define CID_Cancel	1016
-#define CID_Group	1017
-#define CID_Line1	1018
-#define CID_Line2	1019
 
 #define CID_Set		1020
 #define CID_Select	1021
 #define CID_GlyphList	1022
 #define CID_Prev	1023
 #define CID_Next	1024
-#define CID_Group2	1025
 
 #define CID_First	1030
 #define CID_Second	1031
@@ -1831,64 +1827,27 @@ return( false );
       break;
       case et_resize: {
 	GRect wsize, csize;
-	int subwidth, offset;
-	static int moveme[] = { CID_ClassList+100, CID_ClassNew+100,
-		CID_ClassDel+100, CID_ClassEdit+100, CID_ClassLabel+100,
-		CID_ClassUp+100, CID_ClassDown+100, 0};
-	int i;
 
 	GDrawGetSize(kcd->gw,&wsize);
-	GGadgetGetSize(GWidgetGetControl(kcd->gw,CID_Next2),&csize);
-
-	GGadgetMove(GWidgetGetControl(kcd->gw,CID_Prev2),15,wsize.height-kcd->canceldrop);
-	GGadgetMove(GWidgetGetControl(kcd->gw,CID_Next2),wsize.width-csize.width-15,wsize.height-kcd->canceldrop);
-	GGadgetResize(GWidgetGetControl(kcd->gw,CID_Group3),wsize.width-4,wsize.height-4);
 
 	kcd->fullwidth = wsize.width;
 	if ( kcd->cw!=NULL ) {
 	    GDrawResize(kcd->cw,wsize.width,wsize.height);
 	    GDrawResize(kcd->kw,wsize.width,wsize.height);
-	    GGadgetResize(GWidgetGetControl(kcd->gw,CID_Group),wsize.width-4,wsize.height-4);
-	    GGadgetResize(GWidgetGetControl(kcd->gw,CID_Group2),wsize.width-4,wsize.height-4);
-	    GGadgetResize(GWidgetGetControl(kcd->gw,CID_Line2),wsize.width-20,3);
-	    GGadgetResize(GWidgetGetControl(kcd->gw,CID_Line1),wsize.width-20,3);
-
-	    GGadgetMove(GWidgetGetControl(kcd->gw,CID_OK),15,wsize.height-kcd->canceldrop-3);
-	    GGadgetMove(GWidgetGetControl(kcd->gw,CID_Prev),15,wsize.height-kcd->canceldrop);
-	    GGadgetGetSize(GWidgetGetControl(kcd->gw,CID_Cancel),&csize);
-	    GGadgetMove(GWidgetGetControl(kcd->gw,CID_Cancel),wsize.width-csize.width-15,wsize.height-kcd->canceldrop);
-	    GGadgetMove(GWidgetGetControl(kcd->gw,CID_Next),wsize.width-csize.width-15,wsize.height-kcd->canceldrop);
-
-	    subwidth = (wsize.width-GDrawPointsToPixels(NULL,20))/2;
-	    GGadgetGetSize(GWidgetGetControl(kcd->gw,CID_ClassList),&csize);
-	    GGadgetResize(GWidgetGetControl(kcd->gw,CID_ClassList),subwidth,csize.height);
-	    GGadgetResize(GWidgetGetControl(kcd->gw,CID_ClassList+100),subwidth,csize.height);
-	    offset = subwidth - csize.width;
-	    for ( i=0; moveme[i]!=0; ++i ) {
-		GGadgetGetSize(GWidgetGetControl(kcd->gw,moveme[i]),&csize);
-		GGadgetMove(GWidgetGetControl(kcd->gw,moveme[i]),csize.x+offset,csize.y);
-	    }
-
 	    GGadgetGetSize(kcd->hsb,&csize);
-	    kcd->width = wsize.width-csize.height-kcd->xstart2-5;
-	    GGadgetResize(kcd->hsb,kcd->width,csize.height);
-	    GGadgetMove(kcd->hsb,kcd->xstart2,wsize.height-kcd->sbdrop-csize.height);
+	    kcd->width = csize.width;
+	    kcd->xstart2 = csize.x;
 	    GGadgetGetSize(kcd->vsb,&csize);
-	    kcd->height = wsize.height-kcd->sbdrop-kcd->ystart2-csize.width;
-	    GGadgetResize(kcd->vsb,csize.width,wsize.height-kcd->sbdrop-kcd->ystart2-csize.width);
-	    GGadgetMove(kcd->vsb,wsize.width-csize.width-5,kcd->ystart2);
+	    kcd->ystart2 = csize.y;
+	    kcd->height = csize.height;
+	    kcd->xstart = kcd->xstart2-kcd->kernw;
+	    kcd->ystart = kcd->ystart2-kcd->fh-1;
 	    KCD_SBReset(kcd);
 	    GDrawRequestExpose(kcd->kw,NULL,false);
 	    GDrawRequestExpose(kcd->cw,NULL,false);
-
-	    GGadgetGetSize(GWidgetGetControl(kcd->cw,CID_GlyphList),&csize);
-	    GGadgetResize(GWidgetGetControl(kcd->gw,CID_GlyphList),wsize.width-20,csize.height);
 	} else {
 	    kcd->width = wsize.width-kcd->xstart2-5;
 	    kcd->height = wsize.height-kcd->ystart2;
-	    GGadgetGetSize(GWidgetGetControl(kcd->gw,CID_SLI),&csize);
-	    GGadgetResize(GWidgetGetControl(kcd->gw,CID_SLI),wsize.width-24,csize.height);
-	    GGadgetMove(GWidgetGetControl(kcd->gw,CID_SLI),12,wsize.height-kcd->canceldrop-csize.height-3);
 	}
 	GDrawRequestExpose(kcd->gw,NULL,false);
       } break;
@@ -1907,10 +1866,12 @@ return( true );
 }
 
 static int AddClassList(GGadgetCreateData *gcd, GTextInfo *label, int k, int off,
-	int x, int y, int width ) {
+	int x, int y, int width, GGadgetCreateData **harray,
+	GGadgetCreateData **varray ) {
     int blen = GIntGetResource(_NUM_Buttonsize);
     int space = 10;
 
+    harray[0] = GCD_HPad10;
     label[k].text = (unichar_t *) (x<20?_("First Char"):_("Second Char"));
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
@@ -1918,6 +1879,7 @@ static int AddClassList(GGadgetCreateData *gcd, GTextInfo *label, int k, int off
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.cid = CID_ClassLabel+off;
     gcd[k++].creator = GLabelCreate;
+    harray[1] = &gcd[k-1]; harray[2] = GCD_Glue;
 
     label[k].image = &GIcon_up;
     gcd[k].gd.label = &label[k];
@@ -1928,6 +1890,7 @@ static int AddClassList(GGadgetCreateData *gcd, GTextInfo *label, int k, int off
     gcd[k].gd.popup_msg = (unichar_t *) _("Move selected class up");
     gcd[k].gd.cid = CID_ClassUp+off;
     gcd[k++].creator = GButtonCreate;
+    harray[3] = &gcd[k-1];
 
     label[k].image = &GIcon_down;
     gcd[k].gd.label = &label[k];
@@ -1938,6 +1901,12 @@ static int AddClassList(GGadgetCreateData *gcd, GTextInfo *label, int k, int off
     gcd[k].gd.popup_msg = (unichar_t *) _("Move selected class down");
     gcd[k].gd.cid = CID_ClassDown+off;
     gcd[k++].creator = GButtonCreate;
+    harray[4] = &gcd[k-1]; harray[5] = GCD_Glue; harray[6] = NULL;
+
+    gcd[k].gd.flags = gg_enabled|gg_visible;
+    gcd[k].gd.u.boxelements = harray;
+    gcd[k++].creator = GHBoxCreate;
+    varray[0] = &gcd[k-1];
 
     gcd[k].gd.pos.x = x; gcd[k].gd.pos.y = y+17;
     gcd[k].gd.pos.width = width;
@@ -1946,6 +1915,7 @@ static int AddClassList(GGadgetCreateData *gcd, GTextInfo *label, int k, int off
     gcd[k].gd.handle_controlevent = KCD_ClassSelected;
     gcd[k].gd.cid = CID_ClassList+off;
     gcd[k++].creator = GListCreate;
+    varray[1] = &gcd[k-1];
 
     label[k].text = (unichar_t *) S_("Class|New...");
     label[k].text_is_1byte = true;
@@ -1957,6 +1927,7 @@ static int AddClassList(GGadgetCreateData *gcd, GTextInfo *label, int k, int off
     gcd[k].gd.handle_controlevent = KCD_New;
     gcd[k].gd.cid = CID_ClassNew+off;
     gcd[k++].creator = GButtonCreate;
+    harray[7] = &gcd[k-1]; harray[8] = GCD_Glue;
 
     label[k].text = (unichar_t *) _("Edit...");
     label[k].text_is_1byte = true;
@@ -1968,6 +1939,7 @@ static int AddClassList(GGadgetCreateData *gcd, GTextInfo *label, int k, int off
     gcd[k].gd.handle_controlevent = KCD_Edit;
     gcd[k].gd.cid = CID_ClassEdit+off;
     gcd[k++].creator = GButtonCreate;
+    harray[9] = &gcd[k-1]; harray[10] = GCD_Glue;
 
     label[k].text = (unichar_t *) _("Delete");
     label[k].text_is_1byte = true;
@@ -1979,7 +1951,14 @@ static int AddClassList(GGadgetCreateData *gcd, GTextInfo *label, int k, int off
     gcd[k].gd.handle_controlevent = KCD_Delete;
     gcd[k].gd.cid = CID_ClassDel+off;
     gcd[k++].creator = GButtonCreate;
+    harray[11] = &gcd[k-1]; harray[12] = NULL;
 
+    gcd[k].gd.flags = gg_enabled|gg_visible;
+    gcd[k].gd.u.boxelements = harray+7;
+    gcd[k++].creator = GHBoxCreate;
+    varray[2] = &gcd[k-1];
+
+/* GT: Select the class containing the glyph named in the following text field */
     label[k].text = (unichar_t *) _("Select Glyph Class:");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
@@ -1988,6 +1967,7 @@ static int AddClassList(GGadgetCreateData *gcd, GTextInfo *label, int k, int off
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     gcd[k].gd.popup_msg = (unichar_t *) _("Select the class containing the named glyph");
     gcd[k++].creator = GLabelCreate;
+    harray[13] = &gcd[k-1];
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+100; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;
     gcd[k].gd.pos.width = 80;
@@ -1996,13 +1976,25 @@ static int AddClassList(GGadgetCreateData *gcd, GTextInfo *label, int k, int off
     gcd[k].gd.handle_controlevent = KCD_TextSelect;
     gcd[k].gd.cid = CID_ClassSelect+off;
     gcd[k++].creator = GTextFieldCreate;
+    harray[14] = &gcd[k-1]; harray[15] = NULL;
+
+    gcd[k].gd.flags = gg_enabled|gg_visible;
+    gcd[k].gd.u.boxelements = harray+13;
+    gcd[k++].creator = GHBoxCreate;
+    varray[3] = &gcd[k-1]; varray[4] = NULL;
+
+    gcd[k].gd.flags = gg_enabled|gg_visible;
+    gcd[k].gd.u.boxelements = varray;
+    gcd[k++].creator = GVBoxCreate;
+
 return( k );
 }
 
 static void FillShowKerningWindow(KernClassDlg *kcd, int for_class) {
-    GGadgetCreateData gcd[30];
+    GGadgetCreateData gcd[30], hbox, flagbox, hvbox, buttonbox, mainbox[2];
+    GGadgetCreateData *harray[10], *hvarray[14], *flagarray[4], *buttonarray[9], *varray[12];
     GTextInfo label[30];
-    int k;
+    int k,j;
     char buffer[20];
     GRect pos;
 
@@ -2012,7 +2004,12 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class) {
 
     memset(gcd,0,sizeof(gcd));
     memset(label,0,sizeof(label));
-    k = 0;
+    memset(&hbox,0,sizeof(hbox));
+    memset(&flagbox,0,sizeof(flagbox));
+    memset(&hvbox,0,sizeof(hvbox));
+    memset(&buttonbox,0,sizeof(buttonbox));
+    memset(&mainbox,0,sizeof(mainbox));
+    k = j = 0;
 
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = 5;
     gcd[k].gd.pos.width = 120;
@@ -2020,6 +2017,7 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class) {
     gcd[k].gd.handle_controlevent = KCD_GlyphSelected;
     gcd[k].gd.cid = CID_First;
     gcd[k++].creator = for_class ? GListButtonCreate : GTextFieldCreate;
+    harray[0] = &gcd[k-1];
 
     gcd[k].gd.pos.x = 130; gcd[k].gd.pos.y = 5;
     gcd[k].gd.pos.width = 120;
@@ -2028,6 +2026,7 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class) {
     gcd[k].gd.handle_controlevent = KCD_GlyphSelected;
     gcd[k].gd.cid = CID_Second;
     gcd[k++].creator = for_class ? GListButtonCreate : GListFieldCreate;
+    harray[1] = &gcd[k-1];
 
     label[k].text = (unichar_t *) _("Use FreeType");
     label[k].text_is_1byte = true;
@@ -2040,6 +2039,14 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class) {
     gcd[k].gd.cid = CID_FreeType;
     gcd[k].gd.handle_controlevent = KCB_FreeTypeChanged;
     gcd[k++].creator = GCheckBoxCreate;
+    harray[2] = GCD_Glue; harray[3] = &gcd[k-1];
+    harray[4] = GCD_Glue; harray[5] = GCD_Glue;
+    harray[6] = GCD_Glue; harray[7] = GCD_Glue; harray[8] = NULL;
+
+    hbox.gd.flags = gg_enabled|gg_visible;
+    hbox.gd.u.boxelements = harray;
+    hbox.creator = GHBoxCreate;
+    varray[j++] = &hbox; varray[j++] = NULL;
 
     label[k].text = (unichar_t *) _("Display Size:");
     label[k].text_is_1byte = true;
@@ -2047,6 +2054,7 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class) {
     gcd[k].gd.pos.x = 30; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+30;
     gcd[k].gd.flags = gg_visible|gg_enabled ;
     gcd[k++].creator = GLabelCreate;
+    hvarray[0] = &gcd[k-1];
 
     sprintf( buffer, "%d", kcd->pixelsize );
     label[k].text = (unichar_t *) buffer;
@@ -2062,6 +2070,7 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class) {
 #else
     gcd[k++].creator = GListFieldCreate;
 #endif
+    hvarray[1] = &gcd[k-1];
 
     label[k].text = (unichar_t *) _("Magnification:");
     label[k].text_is_1byte = true;
@@ -2069,6 +2078,7 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class) {
     gcd[k].gd.pos.x = 185; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y;
     gcd[k].gd.flags = gg_visible|gg_enabled ;
     gcd[k++].creator = GLabelCreate;
+    hvarray[2] = &gcd[k-1];
 
 #ifndef FONTFORGE_CONFIG_DEVICETABLES
     gcd[k].gd.pos.x = 255; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;
@@ -2080,6 +2090,7 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class) {
     gcd[k].gd.u.list = magnifications;
     gcd[k].gd.handle_controlevent = KCD_MagnificationChanged;
     gcd[k++].creator = GListButtonCreate;
+    hvarray[3] = &gcd[k-1]; hvarray[4] = GCD_Glue; hvarray[5] = NULL;
 
     label[k].text = (unichar_t *) _("Kern Offset:");
     label[k].text_is_1byte = true;
@@ -2087,6 +2098,7 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class) {
     gcd[k].gd.pos.x = 30; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+30;
     gcd[k].gd.flags = gg_visible|gg_enabled ;
     gcd[k++].creator = GLabelCreate;
+    hvarray[6] = &gcd[k-1];
 
     gcd[k].gd.pos.x = 90; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-4;
     gcd[k].gd.pos.width = 60;
@@ -2094,6 +2106,7 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class) {
     gcd[k].gd.cid = CID_KernOffset;
     gcd[k].gd.handle_controlevent = KCD_KernOffChanged;
     gcd[k++].creator = GTextFieldCreate;
+    hvarray[7] = &gcd[k-1];
 
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
     label[k].text = (unichar_t *) _("Device Table Correction:");
@@ -2102,6 +2115,7 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class) {
     gcd[k].gd.pos.x = 185; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y;
     gcd[k].gd.flags = gg_visible|gg_enabled ;
     gcd[k++].creator = GLabelCreate;
+    hvarray[8] = &gcd[k-1];
 
     label[k].text = (unichar_t *) "0";
     label[k].text_is_1byte = true;
@@ -2112,7 +2126,20 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class) {
     gcd[k].gd.cid = CID_Correction;
     gcd[k].gd.handle_controlevent = KCD_CorrectionChanged;
     gcd[k++].creator = GTextFieldCreate;
+    hvarray[9] = &gcd[k-1];
+#else
+    hvarray[8] = GCD_Glue;
+    hvarray[9] = GCD_Glue;
 #endif
+    hvarray[10] = GCD_Glue;
+    hvarray[11] = NULL; hvarray[12] = NULL;
+
+    hvbox.gd.flags = gg_enabled|gg_visible;
+    hvbox.gd.u.boxelements = hvarray;
+    hvbox.creator = GHVBoxCreate;
+    varray[j++] = &hvbox; varray[j++] = NULL;
+
+    varray[j++] = GCD_Glue; varray[j++] = NULL;
 
     GDrawGetSize(kcd->kw,&pos);
 
@@ -2124,6 +2151,7 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class) {
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.cid = CID_R2L;
 	gcd[k++].creator = GCheckBoxCreate;
+	flagarray[0] = &gcd[k-1];
 
 	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = KC_Height-KC_CANCELDROP-27;
 	gcd[k].gd.pos.width = GDrawPixelsToPoints(kcd->kw,pos.width)-20;
@@ -2132,6 +2160,12 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class) {
 	gcd[k].gd.cid = CID_SLI;
 	gcd[k].gd.handle_controlevent = KC_Sli;
 	gcd[k++].creator = GListButtonCreate;
+	flagarray[1] = &gcd[k-1]; flagarray[2] = GCD_Glue; flagarray[3] = NULL;
+
+	flagbox.gd.flags = gg_enabled|gg_visible;
+	flagbox.gd.u.boxelements = flagarray;
+	flagbox.creator = GHBoxCreate;
+	varray[j++] = &flagbox; varray[j++] = NULL;
     }
 
     label[k].text = (unichar_t *) (for_class ? _("< _Prev") : _("_OK"));
@@ -2158,21 +2192,37 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class) {
     gcd[k].gd.cid = CID_Next2;
     gcd[k++].creator = GButtonCreate;
 
-    gcd[k].gd.pos.x = 2; gcd[k].gd.pos.y = 2;
-    gcd[k].gd.pos.width = pos.width-4;
-    gcd[k].gd.pos.height = pos.height-4;
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
-    gcd[k].gd.cid = CID_Group3;
-    gcd[k++].creator = GGroupCreate;
+    buttonarray[0] = GCD_Glue; buttonarray[1] = &gcd[k-2]; buttonarray[2] = GCD_Glue;
+    buttonarray[3] = GCD_Glue; buttonarray[4] = &gcd[k-1]; buttonarray[5] = GCD_Glue;
+    buttonarray[6] = NULL;
+    buttonbox.gd.flags = gg_enabled|gg_visible;
+    buttonbox.gd.u.boxelements = buttonarray;
+    buttonbox.creator = GHBoxCreate;
+    varray[j++] = &buttonbox; varray[j++] = NULL; varray[j++] = NULL;
 
-    GGadgetsCreate(kcd->kw,gcd);
+    mainbox[0].gd.pos.x = mainbox[0].gd.pos.y = 2;
+    mainbox[0].gd.flags = gg_enabled|gg_visible;
+    mainbox[0].gd.u.boxelements = varray;
+    mainbox[0].creator = GHVGroupCreate;
+
+    GGadgetsCreate(kcd->kw,mainbox);
+
+    GHVBoxSetExpandableRow(mainbox[0].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(hbox.ret,gb_expandglue);
+    GHVBoxSetExpandableCol(hvbox.ret,gb_expandglue);
+    GHVBoxSetExpandableCol(buttonbox.ret,gb_expandgluesame);
+    if ( !for_class )
+	GHVBoxSetExpandableCol(flagbox.ret,gb_expandglue);
 }
 
 static void KernClassD(KernClassListDlg *kcld,KernClass *kc) {
     GRect pos, subpos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[38];
-    GTextInfo label[38];
+    GGadgetCreateData gcd[46], flagbox, classbox, hvbox, buttonbox, mainbox[2];
+    GGadgetCreateData selbox, *selarray[7], pane2[2];
+    GGadgetCreateData *flagarray[6], *harray1[17], *harray2[17], *varray1[5], *varray2[5];
+    GGadgetCreateData *hvarray[13], *buttonarray[8], *varray[15], *harrayclasses[6];
+    GTextInfo label[46];
     KernClassDlg *kcd;
     int i,j, kc_width, vi, y, k;
     static unichar_t courier[] = { 'c', 'o', 'u', 'r', 'i', 'e', 'r', ',', 'm','o','n','o','s','p','a','c','e',',','c','l','e','a','r','l','y','u',',', 'u','n','i','f','o','n','t', '\0' };
@@ -2218,6 +2268,11 @@ return;
 
     memset(&wattrs,0,sizeof(wattrs));
     memset(&gcd,0,sizeof(gcd));
+    memset(&flagbox,0,sizeof(flagbox));
+    memset(&classbox,0,sizeof(classbox));
+    memset(&hvbox,0,sizeof(hvbox));
+    memset(&buttonbox,0,sizeof(buttonbox));
+    memset(&mainbox,0,sizeof(mainbox));
     memset(&label,0,sizeof(label));
 
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
@@ -2234,6 +2289,18 @@ return;
 
     kc_width = GDrawPixelsToPoints(NULL,pos.width*100/GGadgetScale(100));
 
+    memset(&rq,'\0',sizeof(rq));
+    rq.point_size = 12;
+    rq.weight = 400;
+    rq.family_name = courier;
+    kcd->font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+    GDrawFontMetrics(kcd->font,&as,&ds,&ld);
+    kcd->fh = as+ds; kcd->as = as;
+    GDrawSetFont(gw,kcd->font);
+
+    kcd->kernh = kcd->fh+3;
+    kcd->kernw = GDrawGetTextWidth(gw,kernw,-1,NULL)+3;
+
     i = 0;
     gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = 5;
     gcd[i].gd.pos.width = kc_width-20;
@@ -2247,6 +2314,7 @@ return;
     gcd[i].gd.cid = CID_SLI;
     gcd[i].gd.handle_controlevent = KC_Sli;
     gcd[i++].creator = GListButtonCreate;
+    flagarray[i-1] = &gcd[i-1];
 
     gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+28;
     gcd[i].gd.flags = gg_visible | gg_enabled | (kc!=NULL && (kc->flags&pst_r2l)?gg_cb_on:0);
@@ -2255,6 +2323,7 @@ return;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.cid = CID_R2L;
     gcd[i++].creator = GCheckBoxCreate;
+    flagarray[i-1] = &gcd[i-1];
 
     gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+15;
     gcd[i].gd.flags = gg_visible | gg_enabled | (kc!=NULL && (kc->flags&pst_ignorebaseglyphs)?gg_cb_on:0);
@@ -2263,6 +2332,7 @@ return;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.cid = CID_IgnBase;
     gcd[i++].creator = GCheckBoxCreate;
+    flagarray[i-1] = &gcd[i-1];
 
     gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+15;
     gcd[i].gd.flags = gg_visible | gg_enabled | (kc!=NULL && (kc->flags&pst_ignoreligatures)?gg_cb_on:0);
@@ -2271,6 +2341,7 @@ return;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.cid = CID_IgnLig;
     gcd[i++].creator = GCheckBoxCreate;
+    flagarray[i-1] = &gcd[i-1];
 
     gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+15;
     gcd[i].gd.flags = gg_visible | gg_enabled | (kc!=NULL && (kc->flags&pst_ignorecombiningmarks)?gg_cb_on:0);
@@ -2279,25 +2350,54 @@ return;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.cid = CID_IgnMark;
     gcd[i++].creator = GCheckBoxCreate;
+    flagarray[i-1] = &gcd[i-1];
+    flagarray[i] = NULL;
+
+    flagbox.gd.flags = gg_enabled|gg_visible;
+    flagbox.gd.u.boxelements = flagarray;
+    flagbox.creator = GVBoxCreate;
+    varray[0] = &flagbox; varray[1] = NULL;
 
     gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = GDrawPointsToPixels(gw,gcd[i-1].gd.pos.y+17);
     gcd[i].gd.pos.width = pos.width-20;
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
-    gcd[i].gd.cid = CID_Line1;
     gcd[i++].creator = GLineCreate;
+    varray[2] = &gcd[i-1]; varray[3] = NULL;
 
     y = gcd[i-2].gd.pos.y+23;
-    i = AddClassList(gcd,label,i,0,5,y,(kc_width-20)/2);
-    i = AddClassList(gcd,label,i,100,(kc_width-20)/2+10,y,(kc_width-20)/2);
+    i = AddClassList(gcd,label,i,0,5,y,(kc_width-20)/2,harray1,varray1);
+    harrayclasses[0] = &gcd[i-1];
+    i = AddClassList(gcd,label,i,100,(kc_width-20)/2+10,y,(kc_width-20)/2,harray2,varray2);
+    harrayclasses[2] = &gcd[i-1]; harrayclasses[3] = NULL;
+
+    gcd[i].gd.pos.height = 20;
+    gcd[i].gd.flags = gg_visible | gg_enabled | gg_line_vert;
+    gcd[i++].creator = GLineCreate;
+    harrayclasses[1] = &gcd[i-1];
+
+    classbox.gd.flags = gg_enabled|gg_visible;
+    classbox.gd.u.boxelements = harrayclasses;
+    classbox.creator = GHBoxCreate;
+    varray[4] = &classbox; varray[5] = NULL;
 
     gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = GDrawPointsToPixels(gw,gcd[i-1].gd.pos.y+27);
     gcd[i].gd.pos.width = pos.width-20;
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
-    gcd[i].gd.cid = CID_Line2;
     gcd[i++].creator = GLineCreate;
+    varray[6] = &gcd[i-1]; varray[7] = NULL;
 
     kcd->canceldrop = GDrawPointsToPixels(gw,KC_CANCELDROP);
     kcd->sbdrop = kcd->canceldrop+GDrawPointsToPixels(gw,7);
+    gcd[i].gd.pos.width = kcd->kernw;
+    gcd[i].gd.pos.height = kcd->kernh;
+    gcd[i].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
+    gcd[i++].creator = GSpacerCreate;
+    hvarray[0] = &gcd[i-1]; hvarray[1] = GCD_Glue; hvarray[2] = GCD_Glue; hvarray[3] = NULL;
+
+    gcd[i].gd.pos.width = kcd->kernw;
+    gcd[i].gd.pos.height = 4*kcd->kernh;
+    gcd[i].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
+    gcd[i++].creator = GSpacerCreate;
 
     vi = i;
     gcd[i].gd.pos.width = sbsize = GDrawPointsToPixels(gw,_GScrollBar_Width);
@@ -2306,8 +2406,7 @@ return;
     gcd[i].gd.pos.height = pos.height-gcd[i].gd.pos.y-sbsize-kcd->sbdrop;
     gcd[i].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_sb_vert;
     gcd[i++].creator = GScrollBarCreate;
-    kcd->height = gcd[i-1].gd.pos.height;
-    kcd->ystart = gcd[i-1].gd.pos.y;
+    hvarray[4] = &gcd[i-2]; hvarray[5] = GCD_Glue; hvarray[6] = &gcd[i-1]; hvarray[7] = NULL;
 
     gcd[i].gd.pos.height = sbsize;
     gcd[i].gd.pos.y = pos.height-sbsize-8;
@@ -2315,8 +2414,15 @@ return;
     gcd[i].gd.pos.width = pos.width-sbsize;
     gcd[i].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
     gcd[i++].creator = GScrollBarCreate;
+    hvarray[8] = GCD_Glue; hvarray[9] = &gcd[i-1]; hvarray[10] = GCD_Glue; hvarray[11] = NULL;
+    hvarray[12] = NULL;
     kcd->width = gcd[i-1].gd.pos.width;
     kcd->xstart = 5;
+
+    hvbox.gd.flags = gg_enabled|gg_visible;
+    hvbox.gd.u.boxelements = hvarray;
+    hvbox.creator = GHVBoxCreate;
+    varray[8] = &hvbox; varray[9] = NULL;
 
     gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+24+3;
     gcd[i].gd.pos.width = -1;
@@ -2340,30 +2446,38 @@ return;
     gcd[i].gd.cid = CID_Cancel;
     gcd[i++].creator = GButtonCreate;
 
-    gcd[i].gd.pos.x = 2; gcd[i].gd.pos.y = 2;
-    gcd[i].gd.pos.width = pos.width-4;
-    gcd[i].gd.pos.height = pos.height-4;
-    gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
-    gcd[i].gd.cid = CID_Group;
-    gcd[i++].creator = GGroupCreate;
+    buttonarray[0] = GCD_Glue; buttonarray[1] = &gcd[i-2]; buttonarray[2] = GCD_Glue;
+    buttonarray[3] = GCD_Glue; buttonarray[4] = &gcd[i-1]; buttonarray[5] = GCD_Glue;
+    buttonarray[6] = NULL;
+    buttonbox.gd.flags = gg_enabled|gg_visible;
+    buttonbox.gd.u.boxelements = buttonarray;
+    buttonbox.creator = GHBoxCreate;
+    varray[10] = &buttonbox; varray[11] = NULL; varray[12] = NULL;
 
-    memset(&rq,'\0',sizeof(rq));
-    rq.point_size = 12;
-    rq.weight = 400;
-    rq.family_name = courier;
-    kcd->font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
-    GDrawFontMetrics(kcd->font,&as,&ds,&ld);
-    kcd->fh = as+ds; kcd->as = as;
-    GDrawSetFont(gw,kcd->font);
+    mainbox[0].gd.pos.x = mainbox[0].gd.pos.y = 2;
+    mainbox[0].gd.flags = gg_enabled|gg_visible;
+    mainbox[0].gd.u.boxelements = varray;
+    mainbox[0].creator = GHVGroupCreate;
 
-    kcd->kernh = kcd->fh+3;
-    kcd->kernw = GDrawGetTextWidth(gw,kernw,-1,NULL)+3;
-    kcd->xstart2 = kcd->xstart+kcd->kernw;
-    kcd->ystart2 = kcd->ystart+kcd->fh+1;
-
-    GGadgetsCreate(kcd->gw,gcd);
+    GGadgetsCreate(kcd->gw,mainbox);
     kcd->vsb = gcd[vi].ret;
     kcd->hsb = gcd[vi+1].ret;
+
+    GHVBoxSetExpandableRow(mainbox[0].ret,4);
+
+    GHVBoxSetExpandableCol(buttonbox.ret,gb_expandgluesame);
+
+    GHVBoxSetPadding(hvbox.ret,0,0);
+    GHVBoxSetExpandableRow(hvbox.ret,1);
+    GHVBoxSetExpandableCol(hvbox.ret,1);
+
+    for ( i=0; i<2; ++i ) {
+	GGadgetCreateData *box = harrayclasses[2*i], **boxarray = box->gd.u.boxelements;
+	GHVBoxSetExpandableRow(box->ret,1);
+	GHVBoxSetExpandableCol(boxarray[0]->ret,gb_expandglue);
+	GHVBoxSetExpandableCol(boxarray[2]->ret,gb_expandgluesame);
+	GHVBoxSetExpandableCol(boxarray[3]->ret,1);
+    }
 
     for ( i=0; i<2; ++i ) {
 	GGadget *list = GWidgetGetControl(kcd->gw,CID_ClassList+i*100);
@@ -2388,6 +2502,9 @@ return;
     subpos = pos; subpos.x = subpos.y = 0;
     kcd->cw = GWidgetCreateSubWindow(kcd->gw,&subpos,subkcd_e_h,kcd,&wattrs);
 
+    memset(&selbox,0,sizeof(selbox));
+    memset(&buttonbox,0,sizeof(buttonbox));
+    memset(pane2,0,sizeof(pane2));
     memset(gcd,0,sizeof(gcd));
     memset(label,0,sizeof(label));
     k = 0;
@@ -2401,6 +2518,7 @@ return;
     gcd[k].gd.handle_controlevent = KCD_FromSelection;
     gcd[k].gd.cid = CID_Set;
     gcd[k++].creator = GButtonCreate;
+    selarray[0] = &gcd[k-1]; selarray[1] = GCD_Glue;
 
     label[k].text = (unichar_t *) _("Select In Font");
     label[k].text_is_1byte = true;
@@ -2411,12 +2529,21 @@ return;
     gcd[k].gd.handle_controlevent = KCD_ToSelection;
     gcd[k].gd.cid = CID_Select;
     gcd[k++].creator = GButtonCreate;
+    selarray[2] = &gcd[k-1]; selarray[3] = GCD_Glue;
+    selarray[4] = GCD_Glue; selarray[5] = GCD_Glue; selarray[6] = NULL;
+
+    selbox.gd.flags = gg_enabled|gg_visible;
+    selbox.gd.u.boxelements = selarray;
+    selbox.creator = GHBoxCreate;
+    varray[0] = &selbox; varray[1] = NULL;
 
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = 30;
     gcd[k].gd.pos.width = KC_Width-25; gcd[k].gd.pos.height = 8*13+4;
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;
     gcd[k].gd.cid = CID_GlyphList;
     gcd[k++].creator = GTextAreaCreate;
+    varray[2] = &gcd[k-1]; varray[3] = NULL;
+    varray[4] = GCD_Glue; varray[5] = NULL;
 
     label[k].text = (unichar_t *) _("< _Prev");
     label[k].text_is_1byte = true;
@@ -2440,19 +2567,30 @@ return;
     gcd[k].gd.cid = CID_Next;
     gcd[k++].creator = GButtonCreate;
 
-    gcd[k].gd.pos.x = 2; gcd[k].gd.pos.y = 2;
-    gcd[k].gd.pos.width = pos.width-4;
-    gcd[k].gd.pos.height = pos.height-4;
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
-    gcd[k].gd.cid = CID_Group2;
-    gcd[k++].creator = GGroupCreate;
+    buttonarray[0] = GCD_Glue; buttonarray[1] = &gcd[k-2]; buttonarray[2] = GCD_Glue;
+    buttonarray[3] = GCD_Glue; buttonarray[4] = &gcd[k-1]; buttonarray[5] = GCD_Glue;
+    buttonarray[6] = NULL;
+    buttonbox.gd.flags = gg_enabled|gg_visible;
+    buttonbox.gd.u.boxelements = buttonarray;
+    buttonbox.creator = GHBoxCreate;
+    varray[6] = &buttonbox; varray[7] = NULL; varray[8] = NULL;
 
-    GGadgetsCreate(kcd->cw,gcd);
+    pane2[0].gd.pos.x = pane2[0].gd.pos.y = 2;
+    pane2[0].gd.flags = gg_enabled|gg_visible;
+    pane2[0].gd.u.boxelements = varray;
+    pane2[0].creator = GHVGroupCreate;
+
+    GGadgetsCreate(kcd->cw,pane2);
+
+    GHVBoxSetExpandableRow(pane2[0].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(selbox.ret,gb_expandglue);
+    GHVBoxSetExpandableCol(buttonbox.ret,gb_expandgluesame);
 
 
     kcd->kw = GWidgetCreateSubWindow(kcd->gw,&subpos,subkern_e_h,kcd,&wattrs);
     FillShowKerningWindow(kcd, true);
 
+    GHVBoxFitWindow(mainbox[0].ret);
     GDrawSetVisible(kcd->gw,true);
 
     GGadgetSetEnabled(GWidgetGetControl(kcld->gw,CID_Delete),false);

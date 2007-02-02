@@ -807,6 +807,7 @@ static void glist_resize(GGadget *g, int32 width, int32 height ) {
 	_ggadget_move((GGadget *) (gl->vsb),gl->vsb->g.r.x+width-oldwidth,gl->vsb->g.r.y);
 	_ggadget_resize(g,width-(oldwidth-g->r.width), height);
 	_ggadget_resize((GGadget *) (gl->vsb),gl->vsb->g.r.width,height);
+	GListCheckSB(gl);
     } else
 	_ggadget_resize(g,width,height);
 }
@@ -838,22 +839,28 @@ static void GListGetDesiredSize(GGadget *g,GRect *outer, GRect *inner) {
     int i;
 
     /* can't deal with eliptical scrolling lists nor diamond ones. Just rects and roundrects */
-    GListFindXMax(gl);
+    if ( g->desired_width<=0 ) {
+	GListFindXMax(gl);
 
-    width = gl->xmax;
-    temp = GDrawPointsToPixels(gl->g.base,50);
-    if ( width<temp ) width = temp;
-    width += GDrawPointsToPixels(gl->g.base,_GScrollBar_Width) +
-	    GDrawPointsToPixels(gl->g.base,1);
+	width = gl->xmax;
+	temp = GDrawPointsToPixels(gl->g.base,50);
+	if ( width<temp ) width = temp;
+	width += GDrawPointsToPixels(gl->g.base,_GScrollBar_Width) +
+		GDrawPointsToPixels(gl->g.base,1);
+    } else
+	width = g->desired_width - 2*bp;
 
-    for ( i=0; i<gl->ltot && i<8; ++i ) {
-	height += GTextInfoGetHeight(gl->g.base,gl->ti[i],gl->font);
-    }
-    if ( i<4 ) {
-	int as, ds, ld;
-	GDrawFontMetrics(gl->font,&as, &ds, &ld);
-	height += (4-i)*(as+ds);
-    }
+    if ( g->desired_height<=0 ) {
+	for ( i=0; i<gl->ltot && i<8; ++i ) {
+	    height += GTextInfoGetHeight(gl->g.base,gl->ti[i],gl->font);
+	}
+	if ( i<4 ) {
+	    int as, ds, ld;
+	    GDrawFontMetrics(gl->font,&as, &ds, &ld);
+	    height += (4-i)*(as+ds);
+	}
+    } else
+	height = g->desired_height - 2*bp;
     if ( inner!=NULL ) {
 	inner->x = inner->y = 0;
 	inner->width = width;
@@ -915,7 +922,7 @@ struct gfuncs GList_funcs = {
     GListSetOrderer,
 
     GListGetDesiredSize,
-    NULL,
+    _ggadget_setDesiredSize,
     glist_FillsWindow
 };
 
