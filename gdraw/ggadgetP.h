@@ -101,10 +101,13 @@ struct ggadget {
 	    gs_focused, gs_pressedactive } state;
     unichar_t *popup_msg;
     GGadgetHandler handle_controlevent;
+    int16 desired_width, desired_height;
 };
 
 typedef struct ggadget GLine;
 typedef struct ggadget GGroup;
+
+typedef struct ggadget GSpacer;		/* a blank space of a given size, used in box layout */
 
 typedef struct glabel {		/* or simple text, or groupbox */
     GGadget g;
@@ -273,7 +276,6 @@ typedef struct gtextfield {
     int32 bilen;		/* allocated size of bidata */
     int16 xmax;
     GIC *gic;
-    int16 desired_width, desired_height;
 } GTextField;
 
 typedef struct glistfield {
@@ -343,7 +345,6 @@ typedef struct gfilechooser {
     struct giocontrol *outstanding;
     GCursor old_cursor;
     GButton *up, *home;
-    int16 desired_width, desired_height;
 } GFileChooser;
 
 typedef struct ghvbox {
@@ -389,7 +390,6 @@ typedef struct gmatrixedit {
     GGadget *up, *down;
     GGadget **buttonlist;
     GWindow nested;
-    int16 desired_width, desired_height;
     int16 mark_length, mark_size, mark_skip;
     char *newtext;
     void (*initrow)(GGadget *g,int row);
@@ -405,7 +405,6 @@ typedef struct gmatrixedit {
 typedef struct gdrawable {
     GGadget g;
     GWindow gw;
-    int16 desired_width, desired_height;
     GDrawEH e_h;
 } GDrawable;
 
@@ -465,8 +464,10 @@ extern void _ggadget_move(GGadget *g, int32 x, int32 y );
 extern void _ggadget_resize(GGadget *g, int32 width, int32 height );
 extern void _ggadget_setvisible(GGadget *g,int visible);
 extern void _ggadget_setenabled(GGadget *g,int enabled);
-GRect *_ggadget_getsize(GGadget *g,GRect *rct);
-GRect *_ggadget_getinnersize(GGadget *g,GRect *rct);
+extern GRect *_ggadget_getsize(GGadget *g,GRect *rct);
+extern GRect *_ggadget_getinnersize(GGadget *g,GRect *rct);
+extern void _ggadget_getDesiredSize(GGadget *g, GRect *outer, GRect *inner);
+extern void _ggadget_setDesiredSize(GGadget *g,GRect *outer, GRect *inner);
 void _GGroup_Init(void);
 
 extern unichar_t *_GGadgetFileToUString(char *filename,int max);

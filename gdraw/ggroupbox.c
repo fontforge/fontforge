@@ -88,6 +88,8 @@ static void GGroupGetDesiredSize(GGadget *g, GRect *outer, GRect *inner) {
 	int bp = GBoxBorderWidth(g->base,g->box);
 	outer->x = outer->y = 0;
 	outer->width = outer->height = 2*bp+2;
+	if ( g->desired_width>0 ) outer->width = g->desired_width;
+	if ( g->desired_height>0 ) outer->height = g->desired_height;
     }
     if ( inner!=NULL ) {
 	inner->x = inner->y = 0;
@@ -138,7 +140,8 @@ struct gfuncs gline_funcs = {
     NULL,
     NULL,
 
-    GGroupGetDesiredSize
+    GGroupGetDesiredSize,
+    _ggadget_setDesiredSize
 };
 
 struct gfuncs ggroup_funcs = {
@@ -184,7 +187,8 @@ struct gfuncs ggroup_funcs = {
     NULL,
     NULL,
 
-    GGroupGetDesiredSize
+    GGroupGetDesiredSize,
+    _ggadget_setDesiredSize
 };
 
 static void GLineFit(GGadget *g) {

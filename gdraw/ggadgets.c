@@ -557,6 +557,7 @@ void _ggadgetFigureSize(GWindow gw, GBox *design, GRect *r, int isdef) {
 void _ggadgetSetRects(GGadget *g, GRect *outer, GRect *inner, int xjust, int yjust) {
     int bp = GBoxBorderWidth(g->base,g->box);
 
+
     if ( g->r.width==0 )
 	g->r.width = outer->width;
     if ( g->r.height==0 )
@@ -612,6 +613,7 @@ return( xpos*GIntGetResource(_NUM_ScaleFactor)/100 );
 GGadget *_GGadget_Create(GGadget *g, struct gwindow *base, GGadgetData *gd,void *data, GBox *def) {
     GGadget *last, *lastopengroup;
 
+    g->desired_width = g->desired_height = -1;
     _GWidget_AddGGadget(base,g);
     g->r = gd->pos;
     if ( !(gd->flags&gg_pos_in_pixels) ) {
@@ -626,6 +628,8 @@ GGadget *_GGadget_Create(GGadget *g, struct gwindow *base, GGadgetData *gd,void 
 	}
 	g->r.height = GDrawPointsToPixels(base,g->r.height);
     }
+    if ( gd->pos.width>0 ) g->desired_width = g->r.width;
+    if ( gd->pos.height>0 ) g->desired_height = g->r.height;
     last = g->prev;
     lastopengroup = GGadgetFindLastOpenGroup(g);
     if ( g->r.y==0 && !(gd->flags & gg_pos_use0)) {
@@ -804,6 +808,32 @@ void _ggadget_resize(GGadget *g, int32 width, int32 height ) {
     g->inner.height = height-(g->r.height-g->inner.height);
     g->r.width = width;
     g->r.height = height;
+}
+
+void _ggadget_getDesiredSize(GGadget *g, GRect *outer, GRect *inner) {
+
+    if ( inner!=NULL ) {
+	inner->x = inner->y = 0;
+	inner->width = g->desired_width;
+	inner->height = g->desired_height;
+    }
+    if ( outer!=NULL ) {
+	outer->x = outer->y = 0;
+	outer->width = g->desired_width;
+	outer->height = g->desired_height;
+    }
+}
+
+void _ggadget_setDesiredSize(GGadget *g,GRect *outer, GRect *inner) {
+    int bp = GBoxBorderWidth(g->base,g->box);
+
+    if ( outer!=NULL ) {
+	g->desired_width = outer->width;
+	g->desired_height = outer->height;
+    } else if ( inner!=NULL ) {
+	g->desired_width = inner->width<=0 ? -1 : inner->width+2*bp;
+	g->desired_height = inner->height<=0 ? -1 : inner->height+2*bp;
+    }
 }
 
 GRect *_ggadget_getsize(GGadget *g,GRect *rct) {

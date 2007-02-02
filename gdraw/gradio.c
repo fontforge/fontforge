@@ -290,6 +290,8 @@ static void GRadioGetDesiredSize(GGadget *g, GRect *outer, GRect *inner) {
     if ( iheight < gl->onoffrect.height )
 	iheight = gl->onoffrect.height;
     width += gl->onoffrect.width + GDrawPointsToPixels(gl->g.base,5);
+    if ( g->desired_width>0 ) width = g->desired_width;
+    if ( g->desired_height>0 ) iheight = g->desired_height;
     if ( inner!=NULL ) {
 	inner->x = inner->y = 0;
 	inner->width = width;
@@ -346,7 +348,8 @@ struct gfuncs gradio_funcs = {
     NULL,
     NULL,
 
-    GRadioGetDesiredSize
+    GRadioGetDesiredSize,
+    _ggadget_setDesiredSize
 };
 
 static void GRadioInit() {
