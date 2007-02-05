@@ -9013,7 +9013,6 @@ return;
 
     memset(mb,0,sizeof(mb));
     mb[0].gd.pos.x = mb[0].gd.pos.y = 2;
-    mb[0].gd.pos.width = pos.width-4; mb[0].gd.pos.height = pos.height-4;
     mb[0].gd.flags = gg_enabled|gg_visible;
     mb[0].gd.u.boxelements = marray;
     mb[0].creator = GHVBoxCreate;
