@@ -5308,9 +5308,37 @@ static void bPrivateToCvt(Context *c) {
 }
 
 static void bClearHints(Context *c) {
-    if ( c->a.argc!=1 )
+    if ( c->a.argc>2 )
 	ScriptError( c, "Wrong number of arguments");
-    FVFakeMenus(c->curfv,201);
+    if ( c->a.argc==1 )
+	FVFakeMenus(c->curfv,201);
+    else if ( c->a.vals[1].type==v_str ) {
+	int vert=false;
+	int i, gid;
+	FontView *fv = c->curfv;
+	if ( strmatch(c->a.vals[1].u.sval,"vertical")==0 )
+	    vert=true;
+	else if ( strmatch(c->a.vals[1].u.sval,"horizontal")!=0 )
+	    ScriptError(c,"Argument must be a string and must be either \"Horizontal\" or \"Vertical\".");
+
+	for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
+		(gid = fv->map->map[i])!=-1 && SCWorthOutputting(fv->sf->glyphs[gid]) ) {
+	    SplineChar *sc = fv->sf->glyphs[gid];
+	    sc->manualhints = true;
+	    SCPreserveHints(sc);
+	    if ( vert ) {
+		StemInfosFree(sc->vstem);
+		sc->vstem = NULL;
+		sc->vconflicts = false;
+	    } else {
+		StemInfosFree(sc->hstem);
+		sc->hstem = NULL;
+		sc->hconflicts = false;
+	    }
+	    SCUpdateAll(sc);
+	}
+    } else
+	ScriptError(c,"Argument must be a string and must be either \"Horizontal\" or \"Vertical\".");
 }
 
 static void bClearInstrs(Context *c) {
