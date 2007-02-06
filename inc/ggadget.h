@@ -384,6 +384,7 @@ GWindow _GMenuCreatePopupMenu(GWindow owner,GEvent *event, GMenuItem *mi,
 
 GGadget *GLineCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GGroupCreate(struct gwindow *base, GGadgetData *gd,void *data);
+GGadget *GSpacerCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GLabelCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GButtonCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GImageButtonCreate(struct gwindow *base, GGadgetData *gd,void *data);
