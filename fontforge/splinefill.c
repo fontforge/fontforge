@@ -867,6 +867,10 @@ void BCCompressBitmap(BDFChar *bdfc) {
 	}
 	BCRegularizeGreymap(bdfc);
     }
+    if ( bdfc->xmax<bdfc->xmin || bdfc->ymax<bdfc->ymin ) {
+	bdfc->ymax = bdfc->ymin-1;
+	bdfc->xmax = bdfc->xmin-1;
+    }
 }
 
 static void Bresenham(uint8 *bytemap,EdgeList *es,int x1,int x2,int y1,int y2,
