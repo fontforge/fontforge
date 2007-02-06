@@ -313,7 +313,8 @@ static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b,EncMap *map,int dep
 	} else if ( strcmp(tok,"BITMAP")==0 )
     break;
     }
-    if ( xmax+1==xmin && ymax+1==ymin )
+    if (( xmax+1==xmin && (ymax+1==ymin || ymax==ymin)) ||
+	    (( xmax+1==xmin || xmax==xmin) && ymax+1==ymin ))
 	/* Empty glyph */;
     else if ( xmax<xmin || ymax<ymin ) {
 	LogError( _("Bad bounding box for %s.\n"), name );
@@ -1790,18 +1791,22 @@ return( false );
     free(b->glyphs);
     b->glyphs = gcalloc(mcnt,sizeof(BDFChar *));
     for ( i=0; i<mcnt; ++i ) {
-	b->glyphs[i] = chunkalloc(sizeof(BDFChar));
-	b->glyphs[i]->xmin = metrics[i].lsb;
-	b->glyphs[i]->xmax = metrics[i].rsb-1;
-	if ( metrics[i].rsb==0 ) b->glyphs[i]->xmax = 0;
-	b->glyphs[i]->ymin = -metrics[i].descent;
-	b->glyphs[i]->ymax = metrics[i].ascent-1;
-	/*if ( metrics[i].ascent==0 ) b->glyphs[i]->ymax = 0;*/ /*??*/
-	b->glyphs[i]->width = metrics[i].width;
-	b->glyphs[i]->vwidth = b->pixelsize;	/* pcf doesn't support vmetrics */
-	b->glyphs[i]->bytes_per_line = ((b->glyphs[i]->xmax-b->glyphs[i]->xmin)>>3) + 1;
-	b->glyphs[i]->bitmap = galloc(b->glyphs[i]->bytes_per_line*(b->glyphs[i]->ymax-b->glyphs[i]->ymin+1));
-	b->glyphs[i]->orig_pos = -1;
+	BDFChar *bc = b->glyphs[i] = chunkalloc(sizeof(BDFChar));
+	bc->xmin = metrics[i].lsb;
+	bc->xmax = metrics[i].rsb-1;
+	if ( metrics[i].rsb==0 ) bc->xmax = 0;
+	bc->ymin = -metrics[i].descent;
+	bc->ymax = metrics[i].ascent-1;
+	if ( bc->ymax<bc->ymin || bc->xmax<bc->xmin ) {
+	    bc->ymax = bc->ymin-1;
+	    bc->xmax = bc->xmin-1;
+	}
+	/*if ( metrics[i].ascent==0 ) bc->ymax = 0;*/ /*??*/
+	bc->width = metrics[i].width;
+	bc->vwidth = b->pixelsize;	/* pcf doesn't support vmetrics */
+	bc->bytes_per_line = ((bc->xmax-bc->xmin)>>3) + 1;
+	bc->bitmap = galloc(bc->bytes_per_line*(bc->ymax-bc->ymin+1));
+	bc->orig_pos = -1;
     }
     free(metrics);
 
