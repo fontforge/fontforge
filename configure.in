@@ -305,7 +305,8 @@ AC_SUBST(X_11LIB)
 X_11LIB=-lX11
 if test "$no_x" = "yes"; then
  X_11LIB=
- AC_DEFINE(FONTFORGE_CONFIG_NO_WINDOWING_UI)
+dnl AC_DEFINE(FONTFORGE_CONFIG_NO_WINDOWING_UI)
+
 else
  dnl AC_CHECK_HEADER("X11/extensions/XInput.h", : ,AC_DEFINE(_NO_XINPUT),)
  dnl AC_CHECK_HEADER("X11/extensions/XI.h", : ,AC_DEFINE(_NO_XINPUT),)
@@ -386,6 +387,10 @@ fi
 if test "$gww_needsstaticimages" = "yes" -a "$gww_regular_link" = "no"; then
  if test "$gww_needsstatic" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -static"
+ fi
+ if test "$ac_cv_lib_gif_DGifOpenFileName" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lgif"
+  AC_DEFINE(_STATIC_LIBUNGIF)
  fi
  if test "$ac_cv_lib_ungif_DGifOpenFileName" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -lungif"
@@ -474,6 +479,8 @@ AC_ARG_WITH(noui,
     if test "$withval" != "no" >/dev/null 2>&1 ; then
 	AC_DEFINE(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 	X_11LIB=
+	echo "This does not work. Use --without-x instead"
+	exit 1
     fi
  ], : )
 

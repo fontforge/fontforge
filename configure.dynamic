@@ -22716,9 +22716,6 @@ fi
 X_11LIB=-lX11
 if test "$no_x" = "yes"; then
  X_11LIB=
- cat >>confdefs.h <<\_ACEOF
-#define FONTFORGE_CONFIG_NO_WINDOWING_UI 1
-_ACEOF
 
 else
 
@@ -23406,6 +23403,13 @@ fi
 if test "$gww_needsstaticimages" = "yes" -a "$gww_regular_link" = "no"; then
  if test "$gww_needsstatic" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -static"
+ fi
+ if test "$ac_cv_lib_gif_DGifOpenFileName" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lgif"
+  cat >>confdefs.h <<\_ACEOF
+#define _STATIC_LIBUNGIF 1
+_ACEOF
+
  fi
  if test "$ac_cv_lib_ungif_DGifOpenFileName" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -lungif"
@@ -24221,6 +24225,8 @@ if test "${with_noui+set}" = set; then
 _ACEOF
 
 	X_11LIB=
+	echo "This does not work. Use --without-x instead"
+	exit 1
     fi
 
 else
