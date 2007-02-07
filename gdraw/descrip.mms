@@ -12,7 +12,7 @@ libgdraw_OBJECTS =  choosericons.obj,divisors.obj,drawboxborder.obj,\
  gmenu.obj,gprogress.obj,gpsdraw.obj,gpstxtinit.obj,gradio.obj,gresource.obj,\
  gresourceimage.obj,gsavefiledlg.obj,gscrollbar.obj,gtabset.obj,\
  gtextfield.obj,gtextinfo.obj,gwidgets.obj,gxdraw.obj,ghvbox.obj,\
- gmatrixedit.obj gspacer.obj
+ gmatrixedit.obj,gspacer.obj
 
 CFLAGS=/nowarn/incl=([-.inc])/name=(as_is,short)\
 	/define=("NOTHREADS=1","_NO_XKB=1","_STATIC_LIBFREETYPE=1",\
