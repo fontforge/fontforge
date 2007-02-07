@@ -342,8 +342,9 @@ static void _GXDraw_FindVisual(GXDisplay *gdisp) {
     }
     gdisp->cmap = DefaultColormap(display,gdisp->screen);
 #else
-    static int vsearch[][2] = {{ 32, TrueColor },
+    static int vsearch[][2] = {
 				{ 24, TrueColor },
+				{ 32, TrueColor },
 				{ 16, TrueColor },
 				{ 15, TrueColor },
 				{ 12, TrueColor }};
