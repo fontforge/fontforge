@@ -682,7 +682,7 @@ char *utf8_2_latin1_copy(const char *utf8buf) {
 return( NULL );
 
     len = strlen(utf8buf);
-    lbuf = galloc(len+1);
+    pt = lbuf = galloc(len+1);
     for ( upt=utf8buf; (ch=utf8_ildb(&upt))!='\0'; )
 	if ( ch>=0xff )
 	    *pt++ = '?';
