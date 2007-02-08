@@ -177,7 +177,7 @@ int GTextInfoDraw(GWindow base,int x,int y,GTextInfo *ti,
 	GDrawGetClip(base,&r);
 	r.x += GDrawPointsToPixels(base,2); r.width -= 2*GDrawPointsToPixels(base,2);
 	GDrawPushClip(base,&r,&old);
-	r.y = y+2*as/3; r.height = height;
+	r.y = y; r.height = height;
 	r.x = x; r.width = 10000;
 	GBoxDrawHLine(base,&r,&_GGroup_LineBox);
 	GDrawPopClip(base,&old);
