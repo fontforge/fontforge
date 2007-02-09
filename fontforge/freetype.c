@@ -455,10 +455,12 @@ return( NULL );
 
     if ( _FT_New_Memory_Face(context,ftc->mappedfile,ftc->len,0,&ftc->face))
  goto fail;
+    GlyphHashFree(sf);		/* If we created a tiny font, our hash table may reflect that */
     
 return( ftc );
 
  fail:
+    GlyphHashFree(sf);
     FreeTypeFreeContext(ftc);
     if ( sf->glyphs!=old ) {
 	free(sf->glyphs);
