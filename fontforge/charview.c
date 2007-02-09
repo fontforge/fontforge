@@ -4566,7 +4566,6 @@ return( true );
 #define MID_SetVWidth	2606
 #define MID_RemoveVKerns	2607
 #define MID_KPCloseup	2608
-#define MID_AnchorsAway	2609
 #define MID_OpenBitmap	2700
 #define MID_Revert	2702
 #define MID_Recent	2703
@@ -4957,17 +4956,6 @@ static void CVMenuLigatures(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void CVMenuAnchorPairs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     SFShowKernPairs(cv->sc->parent,cv->sc,(AnchorClass *) (-1));
-}
-
-static void CVMenuAnchorControl(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    CharView *cv = (CharView *) GDrawGetUserData(gw);
-    AnchorPoint *found;
-
-    for ( found=cv->sc->anchor; found!=NULL; found=found->next )
-	if ( found->selected )
-    break;
-    if ( found!=NULL )
-	AnchorControl(cv->sc,found);
 }
 
 static void CVMenuAPDetach(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -7495,9 +7483,6 @@ static void mtlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_SetVWidth:
 	    mi->ti.disabled = !cv->sc->parent->hasvmetrics;
 	  break;
-	  case MID_AnchorsAway:
-	    mi->ti.disabled = cv->sc->anchor==NULL;
-	  break;
 	}
     }
 }
@@ -7573,7 +7558,7 @@ static void cv_cblistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = sc->anchor==NULL;
 	  break;
 	  case MID_AnchorControl:
-	    mi->ti.disabled = found==NULL;
+	    mi->ti.disabled = cv->sc->anchor==NULL;
 	  break;
 	  case MID_AnchorGlyph:
 	    if ( cv->apmine!=NULL )
@@ -7791,7 +7776,7 @@ static void CVMenuAnchorsAway(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     AnchorPoint *ap;
 
-    for ( ap = cv->sc->anchor; ap!=NULL && !ap->selected; ap = ap->next );
+    ap = mi->ti.userdata;
     if ( ap==NULL ) ap= cv->sc->anchor;
     if ( ap==NULL )
 return;
@@ -8124,6 +8109,50 @@ static GMenuItem htlist[] = {
     { NULL }
 };
 
+static GMenuItem ap2list[] = {
+    { NULL }
+};
+
+static void ap2listbuild(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    char buf[300];
+    GMenuItem *sub;
+    int k, cnt;
+    AnchorPoint *ap;
+    extern void GMenuItemArrayFree(GMenuItem *mi);
+
+    if ( mi->sub!=NULL ) {
+	GMenuItemArrayFree(mi->sub);
+	mi->sub = NULL;
+    }
+
+    for ( k=0; k<2; ++k ) {
+	cnt = 0;
+	for ( ap=cv->sc->anchor; ap!=NULL; ap=ap->next ) {
+	    if ( k ) {
+		if ( ap->type==at_baselig )
+/* GT: In the next few lines the "%s" is the name of an anchor class, and the */
+/* GT: rest of the string identifies the type of the anchor */
+		    snprintf(buf,sizeof(buf), _("%s at ligature pos %d"), ap->anchor->name, ap->lig_index );
+		else
+		    snprintf(buf,sizeof(buf),
+			ap->type==at_cexit ? _("%s exit"):
+			ap->type==at_centry ? _("%s entry"):
+			ap->type==at_mark ? _("%s mark"):
+			    _("%s base"),ap->anchor->name );
+		sub[cnt].ti.text = utf82u_copy(buf);
+		sub[cnt].ti.userdata = ap;
+		sub[cnt].ti.bg = sub[cnt].ti.fg = COLOR_DEFAULT;
+		sub[cnt].invoke = CVMenuAnchorsAway;
+	    }
+	    ++cnt;
+	}
+	if ( !k )
+	    sub = gcalloc(cnt+1,sizeof(GMenuItem));
+    }
+    mi->sub = sub;
+}
+	    
 static GMenuItem mtlist[] = {
     { { (unichar_t *) N_("_Center in Width"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_control, NULL, NULL, CVMenuCenter, MID_Center },
     { { (unichar_t *) N_("_Thirds in Width"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'T' }, '\0', ksm_control, NULL, NULL, CVMenuCenter, MID_Thirds },
@@ -8136,8 +8165,6 @@ static GMenuItem mtlist[] = {
     { { (unichar_t *) N_("Kern Pair Closeup..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuKPCloseup, MID_KPCloseup },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("Set _Vertical Advance..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'V' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuSetWidth, MID_SetVWidth },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("_Anchor Control..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'V' }, '\0', ksm_control|ksm_shift, NULL, NULL, CVMenuAnchorsAway, MID_AnchorsAway },
     { NULL }
 };
 
@@ -8211,7 +8238,7 @@ return;
 static GMenuItem cblist[] = {
     { { (unichar_t *) N_("_Kern Pairs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'K' }, '\0', 0, NULL, NULL, CVMenuKernPairs, MID_KernPairs },
     { { (unichar_t *) N_("_Anchored Pairs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, '\0', 0, NULL, NULL, CVMenuAnchorPairs, MID_AnchorPairs },
-    { { (unichar_t *) N_("_Anchored Control"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, '\0', 0, NULL, NULL, CVMenuAnchorControl, MID_AnchorControl },
+    { { (unichar_t *) N_("_Anchor Control..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'V' }, '\0', ksm_control|ksm_shift, ap2list, ap2listbuild, NULL, MID_AnchorControl },
     { { (unichar_t *) N_("Anchor _Glyph at Point"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, '\0', 0, aplist, aplistcheck, NULL, MID_AnchorGlyph },
     { { (unichar_t *) N_("_Ligatures"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'L' }, '\0', ksm_shift|ksm_control, NULL, NULL, CVMenuLigatures, MID_Ligatures },
     NULL
