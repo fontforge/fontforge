@@ -2139,7 +2139,7 @@ static void bWritePfm(Context *c) {
 #endif
 
 static void bExport(Context *c) {
-    int format,i ;
+    int format,i, gid ;
     BDFFont *bdf;
     char *pt, *format_spec;
     char buffer[20];
@@ -2193,9 +2193,10 @@ static void bExport(Context *c) {
 	if ( bdf==NULL )
 	    ScriptError(c, "No bitmap font matches the specified size");
     }
-    for ( i=0; i<c->curfv->sf->glyphcnt; ++i )
-	if ( SCWorthOutputting(c->curfv->sf->glyphs[i]) )
-	    ScriptExport(c->curfv->sf,bdf,format,i,format_spec,c->curfv->map);
+    for ( i=0; i<c->curfv->map->enccount; ++i )
+	if ( c->curfv->selected[i] && (gid=c->curfv->map->map[i])!=-1 &&
+		SCWorthOutputting(c->curfv->sf->glyphs[gid]) )
+	    ScriptExport(c->curfv->sf,bdf,format,gid,format_spec,c->curfv->map);
     if ( format_spec!=buffer )
 	free(format_spec);
 }
