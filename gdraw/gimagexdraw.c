@@ -954,6 +954,7 @@ static void gdraw_8_on_32_nomag_masked(GXDisplay *gdisp, GImage *image, GRect *s
     register uint8 *pt;
     uint32 *ipt;
     struct gcol *pos;
+    uint32 allbits = gdisp->visual->red_mask | gdisp->visual->green_mask | gdisp->visual->blue_mask;
 
     _GDraw_getimageclut(base,clut);
     for ( i=base->clut->clut_len-1; i>=0; --i ) {
@@ -979,7 +980,7 @@ static void gdraw_8_on_32_nomag_masked(GXDisplay *gdisp, GImage *image, GRect *s
 	    index = *pt++;
 	    if ( index==trans ) {
 #if FAST_BITS==0
-		*mpt++ = 0xffffffff;
+		*mpt++ = allbits;
 #else
 		*mpt |= mbit;
 #endif
@@ -1009,6 +1010,7 @@ static void gdraw_32_on_32_nomag_masked(GXDisplay *gdisp, GImage *image, GRect *
     int trans = base->trans;
     register uint32 *pt, index, *ipt;
     int endian_mismatch = gdisp->endian_mismatch;
+    uint32 allbits = gdisp->visual->red_mask | gdisp->visual->green_mask | gdisp->visual->blue_mask;
 #if FAST_BITS==0
     register uint32 *mpt;
 #else
@@ -1033,7 +1035,7 @@ static void gdraw_32_on_32_nomag_masked(GXDisplay *gdisp, GImage *image, GRect *
 	    if ( index==trans ) {
 		*ipt++ = Pixel32(gdisp,0);
 #if FAST_BITS==0
-		*mpt++ = 0xffffffff;
+		*mpt++ = allbits;
 #else
 		*mpt |= mbit;
 #endif
