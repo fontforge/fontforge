@@ -342,9 +342,8 @@ static void _GXDraw_FindVisual(GXDisplay *gdisp) {
     }
     gdisp->cmap = DefaultColormap(display,gdisp->screen);
 #else
-    static int vsearch[][2] = {
+    static int vsearch[][2] = {{ 32, TrueColor },
 				{ 24, TrueColor },
-				{ 32, TrueColor },
 				{ 16, TrueColor },
 				{ 15, TrueColor },
 				{ 12, TrueColor }};
@@ -568,6 +567,8 @@ static void InitTrueColor(GXDisplay *gdisp) {
     gdisp->cs.red_bits_shift = 24-red_bits_shift;
     gdisp->cs.green_bits_shift = 16-green_bits_shift;
     gdisp->cs.blue_bits_shift = 8-blue_bits_shift;
+
+    gdisp->cs.alpha_bits = 0xffffffff&~(vis->red_mask|vis->green_mask|vis->blue_mask);
 }
 
 static void _GXDraw_InitCols(GXDisplay *gdisp) {
@@ -614,6 +615,8 @@ unsigned long _GXDraw_GetScreenPixel(GXDisplay *gdisp, Color col) {
 
     if ( gdisp->depth==24 )
 return( Pixel24(gdisp,col) );
+    else if ( gdisp->depth==32 )
+return( Pixel32(gdisp,col) );
     else if ( gdisp->depth>8 )
 return( Pixel16(gdisp,col));
 
