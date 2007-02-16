@@ -2184,177 +2184,11 @@ static void CVFakeMove(CharView *cv, GEvent *event) {
     e.u.mouse.device = NULL;
     CVMouseMove(cv,&e);
 }
-	
-void CVChar(CharView *cv, GEvent *event ) {
-    extern float arrowAmount;
 
-#if _ModKeysAutoRepeat
-	/* Under cygwin these keys auto repeat, they don't under normal X */
-	if ( cv->autorpt!=NULL ) {
-	    GDrawCancelTimer(cv->autorpt); cv->autorpt = NULL;
-	    if ( cv->keysym == event->u.chr.keysym )	/* It's an autorepeat, ignore it */
-return;
-	    CVToolsSetCursor(cv,cv->oldstate,NULL);
-	}
-#endif
-
-#if MyMemory
-    if ( event->u.chr.keysym == GK_F2 ) {
-	fprintf( stderr, "Malloc debug on\n" );
-	__malloc_debug(5);
-    } else if ( event->u.chr.keysym == GK_F3 ) {
-	fprintf( stderr, "Malloc debug off\n" );
-	__malloc_debug(0);
-    }
-#endif
-#if 0
-    if ( event->u.chr.keysym == GK_F4 ) {
-	RepeatFromFile(cv);
-    }
-#endif
-
-    CVPaletteActivate(cv);
-    CVToolsSetCursor(cv,TrueCharState(event),NULL);
-	/* The isalpha check is to prevent infinite loops since DVChar can */
-	/*  call CVChar too */
-    if ( cv->dv!=NULL && isalpha(event->u.chr.chars[0]) && DVChar(cv->dv,event))
-	/* All Done */;
-    else if ( event->u.chr.keysym=='s' &&
-	    (event->u.chr.state&ksm_control) &&
-	    (event->u.chr.state&ksm_meta) )
-	MenuSaveAll(NULL,NULL,NULL);
-    else if ( event->u.chr.keysym=='q' &&
-	    (event->u.chr.state&ksm_control) &&
-	    (event->u.chr.state&ksm_meta) )
-	MenuExit(NULL,NULL,NULL);
-    else if (( event->u.chr.keysym=='M' ||event->u.chr.keysym=='m' ) &&
-	    (event->u.chr.state&ksm_control) ) {
-	if ( (event->u.chr.state&ksm_meta) && (event->u.chr.state&ksm_shift))
-	    CVMenuSimplifyMore(cv->gw,NULL,NULL);
-	else if ( (event->u.chr.state&ksm_shift))
-	    CVMenuSimplify(cv->gw,NULL,NULL);
-	else if ( (event->u.chr.state&ksm_meta) && (event->u.chr.state&ksm_control))
-	    CVElide(cv->gw,NULL,NULL);
-	else
-	    CVMerge(cv->gw,NULL,NULL);
-    } else if ( event->u.chr.keysym == GK_Shift_L || event->u.chr.keysym == GK_Shift_R ||
-	     event->u.chr.keysym == GK_Alt_L || event->u.chr.keysym == GK_Alt_R ||
-	     event->u.chr.keysym == GK_Meta_L || event->u.chr.keysym == GK_Meta_R ) {
-	CVFakeMove(cv, event);
-    } else if ( (event->u.chr.state&ksm_meta) &&
-	    !(event->u.chr.state&(ksm_control|ksm_shift)) &&
-	    event->u.chr.chars[0]!='\0' ) {
-	CVPaletteMnemonicCheck(event);
-    } else if ( !(event->u.chr.state&(ksm_control|ksm_meta)) &&
-	    event->u.chr.keysym == GK_BackSpace ) {
-	/* Menu does delete */
-	CVClear(cv->gw,NULL,NULL);
-    } else if ( event->u.chr.keysym == GK_Help ) {
-	MenuHelp(NULL,NULL,NULL);	/* Menu does F1 */
-    } else if ( (event->u.chr.keysym=='[' || event->u.chr.keysym==']') &&
-	    (event->u.chr.state&ksm_control) ) {
-	/* some people have remapped keyboards so that shift is needed to get [] */
-	int pos;
-	if ( event->u.chr.keysym=='[' ) {
-	    pos = CVCurEnc(cv)-1;
-	} else {
-	    pos = CVCurEnc(cv)+1;
-	}
-#if 0		/* Werner doesn't want it to wrap */
-	if ( pos<0 ) pos = cv->fv->map->enccount-1;
-	else if ( pos>= cv->fv->map->enccount ) pos = 0;
-#endif
-	if ( pos>=0 && pos<cv->fv->map->enccount )
-	    CVChangeChar(cv,pos);
-    } else if ( event->u.chr.keysym == GK_Left ||
-	    event->u.chr.keysym == GK_Up ||
-	    event->u.chr.keysym == GK_Right ||
-	    event->u.chr.keysym == GK_Down ||
-	    event->u.chr.keysym == GK_KP_Left ||
-	    event->u.chr.keysym == GK_KP_Up ||
-	    event->u.chr.keysym == GK_KP_Right ||
-	    event->u.chr.keysym == GK_KP_Down ) {
-	real dx=0, dy=0; int anya;
-	switch ( event->u.chr.keysym ) {
-	  case GK_Left: case GK_KP_Left:
-	    dx = -1;
-	  break;
-	  case GK_Right: case GK_KP_Right:
-	    dx = 1;
-	  break;
-	  case GK_Up: case GK_KP_Up:
-	    dy = 1;
-	  break;
-	  case GK_Down: case GK_KP_Down:
-	    dy = -1;
-	  break;
-	}
-	if ( event->u.chr.state & (ksm_control|ksm_capslock) ) {
-	    struct sbevent sb;
-	    sb.type = dy>0 || dx<0 ? et_sb_halfup : et_sb_halfdown;
-	    if ( dx==0 )
-		CVVScroll(cv,&sb);
-	    else
-		CVHScroll(cv,&sb);
-	} else {
-	    if ( event->u.chr.state & ksm_meta ) {
-		dx *= 10; dy *= 10;
-	    }
-	    if ( event->u.chr.state & (ksm_shift) )
-		dx -= dy*tan((cv->sc->parent->italicangle)*(3.1415926535897932/180) );
-	    if (( cv->p.sp!=NULL || cv->lastselpt!=NULL ) &&
-		    (cv->p.nextcp || cv->p.prevcp) ) {
-		SplinePoint *sp = cv->p.sp ? cv->p.sp : cv->lastselpt;
-		SplinePoint *old = cv->p.sp;
-		BasePoint *which = cv->p.nextcp ? &sp->nextcp : &sp->prevcp;
-		BasePoint to;
-		to.x = which->x + dx*arrowAmount;
-		to.y = which->y + dy*arrowAmount;
-		cv->p.sp = sp;
-		CVPreserveState(cv);
-		CVAdjustControl(cv,which,&to);
-		cv->p.sp = old;
-		SCUpdateAll(cv->sc);
-	    } else if ( CVAnySel(cv,NULL,NULL,NULL,&anya) || cv->widthsel || cv->vwidthsel ) {
-		CVPreserveState(cv);
-		CVMoveSelection(cv,dx*arrowAmount,dy*arrowAmount, event->u.chr.state);
-		if ( cv->widthsel )
-		    SCSynchronizeWidth(cv->sc,cv->sc->width,cv->sc->width-dx,NULL);
-		CVCharChangedUpdate(cv);
-		CVInfoDraw(cv,cv->gw);
-	    }
-	}
-    } else if ( event->u.chr.keysym == GK_Page_Up ||
-	    event->u.chr.keysym == GK_KP_Page_Up ||
-	    event->u.chr.keysym == GK_Prior ||
-	    event->u.chr.keysym == GK_Page_Down ||
-	    event->u.chr.keysym == GK_KP_Page_Down ||
-	    event->u.chr.keysym == GK_Next ) {
-	/* Um... how do we scroll horizontally??? */
-	struct sbevent sb;
-	sb.type = et_sb_uppage;
-	if ( event->u.chr.keysym == GK_Page_Down ||
-		event->u.chr.keysym == GK_KP_Page_Down ||
-		event->u.chr.keysym == GK_Next )
-	    sb.type = et_sb_downpage;
-	CVVScroll(cv,&sb);
-    } else if ( event->u.chr.keysym == GK_Home ) {
-	CVFit(cv);
-    } else if ( !(event->u.chr.state&(ksm_control|ksm_meta)) &&
-	    event->type == et_char &&
-	    cv->searcher==NULL &&
-	    cv->dv==NULL &&
-	    event->u.chr.chars[0]>=' ' && event->u.chr.chars[1]=='\0' ) {
-	SplineFont *sf = cv->sc->parent;
-	int i;
-	EncMap *map = cv->fv->map;
-	extern int cv_auto_goto;
-	if ( cv_auto_goto ) {
-	    i = SFFindSlot(sf,map,event->u.chr.chars[0],NULL);
-	    if ( i!=-1 )
-		CVChangeChar(cv,i);
-	}
-    }
+static void CVDoFindInFontView(CharView *cv) {
+    FVChangeChar(cv->fv,CVCurEnc(cv));
+    GDrawSetVisible(cv->fv->gw,true);
+    GDrawRaise(cv->fv->gw);
 }
 
 static void CVCharUp(CharView *cv, GEvent *event ) {
@@ -5023,8 +4857,7 @@ return( NULL );
 return( glyphs );
 }
 
-static void CVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    CharView *cv = (CharView *) GDrawGetUserData(gw);
+static void _CVMenuChangeChar(CharView *cv,int mid ) {
     SplineFont *sf = cv->sc->parent;
     int pos = -1;
     int gid;
@@ -5033,11 +4866,11 @@ static void CVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     if ( cv->searcher!=NULL )
 return;
-    if ( mi->mid == MID_Next ) {
+    if ( mid == MID_Next ) {
 	pos = CVCurEnc(cv)+1;
-    } else if ( mi->mid == MID_Prev ) {
+    } else if ( mid == MID_Prev ) {
 	pos = CVCurEnc(cv)-1;
-    } else if ( mi->mid == MID_NextDef ) {
+    } else if ( mid == MID_NextDef ) {
 	for ( pos = CVCurEnc(cv)+1; pos<map->enccount &&
 		((gid=map->map[pos])==-1 || !SCWorthOutputting(sf->glyphs[gid])); ++pos );
 	if ( pos>=map->enccount ) {
@@ -5060,12 +4893,12 @@ return;
 	    if ( pos>=map->enccount )
 return;
 	}
-    } else if ( mi->mid == MID_PrevDef ) {
+    } else if ( mid == MID_PrevDef ) {
 	for ( pos = CVCurEnc(cv)-1; pos>=0 &&
 		((gid=map->map[pos])==-1 || !SCWorthOutputting(sf->glyphs[gid])); --pos );
 	if ( pos<0 )
 return;
-    } else if ( mi->mid == MID_Former ) {
+    } else if ( mid == MID_Former ) {
 	if ( cv->former_cnt<=1 )
 return;
 	for ( gid=sf->glyphcnt-1; gid>=0; --gid )
@@ -5083,6 +4916,174 @@ return;
 return;
     if ( pos>=0 && pos<map->enccount )
 	CVChangeChar(cv,pos);
+}
+
+
+static void CVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    _CVMenuChangeChar(cv,mi->mid);
+}
+
+void CVChar(CharView *cv, GEvent *event ) {
+    extern float arrowAmount;
+
+#if _ModKeysAutoRepeat
+	/* Under cygwin these keys auto repeat, they don't under normal X */
+	if ( cv->autorpt!=NULL ) {
+	    GDrawCancelTimer(cv->autorpt); cv->autorpt = NULL;
+	    if ( cv->keysym == event->u.chr.keysym )	/* It's an autorepeat, ignore it */
+return;
+	    CVToolsSetCursor(cv,cv->oldstate,NULL);
+	}
+#endif
+
+#if MyMemory
+    if ( event->u.chr.keysym == GK_F2 ) {
+	fprintf( stderr, "Malloc debug on\n" );
+	__malloc_debug(5);
+    } else if ( event->u.chr.keysym == GK_F3 ) {
+	fprintf( stderr, "Malloc debug off\n" );
+	__malloc_debug(0);
+    }
+#endif
+#if 0
+    if ( event->u.chr.keysym == GK_F4 ) {
+	RepeatFromFile(cv);
+    }
+#endif
+
+    CVPaletteActivate(cv);
+    CVToolsSetCursor(cv,TrueCharState(event),NULL);
+	/* The isalpha check is to prevent infinite loops since DVChar can */
+	/*  call CVChar too */
+    if ( cv->dv!=NULL && isalpha(event->u.chr.chars[0]) && DVChar(cv->dv,event))
+	/* All Done */;
+    else if ( event->u.chr.keysym=='s' &&
+	    (event->u.chr.state&ksm_control) &&
+	    (event->u.chr.state&ksm_meta) )
+	MenuSaveAll(NULL,NULL,NULL);
+    else if ( event->u.chr.keysym=='q' &&
+	    (event->u.chr.state&ksm_control) &&
+	    (event->u.chr.state&ksm_meta) )
+	MenuExit(NULL,NULL,NULL);
+    else if ( event->u.chr.keysym == GK_Shift_L || event->u.chr.keysym == GK_Shift_R ||
+	     event->u.chr.keysym == GK_Alt_L || event->u.chr.keysym == GK_Alt_R ||
+	     event->u.chr.keysym == GK_Meta_L || event->u.chr.keysym == GK_Meta_R ) {
+	CVFakeMove(cv, event);
+    } else if ( (event->u.chr.state&ksm_meta) &&
+	    !(event->u.chr.state&(ksm_control|ksm_shift)) &&
+	    event->u.chr.chars[0]!='\0' ) {
+	CVPaletteMnemonicCheck(event);
+    } else if ( !(event->u.chr.state&(ksm_control|ksm_meta)) &&
+	    event->u.chr.keysym == GK_BackSpace ) {
+	/* Menu does delete */
+	CVClear(cv->gw,NULL,NULL);
+    } else if ( event->u.chr.keysym == GK_Help ) {
+	MenuHelp(NULL,NULL,NULL);	/* Menu does F1 */
+    } else if ( event->u.chr.keysym=='<' && (event->u.chr.state&ksm_control) ) {
+	/* European keyboards do not need shift to get < */
+	CVDoFindInFontView(cv);
+    } else if ( (event->u.chr.keysym=='[' || event->u.chr.keysym==']') &&
+	    (event->u.chr.state&ksm_control) ) {
+	/* European keyboards need a funky modifier to get [] */
+	_CVMenuChangeChar(cv,event->u.chr.keysym=='[' ? MID_Prev : MID_Next );
+    } else if ( (event->u.chr.keysym=='{' || event->u.chr.keysym=='}') &&
+	    (event->u.chr.state&ksm_control) ) {
+	/* European keyboards need a funky modifier to get {} */
+	_CVMenuChangeChar(cv,event->u.chr.keysym=='{' ? MID_PrevDef : MID_NextDef );
+    } else if ( event->u.chr.keysym=='\\' && (event->u.chr.state&ksm_control) ) {
+	/* European keyboards need a funky modifier to get \ */
+	CVDoTransform(cv,cvt_none);
+    } else if ( event->u.chr.keysym == GK_Left ||
+	    event->u.chr.keysym == GK_Up ||
+	    event->u.chr.keysym == GK_Right ||
+	    event->u.chr.keysym == GK_Down ||
+	    event->u.chr.keysym == GK_KP_Left ||
+	    event->u.chr.keysym == GK_KP_Up ||
+	    event->u.chr.keysym == GK_KP_Right ||
+	    event->u.chr.keysym == GK_KP_Down ) {
+	real dx=0, dy=0; int anya;
+	switch ( event->u.chr.keysym ) {
+	  case GK_Left: case GK_KP_Left:
+	    dx = -1;
+	  break;
+	  case GK_Right: case GK_KP_Right:
+	    dx = 1;
+	  break;
+	  case GK_Up: case GK_KP_Up:
+	    dy = 1;
+	  break;
+	  case GK_Down: case GK_KP_Down:
+	    dy = -1;
+	  break;
+	}
+	if ( event->u.chr.state & (ksm_control|ksm_capslock) ) {
+	    struct sbevent sb;
+	    sb.type = dy>0 || dx<0 ? et_sb_halfup : et_sb_halfdown;
+	    if ( dx==0 )
+		CVVScroll(cv,&sb);
+	    else
+		CVHScroll(cv,&sb);
+	} else {
+	    if ( event->u.chr.state & ksm_meta ) {
+		dx *= 10; dy *= 10;
+	    }
+	    if ( event->u.chr.state & (ksm_shift) )
+		dx -= dy*tan((cv->sc->parent->italicangle)*(3.1415926535897932/180) );
+	    if (( cv->p.sp!=NULL || cv->lastselpt!=NULL ) &&
+		    (cv->p.nextcp || cv->p.prevcp) ) {
+		SplinePoint *sp = cv->p.sp ? cv->p.sp : cv->lastselpt;
+		SplinePoint *old = cv->p.sp;
+		BasePoint *which = cv->p.nextcp ? &sp->nextcp : &sp->prevcp;
+		BasePoint to;
+		to.x = which->x + dx*arrowAmount;
+		to.y = which->y + dy*arrowAmount;
+		cv->p.sp = sp;
+		CVPreserveState(cv);
+		CVAdjustControl(cv,which,&to);
+		cv->p.sp = old;
+		SCUpdateAll(cv->sc);
+	    } else if ( CVAnySel(cv,NULL,NULL,NULL,&anya) || cv->widthsel || cv->vwidthsel ) {
+		CVPreserveState(cv);
+		CVMoveSelection(cv,dx*arrowAmount,dy*arrowAmount, event->u.chr.state);
+		if ( cv->widthsel )
+		    SCSynchronizeWidth(cv->sc,cv->sc->width,cv->sc->width-dx,NULL);
+		CVCharChangedUpdate(cv);
+		CVInfoDraw(cv,cv->gw);
+	    }
+	}
+    } else if ( event->u.chr.keysym == GK_Page_Up ||
+	    event->u.chr.keysym == GK_KP_Page_Up ||
+	    event->u.chr.keysym == GK_Prior ||
+	    event->u.chr.keysym == GK_Page_Down ||
+	    event->u.chr.keysym == GK_KP_Page_Down ||
+	    event->u.chr.keysym == GK_Next ) {
+	/* Um... how do we scroll horizontally??? */
+	struct sbevent sb;
+	sb.type = et_sb_uppage;
+	if ( event->u.chr.keysym == GK_Page_Down ||
+		event->u.chr.keysym == GK_KP_Page_Down ||
+		event->u.chr.keysym == GK_Next )
+	    sb.type = et_sb_downpage;
+	CVVScroll(cv,&sb);
+    } else if ( event->u.chr.keysym == GK_Home ) {
+	CVFit(cv);
+    } else if ( !(event->u.chr.state&(ksm_control|ksm_meta)) &&
+	    event->type == et_char &&
+	    cv->searcher==NULL &&
+	    cv->dv==NULL &&
+	    event->u.chr.chars[0]>=' ' && event->u.chr.chars[1]=='\0' ) {
+	SplineFont *sf = cv->sc->parent;
+	int i;
+	EncMap *map = cv->fv->map;
+	extern int cv_auto_goto;
+	if ( cv_auto_goto ) {
+	    i = SFFindSlot(sf,map,event->u.chr.chars[0],NULL);
+	    if ( i!=-1 )
+		CVChangeChar(cv,i);
+	}
+    }
 }
 
 void CVShowPoint(CharView *cv, BasePoint *me) {
@@ -5241,9 +5242,7 @@ static void CVMenuGotoChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void CVMenuFindInFontView(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
-    FVChangeChar(cv->fv,CVCurEnc(cv));
-    GDrawSetVisible(cv->fv->gw,true);
-    GDrawRaise(cv->fv->gw);
+    CVDoFindInFontView(cv);
 }
 
 static void CVMenuPalettesDock(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -8152,7 +8151,7 @@ static void ap2listbuild(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
     mi->sub = sub;
 }
-
+	    
 static GMenuItem2 mtlist[] = {
     { { (unichar_t *) N_("_Center in Width"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Center in Width|No Shortcut"), NULL, NULL, CVMenuCenter, MID_Center },
     { { (unichar_t *) N_("_Thirds in Width"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Thirds in Width|No Shortcut"), NULL, NULL, CVMenuCenter, MID_Thirds },
