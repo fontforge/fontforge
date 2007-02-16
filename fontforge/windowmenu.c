@@ -48,7 +48,7 @@ static void AddMI(GMenuItem *mi,GWindow gw,int changed, int top) {
 }
 
 /* Builds up a menu containing the titles of all the major windows */
-void WindowMenuBuild(GWindow basew,struct gmenuitem *mi,GEvent *e, struct gmenuitem *base) {
+void WindowMenuBuild(GWindow basew,struct gmenuitem *mi,GEvent *e) {
     int i, cnt, precnt;
     FontView *fv;
     CharView *cv;
@@ -58,17 +58,7 @@ void WindowMenuBuild(GWindow basew,struct gmenuitem *mi,GEvent *e, struct gmenui
     BDFFont *bdf;
     extern void GMenuItemArrayFree(GMenuItem *mi);
 
-    if ( mi->sub!=NULL ) {
-	GMenuItemArrayFree(mi->sub);
-	mi->sub = NULL;
-    }
-
-    precnt = 0;
-    for ( sub = base; sub->ti.text!=NULL || sub->ti.line; ++sub )
-	++precnt;
-    if ( sub->ti.text!=NULL )		/* Skip two lines now */
-	for ( ++sub; sub->ti.text!=NULL || sub->ti.line; ++sub )
-	    ++precnt;
+    precnt = 6;
     cnt = precnt;
 
     for ( fv = fv_list; fv!=NULL; fv = fv->next ) {
@@ -91,7 +81,12 @@ void WindowMenuBuild(GWindow basew,struct gmenuitem *mi,GEvent *e, struct gmenui
 return;
     }
     sub = gcalloc(cnt+1,sizeof(GMenuItem));
-    memcpy(sub,base,precnt*sizeof(struct gmenuitem));
+    memcpy(sub,mi->sub,precnt*sizeof(struct gmenuitem));
+    for ( i=0; i<precnt; ++i )
+	mi->sub[i].ti.text = NULL;
+    GMenuItemArrayFree(mi->sub);
+    mi->sub = sub;
+
     for ( i=0; sub[i].ti.text!=NULL || sub[i].ti.line; ++i ) {
 	if ( sub[i].ti.text_is_1byte && sub[i].ti.text_in_resource) {
 	    sub[i].ti.text = utf82u_mncopy((char *) sub[i].ti.text,&sub[i].ti.mnemonic);
@@ -121,7 +116,6 @@ return;
 	for ( mv=fv->metrics; mv!=NULL; mv=mv->next )
 	    AddMI(&sub[cnt++],mv->gw,false,false);
     }
-    mi->sub = sub;
 }
 
 static void RecentSelect(GWindow base,struct gmenuitem *mi,GEvent *e) {
@@ -465,6 +459,21 @@ return;
 	    mb[i].ti.text = (unichar_t *) S_((char *) mb[i].ti.text);
 	    if ( mb[i].sub!=NULL )
 		mbDoGetText(mb[i].sub);
+	}
+    }
+}
+
+void mb2DoGetText(GMenuItem2 *mb) {
+    /* perform gettext substitutions on this menu and all sub menus */
+    int i;
+
+    if ( mb==NULL )
+return;
+    for ( i=0; mb[i].ti.text!=NULL || mb[i].ti.line || mb[i].ti.image!=NULL; ++i ) {
+	if ( mb[i].ti.text!=NULL ) {
+	    mb[i].ti.text = (unichar_t *) S_((char *) mb[i].ti.text);
+	    if ( mb[i].sub!=NULL )
+		mb2DoGetText(mb[i].sub);
 	}
     }
 }

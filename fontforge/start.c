@@ -629,6 +629,9 @@ int FontForgeMain( int argc, char **argv ) {
     add_pixmap_directory (PIXMAP_DIR);
 #endif
 
+    GMenuSetShortcutDomain("FontForge-MenuShortCuts");
+    bind_textdomain_codeset("FontForge-MenuShortCuts","UTF-8");
+    bindtextdomain("FontForge-MenuShortCuts", getLocaleDir());
     bind_textdomain_codeset("FontForge","UTF-8");
     bindtextdomain("FontForge", getLocaleDir());
     textdomain("FontForge");

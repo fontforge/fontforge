@@ -36,6 +36,8 @@
 # define bind_textdomain_codeset(domain,enc)
 # define textdomain(domain)
 
+# define dgettext(domain,str)	(str)
+
 #elif defined( NODYNAMIC ) || defined ( _STATIC_LIBINTL )
 
 # include <libintl.h>
@@ -56,16 +58,21 @@
 # define bind_textdomain_codeset(domain,enc)	gwwv_bind_textdomain_codeset(domain,enc)
 # define textdomain(domain)			gwwv_textdomain(domain)
 
+# define dgettext(domain,str)	gwwv_dgettext(domain,str)
+
 char *gwwv_bindtextdomain(const char *, const char *);
 char *gwwv_bind_textdomain_codeset(const char *, const char *);
 char *gwwv_textdomain(const char *);
 char *gwwv_gettext(const char *);
 char *gwwv_ngettext(const char *,const char *, unsigned long int);
+char *gwwv_dgettext(const char *,const char *);
 #endif
 /* For messages including utf8 sequences that need gettext_noop treatment */
 #define NU_(str)	(str)
 #define N_(str)		(str)
 #define S_(str) sgettext(str)
+/* For messages in the shortcuts domain */
+#define H_(str)		(str)
 
 extern void GResourceUseGetText(void);
 char *sgettext(const char *msgid);

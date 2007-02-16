@@ -101,6 +101,10 @@ distclean cleaner: clean
 install:
 	( cd .. ; make install )
 
+FontForge-MenuShortCuts.pot: *.c
+	xgettext --from-code=UTF-8 -kH_ -oFontForge-MenuShortCuts.pot *.c ../gdraw/*.c
+	patch < potmstitle.patch
+
 FontForge.pot: *.c utf8.pot
 	echo "If this doesn't work try make fontforge-old.pot instead"
 	xgettext --from-code=UTF-8 -k_ -kN_ -kS_ -kU_ -kNU_ -kP_:1,2 --add-comments=GT: -oFontForge.pot *.c ../gdraw/*.c

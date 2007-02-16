@@ -926,9 +926,10 @@ extern void MenuIndex(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuAbout(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuLicense(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuNew(GWindow gw,struct gmenuitem *mi,GEvent *e);
-extern void WindowMenuBuild(GWindow base,struct gmenuitem *mi,GEvent *,struct gmenuitem *);
+extern void WindowMenuBuild(GWindow base,struct gmenuitem *mi,GEvent *);
 extern void MenuRecentBuild(GWindow base,struct gmenuitem *mi,GEvent *);
 extern void MenuScriptsBuild(GWindow base,struct gmenuitem *mi,GEvent *);
+extern void mb2DoGetText(GMenuItem2 *mb);
 extern void mbDoGetText(GMenuItem *mb);
 extern int RecentFilesAny(void);
 extern void _aplistbuild(struct gmenuitem *mi,SplineFont *sf,
@@ -1335,7 +1336,7 @@ struct instrdlg;
 uint8 *_IVParse(struct instrdlg *iv, char *text, int *len);
 
 #ifdef FONTFORGE_CONFIG_GDRAW
-extern GMenuItem helplist[];
+extern GMenuItem2 helplist[];
 #endif
 extern BasePoint last_ruler_offset[];
 
