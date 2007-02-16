@@ -6431,11 +6431,11 @@ static void hglistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
-static GMenuItem hglist[] = {
-    { { (unichar_t *) N_("_New Composition..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'N' }, 'N', ksm_shift|ksm_control, NULL, NULL, MenuNewComposition },
-    { { (unichar_t *) N_("_Modify Composition..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuModifyComposition, MID_ModifyComposition },
+static GMenuItem2 hglist[] = {
+    { { (unichar_t *) N_("_New Composition..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'N' }, H_("New Composition...|Ctl+Shft+N"), NULL, NULL, MenuNewComposition },
+    { { (unichar_t *) N_("_Modify Composition..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Modify Composition...|No Shortcut"), NULL, NULL, FVMenuModifyComposition, MID_ModifyComposition },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("_Build Syllables"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuBuildSyllables, MID_BuildSyllables },
+    { { (unichar_t *) N_("_Build Syllables"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Build Syllables|No Shortcut"), NULL, NULL, FVMenuBuildSyllables, MID_BuildSyllables },
     { NULL }
 };
 #endif
@@ -6516,250 +6516,250 @@ static void aatlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
-static GMenuItem dummyitem[] = { { (unichar_t *) N_("Font|_New"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'N' }, NULL };
-static GMenuItem fllist[] = {
-    { { (unichar_t *) N_("Font|_New"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'N' }, 'N', ksm_control, NULL, NULL, MenuNew },
+static GMenuItem2 dummyitem[] = { { (unichar_t *) N_("Font|_New"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'N' }, NULL };
+static GMenuItem2 fllist[] = {
+    { { (unichar_t *) N_("Font|_New"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'N' }, H_("New|Ctl+N"), NULL, NULL, MenuNew },
 #if HANYANG
-    { { (unichar_t *) N_("_Hangul"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, '\0', 0, hglist, hglistcheck, NULL, 0 },
+    { { (unichar_t *) N_("_Hangul"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, NULL, hglist, hglistcheck, NULL, 0 },
 #endif
-    { { (unichar_t *) N_("_Open"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'O' }, 'O', ksm_control, NULL, NULL, MenuOpen },
-    { { (unichar_t *) N_("Recen_t"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 't' }, '\0', ksm_control, dummyitem, MenuRecentBuild, NULL, MID_Recent },
-    { { (unichar_t *) N_("_Close"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, 'Q', ksm_control|ksm_shift, NULL, NULL, FVMenuClose },
+    { { (unichar_t *) N_("_Open"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'O' }, H_("Open|Ctl+O"), NULL, NULL, MenuOpen },
+    { { (unichar_t *) N_("Recen_t"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 't' }, H_("Recent|No Shortcut"), dummyitem, MenuRecentBuild, NULL, MID_Recent },
+    { { (unichar_t *) N_("_Close"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Close|Ctl+Shft+Q"), NULL, NULL, FVMenuClose },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("_Save"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, 'S', ksm_control, NULL, NULL, FVMenuSave },
-    { { (unichar_t *) N_("S_ave as..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'a' }, 'S', ksm_control|ksm_shift, NULL, NULL, FVMenuSaveAs },
-    { { (unichar_t *) N_("Save A_ll"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, 'S', ksm_control|ksm_meta, NULL, NULL, MenuSaveAll },
-    { { (unichar_t *) N_("_Generate Fonts..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'G' }, 'G', ksm_control|ksm_shift, NULL, NULL, FVMenuGenerate },
-    { { (unichar_t *) N_("Generate Mac _Family..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'F' }, 'G', ksm_control|ksm_meta, NULL, NULL, FVMenuGenerateFamily },
+    { { (unichar_t *) N_("_Save"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Save|Ctl+S"), NULL, NULL, FVMenuSave },
+    { { (unichar_t *) N_("S_ave as..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'a' }, H_("Save as...|Ctl+Shft+S"), NULL, NULL, FVMenuSaveAs },
+    { { (unichar_t *) N_("Save A_ll"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Save All|Alt+Ctl+S"), NULL, NULL, MenuSaveAll },
+    { { (unichar_t *) N_("_Generate Fonts..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'G' }, H_("Generate Fonts...|Ctl+Shft+G"), NULL, NULL, FVMenuGenerate },
+    { { (unichar_t *) N_("Generate Mac _Family..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Generate Mac Family...|Alt+Ctl+G"), NULL, NULL, FVMenuGenerateFamily },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("_Import..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, 'I', ksm_control|ksm_shift, NULL, NULL, FVMenuImport },
-    { { (unichar_t *) N_("_Merge Kern Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, 'K', ksm_meta|ksm_control|ksm_shift, NULL, NULL, FVMenuMergeKern },
-    { { (unichar_t *) N_("_Revert File"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'R' }, 'R', ksm_control|ksm_shift, NULL, NULL, FVMenuRevert, MID_Revert },
-    { { (unichar_t *) N_("Revert To _Backup"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'R' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuRevertBackup, MID_RevertToBackup },
-    { { (unichar_t *) N_("Revert Gl_yph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'R' }, 'R', ksm_control|ksm_meta, NULL, NULL, FVMenuRevertGlyph, MID_RevertGlyph },
+    { { (unichar_t *) N_("_Import..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Import...|Ctl+Shft+I"), NULL, NULL, FVMenuImport },
+    { { (unichar_t *) N_("_Merge Kern Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Merge Kern Info...|Alt+Ctl+Shft+K"), NULL, NULL, FVMenuMergeKern },
+    { { (unichar_t *) N_("_Revert File"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Revert File|Ctl+Shft+R"), NULL, NULL, FVMenuRevert, MID_Revert },
+    { { (unichar_t *) N_("Revert To _Backup"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Revert To Backup|No Shortcut"), NULL, NULL, FVMenuRevertBackup, MID_RevertToBackup },
+    { { (unichar_t *) N_("Revert Gl_yph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Revert Glyph|Alt+Ctl+R"), NULL, NULL, FVMenuRevertGlyph, MID_RevertGlyph },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("_Print..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, 'P', ksm_control, NULL, NULL, FVMenuPrint, MID_Print },
-    { { (unichar_t *) N_("_Display..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'D' }, 'P', ksm_control|ksm_meta, NULL, NULL, FVMenuDisplay, MID_Display },
+    { { (unichar_t *) N_("_Print..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Print...|Ctl+P"), NULL, NULL, FVMenuPrint, MID_Print },
+    { { (unichar_t *) N_("_Display..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'D' }, H_("Display...|Alt+Ctl+P"), NULL, NULL, FVMenuDisplay, MID_Display },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("E_xecute Script..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'x' }, '.', ksm_control, NULL, NULL, FVMenuExecute },
-    { { (unichar_t *) N_("Script Menu"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'r' }, '\0', ksm_control, dummyitem, MenuScriptsBuild, NULL, MID_ScriptMenu },
+    { { (unichar_t *) N_("E_xecute Script..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Execute Script...|Ctl+."), NULL, NULL, FVMenuExecute },
+    { { (unichar_t *) N_("Script Menu"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'r' }, H_("Script Menu|No Shortcut"), dummyitem, MenuScriptsBuild, NULL, MID_ScriptMenu },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("Pr_eferences..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'e' }, '\0', ksm_control, NULL, NULL, MenuPrefs },
+    { { (unichar_t *) N_("Pr_eferences..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'e' }, H_("Preferences...|No Shortcut"), NULL, NULL, MenuPrefs },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("_Quit"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'Q' }, 'Q', ksm_control, NULL, NULL, FVMenuExit },
+    { { (unichar_t *) N_("_Quit"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'Q' }, H_("Quit|Ctl+Q"), NULL, NULL, FVMenuExit },
     { NULL }
 };
 
-static GMenuItem cflist[] = {
-    { { (unichar_t *) N_("_All Fonts"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'A' }, '\0', ksm_control, NULL, NULL, FVMenuCopyFrom, MID_AllFonts },
-    { { (unichar_t *) N_("_Displayed Font"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'D' }, '\0', ksm_control, NULL, NULL, FVMenuCopyFrom, MID_DisplayedFont },
+static GMenuItem2 cflist[] = {
+    { { (unichar_t *) N_("_All Fonts"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'A' }, H_("All Fonts|No Shortcut"), NULL, NULL, FVMenuCopyFrom, MID_AllFonts },
+    { { (unichar_t *) N_("_Displayed Font"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'D' }, H_("Displayed Font|No Shortcut"), NULL, NULL, FVMenuCopyFrom, MID_DisplayedFont },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("Glyph _Metadata"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'N' }, '\0', ksm_control, NULL, NULL, FVMenuCopyFrom, MID_CharName },
+    { { (unichar_t *) N_("Glyph _Metadata"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'N' }, H_("Glyph Metadata|No Shortcut"), NULL, NULL, FVMenuCopyFrom, MID_CharName },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("_TrueType Instructions"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'N' }, '\0', ksm_control, NULL, NULL, FVMenuCopyFrom, MID_TTFInstr },
+    { { (unichar_t *) N_("_TrueType Instructions"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'N' }, H_("TrueType Instructions|No Shortcut"), NULL, NULL, FVMenuCopyFrom, MID_TTFInstr },
     { NULL }
 };
 
-static GMenuItem sclist[] = {
-    { { (unichar_t *)  N_("Color|Default"), &def_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) COLOR_DEFAULT, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control, NULL, NULL, FVMenuSelectColor },
-    { { NULL, &white_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0xffffff, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, '\0', ksm_control, NULL, NULL, FVMenuSelectColor },
-    { { NULL, &red_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0xff0000, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, '\0', ksm_control, NULL, NULL, FVMenuSelectColor },
-    { { NULL, &green_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0x00ff00, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, '\0', ksm_control, NULL, NULL, FVMenuSelectColor },
-    { { NULL, &blue_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0x0000ff, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, '\0', ksm_control, NULL, NULL, FVMenuSelectColor },
-    { { NULL, &yellow_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0xffff00, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, '\0', ksm_control, NULL, NULL, FVMenuSelectColor },
-    { { NULL, &cyan_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0x00ffff, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, '\0', ksm_control, NULL, NULL, FVMenuSelectColor },
-    { { NULL, &magenta_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0xff00ff, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, '\0', ksm_control, NULL, NULL, FVMenuSelectColor },
+static GMenuItem2 sclist[] = {
+    { { (unichar_t *)  N_("Color|Default"), &def_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) COLOR_DEFAULT, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Default|No Shortcut"), NULL, NULL, FVMenuSelectColor },
+    { { NULL, &white_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0xffffff, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, NULL, NULL, NULL, FVMenuSelectColor },
+    { { NULL, &red_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0xff0000, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, NULL, NULL, NULL, FVMenuSelectColor },
+    { { NULL, &green_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0x00ff00, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, NULL, NULL, NULL, FVMenuSelectColor },
+    { { NULL, &blue_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0x0000ff, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, NULL, NULL, NULL, FVMenuSelectColor },
+    { { NULL, &yellow_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0xffff00, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, NULL, NULL, NULL, FVMenuSelectColor },
+    { { NULL, &cyan_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0x00ffff, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, NULL, NULL, NULL, FVMenuSelectColor },
+    { { NULL, &magenta_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0xff00ff, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, NULL, NULL, NULL, FVMenuSelectColor },
     { NULL }
 };
 
-static GMenuItem sllist[] = {
-    { { (unichar_t *) N_("Select _All"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, 'A', ksm_control, NULL, NULL, FVMenuSelectAll },
-    { { (unichar_t *) N_("_Invert Selection"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, GK_Escape, ksm_control, NULL, NULL, FVMenuInvertSelection },
-    { { (unichar_t *) N_("_Deselect All"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, GK_Escape, 0, NULL, NULL, FVMenuDeselectAll },
-    { { (unichar_t *) N_("_Select by Color"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control, sclist },
-    { { (unichar_t *) N_("Select by _Name..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control, NULL, NULL, FVMenuSelectByName },
+static GMenuItem2 sllist[] = {
+    { { (unichar_t *) N_("Select _All"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("Select All|Ctl+A"), NULL, NULL, FVMenuSelectAll },
+    { { (unichar_t *) N_("_Invert Selection"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Invert Selection|Ctl+Escape"), NULL, NULL, FVMenuInvertSelection },
+    { { (unichar_t *) N_("_Deselect All"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, H_("Deselect All|Escape"), NULL, NULL, FVMenuDeselectAll },
+    { { (unichar_t *) N_("_Select by Color"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Select by Color|No Shortcut"), sclist },
+    { { (unichar_t *) N_("Select by _Name..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Select by Name...|No Shortcut"), NULL, NULL, FVMenuSelectByName },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("_Glyphs Worth Outputting"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control, NULL,NULL, FVMenuSelectWorthOutputting },
-    { { (unichar_t *) N_("_Changed Glyphs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control, NULL,NULL, FVMenuSelectChanged },
-    { { (unichar_t *) N_("_Hinting Needed"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control, NULL,NULL, FVMenuSelectHintingNeeded },
+    { { (unichar_t *) N_("_Glyphs Worth Outputting"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Glyphs Worth Outputting|No Shortcut"), NULL,NULL, FVMenuSelectWorthOutputting },
+    { { (unichar_t *) N_("_Changed Glyphs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Changed Glyphs|No Shortcut"), NULL,NULL, FVMenuSelectChanged },
+    { { (unichar_t *) N_("_Hinting Needed"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Hinting Needed|No Shortcut"), NULL,NULL, FVMenuSelectHintingNeeded },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("Selec_t By ATT..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'T' }, '\0', 0, NULL, NULL, FVMenuSelectByPST },
+    { { (unichar_t *) N_("Selec_t By ATT..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Select By ATT...|No Shortcut"), NULL, NULL, FVMenuSelectByPST },
     { NULL }
 };
 
-static GMenuItem edlist[] = {
-    { { (unichar_t *) N_("_Undo"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 1, 0, 'U' }, 'Z', ksm_control, NULL, NULL, FVMenuUndo, MID_Undo },
-    { { (unichar_t *) N_("_Redo"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 1, 0, 'R' }, 'Y', ksm_control, NULL, NULL, FVMenuRedo, MID_Redo},
+static GMenuItem2 edlist[] = {
+    { { (unichar_t *) N_("_Undo"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 1, 0, 'U' }, H_("Undo|Ctl+Z"), NULL, NULL, FVMenuUndo, MID_Undo },
+    { { (unichar_t *) N_("_Redo"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Redo|Ctl+Y"), NULL, NULL, FVMenuRedo, MID_Redo},
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("Cu_t"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 't' }, 'X', ksm_control, NULL, NULL, FVMenuCut, MID_Cut },
-    { { (unichar_t *) N_("_Copy"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, 'C', ksm_control, NULL, NULL, FVMenuCopy, MID_Copy },
-    { { (unichar_t *) N_("C_opy Reference"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, 'G', ksm_control, NULL, NULL, FVMenuCopyRef, MID_CopyRef },
-    { { (unichar_t *) N_("Copy _Width"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'W' }, 'W', ksm_control, NULL, NULL, FVMenuCopyWidth, MID_CopyWidth },
-    { { (unichar_t *) N_("Copy _VWidth"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'V' }, '\0', ksm_control, NULL, NULL, FVMenuCopyWidth, MID_CopyVWidth },
-    { { (unichar_t *) N_("Co_py LBearing"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'p' }, '\0', ksm_control, NULL, NULL, FVMenuCopyWidth, MID_CopyLBearing },
-    { { (unichar_t *) N_("Copy RBearin_g"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'g' }, '\0', ksm_control, NULL, NULL, FVMenuCopyWidth, MID_CopyRBearing },
-    { { (unichar_t *) N_("Copy Glyph Features..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control, NULL, NULL, FVMenuCopyFeatures, MID_CopyFeatures },
-    { { (unichar_t *) N_("_Paste"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, 'V', ksm_control, NULL, NULL, FVMenuPaste, MID_Paste },
-    { { (unichar_t *) N_("Paste Into"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, 'V', ksm_control|ksm_shift, NULL, NULL, FVMenuPasteInto, MID_PasteInto },
+    { { (unichar_t *) N_("Cu_t"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 't' }, H_("Cut|Ctl+X"), NULL, NULL, FVMenuCut, MID_Cut },
+    { { (unichar_t *) N_("_Copy"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Copy|Ctl+C"), NULL, NULL, FVMenuCopy, MID_Copy },
+    { { (unichar_t *) N_("C_opy Reference"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, H_("Copy Reference|Ctl+G"), NULL, NULL, FVMenuCopyRef, MID_CopyRef },
+    { { (unichar_t *) N_("Copy _Width"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'W' }, H_("Copy Width|Ctl+W"), NULL, NULL, FVMenuCopyWidth, MID_CopyWidth },
+    { { (unichar_t *) N_("Copy _VWidth"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'V' }, H_("Copy VWidth|No Shortcut"), NULL, NULL, FVMenuCopyWidth, MID_CopyVWidth },
+    { { (unichar_t *) N_("Co_py LBearing"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'p' }, H_("Copy LBearing|No Shortcut"), NULL, NULL, FVMenuCopyWidth, MID_CopyLBearing },
+    { { (unichar_t *) N_("Copy RBearin_g"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'g' }, H_("Copy RBearing|No Shortcut"), NULL, NULL, FVMenuCopyWidth, MID_CopyRBearing },
+    { { (unichar_t *) N_("Copy Glyph Features..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Copy Glyph Features...|No Shortcut"), NULL, NULL, FVMenuCopyFeatures, MID_CopyFeatures },
+    { { (unichar_t *) N_("_Paste"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Paste|Ctl+V"), NULL, NULL, FVMenuPaste, MID_Paste },
+    { { (unichar_t *) N_("Paste Into"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Paste Into|Ctl+Shft+V"), NULL, NULL, FVMenuPasteInto, MID_PasteInto },
 #ifdef FONTFORGE_CONFIG_PASTEAFTER
-    { { (unichar_t *) N_("Paste After"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, 'V', ksm_control|ksm_meta|ksm_shift, NULL, NULL, FVMenuPasteAfter, MID_PasteAfter },
+    { { (unichar_t *) N_("Paste After"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Paste After|Alt+Ctl+Shft+V"), NULL, NULL, FVMenuPasteAfter, MID_PasteAfter },
 #endif
-    { { (unichar_t *) N_("Sa_me Glyph As"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'm' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuSameGlyphAs, MID_SameGlyphAs },
-    { { (unichar_t *) N_("C_lear"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, 0, 0, NULL, NULL, FVMenuClear, MID_Clear },
-    { { (unichar_t *) N_("Clear _Background"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, 0, 0, NULL, NULL, FVMenuClearBackground, MID_ClearBackground },
-    { { (unichar_t *) N_("Copy _Fg To Bg"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'F' }, 'C', ksm_control|ksm_shift, NULL, NULL, FVMenuCopyFgBg, MID_CopyFgToBg },
-    { { (unichar_t *) N_("_Join"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'J' }, 'J', ksm_control|ksm_shift, NULL, NULL, FVMenuJoin, MID_Join },
+    { { (unichar_t *) N_("Sa_me Glyph As"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'm' }, H_("Same Glyph As|No Shortcut"), NULL, NULL, FVMenuSameGlyphAs, MID_SameGlyphAs },
+    { { (unichar_t *) N_("C_lear"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Clear|No Shortcut"), NULL, NULL, FVMenuClear, MID_Clear },
+    { { (unichar_t *) N_("Clear _Background"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Clear Background|No Shortcut"), NULL, NULL, FVMenuClearBackground, MID_ClearBackground },
+    { { (unichar_t *) N_("Copy _Fg To Bg"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Copy Fg To Bg|Ctl+Shft+C"), NULL, NULL, FVMenuCopyFgBg, MID_CopyFgToBg },
+    { { (unichar_t *) N_("_Join"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'J' }, H_("Join|Ctl+Shft+J"), NULL, NULL, FVMenuJoin, MID_Join },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("_Select"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, 0, ksm_control, sllist, sllistcheck },
-    { { (unichar_t *) N_("F_ind / Replace..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'i' }, 'F', ksm_control|ksm_meta, NULL, NULL, FVMenuFindRpl },
-    { { (unichar_t *) N_("Replace with Reference"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'i' }, 'F', ksm_control|ksm_meta|ksm_shift, NULL, NULL, FVMenuReplaceWithRef, MID_RplRef },
+    { { (unichar_t *) N_("_Select"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, NULL, sllist, sllistcheck },
+    { { (unichar_t *) N_("F_ind / Replace..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'i' }, H_("Find / Replace...|Alt+Ctl+F"), NULL, NULL, FVMenuFindRpl },
+    { { (unichar_t *) N_("Replace with Reference"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'i' }, H_("Replace with Reference|Alt+Ctl+Shft+F"), NULL, NULL, FVMenuReplaceWithRef, MID_RplRef },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("U_nlink Reference"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'U' }, 'U', ksm_control, NULL, NULL, FVMenuUnlinkRef, MID_UnlinkRef },
+    { { (unichar_t *) N_("U_nlink Reference"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'U' }, H_("Unlink Reference|Ctl+U"), NULL, NULL, FVMenuUnlinkRef, MID_UnlinkRef },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("Copy _From"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'F' }, '\0', 0, cflist, cflistcheck, NULL, 0 },
+    { { (unichar_t *) N_("Copy _From"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'F' }, NULL, cflist, cflistcheck, NULL, 0 },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("Remo_ve Undoes"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'e' }, '\0', 0, NULL, NULL, FVMenuRemoveUndoes, MID_RemoveUndoes },
+    { { (unichar_t *) N_("Remo_ve Undoes"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'e' }, H_("Remove Undoes|No Shortcut"), NULL, NULL, FVMenuRemoveUndoes, MID_RemoveUndoes },
     { NULL }
 };
 
-static GMenuItem aat2list[] = {
-    { { (unichar_t *) N_("All"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("_Ligatures"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0xffffffff, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+static GMenuItem2 aat2list[] = {
+    { { (unichar_t *) N_("All"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("All|No Shortcut"), NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("_Ligatures"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0xffffffff, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Ligatures|No Shortcut"), NULL, NULL, FVMenuAAT },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("Standard Ligatures"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('l','i','g','a'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Required Ligatures"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('r','l','i','g'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Historic Ligatures"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('h','l','i','g'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Discretionary Ligatures"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('d','l','i','g'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Diagonal Fractions"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('f','r','a','c'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Unicode Decomposition (Mac Only)"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) ((27<<16)|1), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Standard Ligatures"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('l','i','g','a'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Standard Ligatures|No Shortcut"), NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Required Ligatures"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('r','l','i','g'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Required Ligatures|No Shortcut"), NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Historic Ligatures"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('h','l','i','g'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Historic Ligatures|No Shortcut"), NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Discretionary Ligatures"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('d','l','i','g'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Discretionary Ligatures|No Shortcut"), NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Diagonal Fractions"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('f','r','a','c'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Diagonal Fractions|No Shortcut"), NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Unicode Decomposition (Mac Only)"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) ((27<<16)|1), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Unicode Decomposition (Mac Only)|No Shortcut"), NULL, NULL, FVMenuAAT },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("Right to Left Alternates"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('r','t','l','a'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Vertical Rotation & Alternates"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('v','r','t','2'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Lowercase to Small Capitals"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('s','m','c','p'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Capitals to Small Capitals"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('c','2','s','c'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Oldstyle Figures"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('o','n','u','m'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Superscript"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('s','u','p','s'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Subscript"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('s','u','b','s'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Swash"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('s','w','s','h'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Proportional Width"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('p','w','i','d'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Full Widths"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('f','w','i','d'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Half Widths"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('h','w','i','d'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Initial Forms"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('i','n','i','t'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Medial Forms"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('m','e','d','i'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Terminal Forms"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('f','i','n','a'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Isolated Forms"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('i','s','o','l'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Right to Left Alternates"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('r','t','l','a'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Right to Left Alternates|No Shortcut"), NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Vertical Rotation & Alternates"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('v','r','t','2'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Vertical Rotation & Alternates|No Shortcut"), NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Lowercase to Small Capitals"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('s','m','c','p'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Lowercase to Small Capitals|No Shortcut"), NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Capitals to Small Capitals"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('c','2','s','c'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Capitals to Small Capitals|No Shortcut"), NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Oldstyle Figures"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('o','n','u','m'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Oldstyle Figures|No Shortcut"), NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Superscript"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('s','u','p','s'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Superscript|No Shortcut"), NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Subscript"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('s','u','b','s'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Subscript|No Shortcut"), NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Swash"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('s','w','s','h'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Swash|No Shortcut"), NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Proportional Width"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('p','w','i','d'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Proportional Width|No Shortcut"), NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Full Widths"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('f','w','i','d'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Full Widths|No Shortcut"), NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Half Widths"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('h','w','i','d'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Half Widths|No Shortcut"), NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Initial Forms"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('i','n','i','t'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Initial Forms|No Shortcut"), NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Medial Forms"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('m','e','d','i'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Medial Forms|No Shortcut"), NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Terminal Forms"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('f','i','n','a'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Terminal Forms|No Shortcut"), NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Isolated Forms"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('i','s','o','l'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Isolated Forms|No Shortcut"), NULL, NULL, FVMenuAAT },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("Left Bounds"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('l','f','b','d'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Right Bounds"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('r','t','b','d'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Left Bounds"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('l','f','b','d'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Left Bounds|No Shortcut"), NULL, NULL, FVMenuAAT },
+    { { (unichar_t *) N_("Right Bounds"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('r','t','b','d'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Right Bounds|No Shortcut"), NULL, NULL, FVMenuAAT },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("Suffix to Tag..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAATSuffix },
+    { { (unichar_t *) N_("Suffix to Tag..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Suffix to Tag...|No Shortcut"), NULL, NULL, FVMenuAATSuffix },
     { NULL }
 };
 
-static GMenuItem smlist[] = {
-    { { (unichar_t *) N_("_Simplify"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, 'M', ksm_control|ksm_shift, NULL, NULL, FVMenuSimplify, MID_Simplify },
-    { { (unichar_t *) N_("Simplify More..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, 'M', ksm_control|ksm_shift|ksm_meta, NULL, NULL, FVMenuSimplifyMore, MID_SimplifyMore },
-    { { (unichar_t *) N_("Clea_nup Glyph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'n' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuCleanup, MID_CleanupGlyph },
-    { { (unichar_t *) N_("Canonical Start _Point"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'n' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuCanonicalStart, MID_CanonicalStart },
-    { { (unichar_t *) N_("Canonical _Contours"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'n' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuCanonicalContours, MID_CanonicalContours },
+static GMenuItem2 smlist[] = {
+    { { (unichar_t *) N_("_Simplify"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Simplify|Ctl+Shft+M"), NULL, NULL, FVMenuSimplify, MID_Simplify },
+    { { (unichar_t *) N_("Simplify More..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Simplify More...|Alt+Ctl+Shft+M"), NULL, NULL, FVMenuSimplifyMore, MID_SimplifyMore },
+    { { (unichar_t *) N_("Clea_nup Glyph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'n' }, H_("Cleanup Glyph|No Shortcut"), NULL, NULL, FVMenuCleanup, MID_CleanupGlyph },
+    { { (unichar_t *) N_("Canonical Start _Point"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'n' }, H_("Canonical Start Point|No Shortcut"), NULL, NULL, FVMenuCanonicalStart, MID_CanonicalStart },
+    { { (unichar_t *) N_("Canonical _Contours"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'n' }, H_("Canonical Contours|No Shortcut"), NULL, NULL, FVMenuCanonicalContours, MID_CanonicalContours },
     { NULL }
 };
 
-static GMenuItem rmlist[] = {
-    { { (unichar_t *) N_("_Remove Overlap"), &GIcon_rmoverlap, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'O' }, 'O', ksm_control|ksm_shift, NULL, NULL, FVMenuOverlap, MID_RmOverlap },
-    { { (unichar_t *) N_("_Intersect"), &GIcon_intersection, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'I' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuOverlap, MID_Intersection },
-    { { (unichar_t *) N_("_Find Intersections"), &GIcon_findinter, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'O' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuOverlap, MID_FindInter },
+static GMenuItem2 rmlist[] = {
+    { { (unichar_t *) N_("_Remove Overlap"), &GIcon_rmoverlap, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'O' }, H_("Remove Overlap|Ctl+Shft+O"), NULL, NULL, FVMenuOverlap, MID_RmOverlap },
+    { { (unichar_t *) N_("_Intersect"), &GIcon_intersection, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Intersect|No Shortcut"), NULL, NULL, FVMenuOverlap, MID_Intersection },
+    { { (unichar_t *) N_("_Find Intersections"), &GIcon_findinter, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'O' }, H_("Find Intersections|No Shortcut"), NULL, NULL, FVMenuOverlap, MID_FindInter },
     { NULL }
 };
 
-static GMenuItem eflist[] = {
-    { { (unichar_t *) N_("_Inline"), &GIcon_inline, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'O' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuInline },
-    { { (unichar_t *) N_("_Outline"), &GIcon_outline, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'I' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuOutline },
-    { { (unichar_t *) N_("_Shadow"), &GIcon_shadow, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'S' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuShadow },
-    { { (unichar_t *) N_("_Wireframe"), &GIcon_wireframe, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'W' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuWireframe },
+static GMenuItem2 eflist[] = {
+    { { (unichar_t *) N_("_Inline"), &GIcon_inline, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'O' }, H_("Inline|No Shortcut"), NULL, NULL, FVMenuInline },
+    { { (unichar_t *) N_("_Outline"), &GIcon_outline, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Outline|No Shortcut"), NULL, NULL, FVMenuOutline },
+    { { (unichar_t *) N_("_Shadow"), &GIcon_shadow, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Shadow|No Shortcut"), NULL, NULL, FVMenuShadow },
+    { { (unichar_t *) N_("_Wireframe"), &GIcon_wireframe, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'W' }, H_("Wireframe|No Shortcut"), NULL, NULL, FVMenuWireframe },
     { NULL }
 };
 
-static GMenuItem balist[] = {
-    { { (unichar_t *) N_("_Build Accented Glyph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, 'A', ksm_control|ksm_shift, NULL, NULL, FVMenuBuildAccent, MID_BuildAccent },
-    { { (unichar_t *) N_("Build _Composite Glyph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuBuildComposite, MID_BuildComposite },
-    { { (unichar_t *) N_("Buil_d Duplicate Glyph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuBuildDuplicate, MID_BuildDuplicates },
+static GMenuItem2 balist[] = {
+    { { (unichar_t *) N_("_Build Accented Glyph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Build Accented Glyph|Ctl+Shft+A"), NULL, NULL, FVMenuBuildAccent, MID_BuildAccent },
+    { { (unichar_t *) N_("Build _Composite Glyph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Build Composite Glyph|No Shortcut"), NULL, NULL, FVMenuBuildComposite, MID_BuildComposite },
+    { { (unichar_t *) N_("Buil_d Duplicate Glyph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Build Duplicate Glyph|No Shortcut"), NULL, NULL, FVMenuBuildDuplicate, MID_BuildDuplicates },
 #ifdef KOREAN
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) _STR_ShowGrp, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuShowGroup },
+    { { (unichar_t *) _STR_ShowGrp, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, NULL, NULL, NULL, FVMenuShowGroup },
 #endif
     { NULL }
 };
 
-static GMenuItem aatlist[] = {
-    { { (unichar_t *) N_("_Copy Feature(s) To Font..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuCopyFeatureToFont, MID_CopyFeatureToFont },
-    { { (unichar_t *) N_("_Default ATT"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'D' }, 'I', ksm_control|ksm_meta, aat2list, NULL, NULL, MID_DefaultATT },
+static GMenuItem2 aatlist[] = {
+    { { (unichar_t *) N_("_Copy Feature(s) To Font..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Copy Feature(s) To Font...|No Shortcut"), NULL, NULL, FVMenuCopyFeatureToFont, MID_CopyFeatureToFont },
+    { { (unichar_t *) N_("_Default ATT"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'D' }, NULL, aat2list, NULL, NULL, MID_DefaultATT },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("_Remove All Features"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuRemoveAllFeatures },
-    { { (unichar_t *) N_("R_emove Feature(s)..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuRemoveFeatures },
-    { { (unichar_t *) N_("Remove U_nused Nested"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuRemoveUnusedNested },
+    { { (unichar_t *) N_("_Remove All Features"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Remove All Features|No Shortcut"), NULL, NULL, FVMenuRemoveAllFeatures },
+    { { (unichar_t *) N_("R_emove Feature(s)..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Remove Feature(s)...|No Shortcut"), NULL, NULL, FVMenuRemoveFeatures },
+    { { (unichar_t *) N_("Remove U_nused Nested"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Remove Unused Nested|No Shortcut"), NULL, NULL, FVMenuRemoveUnusedNested },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("Re_tag Feature(s)..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuRetagFeature },
+    { { (unichar_t *) N_("Re_tag Feature(s)..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Retag Feature(s)...|No Shortcut"), NULL, NULL, FVMenuRetagFeature },
     { NULL }
 };
 
-static GMenuItem delist[] = {
-    { { (unichar_t *) N_("_References..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'u' }, 'I', ksm_control|ksm_meta, NULL, NULL, FVMenuShowDependentRefs, MID_ShowDependentRefs },
-    { { (unichar_t *) N_("_Substitutions..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuShowDependentSubs, MID_ShowDependentSubs },
+static GMenuItem2 delist[] = {
+    { { (unichar_t *) N_("_References..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'u' }, H_("References...|Alt+Ctl+I"), NULL, NULL, FVMenuShowDependentRefs, MID_ShowDependentRefs },
+    { { (unichar_t *) N_("_Substitutions..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Substitutions...|No Shortcut"), NULL, NULL, FVMenuShowDependentSubs, MID_ShowDependentSubs },
     { NULL }
 };
 
-static GMenuItem trlist[] = {
-    { { (unichar_t *) N_("_Transform..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'T' }, '\\', ksm_control, NULL, NULL, FVMenuTransform, MID_Transform },
-    { { (unichar_t *) N_("_Point of View Projection..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'T' }, '<', ksm_shift|ksm_control, NULL, NULL, FVMenuPOV, MID_POV },
-    { { (unichar_t *) N_("_Non Linear Transform..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'T' }, '|', ksm_shift|ksm_control, NULL, NULL, FVMenuNLTransform, MID_NLTransform },
+static GMenuItem2 trlist[] = {
+    { { (unichar_t *) N_("_Transform..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Transform...|No Shortcut"), NULL, NULL, FVMenuTransform, MID_Transform },
+    { { (unichar_t *) N_("_Point of View Projection..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Point of View Projection...|Ctl+Shft+<"), NULL, NULL, FVMenuPOV, MID_POV },
+    { { (unichar_t *) N_("_Non Linear Transform..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Non Linear Transform...|Ctl+Shft+|"), NULL, NULL, FVMenuNLTransform, MID_NLTransform },
     { NULL }
 };
 
-static GMenuItem rndlist[] = {
-    { { (unichar_t *) N_("To _Int"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, '_', ksm_control|ksm_shift, NULL, NULL, FVMenuRound2Int, MID_Round },
-    { { (unichar_t *) N_("To _Hundredths"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuRound2Hundredths, 0 },
-    { { (unichar_t *) N_("_Cluster"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuCluster },
+static GMenuItem2 rndlist[] = {
+    { { (unichar_t *) N_("To _Int"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("To Int|Ctl+Shft+_"), NULL, NULL, FVMenuRound2Int, MID_Round },
+    { { (unichar_t *) N_("To _Hundredths"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("To Hundredths|No Shortcut"), NULL, NULL, FVMenuRound2Hundredths, 0 },
+    { { (unichar_t *) N_("_Cluster"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Cluster|No Shortcut"), NULL, NULL, FVMenuCluster },
     { NULL }
 };
 
-static GMenuItem ellist[] = {
-    { { (unichar_t *) N_("_Font Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'F' }, 'F', ksm_control|ksm_shift, NULL, NULL, FVMenuFontInfo },
-    { { (unichar_t *) N_("Glyph _Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, 'I', ksm_control, NULL, NULL, FVMenuCharInfo, MID_CharInfo },
-    { { (unichar_t *) N_("BDF Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuBDFInfo, MID_StrikeInfo },
-    { { (unichar_t *) N_("T_ypo. Features"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'D' }, '\0', ksm_control|ksm_meta, aatlist, aatlistcheck },
-    { { (unichar_t *) N_("S_how Dependent"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'D' }, 'I', ksm_control|ksm_meta, delist, delistcheck },
-    { { (unichar_t *) N_("Find Pr_oblems..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, 'E', ksm_control, NULL, NULL, FVMenuFindProblems, MID_FindProblems },
+static GMenuItem2 ellist[] = {
+    { { (unichar_t *) N_("_Font Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Font Info...|Ctl+Shft+F"), NULL, NULL, FVMenuFontInfo },
+    { { (unichar_t *) N_("Glyph _Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Glyph Info...|Ctl+I"), NULL, NULL, FVMenuCharInfo, MID_CharInfo },
+    { { (unichar_t *) N_("BDF Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("BDF Info...|No Shortcut"), NULL, NULL, FVMenuBDFInfo, MID_StrikeInfo },
+    { { (unichar_t *) N_("T_ypo. Features"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'D' }, NULL, aatlist, aatlistcheck },
+    { { (unichar_t *) N_("S_how Dependent"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'D' }, NULL, delist, delistcheck },
+    { { (unichar_t *) N_("Find Pr_oblems..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, H_("Find Problems...|Ctl+E"), NULL, NULL, FVMenuFindProblems, MID_FindProblems },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("Bitm_ap Strikes Available..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, 'B', ksm_control|ksm_shift, NULL, NULL, FVMenuBitmaps, MID_AvailBitmaps },
-    { { (unichar_t *) N_("Regenerate _Bitmap Glyphs..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, 'B', ksm_control, NULL, NULL, FVMenuBitmaps, MID_RegenBitmaps },
-    { { (unichar_t *) N_("Remove Bitmap Glyphs..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_control, NULL, NULL, FVMenuBitmaps, MID_RemoveBitmaps },
+    { { (unichar_t *) N_("Bitm_ap Strikes Available..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("Bitmap Strikes Available...|Ctl+Shft+B"), NULL, NULL, FVMenuBitmaps, MID_AvailBitmaps },
+    { { (unichar_t *) N_("Regenerate _Bitmap Glyphs..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Regenerate Bitmap Glyphs...|Ctl+B"), NULL, NULL, FVMenuBitmaps, MID_RegenBitmaps },
+    { { (unichar_t *) N_("Remove Bitmap Glyphs..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Remove Bitmap Glyphs...|No Shortcut"), NULL, NULL, FVMenuBitmaps, MID_RemoveBitmaps },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("_Transformations"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'T' }, 0, ksm_control, trlist, trlistcheck, NULL, MID_Transform },
-    { { (unichar_t *) N_("_Expand Stroke..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'E' }, 'E', ksm_control|ksm_shift, NULL, NULL, FVMenuStroke, MID_Stroke },
+    { { (unichar_t *) N_("_Transformations"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'T' }, NULL, trlist, trlistcheck, NULL, MID_Transform },
+    { { (unichar_t *) N_("_Expand Stroke..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'E' }, H_("Expand Stroke...|Ctl+Shft+E"), NULL, NULL, FVMenuStroke, MID_Stroke },
 #ifdef FONTFORGE_CONFIG_TILEPATH
-    { { (unichar_t *) N_("Tile _Path..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuTilePath, MID_TilePath },
+    { { (unichar_t *) N_("Tile _Path..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Tile Path...|No Shortcut"), NULL, NULL, FVMenuTilePath, MID_TilePath },
 #endif
-    { { (unichar_t *) N_("O_verlap"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'O' }, '\0', ksm_control|ksm_shift, rmlist, NULL, NULL, MID_RmOverlap },
-    { { (unichar_t *) N_("_Simplify"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, '\0', ksm_control|ksm_shift, smlist, NULL, NULL, MID_Simplify },
-    { { (unichar_t *) N_("Add E_xtrema"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'x' }, 'X', ksm_control|ksm_shift, NULL, NULL, FVMenuAddExtrema, MID_AddExtrema },
-    { { (unichar_t *) N_("Roun_d"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, '\0', ksm_control|ksm_shift, rndlist, NULL, NULL, MID_Round },
-    { { (unichar_t *) N_("Effects"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, '\0', ksm_control|ksm_shift, eflist, NULL, NULL, MID_Effects },
-    { { (unichar_t *) N_("_Meta Font..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, '!', ksm_control|ksm_shift, NULL, NULL, FVMenuMetaFont, MID_MetaFont },
-    { { (unichar_t *) N_("Autot_race"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'r' }, 'T', ksm_control|ksm_shift, NULL, NULL, FVMenuAutotrace, MID_Autotrace },
+    { { (unichar_t *) N_("O_verlap"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'O' }, NULL, rmlist, NULL, NULL, MID_RmOverlap },
+    { { (unichar_t *) N_("_Simplify"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, NULL, smlist, NULL, NULL, MID_Simplify },
+    { { (unichar_t *) N_("Add E_xtrema"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Add Extrema|Ctl+Shft+X"), NULL, NULL, FVMenuAddExtrema, MID_AddExtrema },
+    { { (unichar_t *) N_("Roun_d"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, NULL, rndlist, NULL, NULL, MID_Round },
+    { { (unichar_t *) N_("Effects"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, NULL, eflist, NULL, NULL, MID_Effects },
+    { { (unichar_t *) N_("_Meta Font..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Meta Font...|Ctl+Shft+!"), NULL, NULL, FVMenuMetaFont, MID_MetaFont },
+    { { (unichar_t *) N_("Autot_race"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'r' }, H_("Autotrace|Ctl+Shft+T"), NULL, NULL, FVMenuAutotrace, MID_Autotrace },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("_Correct Direction"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'D' }, 'D', ksm_control|ksm_shift, NULL, NULL, FVMenuCorrectDir, MID_Correct },
+    { { (unichar_t *) N_("_Correct Direction"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'D' }, H_("Correct Direction|Ctl+Shft+D"), NULL, NULL, FVMenuCorrectDir, MID_Correct },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("B_uild"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, balist, balistcheck, NULL, MID_BuildAccent },
+    { { (unichar_t *) N_("B_uild"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, NULL, balist, balistcheck, NULL, MID_BuildAccent },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("_Merge Fonts..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuMergeFonts, MID_MergeFonts },
-    { { (unichar_t *) N_("Interpo_late Fonts..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'p' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuInterpFonts, MID_InterpolateFonts },
-    { { (unichar_t *) N_("Compare Fonts..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'p' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuCompareFonts, MID_FontCompare },
+    { { (unichar_t *) N_("_Merge Fonts..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Merge Fonts...|No Shortcut"), NULL, NULL, FVMenuMergeFonts, MID_MergeFonts },
+    { { (unichar_t *) N_("Interpo_late Fonts..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'p' }, H_("Interpolate Fonts...|No Shortcut"), NULL, NULL, FVMenuInterpFonts, MID_InterpolateFonts },
+    { { (unichar_t *) N_("Compare Fonts..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'p' }, H_("Compare Fonts...|No Shortcut"), NULL, NULL, FVMenuCompareFonts, MID_FontCompare },
     { NULL }
 };
 
-static GMenuItem dummyall[] = {
-    { { (unichar_t *) N_("All"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 1, 0, 'K' }, '\0', ksm_shift|ksm_control, NULL, NULL, NULL },
+static GMenuItem2 dummyall[] = {
+    { { (unichar_t *) N_("All"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 1, 0, 'K' }, H_("All|No Shortcut"), NULL, NULL, NULL },
     NULL
 };
 
@@ -6768,18 +6768,16 @@ static void aplistbuild(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     extern void GMenuItemArrayFree(GMenuItem *mi);
 
-    if ( mi->sub!=dummyall ) {
-	GMenuItemArrayFree(mi->sub);
-	mi->sub = NULL;
-    }
+    GMenuItemArrayFree(mi->sub);
+    mi->sub = NULL;
 
     _aplistbuild(mi,fv->sf,FVMenuAnchorPairs);
 }
 
-static GMenuItem cblist[] = {
-    { { (unichar_t *) N_("_Kern Pairs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'K' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuKernPairs, MID_KernPairs },
-    { { (unichar_t *) N_("_Anchored Pairs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'K' }, '\0', ksm_shift|ksm_control, dummyall, aplistbuild, NULL, MID_AnchorPairs },
-    { { (unichar_t *) N_("_Ligatures"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'L' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuLigatures, MID_Ligatures },
+static GMenuItem2 cblist[] = {
+    { { (unichar_t *) N_("_Kern Pairs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'K' }, H_("Kern Pairs|No Shortcut"), NULL, NULL, FVMenuKernPairs, MID_KernPairs },
+    { { (unichar_t *) N_("_Anchored Pairs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'K' }, H_("Anchored Pairs|No Shortcut"), dummyall, aplistbuild, NULL, MID_AnchorPairs },
+    { { (unichar_t *) N_("_Ligatures"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'L' }, H_("Ligatures|No Shortcut"), NULL, NULL, FVMenuLigatures, MID_Ligatures },
     NULL
 };
 
@@ -6821,11 +6819,11 @@ static void cblistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 }
 
 
-static GMenuItem gllist[] = {
-    { { (unichar_t *) N_("_Glyph Image"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'K' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuGlyphLabel, gl_glyph },
-    { { (unichar_t *) N_("_Name"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'K' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuGlyphLabel, gl_name },
-    { { (unichar_t *) N_("_Unicode"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'L' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuGlyphLabel, gl_unicode },
-    { { (unichar_t *) N_("_Encoding Hex"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'L' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuGlyphLabel, gl_encoding },
+static GMenuItem2 gllist[] = {
+    { { (unichar_t *) N_("_Glyph Image"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'K' }, H_("Glyph Image|No Shortcut"), NULL, NULL, FVMenuGlyphLabel, gl_glyph },
+    { { (unichar_t *) N_("_Name"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'K' }, H_("Name|No Shortcut"), NULL, NULL, FVMenuGlyphLabel, gl_name },
+    { { (unichar_t *) N_("_Unicode"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'L' }, H_("Unicode|No Shortcut"), NULL, NULL, FVMenuGlyphLabel, gl_unicode },
+    { { (unichar_t *) N_("_Encoding Hex"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'L' }, H_("Encoding Hex|No Shortcut"), NULL, NULL, FVMenuGlyphLabel, gl_encoding },
     NULL
 };
 
@@ -6837,7 +6835,7 @@ static void gllistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     }
 }
 
-static GMenuItem emptymenu[] = {
+static GMenuItem2 emptymenu[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { NULL }
 };
@@ -7352,28 +7350,28 @@ return;
     FontViewReformatAll(fv->sf);
 }
 
-static GMenuItem enlist[] = {
-    { { (unichar_t *) N_("_Reencode"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'E' }, '\0', ksm_shift|ksm_control, emptymenu, FVEncodingMenuBuild, NULL, MID_Reencode },
-    { { (unichar_t *) N_("_Compact"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuCompact, MID_Compact },
-    { { (unichar_t *) N_("_Force Encoding"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, emptymenu, FVForceEncodingMenuBuild, NULL, MID_ForceReencode },
+static GMenuItem2 enlist[] = {
+    { { (unichar_t *) N_("_Reencode"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'E' }, H_("Reencode|No Shortcut"), emptymenu, FVEncodingMenuBuild, NULL, MID_Reencode },
+    { { (unichar_t *) N_("_Compact"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'C' }, H_("Compact|No Shortcut"), NULL, NULL, FVMenuCompact, MID_Compact },
+    { { (unichar_t *) N_("_Force Encoding"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Force Encoding|No Shortcut"), emptymenu, FVForceEncodingMenuBuild, NULL, MID_ForceReencode },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("_Add Encoding Slots..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuAddUnencoded, MID_AddUnencoded },
-    { { (unichar_t *) N_("Remove _Unused Slots"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuRemoveUnused, MID_RemoveUnused },
-    { { (unichar_t *) N_("_Detach Glyphs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuDetachGlyphs, MID_DetachGlyphs },
-    { { (unichar_t *) N_("Detach & Remo_ve Glyphs..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuDetachAndRemoveGlyphs, MID_DetachAndRemoveGlyphs },
+    { { (unichar_t *) N_("_Add Encoding Slots..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Add Encoding Slots...|No Shortcut"), NULL, NULL, FVMenuAddUnencoded, MID_AddUnencoded },
+    { { (unichar_t *) N_("Remove _Unused Slots"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Remove Unused Slots|No Shortcut"), NULL, NULL, FVMenuRemoveUnused, MID_RemoveUnused },
+    { { (unichar_t *) N_("_Detach Glyphs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Detach Glyphs|No Shortcut"), NULL, NULL, FVMenuDetachGlyphs, MID_DetachGlyphs },
+    { { (unichar_t *) N_("Detach & Remo_ve Glyphs..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Detach & Remove Glyphs...|No Shortcut"), NULL, NULL, FVMenuDetachAndRemoveGlyphs, MID_DetachAndRemoveGlyphs },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("Add E_ncoding Name..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuAddEncodingName },
-    { { (unichar_t *) N_("_Load Encoding..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuLoadEncoding, MID_LoadEncoding },
-    { { (unichar_t *) N_("Ma_ke From Font..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuMakeFromFont, MID_MakeFromFont },
-    { { (unichar_t *) N_("Remove En_coding..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuRemoveEncoding, MID_RemoveEncoding },
+    { { (unichar_t *) N_("Add E_ncoding Name..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Add Encoding Name...|No Shortcut"), NULL, NULL, FVMenuAddEncodingName },
+    { { (unichar_t *) N_("_Load Encoding..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Load Encoding...|No Shortcut"), NULL, NULL, FVMenuLoadEncoding, MID_LoadEncoding },
+    { { (unichar_t *) N_("Ma_ke From Font..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Make From Font...|No Shortcut"), NULL, NULL, FVMenuMakeFromFont, MID_MakeFromFont },
+    { { (unichar_t *) N_("Remove En_coding..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Remove Encoding...|No Shortcut"), NULL, NULL, FVMenuRemoveEncoding, MID_RemoveEncoding },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("Display By _Groups..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuDisplayByGroups, MID_DisplayByGroups },
-    { { (unichar_t *) N_("D_efine Groups..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuDefineGroups },
+    { { (unichar_t *) N_("Display By _Groups..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Display By Groups...|No Shortcut"), NULL, NULL, FVMenuDisplayByGroups, MID_DisplayByGroups },
+    { { (unichar_t *) N_("D_efine Groups..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Define Groups...|No Shortcut"), NULL, NULL, FVMenuDefineGroups },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("_Save Namelist of Font..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuMakeNamelist, MID_SaveNamelist },
-    { { (unichar_t *) N_("L_oad Namelist..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuLoadNamelist },
-    { { (unichar_t *) N_("Rename Gl_yphs..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuRenameByNamelist, MID_RenameGlyphs },
-    { { (unichar_t *) N_("Cre_ate Named Glyphs..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuNameGlyphs, MID_NameGlyphs },
+    { { (unichar_t *) N_("_Save Namelist of Font..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Save Namelist of Font...|No Shortcut"), NULL, NULL, FVMenuMakeNamelist, MID_SaveNamelist },
+    { { (unichar_t *) N_("L_oad Namelist..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Load Namelist...|No Shortcut"), NULL, NULL, FVMenuLoadNamelist },
+    { { (unichar_t *) N_("Rename Gl_yphs..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Rename Glyphs...|No Shortcut"), NULL, NULL, FVMenuRenameByNamelist, MID_RenameGlyphs },
+    { { (unichar_t *) N_("Cre_ate Named Glyphs..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Create Named Glyphs...|No Shortcut"), NULL, NULL, FVMenuNameGlyphs, MID_NameGlyphs },
     { NULL }
 };
 
@@ -7426,35 +7424,35 @@ static void enlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     }
 }
 
-static GMenuItem vwlist[] = {
-    { { (unichar_t *) N_("_Next Glyph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'N' }, ']', ksm_control, NULL, NULL, FVMenuChangeChar, MID_Next },
-    { { (unichar_t *) N_("_Prev Glyph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, '[', ksm_control, NULL, NULL, FVMenuChangeChar, MID_Prev },
-    { { (unichar_t *) N_("Next _Defined Glyph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'D' }, ']', ksm_control|ksm_meta, NULL, NULL, FVMenuChangeChar, MID_NextDef },
-    { { (unichar_t *) N_("Prev Defined Gl_yph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'a' }, '[', ksm_control|ksm_meta, NULL, NULL, FVMenuChangeChar, MID_PrevDef },
-    { { (unichar_t *) N_("_Goto"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'G' }, '>', ksm_shift|ksm_control, NULL, NULL, FVMenuGotoChar },
+static GMenuItem2 vwlist[] = {
+    { { (unichar_t *) N_("_Next Glyph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'N' }, H_("Next Glyph|Ctl+]"), NULL, NULL, FVMenuChangeChar, MID_Next },
+    { { (unichar_t *) N_("_Prev Glyph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Prev Glyph|Ctl+["), NULL, NULL, FVMenuChangeChar, MID_Prev },
+    { { (unichar_t *) N_("Next _Defined Glyph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'D' }, H_("Next Defined Glyph|Alt+Ctl+]"), NULL, NULL, FVMenuChangeChar, MID_NextDef },
+    { { (unichar_t *) N_("Prev Defined Gl_yph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'a' }, H_("Prev Defined Glyph|Alt+Ctl+["), NULL, NULL, FVMenuChangeChar, MID_PrevDef },
+    { { (unichar_t *) N_("_Goto"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'G' }, H_("Goto|Ctl+Shft+>"), NULL, NULL, FVMenuGotoChar },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("_Show ATT"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuShowAtt },
-    { { (unichar_t *) N_("Display S_ubstitutions..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'u' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuDisplaySubs, MID_DisplaySubs },
-    { { (unichar_t *) N_("Com_binations"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'b' }, '\0', ksm_shift|ksm_control, cblist, cblistcheck },
+    { { (unichar_t *) N_("_Show ATT"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Show ATT|No Shortcut"), NULL, NULL, FVMenuShowAtt },
+    { { (unichar_t *) N_("Display S_ubstitutions..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'u' }, H_("Display Substitutions...|No Shortcut"), NULL, NULL, FVMenuDisplaySubs, MID_DisplaySubs },
+    { { (unichar_t *) N_("Com_binations"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'b' }, NULL, cblist, cblistcheck },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("_Label Glyph By"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'b' }, '\0', ksm_shift|ksm_control, gllist, gllistcheck },
+    { { (unichar_t *) N_("_Label Glyph By"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'b' }, NULL, gllist, gllistcheck },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("S_how H. Metrics..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuShowMetrics, MID_ShowHMetrics },
-    { { (unichar_t *) N_("Show _V. Metrics..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'V' }, '\0', ksm_shift|ksm_control, NULL, NULL, FVMenuShowMetrics, MID_ShowVMetrics },
+    { { (unichar_t *) N_("S_how H. Metrics..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("Show H. Metrics...|No Shortcut"), NULL, NULL, FVMenuShowMetrics, MID_ShowHMetrics },
+    { { (unichar_t *) N_("Show _V. Metrics..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'V' }, H_("Show V. Metrics...|No Shortcut"), NULL, NULL, FVMenuShowMetrics, MID_ShowVMetrics },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("32x8 cell window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, '2' }, '%', ksm_shift|ksm_control, NULL, NULL, FVMenuWSize, MID_32x8 },
-    { { (unichar_t *) N_("1_6x4 cell window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, '3' }, '^', ksm_shift|ksm_control, NULL, NULL, FVMenuWSize, MID_16x4 },
-    { { (unichar_t *) N_("_8x2  cell window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, '3' }, '*', ksm_shift|ksm_control, NULL, NULL, FVMenuWSize, MID_8x2 },
+    { { (unichar_t *) N_("32x8 cell window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, '2' }, H_("32x8 cell window|Ctl+Shft+%"), NULL, NULL, FVMenuWSize, MID_32x8 },
+    { { (unichar_t *) N_("1_6x4 cell window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, '3' }, H_("16x4 cell window|Ctl+Shft+^"), NULL, NULL, FVMenuWSize, MID_16x4 },
+    { { (unichar_t *) N_("_8x2  cell window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, '3' }, H_("8x2  cell window|Ctl+Shft+*"), NULL, NULL, FVMenuWSize, MID_8x2 },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("_24 pixel outline"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, '2' }, '2', ksm_control, NULL, NULL, FVMenuSize, MID_24 },
-    { { (unichar_t *) N_("_36 pixel outline"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, '3' }, '3', ksm_control, NULL, NULL, FVMenuSize, MID_36 },
-    { { (unichar_t *) N_("_48 pixel outline"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, '4' }, '4', ksm_control, NULL, NULL, FVMenuSize, MID_48 },
-    { { (unichar_t *) N_("_72 pixel outline"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, '4' }, '7', ksm_control, NULL, NULL, FVMenuSize, MID_72 },
-    { { (unichar_t *) N_("_96 pixel outline"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, '4' }, '9', ksm_control, NULL, NULL, FVMenuSize, MID_96 },
-    { { (unichar_t *) N_("_Anti Alias"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'A' }, '5', ksm_control, NULL, NULL, FVMenuSize, MID_AntiAlias },
-    { { (unichar_t *) N_("_Fit to em"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'F' }, '6', ksm_control, NULL, NULL, FVMenuSize, MID_FitToEm },
+    { { (unichar_t *) N_("_24 pixel outline"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, '2' }, H_("24 pixel outline|Ctl+2"), NULL, NULL, FVMenuSize, MID_24 },
+    { { (unichar_t *) N_("_36 pixel outline"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, '3' }, H_("36 pixel outline|Ctl+3"), NULL, NULL, FVMenuSize, MID_36 },
+    { { (unichar_t *) N_("_48 pixel outline"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, '4' }, H_("48 pixel outline|Ctl+4"), NULL, NULL, FVMenuSize, MID_48 },
+    { { (unichar_t *) N_("_72 pixel outline"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, '4' }, H_("72 pixel outline|Ctl+7"), NULL, NULL, FVMenuSize, MID_72 },
+    { { (unichar_t *) N_("_96 pixel outline"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, '4' }, H_("96 pixel outline|Ctl+9"), NULL, NULL, FVMenuSize, MID_96 },
+    { { (unichar_t *) N_("_Anti Alias"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'A' }, H_("Anti Alias|Ctl+5"), NULL, NULL, FVMenuSize, MID_AntiAlias },
+    { { (unichar_t *) N_("_Fit to em"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'F' }, H_("Fit to em|Ctl+6"), NULL, NULL, FVMenuSize, MID_FitToEm },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("Bitmap _Magnification..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'F' }, '\0', ksm_control, NULL, NULL, FVMenuMagnify, MID_BitmapMag },
+    { { (unichar_t *) N_("Bitmap _Magnification..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'F' }, H_("Bitmap Magnification...|No Shortcut"), NULL, NULL, FVMenuMagnify, MID_BitmapMag },
     { NULL },			/* Some extra room to show bitmaps */
     { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
     { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
@@ -7469,7 +7467,7 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     BDFFont *bdf;
     char buffer[50];
     extern void GMenuItemArrayFree(GMenuItem *mi);
-    extern GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt);
+    extern GMenuItem *GMenuItem2ArrayCopy(GMenuItem2 *mi, uint16 *cnt);
     int pos;
     SplineFont *sf = fv->sf;
     EncMap *map = fv->map;
@@ -7502,7 +7500,7 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	}
     }
     GMenuItemArrayFree(mi->sub);
-    mi->sub = GMenuItemArrayCopy(vwlist,NULL);
+    mi->sub = GMenuItem2ArrayCopy(vwlist,NULL);
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
@@ -7574,69 +7572,69 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     }
 }
 
-static GMenuItem histlist[] = {
-    { { (unichar_t *) N_("_HStem"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuHistograms, MID_HStemHist },
-    { { (unichar_t *) N_("_VStem"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'V' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuHistograms, MID_VStemHist },
-    { { (unichar_t *) N_("BlueValues"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuHistograms, MID_BlueValuesHist },
+static GMenuItem2 histlist[] = {
+    { { (unichar_t *) N_("_HStem"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("HStem|No Shortcut"), NULL, NULL, FVMenuHistograms, MID_HStemHist },
+    { { (unichar_t *) N_("_VStem"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'V' }, H_("VStem|No Shortcut"), NULL, NULL, FVMenuHistograms, MID_VStemHist },
+    { { (unichar_t *) N_("BlueValues"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("BlueValues|No Shortcut"), NULL, NULL, FVMenuHistograms, MID_BlueValuesHist },
     { NULL }
 };
 
-static GMenuItem htlist[] = {
-    { { (unichar_t *) N_("Auto_Hint"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, 'H', ksm_control|ksm_shift, NULL, NULL, FVMenuAutoHint, MID_AutoHint },
-    { { (unichar_t *) N_("Hint _Substitution Pts"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAutoHintSubs, MID_HintSubsPt },
-    { { (unichar_t *) N_("Auto _Counter Hint"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuAutoCounter, MID_AutoCounter },
-    { { (unichar_t *) N_("_Don't AutoHint"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuDontAutoHint, MID_DontAutoHint },
+static GMenuItem2 htlist[] = {
+    { { (unichar_t *) N_("Auto_Hint"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("AutoHint|Ctl+Shft+H"), NULL, NULL, FVMenuAutoHint, MID_AutoHint },
+    { { (unichar_t *) N_("Hint _Substitution Pts"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("Hint Substitution Pts|No Shortcut"), NULL, NULL, FVMenuAutoHintSubs, MID_HintSubsPt },
+    { { (unichar_t *) N_("Auto _Counter Hint"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("Auto Counter Hint|No Shortcut"), NULL, NULL, FVMenuAutoCounter, MID_AutoCounter },
+    { { (unichar_t *) N_("_Don't AutoHint"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("Don't AutoHint|No Shortcut"), NULL, NULL, FVMenuDontAutoHint, MID_DontAutoHint },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("Auto_Instr"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, 'T', ksm_control, NULL, NULL, FVMenuAutoInstr, MID_AutoInstr },
-    { { (unichar_t *) N_("_Edit Instructions..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, '\0', 0, NULL, NULL, FVMenuEditInstrs, MID_EditInstructions },
-    { { (unichar_t *) N_("Edit 'fpgm'..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', 0, NULL, NULL, FVMenuEditTable, MID_Editfpgm },
-    { { (unichar_t *) N_("Edit 'prep'..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', 0, NULL, NULL, FVMenuEditTable, MID_Editprep },
-    { { (unichar_t *) N_("Edit 'maxp'..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', 0, NULL, NULL, FVMenuEditTable, MID_Editmaxp },
-    { { (unichar_t *) N_("Edit 'cvt '..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', 0, NULL, NULL, FVMenuEditTable, MID_Editcvt },
-    { { (unichar_t *) N_("Private to 'cvt'"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', 0, NULL, NULL, FVMenuPrivateToCvt, MID_PrivateToCvt },
+    { { (unichar_t *) N_("Auto_Instr"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("AutoInstr|Ctl+T"), NULL, NULL, FVMenuAutoInstr, MID_AutoInstr },
+    { { (unichar_t *) N_("_Edit Instructions..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Edit Instructions...|No Shortcut"), NULL, NULL, FVMenuEditInstrs, MID_EditInstructions },
+    { { (unichar_t *) N_("Edit 'fpgm'..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Edit 'fpgm'...|No Shortcut"), NULL, NULL, FVMenuEditTable, MID_Editfpgm },
+    { { (unichar_t *) N_("Edit 'prep'..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Edit 'prep'...|No Shortcut"), NULL, NULL, FVMenuEditTable, MID_Editprep },
+    { { (unichar_t *) N_("Edit 'maxp'..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Edit 'maxp'...|No Shortcut"), NULL, NULL, FVMenuEditTable, MID_Editmaxp },
+    { { (unichar_t *) N_("Edit 'cvt '..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Edit 'cvt '...|No Shortcut"), NULL, NULL, FVMenuEditTable, MID_Editcvt },
+    { { (unichar_t *) N_("Private to 'cvt'"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Private to 'cvt'|No Shortcut"), NULL, NULL, FVMenuPrivateToCvt, MID_PrivateToCvt },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("_Clear Hints"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuClearHints, MID_ClearHints },
-    { { (unichar_t *) N_("Clear _Width MD"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuClearWidthMD, MID_ClearWidthMD },
-    { { (unichar_t *) N_("Clear Instructions"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuClearInstrs, MID_ClearInstrs },
+    { { (unichar_t *) N_("_Clear Hints"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Clear Hints|No Shortcut"), NULL, NULL, FVMenuClearHints, MID_ClearHints },
+    { { (unichar_t *) N_("Clear _Width MD"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Clear Width MD|No Shortcut"), NULL, NULL, FVMenuClearWidthMD, MID_ClearWidthMD },
+    { { (unichar_t *) N_("Clear Instructions"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Clear Instructions|No Shortcut"), NULL, NULL, FVMenuClearInstrs, MID_ClearInstrs },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("Histograms"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, '\0', ksm_shift|ksm_control, histlist },
+    { { (unichar_t *) N_("Histograms"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Histograms|No Shortcut"), histlist },
     { NULL }
 };
 
-static GMenuItem mtlist[] = {
-    { { (unichar_t *) N_("_Center in Width"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_control, NULL, NULL, FVMenuCenter, MID_Center },
-    { { (unichar_t *) N_("_Thirds in Width"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'T' }, '\0', ksm_control, NULL, NULL, FVMenuCenter, MID_Thirds },
-    { { (unichar_t *) N_("Set _Width..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'W' }, 'L', ksm_control|ksm_shift, NULL, NULL, FVMenuSetWidth, MID_SetWidth },
-    { { (unichar_t *) N_("Set _LBearing..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'L' }, 'L', ksm_control, NULL, NULL, FVMenuSetWidth, MID_SetLBearing },
-    { { (unichar_t *) N_("Set _RBearing..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'R' }, 'R', ksm_control, NULL, NULL, FVMenuSetWidth, MID_SetRBearing },
+static GMenuItem2 mtlist[] = {
+    { { (unichar_t *) N_("_Center in Width"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Center in Width|No Shortcut"), NULL, NULL, FVMenuCenter, MID_Center },
+    { { (unichar_t *) N_("_Thirds in Width"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Thirds in Width|No Shortcut"), NULL, NULL, FVMenuCenter, MID_Thirds },
+    { { (unichar_t *) N_("Set _Width..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'W' }, H_("Set Width...|Ctl+Shft+L"), NULL, NULL, FVMenuSetWidth, MID_SetWidth },
+    { { (unichar_t *) N_("Set _LBearing..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'L' }, H_("Set LBearing...|Ctl+L"), NULL, NULL, FVMenuSetWidth, MID_SetLBearing },
+    { { (unichar_t *) N_("Set _RBearing..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Set RBearing...|Ctl+R"), NULL, NULL, FVMenuSetWidth, MID_SetRBearing },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("Set _Vertical Advance..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'V' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuSetWidth, MID_SetVWidth },
+    { { (unichar_t *) N_("Set _Vertical Advance..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'V' }, H_("Set Vertical Advance...|No Shortcut"), NULL, NULL, FVMenuSetWidth, MID_SetVWidth },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("_Auto Width..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, 'W', ksm_control|ksm_shift, NULL, NULL, FVMenuAutoWidth },
-    { { (unichar_t *) N_("Auto _Kern..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'K' }, 'K', ksm_control|ksm_shift, NULL, NULL, FVMenuAutoKern },
-    { { (unichar_t *) N_("Ker_n By Classes..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'K' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuKernByClasses },
-    { { (unichar_t *) N_("Remove All Kern _Pairs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuRemoveKern, MID_RmHKern },
-    { { (unichar_t *) N_("Kern Pair Closeup..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuKPCloseup },
+    { { (unichar_t *) N_("_Auto Width..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("Auto Width...|Ctl+Shft+W"), NULL, NULL, FVMenuAutoWidth },
+    { { (unichar_t *) N_("Auto _Kern..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'K' }, H_("Auto Kern...|Ctl+Shft+K"), NULL, NULL, FVMenuAutoKern },
+    { { (unichar_t *) N_("Ker_n By Classes..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'K' }, H_("Kern By Classes...|No Shortcut"), NULL, NULL, FVMenuKernByClasses },
+    { { (unichar_t *) N_("Remove All Kern _Pairs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Remove All Kern Pairs|No Shortcut"), NULL, NULL, FVMenuRemoveKern, MID_RmHKern },
+    { { (unichar_t *) N_("Kern Pair Closeup..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Kern Pair Closeup...|No Shortcut"), NULL, NULL, FVMenuKPCloseup },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("VKern By Classes..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'K' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuVKernByClasses, MID_VKernByClass },
-    { { (unichar_t *) N_("VKern From HKern"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuVKernFromHKern, MID_VKernFromH },
-    { { (unichar_t *) N_("Remove All VKern Pairs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuRemoveVKern, MID_RmVKern },
+    { { (unichar_t *) N_("VKern By Classes..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'K' }, H_("VKern By Classes...|No Shortcut"), NULL, NULL, FVMenuVKernByClasses, MID_VKernByClass },
+    { { (unichar_t *) N_("VKern From HKern"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("VKern From HKern|No Shortcut"), NULL, NULL, FVMenuVKernFromHKern, MID_VKernFromH },
+    { { (unichar_t *) N_("Remove All VKern Pairs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Remove All VKern Pairs|No Shortcut"), NULL, NULL, FVMenuRemoveVKern, MID_RmVKern },
     { NULL }
 };
 
-static GMenuItem cdlist[] = {
-    { { (unichar_t *) N_("_Convert to CID"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_control, NULL, NULL, FVMenuConvert2CID, MID_Convert2CID },
-    { { (unichar_t *) N_("Convert By C_Map"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_control, NULL, NULL, FVMenuConvertByCMap, MID_ConvertByCMap },
+static GMenuItem2 cdlist[] = {
+    { { (unichar_t *) N_("_Convert to CID"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Convert to CID|No Shortcut"), NULL, NULL, FVMenuConvert2CID, MID_Convert2CID },
+    { { (unichar_t *) N_("Convert By C_Map"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Convert By CMap|No Shortcut"), NULL, NULL, FVMenuConvertByCMap, MID_ConvertByCMap },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("_Flatten"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'F' }, '\0', ksm_control, NULL, NULL, FVMenuFlatten, MID_Flatten },
-    { { (unichar_t *) N_("Fl_attenByCMap"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'F' }, '\0', ksm_control, NULL, NULL, FVMenuFlattenByCMap, MID_FlattenByCMap },
+    { { (unichar_t *) N_("_Flatten"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Flatten|No Shortcut"), NULL, NULL, FVMenuFlatten, MID_Flatten },
+    { { (unichar_t *) N_("Fl_attenByCMap"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("FlattenByCMap|No Shortcut"), NULL, NULL, FVMenuFlattenByCMap, MID_FlattenByCMap },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("Insert F_ont..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control|ksm_shift, NULL, NULL, FVMenuInsertFont, MID_InsertFont },
-    { { (unichar_t *) N_("Insert _Blank"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, '\0', ksm_control, NULL, NULL, FVMenuInsertBlank, MID_InsertBlank },
-    { { (unichar_t *) N_("_Remove Font"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'R' }, '\0', ksm_control, NULL, NULL, FVMenuRemoveFontFromCID, MID_RemoveFromCID },
+    { { (unichar_t *) N_("Insert F_ont..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, H_("Insert Font...|No Shortcut"), NULL, NULL, FVMenuInsertFont, MID_InsertFont },
+    { { (unichar_t *) N_("Insert _Blank"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Insert Blank|No Shortcut"), NULL, NULL, FVMenuInsertBlank, MID_InsertBlank },
+    { { (unichar_t *) N_("_Remove Font"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Remove Font|No Shortcut"), NULL, NULL, FVMenuRemoveFontFromCID, MID_RemoveFromCID },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("_Change Supplement..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuChangeSupplement, MID_ChangeSupplement },
-    { { (unichar_t *) N_("C_ID Font Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuCIDFontInfo, MID_CIDFontInfo },
+    { { (unichar_t *) N_("_Change Supplement..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Change Supplement...|No Shortcut"), NULL, NULL, FVMenuChangeSupplement, MID_ChangeSupplement },
+    { { (unichar_t *) N_("C_ID Font Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("CID Font Info...|No Shortcut"), NULL, NULL, FVMenuCIDFontInfo, MID_CIDFontInfo },
     { NULL },				/* Extra room to show sub-font names */
     { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
     { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL }, { NULL },
@@ -7651,7 +7649,7 @@ static void cdlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int i, base, j;
     extern void GMenuItemArrayFree(GMenuItem *mi);
-    extern GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt);
+    extern GMenuItem *GMenuItem2ArrayCopy(GMenuItem2 *mi, uint16 *cnt);
     SplineFont *sub, *cidmaster = fv->cidmaster;
 
     for ( i=0; cdlist[i].mid!=MID_CIDFontInfo; ++i );
@@ -7679,7 +7677,7 @@ static void cdlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	}
     }
     GMenuItemArrayFree(mi->sub);
-    mi->sub = GMenuItemArrayCopy(cdlist,NULL);
+    mi->sub = GMenuItem2ArrayCopy(cdlist,NULL);
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
@@ -7701,13 +7699,13 @@ static void cdlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     }
 }
 
-static GMenuItem mmlist[] = {
+static GMenuItem2 mmlist[] = {
 /* GT: Here (and following) MM means "MultiMaster" */
-    { { (unichar_t *) N_("_Create MM..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuCreateMM, MID_CreateMM },
-    { { (unichar_t *) N_("MM _Validity Check"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuMMValid, MID_MMValid },
-    { { (unichar_t *) N_("MM _Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuMMInfo, MID_MMInfo },
-    { { (unichar_t *) N_("_Blend to New Font..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuBlendToNew, MID_BlendToNew },
-    { { (unichar_t *) N_("MM Change Default _Weights..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, '\0', ksm_control, NULL, NULL, FVMenuChangeMMBlend, MID_ChangeMMBlend },
+    { { (unichar_t *) N_("_Create MM..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Create MM...|No Shortcut"), NULL, NULL, FVMenuCreateMM, MID_CreateMM },
+    { { (unichar_t *) N_("MM _Validity Check"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("MM Validity Check|No Shortcut"), NULL, NULL, FVMenuMMValid, MID_MMValid },
+    { { (unichar_t *) N_("MM _Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("MM Info...|No Shortcut"), NULL, NULL, FVMenuMMInfo, MID_MMInfo },
+    { { (unichar_t *) N_("_Blend to New Font..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Blend to New Font...|No Shortcut"), NULL, NULL, FVMenuBlendToNew, MID_BlendToNew },
+    { { (unichar_t *) N_("MM Change Default _Weights..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("MM Change Default Weights...|No Shortcut"), NULL, NULL, FVMenuChangeMMBlend, MID_ChangeMMBlend },
     { NULL },				/* Extra room to show sub-font names */
 };
 
@@ -7715,17 +7713,17 @@ static void mmlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int i, base, j;
     extern void GMenuItemArrayFree(GMenuItem *mi);
-    extern GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt);
+    extern GMenuItem *GMenuItem2ArrayCopy(GMenuItem2 *mi, uint16 *cnt);
     MMSet *mm = fv->sf->mm;
     SplineFont *sub;
-    GMenuItem *mml;
+    GMenuItem2 *mml;
 
     for ( i=0; mmlist[i].mid!=MID_ChangeMMBlend; ++i );
     base = i+2;
     if ( mm==NULL )
 	mml = mmlist;
     else {
-	mml = gcalloc(base+mm->instance_count+2,sizeof(GMenuItem));
+	mml = gcalloc(base+mm->instance_count+2,sizeof(GMenuItem2));
 	memcpy(mml,mmlist,sizeof(mmlist));
 	mml[base-1].ti.fg = mml[base-1].ti.bg = COLOR_DEFAULT;
 	mml[base-1].ti.line = true;
@@ -7743,7 +7741,7 @@ static void mmlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	}
     }
     GMenuItemArrayFree(mi->sub);
-    mi->sub = GMenuItemArrayCopy(mml,NULL);
+    mi->sub = GMenuItem2ArrayCopy(mml,NULL);
     if ( mml!=mmlist ) {
 	for ( i=base; mml[i].ti.text!=NULL; ++i )
 	    free( mml[i].ti.text);
@@ -7765,12 +7763,12 @@ static void mmlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     }
 }
 
-static GMenuItem wnmenu[] = {
-    { { (unichar_t *) N_("New O_utline Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'u' }, 'H', ksm_control, NULL, NULL, FVMenuOpenOutline, MID_OpenOutline },
-    { { (unichar_t *) N_("New _Bitmap Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, 'J', ksm_control, NULL, NULL, FVMenuOpenBitmap, MID_OpenBitmap },
-    { { (unichar_t *) N_("New _Metrics Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, 'K', ksm_control, NULL, NULL, FVMenuOpenMetrics },
+static GMenuItem2 wnmenu[] = {
+    { { (unichar_t *) N_("New O_utline Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'u' }, H_("New Outline Window|Ctl+H"), NULL, NULL, FVMenuOpenOutline, MID_OpenOutline },
+    { { (unichar_t *) N_("New _Bitmap Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("New Bitmap Window|Ctl+J"), NULL, NULL, FVMenuOpenBitmap, MID_OpenBitmap },
+    { { (unichar_t *) N_("New _Metrics Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("New Metrics Window|Ctl+K"), NULL, NULL, FVMenuOpenMetrics },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("Warnings"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, '\0', ksm_control, NULL, NULL, _MenuWarnings, MID_Warnings },
+    { { (unichar_t *) N_("Warnings"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Warnings|No Shortcut"), NULL, NULL, _MenuWarnings, MID_Warnings },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { NULL }
 };
@@ -7780,7 +7778,8 @@ static void FVWindowMenuBuild(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     int anychars = FVAnyCharSelected(fv);
     struct gmenuitem *wmi;
 
-    for ( wmi = wnmenu; wmi->ti.text!=NULL || wmi->ti.line ; ++wmi ) {
+    WindowMenuBuild(gw,mi,e);
+    for ( wmi = mi->sub; wmi->ti.text!=NULL || wmi->ti.line ; ++wmi ) {
 	switch ( wmi->mid ) {
 	  case MID_OpenOutline:
 	    wmi->ti.disabled = anychars==-1;
@@ -7793,15 +7792,14 @@ static void FVWindowMenuBuild(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	}
     }
-    WindowMenuBuild(gw,mi,e,wnmenu);
 }
 
-GMenuItem helplist[] = {
-    { { (unichar_t *) N_("_Help"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, GK_F1, 0, NULL, NULL, FVMenuContextualHelp },
-    { { (unichar_t *) N_("_Overview"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, GK_F1, ksm_shift, NULL, NULL, MenuHelp },
-    { { (unichar_t *) N_("_Index"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, GK_F1, ksm_control, NULL, NULL, MenuIndex },
-    { { (unichar_t *) N_("_About..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, '\0', 0, NULL, NULL, MenuAbout },
-    { { (unichar_t *) N_("_License..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, '\0', 0, NULL, NULL, MenuLicense },
+GMenuItem2 helplist[] = {
+    { { (unichar_t *) N_("_Help"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("Help|F1"), NULL, NULL, FVMenuContextualHelp },
+    { { (unichar_t *) N_("_Overview"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Overview|Shft+F1"), NULL, NULL, MenuHelp },
+    { { (unichar_t *) N_("_Index"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Index|Ctl+F1"), NULL, NULL, MenuIndex },
+    { { (unichar_t *) N_("_About..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("About...|No Shortcut"), NULL, NULL, MenuAbout },
+    { { (unichar_t *) N_("_License..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("License...|No Shortcut"), NULL, NULL, MenuLicense },
     { NULL }
 };
 
@@ -7832,19 +7830,19 @@ GMenuItem fvpopupmenu[] = {
     { NULL }
 };
 
-static GMenuItem mblist[] = {
-    { { (unichar_t *) N_("_File"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'F' }, 0, 0, fllist, fllistcheck },
-    { { (unichar_t *) N_("_Edit"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'E' }, 0, 0, edlist, edlistcheck },
-    { { (unichar_t *) N_("E_lement"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, 0, 0, ellist, ellistcheck },
-    { { (unichar_t *) N_("H_ints"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'i' }, 0, 0, htlist, htlistcheck },
-    { { (unichar_t *) N_("E_ncoding"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'V' }, 0, 0, enlist, enlistcheck },
-    { { (unichar_t *) N_("_View"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'V' }, 0, 0, vwlist, vwlistcheck },
-    { { (unichar_t *) N_("_Metrics"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, 0, 0, mtlist, mtlistcheck },
-    { { (unichar_t *) N_("_CID"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, 0, 0, cdlist, cdlistcheck },
+static GMenuItem2 mblist[] = {
+    { { (unichar_t *) N_("_File"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'F' }, NULL, fllist, fllistcheck },
+    { { (unichar_t *) N_("_Edit"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'E' }, NULL, edlist, edlistcheck },
+    { { (unichar_t *) N_("E_lement"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, NULL, ellist, ellistcheck },
+    { { (unichar_t *) N_("H_ints"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'i' }, NULL, htlist, htlistcheck },
+    { { (unichar_t *) N_("E_ncoding"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'V' }, NULL, enlist, enlistcheck },
+    { { (unichar_t *) N_("_View"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'V' }, NULL, vwlist, vwlistcheck },
+    { { (unichar_t *) N_("_Metrics"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, NULL, mtlist, mtlistcheck },
+    { { (unichar_t *) N_("_CID"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, NULL, cdlist, cdlistcheck },
 /* GT: Here (and following) MM means "MultiMaster" */
-    { { (unichar_t *) N_("MM"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, 0, 0, mmlist, mmlistcheck },
-    { { (unichar_t *) N_("_Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'W' }, 0, 0, wnmenu, FVWindowMenuBuild, NULL },
-    { { (unichar_t *) N_("_Help"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, 0, 0, helplist, NULL },
+    { { (unichar_t *) N_("MM"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, NULL, mmlist, mmlistcheck },
+    { { (unichar_t *) N_("_Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'W' }, NULL, wnmenu, FVWindowMenuBuild, NULL },
+    { { (unichar_t *) N_("_Help"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, NULL, helplist, NULL },
     { NULL }
 };
 # elif defined(FONTFORGE_CONFIG_GTK)
@@ -10585,7 +10583,7 @@ return( fv );
 }
 
 static void FontViewInit(void) {
-    mbDoGetText(mblist);
+    mb2DoGetText(mblist);
     mbDoGetText(fvpopupmenu);
 }
 
@@ -10683,8 +10681,8 @@ FontView *FontViewCreate(SplineFont *sf) {
     memset(&gd,0,sizeof(gd));
     gd.flags = gg_visible | gg_enabled;
     helplist[0].invoke = FVMenuContextualHelp;
-    gd.u.menu = mblist;
-    fv->mb = GMenuBarCreate( gw, &gd, NULL);
+    gd.u.menu2 = mblist;
+    fv->mb = GMenu2BarCreate( gw, &gd, NULL);
     GGadgetGetSize(fv->mb,&gsize);
     fv->mbh = gsize.height;
     fv->infoh = 1-fv_fontsize;

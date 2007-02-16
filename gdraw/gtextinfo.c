@@ -430,6 +430,138 @@ return( NULL );
 return( arr );
 }
 
+void GMenuItem2ArrayFree(GMenuItem2 *mi) {
+    int i;
+
+    if ( mi == NULL )
+return;
+    for ( i=0; mi[i].ti.text || mi[i].ti.image || mi[i].ti.line; ++i ) {
+	GMenuItem2ArrayFree(mi[i].sub);
+	free(mi[i].ti.text);
+    }
+    gfree(mi);
+}
+
+static char *shortcut_domain = "shortcuts";
+
+void GMenuSetShortcutDomain(char *domain) {
+    shortcut_domain = domain;
+}
+
+const char *GMenuGetShortcutDomain(void) {
+return(shortcut_domain);
+}
+
+void GMenuItemParseShortCut(GMenuItem *mi,char *shortcut) {
+    static struct { char *modifier; int mask; } modifiers[] = {
+	{ "Ctl", ksm_control },
+	{ "Control", ksm_control },
+	{ "Shft", ksm_shift },
+	{ "Shift", ksm_shift },
+	{ "CapsLk", ksm_capslock },
+	{ "CapsLock", ksm_capslock },
+	{ "Meta", ksm_meta },
+	{ "Alt", ksm_meta },
+	{ "Flag0x01", 0x01 },
+	{ "Flag0x02", 0x02 },
+	{ "Flag0x04", 0x04 },
+	{ "Flag0x08", 0x08 },
+	{ "Flag0x10", 0x10 },
+	{ "Flag0x20", 0x20 },
+	{ "Flag0x40", 0x40 },
+	{ "Flag0x80", 0x80 },
+	{ "Opt", 0x2000 },
+	{ "Option", 0x2000 },
+	{ NULL }};
+    char *pt, *sh;
+    int mask, temp, i;
+
+    mi->short_mask = 0;
+    mi->shortcut = '\0';
+
+    sh = dgettext(shortcut_domain,shortcut);
+    pt = strchr(sh,'|');
+    if ( pt!=NULL )
+	sh = pt+1;
+    if ( *sh=='\0' || strcmp(sh,"No Shortcut")==0 )
+return;
+
+    mask = 0;
+    while ( (pt=strchr(sh,'+'))!=NULL && pt!=sh ) {	/* A '+' can also occur as the short cut char itself */
+	for ( i=0; modifiers[i].modifier!=NULL; ++i ) {
+	    if ( strncasecmp(sh,modifiers[i].modifier,pt-sh)==0 )
+	break;
+	}
+	if ( modifiers[i].modifier!=NULL )
+	    mask |= modifiers[i].mask;
+	else if ( sscanf( sh, "0x%x", &temp)==1 )
+	    mask |= temp;
+	else {
+	    fprintf( stderr, "Could not parse short cut: %s\n", shortcut );
+return;
+	}
+	sh = pt+1;
+    }
+    mi->short_mask = mask;
+    for ( i=0; i<0x100; ++i ) {
+	if ( GDrawKeysyms[i]!=NULL && uc_strcmp(GDrawKeysyms[i],sh)==0 ) {
+	    mi->shortcut = 0xff00 + i;
+    break;
+	}
+    }
+    if ( i==0x100 ) {
+	if ( mask==0 ) {
+	    fprintf( stderr, "No modifiers in short cut: %s\n", shortcut );
+return;
+	}
+	mi->shortcut = utf8_ildb((const char **) &sh);
+	if ( *sh!='\0' ) {
+	    fprintf( stderr, "Unexpected characters at end of short cut: %s\n", shortcut );
+return;
+	}
+    }
+}
+
+GMenuItem *GMenuItem2ArrayCopy(GMenuItem2 *mi, uint16 *cnt) {
+    int i;
+    GMenuItem *arr;
+
+    if ( mi==NULL )
+return( NULL );
+    for ( i=0; mi[i].ti.text!=NULL || mi[i].ti.image!=NULL || mi[i].ti.line; ++i );
+    if ( i==0 )
+return( NULL );
+    arr = gcalloc((i+1),sizeof(GMenuItem));
+    for ( i=0; mi[i].ti.text!=NULL || mi[i].ti.image!=NULL || mi[i].ti.line; ++i ) {
+	arr[i].ti = mi[i].ti;
+	arr[i].moveto = mi[i].moveto;
+	arr[i].invoke = mi[i].invoke;
+	arr[i].mid = mi[i].mid;
+	if ( mi[i].shortcut!=NULL )
+	    GMenuItemParseShortCut(&arr[i],mi[i].shortcut);
+	if ( mi[i].ti.text!=NULL ) {
+	    if ( mi[i].ti.text_in_resource && mi[i].ti.text_is_1byte )
+		arr[i].ti.text = utf82u_mncopy((char *) mi[i].ti.text,&arr[i].ti.mnemonic);
+	    else if ( mi[i].ti.text_in_resource )
+		arr[i].ti.text = u_copy((unichar_t *) GStringGetResource((intpt) mi[i].ti.text,&arr[i].ti.mnemonic));
+	    else if ( mi[i].ti.text_is_1byte )
+		arr[i].ti.text = utf82u_copy((char *) mi[i].ti.text);
+	    else
+		arr[i].ti.text = u_copy(mi[i].ti.text);
+	    arr[i].ti.text_in_resource = arr[i].ti.text_is_1byte = false;
+	}
+	if ( islower(arr[i].ti.mnemonic))
+	    arr[i].ti.mnemonic = toupper(arr[i].ti.mnemonic);
+	if ( islower(arr[i].shortcut))
+	    arr[i].shortcut = toupper(arr[i].shortcut);
+	if ( mi[i].sub!=NULL )
+	    arr[i].sub = GMenuItem2ArrayCopy(mi[i].sub,NULL);
+    }
+    memset(&arr[i],'\0',sizeof(GMenuItem));
+    if ( cnt!=NULL ) *cnt = i;
+return( arr );
+}
+
 /* **************************** String Resources **************************** */
 
 /* A string resource file should begin with two shorts, the first containing
@@ -719,6 +851,7 @@ static char *(*_bindtextdomain)(const char *, const char *);
 static char *(*_textdomain)(const char *);
 static char *(*_gettext)(const char *);
 static char *(*_ngettext)(const char *, const char *, unsigned long int);
+static char *(*_dgettext)(const char *, const char *);
 
 static int init_gettext(void) {
 
@@ -738,6 +871,7 @@ return( false );
     _textdomain = (char *(*)(const char *)) dlsym(libintl,"textdomain");
     _gettext = (char *(*)(const char *)) dlsym(libintl,"gettext");
     _ngettext = (char *(*)(const char *, const char *, unsigned long int)) dlsym(libintl,"ngettext");
+    _dgettext = (char *(*)(const char *, const char *)) dlsym(libintl,"dgettext");
 
     if ( _bind_textdomain_codeset==NULL || _bindtextdomain==NULL ||
 	    _textdomain==NULL || _gettext==NULL || _ngettext==NULL ) {
@@ -791,6 +925,15 @@ char *gwwv_ngettext(const char *msg, const char *pmsg,unsigned long int n) {
 return( (_ngettext)(msg,pmsg,n));
 
 return( (char *) (n==1?msg:pmsg) );
+}
+
+char *gwwv_dgettext(const char *domain, const char *msg) {
+    if ( libintl==NULL )
+	init_gettext();
+    if ( libintl!=(void *) -1 && _dgettext!=NULL )
+return( (_dgettext)(domain,msg));
+
+return( (char *) msg );
 }
 #endif
 

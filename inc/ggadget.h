@@ -61,6 +61,15 @@ typedef struct gmenuitem {
     int mid;
 } GMenuItem;
 
+typedef struct gmenuitem2 {
+    GTextInfo ti;
+    char *shortcut;
+    struct gmenuitem2 *sub;
+    void (*moveto)(struct gwindow *base,struct gmenuitem *mi,GEvent *);	/* called before creating submenu */
+    void (*invoke)(struct gwindow *base,struct gmenuitem *mi,GEvent *);	/* called on mouse release */
+    int mid;
+} GMenuItem2;
+
 typedef struct tabinfo {
     unichar_t *text;
     struct ggadgetcreatedata *gcd;
@@ -122,6 +131,7 @@ typedef struct ggadgetdata {
 	GTextInfo *list;	/* for List Widgets (and ListButtons, RowCols etc) */
 	GTabInfo *tabs;		/* for Tab Widgets */
 	GMenuItem *menu;	/* for menus */
+	GMenuItem2 *menu2;	/* for menus (alternate) */
 	struct ggadgetcreatedata **boxelements;	/* An array of things to go in the box */
 	struct matrixinit *matrix;
 	GDrawEH drawable_e_h;	/* Drawable event handler */
@@ -187,7 +197,7 @@ struct matrixinit {
     int initial_row_cnt;
     struct matrix_data {
 	union {
-	    int md_ival;
+	    intpt md_ival;
 	    double md_real;
 	    char *md_str;
 	} u;
@@ -322,6 +332,9 @@ void GScrollBarGetBounds(GGadget *g, int32 *sb_min, int32 *sb_max, int32 *sb_pag
 void GMenuBarSetItemChecked(GGadget *g, int mid, int check);
 void GMenuBarSetItemEnabled(GGadget *g, int mid, int enabled);
 void GMenuBarSetItemName(GGadget *g, int mid, const unichar_t *name);
+void GMenuSetShortcutDomain(char *domain);
+const char *GMenuGetShortcutDomain(void);
+
 
 void GFileChooserPopupCheck(GGadget *g,GEvent *e);
 void GFileChooserFilterIt(GGadget *g);
@@ -348,6 +361,7 @@ void GHVBoxFitWindow(GGadget *g);
 
 void GMatrixEditSet(GGadget *g,struct matrix_data *data, int rows, int copy_it);
 struct matrix_data *GMatrixEditGet(GGadget *g, int *rows);
+int GMatrixEditGetColCnt(GGadget *g);
 int GMatrixEditGetActiveRow(GGadget *g);
 int GMatrixEditGetActiveCol(GGadget *g);
 void GMatrixEditDeleteRow(GGadget *g,int row);
@@ -398,6 +412,7 @@ GGadget *GPasswordCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GTextAreaCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GListFieldCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GMenuBarCreate(struct gwindow *base, GGadgetData *gd,void *data);
+GGadget *GMenu2BarCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GTabSetCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GFileChooserCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GHBoxCreate(struct gwindow *base, GGadgetData *gd,void *data);

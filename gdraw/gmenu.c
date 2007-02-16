@@ -115,26 +115,54 @@ typedef struct gmenu {
 
 static void shorttext(GMenuItem *gi,unichar_t *buf) {
     unichar_t *pt = buf;
+    static int initted = false;
+    struct { int mask; char *modifier; } mods[8] = {
+	{ ksm_shift, H_("Shft+") },
+	{ ksm_capslock, H_("CapsLk+") },
+	{ ksm_control, H_("Ctl+") },
+	{ ksm_meta, H_("Alt+") },
+	{ 0x10, H_("Flag0x10+") },
+	{ 0x20, H_("Flag0x20+") },
+	{ 0x40, H_("Flag0x40+") },
+	{ 0x80, H_("Flag0x80+") }
+	};
+    int i;
+    char buffer[32];
+
+    if ( !initted ) {
+	char *temp;
+	for ( i=0; i<8; ++i ) {
+	    sprintf( buffer,"Flag0x%02x", 1<<i );
+	    temp = dgettext(GMenuGetShortcutDomain(),buffer);
+	    if ( strcmp(temp,buffer)!=0 )
+		mods[i].modifier = temp;
+	    else
+		mods[i].modifier = dgettext(GMenuGetShortcutDomain(),mods[i].modifier);
+	}
+	/* It used to be that the Command key was available to X on the mac */
+	/*  but no longer. So we used to use it, but we can't now */
+	/* if ( strcmp(mods[2].modifier,"Ctl+")==0 ) */
+	    /* mods[2].modifier = keyboard!=kb_mac?"Ctl+":"Cmd+"; */
+	if ( strcmp(mods[3].modifier,"Alt+")==0 )
+	    mods[3].modifier = keyboard==kb_ibm?"Alt+":keyboard==kb_mac?"Opt+":keyboard==kb_ppc?"Cmd+":"Meta+";
+    }
 
     if ( gi->shortcut==0 ) {
 	*pt = '\0';
 return;
     }
-    if ( gi->short_mask&ksm_meta ) {
-	uc_strcpy(pt,keyboard==kb_ibm?"Alt+":keyboard==kb_mac?"Opt+":keyboard==kb_ppc?"Cmd+":"Meta+");
-	pt += u_strlen(pt);
+
+    for ( i=7; i>=0 ; --i ) {
+	if ( gi->short_mask&(1<<i) ) {
+	    uc_strcpy(pt,mods[i].modifier);
+	    pt += u_strlen(pt);
+	}
     }
-    if ( gi->short_mask&ksm_control ) {
-	uc_strcpy(pt,"Ctl+"/*keyboard!=kb_mac?"Ctl+":"Cmd+"*/);	/* Used to be that X made the command key available on the mac. But no longer */
-	pt += u_strlen(pt);
-    }
-    if ( gi->short_mask&ksm_shift ) {
-	uc_strcpy(pt,"Shft+");
-	pt += u_strlen(pt);
-    }
-    if ( gi->shortcut>=0xff00 && GDrawKeysyms[gi->shortcut-0xff00] )
-	u_strcpy(pt,GDrawKeysyms[gi->shortcut-0xff00]);
-    else {
+
+    if ( gi->shortcut>=0xff00 && GDrawKeysyms[gi->shortcut-0xff00] ) {
+	cu_strcpy(buffer,GDrawKeysyms[gi->shortcut-0xff00]);
+	utf82u_strcpy(pt,dgettext(GMenuGetShortcutDomain(),buffer));
+    } else {
 	*pt++ = islower(gi->shortcut)?toupper(gi->shortcut):gi->shortcut;
 	*pt = '\0';
     }
@@ -228,7 +256,7 @@ static void GMenuDrawDownArrow(struct gmenu *m, int ybase) {
 }
 
 static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y) {
-    unichar_t shortbuf[30];
+    unichar_t shortbuf[300];
     int as = GTextInfoGetAs(m->w,&mi->ti,m->font);
     int h, width;
     Color fg = m->box->main_foreground;
@@ -845,7 +873,7 @@ static GMenu *_GMenu_Create(GWindow owner,GMenuItem *mi, GPoint *where,
     GDisplay *disp = GDrawGetDisplayOfWindow(owner);
     GWindowAttrs pattrs;
     int i, width, keywidth;
-    unichar_t buffer[100];
+    unichar_t buffer[300];
     FontInstance *old;
     int ds, ld, temp;
     GRect screen;
@@ -872,6 +900,7 @@ static GMenu *_GMenu_Create(GWindow owner,GMenuItem *mi, GPoint *where,
 	if ( mi[i].sub!=NULL && 3*m->as>keywidth )
 	    keywidth = 3*m->as;
     }
+    GDrawSetFont(owner,old);
     m->mcnt = m->lcnt = i;
     if ( keywidth!=0 ) width += keywidth + GDrawPointsToPixels(owner,8);
     if ( m->hasticks ) {
@@ -1290,6 +1319,30 @@ GGadget *GMenuBarCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     _GGadget_Create(&mb->g,base,gd,data,&menubar_box);
 
     mb->mi = GMenuItemArrayCopy(gd->u.menu,&mb->mtot);
+    mb->xs = galloc((mb->mtot+1)*sizeof(uint16));
+    mb->entry_with_mouse = -1;
+    mb->font = menu_font;
+
+    GMenuBarFit(mb,gd);
+    GMenuBarFindXs(mb);
+
+    if ( gd->flags & gg_group_end )
+	_GGadgetCloseGroup(&mb->g);
+    _GWidget_SetMenuBar(&mb->g);
+
+    mb->g.takes_input = true;
+return( &mb->g );
+}
+
+GGadget *GMenu2BarCreate(struct gwindow *base, GGadgetData *gd,void *data) {
+    GMenuBar *mb = gcalloc(1,sizeof(GMenuBar));
+
+    if ( !gmenubar_inited )
+	GMenuInit();
+    mb->g.funcs = &gmenubar_funcs;
+    _GGadget_Create(&mb->g,base,gd,data,&menubar_box);
+
+    mb->mi = GMenuItem2ArrayCopy(gd->u.menu2,&mb->mtot);
     mb->xs = galloc((mb->mtot+1)*sizeof(uint16));
     mb->entry_with_mouse = -1;
     mb->font = menu_font;
