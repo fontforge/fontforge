@@ -2837,9 +2837,11 @@ static void DummyHintmask(GrowBuf *gb,struct hintdb *hdb) {
     HintMask hm;
 
     memset(hm,0,sizeof(hm));
-    BreakSubroutine(gb,hdb);
-    hdb->donefirsthm = true;
-    AddMask2(gb,hm,hdb->cnt,19);		/* hintmask */
+    if ( hdb->cnt!=0 ) {
+	BreakSubroutine(gb,hdb);
+	hdb->donefirsthm = true;
+	AddMask2(gb,hm,hdb->cnt,19);		/* hintmask */
+    }
 }
 
 static void SetTransformedHintMask(GrowBuf *gb,struct hintdb *hdb,
@@ -2954,7 +2956,8 @@ static void RSC2PS2(GrowBuf *gb, SplineChar *base,SplineChar *rsc,
     for ( r = rsc->layers[ly_fore].refs; r!=NULL; r = r->next ) if ( r!=unsafe ) {
 	if ( !r->justtranslated ) {
 	    if ( !r->sc->hconflicts && !r->sc->vconflicts && !hdb->noconflicts &&
-		    r->transform[1]==0 && r->transform[2]==0 )
+		    r->transform[1]==0 && r->transform[2]==0 &&
+		    r->transform[0]>0 && r->transform[3]>0 )
 		SetTransformedHintMask(gb,hdb,base,r,trans,round);
 	    if ( !hdb->donefirsthm )
 		DummyHintmask(gb,hdb);
