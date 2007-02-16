@@ -606,8 +606,38 @@ uint8 *_IVParse(InstrDlg *iv, char *text, int *len) {
 		    IVError(iv,_("A value must be between [-32768,32767]"),pt-text);
 return( NULL );
 		}
-		numberstack[npos++] = val;
+
 		pt = end;
+
+		if ( *pt == '@' ) { /* a delta control byte */
+		    if ( val>8 || val<-8 || val==0 ) {
+			IVError(iv,_("A value must be between [-8,-1] or [1,8]"),pt-text);
+return( NULL );
+		    }
+
+		    pt++;
+
+		    if ( !isdigit( *pt ) ) {
+			IVError(iv,_("Number expected"),pt-text);
+return( NULL );
+		    }
+
+		    temp = val;
+		    val = strtol(pt,&end,0);
+
+		    if ( val>15 || val<0 ) {
+			IVError(iv,_("A value must be between [0,15]"),pt-text);
+return( NULL );
+		    }
+
+		    val *= 16;
+		    if (temp < 0) temp += 8;
+		    else temp += 7;
+		    val += temp;
+		    pt = end;
+		}
+
+		numberstack[npos++] = val;
 	    } else if ( strnmatch(pt,"cvt",3)==0 ) {
 		pt += 3;
 		while ( *pt==' ' || *pt=='\t' ) ++pt;
