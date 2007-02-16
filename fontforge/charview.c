@@ -8152,7 +8152,7 @@ static void ap2listbuild(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
     mi->sub = sub;
 }
-	    
+
 static GMenuItem2 mtlist[] = {
     { { (unichar_t *) N_("_Center in Width"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Center in Width|No Shortcut"), NULL, NULL, CVMenuCenter, MID_Center },
     { { (unichar_t *) N_("_Thirds in Width"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Thirds in Width|No Shortcut"), NULL, NULL, CVMenuCenter, MID_Thirds },
