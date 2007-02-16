@@ -131,6 +131,7 @@ struct colstate {
     int16 red_shift, green_shift, blue_shift;
     int32 red_bits_mask, green_bits_mask, blue_bits_mask;
     int16 red_bits_shift, green_bits_shift, blue_bits_shift;
+    int32 alpha_bits;
     RevCMap *rev;
     unsigned int is_grey: 1;
 };
@@ -290,7 +291,7 @@ typedef struct gxdisplay /* : GDisplay */ {
     } xkb;
 } GXDisplay;
 
-# define Pixel32(gdisp,col) Pixel16(gdisp,col)
+# define Pixel32(gdisp,col) ( Pixel16(gdisp,col) | (gdisp)->cs.alpha_bits )
 # define Pixel24(gdisp,col) ( ((((col)>>16)&0xff)<<(gdisp)->cs.red_shift) | ((((col)>>8)&0xff)<<(gdisp)->cs.green_shift) | (((col)&0xff)<<(gdisp)->cs.blue_shift) )
 # define Pixel16(gdisp,col) ( ((((col)>>(gdisp)->cs.red_bits_shift)&(gdisp)->cs.red_bits_mask)<<(gdisp)->cs.red_shift) | ((((col)>>(gdisp)->cs.green_bits_shift)&(gdisp)->cs.green_bits_mask)<<(gdisp)->cs.green_shift) | (((col>>(gdisp)->cs.blue_bits_shift)&(gdisp)->cs.blue_bits_mask)<<(gdisp)->cs.blue_shift) )
 # define FixEndian16(col)	((((col)&0xff)<<8) | ((col>>8)&0xff))
