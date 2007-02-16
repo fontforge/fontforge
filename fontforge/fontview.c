@@ -3440,6 +3440,15 @@ return( true );
 }
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+static void FVDoTransform(FontView *fv) {
+    int flags=0x3;
+    if ( FVAnyCharSelected(fv)==-1 )
+return;
+    if ( FVAllSelected(fv))
+	flags = 0x7;
+    TransformDlgCreate(fv,FVTransFunc,getorigin,flags,cvt_none);
+}
+
 # if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuTransform(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
@@ -3447,12 +3456,7 @@ static void FVMenuTransform(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 void FontViewMenu_Transform(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
-    int flags=0x3;
-    if ( FVAnyCharSelected(fv)==-1 )
-return;
-    if ( FVAllSelected(fv))
-	flags = 0x7;
-    TransformDlgCreate(fv,FVTransFunc,getorigin,flags,cvt_none);
+    FVDoTransform(fv);
 }
 
 #if defined(FONTFORGE_CONFIG_GDRAW)
@@ -4048,7 +4052,7 @@ void FVBuildAccent(FontView *fv,int onlyaccents) {
 static void FVMenuBuildAccent(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVBuildAccent( (FontView *) GDrawGetUserData(gw), true );
 # elif defined(FONTFORGE_CONFIG_GTK)
-void FontViewMenu_Transform(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_BuildAccent(GtkMenuItem *menuitem, gpointer user_data) {
     FVBuildAccent( (FontView *) FV_From_MI(menuitem), true );
 # endif
 }
@@ -4057,7 +4061,7 @@ void FontViewMenu_Transform(GtkMenuItem *menuitem, gpointer user_data) {
 static void FVMenuBuildComposite(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVBuildAccent( (FontView *) GDrawGetUserData(gw), false );
 # elif defined(FONTFORGE_CONFIG_GTK)
-void FontViewMenu_Transform(GtkMenuItem *menuitem, gpointer user_data) {
+void FontViewMenu_BuildComposite(GtkMenuItem *menuitem, gpointer user_data) {
     FVBuildAccent( (FontView *) FV_From_MI(menuitem), false );
 # endif
 }
@@ -4418,31 +4422,17 @@ return;
     }
 }
 
-# if defined(FONTFORGE_CONFIG_GDRAW)
-static void FVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-#  define _CC_ISNext (mi->mid==MID_Next)
-#  define _CC_ISPrev (mi->mid==MID_Prev)
-#  define _CC_ISNextDef (mi->mid==MID_NextDef)
-#  define _CC_ISPrevDef (mi->mid==MID_PrevDef)
-# elif defined(FONTFORGE_CONFIG_GTK)
-void FontViewMenu_ChangeChar(GtkMenuItem *menuitem, gpointer user_data) {
-    FontView *fv = FV_From_MI(menuitem);
-    G_CONST_RETURN gchar *name = gtk_widget_get_name(menuitem);
-#  define _CC_ISNext (strcmp(name,"next_char1")==0)
-#  define _CC_ISPrev (strcmp(name,"prev_char1")==0)
-#  define _CC_ISNextDef (strcmp(name,"next_defined_char1")==0)
-#  define _CC_ISPrevDef (strcmp(name,"prev_defined_char1")==0)
-# endif
+static void _FVMenuChangeChar(FontView *fv,int mid ) {
     SplineFont *sf = fv->sf;
     EncMap *map = fv->map;
     int pos = FVAnyCharSelected(fv);
+
     if ( pos>=0 ) {
-	if ( _CC_ISNext )
+	if ( mid==MID_Next )
 	    ++pos;
-	else if ( _CC_ISPrev )
+	else if ( mid==MID_Prev )
 	    --pos;
-	else if ( _CC_ISNextDef ) {
+	else if ( mid==MID_NextDef ) {
 	    for ( ++pos; pos<map->enccount &&
 		    (map->map[pos]==-1 || !SCWorthOutputting(sf->glyphs[map->map[pos]]) ||
 			(fv->show!=fv->filled && fv->show->glyphs[map->map[pos]]==NULL ));
@@ -4484,7 +4474,7 @@ void FontViewMenu_ChangeChar(GtkMenuItem *menuitem, gpointer user_data) {
 		if ( pos>=map->enccount )
 return;
 	    }
-	} else if ( _CC_ISPrevDef ) {
+	} else if ( mid==MID_PrevDef ) {
 	    for ( --pos; pos>=0 &&
 		    (map->map[pos]==-1 || !SCWorthOutputting(sf->glyphs[map->map[pos]]) ||
 			(fv->show!=fv->filled && fv->show->glyphs[map->map[pos]]==NULL ));
@@ -4497,6 +4487,11 @@ return;
     else if ( pos>= map->enccount ) pos = 0;
     if ( pos>=0 && pos<map->enccount )
 	FVChangeChar(fv,pos);
+}
+
+static void FVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    _FVMenuChangeChar(fv,mi->mid);
 }
 
 # if defined(FONTFORGE_CONFIG_GDRAW)
@@ -9721,26 +9716,15 @@ static void FVChar(FontView *fv,GEvent *event) {
 	    (event->u.chr.state&ksm_shift) &&
 	    (event->u.chr.state&ksm_meta) )
 	FVMenuCharInfo(fv->gw,NULL,NULL);
-    else if (( event->u.chr.keysym=='M' ||event->u.chr.keysym=='m' ) &&
+    else if ( (event->u.chr.keysym=='[' || event->u.chr.keysym==']') &&
 	    (event->u.chr.state&ksm_control) ) {
-	if ( (event->u.chr.state&ksm_meta) && (event->u.chr.state&ksm_shift))
-	    FVSimplify(fv,1);
-	else if ( (event->u.chr.state&ksm_shift))
-	    FVSimplify(fv,0);
-    } else if ( (event->u.chr.keysym=='[' || event->u.chr.keysym==']') &&
+	_FVMenuChangeChar(fv,event->u.chr.keysym=='['?MID_Prev:MID_Next);
+    } else if ( (event->u.chr.keysym=='{' || event->u.chr.keysym=='}') &&
 	    (event->u.chr.state&ksm_control) ) {
-	/* some people have remapped keyboards so that shift is needed to get [] */
-	int pos = FVAnyCharSelected(fv);
-	if ( pos>=0 ) {
-	    if ( event->u.chr.keysym=='[' )
-		--pos;
-	    else
-		++pos;
-	    if ( pos<0 ) pos = fv->map->enccount-1;
-	    else if ( pos>= fv->map->enccount ) pos = 0;
-	    if ( pos>=0 && pos<fv->map->enccount )
-		FVChangeChar(fv,pos);
-	}
+	_FVMenuChangeChar(fv,event->u.chr.keysym=='{'?MID_PrevDef:MID_NextDef);
+    } else if ( event->u.chr.keysym=='\\' && (event->u.chr.state&ksm_control) ) {
+	/* European keyboards need a funky modifier to get \ */
+	FVDoTransform(fv);
     } else if ( isdigit(event->u.chr.keysym) && (event->u.chr.state&ksm_control) &&
 	    (event->u.chr.state&ksm_meta) ) {
 	/* The Script menu isn't always up to date, so we might get one of */
