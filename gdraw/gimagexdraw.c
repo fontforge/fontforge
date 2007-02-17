@@ -1134,9 +1134,9 @@ static void gdraw_xbitmap(GXWindow w, XImage *xi, GClut *clut,
 	XSetFunction(display,gc,GXand);
 	if ( trans==1 ) {
 	    XSetForeground(display,gc, ~((-1)<<depth) );
-	    XSetBackground(display,gc, 0 );
+	    XSetBackground(display,gc, gdisp->cs.alpha_bits );
 	} else {
-	    XSetForeground(display,gc, 0 );
+	    XSetForeground(display,gc, gdisp->cs.alpha_bits );
 	    XSetBackground(display,gc, ~((-1)<<depth) );
 	}
 	XPutImage(display,w->w,gc,xi,src->x,src->y,
