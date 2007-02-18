@@ -590,7 +590,7 @@ static void IVError(InstrDlg *iv,char *msg,int offset) {
 uint8 *_IVParse(InstrDlg *iv, char *text, int *len) {
     short numberstack[256];
     int npos=0, nread, i;
-    int push_left=0, push_size=0;
+    int push_left= 0, push_size=0;
     char *pt;
     char *end, *bend, *brack;
     int icnt=0, imax=strlen(text)/2, val, temp;
@@ -658,7 +658,7 @@ return( NULL );
 	break;
 	}
 	while ( *pt==' ' || *pt=='\t' ) ++pt;
-	if ( npos==0 && *pt=='\n' )
+	if ( npos==0 && (*pt=='\n' || *pt=='\0') )
     continue;
 	nread = 0;
 	if ( push_left==-1 ) {
@@ -674,7 +674,7 @@ return( NULL );
 		push_left = numberstack[0];
 	    }
 	}
-	if ( push_left!=0 && push_left<npos-nread && *pt=='\n' ) {
+	if ( push_left!=0 && push_left<npos-nread && (*pt=='\n' || *pt=='\0') ) {
 	    IVError(iv,_("More pushes specified than needed"),pt-text);
 return( NULL );
 	}
@@ -689,11 +689,11 @@ return( NULL );
 		instrs[icnt++] = numberstack[nread++];
 	    --push_left;
 	}
-	if ( nread<npos && push_left<=0 ) {
+	if ( nread<npos && push_left==0 && (*pt=='\n' || *pt=='\0')) {
 	    IVError(iv,_("Unexpected number"),pt-text);
 return( NULL );
 	}
-	if ( *pt=='\n' )
+	if ( *pt=='\n' || *pt=='\0' )
     continue;
 	if ( push_left>0 ) {
 	    IVError(iv,_("Missing pushes"),pt-text);
