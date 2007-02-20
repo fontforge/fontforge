@@ -656,7 +656,10 @@ static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
     lb = FindLineBreaks(ubuf,qlabels);
     llabels = gcalloc(cnt+1,sizeof(GTextInfo));
     for ( i=0; i<cnt; ++i) {
-	llabels[i].text = (unichar_t *) choices[i];
+	if ( choices[i][0]=='-' && choices[i][1]=='\0' )
+	    llabels[i].line = true;
+	else
+	    llabels[i].text = (unichar_t *) choices[i];
 	if ( multisel )
 	    llabels[i].selected = multisel[i];
 	else
@@ -1184,8 +1187,12 @@ static GWindow ChoiceDlgCreate8(struct dlg_info *d,const char *title,
     lb = FindLineBreaks(ubuf,qlabels);
     llabels = gcalloc(cnt+1,sizeof(GTextInfo));
     for ( i=0; i<cnt; ++i) {
-	llabels[i].text = (unichar_t *) choices[i];
-	llabels[i].text_is_1byte = true;
+	if ( choices[i][0]=='-' && choices[i][1]=='\0' )
+	    llabels[i].line = true;
+	else {
+	    llabels[i].text = (unichar_t *) choices[i];
+	    llabels[i].text_is_1byte = true;
+	}
 	if ( multisel )
 	    llabels[i].selected = multisel[i];
 	else
