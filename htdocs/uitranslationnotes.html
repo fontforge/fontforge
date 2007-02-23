@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 19-Aug-2006 -->
-  <!-- AP: Last modified: 14-Dec-2006 -->
+  <!-- AP: Last modified: 22-Feb-2007 -->
   <TITLE>User Interface Translation Notes</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -12,6 +12,33 @@
   <H1>
     User Interface Translation Notes
   </H1>
+  <BLOCKQUOTE ID="lit">
+    <TABLE ID="lit" ALIGN="RIGHT">
+      <TR VALIGN="Bottom">
+	<TD COLSPAN=2><SMALL><SMALL><B>CASCA:</B></SMALL> Ay, he spoke Greek.<BR>
+	  <SMALL><B>CASSIUS:</B></SMALL> To what effect?<BR>
+	  <SMALL><B>CASCA:</B></SMALL> Nay, an I tell you that, I'll ne'er<BR>
+	  look you i' the face again: but those that<BR>
+	  understood him smiled at one another and<BR>
+	  shook their heads; but, for mine own<BR>
+	  part, it was Greek to me.</SMALL></TD>
+	<TD><SMALL><SMALL><I>Julius Caesar</I>, I, ii<BR>
+	  Shakespeare</SMALL></SMALL></TD>
+      </TR>
+      <TR>
+	<TD COLSPAN=3>
+	    <HR>
+	</TD>
+      </TR>
+      <TR VALIGN="Bottom">
+	<TD><SMALL><SMALL><B>CHAPLAIN:</B></SMALL>...legal matters and so forth<BR>
+	  Are Greek to me; except of course<BR>
+	  That I understand Greek.</SMALL></TD>
+	<TD COLSPAN=2><SMALL><SMALL><I>The Lady's not for Burning</I>, II<BR>
+	  Christopher Fry</SMALL></SMALL></TD>
+      </TR>
+    </TABLE>
+  </BLOCKQUOTE>
   <P>
   FontForge uses a standard mechanism called gettext to provide translations
   of user interface strings into different language. Gettext is described profusely
@@ -35,34 +62,11 @@
       the CVS tree</A>
     <LI>
       <A HREF="#More">Still more strings to translate!</A>
+    <LI>
+      <A HREF="#HotKeys">Different hot keys</A>
   </UL>
-  <BLOCKQUOTE ID="lit">
-    <TABLE>
-      <TR VALIGN="Bottom">
-	<TD><SMALL><B>CASCA:</B></SMALL> Ay, he spoke Greek.<BR>
-	  <SMALL><B>CASSIUS:</B></SMALL> To what effect?<BR>
-	  <SMALL><B>CASCA:</B></SMALL> Nay, an I tell you that, I'll ne'er look you
-	  i' the<BR>
-	  face again: but those that understood him smiled at<BR>
-	  one another and shook their heads; but, for mine own<BR>
-	  part, it was Greek to me.</TD>
-	<TD><I><SMALL>Julius Caesar</SMALL></I><SMALL>, I, ii<BR>
-	  Shakespeare</SMALL></TD>
-      </TR>
-      <TR>
-	<TD COLSPAN=2>
-	    <HR>
-	</TD>
-      </TR>
-      <TR VALIGN="Bottom">
-	<TD><SMALL><B>CHAPLAIN:</B></SMALL>...legal matters and so forth<BR>
-	  Are Greek to me; except of course<BR>
-	  That I understand Greek.</TD>
-	<TD><I><SMALL>The Lady's not for Burning</SMALL></I><SMALL>, Act II<BR>
-	  Christopher Fry</SMALL></TD>
-      </TR>
-    </TABLE>
-  </BLOCKQUOTE>
+  <P>
+  <BR CLEAR="ALL">
   <H2>
     <A NAME="Obtaining">Obtaining</A> the strings
   </H2>
@@ -441,7 +445,195 @@ msgstr[1] "<FONT COLOR="Red">%d Groupes</FONT>"
   version 1.1</A> is under review. It might be better to translate that rather
   than version 1.0)
   <UL>
-    <LI><A HREF="OFL-vi.html">Vietnamese OFL 1.0</A> <A HREF="OFL-FAQ-vi.html">FAQ</A> by Clytie Siddall
+    <LI>
+      <A HREF="OFL-vi.html">Vietnamese OFL 1.0</A>
+      <A HREF="OFL-FAQ-vi.html">FAQ</A> by Clytie Siddall
   </UL>
+  <P>
+    <HR>
+  <H2>
+    Changing the assignment of <A NAME="HotKeys">Hot Keys</A>
+  </H2>
+  <P>
+  FontForge has a <A HREF="HotKeys.html">default assignment of hot key </A>(menu
+  shortcuts, whatever term you wish to use). This assignment can be difficult
+  to use on non-English keyboards. Even users with English keyboards might
+  find reasons to disagree with it. So FontForge allows you to redefine the
+  hot keys. This is done using a gettext mechanism, but in a different pot
+  file from the normal set of translation strings (which means it uses a different
+  gettext "text domain").
+  <P>
+  The hot key pot file is called: <TT>FontForge-MenuShortCuts.pot</TT>
+  <P>
+  This file consists of a sequence of entries that look like:
+  <BLOCKQUOTE>
+    <PRE>#: bitmapview.c:1720 charview.c:7833 charview.c:9079 fontview.c:6521
+msgid "New|Ctl+N"
+msgstr ""
+
+#: bitmapview.c:1721 charview.c:7834 charview.c:9080 fontview.c:6525
+msgid "Open|Ctl+O"
+msgstr ""
+
+#: bitmapview.c:1723 charview.c:7836 charview.c:9082 fontview.c:6527
+msgid "Close|Ctl+Shft+Q"
+msgstr ""
+
+#: bitmapview.c:1729 charview.c:7842
+msgid "Export...|No Shortcut"
+msgstr ""
+
+#: fontview.c:7798
+msgid "Help|F1"
+msgstr ""
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  Each entry (msgid) is formatted as follows
+  <UL>
+    <LI>
+      First is the command name as it appears in the (English) menu.
+    <LI>
+      Then there is the special character "|" which separates the command from
+      the hot key specification.
+    <LI>
+      Then a list of key modifiers separated by "+"
+    <LI>
+      And finally the key itself
+  </UL>
+  <P>
+  So in the first example above <CODE>New|Ctl+N</CODE> means that this is the
+  hot key for the New command, and that the default definition of that hot
+  key is Control N.
+  <P>
+  Modifier lists can be more complex <CODE>Close|Ctl+Shft+Q</CODE> means that
+  the hot key for the Close command is Control Shift Q.
+  <P>
+  Not all commands have hot keys in the default assignment, but since some
+  users might want to assign keys to them they still have entries. Thus
+  <CODE>Export...|No Shortcut</CODE> means that the Export command has no shortcut
+  (no hot key) in English.
+  <P>
+  It is also possible to use keys with no modifiers. Generally you will not
+  want to do that for a normal, alphabetic key, but for special keys, like
+  the function keys, it is perfectly acceptable. <CODE>Help|F1</CODE> means
+  that the Help command is bound to the first function key. 
+    <HR>
+  <P>
+  So that's what the msgid field means. The above information describes the
+  default key bindings. You want to know how to change them. The format is
+  almost the same (the only exception is that you will not include the command
+  name nor the "|" separator), but you need to change the msgstr field.
+  <P>
+  Suppose that you wanted to remove the shortcut for the open command, and
+  add one to the Export command: You might create a po file which looks like:
+  <BLOCKQUOTE>
+    <PRE>#: #: bitmapview.c:1721 charview.c:7834 charview.c:9080 fontview.c:6525
+msgid "Open|Ctl+O"
+msgstr "No Shortcut"
+
+#: bitmapview.c:1729 charview.c:7842
+msgid "Export...|No Shortcut"
+msgstr "Alt+Cntl+Shft+E"
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  NOTE: <FONT COLOR="Red"><STRONG>Omitting a string will not remove the
+  shortcut</STRONG></FONT>. Instead FontForge will use the default shortcut.
+  If you want to remove a shortcut you must add an explicit assignment to
+  "<CODE>No Shortcut</CODE>".
+  <P>
+  FontForge recognizes the following standard modifiers: <CODE>Alt+, Ctl+,
+  Shft+, CapsLock+, Opt+</CODE> (the last corresponds to the Option key on
+  the mac keyboard -- the mac Command key cannot be used by an X program because
+  the X11 application uses the Command key in its own menubar).
+  <P>
+  Some keyboards have additional modifier keys, X maps them to a flag bit in
+  the keyboard state mask of the XKeyEvent. If you want to use these modifiers
+  you need to know what that bit is. FontForge will also recognize:<BR>
+  <CODE>Flag0x01+, Flag0x02+, Flag0x04+, Flag0x08+,<BR>
+  Flag0x10+, Flag0x20+, Flag0x40+, Flag0x80+</CODE>
+  <P>
+  The hot key itself should be entered in UTF-8. 
+    <HR>
+  <P>
+  There are a few other strings in this file.
+  <P>
+  When FF displays a shortcut in the menu it will use a similar syntax.<BR>
+  That may not be appropriate for non-English terminals. On a French system
+  it might be better to show the Shift modifier as <I>Majuscule</I>. At the
+  bottom of this file are several entries which are not used to set shortcuts
+  but are used in displaying the shortcuts in the menu, thus
+  <BLOCKQUOTE>
+    <PRE>#: ../gdraw/gmenu.c:120
+msgid "Shft+"
+msgstr "Maj+"
+msgid "Flag0x80+"
+msgstr "AltGr+"
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  (These changes only affect what FontForge <EM>displays</EM> in the menu.
+  If you try to specify a keybinding as <CODE>msgstr "Ctl+Maj+E" </CODE>it
+  will <FONT COLOR="Red"><STRONG>NOT</STRONG></FONT> work)
+  <P>
+  Even though not obvious from this file, it is also possible to add names
+  for special keys. So you could add:
+  <BLOCKQUOTE>
+    <PRE>msgid "Escape"
+msgstr "&Eacute;chappe"
+msgid "Delete"
+msgstr "Efface"
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  The English names accepted for special keys are those defined under XK_MISCELLANY
+  in keysymdef.h of the X11 header files -- without the initial XK_ 
+    <HR>
+  <P>
+  You can obtain a <CODE>FontForge-MenuShortCuts.pot </CODE>file in pretty
+  much the same way you <A HREF="uitranslationnotes.html#Obtaining">obtain
+  a <CODE>FontForge.pot</CODE> file</A> -- download the source and then type:
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>cd fontforge/fontforge
+<FONT COLOR="Gray">$ </FONT>make -f Makefile.in FontForge-MenuShortCuts.pot
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  Again you will want to <A HREF="uitranslationnotes.html#Modifying">rename
+  this file before working on it</A>:
+  <BLOCKQUOTE>
+    <PRE><FONT COLOR="Gray">$ </FONT>mv FontForge-MenuShortCuts.pot fr-MenuShortCuts.po
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  Then edit the file to insert your short cuts.
+  <P>
+  If you want to install your new short cuts:
+  <UL>
+    <LI>
+      First you need to compile it:
+      <BLOCKQUOTE>
+	<PRE><FONT COLOR="Gray">$ </FONT>msgfmt -o <FONT COLOR="Red">fr-MenuShortCuts</FONT>.mo <FONT COLOR="Red">fr-MenuShortCuts</FONT>.po
+</PRE>
+      </BLOCKQUOTE>
+      <P>
+      and create an "mo" file.
+    <LI>
+      This file you will want to rename and move to the appropriate directory.
+      If fontforge is installed in /usr/local/bin then you would say
+      <BLOCKQUOTE>
+	<PRE><FONT COLOR="Gray">$ </FONT>mv <FONT COLOR="Red">fr-MenuShortCuts</FONT>.mo /usr/local/share/locale/<FONT COLOR="Red">fr</FONT>/LC_MESSAGES/FontForge-MenuShortCuts.mo
+</PRE>
+      </BLOCKQUOTE>
+      <P>
+      The above example assumes you have FontForge installed in
+      <CODE>/usr/local</CODE>. If you installed it elsewhere (<CODE>/usr </CODE>for
+      instance) simply replace <CODE>/usr/local/share</CODE> with
+      <CODE>/usr/share</CODE>, or whatever is appropriate.
+  </UL>
+  <P>
+  Currently there are no examples of these files, and there is nothing in the
+  Makefile to install them.
 </DIV>
 </BODY></HTML>
