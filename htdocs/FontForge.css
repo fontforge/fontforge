@@ -8,6 +8,7 @@
  A { text-decoration: none }
  #in { background: #fff; border: 1px solid #f00; padding: 1em }
  #framed-in { background: #fff; border: 1px solid #f00; padding: 10px }
+ TABLE#lit { background: #ddf; color: #000; }
  BLOCKQUOTE#lit { background: #ffd; color: #000; margin: 0em 5em 0em 5em; font: 80% serif; }
  BLOCKQUOTE#lit P { margin: .3em 0em .3em 0em; }
  BLOCKQUOTE PRE { background: #ffd; color: #000; }

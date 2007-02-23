@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 9-Apr-2006 -->
-  <!-- AP: Last modified: 19-Jan-2007 -->
+  <!-- AP: Last modified: 22-Feb-2007 -->
   <TITLE>Scripting functions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -480,9 +480,13 @@ a[4][0] = "Nested array";
 	  <DD>
 	    Clears any counter masks from the (one) selected glyph.
 	  <DT>
-	    <A NAME="ClearHints" HREF="hintsmenu.html#ClearHints">ClearHints</A>()
+	    <A NAME="ClearHints" HREF="hintsmenu.html#ClearHints">ClearHints</A>()<BR>
+	    ClearHints("Vertical")<BR>
+	    ClearHints("Horizontal")
 	  <DD>
-	    Clears any (PostScript) hints from the selected instructions.
+	    Clears any (PostScript) hints from the selected instructions. The first form
+	    clears all hints, the other two clear either all vertical or all horizontal
+	    hints respectively.
 	  <DT>
 	    <A NAME="ClearInstrs">C</A>learInstrs()
 	  <DD>
