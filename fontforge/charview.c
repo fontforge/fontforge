@@ -1849,6 +1849,10 @@ static void CVFit(CharView *cv) {
     double center;
 
     SplineCharFindBounds(cv->sc,&b);
+    if ( b.miny==0 && b.maxy==0 ) {
+	b.maxy =cv->sc->parent->ascent;
+	b.miny = -cv->sc->parent->descent;
+    }
     if ( b.miny>=0 ) b.miny = -cv->sc->parent->descent;
     if ( b.minx>0 ) b.minx = 0;
     if ( b.maxx<0 ) b.maxx = 0;
