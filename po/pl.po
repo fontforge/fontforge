@@ -11178,7 +11178,7 @@ msgstr "_CID"
 
 #: fontview.c:10746 fontview.c:10751 sfd.c:3927
 msgid "Interpreting Glyphs"
-msgstr ""
+msgstr "Interpretacja glifów"
 
 #: fontview.c:10800 fvimportbdf.c:2144
 msgid "Decompress Failed!"
@@ -11323,6 +11323,9 @@ msgid ""
 "and the deprecated dotlessj glyph,\n"
 "please add the former and remake your accented glyphs"
 msgstr ""
+"W tym foncie nie określono glifu ani dla „uni0207”,\n"
+"ani dla przestarzałego „dotlessj”, proszę dodać ten\n"
+"pierwszy i ponownie zbudować glify akcentowane."
 
 #: fvfonts.c:965 fvfonts.c:967 fvfonts.c:977 fvfonts.c:979 fvfonts.c:1016
 msgid "Merging Problem"
@@ -11351,7 +11354,7 @@ msgstr "Połącz fonty..."
 #: fvfonts.c:1134
 #, c-format
 msgid "Font to merge into %.20s"
-msgstr ""
+msgstr "Font do połączenia z %.20s"
 
 #: fvfonts.c:1219
 #, c-format
@@ -11395,7 +11398,7 @@ msgstr ""
 
 #: fvfonts.c:1586
 msgid "Amount"
-msgstr ""
+msgstr "Wartość"
 
 #: fvfonts.c:1621
 msgid "Interpolate Fonts..."
@@ -11404,7 +11407,7 @@ msgstr "Interpoluj fonty..."
 #: fvfonts.c:1630
 #, c-format
 msgid "Interpolating between %.20s and:"
-msgstr ""
+msgstr "Interpolacjia między %.20s a:"
 
 #. GT: The dialog looks like:
 #. GT:   Interpolating between <fontname> and:
@@ -11418,7 +11421,7 @@ msgstr ""
 #: fvimportbdf.c:320
 #, c-format
 msgid "Bad bounding box for %s.\n"
-msgstr ""
+msgstr "Błędny prostokąt opisany dla %s.\n"
 
 #: fvimportbdf.c:451
 #, c-format
@@ -11444,6 +11447,7 @@ msgstr ""
 #, c-format
 msgid "FontForge does not support this bit depth %d (must be 1,2,4,8,16,32)\n"
 msgstr ""
+"FontForge nie obsługuje tej głębi kolorów %d (musi być 1, 2, 4, 8 albo 16 bitów)\n"
 
 #: fvimportbdf.c:967
 msgid "Unexpected EOF in gf\n"
@@ -11477,7 +11481,7 @@ msgstr ""
 
 #: fvimportbdf.c:1967
 msgid "Not a pk file"
-msgstr ""
+msgstr "To nie plik pk"
 
 #: fvimportbdf.c:1967
 #, c-format
@@ -11486,7 +11490,7 @@ msgstr "To nie jest (metafontowy) plik pk: %.200s"
 
 #: fvimportbdf.c:1974
 msgid "Not a gf file"
-msgstr ""
+msgstr "To nie plik gf"
 
 #: fvimportbdf.c:1974
 #, c-format
@@ -11495,7 +11499,7 @@ msgstr "To nie jest (metafontowy) plik gf: %.200s"
 
 #: fvimportbdf.c:1980 fvimportbdf.c:1986 fvimportbdf.c:2079
 msgid "Not a pcf file"
-msgstr ""
+msgstr "To nie plik pcf"
 
 #: fvimportbdf.c:1980 fvimportbdf.c:1986 fvimportbdf.c:2079
 #, c-format
@@ -11504,7 +11508,7 @@ msgstr "To nie jest plik X11 pcf: %.200s"
 
 #: fvimportbdf.c:1992
 msgid "Not a bdf file"
-msgstr ""
+msgstr "To nie plik bdf"
 
 #: fvimportbdf.c:1992
 #, c-format
@@ -11523,7 +11527,7 @@ msgstr "Bez bitmapowych"
 #: fvimportbdf.c:2273
 #, c-format
 msgid "Could not find a bitmap font in %s"
-msgstr ""
+msgstr "Nie znaleziono fontu bitmapowego w %s"
 
 #: fvmetrics.c:53
 msgid "Set Width To:"
@@ -11626,12 +11630,12 @@ msgstr ""
 #: glyphcomp.c:858 glyphcomp.c:1117 glyphcomp.c:1132 glyphcomp.c:1146
 #, c-format
 msgid "Outline Glyphs\n"
-msgstr ""
+msgstr "Glify obrysowe\n"
 
 #: glyphcomp.c:863 glyphcomp.c:1148
 #, c-format
 msgid "Glyph Differences\n"
-msgstr ""
+msgstr "Różnice w glifach\n"
 
 #. GT: FontForge needs to recoginze the quotes used here(“”). If you change them
 #. GT: (in the translated strings) let me know. It currently also recognizes
@@ -11655,7 +11659,7 @@ msgstr ""
 #: glyphcomp.c:956
 #, c-format
 msgid "Glyph “%s” refers to %s with a different transformation matrix\n"
-msgstr ""
+msgstr "Glif „%s” odwołuje się do „%s” z inną macierzą przekształcenia\n"
 
 #: glyphcomp.c:1007
 #, c-format
@@ -11737,7 +11741,7 @@ msgstr ""
 #: glyphcomp.c:1120 glyphcomp.c:1135
 #, c-format
 msgid "Glyphs in %s but not in %s\n"
-msgstr ""
+msgstr "Glify występują w %s, ale nie w %s\n"
 
 #: glyphcomp.c:1124 glyphcomp.c:1139
 #, c-format
@@ -11752,7 +11756,7 @@ msgstr ""
 #: glyphcomp.c:1185 glyphcomp.c:1208 glyphcomp.c:1238 glyphcomp.c:1290 glyphcomp.c:1309
 #, c-format
 msgid "Bitmap Strikes\n"
-msgstr ""
+msgstr "Wersje bitmapowe\n"
 
 #: glyphcomp.c:1188 glyphcomp.c:1211 glyphcomp.c:1241
 #, c-format
@@ -11797,7 +11801,7 @@ msgstr ""
 #: glyphcomp.c:1293 glyphcomp.c:1312
 #, c-format
 msgid "Strikes in %s but not in %s\n"
-msgstr ""
+msgstr "Wersje bitmapowe dostępne w %s, ale nie w %s\n"
 
 #: glyphcomp.c:1297 glyphcomp.c:1316
 #, c-format
@@ -11935,12 +11939,12 @@ msgstr ""
 #: glyphcomp.c:2127 glyphcomp.c:2142
 #, c-format
 msgid "Nested features in %s but not in %s\n"
-msgstr ""
+msgstr "Funkcje zagnieżdżone użyte w %s, ale nie w %s\n"
 
 #: glyphcomp.c:2131 glyphcomp.c:2146
 #, c-format
 msgid "Nested feature '%c%c%c%c' is not in %s\n"
-msgstr ""
+msgstr "Fukcji zagnieżdżonej „%c%c%c%c” nie użyto w %s\n"
 
 #: glyphcomp.c:2171 glyphcomp.c:2191
 #, c-format
@@ -11996,7 +12000,7 @@ msgstr ""
 #: groups.c:931
 #, c-format
 msgid "The glyph name \"%1$.30s\" occurs in groups %2$.30s and %3$.30s"
-msgstr ""
+msgstr "Nazwa glifu „%1$.30s” występuje w grupach %2$.30s i w %3$.30s"
 
 #: groups.c:1174
 msgid "UntitledGroup"
@@ -12008,11 +12012,11 @@ msgstr "Grupy"
 
 #: groups.c:1297
 msgid "Define Groups"
-msgstr ""
+msgstr "Definiuj grupy"
 
 #: groups.c:1315
 msgid "New Sub-Group"
-msgstr ""
+msgstr "Nowa podgrupa"
 
 #: groups.c:1341
 msgid "Group Name:"
@@ -12208,7 +12212,7 @@ msgstr ""
 
 #: kernclass.c:1890
 msgid "Move selected class up"
-msgstr ""
+msgstr "Przesuń wybraną klasę wyżej"
 
 #: kernclass.c:1901
 msgid "Move selected class down"
@@ -12241,11 +12245,11 @@ msgstr "Powiększenie:"
 
 #: kernclass.c:2095
 msgid "Kern Offset:"
-msgstr ""
+msgstr "Wartość kerningu:"
 
 #: kernclass.c:2112
 msgid "Device Table Correction:"
-msgstr ""
+msgstr "Korekta w tych warunkach:"
 
 #: kernclass.c:2283 problems.c:1949
 msgid "Kerning Class"
@@ -12293,7 +12297,7 @@ msgstr "Za mało pamięci\n"
 
 #: macbinary.c:2101 macbinary.c:2599 parsepdf.c:1456 parsettf.c:339 svg.c:944
 msgid "Not in Collection"
-msgstr ""
+msgstr "Nie w zbiorze"
 
 #: macbinary.c:2101 macbinary.c:2599 parsepdf.c:1456 svg.c:944
 #, c-format
@@ -12311,7 +12315,6 @@ msgid "There are multiple fonts in this file, pick one"
 msgstr "W tym pliku jest więcej niż jeden font, wybierz któryś."
 
 #: macbinary.c:2136
-#, fuzzy
 msgid "Can't open temporary file for truetype output.\n"
 msgstr "Nie udało się otworzyć pliku tymczasowego dla wyjścia TrueType.\n"
 
@@ -12521,7 +12524,7 @@ msgstr "Zwęź"
 
 #: metafont.c:1871
 msgid "Expand"
-msgstr ""
+msgstr "Poszerz"
 
 #: metafont.c:1902 metafont.c:2147
 msgid "Scale Stems By:"
@@ -12561,7 +12564,7 @@ msgstr ""
 
 #: metricsview.c:854
 msgid "Use Kerning Class?"
-msgstr ""
+msgstr "Czy użyć klasy kerningu?"
 
 #: metricsview.c:854
 #, c-format
@@ -12585,9 +12588,8 @@ msgid "TBearing:"
 msgstr "Górna odsadka:"
 
 #: metricsview.c:968
-#, fuzzy
 msgid "LBearing:"
-msgstr "lewa odsadka:"
+msgstr "Lewa odsadka:"
 
 #. GT: Bottom/Right (side) bearing
 #: metricsview.c:973
@@ -12701,7 +12703,7 @@ msgstr ""
 #, c-format
 msgid ""
 "The fonts %1$.30s and %2$.30s have a different number of glyphs or different encodings"
-msgstr ""
+msgstr "Fonty %1$.30s i %2$.30s zawierają inną liczbę glifów lub są inaczej kodowane"
 
 #: mm.c:565 mm.c:567
 #, c-format
@@ -12715,11 +12717,12 @@ msgid ""
 "The entry \"%1$.20s\" is not present in the private dictionary of both %2$.30s and %3"
 "$.30s"
 msgstr ""
+"Wpis „%1$.20s” w prywatnym słowniku PS jest obecny tylko albo w %2$.30s, albo w %3$.30s"
 
 #: mm.c:607 mm.c:609 mm.c:614 mm.c:616
 #, c-format
 msgid "The glyph %1$.30s is defined in font %2$.30s but not in %3$.30s"
-msgstr ""
+msgstr "Glif %1$.30s jest określony w %2$.30s, ale nie w %3$.30s"
 
 #: mm.c:628 mm.c:630 mm.c:642 mm.c:644
 #, c-format
@@ -12727,6 +12730,8 @@ msgid ""
 "The glyph %1$.30s in %2$.30s has both references and contours. This is not supported in "
 "a font with variations"
 msgstr ""
+"Glif %1$.30s w foncie %2$.30s zawiera i kontury, i odwołania. To nie jest obsługiwane w "
+"fontach z wariantami."
 
 #: mm.c:654 mm.c:656
 #, c-format
@@ -12740,6 +12745,8 @@ msgid ""
 "The glyph %1$.30s in font %2$.30s has a different number of points (or control points) "
 "on its contours than in %3$.30s"
 msgstr ""
+"Glif %1$.30s ma w foncie %2$.30s inną liczbę punktów (lib punktów kontrolnych) niż w %3"
+"$.30s"
 
 #: mm.c:676 mm.c:678
 #, c-format
@@ -12773,7 +12780,7 @@ msgstr "Glif %1$.30s ma w foncie %2$.30s inną liczbę par do kerningu niż w %3
 msgid ""
 "The glyph %1$.30s has a different numbering of points (and control points) on its "
 "contours than in the various instances of the font"
-msgstr ""
+msgstr "Glif %1$.30s ma punkty inaczej ponumerowane niż w innych fontach podstawowych"
 
 #: mm.c:736 mm.c:738 mm.c:747 mm.c:749
 #, c-format
@@ -12831,20 +12838,21 @@ msgstr "Ten glif nie występuje w niektórych fontach podstawowych"
 
 #: mm.c:918
 msgid "This glyph contains a different number of references in different instances"
-msgstr ""
+msgstr "Ten glif zawiera różną liczbę odwołań w różnych fontach podstawowych"
 
 #: mm.c:920
 msgid "A reference in this glyph refers to a different encoding in different instances"
-msgstr ""
+msgstr "Odwołania w tym glifie mają różne punkty kodowe w różnych fontach podstawowych"
 
 #: mm.c:983 mm.c:995
 msgid ""
 "A contour in this glyph contains a different number of points in different instances"
 msgstr ""
+"Ten glif zawiera kontur mający różną liczbę punktów w różnych fontach podstawowych"
 
 #: mm.c:1005
 msgid "This glyph contains a different number of contours in different instances"
-msgstr ""
+msgstr "Ten glif zawiera różną liczbę konturów w różnych fontach podstawowych"
 
 #: mm.c:1041
 msgid "This glyph contains a different number of hints in different instances"
@@ -12852,7 +12860,7 @@ msgstr "Ten glif zawiera różną liczbę hintów w różnych fontach podstawowy
 
 #: mm.c:1056
 msgid "This glyph contains different kerning pairs in different instances"
-msgstr ""
+msgstr "Ten glif występuje w innych parach kerningu w różnych fontach podstawowych"
 
 #: mm.c:1223
 msgid "Various errors occurred at the selected glyphs"
@@ -12941,7 +12949,7 @@ msgstr "Błędna liczba w %s"
 #: mm.c:2486
 #, c-format
 msgid "Wrong number of entries in %s"
-msgstr ""
+msgstr "Błędna liczba wpisów w %s"
 
 #: mm.c:2546
 #, c-format
@@ -13069,7 +13077,7 @@ msgstr "Typ osi:"
 
 #: mm.c:3956
 msgid "Axis Range:"
-msgstr ""
+msgstr "Zakres osi:"
 
 #: mm.c:3993
 msgid "Default:"
@@ -13190,6 +13198,8 @@ msgid ""
 "Bad token \"%.30s\"\n"
 "near ...%40s"
 msgstr ""
+"Błędny token „%.30s”\n"
+"w okolicach ...%40s"
 
 #: nonlineartrans.c:180 nonlineartrans.c:182 nonlineartrans.c:192 nonlineartrans.c:194
 #: nonlineartrans.c:204 nonlineartrans.c:206
@@ -13237,6 +13247,8 @@ msgid ""
 "Unexpected token after expression end.\n"
 "before ...%40s"
 msgstr ""
+"Niespodziewany token za końcem wyrażenia.\n"
+"przed ...%40s"
 
 #: nonlineartrans.c:488
 #, c-format
@@ -13308,11 +13320,11 @@ msgstr "Wartość"
 
 #: nonlineartrans.c:1061
 msgid "Point of View Projection..."
-msgstr ""
+msgstr "Projekcja perspektywiczna..."
 
 #: nonlineartrans.c:1071
 msgid "View Point"
-msgstr ""
+msgstr "Punkt widzenia"
 
 #: nonlineartrans.c:1134 nonlineartrans.c:1271
 msgid "Distance to drawing plane:"
@@ -13324,11 +13336,11 @@ msgstr ""
 
 #: nonlineartrans.c:1168 nonlineartrans.c:1273
 msgid "Drawing plane tilt:"
-msgstr ""
+msgstr "Nachylenie płaszczyzny rysunku:"
 
 #: nonlineartrans.c:1192 nonlineartrans.c:1274
 msgid "Direction of gaze:"
-msgstr ""
+msgstr "Kierunek patrzenia:"
 
 #: nonlineartrans.c:1216
 msgid "Vanishing Point:"
@@ -13343,7 +13355,7 @@ msgstr ""
 
 #: nonlineartrans.c:1392 nonlineartrans.c:1394
 msgid "Projecting..."
-msgstr ""
+msgstr "projekcja..."
 
 #: openfontdlg.c:39
 msgid "All Fonts"
@@ -13836,7 +13848,7 @@ msgstr ""
 #. GT: DICT is a magic term inside CFF fonts, as is INDEX, and I guess CFF and type2
 #: parsettf.c:2192
 msgid "FontForge does not support type2 programs embedded in CFF DICT INDICES.\n"
-msgstr ""
+msgstr "FontForge nie obsługuje programów Typu 2 wpisanych w INDEX-ach CFF DICT.\n"
 
 #: parsettf.c:2332
 msgid "Bad subroutine INDEX in cff font.\n"
@@ -13881,7 +13893,7 @@ msgstr ""
 #: parsettf.c:2849
 #, c-format
 msgid "Unexpected charset format in cff: %d\n"
-msgstr ""
+msgstr "Nieznany format kodowania w cff: %d\n"
 
 #: parsettf.c:2870
 msgid "Bad fdselect\n"
@@ -14088,7 +14100,7 @@ msgstr ""
 
 #: parsettf.c:4637
 msgid "No Bitmap Strikes"
-msgstr ""
+msgstr "Brak wersji bitmapowych"
 
 #: parsettf.c:4637
 #, c-format
@@ -14312,7 +14324,7 @@ msgstr ""
 #: parsettfatt.c:2277
 #, c-format
 msgid "Too many scripts %d\n"
-msgstr ""
+msgstr "Za dużo pism %d\n"
 
 #: parsettfatt.c:2329
 #, c-format
@@ -14507,7 +14519,7 @@ msgstr ""
 
 #: parsettfbmf.c:517 parsettfbmf.c:521
 msgid "Load Bitmap Fonts"
-msgstr ""
+msgstr "Wczytaj fonty bitmapowe"
 
 #: parsettfbmf.c:518 parsettfbmf.c:522
 msgid ""
@@ -14608,7 +14620,7 @@ msgstr ""
 
 #: parsettfvar.c:764 parsettfvar.c:768
 msgid "Processing Variations"
-msgstr ""
+msgstr "Przetwarzanie wariantów"
 
 #: prefs.c:270
 msgid "ResourceFile"
@@ -17307,6 +17319,8 @@ msgid ""
 "This font contains at least one foreground image, but svg does not support that. Do you "
 "want to proceed anyway?"
 msgstr ""
+"Ten font ma co najmniej jeden obraz w tle któregoś glifu, a format svg tego nie "
+"obsługuje. Czy mimo to kontynuować?"
 
 #: savefontdlg.c:1496
 msgid "Find Sub Font Definition file"
@@ -17420,7 +17434,7 @@ msgstr ""
 
 #: savefontdlg.c:2374
 msgid "Not a CID format"
-msgstr ""
+msgstr "To nie jest font CID"
 
 #: savefontdlg.c:2374
 msgid ""
@@ -17493,7 +17507,7 @@ msgstr ""
 
 #: savefontdlg.c:2450
 msgid "Needs bitmap font"
-msgstr ""
+msgstr "Potrzebny font bitmapowy"
 
 #: savefontdlg.c:2450
 msgid ""
@@ -17623,7 +17637,7 @@ msgstr "Wywoł_aj..."
 
 #: search.c:918 search.c:943 search.c:945 search.c:1657 search.c:1660
 msgid "Not Found"
-msgstr ""
+msgstr "niczego nie znaleziono"
 
 #: search.c:918
 #, c-format
@@ -17633,7 +17647,7 @@ msgstr ""
 #: search.c:918 search.c:943 search.c:945
 #, c-format
 msgid "The search pattern was not found in the font %.100s"
-msgstr ""
+msgstr "W foncie %.100s nie znaleziono szukanego wzorca"
 
 #: search.c:920 search.c:1163 search.c:1241 search.c:1561
 msgid "Find"
@@ -17792,11 +17806,11 @@ msgstr "Nieobsługiwany format obrazu"
 
 #: sftextfield.c:1207 sftextfield.c:2863
 msgid "Unsupported image format must be bmp or png"
-msgstr ""
+msgstr "Nieobsługiwany format obrazu - musi być bmp albo png"
 
 #: sftextfield.c:1209 sftextfield.c:2865
 msgid "Unsupported image format must be bmp"
-msgstr ""
+msgstr "Nieobsługiwany format obrazu - musi być bmp"
 
 #: sftextfield.c:1213 sftextfield.c:2869
 msgid "Could not write"
@@ -18230,7 +18244,7 @@ msgstr ""
 
 #: showatt.c:2931
 msgid "Font Compare"
-msgstr ""
+msgstr "Porównaj fonty"
 
 #: showatt.c:3076
 msgid "Font Compare..."
@@ -18269,7 +18283,7 @@ msgstr ""
 
 #: showatt.c:3158
 msgid "Warn if _unlinked references"
-msgstr ""
+msgstr "Ostrzegaj przy o_dłączonych odwołaniach"
 
 #: showatt.c:3163
 msgid ""
@@ -18303,7 +18317,7 @@ msgstr ""
 
 #: showatt.c:3210
 msgid "Don't Compare HintMasks"
-msgstr ""
+msgstr "Nie porównuj hintmasek"
 
 #: showatt.c:3222
 msgid "_Add Diff Outlines to Background"
@@ -18318,7 +18332,7 @@ msgstr ""
 
 #: showatt.c:3235
 msgid "Add _Missing Glyphs"
-msgstr ""
+msgstr "Wstaw b_rakujące glify"
 
 #: showatt.c:3240
 msgid ""
@@ -19013,7 +19027,7 @@ msgstr ""
 
 #: tottf.c:4868
 msgid "Missing bitmap strike"
-msgstr ""
+msgstr "Brakuje wersji bitmapowej"
 
 #: tottf.c:4868
 #, c-format
@@ -19022,7 +19036,7 @@ msgstr ""
 
 #: tottf.c:4882
 msgid "No bitmap strikes"
-msgstr ""
+msgstr "Brak wersji bitmapowych"
 
 #: tottf.c:5452
 #, c-format
@@ -19418,7 +19432,7 @@ msgstr ""
 #: ufo.c:898
 #, c-format
 msgid "Bad glif file %s\n"
-msgstr ""
+msgstr "Błędny plik glif %s\n"
 
 #: ufo.c:916
 #, c-format
