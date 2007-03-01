@@ -5200,6 +5200,7 @@ static void GlyphAddInstrs(SplineChar *sc,int replace,
     if ( icnt==0 )
 return;
     if ( sc->ttf_instrs==NULL ) {
+	SCNumberPoints(sc);		/* If the point numbering is wrong then we'll just throw away the instructions when we notice it */
 	sc->ttf_instrs = galloc(icnt);
 	memcpy(sc->ttf_instrs,instrs,icnt);
 	sc->ttf_instrs_len = icnt;
@@ -5262,7 +5263,7 @@ static void bFindOrAddCvtIndex(Context *c) {
 	ScriptError( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_int || (c->a.argc==3 && c->a.vals[2].type!=v_int ))
 	ScriptError( c, "Bad argument type" );
-    if ( c->a.argc )
+    if ( c->a.argc==3 )
 	sign_matters = c->a.vals[2].u.ival;
     c->return_val.type = v_int;
     if ( sign_matters )
@@ -5813,7 +5814,7 @@ static void bMMAxisBounds(Context *c) {
 
     c->return_val.type = v_arrfree;
     c->return_val.u.aval = galloc(sizeof(Array));
-    c->return_val.u.aval->argc = mm->axis_count;
+    c->return_val.u.aval->argc = 3;
     c->return_val.u.aval->vals = galloc(3*sizeof(Val));
     for ( i=0; i<3; ++i )
 	c->return_val.u.aval->vals[i].type = v_int;
