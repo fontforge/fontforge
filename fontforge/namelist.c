@@ -15426,7 +15426,7 @@ static struct psaltnames psaltnames[] = {
 	{ "dotaccentcmb", 0x0307 },
 	{ "dotbelowcmb", 0x0323 },
 	{ "dotkatakana", 0x30fb },
-	{ "dotlessj", 0x0284 },			/* !!!! AGL Still says this is 0xf6be */
+	{ "dotlessj", 0x0237 },			/* !!!! AGL Still says this is 0xf6be */
 	{ "dotlessjstrokehook", 0x0284 },
 	{ "dottedcircle", 0x25cc },
 	{ "doubleyodpatah", 0xfb1f },
