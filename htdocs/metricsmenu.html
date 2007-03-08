@@ -2,199 +2,190 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 27-Jun-2005 -->
+  <!-- AP: Last modified: 8-Mar-2007 -->
   <TITLE>The Metrics Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
 <DIV id="in">
-<P>
-<H1 ALIGN=Center>
-  The Metrics Menu
-</H1>
-<P>
-This menu is not present in the Bitmap View, and the Metrics View only contains
-"Center in Width" and "Thirds in Width".
-<P>
-<UL>
-  <LI>
-    <A HREF="#Center">Center in Width</A>
-  <LI>
-    <A HREF="#Thirds">Thirds in Width</A>
-  <LI>
-    <A HREF="#Width">Set Width...</A>
-  <LI>
-    <A HREF="#LBearing">Set LBearing...</A>
-  <LI>
-    <A HREF="#RBearing">Set RBearing...</A>
-  <LI>
-    <A HREF="#Auto">Auto Width...</A>
-  <LI>
-    <A HREF="#Kern">Auto Kern...</A>
-  <LI>
-    <A HREF="#KernByClasses">Kern By Classes...</A>
-  <LI>
-    <A HREF="#Remove">Remove All Kern Pairs</A>
-  <LI>
-    <A HREF="#kernpair">Kern Pair Closeup...</A>
-  <LI>
-    <A HREF="metricsmenu.html#VKernByClasses">VKern By Classes...</A>
-  <LI>
-    <A HREF="#VKernFromHKern">VKern From HKern</A>
-  <LI>
-    <A HREF="metricsmenu.html#VRemove">Remove All VKern Pairs</A>
-  <LI>
-    <A HREF="#vertical">Set Vertical Advance...</A>
-  <LI>
-    <A HREF="#AnchorControl">Anchor Control...</A>
-</UL>
-<P>
-<DL>
-  <DT>
-    <A NAME="Center">Center</A> in Width
-  <DD>
-    In the Outline and Metrics Views this centers the current glyph (makes its
-    lbearing be the same as its rbearing) within the current width.
-    <P>
-    In the Font View the same thing is done for all selected glyphs.
-  <DT>
-    <A NAME="Thirds">Thirds</A> in Width
-  <DD>
-    This is very like Center in Width above... except that I happen to prefer
-    having a bit more white space after my glyphs than before them. So this command
-    makes the rbearing twice the lbearing (instead of making them be the same).
-  <DT>
-    Set <A NAME="Width">Width</A>...
-  <DD>
-    <IMG SRC="setwidth.png" WIDTH="290" HEIGHT="186"><BR>
-    The Set Width command allows you to change the width of the current glyph
-    (in the outline view) or all selected glyphs (in the font view). You may
-    either set the width to an absolute value, change the width by adding a constant
-    value to it, or multiply it by a scale factor. Normally the width will be
-    expressed in em-units, but in a bitmap only font the width will be expressed
-    as pixels in the current displayed font.
-  <DT>
-    Set <A NAME="LBearing">LBearing</A>...
-  <DD>
-    The Set LBearing command is similar to the Set Width command above, the dialog
-    is pretty much the same except that it applies to the left side bearing rather
-    than to the width.
-  <DT>
-    Set <A NAME="RBearing">RBearing</A>...
-  <DD>
-    The Set RBearing command is similar to the Set Width command above, the dialog
-    is pretty much the same except that it applies to the right side bearing
-    rather than to the width.
-  <DT>
-    <A NAME="Auto">Auto</A> Width...
-  <DD>
-    This command is only available in the font view.
-    <A HREF="autowidth.html#AutoWidth">It attempts to guess reasonable values
-    for the widths</A> (more accurately the left and right bearings) of the specified
-    glyphs.
-  <DT>
-    Auto <A NAME="Kern">Kern</A>...
-  <DD>
-    This command is only available from the font view.
-    <A HREF="autowidth.html#AutoKern">It attempts to guess reasonable kerning
-    values </A>between the specified glyphs.
-  <DT>
-    <A NAME="KernByClasses">Kern</A> By Classes...
-  <DD>
-    This command is only available from the font and metrics views. It provides
-    the user with a <A HREF="metricsview.html#kernclass">dialog</A> to manipulate
-    kerning classes.
-  <DT>
-    <A NAME="Remove">Remove</A> All Kern Pairs
-  <DD>
-    In the font view removes all kern pairs (and kern classes) in the font.<BR>
-    In the outline glyph view removes all kern pairs where the current glyph
-    is the left hand glyph.<BR>
-    Not present in the Metrics or Bitmap views.
-  <DT>
-    <A NAME="kernpair">Kern Pair Closeup...</A>
-  <DD>
-    (Sorry about the name, I couldn't think of a better).
-    <A HREF="metricsview.html#kernpair">Allows</A> you to get a look at kerning
-    between two glyphs at different point-sizes and to build a
-    "<A HREF="metricsview.html#DeviceTable">Device Table</A>" (which allows small
-    corrections from the standard behavior at specified point sizes)<BR>
-    Not present in the Bitmap view.
-  <DT>
-    <A NAME="VKernByClasses">VKern</A> By Classes...
-  <DD>
-    This command is only available from the font and metrics views. It provides
-    the user with a <A HREF="metricsview.html#kernclass">dialog</A> to manipulate
-    vertical kerning classes.
-  <DT>
-    <A NAME="VKernFromHKern">VKern</A> From HKern
-  <DD>
-    This command is only available from the font and metrics views. It removes
-    all current vertical kerning information, then it looks through the font
-    and for each pair of horizontally kerned glyphs where both have a 'vert'
-    or 'vrt2' feature it produces a vertical kerning pair for the vertical versions
-    of those glyphs. (That is: If <CODE>A</CODE>+<CODE>V</CODE> are horizontally
-    kerned by -50 and <CODE>A</CODE> =&gt; <CODE>A.vert</CODE> and <CODE>V</CODE>
-    =&gt; <CODE>V.vert </CODE>then this command will produce a vertical kerning
-    pair between <CODE>A.vert</CODE> + <CODE>V.vert</CODE> with a value of -50)
-  <DT>
-    <A NAME="VRemove">Remove</A> All VKern Pairs
-  <DD>
-    In the font view removes all vertical kern pairs (and kern classes) in the
-    font.<BR>
-    In the outline glyph view removes all kern pairs where the current glyph
-    is the left hand glyph.<BR>
-    Not present in the Metrics or Bitmap views.
-  <DT>
-    Set <A NAME="vertical">Vertical</A> Advance...
-  <DD>
-    If vertical metrics are enabled for the font this will be active in the font
-    and outline glyph view.<BR>
-    It behaves exactly like Set Width... except it works on the vertical advance
-    rather than the horizontal advance (width).
-  <DT>
-    <A NAME="AnchorControl">Anchor Control...</A>
-  <DD>
-    Only in the outline view. If you select an Anchor Point, this will bring
-    up a <A HREF="anchorcontrol.html">dialog</A> showing the combinations obtained
-    with all other glyphs that can attach to that anchor point. You can position
-    the point in this view and even add a device table to it.
-</DL>
-<H2>
-  Other menus
-</H2>
-<UL>
-  <LI>
-    <A HREF="filemenu.html">File</A>
-  <LI>
-    <A HREF="editmenu.html">Edit</A>
-  <LI>
-    <A HREF="pointmenu.html">Point</A>
-  <LI>
-    <A HREF="elementmenu.html">Element</A>
-  <LI>
-    <A HREF="hintsmenu.html">Hints</A>
-  <LI>
-    <A HREF="encodingmenu.html">Encoding</A>
-  <LI>
-    <A HREF="viewmenu.html">View</A>
-  <LI>
-    <A HREF="metricsmenu.html">Metrics</A>
-  <LI>
-    <A HREF="cidmenu.html">CID</A>
-  <LI>
-    <A HREF="mmmenu.html">MM</A>
-  <LI>
-    <A HREF="windowmenu.html">Window</A>
-  <LI>
-    <A HREF="helpmenu.html">Help</A>
-  <LI>
-    <A HREF="HotKeys.html">Hot Keys</A>
-</UL>
-<P ALIGN=Center>
--- <A HREF="viewmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
-<A HREF="cidmenu.html">Next</A> --
-<P>
+  <P>
+  <H1 ALIGN=Center>
+    The Metrics Menu
+  </H1>
+  <P>
+  This menu is not present in the Bitmap View, and the Metrics View only contains
+  "Center in Width" and "Thirds in Width".
+  <P>
+  <UL>
+    <LI>
+      <A HREF="#Center">Center in Width</A>
+    <LI>
+      <A HREF="#Thirds">Thirds in Width</A>
+    <LI>
+      <A HREF="#Width">Set Width...</A>
+    <LI>
+      <A HREF="#LBearing">Set LBearing...</A>
+    <LI>
+      <A HREF="#RBearing">Set RBearing...</A>
+    <LI>
+      <A HREF="#Auto">Auto Width...</A>
+    <LI>
+      <A HREF="#Kern">Auto Kern...</A>
+    <LI>
+      <A HREF="#KernByClasses">Kern By Classes...</A>
+    <LI>
+      <A HREF="#Remove">Remove All Kern Pairs</A>
+    <LI>
+      <A HREF="#kernpair">Kern Pair Closeup...</A>
+    <LI>
+      <A HREF="metricsmenu.html#VKernByClasses">VKern By Classes...</A>
+    <LI>
+      <A HREF="#VKernFromHKern">VKern From HKern</A>
+    <LI>
+      <A HREF="metricsmenu.html#VRemove">Remove All VKern Pairs</A>
+    <LI>
+      <A HREF="#vertical">Set Vertical Advance...</A>
+  </UL>
+  <P>
+  <DL>
+    <DT>
+      <A NAME="Center">Center</A> in Width
+    <DD>
+      In the Outline and Metrics Views this centers the current glyph (makes its
+      lbearing be the same as its rbearing) within the current width.
+      <P>
+      In the Font View the same thing is done for all selected glyphs.
+    <DT>
+      <A NAME="Thirds">Thirds</A> in Width
+    <DD>
+      This is very like Center in Width above... except that I happen to prefer
+      having a bit more white space after my glyphs than before them. So this command
+      makes the rbearing twice the lbearing (instead of making them be the same).
+    <DT>
+      Set <A NAME="Width">Width</A>...
+    <DD>
+      <IMG SRC="setwidth.png" WIDTH="290" HEIGHT="186"><BR>
+      The Set Width command allows you to change the width of the current glyph
+      (in the outline view) or all selected glyphs (in the font view). You may
+      either set the width to an absolute value, change the width by adding a constant
+      value to it, or multiply it by a scale factor. Normally the width will be
+      expressed in em-units, but in a bitmap only font the width will be expressed
+      as pixels in the current displayed font.
+    <DT>
+      Set <A NAME="LBearing">LBearing</A>...
+    <DD>
+      The Set LBearing command is similar to the Set Width command above, the dialog
+      is pretty much the same except that it applies to the left side bearing rather
+      than to the width.
+    <DT>
+      Set <A NAME="RBearing">RBearing</A>...
+    <DD>
+      The Set RBearing command is similar to the Set Width command above, the dialog
+      is pretty much the same except that it applies to the right side bearing
+      rather than to the width.
+    <DT>
+      <A NAME="Auto">Auto</A> Width...
+    <DD>
+      This command is only available in the font view.
+      <A HREF="autowidth.html#AutoWidth">It attempts to guess reasonable values
+      for the widths</A> (more accurately the left and right bearings) of the specified
+      glyphs.
+    <DT>
+      Auto <A NAME="Kern">Kern</A>...
+    <DD>
+      This command is only available from the font view.
+      <A HREF="autowidth.html#AutoKern">It attempts to guess reasonable kerning
+      values </A>between the specified glyphs.
+    <DT>
+      <A NAME="KernByClasses">Kern</A> By Classes...
+    <DD>
+      This command is only available from the font and metrics views. It provides
+      the user with a <A HREF="metricsview.html#kernclass">dialog</A> to manipulate
+      kerning classes.
+    <DT>
+      <A NAME="Remove">Remove</A> All Kern Pairs
+    <DD>
+      In the font view removes all kern pairs (and kern classes) in the font.<BR>
+      In the outline glyph view removes all kern pairs where the current glyph
+      is the left hand glyph.<BR>
+      Not present in the Metrics or Bitmap views.
+    <DT>
+      <A NAME="kernpair">Kern Pair Closeup...</A>
+    <DD>
+      (Sorry about the name, I couldn't think of a better).
+      <A HREF="metricsview.html#kernpair">Allows</A> you to get a look at kerning
+      between two glyphs at different point-sizes and to build a
+      "<A HREF="metricsview.html#DeviceTable">Device Table</A>" (which allows small
+      corrections from the standard behavior at specified point sizes)<BR>
+      Not present in the Bitmap view.
+    <DT>
+      <A NAME="VKernByClasses">VKern</A> By Classes...
+    <DD>
+      This command is only available from the font and metrics views. It provides
+      the user with a <A HREF="metricsview.html#kernclass">dialog</A> to manipulate
+      vertical kerning classes.
+    <DT>
+      <A NAME="VKernFromHKern">VKern</A> From HKern
+    <DD>
+      This command is only available from the font and metrics views. It removes
+      all current vertical kerning information, then it looks through the font
+      and for each pair of horizontally kerned glyphs where both have a 'vert'
+      or 'vrt2' feature it produces a vertical kerning pair for the vertical versions
+      of those glyphs. (That is: If <CODE>A</CODE>+<CODE>V</CODE> are horizontally
+      kerned by -50 and <CODE>A</CODE> =&gt; <CODE>A.vert</CODE> and <CODE>V</CODE>
+      =&gt; <CODE>V.vert </CODE>then this command will produce a vertical kerning
+      pair between <CODE>A.vert</CODE> + <CODE>V.vert</CODE> with a value of -50)
+    <DT>
+      <A NAME="VRemove">Remove</A> All VKern Pairs
+    <DD>
+      In the font view removes all vertical kern pairs (and kern classes) in the
+      font.<BR>
+      In the outline glyph view removes all kern pairs where the current glyph
+      is the left hand glyph.<BR>
+      Not present in the Metrics or Bitmap views.
+    <DT>
+      Set <A NAME="vertical">Vertical</A> Advance...
+    <DD>
+      If vertical metrics are enabled for the font this will be active in the font
+      and outline glyph view.<BR>
+      It behaves exactly like Set Width... except it works on the vertical advance
+      rather than the horizontal advance (width).
+  </DL>
+  <H2>
+    Other menus
+  </H2>
+  <UL>
+    <LI>
+      <A HREF="filemenu.html">File</A>
+    <LI>
+      <A HREF="editmenu.html">Edit</A>
+    <LI>
+      <A HREF="pointmenu.html">Point</A>
+    <LI>
+      <A HREF="elementmenu.html">Element</A>
+    <LI>
+      <A HREF="hintsmenu.html">Hints</A>
+    <LI>
+      <A HREF="encodingmenu.html">Encoding</A>
+    <LI>
+      <A HREF="viewmenu.html">View</A>
+    <LI>
+      <A HREF="metricsmenu.html">Metrics</A>
+    <LI>
+      <A HREF="cidmenu.html">CID</A>
+    <LI>
+      <A HREF="mmmenu.html">MM</A>
+    <LI>
+      <A HREF="windowmenu.html">Window</A>
+    <LI>
+      <A HREF="helpmenu.html">Help</A>
+    <LI>
+      <A HREF="HotKeys.html">Hot Keys</A>
+  </UL>
+  <P ALIGN=Center>
+  -- <A HREF="viewmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
+  <A HREF="cidmenu.html">Next</A> --
+  <P>
 </DIV>
 </BODY></HTML>
