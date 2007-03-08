@@ -577,7 +577,7 @@ int FontForgeMain( int argc, char **argv ) {
     const char *load_prefs = getenv("FONTFORGE_LOADPREFS");
 #if !defined( FONTFORGE_CONFIG_NO_WINDOWING_UI )
     int i;
-    int splash = 1;
+    extern int splash;
     int recover=1;
 #endif
 #ifdef FONTFORGE_CONFIG_GDRAW
