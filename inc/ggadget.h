@@ -188,7 +188,8 @@ struct matrixinit {
     int col_cnt;
     struct col_init {
 	enum me_type { me_int, me_enum, me_real, me_string, me_bigstr, me_func,
-		me_funcedit, me_stringchoice, me_stringchoicetrans } me_type;
+		me_funcedit,
+		me_stringchoice, me_stringchoicetrans, me_stringchoicetag } me_type;
 	char *(*func)(GGadget *,int r,int c);
 	GTextInfo *enum_vals;
 	void (*enable_enum)(GGadget *,GMenuItem *, int r, int c);
@@ -361,6 +362,8 @@ void GHVBoxFitWindow(GGadget *g);
 
 void GMatrixEditSet(GGadget *g,struct matrix_data *data, int rows, int copy_it);
 struct matrix_data *GMatrixEditGet(GGadget *g, int *rows);
+struct matrix_data *_GMatrixEditGet(GGadget *g, int *rows);
+GGadget *_GMatrixEditGetActiveTextField(GGadget *g);
 int GMatrixEditGetColCnt(GGadget *g);
 int GMatrixEditGetActiveRow(GGadget *g);
 int GMatrixEditGetActiveCol(GGadget *g);
@@ -368,17 +371,24 @@ void GMatrixEditDeleteRow(GGadget *g,int row);
 int GMatrixEditStringDlg(GGadget *g,int row,int col);
 void GMatrixEditSetNewText(GGadget *g, char *text);
 void GMatrixEditSetOtherButtonEnable(GGadget *g, void (*sob)(GGadget *g, int r, int c));
+void GMatrixEditSetMouseMoveReporter(GGadget *g, void (*rmm)(GGadget *g, int r, int c));
+void GMatrixEditSetTextChangeReporter(GGadget *g, void (*tcr)(GGadget *g, int r, int c, GGadget *text));
 void GMatrixEditSetValidateStr(GGadget *g, char *(*validate)(GGadget *g, int r, int c, int wasnew, char *str));
 void GMatrixEditUp(GGadget *g);
 void GMatrixEditDown(GGadget *g);
 void GMatrixEditSetUpDownVisible(GGadget *g, int enabled);
 void GMatrixEditAddButtons(GGadget *g, GGadgetCreateData *gcd);
 void GMatrixEditEnableColumn(GGadget *g, int col, int enabled);
+void GMatrixEditShowColumn(GGadget *g, int col, int visible);
 void GMatrixEditSetColumnChoices(GGadget *g, int col, GTextInfo *ti);
 
 GWindow GDrawableGetWindow(GGadget *g);
 
 
+extern void GGadgetPreparePopupImage(GWindow base,const unichar_t *msg,
+	const void *data,
+	GImage *(*get_image)(const void *data),
+	void (*free_image)(const void *data,GImage *img));
 extern void GGadgetPreparePopup(GWindow base,const unichar_t *msg);
 extern void GGadgetPreparePopupR(GWindow base,int msg);
 extern void GGadgetPreparePopup8(GWindow base,char *msg);

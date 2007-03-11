@@ -370,6 +370,7 @@ typedef struct gmatrixedit {
 	int16 width, x;			/* Relative to inner.x */
 	uint8 fixed;
 	uint8 disabled;
+	uint8 hidden;
     } *col_data;
     int hpad, vpad;			/* Internal padding */
     unsigned int has_titles: 1;
@@ -400,6 +401,8 @@ typedef struct gmatrixedit {
     void (*finishedit)(GGadget *g,int r, int c, int wasnew);
     char *(*validatestr)(GGadget *g,int r, int c, int wasnew, char *str);
     void (*setotherbuttons)(GGadget *g, int r, int c);
+    void (*reportmousemove)(GGadget *g, int r, int c);
+    void (*reporttextchanged)(GGadget *g, int r, int c, GGadget *textfield);
 } GMatrixEdit;
 
 typedef struct gdrawable {
