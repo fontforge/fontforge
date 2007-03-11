@@ -72,7 +72,7 @@ return(false);
 static void gdrawable_redraw(GGadget *g ) {
     GDrawable *gd = (GDrawable *) g;
     if ( gd->gw!=NULL )
-	GDrawRequestExpose(gd->gw,NULL,false);
+	GDrawRequestExpose(gd->gw,NULL,true);
     _ggadget_redraw(g);
 }
 

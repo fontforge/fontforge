@@ -616,13 +616,16 @@ return( &gb->g );
 }
 
 void GHVBoxFitWindow(GGadget *g) {
-    GRect outer, cur;
+    GRect outer, cur, screen;
 
     if ( !GGadgetFillsWindow(g)) {
 	fprintf( stderr, "Call to GHVBoxFitWindow in something not an HVBox\n" );
 return;
     }
     GHVBoxGetDesiredSize(g,&outer, NULL );
+    GDrawGetSize(GDrawGetRoot(NULL),&screen);
+    if ( outer.width > screen.width-20 ) outer.width = screen.width-20;
+    if ( outer.height > screen.height-40 ) outer.height = screen.height-40;
     GDrawGetSize(g->base,&cur);
     /* Make any offset simmetrical */
     outer.width += 2*g->r.x;

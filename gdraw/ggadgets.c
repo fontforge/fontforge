@@ -338,6 +338,14 @@ void GGadgetInit(void) {
     }
 }
 
+static struct popup_info {
+    const unichar_t *msg;
+    GImage *img;
+    const void *data;
+    GImage *(*get_image)(const void *data);
+    void (*free_image)(const void *data,GImage *img);
+} popup_info;
+
 void GGadgetEndPopup() {
     if ( popup_visible ) {
 	GDrawSetVisible(popup,false);
@@ -351,6 +359,9 @@ void GGadgetEndPopup() {
 	GDrawCancelTimer(popup_vanish_timer);
 	popup_vanish_timer = NULL;
     }
+    if ( popup_info.img!=NULL )
+	(popup_info.free_image)(popup_info.data,popup_info.img);
+    memset(&popup_info,0,sizeof(popup_info));
 }
 
 void GGadgetPopupExternalEvent(GEvent *e) {
@@ -375,35 +386,45 @@ static int GGadgetPopupTest(GEvent *e) {
     GWindow root = GDrawGetRoot(GDrawGetDisplayOfWindow(popup));
     GRect pos, size;
     unichar_t *pt, *ept;
-    int as, ds, ld;
+    int as, ds, ld, img_height=0;
     GEvent where;
 
     if ( e->type!=et_timer || e->u.timer.timer!=popup_timer || popup==NULL )
 return( false );
     popup_timer = NULL;
-    pt = msg = (unichar_t *) (e->u.timer.userdata);
 
-    GDrawSetFont(popup,popup_font);
-    lines = 0; width = 1;
-    do {
-	temp = -1;
-	if (( ept = u_strchr(pt,'\n'))!=NULL )
-	    temp = ept-pt;
-	temp = GDrawGetTextWidth(popup,pt,temp,NULL);
-	if ( temp>width ) width = temp;
-	++lines;
-	pt = ept+1;
-    } while ( ept!=NULL && *pt!='\0' );
-    GDrawFontMetrics(popup_font,&as, &ds, &ld);
-    pos.width = width+2*GDrawPointsToPixels(popup,2);
-    pos.height = lines*(as+ds) + 2*GDrawPointsToPixels(popup,2);
-
-    /* Is the cursor still in the window? */
+    /* Is the cursor still in the original window? */
     GDrawGetPointerPosition(root,&where);
     if ( where.u.mouse.x<popup_within.x || where.u.mouse.y<popup_within.y ||
 	    where.u.mouse.x>popup_within.x+popup_within.width ||
 	    where.u.mouse.y>popup_within.y+popup_within.height )
 return( true );
+
+    lines = 0; width = 1;
+    if ( popup_info.img==NULL && popup_info.get_image!=NULL ) {
+	popup_info.img = (popup_info.get_image)(popup_info.data);
+	popup_info.get_image = NULL;
+    }
+    if ( popup_info.img!=NULL ) {
+	img_height = GImageGetHeight(popup_info.img);
+	width = GImageGetWidth(popup_info.img);
+    }
+    pt = msg = (unichar_t *) popup_info.msg;
+    if ( msg!=NULL ) {
+	GDrawSetFont(popup,popup_font);
+	do {
+	    temp = -1;
+	    if (( ept = u_strchr(pt,'\n'))!=NULL )
+		temp = ept-pt;
+	    temp = GDrawGetTextWidth(popup,pt,temp,NULL);
+	    if ( temp>width ) width = temp;
+	    ++lines;
+	    pt = ept+1;
+	} while ( ept!=NULL && *pt!='\0' );
+    }
+    GDrawFontMetrics(popup_font,&as, &ds, &ld);
+    pos.width = width+2*GDrawPointsToPixels(popup,2);
+    pos.height = lines*(as+ds) + img_height + 2*GDrawPointsToPixels(popup,2);
 
     pos.x = where.u.mouse.x+10; pos.y = where.u.mouse.y+10;
     GDrawGetSize(root,&size);
@@ -428,23 +449,29 @@ static int msgpopup_eh(GWindow popup,GEvent *event) {
 	int as, ds, ld;
 
 	popup_visible = true;
-	pt = msg = (unichar_t *) GDrawGetUserData(popup);
-	if ( pt==NULL ) {
+	pt = msg = (unichar_t *) popup_info.msg;
+	if ( pt==NULL && popup_info.img==NULL ) {
 	    GGadgetEndPopup();
 return( true );
 	}
-	GDrawFontMetrics(popup_font,&as, &ds, &ld);
-	fh = as+ds;
 	y = x = GDrawPointsToPixels(popup,2);
-	y += as;
-	do {
-	    temp = -1;
-	    if (( ept = u_strchr(pt,'\n'))!=NULL )
-		temp = ept-pt;
-	    GDrawDrawText(popup,x,y,pt,temp,NULL,popup_foreground);
-	    y += fh;
-	    pt = ept+1;
-	} while ( ept!=NULL && *pt!='\0' );
+	if ( popup_info.img!=NULL ) {
+	    GDrawDrawImage(popup,popup_info.img,NULL,x,y);
+	    y += GImageGetHeight(popup_info.img);
+	}
+	if ( pt!=NULL ) {
+	    GDrawFontMetrics(popup_font,&as, &ds, &ld);
+	    fh = as+ds;
+	    y += as;
+	    do {
+		temp = -1;
+		if (( ept = u_strchr(pt,'\n'))!=NULL )
+		    temp = ept-pt;
+		GDrawDrawText(popup,x,y,pt,temp,NULL,popup_foreground);
+		y += fh;
+		pt = ept+1;
+	    } while ( ept!=NULL && *pt!='\0' );
+	}
     } else if ( event->type == et_timer && event->u.timer.timer==popup_timer ) {
 	GGadgetPopupTest(event);
     } else if ( event->type == et_mousemove || event->type == et_mouseup ||
@@ -455,11 +482,21 @@ return( true );
 return( true );
 }
 
-void GGadgetPreparePopup(GWindow base,const unichar_t *msg) {
+void GGadgetPreparePopupImage(GWindow base,const unichar_t *msg, const void *data,
+	GImage *(*get_image)(const void *data),
+	void (*free_image)(const void *data,GImage *img)) {
     GPoint pt;
+
     GGadgetEndPopup();
-    if ( msg==NULL )
+    if ( msg==NULL && get_image==NULL )
 return;
+
+    memset(&popup_info,0,sizeof(popup_info));
+    popup_info.msg = msg;
+    popup_info.data = data;
+    popup_info.get_image = get_image;
+    popup_info.free_image = free_image;
+
     if ( popup==NULL ) {
 	GWindowAttrs pattrs;
 	GRect pos;
@@ -483,15 +520,19 @@ return;
     popup_timer = GDrawRequestTimer(popup,popup_delay,0,(void *) msg);
 }
 
+void GGadgetPreparePopup(GWindow base,const unichar_t *msg) {
+    GGadgetPreparePopupImage(base,msg,NULL,NULL,NULL);
+}
+
 void GGadgetPreparePopupR(GWindow base,int msg) {
-    GGadgetPreparePopup(base,GStringGetResource(msg,NULL));
+    GGadgetPreparePopupImage(base,GStringGetResource(msg,NULL),NULL,NULL,NULL);
 }
 
 void GGadgetPreparePopup8(GWindow base,char *msg) {
     static unichar_t popup_msg[500];
     utf82u_strncpy(popup_msg,msg,sizeof(popup_msg)/sizeof(popup_msg[0]));
     popup_msg[sizeof(popup_msg)/sizeof(popup_msg[0])-1]=0;
-    GGadgetPreparePopup(base,popup_msg);
+    GGadgetPreparePopupImage(base,popup_msg,NULL,NULL,NULL);
 }
 
 void _ggadget_redraw(GGadget *g) {
