@@ -435,7 +435,7 @@ return;
     names[0] = names[1] = names[2] = names[3] = ".notdef";
     for ( j=len=0; j<4; ++j ) {
 	k = ext[j];
-	if ( k>=map->enccount || (gid2 = map->map[k])==-1 || sf->glyphs[gid2]==NULL )
+	if ( k!=0 && k<map->enccount && (gid2 = map->map[k])!=-1 && sf->glyphs[gid2]!=NULL )
 	    names[j] = sf->glyphs[gid2]->name;
 	len += strlen(names[j])+1;
     }
@@ -641,7 +641,7 @@ return;
     names[0] = names[1] = names[2] = names[3] = ".notdef";
     for ( j=len=0; j<4; ++j ) {
 	k = ExtShort(j);
-	if ( k>=map->enccount || (gid2 = map->map[k])==-1 || sf->glyphs[gid2]==NULL )
+	if ( k!=0 && k<map->enccount && (gid2 = map->map[k])!=-1 && sf->glyphs[gid2]!=NULL )
 	    names[j] = sf->glyphs[gid2]->name;
 	len += strlen(names[j])+1;
     }
@@ -2612,7 +2612,7 @@ static int FindExtensions(SplineFont *sf,struct extension *extensions,int *exten
     PST *pst;
     int i, ecnt=0, ch;
     char *pt, *end;
-    int16 founds[4]; int fcnt;
+    int16 founds[4]; int fcnt, enc;
 
     memset(extenindex,-1,(maxc+1)*sizeof(int));
     for ( i=0; i<maxc && i<map->enccount; ++i ) if ( map->map[i]!=-1 && SCWorthOutputting(sf->glyphs[map->map[i]])) {
@@ -2629,14 +2629,18 @@ static int FindExtensions(SplineFont *sf,struct extension *extensions,int *exten
 		    end = pt+strlen(pt);
 		ch = *end;
 		*end = '\0';
-		sc = SFGetChar(sf,-1,pt);
+		if ( strcmp(pt,".notdef")==0 )		/* Idiom for a place holder */
+		    sc = NULL;
+		else
+		    sc = SFGetChar(sf,-1,pt);
 		*end = ch;
 		while ( *end==' ' ) ++end;
-		if ( sc!=NULL && map->backmap[sc->orig_pos]<maxc ) {
-		    if ( fcnt<4 )
-			founds[fcnt++] = map->backmap[sc->orig_pos];
-		} else
-		    founds[fcnt++] = 0;
+		if ( sc!=NULL && map->backmap[sc->orig_pos]<maxc )
+		    enc = map->backmap[sc->orig_pos];
+		else
+		    enc = 0;
+		if ( fcnt<4 )
+		    founds[fcnt++] = enc;
 	    }
 	    if ( fcnt==1 ) {
 		founds[3] = founds[0];
@@ -2645,6 +2649,7 @@ static int FindExtensions(SplineFont *sf,struct extension *extensions,int *exten
 	    if ( fcnt>0 ) {
 		extenindex[i] = ecnt;
 		memcpy(extensions[ecnt].extens,founds,sizeof(founds));
+		++ecnt;
 	    }
 	}
     }
