@@ -3018,7 +3018,7 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map
 	    if ( sc->tex_height!=TEX_UNDEF )
 		heights[i] = sc->tex_height*scale;
 	    if ( sc->tex_depth!=TEX_UNDEF )
-		heights[i] = sc->tex_depth*scale;
+		depths[i] = -sc->tex_depth*scale;
 	    if ( depths[i]<0 ) depths[i] = 0;		/* Werner says depth should never be negative. Something about how accents are positioned */
 	    if ( !is_math ) {
 		if ( sc->width==0 )
