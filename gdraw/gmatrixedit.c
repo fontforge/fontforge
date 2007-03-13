@@ -157,7 +157,7 @@ static GMenuItem *FindMi(GMenuItem *mi, int val ) {
     int i;
 
     for ( i=0; mi[i].ti.text!=NULL || mi[i].ti.line; ++i ) {
-	if ( mi[i].ti.userdata == (void *) val && mi[i].ti.text!=NULL )
+	if ( mi[i].ti.userdata == (void *) (intpt) val && mi[i].ti.text!=NULL )
 return( &mi[i] );
     }
 return( NULL );
@@ -1023,7 +1023,7 @@ static void GME_Choices(GMatrixEdit *gme,GEvent *event,int r,int c) {
     int i;
 
     for ( i=0; mi[i].ti.text!=NULL || mi[i].ti.line || mi[i].ti.image!=NULL; ++i )
-	mi[i].ti.selected = mi[i].ti.checked = !gme->wasnew && (mi[i].ti.userdata == (void *) val);
+	mi[i].ti.selected = mi[i].ti.checked = !gme->wasnew && (mi[i].ti.userdata == (void *) (intpt) val);
     if ( gme->col_data[c].enable_enum!=NULL )
 	(gme->col_data[c].enable_enum)(&gme->g,mi,r,c);
     _GMenuCreatePopupMenu(gme->nested,event, mi, GME_FinishChoice);
@@ -1090,7 +1090,7 @@ static char *MD_Text(GMatrixEdit *gme,int r, int c ) {
       case me_enum:
 	/* Fall through into next case */
       case me_int:
-	sprintf( buffer,"%d",d->u.md_ival );
+	sprintf( buffer,"%d",(int) d->u.md_ival );
 	str = buffer;
       break;
       case me_real:
