@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 28-Oct-2002 -->
-  <!-- AP: Last modified: 7-Apr-2006 -->
+  <!-- AP: Last modified: 12-Mar-2007 -->
   <TITLE>Glossary of (some) typographical terms</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -147,7 +147,8 @@
 	  <DD>
 	    Compact Font Format most commonly used within
 	    <A HREF="glossary.html#opentype">OpenType</A> postscript fonts, but is a
-	    valid font format even without a <A HREF="#SFNT">SFNT</A> wrapper.
+	    valid font format even without a <A HREF="#SFNT">SFNT</A> wrapper. This is
+	    the native font format for fonts with PostScript Type2 charstrings.
 	  <DT>
 	    <A NAME="character">Character</A>
 	  <DD>
@@ -923,10 +924,11 @@ $ make install
 	    <A NAME="SFNT">SFNT</A>
 	  <DD>
 	    The name for the generic font format which contains TrueType, OpenType, Apple's
-	    bitmap only, X11's bitmap only, and Adobe's SING fonts (and no doubt others).
-	    The SFNT format describes how font tables should be laid out within a file.
-	    Each of the above formats follow this general idea but include more specific
-	    requirements (such as what tables are needed, and the format of each table).
+	    bitmap only, X11's bitmap only, obsolete 'typ1' fonts and Adobe's SING fonts
+	    (and no doubt others). The SFNT format describes how font tables should be
+	    laid out within a file. Each of the above formats follow this general idea
+	    but include more specific requirements (such as what tables are needed, and
+	    the format of each table).
 	  <DT>
 	    <A NAME="SIP">SIP</A>
 	  <DD>

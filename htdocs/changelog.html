@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 8-Mar-2007 -->
+  <!-- AP: Last modified: 12-Mar-2007 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -47,8 +47,24 @@
   </BLOCKQUOTE>
   <UL>
     <LI>
-      ????
+      12-Mar-2007
       <UL>
+	<LI>
+	  Add a button to insert the <A HREF="http://scripts.sil.org/ofl/">SIL Open
+	  Font License</A> into the 'name' table.
+	<LI>
+	  FF failed to store TeX heights and depths properly in a tfm file. FF failed
+	  to read or write TeX extension lists properly.
+	<LI>
+	  Patch from Reuben Thomas to turn off the splash screen from the preference
+	  dlg.
+	<LI>
+	  I had the dotlessj code point wrong. Again.
+	<LI>
+	  FF did not center the charview window well on an empty glyph.
+	<LI>
+	  The scripting command to add instructions to a glyph could immediately lose
+	  them if the glyph's points weren't numbered properly
 	<LI>
 	  We used to allow the syntax "<number>&lt;numbers&gt;* command" in ttf
 	  instructions (which automagically inserted an implied push). Someone noticed

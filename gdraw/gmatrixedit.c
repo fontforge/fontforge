@@ -921,7 +921,7 @@ static void GME_StrBigEdit(GMatrixEdit *gme,char *str) {
     wattrs.cursor = ct_pointer;
     wattrs.utf8_window_title = title_str==NULL ? "Editing..." : title_str;
     pos.x = pos.y = 0;
-    pos.width =GDrawPointsToPixels(NULL,GGadgetScale(200));
+    pos.width =GDrawPointsToPixels(NULL,GGadgetScale(500));
     pos.height = GDrawPointsToPixels(NULL,300);
     gme->big_done = 0;
     gw = GDrawCreateTopWindow(NULL,&pos,big_e_h,gme,&wattrs);
@@ -931,7 +931,7 @@ static void GME_StrBigEdit(GMatrixEdit *gme,char *str) {
     memset(&boxes,0,sizeof(boxes));
     memset(&mlabel,0,sizeof(mlabel));
     mgcd[0].gd.pos.x = 4; mgcd[0].gd.pos.y = 6;
-    mgcd[0].gd.pos.width = 192;
+    mgcd[0].gd.pos.width = 492;
     mgcd[0].gd.pos.height = 260;
     mgcd[0].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap | gg_text_xim;
     mgcd[0].gd.cid = CID_EntryField;
