@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#include "ofl.h"
 #include <ustring.h>
 #include <chardata.h>
 #include <utype.h>
@@ -4647,7 +4648,7 @@ static char *TN_BigEditTitle(GGadget *g,int r, int c) {
     struct matrix_data *strings = GMatrixEditGet(g, &rows);
 
     lang = langname(strings[3*r].u.md_ival,buf2);
-    for ( k=0; ttfnameids[k].text!=NULL && ttfnameids[k].userdata!=(void *) (intpt) strings[3*r+2].u.md_str ;
+    for ( k=0; ttfnameids[k].text!=NULL && ttfnameids[k].userdata!=(void *) (intpt) strings[3*r+1].u.md_ival;
 	    ++k );
     snprintf(buf,sizeof(buf),_("%1$.30s string for %2$.30s"),
 	    lang, (char *) ttfnameids[k].text );
@@ -4714,6 +4715,90 @@ static void TNMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
     mi->bigedittitle = TN_BigEditTitle;
 }
 
+static int GFI_AddOFL(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	GGadget *tng = GWidgetGetControl(GGadgetGetWindow(g),CID_TNames);
+	int rows;
+	struct matrix_data *tns, *newtns;
+	int i,j,k,l,m, extras, len;
+	char *all, *pt, **data;
+	char buffer[1024], *bpt;
+	const char *author = GetAuthor();
+	char *reservedname, *fallback;
+	time_t now;
+	struct tm *tm;
+
+	time(&now);
+	tm = localtime(&now);
+
+	tns = GMatrixEditGet(tng, &rows); newtns = NULL;
+	for ( k=0; k<2; ++k ) {
+	    extras = 0;
+	    for ( i=0; ofl_str_lang_data[i].data!=NULL; ++i ) {
+		for ( j=rows-1; j>=0; --j ) {
+		    if ( tns[j*3+1].u.md_ival==ofl_str_lang_data[i].strid &&
+			    tns[j*3+0].u.md_ival==ofl_str_lang_data[i].lang ) {
+			if ( k ) {
+			    free(newtns[j*3+2].u.md_str);
+			    newtns[j*3+2].u.md_str = NULL;
+			}
+		break;
+		    }
+		}
+		if ( j<0 )
+		    j = rows + extras++;
+		if ( k ) {
+		    newtns[j*3+1].u.md_ival = ofl_str_lang_data[i].strid;
+		    newtns[j*3+0].u.md_ival = ofl_str_lang_data[i].lang;
+		    data = ofl_str_lang_data[i].data;
+		    reservedname = fallback = NULL;
+		    for ( m=0; m<rows; ++m ) {
+			if ( newtns[j*3+1].u.md_ival==ttf_family ) {
+			    if ( newtns[j*3+0].u.md_ival==0x409 )
+				fallback = newtns[3*j+2].u.md_str;
+			    else if ( newtns[j*3+0].u.md_ival==ofl_str_lang_data[i].lang )
+				reservedname = newtns[3*j+2].u.md_str;
+			}
+		    }
+		    if ( reservedname==NULL )
+			reservedname = fallback;
+		    if ( reservedname==NULL )
+			reservedname = d->sf->familyname;
+		    for ( m=0; m<2; ++m ) {
+			len = 0;
+			for ( l=0; data[l]!=NULL; ++l ) {
+			    if ( l==0 || l==1 ) {
+				sprintf( buffer, data[l], tm->tm_year+1900, author, reservedname );
+			        bpt = buffer;
+			    } else
+				bpt = data[l];
+			    if ( m ) {
+				strcpy( pt, bpt );
+			        pt += strlen( bpt );
+			        *pt++ = '\n';
+			    } else
+				len += strlen( bpt ) + 1;		/* for a new line */
+			}
+			if ( !m )
+			    newtns[j*3+2].u.md_str = all = pt = galloc(len+2);
+		    }
+		    if ( pt>all ) pt[-1] = '\0';
+		    else *pt = '\0';
+		}
+	    }
+	    if ( !k ) {
+		newtns = gcalloc((rows+extras)*3,sizeof(struct matrix_data));
+		memcpy(newtns,tns,rows*3*sizeof(struct matrix_data));
+		for ( i=0; i<rows; ++i )
+		    newtns[3*i+2].u.md_str = copy(newtns[3*i+2].u.md_str);
+	    }
+	}
+	GMatrixEditSet(tng, newtns, rows+extras, false);
+    }
+return( true );
+}
+	
 static int Gasp_Default(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
@@ -6243,7 +6328,7 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     GGadgetCreateData mb[2], mb2, nb[2], nb2, nb3, xub[2], psb[2], psb2[3], ppbox[3],
 	    vbox[4], metbox[2], ssbox[2], panbox[2], combox[2], atbox[4], mkbox[3],
 	    txbox[5], ubox[2], dbox[2], conbox[fpst_max-pst_contextpos][4],
-	    smbox[4][4], mcbox[3], mfbox[3], szbox[6], tnboxes[3], gaspboxes[3];
+	    smbox[4][4], mcbox[3], mfbox[3], szbox[6], tnboxes[4], gaspboxes[3];
     GGadgetCreateData *marray[7], *marray2[9], *narray[26], *narray2[7], *narray3[3],
 	*xuarray[13], *psarray[10], *psarray2[21], *psarray3[3], *psarray4[10],
 	*ppbuttons[5], *pparray[4], *vradio[5], *vbutton[4], *varray[38], *metarray[46],
@@ -6253,7 +6338,7 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
 	*conarray2[fpst_max-pst_contextpos][6], *conarray3[fpst_max-pst_contextpos][4],
 	*smarray[4][4], *smarray2[4][6], *smarray3[4][4], *mcarray[13], *mcarray2[7],
 	*mfarray[14], *szarray[7], *szarray2[5], *szarray3[7],
-	*szarray4[4], *szarray5[6], *tnvarray[4], *tnharray[5], *gaspharray[6],
+	*szarray4[4], *szarray5[6], *tnvarray[4], *tnharray[6], *tnharray2[4], *gaspharray[6],
 	*gaspvarray[3];
     GTextInfo mlabel[10], nlabel[16], pslabel[30], tnlabel[7],
 	plabel[8], vlabel[19], panlabel[22], comlabel[3], atlabel[7], txlabel[23],
@@ -8071,7 +8156,7 @@ return;
     tngcd[3].gd.label = &tnlabel[3];
     tngcd[3].creator = GRadioCreate;
     tngcd[3].gd.handle_controlevent = GFI_SortBy;
-    tnharray[3] = &tngcd[3]; tnharray[4] = NULL;
+    tnharray[3] = &tngcd[3]; tnharray[4] = GCD_Glue; tnharray[5] = NULL;
 
     tngcd[4].gd.pos.x = 10; tngcd[4].gd.pos.y = tngcd[1].gd.pos.y+14;
     tngcd[4].gd.pos.width = 300; tngcd[4].gd.pos.height = 200;
@@ -8088,15 +8173,39 @@ return;
 	"right click and select the appropriate menu item." );
     tngcd[4].data = d;
     tngcd[4].creator = GMatrixEditCreate;
-    tnvarray[0] = &tnboxes[2]; tnvarray[1] = &tngcd[4]; tnvarray[2] = NULL;
+
+    tngcd[5].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    tnlabel[5].text = (unichar_t *) S_("Add SIL Open Font License");
+    tnlabel[5].text_is_1byte = true;
+    tnlabel[5].text_in_resource = true;
+    tngcd[5].gd.label = &tnlabel[5];
+    tngcd[5].gd.handle_controlevent = GFI_AddOFL;
+    tngcd[5].gd.popup_msg = (unichar_t *) _(
+	"The SIL Open Font License is designed for Open Source/Libre\n"
+	"font projects (most Open Source licenses are designed for\n"
+	"conventional software and are not entirely appropriate for\n"
+	"fonts). I encourage you to use it if you can.\n"
+	"\n"
+	"Feel free to adjust the copyright line and reserved name\n"
+	"line at the top of the entry. Please add your email address.\n"
+	"You may also add additional copyright holders or reserved names.\n"
+	"\n"
+	"This license is described in great detail http://scripts.sil.org/ofl");
+    tngcd[5].creator = GButtonCreate;
+    tnharray2[0] = &tngcd[5]; tnharray2[1] = GCD_Glue; tnharray2[2] = NULL;
+    tnvarray[0] = &tnboxes[2]; tnvarray[1] = &tngcd[4]; tnvarray[2] = &tnboxes[3]; tnvarray[3] = NULL;
 
     tnboxes[0].gd.flags = gg_enabled|gg_visible;
     tnboxes[0].gd.u.boxelements = tnvarray;
     tnboxes[0].creator = GVBoxCreate;
-    
+
     tnboxes[2].gd.flags = gg_enabled|gg_visible;
     tnboxes[2].gd.u.boxelements = tnharray;
     tnboxes[2].creator = GHBoxCreate;
+
+    tnboxes[3].gd.flags = gg_enabled|gg_visible;
+    tnboxes[3].gd.u.boxelements = tnharray2;
+    tnboxes[3].creator = GHBoxCreate;
 /******************************************************************************/
     memset(&comlabel,0,sizeof(comlabel));
     memset(&comgcd,0,sizeof(comgcd));
@@ -9094,6 +9203,8 @@ return;
     }
 
     GHVBoxSetExpandableRow(tnboxes[0].ret,1);
+    GHVBoxSetExpandableCol(tnboxes[2].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(tnboxes[3].ret,gb_expandglue);
 
     GHVBoxSetExpandableRow(mcbox[0].ret,gb_expandglue);
     GHVBoxSetExpandableCol(mcbox[0].ret,1);

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Sep-2002 -->
-  <!-- AP: Last modified: 9-Sep-2006 -->
+  <!-- AP: Last modified: 12-Mar-2007 -->
   <TITLE>Generate Font Dialog</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -21,8 +21,8 @@
   The outline types are:
   <UL>
     <LI>
-      PostScript Type1 font, binary format (a .pfb file, this may be by most modern
-      windowing systems)
+      PostScript Type1 font, binary format (a .pfb file, this may be used by most
+      modern windowing systems)
     <LI>
       PostScript Type1 font, ascii format (a .pfa file, this is used by printers)
     <LI>
@@ -40,7 +40,7 @@
       a bitmap font, and then retry this dlg.
       <P>
       <FONT COLOR="Red"><STRONG><BIG>NOTE:</BIG></STRONG></FONT> Apple implies
-      that this format is depreciated and therefore it may not work in future versions.
+      that this format is deprecated and therefore it may not work in future versions.
     <LI>
       Multiple Master(A), generates a multiple master font in ascii format (same
       as .pfa)
@@ -64,7 +64,8 @@
     <LI>
       PostScript Type42 font (this is really a TrueType font wrapped up in PostScript)
     <LI>
-      PostScript Type42 CID font
+      PostScript Type11 font (this is another format for wrapping a TrueType font
+      in PostScript, it is a CID format)
     <LI>
       PostScript CID font, this is only available if your font is a
       <A HREF="cidmenu.html">CID font</A>. This produces a font in the old Type1
@@ -94,15 +95,15 @@
       True Type dfont format, a truetype font wrapped up in a mac dfont (data fork
       resource file). Mac OS/X font.
     <LI>
-      Open Type. Officially Open Type includes True Type, but Open Type True Type
-      fonts are no different from plain True Type fonts, so they might as well
-      just be called True Type. So by Open Type I mean Open Type with a CFF Postscript
-      Type 2 font inside it.
+      OpenType (CFF). Officially OpenType includes True Type, but OpenType True
+      Type fonts are no different from plain True Type fonts, so they might as
+      well just be called True Type. So here when I say OpenType I mean OpenType
+      with a CFF Postscript Type 2 font inside it.
     <LI>
-      Open Type dfont format, an open type font wrapped up in a mac dfont (data
-      fork resource file). Mac OS/X font.
+      OpenType dfont format, an OpenType font wrapped up in a mac dfont (data fork
+      resource file). Mac OS/X font.
     <LI>
-      Open Type CID, This is only available if your font is a
+      OpenType CID, This is only available if your font is a
       <A HREF="cidmenu.html">CID font</A>. It produces an OpenType CID-keyed font.
     <LI>
       <A HREF="#svg">SVG font</A>
@@ -271,11 +272,11 @@
       [] Output OFM &amp; CFG -- Output metrics files for Omega
   </UL>
   <P>
-  TTF (and Open Type) fonts are usually generated in Unicode encoding, there
+  TTF (and OpenType) fonts are usually generated in Unicode encoding, there
   will also be a tiny macintosh encoding of MacRoman (and a macintosh copy
   of the unicode encoding) -- the exceptions are: KSC5601 and Wansung fonts
-  will use Wansung, Johab fonts will use johab, JIS208 and SJIS fonts will
-  use SJIS, Big5 will use big5 encoding. Fonts with a "Full Unicode" encoding
+  which will use Wansung, Johab fonts will use johab, JIS208 and SJIS fonts
+  will use SJIS, Big5 will use big5 encoding. Fonts with a "Full Unicode" encoding
   will have both a 2 byte unicode encoding table and a 4 byte table. OpenType
   CID keyed fonts will be saved with Unicode encoding.
   <P>
