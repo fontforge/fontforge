@@ -813,6 +813,14 @@ void _FVCloseWindows(FontView *fv) {
 		if ( sf->glyphs[i]->charinfo )
 		    CharInfoDestroy(sf->glyphs[i]->charinfo);
 	    }
+	    for ( mv=sf->metrics; mv!=NULL; mv = mnext ) {
+		mnext = mv->next;
+# ifdef FONTFORGE_CONFIG_GDRAW
+		GDrawDestroyWindow(mv->gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+		gtk_widget_destroy(mv->gw);
+# endif
+	    }
 	}
     } else if ( sf->subfontcnt!=0 ) {
 	for ( j=0; j<sf->subfontcnt; ++j ) {
@@ -829,6 +837,23 @@ void _FVCloseWindows(FontView *fv) {
 		    CharInfoDestroy(sf->subfonts[j]->glyphs[i]->charinfo);
 		}
 	    }
+	    for ( mv=sf->subfonts[j]->metrics; mv!=NULL; mv = mnext ) {
+		mnext = mv->next;
+# ifdef FONTFORGE_CONFIG_GDRAW
+		GDrawDestroyWindow(mv->gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+		gtk_widget_destroy(mv->gw);
+# endif
+	    }
+	}
+    } else {
+	for ( mv=sf->metrics; mv!=NULL; mv = mnext ) {
+	    mnext = mv->next;
+# ifdef FONTFORGE_CONFIG_GDRAW
+	    GDrawDestroyWindow(mv->gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+	    gtk_widget_destroy(mv->gw);
+# endif
 	}
     }
     for ( bdf = sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
@@ -844,16 +869,8 @@ void _FVCloseWindows(FontView *fv) {
 	    }
 	}
     }
-    for ( mv=fv->metrics; mv!=NULL; mv = mnext ) {
-	mnext = mv->next;
-# ifdef FONTFORGE_CONFIG_GDRAW
-	GDrawDestroyWindow(mv->gw);
-# elif defined(FONTFORGE_CONFIG_GTK)
-	gtk_widget_destroy(mv->gw);
-# endif
-    }
-    if ( fv->fontinfo!=NULL )
-	FontInfoDestroy(fv);
+    if ( fv->sf->fontinfo!=NULL )
+	FontInfoDestroy(fv->sf);
     SVDetachFV(fv);
 #endif
 }
@@ -1100,8 +1117,10 @@ return;
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);
 # endif
+    if ( fv->sf->fontinfo )
+	FontInfoDestroy(fv->sf);
     for ( fvs=fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
-	for ( mv=fvs->metrics; mv!=NULL; mv = mvnext ) {
+	for ( mv=fvs->sf->metrics; mv!=NULL; mv = mvnext ) {
 	    /* Don't bother trying to fix up metrics views, just not worth it */
 	    mvnext = mv->next;
 # ifdef FONTFORGE_CONFIG_GDRAW
@@ -1110,8 +1129,6 @@ return;
 	    gtk_widget_destroy(mv->gw);
 # endif
 	}
-	if ( fvs->fontinfo )
-	    FontInfoDestroy(fvs);
     }
 # ifdef FONTFORGE_CONFIG_GDRAW
     GDrawSync(NULL);
@@ -1696,7 +1713,6 @@ void FontViewMenu_Metafont(GtkMenuItem *menuitem, gpointer user_data) {
 #define MID_Intersection	2229
 #define MID_FindInter	2230
 #define MID_Effects	2231
-#define MID_CopyFeatureToFont	2232
 #define MID_SimplifyMore	2233
 #define MID_ShowDependentSubs	2234
 #define MID_DefaultATT	2235
@@ -1767,7 +1783,6 @@ void FontViewMenu_Metafont(GtkMenuItem *menuitem, gpointer user_data) {
 #define MID_SameGlyphAs	2130
 #define MID_RplRef	2131
 #define MID_PasteAfter	2132
-#define MID_CopyFeatures	2133
 #define	MID_TTFInstr		2134
 #define MID_Convert2CID	2800
 #define MID_Flatten	2801
@@ -1932,20 +1947,6 @@ return;
     FVCopyWidth(fv,ut_rbearing);
 }
 # endif
-
-# ifdef FONTFORGE_CONFIG_GDRAW
-static void FVMenuCopyFeatures(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-# elif defined(FONTFORGE_CONFIG_GTK)
-void FontViewMenu_CopyFeatures(GtkMenuItem *menuitem, gpointer user_data) {
-    FontView *fv = FV_From_MI(menuitem);
-# endif
-    int ch = FVAnyCharSelected(fv);
-
-    if ( ch<0 || fv->sf->glyphs[ch]==NULL )
-return;
-    SCCopyFeatures(fv->sf->glyphs[ch]);
-}
 
 # ifdef FONTFORGE_CONFIG_GDRAW
 static void FVMenuPaste(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -2749,199 +2750,6 @@ return;
 	SFBdfProperties(fv->sf,fv->map,fv->show);
     else
 	SFBdfProperties(fv->sf,fv->map,NULL);
-}
-
-# if defined(FONTFORGE_CONFIG_GDRAW)
-static void FVMenuAAT(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    int i,gid;
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    uint32 tag = (uint32) (intpt) (mi->ti.userdata);
-# elif defined(FONTFORGE_CONFIG_GTK)
-void FontViewMenu_Att(GtkMenuItem *menuitem, gpointer user_data) {
-    int i, gid;
-    FontView *fv = FV_From_MI(menuitem);
-    guint32 tag;
-    G_CONST_RETURN gchar *name = gtk_widget_get_name(GTK_WIDGET(menuitem));
-
-    if ( strcmp(name,"all1")==0 )
-	tag = 0;
-    else if ( strcmp(name,"ligatures1")==0 )
-	tag = 0xffffffff;
-    else if ( strcmp(name,"standard_ligatures1")==0 )
-	tag = CHR('l','i','g','a');
-    else if ( strcmp(name,"required_ligatures1")==0 )
-	tag = CHR('r','l','i','g');
-    else if ( strcmp(name,"historic_ligatures1")==0 )
-	tag = CHR('h','l','i','g');
-    else if ( strcmp(name,"discretionary_ligatures1")==0 )
-	tag = CHR('d','l','i','g');
-    else if ( strcmp(name,"diagonal_fractions1")==0 )
-	tag = CHR('f','r','a','c');
-    else if ( strcmp(name,"unicode_decomposition1")==0 )
-	tag = ((27<<16)|1);
-    else if ( strcmp(name,"right_to_left_alternates1")==0 )
-	tag = CHR('r','t','l','a');
-    else if ( strcmp(name,"vertical_rotation_alternates1")==0 )
-	tag = CHR('v','r','t','2');
-    else if ( strcmp(name,"lowercase_to_smallcaps1")==0 )
-	tag = CHR('s','m','c','p');
-    else if ( strcmp(name,"uppercase_to_small_caps1")==0 )
-	tag = CHR('c','2','s','c');
-    else if ( strcmp(name,"oldstyle_figures1")==0 )
-	tag = CHR('o','n','u','m');
-    else if ( strcmp(name,"superscript1")==0 )
-	tag = CHR('s','u','p','s');
-    else if ( strcmp(name,"subscript1")==0 )
-	tag = CHR('s','u','b','s');
-    else if ( strcmp(name,"swash1")==0 )
-	tag = CHR('s','w','s','h');
-    else if ( strcmp(name,"proportional_width1")==0 )
-	tag = CHR('p','w','i','d');
-    else if ( strcmp(name,"full_width1")==0 )
-	tag = CHR('f','w','i','d');
-    else if ( strcmp(name,"half_width1")==0 )
-	tag = CHR('h','w','i','d');
-    else if ( strcmp(name,"initial_forms1")==0 )
-	tag = CHR('i','n','i','t');
-    else if ( strcmp(name,"medial_forms1")==0 )
-	tag = CHR('m','e','d','i');
-    else if ( strcmp(name,"terminal_forms1")==0 )
-	tag = CHR('f','i','n','a');
-    else if ( strcmp(name,"isolated_forms1")==0 )
-	tag = CHR('i','s','o','l');
-    else if ( strcmp(name,"left_bounds1")==0 )
-	tag = CHR('l','f','b','d');
-    else if ( strcmp(name,"right_bounds1")==0 )
-	tag = CHR('r','t','b','d');
-# endif
-
-    for ( i=0; i<fv->map->enccount; ++i )
-	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
-		fv->sf->glyphs[gid]!=NULL )
-	    SCTagDefault(fv->sf->glyphs[gid],tag);
-}
-
-# if defined(FONTFORGE_CONFIG_GDRAW)
-static void FVMenuAATSuffix(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    unichar_t *usuffix, *upt, *end;
-# elif defined(FONTFORGE_CONFIG_GTK)
-void FontViewMenu_AttSuffix(GtkMenuItem *menuitem, gpointer user_data) {
-    FontView *fv = FV_From_MI(menuitem);
-    char *usuffix, *upt, *end;
-# endif
-    uint32 tag;
-    char *suffix;
-    int i, gid;
-    uint16 flags, sli;
-
-    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] && (gid=fv->map->map[i])!=-1 && fv->sf->glyphs[gid]!=NULL )
-	if ( SCScriptFromUnicode(fv->sf->glyphs[gid])!=DEFAULT_SCRIPT )
-    break;
-    if ( i==fv->map->enccount )
-return;
-    usuffix = AskNameTag(_("Suffix to Tag..."),NULL,0,0,-1,pst_substitution,fv->sf,fv->sf->glyphs[gid],-1,-1);
-    if ( usuffix==NULL )
-return;
-
-    upt = usuffix;
-    tag  = (*upt++&0xff)<<24;
-    tag |= (*upt++&0xff)<<16;
-    tag |= (*upt++&0xff)<< 8;
-    tag |= (*upt++&0xff)    ;
-    if ( *upt==' ' ) ++upt;
-    flags = 0;
-    if (( upt[0]=='b' || upt[0]==' ' ) &&
-	    ( upt[1]=='l' || upt[1]==' ' ) &&
-	    ( upt[2]=='m' || upt[2]==' ' ) &&
-	    ( upt[3]=='m' || upt[3]==' ' ) &&
-	    upt[4]==' ' ) {
-	if ( upt[0]=='r' ) flags |= pst_r2l;
-	if ( upt[1]=='b' ) flags |= pst_ignorebaseglyphs;
-	if ( upt[2]=='l' ) flags |= pst_ignoreligatures;
-	if ( upt[3]=='m' ) flags |= pst_ignorecombiningmarks;
-	upt += 5;
-    }
-# ifdef FONTFORGE_CONFIG_GTK
-    sli = strtol(upt,&end,10);
-    while ( *end==' ' ) ++end;
-
-    if ( *end=='.' ) ++end;
-    suffix = copy(end);
-#else
-    sli = u_strtol(upt,&end,10);
-    while ( *end==' ' ) ++end;
-
-    if ( *end=='.' ) ++end;
-    suffix = cu_copy(end);
-#endif
-
-    free(usuffix);
-    for ( i=0; i<fv->map->enccount; ++i )
-	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
-		fv->sf->glyphs[gid]!=NULL )
-	    SCSuffixDefault(fv->sf->glyphs[gid],tag,suffix,flags,sli);
-    free(suffix);
-}
-
-# if defined(FONTFORGE_CONFIG_GDRAW)
-static void FVMenuCopyFeatureToFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-# elif defined(FONTFORGE_CONFIG_GTK)
-void FontViewMenu_CopyFeatures(GtkMenuItem *menuitem, gpointer user_data) {
-    FontView *fv = FV_From_MI(menuitem);
-# endif
-    SFCopyFeatureToFontDlg(fv->sf);
-}
-
-# if defined(FONTFORGE_CONFIG_GDRAW)
-static void FVMenuRemoveAllFeatures(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-
-    if ( !SFRemoveThisFeatureTag(fv->sf,0xffffffff,SLI_UNKNOWN,-1))
-	gwwv_post_error(_("No Features Removed"),_("No Features Removed"));
-}
-# elif defined(FONTFORGE_CONFIG_GTK)
-void FontViewMenu_RemoveAllFeatures(GtkMenuItem *menuitem, gpointer user_data) {
-    FontView *fv = FV_From_MI(menuitem);
-
-    if ( !SFRemoveThisFeatureTag(fv->sf,0xffffffff,SLI_UNKNOWN,-1))
-	gwwv_post_error(_("No Features Removed"),_("No Features Removed"));
-}
-# endif
-
-# if defined(FONTFORGE_CONFIG_GDRAW)
-static void FVMenuRemoveFeatures(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-# elif defined(FONTFORGE_CONFIG_GTK)
-void FontViewMenu_RemoveFeature(GtkMenuItem *menuitem, gpointer user_data) {
-    FontView *fv = FV_From_MI(menuitem);
-# endif
-    SFRemoveFeatureDlg(fv->sf);
-}
-
-# if defined(FONTFORGE_CONFIG_GDRAW)
-static void FVMenuRemoveUnusedNested(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    if ( !SFRemoveUnusedNestedFeatures(fv->sf))
-	gwwv_post_error(_("No Features Removed"),_("No Features Removed"));
-}
-# elif defined(FONTFORGE_CONFIG_GTK)
-void FontViewMenu_RemoveUnusedNested(GtkMenuItem *menuitem, gpointer user_data) {
-    FontView *fv = FV_From_MI(menuitem);
-    if ( !SFRemoveUnusedNestedFeatures(fv->sf))
-	gwwv_post_error(_("No Features Removed"),_("No Features Removed"));
-}
-# endif
-
-# if defined(FONTFORGE_CONFIG_GDRAW)
-static void FVMenuRetagFeature(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-# elif defined(FONTFORGE_CONFIG_GTK)
-void FontViewMenu_RetagFeature(GtkMenuItem *menuitem, gpointer user_data) {
-    FontView *fv = FV_From_MI(menuitem);
-# endif
-    SFRetagFeatureDlg(fv->sf);
 }
 
 # if defined(FONTFORGE_CONFIG_GDRAW)
@@ -4145,200 +3953,6 @@ void FontViewMenu_ShowGroup(GtkMenuItem *menuitem, gpointer user_data) {
 #endif
 #endif
 
-int ScriptLangMatch(struct script_record *sr,uint32 script,uint32 lang) {
-    int i, j;
-
-    if ( script==CHR('*',' ',' ',' ') && lang==CHR('*',' ',' ',' ') )
-return(true);	/* Wild card */
-
-    for ( i=0; sr[i].script!=0; ++i ) {
-	if ( sr[i].script==script || script==CHR('*',' ',' ',' ') ) {
-	    for ( j=0; sr[i].langs[j]!=0 ; ++j )
-		if ( sr[i].langs[j]==lang || lang==CHR('*',' ',' ',' ') )
-return( true );
-	    if ( sr[i].script==script )
-return( false );
-	}
-    }
-return( false );
-}
-
-static void SCFreeMostContents(SplineChar *sc) {
-    int i;
-
-    free(sc->name);
-    for ( i=0; i<sc->layer_cnt; ++i ) {
-	SplinePointListsFree(sc->layers[i].splines); sc->layers[i].splines = NULL;
-	RefCharsFree(sc->layers[i].refs); sc->layers[i].refs = NULL;
-	ImageListsFree(sc->layers[i].images); sc->layers[i].images = NULL;
-	/* image garbage collection????!!!! */
-	/* Keep undoes */
-    }
-    StemInfosFree(sc->hstem); sc->hstem = NULL;
-    StemInfosFree(sc->vstem); sc->vstem = NULL;
-    DStemInfosFree(sc->dstem); sc->dstem = NULL;
-    MinimumDistancesFree(sc->md); sc->md = NULL;
-    KernPairsFree(sc->kerns); sc->kerns = NULL;
-    KernPairsFree(sc->vkerns); sc->vkerns = NULL;
-    AnchorPointsFree(sc->anchor); sc->anchor = NULL;
-    SplineCharListsFree(sc->dependents); sc->dependents = NULL;
-    PSTFree(sc->possub); sc->possub = NULL;
-    free(sc->ttf_instrs); sc->ttf_instrs = NULL;
-    free(sc->countermasks); sc->countermasks = NULL;
-#ifdef FONTFORGE_CONFIG_TYPE3
-    /*free(sc->layers);*/	/* don't free this, leave it empty */
-#endif
-}
-
-static void SCReplaceWith(SplineChar *dest, SplineChar *src) {
-    int opos=dest->orig_pos, uenc=dest->unicodeenc;
-    Undoes *u[2], *r1;
-    struct splinecharlist *scl = dest->dependents;
-    RefChar *refs;
-    int layer;
-#ifdef FONTFORGE_CONFIG_TYPE3
-    int lc;
-    Layer *layers;
-#else
-    SplineSet *back = dest->layers[ly_back].splines;
-    ImageList *images = dest->layers[ly_back].images;
-#endif
-
-    if ( src==dest )
-return;
-
-    SCPreserveState(dest,2);
-    u[0] = dest->layers[ly_fore].undoes; u[1] = dest->layers[ly_back].undoes; r1 = dest->layers[ly_back].redoes;
-
-    free(dest->name);
-    for ( layer = ly_fore; layer<dest->layer_cnt; ++layer ) {
-	SplinePointListsFree(dest->layers[layer].splines);
-	RefCharsFree(dest->layers[layer].refs);
-#ifdef FONTFORGE_CONFIG_TYPE3
-	ImageListsFree(dest->layers[layer].images);
-#endif
-    }
-    StemInfosFree(dest->hstem);
-    StemInfosFree(dest->vstem);
-    DStemInfosFree(dest->dstem);
-    MinimumDistancesFree(dest->md);
-    KernPairsFree(dest->kerns);
-    KernPairsFree(dest->vkerns);
-    AnchorPointsFree(dest->anchor);
-    PSTFree(dest->possub);
-    free(dest->ttf_instrs);
-
-#ifdef FONTFORGE_CONFIG_TYPE3
-    layers = dest->layers;
-    lc = dest->layer_cnt;
-    *dest = *src;
-    dest->layers = galloc(dest->layer_cnt*sizeof(Layer));
-    memcpy(&dest->layers[ly_back],&layers[ly_back],sizeof(Layer));
-    for ( layer=ly_fore; layer<dest->layer_cnt; ++layer ) {
-	memcpy(&dest->layers[layer],&src->layers[layer],sizeof(Layer));
-	dest->layers[layer].undoes = dest->layers[layer].redoes = NULL;
-	src->layers[layer].splines = NULL;
-	src->layers[layer].images = NULL;
-	src->layers[layer].refs = NULL;
-    }
-    for ( layer=ly_fore; layer<dest->layer_cnt && layer<lc; ++layer )
-	dest->layers[layer].undoes = layers[layer].undoes;
-    for ( ; layer<lc; ++layer )
-	UndoesFree(layers[layer].undoes);
-    free(layers);
-#else
-    *dest = *src;
-    dest->layers[ly_back].images = images;
-    dest->layers[ly_back].splines = back;
-    dest->layers[ly_fore].undoes = u[0]; dest->layers[ly_back].undoes = u[1]; dest->layers[ly_fore].redoes = NULL; dest->layers[ly_back].redoes = r1;
-
-    src->layers[ly_fore].splines = NULL;
-    src->layers[ly_fore].refs = NULL;
-#endif
-    dest->orig_pos = opos; dest->unicodeenc = uenc;
-    dest->dependents = scl;
-    dest->namechanged = true;
-
-    src->name = NULL;
-    src->unicodeenc = -1;
-    src->hstem = NULL;
-    src->vstem = NULL;
-    src->dstem = NULL;
-    src->md = NULL;
-    src->kerns = NULL;
-    src->vkerns = NULL;
-    src->anchor = NULL;
-    src->possub = NULL;
-    src->ttf_instrs = NULL;
-    src->ttf_instrs_len = 0;
-    SplineCharFree(src);
-
-    /* Fix up dependant info */
-    for ( layer=ly_fore; layer<dest->layer_cnt; ++layer )
-	for ( refs = dest->layers[layer].refs; refs!=NULL; refs=refs->next ) {
-	    for ( scl=refs->sc->dependents; scl!=NULL; scl=scl->next )
-		if ( scl->sc==src )
-		    scl->sc = dest;
-	}
-    SCCharChangedUpdate(dest);
-}
-
-void FVApplySubstitution(FontView *fv,uint32 script, uint32 lang, uint32 tag) {
-    SplineFont *sf = fv->sf, *sf_sl=sf;
-    SplineChar *sc, *replacement;
-    PST *pst;
-    EncMap *map = fv->map;
-    int i, gid;
-    SplineChar **replacements;
-    uint8 *removes;
-    char namebuf[40];
-
-    if ( sf_sl->cidmaster!=NULL ) sf_sl = sf_sl->cidmaster;
-    else if ( sf_sl->mm!=NULL ) sf_sl = sf_sl->mm->normal;
-
-    /* I used to do replaces and removes as I went along, and then Werner */
-    /*  gave me a font were "a" was replaced by "b" replaced by "a" */
-    replacements = gcalloc(sf->glyphcnt,sizeof(SplineChar *));
-    removes = gcalloc(sf->glyphcnt,sizeof(uint8));
-
-    for ( i=0; i<map->enccount; ++i ) if ( fv->selected[i] &&
-	    (gid=map->map[i])!=-1 && (sc=sf->glyphs[gid])!=NULL ) {
-	for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
-	    if ( pst->type==pst_substitution && pst->tag==tag &&
-		    ScriptLangMatch(sf_sl->script_lang[pst->script_lang_index],script,lang))
-	break;
-	}
-	if ( pst!=NULL ) {
-	    replacement = SFGetChar(sf,-1,pst->u.subs.variant);
-	    if ( replacement!=NULL ) {
-		replacements[gid] = SplineCharCopy( replacement,sf);
-		removes[replacement->orig_pos] = true;
-	    }
-	}
-    }
-
-    for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc = sf->glyphs[gid])!=NULL ) {
-	if ( replacements[gid]!=NULL ) {
-	    SCReplaceWith(sc,replacements[gid]);
-	} else if ( removes[gid] ) {
-	    /* This is deliberatly in the else. We don't want to remove a glyph*/
-	    /*  we are about to replace */
-	    SCPreserveState(sc,2);
-	    SCFreeMostContents(sc);
-	    sprintf(namebuf,"NameMe.%d", sc->orig_pos);
-	    sc->name = copy(namebuf);
-	    sc->namechanged = true;
-	    sc->unicodeenc = -1;
-	    SCCharChangedUpdate(sc);
-	    /* Retain the undoes/redoes */
-	    /* Retain the dependents */
-	}
-    }
-
-    free(removes);
-    free(replacements);
-}
-
 #if HANYANG
 static void FVMenuModifyComposition(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
@@ -4522,7 +4136,7 @@ static void FVMenuKernPairs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 void FontViewMenu_KernPairs(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
-    SFKernPrepare(fv->sf,false);
+    SFKernClassTempDecompose(fv->sf,false);
     SFShowKernPairs(fv->sf,NULL,NULL);
     SFKernCleanup(fv->sf,false);
 }
@@ -4555,22 +4169,49 @@ void FontViewMenu_DisplaySubstitutions(GtkMenuItem *menuitem, gpointer user_data
     FontView *fv = FV_From_MI(menuitem);
 # endif
 
-    if ( fv->cur_feat_tag!=0 ) {
-	fv->cur_feat_tag = 0;
-	fv->cur_sli = 0;
+    if ( fv->cur_subtable!=0 ) {
+	fv->cur_subtable = NULL;
     } else {
-	unichar_t *newname, *components=NULL;
-	int macfeature;
-	uint16 flags, sli;
-	uint32 tag;
-	newname = AskNameTag(_("Display Substitutions..."),NULL,0,0,
-		-1, pst_substitution,fv->sf,NULL,-2,-1);
-	if ( newname==NULL )
+	SplineFont *sf = fv->sf;
+	OTLookup *otf;
+	struct lookup_subtable *sub;
+	int cnt, k;
+	char **names = NULL;
+	if ( sf->cidmaster ) sf=sf->cidmaster;
+	for ( k=0; k<2; ++k ) {
+	    for ( otf = sf->gsub_lookups; otf!=NULL; otf=otf->next ) {
+		if ( otf->lookup_type==gsub_single ) {
+		    for ( sub=otf->subtables; sub!=NULL; sub=sub->next ) {
+			if ( names )
+			    names[cnt] = sub->subtable_name;
+			++cnt;
+		    }
+		}
+	    }
+	    if ( cnt==0 )
+	break;
+	    if ( names==NULL )
+		names = galloc((cnt+3) * sizeof(char *));
+	    else {
+		names[cnt++] = "-";
+		names[cnt++] = _("New Lookup Subtable...");
+		names[cnt] = NULL;
+	    }
+	}
+	sub = NULL;
+	if ( names!=NULL ) {
+	    int ret = gwwv_choose(_("Display Substitution..."), (const char **) names, cnt, 0,
+		    _("Pick a substitution to display in the window."));
+	    if ( ret!=-1 )
+		sub = SFFindLookupSubtable(sf,names[ret]);
+	    free(names);
+	    if ( ret==-1 )
 return;
-	DecomposeClassName(newname,&components,&tag,&macfeature,
-		&flags, &sli, NULL,NULL,fv->sf);
-	fv->cur_feat_tag = tag;
-	fv->cur_sli = sli;
+	}
+	if ( sub==NULL )
+	    sub = SFNewLookupSubtableOfType(sf,gsub_single,NULL);
+	if ( sub!=NULL )
+	    fv->cur_subtable = sub;
     }
     GDrawRequestExpose(fv->v,NULL,false);
 }
@@ -5675,7 +5316,7 @@ static void FontViewMenu_ShowSubFont(GtkMenuItem *menuitem, gpointer user_data) 
     BDFFont *newbdf;
     int wascompact = fv->normal!=NULL;
 
-    for ( mv=fv->metrics; mv!=NULL; mv = mvnext ) {
+    for ( mv=fv->sf->metrics; mv!=NULL; mv = mvnext ) {
 	/* Don't bother trying to fix up metrics views, just not worth it */
 	mvnext = mv->next;
 	GDrawDestroyWindow(mv->gw);
@@ -5887,7 +5528,7 @@ return;
 	}
     }
     GDrawProcessPendingEvents(NULL);
-    for ( mv=fv->metrics; mv!=NULL; mv = mnext ) {
+    for ( mv=fv->sf->metrics; mv!=NULL; mv = mnext ) {
 	mnext = mv->next;
 	GDrawDestroyWindow(mv->gw);
     }
@@ -6184,7 +5825,7 @@ static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    }
 	  break;
 	  case MID_RevertGlyph:
-	    mi->ti.disabled = fv->sf->origname==NULL || anychars==-1 || fv->sf->compression!=0;
+	    mi->ti.disabled = fv->sf->origname==NULL || fv->sf->sfd_version<2 || anychars==-1 || fv->sf->compression!=0;
 	  break;
 	  case MID_Recent:
 	    mi->ti.disabled = !RecentFilesAny();
@@ -6235,10 +5876,6 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = not_pasteable || base==NULL || fv->cidmaster!=NULL ||
 		    base_enc==-1 ||
 		    fv->selected[base_enc];	/* Can't be self-referential */
-	  break;
-	  case MID_CopyFeatures:
-	    mi->ti.disabled = pos<0 || fv->map->map[pos]==-1 ||
-		    !SCAnyFeatures(fv->sf->glyphs[fv->map->map[pos]]);
 	  break;
 	  case MID_Join:
 	  case MID_Cut: case MID_Copy: case MID_Clear:
@@ -6493,24 +6130,6 @@ static void delistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
-static void aatlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    FontView *ofv;
-    int anychars = FVAnyCharSelected(fv);
-
-    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
-	switch ( mi->mid ) {
-	  case MID_DefaultATT:
-	    mi->ti.disabled = anychars==-1;
-	  break;
-	  case MID_CopyFeatureToFont:
-	    for ( ofv=fv_list; ofv!=NULL && ofv->sf==fv->sf; ofv = ofv->next );
-	    mi->ti.disabled = ofv==NULL;
-	  break;
-	}
-    }
-}
-
 static GMenuItem2 dummyitem[] = { { (unichar_t *) N_("Font|_New"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'N' }, NULL };
 static GMenuItem2 fllist[] = {
     { { (unichar_t *) N_("Font|_New"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'N' }, H_("New|Ctl+N"), NULL, NULL, MenuNew },
@@ -6518,7 +6137,7 @@ static GMenuItem2 fllist[] = {
     { { (unichar_t *) N_("_Hangul"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, NULL, hglist, hglistcheck, NULL, 0 },
 #endif
     { { (unichar_t *) N_("_Open"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'O' }, H_("Open|Ctl+O"), NULL, NULL, MenuOpen },
-    { { (unichar_t *) N_("Recen_t"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 't' }, H_("Recent|No Shortcut"), dummyitem, MenuRecentBuild, NULL, MID_Recent },
+    { { (unichar_t *) N_("Recen_t"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 't' }, NULL, dummyitem, MenuRecentBuild, NULL, MID_Recent },
     { { (unichar_t *) N_("_Close"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Close|Ctl+Shft+Q"), NULL, NULL, FVMenuClose },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Save"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Save|Ctl+S"), NULL, NULL, FVMenuSave },
@@ -6578,7 +6197,7 @@ static GMenuItem2 sllist[] = {
     { { (unichar_t *) N_("_Changed Glyphs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Changed Glyphs|No Shortcut"), NULL,NULL, FVMenuSelectChanged },
     { { (unichar_t *) N_("_Hinting Needed"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Hinting Needed|No Shortcut"), NULL,NULL, FVMenuSelectHintingNeeded },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("Selec_t By ATT..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Select By ATT...|No Shortcut"), NULL, NULL, FVMenuSelectByPST },
+    { { (unichar_t *) N_("Selec_t By Lookup Subtable..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Select By Lookup Subtable...|No Shortcut"), NULL, NULL, FVMenuSelectByPST },
     { NULL }
 };
 
@@ -6593,7 +6212,6 @@ static GMenuItem2 edlist[] = {
     { { (unichar_t *) N_("Copy _VWidth"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'V' }, H_("Copy VWidth|No Shortcut"), NULL, NULL, FVMenuCopyWidth, MID_CopyVWidth },
     { { (unichar_t *) N_("Co_py LBearing"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'p' }, H_("Copy LBearing|No Shortcut"), NULL, NULL, FVMenuCopyWidth, MID_CopyLBearing },
     { { (unichar_t *) N_("Copy RBearin_g"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'g' }, H_("Copy RBearing|No Shortcut"), NULL, NULL, FVMenuCopyWidth, MID_CopyRBearing },
-    { { (unichar_t *) N_("Copy Glyph Features..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Copy Glyph Features...|No Shortcut"), NULL, NULL, FVMenuCopyFeatures, MID_CopyFeatures },
     { { (unichar_t *) N_("_Paste"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Paste|Ctl+V"), NULL, NULL, FVMenuPaste, MID_Paste },
     { { (unichar_t *) N_("Paste Into"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Paste Into|Ctl+Shft+V"), NULL, NULL, FVMenuPasteInto, MID_PasteInto },
 #ifdef FONTFORGE_CONFIG_PASTEAFTER
@@ -6614,40 +6232,6 @@ static GMenuItem2 edlist[] = {
     { { (unichar_t *) N_("Copy _From"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'F' }, NULL, cflist, cflistcheck, NULL, 0 },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("Remo_ve Undoes"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'e' }, H_("Remove Undoes|No Shortcut"), NULL, NULL, FVMenuRemoveUndoes, MID_RemoveUndoes },
-    { NULL }
-};
-
-static GMenuItem2 aat2list[] = {
-    { { (unichar_t *) N_("All"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("All|No Shortcut"), NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("_Ligatures"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0xffffffff, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Ligatures|No Shortcut"), NULL, NULL, FVMenuAAT },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("Standard Ligatures"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('l','i','g','a'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Standard Ligatures|No Shortcut"), NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Required Ligatures"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('r','l','i','g'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Required Ligatures|No Shortcut"), NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Historic Ligatures"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('h','l','i','g'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Historic Ligatures|No Shortcut"), NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Discretionary Ligatures"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('d','l','i','g'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Discretionary Ligatures|No Shortcut"), NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Diagonal Fractions"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('f','r','a','c'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Diagonal Fractions|No Shortcut"), NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Unicode Decomposition (Mac Only)"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) ((27<<16)|1), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Unicode Decomposition (Mac Only)|No Shortcut"), NULL, NULL, FVMenuAAT },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("Right to Left Alternates"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('r','t','l','a'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Right to Left Alternates|No Shortcut"), NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Vertical Rotation & Alternates"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('v','r','t','2'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Vertical Rotation & Alternates|No Shortcut"), NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Lowercase to Small Capitals"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('s','m','c','p'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Lowercase to Small Capitals|No Shortcut"), NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Capitals to Small Capitals"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('c','2','s','c'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Capitals to Small Capitals|No Shortcut"), NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Oldstyle Figures"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('o','n','u','m'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Oldstyle Figures|No Shortcut"), NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Superscript"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('s','u','p','s'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Superscript|No Shortcut"), NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Subscript"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('s','u','b','s'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Subscript|No Shortcut"), NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Swash"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('s','w','s','h'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Swash|No Shortcut"), NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Proportional Width"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('p','w','i','d'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Proportional Width|No Shortcut"), NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Full Widths"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('f','w','i','d'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Full Widths|No Shortcut"), NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Half Widths"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('h','w','i','d'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Half Widths|No Shortcut"), NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Initial Forms"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('i','n','i','t'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Initial Forms|No Shortcut"), NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Medial Forms"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('m','e','d','i'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Medial Forms|No Shortcut"), NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Terminal Forms"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('f','i','n','a'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Terminal Forms|No Shortcut"), NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Isolated Forms"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('i','s','o','l'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Isolated Forms|No Shortcut"), NULL, NULL, FVMenuAAT },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("Left Bounds"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('l','f','b','d'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Left Bounds|No Shortcut"), NULL, NULL, FVMenuAAT },
-    { { (unichar_t *) N_("Right Bounds"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, (void *) CHR('r','t','b','d'), NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Right Bounds|No Shortcut"), NULL, NULL, FVMenuAAT },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("Suffix to Tag..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Suffix to Tag...|No Shortcut"), NULL, NULL, FVMenuAATSuffix },
     { NULL }
 };
 
@@ -6686,18 +6270,6 @@ static GMenuItem2 balist[] = {
     { NULL }
 };
 
-static GMenuItem2 aatlist[] = {
-    { { (unichar_t *) N_("_Copy Feature(s) To Font..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Copy Feature(s) To Font...|No Shortcut"), NULL, NULL, FVMenuCopyFeatureToFont, MID_CopyFeatureToFont },
-    { { (unichar_t *) N_("_Default ATT"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'D' }, NULL, aat2list, NULL, NULL, MID_DefaultATT },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("_Remove All Features"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Remove All Features|No Shortcut"), NULL, NULL, FVMenuRemoveAllFeatures },
-    { { (unichar_t *) N_("R_emove Feature(s)..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Remove Feature(s)...|No Shortcut"), NULL, NULL, FVMenuRemoveFeatures },
-    { { (unichar_t *) N_("Remove U_nused Nested"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Remove Unused Nested|No Shortcut"), NULL, NULL, FVMenuRemoveUnusedNested },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("Re_tag Feature(s)..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Retag Feature(s)...|No Shortcut"), NULL, NULL, FVMenuRetagFeature },
-    { NULL }
-};
-
 static GMenuItem2 delist[] = {
     { { (unichar_t *) N_("_References..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'u' }, H_("References...|Alt+Ctl+I"), NULL, NULL, FVMenuShowDependentRefs, MID_ShowDependentRefs },
     { { (unichar_t *) N_("_Substitutions..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Substitutions...|No Shortcut"), NULL, NULL, FVMenuShowDependentSubs, MID_ShowDependentSubs },
@@ -6722,7 +6294,6 @@ static GMenuItem2 ellist[] = {
     { { (unichar_t *) N_("_Font Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Font Info...|Ctl+Shft+F"), NULL, NULL, FVMenuFontInfo },
     { { (unichar_t *) N_("Glyph _Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Glyph Info...|Ctl+I"), NULL, NULL, FVMenuCharInfo, MID_CharInfo },
     { { (unichar_t *) N_("BDF Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("BDF Info...|No Shortcut"), NULL, NULL, FVMenuBDFInfo, MID_StrikeInfo },
-    { { (unichar_t *) N_("T_ypo. Features"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'D' }, NULL, aatlist, aatlistcheck },
     { { (unichar_t *) N_("S_how Dependent"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'D' }, NULL, delist, delistcheck },
     { { (unichar_t *) N_("Find Pr_oblems..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, H_("Find Problems...|Ctl+E"), NULL, NULL, FVMenuFindProblems, MID_FindProblems },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
@@ -7329,7 +6900,7 @@ return;
 			free(sc->name);
 			sc->name = copy(buffer);
 			sc->comment = copy(".");	/* Mark as something for sfd file */
-			SCLigDefault(sc);
+			/*SCLigDefault(sc);*/
 		    }
 		    map->map[map->enccount-1] = sc->orig_pos;
 		    map->backmap[sc->orig_pos] = map->enccount-1;
@@ -7466,6 +7037,7 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     int pos;
     SplineFont *sf = fv->sf;
     EncMap *map = fv->map;
+    OTLookup *otl;
 
     for ( i=0; vwlist[i].ti.text==NULL || strcmp((char *) vwlist[i].ti.text, _("Bitmap _Magnification..."))!=0; ++i );
     base = i+1;
@@ -7516,9 +7088,14 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 		    --pos );
 	    mi->ti.disabled = pos<0;
 	  break;
-	  case MID_DisplaySubs:
-	    mi->ti.checked = fv->cur_feat_tag!=0;
-	  break;
+	  case MID_DisplaySubs: { SplineFont *_sf = sf;
+	    mi->ti.checked = fv->cur_subtable!=NULL;
+	    if ( _sf->cidmaster ) _sf = _sf->cidmaster;
+	    for ( otl=_sf->gsub_lookups; otl!=NULL; otl=otl->next )
+		if ( otl->lookup_type == gsub_single && otl->subtables!=NULL )
+	    break;
+	    mi->ti.disabled = otl==NULL;
+	  } break;
 	  case MID_ShowHMetrics:
 	    /*mi->ti.checked = fv->showhmetrics;*/
 	  break;
@@ -7941,11 +7518,6 @@ void FontViewMenu_ActivateEdit(GtkMenuItem *menuitem, gpointer user_data) {
     w = lookup_widget( menuitem, "copy_vwidth1" );
     if ( w!=NULL )
 	gtk_widget_set_sensitive(w,pos!=-1 && fv->sf->hasvmetrics);
-
-    w = lookup_widget( menuitem, "copy_glyph_features1" );
-    if ( w!=NULL )
-	gtk_widget_set_sensitive(w,pos!=-1 && (gid = fv->map->map[pos])!=-1 &&
-		SCAnyFeatures(fv->sf->glyphs[gid]);
 
 #  ifndef FONTFORGE_CONFIG_PASTEAFTER
     w = lookup_widget( menuitem, "paste_after1" );
@@ -8403,7 +7975,7 @@ static int FeatureTrans(FontView *fv, int enc) {
 
     if ( enc<0 || enc>=fv->map->enccount || (gid = fv->map->map[enc])==-1 )
 return( -1 );
-    if ( fv->cur_feat_tag==0 )
+    if ( fv->cur_subtable==NULL )
 return( gid );
 
     sc = fv->sf->glyphs[gid];
@@ -8411,7 +7983,7 @@ return( gid );
 return( -1 );
     for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
 	if (( pst->type == pst_substitution || pst->type == pst_alternate ) &&
-		pst->tag == fv->cur_feat_tag && pst->script_lang_index == fv->cur_sli )
+		pst->subtable == fv->cur_subtable )
     break;
     }
     if ( pst==NULL )
@@ -8432,7 +8004,7 @@ void FVRefreshChar(FontView *fv,int gid) {
 
     if ( fv->v==NULL || fv->colcnt==0 )	/* Can happen in scripts */
 return;
-    if ( fv->cur_feat_tag!=0 && strchr(fv->sf->glyphs[gid]->name,'.')!=NULL ) {
+    if ( fv->cur_subtable==NULL && strchr(fv->sf->glyphs[gid]->name,'.')!=NULL ) {
 	char *temp = copy(fv->sf->glyphs[gid]->name);
 	SplineChar *sc2;
 	*strchr(temp,'.') = '\0';
@@ -8443,7 +8015,7 @@ return;
     }
 
     for ( fv=fv->sf->fv; fv!=NULL; fv = fv->nextsame ) {
-	for ( mv=fv->metrics; mv!=NULL; mv=mv->next )
+	for ( mv=fv->sf->metrics; mv!=NULL; mv=mv->next )
 	    MVRefreshChar(mv,fv->sf->glyphs[gid]);
 	bdfc = fv->show->glyphs[gid];
 	/* A glyph may be encoded in several places, all need updating */
@@ -8524,7 +8096,7 @@ return;
 	BDFCharFree(fv->filled->glyphs[sc->orig_pos]);
     fv->filled->glyphs[sc->orig_pos] = NULL;
 		/* FVRefreshChar does NOT do this for us */
-    for ( mv=fv->metrics; mv!=NULL; mv=mv->next )
+    for ( mv=fv->sf->metrics; mv!=NULL; mv=mv->next )
 	MVRegenChar(mv,sc);
 
     FVRefreshChar(fv,sc->orig_pos);
@@ -8785,7 +8357,7 @@ return( sc );
 	*sc = dummy;
 #endif
 	sc->name = copy(sc->name);
-	SCLigDefault(sc);
+	/*SCLigDefault(sc);*/
 	SFAddGlyphAndEncode(sf,sc,map,enc);
     }
 return( sc );
@@ -8810,25 +8382,39 @@ return( _SFMakeChar(sf,map,enc));
 }
 
 #if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
+static void AddSubPST(SplineChar *sc,struct lookup_subtable *sub,char *variant) {
+    PST *pst;
+
+    pst = chunkalloc(sizeof(PST));
+    pst->type = gsub_single;
+    pst->subtable = sub;
+    pst->u.alt.components = copy(variant);
+    pst->next = sc->possub;
+    sc->possub = pst;
+}
+
 SplineChar *FVMakeChar(FontView *fv,int enc) {
     SplineFont *sf = fv->sf;
     SplineChar *base_sc = SFMakeChar(sf,fv->map,enc), *feat_sc = NULL;
     int feat_gid = FeatureTrans(fv,enc);
 
-    if ( fv->cur_feat_tag==0 )
+    if ( fv->cur_subtable==NULL )
 return( base_sc );
 
     if ( feat_gid==-1 ) {
 	int uni = -1;
+	FeatureScriptLangList *fl = fv->cur_subtable->lookup->features;
+
 	if ( base_sc->unicodeenc>=0x600 && base_sc->unicodeenc<=0x6ff &&
-		(fv->cur_feat_tag == CHR('i','n','i','t') ||
-		 fv->cur_feat_tag == CHR('m','e','d','i') ||
-		 fv->cur_feat_tag == CHR('f','i','n','a') ||
-		 fv->cur_feat_tag == CHR('i','s','o','l')) ) {
-	    uni = fv->cur_feat_tag == CHR('i','n','i','t') ? ArabicForms[base_sc->unicodeenc-0x600].initial  :
-		  fv->cur_feat_tag == CHR('m','e','d','i') ? ArabicForms[base_sc->unicodeenc-0x600].medial   :
-		  fv->cur_feat_tag == CHR('f','i','n','a') ? ArabicForms[base_sc->unicodeenc-0x600].final    :
-		  fv->cur_feat_tag == CHR('i','s','o','l') ? ArabicForms[base_sc->unicodeenc-0x600].isolated :
+		fl!=NULL &&
+		(fl->featuretag == CHR('i','n','i','t') ||
+		 fl->featuretag == CHR('m','e','d','i') ||
+		 fl->featuretag == CHR('f','i','n','a') ||
+		 fl->featuretag == CHR('i','s','o','l')) ) {
+	    uni = fl->featuretag == CHR('i','n','i','t') ? ArabicForms[base_sc->unicodeenc-0x600].initial  :
+		  fl->featuretag == CHR('m','e','d','i') ? ArabicForms[base_sc->unicodeenc-0x600].medial   :
+		  fl->featuretag == CHR('f','i','n','a') ? ArabicForms[base_sc->unicodeenc-0x600].final    :
+		  fl->featuretag == CHR('i','s','o','l') ? ArabicForms[base_sc->unicodeenc-0x600].isolated :
 		  -1;
 	    feat_sc = SFGetChar(sf,uni,NULL);
 	    if ( feat_sc!=NULL )
@@ -8841,24 +8427,28 @@ return( feat_sc );
 	    feat_sc->name = galloc(8);
 	    feat_sc->unicodeenc = uni;
 	    sprintf( feat_sc->name,"uni%04X", uni );
-	} else if ( fv->cur_feat_tag>=CHR(' ',' ',' ',' ')) {
-	    /* OpenType feature tag */
-	    feat_sc->name = galloc(strlen(base_sc->name)+6);
-	    sprintf( feat_sc->name,"%s.%c%c%c%c", base_sc->name,
-		    (int) (fv->cur_feat_tag>>24),
-		    (int) ((fv->cur_feat_tag>>16)&0xff),
-		    (int) ((fv->cur_feat_tag>>8)&0xff),
-		    (int) ((fv->cur_feat_tag)&0xff) );
-	} else {
+	} else if ( fv->cur_subtable->suffix!=NULL ) {
+	    feat_sc->name = galloc(strlen(base_sc->name)+strlen(fv->cur_subtable->suffix)+2);
+	    sprintf( feat_sc->name, "%s.%s", base_sc->name, fv->cur_subtable->suffix );
+	} else if ( fl==NULL ) {
+	    feat_sc->name = strconcat(base_sc->name,".unknown");
+	} else if ( fl->ismac ) {
 	    /* mac feature/setting */
 	    feat_sc->name = galloc(strlen(base_sc->name)+14);
 	    sprintf( feat_sc->name,"%s.m%d_%d", base_sc->name,
-		    (int) (fv->cur_feat_tag>>16),
-		    (int) ((fv->cur_feat_tag)&0xffff) );
+		    (int) (fl->featuretag>>16),
+		    (int) ((fl->featuretag)&0xffff) );
+	} else {
+	    /* OpenType feature tag */
+	    feat_sc->name = galloc(strlen(base_sc->name)+6);
+	    sprintf( feat_sc->name,"%s.%c%c%c%c", base_sc->name,
+		    (int) (fl->featuretag>>24),
+		    (int) ((fl->featuretag>>16)&0xff),
+		    (int) ((fl->featuretag>>8)&0xff),
+		    (int) ((fl->featuretag)&0xff) );
 	}
 	SFAddGlyphAndEncode(sf,feat_sc,fv->map,fv->map->enccount);
-	base_sc->possub = AddSubs(base_sc->possub,fv->cur_feat_tag,feat_sc->name,
-		0/* No flags */,fv->cur_sli,base_sc);
+	AddSubPST(base_sc,fv->cur_subtable,feat_sc->name);
 return( feat_sc );
     } else
 return( base_sc );
@@ -10041,7 +9631,7 @@ return;
     if ( sc==NULL )
 	sc = SCBuildDummy(&dummy,fv->sf,fv->map,pos);
     if ( event->type == et_mouseup && event->u.mouse.clicks==2 ) {
-	if ( fv->cur_feat_tag!=0 ) {
+	if ( fv->cur_subtable!=NULL ) {
 	    sc = FVMakeChar(fv,pos);
 	    pos = fv->map->backmap[sc->orig_pos];
 	}

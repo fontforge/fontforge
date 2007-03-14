@@ -221,24 +221,22 @@ struct ttfinfo {
 
     KernClass *khead, *klast, *vkhead, *vklast;
 
-    struct script_record **script_lang;
-    int16 sli_cnt;
+    OTLookup *gpos_lookups, *gsub_lookups, *cur_lookups;
 
-    uint32 mort_subs_tag;
+    OTLookup *mort_subs_lookup, *mort_pos_lookup2;
     int mort_r2l, mort_tag_mac, mort_feat, mort_setting, mort_is_nested;
     uint16 *morx_classes;
 
-    uint32 *feats[2];			/* Order of gsub/gpos (morx) features */
     int mort_max;
 
     struct ttf_table *tabs;
     FPST *possub;
     ASM *sm;
     MacFeat *features;
-    struct gentagtype gentags;
     char *chosenname;
     int macstyle;
     int lookup_cnt;		/* Max lookup in current GPOS/GSUB table */
+    int feature_cnt;		/* Max feature in current GPOS/GSUB table */
     struct variations *variations;
     struct macidname {
 	int id;
@@ -647,13 +645,6 @@ struct alltabs {
     short *gn_sid;
     enum fontformat format;
     int fontstyle_name_strid;	/* For GPOS 'size' */
-	/* Uniscribe has weird requirements for the presence of GPOS/GSUB */
-	/* in general it may reject a font for a given script unless both */
-	/* GPOS & GSUB have entries for that script. We place here a union */
-	/* of the scripts used in both tables, and we will later force both*/
-	/* tables to have all these scripts */
-    int script_cnt;
-    uint32 *scripts;
     SplineFont *sf;
     EncMap *map;
 };
@@ -677,8 +668,8 @@ struct contexttree {
 	uint16 thisclassnum;
     } *rules;
     int pending_pos;
-    uint32 applymarkedsubs;
-    uint32 applycursubs;
+    OTLookup *applymarkedsubs;
+    OTLookup *applycursubs;
     uint16 marked_index, cur_index;
     uint8 markme;
     int state, next_state;
@@ -707,13 +698,10 @@ struct contexttree {
 extern int ttfFixupRef(SplineChar **chars,int i);
 
     /* Open type Advanced Typography Tables */
-extern void otf_orderlangs(struct alltabs *at, SplineFont *sf);
 extern void otf_dumpgpos(struct alltabs *at, SplineFont *sf);
 extern void otf_dumpgsub(struct alltabs *at, SplineFont *sf);
 extern void otf_dumpgdef(struct alltabs *at, SplineFont *sf);
 extern int gdefclass(SplineChar *sc);
-
-extern int TTFFeatureIndex( uint32 tag, struct table_ordering *ord, int isgsub );
 
     /* Apple Advanced Typography Tables */
 extern void aat_dumpacnt(struct alltabs *at, SplineFont *sf);
@@ -722,8 +710,9 @@ extern void aat_dumplcar(struct alltabs *at, SplineFont *sf);
 extern void aat_dumpmorx(struct alltabs *at, SplineFont *sf);
 extern void aat_dumpopbd(struct alltabs *at, SplineFont *sf);
 extern void aat_dumpprop(struct alltabs *at, SplineFont *sf);
-extern int SLIHasDefault(SplineFont *sf,int sli);
-extern int FPSTisMacable(SplineFont *sf, FPST *fpst, int checktag);
+extern int LookupHasDefault(OTLookup *otl);
+extern int scriptsHaveDefault(struct scriptlanglist *sl);
+extern int FPSTisMacable(SplineFont *sf, FPST *fpst);
 extern uint32 MacFeatureToOTTag(int featureType,int featureSetting);
 extern int OTTagToMacFeature(uint32 tag, int *featureType,int *featureSetting);
 extern uint16 *props_array(SplineFont *sf,struct glyphinfo *gi);

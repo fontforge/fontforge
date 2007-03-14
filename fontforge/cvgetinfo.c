@@ -971,6 +971,25 @@ return( true );
 return( true );
 }
 
+static GTextInfo **AnchorClassesLList(SplineFont *sf) {
+    AnchorClass *an;
+    int cnt;
+    GTextInfo **ti;
+
+    if ( sf->cidmaster ) sf=sf->cidmaster;
+
+    for ( cnt=0, an=sf->anchor; an!=NULL; ++cnt, an=an->next );
+    ti = gcalloc(cnt+1,sizeof(GTextInfo*));
+    for ( cnt=0, an=sf->anchor; an!=NULL; ++cnt, an=an->next ) {
+	ti[cnt] = gcalloc(1,sizeof(GTextInfo));
+	ti[cnt]->text = utf82u_copy(an->name);
+	ti[cnt]->fg = ti[cnt]->bg = COLOR_DEFAULT;
+	ti[cnt]->userdata = an;
+    }
+    ti[cnt] = gcalloc(1,sizeof(GTextInfo));
+return( ti );
+}
+
 static int AI_New(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
@@ -1123,7 +1142,7 @@ return( true );			/* No op */
 		    else if ( ap->lig_index>max )
 			max = ap->lig_index;
 		}
-	    } else if ( ap!=ci->ap && ap->anchor->merge_with==an->merge_with &&
+	    } else if ( ap!=ci->ap && ap->anchor->subtable==an->subtable &&
 		    ap->type==at_mark )
 	break;
 	}
@@ -1262,6 +1281,7 @@ void ApGetInfo(CharView *cv, AnchorPoint *ap) {
     GTextInfo label[24];
     int j;
     SplineFont *sf;
+    GTextInfo **ti;
 
     memset(&gi,0,sizeof(gi));
     gi.cv = cv;
@@ -1305,7 +1325,6 @@ return;
 	gcd[j].gd.cid = CID_NameList;
 	sf = cv->sc->parent;
 	if ( sf->cidmaster ) sf = sf->cidmaster;
-	gcd[j].gd.u.list = AnchorClassesList(sf);
 	gcd[j].gd.handle_controlevent = AI_ANameChanged;
 	gcd[j].creator = GListButtonCreate;
 	varray[0] = &gcd[j]; varray[1] = NULL;
@@ -1594,6 +1613,11 @@ return;
 	GHVBoxSetExpandableCol(boxes[7].ret,gb_expandgluesame);
 	GHVBoxSetExpandableCol(boxes[6].ret,gb_expandgluesame);
 	GHVBoxFitWindow(boxes[0].ret);
+
+	GGadgetSetList(GWidgetGetControl(gi.gw,CID_NameList),
+		    ti = AnchorClassesLList(gi.sc->parent),false);
+	for ( j=0; ti[j]->text!=NULL && ti[j]->userdata!=ap->anchor; ++j )
+	GGadgetSelectOneListItem(GWidgetGetControl(gi.gw,CID_NameList),j);
 
 	AI_Display(&gi,ap);
 	GWidgetIndicateFocusGadget(GWidgetGetControl(gi.gw,CID_X));
@@ -3301,7 +3325,7 @@ void SCSubBy(SplineChar *sc) {
     int i,j,k,tot;
     char **deps = NULL;
     SplineChar **depsc;
-    char ubuf[100];
+    char ubuf[200];
     SplineFont *sf, *_sf;
     PST *pst;
     char *buts[3];
@@ -3331,9 +3355,8 @@ return;
 			if ( UsedIn(sc->name,pst->u.mult.components)) {
 			    if ( deps!=NULL ) {
 				snprintf(ubuf,sizeof(ubuf),
-					_("'%c%c%c%c' in glyph %.40s"),
-			                (int) (pst->tag>>24), (int) ((pst->tag>>16)&0xff),
-			                (int) ((pst->tag>>8)&0xff), (int) (pst->tag&0xff),
+					_("Subtable %.60s in glyph %.60s"),
+			                pst->subtable->subtable_name,
 			                sf->glyphs[i]->name);
 				deps[tot] = copy(ubuf);
 			        depsc[tot] = sf->glyphs[i];

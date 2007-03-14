@@ -4975,15 +4975,16 @@ return( false );
 
     if ( format!=ff_type42 && format!=ff_type42cid ) {
 	if ( at->opentypemode ) {
-	    otf_orderlangs(at,sf);
+	    SFFindUnusedLookups(sf);
 	    otf_dumpgpos(at,sf);
 	    otf_dumpgsub(at,sf);
 	    otf_dumpgdef(at,sf);
-	    free(at->scripts); at->scripts = NULL;
 	}
 	if ( at->dovariations )
 	    ttf_dumpvariations(at,sf);
 	if ( at->applemode ) {
+	    if ( !at->opentypemode )
+		SFFindUnusedLookups(sf);
 	    ttf_dumpkerns(at,sf);
 	    aat_dumplcar(at,sf);
 	    aat_dumpmorx(at,sf);		/* Sets the feat table too */

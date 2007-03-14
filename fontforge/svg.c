@@ -397,7 +397,7 @@ static int LigCnt(SplineFont *sf,PST *lig,int32 *univals,int max) {
 
     if ( lig->type!=pst_ligature )
 return( 0 );
-    else if ( lig->tag!=CHR('l','i','g','a') && lig->tag!=CHR('r','l','i','g'))
+    else if ( !lig->subtable->lookup->store_in_afm )
 return( 0 );
     pt = lig->u.lig.components;
     forever {
@@ -438,7 +438,8 @@ SplineChar *SCHasSubs(SplineChar *sc, uint32 tag) {
     PST *pst;
 
     for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
-	if ( pst->type==pst_substitution && pst->tag==tag )
+	if ( pst->type==pst_substitution &&
+		FeatureTagInFeatureScriptList(tag,pst->subtable->lookup->features) )
 return( SFGetChar(sc->parent,-1,pst->u.subs.variant));
     }
 return( NULL );
@@ -2156,18 +2157,6 @@ static SplineChar *SVGParseGlyph(SplineFont *sf,xmlNodePtr glyph,int defh, int d
 return( sc );
 }
 
-static PST *AddLig(PST *last,uint32 tag,char *components,SplineChar *first) {
-    PST *lig = chunkalloc(sizeof(PST));
-    lig->tag = tag;
-    lig->flags = PSTDefaultFlags(pst_ligature,first);
-    lig->type = pst_ligature;
-    lig->script_lang_index = SFFindBiggestScriptLangIndex(first->parent,
-			SCScriptFromUnicode(first),DEFAULT_LANG);
-    lig->next = last;
-    lig->u.lig.components = copy(components);
-return( lig );
-}
-
 static void SVGLigatureFixupCheck(SplineChar *sc,xmlNodePtr glyph) {
     xmlChar *unicode;
     int32 *u;
@@ -2205,7 +2194,7 @@ static void SVGLigatureFixupCheck(SplineChar *sc,xmlNodePtr glyph) {
 		if ( u[len+1]!='\0' )
 		    *pt++ = ' ';
 	    }
-	    sc->possub = AddLig(sc->possub,CHR('l','i','g','a'),comp,any);
+	    SubsNew(sc,pst_ligature,CHR('l','i','g','a'),comp,any);
 		/* Understand the unicode latin ligatures. There are too many */
 		/*  arabic ones */
 	    if ( u[0]=='f' ) {
@@ -2292,6 +2281,7 @@ static void SVGParseKern(SplineFont *sf,xmlNodePtr kern,int isv) {
     double off;
     char *c1, *c2;
     SplineChar *sc1, *sc2;
+	uint32 script;
 
     k = _xmlGetProp(kern,(xmlChar *) "k");
     if ( k==NULL )
@@ -2319,6 +2309,11 @@ return;
     if ( g2!=NULL ) _xmlFree(g2);
     if ( u2!=NULL ) _xmlFree(u2);
 
+    script = DEFAULT_SCRIPT;
+    if ( sc1!=NULL )
+	script = SCScriptFromUnicode(sc1);
+    if ( script==DEFAULT_SCRIPT && sc2!=NULL )
+	script = SCScriptFromUnicode(sc2);
     if ( strchr(c1,' ')==NULL && strchr(c2,' ')==NULL ) {
 	KernPair *kp = chunkalloc(sizeof(KernPair));
 	kp->sc = sc2;
@@ -2331,7 +2326,9 @@ return;
 	    sc1->kerns = kp;
 	}
 	free(c1); free(c2);
-	kp->sli = SCDefaultSLI(sf,sc1!=NULL ? sc1 : sc2 );
+	kp->subtable = SFSubTableFindOrMake(sf,
+		isv?CHR('v','k','r','n'):CHR('k','e','r','n'),
+		script, gpos_pair);
     } else {
 	KernClass *kc = chunkalloc(sizeof(KernClass));
 	if ( isv ) {
@@ -2348,10 +2345,20 @@ return;
 	kc->seconds[1] = c2;
 	kc->offsets = gcalloc(4,sizeof(int16));
 	kc->offsets[3] = off;
-	kc->flags = ((sc1!=NULL && SCRightToLeft(sc1)) ||
+	kc->subtable = SFSubTableFindOrMake(sf,
+		isv?CHR('v','k','r','n'):CHR('k','e','r','n'),
+		script, gpos_pair);
+	kc->subtable->lookup->lookup_flags = ((sc1!=NULL && SCRightToLeft(sc1)) ||
 			(sc1==NULL && sc2!=NULL && SCRightToLeft(sc2)))? pst_r2l : 0;
-	if ( sc1!=NULL || sc2!=NULL )
-	    kc->sli = SCDefaultSLI(sf,sc1!=NULL ? sc1 : sc2 );
+	script = DEFAULT_SCRIPT;
+	if ( sc1!=NULL )
+	    script = SCScriptFromUnicode(sc1);
+	if ( script==DEFAULT_SCRIPT && sc2!=NULL )
+	    script = SCScriptFromUnicode(sc2);
+	kc->subtable = SFSubTableMake(sc1->parent,
+		isv?CHR('v','k','r','n'):CHR('k','e','r','n'),
+		script, gpos_pair);
+	kc->subtable->kc = kc;
     }
 }
 

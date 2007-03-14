@@ -834,6 +834,7 @@ return( ret );
 
 struct font_diff {
     SplineFont *sf1, *sf2;
+    SplineFont *sf1_mst, *sf2_mst;
     EncMap *map1;
     int sf1_glyphcnt;		/* It may change if addmissing, but our arrays (like matches) won't */
     FILE *diffs;
@@ -843,12 +844,12 @@ struct font_diff {
     SplineChar **matches;
     SplineChar *last_sc;
     char held[600];
-    int fcnt1, fcnt2;
-    uint32 *tags1, *tags2;
-    int ncnt1, ncnt2;
-    uint32 *nesttag1, *nesttag2, *nmatches1, *nmatches2;
+    int lcnt1, lcnt2;
+    OTLookup **l2match1, **l1match2;
+    int scnt1, scnt2;
+    struct lookup_subtable **s2match1, **s1match2;
     int is_gpos;
-    uint32 tag;			/* Of currently active feature */
+    struct lookup_subtable *cur_sub1, *cur_sub2;
 };
 
 static void GlyphDiffSCError(struct font_diff *fd, SplineChar *sc, char *format, ... ) {
@@ -1430,205 +1431,102 @@ static void comparefontnames(struct font_diff *fd) {
     }
 }
 
-struct tag_block {
-    int cnt, max;
-    uint32 *tags;
-    int ncnt, nmax;
-    uint32 *ntags;
-};
+/* ************************************************************************** */
+/* ************************   Compare font lookups   ************************ */
+/* ************************************************************************** */
 
-static void AddTag(struct tag_block *tb,uint32 tag,int nested) {
-    int i;
+static int ScriptMatch(struct scriptlanglist *sl1, struct scriptlanglist *sl2,
+	int exactness) {
+    struct scriptlanglist *s1, *s2;
 
-    if ( !nested ) {
-	for ( i=0; i<tb->cnt; ++i )
-	    if ( tb->tags[i]==tag )
-return;
-	if ( tb->cnt>=tb->max-1 )
-	    tb->tags = grealloc(tb->tags,(tb->max+=40)*sizeof(uint32));
-	tb->tags[tb->cnt++] = tag;
-    } else {
-	for ( i=0; i<tb->ncnt; ++i )
-	    if ( tb->ntags[i]==tag )
-return;
-	if ( tb->ncnt>=tb->nmax-1 )
-	    tb->ntags = grealloc(tb->ntags,(tb->nmax+=40)*sizeof(uint32));
-	tb->ntags[tb->ncnt++] = tag;
-    }
-}
-
-static uint32 *FindFeatureTags(SplineFont *sf,int is_gpos,int *cnt,
-	uint32 **nested, int *ncnt) {
-    struct tag_block tb;
-    int i,j;
-    SplineChar *sc;
-    AnchorPoint *ap;
-    PST *pst;
-    FPST *fpst;
-
-    memset(&tb,0,sizeof(tb));
-
-    for ( i=0; i<sf->glyphcnt; ++i ) if ((sc = sf->glyphs[i])!=NULL ) {
-	if ( is_gpos ) {
-	    if ( sc->kerns!=NULL )
-		AddTag(&tb,CHR('k','e','r','n'),false);
-	    if ( sc->vkerns!=NULL )
-		AddTag(&tb,CHR('v','k','r','n'),false);
-	    for ( ap = sc->anchor; ap!=NULL; ap=ap->next )
-		AddTag(&tb,ap->anchor->feature_tag,
-			ap->anchor->script_lang_index==SLI_NESTED);
-	    for ( pst=sc->possub; pst!=NULL; pst=pst->next )
-		if ( pst->type == pst_position || pst->type == pst_pair )
-		    AddTag(&tb,pst->tag,pst->script_lang_index==SLI_NESTED);
-	} else {
-	    for ( pst=sc->possub; pst!=NULL; pst=pst->next )
-		if ( pst->type == pst_substitution || pst->type == pst_alternate ||
-			pst->type == pst_multiple || pst->type == pst_ligature )
-		    AddTag(&tb,pst->tag,pst->script_lang_index==SLI_NESTED);
+    if ( exactness ) {
+	/* Features & scripts should be ordered */
+	for ( s1=sl1, s2=sl2; s1!=NULL && s2!=NULL; s1=s1->next, s2=s2->next ) {
+	    if ( s1->script != s2->script )
+return( false );
 	}
-    }
-    if ( is_gpos ) {
-	if ( sf->kerns!=NULL )
-	    AddTag(&tb,CHR('k','e','r','n'),false);
-	if ( sf->vkerns!=NULL )
-	    AddTag(&tb,CHR('v','k','r','n'),false);
-	for ( fpst = sf->possub; fpst!=NULL; fpst=fpst->next )
-	    if ( fpst->type == pst_contextpos || fpst->type == pst_chainpos )
-		AddTag(&tb,fpst->tag,fpst->script_lang_index==SLI_NESTED);
-    } else {
-	for ( fpst = sf->possub; fpst!=NULL; fpst=fpst->next )
-	    if ( fpst->type == pst_contextsub || fpst->type == pst_chainsub ||
-		    fpst->type == pst_reversesub )
-		AddTag(&tb,fpst->tag,fpst->script_lang_index==SLI_NESTED);
-    }
-
-    for ( i=0; i<tb.cnt; ++i ) for ( j=i+1; j<tb.cnt; ++j )
-	if ( tb.tags[i]>tb.tags[j] ) {
-	    uint32 temp = tb.tags[i];
-	    tb.tags[i] = tb.tags[j];
-	    tb.tags[j] = temp;
-	}
-    for ( i=0; i<tb.ncnt; ++i ) for ( j=i+1; j<tb.ncnt; ++j )
-	if ( tb.ntags[i]>tb.ntags[j] ) {
-	    uint32 temp = tb.ntags[i];
-	    tb.ntags[i] = tb.ntags[j];
-	    tb.ntags[j] = temp;
-	}
-
-    *ncnt = tb.ncnt;
-    *nested = tb.ntags;
-    *cnt = tb.cnt;
-return( tb.tags );
-}
-
-static void featureheader(struct font_diff *fd) {
-    char *tagfullname;
-
-    if ( !fd->top_diff )
-	fprintf( fd->diffs, fd->is_gpos ? _("Glyph Positioning\n") : _("Glyph Substitution\n"));
-    if ( !fd->middle_diff ) {
-	putc( ' ', fd->diffs);
-	fprintf( fd->diffs, _("Feature Differences\n") );
-    }
-    if ( !fd->local_diff ) {
-	fputs("  ",fd->diffs);
-	tagfullname = TagFullName(fd->sf1,fd->tag,-1);
-	fprintf( fd->diffs, _("Feature %s\n"), tagfullname );
-	free(tagfullname);
-    }
-    fd->top_diff = fd->middle_diff = fd->diff = fd->local_diff = true;
-}
-
-static void complainscfeature(struct font_diff *fd, SplineChar *sc, char *format, ... ) {
-    va_list ap;
-
-    featureheader(fd);
-
-    va_start(ap,format);
-    if ( fd->last_sc==sc ) {
-	if ( fd->held[0] ) {
-	    fputs("   ",fd->diffs);
-	    fprintf( fd->diffs, U_("Glyph “%s” differs\n"), sc->name );
-	    fprintf( fd->diffs, "    %s", fd->held );
-	    if ( fd->held[strlen(fd->held)-1]!='\n' )
-		putc('\n',fd->diffs);
-	    fd->held[0] = '\0';
-	}
-	fputs("    ",fd->diffs);
-	vfprintf(fd->diffs,format,ap);
-    } else {
-	vsnprintf(fd->held,sizeof(fd->held),format,ap);
-	fd->last_sc = sc;
-    }
-    va_end(ap);
-}
-
-static void complainapfeature(struct font_diff *fd,SplineChar *sc,
-	AnchorPoint *ap,char *missingname) {
-    complainscfeature(fd, sc, U_("“%s” in %s did not contain an anchor point (%g,%g) class %s\n"),
-	    sc->name, missingname, ap->me.x, ap->me.y, ap->anchor->name);
-}
-
-static void complainapfeature2(struct font_diff *fd,SplineChar *sc,
-	AnchorPoint *ap,char *missingname) {
-    complainscfeature(fd, sc, U_("“%s” in %s contains an anchor point (%g,%g) class %s which differs from its counterpart by point matching\n"),
-	    sc->name, missingname, ap->me.x, ap->me.y, ap->anchor->name);
-}
-
-static void complainpstfeature(struct font_diff *fd,SplineChar *sc,
-	PST *pst,char *missingname) {
-    if ( pst->type==pst_position ) {
-	complainscfeature(fd, sc, U_("“%s” in %s did not contain a positioning lookup ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d\n"),
-		sc->name, missingname, pst->u.pos.xoff, pst->u.pos.yoff, pst->u.pos.h_adv_off, pst->u.pos.v_adv_off );
-    } else if ( pst->type==pst_pair ) {
-	complainscfeature(fd, sc, U_("“%s” in %s did not contain a pairwise positioning lookup ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d to %s ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d\n"),
-		sc->name, missingname, 
-		pst->u.pair.vr[0].xoff, pst->u.pair.vr[0].yoff, pst->u.pair.vr[0].h_adv_off, pst->u.pair.vr[0].v_adv_off,
-		pst->u.pair.paired,
-	    pst->u.pair.vr[1].xoff, pst->u.pair.vr[1].yoff, pst->u.pair.vr[1].h_adv_off, pst->u.pair.vr[1].v_adv_off );
-    } else if ( pst->type==pst_substitution || pst->type==pst_alternate || pst->type==pst_multiple || pst->type==pst_ligature ) {
-	complainscfeature(fd, sc, U_("“%s” in %s did not contain a substitution lookup to %s\n"),
-		sc->name, missingname, pst->u.subs.variant );
-    }
-}
-
-static void finishscfeature(struct font_diff *fd ) {
-    if ( fd->held[0] ) {
-	fputs("   ",fd->diffs);
-	fputs(fd->held,fd->diffs);
-	fd->held[0] = '\0';
-    }
-}
-
-static int slimatch(struct font_diff *fd,int sli1, int sli2) {
-    struct script_record *sr1;
-    struct script_record *sr2;
-    int i;
-
-    if ( sli1==SLI_UNKNOWN && sli2==SLI_UNKNOWN )
 return( true );
-    if ( sli1==SLI_UNKNOWN || sli2==SLI_UNKNOWN )
-return( false );
-
-    if ( sli1==SLI_NESTED && sli2==SLI_NESTED )
+    } else {
+	for ( s1=sl1; s1!=NULL; s1=s1->next ) {
+	    /* Someone from Adobe said (on the OpenType list) that it should */
+	    /*  be possible to activate almost all lookups from the default */
+	    /*  script (for shaping engines which can't handle the script in */
+	    /*  question, or if glyphs are used in a context in which no */
+	    /*  script can be determined, or glyphs from font A are used
+	    /*  surounded by those of font B, and the font B glyphs establish
+	    /*  a script font A does not support) so we do not view the presence*/
+	    /*  of the default script as a reliable indicator -- only if it */
+	    /*  is the sole script */
+	    if ( s1->script==DEFAULT_SCRIPT && (s1->next!=NULL || s1!=sl1))
+	continue;
+	    for ( s2=sl2; s2!=NULL; s2=s2->next ) {
+		if ( s2->script==DEFAULT_SCRIPT && (s2->next!=NULL || s2!=sl2))
+	    continue;
+		if ( s1->script == s2->script )
 return( true );
-    if ( sli1==SLI_NESTED || sli2==SLI_NESTED )
+	    }
+	}
 return( false );
-
-    sr1 = fd->sf1->script_lang[sli1];
-    sr2 = fd->sf2->script_lang[sli2];
-    while ( sr1->script!=0 ) {
-	if ( sr1->script!=sr2->script )
-return( false );
-	for ( i=0; sr1->langs[i]!=0; ++i )
-	    if ( sr1->langs[i]!=sr2->langs[i] )
-return( false );
-	if ( sr2->langs[i]!=0 )
-return( false );
-	++sr1; ++sr2;
     }
-    if ( sr2->script!=0 )
+}
+
+static int FeatureMatch(FeatureScriptLangList *fl1, FeatureScriptLangList *fl2,
+	int exactness) {
+    FeatureScriptLangList *f1, *f2;
+
+    if ( exactness ) {
+	/* Features & scripts should be ordered */
+	for ( f1=fl1, f2=fl2; f1!=NULL && f2!=NULL; f1=f1->next, f2=f2->next ) {
+	    if ( f1->featuretag!=f2->featuretag || !ScriptMatch(f1->scripts,f2->scripts,exactness))
 return( false );
+	}
+return( true );
+    } else {
+	for ( f1=fl1; f1!=NULL; f1=f1->next ) {
+	    for ( f2=fl2; f2!=NULL; f2=f2->next )
+		if ( f1->featuretag==f2->featuretag && ScriptMatch(f1->scripts,f2->scripts,exactness))
+return( true );
+	}
+return( false );
+    }
+}
+
+static int comparepst(struct font_diff *fd,PST *pst1,PST *pst2) {
+    if ( pst1->type!=pst2->type )
+return( false );
+    if ( pst1->type==pst_position ) {
+	if ( pst1->u.pos.xoff!=pst2->u.pos.xoff ||
+		pst1->u.pos.yoff!=pst2->u.pos.yoff ||
+		pst1->u.pos.h_adv_off!=pst2->u.pos.h_adv_off ||
+		pst1->u.pos.v_adv_off!=pst2->u.pos.v_adv_off )
+return( false );
+    } else if ( pst1->type==pst_pair ) {
+	if ( pst1->u.pair.vr[0].xoff!=pst2->u.pair.vr[0].xoff ||
+		pst1->u.pair.vr[0].yoff!=pst2->u.pair.vr[0].yoff ||
+		pst1->u.pair.vr[0].h_adv_off!=pst2->u.pair.vr[0].h_adv_off ||
+		pst1->u.pair.vr[0].v_adv_off!=pst2->u.pair.vr[0].v_adv_off ||
+		pst1->u.pair.vr[1].xoff!=pst2->u.pair.vr[1].xoff ||
+		pst1->u.pair.vr[1].yoff!=pst2->u.pair.vr[1].yoff ||
+		pst1->u.pair.vr[1].h_adv_off!=pst2->u.pair.vr[1].h_adv_off ||
+		pst1->u.pair.vr[1].v_adv_off!=pst2->u.pair.vr[1].v_adv_off ||
+		strcmp(pst1->u.pair.paired,pst2->u.pair.paired)!=0 )
+return( false );
+    } else if ( pst1->type==pst_substitution || pst1->type==pst_alternate ||
+	    pst1->type==pst_multiple || pst1->type==pst_ligature ) {
+	if ( strcmp(pst1->u.subs.variant,pst2->u.subs.variant)!=0 )
+return( false );
+    }
+return( true );
+}
+
+static int compareap(struct font_diff *fd,AnchorPoint *ap1,AnchorPoint *ap2) {
+    if ( ap1->type!=ap2->type )
+return( false );
+    if ( ap1->me.x!=ap2->me.x || ap1->me.y!=ap2->me.y )
+return( false );
+    if ( ap1->has_ttf_pt!=ap2->has_ttf_pt ||
+	    (ap1->has_ttf_pt && ap1->ttf_pt_index!=ap2->ttf_pt_index))
+return( 2 );
 
 return( true );
 }
@@ -1682,8 +1580,6 @@ static int comparekc(struct font_diff *fd,KernClass *kc1, KernClass *kc2) {
 
     if ( kc1->first_cnt!=kc2->first_cnt || kc1->second_cnt!=kc2->second_cnt )
 return( false );
-    if ( !slimatch(fd,kc1->sli,kc2->sli))
-return( false );
     if ( memcmp(kc1->offsets,kc2->offsets,kc1->first_cnt*kc2->second_cnt*sizeof(int16))!=0 )
 return( false );
 
@@ -1704,78 +1600,18 @@ return( false );
 return( true );
 }
 
-static void comparekernclasses(struct font_diff *fd,KernClass *kc1, KernClass *kc2) {
-    KernClass *t1, *t2;
-    int i;
+static int NestedLookupsMatch(struct font_diff *fd,OTLookup *otl1, OTLookup *otl2) {
 
-    for ( t1=kc1; t1!=NULL; t1=t1->next )
-	t1->kcid = false;
-    for ( t2=kc2; t2!=NULL; t2=t2->next )
-	t2->kcid = false;
-    for ( t1=kc1; t1!=NULL; t1=t1->next ) {
-	for ( t2=kc2; t2!=NULL; t2=t2->next ) if ( !t2->kcid ) {
-	    if ( comparekc(fd,t1,t2)) {
-		t1->kcid = t2->kcid = true;
-	break;
-	    }
-	}
-    }
-    for ( t1=kc1; t1!=NULL; t1=t1->next )
-	if ( t1->kcid )
-    break;
-    if ( kc1!=NULL && t1==NULL ) {
-	featureheader(fd);
-	fputs("   ",fd->diffs);
-	if ( kc1->next==NULL )
-	    fprintf( fd->diffs,_("The kerning class in %s fails to match anything in %s\n"),
-		    fd->name1, fd->name2 );
-	else
-	    fprintf( fd->diffs,_("All kerning classes in %s fail to match anything in %s\n"),
-		    fd->name1, fd->name2 );
-	if ( kc2==NULL )
-	    /* Do Nothing */;
-	else if ( kc2->next==NULL ) {
-	    fputs("   ",fd->diffs);
-	    fprintf( fd->diffs,_("The kerning class in %s fails to match anything in %s\n"),
-		    fd->name2, fd->name1 );
-	} else {
-	    fputs("   ",fd->diffs);
-	    fprintf( fd->diffs,_("All kerning classes in %s fail to match anything in %s\n"),
-		    fd->name2, fd->name1 );
-	}
-    } else {
-	for ( t1=kc1, i=0; t1!=NULL; t1=t1->next, ++i )
-	    if ( !t1->kcid ) {
-		featureheader(fd);
-		fputs("   ",fd->diffs);
-		fprintf( fd->diffs,_("The %dth kerning class in %s does not match anything in %s\n"),
-			i+1, fd->name1, fd->name2 );
-	    }
-	for ( t2=kc2, i=0; t2!=NULL; t2=t2->next, ++i )
-	    if ( !t2->kcid ) {
-		featureheader(fd);
-		fputs("   ",fd->diffs);
-		fprintf( fd->diffs,_("The %dth kerning class in %s does not match anything in %s\n"),
-			i+1, fd->name2, fd->name1 );
-	    }
-    }
-}
-
-static int NestedFeatureTagsMatch(struct font_diff *fd,uint32 tag1,uint32 tag2) {
-    int i;
-
-    for ( i=0; i<fd->ncnt1; ++i )
-	if ( tag1==fd->nesttag1[i] )
-return( tag2==fd->nmatches1[i] );
-
+    if ( fd->l2match1[otl1->lookup_index]==NULL ||
+	    fd->l2match1[otl1->lookup_index]!=otl2 )
 return( false );
+
+return( true );
 }
 
 static int comparefpst(struct font_diff *fd,FPST *fpst1, FPST *fpst2) {
     int i,j;
 
-    if ( !slimatch(fd,fpst1->script_lang_index,fpst2->script_lang_index))
-return( false );
     if ( fpst1->type!=fpst2->type || fpst1->format!=fpst2->format )
 return( false );
     if ( fpst1->rule_cnt != fpst2->rule_cnt )
@@ -1851,160 +1687,95 @@ return( false );
 	    if ( fpst1->rules[i].lookups[j].seq!=fpst2->rules[i].lookups[j].seq )
 return( false );
 	for ( j=0; j<fpst1->rules[i].lookup_cnt; ++j )
-	    if ( !NestedFeatureTagsMatch(fd,
-		    fpst1->rules[i].lookups[j].lookup_tag,
-		    fpst2->rules[i].lookups[j].lookup_tag))
+	    if ( !NestedLookupsMatch(fd,
+		    fpst1->rules[i].lookups[j].lookup,
+		    fpst2->rules[i].lookups[j].lookup))
 return( false );
     }
     
 return( true );
 }
 
-static void comparefpsts(struct font_diff *fd,FPST *fpst1, FPST *fpst2) {
-    FPST *t1, *t2;
-    int i, any1, any2;
-
-    for ( t1=fpst1,any1=false; t1!=NULL; t1=t1->next ) {
-	t1->ticked = false;
-	if ( t1->tag==fd->tag ) ++any1;
-    }
-    for ( t2=fpst2,any2=false; t2!=NULL; t2=t2->next ) {
-	t2->ticked = false;
-	if ( t2->tag==fd->tag ) ++any2;
-    }
-    if ( !any1 && !any2 )
-return;
-    for ( t1=fpst1; t1!=NULL; t1=t1->next ) if ( t1->tag==fd->tag ) {
-	for ( t2=fpst2; t2!=NULL; t2=t2->next ) if ( !t2->ticked && t2->tag==fd->tag ) {
-	    if ( comparefpst(fd,t1,t2)) {
-		t1->ticked = t2->ticked = true;
-	break;
-	    }
-	}
-    }
-    for ( t1=fpst1; t1!=NULL; t1=t1->next )
-	if ( t1->ticked )
-    break;
-
-    if ( any1 && t1==NULL ) {
-	featureheader(fd);
-	fputs("   ",fd->diffs);
-	if ( any1==1 )
-	    fprintf( fd->diffs,_("The context/chaining in %s fails to match anything in %s\n"),
-		    fd->name1, fd->name2 );
-	else
-	    fprintf( fd->diffs,_("All context/chainings in %s fail to match anything in %s\n"),
-		    fd->name1, fd->name2 );
-	fputs("   ",fd->diffs);
-	if ( any2==0 )
-	    /* Do Nothing */;
-	else if ( any2==1 )
-	    fprintf( fd->diffs,_("The context/chaining in %s fails to match anything in %s\n"),
-		    fd->name2, fd->name1 );
-	else
-	    fprintf( fd->diffs,_("All context/chainings in %s fail to match anything in %s\n"),
-		    fd->name2, fd->name1 );
-    } else {
-	for ( t1=fpst1, i=0; t1!=NULL; t1=t1->next, ++i ) if ( t1->tag==fd->tag )
-	    if ( !t1->ticked ) {
-		featureheader(fd);
-		fputs("   ",fd->diffs);
-		fprintf( fd->diffs,_("The %dth context/chaining in %s does not match anything in %s\n"),
-			i+1, fd->name1, fd->name2 );
-	    }
-	for ( t2=fpst2, i=0; t2!=NULL; t2=t2->next, ++i ) if ( t2->tag==fd->tag )
-	    if ( !t2->ticked ) {
-		featureheader(fd);
-		fputs("   ",fd->diffs);
-		fprintf( fd->diffs,_("The %dth context/chaining in %s does not match anything in %s\n"),
-			i+1, fd->name2, fd->name1 );
-	    }
-    }
-}
-
-static int comparepst(struct font_diff *fd,PST *pst1,PST *pst2) {
-    if ( pst1->type!=pst2->type )
-return( false );
-    if ( !slimatch(fd,pst1->script_lang_index,pst2->script_lang_index))
-return( false );
-    if ( pst1->type==pst_position ) {
-	if ( pst1->u.pos.xoff!=pst2->u.pos.xoff ||
-		pst1->u.pos.yoff!=pst2->u.pos.yoff ||
-		pst1->u.pos.h_adv_off!=pst2->u.pos.h_adv_off ||
-		pst1->u.pos.v_adv_off!=pst2->u.pos.v_adv_off )
-return( false );
-    } else if ( pst1->type==pst_pair ) {
-	if ( pst1->u.pair.vr[0].xoff!=pst2->u.pair.vr[0].xoff ||
-		pst1->u.pair.vr[0].yoff!=pst2->u.pair.vr[0].yoff ||
-		pst1->u.pair.vr[0].h_adv_off!=pst2->u.pair.vr[0].h_adv_off ||
-		pst1->u.pair.vr[0].v_adv_off!=pst2->u.pair.vr[0].v_adv_off ||
-		pst1->u.pair.vr[1].xoff!=pst2->u.pair.vr[1].xoff ||
-		pst1->u.pair.vr[1].yoff!=pst2->u.pair.vr[1].yoff ||
-		pst1->u.pair.vr[1].h_adv_off!=pst2->u.pair.vr[1].h_adv_off ||
-		pst1->u.pair.vr[1].v_adv_off!=pst2->u.pair.vr[1].v_adv_off ||
-		strcmp(pst1->u.pair.paired,pst2->u.pair.paired)!=0 )
-return( false );
-    } else if ( pst1->type==pst_substitution || pst1->type==pst_alternate ||
-	    pst1->type==pst_multiple || pst1->type==pst_ligature ) {
-	if ( strcmp(pst1->u.subs.variant,pst2->u.subs.variant)!=0 )
-return( false );
-    }
-return( true );
-}
-
-static int compareap(struct font_diff *fd,AnchorPoint *ap1,AnchorPoint *ap2) {
-    if ( ap1->type!=ap2->type )
-return( false );
-    if ( !slimatch(fd,ap1->anchor->script_lang_index,ap2->anchor->script_lang_index) )
-return( false );
-    if ( ap1->anchor->type!=ap2->anchor->type )
-return( false );
-    if ( ap1->me.x!=ap2->me.x || ap1->me.y!=ap2->me.y )
-return( false );
-    if ( ap1->has_ttf_pt!=ap2->has_ttf_pt ||
-	    (ap1->has_ttf_pt && ap1->ttf_pt_index!=ap2->ttf_pt_index))
-return( 2 );
-
-return( true );
-}
-
-/* Very similar to following routine, except here we don't complain */
-static int NestedFeatureMatches(struct font_diff *fd,uint32 tag1,uint32 tag2) {
+/* See if we have an exact match on the subtable */
+static int comparelookupsubtable(struct font_diff *fd,struct lookup_subtable *sub1,struct lookup_subtable *sub2) {
     int gid1;
     SplineChar *sc1, *sc2;
     PST *pst1, *pst2;
     AnchorPoint *ap1, *ap2;
+    int test_anchors, test_psts, test_kerns;
+    int lookup_type;
+    int isv;
+    KernPair *kp1, *kp2;
+
+    /* These are complex to check and involve testing nested lookups which we */
+    /*  might not have worked out yet */
+    if ( sub1->fpst!=NULL || sub1->sm!=NULL )
+return( false );
+    if ( sub1->kc!=NULL || sub2->kc!=NULL ) {
+	if ( sub1->kc!=NULL && sub2->kc!=NULL && comparekc(fd,sub1->kc,sub2->kc))
+return( true );
+
+return( false );
+    }
+
+    lookup_type = sub1->lookup->lookup_type;
+    test_anchors = lookup_type>=gpos_cursive && lookup_type<=gpos_mark2mark;
+    test_psts = (lookup_type>=gsub_single && lookup_type<=gsub_ligature) ||
+	    lookup_type == gpos_single || lookup_type==gpos_pair;
+    test_kerns = lookup_type==gpos_pair;
+    if ( !test_anchors && !test_kerns && !test_psts )
+return( false );
 
     for ( gid1=0; gid1<fd->sf1_glyphcnt; ++gid1 ) if ( (sc2=fd->matches[gid1])!=NULL && (sc1=fd->sf1->glyphs[gid1])!=NULL ) {
-	for ( pst1=sc1->possub; pst1!=NULL; pst1=pst1->next ) if ( pst1->tag==tag1 ) {
-	    for ( pst2=sc2->possub; pst2!=NULL; pst2=pst2->next ) if ( pst2->tag==tag2 ) {
-		if ( comparepst(fd,pst1,pst2))
-	    break;
-	    }
-	    if ( pst2==NULL )
+	if ( test_psts ) {
+	    for ( pst1=sc1->possub; pst1!=NULL; pst1=pst1->next ) if ( pst1->subtable==sub1 ) {
+		for ( pst2=sc2->possub; pst2!=NULL; pst2=pst2->next ) if ( pst2->subtable==sub2 ) {
+		    if ( comparepst(fd,pst1,pst2))
+		break;
+		}
+		if ( pst2==NULL )
 return( false );
-	}
-	for ( pst2=sc2->possub; pst2!=NULL; pst2=pst2->next ) if ( pst2->tag==tag2 ) {
-	    for ( pst1=sc1->possub; pst1!=NULL; pst1=pst1->next ) if ( pst1->tag==tag1 ) {
-		if ( comparepst(fd,pst1,pst2))
-	    break;
 	    }
-	    if ( pst1==NULL )
+	    for ( pst2=sc2->possub; pst2!=NULL; pst2=pst2->next ) if ( pst2->subtable==sub2 ) {
+		for ( pst1=sc1->possub; pst1!=NULL; pst1=pst1->next ) if ( pst1->subtable==sub1 ) {
+		    if ( comparepst(fd,pst1,pst2))
+		break;
+		}
+		if ( pst1==NULL )
 return( false );
+	    }
 	}
-	if ( fd->is_gpos ) {
-	    /* There won't be any kern pairs as such here, but there might be */
-	    /* some pair-size features above */
-	    for ( ap1=sc1->anchor; ap1!=NULL; ap1=ap1->next ) if ( ap1->anchor->feature_tag==tag1 ) {
-		for ( ap2=sc2->anchor; ap2!=NULL; ap2=ap2->next ) if ( ap2->anchor->feature_tag==tag2 ) {
+	if ( test_kerns ) {
+	    for ( isv=0; isv<2; ++isv ) {
+		for ( kp1= isv ? sc1->kerns : sc1->vkerns; kp1!=NULL; kp1=kp1->next ) if ( kp1->subtable==sub1 ) {
+		    for ( kp2= isv ? sc2->kerns : sc2->vkerns; kp2!=NULL; kp2=kp2->next ) if ( kp2->subtable==sub2 ) {
+			if ( kp1->off == kp2->off && kp2->sc==fd->matches[kp1->sc->orig_pos])
+		    break;
+		    }
+		    if ( kp2==NULL )
+return( false );
+		}
+		for ( kp2= isv ? sc2->kerns : sc2->vkerns; kp2!=NULL; kp2=kp2->next ) if ( kp2->subtable==sub2 ) {
+		    for ( kp1= isv ? sc1->kerns : sc1->vkerns; kp1!=NULL; kp1=kp1->next ) if ( kp1->subtable==sub1 ) {
+			if ( kp1->off == kp2->off && kp2->sc==fd->matches[kp1->sc->orig_pos])
+		    break;
+		    }
+		    if ( kp1==NULL )
+return( false );
+		}
+	    }
+	}
+	if ( test_anchors ) {
+	    for ( ap1=sc1->anchor; ap1!=NULL; ap1=ap1->next ) if ( ap1->anchor->subtable == sub1 ) {
+		for ( ap2=sc2->anchor; ap2!=NULL; ap2=ap2->next ) if ( ap2->anchor->subtable == sub2 ) {
 		    if ( compareap(fd,ap1,ap2)!=true )
 		break;
 		}
 		if ( ap2==NULL )
 return( false );
 	    }
-	    for ( ap2=sc2->anchor; ap2!=NULL; ap2=ap2->next ) if ( ap2->anchor->feature_tag==tag1 ) {
-		for ( ap1=sc1->anchor; ap1!=NULL; ap1=ap1->next ) if ( ap1->anchor->feature_tag==tag2 ) {
+	    for ( ap2=sc2->anchor; ap2!=NULL; ap2=ap2->next ) if ( ap2->anchor->subtable == sub2 ) {
+		for ( ap1=sc1->anchor; ap1!=NULL; ap1=ap1->next ) if ( ap1->anchor->subtable == sub1 ) {
 		    if ( compareap(fd,ap1,ap2)!=true )
 		break;
 		}
@@ -2016,42 +1787,246 @@ return( false );
 return( true );
 }
 
-static void comparefeature(struct font_diff *fd) {
+static void MatchLookups(struct font_diff *fd) {
+    int lcnt, scnt, scnt2;
+    OTLookup *otl, *otl2;
+    SplineFont *sf1 = fd->sf1, *sf2 = fd->sf2;
+    int exactness;
+    struct lookup_subtable *sub, *sub2;
+
+    if ( sf1->cidmaster ) sf1 = sf1->cidmaster;
+    if ( sf2->cidmaster ) sf2 = sf2->cidmaster;
+    fd->sf1_mst = sf1; fd->sf2_mst = sf2;
+
+    for ( scnt = lcnt=0, otl=fd->is_gpos ? sf1->gpos_lookups : sf1->gsub_lookups; otl!=NULL; otl=otl->next, ++lcnt ) {
+	otl->lookup_index = lcnt;
+	otl->ticked = false;
+	for ( sub=otl->subtables; sub!=NULL; sub=sub->next, ++scnt )
+	    sub->subtable_offset = scnt;
+    }
+    fd->lcnt1 = lcnt;
+    fd->l2match1 = gcalloc(lcnt,sizeof(OTLookup *));
+    fd->scnt1 = scnt;
+    fd->s2match1 = gcalloc(scnt,sizeof(OTLookup *));
+
+    for ( scnt = lcnt=0, otl=fd->is_gpos ? sf2->gpos_lookups : sf2->gsub_lookups; otl!=NULL; otl=otl->next, ++lcnt ) {
+	otl->lookup_index = lcnt;
+	otl->ticked = false;
+	for ( sub=otl->subtables; sub!=NULL; sub=sub->next, ++scnt )
+	    sub->subtable_offset = scnt;
+    }
+    fd->lcnt2 = lcnt;
+    fd->l1match2 = gcalloc(lcnt,sizeof(OTLookup *));
+    fd->scnt1 = scnt;
+    fd->s2match1 = gcalloc(scnt,sizeof(OTLookup *));
+
+    for ( otl=fd->is_gpos ? sf1->gpos_lookups : sf1->gsub_lookups; otl!=NULL; otl=otl->next ) {
+	for ( otl2=fd->is_gpos ? sf2->gpos_lookups : sf2->gsub_lookups; otl2!=NULL; otl2=otl2->next ) {
+	    if ( otl->lookup_type != otl2->lookup_type || otl2->ticked )
+	continue;
+	    for ( sub=otl->subtables; sub!=NULL; sub=sub->next ) {
+		for ( sub2=otl2->subtables; sub2!=NULL; sub2=sub2->next ) {
+		    if ( sub2->ticked )
+		continue;
+		    if ( comparelookupsubtable(fd,sub,sub2)) {
+			sub->ticked = sub2->ticked = true;
+			otl->ticked = otl2->ticked = true;
+			fd->s2match1[sub->subtable_offset] = sub2;
+			fd->s1match2[sub2->subtable_offset] = sub;
+			fd->l2match1[otl->lookup_index] = otl2;
+			fd->l1match2[otl2->lookup_index] = otl;
+      goto break_3_loops;
+		    }
+		}
+	    }
+	}
+      break_3_loops: ;
+    }
+	    
+    for ( exactness=3; exactness>=0; --exactness ) {
+	for ( lcnt=0, otl=fd->is_gpos ? sf1->gpos_lookups : sf1->gsub_lookups; otl!=NULL; otl=otl->next, ++lcnt ) {
+	    if ( otl->ticked )
+	continue;
+	    for ( otl2=fd->is_gpos ? sf2->gpos_lookups : sf2->gsub_lookups; otl2!=NULL; otl2=otl2->next ) {
+		if ( otl2->ticked )
+	    continue;
+		if ( otl->lookup_type==otl2->lookup_type &&
+			(!(exactness&2) || strcmp(otl->lookup_name,otl2->lookup_name)==0) &&
+			FeatureMatch(otl->features,otl2->features,exactness&1)) {
+		    otl->ticked = otl2->ticked = true;
+		    fd->l2match1[lcnt] = otl2;
+		    fd->l1match2[otl2->lookup_index] = otl;
+	    break;
+		}
+	    }
+	}
+    }
+
+    for ( lcnt=0, otl=fd->is_gpos ? sf1->gpos_lookups : sf1->gsub_lookups; otl!=NULL; otl=otl->next, ++lcnt ) {
+	if ( (otl2 = fd->l2match1[lcnt])==NULL )
+    break;
+	for ( scnt=0, sub=otl->subtables; sub!=NULL; ++scnt, sub=sub->next );
+	for ( scnt2=0, sub=otl2->subtables; sub!=NULL; ++scnt2, sub=sub->next );
+	if ( scnt==scnt2 ) {
+	    /* Try assigning all unassigned subtables in order */
+	    for ( sub=otl->subtables, sub2=otl2->subtables; sub!=NULL && sub2!=NULL; ) {
+		if ( fd->s2match1[sub->subtable_offset]==NULL &&
+			fd->s1match2[sub2->subtable_offset]==NULL ) {
+		    fd->s2match1[sub->subtable_offset]=sub2;
+		    fd->s1match2[sub2->subtable_offset]=sub;
+		    sub=sub->next;
+		    sub2=sub->next;
+		} else {
+		    if ( fd->s2match1[sub->subtable_offset]!=NULL )
+			sub=sub->next;
+		    if ( fd->s1match2[sub2->subtable_offset]!=NULL )
+			sub2=sub2->next;
+		}
+	    }
+	}
+    }
+}
+
+static void featureheader(struct font_diff *fd) {
+
+    if ( !fd->top_diff )
+	fprintf( fd->diffs, fd->is_gpos ? _("Glyph Positioning\n") : _("Glyph Substitution\n"));
+    if ( !fd->middle_diff ) {
+	putc( ' ', fd->diffs);
+	fprintf( fd->diffs, _("Lookup Differences\n") );
+    }
+    if ( !fd->local_diff ) {
+	fputs("  ",fd->diffs);
+	fprintf( fd->diffs, _("Lookup subtable %s (matched with %s)\n"),
+		fd->cur_sub1->subtable_name, fd->cur_sub2->subtable_name );
+    }
+    fd->top_diff = fd->middle_diff = fd->diff = fd->local_diff = true;
+}
+
+static void complainscfeature(struct font_diff *fd, SplineChar *sc, char *format, ... ) {
+    va_list ap;
+
+    featureheader(fd);
+
+    va_start(ap,format);
+    if ( fd->last_sc==sc ) {
+	if ( fd->held[0] ) {
+	    fputs("   ",fd->diffs);
+	    fprintf( fd->diffs, U_("Glyph “%s” differs\n"), sc->name );
+	    fprintf( fd->diffs, "    %s", fd->held );
+	    if ( fd->held[strlen(fd->held)-1]!='\n' )
+		putc('\n',fd->diffs);
+	    fd->held[0] = '\0';
+	}
+	fputs("    ",fd->diffs);
+	vfprintf(fd->diffs,format,ap);
+    } else {
+	vsnprintf(fd->held,sizeof(fd->held),format,ap);
+	fd->last_sc = sc;
+    }
+    va_end(ap);
+}
+
+static void complainapfeature(struct font_diff *fd,SplineChar *sc,
+	AnchorPoint *ap,char *missingname) {
+    complainscfeature(fd, sc, U_("“%s” in %s did not contain an anchor point (%g,%g) class %s\n"),
+	    sc->name, missingname, ap->me.x, ap->me.y, ap->anchor->name);
+}
+
+static void complainapfeature2(struct font_diff *fd,SplineChar *sc,
+	AnchorPoint *ap,char *missingname) {
+    complainscfeature(fd, sc, U_("“%s” in %s contains an anchor point (%g,%g) class %s which differs from its counterpart by point matching\n"),
+	    sc->name, missingname, ap->me.x, ap->me.y, ap->anchor->name);
+}
+
+static void complainpstfeature(struct font_diff *fd,SplineChar *sc,
+	PST *pst,char *missingname) {
+    if ( pst->type==pst_position ) {
+	complainscfeature(fd, sc, U_("“%s” in %s did not contain a positioning lookup ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d\n"),
+		sc->name, missingname, pst->u.pos.xoff, pst->u.pos.yoff, pst->u.pos.h_adv_off, pst->u.pos.v_adv_off );
+    } else if ( pst->type==pst_pair ) {
+	complainscfeature(fd, sc, U_("“%s” in %s did not contain a pairwise positioning lookup ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d to %s ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d\n"),
+		sc->name, missingname, 
+		pst->u.pair.vr[0].xoff, pst->u.pair.vr[0].yoff, pst->u.pair.vr[0].h_adv_off, pst->u.pair.vr[0].v_adv_off,
+		pst->u.pair.paired,
+	    pst->u.pair.vr[1].xoff, pst->u.pair.vr[1].yoff, pst->u.pair.vr[1].h_adv_off, pst->u.pair.vr[1].v_adv_off );
+    } else if ( pst->type==pst_substitution || pst->type==pst_alternate || pst->type==pst_multiple || pst->type==pst_ligature ) {
+	complainscfeature(fd, sc, U_("“%s” in %s did not contain a substitution lookup to %s\n"),
+		sc->name, missingname, pst->u.subs.variant );
+    }
+}
+
+static void finishscfeature(struct font_diff *fd ) {
+    if ( fd->held[0] ) {
+	fputs("   ",fd->diffs);
+	fputs(fd->held,fd->diffs);
+	fd->held[0] = '\0';
+    }
+}
+
+static void comparesubtable(struct font_diff *fd) {
     int gid1;
     SplineChar *sc1, *sc2;
     PST *pst1, *pst2;
     AnchorPoint *ap1, *ap2;
+    int isv;
     KernPair *kp1, *kp2;
-
-    if ( fd->is_gpos ) {
-	if ( fd->tag==CHR('k','e','r','n') )
-	    comparekernclasses(fd,fd->sf1->kerns,fd->sf2->kerns);
-	else if ( fd->tag==CHR('v','k','r','n') )
-	    comparekernclasses(fd,fd->sf1->vkerns,fd->sf2->vkerns);
-    }
-    comparefpsts(fd,fd->sf1->possub,fd->sf2->possub);
+    int test_anchors, test_psts, test_kerns;
+    int lookup_type;
 
     fd->last_sc = NULL;
+
+    lookup_type = fd->cur_sub1->lookup->lookup_type;
+    test_anchors = lookup_type>=gpos_cursive && lookup_type<=gpos_mark2mark;
+    test_psts = (lookup_type>=gsub_single && lookup_type<=gsub_ligature) ||
+	    lookup_type == gpos_single || lookup_type==gpos_pair;
+    test_kerns = lookup_type==gpos_pair;
+    if ( !test_anchors && !test_kerns && !test_psts ) {
+	if ( fd->cur_sub1->kc && fd->cur_sub2->kc ) {
+	    if ( comparekc(fd,fd->cur_sub1->kc,fd->cur_sub2->kc)) {
+		featureheader(fd);
+		fprintf( fd->diffs,_("The kerning class subtable %s in %s fails to match %s in %s\n"),
+			fd->cur_sub1->subtable_name, fd->name1,
+			fd->cur_sub2->subtable_name, fd->name2 );
+	    }
+	} else if ( fd->cur_sub1->fpst && fd->cur_sub2->fpst ) {
+	    if ( !comparefpst(fd,fd->cur_sub1->fpst,fd->cur_sub2->fpst)) {
+		featureheader(fd);
+		fprintf( fd->diffs,_("The context/chaining subtable %s in %s fails to match %s in %s\n"),
+			fd->cur_sub1->subtable_name, fd->name1,
+			fd->cur_sub2->subtable_name, fd->name2 );
+	    }
+	} else {
+	    featureheader(fd);
+	    fputs("   ",fd->diffs);
+	    fprintf( fd->diffs,_("I can't figure out how to compare the subtable, %s, in %s to %s in %s\n"),
+		    fd->cur_sub1->subtable_name, fd->name1, fd->cur_sub2->subtable_name, fd->name2 );
+	}
+return;
+    }
+
     for ( gid1=0; gid1<fd->sf1_glyphcnt; ++gid1 ) if ( (sc2=fd->matches[gid1])!=NULL && (sc1=fd->sf1->glyphs[gid1])!=NULL ) {
-	for ( pst1=sc1->possub; pst1!=NULL; pst1=pst1->next ) if ( pst1->tag==fd->tag ) {
-	    for ( pst2=sc2->possub; pst2!=NULL; pst2=pst2->next ) if ( pst2->tag==fd->tag ) {
-		if ( comparepst(fd,pst1,pst2))
-	    break;
+	if ( test_psts ) {
+	    for ( pst1=sc1->possub; pst1!=NULL; pst1=pst1->next ) if ( pst1->subtable==fd->cur_sub1 ) {
+		for ( pst2=sc2->possub; pst2!=NULL; pst2=pst2->next ) if ( pst2->subtable==fd->cur_sub2 ) {
+		    if ( comparepst(fd,pst1,pst2))
+		break;
+		}
+		if ( pst2==NULL )
+		    complainpstfeature(fd,sc1,pst1,fd->name2);
 	    }
-	    if ( pst2==NULL )
-		complainpstfeature(fd,sc1,pst1,fd->name2);
-	}
-	for ( pst2=sc2->possub; pst2!=NULL; pst2=pst2->next ) if ( pst2->tag==fd->tag ) {
-	    for ( pst1=sc1->possub; pst1!=NULL; pst1=pst1->next ) if ( pst1->tag==fd->tag ) {
-		if ( comparepst(fd,pst1,pst2))
-	    break;
+	    for ( pst2=sc2->possub; pst2!=NULL; pst2=pst2->next ) if ( pst2->subtable==fd->cur_sub2 ) {
+		for ( pst1=sc1->possub; pst1!=NULL; pst1=pst1->next ) if ( pst1->subtable==fd->cur_sub1 ) {
+		    if ( comparepst(fd,pst1,pst2))
+		break;
+		}
+		if ( pst1==NULL )
+		    complainpstfeature(fd,sc1,pst2,fd->name1);
 	    }
-	    if ( pst1==NULL )
-		complainpstfeature(fd,sc1,pst2,fd->name1);
 	}
-	if ( fd->is_gpos ) {
-	    for ( ap1=sc1->anchor; ap1!=NULL; ap1=ap1->next ) if ( ap1->anchor->feature_tag==fd->tag ) {
-		for ( ap2=sc2->anchor; ap2!=NULL; ap2=ap2->next ) if ( ap2->anchor->feature_tag==fd->tag ) {
+	if ( test_anchors ) {
+	    for ( ap1=sc1->anchor; ap1!=NULL; ap1=ap1->next ) if ( ap1->anchor->subtable==fd->cur_sub1 ) {
+		for ( ap2=sc2->anchor; ap2!=NULL; ap2=ap2->next ) if ( ap2->anchor->subtable==fd->cur_sub2 ) {
 		    int apret= compareap(fd,ap1,ap2);
 		    if ( apret==2 )
 			complainapfeature2(fd,sc1,ap1,fd->name2);
@@ -2061,8 +2036,8 @@ static void comparefeature(struct font_diff *fd) {
 		if ( ap2==NULL )
 		    complainapfeature(fd,sc1,ap1,fd->name2);
 	    }
-	    for ( ap2=sc2->anchor; ap2!=NULL; ap2=ap2->next ) if ( ap2->anchor->feature_tag==fd->tag ) {
-		for ( ap1=sc1->anchor; ap1!=NULL; ap1=ap1->next ) if ( ap1->anchor->feature_tag==fd->tag ) {
+	    for ( ap2=sc2->anchor; ap2!=NULL; ap2=ap2->next ) if ( ap2->anchor->subtable==fd->cur_sub2 ) {
+		for ( ap1=sc1->anchor; ap1!=NULL; ap1=ap1->next ) if ( ap1->anchor->subtable==fd->cur_sub1 ) {
 		    /* don't need to check for point matching here, already done above */
 		    if ( compareap(fd,ap1,ap2))
 		break;
@@ -2070,167 +2045,133 @@ static void comparefeature(struct font_diff *fd) {
 		if ( ap1==NULL )
 		    complainapfeature(fd,sc1,ap2,fd->name1);
 	    }
-	    for ( kp2= (fd->tag==CHR('k','e','r','n'))? sc2->kerns : (fd->tag==CHR('v','k','r','n') ) ? sc2->vkerns : NULL ;
-		    kp2!=NULL; kp2=kp2->next )
-		kp2->kcid = 0;
-	    for ( kp1= (fd->tag==CHR('k','e','r','n'))? sc1->kerns : (fd->tag==CHR('v','k','r','n') ) ? sc1->vkerns : NULL ;
-		    kp1!=NULL; kp1=kp1->next ) {
-		for ( kp2= (fd->tag==CHR('k','e','r','n'))? sc2->kerns : (fd->tag==CHR('v','k','r','n') ) ? sc2->vkerns : NULL ;
-			kp2!=NULL; kp2=kp2->next ) if ( !kp2->kcid ) {
-		    if ( strcmp(kp1->sc->name,kp2->sc->name)==0 )
-		break;
+	}
+	if ( test_kerns ) {
+	    for ( isv=0; isv<2; ++isv ) {
+		for ( kp2= isv ? sc2->vkerns : sc2->kerns ; kp2!=NULL; kp2=kp2->next )
+		    kp2->kcid = 0;
+		for ( kp1= isv ? sc1->vkerns : sc1->kerns; kp1!=NULL; kp1=kp1->next ) {
+		    if ( kp1->subtable!=fd->cur_sub1 )
+		continue;
+		    for ( kp2= isv ? sc2->vkerns : sc2->kerns ; kp2!=NULL; kp2=kp2->next ) if ( !kp2->kcid ) {
+			if ( kp2->subtable!=fd->cur_sub2 )
+		    continue;
+			if ( strcmp(kp1->sc->name,kp2->sc->name)==0 )
+		    break;
+		    }
+		    if ( kp2!=NULL ) {
+			if ( kp2->off!=kp1->off )
+			    complainscfeature(fd, sc1, U_("Kerning between “%s” and %s is %d in %s and %d in %s\n"),
+				    sc1->name, kp1->sc->name, kp1->off, fd->name1, kp2->off, fd->name2 );
+			kp2->kcid = 1;
+		    } else {
+			complainscfeature(fd, sc1, U_("No kerning between “%s” and %s in %s whilst it is %d in %s\n"),
+				sc1->name, kp1->sc->name, fd->name2, kp1->off, fd->name1 );
+		    }
 		}
-		if ( kp2!=NULL ) {
-		    if ( kp2->off!=kp1->off )
-			complainscfeature(fd, sc1, U_("Kerning between “%s” and %s is %d in %s and %d in %s\n"),
-				sc1->name, kp1->sc->name, kp1->off, fd->name1, kp2->off, fd->name2 );
-		    kp2->kcid = 1;
-		} else {
-		    complainscfeature(fd, sc1, U_("No kerning between “%s” and %s in %s whilst it is %d in %s\n"),
-			    sc1->name, kp1->sc->name, fd->name2, kp1->off, fd->name1 );
+		for ( kp2= isv ? sc2->vkerns : sc2->kerns ; kp2!=NULL; kp2=kp2->next )
+		    if ( !kp2->kcid && kp2->subtable == fd->cur_sub2 )
+			complainscfeature(fd, sc1, U_("No kerning between “%s” and %s in %s whilst it is %d in %s\n"),
+				sc2->name, kp2->sc->name, fd->name1, kp2->off, fd->name2 );
 		}
-	    }
-	    for ( kp2= (fd->tag==CHR('k','e','r','n'))? sc2->kerns : (fd->tag==CHR('v','k','r','n') ) ? sc2->vkerns : NULL ;
-		    kp2!=NULL; kp2=kp2->next ) if ( !kp2->kcid ) {
-		complainscfeature(fd, sc1, U_("No kerning between “%s” and %s in %s whilst it is %d in %s\n"),
-			sc2->name, kp2->sc->name, fd->name1, kp2->off, fd->name2 );
-	    }
 	}
 	finishscfeature(fd);
     }
 }
 
-static void CompareNestedTags(struct font_diff *fd) {
-    int i,j;
+static void compareg___(struct font_diff *fd) {
+    OTLookup *otl;
+    struct lookup_subtable *sub;
 
-    fd->nmatches1 = gcalloc(fd->ncnt1,sizeof(uint32));
-    fd->nmatches2 = gcalloc(fd->ncnt2,sizeof(uint32));
+    fd->top_diff = fd->middle_diff = fd->local_diff = false;
 
-    if ( fd->ncnt1!=0 && fd->ncnt2!=0 ) {
-	for ( i=0; i<fd->ncnt1; ++i ) {
-	    for ( j=0; j<fd->ncnt2; ++j ) if ( fd->nmatches2[j]==0 ) {
-		if ( NestedFeatureMatches(fd,fd->nesttag1[i],fd->nesttag2[j])) {
-		    fd->nmatches1[i] = fd->nesttag2[j];
-		    fd->nmatches2[j] = fd->nesttag1[i];
-	    break;
+    MatchLookups(fd);
+
+    fd->middle_diff = false;
+    for ( otl = fd->is_gpos ? fd->sf1_mst->gpos_lookups : fd->sf1_mst->gsub_lookups; otl!=NULL ; otl=otl->next ) {
+	if ( fd->l2match1[otl->lookup_index]==NULL ) {
+	    if ( !fd->top_diff )
+		fprintf( fd->diffs, fd->is_gpos ? _("Glyph Positioning\n") : _("Glyph Substitution\n"));
+	    if ( !fd->middle_diff ) {
+		putc( ' ', fd->diffs);
+		fprintf( fd->diffs, _("Lookups in %s but not in %s\n"), fd->name1, fd->name2 );
+	    }
+	    fd->top_diff = fd->middle_diff = fd->diff = true;
+	    fputs("  ",fd->diffs);
+	    fprintf( fd->diffs, _("Lookup %s is not in %s\n"),
+		    otl->lookup_name, fd->name2 );
+	}
+    }
+    fd->middle_diff = false;
+    for ( otl = fd->is_gpos ? fd->sf1_mst->gpos_lookups : fd->sf1_mst->gsub_lookups; otl!=NULL ; otl=otl->next ) {
+	if ( fd->l2match1[otl->lookup_index]!=NULL ) {
+	    for ( sub=otl->subtables; sub!=NULL; sub=sub->next ) {
+		if ( fd->s2match1[sub->subtable_offset]==NULL ) {
+		    if ( !fd->top_diff )
+			fprintf( fd->diffs, fd->is_gpos ? _("Glyph Positioning\n") : _("Glyph Substitution\n"));
+		    if ( !fd->middle_diff ) {
+			putc( ' ', fd->diffs);
+			fprintf( fd->diffs, _("Lookups subtables in %s but not in %s\n"), fd->name1, fd->name2 );
+		    }
+		    fd->top_diff = fd->middle_diff = fd->diff = true;
+		    fputs("  ",fd->diffs);
+		    fprintf( fd->diffs, _("Lookup subtable %s is not in %s\n"),
+			    sub->subtable_name, fd->name2 );
 		}
 	    }
 	}
     }
 
     fd->middle_diff = false;
-    for ( i=0; i<fd->ncnt1; ++i ) if ( fd->nmatches1[i]==0 ) {
-	if ( !fd->top_diff )
-	    fprintf( fd->diffs, fd->is_gpos ? _("Glyph Positioning\n") : _("Glyph Substitution\n"));
-	if ( !fd->middle_diff ) {
-	    putc( ' ', fd->diffs);
-	    fprintf( fd->diffs, _("Nested features in %s but not in %s\n"), fd->name1, fd->name2 );
-	}
-	fd->top_diff = fd->middle_diff = fd->diff = true;
-	fputs("  ",fd->diffs);
-	fprintf( fd->diffs, _("Nested feature '%c%c%c%c' is not in %s\n"),
-		(int) (fd->nesttag1[i]>>24), (int) (fd->nesttag1[i]>>16), (int) (fd->nesttag1[i]>>8), (int) ((fd->nesttag1[i]&0xff)),
-		fd->name2 );
-    }
-
-    fd->middle_diff = false;
-    for ( i=0; i<fd->ncnt2; ++i ) if ( fd->nmatches2[i]==0 ) {
-	if ( !fd->top_diff )
-	    fprintf( fd->diffs, fd->is_gpos ? _("Glyph Positioning\n") : _("Glyph Substitution\n"));
-	if ( !fd->middle_diff ) {
-	    putc( ' ', fd->diffs);
-	    fprintf( fd->diffs, _("Nested features in %s but not in %s\n"), fd->name2, fd->name1 );
-	}
-	fd->top_diff = fd->middle_diff = fd->diff = true;
-	fputs("  ",fd->diffs);
-	fprintf( fd->diffs, _("Nested feature '%c%c%c%c' is not in %s\n"),
-		(int) (fd->nesttag2[i]>>24), (int) (fd->nesttag2[i]>>16), (int) (fd->nesttag2[i]>>8), (int) ((fd->nesttag2[i]&0xff)),
-		fd->name1 );
-    }
-}
-
-static void compareg___(struct font_diff *fd) {
-    int i,j;
-    char *tagfullname;
-
-    fd->top_diff = fd->middle_diff = fd->local_diff = false;
-
-    fd->tags1 = FindFeatureTags(fd->sf1,fd->is_gpos,&fd->fcnt1,&fd->nesttag1,&fd->ncnt1);
-    fd->tags2 = FindFeatureTags(fd->sf2,fd->is_gpos,&fd->fcnt2,&fd->nesttag2,&fd->ncnt2);
-    CompareNestedTags(fd);
-
-    fd->middle_diff = false;
-    for ( i=j=0; i<fd->fcnt1 ; ++i ) {
-	while ( j<fd->fcnt2 && fd->tags2[j]<fd->tags1[i])
-	    ++j;
-	if ( j>=fd->fcnt2 || fd->tags2[j]!=fd->tags1[i] ) {
+    for ( otl = fd->is_gpos ? fd->sf2_mst->gpos_lookups : fd->sf2_mst->gsub_lookups; otl!=NULL ; otl=otl->next ) {
+	if ( fd->l1match2[otl->lookup_index]==NULL ) {
 	    if ( !fd->top_diff )
 		fprintf( fd->diffs, fd->is_gpos ? _("Glyph Positioning\n") : _("Glyph Substitution\n"));
 	    if ( !fd->middle_diff ) {
 		putc( ' ', fd->diffs);
-		fprintf( fd->diffs, _("Features in %s but not in %s\n"), fd->name1, fd->name2 );
+		fprintf( fd->diffs, _("Lookups in %s but not in %s\n"), fd->name2, fd->name1 );
 	    }
 	    fd->top_diff = fd->middle_diff = fd->diff = true;
 	    fputs("  ",fd->diffs);
-	    tagfullname = TagFullName(fd->sf1,fd->tags1[i],-1);
-	    fprintf( fd->diffs, _("Feature %s is not in %s\n"),
-		    tagfullname, fd->name2 );
-	    free(tagfullname);
+	    fprintf( fd->diffs, _("Lookup %s is not in %s\n"),
+		    otl->lookup_name, fd->name1 );
+	}
+    }
+    fd->middle_diff = false;
+    for ( otl = fd->is_gpos ? fd->sf2_mst->gpos_lookups : fd->sf2_mst->gsub_lookups; otl!=NULL ; otl=otl->next ) {
+	if ( fd->l1match2[otl->lookup_index]!=NULL ) {
+	    for ( sub=otl->subtables; sub!=NULL; sub=sub->next ) {
+		if ( fd->s1match2[sub->subtable_offset]==NULL ) {
+		    if ( !fd->top_diff )
+			fprintf( fd->diffs, fd->is_gpos ? _("Glyph Positioning\n") : _("Glyph Substitution\n"));
+		    if ( !fd->middle_diff ) {
+			putc( ' ', fd->diffs);
+			fprintf( fd->diffs, _("Lookups subtables in %s but not in %s\n"), fd->name2, fd->name1 );
+		    }
+		    fd->top_diff = fd->middle_diff = fd->diff = true;
+		    fputs("  ",fd->diffs);
+		    fprintf( fd->diffs, _("Lookup subtable %s is not in %s\n"),
+			    sub->subtable_name, fd->name1 );
+		}
+	    }
 	}
     }
 
     fd->middle_diff = false;
-    for ( i=j=0; i<fd->fcnt2 ; ++i ) {
-	while ( j<fd->fcnt1 && fd->tags1[j]<fd->tags2[i])
-	    ++j;
-	if ( j>=fd->fcnt1 || fd->tags1[j]!=fd->tags2[i] ) {
-	    if ( !fd->top_diff )
-		fprintf( fd->diffs, fd->is_gpos ? _("Glyph Positioning\n") : _("Glyph Substitution\n"));
-	    if ( !fd->middle_diff ) {
-		putc( ' ', fd->diffs);
-		fprintf( fd->diffs, _("Features in %s but not in %s\n"), fd->name2, fd->name1 );
+    for ( otl = fd->is_gpos ? fd->sf1_mst->gpos_lookups : fd->sf1_mst->gsub_lookups; otl!=NULL ; otl=otl->next ) {
+	if ( fd->l1match2[otl->lookup_index]!=NULL ) {
+	    for ( sub=otl->subtables; sub!=NULL; sub=sub->next ) {
+		if ( fd->s2match1[sub->subtable_offset]==NULL ) {
+		    fd->cur_sub1 = sub; fd->cur_sub2 = fd->s2match1[sub->subtable_offset];
+		    fd->local_diff = false;
+		    comparesubtable(fd);
+		}
 	    }
-	    fd->top_diff = fd->middle_diff = true;
-	    fputs("  ",fd->diffs);
-	    tagfullname = TagFullName(fd->sf2,fd->tags2[i],-1);
-	    fprintf( fd->diffs, _("Feature %s is not in %s\n"),
-		    tagfullname, fd->name1 );
-	    free(tagfullname);
 	}
     }
 
-    fd->middle_diff = false;
-    for ( i=j=0; i<fd->fcnt1 ; ++i ) {
-	while ( j<fd->fcnt2 && fd->tags2[j]<fd->tags1[i])
-	    ++j;
-	if ( j<fd->fcnt2 && fd->tags2[j]==fd->tags1[i] ) {
-	    fd->local_diff = false;
-	    fd->tag = fd->tags1[i];
-	    comparefeature(fd);
-	}
-    }
-
-    /* If there were a mismatch in this table, then output the nest tag matches*/
-    if ( fd->top_diff ) {
-	fd->middle_diff = false;
-	for ( i=0; i<fd->ncnt1; ++i ) if ( fd->nmatches1[i]!=0 ) {
-	    if ( !fd->middle_diff ) {
-		putc( ' ', fd->diffs);
-		fprintf( fd->diffs, _("Nested feature correspondance between fonts\n") );
-		fd->middle_diff = true;
-	    }
-	    fputs("  ",fd->diffs);
-	    fprintf(fd->diffs, _("Nested feature '%c%c%c%c' in %s corresponds to '%c%c%c%c' in %s\n"),
-		(int) (fd->nesttag1[i]>>24), (int) (fd->nesttag1[i]>>16), (int) (fd->nesttag1[i]>>8), (int) ((fd->nesttag1[i]&0xff)),
-		fd->name1,
-		(int) (fd->nmatches1[i]>>24), (int) (fd->nmatches1[i]>>16), (int) (fd->nmatches1[i]>>8), (int) ((fd->nmatches1[i]&0xff)),
-		fd->name2 );
-	}
-    }
-
-    free( fd->tags1 );
-    free( fd->tags2 );
-    free(fd->nesttag1); free(fd->nesttag2); free(fd->nmatches1); free(fd->nmatches2);
+    free( fd->l2match1 ); free( fd->l1match2 );
+    free( fd->s2match1 ); free( fd->s1match2 );
 }
 
 static void comparegpos(struct font_diff *fd) {

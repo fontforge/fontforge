@@ -927,7 +927,7 @@ static int KP_OK(GGadget *g, GEvent *e) {
 		kpd->kerns[i].kp->off = kpd->kerns[i].newoff;
 		kpd->sf->changed = true;
 		for ( fv=kpd->sf->fv; fv!=NULL; fv = fv->nextsame ) {
-		    for ( mv=fv->metrics; mv!=NULL; mv=mv->next )
+		    for ( mv=fv->sf->metrics; mv!=NULL; mv=mv->next )
 			MVRefreshChar(mv,kpd->kerns[i].first);
 		}
 	    }

@@ -63,26 +63,6 @@ static void DumpKernClass(FILE *file, uint16 *class,int cnt,int add,int mul) {
 	putshort(file,class[i]*mul+add);
 }
 
-int SLIHasDefault(SplineFont *sf,int sli) {
-    struct script_record *sr;
-    int i, j;
-
-    if ( sli==SLI_NESTED || sli==SLI_UNKNOWN )
-return( false );
-
-    if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
-    if ( sf->mm!=NULL ) sf = sf->mm->normal;
-
-    sr = sf->script_lang[sli];
-
-    for ( i=0; sr[i].script!=0; ++i )
-	for ( j=0; sr[i].langs[j]!=0; ++j )
-	    if ( sr[i].langs[j]==DEFAULT_LANG )
-return( true );
-
-return( false );
-}
-
 static int morx_dumpASM(FILE *temp,ASM *sm, struct alltabs *at, SplineFont *sf );
 
 struct kerncounts {
@@ -108,12 +88,12 @@ static int CountKerns(struct alltabs *at, SplineFont *sf, struct kerncounts *kcn
     for ( i=0; i<at->gi.gcnt; ++i ) if ( at->gi.bygid[i]!=-1 ) {
 	j = 0;
 	for ( kp = sf->glyphs[at->gi.bygid[i]]->kerns; kp!=NULL; kp=kp->next )
-	    if ( kp->off!=0 )
+	    if ( kp->off!=0 && LookupHasDefault(kp->subtable->lookup ))
 		++cnt, ++j;
 	if ( j>mh ) mh=j;
 	j=0;
 	for ( kp = sf->glyphs[at->gi.bygid[i]]->vkerns; kp!=NULL; kp=kp->next )
-	    if ( kp->off!=0 )
+	    if ( kp->off!=0 && LookupHasDefault(kp->subtable->lookup ))
 		++vcnt, ++j;
 	if ( j>mv ) mv=j;
     }
@@ -134,7 +114,7 @@ static int CountKerns(struct alltabs *at, SplineFont *sf, struct kerncounts *kcn
 	for ( i=0; i<at->gi.gcnt; ++i ) if ( at->gi.bygid[i]!=-1 ) {
 	    j = 0;
 	    for ( kp = sf->glyphs[at->gi.bygid[i]]->kerns; kp!=NULL; kp=kp->next )
-		if ( kp->off!=0 )
+		if ( kp->off!=0 && LookupHasDefault(kp->subtable->lookup ))
 		    ++j;
 	    if ( (cnt+j)*6>64000L && cnt!=0 ) {
 		kcnt->hbreaks[b++] = cnt;
@@ -155,7 +135,7 @@ static int CountKerns(struct alltabs *at, SplineFont *sf, struct kerncounts *kcn
 	for ( i=0; i<at->gi.gcnt; ++i ) if ( at->gi.bygid[i]!=-1 ) {
 	    j = 0;
 	    for ( kp = sf->glyphs[at->gi.bygid[i]]->vkerns; kp!=NULL; kp=kp->next )
-		if ( kp->off!=0 )
+		if ( kp->off!=0 && LookupHasDefault(kp->subtable->lookup))
 		    ++j;
 	    if ( (vcnt+j)*6>64000L && vcnt!=0 ) {
 		kcnt->vbreaks[b++] = vcnt;
@@ -171,9 +151,9 @@ static int CountKerns(struct alltabs *at, SplineFont *sf, struct kerncounts *kcn
 	kcnt->vsubs = 0;
 
     if ( at->applemode ) {	/* if we aren't outputting Apple's extensions to kerning (by classes, and by state machine) then don't check for those extensions */
-	for ( kc=sf->kerns; kc!=NULL; kc = kc->next ) if ( SLIHasDefault(sf,kc->sli) )
+	for ( kc=sf->kerns; kc!=NULL; kc = kc->next ) if ( LookupHasDefault(kc->subtable->lookup) )
 	    ++kccnt;
-	for ( kc=sf->vkerns; kc!=NULL; kc = kc->next ) if ( SLIHasDefault(sf,kc->sli) )
+	for ( kc=sf->vkerns; kc!=NULL; kc = kc->next ) if ( LookupHasDefault(kc->subtable->lookup) )
 	    ++vkccnt;
 	for ( sm=sf->sm; sm!=NULL; sm=sm->next )
 	    if ( sm->type == asm_kern )
@@ -235,7 +215,7 @@ return;
 		    SplineChar *sc = sf->glyphs[at->gi.bygid[gid]];
 		    m = 0;
 		    for ( kp = isv ? sc->vkerns : sc->kerns; kp!=NULL; kp=kp->next ) {
-			if ( kp->off!=0 ) {
+			if ( kp->off!=0 && LookupHasDefault(kp->subtable->lookup)) {
 			    /* order the pairs */
 			    for ( j=0; j<m; ++j )
 				if ( kp->sc->ttf_glyph<glnum[j] )
@@ -264,7 +244,7 @@ return;
     free(kcnt.hbreaks); free(kcnt.vbreaks);
 
     if ( at->applemode ) for ( isv=0; isv<2; ++isv ) {
-	for ( kc=isv ? sf->vkerns : sf->kerns; kc!=NULL; kc=kc->next ) if ( SLIHasDefault(sf,kc->sli) ) {
+	for ( kc=isv ? sf->vkerns : sf->kerns; kc!=NULL; kc=kc->next ) if ( LookupHasDefault(kc->subtable->lookup) ) {
 	    /* If we are here, we must be using version 1 */
 	    uint32 len_pos = ftell(at->kern), pos;
 	    uint16 *class1, *class2;
@@ -346,7 +326,7 @@ void ttf_dumpkerns(struct alltabs *at, SplineFont *sf) {
 
     if ( !at->applemode && (!at->opentypemode || (at->gi.flags&ttf_flag_oldkern)) ) {
 	must_use_old_style = true;
-	SFKernPrepare(sf,false);
+	SFKernClassTempDecompose(sf,false);
 	mm = NULL;
     } else {
 	if ( mm!=NULL ) {
@@ -494,11 +474,12 @@ return;
 /* *************************      (and 'feat')      ************************* */
 /* ************************************************************************** */
 
-/* I'm also going to break ligatures up into seperate sub-tables depending on */
-/*  script, so again there may be multiple tags */
+/* Each lookup gets its own subtable, so there may be multiple subtables */
+/*  with the same feature/setting. The subtables will be ordered the same */
+/*  way the lookups are, which might lead to awkwardness if there are many */
+/*  chains and the same feature occurs in several of them */
 /* (only the default language will be used) */
 struct feature {
-    uint32 otftag;
     int16 featureType, featureSetting;
     MacFeat *mf, *smf;
     struct macsetting *ms, *sms;
@@ -512,10 +493,14 @@ struct feature {
     int32 flag, offFlags;
     uint32 feature_start;
     uint32 feature_len;		/* Does not include header yet */
-    struct feature *next;
+    struct feature *next;	/* features in output order */
+    struct feature *nexttype;	/* features in feature/setting order */
+    struct feature *nextsame;	/* all features with the same feature/setting */
+    int setting_cnt, setting_index, real_index;
 };
 
-static struct feature *featureFromTag(SplineFont *sf, uint32 tag);
+static struct feature *featureFromSubtable(SplineFont *sf, struct lookup_subtable *sub );
+static int PSTHasTag(PST *pst, uint32 tag);
 
 static void morxfeaturesfree(struct feature *features) {
     struct feature *n;
@@ -606,133 +591,65 @@ static void morx_dumpSubsFeature(FILE *temp,SplineChar **glyphs,uint16 *maps,int
     morx_lookupmap(temp,glyphs,maps,gcnt);
 }
 
-static int HasDefaultLang(SplineFont *sf,PST *lig,uint32 script) {
-    int i, j;
-    struct script_record *sr;
-
-    if ( lig->script_lang_index==SLI_NESTED )
-return( false );
-
-    if ( sf->cidmaster ) sf = sf->cidmaster;
-    else if ( sf->mm!=NULL ) sf=sf->mm->normal;
-    sr = sf->script_lang[lig->script_lang_index];
-    for ( i=0; sr[i].script!=0; ++i ) {
-	if ( script==0 || script==sr[i].script ) {
-	    for ( j=0; sr[i].langs[j]!=0; ++j )
-		if ( sr[i].langs[j]==DEFAULT_LANG )
-return( true );
-	    if ( script!=0 )
-return( false );
-	}
-    }
-return( false );
-}
-
-struct tagflag {
-    uint32 tag;
-    uint32 r2l;
-};
-
 static struct feature *aat_dumpmorx_substitutions(struct alltabs *at, SplineFont *sf,
-	FILE *temp, struct feature *features) {
-    int i, max, cnt, j, k, gcnt;
-    struct tagflag *subtags;
-    int ft, fs;
+	FILE *temp, struct feature *features, struct lookup_subtable *sub) {
+    int i, k, gcnt;
     SplineChar *sc, *msc, **glyphs;
     uint16 *maps;
     struct feature *cur;
     PST *pst;
 
-    max = 30; cnt = 0;
-    subtags = galloc(max*sizeof(sizeof(struct tagflag)));
-
-    for ( i=0; i<at->gi.gcnt; ++i ) if ( at->gi.bygid[i]!=-1 ) {
-	sc = sf->glyphs[at->gi.bygid[i]];
-	for ( pst=sc->possub; pst!=NULL; pst=pst->next ) if ( pst->type == pst_substitution ) {
-	    /* Arabic forms (marked by 'isol') are done with a contextual glyph */
-	    /*  substitution subtable (cursive connection) */
-	    if ( !HasDefaultLang(sf,pst,0) )
-	continue;
-	    if ( pst->tag!=CHR('i','s','o','l') &&
-		    pst->type!=pst_position &&
-		    pst->type!=pst_pair &&
-		    pst->type!=pst_lcaret &&
-		    (pst->macfeature || OTTagToMacFeature(pst->tag,&ft,&fs))) {
-		for ( j=cnt-1; j>=0 &&
-			(subtags[j].tag!=pst->tag || subtags[j].r2l!=(pst->flags&pst_r2l)); --j );
-		if ( j<0 ) {
-		    if ( cnt>=max )
-			subtags = grealloc(subtags,(max+=30)*sizeof(uint32));
-		    subtags[cnt].tag = pst->tag;
-		    subtags[cnt++].r2l = pst->flags & pst_r2l;
-		}
-	    }
-	}
-    }
-
-    if ( cnt!=0 ) {
-	for ( j=0; j<cnt; ++j ) {
-	    for ( k=0; k<2; ++k ) {
-		gcnt = 0;
-		for ( i=0; i<at->gi.gcnt; ++i ) if ( at->gi.bygid[i]!=-1 ) {
-		    sc = sf->glyphs[at->gi.bygid[i]];
-		    for ( pst=sc->possub; pst!=NULL &&
-			    (pst->tag!=subtags[j].tag ||
-			     (pst->flags&pst_r2l) != subtags[j].r2l ||
-			     pst->type==pst_position || pst->type==pst_pair ||
-			     pst->type==pst_lcaret ||
-			     !HasDefaultLang(sf,pst,0)); pst=pst->next );
-		    if ( pst!=NULL ) {
-			if ( k==1 ) {
-			    msc = SFGetChar(sf,-1,pst->u.subs.variant);
-			    glyphs[gcnt] = sc;
-			    if ( msc!=NULL && msc->ttf_glyph!=-1 ) {
-			        maps[gcnt++] = msc->ttf_glyph;
-			    } else if ( msc==NULL &&
-				    strcmp(pst->u.subs.variant,MAC_DELETED_GLYPH_NAME)==0 ) {
-			        maps[gcnt++] = 0xffff;
-			    }
-			} else
-			    ++gcnt;
+    for ( k=0; k<2; ++k ) {
+	gcnt = 0;
+	for ( i=0; i<at->gi.gcnt; ++i ) if ( at->gi.bygid[i]!=-1 ) {
+	    sc = sf->glyphs[at->gi.bygid[i]];
+	    for ( pst=sc->possub; pst!=NULL && pst->subtable!=sub; pst=pst->next );
+	    if ( pst!=NULL ) {
+		if ( k==1 ) {
+		    msc = SFGetChar(sf,-1,pst->u.subs.variant);
+		    glyphs[gcnt] = sc;
+		    if ( msc!=NULL && msc->ttf_glyph!=-1 ) {
+			maps[gcnt++] = msc->ttf_glyph;
+		    } else if ( msc==NULL &&
+			    strcmp(pst->u.subs.variant,MAC_DELETED_GLYPH_NAME)==0 ) {
+			maps[gcnt++] = 0xffff;
 		    }
-		}
-		if ( k==0 ) {
-		    if ( gcnt==0 )
-	    break;
-		    glyphs = galloc((gcnt+1)*sizeof(SplineChar *));
-		    maps = galloc((gcnt+1)*sizeof(uint16));
-		} else {
-		    glyphs[gcnt] = NULL; maps[gcnt] = 0;
-		}
+		} else
+		    ++gcnt;
 	    }
+	}
+	if ( k==0 ) {
 	    if ( gcnt==0 )
-	continue;
-	    cur = featureFromTag(sf,subtags[j].tag);
-	    cur->next = features;
-	    cur->r2l = subtags[j].r2l ? true : false;
-	    features = cur;
-	    cur->subtable_type = 4;
-	    cur->feature_start = ftell(temp);
-	    morx_dumpSubsFeature(temp,glyphs,maps,gcnt);
-	    if ( (ftell(temp)-cur->feature_start)&1 )
-		putc('\0',temp);
-	    if ( (ftell(temp)-cur->feature_start)&2 )
-		putshort(temp,0);
-	    cur->feature_len = ftell(temp)-cur->feature_start;
-	    free(glyphs); free(maps);
+return( features );
+	    glyphs = galloc((gcnt+1)*sizeof(SplineChar *));
+	    maps = galloc((gcnt+1)*sizeof(uint16));
+	} else {
+	    glyphs[gcnt] = NULL; maps[gcnt] = 0;
 	}
     }
-    free(subtags);
+
+    cur = featureFromSubtable(sf,sub);
+    cur->next = features;
+    cur->r2l = sub->lookup->lookup_flags&pst_r2l ? true : false;
+    features = cur;
+    cur->subtable_type = 4;
+    cur->feature_start = ftell(temp);
+    morx_dumpSubsFeature(temp,glyphs,maps,gcnt);
+    if ( (ftell(temp)-cur->feature_start)&1 )
+	putc('\0',temp);
+    if ( (ftell(temp)-cur->feature_start)&2 )
+	putshort(temp,0);
+    cur->feature_len = ftell(temp)-cur->feature_start;
+    free(glyphs); free(maps);
 return( features);
 }
 
-static LigList *LigListMatchOtfTag(SplineFont *sf,LigList *ligs,uint32 tag,
-	int r2l) {
+static LigList *LigListMatchSubtable(SplineFont *sf,LigList *ligs,
+	struct lookup_subtable *sub) {
     LigList *l;
 
     for ( l=ligs; l!=NULL; l=l->next )
-	if ( l->lig->tag == tag && r2l == (l->lig->flags & pst_r2l) &&
-		HasDefaultLang(sf,l->lig,0))
+	if ( l->lig->subtable==sub )
 return( l );
 return( NULL );
 }
@@ -752,7 +669,7 @@ return( false );
 struct transition { uint16 next_state, dontconsume, ismark, trans_ent; LigList *l; };
 struct trans_entries { uint16 next_state, flags, act_index; LigList *l; };
 static void morx_dumpLigaFeature(FILE *temp,SplineChar **glyphs,int gcnt,
-	uint32 otf_tag, struct alltabs *at, SplineFont *sf,
+	struct lookup_subtable *sub, struct alltabs *at, SplineFont *sf,
 	int ignoremarks) {
     LigList *l;
     struct splinecharlist *comp;
@@ -775,7 +692,7 @@ static void morx_dumpLigaFeature(FILE *temp,SplineChar **glyphs,int gcnt,
     /* figure out the classes (one for each character used to make a lig) */
     for ( i=0; i<gcnt; ++i ) {
 	used[glyphs[i]->ttf_glyph] = true;
-	for ( l=glyphs[i]->ligofme; l!=NULL; l=l->next ) if ( l->lig->tag==otf_tag ) {
+	for ( l=glyphs[i]->ligofme; l!=NULL; l=l->next ) if ( l->lig->subtable==sub ) {
 	    for ( comp = l->components; comp!=NULL; comp=comp->next )
 		used[comp->sc->ttf_glyph] = true;
 	}
@@ -837,7 +754,7 @@ static void morx_dumpLigaFeature(FILE *temp,SplineChar **glyphs,int gcnt,
 	states[0][used[glyphs[i]->ttf_glyph]].next_state = state_cnt;
 	states[1][used[glyphs[i]->ttf_glyph]].next_state = state_cnt;
 	states[state_cnt++] = gcalloc(class,sizeof(struct transition));
-	for ( l=glyphs[i]->ligofme; l!=NULL; l=l->next ) if ( l->lig->tag==otf_tag ) {
+	for ( l=glyphs[i]->ligofme; l!=NULL; l=l->next ) if ( l->lig->subtable==sub ) {
 	    if ( l->ccnt > maxccnt ) maxccnt = l->ccnt;
 	    last = base;
 	    for ( comp = l->components; comp!=NULL; comp=comp->next ) {
@@ -980,93 +897,58 @@ static void morx_dumpLigaFeature(FILE *temp,SplineChar **glyphs,int gcnt,
 }
 
 static struct feature *aat_dumpmorx_ligatures(struct alltabs *at, SplineFont *sf,
-	FILE *temp, struct feature *features) {
-    int i, max, cnt, j, k, gcnt;
-    struct tagflag *ligtags;
-    int ft, fs;
+	FILE *temp, struct feature *features, struct lookup_subtable *sub) {
+    int i, k, gcnt;
     SplineChar *sc, *ssc, **glyphs;
     struct feature *cur;
     LigList *l;
 
-    SFLigaturePrepare(sf);
-
-    max = 30; cnt = 0;
-    ligtags = galloc(max*sizeof(struct tagflag));
-
-    for ( i=0; i<at->gi.gcnt; ++i ) if ( at->gi.bygid[i]!=-1 ) {
-	sc = sf->glyphs[at->gi.bygid[i]];
-	for ( l=sc->ligofme; l!=NULL; l=l->next ) {
-	    if ( HasDefaultLang(sf,l->lig,0) &&
-		    (l->lig->macfeature || OTTagToMacFeature(l->lig->tag,&ft,&fs))) {
-		for ( j=cnt-1; j>=0 &&
-			(ligtags[j].tag!=l->lig->tag || ligtags[j].r2l!=(l->lig->flags&pst_r2l));
-			--j );
-		if ( j<0 ) {
-		    if ( cnt>=max )
-			ligtags = grealloc(ligtags,(max+=30)*sizeof(struct tagflag));
-		    ligtags[cnt].tag = l->lig->tag;
-		    ligtags[cnt++].r2l = l->lig->flags & pst_r2l;
-		}
-	    }
-	}
-    }
-    if ( cnt==0 ) {
-	free( ligtags );
-	SFLigatureCleanup(sf);
-return( features);
-    }
-
     glyphs = galloc((at->maxp.numGlyphs+1)*sizeof(SplineChar *));
-    for ( j=0; j<cnt; ++j ) {
-	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
-	    sf->glyphs[i]->ticked = false;
-	for ( i=0; i<at->gi.gcnt; ++i )
-		if ( at->gi.bygid[i]!=-1 && !(sc=sf->glyphs[at->gi.bygid[i]])->ticked &&
-			(l = LigListMatchOtfTag(sf,sc->ligofme,ligtags[j].tag,ligtags[j].r2l))!=NULL ) {
-	    uint32 script = SCScriptFromUnicode(sc);
-	    int ignoremarks = l->lig->flags & pst_ignorecombiningmarks ? 1 : 0 ;
-	    for ( k=i, gcnt=0; k<at->gi.gcnt; ++k )
-		    if ( at->gi.bygid[k]!=-1 &&
-			    (ssc=sf->glyphs[at->gi.bygid[k]])!=NULL && !ssc->ticked &&
-			    SCScriptFromUnicode(ssc) == script &&
-			    LigListMatchOtfTag(sf,ssc->ligofme,ligtags[j].tag,ligtags[j].r2l)) {
-		glyphs[gcnt++] = ssc;
-		ssc->ticked = true;
-	    }
-	    glyphs[gcnt] = NULL;
-	    cur = featureFromTag(sf,ligtags[j].tag);
-	    cur->next = features;
-	    features = cur;
-	    cur->subtable_type = 2;		/* ligature */
-	    cur->feature_start = ftell(temp);
-	    morx_dumpLigaFeature(temp,glyphs,gcnt,ligtags[j].tag,at,sf,ignoremarks);
-	    if ( (ftell(temp)-cur->feature_start)&1 )
-		putc('\0',temp);
-	    if ( (ftell(temp)-cur->feature_start)&2 )
-		putshort(temp,0);
-	    cur->feature_len = ftell(temp)-cur->feature_start;
-	    cur->r2l = ligtags[j].r2l ? true : false;
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
+	sf->glyphs[i]->ticked = false;
+
+    for ( i=0; i<at->gi.gcnt; ++i )
+	    if ( at->gi.bygid[i]!=-1 && !(sc=sf->glyphs[at->gi.bygid[i]])->ticked &&
+		    (l = LigListMatchSubtable(sf,sc->ligofme,sub))!=NULL ) {
+	int ignoremarks = sub->lookup->lookup_flags & pst_ignorecombiningmarks ? 1 : 0 ;
+	for ( k=i, gcnt=0; k<at->gi.gcnt; ++k )
+		if ( at->gi.bygid[k]!=-1 &&
+			(ssc=sf->glyphs[at->gi.bygid[k]])!=NULL && !ssc->ticked &&
+			LigListMatchSubtable(sf,ssc->ligofme,sub)) {
+	    glyphs[gcnt++] = ssc;
+	    ssc->ticked = true;
 	}
+	glyphs[gcnt] = NULL;
+	cur = featureFromSubtable(sf,sub);
+	cur->next = features;
+	features = cur;
+	cur->subtable_type = 2;		/* ligature */
+	cur->feature_start = ftell(temp);
+	morx_dumpLigaFeature(temp,glyphs,gcnt,sub,at,sf,ignoremarks);
+	if ( (ftell(temp)-cur->feature_start)&1 )
+	    putc('\0',temp);
+	if ( (ftell(temp)-cur->feature_start)&2 )
+	    putshort(temp,0);
+	cur->feature_len = ftell(temp)-cur->feature_start;
+	cur->r2l = sub->lookup->lookup_flags&pst_r2l ? true : false;
     }
 
     free(glyphs);
-    free(ligtags);
-    SFLigatureCleanup(sf);
 return( features);
 }
 
-static void morx_dumpnestedsubs(FILE *temp,SplineFont *sf,uint32 tag,struct glyphinfo *gi) {
+static void morx_dumpnestedsubs(FILE *temp,SplineFont *sf,OTLookup *otl,struct glyphinfo *gi) {
     int i, j, gcnt;
     PST *pst;
     SplineChar **glyphs, *sc;
     uint16 *map;
+    struct lookup_subtable *sub = otl->subtables;	/* Mac can't have more than one subtable/lookup */
 
     for ( j=0; j<2; ++j ) {
 	gcnt = 0;
 	for ( i = 0; i<gi->gcnt; ++i ) if ( gi->bygid[i]!=-1 ) {
 	    for ( pst=sf->glyphs[gi->bygid[i]]->possub;
-		    pst!=NULL && (pst->tag!=tag || pst->script_lang_index!=SLI_NESTED);
-		    pst=pst->next );
+		    pst!=NULL && pst->subtable!=sub;  pst=pst->next );
 	    if ( pst!=NULL && pst->type==pst_substitution &&
 		    (sc=SFGetChar(sf,-1,pst->u.subs.variant))!=NULL &&
 		    sc->ttf_glyph!=-1 ) {
@@ -1121,7 +1003,7 @@ static int morx_dumpASM(FILE *temp,ASM *sm, struct alltabs *at, SplineFont *sf )
     SplineChar **glyphs, *sc;
     int stcnt, tcnt;
     struct ins { char *names; uint16 len,pos; uint16 *glyphs; } *subsins=NULL;
-    uint32 *substags=NULL;
+    OTLookup **subslookups=NULL;
     uint32 start, here, substable_pos, state_offset;
     struct transdata { uint16 transition, mark_index, cur_index; } *transdata;
     struct trans { uint16 ns, flags, mi, ci; } *trans;
@@ -1159,26 +1041,26 @@ static int morx_dumpASM(FILE *temp,ASM *sm, struct alltabs *at, SplineFont *sf )
     /* Give each subs tab an index into the mac's substitution lookups */
     transdata = gcalloc(sm->state_cnt*sm->class_cnt,sizeof(struct transdata));
     stcnt = 0;
-    substags = NULL; subsins = NULL;
+    subslookups = NULL; subsins = NULL;
     if ( sm->type==asm_context ) {
-	substags = galloc(2*sm->state_cnt*sm->class_cnt*sizeof(uint32));
+	subslookups = galloc(2*sm->state_cnt*sm->class_cnt*sizeof(OTLookup));
 	for ( j=0; j<sm->state_cnt*sm->class_cnt; ++j ) {
 	    struct asm_state *this = &sm->state[j];
 	    transdata[j].mark_index = transdata[j].cur_index = 0xffff;
-	    if ( this->u.context.mark_tag!=0 ) {
+	    if ( this->u.context.mark_lookup!=NULL ) {
 		for ( i=0; i<stcnt; ++i )
-		    if ( substags[i]==this->u.context.mark_tag )
+		    if ( subslookups[i]==this->u.context.mark_lookup )
 		break;
 		if ( i==stcnt )
-		    substags[stcnt++] = this->u.context.mark_tag;
+		    subslookups[stcnt++] = this->u.context.mark_lookup;
 		transdata[j].mark_index = i;
 	    }
-	    if ( this->u.context.cur_tag!=0 ) {
+	    if ( this->u.context.cur_lookup!=NULL ) {
 		for ( i=0; i<stcnt; ++i )
-		    if ( substags[i]==this->u.context.cur_tag )
+		    if ( subslookups[i]==this->u.context.cur_lookup )
 		break;
 		if ( i==stcnt )
-		    substags[stcnt++] = this->u.context.cur_tag;
+		    subslookups[stcnt++] = this->u.context.cur_lookup;
 		transdata[j].cur_index = i;
 	    }
 	}
@@ -1353,9 +1235,9 @@ static int morx_dumpASM(FILE *temp,ASM *sm, struct alltabs *at, SplineFont *sf )
 	    fseek(temp,substable_pos+i*sizeof(uint32),SEEK_SET);
 	    putlong(temp,here-substable_pos);
 	    fseek(temp,0,SEEK_END);
-	    morx_dumpnestedsubs(temp,sf,substags[i],&at->gi);
+	    morx_dumpnestedsubs(temp,sf,subslookups[i],&at->gi);
 	}
-	free(substags);
+	free(subslookups);
     } else if ( sm->type==asm_insert ) {
 	substable_pos = ftell(temp);
 	fseek(temp,start+4*sizeof(uint32),SEEK_SET);
@@ -1380,93 +1262,182 @@ return( true );
 }
 
 static struct feature *aat_dumpmorx_asm(struct alltabs *at, SplineFont *sf,
-	FILE *temp, struct feature *features) {
-    ASM *sm;
+	FILE *temp, struct feature *features, ASM *sm) {
     struct feature *cur;
 
-    for ( sm = sf->sm; sm!=NULL; sm=sm->next ) if ( sm->type!=asm_kern ) {
-	cur = chunkalloc(sizeof(struct feature));
-	if ( sm->opentype_tag==0 )
-	    cur->otftag = (sm->feature<<16)|sm->setting;
-	else
-	    cur->otftag = sm->opentype_tag;
-	cur->featureType = sm->feature;
-	cur->featureSetting = sm->setting;
-	cur->mf = FindMacFeature(sf,cur->featureType,&cur->smf);
-	cur->ms = FindMacSetting(sf,cur->featureType,cur->featureSetting,&cur->sms);
-	cur->needsOff = cur->mf!=NULL && !cur->mf->ismutex;
-	cur->vertOnly = sm->flags&0x8000?1:0;
-	cur->r2l = sm->flags&0x4000?1:0;
-	cur->subtable_type = sm->type;		/* contextual glyph subs */
-	cur->feature_start = ftell(temp);
-	if ( morx_dumpASM(temp,sm,at,sf)) {
-	    cur->next = features;
-	    features = cur;
-	    if ( (ftell(temp)-cur->feature_start)&1 )
-		putc('\0',temp);
-	    if ( (ftell(temp)-cur->feature_start)&2 )
-		putshort(temp,0);
-	    cur->feature_len = ftell(temp)-cur->feature_start;
-	} else
-	    chunkfree(cur,sizeof(struct feature));
-    }
+    cur = featureFromSubtable(sf,sm->subtable);
+    cur->vertOnly = sm->flags&0x8000?1:0;
+    cur->r2l = sm->flags&0x4000?1:0;
+    cur->subtable_type = sm->type;		/* contextual glyph subs */
+    cur->feature_start = ftell(temp);
+    if ( morx_dumpASM(temp,sm,at,sf)) {
+	cur->next = features;
+	features = cur;
+	if ( (ftell(temp)-cur->feature_start)&1 )
+	    putc('\0',temp);
+	if ( (ftell(temp)-cur->feature_start)&2 )
+	    putshort(temp,0);
+	cur->feature_len = ftell(temp)-cur->feature_start;
+    } else
+	chunkfree(cur,sizeof(struct feature));
 return( features);
 }
 
 static struct feature *aat_dumpmorx_cvtopentype(struct alltabs *at, SplineFont *sf,
-	FILE *temp, struct feature *features) {
-    FPST *fpst;
-    ASM *sm, *last=NULL;
-    int genbase;
-    struct sliflag *sliflags;
-    int featureType, featureSetting;
-    int i;
+	FILE *temp, struct feature *features, struct lookup_subtable *sub) {
+    ASM *sm;
 
-    if ( sf->cidmaster!=NULL )
-	sf = sf->cidmaster;
-    else if ( sf->mm!=NULL ) sf=sf->mm->normal;
-    genbase = sf->gentags.tt_cur;
-
-    for ( fpst=sf->possub; fpst!=NULL; fpst=fpst->next ) {
-	if ( FPSTisMacable(sf,fpst,true)) {
-	    sm = ASMFromFPST(sf,fpst,true);
-	    if ( sm!=NULL ) {
-		OTTagToMacFeature(fpst->tag,&featureType,&featureSetting);
-		sm->feature = featureType; sm->setting = featureSetting;
-		sm->opentype_tag = fpst->tag;
-		if ( last==NULL )
-		    sf->sm = sm;
-		else
-		    last->next = sm;
-		last = sm;
-	    }
+    if ( FPSTisMacable(sf,sub->fpst)) {
+	sm = ASMFromFPST(sf,sub->fpst,true);
+	if ( sm!=NULL ) {
+	    features = aat_dumpmorx_asm(at,sf,temp,features,sm);
+	    ASMFree(sm);
 	}
     }
+return( features );
+}
 
-    sliflags = NULL;
+static int IsOtfArabicFormFeature(OTLookup *otl) {
+    FeatureScriptLangList *fl;
+
+    for ( fl=otl->features; fl!=NULL; fl=fl->next ) {
+	if (( fl->featuretag == CHR('i','n','i','t') ||
+		fl->featuretag==CHR('m','e','d','i') ||
+		fl->featuretag==CHR('f','i','n','a') ||
+		fl->featuretag==CHR('i','s','o','l') ) &&
+		    scriptsHaveDefault(fl->scripts))
+return( true );
+    }
+return( false );
+}
+
+static int HasCursiveConnectionSM(SplineFont *sf) {
+    int featureType, featureSetting;
+    uint32 tag;
+    ASM *sm;
+
     if ( OTTagToMacFeature(CHR('i','s','o','l'),&featureType,&featureSetting) ) {
-	sliflags = SFGetFormsList(sf,true);
-	if ( sliflags!=NULL ) {
-	    for ( i=0; sliflags[i].sli!=0xffff; ++i ) {
-		sm = ASMFromOpenTypeForms(sf,sliflags[i].sli,sliflags[i].flags);
-		if ( sm!=NULL ) {
-		    sm->feature = featureType; sm->setting = featureSetting;
-		    sm->opentype_tag = CHR('i','s','o','l');
-		    if ( last==NULL )
-			sf->sm = sm;
-		    else
-			last->next = sm;
-		    last = sm;
+	tag = (featureType<<16) | featureSetting;
+	for ( sm = sf->sm; sm!=NULL; sm=sm->next ) {
+	    if ( sm->subtable->lookup->features->featuretag==tag )
+return( true );
+	}
+    }
+    for ( sm = sf->sm; sm!=NULL; sm=sm->next ) {
+	if ( sm->subtable->lookup->features->featuretag==CHR('i','s','o','l') )
+return( true );
+    }
+return( false );
+}
+
+static uint32 *FormedScripts(SplineFont *sf) {
+    OTLookup *otl;
+    uint32 *ret = NULL;
+    int scnt=0, smax=0;
+    FeatureScriptLangList *fl;
+    struct scriptlanglist *sl;
+    int i;
+
+    for ( otl= sf->gsub_lookups; otl!=NULL; otl=otl->next ) {
+	if ( otl->lookup_type == gsub_single ) {
+	    for ( fl=otl->features; fl!=NULL; fl=fl->next ) {
+		if ( fl->featuretag == CHR('i','n','i','t') ||
+			fl->featuretag==CHR('m','e','d','i') ||
+			fl->featuretag==CHR('f','i','n','a') ||
+			fl->featuretag==CHR('i','s','o','l') ) {
+		    for ( sl=fl->scripts; sl!=NULL; sl=sl->next ) {
+			for ( i=0; i<sl->lang_cnt; ++i ) {
+			    if ( (i<MAX_LANG ? sl->langs[i] : sl->morelangs[i-MAX_LANG])==DEFAULT_LANG ) {
+				if ( scnt<=smax )
+				    ret = grealloc(ret,(smax+=5)*sizeof(uint32));
+				ret[scnt++] = sl->script;
+			    }
+			}
+		    }
 		}
 	    }
 	}
     }
+    if ( scnt==0 )
+return( NULL );
+    if ( scnt<=smax )
+	ret = grealloc(ret,(smax+=1)*sizeof(uint32));
+    ret[scnt] = 0;
+return( ret );
+}
+    
+static int Macable(SplineFont *sf, OTLookup *otl) {
+    int ft, fs;
+    FeatureScriptLangList *features;
 
-    features = aat_dumpmorx_asm(at,sf,temp,features);
-    ASMFree(sf->sm); sf->sm = NULL;
-    RemoveGeneratedTagsAbove(sf,genbase);
-    free(sliflags);
+    switch ( otl->lookup_type ) {
+    /* These lookup types are mac only */
+      case kern_statemachine: case morx_indic: case morx_context: case morx_insert:
+return( true );
+    /* These lookup types or OpenType only */
+      case gsub_multiple: case gsub_alternate:
+      case gpos_single: case gpos_cursive: case gpos_mark2base:
+      case gpos_mark2ligature: case gpos_mark2mark:
+return( false );
+    /* These are OpenType only, but they might be convertable to a state */
+    /*  machine */
+      case gsub_context:
+      case gsub_contextchain: case gsub_reversecchain:
+      case gpos_context: case gpos_contextchain:
+	if ( sf->sm!=NULL )
+return( false );
+	/* Else fall through into the test on the feature tag */;
+    /* These two can be expressed in both, and might be either */
+      case gsub_single: case gsub_ligature: case gpos_pair:
+	for ( features = otl->features; features!=NULL; features = features->next ) {
+	    if ( features->ismac || OTTagToMacFeature(features->featuretag,&ft,&fs))
+return( true );
+	}
+    }
+return( false );
+}
+
+static struct feature *aat_dumpmorx_cvtopentypeforms(struct alltabs *at, SplineFont *sf,
+	FILE *temp, struct feature *features) {
+    ASM *sm;
+    int32 *scripts;
+    int featureType, featureSetting;
+    int i;
+    OTLookup *otl;
+
+    if ( sf->cidmaster!=NULL )
+	sf = sf->cidmaster;
+    else if ( sf->mm!=NULL ) sf=sf->mm->normal;
+
+    for ( otl=sf->gsub_lookups; otl!=NULL; otl=otl->next )
+	if ( Macable(sf,otl) && otl->lookup_type==gsub_single && IsOtfArabicFormFeature(otl))
+	    otl->ticked = true;
+
+    if ( OTTagToMacFeature(CHR('i','s','o','l'),&featureType,&featureSetting) ) {
+	scripts = FormedScripts(sf);
+	for ( i=0; scripts[i]!=0; ++i ) {
+	    sm = ASMFromOpenTypeForms(sf,scripts[i]);
+	    if ( sm!=NULL ) {
+		features = aat_dumpmorx_asm(at,sf,temp,features,sm);
+		ASMFree(sf->sm);
+	    }
+	}
+	free(scripts);
+    }
 return( features );
+}
+
+static struct feature *featuresReverse(struct feature *features) {
+    struct feature *p, *n;
+
+    p = NULL;
+    while ( features!=NULL ) {
+	n = features->next;
+	features->next = p;
+	p = features;
+	features = n;
+    }
+return( p );
 }
 
 static struct feature *featuresOrderByType(struct feature *features) {
@@ -1488,32 +1459,9 @@ return( features );
 	    all[j] = f;
 	}
     }
-#if 0
-    for ( i=0; i<cnt; ++i ) {
-	if ( all[i]->mf!=NULL && all[i]->mf->ismutex && !all[i]->needsOff ) {
-	    /* mutexes with just 2 choices don't always follow the rule that 0 is off */
-	    if (i==cnt-1 || all[i]->featureType!=all[i+1]->featureType )
-		all[i]->singleMutex = true;
-	    saw_default = false;
-	    j=i;
-	    while ( i<cnt-1 && all[i]->featureType==all[j]->featureType ) {
-		if ( all[i]->featureSetting==0 ) saw_default = true;
-		++i;
-	    }
-	    if ( i!=j ) --i;
-	    if ( !saw_default )
-		all[i]->singleMutex = true;
-	} else {
-	    j=i;
-	    while ( i<cnt-1 && all[i]->featureType==all[j]->featureType )
-		++i;
-	    if ( i!=j ) --i;
-	}
-    }
-#endif
     for ( i=0; i<cnt-1; ++i )
-	all[i]->next = all[i+1];
-    all[cnt-1]->next = NULL;
+	all[i]->nexttype = all[i+1];
+    all[cnt-1]->nexttype = NULL;
     features = all[0];
     free( all );
 return( features );
@@ -1525,11 +1473,11 @@ static struct feature *AddExclusiveNoops(SplineFont *sf, struct feature *feature
     /* mutually exclusive features need to have a setting which does nothing */
 
     for ( f=features; f!=NULL; f=n ) {
-	n= f->next;
+	n= f->nexttype;
 	if ( f->mf!=NULL && f->mf->ismutex ) {
 	    def = NULL;
 	    offFlags=0;
-	    for ( n=f; n!=NULL && n->featureType==f->featureType; n=n->next ) {
+	    for ( n=f; n!=NULL && n->featureType==f->featureType; n=n->nexttype ) {
 		if ( n->featureSetting==f->mf->default_setting )
 		    def = n;
 		offFlags |= n->flag;
@@ -1538,7 +1486,7 @@ static struct feature *AddExclusiveNoops(SplineFont *sf, struct feature *feature
 		if ( f==features )
 		    p = NULL;
 		else
-		    for ( p=features; p->next!=f; p=p->next );
+		    for ( p=features; p->nexttype!=f; p=p->nexttype );
 		t = chunkalloc(sizeof(struct feature));
 		*t = *f;
 		t->featureSetting = f->mf->default_setting;
@@ -1548,19 +1496,19 @@ static struct feature *AddExclusiveNoops(SplineFont *sf, struct feature *feature
 		if ( f==features )
 		    p = NULL;
 		else
-		    for ( p=features; p->next!=f; p=p->next );
+		    for ( p=features; p->nexttype!=f; p=p->nexttype );
 		n = f;
 		while ( n!=NULL && n->featureType==t->featureType && n->featureSetting<t->featureSetting ) {
 		    p = n;
-		    n = n->next;
+		    n = n->nexttype;
 		}
-		t->next = n;
+		t->nexttype = n;
 		if ( p==NULL )
 		    features = t;
 		else
-		    p->next = t;
+		    p->nexttype = t;
 		while ( n!=NULL && n->featureType==t->featureType )
-		    n=n->next;
+		    n=n->nexttype;
 	    }
 	}
     }
@@ -1592,7 +1540,6 @@ static void aat_dumpfeat(struct alltabs *at, SplineFont *sf, struct feature *fea
 
     if ( feature==NULL )
 return;
-    /*feature = reversefeatures(feature);*/
 
     fcnt = scnt = 0;
     for ( k=0; k<3; ++k ) {
@@ -1685,104 +1632,109 @@ return;
 	putshort(at->feat,0);
 }
 
-static int featuresAssignFlagsChains(struct feature *feature) {
-    int bit=0, cnt, chain = 0;
+static int featuresAssignFlagsChains(struct feature *features, struct feature *feature_by_type) {
+    int bit, cnt, chain, fcnt, i, mybit;
     struct feature *f, *n, *p;
+    uint16 chains_features[32];
+    uint32 chains_bitindex[32];		/* Index for bit of first setting of this feature */
 
-    if ( feature==NULL )
+    if ( features==NULL )
 return( 0 );
 
-    for ( f=feature; f!=NULL; f=n ) {
+    /* A feature may have several subtables which need not be contiguous in */
+    /*  the feature list */
+    /* Indeed we could have a feature in several different chains */
+    /* Sigh */
+    /* we figure out how many possible settings there are for each feature */
+    /*  and reserve that many bits for the feature in all chains in which it */
+    /*  occurs */
+    /* Note that here we count dummy settings (they need turn off bits) */
+    /*  so we use feature_by_type */
+    for ( f=feature_by_type; f!=NULL; f=n ) {
 	cnt=0;
-	p = f;
-	for ( n=f; n!=NULL && n->featureType==f->featureType; n=n->next ) {
-	    if ( n->featureSetting != p->featureSetting ) {
+	p = NULL;
+	for ( n=f; n!=NULL && n->featureType==f->featureType; n=n->nexttype ) {
+	    if ( p==NULL || n->featureSetting != p->featureSetting ) {
 		++cnt;
 		p = n;
 	    }
+	    n->setting_index = cnt-1;
 	}
-	if ( bit+cnt>=32 ) {
-	    ++chain;
-	    bit = 0;
-	}
-	for ( n=f; n!=NULL && n->featureType==f->featureType; ) {
-	    if ( n->dummyOff )
-		n=n->next;
-	    else {
-		p = n;
-		while ( n!=NULL && n->featureType==p->featureType &&
-			n->featureSetting == p->featureSetting ) {
-		    n->flag = 1<<bit;
-		    n->chain = chain;
-		    n = n->next;
-		}
-		++bit;
-	    }
-	}
+	for ( n=f; n!=NULL && n->featureType==f->featureType; n=n->nexttype )
+	    n->setting_cnt = cnt;
     }
-    for ( f=feature; f!=NULL; f=n ) {
+    /* When we counted flags we need to count the dummy features for turning  */
+    /*  things off. Those features live in features_by_type. When we put      */
+    /*  things in chains we want only the meaningful features, and we want    */
+    /*  them to be properly ordered. That we get from the "features" list     */
+    fcnt = 0; chain = 0; bit=0;
+    for ( f=features; f!=NULL; f=f->next ) {
+	for ( i=0; i<fcnt && chains_features[i]!=f->featureType; ++i );
+	if ( i==fcnt ) {
+	    if ( bit+f->setting_cnt>=32 ) {
+		++chain;
+		bit = 0;
+		fcnt = 0;
+	    }
+	    chains_features[fcnt] = f->featureType;
+	    chains_bitindex[fcnt++] = bit;
+	    mybit = bit;
+	    bit += f->setting_cnt;
+	} else
+	    mybit = chains_bitindex[i];
+	f->real_index = mybit+f->setting_index;
+	f->flag = 1<<f->real_index;
 	if ( f->mf!=NULL && f->mf->ismutex ) {
-	    int offFlags = 0;
-	    for ( n=f; n!=NULL && f->featureType==n->featureType; n=n->next )
-		offFlags |= n->flag;
-	    for ( n=f; n!=NULL && f->featureType==n->featureType; n=n->next )
-		n->offFlags = offFlags;
-	} else if ( f->next!=NULL && (f->featureSetting&1)==0 &&
-		f->next->featureType==f->featureType &&
-		f->next->featureSetting==f->featureSetting+1 ) {
-	    n = f->next;
-	    f->offFlags = n->flag;
-	    n->offFlags = f->flag;
-	    n = n->next;
+	    int off = (~((~0)<<f->setting_cnt))<<mybit;
+	    off &= !f->flag;
+	    f->offFlags = off;
 	} else {
-	    f->offFlags = 0;
-	    n = f->next;
+	    if ( f->featureSetting&1 ) {
+		for ( n=feature_by_type; n!=NULL &&
+			(n->featureType!=f->featureType || n->featureSetting!=f->featureSetting+1);
+			n=n->next );
+	    } else {
+		for ( n=feature_by_type; n!=NULL &&
+			(n->featureType!=f->featureType || n->featureSetting!=f->featureSetting+1);
+			n=n->next );
+	    }
+	    if ( n!=NULL )
+		f->offFlags = 1<<(mybit+n->setting_index);
+	    else
+		f->offFlags = 0;
 	}
+	f->chain = chain;
     }
 return( chain+1 );
 }
 
-static void morxDumpChain(struct alltabs *at,struct feature *features,int chain,
-	FILE *temp,struct table_ordering *ord) {
+static void morxDumpChain(struct alltabs *at,struct feature *features,
+	struct feature *features_by_type, int chain, FILE *temp) {
     uint32 def_flags=0;
     struct feature *f, *n;
-    int subcnt=0, scnt=0;
     uint32 chain_start, end;
     char *buf;
-    int len, tot, cnt;
-    struct feature *all[32], *ftemp;
-    int i,j;
+    int len, tot, fs_cnt, sub_cnt;
+    struct feature *all[32];
+    int i,offFlags;
 
-    for ( f=features, cnt=0; f!=NULL; f=n ) {
+    memset(all,0,sizeof(all));
+    for ( f=features, fs_cnt=sub_cnt=0; f!=NULL; f=f->next ) {
 	if ( f->chain==chain ) {
-	    for ( n=f; n!=NULL && n->featureType==f->featureType; n=n->next ) if ( !n->dummyOff ) {
-		all[cnt++] = n;
-		++subcnt;
-		if ( n->ms!=NULL && n->ms->initially_enabled )
-		    def_flags |= n->flag;
-		++scnt;
-		/* There might be several statemachines (or whatever) for the */
-		/*  same feature/setting. They don't get multiple entries */
-		while ( n->next!=NULL && n->next->featureType==n->featureType &&
-			n->next->featureSetting == n->featureSetting )
-		    n=n->next;
-		if ( n->needsOff ) {
-		    ++scnt;
-		    if ( n->next!=NULL && n->next->featureSetting==n->featureSetting+1 )
-			n = n->next;
-		} else if ( n->mf->ismutex )
-		    ++scnt;
+	    if ( all[f->real_index]==NULL ) {
+		int base = f->real_index-f->setting_index;
+		/* Note we use features_by_type here. It will have the default*/
+		/*  settings for features, and will be ordered nicely */
+		for ( n=features_by_type; n!=NULL; n=n->nexttype ) {
+		    if ( n->featureType==f->featureType && n->chain==chain ) {
+			n->nextsame = all[base+n->setting_index];
+			all[base+n->setting_index] = n;
+			if ( n->ms!=NULL && n->ms->initially_enabled )
+			    def_flags |= n->flag;
+		    }
+		}
 	    }
-	} else
-	    n = f->next;
-    }
-
-    if ( cnt>32 ) IError("Too many features in chain");
-    for ( i=0; i<cnt; ++i ) for ( j=i+1; j<cnt; ++j ) {
-	if ( TTFFeatureIndex(all[i]->otftag,ord,true)>TTFFeatureIndex(all[j]->otftag,ord,true)) {
-	    ftemp = all[i];
-	    all[i] = all[j];
-	    all[j] = ftemp;
+	    ++sub_cnt;
 	}
     }
 
@@ -1790,36 +1742,36 @@ static void morxDumpChain(struct alltabs *at,struct feature *features,int chain,
     chain_start = ftell(at->morx);
     putlong(at->morx,def_flags);
     putlong(at->morx,0);		/* Fix up length later */
-    putlong(at->morx,scnt+2);		/* extra for All Typo features */
-    putlong(at->morx,subcnt);		/* subtable cnt */
+    putlong(at->morx,0);		/* fix up feature count */
+    putlong(at->morx,sub_cnt);		/* subtable cnt */
 
     /* Features */
-    for ( f=features; f!=NULL; f=n ) {
-	if ( f->chain==chain ) {
-	    for ( n=f; n!=NULL && n->featureType==f->featureType; n=n->next ) if ( !n->dummyOff ) {
-		putshort(at->morx,n->featureType);
-		putshort(at->morx,n->featureSetting);
-		putlong(at->morx,n->flag);
-		putlong(at->morx,n->flag | ~n->offFlags);
-		while ( n->next!=NULL && n->next->featureType==n->featureType &&
-			n->next->featureSetting == n->featureSetting )
-		    n=n->next;
-		if ( n->needsOff ) {
-		    putshort(at->morx,n->featureType);
-		    putshort(at->morx,n->featureSetting+1);
-		} else if ( n->mf->ismutex ) {		    
-		    putshort(at->morx,n->featureType);
-		    putshort(at->morx,n->featureSetting==0?1:0);
-		} else
-	    continue;
-		putlong(at->morx,0);
-		putlong(at->morx,~n->offFlags & ~n->flag );
-		if ( n->needsOff && n->next!=NULL && n->featureSetting+1==n->next->featureSetting )
-		    n = n->next;
-	    }
-	} else
-	    n = f->next;
+    fs_cnt = 0;
+    for ( i=0; i<32; ++i ) if ( all[i]!=NULL ) {
+	putshort(at->morx,all[i]->featureType);
+	putshort(at->morx,all[i]->featureSetting);
+	putlong(at->morx,1<<i);
+	offFlags = all[i]->offFlags;
+	if ( i>all[i]->real_index )
+	    offFlags<<=(i-all[i]->real_index);
+	else if ( i<all[i]->real_index )
+	    offFlags>>=(all[i]->real_index-i);
+	putlong(at->morx,offFlags);
+	++fs_cnt;
+
+	if ( all[i]->needsOff && (i==31 || all[i+1]==NULL ||
+		all[i+1]->featureType!=all[i]->featureType ||
+		all[i+1]->featureSetting!=all[i]->featureSetting+1 )) {
+	    putshort(at->morx,all[i]->featureType);
+	    putshort(at->morx,all[i]->featureSetting+1);
+	    putlong(at->morx,0);
+	    putlong(at->morx,~all[i]->offFlags & ~all[i]->flag );
+	    ++fs_cnt;
+	}
+	/* I used to have code to output the default setting of a mutex */
+	/*  but I should already have put that in the feature list */
     }
+    /* The feature list of every chain must end with these two features */
     putshort(at->morx,0);		/* All Typo Features */
     putshort(at->morx,0);		/* All Features */
     putlong(at->morx,0xffffffff);	/* enable */
@@ -1828,11 +1780,11 @@ static void morxDumpChain(struct alltabs *at,struct feature *features,int chain,
     putshort(at->morx,1);		/* No Features */
     putlong(at->morx,0);		/* enable */
     putlong(at->morx,0);		/* disable */
+    fs_cnt += 2;
 
     buf = galloc(16*1024);
     /* Subtables */
-    /* Ordered by tag */
-    for ( i=0; i<cnt; ++i ) if ( (f=all[i])->chain==chain ) {
+    for ( f=features; f!=NULL; f=f->next ) if ( f->chain==chain ) {
 	putlong(at->morx,f->feature_len+12);		/* Size of header needs to be added */
 	putlong(at->morx,(f->vertOnly?0x80000000:f->r2l?0x40000000:0) | f->subtable_type);
 	putlong(at->morx,f->flag);
@@ -1860,38 +1812,79 @@ static void morxDumpChain(struct alltabs *at,struct feature *features,int chain,
     end = ftell(at->morx);
     fseek(at->morx,chain_start+4,SEEK_SET);
     putlong(at->morx,end-chain_start);
+    putlong(at->morx,fs_cnt);
     fseek(at->morx,0,SEEK_END);
 }
 
 void aat_dumpmorx(struct alltabs *at, SplineFont *sf) {
     FILE *temp = tmpfile();
-    struct feature *features = NULL;
+    struct feature *features = NULL, *features_by_type;
     int nchains, i;
-    struct table_ordering *ord;
+    OTLookup *otl;
+    struct lookup_subtable *sub;
 
-    features = aat_dumpmorx_substitutions(at,sf,temp,features);
-    features = aat_dumpmorx_ligatures(at,sf,temp,features);
-    if ( sf->sm!=NULL )
-	features = aat_dumpmorx_asm(at,sf,temp,features);
-    else
-	features = aat_dumpmorx_cvtopentype(at,sf,temp,features);
+    /* Arabic Form features all need to be merged together and formed into */
+    /*  a cursive connection state machine. So the first time we see one of */
+    /*  we handle all of them. After that we ignore all of them. Note: if */
+    /*  OpenType has them happening in different orders, that information */
+    /*  will be lost. All will be processed at once. */
+    for ( otl = sf->gsub_lookups; otl!=NULL; otl=otl->next )
+	otl->ticked = false;
+
+    SFLigaturePrepare(sf);
+
+    /* Retain the same lookup ordering */
+    for ( otl = sf->gsub_lookups; otl!=NULL; otl=otl->next ) {
+	if ( !Macable(sf,otl))
+    continue;
+	if ( otl->lookup_type==gsub_single && IsOtfArabicFormFeature(otl) ) {
+	    if ( otl->ticked )
+		/* Already processed */;
+	    else if ( HasCursiveConnectionSM(sf) )
+		/* Skip the OpenType conversion and use the native state machine */;
+	    else
+		features = aat_dumpmorx_cvtopentypeforms(at,sf,temp,features);
+	} else {
+	    for ( sub=otl->subtables; sub!=NULL; sub=sub->next ) {
+		switch ( otl->lookup_type ) {
+		  case gsub_single:
+		    features = aat_dumpmorx_substitutions(at,sf,temp,features,sub);
+		  break;
+		  case gsub_ligature:
+		    features = aat_dumpmorx_ligatures(at,sf,temp,features,sub);
+		  break;
+		  case morx_indic: case morx_context: case morx_insert:
+		    features = aat_dumpmorx_asm(at,sf,temp,features,sub->sm);
+		  break;
+		  default:
+		    if ( sf->sm==NULL )
+			features = aat_dumpmorx_cvtopentype(at,sf,temp,features,sub);
+		}
+	    }
+	}
+    }
+
+    SFLigatureCleanup(sf);
+
     if ( features==NULL ) {
 	fclose(temp);
 return;
     }
-    features = featuresOrderByType(features);
-    features = AddExclusiveNoops(sf,features);
-    aat_dumpfeat(at, sf, features);
-    nchains = featuresAssignFlagsChains(features);
+    /* The features are in reverse execution order */
+    features = featuresReverse(features);
+    /* But the feature table requires them in numeric order */
+    features_by_type = featuresOrderByType(features);
+    features_by_type = AddExclusiveNoops(sf,features_by_type);
+    aat_dumpfeat(at, sf, features_by_type);
+    nchains = featuresAssignFlagsChains(features,features_by_type);
 
     at->morx = tmpfile();
     putlong(at->morx,0x00020000);
     putlong(at->morx,nchains);
-    for ( ord = sf->orders; ord!=NULL && ord->table_tag!=CHR('G','S','U','B'); ord = ord->next );
     for ( i=0; i<nchains; ++i )
-	morxDumpChain(at,features,i,temp,ord);
+	morxDumpChain(at,features,features_by_type,i,temp);
     fclose(temp);
-    morxfeaturesfree(features);
+    morxfeaturesfree(features_by_type);
     
     at->morxlen = ftell(at->morx);
     if ( at->morxlen&1 )
@@ -1904,18 +1897,17 @@ return;
 /* *************************    The 'opbd' table    ************************* */
 /* ************************************************************************** */
 
-
 int haslrbounds(SplineChar *sc, PST **left, PST **right) {
     PST *pst;
 
     *left = *right = NULL;
     for ( pst=sc->possub; pst!=NULL ; pst=pst->next ) {
 	if ( pst->type == pst_position ) {
-	    if ( pst->tag==CHR('l','f','b','d') ) {
+	    if ( PSTHasTag(pst,CHR('l','f','b','d')) ) {
 		*left = pst;
 		if ( *right )
 return( true );
-	    } else if ( pst->tag==CHR('r','t','b','d') ) {
+	    } else if ( PSTHasTag(pst,CHR('r','t','b','d')) ) {
 		*right = pst;
 		if ( *left )
 return( true );
@@ -2074,7 +2066,7 @@ uint16 *props_array(SplineFont *sf,struct glyphinfo *gi) {
 		}
 	    }
 	    if ( !isbracket ) {
-		for ( pst=sc->possub; pst!=NULL && pst->tag!=CHR('r','t','l','a'); pst=pst->next );
+		for ( pst=sc->possub; pst!=NULL && PSTHasTag(pst,CHR('r','t','l','a')); pst=pst->next );
 		if ( pst!=NULL && pst->type==pst_substitution &&
 			(bsc=SFGetChar(sf,-1,pst->u.subs.variant))!=NULL &&
 			bsc->ttf_glyph!=-1 && bsc->ttf_glyph-sc->ttf_glyph>-8 && bsc->ttf_glyph-sc->ttf_glyph<8 ) {
@@ -2204,7 +2196,6 @@ static struct feature *featureFromTag(SplineFont *sf, uint32 tag ) {
     break;
 
     feat = chunkalloc(sizeof(struct feature));
-    feat->otftag = tag;
     if ( msn[i].otf_tag!=0 ) {
 	feat->featureType = msn[i].mac_feature_type;
 	feat->featureSetting = msn[i].mac_feature_setting;
@@ -2217,4 +2208,66 @@ static struct feature *featureFromTag(SplineFont *sf, uint32 tag ) {
     feat->needsOff = feat->mf!=NULL && !feat->mf->ismutex;
     feat->vertOnly = tag==CHR('v','r','t','2') || tag==CHR('v','k','n','a');
 return( feat );
+}
+
+static struct feature *featureFromSubtable(SplineFont *sf, struct lookup_subtable *sub ) {
+    FeatureScriptLangList *fl;
+    int ft, fs;
+
+    for ( fl=sub->lookup->features; fl!=NULL; fl=fl->next ) {
+	if ( fl->ismac )
+    break;
+    }
+    if ( fl==NULL ) {
+	for ( fl=sub->lookup->features; fl!=NULL; fl=fl->next ) {
+	    if ( OTTagToMacFeature(fl->featuretag,&ft,&fs) )
+	break;
+	}
+	if ( fl==NULL )
+	    IError("Could not find a mac feature");
+    }
+return( featureFromTag(sf,fl->featuretag));
+}
+    
+static int PSTHasTag(PST *pst, uint32 tag) {
+    FeatureScriptLangList *fl;
+
+    if ( pst->subtable==NULL )
+return( false );
+    for ( fl=pst->subtable->lookup->features; fl!=NULL; fl=fl->next )
+	if ( fl->featuretag == tag )
+return( true );
+
+return( false );
+}
+
+int scriptsHaveDefault(struct scriptlanglist *sl) {
+    int i;
+
+    for ( ; sl!=NULL; sl=sl->next ) {
+	for ( i=0; i<sl->lang_cnt; ++i ) {
+	    if ( (i<MAX_LANG && sl->langs[i]==DEFAULT_LANG) ||
+		    (i>=MAX_LANG && sl->morelangs[i-MAX_LANG]==DEFAULT_LANG)) {
+return( true );
+	    }
+	}
+    }
+return( false );
+}
+
+int LookupHasDefault(OTLookup *otl) {
+    FeatureScriptLangList *feats;
+
+    if ( otl->def_lang_checked )
+return( otl->def_lang_found );
+
+    otl->def_lang_checked = true;
+    for ( feats=otl->features; feats!=NULL; feats = feats->next ) {
+	if ( scriptsHaveDefault(feats->scripts) ) {
+	    otl->def_lang_found = true;
+return( true );
+	}
+    }
+    otl->def_lang_found = false;
+return( false );
 }

@@ -63,62 +63,161 @@ static RefChar *RefCharsCopy(RefChar *ref) {
 return( rhead );
 }
 
+static OTLookup *ConvertLookup(struct sfmergecontext *mc,OTLookup *otl) {
+    int l;
+    OTLookup *newotl;
 
-static int FixupSLI(int sli,SplineFont *from,SplineFont *to) {
-    int i,j,k;
+    if ( mc==NULL || mc->sf_from==mc->sf_to )
+return( otl );		/* No translation needed */
 
-    if ( from->cidmaster ) from = from->cidmaster;
-    else if ( from->mm!=NULL ) from = from->mm->normal;
-    if ( to->cidmaster ) to = to->cidmaster;
-    else if ( to->mm!=NULL ) to = to->mm->normal;
-    if ( from==to )
-return( sli );
+    for ( l=0; l<mc->lcnt; ++l ) {
+	if ( mc->lks[l].from == otl )
+    break;
+    }
+    if ( l==mc->lcnt )
+return( NULL );
+    if ( mc->lks[l].to!=NULL )
+return( mc->lks[l].to );
 
-    /* does the new font have exactly what we want? */
-    i = 0;
-    if ( to->script_lang!=NULL ) {
-	for ( i=0; to->script_lang[i]!=NULL; ++i ) {
-	    for ( j=0; to->script_lang[i][j].script!=0 &&
-		    to->script_lang[i][j].script==from->script_lang[sli][j].script; ++j ) {
-		for ( k=0; to->script_lang[i][j].langs[k]!=0 &&
-			to->script_lang[i][j].langs[k]==from->script_lang[sli][j].langs[k]; ++k );
-		if ( to->script_lang[i][j].langs[k]!=0 || from->script_lang[sli][j].langs[k]!=0 )
-	    break;
+    mc->lks[l].to = newotl = chunkalloc(sizeof(struct lookup_subtable));
+    newotl->lookup_name = strconcat(mc->prefix,otl->lookup_name);
+    newotl->lookup_type = otl->lookup_type;
+    newotl->lookup_flags = otl->lookup_flags;
+    newotl->features = FeatureListCopy(otl->features);
+    newotl->store_in_afm = otl->store_in_afm;
+return( newotl );
+}
+
+static struct lookup_subtable *ConvertSubtable(struct sfmergecontext *mc,struct lookup_subtable *sub) {
+    int s;
+    struct lookup_subtable *newsub;
+
+    if ( mc==NULL || mc->sf_from==mc->sf_to )
+return( sub );		/* No translation needed */
+    if ( mc->prefix==NULL ) {
+	int lcnt, scnt;
+	OTLookup *otl;
+	struct lookup_subtable *subs;
+	int isgpos, doit;
+	char *temp;
+
+	/* Not initialized */
+	if ( mc->sf_from->cidmaster ) mc->sf_from = mc->sf_from->cidmaster;
+	else if ( mc->sf_from->mm!=NULL ) mc->sf_from = mc->sf_from->mm->normal;
+	if ( mc->sf_to->cidmaster ) mc->sf_to = mc->sf_to->cidmaster;
+	else if ( mc->sf_to->mm!=NULL ) mc->sf_to = mc->sf_to->mm->normal;
+	if ( mc->sf_from == mc->sf_to )
+return( sub );
+	mc->prefix = strconcat(mc->sf_from->fontname,"-");
+	for ( doit = 0; doit<2; ++doit ) {
+	    lcnt = scnt = 0;
+	    for ( isgpos=0; isgpos<2; ++isgpos ) {
+		for ( otl = isgpos ? mc->sf_from->gpos_lookups : mc->sf_from->gsub_lookups; otl!=NULL; otl=otl->next ) {
+		    if ( doit ) {
+			mc->lks[lcnt].from = otl;
+			temp = strconcat(mc->prefix,otl->lookup_name);
+			mc->lks[lcnt].to = SFFindLookup(mc->sf_to,temp);
+			free(temp);
+			mc->lks[lcnt].old = mc->lks[lcnt].to!=NULL;
+		    }
+		    ++lcnt;
+		    for ( subs=otl->subtables; subs!=NULL; subs=subs->next ) {
+			if ( doit ) {
+			    mc->subs[scnt].from = subs;
+			    temp = strconcat(mc->prefix,subs->subtable_name);
+			    mc->subs[scnt].to = SFFindLookupSubtable(mc->sf_to,temp);
+			    free(temp);
+			    mc->subs[scnt].old = mc->subs[scnt].to!=NULL;
+			}
+			++scnt;
+		    }
+		}
 	    }
-	    if ( to->script_lang[i][j].script==0 && from->script_lang[sli][j].script==0 )
-return( i );
+	    if ( !doit ) {
+		mc->lcnt = lcnt; mc->scnt = scnt;
+		mc->lks = gcalloc(lcnt,sizeof(struct lookup_cvt));
+		mc->subs = gcalloc(scnt,sizeof(struct sub_cvt));
+	    }
 	}
     }
 
-    /* Add it */
-    if ( to->script_lang==NULL )
-	to->script_lang = galloc(2*sizeof(struct script_record *));
-    else
-	to->script_lang = grealloc(to->script_lang,(i+2)*sizeof(struct script_record *));
-    to->sli_cnt = i+1;
-    to->script_lang[i+1] = NULL;
-    for ( j=0; from->script_lang[sli][j].script!=0; ++j );
-    to->script_lang[i] = galloc((j+1)*sizeof(struct script_record));
-    for ( j=0; from->script_lang[sli][j].script!=0; ++j ) {
-	to->script_lang[i][j].script = from->script_lang[sli][j].script;
-	for ( k=0; from->script_lang[sli][j].langs[k]!=0; ++k );
-	to->script_lang[i][j].langs = galloc((k+1)*sizeof(uint32));
-	for ( k=0; from->script_lang[sli][j].langs[k]!=0; ++k )
-	    to->script_lang[i][j].langs[k] = from->script_lang[sli][j].langs[k];
-	to->script_lang[i][j].langs[k] = 0;
+    for ( s=0; s<mc->scnt; ++s ) {
+	if ( mc->subs[s].from == sub )
+    break;
     }
-    to->script_lang[i][j].script = 0;
-return( i );
+    if ( s==mc->scnt )
+return( NULL );
+    if ( mc->subs[s].to!=NULL )
+return( mc->subs[s].to );
+
+    mc->subs[s].to = newsub = chunkalloc(sizeof(struct lookup_subtable));
+    newsub->subtable_name = strconcat(mc->prefix,sub->subtable_name);
+    newsub->lookup = ConvertLookup(mc,sub->lookup);
+    newsub->anchor_classes = sub->anchor_classes;
+    newsub->per_glyph_pst_or_kern = sub->per_glyph_pst_or_kern;
+return( newsub );
 }
 
-PST *PSTCopy(PST *base,SplineChar *sc,SplineFont *from) {
+void SFFinishMergeContext(struct sfmergecontext *mc) {
+    int l,s,slast, isgpos;
+    OTLookup *otl, *last;
+    struct lookup_subtable *sub_last;
+
+    if ( mc->prefix==NULL )		/* Nothing to do, never initialized, no lookups needed */
+return;
+
+    /* Get all the subtables in the right order */
+    for ( s=0; s<mc->scnt; s=slast ) {
+	if ( mc->subs[s].to==NULL )
+    continue;
+	otl = mc->subs[s].to->lookup;
+	sub_last = otl->subtables = mc->subs[s].to;
+	for ( slast=s+1; slast<mc->scnt; ++slast ) {
+	    if ( mc->subs[slast].to==NULL )
+	continue;
+	    if ( mc->subs[slast].to->lookup!=otl )
+	break;
+	    sub_last->next = mc->subs[slast].to;
+	    sub_last = sub_last->next;
+	}
+	sub_last->next = NULL;
+    }
+
+    /* Then order the lookups. Leave the old lookups as they are, insert the */
+    /*  new at the end of the list */
+    last = NULL;
+    for ( l=0; l<mc->lcnt; ++l ) {
+	if ( mc->lks[l].to==NULL || mc->lks[l].old )
+    continue;
+	otl = mc->lks[l].to;
+	isgpos = (otl->lookup_type>=gpos_start);
+	if ( last==NULL || (last->lookup_type>=gpos_start)!=isgpos) {
+	    last = isgpos ? mc->sf_to->gpos_lookups : mc->sf_to->gsub_lookups;
+	    if ( last!=NULL )
+		while ( last->next!=NULL )
+		    last = last->next;
+	}
+	if ( last!=NULL )
+	    last->next = otl;
+	else if ( isgpos )
+	    mc->sf_to->gpos_lookups = otl;
+	else
+	    mc->sf_to->gsub_lookups = otl;
+	last = otl;
+    }
+
+    free(mc->prefix);
+    free(mc->lks);
+    free(mc->subs);
+}
+
+PST *PSTCopy(PST *base,SplineChar *sc,struct sfmergecontext *mc) {
     PST *head=NULL, *last=NULL, *cur;
 
     for ( ; base!=NULL; base = base->next ) {
 	cur = chunkalloc(sizeof(PST));
 	*cur = *base;
-	if ( from!=sc->parent && base->script_lang_index<SLI_NESTED )
-	    cur->script_lang_index = FixupSLI(cur->script_lang_index,from,sc->parent);
+	cur->subtable = ConvertSubtable(mc,base->subtable);
 	if ( cur->type==pst_ligature ) {
 	    cur->u.lig.components = copy(cur->u.lig.components);
 	    cur->u.lig.lig = sc;
@@ -170,7 +269,7 @@ static AnchorPoint *AnchorPointsDuplicate(AnchorPoint *base,SplineChar *sc) {
 return( head );
 }
 
-static void AnchorClassesAdd(SplineFont *into, SplineFont *from) {
+static void AnchorClassesAdd(SplineFont *into, SplineFont *from, struct sfmergecontext *mc) {
     AnchorClass *fac, *iac, *last, *cur;
 
     if ( into->cidmaster!=NULL )
@@ -190,7 +289,7 @@ static void AnchorClassesAdd(SplineFont *into, SplineFont *from) {
 	    *cur = *fac;
 	    cur->next = NULL;
 	    cur->name = copy(cur->name);
-	    cur->script_lang_index = FixupSLI(cur->script_lang_index,from,into);
+	    cur->subtable = ConvertSubtable(mc,cur->subtable);
 	    if ( last==NULL )
 		into->anchor = cur;
 	    else
@@ -202,15 +301,23 @@ static void AnchorClassesAdd(SplineFont *into, SplineFont *from) {
     }
 }
 
-static void FPSTsAdd(SplineFont *into, SplineFont *from) {
+static void FPSTsAdd(SplineFont *into, SplineFont *from,struct sfmergecontext *mc) {
     FPST *fpst, *nfpst, *last;
+    int i,k;
 
     last = NULL;
     if ( into->possub!=NULL )
 	for ( last = into->possub; last->next!=NULL; last=last->next );
     for ( fpst = from->possub; fpst!=NULL; fpst=fpst->next ) {
 	nfpst = FPSTCopy(fpst);
-	nfpst->script_lang_index = FixupSLI(nfpst->script_lang_index,from,into);
+	nfpst->subtable = ConvertSubtable(mc,fpst->subtable);
+	nfpst->subtable->fpst = nfpst;
+	for ( i=0; i<nfpst->rule_cnt; ++i ) {
+	    struct fpst_rule *r = &nfpst->rules[i], *oldr = &fpst->rules[i];
+	    for ( k=0; k<r->lookup_cnt; ++k ) {
+		r->lookups[k].lookup = ConvertLookup(mc,oldr->lookups[k].lookup);
+	    }
+	}
 	if ( last==NULL )
 	    into->possub = nfpst;
 	else
@@ -219,7 +326,7 @@ static void FPSTsAdd(SplineFont *into, SplineFont *from) {
     }
 }
 
-static void ASMsAdd(SplineFont *into, SplineFont *from) {
+static void ASMsAdd(SplineFont *into, SplineFont *from,struct sfmergecontext *mc) {
     ASM *sm, *nsm, *last;
     int i;
 
@@ -229,6 +336,8 @@ static void ASMsAdd(SplineFont *into, SplineFont *from) {
     for ( sm = from->sm; sm!=NULL; sm=sm->next ) {
 	nsm = chunkalloc(sizeof(ASM));
 	*nsm = *sm;
+	nsm->subtable = ConvertSubtable(mc,sm->subtable);
+	nsm->subtable->sm = nsm;
 	nsm->classes = galloc(nsm->class_cnt*sizeof(char *));
 	for ( i=0; i<nsm->class_cnt; ++i )
 	    nsm->classes[i] = copy(sm->classes[i]);
@@ -239,6 +348,13 @@ static void ASMsAdd(SplineFont *into, SplineFont *from) {
 		nsm->state[i].u.kern.kerns = galloc(nsm->state[i].u.kern.kcnt*sizeof(int16));
 		memcpy(nsm->state[i].u.kern.kerns,sm->state[i].u.kern.kerns,nsm->state[i].u.kern.kcnt*sizeof(int16));
 	    }
+	} else if ( nsm->type == asm_context ) {
+	    for ( i=0; i<nsm->class_cnt*nsm->state_cnt; ++i ) {
+		nsm->state[i].u.context.mark_lookup = ConvertLookup(mc,
+			nsm->state[i].u.context.mark_lookup);
+		nsm->state[i].u.context.cur_lookup = ConvertLookup(mc,
+			nsm->state[i].u.context.cur_lookup);
+	    }
 	} else if ( nsm->type == asm_insert ) {
 	    for ( i=nsm->class_cnt*nsm->state_cnt-1; i>=0; --i ) {
 		nsm->state[i].u.insert.mark_ins = copy(sm->state[i].u.insert.mark_ins);
@@ -248,15 +364,16 @@ static void ASMsAdd(SplineFont *into, SplineFont *from) {
     }
 }
 
-static KernClass *_KernClassCopy(KernClass *kc,SplineFont *into,SplineFont *from) {
+static KernClass *_KernClassCopy(KernClass *kc,SplineFont *into,SplineFont *from,struct sfmergecontext *mc) {
     KernClass *nkc;
 
     nkc = KernClassCopy(kc);
-    nkc->sli = FixupSLI(nkc->sli,from,into);
+    nkc->subtable = ConvertSubtable(mc,kc->subtable);
+    nkc->subtable->kc = nkc;
 return( nkc );
 }
 
-static void KernClassesAdd(SplineFont *into, SplineFont *from) {
+static void KernClassesAdd(SplineFont *into, SplineFont *from,struct sfmergecontext *mc) {
     /* Is this a good idea? We could end up with two kern classes that do */
     /*  the same thing and strange sets of slis so that they didn't all fit */
     /*  in one lookup... */
@@ -266,7 +383,7 @@ static void KernClassesAdd(SplineFont *into, SplineFont *from) {
     if ( into->kerns!=NULL )
 	for ( last = into->kerns; last->next!=NULL; last=last->next );
     for ( kc=from->kerns; kc!=NULL; kc=kc->next ) {
-	cur = _KernClassCopy(kc,into,from);
+	cur = _KernClassCopy(kc,into,from,mc);
 	if ( last==NULL )
 	    into->kerns = cur;
 	else
@@ -278,7 +395,7 @@ static void KernClassesAdd(SplineFont *into, SplineFont *from) {
     if ( into->vkerns!=NULL )
 	for ( last = into->vkerns; last->next!=NULL; last=last->next )
     for ( kc=from->vkerns; kc!=NULL; kc=kc->next ) {
-	cur = _KernClassCopy(kc,into,from);
+	cur = _KernClassCopy(kc,into,from,mc);
 	if ( last==NULL )
 	    into->vkerns = cur;
 	else
@@ -305,7 +422,7 @@ static struct altuni *AltUniCopy(struct altuni *altuni,SplineFont *noconflicts) 
 return( head );
 }
 
-SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into) {
+SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into,struct sfmergecontext *mc) {
     SplineChar *nsc = SplineCharCreate();
 #ifdef FONTFORGE_CONFIG_TYPE3
     Layer *layers = nsc->layers;
@@ -335,8 +452,6 @@ SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into) {
     nsc->name = copy(sc->name);
     nsc->hstem = StemInfoCopy(nsc->hstem);
     nsc->vstem = StemInfoCopy(nsc->vstem);
-    nsc->dstem = DStemInfoCopy(nsc->dstem);
-    nsc->md = MinimumDistanceCopy(nsc->md);
     nsc->anchor = AnchorPointsDuplicate(nsc->anchor,nsc);
     nsc->views = NULL;
     nsc->changed = true;
@@ -348,14 +463,15 @@ SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into) {
 	memcpy(nsc->ttf_instrs,sc->ttf_instrs,nsc->ttf_instrs_len);
     }
     nsc->kerns = NULL;
-    nsc->possub = PSTCopy(nsc->possub,nsc,sc->parent);
+    nsc->possub = PSTCopy(nsc->possub,nsc,mc);
     nsc->altuni = AltUniCopy(nsc->altuni,into);
     if ( sc->parent!=NULL && into->order2!=sc->parent->order2 )
 	SCConvertOrder(nsc,into->order2);
 return(nsc);
 }
 
-static KernPair *KernsCopy(KernPair *kp,int *mapping,SplineFont *into,SplineFont *from) {
+static KernPair *KernsCopy(KernPair *kp,int *mapping,SplineFont *into,
+	struct sfmergecontext *mc) {
     KernPair *head = NULL, *last=NULL, *new;
     int index;
 
@@ -364,7 +480,7 @@ static KernPair *KernsCopy(KernPair *kp,int *mapping,SplineFont *into,SplineFont
 		into->glyphs[index]!=NULL ) {
 	    new = chunkalloc(sizeof(KernPair));
 	    new->off = kp->off;
-	    new->sli = FixupSLI(kp->sli,from,into);
+	    new->subtable = ConvertSubtable(mc,kp->subtable);
 	    new->sc = into->glyphs[index];
 	    if ( head==NULL )
 		head = new;
@@ -695,7 +811,7 @@ SplineChar *SFGetOrMakeChar(SplineFont *sf, int unienc, const char *name ) {
 	    sc->name = copy(buffer);
 	}
 	SFAddGlyphAndEncode(sf,sc,NULL,-1);
-	SCLigDefault(sc);
+	/*SCLigDefault(sc);*/
     }
 return( sc );
 }
@@ -824,7 +940,7 @@ static void FVMergeRefigureMapSel(FontView *fv,SplineFont *into,SplineFont *o_sf
     }
 }
 
-static void _MergeFont(SplineFont *into,SplineFont *other) {
+static void _MergeFont(SplineFont *into,SplineFont *other,struct sfmergecontext *mc) {
     int i,cnt, doit, emptypos, index, k;
     SplineFont *o_sf, *bitmap_into;
     BDFFont *bdf;
@@ -847,7 +963,7 @@ static void _MergeFont(SplineFont *into,SplineFont *other) {
 		    /* Bug here. Suppose someone has a reference to our empty */
 		    /*  char */
 		    SplineCharFree(into->glyphs[index]);
-		    into->glyphs[index] = SplineCharCopy(o_sf->glyphs[i],into);
+		    into->glyphs[index] = SplineCharCopy(o_sf->glyphs[i],into,mc);
 		    if ( into->bitmaps!=NULL && other->bitmaps!=NULL )
 			BitmapsCopy(bitmap_into,other,index,i);
 		} else if ( !doit ) {
@@ -887,7 +1003,7 @@ static void _MergeFont(SplineFont *into,SplineFont *other) {
 	} while ( k<other->subfontcnt );
     }
     for ( i=0; i<other->glyphcnt; ++i ) if ( (index=mapping[i])!=-1 )
-	into->glyphs[index]->kerns = KernsCopy(other->glyphs[i]->kerns,mapping,into,other);
+	into->glyphs[index]->kerns = KernsCopy(other->glyphs[i]->kerns,mapping,into,mc);
     free(mapping);
     GlyphHashFree(into);
     MergeFixupRefChars(into);
@@ -901,24 +1017,32 @@ static void _MergeFont(SplineFont *into,SplineFont *other) {
 }
 
 static void __MergeFont(SplineFont *into,SplineFont *other) {
+    struct sfmergecontext mc;
 
-    AnchorClassesAdd(into,other);
-    FPSTsAdd(into,other);
-    ASMsAdd(into,other);
-    KernClassesAdd(into,other);
+    memset(&mc,0,sizeof(mc));
+    mc.sf_from = other; mc.sf_to = into;
 
-    _MergeFont(into,other);
+    AnchorClassesAdd(into,other,&mc);
+    FPSTsAdd(into,other,&mc);
+    ASMsAdd(into,other,&mc);
+    KernClassesAdd(into,other,&mc);
+
+    _MergeFont(into,other,&mc);
 }
 
 static void CIDMergeFont(SplineFont *into,SplineFont *other) {
     int i,j,k;
     SplineFont *i_sf, *o_sf;
     FontView *fvs;
+    struct sfmergecontext mc;
 
-    AnchorClassesAdd(into,other);
-    FPSTsAdd(into,other);
-    ASMsAdd(into,other);
-    KernClassesAdd(into,other);
+    memset(&mc,0,sizeof(mc));
+    mc.sf_from = other; mc.sf_to = into;
+
+    AnchorClassesAdd(into,other,&mc);
+    FPSTsAdd(into,other,&mc);
+    ASMsAdd(into,other,&mc);
+    KernClassesAdd(into,other,&mc);
 
     k = 0;
     do {
@@ -943,7 +1067,7 @@ static void CIDMergeFont(SplineFont *into,SplineFont *other) {
 		/* Don't bother to copy it */;
 	    else if ( SFHasCID(into,i)==-1 ) {
 		SplineCharFree(i_sf->glyphs[i]);
-		i_sf->glyphs[i] = SplineCharCopy(o_sf->glyphs[i],i_sf);
+		i_sf->glyphs[i] = SplineCharCopy(o_sf->glyphs[i],i_sf,&mc);
 		if ( into->bitmaps!=NULL && other->bitmaps!=NULL )
 		    BitmapsCopy(into,other,i,i);
 	    }
@@ -961,11 +1085,7 @@ static void CIDMergeFont(SplineFont *into,SplineFont *other) {
 void MergeFont(FontView *fv,SplineFont *other) {
 
     if ( fv->sf==other ) {
-#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Merging Problem"),_("Merging a font with itself achieves nothing"));
-#else
-	gwwv_post_error(_("Merging Problem"),_("Merging a font with itself achieves nothing"));
-#endif
 return;
     }
     if ( fv->sf->cidmaster!=NULL && other->subfonts!=NULL &&
@@ -973,11 +1093,7 @@ return;
 	     strcmp(fv->sf->cidmaster->ordering,other->ordering)!=0 ||
 	     fv->sf->cidmaster->supplement<other->supplement ||
 	     fv->sf->cidmaster->subfontcnt<other->subfontcnt )) {
-#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Merging Problem"),_("When merging two CID keyed fonts, they must have the same Registry and Ordering, and the font being merged into (the mergee) must have a supplement which is at least as recent as the other's. Furthermore the mergee must have at least as many subfonts as the merger."));
-#else
-	gwwv_post_error(_("Merging Problem"),_("When merging two CID keyed fonts, they must have the same Registry and Ordering, and the font being merged into (the mergee) must have a supplement which is at least as recent as the other's. Furthermore the mergee must have at least as many subfonts as the merger."));
-#endif
 return;
     }
     /* Ok. when merging CID fonts... */
@@ -1337,7 +1453,8 @@ return( sc1->unicodeenc==sc2->unicodeenc );
 return( strcmp(sc1->name,sc2->name)==0 );
 }
 
-static KernPair *InterpKerns(KernPair *kp1, KernPair *kp2, real amount, SplineFont *new) {
+static KernPair *InterpKerns(KernPair *kp1, KernPair *kp2, real amount,
+	SplineFont *new, SplineChar *scnew) {
     KernPair *head=NULL, *last, *nkp, *k;
 
     if ( kp1==NULL || kp2==NULL )
@@ -1349,7 +1466,8 @@ return( NULL );
 	    nkp = chunkalloc(sizeof(KernPair));
 	    nkp->sc = new->glyphs[kp1->sc->orig_pos];
 	    nkp->off = kp1->off + amount*(k->off-kp1->off);
-	    nkp->sli = kp1->sli;
+	    nkp->subtable = SFSubTableFindOrMake(new,CHR('k','e','r','n'),
+		    SCScriptFromUnicode(scnew),gpos_pair);
 	    if ( head==NULL )
 		head = nkp;
 	    else
@@ -1546,7 +1664,7 @@ return( NULL );
 	    InterpolateChar(new,i,base->glyphs[i],other->glyphs[index],amount);
 	    if ( new->glyphs[i]!=NULL )
 		new->glyphs[i]->kerns = InterpKerns(base->glyphs[i]->kerns,
-			other->glyphs[index]->kerns,amount,new);
+			other->glyphs[index]->kerns,amount,new,new->glyphs[i]);
 	}
     }
     InterpFixupRefChars(new);

@@ -1369,7 +1369,10 @@ struct macsetting *FindMacSetting(SplineFont *sf, int feat, int set,
     MacFeat *from_f, *from_p;
     struct macsetting *s_f, *s_p;
 
-    for ( from_f = sf->features; from_f!=NULL && from_f->feature!=feat; from_f=from_f->next );
+    if ( sf!=NULL )
+	for ( from_f = sf->features; from_f!=NULL && from_f->feature!=feat; from_f=from_f->next );
+    else
+	from_f = NULL;
     for ( from_p = default_mac_feature_map; from_p!=NULL && from_p->feature!=feat; from_p=from_p->next );
     s_f = s_p = NULL;
     if ( from_f!=NULL )
@@ -1388,7 +1391,10 @@ struct macname *FindMacSettingName(SplineFont *sf, int feat, int set) {
     MacFeat *from_f, *from_p;
     struct macsetting *s;
 
-    for ( from_f = sf->features; from_f!=NULL && from_f->feature!=feat; from_f=from_f->next );
+    if ( sf != NULL )
+	for ( from_f = sf->features; from_f!=NULL && from_f->feature!=feat; from_f=from_f->next );
+    else
+	from_f = NULL;
     for ( from_p = default_mac_feature_map; from_p!=NULL && from_p->feature!=feat; from_p=from_p->next );
     if ( set==-1 ) {
 	if ( from_f!=NULL && from_f->featname!=NULL )
@@ -2352,7 +2358,7 @@ return( _("Unspecified Language") );
 
     initmaclangs();
     for ( i=0; maclanguages[i].text!=NULL; ++i )
-	if ( (void *) code == maclanguages[i].userdata )
+	if ( (void *) (intpt) code == maclanguages[i].userdata )
 return( (char *) maclanguages[i].text );
 
 return( _("Unknown Language"));

@@ -38,10 +38,10 @@ fontforge_LIBOBJECTS =  autohint.o autosave.o autowidth.o bitmapdlg.o \
  charinfo.o splineorder2.o genttfinstrs.o ttfinstrs.o cvgridfit.o \
  cvdebug.o showatt.o kernclass.o nonlineartrans.o effects.o \
  histograms.o ttfspecial.o svg.o parsettfatt.o contextchain.o \
- macenc.o statemachine.o typofeatures.o splinerefigure.o mm.o \
+ macenc.o statemachine.o splinerefigure.o mm.o \
  parsettfvar.o tottfvar.o pua.o stemdb.o anchorsaway.o palmfonts.o \
  cvdgloss.o groups.o parsepdf.o plugins.o bdfinfo.o \
- glyphcomp.o unicoderange.o ufo.o ofl.o @FF_EXTRA_FILES@
+ glyphcomp.o unicoderange.o ufo.o ofl.o lookups.o sfd1.o @FF_EXTRA_FILES@
 DIFFOBJS = sfddiff.o sfd.o diffstubs.o stamp.o namelist.o pua.o
 ACORNOBJS = acorn2sfd.o sfd.o diffstubs.o psunicodenames.o stamp.o
 

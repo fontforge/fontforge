@@ -73,7 +73,7 @@ void WindowMenuBuild(GWindow basew,struct gmenuitem *mi,GEvent *e) {
 		    ++cnt;
 	    }
 	}
-	for ( mv=fv->metrics; mv!=NULL; mv=mv->next )
+	for ( mv=fv->sf->metrics; mv!=NULL; mv=mv->next )
 	    ++cnt;
     }
     if ( cnt==0 ) {
@@ -113,7 +113,7 @@ return;
 		    AddMI(&sub[cnt++],bv->gw,bv->bc->changed,false);
 	    }
 	}
-	for ( mv=fv->metrics; mv!=NULL; mv=mv->next )
+	for ( mv=fv->sf->metrics; mv!=NULL; mv=mv->next )
 	    AddMI(&sub[cnt++],mv->gw,false,false);
     }
 }
@@ -320,7 +320,7 @@ return;
 			    bv->bc->changed,false);
 	    }
 	}
-	for ( mv=fv->metrics; mv!=NULL; mv=mv->next )
+	for ( mv=fv->sf->metrics; mv!=NULL; mv=mv->next )
 	    AddMI(shell,current,mv->gw,"Metrics",false,false);
     }
 }

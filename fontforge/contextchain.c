@@ -219,9 +219,7 @@ return( NULL );
     new = chunkalloc(sizeof(FPST));
     new->type = fpst->type;
     new->format = pst_class;
-    new->script_lang_index = fpst->script_lang_index;
-    new->flags = fpst->flags;
-    new->tag = fpst->tag;
+    new->subtable = fpst->subtable;
     new->rule_cnt = fpst->rule_cnt;
     new->rules = gcalloc(fpst->rule_cnt,sizeof(struct fpst_rule));
 
@@ -440,15 +438,86 @@ return( cnt );
 return( cnt );
 }
 
+static int seqlookuplen(struct fpst_rule *r) {
+    int i, len=0;
+    char buf[20];
+
+    for ( i=0; i<r->lookup_cnt; ++i ) {
+	sprintf( buf," %d \"\",", r->lookups[i].seq );
+	len += strlen(buf) + utf8_strlen( r->lookups[i].lookup->lookup_name );
+    }
+return( len );
+}
+
+static unichar_t *addseqlookups(unichar_t *pt, struct fpst_rule *r) {
+    int i;
+    char buf[20];
+
+    *pt++ = 0x21d2;
+    for ( i=0; i<r->lookup_cnt; ++i ) {
+	unichar_t *temp;
+	sprintf( buf," %d \"", r->lookups[i].seq );
+	uc_strcpy(pt, buf);
+	pt += u_strlen(pt);
+	temp = utf82u_copy(r->lookups[i].lookup->lookup_name );
+	u_strcpy(pt,temp);
+	pt += u_strlen(pt);
+	*pt++ = '"';
+	*pt++ = ',';
+    }
+    if ( pt[-1]==',' ) pt[-1] = '\0';
+    *pt = '\0';
+return( pt );
+}
+
+static void parseseqlookups(SplineFont *sf, const unichar_t *solooks, struct fpst_rule *r) {
+    int cnt;
+    const unichar_t *pt;
+
+    for ( pt = solooks, cnt=0; *pt!='\0'; ) {
+	++cnt;
+	while ( *pt!='"' && *pt!='\0' ) ++pt;
+	if ( *pt=='"' ) {
+	    ++pt;
+	    while ( *pt!='"' && *pt!='\0' ) ++pt;
+	    if ( *pt=='"' ) ++pt;
+	}
+	if ( *pt==',' ) ++pt;
+    }
+    r->lookup_cnt = cnt;
+    r->lookups = gcalloc(cnt,sizeof(struct seqlookup));
+    cnt = 0;
+    pt = solooks;
+    forever {
+	unichar_t *end;
+	r->lookups[cnt].seq = u_strtol(pt,&end,10);
+	pt = end+2;
+	if ( *pt=='"' ) {
+	    const unichar_t *eoname; char *temp;
+	    ++pt;
+	    for ( eoname = ++pt; *eoname!='\0' && *eoname!='"'; ++eoname );
+	    temp = u2utf8_copyn(pt,eoname-pt);
+	    r->lookups[cnt].lookup = SFFindLookup(sf,temp);
+	    free(temp);
+	    pt = eoname;
+	    if ( *pt=='"' ) ++pt;
+	}
+	++cnt;
+	if ( *pt!=',' )
+    break;
+	++pt;
+    }
+}
+
 static unichar_t *glistitem(struct fpst_rule *r) {
     unichar_t *ret, *pt;
-    int len, i;
-    char buf[20];
+    int len;
 
     len = (r->u.glyph.back==NULL ? 0 : strlen(r->u.glyph.back)) +
 	    strlen(r->u.glyph.names) +
-	    (r->u.glyph.fore==0 ? 0 : strlen(r->u.glyph.fore))+
-	    13*r->lookup_cnt;
+	    (r->u.glyph.fore==0 ? 0 : strlen(r->u.glyph.fore)) +
+	    seqlookuplen(r);
+
     ret = pt = galloc((len+8) * sizeof(unichar_t));
     if ( r->u.glyph.back!=NULL && *r->u.glyph.back!='\0' ) {
 	char *temp = reversenames(r->u.glyph.back);
@@ -469,25 +538,13 @@ static unichar_t *glistitem(struct fpst_rule *r) {
 	pt += strlen(r->u.glyph.fore);
 	*pt++ = ' ';
     }
-    *pt++ = 0x21d2;
-    for ( i=0; i<r->lookup_cnt; ++i ) {
-	sprintf( buf," %d '%c%c%c%c',", r->lookups[i].seq,
-		(int) (r->lookups[i].lookup_tag>>24),
-		(int) ((r->lookups[i].lookup_tag>>16)&0xff),
-		(int) ((r->lookups[i].lookup_tag>>8)&0xff),
-		(int) (r->lookups[i].lookup_tag&0xff) );
-	uc_strcpy(pt, buf);
-	pt += u_strlen(pt);
-    }
-    if ( pt[-1]==',' ) pt[-1] = '\0';
-    *pt = '\0';
+    pt = addseqlookups(pt, r);
 return( ret );
 }
 
-static void glistitem2rule(const unichar_t *ret,struct fpst_rule *r) {
-    const unichar_t *pt; unichar_t *end;
+static void glistitem2rule(SplineFont *sf, const unichar_t *ret,struct fpst_rule *r) {
+    const unichar_t *pt;
     char *temp;
-    int cnt;
 
     for ( pt=ret; *pt!='\0' && *pt!='['; ++pt );
     if ( *pt=='\0' )
@@ -508,24 +565,7 @@ return;
 return;
     if ( pt!=ret )
 	r->u.glyph.fore = cu_copybetween(ret,pt-1);
-    ret = pt+2;
-    for ( pt = ret, cnt=0; pt!=NULL; pt = u_strchr(pt,',')) {
-	++cnt; ++pt;
-    }
-    r->lookup_cnt = cnt;
-    r->lookups = gcalloc(cnt,sizeof(struct seqlookup));
-    cnt = 0;
-    pt = ret;
-    forever {
-	r->lookups[cnt].seq = u_strtol(pt,&end,10);
-	pt = end+2;
-	r->lookups[cnt].lookup_tag = (pt[0]<<24) | (pt[1]<<16) | (pt[2]<<8) | pt[3];
-	pt += 5;
-	++cnt;
-	if ( *pt!=',' )
-    break;
-	++pt;
-    }
+    parseseqlookups(sf,pt+2,r);
 }
 
 static GTextInfo **glistlist(FPST *fpst) {
@@ -557,7 +597,7 @@ static unichar_t *clslistitem(struct fpst_rule *r) {
 	}
     }
 
-    ret = pt = galloc((len+8+13*r->lookup_cnt) * sizeof(unichar_t));
+    ret = pt = galloc((len+8+seqlookuplen(r)) * sizeof(unichar_t));
     for ( k=r->u.class.bcnt-1; k>=0; --k ) {
 	sprintf( buf, "%d ", r->u.class.bclasses[k]);
 	uc_strcpy(pt,buf);
@@ -578,24 +618,12 @@ static unichar_t *clslistitem(struct fpst_rule *r) {
     }
 
     *pt++ = ' ';
-    *pt++ = 0x21d2;
-    for ( i=0; i<r->lookup_cnt; ++i ) {
-	sprintf( buf," %d '%c%c%c%c',", r->lookups[i].seq,
-		(int) (r->lookups[i].lookup_tag>>24),
-		(int) ((r->lookups[i].lookup_tag>>16)&0xff),
-		(int) ((r->lookups[i].lookup_tag>>8)&0xff),
-		(int) (r->lookups[i].lookup_tag&0xff) );
-	uc_strcpy(pt, buf);
-	pt += u_strlen(pt);
-    }
-    if ( pt[-1]==',' ) pt[-1] = '\0';
-    *pt = '\0';
+    pt = addseqlookups(pt, r);
 return( ret );
 }
 
-static void clslistitem2rule(const unichar_t *ret,struct fpst_rule *r) {
+static void clslistitem2rule(SplineFont *sf,const unichar_t *ret,struct fpst_rule *r) {
     const unichar_t *pt; unichar_t *end;
-    int cnt;
     int len, i;
 
     memset(r,0,sizeof(*r));
@@ -645,24 +673,7 @@ static void clslistitem2rule(const unichar_t *ret,struct fpst_rule *r) {
 
     if ( *pt=='\0' || pt[1]=='\0' )
 return;
-    ret = pt+2;
-    for ( pt = ret, cnt=0; pt!=NULL; pt = u_strchr(pt,',')) {
-	++cnt; ++pt;
-    }
-    r->lookup_cnt = cnt;
-    r->lookups = gcalloc(cnt,sizeof(struct seqlookup));
-    cnt = 0;
-    pt = ret;
-    forever {
-	r->lookups[cnt].seq = u_strtol(pt,&end,10);
-	pt = end+2;
-	r->lookups[cnt].lookup_tag = (pt[0]<<24) | (pt[1]<<16) | (pt[2]<<8) | pt[3];
-	pt += 5;
-	++cnt;
-	if ( *pt!=',' )
-    break;
-	++pt;
-    }
+    parseseqlookups(sf,pt+2,r);
 }
 
 static GTextInfo **clslistlist(FPST *fpst) {
@@ -719,31 +730,31 @@ return(NULL);
     ti = galloc((r->lookup_cnt+1)*sizeof(GTextInfo *));
     ti[r->lookup_cnt] = gcalloc(1,sizeof(GTextInfo));
     for ( i=0; i<r->lookup_cnt; ++i ) {
+	unichar_t *space;
 	ti[i] = gcalloc(1,sizeof(GTextInfo));
-	sprintf( buf,"%d '%c%c%c%c'", r->lookups[i].seq,
-		(int) (r->lookups[i].lookup_tag>>24),
-		(int) ((r->lookups[i].lookup_tag>>16)&0xff),
-		(int) ((r->lookups[i].lookup_tag>>8)&0xff),
-		(int) (r->lookups[i].lookup_tag&0xff) );
-	ti[i]->text = uc_copy(buf);
+	sprintf( buf,"%d ", r->lookups[i].seq );
+	ti[i]->text = space = galloc((strlen(buf)+utf8_strlen(r->lookups[i].lookup->lookup_name)+2)*sizeof(unichar_t));
+	uc_strcpy(space,buf);
+	utf82u_strcat(space,r->lookups[i].lookup->lookup_name);
 	ti[i]->fg = ti[i]->bg = COLOR_DEFAULT;
     }
 return( ti );
 }
 
-static void CCD_ParseLookupList(struct fpst_rule *r,GGadget *list) {
+static void CCD_ParseLookupList(SplineFont *sf, struct fpst_rule *r,GGadget *list) {
     int32 len, i;
     GTextInfo **ti = GGadgetGetList(list,&len);
     unichar_t *end;
+    char *name;
 
     r->lookup_cnt = len;
     r->lookups = galloc(len*sizeof(struct seqlookup));
     for ( i=0; i<len; ++i ) {
 	r->lookups[i].seq = u_strtol(ti[i]->text,&end,10);
 	while ( *end==' ') ++end;
-	if ( *end=='\'' ) ++end;
-	r->lookups[i].lookup_tag =
-	    ((*end&0xff)<<24) | ((end[1]&0xff)<<16) | ((end[2]&0xff)<<8)| (end[3]&0xff);
+	name = u2utf8_copy(end);
+	r->lookups[i].lookup = SFFindLookup(sf,name);
+	free(name);
     }
 }
 
@@ -1014,7 +1025,7 @@ return;
     } else if ( ccd->wasoffset>=200 ) {		/* It's class numbers */
 	unichar_t *ret;
 	memset(&dummy,0,sizeof(dummy));
-	CCD_ParseLookupList(&dummy,GWidgetGetControl(ccd->gw,CID_LookupList+500));
+	CCD_ParseLookupList(ccd->sf,&dummy,GWidgetGetControl(ccd->gw,CID_LookupList+500));
 	if ( dummy.lookup_cnt==0 ) {
 	    int ans = gwwv_ask(_("No Sequence/Lookups"),
 		    (const char **) buts,0,1,
@@ -1085,7 +1096,7 @@ return;
 return;
 	}
 	free(val);
-	CCD_ParseLookupList(&dummy,GWidgetGetControl(ccd->gw,CID_LookupList));
+	CCD_ParseLookupList(ccd->sf,&dummy,GWidgetGetControl(ccd->gw,CID_LookupList));
 	if ( dummy.lookup_cnt==0 ) {
 	    int ans = gwwv_ask(_("No Sequence/Lookups"),
 		    (const char **) buts,0,1,
@@ -1135,7 +1146,7 @@ static void _CCD_DoEditNew(struct contextchaindlg *ccd,int off,int isedit) {
 	    if ( i==-1 )
 return;
 	    memset(&dummy,0,sizeof(dummy));
-	    clslistitem2rule(old[i]->text,&dummy);
+	    clslistitem2rule(ccd->sf,old[i]->text,&dummy);
 	    GGadgetSetTitle(GWidgetGetControl(ccd->gw,CID_ClassNumbers),
 		    (temp=classnumbers(dummy.u.class.ncnt,dummy.u.class.nclasses)));
 	    free(temp);
@@ -1198,7 +1209,7 @@ return;
 	    if ( i==-1 )
 return;
 	    memset(&dummy,0,sizeof(dummy));
-	    glistitem2rule(old[i]->text,&dummy);
+	    glistitem2rule(ccd->sf,old[i]->text,&dummy);
 	    GGadgetSetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList),(temp=uc_copy(dummy.u.glyph.names)));
 	    free(temp);
 	    GGadgetSetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList+20),(temp=uc_copy((temp2 = reversenames(dummy.u.glyph.back))==NULL ? "" : temp2)));
@@ -1552,7 +1563,7 @@ static void _CCD_DoLEditNew(struct contextchaindlg *ccd,int off,int isedit) {
     const unichar_t *pt;
     unichar_t *line;
     int selpos= -1;
-    int searchtype;
+    int isgpos;
 
     tagbuf[0] = 0; seq = 0;
     if ( isedit ) {
@@ -1637,11 +1648,8 @@ static void _CCD_DoLEditNew(struct contextchaindlg *ccd,int off,int isedit) {
     gcd[6].creator = GGroupCreate;
 
     GGadgetsCreate(gw,gcd);
-    if ( ccd->fpst->type==pst_contextpos || ccd->fpst->type==pst_chainpos )
-	searchtype = fpst_max;		/* Search for positioning tables */
-    else
-	searchtype = fpst_max+1;	/* Search for substitution tables */
-    GGadgetSetList(gcd[3].ret, SFGenTagListFromType(&ccd->sf->gentags,searchtype),false);
+    isgpos = ( ccd->fpst->type==pst_contextpos || ccd->fpst->type==pst_chainpos );
+    GGadgetSetList(gcd[3].ret, SFLookupListFromType(ccd->sf,ot_undef),false);
     GDrawSetVisible(gw,true);
 
   retry:
@@ -1711,7 +1719,7 @@ return( true );
 
 void CCD_Close(struct contextchaindlg *ccd) {
     if ( ccd->isnew )
-	GFI_FinishContextNew(ccd->gfi,ccd->fpst,ccd->newname,false);
+	GFI_FinishContextNew(ccd->gfi,ccd->fpst,false);
     GFI_CCDEnd(ccd->gfi);
     GDrawDestroyWindow(ccd->gw);
 }
@@ -1767,7 +1775,7 @@ return;
 	fpst->rule_cnt = len;
 	fpst->rules = gcalloc(len,sizeof(struct fpst_rule));
 	for ( i=0; i<len; ++i )
-	    glistitem2rule(old[i]->text,&fpst->rules[i]);
+	    glistitem2rule(ccd->sf,old[i]->text,&fpst->rules[i]);
       } break;
       case aw_class: {
 	old = GGadgetGetList(GWidgetGetControl(ccd->gw,CID_GList+200),&len);
@@ -1783,7 +1791,7 @@ return;
 	fpst->nclass = fpst->bclass = fpst->fclass = NULL;
 	has[1] = has[2] = false; has[0] = true;
 	for ( i=0; i<len; ++i ) {
-	    clslistitem2rule(old[i]->text,&fpst->rules[i]);
+	    clslistitem2rule(ccd->sf,old[i]->text,&fpst->rules[i]);
 	    if ( fpst->rules[i].u.class.bcnt!=0 ) has[1] = true;
 	    if ( fpst->rules[i].u.class.fcnt!=0 ) has[2] = true;
 	}
@@ -1820,7 +1828,7 @@ return;
 	    dummy.u.rcoverage.replacements = ccd_cu_copy(
 		    _GGadgetGetTitle(GWidgetGetControl(ccd->gw,CID_RplList+100)));
 	} else {
-	    CCD_ParseLookupList(&dummy,GWidgetGetControl(ccd->gw,CID_LookupList+100));
+	    CCD_ParseLookupList(ccd->sf,&dummy,GWidgetGetControl(ccd->gw,CID_LookupList+100));
 	    if ( dummy.lookup_cnt==0 ) {
 		int ans = gwwv_ask(_("No Sequence/Lookups"),
 			(const char **) buts,0,1,
@@ -1857,7 +1865,7 @@ return;
 return;
     }
     if ( ccd->isnew )
-	GFI_FinishContextNew(ccd->gfi,ccd->fpst,ccd->newname,true);
+	GFI_FinishContextNew(ccd->gfi,ccd->fpst,true);
     GFI_CCDEnd(ccd->gfi);
     GDrawDestroyWindow(ccd->gw);
 }

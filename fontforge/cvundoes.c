@@ -392,7 +392,6 @@ static void ExtractHints(SplineChar *sc,void *hints,int docopy) {
 
 void UndoesFree(Undoes *undo) {
     Undoes *unext;
-    int i;
 
     while ( undo!=NULL ) {
 	unext = undo->next;
@@ -426,12 +425,6 @@ void UndoesFree(Undoes *undo) {
 	  case ut_composit:
 	    UndoesFree(undo->u.composit.state);
 	    UndoesFree(undo->u.composit.bitmaps);
-	  break;
-	  case ut_possub:
-	    for ( i=0; undo->u.possub.data[i]!=NULL; ++i )
-		free(undo->u.possub.data[i]);
-	    free(undo->u.possub.data);
-	    UndoesFree(undo->u.possub.more_pst);
 	  break;
 	  default:
 	    IError( "Unknown undo type in UndoesFree: %d", undo->undotype );
@@ -572,7 +565,7 @@ return(NULL);
 	    undo->u.state.unicodeenc = sc->unicodeenc;
 	    undo->u.state.charname = copy(sc->name);
 	    undo->u.state.comment = copy(sc->comment);
-	    undo->u.state.possub = PSTCopy(sc->possub,sc,sc->parent);
+	    undo->u.state.possub = PSTCopy(sc->possub,sc,NULL);
 	}
     }
     undo->u.state.images = ImageListCopy(sc->layers[layer].images);
@@ -1120,50 +1113,6 @@ return( copy(""));
 return( copy( cur->u.state.charname ));
 }
 
-static void *copybufferPosSub2str(void *_copybuffer,int32 *len) {
-    Undoes *cur = &copybuffer, *otherpsts;
-    char *pt, *data;
-    int lcnt, size;
-
-    while ( cur ) {
-	switch ( cur->undotype ) {
-	  case ut_multiple:
-	    cur = cur->u.multiple.mult;
-	  break;
-	  case ut_composit:
-	    cur = cur->u.composit.state;
-	  break;
-	  case ut_possub:
-    goto out;
-	  default:
-	    cur = NULL;
-	  break;
-	}
-    }
-    out:
-    if ( cur==NULL || fv_list==NULL || cur->u.possub.data==NULL ) {
-	*len=0;
-return( copy(""));
-    }
-    lcnt = size = 0;
-    for ( otherpsts = cur; otherpsts!=NULL; otherpsts = otherpsts->u.possub.more_pst )
-	for ( lcnt=size=0; otherpsts->u.possub.data[lcnt]!=NULL; ++lcnt )
-	    size += strlen(otherpsts->u.possub.data[lcnt])+1;
-    data = pt = galloc(size+1);
-    for ( otherpsts = cur; otherpsts!=NULL; otherpsts = otherpsts->u.possub.more_pst )
-	for ( lcnt=0; otherpsts->u.possub.data[lcnt]!=NULL; ++lcnt ) {
-	    strcpy(pt,otherpsts->u.possub.data[lcnt]);
-	    pt += strlen(otherpsts->u.possub.data[lcnt]);
-	    *pt++='\n';
-	}
-    if ( lcnt!=0 )
-	pt[-1] = '\0';
-    *pt = '\0';
-
-    *len = strlen(data);
-return( data );
-}
-
 static RefChar *XCopyInstanciateRefs(RefChar *refs,SplineChar *container) {
     /* References in the copybuffer don't include the translated splines */
     RefChar *head=NULL, *last, *cur;
@@ -1431,11 +1380,6 @@ return;
 			copybufferName2str,noop);
 	    cur = NULL;
 	  break;
-	  case ut_possub:
-	    GDrawAddSelectionType(fv_list->gw,sn_clipboard,"STRING",&copybuffer,0,sizeof(char),
-		    copybufferPosSub2str,noop);
-	    cur = NULL;
-	  break;
 	  default:
 	    cur = NULL;
 	  break;
@@ -1474,7 +1418,7 @@ return( cur->undotype==ut_state || cur->undotype==ut_tstate ||
 	cur->undotype==ut_statehint || cur->undotype==ut_statename ||
 	cur->undotype==ut_width || cur->undotype==ut_vwidth ||
 	cur->undotype==ut_lbearing || cur->undotype==ut_rbearing ||
-	cur->undotype==ut_hints || cur->undotype==ut_possub ||
+	cur->undotype==ut_hints ||
 	cur->undotype==ut_anchors || cur->undotype==ut_noop );
 }
 
@@ -1509,23 +1453,6 @@ return( NULL );
 return( cur->u.state.refs );
 }
 
-char **CopyGetPosSubData(enum possub_type *type, SplineFont **copied_from,
-	int depth) {
-    Undoes *cur = &copybuffer;
-
-    if ( cur->undotype==ut_multiple )
-	cur = cur->u.multiple.mult;
-    if ( cur->undotype!=ut_possub )
-return( NULL );
-    while ( depth-->0 && cur!=NULL )
-	cur = cur->u.possub.more_pst;
-    if ( cur==NULL )
-return( NULL );
-    *type = cur->u.possub.pst;
-    *copied_from = cur->u.possub.copied_from;
-return( cur->u.possub.data );
-}
-
 const Undoes *CopyBufferGet(void) {
 return( &copybuffer );
 }
@@ -1537,13 +1464,6 @@ static void _CopyBufferClearCopiedFrom(Undoes *cb, SplineFont *dying) {
       case ut_state: case ut_statehint: case ut_statename:
 	if ( cb->u.state.copied_from == dying )
 	    cb->u.state.copied_from = NULL;
-      break;
-      case ut_possub:
-	while ( cb!=NULL ) {
-	    if ( cb->u.possub.copied_from == dying )
-		cb->u.possub.copied_from = NULL;
-	    cb = cb->u.possub.more_pst;
-	}
       break;
       case ut_width:
       case ut_vwidth:
@@ -1724,7 +1644,7 @@ static Undoes *SCCopyAll(SplineChar *sc,int full) {
 	    if ( copymetadata && layer==ly_fore ) {
 		cur->u.state.charname = copy(sc->name);
 		cur->u.state.comment = copy(sc->comment);
-		cur->u.state.possub = PSTCopy(sc->possub,sc,sc->parent);
+		cur->u.state.possub = PSTCopy(sc->possub,sc,NULL);
 	    } else {
 		cur->u.state.charname = NULL;
 		cur->u.state.comment = NULL;
@@ -2093,10 +2013,10 @@ return( dontask_ret );
 /* when pasting from the fontview we do a clear first */
 #ifdef FONTFORGE_CONFIG_TYPE3
 static void _PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
-	int layer, real trans[6]) {
+	int layer, real trans[6], struct sfmergecontext *mc) {
 #else
 static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
-	real trans[6]) {
+	real trans[6], struct sfmergecontext *mc) {
     const int layer = ly_fore;
 #endif
     DBounds bb;
@@ -2237,7 +2157,10 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
 		    paster->u.state.comment);
 	    PSTFree(sc->possub);
 	    for ( fvs = fv_list; fvs!=NULL && fvs->sf!=paster->u.state.copied_from; fvs=fvs->next );
-	    sc->possub = PSTCopy(paster->u.state.possub,sc,fvs==NULL?NULL:fvs->sf);
+	    if ( fvs!=NULL ) {	/* If we can't translate the lookups, the PSTs are meaningless */
+		mc->sf_from = fvs->sf; mc->sf_to = sc->parent;
+		sc->possub = PSTCopy(paster->u.state.possub,sc,mc);
+	    }
 	}
 	if ( paster->u.state.refs!=NULL ) {
 	    RefChar *new, *refs;
@@ -2284,12 +2207,6 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
 	if ( was_empty && (sc->hstem!=NULL || sc->vstem!=NULL))
 	    sc->changedsincelasthinted = false;
       break;
-      case ut_possub:
-	while ( paster!=NULL ) {
-	    SCAppendPosSub(sc,paster->u.possub.pst,paster->u.possub.data,paster->u.possub.copied_from);
-	    paster = paster->u.possub.more_pst;
-	}
-      break;
       case ut_width:
 	SCPreserveWidth(sc);
 	SCSynchronizeWidth(sc,paster->u.width,sc->width,fv);
@@ -2328,7 +2245,7 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
 
 #ifdef FONTFORGE_CONFIG_TYPE3
 static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
-	real trans[6]) {
+	real trans[6], struct sfmergecontext *mc) {
     if ( paster->undotype==ut_layers && sc->parent->multilayer ) {
 	int lc, start, layer;
 	Undoes *pl;
@@ -2354,18 +2271,18 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
 	    sc->layer_cnt = start+lc;
 	}
 	for ( lc=0, pl = paster->u.multiple.mult; pl!=NULL; pl=pl->next, ++lc )
-	    _PasteToSC(sc,pl,fv,pasteinto,start+lc,trans);
+	    _PasteToSC(sc,pl,fv,pasteinto,start+lc,trans,mc);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	SCMoreLayers(sc,old);
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     } else if ( paster->undotype==ut_layers ) {
 	Undoes *pl;
 	for ( pl = paster->u.multiple.mult; pl!=NULL; pl=pl->next ) {
-	    _PasteToSC(sc,pl,fv,pasteinto,ly_fore,trans);
+	    _PasteToSC(sc,pl,fv,pasteinto,ly_fore,trans,mc);
 	    pasteinto = true;		/* Merge other layers in */
 	}
     } else
-	_PasteToSC(sc,paster,fv,pasteinto,ly_fore,trans);
+	_PasteToSC(sc,paster,fv,pasteinto,ly_fore,trans,mc);
 }
 #endif
 
@@ -2529,12 +2446,6 @@ return;
 	    }
 	    SCSynchronizeWidth(cvsc,width,cvsc->width,NULL);
 	    cvsc->vwidth = vwidth;
-	}
-      break;
-      case ut_possub:
-	while ( paster!=NULL ) {
-	    SCAppendPosSub(cvsc,paster->u.possub.pst,paster->u.possub.data,paster->u.possub.copied_from);
-	    paster = paster->u.possub.more_pst;
 	}
       break;
       case ut_width:
@@ -2947,8 +2858,11 @@ void PasteIntoFV(FontView *fv,int pasteinto,real trans[6]) {
     extern int onlycopydisplayed;
     SplineFont *sf = fv->sf, *origsf = sf;
     MMSet *mm = sf->mm;
+    struct sfmergecontext mc;
 
     fv->refstate = 0;
+    memset(&mc,0,sizeof(mc));
+    mc.sf_to = fv->sf;
 
     cur = &copybuffer;
     for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] )
@@ -3019,7 +2933,7 @@ return;
 	      case ut_noop:
 	      break;
 	      case ut_state: case ut_width: case ut_vwidth:
-	      case ut_lbearing: case ut_rbearing: case ut_possub:
+	      case ut_lbearing: case ut_rbearing:
 	      case ut_statehint: case ut_statename:
 	      case ut_layers: case ut_anchors:
 		if ( !sf->hasvmetrics && cur->undotype==ut_vwidth) {
@@ -3028,7 +2942,7 @@ return;
 #endif
  goto err;
 		}
-		PasteToSC(SFMakeChar(sf,fv->map,i),cur,fv,pasteinto,trans);
+		PasteToSC(SFMakeChar(sf,fv->map,i),cur,fv,pasteinto,trans,&mc);
 	      break;
 	      case ut_bitmapsel: case ut_bitmap:
 		if ( onlycopydisplayed && fv->show!=fv->filled )
@@ -3045,7 +2959,7 @@ return;
 	      break;
 	      case ut_composit:
 		if ( cur->u.composit.state!=NULL )
-		    PasteToSC(SFMakeChar(sf,fv->map,i),cur->u.composit.state,fv,pasteinto,trans);
+		    PasteToSC(SFMakeChar(sf,fv->map,i),cur->u.composit.state,fv,pasteinto,trans,&mc);
 		for ( bmp=cur->u.composit.bitmaps; bmp!=NULL; bmp = bmp->next ) {
 		    for ( bdf=sf->bitmaps; bdf!=NULL &&
 			    (bdf->pixelsize!=bmp->u.bmpstate.pixelsize || BDFDepth(bdf)!=bmp->u.bmpstate.depth);
@@ -3093,6 +3007,7 @@ return;
 #endif
     if ( oldsel!=fv->selected )
 	free(oldsel);
+    SFFinishMergeContext(&mc);
 }
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -3101,9 +3016,12 @@ void PasteIntoMV(MetricsView *mv,SplineChar *sc, int doclear) {
     BDFFont *bdf;
     int yestoall=0, first=true;
     extern int onlycopydisplayed;
+    struct sfmergecontext mc;
+
+    memset(&mc,0,sizeof(mc));
+    mc.sf_to = mv->fv->sf;
 
     cur = &copybuffer;
-
 
     if ( copybuffer.undotype == ut_none ) {
 	SCCheckXClipboard(mv->gw,sc,dm_fore,doclear);
@@ -3126,7 +3044,7 @@ return;
 #endif
 return;
 	}
-	PasteToSC(sc,cur,mv->fv,!doclear,NULL);
+	PasteToSC(sc,cur,mv->fv,!doclear,NULL,&mc);
       break;
       case ut_bitmapsel: case ut_bitmap:
 	if ( onlycopydisplayed && mv->bdf!=NULL )
@@ -3145,7 +3063,7 @@ return;
       break;
       case ut_composit:
 	if ( cur->u.composit.state!=NULL )
-	    PasteToSC(sc,cur->u.composit.state,mv->fv,!doclear,NULL);
+	    PasteToSC(sc,cur->u.composit.state,mv->fv,!doclear,NULL,&mc);
 	for ( bmp=cur->u.composit.bitmaps; bmp!=NULL; bmp = bmp->next ) {
 	    for ( bdf=mv->fv->sf->bitmaps; bdf!=NULL &&
 		    (bdf->pixelsize!=bmp->u.bmpstate.pixelsize || BDFDepth(bdf)!=bmp->u.bmpstate.depth);
@@ -3158,6 +3076,7 @@ return;
 	first = false;
       break;
     }
+    SFFinishMergeContext(&mc);
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
@@ -3203,60 +3122,4 @@ void PasteAnchorClassMerge(SplineFont *sf,AnchorClass *into,AnchorClass *from) {
 
 void PasteRemoveAnchorClass(SplineFont *sf,AnchorClass *dying) {
     _PasteAnchorClassManip(sf,NULL,dying);
-}
-
-void PosSubCopy(enum possub_type type, char **data,SplineFont *sf) {
-
-    CopyBufferFreeGrab();
-
-    copybuffer.undotype = ut_possub;
-    copybuffer.u.possub.pst = type;
-    copybuffer.u.possub.data = data;
-    copybuffer.u.possub.more_pst = NULL;
-    copybuffer.u.possub.copied_from = sf;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    XClipCheckEps();
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-}
-
-void CopyPSTStart(SplineFont *sf) {
-
-    CopyBufferFreeGrab();
-
-    copybuffer.undotype = ut_possub;
-    copybuffer.u.possub.pst = pst_null;
-    copybuffer.u.possub.data = NULL;
-    copybuffer.u.possub.more_pst = NULL;
-    copybuffer.u.possub.copied_from = sf;
-}
-
-void CopyPSTAppend(enum possub_type type, char *text ) {
-    Undoes *cp;
-
-    if ( copybuffer.undotype!=ut_possub ) {
-	IError("Bad call to CopyPSTAppend");
-return;
-    }
-
-    if ( copybuffer.u.possub.pst == pst_null )
-	copybuffer.u.possub.pst = type;
-    for ( cp=&copybuffer; cp!=NULL && cp->u.possub.pst!=type; cp = cp->u.possub.more_pst );
-    if ( cp==NULL ) {
-	cp = chunkalloc(sizeof(Undoes));
-	cp->undotype = ut_possub;
-	cp->u.possub.pst = type;
-	cp->u.possub.copied_from = copybuffer.u.possub.copied_from;
-	cp->u.possub.more_pst = copybuffer.u.possub.more_pst;
-	copybuffer.u.possub.more_pst = cp;
-    }
-    if ( cp->u.possub.cnt>=cp->u.possub.max ) {
-	cp->u.possub.max += 10;
-	if ( cp->u.possub.data==NULL )
-	    cp->u.possub.data = galloc((cp->u.possub.max+1)*sizeof(char *));
-	else
-	    cp->u.possub.data = grealloc(cp->u.possub.data,(cp->u.possub.max+1)*sizeof(char *));
-    }
-    cp->u.possub.data[cp->u.possub.cnt++] = copy(text);
-    cp->u.possub.data[cp->u.possub.cnt  ] = NULL;
-    free(text);
 }
