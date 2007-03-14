@@ -1649,6 +1649,18 @@ return( DVChar(dv,event));
 return( true );
 }
 
+static int CVXPos(DebugView *dv,int offset,int width) {
+    GRect r, screensize;
+    int x;
+
+    GDrawGetSize(dv->cv->gw,&r);
+    GDrawGetSize(GDrawGetRoot(NULL),&screensize);
+    x = r.x+r.width+10 + offset;
+    if ( x+width >screensize.width )
+	x = screensize.width - width;
+return( x );
+}
+
 static void DVCreateRaster(DebugView *dv) {
     GWindowAttrs wattrs;
     GRect pos;
@@ -1658,8 +1670,8 @@ static void DVCreateRaster(DebugView *dv) {
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
     wattrs.utf8_window_title = _("Current Raster (TrueType)");
-    pos.x = 664; pos.y = 1;
     pos.width = 50; pos.height = 50;
+    pos.x = CVXPos(dv,143,pos.width); pos.y = 1;
     dv->raster = GDrawCreateTopWindow(NULL,&pos,dvraster_e_h,dv,&wattrs);
     GDrawSetVisible(dv->raster,true);
 }
@@ -1675,8 +1687,8 @@ static void DVCreateRegs(DebugView *dv) {
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
     wattrs.utf8_window_title = _("Registers (TrueType)");
-    pos.x = 664; pos.y = 1;
     pos.width = 143; pos.height = 269;
+    pos.x = CVXPos(dv,0,pos.width); pos.y = 1;
     dv->regs = GDrawCreateTopWindow(NULL,&pos,dvreg_e_h,dv,&wattrs);
 
     memset(&gd,0,sizeof(gd));
@@ -1701,8 +1713,8 @@ static void DVCreateStack(DebugView *dv) {
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
     wattrs.utf8_window_title = _("Stack (TrueType)");
-    pos.x = 664; pos.y = 302;
     pos.width = 143; pos.height = 269;
+    pos.x = CVXPos(dv,0,pos.width); pos.y = 302;
     dv->stack = GDrawCreateTopWindow(NULL,&pos,dvstack_e_h,dv,&wattrs);
 
     memset(&gd,0,sizeof(gd));
@@ -1727,8 +1739,8 @@ static void DVCreateStore(DebugView *dv) {
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
     wattrs.utf8_window_title = _("Storage (TrueType)");
-    pos.x = 664; pos.y = 602;
     pos.width = 183; pos.height = 100;
+    pos.x = CVXPos(dv,0,pos.width); pos.y = 602;
     dv->storage = GDrawCreateTopWindow(NULL,&pos,dvstore_e_h,dv,&wattrs);
 
     memset(&gd,0,sizeof(gd));
@@ -1756,9 +1768,9 @@ static void DVCreatePoints(DebugView *dv) {
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
     wattrs.utf8_window_title = _("Points (TrueType)");
-    pos.x = 664; pos.y = 732;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,129+_GScrollBar_Width)+19);
     pos.height = 269;
+    pos.x = CVXPos(dv,0,pos.width); pos.y = 732;
     dv->points = GDrawCreateTopWindow(NULL,&pos,dvpoints_e_h,dv,&wattrs);
 
     dv->pts_head = GDrawPointsToPixels(NULL,GGadgetScale(5+4*16+3));
@@ -1872,6 +1884,7 @@ static void DVCreateCvt(DebugView *dv) {
     wattrs.utf8_window_title = _("Cvt");
     pos.x = 664; pos.y = 732;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,125))+20; pos.height = 169;
+    pos.x = CVXPos(dv,183,pos.width); pos.y = 602;
     dv->cvt = GDrawCreateTopWindow(NULL,&pos,dvcvt_e_h,dv,&wattrs);
 
     memset(&gd,0,sizeof(gd));
