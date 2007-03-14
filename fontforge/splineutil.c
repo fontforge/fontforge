@@ -174,6 +174,14 @@ return;
 }
 #endif
 
+char *strconcat(const char *str1,const char *str2) {
+    int len1 = strlen(str1);
+    char *ret = galloc(len1+strlen(str2)+1);
+    strcpy(ret,str1);
+    strcpy(ret+len1,str2);
+return( ret );
+}
+
 void LineListFree(LineList *ll) {
     LineList *next;
 
@@ -2095,7 +2103,7 @@ static void _SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext 
 	    sf->glyphs[i]->vwidth = sf->ascent+sf->descent;
 	    sf->glyphs[i]->unicodeenc = UniFromName(sf->glyphs[i]->name,sf->uni_interp,map->enc);
 	    sf->glyphs[i]->parent = sf;
-	    SCLigDefault(sf->glyphs[i]);		/* Also reads from AFM file, but it probably doesn't exist */
+	    /* SCLigDefault(sf->glyphs[i]);*/		/* Also reads from AFM file, but it probably doesn't exist */
 	}
 #if defined(FONTFORGE_CONFIG_GDRAW)
 	gwwv_progress_next();
@@ -4478,68 +4486,6 @@ MinimumDistance *MinimumDistanceCopy(MinimumDistance *md) {
 return( head );
 }
 
-static int KCFindName(char *name, char **classnames, int cnt ) {
-    int i;
-    char *pt, *end, ch;
-
-    for ( i=1; i<cnt; ++i ) {
-	for ( pt = classnames[i]; *pt; pt=end+1 ) {
-	    end = strchr(pt,' ');
-	    if ( end==NULL ) end = pt+strlen(pt);
-	    ch = *end;
-	    *end = '\0';
-	    if ( strcmp(pt,name)==0 ) {
-		*end = ch;
-return( i );
-	    }
-	    *end = ch;
-	    if ( ch=='\0' )
-	break;
-	}
-    }
-return( 0 );
-}
-
-KernClass *SFFindKernClass(SplineFont *sf,SplineChar *first,SplineChar *last,
-	int *index,int allow_zero) {
-    int i,f,l;
-    KernClass *kc;
-
-    for ( i=0; i<=allow_zero; ++i ) {
-	for ( kc=sf->kerns; kc!=NULL; kc=kc->next ) {
-	    f = KCFindName(first->name,kc->firsts,kc->first_cnt);
-	    l = KCFindName(last->name,kc->seconds,kc->second_cnt);
-	    if ( f!=0 && l!=0 ) {
-		if ( i || kc->offsets[f*kc->second_cnt+l]!=0 ) {
-		    *index = f*kc->second_cnt+l;
-return( kc );
-		}
-	    }
-	}
-    }
-return( NULL );
-}
-
-KernClass *SFFindVKernClass(SplineFont *sf,SplineChar *first,SplineChar *last,
-	int *index,int allow_zero) {
-    int i,f,l;
-    KernClass *kc;
-
-    for ( i=0; i<=allow_zero; ++i ) {
-	for ( kc=sf->vkerns; kc!=NULL; kc=kc->next ) {
-	    f = KCFindName(first->name,kc->firsts,kc->first_cnt);
-	    l = KCFindName(last->name,kc->seconds,kc->second_cnt);
-	    if ( f!=0 && l!=0 ) {
-		if ( i || kc->offsets[f*kc->second_cnt+l]!=0 ) {
-		    *index = f*kc->second_cnt+l;
-return( kc );
-		}
-	    }
-	}
-    }
-return( NULL );
-}
-
 void KernPairsFree(KernPair *kp) {
     KernPair *knext;
     for ( ; kp!=NULL; kp = knext ) {
@@ -4946,15 +4892,6 @@ void AnchorClassesFree(AnchorClass *an) {
     }
 }
 
-void TableOrdersFree(struct table_ordering *ord) {
-    struct table_ordering *onext;
-    for ( ; ord!=NULL; ord = onext ) {
-	onext = ord->next;
-	free(ord->ordered_features);
-	chunkfree(ord,sizeof(struct table_ordering));
-    }
-}
-
 void TtfTablesFree(struct ttf_table *tab) {
     struct ttf_table *next;
 
@@ -4965,22 +4902,49 @@ void TtfTablesFree(struct ttf_table *tab) {
     }
 }
 
-void ScriptRecordFree(struct script_record *sr) {
-    int i;
+void ScriptLangListFree(struct scriptlanglist *sl) {
+    struct scriptlanglist *next;
 
-    for ( i=0; sr[i].script!=0; ++i )
-	free( sr[i].langs );
-    free( sr );
+    while ( sl!=NULL ) {
+	next = sl->next;
+	free(sl->morelangs);
+	chunkfree(sl,sizeof(*sl));
+	sl = next;
+    }
 }
 
-void ScriptRecordListFree(struct script_record **script_lang) {
-    int i;
+void FeatureScriptLangListFree(FeatureScriptLangList *fl) {
+    FeatureScriptLangList *next;
 
-    if ( script_lang==NULL )
-return;
-    for ( i=0; script_lang[i]!=NULL; ++i )
-	ScriptRecordFree(script_lang[i]);
-    free( script_lang );
+    while ( fl!=NULL ) {
+	next = fl->next;
+	ScriptLangListFree(fl->scripts);
+	chunkfree(fl,sizeof(*fl));
+	fl = next;
+    }
+}
+
+void OTLookupFree(OTLookup *lookup) {
+    struct lookup_subtable *st, *stnext;
+
+    free(lookup->lookup_name);
+    FeatureScriptLangListFree(lookup->features);
+    for ( st=lookup->subtables; st!=NULL; st=stnext ) {
+	stnext = st->next;
+	free(st->subtable_name);
+	free(st->suffix);
+	chunkfree(st,sizeof(struct lookup_subtable));
+    }
+    chunkfree( lookup,sizeof(OTLookup) );
+}
+
+void OTLookupListFree(OTLookup *lookup ) {
+    OTLookup *next;
+
+    for ( ; lookup!=NULL; lookup = next ) {
+	next = lookup->next;
+	OTLookupFree(lookup);
+    }
 }
 
 KernClass *KernClassCopy(KernClass *kc) {
@@ -5215,7 +5179,6 @@ return;
     /* We don't free the EncMap. That field is only a temporary pointer. Let the FontView free it, that's where it really lives */
     SplinePointListsFree(sf->grid.splines);
     AnchorClassesFree(sf->anchor);
-    TableOrdersFree(sf->orders);
     TtfTablesFree(sf->ttf_tables);
     UndoesFree(sf->grid.undoes);
     UndoesFree(sf->grid.redoes);
@@ -5225,12 +5188,12 @@ return;
 	SplineFontFree(sf->subfonts[i]);
     free(sf->subfonts);
     GlyphHashFree(sf);
-    ScriptRecordListFree(sf->script_lang);
+    OTLookupListFree(sf->gpos_lookups);
+    OTLookupListFree(sf->gsub_lookups);
     KernClassListFree(sf->kerns);
     KernClassListFree(sf->vkerns);
     FPSTFree(sf->possub);
     ASMFree(sf->sm);
-    free(sf->gentags.tagtype);
     OtfNameListFree(sf->fontstyle_name);
     for ( i=1; i<sf->mark_class_cnt; ++i ) {
 	free( sf->mark_classes[i] );

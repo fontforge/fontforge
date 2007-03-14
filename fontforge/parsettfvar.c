@@ -195,7 +195,7 @@ static SplineChar **InfoCopyGlyphs(struct ttfinfo *info) {
 	if ( info->chars[i]==NULL )
 	    chars[i] = NULL;
 	else {
-	    chars[i] = SplineCharCopy(info->chars[i],NULL);
+	    chars[i] = SplineCharCopy(info->chars[i],NULL,NULL);
 	    free(chars[i]->ttf_instrs); chars[i]->ttf_instrs = NULL;
 	    chars[i]->ttf_instrs_len = 0;
 	    PSTFree(chars[i]->possub); chars[i]->possub = NULL;

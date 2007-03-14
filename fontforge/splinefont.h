@@ -220,13 +220,145 @@ typedef struct bdffloat {
 } BDFFloat;
 
 /* OpenType does not document 'dflt' as a language, but we'll use it anyway. */
-/* we'll turn it into a default entry when we output it. */
+/* (Adobe uses it too) we'll turn it into a default entry when we output it. */
 #define DEFAULT_LANG		CHR('d','f','l','t')
+/* The OpenType spec says in one place that the default script is 'dflt' and */
+/*  in another that it is 'DFLT'. 'DFLT' is correct */
 #define DEFAULT_SCRIPT		CHR('D','F','L','T')
 #define REQUIRED_FEATURE	CHR(' ','R','Q','D')
 
-#define SLI_UNKNOWN		0xffff
-#define SLI_NESTED		0xfffe
+enum otlookup_type {
+    ot_undef = 0,			/* Not a lookup type */
+    gsub_start	       = 0x000,		/* Not a lookup type */
+    gsub_single        = 0x001,
+    gsub_multiple      = 0x002,
+    gsub_alternate     = 0x003,
+    gsub_ligature      = 0x004,
+    gsub_context       = 0x005,
+    gsub_contextchain  = 0x006,
+     /* GSUB extension 7 */
+    gsub_reversecchain = 0x008,
+    /* mac state machines */
+    morx_indic	       = 0x0fd,
+    morx_context       = 0x0fe,
+    morx_insert        = 0x0ff,
+    /* ********************* */
+    gpos_start         = 0x100,		/* Not a lookup type */
+
+    gpos_single        = 0x101,
+    gpos_pair          = 0x102,
+    gpos_cursive       = 0x103,
+    gpos_mark2base     = 0x104,
+    gpos_mark2ligature = 0x105,
+    gpos_mark2mark     = 0x106,
+    gpos_context       = 0x107,
+    gpos_contextchain  = 0x108,
+    /* GPOS extension 9 */
+    kern_statemachine  = 0x1ff
+
+    /* otlookup&0xff == lookup type for the appropriate table */
+    /* otlookup>>8:     0=>GSUB, 1=>GPOS */
+};
+
+enum otlookup_typemasks {
+    gsub_single_mask        = 0x00001,
+    gsub_multiple_mask      = 0x00002,
+    gsub_alternate_mask     = 0x00004,
+    gsub_ligature_mask      = 0x00008,
+    gsub_context_mask       = 0x00010,
+    gsub_contextchain_mask  = 0x00020,
+    gsub_reversecchain_mask = 0x00040,
+    morx_indic_mask         = 0x00080,
+    morx_context_mask       = 0x00100,
+    morx_insert_mask        = 0x00200,
+    /* ********************* */
+    gpos_single_mask        = 0x00400,
+    gpos_pair_mask          = 0x00800,
+    gpos_cursive_mask       = 0x01000,
+    gpos_mark2base_mask     = 0x02000,
+    gpos_mark2ligature_mask = 0x04000,
+    gpos_mark2mark_mask     = 0x08000,
+    gpos_context_mask       = 0x10000,
+    gpos_contextchain_mask  = 0x20000,
+    kern_statemachine_mask  = 0x40000
+};
+
+#define MAX_LANG 		4	/* If more than this we allocate more_langs in chunks of MAX_LANG */
+struct scriptlanglist {
+    uint32 script;
+    uint32 langs[MAX_LANG];
+    uint32 *morelangs;
+    int lang_cnt;
+    struct scriptlanglist *next;
+};
+
+extern struct opentype_feature_friendlynames {
+    uint32 tag;
+    char *tagstr;
+    char *friendlyname;
+    int masks;
+} friendlies[];
+
+typedef struct featurescriptlanglist {
+    uint32 featuretag;
+    struct scriptlanglist *scripts;
+    struct featurescriptlanglist *next;
+    unsigned int ismac: 1;	/* treat the featuretag as a mac feature/setting */
+} FeatureScriptLangList;
+
+enum pst_flags { pst_r2l=1, pst_ignorebaseglyphs=2, pst_ignoreligatures=4,
+	pst_ignorecombiningmarks=8 };
+
+typedef struct otlookup {
+    struct otlookup *next;
+    enum otlookup_type lookup_type;
+    uint16 lookup_flags;
+    char *lookup_name;
+    FeatureScriptLangList *features;
+    struct lookup_subtable {
+	char *subtable_name;
+	char *suffix;			/* for gsub_single, used to find a default replacement */
+	struct otlookup *lookup;
+	unsigned int unused: 1;
+	unsigned int per_glyph_pst_or_kern: 1;
+	unsigned int anchor_classes: 1;
+	unsigned int vertical_kerning: 1;
+	unsigned int ticked: 1;
+	struct kernclass *kc;
+	struct generic_fpst *fpst;
+	struct generic_asm  *sm;
+	/* Each time an item is added to a lookup we must place it into a */
+	/*  subtable. If it's a kerning class, fpst or state machine it has */
+	/*  a subtable all to itself. If it's an anchor class it can share */
+	/*  a subtable with other anchor classes (merge with). If it's a glyph */
+	/*  PST it may share a subtable with other PSTs */
+	/* Note items may only be placed in lookups in which they fit. Can't */
+	/*  put kerning data in a gpos_single lookup, etc. */
+	struct lookup_subtable *next;
+	int32 subtable_offset;
+	int32 *extra_subtables;
+	/* If a kerning subtable has too much stuff in it, we are prepared to */
+	/*  break it up into several smaller subtables, each of which has */
+	/*  an offset in this list (extra-subtables[0]==subtable_offset) */
+	/*  the list is terminated by an entry of -1 */
+    } *subtables;
+    unsigned int unused: 1;	/* No subtable is used (call SFFindUnusedLookups before examining) */
+    unsigned int empty: 1;	/* No subtable is used, and no anchor classes are used */
+    unsigned int store_in_afm: 1;	/* Used for ligatures, some get stored */
+    					/*  'liga' generally does, but 'frac' doesn't */
+    unsigned int needs_extension: 1;	/* Used during opentype generation */
+    unsigned int temporary_kern: 1;	/* Used when decomposing kerning classes into kern pairs for older formats */
+    unsigned int def_lang_checked: 1;
+    unsigned int def_lang_found: 1;
+    unsigned int ticked: 1;
+    int16 subcnt;		/* Actual number of subtables we will output */
+				/* Some of our subtables may contain no data */
+			        /* Some may be too big and need to be broken up.*/
+			        /* So this field may be different than just counting the subtables */
+    int lookup_index;		/* used during opentype generation */
+    uint32 lookup_offset;
+    uint32 lookup_length;
+} OTLookup;
 
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 typedef struct devicetab {
@@ -242,18 +374,14 @@ typedef struct valdev {		/* Value records can have four associated device tables
 } ValDevTab;
 #endif
 
-enum pst_flags { pst_r2l=1, pst_ignorebaseglyphs=2, pst_ignoreligatures=4,
-	pst_ignorecombiningmarks=8 };
-enum anchorclass_type { act_mark, /* act_mklg, */act_mkmk, act_curs };
+enum anchorclass_type { act_mark, act_mkmk, act_curs, act_mklg };
 typedef struct anchorclass {
     char *name;			/* in utf8 */
-    uint32 feature_tag;
-    uint16 script_lang_index;
-    uint16 flags;
-    uint16 merge_with;
-    uint16 type;		/* anchorclass_type */
-    struct anchorclass *next;
+    struct lookup_subtable *subtable;
+    uint8 type;		/* anchorclass_type */
+    uint8 has_base;
     uint8 processed, has_mark, matches, ac_num;
+    struct anchorclass *next;
 } AnchorClass;
 
 enum anchor_type { at_mark, at_basechar, at_baselig, at_basemark, at_centry, at_cexit, at_max };
@@ -271,6 +399,31 @@ typedef struct anchorpoint {
     int16  lig_index;
     struct anchorpoint *next;
 } AnchorPoint;
+
+typedef struct kernpair {
+    struct lookup_subtable *subtable;
+    struct splinechar *sc;
+    int16 off;
+    uint16 kcid;			/* temporary value */
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    DeviceTable *adjust;		/* Only adjustment in one dimen, if more needed use pst */
+#endif
+    struct kernpair *next;
+} KernPair;
+
+typedef struct kernclass {
+    int first_cnt, second_cnt;		/* Count of classes for first and second chars */
+    char **firsts;			/* list of a space seperated list of char names */
+    char **seconds;			/*  one entry for each class. Entry 0 is null */
+    					/*  and means everything not specified elsewhere */
+    struct lookup_subtable *subtable;
+    uint16 kcid;			/* Temporary value, used for many things briefly */
+    int16 *offsets;			/* array of first_cnt*second_cnt entries */
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    DeviceTable *adjusts;		/* array of first_cnt*second_cnt entries */
+#endif
+    struct kernclass *next;
+} KernClass;
 
 enum possub_type { pst_null, pst_position, pst_pair,
 	pst_substitution, pst_alternate,
@@ -296,11 +449,10 @@ struct vr {
 };
 
 typedef struct generic_pst {
+    unsigned int ticked: 1;
+    unsigned int temporary: 1;		/* Used in afm ligature closure */
     /* enum possub_type*/ uint8 type;
-    uint8 macfeature;		/* tag should be interpretted as <feature,setting> rather than 'abcd' */
-    uint16 flags;
-    uint16 script_lang_index;		/* 0xffff means none */
-    uint32 tag;
+    struct lookup_subtable *subtable;
     struct generic_pst *next;
     union {
 	struct vr pos;
@@ -326,9 +478,7 @@ enum fpossub_format { pst_glyphs, pst_class, pst_coverage,
 typedef struct generic_fpst {
     uint16 /*enum sfpossub_type*/ type;
     uint16 /*enum sfpossub_format*/ format;
-    uint16 script_lang_index;
-    uint16 flags;
-    uint32 tag;
+    struct lookup_subtable *subtable;
     struct generic_fpst *next;
     uint16 nccnt, bccnt, fccnt;
     uint16 rule_cnt;
@@ -343,7 +493,7 @@ typedef struct generic_fpst {
 	int lookup_cnt;
 	struct seqlookup {
 	    int seq;
-	    uint32 lookup_tag;
+	    struct otlookup *lookup;
 	} *lookups;
     } *rules;
     uint8 ticked;
@@ -356,7 +506,7 @@ enum asm_flags { asm_vert=0x8000, asm_descending=0x4000, asm_always=0x2000 };
 typedef struct generic_asm {		/* Apple State Machine */
     struct generic_asm *next;
     uint16 /*enum asm_type*/ type;
-    uint16 feature, setting;
+    struct lookup_subtable *subtable;	/* Lookup contains feature setting info */
     uint16 flags;	/* 0x8000=>vert, 0x4000=>r2l, 0x2000=>hor&vert */
     uint8 ticked;
 
@@ -367,8 +517,8 @@ typedef struct generic_asm {		/* Apple State Machine */
 	uint16 flags;
 	union {
 	    struct {
-		uint32 mark_tag;	/* for contextual glyph subs (tag of a nested lookup) */
-		uint32 cur_tag;		/* for contextual glyph subs */
+		struct otlookup *mark_lookup;	/* for contextual glyph subs (tag of a nested lookup) */
+		struct otlookup *cur_lookup;	/* for contextual glyph subs */
 	    } context;
 	    struct {
 		char *mark_ins;
@@ -380,7 +530,7 @@ typedef struct generic_asm {		/* Apple State Machine */
 	    } kern;
 	} u;
     } *state;
-    uint32 opentype_tag;		/* If converted from opentype */
+    /*uint32 opentype_tag;		/* If converted from opentype */
 } ASM;
 /* State Flags:
  Indic:
@@ -762,32 +912,6 @@ typedef struct refchar {
     uint16 match_pt_base, match_pt_ref;
 } RefChar;
 
-typedef struct kernpair {
-    struct splinechar *sc;
-    int16 off;
-    uint16 sli, flags;
-    uint16 kcid;			/* temporary value */
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
-    DeviceTable *adjust;		/* Only adjustment in one dimen, if more needed use pst */
-#endif
-    struct kernpair *next;
-} KernPair;
-
-typedef struct kernclass {
-    int first_cnt, second_cnt;		/* Count of classes for first and second chars */
-    char **firsts;			/* list of a space seperated list of char names */
-    char **seconds;			/*  one entry for each class. Entry 0 is null */
-    					/*  and means everything not specified elsewhere */
-    uint16 sli;
-    uint16 flags;
-    uint16 kcid;			/* Temporary value, used for many things briefly */
-    int16 *offsets;			/* array of first_cnt*second_cnt entries */
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
-    DeviceTable *adjusts;		/* array of first_cnt*second_cnt entries */
-#endif
-    struct kernclass *next;
-} KernClass;
-
 /* Some stems may appear, disappear, reapear several times */
 /* Serif stems on I which appear at 0, disappear, reappear at top */
 /* Or the major vertical stems on H which disappear at the cross bar */
@@ -1011,7 +1135,14 @@ typedef struct splinefont {
     unsigned int weight_width_slope_only: 1;	/* This bit seems stupid to me */
     unsigned int save_to_dir: 1;		/* Loaded from an sfdir collection rather than a simple sfd file */
     unsigned int head_optimized_for_cleartype: 1;/* Bit in the 'head' flags field, if unset "East Asian fonts in the Windows Presentation Framework (Avalon) will not be hinted" */
+    unsigned int ticked: 1;
+	/* 6 bits left */
     struct fontview *fv;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    struct metricsview *metrics;
+#else
+    void *metrics;
+#endif
     enum uni_interp uni_interp;
     NameList *for_new_glyphs;
     EncMap *map;		/* only used when opening a font to provide original default encoding */
@@ -1064,9 +1195,7 @@ typedef struct splinefont {
     int tempuniqueid;
     int top_enc;
     uint16 desired_row_cnt, desired_col_cnt;
-    AnchorClass *anchor;
     struct glyphnamehash *glyphnames;
-    struct table_ordering { uint32 table_tag; uint32 *ordered_features; struct table_ordering *next; } *orders;
     struct ttf_table {
 	uint32 tag;
 	int32 len, maxlen;
@@ -1077,37 +1206,22 @@ typedef struct splinefont {
 	/* We copy: fpgm, prep, cvt, maxp */
     struct instrdata *instr_dlgs;	/* Pointer to all table and character instruction dlgs in this font */
     struct shortview *cvt_dlg;
-    /* Any GPOS/GSUB entry (PST, AnchorClass, kerns, FPST */
-    /*  Has an entry saying what scripts/languages it should appear it */
-    /*  Things like fractions will appear in almost all possible script/lang */
-    /*  combinations, while alphabetic ligatures will only live in one script */
-    /* Rather than store the complete list of possibilities in each PST we */
-    /*  store all choices used here, and just store an index into this list */
-    /*  in the PST. All lists are terminated by a 0 entry */
-    struct script_record {
-	uint32 script;
-	uint32 *langs;
-    } **script_lang;
-    struct kernclass *kerns, *vkerns;
     struct kernclasslistdlg *kcld, *vkcld;
+    struct kernclassdlg *kcd;
     struct texdata {
 	enum { tex_unset, tex_text, tex_math, tex_mathext } type;
 	int32 params[22];		/* param[6] has different meanings in normal and math fonts */
     } texdata;
-    struct gentagtype {
-	uint16 tt_cur, tt_max;
-	struct tagtype {
-	    enum possub_type type;
-	    uint32 tag;
-	} *tagtype;
-    } gentags;
+    OTLookup *gsub_lookups, *gpos_lookups;
+    /* Apple morx subtables become gsub, and kern subtables become gpos */
+    AnchorClass *anchor;
+    KernClass *kerns, *vkerns;
     FPST *possub;
     ASM *sm;				/* asm is a keyword */
     MacFeat *features;
     char *chosenname;			/* Set for files with multiple fonts in them */
     struct mmset *mm;			/* If part of a multiple master set */
     int16 macstyle;
-    int16 sli_cnt;
     char *fondname;			/* For use in generating mac families */
     /* from the GPOS 'size' feature. design_size, etc. are measured in tenths of a point */
     /*  bottom is exclusive, top is inclusive */
@@ -1140,6 +1254,8 @@ typedef struct splinefont {
 	uint16 ppem;
 	uint16 flags;
     } *gasp;
+    uint8 sfd_version;			/* Used only when reading in an sfd file */
+    struct gfi_data *fontinfo;
 } SplineFont;
 
 /* I am going to simplify my life and not encourage intermediate designs */
@@ -1238,6 +1354,8 @@ struct enc;
 extern void *chunkalloc(int size);
 extern void chunkfree(void *, int size);
 
+extern char *strconcat(const char *str, const char *str2);
+
 extern char *XUIDFromFD(int xuid[20]);
 extern SplineFont *SplineFontFromPSFont(struct fontdict *fd);
 extern int CheckAfmOfPostscript(SplineFont *sf,char *psname,EncMap *map);
@@ -1248,6 +1366,9 @@ extern int LoadKerningDataFromOfm(SplineFont *sf, char *filename, EncMap *map);
 extern int LoadKerningDataFromPfm(SplineFont *sf, char *filename, EncMap *map);
 extern int LoadKerningDataFromMacFOND(SplineFont *sf, char *filename, EncMap *map);
 extern int LoadKerningDataFromMetricsFile(SplineFont *sf, char *filename, EncMap *map);
+extern void SubsNew(SplineChar *to,enum possub_type type,int tag,char *components,
+	    SplineChar *default_script);
+extern void PosNew(SplineChar *to,int tag,int dx, int dy, int dh, int dv);
 extern int SFOneWidth(SplineFont *sf);
 extern int CIDOneWidth(SplineFont *sf);
 extern int SFOneHeight(SplineFont *sf);
@@ -1367,7 +1488,6 @@ extern int IsAnchorClassUsed(SplineChar *sc,AnchorClass *an);
 extern AnchorPoint *APAnchorClassMerge(AnchorPoint *anchors,AnchorClass *into,AnchorClass *from);
 extern void AnchorClassMerge(SplineFont *sf,AnchorClass *into,AnchorClass *from);
 extern void AnchorClassesFree(AnchorClass *kp);
-extern void TableOrdersFree(struct table_ordering *ord);
 extern void TtfTablesFree(struct ttf_table *tab);
 extern AnchorClass *AnchorClassMatch(SplineChar *sc1,SplineChar *sc2,
 	AnchorClass *restrict_, AnchorPoint **_ap1,AnchorPoint **_ap2 );
@@ -1375,7 +1495,6 @@ extern AnchorClass *AnchorClassMkMkMatch(SplineChar *sc1,SplineChar *sc2,
 	AnchorPoint **_ap1,AnchorPoint **_ap2 );
 extern AnchorClass *AnchorClassCursMatch(SplineChar *sc1,SplineChar *sc2,
 	AnchorPoint **_ap1,AnchorPoint **_ap2 );
-extern PST *SCFindPST(SplineChar *sc,int type,uint32 tag,int sli,int flags);
 extern void SCInsertPST(SplineChar *sc,PST *new);
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 extern void ValDevFree(ValDevTab *adjust);
@@ -1387,14 +1506,20 @@ extern void DeviceTableSet(DeviceTable *adjust, int size, int correction);
 extern void PSTFree(PST *lig);
 extern uint16 PSTDefaultFlags(enum possub_type type,SplineChar *sc );
 extern int PSTContains(const char *components,const char *name);
-extern int SCDefaultSLI(SplineFont *sf, SplineChar *default_script);
-extern int ScriptInSLI(SplineFont *sf,uint32 script,int sli);
-extern int SCScriptInSLI(SplineFont *sf,SplineChar *sc,int sli);
 extern StemInfo *StemInfoCopy(StemInfo *h);
 extern DStemInfo *DStemInfoCopy(DStemInfo *h);
 extern MinimumDistance *MinimumDistanceCopy(MinimumDistance *h);
-extern PST *PSTCopy(PST *base,SplineChar *sc,SplineFont *from);
-extern SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into);
+struct sfmergecontext {
+    SplineFont *sf_from, *sf_to;
+    int lcnt;
+    struct lookup_cvt { OTLookup *from, *to; int old;} *lks;
+    int scnt;
+    struct sub_cvt { struct lookup_subtable *from, *to; int old;} *subs;
+    char *prefix;
+};
+extern PST *PSTCopy(PST *base,SplineChar *sc,struct sfmergecontext *mc);
+extern void SFFinishMergeContext(struct sfmergecontext *mc);
+extern SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into,struct sfmergecontext *);
 extern BDFChar *BDFCharCopy(BDFChar *bc);
 extern void BitmapsCopy(SplineFont *to, SplineFont *from, int to_index, int from_index );
 extern struct gimage *ImageAlterClut(struct gimage *image);
@@ -1410,11 +1535,11 @@ extern SplineChar *SplineCharCreate(void);
 extern RefChar *RefCharCreate(void);
 extern void SCAddRef(SplineChar *sc,SplineChar *rsc,real xoff, real yoff);
 extern void _SCAddRef(SplineChar *sc,SplineChar *rsc,real transform[6]);
-extern void ScriptRecordFree(struct script_record *sr);
-extern void ScriptRecordListFree(struct script_record **script_lang);
 extern KernClass *KernClassCopy(KernClass *kc);
 extern void KernClassListFree(KernClass *kc);
 extern int KernClassContains(KernClass *kc, char *name1, char *name2, int ordered );
+extern void OTLookupFree(OTLookup *lookup);
+extern void OTLookupListFree(OTLookup *lookup );
 extern FPST *FPSTCopy(FPST *fpst);
 extern void FPSTFree(FPST *fpst);
 extern void ASMFree(ASM *sm);
@@ -1431,6 +1556,8 @@ extern EncMap *CompactEncMap(EncMap *map, SplineFont *sf);
 extern EncMap *EncMapNew(int encmax, int backmax, Encoding *enc);
 extern EncMap *EncMap1to1(int enccount);
 extern EncMap *EncMapCopy(EncMap *map);
+extern void ScriptLangListFree(struct scriptlanglist *sl);
+extern void FeatureScriptLangListFree(FeatureScriptLangList *fl);
 extern void SplineFontFree(SplineFont *sf);
 extern void OtfNameListFree(struct otfname *on);
 extern void MMSetFreeContents(MMSet *mm);
@@ -1703,12 +1830,8 @@ extern char *EncodingName(Encoding *map);
 extern char *SFEncodingName(SplineFont *sf,EncMap *map);
 extern void SFLigaturePrepare(SplineFont *sf);
 extern void SFLigatureCleanup(SplineFont *sf);
-extern void SFKernPrepare(SplineFont *sf,int isv);
+extern void SFKernClassTempDecompose(SplineFont *sf,int isv);
 extern void SFKernCleanup(SplineFont *sf,int isv);
-extern KernClass *SFFindKernClass(SplineFont *sf,SplineChar *first,SplineChar *last,
-	int *index,int allow_zero);
-extern KernClass *SFFindVKernClass(SplineFont *sf,SplineChar *first,SplineChar *last,
-	int *index,int allow_zero);
 extern int SCSetMetaData(SplineChar *sc,char *name,int unienc,
 	const char *comment);
 
@@ -1765,9 +1888,6 @@ extern SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,EncMap *map,int
 extern SplineChar *SFMakeChar(SplineFont *sf,EncMap *map,int i);
 extern char *AdobeLigatureFormat(char *name);
 extern uint32 LigTagFromUnicode(int uni);
-extern void SCLigDefault(SplineChar *sc);
-extern void SCTagDefault(SplineChar *sc,uint32 tag);
-extern void SCSuffixDefault(SplineChar *sc,uint32 tag,char *suffix,uint16 flags,uint16 sli);
 extern void SCLigCaretCheck(SplineChar *sc,int clean);
 extern BDFChar *BDFMakeGID(BDFFont *bdf,int gid);
 extern BDFChar *BDFMakeChar(BDFFont *bdf,EncMap *map,int enc);
@@ -1858,20 +1978,6 @@ extern void SFFigureGrid(SplineFont *sf);
 #endif
 extern int FVWinInfo(struct fontview *,int *cc,int *rc);
 
-#ifdef FONTFORGE_CONFIG_GTK
-extern struct script_record *SRParse(const char *line);
-#else
-extern struct script_record *SRParse(const unichar_t *line);
-#endif
-extern int SFFindScriptLangRecord(SplineFont *sf,struct script_record *sr);
-extern int SFAddScriptLangRecord(SplineFont *sf,struct script_record *sr);
-extern int SFAddScriptLangIndex(SplineFont *sf,uint32 script,uint32 lang);
-extern int SFFindBiggestScriptLangIndex(SplineFont *sf,uint32 script,uint32 lang);
-extern int ScriptLangMatch(struct script_record *sr,uint32 script,uint32 lang);
-extern int SRMatch(struct script_record *sr1,struct script_record *sr2);
-extern int SFConvertSLI(SplineFont *fromsf,int sli,SplineFont *tosf,
-	SplineChar *default_script);
-
 struct cidmap;			/* private structure to encoding.c */
 extern int CIDFromName(char *name,SplineFont *cidmaster);
 extern int CID2Uni(struct cidmap *map,int cid);
@@ -1957,11 +2063,6 @@ extern int  ttfFindPointInSC(SplineChar *sc,int pnum,BasePoint *pos,
 
 int SFFigureDefWidth(SplineFont *sf, int *_nomwid);
 
-extern enum possub_type SFGTagUsed(struct gentagtype *gentags,uint32 tag);
-extern uint32 SFGenerateNewFeatureTag(struct gentagtype *gentags,enum possub_type type,uint32 suggestion);
-extern void SFFreeGenerateFeatureTag(struct gentagtype *gentags,uint32 tag);
-extern int SFRemoveThisFeatureTag(SplineFont *sf, uint32 tag, int sli, int flags);
-extern void RemoveGeneratedTagsAbove(SplineFont *sf, int old_top);
 extern int SFRenameTheseFeatureTags(SplineFont *sf, uint32 tag, int sli, int flags,
 	uint32 totag, int tosli, int toflags, int ismac);
 extern int SFRemoveUnusedNestedFeatures(SplineFont *sf);
@@ -1969,10 +2070,8 @@ extern int SFHasNestedLookupWithTag(SplineFont *sf,uint32 tag,int ispos);
 extern int ClassesMatch(int cnt1,char **classes1,int cnt2,char **classes2);
 extern FPST *FPSTGlyphToClass(FPST *fpst);
 
-extern ASM *ASMFromOpenTypeForms(SplineFont *sf,int sli,int flags);
+extern ASM *ASMFromOpenTypeForms(SplineFont *sf,uint32 script);
 extern ASM *ASMFromFPST(SplineFont *sf,FPST *fpst,int ordered);
-extern struct sliflag { uint16 sli, flags; } *SFGetFormsList(SplineFont *sf,int test_dflt);
-extern int SFAnyConvertableSM(SplineFont *sf);
 
 extern char *utf8_verify_copy(const char *str);
 
@@ -2010,7 +2109,7 @@ extern char *MMExtractNth(char *pt,int ipos);
 extern char *MMExtractArrayNth(char *pt,int ipos);
 extern int MMValid(MMSet *mm,int complain);
 extern void MMKern(SplineFont *sf,SplineChar *first,SplineChar *second,int diff,
-	int sli,KernPair *oldkp);
+	struct lookup_subtable *sub,KernPair *oldkp);
 extern char *MMBlendChar(MMSet *mm, int gid);
 extern int   MMReblend(struct fontview *fv, MMSet *mm);
 struct fontview *MMCreateBlendedFont(MMSet *mm,struct fontview *fv,real blends[MmMax],int tonew );
@@ -2020,6 +2119,7 @@ extern char *EnforcePostScriptName(char *old);
 extern const char *TTFNameIds(int id);
 extern const char *MSLangString(int language);
 extern void FontInfoInit(void);
+extern void LookupUIInit(void);
 extern char *ToAbsolute(char *filename);
 
 enum Compare_Ret {	SS_DiffContourCount	= 1,
@@ -2079,4 +2179,49 @@ extern void SFTimesFromFile(SplineFont *sf,FILE *);
 extern int SFHasInstructions(SplineFont *sf);
 
 extern SplineChar *SCHasSubs(SplineChar *sc,uint32 tag);
+
+extern char *TagFullName(SplineFont *sf,uint32 tag, int ismac, int onlyifknown);
+
+extern uint32 *SFScriptsInLookups(SplineFont *sf,int gpos);
+extern uint32 *SFLangsInScript(SplineFont *sf,int gpos,uint32 script);
+extern uint32 *SFFeaturesInScriptLang(SplineFont *sf,int gpos,uint32 script,uint32 lang);
+extern OTLookup **SFLookupsInScriptLangFeature(SplineFont *sf,int gpos,uint32 script,uint32 lang, uint32 feature);
+extern SplineChar **SFGlyphsWithPSTinSubtable(SplineFont *sf,struct lookup_subtable *subtable);
+extern SplineChar **SFGlyphsWithLigatureinLookup(SplineFont *sf,struct lookup_subtable *subtable);
+extern void SFFindUnusedLookups(SplineFont *sf);
+extern void SFFindClearUnusedLookupBits(SplineFont *sf);
+extern void SFRemoveUnusedLookupSubTables(SplineFont *sf,
+	int remove_incomplete_anchorclasses,
+	int remove_unused_lookups);
+extern void SFRemoveLookupSubTable(SplineFont *sf,struct lookup_subtable *sub);
+extern void SFRemoveLookup(SplineFont *sf,OTLookup *otl);
+extern struct lookup_subtable *SFFindLookupSubtable(SplineFont *sf,char *name);
+extern struct lookup_subtable *SFFindLookupSubtableAndFreeName(SplineFont *sf,char *name);
+extern OTLookup *SFFindLookup(SplineFont *sf,char *name);
+extern void NameOTLookup(OTLookup *otl,SplineFont *sf);
+extern void FListAppendScriptLang(FeatureScriptLangList *fl,uint32 script_tag,uint32 lang_tag);
+extern void FListsAppendScriptLang(FeatureScriptLangList *fl,uint32 script_tag,uint32 lang_tag);
+extern FeatureScriptLangList *FeatureListCopy(FeatureScriptLangList *fl);
+extern void FLMerge(OTLookup *into, OTLookup *from);
+extern FeatureScriptLangList *FLOrder(FeatureScriptLangList *fl);
+extern int FeatureScriptTagInFeatureScriptList(uint32 tag, uint32 script, FeatureScriptLangList *fl);
+extern int FeatureTagInFeatureScriptList(uint32 tag, FeatureScriptLangList *fl);
+extern int ScriptInFeatureScriptList(uint32 script, FeatureScriptLangList *fl);
+extern int FeatureOrderId( int isgpos,FeatureScriptLangList *fl );
+extern void SFSubTablesMerge(SplineFont *_sf,struct lookup_subtable *subfirst,
+	struct lookup_subtable *subsecond);
+extern struct lookup_subtable *SFSubTableFindOrMake(SplineFont *sf,uint32 tag,uint32 script,
+	int lookup_type );
+extern struct lookup_subtable *SFSubTableMake(SplineFont *sf,uint32 tag,uint32 script,
+	int lookup_type );
+OTLookup *OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf, OTLookup *from_otl);
+
+extern int KCFindIndex(KernClass *kc,char *name1, char *name2);
+extern KernClass *SFFindKernClass(SplineFont *sf,SplineChar *first,SplineChar *last,
+	int *index,int allow_zero);
+extern KernClass *SFFindVKernClass(SplineFont *sf,SplineChar *first,SplineChar *last,
+	int *index,int allow_zero);
+extern int SFFindKernOffset(SplineFont *sf,SplineChar *first,SplineChar *second,
+	int isv, KernPair **_kp, KernClass **_kc, int *index);
+
 #endif

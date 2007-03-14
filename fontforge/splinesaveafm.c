@@ -48,17 +48,6 @@ extern short zapfwx[];
 extern short zapfbb[][4];
 extern char zapfexists[];
 
-int lig_script = CHR('*',' ',' ',' ');
-int lig_lang = DEFAULT_LANG;
-int *lig_tags=NULL;
-
-#define SPECIAL_TEMPORARY_LIGATURE_TAG	1
-    /* This is a special tag value which I use internally. It is not a valid */
-    /*  feature tag (not 4 ascii characters) so there should be no confusion */
-    /* When generating an afm file and I'm given the ligatures "ffi->f f i" */
-    /*  "ff->f f" then generate the third ligature "ffi->ff i" on a temporary */
-    /*  basis. AFM files can't deal with three character ligatures */
-
 static void *mygets(FILE *file,char *buffer,int size) {
     char *end = buffer+size-1;
     char *pt = buffer;
@@ -95,8 +84,9 @@ static void KPInsert( SplineChar *sc1, SplineChar *sc2, int off, int isv ) {
 	    script = SCScriptFromUnicode(sc1);
 	    if ( script==DEFAULT_SCRIPT )
 		script = SCScriptFromUnicode(sc2);
-	    kp->sli = SFFindBiggestScriptLangIndex(sc1->parent,
-			    script,DEFAULT_LANG);
+	    kp->subtable = SFSubTableFindOrMake(sc1->parent,
+		    isv?CHR('v','k','r','n'):CHR('k','e','r','n'),
+		    script, gpos_pair);
 	    if ( isv ) {
 		kp->next = sc1->vkerns;
 		sc1->vkerns = kp;
@@ -119,11 +109,7 @@ int LoadKerningDataFromAfm(SplineFont *sf, char *filename,EncMap *map) {
 
     if ( file==NULL )
 return( 0 );
-#if defined(FONTFORGE_CONFIG_GDRAW)
     gwwv_progress_change_line2(_("Reading AFM file"));
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gwwv_progress_change_line2(_("Reading AFM file"));
-#endif
     while ( mygets(file,buffer,sizeof(buffer))!=NULL ) {
 	if ( strncmp(buffer,"KPX",3)==0 || strncmp(buffer,"KPY",3)==0 ) {
 	    int isv = strncmp(buffer,"KPY",3)==0;
@@ -153,9 +139,10 @@ return( 0 );
 		}
 		if ( liga==NULL ) {
 		    liga = chunkalloc(sizeof(PST));
-		    liga->tag = CHR('l','i','g','a');
-		    liga->script_lang_index = SFFindBiggestScriptLangIndex(sf,
-			    SCScriptFromUnicode(sc2),DEFAULT_LANG);
+		    liga->subtable = SFSubTableFindOrMake(sf,
+			    CHR('l','i','g','a'),SCScriptFromUnicode(sc2),
+			    gsub_ligature);
+		    liga->subtable->lookup->store_in_afm = true;
 		    liga->type = pst_ligature;
 		    liga->next = sc1->possub;
 		    sc1->possub = liga;
@@ -277,32 +264,38 @@ int CheckAfmOfPostscript(SplineFont *sf,char *psname, EncMap *map) {
 return( ret );
 }
 
-static void SubsNew(SplineChar *to,enum possub_type type,int tag,char *components,
+void SubsNew(SplineChar *to,enum possub_type type,int tag,char *components,
 	    SplineChar *default_script) {
     PST *pst;
 
     pst = chunkalloc(sizeof(PST));
     pst->type = type;
-    pst->script_lang_index = SCDefaultSLI(to->parent,default_script);
-    pst->tag = tag;
+    pst->subtable = SFSubTableFindOrMake(to->parent,tag,SCScriptFromUnicode(default_script),
+	    type==pst_substitution ? gsub_single :
+	    type==pst_alternate ? gsub_alternate :
+	    type==pst_multiple ? gsub_multiple : gsub_ligature );
     pst->u.alt.components = components;
-    if ( type == pst_ligature )
+    if ( type == pst_ligature ) {
 	pst->u.lig.lig = to;
-    SCInsertPST(to,pst);
+	pst->subtable->lookup->store_in_afm = true;
+    }
+    pst->next = to->possub;
+    to->possub = pst;
 }
 
-static void PosNew(SplineChar *to,int tag,int dx, int dy, int dh, int dv) {
+void PosNew(SplineChar *to,int tag,int dx, int dy, int dh, int dv) {
     PST *pst;
 
     pst = chunkalloc(sizeof(PST));
     pst->type = pst_position;
-    pst->script_lang_index = SCDefaultSLI(to->parent,to);
-    pst->tag = tag;
+    pst->subtable = SFSubTableFindOrMake(to->parent,tag,SCScriptFromUnicode(to),
+	    gpos_single );
     pst->u.pos.xoff = dx;
     pst->u.pos.yoff = dy;
     pst->u.pos.h_adv_off = dh;
     pst->u.pos.v_adv_off = dv;
-    SCInsertPST(to,pst);
+    pst->next = to->possub;
+    to->possub = pst;
 }
 
 static void LigatureNew(SplineChar *sc3,SplineChar *sc1,SplineChar *sc2) {
@@ -839,47 +832,6 @@ return( "FontSpecific" );
 return( name );
 }
 
-static int ScriptLangMatchLigOuts(PST *lig,SplineFont *sf) {
-    int i,j;
-    struct script_record *sr;
-
-    if ( lig_tags==NULL ) {
-	lig_tags = gcalloc(4,sizeof(uint32));
-	lig_tags[0] = CHR('l','i','g','a');
-	lig_tags[1] = CHR('r','l','i','g');
-	lig_tags[2] = REQUIRED_FEATURE;
-	lig_tags[3] = 0;
-    }
-
-    if ( lig->tag==SPECIAL_TEMPORARY_LIGATURE_TAG )	/* Special hack for the temporary 2 character intermediate ligatures we generate. We've already decided to output them */
-return( true );
-
-    for ( i=0; lig_tags[i]!=0 && lig_tags[i]!=lig->tag; ++i );
-    if ( lig_tags[i]==0 )
-return( false );
-
-    if ( sf->cidmaster!=NULL ) sf=sf->cidmaster;
-    else if ( sf->mm!=NULL ) sf=sf->mm->normal;
-
-    if ( sf->script_lang==NULL ) {
-	IError("How can there be ligatures with no script/lang list?");
-return( lig_script==CHR('*',' ',' ',' ') && lig_lang==CHR('*',' ',' ',' ') );
-    }
-
-    sr = sf->script_lang[lig->script_lang_index];
-    for ( i=0; sr[i].script!=0; ++i ) {
-	if ( sr[i].script==lig_script || lig_script==CHR('*',' ',' ',' ')) {
-	    for ( j=0; sr[i].langs[j]!=0; ++j ) {
-		if ( sr[i].langs[j]==lig_lang || lig_lang==CHR('*',' ',' ',' '))
-return( true );
-	    }
-	    if ( lig_script!=CHR('*',' ',' ',' ') )
-return( false );
-	}
-    }
-return( false );
-}
-
 static void AfmLigOut(FILE *afm, SplineChar *sc) {
     LigList *ll;
     PST *lig;
@@ -887,7 +839,7 @@ static void AfmLigOut(FILE *afm, SplineChar *sc) {
 
     for ( ll=sc->ligofme; ll!=NULL; ll=ll->next ) {
 	lig = ll->lig;
-	if ( !ScriptLangMatchLigOuts(lig,sc->parent))
+	if ( !lig->subtable->lookup->store_in_afm )
     continue;
 	pt = strchr(lig->u.lig.components,' ');
 	eos = strrchr(lig->u.lig.components,' ');
@@ -1570,8 +1522,8 @@ int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype,EncMap *map,
 
     SFLigaturePrepare(sf);
     LigatureClosure(sf);		/* Convert 3 character ligs to a set of two character ones when possible */
-    SFKernPrepare(sf,false);		/* Undoes kern classes */
-    SFKernPrepare(sf,true);
+    SFKernClassTempDecompose(sf,false);	/* Undoes kern classes */
+    SFKernClassTempDecompose(sf,true);
     if ( sf->anchor!=NULL && docc )
 	cc = AfmFigureCCdata(sf,&cc_cnt);
 
@@ -1779,7 +1731,7 @@ void SFLigatureCleanup(SplineFont *sf) {
 		sclnext = scl->next;
 		chunkfree(scl,sizeof(struct splinecharlist));
 	    }
-	    if ( l->lig->tag==SPECIAL_TEMPORARY_LIGATURE_TAG ) {
+	    if ( l->lig->temporary ) {
 		free(l->lig->u.lig.components);
 		chunkfree(l->lig,sizeof(PST));
 	    }
@@ -1894,24 +1846,24 @@ static void LigatureClosure(SplineFont *sf) {
     SplineChar *sc, *sublig;
 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
-	for ( l=sc->ligofme; l!=NULL; l=l->next ) if ( ScriptLangMatchLigOuts(l->lig,sf)) {
+	for ( l=sc->ligofme; l!=NULL; l=l->next ) if ( l->lig->subtable->lookup->store_in_afm ) {
 	    if ( l->ccnt==3 ) {
 		/* we've got a 3 character ligature */
 		for ( l2=l->next; l2!=NULL; l2=l2->next ) {
-		    if ( l2->lig->tag==l->lig->tag && l2->lig->script_lang_index==l->lig->script_lang_index &&
+		    if ( l2->lig->subtable==l->lig->subtable &&
 			    l2->ccnt == 2 && l2->components->sc==l->components->sc ) {
 			/* We've found a two character sub ligature */
 			sublig = l2->lig->u.lig.lig;
 			for ( l3=sublig->ligofme; l3!=NULL; l3=l3->next ) {
 			    if ( l3->ccnt==2 && l3->components->sc==l->components->next->sc &&
-				    ScriptLangMatchLigOuts(l3->lig,sf))
+				    l3->lig->subtable->lookup->store_in_afm)
 			break;
 			}
 			if ( l3!=NULL )	/* The ligature we want to add already exists */
 		break;
 			lig = chunkalloc(sizeof(PST));
 			*lig = *l->lig;
-			lig->tag = SPECIAL_TEMPORARY_LIGATURE_TAG;
+			lig->temporary = true;
 			lig->next = NULL;
 			lig->u.lig.components = galloc(strlen(sublig->name)+
 					strlen(l->components->next->sc->name)+
@@ -1937,6 +1889,7 @@ static void LigatureClosure(SplineFont *sf) {
 void SFKernCleanup(SplineFont *sf,int isv) {
     int i;
     KernPair *kp, *p, *n;
+    OTLookup *otl, *otlp, *otln;
 
     if ( (!isv && sf->kerns==NULL) || (isv && sf->vkerns==NULL) )	/* can't have gotten messed up */
 return;
@@ -1954,6 +1907,17 @@ return;
 	    } else
 		p = kp;
 	}
+    }
+    for ( otl=sf->gpos_lookups, otlp = NULL; otl!=NULL; otl = otln ) {
+	otln = otl->next;
+	if ( otl->temporary_kern ) {
+	    if ( otlp!=NULL )
+		otlp->next = otln;
+	    else
+		sf->gpos_lookups = otln;
+	    OTLookupFree(otl);
+	} else
+	    otlp = otl;
     }
 }
 
@@ -1993,7 +1957,7 @@ return( scs );
 }
 
 static void AddTempKP(SplineChar *first,SplineChar *second,
-	int16 offset, uint16 sli, uint16 flags,uint16 kcid,int isv) {
+	int16 offset, struct lookup_subtable *sub,uint16 kcid,int isv) {
     KernPair *kp;
 
     for ( kp=first->kerns; kp!=NULL; kp=kp->next )
@@ -2003,8 +1967,7 @@ static void AddTempKP(SplineChar *first,SplineChar *second,
 	kp = chunkalloc(sizeof(KernPair));
 	kp->sc = second;
 	kp->off = offset;
-	kp->sli = sli;
-	kp->flags = flags;
+	kp->subtable = sub;
 	kp->kcid = kcid;
 	if ( isv ) {
 	    kp->next = first->vkerns;
@@ -2016,14 +1979,29 @@ static void AddTempKP(SplineChar *first,SplineChar *second,
     }
 }
 
-void SFKernPrepare(SplineFont *sf,int isv) {
+void SFKernClassTempDecompose(SplineFont *sf,int isv) {
     KernClass *kc, *head= isv ? sf->vkerns : sf->kerns;
     SplineChar ***first, ***last;
     int i, j, k, l;
+    OTLookup *otl;
 
     for ( kc = head, i=0; kc!=NULL; kc = kc->next )
 	kc->kcid = ++i;
     for ( kc = head; kc!=NULL; kc = kc->next ) {
+
+	otl = chunkalloc(sizeof(OTLookup));
+	otl->next = sf->gpos_lookups;
+	sf->gpos_lookups = otl;
+	otl->lookup_type = gpos_pair;
+	otl->lookup_flags = kc->subtable->lookup->lookup_flags;
+	otl->features = FeatureListCopy(kc->subtable->lookup->features);
+	otl->lookup_name = copy(_("<Temporary kerning>"));
+	otl->temporary_kern = otl->store_in_afm = true;
+	otl->subtables = chunkalloc(sizeof(struct lookup_subtable));
+	otl->subtables->lookup = otl;
+	otl->subtables->per_glyph_pst_or_kern = true;
+	otl->subtables->subtable_name = copy(_("<Temporary kerning>"));
+
 	first = KernClassToSC(sf,kc->firsts,kc->first_cnt);
 	last = KernClassToSC(sf,kc->seconds,kc->second_cnt);
 	for ( i=1; i<kc->first_cnt; ++i ) for ( j=1; j<kc->second_cnt; ++j ) {
@@ -2032,7 +2010,7 @@ void SFKernPrepare(SplineFont *sf,int isv) {
 		    for ( l=0; last[j][l]!=NULL; ++l )
 			AddTempKP(first[i][k],last[j][l],
 				kc->offsets[i*kc->second_cnt+j],
-			        kc->sli,kc->flags, kc->kcid,isv);
+			        otl->subtables,kc->kcid,isv);
 	    }
 	}
 	KCSfree(first,kc->first_cnt);
@@ -2175,7 +2153,7 @@ int PfmSplineFont(FILE *pfm, SplineFont *sf, int type0,EncMap *map) {
 		winmap[ii] = i;
     }
 
-    SFKernPrepare(sf,false);
+    SFKernClassTempDecompose(sf,false);
     for ( ii=0; ii<256; ++ii ) if ( (i=winmap[ii])!=-1 ) {
 	if ( sf->glyphs[i]!=NULL && sf->glyphs[i]->unicodeenc==' ' )
 	    spacepos = ii;
@@ -2560,7 +2538,7 @@ static struct ligkern *TfmAddLiga(LigList *l,struct ligkern *last,EncMap *map,
 	int maxc, SplineChar *sc) {
     struct ligkern *new;
 
-    if ( !ScriptLangMatchLigOuts(l->lig,sc->parent))
+    if ( !l->lig->subtable->lookup->store_in_afm )
 return( last );
     if ( map->backmap[l->lig->u.lig.lig->orig_pos]>=maxc )
 return( last );
@@ -2585,7 +2563,8 @@ static void FindCharlists(SplineFont *sf,int *charlistindex,EncMap *map,int maxc
     for ( i=0; i<maxc && i<map->enccount; ++i ) if ( map->map[i]!=-1 && SCWorthOutputting(sf->glyphs[map->map[i]])) {
 	SplineChar *sc = sf->glyphs[map->map[i]];
 	for ( pst=sc->possub; pst!=NULL; pst=pst->next )
-	    if ( pst->type == pst_alternate && pst->tag==CHR('T','C','H','L'))
+	    if ( pst->type == pst_alternate &&
+		    FeatureTagInFeatureScriptList(CHR('T','C','H','L'),pst->subtable->lookup->features))
 	break;
 	if ( pst!=NULL ) {
 	    last = i;
@@ -2618,7 +2597,8 @@ static int FindExtensions(SplineFont *sf,struct extension *extensions,int *exten
     for ( i=0; i<maxc && i<map->enccount; ++i ) if ( map->map[i]!=-1 && SCWorthOutputting(sf->glyphs[map->map[i]])) {
 	SplineChar *sc = sf->glyphs[map->map[i]];
 	for ( pst=sc->possub; pst!=NULL; pst=pst->next )
-	    if ( pst->type == pst_multiple && pst->tag==CHR('T','E','X','L'))
+	    if ( pst->type == pst_multiple &&
+		    FeatureTagInFeatureScriptList(CHR('T','E','X','L'),pst->subtable->lookup->features))
 	break;
 	if ( pst!=NULL ) {
 	    fcnt = 0;
@@ -2861,6 +2841,20 @@ return( 0 );	/* In omega this means Top, Left */
 }
 #endif
 
+static PST *SCFindPST(SplineChar *sc,int type,uint32 tag ) {
+    PST *pst;
+
+    FeatureScriptLangList *fl;
+    for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
+	if ( pst->subtable!=NULL ) {
+	    for ( fl=pst->subtable->lookup->features; fl!=NULL; fl=fl->next )
+		if ( fl->featuretag==tag )
+return( pst );
+	}
+    }
+return( NULL );
+}
+
 static int _OTfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map,int maxc) {
     struct tfm_header header;
     char *full=NULL, *encname;
@@ -2927,7 +2921,7 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map
     }
     SFLigaturePrepare(sf);
     LigatureClosure(sf);		/* Convert 3 character ligs to a set of two character ones when possible */
-    SFKernPrepare(sf,false);		/* Undoes kern classes */
+    SFKernClassTempDecompose(sf,false);	/* Undoes kern classes */
     TeXDefaultParams(sf);
 
     memset(&header,0,sizeof(header));
@@ -2996,7 +2990,7 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map
     anyITLC = false;
     for ( i=0; i<maxc && i<map->enccount; ++i )
 	if ( map->map[i]!=-1 && SCWorthOutputting(sf->glyphs[map->map[i]])) {
-	    if ( (pst=SCFindPST(sf->glyphs[map->map[i]],pst_position,CHR('I','T','L','C'),-1,-1))!=NULL ) {
+	    if ( (pst=SCFindPST(sf->glyphs[map->map[i]],pst_position,CHR('I','T','L','C')))!=NULL ) {
 		anyITLC = true;
 	break;
 	    }
@@ -3033,7 +3027,7 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map
 		    widths[i] = (16<<20)-1;
 		} else
 		    widths[i] = sc->width*scale;
-		if ( (pst=SCFindPST(sc,pst_position,CHR('I','T','L','C'),-1,-1))!=NULL )
+		if ( (pst=SCFindPST(sc,pst_position,CHR('I','T','L','C')))!=NULL )
 		    italics[i] = pst->u.pos.h_adv_off*scale;
 		else if ( (style&sf_italic) && b.maxx>sc->width && !anyITLC )
 		    italics[i] = ((b.maxx-sc->width) +

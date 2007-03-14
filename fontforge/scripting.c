@@ -1931,73 +1931,7 @@ static void bGenerateFamily(Context *c) {
 }
 
 static void bControlAfmLigatureOutput(Context *c) {
-    extern int lig_script, lig_lang, *lig_tags;
-    uint32 tags[2];
-    int i,cnt;
-    char *str, *pt;
-    char temp[4];
-
-    if ( c->a.argc!=4 )
-	ScriptError( c, "Wrong number of arguments");
-    if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str || c->a.vals[3].type!=v_str )
-	ScriptError( c, "Bad type of argument");
-    for ( i=0; i<2; ++i ) {
-	str = c->a.vals[i+1].u.sval;
-	memset(temp,' ',4);
-	if ( *str ) {
-	    temp[0] = *str;
-	    if ( str[1] ) {
-		temp[1] = str[1];
-		if ( str[2] ) {
-		    temp[2] = str[2];
-		    if ( str[3] ) {
-			temp[3] = str[3];
-			if ( str[4] )
-			    ScriptError(c,"Scripts/Languages are represented by strings which are at most 4 characters long");
-		    }
-		}
-	    }
-	}
-	tags[i] = (temp[0]<<24)|(temp[1]<<16)|(temp[2]<<8)|temp[3];
-    }
-    lig_script = tags[0]; lig_lang = tags[1];
-
-    pt = str = c->a.vals[3].u.sval;
-    cnt = 0;
-    while ( (pt=strchr(pt,','))!=NULL ) {
-	++cnt;
-	++pt;
-    }
-    if ( lig_tags!=NULL ) free(lig_tags);
-    lig_tags = galloc((cnt+2)*sizeof(uint32));
-    i =0;
-    while ( *str ) {
-	memset(temp,' ',4);
-	if ( *str && *str!=',' ) {
-	    temp[0] = *str;
-	    if ( str[1] && str[1]!=',' ) {
-		temp[1] = str[1];
-		if ( str[2] && str[2]!=',' ) {
-		    temp[2] = str[2];
-		    if ( str[3] && str[3]!=',' ) {
-			temp[3] = str[3];
-			if ( str[4] && str[4]!=',' )
-			    ScriptError(c,"Tags are represented by strings which are at most 4 characters long");
-		    }
-		}
-	    }
-	}
-	if ( i<=cnt )
-	    lig_tags[i++] = (temp[0]<<24)|(temp[1]<<16)|(temp[2]<<8)|temp[3];
-	else
-	    IError("Bad ligature tag count");
-	pt = strchr(str,',');
-	if ( pt==NULL )
-	    str += strlen(str);
-	else
-	    str = pt+1;
-    }
-    lig_tags[i] = 0;
+    ScriptError(c,"This scripting function no works.");
 }
 
 static void Bitmapper(Context *c,int isavail) {
@@ -2417,87 +2351,7 @@ return( SFMakeChar(c->curfv->sf,c->curfv->map,found));
 }
 
 static void bCopyGlyphFeatures(Context *c) {
-    Array *a;
-    uint32 tag;
-    int i, j, pos = -1, start, gid;
-    unsigned char *pt;
-    FontView *fv = c->curfv;
-    SplineFont *sf = fv->sf;
-    SplineChar *sc;
-    KernPair *kp;
-    PST *pst;
-
-    if ( c->a.argc<2 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_str ) {
-	a = &c->a;
-	start = 1;
-    } else if ( c->a.vals[1].type!=v_arr )
-	ScriptError( c, "Bad type for argument");
-    else if ( c->a.argc!=2 )	/* Only one array allowed */
-	ScriptError( c, "Wrong number of arguments");
-    else {
-	a = c->a.vals[1].u.aval;
-	start = 0;
-    }
-
-    pos = GetOneSelCharIndex(c);
-    gid = fv->map->map[pos];
-    sc = gid==-1 ? NULL : sf->glyphs[gid];
-
-    CopyPSTStart(sf);
-    if ( sc==NULL )
-return;			/* Glyph hasn't been created yet=>no features */
-
-    for ( i=start; i<a->argc; ++i ) {
-	if ( a->vals[i].type==v_int )
-	    tag = a->vals[i].u.ival;
-	else if ( a->vals[i].type!=v_str )
-	    ScriptError( c, "Bad type for array element");
-	else if ( *(pt = (unsigned char *) a->vals[i].u.sval)=='<' ) {
-	    int feat,set;
-	    if ( sscanf((char *) pt,"<%d,%d>", &feat, &set)!=2 )
-		ScriptError( c, "Bad mac feature/setting specification" );
-	    tag = (feat<<16)|set;
-	} else if ( strlen((char *) pt)>4 || *pt=='\0' )
-	    ScriptError( c, "Bad OpenType tag specification" );
-	else {
-	    tag = (pt[0]<<24);
-	    if ( pt[1]!='\0' ) {
-		tag |= (pt[1]<<16);
-		if ( pt[2]!='\0' ) {
-		    tag |= (pt[2]<<8);
-		    if ( pt[3]!='\0' )
-			tag |= pt[3];
-		    else
-			tag |= ' ';
-		} else
-		    tag |= ( ' '<<8 ) | ' ';
-	    } else
-		tag |= (' ' << 16) | ( ' '<<8 ) | ' ';
-	}
-	if ( tag==CHR('k','e','r','n') ) {
-	    for ( kp=sc->kerns; kp!=NULL; kp=kp->next ) if ( kp->off!=0 )
-		CopyPSTAppend(pst_kerning,Kern2Text(kp->sc,kp,false));
-	} else if ( tag==CHR('v','k','r','n') ) {
-	    for ( kp=sc->vkerns; kp!=NULL; kp=kp->next ) if ( kp->off!=0 )
-		CopyPSTAppend(pst_vkerning,Kern2Text(kp->sc,kp,false));
-	} else if ( tag==CHR('_','k','r','n') ) {
-	    for ( j=0; j<sf->glyphcnt; ++j ) if ( sf->glyphs[j]!=NULL )
-		for ( kp=sf->glyphs[j]->kerns; kp!=NULL; kp=kp->next )
-		    if ( kp->off!=0 && kp->sc==sc )
-			CopyPSTAppend(pst_kernback,Kern2Text(sf->glyphs[j],kp,false));
-	} else if ( tag==CHR('_','v','k','n') ) {
-	    for ( j=0; j<sf->glyphcnt; ++j ) if ( sf->glyphs[j]!=NULL )
-		for ( kp=sf->glyphs[j]->vkerns; kp!=NULL; kp=kp->next )
-		    if ( kp->off!=0 && kp->sc==sc )
-			CopyPSTAppend(pst_vkernback,Kern2Text(sf->glyphs[j],kp,true));
-	} else {
-	    for ( pst = sc->possub; pst!=NULL; pst=pst->next )
-		if ( pst->tag == tag && pst->type!=pst_lcaret )
-		    CopyPSTAppend(pst->type,PST2Text(pst,sf));
-	}
-    }
+    ScriptError(c,"This scripting function no works.");
 }
 
 static void bPaste(Context *c) {
@@ -2865,48 +2719,26 @@ static void bSelectWorthOutputting(Context *c) {
 }
 
 static void bSelectByATT(Context *c) {
-    unichar_t *tags, *contents;
-    int type;
+    ScriptError(c,"This scripting function no works. It has been replace by SelectByPosSub");
+}
 
-    if ( c->a.argc!=5 )
+static void bSelectByPosSub(Context *c) {
+    struct lookup_subtable *sub;
+
+    if ( c->a.argc!=3 )
 	ScriptError( c, "Wrong number of arguments");
     else if ( c->a.vals[1].type!=v_str ||
-	    c->a.vals[2].type!=v_str || c->a.vals[3].type!=v_str ||
-	    c->a.vals[4].type!=v_int )
+	    c->a.vals[2].type!=v_int )
 	ScriptError(c,"Bad argument type");
-    else if ( c->a.vals[4].u.ival<1 || c->a.vals[4].u.ival>3 )
+    else if ( c->a.vals[2].u.ival<1 || c->a.vals[2].u.ival>3 )
 	ScriptError(c,"Bad argument value");
-    if ( c->a.vals[1].type==v_int )
-	type = c->a.vals[1].u.ival;
-    else {
-	if ( strmatch(c->a.vals[1].u.sval,"Position")==0 )
-	    type = pst_position;
-	else if ( strmatch(c->a.vals[1].u.sval,"Pair")==0 )
-	    type = pst_pair;
-	else if ( strmatch(c->a.vals[1].u.sval,"Substitution")==0 )
-	    type = pst_substitution;
-	else if ( strmatch(c->a.vals[1].u.sval,"AltSubs")==0 )
-	    type = pst_alternate;
-	else if ( strmatch(c->a.vals[1].u.sval,"MultSubs")==0 )
-	    type = pst_multiple;
-	else if ( strmatch(c->a.vals[1].u.sval,"Ligature")==0 )
-	    type = pst_ligature;
-	else if ( strmatch(c->a.vals[1].u.sval,"LCaret")==0 )
-	    type = pst_lcaret;
-	else if ( strmatch(c->a.vals[1].u.sval,"Kern")==0 )
-	    type = pst_kerning;
-	else if ( strmatch(c->a.vals[1].u.sval,"VKern")==0 )
-	    type = pst_vkerning;
-	else if ( strmatch(c->a.vals[1].u.sval,"Anchor")==0 )
-	    type = pst_anchors;
-    }
-    tags = uc_copy(c->a.vals[2].u.sval);
-    contents = uc_copy(c->a.vals[3].u.sval);
+
+    sub = SFFindLookupSubtable(c->curfv->sf,c->a.vals[1].u.sval);
+    if ( sub==NULL )
+	ScriptErrorString(c,"Unknown lookup subtable",c->a.vals[1].u.sval);
+
     c->return_val.type = v_int;
-    c->return_val.u.ival = FVParseSelectByPST(c->curfv,type,tags,contents,
-	    c->a.vals[4].u.ival);
-    free(tags);
-    free(contents);
+    c->return_val.u.ival = FVParseSelectByPST(c->curfv,sub,c->a.vals[2].u.ival);
 }
 
 static void bSelectByColor(Context *c) {
@@ -3956,7 +3788,7 @@ static void bSetUnicodeValue(Context *c) {
 	name = copy(StdGlyphName(buffer,uni,c->curfv->sf->uni_interp,c->curfv->sf->for_new_glyphs));
     }
     SCSetMetaData(sc,name,uni,comment);
-    SCLigDefault(sc);
+    /*SCLigDefault(sc);*/
 }
 
 static void bSetGlyphClass(Context *c) {
@@ -4051,35 +3883,7 @@ static void bSetGlyphChanged(Context *c) {
 }
 
 static void bApplySubstitution(Context *c) {
-    uint32 tags[3];
-    int i;
-
-    if ( c->a.argc!=4 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str ||
-	      c->a.vals[3].type!=v_str )
-	ScriptError(c,"Bad argument type");
-    for ( i=0; i<3; ++i ) {
-	char *str = c->a.vals[i+1].u.sval;
-	char temp[4];
-	memset(temp,' ',4);
-	if ( *str ) {
-	    temp[0] = *str;
-	    if ( str[1] ) {
-		temp[1] = str[1];
-		if ( str[2] ) {
-		    temp[2] = str[2];
-		    if ( str[3] ) {
-			temp[3] = str[3];
-			if ( str[4] )
-			    ScriptError(c,"Tags/Scripts/Languages are represented by strings which are at most 4 characters long");
-		    }
-		}
-	    }
-	}
-	tags[i] = (temp[0]<<24)|(temp[1]<<16)|(temp[2]<<8)|temp[3];
-    }
-    FVApplySubstitution(c->curfv, tags[0], tags[1], tags[2]);
+    ScriptError(c,"This scripting function no works.");
 }
 
 static void bTransform(Context *c) {
@@ -5644,14 +5448,23 @@ static void bAutoWidth(Context *c) {
 }
 
 static void bAutoKern(Context *c) {
+    struct lookup_subtable *sub;
 
-    if ( c->a.argc != 3 && c->a.argc != 4 )
+    if ( c->a.argc == 3 )
+	ScriptError(c,"This scripting function now needs the name of a lookup-subtable too.");
+    if ( c->a.argc != 4 && c->a.argc != 5 )
 	ScriptError( c, "Wrong number of arguments");
     if ( c->a.vals[1].type!=v_int || c->a.vals[2].type!=v_int ||
-	    (c->a.argc==4 && c->a.vals[3].type!=v_str))
+	    c->a.vals[3].type!=v_str ||
+	    (c->a.argc==5 && c->a.vals[4].type!=v_str))
 	ScriptError(c,"Bad argument type");
+
+    sub = SFFindLookupSubtable(c->curfv->sf,c->a.vals[3].u.sval);
+    if ( sub==NULL )
+	ScriptErrorString(c,"Unknown lookup subtable",c->a.vals[3].u.sval);
+    
     if ( !AutoKernScript(c->curfv,c->a.vals[1].u.ival,c->a.vals[2].u.ival,
-	    c->a.argc==4?c->a.vals[3].u.sval:NULL) )
+	    sub,c->a.argc==5?c->a.vals[4].u.sval:NULL) )
 	ScriptError(c,"No characters selected.");
 }
 
@@ -5666,7 +5479,8 @@ static void _SetKern(Context *c,int isv) {
     SplineFont *sf = fv->sf;
     EncMap *map = fv->map;
     SplineChar *sc1, *sc2;
-    int i, gid, kern, ch2, sli;
+    int i, gid, kern, ch2;
+    struct lookup_subtable *sub = NULL;
     KernPair *kp;
 
     if ( c->a.argc!=3 && c->a.argc!=4 )
@@ -5674,12 +5488,14 @@ static void _SetKern(Context *c,int isv) {
     ch2 = ParseCharIdent(c,&c->a.vals[1],true);
     if ( c->a.vals[2].type!=v_int )
 	ScriptError(c,"Bad argument type");
-    sli = -1;
     if ( c->a.argc==4 ) {
-	if ( c->a.vals[3].type!=v_int )
+	if ( c->a.vals[3].type!=v_str )
 	    ScriptError(c,"Bad argument type");
-	else
-	    sli = c->a.vals[3].u.ival;
+	else {
+	    sub = SFFindLookupSubtable(sf,c->a.vals[3].u.sval);
+	    if ( sub==NULL )
+		ScriptErrorString(c,"Unknown lookup subtable",c->a.vals[3].u.sval);
+	}
     }
     kern = c->a.vals[2].u.ival;
     if ( kern!=0 )
@@ -5692,6 +5508,7 @@ return;		/* It already has a kern==0 with everything */
     }
 
     for ( i=0; i<map->enccount; ++i ) if ( c->curfv->selected[i] ) {
+	struct lookup_subtable *local_sub = sub;
 	if ( kern!=0 )
 	    sc1 = SFMakeChar(sf,map,i);
 	else {
@@ -5700,15 +5517,19 @@ return;		/* It already has a kern==0 with everything */
     continue;
 	}
 	for ( kp = isv ? sc1->vkerns : sc1->kerns; kp!=NULL && kp->sc!=sc2; kp = kp->next );
+	if ( local_sub==NULL && kp!=NULL )
+	    local_sub = kp->subtable;
+	if ( local_sub==NULL )
+	    local_sub = SFSubTableFindOrMake(sf,isv?CHR('v','k','r','n'):CHR('k','e','r','n'),
+		    SCScriptFromUnicode(sc1),gpos_pair);
 	if ( kp==NULL && kern==0 )
     continue;
 	if ( !isv )
 	    MMKern(sc1->parent,sc1,sc2,kp==NULL?kern:kern-kp->off,
-		    sli,kp);
+		    local_sub,kp);
 	if ( kp!=NULL ) {
 	    kp->off = kern;
-	    if ( sli!=-1 )
-		kp->sli = sli;
+	    kp->subtable = local_sub;
 	} else {
 	    kp = chunkalloc(sizeof(KernPair));
 	    if ( isv ) {
@@ -5720,11 +5541,7 @@ return;		/* It already has a kern==0 with everything */
 	    }
 	    kp->sc = sc2;
 	    kp->off = kern;
-	    if ( sli!=-1 )
-		kp->sli = sli;
-	    else
-		kp->sli = SFFindBiggestScriptLangIndex(sc1->parent,
-			    SCScriptFromUnicode(sc1),DEFAULT_LANG);
+	    kp->subtable = local_sub;
 	}
     }
 }
@@ -5814,7 +5631,7 @@ static void bMMAxisBounds(Context *c) {
 
     c->return_val.type = v_arrfree;
     c->return_val.u.aval = galloc(sizeof(Array));
-    c->return_val.u.aval->argc = 3;
+    c->return_val.u.aval->argc = mm->axis_count;
     c->return_val.u.aval->vals = galloc(3*sizeof(Val));
     for ( i=0; i<3; ++i )
 	c->return_val.u.aval->vals[i].type = v_int;
@@ -5964,7 +5781,7 @@ static void bCIDChangeSubFont(Context *c) {
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( !no_windowing_ui ) {
 	MetricsView *mv, *mvnext;
-	for ( mv=c->curfv->metrics; mv!=NULL; mv = mvnext ) {
+	for ( mv=c->curfv->sf->metrics; mv!=NULL; mv = mvnext ) {
 	    /* Don't bother trying to fix up metrics views, just not worth it */
 	    mvnext = mv->next;
 	    GDrawDestroyWindow(mv->gw);
@@ -6113,69 +5930,7 @@ static void bDrawsSomething(Context *c) {
 }
 
 static void bDefaultATT(Context *c) {
-    char tag[4];
-    char *str;
-    uint32 ftag;
-    int i, gid;
-    FontView *fv = c->curfv;
-    SplineFont *sf = fv->sf;
-    EncMap *map = fv->map;
-
-    if ( c->a.argc!=2 )
-	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str )
-	ScriptError( c, "Bad type for argument");
-
-    memset(tag,' ',4);
-    str = c->a.vals[1].u.sval;
-    if ( *str ) {
-	tag[0] = *str;
-	if ( str[1] ) {
-	    tag[1] = str[1];
-	    if ( str[2] ) {
-		tag[2] = str[2];
-		if ( str[3] ) {
-		    tag[3] = str[3];
-		    if ( str[4] )
-			ScriptError(c,"Tags/Scripts/Languages are represented by strings which are at most 4 characters long");
-		}
-	    }
-	}
-    }
-    ftag = (tag[0]<<24)|(tag[1]<<16)|(tag[2]<<8)|tag[3];
-    if ( strcmp(str,"*")==0 )
-	ftag = 0;			/* Everything */
-
-    for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && fv->selected[i] )
-	SCTagDefault(sf->glyphs[gid],ftag);
-}
-
-static int32 ParseTag(Context *c,Val *tagstr) {
-    char tag[4];
-    int feat,set;
-    char *str;
-
-    memset(tag,' ',4);
-    str = tagstr->u.sval;
-    if ( *str=='<' ) {
-	if ( sscanf(str,"<%d,%d>", &feat, &set)!=2 )
-	    ScriptError(c,"Bad Apple feature/setting");
-return( (feat<<16) | set );
-    } else if ( *str ) {
-	tag[0] = *str;
-	if ( str[1] ) {
-	    tag[1] = str[1];
-	    if ( str[2] ) {
-		tag[2] = str[2];
-		if ( str[3] ) {
-		    tag[3] = str[3];
-		    if ( str[4] )
-			ScriptError(c,"Tags/Scripts/Languages are represented by strings which are at most 4 characters long");
-		}
-	    }
-	}
-    }
-return( (tag[0]<<24)|(tag[1]<<16)|(tag[2]<<8)|tag[3] );
+    ScriptError(c,"This scripting function no works.");
 }
 
 static void bCheckForAnchorClass(Context *c) {
@@ -6200,11 +5955,14 @@ static void bAddAnchorClass(Context *c) {
     unichar_t *ustr;
     SplineFont *sf = c->curfv->sf;
 
-    if ( c->a.argc!=7 )
+    if ( sf->cidmaster ) sf = sf->cidmaster;
+
+    if ( c->a.argc==7 )
+	ScriptError( c, "This scripting function now takes a completely different set of arguments" );
+    else if ( c->a.argc!=4 )
 	ScriptError( c, "Wrong number of arguments");
     else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str ||
-	    c->a.vals[3].type!=v_str || c->a.vals[4].type!=v_str ||
-	    c->a.vals[5].type!=v_int || c->a.vals[6].type!=v_str )
+	    c->a.vals[3].type!=v_str )
 	ScriptError( c, "Bad type for argument");
 
     ac = chunkalloc(sizeof(AnchorClass));
@@ -6216,10 +5974,9 @@ static void bAddAnchorClass(Context *c) {
     if ( t!=NULL )
 	ScriptErrorString(c,"This font already contains an anchor class with this name: ", c->a.vals[1].u.sval );
 
-    ac->feature_tag = ParseTag( c, &c->a.vals[4] );
-    ac->flags = c->a.vals[5].u.ival;
-    if ( c->a.vals[5].u.ival == -1 )
-	ac->flags = PSTDefaultFlags(ac->feature_tag,NULL);
+    ac->subtable = SFFindLookupSubtable(sf,c->a.vals[3].u.sval);
+    if ( ac->subtable==NULL )
+	ScriptErrorString(c,"Unknown lookup subtable",c->a.vals[3].u.sval);
 
     if ( strmatch(c->a.vals[2].u.sval,"default")==0 || strmatch(c->a.vals[2].u.sval,"mark")==0 )
 	ac->type = act_mark;
@@ -6231,19 +5988,7 @@ static void bAddAnchorClass(Context *c) {
 	ScriptErrorString(c,"Unknown type of anchor class. Must be one of \"default\", \"mk-mk\", or \"cursive\". ",  c->a.vals[2].u.sval);
 
     ustr = uc_copy(c->a.vals[3].u.sval);
-    ac->script_lang_index = SFAddScriptLangRecord(sf,SRParse(ustr));
     free(ustr);
-
-    if ( *c->a.vals[6].u.sval=='\0' || strcmp(c->a.vals[6].u.sval,ac->name)==0 )
-	ac->merge_with = AnchorClassesNextMerge(sf->anchor);
-    else {
-	for ( t=sf->anchor; t!=NULL; t=t->next )
-	    if ( strcmp(c->a.vals[6].u.sval,t->name)==0 )
-	break;
-	if ( t==NULL )
-	    ScriptErrorString(c,"Attempt to merge with unknown anchor class: ", c->a.vals[6].u.sval );
-	ac->merge_with = t->merge_with;
-    }
     ac->next = sf->anchor;
     sf->anchor = ac;
     sf->changed = true;
@@ -6365,87 +6110,82 @@ static void bAddAnchorPoint(Context *c) {
 }
 
 static void bAddATT(Context *c) {
+    ScriptError(c,"This scripting function no works, replaced by AddPosSub.");
+}
+
+static void bAddPosSub(Context *c) {
     SplineChar *sc;
     PST temp, *pst;
-    unichar_t *ustr;
+    struct lookup_subtable *sub;
 
     memset(&temp,0,sizeof(temp));
 
-    if ( c->a.argc!=6 && c->a.argc!=9 && c->a.argc!=14 )
+    if ( c->a.argc!=3 && c->a.argc!=6 && c->a.argc!=11 )
 	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str ||
-	    c->a.vals[3].type!=v_str || c->a.vals[4].type!=v_int )
+    else if ( c->a.vals[1].type!=v_str )
 	ScriptError( c, "Bad type for argument");
-    else if ( c->a.argc==6 && c->a.vals[5].type!=v_str )
+    else if ( c->a.argc==3 && c->a.vals[2].type!=v_str )
 	ScriptError( c, "Bad type for argument");
-    else if ( c->a.argc==9 && ( c->a.vals[5].type!=v_int ||
-	    c->a.vals[6].type!=v_int || c->a.vals[7].type!=v_int ||
-	    c->a.vals[8].type!=v_int ))
+    else if ( c->a.argc==6 && ( c->a.vals[2].type!=v_int ||
+	    c->a.vals[3].type!=v_int || c->a.vals[4].type!=v_int ||
+	    c->a.vals[5].type!=v_int ))
 	ScriptError( c, "Bad type for argument");
-    else if ( c->a.argc==14 && ( c->a.vals[5].type!=v_str ||
-	    c->a.vals[6].type!=v_int || c->a.vals[7].type!=v_int ||
-	    c->a.vals[8].type!=v_int || c->a.vals[9].type!=v_int ||
-	    c->a.vals[10].type!=v_int || c->a.vals[11].type!=v_int ||
-	    c->a.vals[12].type!=v_int || c->a.vals[13].type!=v_int ))
+    else if ( c->a.argc==11 && ( c->a.vals[2].type!=v_str ||
+	    c->a.vals[3].type!=v_int || c->a.vals[4].type!=v_int ||
+	    c->a.vals[5].type!=v_int || c->a.vals[6].type!=v_int ||
+	    c->a.vals[7].type!=v_int || c->a.vals[8].type!=v_int ||
+	    c->a.vals[9].type!=v_int || c->a.vals[10].type!=v_int ))
 	ScriptError( c, "Bad type for argument");
 
-    if ( strcmp(c->a.vals[1].u.sval,"Position")==0 ) {
+    sub = SFFindLookupSubtable(c->curfv->sf,c->a.vals[1].u.sval);
+    if ( sub==NULL )
+	ScriptErrorString(c,"Unknown lookup subtable",c->a.vals[2].u.sval);
+
+    if ( sub->lookup->lookup_type==gpos_single ) {
 	temp.type = pst_position;
-	if (c->a.argc!=9 )
-	    ScriptError( c, "Wrong number of arguments");
-    } else if ( strcmp(c->a.vals[1].u.sval,"Pair")==0 ) {
-	temp.type = pst_pair;
-	if (c->a.argc!=14 )
-	    ScriptError( c, "Wrong number of arguments");
-    } else {
 	if (c->a.argc!=6 )
 	    ScriptError( c, "Wrong number of arguments");
-	if ( strcmp(c->a.vals[1].u.sval,"Substitution")==0 )
+    } else if ( sub->lookup->lookup_type==gpos_pair ) {
+	temp.type = pst_pair;
+	if (c->a.argc!=11 )
+	    ScriptError( c, "Wrong number of arguments");
+    } else {
+	if (c->a.argc!=3 )
+	    ScriptError( c, "Wrong number of arguments");
+	if ( sub->lookup->lookup_type>=gsub_single )
 	    temp.type = pst_substitution;
-	else if ( strcmp(c->a.vals[1].u.sval,"AltSubs")==0 )
+	else if ( sub->lookup->lookup_type>=gsub_alternate )
 	    temp.type = pst_alternate;
-	else if ( strcmp(c->a.vals[1].u.sval,"MultSubs")==0 )
+	else if ( sub->lookup->lookup_type>=gsub_multiple )
 	    temp.type = pst_multiple;
-	else if ( strcmp(c->a.vals[1].u.sval,"Ligature")==0 )
+	else if ( sub->lookup->lookup_type>=gsub_ligature )
 	    temp.type = pst_ligature;
 	else
-	    ScriptErrorString(c,"Unknown tag", c->a.vals[1].u.sval);
+	    ScriptErrorString(c,"Unexpected lookup type", sub->lookup->lookup_name);
     }
 
-    temp.tag = ParseTag( c,&c->a.vals[3] );
-    temp.flags = c->a.vals[4].u.ival;
+    temp.subtable = sub;
 
     sc = GetOneSelChar(c);
 
-    if ( c->a.vals[4].u.ival == -1 )
-	temp.flags = PSTDefaultFlags(temp.type,sc);
-
-    if ( strmatch( c->a.vals[2].u.sval,"Nested")==0 )
-	temp.script_lang_index = SLI_NESTED;
-    else {
-	ustr = uc_copy(c->a.vals[2].u.sval);
-	temp.script_lang_index = SFAddScriptLangRecord(sc->parent,SRParse(ustr));
-	free(ustr);
-    }
-
     if ( temp.type==pst_position ) {
-	temp.u.pos.xoff = c->a.vals[5].u.ival;
-	temp.u.pos.yoff = c->a.vals[6].u.ival;
-	temp.u.pos.h_adv_off = c->a.vals[7].u.ival;
-	temp.u.pos.v_adv_off = c->a.vals[8].u.ival;
+	temp.u.pos.xoff = c->a.vals[2].u.ival;
+	temp.u.pos.yoff = c->a.vals[3].u.ival;
+	temp.u.pos.h_adv_off = c->a.vals[4].u.ival;
+	temp.u.pos.v_adv_off = c->a.vals[5].u.ival;
     } else if ( temp.type==pst_pair ) {
-	temp.u.pair.paired = copy(c->a.vals[5].u.sval);
+	temp.u.pair.paired = copy(c->a.vals[2].u.sval);
 	temp.u.pair.vr = chunkalloc(sizeof(struct vr [2]));
-	temp.u.pair.vr[0].xoff = c->a.vals[6].u.ival;
-	temp.u.pair.vr[0].yoff = c->a.vals[7].u.ival;
-	temp.u.pair.vr[0].h_adv_off = c->a.vals[8].u.ival;
-	temp.u.pair.vr[0].v_adv_off = c->a.vals[9].u.ival;
-	temp.u.pair.vr[1].xoff = c->a.vals[10].u.ival;
-	temp.u.pair.vr[1].yoff = c->a.vals[11].u.ival;
-	temp.u.pair.vr[1].h_adv_off = c->a.vals[12].u.ival;
-	temp.u.pair.vr[1].v_adv_off = c->a.vals[13].u.ival;
+	temp.u.pair.vr[0].xoff = c->a.vals[3].u.ival;
+	temp.u.pair.vr[0].yoff = c->a.vals[4].u.ival;
+	temp.u.pair.vr[0].h_adv_off = c->a.vals[5].u.ival;
+	temp.u.pair.vr[0].v_adv_off = c->a.vals[6].u.ival;
+	temp.u.pair.vr[1].xoff = c->a.vals[7].u.ival;
+	temp.u.pair.vr[1].yoff = c->a.vals[8].u.ival;
+	temp.u.pair.vr[1].h_adv_off = c->a.vals[9].u.ival;
+	temp.u.pair.vr[1].v_adv_off = c->a.vals[10].u.ival;
     } else {
-	temp.u.subs.variant = copy(c->a.vals[5].u.sval);
+	temp.u.subs.variant = copy(c->a.vals[2].u.sval);
 	if ( temp.type==pst_ligature )
 	    temp.u.lig.lig = sc;
     }
@@ -6456,55 +6196,97 @@ static void bAddATT(Context *c) {
 }
 
 static void bRemoveATT(Context *c) {
-    char tag[4];
-    char *str;
-    uint32 ftag;
-    int i, gid;
-    FontView *fv = c->curfv;
-    SplineFont *sf = fv->sf;
-    EncMap *map = fv->map;
-    int type, sli;
-    struct script_record *sr;
-    PST *pst, *prev, *next;
-    int changed;
+    ScriptError(c,"This scripting function no works.");
+}
 
-    if ( c->a.argc!=4 )
+static void bRemoveLookup(Context *c) {
+    OTLookup *otl;
+
+    if ( c->a.argc!=2 )
 	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str || c->a.vals[3].type!=v_str )
+    else if ( c->a.vals[1].type!=v_str )
 	ScriptError( c, "Bad type for argument");
+    otl = SFFindLookup(c->curfv->sf,c->a.vals[1].u.sval);
+    if ( otl==NULL )
+	ScriptErrorString(c,"Unknown lookup",c->a.vals[1].u.sval);
+    SFRemoveLookup(c->curfv->sf,otl);
+}
 
-    if ( strcmp(c->a.vals[1].u.sval,"Position")==0 )
-	type = pst_position;
-    else if ( strcmp(c->a.vals[1].u.sval,"Pair")==0 )
-	type = pst_pair;
-    else if ( strcmp(c->a.vals[1].u.sval,"Substitution")==0 )
-	type = pst_substitution;
-    else if ( strcmp(c->a.vals[1].u.sval,"AltSubs")==0 )
-	type = pst_alternate;
-    else if ( strcmp(c->a.vals[1].u.sval,"MultSubs")==0 )
-	type = pst_multiple;
-    else if ( strcmp(c->a.vals[1].u.sval,"Ligature")==0 )
-	type = pst_ligature;
-    else if ( strcmp(c->a.vals[1].u.sval,"*")==0 )
-	type = -1;
-    else
-	ScriptErrorString(c,"Unknown tag", c->a.vals[1].u.sval);
+static void bMergeLookups(Context *c) {
+    OTLookup *otl1, *otl2;
+    struct lookup_subtable *sub;
 
-    if ( strcmp(c->a.vals[2].u.sval,"*")==0 )
-	sli = -1;
+    if ( c->a.argc!=3 )
+	ScriptError( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str )
+	ScriptError( c, "Bad type for argument");
+    otl1 = SFFindLookup(c->curfv->sf,c->a.vals[1].u.sval);
+    if ( otl1==NULL )
+	ScriptErrorString(c,"Unknown lookup",c->a.vals[1].u.sval);
+    otl2 = SFFindLookup(c->curfv->sf,c->a.vals[2].u.sval);
+    if ( otl2==NULL )
+	ScriptErrorString(c,"Unknown lookup",c->a.vals[2].u.sval);
+    if ( otl1->lookup_type != otl2->lookup_type )
+	ScriptError(c,"When merging two lookups they must be of the same type");
+    FLMerge(otl1,otl2);
+
+    for ( sub = otl2->subtables; sub!=NULL; sub=sub->next )
+	sub->lookup = otl1;
+    if ( otl1->subtables==NULL )
+	otl1->subtables = otl2->subtables;
     else {
-	unichar_t *utemp;
-	sr = SRParse(utemp = uc_copy(c->a.vals[2].u.sval));
-	sli = SFFindScriptLangRecord(sf,sr);
-	ScriptRecordFree(sr);
-	free(utemp);
-	if ( sli==-1 )		/* Can't be any matches, that script record didn't exist */
-return;
+	for ( sub=otl1->subtables; sub->next!=NULL; sub=sub->next );
+	sub->next = otl2->subtables;
     }
+    otl2->subtables = NULL;
+    SFRemoveLookup(c->curfv->sf,otl2);
+}
+
+static void bRemoveLookupSubtable(Context *c) {
+    struct lookup_subtable *sub;
+
+    if ( c->a.argc!=2 )
+	ScriptError( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str )
+	ScriptError( c, "Bad type for argument");
+    sub = SFFindLookupSubtable(c->curfv->sf,c->a.vals[1].u.sval);
+    if ( sub==NULL )
+	ScriptErrorString(c,"Unknown lookup subtable",c->a.vals[1].u.sval);
+    SFRemoveLookupSubTable(c->curfv->sf,sub);
+}
+
+static void bMergeLookupSubtables(Context *c) {
+    struct lookup_subtable *sub1, *sub2;
+
+    if ( c->a.argc!=3 )
+	ScriptError( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str )
+	ScriptError( c, "Bad type for argument");
+    sub1 = SFFindLookupSubtable(c->curfv->sf,c->a.vals[1].u.sval);
+    if ( sub1==NULL )
+	ScriptErrorString(c,"Unknown subtable",c->a.vals[1].u.sval);
+    sub2 = SFFindLookupSubtable(c->curfv->sf,c->a.vals[2].u.sval);
+    if ( sub2==NULL )
+	ScriptErrorString(c,"Unknown subtable",c->a.vals[2].u.sval);
+    if ( sub1->lookup!=sub2->lookup )
+	ScriptError(c,"When merging two lookup subtables they must be in the same lookup.");
+    SFSubTablesMerge(c->curfv->sf,sub1,sub2);
+    SFRemoveLookupSubTable(c->curfv->sf,sub2);
+}
+
+static int32 ParseTag(Context *c,Val *tagstr,int macok,int *wasmac) {
+    char tag[4];
+    int feat,set;
+    char *str;
 
     memset(tag,' ',4);
-    str = c->a.vals[3].u.sval;
-    if ( *str ) {
+    str = tagstr->u.sval;
+    if ( macok && *str=='<' ) {
+	if ( sscanf(str,"<%d,%d>", &feat, &set)!=2 || feat<0 || feat>65535 || set<0 || set>65535 )
+	    ScriptError(c,"Bad Apple feature/setting");
+	*wasmac = true;
+return( (feat<<16) | set );
+    } else if ( *str ) {
 	tag[0] = *str;
 	if ( str[1] ) {
 	    tag[1] = str[1];
@@ -6518,32 +6300,422 @@ return;
 	    }
 	}
     }
-    ftag = (tag[0]<<24)|(tag[1]<<16)|(tag[2]<<8)|tag[3];
-    if ( strcmp(str,"*")==0 )
-	ftag = 0;			/* Everything */
+    *wasmac = false;
+return( (tag[0]<<24)|(tag[1]<<16)|(tag[2]<<8)|tag[3] );
+}
 
-    for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && fv->selected[i] ) {
-	changed = false;
-	for ( prev=NULL, pst = sf->glyphs[gid]->possub; pst!=NULL; pst = next ) {
-	    next = pst->next;
-	    if ( (pst->type==type || type==-1 ) &&
-		    (pst->script_lang_index==sli || sli==-1 ) &&
-		    (pst->tag==ftag || ftag==0)) {
-		if ( prev==NULL )
-		    sf->glyphs[gid]->possub = next;
-		else
-		    prev->next = next;
-		pst->next = NULL;
-		PSTFree(pst);
-		changed = true;
-	    } else
-		prev = pst;
-	}
-	if ( changed ) {
-	    sf->glyphs[gid]->changed = true;
-	    sf->changed = true;
+static FeatureScriptLangList *ParseFeatureList(Context *c,Array *a) {
+    FeatureScriptLangList *flhead=NULL, *fltail, *fl;
+    struct scriptlanglist *sltail, *sl;
+    int f,s,l;
+    int wasmac;
+    Array *scripts, *langs;
+
+    for ( f=0; f<a->argc; ++f ) {
+	if ( a->vals[f].type!=v_arr && a->vals[f].type!=v_arrfree )
+	    ScriptError(c,"A feature list is composed of an array of arrays");
+	else if ( a->vals[f].u.aval->argc!=2 )
+	    ScriptError(c,"A feature list is composed of an array of arrays each containing two elements");
+	else if (a->vals[f].u.aval->vals[0].type!=v_str ||
+		(a->vals[f].u.aval->vals[1].type!=v_arr && a->vals[f].u.aval->vals[1].type!=v_arrfree))
+	    ScriptError( c, "Bad type for argument");
+	fl = chunkalloc(sizeof(FeatureScriptLangList));
+	fl->featuretag = ParseTag(c,&a->vals[f].u.aval->vals[0],true,&wasmac);
+	fl->ismac = wasmac;
+	if ( flhead==NULL )
+	    flhead = fl;
+	else
+	    fltail->next = fl;
+	fltail = fl;
+	scripts = a->vals[f].u.aval->vals[1].u.aval;
+	if ( scripts->argc==0 )
+	    ScriptErrorString( c, "No scripts specified for feature", a->vals[f].u.aval->vals[0].u.sval);
+	sltail = NULL;
+	for ( s=0; s<scripts->argc; ++s ) {
+	    if ( scripts->vals[s].type!=v_arr && scripts->vals[s].type!=v_arrfree )
+		ScriptError(c,"A script list is composed of an array of arrays");
+	    else if ( scripts->vals[s].u.aval->argc!=2 )
+		ScriptError(c,"A script list is composed of an array of arrays each containing two elements");
+	    else if (scripts->vals[s].u.aval->vals[0].type!=v_str ||
+		    (scripts->vals[s].u.aval->vals[1].type!=v_arr && scripts->vals[s].u.aval->vals[1].type!=v_arrfree))
+		ScriptError( c, "Bad type for argument");
+	    sl = chunkalloc(sizeof(struct scriptlanglist));
+	    sl->script = ParseTag(c,&scripts->vals[s].u.aval->vals[0],false,&wasmac);
+	    if ( sltail==NULL )
+		fl->scripts = sl;
+	    else
+		sltail->next = sl;
+	    sltail = sl;
+	    langs = scripts->vals[s].u.aval->vals[1].u.aval;
+	    if ( langs->argc==0 ) {
+		sl->lang_cnt = 1;
+		sl->langs[0] = DEFAULT_LANG;
+	    } else {
+		sl->lang_cnt = langs->argc;
+		if ( langs->argc>MAX_LANG )
+		    sl->morelangs = galloc((langs->argc-MAX_LANG)*sizeof(uint32));
+		for ( l=0; l<langs->argc; ++l ) {
+		    uint32 lang = ParseTag(c,&langs->vals[l],false,&wasmac);
+		    if ( l<MAX_LANG )
+			sl->langs[l] = lang;
+		    else
+			sl->morelangs[l-MAX_LANG] = lang;
+		}
+	    }
 	}
     }
+return( flhead );
+}
+
+static void bAddLookup(Context *c) {
+    OTLookup *otl, *after = NULL;
+    SplineFont *sf = c->curfv->sf;
+    int type;
+
+    if ( c->a.argc!=5 && c->a.argc!=6 )
+	ScriptError( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str ||
+	    c->a.vals[3].type!=v_int ||
+	    (c->a.vals[4].type!=v_arr && c->a.vals[4].type!=v_arrfree) ||
+	    (c->a.argc==6 && c->a.vals[5].type!=v_str))
+	ScriptError( c, "Bad type for argument");
+
+    if ( strmatch(c->a.vals[2].u.sval,"gsub_single")==0 )
+	type = gsub_single;
+    else if ( strmatch(c->a.vals[2].u.sval,"gsub_multiple")==0 )
+	type = gsub_multiple;
+    else if ( strmatch(c->a.vals[2].u.sval,"gsub_alternate")==0 )
+	type = gsub_alternate;
+    else if ( strmatch(c->a.vals[2].u.sval,"gsub_ligature")==0 )
+	type = gsub_ligature;
+    else if ( strmatch(c->a.vals[2].u.sval,"gsub_context")==0 )
+	type = gsub_context;
+    else if ( strmatch(c->a.vals[2].u.sval,"gsub_contextchain")==0 )
+	type = gsub_contextchain;
+    else if ( strmatch(c->a.vals[2].u.sval,"gsub_reversecchain")==0 )
+	type = gsub_reversecchain;
+    else if ( strmatch(c->a.vals[2].u.sval,"morx_indic")==0 )
+	type = morx_indic;
+    else if ( strmatch(c->a.vals[2].u.sval,"morx_context")==0 )
+	type = morx_context;
+    else if ( strmatch(c->a.vals[2].u.sval,"morx_insert")==0 )
+	type = morx_insert;
+    else if ( strmatch(c->a.vals[2].u.sval,"gpos_single")==0 )
+	type = gpos_single;
+    else if ( strmatch(c->a.vals[2].u.sval,"gpos_pair")==0 )
+	type = gpos_pair;
+    else if ( strmatch(c->a.vals[2].u.sval,"gpos_cursive")==0 )
+	type = gpos_cursive;
+    else if ( strmatch(c->a.vals[2].u.sval,"gpos_mark2base")==0 || strmatch(c->a.vals[2].u.sval,"gpos_marktobase")==0 )
+	type = gpos_mark2base;
+    else if ( strmatch(c->a.vals[2].u.sval,"gpos_mark2ligature")==0 || strmatch(c->a.vals[2].u.sval,"gpos_marktoligature")==0 )
+	type = gpos_mark2ligature;
+    else if ( strmatch(c->a.vals[2].u.sval,"gpos_mark2mark")==0 || strmatch(c->a.vals[2].u.sval,"gpos_marktomark")==0 )
+	type = gpos_mark2mark;
+    else if ( strmatch(c->a.vals[2].u.sval,"gpos_context")==0 )
+	type = gpos_context;
+    else if ( strmatch(c->a.vals[2].u.sval,"gpos_contextchain")==0 )
+	type = gpos_contextchain;
+    else if ( strmatch(c->a.vals[2].u.sval,"kern_statemachine")==0 )
+	type = kern_statemachine;
+    else
+	ScriptErrorString(c,"Unknown lookup type",c->a.vals[2].u.sval);
+
+    otl = SFFindLookup(c->curfv->sf,c->a.vals[1].u.sval);
+    if ( otl!=NULL )
+	ScriptErrorString(c,"Lookup name in use",c->a.vals[1].u.sval);
+    if ( c->a.argc==6 ) {
+	after = SFFindLookup(c->curfv->sf,c->a.vals[5].u.sval);
+	if ( after==NULL )
+	    ScriptErrorString(c,"Unknown after lookup",c->a.vals[5].u.sval);
+	else if ( (after->lookup_type>=gpos_start)!=(type>=gpos_start) )
+	    ScriptErrorString(c,"After lookup is in a different table",c->a.vals[5].u.sval);
+    }
+
+    if ( sf->cidmaster ) sf = sf->cidmaster;
+
+    otl = chunkalloc(sizeof(OTLookup));
+    if ( after!=NULL ) {
+	otl->next = after->next;
+	after->next = otl;
+    } else if ( type>=gpos_start ) {
+	otl->next = sf->gpos_lookups;
+	sf->gpos_lookups = otl;
+    } else {
+	otl->next = sf->gsub_lookups;
+	sf->gsub_lookups = otl;
+    }
+    otl->lookup_type = type;
+    otl->lookup_flags = c->a.vals[3].u.ival;
+    otl->lookup_name = copy(c->a.vals[1].u.sval);
+    otl->features = ParseFeatureList(c,c->a.vals[4].u.aval);
+    if ( otl->features!=NULL && (otl->features->featuretag==CHR('l','i','g','a') || otl->features->featuretag==CHR('r','l','i','g')))
+	otl->store_in_afm = true;
+}
+
+static void bSetFeatureList(Context *c) {
+    OTLookup *otl;
+
+    if ( c->a.argc!=3 )
+	ScriptError( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str || 
+	     (c->a.vals[2].type!=v_arr && c->a.vals[2].type!=v_arrfree))
+	ScriptError( c, "Bad type for argument");
+
+    otl = SFFindLookup(c->curfv->sf,c->a.vals[1].u.sval);
+    if ( otl==NULL )
+	ScriptErrorString(c,"Missing lookup",c->a.vals[1].u.sval);
+    FeatureScriptLangListFree(otl->features);
+    otl->features = NULL;
+    otl->features = ParseFeatureList(c,c->a.vals[2].u.aval);
+}
+
+static void bLookupStoreLigatureInAfm(Context *c) {
+    OTLookup *otl;
+
+    if ( c->a.argc!=3 )
+	ScriptError( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_int )
+	ScriptError( c, "Bad type for argument");
+
+    otl = SFFindLookup(c->curfv->sf,c->a.vals[1].u.sval);
+    if ( otl==NULL )
+	ScriptErrorString(c,"Missing lookup",c->a.vals[1].u.sval);
+    otl->store_in_afm = c->a.vals[2].u.ival;
+}
+
+static char *Tag2Str(uint32 tag, int ismac) {
+    char buffer[20];
+
+    if ( ismac )
+	sprintf( buffer, "<%d,%d>", tag>>16, tag&0xffff );
+    else {
+	buffer[0] = tag>>24;
+	buffer[1] = tag>>16;
+	buffer[2] = tag>>8;
+	buffer[3] = tag&0xff;
+	buffer[4] = '\0';
+    }
+return( copy(buffer ));
+}
+
+static void bGetLookupInfo(Context *c) {
+    OTLookup *otl;
+    FeatureScriptLangList *fl;
+    struct scriptlanglist *sl;
+    int fcnt, scnt, l;
+    Array *farray, *sarray, *larray;
+
+    if ( c->a.argc!=2 )
+	ScriptError( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str )
+	ScriptError( c, "Bad type for argument");
+
+    otl = SFFindLookup(c->curfv->sf,c->a.vals[1].u.sval);
+    if ( otl==NULL )
+	ScriptErrorString(c,"Missing lookup",c->a.vals[1].u.sval);
+    c->return_val.type = v_arrfree;
+    c->return_val.u.aval = galloc(sizeof(Array));
+    c->return_val.u.aval->argc = 3;
+    c->return_val.u.aval->vals = galloc(3*sizeof(Val));
+    c->return_val.u.aval->vals[0].type = v_str;
+    c->return_val.u.aval->vals[0].u.sval = copy(
+	    otl->lookup_type==gpos_single ? "GPOS_single" :
+	    otl->lookup_type==gpos_pair ? "GPOS_pair" :
+	    otl->lookup_type==gpos_cursive ? "GPOS_cursive" :
+	    otl->lookup_type==gpos_mark2base ? "GPOS_marktobase" :
+	    otl->lookup_type==gpos_mark2ligature ? "GPOS_marktoligature" :
+	    otl->lookup_type==gpos_mark2mark ? "GPOS_marktomark" :
+	    otl->lookup_type==gpos_context ? "GPOS_context" :
+	    otl->lookup_type==gpos_contextchain ? "GPOS_contextchain" :
+	    otl->lookup_type==kern_statemachine ? "kern_statemachine" :
+	    otl->lookup_type==gsub_single ? "GSUB_single" :
+	    otl->lookup_type==gsub_multiple ? "GSUB_multiple" :
+	    otl->lookup_type==gsub_alternate ? "GSUB_alternate" :
+	    otl->lookup_type==gsub_ligature ? "GSUB_ligature" :
+	    otl->lookup_type==gsub_context ? "GSUB_context" :
+	    otl->lookup_type==gsub_contextchain ? "GSUB_contextchain" :
+	    otl->lookup_type==gsub_reversecchain ? "GSUB_reversecchain" :
+	    otl->lookup_type==morx_indic ? "morx_indic" :
+	    otl->lookup_type==morx_context ? "morx_context" :
+		"morx_insert" );
+    c->return_val.u.aval->vals[1].type = v_int;
+    c->return_val.u.aval->vals[1].u.ival = otl->lookup_flags;
+    c->return_val.u.aval->vals[2].type = v_arrfree;
+    c->return_val.u.aval->vals[2].u.aval = farray = galloc(sizeof(Array));
+    for ( fl=otl->features, fcnt=0; fl!=NULL; fl=fl->next, ++fcnt );
+    farray->argc = fcnt;
+    farray->vals = galloc(fcnt*sizeof(Val));
+    for ( fl=otl->features, fcnt=0; fl!=NULL; fl=fl->next, ++fcnt ) {
+	farray->vals[fcnt].type = v_arrfree;
+	farray->vals[fcnt].u.aval = galloc(sizeof(Array));
+	farray->vals[fcnt].u.aval->argc = 2;
+	farray->vals[fcnt].u.aval->vals = galloc(2*sizeof(Val));
+	farray->vals[fcnt].u.aval->vals[0].type = v_str;
+	farray->vals[fcnt].u.aval->vals[0].u.sval = Tag2Str(fl->featuretag,fl->ismac);
+	farray->vals[fcnt].u.aval->vals[1].type = v_arrfree;
+	farray->vals[fcnt].u.aval->vals[1].u.aval = sarray = galloc(sizeof(Array));
+	for ( sl=fl->scripts, scnt=0; sl!=NULL; sl=sl->next, ++scnt );
+	sarray->argc = scnt;
+	sarray->vals = galloc(scnt*sizeof(Val));
+	for ( sl=fl->scripts, scnt=0; sl!=NULL; sl=sl->next, ++scnt ) {
+	    sarray->vals[scnt].type = v_arrfree;
+	    sarray->vals[scnt].u.aval = galloc(sizeof(Array));
+	    sarray->vals[scnt].u.aval->argc = 2;
+	    sarray->vals[scnt].u.aval->vals = galloc(2*sizeof(Val));
+	    sarray->vals[scnt].u.aval->vals[0].type = v_str;
+	    sarray->vals[scnt].u.aval->vals[0].u.sval = Tag2Str(sl->script,false);
+	    sarray->vals[scnt].u.aval->vals[1].type = v_arrfree;
+	    sarray->vals[scnt].u.aval->vals[1].u.aval = larray = galloc(sizeof(Array));
+	    larray->argc = sl->lang_cnt;
+	    larray->vals = galloc(sl->lang_cnt*sizeof(Val));
+	    for ( l=0; l<sl->lang_cnt; ++l ) {
+		larray->vals[l].type = v_str;
+		larray->vals[l].u.sval = Tag2Str(l<MAX_LANG?sl->langs[l]:sl->morelangs[l-MAX_LANG],false);
+	    }
+	}
+    }
+}
+
+static void bGetLookupSubtables(Context *c) {
+    OTLookup *otl;
+    struct lookup_subtable *sub;
+    int cnt;
+
+    if ( c->a.argc!=2 )
+	ScriptError( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str )
+	ScriptError( c, "Bad type for argument");
+
+    otl = SFFindLookup(c->curfv->sf,c->a.vals[1].u.sval);
+    if ( otl==NULL )
+	ScriptErrorString(c,"Missing lookup",c->a.vals[1].u.sval);
+    for ( sub=otl->subtables, cnt=0; sub!=NULL; sub=sub->next, ++cnt );
+
+    c->return_val.type = v_arrfree;
+    c->return_val.u.aval = galloc(sizeof(Array));
+    c->return_val.u.aval->argc = cnt;
+    c->return_val.u.aval->vals = galloc(cnt*sizeof(Val));
+    for ( sub=otl->subtables, cnt=0; sub!=NULL; sub=sub->next, ++cnt ) {
+	c->return_val.u.aval->vals[cnt].type = v_str;
+	c->return_val.u.aval->vals[cnt].u.sval = copy( sub->subtable_name );
+    }
+}
+
+static void bGetLookups(Context *c) {
+    OTLookup *otl, *base;
+    int cnt;
+    SplineFont *sf = c->curfv->sf;
+
+    if ( sf->cidmaster ) sf = sf->cidmaster;
+
+    if ( c->a.argc!=2 )
+	ScriptError( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str )
+	ScriptError( c, "Bad type for argument");
+
+    if ( strmatch(c->a.vals[1].u.sval,"GPOS")==0 )
+	base = sf->gpos_lookups;
+    else if ( strmatch(c->a.vals[1].u.sval,"GSUB")==0 )
+	base = sf->gsub_lookups;
+    else
+	ScriptError( c, "Argument to \"GetLookups\" must be either \"GPOS\" or \"GSUB\"");
+
+    for ( otl=base, cnt=0; otl!=NULL; otl=otl->next, ++cnt );
+    c->return_val.type = v_arrfree;
+    c->return_val.u.aval = galloc(sizeof(Array));
+    c->return_val.u.aval->argc = cnt;
+    c->return_val.u.aval->vals = galloc(cnt*sizeof(Val));
+    for ( otl=base, cnt=0; otl!=NULL; otl=otl->next, ++cnt ) {
+	c->return_val.u.aval->vals[cnt].type = v_str;
+	c->return_val.u.aval->vals[cnt].u.sval = copy( otl->lookup_name );
+    }
+}
+
+static void bAddLookupSubtable(Context *c) {
+    int isgpos;
+    OTLookup *otl, *test;
+    struct lookup_subtable *sub, *after=NULL;
+    SplineFont *sf = c->curfv->sf;
+
+    if ( c->a.argc!=3 && c->a.argc!=4 )
+	ScriptError( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str ||
+	    (c->a.argc==4 && c->a.vals[3].type!=v_str))
+	ScriptError( c, "Bad type for argument");
+
+    otl = SFFindLookup(c->curfv->sf,c->a.vals[1].u.sval);
+    if ( otl==NULL )
+	ScriptErrorString(c,"Unknown lookup",c->a.vals[1].u.sval);
+    if ( c->a.argc==4 ) {
+	after = SFFindLookupSubtable(c->curfv->sf,c->a.vals[3].u.sval);
+	if ( after==NULL )
+	    ScriptErrorString(c,"Unknown subtable",c->a.vals[3].u.sval);
+	else if ( after->lookup!=otl )
+	    ScriptErrorString(c,"Subtable is not in lookup",c->a.vals[3].u.sval);
+    }
+
+    if ( sf->cidmaster ) sf = sf->cidmaster;
+
+    for ( isgpos=0; isgpos<2; ++isgpos ) {
+	for ( test = isgpos ? sf->gpos_lookups : sf->gsub_lookups; test!=NULL; test=test->next ) {
+	    for ( sub = test->subtables; sub!=NULL; sub=sub->next )
+		if ( strcmp(sub->subtable_name,c->a.vals[2].u.sval)==0 )
+		    ScriptErrorString(c,"A lookup subtable with this name already exists", c->a.vals[2].u.sval);
+	}
+    }
+    sub = chunkalloc(sizeof(struct lookup_subtable));
+    sub->lookup = otl;
+    sub->subtable_name = copy(c->a.vals[2].u.sval);
+    if ( after!=NULL ) {
+	sub->next = after->next;
+	after->next = sub;
+    } else {
+	sub->next = otl->subtables;
+	otl->subtables = sub;
+    }
+    switch ( otl->lookup_type ) {
+      case gpos_cursive: case gpos_mark2base: case gpos_mark2ligature: case gpos_mark2mark:
+	sub->anchor_classes = true;
+      break;
+      case gsub_single: case gsub_multiple: case gsub_alternate: case gsub_ligature:
+      case gpos_single: case gpos_pair:
+	sub->per_glyph_pst_or_kern = true;
+      break;
+    }
+}
+
+static void bGetLookupOfSubtable(Context *c) {
+    struct lookup_subtable *sub;
+
+    if ( c->a.argc!=2 )
+	ScriptError( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str )
+	ScriptError( c, "Bad type for argument");
+    sub = SFFindLookupSubtable(c->curfv->sf,c->a.vals[1].u.sval);
+    if ( sub==NULL )
+	ScriptErrorString(c,"Unknown lookup subtable",c->a.vals[1].u.sval);
+    c->return_val.type = v_str;
+    c->return_val.u.sval = copy( sub->lookup->lookup_name );
+}
+
+static void bGetSubtableOfAnchorClass(Context *c) {
+    AnchorClass *ac;
+    SplineFont *sf = c->curfv->sf;
+
+    if ( c->a.argc!=2 )
+	ScriptError( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str )
+	ScriptError( c, "Bad type for argument");
+    if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
+
+    for ( ac=sf->anchor; ac!=NULL; ac=ac->next )
+	if ( strcmp(ac->name, c->a.vals[1].u.sval)==0 )
+    break;
+    if ( ac==NULL )
+	ScriptErrorString(c,"Unknown anchor class",c->a.vals[1].u.sval);
+    c->return_val.type = v_str;
+    c->return_val.u.sval = copy( ac->subtable->subtable_name );
 }
 
 static void bAddSizeFeature(Context *c) {
@@ -6674,73 +6846,6 @@ static void FigureExtrema(Context *c,SplineChar *sc,int pos,int xextrema) {
     }
 }
 
-static void PosSubInfo(SplineChar *sc,Context *c) {
-    uint32 tags[3];
-    int i;
-    enum possub_type type;
-    PST *pst;
-    SplineFont *sf_sl = c->curfv->sf;
-
-    if ( sf_sl->cidmaster!=NULL ) sf_sl = sf_sl->cidmaster;
-    else if ( sf_sl->mm!=NULL ) sf_sl = sf_sl->mm->normal;
-
-    if ( c->a.vals[2].type!=v_str || c->a.vals[3].type!=v_str  || c->a.vals[4].type!=v_str )
-	ScriptError( c, "Bad type for argument");
-    for ( i=0; i<3; ++i ) {
-	char *str = c->a.vals[i+2].u.sval;
-	char temp[4];
-	memset(temp,' ',4);
-	if ( *str ) {
-	    temp[0] = *str;
-	    if ( str[1] ) {
-		temp[1] = str[1];
-		if ( str[2] ) {
-		    temp[2] = str[2];
-		    if ( str[3] ) {
-			temp[3] = str[3];
-			if ( str[4] )
-			    ScriptError(c,"Tags/Scripts/Languages are represented by strings which are at most 4 characters long");
-		    }
-		}
-	    }
-	}
-	tags[i] = (temp[0]<<24)|(temp[1]<<16)|(temp[2]<<8)|temp[3];
-    }
-
-    if ( strcmp(c->a.vals[1].u.sval,"Position")==0 )
-	type = pst_position;
-    else if ( strcmp(c->a.vals[1].u.sval,"Pair")==0 )
-	type = pst_pair;
-    else if ( strcmp(c->a.vals[1].u.sval,"Substitution")==0 )
-	type = pst_substitution;
-    else if ( strcmp(c->a.vals[1].u.sval,"AltSubs")==0 )
-	type = pst_alternate;
-    else if ( strcmp(c->a.vals[1].u.sval,"MultSubs")==0 )
-	type = pst_multiple;
-    else if ( strcmp(c->a.vals[1].u.sval,"Ligature")==0 )
-	type = pst_ligature;
-    else
-	ScriptErrorString(c,"Unknown tag", c->a.vals[1].u.sval);
-
-    for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
-	if ( pst->type == type && pst->tag==tags[2] &&
-		ScriptLangMatch(sf_sl->script_lang[pst->script_lang_index],
-			tags[0],tags[1]))
-    break;
-    }
-
-    if ( type==pst_position || type==pst_pair ) {
-	c->return_val.type = v_int;
-	c->return_val.u.ival = (pst!=NULL);
-    } else {
-	c->return_val.type = v_str;
-	if ( pst==NULL )
-	    c->return_val.u.sval = copy("");
-	else
-	    c->return_val.u.sval = copy(pst->u.subs.variant);	/* All other types have their strings in the same place in the union */
-    }
-}
-
 static void bCharInfo(Context *c) {
     SplineFont *sf = c->curfv->sf;
     EncMap *map = c->curfv->map;
@@ -6751,7 +6856,9 @@ static void bCharInfo(Context *c) {
     SplineChar dummy;
     RefChar *ref;
 
-    if ( c->a.argc!=2 && c->a.argc!=3 && c->a.argc!=5 )
+    if ( c->a.argc==5 )
+	ScriptError(c,"This variant of GlyphInfo no works. Use GetPosSub instead");
+    if ( c->a.argc!=2 && c->a.argc!=3 )
 	ScriptError( c, "Wrong number of arguments");
     else if ( c->a.vals[1].type!=v_str )
 	ScriptError( c, "Bad type for argument");
@@ -6763,9 +6870,7 @@ static void bCharInfo(Context *c) {
 	sc = SCBuildDummy(&dummy,sf,map,found);
 
     c->return_val.type = v_int;
-    if ( c->a.argc==5 ) {
-	PosSubInfo(sc,c);
-    } else if ( c->a.argc==3 ) {
+    if ( c->a.argc==3 ) {
 	int ch2;
 	if ( strmatch( c->a.vals[1].u.sval,"XExtrema")==0 ||
 		strmatch( c->a.vals[1].u.sval,"YExtrema")==0 ) {
@@ -6902,42 +7007,17 @@ return;
     }
 }
 
-static char *Tag(uint32 tag) {
-    char buffer[8];
-
-    buffer[0] = tag>>24;
-    buffer[1] = (tag>>16)&0xff;
-    buffer[2] = (tag>>8)&0xff;
-    buffer[3] = tag&0xff;
-    buffer[4] = '\0';
-return( copy( buffer ));
-}
-    
-static char *SLIName(SplineFont *sf,int sli) {
-    unichar_t *temp;
-    char *ret;
-
-    if ( sli>sf->sli_cnt )
-return( copy( "Internal Error"));
-
-    temp = ScriptLangLine(sf->script_lang[sli]);
-    ret = cu_copy(temp);
-    free(temp);
-    if ( ret==NULL ) ret = copy("");
-return( ret );
-}
-
 static void bGetPosSub(Context *c) {
     SplineFont *sf = c->curfv->sf, *sf_sl = sf;
     EncMap *map = c->curfv->map;
     SplineChar *sc;
     int i, j, k, cnt, subcnt, found, gid;
     SplineChar dummy;
-    uint32 tags[3];
     Array *ret, *temp;
     PST *pst;
     KernPair *kp;
     char *pt, *start;
+    struct lookup_subtable *sub;
 
     if ( sf_sl->cidmaster!=NULL ) sf_sl = sf_sl->cidmaster;
     else if ( sf_sl->mm!=NULL ) sf_sl = sf_sl->mm->normal;
@@ -6948,30 +7028,16 @@ static void bGetPosSub(Context *c) {
     if ( sc==NULL )
 	sc = SCBuildDummy(&dummy,sf,map,found);
 
-    if ( c->a.argc!=4 )
+    if ( c->a.argc!=2 )
 	ScriptError( c, "Wrong number of arguments");
-    else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str ||
-	      c->a.vals[3].type!=v_str )
+    else if ( c->a.vals[1].type!=v_str )
 	ScriptError(c,"Bad argument type");
-    for ( i=0; i<3; ++i ) {
-	char *str = c->a.vals[i+1].u.sval;
-	char temp[4];
-	memset(temp,' ',4);
-	if ( *str ) {
-	    temp[0] = *str;
-	    if ( str[1] ) {
-		temp[1] = str[1];
-		if ( str[2] ) {
-		    temp[2] = str[2];
-		    if ( str[3] ) {
-			temp[3] = str[3];
-			if ( str[4] )
-			    ScriptError(c,"Tags/Scripts/Languages are represented by strings which are at most 4 characters long");
-		    }
-		}
-	    }
-	}
-	tags[i] = (temp[0]<<24)|(temp[1]<<16)|(temp[2]<<8)|temp[3];
+    if ( *c->a.vals[1].u.sval=='*' )
+	sub = NULL;
+    else {
+	sub = SFFindLookupSubtable(sf,c->a.vals[1].u.sval);
+	if ( sub==NULL )
+	    ScriptErrorString(c,"Unknown lookup subtable",c->a.vals[1].u.sval);
     }
 
     for ( i=0; i<2; ++i ) {
@@ -6979,8 +7045,7 @@ static void bGetPosSub(Context *c) {
 	for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
 	    if ( pst->type==pst_lcaret )
 	continue;
-	    if (( tags[0]==CHR('*',' ',' ',' ') || tags[0]==pst->tag ) &&
-		    ScriptLangMatch(sf_sl->script_lang[pst->script_lang_index],tags[1],tags[2])) {
+	    if ( pst->subtable == sub || sub==NULL ) {
 		if ( i ) {
 		    ret->vals[cnt].type = v_arr;
 		    ret->vals[cnt].u.aval = temp = galloc(sizeof(Array));
@@ -6993,33 +7058,33 @@ static void bGetPosSub(Context *c) {
 			LogError( "Unexpected PST type in GetPosSub (%d).\n", pst->type );
 		      break;
 		      case pst_position:
-			temp->argc = 7;
+			temp->argc = 6;
 			temp->vals = gcalloc(7,sizeof(Val));
-			temp->vals[2].u.sval = copy("Position");
-			for ( k=3; k<7; ++k ) {
+			temp->vals[1].u.sval = copy("Position");
+			for ( k=2; k<6; ++k ) {
 			    temp->vals[k].type = v_int;
 			    temp->vals[k].u.ival =
-				    (&pst->u.pos.xoff)[(k-3)];
+				    (&pst->u.pos.xoff)[(k-2)];
 			}
 		      break;
 		      case pst_pair:
-			temp->argc = 12;
-			temp->vals = gcalloc(12,sizeof(Val));
-			temp->vals[2].u.sval = copy("Pair");
-			temp->vals[3].type = v_str;
-			temp->vals[3].u.sval = copy(pst->u.pair.paired);
-			for ( k=4; k<12; ++k ) {
+			temp->argc = 11;
+			temp->vals = gcalloc(11,sizeof(Val));
+			temp->vals[1].u.sval = copy("Pair");
+			temp->vals[2].type = v_str;
+			temp->vals[2].u.sval = copy(pst->u.pair.paired);
+			for ( k=3; k<11; ++k ) {
 			    temp->vals[k].type = v_int;
 			    temp->vals[k].u.ival =
-				    (&pst->u.pair.vr[(k-4)/4].xoff)[k&3];
+				    (&pst->u.pair.vr[(k-3)/4].xoff)[(k-3)&3];
 			}
 		      break;
 		      case pst_substitution:
-			temp->argc = 4;
+			temp->argc = 3;
 			temp->vals = gcalloc(4,sizeof(Val));
-			temp->vals[2].u.sval = copy("Substitution");
-			temp->vals[3].type = v_str;
-			temp->vals[3].u.sval = copy(pst->u.subs.variant);
+			temp->vals[1].u.sval = copy("Substitution");
+			temp->vals[2].type = v_str;
+			temp->vals[2].u.sval = copy(pst->u.subs.variant);
 		      break;
 		      case pst_alternate:
 		      case pst_multiple:
@@ -7030,9 +7095,9 @@ static void bGetPosSub(Context *c) {
 			        while ( pt[1]==' ' ) ++pt;
 			    }
 			}
-			temp->argc = 3+subcnt;
-			temp->vals = gcalloc(3+subcnt,sizeof(Val));
-			temp->vals[2].u.sval = copy(pst->type==pst_alternate?"AltSubs":
+			temp->argc = 2+subcnt;
+			temp->vals = gcalloc(2+subcnt,sizeof(Val));
+			temp->vals[1].u.sval = copy(pst->type==pst_alternate?"AltSubs":
 					    pst->type==pst_multiple?"MultSubs":
 			                    "Ligature");
 			for ( pt=pst->u.mult.components, subcnt=0; *pt; ) {
@@ -7041,52 +7106,46 @@ static void bGetPosSub(Context *c) {
 			break;
 			    start = pt;
 			    while ( *pt!=' ' && *pt!='\0' ) ++pt;
-			    temp->vals[3+subcnt].type = v_str;
-			    temp->vals[3+subcnt].u.sval = copyn(start,pt-start);
+			    temp->vals[2+subcnt].type = v_str;
+			    temp->vals[2+subcnt].u.sval = copyn(start,pt-start);
 			    ++subcnt;
 			}
 		      break;
 		    }
 		    if ( ret->vals[cnt].type==v_arr ) {
 			temp->vals[0].type = v_str;
-			temp->vals[0].u.sval = Tag(pst->tag);
+			temp->vals[0].u.sval = copy(pst->subtable->subtable_name);
 			temp->vals[1].type = v_str;
-			temp->vals[1].u.sval = SLIName(sf_sl,pst->script_lang_index);
-			temp->vals[2].type = v_str;
 		    }
 		}
 		++cnt;
 	    }
 	}
 	for ( j=0; j<2; ++j ) {
-	    if ( tags[0]==CHR('*',' ',' ',' ') ||
-		    (j==0 && tags[0]==CHR('k','e','r','n')) ||
-		    (j==1 && tags[0]==CHR('v','k','r','n')) ) {
+	    if ( sub==NULL || sub->lookup->lookup_type==gpos_pair ) {
 		for ( kp= (j==0 ? sc->kerns : sc->vkerns); kp!=NULL; kp=kp->next ) {
-		    if ( ScriptLangMatch(sf_sl->script_lang[kp->sli],tags[1],tags[2])) {
+		    if ( sub==NULL || sub==kp->subtable ) {
 			if ( i ) {
 			    ret->vals[cnt].type = v_arr;
 			    ret->vals[cnt].u.aval = temp = galloc(sizeof(Array));
-			    temp->argc = 12;
+			    temp->argc = 11;
 			    temp->vals = gcalloc(temp->argc,sizeof(Val));
 			    temp->vals[0].type = v_str;
-			    temp->vals[0].u.sval = copy(j==0 ? "kern" : "vkrn");
+			    temp->vals[0].u.sval = copy(kp->subtable->subtable_name);
 			    temp->vals[1].type = v_str;
-			    temp->vals[1].u.sval = SLIName(sf_sl, kp->sli);
+			    temp->vals[1].u.sval = copy("Pair");
 			    temp->vals[2].type = v_str;
-			    temp->vals[2].u.sval = copy("Pair");
-			    temp->vals[3].type = v_str;
-			    temp->vals[3].u.sval = copy(kp->sc->name);
-			    for ( k=4; k<12; ++k ) {
+			    temp->vals[2].u.sval = copy(kp->sc->name);
+			    for ( k=3; k<11; ++k ) {
 				temp->vals[k].type = v_int;
 				temp->vals[k].u.ival = 0;
 			    }
 			    if ( j )
-				temp->vals[7].u.ival = kp->off;
-			    else if ( SCRightToLeft(sc))
-				temp->vals[10].u.ival = kp->off;
-			    else
 				temp->vals[6].u.ival = kp->off;
+			    else if ( SCRightToLeft(sc))
+				temp->vals[9].u.ival = kp->off;
+			    else
+				temp->vals[5].u.ival = kp->off;
 			}
 			++cnt;
 		    }
@@ -7363,6 +7422,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "SelectHintingNeeded", bSelectHintingNeeded },
     { "SelectWorthOutputting", bSelectWorthOutputting },
     { "SelectByATT", bSelectByATT },
+    { "SelectByPosSub", bSelectByPosSub },
     { "SelectByColor", bSelectByColor },
     { "SelectByColour", bSelectByColor },
 /* Element/Encoding Menu */
@@ -7439,9 +7499,23 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "Autotrace", bAutotrace },
     { "AutoTrace", bAutotrace },	/* Oops. docs say upperT, old scripts expect lowert */
     { "CorrectDirection", bCorrectDirection },
+    { "AddPosSub", bAddPosSub },
     { "AddATT", bAddATT },
     { "DefaultATT", bDefaultATT },
     { "RemoveATT", bRemoveATT },
+    { "RemoveLookup", bRemoveLookup },
+    { "MergeLookups", bMergeLookups },
+    { "RemoveLookupSubtable", bRemoveLookupSubtable },
+    { "MergeLookupSubtables", bMergeLookupSubtables },
+    { "AddLookup", bAddLookup },
+    { "SetFeatureList", bSetFeatureList },
+    { "LookupStoreLigatureInAfm", bLookupStoreLigatureInAfm },
+    { "GetLookups", bGetLookups },
+    { "GetLookupSubtables", bGetLookupSubtables },
+    { "GetLookupInfo", bGetLookupInfo },
+    { "AddLookupSubtable", bAddLookupSubtable },
+    { "GetLookupOfSubtable", bGetLookupOfSubtable },
+    { "GetSubtableOfAnchorClass", bGetSubtableOfAnchorClass },
     { "CheckForAnchorClass", bCheckForAnchorClass },
     { "AddAnchorClass", bAddAnchorClass },
     { "RemoveAnchorClass", bRemoveAnchorClass },

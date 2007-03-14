@@ -1016,7 +1016,7 @@ return( true );
 return( true );
 }
 
-static AnchorPoint *AddAnchor(AnchorDlg *a, SplineFont *sf, AnchorClass *ac,
+static SplineChar *AddAnchor(AnchorDlg *a, SplineFont *sf, AnchorClass *ac,
 	int ismarklike) {
     char *ret, *def;
     SplineChar *sc;
@@ -1077,7 +1077,7 @@ return( NULL );
 	}
     }
 
-    if ( isliga /* !!!!!! || (ac->type==act_mklg && ismarklike==0 ) */ ) {
+    if ( isliga || (ac->type==act_mklg && ismarklike==0 ) ) {
 	ap->type = at_baselig;
 	ap->lig_index = maxlig+1;
     } else if ( ismrk && ismarklike!=0 )
@@ -1105,7 +1105,7 @@ return( NULL );
 	}
 	AnchorD_ChangeGlyph(a,sc,ap);
     }
-return( ap );
+return( sc );
 }
 
 static int AnchorD_GlyphChanged(GGadget *g, GEvent *e) {
@@ -1432,3 +1432,54 @@ void AnchorControl(SplineChar *sc,AnchorPoint *ap) {
     AnchorD_FreeAll(&a);
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+
+void AnchorControlClass(SplineFont *_sf,AnchorClass *ac) {
+    /* Pick a random glyph with an anchor point in the class. If no glyph, */
+    /*  give user the chance to create one */
+    SplineChar *sc, *scmark = NULL;
+    AnchorPoint *ap, *apmark = NULL;
+    SplineFont *sf;
+    int k, gid;
+
+    if ( _sf->cidmaster!=NULL ) _sf = _sf->cidmaster;
+    k=0;
+    ap = NULL;
+    do {
+	sf = _sf->subfontcnt==0 ? _sf : _sf->subfonts[k];
+	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc = sf->glyphs[gid])!=NULL ) {
+	    for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
+		if ( ap->anchor==ac ) {
+		    if ( ap->type!=at_mark && ap->type!=at_centry )
+	    break;
+		    else if ( scmark==NULL ) {
+			scmark = sc;
+			apmark = ap;
+		    }
+		}
+	    }
+	    if ( ap!=NULL )
+	break;
+	}
+	if ( ap!=NULL )
+    break;
+	++k;
+    } while ( k<_sf->subfontcnt );
+
+    if ( ap==NULL ) {
+	sc = scmark;
+	ap = apmark;
+    }
+    if ( ap==NULL ) {
+	sc = AddAnchor(NULL,_sf,ac,-1);
+	if ( sc==NULL )
+return;
+	for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
+	    if ( ap->anchor==ac )
+	break;
+	}
+	if ( ap==NULL )		/* Can't happen */
+return;
+    }
+	
+    AnchorControl(sc,ap);
+}

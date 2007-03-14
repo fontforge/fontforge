@@ -63,8 +63,6 @@ struct problems {
     unsigned int multname: 1;
     unsigned int badsubs: 1;
     unsigned int missingglyph: 1;
-    unsigned int missinglookuptag: 1;
-    unsigned int DFLTscript: 1;
     unsigned int toomanypoints: 1;
     unsigned int toomanyhints: 1;
     unsigned int toodeeprefs: 1;
@@ -89,7 +87,7 @@ struct problems {
     SplineChar *lastcharopened;
     CharView *cvopened;
     char *badsubsname;
-    uint32 badsubstag;
+    struct lookup_subtable *badsubs_lsubtable;
     int rpl_cnt, rpl_max;
     struct mgrpl {
 	char *search;
@@ -108,7 +106,7 @@ static int intersectingpaths=1;
 static int doynearstd=1, linestd=1, cpstd=1, cpodd=1, hintnopt=0, ptnearhint=0;
 static int hintwidth=0, direction=1, flippedrefs=1, bitmaps=0;
 static int cidblank=0, cidmultiple=1, advancewidth=0, vadvancewidth=0;
-static int irrelevantcp=1, missingglyph=0, missinglookuptag=0, DFLTscript=0;
+static int irrelevantcp=1, missingglyph=0;
 static int badsubs=1, toomanypoints=1, pointsmax = 1500;
 static int multuni=1, multname=1;
 static int toomanyhints=1, hintsmax=96, toodeeprefs=1, refdepthmax=9;
@@ -156,14 +154,12 @@ static double irrelevantfactor = .005;
 #define CID_IrrelevantFactor	1029
 #define CID_BadSubs		1030
 #define CID_MissingGlyph	1031
-#define CID_MissingLookupTag	1032
 #define CID_TooManyPoints	1033
 #define CID_PointsMax		1034
 #define CID_TooManyHints	1035
 #define CID_HintsMax		1036
 #define CID_TooDeepRefs		1037
 #define CID_RefDepthMax		1038
-#define CID_DFLTScript		1039
 #define CID_MultUni		1040
 #define CID_MultName		1041
 #define CID_PtMatchRefsOutOfDate 1042
@@ -527,8 +523,8 @@ return;
 
     if ( explain==_("This glyph contains a substitution or ligature entry which refers to an empty char") ) {
 	snprintf(buf,sizeof(buf),
-		_("'%2$c%3$c%4$c%5$c' refers to an empty character \"%1$.20s\""), p->badsubsname,
-		(int) (p->badsubstag>>24),(int) ((p->badsubstag>>16)&0xff),(int) ((p->badsubstag>>8)&0xff),(int) (p->badsubstag&0xff));
+		_("%2$.20s refers to an empty character \"%1$.20s\""), p->badsubsname,
+		p->badsubs_lsubtable->subtable_name );
     } else if ( explain==_("This glyph has the same unicode code point as the glyph named") ) {
 	snprintf(buf,sizeof(buf), _("%.40s"), p->glyphname );
     } else if ( explain==_("This glyph has the same name as the glyph at encoding") ) {
@@ -1637,7 +1633,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 			changed = true;
 			p->badsubsname = copy(pt);
 			*end = ch;
-			p->badsubstag = pst->tag;
+			p->badsubs_lsubtable = pst->subtable;
 			ExplainIt(p,sc,_("This glyph contains a substitution or ligature entry which refers to an empty char"),0,0);
 			free(p->badsubsname);
 			if ( p->ignorethis )
@@ -1725,16 +1721,6 @@ return( p->mg[i].rpl );
 return( NULL );
 }
 
-static uint32 missinglookup_tag(struct problems *p,uint32 tag) {
-    int i;
-
-    for ( i=0; i<p->rpl_cnt; ++i )
-	if ( p->mlt[i].search==tag )
-return( p->mlt[i].rpl );
-
-return( 0 );
-}
-
 static void mgreplace(char **base, char *str,char *end, char *new, SplineChar *sc, PST *pst) {
     PST *p, *ps;
 
@@ -1779,30 +1765,17 @@ static void ClearMissingState(struct problems *p) {
     p->mg = NULL;
     p->rpl_cnt = p->rpl_max = 0;
 }
-	    
-enum missingglyph_type { mg_pst, mg_fpst, mg_kern, mg_vkern, mg_lookups,
-	mg_asm, mg_smlookups };
+
+enum missingglyph_type { mg_pst, mg_fpst, mg_kern, mg_vkern, mg_asm };
 struct mgask_data {
     GWindow gw;
-    uint8 done, skipped, islookup;
+    uint8 done, skipped;
     uint32 tag;
     char **_str, *start, *end;
     SplineChar *sc;
     PST *pst;
     struct problems *p;
 };
-
-static void mark_tagto_replace(struct problems *p,uint32 tag, uint32 rpl) {
-
-    if ( p->rpl_cnt >= p->rpl_max ) {
-	if ( p->rpl_max == 0 )
-	    p->mlt = galloc((p->rpl_max = 30)*sizeof(struct mlrpl));
-	else
-	    p->mlt = grealloc(p->mlt,(p->rpl_max += 30)*sizeof(struct mlrpl));
-    }
-    p->mlt[p->rpl_cnt].search = tag;
-    p->mlt[p->rpl_cnt++].rpl = rpl;
-}
 
 static void mark_to_replace(struct problems *p,struct mgask_data *d, char *rpl) {
     int ch;
@@ -1839,19 +1812,11 @@ static int MGA_Rpl(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct mgask_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	const unichar_t *_rpl = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_RplText));
-	if ( d->islookup ) {
-	    if ( u_strlen(_rpl)!=4 ) {
-		gwwv_post_error(_("Tag must be 4 characters long"),_("Tag must be 4 characters long"));
-return( true);
-	    }
-	    mark_tagto_replace(d->p,d->tag,((_rpl[0]&0xff)<<24)|((_rpl[1]&0xff)<<16)|((_rpl[2]&0xff)<<8)|((_rpl[3]&0xff)));
-	} else {
-	    char *rpl = cu_copy(_rpl);
-	    if ( GGadgetIsChecked(GWidgetGetControl(d->gw,CID_Always)))
-		mark_to_replace(d->p,d,rpl);
-	    mgreplace(d->_str,d->start,d->end,rpl,d->sc,d->pst);
-	    free(rpl);
-	}
+	char *rpl = cu_copy(_rpl);
+	if ( GGadgetIsChecked(GWidgetGetControl(d->gw,CID_Always)))
+	    mark_to_replace(d->p,d,rpl);
+	mgreplace(d->_str,d->start,d->end,rpl,d->sc,d->pst);
+	free(rpl);
 	d->done = true;
     }
 return( true );
@@ -1860,13 +1825,9 @@ return( true );
 static int MGA_Delete(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct mgask_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	if ( d->islookup )
-	    mark_tagto_replace(d->p,d->tag,-1);
-	else {
-	    if ( GGadgetIsChecked(GWidgetGetControl(d->gw,CID_Always)))
-		mark_to_replace(d->p,d,"");
-	    mgreplace(d->_str,d->start,d->end,"",d->sc,d->pst);
-	}
+	if ( GGadgetIsChecked(GWidgetGetControl(d->gw,CID_Always)))
+	    mark_to_replace(d->p,d,"");
+	mgreplace(d->_str,d->start,d->end,"",d->sc,d->pst);
 	d->done = true;
     }
 return( true );
@@ -1896,7 +1857,7 @@ return( true );
 
 static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32 tag,
 	SplineChar *sc,enum missingglyph_type which,void *data) {
-    char buffer[200], tbuf[6];
+    char buffer[200];
     static char *pstnames[] = { "", N_("position"), N_("pair"), N_("substitution"),
 	N_("alternate subs"), N_("multiple subs"), N_("ligature"), NULL };
     static char *fpstnames[] = { N_("Contextual position"), N_("Contextual substitution"),
@@ -1908,6 +1869,7 @@ static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32 tag,
     PST *pst = data;
     FPST *fpst = data;
     ASM *sm = data;
+    KernClass *kc = data;
     char end_ch;
     GRect pos;
     GWindow gw;
@@ -1918,36 +1880,28 @@ static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32 tag,
     int blen = GIntGetResource(_NUM_Buttonsize), ptwidth;
     int k, rplpos;
 
-    if ( which != mg_lookups ) {
-	end_ch = *end; *end = '\0';
-    }
+    end_ch = *end; *end = '\0';
 
     if ( which == mg_pst ) {
-	if ( pst->macfeature )
-	    snprintf(buffer,sizeof(buffer),
-		    _("Glyph %1$.50s with a %2$s with feature <%3$d,%4$d>"),
-		    sc->name, _(pstnames[pst->type]),
-		    (int) (pst->tag>>16), (int) (pst->tag&0xffff));
-	else
-	    snprintf(buffer,sizeof(buffer),
-		    _("Glyph %1$.50s with a %2$s with tag '%3$c%4$c%5$c%6$c'"),
-		    sc->name, _(pstnames[pst->type]),
-		    (int) (pst->tag>>24), (int) ((pst->tag>>16)&0xff), (int) ((pst->tag>>8)&0xff), (int) (pst->tag&0xff));
-    } else if ( which == mg_fpst || which==mg_lookups )
 	snprintf(buffer,sizeof(buffer),
-		_("%1$s with tag '%2$c%3$c%4$c%5$c'"),
+		_("Glyph %1$.50s with a %2$s from lookup subtable %3$.50s"),
+		sc->name, _(pstnames[pst->type]),
+		pst->subtable->subtable_name );
+    } else if ( which == mg_fpst )
+	snprintf(buffer,sizeof(buffer),
+		_("%1$s from lookup subtable %2$.50s"),
 		_(fpstnames[fpst->type-pst_contextpos]),
-		(int) (fpst->tag>>24), (int) ((fpst->tag>>16)&0xff), (int) ((fpst->tag>>8)&0xff), (int) (fpst->tag&0xff));
-    else if ( which == mg_asm || which==mg_smlookups )
+		fpst->subtable->subtable_name );
+    else if ( which == mg_asm )
 	snprintf(buffer,sizeof(buffer),
-		_("%1$s with feature <%2$d,%3$d>"),
+		_("%1$s from lookup subtable %2$.50s"),
 		_(asmnames[sm->type]),
-		sm->feature, sm->setting);
+		sm->subtable->subtable_name );
     else
 	snprintf(buffer,sizeof(buffer),
-		_("%1$s with tag '%2$c%3$c%4$c%5$c'"),
+		_("%1$s from lookup subtable %2$.50s"),
 		which==mg_kern ? _("Kerning Class"): _("Vertical Kerning Class"),
-		which==mg_kern ? 'k' : 'v', which==mg_kern ? 'e' : 'k', 'r', 'n' );
+		kc->subtable->subtable_name );
 
     memset(&d,'\0',sizeof(d));
     d._str = _str;
@@ -1956,7 +1910,6 @@ static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32 tag,
     d.sc = sc;
     d.pst = which==mg_pst ? data : NULL;
     d.p = p;
-    d.islookup = which==mg_lookups;
     d.tag = tag;
 
     memset(&wattrs,0,sizeof(wattrs));
@@ -1983,25 +1936,15 @@ static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32 tag,
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k++].creator = GLabelCreate;
 
-    label[k].text = (unichar_t *) (which==mg_lookups ?
-	    _(" refers to a missing lookup tag") :
-	    _(" refers to a missing glyph"));
+    label[k].text = (unichar_t *) _(" refers to a missing glyph");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+13;
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k++].creator = GLabelCreate;
 
-    if ( which!=mg_lookups ) {
-	label[k].text = (unichar_t *) str;
-	label[k].text_is_1byte = true;
-    } else {
-	label[k].text = (unichar_t *) tbuf;
-	label[k].text_is_1byte = true;
-	tbuf[0] = tag>>24; tbuf[1] = (tag>>16)&0xff;
-	tbuf[2] = (tag>>8)&0xff; tbuf[3] = tag&0xff;
-	tbuf[4] = 0;
-    }
+    label[k].text = (unichar_t *) str;
+    label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+13;
     gcd[k].gd.flags = gg_visible | gg_enabled;
@@ -2019,10 +1962,7 @@ static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32 tag,
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.cid = CID_RplText;
     gcd[k].gd.handle_controlevent = MGA_RplChange;
-    if ( which==mg_lookups ) {
-	gcd[k++].creator = GListFieldCreate;
-    } else
-	gcd[k++].creator = GTextFieldCreate;
+    gcd[k++].creator = GTextFieldCreate;
 
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+30;
     gcd[k].gd.flags = gg_visible | gg_enabled;
@@ -2031,8 +1971,6 @@ static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32 tag,
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_Always;
     gcd[k++].creator = GCheckBoxCreate;
-    if ( which==mg_lookups )
-	gcd[k-1].gd.flags = gg_enabled | gg_cb_on;
 
     label[k].text = (unichar_t *) _("Ignore this problem in the future");
     label[k].text_is_1byte = true;
@@ -2079,19 +2017,7 @@ static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32 tag,
     gcd[k++].creator = GGroupCreate;
 
     GGadgetsCreate(gw,gcd);
-    if ( which!=mg_lookups && which!=mg_smlookups )
-	*end = end_ch;
-    else {
-	int searchtype;
-	SplineFont *sf = p->fv!=NULL ? p->fv->sf : p->cv!=NULL ? p->cv->sc->parent : p->msc->parent;
-	if ( which==mg_smlookups )
-	    searchtype = fpst_max+1;	/* Search for substitution tables */
-	else if ( fpst->type==pst_contextpos || fpst->type==pst_chainpos )
-	    searchtype = fpst_max;		/* Search for positioning tables */
-	else
-	    searchtype = fpst_max+1;	/* Search for substitution tables */
-	GGadgetSetList(gcd[rplpos].ret, SFGenTagListFromType(&sf->gentags,searchtype),false);
-    }
+    *end = end_ch;
     GDrawSetVisible(gw,true);
 
     while ( !d.done )
@@ -2214,77 +2140,12 @@ static int FPSTMissingGlyph(struct problems *p,FPST *fpst) {
 return( found );
 }
 
-static int FPSTMissingLookups(struct problems *p,FPST *fpst) {
-    int i, j;
-    int ispos = (fpst->type==pst_contextpos || fpst->type==pst_chainpos);
-    SplineFont *sf = p->fv!=NULL ? p->fv->sf : p->cv!=NULL ? p->cv->sc->parent : p->msc->parent;
-    int found = false;
-    uint32 new;
-
-    if ( fpst->type==pst_reversesub )		/* No other lookups needed */
-return( false );
-
-    for ( i=0; i<fpst->rule_cnt ; ++i ) {
-	struct fpst_rule *r = &fpst->rules[i];
-	for ( j=0; j<r->lookup_cnt; ++j ) {
-	    if ( !SFHasNestedLookupWithTag(sf,r->lookups[j].lookup_tag,ispos) ) {
-		found = true;
-		if ( (new = missinglookup_tag(p,r->lookups[j].lookup_tag))==0 ) {
-		    if ( !mgAsk(p,NULL,NULL,NULL,r->lookups[j].lookup_tag,NULL,mg_lookups,fpst))
-	continue;
-		}
-		if ( (new = missinglookup_tag(p,r->lookups[j].lookup_tag))!=0 ) {
-		    if ( new==(uint32) -1 ) {
-			if ( j!=r->lookup_cnt-1 )
-			    memmove(&r->lookups[j],&r->lookups[j+1],r->lookup_cnt-j-1);
-			--r->lookup_cnt;
-		    } else
-			r->lookups[j].lookup_tag = new;
-		    --j;
-		}
-	    }
-	}
-    }
-return( found );
-}
-
 static int ASMMissingGlyph(struct problems *p,ASM *sm) {
     int j;
     int found = false;
 
     for ( j=4; j<sm->class_cnt; ++j )
 	found |= StrMissingGlyph(p,&sm->classes[j],NULL,mg_asm,sm);
-return( found );
-}
-
-static int ASMMissingLookups(struct problems *p,ASM *sm) {
-    int i, j;
-    SplineFont *sf = p->fv!=NULL ? p->fv->sf : p->cv!=NULL ? p->cv->sc->parent : p->msc->parent;
-    int found = false;
-    uint32 new;
-
-    if ( sm->type!=asm_context )		/* No lookups involved */
-return( false );
-
-    for ( i=0; i<sm->state_cnt*sm->class_cnt; ++i ) {
-	struct asm_state *this = &sm->state[i];
-	for ( j=0; j<2; ++j ) {
-	    uint32 *tagpt = &this->u.context.mark_tag+j;
-	    if ( !SFHasNestedLookupWithTag(sf,*tagpt,false) ) {
-		found = true;
-		if ( (new = missinglookup_tag(p,*tagpt))==0 ) {
-		    if ( !mgAsk(p,NULL,NULL,NULL,*tagpt,NULL,mg_smlookups,sm))
-	continue;
-		}
-		if ( (new = missinglookup_tag(p,*tagpt))!=0 ) {
-		    if ( new==(uint32) -1 )
-			*tagpt = 0;
-		    else
-			*tagpt = new;
-		}
-	    }
-	}
-    }
 return( found );
 }
 
@@ -2306,30 +2167,6 @@ static int CheckForATT(struct problems *p) {
 
     _sf = p->fv->sf;
     if ( _sf->cidmaster ) _sf = _sf->cidmaster;
-
-    if ( p->DFLTscript && !p->finish ) {
-	sf = _sf;
-	if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
-	else if ( sf->mm!=NULL ) sf = sf->mm->normal;
-	if ( sf->script_lang!=NULL ) {
-	    for ( i=0; sf->script_lang[i]!=NULL; ++i ) {
-		if ( sf->script_lang[i][0].script == DEFAULT_SCRIPT ) {
-		    found = true;
-		    if ( gwwv_ask(_("Check for use of 'DFLT' script"),(const char **) buts,0,1,_("This font refers to the script 'DFLT'\nwhich means FontForge couldn't guess\na good script.\nYou should probably provide a new\nlist of scripts (if you are unsure\nof which scripts to select, select all\nthat are used in your font).\nWould you like to do this?"))==0 ) {
-			unichar_t *dflt, *result;
-			dflt = ScriptLangLine(sf->script_lang[i]);
-			result = ShowScripts(dflt);
-			if ( result!=NULL ) {
-			    ScriptRecordFree(sf->script_lang[i]);
-			    sf->script_lang[i] = SRParse(result);
-			    free(result);
-			}
-			free(dflt);
-		    }
-		}
-	    }
-	}
-    }
 
     if ( p->missingglyph && !p->finish ) {
 	if ( p->cv!=NULL )
@@ -2356,13 +2193,6 @@ static int CheckForATT(struct problems *p) {
 	ClearMissingState(p);
     }
 
-    if ( p->missinglookuptag && !p->finish ) {
-	for ( fpst=_sf->possub; fpst!=NULL && !p->finish && p->missinglookuptag; fpst=fpst->next )
-	    found |= FPSTMissingLookups(p,fpst);
-	for ( sm=_sf->sm; sm!=NULL && !p->finish && p->missinglookuptag; sm=sm->next )
-	    found |= ASMMissingLookups(p,sm);
-	ClearMissingState(p);
-    }
 return( found );
 }
 
@@ -2371,7 +2201,7 @@ static void DoProbs(struct problems *p) {
     SplineChar *sc;
     BDFFont *bdf;
 
-    if ( p->missingglyph || p->missinglookuptag || p->DFLTscript )
+    if ( p->missingglyph )
 	ret = CheckForATT(p);
     if ( p->cv!=NULL ) {
 	ret |= SCProblems(p->cv,NULL,p);
@@ -2430,9 +2260,9 @@ static int Prob_DoAll(GGadget *g, GEvent *e) {
 	    CID_YNear, CID_YNearStd, CID_HintNoPt, CID_PtNearHint,
 	    CID_HintWidthNear, CID_LineStd, CID_Direction, CID_CpStd,
 	    CID_CpOdd, CID_FlippedRefs, CID_Bitmaps, CID_AdvanceWidth,
-	    CID_BadSubs, CID_MissingGlyph, CID_MissingLookupTag,
+	    CID_BadSubs, CID_MissingGlyph,
 	    CID_Stem3, CID_IrrelevantCP, CID_TooManyPoints,
-	    CID_TooManyHints, CID_TooDeepRefs, CID_DFLTScript,
+	    CID_TooManyHints, CID_TooDeepRefs,
 	    CID_MultUni, CID_MultName, CID_PtMatchRefsOutOfDate,
 	    CID_RefBadTransformTTF, CID_RefBadTransformPS, CID_MixedContoursRefs,
 	    0 };
@@ -2477,8 +2307,6 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	multname = p->multname = GGadgetIsChecked(GWidgetGetControl(gw,CID_MultName));
 	badsubs = p->badsubs = GGadgetIsChecked(GWidgetGetControl(gw,CID_BadSubs));
 	missingglyph = p->missingglyph = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingGlyph));
-	missinglookuptag = p->missinglookuptag = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingLookupTag));
-	DFLTscript = p->DFLTscript = GGadgetIsChecked(GWidgetGetControl(gw,CID_DFLTScript));
 	toomanypoints = p->toomanypoints = GGadgetIsChecked(GWidgetGetControl(gw,CID_TooManyPoints));
 	toomanyhints = p->toomanyhints = GGadgetIsChecked(GWidgetGetControl(gw,CID_TooManyHints));
 	ptmatchrefsoutofdate = p->ptmatchrefsoutofdate = GGadgetIsChecked(GWidgetGetControl(gw,CID_PtMatchRefsOutOfDate));
@@ -2530,8 +2358,8 @@ return( true );
 		direction || p->cidmultiple || p->cidblank || p->flippedrefs ||
 		p->bitmaps || p->advancewidth || p->vadvancewidth || p->stem3 ||
 		p->irrelevantcontrolpoints || p->badsubs || p->missingglyph ||
-		p->missinglookuptag || p->toomanypoints || p->toomanyhints ||
-		p->toodeeprefs || p->DFLTscript || multuni || multname ||
+		p->toomanypoints || p->toomanyhints ||
+		p->toodeeprefs || multuni || multname ||
 		p->ptmatchrefsoutofdate || p->refsbadtransformttf ||
 		p->mixedcontoursrefs || p->refsbadtransformps ) {
 	    DoProbs(p);
@@ -3150,28 +2978,6 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     agcd[0].gd.popup_msg = (unichar_t *) _("Check whether a substitution, kerning class, etc. uses a glyph name which does not match any glyph in the font");
     agcd[0].gd.cid = CID_MissingGlyph;
     agcd[0].creator = GCheckBoxCreate;
-
-    alabel[1].text = (unichar_t *) _("Check for missing _lookup tags");
-    alabel[1].text_is_1byte = true;
-    alabel[1].text_in_resource = true;
-    agcd[1].gd.label = &alabel[1];
-    agcd[1].gd.pos.x = 3; agcd[1].gd.pos.y = agcd[0].gd.pos.y+17; 
-    agcd[1].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    if ( missinglookuptag ) agcd[1].gd.flags |= gg_cb_on;
-    agcd[1].gd.popup_msg = (unichar_t *) _("Check whether a contextual subtitution/positioning item refers to a tag which is not defined in the font");
-    agcd[1].gd.cid = CID_MissingLookupTag;
-    agcd[1].creator = GCheckBoxCreate;
-
-    alabel[2].text = (unichar_t *) _("Check for use of '_DFLT' script");
-    alabel[2].text_is_1byte = true;
-    alabel[2].text_in_resource = true;
-    agcd[2].gd.label = &alabel[2];
-    agcd[2].gd.pos.x = 3; agcd[2].gd.pos.y = agcd[1].gd.pos.y+17; 
-    agcd[2].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    if ( DFLTscript ) agcd[2].gd.flags |= gg_cb_on;
-    agcd[2].gd.popup_msg = (unichar_t *) _("Use of the 'DFLT' script is not very informative.\nFontForge will occasionally create an entry with\nthis script if it doesn't know what better to use.");
-    agcd[2].gd.cid = CID_DFLTScript;
-    agcd[2].creator = GCheckBoxCreate;
 
 /* ************************************************************************** */
 

@@ -5001,7 +5001,6 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     SplineFont *sf, *_sf;
     int i,k;
     BDFFont *bdf;
-    struct table_ordering *ord;
     SplineChar *sc;
     struct ttf_table *last[2], *tab, *next;
 
@@ -5107,9 +5106,8 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->possub = info->possub;
     sf->sm = info->sm;
     sf->features = info->features;
-    sf->gentags = info->gentags;
-    sf->script_lang = info->script_lang;
-    sf->sli_cnt = info->sli_cnt;
+    sf->gpos_lookups = info->gpos_lookups;
+    sf->gsub_lookups = info->gsub_lookups;
 
     last[0] = sf->ttf_tables;
     last[1] = NULL;
@@ -5168,6 +5166,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 	}
     }
     TTF_PSDupsDefault(sf);
+#if 0
     if ( info->gsub_start==0 && info->mort_start==0 && info->morx_start==0 ) {
 	/* Get default ligature values, etc. */
 	k=0;
@@ -5180,22 +5179,15 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 	    ++k;
 	} while ( k<sf->subfontcnt );
     }
+#endif
 
-    if ( info->feats[0]!=NULL ) {
-	ord = chunkalloc(sizeof(struct table_ordering));
-	ord->table_tag = CHR('G','S','U','B');		/* or mort/morx */
-	ord->ordered_features = info->feats[0];
-	sf->orders = ord;
+    /* I thought the languages were supposed to be ordered, but it seems */
+    /*  that is not always the case. Order everything, just in case */
+    { int isgpos; OTLookup *otl;
+    for ( isgpos=0; isgpos<2; ++isgpos )
+	for ( otl= isgpos? sf->gpos_lookups:sf->gsub_lookups; otl!=NULL; otl=otl->next )
+	    otl->features = FLOrder(otl->features);
     }
-    if ( info->feats[1]!=NULL ) {
-	ord = chunkalloc(sizeof(struct table_ordering));
-	ord->table_tag = CHR('G','P','O','S');
-	ord->ordered_features = info->feats[1];
-	ord->next = sf->orders;
-	sf->orders = ord;
-    }
-
-    otf_orderlangs(NULL,sf);		/* I thought these had to be ordered, but it seems I was wrong. But I depend on the order, so I enforce it here */
 
     if ( info->variations!=NULL )
 	MMFillFromVAR(sf,info);

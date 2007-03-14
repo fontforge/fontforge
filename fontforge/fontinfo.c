@@ -39,32 +39,6 @@ extern int _GScrollBar_Width;
 
 static int last_aspect=0;
 
-struct gfi_data {
-    SplineFont *sf;
-    GWindow gw;
-    GFont *tn_font;
-    int tn_active;
-    int private_aspect, ttfv_aspect, tn_aspect, tx_aspect, unicode_aspect;
-    int old_sel, old_aspect, old_lang, old_strid;
-    int ttf_set, names_set, tex_set;
-    struct psdict *private;
-    int langlocalecode;	/* MS code for the current locale */
-    unsigned int family_untitled: 1;
-    unsigned int human_untitled: 1;
-    unsigned int done: 1;
-    unsigned int mpdone: 1;
-    struct anchor_shows { CharView *cv; SplineChar *sc; int restart; } anchor_shows[2];
-    struct texdata texdata;
-    struct contextchaindlg *ccd;
-    struct statemachinedlg *smd;
-/* For GDEF Mark Attachment Class -- used in lookup flags */
-/* As usual, class 0 is unused */
-    int mark_class_cnt;
-    char **mark_classes;		/* glyph name list */
-    char **mark_class_names;		/* used within ff */
-    struct markclassdlg *mcd;
-};
-
 GTextInfo emsizes[] = {
     { (unichar_t *) "1000", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) "1024", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -77,6 +51,7 @@ GTextInfo interpretations[] = {
 /* GT: See the long comment at "Property|New" */
 /* GT: The msgstr should contain a translation of "None", ignore "Interpretation|" */
 /* GT: In french this could be "Aucun" or "Aucune" depending on the gender */
+/* GT:  of "Interpretation" */
     { (unichar_t *) N_("Interpretation|None"), NULL, 0, 0, (void *) ui_none, NULL, 0, 0, 0, 0, 0, 0, 1},
 /*  { (unichar_t *) N_("Adobe Public Use Defs."), NULL, 0, 0, (void *) ui_adobe, NULL, 0, 0, 0, 0, 0, 0, 1}, */
 /*  { (unichar_t *) N_("Greek"), NULL, 0, 0, (void *) ui_greek, NULL, 0, 0, 0, 0, 0, 0, 1}, */
@@ -1234,13 +1209,6 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 
 #define CID_Comment		6001
 
-#define CID_AnchorClasses	7001
-#define CID_AnchorNew		7002
-#define CID_AnchorDel		7003
-#define CID_AnchorRename	7004
-#define CID_ShowMark		7005
-#define CID_ShowBase		7006
-
 #define CID_MarkClasses		7101
 #define CID_MarkNew		7102
 #define CID_MarkEdit		7103
@@ -1261,23 +1229,28 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_StyleNameDel	8307
 #define CID_StyleNameRename	8308
 
-#define CID_Contextual		9000
-#define CID_ContextClasses	9001	/* Variants at +n*100 */
-#define CID_ContextNew		9002
-#define CID_ContextDel		9003
-#define CID_ContextEdit		9004
-#define CID_ContextEditData	9005
-
-#define CID_StateMachine	9010
-#define CID_SMList		9011	/* Variants at +n*100 */
-#define CID_SMNew		9012
-#define CID_SMDel		9013
-#define CID_SMEdit		9014
-
 #define CID_Tabs		10001
 #define CID_OK			10002
 #define CID_Cancel		10003
 #define CID_MainGroup		10004
+
+#define CID_Lookups		11000
+#define CID_LookupTop		11001
+#define CID_LookupUp		11002
+#define CID_LookupDown		11003
+#define CID_LookupBottom	11004
+#define CID_AddLookup		11005
+#define CID_AddSubtable		11006
+#define CID_EditLookup		11007
+#define CID_EditSubtable	11008
+#define CID_DeleteLookup	11009
+#define CID_MergeLookup		11010
+#define CID_RevertLookups	11011
+#define CID_LookupSort		11012
+#define CID_ImportLookups	11013
+#define CID_LookupWin		11020		/* (GSUB, add 1 for GPOS) */
+#define CID_LookupVSB		11022		/* (GSUB, add 1 for GPOS) */
+#define CID_LookupHSB		11024		/* (GSUB, add 1 for GPOS) */
 
 #define CID_MacAutomatic	16000
 #define CID_MacStyles		16001
@@ -2097,169 +2070,6 @@ static int GFI_GuessItalic(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static void GFI_CleanupContext(struct gfi_data *d) {
-    FPST *fpst;
-    ASM *sm;
-    int i, j;
-
-    /* Free any context which were created but got [Cancelled] */
-    for ( i=0; i<fpst_max-pst_contextpos; ++i ) {
-	GGadget *list = GWidgetGetControl(d->gw,CID_ContextClasses+i*100);
-	int32 len;
-	GTextInfo **old = GGadgetGetList(list,&len);
-	for ( j=0; j<len; ++j ) {
-	    fpst = (FPST *) (old[j]->userdata);
-	    if ( fpst!=NULL ) fpst->ticked = false;
-	}
-    }
-    for ( fpst = d->sf->possub; fpst!=NULL; fpst=fpst->next )
-	fpst->ticked = true;
-    for ( i=0; i<fpst_max-pst_contextpos; ++i ) {
-	GGadget *list = GWidgetGetControl(d->gw,CID_ContextClasses+i*100);
-	int32 len;
-	GTextInfo **old = GGadgetGetList(list,&len);
-	for ( j=0; j<len; ++j ) {
-	    fpst = (FPST *) (old[j]->userdata);
-	    if ( fpst!=NULL && !fpst->ticked ) {
-		fpst->next = NULL;
-		FPSTFree(fpst);
-	    }
-	}
-    }
-
-    /* Do the same thing for apple state machines */
-    for ( i=0; i<3; ++i ) {
-	GGadget *list = GWidgetGetControl(d->gw,CID_SMList+i*100);
-	int32 len;
-	GTextInfo **old = GGadgetGetList(list,&len);
-	for ( j=0; j<len; ++j ) {
-	    sm = (ASM *) (old[j]->userdata);
-	    if ( sm!=NULL ) sm->ticked = false;
-	}
-    }
-    for ( sm = d->sf->sm; sm!=NULL; sm=sm->next )
-	sm->ticked = true;
-    for ( i=0; i<3; ++i ) {
-	GGadget *list = GWidgetGetControl(d->gw,CID_SMList+i*100);
-	int32 len;
-	GTextInfo **old = GGadgetGetList(list,&len);
-	for ( j=0; j<len; ++j ) {
-	    sm = (ASM *) (old[j]->userdata);
-	    if ( sm!=NULL && !sm->ticked ) {
-		sm->next = NULL;
-		ASMFree(sm);
-	    }
-	}
-    }
-}
-
-static void GFI_ProcessContexts(struct gfi_data *d) {
-    FPST *fpst, *next, *p, *last;
-    ASM *sm, *nextsm, *psm, *lastsm;
-    int i, j;
-
-    /* Free any contexts which have been deleted */
-    for ( fpst = d->sf->possub; fpst!=NULL; fpst=fpst->next )
-	fpst->ticked = false;
-    for ( i=0; i<fpst_max-pst_contextpos; ++i ) {
-	GGadget *list = GWidgetGetControl(d->gw,CID_ContextClasses+i*100);
-	int32 len;
-	GTextInfo **old = GGadgetGetList(list,&len);
-	for ( j=0; j<len; ++j ) {
-	    fpst = (FPST *) (old[j]->userdata);
-	    if ( fpst!=NULL ) fpst->ticked = true;
-	}
-    }
-    p = NULL;
-    for ( fpst = d->sf->possub; fpst!=NULL; fpst=next ) {
-	next = fpst->next;
-	if ( fpst->ticked )
-	    p = fpst;
-	else {
-	    if ( p==NULL )
-		d->sf->possub = next;
-	    else
-		p->next = next;
-	    fpst->next = NULL;
-	    FPSTFree(fpst);
-	}
-    }
-
-    /* Now build up a new list containing all fpst's */
-    last = NULL;
-    for ( i=0; i<fpst_max-pst_contextpos; ++i ) {
-	GGadget *list = GWidgetGetControl(d->gw,CID_ContextClasses+i*100);
-	int32 len;
-	GTextInfo **old = GGadgetGetList(list,&len);
-	for ( j=0; j<len; ++j ) {
-	    fpst = (FPST *) (old[j]->userdata);
-	    if ( fpst!=NULL ) {
-		if ( last==NULL )
-		    d->sf->possub = fpst;
-		else
-		    last->next = fpst;
-		last = fpst;
-	    }
-	    old[j]->userdata = NULL;
-	}
-    }
-    if ( last==NULL )
-	d->sf->possub = NULL;
-    else
-	last->next = NULL;
-
-    /* And for apple state machines... */
-    /* Free any state machines which have been deleted */
-    for ( sm = d->sf->sm; sm!=NULL; sm=sm->next )
-	sm->ticked = false;
-    for ( i=0; i<3; ++i ) {
-	GGadget *list = GWidgetGetControl(d->gw,CID_SMList+i*100);
-	int32 len;
-	GTextInfo **old = GGadgetGetList(list,&len);
-	for ( j=0; j<len; ++j ) {
-	    sm = (ASM *) (old[j]->userdata);
-	    if ( sm!=NULL ) sm->ticked = true;
-	}
-    }
-    psm = NULL;
-    for ( sm = d->sf->sm; sm!=NULL; sm=nextsm ) {
-	nextsm = sm->next;
-	if ( sm->ticked )
-	    psm = sm;
-	else {
-	    if ( p==NULL )
-		d->sf->sm = nextsm;
-	    else
-		psm->next = nextsm;
-	    sm->next = NULL;
-	    ASMFree(sm);
-	}
-    }
-
-    /* Now build up a new list containing all active state machines */
-    lastsm = NULL;
-    for ( i=0; i<4; ++i ) {
-	GGadget *list = GWidgetGetControl(d->gw,CID_SMList+i*100);
-	int32 len;
-	GTextInfo **old = GGadgetGetList(list,&len);
-	for ( j=0; j<len; ++j ) {
-	    sm = (ASM *) (old[j]->userdata);
-	    if ( sm!=NULL ) {
-		if ( lastsm==NULL )
-		    d->sf->sm = sm;
-		else
-		    lastsm->next = sm;
-		lastsm = sm;
-	    }
-	    old[j]->userdata = NULL;
-	}
-    }
-    if ( lastsm==NULL )
-	d->sf->sm = NULL;
-    else
-	lastsm->next = NULL;
-}
-
 static void MCD_Close(struct markclassdlg *mcd);
 
 static void GFI_Close(struct gfi_data *d) {
@@ -2273,14 +2083,13 @@ static void GFI_Close(struct gfi_data *d) {
     if ( d->mcd )
 	MCD_Close(d->mcd );
 
-    GFI_CleanupContext(d);
     PSDictFree(d->private);
 
     GDrawDestroyWindow(d->gw);
+    if ( d->sf->fontinfo == d )
+	d->sf->fontinfo = NULL;
     for ( fvs = d->sf->fv; fvs!=NULL; fvs = fvs->nextsame ) {
 	GDrawRequestExpose(sf->fv->v,NULL,false);
-	if ( fvs->fontinfo == d )
-	    fvs->fontinfo = NULL;
     }
     d->done = true;
     /* d will be freed by destroy event */;
@@ -2298,9 +2107,24 @@ static void MarkClassFree(int cnt,char **classes,char **names) {
 }
 
 static void GFI_CancelClose(struct gfi_data *d) {
+    int isgpos,i,j;
+
     MacFeatListFree(GGadgetGetUserData((GWidgetGetControl(
 	    d->gw,CID_Features))));
     MarkClassFree(d->mark_class_cnt,d->mark_classes,d->mark_class_names);
+    for ( isgpos=0; isgpos<2; ++isgpos ) {
+	struct lkdata *lk = &d->tables[isgpos];
+	for ( i=0; i<lk->cnt; ++i ) {
+	    if ( lk->all[i].new )
+		SFRemoveLookup(d->sf,lk->all[i].lookup);
+	    else for ( j=0; j<lk->all[i].subtable_cnt; ++j ) {
+		if ( lk->all[i].subtables[j].new )
+		    SFRemoveLookupSubTable(d->sf,lk->all[i].subtables[j].subtable);
+	    }
+	    free(lk->all[i].subtables);
+	}
+	free(lk->all);
+    }
     GFI_Close(d);
 }
 
@@ -2701,215 +2525,6 @@ static int GFI_MarkSelChanged(GGadget *g, GEvent *e) {
 return( true );
 }
 
-GTextInfo *AnchorClassesList(SplineFont *sf) {
-    AnchorClass *an;
-    int cnt;
-    GTextInfo *ti;
-
-    for ( cnt=0, an=sf->anchor; an!=NULL; ++cnt, an=an->next );
-    ti = gcalloc(cnt+1,sizeof(GTextInfo));
-    for ( cnt=0, an=sf->anchor; an!=NULL; ++cnt, an=an->next ) {
-	ti[cnt].text = ClassName(an->name,an->feature_tag,an->flags,
-		an->script_lang_index, an->merge_with, an->type,false,sf);
-	ti[cnt].fg = ti[cnt].bg = COLOR_DEFAULT;
-	ti[cnt].userdata = an;
-    }
-return( ti );
-}
-
-GTextInfo **AnchorClassesLList(SplineFont *sf) {
-    AnchorClass *an;
-    int cnt;
-    GTextInfo **ti;
-
-    for ( cnt=0, an=sf->anchor; an!=NULL; ++cnt, an=an->next );
-    ti = gcalloc(cnt+1,sizeof(GTextInfo*));
-    for ( cnt=0, an=sf->anchor; an!=NULL; ++cnt, an=an->next ) {
-	ti[cnt] = gcalloc(1,sizeof(GTextInfo));
-	ti[cnt]->text = ClassName(an->name,an->feature_tag,an->flags,
-		an->script_lang_index,an->merge_with, an->type,false,sf);
-	ti[cnt]->fg = ti[cnt]->bg = COLOR_DEFAULT;
-	ti[cnt]->userdata = an;
-    }
-    ti[cnt] = gcalloc(1,sizeof(GTextInfo));
-return( ti );
-}
-
-GTextInfo **AnchorClassesSimpleLList(SplineFont *sf) {
-    AnchorClass *an;
-    int cnt;
-    GTextInfo **ti;
-
-    for ( cnt=0, an=sf->anchor; an!=NULL; ++cnt, an=an->next );
-    ti = gcalloc(cnt+1,sizeof(GTextInfo*));
-    for ( cnt=0, an=sf->anchor; an!=NULL; ++cnt, an=an->next ) {
-	ti[cnt] = gcalloc(1,sizeof(GTextInfo));
-	ti[cnt]->text = uc_copy(an->name);
-	ti[cnt]->fg = ti[cnt]->bg = COLOR_DEFAULT;
-	ti[cnt]->userdata = an;
-    }
-    ti[cnt] = gcalloc(1,sizeof(GTextInfo));
-return( ti );
-}
-
-static void GFI_AnchorShow(GGadget *g, int index) {
-    struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-    int i, start;
-    GGadget *list = GWidgetGetControl(GGadgetGetWindow(g),CID_AnchorClasses);
-    int sel = GGadgetGetFirstListSelectedItem(list);
-    int32 len;
-    GTextInfo **old = GGadgetGetList(list,&len);
-    AnchorClass *ac;
-    SplineChar *sc;
-    AnchorPoint *ap, *ap2;
-    CharView *cvs;
-
-    if ( (ac = old[sel]->userdata)==NULL )
-return;
-
-    if ( d->anchor_shows[index].restart || d->anchor_shows[index].sc==NULL )
-	start = 0;
-    else
-	start = d->anchor_shows[index].sc->orig_pos+1;
-    for ( i=start; i<d->sf->glyphcnt; ++i ) if ( d->sf->glyphs[i]!=NULL ) {
-	sc = d->sf->glyphs[i];
-	for ( ap = sc->anchor; ap!=NULL ; ap=ap->next ) {
-	    if ( ap->anchor==ac &&
-		    ((index==0 && (ap->type==at_mark || ap->type==at_centry)) ||
-		     (index==1 && (ap->type==at_basechar || ap->type==at_baselig ||
-				     ap->type==at_basemark || ap->type==at_cexit))))
-	break;
-	}
-	if ( ap!=NULL )
-    break;
-    }
-    if ( i==d->sf->glyphcnt ) {
-	if ( start==0 ) {
-	    GGadgetSetEnabled(g,false);
-	    gwwv_post_error(_("No More"),index==0?_("There are no marks associated with this anchor class"):_("There are no base glyphs associated with this anchor class"));
-	} else {
-	    GGadgetSetTitle8(g,index==0?_("Show First Mark"):_("Show First Base"));
-	    gwwv_post_error(_("No More"),index==0?_("There are no more marks associated with this anchor class"):_("There are no more base glyphs associated with this anchor class"));
-	}
-    } else {
-	cvs = NULL;
-	if ( d->anchor_shows[index].sc!=NULL ) {
-	    for ( cvs = d->anchor_shows[index].sc->views;
-		    cvs!=NULL && cvs!=d->anchor_shows[index].cv; cvs=cvs->next );
-	}
-	for ( ap2 = sc->anchor; ap2!=NULL ; ap2=ap2->next )
-	    ap2->selected = false;
-	ap->selected = true;
-	d->anchor_shows[index].sc = sc;
-	d->anchor_shows[index].restart = false;
-	if ( cvs!=NULL )
-	    CVChangeSC(cvs,sc);
-	else
-	    d->anchor_shows[index].cv = CharViewCreate(sc,sc->parent->fv,-1);
-	if ( start==0 )
-	    GGadgetSetTitle8(g,index==0?_("Show Next Mark"):_("Show Next Base"));
-    }
-}
-
-static int GFI_AnchorShowMark(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate )
-	GFI_AnchorShow(g,0);
-return( true );
-}
-
-static int GFI_AnchorShowBase(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate )
-	GFI_AnchorShow(g,1);
-return( true );
-}
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-
-int AnchorClassesNextMerge(AnchorClass *ac) {
-    int max=0;
-
-    while ( ac!=NULL ) {
-	if ( ac->merge_with>max ) max = ac->merge_with;
-	ac = ac->next;
-    }
-return( max + 1 );
-}
-
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-static void AnchorClassNameDecompose(AnchorClass *ac,const unichar_t *line,
-	SplineFont *sf) {
-    unichar_t *end;
-
-    free(ac->name);
-    ac->feature_tag = (line[0]<<24) | (line[1]<<16) | (line[2]<<8) | line[3];
-    line += 5;
-    if (( line[0]=='r' || line[0]==' ' ) &&
-	    ( line[1]=='b' || line[1]==' ' ) &&
-	    ( line[2]=='l' || line[2]==' ' ) &&
-	    ( line[3]=='m' || line[3]==' ' ) &&
-	    ( line[4]==' ' || line[4]=='(' )) {
-	ac->flags = 0;
-	if ( line[0]=='r' ) ac->flags |= pst_r2l;
-	if ( line[1]=='b' ) ac->flags |= pst_ignorebaseglyphs;
-	if ( line[2]=='l' ) ac->flags |= pst_ignoreligatures;
-	if ( line[3]=='m' ) ac->flags |= pst_ignorecombiningmarks;
-	line += 4;
-	if ( *line=='(' ) {
-	    const unichar_t *end;
-	    int i;
-	    for ( end = ++line; *end && *end!=')'; ++end );
-	    for ( i=sf->mark_class_cnt-1; i>0; --i )
-		if ( strlen(sf->mark_class_names[i])==end-line &&
-			uc_strncmp(line,sf->mark_class_names[i],
-				end-line)==0 )
-	    break;
-	    ac->flags |= (i<<8);
-	    line = end;
-	}
-	++line;
-    }
-    ac->script_lang_index = u_strtol(line,&end,10);
-    ac->type = u_strtol(end,&end,10);
-    ac->merge_with = u_strtol(end,&end,10);
-    while ( *end==' ' ) ++end;
-    ac->name = u2utf8_copy(end);
-}
-
-static void GFI_GetAnchors(struct gfi_data *d) {
-    GGadget *list = GWidgetGetControl(d->gw,CID_AnchorClasses);
-    int32 len;
-    GTextInfo **old = GGadgetGetList(list,&len);
-    AnchorClass *klast=NULL, *test;
-    int i;
-    SplineFont *sf = d->sf;
-
-    for ( i=0; i<len; ++i ) {
-	test = chunkalloc(sizeof(AnchorClass));
-	AnchorClassNameDecompose(test,old[i]->text,d->sf);
-	if ( sf->anchor==NULL )
-	    sf->anchor = test;
-	else
-	    klast->next = test;
-	klast = test;
-    }
-}
-
-static unichar_t *GFI_AskNameTag(char *title,unichar_t *def,uint32 def_tag, uint16 flags,
-	int sli, enum possub_type type, struct gfi_data *d,
-	SplineChar *default_script, int merge_with, int act_type ) {
-    AnchorClass *oldancs;
-    unichar_t *newname;
-
-    oldancs = d->sf->anchor;
-    d->sf->anchor = NULL;
-    GFI_GetAnchors(d);
-
-    newname = AskNameTag(title,def,def_tag,flags,sli,type,d->sf,
-	    default_script,merge_with,act_type);
-    AnchorClassesFree(d->sf->anchor);
-    d->sf->anchor = oldancs;
-return( newname );
-}
-
 static char *OtfNameToText(int lang, const char *name) {
     const char *langname;
     char *text;
@@ -3179,59 +2794,6 @@ static int GFI_StyleNameSelChanged(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static int GFI_AnchorNew(GGadget *g, GEvent *e) {
-    int32 len; int i;
-    GTextInfo **old, **new;
-    GGadget *list;
-    unichar_t *newname;
-
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-
-	newname = GFI_AskNameTag(_("New anchor class"),NULL,CHR('m','a','r','k'),0,
-		-1, pst_anchors,d,NULL,AnchorClassesNextMerge(d->sf->anchor),act_mark);
-
-	if ( newname!=NULL ) {
-	    list = GWidgetGetControl(GGadgetGetWindow(g),CID_AnchorClasses);
-	    old = GGadgetGetList(list,&len);
-	    for ( i=0; i<len; ++i ) {
-		if ( u_strcmp(old[i]->text+4,newname+4)==0 )
-	    break;
-	    }
-	    if ( i<len ) {
-/* GT: We have a name that appears twice in a list of names and that's bad */
-		gwwv_post_error(_("Duplicate Name"),_("Duplicate Name"));
-		free(newname);
-return( true );
-	    }
-	    if ( uc_strncmp(newname,"curs",4)==0 ) {
-		for ( i=0; i<len; ++i ) {
-		    if ( uc_strncmp(old[i]->text,"curs",4)==0 )
-		break;
-		}
-		if ( i<len ) {
-		    gwwv_post_error(_("Only One"),_("There may be only one anchor class tagged with 'curs'"));
-		    free(newname);
-return( true );
-		}
-	    }
-	    new = gcalloc(len+2,sizeof(GTextInfo *));
-	    for ( i=0; i<len; ++i ) {
-		new[i] = galloc(sizeof(GTextInfo));
-		*new[i] = *old[i];
-		new[i]->text = u_copy(new[i]->text);
-	    }
-	    new[i] = gcalloc(1,sizeof(GTextInfo));
-	    new[i]->fg = new[i]->bg = COLOR_DEFAULT;
-	    new[i]->userdata = NULL;
-	    new[i]->text = newname;
-	    new[i+1] = gcalloc(1,sizeof(GTextInfo));
-	    GGadgetSetList(list,new,false);
-	}
-    }
-return( true );
-}
-
 void GListMoveSelected(GGadget *list,int offset) {
     int32 len; int i,j;
     GTextInfo **old, **new;
@@ -3365,453 +2927,6 @@ GTextInfo *GListAppendLine8(GGadget *list,const char *line,int select) {
     GGadgetSetList(list,new,false);
     GGadgetScrollListToPos(list,i);
 return( new[i]);
-}
-
-static int GFI_AnchorDel(GGadget *g, GEvent *e) {
-    GGadget *list;
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	list = GWidgetGetControl(GGadgetGetWindow(g),CID_AnchorClasses);
-	GListDelSelected(list);
-	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_AnchorDel),false);
-	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_AnchorRename),false);
-    }
-return( true );
-}
-
-static int GFI_AnchorRename(GGadget *g, GEvent *e) {
-    int32 len; int i;
-    GTextInfo **old, **new, *ti;
-    GGadget *list;
-    unichar_t *newname;
-
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	list = GWidgetGetControl(GGadgetGetWindow(g),CID_AnchorClasses);
-	if ( (ti = GGadgetGetListItemSelected(list))==NULL )
-return( true );
-	newname = GFI_AskNameTag(_("Edit anchor class"),ti->text,0,0,0,pst_anchors,
-		d,NULL,0,0);
-	if ( newname!=NULL ) {
-	    old = GGadgetGetList(list,&len);
-	    if (( uc_strncmp(newname,"curs",4)==0 && uc_strncmp(ti->text,"curs",4)!=0 ) ||
-		    ( uc_strncmp(newname,"curs",4)!=0 && uc_strncmp(ti->text,"curs",4)==0 )) {
-		gwwv_post_error(_("Can't do this change"),_("You may not change the tag on an anchor class to or from 'curs'"));
-		free(newname);
-return( false );
-	    }
-	    for ( i=0; i<len; ++i ) if ( old[i]!=ti ) {
-		if ( u_strcmp(old[i]->text,newname)==0 )
-	    break;
-	    }
-	    if ( i==len ) {
-		for ( i=0; i<len; ++i ) if ( old[i]!=ti ) {
-		    if ( u_strcmp(old[i]->text+4,newname+4)==0 )
-		break;
-		}
-		if ( i<len ) {
-		    gwwv_post_error(_("Duplicate Name"),_("The name, %s, is already in use with a different tag."),newname);
-		    free(newname);
-return( false );
-		}
-	    } else {
-		char *buts[3];
-		buts[0] = _("C_ontinue");
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		buts[1] = _("_Cancel");
-#elif defined(FONTFORGE_CONFIG_GTK)
-		buts[1] = GTK_STOCK_CANCEL;
-#endif
-		buts[2] = NULL;
-		if ( gwwv_ask(_("Duplicate Name"),(const char **) buts,0,1,_("The name, %s, is already in use.\nIf you elect to continue, these two anchor classes\nwill be merged when you press the OK button."),newname)==1 )
-return( false );
-	    }
-	    new = gcalloc(len+1,sizeof(GTextInfo *));
-	    for ( i=0; i<len; ++i ) {
-		new[i] = galloc(sizeof(GTextInfo));
-		*new[i] = *old[i];
-		if ( new[i]->selected && newname!=NULL ) {
-		    new[i]->text = newname;
-		    newname = NULL;
-		} else
-		    new[i]->text = u_copy(new[i]->text);
-	    }
-	    new[i] = gcalloc(1,sizeof(GTextInfo));
-	    GGadgetSetList(list,new,false);
-	}
-    }
-return( true );
-}
-
-static int GFI_AnchorSelChanged(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
-	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	int32 sel = GGadgetGetFirstListSelectedItem(g), len;
-	GTextInfo **old = GGadgetGetList(g,&len);
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_AnchorDel),sel!=-1);
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_AnchorRename),sel!=-1);
-	d->anchor_shows[0].restart = true;
-	d->anchor_shows[1].restart = true;
-	GGadgetSetTitle8(GWidgetGetControl(d->gw,CID_ShowMark),
-		_("Show First Mark"));
-	GGadgetSetTitle8(GWidgetGetControl(d->gw,CID_ShowBase),
-		_("Show First Base"));
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ShowMark),sel!=-1 && old[sel]->userdata!=NULL);
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ShowBase),sel!=-1 && old[sel]->userdata!=NULL);
-    } else if ( e->type==et_controlevent && e->u.control.subtype == et_listdoubleclick ) {
-	e->u.control.subtype = et_buttonactivate;
-	GFI_AnchorRename(g,e);
-    }
-return( true );
-}
-
-static GTextInfo *FPSTList(SplineFont *sf,enum possub_type type) {
-    int len;
-    FPST *fpst;
-    GTextInfo *ti;
-
-    for ( len=0, fpst = sf->possub; fpst!=NULL; fpst=fpst->next )
-	if ( fpst->type == type )
-	    ++len;
-    ti = gcalloc(len+1,sizeof(GTextInfo));
-    for ( len=0, fpst = sf->possub; fpst!=NULL; fpst=fpst->next ) if ( fpst->type==type ) {
-	ti[len].text = ClassName("",fpst->tag,fpst->flags,
-		fpst->script_lang_index, -1, -1,false,sf);
-	ti[len].fg = ti[len].bg = COLOR_DEFAULT;
-	ti[len++].userdata = fpst;
-    }
-return( ti );
-}
-
-void GFI_CCDEnd(struct gfi_data *d) {
-    int i;
-
-    d->ccd = NULL;
-    for ( i=0; i<fpst_max-pst_contextpos; ++i ) {
-	GGadget *list = GWidgetGetControl(d->gw,CID_ContextClasses+i*100);
-	int sel = GGadgetGetFirstListSelectedItem(list);
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ContextDel+i*100),sel!=-1);
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ContextEdit+i*100),sel!=-1);
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ContextEditData+i*100),sel!=-1);
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ContextNew+i*100),true);
-    }
-}
-
-void GFI_FinishContextNew(struct gfi_data *d,FPST *fpst, unichar_t *newname,
-	int success) {
-    int off;
-    GGadget *list;
-
-    if ( success ) {
-	off = fpst->type == pst_contextpos ? 000 :
-		fpst->type == pst_contextsub ? 100 :
-		fpst->type == pst_chainpos ? 200 :
-		fpst->type == pst_chainsub ? 300 : 400;
-	list = GWidgetGetControl(d->gw,CID_ContextClasses+off);
-	GListAppendLine(list,newname,false)->userdata = fpst;
-    } else {
-	chunkfree(fpst,sizeof(FPST));
-    }
-    free(newname);
-}
-
-static int GFI_ContextNew(GGadget *g, GEvent *e) {
-    int i;
-    unichar_t *newname;
-    FPST *fpst;
-    static char *titles[] = { N_("New Contextual Position"),
-	N_("New Contextual Substitution"),
-	N_("New Chaining Position"),
-	N_("New Chaining Substitution"),
-	N_("New Reverse Chaining Substitution"),
-	0 };
-
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	int which = (GGadgetGetCid(g)-CID_ContextNew)/100;
-
-	if ( d->ccd )
-return( true );
-
-	newname = GFI_AskNameTag(_(titles[which]),NULL,0,0,
-		-1, pst_contextpos+which,d,NULL,-2,-1);
-
-	if ( newname!=NULL ) {
-	    fpst = chunkalloc(sizeof(FPST));
-	    fpst->type = pst_contextpos + which;
-	    fpst->format = fpst->type==pst_reversesub ? pst_reversecoverage : pst_class;
-	    DecomposeClassName(newname,NULL,&fpst->tag,NULL,&fpst->flags,
-		    &fpst->script_lang_index,NULL,NULL,d->sf);
-	    if ( (d->ccd = ContextChainEdit(d->sf,fpst,d,newname))!=NULL ) {
-	    for ( i=0; i<fpst_max-pst_contextpos; ++i ) {
-		    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ContextDel+i*100),false);
-		    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ContextEdit+i*100),false);
-		    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ContextEditData+i*100),false);
-		    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ContextNew+i*100),false);
-		}
-	    }
-	}
-    }
-return( true );
-}
-
-static int GFI_ContextDel(GGadget *g, GEvent *e) {
-    GGadget *list;
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	int off = GGadgetGetCid(g)-CID_ContextDel;
-	list = GWidgetGetControl(GGadgetGetWindow(g),CID_ContextClasses+off);
-	GListDelSelected(list);
-	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_ContextDel+off),false);
-	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_ContextEdit+off),false);
-	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_ContextEditData+off),false);
-    }
-return( true );
-}
-
-static int GFI_ContextEdit(GGadget *g, GEvent *e) {
-    int32 len; int i;
-    GTextInfo **old, **new, *ti;
-    GGadget *list;
-    unichar_t *newname;
-    FPST *fpst;
-    static char *titles[] = { N_("Edit Contextual Position"),
-	N_("Edit Contextual Substitution"),
-	N_("Edit Chaining Position"),
-	N_("Edit Chaining Substitution"),
-	N_("Edit Reverse Chaining Substitution"),
-	0 };
-
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	int which = (GGadgetGetCid(g)-CID_ContextEdit)/100;
-	list = GWidgetGetControl(GGadgetGetWindow(g),CID_ContextClasses+which*100);
-	if ( (ti = GGadgetGetListItemSelected(list))==NULL )
-return( true );
-	fpst = (FPST *) (ti->userdata);
-	newname = GFI_AskNameTag(_(titles[which]),ti->text,0,0,0,
-		pst_contextpos+which, d,NULL,-2,-1);
-	if ( newname!=NULL ) {
-	    DecomposeClassName(newname,NULL,&fpst->tag,NULL,&fpst->flags,
-		    &fpst->script_lang_index,NULL,NULL,d->sf);
-	    old = GGadgetGetList(list,&len);
-	    new = gcalloc(len+1,sizeof(GTextInfo *));
-	    for ( i=0; i<len; ++i ) {
-		new[i] = galloc(sizeof(GTextInfo));
-		*new[i] = *old[i];
-		if ( new[i]->selected && newname!=NULL ) {
-		    new[i]->text = newname;
-		    newname = NULL;
-		} else
-		    new[i]->text = u_copy(new[i]->text);
-	    }
-	    new[i] = gcalloc(1,sizeof(GTextInfo));
-	    GGadgetSetList(list,new,false);
-	}
-    }
-return( true );
-}
-
-static int GFI_ContextEditData(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	GGadget *list = GWidgetGetControl(d->gw,GGadgetGetCid(g)-CID_ContextEditData+CID_ContextClasses);
-	int32 sel = GGadgetGetFirstListSelectedItem(list), len;
-	GTextInfo **old = GGadgetGetList(list,&len);
-	int i;
-	if ( d->ccd )
-return( true );
-	if ( (d->ccd = ContextChainEdit(d->sf,(FPST *) (old[sel]->userdata),d,NULL))!=NULL ) {
-	    for ( i=0; i<fpst_max-pst_contextpos; ++i ) {
-		GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ContextDel+i*100),false);
-		GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ContextEdit+i*100),false);
-		GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ContextEditData+i*100),false);
-		GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ContextNew+i*100),false);
-	    }
-	}
-    }
-return( true );
-}
-
-static int GFI_ContextSelChanged(GGadget *g, GEvent *e) {
-    struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-    int sel = GGadgetGetFirstListSelectedItem(g);
-    int off = GGadgetGetCid(g)-CID_ContextClasses;
-
-    if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ContextDel+off),sel!=-1 && d->ccd==NULL);
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ContextEdit+off),sel!=-1 && d->ccd==NULL);
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_ContextEditData+off),
-		d->ccd==NULL && sel!=-1 );
-    } else if ( e->type==et_controlevent && e->u.control.subtype == et_listdoubleclick ) {
-	e->u.control.subtype = et_buttonactivate;
-	g = GWidgetGetControl(GGadgetGetWindow(g),GGadgetGetCid(g)-CID_ContextClasses+CID_ContextEditData);
-	GFI_ContextEditData(g,e);
-    }
-return( true );
-}
-
-static char *FeatSetName(SplineFont *sf, int feat, int set) {
-    char buf[32];
-    char *temp, *full;
-
-    sprintf( buf, "<%d,%d> ", feat, set );
-    temp = PickNameFromMacName(FindMacSettingName(sf,feat,set));
-    if ( temp==NULL )
-	full = copy(buf);
-    else {
-	full = galloc((strlen(buf)+strlen(temp)+1));
-	strcpy(full,buf);
-	strcat(full,temp);
-	free(temp);
-    }
-return( full );
-}
-
-static GTextInfo *SMList(SplineFont *sf,enum asm_type type) {
-    int len;
-    ASM *sm;
-    GTextInfo *ti;
-
-    for ( len=0, sm = sf->sm; sm!=NULL; sm=sm->next )
-	if ( sm->type == type )
-	    ++len;
-    ti = gcalloc(len+1,sizeof(GTextInfo));
-    for ( len=0, sm = sf->sm; sm!=NULL; sm=sm->next ) if ( sm->type==type ) {
-	if ( type==asm_kern )
-	    ti[len].text = (unichar_t *) copy(_("Kerning"));
-	else
-	    ti[len].text = (unichar_t *) FeatSetName(sf,sm->feature,sm->setting);
-	ti[len].text_is_1byte = true;
-	ti[len].fg = ti[len].bg = COLOR_DEFAULT;
-	ti[len++].userdata = sm;
-    }
-return( ti );
-}
-
-void GFI_SMDEnd(struct gfi_data *d) {
-    int i;
-
-    d->smd = NULL;
-    for ( i=0; i<3; ++i ) {
-	GGadget *list = GWidgetGetControl(d->gw,CID_SMList+i*100);
-	int sel = GGadgetGetFirstListSelectedItem(list);
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_SMDel+i*100),sel!=-1);
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_SMEdit+i*100),sel!=-1);
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_SMNew+i*100),true);
-    }
-}
-
-void GFI_FinishSMNew(struct gfi_data *d,ASM *sm, int success, int isnew) {
-    int off;
-    GGadget *list;
-    char *name;
-
-    if ( success ) {
-	off = sm->type == asm_indic ? 000 :
-		sm->type == asm_context ? 100 :
-		sm->type == asm_insert ? 200 : 300;
-	list = GWidgetGetControl(d->gw,CID_SMList+off);
-	if ( sm->type!=asm_kern )
-	    name = FeatSetName(d->sf,sm->feature,sm->setting);
-	else
-	    name = copy(_("Kerning"));
-	if ( isnew )
-	    GListAppendLine8(list,name,false)->userdata = sm;
-	else
-	    GListChangeLine8(list,GGadgetGetFirstListSelectedItem(list),name);
-    } else if ( isnew ) {
-	chunkfree(sm,sizeof(ASM));
-    }
-}
-
-static int GFI_SMNew(GGadget *g, GEvent *e) {
-    int i;
-    ASM *sm;
-
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	int which = (GGadgetGetCid(g)-CID_SMNew)/100;
-
-	if ( d->smd )
-return( true );
-
-	sm = chunkalloc(sizeof(ASM));
-	sm->type = which==0 ? asm_indic : which==1 ? asm_context : which==2 ? asm_insert : asm_kern;
-	if ( (d->smd = StateMachineEdit(d->sf,sm,d))!=NULL ) {
-	    for ( i=0; i<3; ++i ) {
-		GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_SMDel+i*100),false);
-		GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_SMEdit+i*100),false);
-		GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_SMNew+i*100),false);
-	    }
-	}
-    }
-return( true );
-}
-
-static int GFI_SMDel(GGadget *g, GEvent *e) {
-    GGadget *list;
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	int off = GGadgetGetCid(g)-CID_SMDel;
-	list = GWidgetGetControl(GGadgetGetWindow(g),CID_SMList+off);
-	GListDelSelected(list);
-	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_SMDel+off),false);
-	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_SMEdit+off),false);
-    }
-return( true );
-}
-
-static int GFI_SMEdit(GGadget *g, GEvent *e) {
-    int i;
-    GTextInfo *ti;
-    GGadget *list;
-    ASM *sm;
-
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	int which = (GGadgetGetCid(g)-CID_SMEdit)/100;
-	list = GWidgetGetControl(GGadgetGetWindow(g),CID_SMList+which*100);
-	if ( (ti = GGadgetGetListItemSelected(list))==NULL )
-return( true );
-	if ( d->smd!=NULL )
-return( true );
-	sm = (ASM *) (ti->userdata);
-	if ( (d->smd = StateMachineEdit(d->sf,sm,d))!=NULL ) {
-	    for ( i=0; i<3; ++i ) {
-		GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_SMDel+i*100),false);
-		GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_SMEdit+i*100),false);
-		GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_SMNew+i*100),false);
-	    }
-	}
-    }
-return( true );
-}
-
-static int GFI_SMSelChanged(GGadget *g, GEvent *e) {
-    struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-    int sel = GGadgetGetFirstListSelectedItem(g);
-    int off = GGadgetGetCid(g)-CID_SMList;
-
-    if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_SMDel+off),sel!=-1 && d->ccd==NULL);
-	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_SMEdit+off),sel!=-1 && d->ccd==NULL);
-    } else if ( e->type==et_controlevent && e->u.control.subtype == et_listdoubleclick ) {
-	e->u.control.subtype = et_buttonactivate;
-	g = GWidgetGetControl(GGadgetGetWindow(g),GGadgetGetCid(g)-CID_SMList+CID_SMEdit);
-	GFI_SMEdit(g,e);
-    }
-return( true );
-}
-
-static int GFI_SMConvert(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	ASM *sm = SMConvertDlg(d->sf);
-	GGadget *list = GWidgetGetControl(d->gw,CID_SMList+100);
-	while ( sm!=NULL ) {
-	    GListAppendLine8(list,FeatSetName(d->sf,sm->feature,sm->setting),false)->userdata = sm;
-	    sm = sm->next;
-	}
-    }
-return( true );
 }
 
 static int GFI_Cancel(GGadget *g, GEvent *e) {
@@ -4910,52 +4025,6 @@ static int GFI_SortBy(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static void GFI_ProcessAnchor(struct gfi_data *d) {
-    GGadget *list = GWidgetGetControl(d->gw,CID_AnchorClasses);
-    int32 len;
-    GTextInfo **old = GGadgetGetList(list,&len);
-    AnchorClass *keep=NULL, *klast, *test, *prev, *next, *test2;
-    int i;
-
-    for ( i=0; i<len; ++i ) {
-	if ( old[i]->userdata==NULL ) {
-	    test = chunkalloc(sizeof(AnchorClass));
-	} else {
-	    prev = NULL;
-	    for ( test = d->sf->anchor; test!=old[i]->userdata; prev=test, test=test->next );
-	    if ( prev==NULL )
-		d->sf->anchor = test->next;
-	    else
-		prev->next = test->next;
-	    test->next = NULL;
-	}
-	AnchorClassNameDecompose(test,old[i]->text,d->sf);
-	if ( keep==NULL )
-	    keep = test;
-	else
-	    klast->next = test;
-	klast = test;
-    }
-    for ( test = d->sf->anchor; test!=NULL; test = next ) {
-	next = test->next;
-	SFRemoveAnchorClass(d->sf,test);
-    }
-    d->sf->anchor = keep;
-
-    for ( test=d->sf->anchor; test!=NULL; test=test->next ) {
-	prev = test;
-	for ( test2=test->next; test2!=NULL; test2 = next ) {
-	    next = test2->next;
-	    if ( strcmp(test->name,test2->name)==0 ) {
-		AnchorClassMerge(d->sf,test,test2);
-		prev->next = next;
-		chunkfree(test2,sizeof(*test2));
-	    } else
-		prev = test2;
-	}
-    }
-}
-
 static void BDFsSetAsDs(SplineFont *sf) {
     BDFFont *bdf;
     real scale;
@@ -5167,6 +4236,59 @@ void SFSetModTime(SplineFont *sf) {
     time_t now;
     time(&now);
     sf->modificationtime = now;
+}
+
+static void GFI_ApplyLookupChanges(struct gfi_data *gfi) {
+    int i,j, isgpos;
+    OTLookup *last;
+    SplineFont *sf = gfi->sf;
+    struct lookup_subtable *sublast;
+
+    for ( isgpos=0; isgpos<2; ++isgpos ) {
+	struct lkdata *lk = &gfi->tables[isgpos];
+	for ( i=0; i<lk->cnt; ++i ) {
+	    if ( lk->all[i].deleted )
+		SFRemoveLookup(gfi->sf,lk->all[i].lookup);
+	    else for ( j=0; j<lk->all[i].subtable_cnt; ++j ) {
+		if ( lk->all[i].subtables[j].deleted )
+		    SFRemoveLookupSubTable(gfi->sf,lk->all[i].subtables[j].subtable);
+	    }
+	}
+	last = NULL;
+	for ( i=0; i<lk->cnt; ++i ) {
+	    if ( !lk->all[i].deleted ) {
+		if ( last!=NULL )
+		    last->next = lk->all[i].lookup;
+		else if ( isgpos )
+		    sf->gpos_lookups = lk->all[i].lookup;
+		else
+		    sf->gsub_lookups = lk->all[i].lookup;
+		last = lk->all[i].lookup;
+		sublast = NULL;
+		for ( j=0; j<lk->all[i].subtable_cnt; ++j ) {
+		    if ( !lk->all[i].subtables[j].deleted ) {
+			if ( sublast!=NULL )
+			    sublast->next = lk->all[i].subtables[j].subtable;
+			else
+			    last->subtables = lk->all[i].subtables[j].subtable;
+			sublast = lk->all[i].subtables[j].subtable;
+		    }
+		}
+		if ( sublast!=NULL )
+		    sublast->next = NULL;
+		else
+		    last->subtables = NULL;
+	    }
+	    free(lk->all[i].subtables);
+	}
+	if ( last!=NULL )
+	    last->next = NULL;
+	else if ( isgpos )
+	    sf->gpos_lookups = NULL;
+	else
+	    sf->gsub_lookups = NULL;
+	free(lk->all);
+    }
 }
 
 static int GFI_OK(GGadget *g, GEvent *e) {
@@ -5474,9 +4596,6 @@ return(true);
 	sf->uniqueid = uniqueid;
 	sf->texdata = d->texdata;
 
-	GFI_ProcessAnchor(d);
-	GFI_ProcessContexts(d);
-
 	interp = GGadgetGetFirstListSelectedItem(GWidgetGetControl(gw,CID_Interpretation));
 	if ( interp==-1 ) sf->uni_interp = ui_none;
 	else sf->uni_interp = (intpt) interpretations[interp].userdata;
@@ -5581,6 +4700,7 @@ return(true);
 	    else
 		SFConvertToOrder3(sf);
 	}
+	GFI_ApplyLookupChanges(d);
 	if ( retitle_fv ) { FontView *fvs;
 	    for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame )
 		FVSetTitle(fvs);
@@ -6291,14 +5411,6 @@ return( GFI_Char(GDrawGetUserData(gw),event));
 return( true );
 }
 
-static int OrderGSUB(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	OrderTable(d->sf,CHR('G','S','U','B'));
-    }
-return( true );
-}
-
 static void GFI_InitMarkClasses(struct gfi_data *d) {
     SplineFont *sf = d->sf;
     int i;
@@ -6315,36 +5427,1263 @@ static void GFI_InitMarkClasses(struct gfi_data *d) {
     }
 }
 
+static void LookupSetup(struct lkdata *lk,OTLookup *lookups) {
+    int cnt, subcnt;
+    OTLookup *otl;
+    struct lookup_subtable *sub;
+
+    for ( cnt=0, otl=lookups; otl!=NULL; ++cnt, otl=otl->next );
+    lk->cnt = cnt; lk->max = cnt+10;
+    lk->all = gcalloc(lk->max,sizeof(struct lkinfo));
+    for ( cnt=0, otl=lookups; otl!=NULL; ++cnt, otl=otl->next ) {
+	lk->all[cnt].lookup = otl;
+	for ( subcnt=0, sub=otl->subtables; sub!=NULL; ++subcnt, sub=sub->next );
+	lk->all[cnt].subtable_cnt = subcnt; lk->all[cnt].subtable_max = subcnt+10;
+	lk->all[cnt].subtables = gcalloc(lk->all[cnt].subtable_max,sizeof(struct lksubinfo));
+	for ( subcnt=0, sub=otl->subtables; sub!=NULL; ++subcnt, sub=sub->next )
+	    lk->all[cnt].subtables[subcnt].subtable = sub;
+    }
+}
+
+static void LookupInfoFree(struct lkdata *lk) {
+    int cnt;
+
+    for ( cnt=0; cnt<lk->cnt; ++cnt )
+	free(lk->all[cnt].subtables);
+    free(lk->all);
+}
+
+#define LK_MARGIN 2
+
+struct selection_bits {
+    int lookup_cnt, sub_cnt;	/* Number of selected lookups, and selected sub tables */
+    int a_lookup, a_sub;	/* The index of one of those lookups, or subtables */
+    int a_sub_lookup;		/*  the index of the lookup containing a_sub */
+    int any_first, any_last;	/* Whether any of the selected items is first or last in its catagory */
+    int sub_table_mergeable;	/* Can we merge the selected subtables? */
+    int lookup_mergeable;	/* Can we merge the selected lookups? */
+};
+
+static void LookupParseSelection(struct lkdata *lk, struct selection_bits *sel) {
+    int lookup_cnt, sub_cnt, any_first, any_last, all_one_lookup;
+    int a_lookup, a_sub, a_sub_lookup;
+    int sub_mergeable, lookup_mergeable;
+    int i,j;
+
+    lookup_cnt = sub_cnt = any_first = any_last = 0;
+    all_one_lookup = a_lookup = a_sub = a_sub_lookup = -1;
+    sub_mergeable = lookup_mergeable = true;
+    for ( i=0; i<lk->cnt; ++i ) {
+	if ( lk->all[i].deleted )
+    continue;
+	if ( lk->all[i].selected ) {
+	    ++lookup_cnt;
+	    if ( a_lookup==-1 )
+		a_lookup = i;
+	    else if ( lk->all[i].lookup->lookup_type!=lk->all[a_lookup].lookup->lookup_type ||
+		    lk->all[i].lookup->lookup_flags!=lk->all[a_lookup].lookup->lookup_flags )
+		lookup_mergeable = false;
+	    if ( i==0 ) any_first=true;
+	    if ( i==lk->cnt-1 ) any_last=true;
+	}
+	if ( lk->all[i].open ) {
+	    for ( j=0; j<lk->all[i].subtable_cnt; ++j ) {
+		if ( lk->all[i].subtables[j].deleted )
+	    continue;
+		if ( lk->all[i].subtables[j].selected ) {
+		    ++sub_cnt;
+		    if ( a_sub==-1 ) {
+			a_sub = j; a_sub_lookup = i;
+		    }
+		    if ( j==0 ) any_first = true;
+		    if ( j==lk->all[i].subtable_cnt-1 ) any_last = true;
+		    if ( lk->all[i].subtables[j].subtable->kc!=NULL ||
+			    lk->all[i].subtables[j].subtable->fpst!=NULL ||
+			    lk->all[i].subtables[j].subtable->sm!=NULL )
+			sub_mergeable = false;
+		    if ( all_one_lookup==-1 )
+			all_one_lookup = i;
+		    else if ( all_one_lookup!=i )
+			all_one_lookup = -2;
+		}
+	    }
+	}
+    }
+
+    sel->lookup_cnt = lookup_cnt;
+    sel->sub_cnt = sub_cnt;
+    sel->a_lookup = a_lookup;
+    sel->a_sub = a_sub;
+    sel->a_sub_lookup = a_sub_lookup;
+    sel->any_first = any_first;
+    sel->any_last = any_last;
+    sel->sub_table_mergeable = sub_mergeable && all_one_lookup && sub_cnt>=2 && lookup_cnt==0;
+    sel->lookup_mergeable = lookup_mergeable && lookup_cnt>=2 && sub_cnt==0;
+}
+
+void GFI_LookupEnableButtons(struct gfi_data *gfi, int isgpos) {
+    struct lkdata *lk = &gfi->tables[isgpos];
+    struct selection_bits sel;
+    FontView *ofv;
+
+    LookupParseSelection(lk,&sel);
+
+    GGadgetSetEnabled(GWidgetGetControl(gfi->gw,CID_LookupTop),!sel.any_first &&
+	    sel.lookup_cnt+sel.sub_cnt==1);
+    GGadgetSetEnabled(GWidgetGetControl(gfi->gw,CID_LookupUp),!sel.any_first &&
+	    sel.lookup_cnt+sel.sub_cnt!=0);
+    GGadgetSetEnabled(GWidgetGetControl(gfi->gw,CID_LookupDown),!sel.any_last &&
+	    sel.lookup_cnt+sel.sub_cnt!=0);
+    GGadgetSetEnabled(GWidgetGetControl(gfi->gw,CID_LookupBottom),!sel.any_last &&
+	    sel.lookup_cnt+sel.sub_cnt==1);
+    GGadgetSetEnabled(GWidgetGetControl(gfi->gw,CID_AddLookup),sel.lookup_cnt<=1 &&
+	    sel.sub_cnt==0);
+    GGadgetSetEnabled(GWidgetGetControl(gfi->gw,CID_AddSubtable),
+	    (sel.lookup_cnt==1 && sel.sub_cnt<=1) || (sel.lookup_cnt==0 && sel.sub_cnt==1));
+    GGadgetSetEnabled(GWidgetGetControl(gfi->gw,CID_EditLookup),sel.lookup_cnt==1 &&
+	    sel.sub_cnt==0);
+    GGadgetSetEnabled(GWidgetGetControl(gfi->gw,CID_EditSubtable),sel.lookup_cnt==0 &&
+	    sel.sub_cnt==1);
+    GGadgetSetEnabled(GWidgetGetControl(gfi->gw,CID_DeleteLookup),sel.lookup_cnt!=0 ||
+	    sel.sub_cnt!=0);
+    GGadgetSetEnabled(GWidgetGetControl(gfi->gw,CID_MergeLookup),
+	    (sel.lookup_cnt>=2 && sel.sub_cnt==0 && sel.lookup_mergeable) ||
+	    (sel.lookup_cnt==0 && sel.sub_cnt>=2 && sel.sub_table_mergeable));
+    GGadgetSetEnabled(GWidgetGetControl(gfi->gw,CID_RevertLookups),true);
+
+    for ( ofv=fv_list; ofv!=NULL; ofv = ofv->next ) {
+	SplineFont *osf = ofv->sf;
+	if ( osf->cidmaster ) osf = osf->cidmaster;
+	if ( osf==gfi->sf || gfi->sf->cidmaster==osf )
+    continue;
+	if ( (isgpos && osf->gpos_lookups!=NULL) || (!isgpos && osf->gsub_lookups!=NULL) )
+    break;
+    }
+    GGadgetSetEnabled(GWidgetGetControl(gfi->gw,CID_ImportLookups),ofv!=NULL);
+}
+
+void GFI_LookupScrollbars(struct gfi_data *gfi, int isgpos, int refresh) {
+    int lcnt, i,j;
+    int width=0, wmax;
+    GWindow gw = GDrawableGetWindow(GWidgetGetControl(gfi->gw,CID_LookupWin+isgpos));
+    struct lkdata *lk = &gfi->tables[isgpos];
+    GGadget *vsb = GWidgetGetControl(gfi->gw,CID_LookupVSB+isgpos);
+    GGadget *hsb = GWidgetGetControl(gfi->gw,CID_LookupHSB+isgpos);
+    int off_top, off_left;
+
+    GDrawSetFont(gw,gfi->font);
+    lcnt = 0;
+    for ( i=0; i<lk->cnt; ++i ) {
+	if ( lk->all[i].deleted )
+    continue;
+	++lcnt;
+	wmax = GDrawGetText8Width(gw,lk->all[i].lookup->lookup_name,-1,NULL);
+	if ( wmax > width ) width = wmax;
+	if ( lk->all[i].open ) {
+	    for ( j=0; j<lk->all[i].subtable_cnt; ++j ) {
+		if ( lk->all[i].subtables[j].deleted )
+	    continue;
+		++lcnt;
+		wmax = gfi->fh+GDrawGetText8Width(gw,lk->all[i].subtables[j].subtable->subtable_name,-1,NULL);
+		if ( wmax > width ) width = wmax;
+	    }
+	}
+    }
+    width += gfi->fh;
+    GScrollBarSetBounds(vsb,0,lcnt,(gfi->lkheight-2*LK_MARGIN)/gfi->fh);
+    GScrollBarSetBounds(hsb,0,width,gfi->lkwidth-2*LK_MARGIN);
+    off_top = lk->off_top;
+    if ( off_top+((gfi->lkheight-2*LK_MARGIN)/gfi->fh) > lcnt )
+	off_top = lcnt - (gfi->lkheight-2*LK_MARGIN)/gfi->fh;
+    if ( off_top<0 )
+	off_top  = 0;
+    off_left = lk->off_left;
+    if ( off_left+gfi->lkwidth-2*LK_MARGIN > width )
+	off_left = width-(gfi->lkwidth-2*LK_MARGIN);
+    if ( off_left<0 )
+	off_left  = 0;
+    if ( off_top!=lk->off_top || off_left!=lk->off_left ) {
+	lk->off_top = off_top; lk->off_left = off_left;
+	GScrollBarSetPos(vsb,off_top);
+	GScrollBarSetPos(hsb,off_left);
+	refresh = true;
+    }
+    if ( refresh )
+	GDrawRequestExpose(gw,NULL,true);
+}
+
+static int LookupsHScroll(GGadget *g,GEvent *event) {
+    struct gfi_data *gfi = GDrawGetUserData(GGadgetGetWindow(g));
+    int isgpos = GGadgetGetCid(g)-CID_LookupHSB;
+    struct lkdata *lk = &gfi->tables[isgpos];
+    int newpos = lk->off_left;
+    int32 sb_min, sb_max, sb_pagesize;
+
+    if ( event->type!=et_controlevent || event->u.control.subtype != et_scrollbarchange )
+return( true );
+
+    GScrollBarGetBounds(event->u.control.g,&sb_min,&sb_max,&sb_pagesize);
+    switch( event->u.control.u.sb.type ) {
+      case et_sb_top:
+        newpos = 0;
+      break;
+      case et_sb_uppage:
+        newpos -= 9*sb_pagesize/10;
+      break;
+      case et_sb_up:
+        newpos -= sb_pagesize/15;
+      break;
+      case et_sb_down:
+        newpos += sb_pagesize/15;
+      break;
+      case et_sb_downpage:
+        newpos += 9*sb_pagesize/10;
+      break;
+      case et_sb_bottom:
+        newpos = sb_max-sb_pagesize;
+      break;
+      case et_sb_thumb:
+      case et_sb_thumbrelease:
+        newpos = event->u.control.u.sb.pos;
+      break;
+      case et_sb_halfup:
+        newpos -= sb_pagesize/30;
+      break;
+      case et_sb_halfdown:
+        newpos += sb_pagesize/30;
+      break;
+    }
+    if ( newpos>sb_max-sb_pagesize )
+        newpos = sb_max-sb_pagesize;
+    if ( newpos<0 ) newpos = 0;
+    if ( newpos!=lk->off_left ) {
+	lk->off_left = newpos;
+	GScrollBarSetPos(event->u.control.g,newpos);
+	GDrawRequestExpose(GDrawableGetWindow(GWidgetGetControl(gfi->gw,CID_LookupWin+isgpos)),NULL,true);
+    }
+return( true );
+}
+
+static int LookupsVScroll(GGadget *g,GEvent *event) {
+    struct gfi_data *gfi = GDrawGetUserData(GGadgetGetWindow(g));
+    int isgpos = GGadgetGetCid(g)-CID_LookupVSB;
+    struct lkdata *lk = &gfi->tables[isgpos];
+    int newpos = lk->off_top;
+    int32 sb_min, sb_max, sb_pagesize;
+
+    if ( event->type!=et_controlevent || event->u.control.subtype != et_scrollbarchange )
+return( true );
+
+    GScrollBarGetBounds(event->u.control.g,&sb_min,&sb_max,&sb_pagesize);
+    switch( event->u.control.u.sb.type ) {
+      case et_sb_top:
+        newpos = 0;
+      break;
+      case et_sb_uppage:
+        newpos -= 9*sb_pagesize/10;
+      break;
+      case et_sb_up:
+        --newpos;
+      break;
+      case et_sb_down:
+        ++newpos;
+      break;
+      case et_sb_downpage:
+        newpos += 9*sb_pagesize/10;
+      break;
+      case et_sb_bottom:
+        newpos = (sb_max-sb_pagesize);
+      break;
+      case et_sb_thumb:
+      case et_sb_thumbrelease:
+        newpos = event->u.control.u.sb.pos;
+      break;
+    }
+    if ( newpos>(sb_max-sb_pagesize) )
+        newpos = (sb_max-sb_pagesize);
+    if ( newpos<0 ) newpos = 0;
+    if ( newpos!=lk->off_top ) {
+	/*int diff = newpos-lk->off_top;*/
+	lk->off_top = newpos;
+	GScrollBarSetPos(event->u.control.g,newpos);
+	/*GDrawScroll(GDrawableGetWindow(GWidgetGetControl(gfi->gw,CID_LookupWin+isgpos)),NULL,0,diff*gfi->fh);*/
+	GDrawRequestExpose(GDrawableGetWindow(GWidgetGetControl(gfi->gw,CID_LookupWin+isgpos)),NULL,true);
+    }
+return( true );
+}
+
+static int GFI_LookupOrder(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct gfi_data *gfi = GDrawGetUserData(GGadgetGetWindow(g));
+	int isgpos = GTabSetGetSel(GWidgetGetControl(gfi->gw,CID_Lookups));
+	struct lkdata *lk = &gfi->tables[isgpos];
+	int i,j,k;
+	struct lkinfo temp;
+	struct lksubinfo temp2;
+	int cid = GGadgetGetCid(g);
+	GWindow gw = GDrawableGetWindow(GWidgetGetControl(gfi->gw,CID_LookupWin+isgpos));
+
+	if ( cid==CID_LookupTop ) {
+	    for ( i=0; i<lk->cnt; ++i ) {
+		if ( lk->all[i].deleted )
+	    continue;
+		if ( lk->all[i].selected ) {
+		    temp = lk->all[i];
+		    for ( k=i-1; k>=0; --k )
+			lk->all[k+1] = lk->all[k];
+		    lk->all[0] = temp;
+    goto done;
+		}
+		if ( lk->all[i].open ) {
+		    for ( j=0; j<lk->all[i].subtable_cnt; ++j ) {
+			if ( lk->all[i].subtables[j].deleted )
+		    continue;
+			if ( lk->all[i].subtables[j].selected ) {
+			    temp2 = lk->all[i].subtables[j];
+			    for ( k=j-1; k>=0; --k )
+				lk->all[i].subtables[k+1] = lk->all[i].subtables[k];
+			    lk->all[i].subtables[0] = temp2;
+    goto done;
+			}
+		    }
+		}
+	    }
+	} else if ( cid==CID_LookupBottom ) {
+	    for ( i=0; i<lk->cnt; ++i ) {
+		if ( lk->all[i].deleted )
+	    continue;
+		if ( lk->all[i].selected ) {
+		    temp = lk->all[i];
+		    for ( k=i; k<lk->cnt-1; --k )
+			lk->all[k] = lk->all[k+1];
+		    lk->all[lk->cnt-1] = temp;
+    goto done;
+		}
+		if ( lk->all[i].open ) {
+		    for ( j=0; j<lk->all[i].subtable_cnt; ++j ) {
+			if ( lk->all[i].subtables[j].deleted )
+		    continue;
+			if ( lk->all[i].subtables[j].selected ) {
+			    temp2 = lk->all[i].subtables[j];
+			    for ( k=j; k<lk->all[i].subtable_cnt-1; --k )
+				lk->all[i].subtables[k] = lk->all[i].subtables[k+1];
+			    lk->all[i].subtables[lk->all[i].subtable_cnt-1] = temp2;
+    goto done;
+			}
+		    }
+		}
+	    }
+	} else if ( cid==CID_LookupUp ) {
+	    for ( i=0; i<lk->cnt; ++i ) {
+		if ( lk->all[i].deleted )
+	    continue;
+		if ( lk->all[i].selected && i!=0 ) {
+		    temp = lk->all[i];
+		    lk->all[i] = lk->all[i-1];
+		    lk->all[i-1] = temp;
+		}
+		if ( lk->all[i].open ) {
+		    for ( j=0; j<lk->all[i].subtable_cnt; ++j ) {
+			if ( lk->all[i].subtables[j].deleted )
+		    continue;
+			if ( lk->all[i].subtables[j].selected && j!=0 ) {
+			    temp2 = lk->all[i].subtables[j];
+			    lk->all[i].subtables[j] = lk->all[i].subtables[j-1];
+			    lk->all[i].subtables[j-1] = temp2;
+			}
+		    }
+		}
+	    }
+	} else if ( cid==CID_LookupDown ) {
+	    for ( i=lk->cnt-1; i>=0; --i ) {
+		if ( lk->all[i].deleted )
+	    continue;
+		if ( lk->all[i].selected && i!=lk->cnt-1 ) {
+		    temp = lk->all[i];
+		    lk->all[i] = lk->all[i+1];
+		    lk->all[i+1] = temp;
+		}
+		if ( lk->all[i].open ) {
+		    for ( j=0; j<lk->all[i].subtable_cnt; ++j ) {
+			if ( lk->all[i].subtables[j].deleted )
+		    continue;
+			if ( lk->all[i].subtables[j].selected && j!=lk->all[i].subtable_cnt-1 ) {
+			    temp2 = lk->all[i].subtables[j];
+			    lk->all[i].subtables[j] = lk->all[i].subtables[j+1];
+			    lk->all[i].subtables[j+1] = temp2;
+			}
+		    }
+		}
+	    }
+	}
+    done:
+	GFI_LookupEnableButtons(gfi,isgpos);
+	GDrawRequestExpose(gw,NULL,true);
+    }
+return( true );
+}
+
+static int GFI_LookupSort(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct gfi_data *gfi = GDrawGetUserData(GGadgetGetWindow(g));
+	int isgpos = GTabSetGetSel(GWidgetGetControl(gfi->gw,CID_Lookups));
+	struct lkdata *lk = &gfi->tables[isgpos];
+	struct lkinfo temp;
+	int i,j;
+
+	for ( i=0; i<lk->cnt; ++i ) {
+	    int order = FeatureOrderId(isgpos,lk->all[i].lookup->features);
+	    for ( j=i+1; j<lk->cnt; ++j ) {
+		int jorder = FeatureOrderId(isgpos,lk->all[j].lookup->features);
+		if ( order>jorder) {
+		    temp = lk->all[i];
+		    lk->all[i] = lk->all[j];
+		    lk->all[j] = temp;
+		    order = jorder;
+		}
+	    }
+	}
+	GFI_LookupEnableButtons(gfi,isgpos);
+    }
+return( true );
+}
+
+/* ??? *//* How about a series of buttons to show only by lookup_type, feat-tag, script-tag */
+
+void GFI_CCDEnd(struct gfi_data *d) {
+
+    d->ccd = NULL;
+}
+
+void GFI_FinishContextNew(struct gfi_data *d,FPST *fpst, int success) {
+    OTLookup *otl;
+    struct lookup_subtable *sub, *prev;
+    FPST *ftest, *fprev;
+
+    if ( !success ) {
+	/* We can't allow incomplete FPSTs to float around */
+	/* If they didn't fill it in, delete it */
+	otl = fpst->subtable->lookup;
+	prev = NULL;
+	for ( sub=otl->subtables; sub!=NULL && sub!=fpst->subtable; prev = sub, sub=sub->next );
+	if ( sub!=NULL ) {
+	    if ( prev==NULL )
+		otl->subtables = sub->next;
+	    else
+		prev->next = sub->next;
+	    free(sub->subtable_name);
+	    chunkfree(sub,sizeof(struct lookup_subtable));
+	}
+	fprev = NULL;
+	for ( ftest=d->sf->possub; ftest!=NULL && ftest!=fpst; fprev = ftest, ftest=ftest->next );
+	if ( ftest!=NULL ) {
+	    if ( fprev==NULL )
+		d->sf->possub = fpst->next;
+	    else
+		fprev->next = fpst->next;
+	}
+
+	chunkfree(fpst,sizeof(FPST));
+    }
+}
+
+void GFI_SMDEnd(struct gfi_data *d) {
+
+    d->smd = NULL;
+}
+
+void GFI_FinishSMNew(struct gfi_data *d,ASM *sm, int success, int isnew) {
+    OTLookup *otl;
+    struct lookup_subtable *sub, *prev;
+    ASM *smtest, *smprev;
+
+    if ( !success && isnew ) {
+	/* We can't allow incomplete state machines floating around */
+	/* If they didn't fill it in, delete it */
+	otl = sm->subtable->lookup;
+	prev = NULL;
+	for ( sub=otl->subtables; sub!=NULL && sub!=sm->subtable; prev = sub, sub=sub->next );
+	if ( sub!=NULL ) {
+	    if ( prev==NULL )
+		otl->subtables = sub->next;
+	    else
+		prev->next = sub->next;
+	    free(sub->subtable_name);
+	    chunkfree(sub,sizeof(struct lookup_subtable));
+	}
+	smprev = NULL;
+	for ( smtest=d->sf->sm; smtest!=NULL && smtest!=sm; smprev = smtest, smtest=smtest->next );
+	if ( smtest!=NULL ) {
+	    if ( smprev==NULL )
+		d->sf->sm = sm->next;
+	    else
+		smprev->next = sm->next;
+	}
+	chunkfree(sm,sizeof(ASM));
+    }
+}
+
+static void LookupSubtableContents(struct gfi_data *gfi,int isgpos) {
+    struct lkdata *lk = &gfi->tables[isgpos];
+    int i,j;
+
+    for ( i=0; i<lk->cnt; ++i ) {
+	if ( lk->all[i].deleted )
+    continue;
+	if ( lk->all[i].open ) {
+	    for ( j=0; j<lk->all[i].subtable_cnt; ++j ) {
+		if ( lk->all[i].subtables[j].deleted )
+	    continue;
+		if ( lk->all[i].subtables[j].selected ) {
+		    _LookupSubtableContents(gfi->sf,lk->all[i].subtables[j].subtable,NULL);
+return;
+		}
+	    }
+	}
+    }
+}
+
+static int GFI_LookupEditSubtableContents(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct gfi_data *gfi = GDrawGetUserData(GGadgetGetWindow(g));
+	int isgpos = GTabSetGetSel(GWidgetGetControl(gfi->gw,CID_Lookups));
+	LookupSubtableContents(gfi,isgpos);
+    }
+return( true );
+}
+
+static int GFI_LookupAddLookup(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct gfi_data *gfi = GDrawGetUserData(GGadgetGetWindow(g));
+	int isgpos = GTabSetGetSel(GWidgetGetControl(gfi->gw,CID_Lookups));
+	struct lkdata *lk = &gfi->tables[isgpos];
+	int i,j,k,lcnt;
+	OTLookup *otl = chunkalloc(sizeof(OTLookup));
+
+	if ( !EditLookup(otl,isgpos,gfi->sf)) {
+	    chunkfree(otl,sizeof(OTLookup));
+return( true );
+	}
+	for ( i=lk->cnt-1; i>=0; --i ) {
+	    if ( !lk->all[i].deleted && lk->all[i].selected )
+	break;
+	}
+	if ( lk->cnt>=lk->max )
+	    lk->all = grealloc(lk->all,(lk->max+=10)*sizeof(struct lkinfo));
+	for ( k=lk->cnt; k>i+1; --k )
+	    lk->all[k] = lk->all[k-1];
+	memset(&lk->all[k],0,sizeof(struct lkinfo));
+	lk->all[k].lookup = otl;
+	lk->all[k].new = true;
+	++lk->cnt;
+	if ( isgpos ) {
+	    otl->next = gfi->sf->gpos_lookups;
+	    gfi->sf->gpos_lookups = otl;
+	} else {
+	    otl->next = gfi->sf->gsub_lookups;
+	    gfi->sf->gsub_lookups = otl;
+	}
+
+	/* Make sure the window is scrolled to display the new lookup */
+	lcnt=0;
+	for ( i=0; i<lk->cnt; ++i ) {
+	    if ( lk->all[i].deleted )
+	continue;
+	    if ( i==k )
+	break;
+	    ++lcnt;
+	    for ( j=0; j<lk->all[i].subtable_cnt; ++j ) {
+		if ( lk->all[i].subtables[j].deleted )
+	    continue;
+		++lcnt;
+	    }
+	}
+	if ( lcnt<lk->off_top || lcnt>=lk->off_top+(gfi->lkheight-2*LK_MARGIN)/gfi->fh )
+	    lk->off_top = lcnt;
+
+	GFI_LookupScrollbars(gfi,isgpos, true);
+	GFI_LookupEnableButtons(gfi,isgpos);
+    }
+return( true );
+}
+
+static int GFI_LookupAddSubtable(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct gfi_data *gfi = GDrawGetUserData(GGadgetGetWindow(g));
+	int isgpos = GTabSetGetSel(GWidgetGetControl(gfi->gw,CID_Lookups));
+	struct lkdata *lk = &gfi->tables[isgpos];
+	int i,j,k,lcnt;
+	struct lookup_subtable *sub;
+
+	lcnt = 0;
+	for ( i=0; i<lk->cnt; ++i ) {
+	    if ( lk->all[i].deleted )
+	continue;
+	    j = -1;
+	    ++lcnt;
+	    if ( lk->all[i].selected )
+	break;
+	    for ( j=0; j<lk->all[i].subtable_cnt; ++j ) {
+		if ( lk->all[i].subtables[j].deleted )
+	    continue;
+		++lcnt;
+		if ( lk->all[i].subtables[j].selected )
+	goto break_2_loops;
+	    }
+	}
+	break_2_loops:
+	if ( i==lk->cnt )
+return( true );
+
+	sub = chunkalloc(sizeof(struct lookup_subtable));
+	sub->lookup = lk->all[i].lookup;
+	if ( !EditSubtable(sub,isgpos,gfi->sf,NULL)) {
+	    chunkfree(sub,sizeof(struct lookup_subtable));
+return( true );
+	}
+	if ( lk->all[i].subtable_cnt>=lk->all[i].subtable_max )
+	    lk->all[i].subtables = grealloc(lk->all[i].subtables,(lk->all[i].subtable_max+=10)*sizeof(struct lksubinfo));
+	for ( k=lk->all[i].subtable_cnt; k>j+1; --k )
+	    lk->all[i].subtables[k] = lk->all[i].subtables[k-1];
+	memset(&lk->all[i].subtables[k],0,sizeof(struct lksubinfo));
+	lk->all[i].subtables[k].subtable = sub;
+	lk->all[i].subtables[k].new = true;
+	sub->next = lk->all[i].lookup->subtables;
+	lk->all[i].lookup->subtables = sub;
+	++lk->all[i].subtable_cnt;
+
+	/* Make sure the window is scrolled to display the new subtable */
+	if ( lcnt<lk->off_top || lcnt>=lk->off_top+(gfi->lkheight-2*LK_MARGIN)/gfi->fh )
+	    lk->off_top = lcnt;
+
+	GFI_LookupScrollbars(gfi,isgpos, true);
+	GFI_LookupEnableButtons(gfi,isgpos);
+    }
+return( true );
+}
+
+static int GFI_LookupEditLookup(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct gfi_data *gfi = GDrawGetUserData(GGadgetGetWindow(g));
+	int isgpos = GTabSetGetSel(GWidgetGetControl(gfi->gw,CID_Lookups));
+	struct lkdata *lk = &gfi->tables[isgpos];
+	int i,j;
+
+	for ( i=0; i<lk->cnt; ++i ) {
+	    if ( lk->all[i].deleted )
+	continue;
+	    if ( lk->all[i].selected ) {
+		EditLookup(lk->all[i].lookup,isgpos,gfi->sf);
+return( true );
+	    } else if ( lk->all[i].open ) {
+		for ( j=0; j<lk->all[i].subtable_cnt; ++j ) {
+		    if ( lk->all[i].subtables[j].deleted )
+		continue;
+		    if ( lk->all[i].subtables[j].selected ) {
+			EditSubtable(lk->all[i].subtables[j].subtable,isgpos,gfi->sf,NULL);
+return( true );
+		    }
+		}
+	    }
+	}
+    }
+return( true );
+}
+
+static int GFI_LookupMergeLookup(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct gfi_data *gfi = GDrawGetUserData(GGadgetGetWindow(g));
+	char *buts[3];
+	int isgpos = GTabSetGetSel(GWidgetGetControl(gfi->gw,CID_Lookups));
+	struct lkdata *lk = &gfi->tables[isgpos];
+	struct selection_bits sel;
+	int i,j;
+	struct lkinfo *lkfirst;
+	struct lksubinfo *sbfirst;
+	struct lookup_subtable *sub;
+
+	LookupParseSelection(lk,&sel);
+	if ( !sel.sub_table_mergeable && !sel.lookup_mergeable )
+return( true );
+	
+	buts[0] = _("Do it");
+	buts[1] = _("_Cancel");
+	buts[2] = NULL;
+	if ( gwwv_ask(_("Cannot be Undone"),(const char **) buts,0,1,_("The Merge operation cannot be reverted.\nDo it anyway?"))==1 )
+return( true );
+	if ( sel.lookup_mergeable ) {
+	    lkfirst = NULL;
+	    for ( i=0; i<lk->cnt; ++i ) {
+		if ( lk->all[i].selected && !lk->all[i].deleted ) {
+		    if ( lkfirst==NULL )
+			lkfirst = &lk->all[i];
+		    else {
+			FLMerge(lkfirst->lookup,lk->all[i].lookup);
+			if ( lkfirst->subtable_cnt+lk->all[i].subtable_cnt >= lkfirst->subtable_max )
+			    lkfirst->subtables = grealloc(lkfirst->subtables,(lkfirst->subtable_max+=lk->all[i].subtable_cnt)*sizeof(struct lksubinfo));
+			memcpy(lkfirst->subtables+lkfirst->subtable_cnt,
+				lk->all[i].subtables,lk->all[i].subtable_cnt*sizeof(struct lksubinfo));
+			lkfirst->subtable_cnt += lk->all[i].subtable_cnt;
+			for ( j=0; j<lk->all[i].subtable_cnt; ++j )
+			    lk->all[i].subtables[j].subtable->lookup = lkfirst->lookup;
+			if ( lk->all[i].lookup->subtables!=NULL ) {
+			    for ( sub = lk->all[i].lookup->subtables; sub->next!=NULL; sub = sub->next );
+			    sub->next = lkfirst->lookup->subtables;
+			    lkfirst->lookup->subtables = lk->all[i].lookup->subtables;
+			    lk->all[i].lookup->subtables = NULL;
+			}
+			lk->all[i].subtable_cnt = 0;
+			lk->all[i].deleted = true;
+			lk->all[i].open = false;
+			lk->all[i].selected = false;
+		    }
+		}
+	    }
+	} else if ( sel.sub_table_mergeable ) {
+	    sbfirst = NULL;
+	    for ( i=0; i<lk->cnt; ++i ) if ( !lk->all[i].deleted && lk->all[i].open ) {
+		for ( j=0; j<lk->all[i].subtable_cnt; ++j ) if ( !lk->all[i].subtables[j].deleted ) {
+		    if ( lk->all[i].subtables[j].selected ) {
+			if ( sbfirst == NULL )
+			    sbfirst = &lk->all[i].subtables[j];
+			else {
+			    SFSubTablesMerge(gfi->sf,sbfirst->subtable,lk->all[i].subtables[j].subtable);
+			    lk->all[i].subtables[j].deleted = true;
+			    lk->all[i].subtables[j].selected = false;
+			}
+		    }
+		}
+		if ( sbfirst!=NULL )	/* Can only merge subtables within a lookup, so if we found anything, in a lookup that's everything */
+	    break;
+	    }
+	}
+	GFI_LookupScrollbars(gfi,isgpos, true);
+	GFI_LookupEnableButtons(gfi,isgpos);
+    }
+return( true );
+}
+
+static int GFI_LookupDeleteLookup(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct gfi_data *gfi = GDrawGetUserData(GGadgetGetWindow(g));
+	int isgpos = GTabSetGetSel(GWidgetGetControl(gfi->gw,CID_Lookups));
+	struct lkdata *lk = &gfi->tables[isgpos];
+	int i,j;
+
+	for ( i=0; i<lk->cnt; ++i ) {
+	    if ( lk->all[i].deleted )
+	continue;
+	    if ( lk->all[i].selected )
+		lk->all[i].deleted = true;
+	    else if ( lk->all[i].open ) {
+		for ( j=0; j<lk->all[i].subtable_cnt; ++j ) {
+		    if ( lk->all[i].subtables[j].deleted )
+		continue;
+		    if ( lk->all[i].subtables[j].selected )
+			lk->all[i].subtables[j].deleted = true;
+		}
+	    }
+	}
+
+	GFI_LookupScrollbars(gfi,isgpos, true);
+	GFI_LookupEnableButtons(gfi,isgpos);
+    }
+
+return( true );
+}
+
+static int GFI_LookupRevertLookup(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct gfi_data *gfi = GDrawGetUserData(GGadgetGetWindow(g));
+	int isgpos = GTabSetGetSel(GWidgetGetControl(gfi->gw,CID_Lookups));
+	struct lkdata *lk = &gfi->tables[isgpos];
+	int i,j;
+
+	/* First remove any new lookups, subtables */
+	for ( i=0; i<lk->cnt; ++i ) {
+	    if ( lk->all[i].new )
+		SFRemoveLookup(gfi->sf,lk->all[i].lookup);
+	    else {
+		for ( j=0; j<lk->all[i].subtable_cnt; ++j )
+		    if ( lk->all[i].subtables[j].new )
+			SFRemoveLookupSubTable(gfi->sf,lk->all[i].subtables[j].subtable);
+	    }
+	}
+
+	/* Now since we didn't actually delete anything we don't need to do */
+	/*  anything to resurrect them */
+
+	/* Finally we need to restore the original order. */
+	/* But that just means regenerating the lk structure. So free it and */
+	/*  regenerate it */
+
+	LookupInfoFree(lk);
+	LookupSetup(lk,isgpos?gfi->sf->gpos_lookups:gfi->sf->gsub_lookups);
+
+	GFI_LookupScrollbars(gfi,isgpos, true);
+	GFI_LookupEnableButtons(gfi,isgpos);
+    }
+return( true );
+}
+
+static int import_e_h(GWindow gw, GEvent *event) {
+    int *done = GDrawGetUserData(gw);
+
+    if ( event->type==et_close ) {
+	*done = true;
+    } else if ( event->type==et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    help("fontinfo.html#Lookups");
+return( true );
+	}
+return( false );
+    } else if ( event->type==et_controlevent && event->u.control.subtype == et_buttonactivate ) {
+	switch ( GGadgetGetCid(event->u.control.g)) {
+	  case CID_OK:
+	    *done = 2;
+	  break;
+	  case CID_Cancel:
+	    *done = true;
+	  break;
+	}
+    }
+return( true );
+}
+
+static int GFI_LookupImportLookup(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct gfi_data *gfi = GDrawGetUserData(GGadgetGetWindow(g));
+	int isgpos = GTabSetGetSel(GWidgetGetControl(gfi->gw,CID_Lookups));
+	FontView *ofv;
+	SplineFont *osf;
+	OTLookup *otl;
+	int i, j, cnt;
+	GTextInfo *ti;
+	GGadgetCreateData gcd[7], *varray[8], *harray[7];
+	GTextInfo label[7];
+	GWindowAttrs wattrs;
+	GRect pos;
+	GWindow gw;
+	int done = 0;
+
+	/* Figure out what lookups can be imported from which (open) fonts */
+	ti = NULL;
+	for ( j=0; j<2; ++j ) {
+	    for ( ofv=fv_list; ofv!=NULL; ofv=ofv->next ) {
+		osf = ofv->sf;
+		if ( osf->cidmaster ) osf = osf->cidmaster;
+		osf->ticked = false;
+	    }
+	    cnt = 0;
+	    for ( ofv=fv_list; ofv!=NULL; ofv=ofv->next ) {
+		osf = ofv->sf;
+		if ( osf->cidmaster ) osf = osf->cidmaster;
+		if ( osf->ticked || osf==gfi->sf || osf==gfi->sf->cidmaster ||
+			( isgpos && osf->gpos_lookups==NULL) ||
+			(!isgpos && osf->gsub_lookups==NULL) )
+	    continue;
+		osf->ticked = true;
+		if ( cnt!=0 ) {
+		    if ( ti )
+			ti[cnt].line = true;
+		    ++cnt;
+		}
+		if ( ti ) {
+		    ti[cnt].text = (unichar_t *) copy( osf->fontname );
+		    ti[cnt].text_is_1byte = true;
+		    ti[cnt].disabled = true;
+		    ti[cnt].userdata = osf;
+		}
+		++cnt;
+		for ( otl = isgpos ? osf->gpos_lookups : osf->gsub_lookups; otl!=NULL; otl=otl->next ) {
+		    if ( ti ) {
+			ti[cnt].text = (unichar_t *) strconcat( " ", otl->lookup_name );
+			ti[cnt].text_is_1byte = true;
+			ti[cnt].userdata = otl;
+		    }
+		    ++cnt;
+		}
+	    }
+	    if ( ti==NULL )
+		ti = gcalloc((cnt+1),sizeof(GTextInfo));
+	}
+
+	memset(gcd,0,sizeof(gcd));
+	memset(label,0,sizeof(label));
+
+	i = 0;
+	label[i].text = (unichar_t *) _("Select lookups from other fonts");
+	label[i].text_is_1byte = true;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.pos.x = 12; gcd[i].gd.pos.y = 6+6; 
+	gcd[i].gd.flags = gg_visible | gg_enabled;
+	gcd[i].creator = GLabelCreate;
+	varray[0] = &gcd[i++]; varray[1] = NULL;
+
+	gcd[i].gd.pos.height = 12*12+6;
+	gcd[i].gd.flags = gg_enabled|gg_visible|gg_list_multiplesel|gg_utf8_popup;
+	gcd[i].gd.u.list = ti;
+	gcd[i].creator = GListCreate;
+	varray[2] = &gcd[i++]; varray[1] = NULL;
+
+	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
+	label[i].text = (unichar_t *) _("_Import");
+	label[i].text_is_1byte = true;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.cid = CID_OK;
+	harray[0] = GCD_Glue; harray[1] = &gcd[i]; harray[2] = GCD_Glue;
+	gcd[i++].creator = GButtonCreate;
+
+	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+	label[i].text = (unichar_t *) _("_Cancel");
+	label[i].text_is_1byte = true;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.cid = CID_Cancel;
+	harray[3] = GCD_Glue; harray[4] = &gcd[i]; harray[5] = GCD_Glue; harray[6] = NULL;
+	gcd[i++].creator = GButtonCreate;
+
+	gcd[i].gd.flags = gg_enabled|gg_visible;
+	gcd[i].gd.u.boxelements = harray;
+	gcd[i].creator = GHBoxCreate;
+	varray[4] = &gcd[i++]; varray[5] = NULL; varray[6] = NULL;
+
+	gcd[i].gd.pos.x = gcd[i].gd.pos.y = 2;
+	gcd[i].gd.flags = gg_enabled|gg_visible;
+	gcd[i].gd.u.boxelements = varray;
+	gcd[i].creator = GHVBoxCreate;
+
+	memset(&wattrs,0,sizeof(wattrs));
+	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+	wattrs.event_masks = ~(1<<et_charup);
+	wattrs.restrict_input_to_me = 1;
+	wattrs.undercursor = 1;
+	wattrs.cursor = ct_pointer;
+	wattrs.utf8_window_title =  _("Import Lookup...");
+	wattrs.is_dlg = true;
+	pos.x = pos.y = 0;
+	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,150));
+	pos.height = GDrawPointsToPixels(NULL,193);
+	gw = GDrawCreateTopWindow(NULL,&pos,import_e_h,&done,&wattrs);
+
+	GGadgetsCreate(gw,&gcd[i]);
+	GHVBoxSetExpandableRow(gcd[i].ret,1);
+	GHVBoxSetExpandableCol(gcd[i-1].ret,gb_expandgluesame);
+	GHVBoxFitWindow(gcd[i].ret);
+	GTextInfoListFree(ti);
+	GDrawSetVisible(gw,true);
+ 
+	while ( !done )
+	    GDrawProcessOneEvent(NULL);
+	if ( done==2 ) {
+	    int32 len;
+	    GTextInfo **ti = GGadgetGetList(gcd[1].ret,&len);
+	    osf = NULL;
+	    for ( i=0; i<len; ++i ) {
+		if ( ti[i]->disabled )
+		    osf = ti[i]->userdata;
+		else if ( ti[i]->selected && ti[i]->text!=NULL )
+		    OTLookupCopyInto(gfi->sf,osf,(OTLookup *) ti[i]->userdata);
+	    }
+	}
+	GDrawDestroyWindow(gw);
+
+	GFI_LookupScrollbars(gfi,isgpos, true);
+	GFI_LookupEnableButtons(gfi,isgpos);
+    }
+return( true );
+}
+
+static int GFI_LookupAspectChange(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	struct gfi_data *gfi = GDrawGetUserData(GGadgetGetWindow(g));
+	int isgpos = GTabSetGetSel(GWidgetGetControl(gfi->gw,CID_Lookups));
+	GFI_LookupEnableButtons(gfi,isgpos);
+    }
+return( true );
+}
+
+static void LookupExpose(GWindow pixmap, struct gfi_data *gfi, int isgpos) {
+    int lcnt, i,j;
+    struct lkdata *lk = &gfi->tables[isgpos];
+    GRect r, old;
+
+    r.x = LK_MARGIN; r.width = gfi->lkwidth-2*LK_MARGIN;
+    r.y = LK_MARGIN; r.height = gfi->lkheight-2*LK_MARGIN;
+    GDrawPushClip(pixmap,&r,&old);
+    GDrawSetFont(pixmap,gfi->font);
+
+    lcnt = 0;
+    for ( i=0; i<lk->cnt; ++i ) {
+	if ( lk->all[i].deleted )
+    continue;
+	if ( lcnt>=lk->off_top ) {
+	    if ( lk->all[i].selected ) {
+		r.x = LK_MARGIN; r.width = gfi->lkwidth-2*LK_MARGIN;
+		r.y = (lcnt-lk->off_top)*gfi->fh; r.height = gfi->fh;
+		GDrawFillRect(pixmap,&r,0xffff00);
+	    }
+	    r.x = LK_MARGIN-lk->off_left; r.width = (gfi->as&~1);
+	    r.y = LK_MARGIN+(lcnt-lk->off_top)*gfi->fh; r.height = r.width;
+	    GDrawDrawRect(pixmap,&r,0x000000);
+	    GDrawDrawLine(pixmap,r.x+2,r.y+(r.height/2), r.x+r.width-2,r.y+(r.height/2), 0x000000);
+	    if ( !lk->all[i].open )
+		GDrawDrawLine(pixmap,r.x+(r.width/2),r.y+2, r.x+(r.width/2),r.y+r.height-2, 0x000000);
+	    GDrawDrawText8(pixmap,r.x+gfi->fh, r.y+gfi->as,
+		    lk->all[i].lookup->lookup_name,-1,NULL,0x000000);
+	}
+	++lcnt;
+	if ( lk->all[i].open ) {
+	    for ( j=0; j<lk->all[i].subtable_cnt; ++j ) {
+		if ( lk->all[i].subtables[j].deleted )
+	    continue;
+		if ( lcnt>=lk->off_top ) {
+		    if ( lk->all[i].subtables[j].selected ) {
+			r.x = LK_MARGIN; r.width = gfi->lkwidth-2*LK_MARGIN;
+			r.y = LK_MARGIN+(lcnt-lk->off_top)*gfi->fh; r.height = gfi->fh;
+			GDrawFillRect(pixmap,&r,0xffff00);
+		    }
+		    r.x = LK_MARGIN+2*gfi->fh-lk->off_left;
+		    r.y = LK_MARGIN+(lcnt-lk->off_top)*gfi->fh;
+		    GDrawDrawText8(pixmap,r.x, r.y+gfi->as,
+			    lk->all[i].subtables[j].subtable->subtable_name,-1,NULL,0x000000);
+		}
+		++lcnt;
+	    }
+	}
+    }
+    GDrawPopClip(pixmap,&old);
+}
+
+static void LookupDeselect(struct lkdata *lk) {
+    int i,j;
+
+    for ( i=0; i<lk->cnt; ++i ) {
+	lk->all[i].selected = false;
+	for ( j=0; j<lk->all[i].subtable_cnt; ++j )
+	    lk->all[i].subtables[j].selected = false;
+    }
+}
+
+static void LookupPopup(GWindow gw,OTLookup *otl,struct lookup_subtable *sub) {
+    extern char *lookup_type_names[2][10];
+    static char popup_msg[300];
+    int pos;
+    char *lookuptype;
+    FeatureScriptLangList *fl;
+    struct scriptlanglist *sl;
+    int l;
+
+    if ( (otl->lookup_type&0xff)>= 0xf0 ) {
+	if ( otl->lookup_type==kern_statemachine )
+	    lookuptype = _("Kerning State Machine");
+	else if ( otl->lookup_type==morx_indic )
+	    lookuptype = _("Indic State Machine");
+	else if ( otl->lookup_type==morx_context )
+	    lookuptype = _("Contextual State Machine");
+	else
+	    lookuptype = _("Contextual State Machine");
+    } else if ( (otl->lookup_type>>8)<2 && (otl->lookup_type&0xff)<10 )
+	lookuptype = _(lookup_type_names[otl->lookup_type>>8][otl->lookup_type&0xff]);
+    else
+	lookuptype = S_("LookupType|Unknown");
+    snprintf(popup_msg,sizeof(popup_msg), "%s\n", lookuptype);
+    pos = strlen(popup_msg);
+
+    if ( sub!=NULL && otl->lookup_type==gpos_pair && sub->kc!=NULL ) {
+	snprintf(popup_msg+pos,sizeof(popup_msg)-pos,_("(kerning class)\n") );
+	pos += strlen( popup_msg+pos );
+    }
+
+    if ( otl->features==NULL )
+	snprintf(popup_msg+pos,sizeof(popup_msg)-pos,_("Not attached to a feature"));
+    else {
+	for ( fl=otl->features; fl!=NULL && pos<sizeof(popup_msg)-2; fl=fl->next ) {
+	    snprintf(popup_msg+pos,sizeof(popup_msg)-pos,"%c%c%c%c: ",
+		    fl->featuretag>>24, fl->featuretag>>16,
+		    fl->featuretag>>8, fl->featuretag&0xff );
+	    pos += strlen( popup_msg+pos );
+	    for ( sl=fl->scripts; sl!=NULL; sl=sl->next ) {
+		snprintf(popup_msg+pos,sizeof(popup_msg)-pos,"%c%c%c%c{",
+			sl->script>>24, sl->script>>16,
+			sl->script>>8, sl->script&0xff );
+		pos += strlen( popup_msg+pos );
+		for ( l=0; l<sl->lang_cnt; ++l ) {
+		    uint32 lang = l<MAX_LANG ? sl->langs[l] : sl->morelangs[l-MAX_LANG];
+		    snprintf(popup_msg+pos,sizeof(popup_msg)-pos,"%c%c%c%c,",
+			    lang>>24, lang>>16,
+			    lang>>8, lang&0xff );
+		    pos += strlen( popup_msg+pos );
+		}
+		if ( popup_msg[pos-1]==',' )
+		    popup_msg[pos-1] = '}';
+		else if ( pos<sizeof(popup_msg)-2 )
+		    popup_msg[pos++] = '}';
+		if ( pos<sizeof(popup_msg)-2 )
+		    popup_msg[pos++] = ' ';
+	    }
+	    if ( pos<sizeof(popup_msg)-2 )
+		popup_msg[pos++] = '\n';
+	}
+    }
+    if ( pos>=sizeof(popup_msg) )
+	pos = sizeof(popup_msg)-1;
+    popup_msg[pos]='\0';
+    GGadgetPreparePopup8(gw,popup_msg);
+}
+
+static void LookupMouse(struct gfi_data *gfi, int isgpos, GEvent *event) {
+    struct lkdata *lk = &gfi->tables[isgpos];
+    int l = (event->u.mouse.y-LK_MARGIN)/gfi->fh + lk->off_top;
+    int inbox = event->u.mouse.x>=LK_MARGIN &&
+	    event->u.mouse.x>=LK_MARGIN-lk->off_left &&
+	    event->u.mouse.x<=LK_MARGIN-lk->off_left+gfi->as+1;
+    GWindow gw = GDrawableGetWindow(GWidgetGetControl(gfi->gw,CID_LookupWin+isgpos));
+    int i,j,lcnt;
+
+    if ( l<0 || l>=(gfi->lkheight-2*LK_MARGIN)/gfi->fh )
+return;
+
+    lcnt = 0;
+    for ( i=0; i<lk->cnt; ++i ) {
+	if ( lk->all[i].deleted )
+    continue;
+	if ( l==lcnt ) {
+	    if ( event->type==et_mousedown )
+return;
+	    else if ( event->type==et_mousemove ) {
+		LookupPopup(gw,lk->all[i].lookup,NULL);
+return;
+	    } else {
+		if ( inbox || event->u.mouse.clicks>1 ) {
+		    lk->all[i].open = !lk->all[i].open;
+		    GFI_LookupScrollbars(gfi, isgpos, true);
+return;
+		}
+		if ( !(event->u.mouse.state&(ksm_shift|ksm_control)) ) {
+		    LookupDeselect(lk);
+		    lk->all[i].selected = true;
+		} else
+		    lk->all[i].selected = !lk->all[i].selected;
+		GFI_LookupEnableButtons(gfi,isgpos);
+		GDrawRequestExpose(gw,NULL,true);
+return;
+	    }
+	}
+	++lcnt;
+	if ( lk->all[i].open ) {
+	    for ( j=0; j<lk->all[i].subtable_cnt; ++j ) {
+		if ( lk->all[i].subtables[j].deleted )
+	    continue;
+		if ( l==lcnt ) {
+		    if ( event->type==et_mousedown )
+return;
+		    else if ( event->type==et_mousemove ) {
+			LookupPopup(gw,lk->all[i].lookup,lk->all[i].subtables[j].subtable);
+return;
+		    } else {
+			if ( inbox )
+return;		/* Can't open this guy */
+			if ( event->u.mouse.clicks>1 )
+			    LookupSubtableContents(gfi,isgpos);
+			else {
+			    if ( !(event->u.mouse.state&(ksm_shift|ksm_control)) ) {
+				LookupDeselect(lk);
+				lk->all[i].subtables[j].selected = true;
+			    } else
+				lk->all[i].subtables[j].selected = !lk->all[i].subtables[j].selected;
+			    GFI_LookupEnableButtons(gfi,isgpos);
+			    GDrawRequestExpose(gw,NULL,true);
+			}
+return;
+		    }
+		}
+		++lcnt;
+	    }
+	}
+    }
+}
+
+static int lookups_e_h(GWindow gw, GEvent *event, int isgpos) {
+    struct gfi_data *gfi = GDrawGetUserData(gw);
+
+    if (( event->type==et_mouseup || event->type==et_mousedown ) &&
+	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
+return( GGadgetDispatchEvent(GWidgetGetControl(gw,CID_LookupVSB+isgpos),event));
+    }
+
+    switch ( event->type ) {
+      case et_char:
+return( GFI_Char(gfi,event) );
+      case et_expose:
+	LookupExpose(gw,gfi,isgpos);
+      break;
+      case et_mousedown: case et_mousemove: case et_mouseup:
+	LookupMouse(gfi,isgpos,event);
+      break;
+      case et_resize: {
+	GRect r;
+	GDrawGetSize(gw,&r);
+	gfi->lkheight = r.height; gfi->lkwidth = r.width;
+	GFI_LookupScrollbars(gfi,false,false);
+	GFI_LookupScrollbars(gfi,true,false);
+      }
+      break;
+    }
+return( true );
+}
+
+static int gposlookups_e_h(GWindow gw, GEvent *event) {
+return( lookups_e_h(gw,event,true));
+}
+
+static int gsublookups_e_h(GWindow gw, GEvent *event) {
+return( lookups_e_h(gw,event,false));
+}
+
 void FontInfo(SplineFont *sf,int defaspect,int sync) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GTabInfo aspects[21], conaspects[7], smaspects[5], vaspects[5];
+    GTabInfo aspects[22], vaspects[5], lkaspects[3];
     GGadgetCreateData mgcd[10], ngcd[17], psgcd[30], tngcd[8],
-	pgcd[8], vgcd[19], pangcd[22], comgcd[3], atgcd[7], txgcd[23],
-	congcd[3], csubgcd[fpst_max-pst_contextpos][6], smgcd[3], smsubgcd[4][6],
+	pgcd[8], vgcd[19], pangcd[22], comgcd[3], txgcd[23],
 	mfgcd[8], mcgcd[8], szgcd[19], mkgcd[5], metgcd[29], vagcd[3], ssgcd[23],
-	xugcd[7], dgcd[6], ugcd[4], gaspgcd[5], gaspgcd_def[2];
+	xugcd[7], dgcd[6], ugcd[4], gaspgcd[5], gaspgcd_def[2], lksubgcd[2][4],
+	lkgcd[2], lkbuttonsgcd[15];
     GGadgetCreateData mb[2], mb2, nb[2], nb2, nb3, xub[2], psb[2], psb2[3], ppbox[3],
-	    vbox[4], metbox[2], ssbox[2], panbox[2], combox[2], atbox[4], mkbox[3],
-	    txbox[5], ubox[2], dbox[2], conbox[fpst_max-pst_contextpos][4],
-	    smbox[4][4], mcbox[3], mfbox[3], szbox[6], tnboxes[4], gaspboxes[3];
+	    vbox[4], metbox[2], ssbox[2], panbox[2], combox[2], mkbox[3],
+	    txbox[5], ubox[2], dbox[2], 
+	    mcbox[3], mfbox[3], szbox[6], tnboxes[4], gaspboxes[3],
+	    lkbox[7];
     GGadgetCreateData *marray[7], *marray2[9], *narray[26], *narray2[7], *narray3[3],
 	*xuarray[13], *psarray[10], *psarray2[21], *psarray3[3], *psarray4[10],
-	*ppbuttons[5], *pparray[4], *vradio[5], *vbutton[4], *varray[38], *metarray[46],
-	*ssarray[58], *panarray[38], *comarray[2], *atarray[6], *atarray2[6],
-	*atarray3[4], *mkarray[3], *mkarray2[4], *txarray[5], *txarray2[30],
-	*txarray3[6], *txarray4[6], *uarray[3], *darray[10], *conarray[fpst_max-pst_contextpos][4],
-	*conarray2[fpst_max-pst_contextpos][6], *conarray3[fpst_max-pst_contextpos][4],
-	*smarray[4][4], *smarray2[4][6], *smarray3[4][4], *mcarray[13], *mcarray2[7],
+	*ppbuttons[5], *pparray[4], *vradio[5], *varray[38], *metarray[46],
+	*ssarray[58], *panarray[38], *comarray[2],
+	*mkarray[3], *mkarray2[4], *txarray[5], *txarray2[30],
+	*txarray3[6], *txarray4[6], *uarray[3], *darray[10],
+	*mcarray[13], *mcarray2[7],
 	*mfarray[14], *szarray[7], *szarray2[5], *szarray3[7],
 	*szarray4[4], *szarray5[6], *tnvarray[4], *tnharray[6], *tnharray2[4], *gaspharray[6],
-	*gaspvarray[3];
+	*gaspvarray[3], *lkarray[2][7], *lkbuttonsarray[17], *lkharray[3];
     GTextInfo mlabel[10], nlabel[16], pslabel[30], tnlabel[7],
-	plabel[8], vlabel[19], panlabel[22], comlabel[3], atlabel[7], txlabel[23],
-	csublabel[fpst_max-pst_contextpos][6], smsublabel[4][6],
+	plabel[8], vlabel[19], panlabel[22], comlabel[3], txlabel[23],
 	mflabel[8], mclabel[8], szlabel[17], mklabel[5], metlabel[28],
-	sslabel[23], xulabel[6], dlabel[5], ulabel[1], gasplabel[5];
+	sslabel[23], xulabel[6], dlabel[5], ulabel[1], gasplabel[5],
+	lkbuttonslabel[14];
     GTextInfo *namelistnames;
     struct gfi_data *d;
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20],
@@ -6352,33 +6691,11 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     char dszbuf[20], dsbbuf[20], dstbuf[21], sibuf[20], swbuf[20];
     int i,j,k, psrow;
     int mcs;
-    FontView *fvs;
     char title[130];
-    static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
-    /*static unichar_t sans[] = { 'h','e','l','v','e','t','i','c','a',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };*/
+    /* static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };*/
+    static unichar_t sans[] = { 'h','e','l','v','e','t','i','c','a',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
     FontRequest rq;
-    GFont *font;
-    static char *connames[] = {
-/* GT: Contextual Positioning. For definition of these terms see */
-/* GT: http://partners.adobe.com/public/developer/opentype/index_table_formats2.html */
-	    N_("Context Pos"),
-/* GT: Contextual Substitution */
-	    N_("Context Sub"),
-/* GT: Contextual Chaining Positioning */
-	    N_("Chain Pos"),
-/* GT: Contextual Chaining Substitution */
-	    N_("Chain Sub"),
-	    N_("Reverse Chain Sub"), NULL };
-    static int contypes[] = { pst_contextpos, pst_contextsub, pst_chainpos, pst_chainsub, pst_reversesub, 0 };
-    static char *smnames[] = {
-	    N_("Indic"),
-/* GT: Contextual Substitution */
-	    N_("Context Sub"),
-/* GT: Contextual Insertions */
-	    N_("Context Ins"),
-	    N_("Kerning"), NULL };
-    static int smtypes[] = { asm_indic, asm_context, asm_insert, asm_kern };
-    static int done = false;
+    int as, ds, ld;
     char **nlnames;
     char createtime[200], modtime[200];
     unichar_t *tmpcreatetime, *tmpmodtime;
@@ -6387,27 +6704,17 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     struct matrixinit mi, gaspmi;
 
     FontInfoInit();
-    if ( !done ) {
-	for ( i=0; connames[i]!=NULL; ++i )
-	    connames[i] = _(connames[i]);
-	for ( i=0; smnames[i]!=NULL; ++i )
-	    smnames[i] = _(smnames[i]);
-	done = true;
-    }
 
-    for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
-	if ( fvs->fontinfo ) {
-	    GDrawSetVisible(((struct gfi_data *) (fvs->fontinfo))->gw,true);
-	    GDrawRaise( ((struct gfi_data *) (fvs->fontinfo))->gw );
+    if ( sf->fontinfo!=NULL ) {
+	GDrawSetVisible(((struct gfi_data *) (sf->fontinfo))->gw,true);
+	GDrawRaise( ((struct gfi_data *) (sf->fontinfo))->gw );
 return;
-	}
     }
     if ( defaspect==-1 )
 	defaspect = last_aspect;
 
     d = gcalloc(1,sizeof(struct gfi_data));
-    if ( sf->fv!=NULL )
-	sf->fv->fontinfo = d;
+    sf->fontinfo = d;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg;
@@ -7244,34 +7551,24 @@ return;
     vgcd[14].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     vgcd[14].creator = GCheckBoxCreate;
 
-    vgcd[15].gd.pos.x = 10; vgcd[15].gd.pos.y = vgcd[14].gd.pos.y+56;
-    vlabel[15].text = (unichar_t *) _("_Set GSUB/morx Ordering");
+    vgcd[15].gd.pos.x = 10; vgcd[15].gd.pos.y = vgcd[11].gd.pos.y+24+6;
+    vlabel[15].text = (unichar_t *) _("_OS/2 Version");
     vlabel[15].text_is_1byte = true;
     vlabel[15].text_in_resource = true;
     vgcd[15].gd.label = &vlabel[15];
-    vgcd[15].gd.flags = gg_visible | gg_enabled;
-    vgcd[15].gd.handle_controlevent = OrderGSUB;
-    vgcd[15].creator = GButtonCreate;
+    vgcd[15].gd.popup_msg = (unichar_t *) _("The 'OS/2' table has changed slightly over the years,\nGenerally fields have been added, but occasionally their\nmeanings have been redefined." );
+    vgcd[15].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    vgcd[15].creator = GLabelCreate;
 
-    vgcd[16].gd.pos.x = 10; vgcd[16].gd.pos.y = vgcd[11].gd.pos.y+24+6;
-    vlabel[16].text = (unichar_t *) _("_OS/2 Version");
-    vlabel[16].text_is_1byte = true;
-    vlabel[16].text_in_resource = true;
-    vgcd[16].gd.label = &vlabel[16];
-    vgcd[14].gd.popup_msg = (unichar_t *) _("The 'OS/2' table has changed slightly over the years,\nGenerally fields have been added, but occasionally their\nmeanings have been redefined." );
-    vgcd[16].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    vgcd[16].creator = GLabelCreate;
-
-    vgcd[17].gd.pos.x = 90; vgcd[17].gd.pos.y = vgcd[16].gd.pos.y-4; vgcd[17].gd.pos.width = vgcd[7].gd.pos.width;
-    vgcd[17].gd.flags = gg_visible | gg_enabled;
-    vgcd[17].gd.cid = CID_OS2Version;
-    vgcd[17].gd.u.list = os2versions;
-    vgcd[17].creator = GListFieldCreate;
+    vgcd[16].gd.pos.x = 90; vgcd[16].gd.pos.y = vgcd[15].gd.pos.y-4; vgcd[16].gd.pos.width = vgcd[7].gd.pos.width;
+    vgcd[16].gd.flags = gg_visible | gg_enabled;
+    vgcd[16].gd.cid = CID_OS2Version;
+    vgcd[16].gd.u.list = os2versions;
+    vgcd[16].creator = GListFieldCreate;
 
     vradio[0] = GCD_Glue; vradio[1] = &vgcd[8]; vradio[2] = &vgcd[9]; vradio[3] = GCD_Glue; vradio[4] = NULL;
-    vbutton[0] = GCD_Glue; vbutton[1] = &vgcd[15]; vbutton[2] = GCD_Glue; vbutton[3] = NULL;
 
-    varray[0] = &vgcd[16]; varray[1] = &vgcd[17]; varray[2] = NULL;
+    varray[0] = &vgcd[15]; varray[1] = &vgcd[16]; varray[2] = NULL;
     varray[3] = &vgcd[0]; varray[4] = &vgcd[1]; varray[5] = NULL;
     varray[6] = &vgcd[2]; varray[7] = &vgcd[3]; varray[8] = NULL;
     varray[9] = &vgcd[4]; varray[10] = &vgcd[5]; varray[11] = NULL;
@@ -7281,9 +7578,8 @@ return;
     varray[21] = &vgcd[12]; varray[22] = &vgcd[13]; varray[23] = NULL;
     varray[24] = &vgcd[14]; varray[25] = GCD_ColSpan; varray[26] = NULL;
     varray[27] = GCD_Glue; varray[28] = GCD_Glue; varray[29] = NULL;
-    varray[30] = &vbox[3]; varray[31] = GCD_ColSpan; varray[32] = NULL;
-    varray[33] = GCD_Glue; varray[34] = GCD_Glue; varray[35] = NULL;
-    varray[36] = varray[37] = NULL;
+    varray[30] = GCD_Glue; varray[31] = GCD_Glue; varray[32] = NULL;
+    varray[33] = varray[37] = NULL;
 
     memset(vbox,0,sizeof(vbox));
     vbox[0].gd.flags = gg_enabled|gg_visible;
@@ -7294,9 +7590,6 @@ return;
     vbox[2].gd.u.boxelements = vradio;
     vbox[2].creator = GHBoxCreate;
 
-    vbox[3].gd.flags = gg_enabled|gg_visible;
-    vbox[3].gd.u.boxelements = vbutton;
-    vbox[3].creator = GHBoxCreate;
 /******************************************************************************/
 
     memset(&metgcd,0,sizeof(metgcd));
@@ -8225,88 +8518,7 @@ return;
     combox[0].gd.flags = gg_enabled|gg_visible;
     combox[0].gd.u.boxelements = comarray;
     combox[0].creator = GHBoxCreate;
-/******************************************************************************/
-    memset(&atlabel,0,sizeof(atlabel));
-    memset(&atgcd,0,sizeof(atgcd));
 
-    atgcd[0].gd.pos.x = 10; atgcd[0].gd.pos.y = 10;
-    atgcd[0].gd.pos.width = ngcd[11].gd.pos.width; atgcd[0].gd.pos.height = 200;
-    atgcd[0].gd.flags = gg_visible | gg_enabled | gg_list_alphabetic;
-    atgcd[0].gd.cid = CID_AnchorClasses;
-    atgcd[0].gd.u.list = AnchorClassesList(sf);
-    atgcd[0].gd.handle_controlevent = GFI_AnchorSelChanged;
-    atgcd[0].creator = GListCreate;
-
-    atgcd[1].gd.pos.x = 10; atgcd[1].gd.pos.y = atgcd[0].gd.pos.y+atgcd[0].gd.pos.height+4;
-    atgcd[1].gd.pos.width = -1;
-    atgcd[1].gd.flags = gg_visible | gg_enabled;
-/* GT: See the long comment at "Property|New" */
-/* GT: The msgstr should contain a translation of "_New...", ignore "Anchor|" */
-    atlabel[1].text = (unichar_t *) S_("Anchor|_New...");
-    atlabel[1].text_is_1byte = true;
-    atlabel[1].text_in_resource = true;
-    atgcd[1].gd.label = &atlabel[1];
-    atgcd[1].gd.cid = CID_AnchorNew;
-    atgcd[1].gd.handle_controlevent = GFI_AnchorNew;
-    atgcd[1].creator = GButtonCreate;
-
-    atgcd[2].gd.pos.x = 20+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor); atgcd[2].gd.pos.y = atgcd[1].gd.pos.y;
-    atgcd[2].gd.pos.width = -1;
-    atgcd[2].gd.flags = gg_visible;
-    atlabel[2].text = (unichar_t *) _("_Delete");
-    atlabel[2].text_is_1byte = true;
-    atlabel[2].text_in_resource = true;
-    atgcd[2].gd.label = &atlabel[2];
-    atgcd[2].gd.cid = CID_AnchorDel;
-    atgcd[2].gd.handle_controlevent = GFI_AnchorDel;
-    atgcd[2].creator = GButtonCreate;
-
-    atgcd[3].gd.pos.x = -10; atgcd[3].gd.pos.y = atgcd[1].gd.pos.y;
-    atgcd[3].gd.pos.width = -1;
-    atgcd[3].gd.flags = gg_visible;
-    atlabel[3].text = (unichar_t *) _("_Edit...");
-    atlabel[3].text_is_1byte = true;
-    atlabel[3].text_in_resource = true;
-    atgcd[3].gd.label = &atlabel[3];
-    atgcd[3].gd.cid = CID_AnchorRename;
-    atgcd[3].gd.handle_controlevent = GFI_AnchorRename;
-    atgcd[3].creator = GButtonCreate;
-
-    atgcd[4].gd.pos.x = 10; atgcd[4].gd.pos.y = atgcd[1].gd.pos.y+30;
-    atgcd[4].gd.flags = gg_visible;
-    atlabel[4].text = (unichar_t *) _("Show First Mark");
-    atlabel[4].text_is_1byte = true;
-    atgcd[4].gd.label = &atlabel[4];
-    atgcd[4].gd.cid = CID_ShowMark;
-    atgcd[4].gd.handle_controlevent = GFI_AnchorShowMark;
-    atgcd[4].creator = GButtonCreate;
-
-    atgcd[5].gd.pos.x = -10; atgcd[5].gd.pos.y = atgcd[4].gd.pos.y;
-    atgcd[5].gd.flags = gg_visible;
-    atlabel[5].text = (unichar_t *) _("Show First Base");
-    atlabel[5].text_is_1byte = true;
-    atgcd[5].gd.label = &atlabel[5];
-    atgcd[5].gd.cid = CID_ShowBase;
-    atgcd[5].gd.handle_controlevent = GFI_AnchorShowBase;
-    atgcd[5].creator = GButtonCreate;
-
-    atarray[0] = &atgcd[0]; atarray[1] = &atbox[2]; atarray[2] = &atbox[3]; atarray[3] = NULL;
-    atarray2[0] = &atgcd[1]; atarray2[1] = GCD_Glue; atarray2[2] = &atgcd[2];
-     atarray2[3] = GCD_Glue; atarray2[4] = &atgcd[3]; atarray2[5] = NULL;
-    atarray3[0] = &atgcd[4]; atarray3[1] = GCD_Glue; atarray3[2] = &atgcd[5];
-     atarray3[3] = NULL;
-    memset(atbox,0,sizeof(atbox));
-    atbox[0].gd.flags = gg_enabled|gg_visible;
-    atbox[0].gd.u.boxelements = atarray;
-    atbox[0].creator = GVBoxCreate;
-
-    atbox[2].gd.flags = gg_enabled|gg_visible;
-    atbox[2].gd.u.boxelements = atarray2;
-    atbox[2].creator = GHBoxCreate;
-
-    atbox[3].gd.flags = gg_enabled|gg_visible;
-    atbox[3].gd.u.boxelements = atarray3;
-    atbox[3].creator = GHBoxCreate;
 /******************************************************************************/
     memset(&mklabel,0,sizeof(mklabel));
     memset(&mkgcd,0,sizeof(mkgcd));
@@ -8628,99 +8840,6 @@ return;
     szbox[5].gd.flags = gg_enabled|gg_visible;
     szbox[5].gd.u.boxelements = szarray5;
     szbox[5].creator = GHBoxCreate;
-/******************************************************************************/
-    memset(&csublabel,0,sizeof(csublabel));
-    memset(&csubgcd,0,sizeof(csubgcd));
-    memset(&congcd,0,sizeof(congcd));
-    memset(&conaspects,'\0',sizeof(conaspects));
-    memset(&conbox,'\0',sizeof(conbox));
-
-    for ( i=0; i<fpst_max-pst_contextpos; ++i ) {
-	conaspects[i].text = (unichar_t *) connames[i];
-	conaspects[i].text_is_1byte = true;
-	conaspects[i].gcd = conbox[i];
-
-	csubgcd[i][0].gd.pos.x = 10; csubgcd[i][0].gd.pos.y = 10;
-	csubgcd[i][0].gd.pos.width = ngcd[11].gd.pos.width;
-	csubgcd[i][0].gd.pos.height = 150;
-	csubgcd[i][0].gd.flags = gg_visible | gg_enabled;
-	csubgcd[i][0].gd.cid = CID_ContextClasses+i*100;
-	csubgcd[i][0].gd.u.list = FPSTList(sf,contypes[i]);
-	csubgcd[i][0].gd.handle_controlevent = GFI_ContextSelChanged;
-	csubgcd[i][0].creator = GListCreate;
-
-	csubgcd[i][1].gd.pos.x = 10; csubgcd[i][1].gd.pos.y = csubgcd[i][0].gd.pos.y+csubgcd[i][0].gd.pos.height+4;
-	csubgcd[i][1].gd.pos.width = -1;
-	csubgcd[i][1].gd.flags = gg_visible | gg_enabled;
-	csublabel[i][1].text = (unichar_t *) S_("ContextualSubstitution|_New...");
-	csublabel[i][1].text_is_1byte = true;
-	csublabel[i][1].text_in_resource = true;
-	csubgcd[i][1].gd.label = &csublabel[i][1];
-	csubgcd[i][1].gd.cid = CID_ContextNew+i*100;
-	csubgcd[i][1].gd.handle_controlevent = GFI_ContextNew;
-	csubgcd[i][1].creator = GButtonCreate;
-
-	csubgcd[i][2].gd.pos.x = 10+(csubgcd[i][0].gd.pos.width-GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor))/2; csubgcd[i][2].gd.pos.y = csubgcd[i][1].gd.pos.y;
-	csubgcd[i][2].gd.pos.width = -1;
-	csubgcd[i][2].gd.flags = gg_visible;
-	csublabel[i][2].text = (unichar_t *) _("_Delete");
-	csublabel[i][2].text_is_1byte = true;
-	csublabel[i][2].text_in_resource = true;
-	csubgcd[i][2].gd.label = &csublabel[i][2];
-	csubgcd[i][2].gd.cid = CID_ContextDel+i*100;
-	csubgcd[i][2].gd.handle_controlevent = GFI_ContextDel;
-	csubgcd[i][2].creator = GButtonCreate;
-
-	csubgcd[i][3].gd.pos.x = 10+(csubgcd[i][0].gd.pos.width-GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor)); csubgcd[i][3].gd.pos.y = csubgcd[i][1].gd.pos.y;
-	csubgcd[i][3].gd.pos.width = -1;
-	csubgcd[i][3].gd.flags = gg_visible;
-	csublabel[i][3].text = (unichar_t *) _("_Edit...");
-	csublabel[i][3].text_is_1byte = true;
-	csublabel[i][3].text_in_resource = true;
-	csubgcd[i][3].gd.label = &csublabel[i][3];
-	csubgcd[i][3].gd.cid = CID_ContextEdit+i*100;
-	csubgcd[i][3].gd.handle_controlevent = GFI_ContextEdit;
-	csubgcd[i][3].creator = GButtonCreate;
-
-	csubgcd[i][4].gd.pos.x = csubgcd[i][2].gd.pos.x-2; csubgcd[i][4].gd.pos.y = csubgcd[i][1].gd.pos.y+28;
-	csubgcd[i][4].gd.flags = gg_visible;
-	csublabel[i][4].text = (unichar_t *) _("Edit Data...");
-	csublabel[i][4].text_is_1byte = true;
-	csubgcd[i][4].gd.label = &csublabel[i][4];
-	csubgcd[i][4].gd.cid = CID_ContextEditData+i*100;
-	csubgcd[i][4].gd.handle_controlevent = GFI_ContextEditData;
-	csubgcd[i][4].creator = GButtonCreate;
-
-	conarray[i][0] = &csubgcd[i][0]; conarray[i][1] = &conbox[i][2]; conarray[i][2] = &conbox[i][3]; conarray[i][3] = NULL;
-	conarray2[i][0] = &csubgcd[i][1]; conarray2[i][1] = GCD_Glue;
-	 conarray2[i][2] = &csubgcd[i][2]; conarray2[i][3] = GCD_Glue;
-	 conarray2[i][4] = &csubgcd[i][3]; conarray2[i][5] = NULL;
-	conarray3[i][0] = GCD_Glue; conarray3[i][1] = &csubgcd[i][4];
-	 conarray3[i][2] = GCD_Glue; conarray3[i][3] = NULL;
-
-	conbox[i][0].gd.flags = gg_enabled|gg_visible;
-	conbox[i][0].gd.u.boxelements = conarray[i];
-	conbox[i][0].creator = GVBoxCreate;
-
-	conbox[i][2].gd.flags = gg_enabled|gg_visible;
-	conbox[i][2].gd.u.boxelements = conarray2[i];
-	conbox[i][2].creator = GHBoxCreate;
-
-	conbox[i][3].gd.flags = gg_enabled|gg_visible;
-	conbox[i][3].gd.u.boxelements = conarray3[i];
-	conbox[i][3].creator = GHBoxCreate;
-    }
-
-    conaspects[3].selected = true;	/* chaining subs is most likely to be used, so select it by default */
-
-    congcd[0].gd.pos.x = 4; congcd[0].gd.pos.y = 10;
-    congcd[0].gd.pos.width = 250;
-    congcd[0].gd.pos.height = 260;
-    congcd[0].gd.u.tabs = conaspects;
-    congcd[0].gd.flags = gg_visible | gg_enabled;
-    congcd[0].gd.cid = CID_Contextual;
-    /*congcd[0].gd.handle_controlevent = GFI_AspectChange;*/
-    congcd[0].creator = GTabSetCreate;
 
 /******************************************************************************/
     memset(&mcgcd,0,sizeof(mcgcd));
@@ -8792,100 +8911,230 @@ return;
     mcbox[2].gd.flags = gg_enabled|gg_visible;
     mcbox[2].gd.u.boxelements = mcarray2;
     mcbox[2].creator = GHVBoxCreate;
+
 /******************************************************************************/
-    memset(&smsublabel,0,sizeof(smsublabel));
-    memset(&smsubgcd,0,sizeof(smsubgcd));
-    memset(&smgcd,0,sizeof(smgcd));
-    memset(&smaspects,'\0',sizeof(smaspects));
-    memset(&smbox,'\0',sizeof(smbox));
+    memset(&lksubgcd,0,sizeof(lksubgcd));
+    memset(&lkgcd,0,sizeof(lkgcd));
+    memset(&lkaspects,'\0',sizeof(lkaspects));
+    memset(&lkbox,'\0',sizeof(lkbox));
+    memset(&lkbuttonsgcd,'\0',sizeof(lkbuttonsgcd));
+    memset(&lkbuttonslabel,'\0',sizeof(lkbuttonslabel));
 
-    for ( i=0; i<4; ++i ) {
-	smaspects[i].text = (unichar_t *) smnames[i];
-	smaspects[i].text_is_1byte = true;
-	smaspects[i].gcd = smbox[i];
+    LookupSetup(&d->tables[0],sf->gsub_lookups);
+    LookupSetup(&d->tables[1],sf->gpos_lookups);
 
-	smsubgcd[i][0].gd.pos.x = 10; smsubgcd[i][0].gd.pos.y = 10;
-	smsubgcd[i][0].gd.pos.width = ngcd[15].gd.pos.width;
-	smsubgcd[i][0].gd.pos.height = 150;
-	smsubgcd[i][0].gd.flags = gg_visible | gg_enabled;
-	smsubgcd[i][0].gd.cid = CID_SMList+i*100;
-	smsubgcd[i][0].gd.u.list = SMList(sf,smtypes[i]);
-	smsubgcd[i][0].gd.handle_controlevent = GFI_SMSelChanged;
-	smsubgcd[i][0].creator = GListCreate;
+    i=0;
+    lkbuttonsarray[i] = &lkbuttonsgcd[i];
+    lkbuttonsgcd[i].gd.flags = gg_visible | gg_utf8_popup ;
+    lkbuttonsgcd[i].gd.popup_msg = (unichar_t *) _("Moves the currently selected lookup to be first in the lookup ordering\nor moves the currently selected subtable to be first in its lookup.");
+    lkbuttonslabel[i].text = (unichar_t *) _("_Top");
+    lkbuttonslabel[i].text_is_1byte = true;
+    lkbuttonslabel[i].text_in_resource = true;
+    lkbuttonsgcd[i].gd.label = &lkbuttonslabel[i];
+    lkbuttonsgcd[i].gd.cid = CID_LookupTop;
+    lkbuttonsgcd[i].gd.handle_controlevent = GFI_LookupOrder;
+    lkbuttonsgcd[i++].creator = GButtonCreate;
 
-	smsubgcd[i][1].gd.pos.x = 10; smsubgcd[i][1].gd.pos.y = smsubgcd[i][0].gd.pos.y+smsubgcd[i][0].gd.pos.height+4;
-	smsubgcd[i][1].gd.pos.width = -1;
-	smsubgcd[i][1].gd.flags = gg_visible | gg_enabled;
-	smsublabel[i][1].text = (unichar_t *) S_("StateMachine|_New...");
-	smsublabel[i][1].text_is_1byte = true;
-	smsublabel[i][1].text_in_resource = true;
-	smsubgcd[i][1].gd.label = &smsublabel[i][1];
-	smsubgcd[i][1].gd.cid = CID_SMNew+i*100;
-	smsubgcd[i][1].gd.handle_controlevent = GFI_SMNew;
-	smsubgcd[i][1].creator = GButtonCreate;
+    lkbuttonsarray[i] = &lkbuttonsgcd[i];
+    lkbuttonsgcd[i].gd.flags = gg_visible | gg_utf8_popup ;
+    lkbuttonsgcd[i].gd.popup_msg = (unichar_t *) _("Moves the currently selected lookup before the previous lookup\nor moves the currently selected subtable before the previous subtable.");
+    lkbuttonslabel[i].text = (unichar_t *) _("_Up");
+    lkbuttonslabel[i].text_is_1byte = true;
+    lkbuttonslabel[i].text_in_resource = true;
+    lkbuttonsgcd[i].gd.label = &lkbuttonslabel[i];
+    lkbuttonsgcd[i].gd.cid = CID_LookupUp;
+    lkbuttonsgcd[i].gd.handle_controlevent = GFI_LookupOrder;
+    lkbuttonsgcd[i++].creator = GButtonCreate;
 
-	smsubgcd[i][2].gd.pos.x = 10+(smsubgcd[i][0].gd.pos.width-GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor))/2; smsubgcd[i][2].gd.pos.y = smsubgcd[i][1].gd.pos.y;
-	smsubgcd[i][2].gd.pos.width = -1;
-	smsubgcd[i][2].gd.flags = gg_visible;
-	smsublabel[i][2].text = (unichar_t *) _("_Delete");
-	smsublabel[i][2].text_in_resource = true;
-	smsublabel[i][2].text_is_1byte = true;
-	smsubgcd[i][2].gd.label = &smsublabel[i][2];
-	smsubgcd[i][2].gd.cid = CID_SMDel+i*100;
-	smsubgcd[i][2].gd.handle_controlevent = GFI_SMDel;
-	smsubgcd[i][2].creator = GButtonCreate;
+    lkbuttonsarray[i] = &lkbuttonsgcd[i];
+    lkbuttonsgcd[i].gd.flags = gg_visible | gg_utf8_popup ;
+    lkbuttonsgcd[i].gd.popup_msg = (unichar_t *) _("Moves the currently selected lookup after the next lookup\nor moves the currently selected subtable after the next subtable.");
+    lkbuttonslabel[i].text = (unichar_t *) _("_Down");
+    lkbuttonslabel[i].text_is_1byte = true;
+    lkbuttonslabel[i].text_in_resource = true;
+    lkbuttonsgcd[i].gd.label = &lkbuttonslabel[i];
+    lkbuttonsgcd[i].gd.cid = CID_LookupDown;
+    lkbuttonsgcd[i].gd.handle_controlevent = GFI_LookupOrder;
+    lkbuttonsgcd[i++].creator = GButtonCreate;
 
-	smsubgcd[i][3].gd.pos.x = 10+(smsubgcd[i][0].gd.pos.width-GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor)); smsubgcd[i][3].gd.pos.y = smsubgcd[i][1].gd.pos.y;
-	smsubgcd[i][3].gd.pos.width = -1;
-	smsubgcd[i][3].gd.flags = gg_visible;
-	smsublabel[i][3].text = (unichar_t *) _("_Edit...");
-	smsublabel[i][3].text_in_resource = true;
-	smsublabel[i][3].text_is_1byte = true;
-	smsubgcd[i][3].gd.label = &smsublabel[i][3];
-	smsubgcd[i][3].gd.cid = CID_SMEdit+i*100;
-	smsubgcd[i][3].gd.handle_controlevent = GFI_SMEdit;
-	smsubgcd[i][3].creator = GButtonCreate;
+    lkbuttonsarray[i] = &lkbuttonsgcd[i];
+    lkbuttonsgcd[i].gd.flags = gg_visible | gg_utf8_popup ;
+    lkbuttonsgcd[i].gd.popup_msg = (unichar_t *) _("Moves the currently selected lookup to the end of the lookup chain\nor moves the currently selected subtable to be the last subtable in the lookup");
+    lkbuttonslabel[i].text = (unichar_t *) _("_Bottom");
+    lkbuttonslabel[i].text_is_1byte = true;
+    lkbuttonslabel[i].text_in_resource = true;
+    lkbuttonsgcd[i].gd.label = &lkbuttonslabel[i];
+    lkbuttonsgcd[i].gd.cid = CID_LookupBottom;
+    lkbuttonsgcd[i].gd.handle_controlevent = GFI_LookupOrder;
+    lkbuttonsgcd[i++].creator = GButtonCreate;
 
-	if ( i==1 ) {
-	    smsubgcd[i][4].gd.pos.x = 10; smsubgcd[i][4].gd.pos.y = smsubgcd[i][1].gd.pos.y+30;
-	    smsubgcd[i][4].gd.flags = SFAnyConvertableSM(sf) ? gg_visible | gg_enabled : gg_visible;
-	    smsublabel[i][4].text = (unichar_t *) _("Convert from OpenType...");
-	    smsublabel[i][4].text_is_1byte = true;
-	    smsubgcd[i][4].gd.label = &smsublabel[i][4];
-	    smsubgcd[i][4].gd.handle_controlevent = GFI_SMConvert;
-	    smsubgcd[i][4].creator = GButtonCreate;
-	}
+    lkbuttonsarray[i] = &lkbuttonsgcd[i];
+    lkbuttonsgcd[i].gd.flags = gg_visible | gg_utf8_popup ;
+    lkbuttonsgcd[i].gd.popup_msg = (unichar_t *) _("Sorts the lookups in a default ordering based on feature tags");
+    lkbuttonslabel[i].text = (unichar_t *) _("_Sort");
+    lkbuttonslabel[i].text_is_1byte = true;
+    lkbuttonslabel[i].text_in_resource = true;
+    lkbuttonsgcd[i].gd.label = &lkbuttonslabel[i];
+    lkbuttonsgcd[i].gd.cid = CID_LookupSort;
+    lkbuttonsgcd[i].gd.handle_controlevent = GFI_LookupSort;
+    lkbuttonsgcd[i++].creator = GButtonCreate;
 
-	smarray[i][0] = &smsubgcd[i][0]; smarray[i][1] = &smbox[i][2]; smarray[i][2] = &smbox[i][3]; smarray[i][3] = NULL;
-	smarray2[i][0] = &smsubgcd[i][1]; smarray2[i][1] = GCD_Glue;
-	 smarray2[i][2] = &smsubgcd[i][2]; smarray2[i][3] = GCD_Glue;
-	 smarray2[i][4] = &smsubgcd[i][3]; smarray2[i][5] = NULL;
-	smarray3[i][0] = i==1 ? &smsubgcd[i][4] : GCD_Glue ;
-	 smarray3[i][1] = GCD_Glue; smarray3[i][2] = NULL;
+    lkbuttonsarray[i] = &lkbuttonsgcd[i];
+    lkbuttonsgcd[i].gd.flags = gg_visible | gg_enabled ;
+    lkbuttonsgcd[i++].creator = GLineCreate;
 
-	smbox[i][0].gd.flags = gg_enabled|gg_visible;
-	smbox[i][0].gd.u.boxelements = smarray[i];
-	smbox[i][0].creator = GVBoxCreate;
+    lkbuttonsarray[i] = &lkbuttonsgcd[i];
+    lkbuttonsgcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup ;
+    lkbuttonsgcd[i].gd.popup_msg = (unichar_t *) _("Adds a new lookup after the selected lookup\nor at the start of the lookup list if nothing is selected.");
+    lkbuttonslabel[i].text = (unichar_t *) _("Add _Lookup");
+    lkbuttonslabel[i].text_is_1byte = true;
+    lkbuttonslabel[i].text_in_resource = true;
+    lkbuttonsgcd[i].gd.label = &lkbuttonslabel[i];
+    lkbuttonsgcd[i].gd.cid = CID_AddLookup;
+    lkbuttonsgcd[i].gd.handle_controlevent = GFI_LookupAddLookup;
+    lkbuttonsgcd[i++].creator = GButtonCreate;
 
-	smbox[i][2].gd.flags = gg_enabled|gg_visible;
-	smbox[i][2].gd.u.boxelements = smarray2[i];
-	smbox[i][2].creator = GHBoxCreate;
+    lkbuttonsarray[i] = &lkbuttonsgcd[i];
+    lkbuttonsgcd[i].gd.flags = gg_visible | gg_utf8_popup ;
+    lkbuttonsgcd[i].gd.popup_msg = (unichar_t *) _("Adds a new lookup subtable after the selected subtable\nor at the start of the lookup if nothing is selected.");
+    lkbuttonslabel[i].text = (unichar_t *) _("Add Sub_table");
+    lkbuttonslabel[i].text_is_1byte = true;
+    lkbuttonslabel[i].text_in_resource = true;
+    lkbuttonsgcd[i].gd.label = &lkbuttonslabel[i];
+    lkbuttonsgcd[i].gd.cid = CID_AddSubtable;
+    lkbuttonsgcd[i].gd.handle_controlevent = GFI_LookupAddSubtable;
+    lkbuttonsgcd[i++].creator = GButtonCreate;
 
-	smbox[i][3].gd.flags = gg_enabled|gg_visible;
-	smbox[i][3].gd.u.boxelements = smarray3[i];
-	smbox[i][3].creator = GHBoxCreate;
+    lkbuttonsarray[i] = &lkbuttonsgcd[i];
+    lkbuttonsgcd[i].gd.flags = gg_visible | gg_utf8_popup ;
+    lkbuttonsgcd[i].gd.popup_msg = (unichar_t *) _("Edits a lookup or lookup subtable.");
+    lkbuttonslabel[i].text = (unichar_t *) _("Edit _Metadata");
+    lkbuttonslabel[i].text_is_1byte = true;
+    lkbuttonslabel[i].text_in_resource = true;
+    lkbuttonsgcd[i].gd.label = &lkbuttonslabel[i];
+    lkbuttonsgcd[i].gd.cid = CID_EditLookup;
+    lkbuttonsgcd[i].gd.handle_controlevent = GFI_LookupEditLookup;
+    lkbuttonsgcd[i++].creator = GButtonCreate;
+
+    lkbuttonsarray[i] = &lkbuttonsgcd[i];
+    lkbuttonsgcd[i].gd.flags = gg_visible | gg_utf8_popup ;
+    lkbuttonsgcd[i].gd.popup_msg = (unichar_t *) _("Edits the transformations in a lookup subtable.");
+    lkbuttonslabel[i].text = (unichar_t *) _("_Edit Data");
+    lkbuttonslabel[i].text_is_1byte = true;
+    lkbuttonslabel[i].text_in_resource = true;
+    lkbuttonsgcd[i].gd.label = &lkbuttonslabel[i];
+    lkbuttonsgcd[i].gd.cid = CID_EditSubtable;
+    lkbuttonsgcd[i].gd.handle_controlevent = GFI_LookupEditSubtableContents;
+    lkbuttonsgcd[i++].creator = GButtonCreate;
+
+    lkbuttonsarray[i] = &lkbuttonsgcd[i];
+    lkbuttonsgcd[i].gd.flags = gg_visible | gg_utf8_popup ;
+    lkbuttonsgcd[i].gd.popup_msg = (unichar_t *) _("Deletes any selected lookups and their subtables, or deletes any selected subtables.\nThis will also delete any transformations associated with those subtables.");
+    lkbuttonslabel[i].text = (unichar_t *) _("De_lete");
+    lkbuttonslabel[i].text_is_1byte = true;
+    lkbuttonslabel[i].text_in_resource = true;
+    lkbuttonsgcd[i].gd.label = &lkbuttonslabel[i];
+    lkbuttonsgcd[i].gd.cid = CID_DeleteLookup;
+    lkbuttonsgcd[i].gd.handle_controlevent = GFI_LookupDeleteLookup;
+    lkbuttonsgcd[i++].creator = GButtonCreate;
+
+    lkbuttonsarray[i] = &lkbuttonsgcd[i];
+    lkbuttonsgcd[i].gd.flags = gg_visible | gg_utf8_popup ;
+    lkbuttonsgcd[i].gd.popup_msg = (unichar_t *) _("Merges two selected (and compatible) lookups into one,\nor merges two selected subtables of a lookup into one");
+    lkbuttonslabel[i].text = (unichar_t *) _("_Merge");
+    lkbuttonslabel[i].text_is_1byte = true;
+    lkbuttonslabel[i].text_in_resource = true;
+    lkbuttonsgcd[i].gd.label = &lkbuttonslabel[i];
+    lkbuttonsgcd[i].gd.cid = CID_MergeLookup;
+    lkbuttonsgcd[i].gd.handle_controlevent = GFI_LookupMergeLookup;
+    lkbuttonsgcd[i++].creator = GButtonCreate;
+
+    lkbuttonsarray[i] = &lkbuttonsgcd[i];
+    lkbuttonsgcd[i].gd.flags = gg_visible | gg_utf8_popup ;
+    lkbuttonsgcd[i].gd.popup_msg = (unichar_t *) _("Reverts the lookup list to its original condition.\nBut any changes to subtable data will remain.");
+    lkbuttonslabel[i].text = (unichar_t *) _("_Revert");
+    lkbuttonslabel[i].text_is_1byte = true;
+    lkbuttonslabel[i].text_in_resource = true;
+    lkbuttonsgcd[i].gd.label = &lkbuttonslabel[i];
+    lkbuttonsgcd[i].gd.cid = CID_RevertLookups;
+    lkbuttonsgcd[i].gd.handle_controlevent = GFI_LookupRevertLookup;
+    lkbuttonsgcd[i++].creator = GButtonCreate;
+
+    lkbuttonsarray[i] = &lkbuttonsgcd[i];
+    lkbuttonsgcd[i].gd.flags = gg_visible | gg_utf8_popup ;
+    lkbuttonsgcd[i].gd.popup_msg = (unichar_t *) _("Imports a lookup (and all its subtables) from another font.");
+    lkbuttonslabel[i].text = (unichar_t *) _("_Import");
+    lkbuttonslabel[i].text_is_1byte = true;
+    lkbuttonslabel[i].text_in_resource = true;
+    lkbuttonsgcd[i].gd.label = &lkbuttonslabel[i];
+    lkbuttonsgcd[i].gd.cid = CID_ImportLookups;
+    lkbuttonsgcd[i].gd.handle_controlevent = GFI_LookupImportLookup;
+    lkbuttonsgcd[i++].creator = GButtonCreate;
+    lkbuttonsarray[i] = GCD_Glue;
+    lkbuttonsarray[i+1] = NULL;
+
+    for ( i=0; i<2; ++i ) {
+	lkaspects[i].text = (unichar_t *) (i?"GPOS":"GSUB");
+	lkaspects[i].text_is_1byte = true;
+	lkaspects[i].gcd = &lkbox[2*i];
+
+	lksubgcd[i][0].gd.pos.x = 10; lksubgcd[i][0].gd.pos.y = 10;
+	lksubgcd[i][0].gd.pos.width = ngcd[15].gd.pos.width;
+	lksubgcd[i][0].gd.pos.height = 150;
+	lksubgcd[i][0].gd.flags = gg_visible | gg_enabled;
+	lksubgcd[i][0].gd.u.drawable_e_h = i ? gposlookups_e_h : gsublookups_e_h;
+	lksubgcd[i][0].gd.cid = CID_LookupWin+i;
+	lksubgcd[i][0].creator = GDrawableCreate;
+
+	lksubgcd[i][1].gd.pos.x = 10; lksubgcd[i][1].gd.pos.y = 10;
+	lksubgcd[i][1].gd.pos.height = 150;
+	lksubgcd[i][1].gd.flags = gg_visible | gg_enabled | gg_sb_vert;
+	lksubgcd[i][1].gd.cid = CID_LookupVSB+i;
+	lksubgcd[i][1].gd.handle_controlevent = LookupsVScroll;
+	lksubgcd[i][1].creator = GScrollBarCreate;
+
+	lksubgcd[i][2].gd.pos.x = 10; lksubgcd[i][2].gd.pos.y = 10;
+	lksubgcd[i][2].gd.pos.width = 150;
+	lksubgcd[i][2].gd.flags = gg_visible | gg_enabled;
+	lksubgcd[i][2].gd.cid = CID_LookupHSB+i;
+	lksubgcd[i][2].gd.handle_controlevent = LookupsHScroll;
+	lksubgcd[i][2].creator = GScrollBarCreate;
+
+	lksubgcd[i][3].gd.pos.x = 10; lksubgcd[i][3].gd.pos.y = 10;
+	lksubgcd[i][3].gd.pos.width = lksubgcd[i][3].gd.pos.height = _GScrollBar_Width;
+	lksubgcd[i][3].gd.flags = gg_visible | gg_enabled | gg_tabset_nowindow;
+	lksubgcd[i][3].creator = GDrawableCreate;
+
+	lkarray[i][0] = &lksubgcd[i][0]; lkarray[i][1] = &lksubgcd[i][1]; lkarray[i][2] = NULL;
+	lkarray[i][3] = &lksubgcd[i][2]; lkarray[i][4] = &lksubgcd[i][3]; lkarray[i][5] = NULL;
+	lkarray[i][6] = NULL;
+
+	lkbox[2*i].gd.flags = gg_enabled|gg_visible;
+	lkbox[2*i].gd.u.boxelements = lkarray[i];
+	lkbox[2*i].creator = GHVBoxCreate;
     }
 
-    smaspects[1].selected = true;	/* Contextual glyph subs is most likely to be used, so select it by default */
+    lkaspects[0].selected = true;
 
-    smgcd[0].gd.pos.x = 4; smgcd[0].gd.pos.y = 10;
-    smgcd[0].gd.pos.width = 250;
-    smgcd[0].gd.pos.height = 260;
-    smgcd[0].gd.u.tabs = smaspects;
-    smgcd[0].gd.flags = gg_visible | gg_enabled;
-    smgcd[0].gd.cid = CID_StateMachine;
-    /*smgcd[0].gd.handle_controlevent = GFI_AspectChange;*/
-    smgcd[0].creator = GTabSetCreate;
+    lkgcd[0].gd.pos.x = 4; lkgcd[0].gd.pos.y = 10;
+    lkgcd[0].gd.pos.width = 250;
+    lkgcd[0].gd.pos.height = 260;
+    lkgcd[0].gd.u.tabs = lkaspects;
+    lkgcd[0].gd.flags = gg_visible | gg_enabled;
+    lkgcd[0].gd.cid = CID_Lookups;
+    lkgcd[0].gd.handle_controlevent = GFI_LookupAspectChange;
+    lkgcd[0].creator = GTabSetCreate;
+
+    lkharray[0] = &lkgcd[0]; lkharray[1] = &lkbox[4]; lkharray[2] = NULL;
+
+    lkbox[4].gd.flags = gg_enabled|gg_visible;
+    lkbox[4].gd.u.boxelements = lkbuttonsarray;
+    lkbox[4].creator = GVBoxCreate;
+
+    lkbox[5].gd.flags = gg_enabled|gg_visible;
+    lkbox[5].gd.u.boxelements = lkharray;
+    lkbox[5].creator = GHBoxCreate;
+    
 
 /******************************************************************************/
     memset(&mfgcd,0,sizeof(mfgcd));
@@ -9023,6 +9272,7 @@ return;
     aspects[i].text_is_1byte = true;
     aspects[i++].gcd = txbox;
 
+    if ( sf->cidmaster!=NULL ) aspects[i].disabled = true;
     aspects[i].text = (unichar_t *) _("Size");
     aspects[i].text_is_1byte = true;
     aspects[i++].gcd = szbox;
@@ -9031,17 +9281,16 @@ return;
     aspects[i].text_is_1byte = true;
     aspects[i++].gcd = combox;
 
+    if ( sf->cidmaster!=NULL ) aspects[i].disabled = true;
     aspects[i].text = (unichar_t *) _("Mark Classes");
     aspects[i].text_is_1byte = true;
     aspects[i++].gcd = mkbox;
 
-    aspects[i].text = (unichar_t *) _("Anchor Classes");
+/* GT: OpenType GPOS/GSUB lookups */
+    if ( sf->cidmaster!=NULL ) aspects[i].disabled = true;
+    aspects[i].text = (unichar_t *) S_("OpenType|Lookups");
     aspects[i].text_is_1byte = true;
-    aspects[i++].gcd = atbox;
-
-    aspects[i].text = (unichar_t *) _("Contextual");
-    aspects[i].text_is_1byte = true;
-    aspects[i++].gcd = congcd;
+    aspects[i++].gcd = &lkbox[5];
 
     aspects[i].text = (unichar_t *) _("Mac");
     aspects[i].text_is_1byte = true;
@@ -9050,11 +9299,6 @@ return;
     aspects[i].text = (unichar_t *) _("Mac Features");
     aspects[i].text_is_1byte = true;
     aspects[i++].gcd = mfbox;
-
-/* GT: Mac State Machines. Please make this very short */
-    aspects[i].text = (unichar_t *) _("Mac SM");
-    aspects[i].text_is_1byte = true;
-    aspects[i++].gcd = smgcd;
 
 #ifndef FONTFORGE_CONFIG_INFO_HORIZONTAL
     aspects[i].text = (unichar_t *) _("Dates");
@@ -9175,10 +9419,6 @@ return;
     GHVBoxSetExpandableRow(panbox[0].ret,gb_expandglue);
     GHVBoxSetExpandableCol(panbox[0].ret,1);
 
-    GHVBoxSetExpandableRow(atbox[0].ret,0);
-    GHVBoxSetExpandableCol(atbox[2].ret,gb_expandglue);
-    GHVBoxSetExpandableCol(atbox[3].ret,gb_expandglue);
-
     GHVBoxSetExpandableRow(mkbox[0].ret,0);
     GHVBoxSetExpandableCol(mkbox[2].ret,gb_expandglue);
 
@@ -9196,12 +9436,6 @@ return;
     GHVBoxSetExpandableCol(szbox[4].ret,gb_expandglue);
     GHVBoxSetExpandableCol(szbox[5].ret,gb_expandglue);
 
-    for ( i=0; i<fpst_max-pst_contextpos; ++i ) {
-	GHVBoxSetExpandableRow(conbox[i][0].ret,0);
-	GHVBoxSetExpandableCol(conbox[i][2].ret,gb_expandglue);
-	GHVBoxSetExpandableCol(conbox[i][3].ret,gb_expandglue);
-    }
-
     GHVBoxSetExpandableRow(tnboxes[0].ret,1);
     GHVBoxSetExpandableCol(tnboxes[2].ret,gb_expandglue);
     GHVBoxSetExpandableCol(tnboxes[3].ret,gb_expandglue);
@@ -9213,27 +9447,33 @@ return;
     GHVBoxSetExpandableRow(mfbox[0].ret,0);
     GHVBoxSetExpandableRow(mfbox[2].ret,gb_expandglue);
 
-    for ( i=0; i<4; ++i ) {
-	GHVBoxSetExpandableRow(smbox[i][0].ret,0);
-	GHVBoxSetExpandableCol(smbox[i][2].ret,gb_expandglue);
-	GHVBoxSetExpandableCol(smbox[i][3].ret,gb_expandglue);
-    }
-
     GHVBoxSetExpandableRow(dbox[0].ret,gb_expandglue);
     GHVBoxSetExpandableCol(dbox[0].ret,1);
 
     GHVBoxSetExpandableRow(ubox[0].ret,1);
 
+    GHVBoxSetExpandableCol(lkbox[0].ret,0);
+    GHVBoxSetExpandableRow(lkbox[0].ret,0);
+    GHVBoxSetPadding(lkbox[0].ret,0,0);
+    GHVBoxSetExpandableCol(lkbox[2].ret,0);
+    GHVBoxSetExpandableRow(lkbox[2].ret,0);
+    GHVBoxSetPadding(lkbox[2].ret,0,0);
+    GHVBoxSetExpandableRow(lkbox[4].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(lkbox[5].ret,0);
+
+    GFI_LookupEnableButtons(d,true);
+    GFI_LookupEnableButtons(d,false);
+
     memset(&rq,0,sizeof(rq));
-    rq.family_name = monospace;
+    rq.family_name = sans;
     rq.point_size = 12;
     rq.weight = 400;
-    font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
-    GGadgetSetFont(atgcd[0].ret,font);
+    d->font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+    GDrawFontMetrics(d->font,&as,&ds,&ld);
+    d->as = as; d->fh = as+ds;
 
     GTextInfoListFree(namelistnames);
     GTextInfoListFree(pgcd[0].gd.u.list);
-    GTextInfoListFree(atgcd[0].gd.u.list);
 
     for ( i=0; i<mi.initial_row_cnt; ++i )
 	free( mi.matrix_data[3*i+2].u.md_str );
@@ -9269,9 +9509,9 @@ void FontMenuFontInfo(void *_fv) {
     FontInfo( ((FontView *) _fv)->sf,-1,false);
 }
 
-void FontInfoDestroy(FontView *fv) {
-    if ( fv->fontinfo )
-	GFI_CancelClose( (struct gfi_data *) (fv->fontinfo) );
+void FontInfoDestroy(SplineFont *sf) {
+    if ( sf->fontinfo )
+	GFI_CancelClose( (struct gfi_data *) (sf->fontinfo) );
 }
 
 void FontInfoInit(void) {

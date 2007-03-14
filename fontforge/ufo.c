@@ -595,7 +595,7 @@ static StemInfo *GlifParseHints(xmlDocPtr doc,xmlNodePtr dict,char *hinttype) {
 				    break;
 				    }
 				    if ( temp!=NULL ) {
-					char *valname = _xmlNodeListGetString(doc,temp->children,true);
+					char *valname = (char *) _xmlNodeListGetString(doc,temp->children,true);
 					if ( _xmlStrcmp(temp->name,(const xmlChar *) "integer")==0 )
 					    value = strtol(valname,NULL,10);
 					else if ( _xmlStrcmp(temp->name,(const xmlChar *) "real")==0 )
@@ -1000,6 +1000,7 @@ static void UFOHandleKern(SplineFont *sf,char *basedir,int isv) {
     SplineChar *sc, *ssc;
     KernPair *kp;
     char *end;
+    uint32 script;
 
     if ( GFileExists(fname))
 	doc = _xmlParseFile(fname);
@@ -1051,7 +1052,12 @@ return;
 			    kp->next = sc->kerns;
 			    sc->kerns = kp;
 			}
-			kp->sli = SCDefaultSLI(sf,sc);
+			script = SCScriptFromUnicode(sc);
+			if ( script==DEFAULT_SCRIPT )
+			    script = SCScriptFromUnicode(ssc);
+			kp->subtable = SFSubTableFindOrMake(sf,
+				isv?CHR('v','k','r','n'):CHR('k','e','r','n'),
+				script, gpos_pair);
 		    }
 		    free(valname);
 		}

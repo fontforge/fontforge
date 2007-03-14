@@ -297,7 +297,7 @@ return( ret );
 }
 
 void MMKern(SplineFont *sf,SplineChar *first,SplineChar *second,int diff,
-	int sli,KernPair *oldkp) {
+	struct lookup_subtable *sub,KernPair *oldkp) {
     MMSet *mm = sf->mm;
     KernPair *kp;
     int i;
@@ -326,10 +326,10 @@ return;
 		    *kp = *oldkp;
 		else {
 		    kp->off = diff;
-		    if ( sli==-1 )
-			sli = SFFindBiggestScriptLangIndex(cur,
-				    SCScriptFromUnicode(psc),DEFAULT_LANG);
-		    kp->sli = sli;
+		    if ( sub==NULL )
+			sub = SFSubTableFindOrMake(cur,
+				CHR('k','e','r','n'), SCScriptFromUnicode(psc), gpos_pair);
+		    kp->subtable = sub;
 		}
 		kp->sc = ssc;
 		kp->next = psc->kerns;
@@ -1059,8 +1059,7 @@ return( _("This glyph contains different kerning pairs in different instances") 
 	kp = chunkalloc(sizeof(KernPair));
 	kp->sc = mm->normal->glyphs[kp0->sc->orig_pos];
 	kp->off = off;
-	kp->sli = kp0->sli;
-	kp->flags = kp0->flags;
+	kp->subtable = kp0->subtable;
 	if ( kplast!=NULL )
 	    kplast->next = kp;
 	else
@@ -1514,7 +1513,7 @@ static void MakeAppleBlend(MMSet *mm,real *blends,real *normalized) {
 
     sf->mm = NULL;
     for ( i=0; i<base->glyphcnt && i<sf->glyphcnt; ++i ) if ( base->glyphs[i]!=NULL ) {
-	sf->glyphs[i] = SplineCharCopy(base->glyphs[i],base);
+	sf->glyphs[i] = SplineCharCopy(base->glyphs[i],base,NULL);
 	for ( ref=sf->glyphs[i]->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
 	    ref->sc = NULL;
 	sf->glyphs[i]->orig_pos = i;

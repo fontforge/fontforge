@@ -165,6 +165,7 @@ typedef struct widthinfo {
     FontView *fv;
     unsigned int done: 1;
     unsigned int autokern: 1;
+    struct lookup_subtable *subtable;
 } WidthInfo;
 
 #define NOTREACHED	-9999.0
@@ -418,6 +419,7 @@ static void AutoKern(WidthInfo *wi) {
 	    kp = chunkalloc(sizeof(KernPair));
 	    kp->sc = rsc;
 	    kp->off = diff;
+	    kp->subtable = wi->subtable;
 	    kp->next = lsc->kerns;
 	    lsc->kerns = kp;
 	    wi->sf->changed = true;
@@ -426,7 +428,7 @@ static void AutoKern(WidthInfo *wi) {
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     {
     MetricsView *mv;
-    for ( mv=wi->fv->metrics; mv!=NULL; mv=mv->next )
+    for ( mv=wi->fv->sf->metrics; mv!=NULL; mv=mv->next )
 	MVReKern(mv);
     }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
@@ -1083,7 +1085,7 @@ return;
     }
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame )
-	for ( mv=fvs->metrics; mv!=NULL; mv=mv->next )
+	for ( mv=fvs->sf->metrics; mv!=NULL; mv=mv->next )
 	    MVReKern(mv);
 #endif
 }
@@ -1094,6 +1096,7 @@ return;
 #define CID_Threshold	1003
 #define CID_Left	1010
 #define CID_Right	1020
+#define CID_Subtable	1030
 #define CID_Browse	2001
 #define CID_OK		2002
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
@@ -1476,6 +1479,31 @@ return( true );
 }
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+static int AW_Subtable(GGadget *g, GEvent *e) {
+    WidthInfo *wi = GDrawGetUserData(GGadgetGetWindow(g));
+    GTextInfo *ti;
+    struct lookup_subtable *sub;
+    struct subtable_data sd;
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
+	ti = GGadgetGetListItemSelected(g);
+	if ( ti!=NULL ) {
+	    if ( ti->userdata!=NULL )
+		wi->subtable = ti->userdata;
+	    else {
+		memset(&sd,0,sizeof(sd));
+		sd.flags = sdf_horizontalkern | sdf_kernpair;
+		sub = SFNewLookupSubtableOfType(wi->sf,gpos_pair,&sd);
+		if ( sub!=NULL ) {
+		    wi->subtable = sub;
+		    GGadgetSetList(g,SFSubtablesOfType(wi->sf,gpos_pair,false),false);
+		}
+	    }
+	}
+    }
+return( true );
+}
+
 static int AW_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GWindow gw = GGadgetGetWindow(g);
@@ -1491,6 +1519,10 @@ static int AW_OK(GGadget *g, GEvent *e) {
 	}
 	if ( err )
 return( true );
+	if ( wi->autokern && wi->subtable==NULL ) {
+	    gwwv_post_error(_("Select a subtable"),_("You must select a lookup subtable in which to store the kerning pairs"));
+return( true );
+	}
 
 	old_sf = wi->sf;
 	old_spaceguess = wi->spacing;
@@ -1563,7 +1595,8 @@ return( true );
 
 #define SelHeight	34
 static int MakeSelGadgets(GGadgetCreateData *gcd, GTextInfo *label,
-	int i, int base, char *labr, int y, int toomany, int autokern ) {
+	int i, int base, char *labr, int y, int toomany, int autokern,
+	GGadgetCreateData **hvarray) {
     char *std = !autokern ? _("A-Za-z0-9") :
 		base==CID_Left ? _("A-Za-z") :
 		_("a-z.,:;-");
@@ -1575,6 +1608,7 @@ static int MakeSelGadgets(GGadgetCreateData *gcd, GTextInfo *label,
     gcd[i].gd.pos.x = 12; gcd[i].gd.pos.y = y; 
     gcd[i].gd.flags = gg_visible | gg_enabled;
     gcd[i++].creator = GLabelCreate;
+    hvarray[0] = &gcd[i-1];
 
     label[i].text = (unichar_t *) std;
     label[i].text_is_1byte = true;
@@ -1584,6 +1618,7 @@ static int MakeSelGadgets(GGadgetCreateData *gcd, GTextInfo *label,
     gcd[i].gd.u.list = !autokern ? widthlist : base==CID_Left ? kernllist : kernrlist;
     gcd[i].gd.cid = base;
     gcd[i++].creator = GListFieldCreate;
+    hvarray[1] = &gcd[i-1]; hvarray[2] = NULL;
 
     for ( epos = 0; gcd[i-1].gd.u.list[epos].text!=NULL; ++epos );
     gcd[i-1].gd.u.list[epos-2].disabled = (toomany&1);
@@ -1618,9 +1653,10 @@ static void AutoWKDlg(FontView *fv,int autokern) {
     GWindow gw;
     GWindowAttrs wattrs;
     GRect pos;
+    GGadgetCreateData *hvarray[20], *varray[10], *h3array[8];
     GGadgetCreateData gcd[29];
     GTextInfo label[29];
-    int i, y, selfield;
+    int i, y, selfield, v;
     char buffer[30], buffer2[30];
     SplineFont *sf = fv->sf;
     int selcnt = SFCountSel(fv,sf);
@@ -1650,25 +1686,20 @@ static void AutoWKDlg(FontView *fv,int autokern) {
 
     i = 0;
 
-    label[i].text = (unichar_t *) _("Enter two glyph ranges");
+    label[i].text = (unichar_t *) _("Enter two glyph ranges to be adjusted.");
     label[i].text_is_1byte = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 6;
     gcd[i].gd.flags = gg_visible | gg_enabled;
     gcd[i++].creator = GLabelCreate;
+    varray[0] = &gcd[i-1]; varray[1] = NULL;
 
-    label[i].text = (unichar_t *) _("to be adjusted.");
-    label[i].text_is_1byte = true;
-    gcd[i].gd.label = &label[i];
-    gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 18;
-    gcd[i].gd.flags = gg_visible | gg_enabled;
-    gcd[i++].creator = GLabelCreate;
-
-    i = MakeSelGadgets(gcd, label, i, CID_Left, _("Glyphs on Left"), 33,
-	    toomany, autokern );
+    i = MakeSelGadgets(gcd, label, i, CID_Left, _("Glyphs on Left"), 21,
+	    toomany, autokern, hvarray );
+    varray[2] = &gcd[i-1]; varray[3] = NULL;
     selfield = i-1;
-    i = MakeSelGadgets(gcd, label, i, CID_Right, _("Glyphs on Right"), 33+SelHeight+9,
-	    toomany, autokern );
+    i = MakeSelGadgets(gcd, label, i, CID_Right, _("Glyphs on Right"), 21+SelHeight+9,
+	    toomany, autokern, hvarray+3 );
     y = 32+2*(SelHeight+9);
 
     label[i].text = (unichar_t *) _("Spacing");
@@ -1677,6 +1708,7 @@ static void AutoWKDlg(FontView *fv,int autokern) {
     gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = y+7;
     gcd[i].gd.flags = gg_visible | gg_enabled;
     gcd[i++].creator = GLabelCreate;
+    hvarray[6] = &gcd[i-1];
 
     sprintf( buffer, "%d", wi.space_guess );
     label[i].text = (unichar_t *) buffer;
@@ -1686,6 +1718,7 @@ static void AutoWKDlg(FontView *fv,int autokern) {
     gcd[i].gd.flags = gg_visible | gg_enabled;
     gcd[i].gd.cid = CID_Spacing;
     gcd[i++].creator = GTextFieldCreate;
+    hvarray[7] = &gcd[i-1]; hvarray[8] = NULL;
     y += 32;
 
     if ( autokern ) {
@@ -1697,6 +1730,7 @@ static void AutoWKDlg(FontView *fv,int autokern) {
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = y+7;
 	gcd[i].gd.flags = gg_visible | gg_enabled;
 	gcd[i++].creator = GLabelCreate;
+	hvarray[9] = &gcd[i-1];
 
 	label[i].text = (unichar_t *) "2048";
 	label[i].text_is_1byte = true;
@@ -1705,6 +1739,7 @@ static void AutoWKDlg(FontView *fv,int autokern) {
 	gcd[i].gd.flags = gg_visible | gg_enabled;
 	gcd[i].gd.cid = CID_Total;
 	gcd[i++].creator = GTextFieldCreate;
+	hvarray[10] = &gcd[i-1]; hvarray[11] = NULL;
 	y += 28;
 
 	label[i].text = (unichar_t *) _("Threshold:");
@@ -1713,6 +1748,7 @@ static void AutoWKDlg(FontView *fv,int autokern) {
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = y+7;
 	gcd[i].gd.flags = gg_visible | gg_enabled;
 	gcd[i++].creator = GLabelCreate;
+	hvarray[12] = &gcd[i-1];
 
 	sprintf( buffer2, "%d", (sf->ascent+sf->descent)/25 );
 	label[i].text = (unichar_t *) buffer2;
@@ -1722,24 +1758,33 @@ static void AutoWKDlg(FontView *fv,int autokern) {
 	gcd[i].gd.flags = gg_visible | gg_enabled;
 	gcd[i].gd.cid = CID_Threshold;
 	gcd[i++].creator = GTextFieldCreate;
+	hvarray[13] = &gcd[i-1]; hvarray[14] = NULL;
 	y += 32;
 
-	gcd[i].gd.pos.width = 80; gcd[i].gd.pos.height = 0;
-	gcd[i].gd.pos.x = (200-gcd[i].gd.pos.width)/2; gcd[i].gd.pos.y = y;
-	gcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-	label[i].text = (unichar_t *) _("_Browse...");
+	gcd[i].gd.flags = gg_enabled ;
+	label[i].text = (unichar_t *) _("Lookup subtable:");
 	label[i].text_is_1byte = true;
-	gcd[i].gd.mnemonic = 'B';
 	gcd[i].gd.label = &label[i];
-	gcd[i].gd.handle_controlevent = AW_OK;	/* Yes, really */
-	gcd[i].gd.popup_msg = (unichar_t *) _("Browse for a file containing a list of kerning pairs\ntwo characters per line. FontForge will only check\nthose pairs for kerning info.");
-	gcd[i].gd.cid = CID_Browse;
-	gcd[i++].creator = GButtonCreate;
-	y += 32;
-    }
+	gcd[i++].creator = GLabelCreate;
+	hvarray[15] = &gcd[i-1];
+
+	gcd[i].gd.flags = gg_enabled|gg_visible;
+	gcd[i].gd.cid = CID_Subtable;
+	gcd[i].gd.handle_controlevent = AW_Subtable;
+	gcd[i++].creator = GListButtonCreate;
+	hvarray[16] = &gcd[i-1]; hvarray[17] = NULL; hvarray[18] = NULL;
+    } else
+	hvarray[9] = NULL;
+
+    gcd[i].gd.flags = gg_enabled|gg_visible;
+    gcd[i].gd.u.boxelements = hvarray;
+    gcd[i++].creator = GHVBoxCreate;
+    varray[2] = &gcd[i-1]; varray[3] = NULL;
+
+    v = 4;
+    varray[v++] = GCD_Glue; varray[v++] = NULL;
 
     gcd[i].gd.pos.x = 30-3; gcd[i].gd.pos.y = y-3;
-    gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
     label[i].text = (unichar_t *) _("_OK");
     label[i].text_is_1byte = true;
@@ -1749,9 +1794,24 @@ static void AutoWKDlg(FontView *fv,int autokern) {
     gcd[i].gd.handle_controlevent = AW_OK;
     gcd[i].gd.cid = CID_OK;
     gcd[i++].creator = GButtonCreate;
+    h3array[0] = GCD_Glue; h3array[1] = &gcd[i-1]; h3array[2] = GCD_Glue;
+
+    if ( autokern ) {
+	gcd[i].gd.pos.x = (200-gcd[i].gd.pos.width)/2; gcd[i].gd.pos.y = y;
+	gcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+	label[i].text = (unichar_t *) _("_Browse...");
+	label[i].text_is_1byte = true;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.handle_controlevent = AW_OK;	/* Yes, really */
+	gcd[i].gd.popup_msg = (unichar_t *) _("Browse for a file containing a list of kerning pairs\ntwo characters per line. FontForge will only check\nthose pairs for kerning info.");
+	gcd[i].gd.cid = CID_Browse;
+	gcd[i++].creator = GButtonCreate;
+	h3array[3] = &gcd[i-1]; h3array[4] = GCD_Glue;
+    } else
+	h3array[3] = h3array[4] = GCD_Glue;
 
     gcd[i].gd.pos.x = -30; gcd[i].gd.pos.y = y;
-    gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
     label[i].text = (unichar_t *) _("_Cancel");
     label[i].text_is_1byte = true;
@@ -1760,13 +1820,40 @@ static void AutoWKDlg(FontView *fv,int autokern) {
     gcd[i].gd.mnemonic = 'C';
     gcd[i].gd.handle_controlevent = AW_Cancel;
     gcd[i++].creator = GButtonCreate;
+    h3array[5] = &gcd[i-1]; h3array[6] = GCD_Glue; h3array[7] = NULL;
 
-    gcd[i].gd.pos.x = 2; gcd[i].gd.pos.y = GDrawPointsToPixels(gw,2);
-    gcd[i].gd.pos.width = pos.width-4; gcd[i].gd.pos.height = pos.height-4;
-    gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
-    gcd[i++].creator = GGroupCreate;
+    gcd[i].gd.flags = gg_enabled|gg_visible;
+    gcd[i].gd.u.boxelements = h3array;
+    gcd[i++].creator = GHBoxCreate;
+    varray[v++] = &gcd[i-1]; varray[v++] = NULL; varray[v++] = NULL;
 
-    GGadgetsCreate(gw,gcd);
+    gcd[i].gd.pos.x = gcd[i].gd.pos.y = 2;
+    gcd[i].gd.flags = gg_enabled|gg_visible;
+    gcd[i].gd.u.boxelements = varray;
+    gcd[i].creator = GHVGroupCreate;
+
+    GGadgetsCreate(gw,gcd+i);
+    GHVBoxSetExpandableRow(gcd[i].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(gcd[i-1].ret,gb_expandgluesame);
+    GHVBoxSetExpandableCol(varray[2]->ret,1);
+    if ( autokern ) {
+	GTextInfo *ti;
+	GGadgetSetList(hvarray[16]->ret,SFSubtablesOfType(sf,gpos_pair,false),false);
+	ti = GGadgetGetListItemSelected(hvarray[16]->ret);
+	if ( ti==NULL ) {
+	    int32 len,j;
+	    GTextInfo **list = GGadgetGetList(hvarray[16]->ret,&len);
+	    for ( j=0; j<len; ++j )
+		if ( !list[j]->disabled && !list[j]->line ) {
+		    ti = list[j];
+		    GGadgetSelectOneListItem(hvarray[16]->ret,j);
+	    break;
+		}
+	}
+	if ( ti!=NULL )
+	    wi.subtable = ti->userdata;
+    }
+    GHVBoxFitWindow(gcd[i].ret);
 
     GWidgetIndicateFocusGadget(gcd[selfield].ret);
     GTextFieldSelect(gcd[selfield].ret,0,-1);
@@ -1787,50 +1874,52 @@ void FVAutoWidth(FontView *fv) {
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 void FVRemoveKerns(FontView *fv) {
-    int i;
-    SplineChar *sc;
     int changed = false;
+    SplineFont *sf = fv->sf;
+    OTLookup *otl, *notl;
 
-    KernClassListFree(fv->sf->kerns); fv->sf->kerns = NULL;
+    if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
 
-    for ( i=0; i<fv->sf->glyphcnt; ++i ) if ( (sc = fv->sf->glyphs[i])!=NULL ) {
-	if ( sc->kerns!=NULL ) {
+    for ( otl=sf->gpos_lookups; otl!=NULL; otl = notl ) {
+	notl = otl->next;
+	if ( otl->lookup_type==gpos_pair &&
+		FeatureTagInFeatureScriptList(CHR('k','e','r','n'),otl->features)) {
+	    SFRemoveLookup(sf,otl);
 	    changed = true;
-	    KernPairsFree(sc->kerns);
-	    sc->kerns = NULL;
 	}
     }
     if ( changed ) {
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	MetricsView *mv;
-	fv->sf->changed = true;
-	for ( mv=fv->metrics; mv!=NULL; mv=mv->next )
+	sf->changed = true;
+	for ( mv=fv->sf->metrics; mv!=NULL; mv=mv->next )
 	    MVReKern(mv);
 #else
-	fv->sf->changed = true;
+	sf->changed = true;
 #endif
     }
 }
 
 void FVRemoveVKerns(FontView *fv) {
-    int i;
-    SplineChar *sc;
     int changed = false;
+    SplineFont *sf = fv->sf;
+    OTLookup *otl, *notl;
 
-    KernClassListFree(fv->sf->vkerns); fv->sf->vkerns = NULL;
+    if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
 
-    for ( i=0; i<fv->sf->glyphcnt; ++i ) if ( (sc = fv->sf->glyphs[i])!=NULL ) {
-	if ( sc->vkerns!=NULL ) {
+    for ( otl=sf->gpos_lookups; otl!=NULL; otl = notl ) {
+	notl = otl->next;
+	if ( otl->lookup_type==gpos_pair &&
+		FeatureTagInFeatureScriptList(CHR('v','k','r','n'),otl->features)) {
+	    SFRemoveLookup(sf,otl);
 	    changed = true;
-	    KernPairsFree(sc->vkerns);
-	    sc->vkerns = NULL;
 	}
     }
     if ( changed ) {
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	MetricsView *mv;
 	fv->sf->changed = true;
-	for ( mv=fv->metrics; mv!=NULL; mv=mv->next )
+	for ( mv=fv->sf->metrics; mv!=NULL; mv=mv->next )
 	    MVReKern(mv);
 #else
 	fv->sf->changed = true;
@@ -1846,7 +1935,8 @@ return( NULL );
 
     for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
 	if ( pst->type==pst_substitution &&
-		(pst->tag==CHR('v','e','r','t') || pst->tag==CHR('v','r','t','2'))) {
+		(FeatureTagInFeatureScriptList(CHR('v','e','r','t'),pst->subtable->lookup->features) ||
+		 FeatureTagInFeatureScriptList(CHR('v','r','t','2'),pst->subtable->lookup->features)) ) {
 return( SFGetChar(sc->parent,-1,pst->u.subs.variant));
 	}
     }
@@ -1902,6 +1992,83 @@ static char *SCListToName(SplineChar **sclist) {
 return( names );
 }
 
+struct lookupmap {
+    int lc, sc;
+    struct otlmap { OTLookup *from, *to; } *lmap;
+    struct submap { struct lookup_subtable *from, *to; } *smap;
+    SplineFont *sf;
+};
+
+static struct lookup_subtable *VSubtableFromH(struct lookupmap *lookupmap,struct lookup_subtable *sub) {
+    int i, lc, sc;
+    OTLookup *otl;
+    struct lookup_subtable *nsub, *prev, *test, *ls;
+    FeatureScriptLangList *fl;
+
+    for ( i=0 ; i<lookupmap->sc; ++i )
+	if ( lookupmap->smap[i].from == sub )
+return( lookupmap->smap[i].to );
+
+    if ( lookupmap->lmap==NULL ) {
+	for ( otl = lookupmap->sf->gpos_lookups, lc=sc=0; otl!=NULL; otl=otl->next ) {
+	    if ( otl->lookup_type==gpos_pair ) {
+		++lc;
+		for ( ls=otl->subtables; ls!=NULL; ls=ls->next )
+		    ++sc;
+	    }
+	}
+	lookupmap->lmap = galloc(lc*sizeof(struct otlmap));
+	lookupmap->smap = galloc(sc*sizeof(struct submap));
+    }
+
+    for ( i=0 ; i<lookupmap->lc; ++i )
+	if ( lookupmap->lmap[i].from == sub->lookup )
+    break;
+
+    if ( i==lookupmap->lc ) {
+	++lookupmap->lc;
+	lookupmap->lmap[i].from = sub->lookup;
+	lookupmap->lmap[i].to = otl = chunkalloc(sizeof(OTLookup));
+	otl->lookup_type = gpos_pair;
+	otl->features = FeatureListCopy(sub->lookup->features);
+	for ( fl=otl->features; fl!=NULL; fl=fl->next )
+	    if ( fl->featuretag == CHR('k','e','r','n') )
+		fl->featuretag = CHR('v','k','r','n');
+	otl->lookup_name = strconcat("V",sub->lookup->lookup_name);
+	otl->next = sub->lookup->next;
+	sub->lookup->next = otl;
+    } else
+	otl = lookupmap->lmap[i].to;
+
+    sc = lookupmap->sc++;
+    lookupmap->smap[sc].from = sub;
+    lookupmap->smap[sc].to = nsub = chunkalloc(sizeof(struct lookup_subtable));
+    nsub->subtable_name = strconcat("V",sub->subtable_name);
+    nsub->per_glyph_pst_or_kern = sub->per_glyph_pst_or_kern;
+    nsub->vertical_kerning = true;
+    nsub->lookup = otl;
+
+    /* Order the subtables of the new lookup the same way they are ordered */
+    /*  in the old. However there may be holes (subtables which don't get */
+    /*  converted) */
+    prev = NULL;
+    for ( test=sub->lookup->subtables; test!=NULL && test!=sub; test=test->next ) {
+	for ( i=0 ; i<lookupmap->sc; ++i )
+	    if ( lookupmap->smap[i].from == test ) {
+		prev = lookupmap->smap[i].to;
+	break;
+	    }
+    }
+    if ( prev!=NULL ) {
+	nsub->next = prev->next;
+	prev->next = nsub;
+    } else {
+	nsub->next = otl->subtables;
+	otl->subtables = nsub;
+    }
+return( nsub );
+}
+
 void FVVKernFromHKern(FontView *fv) {
     int i,j;
     KernPair *kp, *vkp;
@@ -1911,10 +2078,14 @@ void FVVKernFromHKern(FontView *fv) {
     int any1, any2;
     SplineFont *sf = fv->sf;
     int *map1, *map2;
+    struct lookupmap lookupmap;
 
     FVRemoveVKerns(fv);
+    if ( sf->cidmaster ) sf = sf->cidmaster;
     if ( !sf->hasvmetrics )
 return;
+    memset(&lookupmap,0,sizeof(lookupmap));
+    lookupmap.sf = sf;
 
     for ( i=0; i<sf->glyphcnt; ++i ) {
 	if ( (sc1 = SCHasVertVariant(sf->glyphs[i]))!=NULL ) {
@@ -1922,6 +2093,7 @@ return;
 		if ( (sc2 = SCHasVertVariant(kp->sc))!=NULL ) {
 		    vkp = chunkalloc(sizeof(KernPair));
 		    *vkp = *kp;
+		    vkp->subtable = VSubtableFromH(&lookupmap,kp->subtable);
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 		    vkp->adjust = DeviceTableCopy(vkp->adjust);
 #endif
@@ -1951,6 +2123,8 @@ return;
 	if ( any1 && any2 ) {
 	    vkc = chunkalloc(sizeof(KernClass));
 	    *vkc = *kc;
+	    vkc->subtable = VSubtableFromH(&lookupmap,kc->subtable);
+	    vkc->subtable->kc = vkc;
 	    vkc->next = sf->vkerns;
 	    sf->vkerns = vkc;
 	    vkc->first_cnt = any1+1;
@@ -1989,7 +2163,9 @@ return;
 	free(firsts);
 	free(seconds);
     }
-}
+    free( lookupmap.lmap );
+    free( lookupmap.smap );
+ }
 
 /* Scripting hooks */
 
@@ -2068,7 +2244,8 @@ return( 0 );
 return( true );
 }
 
-int AutoKernScript(FontView *fv,int spacing, int threshold,char *kernfile) {
+int AutoKernScript(FontView *fv,int spacing, int threshold,
+	struct lookup_subtable *sub, char *kernfile) {
     WidthInfo wi;
     SplineFont *sf = fv->sf;
 
@@ -2079,7 +2256,8 @@ int AutoKernScript(FontView *fv,int spacing, int threshold,char *kernfile) {
     FindFontParameters(&wi);
     if ( spacing>-(sf->ascent+sf->descent) )
 	wi.spacing = spacing;    
-    wi.threshold = threshold;    
+    wi.threshold = threshold;
+    wi.subtable = sub;
 
     if ( kernfile==NULL ) {
 	wi.left = autowidthBuildCharList(wi.fv, wi.sf, &wi.lcnt, &wi.real_lcnt, &wi.l_Ipos, false );

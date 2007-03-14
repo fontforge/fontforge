@@ -31,34 +31,8 @@
 #include <math.h>
 #include <locale.h>
 #include <stdlib.h>
+#include <ggadget.h>		/* For GTextInfo */
 #include "ttf.h"
-
-static int SLIFromInfo(struct ttfinfo *info,SplineChar *sc,uint32 lang) {
-    uint32 script = SCScriptFromUnicode(sc);
-    int j;
-
-    if ( script==0 ) script = CHR('l','a','t','n');
-    if ( info->script_lang==NULL ) {
-	info->script_lang = galloc(2*sizeof(struct script_record *));
-	j = 0;
-    } else {
-	for ( j=0; info->script_lang[j]!=NULL; ++j ) {
-	    if ( info->script_lang[j][0].script==script &&
-		    info->script_lang[j][1].script == 0 &&
-		    info->script_lang[j][0].langs[0] == lang &&
-		    info->script_lang[j][0].langs[1] == 0 )
-return( j );
-	}
-    }
-    info->script_lang = grealloc(info->script_lang,(j+2)*sizeof(struct script_record *));
-    info->script_lang[j+1] = NULL;
-    info->script_lang[j]= gcalloc(2,sizeof(struct script_record));
-    info->script_lang[j][0].script = script;
-    info->script_lang[j][0].langs = gcalloc(2,sizeof(uint32));
-    info->script_lang[j][0].langs[0] = lang;
-    info->sli_cnt = j+1;
-return( j );
-}
 
 static uint16 *getAppleClassTable(FILE *ttf, int classdef_offset, int cnt, int sub, int div) {
     uint16 *class = gcalloc(cnt,sizeof(uint16));
@@ -195,19 +169,11 @@ return( copy(""));
 return( ret );
 }
 
-#define MAX_LANG 		20		/* Don't support more than 20 languages per feature (only remember first 20) */
-struct scriptlist {
-    uint32 script;
-    uint32 langs[MAX_LANG];
-    int lang_cnt;
-    struct scriptlist *next;
-};
-
 struct scripts {
     uint32 offset;
     uint32 tag;
-    int langcnt;
-    struct language {
+    int langcnt;		/* the default language is included as a */
+    struct language {		/* normal entry with lang tag 'dflt' */
 	uint32 tag;
 	uint32 offset;
 	uint16 req;		/* required feature index. 0xffff for null */
@@ -223,25 +189,14 @@ struct feature {
     uint16 *lookups;
 };
 
-struct lookup_subtable {
-    uint32 tag;
-    struct scriptlist *sl;
-    int script_lang_index;
-    uint16 flags;
-    uint16 type;	/* not always meaningful, might be extension */
-    uint32 offset;
-    struct lookup_subtable *alttags, *nextsame;
-};
-
 struct lookup {
     uint16 type;
     uint16 flags;
-    uint16 lookup;
+    /* uint16 lookup; */	/* ???? can't imagine what this is*/
     uint32 offset;
     int subtabcnt;
     int32 *subtab_offsets;
-    struct lookup_subtable **subtables;
-    uint32 made_tag;		/* For nested pst */
+    OTLookup *otlookup;
 };
 
 enum gsub_inusetype { git_normal, git_justinuse, git_findnames };
@@ -461,15 +416,13 @@ return( ret );
 #endif
 
 static void addPairPos(struct ttfinfo *info, int glyph1, int glyph2,
-	struct lookup_subtable *sub,struct valuerecord *vr1,struct valuerecord *vr2,
+	struct lookup *l, struct lookup_subtable *subtable, struct valuerecord *vr1,struct valuerecord *vr2,
 	uint32 base,FILE *ttf) {
     
     if ( glyph1<info->glyph_cnt && glyph2<info->glyph_cnt ) {
 	PST *pos = chunkalloc(sizeof(PST));
 	pos->type = pst_pair;
-	pos->tag = sub->tag;
-	pos->script_lang_index = sub->script_lang_index;
-	pos->flags = sub->flags;
+	pos->subtable = subtable;
 	pos->next = info->chars[glyph1]->possub;
 	info->chars[glyph1]->possub = pos;
 	pos->u.pair.vr = chunkalloc(sizeof(struct vr [2]));
@@ -492,7 +445,7 @@ static void addPairPos(struct ttfinfo *info, int glyph1, int glyph2,
 }
 
 static int addKernPair(struct ttfinfo *info, int glyph1, int glyph2,
-	int16 offset, uint32 devtab, uint16 sli, uint16 flags,int isv,
+	int16 offset, uint32 devtab, struct lookup *l, struct lookup_subtable *subtable,int isv,
 	FILE *ttf) {
     KernPair *kp;
     if ( glyph1<info->glyph_cnt && glyph2<info->glyph_cnt &&
@@ -506,8 +459,7 @@ static int addKernPair(struct ttfinfo *info, int glyph1, int glyph2,
 	    kp = chunkalloc(sizeof(KernPair));
 	    kp->sc = info->chars[glyph2];
 	    kp->off = offset;
-	    kp->sli = sli;
-	    kp->flags = flags;
+	    kp->subtable = subtable;
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    if ( devtab!=0 ) {
 		kp->adjust = chunkalloc(sizeof(DeviceTable));
@@ -521,7 +473,7 @@ static int addKernPair(struct ttfinfo *info, int glyph1, int glyph2,
 		kp->next = info->chars[glyph1]->kerns;
 		info->chars[glyph1]->kerns = kp;
 	    }
-	} else if ( kp->sli!=sli || kp->flags!=flags )
+	} else if ( kp->subtable!=subtable )
 return( true );
     } else
 	LogError( _("Bad kern pair: glyphs %d & %d should have been < %d\n"),
@@ -529,7 +481,7 @@ return( true );
 return( false );
 }
 
-static void gposKernSubTable(FILE *ttf, int stoffset, struct ttfinfo *info, struct lookup_subtable *sub,int isv) {
+static void gposKernSubTable(FILE *ttf, int stoffset, struct ttfinfo *info, struct lookup *l, struct lookup_subtable *subtable) {
     int coverage, cnt, i, j, pair_cnt, vf1, vf2, glyph2;
     int cd1, cd2, c1_cnt, c2_cnt;
     uint16 format;
@@ -538,6 +490,7 @@ static void gposKernSubTable(FILE *ttf, int stoffset, struct ttfinfo *info, stru
     struct valuerecord vr1, vr2;
     long foffset;
     KernClass *kc;
+    int isv, r2l;
 
     format=getushort(ttf);
     if ( format!=1 && format!=2 )	/* Unknown subtable format */
@@ -545,18 +498,18 @@ return;
     coverage = getushort(ttf);
     vf1 = getushort(ttf);
     vf2 = getushort(ttf);
-    if ( isv==1 ) {
-	if ( vf1&0xff77 )
-	    isv = 2;
-	if ( vf2&0xff77 )
-	    isv = 2;
-    } else if ( isv==0 ) {
-	if ( vf1&0xffbb)	/* can't represent things that deal with y advance/placement nor with x placement as kerning */
-	    isv = 2;
-	if ( vf2&0xffaa )
-	    isv = 2;
-    }
+    r2l = 0;
+    if ( (vf1==0x0088 || vf1==0x0008) && vf2==0x0000 )
+	isv = 1;		/* Top to bottom */
+    else if ( vf1==0x0000 && (vf2==0x0044 || vf2==0x0004)) {
+	isv = 0;		/* Right to left */
+	r2l = 1;
+    } else if ( (vf1==0x0044 || vf1==0x0004) && vf2==0x0000 )
+	isv = 0;		/* Left to right */
+    else
+	isv = 2;
     if ( format==1 ) {
+	subtable->per_glyph_pst_or_kern = true;
 	cnt = getushort(ttf);
 	ps_offsets = galloc(cnt*sizeof(uint16));
 	for ( i=0; i<cnt; ++i )
@@ -572,25 +525,25 @@ return;
 		readvaluerecord(&vr1,vf1,ttf);
 		readvaluerecord(&vr2,vf2,ttf);
 		if ( isv==2 )
-		    addPairPos(info, glyphs[i], glyph2,sub,&vr1,&vr2, stoffset,ttf);
+		    addPairPos(info, glyphs[i], glyph2,l,subtable,&vr1,&vr2, stoffset,ttf);
 		else if ( isv ) {
 		    if ( addKernPair(info, glyphs[i], glyph2, vr1.yadvance,
 			    vr1.offYadvanceDev==0?0:stoffset+vr1.offYadvanceDev,
-			    sub->script_lang_index,sub->flags,isv,ttf))
-			addPairPos(info, glyphs[i], glyph2,sub,&vr1,&vr2, stoffset,ttf);
+			    l,subtable,isv,ttf))
+			addPairPos(info, glyphs[i], glyph2,l,subtable,&vr1,&vr2, stoffset,ttf);
 			/* If we've already got kern data for this pair of */
 			/*  glyphs, then we can't make it be a true KernPair */
 			/*  but we can save the info as a pst_pair */
-		} else if ( sub->flags&1 ) {	/* R2L */
+		} else if ( r2l ) {	/* R2L */
 		    if ( addKernPair(info, glyphs[i], glyph2, vr2.xadvance,
 			    vr2.offXadvanceDev==0?0:stoffset+vr2.offXadvanceDev,
-			    sub->script_lang_index,sub->flags,isv,ttf))
-			addPairPos(info, glyphs[i], glyph2,sub,&vr1,&vr2,stoffset,ttf);
+			    l,subtable,isv,ttf))
+			addPairPos(info, glyphs[i], glyph2,l,subtable,&vr1,&vr2,stoffset,ttf);
 		} else {
 		    if ( addKernPair(info, glyphs[i], glyph2, vr1.xadvance,
 			    vr1.offXadvanceDev==0?0:stoffset+vr1.offXadvanceDev,
-			    sub->script_lang_index,sub->flags,isv,ttf))
-			addPairPos(info, glyphs[i], glyph2,sub,&vr1,&vr2,stoffset,ttf);
+			    l,subtable,isv,ttf))
+			addPairPos(info, glyphs[i], glyph2,l,subtable,&vr1,&vr2,stoffset,ttf);
 		}
 	    }
 	}
@@ -619,9 +572,10 @@ return;
 		    kc = info->klast->next = chunkalloc(sizeof(KernClass));
 		info->klast = kc;
 	    }
+	    subtable->vertical_kerning = isv;
+	    subtable->kc = kc;
 	    kc->first_cnt = c1_cnt; kc->second_cnt = c2_cnt;
-	    kc->sli = sub->script_lang_index;
-	    kc->flags = sub->flags;
+	    kc->subtable = subtable;
 	    kc->offsets = galloc(c1_cnt*c2_cnt*sizeof(int16));
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    kc->adjusts = gcalloc(c1_cnt*c2_cnt,sizeof(DeviceTable));
@@ -638,7 +592,7 @@ return;
 		    readvaluerecord(&vr2,vf2,ttf);
 		    if ( isv )
 			kc->offsets[i*c2_cnt+j] = vr1.yadvance;
-		    else if ( sub->flags&1 )	/* R2L */
+		    else if ( r2l )
 			kc->offsets[i*c2_cnt+j] = vr2.xadvance;
 		    else
 			kc->offsets[i*c2_cnt+j] = vr1.xadvance;
@@ -646,7 +600,7 @@ return;
 		    if ( isv ) {
 			if ( vr1.offYadvanceDev!=0 )
 			    ReadDeviceTable(ttf,&kc->adjusts[i*c2_cnt+j],stoffset+vr1.offYadvanceDev);
-		    } else if ( sub->flags&1 )	{ /* R2L */
+		    } else if ( r2l ) {
 			if ( vr2.offXadvanceDev!=0 )
 			    ReadDeviceTable(ttf,&kc->adjusts[i*c2_cnt+j],stoffset+vr2.offXadvanceDev);
 		    } else {
@@ -657,7 +611,8 @@ return;
 		}
 	    }
 	} else {	/* This happens when we have a feature which is neither 'kern' nor 'vkrn' we don't know what to do with it so we make it into kern pairs */
-	    int k,l;
+	    int k,m;
+	    subtable->per_glyph_pst_or_kern = true;
 	    for ( i=0; i<c1_cnt; ++i) {
 		for ( j=0; j<c2_cnt; ++j) {
 		    readvaluerecord(&vr1,vf1,ttf);
@@ -666,9 +621,9 @@ return;
 			    vr2.xadvance!=0 || vr2.xplacement!=0 || vr2.yadvance!=0 || vr2.yplacement!=0 )
 			for ( k=0; k<info->glyph_cnt; ++k )
 			    if ( class1[k]==i )
-				for ( l=0; l<info->glyph_cnt; ++l )
-				    if ( class2[l]==j )
-					addPairPos(info, k,l,sub,&vr1,&vr2,stoffset,ttf);
+				for ( m=0; m<info->glyph_cnt; ++m )
+				    if ( class2[m]==j )
+					addPairPos(info, k,m,l,subtable,&vr1,&vr2,stoffset,ttf);
 		}
 	    }
 	}
@@ -712,12 +667,13 @@ static AnchorPoint *readAnchorPoint(FILE *ttf,uint32 base,AnchorClass *class,
 return( ap );
 }
 
-static void gposCursiveSubTable(FILE *ttf, int stoffset, struct ttfinfo *info,struct lookup_subtable *sub) {
+static void gposCursiveSubTable(FILE *ttf, int stoffset, struct ttfinfo *info,struct lookup *l, struct lookup_subtable *subtable) {
     int coverage, cnt, format, i;
     struct ee_offsets { int entry, exit; } *offsets;
     uint16 *glyphs;
     AnchorClass *class;
     SplineChar *sc;
+    char buf[50];
 
     format=getushort(ttf);
     if ( format!=1 )	/* Unknown subtable format */
@@ -734,9 +690,11 @@ return;
     glyphs = getCoverageTable(ttf,stoffset+coverage,info);
 
     class = chunkalloc(sizeof(AnchorClass));
-    class->name = copy(_("Cursive"));
-    class->feature_tag = sub->tag;
-    class->script_lang_index = sub->script_lang_index;
+    snprintf(buf,sizeof(buf),_("Cursive-%d"),
+	    info->anchor_class_cnt++ );
+    class->name = copy(buf);
+    subtable->anchor_classes = true;
+    class->subtable = subtable;
     class->type = act_curs;
     if ( info->ahead==NULL )
 	info->ahead = class;
@@ -760,8 +718,8 @@ return;
 }
 
 static AnchorClass **MarkGlyphsProcessMarks(FILE *ttf,int markoffset,
-	struct ttfinfo *info,struct lookup_subtable *sub,uint16 *markglyphs,
-	int classcnt,int lu_type) {
+	struct ttfinfo *info,struct lookup *l, struct lookup_subtable *subtable,uint16 *markglyphs,
+	int classcnt) {
     AnchorClass **classes = gcalloc(classcnt,sizeof(AnchorClass *)), *ac;
     char buf[50];
     int i, cnt;
@@ -773,11 +731,10 @@ static AnchorClass **MarkGlyphsProcessMarks(FILE *ttf,int markoffset,
 		info->anchor_class_cnt+i );
 	classes[i] = ac = chunkalloc(sizeof(AnchorClass));
 	ac->name = copy(buf);
-	ac->feature_tag = sub->tag;
-	ac->script_lang_index = sub->script_lang_index;
-	ac->flags = sub->flags;
-	ac->merge_with = info->anchor_merge_cnt+1;
-	ac->type = lu_type==6 ? act_mkmk : act_mark;
+	subtable->anchor_classes = true;
+	ac->subtable = subtable;
+	/*ac->merge_with = info->anchor_merge_cnt+1;*/
+	ac->type = l->otlookup->lookup_type==gpos_mark2mark ? act_mkmk : act_mark;
 	    /* I don't distinguish between mark to base and mark to lig */
 	if ( info->ahead==NULL )
 	    info->ahead = ac;
@@ -815,7 +772,7 @@ return( classes );
 }
 
 static void MarkGlyphsProcessBases(FILE *ttf,int baseoffset,
-	struct ttfinfo *info,struct lookup_subtable *sub,uint16 *baseglyphs,int classcnt,
+	struct ttfinfo *info,struct lookup *l, struct lookup_subtable *subtable,uint16 *baseglyphs,int classcnt,
 	AnchorClass **classes,enum anchor_type at) {
     int basecnt,i, j, ibase;
     uint16 *offsets;
@@ -845,7 +802,7 @@ return;
 }
 
 static void MarkGlyphsProcessLigs(FILE *ttf,int baseoffset,
-	struct ttfinfo *info,struct lookup_subtable *sub,uint16 *baseglyphs,int classcnt,
+	struct ttfinfo *info,struct lookup *l, struct lookup_subtable *subtable,uint16 *baseglyphs,int classcnt,
 	AnchorClass **classes) {
     int basecnt,compcnt, i, j, k, kbase;
     uint16 *loffsets, *aoffsets;
@@ -886,7 +843,7 @@ return;
 }
 
 static void gposMarkSubTable(FILE *ttf, uint32 stoffset,
-	struct ttfinfo *info, struct lookup_subtable *sub,int lu_type) {
+	struct ttfinfo *info, struct lookup *l, struct lookup_subtable *subtable) {
     int markcoverage, basecoverage, classcnt, markoffset, baseoffset;
     uint16 *markglyphs, *baseglyphs;
     AnchorClass **classes;
@@ -906,19 +863,19 @@ return;
     }
 	/* as is the (first) mark table */
     classes = MarkGlyphsProcessMarks(ttf,stoffset+markoffset,
-	    info,sub,markglyphs,classcnt,lu_type);
+	    info,l,subtable,markglyphs,classcnt);
     if ( classes==NULL )
 return;
-    switch ( lu_type ) {
-      case 4:			/* Mark to Base */
-      case 6:			/* Mark to Mark */
+    switch ( l->otlookup->lookup_type ) {
+      case gpos_mark2base:
+      case gpos_mark2mark:
 	  MarkGlyphsProcessBases(ttf,stoffset+baseoffset,
-	    info,sub,baseglyphs,classcnt,classes,
-	    lu_type==4?at_basechar:at_basemark);
+	    info,l,subtable,baseglyphs,classcnt,classes,
+	    l->otlookup->lookup_type==gpos_mark2base?at_basechar:at_basemark);
       break;
-      case 5:			/* Mark to Ligature */
+      case gpos_mark2ligature:
 	  MarkGlyphsProcessLigs(ttf,stoffset+baseoffset,
-	    info,sub,baseglyphs,classcnt,classes);
+	    info,l,subtable,baseglyphs,classcnt,classes);
       break;
     }
     info->anchor_class_cnt += classcnt;
@@ -928,7 +885,7 @@ return;
 }
 
 static void gposSimplePos(FILE *ttf, int stoffset, struct ttfinfo *info,
-	struct lookup_subtable *sub) {
+	struct lookup *l, struct lookup_subtable *subtable) {
     int coverage, cnt, i, vf;
     uint16 format;
     uint16 *glyphs;
@@ -963,9 +920,7 @@ return;
     for ( i=0; glyphs[i]!=0xffff; ++i ) if ( glyphs[i]<info->glyph_cnt ) {
 	PST *pos = chunkalloc(sizeof(PST));
 	pos->type = pst_position;
-	pos->tag = sub->tag;
-	pos->script_lang_index = sub->script_lang_index;
-	pos->flags = sub->flags;
+	pos->subtable = subtable;
 	pos->next = info->chars[glyphs[i]]->possub;
 	info->chars[glyphs[i]]->possub = pos;
 	which = format==1 ? &_vr : &vr[i];
@@ -977,32 +932,27 @@ return;
 	pos->u.pos.adjust = readValDevTab(ttf,which,stoffset);
 #endif
     }
+    subtable->per_glyph_pst_or_kern = true;
     free(vr);
     free(glyphs);
 }
-
-static void ProcessGPOSGSUBlookup(FILE *ttf,struct ttfinfo *info,int gpos,
-	int lookup_index, int inusetype, struct lookup *alllooks);
 
 static void ProcessSubLookups(FILE *ttf,struct ttfinfo *info,int gpos,
 	struct lookup *alllooks,struct seqlookup *sl) {
     int i;
 
-    i = sl->lookup_tag;
+    i = (intpt) sl->lookup;
     if ( i<0 || i>=info->lookup_cnt ) {
 	LogError( _("Attempt to reference lookup %d (within a contextual lookup), but there are\n only %d lookups in %s\n"),
 		i, info->lookup_cnt, gpos ? "'GPOS'" : "'GSUB'" );
-	sl->lookup_tag = CHR('!','!','!','!');
+	sl->lookup = NULL;
 return;
     }
-    if ( alllooks[i].made_tag==0 ) {
-	ProcessGPOSGSUBlookup(ttf,info,gpos,i,git_normal,alllooks);
-    }
-    sl->lookup_tag = alllooks[i].made_tag;
+    sl->lookup = alllooks[i].otlookup;
 }
 
 static void g___ContextSubTable1(FILE *ttf, int stoffset,
-	struct ttfinfo *info, struct lookup_subtable *sub, int justinuse,
+	struct ttfinfo *info, struct lookup *l, struct lookup_subtable *subtable, int justinuse,
 	struct lookup *alllooks, int gpos) {
     int i, j, k, rcnt, cnt;
     uint16 coverage;
@@ -1063,30 +1013,22 @@ static void g___ContextSubTable1(FILE *ttf, int stoffset,
 				rules[i].subrules[j].sl[k].seq, rules[i].subrules[j].gcnt );
 			warned2 = true;
 		    }
-		rules[i].subrules[j].sl[k].lookup_tag = getushort(ttf);
+		rules[i].subrules[j].sl[k].lookup = (void *) getushort(ttf);
 	    }
 	}
     }
 
     if ( justinuse==git_justinuse ) {
-	for ( i=0; i<rcnt; ++i ) {
-	    for ( j=0; j<rules[i].scnt; ++j ) {
-		for ( k=0; k<rules[i].subrules[j].scnt; ++k )
-		    if ( rules[i].subrules[j].sl[k].lookup_tag<info->lookup_cnt )
-			ProcessGPOSGSUBlookup(ttf,info,gpos,
-				rules[i].subrules[j].sl[k].lookup_tag,
-				justinuse,alllooks);
-	    }
-	}
+	/* Nothing to do. This lookup doesn't really reference any glyphs */
+	/*  any lookups it invokes will be processed on their own */
     } else {
 	fpst = chunkalloc(sizeof(FPST));
 	fpst->type = gpos ? pst_contextpos : pst_contextsub;
 	fpst->format = pst_glyphs;
-	fpst->tag = sub->tag;
-	fpst->script_lang_index = sub->script_lang_index;
-	fpst->flags = sub->flags;
+	fpst->subtable = subtable;
 	fpst->next = info->possub;
 	info->possub = fpst;
+	subtable->fpst = fpst;
 
 	fpst->rules = rule = gcalloc(cnt,sizeof(struct fpst_rule));
 	fpst->rule_cnt = cnt;
@@ -1115,7 +1057,7 @@ static void g___ContextSubTable1(FILE *ttf, int stoffset,
 }
 
 static void g___ChainingSubTable1(FILE *ttf, int stoffset,
-	struct ttfinfo *info, struct lookup_subtable *sub, int justinuse,
+	struct ttfinfo *info, struct lookup *l, struct lookup_subtable *subtable, int justinuse,
 	struct lookup *alllooks, int gpos) {
     int i, j, k, rcnt, cnt, which;
     uint16 coverage;
@@ -1213,30 +1155,22 @@ return;
 				rules[i].subrules[j].sl[k].seq, rules[i].subrules[j].gcnt );
 			warned2 = true;
 		    }
-		rules[i].subrules[j].sl[k].lookup_tag = getushort(ttf);
+		rules[i].subrules[j].sl[k].lookup = (void *) getushort(ttf);
 	    }
 	}
     }
 
     if ( justinuse==git_justinuse ) {
-	for ( i=0; i<rcnt; ++i ) {
-	    for ( j=0; j<rules[i].scnt; ++j ) {
-		for ( k=0; k<rules[i].subrules[j].scnt; ++k )
-		    if ( rules[i].subrules[j].sl[k].lookup_tag<info->lookup_cnt )
-			ProcessGPOSGSUBlookup(ttf,info,gpos,
-				rules[i].subrules[j].sl[k].lookup_tag,
-				justinuse,alllooks);
-	    }
-	}
+	/* Nothing to do. This lookup doesn't really reference any glyphs */
+	/*  any lookups it invokes will be processed on their own */
     } else {
 	fpst = chunkalloc(sizeof(FPST));
 	fpst->type = gpos ? pst_chainpos : pst_chainsub;
 	fpst->format = pst_glyphs;
-	fpst->tag = sub->tag;
-	fpst->script_lang_index = sub->script_lang_index;
-	fpst->flags = sub->flags;
+	fpst->subtable = subtable;
 	fpst->next = info->possub;
 	info->possub = fpst;
+	subtable->fpst = fpst;
 
 	fpst->rules = rule = gcalloc(cnt,sizeof(struct fpst_rule));
 	fpst->rule_cnt = cnt;
@@ -1269,7 +1203,7 @@ return;
 }
 
 static void g___ContextSubTable2(FILE *ttf, int stoffset,
-	struct ttfinfo *info, struct lookup_subtable *sub, int justinuse,
+	struct ttfinfo *info, struct lookup *l, struct lookup_subtable *subtable, int justinuse,
 	struct lookup *alllooks, int gpos) {
     int i, j, k, rcnt, cnt;
     uint16 coverage;
@@ -1336,28 +1270,20 @@ return;
 				rules[i].subrules[j].sl[k].seq, rules[i].subrules[j].ccnt-1);
 			warned2 = true;
 		    }
-		rules[i].subrules[j].sl[k].lookup_tag = getushort(ttf);
+		rules[i].subrules[j].sl[k].lookup = (void *) getushort(ttf);
 	    }
 	}
     }
 
     if ( justinuse==git_justinuse ) {
-	for ( i=0; i<rcnt; ++i ) {
-	    for ( j=0; j<rules[i].scnt; ++j ) {
-		for ( k=0; k<rules[i].subrules[j].scnt; ++k )
-		    if ( rules[i].subrules[j].sl[k].lookup_tag<info->lookup_cnt )
-			ProcessGPOSGSUBlookup(ttf,info,gpos,
-				rules[i].subrules[j].sl[k].lookup_tag,
-				justinuse,alllooks);
-	    }
-	}
+	/* Nothing to do. This lookup doesn't really reference any glyphs */
+	/*  any lookups it invokes will be processed on their own */
     } else {
 	fpst = chunkalloc(sizeof(FPST));
 	fpst->type = gpos ? pst_contextpos : pst_contextsub;
 	fpst->format = pst_class;
-	fpst->tag = sub->tag;
-	fpst->script_lang_index = sub->script_lang_index;
-	fpst->flags = sub->flags;
+	fpst->subtable = subtable;
+	subtable->fpst = fpst;
 	fpst->next = info->possub;
 	info->possub = fpst;
 
@@ -1393,7 +1319,7 @@ return;
 }
 
 static void g___ChainingSubTable2(FILE *ttf, int stoffset,
-	struct ttfinfo *info, struct lookup_subtable *sub, int justinuse,
+	struct ttfinfo *info, struct lookup *l, struct lookup_subtable *subtable, int justinuse,
 	struct lookup *alllooks, int gpos) {
     int i, j, k, rcnt, cnt;
     uint16 coverage, offset;
@@ -1482,28 +1408,20 @@ return;
 				rules[i].subrules[j].sl[k].seq, rules[i].subrules[j].ccnt-1);
 			warned2 = true;
 		    }
-		rules[i].subrules[j].sl[k].lookup_tag = getushort(ttf);
+		rules[i].subrules[j].sl[k].lookup = (void *) getushort(ttf);
 	    }
 	}
     }
 
     if ( justinuse==git_justinuse ) {
-	for ( i=0; i<rcnt; ++i ) {
-	    for ( j=0; j<rules[i].scnt; ++j ) {
-		for ( k=0; k<rules[i].subrules[j].scnt; ++k )
-		    if ( rules[i].subrules[j].sl[k].lookup_tag<info->lookup_cnt )
-			ProcessGPOSGSUBlookup(ttf,info,gpos,
-				rules[i].subrules[j].sl[k].lookup_tag,
-				justinuse,alllooks);
-	    }
-	}
+	/* Nothing to do. This lookup doesn't really reference any glyphs */
+	/*  any lookups it invokes will be processed on their own */
     } else {
 	fpst = chunkalloc(sizeof(FPST));
 	fpst->type = gpos ? pst_chainpos : pst_chainsub;
 	fpst->format = pst_class;
-	fpst->tag = sub->tag;
-	fpst->script_lang_index = sub->script_lang_index;
-	fpst->flags = sub->flags;
+	fpst->subtable = subtable;
+	subtable->fpst = fpst;
 	fpst->next = info->possub;
 	info->possub = fpst;
 
@@ -1561,7 +1479,7 @@ return;
 }
 
 static void g___ContextSubTable3(FILE *ttf, int stoffset,
-	struct ttfinfo *info, struct lookup_subtable *subs, int justinuse,
+	struct ttfinfo *info, struct lookup *l, struct lookup_subtable *subtable, int justinuse,
 	struct lookup *alllooks, int gpos) {
     int i, k, scnt, gcnt;
     uint16 *coverage;
@@ -1588,22 +1506,18 @@ return;
 		    sl[k].seq, gcnt-1 );
 	    warned2 = true;
 	}
-	sl[k].lookup_tag = getushort(ttf);
+	sl[k].lookup = (void *) getushort(ttf);
     }
 
     if ( justinuse==git_justinuse ) {
-	for ( k=0; k<scnt; ++k )
-	    if ( sl[k].lookup_tag<info->lookup_cnt )
-		ProcessGPOSGSUBlookup(ttf,info,gpos,
-			sl[k].lookup_tag,
-			justinuse,alllooks);
+	/* Nothing to do. This lookup doesn't really reference any glyphs */
+	/*  any lookups it invokes will be processed on their own */
     } else {
 	fpst = chunkalloc(sizeof(FPST));
 	fpst->type = gpos ? pst_contextpos : pst_contextsub;
 	fpst->format = pst_coverage;
-	fpst->tag = subs->tag;
-	fpst->script_lang_index = subs->script_lang_index;
-	fpst->flags = subs->flags;
+	fpst->subtable = subtable;
+	subtable->fpst = fpst;
 	fpst->next = info->possub;
 	info->possub = fpst;
 
@@ -1626,7 +1540,7 @@ return;
 }
 
 static void g___ChainingSubTable3(FILE *ttf, int stoffset,
-	struct ttfinfo *info, struct lookup_subtable *sub, int justinuse,
+	struct ttfinfo *info, struct lookup *l, struct lookup_subtable *subtable, int justinuse,
 	struct lookup *alllooks, int gpos) {
     int i, k, scnt, gcnt, bcnt, fcnt;
     uint16 *coverage, *bcoverage, *fcoverage;
@@ -1673,22 +1587,18 @@ return;
 		    sl[k].seq, gcnt-1 );
 	    warned2 = true;
 	}
-	sl[k].lookup_tag = getushort(ttf);
+	sl[k].lookup = (void *) getushort(ttf);
     }
 
     if ( justinuse==git_justinuse ) {
-	for ( k=0; k<scnt; ++k )
-	    if ( sl[k].lookup_tag<info->lookup_cnt )
-		ProcessGPOSGSUBlookup(ttf,info,gpos,
-			sl[k].lookup_tag,
-			justinuse,alllooks);
+	/* Nothing to do. This lookup doesn't really reference any glyphs */
+	/*  any lookups it invokes will be processed on their own */
     } else {
 	fpst = chunkalloc(sizeof(FPST));
 	fpst->type = gpos ? pst_chainpos : pst_chainsub;
 	fpst->format = pst_coverage;
-	fpst->tag = sub->tag;
-	fpst->script_lang_index = sub->script_lang_index;
-	fpst->flags = sub->flags;
+	fpst->subtable = subtable;
+	subtable->fpst = fpst;
 	fpst->next = info->possub;
 	info->possub = fpst;
 
@@ -1731,33 +1641,33 @@ return;
 }
 
 static void gposContextSubTable(FILE *ttf, int stoffset,
-	struct ttfinfo *info, struct lookup_subtable *sub, 
+	struct ttfinfo *info, struct lookup *l, struct lookup_subtable *subtable, 
 	struct lookup *alllooks) {
     switch( getushort(ttf)) {
       case 1:
-	g___ContextSubTable1(ttf,stoffset,info,sub,git_normal,alllooks,true);
+	g___ContextSubTable1(ttf,stoffset,info,l,subtable,git_normal,alllooks,true);
       break;
       case 2:
-	g___ContextSubTable2(ttf,stoffset,info,sub,git_normal,alllooks,true);
+	g___ContextSubTable2(ttf,stoffset,info,l,subtable,git_normal,alllooks,true);
       break;
       case 3:
-	g___ContextSubTable3(ttf,stoffset,info,sub,git_normal,alllooks,true);
+	g___ContextSubTable3(ttf,stoffset,info,l,subtable,git_normal,alllooks,true);
       break;
     }
 }
 
 static void gposChainingSubTable(FILE *ttf, int stoffset,
-	struct ttfinfo *info, struct lookup_subtable *sub, 
+	struct ttfinfo *info, struct lookup *l, struct lookup_subtable *subtable, 
 	struct lookup *alllooks) {
     switch( getushort(ttf)) {
       case 1:
-	g___ChainingSubTable1(ttf,stoffset,info,sub,git_normal,alllooks,true);
+	g___ChainingSubTable1(ttf,stoffset,info,l,subtable,git_normal,alllooks,true);
       break;
       case 2:
-	g___ChainingSubTable2(ttf,stoffset,info,sub,git_normal,alllooks,true);
+	g___ChainingSubTable2(ttf,stoffset,info,l,subtable,git_normal,alllooks,true);
       break;
       case 3:
-	g___ChainingSubTable3(ttf,stoffset,info,sub,git_normal,alllooks,true);
+	g___ChainingSubTable3(ttf,stoffset,info,l,subtable,git_normal,alllooks,true);
       break;
     }
 }
@@ -1774,7 +1684,7 @@ static struct { uint32 tag; char *str; } tagstr[] = {
 };
 
 static void gsubSimpleSubTable(FILE *ttf, int stoffset, struct ttfinfo *info,
-	struct lookup_subtable *sub, int justinuse) {
+	struct lookup *l, struct lookup_subtable *subtable, int justinuse) {
     int coverage, cnt, i, j, which;
     uint16 format;
     uint16 *glyphs, *glyph2s=NULL;
@@ -1799,7 +1709,11 @@ return;
 return;
     }
     if ( justinuse==git_findnames ) {
-	/* Unnamed glyphs get a name built of the base name and the lookup tag */
+	FeatureScriptLangList *fl;
+	fl = l->otlookup->features;
+	/* Unnamed glyphs get a name built of the base name and the feature tag */
+	/*  assuming this lookup is tagged with a feature... */
+	if ( fl!=NULL )
 	for ( i=0; glyphs[i]!=0xffff; ++i ) if ( glyphs[i]<info->glyph_cnt ) {
 	    if ( info->chars[glyphs[i]]->name!=NULL ) {
 		which = format==1 ? (uint16) (glyphs[i]+delta) : glyph2s[i];
@@ -1808,14 +1722,14 @@ return;
 		    char *basename = info->chars[glyphs[i]]->name;
 		    char *str;
 		    char tag[5], *pt=tag;
-		    for ( j=0; tagstr[j].tag!=0 && tagstr[j].tag!=sub->tag; ++j );
+		    for ( j=0; tagstr[j].tag!=0 && tagstr[j].tag!=fl->featuretag; ++j );
 		    if ( tagstr[j].tag!=0 )
 			pt = tagstr[j].str;
 		    else {
-			tag[0] = sub->tag>>24;
-			if ( (tag[1] = (sub->tag>>16)&0xff)==' ' ) tag[1] = '\0';
-			if ( (tag[2] = (sub->tag>>8)&0xff)==' ' ) tag[2] = '\0';
-			if ( (tag[3] = (sub->tag)&0xff)==' ' ) tag[3] = '\0';
+			tag[0] = fl->featuretag>>24;
+			if ( (tag[1] = (fl->featuretag>>16)&0xff)==' ' ) tag[1] = '\0';
+			if ( (tag[2] = (fl->featuretag>>8)&0xff)==' ' ) tag[2] = '\0';
+			if ( (tag[3] = (fl->featuretag)&0xff)==' ' ) tag[3] = '\0';
 			tag[4] = '\0';
 			pt = tag;
 		    }
@@ -1842,22 +1756,21 @@ return;
 	    if ( info->chars[which]!=NULL ) {	/* Might be in a ttc file */
 		PST *pos = chunkalloc(sizeof(PST));
 		pos->type = pst_substitution;
-		pos->tag = sub->tag;
-		pos->script_lang_index = sub->script_lang_index;
-		pos->flags = sub->flags;
+		pos->subtable = subtable;
 		pos->next = info->chars[glyphs[i]]->possub;
 		info->chars[glyphs[i]]->possub = pos;
 		pos->u.subs.variant = copy(info->chars[which]->name);
 	    }
 	}
     }
+    subtable->per_glyph_pst_or_kern = true;
     free(glyph2s);
     free(glyphs);
 }
 
 /* Multiple and alternate substitution lookups have the same format */
 static void gsubMultipleSubTable(FILE *ttf, int stoffset, struct ttfinfo *info,
-	struct lookup_subtable *sub, int lu_type, int justinuse) {
+	struct lookup *l, struct lookup_subtable *subtable, int justinuse) {
     int coverage, cnt, i, j, len, max;
     uint16 format;
     uint16 *offsets;
@@ -1936,10 +1849,8 @@ return;
 		info->inuse[glyph2s[j]] = 1;
 	} else if ( info->chars[glyphs[i]]!=NULL && !bad ) {
 	    alt = chunkalloc(sizeof(PST));
-	    alt->type = lu_type==2?pst_multiple:pst_alternate;
-	    alt->tag = sub->tag;
-	    alt->script_lang_index = sub->script_lang_index;
-	    alt->flags = sub->flags;
+	    alt->type = l->otlookup->lookup_type==gsub_multiple?pst_multiple:pst_alternate;
+	    alt->subtable = subtable;
 	    alt->next = info->chars[glyphs[i]]->possub;
 	    info->chars[glyphs[i]]->possub = alt;
 	    pt = alt->u.subs.variant = galloc(len+1);
@@ -1952,13 +1863,14 @@ return;
 		pt[strlen(pt)-1] = '\0';
 	}
     }
+    subtable->per_glyph_pst_or_kern = true;
     free(glyphs);
     free(glyph2s);
     free(offsets);
 }
 
 static void gsubLigatureSubTable(FILE *ttf, int stoffset,
-	struct ttfinfo *info, struct lookup_subtable *sub, int justinuse) {
+	struct ttfinfo *info, struct lookup *l, struct lookup_subtable *subtable, int justinuse) {
     int coverage, cnt, i, j, k, lig_cnt, cc, len;
     uint16 *ls_offsets, *lig_offsets;
     uint16 *glyphs, *lig_glyphs, lig;
@@ -2022,10 +1934,11 @@ return;
 		for ( k=0; k<cc; ++k )
 		    info->inuse[lig_glyphs[k]] = 1;
 	    } else if ( justinuse==git_findnames ) {
+		FeatureScriptLangList *fl = l->otlookup->features;
 		/* If our ligature glyph has no name (and its components do) */
 		/*  give it a name by concatenating components with underscores */
 		/*  between them, and appending the tag */
-		if ( info->chars[lig]!=NULL && info->chars[lig]->name==NULL ) {
+		if ( fl!=NULL && info->chars[lig]!=NULL && info->chars[lig]->name==NULL ) {
 		    int len=0;
 		    for ( k=0; k<cc; ++k ) {
 			if ( info->chars[lig_glyphs[k]]==NULL || info->chars[lig_glyphs[k]]->name==NULL )
@@ -2035,10 +1948,10 @@ return;
 		    if ( k==cc ) {
 			char *str = galloc(len+6), *pt;
 			char tag[5];
-			tag[0] = sub->tag>>24;
-			if ( (tag[1] = (sub->tag>>16)&0xff)==' ' ) tag[1] = '\0';
-			if ( (tag[2] = (sub->tag>>8)&0xff)==' ' ) tag[2] = '\0';
-			if ( (tag[3] = (sub->tag)&0xff)==' ' ) tag[3] = '\0';
+			tag[0] = fl->featuretag>>24;
+			if ( (tag[1] = (fl->featuretag>>16)&0xff)==' ' ) tag[1] = '\0';
+			if ( (tag[2] = (fl->featuretag>>8)&0xff)==' ' ) tag[2] = '\0';
+			if ( (tag[3] = (fl->featuretag)&0xff)==' ' ) tag[3] = '\0';
 			tag[4] = '\0';
 			*str='\0';
 			for ( k=0; k<cc; ++k ) {
@@ -2058,9 +1971,7 @@ return;
 			len += strlen(info->chars[lig_glyphs[k]]->name)+1;
 		liga = chunkalloc(sizeof(PST));
 		liga->type = pst_ligature;
-		liga->tag = sub->tag;
-		liga->script_lang_index = sub->script_lang_index;
-		liga->flags = sub->flags;
+		liga->subtable = subtable;
 		liga->next = info->chars[lig]->possub;
 		info->chars[lig]->possub = liga;
 		liga->u.lig.lig = info->chars[lig];
@@ -2079,11 +1990,12 @@ return;
 	}
 	free(lig_offsets);
     }
+    subtable->per_glyph_pst_or_kern = true;
     free(ls_offsets); free(glyphs);
 }
 
 static void gsubContextSubTable(FILE *ttf, int stoffset,
-	struct ttfinfo *info, struct lookup_subtable *sub, int justinuse,
+	struct ttfinfo *info, struct lookup *l, struct lookup_subtable *subtable, int justinuse,
 	struct lookup *alllooks) {
     if ( justinuse==git_findnames )
 return;		/* Don't give names to these guys, they might not be unique */
@@ -2093,37 +2005,37 @@ return;		/* Don't give names to these guys, they might not be unique */
 	/*  <input-glyph-name>"."<tag-name> would be used for several glyphs */
     switch( getushort(ttf)) {
       case 1:
-	g___ContextSubTable1(ttf,stoffset,info,sub,justinuse,alllooks,false);
+	g___ContextSubTable1(ttf,stoffset,info,l,subtable,justinuse,alllooks,false);
       break;
       case 2:
-	g___ContextSubTable2(ttf,stoffset,info,sub,justinuse,alllooks,false);
+	g___ContextSubTable2(ttf,stoffset,info,l,subtable,justinuse,alllooks,false);
       break;
       case 3:
-	g___ContextSubTable3(ttf,stoffset,info,sub,justinuse,alllooks,false);
+	g___ContextSubTable3(ttf,stoffset,info,l,subtable,justinuse,alllooks,false);
       break;
     }
 }
 
 static void gsubChainingSubTable(FILE *ttf, int stoffset,
-	struct ttfinfo *info, struct lookup_subtable *sub, int justinuse,
+	struct ttfinfo *info, struct lookup *l, struct lookup_subtable *subtable, int justinuse,
 	struct lookup *alllooks) {
     if ( justinuse==git_findnames )
 return;		/* Don't give names to these guys, the names might not be unique */
     switch( getushort(ttf)) {
       case 1:
-	g___ChainingSubTable1(ttf,stoffset,info,sub,justinuse,alllooks,false);
+	g___ChainingSubTable1(ttf,stoffset,info,l,subtable,justinuse,alllooks,false);
       break;
       case 2:
-	g___ChainingSubTable2(ttf,stoffset,info,sub,justinuse,alllooks,false);
+	g___ChainingSubTable2(ttf,stoffset,info,l,subtable,justinuse,alllooks,false);
       break;
       case 3:
-	g___ChainingSubTable3(ttf,stoffset,info,sub,justinuse,alllooks,false);
+	g___ChainingSubTable3(ttf,stoffset,info,l,subtable,justinuse,alllooks,false);
       break;
     }
 }
 
 static void gsubReverseChainSubTable(FILE *ttf, int stoffset,
-	struct ttfinfo *info, struct lookup_subtable *sub, int justinuse) {
+	struct ttfinfo *info, struct lookup *l, struct lookup_subtable *subtable, int justinuse) {
     int scnt, bcnt, fcnt, i;
     uint16 coverage, *bcoverage, *fcoverage, *sglyphs, *glyphs;
     FPST *fpst;
@@ -2160,11 +2072,10 @@ return;		/* Don't understand this format type */
 	fpst = chunkalloc(sizeof(FPST));
 	fpst->type = pst_reversesub;
 	fpst->format = pst_reversecoverage;
-	fpst->tag = sub->tag;
-	fpst->script_lang_index = sub->script_lang_index;
-	fpst->flags = sub->flags;
+	fpst->subtable = subtable;
 	fpst->next = info->possub;
 	info->possub = fpst;
+	subtable->fpst = fpst;
 
 	fpst->rules = rule = gcalloc(1,sizeof(struct fpst_rule));
 	fpst->rule_cnt = 1;
@@ -2322,7 +2233,7 @@ static struct feature *readttffeatures(FILE *ttf,int32 pos,int isgpos, struct tt
     int parameters;
 
     fseek(ttf,pos,SEEK_SET);
-    cnt = getushort(ttf);
+    info->feature_cnt = cnt = getushort(ttf);
     if ( cnt<=0 )
 return( NULL );
     else if ( cnt>1000 ) {
@@ -2331,8 +2242,6 @@ return( NULL );
     }
 
     features = gcalloc(cnt+1,sizeof(struct feature));
-    info->feats[isgpos] = galloc((3*cnt+1)*sizeof(uint32));
-    info->feats[isgpos][0] = 0;
     for ( i=0; i<cnt; ++i ) {
 	features[i].tag = getlong(ttf);
 	features[i].offset = getushort(ttf);
@@ -2357,12 +2266,15 @@ return( NULL );
 return( features );
 }
 
-static struct lookup *readttflookups(FILE *ttf,int32 pos, struct ttfinfo *info) {
+static struct lookup *readttflookups(FILE *ttf,int32 pos, struct ttfinfo *info, int isgpos) {
     int cnt,i,j;
     struct lookup *lookups;
+    OTLookup *otlookup, *last=NULL;
+    struct lookup_subtable *st;
 
     fseek(ttf,pos,SEEK_SET);
     info->lookup_cnt = cnt = getushort(ttf);
+    info->cur_lookups = NULL;
     if ( cnt<=0 )
 return( NULL );
     else if ( cnt>1000 ) {
@@ -2377,239 +2289,116 @@ return( NULL );
 	fseek(ttf,pos+lookups[i].offset,SEEK_SET);
 	lookups[i].type = getushort(ttf);
 	lookups[i].flags = getushort(ttf);
-	lookups[i].lookup = i;
 	lookups[i].subtabcnt = getushort(ttf);
 	lookups[i].subtab_offsets = galloc(lookups[i].subtabcnt*sizeof(int32));
-	lookups[i].subtables = galloc(lookups[i].subtabcnt*sizeof(struct lookup_subtable *));
 	for ( j=0; j<lookups[i].subtabcnt; ++j )
 	    lookups[i].subtab_offsets[j] = pos+lookups[i].offset+getushort(ttf);
+
+	lookups[i].otlookup = otlookup = chunkalloc(sizeof(OTLookup));
+	otlookup->lookup_index = i;
+	if ( last==NULL )
+	    info->cur_lookups = otlookup;
+	else
+	    last->next = otlookup;
+	last = otlookup;
+	otlookup->lookup_type = (isgpos<<8) | lookups[i].type;
+	otlookup->lookup_flags = lookups[i].flags;
+	otlookup->lookup_index = i;
+	for ( j=0; j<lookups[i].subtabcnt; ++j ) {
+	    st = chunkalloc(sizeof(struct lookup_subtable));
+	    st->next = otlookup->subtables;
+	    st->lookup = otlookup;
+	    otlookup->subtables = st;
+	}
     }
+    if ( isgpos )
+	info->gpos_lookups = info->cur_lookups;
+    else
+	info->gsub_lookups = info->cur_lookups;
 return( lookups );
 }
 
-static void SubTableAddFeatScriptLang(struct lookup_subtable *sub,
-	uint32 feature, uint32 script, uint32 lang) {
-    struct lookup_subtable *alt;
-    int j;
-    struct scriptlist *sl;
+static void tagLookupsWithFeature(uint32 script_tag,uint32 lang_tag,
+	int required_feature, struct feature *feature, struct lookup *lookups,
+	struct ttfinfo *info) {
+    uint32 feature_tag = required_feature ? REQUIRED_FEATURE : feature->tag;
+    int i;
+    OTLookup *otlookup;
+    FeatureScriptLangList *fl;
 
-    if ( sub->sl==NULL )
-	sub->tag = feature;
-    else if ( sub->tag!=feature ) {
-	for ( alt=sub->alttags; alt!=NULL && alt->tag!=feature; alt=alt->nextsame );
-	if ( alt==NULL ) {
-	    alt = chunkalloc(sizeof(struct lookup_subtable));
-	    *alt = *sub;
-	    alt->alttags = NULL;
-	    alt->nextsame = sub->alttags;
-	    sub->alttags = alt;
-	    alt->tag = feature;
-	    alt->sl = NULL;
-	}
-	sub = alt;
-    }
-    
+    /* The otf docs are ambiguous as to the capitalization of the default */
+    /*  script. The capitalized version is correct (uncapitalized is used for languages) */
+    if ( script_tag == DEFAULT_LANG )
+	script_tag = DEFAULT_SCRIPT;
 
-    for ( sl=sub->sl; sl!=NULL && sl->script!=script; sl=sl->next );
-    if ( sl==NULL ) {
-	sl = gcalloc(1,sizeof(struct scriptlist));
-	sl->next = sub->sl;
-	sub->sl = sl;
-	sl->script = script;
-    }
-    if ( sl->lang_cnt<MAX_LANG ) {
-	for ( j=sl->lang_cnt-1; j>=0 ; --j )
-	    if ( sl->langs[j]==lang )
-	break;
-	if ( j<0 )
-	    sl->langs[sl->lang_cnt++] = lang;
-    }
-}
-
-static void tagFeature(struct feature *feat, uint32 feat_tag, uint32 script_tag,
-	uint32 lang_tag, struct lookup *lookups, int lcnt) {
-    int l, st;
-
-    for ( l=0; l<feat->lcnt; ++l ) {
-	struct lookup *look;
-	if ( feat->lookups[l]>=lcnt ) {
+    for ( i=0; i < feature->lcnt; ++i ) {
+	if ( feature->lookups[i]>=info->lookup_cnt )
 	    LogError( _("Lookup out of bounds in feature table.\n") );
-    continue;
+	else {
+	    otlookup = lookups[feature->lookups[i]].otlookup;
+	    for ( fl = otlookup->features; fl!=NULL && fl->featuretag!=feature_tag; fl=fl->next );
+	    if ( fl==NULL ) {
+		fl = chunkalloc(sizeof(FeatureScriptLangList));
+		fl->featuretag = feature_tag;
+		fl->next = otlookup->features;
+		otlookup->features = fl;
+	    }
+	    FListAppendScriptLang(fl,script_tag,lang_tag);
 	}
-	look = &lookups[feat->lookups[l]];
-	for ( st=0; st<look->subtabcnt; ++st )
-	    SubTableAddFeatScriptLang(look->subtables[st],
-		    feat_tag,script_tag,lang_tag);
     }
 }
 
-static struct lookup_subtable *tagSubLookupsWithScript(struct scripts *scripts,
-	struct feature *features, struct lookup *lookups,struct ttfinfo *info,
-	int isgpos) {
-    int lcnt, fcnt, lstcnt, lstmax;
-    struct lookup_subtable *subs;
-    int i,j,k,f;
-    struct scripts *s;
-    struct feature *feat;
-
-    for ( fcnt=0; features[fcnt].tag!=0 || features[fcnt].lcnt!=0; ++fcnt );
-    for ( lcnt=lstmax=0; lookups[lcnt].offset!=0; ++lcnt )
-	lstmax += lookups[lcnt].subtabcnt;
-    subs = gcalloc(lstmax+1,sizeof(struct lookup_subtable));
-
-    lstcnt = 0;
-    for ( i=0; i<lcnt; ++i ) {
-	for ( j=0; j<lookups[i].subtabcnt; ++j ) {
-	    for ( k=lstcnt-1; k>=0; --k )
-		if ( lookups[i].subtab_offsets[j] == subs[k].offset )
-	    break;
-	    if ( k<0 ) {
-		k = lstcnt++;
-		subs[k].offset = lookups[i].subtab_offsets[j];
-		subs[k].flags = lookups[i].flags;
-		subs[k].type = lookups[i].type;
-	    }
-	    lookups[i].subtables[j] = &subs[k];
-	}
-    }
-
-    /* Tag each subtable with every feature/script/lang combination it gets */
-    for ( s=scripts; s->tag!=0; ++s ) {
-	for ( i=0; i<s->langcnt; ++i ) {
-	    for ( f=0; f<s->languages[i].fcnt; ++f ) {
-		if ( s->languages[i].features[f]>=fcnt ) {
-		    LogError( _("Feature out of bounds in script table.\n") );
-	    continue;
-		}
-		feat = &features[s->languages[i].features[f]];
-		tagFeature(feat,feat->tag,s->tag,s->languages[i].tag,lookups,lcnt);
-	    }
-	    if ( s->languages[i].req!=0xffff ) {
-		if ( s->languages[i].req>=fcnt ) {
-		    LogError( _("Required feature out of bounds in script table.\n") );
-		} else {
-		    feat = &features[s->languages[i].req];
-		    tagFeature(feat,REQUIRED_FEATURE,s->tag,s->languages[i].tag,lookups,lcnt);
-		}
-	    }
-	}
-    }
-
-    /* Save the lookup ordering */
-    j=0;
-    for ( i=0; i<lcnt; ++i ) {
-	uint32 tag=0;
-	for ( k=0; tag==0 && k<lookups[i].subtabcnt; ++k )
-	    tag = lookups[i].subtables[k]->tag;
-	if ( tag==0 )
-    continue;
-	for ( k=0; k<j; ++k )
-	    if ( tag==info->feats[isgpos][k] )
-	break;
-	if ( k==j )
-	    info->feats[isgpos][j++] = tag;
-    }
-    info->feats[isgpos][j] = 0;
-    
-return( subs );
-}
-
-static struct lookup_subtable *flattenSubLookups(struct lookup_subtable *subs,
-	struct lookup *lookups) {
-    int cnt, extras;
-    struct lookup_subtable *alts, *anext, *s, *end;
-    struct lookup_subtable *newsubs;
-
-    cnt = extras = 0;
-    for ( s=subs; s->offset!=0; ++s, ++cnt ) {
-	for ( alts=s->alttags; alts!=NULL; alts=alts->nextsame, ++extras );
-    }
-
-    if ( extras==0 )
-return( subs );
-
-    newsubs = grealloc(subs,(cnt+extras+1)*sizeof( struct lookup_subtable ));
-    end = newsubs+cnt;
-    for ( s=newsubs; s<end; ++s ) {
-	for ( alts=s->alttags; alts!=NULL; alts=anext ) {
-	    anext = alts->nextsame;
-	    newsubs[cnt++] = *alts;
-	    chunkfree(alts,sizeof(*alts));
-	}
-    }
-    memset(newsubs+cnt,0,sizeof(struct lookup_subtable));
-
-    if ( newsubs!=subs ) {
-	struct lookup *l; int i;
-	for ( l=lookups; l->offset!=0; ++l ) {
-	    for ( i=0; i<l->subtabcnt; ++i )
-		l->subtables[i] = newsubs + (l->subtables[i]-subs);
-	}
-    }
-return( newsubs );
-}
-
-static int SLMatch(struct script_record *sr,struct scriptlist *sl) {
+static void tagLookupsWithScript(struct scripts *scripts,
+	struct feature *features, struct lookup *lookups,struct ttfinfo *info ) {
     int i,j;
-    struct scriptlist *slt;
+    struct scripts *s;
+    struct language *lang;
+    struct lookup *l;
 
-    for ( j=0, slt=sl; slt!=NULL; slt=slt->next, ++j );
-    for ( i=0; sr[i].script!=0; ++i );
-    if ( i!=j )
-return( false );
+    if ( scripts==NULL || features==NULL )
+return;		/* Legal, I'd guess, but not very interesting. Perhaps all lookups are controlled by the JSTF table or something */
 
-    for ( slt=sl; slt!=NULL; slt=slt->next ) {
-	for ( i=0; sr[i].script!=0 && sr[i].script!=slt->script; ++i );
-	if ( sr[i].script==0 )
-return( false );
-	for ( j=0 ; sr[i].langs[j]!=0; ++j );
-	if ( j!=slt->lang_cnt )
-return( false );
-	for ( j=0 ; sr[i].langs[j]!=0; ++j )
-	    if ( sr[i].langs[j]!=slt->langs[j] )
-return( false );
-    }
-return( true );
-}
-
-static void FigureScriptIndeces(struct ttfinfo *info,struct lookup_subtable *subs) {
-    int i,j,k;
-    struct scriptlist *sl, *snext;
-
-    for ( i=0; subs[i].offset!=0; ++i );
-    if ( info->script_lang==NULL ) {
-	info->script_lang = gcalloc(i+1,sizeof(struct script_record *));
-    } else {
-	for ( j=0; info->script_lang[j]!=NULL; ++j );
-	info->script_lang = grealloc(info->script_lang,(i+j+1)*sizeof(struct script_record *));
-    }
-    for ( i=0; subs[i].offset!=0; ++i ) {
-	for ( j=0; info->script_lang[j]!=NULL; ++j )
-	    if ( SLMatch(info->script_lang[j],subs[i].sl))
-	break;
-	subs[i].script_lang_index = j;
-	if ( info->script_lang[j]==NULL ) {
-	    for ( k=0, sl=subs[i].sl; sl!=NULL; sl=sl->next, ++k );
-	    info->script_lang[j] = galloc((k+1)*sizeof(struct script_record));
-	    for ( k=0, sl=subs[i].sl; sl!=NULL; sl=sl->next, ++k ) {
-		info->script_lang[j][k].script = sl->script;
-		info->script_lang[j][k].langs = galloc((sl->lang_cnt+1)*sizeof(uint32));
-		memcpy(info->script_lang[j][k].langs,sl->langs,sl->lang_cnt*sizeof(uint32));
-		info->script_lang[j][k].langs[sl->lang_cnt]=0;
+    /* First tag every lookup with all script, lang, feature combinations that*/
+    /*  invoke it */
+    for ( s=scripts; s->tag!=0; ++s ) {
+	for ( lang=s->languages, i=0; i<s->langcnt; ++i, ++lang ) {
+	    if ( lang->req==0xffff )
+		/* Do Nothing */;
+	    else if ( lang->req>= info->feature_cnt )
+		LogError( _("Required feature out of bounds in script table.\n") );
+	    else
+		tagLookupsWithFeature(s->tag,lang->tag,true,&features[lang->req],
+			lookups,info);
+	    for ( j=0; j<lang->fcnt; ++j ) {
+		if ( lang->features[j]>=info->feature_cnt )
+		    LogError( _("Feature out of bounds in script table.\n") );
+		else
+		    tagLookupsWithFeature(s->tag,lang->tag,false,&features[lang->features[j]],
+			    lookups,info);
 	    }
-	    info->script_lang[j][k].script = 0;
-	    info->script_lang[j+1] = NULL;
-	    info->sli_cnt = j+1;
 	}
-	for ( sl=subs[i].sl; sl!=NULL; sl=snext ) {
-	    snext = sl->next;
-	    free( sl );
+    }
+
+    /* The scripts got added backwards so reverse to put them in */
+    /*  alphabetic order again */
+    for ( l=lookups, i=0; l->offset!=0; ++l, ++i ) {
+	OTLookup *otl = l->otlookup;
+	FeatureScriptLangList *fl;
+	struct scriptlanglist *sl, *next, *prev;
+	for ( fl=otl->features; fl!=NULL; fl=fl->next ) {
+	    prev = NULL;
+	    for ( sl=fl->scripts; sl!=NULL; sl = next ) {
+		next = sl->next;
+		sl->next = prev;
+		prev = sl;
+	    }
+	    fl->scripts = prev;
 	}
     }
 }
 
 static void gposExtensionSubTable(FILE *ttf, int stoffset,
-	struct ttfinfo *info, struct lookup_subtable *sub,
+	struct ttfinfo *info, struct lookup *l, struct lookup_subtable *subtable,
 	struct lookup *alllooks) {
     uint32 base = ftell(ttf), st, offset;
     int lu_type;
@@ -2618,30 +2407,27 @@ static void gposExtensionSubTable(FILE *ttf, int stoffset,
     lu_type = getushort(ttf);
     offset = getlong(ttf);
 
+    l->otlookup->lookup_type = 0x100|lu_type;
+
     fseek(ttf,st = base+offset,SEEK_SET);
     switch ( lu_type ) {
       case 1:
-	gposSimplePos(ttf,st,info,sub);
+	gposSimplePos(ttf,st,info,l,subtable);
       break;  
       case 2:
-	if ( sub->tag==CHR('k','e','r','n') )
-	    gposKernSubTable(ttf,st,info,sub,false);
-	else if ( sub->tag==CHR('v','k','r','n') )
-	    gposKernSubTable(ttf,st,info,sub,true);
-	else
-	    gposKernSubTable(ttf,st,info,sub,2);
+	gposKernSubTable(ttf,st,info,l,subtable);
       break;  
       case 3:
-	gposCursiveSubTable(ttf,st,info,sub);
+	gposCursiveSubTable(ttf,st,info,l,subtable);
       break;
       case 4: case 5: case 6:
-	gposMarkSubTable(ttf,st,info,sub,lu_type);
+	gposMarkSubTable(ttf,st,info,l,subtable);
       break;
       case 7:
-	gposContextSubTable(ttf,st,info,sub,alllooks);
+	gposContextSubTable(ttf,st,info,l,subtable,alllooks);
       break;
       case 8:
-	gposChainingSubTable(ttf,st,info,sub,alllooks);
+	gposChainingSubTable(ttf,st,info,l,subtable,alllooks);
       break;
       case 9:
 	LogError( _("This font is erroneous: it has a GPOS extension subtable that points to\nanother extension sub-table.\n") );
@@ -2656,7 +2442,7 @@ static void gposExtensionSubTable(FILE *ttf, int stoffset,
 }
 
 static void gsubExtensionSubTable(FILE *ttf, int stoffset,
-	struct ttfinfo *info, struct lookup_subtable *sub, int justinuse,
+	struct ttfinfo *info, struct lookup *l, struct lookup_subtable *subtable, int justinuse,
 	struct lookup *alllooks) {
     uint32 base = ftell(ttf), st, offset;
     int lu_type;
@@ -2665,28 +2451,30 @@ static void gsubExtensionSubTable(FILE *ttf, int stoffset,
     lu_type = getushort(ttf);
     offset = getlong(ttf);
 
+    l->otlookup->lookup_type = lu_type;
+
     fseek(ttf,st = base+offset,SEEK_SET);
     switch ( lu_type ) {
       case 1:
-	gsubSimpleSubTable(ttf,st,info,sub,justinuse);
+	gsubSimpleSubTable(ttf,st,info,l,subtable,justinuse);
       break;
       case 2: case 3:	/* Multiple and alternate have same format, different semantics */
-	gsubMultipleSubTable(ttf,st,info,sub,lu_type,justinuse);
+	gsubMultipleSubTable(ttf,st,info,l,subtable,justinuse);
       break;
       case 4:
-	gsubLigatureSubTable(ttf,st,info,sub,justinuse);
+	gsubLigatureSubTable(ttf,st,info,l,subtable,justinuse);
       break;
       case 5:
-	gsubContextSubTable(ttf,st,info,sub,justinuse,alllooks);
+	gsubContextSubTable(ttf,st,info,l,subtable,justinuse,alllooks);
       break;
       case 6:
-	gsubChainingSubTable(ttf,st,info,sub,justinuse,alllooks);
+	gsubChainingSubTable(ttf,st,info,l,subtable,justinuse,alllooks);
       break;
       case 7:
 	LogError( _("This font is erroneous: it has a GSUB extension subtable that points to\nanother extension sub-table.\n") );
       break;
       case 8:
-	gsubReverseChainSubTable(ttf,st,info,sub,justinuse);
+	gsubReverseChainSubTable(ttf,st,info,l,subtable,justinuse);
       break;
 /* Any cases added here also need to go in the gsubLookupSwitch */
       default:
@@ -2698,39 +2486,34 @@ static void gsubExtensionSubTable(FILE *ttf, int stoffset,
 }
 
 static void gposLookupSwitch(FILE *ttf, int st,
-	struct ttfinfo *info, struct lookup_subtable *sub,
+	struct ttfinfo *info, struct lookup *l, struct lookup_subtable *subtable,
 	struct lookup *alllooks) {
 
-    switch ( sub->type ) {
-      case 1:
-	gposSimplePos(ttf,st,info,sub);
+    switch ( l->otlookup->lookup_type ) {
+      case gpos_single:
+	gposSimplePos(ttf,st,info,l,subtable);
       break;  
-      case 2:
-	if ( sub->tag==CHR('k','e','r','n') )
-	    gposKernSubTable(ttf,st,info,sub,false);
-	else if ( sub->tag==CHR('v','k','r','n') )
-	    gposKernSubTable(ttf,st,info,sub,true);
-	else
-	    gposKernSubTable(ttf,st,info,sub,2);
+      case gpos_pair:
+	gposKernSubTable(ttf,st,info,l,subtable);
       break;  
-      case 3:
-	gposCursiveSubTable(ttf,st,info,sub);
+      case gpos_cursive:
+	gposCursiveSubTable(ttf,st,info,l,subtable);
       break;
-      case 4: case 5: case 6:
-	gposMarkSubTable(ttf,st,info,sub,sub->type);
+      case gpos_mark2base: case gpos_mark2ligature: case gpos_mark2mark:
+	gposMarkSubTable(ttf,st,info,l,subtable);
       break;
-      case 7:
-	gposContextSubTable(ttf,st,info,sub,alllooks);
+      case gpos_context:
+	gposContextSubTable(ttf,st,info,l,subtable,alllooks);
       break;
-      case 8:
-	gposChainingSubTable(ttf,st,info,sub,alllooks);
+      case gpos_contextchain:
+	gposChainingSubTable(ttf,st,info,l,subtable,alllooks);
       break;
-      case 9:
-	gposExtensionSubTable(ttf,st,info,sub,alllooks);
+      case 0x109:
+	gposExtensionSubTable(ttf,st,info,l,subtable,alllooks);
       break;
 /* Any cases added here also need to go in the gposExtensionSubTable */
       default:
-	LogError( _("Unknown GPOS sub-table type: %d\n"), sub->type );
+	LogError( _("Unknown GPOS sub-table type: %d\n"), l->otlookup->lookup_type );
       break;
     }
     if ( ftell(ttf)>info->gpos_start+info->gpos_length )
@@ -2738,126 +2521,45 @@ static void gposLookupSwitch(FILE *ttf, int st,
 }
 
 static void gsubLookupSwitch(FILE *ttf, int st,
-	struct ttfinfo *info, struct lookup_subtable *sub, int justinuse,
+	struct ttfinfo *info, struct lookup *l, struct lookup_subtable *subtable, int justinuse,
 	struct lookup *alllooks) {
 
-    switch ( sub->type ) {
-      case 1:
-	gsubSimpleSubTable(ttf,st,info,sub,justinuse);
+    switch ( l->otlookup->lookup_type ) {
+      case gsub_single:
+	gsubSimpleSubTable(ttf,st,info,l,subtable,justinuse);
       break;
-      case 2: case 3:	/* Multiple and alternate have same format, different semantics */
-	gsubMultipleSubTable(ttf,st,info,sub,sub->type,justinuse);
+      case gsub_multiple: case gsub_alternate:	/* Multiple and alternate have same format, different semantics */
+	gsubMultipleSubTable(ttf,st,info,l,subtable,justinuse);
       break;
-      case 4:
-	gsubLigatureSubTable(ttf,st,info,sub,justinuse);
+      case gsub_ligature:
+	gsubLigatureSubTable(ttf,st,info,l,subtable,justinuse);
       break;
-      case 5:
-	gsubContextSubTable(ttf,st,info,sub,justinuse,alllooks);
+      case gsub_context:
+	gsubContextSubTable(ttf,st,info,l,subtable,justinuse,alllooks);
       break;
-      case 6:
-	gsubChainingSubTable(ttf,st,info,sub,justinuse,alllooks);
+      case gsub_contextchain:
+	gsubChainingSubTable(ttf,st,info,l,subtable,justinuse,alllooks);
       break;
       case 7:
-	gsubExtensionSubTable(ttf,st,info,sub,justinuse,alllooks);
+	gsubExtensionSubTable(ttf,st,info,l,subtable,justinuse,alllooks);
       break;
-      case 8:
-	gsubReverseChainSubTable(ttf,st,info,sub,justinuse);
+      case gsub_reversecchain:
+	gsubReverseChainSubTable(ttf,st,info,l,subtable,justinuse);
       break;
 /* Any cases added here also need to go in the gsubExtensionSubTable */
       default:
-	LogError( _("Unknown GSUB sub-table type: %d\n"), sub->type );
+	LogError( _("Unknown GSUB sub-table type: %d\n"), l->otlookup->lookup_type );
       break;
     }
     if ( ftell(ttf)>info->g_bounds )
 	LogError( _("Subtable extends beyond end of GSUB table\n" ));
 }
 
-static uint32 InfoGenerateNewFeatureTag(struct gentagtype *gentags,int lu_type,
-	int gpos, int lookup_index) {
-    int type = pst_null;
-    char buf[8];
-    uint32 suggested_tag = 0;
-
-    switch ( gpos ) {
-      case 0:
-	switch ( lu_type ) {
-	  case 1:
-	    type = pst_substitution;
-	  break;
-	  case 2:
-	    type = pst_multiple;
-	  break;
-	  case 3:
-	    type = pst_alternate;
-	  break;
-	  case 4:
-	    type = pst_ligature;
-	  break;
-	  case 5:
-	    type = pst_contextsub;
-	  break;
-	  case 6:
-	    type = pst_chainsub;
-	  break;
-	  case 8:
-	    type = pst_reversesub;
-	  break;
-	    }
-      break;
-      case 1:
-	switch ( lu_type ) {
-	  case 1:
-	    type=pst_position;
-	  break;
-	  case 2:
-	    type = pst_pair;
-	  break;  
-	  case 3:
-	  case 4:
-	  case 5:
-	  case 6:
-	    type = pst_anchors;
-	  break;
-	  case 7:
-	    type = pst_contextpos;
-	  break;
-	  case 8:
-	    type = pst_chainpos;
-	  break;
-	}
-      break;
-    }
-    if ( suggested_tag==0 && lookup_index<1000 ) {
-	sprintf( buf, "L%03d", lookup_index );
-	suggested_tag = CHR(buf[0],buf[1],buf[2],buf[3]);
-    }
-return( SFGenerateNewFeatureTag(gentags,type,suggested_tag));
-}
-
-static void ProcessGPOSGSUBlookup(FILE *ttf,struct ttfinfo *info,int gpos,
-	int lookup_index, int inusetype, struct lookup *alllooks) {
-    int j, st;
-    struct lookup *lookup = &alllooks[lookup_index];
-
-    lookup->made_tag = InfoGenerateNewFeatureTag(&info->gentags,
-	    lookup->type,gpos,lookup_index);
-
-    for ( j=0; j<lookup->subtabcnt; ++j ) {
-	struct lookup_subtable *sub = lookup->subtables[j];
-	sub->tag = lookup->made_tag;
-	sub->script_lang_index = SLI_NESTED;
-	fseek(ttf,st = sub->offset,SEEK_SET);
-	if ( gpos ) {
-	    gposLookupSwitch(ttf,st,info,sub,alllooks);
-	} else {
-	    gsubLookupSwitch(ttf,st,info,sub,inusetype,alllooks);
-	}
-    }
-}
-
 static void ScriptsFree(struct scripts *scripts) {
     int i,j;
 
+    if ( scripts==NULL )
+return;
     for ( i=0; scripts[i].offset!=0 ; ++i ) {
 	for ( j=0; j<scripts[i].langcnt; ++j )
 	    free( scripts[i].languages[j].features);
@@ -2869,6 +2571,8 @@ static void ScriptsFree(struct scripts *scripts) {
 static void FeaturesFree(struct feature *features) {
     int i;
 
+    if ( features==NULL )
+return;
     for ( i=0; features[i].offset!=0 ; ++i )
 	free(features[i].lookups);
     free(features);
@@ -2878,7 +2582,6 @@ static void LookupsFree(struct lookup *lookups) {
     int i;
 
     for ( i=0; lookups[i].offset!=0 ; ++i ) {
-	free( lookups[i].subtables );
 	free( lookups[i].subtab_offsets );
     }
     free(lookups);
@@ -2890,8 +2593,8 @@ static void ProcessGPOSGSUB(FILE *ttf,struct ttfinfo *info,int gpos,int inusetyp
     int32 script_off, feature_off;
     struct scripts *scripts;
     struct feature *features;
-    struct lookup *lookups;
-    struct lookup_subtable *sublookups;
+    struct lookup *lookups, *l;
+    struct lookup_subtable *subtable;
 
     if ( gpos ) {
 	base = info->gpos_start;
@@ -2907,36 +2610,40 @@ static void ProcessGPOSGSUB(FILE *ttf,struct ttfinfo *info,int gpos,int inusetyp
     lookup_start = base+getushort(ttf);
 
     scripts = readttfscripts(ttf,base+script_off);
-    if ( scripts==NULL )
-return;
     features = readttffeatures(ttf,base+feature_off,gpos,info);
-    if ( features==NULL ) {		/* None of the data we care about */
-	ScriptsFree(scripts);		/* Some fonts have empty GSUB/GPOS tables to force windows to accept the other one */
+    /* It is legal to have lookups with no features or scripts */
+    /* For example if all the lookups were controlled by the JSTF table */
+    lookups = readttflookups(ttf,lookup_start,info,gpos);
+    if ( lookups==NULL ) {
+	ScriptsFree(scripts);
+	FeaturesFree(features);
 return;
     }
-    lookups = readttflookups(ttf,lookup_start,info);
-    if ( lookups==NULL )
-return;
-    sublookups = tagSubLookupsWithScript(scripts,features,lookups,info,gpos);
+    tagLookupsWithScript(scripts,features,lookups,info);
     ScriptsFree(scripts); scripts = NULL;
     FeaturesFree(features); features = NULL;
-    sublookups = flattenSubLookups(sublookups,lookups);
-    
-    FigureScriptIndeces(info,sublookups);
 
-    for ( k=0; sublookups[k].offset!=0; ++k ) if ( sublookups[k].tag!=0 ) {
-	fseek(ttf,st = sublookups[k].offset,SEEK_SET);
-	if ( gpos ) {
-	    gposLookupSwitch(ttf,st,info,&sublookups[k],lookups);
-	} else {
-	    gsubLookupSwitch(ttf,st,info,&sublookups[k],inusetype,lookups);
+    for ( l = lookups; l->offset!=0; ++l ) {
+	for ( k=0, subtable=l->otlookup->subtables; k<l->subtabcnt; ++k, subtable=subtable->next ) {
+	    st = l->subtab_offsets[k];
+	    fseek(ttf,st,SEEK_SET);
+	    if ( gpos ) {
+		gposLookupSwitch(ttf,st,info,l,subtable,lookups);
+	    } else {
+		gsubLookupSwitch(ttf,st,info,l,subtable,inusetype,lookups);
+	    }
 	}
     }
+
+    /* Then generate some user-friendly names for the all the lookups */
+    if ( inusetype==git_normal )
+	for ( l=lookups; l->offset!=0; ++l )
+	    NameOTLookup(l->otlookup,NULL);
+
     LookupsFree(lookups);
-    free(sublookups);
-    if ( inusetype ) {
-	free(info->feats[gpos]);
-	info->feats[gpos]=NULL;
+    if ( inusetype!=git_normal && !gpos ) {
+	OTLookupListFree(info->gsub_lookups);
+	info->gsub_lookups = info->cur_lookups = NULL;
     }
 }
 
@@ -3014,7 +2721,7 @@ return;
 		pst->next = sc->possub;
 		sc->possub = pst;
 		pst->type = pst_lcaret;
-		pst->script_lang_index = SLI_UNKNOWN;
+		pst->subtable = NULL;
 	    }
 	    caret_base = ftell(ttf);
 	    pst->u.lcaret.cnt = getushort(ttf);
@@ -3148,6 +2855,79 @@ static void readttf_applelookup(FILE *ttf,struct ttfinfo *info,
     }
 }
 
+static void OTLAppend(struct ttfinfo *info,OTLookup *otl,int gpos) {
+    OTLookup *prev;
+    int pos=0;
+
+    if ( gpos && info->gpos_lookups == NULL )
+	info->gpos_lookups = otl;
+    else if ( !gpos && info->gsub_lookups == NULL )
+	info->gsub_lookups = otl;
+    else {
+	prev = gpos ? info->gpos_lookups : info->gsub_lookups;
+	pos = 1;
+	while ( prev->next!=NULL ) {
+	    prev = prev->next;
+	    ++pos;
+	}
+	prev->next = otl;
+    }
+    otl->lookup_index = pos;
+}
+
+static OTLookup *NewMacLookup(struct ttfinfo *info,int gpos) {
+    OTLookup *otl;
+
+    otl = chunkalloc(sizeof(OTLookup));
+    otl->lookup_type = gpos ? kern_statemachine : morx_context;
+    otl->subtables = chunkalloc(sizeof(struct lookup_subtable));
+    otl->subtables->lookup = otl;
+    otl->features = chunkalloc(sizeof(FeatureScriptLangList));
+    if ( gpos )
+	otl->features->featuretag = CHR('k','e','r','n');
+    else {
+	otl->features->featuretag = (info->mort_feat<<16) | (info->mort_setting);
+	otl->features->ismac = true;
+    }
+    OTLAppend(info,otl,gpos);
+return( otl );
+}
+
+static OTLookup *NewMacSubsLookup(struct ttfinfo *info,OTLookup *parent,
+	int nest_index, OTLookup **subs) {
+    OTLookup *otl;
+    char *name, *format;
+
+    if ( subs[nest_index]!=NULL )
+return( subs[nest_index] );
+
+    /* These are nested lookups, only to be activated by a state machine */
+    /*  as such they have no feature tags nor scripts of their own. */
+    otl = chunkalloc(sizeof(OTLookup));
+    otl->lookup_type = gsub_single;
+    otl->subtables = chunkalloc(sizeof(struct lookup_subtable));
+    otl->subtables->lookup = otl;
+/* GT: This is to give the name to a nested substitution lookup invoked by */
+/* GT: a statemachine. The %s is the name of the statemachine('s lookup) */
+/* GT: and the %d is n, where this lookup is the n'th defined for this state */
+/* GT: machine */
+    format = _("%s nested-substitutions %d");
+    name = galloc(strlen(parent->lookup_name)+strlen(format)+10);
+    sprintf( name, format, parent->lookup_name, nest_index );
+    otl->lookup_name = name;
+    OTLAppend(info,otl,false);
+    subs[nest_index] = otl;
+return( otl );
+}
+
+static void InfoNameOTLookup(OTLookup *otl,struct ttfinfo *info) {
+    SplineFont sf;
+
+    memset(&sf,0,sizeof(sf));
+    sf.features = info->features;
+    NameOTLookup(otl,&sf);
+}
+
 static void TTF_SetProp(struct ttfinfo *info,int gnum, int prop) {
     int offset;
     PST *pst;
@@ -3163,8 +2943,9 @@ return;
 		info->chars[gnum+offset]->name!=NULL ) {
 	    pst = chunkalloc(sizeof(PST));
 	    pst->type = pst_substitution;
-	    pst->tag = CHR('r','t','l','a');
-	    pst->script_lang_index = SLIFromInfo(info,info->chars[gnum],DEFAULT_LANG);
+	    pst->subtable = info->mort_subs_lookup->subtables;
+	    FListAppendScriptLang(info->mort_subs_lookup->features,SCScriptFromUnicode(info->chars[gnum]),
+		    DEFAULT_LANG);
 	    pst->next = info->chars[gnum]->possub;
 	    info->chars[gnum]->possub = pst;
 	    pst->u.subs.variant = copy(info->chars[gnum+offset]->name);
@@ -3205,9 +2986,15 @@ void readttfprop(FILE *ttf,struct ttfinfo *info) {
     /* version = */ getlong(ttf);
     /* format = */ getushort(ttf);
     def = getushort(ttf);
+    info->mort_subs_lookup = NewMacLookup(info,false);
+    info->mort_subs_lookup->lookup_type = gsub_single;
+    info->mort_subs_lookup->features->featuretag = CHR('r','t','l','a');
+    info->mort_subs_lookup->features->ismac = false;
+    info->mort_subs_lookup->subtables->per_glyph_pst_or_kern = true;
     readttf_applelookup(ttf,info,
 	    prop_apply_values,prop_apply_value,
 	    prop_apply_default,(void *) (intpt) def, false);
+    InfoNameOTLookup(info->mort_subs_lookup,info);
 }
 
 static void TTF_SetLcaret(struct ttfinfo *info, int gnum, int offset, FILE *ttf) {
@@ -3226,8 +3013,7 @@ return;
     cnt = getushort(ttf);
     pst = chunkalloc(sizeof(PST));
     pst->type = pst_lcaret;
-    pst->script_lang_index = SLI_UNKNOWN;
-    pst->tag = CHR(' ',' ',' ',' ');
+    pst->subtable = NULL;
     pst->next = sc->possub;
     sc->possub = pst;
     pst->u.lcaret.cnt = cnt;
@@ -3279,8 +3065,9 @@ return;
     if ( left!=0 ) {
 	pst = chunkalloc(sizeof(PST));
 	pst->type = pst_position;
-	pst->tag = CHR('l','f','b','d');
-	pst->script_lang_index = SLIFromInfo(info,sc,DEFAULT_LANG);
+	pst->subtable = info->mort_subs_lookup->subtables;
+	FListAppendScriptLang(info->mort_subs_lookup->features,SCScriptFromUnicode(sc),
+		DEFAULT_LANG);
 	pst->next = sc->possub;
 	sc->possub = pst;
 	pst->u.pos.xoff = left;
@@ -3289,8 +3076,9 @@ return;
     if ( right!=0 ) {
 	pst = chunkalloc(sizeof(PST));
 	pst->type = pst_position;
-	pst->tag = CHR('r','t','b','d');
-	pst->script_lang_index = SLIFromInfo(info,sc,DEFAULT_LANG);
+	pst->subtable = info->mort_pos_lookup2->subtables;
+	FListAppendScriptLang(info->mort_pos_lookup2->features,SCScriptFromUnicode(sc),
+		DEFAULT_LANG);
 	pst->next = sc->possub;
 	sc->possub = pst;
 	pst->u.pos.h_adv_off = -right;
@@ -3337,8 +3125,22 @@ void readttfopbd(FILE *ttf,struct ttfinfo *info) {
     /* version = */ getlong(ttf);
     if ( getushort(ttf)!=0 )	/* A format type of 1 has the bounds */
 return;				/*  indicated by points */
+    info->mort_subs_lookup = NewMacLookup(info,true);
+    info->mort_subs_lookup->lookup_type = pst_position;
+    info->mort_subs_lookup->features->featuretag = CHR('l','f','b','d');
+    info->mort_subs_lookup->features->ismac = false;
+    info->mort_subs_lookup->subtables->per_glyph_pst_or_kern = true;
+
+    info->mort_pos_lookup2 = NewMacLookup(info,true);
+    info->mort_pos_lookup2->lookup_type = pst_position;
+    info->mort_pos_lookup2->features->featuretag = CHR('r','t','b','d');
+    info->mort_pos_lookup2->features->ismac = false;
+    info->mort_pos_lookup2->subtables->per_glyph_pst_or_kern = true;
+
     readttf_applelookup(ttf,info,
 	    opbd_apply_values,opbd_apply_value,NULL,NULL,false);
+    InfoNameOTLookup(info->mort_subs_lookup,info);
+    InfoNameOTLookup(info->mort_pos_lookup2,info);
 }
 
 /* Interesting. The mac allows the creation of temporary gids beyond the */
@@ -3400,11 +3202,10 @@ return;
 
     pst = chunkalloc(sizeof(PST));
     pst->type = pst_substitution;
-    pst->tag = info->mort_subs_tag;
-    pst->macfeature = info->mort_tag_mac && !info->mort_is_nested;
-    pst->flags = info->mort_r2l ? pst_r2l : 0;
-    pst->script_lang_index = info->mort_is_nested ? SLI_NESTED :
-	    SLIFromInfo(info,sc,DEFAULT_LANG);
+    pst->subtable = info->mort_subs_lookup->subtables;
+    if ( info->mort_subs_lookup->features!=NULL )
+	FListsAppendScriptLang(info->mort_subs_lookup->features,SCScriptFromUnicode(sc),
+		DEFAULT_LANG);
     pst->next = sc->possub;
     sc->possub = pst;
     pst->u.subs.variant = gsubs!=0xffff ? copy(ssc->name) : copy(MAC_DELETED_GLYPH_NAME);
@@ -3533,7 +3334,7 @@ return;
 		}
 		if ( lig_glyph<sm->info->glyph_cnt && sm->info->chars[lig_glyph]!=NULL ) {
 		    for ( pst=sm->info->chars[lig_glyph]->possub; pst!=NULL; pst=pst->next )
-			if ( pst->type==pst_ligature && pst->tag==sm->info->mort_subs_tag &&
+			if ( pst->type==pst_ligature && pst->subtable==sm->info->mort_subs_lookup->subtables &&
 				strcmp(comp,pst->u.lig.components)==0 )
 		    break;
 		    /* There are cases where there will be multiple entries for */
@@ -3542,10 +3343,11 @@ return;
 		    if ( pst == NULL ) {
 			pst = chunkalloc(sizeof(PST));
 			pst->type = pst_ligature;
-			pst->tag = sm->info->mort_subs_tag;
-			pst->macfeature = sm->info->mort_tag_mac;
-			pst->flags = sm->info->mort_r2l ? (pst_r2l|pst_ignorecombiningmarks) : pst_ignorecombiningmarks;
-			pst->script_lang_index = SLIFromInfo(sm->info,sm->info->chars[lig_glyph],DEFAULT_LANG);
+			pst->subtable = sm->info->mort_subs_lookup->subtables;
+			if ( sm->info->mort_subs_lookup->features!=NULL )
+			    FListsAppendScriptLang(sm->info->mort_subs_lookup->features,
+				    SCScriptFromUnicode(sm->info->chars[lig_glyph]),
+				    DEFAULT_LANG);
 			pst->u.lig.components = comp;
 			pst->u.lig.lig = sm->info->chars[lig_glyph];
 			pst->next = sm->info->chars[lig_glyph]->possub;
@@ -3641,7 +3443,7 @@ return;
 		    strcat(comp,sm->info->chars[sm->lig_comp_glyphs[j]]->name);
 		}
 		for ( pst=sm->info->chars[lig_glyph]->possub; pst!=NULL; pst=pst->next )
-		    if ( pst->type==pst_ligature && pst->tag==sm->info->mort_subs_tag &&
+		    if ( pst->type==pst_ligature && pst->subtable==sm->info->mort_subs_lookup->subtables &&
 			    strcmp(comp,pst->u.lig.components)==0 )
 		break;
 		/* There are cases where there will be multiple entries for */
@@ -3650,10 +3452,11 @@ return;
 		if ( pst == NULL ) {
 		    pst = chunkalloc(sizeof(PST));
 		    pst->type = pst_ligature;
-		    pst->flags = sm->info->mort_r2l ? (pst_r2l|pst_ignorecombiningmarks) : pst_ignorecombiningmarks;
-		    pst->tag = sm->info->mort_subs_tag;
-		    pst->macfeature = sm->info->mort_tag_mac;
-		    pst->script_lang_index = SLIFromInfo(sm->info,sm->info->chars[lig_glyph],DEFAULT_LANG);
+		    pst->subtable = sm->info->mort_subs_lookup->subtables;
+		    if ( sm->info->mort_subs_lookup->features!=NULL )
+			FListsAppendScriptLang(sm->info->mort_subs_lookup->features,
+				SCScriptFromUnicode(sm->info->chars[lig_glyph]),
+				DEFAULT_LANG);
 		    pst->u.lig.components = comp;
 		    pst->u.lig.lig = sm->info->chars[lig_glyph];
 		    pst->next = sm->info->chars[lig_glyph]->possub;
@@ -3941,12 +3744,30 @@ static void statetablefree(struct statetable *st) {
     free( st );
 }
 
+static void tagSMWithScriptLang(FeatureScriptLangList *fl,
+	struct statetable *st,int ismorx,struct ttfinfo *info) {
+    int i;
+
+    if ( ismorx ) {
+	for ( i=0; i<info->glyph_cnt; ++i )
+	    if ( st->classes2[i]>=4 && info->chars[i]!=NULL )
+		FListsAppendScriptLang(fl,SCScriptFromUnicode(info->chars[i]),
+			DEFAULT_LANG);
+    } else {
+	for ( i=st->first_glyph; i<st->first_glyph+st->nglyphs && i<info->glyph_cnt; ++i )
+	    if ( info->chars[i]!=NULL )
+		FListsAppendScriptLang(fl,SCScriptFromUnicode(info->chars[i]),
+			DEFAULT_LANG);
+    }
+}
+
 static char **ClassesFromStateTable(struct statetable *st,int ismorx,struct ttfinfo *info) {
     /* On the mac the first four classes should be left blank. only class 1 */
     /*  (out of bounds) is supposed to be used in the class array anyway */
     char **classes = galloc(st->nclasses*sizeof(char *));
     int *lens = gcalloc(st->nclasses,sizeof(int));
     int i;
+
 
     if ( ismorx ) {
 	for ( i=0; i<info->glyph_cnt; ++i ) if ( info->chars[i]!=NULL )
@@ -4147,26 +3968,9 @@ return( i );
 return( i );
 }
 
-static uint32 TagFromInfo(struct ttfinfo *info,int i) {
-    char buf[8];
-    uint32 tag;
-
-    sprintf( buf, "M%03d", info->gentags.tt_cur + i );
-    if ( info->gentags.tt_cur + i >= info->gentags.tt_max ) {
-	if ( info->gentags.tt_max==0 )
-	    info->gentags.tagtype = galloc((info->gentags.tt_max=30)*sizeof(struct tagtype));
-	else
-	    info->gentags.tagtype = grealloc(info->gentags.tagtype,(info->gentags.tt_max+=30)*sizeof(struct tagtype));
-    }
-    info->gentags.tagtype[info->gentags.tt_cur+i].type = pst_substitution;
-    tag = CHR(buf[0], buf[1], buf[2], buf[3] );
-    info->gentags.tagtype[info->gentags.tt_cur+i].tag = tag;
-return( tag );
-}
-
 static ASM *readttf_mortx_asm(FILE *ttf,struct ttfinfo *info,int ismorx,
 	uint32 subtab_len,enum asm_type type,int extras,
-	uint32 coverage) {
+	uint32 coverage, OTLookup *otl) {
     struct statetable *st;
     ASM *as;
     int i,j;
@@ -4178,12 +3982,17 @@ return(NULL);
 
     as = chunkalloc(sizeof(ASM));
     as->type = type;
-    as->feature = info->mort_feat; as->setting = info->mort_setting;
     as->flags = coverage>>16;
     as->class_cnt = st->nclasses;
     as->state_cnt = st->nstates;
     as->classes = ClassesFromStateTable(st,ismorx,info);
     as->state = galloc(st->nclasses*st->nstates*sizeof(struct asm_state));
+    if ( otl==NULL )
+	otl = NewMacLookup(info,false);
+    otl->lookup_type = type==asm_indic ? morx_indic : type==asm_context ? morx_context : morx_insert;
+    as->subtable = otl->subtables; otl->subtables->sm = as;
+    tagSMWithScriptLang(otl->features,st,ismorx,info);
+    InfoNameOTLookup(otl,info);
     for ( i=0; i<st->nclasses*st->nstates; ++i ) {
 	int trans;
 	if ( ismorx ) {
@@ -4195,21 +4004,21 @@ return(NULL);
 	}
 	as->state[i].flags = memushort(st->transitions,st->nentries*st->entry_size,trans*st->entry_size+2);
 	if ( extras>0 )
-	    as->state[i].u.context.mark_tag = memushort(st->transitions,st->nentries*st->entry_size, trans*st->entry_size+2+2);
+	    as->state[i].u.context.mark_lookup = (void *) memushort(st->transitions,st->nentries*st->entry_size, trans*st->entry_size+2+2);
 	if ( extras>1 )
-	    as->state[i].u.context.cur_tag = memushort(st->transitions,st->nentries*st->entry_size, trans*st->entry_size+2+2+2);
+	    as->state[i].u.context.cur_lookup = (void *) memushort(st->transitions,st->nentries*st->entry_size, trans*st->entry_size+2+2+2);
     }
     /* Indic tables have no attached subtables, just a verb in the flag field */
     /*  so for them we are done. For the others... */
     if ( !ismorx && type==asm_insert ) {
 	for ( i=0; i<st->nclasses*st->nstates; ++i ) {
 	    char *cur=NULL, *mark=NULL;
-	    if ( (as->state[i].flags&0x3e0)!=0 && as->state[i].u.context.mark_tag!=0 ) {
-		cur = NamesOfList(here+as->state[i].u.context.mark_tag,
+	    if ( (as->state[i].flags&0x3e0)!=0 && as->state[i].u.context.mark_lookup!=NULL ) {
+		cur = NamesOfList(here+(intpt) as->state[i].u.context.mark_lookup,
 			(as->state[i].flags&0x3e0)>>5,ttf,info);
 	    }
-	    if ( (as->state[i].flags&0x01f)!=0 && as->state[i].u.context.cur_tag!=0 ) {
-		mark = NamesOfList(here+as->state[i].u.context.cur_tag,
+	    if ( (as->state[i].flags&0x01f)!=0 && as->state[i].u.context.cur_lookup!=NULL ) {
+		mark = NamesOfList(here+(intpt) as->state[i].u.context.cur_lookup,
 			as->state[i].flags&0x01f,ttf,info);
 	    }
 	    as->state[i].u.insert.cur_ins=cur;
@@ -4218,12 +4027,12 @@ return(NULL);
     } else if ( ismorx && type == asm_insert ) {
 	for ( i=0; i<st->nclasses*st->nstates; ++i ) {
 	    char *cur=NULL, *mark=NULL;
-	    if ( (as->state[i].flags&0x3e0)!=0 && as->state[i].u.context.mark_tag!=0xffff ) {
-		cur = NamesOfList(here+st->extra_offsets[0]+as->state[i].u.context.mark_tag*2,
+	    if ( (as->state[i].flags&0x3e0)!=0 && (intpt) as->state[i].u.context.mark_lookup!=0xffff ) {
+		cur = NamesOfList(here+st->extra_offsets[0]+((intpt) as->state[i].u.context.mark_lookup)*2,
 			(as->state[i].flags&0x3e0)>>5,ttf,info);
 	    }
-	    if ( (as->state[i].flags&0x01f)!=0 && as->state[i].u.context.cur_tag!=0xffff ) {
-		mark = NamesOfList(here+st->extra_offsets[0]+as->state[i].u.context.cur_tag*2,
+	    if ( (as->state[i].flags&0x01f)!=0 && ((intpt) as->state[i].u.context.cur_lookup)!=0xffff ) {
+		mark = NamesOfList(here+st->extra_offsets[0]+((intpt) as->state[i].u.context.cur_lookup)*2,
 			as->state[i].flags&0x01f,ttf,info);
 	    }
 	    as->state[i].u.insert.cur_ins=cur;
@@ -4254,32 +4063,46 @@ return(NULL);
 	/*  wrong */ /* Apple's docs are right. not clear why that offset  */
 	/*  is there */
 	uint8 *classes_subbed = gcalloc(st->nclasses,1);
-	int lookup_max = -1, index;
+	int lookup_max = -1, index, index_max;
 	int32 *lookups = galloc(st->nclasses*st->nstates*sizeof(int32));
 	uint8 *evermarked = gcalloc(st->nclasses*st->nstates,sizeof(uint8));
 	uint8 *used;
+	OTLookup **subs;
+
+	index_max = 0;
+	for ( i=0; i<st->nclasses*st->nstates; ++i ) {
+	    if ( as->state[i].u.context.mark_lookup!=NULL ) {
+		index = sm_lookupfind(lookups,&lookup_max,(int16) (intpt) as->state[i].u.context.mark_lookup);
+		if ( index>index_max ) index_max = index;
+	    }
+	    if ( as->state[i].u.context.cur_lookup!=NULL ) {
+		index = sm_lookupfind(lookups,&lookup_max,(int16) (intpt) as->state[i].u.context.cur_lookup);
+		if ( index>index_max ) index_max = index;
+	    }
+	}
+	subs = gcalloc(index_max,sizeof(OTLookup *));
 
 	for ( i=0; i<st->nclasses*st->nstates; ++i ) {
-	    if ( as->state[i].u.context.mark_tag!=0 ) {
-		index = sm_lookupfind(lookups,&lookup_max,(int16) as->state[i].u.context.mark_tag);
+	    if ( as->state[i].u.context.mark_lookup!=NULL ) {
+		index = sm_lookupfind(lookups,&lookup_max,(int16) (intpt) as->state[i].u.context.mark_lookup);
 		evermarked[index] = true;
-		as->state[i].u.context.mark_tag = TagFromInfo(info,index);
+		as->state[i].u.context.mark_lookup = NewMacSubsLookup(info,otl,index,subs);
 	    }
-	    if ( as->state[i].u.context.cur_tag!=0 ) {
-		index = sm_lookupfind(lookups,&lookup_max,(int16) as->state[i].u.context.cur_tag);
-		as->state[i].u.context.cur_tag = TagFromInfo(info,index);
+	    if ( as->state[i].u.context.cur_lookup!=NULL ) {
+		index = sm_lookupfind(lookups,&lookup_max,(int16) (intpt) as->state[i].u.context.cur_lookup);
+		as->state[i].u.context.cur_lookup = NewMacSubsLookup(info,otl,index,subs);
 	    }
 	}
 	used = gcalloc((subtab_len-st->extra_offsets[0]+1)/2,sizeof(uint8));
 	/* first figure things that only appear in current subs */
 	/*  then go back and work on things that apply to things which are also in marked subs */
 	for ( j=0; j<2; ++j ) for ( i=0; i<=lookup_max; ++i ) if ( evermarked[i]==j ) {
-	    info->mort_subs_tag = TagFromInfo(info,i);
+	    info->mort_subs_lookup = NewMacSubsLookup(info,otl,i,subs);
 	    info->mort_is_nested = true;
 	    if ( !evermarked[i] ) { int k,l;
 		memset(classes_subbed,0,st->nclasses);
 		for ( k=0; k<st->nstates; ++k ) for ( l=0; l<st->nclasses; ++l ) {
-		    if ( as->state[k*st->nclasses+l].u.context.cur_tag == info->mort_subs_tag )
+		    if ( as->state[k*st->nclasses+l].u.context.cur_lookup == info->mort_subs_lookup )
 			classes_subbed[l] = true;
 		}
 	    }
@@ -4292,39 +4115,48 @@ return(NULL);
 	free(lookups);
 	free(used);
 	free(evermarked);
-	info->gentags.tt_cur += lookup_max+1;
+	free(subs);
     } else if ( ismorx && type == asm_context ) {
 	int lookup_max= -1;
 	uint32 *lookups;
+	OTLookup **subs;
+
 	for ( i=0; i<st->nclasses*st->nstates; ++i ) {
-	    if ( as->state[i].u.context.mark_tag!=0xffff ) {
-		if ( ((int) as->state[i].u.context.mark_tag)>lookup_max )
-		    lookup_max = as->state[i].u.context.mark_tag;
-		as->state[i].u.context.mark_tag = TagFromInfo(info,as->state[i].u.context.mark_tag);
-	    } else
-		as->state[i].u.context.mark_tag=0;
-	    if ( as->state[i].u.context.cur_tag!=0xffff ) {
-		if ( ((int) as->state[i].u.context.cur_tag)>lookup_max )
-		    lookup_max = as->state[i].u.context.cur_tag;
-		as->state[i].u.context.cur_tag = TagFromInfo(info,as->state[i].u.context.cur_tag);
-	    } else
-		as->state[i].u.context.cur_tag = 0;
+	    if ( (intpt) as->state[i].u.context.mark_lookup!=0xffff ) {
+		if ( ((int) (intpt) as->state[i].u.context.mark_lookup)>lookup_max )
+		    lookup_max = (intpt) as->state[i].u.context.mark_lookup;
+	    }
+	    if ( (intpt) as->state[i].u.context.cur_lookup!=0xffff ) {
+		if ( ((int) (intpt) as->state[i].u.context.cur_lookup)>lookup_max )
+		    lookup_max = (intpt) as->state[i].u.context.cur_lookup;
+	    }
 	}
 	++lookup_max;
+	subs = gcalloc(lookup_max,sizeof(OTLookup *));
+	for ( i=0; i<st->nclasses*st->nstates; ++i ) {
+	    if ( (intpt) as->state[i].u.context.mark_lookup!=0xffff ) {
+		as->state[i].u.context.mark_lookup = NewMacSubsLookup(info,otl,(intpt) as->state[i].u.context.mark_lookup,subs);
+	    } else
+		as->state[i].u.context.mark_lookup = NULL;
+	    if ( (intpt) as->state[i].u.context.cur_lookup!=0xffff ) {
+		as->state[i].u.context.cur_lookup = NewMacSubsLookup(info,otl,(intpt) as->state[i].u.context.cur_lookup,subs);
+	    } else
+		as->state[i].u.context.cur_lookup = NULL;
+	}
 	lookups = galloc(lookup_max*sizeof(uint32));
 	fseek(ttf,here+st->extra_offsets[0],SEEK_SET);
 	for ( i=0; i<lookup_max; ++i )
 	    lookups[i] = getlong(ttf) + here+st->extra_offsets[0];
 	for ( i=0; i<lookup_max; ++i ) {
 	    fseek(ttf,lookups[i],SEEK_SET);
-	    info->mort_subs_tag = TagFromInfo(info,i);
+	    info->mort_subs_lookup = NewMacSubsLookup(info,otl,i,subs);
 	    info->mort_is_nested = true;
 	    readttf_applelookup(ttf,info,
 		    mort_apply_values,mort_apply_value,NULL,NULL,true);
 	}
 	info->mort_is_nested = false;
+	free(subs);
 	free(lookups);
-	info->gentags.tt_cur += lookup_max;
     } else if ( type == asm_kern ) {
 	for ( i=0; i<st->nclasses*st->nstates; ++i ) {
 	    if ( (as->state[i].flags&0x3fff)!=0 ) {
@@ -4350,7 +4182,7 @@ static uint32 readmortchain(FILE *ttf,struct ttfinfo *info, uint32 base, int ism
     uint32 chain_len, nfeatures, nsubtables, default_flags;
     uint32 enable_flags, disable_flags, flags;
     int featureType, featureSetting;
-    int i,j,k,l;
+    int i,j,k;
     uint32 length, coverage;
     uint32 here;
     uint32 tag;
@@ -4420,39 +4252,51 @@ return( chain_len );
 		tmf[j].ismac = true;
 		tmf[j].tag = (tmf[j].feat<<16) | tmf[j].set;
 	    }
-	    info->mort_subs_tag = tmf[j].tag;
 	    info->mort_r2l = r2l;
 	    info->mort_tag_mac = tmf[j].ismac;
 	    info->mort_feat = tmf[j].feat; info->mort_setting = tmf[j].set;
-	    for ( l=0; info->feats[0][l]!=0; ++l )
-		if ( info->feats[0][l]==tmf[j].tag )
-	    break;
-	    if ( info->feats[0][l]==0 && l<info->mort_max ) {
-		info->feats[0][l] = tmf[j].tag;
-		info->feats[0][l+1] = 0;
-	    }
 	    switch( coverage&0xff ) {
 	      case 0:	/* Indic rearangement */
 		readttf_mortx_asm(ttf,info,ismorx,length,asm_indic,0,
-			coverage);
+			coverage,NULL);
 	      break;
 	      case 1:	/* contextual glyph substitution */
 		readttf_mortx_asm(ttf,info,ismorx,length,asm_context,2,
-			coverage);
+			coverage,NULL);
 	      break;
 	      case 2:	/* ligature substitution */
 		/* Apple's ligature state machines are too weird to be */
 		/*  represented easily, but I can parse them into a set */
 		/*  of ligatures -- assuming they are unconditional */
+		info->mort_subs_lookup = NewMacLookup(info,false);
+		info->mort_subs_lookup->lookup_type = gsub_ligature;
+		if ( !tmf[j].ismac ) {
+		    info->mort_subs_lookup->features->next = chunkalloc(sizeof(FeatureScriptLangList));
+		    info->mort_subs_lookup->features->next->featuretag = tmf[j].tag;
+		    info->mort_subs_lookup->features->next->ismac = false;
+		}
+		info->mort_subs_lookup->subtables->per_glyph_pst_or_kern = true;
 		readttf_mortx_lig(ttf,info,ismorx,here,length);
+		InfoNameOTLookup(info->mort_subs_lookup,info);
+		/* We can give the lookup a better name after we've made a */
+		/*  guess at what scripts it involves => substitutions first */
 	      break;
 	      case 4:	/* non-contextual glyph substitutions */
+		info->mort_subs_lookup = NewMacLookup(info,false);
+		info->mort_subs_lookup->lookup_type = gsub_single;
+		if ( !tmf[j].ismac ) {
+		    info->mort_subs_lookup->features->next = chunkalloc(sizeof(FeatureScriptLangList));
+		    info->mort_subs_lookup->features->next->featuretag = tmf[j].tag;
+		    info->mort_subs_lookup->features->next->ismac = false;
+		}
+		info->mort_subs_lookup->subtables->per_glyph_pst_or_kern = true;
 		readttf_applelookup(ttf,info,
 			mort_apply_values,mort_apply_value,NULL,NULL,true);
+		InfoNameOTLookup(info->mort_subs_lookup,info);
 	      break;
 	      case 5:	/* contextual glyph insertion */
 		readttf_mortx_asm(ttf,info,ismorx,length,asm_insert,2,
-			coverage);
+			coverage,NULL);
 	      break;
 	    }
 	}
@@ -4480,8 +4324,6 @@ return;
 return;
     }
     info->mort_max = nchains*33;		/* Maximum of one feature per bit ? */
-    info->feats[0] = galloc((info->mort_max+1)*sizeof(uint32));
-    info->feats[0][0] = 0;
     for ( i=0; i<nchains; ++i ) {
 	here = ftell(ttf);
 	len = readmortchain(ttf,info,base,ismorx);
@@ -4522,6 +4364,7 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
     int tupleIndex;
     int isv;
     SplineChar **chars;
+    OTLookup *otl;
 
     fseek(ttf,info->kern_start,SEEK_SET);
     version = getushort(ttf);
@@ -4559,6 +4402,17 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 		tupleIndex = -1;
 	    header_size = 8;
 	}
+	otl = NULL;
+	if ( flags_good ) {
+	    otl = NewMacLookup(info,true);
+	    otl->lookup_type = gpos_pair;
+	    if ( isv ) {
+		otl->features->featuretag = CHR('v','k','r','n');
+		otl->features->ismac = false;
+	    }
+	    otl->subtables->per_glyph_pst_or_kern = true;
+	    otl->subtables->vertical_kerning = isv;
+	}
 	if ( flags_good && format==0 ) {
 	    /* format 0, horizontal kerning data (as pairs) not perpendicular */
 	    chars = tupleIndex==-1 ? info->chars : info->variations->tuples[tupleIndex].chars;
@@ -4566,6 +4420,7 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 	    /* searchRange = */ getushort(ttf);
 	    /* entrySelector = */ getushort(ttf);
 	    /* rangeShift = */ getushort(ttf);
+	    otl->subtables[0].per_glyph_pst_or_kern = true;
 	    for ( j=0; j<npairs; ++j ) {
 		left = getushort(ttf);
 		right = getushort(ttf);
@@ -4575,7 +4430,9 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 		    kp = chunkalloc(sizeof(KernPair));
 		    kp->sc = chars[right];
 		    kp->off = offset;
-		    kp->sli = SLIFromInfo(info,chars[left],DEFAULT_LANG);
+		    kp->subtable = otl->subtables;
+		    FListsAppendScriptLang(otl->features,SCScriptFromUnicode(chars[left]),
+			    DEFAULT_LANG);
 		    if ( isv ) {
 			kp->next = chars[left]->vkerns;
 			chars[left]->vkerns = kp;
@@ -4587,6 +4444,7 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 		    LogError( _("Bad kern pair: glyphs %d & %d must be less than %d\n"),
 			    left, right, info->glyph_cnt );
 	    }
+	    InfoNameOTLookup(otl,info);
 	} else if ( flags_good && format==1 ) {
 	    /* format 1 is an apple state machine which can handle weird cases */
 	    /*  OpenType's spec doesn't document this */
@@ -4594,8 +4452,9 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 	    /*  there is a special value which marks the end of the kerning */
 	    /*  lists. In fact there is no such value, the list is as long */
 	    /*  as there are things on the kern stack */
+	    otl->lookup_type = kern_statemachine;
 	    readttf_mortx_asm(ttf,info,false,len-header_size,asm_kern,0,
-		isv ? 0x80000000 : 0 /* coverage doesn't really apply */);
+		isv ? 0x80000000 : 0 /* coverage doesn't really apply */,otl);
 	    fseek(ttf,begin_table+len,SEEK_SET);
 	} else if ( flags_good && (format==2 || format==3 )) {
 	    /* two class based formats */
@@ -4670,13 +4529,16 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 	    kc->firsts = ClassToNames(info,kc->first_cnt,class1,info->glyph_cnt);
 	    kc->seconds = ClassToNames(info,kc->second_cnt,class2,info->glyph_cnt);
 	    for ( i=0; i<info->glyph_cnt; ++i ) {
-		if ( class1[i]!=0 ) {
-		    kc->sli = SLIFromInfo(info,info->chars[i],DEFAULT_LANG);
-	    break;
-		}
+		if ( class1[i]>=4 && info->chars[i]!=NULL )
+		    FListsAppendScriptLang(otl->features,
+			    SCScriptFromUnicode(info->chars[i]),
+			    DEFAULT_LANG);
 	    }
 	    free(class1); free(class2);
 	    fseek(ttf,begin_table+len,SEEK_SET);
+	    otl->subtables[0].kc = kc;
+	    kc->subtable = otl->subtables;
+	    InfoNameOTLookup(otl,info);
 	} else {
 	    fseek(ttf,len-header_size,SEEK_CUR);
 	}

@@ -37,7 +37,6 @@
 #define CID_Delete	302
 #define CID_Classes	305
 
-#define CID_FeatSet	306
 
 #define CID_Ok		307
 #define CID_Cancel	308
@@ -222,20 +221,9 @@ return( max_reachable+1 );		/* The count is one more than the max */
 /* *************** Routines to test conversion from OpenType **************** */
 /* ************************************************************************** */
 
-static int ValidSubs(SplineFont *sf,uint32 tag ) {
-    int i, any=false;
-    PST *pst;
+static int ValidSubs(SplineFont *sf,OTLookup *otl ) {
 
-    for ( i = 0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
-	for ( pst=sf->glyphs[i]->possub; pst!=NULL && pst->tag!=tag; pst=pst->next );
-	if ( pst!=NULL && pst->script_lang_index==SLI_NESTED ) {
-	    if ( pst->type==pst_substitution )
-		any = true;
-	    else
-return( false );
-	}
-    }
-return( any );
+return( otl->lookup_type == gsub_single );
 }
 
 static void TreeFree(struct contexttree *tree) {
@@ -268,40 +256,43 @@ return( snum );
 return( snum );
 }
 
-static uint32 RuleHasSubsHere(struct fpst_rule *rule,int depth) {
+static OTLookup *RuleHasSubsHere(struct fpst_rule *rule,int depth) {
     int i,j;
 
     if ( depth<rule->u.class.bcnt )
-return( 0 );
+return( NULL );
     depth -= rule->u.class.bcnt;
     if ( depth>=rule->u.class.ncnt )
-return( 0 );
+return( NULL );
     for ( i=0; i<rule->lookup_cnt; ++i ) {
 	if ( rule->lookups[i].seq==depth ) {
 	    /* It is possible to have two substitutions applied at the same */
 	    /*  location. I can't deal with that here */
 	    for ( j=i+1; j<rule->lookup_cnt; ++j ) {
 		if ( rule->lookups[j].seq==depth )
-return( 0xffffffff );
+return( (OTLookup *) 0xffffffff );
 	    }
-return( rule->lookups[i].lookup_tag );
+return( rule->lookups[i].lookup );
 	}
     }
 
 return( 0 );
 }
 
-static uint32 RulesAllSameSubsAt(struct contexttree *me,int pos) {
+static OTLookup *RulesAllSameSubsAt(struct contexttree *me,int pos) {
     int i;
-    uint32 tag=0x01, newtag;	/* Can't use 0 as an "unused" flag because it is perfectly valid for there to be no substititution. But then all rules must have no subs */
+    OTLookup *tag=(OTLookup *) 0x01, *newtag;	/* Can't use 0 as an "unused" flag because it is perfectly valid for there to be no substititution. But then all rules must have no subs */
 
     for ( i=0; i<me->rule_cnt; ++i ) {
 	newtag = RuleHasSubsHere(me->rules[i].rule,pos);
-	if ( tag==0x01 )
+	if ( tag==(OTLookup *) 0x01 )
 	    tag=newtag;
 	else if ( newtag!=tag )
-return( 0xffffffff );
+return( (OTLookup *) 0xffffffff );
     }
+    if ( tag==(OTLookup *) 0x01 )
+return( NULL );		/* Should never happen */
+
 return( tag );
 }
 
@@ -314,15 +305,15 @@ static int TreeFollowBranches(SplineFont *sf,struct contexttree *me,int pending_
 	/*  and pending substitutions */
 	if ( pending_pos!=-1 ) {
 	    me->applymarkedsubs = RulesAllSameSubsAt(me,pending_pos);
-	    if ( me->applymarkedsubs==0xffffffff )
+	    if ( me->applymarkedsubs==(OTLookup *) 0xffffffff )
 return( false );
 	    if ( !ValidSubs(sf,me->applymarkedsubs))
 return( false );
 	}
 	me->applycursubs = RulesAllSameSubsAt(me,me->depth);
-	if ( me->applycursubs==0xffffffff )
+	if ( me->applycursubs==(OTLookup *) 0xffffffff )
 return( false );
-	if ( me->applycursubs!=0 && !ValidSubs(sf,me->applycursubs))
+	if ( me->applycursubs!=NULL && !ValidSubs(sf,me->applycursubs))
 return( false );
 	for ( i=0; i<me->branch_cnt; ++i ) {
 	    if ( !TreeFollowBranches(sf,me->branches[i].branch,-1))
@@ -332,7 +323,7 @@ return( false );
 	for ( i=0; i<me->branch_cnt; ++i ) {
 	    for ( j=0; j<me->rule_cnt; ++j )
 		if ( me->rules[j].branch==me->branches[i].branch &&
-			RuleHasSubsHere(me->rules[j].rule,me->depth))
+			RuleHasSubsHere(me->rules[j].rule,me->depth)!=NULL )
 	    break;
 	    if ( j<me->rule_cnt ) {
 		if ( pending_pos==-1 ) {
@@ -482,16 +473,20 @@ return( p->branches[i].branch );
     }
 }
 
-int FPSTisMacable(SplineFont *sf, FPST *fpst, int checktag) {
+int FPSTisMacable(SplineFont *sf, FPST *fpst) {
     int i;
     int featureType, featureSetting;
     struct contexttree *ret;
+    FeatureScriptLangList *fl;
 
     if ( fpst->type!=pst_contextsub && fpst->type!=pst_chainsub )
 return( false );
-    if ( !SLIHasDefault(sf,fpst->script_lang_index))
-return( false );
-    if ( checktag && !OTTagToMacFeature(fpst->tag,&featureType,&featureSetting) )
+    for ( fl = fpst->subtable->lookup->features; fl!=NULL; fl=fl->next ) {
+	if ( OTTagToMacFeature(fl->featuretag,&featureType,&featureSetting) &&
+		scriptsHaveDefault(fl->scripts) )
+    break;
+    }
+    if ( fl==NULL )
 return( false );
 
     if ( fpst->format == pst_glyphs ) {
@@ -526,12 +521,12 @@ return( false );
 	      default:
 return( false );
 	    }
-	    if ( !ValidSubs(sf,fpst->rules[i].lookups[1].lookup_tag) )
+	    if ( !ValidSubs(sf,fpst->rules[i].lookups[1].lookup) )
 return( false );
 		
 	} else if ( fpst->rules[i].lookup_cnt!=1 )
 return( false );
-	if ( !ValidSubs(sf,fpst->rules[i].lookups[0].lookup_tag) )
+	if ( !ValidSubs(sf,fpst->rules[i].lookups[0].lookup) )
 return( false );
     }
 
@@ -615,124 +610,97 @@ static char *BuildClassNames(SplineChar **glyphs,uint16 *map, int classnum) {
 return( ret );
 }
 
-static void BuildNestedFormSubs(SplineFont *sf,SplineChar **glyphs,
-	SplineChar **forms[4], uint32 tags[4], int flags) {
-    int any[4];
-    int i,j;
+static int FindFormLookupsForScript(SplineFont *sf,uint32 script,OTLookup *lookups[4]) {
+    OTLookup *otl;
+    FeatureScriptLangList *fl;
+    struct scriptlanglist *sl;
+    int which;
 
-    memset(any,0,sizeof(any));
-    for ( i=0; glyphs[i]!=NULL; ++i ) {
-	for ( j=0; j<4; ++j )
-	    if ( forms[j][i])
-		any[j] = true;
+    memset(lookups,0,4*sizeof(OTLookup *));
+    for ( otl=sf->gsub_lookups; otl!=NULL; otl=otl->next ) if ( !otl->unused && otl->lookup_type == gsub_single ) {
+	for ( fl=otl->features; fl!=NULL; fl=fl->next ) {
+	    if ( fl->featuretag== CHR('i','n','i','t') ) which = 0;
+	    else if ( fl->featuretag== CHR('m','e','d','i') ) which = 1;
+	    else if ( fl->featuretag== CHR('f','i','n','a') ) which = 2;
+	    else if ( fl->featuretag== CHR('i','s','o','l') ) which = 3;
+	    else
+	continue;
+	    if ( lookups[which]!=NULL )
+	continue;
+	    for ( sl=fl->scripts; sl!=NULL && sl->script!=script; sl=sl->next );
+	    if ( sl==NULL )
+	continue;
+	    lookups[which] = otl;
+	break;
+	}
     }
+    if ( lookups[0]!=NULL || lookups[1]!=NULL || lookups[2]!=NULL || lookups[3]!=NULL )
+return( true );
 
-    memset(tags,0,4*sizeof(uint32));
-    for ( j=0; j<4; ++j ) if ( any[j] )
-	tags[j] = SFGenerateNewFeatureTag(&sf->gentags,pst_substitution,0);
+return( false );
+}
 
-    for ( i=0; glyphs[i]!=NULL; ++i ) {
-	for ( j=0; j<4; ++j ) {
-	    if ( forms[j][i]!=NULL ) {
-		if ( glyphs[i]!=forms[j][i] )
-		    glyphs[i]->possub = AddSubs(glyphs[i]->possub,tags[j],forms[j][i]->name,
-			    flags,SLI_NESTED,NULL);
-		if ( j==2 && forms[1][i]!=NULL )	/* Final must be prepared to convert both base chars and medial chars */
-		    forms[1][i]->possub = AddSubs(forms[1][i]->possub,tags[j],forms[j][i]->name,flags,
-			    SLI_NESTED,NULL);
-		else if ( j==3 && forms[0][i]!=NULL )	/* Isolated must convert both base and initial chars */
-		    forms[0][i]->possub = AddSubs(forms[0][i]->possub,tags[j],forms[j][i]->name,flags,
-			    SLI_NESTED,NULL);
+ASM *ASMFromOpenTypeForms(SplineFont *sf,uint32 script) {
+    int i, which, cg, mg;
+    SplineChar *sc, *rsc, **classglyphs, **markglyphs;
+    PST *pst;
+    OTLookup *lookups[4];
+    ASM *sm;
+    int flags;
+
+    if ( !FindFormLookupsForScript(sf,script,lookups))
+return( NULL );
+    flags = (lookups[0]!=NULL ? lookups[0]->lookup_flags
+	    :lookups[1]!=NULL ? lookups[1]->lookup_flags
+	    :lookups[2]!=NULL ? lookups[2]->lookup_flags
+	    :                   lookups[3]->lookup_flags);
+    classglyphs = galloc((sf->glyphcnt+1)*sizeof(SplineChar *));
+    markglyphs = galloc((sf->glyphcnt+1)*sizeof(SplineChar *));
+
+    mg = 0;
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
+	if ( (flags&pst_ignorecombiningmarks) && IsMarkChar(sc)) {
+	    markglyphs[mg++] = sc;
+	} else if ( SCScriptFromUnicode(sc)==script ) {
+	    classglyphs[sc->orig_pos] = sc;
+	    for ( pst = sc->possub; pst!=NULL; pst=pst->next ) if ( pst->subtable!=NULL ) {
+		OTLookup *otl = pst->subtable->lookup;
+		for ( which=3; which>=0; --which ) {
+		    if ( otl==lookups[which])
+		break;
+		}
+		if ( which==-1 )
+	    continue;
+		rsc = SFGetChar(sf,-1,pst->u.subs.variant);
+		if ( rsc!=NULL )
+		    classglyphs[rsc->orig_pos] = rsc;
 	    }
 	}
     }
-}
-
-ASM *ASMFromOpenTypeForms(SplineFont *sf,int sli,int flags) {
-    int i, gcnt, f, any, which, cg, mg, ng;
-    SplineChar *sc, *rsc, **glyphs, **classglyphs, **markglyphs;
-    SplineChar **forms[4];
-    PST *pst;
-    uint32 script;
-    uint32 tags[4];
-    int found;
-    ASM *sm;
-
-    glyphs = galloc(sf->glyphcnt*sizeof(SplineChar *));
-    classglyphs = galloc(sf->glyphcnt*sizeof(SplineChar *));
-    markglyphs = galloc(sf->glyphcnt*sizeof(SplineChar *));
-    for ( i=0; i<4; ++i )
-	forms[i] = gcalloc(sf->glyphcnt,sizeof(SplineChar *));
-
-    gcnt = 0;
-    for ( f=0; f<4; ++f) forms[f][gcnt] = NULL;
-    found = 0;
-    for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
-	any = false;
-	for ( pst = sc->possub; pst!=NULL; pst=pst->next ) if ( pst->script_lang_index==sli && pst->flags==flags ) {
-	    if ( pst->tag==CHR('i','n','i','t')) which = 0;
-	    else if ( pst->tag==CHR('m','e','d','i')) which = 1;
-	    else if ( pst->tag==CHR('f','i','n','a')) which = 2;
-	    else if ( pst->tag==CHR('i','s','o','l')) which = 3;
-	    else
-	continue;
-	    found |= 1<<which;
-	    rsc = SFGetChar(sf,-1,pst->u.subs.variant);
-	    forms[which][gcnt] = rsc;
-	    any = true;
-	}
-	if ( any ) {
-	    /* Currently I transform all isolated chars to initial first */
-	    /*  so if the isolated char, is just the char unchanged, I have to change it back */
-	    /* Similarly for medial & final */
-	    if ( forms[0][gcnt]!=NULL && forms[3][gcnt]==NULL ) forms[3][gcnt] = sc;
-	    if ( forms[1][gcnt]!=NULL && forms[2][gcnt]==NULL ) forms[2][gcnt] = sc;
-	    glyphs[gcnt++] = sc;
-	    for ( f=0; f<4; ++f) forms[f][gcnt] = NULL;
-	}
-    }
-    glyphs[gcnt] = NULL;
-    if ( gcnt==0 ) {
-	for ( f=0; f<4; ++f) free(forms[f]); free(glyphs);
-return( NULL );
-    }
-    script =SCScriptFromUnicode(glyphs[0]);
+	markglyphs[mg] = NULL;
+    cg = 0;
+    for ( i=0; i<sf->glyphcnt; ++i )
+	if ( classglyphs[i]!=NULL )
+	    classglyphs[cg++] = classglyphs[i];
+    classglyphs[cg] = NULL;
 
     sm = chunkalloc(sizeof(ASM));
     sm->type = asm_context;
     sm->flags = (flags&pst_r2l) ? asm_descending : 0;
-    sm->opentype_tag =  (found&1) ? CHR('i','n','i','t') :
-			(found&2) ? CHR('m','e','d','i') :
-			(found&4) ? CHR('f','i','n','a') :
-					CHR('i','s','o','l');
+	/* This is a temporary value. It should be replaced if we will retain */
+	/*  this state machine */
+    sm->subtable = (lookups[3]!=NULL ? lookups[3] : lookups[0]!=NULL ? lookups[0] : lookups[1]!=NULL ? lookups[1] : lookups[2])->subtables;
     /* Only one (or two) classes of any importance: Letter in this script */
     /* might already be formed. Might be a lig. Might be normal */
     /* Oh, if ignoremarks is true, then combining marks merit a class of their own */
     sm->class_cnt = (flags&pst_ignorecombiningmarks) ? 6 : 5;
     sm->classes = gcalloc(sm->class_cnt,sizeof(char *));
 
-    cg = mg = ng = 0;
-    for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
-	if ( (flags&pst_ignorecombiningmarks) && IsMarkChar(sc)) {
-	    markglyphs[mg++] = sc;
-	    if ( sc==glyphs[ng]) ++ng;
-	} else if ( sc==glyphs[ng] ) {
-	    classglyphs[cg++] = sc;
-	    ++ng;
-	} else if ( SCScriptFromUnicode(sc)==script )
-	    classglyphs[cg++] = sc;
-    }
-    classglyphs[cg] = NULL;
     sm->classes[4] = GlyphListToNames(classglyphs);
-    if ( flags&pst_ignorecombiningmarks ) {
-	markglyphs[mg] = NULL;
+    if ( flags&pst_ignorecombiningmarks )
 	sm->classes[5] = GlyphListToNames(markglyphs);
-    }
     free(classglyphs); free(markglyphs);
 
-    BuildNestedFormSubs(sf,glyphs,forms,tags,flags);
-    free(glyphs);
-    for ( i=0; i<4; ++i ) free(forms[i]);
 
     /* State 0,1 are start states */
     /* State 2 means we have found one interesting letter, transformed current to 'init' and marked it (in case we need to make it isolated) */
@@ -740,35 +708,37 @@ return( NULL );
     sm->state_cnt = 4;
     sm->state = gcalloc(sm->state_cnt*sm->class_cnt,sizeof(struct asm_state));
 
+    /* State 0,1 (start), Class 4 (char in script) takes us to state 2 */
     sm->state[4].next_state = 2;
     sm->state[4].flags = 0x8000;
-    sm->state[4].u.context.cur_tag = tags[0];			  /* Initial */
 
     sm->state[sm->class_cnt+4] = sm->state[4];
 
     for ( i=0; i<4; ++i ) {
 	sm->state[2*sm->class_cnt+i].next_state = 0;
-	sm->state[2*sm->class_cnt+i].u.context.mark_tag = tags[3];/* Isolated */
+	sm->state[2*sm->class_cnt+i].u.context.mark_lookup = lookups[3];/* Isolated */
     }
 
     sm->state[2*sm->class_cnt+4].next_state = 3;
     sm->state[2*sm->class_cnt+4].flags = 0x8000;
-    sm->state[2*sm->class_cnt+4].u.context.cur_tag = tags[1];	  /* Medial */
+    sm->state[2*sm->class_cnt+4].u.context.mark_lookup = lookups[0];	/* Initial */
 
     for ( i=0; i<4; ++i ) {
 	sm->state[3*sm->class_cnt+i].next_state = 0;
-	sm->state[3*sm->class_cnt+i].u.context.mark_tag = tags[2];/* Final */
+	sm->state[3*sm->class_cnt+i].u.context.mark_lookup = lookups[2];/* Final */
     }
 
-    sm->state[3*sm->class_cnt+4] = sm->state[2*sm->class_cnt+4];
+    sm->state[3*sm->class_cnt+4].next_state = 3;
+    sm->state[3*sm->class_cnt+4].flags = 0x8000;
+    sm->state[3*sm->class_cnt+4].u.context.mark_lookup = lookups[1];	/* Medial */
 
     /* Deleted glyph retains same state, just eats the glyph */
     for ( i=0; i<sm->state_cnt; ++i ) {
 	int pos = i*sm->class_cnt+2, mpos = i*sm->class_cnt+5;
 	sm->state[pos].next_state = i;
 	sm->state[pos].flags = 0;
-	sm->state[pos].u.context.cur_tag = 0;
-	sm->state[pos].u.context.mark_tag = 0;
+	sm->state[pos].u.context.cur_lookup = NULL;
+	sm->state[pos].u.context.mark_lookup = NULL;
 	/* same for ignored marks */
 	if ( flags&pst_ignorecombiningmarks )
 	    sm->state[mpos].next_state = i;
@@ -842,7 +812,7 @@ return( NULL );
 	    free(temp[i]);
 	}
     }
-    if ( fpst->flags & pst_ignorecombiningmarks ) {
+    if ( fpst->subtable->lookup->lookup_flags & pst_ignorecombiningmarks ) {
 	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL && sf->glyphs[i]->ttf_glyph!=-1 ) {
 	    if ( sf->glyphs[i]->lsidebearing==0 && IsMarkChar(sf->glyphs[i])) {
 		sf->glyphs[i]->lsidebearing = class_cnt;
@@ -894,7 +864,7 @@ static ASM *ASMFromCoverageFPST(SplineFont *sf,FPST *fpst,int ordered) {
     int i, j, k, match_len;
     struct fpst_rule *r = &fpst->rules[0];
     int subspos = r->u.coverage.bcnt+r->lookups[0].seq;
-    int substag = r->lookups[0].lookup_tag, finaltag=-1;
+    OTLookup *substag = r->lookups[0].lookup, *finaltag=NULL;
     uint16 *map;
     ASM *sm;
 
@@ -903,9 +873,9 @@ static ASM *ASMFromCoverageFPST(SplineFont *sf,FPST *fpst,int ordered) {
 	if ( r->lookups[0].seq==r->u.coverage.ncnt-1 ) {
 	    finaltag = substag;
 	    subspos = r->u.coverage.bcnt+r->lookups[1].seq;
-	    substag = r->lookups[1].lookup_tag;
+	    substag = r->lookups[1].lookup;
 	} else
-	    finaltag = r->lookups[1].lookup_tag;
+	    finaltag = r->lookups[1].lookup;
     }
 
     tables = galloc((r->u.coverage.ncnt+r->u.coverage.bcnt+r->u.coverage.fcnt+1)*sizeof(SplineChar **));
@@ -933,7 +903,7 @@ return( NULL );
 
     sm = chunkalloc(sizeof(ASM));
     sm->type = asm_context;
-    sm->flags = (fpst->flags&pst_r2l) ? asm_descending : 0;
+    sm->flags = (fpst->subtable->lookup->lookup_flags&pst_r2l) ? asm_descending : 0;
     sm->class_cnt = class_cnt;
     sm->classes = galloc(class_cnt*sizeof(char *));
     sm->classes[0] = sm->classes[1] = sm->classes[2] = sm->classes[3] = NULL;
@@ -958,14 +928,14 @@ return( NULL );
 		    sm->state[off+i].next_state = 0;
 		    sm->state[off+i].flags = 0x4000;
 		    if ( subspos==j )
-			sm->state[off+i].u.context.cur_tag = substag;
+			sm->state[off+i].u.context.cur_lookup = substag;
 		    else {
-			sm->state[off+i].u.context.mark_tag = substag;
-			sm->state[off+i].u.context.cur_tag = finaltag;
+			sm->state[off+i].u.context.mark_lookup = substag;
+			sm->state[off+i].u.context.cur_lookup = finaltag;
 		    }
 		} else if ( subspos==j )
 		    sm->state[off+i].flags = 0x8000;
-	    } else if ( i==2 || ((fpst->flags&pst_ignorecombiningmarks) && i==class_cnt-1 ) )
+	    } else if ( i==2 || ((fpst->subtable->lookup->lookup_flags&pst_ignorecombiningmarks) && i==class_cnt-1 ) )
 		sm->state[off+i].next_state = j+1;	/* Deleted glyph is a noop */
 	    else if ( j!=0 )
 		sm->state[off+i].flags = 0x4000;	/* Don't eat the current glyph, go back to state 0 and see if it will start the sequence over again */
@@ -994,8 +964,8 @@ static void SMSetState(struct asm_state *trans,struct contexttree *cur,int class
 	    trans->flags = cur->branches[i].branch->state!=0
 		    ? cur->branches[i].branch->markme?0x8000:0x0000
 		    : cur->branches[i].branch->markme?0xc000:0x4000;
-	    trans->u.context.mark_tag = cur->branches[i].branch->applymarkedsubs;
-	    trans->u.context.cur_tag = cur->branches[i].branch->applycursubs;
+	    trans->u.context.mark_lookup = cur->branches[i].branch->applymarkedsubs;
+	    trans->u.context.cur_lookup = cur->branches[i].branch->applycursubs;
 return;
 	}
     }
@@ -1003,8 +973,8 @@ return;
     if ( cur->ends_here!=NULL ) {
 	trans->next_state = 0;
 	trans->flags = 0x4000;
-	trans->u.context.mark_tag = cur->applymarkedsubs;
-	trans->u.context.cur_tag = cur->applycursubs;
+	trans->u.context.mark_lookup = cur->applymarkedsubs;
+	trans->u.context.cur_lookup = cur->applycursubs;
     } else
 	trans->next_state = 0;
 }
@@ -1046,8 +1016,8 @@ return( NULL );
 
 static int FailureTrans( struct asm_state *trans ) {
 return( trans->next_state==0 &&
-	    trans->u.context.mark_tag==0 &&
-	    trans->u.context.cur_tag==0 );
+	    trans->u.context.mark_lookup==NULL &&
+	    trans->u.context.cur_lookup==NULL );
 }
 
 static ASM *ASMFromClassFPST(SplineFont *sf,FPST *fpst, struct contexttree *tree) {
@@ -1057,14 +1027,14 @@ static ASM *ASMFromClassFPST(SplineFont *sf,FPST *fpst, struct contexttree *tree
 
     sm = chunkalloc(sizeof(ASM));
     sm->type = asm_context;
-    sm->flags = (fpst->flags&pst_r2l) ? asm_descending : 0;
+    sm->flags = (fpst->subtable->lookup->lookup_flags&pst_r2l) ? asm_descending : 0;
     /* mac class sets have four magic classes, opentype sets only have one */
-    sm->class_cnt = (fpst->flags&pst_ignorecombiningmarks) ? fpst->nccnt+4 : fpst->nccnt+3;
+    sm->class_cnt = (fpst->subtable->lookup->lookup_flags&pst_ignorecombiningmarks) ? fpst->nccnt+4 : fpst->nccnt+3;
     sm->classes = galloc(sm->class_cnt*sizeof(char *));
     sm->classes[0] = sm->classes[1] = sm->classes[2] = sm->classes[3] = NULL;
     for ( i=1; i<fpst->nccnt; ++i )
 	sm->classes[i+3] = copy(fpst->nclass[i]);
-    if ( fpst->flags&pst_ignorecombiningmarks )
+    if ( fpst->subtable->lookup->lookup_flags&pst_ignorecombiningmarks )
 	sm->classes[sm->class_cnt-1] = BuildMarkClass(sf);
 
     /* Now build the state machine */
@@ -1075,7 +1045,7 @@ static ASM *ASMFromClassFPST(SplineFont *sf,FPST *fpst, struct contexttree *tree
 
 	SMSetState(&sm->state[off+1],cur,0);		/* Out of bounds state */
 	sm->state[off+2].next_state = cur->state;	/* Deleted glyph gets eaten and ignored */
-	if ( fpst->flags&pst_ignorecombiningmarks )
+	if ( fpst->subtable->lookup->lookup_flags&pst_ignorecombiningmarks )
 	    sm->state[off+sm->class_cnt-1].next_state = cur->state;	/* As do ignored marks */
 	for ( i=1; i<fpst->nccnt; ++i )
 	    SMSetState(&sm->state[off+i+3],cur,i);
@@ -1106,447 +1076,24 @@ ASM *ASMFromFPST(SplineFont *sf,FPST *fpst,int ordered) {
     if ( fpst->format==pst_glyphs )
 	tempfpst = FPSTGlyphToClass( fpst );
     if ( tempfpst->format==pst_coverage )
-return( ASMFromCoverageFPST(sf,fpst,ordered));
-
-    tree = FPST2Tree(sf, tempfpst);
-    if ( tree!=NULL ) {
-	sm = ASMFromClassFPST(sf,tempfpst,tree);
-	TreeFree(tree);
-    } else
-	sm = NULL;
-    if ( tempfpst!=fpst )
-	FPSTFree(tempfpst);
-    sm->opentype_tag = fpst->tag;
+	sm = ASMFromCoverageFPST(sf,fpst,ordered);
+    else {
+	tree = FPST2Tree(sf, tempfpst);
+	if ( tree!=NULL ) {
+	    sm = ASMFromClassFPST(sf,tempfpst,tree);
+	    TreeFree(tree);
+	} else
+	    sm = NULL;
+	if ( tempfpst!=fpst )
+	    FPSTFree(tempfpst);
+    }
+	/* This is a temporary value. It should be replaced if we plan to */
+	/*  retain this state machine */
+    sm->subtable = fpst->subtable;
 return( sm );
 }
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-/* ************************************************************************** */
-/* ************************* Opentype conversion dlg ************************ */
-/* ************************************************************************** */
-struct cvt_dlg {
-    int done;
-    ASM *ret;
-    GGadget *list;
-    SplineFont *sf;
-};
-
-#define CID_Convert	100
-
-struct fs_dlg {
-    int done, ok;
-    int feature, setting;
-    GTextInfo *mactags;
-};
-
-/*#define CID_FeatSet	306*/
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-
-struct sliflag *SFGetFormsList(SplineFont *sf,int test_dflt) {
-    struct sliflag *sliflags;
-    int cur, max;
-    int i,j,k;
-    SplineChar *sc;
-    PST *pst;
-    SplineFont *_sf;
-
-    if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
-    _sf = sf;
-    cur = 0; max = 10;
-    sliflags = galloc(11*sizeof(struct sliflag));
-
-    k = 0;
-    do {
-	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
-	for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
-	    for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
-		if ( pst->type == pst_lcaret )
-	    continue;
-		if ( pst->script_lang_index==SLI_NESTED )
-	    continue;
-		if ( test_dflt && !SLIHasDefault(sf,pst->script_lang_index))
-	    continue;
-		if ( pst->tag==CHR('i','n','i','t') ||
-			pst->tag==CHR('m','e','d','i') ||
-			pst->tag==CHR('f','i','n','a') ||
-			pst->tag==CHR('i','s','o','l') ) {
-		    for ( j=0; j<cur; ++j )
-			if ( sliflags[j].sli==pst->script_lang_index &&
-				sliflags[j].flags==pst->flags )
-		    break;
-		    if ( j>=cur ) {
-			if ( cur>=max )
-			    sliflags = grealloc(sliflags,((max+=10)+1)*sizeof(struct sliflag));
-			sliflags[cur].sli = pst->script_lang_index;
-			sliflags[cur++].flags = pst->flags;
-		    }
-		}
-	    }
-	}
-	++k;
-    } while ( k<_sf->subfontcnt );
-    if ( cur==0 ) {
-	free(sliflags);
-return( NULL );
-    }
-    sliflags[cur].sli = 0xffff; sliflags[cur].flags = 0xffff;
-return( sliflags );
-}
-
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-/* A quick check to see if there is any opentype thing which is LIKELY to be */
-/*  convertable to an apple contextual glyph substitution state machine */
-int SFAnyConvertableSM(SplineFont *sf) {
-    int i,k;
-    SplineChar *sc;
-    PST *pst;
-    SplineFont *_sf;
-    FPST *fpst;
-
-    if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
-    _sf = sf;
-
-    for ( fpst=sf->possub; fpst!=NULL; fpst = fpst->next )
-	if ( fpst->type==pst_contextsub || fpst->type==pst_chainsub )
-return( true );
-
-    k = 0;
-    do {
-	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
-	for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
-	    for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
-		if ( pst->script_lang_index==SLI_NESTED )
-	    continue;
-		if ( pst->tag==CHR('i','n','i','t') ||
-			pst->tag==CHR('m','e','d','i') ||
-			pst->tag==CHR('f','i','n','a') ||
-			pst->tag==CHR('i','s','o','l') )
-return( true );
-	    }
-	}
-	++k;
-    } while ( k<_sf->subfontcnt );
-return( false );
-}
-
-static GTextInfo *ConvertableItems(SplineFont *sf) {
-    int max=10, cur=0;
-    GTextInfo *ret = gcalloc((max+1),sizeof(GTextInfo));
-    struct sliflag *sliflags = SFGetFormsList(sf,false);
-    FPST *fpst;
-    int i;
-    static int types[] = { pst_contextsub, pst_chainsub };
-    char buffer[100];
-
-    if ( sliflags!=NULL ) {
-	for ( i=0; sliflags[i].sli!=0xffff; ++i ) {
-	    sprintf( buffer, "Forms (init,medi,fina,isol) %c%c%c%c %d",
-		    sliflags[i].flags&pst_r2l ? 'r':' ',
-		    sliflags[i].flags&pst_ignorebaseglyphs ? 'b':' ',
-		    sliflags[i].flags&pst_ignoreligatures ? 'l':' ',
-		    sliflags[i].flags&pst_ignorecombiningmarks ? 'm':' ',
-    		    sliflags[i].sli );
-	    if ( cur>=max ) {
-		ret = grealloc(ret,((max+=10)+1)*sizeof(GTextInfo));
-		memset(ret+max,0,11*sizeof(GTextInfo));
-	    }
-	    ret[cur].text = uc_copy(buffer);
-	    ret[cur].checked = true;
-	    ret[cur++].userdata = (void *) (intpt) ((sliflags[i].sli<<16)|sliflags[i].flags);
-	}
-	free(sliflags);
-    }
-
-    for ( i=0; i<2; ++i ) {
-	if ( cur>=max ) {
-	    ret = grealloc(ret,((max+=10)+1)*sizeof(GTextInfo));
-	    memset(ret+max,0,11*sizeof(GTextInfo));
-	}
-	ret[cur].disabled = true;
-	ret[cur++].line = true;
-
-	for ( fpst=sf->possub; fpst!=NULL; fpst = fpst->next ) if ( fpst->type==types[i] ) {
-	    if ( cur>=max ) {
-		ret = grealloc(ret,((max+=10)+1)*sizeof(GTextInfo));
-		memset(ret+max,0,11*sizeof(GTextInfo));
-	    }
-	    ret[cur].text = ClassName("",fpst->tag,fpst->flags,
-		fpst->script_lang_index, -1, -1,false,sf);
-	    ret[cur].checked = false;
-	    ret[cur].disabled = !FPSTisMacable(sf,fpst,false);
-	    ret[cur++].userdata = (void *) fpst;
-	}
-    }
-    if ( cur==0 ) {
-	free(ret);
-return( NULL );
-    }
-return( ret );
-}
-
-static int fs_e_h(GWindow gw, GEvent *e) {
-    if ( e->type==et_close ) {
-	struct fs_dlg *d = GDrawGetUserData(gw);
-	d->done = true;
-    } else if ( e->type == et_char ) {
-return( false );
-    } else if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	struct fs_dlg *d = GDrawGetUserData(gw);
-	if ( (d->ok = GGadgetGetCid(e->u.control.g)) ) {
-	    unichar_t *end;
-	    const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(gw,CID_FeatSet));
-	    if ( *ret=='<' ) ++ret;
-	    d->feature = u_strtol(ret,&end,10);
-	    for ( ; isspace(*end); ++end );
-	    d->setting = u_strtol(end+1,&end,10);
-	    for ( ; isspace(*end); ++end );
-	    if ( *end=='>' ) ++end;
-	    for ( ; isspace(*end); ++end );
-	    if ( *end!='\0' ) {
-		gwwv_post_error(_("Bad Feature Setting"),_("Bad Feature Setting"));
-return( true );
-	    }
-	}
-	d->done = true;
-    } else if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
-	if ( e->u.control.u.tf_changed.from_pulldown!=-1 ) {
-	    struct fs_dlg *d = GDrawGetUserData(gw);
-	    uint32 tag = (uint32) (intpt) d->mactags[e->u.control.u.tf_changed.from_pulldown].userdata;
-	    unichar_t ubuf[20];
-	    char buf[20];
-	    /* If they select something from the pulldown, don't show the human */
-	    /*  readable form, instead show the numeric feature/setting */
-	    sprintf( buf,"<%d,%d>", (int) (tag>>16), (int) (tag&0xffff) );
-	    uc_strcpy(ubuf,buf);
-	    GGadgetSetTitle(e->u.control.g,ubuf);
-	}
-    }
-return( true );
-}
-
-static int GetFeatureSetting(SplineFont *sf, unichar_t *text,
-	int *feature,int *setting) {
-    struct fs_dlg d;
-    GRect pos;
-    GWindow gw;
-    GWindowAttrs wattrs;
-    GGadgetCreateData gcd[8];
-    GTextInfo label[8];
-    int k;
-
-    memset(&d,0,sizeof(d));
-
-    memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;
-    wattrs.event_masks = ~(1<<et_charup);
-    wattrs.restrict_input_to_me = 1;
-    wattrs.undercursor = 1;
-    wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = _("Convert from OpenType...");
-    pos.x = pos.y = 0;
-    pos.width = GDrawPointsToPixels(NULL,200);
-    pos.height = GDrawPointsToPixels(NULL,96);
-    gw = GDrawCreateTopWindow(NULL,&pos,fs_e_h,&d,&wattrs);
-
-    memset(&label,0,sizeof(label));
-    memset(&gcd,0,sizeof(gcd));
-
-    k=0;
-
-    label[k].text = (unichar_t *) _("Feature/Setting for:");
-    label[k].text_is_1byte = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = 5;
-    gcd[k].gd.flags = gg_visible | gg_enabled;
-    gcd[k++].creator = GLabelCreate;
-
-    label[k].text = text;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
-    gcd[k].gd.flags = gg_visible | gg_enabled;
-    gcd[k++].creator = GLabelCreate;
-
-    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
-    gcd[k].gd.flags = gg_visible | gg_enabled;
-    gcd[k].gd.cid = CID_FeatSet;
-    gcd[k].gd.u.list = d.mactags = AddMacFeatures(NULL,pst_max,sf);
-    gcd[k++].creator = GListFieldCreate;
-
-    label[k].text = (unichar_t *) _("_OK");
-    label[k].text_is_1byte = true;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 30; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+26;
-    gcd[k].gd.pos.width = -1;
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    gcd[k].gd.cid = true;
-    gcd[k++].creator = GButtonCreate;
-
-    label[k].text = (unichar_t *) _("_Cancel");
-    label[k].text_is_1byte = true;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = -30; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;
-    gcd[k].gd.pos.width = -1;
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    gcd[k].gd.cid = false;
-    gcd[k++].creator = GButtonCreate;
-
-    gcd[k].gd.pos.x = gcd[k].gd.pos.y = 2;
-    gcd[k].gd.pos.width = pos.width - 4;
-    gcd[k].gd.pos.height = pos.height - 4;
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
-    gcd[k++].creator = GGroupCreate;
-
-    GGadgetsCreate(gw,gcd);
-    GDrawSetVisible(gw,true);
-    while ( !d.done )
-	GDrawProcessOneEvent(NULL);
-    GDrawDestroyWindow(gw);
-    *feature = d.feature;
-    *setting = d.setting;
-return( d.ok );
-}
-
-static void _SMCVT_Convert(struct cvt_dlg *d) {
-    ASM *sm, *last;
-    int32 len,i;
-    GTextInfo **ti = GGadgetGetList(d->list,&len);
-    int feature,setting;
-
-    for ( i=0; i<len; ++i ) if ( ti[i]->selected && !ti[i]->disabled ) {
-	if ( !GetFeatureSetting(d->sf,ti[i]->text,&feature,&setting) )
-    continue;
-	if ( ti[i]->checked ) {
-	    uint32 val = (intpt) ti[i]->userdata;
-	    sm = ASMFromOpenTypeForms(d->sf,val>>16,val&0xffff);
-	} else {
-	    sm = ASMFromFPST(d->sf,(FPST *) (ti[i]->userdata),false);
-	}
-	sm->feature = feature; sm->setting = setting;
-	if ( d->ret==NULL )
-	    d->ret = sm;
-	else
-	    last->next = sm;
-	last = sm;
-    }
-    d->done = true;
-}
-
-static int SMCVT_Convert(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	struct cvt_dlg *d = GDrawGetUserData(GGadgetGetWindow(g));
-	_SMCVT_Convert(d);
-    }
-return( true );
-}
-
-static int SMCVT_Cancel(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	struct cvt_dlg *d = GDrawGetUserData(GGadgetGetWindow(g));
-	d->done = true;
-    }
-return( true );
-}
-
-static int SMCVT_Selected(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
-	GGadgetSetEnabled(GWidgetGetControl(GGadgetGetWindow(g),CID_Convert),
-		GGadgetGetFirstListSelectedItem(g)>=0);
-    } else if ( e->type==et_controlevent && e->u.control.subtype == et_listdoubleclick ) {
-	struct cvt_dlg *d = GDrawGetUserData(GGadgetGetWindow(g));
-	_SMCVT_Convert(d);
-    }
-return( true );
-}
-
-static int cvt_e_h(GWindow gw, GEvent *e) {
-    if ( e->type==et_close ) {
-	struct cvt_dlg *d = GDrawGetUserData(gw);
-	d->done = true;
-    } else if ( e->type == et_char ) {
-return( false );
-    }
-return( true );
-}
-
-ASM *SMConvertDlg(SplineFont *sf) {
-    GTextInfo *cvts = ConvertableItems(sf);
-    struct cvt_dlg d;
-    GRect pos;
-    GWindow gw;
-    GWindowAttrs wattrs;
-    GGadgetCreateData gcd[8];
-    GTextInfo label[8];
-    int k;
-
-    if ( cvts==NULL ) {
-	gwwv_post_error(_("Nothing to Convert"),_("Nothing to Convert"));
-return( NULL );
-    }
-
-    memset(&d,0,sizeof(d));
-    d.sf = sf;
-
-    memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;
-    wattrs.event_masks = ~(1<<et_charup);
-    wattrs.restrict_input_to_me = 1;
-    wattrs.undercursor = 1;
-    wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = _("Convert from OpenType...");
-    pos.x = pos.y = 0;
-    pos.width = GDrawPointsToPixels(NULL,180);
-    pos.height = GDrawPointsToPixels(NULL,200);
-    gw = GDrawCreateTopWindow(NULL,&pos,cvt_e_h,&d,&wattrs);
-
-    memset(&label,0,sizeof(label));
-    memset(&gcd,0,sizeof(gcd));
-
-    k=0;
-
-    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = 5;
-    gcd[k].gd.pos.width = 170;
-    gcd[k].gd.pos.height = 150;
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_list_multiplesel;
-    gcd[k].gd.handle_controlevent = SMCVT_Selected;
-    gcd[k].gd.u.list = cvts;
-    gcd[k++].creator = GListCreate;
-
-    label[k].text = (unichar_t *) _("Convert...");
-    label[k].text_is_1byte = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 30; gcd[k].gd.pos.y = 168-3;
-    gcd[k].gd.flags = gg_visible /*| gg_enabled*/ | gg_but_default;
-    gcd[k].gd.handle_controlevent = SMCVT_Convert;
-    gcd[k].gd.cid = CID_Convert;
-    gcd[k++].creator = GButtonCreate;
-
-    label[k].text = (unichar_t *) _("_Cancel");
-    label[k].text_is_1byte = true;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = -30; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    gcd[k].gd.handle_controlevent = SMCVT_Cancel;
-    gcd[k++].creator = GButtonCreate;
-
-    gcd[k].gd.pos.x = gcd[k].gd.pos.y = 2;
-    gcd[k].gd.pos.width = pos.width - 4;
-    gcd[k].gd.pos.height = pos.height - 4;
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
-    gcd[k++].creator = GGroupCreate;
-
-    GGadgetsCreate(gw,gcd);
-    d.list = gcd[0].ret;
-    GDrawSetVisible(gw,true);
-    while ( !d.done )
-	GDrawProcessOneEvent(NULL);
-    GDrawDestroyWindow(gw);
-return( d.ret );
-}
-
-
 /* ************************************************************************** */
 /* ****************************** Edit a State ****************************** */
 /* ************************************************************************** */
@@ -1646,18 +1193,8 @@ static void SMD_Fillup(SMD *smd) {
 	    buf[strlen(buf)-1] = '\0';
 	GGadgetSetTitle8(GWidgetGetControl(smd->editgw,CID_Kerns),buf);
     } else {
-	buffer[0] = this->u.context.mark_tag>>24;
-	buffer[1] = (this->u.context.mark_tag>>16)&0xff;
-	buffer[2] = (this->u.context.mark_tag>>8)&0xff;
-	buffer[3] = (this->u.context.mark_tag)&0xff;
-	buffer[4] = 0;
-	GGadgetSetTitle8(GWidgetGetControl(smd->editgw,CID_TagMark),buffer);
-	buffer[0] = this->u.context.cur_tag>>24;
-	buffer[1] = (this->u.context.cur_tag>>16)&0xff;
-	buffer[2] = (this->u.context.cur_tag>>8)&0xff;
-	buffer[3] = (this->u.context.cur_tag)&0xff;
-	buffer[4] = 0;
-	GGadgetSetTitle8(GWidgetGetControl(smd->editgw,CID_TagCur),buffer);
+	GGadgetSetTitle8(GWidgetGetControl(smd->editgw,CID_TagMark),this->u.context.mark_lookup->lookup_name);
+	GGadgetSetTitle8(GWidgetGetControl(smd->editgw,CID_TagCur),this->u.context.cur_lookup->lookup_name);
     }
 
     GGadgetSetEnabled(GWidgetGetControl(smd->editgw,CID_Up), state!=0 );
@@ -1670,9 +1207,10 @@ static int SMD_DoChange(SMD *smd) {
     struct asm_state *this = &smd->states[smd->st_pos];
     int err=false, ns, flags, cnt;
     char *mins, *cins;
-    uint32 mtag, ctag;
+    OTLookup *mlook, *clook;
     const unichar_t *ret;
     unichar_t *end;
+    char *ret8;
     int16 kbuf[9];
     int kerns;
     int oddcomplain=false;
@@ -1722,27 +1260,35 @@ return( false );
 	    memcpy(this->u.kern.kerns,kbuf,kerns*sizeof(int16));
 	}
     } else if ( smd->sm->type==asm_context ) {
-	mtag = ctag = 0;
-	ret = _GGadgetGetTitle(GWidgetGetControl(smd->editgw,CID_TagMark));
-	if ( *ret=='\0' )
-	    /* That's ok */;
-	else if ( u_strlen(ret)!=4 ) {
-	    gwwv_post_error(_("Tag must be 4 characters long"),_("Tag must be 4 characters long"));
+	ret8 = GGadgetGetTitle8(GWidgetGetControl(smd->editgw,CID_TagMark));
+	if ( *ret8=='\0' )
+	    mlook = NULL; 		/* That's ok */
+	else if ( (mlook=SFFindLookup(smd->sf,ret8))==NULL ) {
+	    gwwv_post_error(_("Unknown lookup"),_("Lookup, %s, does not exist"), ret8 );
+	    free(ret8);
 return( false );
-	} else
-	    mtag = (ret[0]<<24)|(ret[1]<<16)|(ret[2]<<8)|ret[3];
-	ret = _GGadgetGetTitle(GWidgetGetControl(smd->editgw,CID_TagCur));
-	if ( *ret=='\0' )
-	    /* That's ok */;
-	else if ( u_strlen(ret)!=4 ) {
-	    gwwv_post_error(_("Tag must be 4 characters long"),_("Tag must be 4 characters long"));
+	} else if ( mlook->lookup_type!=gsub_single ) {
+	    gwwv_post_error(_("Bad lookup type"),_("Lookups in contextual state machines must be simple substitutions,\n, but %s is not"), ret8 );
+	    free(ret8);
 return( false );
-	} else
-	    ctag = (ret[0]<<24)|(ret[1]<<16)|(ret[2]<<8)|ret[3];
+	}
+	free(ret8);
+	ret8 = GGadgetGetTitle8(GWidgetGetControl(smd->editgw,CID_TagCur));
+	if ( *ret8=='\0' )
+	    clook = NULL; 		/* That's ok */
+	else if ( (clook=SFFindLookup(smd->sf,ret8))==NULL ) {
+	    gwwv_post_error(_("Unknown lookup"),_("Lookup, %s, does not exist"), ret8 );
+	    free(ret8);
+return( false );
+	} else if ( mlook->lookup_type!=gsub_single ) {
+	    gwwv_post_error(_("Bad lookup type"),_("Lookups in contextual state machines must be simple substitutions,\n, but %s is not"), ret8 );
+	    free(ret8);
+return( false );
+	}
 	this->next_state = ns;
 	this->flags = flags;
-	this->u.context.mark_tag = mtag;
-	this->u.context.cur_tag = ctag;
+	this->u.context.mark_lookup = mlook;
+	this->u.context.cur_lookup = clook;
     } else {
 	char *foo;
 
@@ -2116,9 +1662,9 @@ static void SMD_EditState(SMD *smd) {
 
     if ( listk!=-1 ) {
 	GGadgetSetList(gcd[listk].ret,
-		SFGenTagListFromType(&smd->sf->gentags,pst_substitution),false);
+		SFLookupListFromType(smd->sf,gsub_single),false);
 	GGadgetSetList(gcd[listk+2].ret,
-		SFGenTagListFromType(&smd->sf->gentags,pst_substitution),false);
+		SFLookupListFromType(smd->sf,gsub_single),false);
     }
 
     SMD_Fillup(smd);
@@ -2414,9 +1960,7 @@ return( true );
 static int SMD_Ok(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	SMD *smd = GDrawGetUserData(GGadgetGetWindow(g));
-	const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(smd->gw,CID_FeatSet));
-	unichar_t *end;
-	int feat, set, i;
+	int i;
 	int32 len;
 	GTextInfo **ti = GGadgetGetList(GWidgetGetControl(smd->gw,CID_Classes),&len);
 	ASM *sm = smd->sm;
@@ -2424,19 +1968,6 @@ static int SMD_Ok(GGadget *g, GEvent *e) {
 
 	if ( GDrawIsVisible(smd->cw))
 return( SMD_Next(g,e));
-
-	if ( *ret=='<' )
-	    ++ret;
-	feat = u_strtol(ret,&end,10);
-	if ( *end==',' && ( set = u_strtol(end+1,&end,10), *end=='>' || *end=='\0')) {
-	    sm->feature = feat;
-	    sm->setting = set;
-	} else if ( sm->type==asm_kern ) {	/* Kerns don't get feature/settings */
-	    sm->feature = sm->setting = 0xffff;
-	} else {
-	    gwwv_post_error(_("Bad Feature Setting"),_("Bad Feature Setting"));
-return( true );
-	}
 	
 	for ( i=4; i<sm->class_cnt; ++i )
 	    free(sm->classes[i]);
@@ -2604,19 +2135,15 @@ return;
 	    GDrawDrawText(pixmap,x+(smd->statew-len)/2,y+smd->fh+smd->as+1,
 		ubuf,-1,NULL,0x000000);
 
-	    ubuf[0]='\0';
+	    buf[0]='\0';
 	    if ( smd->sm->type==asm_indic ) {
-		uc_strcpy(ubuf,indicverbs[0][this->flags&0xf]);
+		strcpy(buf,indicverbs[0][this->flags&0xf]);
 	    } else if ( smd->sm->type==asm_context ) {
-		ubuf[0] = this->u.context.mark_tag>>24;
-		ubuf[1] = (this->u.context.mark_tag>>16)&0xff;
-		ubuf[2] = (this->u.context.mark_tag>>8)&0xff;
-		ubuf[3] = this->u.context.mark_tag&0xff;
-		ubuf[4] = 0;
+		if ( this->u.context.mark_lookup!=NULL )
+		    strncpy(buf,this->u.context.mark_lookup->lookup_name,5);
 	    } else if ( smd->sm->type==asm_insert ) {
-		ubuf[0] = '\0';
 		if ( this->u.insert.mark_ins!=NULL )
-		    uc_strncpy(ubuf,this->u.insert.mark_ins,5);
+		    strncpy(buf,this->u.insert.mark_ins,5);
 	    } else { /* kern */
 		if ( this->u.kern.kerns!=NULL ) {
 		    int j;
@@ -2625,33 +2152,29 @@ return;
 			sprintf(buf+strlen(buf),"%d ", this->u.kern.kerns[j]);
 		    kddd = ( strlen(buf)>5 );
 		    buf[5] = '\0';
-		    uc_strcpy(ubuf,buf);
 		} else
 		    kddd = false;
 	    }
-	    len = GDrawGetTextWidth(pixmap,ubuf,-1,NULL);
-	    GDrawDrawText(pixmap,x+(smd->statew-len)/2,y+2*smd->fh+smd->as+1,
-		ubuf,-1,NULL,0x000000);
+	    len = GDrawGetText8Width(pixmap,buf,-1,NULL);
+	    GDrawDrawText8(pixmap,x+(smd->statew-len)/2,y+2*smd->fh+smd->as+1,
+		buf,-1,NULL,0x000000);
 
+	    buf[0] = '\0';
 	    if ( smd->sm->type==asm_indic ) {
-		uc_strcpy(ubuf,indicverbs[1][this->flags&0xf]);
+		strcpy(buf,indicverbs[1][this->flags&0xf]);
 	    } else if ( smd->sm->type==asm_context ) {
-		ubuf[0] = this->u.context.cur_tag>>24;
-		ubuf[1] = (this->u.context.cur_tag>>16)&0xff;
-		ubuf[2] = (this->u.context.cur_tag>>8)&0xff;
-		ubuf[3] = this->u.context.cur_tag&0xff;
-		ubuf[4] = 0;
+		if ( this->u.context.cur_lookup!=NULL )
+		    strncpy(buf,this->u.context.cur_lookup->lookup_name,5);
 	    } else if ( smd->sm->type==asm_insert ) {
-		ubuf[0] = '\0';
 		if ( this->u.insert.cur_ins!=NULL )
-		    uc_strncpy(ubuf,this->u.insert.cur_ins,5);
+		    strncpy(buf,this->u.insert.cur_ins,5);
 	    } else { /* kern */
-		if ( kddd ) uc_strcpy(ubuf,"...");
-		else ubuf[0] = '\0';
+		if ( kddd ) strcpy(buf,"...");
+		else buf[0] = '\0';
 	    }
-	    len = GDrawGetTextWidth(pixmap,ubuf,-1,NULL);
-	    GDrawDrawText(pixmap,x+(smd->statew-len)/2,y+3*smd->fh+smd->as+1,
-		ubuf,-1,NULL,0x000000);
+	    len = GDrawGetText8Width(pixmap,buf,-1,NULL);
+	    GDrawDrawText8(pixmap,x+(smd->statew-len)/2,y+3*smd->fh+smd->as+1,
+		buf,-1,NULL,0x000000);
 	}
     }
 
@@ -2923,8 +2446,6 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     int as, ds, ld, sbsize;
     FontRequest rq;
     static unichar_t statew[] = { '1', '2', '3', '4', '5', 0 };
-    char buf[20];
-    unichar_t ubuf[20];
 
     smd->sf = sf;
     smd->sm = sm;
@@ -2959,25 +2480,6 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     memset(gcd,0,sizeof(gcd));
     memset(label,0,sizeof(label));
     k = 0;
-
-    label[k].text = (unichar_t *) _("Feature, Setting:");
-    label[k].text_is_1byte = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = 5;
-    gcd[k].gd.flags = gg_enabled|gg_visible;
-    gcd[k++].creator = GLabelCreate;
-
-    if ( !smd->isnew ) {
-	sprintf(buf,"<%d,%d>", sm->feature, sm->setting );
-	uc_strcpy(ubuf,buf);
-	label[k].text = ubuf;
-	gcd[k].gd.label = &label[k];
-    }
-    gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
-    gcd[k].gd.flags = gg_enabled|gg_visible;
-    gcd[k].gd.u.list = smd->mactags = AddMacFeatures(NULL,pst_max,sf);
-    gcd[k].gd.cid = CID_FeatSet;
-    gcd[k++].creator = GListFieldCreate;
 
     label[k].text = (unichar_t *) _("Right To Left");
     label[k].text_is_1byte = true;

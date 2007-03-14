@@ -417,17 +417,18 @@ struct aplist { AnchorPoint *ap; int connected_to, selected; struct aplist *next
 
 typedef struct metricsview {
     struct fontview *fv;
+    SplineFont *sf;
     int pixelsize;
     BDFFont *bdf;		/* We can also see metric info on a bitmap font */
 #if defined(FONTFORGE_CONFIG_GTK)
     GtkWidget *gw;
     PangoFont *font;
-    GtkWidget *hsb, *vsb, *mb, *text, *sli_list;
+    GtkWidget *hsb, *vsb, *mb, *text, *subtable_list;
     GtkWidget *namelab, *widthlab, *lbearinglab, *rbearinglab, *kernlab;
 #elif defined(FONTFORGE_CONFIG_GDRAW)
     GWindow gw;
     GFont *font;
-    GGadget *hsb, *vsb, *mb, *text, *sli_list;
+    GGadget *hsb, *vsb, *mb, *text, *subtable_list;
     GGadget *namelab, *widthlab, *lbearinglab, *rbearinglab, *kernlab;
 #endif
     int16 width, height, dwidth;
@@ -472,7 +473,7 @@ typedef struct metricsview {
     BasePoint ap_start;
     int cursor;
     int scale_index;
-    int cur_sli;
+    struct lookup_subtable *cur_subtable;
 } MetricsView;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
@@ -509,11 +510,6 @@ typedef struct fontview {
     struct fontview *nextsame;		/* Next fv looking at this font */
     int pressed_pos, end_pos;
     uint8 *selected;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    MetricsView *metrics;
-#else
-    void *metrics;
-#endif
     unsigned int antialias:1;
     unsigned int bbsized:1;		/* displayed bitmap should be scaled by bounding box rather than emsize */
     unsigned int wasonlybitmaps:1;
@@ -538,11 +534,9 @@ typedef struct fontview {
     int mapcnt;		/* Number of chars in the current group (mapping) */
     struct dictionary *fontvars;	/* Scripting */
     struct searchview *sv;
-    struct gfi_data *fontinfo;
     SplineChar *sc_near_top;
     int sel_index;
-    uint32 cur_feat_tag;
-    int cur_sli;
+    struct lookup_subtable *cur_subtable;
     void *python_fv_object;
     void *python_data;
 } FontView;
@@ -632,6 +626,54 @@ typedef struct searchview {
 } SearchView;
 #endif
 
+struct lkdata {
+    int cnt, max;
+    int off_top, off_left;
+    struct lkinfo {
+	OTLookup *lookup;
+	unsigned int open: 1;
+	unsigned int deleted: 1;
+	unsigned int new: 1;
+	unsigned int selected: 1;
+	int16 subtable_cnt, subtable_max;
+	struct lksubinfo {
+	    struct lookup_subtable *subtable;
+	    unsigned int deleted: 1;
+	    unsigned int new: 1;
+	    unsigned int selected: 1;
+	} *subtables;
+    } *all;
+};
+
+struct gfi_data {
+    SplineFont *sf;
+    GWindow gw;
+    int tn_active;
+    int private_aspect, ttfv_aspect, tn_aspect, tx_aspect, unicode_aspect;
+    int old_sel, old_aspect, old_lang, old_strid;
+    int ttf_set, names_set, tex_set;
+    struct psdict *private;
+    int langlocalecode;	/* MS code for the current locale */
+    unsigned int family_untitled: 1;
+    unsigned int human_untitled: 1;
+    unsigned int done: 1;
+    unsigned int mpdone: 1;
+    struct anchor_shows { CharView *cv; SplineChar *sc; int restart; } anchor_shows[2];
+    struct texdata texdata;
+    struct contextchaindlg *ccd;
+    struct statemachinedlg *smd;
+/* For GDEF Mark Attachment Class -- used in lookup flags */
+/* As usual, class 0 is unused */
+    int mark_class_cnt;
+    char **mark_classes;		/* glyph name list */
+    char **mark_class_names;		/* used within ff */
+    struct markclassdlg *mcd;
+    GFont *font;
+    int as, fh;
+    struct lkdata tables[2];
+    int lkwidth, lkheight;
+};
+
 enum widthtype { wt_width, wt_lbearing, wt_rbearing, wt_vwidth };
 
 enum fvtrans_flags { fvt_dobackground=1, fvt_round_to_int=2,
@@ -706,7 +748,8 @@ extern void FVRemoveKerns(FontView *fv);
 extern void FVRemoveVKerns(FontView *fv);
 extern void FVVKernFromHKern(FontView *fv);
 extern int AutoWidthScript(FontView *fv,int spacing);
-extern int AutoKernScript(FontView *fv,int spacing, int threshold,char *kernfile);
+extern int AutoKernScript(FontView *fv,int spacing, int threshold,
+	struct lookup_subtable *sub, char *kernfile);
 
 enum fvformats { fv_bdf, fv_ttf, fv_pk, fv_pcf, fv_mac, fv_win, fv_palm,
 	fv_image, fv_imgtemplate, fv_eps, fv_epstemplate,
@@ -744,9 +787,6 @@ extern void CopyReference(SplineChar *sc);
 extern void PasteRemoveSFAnchors(SplineFont *);
 extern void PasteAnchorClassMerge(SplineFont *sf,AnchorClass *into,AnchorClass *from);
 extern void PasteRemoveAnchorClass(SplineFont *sf,AnchorClass *dying);
-extern void PosSubCopy(enum possub_type type, char **data,SplineFont *sf);
-extern void CopyPSTStart(SplineFont *sf);
-extern void CopyPSTAppend(enum possub_type type, char *text );
 extern void ClipboardClear(void);
 extern SplineSet *ClipBoardToSplineSet(void);
 extern void BCCopySelected(BDFChar *bc,int pixelsize,int depth);
@@ -860,16 +900,12 @@ extern char *PST2Text(PST *pst,SplineFont *sf);
 
 extern void FVStrokeItScript(FontView *fv, StrokeInfo *si);
 
+extern int FVParseSelectByPST(FontView *fv,struct lookup_subtable *sub,
+	int search_type);
 #if defined(FONTFORGE_CONFIG_GTK)
 extern void DropChars2Text(GdkWindow gw, GtkWidget *glyphs,GdkEvent *event);
-extern int FVParseSelectByPST(FontView *fv,int type,
-	const char *tags,const char *contents,
-	int search_type);
 #elif defined(FONTFORGE_CONFIG_GDRAW)
 extern void DropChars2Text(GWindow gw, GGadget *glyphs,GEvent *event);
-extern int FVParseSelectByPST(FontView *fv,int type,
-	const unichar_t *tags,const unichar_t *contents,
-	int search_type);
 #endif
 
 extern void FVSetWidthScript(FontView *fv,enum widthtype wtype,int val,int incr);
@@ -882,7 +918,6 @@ extern int UserFeaturesDiffer(void);
 
 extern int  SLICount(SplineFont *sf);
 #if defined(FONTFORGE_CONFIG_GTK)
-extern char *ScriptLangLine(struct script_record *sr);
 extern char *ClassName(const char *name,uint32 feature_tag,
 	uint16 flags, int script_lang_index, int merge_with, int act_type,
 	int macfeature,SplineFont *sf);
@@ -891,7 +926,6 @@ extern char *DecomposeClassName(const char *clsnm, char **name,
 	uint16 *flags, uint16 *script_lang_index,int *merge_with,int *act_type,
 	SplineFont *sf);
 #elif defined(FONTFORGE_CONFIG_GDRAW)
-extern unichar_t *ScriptLangLine(struct script_record *sr);
 extern unichar_t *ClassName(const char *name,uint32 feature_tag,
 	uint16 flags, int script_lang_index, int merge_with, int act_type,
 	int macfeature,SplineFont *sf);
@@ -935,9 +969,6 @@ extern int RecentFilesAny(void);
 extern void _aplistbuild(struct gmenuitem *mi,SplineFont *sf,
 	void (*func)(GWindow,struct gmenuitem *,GEvent *));
 extern int32 *ParseBitmapSizes(GGadget *g,char *msg,int *err);
-extern GTextInfo *AnchorClassesList(SplineFont *sf);
-extern GTextInfo **AnchorClassesLList(SplineFont *sf);
-extern GTextInfo **AnchorClassesSimpleLList(SplineFont *sf);
 extern GTextInfo *AddMacFeatures(GTextInfo *opentype,enum possub_type type,SplineFont *sf);
 extern unichar_t *AskNameTag(char *title,unichar_t *def,uint32 def_tag,uint16 flags,
 	int script_lang_index, enum possub_type type, SplineFont *sf, SplineChar *default_script,
@@ -953,18 +984,24 @@ extern GTextInfo *GListAppendLine(GGadget *list,const unichar_t *line,int select
 extern GTextInfo *GListChangeLine8(GGadget *list,int pos, const char *line);
 extern GTextInfo *GListAppendLine8(GGadget *list,const char *line,int select);
 #endif
-extern int SCAnyFeatures(SplineChar *sc);
-extern void SCCopyFeatures(SplineChar *sc);
 extern void CharInfoInit(void);
+extern int DeviceTableOK(char *dvstr, int *_low, int *_high);
+extern DeviceTable *DeviceTableParse(DeviceTable *dv,char *dvstr);
+extern void VRDevTabParse(struct vr *vr,struct matrix_data *md);
+extern void DevTabToString(char **str,DeviceTable *adjust);
+extern void ValDevTabToStrings(struct matrix_data *mds,int first_offset,ValDevTab *adjust);
+extern void KpMDParse(SplineFont *sf,SplineChar *sc,struct lookup_subtable *sub,
+	struct matrix_data *possub,int rows,int cols,int i);
+extern void GFI_LookupEnableButtons(struct gfi_data *gfi, int isgpos);
+extern void GFI_LookupScrollbars(struct gfi_data *gfi, int isgpos, int refresh);
 extern void FontInfo(SplineFont *sf,int aspect,int sync);
-extern void FontInfoDestroy(FontView *fv);
+extern void FontInfoDestroy(SplineFont *sf);
 extern void FontMenuFontInfo(void *fv);
 extern void GFI_CCDEnd(struct gfi_data *d);
 extern struct enc *MakeEncoding(SplineFont *sf, EncMap *map);
 extern void LoadEncodingFile(void);
 extern void RemoveEncoding(void);
 extern void SFPrivateInfo(SplineFont *sf);
-extern void OrderTable(SplineFont *sf,uint32 table_tag);
 extern void FontViewReformatAll(SplineFont *sf);
 extern void FontViewReformatOne(FontView *fv);
 extern void FVShowFilled(FontView *fv);
@@ -972,8 +1009,7 @@ extern void FVChangeDisplayBitmap(FontView *fv,BDFFont *bdf);
 extern void FVDelay(FontView *fv,void (*func)(FontView *));
 #if defined(FONTFORGE_CONFIG_GTK)
 #elif defined(FONTFORGE_CONFIG_GDRAW)
-extern void GFI_FinishContextNew(struct gfi_data *d,FPST *fpst, unichar_t *newname,
-	int success);
+extern void GFI_FinishContextNew(struct gfi_data *d,FPST *fpst, int success);
 extern void SCPreparePopup(GWindow gw,SplineChar *sc, struct remap *remap, int enc, int actualuni);
 extern void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 	Color fg, int dopoints, DRect *clip );
@@ -1072,6 +1108,8 @@ extern void CVTile(CharView *cv);
 extern void FVTile(FontView *fv);
 extern void SCCharInfo(SplineChar *sc,EncMap *map,int enc);
 extern void CharInfoDestroy(struct charinfo *ci);
+extern SplineChar *SuffixCheck(SplineChar *sc,char *suffix);
+extern void SCSubtableDefaultSubsCheck(SplineChar *sc, struct lookup_subtable *sub, struct matrix_data *possub, int r);
 extern void CVGetInfo(CharView *cv);
 extern void CVPGetInfo(CharView *cv);
 extern int  SCUsedBySubs(SplineChar *sc);
@@ -1241,7 +1279,6 @@ extern void ShowAtt(SplineFont *sf);
 extern void FontCompareDlg(FontView *fv);
 extern void SFShowKernPairs(SplineFont *sf,SplineChar *sc,AnchorClass *ac);
 extern void SFShowLigatures(SplineFont *sf,SplineChar *sc);
-extern char *TagFullName(SplineFont *sf,uint32 tag, int ismac);
 
 extern void SCEditInstructions(SplineChar *sc);
 extern void SFEditTable(SplineFont *sf, uint32 tag);
@@ -1262,6 +1299,7 @@ extern void CVDebugFree(DebugView *dv);
 extern int DVChar(DebugView *dv, GEvent *e);
 #endif
 
+extern void KernClassD(KernClass *kc, SplineFont *sf, int isv);
 extern void ShowKernClasses(SplineFont *sf,MetricsView *mv,int isv);
 extern void KCLD_End(struct kernclasslistdlg *kcld);
 extern void KCLD_MvDetach(struct kernclasslistdlg *kcld,MetricsView *mv);
@@ -1273,6 +1311,7 @@ extern GTextInfo *BuildFontList(FontView *except);
 extern void TFFree(GTextInfo *tf);
 
 extern void AnchorControl(SplineChar *sc,AnchorPoint *ap);
+extern void AnchorControlClass(SplineFont *_sf,AnchorClass *ac);
 
 extern void FVSelectByPST(FontView *fv);
 extern void SFUntickAll(SplineFont *sf);
@@ -1287,7 +1326,6 @@ extern int CCD_NameListCheck(SplineFont *sf,const char *ret,int empty_bad,char *
 #if defined(FONTFORGE_CONFIG_GDRAW)
 extern struct contextchaindlg *ContextChainEdit(SplineFont *sf,FPST *fpst,
 	struct gfi_data *gfi,unichar_t *newname);
-extern GTextInfo **SFGenTagListFromType(struct gentagtype *gentags,enum possub_type type);
 extern int CCD_InvalidClassList(char *ret,GGadget *list,int wasedit);
 extern char *cu_copybetween(const unichar_t *start, const unichar_t *end);
 #endif
@@ -1296,7 +1334,6 @@ extern struct statemachinedlg *StateMachineEdit(SplineFont *sf,ASM *sm,struct gf
 extern void SMD_Close(struct statemachinedlg *smd);
 extern void GFI_FinishSMNew(struct gfi_data *d,ASM *sm, int success,int isnew);
 extern void GFI_SMDEnd(struct gfi_data *d);
-extern ASM *SMConvertDlg(SplineFont *sf);
 
 extern void SFRemoveFeatureDlg(SplineFont *sf);
 extern void SFCopyFeatureToFontDlg(SplineFont *sf);
@@ -1328,6 +1365,30 @@ extern GMenuItem *GetEncodingMenu(void (*func)(GWindow,GMenuItem *,GEvent *),
 
 extern GTextInfo *TIFromName(const char *name);
 #endif
+
+enum subtable_data_flags {
+    /* I have flags for each alternative because I want "unspecified" to be */
+    /*  an option */
+    sdf_kernclass      = 0x01,
+    sdf_kernpair       = 0x02,
+    sdf_verticalkern   = 0x04,
+    sdf_horizontalkern = 0x08,
+    sdf_dontedit       = 0x10
+};
+struct subtable_data {
+    int flags;
+    SplineChar *sc;
+};
+
+extern GTextInfo **SFLookupListFromType(SplineFont *sf, int lookup_type );
+extern GTextInfo **SFSubtablesOfType(SplineFont *sf, int lookup_type, int kernclass);
+extern GTextInfo *SFSubtableListOfType(SplineFont *sf, int lookup_type, int kernclass);
+extern struct lookup_subtable *SFNewLookupSubtableOfType(SplineFont *sf, int lookup_type, struct subtable_data *sd );
+extern int EditLookup(OTLookup *otl,int isgpos,SplineFont *sf);
+extern int EditSubtable(struct lookup_subtable *sub,int isgpos,SplineFont *sf,
+	struct subtable_data *sd);
+extern void _LookupSubtableContents(SplineFont *sf, struct lookup_subtable *sub,
+	struct subtable_data *sd);
 
 extern void SFBdfProperties(SplineFont *sf, EncMap *map, BDFFont *thisone);
 
