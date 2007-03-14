@@ -409,7 +409,7 @@ static void GMatrixEdit_Resize(GGadget *g, int32 width, int32 height ) {
     /*  for the last column. Instead put all the extra space in the */
     /*  last column, but give it some minimal size */
     min_width = GME_ColWidth(gme,gme->cols-1);
-    gme->col_data[gme->cols-1].width = (width-gme->hpad-gme->col_data[gme->cols-1].x);
+    gme->col_data[gme->cols-1].width = (subwidth-gme->hpad-gme->col_data[gme->cols-1].x);
     if ( gme->col_data[gme->cols-1].width<min_width )
 	gme->col_data[gme->cols-1].width = min_width;
     GME_FixScrollBars(gme);
