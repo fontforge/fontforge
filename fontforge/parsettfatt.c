@@ -2712,6 +2712,8 @@ return;
 	for ( i=0; i<cnt; ++i )
 	    lc_offsets[i]=getushort(ttf);
 	glyphs = getCoverageTable(ttf,lclo+coverage,info);
+	if ( glyphs==NULL )
+return;
 	for ( i=0; i<cnt; ++i ) if ( glyphs[i]<info->glyph_cnt ) {
 	    fseek(ttf,lclo+lc_offsets[i],SEEK_SET);
 	    sc = info->chars[glyphs[i]];
@@ -3009,7 +3011,7 @@ return;
     } else if ( (sc=info->chars[gnum])==NULL )
 return;
 
-    fseek(ttf,info->lcar_start+offset,SEEK_SET);
+    fseek(ttf,info->lcar_start+offset+6,SEEK_SET);	/* skip over the lcar table header */
     cnt = getushort(ttf);
     pst = chunkalloc(sizeof(PST));
     pst->type = pst_lcaret;
