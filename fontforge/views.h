@@ -1353,6 +1353,7 @@ extern SplineChar *FVMakeChar(FontView *fv,int i);
 extern void CVYPerspective(CharView *cv,double x_vanish, double y_vanish);
 
 extern void DVCreateGloss(DebugView *dv);
+extern int CVXPos(DebugView *dv,int offset,int width);
 
 extern EncMap *EncMapFromEncoding(SplineFont *sf,Encoding *enc);
 extern void SFRemoveGlyph(SplineFont *sf,SplineChar *sc, int *flags);

@@ -1649,7 +1649,7 @@ return( DVChar(dv,event));
 return( true );
 }
 
-static int CVXPos(DebugView *dv,int offset,int width) {
+int CVXPos(DebugView *dv,int offset,int width) {
     GRect r, screensize;
     int x;
 

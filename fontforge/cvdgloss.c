@@ -1193,8 +1193,8 @@ void DVCreateGloss(DebugView *dv) {
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
     wattrs.utf8_window_title = _("Instruction Gloss (TrueType)");
-    pos.x = 664; pos.y = 732;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,230)); pos.height = 169;
+    pos.x = CVXPos(dv,143,pos.width); pos.y = 302;
     dv->gloss = GDrawCreateTopWindow(NULL,&pos,dvgloss_e_h,dv,&wattrs);
 
     memset(&gd,0,sizeof(gd));
