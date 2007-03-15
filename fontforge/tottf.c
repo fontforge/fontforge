@@ -3614,6 +3614,9 @@ static void AddEncodedName(NamTab *nt,char *utf8name,uint16 lang,uint16 strid) {
     int maclang, macenc= -1, specific;
     char *macname = NULL;
 
+    if ( strid==ttf_postscriptname && lang!=0x409 )
+return;		/* Should not happen, but it did */
+
     if ( nt->cur+6>=nt->max ) {
 	if ( nt->cur==0 )
 	    nt->entries = galloc((nt->max=100)*sizeof(NameEntry));
@@ -3643,11 +3646,13 @@ static void AddEncodedName(NamTab *nt,char *utf8name,uint16 lang,uint16 strid) {
 	maclang = 0xffff;
     if ( maclang!=0xffff ) {
 #ifdef FONTFORGE_CONFIG_APPLE_UNICODE_NAMES
-	*ne = ne[-1];
-	ne->platform = 0;	/* Mac unicode */
-	ne->specific = 0;	/* 3 => Unicode 2.0 semantics */ /* 0 ("default") is also a reasonable value */
-	ne->lang     = maclang;
-	++ne;
+	if ( strid!=ttf_postscriptname ) {
+	    *ne = ne[-1];
+	    ne->platform = 0;	/* Mac unicode */
+	    ne->specific = 0;	/* 3 => Unicode 2.0 semantics */ /* 0 ("default") is also a reasonable value */
+	    ne->lang     = maclang;
+	    ++ne;
+	}
 #endif
 
 	macenc = MacEncFromMacLang(maclang);
