@@ -456,7 +456,8 @@ return;
 	    putshort(lcar,6*l);
 	    putshort(lcar,j);
 	    putshort(lcar,6*(seg_cnt-l));
-	    offset = 4+7*2 + seg_cnt*6 + 6;
+	    offset = 4+7*2 + seg_cnt*6 /*+ 6*/;
+		    /* Offset relative to lookup table, not to lcar_start */
 	} else if ( k==1 ) {		/* flag entry */
 	    putshort(lcar,0xffff);
 	    putshort(lcar,0xffff);
