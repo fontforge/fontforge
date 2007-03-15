@@ -3910,6 +3910,15 @@ static int GFI_AddOFL(GGadget *g, GEvent *e) {
 	    }
 	}
 	GMatrixEditSet(tng, newtns, rows+extras, false);
+	gwwv_post_notice(_("Please check the OFL"),_(
+	    "You should check the OFL (in all languages).\n"
+	    "FontForge does not know your email address/URL and has\n"
+	    "left this for you to fill in (The SIL template suggests\n"
+	    "including this information).\n"
+	    "\n"
+	    "You may also wish to adjust the reserved name and possibly\n"
+	    "add others (translations into other languages perhaps?).\n"
+	    "You may wish to add additional copyright holders."));
     }
 return( true );
 }
