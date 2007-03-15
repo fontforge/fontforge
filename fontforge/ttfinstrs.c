@@ -1590,6 +1590,7 @@ return( false );
 	}
 	sv->len = 2*val;
 	SV_SetScrollBar(sv);
+	GDrawRequestExpose(sv->v,NULL,true);
     }
 return( true );
 }
@@ -1688,8 +1689,8 @@ return;
     GGadgetMove(sv->setsize,(event->u.resize.size.width-gsize.width)/2,
 	    event->u.resize.size.height-GDrawPointsToPixels(sv->gw,60));
     
-    GDrawRequestExpose(sv->gw,NULL,false);
-    GDrawRequestExpose(sv->v,NULL,false);
+    GDrawRequestExpose(sv->gw,NULL,true);
+    GDrawRequestExpose(sv->v,NULL,true);
 }
 
 static void short_expose(ShortView *sv,GWindow pixmap,GRect *rect) {
@@ -1933,7 +1934,7 @@ static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
     gcd[2].gd.label = &label[2];
     gcd[2].creator = GButtonCreate;
     gcd[2].data = sv;
-    gd.handle_controlevent = SV_ChangeLength;
+    gcd[2].gd.handle_controlevent = SV_ChangeLength;
 
     butarray[0] = GCD_Glue; butarray[1] = &gcd[0]; butarray[2] = GCD_Glue; 
     butarray[3] = GCD_Glue; butarray[4] = &gcd[1]; butarray[5] = GCD_Glue;
