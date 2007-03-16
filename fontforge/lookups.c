@@ -5267,7 +5267,7 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub) {
     char title[300];
     struct matrixinit mi;
     GGadgetCreateData gcd[15], buttongcd[3], box[5];
-    GGadgetCreateData *h1array[8], *h2array[4], *h3array[7], *varray[16];
+    GGadgetCreateData *h1array[8], *h2array[7], *h3array[7], *varray[16];
     GTextInfo label[15], buttonlabel[2];
     int i,k,mi_pos, mi_k;
 

@@ -2703,7 +2703,7 @@ void ShowKernClasses(SplineFont *sf,MetricsView *mv,int isv) {
     KernClassListDlg *kcld;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[7];
+    GGadgetCreateData gcd[7], boxes[4], *varray[10], *harray[9], *harray2[5];
     GTextInfo label[7];
     int kcl_width = KCL_Width, temp;
 
@@ -2728,6 +2728,7 @@ return;
     memset(&wattrs,0,sizeof(wattrs));
     memset(&gcd,0,sizeof(gcd));
     memset(&label,0,sizeof(label));
+    memset(boxes,0,sizeof(boxes));
 
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
@@ -2750,9 +2751,9 @@ return;
     gcd[0].gd.u.list = KCLookupSubtableList(sf,isv);
     gcd[0].gd.handle_controlevent = KCL_SelChanged;
     gcd[0].creator = GListCreate;
+    varray[0] = &gcd[0]; varray[1] = NULL;
 
     gcd[1].gd.pos.x = 10; gcd[1].gd.pos.y = gcd[0].gd.pos.y+gcd[0].gd.pos.height+4;
-    gcd[1].gd.pos.width = -1;
     gcd[1].gd.flags = gg_visible | gg_enabled;
     label[1].text = (unichar_t *) S_("KernClass|_New Lookup...");
     label[1].text_is_1byte = true;
@@ -2761,9 +2762,9 @@ return;
     gcd[1].gd.cid = CID_New;
     gcd[1].gd.handle_controlevent = KCL_New;
     gcd[1].creator = GButtonCreate;
+    harray[0] = GCD_Glue; harray[1] = &gcd[1];
 
     gcd[2].gd.pos.x = 20+GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor); gcd[2].gd.pos.y = gcd[1].gd.pos.y;
-    gcd[2].gd.pos.width = -1;
     gcd[2].gd.flags = gg_visible;
     label[2].text = (unichar_t *) _("_Delete");
     label[2].text_is_1byte = true;
@@ -2772,6 +2773,7 @@ return;
     gcd[2].gd.cid = CID_Delete;
     gcd[2].gd.handle_controlevent = KCL_Delete;
     gcd[2].creator = GButtonCreate;
+    harray[2] = GCD_Glue; harray[3] = &gcd[2];
 
     gcd[3].gd.pos.x = -10; gcd[3].gd.pos.y = gcd[1].gd.pos.y;
     gcd[3].gd.pos.width = -1;
@@ -2783,14 +2785,20 @@ return;
     gcd[3].gd.cid = CID_Edit;
     gcd[3].gd.handle_controlevent = KCL_Edit;
     gcd[3].creator = GButtonCreate;
+    harray[4] = GCD_Glue; harray[5] = &gcd[3]; harray[6] = GCD_Glue; harray[7] = NULL;
+
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = harray;
+    boxes[0].creator = GHBoxCreate;
+    varray[2] = &boxes[0]; varray[3] = NULL;
 
     gcd[4].gd.pos.x = 10; gcd[4].gd.pos.y = gcd[1].gd.pos.y+28;
     gcd[4].gd.pos.width = kcl_width-20;
     gcd[4].gd.flags = gg_visible;
     gcd[4].creator = GLineCreate;
+    varray[4] = &gcd[4]; varray[5] = NULL;
 
     gcd[5].gd.pos.x = (kcl_width-GIntGetResource(_NUM_Buttonsize))/2; gcd[5].gd.pos.y = gcd[4].gd.pos.y+7;
-    gcd[5].gd.pos.width = -1;
     gcd[5].gd.flags = gg_visible|gg_enabled|gg_but_default|gg_but_cancel;
     label[5].text = (unichar_t *) _("_Done");
     label[5].text_is_1byte = true;
@@ -2798,8 +2806,22 @@ return;
     gcd[5].gd.label = &label[5];
     gcd[5].gd.handle_controlevent = KCL_Done;
     gcd[5].creator = GButtonCreate;
+    harray2[0] = GCD_Glue; harray2[1] = &gcd[5]; harray2[2] = GCD_Glue; harray2[3] = NULL;
 
-    GGadgetsCreate(kcld->gw,gcd);
+    boxes[1].gd.flags = gg_enabled|gg_visible;
+    boxes[1].gd.u.boxelements = harray2;
+    boxes[1].creator = GHBoxCreate;
+    varray[6] = &boxes[1]; varray[7] = NULL; varray[8] = NULL;
+
+    boxes[2].gd.pos.x = boxes[0].gd.pos.y = 2;
+    boxes[2].gd.flags = gg_enabled|gg_visible;
+    boxes[2].gd.u.boxelements = varray;
+    boxes[2].creator = GHVGroupCreate;
+
+    GGadgetsCreate(kcld->gw,&boxes[2]);
+    GHVBoxSetExpandableRow(boxes[2].ret,0);
+    GHVBoxSetExpandableCol(boxes[0].ret,gb_expandgluesame);
+    GHVBoxSetExpandableCol(boxes[1].ret,gb_expandgluesame);
     GDrawSetVisible(kcld->gw,true);
 }
 
