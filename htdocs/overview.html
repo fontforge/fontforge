@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 12-Mar-2007 -->
+  <!-- AP: Last modified: 15-Mar-2007 -->
   <TITLE>FontForge -- An outline font editor for PostScript&reg;, TrueType
   and OpenType fonts</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
@@ -777,7 +777,189 @@
   A few caveats: Adobe's glyph name standard expects all glyph names to be
   in ASCII characters. Syntactically postscript permits a wider range of glyph
   names, but if you use non-ASCII characters some rasterizers might have problems.
-  Best to keep these within fontforge.
+  Best to keep these within fontforge (and rename glyphs to adobe's standard
+  names before generating).
+  <H3>
+    <A NAME="Lookups">Lookups,</A> Features, Scripts and Languages
+  </H3>
+  <P>
+  OpenType (and Apple Advanced Typography) allow various transformations to
+  be applied to the input glyph stream to produce an output glyph stream. These
+  transformations might include forming ligatures, kerning glyphs closer to
+  each other, attaching vowel marks or diacritics to letters, conditionally
+  replacing one glyph with another depending on the glyphs around it, etc.
+  <P>
+  The commands for each transformation are stored in what are called lookups.
+  If you were designing a set of lookups to handle latin ligatures, you might
+  have one lookup for ff, fl and ffl -- ligatures that happen almost all the
+  time, another for fi and ffi -- ligatures which don't happen in Turkish but
+  do in other languages, and lookups for ct and st -- ligatures which rarely
+  happen in English but are more frequent in German.
+  <P>
+  A Feature is a tagged collection of lookups. The tags are all 4 letter sequences
+  (like 'liga') with standardized meanings. The 'liga' tag means standard
+  ligatures. The 'dlig' tag means discretionary ligatures. There are many others.
+  <P>
+  Every script (latin, cyrillic, han ideographs, ...) will have its own set
+  of features that are meaningful to it. Sometimes things will be even more
+  complicated, and each language within a script will have it's own set of
+  features. In the example above we might assign scripts, languages, features
+  and lookups thusly:
+  <TABLE BORDER CELLPADDING="2">
+    <TR>
+      <TH>Script</TH>
+      <TH>Language</TH>
+      <TH>Feature</TH>
+      <TH>Lookups</TH>
+      <TH>Comments</TH>
+    </TR>
+    <TR>
+      <TD ROWSPAN=7>latn</TD>
+      <TD ROWSPAN=3>default</TD>
+      <TD ROWSPAN=2>liga (standard)</TD>
+      <TD>lookup for ff, fl and ffl</TD>
+      <TD></TD>
+    </TR>
+    <TR>
+      <TD>lookup for fi and ffi</TD>
+      <TD></TD>
+    </TR>
+    <TR>
+      <TD>dlig (discretionary)</TD>
+      <TD>lookup for ct and st</TD>
+      <TD></TD>
+    </TR>
+    <TR>
+      <TD>Turkish</TD>
+      <TD>liga</TD>
+      <TD>lookup for ff, fl and ffl</TD>
+      <TD>Lookups may be shared, so this can be the same lookup as above</TD>
+    </TR>
+    <TR>
+      <TD ROWSPAN=3>German</TD>
+      <TD ROWSPAN=3>liga</TD>
+      <TD>lookup for ff, fl and ffl</TD>
+      <TD></TD>
+    </TR>
+    <TR>
+      <TD>lookup for fi and ffi</TD>
+      <TD></TD>
+    </TR>
+    <TR>
+      <TD>lookup for ct and st</TD>
+      <TD>Lookups may even be shared by a different feature type, so for English
+	and Spanish <BR>
+	ct might count as a discretionary ligature, one rarely used, in German it
+	mght be more <BR>
+	common and be part of the standard ligature set.</TD>
+    </TR>
+  </TABLE>
+  <P>
+  The default language means any language in the script which is not specifically
+  named. So in the above example the default language would be any language
+  except Turkish and German that might use the latin script.
+  <P>
+  It is also possible to have a default script. The digits 0-9, are used in
+  many writing systems, not just Latin and are considered Common to most scripts.
+  If you have lookups which apply to the digits (conversion to oldstyle digits,
+  or to proportional digits, or to superscripts...) you should attach those
+  lookups to features in all scripts that could use them, and to the default
+  script (just in case).
+  <TABLE BORDER CELLPADDING="2">
+    <TR>
+      <TH>Script</TH>
+      <TH>Language</TH>
+      <TH>Feature</TH>
+      <TH>Lookups</TH>
+      <TH>Comments</TH>
+    </TR>
+    <TR>
+      <TD ROWSPAN=9>latn</TD>
+      <TD ROWSPAN=3>default</TD>
+      <TD>pnum</TD>
+      <TD>proportional number lookup</TD>
+      <TD></TD>
+    </TR>
+    <TR>
+      <TD>onum</TD>
+      <TD>old style number lookup</TD>
+      <TD></TD>
+    </TR>
+    <TR>
+      <TD>subs</TD>
+      <TD>subscript lookup</TD>
+      <TD></TD>
+    </TR>
+    <TR>
+      <TD ROWSPAN=3>Turkish</TD>
+      <TD>pnum</TD>
+      <TD>proportional number lookup</TD>
+      <TD></TD>
+    </TR>
+    <TR>
+      <TD>onum</TD>
+      <TD>old style number lookup</TD>
+      <TD></TD>
+    </TR>
+    <TR>
+      <TD>subs</TD>
+      <TD>subscript lookup</TD>
+      <TD></TD>
+    </TR>
+    <TR>
+      <TD ROWSPAN=3>German</TD>
+      <TD>pnum</TD>
+      <TD>proportional number lookup</TD>
+      <TD></TD>
+    </TR>
+    <TR>
+      <TD>onum</TD>
+      <TD>old style number lookup</TD>
+      <TD></TD>
+    </TR>
+    <TR>
+      <TD>subs</TD>
+      <TD>subscript lookup</TD>
+      <TD></TD>
+    </TR>
+    <TR>
+      <TD ROWSPAN=3>cyrl</TD>
+      <TD ROWSPAN=3>default</TD>
+      <TD>pnum</TD>
+      <TD>proportional number lookup</TD>
+      <TD></TD>
+    </TR>
+    <TR>
+      <TD>onum</TD>
+      <TD>old style number lookup</TD>
+      <TD></TD>
+    </TR>
+    <TR>
+      <TD>subs</TD>
+      <TD>subscript lookup</TD>
+      <TD></TD>
+    </TR>
+    <TR>
+      <TD ROWSPAN=3>DFLT</TD>
+      <TD ROWSPAN=3>default</TD>
+      <TD>pnum</TD>
+      <TD>proportional number lookup</TD>
+      <TD></TD>
+    </TR>
+    <TR>
+      <TD>onum</TD>
+      <TD>old style number lookup</TD>
+      <TD></TD>
+    </TR>
+    <TR>
+      <TD>subs</TD>
+      <TD>subscript lookup</TD>
+      <TD></TD>
+    </TR>
+  </TABLE>
+  <P>
+  Lookups may be specified with the
+  <A HREF="fontinfo.html#Lookups">Element-&gt;Font Info</A> dialog
   <H3>
     <A NAME="Anchors">Anchor Points and Classes</A>
   </H3>
@@ -812,9 +994,9 @@
   point is positioned where the anchor from "a" was.
   <P>
   FontForge does not compose these glyphs (well, it can, but that's a completely
-  different area), instead it provides information with the
-  <A HREF="gposgsub.html">font</A> to a text layout program so that it can
-  do the composition.
+  different area), instead it provides information within the
+  <A HREF="gposgsub.html">font</A> to a text layout program so that the program
+  can do the composition.
   <P>
   The example above is unlikely to be very useful since most latin fonts contain
   pre-composed a-grave glyphs, but the same concepts apply to arabic and hebrew
@@ -822,13 +1004,12 @@
   <P>
   That's roughly how anchor points are used. Now the mechanics.
   <P>
-  A font may contain a list of Anchor Classes which may be specified with the
-  <A HREF="fontinfo.html#Anchors">Element-&gt;Font Info dialog</A>. An anchor
-  class consists of a name (in the above example the class was called "Top"),
-  a tag, a set of scripts and languages to which it applies, and the type of
-  anchor. The tag is meaningful in the context of the
-  <A HREF="gposgsub.html">GPOS</A> table and unless you are working with indic
-  languages should probably be left as 'mark' for mark to base or mark to ligature
+  A lookup may contain a list of Anchor Classes which may be specified with
+  the <A HREF="fontinfo.html#Lookups">Element-&gt;Font Info dialog</A>. An
+  anchor class consists of a name (in the above example the class was called
+  "Top"), and the type of anchor. As with any lookup you will want to assign
+  feature tags to these lookups and unless you are working with indic languages
+  should probably be set to 'mark' for mark to base or mark to ligature
   connections. For cursive connections, use the tag 'curs', and for mark to
   mark connections use 'mkmk'.
   <P>
@@ -958,7 +1139,7 @@
   <P>
   You can also provide kerning information for any two adjacent glyphs.
   <P>
-  <IMG SRC="MetricsView.png" WIDTH="478" HEIGHT="323">
+  <IMG SRC="MetricsView.png" WIDTH="494" HEIGHT="331">
   <P>
   <IMG SRC="VerticalMetrics.png" WIDTH="270" HEIGHT="573" ALIGN="Right">Note
   that in Hebrew, or Arabic (or any other right to left alphabet) the glyphs
