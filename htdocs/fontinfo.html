@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 12-Mar-2007 -->
+  <!-- AP: Last modified: 13-Mar-2007 -->
   <TITLE>Font Info</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -13,7 +13,7 @@
     Font Info
   </H1>
   <P>
-  <IMG SRC="fontinfo.png" WIDTH="494" HEIGHT="552" ALIGN="Right">
+  <IMG SRC="fontinfo.png" WIDTH="602" HEIGHT="534" ALIGN="Right">
   <P>
   The Font Info dialog is available from all views. It allows you to name your
   font and various other useful bits of information. In a
@@ -56,15 +56,11 @@
     <LI>
       <A HREF="#MarkClass">Mark Classes</A>
     <LI>
-      <A HREF="fontinfo.html#Anchors">Anchor Classes</A>
-    <LI>
-      <A HREF="fontinfo.html#Contextual">Contextual</A>
+      <A HREF="#Lookups">Lookups</A>
     <LI>
       <A HREF="#Mac-Style">Mac Style</A>
     <LI>
       <A HREF="#Mac-Features">Mac Features</A>
-    <LI>
-      <A HREF="#Mac-SM">Mac State Machines</A>
     <LI>
       <A HREF="#Dates">Dates</A>
     <LI>
@@ -712,79 +708,34 @@
   class a name and requires that you to provide a list of glyphs that make
   up the class.<BR Clear=ALL>
   <H2>
-    <A NAME="Anchors">Anchor Classes</A>
+    <A NAME="Lookups">Lookups</A>
   </H2>
   <P>
-  <IMG SRC="fontinfo-anchors.png" WIDTH="376" HEIGHT="544" ALIGN="Right" ALT="Font Info Anchors">
-  This sub-dialog allows you to control the
-  <A HREF="overview.html#Anchors">Anchor Classes</A> used in your font. Anchor
-  classes need a name and a tag. Generally you want to use the default tag
-  of 'mark' (but see the discussion in the
-  <A HREF="overview.html#Anchors">overview</A> of when you might not).
+  <IMG SRC="fontinfo-lookups.png" WIDTH="602" HEIGHT="534" ALIGN="Right" ALT="Font Info Anchors">
+  This pane is so complex that it merits its <A HREF="lookups.html">own
+  section</A>.
   <P>
-  From here you may add new classes, delete old ones or rename old ones. You
-  may also bring up outline glyph views looking at the glyphs which use these
-  classes.
+  Briefly, lookups contain the data to do the work needed for complex typography.
+  There are two main classes of lookups, those which substitute glyphs (ligatures
+  for example) and live in the GSUB table, and those which position glyphs
+  (kerning for example) and live in the GPOS table.
   <P>
-  <IMG SRC="newanchor.png" WIDTH="226" HEIGHT="391" ALIGN="Left">The dialog
-  for creating a new (or modifying an old) anchor class allows you to give
-  that class a name and requires that you associate it with a set of
-  <A HREF="charinfo.html#Feature-Tag">scripts and languages</A>. You may also
-  set some standard OTF flags.
+  Each lookup is composed of one or many subtables.
   <P>
-  There are three different types of anchor classes (well there are four, but
-  FontForge doesn't need to distinguish between two of them), Mark to Base,
-  Mark to Mark and Cursive. When you create an anchor class you must select
-  which type it will be.
-  <UL>
-    <LI>
-      Mark to Base is used for connecting marks (diacritic marks such as accents)
-      to base letters or ligatures
-    <LI>
-      Mark to Mark is used for connecting two marks together (when you have several
-      marks that interact in their positioning when applied to the same letter)
-    <LI>
-      Cursive is used to join two letters so they will give the illusion of cursive
-      script.
-  </UL>
+  There are buttons to the side to create (add) new lookups and subtables,
+  and to edit their attributes (metadata) and their commands (data).
   <P>
-  Generally in OpenType fonts several Anchor Classes will be treated as one
-  unit if they refer to approximately the same set of base glyphs and have
-  non-overlapping marks An example: there could be two types of marks that
-  attach to the same set of letters, one attaching below and one above the
-  letter, each would have its own anchor class, but you would tell FontForge
-  to associate the two together by having them "Merge With" each other.
+  The order in which the lookups appear in this dialog is the order in which
+  they will be applied. The order of the subtables within each lookup is the
+  order in which they will be applied. There are buttons to the side which
+  will reorder things.
   <P>
-  FontForge recognizes a special feature tag ' RQD' to indicate that this feature
-  is required for the given script/language. Such a feature will always be
-  applied.
+  It is possible to merge two lookups (if they are of the same type) or to
+  merge two subtables (if they are in the same lookup and are similar enough).
   <P>
-  Anchor classes are only meaningful when generating a truetype (ttf or otf)
-  like font with OpenType tables.<BR Clear=ALL>
-  <H2>
-    <IMG SRC="fontinfo-context.png" WIDTH="376" HEIGHT="544" ALIGN="Right" ALT="Font Info Contextual Tables">
-    <A NAME="Contextual">Contextual</A>
-  </H2>
-  <P>
-  This sub-dialog allows you to create and remove contextual substitutions
-  and position features in your font.
-  <P>
-  For a description of what a contextual feature might be
-  <A HREF="contextchain.html">see here</A>
-  <P>
-  This dialog allows you to create a new contextual feature by pressing the
-  [New] button. This is a two part operation, first you will be prompted for
-  the standard tag, script&amp;language combination, and flags, then (in a
-  <A HREF="contextchain.html">separate dialog</A>) you will be prompted for
-  the contents of the feature.
-  <P>
-  The [Edit] button will allow you to change the tags, script and flags (it
-  corresponds to the first part of [New]) and the [Edit Data] button allows
-  you to change the contents of the feature.
-  <P>
-  Contextual/chaining tables are only meaningful when generating a truetype
-  (ttf or otf) like font with OpenType tables (in a few cases they can be converted
-  into Apple Advanced Typography tables too).<BR CLEAR=ALL>
+  It is possible to import lookups from other fonts (which must already be
+  loaded into fontforge.<BR Clear=ALL>
+  <BR CLEAR=ALL>
   <H2>
     <IMG SRC="fontinfo-macstyle.png" WIDTH="376" HEIGHT="608" ALIGN="Right" ALT="Font Info Mac Styles">
     <A NAME="Mac-Style">Mac Style</A> &amp; FOND
@@ -820,21 +771,6 @@
   <A HREF="prefs.html#Mac">preferences dialog </A>for this particular font
   (for example to give a more appropriate but local name to a certain feature
   setting).<BR Clear=ALL>
-  <H2>
-    <IMG SRC="fontinfo-statemach.png" WIDTH="376" HEIGHT="608" ALIGN="Right"
-	ALT="Font Info State Machines"> <A NAME="Mac-SM">Mac State Machines</A>
-  </H2>
-  <P>
-  This sub-dialog allows you to create and remove Apple's state machines from
-  your font. These have some similarities to
-  <A HREF="fontinfo.html#Contextual">Contextual/Chaining substitutions </A>(see
-  the previous section).
-  <P>
-  For a description of what a state machine might look like
-  <A HREF="statemachine.html">see here</A>.
-  <P>
-  These state machines are only meaningful when generating a truetype or opentype
-  font with the Apple option set in the Options dialog.<BR CLEAR=ALL>
   <H2>
     <A NAME="Dates">Dates</A>
   </H2>

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 13-Jun-2006 -->
+  <!-- AP: Last modified: 15-Mar-2007 -->
   <TITLE>The Metrics View</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -13,7 +13,7 @@
     The Metrics View
   </H1>
   <P>
-  <IMG SRC="MetricsView.png" WIDTH="478" HEIGHT="323">
+  <IMG SRC="MetricsView.png" WIDTH="494" HEIGHT="331">
   <P>
   The metrics view allows you to examine how glyphs look together and to alter
   the spacing between them.
@@ -476,15 +476,16 @@
   after a T), and rather than create separate kerning pairs for each of the
   "A"s above, they could all be placed in a class of glyphs which kern alike.
   <P>
-  <IMG SRC="kernbyclasses.png" ALIGN="Right" WIDTH="282" HEIGHT="263">The
-  Metrics-&gt;Kern By Class command provides an interface to this. It brings
-  up a dialog showing the kerning classes currently defined for the font (it
-  labels them according to the script in which they are active). You can create
-  new classes, delete existing classes, or change existing classes.
+  <IMG SRC="kernbyclasses.png" ALIGN="Right" WIDTH="314" HEIGHT="271">The
+  Metrics-&gt;Kern By Class command (or indirectly through Element-&gt;Font
+  Info-&gt;Lookups) provides an interface to this. It brings up a dialog showing
+  the kerning classes currently defined for the font (it labels them according
+  to their lookup subtable). You can create new classes (by creating a new
+  lookup subtable), delete existing classes, or change existing classes.
   <P>
-  <IMG SRC="kerningclass.png" WIDTH="560" HEIGHT="620" ALIGN="Left">Each kerning
-  class needs a <A HREF="charinfo.html#Feature-Tag">script/language</A> combination
-  for which it is active, and a set of standard otf flags for a feature.
+  <IMG SRC="kerningclass.png" WIDTH="564" HEIGHT="492" ALIGN="Left">Each kerning
+  class belongs to to a <A HREF="lookups.html">lookup subtable</A> and the
+  subtable name is displayed at the top of the dialog.
   <P>
   But the more interesting stuff follows this. A kerning class actually consists
   of two sets of classes -- one set for the first glyph of the pair and one
@@ -559,10 +560,10 @@
   <A HREF="metricsview.html#DeviceTable">Device Tables</A> may also be created
   in a number of other cases. The example above was for a kerning class.
   <A NAME="kernpair">Kerning pairs</A> may also have tables attached to them
-  with the Element-&gt;Kern Pair Closeup dialog, which looks very similar to
-  the Kerning Class dialog above.
+  with the Metrics-&gt;Kern Pair Closeup dialog, which looks similar to the
+  Kerning Class dialog above.
   <P ALIGN=Center>
-  <IMG SRC="kernpairclose.png" WIDTH="519" HEIGHT="289">
+  <IMG SRC="kernpairclose.png" WIDTH="560" HEIGHT="284">
   <P>
   <BR>
   <P>
