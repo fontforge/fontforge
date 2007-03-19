@@ -1,0 +1,326 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 12-Mar-2007 -->
+  <!-- AP: Last modified: 15-Mar-2007 -->
+  <TITLE>Manipulating OpenType Lookups</TITLE>
+</HEAD>
+<BODY>
+<H1>
+  Manipulating OpenType Lookups
+</H1>
+<P>
+<IMG SRC="fontinfo-lookups.png" WIDTH="602" HEIGHT="534" ALIGN="Right">You
+use the Lookups pane of the <A HREF="fontinfo.html">Element-&gt;Font Info</A>
+command to control OpenType lookups.
+<P>
+A lookup is a collection of commands that provide a text layout program with
+a transformation to apply on the input glyph stream. A lookup might specify
+how to form ligatures or how to do kerning, or any of a number of other things.
+<P>
+Every lookup is composed of a number of subtables. Often this complexity
+is not needed and many lookups will contain just one subtable.
+<P>
+Every lookup is named and every subtable is named. No two lookups may have
+the same name, nor may any two subtables.
+<P>
+There are two major classes of lookups, those that reside in the GSUB table
+and substitute one glyph (or several) with another (ligatures) and those
+which live in the GPOS table and position one glyph relative to another
+(kerning).
+<P>
+The order in which the lookups and subtables appear in this dialog is important.
+This is the same order in which they will be applied. All lookups in the
+GSUB table will be applied before any lookups in the GPOS table.
+<P>
+There are buttons on the side for reordering the lookups. Up, Down, Top,
+Bottom should be obvious. The [Sort] button will sort lookups depending on
+the cannonical order of the features attached to them. This will not always
+be the desired ordering, but it is a place to start.
+<P>
+Lookups are applied in the order listed here. Which lookups will be applied
+depends on the script, language, and what features have been enabled (this
+will be controlled by the text layout engine, and perhaps ultimately by the
+user).
+<P>
+Within a lookup, the subtables will be applied in order until one of them
+actually does something. Then no further subtables will be executed. Note
+that this is different from the way lookups behave -- all active lookups
+will always be applied, but only one subtable in a lookup will be.
+<P>
+Suppose for example that you have a kerning class, and a few kerning pairs.
+If you put both of these into one lookup, with the kerning pairs in the first
+subtable and the kerning class in the second, then if a kerning pair matches
+the input stream the kerning class will not be applied (so you can have special
+cases that override the data in the kerning class).
+<P>
+On the other hand if you put the pairs in one lookup, and the kerning class
+in another lookup, then both would be applied. And the resultant motion would
+be the sum of the two.
+<P>
+<IMG SRC="lookup-metadata.png" WIDTH="439" HEIGHT="427" ALIGN="Left">The
+<CODE>[Add Lookup]</CODE> and <CODE>[Edit Metadata]</CODE> buttons will bring
+up a dialog that allows you to control the attributes of the lookup. Every
+lookup has a lookup type (here "Single Substitution") which specifies broadly
+what kinds of things this lookup can do.
+<DL>
+  <DT>
+    <A HREF="lookups.html#basic-subs">Single Substitution</A>
+  <DD>
+    Substitute exactly one glyph with another.
+  <DT>
+    <A HREF="lookups.html#basic-subs">Multiple Substitution</A>
+  <DD>
+    Substitutes exactly one glyph with several others.
+  <DT>
+    <A HREF="lookups.html#basic-subs">Alternate Substitution</A>
+  <DD>
+    Provides the user with a choice of substitute glyphs for each glyph.
+  <DT>
+    <A HREF="lookups.html#basic-subs">Ligature Substitution</A>
+  <DD>
+    Substitutes multiple glyphs with a single one
+  <DT>
+    <A HREF="lookups.html#contextual-subs">Contextual Substitution</A>
+  <DD>
+    Performs substitutions depending on the glyphs around the current one
+  <DT>
+    <A HREF="lookups.html#contextual-subs">Contextual Chaining Substitutions</A>
+  <DD>
+    A more complicated way of performing contextual substitutions
+  <DT>
+    <A HREF="lookups.html#contextual-subs">Reverse Contextual Chaining
+    Substitutions</A>
+  <DD>
+    For arabic scripts where substitutions need to be done backwards.
+  <DT>
+    <A HREF="lookups.html#sm-subs">Mac Indic State Machine</A>
+  <DD>
+    (Not an OpenType lookup at all, but one for Apple's Advanced typography tables
+    -- rearranges indic glyphs)
+  <DT>
+    <A HREF="lookups.html#sm-subs">Mac Contextual State Machine</A>
+  <DD>
+    (Not an OpenType lookup at all, but one for Apple's Advanced typography tables
+    -- contextual substitutions)
+  <DT>
+    <A HREF="lookups.html#sm-subs">Mac Insertion State Machine</A>
+  <DD>
+    (Not an OpenType lookup at all, but one for Apple's Advanced typography tables
+    -- contextually inserts glyphs) 
+      <HR>
+  <DT>
+    <A HREF="lookups.html#Single-pos">Single Positioning</A>
+  <DD>
+    Moves a single glyph around
+  <DT>
+    <A HREF="lookups.html#Pair">Pair Positioning (kerning)</A>
+  <DD>
+    Moves two glyphs relative to each other
+  <DT>
+    <A HREF="lookups.html#Anchor">Cursive Positioning</A>
+  <DD>
+    For Urdu and other similar scripts. Positions one glyph at the appropriate
+    anchor point relative to another.
+  <DT>
+    <A HREF="lookups.html#Anchor">Mark to Base Positioning</A>
+  <DD>
+    Positions a mark (or accent) relative to a base letter
+  <DT>
+    <A HREF="lookups.html#Anchor">Mark to Ligature Positioning</A>
+  <DD>
+    Positions a mark relative to ta ligature
+  <DT>
+    <A HREF="lookups.html#Anchor">Mark to Mark Positioning</A>
+  <DD>
+    Positions a mark relative to another mark.
+  <DT>
+    <A HREF="lookups.html#contextual-pos">Contextual Positioning</A>
+  <DD>
+    Positions glyphs depending on other glyphs around them
+  <DT>
+    <A HREF="lookups.html#contextual-pos">Contextual chaining Positioning</A>
+  <DD>
+    A more complex form of the above.
+  <DT>
+    <A HREF="lookups.html#sm-kern">Mac Kerning State Machine</A>
+  <DD>
+    (Not an OpenType lookup at all, but one for Apple's Advanced typography tables
+    -- contextual kerning)
+</DL>
+<P>
+A lookup may be associated with one or more feature tags each of which may
+be active for various scripts and languages. You may edit the feature tag
+directly, or you may click on the little box and get a list of feature tags
+identified by their "friendly names" (so instead of 'smcp' you would see
+"Lowercase to Small Capitals").
+<P>
+Similarly you may edit the script and language list directly, or you may
+press on the rectangle to get a friendlier dialog (see
+<A HREF="#scripts-dlg">below</A>).
+<P>
+Every lookup is associated with a set of flags which control its behavior.
+The "Process Marks" field is only active if there are
+<A HREF="fontinfo.html#MarkClass">Mark Classes </A>defined.
+<P>
+Every lookup must be named. You may assign the name as you wish -- except
+that it must not be blank and must be unique. No two lookups may have the
+same name.
+<P>
+For ligatures you have the option of specifying whether you want these ligatures
+output in an afm file.
+<P>
+<IMG SRC="lang-dlg.png" WIDTH="194" HEIGHT="300" ALIGN="Right"><IMG SRC="script-lang-dlg.png"
+    WIDTH="439" HEIGHT="217" ALIGN="Left">The <A NAME="scripts-dlg">script</A>
+dialog allows you to enter scripts and languages. Again you may edit these
+directly or press on the little rectangles to get a list of friendly names.
+If you choose to bring up the language dialog you may choose more than one
+language in it (use the control key to make disjoint
+selections).<BR Clear="Left">
+<P>
+After you have created a lookup you may add subtables to it. In most cases
+you will only need to create one subtable, but for contextual or kerning
+lookups you may need two or more (the second would contain a set of kerning
+classes, while the first would contain any special cases).
+<P>
+The <CODE>[Add Subtable] </CODE>button will prompt you to name the new subtable,
+and will then bring up a dialog to allow you to edit the commands, the data,
+of that subtable. You may also bring up this dialog by selecting an existing
+subtable and double clicking on it (or by pressing the <CODE>[Edit Data]</CODE>
+button). The format of the dialog will depend on the lookup type.
+<P>
+<TABLE CELLPADDING="2">
+  <CAPTION>
+    <A NAME="basic-subs">Basic substitutions</A>
+  </CAPTION>
+  <TR VALIGN="Top">
+    <TD><P ALIGN=Center>
+      <IMG SRC="subtable-gsub-single.png" WIDTH="421" HEIGHT="269" ALT="GSUB single glyph substitution"><BR>
+      GSUB single glyph substitution dialog</TD>
+    <TD><P ALIGN=Center>
+      <IMG SRC="subtable-gsub-ligature.png" WIDTH="421" HEIGHT="237"><BR>
+      GSUB ligature substitution dialog</TD>
+  </TR>
+</TABLE>
+<P>
+Many of the basic substitution dialogs are very similar. Most of the dialog
+contains a list glyph names (one per line) on the left, and a list of
+substitution glyph names on the right. So in the example above left, the
+'smcp' feature will map the glyph named "a" to the glyph named "a.sc", "b"
+to "b.sc" and so on. The multiple and alternate substitution dialogs allow
+a list of replacement glyph names on the right. In a multiple substitution
+the glyph will be replaced with all the glyphs named on the left, while in
+an alternate substitution the word processor will provide the user with a
+menu from which to pick a glyph. The ligature substitution is backwards in
+that the replacement glyph is the one on the left -- if the glyphs on the
+right appear together and in order then they will be replaced with the glyph
+on the left. So if an "f" is followed by an "f" then it will be replaced
+by an "ff" ligature glyph.
+<P>
+The <CODE>[Populate] </CODE>button will fill the dialog with all glyphs in
+any of the scripts for which this dialog is active. If FontForge can figure
+out a default replacement glyph then it will in provide that as the default
+value (if it can't figure out a good replacement it will just leave the right
+side blank).
+<P>
+The <CODE>[Default Using Suffix:] </CODE>button will behave similarly (except
+it will only insert entries for which FontForge can find a replacement, and
+glyph name of that replacement will be found by appending the specified suffix
+to the glyph name of the base glyph).
+<P>
+The <CODE>[Remove Empty] </CODE>button will remove any entries with no
+replacement glyph(s). The <CODE>[Delete]</CODE> button will delete the currently
+selected row.
+<P>
+The various radio buttons and check boxes at the top of the dialog control
+how the base glyphs are ordered in the display -- either in
+&lt;&gt;Alphabetic order (by glyph name) or in Unicode code point order.
+If [] By Base Char is checked then composed characters like "Egrave" will
+be ordered closer to "E" than to "Eth". If [] By Scripts is checked then
+glyphs of one script system will be grouped together no matter how they are
+ordered alphabetically or unicodally, thus "A" would be grouped with "B"
+and not with "Alpha".
+<H3>
+  <A NAME="contextual-subs">Contextual substitutions</A>
+</H3>
+<P>
+The contextual substitution dialog is quite complicated and is discussed
+in its <A HREF="contextchain.html">own section</A>. These lookups can only
+live in an OpenType font, not in an Apple Advanced Typography font.
+<H3>
+  <A NAME="sm-subs">Substitution by State Machine</A>
+</H3>
+<P>
+The state machine substitution dialog is quite complicated and is discussed
+in its <A HREF="statemachine.html">own section</A>. These lookups can only
+live in an Apple Advanced Typography font.
+<P>
+<TABLE CELLPADDING="2">
+  <CAPTION>
+    <A NAME="Single-pos">Single Positioning</A>
+  </CAPTION>
+  <TR>
+    <TD><IMG SRC="subtable-gpos-singlehide.png" WIDTH="415" HEIGHT="259"></TD>
+    <TD><IMG SRC="subtable-gpos-singlefull.png" WIDTH="647" HEIGHT="258"></TD>
+  </TR>
+</TABLE>
+<P>
+The single glyph positionioning lookup can potentially be quite complex,
+but generally in any specific case very little of that complexity is used
+and the dialog can be simplified. The lookup allows four different adjustments
+to each glyph:
+<OL>
+  <LI>
+    The glyph may be moved left or right by a certain number of em-units
+  <LI>
+    The glyph may be moved up or down by a certain number of em-units
+  <LI>
+    The glyph's horizontal advance width may be altered by a certain number of
+    em-units
+  <LI>
+    In fonts with vertical metrics a glyph's vertical advance may be altered
+    by a certain number of em-units
+</OL>
+<P>
+In addition to this, if you have configured fontforge to support device tables,
+you may provide pixel adjustments that apply to specific point sizes. At
+small pixel sizes (such as those used for screen fonts) the rounding error
+introduced by converting for em-units to pixels may be as large as the movement
+itself. In the example at right, if the 'subs' feature is applied to the
+glyph "a.sinf" that glyph should be moved downward by -560 em-units. Then
+if the pixel-size of the rasterization is 10 pixels, it should be moved down
+a further pixel, while if the pixel-size is 12 it should be moved up a pixel.
+<P>
+The [] Hide Unused Columns check box will toggle between the two views above
+(well, not quite, I added two adjustments in the image on the right, so the
+adjustment column would remain after checking the checkbox).
+<H3>
+  <IMG SRC="subtable-gpos-kernpair.png" WIDTH="415" HEIGHT="472" ALIGN="Right"><A
+      NAME="Pair">Pair</A> Positioning (kerning)
+</H3>
+<P>
+When you create a kerning subtable you will first be asked whether you want
+to create a kerning class subtable, or a kerning subtable with a list of
+glyph pairs. The kerning class dialog is described in its
+<A HREF="metricsview.html#kernclass">own section</A>, while the kerning pair
+subtable dialog is described below.
+<H3>
+  <A NAME="Anchor">Anchor Positioning</A>
+</H3>
+<P>
+<IMG SRC="subtable-gpos-anchor.png" WIDTH="421" HEIGHT="239">
+<H3>
+  <A NAME="contextual-pos">Contextual Positioning</A>
+</H3>
+<P>
+The contextual substitution dialog is quite complicated and is discussed
+in its <A HREF="contextchain.html">own section</A>. These lookups can only
+live in an OpenType font, not in an Apple Advanced Typography font.
+<H3>
+  <A NAME="sm-kern">Kerning by State Machine</A>
+</H3>
+<P>
+The state machine substitution dialog is quite complicated and is discussed
+in its <A HREF="statemachine.html">own section</A>. These lookups can only
+live in an Apple Advanced Typography font.
+</BODY></HTML>
