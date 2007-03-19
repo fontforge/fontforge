@@ -2448,16 +2448,16 @@ static void CIFillup(CharInfo *ci) {
     GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_UChar),ubuf);
 
     memset(cnts,0,sizeof(cnts));
-    for ( pst = sc->possub; pst!=NULL; pst=pst->next )
+    for ( pst = sc->possub; pst!=NULL; pst=pst->next ) if ( pst->type!=pst_lcaret )
 	++cnts[pst->type];
     for ( isv=0; isv<2; ++isv ) {
 	for ( kp=isv ? sc->vkerns : sc->kerns; kp!=NULL; kp=kp->next )
 	    ++cnts[pst_pair];
     }
-    for ( i=pst_null+1; i<pst_max; ++i )
+    for ( i=pst_null+1; i<pst_max && i<pst_lcaret ; ++i )
 	mds[i] = gcalloc((cnts[i]+1)*mi[i-1].col_cnt,sizeof(struct matrix_data));
     memset(cnts,0,sizeof(cnts));
-    for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
+    for ( pst = sc->possub; pst!=NULL; pst=pst->next ) if ( pst->type!=pst_lcaret ) {
 	j = (cnts[pst->type]++ * mi[pst->type-1].col_cnt);
 	mds[pst->type][j+0].u.md_ival = (intpt) pst->subtable;
 	if ( i==pst_position ) {
