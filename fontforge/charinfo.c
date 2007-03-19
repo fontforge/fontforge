@@ -2460,7 +2460,7 @@ static void CIFillup(CharInfo *ci) {
     for ( pst = sc->possub; pst!=NULL; pst=pst->next ) if ( pst->type!=pst_lcaret ) {
 	j = (cnts[pst->type]++ * mi[pst->type-1].col_cnt);
 	mds[pst->type][j+0].u.md_ival = (intpt) pst->subtable;
-	if ( i==pst_position ) {
+	if ( pst->type==pst_position ) {
 	    mds[pst->type][j+SIM_DX].u.md_ival = pst->u.pos.xoff;
 	    mds[pst->type][j+SIM_DY].u.md_ival = pst->u.pos.yoff;
 	    mds[pst->type][j+SIM_DX_ADV].u.md_ival = pst->u.pos.h_adv_off;
@@ -2468,7 +2468,7 @@ static void CIFillup(CharInfo *ci) {
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    ValDevTabToStrings(mds[pst_position],j+SIM_DX+1,pst->u.pos.adjust);
 #endif
-	} else if ( i==pst_pair ) {
+	} else if ( pst->type==pst_pair ) {
 	    mds[pst->type][j+1].u.md_str = copy(pst->u.pair.paired);
 	    mds[pst->type][j+PAIR_DX1].u.md_ival = pst->u.pair.vr[0].xoff;
 	    mds[pst->type][j+PAIR_DY1].u.md_ival = pst->u.pair.vr[0].yoff;
