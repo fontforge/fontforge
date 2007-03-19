@@ -6563,7 +6563,7 @@ static void LookupMouse(struct gfi_data *gfi, int isgpos, GEvent *event) {
     GWindow gw = GDrawableGetWindow(GWidgetGetControl(gfi->gw,CID_LookupWin+isgpos));
     int i,j,lcnt;
 
-    if ( l<0 || l>=(gfi->lkheight-2*LK_MARGIN)/gfi->fh )
+    if ( l<0 || event->u.mouse.y>=(gfi->lkheight-2*LK_MARGIN) )
 return;
 
     lcnt = 0;
