@@ -335,10 +335,23 @@ struct contextchaindlg {
 #define CID_LUp		1014
 #define CID_LDown	1015
 
+#define CID_StdClasses	1016
+
 #define CID_ClassNumbers	2000
 #define CID_ClassList		2001
 #define CID_ClassType		2002
 #define CID_SameAsClasses	2003
+
+GTextInfo stdclasses[] = {
+    { (unichar_t *) N_("None"), NULL, 0, 0, "None", NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("0-9"), NULL, 0, 0, "0-9", NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Letters in Script(s)"), NULL, 0, 0, "Letters", NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Lower Case"), NULL, 0, 0, "LC", NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Upper Case"), NULL, 0, 0, "UC", NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Glyphs in Script(s)"), NULL, 0, 0, "Glyphs", NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Added"), NULL, 0, 0, "None", NULL, 1, 0, 0, 0, 0, 0, 1},
+    { NULL }
+};
 
 char *cu_copybetween(const unichar_t *start, const unichar_t *end) {
     char *ret = galloc(end-start+1);
@@ -1288,6 +1301,110 @@ static int CCD_ToSelection2(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static int BaseEnc(SplineChar *sc) {
+    int uni = sc->unicodeenc;
+
+    if ( uni==-1 || (uni>=0xe000 && uni<=0xf8ff)) {	/* Private use or undefined */
+	char *pt = strchr(sc->name,'.');
+	if ( pt!=NULL ) {
+	    *pt = '\0';
+	    uni = UniFromName(sc->name,ui_none,NULL);
+	    *pt = '.';
+	}
+    }
+return( uni );
+}
+
+static int GlyphInClass(char *name,char *glyphs) {
+    char *start, *pt;
+    int len = strlen(name);
+
+    for ( start = glyphs; *start ; ) {
+	pt = strchr(start,' ');
+	if ( pt==NULL ) {
+return( strcmp(name,start)==0 );
+	}
+	if ( pt-start==len && strncmp(name,start,len)==0 )
+return( true );
+	start = pt;
+	while ( *start==' ' ) ++start;
+    }
+return( false );
+}
+
+static char *addglyph(char *results,char *name) {
+    int len = strlen( results );
+    results = grealloc(results,len+strlen(name)+2);
+    if ( len!=0 ) {
+	results[len] = ' ';
+	strcpy( results+len+1,name );
+    } else
+	strcpy(results,name);
+return( results );
+}
+
+static int CCD_StdClass(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
+	struct contextchaindlg *ccd = GDrawGetUserData(GGadgetGetWindow(g));
+	int off = GGadgetGetCid(g)-CID_StdClasses;
+	GTextInfo *ti = GGadgetGetListItemSelected(g);
+	char *glyphs, *results;
+	int any, gid, check_script, baseenc;
+	FeatureScriptLangList *fl = ccd->fpst->subtable->lookup->features;
+	SplineChar *sc;
+
+	if ( ti==NULL )
+return( true );
+	if ( strcmp((char *) ti->userdata,"None")==0 )
+return( true );
+
+	check_script= strcmp((char *) ti->userdata,"0-9")!=0;
+	if ( check_script && fl==NULL ) {
+	    GGadgetSelectOneListItem(g,0);
+return( true );
+	}
+	glyphs = GGadgetGetTitle8(GWidgetGetControl(ccd->gw,CID_GlyphList+off));
+	results = copy(glyphs);
+	any = 0;
+
+	for ( gid=0; gid<ccd->sf->glyphcnt; ++gid ) if ( (sc=ccd->sf->glyphs[gid])!=NULL ) {
+	    if ( check_script && !ScriptInFeatureScriptList(SCScriptFromUnicode(sc),fl))
+	continue;
+	    baseenc = BaseEnc(sc);
+	    if ( strcmp(ti->userdata,"Glyphs")==0 ) {
+		/* ok, we've checked the script, nothing else to do, it matches*/
+	    } else if ( baseenc>=0x10000 || baseenc==-1 ) {
+		/* I don't have any tables outside bmp */
+	continue;
+	    } else if ( strcmp(ti->userdata,"0-9")==0 ) {
+		if ( baseenc<'0' || baseenc>'9' )
+	continue;
+	    } else if ( strcmp(ti->userdata,"Letters")==0 ) {
+		if ( !isalpha(baseenc))
+	continue;
+	    } else if ( strcmp(ti->userdata,"LC")==0 ) {
+		if ( !islower(baseenc))
+	continue;
+	    } else if ( strcmp(ti->userdata,"UC")==0 ) {
+		if ( !isupper(baseenc))
+	continue;
+	    }
+	    /* If we get here the glyph should be in the class */
+	    if ( GlyphInClass(sc->name,glyphs))
+	continue;		/* It's already there nothing for us to do */
+	    results = addglyph(results,sc->name);
+	    any = true;
+	}
+	if ( any ) {
+	    GGadgetSelectOneListItem(g,sizeof(stdclasses)/sizeof(stdclasses[0])-2);
+	    GGadgetSetTitle8(GWidgetGetControl(ccd->gw,CID_GlyphList+off),results);
+	} else
+	    GGadgetSelectOneListItem(g,0);
+	free(glyphs); free(results);
+    }
+return( true );
+}
+
 static void _CCD_FromSelection(struct contextchaindlg *ccd,int cid,int order_matters ) {
     SplineFont *sf = ccd->sf;
     FontView *fv = sf->fv;
@@ -2231,8 +2348,16 @@ return( k );
 
 static int CCD_AddGlyphList(GGadgetCreateData *gcd, GTextInfo *label,int off,
 	int y, int height) {
-    int k = 0;
+    int k;
+    static int inited = 0;
 
+    if ( !inited ) {
+	for ( k=0; stdclasses[k].text!=NULL; ++k )
+	    stdclasses[k].text = (unichar_t *) _((char *) stdclasses[k].text);
+	inited = true;
+    }
+
+    k=0;
     label[k].text = (unichar_t *) _("Set From Font");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
@@ -2253,7 +2378,22 @@ static int CCD_AddGlyphList(GGadgetCreateData *gcd, GTextInfo *label,int off,
     gcd[k].gd.cid = CID_Select+off;
     gcd[k++].creator = GButtonCreate;
 
-    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = 30;
+    label[k].text = (unichar_t *) _("Add Standard Class:");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = y+24+6;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[k++].creator = GLabelCreate;
+
+    gcd[k].gd.pos.x = 110; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-6;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Add one of these standard classes of glyphs to the current class");
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[k].gd.u.list = stdclasses;
+    gcd[k].gd.handle_controlevent = CCD_StdClass;
+    gcd[k].gd.cid = CID_StdClasses+off;
+    gcd[k++].creator = GListButtonCreate;
+
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = y+48;
     gcd[k].gd.pos.width = CCD_WIDTH-25; gcd[k].gd.pos.height = 8*13+4;
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;
     gcd[k].gd.cid = CID_GlyphList+off;
@@ -2400,9 +2540,9 @@ struct contextchaindlg *ContextChainEdit(SplineFont *sf,FPST *fpst,
     GWindow gw;
     GWindowAttrs wattrs;
     GTabInfo faspects[5];
-    GGadgetCreateData glgcd[8], fgcd[3], ggcd[3][12], cgcd[3][18], csgcd[4],
+    GGadgetCreateData glgcd[8], fgcd[3], ggcd[3][14], cgcd[3][18], csgcd[6],
 	clgcd[10];
-    GTextInfo gllabel[8], flabel[3], glabel[3][12], clabel[3][18], cslabel[4],
+    GTextInfo gllabel[8], flabel[3], glabel[3][14], clabel[3][18], cslabel[6],
 	cllabel[10];
     GGadgetCreateData bgcd[6], rgcd[15];
     GTextInfo blabel[4], rlabel[15];
@@ -2507,7 +2647,8 @@ struct contextchaindlg *ContextChainEdit(SplineFont *sf,FPST *fpst,
     if ( fpst->type == pst_reversesub ) {
 	bgcd[1].gd.flags = bgcd[2].gd.flags = gg_visible;
 	ccd->aw = aw_coverage;
-    } else if ( ccd->isnew ) {
+    } else if ( ccd->isnew || fpst->rule_cnt==0) {
+	fpst->format = pst_class;
 	bgcd[0].gd.flags = gg_visible;
 	bgcd[2].gd.flags = gg_visible | gg_enabled;
 	ccd->aw = aw_formats;

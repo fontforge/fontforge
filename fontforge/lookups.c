@@ -2777,7 +2777,7 @@ static int Script_OK(GGadget *g, GEvent *e) {
 	int rows, i, j, script_cnt, lang_cnt;
 	struct matrix_data *strings = GMatrixEditGet(GWidgetGetControl(ld->scriptgw,CID_FeatureScripts), &rows);
 	char *pt, *start, *ret, *rpt;
-	unsigned char foo[4];
+	char foo[4];
 
 	if ( rows==0 ) {
 	    gwwv_post_error(_("No scripts"),_("You must select at least one script if you provide a feature tag."));
@@ -3409,7 +3409,7 @@ int EditLookup(OTLookup *otl,int isgpos,SplineFont *sf) {
     GWindow gw;
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[14], boxes[7];
-    GGadgetCreateData *harray1[4], *varray[14], *flagharray[4], *flagarray[10],
+    GGadgetCreateData *harray1[4], *varray[14], *flagharray[4], *flagarray[12],
 	*harray2[4], *harray3[8];
     GTextInfo label[14];
     struct lookup_dlg ld;
@@ -5833,6 +5833,7 @@ void _LookupSubtableContents(SplineFont *sf, struct lookup_subtable *sub,
 		lookup_type == gsub_reversecchain ? pst_reversesub :
 		lookup_type == gpos_context ? pst_contextpos :
 		 pst_chainpos;
+	sub->fpst->subtable = sub;
 	sub->fpst->next = sf->possub;
 	sf->possub = sub->fpst;
     } else if ( (lookup_type == morx_indic ||
@@ -5845,6 +5846,7 @@ void _LookupSubtableContents(SplineFont *sf, struct lookup_subtable *sub,
 		lookup_type == morx_context ? asm_context :
 		lookup_type == morx_insert ? asm_insert :
 		 asm_kern;
+	sub->sm->subtable = sub;
 	sub->sm->next = sf->sm;
 	sf->sm = sub->sm;
     } else if ( lookup_type==gpos_pair &&
@@ -5881,6 +5883,7 @@ return;
 		sub->kc->next = sf->kerns;
 		sf->kerns = sub->kc;
 	    }
+	    sub->kc->subtable = sub;
 	    sub->kc->first_cnt = sub->kc->second_cnt = 1;
 	    sub->kc->offsets = gcalloc(1,sizeof(int16));
 #ifdef FONTFORGE_CONFIG_DEVICETABLES

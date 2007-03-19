@@ -146,7 +146,7 @@ int UniFromName(const char *name,enum uni_interp interp,Encoding *encname) {
 	i = strtol(name+1,&end,16);
 	if ( *end )
 	    i = -1;
-	else if ( !encname->is_unicodefull &&
+	else if ( encname!=NULL && !encname->is_unicodefull &&
 		(interp==ui_ams || interp==ui_trad_chinese)) {
 	    int j;
 	    extern const int cns14pua[], amspua[];
