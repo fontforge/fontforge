@@ -202,7 +202,7 @@ static void BuildMark(struct node *node,SplineChar **marks,AnchorClass *ac, stru
 }
 
 static void BuildAnchorLists(struct node *node,struct att_dlg *att) {
-    struct lookup_subtable *sub;
+    struct lookup_subtable *sub = node->u.sub;
     AnchorClass *ac, *ac2;
     int cnt, i, j, classcnt;
     AnchorPoint *ap, *ent, *ext;
@@ -258,10 +258,11 @@ static void BuildAnchorLists(struct node *node,struct att_dlg *att) {
 	}
 	free(entryexit);
     } else {
+	classcnt = 0;
 	ac = NULL;
 	for ( ac2=sf->anchor; ac2!=NULL; ac2=ac2->next ) {
 	    if ( ac2->subtable == sub ) {
-		if ( ac!=NULL ) ac=ac2;
+		if ( ac==NULL ) ac=ac2;
 		ac2->matches = true;
 		++classcnt;
 	    } else
