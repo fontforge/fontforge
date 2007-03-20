@@ -57,6 +57,14 @@ typedef struct growbuf {
     char *end;
 } GrowBuf;
 
+#define GARBAGE_MAX	64
+struct garbage {
+    int cnt;
+    struct garbage *next;
+    struct pskeyval *entries[GARBAGE_MAX];
+    int16 cnts[GARBAGE_MAX];
+};
+
 static void GrowBuffer(GrowBuf *gb,int len) {
     if ( len<400 ) len = 400;
     if ( gb->base==NULL ) {
@@ -105,6 +113,24 @@ static void dictfree(struct pskeydict *dict) {
     }
 }
 
+static void garbagefree(struct garbage *all) {
+    struct garbage *junk, *next;
+    int i,j;
+
+    for ( junk = all; junk!=NULL; junk = next ) {
+	next = junk->next;
+	for ( j=0; j<junk->cnt; ++j ) {
+	    for ( i=0; i<junk->cnts[j]; ++i ) {
+		if ( junk->entries[j][i].type==ps_string || junk->entries[j][i].type==ps_instr ||
+			junk->entries[j][i].type==ps_lit )
+		    free(junk->entries[j][i].u.str);
+	    }
+	    free(junk->entries[j]);
+	}
+	if ( junk!=all )
+	    chunkfree(junk,sizeof(struct garbage));
+    }
+}
 /**************************** Postscript Importer *****************************/
 /* It's really dumb. It ignores almost everything except linetos and curvetos */
 /*  anything else, function calls, ... is thrown out, if this breaks a lineto */
@@ -745,7 +771,23 @@ static void circlearcsto(real a1, real a2, real cx, real cy, real r,
     }
 }
 
-static void copyarray(struct pskeydict *to,struct pskeydict *from) {
+static void collectgarbage(struct garbage *tofrees,struct pskeydict *to) {
+    struct garbage *into;
+
+    /* Garbage collection pointers */
+    into = tofrees;
+    if ( tofrees->cnt>=GARBAGE_MAX && tofrees->next!=NULL )
+	into = tofrees->next;
+    if ( into->cnt>=GARBAGE_MAX ) {
+	into = chunkalloc(sizeof(struct garbage));
+	into->next = tofrees->next;
+	tofrees->next = into;
+    }
+    into->cnts[    into->cnt   ] = to->cnt;
+    into->entries[ into->cnt++ ] = to->entries;
+}
+
+static void copyarray(struct pskeydict *to,struct pskeydict *from, struct garbage *tofrees) {
     int i;
     struct pskeyval *oldent = from->entries;
 
@@ -757,11 +799,12 @@ static void copyarray(struct pskeydict *to,struct pskeydict *from) {
 		to->entries[i].type==ps_lit )
 	    to->entries[i].u.str = copy(to->entries[i].u.str);
 	else if ( to->entries[i].type==ps_array || to->entries[i].type==ps_dict )
-	    copyarray(&to->entries[i].u.dict,&oldent[i].u.dict);
+	    copyarray(&to->entries[i].u.dict,&oldent[i].u.dict,tofrees);
     }
+    collectgarbage(tofrees,to);
 }
 
-static int aload(int sp, struct psstack *stack,int stacktop) {
+static int aload(int sp, struct psstack *stack,int stacktop, struct garbage *tofrees) {
     int i;
 
     if ( sp>=1 && stack[sp-1].type==ps_array ) {
@@ -778,7 +821,7 @@ static int aload(int sp, struct psstack *stack,int stacktop) {
 /* The following is incorrect behavior, but as I don't do garbage collection */
 /*  and I'm not going to implement reference counts, this will work in most cases */
 		else if ( stack[sp].type==ps_array )
-		    copyarray(&stack[sp].u.dict,&stack[sp].u.dict);
+		    copyarray(&stack[sp].u.dict,&stack[sp].u.dict,tofrees);
 		++sp;
 	    }
 	}
@@ -825,7 +868,8 @@ static void printarray(struct pskeydict *dict) {
     printf( "]" );
 }
 
-static void freestuff(struct psstack *stack, int sp, struct pskeydict *dict, GrowBuf *gb) {
+static void freestuff(struct psstack *stack, int sp, struct pskeydict *dict,
+	GrowBuf *gb, struct garbage *tofrees) {
     int i;
 
     free(gb->base);
@@ -840,9 +884,12 @@ static void freestuff(struct psstack *stack, int sp, struct pskeydict *dict, Gro
 	if ( stack[i].type==ps_string || stack[i].type==ps_instr ||
 		stack[i].type==ps_lit )
 	    free(stack[i].u.str);
+#if 0		/* Garbage collection should get these */
 	else if ( stack[i].type==ps_array || stack[i].type==ps_dict )
 	    dictfree(&stack[i].u.dict);
+#endif
     }
+    garbagefree(tofrees);
 }
 
 static void DoMatTransform(int tok,int sp,struct psstack *stack) {
@@ -1234,6 +1281,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
     Entity *ent;
     char *oldloc;
     int warned = 0;
+    struct garbage tofrees;
 #if !defined(FONTFORGE_CONFIG_TYPE3)
     char tokbuf[100];
     const int tokbufsize = 100;
@@ -1248,6 +1296,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 
     memset(&gb,'\0',sizeof(GrowBuf));
     memset(&dict,'\0',sizeof(dict));
+    tofrees.cnt = 0; tofrees.next = NULL;
 
     transform[0] = transform[3] = 1.0;
     transform[1] = transform[2] = transform[4] = transform[5] = 0;
@@ -1307,9 +1356,9 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 		if ( kv->type==ps_instr || kv->type==ps_lit || kv->type==ps_string )
 		    stack[sp-1].u.str = copy(stack[sp-1].u.str);
 		else if ( kv->type==ps_array || kv->type==ps_dict ) {
-		    copyarray(&stack[sp-1].u.dict,&stack[sp-1].u.dict);
+		    copyarray(&stack[sp-1].u.dict,&stack[sp-1].u.dict,&tofrees);
 		    if ( stack[sp-1].u.dict.is_executable )
-			sp = aload(sp,stack,sizeof(stack)/sizeof(stack[0]));
+			sp = aload(sp,stack,sizeof(stack)/sizeof(stack[0]),&tofrees);
 		}
 	    }
 	} else {
@@ -1460,7 +1509,7 @@ printf( "-%s-\n", toknames[tok]);
     /* The following is incorrect behavior, but as I don't do garbage collection */
     /*  and I'm not going to implement reference counts, this will work in most cases */
 		else if ( stack[sp].type==ps_array )
-		    copyarray(&stack[sp].u.dict,&stack[sp].u.dict);
+		    copyarray(&stack[sp].u.dict,&stack[sp].u.dict,&tofrees);
 		++sp;
 	    }
 	  break;
@@ -1477,7 +1526,7 @@ printf( "-%s-\n", toknames[tok]);
     /* The following is incorrect behavior, but as I don't do garbage collection */
     /*  and I'm not going to implement reference counts, this will work in most cases */
 			else if ( stack[sp].type==ps_array )
-			    copyarray(&stack[sp].u.dict,&stack[sp].u.dict);
+			    copyarray(&stack[sp].u.dict,&stack[sp].u.dict,&tofrees);
 			++sp;
 		    }
 		}
@@ -1505,7 +1554,7 @@ printf( "-%s-\n", toknames[tok]);
     /* The following is incorrect behavior, but as I don't do garbage collection */
     /*  and I'm not going to implement reference counts, this will work in most cases */
 		    else if ( stack[sp].type==ps_array )
-			copyarray(&stack[sp].u.dict,&stack[sp].u.dict);
+			copyarray(&stack[sp].u.dict,&stack[sp].u.dict,&tofrees);
 		    ++sp;
 		}
 	    }
@@ -2590,6 +2639,7 @@ printf( "-%s-\n", toknames[tok]);
 		    /* don't need to copy because the things on the stack */
 		    /*  are being popped (don't need to free either) */
 		}
+		collectgarbage(&tofrees,&dict);
 		sp = sp-i;
 		stack[sp-1].type = ps_array;
 		stack[sp-1].u.dict = dict;
@@ -2606,7 +2656,7 @@ printf( "-%s-\n", toknames[tok]);
 	    }
 	  break;
 	  case pt_aload:
-	    sp = aload(sp,stack,sizeof(stack)/sizeof(stack[0]));
+	    sp = aload(sp,stack,sizeof(stack)/sizeof(stack[0]),&tofrees);
 	  break;
 	  case pt_astore:
 	    if ( sp>=1 && stack[sp-1].type==ps_array ) {
@@ -2761,7 +2811,7 @@ printf( "-%s-\n", toknames[tok]);
 	for ( j=i+1; j<sp; ++j )
 	    rs->stack[j-i-1] = stack[j].u.val;
     }
-    freestuff(stack,sp,&dict,&gb);
+    freestuff(stack,sp,&dict,&gb,&tofrees);
     if ( head!=NULL ) {
 	ent = EntityCreate(head,linecap,linejoin,linewidth,transform);
 	ent->next = ec->splines;
