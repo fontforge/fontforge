@@ -1022,6 +1022,7 @@ return( NULL );
     free(gcd);
     for ( i=0; i<lb; ++i )
 	free(qlabels[i].text);
+    free(ubuf);
     GProgressResumeTimer();
 return( gw );
 }
