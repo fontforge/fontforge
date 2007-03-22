@@ -1486,9 +1486,9 @@ static void PIChars(PI *pi) {
 	SCPrintPage(pi,pi->sc);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     else {
-	for ( i=0; i<pi->mv->charcnt; ++i )
-	    if ( SCWorthOutputting(pi->mv->perchar[i].sc))
-		SCPrintPage(pi,pi->mv->perchar[i].sc);
+	for ( i=0; i<pi->mv->glyphcnt; ++i )
+	    if ( SCWorthOutputting(pi->mv->glyphs[i].sc))
+		SCPrintPage(pi,pi->mv->glyphs[i].sc);
     }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     dump_trailer(pi);
@@ -2162,9 +2162,9 @@ return;
 	SCPrintSizes(pi,pi->sc);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     else {
-	for ( i=0; i<pi->mv->charcnt; ++i )
-	    if ( SCWorthOutputting(pi->mv->perchar[i].sc))
-		SCPrintSizes(pi,pi->mv->perchar[i].sc);
+	for ( i=0; i<pi->mv->glyphcnt; ++i )
+	    if ( SCWorthOutputting(pi->mv->glyphs[i].sc))
+		SCPrintSizes(pi,pi->mv->glyphs[i].sc);
     }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
@@ -3553,7 +3553,7 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     if ( fv!=NULL )
 	cnt = FVSelCount(fv);
     else if ( mv!=NULL )
-	cnt = mv->charcnt;
+	cnt = mv->glyphcnt;
     label[1].text = (unichar_t *) (cnt==1?_("Full Pa_ge Glyph"):_("Full Pa_ge Glyphs"));
     label[1].text_is_1byte = true;
     label[1].text_in_resource = true;

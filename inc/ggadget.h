@@ -312,6 +312,8 @@ void GGadgetSetChecked(GGadget *g, int ison);
 int GGadgetIsChecked(GGadget *g);
 
 int GListIndexFromY(GGadget *g,int y);
+void GListSetSBAlwaysVisible(GGadget *g,int always);
+void GListSetPopupCallback(GGadget *g,void (*callback)(GGadget *,int));
 
 int GTabSetGetSel(GGadget *g);
 void GTabSetSetSel(GGadget *g,int sel);

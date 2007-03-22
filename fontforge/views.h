@@ -420,6 +420,7 @@ typedef struct metricsview {
     SplineFont *sf;
     int pixelsize;
     BDFFont *bdf;		/* We can also see metric info on a bitmap font */
+    BDFFont *show;		/*  Or the rasterized version of the outline font */
 #if defined(FONTFORGE_CONFIG_GTK)
     GtkWidget *gw;
     PangoFont *font;
@@ -428,35 +429,34 @@ typedef struct metricsview {
 #elif defined(FONTFORGE_CONFIG_GDRAW)
     GWindow gw;
     GFont *font;
-    GGadget *hsb, *vsb, *mb, *text, *subtable_list;
+    GGadget *hsb, *vsb, *mb, *text, *script, *features, *subtable_list;
     GGadget *namelab, *widthlab, *lbearinglab, *rbearinglab, *kernlab;
 #endif
+    int16 xstart;
     int16 width, height, dwidth;
     int16 mbh,sbh;
     int16 topend;		/* y value of the end of the region containing the text field */
     int16 displayend;		/* y value of the end of the region showing filled characters */
     int16 fh, as;
-    struct metricchar {
-	SplineChar *sc;
-	BDFChar *show;
+    int16 cmax, clen; 
+    SplineChar **chars;		/* Character input stream */
+    struct opentype_str *glyphs;/* after going through the various gsub/gpos transformations */
+    struct metricchar {		/* One for each glyph above */
 	int16 dx, dwidth;	/* position and width of the displayed char */
 	int16 dy, dheight;	/*  displayed info for vertical metrics */
+	int xoff, yoff;
 	int16 mx, mwidth;	/* position and width of the text underneath */
 	int16 kernafter;
-	int16 xoff, yoff, hoff, voff;	/* adjustments by GPOS other than 'kern' (scaled) */
-	PST *active_pos;	/* Only support one simple positioning GPOS feature at a time */
 	unsigned int selected: 1;
 #if defined(FONTFORGE_CONFIG_GTK)
 	GtkWidget *width, *lbearing, *rbearing, *kern, *name;
 #elif defined(FONTFORGE_CONFIG_GDRAW)
 	GGadget *width, *lbearing, *rbearing, *kern, *name;
 #endif
-	struct aplist *aps;
-	SplineChar *basesc;	/* If we've done a substitution, this lets us go back */
     } *perchar;
-    SplineChar **sstr;		/* An array the same size as perchar (well 1 bigger, trailing null) */
+    SplineChar **sstr;		/* Character input stream */
     int16 mwidth, mbase;
-    int16 charcnt, max;
+    int16 glyphcnt, max;
     int16 pressed_x, pressed_y;
     int16 activeoff;
     int xoff, coff, yoff;

@@ -477,7 +477,7 @@ enum fpossub_format { pst_glyphs, pst_class, pst_coverage,
 
 typedef struct generic_fpst {
     uint16 /*enum sfpossub_type*/ type;
-    uint16 /*enum sfpossub_format*/ format;
+    uint16 /*enum fpossub_format*/ format;
     struct lookup_subtable *subtable;
     struct generic_fpst *next;
     uint16 nccnt, bccnt, fccnt;
@@ -563,6 +563,17 @@ typedef struct generic_asm {		/* Apple State Machine */
 	0x4000	don't advance to next glyph
 	0x3fff	value offset
 */
+
+struct opentype_str {
+    struct splinechar *sc;
+    struct vr vr;
+    struct kernpair *kp;
+    struct kernclass *kc;
+    int kc_index;
+    int16 lig_pos;		/* when skipping marks to form a ligature keep track of what ligature element a mark was attached to */
+    int16 context_pos;		/* When doing a contextual match remember which glyphs are used, and where in the match they occur. Skipped glyphs have -1 */
+    int16 orig_index;
+};
 
 struct macname {
     struct macname *next;
@@ -1238,7 +1249,7 @@ typedef struct splinefont {
 /* As usual, class 0 is unused */
     int mark_class_cnt;
     char **mark_classes;		/* glyph name list */
-    char **mark_class_names;		/* used within ff, utf8 */
+    char **mark_class_names;		/* used within ff, utf8 (the name we've given to this class of marks) */
 #ifdef _HAS_LONGLONG
     long long creationtime;		/* seconds since 1970 */
     long long modificationtime;
@@ -2214,14 +2225,14 @@ extern struct lookup_subtable *SFSubTableFindOrMake(SplineFont *sf,uint32 tag,ui
 	int lookup_type );
 extern struct lookup_subtable *SFSubTableMake(SplineFont *sf,uint32 tag,uint32 script,
 	int lookup_type );
-OTLookup *OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf, OTLookup *from_otl);
+extern OTLookup *OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf, OTLookup *from_otl);
+extern struct opentype_str *ApplyTickedFeatures(SplineFont *sf,uint32 *flist, uint32 script, uint32 lang,
+	SplineChar **glyphs);
 
 extern int KCFindIndex(KernClass *kc,char *name1, char *name2);
 extern KernClass *SFFindKernClass(SplineFont *sf,SplineChar *first,SplineChar *last,
 	int *index,int allow_zero);
 extern KernClass *SFFindVKernClass(SplineFont *sf,SplineChar *first,SplineChar *last,
 	int *index,int allow_zero);
-extern int SFFindKernOffset(SplineFont *sf,SplineChar *first,SplineChar *second,
-	int isv, KernPair **_kp, KernClass **_kc, int *index);
 
 #endif
