@@ -108,11 +108,11 @@ static void MVOutline(MetricsView *mv, real width) {
     si.radius = width;
     si.removeoverlapifneeded = true;
 
-    for ( i=mv->charcnt-1; i>=0; --i )
+    for ( i=mv->glyphcnt-1; i>=0; --i )
 	if ( mv->perchar[i].selected )
     break;
     if ( i!=-1 ) {
-	SplineChar *sc = mv->perchar[i].sc;
+	SplineChar *sc = mv->glyphs[i].sc;
 	SCPreserveState(sc,false);
 	temp = SSStroke(sc->layers[ly_fore].splines,&si,sc);
 	for ( spl=sc->layers[ly_fore].splines; spl->next!=NULL; spl=spl->next );
@@ -207,11 +207,11 @@ static void MVInline(MetricsView *mv, real width, real inset) {
     si.removeexternal = true;
     si.removeoverlapifneeded = true;
 
-    for ( i=mv->charcnt-1; i>=0; --i )
+    for ( i=mv->glyphcnt-1; i>=0; --i )
 	if ( mv->perchar[i].selected )
     break;
     if ( i!=-1 ) {
-	SplineChar *sc = mv->perchar[i].sc;
+	SplineChar *sc = mv->glyphs[i].sc;
 	SCPreserveState(sc,false);
 	si.radius = width;
 	temp = SSStroke(sc->layers[ly_fore].splines,&si,sc);
@@ -1147,11 +1147,11 @@ static void MVShadow(MetricsView *mv,real angle, real outline_width,
 	real shadow_length,int wireframe) {
     int i;
 
-    for ( i=mv->charcnt-1; i>=0; --i )
+    for ( i=mv->glyphcnt-1; i>=0; --i )
 	if ( mv->perchar[i].selected )
     break;
     if ( i!=-1 ) {
-	SplineChar *sc = mv->perchar[i].sc;
+	SplineChar *sc = mv->glyphs[i].sc;
 	SCPreserveState(sc,false);
 	sc->layers[ly_fore].splines = SSShadow(sc->layers[ly_fore].splines,angle,outline_width,shadow_length,sc,wireframe);
 	SCCharChangedUpdate(sc);

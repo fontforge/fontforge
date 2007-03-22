@@ -1779,6 +1779,727 @@ OTLookup *OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf, OTLookup *fr
     }
 return( otl );
 }
+
+/* ************************************************************************** */
+/* ****************************** Apply lookups ***************************** */
+/* ************************************************************************** */
+
+struct lookup_data {
+    struct opentype_str *str;
+    int cnt, max;
+
+    uint32 script;
+    SplineFont *sf;
+
+    struct lookup_subtable *lig_owner;
+    int lcnt, lmax;
+    SplineChar ***ligs;		/* For each ligature we have an array of SplineChars that are its components preceded by the ligature glyph itself */
+				/*  NULL terminated */
+};
+
+static int ApplyLookupAtPos(uint32 tag, OTLookup *otl,struct lookup_data *data,int pos);
+
+static void LigatureFree(struct lookup_data *data) {
+    int i;
+
+    if ( data->ligs==NULL )
+return;
+    for ( i=0; data->ligs[i]!=NULL; ++i )
+	free(data->ligs[i]);
+}
+
+static void LigatureSearch(struct lookup_subtable *sub, struct lookup_data *data) {
+    SplineFont *sf = data->sf;
+    int gid, ccnt, cnt, ch, err;
+    SplineChar *sc;
+    PST *pst;
+    char *pt, *start;
+
+    LigatureFree(data);
+    cnt = 0;
+    for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
+	for ( pst=sc->possub; pst!=NULL; pst=pst->next ) if ( pst->subtable==sub ) {
+	    for ( pt = pst->u.lig.components, ccnt=0; *pt; ++pt )
+		if ( *pt==' ' )
+		    ++ccnt;
+	    if ( cnt>=data->lmax )
+		data->ligs = grealloc(data->ligs,(data->lmax+=100)*sizeof(SplineChar **));
+	    data->ligs[cnt] = galloc((ccnt+3)*sizeof(SplineChar *));
+	    data->ligs[cnt][0] = sc;
+	    ccnt = 1;
+	    err = 0;
+	    for ( pt = pst->u.lig.components; *pt; ) {
+		while ( *pt==' ' ) ++pt;
+		if ( *pt=='\0' )
+	    break;
+		for ( start=pt; *pt!='\0' && *pt!=' '; ++pt );
+		ch = *pt; *pt = '\0';
+		data->ligs[cnt][ccnt++] = SFGetChar(sf,-1,start);
+		*pt = ch;
+		if ( data->ligs[cnt][ccnt-1]==NULL )
+		    err = 1;
+	    }
+	    if ( !err )
+		data->ligs[cnt++][ccnt] = NULL;
+	}
+    }
+    if ( cnt>=data->lmax )
+	data->ligs = grealloc(data->ligs,(data->lmax+=1)*sizeof(SplineChar **));
+    data->ligs[cnt] = NULL;
+    data->lcnt = cnt;
+}
+
+static int GlyphNameInClass(char *name,char *class ) {
+    char *pt;
+    int len = strlen(name);
+
+    pt = class;
+    while ( (pt=strstr(pt,name))!=NULL ) {
+	if ( pt==NULL )
+return( false );
+	if ( (pt==class || pt[-1]==' ') && (pt[len]=='\0' || pt[len]==' '))
+return( true );
+	pt+=len;
+    }
+
+return( false );
+}
+
+static int skipglyphs(int lookup_flags, struct lookup_data *data, int pos) {
+    int mc, glyph_class;
+    /* The lookup flags tell us what glyphs to ignore. Skip over anything we */
+    /*  should ignore */
+
+    if ( lookup_flags==0 )
+return( pos );
+    mc = (lookup_flags>>8);
+    if ( mc<0 || mc>=data->sf->mark_class_cnt )
+	mc = 0;
+    while ( pos<data->cnt ) {
+	glyph_class = gdefclass(data->str[pos].sc);
+	/* 1=>base, 2=>ligature, 3=>mark, 4=>component?, 0=>.notdef */
+	if ( (glyph_class==1 && (lookup_flags&pst_ignorebaseglyphs)) ||
+		(glyph_class==2 && (lookup_flags&pst_ignoreligatures)) ||
+		(glyph_class==3 && (lookup_flags&pst_ignorecombiningmarks)) ||
+		(glyph_class==3 && mc!=0 &&
+			!GlyphNameInClass(data->str[pos].sc->name,data->sf->mark_classes[mc])) ) {
+	    ++pos;
+	} else
+    break;
+    }
+return( pos );
+}
+
+static int bskipglyphs(int lookup_flags, struct lookup_data *data, int pos) {
+    int mc, glyph_class;
+    /* The lookup flags tell us what glyphs to ignore. Skip over anything we */
+    /*  should ignore. Here we skip backward */
+
+    if ( lookup_flags==0 )
+return( pos );
+    mc = (lookup_flags>>8);
+    if ( mc<0 || mc>=data->sf->mark_class_cnt )
+	mc = 0;
+    while ( pos>=0 ) {
+	glyph_class = gdefclass(data->str[pos].sc);
+	/* 1=>base, 2=>ligature, 3=>mark, 4=>component?, 0=>.notdef */
+	if ( (glyph_class==1 && (lookup_flags&pst_ignorebaseglyphs)) ||
+		(glyph_class==2 && (lookup_flags&pst_ignoreligatures)) ||
+		(glyph_class==3 && (lookup_flags&pst_ignorecombiningmarks)) ||
+		(glyph_class==3 && mc!=0 &&
+			!GlyphNameInClass(data->str[pos].sc->name,data->sf->mark_classes[mc])) ) {
+	    --pos;
+	} else
+    break;
+    }
+return( pos );
+}
+
+static int ContextualMatch(struct lookup_subtable *sub,struct lookup_data *data,
+	int pos, struct fpst_rule **_rule) {
+    int i, cpos, retpos, r;
+    FPST *fpst = sub->fpst;
+    int lookup_flags = sub->lookup->lookup_flags;
+    char *pt, *start;
+
+    /* If we should skip the current glyph then don't try for a match here */
+    cpos = skipglyphs(lookup_flags,data,pos);
+    if ( cpos!=pos )
+return( 0 );
+
+    for ( r=0; r<fpst->rule_cnt; ++r ) {
+	struct fpst_rule *rule = &fpst->rules[r];
+	for ( i=pos; i<data->cnt; ++i )
+	    data->str[i].context_pos = -1;
+
+/* Handle backtrack */
+	if ( fpst->type == pst_chainpos || fpst->type == pst_chainsub ) {
+	    if ( fpst->format==pst_glyphs ) {
+		pt = rule->u.glyph.back;
+		start = strrchr(pt,' ');
+		if ( start==NULL ) start = pt-1;
+		for ( i=bskipglyphs(lookup_flags,data,pos-1), cpos=0; i>=0; i = bskipglyphs(lookup_flags,data,i-1)) {
+		    char *name = data->str[i].sc->name;
+		    int len = strlen( name );
+		    if ( strncmp(name,start,len)!=0 || (start[len]!='\0' && start[len]!=' '))
+		break;
+		    while ( start>=pt && *start==' ' ) --start;
+		    if ( start<pt ) {
+			pt = NULL;
+		break;
+		    }
+		    while ( start>=pt && *start!=' ' ) --start;
+		}
+		if ( *pt!='\0' )
+    continue;		/* didn't match */
+	    } else if ( fpst->format==pst_class ) {
+		for ( i=bskipglyphs(lookup_flags,data,pos-1), cpos=rule->u.class.bcnt-1; i>=0 && cpos>=0; i = bskipglyphs(lookup_flags,data,i-1)) {
+		    if ( !GlyphNameInClass(data->str[i].sc->name,fpst->bclass[rule->u.class.bclasses[cpos]]) )
+		break;
+		    --cpos;
+		}
+		if ( cpos>=0 )
+    continue;		/* didn't match */
+	    } else if ( fpst->format==pst_coverage ) {
+		for ( i=bskipglyphs(lookup_flags,data,pos-1), cpos=rule->u.coverage.bcnt-1; i>=0 && cpos>=0; i = bskipglyphs(lookup_flags,data,i-1)) {
+		    if ( !GlyphNameInClass(data->str[i].sc->name,rule->u.coverage.bcovers[cpos]) )
+		break;
+		    --cpos;
+		}
+		if ( cpos>=0 )
+    continue;		/* didn't match */
+	    }
+	}
+/* Handle Match */
+	if ( fpst->format==pst_glyphs ) {
+	    pt = rule->u.glyph.names;
+	    for ( i=pos, cpos=0; i<data->cnt && *pt!='\0'; i = skipglyphs(lookup_flags,data,i+1)) {
+		char *name = data->str[i].sc->name;
+		int len = strlen( name );
+		if ( strncmp(name,pt,len)!=0 || (pt[len]!='\0' && pt[len]!=' '))
+	    break;
+		data->str[i].context_pos = cpos++;
+		pt += len;
+		while ( *pt==' ' ) ++pt;
+	    }
+	    if ( *pt!='\0' )
+    continue;		/* didn't match */
+	} else if ( fpst->format==pst_class ) {
+	    for ( i=pos, cpos=0; i<data->cnt && cpos<rule->u.class.ncnt; i = skipglyphs(lookup_flags,data,i+1)) {
+		if ( !GlyphNameInClass(data->str[i].sc->name,fpst->nclass[rule->u.class.nclasses[cpos]]) )
+	    break;
+		data->str[i].context_pos = cpos++;
+	    }
+	    if ( cpos<rule->u.class.ncnt )
+    continue;		/* didn't match */
+	} else if ( fpst->format==pst_coverage ) {
+	    for ( i=pos, cpos=0; i<data->cnt && cpos<rule->u.coverage.ncnt; i = skipglyphs(lookup_flags,data,i+1)) {
+		if ( !GlyphNameInClass(data->str[i].sc->name,rule->u.coverage.ncovers[cpos]) )
+	    break;
+		data->str[i].context_pos = cpos++;
+	    }
+	    if ( cpos<rule->u.coverage.ncnt )
+    continue;		/* didn't match */
+	} else
+return( 0 );		/* Not ready to deal with reverse chainging */
+
+	retpos = i;
+/* Handle lookahead */
+	if ( fpst->type == pst_chainpos || fpst->type == pst_chainsub ) {
+	    if ( fpst->format==pst_glyphs ) {
+		pt = rule->u.glyph.fore;
+		for ( i=retpos; i<data->cnt && *pt!='\0'; i = skipglyphs(lookup_flags,data,i+1)) {
+		    char *name = data->str[i].sc->name;
+		    int len = strlen( name );
+		    if ( strncmp(name,pt,len)!=0 || (pt[len]!='\0' && pt[len]!=' '))
+		break;
+		    pt += len;
+		    while ( *pt==' ' ) ++pt;
+		}
+		if ( *pt!='\0' )
+    continue;		/* didn't match */
+	    } else if ( fpst->format==pst_class ) {
+		for ( i=retpos, cpos=0; i<data->cnt && cpos<rule->u.class.fcnt; i = skipglyphs(lookup_flags,data,i+1)) {
+		    if ( !GlyphNameInClass(data->str[i].sc->name,fpst->fclass[rule->u.class.fclasses[cpos]]) )
+		break;
+		    cpos++;
+		}
+		if ( cpos<rule->u.class.fcnt )
+    continue;		/* didn't match */
+	    } else if ( fpst->format==pst_coverage ) {
+		for ( i=retpos, cpos=0; i<data->cnt && cpos<rule->u.coverage.fcnt; i = skipglyphs(lookup_flags,data,i+1)) {
+		    if ( !GlyphNameInClass(data->str[i].sc->name,rule->u.coverage.fcovers[cpos]) )
+		break;
+		    cpos++;
+		}
+		if ( cpos<rule->u.coverage.fcnt )
+    continue;		/* didn't match */
+	    }
+	}
+	*_rule = rule;
+return( retpos );
+    }
+return( 0 );
+}
+
+static int ApplySingleSubsAtPos(struct lookup_subtable *sub,struct lookup_data *data,int pos) {
+    PST *pst;
+    SplineChar *sc;
+
+    for ( pst=data->str[pos].sc->possub; pst!=NULL && pst->subtable!=sub; pst=pst->next );
+    if ( pst==NULL )
+return( 0 );
+
+    sc = SFGetChar(data->sf,-1,pst->u.subs.variant);
+    if ( sc==NULL )
+return( 0 );
+    data->str[pos].sc = sc;
+return( pos+1 );
+}
+
+static int ApplyMultSubsAtPos(struct lookup_subtable *sub,struct lookup_data *data,int pos) {
+    PST *pst;
+    SplineChar *sc;
+    char *start, *pt;
+    int mcnt, ch, i;
+    SplineChar *mults[20];
+
+    for ( pst=data->str[pos].sc->possub; pst!=NULL && pst->subtable!=sub; pst=pst->next );
+    if ( pst==NULL )
+return( 0 );
+
+    mcnt = 0;
+    for ( start = pst->u.alt.components; *start==' '; ++start);
+    for ( ; *start; ) {
+	for ( pt=start; *pt!='\0' && *pt!=' '; ++pt );
+	ch = *pt; *pt = '\0';
+	sc = SFGetChar(data->sf,-1,start);
+	*pt = ch;
+	if ( sc==NULL )
+return( 0 );
+	if ( mcnt<20 ) mults[mcnt++] = sc;
+	while ( *pt==' ' ) ++pt;
+	start = pt;
+    }
+
+    if ( mcnt==0 ) {
+	/* Is this legal? that is can we remove a glyph with an empty multiple? */
+	for ( i=pos+1; i<data->cnt; ++i )
+	    data->str[i-1] = data->str[i];
+	--data->cnt;
+return( pos );
+    } else if ( mcnt==1 ) {
+	data->str[pos].sc = mults[0];
+return( pos+1 );
+    } else {
+	if ( data->cnt+mcnt-1 >= data->max )
+	    data->str = grealloc(data->str,(data->max+=mcnt) * sizeof( struct opentype_str ));
+	for ( i=data->cnt-1; i>pos; --i )
+	    data->str[i+mcnt-1] = data->str[i];
+	memset(data->str+pos,0,mcnt*sizeof(struct opentype_str));
+	for ( i=0; i<mcnt; ++i ) {
+	    data->str[pos+i].sc = mults[i];
+	    data->str[pos+i].orig_index = data->str[pos].orig_index;
+	}
+return( pos+mcnt );
+    }
+}
+
+static int ApplyAltSubsAtPos(struct lookup_subtable *sub,struct lookup_data *data,int pos) {
+    PST *pst;
+    SplineChar *sc;
+    char *start, *pt, ch;
+
+    for ( pst=data->str[pos].sc->possub; pst!=NULL && pst->subtable!=sub; pst=pst->next );
+    if ( pst==NULL )
+return( 0 );
+
+    for ( start = pst->u.alt.components; *start==' '; ++start);
+    for ( ; *start; ) {
+	for ( pt=start; *pt!='\0' && *pt!=' '; ++pt );
+	ch = *pt; *pt = '\0';
+	sc = SFGetChar(data->sf,-1,start);
+	*pt = ch;
+	if ( sc!=NULL ) {
+	    data->str[pos].sc = sc;
+return( pos+1 );
+	}
+	while ( *pt==' ' ) ++pt;
+	start = pt;
+    }
+return( 0 );
+}
+
+static int ApplyLigatureSubsAtPos(struct lookup_subtable *sub,struct lookup_data *data,int pos) {
+    int i,k, lpos, npos;
+    int lookup_flags = sub->lookup->lookup_flags;
+    int match_found = -1, match_len=0;
+
+    if ( data->lig_owner!=sub )
+	LigatureSearch(sub,data);
+    for ( i=0; i<data->lcnt; ++i ) {
+	if ( data->ligs[i][1]==data->str[pos].sc ) {
+	    lpos = 0;
+	    npos = pos+1;
+	    for ( k=2; data->ligs[i][k]!=NULL; ++k ) {
+		npos = skipglyphs(lookup_flags,data,npos);
+		if ( npos>=data->cnt || data->str[npos].sc != data->ligs[i][k] )
+	    break;
+		++npos;
+	    }
+	    if ( data->ligs[i][k]==NULL ) {
+		if ( match_found==-1 || k>match_len ) {
+		    match_found = i;
+		    match_len = k;
+		}
+	    }
+	}
+    }
+    if ( match_found!=-1 ) {
+	/* Matched. Remove the component glyphs, and note which component */
+	/*  any intervening marks should be attached to */
+	data->str[pos].sc = data->ligs[match_found][0];
+	npos = pos+1;
+	for ( k=2; data->ligs[match_found][k]!=NULL; ++k ) {
+	    lpos = skipglyphs(lookup_flags,data,npos);
+	    for ( ; npos<lpos; ++npos )
+		data->str[npos].lig_pos = k-2;
+	    /* Remove this glyph */
+	    for ( ++lpos; lpos<data->cnt; ++lpos )
+		data->str[lpos-1] = data->str[lpos];
+	    --data->cnt;
+	}
+	/* Any marks after the last component (which should be attached */
+	/*  to it) will not have been tagged, so do that now */
+	lpos = skipglyphs(lookup_flags,data,npos);
+	for ( ; npos<lpos; ++npos )
+	    data->str[npos].lig_pos = k-2;
+return( pos+1 );
+    }
+
+return( 0 );
+}
+		    
+static int ApplyContextual(struct lookup_subtable *sub,struct lookup_data *data,int pos) {
+    /* On this level there is no difference between GPOS/GSUB contextuals */
+    /*  If the contextual matches, then we apply the lookups, otherwise we */
+    /*  don't. Now the lookups will be different, but we don't care here */
+    struct fpst_rule *rule;
+    int retpos, i,j;
+
+    retpos = ContextualMatch(sub,data,pos,&rule);
+    if ( retpos==0 )
+return( 0 );
+    for ( i=0; i<rule->lookup_cnt; ++i ) {
+	for ( j=pos; j<data->cnt; ++j ) {
+	    if ( data->str[j].context_pos == rule->lookups[i].seq ) {
+		ApplyLookupAtPos(0,rule->lookups[i].lookup,data,j);
+	break;
+	    }
+	}
+    }
+return( retpos );
+}
+
+static int ApplySinglePosAtPos(struct lookup_subtable *sub,struct lookup_data *data,int pos) {
+    PST *pst;
+
+    for ( pst=data->str[pos].sc->possub; pst!=NULL && pst->subtable!=sub; pst=pst->next );
+    if ( pst==NULL )
+return( 0 );
+
+    data->str[pos].vr.xoff += pst->u.pos.xoff;
+    data->str[pos].vr.yoff += pst->u.pos.yoff;
+    data->str[pos].vr.h_adv_off += pst->u.pos.h_adv_off;
+    data->str[pos].vr.v_adv_off += pst->u.pos.v_adv_off;
+return( pos+1 );
+}
+
+static int ApplyPairPosAtPos(struct lookup_subtable *sub,struct lookup_data *data,int pos) {
+    PST *pst;
+    int npos, isv, within;
+    KernPair *kp;
+
+    npos = skipglyphs(sub->lookup->lookup_flags,data,pos+1);
+    if ( npos>=data->cnt )
+return( 0 );
+    if ( sub->kc!=NULL ) {
+	within = KCFindIndex(sub->kc,data->str[pos].sc->name,data->str[npos].sc->name);
+	if ( within==-1 )
+return( 0 );
+	data->str[pos].kc_index = within;
+	data->str[pos].kc = sub->kc;
+	if ( sub->vertical_kerning )
+	    data->str[pos].vr.v_adv_off += sub->kc->offsets[within];
+	else if ( sub->lookup->lookup_flags & pst_r2l )
+	    data->str[npos].vr.h_adv_off += sub->kc->offsets[within];
+	else
+	    data->str[pos].vr.h_adv_off += sub->kc->offsets[within];
+return( pos+1 );
+    } else {
+	for ( pst=data->str[pos].sc->possub; pst!=NULL; pst=pst->next ) {
+	    if ( pst->subtable==sub && strcmp(pst->u.pair.paired,data->str[npos].sc->name)==0 ) {
+		data->str[pos].vr.xoff += pst->u.pair.vr[0].xoff;
+		data->str[pos].vr.yoff += pst->u.pair.vr[0].yoff;
+		data->str[pos].vr.h_adv_off += pst->u.pair.vr[0].h_adv_off;
+		data->str[pos].vr.v_adv_off += pst->u.pair.vr[0].v_adv_off;
+		data->str[npos].vr.xoff += pst->u.pair.vr[1].xoff;
+		data->str[npos].vr.yoff += pst->u.pair.vr[1].yoff;
+		data->str[npos].vr.h_adv_off += pst->u.pair.vr[1].h_adv_off;
+		data->str[npos].vr.v_adv_off += pst->u.pair.vr[1].v_adv_off;
+return( pos+1 );	/* We do NOT want to return npos+1 */
+	    }
+	}
+	for ( isv = 0; isv<2; ++isv ) {
+	    for ( kp = isv ? data->str[pos].sc->vkerns : data->str[pos].sc->kerns; kp!=NULL; kp=kp->next ) {
+		if ( kp->subtable == sub && kp->sc == data->str[npos].sc ) {
+		    data->str[pos].kp = kp;
+		    if ( isv )
+			data->str[pos].vr.v_adv_off += kp->off;
+		    else if ( sub->lookup->lookup_flags & pst_r2l )
+			data->str[npos].vr.h_adv_off += kp->off;
+		    else
+			data->str[pos].vr.h_adv_off += kp->off;
+return( pos+1 );
+		}
+	    }
+	}
+    }
+	    
+return( 0 );
+}
+
+static int ApplyAnchorPosAtPos(struct lookup_subtable *sub,struct lookup_data *data,int pos) {
+    AnchorPoint *ap1, *ap2;
+    int npos;
+
+    npos = skipglyphs(sub->lookup->lookup_flags,data,pos+1);
+    if ( npos>=data->cnt )
+return( 0 );
+    if ( sub->lookup->lookup_type == gpos_cursive ) {
+	for ( ap1=data->str[pos].sc->anchor; ap1!=NULL ; ap1=ap1->next ) {
+	    if ( ap1->anchor->subtable==sub && ap1->type==at_cexit ) {
+		for ( ap2 = data->str[npos].sc->anchor; ap2!=NULL; ap2=ap2->next ) {
+		    if ( ap2->anchor==ap1->anchor && ap2->type==at_centry )
+		break;
+		}
+		if ( ap2!=NULL )
+	break;
+	    }
+	}
+    } else if ( sub->lookup->lookup_type == gpos_mark2ligature ) {
+	for ( ap1=data->str[pos].sc->anchor; ap1!=NULL ; ap1=ap1->next ) {
+	    if ( ap1->anchor->subtable==sub && ap1->type==at_baselig &&
+		    ap1->lig_index == data->str[npos].lig_pos ) {
+		for ( ap2 = data->str[npos].sc->anchor; ap2!=NULL; ap2=ap2->next ) {
+		    if ( ap2->anchor==ap1->anchor && ap2->type==at_mark )
+		break;
+		}
+		if ( ap2!=NULL )
+	break;
+	    }
+	}
+    } else {
+	for ( ap1=data->str[pos].sc->anchor; ap1!=NULL ; ap1=ap1->next ) {
+	    if ( ap1->anchor->subtable==sub && (ap1->type==at_basechar || ap1->type==at_basemark)) {
+		for ( ap2 = data->str[npos].sc->anchor; ap2!=NULL; ap2=ap2->next ) {
+		    if ( ap2->anchor==ap1->anchor && ap2->type==at_mark )
+		break;
+		}
+		if ( ap2!=NULL )
+	break;
+	    }
+	}
+    }
+    if ( ap1==NULL )
+return( 0 );
+
+    data->str[npos].vr.yoff = ap1->me.y - ap2->me.y;
+    if ( sub->lookup->lookup_flags&pst_r2l ) {
+	data->str[npos].vr.xoff = -(ap1->me.x - ap2->me.x);
+    } else {
+	data->str[npos].vr.xoff = ap1->me.x - ap2->me.x - data->str[pos].sc->width;
+    }
+return( pos+1 );
+}
+
+static int ConditionalTagOk(uint32 tag, OTLookup *otl,struct lookup_data *data,int pos) {
+    int npos, bpos;
+    uint32 script;
+    int before_in_script, after_in_script;
+
+    if ( tag==CHR('i','n','i','t') || tag==CHR('i','s','o','l') ||
+	    tag==CHR('f','i','n','a') || tag==CHR('m','e','d','i') ) {
+	npos = skipglyphs(otl->lookup_flags,data,pos+1);
+	bpos = bskipglyphs(otl->lookup_flags,data,pos-1);
+	script = SCScriptFromUnicode(data->str[pos].sc);
+	before_in_script = (bpos>=0 && SCScriptFromUnicode(data->str[bpos].sc)==script);
+	after_in_script = (npos<data->cnt && SCScriptFromUnicode(data->str[npos].sc)==script);
+	if ( tag==CHR('i','n','i','t') )
+return( !before_in_script && after_in_script );
+	else if ( tag==CHR('i','s','o','l') )
+return( !before_in_script && !after_in_script );
+	else if ( tag==CHR('f','i','n','a') )
+return( before_in_script && !after_in_script );
+	else
+return( before_in_script && after_in_script );
+    }
+
+return( true );
+}
+
+static int ApplyLookupAtPos(uint32 tag, OTLookup *otl,struct lookup_data *data,int pos) {
+    struct lookup_subtable *sub;
+    int newpos;
+
+    /* Some tags imply a conditional check. Do that now */
+    if ( !ConditionalTagOk(tag,otl,data,pos))
+return( 0 );
+
+    for ( sub=otl->subtables; sub!=NULL; sub=sub->next ) {
+	switch ( otl->lookup_type ) {
+	  case gsub_single:
+	    newpos = ApplySingleSubsAtPos(sub,data,pos);
+	  break;
+	  case gsub_multiple:
+	    newpos = ApplyMultSubsAtPos(sub,data,pos);
+	  break;
+	  case gsub_alternate:
+	    newpos = ApplyAltSubsAtPos(sub,data,pos);
+	  break;
+	  case gsub_ligature:
+	    newpos = ApplyLigatureSubsAtPos(sub,data,pos);
+	  break;
+	  case gsub_context:
+	    newpos = ApplyContextual(sub,data,pos);
+	  break;
+	  case gsub_contextchain:
+	    newpos = ApplyContextual(sub,data,pos);
+	  break;
+	  case gsub_reversecchain:
+	    newpos = ApplySingleSubsAtPos(sub,data,pos);
+	  break;
+
+	  case gpos_single:
+	    newpos = ApplySinglePosAtPos(sub,data,pos);
+	  break;
+	  case gpos_pair:
+	    newpos = ApplyPairPosAtPos(sub,data,pos);
+	  break;
+	  case gpos_cursive:
+	    newpos = ApplyAnchorPosAtPos(sub,data,pos);
+	  break;
+	  case gpos_mark2base:
+	    newpos = ApplyAnchorPosAtPos(sub,data,pos);
+	  break;
+	  case gpos_mark2ligature:
+	    newpos = ApplyAnchorPosAtPos(sub,data,pos);
+	  break;
+	  case gpos_mark2mark:
+	    newpos = ApplyAnchorPosAtPos(sub,data,pos);
+	  break;
+	  case gpos_context:
+	    newpos = ApplyContextual(sub,data,pos);
+	  break;
+	  case gpos_contextchain:
+	    newpos = ApplyContextual(sub,data,pos);
+	  break;
+	  default:
+	    /* apple state machines */
+	    newpos = 0;
+	  break;
+	}
+	/* if a subtable worked, we don't try to apply the next one */
+	if ( newpos!=0 )
+return( newpos );
+    }
+return( 0 );
+}
+
+static void ApplyLookup(uint32 tag, OTLookup *otl,struct lookup_data *data) {
+    int pos, npos;
+
+    for ( pos = 0; pos<data->cnt; ) {
+	npos = ApplyLookupAtPos(tag,otl,data,pos);
+	if ( npos==0 )
+	    npos = pos+1;
+	pos = npos;
+    }
+}
+
+static uint32 FSLLMatches(FeatureScriptLangList *fl,uint32 *flist,uint32 script,uint32 lang) {
+    int i,l;
+    struct scriptlanglist *sl;
+
+    while ( fl!=NULL ) {
+	for ( i=0; flist[i]!=0; ++i ) {
+	    if ( fl->featuretag==flist[i] )
+	break;
+	}
+	if ( flist[i]!=0 ) {
+	    for ( sl=fl->scripts; sl!=NULL; sl=sl->next ) {
+		if ( sl->script == script ) {
+		    for ( l=0; l<sl->lang_cnt; ++l )
+			if ( (l<MAX_LANG && sl->langs[l]==lang) ||
+				(l>=MAX_LANG && sl->morelangs[l-MAX_LANG]==lang))
+return( fl->featuretag );
+		}
+	    }
+	}
+	fl = fl->next;
+    }
+return( 0 );
+}
+
+/* This routine takes a string of glyphs and applies the opentype transformations */
+/*  indicated by the features (and script and language) we are passed, it returns */
+/*  a transformed string with substitutions applied and containing positioning */
+/*  info */
+struct opentype_str *ApplyTickedFeatures(SplineFont *sf,uint32 *flist, uint32 script, uint32 lang,
+	SplineChar **glyphs) {
+    int isgpos, cnt;
+    OTLookup *otl;
+    struct lookup_data data;
+    uint32 *langs, templang;
+    int i;
+
+    memset(&data,0,sizeof(data));
+    for ( cnt=0; glyphs[cnt]!=NULL; ++cnt );
+    data.str = gcalloc(cnt+1,sizeof(struct opentype_str));
+    data.cnt = data.max = cnt;
+    for ( cnt=0; glyphs[cnt]!=NULL; ++cnt ) {
+	data.str[cnt].sc = glyphs[cnt];
+	data.str[cnt].orig_index = cnt;
+    }
+    if ( sf->cidmaster!=NULL ) sf=sf->cidmaster;
+    data.sf = sf;
+
+    /* Indic glyph reordering???? */
+    for ( isgpos=0; isgpos<2; ++isgpos ) {
+	/* Check that this table has an entry for this language */
+	/*  if it doesn't use the default language */
+	/* GPOS/GSUB may have different language sets, so we must be prepared */
+	templang = lang;
+	langs = SFLangsInScript(sf,isgpos,script);
+	for ( i=0; langs[i]!=0 && langs[i]!=lang; ++i );
+	if ( langs[i]==0 )
+	    templang = DEFAULT_LANG;
+	free(langs);
+
+	for ( otl = isgpos ? sf->gpos_lookups : sf->gsub_lookups; otl!=NULL ; otl = otl->next ) {
+	    uint32 tag;
+	    if ( (tag=FSLLMatches(otl->features,flist,script,templang))!=0 )
+		ApplyLookup(tag,otl,&data);
+	}
+    }
+    LigatureFree(&data);
+    free(data.ligs);
+
+    data.str = grealloc(data.str,(data.cnt+1)*sizeof(struct opentype_str));
+    memset(&data.str[data.cnt],0,sizeof(struct opentype_str));
+return( data.str );
+}
+
 /* ************************************************************************** */
 /* ******************************* UI routines ****************************** */
 /* ************************************************************************** */
@@ -1790,6 +2511,7 @@ GTextInfo **SFLookupListFromType(SplineFont *sf, int lookup_type ) {
     GTextInfo **ti;
 
     for ( k=0; k<2; ++k ) {
+	cnt = 0;
 	for ( otl= isgpos ? sf->gpos_lookups : sf->gsub_lookups ; otl!=NULL; otl=otl->next ) {
 	    if ( lookup_type==gsub_start || lookup_type==gpos_start ||
 		    otl->lookup_type == lookup_type ) {
@@ -1804,6 +2526,8 @@ GTextInfo **SFLookupListFromType(SplineFont *sf, int lookup_type ) {
 	}
 	if ( !k )
 	    ti = gcalloc(cnt+2,sizeof(GTextInfo *));
+	else
+	    ti[cnt] = gcalloc(1,sizeof(GTextInfo));
     }
 return( ti );
 }

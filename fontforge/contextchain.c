@@ -504,13 +504,15 @@ static void parseseqlookups(SplineFont *sf, const unichar_t *solooks, struct fps
     forever {
 	unichar_t *end;
 	r->lookups[cnt].seq = u_strtol(pt,&end,10);
-	pt = end+2;
+	pt = end+1;
 	if ( *pt=='"' ) {
 	    const unichar_t *eoname; char *temp;
 	    ++pt;
-	    for ( eoname = ++pt; *eoname!='\0' && *eoname!='"'; ++eoname );
+	    for ( eoname = pt; *eoname!='\0' && *eoname!='"'; ++eoname );
 	    temp = u2utf8_copyn(pt,eoname-pt);
 	    r->lookups[cnt].lookup = SFFindLookup(sf,temp);
+	    if ( r->lookups[cnt].lookup==NULL )
+		IError("No lookup in parseseqlookups");
 	    free(temp);
 	    pt = eoname;
 	    if ( *pt=='"' ) ++pt;
@@ -765,8 +767,13 @@ static void CCD_ParseLookupList(SplineFont *sf, struct fpst_rule *r,GGadget *lis
     for ( i=0; i<len; ++i ) {
 	r->lookups[i].seq = u_strtol(ti[i]->text,&end,10);
 	while ( *end==' ') ++end;
+	if ( *end=='"' ) ++end;
 	name = u2utf8_copy(end);
+	if ( name[strlen(name)-1] == '"' )
+	    name[strlen(name)-1] = '\0';
 	r->lookups[i].lookup = SFFindLookup(sf,name);
+	if ( r->lookups[i].lookup==NULL )
+	    IError("Failed to find lookup in CCD_ParseLookupList");
 	free(name);
     }
 }
@@ -1667,31 +1674,29 @@ return( true );
 }
 
 static void _CCD_DoLEditNew(struct contextchaindlg *ccd,int off,int isedit) {
-    int seq;
+    int seq, i;
     char cbuf[20];
-    unichar_t tagbuf[8], *end;
+    unichar_t nullstr[1], *end, *lstr = nullstr;
     GGadget *list = GWidgetGetControl(ccd->gw,CID_LookupList+off);
     struct seqlook_data d;
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[8];
-    GTextInfo label[8];
+    GTextInfo label[8], **ti;
     const unichar_t *pt;
     unichar_t *line;
     int selpos= -1;
     int isgpos;
 
-    tagbuf[0] = 0; seq = 0;
+    nullstr[0] = 0; seq = 0;
     if ( isedit ) {
 	int32 len;
 	GTextInfo **ti = GGadgetGetList(list,&len);
 	selpos = GGadgetGetFirstListSelectedItem(list);
 	seq = u_strtol(ti[selpos]->text,&end,10);
 	if ( *end==' ' ) ++end;
-	if ( *end=='\'' ) ++end;
-	u_strncpy(tagbuf,end,4);
-	tagbuf[4] = 0;
+	lstr = end;
     }
 
 
@@ -1726,7 +1731,7 @@ static void _CCD_DoLEditNew(struct contextchaindlg *ccd,int off,int isedit) {
     gcd[1].gd.cid = 1000;
     gcd[1].creator = GTextFieldCreate;
 
-    label[2].text = (unichar_t *) _("_Tag:");
+    label[2].text = (unichar_t *) _("Lookup:");
     label[2].text_is_1byte = true;
     label[2].text_in_resource = true;
     gcd[2].gd.label = &label[2];
@@ -1734,11 +1739,10 @@ static void _CCD_DoLEditNew(struct contextchaindlg *ccd,int off,int isedit) {
     gcd[2].gd.flags = gg_visible | gg_enabled;
     gcd[2].creator = GLabelCreate;
 
-    label[3].text = tagbuf;
-    gcd[3].gd.label = &label[3];
-    gcd[3].gd.pos.x = 10; gcd[3].gd.pos.y = gcd[2].gd.pos.y+12;
+    gcd[3].gd.pos.x = 10; gcd[3].gd.pos.y = gcd[2].gd.pos.y+13;
+    gcd[3].gd.pos.width = 140;
     gcd[3].gd.flags = gg_visible | gg_enabled;
-    gcd[3].creator = GListFieldCreate;
+    gcd[3].creator = GListButtonCreate;
 
     gcd[4].gd.pos.x = 20-3; gcd[4].gd.pos.y = 130-35-3;
     gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
@@ -1766,7 +1770,12 @@ static void _CCD_DoLEditNew(struct contextchaindlg *ccd,int off,int isedit) {
 
     GGadgetsCreate(gw,gcd);
     isgpos = ( ccd->fpst->type==pst_contextpos || ccd->fpst->type==pst_chainpos );
-    GGadgetSetList(gcd[3].ret, SFLookupListFromType(ccd->sf,ot_undef),false);
+    GGadgetSetList(gcd[3].ret, ti = SFLookupListFromType(ccd->sf,ot_undef),false);
+    for ( i=0; ti[i]->text!=NULL; ++i )
+	if ( u_strcmp(lstr,ti[i]->text)==0 ) {
+	    GGadgetSelectOneListItem(gcd[3].ret,i);
+    break;
+	}
     GDrawSetVisible(gw,true);
 
   retry:
@@ -1780,15 +1789,14 @@ static void _CCD_DoLEditNew(struct contextchaindlg *ccd,int off,int isedit) {
 	if ( err )
   goto retry;
 	pt = _GGadgetGetTitle(gcd[3].ret);
-	if ( u_strlen(pt)!=4 ) {
-	    gwwv_post_error(_("Tag too long"),_("Tag too long"));
+	if ( *pt=='\0' ) {
+	    gwwv_post_error("Please select a lookup", "Please select a lookup");
   goto retry;
 	}
-	sprintf(cbuf,"%d '",seq);
-	line = galloc((strlen(cbuf)+8)*sizeof(unichar_t));
+	sprintf(cbuf,"%d ",seq);
+	line = galloc((strlen(cbuf)+u_strlen(pt)+4)*sizeof(unichar_t));
 	uc_strcpy(line,cbuf);
 	u_strcat(line,pt);
-	uc_strcat(line,"'");
 	if ( isedit )
 	    GListChangeLine(list,selpos,line);
 	else

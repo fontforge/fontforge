@@ -235,9 +235,11 @@ typedef struct glist {
     unsigned int freeti: 1;		/* Free the ti array when we're destroyed */
     unsigned int ispopup: 1;		/* respond to Return and Escape */
     unsigned int sameheight: 1;		/* all lines are the same height */
+    unsigned int always_show_sb: 1;	/* display scrollbar even if we don't need it */
     unichar_t *sofar;			/* user input */
     GTimer *enduser;
     GTimer *pressed;
+    void (*popup_callback)(GGadget *g,int pos);
 } GList;
 
 typedef struct gtextfield {

@@ -369,7 +369,7 @@ static void GListCheckSB(GList *gl) {
 	gl->g.r.width -= gd.pos.width;
 	gl->g.inner.width -= gd.pos.width;
     }
-    if ( GListLinesInWindow(gl,0)<gl->ltot ) {
+    if ( gl->always_show_sb || GListLinesInWindow(gl,0)<gl->ltot ) {
 	if ( gl->vsb->g.state == gs_invisible ) {
 	    int wid = gl->vsb->g.r.width + GDrawPointsToPixels(gl->g.base,1);
 	    gl->vsb->g.state = gs_enabled;
@@ -521,8 +521,12 @@ return( false );
 	    gl->vsb!=NULL )
 return( GGadgetDispatchEvent(&gl->vsb->g,event));
     if ( event->type==et_mousemove && !gl->pressed && !gl->parentpressed ) {
-	if ( GGadgetWithin(g,event->u.mouse.x,event->u.mouse.y) && g->popup_msg )
-	    GGadgetPreparePopup(g->base,g->popup_msg);
+	if ( GGadgetWithin(g,event->u.mouse.x,event->u.mouse.y) ) {
+	    if ( gl->popup_callback!=NULL )
+		(gl->popup_callback)(g,GListIndexFromPos(gl,event->u.mouse.y));
+	    else if ( g->popup_msg )
+		GGadgetPreparePopup(g->base,g->popup_msg);
+	}
 return( true );
     } else if ( event->type==et_mouseup && gl->parentpressed /* &&
 	    !GGadgetInnerWithin(&gl->g,event->u.mouse.x,event->u.mouse.y)*/ ) {
@@ -1134,4 +1138,12 @@ return( popup );
 
 int GListIndexFromY(GGadget *g,int y) {
 return( GListIndexFromPos( (GList *) g, y ));
+}
+
+void GListSetSBAlwaysVisible(GGadget *g,int always) {
+    ((GList *) g)->always_show_sb = always;
+}
+
+void GListSetPopupCallback(GGadget *g,void (*callback)(GGadget *,int)) {
+    ((GList *) g)->popup_callback = callback;
 }
