@@ -1192,7 +1192,7 @@ static void GMatrixEdit_MouseEvent(GMatrixEdit *gme,GEvent *event) {
     int x = event->u.mouse.x + gme->off_left;
     int c, i;
 
-    if ( gme->edit_active && event->type==et_mousemove && r==gme->active_row )
+    if ( gme->edit_active && event->type==et_mousemove )
 return;
     for ( c=0; c<gme->cols; ++c ) {
 	if ( gme->col_data[c].hidden )
