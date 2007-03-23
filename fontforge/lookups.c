@@ -3271,7 +3271,7 @@ static int langs_e_h(GWindow gw, GEvent *event) {
 	*done = true;
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("fontinfo.html#Lookups");
+	    help("lookups.html#scripts-dlg");
 return( true );
 	}
 return( false );
@@ -3593,6 +3593,10 @@ static int script_e_h(GWindow gw, GEvent *event) {
 	ld->scriptdone = true;
 	ld->scriptret = NULL;
     } else if ( event->type == et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    help("lookups.html#scripts-dlg");
+return( true );
+	}
 return( false );
     }
 
@@ -4116,6 +4120,10 @@ static int lookup_e_h(GWindow gw, GEvent *event) {
 	ld->done = true;
 	ld->ok = false;
     } else if ( event->type == et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    help("lookups.html#Add-Lookup");
+return( true );
+	}
 return( false );
     }
 
@@ -4687,7 +4695,7 @@ static int acd_e_h(GWindow gw, GEvent *event) {
       break;
       case et_char:
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("lookups.html#AnchorClass");
+	    help("lookups.html#Anchor");
 return( true );
 	}
 return( false );
@@ -5545,6 +5553,10 @@ return;		/* No kerning pair is active */
 static int pstkern_e_h(GWindow gw, GEvent *event) {
     switch ( event->type ) {
       case et_char:
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    help("lookups.html#Pair");
+return( true );
+	}
 return( false );
       case et_expose:
 	PSTKern_Expose(gw,GDrawGetUserData(gw));
@@ -5967,7 +5979,13 @@ static int pstkd_e_h(GWindow gw, GEvent *event) {
       break;
       case et_char:
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("lookups.html#PSTK");
+	    int lookup_type = pstkd->sub->lookup->lookup_type;
+	    if ( lookup_type==gpos_single )
+		help("lookups.html#Single-pos");
+	    else if ( lookup_type==gpos_pair )
+		help("lookups.html#Pair");
+	    else
+		help("lookups.html#basic-subs");
 return( true );
 	}
 return( false );
