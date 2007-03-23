@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 15-Mar-2007 -->
+  <!-- AP: Last modified: 22-Mar-2007 -->
   <TITLE>The Metrics View</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -13,10 +13,11 @@
     The Metrics View
   </H1>
   <P>
-  <IMG SRC="MetricsView.png" WIDTH="494" HEIGHT="331">
+  <IMG SRC="MetricsView.png" WIDTH="479" HEIGHT="331">
   <P>
   The metrics view allows you to examine how glyphs look together and to alter
-  the spacing between them.
+  the spacing between them. You may apply various OpenType features to those
+  glyphs and see how they are altered.
   <P>
   If the metrics view is created from the font view then any selected glyphs
   (well, the first 15 or so) will be displayed in the view in the order they
@@ -26,13 +27,14 @@
   view will display bitmaps, but will not allow you to edit the bitmaps metrics
   (you must do your metrics editing in a view displaying outlines).
   <P>
-  Underneath the menu bar is a text field which allows you to enter additional
-  unicode characters to be displayed.
-  <P>
-  Beside the text field is a pulldown list showing the script language combination
-  that will be used for building kern pairs. (See the description on
-  <A HREF="charinfo.html#Feature-Tag">script language lists in the glyph
-  information dialog</A>)
+  Underneath the menu bar is a series of fields. The first shows the current
+  script and language combination being used to determine what lookups to apply
+  within the selected features, the next is a text field which allows you to
+  enter additional unicode characters to be displayed, and finally there is
+  a pulldown list of lookup subtables, this will be used if you create a kerning
+  pair (the kerning pair will become part of that subtable). Underneath that
+  is a list showing all features defined in the font. You may select which
+  ones you want to be active in this display.
   <P>
   If you wish to enter non-unicode characters you may drag them from the font
   view and drop them into the metrics view where you want them to go.
@@ -75,13 +77,6 @@
   This is not followed here. The direction determination is done by the first
   glyph alone.
   <P>
-  <STRONG>Note also </STRONG>that neither Arabic ligature nor form (initial,
-  terminal, medial, isolated) determination will be done in the display area
-  (though they will be done in the text field above). If you want to see correct
-  form you must enter the unicode code for that form (as opposed to the character
-  for the letter), or use the
-  <A HREF="viewmenu.html#Substitutions">View-&gt;Substitutions</A> command.
-  <P>
   <IMG SRC="VerticalMetrics.png" WIDTH="270" HEIGHT="573" ALIGN="Right"><IMG
       SRC="HebrewMetrics.png" WIDTH="511" HEIGHT="323">
   <P>
@@ -93,16 +88,18 @@
   If you double click on one of the displayed glyphs then FontForge will bring
   up a outline glyph view to allow you to edit that glyph.
   <P>
-  If the selected glyph contains active anchor points (that is something is
-  attached to those anchor points) then you may move those anchor points around
-  to see how they look. <STRONG>Note:</STRONG> When moving an anchor point
-  in a mark, the result is counter-intuitive at first glance.
+  <IMG SRC="MetricsView-features.png" WIDTH="463" HEIGHT="330" ALIGN="Left"><BR
+      CLEAR=RIGHT>
+  In the example at left, the input text is an "f" followed by an "i", and
+  as the 'liga' feature is turned on, this becomes the "fi" ligature. Then
+  an "a" followed by a "b", but as the 'smcp' (small caps) feature is on these
+  become small-caps letters rather than lower case. Finally "1", "/" and "2"
+  were entered, and as the 'frac' (diagonal fractions) feature is turned on
+  these three input glyphs become the onehalf glyph on output.
   <P>
-  If you click in a glyph with the right button then a popup menu appears
-  displaying all the simple positioning (GPOS type 1) features you have defined.
-  You may select one of these and see the effect of applying it.
-  <STRONG>Limitation</STRONG> FontForge currently only supports modifying the
-  position, it will not display any modified advance widths.
+  Note: This windows is not a full blown layout engine. All the glyphs will
+  be treated as if they were in the same script, and all features will be applied
+  to all glyphs.<BR CLEAR=ALL>
   <H2>
     <A NAME="Entering">Entering non-ASCII characters</A>
   </H2>
