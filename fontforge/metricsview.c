@@ -1440,7 +1440,11 @@ static int MV_ScriptLangChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
 	const unichar_t *sstr = _GGadgetGetTitle(g);
 	MetricsView *mv = GGadgetGetUserData(g);
-	if ( u_strlen(sstr)<4 || !isalpha(sstr[0]) || !isalnum(sstr[1]) || !isalnum(sstr[2]) || !isalnum(sstr[3]) )
+	if ( e->u.control.u.tf_changed.from_pulldown!=-1 ) {
+	    GGadgetSetTitle8(g,mv->scriptlangs[e->u.control.u.tf_changed.from_pulldown].userdata );
+	    sstr = _GGadgetGetTitle(g);
+	}
+	if ( u_strlen(sstr)<4 || !isalpha(sstr[0]) || !isalnum(sstr[1]) /*|| !isalnum(sstr[2]) || !isalnum(sstr[3])*/ )
 return( true );
 	if ( u_strlen(sstr)==4 )
 	    /* No language, we'll use default */;
@@ -3662,6 +3666,67 @@ return( GGadgetDispatchEvent(mv->vsb,event));
     }
 return( true );
 }
+static GTextInfo *SLOfFont(SplineFont *sf) {
+    uint32 *scripttags, *langtags;
+    int s, l, i, k, cnt;
+    extern GTextInfo scripts[], languages[];
+    GTextInfo *ret = NULL;
+    char *sname, *lname, *temp;
+    char sbuf[8], lbuf[8];
+
+    LookupUIInit();
+    scripttags = SFScriptsInLookups(sf,-1);
+    if ( scripttags==NULL )
+return( NULL );
+
+    for ( k=0; k<2; ++k ) {
+	cnt = 0;
+	for ( s=0; scripttags[s]!=0; ++s ) {
+	    if ( k ) {
+		for ( i=0; scripts[i].text!=NULL; ++i )
+		    if ( scripttags[s] == (intpt) (scripts[i].userdata))
+		break;
+		sname = (char *) (scripts[i].text);
+		sbuf[0] = scripttags[s]>>24;
+		sbuf[1] = scripttags[s]>>16;
+		sbuf[2] = scripttags[s]>>8;
+		sbuf[3] = scripttags[s];
+		sbuf[4] = 0;
+		if ( sname==NULL )
+		    sname = sbuf;
+	    }
+	    langtags = SFLangsInScript(sf,-1,scripttags[s]);
+	    /* This one can't be NULL */
+	    for ( l=0; langtags[l]!=0; ++l ) {
+		if ( k ) {
+		    for ( i=0; languages[i].text!=NULL; ++i )
+			if ( langtags[l] == (intpt) (languages[i].userdata))
+		    break;
+		    lname = (char *) (languages[i].text);
+		    lbuf[0] = langtags[l]>>24;
+		    lbuf[1] = langtags[l]>>16;
+		    lbuf[2] = langtags[l]>>8;
+		    lbuf[3] = langtags[l];
+		    lbuf[4] = 0;
+		    if ( lname==NULL )
+			lname = lbuf;
+		    temp = galloc(strlen(sname)+strlen(lname)+3);
+		    strcpy(temp,sname); strcat(temp,"{"); strcat(temp,lname); strcat(temp,"}");
+		    ret[cnt].text = (unichar_t *) temp;
+		    ret[cnt].text_is_1byte = true;
+		    temp = galloc(11);
+		    strcpy(temp,sbuf); temp[4] = '{'; strcpy(temp+5,lbuf); temp[9]='}'; temp[10] = 0;
+		    ret[cnt].userdata = temp;
+		}
+		++cnt;
+	    }
+	    free(langtags);
+	}
+	if ( !k )
+	    ret = gcalloc((cnt+1),sizeof(GTextInfo));
+    }
+return( ret );
+}
 
 #define metricsicon_width 16
 #define metricsicon_height 16
@@ -3775,13 +3840,14 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     memset(&gd,0,sizeof(gd));
     memset(&label,0,sizeof(label));
     gd.pos.y = mv->mbh+2; gd.pos.x = 10;
-    gd.pos.width = GDrawPointsToPixels(mv->gw,80);
+    gd.pos.width = GDrawPointsToPixels(mv->gw,100);
     gd.label = &label;
     label.text = (unichar_t *) "DFLT{dflt}";
     label.text_is_1byte = true;
     gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
+    gd.u.list = mv->scriptlangs = SLOfFont(mv->sf);
     gd.handle_controlevent = MV_ScriptLangChanged;
-    mv->script = GTextFieldCreate(gw,&gd,mv);
+    mv->script = GListFieldCreate(gw,&gd,mv);
     GGadgetGetSize(mv->script,&gsize);
     mv->topend = gsize.y + gsize.height + 2;
 
@@ -3818,6 +3884,12 @@ return( mv );
 
 void MetricsViewFree(MetricsView *mv) {
 
+    if ( mv->scriptlangs!=NULL ) {
+	int i;
+	for ( i=0; mv->scriptlangs[i].text!=NULL ; ++i )
+	    free(mv->scriptlangs[i].userdata );
+	GTextInfoListFree(mv->scriptlangs);
+    }
     BDFFontFree(mv->show);
     /* the fields will free themselves */
     free(mv->chars);
