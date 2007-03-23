@@ -114,7 +114,7 @@ static char *xdefs_filename;
 int new_em_size = 1000;
 int new_fonts_are_order2 = false;
 int loaded_fonts_same_as_new = false;
-int use_second_indic_scripts = true;
+int use_second_indic_scripts = false;
 char *helpdir;
 char *othersubrsfile;
 extern MacFeat *default_mac_feature_map,	/* from macenc.c */
