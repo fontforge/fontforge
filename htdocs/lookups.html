@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 12-Mar-2007 -->
-  <!-- AP: Last modified: 15-Mar-2007 -->
+  <!-- AP: Last modified: 22-Mar-2007 -->
   <TITLE>Manipulating OpenType Lookups</TITLE>
 </HEAD>
 <BODY>
@@ -59,10 +59,11 @@ in another lookup, then both would be applied. And the resultant motion would
 be the sum of the two.
 <P>
 <IMG SRC="lookup-metadata.png" WIDTH="439" HEIGHT="427" ALIGN="Left">The
-<CODE>[Add Lookup]</CODE> and <CODE>[Edit Metadata]</CODE> buttons will bring
-up a dialog that allows you to control the attributes of the lookup. Every
-lookup has a lookup type (here "Single Substitution") which specifies broadly
-what kinds of things this lookup can do.
+<CODE>[<A NAME="Add-Lookup">Add Lookup</A>]</CODE> and <CODE>[Edit
+Metadata]</CODE> buttons will bring up a dialog that allows you to control
+the attributes of the lookup. Every lookup has a lookup type (here "Single
+Substitution") which specifies broadly what kinds of things this lookup can
+do.
 <DL>
   <DT>
     <A HREF="lookups.html#basic-subs">Single Substitution</A>
@@ -304,11 +305,66 @@ to create a kerning class subtable, or a kerning subtable with a list of
 glyph pairs. The kerning class dialog is described in its
 <A HREF="metricsview.html#kernclass">own section</A>, while the kerning pair
 subtable dialog is described below.
+<P>
+Each entry in the dialog specifies a pair of glyphs and then adjustments
+that may be made to each of those glyphs. Each glyph may be adjusted by any
+(or all) of the four adjustments mentioned above, so there are eight potential
+adjustments (and possibly device tables for each of those).
+<P>
+In practice kerning tends to use only one of those 8 adjustments. For left
+to right text this is generally the horizontal advance of the first glyph
+(x_adv#1), for right to left kerning the horizontal advance of the second
+glyph is used instead, and for vertical top to bottom text the vertical advance
+of the first glyph (y_adv#1). Again, the [] Hide Unused Columns may be used
+to simplify the dialog.
+<P>
+Below the value matrix is a visual display of the currently selected kerning
+pair. You may adjust the kerning value by moving the second glyph around.
+<P>
+You may select a pixel size at which to rasterize your glyphs. You may also
+request to see that rasterization magnified (Note: This is different from
+just rasterizing at twice the pixelsize, each pixel will be twice as big
+and the effects of rounding errors will be more obvious). Magnification is
+probably only useful if you are working on device tables for screen
+pixelsizes.<BR CLEAR=ALL>
 <H3>
   <A NAME="Anchor">Anchor Positioning</A>
 </H3>
 <P>
-<IMG SRC="subtable-gpos-anchor.png" WIDTH="421" HEIGHT="239">
+<IMG SRC="subtable-gpos-anchor.png" WIDTH="421" HEIGHT="239" ALIGN="Left">Marks
+(diacritical accents, vowel marks, etc.) may be attached to base glyphs using
+anchors. In the latin script, the grave, accute and circumflex accents might
+all attach to their base glyph at the same point, so these would all live
+in one anchor class. The dot below accent attaches at a different point and
+would need a different class.
+<P>
+You may create as many anchor classes as you like. One mark may not be in
+multiple attachment classes, but a base glyph may.
+<P>
+Anchor classes may also be used in cursive systems such as Urdu where the
+text slopes up the page. Each glyph has an entry point and an exit point,
+and the entry of a glyph will be attached to the exit of the preceding glyph.
+<P>
+Marks may also be attached to marks. Vietnamese will often stack accents
+on top of one another.
+<P>
+Finally, ligatures may have several attachment sites, one for each ligature
+component.
+<P>
+<IMG SRC="anchorcontrol-base.png" WIDTH="501" HEIGHT="323" ALIGN="Right">The
+above dialog may be used to create a set of classes for each type of anchor
+subtable, then click on the <CODE><A HREF="anchorcontrol.html">[Anchor
+Control...]</A></CODE> button to view the marks anchored to bases glyphs.
+<P>
+One glyph is selected (in this case a base) and its anchor point is displayed
+relative to it (the blue star in the first pane after the controls). Subsequent
+panes show all possible mark attachments.
+<P>
+You may adjust the pixelsize of the display and the magnification factor
+(again the magnification factor is most useful if you are looking at small
+pixelsizes.
+<P>
+You may provide device table adjustments for each pixelsize.<BR CLEAR=ALL>
 <H3>
   <A NAME="contextual-pos">Contextual Positioning</A>
 </H3>
