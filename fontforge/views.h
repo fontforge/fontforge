@@ -474,6 +474,7 @@ typedef struct metricsview {
     int cursor;
     int scale_index;
     struct lookup_subtable *cur_subtable;
+    GTextInfo *scriptlangs;
 } MetricsView;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
