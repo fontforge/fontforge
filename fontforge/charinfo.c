@@ -993,25 +993,29 @@ return( false );
 		for ( pt=start; *pt!='\0' && *pt!=' '; ++pt );
 		ch = *pt; *pt='\0';
 		found = SFGetChar(sc->parent,-1,start);
-		*pt = ch;
-		while ( *pt== ' ' ) ++pt;
-		start = pt;
 		if ( found==NULL ) {
 		    buts[0] = _("_Yes");
 		    buts[1] = _("_Cancel");
 		    buts[2] = NULL;
 		    if ( gwwv_ask(_("Missing glyph"),(const char **) buts,0,1,_("In lookup subtable %.30s you refer to a glyph named %.80s, which is not in the font yet. Was this intentional?"),
 			    ((struct lookup_subtable *) possub[cols*j+0].u.md_ival)->subtable_name,
-			    start)==1 )
+			    start)==1 ) {
+			*pt = ch;
 return( false );
+		    }
 		} else if ( found==ci->sc && pstt!=pst_pair ) {
 		    buts[0] = _("_Yes");
 		    buts[1] = _("_Cancel");
 		    buts[2] = NULL;
 		    if ( gwwv_ask(_("Substitution generates itself"),(const char **) buts,0,1,_("In lookup subtable %.30s you replace a glyph with itself. Was this intentional?"),
-			    ((struct lookup_subtable *) possub[cols*j+0].u.md_ival)->subtable_name)==1 )
+			    ((struct lookup_subtable *) possub[cols*j+0].u.md_ival)->subtable_name)==1 ) {
+			*pt = ch;
 return( false );
+		    }
 		}
+		*pt = ch;
+		while ( *pt== ' ' ) ++pt;
+		start = pt;
 	    }
 	}
     }
@@ -1980,8 +1984,10 @@ return;
     ci->old_sub = (void *) possub[r*cols+0].u.md_ival;
 
     for ( i=0; mi[i].ti.text!=NULL || mi[i].ti.line; ++i ) {
-	if ( mi[i].ti.userdata == NULL )	/* Lines, and the new entry always enabled */
+	if ( mi[i].ti.line )	/* Lines, and the new entry always enabled */
 	    mi[i].ti.disabled = false;
+	else if ( mi[i].ti.userdata == NULL )
+	    /* One of the lookup (rather than subtable) entries. leave disabled */;
 	else if ( mi[i].ti.userdata == (void *) possub[r*cols+0].u.md_ival ) {
 	    mi[i].ti.selected = true;		/* Current thing, they can keep on using it */
 	    mi[i].ti.disabled = false;
@@ -1993,7 +1999,6 @@ return;
 	    break;
 		}
 	    if ( j==rows ) {	/* This subtable hasn't been used yet */
-		mi[i].ti.selected = true;
 		mi[i].ti.disabled = false;
 	    }
 	}
@@ -3200,7 +3205,7 @@ return;
 	mbox[0].creator = GHVGroupCreate;
 
 	GGadgetsCreate(ci->gw,mbox);
-	GHVBoxSetExpandableRow(mbox[0].ret,1);
+	GHVBoxSetExpandableRow(mbox[0].ret,0);
 	GHVBoxSetExpandableCol(mbox[2].ret,gb_expandgluesame);
 	GHVBoxSetExpandableCol(mbox[3].ret,gb_expandgluesame);
 

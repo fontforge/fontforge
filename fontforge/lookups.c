@@ -5810,17 +5810,19 @@ return( true );
 		    for ( pt=start; *pt!='\0' && *pt!=' '; ++pt );
 		    ch = *pt; *pt='\0';
 		    found = SFGetChar(pstkd->sf,-1,start);
-		    *pt = ch;
-		    while ( *pt== ' ' ) ++pt;
-		    start = pt;
 		    if ( found==NULL ) {
 			buts[0] = _("_Yes");
 			buts[1] = _("_Cancel");
 			buts[2] = NULL;
 			if ( gwwv_ask(_("Missing glyph"),(const char **) buts,0,1,_("For glyph %.60s you refer to a glyph named %.80s, which is not in the font yet. Was this intentional?"),
-				psts[cols*r+0].u.md_str, start)==1 )
+				psts[cols*r+0].u.md_str, start)==1 ) {
+			    *pt = ch;
 return( true );
+			}
 		    }
+		    *pt = ch;
+		    while ( *pt== ' ' ) ++pt;
+		    start = pt;
 		}
 	    }
 	}
@@ -6437,8 +6439,6 @@ GTextInfo **SFSubtablesOfType(SplineFont *sf, int lookup_type, int kernclass) {
 	    }
 	}
 	if ( !k ) {
-	    if ( cnt==0 )
-return( NULL );
 	    ti = gcalloc(cnt+lcnt+3,sizeof(GTextInfo*));
 	} else {
 	    ti[pos] = gcalloc(1,sizeof(GTextInfo));

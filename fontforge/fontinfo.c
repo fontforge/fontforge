@@ -1241,7 +1241,7 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_LookupBottom	11004
 #define CID_AddLookup		11005
 #define CID_AddSubtable		11006
-#define CID_EditLookup		11007
+#define CID_EditMetadata		11007
 #define CID_EditSubtable	11008
 #define CID_DeleteLookup	11009
 #define CID_MergeLookup		11010
@@ -5549,8 +5549,9 @@ void GFI_LookupEnableButtons(struct gfi_data *gfi, int isgpos) {
 	    sel.sub_cnt==0);
     GGadgetSetEnabled(GWidgetGetControl(gfi->gw,CID_AddSubtable),
 	    (sel.lookup_cnt==1 && sel.sub_cnt<=1) || (sel.lookup_cnt==0 && sel.sub_cnt==1));
-    GGadgetSetEnabled(GWidgetGetControl(gfi->gw,CID_EditLookup),sel.lookup_cnt==1 &&
-	    sel.sub_cnt==0);
+    GGadgetSetEnabled(GWidgetGetControl(gfi->gw,CID_EditMetadata),
+	    (sel.lookup_cnt==1 && sel.sub_cnt==0) ||
+	    (sel.lookup_cnt==0 && sel.sub_cnt==1));
     GGadgetSetEnabled(GWidgetGetControl(gfi->gw,CID_EditSubtable),sel.lookup_cnt==0 &&
 	    sel.sub_cnt==1);
     GGadgetSetEnabled(GWidgetGetControl(gfi->gw,CID_DeleteLookup),sel.lookup_cnt!=0 ||
@@ -6076,7 +6077,7 @@ return( true );
 return( true );
 }
 
-static int GFI_LookupEditLookup(GGadget *g, GEvent *e) {
+static int GFI_LookupEditMetadata(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct gfi_data *gfi = GDrawGetUserData(GGadgetGetWindow(g));
@@ -9021,8 +9022,8 @@ return;
     lkbuttonslabel[i].text_is_1byte = true;
     lkbuttonslabel[i].text_in_resource = true;
     lkbuttonsgcd[i].gd.label = &lkbuttonslabel[i];
-    lkbuttonsgcd[i].gd.cid = CID_EditLookup;
-    lkbuttonsgcd[i].gd.handle_controlevent = GFI_LookupEditLookup;
+    lkbuttonsgcd[i].gd.cid = CID_EditMetadata;
+    lkbuttonsgcd[i].gd.handle_controlevent = GFI_LookupEditMetadata;
     lkbuttonsgcd[i++].creator = GButtonCreate;
 
     lkbuttonsarray[i] = &lkbuttonsgcd[i];
