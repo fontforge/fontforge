@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 21-Mar-2005 -->
-  <!-- AP: Last modified: 23-Mar-2007 -->
+  <!-- AP: Last modified: 24-Mar-2007 -->
   <TITLE>Contextual features</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -239,18 +239,17 @@
   state (the base state -- where nothing changes), and the other is the state
   where we've just read a glyph from the ``bovw'' class. <BR CLEAR=ALL>
   <P>
-  <IMG SRC="asm1.png" WIDTH="261" HEIGHT="323" ALIGN="Left"> Again we use the
-  <A HREF="fontinfo.html#Mac-SM">Element -&gt; Font Info </A>dialog and the
-  Mac SM tag to look at the contextual substitutions available. Again there
-  are several types of contextual behavior, and we are interested in contextual
-  substitutions. Double clicking on a state machine, or pressing the [New]
-  button provides an overview of the given state machine.
+  <IMG SRC="asm1.png" WIDTH="439" HEIGHT="427" ALIGN="Left"> Apple Advanced
+  Typography does not quite fit into the OpentType concepts of lookups and
+  features, but it is close enough that I sort of force it to. So once again
+  we create a GSUB lookup. This time the lookup type is "Mac Contextual State
+  Machine", and the feature is actually a mac feature/setting, two numbers.
+  When we create a new subtable of this type we get a state machine dialog,
+  as shown below.
   <P>
   <IMG SRC="asm2.png" WIDTH="309" HEIGHT="381" ALIGN="Right"> At the top of
-  the dialog we see a field specifying the feature / setting of the machine,
-  this is Apple's equivalent of the OpenType 4 character feature tag. Under
-  this is a set of class definitions, and at the bottom is a representation
-  of the state machine itself. <BR CLEAR=Left>
+  the dialog we see a set of class definitions, and at the bottom is a
+  representation of the state machine itself. <BR CLEAR=Left>
   <P>
   <IMG SRC="asm3.png" WIDTH="309" HEIGHT="206" ALIGN="Left">Double clicking
   on a class brings up a dialog similar to that used in OpenType<BR CLEAR=Right>
@@ -280,19 +279,15 @@
   used if "kappa" and "iota" make up a word unto themselves, it should not
   be used for more normal occurances of the two within a longer word.
   <P>
-  <IMG SRC="kappa_iota+word.png" WIDTH="180" HEIGHT="287" ALIGN="Right">So
-  the first thing to do is create the ligature itself. Add an unencoded glyph
-  to your font with
-  <A HREF="encodingmenu.html#AddSlots"><CODE>Encoding-&gt;Add Encoding
-  Slots</CODE></A>, name it "kappa_iota.word" (with
-  <CODE><A HREF="elementmenu.html#CharInfo">Element-&gt;Glyph Info</A></CODE>),
-  then draw your glyph, and finally with
-  <A HREF="elementmenu.html#CharInfo"><CODE>Element-&gt;Glyph Info-&gt;Ligature
-  </CODE></A>make it be a ligature of "kappa" and "iota". As above we make
-  up a tag (in this case called "WORD") and we use "Nested" for the Script.
-  This feature (lookup actually) will never be used directly -- only under
-  the control of another, a conditional feature, so we don't want it to look
-  anything like something which might get invoked on its own.
+  <IMG SRC="kappa_iota-lookup.png" WIDTH="239" HEIGHT="315" ALIGN="Right">So
+  the first thing to do is create the ligature itself. Add the glyph for U+03D7,
+  and then create a ligature lookup and subtable (with
+  <CODE><A HREF="fontinfo.html#Lookups">Element-&gt;Font
+  Info-&gt;Lookups)</A></CODE> to bind U+03D7 to be a ligature of "kappa" and
+  "iota". This lookup will never be used directly -- only under the control
+  of another, a conditional feature -- so we don't give it a feature
+  tag.<BR>
+  <IMG SRC="kappa_iota-subtable.png" WIDTH="292" HEIGHT="172">
   <P>
   Next the conditional bit.
   <P>
@@ -307,12 +302,18 @@
       kappa iota =&gt; apply the ligature "WORD"
   </OL>
   <P>
+  <SMALL>(Now as I read the standard all these rules could be put into one
+  subtable, and the font validation tools I have agree with me -- but the layout
+  engines do not. The layout engines seem to insist that each rule live in
+  its own subtable. This is inconvenient (the classes must be defined in each
+  subtable) but it seems to work.)</SMALL>
+  <P>
   These rules will be executed in order, and the first one that matches the
   input text will be the (one and only) rule applied. Consider these three
   strings, <IMG SRC="alphakappaiota.png" WIDTH="23" HEIGHT="12">,
   <IMG SRC="kappaiotatheta.png" WIDTH="24" HEIGHT="12">,
   <IMG SRC="alphakappaiotatheta.png" WIDTH="30" HEIGHT="12"> all contain kappa
-  and iota but none contains only those two letters, so none should be replaced
+  and iota but each contains more letters around them, so none should be replaced
   by the ligature.
   <UL>
     <LI>
@@ -348,25 +349,24 @@
   <UL>
     <LI>
       This does not work if the kappa is at the beginning of the input stream (it
-      will not be preceded by any letters, but might still need replacing), or
-      iota at the end.
+      will not be preceded by any glyphs, but might still need replacing), or iota
+      at the end.
   </UL>
   <P>
-  Now how do we convert these rules into a contextual feature?
+  Now how do we convert these rules into a contextual lookup?
   <P>
-  <IMG SRC="contextchainnew.png" WIDTH="405" HEIGHT="254" ALIGN="Left">We use
-  <CODE><A HREF="fontinfo.html#Contextual">Element-&gt;Font
-  Info-&gt;Contextual-&gt;Chain Sub</A></CODE> to bring up a list of all Contextual
-  Chaining substitutions in this font (so far there are none).
+  <IMG SRC="kappa_iota-context.png" WIDTH="246" HEIGHT="315" ALIGN="Left">We
+  use <CODE><A HREF="fontinfo.html#Contextual">Element-&gt;Font
+  Info-&gt;Lookups-&gt;Add Lookup</A></CODE> to create a new contextual chaining
+  lookup. This is the top level lookup and should be bound to a feature tag
+  in the Greek script.
   <P>
-  <IMG SRC="contextualhlig.png" WIDTH="180" HEIGHT="249" ALIGN="Right">Then
-  we press the <CODE>[New...] </CODE>button to create our conditional ligature.
-  As always we need to specify a tag an a script. This feature is one we want
-  applied directly, so we want a standard script and tag. The script is greek,
-  and the tag is for Historic Ligatures.
-  <P>
-  After pressing the <CODE>[OK]</CODE> button we will be asked to design the
-  contextual feature itself.<BR CLEAR=ALL>
+  We have three rules, each rule lives in its own subtable, so we will create
+  three subtables, one for each. The order in which these subtables n the Lookups
+  pane is important because that is the order in which the the rules they contain
+  will be executed. We must insure that that final rule which actually invokes
+  the ligature is the last one executed (and the last one in the
+  list).<BR CLEAR=ALL>
   <TABLE BORDER CELLPADDING="2">
     <TR VALIGN="Top">
       <TD><IMG SRC="hligbyclasses.png" WIDTH="330" HEIGHT="248"><BR>
@@ -379,14 +379,14 @@
 	the <CODE>[New]</CODE> button...</TD>
     </TR>
     <TR VALIGN="Top">
-      <TD><IMG SRC="hligkappaclass.png" WIDTH="330" HEIGHT="214"><BR>
+      <TD><IMG SRC="hligkappaclass.png" WIDTH="330" HEIGHT="195"><BR>
 	And type in the word "kappa" and press <CODE>[Next&gt;]</CODE></TD>
       <TD><IMG SRC="hligkappa.png" WIDTH="330" HEIGHT="362"><BR>
 	Now we have a class containing the single glyph "kappa". We want to do the
 	same thing for "iota" so we press <CODE>[New] </CODE>again.</TD>
     </TR>
     <TR VALIGN="Top">
-      <TD><IMG SRC="hligiotaclass.png" WIDTH="330" HEIGHT="208"><BR>
+      <TD><IMG SRC="hligiotaclass.png" WIDTH="330" HEIGHT="195"><BR>
 	Again type in "iota" and press <CODE>[Next&gt;]</CODE></TD>
       <TD><IMG SRC="hligkappaiota.png" WIDTH="330" HEIGHT="362"><BR>
 	Now we have all the classes we need here. We still need to create classes
@@ -403,12 +403,12 @@
     </TR>
     <TR VALIGN="Top">
       <TD><IMG SRC="allgreek.png" WIDTH="313" HEIGHT="276"><BR>
-	Before doing anything else, go back to the font view and select all the greek
-	letters.</TD>
-      <TD><IMG SRC="hliggreekclass.png" WIDTH="330" HEIGHT="207"><BR>
-	Then, in the dialog, press the <CODE>[Set From Font] </CODE>button, and the
-	font's selection is transfered and becomes the current class. Then press
-	<CODE>[Next&gt;]</CODE>.</TD>
+	Now you could go back to the font view and select all of the greek letters,
+	and then press the [Set From Font] button in the class dialog.</TD>
+      <TD><IMG SRC="hliggreekclass.png" WIDTH="330" HEIGHT="228"><BR>
+	But in this case the class we are interested in (all the greek letters) is
+	built it, and you can select it from the Standard Class pulldown list (Letters
+	in script(s)) Then press <CODE>[Next&gt;]</CODE>.</TD>
     </TR>
     <TR VALIGN="Top">
       <TD><IMG SRC="hliggreekback.png" WIDTH="330" HEIGHT="357"></TD>
@@ -448,9 +448,9 @@
 	</UL>
 	<P>
 	<IMG SRC="hligbackruledone.png" WIDTH="330" HEIGHT="357"><BR>
-	We've got two more rules though, so press <CODE>[New] </CODE>again and go
-	through the same steps, except using the lookahead area rather than the
-	backtrack.</TD>
+	We've got two more rules though, so press <CODE>[OK] </CODE>and then <CODE>[Add
+	Subtable]</CODE>. Then go through the process of adding all the classes,
+	and then add the match string for this rule.</TD>
     </TR>
     <TR VALIGN="Top">
       <TD>We are done with the second rule. It says:
@@ -468,7 +468,7 @@
 	</UL>
 	<P>
 	<IMG SRC="hligaheadruledone.png"><BR>
-	Press <CODE>[New] </CODE>for the final rule.</TD>
+	Press <CODE>[OK] </CODE>and<CODE> [Add Subtable] </CODE>for the final rule.</TD>
       <TD><IMG SRC="hligrule.png" WIDTH="330" HEIGHT="357"><BR>
 	This rule does have substitutions -- we want to take the two characters and
 	convert them into a ligature. So Press <CODE>[New] </CODE>under the sequence
@@ -482,9 +482,18 @@
 	And we want to apply our ligature to it.<BR>
 	<IMG SRC="hligallrulesdone.png" WIDTH="330" HEIGHT="357"></TD>
       <TD>Now we are done. Press a series of <CODE>[OK]</CODE>s until all the dialogs
-	have been accepted.</TD>
+	have been accepted.
+	<P>
+	<IMG SRC="kappaiota-lookups.png" WIDTH="422" HEIGHT="380"></TD>
     </TR>
   </TABLE>
+  <P>
+  Once you have created your lookups you may test the result in the
+  <A HREF="metricsview.html">metrics
+  view</A>.<BR>
+  <IMG SRC="metrics-kappa_iota.png" WIDTH="527" HEIGHT="331">
+  <P>
+  (This example was provided by Apostolos Syropoulos)
   <P>
   <P ALIGN=Center>
   -- <A HREF="editexample6.html">Prev</A> -- <A HREF="overview.html">TOC</A>
