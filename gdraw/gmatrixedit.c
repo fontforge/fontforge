@@ -808,8 +808,10 @@ return;
 		gme->col_data[c].me_type == me_func || gme->col_data[c].me_type == me_funcedit ||
 		gme->col_data[c].me_type == me_stringchoice ||
 		gme->col_data[c].me_type == me_stringchoicetag ||
-		gme->col_data[c].me_type == me_stringchoicetrans )
+		gme->col_data[c].me_type == me_stringchoicetrans ) {
 	    free(gme->data[gme->active_row*gme->cols+c].u.md_str);
+	    gme->data[gme->active_row*gme->cols+c].u.md_str = NULL;
+	}
     }
     for ( r=gme->active_row+1; r<gme->rows; ++r )
 	memcpy(gme->data+(r-1)*gme->cols,gme->data+r*gme->cols,
@@ -1566,7 +1568,6 @@ static GMenuItem *GMenuItemFromTI(GTextInfo *ti,int is_enum) {
 	mi[cnt].ti = ti[cnt];
 	if ( ti[cnt].bg == ti[cnt].fg )
 	    mi[cnt].ti.bg = mi[cnt].ti.fg = COLOR_DEFAULT;
-	mi[cnt].ti.checkable = true;
 	if ( mi[cnt].ti.text!=NULL ) {
 	    if ( ti[cnt].text_is_1byte )
 		mi[cnt].ti.text = (unichar_t *) copy( (char *) mi[cnt].ti.text );
