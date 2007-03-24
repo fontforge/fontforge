@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jan-2003 -->
-  <!-- AP: Last modified: 22-Mar-2007 -->
+  <!-- AP: Last modified: 23-Mar-2007 -->
   <TITLE>Examining and controling metrics and kerning</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -29,6 +29,8 @@
       <A HREF="editexample4.html#accents">Building accented glyphs</A>
     <LI>
       <A HREF="editexample4.html#ligature">Building a ligature</A>
+    <LI>
+      <A HREF="editexample4.html#lookups">Lookups and features</A>
     <LI>
       <A HREF="editexample5.html#metrics">Examining metrics</A>
       <UL>
@@ -193,23 +195,41 @@
     </TR>
   </TABLE>
   <P>
-  In the above example the left image shows the unkerned text, the right shows
-  the kerned text. To create a kerned pair, simply click on the right glyph
-  of the pair, the line (normally the horizontal advance) between the two should
-  go green (and becomes the kerned advance). Drag this line around until the
-  spacing looks nice.
+  <IMG SRC="addlookup-kern.png" WIDTH="439" HEIGHT="408" ALIGN="Right">In the
+  above example the left image shows the unkerned text, the right shows the
+  kerned text. To create a kerned pair in the metrics window, simply click
+  on the right glyph of the pair, the line (normally the horizontal advance)
+  between the two should go green (and becomes the kerned advance). Drag this
+  line around until the spacing looks nice.
+  <P>
+  Sadly that statement is a simplification... Before you can create a kerning
+  pair you must create a kerning lookup (see
+  <A HREF="editexample4.html#lookups">the section on lookups</A>). Once again
+  you bring up the Element-&gt;Font Info-&gt;Lookups pane and this time you
+  must select the GPOS (Glyph Positioning) tab at the top of the pane. Once
+  again you press <CODE>[Add Lookup]</CODE>. This time the lookup type is "Pairwise
+  Positioning", and the feature is "kern" (or perhaps "vkrn" if you want to
+  do vertical kerning).
+  <P>
+  Once you have created your lookup you again select it and press the [Add
+  Subtable] button (which asks you to name the subtable). Then FontForge will
+  ask you whether you want a subtable of kerning pairs or kerning classes.
+  <P>
+  If you have many glyphs which have similar kerning features you might wish
+  to create a set of <A HREF="metricsview.html#kernclass">kerning classes</A>
+  (which might say that A, &Agrave;, &Aacute;, &Acirc;, &Acirc;, &Atilde; and
+  &Auml; all kern alike). However for this example you want a kerning pair
+  subtable.<BR CLEAR=RIGHT>
+  <P>
+  <IMG SRC="subtable-to.png" WIDTH="415" HEIGHT="441" ALIGN="Left">Then FontForge
+  will popup a dialog allowing you to set the kerning subtable directly. You
+  may set your kerning pairs from here, though I prefer the metrics view myself
+  because you can see more glyphs and so get a better feel for the "color"
+  of the font.
   <P>
   (Some glyph combinations are better treated by
   <A HREF="editexample4.html#ligature">creating a ligature </A>than by kerning
   the letters)
-  <H3>
-    Kerning classes
-  </H3>
-  <P>
-  If you have many glyphs which have similar kerning features you might instead
-  wish to create a set of <A HREF="metricsview.html#kernclass">kerning
-  classes</A> (which might say that A, &Agrave;, &Aacute;, &Acirc;, &Acirc;,
-  &Atilde; and &Auml; all kern alike).
   <H3>
     <A NAME="VKern">Vertical</A> Kerning
   </H3>
