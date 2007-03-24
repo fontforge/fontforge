@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 21-Mar-2005 -->
-  <!-- AP: Last modified: 14-Dec-2006 -->
+  <!-- AP: Last modified: 23-Mar-2007 -->
   <TITLE>Contextual features</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -29,6 +29,8 @@
       <A HREF="editexample4.html#accents">Building accented glyphs</A>
     <LI>
       <A HREF="editexample4.html#ligature">Building a ligature</A>
+    <LI>
+      <A HREF="editexample4.html#lookups">Lookups and features</A>
     <LI>
       <A HREF="editexample5.html#metrics">Examining metrics</A>
     <LI>
@@ -136,33 +138,18 @@
   I mayn't have one glyph appearing in two classes).
   <P>
   The first thing we must do is create a simple substitution mapping each low
-  letter to its high variant. Let us call this substitution by the four character
-  OpenType tag ``high.'' To define the substitution we use
-  <A HREF="charinfo.html#substitution">Element -&gt; Glyph Info </A>as
-  <A HREF="editexample6.html#Variants">before</A> except that here we use the
-  special ``script / language'' called ``--- Nested ---'' (an option in the
-  pulldown menu).
+  letter to its high variant. This is a "Simple Substitution" lookup, but it
+  will not be attached to any feature, instead it will be invoked by a contextual
+  lookup. Let us call this lookup "high". We must (of course) create a subtable
+  to go with our lookup, and we can use the [Default with Suffix:] button to
+  fill it up with the high variants.
   <P>
-  <IMG SRC="ott1.png" WIDTH="261" HEIGHT="328" ALIGN="Right">The tricky part
-  is defining the context. This is done with the Contextual tab in the
-  <A HREF="fontinfo.html#Contextual">Element -&gt; Font Info</A> dialog, revealing
-  five different types of contextual behavior, we are interested in contextual
-  chaining substitutions.
+  The tricky part is defining the context. This is done by defining yet another
+  lookup, a contextual chaining lookup which should be associated with a 'calt'
+  feature. And of course we want an associated subtable). This will pop up
+  a series of dialogs to edit a contextual subtable
   <P>
-  You can add a new entry by pressing the [New] button. This brings up a series
-  of dialogs, the first requests a four character OpenType tag and a script
-  / language (much as we <A HREF="charinfo.html#Feature-Tag">saw earlier</A>).
-  <P>
-  In this example we are using 'calt'. That seems an apropriate tag, until
-  you discover that it is not implemented for the Latin script. Indeed there
-  seems to be no appropriate feature that is implemented for Latin. The example
-  will produce a font, which while syntactically correct, will never do anything.
-  It is frustrating that OpenType provides the capabilities needed to do wonderous
-  things, and then to find that
-  <A HREF="http://www.microsoft.com/typography/OpenType%20Dev/standard/shaping.mspx">MicroSoft</A>
-  doesn't let that happen in Latin.
-  <P>
-  <IMG SRC="ott2_5.png" WIDTH="329" HEIGHT="263" ALIGN="Left">The next dialog
+  <IMG SRC="ott2_5.png" WIDTH="329" HEIGHT="263" ALIGN="Left">The first dialog
   allows you to specify the overall format of the substitution. We want a class
   based system -- we've already mentioned what the glyph classes will
   be.<BR CLEAR=ALL>

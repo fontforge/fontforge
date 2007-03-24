@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jan-2003 -->
-  <!-- AP: Last modified: 14-Dec-2006 -->
+  <!-- AP: Last modified: 23-Mar-2007 -->
   <TITLE>Building accented glyphs</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -29,6 +29,8 @@
       <A HREF="editexample4.html#accents">Building accented glyphs</A>
     <LI>
       <A HREF="editexample4.html#ligature">Building a ligature</A>
+    <LI>
+      <A HREF="editexample4.html#lookups">Lookups and features</A>
     <LI>
       <A HREF="editexample5.html#metrics">Examining metrics</A>
     <LI>
@@ -158,50 +160,98 @@
   them on the origin FontForge will ignore them. But once you have built your
   ligature you might want to move the pointer tool over to the origin line,
   press the button and drag one of the caret lines to its correct location.
-  (Only TrueType and OpenType support this).
-  <P>
-  <FONT COLOR="Red"><STRONG><BIG>CAVEAT: </BIG></STRONG></FONT>OpenType engines
-  will only apply features which they believe are appropriate for the current
-  script (in Latin scripts, Uniscribe will apply 'liga'). Even worse, some
-  applications may choose not to apply any features ever (Word does not do
-  ligatures in latin).
-  <A HREF="http://www.microsoft.com/typography/specs/default.htm">Microsoft
-  tries to document </A>what features they apply for which scripts in Uniscribe,
-  but that isn't very helpful since Word and Office have quite different behavior
-  than the default.
+  (Only Apple Advanced Typography and OpenType support this).
   <P>
   There are a good many ligatures needed for the indic scripts, but Unicode
   does not provide an encoding for them. If you wish to build a ligature that
   is not part of Unicode you may do so. First <A HREF="faq.html#new-name">add
-  an unencoded glyph to your font</A> (or if your font is a Unicode font, use
-  a code point in the private use area), and name the glyph. The name is important,
-  if you name it correctly FontForge will be able to figure out that it is
-  a ligature and what its components are. If you want to build a ligature out
-  of the glyphs "longs", "longs" and "l" then name it "longs_longs_l", if you
-  want to build a ligature out of Unicode 0D15, 0D4D and 0D15 then name it
-  "uni0D15_uni0D4D_uni0D15".
+  an unencoded glyph to your font</A> (or if your font is a Unicode font, you
+  could use a code point in the private use area), and name the glyph. The
+  name is important, if you name it correctly FontForge will be able to figure
+  out that it is a ligature and what its components are. If you want to build
+  a ligature out of the glyphs "longs", "longs" and "l" then name it
+  "longs_longs_l", if you want to build a ligature out of Unicode 0D15, 0D4D
+  and 0D15 then name it "uni0D15_uni0D4D_uni0D15".
   <P>
   Once you have named your ligature, and inserted its components (with Build
   Composite), you probably want to open the glyph,
   <A HREF="editmenu.html#Unlink">Unlink your References</A> and edit them to
   make a pleasing shape (as above).
+  <H2>
+    <A NAME="lookups">Lookups and Features</A>
+  </H2>
   <P>
-  <IMG SRC="charinfo-akhn.png" WIDTH="307" HEIGHT="401" ALT="Char Info for Akhand ligature type"
-      ALIGN="Right">Finally you should check that FontForge has marked your glyph
-  as a ligature (and, if so, as the right kind of ligature). Bring up the
-  <A HREF="charinfo.html#ligature">Element-&gt;Glyph Info-&gt;Ligature</A>
-  dialog. You should see a line like:<BR>
-  <TT>&nbsp; &nbsp; liga &nbsp;m longs longs l</TT><BR>
-  or <BR>
-  <TT>&nbsp; &nbsp; liga &nbsp;m uni0D15 uni0D4D uni0D15</TT><BR>
-  In the first case you might want to add an additional line (by pressing the
-  [New...] button:<BR>
-  <TT>&nbsp; &nbsp; liga &nbsp;m longs_longs l</TT><BR>
-  (assuming you have a longs_longs ligature already). While in the second case
-  you might want to select the line, press the [Edit...] button and change
-  the ligature type from 'liga' to 'akhn' (I don't know enough about Indic
-  scripts to understand this distinction myself), yielding: <BR>
-  <TT>&nbsp; &nbsp; akhn &nbsp;m uni0D15 uni0D4D uni0D15</TT>
+  <IMG SRC="fontinfo-lookups.png" WIDTH="602" HEIGHT="534" ALIGN="Right">Unfortunately
+  simply creating a ligature glyph is not enough. You must also include information
+  in the font to say that the glyph is a ligature, and to say what components
+  it is built from.
+  <P>
+  In OpenType this is handled by lookups and features. A lookup is a collection
+  of tables in the font which contain transformation information. A feature
+  is a collection of lookups and is a provides semantic information to the
+  world outside the font about what that set of lookups can be expected to
+  do. So in the example above the lookup would contain the information that
+  "f" + "f" + "i" should turn into "ffi", while the feature would say that
+  this is a standard ligature for the latin script.
+  <P>
+  So the first time you create a ligature glyph you will need to create a lookup
+  (and a lookup subtable) in which the information for that glyph will reside.
+  Any subsequent ligatures can probably share the same lookup and subtable.
+  <P>
+  (This may seem like overkill for latin ligatures, and perhaps it is, bt the
+  complexity is needed for more complex writing systems).
+  <P>
+  You would open the Lookups pane of the
+  <A HREF="fontinfo.html#Lookups">Element-&gt;FontInfo</A> command and press
+  the <CODE>[Add Lookup] </CODE>button. This will give you a new dialog in
+  which you can fill in the attributes of your new lookup.
+  <P>
+  <IMG SRC="AddLookup-Liga.png" WIDTH="439" HEIGHT="427" ALIGN="Left">You must
+  first choose the lookup type. For ligatures this should be "Ligature
+  Substitution". You may then bind this lookup to a feature, script and language
+  set. The "ffi" ligature is a standard ligature in latin typesetting so it
+  should be bound to the 'liga' tag, and the 'latn' script. (If you click on
+  the little box to the right of "liga" you will get a pulldown list of the
+  so-called "friendly names" for the features. "liga" corresponds to "Standard
+  Ligatures").
+  <P>
+  The language is a bit tricky. This ligature should probably be active for
+  all languages except Turkish that use the latin script (Turkish uses a dotlessi
+  and it is not clear whether the "i" in the "fi" and "ffi" ligatures has a
+  dot over it). So we want to list all languages but Turkish. That's a lot
+  of languages. The convention instead is that if a language isn't mentioned
+  explicitly anywhere in the font then that language will be treated as the
+  "default" language. So to make this feature not be active for Turkish, we'd
+  have to create some other feature which specifically mentioned Turkish in
+  its language list.
+  <P>
+  Underneath the feature list is a set of flags. In latin ligatures none of
+  these flags need be set. In Arabic one might want to set both "Right to Left"
+  and "Ignore Combining Marks".
+  <P>
+  Next the lookup must be given a name. This name is for your use and will
+  never be seen in the real font. The name must be distinct from the name of
+  any other lookup however.
+  <P>
+  Finally you get to decide whether you want the ligatures in this lookup to
+  be stored in afm files.
+  <P>
+  <IMG SRC="subtable-ffi.png" WIDTH="421" HEIGHT="215" ALIGN="Right">Once you
+  have created a lookup, you must create a subtable in that lookup. Select
+  the lookup line (in the Lookups pane of Font Info) and press <CODE>[Add
+  Subtable]</CODE>. This is a fairly simple dialog... you simply provide a
+  name for the sub-table, and then another dialog will pop up and you will
+  (finally) be able to store your ligature information.
+  <P>
+  <FONT COLOR="Red"><STRONG><BIG>CAVEAT: </BIG></STRONG></FONT>OpenType engines
+  will only apply features which they believe are appropriate for the current
+  script (in Latin scripts, Uniscribe will apply 'liga'). Even worse, some
+  applications may choose not to apply any features ever (Word does not do
+  ligatures in latin -- though this may have changed with the 2007 release?).
+  <A HREF="http://www.microsoft.com/typography/specs/default.htm">Microsoft
+  tries to document </A>what features they apply for which scripts in Uniscribe,
+  but that isn't very helpful since Word and Office have quite different behavior
+  than the default.
   <P>
   <P>
   <P ALIGN=Center>

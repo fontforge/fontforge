@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Jan-2003 -->
-  <!-- AP: Last modified: 14-Dec-2006 -->
+  <!-- AP: Last modified: 23-Mar-2007 -->
   <TITLE>More advanced features, ligatures, mark positioning, glyph variants</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -29,6 +29,8 @@
       <A HREF="editexample4.html#accents">Building accented glyphs</A>
     <LI>
       <A HREF="editexample4.html#ligature">Building a ligature</A>
+    <LI>
+      <A HREF="editexample4.html#lookups">Lookups and features</A>
     <LI>
       <A HREF="editexample5.html#metrics">Examining metrics</A>
     <LI>
@@ -74,7 +76,8 @@
   have the same advance width so that tables of numbers don't look ragged),
   proportional digits (where each digit has a width appropriate to its shape)
   and old-style or lower case digits
-  (<IMG SRC="lcdigits.png" WIDTH="76" HEIGHT="18" ALIGN="Middle">).
+  (<IMG SRC="lcdigits.png" WIDTH="76" HEIGHT="18" ALIGN="Middle">) where some
+  digits have descenders and others have ascenders.
   <P>
   Some of these variants are built into the encodings (the upper and lower
   case distinction is), but in other cases you should provide extra information
@@ -82,21 +85,31 @@
   is midway between the two, the various forms are in the encoding, but you
   need to provide extra information as well).
   <P>
-  Let us consider the case of the digits mentioned above. Assume that the glyph
+  <IMG SRC="subtable-oldstyle.png" WIDTH="421" HEIGHT="287" ALIGN="Right">Let
+  us consider the case of the digits mentioned above. Assume that the glyph
   called "one" contains the tabular variant of one, the glyph "one.prop" contains
-  the proportional variant and "one.oldstyle" contains the lower-case variant.
-  Then select "one" from the fontview,
-  <CODE><A HREF="charinfo.html#substitution">Element-&gt;Glyph Info</A></CODE>,
-  select the <CODE>Subs</CODE> tab and press the <CODE>[New] </CODE>button.
-  You should get another dialog. In the Components field, enter "one.prop",
-  select "Proportional Numbers" from the pull down list (it will turn into
-  "pnum"), and select the script set you are interested in (a script of 'latn'
-  and a language of 'dflt' will cover many cases). Then press
-  <CODE>[OK]</CODE>.
+  the proportional variant and "one.oldstyle" contains the lower-case variant,
+  and so on for all the other digits. Before you do anything else you must
+  create two <A HREF="editexample4.html#lookups">lookups</A> and associated
+  subtables (I shan't go into that again. Here the lookup type is "Single
+  Substitution", and the features are "pnum" for Proportional Numbers and "onum"
+  for Oldstyle Figures. Also the digits aren't in any single script, but are
+  in many, so make this feature apply to multiple scripts (including "DFLT").
   <P>
-  Some variant forms are built in to FontForge, and if you use
-  <CODE>Element-&gt;Typo. Features-&gt;Default ATT-&gt;(variant name)</CODE>,
-  FontForge may be able to automate this process for you.
+  When FontForge brings up the dialog to fill in the oldstyle lookup subtable
+  notice that there is a button [Default Using Suffix:] followed by a text
+  field containing a suffix. Set the text field to "oldstyle" and press the
+  button. It will search through all glyphs in all the scripts of the feature
+  and find any "oldstyle" variants of them and populate the table with them.
+  <P>
+  <IMG SRC="glyphinfo-one.png" WIDTH="431" HEIGHT="310" ALIGN="Left">Sometimes
+  it makes more sense to think of all the substitutions available for a specific
+  glyph (rather than all substitutions in a specific lookup). So instead if
+  filling up the subtable dialog for "Proportional Numbers" let us instead
+  select "one" from the fontview,
+  <CODE><A HREF="charinfo.html#substitution">Element-&gt;Glyph Info</A></CODE>,
+  select the <CODE>Substitutions</CODE> tab and press the <CODE>&lt;New&gt;
+  </CODE>button. 
   <P>
   (Note: Type0, Type1 and Type3 PostScript fonts have no notation to handle
   this. You need to be creating an OpenType or TrueType font for these variants
@@ -122,11 +135,11 @@
   In OpenType (which includes MicroSoft's TrueType fonts) it is possible to
   indicate on all base glyphs where marks should attach, and on all marks where
   the base glyphs should attach. Thus one could put an anchor centered above
-  a capital-A indicating that all accents (acute, grave, umlaut, circumflex,
+  a lowercase-a indicating that all accents (acute, grave, umlaut, circumflex,
   tilde, macron, ring, caron, ...) should attach there, and underneath all
   the accents one could put another anchor so that when the two glyphs are
   adjacent in the text the word-processor will know where to place the accent
-  so that it rides above the "A".
+  so that it rides above the "a".
   <TABLE>
     <TR>
       <TD><IMG SRC="a_with_anchor.png" WIDTH=104 HEIGHT=208></TD>
@@ -147,13 +160,13 @@
   we create a different kind of anchor, a mark to mark anchor, on the circumflex
   and allow the acute accent to attach to that.
   <P>
-  Before one can create an anchor in a glyph one must notify FontForge that
-  this font will have anchors. You must create an
+  Before one can create an anchor in a glyph one must (of course) create a
+  lookup and subtable. This is another Glyph Positioning lookup (so you enter
+  it in the GPOS pane). Once you have created the subtable you will be presented
+  with another dialog asking for anchor classes, you must create an
   <A HREF="overview.html#Anchors">anchor class</A> for each type of attachment
   (thus in the case of A above with two types of attachments (one above and
-  one below) you would create two anchor classes. The
-  <CODE><A HREF="fontinfo.html#Anchors">Element-&gt;Font Info-&gt;Anchor
-  Classes</A> </CODE>dialog will allow you to do that.
+  one below) you would create two anchor classes. 
   <P>
   Then for each glyph in which an attachment will be made, you should first
   click at the point where the anchor is to be created and then bring up the
@@ -162,7 +175,7 @@
   <P>
   You can examine (and correct) how a glyph fits to any others that combine
   with it by using the
-  <CODE><A HREF="metricsmenu.html#AnchorControl">Metrics-&gt;Anchor
+  <CODE><A HREF="viewmenu.html#AnchorControl">View-&gt;Anchor
   Control...</A></CODE> command.
   <P>
   <FONT COLOR="Red"><STRONG>A warning about mark attachments:</STRONG></FONT>
