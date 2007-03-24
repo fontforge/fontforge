@@ -444,7 +444,8 @@ return( NULL );
 
     FPSTFreeAllClasses(fpst);
 
-    TreeLabelState(ret,1);	/* actually, it's states 0&1, but this will do */
+    if ( ret!=NULL )
+	TreeLabelState(ret,1);	/* actually, it's states 0&1, but this will do */
 
 return( ret );
 }
@@ -2139,8 +2140,10 @@ return;
 	    if ( smd->sm->type==asm_indic ) {
 		strcpy(buf,indicverbs[0][this->flags&0xf]);
 	    } else if ( smd->sm->type==asm_context ) {
-		if ( this->u.context.mark_lookup!=NULL )
-		    strncpy(buf,this->u.context.mark_lookup->lookup_name,5);
+		if ( this->u.context.mark_lookup!=NULL ) {
+		    strncpy(buf,this->u.context.mark_lookup->lookup_name,6);
+		    buf[6] = '\0';
+		}
 	    } else if ( smd->sm->type==asm_insert ) {
 		if ( this->u.insert.mark_ins!=NULL )
 		    strncpy(buf,this->u.insert.mark_ins,5);
@@ -2163,8 +2166,10 @@ return;
 	    if ( smd->sm->type==asm_indic ) {
 		strcpy(buf,indicverbs[1][this->flags&0xf]);
 	    } else if ( smd->sm->type==asm_context ) {
-		if ( this->u.context.cur_lookup!=NULL )
-		    strncpy(buf,this->u.context.cur_lookup->lookup_name,5);
+		if ( this->u.context.cur_lookup!=NULL ) {
+		    strncpy(buf,this->u.context.cur_lookup->lookup_name,6);
+		    buf[6] = '\0';
+		}
 	    } else if ( smd->sm->type==asm_insert ) {
 		if ( this->u.insert.cur_ins!=NULL )
 		    strncpy(buf,this->u.insert.cur_ins,5);
@@ -2490,8 +2495,6 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     gcd[k++].creator = GCheckBoxCreate;
     if ( smd->sm->type == asm_kern ) {
 	gcd[k-1].gd.flags = gg_enabled;		/* I'm not sure why kerning doesn't have an r2l bit */
-	gcd[k-2].gd.flags = gg_enabled;
-	gcd[k-3].gd.flags = gg_enabled;
     }
 
     label[k].text = (unichar_t *) _("Vertical Only");
@@ -2502,7 +2505,7 @@ SMD *StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     gcd[k].gd.cid = CID_VertOnly;
     gcd[k++].creator = GCheckBoxCreate;
 
-    gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = GDrawPointsToPixels(gw,gcd[k-3].gd.pos.y+27);
+    gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = GDrawPointsToPixels(gw,gcd[k-1].gd.pos.y+15);
     gcd[k].gd.pos.width = pos.width-20;
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
     gcd[k].gd.cid = CID_Line1;
