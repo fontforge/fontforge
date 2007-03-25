@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 13-Nov-2006 -->
+  <!-- AP: Last modified: 24-Mar-2007 -->
   <TITLE>Spline Font Database File Format</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -245,32 +245,6 @@ EndPrivate
 </PRE>
   </BLOCKQUOTE>
   <P>
-  If the font has any opentype features it will have a list of
-  <A HREF="charinfo.html#ScriptLang">script language</A> entries:
-  <BLOCKQUOTE>
-    <PRE>ScriptLang: 3
- 1 latn 1 ROM   
- 1 latn 4 DEU  ROM  VIT  dflt 
- 3 cyrl 1 dflt grek 1 dflt latn 5 DEU  ROM  TRK  VIT  dflt
-</PRE>
-  </BLOCKQUOTE>
-  <P>
-  The first line says that there are 3 sets of script lang entries and they
-  follow on the next three lines. The next line says that this entry is only
-  active for one script ('latn') and then only if the language is 'ROM '. The
-  next line says the entry is again only active for one script, but that this
-  time any of the four languages 'DEU ', 'ROM ', 'VIT ' or the default language
-  apply to it. And the last line gives an example of an entry that is active
-  for several scripts with several languages.
-  <P>
-  OpenType features are stored with an index into this list. If a feature has
-  index "0" then that feature is only active for the latin script in the Romanian
-  language. If it has index 2 it will be active for cyrillic, greek and latin
-  scripts. A special script index of 65535 is used to mean that this feature
-  is "Nested", that is it is never activated by itself, but its activation
-  is controlled by a contextual or contextual chaining lookup (which in turn
-  will have its own script language index).
-  <P>
   If your font has any kerning classes
   <BLOCKQUOTE>
     <PRE>KernClass: 31 64 2 0
@@ -290,11 +264,11 @@ EndPrivate
   <P>
   The first line says that this Kerning Class has 31 different classes for
   the first character, and 64 for the second. It is active for entry 2 in the
-  script lang list above. The <A HREF="charinfo.html#lookup-flags">OpenType
-  flags </A>will be 0. The next line says that the first character class of
-  the first character (numbered 1, class 0 is reserved and usually is not defined)
-  consists of only one character "F" (the number in front is the string length
-  of the line. It speeds up processing the sfd file but has no semantic content).
+  script lang list above. The <A HREF="lookups.html#Add-Lookup">OpenType flags
+  </A>will be 0. The next line says that the first character class of the first
+  character (numbered 1, class 0 is reserved and usually is not defined) consists
+  of only one character "F" (the number in front is the string length of the
+  line. It speeds up processing the sfd file but has no semantic content).
   The next line is for class 2 of the first character, it has more characters
   in it and a longer string length. After 30 entries we start on the classes
   for the second character. They look exactly like classes for the first character.

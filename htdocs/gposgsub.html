@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 11-Dec-2005 -->
+  <!-- AP: Last modified: 24-Mar-2007 -->
   <TITLE>Advanced Typography tables</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -166,7 +166,7 @@
 	instance this table could say "when you see a digit followed by the string
 	"th" then raise the "th" into a superscript position"</TD>
       <TD>These may be created with the
-	<A HREF="fontinfo.html#Contextual">Element-&gt;Font Info-&gt;Contextual
+	<A HREF="lookups.html#contextual-subs">Element-&gt;Font Info-&gt;Contextual
 	</A>command</TD>
     </TR>
     <TR>
@@ -176,7 +176,7 @@
 	add new capabilities, but it does provide a more logical approach to the
 	issue.</TD>
       <TD>These may be created with the
-	<A HREF="fontinfo.html#Contextual">Element-&gt;Font Info-&gt;Contextual
+	<A HREF="lookups.html#contextual-subs">Element-&gt;Font Info-&gt;Contextual
 	</A>command</TD>
     </TR>
     <TR>
@@ -262,7 +262,7 @@
       <TD>This subtable allows for a string of glyphs to replace another string
 	of glyphs (or class of strings of glyphs)</TD>
       <TD>These may be created with the
-	<A HREF="fontinfo.html#Contextual">Element-&gt;Font Info-&gt;Contextual
+	<A HREF="lookups.html#contextual-subs">Element-&gt;Font Info-&gt;Contextual
 	</A>command</TD>
     </TR>
     <TR>
@@ -272,7 +272,7 @@
 	add new capabilities, but it does provide a more logical approach to the
 	issue.</TD>
       <TD>These may be created with the
-	<A HREF="fontinfo.html#Contextual">Element-&gt;Font Info-&gt;Contextual
+	<A HREF="lookups.html#contextual-subs">Element-&gt;Font Info-&gt;Contextual
 	</A>command</TD>
     </TR>
     <TR>
@@ -288,7 +288,7 @@
       <TD>This allows glyph substitutions to happen in reverse order, and it a
 	variant of the chaining contextual subtable.</TD>
       <TD>These may be created with the
-	<A HREF="fontinfo.html#Contextual">Element-&gt;Font Info-&gt;Contextual
+	<A HREF="lookups.html#contextual-subs">Element-&gt;Font Info-&gt;Contextual
 	</A>command</TD>
     </TR>
     <TR>
@@ -301,16 +301,15 @@
   </TABLE>
   <P>
   FontForge also has built into it knowledge on how to provide default values
-  for some features that use these tables. See
-  <A HREF="elementmenu.html#DefaultATT">Element-&gt;Default ATT</A> command
-  for that.
+  for some features that use these tables. See the [Populate] button of the
+  various <A HREF="lookups.html">lookup subtable </A>dialogs.
   <P>
   FontForge can produce some of these tables, but the text layout/word processing
   program used has to look up the tables and do the actual work of rearranging
   the glyphs.
   <P>
   FontForge will retain the order of features in the GSUB table, and the user
-  may adjust it with the <A HREF="fontinfo.html#Order">Element-&gt;Font Info</A>
+  may adjust it with the <A HREF="lookups.html#Order">Element-&gt;Font Info</A>
   command.
   <H3>
     The <B><CODE><A NAME="GDEF">GDEF</A> </CODE></B>table
@@ -438,14 +437,14 @@
       <TD>0</TD>
       <TD>Indic style rearrangement</TD>
       <TD>FontForge can read these and stores them as state machines (which can
-	be edited with <A HREF="fontinfo.html#Mac-SM">Font Info</A>)</TD>
+	be edited with <A HREF="lookups.html#sm-subs">Font Info</A>)</TD>
       <TD>Any indic state machines will be output in the generated font.</TD>
     </TR>
     <TR>
       <TD>1</TD>
       <TD>contextual glyph substitution</TD>
       <TD>FontForge can read these and stores them as state machines (which can
-	be edited with <A HREF="fontinfo.html#Mac-SM">Font Info</A>)</TD>
+	be edited with <A HREF="lookups.html#sm-subs">Font Info</A>)</TD>
       <TD>If the font contains any state machines they will be output here. If
 	there are no state machines then the following conversions of opentype features
 	will be done:
@@ -466,7 +465,8 @@
       <TD>ligature substitution</TD>
       <TD>FontForge can read the unconditional information from these and stores
 	them as opentype ligatures (which can be edited with
-	<A HREF="charinfo.html#features">Char Info</A>).</TD>
+	<A HREF="lookups.html">Font Info</A> or <A HREF="charinfo.html#lookups">Char
+	Info</A>).</TD>
       <TD>If there are any ligatures with an apple feature/setting (or which have
 	an opentype tag which can be converted to an apple feature/setting) then
 	this table will be output.</TD>
@@ -475,7 +475,8 @@
       <TD>4</TD>
       <TD>non-contextual glyph substitution</TD>
       <TD>FontForge can read these and stores them as opentype simple substitutions
-	(which can be edited with <A HREF="charinfo.html#features">Char Info</A>)</TD>
+	(which can be edited with <A HREF="lookups.html">Font Info</A> or
+	<A HREF="charinfo.html#lookups">Char Info</A>)</TD>
       <TD>If there are any substitutions with an apple feature/setting (or which
 	have an opentype tag which can be converted to an apple feature/setting)
 	then this table will be output.</TD>
@@ -484,7 +485,7 @@
       <TD>5</TD>
       <TD>contextual glyph insertion</TD>
       <TD>FontForge can read these and stores them as state machines (which can
-	be edited with <A HREF="fontinfo.html#Mac-SM">Font Info</A>)</TD>
+	be edited with <A HREF="lookups.html#sm-subs">Font Info</A>)</TD>
       <TD>Any glyph insertion state machines will be output in the generated font.</TD>
     </TR>
   </TABLE>
@@ -1126,9 +1127,9 @@
   </TABLE>
   <P>
   FontForge will retain the order of features in the morx table, and the user
-  may adjust it with the <A HREF="fontinfo.html#Order">Element-&gt;Font Info</A>
-  command. (this is the same list as that used for GSUB table. GSUB features
-  that don't correspond to mac features will be ignored).
+  may adjust it with the <A HREF="fontinfo.html#Lookups">Element-&gt;Font
+  Info</A> command. (this is the same list as that used for GSUB table. GSUB
+  features that don't correspond to mac features will be ignored).
   <H2>
     What is <A NAME="Unsupported">Unsupported</A>?
   </H2>
@@ -1139,10 +1140,6 @@
     OpenType
   </H3>
   <UL>
-    <LI>
-      FontForge does not support using truetype points to control positioning
-    <LI>
-      FontForge does not support some of the more esoteric uses of the lookup flags.
     <LI>
       FontForge does not provide an attachment list subtable nor a MarkAttachClassDef
       subtable of the GDEF table.

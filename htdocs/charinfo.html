@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 9-Oct-2006 -->
+  <!-- AP: Last modified: 24-Mar-2007 -->
   <TITLE>Char Info</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -24,7 +24,7 @@
     <LI>
       <A HREF="charinfo.html#position">Simple Glyph Positioning </A>(GPOS)
     <LI>
-      <A HREF="charinfo.html#pairwise">Pair-wise Glyph Positioning other than kerning
+      <A HREF="charinfo.html#pairwise">Pair-wise Glyph Positioning (kerning)
       </A>(GPOS)
     <LI>
       <A HREF="charinfo.html#substitution">Glyph Simple Substitution</A> (GSUB,
@@ -62,75 +62,74 @@
   not go into any generated fonts. You may also assign a color to a glyph to
   make it stand out in the font view.<BR CLEAR=ALL>
   <P>
-  <IMG SRC="charinfo-pos.png" WIDTH="305" HEIGHT="400" ALIGN="Right">There
+  <IMG SRC="charinfo-pos.png" WIDTH="359" HEIGHT="313" ALIGN="Right">There
   are 6 separate sub-dialogs to help you edit the
-  <A NAME="features">features</A> of the <A HREF="gposgsub.html">GPOS and
-  GSUB</A> tables (some of these data can be converted into various of Apple's
-  AAT tables, particularly 'morx'). The first of these is the alternate
-  <A NAME="position">position</A> dialog which allows you to associate certain
-  modifications to a glyph's metrics with a feature in the GPOS table.
+  <A NAME="features" HREF="lookups.html">lookups</A> of the
+  <A HREF="gposgsub.html">GPOS and GSUB</A> tables (some of these data can
+  be converted into various of Apple's AAT tables, particularly 'morx'). Lookups
+  and their subtables are described in some detail
+  <A HREF="overview.html#Lookups">here</A>, and may be manipulated and created
+  with the <A HREF="fontinfo.html#Lookups">Element-&gt;Font Info</A> commmand.
   <P>
-  In the example at right the 'fwid' feature (full width) adds 400 units to
-  the glyph's advance width and moves it horizontally by 200 units.
+  The first of sub-dialogs is the alternate <A NAME="position">position</A>
+  pane which allows you to associate certain modifications to a glyph's metrics
+  with a feature in the GPOS table.
   <P>
-  A new entry in the list may be created by pressing the [New] button and a
-  <A HREF="#Feature-Tag">dlg</A> will pop up with fields for the metrics you
-  can change. It will also have a field for a feature tag, and a set of check
-  boxes for flags (these flags are not relevant here, but are included as an
-  exercise in asinine completeness.
+  In the example at right the first lookup subtable (which is associated with
+  the Scientific Inferiors feature) will move the y position of the glyph down
+  by 900 em-units, while the second subtable will move it down by 560 em-units.
+  Positioning subtables can also move glyphs horizontally and can adjust the
+  horizontal and vertical advances of the glyph. If you have configured FontForge
+  to support them you can also add device tables for pixel level corrections
+  to these adjustments. Most subtables will use only a few of the possibilities
+  open to them and FontForge generally hides unused columns -- but if you want
+  to see them just turn off [*] Hide Unused Columns.
   <P>
-  The [Delete] and [Edit] buttons should be fairly self-explanatory. [Copy]
-  and [Paste] work as expected too. You can also paste something copied here
-  into the font view (if you wish to have the same position information available
-  in a large block of glyphs).
+  A new entry in the list may be created by pressing the &lt;New&gt; button
+  and a popup menu will appear with all possible lookup subtables you could
+  add data to.
   <P>
   The <A NAME="pairwise">pairwise</A> positioning sub-dialog allows you to
-  change the positions of two glyphs when they occur next to one another. The
-  most common example of that is kerning (which is better done elsewhere, the
-  metricsview for example, but it can be done here if you really want to do
-  that).<BR Clear=Right>
+  change the positions of two glyphs when they occur next to one another --
+  better know as kerning. I think the <A HREF="metricsview.html">Metrics View
+  </A>provides a better place to do kerning, but you can do it here if you
+  wish.<BR Clear=Right>
   <P>
-  <IMG SRC="charinfo-subs.png" WIDTH="305" HEIGHT="400" ALIGN="Right"> A simple
+  <IMG SRC="charinfo-subs.png" WIDTH="474" HEIGHT="315" ALIGN="Right"> A simple
   <A NAME="substitution">substitution</A> replaces one glyph with another.
-  Here the glyph "one" has a substitution to "onesuperior" when the 'sups'
-  (Superscript) feature is invoked.
-  <P>
-  FontForge recognizes a special feature tag ' RQD' to indicate that this feature
-  is required for the given script/language. Such a feature will always be
-  applied.
-  <P>
-  You can generate a substitution most easily by dragging a glyph from the
-  font view and dropping it here (you will then be
-  <A HREF="#Feature-Tag">prompted for a feature tag</A> for the substitution
-  table.
+  Here the glyph "one" has a series of substitutions to various glyphs depending
+  on what lookup subtable is invoked.
   <P>
   The <A NAME="multiple">multiple</A> and alternate substitution sub-dialogs
   are very similar to this one except that they can take multiple glyph names.
-  In a multiple substitution sub table each glyph is replaced by several other
+  In a multiple substitution subtable each glyph is replaced by several other
   glyphs (sort of the reverse of a ligature), while in the alternate substitution
   sub-dialog each glyph is to be replaced by exactly one glyph from a list
   and the user is to be given a choice as to which glyph is to be chosen.
+  <BLOCKQUOTE ID="lit">
+    <TABLE>
+      <TR VALIGN=BOTTOM>
+	<TD>"Hello Rabbit," he said, "is that you?"
+	  <P>
+	  "Let's pretend it isn't," said Rabbit, "and see what happens."</TD>
+	<TD>Winnie-The-Pooh<BR>
+	  A. A. Milne, 1926</TD>
+      </TR>
+    </TABLE>
+  </BLOCKQUOTE>
+  <P>
   <BR Clear=Right>
   <P>
-  <IMG SRC="charinfo-lig.png" WIDTH="305" HEIGHT="400" ALIGN="Right"> The
-  <A NAME="ligature">ligature</A> field allows you to tell FontForge that the
+  <IMG SRC="charinfo-lig.png" WIDTH="411" HEIGHT="312" ALIGN="Right"> The
+  <A NAME="ligature">ligature</A> pane allows you to tell FontForge that the
   current glyph is a ligature composed of several other glyphs. FontForge will
-  often be able to fill this in with the right default value, but occasionally
-  you may want to change it. The value should be a list of postscript glyph
-  names separated by spaces. If a glyph may be viewed as two different ligatures
-  then they may both be specified in different lines. For example "ffi" may
-  be viewed as a ligature of "f" "f" and "i" or of "ff" and "i".
+  sometimes be able to fill this in with the right default value, but not always.
+  The value should be a list of postscript glyph names separated by spaces.
+  If a glyph may be viewed as two different ligatures then they may both be
+  specified in different lines. For example "ffi" may be viewed as a ligature
+  of "f" "f" and "i" or of "ff" and "i".
   <P>
-  In the example at right the "m" glyph is one of a set of flags stored in
-  the GSUB table. It indicates that combining marks should be ignored when
-  looking for the ligature.
-  <P>
-  The <A HREF="gposgsub.html">GPOS and GSUB</A> tables allow further refinements
-  of ligatures. You may classify a ligature as: Standard, Required, Discretionary,
-  Historic or Fraction. Required ligatures must be replaced, Standard ligatures
-  should be, Discretionary ones may be, and Historic ones should only be used
-  int appropriate circumstances. The pull down list on the Tag field allows
-  you to pick what type of ligature this should be. <BR Clear=Right>
+  <BR Clear=Right>
   <P>
   <IMG SRC="charinfo-counters.png" WIDTH="307" HEIGHT="409" ALIGN="Right">
   In complicated Asian glyphs, postscript has a mechanism for controlling the
@@ -169,143 +168,7 @@
   The Done (or Cancel) button only Cancels work in the current glyph. If you
   have already used Next or Prev then those earlier changes will not be
   cancelled.<BR Clear=Right>
-    <HR>
-  <H3>
-    <A NAME="Feature-Tag">Feature Tag Dialog</A>
-  </H3>
-  <TABLE ALIGN=Right>
-    <TR>
-      <TD><IMG SRC="feature-tag-sub.png" WIDTH="226" HEIGHT="399" ALIGN="Top">
-	<IMG SRC="feature-tag-pos.png" WIDTH="226" HEIGHT="489" ALIGN="Top"></TD>
-    </TR>
-  </TABLE>
-  <P>
-  These two dialogs allow you to specify an otf feature tag and all the other
-  impedimenta that go along with it. They are used by
-  <A HREF="charinfo.html#Character">Glyph Info</A> (above) to specify
-  substitutions, positions, and ligatures, as well as by
-  <A HREF="fontinfo.html#Anchors">Font Info</A> to specify anchor classes and
-  contextual features.
-  <P>
-  You must either specify an opentype feature tag (a four glyph tag like 'liga'
-  -- these are defined by
-  <A HREF="http://partners.adobe.com/public/developer/opentype/index_tag3.html">Microsoft
-  &amp; Adobe</A>, see the section on <A HREF="gposgsub.html">GPOS and GSUB</A>
-  for more information), or an apple feature/setting value (Something like
-  &lt;2,2&gt; where the first number is the feature and the second the setting
-  for that feature). These features tell the opentype (or ATSUI) engine what
-  this substitution is supposed to do.
-  <P>
-  <FONT COLOR="Red"><STRONG><BIG>CAVEAT: </BIG></STRONG></FONT>OpenType engines
-  will only apply features which they believe are appropriate for the current
-  script (in Latin scripts, Uniscribe will apply 'ccmp' and 'liga' (character
-  composition/decomposition and ligature) features but will not apply 'medi'
-  (substitution with a medial glyph variant) features because Latin doesn't
-  need such a feature -- at least so they claim). Even worse, some applications
-  may choose not to apply any features ever (Word does not do ligatures in
-  latin).
-  <A HREF="http://www.microsoft.com/typography/specs/default.htm">Microsoft
-  tries to document </A>what features they apply for which scripts in Uniscribe,
-  but that isn't very helpful since Word and Office have quite different behavior
-  than the default.
-  <P>
-  In <A NAME="lookup-flags">addition</A> you must specify a set of
-  <A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats.html">flags</A>
-  which control the behavior of the feature. If your feature is to be used
-  in right to left text then select that flag. If your feature is to be used
-  to combine glyphs even if there are intervening mark glyphs (accents and
-  such) then select Ignore Combining Marks. If you are creating an Indic font
-  then you will probably need to create mark classes (with
-  <A HREF="fontinfo.html#MarkClass">Element-&gt;Font Info-&gt;Mark Classes</A>)
-  which will be used with the Process Marks option to specify indic rearrangement.
-  <P>
-  And a collection of scripts and languages for which the substitution will
-  be active. In the example above the substitution is active for the greek
-  script and the default language (which here means all languages as none have
-  been singled out for special treatment), the cyrillic script and the default
-  language, and the latin script and several languages.
-  <P>
-  <IMG SRC="scriptlist-pulldown.png" WIDTH="243" HEIGHT="118">
-  <P>
-  Clicking on the pulldown list produces a list of choices that are currently
-  used in the font. The last choice allows you to change or add to this list.
-  <P>
-  Most of the time you will want to specify that your item should be active
-  in just one script but in all languages of that script. For instance the
-  "fl" ligature should probably always be applied in the latin script, no matter
-  what the language is (except Turkish where ligatures should be explicitly
-  disabled), however there is no point in having it active for cyrillic users
-  as they will never see that combination of glyphs. On the other hand the
-  es-zet ligature (German double-s, &szlig;) has fallen by the wayside in all
-  (I think) languages but German so that ligature should only be active for
-  the latin script, german language.
-  <P>
-  And there are some glyphs that don't fall into one single script. The same
-  digits are used for latin, cyrillic, greek, hebrew, (sometimes arabic) and
-  many other script systems, so any ligatures of the digits (such as fractions)
-  should be available in all script systems.
-  <P>
-  The script names used by FontForge are those specified by
-  <A HREF="http://partners.adobe.com/public/developer/opentype/index_tag1.html">Microsoft
-  and Adobe for opentype</A>. These are almost compatible with
-  <A HREF="http://www.evertype.com/standards/iso15924/document/dis15924.pdf">ISO
-  15924</A> except that all opentype scripts are in lower case (while those
-  in ISO 15924 all start with capital letters) and short script names (such
-  as "Lao") are converted to 'lao ' rather than 'Laoo'. I have extended the
-  set of opentype scripts with many of those in ISO 15924 by making them all
-  lower case (I have not used everything from ISO 15924 because it contains
-  script variants for things which I consider to be one script (eg. fraktur
-  has a separate script tag, but I consider it to be latin).
-  <H3>
-    <A NAME="ScriptLang">The Script Language Dialog</A>
-  </H3>
-  <P>
-  <IMG SRC="scriptlist.png" WIDTH="296" HEIGHT="205" ALIGN="Left">This dialog
-  shows all the script and language combinations which are in use in the current
-  font. You may add a new combination or change an old one by pressing the
-  obvious buttons.
-  <P>
-  If you want to specify a script or language that FontForge doesn't know about,
-  then hold the control key down when pressing the [New...] or [Edit] buttons
-  and you will get an unparsed dlg which will allow you to enter whatever you
-  like (OpenType does not give a tag for the default language (it is has a
-  special representation which does not involve tags), but for the sake of
-  consistency I have assigned it the tag of 'dflt'. No 'dflt' tags will appear
-  in the output font, instead they will be converted to the appropriate
-  representation for the default language).
-  <P>
-  The language names used by FontForge are those specified by
-  <A HREF="http://partners.adobe.com/public/developer/opentype/index_tag2.html">Microsoft
-  and Adobe for opentype</A>.
-  <P>
-  Note: In most cases the order of scripts in the list is irrelevant, but kerning
-  uses the initial script to determine the direction of the kern pair. So if
-  you have kerning on the digits, and want those to be active in both latin
-  and hebrew, you must use the unparsed dlg which allows you to order the scripts
-  yourself (or add a greek, or cyrillic script to the list (something that
-  comes before hebrew in alphabetic order and is left to right)).<BR CLEAR=ALL>
-  <H3>
-    <A NAME="Script"><IMG SRC="scriptsdlg.png" WIDTH="152" HEIGHT="215" ALIGN="Right">The
-    Script Dialog</A>
-  </H3>
-  <P>
-  This dialog shows all the scripts currently activated in this script-language
-  collection. If you want to add a new script to the collection hold the control
-  key down while clicking on the script. New scripts are added with the "default"
-  language selected. If you want finer control over languages (ie. want to
-  specify a language other than default) then double click on a script and
-  you will get a dialog of languages.
-  <H3>
-    <IMG SRC="langdlg.png" WIDTH="152" HEIGHT="215" ALIGN="Left">The
-    <A NAME="Language">Language</A> Dialog
-  </H3>
-  <P>
-  This shows all languages active in the current script in the current
-  script-language collection. Some languages are not meaningful in a given
-  script (but I don't know enough to know which to remove so I include all
-  possible languages and apologize for extraneous information). Use the control
-  key to select multiple languages. At least one language must be
-  specified.<BR CLEAR=ALL>
+  <BR CLEAR=ALL>
   <P>
   See Also:
   <UL>

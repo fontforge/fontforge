@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 22-Mar-2007 -->
+  <!-- AP: Last modified: 24-Mar-2007 -->
   <TITLE>FontForge -- An outline font editor for PostScript&reg;, TrueType
   and OpenType fonts</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
@@ -833,7 +833,9 @@
       <TD>Turkish</TD>
       <TD>liga</TD>
       <TD>lookup for ff, fl and ffl</TD>
-      <TD>Lookups may be shared, so this can be the same lookup as above</TD>
+      <TD>Lookups may be shared, so this can be the same lookup as above<BR>
+	(Turkish distinguishes between i and dotlessi and fi ligatures hide this
+	distinction.)</TD>
     </TR>
     <TR>
       <TD ROWSPAN=3>German</TD>
@@ -849,9 +851,9 @@
       <TD>lookup for ct and st</TD>
       <TD>Lookups may even be shared by a different feature type, so for English
 	and Spanish <BR>
-	ct might count as a discretionary ligature, one rarely used, in German it
-	mght be more <BR>
-	common and be part of the standard ligature set.</TD>
+	ct might count as a discretionary ligature, one rarely used, while in German
+	it mght be<BR>
+	more common and be part of the standard ligature set.</TD>
     </TR>
   </TABLE>
   <P>
@@ -863,8 +865,8 @@
   many writing systems, not just Latin and are considered Common to most scripts.
   If you have lookups which apply to the digits (conversion to oldstyle digits,
   or to proportional digits, or to superscripts...) you should attach those
-  lookups to features in all scripts that could use them, and to the default
-  script (just in case).
+  lookups to features in all scripts (and languages) that could use them, and
+  to the default script (just in case).
   <TABLE BORDER CELLPADDING="2">
     <TR>
       <TH>Script</TH>
