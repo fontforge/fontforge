@@ -744,8 +744,10 @@ void VRDevTabParse(struct vr *vr,struct matrix_data *md) {
     ValDevTab temp, *adjust;
     int any = false;
 
-    if ( (adjust = vr->adjust)==NULL )
+    if ( (adjust = vr->adjust)==NULL ) {
 	adjust = &temp;
+	memset(&temp,0,sizeof(temp));
+    }
     any |= (DeviceTableParse(&adjust->xadjust,md[0].u.md_str)!=NULL);
     any |= (DeviceTableParse(&adjust->yadjust,md[2].u.md_str)!=NULL);
     any |= (DeviceTableParse(&adjust->xadv,md[4].u.md_str)!=NULL);
