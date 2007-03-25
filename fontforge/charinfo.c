@@ -133,7 +133,7 @@ static GTextInfo std_colors[] = {
 
 static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
 
-static char *newstrings[] = { N_("New Position Variant"), N_("New Pair Position"),
+static char *newstrings[] = { N_("New Positioning"), N_("New Pair Position"),
 	N_("New Substitution Variant"),
 	N_("New Alternate List"), N_("New Multiple List"), N_("New Ligature"), NULL };
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
@@ -3356,7 +3356,7 @@ void FVSelectByPST(FontView *fv) {
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[14];
     GTextInfo label[14];
-    GGadgetCreateData *varray[10], *harray[8];
+    GGadgetCreateData *varray[20], *harray[8];
     int i,j,isgpos, cnt;
     OTLookup *otl;
     struct lookup_subtable *sub;
@@ -3380,7 +3380,7 @@ void FVSelectByPST(FontView *fv) {
 			otl->lookup_type== gpos_mark2ligature ||
 			otl->lookup_type== gpos_mark2mark )
 		    for ( sub=otl->subtables; sub!=NULL; sub=sub->next )
-			if ( sub->kc!=NULL ) {
+			if ( sub->kc==NULL ) {
 			    if ( ti!=NULL ) {
 				ti[cnt].text = (unichar_t *) copy(sub->subtable_name);
 			        ti[cnt].text_is_1byte = true;
@@ -3426,7 +3426,7 @@ return;
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+26; 
 	gcd[i].gd.flags = gg_enabled|gg_visible;
 	gcd[i++].creator = GLabelCreate;
-	varray[j++] = &gcd[i-1];
+	varray[j++] = &gcd[i-1]; varray[j++] = NULL;
 
 	gcd[i].gd.label = &ti[0];
 	gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = 5+4;
@@ -3434,8 +3434,8 @@ return;
 	gcd[i].gd.u.list = ti;
 	gcd[i].gd.cid = CID_PST;
 	gcd[i++].creator = GListButtonCreate;
-	varray[j++] = &gcd[i-1];
-	varray[j++] = GCD_Glue;
+	varray[j++] = &gcd[i-1]; varray[j++] = NULL;
+	varray[j++] = GCD_Glue; varray[j++] = NULL;
 
 	label[i].text = (unichar_t *) _("Select Results");
 	label[i].text_is_1byte = true;
@@ -3445,7 +3445,7 @@ return;
 	gcd[i].gd.popup_msg = (unichar_t *) _("Set the selection of the font view to the glyphs\nfound by this search");
 	gcd[i].gd.cid = CID_SelectResults;
 	gcd[i++].creator = GRadioCreate;
-	varray[j++] = &gcd[i-1];
+	varray[j++] = &gcd[i-1]; varray[j++] = NULL;
 
 	label[i].text = (unichar_t *) _("Merge Results");
 	label[i].text_is_1byte = true;
@@ -3455,7 +3455,7 @@ return;
 	gcd[i].gd.popup_msg = (unichar_t *) _("Expand the selection of the font view to include\nall the glyphs found by this search");
 	gcd[i].gd.cid = CID_MergeResults;
 	gcd[i++].creator = GRadioCreate;
-	varray[j++] = &gcd[i-1];
+	varray[j++] = &gcd[i-1]; varray[j++] = NULL;
 
 	label[i].text = (unichar_t *) _("Restrict Selection");
 	label[i].text_is_1byte = true;
@@ -3465,8 +3465,8 @@ return;
 	gcd[i].gd.popup_msg = (unichar_t *) _("Only search the selected glyphs, and unselect\nany characters which do not match this search");
 	gcd[i].gd.cid = CID_RestrictSelection;
 	gcd[i++].creator = GRadioCreate;
-	varray[j++] = &gcd[i-1];
-	varray[j++] = GCD_Glue;
+	varray[j++] = &gcd[i-1]; varray[j++] = NULL;
+	varray[j++] = GCD_Glue; varray[j++] = NULL;
 
 	gcd[i].gd.pos.x = 15-3; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+22;
 	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
@@ -3494,7 +3494,7 @@ return;
 	gcd[i].gd.flags = gg_enabled|gg_visible;
 	gcd[i].gd.u.boxelements = harray;
 	gcd[i].creator = GHBoxCreate;
-	varray[j++] = &gcd[i++]; varray[j] = NULL;
+	varray[j++] = &gcd[i++]; varray[j++] = NULL; varray[j++] = NULL;
 
 	gcd[i].gd.pos.x = gcd[i].gd.pos.y = 2;
 	gcd[i].gd.flags = gg_enabled|gg_visible;
