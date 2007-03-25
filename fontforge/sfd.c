@@ -1664,7 +1664,7 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 	    NULL };
 	fprintf( sfd, "%s ", keywords[sm->type-asm_indic] );
 	SFDDumpUTF7Str(sfd,sm->subtable->subtable_name );
-	fprintf( sfd, " %d %d\n", sm->class_cnt, sm->state_cnt );
+	fprintf( sfd, " %d %d %d\n", sm->flags, sm->class_cnt, sm->state_cnt );
 	for ( i=4; i<sm->class_cnt; ++i )
 	  fprintf( sfd, "  Class: %d %s\n", (int)strlen(sm->classes[i]),
 		   sm->classes[i]);
@@ -1772,7 +1772,6 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 	    SFDDumpUTF7Str(sfd,an->name);
 	    putc(' ',sfd);
 	    SFDDumpUTF7Str(sfd,an->subtable->subtable_name );
-	    fprintf( sfd, " %d ", an->type );
 	}
 	putc('\n',sfd);
     }
@@ -5448,7 +5447,8 @@ exit(1);
 		    an->subtable = SFFindLookupSubtableAndFreeName(sf,SFDReadUTF7Str(sfd));
 		while ( (ch=getc(sfd))==' ' || ch=='\t' );
 		ungetc(ch,sfd);
-		if ( isdigit(ch)) {
+		if ( isdigit(ch) ) {
+		    /* Early versions of SfdFormat 2 had a number here */
 		    int temp;
 		    getint(sfd,&temp);
 		    an->type = temp;
@@ -5459,6 +5459,24 @@ exit(1);
 			an->type = act_mkmk;
 		    else
 			an->type = act_mark;
+		} else {
+		    switch ( an->subtable->lookup->lookup_type ) {
+		      case gpos_cursive:
+			an->type = act_curs;
+		      break;
+		      case gpos_mark2base:
+			an->type = act_mark;
+		      break;
+		      case gpos_mark2ligature:
+			an->type = act_mklg;
+		      break;
+		      case gpos_mark2mark:
+			an->type = act_mkmk;
+		      break;
+		      default:
+			an->type = act_mark;
+		      break;
+		    }
 		}
 		if ( lastan==NULL )
 		    sf->anchor = an;
