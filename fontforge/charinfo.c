@@ -815,7 +815,9 @@ void KpMDParse(SplineFont *sf,SplineChar *sc,struct lookup_subtable *sub,
 	}
     }
     newv = false;
-    if ( sub->vertical_kerning ) {
+    if ( other==NULL )
+	iskpable = false;
+    else if ( sub->vertical_kerning ) {
 	newv = true;
 	iskpable = possub[cols*i+PAIR_DX1].u.md_ival==0 &&
 		    possub[cols*i+PAIR_DY1].u.md_ival==0 &&
@@ -904,6 +906,8 @@ void KpMDParse(SplineFont *sf,SplineChar *sc,struct lookup_subtable *sub,
 	    pst->subtable = sub;
 	    pst->next = sc->possub;
 	    sc->possub = pst;
+	    pst->u.pair.vr = chunkalloc(sizeof(struct vr [2]));
+	    pst->u.pair.paired = copy(possub[cols*i+1].u.md_str);
 	}
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 	VRDevTabParse(&pst->u.pair.vr[0],&possub[cols*i+PAIR_DX1+1]);
@@ -1082,7 +1086,7 @@ return( false );
     cols = GMatrixEditGetColCnt(GWidgetGetControl(ci->gw,CID_List+(pst_pair-1)*100));
     for ( i=0; i<rows; ++i ) {
 	struct lookup_subtable *sub = ((struct lookup_subtable *) possub[cols*i+0].u.md_ival);
-	KpMDParse(sc->parent,sc,sub,possub,rows,10,i);
+	KpMDParse(sc->parent,sc,sub,possub,rows,cols,i);
     }
 
     /* Now, free anything that did not get ticked */
