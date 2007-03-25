@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 24-Mar-2007 -->
+  <!-- AP: Last modified: 25-Mar-2007 -->
   <TITLE>Spline Font Database File Format</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -14,13 +14,21 @@
   </H1>
   <P>
   <FONT COLOR="Red"><STRONG>This page is often grievously out of date. It was
-  a fair approximation to reality on 2 October 2006.</STRONG></FONT> Even if
+  a fair approximation to reality on 25 March 2007.</STRONG></FONT> Even if
   out of date it should be helpful, but if you really need to know the current
   format look at
   <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/fontforge/sfd.c">sfd.c</A>
   and see what it parses. Some descriptions of esoteric features are not complete,
   but I hope they give you enough hints that you can figure the format out
   (especially after looking it up in sfd.c)
+  <P>
+  The sfd format evolves over time. I hope the current parser can handle old
+  sfd formats. Most changes have been small, but in March of 2007 the way fontforge
+  handled lookups and features changed radically (and I bumped the SFD file
+  version number for the first time) and sfd files created before then are
+  better understood if you look at an
+  <A href="http://fontforge.cvs.sourceforge.net/fontforge/fontforge/htdocs/sfdformat.html?revision=1.22&amp;view=markup">older
+  version of this document</A>.
   <P>
   FontForge's <A HREF="sfd.html">sfd</A> files are ASCII files (so they can
   be copied easily across the internet and so that diffs are somewhat meaningful).
@@ -56,9 +64,9 @@
       happen when the glyph is grid fit (including system crashes)
     <LI>
       If you copy a substitution (ligature, kern, contextual chaining, ...) item
-      from one font to another, the substitution contains an index into a table
-      of script/languages maintained by the font. Bad things (FontForge crashes)
-      can happen if these tables do not match.
+      from one font to another, the substitution contains the name of a
+      lookup-subtable. Bad things will probably happen if the lookup subtable isn't
+      in the font.
     <LI>
       If you copy a glyph containing references these are done by glyph index (which
       is probably different from font to font). You may end up refering to the
@@ -68,10 +76,10 @@
     <A NAME="Font-Header">Font Header</A>
   </H3>
   <P>
-  Here is an example of what the first few lines look like (order is largely
-  irrelevant within this section):
+  Here is an example of what the first few lines look like (except for the
+  first line, order is largely irrelevant within this section):
   <BLOCKQUOTE>
-    <PRE>SplineFontDB: 1.0
+    <PRE>SplineFontDB: 2.0
 FontName: Ambrosia
 FullName: Ambrosia
 FamilyName: Ambrosia
@@ -245,9 +253,28 @@ EndPrivate
 </PRE>
   </BLOCKQUOTE>
   <P>
+  If your font has any lookups
+  <BLOCKQUOTE>
+    <PRE>
+Lookup: 6 0 0 "calt"  {"calt-1"  } ['calt' ('DFLT' &lt;'dflt' &gt; 'latn' &lt;'dflt' &gt; ) ]
+Lookup: 1 0 0 "'smcp' Lowercase to Small Capitals in Latin lookup 0"  {"'smcp' Lowercase to Small Capitals in Latin lookup 0"  } ['smcp' ('latn' &lt;'dflt' &gt; ) ]
+Lookup: 4 0 1 "'liga' Standard Ligatures in Latin lookup 1"  {"'liga' Standard Ligatures in Latin lookup 1"  } ['liga' ('latn' &lt;'dflt' &gt; ) ]
+Lookup: 258 0 0 "'kern' Horizontal Kerning in Latin lookup 0"  {"'kern' Horizontal Kerning in Latin lookup 0"  } ['kern' ('latn' &lt;'dflt' &gt; ) ]
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  All entries in the lookup list start with the "Lookup:" keyword. They are
+  followed by a lookup type, and flags, and the save-in-afm flag. Then within
+  curly braces is a list of all subtable names in this lookup. Then within
+  backets a list of all features each followed (within parens) by a list of
+  all scripts each followed (within brockets) by a list of all languages.
+  <P>
+  The order in which lookups are applied is the order listed here. The order
+  in which subtables are applied is the order listed here.
+  <P>
   If your font has any kerning classes
   <BLOCKQUOTE>
-    <PRE>KernClass: 31 64 2 0
+    <PRE>KernClass2: 31 64 2 "'kern' Horizontal Kerning in Latin lookup 0"
  1 F
  41 L Lacute glyph78 Lcommaaccent Ldot Lslash
  1 P
@@ -263,21 +290,21 @@ EndPrivate
   </BLOCKQUOTE>
   <P>
   The first line says that this Kerning Class has 31 different classes for
-  the first character, and 64 for the second. It is active for entry 2 in the
-  script lang list above. The <A HREF="lookups.html#Add-Lookup">OpenType flags
-  </A>will be 0. The next line says that the first character class of the first
-  character (numbered 1, class 0 is reserved and usually is not defined) consists
-  of only one character "F" (the number in front is the string length of the
-  line. It speeds up processing the sfd file but has no semantic content).
-  The next line is for class 2 of the first character, it has more characters
-  in it and a longer string length. After 30 entries we start on the classes
-  for the second character. They look exactly like classes for the first character.
-  After all the second character classes have been defined we have an array
-  of numbers, &lt;char1 class cnt&gt;*&lt;char2 class cnt&gt; of them in fact.
-  This specifies the amount of kerning that should be placed between a characters
-  of the given classes of left and right characters (ie. if char1 was in left
-  class 2 and char2 was in right class 4 then we would index this array with
-  3*&lt;char2 class cnt&gt; + 4).
+  the first character, and 64 for the second. It lives in the lookup subtable
+  named "'kern' Horizontal Kerning in Latin lookup 0".. The next line says
+  that the first character class of the first character (numbered 1, class
+  0 is reserved and usually is not defined) consists of only one character
+  "F" (the number in front is the string length of the line. It speeds up
+  processing the sfd file but has no semantic content). The next line is for
+  class 2 of the first character, it has more characters in it and a longer
+  string length. After 30 entries we start on the classes for the second character.
+  They look exactly like classes for the first character. After all the second
+  character classes have been defined we have an array of numbers, &lt;char1
+  class cnt&gt;*&lt;char2 class cnt&gt; of them in fact. This specifies the
+  amount of kerning that should be placed between a characters of the given
+  classes of left and right characters (ie. if char1 was in left class 2 and
+  char2 was in right class 4 then we would index this array with 3*&lt;char2
+  class cnt&gt; + 4).
   <P>
   In some cases it is possible to specify class 0 of the first glyph in a kerning
   by classes entry (but not class 0 of the second glyph). In this case there
@@ -291,19 +318,6 @@ EndPrivate
     <PRE>...
 0 {} 0 {} 0 {} ...
 -145 {12-13 -1,1} -145 {} -130 {8-9 -1,-1} ...
-</PRE>
-  </BLOCKQUOTE>
-  <P>
-  The order of opentype features within GPOS/GSUB tables may be stored:
-  <BLOCKQUOTE>
-    <PRE>TableOrder: GPOS 4
-	'subs'
-	'sinf'
-	'mark'
-	'kern'
-TableOrder: GSUB 2
-	'frac'
-	'nutf'
 </PRE>
   </BLOCKQUOTE>
   <P>
@@ -341,38 +355,37 @@ LangName: 1032 "" "" "+A5oDsQ09A78DvQ05A7oDrAAA"
   <P>
   If your font has any anchor classes:
   <BLOCKQUOTE>
-    <PRE>AnchorClass: "top" mark 4 7 1 "bottom" mark 4 7 1 "Anchor-2" mark 4 7 1 "Anchor-3" mark 4 7 2 "Anchor-4" mark 4 7 2 "Anchor-5" mark 4 7 3 "Anchor-6" mark 4 7 4 
+    <PRE>AnchorClass2: "top" "Latin marks-1" "bottom" "Latin marks-1" "Anchor-2" "Latin marks-1" "Anchor-3" "Latin marks-2" "Anchor-4" "Latin marks-2" "Anchor-5" "Latin marks-2" "Anchor-6" "Latin marks-2" 
 </PRE>
   </BLOCKQUOTE>
   <P>
-  There is an Anchor Class named "top" which has feature tag 'mark', opentype
-  flags 4, a script lang index of 7, and it should be merged with other anchor
-  classes marked with "1". The next class is named "bottom", the next "Anchor-2"
-  and so forth. (Anchor class names are output in UTF7)
+  There is an Anchor Class named "top" which lives in lookup subtable "Latin
+  marks-1". The next class is named "bottom", the next "Anchor-2" and so forth.
+  (Anchor class names are output in UTF7)
   <P>
   Contextual or contextual chaining lookups are also stored in the font header.
-  The are introduced by one of the keywords: "ContextPos", "ContextSub",
-  "ChainPos", "ChainSub" and "ReverseChain", and are ended by "EndFPST". Contextual
-  chaining lookups may check previous glyphs (called backtracking), current
-  glyphs and lookahead glyphs, while Contextual lookups only check for a string
-  of current glyphs. There are four formats:<BR>
+  The are introduced by one of the keywords: "ContextPos2", "ContextSub2",
+  "ChainPos2", "ChainSub2" and "ReverseChain2", and are ended by "EndFPST".
+  Contextual chaining lookups may check previous glyphs (called backtracking),
+  current glyphs and lookahead glyphs, while Contextual lookups only check
+  for a string of current glyphs. There are four formats:<BR>
   By coverage tables
   <BLOCKQUOTE>
-    <PRE>ChainSub: coverage 0 0 'abvs' 0 0 0 1
+    <PRE>ChainSub2: coverage "calt-1" 0 0 0 1
  1 1 0
   Coverage: 7 uni0C40
   BCoverage: 8 glyph388
  1
-  SeqLookup: 0 '0013'
+  SeqLookup: 0 "high"
 EndFPST
 </PRE>
   </BLOCKQUOTE>
   <P>
-  This defines a simple context chaining substitution by coverage class. The
-  opentype flags are 0, script/lang index is 0, the feature tag is 'abvs'.
-  There are no classes, no backtracking classes and no lookahead classes defined
-  (it's by coverage table). There is one rule. (For a greater explanation of
-  these cryptic comments see the OpenType specs on contextual lookups).
+  This defines a simple context chaining substitution by coverage class. It
+  lives in the lookup subtable named "calt-1". There are no classes, no
+  backtracking classes and no lookahead classes defined (it's by coverage table).
+  There is one rule. (For a greater explanation of these cryptic comments see
+  the OpenType specs on contextual lookups).
   <P>
   Then follows the first rule. The first line, "1 1 0", says how many coverage
   tables there are in the normal list (1), how many in the backtrack list (1)
@@ -382,12 +395,12 @@ EndFPST
   lookup, at normal position 0, we should apply the substitution named '0013'.
   <P>
   That is to say: If we find the glyph stream "glyph388 uni0C40", then it will
-  match this lookup and we should apply substitution '0013' (found elsewhere)
-  to uni0C40.
+  match this lookup and we should apply lookup "high" (found elsewhere) to
+  uni0C40.
   <P>
   By classes
   <BLOCKQUOTE>
-    <PRE>ChainSub: class 0 0 'calt' 3 3 0 1
+    <PRE>ChainSub2: class "calt-1" 3 3 0 1
   Class: 52 b o v w b.high o.high v.high w.high r.alt.high r.alt
   Class: 43 a c d e f g h i j k l m n p q r s t u x y z
   BClass: 52 b o v w b.high o.high v.high w.high r.alt.high r.alt
@@ -397,7 +410,7 @@ EndFPST
   BClsList: 1
   FClsList:
  1
-  SeqLookup: 0 'high'
+  SeqLookup: 0 "high"
 EndFPST
 </PRE>
   </BLOCKQUOTE>
@@ -414,26 +427,26 @@ EndFPST
   <P>
   The one rule says that if we get something in normal class 2 following something
   in backtracking class 1 (that is, if we get something like "ba" or "oc")
-  then apply substitution 'high'
+  then apply lookup "high"
   <P>
   By glyphs
   <BLOCKQUOTE>
-    <PRE>ChainSub: glyph 0 1 'calt' 0 0 0 1
+    <PRE>ChainSub2: glyph "calt-1" 0 0 0 1
  String: 1 D
  BString: 3 c b
  FString: 1 e
  1
-  SeqLookup: 0 'rigl'
+  SeqLookup: 0 "high"
 EndFPST
 </PRE>
   </BLOCKQUOTE>
   <P>
   Again we have one rule. That rule says that if we get the sequence of glyphs
-  "c b D e" then we should apply substitution 'rig1' to glyph "D".
+  "c b D e" then we should apply substitution "high" to glyph "D".
   <P>
   And finally by reverse coverage tables
   <BLOCKQUOTE>
-    <PRE>ChainSub: revcov 0 0 'foo ' 0 0 0 1
+    <PRE>ChainSub2: revcov "calt-1" 0 0 0 1
  1 1 0
   Coverage: 7 uni0C40
   BCoverage: 8 glyph388
@@ -447,10 +460,10 @@ EndFPST
   by uni0C40.alt
   <P>
   There may be apple state machines. These are introduced by one of the keywords:
-  "MacIndic", "MacContext", "MacInsert" and "MacKern", and they are terminated
+  "MacIndic2", "MacContext2", "MacInsert2" and "MacKern2", and they are terminated
   with "EndASM".
   <BLOCKQUOTE>
-    <PRE>MacContext: 2,2 16384 9 5
+    <PRE>MacContext2: "calt-1" 16384 9 5
   Class: 320 yehhamzaabovearabic beharabic teharabic theharabic jeemarabic haharabic khaharabic seenarabic sheenarabic sadarabic dadarabic taharabic zaharabic ainarabic ghainarabic feharabic qafarabic kafarabic lamarabic meemarabic noonarabic heharabic alefmaksuraarabic yeharabic peharabic tteharabic tcheharabic veharabic gafarabic
   Class: 227 noonghunnaarabic alefmaddaabovearabic alefhamzaabovearabic wawhamzaabovearabic alefhamzabelowarabic alefarabic tehmarbutaarabic dalarabic thalarabic reharabic zainarabic wawarabic ddalarabic rreharabic jeharabic yehbarreearabic
   Class: 201 shaddakasraarabic shaddakasratanarabic shaddafathaarabic shaddadammaarabic shaddadammatanarabic fathatanarabic dammatanarabic kasratanarabic fathaarabic dammaarabic kasraarabic shaddaarabic sukunarabic
@@ -462,13 +475,13 @@ EndFPST
  0 0 ~ ~ 
  2 32768 ~ ~ 
  ... 
- 3 32768 'M002' 'M003' 
+ 3 32768 "high" "low" 
  ...
 EndASM
 </PRE>
   </BLOCKQUOTE>
   <P>
-  The state machine begins with a line defining what mac feature,setting invokes
+  The state machine begins with a line defining what lookup subtable invokes
   it, some mac flags, the number of classes, and number of states in the machine.
   The first four states on the mac are predefined, so we start with class 4
   (yehhamzaabovearabic...). Finally there will be &lt;number of
@@ -480,18 +493,18 @@ EndASM
   also be other arguments depending on the type of the state machine.
   <TABLE BORDER CELLPADDING="2">
     <TR>
-      <TD VALIGN="Top">MacIndic</TD>
+      <TD VALIGN="Top">MacIndic2</TD>
       <TD>This format has no additional arguments</TD>
     </TR>
     <TR>
-      <TD VALIGN="Top">MacContext</TD>
-      <TD>This format potentially contains the names of two substitutions. One
-	to be applied to the marked glyph, one to be applied to the current glyph
+      <TD VALIGN="Top">MacContext2</TD>
+      <TD>This format potentially contains the names of two lookup substitutions.
+	One to be applied to the marked glyph, one to be applied to the current glyph
 	(the special substitution "~" means do nothing and is used as a place holder).
 	See above.</TD>
     </TR>
     <TR>
-      <TD VALIGN="Top">MacInsert</TD>
+      <TD VALIGN="Top">MacInsert2</TD>
       <TD>This format contains two glyph lists, each preceded by a number indicating
 	how many bytes follow.
 	<BLOCKQUOTE>
@@ -507,22 +520,12 @@ EndASM
 	are insert before or after the glyph.</TD>
     </TR>
     <TR>
-      <TD VALIGN="Top">MacKern</TD>
+      <TD VALIGN="Top">MacKern2</TD>
       <TD>This format contains a list of kerning offsets. First is a count field
 	saying how many numbers follow, then a list of numbers which adjust the kerning
 	for glyphs that have previously been pushed on the kerning stack.</TD>
     </TR>
   </TABLE>
-  <P>
-  The GenTags entry describes a list of feature tags that FontForge has generated
-  itself
-  <BLOCKQUOTE>
-    <PRE>GenTags: 1 sb'rigl'
-</PRE>
-  </BLOCKQUOTE>
-  <P>
-  This line says that FontForge has generated 1 tag, the generated tag is used
-  for a substitution lookup (sb=&gt;substitution), and the tag is 'rig1'.
   <P>
   There may be a list of Mac Feature/Setting names
   <BLOCKQUOTE>
@@ -762,15 +765,6 @@ Ref: 35 46 N 1 0 0 1 0 414 6 3 7 O
       date.
   </UL>
   <P>
-  Old versions of sfd files will use the format:
-  <BLOCKQUOTE>
-    <PRE>Ref: 44 44 N 1 0 0 1 0 0
-Ref: 46 46 N 1 0 0 1 0 414
-</PRE>
-  </BLOCKQUOTE>
-  <P>
-  Where the first number gives the refered components' encoding.
-  <P>
   A postscript glyph may also contain countermasks:
   <BLOCKQUOTE>
     <PRE>StartChar: m
@@ -859,50 +853,40 @@ AnchorPoint: "top" 803 1487 basechar 0
   If the character is the first in any kern pairs (not a pair defined by a
   kern class, however)
   <BLOCKQUOTE>
-    <PRE>KernsSLIFO: 60 -100 1 0 {12-13 -1,-1} 63 -92 1 0 70 -123 1 0 45 -107 1 0 76 -107 1 0
+    <PRE>Kerns2: 60 -100 "Kern Latin" {12-13 -1,-1} 63 -92 "Kern Latin" 70 -123 "Kern Latin" 45 -107 "Kern Latin" 76 -107 "Kern Latin"
 </PRE>
   </BLOCKQUOTE>
   <P>
-  Where each kern pair is represented by 4 numbers (and an optional
-  <A HREF="sfdformat.html#device-table">device</A> table, see above). The first
-  is the original position of the second character (in the current font), the
-  next is the horizontal kerning amount, then the script lang index, and finally
-  the open type flags. Then we start over with the next kernpair.
-  <P>
-  Old sfd files may contain a slightly different format:
-  <BLOCKQUOTE>
-    <PRE>KernsSLIF: 114 -100 1 0 {12-13 -1,-1} 117 -92 1 0 101 -123 1 0 97 -107 1 0 111 -107 1 0
-</PRE>
-  </BLOCKQUOTE>
-  <P>
-  where the first number is the encoding of the second glyph in the kern pair.
+  Where each kern pair is represented by 2 numbers and a lookup subtable (and
+  an optional <A HREF="sfdformat.html#device-table">device</A> table, see above).
+  The first is the original position of the second character (in the current
+  font), the next is the horizontal kerning amount, then the lookup subtable
+  name. Then we start over with the next kernpair.
   <P>
   Data that are to go into other GPOS, GSUB or GDEF sub-tables are stored like
   this:
   <BLOCKQUOTE>
-    <PRE>Position: 12 0 'sinf' dx=0 dy=-900 dh=0 dv=0
-PairPos: 12 0 'dist' B dx=0 dy=0 dh=0 dv=0  dx=-10 dy=0 dh=0 dv=0
-Ligature: 12 0 'frac' one slash four
-Substitution: 12 3 'smcp' agrave.sc
-AlternateSubs: 12 0 'swsh' glyph490 A.swash
-MultipleSubs: 12 0 'ccmp' a grave
-Ligature: 12 4 'liga' f f
-LCarets: 0 0 '    ' 1 650 
+    <PRE>Position2: "Inferiors" dx=0 dy=-900 dh=0 dv=0
+PairPos2: "Distances" B dx=0 dy=0 dh=0 dv=0  dx=-10 dy=0 dh=0 dv=0
+Ligature2: "Latin Ligatures" one slash four
+Substitution2: "Latin Smallcaps" agrave.sc
+AlternateSubs2: "Latin Swash" glyph490 A.swash
+MultipleSubs2: "Latin Decomposition" a grave
+LCarets2: 1 650 
 </PRE>
   </BLOCKQUOTE>
   <P>
-  In most of these lines the first two numbers provide a script lang index
-  and a set of opentype flags (except for LCarets where they are ignored).
-  This is followed by an opentype tag (also ignored for ligature carets). A
-  simple position change is expressed by the amount of movement of the glyph
-  and of the glyph's advance width. A pairwise positioning controls the positioning
-  of two adjacent glyphs (kerning is a special case of this). A ligature contains
-  the names of the characters that make it up. A simple substitution contains
-  the name of the character that it will become. An alternate sub contains
-  the list of characters that the user may choose from. A multiple substitution
-  contains the characters the current glyph is to be decomposed into. A ligature
-  caret contains a count of the number of carets defined, and the a list of
-  the locations of those carets.
+  In most of these lines the first string is the lookup subtable name (except
+  for LCarets where there is nothing). A simple position change is expressed
+  by the amount of movement of the glyph and of the glyph's advance width.
+  A pairwise positioning controls the positioning of two adjacent glyphs (kerning
+  is a special case of this). A ligature contains the names of the characters
+  that make it up. A simple substitution contains the name of the character
+  that it will become. An alternate sub contains the list of characters that
+  the user may choose from. A multiple substitution contains the characters
+  the current glyph is to be decomposed into. A ligature caret contains a count
+  of the number of carets defined, and the a list of the locations of those
+  carets.
   <P>
   A glyph may have an arbitrary comment associated with it, this will be output
   in UTF-7
