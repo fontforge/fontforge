@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 14-Dec-2006 -->
+  <!-- AP: Last modified: 24-Mar-2007 -->
   <TITLE>The Element Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -22,22 +22,6 @@
       <A HREF="elementmenu.html#BDF-Info">BDF Info...</A>
     <LI>
       <A HREF="#Info">Get Info</A>...
-    <LI>
-      Typographic Features
-      <UL>
-	<LI>
-	  <A HREF="#Copy-Feat">Copy Feature(s) to Font</A>...
-	<LI>
-	  <A HREF="#DefaultATT">Default ATT</A> (Advanced Typographic Tables)
-	<LI>
-	  <A HREF="#Rm-All-Feat">Remove All Features</A>
-	<LI>
-	  <A HREF="#Rm-Feat">Remove Feature(s)...</A>
-	<LI>
-	  <A HREF="#Rm-Unused-Feat">Remove Unused Nested Features</A>
-	<LI>
-	  <A HREF="#Retag-Feat">Retag Feature(s)...</A>
-      </UL>
     <LI>
       Show Dependencies
       <UL>
@@ -215,70 +199,6 @@
       In the outline view this brings up <A HREF="getinfo.html">one of four different
       dialogs</A> (Point Info, Image Info, Reference Info, Anchor Point Info) depending
       on what is selected.
-    <DT>
-      Typographic Features
-    <DD>
-      This sub-menu is only present in the font view and allows you to manipulate
-      GSUB/GPOS/morx features. If you wish to create them you should use
-      <A HREF="fontinfo.html">Font Info</A> or
-      <A HREF="charinfo.html#Character">Glyph Info</A>.
-      <DL>
-	<DT>
-	  Copy <A NAME="Copy-Feat">Feature</A> to Font...
-	<DD>
-	  <A HREF="typofeat.html#Copy-Feat">This dialog</A> allows you to copy a set
-	  of features from one font to another.
-	<DT>
-	  Default <A NAME="DefaultATT">ATT</A>
-	<DD>
-	  In the font view this is a sub-menu which allows you to generate default
-	  values for various features of the
-	  <A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats2.html">GPOS</A>
-	  and
-	  <A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats1.html">GSUB</A>
-	  tables.
-	  <P>
-	  The sub-menu consists of a list of feature names (and a few more generic
-	  names like "All" which will provide defaults for everything it can figure
-	  out, and "Ligatures" which will provide defaults for all ligatures). FontForge
-	  will look for defaults for all selected glyphs. There is also one special
-	  entry:
-	  <DL>
-	    <DT>
-	      Suffix to Tag...
-	    <DD>
-	      In adobe's glyph naming conventions, alternate forms of glyphs may be named
-	      by appending a suffix to the normal glyph's name. Thus a swash variant of
-	      "A" might be named "A.swash".
-	      <P>
-	      Using this command you can tell FontForge to associate a given suffix with
-	      a feature tag. (in the above example you could associate ".swash" with 'swsh'
-	      -- except you don't need to, because FontForge already knows about that one).
-	      Select the letter "A", then enter the command, then "A" will be linked to
-	      "A.swash" as a 'swsh'.
-	  </DL>
-	<DT>
-	  <A NAME="Rm-All-Feat">Remove All Features</A>
-	<DD>
-	  Removes all typographic features.
-	<DT>
-	  <A NAME="Rm-Feat">Remove Feature(s)...</A>
-	<DD>
-	  <A HREF="typofeat.html#Rm-Feat">This dialog</A> allows you to select which
-	  features to remove.
-	<DT>
-	  <A NAME="Rm-Nested-Feat">Remove Unused Nested Features</A>
-	<DD>
-	  If there are any nested features which are not referred to within any
-	  contextual/chaining feature nor apple state machine then this command will
-	  remove them.
-	<DT>
-	  <A NAME="Retag-Feat">Retag Feature(s)...</A>
-	<DD>
-	  <A HREF="typofeat.html#Retag-Feat">This dialog</A> allows you to change the
-	  opentype tag (or apple feature/setting) on a given feature.(This does not
-	  retag kerning information).
-      </DL>
     <DT>
       Show Dependencies
       <DL>
