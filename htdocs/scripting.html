@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 15-Dec-2006 -->
+  <!-- AP: Last modified: 25-Mar-2007 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -630,7 +630,7 @@ endloop
     <LI>
       <A HREF="scripting-alpha.html#Close">Close()</A>
     <LI>
-      <A HREF="scripting-alpha.html#ControlAfmLigatureOutput">ControlAfmLigatureOutput(script,lang,ligature-tag-list)</A>
+      <A HREF="scripting-alpha.html#ControlAfmLigatureOutput"><STRIKE>ControlAfmLigatureOutput(script,lang,ligature-tag-list)</STRIKE></A>
     <LI>
       <A HREF="scripting-alpha.html#Export">Export(format[,bitmap-size])</A>
     <LI>
@@ -688,7 +688,7 @@ endloop
     <LI>
       <A HREF="scripting-alpha.html#CopyFgToBg">CopyFgToBg</A>
     <LI>
-      <A HREF="scripting-alpha.html#CopyGlyphFeatures">CopyGlyphFeatures(arg,...)</A>
+      <A HREF="scripting-alpha.html#CopyGlyphFeatures"><STRIKE>CopyGlyphFeatures(arg,...)</STRIKE></A>
     <LI>
       <A HREF="scripting-alpha.html#CopyLBearing">CopyLBearing</A>
     <LI>
@@ -731,7 +731,9 @@ endloop
     <LI>
       <A HREF="scripting-alpha.html#SelectBitmap">SelectBitmap(size)</A>
     <LI>
-      <A HREF="scripting-alpha.html#SelectByATT">SelectByATT(type,tags,contents,search-type)</A>
+      <A HREF="scripting-alpha.html#SelectByATT"><STRIKE>SelectByATT(type,tags,contents,search-type)</STRIKE></A>
+    <LI>
+      <A HREF="scripting-alpha.html#SelectByPosSub">SelectByPosSub(lookup-subtable-name,search_type)</A>
     <LI>
       <A HREF="scripting-alpha.html#SelectChanged">SelectChanged([merge])</A>
     <LI>
@@ -775,7 +777,7 @@ endloop
     <LI>
       <A HREF="scripting-alpha.html#AddExtrema">AddExtrema()</A>
     <LI>
-      <A HREF="scripting-alpha.html#ApplySubstitution">ApplySubstitution(script,lang,tag)</A>
+      <A HREF="scripting-alpha.html#ApplySubstitution"><STRIKE>ApplySubstitution(script,lang,tag)</STRIKE></A>
     <LI>
       <A HREF="scripting-alpha.html#AutoTrace">AutoTrace()</A>
     <LI>
@@ -920,7 +922,7 @@ endloop
     <LI>
       <A HREF="scripting-alpha.html#DrawsSomething">DrawsSomething([arg])</A>
     <LI>
-      <A HREF="scripting-alpha.html#GetPosSub">GetPosSub(feature-tag,script,lang)</A>
+      <A HREF="scripting-alpha.html#GetPosSub">GetPosSub(lookup-subtable-name)</A>
     <LI>
       <A HREF="scripting-alpha.html#GlyphInfo">GlyphInfo(str)</A>
     <LI>
@@ -949,25 +951,55 @@ endloop
     <LI>
       <A HREF="scripting-alpha.html#AddAnchorPoint">AddAnchorPoint(name,type,x,y[,lig-index])</A>
     <LI>
+      <A HREF="scripting-alpha.html#AddLookup">AddLookup(new-lookup-name,type,flags,feature-script-lang-array[,after-lookup-name)</A>
+    <LI>
+      <A HREF="scripting-alpha.html#AddLookupSubtable">AddLookupSubtable(lookup-name,new-subtable-name[,after-subtable-name])</A>
+    <LI>
+      <A HREF="scripting-alpha.html#AddPosSub">AddPosSub(subtable-name,variant(s))<BR>
+      AddPosSub(subtable-name,dx,dy,dadv_x,dadv_y)<BR>
+      AddPosSub(subtable-name,other-glyph-name,dx1,dy1,dadv_x1,dadv_y1,dx2,dy2,dadv_x2,dadv_y2)</A>
+    <LI>
       <A HREF="scripting-alpha.html#AddSizeFeature">AddSizeFeature(default-size[,range-bottom,range-top,style-id,array-of-lang-names])</A>
     <LI>
-      <A HREF="scripting-alpha.html#AddATT">AddATT(type,script-lang,tag,flags,variant)</A>
+      <A HREF="scripting-alpha.html#AddATT"><STRIKE>AddATT(type,script-lang,tag,flags,variant)</STRIKE></A>
     <LI>
-      <A HREF="scripting-alpha.html#ApplySubstitution">ApplySubstitution(script,lang,tag)</A>
+      <A HREF="scripting-alpha.html#ApplySubstitution"><STRIKE>ApplySubstitution(script,lang,tag)</STRIKE></A>
     <LI>
       <A HREF="scripting-alpha.html#CheckForAnchorClass">CheckForAnchorClass(name)</A>
     <LI>
-      <A HREF="scripting-alpha.html#DefaultATT">DefaultATT(tag)</A>
+      <A HREF="scripting-alpha.html#DefaultATT"><STRIKE>DefaultATT(tag)</STRIKE></A>
+    <LI>
+      <A HREF="scripting-alpha.html#GetLookupInfo">GetLookupInfo(lookup-name)</A>
+    <LI>
+      <A HREF="scripting-alpha.html#GetLookups">GetLookups(table-name)</A>
+    <LI>
+      <A HREF="scripting-alpha.html#GetLookupSubtable">GetLookupSubtables(lookup-name)</A>
+    <LI>
+      <A HREF="scripting-alpha.html#GetLookupOfSubtable">GetLookupOfSubtable(subtable-name)</A>
+    <LI>
+      <A HREF="scripting-alpha.html#GetPosSub">GetPosSub(lookup-subtable-name)</A>
+    <LI>
+      <A HREF="scripting-alpha.html#GetSubtableOfAnchor">GetSubtableOfAnchor(anchor-class-name)</A>
     <LI>
       <A HREF="scripting-alpha.html#HasPreservedTable">HasPreservedTable(tag)</A>
     <LI>
       <A HREF="scripting-alpha.html#LoadTableFromFile">LoadTableFromFile(tag,filename)</A>
     <LI>
-      <A HREF="scripting-alpha.html#GetPosSub">GetPosSub(feature-tag,script,lang)</A>
+      <A HREF="scripting-alpha.html#LookupStoreLigatureInAfm">LookupStoreLigatureInAfm(lookup-name,store-it)</A>
     <LI>
-      <A HREF="scripting-alpha.html#RemoveATT">RemoveATT(type,script-lang,tag)</A>
+      <A HREF="scripting-alpha.html#LookupSetFeatureList">LookupSetFeatureList(lookup-name,feature-script-lang-array)</A>
+    <LI>
+      <A HREF="scripting-alpha.html#MergeLookups">MergeLookups(lookup-name1,lookup-name2)</A>
+    <LI>
+      <A HREF="scripting-alpha.html#MergeLookupSubtables">MergeLookupSubtables(subtable-name1,subtable-name2)</A>
+    <LI>
+      <A HREF="scripting-alpha.html#RemoveATT"><STRIKE>RemoveATT(type,script-lang,tag)</STRIKE></A>
     <LI>
       <A HREF="scripting-alpha.html#RemoveAnchorClass">RemoveAnchorClass(name)</A>
+    <LI>
+      <A HREF="scripting-alpha.html#RemoveLookup">RemoveLookup(lookup-name)</A>
+    <LI>
+      <A HREF="scripting-alpha.html#RemoveLookupSubtable">RemoveLookupSubtable(subtable-name)</A>
     <LI>
       <A HREF="scripting-alpha.html#RemovePreservedTable">RemovePreservedTable(tag)</A>
     <LI>
@@ -1052,13 +1084,13 @@ endloop
   </H3>
   <UL>
     <LI>
-      <A HREF="scripting-alpha.html#AutoKern">AutoKern(spacing,threshold[,kernfile])</A>
+      <A HREF="scripting-alpha.html#AutoKern">AutoKern(spacing,threshold,subtable-name[,kernfile])</A>
     <LI>
       <A HREF="scripting-alpha.html#AutoWidth">AutoWidth(spacing)</A>
     <LI>
       <A HREF="scripting-alpha.html#CenterInWidth">CenterInWidth()</A>
     <LI>
-      <A HREF="scripting-alpha.html#SetKern">SetKern(ch2,offset)</A>
+      <A HREF="scripting-alpha.html#SetKern">SetKern(ch2,offset[,lookup-subtable])</A>
     <LI>
       <A HREF="scripting-alpha.html#RemoveAllKerns">RemoveAllKerns()</A>
     <LI>
@@ -1068,7 +1100,7 @@ endloop
     <LI>
       <A HREF="scripting-alpha.html#SetRBearing">SetRBearing(rbearing[,relative])</A>
     <LI>
-      <A HREF="scripting-alpha.html#SetVKern">SetVKern(ch2,offset)</A>
+      <A HREF="scripting-alpha.html#SetVKern">SetVKern(ch2,offset[,lookup-subtable])</A>
     <LI>
       <A HREF="scripting-alpha.html#SetVWidth">SetVWidth(vertical-width[,relative])</A>
     <LI>

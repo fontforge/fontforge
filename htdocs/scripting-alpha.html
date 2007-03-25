@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 9-Apr-2006 -->
-  <!-- AP: Last modified: 22-Feb-2007 -->
+  <!-- AP: Last modified: 25-Mar-2007 -->
   <TITLE>Scripting functions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -103,18 +103,13 @@ Generate(filename[,bitmaptype[,fmflags[,res[,mult-sfd-file[,namelist-name]]]]])
 	      </TR>
 	    </TABLE>
 	  <DT>
-	    <A NAME="AddAnchorClass">A</A>ddAnchorClass(name,type,script-lang,tag,flags,merge-with)
+	    <A NAME="AddAnchorClass">A</A>ddAnchorClass(name,type,lookup-subtable-name)<BR>
+	    <STRIKE>AddAnchorClass(name,type,script-lang,tag,flags,merge-with)</STRIKE>
 	  <DD>
 	    These mirror the values of the Anchor class dialog of Element-&gt;Font Info.
 	    The first argument should be a utf8 encoded name for the anchor class. The
 	    second should be one of the strings "default", "mk-mk", or "cursive". The
-	    third should be a script-lang string like:<BR>
-	    <CODE>&nbsp; &nbsp; grek{dflt} latn{dflt,VIT ,ROM }</CODE><BR>
-	    The fourth arg should be a 4 character opentype feature tag. The fifth argument
-	    should be the <A HREF="#otf-flags">otf flags </A>(or -1 to make FontForge
-	    guess appropriate flags). The sixth and last argument should be the name
-	    of another AnchorClass to be merged into the same lookup (or a null string
-	    if this class merges with no other class yet).
+	    third should be a lookup subtable name.
 	  <DT>
 	    <A NAME="AddAnchorPoint">A</A>ddAnchorPoint(name,type,x,y[,lig-index])
 	  <DD>
@@ -125,49 +120,11 @@ Generate(filename[,bitmaptype[,fmflags[,res[,mult-sfd-file[,namelist-name]]]]])
 	    specify the location of the point. The final argument is only present for
 	    things of type "baselig".
 	  <DT>
-	    <A NAME="AddATT">A</A>ddATT(type,script-lang,tag,flags,variant)<BR>
+	    <STRIKE><A NAME="AddATT">A</A>ddATT(type,script-lang,tag,flags,variant)<BR>
 	    AddATT("Position",script-lang,tag,flags,xoff,yoff,h_adv_off,v_adv_off)<BR>
-	    AddATT("Pair",script-lang,tag,flags,name,xoff,yoff,h_adv_off,v_adv_off,xoff2,yoff2,h_adv_off2,v_adv_off2)
+	    AddATT("Pair",script-lang,tag,flags,name,xoff,yoff,h_adv_off,v_adv_off,xoff2,yoff2,h_adv_off2,v_adv_off2)</STRIKE>
 	  <DD>
-	    Allows you to add an Advanced Typography feature to a single selected glyph.
-	    The first argument may be either: Position, Pair, Substitution, AltSubs,
-	    MultSubs or Ligature. The second argument should be a script-lang list where
-	    each 4-character script name is followed by a comma separated list of 4 character
-	    language names (with the languages enclosed in curly braces) -- or the special
-	    string "Nested". As:<BR>
-	    <CODE>&nbsp; &nbsp; grek{dflt} latn{dflt,VIT ,ROM }</CODE><BR>
-	    The third arg should be a 4 character opentype feature tag (or apple
-	    feature/setting).
-	    <P>
-	    The fourth argument should be the <A NAME="otf-flags">otf flags </A>(or -1
-	    to make FontForge guess appropriate flags).
-	    <UL>
-	      <LI>
-		0x0001 =&gt; RightToLeft
-	      <LI>
-		0x0002 =&gt; IgnoreBaseGlyphs
-	      <LI>
-		0x0004 =&gt; IgnoreLigatures
-	      <LI>
-		0x0008 =&gt; IgnoreMarks
-	      <LI>
-		0x00F0 =&gt; not defined
-	      <LI>
-		0xFF00 =&gt; not supported
-	    </UL>
-	    <P>
-	    The remaining argument(s) vary depending on the value of the first (type)
-	    argument. For Position tags there are 4 integral arguments which specify
-	    how this feature modifies the metrics of this glyph. For Pair type the next
-	    argument is the name of the other glyph in the pair followed by 8 integral
-	    arguments, the first 4 specify the changes in positioning to the first glyph,
-	    the next four the changes for the second char. For substitution tags the
-	    fifth argument is the name of another glyph which will replace the current
-	    one. For an AltSubs tag the argument is a space separated list of glyph names
-	    any of which will replace the current one. For a MultSubs the argument is
-	    a space separated list of names all of which will replace the current one.
-	    For a Ligature the argument is a space separated list of glyph names all
-	    of which will be replaced by the current glyph.
+	    See <A HREF="#AddPosSub">AddPosSub</A>
 	  <DT>
 	    <A NAME="AddExtrema" HREF="elementmenu.html#Add-Extrema">AddExtrema</A>()
 	  <DD>
@@ -194,6 +151,75 @@ Generate(filename[,bitmaptype[,fmflags[,res[,mult-sfd-file[,namelist-name]]]]])
 	    already present.<BR>
 	    And instrs is a string containing fontforge's human readable version of tt
 	    instructions, as "<CODE>IUP[x]\nIUP[y]</CODE>"
+	  <DT>
+	    <A NAME="AddLookup">A</A>ddLookup(name,type,flags,features-script-lang-array[,after-lookup-name)
+	  <DD>
+	    Creates a new lookup with the given name, type and flags. It will tag it
+	    with any indicated features. The type of one of
+	    <UL>
+	      <LI>
+		gsub_single
+	      <LI>
+		gsub_multiple
+	      <LI>
+		gsub_alternate
+	      <LI>
+		gsub_ligature
+	      <LI>
+		gsub_context
+	      <LI>
+		gsub_contextchain
+	      <LI>
+		gsub_revesechain
+	      <LI>
+		morx_indic
+	      <LI>
+		morx_context
+	      <LI>
+		morx_insert
+	      <LI>
+		gpos_single
+	      <LI>
+		gpos_pair
+	      <LI>
+		gpos_cursive
+	      <LI>
+		gpos_mark2base
+	      <LI>
+		gpos_mark2ligature
+	      <LI>
+		gpos_mark2mark
+	      <LI>
+		gpos_context
+	      <LI>
+		gpos_contextchain
+	      <LI>
+		kern_statemachine
+	    </UL>
+	    <P>
+	    A feature-script-lang array is an array with one entry for each feature (there
+	    may be no entries if there are no features). Each entry is itself a two element
+	    array, the first entry is a string containing a 4 letter feature tag, and
+	    the second entry is another array (potentially empty) with an entry for each
+	    script for which the feature is active. Each entry here is itself a two element
+	    array. The first element is a 4 letter script tag and the second is an array
+	    of languages. Each entry in the language array is a four letter language.
+	    Example: [["liga",[["latn",["dflt"]]]]]<BR>
+	    The optional final argument allows you to specify the ordering of the lookup.
+	    If not specified the lookup will be come the first lookup in its table.
+	  <DT>
+	    <A NAME="AddLookupSubtable">A</A>ddLookupSubtable(lookup-name,new-subtable-name[,after-subtable])
+	  <DD>
+	    Creates a new subtable within the specified lookup. The optional final argument
+	    allows you to specify the ordering within the lookup. If not specified this
+	    subtable will be first in the lookup.
+	  <DT>
+	    <A NAME="AddPosSub">A</A>ddPosSub(subtable-name,variant-glyph-name(s))<BR>
+	    AddPosSub(subtable-name,dx,dy,dadv_x,dadv_y)<BR>
+	    AddPosSub(subtable-name,other-glyph-name,dx1,dy1,dadv_x1,dadv_y1,dx2,dy2,dadv_x2,dadv_y2)
+	  <DD>
+	    One glyph must be selected. The arguments of the command depend on the type
+	    of the lookup containing the subtable.
 	  <DT>
 	    <A NAME="AddSizeFeature">A</A>ddSizeFeature(default-size[,range-bottom,range-top,style-id,array-of-lang-names])
 	  <DD>
@@ -263,25 +289,7 @@ AddSizeFeature(10,8,12.9,211,[[0x409,"Text"],[0x40c,"Texte"]])
 	    Adds a vertical stem hint to any selected glyphs. The hint starts at location
 	    "start" and is width wide. A hint will be added to all selected glyphs.
 	  <DT>
-	    <A NAME="ApplySubstitution">A</A>pplySubstitution(script,lang,tag)
-	  <DD>
-	    All three arguments must be strings of no more that four characters (shorter
-	    strings will be padded with blanks to become 4 character strings). For each
-	    selected glyph this command will look up that glyph's list of substitutions,
-	    and if it finds a substitution with the tag "tag" (and if that substitution
-	    matches the script and language combination) then it will apply the
-	    substitution-- that is it will find the variant glyph specified in the
-	    substitution and replace the current glyph with the variant, and clear the
-	    variant.
-	    <P>
-	    FontForge recognizes the string "*" as a wildcard for both the script and
-	    the language (not for the tag though). So if you wish to replace all glyphs
-	    with their vertical variants:
-	    <BLOCKQUOTE>
-	      <PRE>SelectAll()
-ApplySubstitution("*","*","vrt2")
-</PRE>
-	    </BLOCKQUOTE>
+	    <STRIKE><A NAME="ApplySubstitution">A</A>pplySubstitution(script,lang,tag)</STRIKE>
 	  <DT>
 	    <A NAME="Array">A</A>rray(size)
 	  <DD>
@@ -323,11 +331,13 @@ a[4][0] = "Nested array";
 	    Generates (TrueType) instructions for selected glyphs. It doesn't do a good
 	    job.
 	  <DT>
-	    <A NAME="AutoKern" HREF="metricsmenu.html#Kern">AutoKern</A>(spacing,threshold[,kernfile])
+	    <A NAME="AutoKern" HREF="metricsmenu.html#Kern">AutoKern</A>(spacing,threshold,subtable-name[,kernfile])<BR>
+	    <STRIKE>AutoKern(spacing,threshold[,kernfile])</STRIKE>
 	  <DD>
 	    (AutoKern doesn't work well in general)<BR>
-	    Guesses at kerning pairs by looking at all selected glyphs, or if a kernfile
-	    is specified, FontForge will read the kern pairs out of the file.
+	    Guesses at kerning pairs by looking at all selected glyphs, store the new
+	    kerning pairs in the indicated subtable, or if a kernfile is specified, FontForge
+	    will read the kern pairs out of the file.
 	  <DT>
 	    <A NAME="AutoTrace" HREF="elementmenu.html#AutoTrace">AutoTrace</A>()
 	  <DD>
@@ -718,25 +728,7 @@ a[4][0] = "Nested array";
 	      </TR>
 	    </TABLE>
 	  <DT>
-	    <A NAME="ControlAfmLigatureOutput">C</A>ontrolAfmLigatureOutput(script,lang,ligature-tag-list)
-	  <DD>
-	    All three arguments must be strings. The first two must be strings containing
-	    four or fewer characters, the third a string containing a comma separated
-	    list of 4 (or fewer) character strings. Ligatures will be placed in an AFM
-	    (tfm/ofm) file only if
-	    <UL>
-	      <LI>
-		their tags match one of the entries in the list
-	      <LI>
-		they are active in the given script with the given language ("*" acts as
-		a wildcard for both script and language).
-	    </UL>
-	    <P>
-	    The default setting is:
-	    <BLOCKQUOTE>
-	      <PRE>ControlAfmLigatureOutput("*","dflt","liga,rlig")
-</PRE>
-	    </BLOCKQUOTE>
+	    <STRIKE><A NAME="ControlAfmLigatureOutput">C</A>ontrolAfmLigatureOutput(script,lang,ligature-tag-list)</STRIKE>
 	  <DT>
 	    <A NAME="ConvertByCMap" HREF="cidmenu.html#ConvertCMap">ConvertByCMap</A>(cmapfilename)
 	  <DD>
@@ -762,24 +754,7 @@ a[4][0] = "Nested array";
 	  <DD>
 	    Copies all foreground splines into the background in all selected glyphs
 	  <DT>
-	    <A NAME="CopyGlyphFeatures" HREF="editmenu.html#CopyGlyphFeatures">CopyGlyphFeatures</A>(arg,...)
-	  <DD>
-	    This copies features from the currently selected glyph (only one) and stores
-	    them in the clipboard.
-	    <P>
-	    arg may be either a string in which case it should be either a four character
-	    opentype tag (like "kern") or a mac feature setting (like "&lt;1,1&gt;").
-	    Or it may be an integer in which case it must be the integer representation
-	    of one of the above. Or arg may be an array of strings and integers (in this
-	    case there may be only one argument).
-	    <P>
-	    The feature 'kern' will match any kerning pair that has the currently selected
-	    glyph as the first character of the two. The (made up) feature '_krn' will
-	    match any kerning pair that has the currently selected glyph as the last
-	    character of the two. Similary for 'vkrn' and '_vkn'.
-	    <P>
-	    This command does NOT copy anchor points. It should, but it doesn't. Use
-	    <A HREF="#CopyAnchors">CopyAnchors</A> for that.
+	    <STRIKE><A NAME="CopyGlyphFeatures" HREF="editmenu.html#CopyGlyphFeatures">CopyGlyphFeatures</A>(arg,...)</STRIKE>
 	  <DT>
 	    <A NAME="CopyLBearing" HREF="editmenu.html#LBearing">CopyLBearing</A>
 	  <DD>
@@ -830,11 +805,7 @@ a[4][0] = "Nested array";
       <TD BGCOLOR=yellow><A NAME="D">D</A></TD>
       <TD><DL>
 	  <DT>
-	    <A NAME="DefaultATT" HREF="elementmenu.html#DefaultATT">DefaultATT</A>(tag)
-	  <DD>
-	    For all selected glyphs make a guess as to what might be an appropriate value
-	    for the given tag. If the tag is "*" then FontForge will apply guesses for
-	    all features it can.
+	    <STRIKE><A NAME="DefaultATT" HREF="elementmenu.html#DefaultATT">DefaultATT</A>(tag)</STRIKE>
 	  <DT>
 	    <A NAME="DefaultOtherSubrs">D</A>efaultOtherSubrs()
 	  <DD>
@@ -1282,6 +1253,26 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
 	    Returns a 4 element array containing [minimum-x-value, minimum-y-value,
 	    maximum-x-value, maximum-y-value] of the entire font.
 	  <DT>
+	    <A NAME="GetLookupInfo">G</A>etLookupInfo(lookup-name)
+	  <DD>
+	    Returns an array whose entries are: [lookup-type, lookup-flags,
+	    feature-script-lang-array] The lookup type is a string as described in
+	    <A HREF="#AddLookup">AddLookup</A>, and the feature-script-lang array is
+	    also described <A HREF="#AddLookup">there</A>.
+	  <DT>
+	    <A NAME="GetLookups">G</A>etLookups(table-name)
+	  <DD>
+	    The table name is either "GPOS" or "GSUB". Returns an array of all lookup
+	    names in that table.
+	  <DT>
+	    <A NAME="GetLookupSubtables">G</A>etLookupSubtables(lookup-name)
+	  <DD>
+	    Returns an array of all subtable names in that lookup.
+	  <DT>
+	    <A NAME="GetLookupOfSubtable">G</A>etLookupOfSubtable(subtable-name)
+	  <DD>
+	    Returns the name of the lookup containing this subtable.
+	  <DT>
 	    <A NAME="GetMaxpValue">G</A>etMaxpValue(field-name)
 	  <DD>
 	    Field name can be the same set of tag strings as
@@ -1293,22 +1284,22 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
 	    <A HREF="#SetOS2Value">SetOS2Value</A>. <CODE>VendorId</CODE> returns a string,
 	    and <CODE>Panose</CODE> returns an array. The others return integers.
 	  <DT>
-	    <A NAME="GetPosSub">G</A>etPosSub(feature-tag,script,lang)
+	    <A NAME="GetPosSub">G</A>etPosSub(lookup-subtable-name)<BR>
+	    <STRIKE>GetPosSub(feature-tag,script,lang)</STRIKE>
 	  <DD>
 	    One glyph must be selected, this returns information about GPOS/GSUB features
 	    attached to this glyph (It will not return information about class based
 	    kerning or contextual features -- nothing that applies to the font as a whole
-	    -- just things relating to the current glyph). The arguments must be 4 letter
-	    strings (or the special string "*" which acts as a wildcard). It returns
-	    an Array of Arrays (with one entry for each feature which matches the arguments).
-	    If nothing matches a 0 length array will be returned.
+	    -- just things relating to the current glyph). The argument must be a
+	    lookup-subtable name (or "*") and only information about the current glyph
+	    in that subtable will be returned, if the argument is "*" all subtable
+	    information will be returned. If nothing matches a 0 length array will be
+	    returned.
 	    <P>
 	    Each sub-array contains the following information
 	    <UL>
 	      <LI>
-		The feature tag (a string)
-	      <LI>
-		The script/language string of this feature
+		The subtable name
 	      <LI>
 		The type (As a string, One of <CODE>Position, Pair, Substitution, AltSubs,
 		MultSubs </CODE>or<CODE> Ligature</CODE>)
@@ -1343,19 +1334,19 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
 	    Examples:
 	    <BLOCKQUOTE>
 	      <PRE>&gt;Select("ffl")
-&gt;Print( GetPosSub("liga","*","*"))
-[[liga,latn{dflt} ,Ligature,f,f,l],
-[liga,latn{dflt} ,Ligature,ff,l]]
+&gt;Print( GetPosSub("Latin ligatures",)
+[[Latin Ligatures ,Ligature,f,f,l],
+[Latin Ligatures ,Ligature,ff,l]]
 &gt;Select("T")
-&gt;Print( GetPosSub("*","*","*"))
-[[kern,latn{dflt} ,Pair,u,0,0,-76,0,0,0,0,0],
-[kern,latn{dflt} ,Pair,e,0,0,-92,0,0,0,0,0],
-[kern,latn{dflt} ,Pair,a,0,0,-92,0,0,0,0,0],
-[kern,latn{dflt} ,Pair,o,0,0,-76,0,0,0,0,0]]
+&gt;Print( GetPosSub("*"))
+[[Latin kerns ,Pair,u,0,0,-76,0,0,0,0,0],
+[Latin kerns ,Pair,e,0,0,-92,0,0,0,0,0],
+[Latin kerns ,Pair,a,0,0,-92,0,0,0,0,0],
+[Latin kerns ,Pair,o,0,0,-76,0,0,0,0,0]]
 &gt;Select("onehalf")
-&gt;Print( GetPosSub("frac","latn","dflt"))
-[[frac,latn{dflt} ,Ligature,one,slash,two],
-[frac,latn{dflt} ,Ligature,one,fraction,two]]
+&gt;Print( GetPosSub("Fractions"))
+[[Fractions ,Ligature,one,slash,two],
+[Fractions ,Ligature,one,fraction,two]]
 </PRE>
 	    </BLOCKQUOTE>
 	  <DT>
@@ -1378,6 +1369,10 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
 	    If index == -1 then the tex font type will be returned (text==0, math==1,
 	    math extended=2)<BR>
 	    Else index is used to index into the font's tex params array.
+	  <DT>
+	    <A NAME="GetSubtableOfAnchor">G</A>etSubtableOfAnchor(anchor-class-name)
+	  <DD>
+	    Returns the name of the lookup subtable containing this anchor class.
 	  <DT>
 	    <A NAME="GetTTFName">G</A>etTTFName(lang,nameid)
 	  <DD>
@@ -1458,27 +1453,30 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
 		(all 4 character strings) and returns whether the glyph has a Position alternate
 		with that tag.
 	      <LI>
-		"Pair" takes three additional arguments, a script, a language and a tag (all
-		4 character strings) and returns whether the glyph has a Pairwise positioning
-		alternate with that tag.
+		<STRIKE>"Pair" takes three additional arguments, a script, a language and
+		a tag (all 4 character strings) and returns whether the glyph has a Pairwise
+		positioning alternate with that tag.</STRIKE>
 	      <LI>
-		"Substitution" takes three additional arguments, a script, a language and
-		a tag (all 4 character strings) and returns the name of the Simple Substitution
-		alternate with that tag (or a null string if there is none).
+		<STRIKE>"Substitution" takes three additional arguments, a script, a language
+		and a tag (all 4 character strings) and returns the name of the Simple
+		Substitution alternate with that tag (or a null string if there is
+		none).</STRIKE>
 	      <LI>
-		"AltSubs" takes three additional arguments, a script, a language and a tag
-		(all 4 character strings) and returns a space separated list of the names
-		of all alternate substitutions with that tag (or a null string if there is
-		none).
+		<STRIKE>"AltSubs" takes three additional arguments, a script, a language
+		and a tag (all 4 character strings) and returns a space separated list of
+		the names of all alternate substitutions with that tag (or a null string
+		if there is none).</STRIKE>
 	      <LI>
-		"MultSubs" takes three additional arguments, a script, a language and a tag
-		(all 4 character strings) and returns a space separated list of all the names
-		of all glyphs this glyph gets decomposed into with that tag (or a null string
-		if there is none).
+		<STRIKE>"MultSubs" takes three additional arguments, a script, a language
+		and a tag (all 4 character strings) and returns a space separated list of
+		all the names of all glyphs this glyph gets decomposed into with that tag
+		(or a null string if there is none).</STRIKE>
 	      <LI>
-		"Ligature" takes three additional arguments, a script, a language and a tag
-		(all 4 character strings) and returns a space separated list of the names
-		of all components with that tag (or a null string if there is none).
+		<STRIKE>"Ligature" takes three additional arguments, a script, a language
+		and a tag (all 4 character strings) and returns a space separated list of
+		the names of all components with that tag (or a null string if there is
+		none).</STRIKE><BR>
+		(See <A HREF="#GetPosSub">GetPosSub</A> for these)
 	      <LI>
 		"GlyphIndex" returns the index of the current glyph in the ttf 'glyf' table,
 		or -1 if it has been created since. This value may change when a
@@ -1505,12 +1503,8 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
 	    <BLOCKQUOTE>
 	      <PRE>Select("A")
 lbearing = GlyphInfo("LBearing")
-kern = GlyphInfo("Kern","O")
 Select(0u410)
 SetLBearing(lbearing)
-SetKern(0u41e,kern)
-Select("a")
-verta = GlyphInfo("Substitution","*","dflt","vrt2")
 </PRE>
 	    </BLOCKQUOTE>
 	</DL>
@@ -1760,6 +1754,16 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	    <A NAME="Log">L</A>og(val)
 	  <DD>
 	    Returns the natural log of val. It can execute with no current font.
+	  <DT>
+	    <A NAME="LookupStoreLigatureInAfm">L</A>ookupStoreLigatureInAfm(lookup-name,store-it)
+	  <DD>
+	    Sets whether the data in this ligature lookup should be stored in an afm
+	    file.
+	  <DT>
+	    <A NAME="LookupSetFeatureList">L</A>ookupSetFeatureList(lookup-name,feature-script-lang-array)
+	  <DD>
+	    Sets the feature list of indicated lookup. The feature-script-lang array
+	    is described at <A HREF="#AddLookup">AddLookup</A>.
 	</DL>
       </TD>
     </TR>
@@ -1778,6 +1782,19 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	  <DD>
 	    Loads Kerning info out of either an afm or a tfm file and merges it into
 	    the current font.
+	  <DT>
+	    <A NAME="MergeLookups">M</A>ergeLookups(lookup-name1,lookup-name2)
+	  <DD>
+	    The lookups must be of the same type. All subtables from lookup-name2 will
+	    be moved to lookup-name1, the features list of lookup-name2 will be merged
+	    with that of lookup-name1, and lookup-name2 will be removed.
+	  <DT>
+	    <A NAME="MergeLookupSubtables">M</A>ergeLookupSubtables(subtable-name1,subtable-name2)
+	  <DD>
+	    The subtables must be in the same lookup. Not all lookup types allow their
+	    subtables to be merged (contextual subtables may not be merged, kerning classes
+	    may not be (kerning pairs may be)). Any information bound to subtable2 will
+	    be bound to subtable1 and subtable2 will be removed.
 	  <DT>
 	    <A NAME="MMAxisBounds">M</A>MAxisBounds(axis)
 	  <DD>
@@ -2208,11 +2225,17 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	  <DD>
 	    Removes the named AnchorClass (and all associated points) from the font.
 	  <DT>
-	    <A NAME="RemoveATT">R</A>emoveATT(type,script-lang,tag)
+	    <STRIKE><A NAME="RemoveATT">R</A>emoveATT(type,script-lang,tag)</STRIKE>
 	  <DD>
-	    Removes any feature tags which match the arguments (which are essentially
-	    the same as <A HREF="#AddATT">AddAAT</A>, except that any of them may be
-	    "*" which will match anything).
+	    See <A HREF="#RemoveLookupSubtable">RemoveLookupSubtable</A>
+	  <DT>
+	    <A NAME="RemoveLookup">R</A>emoveLookup(lookup-name)
+	  <DD>
+	    Remove the lookup (and any subtables within it).
+	  <DT>
+	    <A NAME="RemoveLookupSubtable">R</A>emoveLookupSubtable(subtable-name)
+	  <DD>
+	    Remove the subtable.
 	  <DT>
 	    <A NAME="RemoveDetachedGlyphs">RemoveDetachedGlyphs</A>()
 	  <DD>
@@ -2412,53 +2435,13 @@ verta = GlyphInfo("Substitution","*","dflt","vrt2")
 	    fonts then size should be set to (depth&lt;&lt;16)|pixel_size. A value of
 	    -1 for size deselects all bitmaps (units become em-units).
 	  <DT>
-	    <A NAME="SelectByATT">S</A>electByATT(type,tags,contents,search-type)
+	    <STRIKE><A NAME="SelectByATT">S</A>electByATT(type,tags,contents,search-type)</STRIKE>
 	  <DD>
-	    See the <A HREF="selectbyatt.html">Select By ATT menu command</A>. The values
-	    for type are:
-	    <TABLE>
-	      <TR>
-		<TD><CODE>"Position"</CODE></TD>
-		<TD>Simple position</TD>
-	      </TR>
-	      <TR>
-		<TD><CODE>"Pair"</CODE></TD>
-		<TD>Pairwise positioning (but not kerning)</TD>
-	      </TR>
-	      <TR>
-		<TD><CODE>"Substitution"</CODE></TD>
-		<TD>Simple substitution</TD>
-	      </TR>
-	      <TR>
-		<TD><CODE>"AltSubs"</CODE></TD>
-		<TD>Alternate substitution</TD>
-	      </TR>
-	      <TR>
-		<TD><CODE>"MultSubs"</CODE></TD>
-		<TD>Multiple substitution</TD>
-	      </TR>
-	      <TR>
-		<TD><CODE>"Ligature"</CODE></TD>
-		<TD>Ligature</TD>
-	      </TR>
-	      <TR>
-		<TD><CODE>"LCaret"</CODE></TD>
-		<TD>Ligature caret</TD>
-	      </TR>
-	      <TR>
-		<TD><CODE>"Kern"</CODE></TD>
-		<TD>Kerning</TD>
-	      </TR>
-	      <TR>
-		<TD><CODE>"VKern"</CODE></TD>
-		<TD>Vertical Kerning</TD>
-	      </TR>
-	      <TR>
-		<TD><CODE>"Anchor"</CODE></TD>
-		<TD>Anchor class</TD>
-	      </TR>
-	    </TABLE>
-	    <P>
+	    See <A HREF="#SelectByPosSub">SelectByPosSub</A>
+	  <DT>
+	    <A NAME="SelectByPosSub">SelectByPosSub</A>(lookup-subtable-name,search_type)
+	  <DD>
+	    Selects all glyphs affected by the lookup subtable.<BR>
 	    And for search_type
 	    <OL>
 	      <LI>
@@ -2649,11 +2632,12 @@ SetGasp([8,2,16,1,65535,3])
 	    then angle will be divided by denom before setting the italic angle field
 	    (a hack to get real values). The angle should be in degrees.
 	  <DT>
-	    <A NAME="SetKern">S</A>etKern(ch2,offset)
+	    <A NAME="SetKern">S</A>etKern(ch2,offset[,lookup-subtable-name])
 	  <DD>
 	    Sets the kern between any selected glyphs and the glyph ch2 to be offset.
 	    The first argument may be specified as in Select(), the second is an integer
-	    representing the kern offset.
+	    representing the kern offset. You can also specify a lookup-subtable-name
+	    in which to put the kerning pair.
 	  <DT>
 	    <A NAME="SetLBearing" HREF="metricsmenu.html#LBearing">SetLBearing</A>(lbearing[,relative])
 	  <DD>
@@ -2808,11 +2792,12 @@ SetGasp([8,2,16,1,65535,3])
 	    Sets the postscript uniqueid field as requested. If you give a value of 0
 	    then FontForge will pick a reasonable random number for you.
 	  <DT>
-	    <A NAME="SetVKern">S</A>etVKern(ch2,offset)
+	    <A NAME="SetVKern">S</A>etVKern(ch2,offset[,lookup-subtable-name])
 	  <DD>
 	    Sets the kern between any selected glyphs and the glyph ch2 to be offset.
 	    The first argument may be specified as in Select(), the second is an integer
-	    representing the kern offset.
+	    representing the kern offset. You can also specify a lookup-subtable-name
+	    in which to put the kerning pair.
 	  <DT>
 	    <A NAME="SetVWidth" HREF="metricsmenu.html#vertical">SetVWidth</A>(vertical-width[,relative])
 	  <DD>
