@@ -103,6 +103,15 @@ return( l==first?1:lcnt );		/* if we can't even fit one line on, pretend it fits
 	height -= temp;
 	++lcnt;
     }
+    if ( height>0 ) {
+	if ( gl->fh==0 ) {
+	    int as, ds, ld;
+	    GDrawFontMetrics(gl->font,&as, &ds, &ld);
+	    gl->fh = as+ds;
+	    gl->as = as;
+	}
+	lcnt += height/gl->fh;
+    }
 return( lcnt );
 }
 

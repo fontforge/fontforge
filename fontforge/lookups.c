@@ -265,35 +265,40 @@ return( langs );
 }
 
 uint32 *SFFeaturesInScriptLang(SplineFont *sf,int gpos,uint32 script,uint32 lang) {
-    int cnt=0, tot=0, i, l;
+    int cnt=0, tot=0, i, l, isg;
     uint32 *features = NULL;
     OTLookup *test;
     FeatureScriptLangList *fl;
     struct scriptlanglist *sl;
 
-    for ( test = gpos ? sf->gpos_lookups : sf->gsub_lookups; test!=NULL; test = test->next ) {
-	if ( test->unused )
+    if ( sf->cidmaster ) sf=sf->cidmaster;
+    for ( isg = 0; isg<2; ++isg ) {
+	if ( gpos!=-1 && isg!=gpos )
     continue;
-	for ( fl=test->features; fl!=NULL; fl=fl->next ) {
-	    if ( fl->ismac )
+	for ( test = isg ? sf->gpos_lookups : sf->gsub_lookups; test!=NULL; test = test->next ) {
+	    if ( test->unused )
 	continue;
-	    for ( sl=fl->scripts ; sl!=NULL; sl=sl->next ) {
-		if ( sl->script==script || (add_DFLT_script && script==DEFAULT_SCRIPT)) {
-		    for ( l=0; l<sl->lang_cnt; ++l ) {
-			int testlang;
-			if ( l<MAX_LANG )
-			    testlang = sl->langs[l];
-			else
-			    testlang = sl->morelangs[l-MAX_LANG];
-			if ( testlang==lang ) {
-			    for ( i=0; i<cnt; ++i ) {
-				if ( fl->featuretag==features[i] )
-			    break;
-			    }
-			    if ( i==cnt ) {
-				if ( cnt>=tot )
-				    features = grealloc(features,(tot+=10)*sizeof(uint32));
-				features[cnt++] = fl->featuretag;
+	    for ( fl=test->features; fl!=NULL; fl=fl->next ) {
+		if ( fl->ismac )
+	    continue;
+		for ( sl=fl->scripts ; sl!=NULL; sl=sl->next ) {
+		    if ( sl->script==script || (add_DFLT_script && script==DEFAULT_SCRIPT)) {
+			for ( l=0; l<sl->lang_cnt; ++l ) {
+			    int testlang;
+			    if ( l<MAX_LANG )
+				testlang = sl->langs[l];
+			    else
+				testlang = sl->morelangs[l-MAX_LANG];
+			    if ( testlang==lang ) {
+				for ( i=0; i<cnt; ++i ) {
+				    if ( fl->featuretag==features[i] )
+				break;
+				}
+				if ( i==cnt ) {
+				    if ( cnt>=tot )
+					features = grealloc(features,(tot+=10)*sizeof(uint32));
+				    features[cnt++] = fl->featuretag;
+				}
 			    }
 			}
 		    }
@@ -1032,21 +1037,34 @@ void NameOTLookup(OTLookup *otl,SplineFont *sf) {
     if ( fl!=NULL && fl->scripts!=NULL ) {
 	char buf[8];
 	int j;
+	struct scriptlanglist *sl, *found;
 	uint32 script_tag = fl->scripts->script;
-	if ( script_tag == DEFAULT_SCRIPT && fl->scripts->next!=NULL )
-	    script_tag = fl->scripts->next->script;
-	for ( j=0; scripts[j].text!=NULL && script_tag!=(uint32) (intpt) scripts[j].userdata; ++j );
-	if ( scripts[j].text!=NULL )
-	    script = copy( S_((char *) scripts[j].text) );
-	else {
-	    buf[0] = '\'';
-	    buf[1] = fl->scripts->script>>24;
-	    buf[2] = (fl->scripts->script>>16)&0xff;
-	    buf[3] = (fl->scripts->script>>8)&0xff;
-	    buf[4] = fl->scripts->script&0xff;
-	    buf[5] = '\'';
-	    buf[6] = 0;
-	    script = copy(buf);
+	found = NULL;
+	for ( sl = fl->scripts; sl!=NULL; sl=sl->next ) {
+	    if ( sl->script == DEFAULT_SCRIPT )
+		/* Ignore it */;
+	    else if ( found==NULL )
+		found = sl;
+	    else {
+		found = NULL;
+	break;
+	    }
+	}
+	if ( found!=NULL ) {
+	    script_tag = found->script;
+	    for ( j=0; scripts[j].text!=NULL && script_tag!=(uint32) (intpt) scripts[j].userdata; ++j );
+	    if ( scripts[j].text!=NULL )
+		script = copy( S_((char *) scripts[j].text) );
+	    else {
+		buf[0] = '\'';
+		buf[1] = fl->scripts->script>>24;
+		buf[2] = (fl->scripts->script>>16)&0xff;
+		buf[3] = (fl->scripts->script>>8)&0xff;
+		buf[4] = fl->scripts->script&0xff;
+		buf[5] = '\'';
+		buf[6] = 0;
+		script = copy(buf);
+	    }
 	}
     }
 /* GT: This string is used to generate a name for each OpenType lookup. */

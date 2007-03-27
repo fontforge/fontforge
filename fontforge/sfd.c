@@ -4795,9 +4795,11 @@ static void SFDParseLookup(FILE *sfd,SplineFont *sf,OTLookup *otl) {
 	    sub->lookup = otl;
 	    switch ( otl->lookup_type ) {
 	      case gsub_single:
-		if ( (ch=getc(sfd))=='(' ) {
+		while ( (ch=getc(sfd))==' ' );
+		if ( ch=='(' ) {
 		    sub->suffix = SFDReadUTF7Str(sfd);
-		    getc(sfd);	/* slurp final paren */
+		    while ( (ch=getc(sfd))==' ' );
+			/* slurp final paren */
 		} else
 		    ungetc(ch,sfd);
 		sub->per_glyph_pst_or_kern = true;
