@@ -32,9 +32,9 @@
 #include <utype.h>
 #include <math.h>
 
-static uint32 simple_stdfeatures[] = { CHR('c','c','m','p'), CHR('l','o','c','a'), CHR('k','e','r','n'), CHR('l','i','g','a'), CHR('c','a','l','t'), CHR('m','a','r','k'), CHR('m','k','m','k'), 0 };
-static uint32 arab_stdfeatures[] = { CHR('c','c','m','p'), CHR('l','o','c','a'), CHR('i','s','o','l'), CHR('i','n','i','t'), CHR('m','e','d','i'),CHR('f','i','n','a'), CHR('r','l','i','g'), CHR('l','i','g','a'), CHR('c','a','l','t'), CHR('k','e','r','n'), CHR('c','u','r','s'), CHR('m','a','r','k'), CHR('m','k','m','k'), 0 };
-static uint32 hebrew_stdfeatures[] = { CHR('c','c','m','p'), CHR('l','o','c','a'), CHR('l','i','g','a'), CHR('c','a','l','t'), CHR('k','e','r','n'), CHR('m','a','r','k'), CHR('m','k','m','k'), 0 };
+static uint32 simple_stdfeatures[] = { CHR('c','c','m','p'), CHR('l','o','c','a'), CHR('k','e','r','n'), CHR('l','i','g','a'), CHR('c','a','l','t'), CHR('m','a','r','k'), CHR('m','k','m','k'), REQUIRED_FEATURE, 0 };
+static uint32 arab_stdfeatures[] = { CHR('c','c','m','p'), CHR('l','o','c','a'), CHR('i','s','o','l'), CHR('i','n','i','t'), CHR('m','e','d','i'),CHR('f','i','n','a'), CHR('r','l','i','g'), CHR('l','i','g','a'), CHR('c','a','l','t'), CHR('k','e','r','n'), CHR('c','u','r','s'), CHR('m','a','r','k'), CHR('m','k','m','k'), REQUIRED_FEATURE, 0 };
+static uint32 hebrew_stdfeatures[] = { CHR('c','c','m','p'), CHR('l','o','c','a'), CHR('l','i','g','a'), CHR('c','a','l','t'), CHR('k','e','r','n'), CHR('m','a','r','k'), CHR('m','k','m','k'), REQUIRED_FEATURE, 0 };
 static struct { uint32 script, *stdfeatures; } script_2_std[] = {
     { CHR('l','a','t','n'), simple_stdfeatures },
     { CHR('D','F','L','T'), simple_stdfeatures },
@@ -386,42 +386,30 @@ static void MVSetSubtables(MetricsView *mv) {
 
 static void MVSetFeatures(MetricsView *mv) {
     SplineFont *sf = mv->sf;
-    int isgpos, k, i, j, cnt;
-    OTLookup *otl;
-    FeatureScriptLangList *fl;
+    int i, j, cnt;
     GTextInfo **ti=NULL;
-    uint32 *tags = NULL, script;
+    uint32 *tags = NULL, script, lang;
     char buf[8];
     uint32 *stds;
     const unichar_t *pt = _GGadgetGetTitle(mv->script);
-
-    if ( sf->cidmaster ) sf=sf->cidmaster;
-    for ( k=0; k<2; ++k ) {
-	cnt = 0;
-	for ( isgpos=0; isgpos<2; ++isgpos) {
-	    for ( otl= isgpos ? sf->gpos_lookups : sf->gsub_lookups; otl!=NULL; otl = otl->next ) {
-		for ( fl=otl->features; fl!=NULL; fl=fl->next ) {
-		    if ( k ) {
-			for ( i=0; i<cnt; ++i )
-			    if ( tags[i]==fl->featuretag )
-			break;
-			if ( i==cnt )
-			    tags[cnt++] = fl->featuretag;
-		    } else
-			++cnt;
-		}
-	    }
-	}
-	if ( !k )
-	    tags = galloc((cnt+1)*sizeof(uint32));
-    }
-
-    /*qsort(tags,cnt,sizeof(uint32),tag_comp);*/ /* The glist will do this for us */
+    int temp_add;
+    extern int add_DFLT_script;
 
     script = DEFAULT_SCRIPT;
+    lang = DEFAULT_LANG;
     if ( u_strlen(pt)>=4 )
 	script = (pt[0]<<24) | (pt[1]<<16) | (pt[2]<<8) | pt[3];
+    if ( pt[4]=='{' && u_strlen(pt)>=9 )
+	lang = (pt[5]<<24) | (pt[6]<<16) | (pt[7]<<8) | pt[8];
     stds = StdFeaturesOfScript(script);
+
+    temp_add = add_DFLT_script; add_DFLT_script = false;
+    tags = SFFeaturesInScriptLang(sf,-1,script,lang);
+    add_DFLT_script = temp_add;
+    /* Never returns NULL */
+    for ( cnt=0; tags[cnt]!=0; ++cnt );
+
+    /*qsort(tags,cnt,sizeof(uint32),tag_comp);*/ /* The glist will do this for us */
 
     ti = galloc((cnt+2)*sizeof(GTextInfo *));
     for ( i=0; i<cnt; ++i ) {
@@ -729,15 +717,21 @@ static void MVRemetric(MetricsView *mv) {
     }
     if ( _script[0]=='D' && _script[1]=='F' && _script[2]=='L' && _script[3]=='T' ) {
 	if ( goodsc!=NULL ) {
-	    /* Set the script */
+	    /* Set the script */ /* Remember if we get here the script is DFLT */
 	    script = SCScriptFromUnicode(goodsc);
 	    buf[0] = script>>24; buf[1] = script>>16; buf[2] = script>>8; buf[3] = script;
 	    strcpy(buf+4,"{dflt}");
 	    GGadgetSetTitle8(mv->script,buf);
 	    MVSelectSubtableForScript(mv,script);
+	    MVSetFeatures(mv);
 	}
-    } else if ( anysc==NULL )
-	GGadgetSetTitle8(mv->script,"DFLT{dflt}");
+    } else {
+	if ( anysc==NULL ) {
+	    /* If we get here the script is not DFLT */
+	    GGadgetSetTitle8(mv->script,"DFLT{dflt}");
+	    MVSetFeatures(mv);
+	}
+    }
     _script = _GGadgetGetTitle(mv->script);
     script = DEFAULT_SCRIPT; lang = DEFAULT_LANG;
     if ( u_strlen(_script)>=4 && (u_strchr(_script,'{')==NULL || u_strchr(_script,'{')-_script>=4)) {
@@ -1443,15 +1437,18 @@ static int MV_ScriptLangChanged(GGadget *g, GEvent *e) {
 	if ( e->u.control.u.tf_changed.from_pulldown!=-1 ) {
 	    GGadgetSetTitle8(g,mv->scriptlangs[e->u.control.u.tf_changed.from_pulldown].userdata );
 	    sstr = _GGadgetGetTitle(g);
+	} else {
+	    if ( u_strlen(sstr)<4 || !isalpha(sstr[0]) || !isalnum(sstr[1]) /*|| !isalnum(sstr[2]) || !isalnum(sstr[3])*/ )
+return( true );
+	    if ( u_strlen(sstr)==4 )
+		/* No language, we'll use default */;
+	    else if ( u_strlen(sstr)!=10 || sstr[4]!='{' || sstr[9]!='}' ||
+		    !isalpha(sstr[5]) || !isalpha(sstr[6]) || !isalpha(sstr[7])  )
+return( true );
 	}
-	if ( u_strlen(sstr)<4 || !isalpha(sstr[0]) || !isalnum(sstr[1]) /*|| !isalnum(sstr[2]) || !isalnum(sstr[3])*/ )
-return( true );
-	if ( u_strlen(sstr)==4 )
-	    /* No language, we'll use default */;
-	else if ( u_strlen(sstr)!=10 || sstr[4]!='{' || sstr[9]!='}' ||
-		!isalpha(sstr[5]) || !isalpha(sstr[6]) || !isalpha(sstr[7])  )
-return( true );
-	MVRemetric(mv);
+	MVSetFeatures(mv);
+	if ( mv->clen!=0 )/* if there are no chars, remetricking will set the script field to DFLT */
+	    MVRemetric(mv);
 	GDrawRequestExpose(mv->gw,NULL,false);
     }
 return( true );
