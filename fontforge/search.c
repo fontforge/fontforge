@@ -404,16 +404,16 @@ static int SCMatchesFull(SplineChar *sc,SearchView *s) {
 	for ( r = sc->layers[ly_fore].refs, i=0; r!=NULL; r=r->next, ++i ) if ( !(s->matched_refs&(1<<i)) ) {
 	    if ( r->sc == s_r->sc ) {
 		/* I should check the transform to see if the tryflips (etc) flags would make this not a match */
-		if ( r->transform[0]==1 && r->transform[1]==0 &&
-			r->transform[2]==0 && r->transform[3]==1 ) {
+		if ( r->transform[0]==s_r->transform[0] && r->transform[1]==s_r->transform[1] &&
+			r->transform[2]==s_r->transform[2] && r->transform[3]==s_r->transform[3] ) {
 		    if ( first ) {
 			s->matched_scale = 1.0;
-			s->matched_x = r->transform[4];
-			s->matched_y = r->transform[5];
+			s->matched_x = r->transform[4]-s_r->transform[4];
+			s->matched_y = r->transform[5]-s_r->transform[5];
 			first = false;
 	break;
-		    } else if ( r->transform[4]==s->matched_x &&
-			    r->transform[5] == s->matched_y )
+		    } else if ( r->transform[4]-s_r->transform[4]==s->matched_x &&
+			    r->transform[5]-s_r->transform[5] == s->matched_y )
 	break;
 		}
 	    }
