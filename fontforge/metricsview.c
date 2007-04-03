@@ -2071,6 +2071,8 @@ static void MVMenuCleanup(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void MVMenuAddExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     int i;
+    SplineFont *sf = mv->sf;
+    int emsize = sf->ascent+sf->descent;
 
     for ( i=mv->glyphcnt-1; i>=0; --i )
 	if ( mv->perchar[i].selected )
@@ -2078,7 +2080,7 @@ static void MVMenuAddExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     if ( i!=-1 ) {
 	SplineChar *sc = mv->glyphs[i].sc;
 	SCPreserveState(sc,false);
-	SplineCharAddExtrema(sc,sc->layers[ly_fore].splines,ae_only_good,sc->parent);
+	SplineCharAddExtrema(sc,sc->layers[ly_fore].splines,ae_only_good,emsize);
 	SCCharChangedUpdate(sc);
     }
 }

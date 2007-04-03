@@ -1533,7 +1533,7 @@ static SplineSet *_SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc)
 return( ssplus );
     }
 
-    SplineSetAddExtrema(NULL,spl,ae_all,NULL);
+    SplineSetAddExtrema(NULL,spl,ae_all,1000/* Not used*/);
 
     if ( spl->first==spl->last && spl->first->next!=NULL ) {
 	/* My routine gets screwed up by counter-clockwise triangles */

@@ -826,13 +826,6 @@ void CVMouseUpFreeHand(CharView *cv, GEvent *event) {
 	cv->freehand.current_trace = TraceCurve(cv);
     }
     if ( cv->freehand.current_trace!=NULL ) {
-#if 0
-	SplinePointListSimplify(cv->sc,cv->freehand.current_trace,
-		sf_ignoreextremum,.75/cv->scale,0);
-	SplineCharAddExtrema(cv->sc,cv->freehand.current_trace,ae_all);
-	SplinePointListSimplify(cv->sc,cv->freehand.current_trace,
-		sf_normal,.75/cv->scale,0);
-#endif
 	CVPreserveState(cv);
 	if ( cv->sc->parent->order2 )
 	    cv->freehand.current_trace = SplineSetsTTFApprox(cv->freehand.current_trace);

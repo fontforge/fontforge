@@ -6485,11 +6485,12 @@ return;
 
 static void _CVMenuAddExtrema(CharView *cv) {
     int anysel;
+    SplineFont *sf = cv->sc->parent;
 
     (void) CVAnySel(cv,&anysel,NULL,NULL,NULL);
     CVPreserveState(cv);
     SplineCharAddExtrema(cv->sc,cv->layerheads[cv->drawmode]->splines,
-	    anysel?ae_between_selected:ae_only_good,cv->sc->parent);
+	    anysel?ae_between_selected:ae_only_good,sf->ascent+sf->descent);
     CVCharChangedUpdate(cv);
 }
 
