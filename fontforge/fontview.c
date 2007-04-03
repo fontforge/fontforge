@@ -3594,6 +3594,8 @@ void FontViewMenu_CanonicalContours(GtkMenuItem *menuitem, gpointer user_data) {
 static void FVAddExtrema(FontView *fv) {
     int i, cnt=0, layer, gid;
     SplineChar *sc;
+    SplineFont *sf = fv->sf;
+    int emsize = sf->ascent+sf->descent;
 
     for ( i=0; i<fv->map->enccount; ++i )
 	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
@@ -3611,7 +3613,7 @@ static void FVAddExtrema(FontView *fv) {
 	sc->ticked = true;
 	SCPreserveState(sc,false);
 	for ( layer = ly_fore; layer<sc->layer_cnt; ++layer )
-	    SplineCharAddExtrema(sc,sc->layers[layer].splines,ae_only_good,sc->parent);
+	    SplineCharAddExtrema(sc,sc->layers[layer].splines,ae_only_good,emsize);
 	SCCharChangedUpdate(sc);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	if ( !gwwv_progress_next())

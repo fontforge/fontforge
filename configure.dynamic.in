@@ -133,6 +133,52 @@ if test "$gww_uselessiconv" = "no" ; then
  AC_SEARCH_LIBS(libiconv, iconv) dnl linux has iconv in libc, mac,solaris have libiconv in libiconv, and a define to map iconv() to libiconv(), so we can't do the obvious check
 fi
 
+python="yes"
+AC_ARG_WITH(python,
+ [  --with-python   Include a python interpreter],
+ [
+    if test "$withval" != "no" >/dev/null 2>&1 ; then
+	python="no"
+    fi
+ ], : )
+if test "$python" = "yes" ; then
+  AC_SEARCH_LIBS(Py_Initialize, python, : , python="no" )
+fi
+if test "$python" = "yes" ; then
+  echo -n checking for Python.h...
+  Python_Incs=`echo /usr/include/*/Python.h | sort -r | sed -e 's/Python.h//'`
+  if test "$Python_Incs" = "" >/dev/null 2>&1 ; then
+    Python_Incs=`echo /usr/local/include/*/Python.h | sort -r | sed -e 's/Python.h//'`
+  fi
+  
+  Python_Inc=""
+  for dir in $Python_Incs; do
+    Python_Inc=$dir
+  break
+  done
+  if test "$Python_Inc" = "" >/dev/null 2>&1 ; then
+   python="no"
+   echo "no"
+  else
+   CFLAGS="$CFLAGS -I$Python_Inc"
+   echo "yes"
+  fi
+fi
+if test "$python" = "no" ; then
+  AC_DEFINE(_NO_PYTHON)
+fi
+ffscript="yes"
+AC_ARG_WITH(native-script,
+ [  --with-native-script   Include a legacy fontforge scripting interpreter],
+ [
+    if test "$withval" != "no" >/dev/null 2>&1 ; then
+	ffscript="no"
+    fi
+ ], : )
+if test "ffscript" = "no" ; then
+  AC_DEFINE(_NO_FFSCRIPT)
+fi
+
 AC_CHECK_FUNC(tzset,:,AC_DEFINE(_NO_TZSET))
 
 dnl Is there a better way to add a directory to the include path?

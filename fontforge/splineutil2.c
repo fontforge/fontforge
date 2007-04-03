@@ -2986,7 +2986,7 @@ return( s );
     }
 }
 
-void SplineSetAddExtrema(SplineChar *sc, SplineSet *ss,enum ae_type between_selected, SplineFont *sf) {
+void SplineSetAddExtrema(SplineChar *sc, SplineSet *ss,enum ae_type between_selected, int emsize) {
     Spline *s, *first;
     DBounds b;
     int always = true;
@@ -2996,7 +2996,7 @@ void SplineSetAddExtrema(SplineChar *sc, SplineSet *ss,enum ae_type between_sele
 
     if ( between_selected==ae_only_good ) {
 	SplineSetQuickBounds(ss,&b);
-	lenbound = (sf->ascent+sf->descent)/32.0;
+	lenbound = (emsize)/32.0;
 	always = false;
 	offsetbound = .5;
 	between_selected = ae_only_good_rm_later;
@@ -3034,11 +3034,11 @@ void SplineSetAddExtrema(SplineChar *sc, SplineSet *ss,enum ae_type between_sele
     }
 }
 
-void SplineCharAddExtrema(SplineChar *sc, SplineSet *head,enum ae_type between_selected,SplineFont *sf) {
+void SplineCharAddExtrema(SplineChar *sc, SplineSet *head,enum ae_type between_selected,int emsize) {
     SplineSet *ss;
 
     for ( ss=head; ss!=NULL; ss=ss->next ) {
-	SplineSetAddExtrema(sc,ss,between_selected,sf);
+	SplineSetAddExtrema(sc,ss,between_selected,emsize);
     }
 }
 

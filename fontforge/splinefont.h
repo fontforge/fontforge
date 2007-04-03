@@ -1019,7 +1019,7 @@ typedef struct layer /* : reflayer */{
 } Layer;
 
 enum layer_type { ly_grid= -1, ly_back=0, ly_fore=1 /* Possibly other foreground layers for multi-layered things */ };
-    
+
 typedef struct splinechar {
     char *name;
     int unicodeenc;
@@ -1088,6 +1088,8 @@ typedef struct splinechar {
     int16 tex_height, tex_depth;
     int16 tex_sub_pos, tex_super_pos;	/* Only for math fonts */
     struct altuni { struct altuni *next; int unienc; } *altuni;
+    void *python_sc_object;
+    void *python_data;
 } SplineChar;
 
 #define TEX_UNDEF 0x7fff
@@ -1733,8 +1735,8 @@ extern SplineSet *SplineSetJoin(SplineSet *start,int doall,real fudge,int *chang
 enum ae_type { ae_all, ae_between_selected, ae_only_good, ae_only_good_rm_later };
 extern Spline *SplineAddExtrema(Spline *s,int always,real lenbound,
 	real offsetbound,DBounds *b);
-extern void SplineSetAddExtrema(SplineChar *sc,SplineSet *ss,enum ae_type between_selected, SplineFont *sf);
-extern void SplineCharAddExtrema(SplineChar *sc,SplineSet *head,enum ae_type between_selected,SplineFont *sf);
+extern void SplineSetAddExtrema(SplineChar *sc,SplineSet *ss,enum ae_type between_selected, int emsize);
+extern void SplineCharAddExtrema(SplineChar *sc,SplineSet *head,enum ae_type between_selected,int emsize);
 extern SplineSet *SplineCharRemoveTiny(SplineChar *sc,SplineSet *head);
 extern SplineFont *SplineFontNew(void);
 extern char *GetNextUntitledName(void);
