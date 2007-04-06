@@ -6519,6 +6519,7 @@ return;
     }
 
     CVPreserveState(cv);
+    smpl->check_selected_contours = true;
     cv->layerheads[cv->drawmode]->splines = SplineCharSimplify(cv->sc,cv->layerheads[cv->drawmode]->splines,
 	    smpl);
     CVCharChangedUpdate(cv);

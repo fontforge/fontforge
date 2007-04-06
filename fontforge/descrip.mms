@@ -35,7 +35,7 @@ fontforge_OBJECTS7=macenc.obj,statemachine.obj,typofeatures.obj,splinerefigure.o
 	palmfonts.obj,cvdgloss.obj,groups.obj,parsepdf.obj,plugins.obj
 
 fontforge_OBJECTS8=bdfinfo.obj,glyphcomp.obj,unicoderange.obj,ufo.obj,\
-	ofl.o
+	ofl.obj,lookups.obj,sfd1.obj,python.obj
 
 fontforge.exe : main.obj lff.opt xlib.opt [-.libs]libfontforge.exe
         link/exec=fontforge.exe main,lff/opt,[-.libs]LIBGDRAW/lib,\
@@ -191,3 +191,6 @@ glyphcomp.obj : glyphcomp.c
 unicoderange.obj : unicoderange.c
 ufo.obj : ufo.c
 ofl.obj : ofl.c
+lookups.obj : lookups.c
+sfd1.obj : sfd1.c
+python.obj : python.c

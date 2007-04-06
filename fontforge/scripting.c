@@ -52,6 +52,7 @@ int no_windowing_ui = false;
 int running_script = false;
 int use_utf8_in_script = true;
 
+#ifndef _NO_FFSCRIPT
 static struct dictionary globals;
 
 struct keywords { enum token_type tok; char *name; } keywords[] = {
@@ -9094,7 +9095,7 @@ static void VerboseCheck(void) {
 	verbose = getenv("FONTFORGE_VERBOSE")!=NULL;
 }
 
-static void ProcessScript(int argc, char *argv[], FILE *script) {
+static void ProcessNativeScript(int argc, char *argv[], FILE *script) {
     int i,j;
     Context c;
     enum token_type tok;
@@ -9172,32 +9173,109 @@ static void ProcessScript(int argc, char *argv[], FILE *script) {
     free(c.dontfree);
     exit(0);
 }
+#endif		/* _NO_FFSCRIPT */
+
+#if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
+static int PythonLangFromExt(char *prog) {
+    char *ext;
+
+    if ( prog==NULL )
+return( -1 );
+    ext = strrchr(prog,'.');
+    if ( ext==NULL )
+return( -1 );
+    ++ext;
+    if ( strcmp(ext,"py")==0 )
+return( 1 );
+
+return( 0 );
+}
+#endif
+
+#if !defined(_NO_FFSCRIPT) || !defined(_NO_PYTHON)
+static int DefaultLangPython(void) {
+    static int def_py = -2;
+    char *pt;
+
+    if ( def_py!=-2 )
+return( def_py );
+    pt = getenv("FONTFORGE_LANGUAGE");
+    if ( pt==NULL )
+	def_py = -1;
+    else if ( strcmp(pt,"py")==0 )
+	def_py = 1;
+    else
+	def_py = 0;
+return( def_py );
+}
 
 static void _CheckIsScript(int argc, char *argv[]) {
+    int i, is_python = DefaultLangPython();
+    char *arg;
+
     if ( argc==1 )
 return;
-    if ( strcmp(argv[1],"-")==0 )	/* Someone thought that, of course, "-" meant read from a script. I guess it makes no sense with anything else... */
-	ProcessScript(argc, argv,stdin);
-    if ( strcmp(argv[1],"-script")==0 || strcmp(argv[1],"--script")==0 ||
-	    strcmp(argv[1],"-dry")==0 || strcmp(argv[1],"--dry")==0 ||
-	    strcmp(argv[1],"-c")==0 || strcmp(argv[1],"--c")==0 )
-	ProcessScript(argc, argv,NULL);
-    else if ( (strcmp(argv[1],"-nosplash")==0 || strcmp(argv[1],"--nosplash")==0) &&
-	    argc>=3 && ( strcmp(argv[2],"-script")==0 || strcmp(argv[2],"--script")==0 ))
-	ProcessScript(argc, argv,NULL);
-    /*if ( access(argv[1],X_OK|R_OK)==0 )*/ {
-	FILE *temp = fopen(argv[1],"r");
-	char buffer[200];
-	if ( temp==NULL )
+    for ( i=1; i<argc; ++i ) {
+	arg = argv[i];
+	if ( *arg=='-' && arg[1]=='-' ) ++arg;
+	if ( strcmp(arg,"-nosplash")==0 )
+	    /* Skip it */;
+	else if ( strcmp(argv[i],"-lang=py")==0 )
+	    is_python = true;
+	else if ( strcmp(argv[i],"-lang=ff")==0 || strcmp(argv[i],"-lang=pe")==0 )
+	    is_python = false;
+	else if ( strcmp(argv[i],"-")==0 ) {	/* Someone thought that, of course, "-" meant read from a script. I guess it makes no sense with anything else... */
+#if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
+	    if ( is_python )
+		PyFF_Stdin();
+	    else
+		ProcessNativeScript(argc, argv,stdin);
+#elif !defined(_NO_PYTHON)
+	    PyFF_Stdin();
+#elif !defined(_NO_FFSCRIPT)
+	    ProcessNativeScript(argc, argv,stdin);
+#endif
+	} else if ( strcmp(argv[i],"-script")==0 ||
+		strcmp(argv[i],"-dry")==0 || strcmp(argv[i],"-c")==0 ) {
+#if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
+	    if ( is_python==-1 && strcmp(argv[i],"-script")==0 )
+		is_python = PythonLangFromExt(argv[i+1]);
+	    if ( is_python )
+		PyFF_Main(argc,argv,i);
+	    else
+		ProcessNativeScript(argc, argv,NULL);
+#elif !defined(_NO_PYTHON)
+	    PyFF_Main(argc,argv,i);
+#elif !defined(_NO_FFSCRIPT)
+	    ProcessNativeScript(argc, argv,NULL);
+#endif
+	} else /*if ( access(argv[i],X_OK|R_OK)==0 )*/ {
+	    FILE *temp = fopen(argv[i],"r");
+	    char buffer[200];
+	    if ( temp==NULL )
 return;
-	buffer[0] = '\0';
-	fgets(buffer,sizeof(buffer),temp);
-	fclose(temp);
-	if ( buffer[0]=='#' && buffer[1]=='!' &&
-		(strstr(buffer,"pfaedit")!=NULL || strstr(buffer,"fontforge")!=NULL ))
-	    ProcessScript(argc, argv,NULL);
+	    buffer[0] = '\0';
+	    fgets(buffer,sizeof(buffer),temp);
+	    fclose(temp);
+	    if ( buffer[0]=='#' && buffer[1]=='!' &&
+		    (strstr(buffer,"pfaedit")!=NULL || strstr(buffer,"fontforge")!=NULL )) {
+#if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
+		if ( is_python==-1 )
+		    is_python = PythonLangFromExt(argv[i]);
+		if ( is_python )
+		    PyFF_Main(argc,argv,i);
+		else
+		    ProcessNativeScript(argc, argv,NULL);
+#elif !defined(_NO_PYTHON)
+		PyFF_Main(argc,argv,i);
+#elif !defined(_NO_FFSCRIPT)
+		ProcessNativeScript(argc, argv,NULL);
+#endif
+	    }
+	}
     }
 }
+#endif
 
 #if defined(FONTFORGE_CONFIG_NO_WINDOWING_UI) || defined(X_DISPLAY_MISSING)
 static void _doscriptusage(void) {
@@ -9205,6 +9283,8 @@ static void _doscriptusage(void) {
     printf( "\t-usage\t\t\t (displays this message, and exits)\n" );
     printf( "\t-help\t\t\t (displays this message, invokes a browser)\n\t\t\t\t  (Using the BROWSER environment variable)\n" );
     printf( "\t-version\t\t (prints the version of fontforge and exits)\n" );
+    printf( "\t-lang=py\t\t use python to execute scripts\n" );
+    printf( "\t-lang=ff\t\t use fontforge's old language to execute scripts\n" );
     printf( "\t-script scriptfile\t (executes scriptfile)\n" );
     printf( "\t-c script-string\t (executes the argument as scripting cmds)\n" );
     printf( "\n" );
@@ -9233,8 +9313,11 @@ exit(0);
 #endif
 
 void CheckIsScript(int argc, char *argv[]) {
+#if defined(_NO_FFSCRIPT) && defined(_NO_PYTHON)
+return;		/* No scripts of any sort */
+#else
     _CheckIsScript(argc, argv);
-#if defined( FONTFORGE_CONFIG_NO_WINDOWING_UI ) || defined( X_DISPLAY_MISSING )
+# if defined( FONTFORGE_CONFIG_NO_WINDOWING_UI ) || defined( X_DISPLAY_MISSING )
     if ( argc==2 ) {
 	char *pt = argv[1];
 	if ( *pt=='-' && pt[1]=='-' ) ++pt;
@@ -9245,11 +9328,17 @@ void CheckIsScript(int argc, char *argv[]) {
 	else if ( strcmp(pt,"-version")==0 )
 	    doversion();
     }
-    ProcessScript(argc, argv,stdin);
+#  if defined(_NO_PYTHON)
+    ProcessNativeScript(argc, argv,stdin);
+#  else
+    PyFF_Stdin();
+#  endif
+# endif
 #endif
 }
 
-void ExecuteScriptFile(FontView *fv, char *filename) {
+#if !defined(_NO_FFSCRIPT)
+static void ExecuteNativeScriptFile(FontView *fv, char *filename) {
     Context c;
     Val argv[1];
     Array *dontfree[1];
@@ -9282,6 +9371,22 @@ return;				/* Error return */
 	fclose(c.script);
     }
 }
+#endif
+
+#if !defined(_NO_FFSCRIPT) || !defined(_NO_PYTHON)
+
+void ExecuteScriptFile(FontView *fv, char *filename) {
+#if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
+    if ( PythonLangFromExt(filename))
+	PyFF_ScriptFile(fv,filename);
+    else
+	ExecuteNativeScriptFile(fv,filename);
+#elif !defined(_NO_PYTHON)
+    PyFF_ScriptFile(fv,filename);
+#elif !defined(_NO_FFSCRIPT)
+    ExecuteNativeScriptFile(fv,filename);
+#endif
+}
 
 #ifdef FONTFORGE_CONFIG_GDRAW
 struct sd_data {
@@ -9298,6 +9403,8 @@ struct sd_data {
 #define CID_OK		1003
 #define CID_Call	1004
 #define CID_Cancel	1005
+#define CID_Python	1006
+#define CID_FF		1007
 
 static int SD_Call(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
@@ -9318,56 +9425,84 @@ return(true);
 return( true );
 }
 
+#if !defined(_NO_FFSCRIPT)
+static void ExecNative(GGadget *g, GEvent *e) {
+    struct sd_data *sd = GDrawGetUserData(GGadgetGetWindow(g));
+    Context c;
+    Val args[1];
+    Array *dontfree[1];
+    jmp_buf env;
+
+    memset( &c,0,sizeof(c));
+    memset( args,0,sizeof(args));
+    memset( dontfree,0,sizeof(dontfree));
+    running_script = true;
+    c.a.argc = 1;
+    c.a.vals = args;
+    c.dontfree = dontfree;
+    c.filename = args[0].u.sval = "ScriptDlg";
+    args[0].type = v_str;
+    c.return_val.type = v_void;
+    c.err_env = &env;
+    c.curfv = sd->fv;
+    if ( setjmp(env)!=0 ) {
+	running_script = false;
+return;			/* Error return */
+    }
+
+    c.script = tmpfile();
+    if ( c.script==NULL )
+	ScriptError(&c, "Can't create temporary file");
+    else {
+	const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(sd->gw,CID_Script));
+	while ( *ret ) {
+	    /* There's a bug here. Filenames need to be converted to the local charset !!!! */
+	    putc(*ret,c.script);
+	    ++ret;
+	}
+	rewind(c.script);
+	VerboseCheck();
+	c.lineno = 1;
+	while ( !c.returned && NextToken(&c)!=tt_eof ) {
+	    backuptok(&c);
+	    statement(&c);
+	}
+	fclose(c.script);
+	sd->done = true;
+    }
+    running_script = false;
+}
+#endif
+
+#if !defined(_NO_PYTHON)
+static void ExecPython(GGadget *g, GEvent *e) {
+    struct sd_data *sd = GDrawGetUserData(GGadgetGetWindow(g));
+    char *str;
+
+    running_script = true;
+
+    str = GGadgetGetTitle8(GWidgetGetControl(sd->gw,CID_Script));
+    PyFF_ScriptString(sd->fv,str);
+    free(str);
+    running_script = false;
+}
+#endif
+
 static int SD_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	struct sd_data *sd = GDrawGetUserData(GGadgetGetWindow(g));
-	Context c;
-	Val args[1];
-	Array *dontfree[1];
-	jmp_buf env;
-
-	memset( &c,0,sizeof(c));
-	memset( args,0,sizeof(args));
-	memset( dontfree,0,sizeof(dontfree));
-	running_script = true;
-	c.a.argc = 1;
-	c.a.vals = args;
-	c.dontfree = dontfree;
-	c.filename = args[0].u.sval = "ScriptDlg";
-	args[0].type = v_str;
-	c.return_val.type = v_void;
-	c.err_env = &env;
-	c.curfv = sd->fv;
-	if ( setjmp(env)!=0 ) {
-	    running_script = false;
-return( true );			/* Error return */
-	}
-
-	c.script = tmpfile();
-	if ( c.script==NULL )
-	    ScriptError(&c, "Can't create temporary file");
-	else {
-	    const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(sd->gw,CID_Script));
-	    while ( *ret ) {
-		/* There's a bug here. Filenames need to be converted to the local charset !!!! */
-		putc(*ret,c.script);
-		++ret;
-	    }
-	    rewind(c.script);
-	    VerboseCheck();
-	    c.lineno = 1;
-	    while ( !c.returned && NextToken(&c)!=tt_eof ) {
-		backuptok(&c);
-		statement(&c);
-	    }
-	    fclose(c.script);
-	    sd->done = true;
-	}
-	running_script = false;
+#if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
+	if ( GGadgetIsChecked(GWidgetGetControl(GGadgetGetWindow(g),CID_Python)) )
+	    ExecPython(g,e);
+	else
+	    ExecNative(g,e);
+#elif !defined(_NO_PYTHON)
+	ExecPython(g,e);
+#elif !defined(_NO_FFSCRIPT)
+	ExecNative(g,e);
+#endif
     }
 return( true );
 }
-
 static void SD_DoCancel(struct sd_data *sd) {
     sd->done = true;
 }
@@ -9400,6 +9535,13 @@ return( false );
 	space = sd->oldh - gpos.height;
 	GGadgetResize(GWidgetGetControl(gw,CID_Box),newsize.width-4,newsize.height-4);
 	GGadgetResize(GWidgetGetControl(gw,CID_Script),newsize.width-2*gpos.x,newsize.height-space);
+#if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
+	GGadgetGetSize(GWidgetGetControl(gw,CID_Python),&gpos);
+	space = sd->oldh - gpos.y;
+	GGadgetMove(GWidgetGetControl(gw,CID_Python),gpos.x,newsize.height-space);
+	GGadgetGetSize(GWidgetGetControl(gw,CID_FF),&gpos);
+	GGadgetMove(GWidgetGetControl(gw,CID_FF),gpos.x,newsize.height-space);
+#endif
 	GGadgetGetSize(GWidgetGetControl(gw,CID_Call),&gpos);
 	space = sd->oldh - gpos.y;
 	GGadgetMove(GWidgetGetControl(gw,CID_Call),gpos.x,newsize.height-space);
@@ -9423,10 +9565,11 @@ void ScriptDlg(FontView *fv) {
     GRect pos;
     static GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[10];
-    GTextInfo label[10];
+    GGadgetCreateData gcd[12];
+    GTextInfo label[12];
     struct sd_data sd;
     FontView *list;
+    int i;
 
     memset(&sd,0,sizeof(sd));
     sd.fv = fv;
@@ -9448,53 +9591,75 @@ void ScriptDlg(FontView *fv) {
 	memset(&gcd,0,sizeof(gcd));
 	memset(&label,0,sizeof(label));
 
-	gcd[0].gd.pos.x = 10; gcd[0].gd.pos.y = 10;
-	gcd[0].gd.pos.width = SD_Width-20; gcd[0].gd.pos.height = SD_Height-54;
-	gcd[0].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;
-	gcd[0].gd.cid = CID_Script;
-	gcd[0].creator = GTextAreaCreate;
+	gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = 10;
+	gcd[i].gd.pos.width = SD_Width-20; gcd[i].gd.pos.height = SD_Height-54;
+	gcd[i].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;
+	gcd[i].gd.cid = CID_Script;
+	gcd[i++].creator = GTextAreaCreate;
 
-	gcd[1].gd.pos.x = 25-3; gcd[1].gd.pos.y = SD_Height-32-3;
-	gcd[1].gd.pos.width = -1; gcd[1].gd.pos.height = 0;
-	gcd[1].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[1].text = (unichar_t *) _("_OK");
-	label[1].text_is_1byte = true;
-	label[1].text_in_resource = true;
-	gcd[1].gd.mnemonic = 'O';
-	gcd[1].gd.label = &label[1];
-	gcd[1].gd.handle_controlevent = SD_OK;
-	gcd[1].gd.cid = CID_OK;
-	gcd[1].creator = GButtonCreate;
+#if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
+	gcd[i-1].gd.pos.height -= 24;
 
-	gcd[2].gd.pos.x = -25; gcd[2].gd.pos.y = SD_Height-32;
-	gcd[2].gd.pos.width = -1; gcd[2].gd.pos.height = 0;
-	gcd[2].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[2].text = (unichar_t *) _("_Cancel");
-	label[2].text_is_1byte = true;
-	label[2].text_in_resource = true;
-	gcd[2].gd.label = &label[2];
-	gcd[2].gd.mnemonic = 'C';
-	gcd[2].gd.handle_controlevent = SD_Cancel;
-	gcd[2].gd.cid = CID_Call;
-	gcd[2].creator = GButtonCreate;
+	gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+gcd[i].gd.pos.height+1;
+	gcd[i].gd.flags = gg_visible | gg_enabled | gg_cb_on;
+	gcd[i].gd.cid = CID_Python;
+	label[i].text = (unichar_t *) _("_Python");
+	label[i].text_is_1byte = true;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i++].creator = GRadioCreate;
 
-	gcd[3].gd.pos.x = (SD_Width-GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor))/2; gcd[3].gd.pos.y = SD_Height-40;
-	gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
-	gcd[3].gd.flags = gg_visible | gg_enabled;
-	label[3].text = (unichar_t *) _("C_all...");
-	label[3].text_is_1byte = true;
-	label[3].text_in_resource = true;
-	gcd[3].gd.label = &label[3];
-	gcd[3].gd.mnemonic = 'a';
-	gcd[3].gd.handle_controlevent = SD_Call;
-	gcd[3].gd.cid = CID_Cancel;
-	gcd[3].creator = GButtonCreate;
+	gcd[i].gd.pos.x = 70; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y;
+	gcd[i].gd.flags = gg_visible | gg_enabled;
+	gcd[i].gd.cid = CID_FF;
+	label[i].text = (unichar_t *) _("_FF");
+	label[i].text_is_1byte = true;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i++].creator = GRadioCreate;
+#endif
 
-	gcd[4].gd.pos.x = 2; gcd[4].gd.pos.y = 2;
-	gcd[4].gd.pos.width = pos.width-4; gcd[4].gd.pos.height = pos.height-4;
-	gcd[4].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
-	gcd[4].gd.cid = CID_Box;
-	gcd[4].creator = GGroupCreate;
+	gcd[i].gd.pos.x = 25-3; gcd[i].gd.pos.y = SD_Height-32-3;
+	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
+	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
+	label[i].text = (unichar_t *) _("_OK");
+	label[i].text_is_1byte = true;
+	label[i].text_in_resource = true;
+	gcd[i].gd.mnemonic = 'O';
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.handle_controlevent = SD_OK;
+	gcd[i].gd.cid = CID_OK;
+	gcd[i++].creator = GButtonCreate;
+
+	gcd[i].gd.pos.x = -25; gcd[i].gd.pos.y = SD_Height-32;
+	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
+	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+	label[i].text = (unichar_t *) _("_Cancel");
+	label[i].text_is_1byte = true;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.mnemonic = 'C';
+	gcd[i].gd.handle_controlevent = SD_Cancel;
+	gcd[i].gd.cid = CID_Call;
+	gcd[i++].creator = GButtonCreate;
+
+	gcd[i].gd.pos.x = (SD_Width-GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor))/2; gcd[i].gd.pos.y = SD_Height-40;
+	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
+	gcd[i].gd.flags = gg_visible | gg_enabled;
+	label[i].text = (unichar_t *) _("C_all...");
+	label[i].text_is_1byte = true;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.mnemonic = 'a';
+	gcd[i].gd.handle_controlevent = SD_Call;
+	gcd[i].gd.cid = CID_Cancel;
+	gcd[i++].creator = GButtonCreate;
+
+	gcd[i].gd.pos.x = 2; gcd[i].gd.pos.y = 2;
+	gcd[i].gd.pos.width = pos.width-4; gcd[i].gd.pos.height = pos.height-4;
+	gcd[i].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
+	gcd[i].gd.cid = CID_Box;
+	gcd[i++].creator = GGroupCreate;
 
 	GGadgetsCreate(gw,gcd);
     }
@@ -9514,3 +9679,4 @@ void ScriptDlg(FontView *fv) {
 #endif
 }
 #endif
+#endif	/* No scripting */

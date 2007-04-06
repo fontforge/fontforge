@@ -2482,20 +2482,27 @@ return;
 SplineSet *SplineCharSimplify(SplineChar *sc,SplineSet *head,
 	struct simplifyinfo *smpl) {
     SplineSet *spl, *prev, *snext;
-    int anysel=0;
+    int anysel=0, wassingleton;
 
-    for ( spl = head; spl!=NULL && !anysel; spl = spl->next ) {
-	anysel = PointListIsSelected(spl);
+    if ( smpl->check_selected_contours ) {
+	for ( spl = head; spl!=NULL && !anysel; spl = spl->next ) {
+	    anysel = PointListIsSelected(spl);
+	}
     }
 
     prev = NULL;
     for ( spl = head; spl!=NULL; spl = snext ) {
 	snext = spl->next;
 	if ( !anysel || PointListIsSelected(spl)) {
+	    wassingleton = spl->first->prev==spl->first->next &&
+		    (spl->first->prev==NULL ||
+		     (spl->first->noprevcp && spl->first->nonextcp));
 	    SplinePointListSimplify(sc,spl,smpl);
 	    /* remove any singleton points */
-	    if ( spl->first->prev==spl->first->next &&
-		    (spl->first->prev==NULL ||
+	    if (( !wassingleton ||
+		    (smpl->flags!=sf_cleanup && (smpl->flags&sf_rmsingletonpoints))) &&
+		   spl->first->prev==spl->first->next &&
+		   (spl->first->prev==NULL ||
 		     (spl->first->noprevcp && spl->first->nonextcp))) {
 		if ( prev==NULL )
 		    head = snext;

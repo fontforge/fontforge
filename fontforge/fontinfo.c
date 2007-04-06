@@ -1214,7 +1214,7 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_MarkEdit		7103
 
 #define CID_TeXText		8001
-#define CID_TeXMath		8002
+#define CID_TeXMathSym		8002
 #define CID_TeXMathExt		8003
 #define CID_MoreParams		8005
 #define CID_TeXExtraSpLabel	8006
@@ -4068,7 +4068,7 @@ static int ParseTeX(struct gfi_data *d) {
     }
     if ( GGadgetIsChecked(GWidgetGetControl(d->gw,CID_TeXText)) )
 	d->texdata.type = tex_text;
-    else if ( GGadgetIsChecked(GWidgetGetControl(d->gw,CID_TeXMath)) )
+    else if ( GGadgetIsChecked(GWidgetGetControl(d->gw,CID_TeXMathSym)) )
 	d->texdata.type = tex_math;
     else
 	d->texdata.type = tex_mathext;
@@ -5112,7 +5112,7 @@ return( false );
 	    int err=false;
 	    double em = (d->sf->ascent+d->sf->descent), val;
 	    char **params;
-	    if ( GGadgetIsChecked(GWidgetGetControl(d->gw,CID_TeXMath)) )
+	    if ( GGadgetIsChecked(GWidgetGetControl(d->gw,CID_TeXMathSym)) )
 		params = mathparams;
 	    else
 		params = extparams;
@@ -5144,7 +5144,7 @@ static int GFI_MoreParams(GGadget *g, GEvent *e) {
 	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	if ( GGadgetIsChecked(GWidgetGetControl(d->gw,CID_TeXText)) )
 return( true );
-	else if ( GGadgetIsChecked(GWidgetGetControl(d->gw,CID_TeXMath)) ) {
+	else if ( GGadgetIsChecked(GWidgetGetControl(d->gw,CID_TeXMathSym)) ) {
 	    tot = 22-7;
 	    params = mathparams;
 	    popups = mathpopups;
@@ -5263,7 +5263,7 @@ static void DefaultTeX(struct gfi_data *d) {
 	GGadgetSetTitle8(GWidgetGetControl(d->gw,CID_TeX+i),buffer);
     }
     if ( sf->texdata.type==tex_math )
-	GGadgetSetChecked(GWidgetGetControl(d->gw,CID_TeXMath), true);
+	GGadgetSetChecked(GWidgetGetControl(d->gw,CID_TeXMathSym), true);
     else if ( sf->texdata.type == tex_mathext )
 	GGadgetSetChecked(GWidgetGetControl(d->gw,CID_TeXMathExt), true);
     else {
@@ -8581,7 +8581,7 @@ return;
     memset(&txgcd,0,sizeof(txgcd));
 
     k=0;
-    txlabel[k].text = (unichar_t *) U_("ΤεΧ Text");
+    txlabel[k].text = (unichar_t *) U_("ΤεΧ General");
     txlabel[k].text_is_1byte = true;
     txgcd[k].gd.label = &txlabel[k];
     txgcd[k].gd.pos.x = 10; txgcd[k].gd.pos.y = 10;
@@ -8590,16 +8590,16 @@ return;
     txgcd[k].gd.handle_controlevent = GFI_TeXChanged;
     txgcd[k++].creator = GRadioCreate;
 
-    txlabel[k].text = (unichar_t *) U_("ΤεΧ Math");
+    txlabel[k].text = (unichar_t *) U_("ΤεΧ Math Symbol");
     txlabel[k].text_is_1byte = true;
     txgcd[k].gd.label = &txlabel[k];
     txgcd[k].gd.pos.x = 80; txgcd[k].gd.pos.y = txgcd[k-1].gd.pos.y;
     txgcd[k].gd.flags = gg_visible | gg_enabled | gg_rad_continueold;
-    txgcd[k].gd.cid = CID_TeXMath;
+    txgcd[k].gd.cid = CID_TeXMathSym;
     txgcd[k].gd.handle_controlevent = GFI_TeXChanged;
     txgcd[k++].creator = GRadioCreate;
 
-    txlabel[k].text = (unichar_t *) U_("ΤεΧ Math Ext");
+    txlabel[k].text = (unichar_t *) U_("ΤεΧ Math Extension");
     txlabel[k].text_is_1byte = true;
     txgcd[k].gd.label = &txlabel[k];
     txgcd[k].gd.pos.x = 155; txgcd[k].gd.pos.y = txgcd[k-1].gd.pos.y;

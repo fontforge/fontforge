@@ -156,8 +156,11 @@ static void _dousage(void) {
     printf( "\t-usage\t\t\t (displays this message, and exits)\n" );
     printf( "\t-help\t\t\t (displays this message, invokes a browser)\n\t\t\t\t  (Using the BROWSER environment variable)\n" );
     printf( "\t-version\t\t (prints the version of fontforge and exits)\n" );
+    printf( "\t-lang=py\t\t use python for scripts\n" );
+    printf( "\t-lang=ff\t\t use fontforge's legacy scripting language\n" );
     printf( "\t-script scriptfile\t (executes scriptfile)\n" );
-    printf( "\t\tmust be the first option. All others passed to scriptfile.\n" );
+    printf( "\t\tmust be the first option (or follow -lang).\n" );
+    printf( "\t\tAll others passed to scriptfile.\n" );
     printf( "\t-dry scriptfile\t (syntax checks scriptfile)\n" );
     printf( "\t\tmust be the first option. All others passed to scriptfile.\n" );
     printf( "\t-c script-string\t (executes argument as scripting cmds)\n" );

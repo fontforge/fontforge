@@ -1397,6 +1397,7 @@ extern void SFBdfProperties(SplineFont *sf, EncMap *map, BDFFont *thisone);
 
 struct instrdlg;
 uint8 *_IVParse(struct instrdlg *iv, char *text, int *len);
+char *_IVUnParseInstrs(uint8 *instrs,int instr_cnt);
 
 #ifdef FONTFORGE_CONFIG_GDRAW
 extern GMenuItem2 helplist[];
