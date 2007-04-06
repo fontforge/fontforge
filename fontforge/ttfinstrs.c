@@ -856,36 +856,56 @@ static void IVOk(InstrDlg *iv) {
     /* Instructions get freed in et_destroy */
 }
 
-static void IVBuildEdit(InstrDlg *iv) {
-    char val[20];
-    unichar_t *ubuf, *pt, *offset, *scroll;
+static char *__IVUnParseInstrs(InstrDlg *iv) {
+    char *ubuf, *pt, *offset, *scroll;
     int i,l;
 
-    pt = ubuf = offset = scroll = galloc((iv->instrdata->instr_cnt*20+1)*sizeof(unichar_t));
+    pt = ubuf = offset = scroll = galloc((iv->instrdata->instr_cnt*20+1));
     for ( i=l=0; i<iv->instrdata->instr_cnt; ++i ) {
 	if ( iv->instrinfo.lpos == l )
 	    scroll = pt;
 	if ( iv->instrinfo.isel_pos == l )
 	    offset = pt;
 	if ( iv->instrdata->bts[i]==bt_wordhi ) {
-	    sprintf( val, " %d", (short) ((iv->instrdata->instrs[i]<<8) | iv->instrdata->instrs[i+1]) );
-	    uc_strcpy(pt,val);
+	    sprintf( pt, " %d", (short) ((iv->instrdata->instrs[i]<<8) | iv->instrdata->instrs[i+1]) );
 	    ++i;
 	} else if ( iv->instrdata->bts[i]==bt_cnt || iv->instrdata->bts[i]==bt_byte ) {
-	    sprintf( val, " %d", iv->instrdata->instrs[i]);
-	    uc_strcpy(pt,val);
+	    sprintf( pt, " %d", iv->instrdata->instrs[i]);
 	} else {
-	    uc_strcpy(pt, instrnames[iv->instrdata->instrs[i]]);
+	    strcpy(pt, instrnames[iv->instrdata->instrs[i]]);
 	}
-	pt += u_strlen(pt);
+	pt += strlen(pt);
 	*pt++ = '\n';
 	++l;
     }
     *pt = '\0';
-    GGadgetSetTitle(iv->text,ubuf);
-    GTextFieldSelect(iv->text,offset-ubuf,offset-ubuf);
-    GTextFieldShow(iv->text,scroll-ubuf);
-    free(ubuf);
+    if ( iv->text!=NULL ) {
+	GGadgetSetTitle8(iv->text,ubuf);
+	GTextFieldSelect(iv->text,offset-ubuf,offset-ubuf);
+	GTextFieldShow(iv->text,scroll-ubuf);
+    }
+return( ubuf );
+}
+
+char *_IVUnParseInstrs(uint8 *instrs,int instr_cnt) {
+    struct instrdlg iv;
+    struct instrdata id;
+    char *ret;
+
+    memset(&iv,0,sizeof(iv));
+    memset(&id,0,sizeof(id));
+    iv.instrdata = &id;
+    id.instr_cnt = instr_cnt;
+    id.instrs = instrs;
+    iv.instrinfo.instrdata = &id;
+    instr_typify(&iv.instrinfo);
+    ret = __IVUnParseInstrs(&iv);
+    free(id.bts);
+return( ret );
+}
+
+static void IVBuildEdit(InstrDlg *iv) {
+    free(__IVUnParseInstrs(iv));
 }
 
 static void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
