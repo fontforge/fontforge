@@ -2598,6 +2598,11 @@ return( -1 );
 return( 0 );
 }
 
+static PyObject *PyFF_Glyph_get_font(PyFF_Glyph *self,void *closure) {
+
+return( PyFV_From_FV_I(self->sc->parent->fv));
+}
+
 static PyObject *PyFF_Glyph_get_references(PyFF_Glyph *self,void *closure) {
     RefChar *ref;
     int cnt;
@@ -2847,6 +2852,9 @@ static PyGetSetDef PyFF_Glyph_getset[] = {
     {"vwidth",
 	 (getter)PyFF_Glyph_get_vwidth, (setter)PyFF_Glyph_set_vwidth,
 	 "Glyph's vertical advance width", NULL},
+    {"font",
+	 (getter)PyFF_Glyph_get_font, (setter)PyFF_cant_set,
+	 "Font containing the glyph", NULL},
     {NULL}  /* Sentinel */
 };
 
@@ -3524,13 +3532,13 @@ static PyGetSetDef PyFF_Font_getset[] = {
 	 "family name", NULL},
     {"weight",
 	 (getter)PyFF_Font_get_weight, (setter)PyFF_Font_set_weight,
-	 "weight", NULL},
+	 "weight (PS)", NULL},
     {"copyright",
 	 (getter)PyFF_Font_get_copyright, (setter)PyFF_Font_set_copyright,
-	 "copyright", NULL},
+	 "copyright (PS)", NULL},
     {"version",
 	 (getter)PyFF_Font_get_version, (setter)PyFF_Font_set_version,
-	 "font version", NULL},
+	 "font version (PS)", NULL},
     {"xuid",
 	 (getter)PyFF_Font_get_xuid, (setter)PyFF_Font_set_xuid,
 	 "PostScript eXtended Unique ID", NULL},
@@ -3597,9 +3605,6 @@ static PyGetSetDef PyFF_Font_getset[] = {
     {"design_range_top",
 	 (getter)PyFF_Font_get_design_range_top, (setter)PyFF_Font_set_design_range_top,
 	 "Largest point size for which this font is acceptable", NULL},
-    {"os2_version",
-	 (getter)PyFF_Font_get_os2_version, (setter)PyFF_Font_set_os2_version,
-	 "OS/2 table version number", NULL},
     {"os2_version",
 	 (getter)PyFF_Font_get_os2_version, (setter)PyFF_Font_set_os2_version,
 	 "OS/2 table version number", NULL},
@@ -3705,7 +3710,7 @@ static PyGetSetDef PyFF_Font_getset[] = {
     {"changed",
 	 (getter)PyFF_Font_get_changed, (setter)PyFF_cant_set,
 	 "Flag indicating whether the font has been changed since it was loaded (read only)", NULL},
-    {"new",
+    {"newflag",
 	 (getter)PyFF_Font_get_new, (setter)PyFF_cant_set,
 	 "Flag indicating whether the font is new (read only)", NULL},
     {"hasvmetrics",
