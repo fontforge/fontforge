@@ -3910,15 +3910,22 @@ static int GFI_AddOFL(GGadget *g, GEvent *e) {
 	    }
 	}
 	GMatrixEditSet(tng, newtns, rows+extras, false);
-	gwwv_post_notice(_("Please check the OFL"),_(
-	    "You should check the OFL (in all languages).\n"
-	    "FontForge does not know your email address/URL and has\n"
-	    "left this for you to fill in (The SIL template suggests\n"
-	    "including this information).\n"
+	gwwv_post_notice(_("Please read the OFL"),_(
+	    "You should read the OFL and its FAQ \n"
+	    "at http://scripts.sil.org/OFL."
 	    "\n"
-	    "You may also wish to adjust the reserved name and possibly\n"
-	    "add others (translations into other languages perhaps?).\n"
-	    "You may wish to add additional copyright holders."));
+	    "If you are not very familiar with English,\n"
+	    "please check if there is a translation of the \n"
+	    "FAQ or an unofficial translation of the license \n"
+	    "in your mother tongue or preferred language. \n"
+	    "\n"
+	    "Fontforge does not know about your email or URL,\n"
+	    "you will need to add them manually. \n"
+	    "Please fill in the copyright notice in the license\n"
+	    "header along with any Reserved Font Name(s).\n"
+	    "If you are branching from an existing font make sure\n"
+	    "you have the right to do so and remember to add your\n"
+	    "additional copyright notice along with any Reserved Font Name(s).\n" ));
     }
 return( true );
 }
@@ -8484,16 +8491,16 @@ return;
     tngcd[5].gd.label = &tnlabel[5];
     tngcd[5].gd.handle_controlevent = GFI_AddOFL;
     tngcd[5].gd.popup_msg = (unichar_t *) _(
-	"The SIL Open Font License is designed for Open Source/Libre\n"
-	"font projects (most Open Source licenses are designed for\n"
-	"conventional software and are not entirely appropriate for\n"
-	"fonts). I encourage you to use it if you can.\n"
+	"The SIL Open Font License (OFL) is designed for free/libre/open font projects.\n"
+	"Most other FLOSS licenses are designed for conventional software and are problematic for fonts.\n"
+	"The OFL is a community-approved license and is well-suited for releasing fonts to be freely \n"
+	"used, studied, copied, modified, embedded, merged and distributed while maintaining artistic integrity.\n"
+        "You are encouraged you to use it if you can.\n"
 	"\n"
-	"Feel free to adjust the copyright line and reserved name\n"
-	"line at the top of the entry. Please add your email address.\n"
-	"You may also add additional copyright holders or reserved names.\n"
+	"For more details about the OFL - and the corresponding FAQ - see http://scripts.sil.org/OFL \n"
 	"\n"
-	"This license is described in great detail http://scripts.sil.org/ofl");
+	"Simply press this button to add the OFL metadata to your font.\n"
+	"\n");
     tngcd[5].creator = GButtonCreate;
     tnharray2[0] = &tngcd[5]; tnharray2[1] = GCD_Glue; tnharray2[2] = NULL;
     tnvarray[0] = &tnboxes[2]; tnvarray[1] = &tngcd[4]; tnvarray[2] = &tnboxes[3]; tnvarray[3] = NULL;

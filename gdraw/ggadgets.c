@@ -57,7 +57,7 @@ int _GGadget_TextImageSkip = 4;
 static int _ggadget_inited=0;
 extern void GGadgetInit(void);
 static Color popup_foreground=0, popup_background=COLOR_CREATE(0xff,0xff,0xc0);
-static int popup_delay=1000, popup_lifetime=15000;
+static int popup_delay=1000, popup_lifetime=20000;
 
 static GWindow popup;
 static GTimer *popup_timer, *popup_vanish_timer;
