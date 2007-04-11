@@ -3830,6 +3830,13 @@ static void TNMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
     mi->bigedittitle = TN_BigEditTitle;
 }
 
+static int GFI_HelpOFL(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	help("http://scripts.sil.org/OFL");
+    }
+return( true );
+}
+
 static int GFI_AddOFL(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
@@ -6694,7 +6701,7 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
 	*txarray3[6], *txarray4[6], *uarray[3], *darray[10],
 	*mcarray[13], *mcarray2[7],
 	*mfarray[14], *szarray[7], *szarray2[5], *szarray3[7],
-	*szarray4[4], *szarray5[6], *tnvarray[4], *tnharray[6], *tnharray2[4], *gaspharray[6],
+	*szarray4[4], *szarray5[6], *tnvarray[4], *tnharray[6], *tnharray2[5], *gaspharray[6],
 	*gaspvarray[3], *lkarray[2][7], *lkbuttonsarray[17], *lkharray[3];
     GTextInfo mlabel[10], nlabel[16], pslabel[30], tnlabel[7],
 	plabel[8], vlabel[19], panlabel[22], comlabel[3], txlabel[23],
@@ -8502,7 +8509,26 @@ return;
 	"Simply press this button to add the OFL metadata to your font.\n"
 	"\n");
     tngcd[5].creator = GButtonCreate;
-    tnharray2[0] = &tngcd[5]; tnharray2[1] = GCD_Glue; tnharray2[2] = NULL;
+
+    tngcd[6].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    tnlabel[6].text = (unichar_t *) S_("?");
+    tnlabel[6].text_is_1byte = true;
+    tnlabel[6].text_in_resource = true;
+    tngcd[6].gd.label = &tnlabel[6];
+    tngcd[6].gd.handle_controlevent = GFI_HelpOFL;
+    tngcd[6].gd.popup_msg = (unichar_t *) _(
+	"The SIL Open Font License (OFL) is designed for free/libre/open font projects.\n"
+	"Most other FLOSS licenses are designed for conventional software and are problematic for fonts.\n"
+	"The OFL is a community-approved license and is well-suited for releasing fonts to be freely \n"
+	"used, studied, copied, modified, embedded, merged and distributed while maintaining artistic integrity.\n"
+        "You are encouraged you to use it if you can.\n"
+	"\n"
+	"For more details about the OFL - and the corresponding FAQ - click here\n"
+	"\n"
+	"Simply press this button to add the OFL metadata to your font.\n"
+	"\n");
+    tngcd[6].creator = GButtonCreate;
+    tnharray2[0] = &tngcd[5]; tnharray2[1] = &tngcd[6]; tnharray2[2] = GCD_Glue; tnharray2[3] = NULL;
     tnvarray[0] = &tnboxes[2]; tnvarray[1] = &tngcd[4]; tnvarray[2] = &tnboxes[3]; tnvarray[3] = NULL;
 
     tnboxes[0].gd.flags = gg_enabled|gg_visible;
