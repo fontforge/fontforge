@@ -18671,7 +18671,7 @@ python="yes"
 if test "${with_python+set}" = set; then
   withval="$with_python"
 
-    if test "$withval" != "no" >/dev/null 2>&1 ; then
+    if test "$withval" = "no" >/dev/null 2>&1 ; then
 	python="no"
     fi
 
@@ -18840,7 +18840,7 @@ ffscript="yes"
 if test "${with_native_script+set}" = set; then
   withval="$with_native_script"
 
-    if test "$withval" != "no" >/dev/null 2>&1 ; then
+    if test "$withval" = "no" >/dev/null 2>&1 ; then
 	ffscript="no"
     fi
 
