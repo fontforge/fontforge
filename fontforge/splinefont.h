@@ -1090,8 +1090,10 @@ typedef struct splinechar {
     int16 tex_height, tex_depth;
     int16 tex_sub_pos, tex_super_pos;	/* Only for math fonts */
     struct altuni { struct altuni *next; int unienc; } *altuni;
+#ifndef _NO_PYTHON
     void *python_sc_object;
     void *python_data;
+#endif
 } SplineChar;
 
 #define TEX_UNDEF 0x7fff
@@ -2245,5 +2247,9 @@ extern void PyFF_Stdin(void);
 extern void PyFF_Main(int argc,char **argv,int start);
 extern void PyFF_ScriptFile(struct fontview *fv,char *filename);
 extern void PyFF_ScriptString(struct fontview *fv,char *str);
+extern void PythonFreeFV(struct fontview *fv);
+extern void PythonFreeSC(SplineChar *sc);
+struct gtextinfo;
+extern void scriptingSaveEnglishNames(struct gtextinfo *ids,struct gtextinfo *langs);
 #endif
 #endif

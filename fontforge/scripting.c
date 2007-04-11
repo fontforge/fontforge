@@ -1932,7 +1932,7 @@ static void bGenerateFamily(Context *c) {
 }
 
 static void bControlAfmLigatureOutput(Context *c) {
-    ScriptError(c,"This scripting function no works.");
+    ScriptError(c,"This scripting function no longer works.");
 }
 
 static void Bitmapper(Context *c,int isavail) {
@@ -2352,7 +2352,7 @@ return( SFMakeChar(c->curfv->sf,c->curfv->map,found));
 }
 
 static void bCopyGlyphFeatures(Context *c) {
-    ScriptError(c,"This scripting function no works.");
+    ScriptError(c,"This scripting function no longer works.");
 }
 
 static void bPaste(Context *c) {
@@ -2720,7 +2720,7 @@ static void bSelectWorthOutputting(Context *c) {
 }
 
 static void bSelectByATT(Context *c) {
-    ScriptError(c,"This scripting function no works. It has been replace by SelectByPosSub");
+    ScriptError(c,"This scripting function no longer works. It has been replace by SelectByPosSub");
 }
 
 static void bSelectByPosSub(Context *c) {
@@ -3884,7 +3884,7 @@ static void bSetGlyphChanged(Context *c) {
 }
 
 static void bApplySubstitution(Context *c) {
-    ScriptError(c,"This scripting function no works.");
+    ScriptError(c,"This scripting function no longer works.");
 }
 
 static void bTransform(Context *c) {
@@ -5931,7 +5931,7 @@ static void bDrawsSomething(Context *c) {
 }
 
 static void bDefaultATT(Context *c) {
-    ScriptError(c,"This scripting function no works.");
+    ScriptError(c,"This scripting function no longer works.");
 }
 
 static void bCheckForAnchorClass(Context *c) {
@@ -6111,7 +6111,7 @@ static void bAddAnchorPoint(Context *c) {
 }
 
 static void bAddATT(Context *c) {
-    ScriptError(c,"This scripting function no works, replaced by AddPosSub.");
+    ScriptError(c,"This scripting function no longer works, replaced by AddPosSub.");
 }
 
 static void bAddPosSub(Context *c) {
@@ -6197,7 +6197,7 @@ static void bAddPosSub(Context *c) {
 }
 
 static void bRemoveATT(Context *c) {
-    ScriptError(c,"This scripting function no works.");
+    ScriptError(c,"This scripting function no longer works.");
 }
 
 static void bRemoveLookup(Context *c) {
@@ -9213,6 +9213,7 @@ static void _CheckIsScript(int argc, char *argv[]) {
     int i, is_python = DefaultLangPython();
     char *arg;
 
+    FontForge_PythonInit();
     if ( argc==1 )
 return;
     for ( i=1; i<argc; ++i ) {
@@ -9490,6 +9491,7 @@ static void ExecPython(GGadget *g, GEvent *e) {
 
 static int SD_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct sd_data *sd = GDrawGetUserData(GGadgetGetWindow(g));
 #if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
 	if ( GGadgetIsChecked(GWidgetGetControl(GGadgetGetWindow(g),CID_Python)) )
 	    ExecPython(g,e);
@@ -9500,9 +9502,11 @@ static int SD_OK(GGadget *g, GEvent *e) {
 #elif !defined(_NO_FFSCRIPT)
 	ExecNative(g,e);
 #endif
+	sd->done = true;
     }
 return( true );
 }
+
 static void SD_DoCancel(struct sd_data *sd) {
     sd->done = true;
 }
@@ -9591,6 +9595,7 @@ void ScriptDlg(FontView *fv) {
 	memset(&gcd,0,sizeof(gcd));
 	memset(&label,0,sizeof(label));
 
+	i = 0;
 	gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = 10;
 	gcd[i].gd.pos.width = SD_Width-20; gcd[i].gd.pos.height = SD_Height-54;
 	gcd[i].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;
@@ -9600,7 +9605,7 @@ void ScriptDlg(FontView *fv) {
 #if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
 	gcd[i-1].gd.pos.height -= 24;
 
-	gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+gcd[i].gd.pos.height+1;
+	gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+gcd[i-1].gd.pos.height+1;
 	gcd[i].gd.flags = gg_visible | gg_enabled | gg_cb_on;
 	gcd[i].gd.cid = CID_Python;
 	label[i].text = (unichar_t *) _("_Python");
