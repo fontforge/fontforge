@@ -2806,6 +2806,20 @@ return( -1 );
 return( 0 );
 }
 
+static PyObject *PyFF_Glyph_get_color(PyFF_Glyph *self,void *closure) {
+return( Py_BuildValue("", self->sc->color ));
+}
+
+static int PyFF_Glyph_set_color(PyFF_Glyph *self,PyObject *value,void *closure) {
+    int val;
+
+    val = PyInt_AsLong(value);
+    if ( PyErr_Occurred()!=NULL )
+return( -1 );
+    self->sc->color = val;
+return( 0 );
+}
+
 static PyGetSetDef PyFF_Glyph_getset[] = {
     {"userdata",
 	 (getter)PyFF_Glyph_get_userdata, (setter)PyFF_Glyph_set_userdata,
@@ -2825,6 +2839,9 @@ static PyGetSetDef PyFF_Glyph_getset[] = {
     {"references",
 	 (getter)PyFF_Glyph_get_references, (setter)PyFF_Glyph_set_references,
 	 "A tuple of all references in the glyph", NULL},
+    {"color",
+	 (getter)PyFF_Glyph_get_color, (setter)PyFF_Glyph_set_color,
+	 "Glyph color", NULL},
     {"comment",
 	 (getter)PyFF_Glyph_get_comment, (setter)PyFF_Glyph_set_comment,
 	 "Glyph comment", NULL},
@@ -2971,8 +2988,250 @@ return( PyString_FromFormat( "<Font: %s>", self->fv->sf->fontname ));
 }
 
 /* ************************************************************************** */
+/* sfnt 'name' table stuff */
+/* ************************************************************************** */
+static struct flaglist *sfnt_name_str_ids, *sfnt_name_mslangs;
+
+/* I can't just use the names in the fontinfo file because they get translated*/
+/*  so I must save the untranslated names before that happens */
+void scriptingSaveEnglishNames(GTextInfo *ids,GTextInfo *langs) {
+    int lcnt,cnt,k;
+    char *pt, *ept;
+
+    for ( cnt=0; ids[cnt].text!=NULL; ++cnt );
+    sfnt_name_str_ids = gcalloc(cnt+4,sizeof(struct flaglist));
+    sfnt_name_str_ids[0].name = "Subfamily";
+    sfnt_name_str_ids[0].flag = 2;
+    for ( cnt=0; ids[cnt].text!=NULL; ++cnt ) {
+	sfnt_name_str_ids[cnt+1].name = (char *) ids[cnt].text;
+	sfnt_name_str_ids[cnt+1].flag = (intpt) ids[cnt].userdata;
+    }
+    ++cnt;
+    sfnt_name_str_ids[cnt].name = "Styles";
+    sfnt_name_str_ids[cnt++].flag = 2;
+    sfnt_name_str_ids[cnt].name = "PostScript";
+    sfnt_name_str_ids[cnt].flag = 2;
+
+    for ( cnt=lcnt=0; langs[cnt].text!=NULL; ++cnt )
+	if ( (((intpt) langs[cnt].userdata)&0xff00) == 0x400 )
+	    ++lcnt;
+    sfnt_name_mslangs = gcalloc(cnt+lcnt+4,sizeof(struct flaglist));
+    for ( cnt=k=0; langs[cnt].text!=NULL; ++cnt ) {
+	pt = strchr((char *) langs[cnt].text,'|');
+	pt = pt==NULL ? (char *) langs[cnt].text : pt+1;
+	sfnt_name_mslangs[k].name = pt;
+	sfnt_name_mslangs[k++].flag = (intpt) langs[cnt].userdata;
+	if ( (((intpt) langs[cnt].userdata)&0xff00) == 0x400 &&
+		strchr(pt,' ')!=NULL ) {
+	    ept = strrchr(pt,' ');
+	    sfnt_name_mslangs[k].name = copyn(pt,ept-pt);
+	    sfnt_name_mslangs[k++].flag = (intpt) langs[cnt].userdata;
+	}
+    }
+}
+
+static PyObject *sfntnametuple(int lang,int strid,char *name) {
+    PyObject *tuple;
+    int i;
+
+    tuple = PyTuple_New(3);
+
+    PyTuple_SetItem(tuple,2,Py_BuildValue("s", name));
+
+    FontInfoInit();
+    for ( i=0; sfnt_name_mslangs[i].name!=NULL ; ++i )
+	if ( sfnt_name_mslangs[i].flag == lang )
+    break;
+    if ( sfnt_name_mslangs[i].flag == lang )
+	PyTuple_SetItem(tuple,0,Py_BuildValue("s", sfnt_name_mslangs[i].name));
+    else
+	PyTuple_SetItem(tuple,0,Py_BuildValue("i", lang));
+
+    for ( i=0; sfnt_name_str_ids[i].name!=NULL ; ++i )
+	if ( sfnt_name_str_ids[i].flag == strid )
+    break;
+    if ( sfnt_name_str_ids[i].flag == strid )
+	PyTuple_SetItem(tuple,1,Py_BuildValue("s", sfnt_name_str_ids[i].name));
+    else
+	PyTuple_SetItem(tuple,1,Py_BuildValue("i", strid));
+return( tuple );
+}
+
+static int SetSFNTName(SplineFont *sf,PyObject *tuple,struct ttflangname *english) {
+    char *lang_str, *strid_str, *string;
+    int lang, strid;
+    PyObject *val;
+    struct ttflangname *names;
+
+    if ( !PyTuple_Check(tuple)) {
+	PyErr_Format(PyExc_TypeError, "Value must be a tuple" );
+return(0);
+    }
+
+    val = PyTuple_GetItem(tuple,0);
+    if ( PyString_Check(val) ) {
+	lang_str = PyString_AsString(val);
+	lang = FlagsFromString(lang_str,sfnt_name_mslangs);
+	if ( lang==0x80000000 ) {
+	    PyErr_Format(PyExc_TypeError, "Unknown language" );
+return( 0 );
+	}
+    } else if ( PyInt_Check(val))
+	lang = PyInt_AsLong(val);
+    else {
+	PyErr_Format(PyExc_TypeError, "Unknown language" );
+return( 0 );
+    }
+
+    val = PyTuple_GetItem(tuple,1);
+    if ( PyString_Check(val) ) {
+	strid_str = PyString_AsString(val);
+	strid = FlagsFromString(strid_str,sfnt_name_str_ids);
+	if ( strid==0x80000000 ) {
+	    PyErr_Format(PyExc_TypeError, "Unknown string id" );
+return( 0 );
+	}
+    } else if ( PyInt_Check(val))
+	strid = PyInt_AsLong(val);
+    else {
+	PyErr_Format(PyExc_TypeError, "Unknown string id" );
+return( 0 );
+    }
+
+    for ( names=sf->names; names!=NULL; names=names->next )
+	if ( names->lang==lang )
+    break;
+
+    if ( PyTuple_GetItem(tuple,2)==Py_None ) {
+	if ( names!=NULL ) {
+	    free( names->names[strid] );
+	    names->names[strid] = NULL;
+	}
+return( 1 );
+    }
+
+    string = PyString_AsString(PyTuple_GetItem(tuple,2));
+    if ( string==NULL )
+return( 0 );
+    if ( lang==0x409 && english!=NULL && english->names[strid]!=NULL &&
+	    strcmp(string,english->names[strid])==0 )
+return( 1 );	/* If they set it to the default, there's nothing to do */
+
+    if ( names==NULL ) {
+	names = chunkalloc(sizeof( struct ttflangname ));
+	names->lang = lang;
+	names->next = sf->names;
+	sf->names = names;
+    }
+    free(names->names[strid]);
+    names->names[strid] = copy( string );
+return( 1 );
+}
+
+/* ************************************************************************** */
 /* Font getters/setters */
 /* ************************************************************************** */
+
+static PyObject *PyFF_Font_get_sfntnames(PyFF_Font *self,void *closure) {
+    struct ttflangname *names, *english;
+    int cnt, i;
+    PyObject *tuple;
+    struct ttflangname dummy;
+    SplineFont *sf = self->fv->sf;
+
+    memset(&dummy,0,sizeof(dummy));
+    DefaultTTFEnglishNames(&dummy, sf);
+
+    cnt = 0;
+    for ( english = sf->names; english!=NULL; ++english )
+	if ( english->lang==0x409 )
+    break;
+    for ( i=0; i<ttf_namemax; ++i ) {
+	if ( (english!=NULL && english->names[i]!=NULL ) || dummy.names[i]!=NULL )
+	    ++cnt;
+    }
+    for ( names = sf->names; names!=NULL; ++names ) if ( names!=english ) {
+	for ( i=0; i<ttf_namemax; ++i ) {
+	    if ( names->names[i]!=NULL )
+		++cnt;
+	}
+    }
+    tuple = PyTuple_New(cnt);
+    cnt = 0;
+    for ( i=0; i<ttf_namemax; ++i ) {
+	char *nm = (english!=NULL && english->names[i]!=NULL ) ? english->names[i] : dummy.names[i];
+	if ( nm!=NULL )
+	    PyTuple_SetItem(tuple,cnt++,sfntnametuple(0x409,i,nm));
+    }
+    for ( names = sf->names; names!=NULL; ++names ) if ( names!=english ) {
+	if ( names->names[i]!=NULL )
+	    PyTuple_SetItem(tuple,cnt++,sfntnametuple(names->lang,i,names->names[i]));
+    }
+
+    for ( i=0; i<ttf_namemax; ++i )
+	free( dummy.names[i]);
+
+return( tuple );
+}
+
+static int PyFF_Font_set_sfntnames(PyFF_Font *self,PyObject *value,void *closure) {
+    SplineFont *sf = self->fv->sf;
+    struct ttflangname *names;
+    struct ttflangname dummy;
+    int i;
+
+    if ( !PyTuple_Check(value)) {
+	PyErr_Format(PyExc_TypeError, "Value must be a tuple" );
+return(-1);
+    }
+
+    memset(&dummy,0,sizeof(dummy));
+    DefaultTTFEnglishNames(&dummy, sf);
+
+    for ( names = sf->names; names!=NULL; names=names->next ) {
+	for ( i=0; i<ttf_namemax; ++i ) {
+	    free(names->names[i]);
+	    names->names[i] = NULL;
+	}
+    }
+    for ( i=PyTuple_Size(value)-1; i>=0; --i )
+	if ( !SetSFNTName(sf,PyTuple_GetItem(value,i),&dummy) )
+return( -1 );
+
+    for ( i=0; i<ttf_namemax; ++i )
+	free( dummy.names[i]);
+
+return( 0 );
+}
+
+static PyObject *PyFF_Font_get_lookups(PyFF_Font *self,void *closure, int isgpos) {
+    PyObject *tuple;
+    OTLookup *otl;
+    int cnt;
+    SplineFont *sf = self->fv->sf;
+
+    cnt = 0;
+    for ( otl=isgpos ? sf->gpos_lookups : sf->gsub_lookups; otl!=NULL; otl=otl->next )
+	++cnt;
+
+    tuple = PyTuple_New(cnt);
+
+    cnt = 0;
+    for ( isgpos=0; isgpos<2; ++isgpos )
+	for ( otl=isgpos ? sf->gpos_lookups : sf->gsub_lookups; otl!=NULL; otl=otl->next )
+	    PyTuple_SetItem(tuple,cnt++,Py_BuildValue("s",otl->lookup_name));
+
+return( tuple );
+}
+
+static PyObject *PyFF_Font_get_gpos_lookups(PyFF_Font *self,void *closure) {
+return( PyFF_Font_get_lookups(self,closure,true));
+}
+
+static PyObject *PyFF_Font_get_gsub_lookups(PyFF_Font *self,void *closure) {
+return( PyFF_Font_get_lookups(self,closure,false));
+}
+
 static PyObject *PyFF_Font_get_userdata(PyFF_Font *self,void *closure) {
     Py_XINCREF( (PyObject *) (self->fv->python_data) );
 return( self->fv->python_data );
@@ -3269,9 +3528,9 @@ ff_gs_os2bit(hheaddescent_add)
 ff_gs_os2bit(typoascent_add)
 ff_gs_os2bit(typodescent_add)
 
-ff_gs_ro_bit(changed)
+ff_gs_bit(changed)
 ff_gs_ro_bit(multilayer)
-ff_gs_ro_bit(strokedfont)
+ff_gs_bit(strokedfont)
 ff_gs_ro_bit(new)
 
 ff_gs_bit(use_typo_metrics)
@@ -3521,6 +3780,15 @@ static PyGetSetDef PyFF_Font_getset[] = {
     {"userdata",
 	 (getter)PyFF_Font_get_userdata, (setter)PyFF_Font_set_userdata,
 	 "arbetrary user data", NULL},
+    {"sfnt_names",
+	 (getter)PyFF_Font_get_sfntnames, (setter)PyFF_Font_set_sfntnames,
+	 "The sfnt 'name' table. A tuple of all ms names.\nEach name is itself a tuple of strings (language,strid,name)\nMac names will be automagically created from ms names", NULL},
+    {"gpos_lookups",
+	 (getter)PyFF_Font_get_gpos_lookups, (setter)PyFF_cant_set,
+	 "The names of all lookups in the font's GPOS table", NULL},
+    {"gsub_lookups",
+	 (getter)PyFF_Font_get_gsub_lookups, (setter)PyFF_cant_set,
+	 "The names of all lookups in the font's GSUB table", NULL},
     {"fontname",
 	 (getter)PyFF_Font_get_fontname, (setter)PyFF_Font_set_fontname,
 	 "font name", NULL},
@@ -3708,9 +3976,9 @@ static PyGetSetDef PyFF_Font_getset[] = {
 	 (getter)PyFF_Font_get_OS2_vendor, (setter)PyFF_Font_set_OS2_vendor,
 	 "The 4 character OS/2 vendor string", NULL},
     {"changed",
-	 (getter)PyFF_Font_get_changed, (setter)PyFF_cant_set,
+	 (getter)PyFF_Font_get_changed, (setter)PyFF_Font_set_changed,
 	 "Flag indicating whether the font has been changed since it was loaded (read only)", NULL},
-    {"newflag",
+    {"isnew",
 	 (getter)PyFF_Font_get_new, (setter)PyFF_cant_set,
 	 "Flag indicating whether the font is new (read only)", NULL},
     {"hasvmetrics",
@@ -3729,7 +3997,7 @@ static PyGetSetDef PyFF_Font_getset[] = {
 	 (getter)PyFF_Font_get_multilayer, (setter)PyFF_cant_set,
 	 "Flag indicating whether the font is multilayered (type3) or not", NULL},
     {"strokedfont",
-	 (getter)PyFF_Font_get_strokedfont, (setter)PyFF_cant_set,
+	 (getter)PyFF_Font_get_strokedfont, (setter)PyFF_Font_set_strokedfont,
 	 "Flag indicating whether the font is a stroked font or not", NULL},
     {"guide",
 	 (getter)PyFF_Font_get_guide, (setter)PyFF_Font_set_guide,
@@ -3884,6 +4152,23 @@ return( NULL );
     TableAddInstrs(((PyFF_Font *) self)->fv->sf,tag,true,instrs,icnt);
     free(instrs);
 Py_RETURN(self);
+}
+
+static PyObject *PyFFFont_appendSFNTName(PyObject *self, PyObject *args) {
+    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+    struct ttflangname dummy;
+    int i;
+
+    memset(&dummy,0,sizeof(dummy));
+    DefaultTTFEnglishNames(&dummy, sf);
+
+    if ( !SetSFNTName(sf,args,&dummy) )
+return( NULL );
+
+    for ( i=0; i<ttf_namemax; ++i )
+	free( dummy.names[i]);
+
+Py_RETURN( self );;
 }
 
 static PyObject *PyFFFont_Save(PyObject *self, PyObject *args) {
@@ -4069,6 +4354,7 @@ return( PySC_From_SC_I( sc ));
 }
 
 static PyMethodDef PyFF_Font_methods[] = { /* !!!!! */
+    { "appendSFNTName", PyFFFont_appendSFNTName, METH_VARARGS, "Adds or replaces a name in the sfnt 'name' table. Takes three arguments, a language, a string id, and the string value" },
     { "save", PyFFFont_Save, METH_VARARGS, "Save the current font to a sfd file" },
     { "generate", (PyCFunction) PyFFFont_Generate, METH_VARARGS | METH_KEYWORDS, "Save the current font to a standard font file" },
     { "mergeKern", PyFFFont_MergeKern, METH_VARARGS, "Merge kerning data into the current font from an external file" },
@@ -4364,5 +4650,20 @@ void PyFF_ScriptString(FontView *fv,char *str) {
     fv_active_in_ui = fv;		/* Make fv known to interpreter */
     PyRun_SimpleString(str);
 }
-	
+
+void PythonFreeFV(FontView *fv) {
+    if ( fv->python_fv_object!=NULL ) {
+	((PyFF_Font *) (fv->python_fv_object))->fv = NULL;
+	Py_DECREF( (PyObject *) (fv->python_fv_object));
+    }
+    Py_XDECREF( (PyObject *) (fv->python_data));
+}
+
+void PythonFreeSC(SplineChar *sc) {
+    if ( sc->python_sc_object!=NULL ) {
+	((PyFF_Glyph *) (sc->python_sc_object))->sc = NULL;
+	Py_DECREF( (PyObject *) (sc->python_sc_object));
+    }
+    Py_XDECREF( (PyObject *) (sc->python_data));
+}
 #endif		/* _NO_PYTHON */

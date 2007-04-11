@@ -538,8 +538,10 @@ typedef struct fontview {
     SplineChar *sc_near_top;
     int sel_index;
     struct lookup_subtable *cur_subtable;
+#ifndef _NO_PYTHON
     void *python_fv_object;
     void *python_data;
+#endif
 } FontView;
 
 typedef struct findsel {

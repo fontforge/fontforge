@@ -822,7 +822,7 @@ static GTextInfo ttfnameids[] = {
     { (unichar_t *) N_("Fullname"), NULL, 0, 0, (void *) 4, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("UniqueID"), NULL, 0, 0, (void *) 3, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Version"), NULL, 0, 0, (void *) 5, NULL, 0, 0, 0, 0, 0, 0, 1},
-/* Don't bother with PostscriptName, we set that elsewhere */
+/* Don't give user access to PostscriptName, we set that elsewhere */
     { (unichar_t *) N_("Trademark"), NULL, 0, 0, (void *) 7, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Manufacturer"), NULL, 0, 0, (void *) 8, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Designer"), NULL, 0, 0, (void *) 9, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -9541,6 +9541,9 @@ void FontInfoInit(void) {
     if ( done )
 return;
     done = true;
+#ifndef _NO_PYTHON
+    scriptingSaveEnglishNames(ttfnameids,mslanguages);
+#endif
     for ( j=0; needswork[j]!=NULL; ++j ) {
 	for ( i=0; needswork[j][i].text!=NULL; ++i )
 	    needswork[j][i].text = (unichar_t *) S_((char *) needswork[j][i].text);

@@ -10808,6 +10808,9 @@ void FontViewFree(FontView *fv) {
     free(fv->fontvars);
     free(fv->selected);
     free(fv->fontset);
+#ifndef _NO_PYTHON
+    PythonFreeFV(fv);
+#endif
     free(fv);
 }
 

@@ -4873,6 +4873,9 @@ return;
     free(sc->layers);
 #endif
     AltUniFree(sc->altuni);
+#ifndef _NO_PYTHON
+    PythonFreeSC(sc);
+#endif
 }
 
 void SplineCharFree(SplineChar *sc) {
