@@ -4175,7 +4175,7 @@ static PyObject *PyFFFont_Save(PyObject *self, PyObject *args) {
     char *filename;
     char *locfilename = NULL, *pt;
     FontView *fv = ((PyFF_Font *) self)->fv;
-    int s2d;
+    int s2d=false;
 
     if ( PyTuple_Size(args)==1 ) {
 	if ( !PyArg_ParseTuple(args,"es","UTF-8",&filename) )
