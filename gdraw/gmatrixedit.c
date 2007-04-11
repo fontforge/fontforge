@@ -924,7 +924,7 @@ static void GME_StrBigEdit(GMatrixEdit *gme,char *str) {
     wattrs.utf8_window_title = title_str==NULL ? "Editing..." : title_str;
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,GGadgetScale(500));
-    pos.height = GDrawPointsToPixels(NULL,300);
+    pos.height = GDrawPointsToPixels(NULL,400);
     gme->big_done = 0;
     gw = GDrawCreateTopWindow(NULL,&pos,big_e_h,gme,&wattrs);
     free(title_str);
@@ -985,6 +985,8 @@ static void GME_StrBigEdit(GMatrixEdit *gme,char *str) {
     GHVBoxSetExpandableCol(boxes[2].ret,gb_expandgluesame);
     GHVBoxFitWindow(boxes[0].ret);
     GGadgetSetTitle8(mgcd[0].ret,str);
+    GTextFieldSelect(mgcd[0].ret,0,0);
+    GTextFieldShow(mgcd[0].ret,0);
 
     GDrawSetVisible(gw,true);
     while ( !gme->big_done )
