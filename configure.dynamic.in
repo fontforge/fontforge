@@ -135,14 +135,14 @@ fi
 
 python="yes"
 AC_ARG_WITH(python,
- [  --with-python   Include a python interpreter],
+ [  --without-python   Don't include a python interpreter],
  [
     if test "$withval" = "no" >/dev/null 2>&1 ; then
 	python="no"
     fi
  ], : )
 if test "$python" = "yes" ; then
-  AC_SEARCH_LIBS(Py_Initialize, python, : , python="no" )
+  AC_SEARCH_LIBS(Py_Initialize, python2.3 python2.4 python2.5 python2.6 python2 python, : , python="no" )
 fi
 if test "$python" = "yes" ; then
   echo -n checking for Python.h...
@@ -169,7 +169,7 @@ if test "$python" = "no" ; then
 fi
 ffscript="yes"
 AC_ARG_WITH(native-script,
- [  --with-native-script   Include a legacy fontforge scripting interpreter],
+ [  --without-native-script   Don't include a legacy fontforge scripting interpreter],
  [
     if test "$withval" = "no" >/dev/null 2>&1 ; then
 	ffscript="no"

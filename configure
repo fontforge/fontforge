@@ -1042,8 +1042,8 @@ Optional Packages:
   --with-capslock-for-alt   Control whether to use capslock rather than alt/meta to alter behavior of tools in outline/bitmap windows
   --with-debug-raw-points   Add a raw mode to the points window of the debugger
   --without-iconv   Don't use the system's iconv(3) routines, use fontforge's instead
-  --with-python   Include a python interpreter
-  --with-native-script   Include a legacy fontforge scripting interpreter
+  --without-python   Don't include a python interpreter
+  --without-native-script   Don't include a legacy fontforge scripting interpreter
   --with-freetype-bytecode   Control whether we build with the bytecode interpreter
   --with-freetype-src=dir   Specify freetype source directory
   --with-x                use the X Window System
@@ -18739,7 +18739,7 @@ fi
 rm -f conftest.err conftest.$ac_objext \
       conftest$ac_exeext conftest.$ac_ext
 if test "$ac_cv_search_Py_Initialize" = no; then
-  for ac_lib in python; do
+  for ac_lib in python2.3 python2.4 python2.5 python2.6 python2 python; do
     LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
     cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
