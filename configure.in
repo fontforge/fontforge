@@ -137,7 +137,7 @@ python="yes"
 AC_ARG_WITH(python,
  [  --with-python   Include a python interpreter],
  [
-    if test "$withval" != "no" >/dev/null 2>&1 ; then
+    if test "$withval" = "no" >/dev/null 2>&1 ; then
 	python="no"
     fi
  ], : )
@@ -171,7 +171,7 @@ ffscript="yes"
 AC_ARG_WITH(native-script,
  [  --with-native-script   Include a legacy fontforge scripting interpreter],
  [
-    if test "$withval" != "no" >/dev/null 2>&1 ; then
+    if test "$withval" = "no" >/dev/null 2>&1 ; then
 	ffscript="no"
     fi
  ], : )
