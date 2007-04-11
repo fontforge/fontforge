@@ -4362,7 +4362,8 @@ static PyMethodDef PyFF_Font_methods[] = { /* !!!!! */
     { "interpolateFonts", PyFFFont_InterpolateFonts, METH_VARARGS, "Interpolate between two fonts returning a new one" },
     { "createChar", PyFFFont_CreateChar, METH_VARARGS, "Creates a (blank) glyph at the specified encoding" },
     { "getTableInstructions", PyFFFont_GetTableAsInstrs, METH_VARARGS, "Returns a tuple of byte tt instructions for the requested truetype table (prep,fpgm)"},
-    { "setTableInstructions", PyFFFont_SetTableAsInstrs, METH_VARARGS, "Sets the instructions in the specified table to a tuple of byte tt instructions"}
+    { "setTableInstructions", PyFFFont_SetTableAsInstrs, METH_VARARGS, "Sets the instructions in the specified table to a tuple of byte tt instructions"},
+    NULL
 };
 
 /* ************************************************************************** */
