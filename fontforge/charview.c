@@ -66,7 +66,8 @@ struct cvshows CVShows = {
 	1,		/* show family blues too */
 	1,		/* show anchor points */
 	1,		/* show control point info when moving them */
-	1		/* show tabs containing names of former glyphs */
+	1,		/* show tabs containing names of former glyphs */
+	1		/* show side bearings */
 };
 static Color pointcol = 0xff0000;
 static Color firstpointcol = 0x707000;
@@ -1548,6 +1549,125 @@ return;
     }
 }
 
+static void DrawPLine(CharView *cv,GWindow pixmap,int x1, int y1, int x2, int y2,Color col) {
+
+    if ( x1==x2 || y1==y2 ) {
+	if ( x1<0 ) x1=0;
+	else if ( x1>cv->width ) x1 = cv->width;
+	if ( x2<0 ) x2=0;
+	else if ( x2>cv->width ) x2 = cv->width;
+	if ( y1<0 ) y1=0;
+	else if ( y1>cv->height ) y1 = cv->height;
+	if ( y2<0 ) y2=0;
+	else if ( y2>cv->height ) y2 = cv->height;
+    } else if ( y1<-1000 || y2<-1000 || x1<-1000 || x2<-1000 ||
+	    y1>cv->height+1000 || y2>cv->height+1000 ||
+	    x1>cv->width+1000 || x2>cv->width+1000 )
+return;
+    GDrawDrawLine(pixmap,x1,y1,x2,y2,col);
+}
+
+static void FindQuickBounds(SplineSet *ss,BasePoint **bounds) {
+    SplinePoint *sp;
+
+    for ( ; ss!=NULL; ss=ss->next ) {
+	sp = ss->first;
+	if ( sp->next==NULL || sp->next->to==sp )	/* Ignore contours with one point. Often tt points for moving references or anchors */
+    continue;
+	forever {
+	    if ( bounds[0]==NULL )
+		bounds[0] = bounds[1] = bounds[2] = bounds[3] = &sp->me;
+	    else {
+		if ( sp->me.x<bounds[0]->x ) bounds[0] = &sp->me;
+		if ( sp->me.x>bounds[1]->x ) bounds[1] = &sp->me;
+		if ( sp->me.y<bounds[2]->y ) bounds[2] = &sp->me;
+		if ( sp->me.y>bounds[3]->y ) bounds[3] = &sp->me;
+	    }
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==ss->first )
+	break;
+	}
+    }
+}
+
+static void CVSideBearings(GWindow pixmap, CharView *cv) {
+    SplineChar *sc = cv->sc;
+    RefChar *ref;
+    BasePoint *bounds[4];
+    int layer,l;
+    int x,y, x2, y2;
+    char buf[20];
+
+    memset(bounds,0,sizeof(bounds));
+    for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+	FindQuickBounds(sc->layers[layer].splines,bounds);
+	for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next )
+	    for ( l=0; l<ref->layer_cnt; ++l )
+		FindQuickBounds(ref->layers[l].splines,bounds);
+    }
+
+    if ( bounds[0]==NULL )
+return;				/* no points. no side bearings */
+
+    GDrawSetFont(pixmap,cv->small);
+    if ( cv->showhmetrics ) {
+	x = rint(bounds[0]->x*cv->scale) + cv->xoff;
+	y = cv->height-cv->yoff-rint(bounds[0]->y*cv->scale);
+	DrawPLine(cv,pixmap,cv->xoff,y,x,y,metricslabelcol);
+	 /* arrow heads */
+	 DrawPLine(cv,pixmap,cv->xoff,y,cv->xoff+4,y+4,metricslabelcol);
+	 DrawPLine(cv,pixmap,cv->xoff,y,cv->xoff+4,y-4,metricslabelcol);
+	 DrawPLine(cv,pixmap,x,y,x-4,y-4,metricslabelcol);
+	 DrawPLine(cv,pixmap,x,y,x-4,y+4,metricslabelcol);
+	dtos( buf, bounds[0]->x);
+	x = cv->xoff + (x-cv->xoff-GDrawGetText8Width(pixmap,buf,-1,NULL))/2;
+	GDrawDrawText8(pixmap,x,y-4,buf,-1,NULL,metricslabelcol);
+
+	x = rint(bounds[1]->x*cv->scale) + cv->xoff;
+	y = cv->height-cv->yoff-rint(bounds[1]->y*cv->scale);
+	x2 = rint(sc->width*cv->scale) + cv->xoff;
+	DrawPLine(cv,pixmap,x,y,x2,y,metricslabelcol);
+	 /* arrow heads */
+	 DrawPLine(cv,pixmap,x,y,x+4,y+4,metricslabelcol);
+	 DrawPLine(cv,pixmap,x,y,x+4,y-4,metricslabelcol);
+	 DrawPLine(cv,pixmap,x2,y,x2-4,y-4,metricslabelcol);
+	 DrawPLine(cv,pixmap,x2,y,x2-4,y+4,metricslabelcol);
+	dtos( buf, sc->width-bounds[1]->x);
+	x = x + (x2-x-GDrawGetText8Width(pixmap,buf,-1,NULL))/2;
+	GDrawDrawText8(pixmap,x,y-4,buf,-1,NULL,metricslabelcol);
+    }
+
+    if ( cv->showvmetrics ) {
+	x = rint(bounds[2]->x*cv->scale) + cv->xoff;
+	y = cv->height-cv->yoff-rint(bounds[2]->y*cv->scale);
+	y2 = cv->height-cv->yoff-rint(-sc->parent->descent*cv->scale);
+	DrawPLine(cv,pixmap,x,y,x,y2,metricslabelcol);
+	 /* arrow heads */
+	 DrawPLine(cv,pixmap,x,y,x-4,y-4,metricslabelcol);
+	 DrawPLine(cv,pixmap,x,y,x+4,y-4,metricslabelcol);
+	 DrawPLine(cv,pixmap,x,y2,x+4,y2+4,metricslabelcol);
+	 DrawPLine(cv,pixmap,x,y2,x-4,y2+4,metricslabelcol);
+	dtos( buf, bounds[2]->y-sc->parent->descent);
+	y = y + (y-y2-cv->sfh)/2;
+	GDrawDrawText8(pixmap,x+4,y,buf,-1,NULL,metricslabelcol);
+
+	x = rint(bounds[3]->x*cv->scale) + cv->xoff;
+	y = cv->height-cv->yoff-rint(bounds[3]->y*cv->scale);
+	y2 = cv->height-cv->yoff-rint(sc->parent->ascent*cv->scale);
+	DrawPLine(cv,pixmap,x,y,x,y2,metricslabelcol);
+	 /* arrow heads */
+	 DrawPLine(cv,pixmap,x,y,x-4,y-4,metricslabelcol);
+	 DrawPLine(cv,pixmap,x,y,x+4,y-4,metricslabelcol);
+	 DrawPLine(cv,pixmap,x,y2,x+4,y2+4,metricslabelcol);
+	 DrawPLine(cv,pixmap,x,y2,x-4,y2+4,metricslabelcol);
+	dtos( buf, sc->vwidth-bounds[3]->y);
+	x = x + (x2-x-GDrawGetText8Width(pixmap,buf,-1,NULL))/2;
+	GDrawDrawText8(pixmap,x,y-4,buf,-1,NULL,metricslabelcol);
+    }
+}
+
 static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     SplineFont *sf = cv->sc->parent;
     RefChar *rf;
@@ -1683,6 +1803,9 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	    GDrawDrawText8(pixmap,cv->width-len-5,y,buf,-1,NULL,metricslabelcol);
 	}
     }
+    if ( cv->showsidebearings && cv->showfore &&
+	    (cv->showvmetrics || cv->showhmetrics))
+	CVSideBearings(pixmap,cv);
 
     if ( cv->p.rubberbanding )
 	CVDrawRubberRect(pixmap,cv);
@@ -4293,6 +4416,7 @@ return( true );
 #define MID_ShowTabs	2029
 #define MID_AnchorGlyph	2030
 #define MID_AnchorControl 2031
+#define MID_ShowSideBearings	2032
 #define MID_Cut		2101
 #define MID_Copy	2102
 #define MID_Paste	2103
@@ -4708,6 +4832,14 @@ static void CVMenuShowTabs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CVShows.showtabs = cv->showtabs = !cv->showtabs;
     CVChangeTabsVisibility(cv,cv->showtabs);
     SavePrefs();
+}
+
+static void CVMenuShowSideBearings(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    CVShows.showsidebearings = cv->showsidebearings = !cv->showsidebearings;
+    SavePrefs();
+    GDrawRequestExpose(cv->v,NULL,false);
 }
 
 static void _CVMenuShowHideRulers(CharView *cv) {
@@ -7665,6 +7797,9 @@ static void cv_vwlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	  case MID_ShowCPInfo:
 	    mi->ti.checked = cv->showcpinfo;
 	  break;
+	  case MID_ShowSideBearings:
+	    mi->ti.checked = cv->showsidebearings;
+	  break;
 	  case MID_ShowTabs:
 	    mi->ti.checked = cv->showtabs;
 	    mi->ti.disabled = cv->former_cnt<=1;
@@ -8274,6 +8409,7 @@ static GMenuItem2 vwlist[] = {
     { { (unichar_t *) N_("_Mark Extrema"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("Mark Extrema|No Shortcut"), NULL, NULL, CVMenuMarkExtrema, MID_MarkExtrema },
     { { (unichar_t *) N_("M_ark Points of Inflection"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("Mark Points of Inflection|No Shortcut"), NULL, NULL, CVMenuMarkPointsOfInflection, MID_MarkPointsOfInflection },
     { { (unichar_t *) N_("Show _Control Point Info"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("Show Control Point Info|No Shortcut"), NULL, NULL, CVMenuShowCPInfo, MID_ShowCPInfo },
+    { { (unichar_t *) N_("Show Side B_earings"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("Show Side Bearings|No Shortcut"), NULL, NULL, CVMenuShowSideBearings, MID_ShowSideBearings },
     { { (unichar_t *) N_("Fi_ll"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'l' }, H_("Fill|No Shortcut"), NULL, NULL, CVMenuFill, MID_Fill },
     { { (unichar_t *) N_("Sho_w Grid Fit..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'l' }, H_("Show Grid Fit...|No Shortcut"), NULL, NULL, CVMenuShowGridFit, MID_ShowGridFit },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
@@ -8508,6 +8644,7 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
     cv->showhmetrics = CVShows.showhmetrics;
     cv->showvmetrics = CVShows.showvmetrics;
     cv->markextrema = CVShows.markextrema;
+    cv->showsidebearings = CVShows.showsidebearings;
     cv->markpoi = CVShows.markpoi;
     cv->showblues = CVShows.showblues;
     cv->showfamilyblues = CVShows.showfamilyblues;

@@ -56,6 +56,7 @@ extern struct cvshows {
     int showanchor;
     int showcpinfo;
     int showtabs;		/* with the names of former glyphs */
+    int showsidebearings;
 } CVShows;
 
 extern struct bvshows {
@@ -260,6 +261,7 @@ typedef struct charview {
     unsigned int autonomous_ruler_w: 1;
     unsigned int showcpinfo: 1;
     unsigned int showtabs: 1;
+    unsigned int showsidebearings: 1;
     Layer *layerheads[dm_max];
     real scale;
 #if defined(FONTFORGE_CONFIG_GTK)
