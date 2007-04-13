@@ -88,6 +88,16 @@ typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
     SplineChar *sc;
+    uint8 replace;
+    uint8 ended;
+    uint8 changed;
+} PyFF_GlyphPen;
+static PyTypeObject PyFF_GlyphPenType;
+
+typedef struct {
+    PyObject_HEAD
+    /* Type-specific fields go here. */
+    SplineChar *sc;
 } PyFF_Glyph;
 static PyTypeObject PyFF_GlyphType;
 
@@ -1442,12 +1452,134 @@ return( Py_BuildValue("((dddd)(dddd))", end.x-start.x-cx-bx,bx,cx,start.x,
     }
 }
 
+static void do_pycall(PyObject *obj,char *method,PyObject *args_tuple) {
+    PyObject *func, *result;
+
+    func = PyObject_GetAttrString(obj,method);	/* I hope this is right */
+    if ( func==NULL ) {
+fprintf( stderr, "Failed to find %s in %s\n", method, obj->ob_type->tp_name );
+	Py_DECREF(args_tuple);
+return;
+    }
+    if (!PyCallable_Check(func)) {
+	PyErr_Format(PyExc_TypeError, "Method, %s, is not callable", method );
+	Py_DECREF(args_tuple);
+	Py_DECREF(func);
+return;
+    }
+    result = PyEval_CallObject(func, args_tuple);
+    Py_DECREF(args_tuple);
+    Py_XDECREF(result);
+    Py_DECREF(func);
+}
+
+static PyObject *PointTuple(PyFF_Point *pt) {
+    PyObject *pt_tuple = PyTuple_New(2);
+
+    PyTuple_SetItem(pt_tuple,0,Py_BuildValue("d",pt->x));
+    PyTuple_SetItem(pt_tuple,1,Py_BuildValue("d",pt->y));
+return( pt_tuple );
+}
+
 static PyObject *PyFFContour_draw(PyFF_Contour *self, PyObject *args) {
-    PyObject *pen;
+    PyObject *pen, *tuple;
+    PyFF_Point **points, **freeme=NULL;
+    int i, start, off, last, j;
 
     if ( !PyArg_ParseTuple(args,"O", &pen ) )
 return( NULL );
-    /* !!!!!!! */
+    if ( self->pt_cnt<2 )
+Py_RETURN_NONE;
+
+    points = self->points;
+    /* The pen protocol demands that we start with an on-curve point */
+    /* this means we may need to rotate our point list. */
+    /* The pen protocol allows a contour of entirely off curve quadratic points */
+    /*  so make a special check for that (can't occur in cubics) */
+    for ( start=0; start<self->pt_cnt; ++start )
+	if ( points[start]->on_curve )
+    break;
+    if ( start==self->pt_cnt ) {
+	if ( self->is_quadratic ) {
+	    tuple = PyTuple_New(self->pt_cnt+1);
+	    for ( i=0; i<self->pt_cnt; ++i ) {
+		PyTuple_SetItem(tuple,i,PointTuple(points[i]));
+	    }
+	    PyTuple_SetItem(tuple,i,Py_None); Py_INCREF(Py_None);
+	    do_pycall(pen,"qCurveTo",tuple);
+	} else {
+	    PyErr_Format(PyExc_TypeError, "A cubic contour must have at least one oncurve point to be drawn" );
+return( NULL );
+	}
+    } else {
+	if ( start!=0 ) {
+	    points = freeme = galloc(self->pt_cnt*sizeof(struct PyFF_Point *));
+	    for ( i=start; i<self->pt_cnt; ++i )
+		points[i-start] = self->points[i];
+	    off = i;
+	    for ( i=0; i<start; ++i )
+		points[i+off] = self->points[i];
+	}
+
+	tuple = PyTuple_New(1);
+	PyTuple_SetItem(tuple,0,PointTuple(points[0]));
+	do_pycall(pen,"moveTo",tuple);
+	if ( PyErr_Occurred())
+return( NULL );
+	last = 0;
+	for ( i=1; i<self->pt_cnt; ++i ) {
+	    if ( !points[i]->on_curve )
+	continue;
+	    if ( i-last==1 ) {
+		tuple = PyTuple_New(1);
+		PyTuple_SetItem(tuple,0,PointTuple(points[i]));
+		do_pycall(pen,"lineTo",tuple);
+	    } else if ( i-last==3 && !self->is_quadratic ) {
+		tuple = PyTuple_New(3);
+		PyTuple_SetItem(tuple,0,PointTuple(points[i-2]));
+		PyTuple_SetItem(tuple,1,PointTuple(points[i-1]));
+		PyTuple_SetItem(tuple,2,PointTuple(points[i]));
+		do_pycall(pen,"curveTo",tuple);
+	    } else if ( self->is_quadratic ) {
+		tuple = PyTuple_New(i-last);
+		for ( j=last+1; j<=i; ++j )
+		    PyTuple_SetItem(tuple,j-(last+1),PointTuple(points[j]));
+		do_pycall(pen,"qCurveTo",tuple);
+	    } else {
+		PyErr_Format(PyExc_TypeError, "Wrong number of off-curve points on a cubic contour");
+return( NULL );
+	    }
+	    if ( PyErr_Occurred())
+return( NULL );
+	    last = i;
+	}
+	if ( i-last==3 && !self->is_quadratic && self->closed ) {
+	    tuple = PyTuple_New(3);
+	    PyTuple_SetItem(tuple,0,PointTuple(points[i-2]));
+	    PyTuple_SetItem(tuple,1,PointTuple(points[i-1]));
+	    PyTuple_SetItem(tuple,2,PointTuple(points[0]));
+	    do_pycall(pen,"curveTo",tuple);
+	} else if ( i-last!=1 && self->is_quadratic && self->closed ) {
+	    tuple = PyTuple_New(i-last);
+	    for ( j=last+1; j<i; ++j )
+		PyTuple_SetItem(tuple,j-(last+1),PointTuple(points[j]));
+	    PyTuple_SetItem(tuple,j-(last+1),PointTuple(points[0]));
+	    do_pycall(pen,"qCurveTo",tuple);
+	}
+    }
+    free(freeme);
+
+    if ( PyErr_Occurred())
+return( NULL );
+
+    tuple = PyTuple_New(0);
+    if ( self->closed )
+	do_pycall(pen,"closePath",tuple);
+    else
+	do_pycall(pen,"endPath",tuple);
+    if ( PyErr_Occurred())
+return( NULL );
+	    
 Py_RETURN_NONE;
 }
 
@@ -2068,11 +2200,8 @@ return( Py_BuildValue("(dddd)", xmin,ymin, xmax,ymax ));
 }
 
 static PyObject *PyFFLayer_draw(PyFF_Layer *self, PyObject *args) {
-    PyObject *pen;
     int i;
 
-    if ( !PyArg_ParseTuple(args,"O", &pen ) )
-return( NULL );
     for ( i=0; i<self->cntr_cnt; ++i )
 	PyFFContour_draw(self->contours[i],args);
 Py_RETURN_NONE;
@@ -2451,7 +2580,344 @@ return( LayerFromSS(inlayer->splines,ret));
 }
 
 /* ************************************************************************** */
-/* Glyph Methods */
+/* GlyphPen Standard Methods */
+/* ************************************************************************** */
+
+static void PyFF_GlyphPen_dealloc(PyFF_GlyphPen *self) {
+    if ( self->sc!=NULL ) {
+	if ( self->changed )
+	    SCCharChangedUpdate(self->sc);
+	self->sc = NULL;
+    }
+    self->ob_type->tp_free((PyObject *) self);
+}
+
+static PyObject *PyFFGlyphPen_Str(PyFF_GlyphPen *self) {
+return( PyString_FromFormat( "<GlyphPen for %s>", self->sc->name ));
+}
+
+/* ************************************************************************** */
+/*  GlyphPen Methods  */
+/* ************************************************************************** */
+static void GlyphClear(PyObject *self) {
+    SplineChar *sc = ((PyFF_GlyphPen *) self)->sc;
+    SCClearContents(sc);
+    ((PyFF_GlyphPen *) self)->replace = false;
+}
+
+static PyObject *PyFFGlyphPen_moveTo(PyObject *self, PyObject *args) {
+    SplineChar *sc = ((PyFF_GlyphPen *) self)->sc;
+    SplineSet *ss;
+    double x,y;
+
+    if ( !((PyFF_GlyphPen *) self)->ended ) {
+	PyErr_Format(PyExc_EnvironmentError, "The moveTo operator may not be called while drawing a contour");
+return( NULL );
+    }
+    if ( !PyArg_ParseTuple( args, "(dd)", &x, &y )) {
+	PyErr_Clear();
+	if ( !PyArg_ParseTuple( args, "dd", &x, &y ))
+return( NULL );
+    }
+    if ( ((PyFF_GlyphPen *) self)->replace )
+	GlyphClear(self);
+    ss = chunkalloc(sizeof(SplineSet));
+    ss->next = sc->layers[ly_fore].splines;
+    sc->layers[ly_fore].splines = ss;
+    ss->first = ss->last = SplinePointCreate(x,y);
+
+    ((PyFF_GlyphPen *) self)->ended = false;
+    ((PyFF_GlyphPen *) self)->changed = true;
+Py_RETURN_NONE;
+}
+
+static PyObject *PyFFGlyphPen_lineTo(PyObject *self, PyObject *args) {
+    SplineChar *sc = ((PyFF_GlyphPen *) self)->sc;
+    SplinePoint *sp;
+    SplineSet *ss;
+    double x,y;
+
+    if ( ((PyFF_GlyphPen *) self)->ended ) {
+	PyErr_Format(PyExc_EnvironmentError, "The lineTo operator must be preceded by a moveTo operator" );
+return( NULL );
+    }
+    if ( !PyArg_ParseTuple( args, "(dd)", &x, &y )) {
+	PyErr_Clear();
+	if ( !PyArg_ParseTuple( args, "dd", &x, &y ))
+return( NULL );
+    }
+    ss = sc->layers[ly_fore].splines;
+    sp = SplinePointCreate(x,y);
+    SplineMake(ss->last,sp,sc->parent->order2);
+    ss->last = sp;
+
+Py_RETURN_NONE;
+}
+
+static PyObject *PyFFGlyphPen_curveTo(PyObject *self, PyObject *args) {
+    SplineChar *sc = ((PyFF_GlyphPen *) self)->sc;
+    SplinePoint *sp;
+    SplineSet *ss;
+    double x[3],y[3];
+
+    if ( ((PyFF_GlyphPen *) self)->ended ) {
+	PyErr_Format(PyExc_EnvironmentError, "The curveTo operator must be preceded by a moveTo operator" );
+return( NULL );
+    }
+    if ( sc->parent->order2 ) {
+	if ( !PyArg_ParseTuple( args, "(dd)(dd)", &x[1], &y[1], &x[2], &y[2] )) {
+	    PyErr_Clear();
+	    if ( !PyArg_ParseTuple( args, "dddd", &x[1], &y[1], &x[2], &y[2] ))
+return( NULL );
+	}
+	x[0] = x[1]; y[0] = y[1];
+    } else {
+	if ( !PyArg_ParseTuple( args, "(dd)(dd)(dd)", &x[0], &y[0], &x[1], &y[1], &x[2], &y[2] )) {
+	    PyErr_Clear();
+	    if ( !PyArg_ParseTuple( args, "dddddd", &x[0], &y[0], &x[1], &y[1], &x[2], &y[2] ))
+return( NULL );
+	}
+    }
+    ss = sc->layers[ly_fore].splines;
+    sp = SplinePointCreate(x[2],y[2]);
+    sp->prevcp.x = x[1]; sp->prevcp.y = y[1];
+    sp->noprevcp = false;
+    ss->last->nextcp.x = x[0], ss->last->nextcp.y = y[0];
+    ss->last->nonextcp = false;
+    SplineMake(ss->last,sp,sc->parent->order2);
+    ss->last = sp;
+
+Py_RETURN_NONE;
+}
+
+static PyObject *PyFFGlyphPen_qCurveTo(PyObject *self, PyObject *args) {
+    SplineChar *sc = ((PyFF_GlyphPen *) self)->sc;
+    SplinePoint *sp;
+    SplineSet *ss;
+    double x0,y0, x1,y1, x2,y2;
+    int len, i;
+    PyObject *pt_tuple;
+
+    if ( !sc->parent->order2 ) {
+	PyErr_Format(PyExc_EnvironmentError, "qCurveTo only applies to quadratic fonts" );
+return( NULL );
+    }
+
+    len = PyTuple_Size(args);
+    if ( PyTuple_GetItem(args,len-1)== Py_None ) {
+	--len;
+	if ( !((PyFF_GlyphPen *) self)->ended ) {
+	    PyErr_Format(PyExc_EnvironmentError, "qCurveTo must describe an entire contour if its last argument is None");
+return( NULL );
+	} else if ( len<2 ) {
+	    PyErr_Format(PyExc_EnvironmentError, "qCurveTo must have at least two tuples");
+return( NULL );
+	}
+
+	pt_tuple = PyTuple_GetItem(args,0);
+	if ( !PyArg_ParseTuple(pt_tuple,"dd", &x0, &y0 ))
+return( NULL );
+
+	ss = chunkalloc(sizeof(SplineSet));
+	ss->next = sc->layers[ly_fore].splines;
+	sc->layers[ly_fore].splines = ss;
+
+	x1 = x0; y1 = y0;
+	for ( i=1; i<len; ++i ) {
+	    pt_tuple = PyTuple_GetItem(args,i);
+	    if ( !PyArg_ParseTuple(pt_tuple,"dd", &x2, &y2 ))
+return( NULL );
+	    sp = SplinePointCreate((x1+x2)/2,(y1+y2)/2);
+	    sp->noprevcp = false;
+	    sp->prevcp.x = x1; sp->prevcp.y = y1;
+	    sp->nonextcp = false;
+	    sp->nextcp.x = x2; sp->nextcp.y = y2;
+	    if ( ss->first==NULL )
+		ss->first = ss->last = sp;
+	    else {
+		SplineMake2(ss->last,sp);
+		ss->last = sp;
+	    }
+	    x1=x2; y1=y2;
+	}
+	sp = SplinePointCreate((x0+x2)/2,(y0+y2)/2);
+	sp->noprevcp = false;
+	sp->prevcp.x = x2; sp->prevcp.y = y2;
+	sp->nonextcp = false;
+	sp->nextcp.x = x0; sp->nextcp.y = y0;
+	SplineMake2(ss->last,sp);
+	SplineMake2(sp,ss->first);
+	ss->last = ss->first;
+
+	((PyFF_GlyphPen *) self)->ended = true;
+	((PyFF_GlyphPen *) self)->changed = true;
+    } else {
+	if ( ((PyFF_GlyphPen *) self)->ended ) {
+	    PyErr_Format(PyExc_EnvironmentError, "The curveTo operator must be preceded by a moveTo operator" );
+return( NULL );
+	} else if ( len<2 ) {
+	    PyErr_Format(PyExc_EnvironmentError, "qCurveTo must have at least two tuples");
+return( NULL );
+	}
+	ss = sc->layers[ly_fore].splines;
+	pt_tuple = PyTuple_GetItem(args,0);
+	if ( !PyArg_ParseTuple(pt_tuple,"dd", &x1, &y1 ))
+return( NULL );
+	ss->last->nextcp.x = x1; ss->last->nextcp.y = y1;
+	ss->last->nonextcp = false;
+	for ( i=1; i<len-1; ++i ) {
+	    pt_tuple = PyTuple_GetItem(args,i);
+	    if ( !PyArg_ParseTuple(pt_tuple,"dd", &x2, &y2 ))
+return( NULL );
+	    sp = SplinePointCreate((x1+x2)/2,(y1+y2)/2);
+	    sp->noprevcp = false;
+	    sp->prevcp.x = x1; sp->prevcp.y = y1;
+	    sp->nonextcp = false;
+	    sp->nextcp.x = x2; sp->nextcp.y = y2;
+	    SplineMake2(ss->last,sp);
+	    ss->last = sp;
+	    x1=x2; y1=y2;
+	}
+	pt_tuple = PyTuple_GetItem(args,i);
+	if ( !PyArg_ParseTuple(pt_tuple,"dd", &x2, &y2 ))
+return( NULL );
+	sp = SplinePointCreate(x2,y2);
+	sp->noprevcp = false;
+	sp->prevcp.x = x1; sp->prevcp.y = y1;
+	SplineMake2(ss->last,sp);
+	ss->last = sp;
+    }
+
+Py_RETURN_NONE;
+}
+
+static PyObject *PyFFGlyphPen_closePath(PyObject *self, PyObject *args) {
+    SplineChar *sc = ((PyFF_GlyphPen *) self)->sc;
+    SplineSet *ss;
+
+    if ( ((PyFF_GlyphPen *) self)->ended ) {
+	PyErr_Format(PyExc_EnvironmentError, "The curveTo operator must be preceded by a moveTo operator" );
+return( NULL );
+    }
+
+    ss = sc->layers[ly_fore].splines;
+    if ( ss->first!=ss->last && RealNear(ss->first->me.x,ss->last->me.x) &&
+	    RealNear(ss->first->me.y,ss->last->me.y)) {
+	ss->first->prevcp = ss->last->prevcp;
+	ss->first->noprevcp = ss->last->noprevcp;
+	ss->last->prev->to = ss->first;
+	ss->first->prev = ss->last->prev;
+	SplinePointFree(ss->last);
+    } else {
+	SplineMake(ss->last,ss->first,sc->parent->order2);
+    }
+    ss->last = ss->first;
+	
+    ((PyFF_GlyphPen *) self)->ended = true;
+Py_RETURN_NONE;
+}
+
+static PyObject *PyFFGlyphPen_endPath(PyObject *self, PyObject *args) {
+
+    if ( ((PyFF_GlyphPen *) self)->ended ) {
+	PyErr_Format(PyExc_EnvironmentError, "The curveTo operator must be preceded by a moveTo operator" );
+return( NULL );
+    }
+
+    ((PyFF_GlyphPen *) self)->ended = true;
+Py_RETURN_NONE;
+}
+
+static PyObject *PyFFGlyphPen_addComponent(PyObject *self, PyObject *args) {
+    SplineChar *sc = ((PyFF_GlyphPen *) self)->sc;
+    real transform[6];
+    SplineChar *rsc;
+    double m[6];
+    char *str;
+    int j;
+
+    if ( !((PyFF_GlyphPen *) self)->ended ) {
+	PyErr_Format(PyExc_EnvironmentError, "The addComponent operator may not be called while drawing a contour");
+return( NULL );
+    }
+    if ( ((PyFF_GlyphPen *) self)->replace )
+	GlyphClear(self);
+
+    memset(m,0,sizeof(m));
+    m[0] = m[3] = 1; 
+    if ( !PyArg_ParseTuple(args,"s|(dddddd)",&str,
+	    &m[0], &m[1], &m[2], &m[3], &m[4], &m[5]) )
+return( NULL );
+    rsc = SFGetChar(sc->parent,-1,str);
+    if ( rsc==NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "No glyph named %s", str);
+return( NULL );
+    }
+    for ( j=0; j<6; ++j )
+	transform[j] = m[j];
+    _SCAddRef(sc,rsc,transform);
+    
+Py_RETURN_NONE;
+}
+
+static PyMethodDef PyFF_GlyphPen_methods[] = {
+    { "moveTo", PyFFGlyphPen_moveTo, METH_VARARGS, "Start a new contour at a point (a two element tuple)" },
+    { "lineTo", PyFFGlyphPen_lineTo, METH_VARARGS, "Draws a line from the current point to the argument (a two element tuple)" },
+    { "curveTo", PyFFGlyphPen_curveTo, METH_VARARGS, "Draws a cubic or quadratic bezier curve from the current point to the last arg" },
+    { "qCurveTo", PyFFGlyphPen_qCurveTo, METH_VARARGS, "Draws a series of quadratic bezier curves" },
+    { "closePath", PyFFGlyphPen_closePath, METH_VARARGS, "Closes the current contour (and ends it)" },
+    { "endPath", PyFFGlyphPen_endPath, METH_VARARGS, "Ends the current contour (without closing it)" },
+    { "addComponent", PyFFGlyphPen_addComponent, METH_VARARGS, "Adds a reference into the glyph" },
+    NULL
+};
+/* ************************************************************************** */
+/*  GlyphPen Type  */
+/* ************************************************************************** */
+
+static PyTypeObject PyFF_GlyphPenType = {
+    PyObject_HEAD_INIT(NULL)
+    0,                         /*ob_size*/
+    "fontforge.glyphPen",      /*tp_name*/
+    sizeof(PyFF_GlyphPen),     /*tp_basicsize*/
+    0,                         /*tp_itemsize*/
+    (destructor) PyFF_GlyphPen_dealloc, /*tp_dealloc*/
+    0,                         /*tp_print*/
+    0,                         /*tp_getattr*/
+    0,                         /*tp_setattr*/
+    0,                         /*tp_compare*/
+    0,                         /*tp_repr*/
+    0,                         /*tp_as_number*/
+    0,                         /*tp_as_sequence*/
+    0,		               /*tp_as_mapping*/
+    0,                         /*tp_hash */
+    0,                         /*tp_call*/
+    (reprfunc) PyFFGlyphPen_Str,/*tp_str*/
+    0,                         /*tp_getattro*/
+    0,                         /*tp_setattro*/
+    0,                         /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT,        /*tp_flags*/
+    "FontForge GlyphPen object",/* tp_doc */
+    0,		               /* tp_traverse */
+    0,		               /* tp_clear */
+    0,		               /* tp_richcompare */
+    0,		               /* tp_weaklistoffset */
+    0,		               /* tp_iter */
+    0,		               /* tp_iternext */
+    PyFF_GlyphPen_methods,     /* tp_methods */
+    0,			       /* tp_members */
+    0,			       /* tp_getset */
+    0,                         /* tp_base */
+    0,                         /* tp_dict */
+    0,                         /* tp_descr_get */
+    0,                         /* tp_descr_set */
+    0,                         /* tp_dictoffset */
+    /*(initproc)PyFF_GlyphPen_init*/0,  /* tp_init */
+    0,                         /* tp_alloc */
+    /*PyFF_GlyphPen_new*/0        /* tp_new */
+};
+
+/* ************************************************************************** */
+/* Glyph Standard Methods */
 /* ************************************************************************** */
 
 static void PyFF_Glyph_dealloc(PyFF_Glyph *self) {
@@ -2708,7 +3174,7 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_a_layer(PyFF_Glyph *self,void *closure, int layeri) {
+static PyObject *PyFF_Glyph_get_a_layer(PyFF_Glyph *self,int layeri) {
     SplineChar *sc = self->sc;
     Layer *layer;
     PyFF_Layer *ly;
@@ -2765,7 +3231,7 @@ return( 0 );
 }
 
 static PyObject *PyFF_Glyph_get_foreground(PyFF_Glyph *self,void *closure) {
-return( PyFF_Glyph_get_a_layer(self,closure,ly_fore));
+return( PyFF_Glyph_get_a_layer(self,ly_fore));
 }
 
 static int PyFF_Glyph_set_foreground(PyFF_Glyph *self,PyObject *value,void *closure) {
@@ -2773,7 +3239,7 @@ return( PyFF_Glyph_set_a_layer(self,value,closure,ly_fore));
 }
 
 static PyObject *PyFF_Glyph_get_background(PyFF_Glyph *self,void *closure) {
-return( PyFF_Glyph_get_a_layer(self,closure,ly_back));
+return( PyFF_Glyph_get_a_layer(self,ly_back));
 }
 
 static int PyFF_Glyph_set_background(PyFF_Glyph *self,PyObject *value,void *closure) {
@@ -2807,7 +3273,7 @@ return( 0 );
 }
 
 static PyObject *PyFF_Glyph_get_color(PyFF_Glyph *self,void *closure) {
-return( Py_BuildValue("", self->sc->color ));
+return( Py_BuildValue("i", self->sc->color ));
 }
 
 static int PyFF_Glyph_set_color(PyFF_Glyph *self,PyObject *value,void *closure) {
@@ -2912,9 +3378,49 @@ return( NULL );
 Py_RETURN_NONE;
 }
 
-static PyMethodDef PyFF_Glyph_methods[] = { /* !!!!! */
+static char *glyphpen_keywords[] = { "replace", NULL };
+static PyObject *PyFFGlyph_GlyphPen(PyObject *self, PyObject *args, PyObject *keywds) {
+    int replace = true;
+    PyObject *gp;
+
+    if ( !PyArg_ParseTupleAndKeywords(args, keywds, "|i", glyphpen_keywords,
+	    &replace ))
+return( NULL );
+    gp = PyFF_GlyphPenType.tp_alloc(&PyFF_GlyphPenType,0);
+    ((PyFF_GlyphPen *) gp)->sc = ((PyFF_Glyph *) self)->sc;
+    ((PyFF_GlyphPen *) gp)->replace = replace;
+    ((PyFF_GlyphPen *) gp)->ended = true;
+    ((PyFF_GlyphPen *) gp)->changed = false;
+    /* tp_alloc increments the reference count for us */
+return( gp );
+}
+
+static PyObject *PyFFGlyph_draw(PyObject *self, PyObject *args) {
+    PyObject *layer, *result, *pen;
+    RefChar *ref;
+    PyObject *tuple;
+
+    if ( !PyArg_ParseTuple(args,"O", &pen ) )
+return( NULL );
+
+    layer = PyFF_Glyph_get_a_layer((PyFF_Glyph *) self,ly_fore);
+    result = PyFFLayer_draw( (PyFF_Layer *) layer,args);
+    Py_XDECREF(layer);
+
+    for ( ref = ((PyFF_Glyph *) self)->sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
+	tuple = Py_BuildValue("s(dddddd)", ref->sc->name,
+		ref->transform[0], ref->transform[1], ref->transform[2],
+		ref->transform[3], ref->transform[4], ref->transform[5]);
+	do_pycall(pen,"addComponent",tuple);
+    }
+return( result );
+}
+
+static PyMethodDef PyFF_Glyph_methods[] = { /* !!!!! */ /* Hinting stuff */
     { "build", PyFFGlyph_Build, METH_NOARGS, "If the current glyph is an accented character\nand all components are in the font\nthen build it out of references" },
     { "addReference", PyFFGlyph_AddReference, METH_VARARGS, "Add a reference"},
+    { "glyphPen", (PyCFunction) PyFFGlyph_GlyphPen, METH_VARARGS | METH_KEYWORDS, "Create a pen object which can draw into this glyph"},
+    { "draw", (PyCFunction) PyFFGlyph_draw, METH_VARARGS , "Draw the glyph's outline to the pen argument"},
     NULL
 };
 /* ************************************************************************** */
@@ -4575,8 +5081,10 @@ static PyMODINIT_FUNC initPyFontForge(void) {
     PyObject* m;
     int i;
     static PyTypeObject *types[] = { &PyFF_PointType, &PyFF_ContourType,
-	    &PyFF_LayerType, &PyFF_GlyphType, &PyFF_FontType, NULL };
-    static char *names[] = { "point", "contour", "layer", "glyph", "font", NULL };
+	    &PyFF_LayerType, &PyFF_GlyphPenType, &PyFF_GlyphType,
+	    &PyFF_FontType, NULL };
+    static char *names[] = { "point", "contour", "layer", "glyph", "glyphPen",
+	    "font", NULL };
 
     for ( i=0; types[i]!=NULL; ++i ) {
 	types[i]->ob_type = &PyType_Type;		/* Or does Type_Ready do this??? */
