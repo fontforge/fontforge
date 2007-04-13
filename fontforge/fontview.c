@@ -5228,7 +5228,7 @@ return;
 	free(temp);
     }
     uc_strcat(title, " (" );
-    if ( fv->normal ) uc_strcat(title,"><");
+    if ( fv->normal ) { utf82u_strcat(title,_("Compact")); uc_strcat(title," "); }
     uc_strcat(title,enc);
     uc_strcat(title, ")" );
     free(enc);
