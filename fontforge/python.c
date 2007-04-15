@@ -2749,7 +2749,7 @@ return( NULL );
 	SplineMake2(sp,ss->first);
 	ss->last = ss->first;
 
-	((PyFF_GlyphPen *) self)->ended = true;
+	/*((PyFF_GlyphPen *) self)->ended = true;*/
 	((PyFF_GlyphPen *) self)->changed = true;
     } else {
 	if ( ((PyFF_GlyphPen *) self)->ended ) {
@@ -3246,6 +3246,86 @@ static int PyFF_Glyph_set_background(PyFF_Glyph *self,PyObject *value,void *clos
 return( PyFF_Glyph_set_a_layer(self,value,closure,ly_back));
 }
 
+static PyObject *PyFF_Glyph_get_hints(StemInfo *head) {
+    StemInfo *h;
+    int cnt;
+    PyObject *tuple;
+
+    for ( h=head, cnt=0; h!=NULL; h=h->next, ++cnt );
+    tuple = PyTuple_New(cnt);
+    for ( h=head, cnt=0; h!=NULL; h=h->next, ++cnt ) {
+	double start, width;
+	start = h->start; width = h->width;
+	if ( h->ghost && width>0 ) {
+	    start += width;
+	    width = -width;
+	}
+	PyTuple_SetItem(tuple,cnt,Py_BuildValue("(dd)", start, width ));
+    }
+
+return( tuple );
+}
+
+static int PyFF_Glyph_set_hints(PyFF_Glyph *self,int is_v,PyObject *value) {
+    SplineChar *sc = self->sc;
+    StemInfo *head=NULL, *tail=NULL, *cur;
+    int i, cnt;
+    double start, width;
+    StemInfo **_head = is_v ? &sc->vstem : &sc->hstem;
+
+    cnt = PyTuple_Size(value);
+    if ( cnt==-1 )
+return( -1 );
+    for ( i=0; i<cnt; ++i ) {
+	if ( !PyArg_ParseTuple(PyTuple_GetItem(value,i),"(dd)", &start, &width ))
+return( -1 );
+	cur = chunkalloc(sizeof(StemInfo));
+	if ( width==-20 || width==-21 )
+	    cur->ghost = true;
+	if ( width<0 ) {
+	    start += width;
+	    width = -width;
+	}
+	cur->start = start;
+	cur->width = width;
+	if ( tail==NULL )
+	    head = cur;
+	else
+	    tail->next = cur;
+	tail = cur;
+    }
+
+    StemInfosFree(*_head);
+    SCClearHintMasks(sc,true);
+    *_head = HintCleanup(head,true,1);
+    if ( is_v ) {
+	SCGuessVHintInstancesList(sc);
+	sc->vconflicts = StemListAnyConflicts(sc->vstem);
+    } else {
+	SCGuessHHintInstancesList(sc);
+	sc->hconflicts = StemListAnyConflicts(sc->hstem);
+    }
+
+    SCCharChangedUpdate(sc);
+return( 0 );
+}
+
+static PyObject *PyFF_Glyph_get_hhints(PyFF_Glyph *self,void *closure) {
+return( PyFF_Glyph_get_hints(self->sc->hstem));
+}
+
+static int PyFF_Glyph_set_hhints(PyFF_Glyph *self,PyObject *value,void *closure) {
+return( PyFF_Glyph_set_hints(self,false,value));
+}
+
+static PyObject *PyFF_Glyph_get_vhints(PyFF_Glyph *self,void *closure) {
+return( PyFF_Glyph_get_hints(self->sc->vstem));
+}
+
+static int PyFF_Glyph_set_vhints(PyFF_Glyph *self,PyObject *value,void *closure) {
+return( PyFF_Glyph_set_hints(self,true,value));
+}
+
 static PyObject *PyFF_Glyph_get_comment(PyFF_Glyph *self,void *closure) {
     if ( self->sc->comment==NULL )
 return( Py_BuildValue("s", "" ));
@@ -3338,6 +3418,12 @@ static PyGetSetDef PyFF_Glyph_getset[] = {
     {"font",
 	 (getter)PyFF_Glyph_get_font, (setter)PyFF_cant_set,
 	 "Font containing the glyph", NULL},
+    {"hhints",
+	 (getter)PyFF_Glyph_get_hhints, (setter)PyFF_Glyph_set_hhints,
+	 "The horizontal hints of the glyph as a tuple, one entry per hint. Each hint is itself a tuple containing the start location and width of the hint", NULL},
+    {"vhints",
+	 (getter)PyFF_Glyph_get_vhints, (setter)PyFF_Glyph_set_vhints,
+	 "The vertical hints of the glyph as a tuple, one entry per hint. Each hint is itself a tuple containing the start location and width of the hint", NULL},
     {NULL}  /* Sentinel */
 };
 
@@ -3416,11 +3502,189 @@ return( NULL );
 return( result );
 }
 
-static PyMethodDef PyFF_Glyph_methods[] = { /* !!!!! */ /* Hinting stuff */
-    { "build", PyFFGlyph_Build, METH_NOARGS, "If the current glyph is an accented character\nand all components are in the font\nthen build it out of references" },
-    { "addReference", PyFFGlyph_AddReference, METH_VARARGS, "Add a reference"},
+static PyObject *PyFFGlyph_addHint(PyObject *self, PyObject *args) {
+    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
+    int is_v;
+    double start, width;
+    StemInfo *h;
+
+    if ( !PyArg_ParseTuple(args,"idd", &is_v, &start, &width ) )
+return( NULL );
+
+    h = chunkalloc(sizeof(StemInfo));
+    if ( width==-20 || width==-21 )
+	h->ghost = true;
+    if ( width<0 ) {
+	start += width;
+	width = -width;
+    }
+    h->start = start;
+    h->width = width;
+    if ( is_v ) {
+	SCGuessVHintInstancesAndAdd(sc,h,0x80000000,0x80000000);
+	h->next = sc->vstem;
+	sc->vstem = HintCleanup(h,true,1);
+	sc->vconflicts = StemListAnyConflicts(sc->vstem);
+    } else {
+	SCGuessHHintInstancesAndAdd(sc,h,0x80000000,0x80000000);
+	h->next = sc->hstem;
+	sc->hstem = HintCleanup(h,true,1);
+	sc->hconflicts = StemListAnyConflicts(sc->hstem);
+    }
+Py_RETURN_NONE;
+}
+
+static PyObject *PyFFGlyph_autoHint(PyObject *self, PyObject *args) {
+    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
+
+    SplineCharAutoHint(sc,NULL);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    if ( !no_windowing_ui )
+	SCUpdateAll(sc);
+#endif
+Py_RETURN_NONE;
+}
+
+static PyObject *PyFFGlyph_autoInstr(PyObject *self, PyObject *args) {
+    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
+
+    SCAutoInstr(sc,NULL);
+Py_RETURN_NONE;
+}
+
+static PyObject *PyFFGlyph_autoTrace(PyObject *self, PyObject *args) {
+    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
+    char **at_args;
+
+    at_args = AutoTraceArgs(false);
+    if ( at_args==(char **) -1 ) {
+	PyErr_Format(PyExc_EnvironmentError, "Bad autotrace args" );
+return(NULL);
+    }
+    _SCAutoTrace(sc, at_args);
+Py_RETURN_NONE;
+}
+
+static PyObject *PyFFGlyph_import(PyObject *self, PyObject *args) {
+    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
+    char *filename;
+    char *locfilename = NULL, *pt;
+
+    if ( !PyArg_ParseTuple(args,"es","UTF-8",&filename) )
+return( NULL );
+    locfilename = utf82def_copy(filename);
+    free(filename);
+
+    pt = strrchr(locfilename,'.');
+    if ( pt==NULL ) pt=locfilename;
+
+    if ( strcasecmp(pt,".eps")==0 || strcasecmp(pt,".ps")==0 || strcasecmp(pt,".art")==0 )
+	SCImportPS(sc,ly_fore,locfilename,false,0);
+#ifndef _NO_LIBXML
+    else if ( strcasecmp(pt,".svg")==0 )
+	SCImportSVG(sc,ly_fore,locfilename,NULL,0,false);
+    else if ( strcasecmp(pt,".glif")==0 )
+	SCImportGlif(sc,ly_fore,locfilename,NULL,0,false);
+#endif
+    /* else if ( strcasecmp(pt,".fig")==0 )*/
+    else {
+	GImage *image = GImageRead(locfilename);
+	if ( image==NULL ) {
+	    PyErr_Format(PyExc_EnvironmentError, "Could not load image file %s", locfilename );
+return(NULL);
+	}
+	SCAddScaleImage(sc,image,false,ly_back);
+    }
+    free( locfilename );
+Py_RETURN_NONE;
+}
+
+static PyObject *PyFFGlyph_export(PyObject *self, PyObject *args) {
+    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
+    char *filename;
+    char *locfilename = NULL;
+    char *pt;
+    int pixels=100, bits=8;
+    int format;
+    FILE *file;
+
+    if ( !PyArg_ParseTuple(args,"es|ii","UTF-8",&filename,&pixels,&bits) )
+return( NULL );
+    locfilename = utf82def_copy(filename);
+    free(filename);
+
+    pt = strrchr(locfilename,'.');
+    if ( pt==NULL ) pt=locfilename;
+    if ( strcasecmp(pt,".xbm")==0 ) {
+	format=0; bits=1;
+    } else if ( strcasecmp(pt,".bmp")==0 )
+	format=1;
+    else if ( strcasecmp(pt,".png")==0 )
+	format=2;
+
+    if ( format!=-1 ) {
+	if ( !ExportImage(locfilename,sc,format,pixels,bits)) {
+	    PyErr_Format(PyExc_EnvironmentError, "Could not create image file %s", locfilename );
+return( NULL );
+	}
+    } else {
+	file = fopen( locfilename,"w");
+	if ( file==NULL ) {
+	    PyErr_Format(PyExc_EnvironmentError, "Could not create file %s", locfilename );
+return( NULL );
+	}
+
+	if ( strcasecmp(pt,".eps")==0 || strcasecmp(pt,".ps")==0 || strcasecmp(pt,".art")==0 )
+	    _ExportEPS(file,sc,true);
+	else if ( strcasecmp(pt,".pdf")==0 )
+	    _ExportPDF(file,sc);
+	else if ( strcasecmp(pt,".svg")==0 )
+	    _ExportSVG(file,sc);
+	else if ( strcasecmp(pt,".glif")==0 )
+	    _ExportGlif(file,sc);
+	/* else if ( strcasecmp(pt,".fig")==0 )*/
+	else {
+	    PyErr_Format(PyExc_TypeError, "Unknown extension to export: %s", pt );
+	    free( locfilename );
+return( NULL );
+	}
+	fclose(file);
+    }
+    free( locfilename );
+Py_RETURN_NONE;
+}
+
+static PyObject *PyFFGlyph_unlinkRef(PyObject *self, PyObject *args) {
+    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
+    char *refname;
+    RefChar *ref;
+
+    if ( !PyArg_ParseTuple(args,"s",&refname) )
+return( NULL );
+    for ( ref = sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
+	if ( strcmp(ref->sc->name,refname)==0 )
+    break;
+    if ( ref==NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "No reference named %s found in glyph %s", refname, sc->name );
+return( NULL );
+    }
+    SCRefToSplines(sc,ref);
+    SCCharChangedUpdate(sc);
+Py_RETURN_NONE;
+}
+
+static PyMethodDef PyFF_Glyph_methods[] = { /* PSTs!!!!!! */
     { "glyphPen", (PyCFunction) PyFFGlyph_GlyphPen, METH_VARARGS | METH_KEYWORDS, "Create a pen object which can draw into this glyph"},
     { "draw", (PyCFunction) PyFFGlyph_draw, METH_VARARGS , "Draw the glyph's outline to the pen argument"},
+    { "addReference", PyFFGlyph_AddReference, METH_VARARGS, "Add a reference"},
+    { "addHint", PyFFGlyph_addHint, METH_VARARGS, "Add a postscript hint (is_vertical_hint,start_pos,width)"},
+    { "autoHint", PyFFGlyph_autoHint, METH_NOARGS, "Guess at postscript hints"},
+    { "autoInstr", PyFFGlyph_autoInstr, METH_NOARGS, "Guess (badly) at truetype instructions"},
+    { "autoTrace", PyFFGlyph_autoTrace, METH_NOARGS, "Autotrace any background images"},
+    { "build", PyFFGlyph_Build, METH_NOARGS, "If the current glyph is an accented character\nand all components are in the font\nthen build it out of references" },
+    { "export", PyFFGlyph_export, METH_NOARGS, "Import a background image or a foreground eps/svg/etc. (provide the filename of the image file)" },
+    { "import", PyFFGlyph_import, METH_NOARGS, "Export the glyph, the format is determined by the extension. (provide the filename of the image file)" },
+    { "unlinkRef", PyFFGlyph_unlinkRef, METH_NOARGS, "Unlink a reference and turn it into outlines"},
     NULL
 };
 /* ************************************************************************** */

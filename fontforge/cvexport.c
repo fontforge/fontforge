@@ -532,32 +532,19 @@ static int AskSizeBits(int *pixelsize,int *bitsperpixel) {
     GDrawDestroyWindow(gw);
 return( sb.good );
 }
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-static int ExportXBM(char *filename,SplineChar *sc, int format) {
+int ExportImage(char *filename,SplineChar *sc, int format, int pixelsize, int bitsperpixel) {
     struct _GImage base;
     GImage gi;
     GClut clut;
     BDFChar *bdfc;
-    int pixelsize, ret;
-    char *ans;
-    int tot, bitsperpixel, i;
+    int ret;
+    int tot, i;
     uint8 *pt, *end;
     int scale;
     void *freetypecontext;
 
-    if ( format==0 ) {
-	ans = gwwv_ask_string(_("Pixel size?"),"100",_("Pixel size?"));
-	if ( ans==NULL )
-return( 0 );
-	if ( (pixelsize=strtol(ans,NULL,10))<=0 )
-return( 0 );
-	free(last);
-	last = ans;
-	bitsperpixel=1;
-    } else {
-	if ( !AskSizeBits(&pixelsize,&bitsperpixel) )
-return( 0 );
-    }
     if ( autohint_before_rasterize && sc->changedsincelasthinted && !sc->manualhints )
 	SplineCharAutoHint(sc,NULL);
 
@@ -624,6 +611,29 @@ return( 0 );
 	BDFCharFree(bdfc);
     }
 return( ret );
+}
+
+#ifndef	FONTFORGE_CONFIG_NO_WINDOWING_UI
+static int ExportXBM(char *filename,SplineChar *sc, int format) {
+    char *ans;
+    int pixelsize, bitsperpixel;
+
+    if ( format==0 ) {
+	ans = gwwv_ask_string(_("Pixel size?"),"100",_("Pixel size?"));
+	if ( ans==NULL )
+return( 0 );
+	if ( (pixelsize=strtol(ans,NULL,10))<=0 )
+return( 0 );
+	free(last);
+	last = ans;
+	bitsperpixel=1;
+    } else {
+	if ( !AskSizeBits(&pixelsize,&bitsperpixel) )
+return( 0 );
+    }
+    if ( autohint_before_rasterize && sc->changedsincelasthinted && !sc->manualhints )
+	SplineCharAutoHint(sc,NULL);
+return( ExportImage(filename,sc, format, pixelsize, bitsperpixel));
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 

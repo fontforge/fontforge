@@ -765,6 +765,7 @@ extern int HasSVG(void);
 extern void SCImportSVG(SplineChar *sc,int layer,char *path,char  *memory, int memlen,int doclear);
 extern int HasUFO(void);
 extern void SCImportGlif(SplineChar *sc,int layer,char *path,char  *memory, int memlen,int doclear);
+extern void SCImportPS(SplineChar *sc,int layer,char *path,int doclear, int flags);
 extern void SCImportPSFile(SplineChar *sc,int layer,FILE *ps,int doclear,int flags);
 extern void SCAddScaleImage(SplineChar *sc,GImage *image,int doclear,int layer);
 extern void SCInsertImage(SplineChar *sc,GImage *image,real scale,real yoff, real xoff, int layer);
@@ -775,6 +776,7 @@ extern int _ExportPDF(FILE *pdf,SplineChar *sc);
 extern int _ExportEPS(FILE *eps,SplineChar *sc,int gen_preview);
 extern int _ExportSVG(FILE *svg,SplineChar *sc);
 extern int _ExportGlif(FILE *glif,SplineChar *sc);
+extern int ExportImage(char *filename,SplineChar *sc, int format, int pixelsize, int bitsperpixel);
 extern void ScriptExport(SplineFont *sf, BDFFont *bdf, int format, int gid,
 	char *format_spec, EncMap *map);
 
@@ -835,6 +837,8 @@ extern void PasteToCV(CharView *cv);
 
 extern void MDReplace(MinimumDistance *md,SplineSet *old,SplineSet *rpl);
 
+extern void _SCAutoTrace(SplineChar *sc, char **args);
+extern char **AutoTraceArgs(int ask);
 extern void FVAutoTrace(FontView *fv,int ask);
 extern char *FindAutoTraceName(void);
 extern char *FindMFName(void);

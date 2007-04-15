@@ -233,7 +233,7 @@ return( NULL );
     }
 }
 
-static void _SCAutoTrace(SplineChar *sc, char **args) {
+void _SCAutoTrace(SplineChar *sc, char **args) {
     ImageList *images;
     char *prog, *pt;
     SplineSet *new, *last;
@@ -424,7 +424,7 @@ void SetAutoTraceArgs(void *a) {
     args = makevector((char *) a);
 }
 
-static char **AutoTraceArgs(int ask) {
+char **AutoTraceArgs(int ask) {
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( ask || autotrace_ask ) {

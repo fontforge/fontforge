@@ -357,7 +357,7 @@ return;
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-static void SCImportPS(SplineChar *sc,int layer,char *path,int doclear, int flags) {
+void SCImportPS(SplineChar *sc,int layer,char *path,int doclear, int flags) {
     FILE *ps = fopen(path,"r");
 
     if ( ps==NULL )
