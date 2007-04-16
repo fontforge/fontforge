@@ -6197,7 +6197,7 @@ static void bAddPosSub(Context *c) {
 }
 
 static void bRemoveATT(Context *c) {
-    ScriptError(c,"This scripting function no longer works.");
+    ScriptError(c,"This scripting function no longer works. Try RemoveLookupSubtable or RemovePosSub.");
 }
 
 static void bRemoveLookup(Context *c) {
@@ -7163,6 +7163,69 @@ static void bGetPosSub(Context *c) {
     c->return_val.u.aval = ret;
 }
 
+static void bRemovePosSub(Context *c) {
+    SplineFont *sf = c->curfv->sf, *sf_sl = sf;
+    EncMap *map = c->curfv->map;
+    SplineChar *sc;
+    int i, gid, is_v;
+    PST *pst, *next, *prev;
+    KernPair *kp, *kpnext, *kpprev;
+    struct lookup_subtable *sub;
+
+    if ( sf_sl->cidmaster!=NULL ) sf_sl = sf_sl->cidmaster;
+    else if ( sf_sl->mm!=NULL ) sf_sl = sf_sl->mm->normal;
+
+    if ( c->a.argc!=2 )
+	ScriptError( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str )
+	ScriptError(c,"Bad argument type");
+    if ( *c->a.vals[1].u.sval=='*' )
+	sub = NULL;
+    else {
+	sub = SFFindLookupSubtable(sf,c->a.vals[1].u.sval);
+	if ( sub==NULL )
+	    ScriptErrorString(c,"Unknown lookup subtable",c->a.vals[1].u.sval);
+    }
+
+    for ( i=0; i<c->curfv->map->enccount; ++i ) {
+	if ( c->curfv->selected[i] && (gid=map->map[i])!=-1 &&
+		SCWorthOutputting( sc= sf->glyphs[gid]) ) {
+	    for ( prev=NULL, pst = sc->possub; pst!=NULL; pst=next ) {
+		next = pst->next;
+		if ( pst->type==pst_lcaret ) {
+		    prev = pst;
+	    continue;
+		}
+		if ( pst->subtable == sub || sub==NULL ) {
+		    if ( prev==NULL )
+			sc->possub = next;
+		    else
+			prev->next = next;
+		    pst->next = NULL;
+		    PSTFree(pst);
+		} else
+		    prev = pst;
+	    }
+	    for ( is_v=0; is_v<2; ++is_v ) {
+		for ( kpprev=NULL, kp = is_v ? sc->vkerns: sc->kerns; kp!=NULL; kp=kpnext ) {
+		    kpnext = kp->next;
+		    if ( kp->subtable == sub || sub==NULL ) {
+			if ( kpprev!=NULL )
+			    kpprev->next = kpnext;
+			else if ( is_v )
+			    sc->vkerns = kpnext;
+			else
+			    sc->kerns = kpnext;
+			kp->next = NULL;
+			KernPairsFree(kp);
+		    } else
+			kpprev = kp;
+		}
+	    }
+	}
+    }
+}
+
 static void bSetGlyphTeX(Context *c) {
     SplineFont *sf = c->curfv->sf;
     EncMap *map = c->curfv->map;
@@ -7501,6 +7564,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "AutoTrace", bAutotrace },	/* Oops. docs say upperT, old scripts expect lowert */
     { "CorrectDirection", bCorrectDirection },
     { "AddPosSub", bAddPosSub },
+    { "RemovePosSub", bRemovePosSub },
     { "AddATT", bAddATT },
     { "DefaultATT", bDefaultATT },
     { "RemoveATT", bRemoveATT },
