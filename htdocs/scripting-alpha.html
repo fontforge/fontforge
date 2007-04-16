@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 9-Apr-2006 -->
-  <!-- AP: Last modified: 25-Mar-2007 -->
+  <!-- AP: Last modified: 15-Apr-2007 -->
   <TITLE>Scripting functions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -2227,7 +2227,8 @@ SetLBearing(lbearing)
 	  <DT>
 	    <STRIKE><A NAME="RemoveATT">R</A>emoveATT(type,script-lang,tag)</STRIKE>
 	  <DD>
-	    See <A HREF="#RemoveLookupSubtable">RemoveLookupSubtable</A>
+	    See <A HREF="#RemoveLookupSubtable">RemoveLookupSubtable</A> or
+	    <A HREF="#RemovePosSub">RemovePosSub</A>
 	  <DT>
 	    <A NAME="RemoveLookup">R</A>emoveLookup(lookup-name)
 	  <DD>
@@ -2236,6 +2237,12 @@ SetLBearing(lbearing)
 	    <A NAME="RemoveLookupSubtable">R</A>emoveLookupSubtable(subtable-name)
 	  <DD>
 	    Remove the subtable.
+	  <DT>
+	    <A NAME="RemovePosSub">R</A>emovePosSub(subtable-name)
+	  <DD>
+	    Remove any positionings or substitutions from the selected glyphs that are
+	    controlled by the named subtable. If the subtable name is "*" then all are
+	    removed.
 	  <DT>
 	    <A NAME="RemoveDetachedGlyphs">RemoveDetachedGlyphs</A>()
 	  <DD>
