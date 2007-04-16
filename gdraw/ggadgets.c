@@ -1183,3 +1183,7 @@ return( (g->funcs->handle_timer)(g,event) );
     }
 return( false );
 }
+
+void GGadgetTakesKeyboard(GGadget *g, int takes_keyboard) {
+    g->takes_keyboard = takes_keyboard;
+}

@@ -471,7 +471,7 @@ static int gtabset_key(GGadget *g, GEvent *event) {
     GTabSet *gts = (GTabSet *) g;
     int i;
 
-    if ( !g->takes_input || (g->state!=gs_enabled && g->state!=gs_active && g->state!=gs_focused ))
+    if ( !g->takes_input || !g->takes_keyboard || (g->state!=gs_enabled && g->state!=gs_active && g->state!=gs_focused ))
 return(false);
     if ( event->type == et_charup )
 return( true );

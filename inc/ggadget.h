@@ -398,6 +398,7 @@ extern void GGadgetEndPopup(void);
 extern void GGadgetPopupExternalEvent(GEvent *e);
 
 extern int GGadgetDispatchEvent(GGadget *g,GEvent *e);
+extern void GGadgetTakesKeyboard(GGadget *g, int takes_keyboard);
 
 /* Handles *?{}[] wildcards */
 int GGadgetWildMatch(unichar_t *pattern, unichar_t *name,int ignorecase);
