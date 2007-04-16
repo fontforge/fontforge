@@ -3621,7 +3621,7 @@ static PyObject *PyFFGlyph_export(PyObject *self, PyObject *args) {
     char *locfilename = NULL;
     char *pt;
     int pixels=100, bits=8;
-    int format;
+    int format= -1;
     FILE *file;
 
     if ( !PyArg_ParseTuple(args,"es|ii","UTF-8",&filename,&pixels,&bits) )
@@ -3973,11 +3973,11 @@ static PyMethodDef PyFF_Glyph_methods[] = { /* PSTs!!!!!! */
     { "autoInstr", PyFFGlyph_autoInstr, METH_NOARGS, "Guess (badly) at truetype instructions"},
     { "autoTrace", PyFFGlyph_autoTrace, METH_NOARGS, "Autotrace any background images"},
     { "build", PyFFGlyph_Build, METH_NOARGS, "If the current glyph is an accented character\nand all components are in the font\nthen build it out of references" },
-    { "export", PyFFGlyph_export, METH_NOARGS, "Import a background image or a foreground eps/svg/etc. (provide the filename of the image file)" },
+    { "export", PyFFGlyph_import, METH_VARARGS, "Export the glyph, the format is determined by the extension. (provide the filename of the image file)" },
     { "getPosSub", PyFFGlyph_getPosSub, METH_VARARGS, "Gets position/substitution data from the glyph"},
-    { "import", PyFFGlyph_import, METH_NOARGS, "Export the glyph, the format is determined by the extension. (provide the filename of the image file)" },
+    { "import", PyFFGlyph_export, METH_VARARGS, "Import a background image or a foreground eps/svg/etc. (provide the filename of the image file)" },
     { "removePosSub", PyFFGlyph_removePosSub, METH_VARARGS, "Removes position/substitution data from the glyph"},
-    { "unlinkRef", PyFFGlyph_unlinkRef, METH_NOARGS, "Unlink a reference and turn it into outlines"},
+    { "unlinkRef", PyFFGlyph_unlinkRef, METH_VARARGS, "Unlink a reference and turn it into outlines"},
     NULL
 };
 /* ************************************************************************** */
@@ -5353,8 +5353,10 @@ return( -1 );
 	CompactEncMap(fv->map,fv->sf);
     } else {
 	new_enc = FindOrMakeEncoding(encname);
-	if ( new_enc==NULL )
+	if ( new_enc==NULL ) {
 	    PyErr_Format(PyExc_NameError, "Unknown encoding %s", encname);
+return -1;
+	}
 	if ( new_enc==&custom )
 	    fv->map->enc = &custom;
 	else {
