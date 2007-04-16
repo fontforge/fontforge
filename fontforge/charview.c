@@ -8839,6 +8839,7 @@ CharView *CharViewCreate(SplineChar *sc, FontView *fv,int enc) {
     cv->tabs = GTabSetCreate( gw, &gd, NULL );
     cv->former_cnt = 1;
     cv->former_names[0] = copy(sc->name);
+    GGadgetTakesKeyboard(cv->tabs,false);
 
     _CharViewCreate(cv,sc,fv,enc);
 return( cv );
