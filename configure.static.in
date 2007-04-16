@@ -93,28 +93,22 @@ AC_ARG_WITH(python,
     fi
  ], : )
 if test "$python" = "yes" ; then
-  AC_SEARCH_LIBS(Py_Initialize, python2.3 python2.4 python2.5 python2.6 python2 python, : , python="no" )
-fi
-if test "$python" = "yes" ; then
-  echo -n checking for Python.h...
-  Python_Incs=`echo /usr/include/*/Python.h | sort -r | sed -e 's/Python.h//'`
-  if test "$Python_Incs" = "" >/dev/null 2>&1 ; then
-    Python_Incs=`echo /usr/local/include/*/Python.h | sort -r | sed -e 's/Python.h//'`
-  fi
-  
-  Python_Inc=""
-  for dir in $Python_Incs; do
-    Python_Inc=$dir
-  break
-  done
-  if test "$Python_Inc" = "" >/dev/null 2>&1 ; then
-   python="no"
-   echo "no"
+  echo -n "Checking for python..."
+  if python -c "import distutils.sysconfig ; print '-I%s' % distutils.sysconfig.get_config_var('INCLUDEPY')" >/dev/null 2>&1 ; then
+    if python -c "import distutils.sysconfig ; print '%s/%s %s' % (distutils.sysconfig.get_config_var('LIBPL'),distutils.sysconfig.get_config_var('LDLIBRARY'),distutils.sysconfig.get_config_var('LIBS'))" >/dev/null 2>&1 ; then
+      PyIncs=`python -c "import distutils.sysconfig ; print '-I%s' % distutils.sysconfig.get_config_var('INCLUDEPY')"`
+      CFLAGS="$CFLAGS $PyIncs"
+      PyLibs=`python -c "import distutils.sysconfig ; print '%s/%s %s' % (distutils.sysconfig.get_config_var('LIBPL'),distutils.sysconfig.get_config_var('LDLIBRARY'),distutils.sysconfig.get_config_var('LIBS'))"`
+      LIBS="$LIBS $PyLibs"
+    else
+      python="no"
+    fi
   else
-   CFLAGS="$CFLAGS -I$Python_Inc"
-   echo "yes"
+    python="no"
   fi
+  echo $python
 fi
+
 if test "$python" = "no" ; then
   AC_DEFINE(_NO_PYTHON)
 fi
