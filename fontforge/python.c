@@ -104,6 +104,21 @@ static PyTypeObject PyFF_GlyphType;
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
+    SplineFont *sf;
+} PyFF_Private;
+static PyTypeObject PyFF_PrivateType;
+
+typedef struct {
+    PyObject_HEAD
+    /* Type-specific fields go here. */
+    SplineFont *sf;
+    struct ttf_table *cvt;
+} PyFF_Cvt;
+static PyTypeObject PyFF_CvtType;
+
+typedef struct {
+    PyObject_HEAD
+    /* Type-specific fields go here. */
     FontView *fv;
 } PyFF_Font;
 static PyTypeObject PyFF_FontType;
@@ -633,6 +648,7 @@ static PyFF_Point *PyFFPoint_CNew(double x, double y, int on_curve) {
     self->on_curve = on_curve;
 return( self );
 }
+
 /* ************************************************************************** */
 /* Contours */
 /* ************************************************************************** */
@@ -2927,7 +2943,7 @@ static void PyFF_Glyph_dealloc(PyFF_Glyph *self) {
 }
 
 static PyObject *PyFFGlyph_Str(PyFF_Glyph *self) {
-return( PyString_FromFormat( "<Glyph: %s>", self->sc->name ));
+return( PyString_FromFormat( "<Glyph %s in font %s>", self->sc->name, self->sc->parent->fontname ));
 }
 
 /* ************************************************************************** */
@@ -3673,17 +3689,294 @@ return( NULL );
 Py_RETURN_NONE;
 }
 
+static PyObject *PyFFGlyph_getPosSub(PyObject *self, PyObject *args) {
+    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
+    SplineFont *sf = sc->parent, *sf_sl = sf;
+    int i, j, cnt, subcnt, ch;
+    PyObject *ret, *temp;
+    PST *pst;
+    KernPair *kp;
+    char *pt, *start;
+    struct lookup_subtable *sub;
+    char *subname;
+
+    if ( sf_sl->cidmaster!=NULL ) sf_sl = sf_sl->cidmaster;
+    else if ( sf_sl->mm!=NULL ) sf_sl = sf_sl->mm->normal;
+
+    subname = PyString_AsString(PyTuple_GetItem(args,0));
+    if ( subname==NULL )
+return( NULL );
+    if ( *subname=='*' )
+	sub = NULL;
+    else {
+	sub = SFFindLookupSubtable(sf,subname);
+	if ( sub==NULL ) {
+	    PyErr_Format(PyExc_KeyError, "Unknown lookup subtable: %s",subname);
+return( NULL );
+	}
+    }
+
+    for ( i=0; i<2; ++i ) {
+	cnt = 0;
+	for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
+	    if ( pst->type==pst_lcaret )
+	continue;
+	    if ( pst->subtable == sub || sub==NULL ) {
+		if ( i ) {
+		    switch ( pst->type ) {
+		      default:
+			Py_INCREF(Py_None);
+			PyTuple_SetItem(ret,i,Py_None);
+/* The important things here should not be translated. We hope the user will */
+/*  never see this. Let's not translate it at all */
+			LogError( "Unexpected PST type in GetPosSub (%d).\n", pst->type );
+		      break;
+		      case pst_position:
+			PyTuple_SetItem(ret,cnt,Py_BuildValue("(ssiiii)",
+				pst->subtable->subtable_name,"Position",
+			        pst->u.pos.xoff,pst->u.pos.yoff,
+			        pst->u.pos.h_adv_off, pst->u.pos.v_adv_off ));
+		      break;
+		      case pst_pair:
+			PyTuple_SetItem(ret,cnt,Py_BuildValue("(sssiiiiiiii)",
+				pst->subtable->subtable_name,"Pair",pst->u.pair.paired,
+			        pst->u.pair.vr[0].xoff,pst->u.pair.vr[0].yoff,
+			        pst->u.pair.vr[0].h_adv_off, pst->u.pair.vr[0].v_adv_off,
+			        pst->u.pair.vr[1].xoff,pst->u.pair.vr[1].yoff,
+			        pst->u.pair.vr[1].h_adv_off, pst->u.pair.vr[1].v_adv_off ));
+		      break;
+		      case pst_substitution:
+			PyTuple_SetItem(ret,cnt,Py_BuildValue("(sss)",
+				pst->subtable->subtable_name,"Substitution",pst->u.subs.variant));
+		      break;
+		      case pst_alternate:
+		      case pst_multiple:
+		      case pst_ligature:
+			for ( pt=pst->u.mult.components, subcnt=1; *pt; ++pt ) {
+			    if ( *pt==' ' ) {
+				++subcnt;
+			        while ( pt[1]==' ' ) ++pt;
+			    }
+			}
+			temp = PyTuple_New(2+subcnt);
+			PyTuple_SetItem(temp,0,PyString_FromString(pst->subtable->subtable_name));
+			PyTuple_SetItem(temp,1,PyString_FromString(
+				pst->type==pst_alternate?"AltSubs":
+				pst->type==pst_multiple?"MultSubs":
+			                    "Ligature"));
+			for ( pt=pst->u.mult.components, subcnt=0; *pt; ) {
+			    while ( *pt==' ' ) ++pt;
+			    if ( *pt=='\0' )
+			break;
+			    start = pt;
+			    while ( *pt!=' ' && *pt!='\0' ) ++pt;
+			    ch = *pt; *pt = '\0';
+			    PyTuple_SetItem(temp,2+subcnt,PyString_FromString(start));
+			    *pt = ch;
+			    ++subcnt;
+			}
+			PyTuple_SetItem(ret,cnt,temp);
+		      break;
+		    }
+		}
+		++cnt;
+	    }
+	}
+	for ( j=0; j<2; ++j ) {
+	    if ( sub==NULL || sub->lookup->lookup_type==gpos_pair ) {
+		for ( kp= (j==0 ? sc->kerns : sc->vkerns); kp!=NULL; kp=kp->next ) {
+		    if ( sub==NULL || sub==kp->subtable ) {
+			if ( i ) {
+			    int xadv1, yadv1, xadv2;
+			    xadv1 = yadv1 = xadv2 = 0;
+			    if ( j )
+				yadv1 = kp->off;
+			    else if ( SCRightToLeft(sc))
+				xadv2 = kp->off;
+			    else
+				xadv1 = kp->off;
+			    PyTuple_SetItem(ret,cnt,Py_BuildValue("(sssiiiiiiii)",
+				    kp->subtable->subtable_name,"Pair",kp->sc->name,
+			            0,0,xadv1,yadv1,
+			            0,0,xadv2,0));
+			}
+			++cnt;
+		    }
+		}
+	    }
+	}
+	if ( i==0 )
+	    ret = PyTuple_New(cnt);
+    }
+return( ret );
+}
+
+static PyObject *PyFFGlyph_removePosSub(PyObject *self, PyObject *args) {
+    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
+    SplineFont *sf = sc->parent, *sf_sl = sf;
+    int is_v;
+    PST *pst, *next, *prev;
+    KernPair *kp, *kpnext, *kpprev;
+    struct lookup_subtable *sub;
+    char *subname;
+
+    if ( sf_sl->cidmaster!=NULL ) sf_sl = sf_sl->cidmaster;
+    else if ( sf_sl->mm!=NULL ) sf_sl = sf_sl->mm->normal;
+
+    subname = PyString_AsString(PyTuple_GetItem(args,0));
+    if ( subname==NULL )
+return( NULL );
+    if ( *subname=='*' )
+	sub = NULL;
+    else {
+	sub = SFFindLookupSubtable(sf,subname);
+	if ( sub==NULL ) {
+	    PyErr_Format(PyExc_KeyError, "Unknown lookup subtable: %s",subname);
+return( NULL );
+	}
+    }
+
+    for ( prev=NULL, pst = sc->possub; pst!=NULL; pst=next ) {
+	next = pst->next;
+	if ( pst->type==pst_lcaret ) {
+	    prev = pst;
+    continue;
+	}
+	if ( pst->subtable == sub || sub==NULL ) {
+	    if ( prev==NULL )
+		sc->possub = next;
+	    else
+		prev->next = next;
+	    pst->next = NULL;
+	    PSTFree(pst);
+	} else
+	    prev = pst;
+    }
+    for ( is_v=0; is_v<2; ++is_v ) {
+	for ( kpprev=NULL, kp = is_v ? sc->vkerns: sc->kerns; kp!=NULL; kp=kpnext ) {
+	    kpnext = kp->next;
+	    if ( kp->subtable == sub || sub==NULL ) {
+		if ( kpprev!=NULL )
+		    kpprev->next = kpnext;
+		else if ( is_v )
+		    sc->vkerns = kpnext;
+		else
+		    sc->kerns = kpnext;
+		kp->next = NULL;
+		KernPairsFree(kp);
+	    } else
+		kpprev = kp;
+	}
+    }
+Py_RETURN_NONE;
+}
+
+static PyObject *PyFFGlyph_addPosSub(PyObject *self, PyObject *args) {
+    SplineChar *sc = ((PyFF_Glyph *) self)->sc, *osc;
+    SplineFont *sf = sc->parent, *sf_sl = sf;
+    PST temp, *pst;
+    struct lookup_subtable *sub;
+    char *subname, *other;
+    KernPair *kp;
+
+    memset(&temp,0,sizeof(temp));
+
+    if ( sf_sl->cidmaster!=NULL ) sf_sl = sf_sl->cidmaster;
+    else if ( sf_sl->mm!=NULL ) sf_sl = sf_sl->mm->normal;
+
+    subname = PyString_AsString(PyTuple_GetItem(args,0));
+    if ( subname==NULL )
+return( NULL );
+    sub = SFFindLookupSubtable(sf,subname);
+    if ( sub==NULL ) {
+	PyErr_Format(PyExc_KeyError, "Unknown lookup subtable: %s",subname);
+return( NULL );
+    }
+
+    temp.subtable = sub;
+
+    if ( sub->lookup->lookup_type==gpos_single ) {
+	if ( !PyArg_ParseTuple(args,"(shhhh)", &subname,
+		&temp.u.pos.xoff, &temp.u.pos.yoff,
+		&temp.u.pos.h_adv_off, &temp.u.pos.v_adv_off))
+return( NULL );
+	temp.type = pst_position;
+    } else if ( sub->lookup->lookup_type==gpos_pair ) {
+	temp.type = pst_pair;
+	temp.u.pair.vr = chunkalloc(sizeof(struct vr [2]));
+	if ( !PyArg_ParseTuple(args,"(sshhhhhhhh)", &subname, &other,
+		&temp.u.pair.vr[0].xoff, &temp.u.pair.vr[0].yoff,
+		&temp.u.pair.vr[0].h_adv_off, &temp.u.pair.vr[0].v_adv_off,
+		&temp.u.pair.vr[1].xoff, &temp.u.pair.vr[1].yoff,
+		&temp.u.pair.vr[1].h_adv_off, &temp.u.pair.vr[1].v_adv_off))
+return( NULL );
+	if ( temp.u.pair.vr[0].xoff==0 && temp.u.pair.vr[0].yoff==0 &&
+		temp.u.pair.vr[1].xoff==0 && temp.u.pair.vr[1].yoff==0 &&
+		temp.u.pair.vr[1].v_adv_off==0 ) {
+	    int off =0x7fffffff;
+	    if ( temp.u.pair.vr[0].h_adv_off==0 && temp.u.pair.vr[1].h_adv_off==0 &&
+		    sub->vertical_kerning )
+		off = temp.u.pair.vr[0].v_adv_off;
+	    else if ( temp.u.pair.vr[0].h_adv_off==0 && temp.u.pair.vr[0].v_adv_off==0 &&
+		    SCRightToLeft(sc))
+		off = temp.u.pair.vr[1].h_adv_off;
+	    else if ( temp.u.pair.vr[0].v_adv_off==0 && temp.u.pair.vr[1].h_adv_off==0 )
+		off = temp.u.pair.vr[0].h_adv_off;
+	    if ( off!=0x7fffffff && (osc=SFGetChar(sf,-1,other))!=NULL ) {
+		chunkfree(temp.u.pair.vr,sizeof(struct vr [2]));
+		kp = chunkalloc(sizeof(KernPair));
+		kp->sc = osc;
+		kp->off = off;
+		kp->subtable = sub;
+		if ( sub->vertical_kerning ) {
+		    kp->next = sc->vkerns;
+		    sc->vkerns = kp;
+		} else {
+		    kp->next = sc->kerns;
+		    sc->kerns = kp;
+		}
+Py_RETURN_NONE;
+	    }
+	}
+	temp.u.pair.paired = copy(other);
+    } else {
+	if ( !PyArg_ParseTuple(args,"(ss)", &subname, &other))
+return( NULL );
+	if ( sub->lookup->lookup_type>=gsub_single )
+	    temp.type = pst_substitution;
+	else if ( sub->lookup->lookup_type>=gsub_alternate )
+	    temp.type = pst_alternate;
+	else if ( sub->lookup->lookup_type>=gsub_multiple )
+	    temp.type = pst_multiple;
+	else if ( sub->lookup->lookup_type>=gsub_ligature )
+	    temp.type = pst_ligature;
+	else {
+	    PyErr_Format(PyExc_KeyError, "Unexpected lookup type: %s",sub->lookup->lookup_name);
+return( NULL );
+	}
+	temp.u.subs.variant = copy(other);
+    }
+    pst = chunkalloc(sizeof(PST));
+    *pst = temp;
+    pst->next = sc->possub;
+    sc->possub = pst;
+Py_RETURN_NONE;
+}
+
 static PyMethodDef PyFF_Glyph_methods[] = { /* PSTs!!!!!! */
     { "glyphPen", (PyCFunction) PyFFGlyph_GlyphPen, METH_VARARGS | METH_KEYWORDS, "Create a pen object which can draw into this glyph"},
     { "draw", (PyCFunction) PyFFGlyph_draw, METH_VARARGS , "Draw the glyph's outline to the pen argument"},
     { "addReference", PyFFGlyph_AddReference, METH_VARARGS, "Add a reference"},
     { "addHint", PyFFGlyph_addHint, METH_VARARGS, "Add a postscript hint (is_vertical_hint,start_pos,width)"},
+    { "addPosSub", PyFFGlyph_addPosSub, METH_VARARGS, "Adds position/substitution data to the glyph"},
     { "autoHint", PyFFGlyph_autoHint, METH_NOARGS, "Guess at postscript hints"},
     { "autoInstr", PyFFGlyph_autoInstr, METH_NOARGS, "Guess (badly) at truetype instructions"},
     { "autoTrace", PyFFGlyph_autoTrace, METH_NOARGS, "Autotrace any background images"},
     { "build", PyFFGlyph_Build, METH_NOARGS, "If the current glyph is an accented character\nand all components are in the font\nthen build it out of references" },
     { "export", PyFFGlyph_export, METH_NOARGS, "Import a background image or a foreground eps/svg/etc. (provide the filename of the image file)" },
+    { "getPosSub", PyFFGlyph_getPosSub, METH_VARARGS, "Gets position/substitution data from the glyph"},
     { "import", PyFFGlyph_import, METH_NOARGS, "Export the glyph, the format is determined by the extension. (provide the filename of the image file)" },
+    { "removePosSub", PyFFGlyph_removePosSub, METH_VARARGS, "Removes position/substitution data from the glyph"},
     { "unlinkRef", PyFFGlyph_unlinkRef, METH_NOARGS, "Unlink a reference and turn it into outlines"},
     NULL
 };
@@ -3734,7 +4027,596 @@ static PyTypeObject PyFF_GlyphType = {
 };
 
 /* ************************************************************************** */
-/* Font Methods */
+/* Cvt sequence object */
+/* ************************************************************************** */
+
+static void PyFFCvt_dealloc(PyFF_Cvt *self) {
+    self->ob_type->tp_free((PyObject*)self);
+}
+
+static PyFF_Cvt *PyFFCvt_new(SplineFont *sf) {
+    PyFF_Cvt *self;
+
+    self = PyObject_New(PyFF_Cvt, &PyFF_CvtType);
+    ((PyFF_Cvt *) self)->sf = sf;
+    ((PyFF_Cvt *) self)->cvt = SFFindTable(sf,CHR('c','v','t',' '));
+return( self );
+}
+
+static PyObject *PyFFCvt_Str(PyFF_Cvt *self) {
+return( PyString_FromFormat( "<cvt table for font %s>", self->sf->fontname ));
+}
+
+/* ************************************************************************** */
+/* Cvt sequence */
+/* ************************************************************************** */
+static int PyFFCvt_Length( PyObject *self ) {
+    if ( ((PyFF_Cvt *) self)->cvt==NULL )
+return( 0 );
+    else
+return( ((PyFF_Cvt *) self)->cvt->len/2 );
+}
+
+static struct ttf_table *BuildCvt(SplineFont *sf,int initial_size) {
+    struct ttf_table *cvt;
+
+    cvt = chunkalloc(sizeof(struct ttf_table));
+    cvt->next = sf->ttf_tables;
+    sf->ttf_tables = cvt;
+    cvt->tag = CHR('m','a','x','p');
+    cvt->data = galloc(initial_size);
+    cvt->len = 0;
+    cvt->maxlen = initial_size;
+return( cvt );
+}
+
+static PyObject *PyFFCvt_Concat( PyObject *_c1, PyObject *_c2 ) {
+    PyFF_Cvt *c1 = (PyFF_Cvt *) _c1, *c2 = (PyFF_Cvt *) _c2;
+    PyObject *ret;
+    int i, len2, len1;
+    int is_cvt2;
+
+    len1 = PyFFCvt_Length(_c1);
+    if ( PyType_IsSubtype(&PyFF_CvtType,c2->ob_type) ) {
+	len2 = PyFFCvt_Length(_c2);
+	is_cvt2 = true;
+    } else if ( PyTuple_Check(_c2)) {
+	is_cvt2 = false;
+	len2 = PyTuple_Size(_c2);
+    } else {
+	PyErr_Format(PyExc_TypeError, "The second argument must be either another cvt or a tuple of integers");
+return( NULL );
+    }
+    ret = PyTuple_New(len1+len2);
+    for ( i=0; i<len1; ++i )
+	PyTuple_SetItem(ret,i,Py_BuildValue("i",memushort(c1->cvt->data,c1->cvt->len,i*sizeof(uint16))) );
+    if ( is_cvt2 ) {
+	for ( i=0; i<len2; ++i )
+	    PyTuple_SetItem(ret,len1+i,Py_BuildValue("i",memushort(c2->cvt->data,c2->cvt->len,i*sizeof(uint16))) );
+    } else {
+	for ( i=0; i<len2; ++i )
+	    PyTuple_SetItem(ret,len1+i,Py_BuildValue("i",PyTuple_GetItem(_c2,i)));
+    }
+Py_RETURN( (PyObject *) ret );
+}
+
+static PyObject *PyFFCvt_InPlaceConcat( PyObject *_self, PyObject *_c2 ) {
+    PyFF_Cvt *self = (PyFF_Cvt *) _self, *c2 = (PyFF_Cvt *) _c2;
+    int i;
+    int len1, len2, is_cvt2;
+    struct ttf_table *cvt;
+
+    len1 = PyFFCvt_Length(_self);
+    if ( PyType_IsSubtype(&PyFF_CvtType,c2->ob_type) ) {
+	len2 = PyFFCvt_Length(_c2);
+	is_cvt2 = true;
+    } else if ( PyTuple_Check(_c2)) {
+	is_cvt2 = false;
+	len2 = PyTuple_Size(_c2);
+    } else {
+	PyErr_Format(PyExc_TypeError, "The second argument must be either another cvt or a tuple of integers");
+return( NULL );
+    }
+
+    if ( self->cvt==NULL )
+	self->cvt = BuildCvt(self->sf,(len1+len2)*2);
+    cvt = self->cvt;
+    if ( (len1+len2)*2 >= cvt->maxlen )
+	cvt->data = grealloc(cvt->data,cvt->maxlen = 2*(len1+len2)+10 );
+    if ( is_cvt2 ) {
+	if ( len2!=0 )
+	    memcpy(cvt->data+len1*sizeof(uint16),c2->cvt->data, 2*len2);
+    } else {
+	for ( i=0; i<len2; ++i ) {
+	    int val = PyInt_AsLong(PyTuple_GetItem(_c2,i));
+	    if ( PyErr_Occurred())
+return( NULL );
+	    memputshort(cvt->data,sizeof(uint16)*(len1+i),val);
+	}
+    }
+    cvt->len += 2*len2;
+Py_RETURN( self );
+}
+
+static PyObject *PyFFCvt_Index( PyObject *self, int pos ) {
+    PyFF_Cvt *c = (PyFF_Cvt *) self;
+
+    if ( c->cvt==NULL || pos<0 || pos>=c->cvt->len/2) {
+	PyErr_Format(PyExc_TypeError, "Index out of bounds");
+return( NULL );
+    }
+return( Py_BuildValue("i",memushort(c->cvt->data,c->cvt->len,pos*sizeof(uint16))) );
+}
+
+static int PyFFCvt_IndexAssign( PyObject *self, int pos, PyObject *value ) {
+    PyFF_Cvt *c = (PyFF_Cvt *) self;
+    struct ttf_table *cvt;
+    int val;
+
+    val = PyInt_AsLong(value);
+    if ( PyErr_Occurred())
+return( -1 );
+    if ( c->cvt==NULL )
+	c->cvt = BuildCvt(c->sf,2);
+    cvt = c->cvt;
+    if ( cvt==NULL || pos<0 || pos>cvt->len/2) {
+	PyErr_Format(PyExc_TypeError, "Index out of bounds");
+return( -1 );
+    }
+    if ( 2*pos>=cvt->maxlen )
+	cvt->data = grealloc(cvt->data,cvt->maxlen = sizeof(uint16)*pos+10 );
+    if ( 2*pos>=cvt->len )
+	cvt->len = sizeof(uint16)*pos;
+    memputshort(cvt->data,sizeof(uint16)*pos,val);
+return( 0 );
+}
+
+static PyObject *PyFFCvt_Slice( PyObject *self, int start, int end ) {
+    PyFF_Cvt *c = (PyFF_Cvt *) self;
+    struct ttf_table *cvt;
+    int len, i;
+    PyObject *ret;
+
+    cvt = c->cvt;
+    if ( cvt==NULL || end<start || end <0 || 2*start>=cvt->len ) {
+	PyErr_Format(PyExc_ValueError, "Slice specification out of range" );
+return( NULL );
+    }
+
+    len = end-start + 1;
+
+    ret = PyTuple_New(len);
+    for ( i=start; i<=end; ++i )
+	PyTuple_SetItem(ret,i-start,Py_BuildValue("i",memushort(cvt->data,cvt->len,2*i)));
+
+return( (PyObject *) ret );
+}
+
+static int PyFFCvt_SliceAssign( PyObject *_self, int start, int end, PyObject *rpl ) {
+    PyFF_Cvt *c = (PyFF_Cvt *) _self;
+    struct ttf_table *cvt;
+    int len, i;
+
+    cvt = c->cvt;
+    if ( cvt==NULL || end<start || end <0 || 2*start>=cvt->len ) {
+	PyErr_Format(PyExc_ValueError, "Slice specification out of range" );
+return( -1 );
+    }
+
+    len = end-start + 1;
+
+    if ( len!=PyTuple_Size(rpl) ) {
+	if ( !PyErr_Occurred())
+	    PyErr_Format(PyExc_ValueError, "Replacement is different size than slice" );
+return( -1 );
+    }
+    for ( i=start; i<=end; ++i ) {
+	memputshort(cvt->data,sizeof(uint16)*i,
+		PyInt_AsLong(PyTuple_GetItem(rpl,i-start)));
+	if ( PyErr_Occurred())
+return( -1 );
+    }
+return( 0 );
+}
+
+static int PyFFCvt_Contains(PyObject *_self, PyObject *_val) {
+    PyFF_Cvt *c = (PyFF_Cvt *) _self;
+    struct ttf_table *cvt;
+    int i;
+    int val;
+
+    val = PyInt_AsLong(_val);
+    if ( PyErr_Occurred())
+return( -1 );
+
+    cvt = c->cvt;
+    if ( cvt==NULL )
+return( 0 );
+
+    for ( i=0; i<cvt->len/2; ++i )
+	if ( memushort(cvt->data,cvt->len,2*i)==val )
+return( 1 );
+
+return( 0 );
+}
+
+static PySequenceMethods PyFFCvt_Sequence = {
+    PyFFCvt_Length,		/* length */
+    PyFFCvt_Concat,		/* concat */
+    NULL,			/* repeat */
+    PyFFCvt_Index,		/* subscript */
+    PyFFCvt_Slice,		/* slice */
+    PyFFCvt_IndexAssign,	/* subscript assign */
+    PyFFCvt_SliceAssign,	/* slice assign */
+    PyFFCvt_Contains,	/* contains */
+    PyFFCvt_InPlaceConcat	/* inplace_concat */
+};
+
+static PyTypeObject PyFF_CvtType = {
+    PyObject_HEAD_INIT(NULL)
+    0,                         /*ob_size*/
+    "fontforge.cvt",	       /*tp_name*/
+    sizeof(PyFF_Cvt),      /*tp_basicsize*/
+    0,                         /*tp_itemsize*/
+    (destructor)PyFFCvt_dealloc, /*tp_dealloc*/
+    0,                         /*tp_print*/
+    0,                         /*tp_getattr*/
+    0,                         /*tp_setattr*/
+    0,                         /*tp_compare*/
+    0,                         /*tp_repr*/
+    0,                         /*tp_as_number*/
+    &PyFFCvt_Sequence,         /*tp_as_sequence*/
+    0,                         /*tp_as_mapping*/
+    0,                         /*tp_hash */
+    0,                         /*tp_call*/
+    (reprfunc) PyFFCvt_Str,    /*tp_str*/
+    0,                         /*tp_getattro*/
+    0,                         /*tp_setattro*/
+    0,                         /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT | Py_TPFLAGS_CHECKTYPES,
+			       /*tp_flags*/
+    "fontforge cvt objects",   /* tp_doc */
+    0,				/* tp_traverse */
+    0,				/* tp_clear */
+    0,		               /* tp_richcompare */
+    0,		               /* tp_weaklistoffset */
+    0,		               /* tp_iter */
+    0,		               /* tp_iternext */
+    0,			       /* tp_methods */
+    0,			       /* tp_members */
+    0,			       /* tp_getset */
+    0,                         /* tp_base */
+    0,                         /* tp_dict */
+    0,                         /* tp_descr_get */
+    0,                         /* tp_descr_set */
+    0,                         /* tp_dictoffset */
+    0,				/* tp_init */
+    0,                         /* tp_alloc */
+    0,			       /* tp_new */
+};
+
+/* ************************************************************************** */
+/* Private dictionary iterator type */
+/* ************************************************************************** */
+
+typedef struct {
+	PyObject_HEAD
+	PyFF_Private *private;
+	int pos;
+} privateiterobject;
+static PyTypeObject PyFF_PrivateIterType;
+
+static PyObject *privateiter_new(PyObject *private) {
+    privateiterobject *di;
+    di = PyObject_New(privateiterobject, &PyFF_PrivateIterType);
+    if (di == NULL)
+return NULL;
+    Py_INCREF(private);
+    di->private = (PyFF_Private *) private;
+    di->pos = 0;
+return (PyObject *)di;
+}
+
+static void privateiter_dealloc(privateiterobject *di) {
+    Py_XDECREF(di->private);
+    PyObject_Del(di);
+}
+
+static PyObject *privateiter_iternextkey(privateiterobject *di) {
+    PyFF_Private *d = di->private;
+
+    if (d == NULL || d->sf->private==NULL )
+return NULL;
+
+    if ( di->pos<d->sf->private->next )
+return( Py_BuildValue("s",d->sf->private->keys[di->pos++]) );
+
+return NULL;
+}
+
+static PyTypeObject PyFF_PrivateIterType = {
+	PyObject_HEAD_INIT(&PyType_Type)
+	0,					/* ob_size */
+	"dictionary-keyiterator",		/* tp_name */
+	sizeof(privateiterobject),		/* tp_basicsize */
+	0,					/* tp_itemsize */
+	/* methods */
+	(destructor)privateiter_dealloc, 	/* tp_dealloc */
+	0,					/* tp_print */
+	0,					/* tp_getattr */
+	0,					/* tp_setattr */
+	0,					/* tp_compare */
+	0,					/* tp_repr */
+	0,					/* tp_as_number */
+	0,					/* tp_as_sequence */
+	0,					/* tp_as_mapping */
+	0,					/* tp_hash */
+	0,					/* tp_call */
+	0,					/* tp_str */
+	0,					/* tp_getattro */
+	0,					/* tp_setattro */
+	0,					/* tp_as_buffer */
+	Py_TPFLAGS_DEFAULT,			/* tp_flags */
+ 	0,					/* tp_doc */
+ 	0,					/* tp_traverse */
+ 	0,					/* tp_clear */
+	0,					/* tp_richcompare */
+	0,					/* tp_weaklistoffset */
+	PyObject_SelfIter,			/* tp_iter */
+	(iternextfunc)privateiter_iternextkey,	/* tp_iternext */
+	0,					/* tp_methods */
+	0
+};
+
+/* ************************************************************************** */
+/* Private Dict Standard Methods */
+/* ************************************************************************** */
+
+static void PyFF_Private_dealloc(PyFF_Private *self) {
+    if ( self->sf!=NULL )
+	self->sf = NULL;
+    self->ob_type->tp_free((PyObject *) self);
+}
+
+static PyObject *PyFFPrivate_Str(PyFF_Private *self) {
+return( PyString_FromFormat( "<Private Dictionary for %s>", self->sf->fontname ));
+}
+
+/* ************************************************************************** */
+/* ************************** Private Dictionary **************************** */
+/* ************************************************************************** */
+static int PyFF_PrivateLength( PyObject *self ) {
+    struct psdict *private = ((PyFF_Private *) self)->sf->private;
+    if ( private==NULL )
+return( 0 );
+    else
+return( private->next );
+}
+
+static PyObject *PyFF_PrivateIndex( PyObject *self, PyObject *index ) {
+    SplineFont *sf = ((PyFF_Private *) self)->sf;
+    struct psdict *private = sf->private;
+    char *value=NULL;
+    char *pt, *end;
+    double temp;
+    PyObject *tuple;
+
+    if ( PyString_Check(index)) {
+	char *name = PyString_AsString(index);
+	if ( private!=NULL )
+	    value = PSDictHasEntry(private,name);
+    } else {
+	PyErr_Format(PyExc_TypeError, "Index must be a string" );
+return( NULL );
+    }
+    if ( value==NULL ) {
+	PyErr_Format(PyExc_TypeError, "No such entry" );
+return( NULL );
+    }
+    strtod(value,&end); while ( *end==' ' ) ++end;
+    if ( *end=='\0' )
+return( Py_BuildValue("d",strtod(value,NULL)) );
+
+    if ( *value=='[' ) {
+	int cnt = 0;
+	pt = value+1;
+	forever {
+	    strtod(pt,&end);
+	    if ( pt==end )
+	break;
+	    ++cnt;
+	    pt = end;
+	}
+	while ( *pt==' ' ) ++pt;
+	if ( *pt==']' ) {
+	    tuple = PyTuple_New(cnt);
+	    cnt = 0;
+	    pt = value+1;
+	    forever {
+		temp = strtod(pt,&end);
+		if ( pt==end )
+	    break;
+		PyTuple_SetItem(tuple,cnt++,Py_BuildValue("d",temp));
+		pt = end;
+	    }
+return( tuple );
+	}
+    }
+return( Py_BuildValue("s",value));
+}
+
+static int PyFF_PrivateIndexAssign( PyObject *self, PyObject *index, PyObject *value ) {
+    SplineFont *sf = ((PyFF_Private *) self)->sf;
+    struct psdict *private = sf->private;
+    char *string, *freeme=NULL;
+    char buffer[40];
+
+    if ( PyString_Check(value))
+	string = PyString_AsString(index);
+    else if ( PyFloat_Check(value)) {
+	double temp = PyFloat_AsDouble(value);
+	sprintf(buffer,"%g",temp);
+	string = buffer;
+    } else if ( PyInt_Check(value)) {
+	int temp = PyInt_AsLong(value);
+	sprintf(buffer,"%d",temp);
+	string = buffer;
+    } else if ( PyTuple_Check(value)) {
+	int i; char *pt;
+	pt = string = freeme = galloc(PyTuple_Size(value)*21+4);
+	*pt++ = '[';
+	for ( i=0; i<PyTuple_Size(value); ++i ) {
+	    sprintf( pt, "%g", PyFloat_AsDouble(PyTuple_GetItem(value,i)));
+	    pt += strlen(pt);
+	    *pt++ = ' ';
+	}
+	if ( pt[-1]==' ' ) --pt;
+	*pt++ = ']'; *pt = '\0';
+    } else {
+	PyErr_Format(PyExc_TypeError, "Unexpected value tupe" );
+return( -1 );
+    }
+
+    if ( PyString_Check(index)) {
+	char *name = PyString_AsString(index);
+	if ( private==NULL )
+	    sf->private = private = galloc(sizeof(struct psdict));
+	PSDictChangeEntry(private,name,string);
+    } else {
+	free(freeme);
+	PyErr_Format(PyExc_TypeError, "Index must be a string" );
+return( -1 );
+    }
+return( 0 );
+}
+
+static PyMappingMethods PyFF_PrivateMapping = {
+    PyFF_PrivateLength,		/* length */
+    PyFF_PrivateIndex,		/* subscript */
+    PyFF_PrivateIndexAssign	/* subscript assign */
+};
+/* ************************************************************************** */
+/* ************************* initializer routines *************************** */
+/* ************************************************************************** */
+
+static PyTypeObject PyFF_PrivateType = {
+    PyObject_HEAD_INIT(NULL)
+    0,                         /*ob_size*/
+    "fontforge.private",       /*tp_name*/
+    sizeof(PyFF_Private), /*tp_basicsize*/
+    0,                         /*tp_itemsize*/
+    (destructor) PyFF_Private_dealloc, /*tp_dealloc*/
+    0,                         /*tp_print*/
+    0,                         /*tp_getattr*/
+    0,                         /*tp_setattr*/
+    0,                         /*tp_compare*/
+    0,                         /*tp_repr*/
+    0,                         /*tp_as_number*/
+    0,                         /*tp_as_sequence*/
+    &PyFF_PrivateMapping,      /*tp_as_mapping*/
+    0,                         /*tp_hash */
+    0,                         /*tp_call*/
+    (reprfunc) PyFFPrivate_Str,/*tp_str*/
+    0,                         /*tp_getattro*/
+    0,                         /*tp_setattro*/
+    0,                         /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT,        /*tp_flags*/
+    "FontForge private dictionary", /* tp_doc */
+    0,		               /* tp_traverse */
+    0,		               /* tp_clear */
+    0,		               /* tp_richcompare */
+    0,		               /* tp_weaklistoffset */
+    privateiter_new,		/* tp_iter */
+    0,		               /* tp_iternext */
+    0,			       /* tp_methods */
+    0,			       /* tp_members */
+    0,		               /* tp_getset */
+    0,                         /* tp_base */
+    0,                         /* tp_dict */
+    0,                         /* tp_descr_get */
+    0,                         /* tp_descr_set */
+    0,                         /* tp_dictoffset */
+    0,				/* tp_init */
+    0,                         /* tp_alloc */
+    0			       /* tp_new */
+};
+
+/* ************************************************************************** */
+/* Font iterator type */
+/* ************************************************************************** */
+
+typedef struct {
+	PyObject_HEAD
+	SplineFont *sf;
+	int pos;
+} fontiterobject;
+static PyTypeObject PyFF_FontIterType;
+
+static PyObject *fontiter_new(PyObject *font) {
+    fontiterobject *di;
+    di = PyObject_New(fontiterobject, &PyFF_FontIterType);
+    if (di == NULL)
+	    return NULL;
+    di->sf = ((PyFF_Font *) font)->fv->sf;
+    di->pos = 0;
+return (PyObject *)di;
+}
+
+static void fontiter_dealloc(fontiterobject *di) {
+    PyObject_Del(di);
+}
+
+static PyObject *fontiter_iternextkey(fontiterobject *di) {
+    SplineFont *sf = di->sf;
+
+    if (sf == NULL)
+return NULL;
+
+    while ( di->pos<sf->glyphcnt ) {
+	if ( sf->glyphs[di->pos]!=NULL )
+return( Py_BuildValue("s",sf->glyphs[di->pos++]->name) );
+	++di->pos;
+    }
+
+return NULL;
+}
+
+static PyTypeObject PyFF_FontIterType = {
+	PyObject_HEAD_INIT(&PyType_Type)
+	0,					/* ob_size */
+	"fontiter",				/* tp_name */
+	sizeof(fontiterobject),			/* tp_basicsize */
+	0,					/* tp_itemsize */
+	/* methods */
+	(destructor)fontiter_dealloc,	 	/* tp_dealloc */
+	0,					/* tp_print */
+	0,					/* tp_getattr */
+	0,					/* tp_setattr */
+	0,					/* tp_compare */
+	0,					/* tp_repr */
+	0,					/* tp_as_number */
+	0,					/* tp_as_sequence */
+	0,					/* tp_as_mapping */
+	0,					/* tp_hash */
+	0,					/* tp_call */
+	0,					/* tp_str */
+	0,					/* tp_getattro */
+	0,					/* tp_setattro */
+	0,					/* tp_as_buffer */
+	Py_TPFLAGS_DEFAULT,			/* tp_flags */
+ 	0,					/* tp_doc */
+ 	0,					/* tp_traverse */
+ 	0,					/* tp_clear */
+	0,					/* tp_richcompare */
+	0,					/* tp_weaklistoffset */
+	PyObject_SelfIter,			/* tp_iter */
+	(iternextfunc)fontiter_iternextkey,	/* tp_iternext */
+	0,					/* tp_methods */
+	0,
+};
+
+/* ************************************************************************** */
+/* Font Standard Methods */
 /* ************************************************************************** */
 
 static void PyFF_Font_dealloc(PyFF_Font *self) {
@@ -4000,6 +4882,55 @@ return( PyFF_Font_get_lookups(self,closure,true));
 
 static PyObject *PyFF_Font_get_gsub_lookups(PyFF_Font *self,void *closure) {
 return( PyFF_Font_get_lookups(self,closure,false));
+}
+
+static PyObject *PyFF_Font_get_private(PyFF_Font *self,void *closure) {
+    PyFF_Private *private = (PyFF_Private *) PyObject_New(PyFF_Private, &PyFF_PrivateType);
+    if (private == NULL)
+return NULL;
+    private->sf = self->fv->sf;
+return (PyObject *)private;
+}
+
+static PyObject *PyFF_Font_get_cvt(PyFF_Font *self,void *closure) {
+return( (PyObject *) PyFFCvt_new(self->fv->sf));
+}
+
+static int PyFF_Font_set_cvt(PyFF_Font *self,PyObject *value,void *closure) {
+    PyFF_Cvt *c2 = (PyFF_Cvt *) value;
+    int i, len2;
+    int is_cvt2;
+    SplineFont *sf = self->fv->sf;
+    struct ttf_table *cvt;
+
+    if ( PyType_IsSubtype(&PyFF_CvtType,value->ob_type) ) {
+	len2 = PyFFCvt_Length(value);
+	is_cvt2 = true;
+    } else if ( PyTuple_Check(value)) {
+	is_cvt2 = false;
+	len2 = PyTuple_Size(value);
+    } else {
+	PyErr_Format(PyExc_TypeError, "The value must be either another cvt or a tuple of integers");
+return( -1 );
+    }
+
+    cvt = SFFindTable(sf,CHR('c','v','t',' '));
+    if ( cvt==NULL )
+	cvt = BuildCvt(sf,len2*2);
+    if ( len2*2>=cvt->maxlen )
+	cvt->data = grealloc(cvt->data,cvt->maxlen = sizeof(uint16)*len2+10 );
+    if ( is_cvt2 ) {
+	if ( len2!=0 )
+	    memcpy(cvt->data,c2->cvt->data,2*len2 );
+    } else {
+	for( i=0; i<len2; ++i ) {
+	    memputshort(cvt->data,2*i,PyInt_AsLong(PyTuple_GetItem(value,i)));
+	    if ( PyErr_Occurred())
+return( -1 );
+	}
+    }
+    cvt->len = 2*len2;
+return( 0 );
 }
 
 static PyObject *PyFF_Font_get_userdata(PyFF_Font *self,void *closure) {
@@ -4546,6 +5477,126 @@ return( -1 );
 return( 0 );
 }
 
+static int PyFF_Font_SetMaxpValue(PyFF_Font *self,PyObject *value,char *str) {
+    SplineFont *sf = self->fv->sf;
+    struct ttf_table *tab;
+    int val;
+
+    val = PyInt_AsLong(value);
+    if ( PyErr_Occurred())
+return( -1 );
+
+    tab = SFFindTable(sf,CHR('m','a','x','p'));
+    if ( tab==NULL ) {
+	tab = chunkalloc(sizeof(struct ttf_table));
+	tab->next = sf->ttf_tables;
+	sf->ttf_tables = tab;
+	tab->tag = CHR('m','a','x','p');
+    }
+    if ( tab->len<32 ) {
+	tab->data = grealloc(tab->data,32);
+	memset(tab->data+tab->len,0,32-tab->len);
+	if ( tab->len<16 )
+	    tab->data[15] = 2;			/* Default zones to 2 */
+	tab->len = tab->maxlen = 32;
+    }
+    if ( strmatch(str,"Zones")==0 )
+	memputshort(tab->data,7*sizeof(uint16),val);
+    else if ( strmatch(str,"TwilightPntCnt")==0 )
+	memputshort(tab->data,8*sizeof(uint16),val);
+    else if ( strmatch(str,"StorageCnt")==0 )
+	memputshort(tab->data,9*sizeof(uint16),val);
+    else if ( strmatch(str,"MaxStackDepth")==0 )
+	memputshort(tab->data,12*sizeof(uint16),val);
+    else if ( strmatch(str,"FDEFs")==0 )
+	memputshort(tab->data,10*sizeof(uint16),val);
+    else if ( strmatch(str,"IDEFs")==0 )
+	memputshort(tab->data,11*sizeof(uint16),val);
+return( 0 );
+}
+
+static PyObject *PyFF_Font_GetMaxpValue(PyFF_Font *self,char *str) {
+    SplineFont *sf = self->fv->sf;
+    struct ttf_table *tab;
+    uint8 *data, dummy[32];
+    int val;
+
+    memset(dummy,0,32);
+    dummy[15] = 2;
+    tab = SFFindTable(sf,CHR('m','a','x','p'));
+    if ( tab==NULL )
+	data = dummy;
+    else if ( tab->len<32 ) {
+	memcpy(dummy,tab->data,tab->len);
+	data = dummy;
+    } else
+	data = tab->data;
+
+    if ( strmatch(str,"Zones")==0 )
+	val = memushort(data,32,7*sizeof(uint16));
+    else if ( strmatch(str,"TwilightPntCnt")==0 )
+	val = memushort(data,32,8*sizeof(uint16));
+    else if ( strmatch(str,"StorageCnt")==0 )
+	val = memushort(data,32,9*sizeof(uint16));
+    else if ( strmatch(str,"MaxStackDepth")==0 )
+	val = memushort(data,32,12*sizeof(uint16));
+    else if ( strmatch(str,"FDEFs")==0 )
+	val = memushort(data,32,10*sizeof(uint16));
+    else if ( strmatch(str,"IDEFs")==0 )
+	val = memushort(data,32,11*sizeof(uint16));
+    else
+	val = -1;
+return( Py_BuildValue("i",val));
+}
+
+static PyObject *PyFF_Font_get_maxp_IDEFs(PyFF_Font *self,void *closure) {
+return( PyFF_Font_GetMaxpValue(self,"IDEFs"));
+}
+
+static int PyFF_Font_set_maxp_IDEFs(PyFF_Font *self,PyObject *value,void *closure) {
+return( PyFF_Font_SetMaxpValue(self,value,"IDEFs"));
+}
+
+static PyObject *PyFF_Font_get_maxp_FDEFs(PyFF_Font *self,void *closure) {
+return( PyFF_Font_GetMaxpValue(self,"FDEFs"));
+}
+
+static int PyFF_Font_set_maxp_FDEFs(PyFF_Font *self,PyObject *value,void *closure) {
+return( PyFF_Font_SetMaxpValue(self,value,"FDEFs"));
+}
+
+static PyObject *PyFF_Font_get_maxp_maxStackDepth(PyFF_Font *self,void *closure) {
+return( PyFF_Font_GetMaxpValue(self,"MaxStackDepth"));
+}
+
+static int PyFF_Font_set_maxp_maxStackDepth(PyFF_Font *self,PyObject *value,void *closure) {
+return( PyFF_Font_SetMaxpValue(self,value,"MaxStackDepth"));
+}
+
+static PyObject *PyFF_Font_get_maxp_storageCnt(PyFF_Font *self,void *closure) {
+return( PyFF_Font_GetMaxpValue(self,"StorageCnt"));
+}
+
+static int PyFF_Font_set_maxp_storageCnt(PyFF_Font *self,PyObject *value,void *closure) {
+return( PyFF_Font_SetMaxpValue(self,value,"StorageCnt"));
+}
+
+static PyObject *PyFF_Font_get_maxp_twilightPtCnt(PyFF_Font *self,void *closure) {
+return( PyFF_Font_GetMaxpValue(self,"TwilightPntCnt"));
+}
+
+static int PyFF_Font_set_maxp_twilightPtCnt(PyFF_Font *self,PyObject *value,void *closure) {
+return( PyFF_Font_SetMaxpValue(self,value,"TwilightPntCnt"));
+}
+
+static PyObject *PyFF_Font_get_maxp_zones(PyFF_Font *self,void *closure) {
+return( PyFF_Font_GetMaxpValue(self,"Zones"));
+}
+
+static int PyFF_Font_set_maxp_zones(PyFF_Font *self,PyObject *value,void *closure) {
+return( PyFF_Font_SetMaxpValue(self,value,"Zones"));
+}
+
 static PyGetSetDef PyFF_Font_getset[] = {
     {"userdata",
 	 (getter)PyFF_Font_get_userdata, (setter)PyFF_Font_set_userdata,
@@ -4559,6 +5610,12 @@ static PyGetSetDef PyFF_Font_getset[] = {
     {"gsub_lookups",
 	 (getter)PyFF_Font_get_gsub_lookups, (setter)PyFF_cant_set,
 	 "The names of all lookups in the font's GSUB table", NULL},
+    {"private",
+	 (getter)PyFF_Font_get_private, (setter)PyFF_cant_set,
+	 "The font's PostScript private dictionary", NULL},
+    {"cvt",
+	 (getter)PyFF_Font_get_cvt, (setter)PyFF_Font_set_cvt,
+	 "The font's TrueType cvt table", NULL},
     {"fontname",
 	 (getter)PyFF_Font_get_fontname, (setter)PyFF_Font_set_fontname,
 	 "font name", NULL},
@@ -4643,6 +5700,24 @@ static PyGetSetDef PyFF_Font_getset[] = {
     {"design_range_top",
 	 (getter)PyFF_Font_get_design_range_top, (setter)PyFF_Font_set_design_range_top,
 	 "Largest point size for which this font is acceptable", NULL},
+    {"maxp_zones",
+	 (getter)PyFF_Font_get_maxp_zones, (setter)PyFF_Font_set_maxp_zones,
+	 "The number of zones used in the tt program", NULL},
+    {"maxp_twilightPtCnt",
+	 (getter)PyFF_Font_get_maxp_twilightPtCnt, (setter)PyFF_Font_set_maxp_twilightPtCnt,
+	 "The number of points in the twilight zone of the tt program", NULL},
+    {"maxp_storageCnt",
+	 (getter)PyFF_Font_get_maxp_storageCnt, (setter)PyFF_Font_set_maxp_storageCnt,
+	 "The number of storage locations used by the tt program", NULL},
+    {"maxp_maxStackDepth",
+	 (getter)PyFF_Font_get_maxp_maxStackDepth, (setter)PyFF_Font_set_maxp_maxStackDepth,
+	 "The maximum stack depth used by the tt program", NULL},
+    {"maxp_FDEFs",
+	 (getter)PyFF_Font_get_maxp_FDEFs, (setter)PyFF_Font_set_maxp_FDEFs,
+	 "The number of function definitions used by the tt program", NULL},
+    {"maxp_IDEFs",
+	 (getter)PyFF_Font_get_maxp_IDEFs, (setter)PyFF_Font_set_maxp_IDEFs,
+	 "The number of instruction definitions used by the tt program", NULL},
     {"os2_version",
 	 (getter)PyFF_Font_get_os2_version, (setter)PyFF_Font_set_os2_version,
 	 "OS/2 table version number", NULL},
@@ -5206,7 +6281,7 @@ static PyTypeObject PyFF_FontType = {
     0,		               /* tp_clear */
     0,		               /* tp_richcompare */
     0,		               /* tp_weaklistoffset */
-    0,		               /* tp_iter */
+    fontiter_new,              /* tp_iter */
     0,		               /* tp_iternext */
     PyFF_Font_methods,         /* tp_methods */
     0,			       /* tp_members */
@@ -5346,9 +6421,10 @@ static PyMODINIT_FUNC initPyFontForge(void) {
     int i;
     static PyTypeObject *types[] = { &PyFF_PointType, &PyFF_ContourType,
 	    &PyFF_LayerType, &PyFF_GlyphPenType, &PyFF_GlyphType,
-	    &PyFF_FontType, NULL };
+	    &PyFF_CvtType, &PyFF_PrivateIterType, &PyFF_PrivateType,
+	    &PyFF_FontIterType, &PyFF_FontType, NULL };
     static char *names[] = { "point", "contour", "layer", "glyph", "glyphPen",
-	    "font", NULL };
+	    "cvt", "privateiter", "private", "fontiter", "font", NULL };
 
     for ( i=0; types[i]!=NULL; ++i ) {
 	types[i]->ob_type = &PyType_Type;		/* Or does Type_Ready do this??? */
