@@ -2862,12 +2862,14 @@ void SFDefaultOS2Simple(struct pfminfo *pfminfo,SplineFont *sf) {
 	    rint(.09*(sf->ascent+sf->descent));
 }
 
-void SFDefaultOS2SubSuper(struct pfminfo *pfminfo,int emsize) {
+void SFDefaultOS2SubSuper(struct pfminfo *pfminfo,int emsize,double italic_angle) {
+    double s = sin(italic_angle*3.1415926535897932/180.0);
     pfminfo->os2_supysize = pfminfo->os2_subysize = .7*emsize;
     pfminfo->os2_supxsize = pfminfo->os2_subxsize = .65*emsize;
     pfminfo->os2_subyoff = .14*emsize;
-    pfminfo->os2_subxoff = pfminfo->os2_supxoff = 0;
-    pfminfo->os2_subyoff = .48*emsize;
+    pfminfo->os2_supyoff = .48*emsize;
+    pfminfo->os2_supxoff =  s*pfminfo->os2_supyoff;
+    pfminfo->os2_subxoff = -s*pfminfo->os2_subyoff;
     pfminfo->os2_strikeysize = 102*emsize/2048;
     pfminfo->os2_strikeypos = 530*emsize/2048;
 }
@@ -2963,7 +2965,7 @@ void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontname) {
 	}
     }
     if ( !pfminfo->subsuper_set )
-	SFDefaultOS2SubSuper(pfminfo,sf->ascent+sf->descent);
+	SFDefaultOS2SubSuper(pfminfo,sf->ascent+sf->descent,sf->italicangle);
 }
 
 void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]) {
@@ -3097,7 +3099,7 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *sf,
     if ( sf->pfminfo.fstype!=-1 )
 	os2->fstype = sf->pfminfo.fstype;
     if ( !sf->pfminfo.subsuper_set )
-	SFDefaultOS2SubSuper(&sf->pfminfo,sf->ascent+sf->descent);
+	SFDefaultOS2SubSuper(&sf->pfminfo,sf->ascent+sf->descent,sf->italicangle);
     os2->ysupYSize = sf->pfminfo.os2_supysize;
     os2->ysubXSize = sf->pfminfo.os2_subxsize;
     os2->ysubYSize = sf->pfminfo.os2_subysize;

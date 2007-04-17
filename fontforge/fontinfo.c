@@ -4915,13 +4915,15 @@ static void _GFI_SubSuperDefault(struct gfi_data *d) {
     if ( isdefault ) {
 	const unichar_t *as = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Ascent));
 	const unichar_t *ds = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Descent));
-	unichar_t *aend, *dend;
-	double av=u_strtod(as,&aend),dv=u_strtod(ds,&dend);
+	const unichar_t *ia = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Descent));
+	unichar_t *aend, *dend, *iend;
+	double av=u_strtod(as,&aend),dv=u_strtod(ds,&dend),iav=u_strtod(ia,&iend);
 	struct pfminfo info;
 	if ( *aend!='\0' ) av = d->sf->ascent;
 	if ( *dend!='\0' ) dv = d->sf->descent;
+	if ( *iend!='\0' ) iav = d->sf->italicangle;
 	memset(&info,0,sizeof(info));
-	SFDefaultOS2SubSuper(&info,(int) (dv+av));
+	SFDefaultOS2SubSuper(&info,(int) (dv+av), iav);
 	GFI_SubSuperSet(d,&info);
     }
 }

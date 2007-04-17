@@ -1449,7 +1449,7 @@ extern void TeXDefaultParams(SplineFont *sf);
 extern void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]);
 extern void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontname);
 extern void SFDefaultOS2Simple(struct pfminfo *pfminfo,SplineFont *sf);
-extern void SFDefaultOS2SubSuper(struct pfminfo *pfminfo,int emsize);
+extern void SFDefaultOS2SubSuper(struct pfminfo *pfminfo,int emsize,double italicangle);
 extern void VerifyLanguages(SplineFont *sf);
 extern int ScriptIsRightToLeft(uint32 script);
 extern uint32 ScriptFromUnicode(int u,SplineFont *sf);
