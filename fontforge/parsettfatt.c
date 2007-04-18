@@ -3094,7 +3094,7 @@ static void opbd_apply_values(struct ttfinfo *info, int gfirst, int glast,FILE *
     for ( i=gfirst; i<=glast; ++i ) {
 	offset = getushort(ttf);
 	here = ftell(ttf);
-	fseek(ttf,info->opbd_start+offset,SEEK_SET);
+	fseek(ttf,info->opbd_start+6/*opbd header*/+offset,SEEK_SET);
 	left = (int16) getushort(ttf);
 	/* top = (int16) */ getushort(ttf);
 	right = (int16) getushort(ttf);
@@ -3128,13 +3128,13 @@ void readttfopbd(FILE *ttf,struct ttfinfo *info) {
     if ( getushort(ttf)!=0 )	/* A format type of 1 has the bounds */
 return;				/*  indicated by points */
     info->mort_subs_lookup = NewMacLookup(info,true);
-    info->mort_subs_lookup->lookup_type = pst_position;
+    info->mort_subs_lookup->lookup_type = gpos_single;
     info->mort_subs_lookup->features->featuretag = CHR('l','f','b','d');
     info->mort_subs_lookup->features->ismac = false;
     info->mort_subs_lookup->subtables->per_glyph_pst_or_kern = true;
 
     info->mort_pos_lookup2 = NewMacLookup(info,true);
-    info->mort_pos_lookup2->lookup_type = pst_position;
+    info->mort_pos_lookup2->lookup_type = gpos_single;
     info->mort_pos_lookup2->features->featuretag = CHR('r','t','b','d');
     info->mort_pos_lookup2->features->ismac = false;
     info->mort_pos_lookup2->subtables->per_glyph_pst_or_kern = true;
