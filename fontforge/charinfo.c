@@ -2011,7 +2011,7 @@ return;
     }
 }
 
-void SCSubtableDefaultSubsCheck(SplineChar *sc, struct lookup_subtable *sub, struct matrix_data *possub, int r) {
+void SCSubtableDefaultSubsCheck(SplineChar *sc, struct lookup_subtable *sub, struct matrix_data *possub, int col_cnt, int r) {
     FeatureScriptLangList *fl;
     int lookup_type = sub->lookup->lookup_type;
     SplineChar *alt;
@@ -2023,7 +2023,7 @@ void SCSubtableDefaultSubsCheck(SplineChar *sc, struct lookup_subtable *sub, str
     if ( lookup_type == gsub_single && sub->suffix != NULL ) {
 	alt = SuffixCheck(sc,sub->suffix);
 	if ( alt!=NULL ) {
-	    possub[r*2+1].u.md_str = copy( alt->name );
+	    possub[r*col_cnt+1].u.md_str = copy( alt->name );
 return;
 	}
     }
@@ -2036,13 +2036,13 @@ return;
 		SplineCharFindBounds(sc,&bb);
 		/* Adjust horixontal positioning and horizontal advance by */
 		/*  the left side bearing */
-		possub[r*5+SIM_DX].u.md_ival = -bb.minx;
-		possub[r*5+SIM_DX_ADV].u.md_ival = -bb.minx;
+		possub[r*col_cnt+SIM_DX].u.md_ival = -bb.minx;
+		possub[r*col_cnt+SIM_DX_ADV].u.md_ival = -bb.minx;
 return;
 	    } else if ( fl->featuretag == CHR('r','t','b','d') ) {
 		SplineCharFindBounds(sc,&bb);
 		/* Adjust horizontal advance by right side bearing */
-		possub[r*5+SIM_DX_ADV].u.md_ival = bb.maxx-sc->width;
+		possub[r*col_cnt+SIM_DX_ADV].u.md_ival = bb.maxx-sc->width;
 return;
 	    }
 	} else if ( lookup_type == gsub_single ) {
@@ -2080,7 +2080,7 @@ return;
 		}
 	    }
 	    if ( alt!=NULL ) {
-		possub[r*2+1].u.md_str = copy( alt->name );
+		possub[r*col_cnt+1].u.md_str = copy( alt->name );
 return;
 	    }
 	} else if ( lookup_type == gsub_ligature ) {
@@ -2091,12 +2091,12 @@ return;
 		    if ( components==NULL )
 		break;
 		    for ( i=0; i<r; ++i ) {
-			if ( possub[i*2+0].u.md_ival == (intpt) sub &&
-				strcmp(possub[i*2+1].u.md_str,components)==0 )
+			if ( possub[i*col_cnt+0].u.md_ival == (intpt) sub &&
+				strcmp(possub[i*col_cnt+1].u.md_str,components)==0 )
 		    break;
 		    }
 		    if ( i==r ) {
-			possub[r*2+1].u.md_str = components;
+			possub[r*col_cnt+1].u.md_str = components;
 return;
 		    }
 		    free( components );
@@ -2123,7 +2123,7 @@ return;
     cols = GMatrixEditGetColCnt(g);
     if ( possub[r*cols+0].u.md_ival!=0 ) {
 	if ( wasnew )
-	    SCSubtableDefaultSubsCheck(ci->sc,(struct lookup_subtable *) possub[r*cols+0].u.md_ival, possub, r);
+	    SCSubtableDefaultSubsCheck(ci->sc,(struct lookup_subtable *) possub[r*cols+0].u.md_ival, possub, cols, r);
 return;
     }
     /* They asked to create a new subtable */
@@ -2137,7 +2137,7 @@ return;
 	GMatrixEditSetColumnChoices(g,0,ti);
 	GTextInfoListFree(ti);
 	if ( wasnew )
-	    SCSubtableDefaultSubsCheck(ci->sc,sub, possub, r);
+	    SCSubtableDefaultSubsCheck(ci->sc,sub, possub, cols, r);
     } else if ( ci->old_sub!=NULL ) {
 	/* Restore old value */
 	possub[r*cols+0].u.md_ival = (intpt) ci->old_sub;

@@ -5696,7 +5696,7 @@ static void PSTKD_DoPopulate(PSTKernDlg *pstkd,char *suffix) {
 		if ( alt!=NULL ) 
 		    psts[pos*cols+1].u.md_str = copy(alt->name);
 		else if ( pstkd->sub->lookup->lookup_type!=gpos_pair )
-		    SCSubtableDefaultSubsCheck(sc,pstkd->sub,psts,pos);
+		    SCSubtableDefaultSubsCheck(sc,pstkd->sub,psts,cols,pos);
 	    }
 	}
 	++k;
@@ -6123,7 +6123,7 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub) {
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4; 
 	gcd[i].gd.flags = lookup_hideunused ? (gg_enabled|gg_visible|gg_cb_on|gg_utf8_popup) : (gg_enabled|gg_visible|gg_utf8_popup);
-	gcd[i].gd.popup_msg = (unichar_t *) _("Don't display columns of 0s.\nThe OpenType lookup allows for up to 8 kinds\nof data, but almost all kerning lookups will use just one.\nOmitting the others makes the behavior clearer.");
+	gcd[i].gd.popup_msg = (unichar_t *) _("Don't display columns of 0s.\nThe OpenType lookup allows for up to 8 kinds\nof data, but almost all lookups will use just one or two.\nOmitting the others makes the behavior clearer.");
 	gcd[i].gd.handle_controlevent = PSTKD_HideUnused;
 	gcd[i].creator = GCheckBoxCreate;
 	varray[k++] = &gcd[i++]; varray[k++] = NULL;

@@ -1939,11 +1939,12 @@ void aat_dumpopbd(struct alltabs *at, SplineFont *_sf) {
 		    putshort(opbd,offset);
 		    offset += 8;
 		} else if ( k==3 ) {
-		    putshort(opbd,left!=NULL?left->u.pos.xoff:0);
+		    putshort(opbd,left!=NULL?-left->u.pos.xoff:0);
 		    putshort(opbd,0);		/* top */
 		    putshort(opbd,right!=NULL?-right->u.pos.h_adv_off:0);
 		    putshort(opbd,0);		/* bottom */
 		}
+		last = i;
 		for ( j=i+1, ++tot; j<at->gi.gcnt; ++j ) {
 		    if ( at->gi.bygid[i]==-1 || !haslrbounds(_sf->glyphs[at->gi.bygid[j]],&left,&right) )
 		break;
@@ -1953,7 +1954,7 @@ void aat_dumpopbd(struct alltabs *at, SplineFont *_sf) {
 			putshort(opbd,offset);
 			offset += 8;
 		    } else if ( k==3 ) {
-			putshort(opbd,left!=NULL?left->u.pos.xoff:0);
+			putshort(opbd,left!=NULL?-left->u.pos.xoff:0);
 			putshort(opbd,0);		/* top */
 			putshort(opbd,right!=NULL?-right->u.pos.h_adv_off:0);
 			putshort(opbd,0);		/* bottom */
@@ -1974,7 +1975,7 @@ void aat_dumpopbd(struct alltabs *at, SplineFont *_sf) {
 return;
 	    opbd = tmpfile();
 	    putlong(opbd, 0x00010000);	/* version */
-	    putshort(opbd,0);		/* data are distances (not points) */
+	    putshort(opbd,0);		/* data are distances (not control points) */
 
 	    putshort(opbd,4);		/* Lookup table format 4 */
 		/* Binary search header */
@@ -1985,7 +1986,8 @@ return;
 	    putshort(opbd,6*l);
 	    putshort(opbd,j);
 	    putshort(opbd,6*(seg_cnt-l));
-	    offset = 6*2 + seg_cnt*6 + 6;
+	    /* offset from start of lookup, not table */
+	    offset = 6*2/* format, binsearch*/ + seg_cnt*6 +6 /*flag entry */;
 	} else if ( k==1 ) {		/* flag entry */
 	    putshort(opbd,0xffff);
 	    putshort(opbd,0xffff);
