@@ -26,6 +26,9 @@
  */
 /*			   Python Interface to FontForge		      */
 
+/* Allow general sequences rather than insisting on tuples */
+/*  Should I return strings for binary data rather than tuples? */
+
 #ifndef _NO_PYTHON
 #include "Python.h"
 #include "structmember.h"
@@ -158,10 +161,10 @@ return( 0 );
     if ( PyString_Check(tuple)) {
 	str = PyString_AsString(tuple);
 return( FlagsFromString(str,flags));
-    } else if ( PyTuple_Check(tuple)) {
+    } else if ( PySequence_Check(tuple)) {
 	ret = 0;
-	for ( i=0; i<PyTuple_Size(tuple); ++i ) {
-	    obj = PyTuple_GetItem(tuple,i);
+	for ( i=0; i<PySequence_Size(tuple); ++i ) {
+	    obj = PySequence_GetItem(tuple,i);
 	    if ( !PyString_Check(obj)) {
 		PyErr_Format(PyExc_TypeError, "Bad flag tuple, must be strings");
 return( 0x80000000 );
@@ -486,7 +489,7 @@ return( tuple );
 }
 
 static PyObject *PyFF_ParseTTFInstrs(PyObject *self, PyObject *args) {
-    PyObject *tuple;
+    PyObject *binstr;
     char *instr_str;
     int icnt, i;
     uint8 *instrs;
@@ -498,12 +501,10 @@ return( NULL );
 	PyErr_Format(PyExc_TypeError, "Failed to parse instructions" );
 return( NULL );
     }
-    tuple = PyTuple_New(icnt);
-    for ( i=0; i<icnt; ++i )
-	PyTuple_SetItem(tuple,i,PyInt_FromLong(instrs[i]));
+    binstr = PyString_FromStringAndSize(instrs,icnt);
     free(instrs);
 
-return( tuple );
+return( binstr );
 }
 
 static PyObject *PyFF_UnParseTTFInstrs(PyObject *self, PyObject *args) {
@@ -514,16 +515,24 @@ static PyObject *PyFF_UnParseTTFInstrs(PyObject *self, PyObject *args) {
 
     if ( !PyArg_ParseTuple(args,"O",&tuple) )
 return( NULL );
-    if ( !PyTuple_Check(tuple)) {
-	PyErr_Format(PyExc_TypeError, "Argument must be a tuple" );
+    if ( !PySequence_Check(tuple)) {
+	PyErr_Format(PyExc_TypeError, "Argument must be a sequence" );
 return( NULL );
     }
-    icnt = PyTuple_Size(tuple);
-    instrs = galloc(icnt);
-    for ( i=0; i<icnt; ++i ) {
-	instrs[i] = PyInt_AsLong(PyTuple_GetItem(tuple,i));
-	if ( PyErr_Occurred())
+    if ( PyString_Check(tuple)) {
+	char *space; int len;
+	PyString_AsStringAndSize(tuple,&space,&len);
+	instrs = gcalloc(len,sizeof(uint8));
+	icnt = len;
+	memcpy(instrs,space,len);
+    } else {
+	icnt = PySequence_Size(tuple);
+	instrs = galloc(icnt);
+	for ( i=0; i<icnt; ++i ) {
+	    instrs[i] = PyInt_AsLong(PySequence_GetItem(tuple,i));
+	    if ( PyErr_Occurred())
 return( NULL );
+	}
     }
     as_str = _IVUnParseInstrs(instrs,icnt);
     ret = PyString_FromString(as_str);
@@ -965,7 +974,7 @@ static int PyFFContour_Contains(PyObject *_self, PyObject *_pt) {
     float x,y;
     int i;
 
-    if ( PyTuple_Check(_pt)) {
+    if ( PySequence_Check(_pt)) {
 	if ( !PyArg_ParseTuple(_pt,"ff", &x, &y ));
 return( -1 );
     } else if ( !PyType_IsSubtype(&PyFF_PointType,_pt->ob_type) ) {
@@ -1228,8 +1237,8 @@ static PyObject *PyFFContour_Merge(PyFF_Contour *self, PyObject *args) {
 	PyErr_SetString(PyExc_AttributeError, "Empty Contour");
 return( NULL );
     }
-    for ( i=0; i<PyTuple_Size(args); ++i ) {
-	pos = PyInt_AsLong(PyTuple_GetItem(args,i));
+    for ( i=0; i<PySequence_Size(args); ++i ) {
+	pos = PyInt_AsLong(PySequence_GetItem(args,i));
 	if ( PyErr_Occurred())
 return( NULL );
 	SSSelectOnCurve(ss,pos);
@@ -1273,16 +1282,16 @@ static PyObject *PyFFContour_Simplify(PyFF_Contour *self, PyObject *args) {
     if ( ss==NULL )
 Py_RETURN( self );		/* As simple as it can be */
 
-    if ( PyTuple_Size(args)>=1 )
-	smpl.err = PyFloat_AsDouble(PyTuple_GetItem(args,0));
-    if ( !PyErr_Occurred() && PyTuple_Size(args)>=2 )
-	smpl.flags = FlagsFromTuple( PyTuple_GetItem(args,1),simplifyflags);
-    if ( !PyErr_Occurred() && PyTuple_Size(args)>=3 )
-	smpl.tan_bounds = PyFloat_AsDouble( PyTuple_GetItem(args,2));
-    if ( !PyErr_Occurred() && PyTuple_Size(args)>=4 )
-	smpl.linefixup = PyFloat_AsDouble( PyTuple_GetItem(args,3));
-    if ( !PyErr_Occurred() && PyTuple_Size(args)>=5 )
-	smpl.linelenmax = PyFloat_AsDouble( PyTuple_GetItem(args,4));
+    if ( PySequence_Size(args)>=1 )
+	smpl.err = PyFloat_AsDouble(PySequence_GetItem(args,0));
+    if ( !PyErr_Occurred() && PySequence_Size(args)>=2 )
+	smpl.flags = FlagsFromTuple( PySequence_GetItem(args,1),simplifyflags);
+    if ( !PyErr_Occurred() && PySequence_Size(args)>=3 )
+	smpl.tan_bounds = PyFloat_AsDouble( PySequence_GetItem(args,2));
+    if ( !PyErr_Occurred() && PySequence_Size(args)>=4 )
+	smpl.linefixup = PyFloat_AsDouble( PySequence_GetItem(args,3));
+    if ( !PyErr_Occurred() && PySequence_Size(args)>=5 )
+	smpl.linelenmax = PyFloat_AsDouble( PySequence_GetItem(args,4));
     if ( PyErr_Occurred() )
 return( NULL );
     SplinePointListSimplify(NULL,ss,&smpl);
@@ -1938,16 +1947,16 @@ static PyObject *PyFFLayer_Simplify(PyFF_Layer *self, PyObject *args) {
     if ( ss==NULL )
 Py_RETURN( self );		/* As simple as it can be */
 
-    if ( PyTuple_Size(args)>=1 )
-	smpl.err = PyFloat_AsDouble(PyTuple_GetItem(args,0));
-    if ( !PyErr_Occurred() && PyTuple_Size(args)>=2 )
-	smpl.flags = FlagsFromTuple( PyTuple_GetItem(args,1),simplifyflags);
-    if ( !PyErr_Occurred() && PyTuple_Size(args)>=3 )
-	smpl.tan_bounds = PyFloat_AsDouble( PyTuple_GetItem(args,2));
-    if ( !PyErr_Occurred() && PyTuple_Size(args)>=4 )
-	smpl.linefixup = PyFloat_AsDouble( PyTuple_GetItem(args,3));
-    if ( !PyErr_Occurred() && PyTuple_Size(args)>=5 )
-	smpl.linelenmax = PyFloat_AsDouble( PyTuple_GetItem(args,4));
+    if ( PySequence_Size(args)>=1 )
+	smpl.err = PyFloat_AsDouble(PySequence_GetItem(args,0));
+    if ( !PyErr_Occurred() && PySequence_Size(args)>=2 )
+	smpl.flags = FlagsFromTuple( PySequence_GetItem(args,1),simplifyflags);
+    if ( !PyErr_Occurred() && PySequence_Size(args)>=3 )
+	smpl.tan_bounds = PyFloat_AsDouble( PySequence_GetItem(args,2));
+    if ( !PyErr_Occurred() && PySequence_Size(args)>=4 )
+	smpl.linefixup = PyFloat_AsDouble( PySequence_GetItem(args,3));
+    if ( !PyErr_Occurred() && PySequence_Size(args)>=5 )
+	smpl.linelenmax = PyFloat_AsDouble( PySequence_GetItem(args,4));
     if ( PyErr_Occurred() )
 return( NULL );
     SplineCharSimplify(NULL,ss,&smpl);
@@ -2064,7 +2073,7 @@ static PyObject *PyFFLayer_Stroke(PyFF_Layer *self, PyObject *args) {
     int c, j, f;
     PyObject *flagtuple=NULL;
 
-    str =PyString_AsString(PyTuple_GetItem(args,0));
+    str =PyString_AsString(PySequence_GetItem(args,0));
     memset(&si,0,sizeof(si));
     if ( str==NULL )
 return( NULL );
@@ -2719,8 +2728,8 @@ static PyObject *PyFFGlyphPen_qCurveTo(PyObject *self, PyObject *args) {
 return( NULL );
     }
 
-    len = PyTuple_Size(args);
-    if ( PyTuple_GetItem(args,len-1)== Py_None ) {
+    len = PySequence_Size(args);
+    if ( PySequence_GetItem(args,len-1)== Py_None ) {
 	--len;
 	if ( !((PyFF_GlyphPen *) self)->ended ) {
 	    PyErr_Format(PyExc_EnvironmentError, "qCurveTo must describe an entire contour if its last argument is None");
@@ -2730,7 +2739,7 @@ return( NULL );
 return( NULL );
 	}
 
-	pt_tuple = PyTuple_GetItem(args,0);
+	pt_tuple = PySequence_GetItem(args,0);
 	if ( !PyArg_ParseTuple(pt_tuple,"dd", &x0, &y0 ))
 return( NULL );
 
@@ -2740,7 +2749,7 @@ return( NULL );
 
 	x1 = x0; y1 = y0;
 	for ( i=1; i<len; ++i ) {
-	    pt_tuple = PyTuple_GetItem(args,i);
+	    pt_tuple = PySequence_GetItem(args,i);
 	    if ( !PyArg_ParseTuple(pt_tuple,"dd", &x2, &y2 ))
 return( NULL );
 	    sp = SplinePointCreate((x1+x2)/2,(y1+y2)/2);
@@ -2776,13 +2785,13 @@ return( NULL );
 return( NULL );
 	}
 	ss = sc->layers[ly_fore].splines;
-	pt_tuple = PyTuple_GetItem(args,0);
+	pt_tuple = PySequence_GetItem(args,0);
 	if ( !PyArg_ParseTuple(pt_tuple,"dd", &x1, &y1 ))
 return( NULL );
 	ss->last->nextcp.x = x1; ss->last->nextcp.y = y1;
 	ss->last->nonextcp = false;
 	for ( i=1; i<len-1; ++i ) {
-	    pt_tuple = PyTuple_GetItem(args,i);
+	    pt_tuple = PySequence_GetItem(args,i);
 	    if ( !PyArg_ParseTuple(pt_tuple,"dd", &x2, &y2 ))
 return( NULL );
 	    sp = SplinePointCreate((x1+x2)/2,(y1+y2)/2);
@@ -2794,7 +2803,7 @@ return( NULL );
 	    ss->last = sp;
 	    x1=x2; y1=y2;
 	}
-	pt_tuple = PyTuple_GetItem(args,i);
+	pt_tuple = PySequence_GetItem(args,i);
 	if ( !PyArg_ParseTuple(pt_tuple,"dd", &x2, &y2 ))
 return( NULL );
 	sp = SplinePointCreate(x2,y2);
@@ -3108,14 +3117,14 @@ static int PyFF_Glyph_set_references(PyFF_Glyph *self,PyObject *value,void *clos
     SplineChar *sc = self->sc, *rsc;
     SplineFont *sf = sc->parent;
 
-    if ( !PyTuple_Check(value)) {
+    if ( !PySequence_Check(value)) {
 	PyErr_Format(PyExc_TypeError, "Value must be a tuple of references");
 return( -1 );
     }
-    cnt = PyTuple_Size(value);
+    cnt = PySequence_Size(value);
     RefCharsFree(sc->layers[ly_fore].refs); sc->layers[ly_fore].refs = NULL;
     for ( i=0; i<cnt; ++i ) {
-	if ( !PyArg_ParseTuple(PyTuple_GetItem(value,i),"s(dddddd)",&str,
+	if ( !PyArg_ParseTuple(PySequence_GetItem(value,i),"s(dddddd)",&str,
 		&m[0], &m[1], &m[2], &m[3], &m[4], &m[5]) )
 return( -1 );
 	rsc = SFGetChar(sf,-1,str);
@@ -3133,32 +3142,38 @@ return( 0 );
 static PyObject *PyFF_Glyph_get_ttfinstrs(PyFF_Glyph *self,void *closure) {
     int cnt;
     SplineChar *sc = self->sc;
-    PyObject *tuple;
+    PyObject *binstr;
 
-    tuple = PyTuple_New(sc->ttf_instrs_len);
-    for ( cnt=0; cnt<sc->ttf_instrs_len; ++cnt )
-	PyTuple_SET_ITEM(tuple,cnt,Py_BuildValue("i", sc->ttf_instrs[cnt]));
-return( tuple );
+    binstr = PyString_FromStringAndSize(sc->ttf_instrs,sc->ttf_instrs_len);
+return( binstr );
 }
 
 static int PyFF_Glyph_set_ttfinstrs(PyFF_Glyph *self,PyObject *value,void *closure) {
     int i, cnt;
     SplineChar *sc = self->sc;
 
-    if ( !PyTuple_Check(value)) {
-	PyErr_Format(PyExc_TypeError, "Value must be a tuple of integers");
+    if ( !PySequence_Check(value)) {
+	PyErr_Format(PyExc_TypeError, "Value must be a sequence of integers");
 return( -1 );
     }
-    cnt = PyTuple_Size(value);
+    cnt = PySequence_Size(value);
     free(sc->ttf_instrs); sc->ttf_instrs = NULL; sc->ttf_instrs_len = cnt;
     if ( cnt==0 )
 return( 0 );
-    sc->ttf_instrs = gcalloc(cnt,sizeof(uint8));
-    for ( i=0; i<cnt; ++i ) {
-	int val = PyInt_AsLong(PyTuple_GetItem(value,i));
-	if ( PyErr_Occurred()!=NULL )
+    if ( PyString_Check(value)) {
+	char *space; int len;
+	PyString_AsStringAndSize(value,&space,&len);
+	sc->ttf_instrs = gcalloc(len,sizeof(uint8));
+	sc->ttf_instrs_len = len;
+	memcpy(sc->ttf_instrs,space,len);
+    } else {
+	sc->ttf_instrs = gcalloc(cnt,sizeof(uint8));
+	for ( i=0; i<cnt; ++i ) {
+	    int val = PyInt_AsLong(PySequence_GetItem(value,i));
+	    if ( PyErr_Occurred()!=NULL )
 return( -1 );
-	sc->ttf_instrs[i] = val;
+	    sc->ttf_instrs[i] = val;
+	}
     }
 return( 0 );
 }
@@ -3289,11 +3304,11 @@ static int PyFF_Glyph_set_hints(PyFF_Glyph *self,int is_v,PyObject *value) {
     double start, width;
     StemInfo **_head = is_v ? &sc->vstem : &sc->hstem;
 
-    cnt = PyTuple_Size(value);
+    cnt = PySequence_Size(value);
     if ( cnt==-1 )
 return( -1 );
     for ( i=0; i<cnt; ++i ) {
-	if ( !PyArg_ParseTuple(PyTuple_GetItem(value,i),"(dd)", &start, &width ))
+	if ( !PyArg_ParseTuple(PySequence_GetItem(value,i),"(dd)", &start, &width ))
 return( -1 );
 	cur = chunkalloc(sizeof(StemInfo));
 	if ( width==-20 || width==-21 )
@@ -3368,6 +3383,126 @@ return( -1 );
 return( 0 );
 }
 
+static struct flaglist ap_types[] = {
+    { "mark", at_mark },
+    { "base", at_basechar },
+    { "ligature", at_baselig },
+    { "basemark", at_basemark },
+    { "entry", at_centry },
+    { "exit", at_cexit },
+    NULL };
+
+static PyObject *PyFF_Glyph_get_anchorPoints(PyFF_Glyph *self,void *closure) {
+    SplineChar *sc = self->sc;
+    AnchorPoint *ap;
+    int cnt;
+    PyObject *tuple;
+
+    for ( ap=sc->anchor, cnt=0; ap!=NULL; ap=ap->next, ++cnt );
+    tuple = PyTuple_New(cnt);
+    for ( ap=sc->anchor, cnt=0; ap!=NULL; ap=ap->next, ++cnt ) {
+	if ( ap->type == at_baselig )
+	    PyTuple_SetItem(tuple,cnt,Py_BuildValue("(ssddi)", ap->anchor->name,
+		    ap_types[ap->type].name, ap->me.x, ap->me.y, ap->lig_index ));
+	else
+	    PyTuple_SetItem(tuple,cnt,Py_BuildValue("(ssdd)", ap->anchor->name,
+		    ap_types[ap->type].name, ap->me.x, ap->me.y ));
+    }
+
+return( tuple );
+}
+
+static AnchorPoint *APFromTuple(SplineChar *sc,PyObject *tuple) {
+    char *ac_name, *type;
+    double x, y;
+    int lig_index=-1;
+    AnchorPoint *ap;
+    AnchorClass *ac;
+    SplineFont *sf = sc->parent;
+    int aptype;
+
+    if ( !PyArg_ParseTuple(tuple, "ssdd|i", &ac_name, &type, &x, &y, &lig_index ))
+return( NULL );
+    aptype = FlagsFromString(type,ap_types);
+    if ( aptype==0x80000000 )
+return( NULL );
+    for ( ac=sf->anchor; ac!=NULL; ac=ac->next ) {
+	if ( strcmp(ac->name,ac_name)==0 )
+    break;
+    }
+    if ( ac==NULL ) {
+	PyErr_Format(PyExc_TypeError, "No anchor class named %s", ac_name);
+return( NULL );
+    }
+    switch ( ac->type ) {
+      case act_mark:
+	if ( aptype!=at_mark && aptype!=at_basechar ) {
+	    PyErr_Format(PyExc_TypeError, "You must specify either a mark or a base anchor type for this anchor class, %s.", ac_name );
+return( NULL );
+	}
+      break;
+      case act_mkmk:
+	if ( aptype!=at_mark && aptype!=at_basemark ) {
+	    PyErr_Format(PyExc_TypeError, "You must specify either a mark or a base mark anchor type for this anchor class, %s.", ac_name );
+return( NULL );
+	}
+      break;
+      case act_mklg:
+	if ( aptype!=at_mark && aptype!=at_baselig ) {
+	    PyErr_Format(PyExc_TypeError, "You must specify either a mark or a ligature anchor type for this anchor class, %s.", ac_name );
+return( NULL );
+	}
+      break;
+      case act_curs:
+	if ( aptype!=at_centry && aptype!=at_cexit ) {
+	    PyErr_Format(PyExc_TypeError, "You must specify either an entry or an exit anchor type for this anchor class, %s.", ac_name );
+return( NULL );
+	}
+      break;
+    }
+    if ( lig_index==-1 && aptype==at_baselig ) {
+	PyErr_Format(PyExc_TypeError, "You must specify a ligature index for a ligature anchor point" );
+return( NULL );
+    } else if ( lig_index!=-1 && aptype!=at_baselig ) {
+	PyErr_Format(PyExc_TypeError, "You may not specify a ligature index for a non-ligature anchor point" );
+return( NULL );
+    }
+
+    ap = chunkalloc(sizeof(AnchorPoint));
+    ap->anchor = ac;
+    ap->type = aptype;
+    ap->me.x = x;
+    ap->me.y = y;
+    if ( aptype==at_baselig )
+	ap->lig_index = lig_index;
+return( ap );
+}
+
+static int PyFF_Glyph_set_anchorPoints(PyFF_Glyph *self,PyObject *value,void *closure) {
+    AnchorPoint *aphead=NULL, *aplast = NULL, *ap;
+    int i;
+    SplineChar *sc = self->sc;
+
+    if ( !PySequence_Check(value)) {
+	PyErr_Format(PyExc_TypeError, "Expected a tuple of anchor points" );
+return( -1 );
+    }
+    
+    for ( i=0; i<PySequence_Size(value); ++i ) {
+	ap = APFromTuple(sc,PySequence_GetItem(value,i));
+	if ( ap==NULL )
+return( -1 );
+	if ( aphead==NULL )
+	    aphead = ap;
+	else
+	    aplast->next = ap;
+	aplast = ap;
+    }
+    AnchorPointsFree(sc->anchor);
+    sc->anchor = aphead;
+return( 0 );
+}
+
 static PyObject *PyFF_Glyph_get_color(PyFF_Glyph *self,void *closure) {
 return( Py_BuildValue("i", self->sc->color ));
 }
@@ -3386,6 +3521,9 @@ static PyGetSetDef PyFF_Glyph_getset[] = {
     {"userdata",
 	 (getter)PyFF_Glyph_get_userdata, (setter)PyFF_Glyph_set_userdata,
 	 "arbetrary user data", NULL},
+    {"anchorPoints",
+	 (getter)PyFF_Glyph_get_anchorPoints, (setter)PyFF_Glyph_set_anchorPoints,
+	 "glyph name", NULL},
     {"glyphname",
 	 (getter)PyFF_Glyph_get_glyphname, (setter)PyFF_Glyph_set_glyphname,
 	 "glyph name", NULL},
@@ -3476,6 +3614,18 @@ return( NULL );
     for ( j=0; j<6; ++j )
 	transform[j] = m[j];
     _SCAddRef(sc,rsc,transform);
+
+Py_RETURN_NONE;
+}
+
+static PyObject *PyFFGlyph_addAnchorPoint(PyObject *self, PyObject *args) {
+    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
+    AnchorPoint *ap = APFromTuple(sc,args);
+
+    if ( ap==NULL )
+return( NULL );
+    ap->next = sc->anchor;
+    sc->anchor = ap;
 
 Py_RETURN_NONE;
 }
@@ -3689,21 +3839,87 @@ return( NULL );
 Py_RETURN_NONE;
 }
 
+static PyObject *TupleOfGlyphNames(char *str,int extras) {
+    int cnt;
+    char *pt, *start;
+    PyObject *tuple;
+    int ch;
+
+    for ( pt=str; *pt==' '; ++pt );
+    if ( *pt=='\0' )
+return( PyTuple_New(extras));
+
+    for ( cnt=1; *pt; ++pt ) {
+	if ( *pt==' ' ) {
+	    ++cnt;
+	    while ( pt[1]==' ' ) ++pt;
+	}
+    }
+    tuple = PyTuple_New(extras+cnt);
+    for ( pt=str, cnt=0; *pt; ) {
+	while ( *pt==' ' ) ++pt;
+	if ( *pt=='\0' )
+    break;
+	start = pt;
+	while ( *pt!=' ' && *pt!='\0' ) ++pt;
+	ch = *pt; *pt = '\0';
+	PyTuple_SetItem(tuple,extras+cnt,PyString_FromString(start));
+	*pt = ch;
+	++cnt;
+    }
+return( tuple );
+}
+
+static char *GlyphNamesFromTuple(PyObject *glyphs) {
+    int cnt, len;
+    char *str, *ret, *pt;
+    int i;
+
+    if ( PyString_Check(glyphs))
+return( copy( PyString_AsString(glyphs)) );
+
+    if ( !PySequence_Check(glyphs) ) {
+	PyErr_Format(PyExc_TypeError,"Expected tuple of glyph names");
+return(NULL );
+    }
+    cnt = PySequence_Size(glyphs);
+    len = 0;
+    for ( i=0; i<cnt; ++i ) {
+	str = PyString_AsString(PySequence_GetItem(glyphs,i));
+	if ( str==NULL ) {
+	    PyErr_Format(PyExc_TypeError,"Expected tuple of glyph names");
+return( NULL );
+	}
+	len += strlen(str)+1;
+    }
+
+    ret = pt = galloc(len+1);
+    for ( i=0; i<cnt; ++i ) {
+	str = PyString_AsString(PySequence_GetItem(glyphs,i));
+	strcpy(pt,str);
+	pt += strlen(pt);
+	*pt++ = ' ';
+    }
+    if ( pt!=ret )
+	--pt;
+    *pt = '\0';
+return( ret );
+}
+
 static PyObject *PyFFGlyph_getPosSub(PyObject *self, PyObject *args) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     SplineFont *sf = sc->parent, *sf_sl = sf;
-    int i, j, cnt, subcnt, ch;
+    int i, j, cnt;
     PyObject *ret, *temp;
     PST *pst;
     KernPair *kp;
-    char *pt, *start;
     struct lookup_subtable *sub;
     char *subname;
 
     if ( sf_sl->cidmaster!=NULL ) sf_sl = sf_sl->cidmaster;
     else if ( sf_sl->mm!=NULL ) sf_sl = sf_sl->mm->normal;
 
-    subname = PyString_AsString(PyTuple_GetItem(args,0));
+    subname = PyString_AsString(PySequence_GetItem(args,0));
     if ( subname==NULL )
 return( NULL );
     if ( *subname=='*' )
@@ -3752,29 +3968,12 @@ return( NULL );
 		      case pst_alternate:
 		      case pst_multiple:
 		      case pst_ligature:
-			for ( pt=pst->u.mult.components, subcnt=1; *pt; ++pt ) {
-			    if ( *pt==' ' ) {
-				++subcnt;
-			        while ( pt[1]==' ' ) ++pt;
-			    }
-			}
-			temp = PyTuple_New(2+subcnt);
+			temp = TupleOfGlyphNames(pst->u.mult.components,2);
 			PyTuple_SetItem(temp,0,PyString_FromString(pst->subtable->subtable_name));
 			PyTuple_SetItem(temp,1,PyString_FromString(
 				pst->type==pst_alternate?"AltSubs":
 				pst->type==pst_multiple?"MultSubs":
 			                    "Ligature"));
-			for ( pt=pst->u.mult.components, subcnt=0; *pt; ) {
-			    while ( *pt==' ' ) ++pt;
-			    if ( *pt=='\0' )
-			break;
-			    start = pt;
-			    while ( *pt!=' ' && *pt!='\0' ) ++pt;
-			    ch = *pt; *pt = '\0';
-			    PyTuple_SetItem(temp,2+subcnt,PyString_FromString(start));
-			    *pt = ch;
-			    ++subcnt;
-			}
 			PyTuple_SetItem(ret,cnt,temp);
 		      break;
 		    }
@@ -3823,7 +4022,7 @@ static PyObject *PyFFGlyph_removePosSub(PyObject *self, PyObject *args) {
     if ( sf_sl->cidmaster!=NULL ) sf_sl = sf_sl->cidmaster;
     else if ( sf_sl->mm!=NULL ) sf_sl = sf_sl->mm->normal;
 
-    subname = PyString_AsString(PyTuple_GetItem(args,0));
+    subname = PyString_AsString(PySequence_GetItem(args,0));
     if ( subname==NULL )
 return( NULL );
     if ( *subname=='*' )
@@ -3878,13 +4077,14 @@ static PyObject *PyFFGlyph_addPosSub(PyObject *self, PyObject *args) {
     struct lookup_subtable *sub;
     char *subname, *other;
     KernPair *kp;
+    PyObject *others;
 
     memset(&temp,0,sizeof(temp));
 
     if ( sf_sl->cidmaster!=NULL ) sf_sl = sf_sl->cidmaster;
     else if ( sf_sl->mm!=NULL ) sf_sl = sf_sl->mm->normal;
 
-    subname = PyString_AsString(PyTuple_GetItem(args,0));
+    subname = PyString_AsString(PySequence_GetItem(args,0));
     if ( subname==NULL )
 return( NULL );
     sub = SFFindLookupSubtable(sf,subname);
@@ -3939,12 +4139,18 @@ Py_RETURN_NONE;
 	    }
 	}
 	temp.u.pair.paired = copy(other);
-    } else {
+    } else if ( sub->lookup->lookup_type==gsub_single ) {
 	if ( !PyArg_ParseTuple(args,"(ss)", &subname, &other))
 return( NULL );
-	if ( sub->lookup->lookup_type>=gsub_single )
-	    temp.type = pst_substitution;
-	else if ( sub->lookup->lookup_type>=gsub_alternate )
+	temp.type = pst_substitution;
+	temp.u.subs.variant = copy(other);
+    } else {
+	if ( !PyArg_ParseTuple(args,"(sO)", &subname, &others))
+return( NULL );
+	other = GlyphNamesFromTuple(others);
+	if ( other==NULL )
+return( NULL );
+	if ( sub->lookup->lookup_type>=gsub_alternate )
 	    temp.type = pst_alternate;
 	else if ( sub->lookup->lookup_type>=gsub_multiple )
 	    temp.type = pst_multiple;
@@ -3954,7 +4160,7 @@ return( NULL );
 	    PyErr_Format(PyExc_KeyError, "Unexpected lookup type: %s",sub->lookup->lookup_name);
 return( NULL );
 	}
-	temp.u.subs.variant = copy(other);
+	temp.u.subs.variant = other;
     }
     pst = chunkalloc(sizeof(PST));
     *pst = temp;
@@ -3963,10 +4169,11 @@ return( NULL );
 Py_RETURN_NONE;
 }
 
-static PyMethodDef PyFF_Glyph_methods[] = { /* PSTs!!!!!! */
+static PyMethodDef PyFF_Glyph_methods[] = {
     { "glyphPen", (PyCFunction) PyFFGlyph_GlyphPen, METH_VARARGS | METH_KEYWORDS, "Create a pen object which can draw into this glyph"},
     { "draw", (PyCFunction) PyFFGlyph_draw, METH_VARARGS , "Draw the glyph's outline to the pen argument"},
     { "addReference", PyFFGlyph_AddReference, METH_VARARGS, "Add a reference"},
+    { "addAnchorPoint", PyFFGlyph_addAnchorPoint, METH_VARARGS, "Adds an anchor point"},
     { "addHint", PyFFGlyph_addHint, METH_VARARGS, "Add a postscript hint (is_vertical_hint,start_pos,width)"},
     { "addPosSub", PyFFGlyph_addPosSub, METH_VARARGS, "Adds position/substitution data to the glyph"},
     { "autoHint", PyFFGlyph_autoHint, METH_NOARGS, "Guess at postscript hints"},
@@ -4080,9 +4287,9 @@ static PyObject *PyFFCvt_Concat( PyObject *_c1, PyObject *_c2 ) {
     if ( PyType_IsSubtype(&PyFF_CvtType,c2->ob_type) ) {
 	len2 = PyFFCvt_Length(_c2);
 	is_cvt2 = true;
-    } else if ( PyTuple_Check(_c2)) {
+    } else if ( PySequence_Check(_c2)) {
 	is_cvt2 = false;
-	len2 = PyTuple_Size(_c2);
+	len2 = PySequence_Size(_c2);
     } else {
 	PyErr_Format(PyExc_TypeError, "The second argument must be either another cvt or a tuple of integers");
 return( NULL );
@@ -4095,7 +4302,7 @@ return( NULL );
 	    PyTuple_SetItem(ret,len1+i,Py_BuildValue("i",memushort(c2->cvt->data,c2->cvt->len,i*sizeof(uint16))) );
     } else {
 	for ( i=0; i<len2; ++i )
-	    PyTuple_SetItem(ret,len1+i,Py_BuildValue("i",PyTuple_GetItem(_c2,i)));
+	    PyTuple_SetItem(ret,len1+i,Py_BuildValue("i",PySequence_GetItem(_c2,i)));
     }
 Py_RETURN( (PyObject *) ret );
 }
@@ -4110,9 +4317,9 @@ static PyObject *PyFFCvt_InPlaceConcat( PyObject *_self, PyObject *_c2 ) {
     if ( PyType_IsSubtype(&PyFF_CvtType,c2->ob_type) ) {
 	len2 = PyFFCvt_Length(_c2);
 	is_cvt2 = true;
-    } else if ( PyTuple_Check(_c2)) {
+    } else if ( PySequence_Check(_c2)) {
 	is_cvt2 = false;
-	len2 = PyTuple_Size(_c2);
+	len2 = PySequence_Size(_c2);
     } else {
 	PyErr_Format(PyExc_TypeError, "The second argument must be either another cvt or a tuple of integers");
 return( NULL );
@@ -4128,7 +4335,7 @@ return( NULL );
 	    memcpy(cvt->data+len1*sizeof(uint16),c2->cvt->data, 2*len2);
     } else {
 	for ( i=0; i<len2; ++i ) {
-	    int val = PyInt_AsLong(PyTuple_GetItem(_c2,i));
+	    int val = PyInt_AsLong(PySequence_GetItem(_c2,i));
 	    if ( PyErr_Occurred())
 return( NULL );
 	    memputshort(cvt->data,sizeof(uint16)*(len1+i),val);
@@ -4205,14 +4412,14 @@ return( -1 );
 
     len = end-start + 1;
 
-    if ( len!=PyTuple_Size(rpl) ) {
+    if ( len!=PySequence_Size(rpl) ) {
 	if ( !PyErr_Occurred())
 	    PyErr_Format(PyExc_ValueError, "Replacement is different size than slice" );
 return( -1 );
     }
     for ( i=start; i<=end; ++i ) {
 	memputshort(cvt->data,sizeof(uint16)*i,
-		PyInt_AsLong(PyTuple_GetItem(rpl,i-start)));
+		PyInt_AsLong(PySequence_GetItem(rpl,i-start)));
 	if ( PyErr_Occurred())
 return( -1 );
     }
@@ -4461,19 +4668,19 @@ static int PyFF_PrivateIndexAssign( PyObject *self, PyObject *index, PyObject *v
 	int temp = PyInt_AsLong(value);
 	sprintf(buffer,"%d",temp);
 	string = buffer;
-    } else if ( PyTuple_Check(value)) {
+    } else if ( PySequence_Check(value)) {
 	int i; char *pt;
-	pt = string = freeme = galloc(PyTuple_Size(value)*21+4);
+	pt = string = freeme = galloc(PySequence_Size(value)*21+4);
 	*pt++ = '[';
-	for ( i=0; i<PyTuple_Size(value); ++i ) {
-	    sprintf( pt, "%g", PyFloat_AsDouble(PyTuple_GetItem(value,i)));
+	for ( i=0; i<PySequence_Size(value); ++i ) {
+	    sprintf( pt, "%g", PyFloat_AsDouble(PySequence_GetItem(value,i)));
 	    pt += strlen(pt);
 	    *pt++ = ' ';
 	}
 	if ( pt[-1]==' ' ) --pt;
 	*pt++ = ']'; *pt = '\0';
     } else {
-	PyErr_Format(PyExc_TypeError, "Unexpected value tupe" );
+	PyErr_Format(PyExc_TypeError, "Tuple expected for argument" );
 return( -1 );
     }
 
@@ -4715,12 +4922,12 @@ static int SetSFNTName(SplineFont *sf,PyObject *tuple,struct ttflangname *englis
     PyObject *val;
     struct ttflangname *names;
 
-    if ( !PyTuple_Check(tuple)) {
+    if ( !PySequence_Check(tuple)) {
 	PyErr_Format(PyExc_TypeError, "Value must be a tuple" );
 return(0);
     }
 
-    val = PyTuple_GetItem(tuple,0);
+    val = PySequence_GetItem(tuple,0);
     if ( PyString_Check(val) ) {
 	lang_str = PyString_AsString(val);
 	lang = FlagsFromString(lang_str,sfnt_name_mslangs);
@@ -4735,7 +4942,7 @@ return( 0 );
 return( 0 );
     }
 
-    val = PyTuple_GetItem(tuple,1);
+    val = PySequence_GetItem(tuple,1);
     if ( PyString_Check(val) ) {
 	strid_str = PyString_AsString(val);
 	strid = FlagsFromString(strid_str,sfnt_name_str_ids);
@@ -4754,7 +4961,7 @@ return( 0 );
 	if ( names->lang==lang )
     break;
 
-    if ( PyTuple_GetItem(tuple,2)==Py_None ) {
+    if ( PySequence_GetItem(tuple,2)==Py_None ) {
 	if ( names!=NULL ) {
 	    free( names->names[strid] );
 	    names->names[strid] = NULL;
@@ -4762,7 +4969,7 @@ return( 0 );
 return( 1 );
     }
 
-    string = PyString_AsString(PyTuple_GetItem(tuple,2));
+    string = PyString_AsString(PySequence_GetItem(tuple,2));
     if ( string==NULL )
 return( 0 );
     if ( lang==0x409 && english!=NULL && english->names[strid]!=NULL &&
@@ -4832,7 +5039,7 @@ static int PyFF_Font_set_sfntnames(PyFF_Font *self,PyObject *value,void *closure
     struct ttflangname dummy;
     int i;
 
-    if ( !PyTuple_Check(value)) {
+    if ( !PySequence_Check(value)) {
 	PyErr_Format(PyExc_TypeError, "Value must be a tuple" );
 return(-1);
     }
@@ -4846,8 +5053,8 @@ return(-1);
 	    names->names[i] = NULL;
 	}
     }
-    for ( i=PyTuple_Size(value)-1; i>=0; --i )
-	if ( !SetSFNTName(sf,PyTuple_GetItem(value,i),&dummy) )
+    for ( i=PySequence_Size(value)-1; i>=0; --i )
+	if ( !SetSFNTName(sf,PySequence_GetItem(value,i),&dummy) )
 return( -1 );
 
     for ( i=0; i<ttf_namemax; ++i )
@@ -4906,9 +5113,9 @@ static int PyFF_Font_set_cvt(PyFF_Font *self,PyObject *value,void *closure) {
     if ( PyType_IsSubtype(&PyFF_CvtType,value->ob_type) ) {
 	len2 = PyFFCvt_Length(value);
 	is_cvt2 = true;
-    } else if ( PyTuple_Check(value)) {
+    } else if ( PySequence_Check(value)) {
 	is_cvt2 = false;
-	len2 = PyTuple_Size(value);
+	len2 = PySequence_Size(value);
     } else {
 	PyErr_Format(PyExc_TypeError, "The value must be either another cvt or a tuple of integers");
 return( -1 );
@@ -4924,7 +5131,7 @@ return( -1 );
 	    memcpy(cvt->data,c2->cvt->data,2*len2 );
     } else {
 	for( i=0; i<len2; ++i ) {
-	    memputshort(cvt->data,2*i,PyInt_AsLong(PyTuple_GetItem(value,i)));
+	    memputshort(cvt->data,2*i,PyInt_AsLong(PySequence_GetItem(value,i)));
 	    if ( PyErr_Occurred())
 return( -1 );
 	}
@@ -5192,10 +5399,6 @@ ff_gs_int(vertical_origin)
 ff_gs_int(uniqueid)
 ff_gs_int(supplement)
 ff_gs_int2(macstyle)
-ff_gs_int2(design_size)
-ff_gs_int2(fontstyle_id)
-ff_gs_int2(design_range_bottom)
-ff_gs_int2(design_range_top)
 ff_gs_int2(os2_version)
 
 ff_gs_os2int2(weight)
@@ -5314,6 +5517,153 @@ return( -1 );
     sf->pfminfo.os2_vendor[2] = newv[2];
     sf->pfminfo.os2_vendor[3] = newv[3];
     sf->pfminfo.panose_set = true;
+return( 0 );
+}
+
+static PyObject *PyFF_Font_get_design_size(PyFF_Font *self,void *closure) {
+    /* Design size is expressed in tenths of points */
+return( Py_BuildValue("d", self->fv->sf->design_size/10.0));
+}
+
+static int PyFF_Font_set_design_size(PyFF_Font *self,PyObject *value,
+	void *closure) {
+    double temp;
+
+    if ( value==NULL )
+	self->fv->sf->design_size = 0;
+    else if ( PyFloat_Check(value)) {
+	temp = PyFloat_AsDouble(value);
+	if ( PyErr_Occurred()!=NULL )
+return( -1 );
+	self->fv->sf->design_size = rint(10.0*temp);
+    } else if ( PyInt_Check(value)) {
+	int t = PyInt_AsLong(value);
+	if ( PyErr_Occurred()!=NULL )
+return( -1 );
+	self->fv->sf->design_size = 10*t;
+    }
+return( 0 );
+}
+
+static PyObject *PyFF_Font_get_size_feature(PyFF_Font *self,void *closure) {
+    /* Size feature has two formats: Just a design size, or a design size */
+    /*  and size bounds, id & name */
+    /* First case means a tuple of one element, second a tuple of 5 */
+    /* design size & bounds are measured in tenths of points */
+    struct otfname *names;
+    int i,cnt;
+    PyObject *tuple;
+    SplineFont *sf = self->fv->sf;
+
+    if ( sf->design_size==0 )
+Py_RETURN_NONE;
+
+    for ( names=sf->fontstyle_name, cnt=0; names!=NULL; names=names->next, ++cnt );
+    if ( cnt==0 )
+return( Py_BuildValue("(d)", sf->design_size/10.0));
+    tuple = PyTuple_New(cnt);
+    FontInfoInit();
+    for ( names=sf->fontstyle_name, cnt=0; names!=NULL; names=names->next, ++cnt ) {
+	for ( i=0; sfnt_name_mslangs[i].name!=NULL ; ++i )
+	    if ( sfnt_name_mslangs[i].flag == names->lang )
+	break;
+	if ( sfnt_name_mslangs[i].flag == names->lang )
+	    PyTuple_SetItem(tuple,i,Py_BuildValue("ss", sfnt_name_mslangs[i].name, names->name));
+	else
+	    PyTuple_SetItem(tuple,i,Py_BuildValue("is", names->lang, names->name));
+    }
+return( Py_BuildValue("(dddiO)", sf->design_size/10.0,
+	sf->design_range_bottom/10.0, sf->design_range_top/10.,
+	sf->fontstyle_id, tuple ));
+}
+
+static int PyFF_Font_set_size_feature(PyFF_Font *self,PyObject *value,
+	void *closure) {
+    double temp, top=0, bot=0;
+    int id=0;
+    PyObject *names=NULL;
+    SplineFont *sf = self->fv->sf;
+    int i;
+    struct otfname *head, *last, *cur;
+    char *string;
+
+    if ( value==NULL ) {
+	sf->design_size = 0;
+	/* Setting the design size to zero means there will be no 'size' feature in the output */
+return( 0 );
+    }
+    /* If they only specify a design size, we won't require that it be a tuple */
+    /*  if it is in a tuple, remove it and treat as a single value */
+    if ( PySequence_Check(value) && PySequence_Size(value)==1 )
+	value = PySequence_GetItem(value,0);
+    if ( PyFloat_Check(value) || PyInt_Check(value)) {
+	if ( PyFloat_Check(value))
+	    temp = PyFloat_AsDouble(value);
+	else
+	    temp = PyInt_AsLong(value);
+	if ( PyErr_Occurred()!=NULL )
+return( -1 );
+	sf->design_size = rint(10.0*temp);
+	sf->design_range_bottom = 0;
+	sf->design_range_top = 0;
+	sf->fontstyle_id = 0;
+	OtfNameListFree(sf->fontstyle_name);
+	sf->fontstyle_name = NULL;
+return( 0 );
+    }
+
+    if ( !PyArg_ParseTuple(value,"dddiO", &temp, &bot, &top, &id, &names ))
+return( -1 );
+    sf->design_size = rint(10.0*temp);
+    sf->design_range_bottom = rint(10.0*bot);
+    sf->design_range_top = rint(10.0*top);
+    sf->fontstyle_id = id;
+
+    if ( !PySequence_Check(names)) {
+	PyErr_Format(PyExc_TypeError,"Final argument must be a tuple of tuples");
+return( -1 );
+    }
+    head = last = NULL;
+    for ( i=0; i<PySequence_Size(names); ++i ) {
+	PyObject *subtuple = PySequence_GetItem(names,i);
+	PyObject *val;
+	int lang;
+
+	if ( !PySequence_Check(subtuple)) {
+	    PyErr_Format(PyExc_TypeError, "Value must be a tuple" );
+    return(0);
+	}
+
+	val = PySequence_GetItem(subtuple,0);
+	if ( PyString_Check(val) ) {
+	    char *lang_str = PyString_AsString(val);
+	    lang = FlagsFromString(lang_str,sfnt_name_mslangs);
+	    if ( lang==0x80000000 ) {
+		PyErr_Format(PyExc_TypeError, "Unknown language" );
+return( 0 );
+	    }
+	} else if ( PyInt_Check(val))
+	    lang = PyInt_AsLong(val);
+	else {
+	    PyErr_Format(PyExc_TypeError, "Unknown language" );
+return( 0 );
+	}
+
+	string = PyString_AsString(PySequence_GetItem(subtuple,2));
+	if ( string==NULL )
+return( 0 );
+	cur = chunkalloc(sizeof( struct otfname ));
+	cur->name = copy(string);
+	cur->lang = lang;
+	if ( head==NULL )
+	    head = cur;
+	else
+	    last->next = cur;
+	last = cur;
+    }
+    OtfNameListFree(sf->fontstyle_name);
+    sf->fontstyle_name = head;
+    
 return( 0 );
 }
 
@@ -5447,6 +5797,68 @@ return( -1 );
 	ss = newss;
     }
     guide->splines = ss;
+return( 0 );
+}
+
+static PyObject *PyFF_Font_get_mark_classes(PyFF_Font *self,void *closure) {
+    PyObject *tuple, *nametuple;
+    SplineFont *sf = self->fv->sf;
+    int i;
+
+    if ( sf->mark_class_cnt==0 )
+Py_RETURN_NONE;
+
+    tuple = PyTuple_New(sf->mark_class_cnt-1);
+    for ( i=1; i<sf->mark_class_cnt; ++i ) {
+	nametuple = TupleOfGlyphNames(sf->mark_classes[i],0);
+	PyTuple_SetItem(tuple,i-1,Py_BuildValue("(sO)", sf->mark_class_names[i], nametuple));
+    }
+return( tuple );
+}
+
+static int PyFF_Font_set_mark_classes(PyFF_Font *self,PyObject *value,void *closure) {
+    SplineFont *sf = self->fv->sf;
+    int i, cnt;
+    char **names, **classes;
+    char *nm;
+    PyObject *subtuple;
+
+    if ( value==NULL || value==Py_None )
+	cnt = 0;
+    else {
+	cnt = PySequence_Size(value);
+	if ( cnt==-1 )
+return( -1 );
+	if ( cnt>=256 ) {
+	    PyErr_Format(PyExc_ValueError, "There may be at most 255 mark classes" );
+return( -1 );
+	}
+    }
+    if ( cnt==0 ) {
+	MarkClassFree(sf->mark_class_cnt,sf->mark_classes,sf->mark_class_names);
+	sf->mark_class_cnt = 0;
+	sf->mark_classes = NULL;
+	sf->mark_class_names = NULL;
+return( 0 );
+    }
+
+    names = galloc((cnt+1)*sizeof(char *));
+    classes = galloc((cnt+1)*sizeof(char *));
+    names[0] = classes[0] = NULL;
+    for ( i=0; i<cnt; ++i ) {
+	if ( !PyArg_ParseTuple(PySequence_GetItem(value,i),"(sO)", &nm, &subtuple))
+return( -1 );
+	classes[i+1] = GlyphNamesFromTuple(subtuple);
+	if ( classes[i+1]==NULL )
+return( -1 );
+	names[i+1] = copy(nm);
+    }
+
+    MarkClassFree(sf->mark_class_cnt,sf->mark_classes,sf->mark_class_names);
+    sf->mark_class_cnt = cnt+1;
+    sf->mark_classes = classes;
+    sf->mark_class_names = names;
+    
 return( 0 );
 }
 
@@ -5693,15 +6105,9 @@ static PyGetSetDef PyFF_Font_getset[] = {
     {"design_size",
 	 (getter)PyFF_Font_get_design_size, (setter)PyFF_Font_set_design_size,
 	 "Point size for which this font was designed", NULL},
-    {"fontstyle_id",
-	 (getter)PyFF_Font_get_fontstyle_id, (setter)PyFF_Font_set_fontstyle_id,
-	 "Font Style ID for 'size' feature", NULL},
-    {"design_range_bottom",
-	 (getter)PyFF_Font_get_design_range_bottom, (setter)PyFF_Font_set_design_range_bottom,
-	 "Smallest point size for which this font is acceptable", NULL},
-    {"design_range_top",
-	 (getter)PyFF_Font_get_design_range_top, (setter)PyFF_Font_set_design_range_top,
-	 "Largest point size for which this font is acceptable", NULL},
+    {"size_feature",
+	 (getter)PyFF_Font_get_size_feature, (setter)PyFF_Font_set_size_feature,
+	 "A tuple containing the info needed for the 'size' feature", NULL},
     {"maxp_zones",
 	 (getter)PyFF_Font_get_maxp_zones, (setter)PyFF_Font_set_maxp_zones,
 	 "The number of zones used in the tt program", NULL},
@@ -5849,6 +6255,9 @@ static PyGetSetDef PyFF_Font_getset[] = {
     {"guide",
 	 (getter)PyFF_Font_get_guide, (setter)PyFF_Font_set_guide,
 	 "The Contours that make up the guide layer of the font", NULL},
+    {"markClasses",
+	 (getter)PyFF_Font_get_mark_classes, (setter)PyFF_Font_set_mark_classes,
+	 "A tuple each entry of which is itself a tuple containing a mark-class-name and a tuple of glyph-names", NULL},
     {NULL}  /* Sentinel */
 };
 
@@ -5905,32 +6314,73 @@ static PyGetSetDef PyFF_Font_getset[] = {
     SelectInvert
 #endif
 
-static PyObject *PyFFFont_GetTableAsInstrs(PyObject *self, PyObject *args) {
+static uint32 StrToTag(char *tag_name, int *was_mac) {
+    uint8 foo[4];
+    int feat, set;
+
+    if ( was_mac!=NULL && sscanf(tag_name,"<%d,%d>", &feat, &set )==2 ) {
+	*was_mac = true;
+return( (feat<<16) | set );
+    }
+
+    if ( was_mac ) *was_mac = false;
+    foo[0] = foo[1] = foo[2] = foo[3] = ' ';
+    if ( *tag_name!='\0' ) {
+	foo[0] = tag_name[0];
+	if ( tag_name[1]!='\0' ) {
+	    foo[1] = tag_name[1];
+	    if ( tag_name[2]!='\0' ) {
+		foo[2] = tag_name[2];
+		if ( tag_name[3]!='\0' ) {
+		    foo[3] = tag_name[3];
+		    if ( tag_name[4]!='\0' ) {
+			PyErr_Format(PyExc_TypeError, "OpenType tags are limited to 4 characters: %s", tag_name);
+return( 0xffffffff );
+		    }
+		}
+	    }
+	}
+    }
+return( (foo[0]<<24) | (foo[1]<<16) | (foo[2]<<8) | foo[3] );
+}
+
+static PyObject *TagToPyString(uint32 tag,int ismac) {
+    char foo[30];
+
+    if ( ismac ) {
+	sprintf( foo,"<%d,%d>", tag>>16, tag&0xffff );
+    } else {
+	foo[0] = tag>>24;
+	foo[1] = tag>>16;
+	foo[2] = tag>>8;
+	foo[3] = tag;
+	foo[4] = '\0';
+    }
+return( PyString_FromString(foo));
+}
+		    
+static PyObject *PyFFFont_GetTableData(PyObject *self, PyObject *args) {
     char *table_name;
     uint32 tag;
     struct ttf_table *tab;
-    PyObject *tuple;
+    PyObject *binstr;
     int i;
 
     if ( !PyArg_ParseTuple(args,"s",&table_name) )
 return( NULL );
-    if ( strcmp(table_name,"fpgm")==0 )
-	tag = CHR('f','p','g','m');
-    else if ( strcmp(table_name,"prep")==0 )
-	tag = CHR('p','r','e','p');
-    else {
-	PyErr_Format(PyExc_TypeError, "Unexpected table name" );
+    tag = StrToTag(table_name,NULL);
+    if ( tag==0xffffffff )
 return( NULL );
-    }
 
     for ( tab=((PyFF_Font *) self)->fv->sf->ttf_tables; tab!=NULL && tab->tag!=tag; tab=tab->next );
     if ( tab==NULL )
-return( PyTuple_New(0));		/* No table => no instructions */
+	for ( tab=((PyFF_Font *) self)->fv->sf->ttf_tab_saved; tab!=NULL && tab->tag!=tag; tab=tab->next );
 
-    tuple = PyTuple_New(tab->len);
-    for ( i=0; i<tab->len; ++i )
-	PyTuple_SetItem(tuple,i,PyInt_FromLong(tab->data[i]));
-return( tuple );
+    if ( tab==NULL )
+Py_RETURN_NONE;
+
+    binstr = PyString_FromStringAndSize((char *) tab->data,tab->len);
+return( binstr );
 }
 
 static void TableAddInstrs(SplineFont *sf, uint32 tag,int replace,
@@ -5938,6 +6388,8 @@ static void TableAddInstrs(SplineFont *sf, uint32 tag,int replace,
     struct ttf_table *tab;
 
     for ( tab=sf->ttf_tables; tab!=NULL && tab->tag!=tag; tab=tab->next );
+    if ( tab==NULL )
+	for ( tab=sf->ttf_tab_saved; tab!=NULL && tab->tag!=tag; tab=tab->next );
 
     if ( replace && tab!=NULL ) {
 	free(tab->data);
@@ -5949,8 +6401,14 @@ return;
     if ( tab==NULL ) {
 	tab = chunkalloc(sizeof( struct ttf_table ));
 	tab->tag = tag;
-	tab->next = sf->ttf_tables;
-	sf->ttf_tables = tab;
+	if ( tag==CHR('p','r','e','p') || tag==CHR('f','p','g','m') ||
+		tag==CHR('c','v','t',' ') || tag==CHR('m','a','x','p') ) {
+	    tab->next = sf->ttf_tables;
+	    sf->ttf_tables = tab;
+	} else {
+	    tab->next = sf->ttf_tab_saved;
+	    sf->ttf_tab_saved = tab;
+	}
     }
     if ( tab->data==NULL ) {
 	tab->data = galloc(icnt);
@@ -5967,7 +6425,7 @@ return;
     tab->maxlen = tab->len;
 }
 
-static PyObject *PyFFFont_SetTableAsInstrs(PyObject *self, PyObject *args) {
+static PyObject *PyFFFont_SetTableData(PyObject *self, PyObject *args) {
     char *table_name;
     uint32 tag;
     PyObject *tuple;
@@ -5976,25 +6434,28 @@ static PyObject *PyFFFont_SetTableAsInstrs(PyObject *self, PyObject *args) {
 
     if ( !PyArg_ParseTuple(args,"sO",&table_name,&tuple) )
 return( NULL );
-    if ( strcmp(table_name,"fpgm")==0 )
-	tag = CHR('f','p','g','m');
-    else if ( strcmp(table_name,"prep")==0 )
-	tag = CHR('p','r','e','p');
-    else {
-	PyErr_Format(PyExc_TypeError, "Unexpected table name" );
+    tag = StrToTag(table_name,NULL);
+    if ( tag==0xffffffff )
 return( NULL );
-    }
 
-    if ( !PyTuple_Check(tuple)) {
+    if ( !PySequence_Check(tuple)) {
 	PyErr_Format(PyExc_TypeError, "Argument must be a tuple" );
 return( NULL );
     }
-    icnt = PyTuple_Size(tuple);
-    instrs = galloc(icnt);
-    for ( i=0; i<icnt; ++i ) {
-	instrs[i] = PyInt_AsLong(PyTuple_GetItem(tuple,i));
-	if ( PyErr_Occurred())
+    if ( PyString_Check(tuple)) {
+	char *space; int len;
+	PyString_AsStringAndSize(tuple,&space,&len);
+	instrs = gcalloc(len,sizeof(uint8));
+	icnt = len;
+	memcpy(instrs,space,len);
+    } else {
+	icnt = PySequence_Size(tuple);
+	instrs = galloc(icnt);
+	for ( i=0; i<icnt; ++i ) {
+	    instrs[i] = PyInt_AsLong(PySequence_GetItem(tuple,i));
+	    if ( PyErr_Occurred())
 return( NULL );
+	}
     }
     TableAddInstrs(((PyFF_Font *) self)->fv->sf,tag,true,instrs,icnt);
     free(instrs);
@@ -6018,13 +6479,872 @@ return( NULL );
 Py_RETURN( self );;
 }
 
+static struct lookup_subtable *addLookupSubtable(SplineFont *sf, char *lookup,
+	char *new_subtable, char *after_str) {
+    OTLookup *otl;
+    struct lookup_subtable *sub, *after=NULL;
+    int is_v;
+
+    otl = SFFindLookup(sf,lookup);
+    if ( otl==NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "No lookup named %s", lookup );
+return( NULL );
+    }
+    if ( after_str!=NULL ) {
+	after = SFFindLookupSubtable(sf,after_str);
+	if ( after==NULL ) {
+	    PyErr_Format(PyExc_EnvironmentError, "No lookup subtable named %s", after_str );
+return( NULL );
+	} else if ( after->lookup!=otl ) {
+	    PyErr_Format(PyExc_EnvironmentError, "Subtable, %s, is not in lookup %s.", after_str, lookup );
+return( NULL );
+	}
+    }
+
+    if ( sf->cidmaster ) sf = sf->cidmaster;
+
+    if ( SFFindLookupSubtable(sf,new_subtable)!=NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "A lookup subtable named %s already exists", new_subtable);
+return( NULL );
+    }
+
+    sub = chunkalloc(sizeof(struct lookup_subtable));
+    sub->lookup = otl;
+    sub->subtable_name = copy(new_subtable);
+    if ( after!=NULL ) {
+	sub->next = after->next;
+	after->next = sub;
+    } else {
+	sub->next = otl->subtables;
+	otl->subtables = sub;
+    }
+    switch ( otl->lookup_type ) {
+      case gpos_cursive: case gpos_mark2base: case gpos_mark2ligature: case gpos_mark2mark:
+	sub->anchor_classes = true;
+      break;
+      case gpos_pair:
+	is_v = VerticalKernFeature(sf,otl,false);
+	if ( is_v==-1 ) is_v = false;
+	sub->vertical_kerning = is_v;
+	sub->per_glyph_pst_or_kern = true;
+      break;
+      case gpos_single:
+      case gsub_single: case gsub_multiple: case gsub_alternate: case gsub_ligature:
+	sub->per_glyph_pst_or_kern = true;
+      break;
+    }
+
+return( sub );
+}
+
+static PyObject *PyFFFont_addAnchorClass(PyObject *self, PyObject *args) {
+    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+    char *subtable, *anchor_name;
+    struct lookup_subtable *sub;
+    AnchorClass *ac;
+    int lookup_type;
+
+    if ( !PyArg_ParseTuple(args,"ss", &subtable, &anchor_name ))
+return( NULL );
+
+    sub = SFFindLookupSubtable(sf,subtable);
+    if ( sub==NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "No subtable named %s", subtable );
+return( NULL );
+    }
+    lookup_type = sub->lookup->lookup_type;
+    if ( lookup_type<gpos_cursive || lookup_type>gpos_mark2mark ) {
+	PyErr_Format(PyExc_EnvironmentError, "Cannot add an anchor class to %s, it has the wrong lookup type", subtable );
+return( NULL );
+    }
+    for ( ac=sf->anchor; ac!=NULL; ac=ac->next ) {
+	if ( strcmp(ac->name,anchor_name)==0 )
+    break;
+    }
+    if ( ac!=NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "An anchor class named %s already exists", anchor_name );
+return( NULL );
+    }
+    ac = chunkalloc(sizeof(AnchorClass));
+    ac->name = copy( anchor_name );
+    ac->subtable = sub;
+    ac->type = lookup_type==gpos_cursive        ? act_curs :
+		lookup_type==gpos_mark2base     ? act_mark :
+		lookup_type==gpos_mark2ligature ? act_mklg :
+						  act_mkmk ;
+    ac->next = sf->anchor;
+    sf->anchor = ac;
+
+Py_RETURN( self );
+}
+
+static PyObject *PyFFFont_removeAnchorClass(PyObject *self, PyObject *args) {
+    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+    char *anchor_name;
+    AnchorClass *ac;
+
+    if ( !PyArg_ParseTuple(args,"s", &anchor_name ))
+return( NULL );
+
+    for ( ac=sf->anchor; ac!=NULL; ac=ac->next ) {
+	if ( strcmp(ac->name,anchor_name)==0 )
+    break;
+    }
+    if ( ac==NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "No anchor class named %s exists", anchor_name );
+return( NULL );
+    }
+    SFRemoveAnchorClass(sf,ac);
+Py_RETURN( self );
+}
+
+static int ParseClassNames(PyObject *classes,char ***class_strs) {
+    int cnt, i;
+    char **cls;
+
+    *class_strs = NULL;
+    cnt = PySequence_Size(classes);
+    if ( cnt==-1 )
+return( -1 );
+    *class_strs = cls = galloc(cnt*sizeof(char *));
+    for ( i=0; i<cnt; ++i ) {
+	PyObject *thingy = PySequence_GetItem(classes,i);
+	if ( i==0 && thingy==Py_None )
+	    cls[i] = NULL;
+	else {
+	    cls[i] = GlyphNamesFromTuple(thingy);
+	    if ( cls[i]==NULL )
+return( -1 );
+	}
+    }
+return( cnt );
+}
+
+static PyObject *MakeClassNameTuple(int cnt, char**classes) {
+    PyObject *tuple;
+    int i;
+
+    tuple = PyTuple_New(cnt);
+    for ( i=0; i<cnt; ++i ) {
+	if ( classes[i]==NULL ) {
+	    PyTuple_SetItem(tuple,i,Py_None);
+	    Py_INCREF(Py_None);
+	} else
+	    PyTuple_SetItem(tuple,i,TupleOfGlyphNames(classes[i],0));
+    }
+return( tuple );
+}
+
+static PyObject *PyFFFont_addKerningClass(PyObject *self, PyObject *args) {
+    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+    char *lookup, *subtable, *after_str=NULL;
+    int i;
+    struct lookup_subtable *sub;
+    PyObject *class1s, *class2s, *offsets;
+    char **class1_strs, **class2_strs;
+    int cnt1, cnt2;
+    int16 *offs;
+
+    if ( !PyArg_ParseTuple(args,"sOOO", &subtable, &class1s, &class2s,
+	    &offsets ))
+return( NULL );
+
+    cnt1 = ParseClassNames(class1s,&class1_strs);
+    cnt2 = ParseClassNames(class2s,&class2_strs);
+    if ( cnt1*cnt2 != PySequence_Size(offsets) ) {
+	PyErr_Format(PyExc_ValueError, "There aren't enough kerning offsets for the number of kerning classes. Should be %d", cnt1*cnt2 );
+return( NULL );
+    }
+    offs = galloc(cnt1*cnt2*sizeof(int16));
+    for ( i=0 ; i<cnt1*cnt2; ++i ) {
+	offs[i] = PyInt_AsLong(PySequence_GetItem(offsets,i));
+	if ( PyErr_Occurred())
+return( NULL );
+    }
+
+    sub = addLookupSubtable(sf, lookup, subtable, after_str);
+    if ( sub==NULL )
+return( NULL );
+    if ( sub->lookup->lookup_type!=gpos_pair ) {
+	PyErr_Format(PyExc_EnvironmentError, "Cannot add kerning data to %s, it has the wrong lookup type", lookup );
+return( NULL );
+    }
+    sub->per_glyph_pst_or_kern = false;
+    sub->kc = chunkalloc(sizeof(KernClass));
+    sub->kc->subtable = sub;
+    sub->kc->first_cnt = cnt1;
+    sub->kc->second_cnt = cnt2;
+    sub->kc->firsts = class1_strs;
+    sub->kc->seconds = class2_strs;
+    sub->kc->offsets = offs;
+
+    if ( sub->vertical_kerning ) {
+	sub->kc->next = sf->vkerns;
+	sf->vkerns = sub->kc;
+    } else {
+	sub->kc->next = sf->kerns;
+	sf->kerns = sub->kc;
+    }
+
+Py_RETURN( self );
+}
+
+static PyObject *PyFFFont_alterKerningClass(PyObject *self, PyObject *args) {
+    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+    char *lookup, *subtable, *after_str=NULL;
+    int i;
+    struct lookup_subtable *sub;
+    PyObject *class1s, *class2s, *offsets;
+    char **class1_strs, **class2_strs;
+    int cnt1, cnt2;
+    int16 *offs;
+
+    if ( !PyArg_ParseTuple(args,"ssOOO|s", &lookup, &subtable, &class1s, &class2s,
+	    &offsets, &after_str ))
+return( NULL );
+
+    sub = SFFindLookupSubtable(sf,subtable);
+    if ( sub==NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "No subtable named %s", subtable );
+return( NULL );
+    }
+    if ( sub->kc==NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "This subtable, %s, does not contain not a kerning class", subtable );
+return( NULL );
+    }
+
+    cnt1 = ParseClassNames(class1s,&class1_strs);
+    cnt2 = ParseClassNames(class2s,&class2_strs);
+    if ( cnt1*cnt2 != PySequence_Size(offsets) ) {
+	PyErr_Format(PyExc_ValueError, "There aren't enough kerning offsets for the number of kerning classes. Should be %d", cnt1*cnt2 );
+return( NULL );
+    }
+    offs = galloc(cnt1*cnt2*sizeof(int16));
+    for ( i=0 ; i<cnt1*cnt2; ++i ) {
+	offs[i] = PyInt_AsLong(PySequence_GetItem(offsets,i));
+	if ( PyErr_Occurred())
+return( NULL );
+    }
+
+    KernClassFreeContents(sub->kc);
+    sub->kc->first_cnt = cnt1;
+    sub->kc->second_cnt = cnt2;
+    sub->kc->firsts = class1_strs;
+    sub->kc->seconds = class2_strs;
+    sub->kc->offsets = offs;
+
+Py_RETURN( self );
+}
+
+static PyObject *PyFFFont_getKerningClass(PyObject *self, PyObject *args) {
+    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+    char *subtable;
+    struct lookup_subtable *sub;
+    PyObject *offsets;
+    int i;
+
+    if ( !PyArg_ParseTuple(args,"s", &subtable ))
+return( NULL );
+
+    sub = SFFindLookupSubtable(sf,subtable);
+    if ( sub==NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "No subtable named %s", subtable );
+return( NULL );
+    }
+    if ( sub->kc==NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "This subtable, %s, does not contain not a kerning class", subtable );
+return( NULL );
+    }
+    offsets = PyTuple_New(sub->kc->first_cnt*sub->kc->second_cnt);
+    for ( i=0; i<sub->kc->first_cnt*sub->kc->second_cnt; ++i )
+	PyTuple_SetItem(offsets,i,PyInt_FromLong(sub->kc->offsets[i]));
+
+return( Py_BuildValue("(OOO)",
+	MakeClassNameTuple(sub->kc->first_cnt,sub->kc->firsts),
+	MakeClassNameTuple(sub->kc->second_cnt,sub->kc->seconds),
+	offsets));
+}
+
+static PyObject *PyFFFont_isKerningClass(PyObject *self, PyObject *args) {
+    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+    char *subtable;
+    struct lookup_subtable *sub;
+    PyObject *ret;
+
+    if ( !PyArg_ParseTuple(args,"s", &subtable ))
+return( NULL );
+
+    sub = SFFindLookupSubtable(sf,subtable);
+    if ( sub==NULL || sub->kc==NULL )
+	ret = Py_False;
+    else
+	ret = Py_True;
+    Py_INCREF(ret);
+return( ret );
+}
+
+static PyObject *PyFFFont_isVerticalKerning(PyObject *self, PyObject *args) {
+    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+    char *subtable;
+    struct lookup_subtable *sub;
+    PyObject *ret;
+
+    if ( !PyArg_ParseTuple(args,"s", &subtable ))
+return( NULL );
+
+    sub = SFFindLookupSubtable(sf,subtable);
+    if ( sub==NULL || !sub->vertical_kerning )
+	ret = Py_False;
+    else
+	ret = Py_True;
+    Py_INCREF(ret);
+return( ret );
+}
+
+static PyObject *PyFFFont_removeLookup(PyObject *self, PyObject *args) {
+    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+    char *lookup;
+    OTLookup *otl;
+
+    if ( !PyArg_ParseTuple(args,"s", &lookup ))
+return( NULL );
+
+    otl = SFFindLookup(sf,lookup);
+    if ( otl==NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "No lookup named %s exists", lookup );
+return( NULL );
+    }
+    SFRemoveLookup(sf,otl);
+Py_RETURN_NONE;
+}
+
+static PyObject *PyFFFont_mergeLookups(PyObject *self, PyObject *args) {
+    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+    char *lookup1, *lookup2;
+    OTLookup *otl1, *otl2;
+    struct lookup_subtable *sub;
+
+    if ( !PyArg_ParseTuple(args,"ss", &lookup1, &lookup2 ))
+return( NULL );
+
+    otl1 = SFFindLookup(sf,lookup1);
+    if ( otl1==NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "No lookup named %s exists", lookup1 );
+return( NULL );
+    }
+    otl2 = SFFindLookup(sf,lookup2);
+    if ( otl2==NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "No lookup named %s exists", lookup2 );
+return( NULL );
+    }
+    if ( otl1->lookup_type != otl2->lookup_type ) {
+	PyErr_Format(PyExc_EnvironmentError, "When merging two lookups they must be of the same type, but %s and %s are not", lookup1, lookup2);
+return( NULL );
+    }
+    FLMerge(otl1,otl2);
+
+    for ( sub = otl2->subtables; sub!=NULL; sub=sub->next )
+	sub->lookup = otl1;
+    if ( otl1->subtables==NULL )
+	otl1->subtables = otl2->subtables;
+    else {
+	for ( sub=otl1->subtables; sub->next!=NULL; sub=sub->next );
+	sub->next = otl2->subtables;
+    }
+    otl2->subtables = NULL;
+    SFRemoveLookup(sf,otl2);
+Py_RETURN_NONE;
+}
+
+static PyObject *PyFFFont_removeLookupSubtable(PyObject *self, PyObject *args) {
+    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+    char *subtable;
+    struct lookup_subtable *sub;
+
+    if ( !PyArg_ParseTuple(args,"s", &subtable ))
+return( NULL );
+
+    sub = SFFindLookupSubtable(sf,subtable);
+    if ( sub==NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "No subtable named %s exists", subtable );
+return( NULL );
+    }
+    SFRemoveLookupSubTable(sf,sub);
+Py_RETURN_NONE;
+}
+
+static PyObject *PyFFFont_mergeLookupSubtables(PyObject *self, PyObject *args) {
+    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+    char *subtable1, *subtable2;
+    struct lookup_subtable *sub1, *sub2;
+
+    if ( !PyArg_ParseTuple(args,"ss", &subtable1, &subtable2 ))
+return( NULL );
+
+    sub1 = SFFindLookupSubtable(sf,subtable1);
+    if ( sub1==NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "No subtable named %s exists", subtable1 );
+return( NULL );
+    }
+    sub2 = SFFindLookupSubtable(sf,subtable2);
+    if ( sub2==NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "No subtable named %s exists", subtable2 );
+return( NULL );
+    }
+    if ( sub1->lookup!=sub2->lookup ) {
+	PyErr_Format(PyExc_EnvironmentError, "When merging two lookup subtables they must be in the same lookup, but %s and %s are not", subtable1, subtable2);
+return( NULL );
+    }
+    SFSubTablesMerge(sf,sub1,sub2);
+    SFRemoveLookupSubTable(sf,sub2);
+Py_RETURN_NONE;
+}
+
+static struct flaglist lookup_types[] = {
+    { "gsub_single", gsub_single },
+    { "gsub_multiple", gsub_multiple },
+    { "gsub_alternate", gsub_alternate },
+    { "gsub_ligature", gsub_ligature },
+    { "gsub_context", gsub_context },
+    { "gsub_contextchain", gsub_contextchain },
+    { "gsub_reversecchain", gsub_reversecchain },
+    { "morx_indic", morx_indic },
+    { "morx_context", morx_context },
+    { "morx_insert", morx_insert },
+    { "gpos_single", gpos_single },
+    { "gpos_pair", gpos_pair },
+    { "gpos_cursive", gpos_cursive },
+    { "gpos_mark2base", gpos_mark2base },
+    { "gpos_mark2ligature", gpos_mark2ligature },
+    { "gpos_mark2mark", gpos_mark2mark },
+    { "gpos_context", gpos_context },
+    { "gpos_contextchain", gpos_contextchain },
+    { "kern_statemachine", kern_statemachine },
+    NULL };
+static struct flaglist lookup_flags[] = {
+    { "right_to_left", pst_r2l },
+    { "ignore_bases", pst_ignorebaseglyphs },
+    { "ignore_ligatures", pst_ignoreligatures },
+    { "ignore_marks", pst_ignorecombiningmarks },
+    { "right_2_left", pst_r2l },
+    { "right2left", pst_r2l },
+    NULL };
+
+static int ParseLookupFlagsItem(SplineFont *sf,PyObject *flagstr) {
+    char *str = PyString_AsString(flagstr);
+    int i;
+
+    if ( str==NULL )
+return( -1 );
+    for ( i=0; lookup_flags[i].name!=NULL; ++i )
+	if ( strcmp(lookup_flags[i].name,str)==0 )
+return( lookup_flags[i].flag );
+
+    for ( i=1; i<sf->mark_class_cnt; ++i )
+	if ( strcmp(sf->mark_class_names[i],str)==0 )
+return( i<<8 );
+
+    PyErr_Format(PyExc_ValueError, "Unknown lookup flag %s", str );
+return( -1 );
+}
+
+static int ParseLookupFlags(SplineFont *sf,PyObject *flagtuple) {
+    int i, flags=0, cnt, temp;
+
+    if ( PyString_Check(flagtuple))
+return( ParseLookupFlagsItem(sf,flagtuple));
+    cnt = PySequence_Size(flagtuple);
+    if ( cnt==-1 )
+return( -1 );
+    for ( i=0; i<cnt; ++i ) {
+	temp = ParseLookupFlagsItem(sf,PySequence_GetItem(flagtuple,i));
+	if ( temp==-1 )
+return( -1 );
+	flags |= temp;
+    }
+return( flags );
+}
+
+static FeatureScriptLangList *PyParseFeatureList(PyObject *tuple) {
+    FeatureScriptLangList *flhead=NULL, *fltail, *fl;
+    struct scriptlanglist *sltail, *sl;
+    int f,s,l, cnt;
+    int wasmac;
+    PyObject *scripts, *langs;
+
+    if ( !PySequence_Check(tuple)) {
+	PyErr_Format(PyExc_TypeError, "A feature list is composed of a tuple of tuples" );
+return( (FeatureScriptLangList *) -1 );
+    }
+    cnt = PySequence_Size(tuple);
+
+    for ( f=0; f<cnt; ++f ) {
+	PyObject *subs = PySequence_GetItem(tuple,f);
+	if ( !PySequence_Check(subs)) {
+	    PyErr_Format(PyExc_TypeError, "A feature list is composed of a tuple of tuples" );
+return( (FeatureScriptLangList *) -1 );
+	} else if ( PySequence_Size(subs)!=2 ) {
+	    PyErr_Format(PyExc_TypeError, "A feature list is composed of a tuple of tuples each containing two elements");
+return( (FeatureScriptLangList *) -1 );
+	} else if ( !PyString_Check(PySequence_GetItem(subs,0)) ||
+		!PySequence_Check(PySequence_GetItem(subs,1))) {
+	    PyErr_Format(PyExc_TypeError, "Bad type for argument");
+return( (FeatureScriptLangList *) -1 );
+	}
+	fl = chunkalloc(sizeof(FeatureScriptLangList));
+	fl->featuretag = StrToTag(PyString_AsString(PySequence_GetItem(subs,0)),&wasmac);
+	if ( fl->featuretag == 0xffffffff )
+return( (FeatureScriptLangList *) -1 );
+	fl->ismac = wasmac;
+	if ( flhead==NULL )
+	    flhead = fl;
+	else
+	    fltail->next = fl;
+	fltail = fl;
+	scripts = PySequence_GetItem(subs,1);
+	if ( !PySequence_Check(scripts)) {
+	    PyErr_Format(PyExc_TypeError, "A script list is composed of a tuple of tuples" );
+return( (FeatureScriptLangList *) -1 );
+	} else if ( PySequence_Size(scripts)==0 ) {
+	    PyErr_Format(PyExc_TypeError, "No scripts specified for feature %s", PyString_AsString(PySequence_GetItem(subs,0)));
+return( (FeatureScriptLangList *) -1 );
+	}
+	sltail = NULL;
+	for ( s=0; s<PySequence_Size(scripts); ++s ) {
+	    PyObject *subs = PySequence_GetItem(tuple,s);
+	    if ( !PySequence_Check(subs)) {
+		PyErr_Format(PyExc_TypeError, "A script list is composed of a tuple of tuples" );
+return( (FeatureScriptLangList *) -1 );
+	    } else if ( PySequence_Size(subs)!=2 ) {
+		PyErr_Format(PyExc_TypeError, "A script list is composed of a tuple of tuples each containing two elements");
+return( (FeatureScriptLangList *) -1 );
+	    } else if ( !PyString_Check(PySequence_GetItem(subs,0)) ||
+		    !PySequence_Check(PySequence_GetItem(subs,1))) {
+		PyErr_Format(PyExc_TypeError, "Bad type for argument");
+return( (FeatureScriptLangList *) -1 );
+	    }
+	    sl = chunkalloc(sizeof(struct scriptlanglist));
+	    sl->script = StrToTag(PyString_AsString(PySequence_GetItem(subs,0)),NULL);
+	    if ( sl->script==0xffffffff )
+return( (FeatureScriptLangList *) -1 );
+	    if ( sltail==NULL )
+		fl->scripts = sl;
+	    else
+		sltail->next = sl;
+	    sltail = sl;
+	    langs = PySequence_GetItem(subs,1);
+	    if ( !PySequence_Check(langs)) {
+		PyErr_Format(PyExc_TypeError, "A language list is composed of a tuple of strings" );
+return( (FeatureScriptLangList *) -1 );
+	    } else if ( PySequence_Size(langs)==0 ) {
+		sl->lang_cnt = 1;
+		sl->langs[0] = DEFAULT_LANG;
+	    } else {
+		sl->lang_cnt = PySequence_Size(langs);
+		if ( sl->lang_cnt>MAX_LANG )
+		    sl->morelangs = galloc((sl->lang_cnt-MAX_LANG)*sizeof(uint32));
+		for ( l=0; l<sl->lang_cnt; ++l ) {
+		    uint32 lang = StrToTag(PyString_AsString(PySequence_GetItem(langs,l)),NULL);
+		    if ( lang==0xffffffff )
+return( (FeatureScriptLangList *) -1 );
+		    if ( l<MAX_LANG )
+			sl->langs[l] = lang;
+		    else
+			sl->morelangs[l-MAX_LANG] = lang;
+		}
+	    }
+	}
+    }
+return( flhead );
+}
+
+static PyObject *PyFFFont_addLookup(PyObject *self, PyObject *args) {
+    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+    OTLookup *otl, *after = NULL;
+    int itype;
+    char *lookup_str, *type, *after_str=NULL;
+    PyObject *flagtuple, *featlist;
+    int flags;
+    FeatureScriptLangList *fl;
+
+    if ( !PyArg_ParseTuple(args,"ssOO|s", &lookup_str, &type, &flags, &featlist, &after_str ))
+return( NULL );
+
+    otl = SFFindLookup(sf,lookup_str);
+    if ( otl!=NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "A lookup named %s already exists", lookup_str );
+return( NULL );
+    }
+    if ( after_str!=NULL ) {
+	after = SFFindLookup(sf,after_str);
+	if ( after!=NULL ) {
+	    PyErr_Format(PyExc_EnvironmentError, "No lookup named %s", after_str );
+return( NULL );
+	}
+    }
+
+    itype = FlagsFromString(type,lookup_types);
+    if ( itype==0x8000000 )
+return( NULL );
+
+    flags = ParseLookupFlags(sf,flagtuple);
+    if ( flags==-1 )
+return( NULL );
+
+    fl = PyParseFeatureList(featlist);
+    if ( fl==(FeatureScriptLangList *) -1 )
+return( NULL );
+
+    if ( after!=NULL && (after->lookup_type>=gpos_start)!=(itype>=gpos_start) ) {
+	PyErr_Format(PyExc_EnvironmentError, "After lookup, %s, is in a different table", after_str );
+return( NULL );
+    }
+
+    if ( sf->cidmaster ) sf = sf->cidmaster;
+
+    otl = chunkalloc(sizeof(OTLookup));
+    if ( after!=NULL ) {
+	otl->next = after->next;
+	after->next = otl;
+    } else if ( itype>=gpos_start ) {
+	otl->next = sf->gpos_lookups;
+	sf->gpos_lookups = otl;
+    } else {
+	otl->next = sf->gsub_lookups;
+	sf->gsub_lookups = otl;
+    }
+    otl->lookup_type = itype;
+    otl->lookup_flags = flags;
+    otl->lookup_name = copy(lookup_str);
+    otl->features = fl;
+    if ( fl!=NULL && (fl->featuretag==CHR('l','i','g','a') || fl->featuretag==CHR('r','l','i','g')))
+	otl->store_in_afm = true;
+Py_RETURN_NONE;
+}
+
+static PyObject *PyFFFont_lookupSetFeatureList(PyObject *self, PyObject *args) {
+    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+    OTLookup *otl;
+    char *lookup;
+    PyObject *featlist;
+    FeatureScriptLangList *fl;
+
+    if ( !PyArg_ParseTuple(args,"sO", &lookup, &featlist ))
+return( NULL );
+
+    otl = SFFindLookup(sf,lookup);
+    if ( otl==NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "No lookup named %s", lookup );
+return( NULL );
+    }
+
+    fl = PyParseFeatureList(featlist);
+    if ( fl==(FeatureScriptLangList *) -1 )
+return( NULL );
+
+    FeatureScriptLangListFree(otl->features);
+    otl->features = fl;
+Py_RETURN_NONE;
+}
+
+static PyObject *PyFFFont_lookupSetFlags(PyObject *self, PyObject *args) {
+    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+    OTLookup *otl;
+    char *lookup;
+    PyObject *flagtuple;
+    int flags;
+
+    if ( !PyArg_ParseTuple(args,"sO", &lookup, &flagtuple ))
+return( NULL );
+
+    otl = SFFindLookup(sf,lookup);
+    if ( otl==NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "No lookup named %s", lookup );
+return( NULL );
+    }
+
+    flags = ParseLookupFlags(sf,flagtuple);
+    if ( flags==-1 )
+return( NULL );
+
+    otl->lookup_flags = flags;
+Py_RETURN_NONE;
+}
+
+static PyObject *PyFFFont_lookupSetStoreLigatureInAfm(PyObject *self, PyObject *args) {
+    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+    OTLookup *otl;
+    char *lookup;
+    int store_it;
+
+    if ( !PyArg_ParseTuple(args,"si", &lookup, &store_it ))
+return( NULL );
+
+    otl = SFFindLookup(sf,lookup);
+    if ( otl==NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "No lookup named %s", lookup );
+return( NULL );
+    }
+    otl->store_in_afm = store_it;
+Py_RETURN_NONE;
+}
+
+static PyObject *PyFFFont_getLookupInfo(PyObject *self, PyObject *args) {
+    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+    OTLookup *otl;
+    char *lookup, *type;
+    int i, cnt;
+    PyObject *flags_tuple;
+    FeatureScriptLangList *fl;
+    struct scriptlanglist *sl;
+    int fcnt, scnt, l;
+    PyObject *farray, *sarray, *larray;
+
+    if ( !PyArg_ParseTuple(args,"s", &lookup ))
+return( NULL );
+
+    otl = SFFindLookup(sf,lookup);
+    if ( otl==NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "No lookup named %s", lookup );
+return( NULL );
+    }
+
+    for ( i=0; lookup_types[i].name!=NULL ; ++i )
+	if ( lookup_types[i].flag == otl->lookup_type )
+    break;
+    type = lookup_types[i].name;
+
+    cnt = ( otl->lookup_flags&0xff00 )!=0;
+    for ( i=0; i<4; ++i )
+	if ( otl->lookup_flags&(1<<i) )
+	    ++cnt;
+    flags_tuple = PyTuple_New(cnt);
+    cnt = 0;
+    if ( otl->lookup_flags&0xff00 )
+	PyTuple_SetItem(flags_tuple,cnt++,Py_BuildValue("s",sf->mark_class_names[ (otl->lookup_flags&0xff00)>>8 ]));
+    for ( i=0; i<4; ++i )
+	if ( otl->lookup_flags&(1<<i) )
+	    PyTuple_SetItem(flags_tuple,cnt++,Py_BuildValue("s",lookup_flags[i].name));
+
+    for ( fl=otl->features, fcnt=0; fl!=NULL; fl=fl->next, ++fcnt );
+    farray = PyTuple_New(fcnt);
+    for ( fl=otl->features, fcnt=0; fl!=NULL; fl=fl->next, ++fcnt ) {
+	for ( sl=fl->scripts, scnt=0; sl!=NULL; sl=sl->next, ++scnt );
+	sarray = PyTuple_New(scnt);
+	for ( sl=fl->scripts, scnt=0; sl!=NULL; sl=sl->next, ++scnt ) {
+	    larray = PyTuple_New(sl->lang_cnt);
+	    for ( l=0; l<sl->lang_cnt; ++l )
+		PyTuple_SetItem(larray,l,TagToPyString(l<MAX_LANG?sl->langs[l]:sl->morelangs[l-MAX_LANG],false));
+	    PyTuple_SetItem(sarray,scnt,Py_BuildValue("(sO)",
+		    TagToPyString(sl->script,false),larray));
+	}
+	PyTuple_SetItem(farray,fcnt,Py_BuildValue("(sO)",
+		TagToPyString(fl->featuretag,fl->ismac),sarray));
+    }
+return( Py_BuildValue("(sOO)",type,flags_tuple,farray) );
+}
+
+static PyObject *PyFFFont_addLookupSubtable(PyObject *self, PyObject *args) {
+    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+    char *lookup, *subtable, *after_str=NULL;
+
+    if ( !PyArg_ParseTuple(args,"ss|s", &lookup, &subtable, &after_str ))
+return( NULL );
+
+    if ( addLookupSubtable(sf, lookup, subtable, after_str)==NULL )
+return( NULL );
+
+Py_RETURN( self );
+}
+
+static PyObject *PyFFFont_getLookupSubtables(PyObject *self, PyObject *args) {
+    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+    char *lookup;
+    OTLookup *otl;
+    struct lookup_subtable *sub;
+    int cnt;
+    PyObject *tuple;
+
+    if ( !PyArg_ParseTuple(args,"s", &lookup ))
+return( NULL );
+
+    otl = SFFindLookup(sf,lookup);
+    if ( otl==NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "No lookup named %s", lookup );
+return( NULL );
+    }
+    for ( sub = otl->subtables, cnt=0; sub!=NULL; sub=sub->next, ++cnt );
+    tuple = PyTuple_New(cnt);
+    for ( sub = otl->subtables, cnt=0; sub!=NULL; sub=sub->next, ++cnt )
+	PyTuple_SetItem(tuple,cnt,Py_BuildValue("s",sub->subtable_name));
+return( tuple );
+}
+
+static PyObject *PyFFFont_getLookupSubtableAnchorClasses(PyObject *self, PyObject *args) {
+    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+    char *subtable;
+    struct lookup_subtable *sub;
+    AnchorClass *ac;
+    int cnt;
+    PyObject *tuple;
+
+    if ( !PyArg_ParseTuple(args,"s", &subtable ))
+return( NULL );
+
+    sub = SFFindLookupSubtable(sf,subtable);
+    if ( sub==NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "No lookup subtable named %s", subtable );
+return( NULL );
+    }
+    for ( ac = sf->anchor, cnt=0; ac!=NULL; ac=ac->next )
+	if ( ac->subtable == sub )
+	    ++cnt;
+    tuple = PyTuple_New(cnt);
+    for ( ac = sf->anchor, cnt=0; ac!=NULL; ac=ac->next )
+	if ( ac->subtable == sub )
+	    PyTuple_SetItem(tuple,cnt++,Py_BuildValue("s",ac->name));
+return( tuple );
+}
+
+static PyObject *PyFFFont_getLookupOfSubtable(PyObject *self, PyObject *args) {
+    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+    char *subtable;
+    struct lookup_subtable *sub;
+
+    if ( !PyArg_ParseTuple(args,"s", &subtable ))
+return( NULL );
+
+    sub = SFFindLookupSubtable(sf,subtable);
+    if ( sub==NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "No lookup subtable named %s", subtable );
+return( NULL );
+    }
+return( Py_BuildValue("s", sub->lookup->lookup_name ));
+}
+
+static PyObject *PyFFFont_getSubtableOfAnchor(PyObject *self, PyObject *args) {
+    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+    char *anchorclass;
+    AnchorClass *ac;
+
+    if ( !PyArg_ParseTuple(args,"s", &anchorclass ))
+return( NULL );
+
+    for ( ac=sf->anchor; ac!=NULL; ac=ac->next )
+	if ( strcmp(ac->name,anchorclass)==0 )
+return( Py_BuildValue("s", ac->subtable->subtable_name ));
+
+    PyErr_Format(PyExc_EnvironmentError, "No anchor class named %s", anchorclass );
+return( NULL );
+}
+
 static PyObject *PyFFFont_Save(PyObject *self, PyObject *args) {
     char *filename;
     char *locfilename = NULL, *pt;
     FontView *fv = ((PyFF_Font *) self)->fv;
     int s2d=false;
 
-    if ( PyTuple_Size(args)==1 ) {
+    if ( PySequence_Size(args)==1 ) {
 	if ( !PyArg_ParseTuple(args,"es","UTF-8",&filename) )
 return( NULL );
 	locfilename = utf82def_copy(filename);
@@ -6208,9 +7528,35 @@ static PyMethodDef PyFF_Font_methods[] = { /* !!!!! */
     { "mergeFonts", PyFFFont_MergeFonts, METH_VARARGS, "Merge two fonts" },
     { "interpolateFonts", PyFFFont_InterpolateFonts, METH_VARARGS, "Interpolate between two fonts returning a new one" },
     { "createChar", PyFFFont_CreateChar, METH_VARARGS, "Creates a (blank) glyph at the specified encoding" },
-    { "getTableInstructions", PyFFFont_GetTableAsInstrs, METH_VARARGS, "Returns a tuple of byte tt instructions for the requested truetype table (prep,fpgm)"},
-    { "setTableInstructions", PyFFFont_SetTableAsInstrs, METH_VARARGS, "Sets the instructions in the specified table to a tuple of byte tt instructions"},
-    NULL
+    { "getTableData", PyFFFont_GetTableData, METH_VARARGS, "Returns a tuple, one entry per byte (as unsigned integers) of the table"},
+    { "setTableData", PyFFFont_SetTableData, METH_VARARGS, "Sets the table to a tuple of bytes"},
+    { "addLookup", PyFFFont_addLookup, METH_VARARGS, "Add a new lookup"},
+    { "addLookupSubtable", PyFFFont_addLookupSubtable, METH_VARARGS, "Add a new lookup-subtable"},
+    { "addAnchorClass", PyFFFont_addAnchorClass, METH_VARARGS, "Add a new anchor class to the subtable"},
+    { "addKerningClass", PyFFFont_addKerningClass, METH_VARARGS, "Add a new subtable with a new kerning class to a lookup"},
+    { "alterKerningClass", PyFFFont_alterKerningClass, METH_VARARGS, "Changes the existing kerning class in the named subtable"},
+    { "getKerningClass", PyFFFont_getKerningClass, METH_VARARGS, "Returns the contents of the kerning class in the named subtable"},
+    { "getLookupInfo", PyFFFont_getLookupInfo, METH_VARARGS, "Get info about the named lookup" },
+    { "getLookupSubtables", PyFFFont_getLookupSubtables, METH_VARARGS, "Get a tuple of subtable names in a lookup" },
+    { "getLookupSubtableAnchorClasses", PyFFFont_getLookupSubtableAnchorClasses, METH_VARARGS, "Get a tuple of all anchor classes in a subtable" },
+    { "getLookupOfSubtable", PyFFFont_getLookupOfSubtable, METH_VARARGS, "Returns the name of the lookup containing this subtable" },
+    { "getSubtableOfAnchor", PyFFFont_getSubtableOfAnchor, METH_VARARGS, "Returns the name of the lookup subtable containing this anchor class" },
+    { "isKerningClass", PyFFFont_isKerningClass, METH_VARARGS, "Returns whether the named subtable contains a kerning class"},
+    { "isVerticalKerning", PyFFFont_isVerticalKerning, METH_VARARGS, "Returns whether the named subtable contains vertical kerning data"},
+    { "lookupSetFeatureList", PyFFFont_lookupSetFeatureList, METH_VARARGS, "Sets the feature, script, language list on a lookup" },
+    { "lookupSetFlags", PyFFFont_lookupSetFlags, METH_VARARGS, "Sets the lookup flags on a lookup" },
+    { "lookupSetStoreLigatureInAfm", PyFFFont_lookupSetStoreLigatureInAfm, METH_VARARGS, "Sets whether this ligature lookup contains data which should live in the afm file"},
+    { "mergeLookups", PyFFFont_mergeLookups, METH_VARARGS, "Merges two lookups" },
+    { "mergeLookupSubtables", PyFFFont_mergeLookupSubtables, METH_VARARGS, "Merges two lookup subtables" },
+    { "removeAnchorClass", PyFFFont_removeAnchorClass, METH_VARARGS, "Removes the named anchor class" },
+    { "removeLookup", PyFFFont_removeLookup, METH_VARARGS, "Removes the named lookup" },
+    { "removeLookupSubtable", PyFFFont_removeLookupSubtable, METH_VARARGS, "Removes the named lookup subtable" },
+
+/*HasPreservedTable(tag)*/
+/*LoadTableFromFile(tag,filename) */
+/*RemovePreservedTable(tag)*/
+/*SaveTableToFile(tag,filename)*/
+NULL
 };
 
 /* ************************************************************************** */
