@@ -4034,6 +4034,51 @@ return( soln!=0 );
 return( found!=0 );
 }
 
+int SplineSetIntersect(SplineSet *spl, Spline **_spline, Spline **_spline2) {
+    BasePoint pts[9];
+    extended t1s[10], t2s[10];
+    int found = false,i;
+    SplineSet *test, *test2;
+    Spline *spline, *spline2, *first, *first2;
+
+    for ( test=spl; test!=NULL ; test=test->next ) {
+	first = NULL;
+	for ( spline = test->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
+	    if ( first==NULL ) first = spline;
+	    for ( test2=test; test2!=NULL; test2=test2->next ) {
+		first2 = test2==test && first!=spline ? first : NULL;
+		for ( spline2=(test2==test)?spline : test2->first->next;
+			spline2!=NULL && spline2!=first2; spline2 = spline2->to->next ) {
+		    if ( first2==NULL ) first2 = spline2;
+		    if ( SplinesIntersect(spline,spline2,pts,t1s,t2s)) {
+			if ( spline->to->next!=spline2 && spline->from->prev!=spline2 )
+			    found = true;
+			else for ( i=0; i<10 && t1s[i]!=-1; ++i ) {
+			    if ( (t1s[i]<.9 && t1s[i]>.1) || (t2s[i]<.9 && t2s[i]>.1)) {
+				found = true;
+			break;
+			    }
+			}
+			if ( found )
+		break;
+		    }
+		}
+		if ( found )
+	    break;
+	    }
+	    if ( found )
+	break;
+	}
+	if ( found )
+    break;
+    }
+    if ( found ) {
+	*_spline = spline;
+	*_spline2 = spline2;
+    }
+return( found );
+}
+
 int LineTangentToSplineThroughPt(Spline *s, BasePoint *pt, extended ts[4],
 	extended tmin, extended tmax) {
     /* attempt to find a line though the point pt which is tangent to the spline */
@@ -4982,23 +5027,28 @@ return( NULL );
 return( new );
 }
 
-void KernClassListFree(KernClass *kc) {
+void KernClassFreeContents(KernClass *kc) {
     int i;
+
+    for ( i=1; i<kc->first_cnt; ++i )
+	free(kc->firsts[i]);
+    for ( i=1; i<kc->second_cnt; ++i )
+	free(kc->seconds[i]);
+    free(kc->firsts);
+    free(kc->seconds);
+    free(kc->offsets);
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    for ( i=kc->first_cnt*kc->second_cnt-1; i>=0 ; --i )
+	free(kc->adjusts[i].corrections);
+    free(kc->adjusts);
+#endif
+}
+
+void KernClassListFree(KernClass *kc) {
     KernClass *n;
 
     while ( kc ) {
-	for ( i=1; i<kc->first_cnt; ++i )
-	    free(kc->firsts[i]);
-	for ( i=1; i<kc->second_cnt; ++i )
-	    free(kc->seconds[i]);
-	free(kc->firsts);
-	free(kc->seconds);
-	free(kc->offsets);
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
-	for ( i=kc->first_cnt*kc->second_cnt-1; i>=0 ; --i )
-	    free(kc->adjusts[i].corrections);
-	free(kc->adjusts);
-#endif
+	KernClassFreeContents(kc);
 	n = kc->next;
 	chunkfree(kc,sizeof(KernClass));
 	kc = n;
@@ -5146,6 +5196,17 @@ EncMap *EncMapCopy(EncMap *map) {
 return( new );
 }
 
+void MarkClassFree(int cnt,char **classes,char **names) {
+    int i;
+
+    for ( i=1; i<cnt; ++i ) {
+	free( classes[i] );
+	free( names[i] );
+    }
+    free( classes );
+    free( names );
+}
+
 void SplineFontFree(SplineFont *sf) {
     int i;
     BDFFont *bdf, *bnext;
@@ -5198,12 +5259,7 @@ return;
     FPSTFree(sf->possub);
     ASMFree(sf->sm);
     OtfNameListFree(sf->fontstyle_name);
-    for ( i=1; i<sf->mark_class_cnt; ++i ) {
-	free( sf->mark_classes[i] );
-	free( sf->mark_class_names[i] );
-    }
-    free( sf->mark_classes );
-    free( sf->mark_class_names );
+    MarkClassFree(sf->mark_class_cnt,sf->mark_classes,sf->mark_class_names);
     free( sf->gasp );
     free(sf);
 }

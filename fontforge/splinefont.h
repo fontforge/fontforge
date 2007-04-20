@@ -1497,7 +1497,7 @@ extern void DStemInfosFree(DStemInfo *h);
 extern void DStemInfoFree(DStemInfo *h);
 extern void KernPairsFree(KernPair *kp);
 extern void SCOrderAP(SplineChar *sc);
-extern void AnchorPointsFree(AnchorPoint *kp);
+extern void AnchorPointsFree(AnchorPoint *ap);
 extern AnchorPoint *AnchorPointsCopy(AnchorPoint *alist);
 extern void SFRemoveAnchorClass(SplineFont *sf,AnchorClass *an);
 extern int AnchorClassesNextMerge(AnchorClass *ac);
@@ -1553,6 +1553,7 @@ extern RefChar *RefCharCreate(void);
 extern void SCAddRef(SplineChar *sc,SplineChar *rsc,real xoff, real yoff);
 extern void _SCAddRef(SplineChar *sc,SplineChar *rsc,real transform[6]);
 extern KernClass *KernClassCopy(KernClass *kc);
+extern void KernClassFreeContents(KernClass *kc);
 extern void KernClassListFree(KernClass *kc);
 extern int KernClassContains(KernClass *kc, char *name1, char *name2, int ordered );
 extern void OTLookupFree(OTLookup *lookup);
@@ -1577,6 +1578,7 @@ extern void ScriptLangListFree(struct scriptlanglist *sl);
 extern void FeatureScriptLangListFree(FeatureScriptLangList *fl);
 extern void SplineFontFree(SplineFont *sf);
 extern void OtfNameListFree(struct otfname *on);
+extern void MarkClassFree(int cnt,char **classes,char **names);
 extern void MMSetFreeContents(MMSet *mm);
 extern void MMSetFree(MMSet *mm);
 extern void SFRemoveUndoes(SplineFont *sf,uint8 *selected,EncMap *map);
@@ -1683,6 +1685,7 @@ extern void XLFD_CreateComponents(BDFFont *bdf,EncMap *map,int res,struct xlfd_c
 /* Two cubics intersect in at most 9 points */ /* Plus an extra space for a trailing -1 */
 extern int SplinesIntersect(const Spline *s1, const Spline *s2, BasePoint pts[9],
 	extended t1s[10], extended t2s[10]);
+extern int SplineSetIntersect(SplineSet *spl, Spline **_spline, Spline **_spline2 );
 extern int LineTangentToSplineThroughPt(Spline *s, BasePoint *pt, extended ts[4],
 	extended tmin, extended tmax);
 extern int CubicSolve(const Spline1D *sp,extended ts[3]);
@@ -2234,6 +2237,7 @@ extern struct lookup_subtable *SFSubTableMake(SplineFont *sf,uint32 tag,uint32 s
 extern OTLookup *OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf, OTLookup *from_otl);
 extern struct opentype_str *ApplyTickedFeatures(SplineFont *sf,uint32 *flist, uint32 script, uint32 lang,
 	SplineChar **glyphs);
+extern int VerticalKernFeature(SplineFont *sf, OTLookup *otl, int ask);
 
 extern int KCFindIndex(KernClass *kc,char *name1, char *name2);
 extern KernClass *SFFindKernClass(SplineFont *sf,SplineChar *first,SplineChar *last,
