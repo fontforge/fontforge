@@ -1118,7 +1118,7 @@ extern void FVTile(FontView *fv);
 extern void SCCharInfo(SplineChar *sc,EncMap *map,int enc);
 extern void CharInfoDestroy(struct charinfo *ci);
 extern SplineChar *SuffixCheck(SplineChar *sc,char *suffix);
-extern void SCSubtableDefaultSubsCheck(SplineChar *sc, struct lookup_subtable *sub, struct matrix_data *possub, int r);
+extern void SCSubtableDefaultSubsCheck(SplineChar *sc, struct lookup_subtable *sub, struct matrix_data *possub, int col_cnt, int r);
 extern void CVGetInfo(CharView *cv);
 extern void CVPGetInfo(CharView *cv);
 extern int  SCUsedBySubs(SplineChar *sc);
