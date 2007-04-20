@@ -491,7 +491,7 @@ return( tuple );
 static PyObject *PyFF_ParseTTFInstrs(PyObject *self, PyObject *args) {
     PyObject *binstr;
     char *instr_str;
-    int icnt, i;
+    int icnt;
     uint8 *instrs;
 
     if ( !PyArg_ParseTuple(args,"s",&instr_str) )
@@ -3140,7 +3140,6 @@ return( 0 );
 }
 
 static PyObject *PyFF_Glyph_get_ttfinstrs(PyFF_Glyph *self,void *closure) {
-    int cnt;
     SplineChar *sc = self->sc;
     PyObject *binstr;
 
@@ -6364,7 +6363,6 @@ static PyObject *PyFFFont_GetTableData(PyObject *self, PyObject *args) {
     uint32 tag;
     struct ttf_table *tab;
     PyObject *binstr;
-    int i;
 
     if ( !PyArg_ParseTuple(args,"s",&table_name) )
 return( NULL );
