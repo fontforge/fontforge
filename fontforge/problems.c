@@ -902,8 +902,8 @@ return( cnt );
 }
 
 static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
-    SplineSet *spl, *test, *test2;
-    Spline *spline, *first, *spline2, *first2;
+    SplineSet *spl, *test;
+    Spline *spline, *first;
     SplinePoint *sp, *nsp;
     int needsupdate=false, changed=false;
     StemInfo *h;
@@ -951,44 +951,12 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
     }
 
     if ( p->intersectingpaths && !p->finish ) {
-	BasePoint pts[9];
-	extended t1s[10], t2s[10];
-	int found = false,i;
-	for ( test=spl; test!=NULL ; test=test->next ) {
-	    first = NULL;
-	    for ( spline = test->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
-		if ( first==NULL ) first = spline;
-		for ( test2=test; test2!=NULL; test2=test2->next ) {
-		    first2 = test2==test && first!=spline ? first : NULL;
-		    for ( spline2=(test2==test)?spline : test2->first->next;
-			    spline2!=NULL && spline2!=first2; spline2 = spline2->to->next ) {
-			if ( first2==NULL ) first2 = spline2;
-			if ( SplinesIntersect(spline,spline2,pts,t1s,t2s)) {
-			    if ( spline->to->next!=spline2 && spline->from->prev!=spline2 )
-				found = true;
-			    else for ( i=0; i<10 && t1s[i]!=-1; ++i ) {
-				if ( (t1s[i]<.9 && t1s[i]>.1) || (t2s[i]<.9 && t2s[i]>.1)) {
-				    found = true;
-			    break;
-				}
-			    }
-			    if ( found )
-		    break;
-			}
-		    }
-		    if ( found )
-		break;
-		}
-		if ( found )
-	    break;
-	    }
-	    if ( found )
-	break;
-	}
+	Spline *s, *s2;
+	int found = SplineSetIntersect(spl,&s,&s2);
 	if ( found ) {
 	    changed = true;
-	    spline->from->selected = true; spline->to->selected = true;
-	    spline2->from->selected = true; spline2->to->selected = true;
+	    s->from->selected = true; s->to->selected = true;
+	    s2->from->selected = true; s2->to->selected = true;
 	    ExplainIt(p,sc,_("The paths that make up this glyph intersect one another"),0,0);
 	    if ( p->ignorethis ) {
 		p->intersectingpaths = false;

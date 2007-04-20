@@ -1269,6 +1269,18 @@ struct flaglist simplifyflags[] = {
     { NULL }
 };
 
+static PyObject *PyFFContour_selfIntersects(PyFF_Contour *self, PyObject *args) {
+    SplineSet *ss;
+    Spline *s, *s2;
+    PyObject *ret;
+
+    ss = SSFromContour(self,NULL);
+    ret = SplineSetIntersect(ss,&s,&s2) ? Py_True : Py_False;
+    SplinePointListFree(ss);
+    Py_INCREF( ret );
+return( ret );
+}
+
 static PyObject *PyFFContour_Simplify(PyFF_Contour *self, PyObject *args) {
     SplineSet *ss;
     static struct simplifyinfo smpl = { sf_normal,.75,.2,10 };
@@ -1629,6 +1641,8 @@ static PyMethodDef PyFFContour_methods[] = {
 	     "Determine if a contour is oriented in a clockwise direction. If the contour intersects itself the results are indeterminate." },
     {"merge", (PyCFunction)PyFFContour_Merge, METH_VARARGS,
 	     "Removes the specified on-curve point leaving the contour otherwise intact" },
+    {"selfIntersects", (PyCFunction)PyFFContour_selfIntersects, METH_NOARGS,
+	     "Returns whether this contour intersects itself" },
     {"simplify", (PyCFunction)PyFFContour_Simplify, METH_VARARGS,
 	     "Smooths a contour" },
     {"transform", (PyCFunction)PyFFContour_Transform, METH_VARARGS,
@@ -1935,6 +1949,18 @@ static PyObject *PyFFLayer_IsEmpty(PyFF_Layer *self) {
 return( Py_BuildValue("i",self->cntr_cnt==0 ) );
 }
 
+static PyObject *PyFFLayer_selfIntersects(PyFF_Layer *self, PyObject *args) {
+    SplineSet *ss;
+    Spline *s, *s2;
+    PyObject *ret;
+
+    ss = SSFromLayer(self);
+    ret = SplineSetIntersect(ss,&s,&s2) ? Py_True : Py_False;
+    SplinePointListFree(ss);
+    Py_INCREF( ret );
+return( ret );
+}
+
 static PyObject *PyFFLayer_Simplify(PyFF_Layer *self, PyObject *args) {
     SplineSet *ss;
     static struct simplifyinfo smpl = { sf_normal,.75,.2,10 };
@@ -2237,6 +2263,8 @@ static PyMethodDef PyFFLayer_methods[] = {
 	     "Returns whether a layer contains no contours" },
     {"simplify", (PyCFunction)PyFFLayer_Simplify, METH_VARARGS,
 	     "Smooths a layer" },
+    {"selfIntersects", (PyCFunction)PyFFLayer_selfIntersects, METH_NOARGS,
+	     "Returns whether this layer intersects itself" },
     {"transform", (PyCFunction)PyFFLayer_Transform, METH_VARARGS,
 	     "Transform a layer by a 6 element matrix." },
     {"addExtrema", (PyCFunction)PyFFLayer_AddExtrema, METH_VARARGS,
@@ -4168,6 +4196,33 @@ return( NULL );
 Py_RETURN_NONE;
 }
 
+static PyObject *PyFFGlyph_selfIntersects(PyObject *self, PyObject *args) {
+    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
+    Spline *s, *s2;
+    PyObject *ret;
+
+    ret = SplineSetIntersect(sc->layers[ly_fore].splines,&s,&s2) ? Py_True : Py_False;
+    Py_INCREF( ret );
+return( ret );
+}
+#if 0
+static PyObject *PyFFGLyph_Transform(PyFF_Layer *self, PyObject *args) {
+    SplineChar *sc = ((PyFF_Glyph *) self)->sc, *osc;
+    int i, j;
+    double m[6];
+    PyFF_Contour *cntr;
+
+    if ( !PyArg_ParseTuple(args,"(dddddd)",&m[0], &m[1], &m[2], &m[3], &m[4], &m[5]) )
+return( NULL );
+    for ( i=0; i<self->cntr_cnt; ++i ) {
+	cntr = self->contours[i];
+	for ( j=0; j<cntr->pt_cnt; ++j )
+	    PyFF_TransformPoint(cntr->points[j],m);
+    }
+Py_RETURN( self );
+}
+#endif
+
 static PyMethodDef PyFF_Glyph_methods[] = {
     { "glyphPen", (PyCFunction) PyFFGlyph_GlyphPen, METH_VARARGS | METH_KEYWORDS, "Create a pen object which can draw into this glyph"},
     { "draw", (PyCFunction) PyFFGlyph_draw, METH_VARARGS , "Draw the glyph's outline to the pen argument"},
@@ -4183,6 +4238,10 @@ static PyMethodDef PyFF_Glyph_methods[] = {
     { "getPosSub", PyFFGlyph_getPosSub, METH_VARARGS, "Gets position/substitution data from the glyph"},
     { "import", PyFFGlyph_export, METH_VARARGS, "Import a background image or a foreground eps/svg/etc. (provide the filename of the image file)" },
     { "removePosSub", PyFFGlyph_removePosSub, METH_VARARGS, "Removes position/substitution data from the glyph"},
+    { "selfIntersects", (PyCFunction)PyFFGlyph_selfIntersects, METH_NOARGS, "Returns whether this glyph intersects itself" },
+#if 0
+    { "transform", (PyCFunction)PyFFGlyph_Transform, METH_VARARGS, "Transform a glyph by a 6 element matrix." },
+#endif
     { "unlinkRef", PyFFGlyph_unlinkRef, METH_VARARGS, "Unlink a reference and turn it into outlines"},
     NULL
 };
