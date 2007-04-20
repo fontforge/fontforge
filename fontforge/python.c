@@ -4200,8 +4200,11 @@ static PyObject *PyFFGlyph_selfIntersects(PyObject *self, PyObject *args) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     Spline *s, *s2;
     PyObject *ret;
+    SplineSet *ss;
 
-    ret = SplineSetIntersect(sc->layers[ly_fore].splines,&s,&s2) ? Py_True : Py_False;
+    ss = LayerAllSplines(&sc->layers[ly_fore]);
+    ret = SplineSetIntersect(ss,&s,&s2) ? Py_True : Py_False;
+    LayerUnAllSplines(&sc->layers[ly_fore]);
     Py_INCREF( ret );
 return( ret );
 }
