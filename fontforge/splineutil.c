@@ -4034,6 +4034,49 @@ return( soln!=0 );
 return( found!=0 );
 }
 
+/* Puts all the contours of the glyph together. Next routine undoes this */
+SplineSet *LayerAllSplines(Layer *layer) {
+    SplineSet *head=NULL, *last=NULL;
+    RefChar *r;
+
+    head = layer->splines;
+    if ( head!=NULL )
+	for ( last=head; last->next!=NULL; last = last->next );
+    for ( r=layer->refs; r!=NULL; r=r->next ) {
+	if ( last!=NULL ) {
+	    last->next = r->layers[0].splines;
+	    for ( ; last->next!=NULL; last=last->next );
+	} else {
+	    head = r->layers[0].splines;
+	    if ( head!=NULL )
+		for ( last=head; last->next!=NULL; last = last->next );
+	}
+    }
+return( head );
+}
+
+SplineSet *LayerUnAllSplines(Layer *layer) {
+    SplineSet *spl = layer->splines;
+    RefChar *r = layer->refs;
+
+    if ( spl==NULL ) {
+	while ( r!=NULL && r->layers[0].splines==NULL )
+	    r = r->next;
+	if ( r==NULL )
+return( NULL );
+	spl = r->layers[0].splines;
+	r = r->next;
+    }
+    while ( r!=NULL ) {
+	while ( spl!=NULL && spl->next!=r->layers[0].splines )
+	    spl = spl->next;
+	spl->next = NULL;
+	spl = r->layers[0].splines;
+	r = r->next;
+    }
+return( layer->splines );
+}
+
 int SplineSetIntersect(SplineSet *spl, Spline **_spline, Spline **_spline2) {
     BasePoint pts[9];
     extended t1s[10], t2s[10];

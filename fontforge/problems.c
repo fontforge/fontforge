@@ -901,17 +901,38 @@ static int SPLPointCnt(SplinePointList *spl) {
 return( cnt );
 }
 
+static RefChar *FindRefOfSplineInLayer(Layer *layer,Spline *spline) {
+    RefChar *r;
+    SplineSet *ss;
+    Spline *s, *first;
+
+    for ( r=layer->refs; r!=NULL; r=r->next ) {
+	for ( ss=r->layers[0].splines; ss!=NULL; ss=ss->next ) {
+	    first = NULL;
+	    for ( s=ss->first->next ; s!=NULL && s!=first; s=s->to->next ) {
+		if ( first==NULL ) first = s;
+		if ( s==spline )
+return( r );
+	    }
+	}
+    }
+return( NULL );
+}
+
 static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
     SplineSet *spl, *test;
     Spline *spline, *first;
+    Layer *cur;
     SplinePoint *sp, *nsp;
     int needsupdate=false, changed=false;
     StemInfo *h;
+    RefChar *r1, *r2;
 
   restart:
     if ( cv!=NULL ) {
 	needsupdate = CVClearSel(cv);
-	spl = cv->layerheads[cv->drawmode]->splines;
+	cur = cv->layerheads[cv->drawmode];
+	spl = cur->splines;
 	sc = cv->sc;
     } else {
 	for ( spl = sc->layers[ly_fore].splines; spl!=NULL; spl = spl->next ) {
@@ -923,7 +944,8 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		if ( first==NULL ) first = spline;
 	    }
 	}
-	spl = sc->layers[ly_fore].splines;
+	cur = &sc->layers[ly_fore];
+	spl = cur->splines;
     }
     p->sc = sc;
     if (( p->ptnearhint || p->hintwidthnearval || p->hintwithnopt ) &&
@@ -952,11 +974,22 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 
     if ( p->intersectingpaths && !p->finish ) {
 	Spline *s, *s2;
-	int found = SplineSetIntersect(spl,&s,&s2);
+	int found;
+	spl = LayerAllSplines(cur);
+	found = SplineSetIntersect(spl,&s,&s2);
+	spl = LayerUnAllSplines(cur);
 	if ( found ) {
 	    changed = true;
-	    s->from->selected = true; s->to->selected = true;
-	    s2->from->selected = true; s2->to->selected = true;
+	    if ( (r1 = FindRefOfSplineInLayer(cur,s))!=NULL )
+		r1->selected = true;
+	    else {
+		s->from->selected = true; s->to->selected = true;
+	    }
+	    if ( (r2 = FindRefOfSplineInLayer(cur,s2))!=NULL )
+		r2->selected = true;
+	    else {
+		s2->from->selected = true; s2->to->selected = true;
+	    }
 	    ExplainIt(p,sc,_("The paths that make up this glyph intersect one another"),0,0);
 	    if ( p->ignorethis ) {
 		p->intersectingpaths = false;
