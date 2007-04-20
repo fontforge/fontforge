@@ -79,6 +79,7 @@ typedef struct mlist {
 			/* always have right spline. we fix when we need it */
     extended t;
     int isend;
+    BasePoint unit;
     struct mlist *next;
 } MList;
 
@@ -1534,6 +1535,38 @@ return;
     free(gaps);
 }
 
+static void FindUnitVectors(Intersection *ilist) {
+    MList *ml;
+    Intersection *il;
+    BasePoint u;
+    double len;
+
+    for ( il=ilist; il!=NULL; il=il->next ) {
+	for ( ml=il->monos; ml!=NULL; ml=ml->next ) {
+	    if ( ml->m->isneeded ) {
+		Spline *s = ml->m->s;
+		double t1, t2;
+		t1 = ml->t;
+		if ( ml->isend )
+		    t2 = ml->t - (ml->t-ml->m->tstart)/20.0;
+		else
+		    t2 = ml->t + (ml->m->tend-ml->t)/20.0;
+		u.x = ((s->splines[0].a*t1 + s->splines[0].b)*t1 + s->splines[0].c)*t1 -
+			((s->splines[0].a*t2 + s->splines[0].b)*t2 + s->splines[0].c)*t2;
+		u.y = ((s->splines[1].a*t1 + s->splines[1].b)*t1 + s->splines[1].c)*t1 -
+			((s->splines[1].a*t2 + s->splines[1].b)*t2 + s->splines[1].c)*t2;
+		len = u.x*u.x + u.y*u.y;
+		if ( len!=0 ) {
+		    len = sqrt(len);
+		    u.x /= len;
+		    u.y /= len;
+		}
+		ml->unit = u;
+	    }
+	}
+    }
+}
+
 static void TestForBadDirections(Intersection *ilist) {
     /* If we have a glyph with at least two contours one drawn clockwise, */
     /*  one counter, and these two intersect, then our algorithm will */
@@ -1661,8 +1694,37 @@ return( true );
 return( false );
 }
 
+static MList *FindMLOfM(Intersection *curil,Monotonic *finalm) {
+    MList *ml;
+    Monotonic *m;
+
+    for ( ml=curil->monos; ml!=NULL; ml=ml->next ) {
+	if ( ml->m==finalm )
+return( ml );
+    }
+#if 0
+	if ( ml->isend ) {
+	    for ( m=ml->m; m!=NULL ; m=m->prev ) {
+		if ( m==finalm )
+return( ml );
+		if ( m->start != NULL )
+	    break;
+	    }
+	} else {
+	    for ( m=ml->m; m!=NULL; m=m->next ) {
+		if ( m==finalm )
+return( ml );
+		if ( m->end!=NULL )
+	    break;
+	    }
+	}
+    }
+#endif
+return( NULL );
+}
+
 static SplinePoint *MonoFollowForward(Intersection **curil, MList *ml,
-	SplinePoint *last) {
+	SplinePoint *last, Monotonic **finalm) {
     SplinePoint *mid;
     Monotonic *m = ml->m, *mstart;
 
@@ -1694,6 +1756,7 @@ static SplinePoint *MonoFollowForward(Intersection **curil, MList *ml,
 	last = mid;
 	if ( m->end!=NULL ) {
 	    *curil = m->end;
+	    *finalm = m;
 return( last );
 	}
 	m = m->next;
@@ -1701,7 +1764,7 @@ return( last );
 }
 
 static SplinePoint *MonoFollowBackward(Intersection **curil, MList *ml,
-	SplinePoint *last) {
+	SplinePoint *last, Monotonic **finalm) {
     SplinePoint *mid;
     Monotonic *m = ml->m, *mstart;
 
@@ -1734,6 +1797,7 @@ static SplinePoint *MonoFollowBackward(Intersection **curil, MList *ml,
 	last = mid;
 	if ( m->start!=NULL ) {
 	    *curil = m->start;
+	    *finalm = m;
 return( last );
 	}
 	m = m->prev;
@@ -1745,15 +1809,18 @@ static SplineSet *JoinAContour(Intersection *startil,MList *ml) {
     SplinePoint *last;
     Intersection *curil;
     int allexclude = ml->m->exclude;
+    Monotonic *finalm;
+    MList *lastml;
 
     ss->first = last = SplinePointCreate(startil->inter.x,startil->inter.y);
     curil = startil;
     forever {
 	if ( allexclude && !ml->m->exclude ) allexclude = false;
+	finalm = NULL;
 	if ( ml->m->start==curil ) {
-	    last = MonoFollowForward(&curil,ml,last);
+	    last = MonoFollowForward(&curil,ml,last,&finalm);
 	} else if ( ml->m->end==curil ) {
-	    last = MonoFollowBackward(&curil,ml,last);
+	    last = MonoFollowBackward(&curil,ml,last,&finalm);
 	} else {
 	    SOError( "Couldn't find endpoint (%g,%g).\n",
 		    curil->inter.x, curil->inter.y );
@@ -1770,10 +1837,31 @@ static SplineSet *JoinAContour(Intersection *startil,MList *ml) {
 	    ss->last = ss->first;
     break;
 	}
-	/* Try to preserve direction */
-	for ( ml=curil->monos; ml!=NULL && (!ml->m->isneeded || ml->m->end==curil); ml=ml->next );
-	if ( ml==NULL )
-	    for ( ml=curil->monos; ml!=NULL && !ml->m->isneeded; ml=ml->next );
+	lastml = FindMLOfM(curil,finalm);
+	if ( lastml==NULL ) {
+	    IError("Could not find finalm");
+	    /* Try to preserve direction */
+	    for ( ml=curil->monos; ml!=NULL && (!ml->m->isneeded || ml->m->end==curil); ml=ml->next );
+	    if ( ml==NULL )
+		for ( ml=curil->monos; ml!=NULL && !ml->m->isneeded; ml=ml->next );
+	} else {
+	    int k; MList *bestml; double bestdot;
+	    for ( k=0; k<2; ++k ) {
+		bestml = NULL; bestdot = -2;
+		for ( ml=curil->monos; ml!=NULL ; ml=ml->next ) {
+		    if ( ml->m->isneeded && (ml->m->start==curil || k) ) {
+			double dot = lastml->unit.x*ml->unit.x + lastml->unit.y*ml->unit.y;
+			if ( dot>bestdot ) {
+			    bestml = ml;
+			    bestdot = dot;
+			}
+		    }
+		}
+		if ( bestml!=NULL )
+	    break;
+	    }
+	    ml = bestml;
+	}
 	if ( ml==NULL ) {
 	    for ( ml=curil->monos; ml!=NULL ; ml=ml->next )
 		if ( ml->m->isunneeded && ml->m->start==curil &&
@@ -2236,6 +2324,7 @@ SplineSet *SplineSetRemoveOverlap(SplineChar *sc, SplineSet *base,enum overlap_t
 	ret = base;
     } else {
 	FindNeeded(ms,ot);
+	FindUnitVectors(ilist);
 	if ( ot==over_remove || ot == over_rmselected )
 	    TestForBadDirections(ilist);
 	ret = JoinAllNeeded(ilist);
