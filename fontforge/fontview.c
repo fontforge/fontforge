@@ -2862,6 +2862,13 @@ static void KCTrans(KernClass *kc,double scale) {
 	kc->offsets[i] = rint(scale*kc->offsets[i]);
 }
 
+/* If sel is specified then we decide how to transform references based on */
+/*  whether the refered glyph is selected. (If we tranform a reference that */
+/*  is selected we are, in effect, transforming it twice -- since the glyph */
+/*  itself will be transformed -- so instead we just transform the offsets */
+/*  of the reference */
+/* If sel is NULL then we transform the reference */
+/* if flags&fvt_partialreftrans then we always just transform the offsets */
 void FVTrans(FontView *fv,SplineChar *sc,real transform[6], uint8 *sel,
 	enum fvtrans_flags flags) {
     RefChar *refs;
@@ -2909,7 +2916,8 @@ void FVTrans(FontView *fv,SplineChar *sc,real transform[6], uint8 *sel,
     for ( i=ly_fore; i<sc->layer_cnt; ++i ) {
 	SplinePointListTransform(sc->layers[i].splines,transform,true);
 	for ( refs = sc->layers[i].refs; refs!=NULL; refs=refs->next ) {
-	    if ( sel!=NULL && sel[fv->map->backmap[refs->sc->orig_pos]] ) {
+	    if ( (sel!=NULL && sel[fv->map->backmap[refs->sc->orig_pos]]) ||
+		    (flags&fvt_partialreftrans)) {
 		/* if the character referred to is selected then it's going to */
 		/*  be scaled too (or will have been) so we don't want to scale */
 		/*  it twice */
