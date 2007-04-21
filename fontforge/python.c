@@ -4208,23 +4208,32 @@ static PyObject *PyFFGlyph_selfIntersects(PyObject *self, PyObject *args) {
     Py_INCREF( ret );
 return( ret );
 }
-#if 0
-static PyObject *PyFFGLyph_Transform(PyFF_Layer *self, PyObject *args) {
-    SplineChar *sc = ((PyFF_Glyph *) self)->sc, *osc;
-    int i, j;
-    double m[6];
-    PyFF_Contour *cntr;
 
-    if ( !PyArg_ParseTuple(args,"(dddddd)",&m[0], &m[1], &m[2], &m[3], &m[4], &m[5]) )
+static struct flaglist trans_flags[] = {
+    { "partialRefs", fvt_partialreftrans },
+    { "round", fvt_round_to_int },
+    NULL };
+
+static PyObject *PyFFGlyph_Transform(PyFF_Layer *self, PyObject *args) {
+    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
+    int i;
+    double m[6];
+    real t[6];
+    int flags;
+    PyObject *flagO=NULL;
+
+    if ( !PyArg_ParseTuple(args,"(dddddd)|O",&m[0], &m[1], &m[2], &m[3], &m[4], &m[5],
+	    &flagO) )
 return( NULL );
-    for ( i=0; i<self->cntr_cnt; ++i ) {
-	cntr = self->contours[i];
-	for ( j=0; j<cntr->pt_cnt; ++j )
-	    PyFF_TransformPoint(cntr->points[j],m);
-    }
+    flags = FlagsFromTuple(flagO,trans_flags);
+    if ( flags==0x80000000 )
+return( NULL );
+    flags |= fvt_dobackground;
+    for ( i=0; i<6; ++i )
+	t[i] = m[i];
+    FVTrans(sc->parent->fv,sc,t,NULL,flags);
 Py_RETURN( self );
 }
-#endif
 
 static PyMethodDef PyFF_Glyph_methods[] = {
     { "glyphPen", (PyCFunction) PyFFGlyph_GlyphPen, METH_VARARGS | METH_KEYWORDS, "Create a pen object which can draw into this glyph"},
@@ -4242,9 +4251,7 @@ static PyMethodDef PyFF_Glyph_methods[] = {
     { "import", PyFFGlyph_export, METH_VARARGS, "Import a background image or a foreground eps/svg/etc. (provide the filename of the image file)" },
     { "removePosSub", PyFFGlyph_removePosSub, METH_VARARGS, "Removes position/substitution data from the glyph"},
     { "selfIntersects", (PyCFunction)PyFFGlyph_selfIntersects, METH_NOARGS, "Returns whether this glyph intersects itself" },
-#if 0
     { "transform", (PyCFunction)PyFFGlyph_Transform, METH_VARARGS, "Transform a glyph by a 6 element matrix." },
-#endif
     { "unlinkRef", PyFFGlyph_unlinkRef, METH_VARARGS, "Unlink a reference and turn it into outlines"},
     NULL
 };
