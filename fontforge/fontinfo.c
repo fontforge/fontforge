@@ -2095,17 +2095,6 @@ static void GFI_Close(struct gfi_data *d) {
     /* d will be freed by destroy event */;
 }
 
-static void MarkClassFree(int cnt,char **classes,char **names) {
-    int i;
-
-    for ( i=1; i<cnt; ++i ) {
-	free( classes[i] );
-	free( names[i] );
-    }
-    free( classes );
-    free( names );
-}
-
 static void GFI_CancelClose(struct gfi_data *d) {
     int isgpos,i,j;
 
