@@ -6551,7 +6551,7 @@ return( NULL );
 return( NewSubtable(found,isgpos,sf,sd));
 }
 
-static int VerticalKernFeature(SplineFont *sf, OTLookup *otl) {
+int VerticalKernFeature(SplineFont *sf, OTLookup *otl, int ask) {
     FeatureScriptLangList *fl;
     struct lookup_subtable *sub;
     KernClass *kc;
@@ -6574,6 +6574,9 @@ return( false );
 return( true );
 	}
     }
+
+    if ( !ask )
+return( -1 );
 
     buts[0] = _("_Horizontal"); buts[1] = _("_Vertical"); buts[2] = NULL;
 return( gwwv_ask(_("Kerning direction"),(const char **) buts,0,1,_("Is this horizontal or vertical kerning data?")) );
@@ -6620,7 +6623,7 @@ void _LookupSubtableContents(SplineFont *sf, struct lookup_subtable *sub,
 	else if ( sd!=NULL && sd->flags&sdf_horizontalkern )
 	    sub->vertical_kerning = false;
 	else
-	    sub->vertical_kerning = VerticalKernFeature(sf,sub->lookup);
+	    sub->vertical_kerning = VerticalKernFeature(sf,sub->lookup,true);
 
 	if ( sd!=NULL && sd->flags&sdf_kernclass )
 	    asked = 1;
