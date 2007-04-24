@@ -100,7 +100,7 @@ return;
 
 static void PfEd_GlyphComments(SplineFont *sf, struct PfEd_subtabs *pfed,
 	struct glyphinfo *gi ) {
-    int i, j, k, any, cnt, last, skipped, subcnt;
+    int i, j, k, any, cnt, last, skipped;
     uint32 offset;
     SplineChar *sc, *sc2;
     FILE *cmnt;
@@ -132,10 +132,9 @@ return;
 	    sc=sf->glyphs[gi->bygid[i]];
 	    if ( sc!=NULL && sc->comment!=NULL ) {
 		last = i; skipped = false;
-		subcnt = 1;
 		for ( k=i+1; k<gi->gcnt; ++k ) {
 		    if ( gi->bygid[k]!=-1 )
-			sc2 = sf->glyphs[gi->bygid[i]];
+			sc2 = sf->glyphs[gi->bygid[k]];
 		    if ( (gi->bygid[k]==-1 || sc2->comment==NULL) && skipped )
 		break;
 		    if ( gi->bygid[k]!=-1 && sc2->comment!=NULL ) {
@@ -143,14 +142,13 @@ return;
 			skipped = false;
 		    } else
 			skipped = true;
-		    ++subcnt;
 		}
 		++cnt;
 		if ( j==1 ) {
 		    putshort(cmnt,i);
 		    putshort(cmnt,last);
 		    putlong(cmnt,offset);
-		    offset += sizeof(uint32)*(subcnt+1);
+		    offset += sizeof(uint32)*(last-i+2);
 		} else if ( j==2 ) {
 		    for ( ; i<=last; ++i ) {
 			if ( gi->bygid[i]==-1 || (sc=sf->glyphs[gi->bygid[i]])->comment==NULL )
@@ -300,6 +298,9 @@ static char *ReadUnicodeStr(FILE *ttf,uint32 offset,int len) {
     uint32 uch, uch2;
     int i;
 
+    if ( len<0 )
+return( NULL );
+
     len>>=1;
     pt = str = galloc(3*len);
     fseek(ttf,offset,SEEK_SET);
@@ -345,6 +346,9 @@ return;			/* Bad version number */
 	    offset = getlong(ttf);
 	    next = getlong(ttf);
 	    info->chars[j]->comment = ReadUnicodeStr(ttf,base+offset,next-offset);
+	    if ( info->chars[j]->comment == NULL )
+		LogError("Invalid comment string (negative length?) in 'PfEd' table for glyph %s.",
+			info->chars[j]->name );
 	}
     }
     free(grange);
