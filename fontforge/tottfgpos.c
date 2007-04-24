@@ -2534,8 +2534,11 @@ static FILE *G___figureLookups(SplineFont *sf,int is_gpos,
     for ( otl=all; otl!=NULL; otl=otl->next ) {
 	if ( otl->unused || OnlyMac(otl,all))
 	    otl->lookup_index = -1;
-	else {
+	else
 	    otl->lookup_index = index++;
+    }
+    for ( otl=all; otl!=NULL; otl=otl->next ) {
+	if ( otl->lookup_index!=-1 ) {
 	    otl->lookup_offset = ftell(lfile);
 	    for ( sub = otl->subtables; sub!=NULL; sub=sub->next ) {
 		sub->extra_subtables = NULL;
