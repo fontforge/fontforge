@@ -3150,7 +3150,7 @@ docs are wrong.
     os2->linegap = sf->pfminfo.os2_typolinegap;
     os2->sFamilyClass = sf->pfminfo.os2_family_class;
 
-    avg1 = avg2 = last = 0; first = 0x10000;
+    avg1 = avg2 = last = 0; first = 0xffff;
     cnt1 = cnt2 = 0;
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
 	if ( SCWorthOutputting(sf->glyphs[i]) &&
@@ -3164,9 +3164,18 @@ docs are wrong.
 		    os2->unicoderange[bit>>5] |= (1<<(bit&31));
 	    break;
 		}
+	    /* Don't include the dummy glyphs (.notdef, .null, etc.) they aren't */
+	    /*  really encoded. Don't include glyphs out of BMP, OS/2 uses shorts */
+	    /*  for the first/last char and can't represent them. */
+	    /* If no BMP glyphs, then first should be 0xffff. If any outside */
+	    /*  BMP then last is 0xffff */
 	    if ( sf->glyphs[i]->ttf_glyph>2 ) {
-		if ( sf->glyphs[i]->unicodeenc<first ) first = sf->glyphs[i]->unicodeenc;
-		if ( sf->glyphs[i]->unicodeenc>last ) last = sf->glyphs[i]->unicodeenc;
+		if ( sf->glyphs[i]->unicodeenc<=0xffff ) {
+		    if ( sf->glyphs[i]->unicodeenc<first ) first = sf->glyphs[i]->unicodeenc;
+		    if ( sf->glyphs[i]->unicodeenc>last ) last = sf->glyphs[i]->unicodeenc;
+		} else {
+		    last = 0xffff;
+		}
 	    }
 	    if ( sf->glyphs[i]->width!=0 ) {
 		avg2 += sf->glyphs[i]->width; ++cnt2;
