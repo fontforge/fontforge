@@ -5639,6 +5639,8 @@ static void CVSelectInvert(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void CVSelectWidth(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
+    if ( HasUseMyMetrics(cv->sc)!=NULL )
+return;
     cv->widthsel = !cv->widthsel;
     cv->oldwidth = cv->sc->width;
     SCUpdateAll(cv->sc);
@@ -5647,6 +5649,8 @@ static void CVSelectWidth(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void CVSelectVWidth(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     if ( !cv->showvmetrics || !cv->sc->parent->hasvmetrics )
+return;
+    if ( HasUseMyMetrics(cv->sc)!=NULL )
 return;
     cv->vwidthsel = !cv->widthsel;
     cv->oldvwidth = cv->sc->vwidth;
@@ -7601,6 +7605,7 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void mtlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
+    RefChar *r = HasUseMyMetrics(cv->sc);
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
@@ -7611,10 +7616,13 @@ static void mtlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = cv->sc->vkerns==NULL;
 	  break;
 	  case MID_SetVWidth:
-	    mi->ti.disabled = !cv->sc->parent->hasvmetrics;
+	    mi->ti.disabled = !cv->sc->parent->hasvmetrics || r!=NULL;
 	  break;
 	  case MID_AnchorsAway:
 	    mi->ti.disabled = cv->sc->anchor==NULL;
+	  break;
+	  case MID_SetWidth: case MID_SetLBearing: case MID_SetRBearing:
+	    mi->ti.disabled = r!=NULL;
 	  break;
 	}
     }
@@ -7639,6 +7647,8 @@ static void cv_sllistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_SelectWidth:
 	    mi->ti.disabled = !cv->showhmetrics;
+	    if ( HasUseMyMetrics(cv->sc)!=NULL )
+		mi->ti.disabled = true;
 	    if ( !mi->ti.disabled ) {
 		free(mi->ti.text);
 		mi->ti.text = utf82u_copy(cv->widthsel?_("Deselect Width"):_("Width"));
@@ -7646,6 +7656,8 @@ static void cv_sllistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_SelectVWidth:
 	    mi->ti.disabled = !cv->showvmetrics || !cv->sc->parent->hasvmetrics;
+	    if ( HasUseMyMetrics(cv->sc)!=NULL )
+		mi->ti.disabled = true;
 	    if ( !mi->ti.disabled ) {
 		free(mi->ti.text);
 		mi->ti.text = utf82u_copy(cv->vwidthsel?_("Deselect VWidth"):_("VWidth"));
