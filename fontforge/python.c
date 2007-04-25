@@ -3085,8 +3085,6 @@ static PyObject *PyFF_Glyph_get_originalgid(PyFF_Glyph *self,void *closure) {
 return( Py_BuildValue("i", self->sc->orig_pos ));
 }
 
-/* Can't set original gid */
-
 static PyObject *PyFF_Glyph_get_width(PyFF_Glyph *self,void *closure) {
 
 return( Py_BuildValue("i", self->sc->width ));
@@ -3098,7 +3096,55 @@ static int PyFF_Glyph_set_width(PyFF_Glyph *self,PyObject *value,void *closure) 
     val = PyInt_AsLong(value);
     if ( PyErr_Occurred()!=NULL )
 return( -1 );
-    self->sc->width = val;
+    SCSynchronizeWidth(self->sc,val,self->sc->width,self->sc->parent->fv);
+return( 0 );
+}
+
+static PyObject *PyFF_Glyph_get_lsb(PyFF_Glyph *self,void *closure) {
+    DBounds b;
+
+    SplineCharFindBounds(self->sc,&b);
+
+return( Py_BuildValue("d", b.minx ));
+}
+
+static int PyFF_Glyph_set_lsb(PyFF_Glyph *self,PyObject *value,void *closure) {
+    int val;
+    real trans[6];
+    DBounds b;
+    SplineChar *sc = self->sc;
+
+    val = PyInt_AsLong(value);
+    if ( PyErr_Occurred()!=NULL )
+return( -1 );
+    SplineCharFindBounds(sc,&b);
+
+    memset(trans,0,sizeof(trans));
+    trans[0] = trans[3] = 1.0;
+    trans[4] = val - b.minx;
+    if ( trans[4]!=0 )
+	FVTrans(sc->parent->fv,sc,trans,NULL,fvt_dobackground);
+return( 0 );
+}
+
+static PyObject *PyFF_Glyph_get_rsb(PyFF_Glyph *self,void *closure) {
+    DBounds b;
+
+    SplineCharFindBounds(self->sc,&b);
+
+return( Py_BuildValue("d", self->sc->width - b.maxx ));
+}
+
+static int PyFF_Glyph_set_rsb(PyFF_Glyph *self,PyObject *value,void *closure) {
+    int val;
+    DBounds b;
+
+    val = PyInt_AsLong(value);
+    if ( PyErr_Occurred()!=NULL )
+return( -1 );
+
+    SplineCharFindBounds(self->sc,&b);
+    SCSynchronizeWidth(self->sc,rint( val+b.maxx ),self->sc->width,self->sc->parent->fv);
 return( 0 );
 }
 
@@ -3593,6 +3639,12 @@ static PyGetSetDef PyFF_Glyph_getset[] = {
     {"width",
 	 (getter)PyFF_Glyph_get_width, (setter)PyFF_Glyph_set_width,
 	 "Glyph's advance width", NULL},
+    {"left_side_bearing",
+	 (getter)PyFF_Glyph_get_lsb, (setter)PyFF_Glyph_set_lsb,
+	 "Glyph's left side bearing", NULL},
+    {"right_side_bearing",
+	 (getter)PyFF_Glyph_get_rsb, (setter)PyFF_Glyph_set_rsb,
+	 "Glyph's right side bearing", NULL},
     {"vwidth",
 	 (getter)PyFF_Glyph_get_vwidth, (setter)PyFF_Glyph_set_vwidth,
 	 "Glyph's vertical advance width", NULL},
@@ -7576,7 +7628,7 @@ return( NULL );
 return( PyFV_From_FV_I(newfv));
 }
 
-static PyObject *PyFFFont_CreateChar(PyObject *self, PyObject *args) {
+static PyObject *PyFFFont_CreateMappedChar(PyObject *self, PyObject *args) {
     int enc;
     FontView *fv = ((PyFF_Font *) self)->fv;
     SplineChar *sc;
@@ -7587,6 +7639,70 @@ return( NULL );
 return( PySC_From_SC_I( sc ));
 }
 
+static PyObject *PyFFFont_CreateUnicodeChar(PyObject *self, PyObject *args) {
+    int uni, enc;
+    char *name=NULL;
+    FontView *fv = ((PyFF_Font *) self)->fv;
+    SplineChar *sc;
+
+    if ( !PyArg_ParseTuple(args,"i|s", &enc, &name ) )
+return( NULL );
+    if ( uni<-1 || uni>=unicode4_size ) {
+	PyErr_Format(PyExc_ValueError, "Unicode codepoint, %d, out of range, must be either -1 or between 0 and 0x10ffff", uni );
+return( NULL );
+    } else if ( uni==-1 && name==NULL ) {
+	PyErr_Format(PyExc_ValueError, "If you do not specify a code point, you must specify a name.");
+return( NULL );
+    }
+
+    enc = SFFindSlot(fv->sf, fv->map, uni, name );
+    if ( enc!=-1 ) {
+	sc = SFMakeChar(fv->sf,fv->map,enc);
+	if ( name!=NULL ) {
+	    free(sc->name);
+	    sc->name = copy(name);
+	}
+    } else {
+	sc = SFGetOrMakeChar(fv->sf,uni,name);
+	/* does not add to current map. But since we didn't find a slot it's */
+	/*  not in the encoding. We could add it in the unencoded area */
+    }
+return( PySC_From_SC_I( sc ));
+}
+
+static PyObject *PyFFFont_removeGlyph(PyObject *self, PyObject *args) {
+    int uni, enc;
+    char *name=NULL;
+    FontView *fv = ((PyFF_Font *) self)->fv;
+    SplineChar *sc;
+    int flags = 0;	/* Currently unused */
+
+    if ( PyTuple_Size(args)==1 && PyType_IsSubtype(&PyFF_GlyphType,PyTuple_GetItem(args,0)->ob_type)) {
+	sc = ((PyFF_Glyph *) PyTuple_GetItem(args,0))->sc;
+	if ( sc->parent!=fv->sf ) {
+	    PyErr_Format(PyExc_ValueError, "This glyph is not in the font");
+return( NULL );
+	}
+    } else {
+	if ( !PyArg_ParseTuple(args,"i|s", &enc, &name ) )
+return( NULL );
+	if ( uni<-1 || uni>=unicode4_size ) {
+	    PyErr_Format(PyExc_ValueError, "Unicode codepoint, %d, out of range, must be either -1 or between 0 and 0x10ffff", uni );
+return( NULL );
+	} else if ( uni==-1 && name==NULL ) {
+	    PyErr_Format(PyExc_ValueError, "If you do not specify a code point, you must specify a name.");
+return( NULL );
+	}
+	sc = SFGetChar(fv->sf,uni,name);
+	if ( sc==NULL ) {
+	    PyErr_Format(PyExc_ValueError, "This glyph is not in the font");
+return( NULL );
+	}
+    }
+    SFRemoveGlyph(fv->sf,sc,&flags);
+Py_RETURN_NONE;
+}
+
 static PyMethodDef PyFF_Font_methods[] = { /* !!!!! */
     { "appendSFNTName", PyFFFont_appendSFNTName, METH_VARARGS, "Adds or replaces a name in the sfnt 'name' table. Takes three arguments, a language, a string id, and the string value" },
     { "save", PyFFFont_Save, METH_VARARGS, "Save the current font to a sfd file" },
@@ -7594,7 +7710,8 @@ static PyMethodDef PyFF_Font_methods[] = { /* !!!!! */
     { "mergeKern", PyFFFont_MergeKern, METH_VARARGS, "Merge kerning data into the current font from an external file" },
     { "mergeFonts", PyFFFont_MergeFonts, METH_VARARGS, "Merge two fonts" },
     { "interpolateFonts", PyFFFont_InterpolateFonts, METH_VARARGS, "Interpolate between two fonts returning a new one" },
-    { "createChar", PyFFFont_CreateChar, METH_VARARGS, "Creates a (blank) glyph at the specified encoding" },
+    { "createChar", PyFFFont_CreateUnicodeChar, METH_VARARGS, "Creates a (blank) glyph at the specified unicode codepoint" },
+    { "createMappedChar", PyFFFont_CreateMappedChar, METH_VARARGS, "Creates a (blank) glyph at the specified encoding" },
     { "getTableData", PyFFFont_GetTableData, METH_VARARGS, "Returns a tuple, one entry per byte (as unsigned integers) of the table"},
     { "setTableData", PyFFFont_SetTableData, METH_VARARGS, "Sets the table to a tuple of bytes"},
     { "addLookup", PyFFFont_addLookup, METH_VARARGS, "Add a new lookup"},
@@ -7616,6 +7733,7 @@ static PyMethodDef PyFF_Font_methods[] = { /* !!!!! */
     { "mergeLookups", PyFFFont_mergeLookups, METH_VARARGS, "Merges two lookups" },
     { "mergeLookupSubtables", PyFFFont_mergeLookupSubtables, METH_VARARGS, "Merges two lookup subtables" },
     { "removeAnchorClass", PyFFFont_removeAnchorClass, METH_VARARGS, "Removes the named anchor class" },
+    { "removeGlyph", PyFFFont_removeGlyph, METH_VARARGS, "Removes the glyph from the font" },
     { "removeLookup", PyFFFont_removeLookup, METH_VARARGS, "Removes the named lookup" },
     { "removeLookupSubtable", PyFFFont_removeLookupSubtable, METH_VARARGS, "Removes the named lookup subtable" },
 
