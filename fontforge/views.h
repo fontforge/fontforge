@@ -810,6 +810,7 @@ extern void _SCCharChangedUpdate(SplineChar *sc,int changed);
 extern void SCCharChangedUpdate(SplineChar *sc);
 extern void SCHintsChanged(SplineChar *sc);
 extern void SCSynchronizeWidth(SplineChar *sc,real newwidth, real oldwidth,FontView *fv);
+extern RefChar *HasUseMyMetrics(SplineChar *sc);
 extern void SCSynchronizeLBearing(SplineChar *sc,real off);
 extern void BackgroundImageTransform(SplineChar *sc, ImageList *img,real transform[6]);
 extern void SCClearRounds(SplineChar *sc);

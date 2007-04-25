@@ -30,6 +30,16 @@
 
 extern int stop_at_join;
 
+RefChar *HasUseMyMetrics(SplineChar *sc) {
+    RefChar *r;
+
+    for ( r=sc->layers[ly_fore].refs; r!=NULL; r=r->next )
+	if ( r->use_my_metrics )
+return( r );
+
+return( NULL );
+}
+
 /* if they changed the width, then change the width on all bitmap chars of */
 /*  ours, and if we are a letter, then change the width on all chars linked */
 /*  to us which had the same width that we used to have (so if we change the */
@@ -38,8 +48,13 @@ void SCSynchronizeWidth(SplineChar *sc,real newwidth, real oldwidth, FontView *f
     BDFFont *bdf;
     struct splinecharlist *dlist;
     FontView *fv = sc->parent->fv;
+    RefChar *r = HasUseMyMetrics(sc);
 
     sc->widthset = true;
+    if( r!=NULL ) {
+	sc->width = r->sc->width;
+return;
+    }
     if ( newwidth==oldwidth )
 return;
     sc->width = newwidth;
@@ -214,6 +229,7 @@ int CVSetSel(CharView *cv,int mask) {
     ImageList *img;
     int needsupdate = 0;
     AnchorPoint *ap;
+    RefChar *usemymetrics = HasUseMyMetrics(cv->sc);
 
     cv->lastselpt = NULL;
     if ( mask&1 )
@@ -240,11 +256,11 @@ int CVSetSel(CharView *cv,int mask) {
     if ( cv->p.nextcp || cv->p.prevcp )
 	needsupdate = true;
     cv->p.nextcp = cv->p.prevcp = false;
-    if ( cv->showhmetrics && !cv->widthsel && (mask&4)) {
+    if ( cv->showhmetrics && !cv->widthsel && (mask&4) && usemymetrics==NULL ) {
 	cv->widthsel = needsupdate = true;
 	cv->oldwidth = cv->sc->width;
     }
-    if ( cv->showvmetrics && cv->sc->parent->hasvmetrics && !cv->vwidthsel && (mask&4)) {
+    if ( cv->showvmetrics && cv->sc->parent->hasvmetrics && !cv->vwidthsel && (mask&4) && usemymetrics==NULL ) {
 	cv->vwidthsel = needsupdate = true;
 	cv->oldvwidth = cv->sc->vwidth;
     }
@@ -444,10 +460,13 @@ void CVCheckResizeCursors(CharView *cv) {
 	break;
 	}
 	if ( cv->expandedge == ee_none ) {
+	    RefChar *usemymetrics = HasUseMyMetrics(cv->sc);
 	    if ( cv->showhmetrics && cv->info.x > cv->sc->width-fudge &&
-		    cv->info.x<cv->sc->width+fudge && cv->searcher==NULL )
+		    cv->info.x<cv->sc->width+fudge && cv->searcher==NULL &&
+		    usemymetrics==NULL )
 		cv->expandedge = ee_right;
-	    else if ( cv->showhmetrics && NearCaret(cv->sc,cv->info.x,fudge)!=-1 )
+	    else if ( cv->showhmetrics && NearCaret(cv->sc,cv->info.x,fudge)!=-1 &&
+		    usemymetrics==NULL )
 		cv->expandedge = ee_right;
 	    if ( cv->showvmetrics && cv->sc->parent->hasvmetrics && cv->searcher==NULL &&
 		    cv->info.y > cv->sc->parent->vertical_origin-cv->sc->vwidth-fudge &&
@@ -507,6 +526,7 @@ return( false );
 void CVMouseDownPointer(CharView *cv, FindSel *fs, GEvent *event) {
     int needsupdate = false;
     int dowidth, dovwidth, nearcaret;
+    RefChar *usemymetrics = HasUseMyMetrics(cv->sc);
 
     if ( cv->pressed==NULL )
 	cv->pressed = GDrawRequestTimer(cv->v,200,100,NULL);
@@ -516,10 +536,12 @@ void CVMouseDownPointer(CharView *cv, FindSel *fs, GEvent *event) {
     if ( ImgRefEdgeSelected(cv,fs,event))
 return;
     dowidth = ( cv->showhmetrics && cv->p.cx>cv->sc->width-fs->fudge &&
-		cv->p.cx<cv->sc->width+fs->fudge && cv->searcher==NULL );
+		cv->p.cx<cv->sc->width+fs->fudge && cv->searcher==NULL &&
+		usemymetrics==NULL );
     dovwidth = ( cv->showvmetrics && cv->sc->parent->hasvmetrics && cv->searcher == NULL &&
 		cv->p.cy>cv->sc->parent->vertical_origin-cv->sc->vwidth-fs->fudge &&
-		cv->p.cy<cv->sc->parent->vertical_origin-cv->sc->vwidth+fs->fudge );
+		cv->p.cy<cv->sc->parent->vertical_origin-cv->sc->vwidth+fs->fudge &&
+		usemymetrics==NULL );
     cv->nearcaret = nearcaret = -1;
     if ( cv->showhmetrics ) nearcaret = NearCaret(cv->sc,cv->p.cx,fs->fudge);
     if ( (fs->p->sp==NULL || !fs->p->sp->selected) &&
@@ -1118,7 +1140,6 @@ void CVMouseUpPointer(CharView *cv ) {
 #endif
 
     if ( cv->widthsel ) {
-	/* cv->widthsel = false; */
 	if ( cv->sc->width<0 && cv->oldwidth>=0 ) {
 	    if ( gwwv_ask(_("Negative Width"), (const char **) buts, 0, 1, _("Negative character widths are not allowed in TrueType.\nDo you really want a negative width?") )==1 )
 		cv->sc->width = cv->oldwidth;
@@ -1128,7 +1149,6 @@ void CVMouseUpPointer(CharView *cv ) {
 	GDrawSetCursor(cv->v,ct_mypointer);
     }
     if ( cv->vwidthsel ) {
-	/* cv->vwidthsel = false; */
 	if ( cv->sc->vwidth<0 && cv->oldvwidth>=0 ) {
 	    if ( gwwv_ask(_("Negative Width"), (const char **) buts, 0, 1, _("Negative character widths are not allowed in TrueType.\nDo you really want a negative width?") )==1 )
 		cv->sc->vwidth = cv->oldvwidth;
