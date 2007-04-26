@@ -26,8 +26,6 @@
  */
 /*			   Python Interface to FontForge		      */
 
-/* Allow general sequences rather than insisting on tuples */
-/*  Should I return strings for binary data rather than tuples? */
 
 #ifndef _NO_PYTHON
 #include "Python.h"
@@ -1985,7 +1983,7 @@ Py_RETURN( self );		/* As simple as it can be */
 	smpl.linelenmax = PyFloat_AsDouble( PySequence_GetItem(args,4));
     if ( PyErr_Occurred() )
 return( NULL );
-    SplineCharSimplify(NULL,ss,&smpl);
+    ss = SplineCharSimplify(NULL,ss,&smpl);
     LayerFromSS(ss,self);
     SplinePointListsFree(ss);
 Py_RETURN( self );
@@ -2274,7 +2272,7 @@ static PyMethodDef PyFFLayer_methods[] = {
     {"cluster", (PyCFunction)PyFFLayer_Cluster, METH_VARARGS,
 	     "Round contours on a layer" },
     {"boundingBox", (PyCFunction)PyFFLayer_BoundingBox, METH_NOARGS,
-	     "Finds a bounding box for the countour (xmin,ymin,xmax,ymax)" },
+	     "Finds a bounding box for the layer (xmin,ymin,xmax,ymax)" },
     {"correctDirection", (PyCFunction)PyFFLayer_Correct, METH_NOARGS,
 	     "Orient a layer so that external contours are clockwise and internal counter clockwise." },
     {"stroke", (PyCFunction)PyFFLayer_Stroke, METH_VARARGS,
@@ -2282,7 +2280,7 @@ static PyMethodDef PyFFLayer_methods[] = {
     {"removeOverlap", (PyCFunction)PyFFLayer_RemoveOverlap, METH_NOARGS,
 	     "Remove overlapping areas from a layer." },
     {"intersect", (PyCFunction)PyFFLayer_Intersect, METH_NOARGS,
-	     "Returns the areas where the contours of a layer overlap." },
+	     "Leaves the areas where the contours of a layer overlap." },
     {"exclude", (PyCFunction)PyFFLayer_Exclude, METH_VARARGS,
 	     "Exclude the area of the argument (also a layer) from the current layer" },
     {"draw", (PyCFunction)PyFFLayer_draw, METH_VARARGS,
@@ -4287,9 +4285,191 @@ return( NULL );
 Py_RETURN( self );
 }
 
+static PyObject *PyFFGlyph_Simplify(PyFF_Glyph *self, PyObject *args) {
+    static struct simplifyinfo smpl = { sf_normal,.75,.2,10 };
+    SplineChar *sc = self->sc;
+
+    smpl.err = 1;
+    smpl.linefixup = 2;
+    smpl.linelenmax = 10;
+
+    if ( PySequence_Size(args)>=1 )
+	smpl.err = PyFloat_AsDouble(PySequence_GetItem(args,0));
+    if ( !PyErr_Occurred() && PySequence_Size(args)>=2 )
+	smpl.flags = FlagsFromTuple( PySequence_GetItem(args,1),simplifyflags);
+    if ( !PyErr_Occurred() && PySequence_Size(args)>=3 )
+	smpl.tan_bounds = PyFloat_AsDouble( PySequence_GetItem(args,2));
+    if ( !PyErr_Occurred() && PySequence_Size(args)>=4 )
+	smpl.linefixup = PyFloat_AsDouble( PySequence_GetItem(args,3));
+    if ( !PyErr_Occurred() && PySequence_Size(args)>=5 )
+	smpl.linelenmax = PyFloat_AsDouble( PySequence_GetItem(args,4));
+    if ( PyErr_Occurred() )
+return( NULL );
+    sc->layers[ly_fore].splines = SplineCharSimplify(sc,sc->layers[ly_fore].splines,&smpl);
+    SCCharChangedUpdate(self->sc);
+Py_RETURN( self );
+}
+
+static PyObject *PyFFGlyph_Round(PyFF_Glyph *self, PyObject *args) {
+    double factor=1;
+
+    if ( !PyArg_ParseTuple(args,"|d",&factor ) )
+return( NULL );
+    SCRound2Int( self->sc,factor);
+    SCCharChangedUpdate(self->sc);
+Py_RETURN( self );
+}
+
+static PyObject *PyFFGlyph_Cluster(PyFF_Glyph *self, PyObject *args) {
+    double within = .1, max = .5;
+
+    if ( !PyArg_ParseTuple(args,"|dd", &within, &max ) )
+return( NULL );
+
+    SCRoundToCluster( self->sc,ly_fore,false,within,max);
+    SCCharChangedUpdate(self->sc);
+Py_RETURN( self );
+}
+
+static PyObject *PyFFGlyph_AddExtrema(PyFF_Glyph *self, PyObject *args) {
+    int emsize = 1000;
+    char *flag = NULL;
+    int ae = ae_only_good;
+    SplineChar *sc = self->sc;
+    SplineFont *sf = sc->parent;
+
+    if ( !PyArg_ParseTuple(args,"|si", &flag, &emsize ) )
+return( NULL );
+    if ( flag!=NULL )
+	ae = FlagsFromString(flag,addextremaflags);
+
+    SplineCharAddExtrema(sc,sc->layers[ly_fore].splines,ae,sf->ascent+sf->descent);
+    SCCharChangedUpdate(sc);
+Py_RETURN( self );
+}
+
+static PyObject *PyFFGlyph_Stroke(PyFF_Glyph *self, PyObject *args) {
+    StrokeInfo si;
+    SplineSet *newss;
+    char *str, *cap="butt", *join="round";
+    double width=0, minor=1, angle=0;
+    int c, j, f;
+    PyObject *flagtuple=NULL;
+
+    str =PyString_AsString(PySequence_GetItem(args,0));
+    memset(&si,0,sizeof(si));
+    if ( str==NULL )
+return( NULL );
+    if ( strcmp(str,"circular")==0 ) {
+	if ( !PyArg_ParseTuple(args,"sd|ssO", &str, &width, &cap, &join, &flagtuple ) )
+return( NULL );
+	si.stroke_type = si_std;
+    } else if ( strcmp(str,"eliptical")==0 ) {
+	if ( !PyArg_ParseTuple(args,"sddd|ssO", &str, &width, &minor, &angle, &cap, &join, &flagtuple ) )
+return( NULL );
+	si.stroke_type = si_elipse;
+    } else if ( strcmp(str,"caligraphic")==0 ) {
+	if ( !PyArg_ParseTuple(args,"sddd|O", &str, &width, &minor, &angle, &flagtuple ) )
+return( NULL );
+	si.stroke_type = si_caligraphic;
+    } else {
+	PyErr_Format(PyExc_ValueError, "Unknown stroke type %s", str );
+return( NULL );
+    }
+    if ( width<=0 || minor<=0 ) {
+	PyErr_Format(PyExc_ValueError, "Stroke width must be positive" );
+return( NULL );
+    }
+    c = FlagsFromString(cap,linecap);
+    j = FlagsFromString(join,linejoin);
+    f = FlagsFromTuple(flagtuple,strokeflags);
+    if ( c==0x80000000 || j==0x80000000 || f==0x80000000 ) {
+	PyErr_Format(PyExc_ValueError, "Bad value for line cap, join or flags" );
+return( NULL );
+    }
+    si.radius = width/2;
+    si.join = j;
+    si.cap = c;
+    if ( f&1 )
+	si.removeinternal = true;
+    if ( f&2 )
+	si.removeexternal = true;
+    if ( f&4 )
+	si.removeoverlapifneeded = true;
+    si.penangle = angle;
+
+    if ( si.stroke_type == si_caligraphic )
+	si.ratio = minor/width;
+    else if ( si.stroke_type == si_elipse )
+	si.minorradius = minor/2;
+
+    newss = SSStroke(self->sc->layers[ly_fore].splines,&si,self->sc);
+    SplinePointListFree(self->sc->layers[ly_fore].splines);
+    self->sc->layers[ly_fore].splines = newss;
+    SCCharChangedUpdate(self->sc);
+Py_RETURN( self );
+}
+
+static PyObject *PyFFGlyph_Correct(PyFF_Glyph *self, PyObject *args) {
+    int changed = false;
+
+    self->sc->layers[ly_fore].splines = SplineSetsCorrect(self->sc->layers[ly_fore].splines,&changed);
+    if ( changed )
+	SCCharChangedUpdate(self->sc);
+Py_RETURN( self );
+}
+
+static PyObject *PyFFGlyph_RemoveOverlap(PyFF_Glyph *self, PyObject *args) {
+
+    self->sc->layers[ly_fore].splines = SplineSetRemoveOverlap(self->sc,self->sc->layers[ly_fore].splines,over_remove);
+    SCCharChangedUpdate(self->sc);
+Py_RETURN( self );
+}
+
+static PyObject *PyFFGlyph_Intersect(PyFF_Glyph *self, PyObject *args) {
+
+    self->sc->layers[ly_fore].splines = SplineSetRemoveOverlap(self->sc,self->sc->layers[ly_fore].splines,over_intersect);
+    SCCharChangedUpdate(self->sc);
+Py_RETURN( self );
+}
+
+static PyObject *PyFFGlyph_Exclude(PyFF_Glyph *self, PyObject *args) {
+    SplineSet *ss, *excludes, *tail;
+    PyObject *obj;
+
+    if ( !PyArg_ParseTuple(args,"O", &obj ) )
+return( NULL );
+    if ( !PyType_IsSubtype(&PyFF_LayerType,obj->ob_type) ) {
+	PyErr_Format(PyExc_TypeError, "Value must be a (FontForge) Layer");
+return( NULL );
+    }
+
+    excludes = SSFromLayer((PyFF_Layer *) obj);
+    ss = self->sc->layers[ly_fore].splines;
+    for ( tail=ss; tail->next!=NULL; tail=tail->next );
+    tail->next = excludes;
+    while ( excludes!=NULL ) {
+	excludes->first->selected = true;
+	excludes = excludes->next;
+    }
+    self->sc->layers[ly_fore].splines = SplineSetRemoveOverlap(NULL,ss,over_exclude);
+    /* Frees the old splinesets */
+    SCCharChangedUpdate(self->sc);
+Py_RETURN( self );
+}
+
+static PyObject *PyFFGlyph_BoundingBox(PyFF_Glyph *self, PyObject *args) {
+    DBounds bb;
+
+    SplineCharFindBounds(self->sc,&bb);
+
+return( Py_BuildValue("(dddd)", bb.minx,bb.miny, bb.maxx,bb.maxy ));
+}
+
 static PyMethodDef PyFF_Glyph_methods[] = {
     { "glyphPen", (PyCFunction) PyFFGlyph_GlyphPen, METH_VARARGS | METH_KEYWORDS, "Create a pen object which can draw into this glyph"},
     { "draw", (PyCFunction) PyFFGlyph_draw, METH_VARARGS , "Draw the glyph's outline to the pen argument"},
+    { "addExtrema", (PyCFunction) PyFFGlyph_AddExtrema, METH_VARARGS, "Add extrema to the contours of the glyph"},
     { "addReference", PyFFGlyph_AddReference, METH_VARARGS, "Add a reference"},
     { "addAnchorPoint", PyFFGlyph_addAnchorPoint, METH_VARARGS, "Adds an anchor point"},
     { "addHint", PyFFGlyph_addHint, METH_VARARGS, "Add a postscript hint (is_vertical_hint,start_pos,width)"},
@@ -4297,12 +4477,21 @@ static PyMethodDef PyFF_Glyph_methods[] = {
     { "autoHint", PyFFGlyph_autoHint, METH_NOARGS, "Guess at postscript hints"},
     { "autoInstr", PyFFGlyph_autoInstr, METH_NOARGS, "Guess (badly) at truetype instructions"},
     { "autoTrace", PyFFGlyph_autoTrace, METH_NOARGS, "Autotrace any background images"},
+    { "boundingBox", (PyCFunction) PyFFGlyph_BoundingBox, METH_NOARGS, "Finds the minimum bounding box for the glyph (xmin,ymin,xmax,ymax)" },
     { "build", PyFFGlyph_Build, METH_NOARGS, "If the current glyph is an accented character\nand all components are in the font\nthen build it out of references" },
-    { "export", PyFFGlyph_import, METH_VARARGS, "Export the glyph, the format is determined by the extension. (provide the filename of the image file)" },
+    { "cluster", (PyCFunction) PyFFGlyph_Cluster, METH_VARARGS, "Cluster the points of a glyph towards common values" },
+    { "correctDirection", (PyCFunction) PyFFGlyph_Correct, METH_NOARGS, "Orient a layer so that external contours are clockwise and internal counter clockwise." },
+    { "exclude", (PyCFunction) PyFFGlyph_Exclude, METH_VARARGS, "Exclude the area of the argument (a layer) from the current glyph"},
+    { "export", PyFFGlyph_export, METH_VARARGS, "Export the glyph, the format is determined by the extension. (provide the filename of the image file)" },
     { "getPosSub", PyFFGlyph_getPosSub, METH_VARARGS, "Gets position/substitution data from the glyph"},
-    { "import", PyFFGlyph_export, METH_VARARGS, "Import a background image or a foreground eps/svg/etc. (provide the filename of the image file)" },
+    { "import", PyFFGlyph_import, METH_VARARGS, "Import a background image or a foreground eps/svg/etc. (provide the filename of the image file)" },
+    { "intersect", (PyCFunction) PyFFGlyph_Intersect, METH_NOARGS, "Leaves the areas where the contours of a glyph overlap."},
+    { "removeOverlap", (PyCFunction) PyFFGlyph_RemoveOverlap, METH_NOARGS, "Remove overlapping areas from a glyph"},
     { "removePosSub", PyFFGlyph_removePosSub, METH_VARARGS, "Removes position/substitution data from the glyph"},
+    { "round", (PyCFunction)PyFFGlyph_Round, METH_VARARGS, "Rounds point coordinates (and reference translations) to integers"},
     { "selfIntersects", (PyCFunction)PyFFGlyph_selfIntersects, METH_NOARGS, "Returns whether this glyph intersects itself" },
+    { "simplify", (PyCFunction)PyFFGlyph_Simplify, METH_VARARGS, "Simplifies a glyph" },
+    { "stroke", (PyCFunction)PyFFGlyph_Stroke, METH_VARARGS, "Strokes the countours in a glyph"},
     { "transform", (PyCFunction)PyFFGlyph_Transform, METH_VARARGS, "Transform a glyph by a 6 element matrix." },
     { "unlinkRef", PyFFGlyph_unlinkRef, METH_VARARGS, "Unlink a reference and turn it into outlines"},
     NULL
