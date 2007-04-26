@@ -1613,30 +1613,34 @@ return;				/* no points. no side bearings */
 
     GDrawSetFont(pixmap,cv->small);
     if ( cv->showhmetrics ) {
-	x = rint(bounds[0]->x*cv->scale) + cv->xoff;
-	y = cv->height-cv->yoff-rint(bounds[0]->y*cv->scale);
-	DrawPLine(cv,pixmap,cv->xoff,y,x,y,metricslabelcol);
-	 /* arrow heads */
-	 DrawPLine(cv,pixmap,cv->xoff,y,cv->xoff+4,y+4,metricslabelcol);
-	 DrawPLine(cv,pixmap,cv->xoff,y,cv->xoff+4,y-4,metricslabelcol);
-	 DrawPLine(cv,pixmap,x,y,x-4,y-4,metricslabelcol);
-	 DrawPLine(cv,pixmap,x,y,x-4,y+4,metricslabelcol);
-	dtos( buf, bounds[0]->x);
-	x = cv->xoff + (x-cv->xoff-GDrawGetText8Width(pixmap,buf,-1,NULL))/2;
-	GDrawDrawText8(pixmap,x,y-4,buf,-1,NULL,metricslabelcol);
+	if ( bounds[0]->x!=0 ) {
+	    x = rint(bounds[0]->x*cv->scale) + cv->xoff;
+	    y = cv->height-cv->yoff-rint(bounds[0]->y*cv->scale);
+	    DrawPLine(cv,pixmap,cv->xoff,y,x,y,metricslabelcol);
+	     /* arrow heads */
+	     DrawPLine(cv,pixmap,cv->xoff,y,cv->xoff+4,y+4,metricslabelcol);
+	     DrawPLine(cv,pixmap,cv->xoff,y,cv->xoff+4,y-4,metricslabelcol);
+	     DrawPLine(cv,pixmap,x,y,x-4,y-4,metricslabelcol);
+	     DrawPLine(cv,pixmap,x,y,x-4,y+4,metricslabelcol);
+	    dtos( buf, bounds[0]->x);
+	    x = cv->xoff + (x-cv->xoff-GDrawGetText8Width(pixmap,buf,-1,NULL))/2;
+	    GDrawDrawText8(pixmap,x,y-4,buf,-1,NULL,metricslabelcol);
+	}
 
-	x = rint(bounds[1]->x*cv->scale) + cv->xoff;
-	y = cv->height-cv->yoff-rint(bounds[1]->y*cv->scale);
-	x2 = rint(sc->width*cv->scale) + cv->xoff;
-	DrawPLine(cv,pixmap,x,y,x2,y,metricslabelcol);
-	 /* arrow heads */
-	 DrawPLine(cv,pixmap,x,y,x+4,y+4,metricslabelcol);
-	 DrawPLine(cv,pixmap,x,y,x+4,y-4,metricslabelcol);
-	 DrawPLine(cv,pixmap,x2,y,x2-4,y-4,metricslabelcol);
-	 DrawPLine(cv,pixmap,x2,y,x2-4,y+4,metricslabelcol);
-	dtos( buf, sc->width-bounds[1]->x);
-	x = x + (x2-x-GDrawGetText8Width(pixmap,buf,-1,NULL))/2;
-	GDrawDrawText8(pixmap,x,y-4,buf,-1,NULL,metricslabelcol);
+	if ( sc->width != bounds[1]->x ) {
+	    x = rint(bounds[1]->x*cv->scale) + cv->xoff;
+	    y = cv->height-cv->yoff-rint(bounds[1]->y*cv->scale);
+	    x2 = rint(sc->width*cv->scale) + cv->xoff;
+	    DrawPLine(cv,pixmap,x,y,x2,y,metricslabelcol);
+	     /* arrow heads */
+	     DrawPLine(cv,pixmap,x,y,x+4,y+4,metricslabelcol);
+	     DrawPLine(cv,pixmap,x,y,x+4,y-4,metricslabelcol);
+	     DrawPLine(cv,pixmap,x2,y,x2-4,y-4,metricslabelcol);
+	     DrawPLine(cv,pixmap,x2,y,x2-4,y+4,metricslabelcol);
+	    dtos( buf, sc->width-bounds[1]->x);
+	    x = x + (x2-x-GDrawGetText8Width(pixmap,buf,-1,NULL))/2;
+	    GDrawDrawText8(pixmap,x,y-4,buf,-1,NULL,metricslabelcol);
+	}
     }
 
     if ( cv->showvmetrics ) {
