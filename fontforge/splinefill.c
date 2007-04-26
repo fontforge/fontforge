@@ -1730,6 +1730,12 @@ BDFChar *BDFPieceMeal(BDFFont *bdf, int index) {
 
     if ( index==-1 )
 return( NULL );
+    if ( bdf->glyphcnt<bdf->sf->glyphcnt ) {
+	if ( bdf->glyphmax<bdf->sf->glyphcnt )
+	    bdf->glyphs = grealloc(bdf->glyphs,(bdf->glyphmax = bdf->sf->glyphmax)*sizeof(BDFChar *));
+	memset(bdf->glyphs+bdf->glyphcnt,0,(bdf->glyphmax-bdf->glyphcnt)*sizeof(SplineChar *));
+	bdf->glyphcnt = bdf->sf->glyphcnt;
+    }
     sc = bdf->sf->glyphs[index];
     if ( sc==NULL )
 return(NULL);
