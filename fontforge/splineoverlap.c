@@ -475,7 +475,7 @@ static void GradImproveInter(Monotonic *m1, Monotonic *m2,
     extended factor = 4096;
     extended t1=*_t1, t2=*_t2;
     extended off, off2, yoff;
-    /*int cnt=0;*/
+    int cnt=0;
     /* We want to find (t1,t2) so that (m1(t1)-m2(t2))^2==0 */
     /* Find the gradiant and move in the reverse direction */
     /* We know that the current values of (t1,t2) are close to an intersection*/
@@ -517,7 +517,9 @@ static void GradImproveInter(Monotonic *m1, Monotonic *m2,
     break;
 	}
 	olderr = error;
-	/*++cnt;*/
+	++cnt;
+	if ( cnt>1000 )
+    break;
     }
 #if 0
     if ( cnt<=1 && error>=1e-11 )
@@ -1696,7 +1698,6 @@ return( false );
 
 static MList *FindMLOfM(Intersection *curil,Monotonic *finalm) {
     MList *ml;
-    Monotonic *m;
 
     for ( ml=curil->monos; ml!=NULL; ml=ml->next ) {
 	if ( ml->m==finalm )
@@ -1889,9 +1890,49 @@ static SplineSet *JoinAContour(Intersection *startil,MList *ml) {
 return( ss );
 }
 
+static SplineSet *FindMatchingContour(SplineSet *head,SplineSet *cur) {
+    SplineSet *test;
+
+    for ( test=head; test!=NULL; test=test->next ) {
+	if ( test->first->prev==NULL &&
+		test->first->me.x==cur->last->me.x && test->first->me.y==cur->last->me.y &&
+		test->last->me.x==cur->first->me.x && test->last->me.y==cur->first->me.y )
+    break;
+    }
+    if ( test==NULL ) {
+	for ( test=head; test!=NULL; test=test->next ) {
+	    if ( test->first->prev==NULL &&
+		    test->last->me.x==cur->last->me.x && test->last->me.y==cur->last->me.y &&
+		    test->first->me.x==cur->first->me.x && test->first->me.y==cur->first->me.y ) {
+		SplineSetReverse(cur);
+	break;
+	    }
+	}
+    }
+    if ( test==NULL ) {
+	for ( test=head; test!=NULL; test=test->next ) {
+	    if ( test->first->prev==NULL &&
+		    ((test->first->me.x==cur->last->me.x && test->first->me.y==cur->last->me.y) ||
+		     (test->last->me.x==cur->first->me.x && test->last->me.y==cur->first->me.y )))
+	break;
+	}
+    }
+    if ( test==NULL ) {
+	for ( test=head; test!=NULL; test=test->next ) {
+	    if ( test->first->prev==NULL &&
+		    ((test->last->me.x==cur->last->me.x && test->last->me.y==cur->last->me.y) ||
+		     (test->first->me.x==cur->first->me.x && test->first->me.y==cur->first->me.y ))) {
+		SplineSetReverse(cur);
+	break;
+	    }
+	}
+    }
+return( test );
+}
+
 static SplineSet *JoinAllNeeded(Intersection *ilist) {
     Intersection *il;
-    SplineSet *head=NULL, *last=NULL, *cur;
+    SplineSet *head=NULL, *last=NULL, *cur, *test;
     MList *ml;
 
     for ( il=ilist; il!=NULL; il=il->next ) {
@@ -1903,15 +1944,48 @@ static SplineSet *JoinAllNeeded(Intersection *ilist) {
 	    if ( ml==NULL )
 	break;
 	    if ( !MonoGoesSomewhereUseful(il,ml->m)) {
-		SOError("Skipping needed monotonic which leads nowhere.\n" );
-	break;
+		SOError("Humph. This monotonic leads nowhere.\n" );
+	/* break; */
 	    }
 	    cur = JoinAContour(il,ml);
 	    if ( head==NULL )
 		head = cur;
-	    else
-		last->next = cur;
-	    last = cur;
+	    else {
+		if ( cur->first->prev==NULL ) {
+		    /* Open contours are errors. See if we had an earlier error */
+		    /*  to which we can join this */
+		    test = FindMatchingContour(head,cur);
+		    if ( test!=NULL ) {
+			if ( test->first->me.x==cur->last->me.x && test->first->me.y==cur->last->me.y ) {
+			    test->first->prev = cur->last->prev;
+			    cur->last->prev->to = test->first;
+			    SplinePointFree(cur->last);
+			    if ( test->last->me.x==cur->first->me.x && test->last->me.y==cur->first->me.y ) {
+				test->last->next = cur->first->next;
+			        cur->first->next->from = test->last;
+			        SplinePointFree(cur->first);
+			        test->last = test->first;
+			    }
+			} else {
+			    if ( test->last->me.x!=cur->first->me.x || test->last->me.y!=cur->first->me.y )
+				SOError( "Join failed");
+			    else {
+				test->last->next = cur->first->next;
+			        cur->first->next->from = test->last;
+			        SplinePointFree(cur->first);
+			        test->last = test->first;
+			    }
+			}
+			cur->first = cur->last = NULL;
+			SplinePointListFree(cur);
+			cur=NULL;
+		    }
+		}
+		if ( cur!=NULL )
+		    last->next = cur;
+	    }
+	    if ( cur!=NULL )
+		last = cur;
 	}
     }
 return( head );
@@ -2219,6 +2293,105 @@ return( nsp );
 return( psp );
 }
 
+static double AdjacentSplinesMatch(Spline *s1,Spline *s2,int s2forward) {
+    /* Is every point on s2 close to a point on s1 */
+    double t, tdiff, t1 = -1;
+    double xoff, yoff;
+    double t1start, t1end;
+    extended ts[2];
+    int i;
+
+    if ( (xoff = s2->to->me.x-s2->from->me.x)<0 ) xoff = -xoff;
+    if ( (yoff = s2->to->me.y-s2->from->me.y)<0 ) yoff = -yoff;
+    if ( xoff>yoff )
+	SplineFindExtrema(&s1->splines[0],&ts[0],&ts[1]);
+    else
+	SplineFindExtrema(&s1->splines[1],&ts[0],&ts[1]);
+    if ( s2forward ) {
+	t = 0;
+	tdiff = 1/16.0;
+	t1end = 1;
+	for ( i=1; i>=0 && ts[i]==-1; --i );
+	t1start = i<0 ? 0 : ts[i];
+    } else {
+	t = 1;
+	tdiff = -1/16.0;
+	t1start = 0;
+	t1end = ( ts[0]==-1 ) ? 1.0 : ts[0];
+    }
+
+    for ( ; (s2forward && t<=1) || (!s2forward && t>=0 ); t += tdiff ) {
+	double x1, y1, xo, yo;
+	double x = ((s2->splines[0].a*t+s2->splines[0].b)*t+s2->splines[0].c)*t+s2->splines[0].d;
+	double y = ((s2->splines[1].a*t+s2->splines[1].b)*t+s2->splines[1].c)*t+s2->splines[1].d;
+	if ( xoff>yoff )
+	    t1 = IterateSplineSolve(&s1->splines[0],t1start,t1end,x,.001);
+	else
+	    t1 = IterateSplineSolve(&s1->splines[1],t1start,t1end,y,.001);
+	if ( t1<0 || t1>1 )
+return( -1 );
+	x1 = ((s1->splines[0].a*t1+s1->splines[0].b)*t1+s1->splines[0].c)*t1+s1->splines[0].d;
+	y1 = ((s1->splines[1].a*t1+s1->splines[1].b)*t1+s1->splines[1].c)*t1+s1->splines[1].d;
+	if ( (xo = (x-x1))<0 ) xo = -xo;
+	if ( (yo = (y-y1))<0 ) yo = -yo;
+	if ( xo+yo>.1 )
+return( -1 );
+    }
+return( t1 );
+}
+	
+void SSRemoveBacktracks(SplineSet *ss) {
+    SplinePoint *sp;
+
+    for ( sp=ss->first; ; ) {
+	if ( sp->next!=NULL && sp->prev!=NULL ) {
+	    SplinePoint *nsp = sp->next->to, *psp = sp->prev->from, *isp;
+	    BasePoint ndir, pdir;
+	    double dot, pdot, nlen, plen, t = -1;
+
+	    ndir.x = (nsp->me.x - sp->me.x); ndir.y = (nsp->me.y - sp->me.y);
+	    pdir.x = (psp->me.x - sp->me.x); pdir.y = (psp->me.y - sp->me.y);
+	    nlen = ndir.x*ndir.x + ndir.y*ndir.y; plen = pdir.x*pdir.x + pdir.y*pdir.y;
+	    dot = ndir.x*pdir.x + ndir.y*pdir.y;
+	    if ( (pdot = ndir.x*pdir.y - ndir.y*pdir.x)<0 ) pdot = -pdot;
+	    if ( dot>0 && dot>pdot ) {
+		if ( nlen>plen && (t=AdjacentSplinesMatch(sp->next,sp->prev,false))!=-1 ) {
+		    isp = SplineBisect(sp->next,t);
+		    psp->nextcp.x = psp->me.x + (isp->nextcp.x-isp->me.x);
+		    psp->nextcp.y = psp->me.y + (isp->nextcp.y-isp->me.y);
+		    psp->nonextcp = isp->nonextcp;
+		    psp->next = isp->next;
+		    isp->next->from = psp;
+		    SplineFree(isp->prev);
+		    SplineFree(sp->prev);
+		    SplinePointFree(isp);
+		    SplinePointFree(sp);
+		    SplineRefigure(psp->next);
+		    sp=psp;
+		} else if ( nlen<plen && (t=AdjacentSplinesMatch(sp->prev,sp->next,true))!=-1 ) {
+		    isp = SplineBisect(sp->prev,t);
+		    nsp->prevcp.x = nsp->me.x + (isp->prevcp.x-isp->me.x);
+		    nsp->prevcp.y = nsp->me.y + (isp->prevcp.y-isp->me.y);
+		    nsp->noprevcp = isp->noprevcp;
+		    nsp->prev = isp->prev;
+		    isp->prev->to = nsp;
+		    SplineFree(isp->next);
+		    SplineFree(sp->next);
+		    SplinePointFree(isp);
+		    SplinePointFree(sp);
+		    SplineRefigure(nsp->prev);
+		    sp=psp;
+		}
+	    }
+	}
+	if ( sp->next==NULL )
+    break;
+	sp=sp->next->to;
+	if ( sp==ss->first )
+    break;
+    }
+}
+
 /* If we have a contour with no width, say a line from A to B and then from B */
 /*  to A, then it will be ambiguous, depending on how we hit the contour, as  */
 /*  to whether it is needed or not. Which will cause us to complain. Since    */
@@ -2283,6 +2456,7 @@ static SplineSet *SSRemoveReversals(SplineSet *base) {
 	    break;
 	    }
 	}
+	SSRemoveBacktracks(base);
 	prev = base;
 	base = next;
     }

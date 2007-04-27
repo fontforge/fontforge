@@ -2359,6 +2359,7 @@ return;
 
     RemoveZeroLengthSplines(spl,false,0.1);
     RemoveStupidControlPoints(spl);
+    SSRemoveBacktracks(spl);
     if ( smpl->flags!=sf_cleanup && (smpl->flags&sf_setstart2extremum))
 	SPLStartToExtremum(sc,spl);
     if ( spl->first->next!=NULL && spl->first->next->to==spl->first &&
