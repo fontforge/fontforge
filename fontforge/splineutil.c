@@ -3800,6 +3800,24 @@ return( 0 );
 return( cnt );
 }
 
+static int Closer(const Spline *s1,const Spline *s2,extended t1,extended t2,extended t1p,extended t2p) {
+    double x1 = ((s1->splines[0].a*t1+s1->splines[0].b)*t1+s1->splines[0].c)*t1+s1->splines[0].c;
+    double y1 = ((s1->splines[1].a*t1+s1->splines[1].b)*t1+s1->splines[1].c)*t1+s1->splines[1].c;
+    double x2 = ((s2->splines[0].a*t2+s2->splines[0].b)*t2+s2->splines[0].c)*t2+s2->splines[0].c;
+    double y2 = ((s2->splines[1].a*t2+s2->splines[1].b)*t2+s2->splines[1].c)*t2+s2->splines[1].c;
+    double diff = abs(x1-x2) + abs(y1-y2);
+    double x1p = ((s1->splines[0].a*t1p+s1->splines[0].b)*t1p+s1->splines[0].c)*t1p+s1->splines[0].c;
+    double y1p = ((s1->splines[1].a*t1p+s1->splines[1].b)*t1p+s1->splines[1].c)*t1p+s1->splines[1].c;
+    double x2p = ((s2->splines[0].a*t2p+s2->splines[0].b)*t2p+s2->splines[0].c)*t2p+s2->splines[0].c;
+    double y2p = ((s2->splines[1].a*t2p+s2->splines[1].b)*t2p+s2->splines[1].c)*t2p+s2->splines[1].c;
+    double diffp = abs(x1p-x2p) + abs(y1p-y2p);
+
+    if ( diff<diffp )
+return( false );
+
+return( true );
+}
+    
 /* returns 0=>no intersection, 1=>at least one, location in pts, t1s, t2s */
 /*  -1 => We couldn't figure it out in a closed form, have to do a numerical */
 /*  approximation */
@@ -3905,6 +3923,14 @@ return( false );
 		t = (x-s1->splines[0].d)/s1->splines[0].c;
 	    else
 		t = (y-s1->splines[1].d)/s1->splines[1].c;
+	    if ( tempts[i]>.999 && Closer(s1,s2,tempts[i],t,1,t))
+		tempts[i] = 1;
+	    else if ( tempts[i]<.001 && Closer(s1,s2,tempts[i],t,0,t))
+		tempts[i] = 0;
+	    if ( t>.999 && Closer(s1,s2,tempts[i],t,tempts[i],1))
+		t = 1;
+	    else if ( t<.001 && Closer(s1,s2,tempts[i],t,tempts[i],0))
+		t = 0;
 	    if ( t<-.001 || t>1.001 || x<min1.x-.01 || y<min1.y-.01 || x>max1.x+.01 || y>max1.y+.01 )
 	continue;
 	    if ( t<=0 ) {t=0; x=s1->from->me.x; y = s1->from->me.y; }
