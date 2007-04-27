@@ -20,15 +20,15 @@ msgstr ""
 #: cvhints.c:491 cvhints.c:678 cvhints.c:776 displayfonts.c:339
 #: displayfonts.c:543
 msgid "_Size:"
-msgstr "_Μέγεθος:"
+msgstr "_:"
 
 #: alignment.c:335
 msgid "Space Regions..."
-msgstr "Χωρικές περιοχές..."
+msgstr " ..."
 
 #: alignment.c:345
 msgid "Coordinate along which to space"
-msgstr ""
+msgstr "       "
 
 #: alignment.c:352 anchorsaway.c:889 cvgetinfo.c:1168 cvpalettes.c:293
 #: cvpalettes.c:507 nonlineartrans.c:1078 nonlineartrans.c:1269
@@ -44,7 +44,7 @@ msgstr ""
 
 #: alignment.c:375
 msgid "_Maximum distance between points in a region"
-msgstr "_Μέγιστη απόσταση μεταξύ σημείων σε μία περιοχή"
+msgstr "_      "
 
 #: alignment.c:395 anchorsaway.c:969 autowidth.c:1746 bdfinfo.c:1693
 #: bitmapdlg.c:786 charinfo.c:1405 charinfo.c:1601 charinfo.c:1890
@@ -104,45 +104,45 @@ msgstr ""
 #: ../gdraw/gaskdlg.c:1357 ../gdraw/gaskdlg.c:1416 ../gdraw/gfiledlg.c:152
 #: ../gdraw/gmatrixedit.c:795 ../gdraw/gsavefiledlg.c:280
 msgid "_Cancel"
-msgstr "_Ακύρωση"
+msgstr "_"
 
 #: alignment.c:638
 msgid "Not enough lines"
-msgstr "Μη επαρκείς γραμμές"
+msgstr "  "
 
 #: alignment.c:643
 msgid "Can't Parallel"
-msgstr "Αδύνατος ο παραλληλισμός"
+msgstr "  "
 
 #: alignment.c:643
 msgid "These two lines share a common endpoint, I can't make them parallel"
 msgstr ""
-"Αυτά τα δύο ευθύγραμμα τμήματα τέμνωνται στην άκρη τους, δεν γίνεται να "
-"γίνουν παράλληλα"
+"        ,    "
+" "
 
 #: anchorsaway.c:667 charview.c:6476 kernclass.c:783
 msgid "Out of Range"
-msgstr "Εκτός ορίων"
+msgstr " "
 
 #: anchorsaway.c:667 kernclass.c:783
 msgid "Corrections must be between -128 and 127 (and should be smaller)"
 msgstr ""
-"Οι διορθώσεις πρέπει να είναι μεταξύ -128 και 127 (και θα πρέπει να είναι "
-"μικρότερεςr)"
+"      -128  127 (     "
+"r)"
 
 #: anchorsaway.c:835
 msgid "Anchor Control..."
-msgstr ""
+msgstr "    Bzier"
 
 #. GT: Short for: Magnification
 #: anchorsaway.c:875
 msgid "Mag:"
-msgstr "Μέγ:"
+msgstr ":"
 
 #. GT: Short for Correction
 #: anchorsaway.c:910 anchorsaway.c:950
 msgid "Cor:"
-msgstr "Συντεταγμ:"
+msgstr ":"
 
 #: anchorsaway.c:915 anchorsaway.c:955
 msgid ""
@@ -153,11 +153,11 @@ msgstr ""
 
 #: autotrace.c:434 autotrace.c:435 autotrace.c:682 autotrace.c:683
 msgid "Additional arguments for autotrace program:"
-msgstr "Επιπλέον ορίσματα προς το πρόγραμμα autotrace:"
+msgstr "     autotrace:"
 
 #: autotrace.c:455 autotrace.c:523 autotrace.c:707
 msgid "Can't find autotrace"
-msgstr "Το πρόγραμμα autotrace δεν υπάρχει στο σύστημά σας"
+msgstr "  autotrace     "
 
 #: autotrace.c:455 autotrace.c:523 autotrace.c:707
 msgid ""
@@ -165,21 +165,21 @@ msgid ""
 "download from:\n"
 "  http://sf.net/projects/autotrace/"
 msgstr ""
-"Το πϱογραμμα autotrace δεν υπάρχει στο σύστημά σας (δώστε τιμή στη μεταβλητή "
-"περιβάλλοντος AUTOTRACE) ή «κατεβάστε» το από:\n"
+"  autotrace      (    "
+" AUTOTRACE)    :\n"
 "  http://sf.net/projects/autotrace/"
 
 #: autotrace.c:475 autotrace.c:484 autotrace.c:763
 msgid "Autotracing..."
-msgstr "Διαδικασία «σκιαγράφισης»..."
+msgstr " ..."
 
 #: autotrace.c:518
 msgid "Nothing to trace"
-msgstr "Δεν υπάρχει τίποτα προς «σκιαγράφιση»"
+msgstr "    "
 
 #: autotrace.c:702
 msgid "Can't find mf"
-msgstr "Το πρόγραμμα mf δεν υπάρχει στο σύστημά σας"
+msgstr "  mf     "
 
 #: autotrace.c:702
 msgid ""
@@ -189,27 +189,27 @@ msgid ""
 "  http://www.ctan.org/\n"
 "It's part of the TeX distribution"
 msgstr ""
-"Το πρόγραμμα mf (metafont) δεν υπάρχει στο σύστημά σας (δώστε τιμή στη "
-"μεταβλητή περιβάλλοντος MF) είτε «κατεβάστε» το από:\n"
+"  mf (metafont)      (   "
+"  MF)    :\n"
 "  http://www.tug.org/\n"
 "  http://www.ctan.org/\n"
-"Αποτελεί τμήμα κάθε διανομής του TeX"
+"     TeX"
 
 #: autotrace.c:720
 msgid "Can't create temporary directory"
-msgstr "Αδύνατη η δημιουργία προσωρινού καταλόγου"
+msgstr "    "
 
 #: autotrace.c:756 autotrace.c:782 autotrace.c:787 autotrace.c:791
 msgid "Can't run mf"
-msgstr "Αδύνατη η εκτέλεση του mf"
+msgstr "    mf"
 
 #: autotrace.c:756 autotrace.c:782
 msgid "Could not read (or perhaps find) mf output file"
-msgstr "Αδύνατη η ανάγνωση (ή τουλάχιστον η εύρεση) του αρχείου εξόδου του mf"
+msgstr "   (   )     mf"
 
 #: autotrace.c:787
 msgid "MetaFont exited with an error"
-msgstr "Το MetaFont στάματησε μετά από αναγνώριση λάθους"
+msgstr " MetaFont     "
 
 #: autowidth.c:80 autowidth.c:1569
 msgid "A-Za-z0-9"
@@ -219,11 +219,11 @@ msgstr ""
 #: charinfo.c:1133 fontview.c:6518 fontview.c:6653 metricsview.c:2765
 #: windowmenu.c:251 windowmenu.c:434
 msgid "All"
-msgstr "Όλα"
+msgstr ""
 
 #: autowidth.c:85 autowidth.c:92 autowidth.c:102 autowidth.c:1140
 msgid "Selected"
-msgstr "Επιλεγμένα"
+msgstr ""
 
 #: autowidth.c:88 autowidth.c:1570
 msgid "A-Za-z"
@@ -240,27 +240,27 @@ msgstr ""
 #: autowidth.c:324 autowidth.c:331
 #, c-format
 msgid "AutoWidth failure on %s\n"
-msgstr "Αποτυχία της διαδικασίας AutoWidth στο %s\n"
+msgstr "   AutoWidth  %s\n"
 
 #: autowidth.c:1447 encoding.c:565 encoding.c:1189 fvimportbdf.c:1954
 #: palmfonts.c:394 winfonts.c:930
 msgid "Couldn't open file"
-msgstr "Αδύνατο το άνοιγμα του αρχείου"
+msgstr "    "
 
 #: autowidth.c:1447 encoding.c:565 encoding.c:1189 fvimportbdf.c:1954
 #: palmfonts.c:394
 #, c-format
 msgid "Couldn't open file %.200s"
-msgstr "Αδύνατο το άνοιγμα του αρχείου υπ᾽ αριθμόν %.200"
+msgstr "       %.200"
 
 #: autowidth.c:1470
 msgid "No Kern Pairs"
-msgstr "Δεν υπάρχουν ζεύγη «υποσκαφής»"
+msgstr "   "
 
 #: autowidth.c:1470
 #, c-format
 msgid "No kerning pairs found in %.200s"
-msgstr "Δεν υπάρχουν ζεύγη «υποσκαφής» στο αρχείο υπ. αρθμ. %.200"
+msgstr "      . . %.200"
 
 #: autowidth.c:1488 autowidth.c:1676
 msgid "Spacing"
@@ -268,47 +268,47 @@ msgstr ""
 
 #: autowidth.c:1490 autowidth.c:1712
 msgid "Threshold:"
-msgstr "Κατώφλι:"
+msgstr ":"
 
 #: autowidth.c:1491 autowidth.c:1696
 msgid "Total Kerns:"
-msgstr "Σύνολο «υποσκαφών»:"
+msgstr " :"
 
 #: autowidth.c:1511
 msgid "No glyphs selected."
-msgstr "Δεν έγινε επιλογή γλύφων."
+msgstr "   ."
 
 #: autowidth.c:1517
 msgid "Load Kern Pairs"
-msgstr "Φόρτωση ζευγών «υποσκαφής»"
+msgstr "  "
 
 #: autowidth.c:1644
 msgid "Auto Kern..."
-msgstr "Αυτόματη «υποσκαφή»..."
+msgstr " ..."
 
 #: autowidth.c:1644
 msgid "Auto Width..."
-msgstr "Αυτόματος ορισμός πλάτους..."
+msgstr "  ..."
 
 #: autowidth.c:1655
 msgid "Enter two glyph ranges"
-msgstr "Δώστε δύο «εύρη» γλύφων"
+msgstr "   "
 
 #: autowidth.c:1662
 msgid "to be adjusted."
-msgstr "προς προσαρμογή."
+msgstr " ."
 
 #: autowidth.c:1669
 msgid "Glyphs on Left"
-msgstr "Γλύφοι στα αριστερά"
+msgstr "  "
 
 #: autowidth.c:1672
 msgid "Glyphs on Right"
-msgstr "Γλύφοι στα δεξιά"
+msgstr "  "
 
 #: autowidth.c:1732
 msgid "_Browse..."
-msgstr "_Φυλλομετρήστε..."
+msgstr "_..."
 
 #: autowidth.c:1737
 msgid ""
@@ -316,28 +316,28 @@ msgid ""
 "two characters per line. FontForge will only check\n"
 "those pairs for kerning info."
 msgstr ""
-"Ψάξτε για ένα αρχείο που να περιέχει ένα κατάλογο ζευγών «υποσκαφής»,\n"
-"δύο χαρακτήρες ανά γραμμή. Το FontForge θα θεωρήσει μόνο\n"
-"αυτά τα ζεύγη για ως πληροφορίες «υποσκαφής»."
+"          ,\n"
+"   .  FontForge   \n"
+"      ."
 
 #: bdfinfo.c:1010
 msgid "Not ASCII"
-msgstr "Μη ASCII"
+msgstr " ASCII"
 
 #: bdfinfo.c:1010
 msgid "All characters in the value must be in ASCII"
-msgstr "Όλοι οι χαρακτήρες πρέπει να είναι ASCII"
+msgstr "      ASCII"
 
 #: bdfinfo.c:1017 bvedit.c:45 cvstroke.c:1029 fontview.c:333 fontview.c:5852
 #: fontview.c:6771 fvimportbdf.c:1862 kernclass.c:406 kernclass.c:408
 #: macenc.c:2872 macenc.c:2874 macenc.c:3179 macenc.c:3181 prefs.c:1150
 #: prefs.c:1156 ttfinstrs.c:1486 ttfinstrs.c:1528
 msgid "Bad Number"
-msgstr "Ακατάλληλος αριθμός"
+msgstr " "
 
 #: bdfinfo.c:1017
 msgid "Must be a number"
-msgstr "Θα πρέπει να είναι αριθμός"
+msgstr "    "
 
 #. GT: I am told that the use of "|" to provide contextual information in a
 #. GT: gettext string is non-standard. However it is documented in section
@@ -357,11 +357,11 @@ msgstr "Θα πρέπει να είναι αριθμός"
 #. GT:      <pfaedit@users.sourceforge.net>
 #: bdfinfo.c:1375
 msgid "Property|New..."
-msgstr "Ιδιότητα|Νέο..."
+msgstr "|..."
 
 #: bdfinfo.c:1426 statemachine.c:1555
 msgid "No Change"
-msgstr "Καμία αλλαγή"
+msgstr " "
 
 #: bdfinfo.c:1595
 #, c-format
@@ -370,97 +370,93 @@ msgstr ""
 
 #: bdfinfo.c:1640 fontinfo.c:4606 kernclass.c:1973 ../gdraw/gmatrixedit.c:1350
 msgid "Delete"
-msgstr "Διαγραφή"
+msgstr ""
 
 #: bdfinfo.c:1649
 msgid "Default All"
-msgstr "Καθορισμός προεπιλογής σε όλα"
+msgstr "   "
 
 #: bdfinfo.c:1658
 msgid "Default This"
-msgstr "Καθορισμός προεπιλογής στο παρόν"
+msgstr "   "
 
 #: bitmapdlg.c:56
 msgid "All Glyphs"
-msgstr "Όλοι οι γλύφοι"
+msgstr "  "
 
 #: bitmapdlg.c:57
 msgid "Selected Glyphs"
-msgstr "Επιλεγμένοι γλύφοι"
+msgstr " "
 
 #: bitmapdlg.c:58
 msgid "Current Glyph"
-msgstr "Τρέχον γλύφος"
+msgstr " "
 
 #: bitmapdlg.c:200 bitmapdlg.c:202
 msgid "Scaling Bitmaps"
-msgstr "Αλλαγή διαστάσεων χαρτογραφικών γραφικών"
+msgstr "   "
 
 #: bitmapdlg.c:293 bitmapdlg.c:296 savefontdlg.c:1279 savefontdlg.c:1286
 #: winfonts.c:850
 msgid "Missing Bitmap"
-msgstr "Ελλείπων χαρτογραφικό γραφικό"
+msgstr "  "
 
 #: bitmapdlg.c:293 bitmapdlg.c:296
 #, c-format
 msgid "Attempt to regenerate a pixel size that has not been created (%d@%d)"
-msgstr ""
-"Προσπάθεια επαναδημιουργίας μεγέθους pixel το οποίο δεν έχει δημιουργηθεί (%"
-"d@%d)"
+msgstr "   pixel      (%d@%d)"
 
 #: bitmapdlg.c:426 bitmapdlg.c:744
 msgid "Pixel Sizes:"
-msgstr "Μεγέθη pixel:"
+msgstr " pixel:"
 
 #: bitmapdlg.c:539 bitmapdlg.c:704
 msgid "Point sizes on a 75 dpi screen"
-msgstr "Μεγέθη στιγμών σε οθόνη 75 dpi"
+msgstr "    75 dpi"
 
 #: bitmapdlg.c:540
 msgid "Point sizes on a 96 dpi screen"
-msgstr "Μεγέθη στιγμών σε οθόνη 96 dpi"
+msgstr "    96 dpi"
 
 #: bitmapdlg.c:541
 msgid "Point sizes on a 72 dpi screen"
-msgstr "Μεγέθη στιγμών σε οθόνη 72 dpi"
+msgstr "    72 dpi"
 
 #: bitmapdlg.c:543
 msgid "Point sizes on a 120 dpi screen"
-msgstr "Μεγέθη στιγμών σε οθόνη 120 dpi"
+msgstr "    120 dpi"
 
 #: bitmapdlg.c:544 bitmapdlg.c:723
 msgid "Point sizes on a 100 dpi screen"
-msgstr "Μεγέθη στιγμών σε οθόνη 100 dpi"
+msgstr "    100 dpi"
 
 #: bitmapdlg.c:618
 msgid "Bitmaps Available..."
-msgstr "Διαθέσιμα χαρτογραφικά γραφικά..."
+msgstr "  ..."
 
 #: bitmapdlg.c:618
 msgid "Regenerate Bitmaps..."
-msgstr "Επαναδημιουργία χαρτογραφικών γραφικών..."
+msgstr "  ..."
 
 #: bitmapdlg.c:629
 msgid "The list of current pixel bitmap sizes"
-msgstr "Κατάλογος τρεχόντων μεγεθών pixel χαρτογραφικών γραφικών"
+msgstr "   pixel  "
 
 #: bitmapdlg.c:636
 msgid " Removing a size will delete it."
-msgstr " Αφαίρεση ενός μεγέθος σημαίνει διαγραφή του."
+msgstr "      ."
 
 #: bitmapdlg.c:644
-msgid " Adding a size will create it by scaling."
-msgstr ""
-" Προσθεση ενός μεγέθους σημαίνει τη δημιουργία του μέσω αλλαγής διαστάσεων."
+msgid  " Adding a size will create it by scaling."
+msgstr "          ."
 
 #: bitmapdlg.c:646
 msgid " Adding a size will create it."
-msgstr " Πρόσθεση ενός μεγέθους συνεπάγεται τη δημιουργία του."
+msgstr "       ."
 
 #: bitmapdlg.c:654
 msgid "Specify bitmap sizes to be regenerated"
-msgstr ""
-"Καθορίστε τα μεγέθη χαρτογραφικών αρχείων που πρέπει να επαναδημιουργηθούν"
+msgstr "        "
 
 #. GT: X is a coordinate
 #: bitmapdlg.c:675 cvpointer.c:1249
@@ -477,7 +473,7 @@ msgstr ""
 
 #: bitmapdlg.c:762 kernclass.c:2033
 msgid "Use FreeType"
-msgstr "Χρησιμοποιείσε τη βιβλιοθήκη FreeType"
+msgstr "   FreeType"
 
 #. GT: This is the title for a window showing a bitmap character
 #. GT: It will look something like:
@@ -493,215 +489,215 @@ msgstr ""
 
 #: bitmapview.c:1433 fvmetrics.c:140
 msgid "Set Width..."
-msgstr "Θέσε το πλάτος..."
+msgstr "  ..."
 
 #: bitmapview.c:1436
 msgid "Set Vertical Width..."
-msgstr "Θέσε το κάθετο πλάτος..."
+msgstr "   ..."
 
 #: bitmapview.c:1640 charview.c:7544 fontview.c:7665 metricsview.c:2606
 msgid "New O_utline Window"
-msgstr "Νέο παράθυρο O_utline"
+msgstr "  O_utline"
 
 #: bitmapview.c:1641 charview.c:7545 fontview.c:7666 metricsview.c:2607
 msgid "New _Bitmap Window"
-msgstr "Νέο παράθυρο _χαρτογραφικών"
+msgstr "  _"
 
 #: bitmapview.c:1642 charview.c:7546 fontview.c:7667 metricsview.c:2608
 msgid "New _Metrics Window"
-msgstr "Νέο παράθυρο μετρικών"
+msgstr "  "
 
 #: bitmapview.c:1644 charview.c:7548 fontview.c:7669 metricsview.c:2610
 #: uiutil.c:615
 msgid "Warnings"
-msgstr "Προειδοποιήσεις"
+msgstr ""
 
 #: bitmapview.c:1669
 msgid "Flip Horizontally"
-msgstr "Οριζόντια αντιστροφή"
+msgstr " "
 
 #: bitmapview.c:1669
 msgid "Flip Vertically"
-msgstr "Κάθετη αντιστροφή"
+msgstr " "
 
 #: bitmapview.c:1675 transform.c:99
 msgid "Skew..."
-msgstr "Στρέβλωση..."
+msgstr "..."
 
 #: bitmapview.c:1677 bitmapview.c:1679 charview.c:7583 charview.c:7585
 #: charview.c:8703 fontview.c:6411 fontview.c:6413 metricsview.c:2642
 #: metricsview.c:2644 openfontdlg.c:678
 #, fuzzy
 msgid "Font|_New"
-msgstr "Γραμματοσειρά|_Νέο"
+msgstr "|_"
 
 #: bitmapview.c:1680 charview.c:7586 charview.c:8704 fontview.c:6417
 #: metricsview.c:2645 ../gdraw/gtextfield.c:793
 msgid "_Open"
-msgstr "_Άνοιγμα"
+msgstr "_"
 
 #: bitmapview.c:1681 charview.c:7587 charview.c:8705 fontview.c:6418
 #: metricsview.c:2646
 msgid "Recen_t"
-msgstr "Πρόσφα_το"
+msgstr "_"
 
 #: bitmapview.c:1682 charview.c:7588 charview.c:8706 fontview.c:6419
 #: metricsview.c:2647
 msgid "_Close"
-msgstr "_Κλείσιμο"
+msgstr "_"
 
 #: bitmapview.c:1684 charview.c:7590 charview.c:8708 cvexport.c:997
 #: fontview.c:509 fontview.c:6421 metricsview.c:2649 savefontdlg.c:2997
 #: sftextfield.c:1100 ../gdraw/gsavefiledlg.c:233 ../gdraw/gtextfield.c:826
 msgid "_Save"
-msgstr "_Αποθήκευση"
+msgstr "_"
 
 #: bitmapview.c:1685 charview.c:7591 charview.c:8709 fontview.c:6422
 #: metricsview.c:2650
 msgid "S_ave as..."
-msgstr "Αποθήκευση _ως"
+msgstr " _"
 
 #: bitmapview.c:1686 charview.c:7592 charview.c:8710 fontview.c:6424
 #: metricsview.c:2651
 msgid "_Generate Fonts..."
-msgstr "_Δημιουργία γραμματοσειρών"
+msgstr "_ "
 
 #: bitmapview.c:1687 charview.c:7593 fontview.c:6425 metricsview.c:2652
 msgid "Generate Mac _Family..."
-msgstr "Δημιουργία γραμματοσειρά τύπου _macintosh"
+msgstr "   _macintosh"
 
 #: bitmapview.c:1688 charview.c:7594
 msgid "Expor_t..."
-msgstr "Ε_ξαγωγή"
+msgstr "_"
 
 #: bitmapview.c:1690 charview.c:7596 fontview.c:6427 sftextfield.c:1101
 msgid "_Import..."
-msgstr "Ει_σαγωγή"
+msgstr "_"
 
 #: bitmapview.c:1691 charview.c:7597 fontview.c:6429
 msgid "_Revert File"
-msgstr "_Επαναφορά αρχείου"
+msgstr "_ "
 
 #: bitmapview.c:1693 charview.c:7603 fontview.c:6439 metricsview.c:2659
 msgid "Pr_eferences..."
-msgstr "Προτή_μισεις"
+msgstr "_"
 
 #: bitmapview.c:1695 charview.c:7605 charview.c:8712 fontview.c:6441
 #: metricsview.c:2661
 msgid "_Quit"
-msgstr "_Τερματισμός"
+msgstr "_"
 
 #: bitmapview.c:1700 charview.c:7633 charview.c:8730 fontview.c:6483
 #: metricsview.c:2666 sftextfield.c:1094 ../gdraw/gtextfield.c:948
 msgid "_Undo"
-msgstr "Επανα_φορά"
+msgstr "_"
 
 #: bitmapview.c:1701 charview.c:7634 charview.c:8731 fontview.c:6484
 #: metricsview.c:2667
 msgid "_Redo"
-msgstr "Επανά_ληψη"
+msgstr "_"
 
 #: bitmapview.c:1703 charview.c:7636 charview.c:8733 fontview.c:6486
 #: fontview.c:7705 metricsview.c:2669 sftextfield.c:1096
 #: ../gdraw/gtextfield.c:949
 msgid "Cu_t"
-msgstr "Αποκο_πή"
+msgstr "_"
 
 #: bitmapview.c:1704 charinfo.c:6099 charview.c:7637 charview.c:8734
 #: fontview.c:6487 fontview.c:7706 metricsview.c:2670 sftextfield.c:1097
 #: ../gdraw/gtextfield.c:950
 msgid "_Copy"
-msgstr "Α_ντιγραφή"
+msgstr "_"
 
 #: bitmapview.c:1705 charinfo.c:6112 charview.c:7643 charview.c:8735
 #: fontview.c:6494 fontview.c:7709 metricsview.c:2676 sftextfield.c:1098
 #: ../gdraw/gtextfield.c:951
 msgid "_Paste"
-msgstr "Επι_κόλληση"
+msgstr "_"
 
 #: bitmapview.c:1706 charview.c:7644 charview.c:8736 combinations.c:996
 #: fontview.c:6500 fontview.c:7710 metricsview.c:2677
 msgid "C_lear"
-msgstr "Κα_θαρισμός"
+msgstr "_"
 
 #: bitmapview.c:1708 charview.c:7610 charview.c:8717 fontview.c:6468
 #: metricsview.c:2680 ../gdraw/gaskdlg.c:1277
 msgid "Select _All"
-msgstr "Επιλο_γή όλων "
+msgstr "_  "
 
 #: bitmapview.c:1710 charview.c:7659 charview.c:8745 fontview.c:6513
 msgid "Remo_ve Undoes"
-msgstr "Αφαί_ρεση επαναφορών"
+msgstr "_ "
 
 #: bitmapview.c:1715
 msgid "Flip _Horizontally"
-msgstr "Ορι_ζόντια περιστροφή"
+msgstr "_ "
 
 #: bitmapview.c:1716
 msgid "Flip _Vertically"
-msgstr "Κά_θετη περιστροφή"
+msgstr "_ "
 
 #: bitmapview.c:1720
 msgid "_Skew..."
-msgstr "_Λοξότητα..."
+msgstr "_..."
 
 #: bitmapview.c:1725 charview.c:7806 charview.c:8769 fontview.c:6619
 #: metricsview.c:2737
 msgid "_Font Info..."
-msgstr "_Περί της γραμμαροσειράς..."
+msgstr "_  ..."
 
 #: bitmapview.c:1726 charview.c:7807 fontview.c:6620 fontview.c:7714
 #: metricsview.c:2738
 msgid "Glyph _Info..."
-msgstr "Πληροφορίες _γλύφου..."
+msgstr " _..."
 
 #: bitmapview.c:1727 fontview.c:6621
 msgid "BDF Info..."
-msgstr "Πληφορορίες BDF..."
+msgstr " BDF..."
 
 #: bitmapview.c:1729 charview.c:7812 fontview.c:6626 metricsview.c:2742
 msgid "Bitm_aps Available..."
-msgstr "Διαθέσιμα χαρτογραφικά..."
+msgstr " ..."
 
 #: bitmapview.c:1730 charview.c:7813 fontview.c:6627 metricsview.c:2743
 msgid "Regenerate _Bitmaps..."
-msgstr "Επαναδημιουργία _χαρτογραφικών..."
+msgstr " _..."
 
 #: bitmapview.c:1732 charview.c:7815 fontview.c:6629
 msgid "_Transformations"
-msgstr "_Μετασχηματισμοί"
+msgstr "_"
 
 #: bitmapview.c:1737 charview.c:7881 charview.c:8789
 msgid "_Tools"
-msgstr "_Εργαλεία"
+msgstr "_"
 
 #: bitmapview.c:1738 charview.c:7882 charview.c:8790
 msgid "_Layers"
-msgstr "_Στρώμα"
+msgstr "_"
 
 #: bitmapview.c:1739
 msgid "_Shades"
-msgstr "_Τόνοι"
+msgstr "_"
 
 #: bitmapview.c:1741 charview.c:7884 charview.c:8791
 msgid "_Docked Palettes"
-msgstr "Εργαλειοθήκες χωρί_ς πλαίσια"
+msgstr " _ "
 
 #: bitmapview.c:1746 charview.c:7904 charview.c:8796
 msgid "_Fit"
-msgstr "Προσαρ_μογή"
+msgstr "_"
 
 #: bitmapview.c:1747 charview.c:7905 charview.c:8797 metricsview.c:2826
 msgid "Z_oom out"
-msgstr "Ζο_υμάρισμα"
+msgstr "_"
 
 #: bitmapview.c:1748 charview.c:7906 charview.c:8798 metricsview.c:2827
 msgid "Zoom _in"
-msgstr "_Ξεζουμάρισμα"
+msgstr "_Z"
 
 #: bitmapview.c:1750 charview.c:7912 fontview.c:7321 metricsview.c:2832
 msgid "_Next Glyph"
-msgstr "_Επόμενος γλύφος"
+msgstr "_ "
 
 #: bitmapview.c:1751 charview.c:7913 fontview.c:7322 metricsview.c:2833
 msgid "_Prev Glyph"
@@ -709,15 +705,15 @@ msgstr ""
 
 #: bitmapview.c:1752 charview.c:7914 fontview.c:7323 metricsview.c:2834
 msgid "Next _Defined Glyph"
-msgstr "Επόμενος _καθορισμένος γλύφος"
+msgstr " _ "
 
 #: bitmapview.c:1753 charview.c:7915 fontview.c:7324 metricsview.c:2835
 msgid "Prev Defined Gl_yph"
-msgstr "Προηγούμενος καθορισμένος γλύ_φος"
+msgstr "  _"
 
 #: bitmapview.c:1754 charview.c:7917 fontview.c:7325
 msgid "_Goto"
-msgstr "Πή_γαινε"
+msgstr "_"
 
 #: bitmapview.c:1755 charview.c:7918 metricsview.c:2836
 msgid "Find In Font _View"
@@ -725,64 +721,64 @@ msgstr ""
 
 #: bitmapview.c:1757
 msgid "_Bigger Pixel Size"
-msgstr ""
+msgstr "_  "
 
 #: bitmapview.c:1758
 msgid "_Smaller Pixel Size"
-msgstr ""
+msgstr "  _"
 
 #: bitmapview.c:1760 charview.c:8804
 msgid "_Palettes"
-msgstr ""
+msgstr "_"
 
 #: bitmapview.c:1765 charview.c:7866 cvpalettes.c:2866 fontview.c:7505
 #: fontview.c:7726
 msgid "Set _Width..."
-msgstr ""
+msgstr "  _"
 
 #: bitmapview.c:1766
 msgid "Set _Vertical Width..."
-msgstr ""
+msgstr "  _ "
 
 #: bitmapview.c:1771 charview.c:8087 charview.c:8102 charview.c:8810
 #: fontview.c:7732 metricsview.c:3093
 msgid "_File"
-msgstr ""
+msgstr "_"
 
 #: bitmapview.c:1772 charinfo.c:1868 charview.c:8088 charview.c:8103
 #: charview.c:8811 contextchain.c:2152 contextchain.c:2266 fontview.c:7733
 #: metricsview.c:3094 statemachine.c:3029 ttfinstrs.c:1254
 msgid "_Edit"
-msgstr ""
+msgstr "_"
 
 #: bitmapview.c:1773 charview.c:8090 charview.c:8105 charview.c:8813
 #: fontview.c:7734 metricsview.c:3095
 msgid "E_lement"
-msgstr ""
+msgstr "_"
 
 #: bitmapview.c:1774 charview.c:8025 charview.c:8092 charview.c:8107
 #: charview.c:8814 fontview.c:7737 metricsview.c:3096
 msgid "_View"
-msgstr ""
+msgstr "_"
 
 #: bitmapview.c:1775 charview.c:8093 charview.c:8108 fontview.c:7738
 #: metricsview.c:3097
 msgid "_Metrics"
-msgstr ""
+msgstr "_"
 
 #: bitmapview.c:1776 charview.c:8096 charview.c:8109 charview.c:8815
 #: fontview.c:7742 metricsview.c:3098
 msgid "_Window"
-msgstr ""
+msgstr "_"
 
 #: bitmapview.c:1777 charview.c:8097 charview.c:8110 charview.c:8816
 #: fontview.c:7696 fontview.c:7743 metricsview.c:3099
 msgid "_Help"
-msgstr ""
+msgstr "_"
 
 #: bitmapview.c:1889
 msgid "Recalculate Bitmaps"
-msgstr ""
+msgstr "  "
 
 #: bvedit.c:39
 msgid "Skew"
@@ -798,7 +794,7 @@ msgstr ""
 
 #: charinfo.c:83
 msgid "No Class"
-msgstr ""
+msgstr "   "
 
 #: charinfo.c:84 cvgetinfo.c:1391
 msgid "Base Glyph"
@@ -878,11 +874,11 @@ msgstr ""
 
 #: charinfo.c:121
 msgid "Byzantine Music"
-msgstr ""
+msgstr " "
 
 #: charinfo.c:122
 msgid "Canadian Syllabics"
-msgstr ""
+msgstr "  "
 
 #: charinfo.c:123
 msgid "Script|Cham"
@@ -898,7 +894,7 @@ msgstr ""
 
 #: charinfo.c:126
 msgid "CJK Ideographic"
-msgstr ""
+msgstr " "
 
 #: charinfo.c:127
 #, fuzzy
@@ -907,11 +903,11 @@ msgstr "Lang|Coptic"
 
 #: charinfo.c:128
 msgid "Cypro-Minoan"
-msgstr ""
+msgstr "-"
 
 #: charinfo.c:129
 msgid "Cypriot syllabary"
-msgstr ""
+msgstr "  "
 
 #: charinfo.c:130 unicoderange.c:52
 msgid "Cyrillic"
@@ -1028,11 +1024,11 @@ msgstr ""
 
 #: charinfo.c:169
 msgid "Linear A"
-msgstr ""
+msgstr " "
 
 #: charinfo.c:170
 msgid "Linear B"
-msgstr ""
+msgstr " "
 
 #: charinfo.c:171
 msgid "Script|Mandaean"
@@ -1060,7 +1056,7 @@ msgstr ""
 
 #: charinfo.c:181
 msgid "Old Italic (Etruscan, Oscan, etc.)"
-msgstr ""
+msgstr "  ( ..)"
 
 #: charinfo.c:182
 msgid "Script|Old Permic"
@@ -1069,7 +1065,7 @@ msgstr ""
 #: charinfo.c:183
 #, fuzzy
 msgid "Old Persian cuneiform"
-msgstr "Cuneiform, Old Persian"
+msgstr " , "
 
 #: charinfo.c:184
 msgid "Script|Oriya"
@@ -1122,7 +1118,7 @@ msgstr ""
 
 #: charinfo.c:196
 msgid "Script|Sumero-Akkadian Cuneiform"
-msgstr ""
+msgstr "- "
 
 #: charinfo.c:197
 msgid "Script|Syloti Nagri"
@@ -1458,7 +1454,7 @@ msgstr ""
 #: charinfo.c:290
 #, fuzzy
 msgid "Lang|Default"
-msgstr "Καθορισμός προεπιλογής σε όλα"
+msgstr "   "
 
 #: charinfo.c:291
 msgid "Woods Cree"
@@ -1466,7 +1462,7 @@ msgstr ""
 
 #: charinfo.c:292
 msgid "German (Standard)"
-msgstr ""
+msgstr " ()"
 
 #: charinfo.c:293
 msgid "Dogri"
@@ -1582,7 +1578,7 @@ msgstr ""
 
 #: charinfo.c:321
 msgid "French (Standard)"
-msgstr ""
+msgstr " ()"
 
 #: charinfo.c:322 fontinfo.c:696
 msgid "Frisian"
@@ -1746,7 +1742,7 @@ msgstr ""
 
 #: charinfo.c:362
 msgid "Irish Traditional"
-msgstr ""
+msgstr " "
 
 #: charinfo.c:363 fontinfo.c:716 macenc.c:2229
 msgid "Icelandic"
@@ -2262,7 +2258,7 @@ msgstr ""
 
 #: charinfo.c:491
 msgid "Nynorsk"
-msgstr ""
+msgstr " "
 
 #: charinfo.c:492
 msgid "Oji-Cree"
@@ -2286,7 +2282,7 @@ msgstr ""
 
 #: charinfo.c:497
 msgid "Palestinian Aramaic"
-msgstr ""
+msgstr " "
 
 #: charinfo.c:498
 msgid "Pali"
@@ -2306,7 +2302,7 @@ msgstr ""
 
 #: charinfo.c:502
 msgid "Polytonic Greek"
-msgstr ""
+msgstr " "
 
 #: charinfo.c:503
 msgid "Pilipino"
@@ -2694,15 +2690,15 @@ msgstr ""
 
 #: charinfo.c:599
 msgid "Chinese Phonetic"
-msgstr ""
+msgstr " "
 
 #: charinfo.c:600
 msgid "Chinese Simplified"
-msgstr ""
+msgstr " "
 
 #: charinfo.c:601
 msgid "Chinese Traditional"
-msgstr ""
+msgstr " "
 
 #: charinfo.c:602
 msgid "Zande"
@@ -2714,43 +2710,43 @@ msgstr ""
 
 #: charinfo.c:608
 msgid "Ancient Ligatures"
-msgstr ""
+msgstr "  "
 
 #: charinfo.c:609 fontview.c:6524
 msgid "Discretionary Ligatures"
-msgstr ""
+msgstr "  "
 
 #: charinfo.c:610 fontview.c:6523
 msgid "Historic Ligatures"
-msgstr ""
+msgstr "  "
 
 #: charinfo.c:611 fontview.c:6522
 msgid "Required Ligatures"
-msgstr ""
+msgstr "  "
 
 #: charinfo.c:612 fontview.c:6521
 msgid "Standard Ligatures"
-msgstr ""
+msgstr "  "
 
 #: charinfo.c:613 charinfo.c:678 fontview.c:6525
 msgid "Diagonal Fractions"
-msgstr ""
+msgstr " "
 
 #: charinfo.c:614
 msgid "Vertical Fractions"
-msgstr ""
+msgstr " "
 
 #: charinfo.c:615
 msgid "Above Base Substitutions"
-msgstr ""
+msgstr "    "
 
 #: charinfo.c:616
 msgid "Below Base Forms"
-msgstr ""
+msgstr "    "
 
 #: charinfo.c:617
 msgid "Below Base Substitutions"
-msgstr ""
+msgstr "    "
 
 #: charinfo.c:618
 msgid "Akhand"
@@ -2758,69 +2754,69 @@ msgstr ""
 
 #: charinfo.c:619 charinfo.c:752
 msgid "Glyph Composition/Decomposition"
-msgstr ""
+msgstr "/ "
 
 #: charinfo.c:620
 msgid "Half Forms"
-msgstr ""
+msgstr " "
 
 #: charinfo.c:621
 msgid "Halant Forms"
-msgstr ""
+msgstr " Halant"
 
 #: charinfo.c:622
 msgid "Leading Jamo Forms"
-msgstr ""
+msgstr "  Jamo"
 
 #: charinfo.c:623
 msgid "Trailing Jamo Forms"
-msgstr ""
+msgstr "  Jamo"
 
 #: charinfo.c:624
 msgid "Vowel Jamo Forms"
-msgstr ""
+msgstr "  Jamo"
 
 #: charinfo.c:625
 msgid "Nukta Forms"
-msgstr ""
+msgstr " Nukta"
 
 #: charinfo.c:626 charinfo.c:783
 msgid "Ordinals"
-msgstr ""
+msgstr " "
 
 #: charinfo.c:627
 msgid "Pre Base Forms"
-msgstr ""
+msgstr "  "
 
 #: charinfo.c:628 charinfo.c:775
 msgid "Pre Base Substitutions"
-msgstr ""
+msgstr "  "
 
 #: charinfo.c:629
 msgid "Post Base Forms"
-msgstr ""
+msgstr "  "
 
 #: charinfo.c:630
 msgid "Post Base Substitutions"
-msgstr ""
+msgstr "  "
 
 #: charinfo.c:631
 msgid "Reph Form"
-msgstr ""
+msgstr " Reph"
 
 #: charinfo.c:632
 msgid "Vattu Variants"
-msgstr ""
+msgstr "  Vattu"
 
 #: charinfo.c:634 charinfo.c:656 charinfo.c:665 charinfo.c:728 charinfo.c:747
 #: charinfo.c:756 charinfo.c:766 charinfo.c:777 charinfo.c:785 charinfo.c:793
 #: charinfo.c:800 charinfo.c:808
 msgid "Required feature"
-msgstr ""
+msgstr " "
 
 #: charinfo.c:639 charinfo.c:672
 msgid "Case-Sensitive Forms"
-msgstr ""
+msgstr "  -"
 
 #: charinfo.c:640
 msgid "Capital Spacing"
@@ -2968,7 +2964,7 @@ msgstr ""
 
 #: charinfo.c:693
 msgid "Mathematical Greek"
-msgstr ""
+msgstr " "
 
 #: charinfo.c:694 charinfo.c:738
 msgid "Alternate Annotation Forms"
@@ -3207,7 +3203,7 @@ msgid "Edit Ligature"
 msgstr ""
 
 #: charinfo.c:1121
-msgid "Any Script"
+msgid "Any Script" 
 msgstr ""
 
 #: charinfo.c:1121
@@ -3257,10 +3253,10 @@ msgid ""
 "If that is not desirable, press [Cancel] twice,\n"
 "and then hold down the control key and press [Edit]."
 msgstr ""
-"Could not find a language to match '%c%c%c%c'.\n"
-"It has been omitted from this list.\n"
-"If that is not desirable press [Cancel] twice\n"
-"and then hold down the control key and press [Edit]"
+"           %c%c%c%c.\n"
+"    .\n"
+"      []  \n"
+"       Ctrl  []"
 
 #: charinfo.c:1454
 #, fuzzy
@@ -3268,16 +3264,16 @@ msgid ""
 "You must select at least one language.\n"
 "Use the \"Default\" language if nothing else fits."
 msgstr ""
-"You must select at least one language\n"
-"Use the \"Default\" language if nothing else fits."
+"     \n"
+"        ."
 
 #: charinfo.c:1577
 msgid "Script List"
-msgstr ""
+msgstr " "
 
 #: charinfo.c:1652 charinfo.c:1681
 msgid "Script Missing"
-msgstr ""
+msgstr "- "
 
 #: charinfo.c:1652
 #, fuzzy, c-format
@@ -3287,26 +3283,26 @@ msgid ""
 "If that is not desirable, press [Cancel],\n"
 "and then hold down the control key and press [Edit]."
 msgstr ""
-"Could not find a script to match '%c%c%c%c'.\n"
-"It has been omitted from this list.\n"
-"If that is not desirable press [Cancel]\n"
-"and then hold down the control key and press [Edit]"
+"           %c%c%c%c.\n"
+"    .\n"
+"      []  \n"
+"       Ctrl  []"
 
 #: charinfo.c:1681
 msgid "You must select at least one script"
-msgstr ""
+msgstr "      "
 
 #: charinfo.c:1725
 msgid "Script & Language"
-msgstr ""
+msgstr " & "
 
 #: charinfo.c:1725
 msgid "Enter a list of scripts each followed by a list of languages"
-msgstr ""
+msgstr "   ,       "
 
 #: charinfo.c:1833
 msgid "Script & Language List"
-msgstr ""
+msgstr "  & "
 
 #: charinfo.c:1857
 msgid "ScriptLangList|_New..."
@@ -3352,7 +3348,7 @@ msgstr ""
 #: charinfo.c:2574 charinfo.c:3217 kernclass.c:2123 kernclass.c:2254
 #: statemachine.c:2983 typofeatures.c:1271
 msgid "Right To Left"
-msgstr ""
+msgstr "  "
 
 #: charinfo.c:2583 charinfo.c:3225 kernclass.c:2262 typofeatures.c:1279
 msgid "Ignore Base Glyphs"
@@ -3360,7 +3356,7 @@ msgstr ""
 
 #: charinfo.c:2592 charinfo.c:3233 kernclass.c:2270 typofeatures.c:1287
 msgid "Ignore Ligatures"
-msgstr ""
+msgstr "   "
 
 #: charinfo.c:2601 charinfo.c:3241 kernclass.c:2278 typofeatures.c:1295
 msgid "Ignore Combining Marks"
@@ -11539,7 +11535,7 @@ msgstr "_Edit..."
 #: kernclass.c:1984
 #, fuzzy
 msgid "Select Glyph Class:"
-msgstr "Επιλεγμένοι γλύφοι"
+msgstr " "
 
 #: kernclass.c:1990 kernclass.c:1996
 #, fuzzy
@@ -12677,7 +12673,7 @@ msgstr "No Bitmap Fonts"
 #: openfontdlg.c:112
 #, fuzzy
 msgid "PostScript"
-msgstr "PostScript®"
+msgstr "PostScript"
 
 #: openfontdlg.c:114 prefs.c:419 savefontdlg.c:894
 msgid "OpenType"
@@ -18728,7 +18724,7 @@ msgstr "Lang|Kannada"
 #: unicoderange.c:74
 #, fuzzy
 msgid "Malayalam"
-msgstr "Malayālam"
+msgstr "Malaylam"
 
 #: unicoderange.c:75
 #, fuzzy
@@ -19568,337 +19564,337 @@ msgstr ""
 #. xgettext doesn't like them, so I have to find them manually.
 #. it is encoded in utf-8
 #: autowidth.c
-msgid "Α-ΡΣ-Ωα-ω"
+msgid "---"
 msgstr ""
 
 #: autowidth.c
-msgid "ЂЄ-ІЈ-ЋЏ-ИК-Яа-ик-яђє-іј-ћџ"
+msgid "--------"
 msgstr ""
 
 #: autowidth.c
-msgid "α-ω.,:;-"
+msgid "-.,:;-"
 msgstr ""
 
 #: autowidth.c
-msgid "Α-ΡΣ-Ωα-ω.,:;-"
+msgid "---.,:;-"
 msgstr ""
 
 #: autowidth.c
-msgid "а-ик-яђє-іј-ћџ.,:;-"
+msgid "----.,:;-"
 msgstr ""
 
 #: autowidth.c
-msgid "ЂЄ-ІЈ-ЋЏ-ИК-Яа-ик-яђє-іј-ћџ.,:;-"
+msgid "--------.,:;-"
 msgstr ""
 
 #. CW means clockwise
 #: bitmapview.c
-msgid "_Rotate 90° CW"
+msgid "_Rotate 90 CW"
 msgstr ""
 
 #. CCW means counter clockwise
 #: bitmapview.c
-msgid "Rotate _90° CCW"
+msgid "Rotate _90 CCW"
 msgstr ""
 
 #: bitmapview.c
-msgid "Rotate _180°"
+msgid "Rotate _180"
 msgstr ""
 
 #: charinfo.c
-msgid "Brāhmī"
+msgid "Brhm"
 msgstr ""
 
 #: charinfo.c
-msgid "Hanunóo"
+msgid "Hanuno"
 msgstr ""
 
 #: charinfo.c
-msgid "Kharoṣṭhī"
+msgid "Kharoh"
 msgstr ""
 
 #: charinfo.c
-msgid "Lepcha (Róng)"
+msgid "Lepcha (Rng)"
 msgstr ""
 
 #: charinfo.c
-msgid "Malayālam"
+msgid "Malaylam"
 msgstr ""
 
 #: charinfo.c
-msgid "∆X:"
+msgid "X:"
 msgstr ""
 
 #: charinfo.c
-msgid "∆Y:"
+msgid "Y:"
 msgstr ""
 
 #: charinfo.c
-msgid "∆XAdvance:"
+msgid "XAdvance:"
 msgstr ""
 
 #: charinfo.c
-msgid "∆YAdvance:"
+msgid "YAdvance:"
 msgstr ""
 
 # charinfo.c, fontinfo.c
 #: charinfo.c
-msgid "ΤεΧ"
+msgid ""
 msgstr ""
 
 # charview.c, savefontdlg.c
 #: charview.c
-msgid "PostScript®"
+msgid "PostScript"
 msgstr ""
 
 # cvgetinfo.c, nonlineartrans.c, transform.c
 #: cvgetinfo.c
-msgid "°"
+msgid ""
 msgstr ""
 
 #: fontinfo.c
-msgid "ΤεΧ Base (8r)"
+msgid " Base (8r)"
 msgstr ""
 
 #: fontinfo.c
-msgid "French Réunion"
+msgid "French Runion"
 msgstr ""
 
 #: fontinfo.c
-msgid "French Côte d'Ivoire"
+msgid "French Cte d'Ivoire"
 msgstr ""
 
 #: fontinfo.c
-msgid "ΤεΧ Text"
+msgid " Text"
 msgstr ""
 
 #: fontinfo.c
-msgid "ΤεΧ Math"
+msgid " Math"
 msgstr ""
 
 #: fontinfo.c
-msgid "ΤεΧ Math Ext"
+msgid " Math Ext"
 msgstr ""
 
 #: fontview.c
-msgid "Replace Å"
+msgid "Replace "
 msgstr ""
 
 #: fontview.c
 msgid ""
-"Are you sure you want to replace Å?\n"
+"Are you sure you want to replace ?\n"
 "The ring will not join to the A."
 msgstr ""
 
 #: openfontdlg.c
 #, fuzzy
-msgid "ΤεΧ Bitmap Fonts"
+msgid " Bitmap Fonts"
 msgstr "No Bitmap Fonts"
 
 #: problems.c
-msgid "_X near¹"
+msgid "_X near"
 msgstr ""
 
 #: problems.c
-msgid "_Y near¹"
+msgid "_Y near"
 msgstr ""
 
 #: problems.c
-msgid "Hint _Width Near¹"
+msgid "Hint _Width Near"
 msgstr ""
 
 #: problems.c
-msgid "Y near¹ _standard heights"
+msgid "Y near _standard heights"
 msgstr ""
 
 #: problems.c
-msgid "_Points near¹ hint edges"
+msgid "_Points near hint edges"
 msgstr ""
 
 #: problems.c
-msgid "¹ \"_Near\" means within"
+msgid " \"_Near\" means within"
 msgstr ""
 
 #: savefontdlg.c
 msgid ""
 "The AFM file contains metrics information that many word-processors will "
-"read when using a PostScript® font."
+"read when using a PostScript font."
 msgstr ""
 
 #: savefontdlg.c
 msgid ""
-"The PFM file contains information Windows needs to install a PostScript® "
+"The PFM file contains information Windows needs to install a PostScript "
 "font."
 msgstr ""
 
 #: savefontdlg.c
 msgid ""
-"The tfm and enc files contain information TeX needs to install a PostScript® "
+"The tfm and enc files contain information TeX needs to install a PostScript "
 "font."
 msgstr ""
 
 #: statemachine.c
-msgid "_Up↑"
+msgid "_Up"
 msgstr ""
 
 #: statemachine.c
-msgid "←_Left"
+msgid "_Left"
 msgstr ""
 
 #: statemachine.c
-msgid "_Right→"
+msgid "_Right"
 msgstr ""
 
 #: statemachine.c
-msgid "↓_Down"
+msgid "_Down"
 msgstr ""
 
 #: transform.c
-msgid "° Clockwise"
+msgid " Clockwise"
 msgstr ""
 
 #. Sometimes spelled Widdershins. An old word which means counter clockwise.
 #. I used it because "counter clockwise" took too much space.
 #: transform.c
-msgid "° Withershins"
+msgid " Withershins"
 msgstr ""
 
-# FontForge needs to recoginze the quotes used here(“”). If you change them
+# FontForge needs to recoginze the quotes used here(). If you change them
 # (in the translated strings) let me know. It currently also recognizes
 # guillemets and a couple of other quotes as well.
-#. FontForge needs to recoginze the quotes used here(“”). If you change them
+#. FontForge needs to recoginze the quotes used here(). If you change them
 #. (in the translated strings) let me know. It currently also recognizes
 #. guillemets and a couple of other quotes as well.
 #.   pfaedit@users.sourceforge.net
 #: glyphcomp.c
-msgid "Glyph “%s” differs\n"
+msgid "Glyph %s differs\n"
 msgstr ""
 
 #: glyphcomp.c
-msgid "Glyph “%s” contains a reference to %s in %s\n"
+msgid "Glyph %s contains a reference to %s in %s\n"
 msgstr ""
 
 #: glyphcomp.c
-msgid "Glyph “%s” refers to %s with a different transformation matrix\n"
+msgid "Glyph %s refers to %s with a different transformation matrix\n"
 msgstr ""
 
 #: glyphcomp.c
-msgid "A match was found after unlinking references in glyph “%s”\n"
+msgid "A match was found after unlinking references in glyph %s\n"
 msgstr ""
 
 #: glyphcomp.c
-msgid "Glyph “%s” has advance width %d in %s but %d in %s\n"
+msgid "Glyph %s has advance width %d in %s but %d in %s\n"
 msgstr ""
 
 #: glyphcomp.c
-msgid "Glyph “%s” has vertical advance width %d in %s but %d in %s\n"
+msgid "Glyph %s has vertical advance width %d in %s but %d in %s\n"
 msgstr ""
 
 #: glyphcomp.c
-msgid "Glyph “%s” has a different number of layers\n"
+msgid "Glyph %s has a different number of layers\n"
 msgstr ""
 
 #: glyphcomp.c
-msgid "Glyph “%s” has a different fill in layer %d\n"
+msgid "Glyph %s has a different fill in layer %d\n"
 msgstr ""
 
 #: glyphcomp.c
-msgid "Glyph “%s” has a different stroke in layer %d\n"
+msgid "Glyph %s has a different stroke in layer %d\n"
 msgstr ""
 
 #: glyphcomp.c
 msgid ""
-"Glyph “%s” does not have splines which match exactly, but they are close\n"
+"Glyph %s does not have splines which match exactly, but they are close\n"
 msgstr ""
 
 #: glyphcomp.c
-msgid "Different number of contours in glyph “%s”\n"
+msgid "Different number of contours in glyph %s\n"
 msgstr ""
 
 #: glyphcomp.c
-msgid "Open/Closed contour mismatch in glyph “%s”\n"
+msgid "Open/Closed contour mismatch in glyph %s\n"
 msgstr ""
 
 #: glyphcomp.c
-msgid "Spline mismatch in glyph “%s”\n"
+msgid "Spline mismatch in glyph %s\n"
 msgstr ""
 
 #: glyphcomp.c
-msgid "Hint masks differ in glyph “%s” at (%g,%g)\n"
+msgid "Hint masks differ in glyph %s at (%g,%g)\n"
 msgstr ""
 
 #: glyphcomp.c
-msgid "Hints differ in glyph “%s”\n"
+msgid "Hints differ in glyph %s\n"
 msgstr ""
 
 #: glyphcomp.c
-msgid "Glyph “%s” in %s has no truetype instructions\n"
+msgid "Glyph %s in %s has no truetype instructions\n"
 msgstr ""
 
 #: glyphcomp.c
-msgid "Glyph “%s” has different truetype instructions\n"
+msgid "Glyph %s has different truetype instructions\n"
 msgstr ""
 
 #: glyphcomp.c
-msgid "Glyph “%s” missing from %s\n"
+msgid "Glyph %s missing from %s\n"
 msgstr ""
 
 #: glyphcomp.c
-msgid "Glyph “%s” missing from %s at %d@%d\n"
+msgid "Glyph %s missing from %s at %d@%d\n"
 msgstr ""
 
 #: glyphcomp.c
-msgid "Glyph “%s” differs at %d@%d\n"
+msgid "Glyph %s differs at %d@%d\n"
 msgstr ""
 
 #: glyphcomp.c
-msgid "Glyph “%s” has advance width %d in %s but %d in %s at %d@%d\n"
+msgid "Glyph %s has advance width %d in %s but %d in %s at %d@%d\n"
 msgstr ""
 
 #: glyphcomp.c
-msgid "Glyph “%s” has vertical advance width %d in %s but %d in %s at %d@%d\n"
+msgid "Glyph %s has vertical advance width %d in %s but %d in %s at %d@%d\n"
 msgstr ""
 
 #: glyphcomp.c
-msgid "Glyph “%s” has a different bitmap at %d@%d\n"
+msgid "Glyph %s has a different bitmap at %d@%d\n"
 msgstr ""
 
 #: glyphcomp.c
-msgid "“%s” in %s did not contain an anchor point (%g,%g) class %s\n"
+msgid "%s in %s did not contain an anchor point (%g,%g) class %s\n"
 msgstr ""
 
 #: glyphcomp.c
 #, fuzzy
 msgid ""
-"“%s” in %s did not contain a positioning lookup ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv="
+"%s in %s did not contain a positioning lookup x=%d y=%d x_adv=%d y_adv="
 "%d\n"
 msgstr ""
-"“%s” in %s did not contain a positioning lookup dx=%d dy=%d dx_adv=%d dy_adv="
+"%s in %s did not contain a positioning lookup dx=%d dy=%d dx_adv=%d dy_adv="
 "%d\n"
 
 #: glyphcomp.c
 #, fuzzy
 msgid ""
-"“%s” in %s did not contain a pairwise positioning lookup ∆x=%d ∆y=%d ∆x_adv=%"
-"d ∆y_adv=%d to %s ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d\n"
+"%s in %s did not contain a pairwise positioning lookup x=%d y=%d x_adv=%"
+"d y_adv=%d to %s x=%d y=%d x_adv=%d y_adv=%d\n"
 msgstr ""
-"“%s” in %s did not contain a pairwise positioning lookup dx=%d dy=%d dx_adv=%"
+"%s in %s did not contain a pairwise positioning lookup dx=%d dy=%d dx_adv=%"
 "d dy_adv=%d to %s dx=%d dy=%d dx_adv=%d dy_adv=%d\n"
 
 #: glyphcomp.c
-msgid "“%s” in %s did not contain a substitution lookup to %s\n"
+msgid "%s in %s did not contain a substitution lookup to %s\n"
 msgstr ""
 
 #: glyphcomp.c
-msgid "Kerning between “%s” and %s is %d in %s and %d in %s\n"
+msgid "Kerning between %s and %s is %d in %s and %d in %s\n"
 msgstr ""
 
 #: glyphcomp.c
-msgid "No kerning between “%s” and %s in %s whilst it is %d in %s\n"
+msgid "No kerning between %s and %s in %s whilst it is %d in %s\n"
 msgstr ""
 
 #: cvruler.c
-msgid "∆Curvature: %g"
+msgid "Curvature: %g"
 msgstr ""
 
 #, fuzzy
