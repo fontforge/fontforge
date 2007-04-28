@@ -2334,7 +2334,7 @@ return( -1 );
 	y1 = ((s1->splines[1].a*t1+s1->splines[1].b)*t1+s1->splines[1].c)*t1+s1->splines[1].d;
 	if ( (xo = (x-x1))<0 ) xo = -xo;
 	if ( (yo = (y-y1))<0 ) yo = -yo;
-	if ( xo+yo>.1 )
+	if ( xo+yo>.5 )
 return( -1 );
     }
 return( t1 );
