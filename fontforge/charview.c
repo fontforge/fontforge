@@ -1838,11 +1838,19 @@ void SCUpdateAll(SplineChar *sc) {
 #elif defined(FONTFORGE_CONFIG_GDRAW)
     CharView *cv;
     struct splinecharlist *dlist;
+    MetricsView *mv;
+    FontView *fv;
 
     for ( cv=sc->views; cv!=NULL; cv=cv->next )
 	GDrawRequestExpose(cv->v,NULL,false);
     for ( dlist=sc->dependents; dlist!=NULL; dlist=dlist->next )
 	SCUpdateAll(dlist->sc);
+    if ( sc->parent!=NULL ) {
+	for ( fv = sc->parent->fv; fv!=NULL; fv=fv->nextsame )
+	    FVRegenChar(fv,sc);
+	for ( mv = sc->parent->metrics; mv!=NULL; mv=mv->next )
+	    MVRegenChar(mv,sc);
+    }
 #endif
 }
 
@@ -3348,7 +3356,6 @@ return;
 void _SCCharChangedUpdate(SplineChar *sc,int changed) {
     SplineFont *sf = sc->parent;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    FontView *fv;
     extern int updateflex;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
@@ -3393,8 +3400,6 @@ void _SCCharChangedUpdate(SplineChar *sc,int changed) {
     SCLayersChange(sc);
 # endif
     SCRegenFills(sc);
-    for ( fv = sf->fv; fv!=NULL; fv=fv->nextsame )
-	FVRegenChar(fv,sc);
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 }
 
