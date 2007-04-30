@@ -2386,22 +2386,26 @@ static int CCD_AddGlyphList(GGadgetCreateData *gcd, GTextInfo *label,int off,
     gcd[k].gd.cid = CID_Select+off;
     gcd[k++].creator = GButtonCreate;
 
-    label[k].text = (unichar_t *) _("Add Standard Class:");
-    label[k].text_is_1byte = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = y+24+6;
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    gcd[k++].creator = GLabelCreate;
+    if ( off>100 ) {	/* Don't add for glyph lists */
+	label[k].text = (unichar_t *) _("Add Standard Class:");
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = y+24+6;
+	gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+	gcd[k++].creator = GLabelCreate;
 
-    gcd[k].gd.pos.x = 110; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-6;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Add one of these standard classes of glyphs to the current class");
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    gcd[k].gd.u.list = stdclasses;
-    gcd[k].gd.handle_controlevent = CCD_StdClass;
-    gcd[k].gd.cid = CID_StdClasses+off;
-    gcd[k++].creator = GListButtonCreate;
+	gcd[k].gd.pos.x = 110; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-6;
+	gcd[k].gd.popup_msg = (unichar_t *) _("Add one of these standard classes of glyphs to the current class");
+	gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+	gcd[k].gd.u.list = stdclasses;
+	gcd[k].gd.handle_controlevent = CCD_StdClass;
+	gcd[k].gd.cid = CID_StdClasses+off;
+	gcd[k++].creator = GListButtonCreate;
 
-    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = y+48;
+	y+=24;
+    }
+
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = y+24;
     gcd[k].gd.pos.width = CCD_WIDTH-25; gcd[k].gd.pos.height = 8*13+4;
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;
     gcd[k].gd.cid = CID_GlyphList+off;
