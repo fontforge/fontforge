@@ -100,6 +100,7 @@ return( copy(str));
 return( ret );
     }
 }
+#endif /* _NO_FFSCRIPT */
 
 static void arrayfree(Array *a) {
     int i;
@@ -114,6 +115,7 @@ static void arrayfree(Array *a) {
     free(a);
 }
 
+#ifndef _NO_FFSCRIPT
 static Array *arraycopy(Array *a) {
     int i;
     Array *c;
@@ -142,6 +144,7 @@ static void array_copy_into(Array *dest,int offset,Array *src) {
 	    dest->vals[i+offset].u.aval = arraycopy(src->vals[i].u.aval);
     }
 }
+#endif /* _NO_FFSCRIPT */
 
 void DictionaryFree(struct dictionary *dica) {
     int i;
@@ -159,6 +162,7 @@ return;
     free( dica->entries );
 }
 
+#ifndef _NO_FFSCRIPT
 static int DicaLookup(struct dictionary *dica,char *name,Val *val) {
     int i;
 
@@ -1547,6 +1551,7 @@ static FontView *FVAppend(FontView *fv) {
     }
 return( fv );
 }
+#endif /* _NO_FFSCRIPT */
 
 char **GetFontNames(char *filename) {
     FILE *foo;
@@ -1601,6 +1606,7 @@ char **GetFontNames(char *filename) {
 return( ret );
 }
 
+#ifndef _NO_FFSCRIPT
 static void bFontsInFile(Context *c) {
     char **ret;
     int cnt;
@@ -1960,7 +1966,7 @@ static void Bitmapper(Context *c,int isavail) {
 	    sizes[i] |= 0x10000;
     }
     sizes[i] = 0;
-    
+
     if ( !BitmapControl(c->curfv,sizes,isavail,rasterize) )
 	ScriptError(c,"Bitmap operation failed");		/* Storage leak here longjmp avoids free */
     free(sizes);
@@ -4658,7 +4664,6 @@ static void bRoundToInt(Context *c) {
     }
     for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = sf->glyphs[gid];
-	SCPreserveState(sc,false);
 	SCRound2Int( sc,factor);
     }
 }
@@ -9277,7 +9282,9 @@ static void _CheckIsScript(int argc, char *argv[]) {
     int i, is_python = DefaultLangPython();
     char *arg;
 
+#ifndef _NO_PYTHON
     FontForge_PythonInit();
+#endif
     if ( argc==1 )
 return;
     for ( i=1; i<argc; ++i ) {

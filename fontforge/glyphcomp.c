@@ -31,6 +31,49 @@
 #include <ustring.h>
 
 /* ************************************************************************** */
+/* *********************       Error dispatchers        ********************* */
+/* ************************************************************************** */
+#if !defined(_NO_PYTHON) || !defined(_NO_FFSCRIPT)
+static void GCError(Context *c, const char *msg) {
+#ifdef _NO_PYTHON
+    ScriptError(c,msg);
+#elif defined(_NO_FFSCRIPT)
+    PyFF_ErrorString(msg,NULL);
+#else
+    if ( c==NULL )
+	PyFF_ErrorString(msg,NULL);
+    else
+	ScriptError(c,msg);
+#endif
+}
+
+static void GCErrorString(Context *c, const char *frmt, const char *str) {
+#ifdef _NO_PYTHON
+    ScriptErrorString(c,frmt,str);
+#elif defined(_NO_FFSCRIPT)
+    PyFF_ErrorString(frmt,str);
+#else
+    if ( c==NULL )
+	PyFF_ErrorString(frmt,str);
+    else
+	ScriptErrorString(c,frmt,str);
+#endif
+}
+
+static void GCError3(Context *c, const char *frmt, const char *str, int size, int depth) {
+#ifdef _NO_PYTHON
+    ScriptErrorF(c,frmt,str, size,depth);
+#elif defined(_NO_FFSCRIPT)
+    PyFF_ErrorF3(frmt,str, size,depth);
+#else
+    if ( c==NULL )
+	PyFF_ErrorF3(frmt,str, size,depth);
+    else
+	ScriptErrorF(c,frmt,str, size,depth);
+#endif
+}
+#endif
+/* ************************************************************************** */
 /* ********************* Code to compare outline glyphs ********************* */
 /* ************************************************************************** */
 
@@ -541,7 +584,7 @@ return( failed == 0 ? BC_Match : failed );
 /* **************** Code to selected glyphs against clipboard *************** */
 /* ************************************************************************** */
 
-static int RefCheck(Context *c, const RefChar *ref1,const RefChar *ref2 ) {
+static int RefCheck(const RefChar *ref1,const RefChar *ref2 ) {
     const RefChar *r1, *r2;
     int i;
     int ptmatchdiff = 0;
@@ -576,7 +619,8 @@ return( false );
 return( true + ptmatchdiff );
 }
 
-static int CompareLayer(Context *c, const SplineSet *ss1,const SplineSet *ss2,
+#if !defined(_NO_PYTHON) || !defined(_NO_FFSCRIPT)
+int CompareLayer(Context *c, const SplineSet *ss1,const SplineSet *ss2,
 	const RefChar *refs1, const RefChar *refs2,
 	real pt_err, real spline_err, const char *name, int diffs_are_errors,
 	SplinePoint **_hmfail) {
@@ -587,7 +631,7 @@ return( SS_PointsMatch );
 #if 0
     /* Unfortunately we can't do this because references in the clipboard */
     /*  don't have inline copies of their splines */
-    if ( !RefCheck( c,refs1,refs2 )) {
+    if ( !RefCheck( refs1,refs2 )) {
 	val = SSRefCompare(ss1,ss2,refs1,refs2,pt_err,spline_err);
 	if ( val&SS_NoMatch )
 	    val |= SS_RefMismatch;
@@ -595,7 +639,7 @@ return( SS_PointsMatch );
 	val = SSsCompare(ss1,ss2, pt_err, spline_err,_hmfail);
 #else
     val = SSsCompare(ss1,ss2, pt_err, spline_err,_hmfail);
-    refc = RefCheck( c,refs1,refs2 );
+    refc = RefCheck( refs1,refs2 );
     if ( !refc ) {
 	if ( !(val&SS_NoMatch) )
 	    val = SS_NoMatch|SS_RefMismatch;
@@ -606,16 +650,19 @@ return( SS_PointsMatch );
 #endif
     if ( (val&SS_NoMatch) && diffs_are_errors ) {
 	if ( val & SS_DiffContourCount )
-	    ScriptErrorString(c,"Spline mismatch (different number of contours) in glyph", name);
+	    GCErrorString(c,"Spline mismatch (different number of contours) in glyph", name);
 	else if ( val & SS_MismatchOpenClosed )
-	    ScriptErrorString(c,"Open/Closed contour mismatch in glyph", name);
+	    GCErrorString(c,"Open/Closed contour mismatch in glyph", name);
 	else if ( val & SS_RefMismatch )
-	    ScriptErrorString(c,"Reference mismatch in glyph", name);
+	    GCErrorString(c,"Reference mismatch in glyph", name);
 	else
-	    ScriptErrorString(c,"Spline mismatch in glyph", name);
+	    GCErrorString(c,"Spline mismatch in glyph", name);
+return( -1 );
     }
-    if ( (val & SS_RefPtMismatch) && diffs_are_errors )
-	ScriptErrorString(c,"References have different truetype point matching in glyph", name);
+    if ( (val & SS_RefPtMismatch) && diffs_are_errors ) {
+	GCErrorString(c,"References have different truetype point matching in glyph", name);
+return( -1 );
+    }
 return( val );
 }
 
@@ -627,8 +674,10 @@ static int CompareBitmap(Context *c,SplineChar *sc,const Undoes *cur,
 
     for ( bdf=c->curfv->sf->bitmaps; bdf!=NULL && (bdf->pixelsize!=cur->u.bmpstate.pixelsize || BDFDepth(bdf)!=cur->u.bmpstate.depth); bdf=bdf->next );
     if ( bdf==NULL || sc->orig_pos>=bdf->glyphcnt ||
-	    bdf->glyphs[sc->orig_pos]==NULL )
-	ScriptError(c,"Missing bitmap size" );
+	    bdf->glyphs[sc->orig_pos]==NULL ) {
+	GCError(c,"Missing bitmap size" );
+return( -1 );
+    }
     memset(&bc,0,sizeof(bc));
     bc.xmin = cur->u.bmpstate.xmin;
     bc.xmax = cur->u.bmpstate.xmax;
@@ -642,17 +691,18 @@ static int CompareBitmap(Context *c,SplineChar *sc,const Undoes *cur,
     ret = BitmapCompare(bdf->glyphs[sc->orig_pos],&bc,err, bb_err);
     if ( (ret&BC_NoMatch) && diffs_are_errors ) {
 	if ( ret&BC_BoundingBoxMismatch )
-	    ScriptErrorF(c,"Bitmaps bounding boxes do not match in glyph %s pixelsize %d depth %d",
+	    GCError3(c,"Bitmaps bounding boxes do not match in glyph %s pixelsize %d depth %d",
 		    sc->name, bdf->pixelsize, BDFDepth(bdf));
 	else if ( ret&SS_WidthMismatch )
-	    ScriptErrorF(c,"Bitmaps advance widths do not match in glyph %s pixelsize %d depth %d",
+	    GCError3(c,"Bitmaps advance widths do not match in glyph %s pixelsize %d depth %d",
 		    sc->name, bdf->pixelsize, BDFDepth(bdf));
 	else if ( ret&SS_VWidthMismatch )
-	    ScriptErrorF(c,"Bitmaps vertical advance widths do not match in glyph %s pixelsize %d depth %d",
+	    GCError3(c,"Bitmaps vertical advance widths do not match in glyph %s pixelsize %d depth %d",
 		    sc->name, bdf->pixelsize, BDFDepth(bdf));
 	else
-	    ScriptErrorF(c,"Bitmap mismatch in glyph %s pixelsize %d depth %d",
+	    GCError3(c,"Bitmap mismatch in glyph %s pixelsize %d depth %d",
 		    sc->name, bdf->pixelsize, BDFDepth(bdf));
+return( -1 );
     }
 return( ret );
 }
@@ -704,6 +754,8 @@ static int CompareSplines(Context *c,SplineChar *sc,const Undoes *cur,
 	    ret = CompareLayer(c,sc->layers[ly_fore].splines,cur->u.state.splines,
 			sc->layers[ly_fore].refs,cur->u.state.refs,
 			pt_err, spline_err,sc->name, diffs_are_errors, &hmfail);
+	    if ( ret==-1 )
+return( -1 );
 	    if ( ret&SS_NoMatch )
 		failed |= ret;
 	    if ( sc->vwidth-cur->u.state.vwidth>err || sc->vwidth-cur->u.state.vwidth<-err )
@@ -729,6 +781,8 @@ static int CompareSplines(Context *c,SplineChar *sc,const Undoes *cur,
 		temp = CompareLayer(c,sc->layers[ly].splines,cur->u.state.splines,
 			    sc->layers[ly].refs,cur->u.state.refs,
 			    pt_err, spline_err,sc->name, diffs_are_errors, &hmfail);
+		if ( temp==-1 )
+return( -1 );
 		if ( temp&SS_NoMatch )
 		    failed |= temp;
 		else
@@ -746,23 +800,36 @@ static int CompareSplines(Context *c,SplineChar *sc,const Undoes *cur,
 	    ret = failed;
       break;
       default:
-	ScriptError(c,"Unexpected clipboard contents");
+	GCError(c,"Unexpected clipboard contents");
+return( -1 );
     }
-    if ( (ret&SS_WidthMismatch) && diffs_are_errors )
-	ScriptErrorString(c,"Advance width mismatch in glyph", sc->name);
-    if ( (ret&SS_VWidthMismatch) && diffs_are_errors )
-	ScriptErrorString(c,"Vertical advance width mismatch in glyph", sc->name);
-    if ( (ret&SS_HintMismatch) && diffs_are_errors )
-	ScriptErrorString(c,"Hinting mismatch in glyph", sc->name);
+
+    if ( (ret&SS_WidthMismatch) && diffs_are_errors ) {
+	GCErrorString(c,"Advance width mismatch in glyph", sc->name);
+return( -1 );
+    }
+    if ( (ret&SS_VWidthMismatch) && diffs_are_errors ) {
+	GCErrorString(c,"Vertical advance width mismatch in glyph", sc->name);
+return( -1 );
+    }
+    if ( (ret&SS_HintMismatch) && diffs_are_errors ) {
+	GCErrorString(c,"Hinting mismatch in glyph", sc->name);
+return( -1 );
+    }
     if ( (ret&SS_HintMaskMismatch) && diffs_are_errors ) {
-	if ( hmfail==NULL )
-	    ScriptErrorString(c,"Hint mask mismatch in glyph", sc->name);
+	if ( hmfail==NULL || c==NULL )
+	    GCErrorString(c,"Hint mask mismatch in glyph", sc->name);
+#if !defined(_NO_FFSCRIPT)
 	else
 	    ScriptErrorF(c,"Hint mask mismatch at (%g,%g) in glyph: %s",
 		    hmfail->me.x, hmfail->me.y, sc->name);
+#endif
+return( -1 );
     }
-    if ( (ret&SS_LayerCntMismatch) && diffs_are_errors )
-	ScriptErrorString(c,"Layer difference in glyph", sc->name);
+    if ( (ret&SS_LayerCntMismatch) && diffs_are_errors ) {
+	GCErrorString(c,"Layer difference in glyph", sc->name);
+return( -1 );
+    }
 return( ret );
 }
 
@@ -776,12 +843,16 @@ int CompareGlyphs(Context *c, real pt_err, real spline_err,
 
     for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] )
 	++cnt;
-    if ( cnt==0 )
-	ScriptError(c,"Nothing selected");
+    if ( cnt==0 ) {
+	GCError(c,"Nothing selected");
+return( -1 );
+    }
 
     cur = CopyBufferGet();
-    if ( cur->undotype==ut_noop || cur->undotype==ut_none )
-	ScriptError(c,"Nothing in clipboard");
+    if ( cur->undotype==ut_noop || cur->undotype==ut_none ) {
+	GCError(c,"Nothing in clipboard");
+return( -1 );
+    }
 
     if ( cur->undotype==ut_multiple )
 	cur = cur->u.multiple.mult;
@@ -789,32 +860,46 @@ int CompareGlyphs(Context *c, real pt_err, real spline_err,
     for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] ) {
 	SplineChar *sc = fv->map->map[i]==-1 ? NULL : sf->glyphs[ fv->map->map[i] ];
 
-	if ( sc==NULL )
-	    ScriptError(c,"Missing character");
+	if ( sc==NULL ) {
+	    GCError(c,"Missing character");
+return( -1 );
+	}
 
-	if ( cur==NULL )
-	    ScriptError(c,"Too few glyphs in clipboard");
+	if ( cur==NULL ) {
+	    GCError(c,"Too few glyphs in clipboard");
+return( -1 );
+	}
 
 	switch ( cur->undotype ) {
 	  case ut_state: case ut_statehint: case ut_statename:
 	  case ut_layers:
-	    if ( pt_err>=0 || spline_err>0 || comp_hints )
+	    if ( pt_err>=0 || spline_err>0 || comp_hints ) {
 		ret |= CompareSplines(c,sc,cur,pt_err,spline_err,comp_hints,diffs_are_errors);
+		if ( ret==-1 )
+return( -1 );
+	    }
 	  break;
 	  case ut_bitmapsel: case ut_bitmap:
-	    if ( pixel_off_frac>=0 )
+	    if ( pixel_off_frac>=0 ) {
 		ret |= CompareBitmap(c,sc,cur,pixel_off_frac,bb_err,diffs_are_errors);
+		if ( ret==-1 )
+return( -1 );
+	    }
 	  break;
 	  case ut_composit:
 	    if ( cur->u.composit.state!=NULL && ( pt_err>=0 || spline_err>0 || comp_hints ))
 		ret |= CompareSplines(c,sc,cur->u.composit.state,pt_err,spline_err,comp_hints,diffs_are_errors);
 	    if ( pixel_off_frac>=0 ) {
-		for ( bmp=cur->u.composit.bitmaps; bmp!=NULL; bmp = bmp->next )
+		for ( bmp=cur->u.composit.bitmaps; bmp!=NULL; bmp = bmp->next ) {
 		    ret |= CompareBitmap(c,sc,bmp,pixel_off_frac,bb_err,diffs_are_errors);
+		    if ( ret==-1 )
+return( -1 );
+		}
 	    }
 	  break;
 	  default:
-	    ScriptError(c,"Unexpected clipboard contents");
+	    GCError(c,"Unexpected clipboard contents");
+return( -1 );
 	}
 	if ( ret&(SS_NoMatch|SS_RefMismatch|SS_WidthMismatch|BC_NoMatch) ) {
 	    ret &= ~(BC_Match|SS_PointsMatch|SS_ContourMatch);
@@ -823,10 +908,13 @@ return( ret );
 	cur = cur->next;
     }
 
-    if ( cur!=NULL )
-	ScriptError(c,"Too many glyphs in clipboard");
+    if ( cur!=NULL ) {
+	GCError(c,"Too many glyphs in clipboard");
+return( -1 );
+    }
 return( ret );
 }
+#endif /* !defined(_NO_PYTHON) || !defined(_NO_FFSCRIPT) */
 
 /* ************************************************************************** */
 /* *********************** Code to compare two fonts ************************ */

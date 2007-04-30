@@ -1372,6 +1372,7 @@ extern void *chunkalloc(int size);
 extern void chunkfree(void *, int size);
 
 extern char *strconcat(const char *str, const char *str2);
+extern char *strconcat3(const char *str, const char *str2, const char *str3);
 
 extern char *XUIDFromFD(int xuid[20]);
 extern SplineFont *SplineFontFromPSFont(struct fontdict *fd);
@@ -2250,12 +2251,14 @@ extern KernClass *SFFindVKernClass(SplineFont *sf,SplineChar *first,SplineChar *
 
 #if !defined(_NO_PYTHON)
 extern void FontForge_PythonInit(void);
+extern void PyFF_ErrorString(const char *msg,const char *str);
+extern void PyFF_ErrorF3(const char *frmt, const char *str, int size, int depth);
 extern void PyFF_Stdin(void);
 extern void PyFF_Main(int argc,char **argv,int start);
 extern void PyFF_ScriptFile(struct fontview *fv,char *filename);
 extern void PyFF_ScriptString(struct fontview *fv,char *str);
-extern void PythonFreeFV(struct fontview *fv);
-extern void PythonFreeSC(SplineChar *sc);
+extern void PyFF_FreeFV(struct fontview *fv);
+extern void PyFF_FreeSC(SplineChar *sc);
 struct gtextinfo;
 extern void scriptingSaveEnglishNames(struct gtextinfo *ids,struct gtextinfo *langs);
 #endif

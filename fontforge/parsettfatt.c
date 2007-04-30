@@ -1013,7 +1013,7 @@ static void g___ContextSubTable1(FILE *ttf, int stoffset,
 				rules[i].subrules[j].sl[k].seq, rules[i].subrules[j].gcnt );
 			warned2 = true;
 		    }
-		rules[i].subrules[j].sl[k].lookup = (void *) getushort(ttf);
+		rules[i].subrules[j].sl[k].lookup = (void *) (intpt) getushort(ttf);
 	    }
 	}
     }
@@ -1155,7 +1155,7 @@ return;
 				rules[i].subrules[j].sl[k].seq, rules[i].subrules[j].gcnt );
 			warned2 = true;
 		    }
-		rules[i].subrules[j].sl[k].lookup = (void *) getushort(ttf);
+		rules[i].subrules[j].sl[k].lookup = (void *) (intpt) getushort(ttf);
 	    }
 	}
     }
@@ -1270,7 +1270,7 @@ return;
 				rules[i].subrules[j].sl[k].seq, rules[i].subrules[j].ccnt-1);
 			warned2 = true;
 		    }
-		rules[i].subrules[j].sl[k].lookup = (void *) getushort(ttf);
+		rules[i].subrules[j].sl[k].lookup = (void *) (intpt) getushort(ttf);
 	    }
 	}
     }
@@ -1408,7 +1408,7 @@ return;
 				rules[i].subrules[j].sl[k].seq, rules[i].subrules[j].ccnt-1);
 			warned2 = true;
 		    }
-		rules[i].subrules[j].sl[k].lookup = (void *) getushort(ttf);
+		rules[i].subrules[j].sl[k].lookup = (void *) (intpt) getushort(ttf);
 	    }
 	}
     }
@@ -1506,7 +1506,7 @@ return;
 		    sl[k].seq, gcnt-1 );
 	    warned2 = true;
 	}
-	sl[k].lookup = (void *) getushort(ttf);
+	sl[k].lookup = (void *) (intpt) getushort(ttf);
     }
 
     if ( justinuse==git_justinuse ) {
@@ -1587,7 +1587,7 @@ return;
 		    sl[k].seq, gcnt-1 );
 	    warned2 = true;
 	}
-	sl[k].lookup = (void *) getushort(ttf);
+	sl[k].lookup = (void *) (intpt) getushort(ttf);
     }
 
     if ( justinuse==git_justinuse ) {
@@ -4006,9 +4006,9 @@ return(NULL);
 	}
 	as->state[i].flags = memushort(st->transitions,st->nentries*st->entry_size,trans*st->entry_size+2);
 	if ( extras>0 )
-	    as->state[i].u.context.mark_lookup = (void *) memushort(st->transitions,st->nentries*st->entry_size, trans*st->entry_size+2+2);
+	    as->state[i].u.context.mark_lookup = (void *) (intpt) memushort(st->transitions,st->nentries*st->entry_size, trans*st->entry_size+2+2);
 	if ( extras>1 )
-	    as->state[i].u.context.cur_lookup = (void *) memushort(st->transitions,st->nentries*st->entry_size, trans*st->entry_size+2+2+2);
+	    as->state[i].u.context.cur_lookup = (void *) (intpt) memushort(st->transitions,st->nentries*st->entry_size, trans*st->entry_size+2+2+2);
     }
     /* Indic tables have no attached subtables, just a verb in the flag field */
     /*  so for them we are done. For the others... */

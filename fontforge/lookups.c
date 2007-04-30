@@ -3335,7 +3335,7 @@ static char *LK_LangsDlg(GGadget *g, int r, int c) {
 	if ( *pt==',' ) ++pt;
 	tag = (tagstr[0]<<24) | (tagstr[1]<<16) | (tagstr[2]<<8) | tagstr[3];
 	for ( i=0; languages[i].text!=NULL; ++i )
-	    if ( languages[i].userdata == (void *) tag ) {
+	    if ( languages[i].userdata == (void *) (intpt) tag ) {
 		languages[i].selected = true;
 	break;
 	    }
