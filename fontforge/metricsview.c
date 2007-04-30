@@ -842,6 +842,7 @@ return;
 	BDFFontFree(mv->show);
 	mv->show = NULL;
     } else if ( bdf==NULL ) {
+	BDFFontFree(mv->show);
 	mv->show = SplineFontPieceMeal(mv->sf,mv->pixelsize,mv->antialias?pf_antialias:0,NULL);
     }
     MVRemetric(mv);
@@ -862,7 +863,7 @@ return( true );
 	    GDrawBeep(NULL);
 	else if ( !mv->vertical && val!=sc->width ) {
 	    SCPreserveWidth(sc);
-	    sc->width = val;
+	    SCSynchronizeWidth(sc,val,sc->width,mv->fv);
 	    SCCharChangedUpdate(sc);
 	} else if ( mv->vertical && val!=sc->vwidth ) {
 	    SCPreserveVWidth(sc);
@@ -3484,7 +3485,7 @@ return;
 	    diff = diff*(mv->sf->ascent+mv->sf->descent)/mv->pixelsize;
 	    if ( diff!=0 ) {
 		SCPreserveWidth(sc);
-		sc->width += diff;
+		SCSynchronizeWidth(sc,sc->width+diff,sc->width,mv->fv);
 		SCCharChangedUpdate(sc);
 	    }
 	} else if ( mv->pressedkern ) {
@@ -3497,8 +3498,6 @@ return;
 	    }
 	} else {
 	    real transform[6];
-	    DBounds bb;
-	    SplineCharFindBounds(sc,&bb);
 	    transform[0] = transform[3] = 1.0;
 	    transform[1] = transform[2] = transform[5] = 0;
 	    transform[4] = diff*
