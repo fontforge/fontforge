@@ -1,0 +1,2602 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 6-Apr-2007 -->
+  <!-- AP: Last modified: 29-Apr-2007 -->
+  <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+  <H1 ALIGN=Center>
+    Writing python scripts to change fonts in FontForge
+  </H1>
+  <P>
+  I assume you have a working knowlege of python (because I do not).
+  <A href="http://www.python.org/doc/">Python documentation may be found on
+  the web.</A> FontForge implements two python modules -- one great huge one
+  called <CODE>fontforge</CODE> which provides access to as much of FontForge's
+  functionality as I've had time to write, and one tiny one called
+  <CODE>psMat</CODE> which provides quick access to some useful transformations
+  expressed as PostScript matrices.
+  <TABLE id="module" border=1>
+    <CAPTION>
+      psMat
+    </CAPTION>
+    <TR>
+      <TH span=3>Methods</TH>
+    </TR>
+    <TR>
+      <TH>method</TH>
+      <TH>args</TH>
+      <TH>comments</TH>
+    </TR>
+    <TR>
+      <TD><CODE>identity</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>returns an identity matrix as a tuple</TD>
+    </TR>
+    <TR>
+      <TD><CODE>compose</CODE></TD>
+      <TD><CODE>(mat1,mat2)</CODE></TD>
+      <TD>returns a matrix which is the composition of the two input transformations</TD>
+    </TR>
+    <TR>
+      <TD><CODE>inverse</CODE></TD>
+      <TD><CODE>(mat)</CODE></TD>
+      <TD>returns a matrix which is the inverse of the input transformation. (Note:
+	There will not always be an inverse)</TD>
+    </TR>
+    <TR>
+      <TD><CODE>rotate</CODE></TD>
+      <TD><CODE>(theta)</CODE></TD>
+      <TD>returns a matrix which will rotate by <CODE>theta</CODE>.
+	<CODE>Theta</CODE> is expressed in radians</TD>
+    </TR>
+    <TR>
+      <TD><CODE>scale</CODE></TD>
+      <TD><CODE>(x[,y])</CODE></TD>
+      <TD>returns a matrix which will scale by <CODE>x</CODE> in the horizontal
+	direction and <CODE>y</CODE> in the vertical. If <CODE>y</CODE> is omitted,
+	it will scale by the same amount (<CODE>x</CODE>) in both directions</TD>
+    </TR>
+    <TR>
+      <TD><CODE>skew</CODE></TD>
+      <TD><CODE>(theta)</CODE></TD>
+      <TD>returns a matrix which will skew by <CODE>theta</CODE> (to produce a
+	oblique font). <CODE>Theta</CODE> is expressed in radians</TD>
+    </TR>
+    <TR>
+      <TD><CODE>translate</CODE></TD>
+      <TD><CODE>(x,y)</CODE></TD>
+      <TD>returns a matrix which will translate by <CODE>x</CODE> in the horizontal
+	direction and <CODE>y</CODE> in the vertical</TD>
+    </TR>
+    <TR>
+      <TH colspan=3>Types</TH>
+    </TR>
+    <TR>
+      <TD colspan=3>None</TD>
+    </TR>
+  </TABLE>
+  <P>
+  <TABLE id="module" border=1>
+    <CAPTION>
+      fontforge
+    </CAPTION>
+    <TR>
+      <TH colspan=3>Methods</TH>
+    </TR>
+    <TR>
+      <TH>method</TH>
+      <TH>args</TH>
+      <TH>comments</TH>
+    </TR>
+    <TR>
+      <TD><CODE>getPrefs</CODE></TD>
+      <TD><CODE>(pref-name)</CODE></TD>
+      <TD>returns the value of the named preference item</TD>
+    </TR>
+    <TR>
+      <TD><CODE>setPrefs</CODE></TD>
+      <TD><CODE>(pref-name,value)</CODE></TD>
+      <TD>sets the value of the named preference item</TD>
+    </TR>
+    <TR>
+      <TD><CODE>savePrefs</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Saves the current preference settings</TD>
+    </TR>
+    <TR>
+      <TD><CODE>loadPrefs</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Loads the user's default preference settings. Not done automatically
+	in a script.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>defaultOtherSubrs</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Sets the type1 PostScript OtherSubrs to the default value</TD>
+    </TR>
+    <TR>
+      <TD><CODE>readOtherSubrsFile</CODE></TD>
+      <TD><CODE>(filename)</CODE></TD>
+      <TD>Sets the type1 PostScript OtherSubrs to the stuff found in the file.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>loadEncodingFile</CODE></TD>
+      <TD><CODE>(filename)</CODE></TD>
+      <TD>Loads an encoding file</TD>
+    </TR>
+    <TR>
+      <TD><CODE>loadNamelist</CODE></TD>
+      <TD><CODE>(filename)</CODE></TD>
+      <TD>Loads a namelist</TD>
+    </TR>
+    <TR>
+      <TD><CODE>loadNamelistDir</CODE></TD>
+      <TD><CODE>(dirname)</CODE></TD>
+      <TD>Loads all namelist files in the directory</TD>
+    </TR>
+    <TR>
+      <TD><CODE>loadPlugin</CODE></TD>
+      <TD><CODE>(filename)</CODE></TD>
+      <TD>Loads a fontforge plugin</TD>
+    </TR>
+    <TR>
+      <TD><CODE>loadPluginDir</CODE></TD>
+      <TD><CODE>(dirname)</CODE></TD>
+      <TD>Loads all fontforge plugins in the directory</TD>
+    </TR>
+    <TR>
+      <TD><CODE>preloadCidmap</CODE></TD>
+      <TD><CODE>(filename)</CODE></TD>
+      <TD>Loads a fontforge cidmap file</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A name="printSetup">printSetup</A></CODE></TD>
+      <TD><CODE>(type[,printer|cmd|file,<BR>
+	width,height])</CODE></TD>
+      <TD>Prepare to <A href="#f-print">print a font sample</A>. The first argument
+	may be one of:
+	<DL>
+	  <DT>
+	    lp
+	  <DD>
+	    Queues postscript output to the printer using <CODE>lp</CODE>. You may use
+	    the optional second argument to specify the printer name.
+	  <DT>
+	    lpr
+	  <DD>
+	    Queues postscript output to the printer using <CODE>lpr</CODE>. You may use
+	    the optional second argument to specify the printer name.
+	  <DT>
+	    ghostview
+	  <DD>
+	    Displays the output using ghostview (or gv). The second argument is ignored.
+	  <DT>
+	    command
+	  <DD>
+	    Use a custom shell command to print the output. The second argument should
+	    contain the command and its arguments.
+	  <DT>
+	    ps-file
+	  <DD>
+	    Dump the postscript output to a file. The second argument specifies the filename.
+	  <DT>
+	    pdf-file
+	  <DD>
+	    Dump the output as pdf to a file. The second argument specifies the filename.
+	</DL>
+	<P>
+	The third and fourth arguments are optional and specify the page size (in
+	points) for the output. The third argument is the page width and the fourth
+	is the height.
+	<P>
+	These setting remain until changed</TD>
+    </TR>
+    <TR>
+      <TD><CODE>unicodeFromName</CODE></TD>
+      <TD><CODE>(glyphname)</CODE></TD>
+      <TD>Looks up glyph name in its dictionary and if it is associated with a
+	unicode code point returns that number. Otherwise it returns -1</TD>
+    </TR>
+    <TR>
+      <TD><CODE>version</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Returns fontforge's version number. This will be a large number like
+	20070406.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>fonts</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Returns a tuple of all fonts currently loaded into fontforge for editing</TD>
+    </TR>
+    <TR>
+      <TD><CODE>activeFontInUI</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>If the script were invoked from the File-&gt;Execute Script... dialog,
+	this returns the font that was active at the time. Otherwise it returns None.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>fontsInFile</CODE></TD>
+      <TD><CODE>(filename)</CODE></TD>
+      <TD>Returns a tuple of all fontnames found in the specified file. The tuple
+	may be empty if fontforge couldn't find any.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>open</CODE></TD>
+      <TD><CODE>(filename)</CODE></TD>
+      <TD>Opens a filename and returns the font it contains. If it does.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>parseTTInstrs</CODE></TD>
+      <TD><CODE>(string)</CODE></TD>
+      <TD>Returns a binary string each byte of which corresponds to a truetype
+	instruction. The input string should contain a set of instruction names as
+	"SRP0\nMIRP[min,rnd,black]"</TD>
+    </TR>
+    <TR>
+      <TD><CODE>unParseTTInstrs</CODE></TD>
+      <TD><CODE>(sequence)</CODE></TD>
+      <TD>Reverse of the above. Converts a binary string into a human (sort of)
+	readable string</TD>
+    </TR>
+    <TR>
+      <TH colspan=3>Types</TH>
+    </TR>
+    <TR>
+      <TD colspan=3><A href="#Point">point</A></TD>
+    </TR>
+    <TR>
+      <TD colspan=3><A href="#Contour">contour</A></TD>
+    </TR>
+    <TR>
+      <TD colspan=3><A href="#Layer">layer</A></TD>
+    </TR>
+    <TR>
+      <TD colspan=3><A href="#GlyphPen">glyphPen</A></TD>
+    </TR>
+    <TR>
+      <TD colspan=3><A href="#Glyph">glyph</A></TD>
+    </TR>
+    <TR>
+      <TD colspan=3><A href="#selection">selection</A></TD>
+    </TR>
+    <TR>
+      <TD colspan=3><A href="#Font">font</A></TD>
+    </TR>
+  </TABLE>
+  <P>
+  <TABLE id="type" border=1>
+    <CAPTION>
+      <A name="Point">point</A>
+    </CAPTION>
+    <TR>
+      <TH colspan=3>Members</TH>
+    </TR>
+    <TR>
+      <TH>member</TH>
+      <TH colspan=2>comments</TH>
+    </TR>
+    <TR>
+      <TD><CODE>x</CODE></TD>
+      <TD colspan=2>The x location of the point</TD>
+    </TR>
+    <TR>
+      <TD><CODE>y</CODE></TD>
+      <TD colspan=2>The y location of the point</TD>
+    </TR>
+    <TR>
+      <TD><CODE>on_curve</CODE></TD>
+      <TD colspan=2>Whether this is an on curve point or an off curve point (a
+	control point)</TD>
+    </TR>
+    <TR>
+    </TR>
+    <TR>
+      <TH colspan=3>Methods</TH>
+    </TR>
+    <TR>
+      <TH>method</TH>
+      <TH>args</TH>
+      <TH>comments</TH>
+    </TR>
+    <TR>
+      <TD><CODE>new</CODE></TD>
+      <TD><CODE>([x,y,on-curve])</CODE></TD>
+      <TD>Creates a new point. Optionally specifying its location</TD>
+    </TR>
+    <TR>
+      <TD><CODE>transform</CODE></TD>
+      <TD><CODE>(tuple)</CODE></TD>
+      <TD>Transforms the point by the transformation matrix</TD>
+    </TR>
+  </TABLE>
+  <P>
+  <TABLE id="type" border=1>
+    <CAPTION>
+      <A name="Contour">contour</A>
+    </CAPTION>
+    <TR>
+      <TH colspan=3>Members</TH>
+    </TR>
+    <TR>
+      <TH>member</TH>
+      <TH colspan=2>comments</TH>
+    </TR>
+    <TR>
+      <TD><CODE>is_quadratic</CODE></TD>
+      <TD colspan=2>Whether the contour should be interpretted as a set of quadratic
+	or cubic splines. Setting this value has the side effect of converting the
+	point list to the appropriate format</TD>
+    </TR>
+    <TR>
+      <TD><CODE>closed</CODE></TD>
+      <TD colspan=2>Whether the contour is open or closed</TD>
+    </TR>
+    <TR>
+      <TH colspan=3>Sequence Protocol</TH>
+    </TR>
+    <TR>
+      <TD colspan=2><CODE>len(c)</CODE></TD>
+      <TD>The number of points in the contour</TD>
+    </TR>
+    <TR>
+      <TD colspan=2><CODE>c[i]</CODE></TD>
+      <TD>The <EM>i</EM>th point on the contour. You may assign to this</TD>
+    </TR>
+    <TR>
+      <TD colspan=2><CODE>c[i:j]</CODE></TD>
+      <TD>The contour containing points between i and j. You may assign to this</TD>
+    </TR>
+    <TR>
+      <TD colspan=2><CODE>c + d</CODE></TD>
+      <TD>A contour concatenating c and d. D may be either another contour or a
+	point.</TD>
+    </TR>
+    <TR>
+      <TD colspan=2><CODE>c += d</CODE></TD>
+      <TD>Appends d to c. D may be either another contour or a point.</TD>
+    </TR>
+    <TR>
+      <TD colspan=2><CODE>p in c</CODE></TD>
+      <TD>Returns whether the point p is in the contour c. p may be either a point
+	or a tuple of two numbers</TD>
+    </TR>
+    <TR>
+      <TD colspan=3>Does not support the repeat concept</TD>
+    </TR>
+    <TR>
+      <TH colspan=3>Methods</TH>
+    </TR>
+    <TR>
+      <TH>method</TH>
+      <TH>args</TH>
+      <TH>comments</TH>
+    </TR>
+    <TR>
+      <TD><CODE>new</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Creates a new contour</TD>
+    </TR>
+    <TR>
+      <TD><CODE>isEmpty</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Returns whether the contour is empty (contains no points)</TD>
+    </TR>
+    <TR>
+      <TD>&nbsp;</TD>
+      <TH colspan=2>Contour construction</TH>
+    </TR>
+    <TR>
+      <TD><CODE>moveTo</CODE></TD>
+      <TD><CODE>(x,y)</CODE></TD>
+      <TD>Adds an initial, on-curve point at (x,y) to the contour</TD>
+    </TR>
+    <TR>
+      <TD><CODE>lineTo</CODE></TD>
+      <TD><CODE>(x,y[,pos])</CODE></TD>
+      <TD>Adds an line to the contour. If the optional third argument is give,
+	the line will be added after the pos'th point, otherwise it will be at the
+	end of the contour.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>cubicTo</CODE></TD>
+      <TD><CODE>((cp1x,cp1y)(cp2x,cp2y)(x,y)[,pos])</CODE></TD>
+      <TD>Adds a cubic curve to the contour. If the optional third argument is
+	give, the line will be added after the pos'th point, otherwise it will be
+	at the end of the contour.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>quadraticTo</CODE></TD>
+      <TD><CODE>((cpx,cpy)(x,y)[,pos])</CODE></TD>
+      <TD>Adds a quadratic curve to the contour. If the optional third argument
+	is give, the line will be added after the pos'th point, otherwise it will
+	be at the end of the contour.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>insertPoint</CODE></TD>
+      <TD><CODE>(point[,pos])</CODE></TD>
+      <TD>Adds point to the contour. If the optional third argument is give, the
+	line will be added after the pos'th point, otherwise it will be at the end
+	of the contour. The point may be either a point or a tuple with three members
+	(x,y,on_curve)</TD>
+    </TR>
+    <TR>
+      <TD><CODE>makeFirst</CODE></TD>
+      <TD><CODE>(pos)</CODE></TD>
+      <TD>Rotate the point list so that the pos'th point becomes the first point</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A name="#cnt-isClockwise">isClockwise</A></CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Returns whether the contour is drawn in a clockwise direction.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>reverseDirection</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Reverse the order in which the contour is drawn (turns a clockwise contour
+	into a counter-clockwise one). See also
+	<A href="#l-correctDirection">layer.correctDirection</A>.</TD>
+    </TR>
+    <TR>
+      <TD>&nbsp;</TD>
+      <TH colspan=2>Contour manipulation</TH>
+    </TR>
+    <TR>
+      <TD><CODE>addExtrema</CODE></TD>
+      <TD><CODE>([flags,emsize])</CODE></TD>
+      <TD>Extrema should be marked by on-curve points. If a curve lacks a point
+	at an extrema this command will add one. Flags may be one of the following
+	strings
+	<DL>
+	  <DT>
+	    all
+	  <DD>
+	    Add all missing extrema
+	  <DT>
+	    only_good
+	  <DD>
+	    Only add extrema on longer splines (with respect to the em-size)
+	  <DT>
+	    only_good_rm
+	  <DD>
+	    As above but also merge away on-curve points which are very close to, but
+	    not on, an added extremum
+	</DL>
+      </TD>
+    </TR>
+    <TR>
+      <TD><CODE><A name="cnt-cluster">cluster</A></CODE></TD>
+      <TD><CODE>([within,max])</CODE></TD>
+      <TD>Moves clustered coordinates to a standard central value. See Also
+	<A href="#cnt-round">round</A></TD>
+    </TR>
+    <TR>
+      <TD><CODE><A name="cnt-merge">merge</A></CODE></TD>
+      <TD><CODE>(pos)</CODE></TD>
+      <TD>Removes the on-curve point a the given position and rearranges the other
+	points to make the curve as similar to the original as possible. (pos may
+	also be a tuple of positions, all of which will be removed) See Also
+	<A href="#cnt-simplify">simplify</A></TD>
+    </TR>
+    <TR>
+      <TD><CODE><A name="cnt-round">round</A></CODE></TD>
+      <TD><CODE>([factor])</CODE></TD>
+      <TD>Rounds the x and y coordinates. If factor is specified then new-coord
+	= round(factor*old-coord)/factor. See Also <A href="#cnt-cluster">cluster</A></TD>
+    </TR>
+    <TR>
+      <TD><CODE>selfIntersects</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Returns whether this contour intersects itself.</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A name="cnt-simplify">simplify</A></CODE></TD>
+      <TD><CODE>([error-bound,flags,tan_bounds,<BR>
+	linefixup,linelenmax])</CODE></TD>
+      <TD>Tries to remove excess points on the contour if doing so will not perturb
+	the curve by more than <CODE>error-bound</CODE>. Flags is a tuple of the
+	following strings
+	<DL>
+	  <DT>
+	    ignoreslopes
+	  <DD>
+	    Allow slopes to change
+	  <DT>
+	    ignoreextrema
+	  <DD>
+	    Allow removal of extrema
+	  <DT>
+	    smoothcurves
+	  <DD>
+	    Allow curve smoothing
+	  <DT>
+	    choosehv
+	  <DD>
+	    Snap to horizontal or vertical
+	  <DT>
+	    forcelines
+	  <DD>
+	    flatten bumps on lines
+	  <DT>
+	    nearlyhvlines
+	  <DD>
+	    Make nearly horizontal/vertical lines be so
+	  <DT>
+	    mergelines
+	  <DD>
+	    Merge adjacent lines into one
+	  <DT>
+	    setstarttoextrema
+	  <DD>
+	    Rotate the point list so that the start point is on an extremum
+	  <DT>
+	    removesingletonpoints
+	  <DD>
+	    If the contour contains just one point then remove it
+	</DL>
+	<P>
+	See Also <A href="#cnt-merge">merge</A></TD>
+    </TR>
+    <TR>
+      <TD><CODE>transform</CODE></TD>
+      <TD><CODE>(matrix)</CODE></TD>
+      <TD>Transforms the contour by the matrix</TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TH colspan=2>random stuff about contours</TH>
+    </TR>
+    <TR>
+      <TD><CODE>boundingBox</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Returns a tuple representing a rectangle (xmin,ymin, xmax,ymax) into
+	which the contour fits. It is not guaranteed to be the smallest such rectangle,
+	but it will often be.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>getSplineAfterPoint</CODE></TD>
+      <TD><CODE>(pos)</CODE></TD>
+      <TD>Returns a tuple of two four-element tuples. These tuples are x and y
+	splines for the curve after the specified point.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>draw</CODE></TD>
+      <TD><CODE>(pen)</CODE></TD>
+      <TD>Draw the contour to the
+	<A href="http://just.letterror.com/ltrwiki/PenProtocol">pen argument.</A></TD>
+    </TR>
+  </TABLE>
+  <P>
+  <TABLE id="type" border=1>
+    <CAPTION>
+      <A name="Layer">layer</A>
+    </CAPTION>
+    <TR>
+      <TH colspan=3>Members</TH>
+    </TR>
+    <TR>
+      <TH>member</TH>
+      <TH colspan=2>comments</TH>
+    </TR>
+    <TR>
+      <TD><CODE>is_quadratic</CODE></TD>
+      <TD colspan=2>Whether the contours should be interpretted as a set of quadratic
+	or cubic splines. Setting this value has the side effect of converting the
+	contour list to the appropriate format</TD>
+    </TR>
+    <TR>
+      <TH colspan=3>Sequence Protocol</TH>
+    </TR>
+    <TR>
+      <TD colspan=2><CODE>len(c)</CODE></TD>
+      <TD>The number of contours in the layer</TD>
+    </TR>
+    <TR>
+      <TD colspan=2><CODE>c[i]</CODE></TD>
+      <TD>The <EM>i</EM>th contour on the layer. You may assign to this</TD>
+    </TR>
+    <TR>
+      <TD colspan=2><CODE>c + d</CODE></TD>
+      <TD>A layer concatenating c and d. D may be either another layer or a contour.</TD>
+    </TR>
+    <TR>
+      <TD colspan=2><CODE>c += d</CODE></TD>
+      <TD>Appends d to c. D may be either another layer or a contour.</TD>
+    </TR>
+    <TR>
+      <TD colspan=3>Does not support the repeat, slice and contains concepts</TD>
+    </TR>
+    <TR>
+      <TH colspan=3>Methods</TH>
+    </TR>
+    <TR>
+      <TH>method</TH>
+      <TH>args</TH>
+      <TH>comments</TH>
+    </TR>
+    <TR>
+      <TD><CODE>new</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Creates a new layer</TD>
+    </TR>
+    <TR>
+      <TD><CODE>isEmpty</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Returns whether the layer is empty (contains no contour)</TD>
+    </TR>
+    <TR>
+      <TD><CODE>addExtrema</CODE></TD>
+      <TD><CODE>([flags,emsize])</CODE></TD>
+      <TD>Extrema should be marked by on-curve points. If a curve lacks a point
+	at an extrema this command will add one. Flags may be one of the following
+	strings
+	<DL>
+	  <DT>
+	    all
+	  <DD>
+	    Add all missing extrema
+	  <DT>
+	    only_good
+	  <DD>
+	    Only add extrema on longer splines (with respect to the em-size)
+	  <DT>
+	    only_good_rm
+	  <DD>
+	    As above but also merge away on-curve points which are very close to, but
+	    not on, an added extremum
+	</DL>
+      </TD>
+    </TR>
+    <TR>
+      <TD><CODE><A name="l-cluster">cluster</A></CODE></TD>
+      <TD><CODE>([within,max])</CODE></TD>
+      <TD>Moves clustered coordinates to a standard central value. See also
+	<A href="#l-round">round</A>.</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A name="l-correctDirection">correctDirection</A></CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Orients all contours so that external ones are clockwise and internal
+	counter-clockwise. See also
+	<A href="#cnt-isClockwise">contour.isClockwise</A>.</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A name="l-exclude">exclude</A></CODE></TD>
+      <TD><CODE>(excluded-layer)</CODE></TD>
+      <TD>Removes the excluded area from the current contours. See also
+	<A href="#l-removeOverlap">removeOverlap</A> and
+	<A href="#l-intersect">intersect</A>.</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A name="l-intersect">intersect</A></CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Leaves only areas in the intersection of contours. See also
+	<A href="#l-removeOverlap">removeOverlap</A> and
+	<A href="#l-exclude">exclude</A>.</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A name="l-removeOverlap">removeOverlap</A></CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Removes overlapping areas. See also <A href="#l-intersect">intersect</A>
+	and <A href="#l-exclude">exclude</A>.</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A name="l-round">round</A></CODE></TD>
+      <TD><CODE>([factor])</CODE></TD>
+      <TD>Rounds the x and y coordinates. If factor is specified then new-coord
+	= round(factor*old-coord)/factor. See also <A href="#l-cluster">cluster</A>.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>selfIntersects</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Returns whether any of the contours on this layer intersects any other
+	contour (including itself).</TD>
+    </TR>
+    <TR>
+      <TD><CODE>simplify</CODE></TD>
+      <TD><CODE>([error-bound,flags,tan_bounds,<BR>
+	linefixup,linelenmax])</CODE></TD>
+      <TD>Tries to remove excess points on the layer if doing so will not perturb
+	the curve by more than <CODE>error-bound</CODE>. Flags is a tuple of the
+	following strings
+	<DL>
+	  <DT>
+	    ignoreslopes
+	  <DD>
+	    Allow slopes to change
+	  <DT>
+	    ignoreextrema
+	  <DD>
+	    Allow removal of extrema
+	  <DT>
+	    smoothcurves
+	  <DD>
+	    Allow curve smoothing
+	  <DT>
+	    choosehv
+	  <DD>
+	    Snap to horizontal or vertical
+	  <DT>
+	    forcelines
+	  <DD>
+	    flatten bumps on lines
+	  <DT>
+	    nearlyhvlines
+	  <DD>
+	    Make nearly horizontal/vertical lines be so
+	  <DT>
+	    mergelines
+	  <DD>
+	    Merge adjacent lines into one
+	  <DT>
+	    setstarttoextrema
+	  <DD>
+	    Rotate the point list so that the start point is on an extremum
+	  <DT>
+	    removesingletonpoints
+	  <DD>
+	    If the contour contains just one point then remove it
+	</DL>
+      </TD>
+    </TR>
+    <TR>
+      <TD><CODE>stroke</CODE></TD>
+      <TD><CODE>("circular",width[,linecap,linejoin,flags])<BR>
+	("eliptical",width,minor-width,angle<BR>
+	&nbsp;[,linecap,linejoin,flags])<BR>
+	("caligraphic",width,height,angle[,flags])</CODE></TD>
+      <TD>Strokes the current line using one of the indicated pens. Line cap may
+	be one of
+	<UL>
+	  <LI>
+	    butt
+	  <LI>
+	    round
+	  <LI>
+	    square
+	</UL>
+	<P>
+	line join may be
+	<UL>
+	  <LI>
+	    miter
+	  <LI>
+	    round
+	  <LI>
+	    bevel
+	</UL>
+	<P>
+	flags is a tuple containing some of the following strings
+	<UL>
+	  <LI>
+	    removeinternal
+	  <LI>
+	    removeexternal
+	  <LI>
+	    cleanup
+	</UL>
+      </TD>
+    </TR>
+    <TR>
+      <TD><CODE>transform</CODE></TD>
+      <TD><CODE>(matrix)</CODE></TD>
+      <TD>Transforms the layer by the matrix</TD>
+    </TR>
+    <TR>
+      <TD><CODE>boundingBox</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Returns a tuple representing a rectangle (xmin,ymin, xmax,ymax) into
+	which the layer fits. It is not guaranteed to be the smallest such rectangle,
+	but it will often be.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>draw</CODE></TD>
+      <TD><CODE>(pen)</CODE></TD>
+      <TD>Draw the layer to the
+	<A href="http://just.letterror.com/ltrwiki/PenProtocol">pen argument.</A></TD>
+    </TR>
+  </TABLE>
+  <P>
+  <TABLE id="type" border=1>
+    <CAPTION>
+      <A name="GlyphPen">glyphPen</A>
+    </CAPTION>
+    <TR>
+      <TD colspan=3>This implements the
+	<A href="http://just.letterror.com/ltrwiki/PenProtocol">Pen Protocol</A>
+	to draw into a FontForge glyph. You create a glyphPen with the
+	<A href="#glyph-glyphPen">glyphPen</A> attribute of a glyph. You then draw
+	into it with the operators below.
+	<BLOCKQUOTE>
+	  <PRE>
+import fontforge;
+font = fontforge.open("Ambrosia.sfd");	#Open a font
+pen = font["B"].glyphPen();		# Create a pen to draw into glyph "B"
+pen.moveTo((100,100));			# draw a square
+pen.lineTo((100,200));
+pen.lineTo((200,200));
+pen.lineTo((200,100));
+pen.closePath();			# end the contour
+
+font["A"].draw(pen);			# or you can copy from one glyph to another
+					# by having a glyph draw itself into the pen
+pen = None;				# Finalize the pen. This tells FontForge
+					# that the drawing is done and causes
+			                # it to refresh the display (if a UI is active).
+</PRE>
+	</BLOCKQUOTE>
+      </TD>
+    </TR>
+    <TR>
+      <TH colspan=3>Members</TH>
+    </TR>
+    <TR>
+      <TD colspan=3>None</TD>
+    </TR>
+    <TR>
+      <TH colspan=3>Methods</TH>
+    </TR>
+    <TR>
+      <TH>method</TH>
+      <TH>args</TH>
+      <TH>comments</TH>
+    </TR>
+    <TR>
+      <TD><CODE>moveTo</CODE></TD>
+      <TD><CODE>((x,y))</CODE></TD>
+      <TD>With one exception this call begins every contor and creates an on curve
+	point at (x,y) as the start point of that contour. This should be the first
+	call after a pen has been created and the call that follows a closePath,
+	endPath.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>lineTo</CODE></TD>
+      <TD><CODE>((x,y))</CODE></TD>
+      <TD>Draws a line from the last point to (x,y) and adds that to the contour.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>curveTo</CODE></TD>
+      <TD><CODE>((cp1.x,cp1.y),(cp2.x,cp2.y),(x,y))<BR>
+	((cp.x,cp.y),(x,y))</CODE></TD>
+      <TD>This routine has slightly different arguments depending on the type of
+	the font. When drawing into a cubic font (PostScript) use the first set of
+	arguments (with two control points -- off curve points -- between each on
+	curve point). When drawing into a quadratic font (TrueType) use the second
+	format with one control point between adjacent on-curve points.
+	<P>
+	The standard appears to support super-bezier curves with more than two control
+	points between on-curve points. FontForge does not. Nor does FontForge allow
+	you to draw a quadratic spline into a cubic font, nor vice versa.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>qCurveTo</CODE></TD>
+      <TD><CODE>([(cp.x,cp.y)]*,(x,y))<BR>
+	([(cp.x,cp.y)]*,None))</CODE></TD>
+      <TD>This routine may only be used in quadratic (TrueType) fonts and has two
+	different formats. It is used to express the TrueType idiom where an on-curve
+	point mid-way between its control points may be omitted, leading to a run
+	of off-curve points (with implied but unspecified on-curve points between
+	them).
+	<P>
+	The first format allows an arbetary number of off-curve points followed by
+	one on-curve point.
+	<P>
+	It is possible to have a contour which consists solely of off-curve points.
+	When this happens the contour is NOT started with a moveTo, instead the entire
+	contour, all the off curve points, are listed in one call, and the argument
+	list is terminated by a <CODE>None</CODE> to indicate there are no on-curve
+	points.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>closePath</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Closes the contour (connects the last point to the first point to make
+	a loop) and ends it.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>endPath</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Ends the contour without closing it. This is only relevant if you are
+	stroking contours.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>addComponent</CODE></TD>
+      <TD><CODE>(glypn-name,transform)</CODE></TD>
+      <TD>Adds a reference (a component) to the glyph. The PostScript transformation
+	matrix is a 6 element tuple.</TD>
+    </TR>
+  </TABLE>
+  <P>
+  <TABLE id="type" border=1>
+    <CAPTION>
+      <A name="Glyph">glyph</A>
+    </CAPTION>
+    <TR>
+      <TH colspan=3>Members</TH>
+    </TR>
+    <TR>
+      <TH>member</TH>
+      <TH colspan=2>comments</TH>
+    </TR>
+    <TR>
+      <TD><CODE><A name="g-background">background</A></CODE></TD>
+      <TD colspan=2>The glyph's background layer. This is a <EM>copy</EM> of the
+	glyph's data. See also <A href="g-foreground">foreground</A>.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>changed</CODE></TD>
+      <TD colspan=2>Whether this glyph has been modified. This is (should be)
+	maintained automatically, but you may set it if you wish.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>color</CODE></TD>
+      <TD colspan=2>The color of the glyph in the fontview. A 6 hex-digit RGB number
+	or -1 for default. 0xffffff is white, 0x0000ff is blue, etc.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>comment</CODE></TD>
+      <TD colspan=2>Any comment you wish to associate with the glyph. UTF-8</TD>
+    </TR>
+    <TR>
+      <TD><CODE>font</CODE></TD>
+      <TD colspan=2>The font containing this glyph.</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A name="g-foreground">foreground</A></CODE></TD>
+      <TD colspan=2>The glyph's foreground layer. This is a <EM>copy</EM> of the
+	glyph's data. See also <A href="g-background">background</A> and
+	<A href="g-references">references</A>.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>glyphclass</CODE></TD>
+      <TD colspan=2>An opentype glyphclass, one of automatic, noclass, baseglyph,
+	baseligature, mark, component</TD>
+    </TR>
+    <TR>
+      <TD><CODE>glyphname</CODE></TD>
+      <TD colspan=2>The name of the glyph</TD>
+    </TR>
+    <TR>
+      <TD><CODE>hhints</CODE></TD>
+      <TD colspan=2>A tuple of all horizontal postscript hints. Each hint is itself
+	a tuple of starting locations and widths.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>left_side_bearing</CODE></TD>
+      <TD colspan=2>The left side bearing of the glyph</TD>
+    </TR>
+    <TR>
+      <TD><CODE>originalgid</CODE></TD>
+      <TD colspan=2>The GID of this glyph in the font it was read from. You may
+	not change this.</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A name="g-references">references</A></CODE></TD>
+      <TD colspan=2>A tuple of tuples containing glyph-name and a transformation
+	matrix for each reference. See also <A href="g-foreground">foreground</A>.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>right_side_bearing</CODE></TD>
+      <TD colspan=2>The right side bearing of the glyph</TD>
+    </TR>
+    <TR>
+      <TD><CODE>texheight</CODE></TD>
+      <TD colspan=2>The Tex height</TD>
+    </TR>
+    <TR>
+      <TD><CODE>texdepth</CODE></TD>
+      <TD colspan=2>The Tex depth</TD>
+    </TR>
+    <TR>
+      <TD><CODE>ttinstrs</CODE></TD>
+      <TD colspan=2>Any truetype instructions, returned as a binary string</TD>
+    </TR>
+    <TR>
+      <TD><CODE>unicode</CODE></TD>
+      <TD colspan=2>The glyph's unicode code point, or -1</TD>
+    </TR>
+    <TR>
+      <TD><CODE>userdata</CODE></TD>
+      <TD colspan=2>Whatever you want (contents are not saved in an sfd file)</TD>
+    </TR>
+    <TR>
+      <TD><CODE>vhints</CODE></TD>
+      <TD colspan=2>A tuple of all vertical postscript hints. Each hint is itself
+	a tuple of starting locations and widths.</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A name="g-width">width</A></CODE></TD>
+      <TD colspan=2>The advance width of the glyph. See also
+	<A href="g-vwidth">vwidth</A>.</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A name="g-vwidth">vwidth</A></CODE></TD>
+      <TD colspan=2>The vertical advance width of the glyph. See also
+	<A href="g-width">width</A>.</TD>
+    </TR>
+    <TR>
+      <TH colspan=3>Methods</TH>
+    </TR>
+    <TR>
+      <TH>method</TH>
+      <TH>args</TH>
+      <TH>comments</TH>
+    </TR>
+    <TR>
+      <TD><CODE>addExtrema</CODE></TD>
+      <TD><CODE>([flags,emsize])</CODE></TD>
+      <TD>Extrema should be marked by on-curve points. If a curve lacks a point
+	at an extrema this command will add one. Flags may be one of the following
+	strings
+	<DL>
+	  <DT>
+	    all
+	  <DD>
+	    Add all missing extrema
+	  <DT>
+	    only_good
+	  <DD>
+	    Only add extrema on longer splines (with respect to the em-size)
+	  <DT>
+	    only_good_rm
+	  <DD>
+	    As above but also merge away on-curve points which are very close to, but
+	    not on, an added extremum
+	</DL>
+      </TD>
+    </TR>
+    <TR>
+      <TD><CODE>addReference</CODE></TD>
+      <TD><CODE>(glyph-name[,transform])</CODE></TD>
+      <TD>Adds a reference to the specified glyph into the current glyph. Optionally
+	specifying a transformation matrix</TD>
+    </TR>
+    <TR>
+      <TD><CODE>addHint</CODE></TD>
+      <TD><CODE>(is-vertical,start,width)</CODE></TD>
+      <TD>Adds a postscript hint. Takes a boolean flag indicating whether the hint
+	is horizontal or vertical, a start location and the hint's width.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>addPosSub</CODE></TD>
+      <TD><CODE>(subtable-name,variant)<BR>
+	(subtable-name,variants)<BR>
+	(subtable-name,ligature-components)<BR>
+	(subtable-name,xoff,yoff,xadv,yadv)<BR>
+	(subtable-name,other-glyph-name, &nbsp;xoff1,yoff1,xadv1,yadv1,<BR>
+	&nbsp;xoff2,yoff2,xadv2,yadv2)</CODE></TD>
+      <TD>Adds position/substitution data to the glyph. The number and type of
+	the arguments vary acording to the type of the lookup containing the subtable.
+	The first argument should always be a lookup subtable name. If the lookup
+	is for single substitutions then the second argument should be a string
+	containing a single glyph name. For multiple and alternated substitutions
+	multiple glyph names. For ligatures, a string of the ligature components.
+	For single positionings the second through fifth arguments should be small
+	integers representing the adjustment along that axis. For pairwise positionings
+	(kerning) the second argument should be the name of the other glyph being
+	kerned with, and the third through tenth should be small integers.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>autoHint</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Generates PostScript hints for this glyph.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>autoInstr</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Generates (bad) TrueType instructions for this glyph.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>autoTrace</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Auto traces any background images</TD>
+    </TR>
+    <TR>
+      <TD><CODE>boundingBox</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Returns a tuple representing a rectangle (xmin,ymin, xmax,ymax) which
+	is the minimum bounding box of the glyph.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>build</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>If the character is a composite character, then clears it and inserts
+	references to its components</TD>
+    </TR>
+    <TR>
+      <TD><CODE>canonicalContours</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Orders the contours in the current glyph by the x coordinate of their
+	leftmost point. (This can reduce the size of the charstring needed to describe
+	the glyph(s).</TD>
+    </TR>
+    <TR>
+      <TD><CODE>canonicalStart</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Sets the start point of all the contours of the current glyph to be the
+	leftmost point on the contour. (If there are several points with that value
+	then use the one which is closest to the baseline). This can reduce the size
+	of the charstring needed to describe the glyph(s). By regularizing things
+	it can also make more things available to be put in subroutines.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>clear</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Clears the contents of the glyph (and marks it as not
+	<A href="#g-isWorthOutputting">worth outputting</A>).</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A name="g-cluster">cluster</A></CODE></TD>
+      <TD><CODE>([within,max])</CODE></TD>
+      <TD>Moves clustered coordinates to a standard central value. See also
+	<A href="#g-round">round</A>.</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A name="g-correctDirection">correctDirection</A></CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Orients all contours so that external ones are clockwise and internal
+	counter-clockwise.</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A name="g-exclude">exclude</A></CODE></TD>
+      <TD><CODE>(excluded-layer)</CODE></TD>
+      <TD>Removes the excluded area from the current glyph. Takes an argument which
+	is a layer. See also <A href="#g-removeOverlap">removeOverlap</A> and
+	<A href="#g-intersect">intersect</A>.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>export</CODE></TD>
+      <TD><CODE>(filename[,pixelsize,bitdepth])</CODE></TD>
+      <TD>Uses the file's extension to determine output file type. Exports outline
+	formats to the file. For bitmap formats it will rasterize the glyph and output
+	that. The optional arguments are only used for rasterizing. bitdepth must
+	be 1 or 8.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>getPosSub</CODE></TD>
+      <TD><CODE>(lookup-subtable-name)</CODE></TD>
+      <TD>Returns any positioning/substitution data attached to the glyph controlled
+	by the lookup-subtable. If the name is "*" then returns data from all subtables.
+	<P>
+	The data are returned as a tuple of tuples. The first element of the subtuples
+	is the name of the lookup-subtable. The second element will be one of the
+	strings: "Position", "Pair", "Substitution", "AltSubs", "MultSubs","Ligature".
+	<P>
+	Positioning data will be followed by four small integers representing adjustments
+	to the: x position of the glyph, the y position, the horizontal advance,
+	and the vertical advance.
+	<P>
+	Pair data will be followed by the name of the other glyph in the pair and
+	then eight small integers representing adjustments to the: x position of
+	the first glyph, the y position, the horizontal advance, and the vertical
+	advance, and then a similar foursome for the second glyph.
+	<P>
+	Substitution data will be followed by a string containing the name of the
+	glyph to replace the current one.
+	<P>
+	Multiple and Alternate data will be followed by several strings each containing
+	the name of a replacement glyph.
+	<P>
+	Ligature data will be followed by several strings each containing the name
+	of a ligature component glyph.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>import</CODE></TD>
+      <TD><CODE>(filename)</CODE></TD>
+      <TD>Uses the file's extension to determine behavior. Imports outline descriptions
+	(eps, svg, glif files) into the forground layer. Imports image descriptions
+	(bmp, png, xbm, etc.) into the background layer.</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A name="g-intersect">intersect</A></CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Leaves only areas in the intersection of contours. See also
+	<A href="#g-removeOverlap">removeOverlap</A> and
+	<A href="#g-exclude">exclude</A>.</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A name="g-isWorthOutputting">isWorthOutputting</A></CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Returns whether the glyph is worth outputting into a font file. Basically
+	a glyph is worth outputting if it contains any contours, or references or
+	has had its width set.</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A name="g-removeOverlap">removeOverlap</A></CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Removes overlapping areas. See also <A href="#g-intersect">intersect</A>
+	and <A href="#g-exclude">exclude</A>.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>removePosSub</CODE></TD>
+      <TD><CODE>(lookup-subtable-name)</CODE></TD>
+      <TD>Removes all data from the glyph corresponding to the given lookup-subtable.
+	If the name is "*" then all data will be removed.</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A name="g-round">round</A></CODE></TD>
+      <TD><CODE>([factor])</CODE></TD>
+      <TD>Rounds the x and y coordinates of each point in the glyph. If factor
+	is specified then new-coord = round(factor*old-coord)/factor. See also
+	<A href="#g-cluster">cluster</A>.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>selfIntersects</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Returns whether any of the contours in this glyph intersects any other
+	contour in the glyph (including itself).</TD>
+    </TR>
+    <TR>
+      <TD><CODE>simplify</CODE></TD>
+      <TD><CODE>([error-bound,flags,tan_bounds,<BR>
+	linefixup,linelenmax])</CODE></TD>
+      <TD>Tries to remove excess points in the glyph if doing so will not perturb
+	the curve by more than <CODE>error-bound</CODE>. Flags is a tuple of the
+	following strings
+	<DL>
+	  <DT>
+	    ignoreslopes
+	  <DD>
+	    Allow slopes to change
+	  <DT>
+	    ignoreextrema
+	  <DD>
+	    Allow removal of extrema
+	  <DT>
+	    smoothcurves
+	  <DD>
+	    Allow curve smoothing
+	  <DT>
+	    choosehv
+	  <DD>
+	    Snap to horizontal or vertical
+	  <DT>
+	    forcelines
+	  <DD>
+	    flatten bumps on lines
+	  <DT>
+	    nearlyhvlines
+	  <DD>
+	    Make nearly horizontal/vertical lines be so
+	  <DT>
+	    mergelines
+	  <DD>
+	    Merge adjacent lines into one
+	  <DT>
+	    setstarttoextrema
+	  <DD>
+	    Rotate the point list so that the start point is on an extremum
+	  <DT>
+	    removesingletonpoints
+	  <DD>
+	    If the contour contains just one point then remove it
+	</DL>
+      </TD>
+    </TR>
+    <TR>
+      <TD><CODE>stroke</CODE></TD>
+      <TD><CODE>("circular",width[,linecap,linejoin,flags])<BR>
+	("eliptical",width,minor-width,angle<BR>
+	&nbsp;[,linecap,linejoin,flags])<BR>
+	("caligraphic",width,height,angle[,flags])</CODE></TD>
+      <TD>Strokes the contours of the glyph using one of the indicated pens. Line
+	cap may be one of
+	<UL>
+	  <LI>
+	    butt
+	  <LI>
+	    round
+	  <LI>
+	    square
+	</UL>
+	<P>
+	line join may be
+	<UL>
+	  <LI>
+	    miter
+	  <LI>
+	    round
+	  <LI>
+	    bevel
+	</UL>
+	<P>
+	flags is a tuple containing some of the following strings
+	<UL>
+	  <LI>
+	    removeinternal
+	  <LI>
+	    removeexternal
+	  <LI>
+	    cleanup
+	</UL>
+      </TD>
+    </TR>
+    <TR>
+      <TD><CODE>transform</CODE></TD>
+      <TD><CODE>(matrix[,flags])</CODE></TD>
+      <TD>Transforms the glyph by the matrix. The optional flags argument should
+	be a tuple containing any of the following strings:
+	<UL>
+	  <LI>
+	    partialRefs -- Don't transform any references in the glyph, but do transform
+	    their offsets. This is useful if the refered glyph will be (or has been)
+	    transformed.
+	  <LI>
+	    round -- Round to int after the transformation is done.
+	</UL>
+      </TD>
+    </TR>
+    <TR>
+      <TD><CODE>unlinkRef</CODE></TD>
+      <TD><CODE>([ref-name])</CODE></TD>
+      <TD>Unlinks the reference to the glyph named <CODE>ref-name</CODE>. If
+	<CODE>ref-name</CODE> is omitted, unlinks all references.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>unlinkThisGlyph</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Unlinks all the references to the current glyph within any other glyph
+	in the font.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>draw</CODE></TD>
+      <TD><CODE>(pen)</CODE></TD>
+      <TD>Draw the glyph's outline to the
+	<A href="http://just.letterror.com/ltrwiki/PenProtocol">pen argument.</A></TD>
+    </TR>
+    <TR>
+      <TD><CODE><A name="glyph-glyphPen">glyphPen</A></CODE></TD>
+      <TD><CODE>([replace=False])</CODE></TD>
+      <TD>Creates a new glyphPen which will draw into the current glyph. By default
+	the pen will replace any existing contours and references, but setting the
+	optional keyword argument, <CODE>replace</CODE> to false will retain the
+	old contents.</TD>
+    </TR>
+    <TR>
+      <TD colspan=3><STRONG>Note:</STRONG> Glyphs do not have an independant existance.
+	They live in fonts. You may not create them with new(), only in the context
+	of a font. See <A href="#f-createChar">font.createChar</A></TD>
+    </TR>
+  </TABLE>
+  <P>
+  <TABLE id="type" border=1>
+    <CAPTION>
+      <A name="selection">selection</A>
+    </CAPTION>
+    <TR>
+      <TD colspan=3>This represents a font's selection. You may index it with an
+	encoding value (in the encoding ISO-646-US (ASCII) the character "A" has
+	encoding index 65), or with a glyph's name, or with a string like "uXXXXX"
+	where XXXXX represent the glyphs unicode codepoint in hex, or with a fontforge
+	glyph object.</TD>
+    </TR>
+    <TR>
+      <TH colspan=3>Members</TH>
+    </TR>
+    <TR>
+      <TD colspan=3>None</TD>
+    </TR>
+    <TR>
+      <TH colspan=3>Iterator Protocol</TH>
+    </TR>
+    <TR>
+      <TD><CODE>__iter__</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Returns an iterator for the selection which will run all selected glyphs
+	in encoding order. Note if an encoding slot does not contain a glyph it will
+	be skipped.</TD>
+    </TR>
+    <TR>
+      <TH colspan=3>Methods</TH>
+    </TR>
+    <TR>
+      <TH>method</TH>
+      <TH>args</TH>
+      <TH>comments</TH>
+    </TR>
+    <TR>
+      <TD><CODE>all</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Select everything.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>none</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Deselect everything.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>changed</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Select all glyphs which have changed.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>invert</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Invert the selection.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>select</CODE></TD>
+      <TD><CODE>(args)</CODE></TD>
+      <TD>There may be an arbetrary number of arguments. Each argument may be either:
+	<UL>
+	  <LI>
+	    A glyph name<BR>
+	    Note: There need not be a glyph with this name in the font yet, but if you
+	    use a standard name (like "A") fontforge will still know where that glyph
+	    should be.
+	  <LI>
+	    An integer (this will be interpreted as either an encoding index or (default)
+	    a unicode code point depending on the flags).
+	  <LI>
+	    A fontforge glyph.
+	  <LI>
+	    A tuple of flags.<BR>
+	    (For reasons obscure to me, if I type a single element tuple on the command
+	    line, python strips the tuple and leaves me with the element
+	    <CODE>(("more"),"A") =&gt; ("more","A")</CODE>. So if you have only one flag
+	    to specify, append a None to the end of the tuple. FF needs the flags to
+	    be in a tuple otherwise it can't distinguish them from glyph names)
+	    <DL>
+	      <DT>
+		unicode
+	      <DD>
+		Interpret integer arguments as unicode code points
+	      <DT>
+		encoding
+	      <DD>
+		Interpret integer arguments as encoding indeces.
+	      <DT>
+		more
+	      <DD>
+		Specified items should be selected
+	      <DT>
+		less
+	      <DD>
+		Specified items should be deselected.
+	      <DT>
+		singletons
+	      <DD>
+		Specified items should be interpreted individually and mean the obvious.
+	      <DT>
+		ranges
+	      <DD>
+		Specified items should be interpreted in pairs and represent all encoding
+		slots between the start and end points specified by the pair. So
+		<CODE>.select(("ranges",None),"A","Z")</CODE> would select all the upper
+		case (latin) letters.
+	    </DL>
+	</UL>
+	<P>
+	If the first argument is not a flag argument (or if it doesn't specify either
+	"more" or "less") then the selection will be cleared. So
+	<CODE>.select("A")</CODE> would produce a selection with only "A" selected,
+	<CODE>.select(("more",None),"A")</CODE> would add "A" to the current selection,
+	while <CODE>.select(("less",None),"A")</CODE> would remove "A" from the current
+	selection.</TD>
+    </TR>
+  </TABLE>
+  <P>
+  <TABLE id="type" border=1>
+    <CAPTION>
+      <A name="Font">font</A>
+    </CAPTION>
+    <TR>
+      <TH colspan=3>Members</TH>
+    </TR>
+    <TR>
+      <TH>member</TH>
+      <TH colspan=2>comments</TH>
+    </TR>
+    <TR>
+      <TD><CODE>ascent</CODE></TD>
+      <TD colspan=2>The font's ascent</TD>
+    </TR>
+    <TR>
+      <TD><CODE>bitmapSizes</CODE></TD>
+      <TD colspan=2>A tuple with an entry for each bitmap strike attached to the
+	font. Each strike is identified by pixelsize (if the strike is a grey scale
+	font it will be indicated by
+	<CODE>(bitmap-depth&lt;&lt;16)|pixelsize</CODE>.
+	<P>
+	When setting this value pass in a tuple of the same format. Any existing
+	strike not specified in the tuple will be removed. Any new sizes will be
+	created (but not rasterized -- use <A href="#f-regenBitmaps">regenBitmaps</A>
+	for that).</TD>
+    </TR>
+    <TR>
+      <TD><CODE>changed</CODE></TD>
+      <TD colspan=2>Bit indicating whether the font has been modified. This is
+	(should be) maintained automatically, but you may set it if you wish.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>cidordering</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>cidregistry</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>cidsubfontcnt</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>cidsubfontnames</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>cidsupplement</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>cidversion</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>copyright</CODE></TD>
+      <TD colspan=2>PostScript copyright notice</TD>
+    </TR>
+    <TR>
+      <TD><CODE>cvt</CODE></TD>
+      <TD colspan=2>Returns a sequence object containing the font's cvt table.
+	Changes made to this object will be made to the font (this is a reference
+	not a copy).</TD>
+    </TR>
+    <TR>
+      <TD><CODE>descent</CODE></TD>
+      <TD colspan=2>The font's descent</TD>
+    </TR>
+    <TR>
+      <TD><CODE>design_size</CODE></TD>
+      <TD colspan=2>Size (in pica points) for which this font was designed.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>em</CODE></TD>
+      <TD colspan=2>The em size of the font. Setting this will scale the entire
+	font to the new size.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>encoding</CODE></TD>
+      <TD colspan=2>The name of the current encoding. Setting it will change the
+	encoding used for indexing</TD>
+    </TR>
+    <TR>
+      <TD><CODE>familyname</CODE></TD>
+      <TD colspan=2>PostScript font family name</TD>
+    </TR>
+    <TR>
+      <TD><CODE>fondname</CODE></TD>
+      <TD colspan=2>Mac fond name</TD>
+    </TR>
+    <TR>
+      <TD><CODE>fontname</CODE></TD>
+      <TD colspan=2>PostScript font name</TD>
+    </TR>
+    <TR>
+      <TD><CODE>fullname</CODE></TD>
+      <TD colspan=2>PostScript font name</TD>
+    </TR>
+    <TR>
+      <TD><CODE>gasp</CODE></TD>
+      <TD colspan=2>Returns a tuple of all gasp table entries. Each item in the
+	tuple is itself a tuple composed of a ppem (an integer) and a tuple of flags.
+	The flags are a chosen from:
+	<UL>
+	  <LI>
+	    gridfit
+	  <LI>
+	    antialias
+	  <LI>
+	    symmetric-smoothing
+	  <LI>
+	    gridfit+smoothing
+	</UL>
+      </TD>
+    </TR>
+    <TR>
+      <TD><CODE>gasp_version</CODE></TD>
+      <TD colspan=2>The version of the 'gasp' table. Currently this may be 0 or
+	1.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>gpos_lookups</CODE></TD>
+      <TD colspan=2>Returns a tuple of all positioning lookup names in the font.
+	This member cannot be set.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>gsub_lookups</CODE></TD>
+      <TD colspan=2>Returns a tuple of all substitution lookup names in the font.
+	This member cannot be set.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>guide</CODE></TD>
+      <TD colspan=2>A copy of the font's guide layer</TD>
+    </TR>
+    <TR>
+      <TD><CODE>hasvmetrics</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>hhea_ascent</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>hhea_ascent_add</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>hhea_descent</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>hhea_descent_add</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>hhea_linegap</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>is_quadratic</CODE></TD>
+      <TD colspan=2>Whether the contours should be interpretted as a set of quadratic
+	or cubic splines. Setting this value has the side effect of converting the
+	entire font into the other format</TD>
+    </TR>
+    <TR>
+      <TD><CODE>isnew</CODE></TD>
+      <TD colspan=2>A flag indicating that this is a new font</TD>
+    </TR>
+    <TR>
+      <TD><CODE>italicangle</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>macstyle</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>maxp_FDEFs</CODE></TD>
+      <TD colspan=2>The number of function definitions used by the tt program</TD>
+    </TR>
+    <TR>
+      <TD><CODE>maxp_IDEFs</CODE></TD>
+      <TD colspan=2>The number of instruction definitions used by the tt program</TD>
+    </TR>
+    <TR>
+      <TD><CODE>maxp_maxStackDepth</CODE></TD>
+      <TD colspan=2>The maximum stack depth used by the tt program</TD>
+    </TR>
+    <TR>
+      <TD><CODE>maxp_storageCnt</CODE></TD>
+      <TD colspan=2>The number of storage locations used by the tt program</TD>
+    </TR>
+    <TR>
+      <TD><CODE>maxp_twilightPtCnt</CODE></TD>
+      <TD colspan=2>The number of points in the twilight zone of the tt program</TD>
+    </TR>
+    <TR>
+      <TD><CODE>maxp_zones</CODE></TD>
+      <TD colspan=2>The number of zones used in the tt program</TD>
+    </TR>
+    <TR>
+      <TD><CODE>multilayer</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>onlybitmaps</CODE></TD>
+      <TD colspan=2>A flag indicating that this font only contains bitmaps. No
+	outlines.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>os2_family_class</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>os2_fstype</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>os2_panose</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>os2_strikeypos</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>os2_strikeysize</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>os2_subxoff</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>os2_subxsize</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>os2_subyoff</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>os2_subysize</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>os2_supxoff</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>os2_supxsize</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>os2_supyoff</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>os2_supysize</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>os2_typoascent</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>os2_typoascent_add</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>os2_typodescent</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>os2_typodescent_add</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>os2_typolinegap</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>os2_use_typo_metrics</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>os2_vendor</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>os2_version</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>os2_weight</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>os2_weight_width_slope_only</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>os2_width</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>os2_winascent</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>os2_winascent_add</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>os2_windescent</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>os2_windescent_add</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>private</CODE></TD>
+      <TD colspan=2>Returns a dictionary like object representing the PostScript
+	private dictionary for the font. Changing entries in this object will change
+	them in the font. (It's a reference, not a copy).
+	<P>
+	There is an iterator associated with this entry.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>selection</CODE></TD>
+      <TD colspan=2>Returns a reference to an <A href="#selection">array-like object
+	representing the font's selection</A>. There is one entry for each encoding
+	slot (there may not be a glyph attached to every encoding slot). You may
+	set this with a tuple of integers (or boolean values). There should not be
+	more entries in the tuple than there are encoding slots in the current encoding.
+	A <CODE>True</CODE> or non-0 value means the slot is selected.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>sfnt_names</CODE></TD>
+      <TD colspan=2>The strings in the sfnt 'name' table. A tuple of all ms names.
+	Each name is itself a tuple of strings (language,strid,string). Language
+	may be either the (english) name of the language/locale, or the number
+	representing that language in MicroSoft's specification. Strid may be one
+	of the (english) string names (Copyright, Family, SubFamily, etc.) or the
+	numeric value of that item. The string itself is in UTF-8.
+	<P>
+	Mac names will be automagically created from ms names</TD>
+    </TR>
+    <TR>
+      <TD><CODE>size_feature</CODE></TD>
+      <TD colspan=2>The OpenType 'size' feature has two formats. It may either
+	represent the design size of the font (and nothing else) or the design size,
+	and range (top and bottom point sizes for which this design works), a style
+	id (used to represent this design size throughout the font family) and a
+	set of language/string pairs used to represent this design size in the menu.
+	<P>
+	If no size information is specified in the font FontForge will return None.
+	<P>
+	If only the design size is specified, FontForge will return a tuple containing
+	a single element: the point size for which the font was designed. (This is
+	returned as a real number -- the field can represent tenths of a point).
+	<P>
+	Otherwise FontForge returns a tuple containing five elements, the design
+	size, the bottom of the design range, the top, the style id and a tuple of
+	tuples. Each sub-tuple is a language/string pair. Language may be either
+	the (english) name of the language/locale, or The string itself is in UTF-8.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>strokedfont</CODE></TD>
+      <TD colspan=2>is this a stroked font?</TD>
+    </TR>
+    <TR>
+      <TD><CODE>strokewidth</CODE></TD>
+      <TD colspan=2>the stroke width of a stroked font</TD>
+    </TR>
+    <TR>
+      <TD><CODE>uniqueid</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>upos</CODE></TD>
+      <TD colspan=2>underline position</TD>
+    </TR>
+    <TR>
+      <TD><CODE>userdata</CODE></TD>
+      <TD colspan=2>Whatever you want (contents are not saved in an sfd file)</TD>
+    </TR>
+    <TR>
+      <TD><CODE>uwidth</CODE></TD>
+      <TD colspan=2>underline width</TD>
+    </TR>
+    <TR>
+      <TD><CODE>version</CODE></TD>
+      <TD colspan=2>PostScript font version string</TD>
+    </TR>
+    <TR>
+      <TD><CODE>vertical_origin</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>vhea_linegap</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>weight</CODE></TD>
+      <TD colspan=2>PostScript font weight string</TD>
+    </TR>
+    <TR>
+      <TH colspan=3>Iterator Protocol</TH>
+    </TR>
+    <TR>
+      <TD><CODE>__iter__</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Returns an iterator for the font which will run through the font, in
+	gid order, returning glyph names</TD>
+    </TR>
+    <TR>
+      <TD colspan=2><CODE>&lt;name&gt; in f</CODE></TD>
+      <TD>Returns whether the font contains a glyph with the given name.</TD>
+    </TR>
+    <TR>
+      <TH colspan=3>Mapping Protocol</TH>
+    </TR>
+    <TR>
+      <TD colspan=2><CODE>len(f)</CODE></TD>
+      <TD>The number of glyph slots in the current encoding</TD>
+    </TR>
+    <TR>
+      <TD colspan=2><CODE>f[i]</CODE></TD>
+      <TD>If <EM>i</EM> is an integer, then returns the glyph at that encoding.
+	If a string then returns the glyph with that name. May not be assigned to.</TD>
+    </TR>
+    <TR>
+      <TH colspan=3>Methods</TH>
+    </TR>
+    <TR>
+      <TH>method</TH>
+      <TH>args</TH>
+      <TH>comments</TH>
+    </TR>
+    <TR>
+      <TD><CODE>new</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Creates a new font</TD>
+    </TR>
+    <TR>
+      <TD><CODE>addAnchorClass</CODE></TD>
+      <TD><CODE>(lookup-subtable-name,<BR>
+	&nbsp;new-anchor-class-name)</CODE></TD>
+      <TD>Adds an anchor class to the specified (anchor) subtable.</TD>
+    </TR>
+    <TR>
+    </TR>
+    <TR>
+      <TD><CODE>addKerningClass</CODE></TD>
+      <TD><CODE>(lookup-name,new-subtable-name,<BR>
+	&nbsp;first-classes,<BR>
+	&nbsp;second-classes,<BR>
+	&nbsp;offsets<BR>
+	&nbsp;[,after])</CODE></TD>
+      <TD>Creates a new subtable and a new kerning class in the named lookup. The
+	classes arguments are tuples of tuples of glyph names (each sub-tuble of
+	glyph names is a kerning class). The offsets argument is a tuple of kerning
+	offsets. There must be as many entries as
+	<CODE>len(first-class)*len(second-class)</CODE>. The optional after argument
+	is used to specify the order of the subtable within the lookup.</TD>
+    </TR>
+    <TR>
+    </TR>
+    <TR>
+      <TD><CODE><A name="font-addLookup">addLookup</A></CODE></TD>
+      <TD><CODE>(new-lookup-name,type,flags,<BR>
+	&nbsp;feature-script-lang-tuple<BR>
+	&nbsp;[,after-lookup-name)</CODE></TD>
+      <TD>Creates a new lookup with the given name, type and flags. It will tag
+	it with any indicated features. The type of one of
+	<UL>
+	  <LI>
+	    gsub_single
+	  <LI>
+	    gsub_multiple
+	  <LI>
+	    gsub_alternate
+	  <LI>
+	    gsub_ligature
+	  <LI>
+	    gsub_context
+	  <LI>
+	    gsub_contextchain
+	  <LI>
+	    gsub_revesechain
+	  <LI>
+	    morx_indic
+	  <LI>
+	    morx_context
+	  <LI>
+	    morx_insert
+	  <LI>
+	    gpos_single
+	  <LI>
+	    gpos_pair
+	  <LI>
+	    gpos_cursive
+	  <LI>
+	    gpos_mark2base
+	  <LI>
+	    gpos_mark2ligature
+	  <LI>
+	    gpos_mark2mark
+	  <LI>
+	    gpos_context
+	  <LI>
+	    gpos_contextchain
+	  <LI>
+	    kern_statemachine
+	</UL>
+	<P>
+	The flags argument is a tuple of strings. At most one of these strings may
+	be the name of a mark class. The others are:
+	<UL>
+	  <LI>
+	    right_to_left
+	  <LI>
+	    ignore_bases
+	  <LI>
+	    ignore_ligatures
+	  <LI>
+	    ignore_marks
+	</UL>
+	<P>
+	A feature-script-lang tuple is a tuple with one entry for each feature (there
+	may be no entries if there are no features). Each entry is itself a two element
+	tuple, the first entry is a string containing a 4 letter feature tag, and
+	the second entry is another tuple (potentially empty) with an entry for each
+	script for which the feature is active. Each entry here is itself a two element
+	tuple. The first element is a 4 letter script tag and the second is a tuple
+	of languages. Each entry in the language tuple is a four letter language.
+	Example: (("liga",(("latn",("dflt")))))<BR>
+	The optional final argument allows you to specify the ordering of the lookup.
+	If not specified the lookup will be come the first lookup in its table.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>addLookupSubtable</CODE></TD>
+      <TD><CODE>(lookup-name,<BR>
+	&nbsp;new-subtable-name<BR>
+	&nbsp;[,after-subtable-name])</CODE></TD>
+      <TD>Creates a new subtable within the specified lookup. The optional final
+	argument allows you to specify the ordering within the lookup. If not specified
+	this subtable will be first in the lookup.</TD>
+      <TD><CODE>alterKerningClass</CODE></TD>
+      <TD><CODE>(subtable-name,<BR>
+	&nbsp;first-classes,<BR>
+	&nbsp;second-classes,<BR>
+	&nbsp;offsets)</CODE></TD>
+      <TD>Changes the kerning class in the named subtable. The classes arguments
+	are tuples of tuples of glyph names (each sub-tuble of glyph names is a kerning
+	class). The offsets argument is a tuple of kerning offsets. There must be
+	as many entries as <CODE>len(first-class)*len(second-class)</CODE>. The optional
+	after argument is used to specify the order of the subtable within the lookup.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>appendSFNTName</CODE></TD>
+      <TD><CODE>(language,strid,string)</CODE></TD>
+      <TD>Adds a new (or replaces an old) string in the sfnt 'name' table. Language
+	may be either the english name of the language/locale as a string, or the
+	number representing that language in MicroSoft's specification. Strid may
+	be one of the (english) string names (Copyright, Family, SubFamily, etc.)
+	or the numeric value of that item. The string itself is in UTF-8.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>close</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Frees memory for the current font.
+	<P>
+	<STRONG>Warning:</STRONG> Any python pointers to it will become invalid.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>compareFonts</CODE></TD>
+      <TD><CODE>(other-font,filename,<BR>
+	&nbsp;flags-tuple)</CODE></TD>
+      <TD>This will compare the current font with the font in
+	<CODE>other-font</CODE> (which must already have been opened). It will write
+	the results to the <CODE>filename</CODE>, you may use "-" to send the output
+	to stdout. The <CODE>flags</CODE> argument is a tuple of strings and controls
+	what will be compared.
+	<TABLE BORDER CELLPADDING="2">
+	  <CAPTION>
+	    <SMALL>flags</SMALL>
+	  </CAPTION>
+	  <TR>
+	    <TD>outlines</TD>
+	    <TD>compare outlines</TD>
+	  </TR>
+	  <TR>
+	    <TD>outlines-exactly</TD>
+	    <TD>compare outlines exactly (otherwise allow slight errors and the unlinking
+	      of references)</TD>
+	  </TR>
+	  <TR>
+	    <TD>warn-outlines-mismatch</TD>
+	    <TD>warn if the outlines don't exactly match (but are pretty close)</TD>
+	  </TR>
+	  <TR>
+	    <TD>hints</TD>
+	    <TD>compare hints</TD>
+	  </TR>
+	  <TR>
+	    <TD>warn-refs-unlink</TD>
+	    <TD>warn if references need to be unlinked before a match is found</TD>
+	  </TR>
+	  <TR>
+	    <TD>strikes</TD>
+	    <TD>compare bitmap strikes</TD>
+	  </TR>
+	  <TR>
+	    <TD>fontnames</TD>
+	    <TD>compare font names</TD>
+	  </TR>
+	  <TR>
+	    <TD>gpos</TD>
+	    <TD>compare glyph positioning</TD>
+	  </TR>
+	  <TR>
+	    <TD>gsub</TD>
+	    <TD>compare glyph substitutions</TD>
+	  </TR>
+	  <TR>
+	    <TD>add-outlines</TD>
+	    <TD>for any glyphs whose outlines differ, add the outlines of the glyph in
+	      the second font to the background of the glyph in the first</TD>
+	  </TR>
+	  <TR>
+	    <TD>create-glyphs</TD>
+	    <TD>if a glyph exists in the second font but not the first, create that glyph
+	      in the first and add the outlines from the second into the backgroun layer</TD>
+	  </TR>
+	</TABLE>
+      </TD>
+    </TR>
+    <TR>
+      <TD><CODE><A name="f-createChar">createChar</A></CODE></TD>
+      <TD><CODE>(uni[,name])</CODE></TD>
+      <TD>Create (and return) a character at the specified unicode codepoint in
+	this font and optionally name it. If you wish to create an glyph with no
+	unicode codepoint set the first argument to -1 and specify a name. If there
+	is already a character there, return it (it will not be renamed).</TD>
+    </TR>
+    <TR>
+      <TD><CODE>createMappedChar</CODE></TD>
+      <TD><CODE>(enc)<BR>
+	(name)</CODE></TD>
+      <TD>Create (and return) a character at the specified encoding in this font.
+	If there is already a character there, return it</TD>
+    </TR>
+    <TR>
+      <TD><CODE>findEncodingSlot</CODE></TD>
+      <TD><CODE>(uni)<BR>
+	(name)</CODE></TD>
+      <TD>Tests whether a glyph with this codepoint or name is in the font's encoding
+	and returns the encoding slot. If the glyph is not present it returns -1.</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A name="f-generate">generate</A></CODE></TD>
+      <TD><CODE>(filename,<BR>
+	&nbsp;[bitmap_type=,<BR>
+	&nbsp;flags=,<BR>
+	&nbsp;bitmap_resolution=,<BR>
+	&nbsp;subfont_directory=,<BR>
+	&nbsp;namelist=])</CODE></TD>
+      <TD>Generates a font. The type is determined by the font's extension.
+	<P>
+	Flags is a tuple containing some of
+	<DL>
+	  <DT>
+	    afm
+	  <DD>
+	    output an afm file
+	  <DT>
+	    pfm
+	  <DD>
+	    output a pfm file
+	  <DT>
+	    tfm
+	  <DD>
+	    output a tfm file
+	  <DT>
+	    ofm
+	  <DD>
+	    output a ofm file
+	  <DT>
+	    composites-in-afm
+	  <DD>
+	    Store composite info in the afm file
+	  <DT>
+	    glyph-map-file
+	  <DD>
+	    Output a glyph map file giving the mapping between output gid and glyphnames
+	  <DT>
+	    short-post
+	  <DD>
+	    Do not include glyphnames in a ttf/otf file
+	  <DT>
+	    apple
+	  <DD>
+	    output apple advanced typography tables
+	  <DT>
+	    opentype
+	  <DD>
+	    output opentype tables
+	  <DT>
+	    old-kern
+	  <DD>
+	    output an old style 'kern' with opentype tables
+	  <DT>
+	    TeX-table
+	  <DD>
+	    Include a 'TeX ' table in an ttf/otf file
+	  <DT>
+	    round
+	  <DD>
+	    Round PS coordinates to integers
+	  <DT>
+	    no-hints
+	  <DD>
+	    Do not include PS hints
+	  <DT>
+	    omit-instructions
+	  <DD>
+	    Do not include TrueType instructions
+	</DL>
+	<P>
+	See also <A href="font-save">save()</A>.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>getKerningClass</CODE></TD>
+      <TD><CODE>(subtable-name)</CODE></TD>
+      <TD>Returns a tuple whose entries are: (first-classes, second-classes, offsets).
+	The classes are themselves tuples of tuples of glyph names. The offsets will
+	be a tuple of numeric kerning offsets.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>getLookupInfo</CODE></TD>
+      <TD><CODE>(lookup-name)</CODE></TD>
+      <TD>Returns a tuple whose entries are: (lookup-type, lookup-flags,
+	feature-script-lang-tuple) The lookup type is a string as described in
+	<A HREF="#font-addLookup">addLookup</A>, and the feature-script-lang tuple
+	is also described <A HREF="#font-addLookup">there</A>.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>getLookupSubtables</CODE></TD>
+      <TD><CODE>(lookup-name)</CODE></TD>
+      <TD>Returns a tuple of all subtable names in that lookup.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>getLookupSubtableAnchorClasses</CODE></TD>
+      <TD><CODE>(subtable-name)</CODE></TD>
+      <TD>Returns a tuple of all anchor class names in that subtable.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>getLookupOfSubtable</CODE></TD>
+      <TD><CODE>(subtable-name)</CODE></TD>
+      <TD>Returns the name of the lookup containing this subtable.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>getSubtableOfAnchor</CODE></TD>
+      <TD><CODE>(anchor-class-name)</CODE></TD>
+      <TD>Returns the name of the subtable containing this anchor class.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>interpolateFonts</CODE></TD>
+      <TD><CODE>(fraction,filename)</CODE></TD>
+      <TD>Interpolates a font between the current font and the font contained in
+	filename.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>isKerningClass</CODE></TD>
+      <TD><CODE>(subtable-name)</CODE></TD>
+      <TD>Returns whether the named subtable contains a kerning class.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>isVerticalKerning</CODE></TD>
+      <TD><CODE>(subtable-name)</CODE></TD>
+      <TD>Returns whether the named subtable contains a vertical kerning data</TD>
+    </TR>
+    <TR>
+      <TD><CODE>lookupSetFeatureList</CODE></TD>
+      <TD><CODE>(lookup-name,feature-script-lang-tuple)</CODE></TD>
+      <TD>Sets the feature list of indicated lookup. The feature-script-lang tuple
+	is described at <A HREF="#font-addLookup">addLookup</A>.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>lookupSetFlags</CODE></TD>
+      <TD><CODE>(lookup-name,flags)</CODE></TD>
+      <TD>Sets the lookup flags for the named lookup.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>lookupSetStoreLigatureInAfm</CODE></TD>
+      <TD><CODE>(lookup-name,boolean)</CODE></TD>
+      <TD>Sets whether this ligature lookup contains data to store in the afm.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>mergeFonts</CODE></TD>
+      <TD><CODE>(filename)</CODE></TD>
+      <TD>Merges the font in the file into the current font.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>mergeKern</CODE></TD>
+      <TD><CODE>(filename)</CODE></TD>
+      <TD>Merge metrics information from the (afm,tfm,etc) file into the current
+	font.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>mergeLookups</CODE></TD>
+      <TD><CODE>(lookup-name1,lookup-name2)</CODE></TD>
+      <TD>The lookups must be of the same type. All subtables from lookup-name2
+	will be moved to lookup-name1, the features list of lookup-name2 will be
+	merged with that of lookup-name1, and lookup-name2 will be removed.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>mergeLookupSubtables</CODE></TD>
+      <TD><CODE>(subtable-name1,subtable-name2)</CODE></TD>
+      <TD>The subtables must be in the same lookup. Not all lookup types allow
+	their subtables to be merged (contextual subtables may not be merged, kerning
+	classes may not be (kerning pairs may be)). Any information bound to subtable2
+	will be bound to subtable1 and subtable2 will be removed.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>print</CODE></TD>
+      <TD><CODE>(type,pointsize,<BR>
+	&nbsp;sample,output-file)</CODE></TD>
+      <TD>Type is a string which must be one of
+	<DL>
+	  <DT>
+	    fontdisplay
+	  <DD>
+	    Display all glyphs in the font in encoding order
+	  <DT>
+	    chars
+	  <DD>
+	    Display the selected glyphs scaled to fill a page<BR>
+	    Ignores the pointsize argument.
+	  <DT>
+	    waterfall
+	  <DD>
+	    Displays the selected glyphs at many pointsizes.<BR>
+	    The pointsize argument should be a tuple of pointsizes here.
+	  <DT>
+	    fontsample
+	  <DD>
+	    The third argument should contain a string which will be layed out and displayed
+	    as well as FontForge can.
+	  <DT>
+	    fontsampleinfile
+	  <DD>
+	    The third argument should contain the name of a file which contains text
+	    to be layed out and displayed.
+	</DL>
+	<P>
+	If output is to a file (see <A href="#printSetup">printSetup</A>) then the
+	last argument specifies a file name in which to store output.</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A name="f-regenBitmaps">regenBitmaps</A></CODE></TD>
+      <TD><CODE>(tuple-of-sizes)</CODE></TD>
+      <TD>A tuple with an entry for each bitmap strike to be regenerated
+	(rerasterized). Each strike is identified by pixelsize (if the strike is
+	a grey scale font it will be indicated by
+	<CODE>(bitmap-depth&lt;&lt;16)|pixelsize</CODE>.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>removeAnchorClass</CODE></TD>
+      <TD><CODE>(anchor-class-name)</CODE></TD>
+      <TD>Removes the named AnchorClass (and all associated points) from the font.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>removeLookup</CODE></TD>
+      <TD><CODE>(lookup-name)</CODE></TD>
+      <TD>Remove the lookup (and any subtables within it).</TD>
+    </TR>
+    <TR>
+      <TD><CODE>removeLookupSubtable</CODE></TD>
+      <TD><CODE>(subtable-name)</CODE></TD>
+      <TD>Remove the subtable (and all data associated with it).</TD>
+    </TR>
+    <TR>
+      <TD><CODE>removeGlyph</CODE></TD>
+      <TD><CODE>(uni[,name])<BR>
+	(glyph)</CODE></TD>
+      <TD>You may either pass in a FontForge glyph object (from this font) or identify
+	a glyph in the font by unicode code point or name. In any case the glyph
+	will be removed from the font.
+	<P>
+	<STRONG>WARNING:</STRONG> This frees fontforge's storage to this glyph. If
+	you have any python pointers to that storage they will be looking at garbage.
+	This does not go through the usual python reference mechanism.</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A name="font-save">save</A></CODE></TD>
+      <TD><CODE>([filename])</CODE></TD>
+      <TD>Saves the font to an sfd file. See also
+	<A href="f-generate">generate()</A></TD>
+    </TR>
+    <TR>
+      <TD><CODE>getTableData</CODE></TD>
+      <TD><CODE>(table-name)</CODE></TD>
+      <TD>Gets binary data from any saved table. FF will save 'fpgm', 'prep', 'cvt
+	' and 'maxp'. FF may also save tables which you explicitly request. Do not
+	expect to get binary data for tables like 'GPOS' or 'glyf' which FF will
+	generate when it creates a font... that information is not currently available.
+	<P>
+	Returns a binary string.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>setTableData</CODE></TD>
+      <TD><CODE>(table-name,sequence)</CODE></TD>
+      <TD>Sets binary data of any saved table. FF will save 'fpgm', 'prep', 'cvt
+	' and 'maxp'. FF may also save tables which you explicitly request. Do not
+	expect to set binary data for tables like 'GPOS' or 'glyf' which FF will
+	generate when it creates a font... that information is not currently available.</TD>
+    </TR>
+    <TR>
+      <TH colspan=3>Selection based interface<BR>
+	See the <A href="#selection">selection type</A> for how to alter the selection</TH>
+    </TR>
+    <TR>
+      <TD><CODE>addExtrema</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Extrema should be marked by on-curve points. If a curve in any selected
+	glyph lacks a point at a significant extremum this command will add one.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>autoHint</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Generates PostScript hints for all selected glyphs.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>autoInstr</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Generates (bad) TrueType instructions for all selected glyphs.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>autoTrace</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Auto traces any background images in all selected glyphs</TD>
+    </TR>
+    <TR>
+      <TD><CODE>build</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>If any of the selected characters is a composite character, then this
+	command will clear it and insert references to its components (this command
+	can create new glyphs).</TD>
+    </TR>
+    <TR>
+      <TD><CODE>canonicalContours</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Orders the contours in the selected glyphs by the x coordinate of their
+	leftmost point. (This can reduce the size of the charstring needed to describe
+	the glyph(s).</TD>
+    </TR>
+    <TR>
+      <TD><CODE>canonicalStart</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Sets the start point of all the contours of the selected glyphs to be
+	the leftmost point on the contour. (If there are several points with that
+	value then use the one which is closest to the baseline). This can reduce
+	the size of the charstring needed to describe the glyph(s). By regularizing
+	things it can also make more things available to be put in subroutines.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>clear</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Clears the contents of all selected glyphs</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A name="f-cluster">cluster</A></CODE></TD>
+      <TD><CODE>([within,max])</CODE></TD>
+      <TD>Moves clustered coordinates to a standard central value in all selected
+	glyphs. See also <A href="#f-round">round</A>.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>copy</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Copies all selected glyphs into (fontforge's internal) clipboard.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>copyReference</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Copies all selected glyphs (as references) into (fontforge's internal)
+	clipboard.</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A name="f-correctDirection">correctDirection</A></CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Orients all contours so that external ones are clockwise and internal
+	counter-clockwise in all selected glyphs.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>cut</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Copies all selected glyphs into (fontforge's internal) clipboard. And
+	then clears them.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>paste</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Pastes the contents of (fontforge's internal) clipboard into the selected
+	glyphs -- and removes what was there before.</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A name="f-intersect">intersect</A></CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Leaves only areas in the intersection of contours in all selected glyphs.
+	See also <A href="#f-removeOverlap">removeOverlap</A>.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>pasteInto</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Pastes the contents of (fontforge's internal) clipboard into the selected
+	glyphs -- and retains what was there before.</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A name="f-removeOverlap">removeOverlap</A></CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Removes overlapping areas in all selected glyphs. See also
+	<A href="#f-intersect">intersect</A>.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>replaceWithReference</CODE></TD>
+      <TD><CODE>([fudge])</CODE></TD>
+      <TD>Finds any glyph which contains an inline copy of one of the selected
+	glyphs, and converts that copy into a reference to the appropriate glyph.
+	Selection is changed to the set of glyphs which the command alters.
+	<P>
+	If specified the fudge argument specifies the error allowed for coordinate
+	differences.</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A name="f-round">round</A></CODE></TD>
+      <TD><CODE>([factor])</CODE></TD>
+      <TD>Rounds the x and y coordinates of each point in all selected glyphs.
+	If factor is specified then new-coord = round(factor*old-coord)/factor. See
+	also <A href="#f-cluster">cluster</A>.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>simplify</CODE></TD>
+      <TD><CODE>([error-bound,flags,tan_bounds,<BR>
+	linefixup,linelenmax])</CODE></TD>
+      <TD>Tries to remove excess points in all selected glyphs if doing so will
+	not perturb the curve by more than <CODE>error-bound</CODE>. Flags is a tuple
+	of the following strings
+	<DL>
+	  <DT>
+	    ignoreslopes
+	  <DD>
+	    Allow slopes to change
+	  <DT>
+	    ignoreextrema
+	  <DD>
+	    Allow removal of extrema
+	  <DT>
+	    smoothcurves
+	  <DD>
+	    Allow curve smoothing
+	  <DT>
+	    choosehv
+	  <DD>
+	    Snap to horizontal or vertical
+	  <DT>
+	    forcelines
+	  <DD>
+	    flatten bumps on lines
+	  <DT>
+	    nearlyhvlines
+	  <DD>
+	    Make nearly horizontal/vertical lines be so
+	  <DT>
+	    mergelines
+	  <DD>
+	    Merge adjacent lines into one
+	  <DT>
+	    setstarttoextrema
+	  <DD>
+	    Rotate the point list so that the start point is on an extremum
+	  <DT>
+	    removesingletonpoints
+	  <DD>
+	    If the contour contains just one point then remove it
+	</DL>
+      </TD>
+    </TR>
+    <TR>
+      <TD><CODE>stroke</CODE></TD>
+      <TD><CODE>("circular",width[,linecap,linejoin,flags])<BR>
+	("eliptical",width,minor-width,angle<BR>
+	&nbsp;[,linecap,linejoin,flags])<BR>
+	("caligraphic",width,height,angle[,flags])</CODE></TD>
+      <TD>Strokes the contours of all selected glyphs using one of the indicated
+	pens. Line cap may be one of
+	<UL>
+	  <LI>
+	    butt
+	  <LI>
+	    round
+	  <LI>
+	    square
+	</UL>
+	<P>
+	line join may be
+	<UL>
+	  <LI>
+	    miter
+	  <LI>
+	    round
+	  <LI>
+	    bevel
+	</UL>
+	<P>
+	flags is a tuple containing some of the following strings
+	<UL>
+	  <LI>
+	    removeinternal
+	  <LI>
+	    removeexternal
+	  <LI>
+	    cleanup
+	</UL>
+      </TD>
+    </TR>
+    <TR>
+      <TD><CODE>transform</CODE></TD>
+      <TD><CODE>(matrix)</CODE></TD>
+      <TD>Transforms all selected glyphs by the matrix.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>unlinkReferences</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Unlinks all references in all selected glyphs and replaces them with
+	splines.</TD>
+    </TR>
+  </TABLE>
+  <H3>
+    Stupid example
+  </H3>
+  <TABLE BORDER=1>
+    <TR>
+      <TD><PRE>import fontforge                                 #Load the module
+amb=fontforge.open("Ambrosia.sfd")               #Open a font
+amb.selection.select(("ranges",None),"A","Z")    #select A-Z
+amb.copy()                                       #Copy those glyphs into the clipboard
+
+n=fontforge.font()                               #Create a new font
+n.selection.select(("ranges",None),"A","Z")      #select A-Z of it
+n.paste()                                        #paste the glyphs above in
+print n["A"].foreground                          #test to see that something
+                                                 #  actually got pasted
+n.fontname="NewFont"                             #Give the new font a name
+n.save("NewFont.sfd")                            #and save it.
+</PRE>
+      </TD>
+    </TR>
+  </TABLE>
+</DIV>
+</BODY></HTML>
