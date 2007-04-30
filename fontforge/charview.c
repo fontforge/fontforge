@@ -1365,7 +1365,7 @@ static void DrawTransOrigin(CharView *cv, GWindow pixmap) {
 
 static void DrawVLine(CharView *cv,GWindow pixmap,real pos,Color fg, int flags, GImage *lock) {
     char buf[20];
-    int x = cv->xoff + rint(pos*cv->scale), nx;
+    int x = cv->xoff + rint(pos*cv->scale);
     DrawLine(cv,pixmap,pos,-32768,pos,32767,fg);
     if ( flags&1 ) {
 	if ( x>-400 && x<cv->width+400 ) {
