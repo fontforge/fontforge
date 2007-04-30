@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 15-Apr-2007 -->
+  <!-- AP: Last modified: 30-Apr-2007 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -13,14 +13,22 @@
     Writing scripts to change fonts in FontForge
   </H1>
   <P>
-  FontForge includes an interpreter so you can write scripts to modify fonts.
+  FontForge includes two interpreters so you can write scripts to modify fonts.
+  One of these interpreters is <A HREF="python.html">python</A>, one is a legacy
+  language I came up with. FontForge may be configured with either or both
+  of these. If configured with both then fontforge will make a guess at which
+  to use based on the script file's extension ("py" means use the python
+  interpreter, "ff" or "pe" means use the old interpreter)
   <UL>
     <LI>
-      <A HREF="scripting-tutorial.html">Scripting tutorial</A>
+      <A HREF="#Starting">Invoking a
+      script</A><A HREF="scripting-tutorial.html"></A>
     <LI>
-      <A HREF="#Starting">Invoking a script</A>
+      <A HREF="python.html">Python scripting</A>
     <LI>
-      <A HREF="#Language">Scripting language</A>
+      <A HREF="scripting-tutorial.html">Native Scripting tutorial</A>
+    <LI>
+      <A HREF="#Language">Native Scripting language</A>
       <UL>
 	<LI>
 	  <A HREF="#variables">Built in variables</A>
@@ -39,14 +47,18 @@
   </H2>
   <P>
   If you start fontforge with a script on the command line it will not put
-  up any windows and it will exit when the script is done.
+  up any windows and it will exit when the script is done. The script can be
+  in a file, or just a string presented as an argument. You may need to specify
+  which interpreter to use with the -lang argument.
   <BLOCKQUOTE>
-    <PRE>$ fontforge -script scriptfile.pe {fontnames}
+    <PRE>$ fontforge -script scriptfile.pe {arguments}
+$ fontforge -c "script-string" {arguments}
+$ fontforge -lang={ff|py} -c "script-string"
 </PRE>
   </BLOCKQUOTE>
   <P>
-  FontForge can also be used as an interpreter that the shell will automatically
-  pass scripts to. If you a mark your script files as executable<BR>
+  FontForge can also be used as an interpreter to which the shell will
+  automatically pass scripts. If you a mark your script files as executable<BR>
   <CODE>&nbsp; &nbsp; $ chmod +x scriptfile.pe</CODE><BR>
   and begin each one with the line<BR>
   <CODE>&nbsp; &nbsp; #!/usr/local/bin/fontforge</CODE><BR>
@@ -74,22 +86,14 @@
   need a value, just needs to be set) then FontForge will print scripts to
   stdout as it executes them.
   <P>
-  In general I envision this as being useful for things like taking a latin
-  font and extending it to contain cyrillic glyphs. So the script might:
-  <UL>
-    <LI>
-      Reencode the font
-    <LI>
-      Place a reference to Latin "A" at Cyrillic "A"
-    <LI>
-      Copy Latin "R" to Cyrillic "YA"
-    <LI>
-      Flip "YA" horizontally
-    <LI>
-      Correct its direction
-    <LI>
-      ... and so forth
-  </UL>
+  You may set the environment variable <CODE>FONTFORGE_LANGUAGE</CODE> to either
+  "py" (for python) or "ff" or "pe" (for native scripting) as another way to
+  determne what interpreter to use.
+  <H2>
+    <A HREF="python.html">Python scripting</A>
+  </H2>
+  <P>
+  <A HREF="python.html">Is described elsewhere.</A>
   <H2>
     Scripting <A NAME="Language">Language</A>
   </H2>
