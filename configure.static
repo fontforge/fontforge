@@ -3207,13 +3207,28 @@ else
   :
 fi;
 if test "$python" = "yes" ; then
-  echo "$as_me:$LINENO: checking for library containing Py_Initialize" >&5
-echo $ECHO_N "checking for library containing Py_Initialize... $ECHO_C" >&6
-if test "${ac_cv_search_Py_Initialize+set}" = set; then
+  echo -n "Checking for python..."
+  if python -c "import distutils.sysconfig ; print '-I%s' % distutils.sysconfig.get_config_var('INCLUDEPY')" >/dev/null 2>&1 ; then
+    if python -c "import distutils.sysconfig ; print '%s/%s %s' % (distutils.sysconfig.get_config_var('LIBPL'),distutils.sysconfig.get_config_var('LDLIBRARY'),distutils.sysconfig.get_config_var('LIBS'))" >/dev/null 2>&1 ; then
+      PyVersion=`python -c "import distutils.sysconfig ; print '%s' % distutils.sysconfig.get_config_var('VERSION')"`
+      PySubVersion=`echo $PyVersion |sed -e 's/2.//'`
+      PyInc=`python -c "import distutils.sysconfig ; print '%s' % distutils.sysconfig.get_config_var('INCLUDEPY')"`
+      PyLib=`python -c "import distutils.sysconfig ; print '%s/%s' % (distutils.sysconfig.get_config_var('LIBPL'),distutils.sysconfig.get_config_var('LDLIBRARY'))"`
+      if test "$PySubVersion" \!= "" -a "$PySubVersion" -ge 3 -a -e $PyLib -a -e $PyInc; then
+	PyIncs=`python -c "import distutils.sysconfig ; print '-I%s' % distutils.sysconfig.get_config_var('INCLUDEPY')"`
+        PyLibs=`python -c "import distutils.sysconfig ; print '%s/%s %s' % (distutils.sysconfig.get_config_var('LIBPL'),distutils.sysconfig.get_config_var('LDLIBRARY'),distutils.sysconfig.get_config_var('LIBS'))"`
+        LIBS="$LIBS $PyLibs"
+	CPPFLAGS="$CPPFLAGS $PyIncs"
+      else
+	# python gets it wrong on all my build systems, this seems to work instead
+	PyName="python$PyVersion"
+	echo "$as_me:$LINENO: checking for library containing Py_Main" >&5
+echo $ECHO_N "checking for library containing Py_Main... $ECHO_C" >&6
+if test "${ac_cv_search_Py_Main+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
 else
   ac_func_search_save_LIBS=$LIBS
-ac_cv_search_Py_Initialize=no
+ac_cv_search_Py_Main=no
 cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
 _ACEOF
@@ -3227,11 +3242,11 @@ extern "C"
 #endif
 /* We use char because int might match the return type of a gcc2
    builtin and then its argument prototype would still apply.  */
-char Py_Initialize ();
+char Py_Main ();
 int
 main ()
 {
-Py_Initialize ();
+Py_Main ();
   ;
   return 0;
 }
@@ -3258,7 +3273,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_cv_search_Py_Initialize="none required"
+  ac_cv_search_Py_Main="none required"
 else
   echo "$as_me: failed program was:" >&5
 sed 's/^/| /' conftest.$ac_ext >&5
@@ -3266,8 +3281,8 @@ sed 's/^/| /' conftest.$ac_ext >&5
 fi
 rm -f conftest.err conftest.$ac_objext \
       conftest$ac_exeext conftest.$ac_ext
-if test "$ac_cv_search_Py_Initialize" = no; then
-  for ac_lib in python2.3 python2.4 python2.5 python2.6 python2 python; do
+if test "$ac_cv_search_Py_Main" = no; then
+  for ac_lib in $PyName python; do
     LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
     cat >conftest.$ac_ext <<_ACEOF
 /* confdefs.h.  */
@@ -3282,11 +3297,11 @@ extern "C"
 #endif
 /* We use char because int might match the return type of a gcc2
    builtin and then its argument prototype would still apply.  */
-char Py_Initialize ();
+char Py_Main ();
 int
 main ()
 {
-Py_Initialize ();
+Py_Main ();
   ;
   return 0;
 }
@@ -3313,7 +3328,7 @@ if { (eval echo "$as_me:$LINENO: \"$ac_link\"") >&5
   ac_status=$?
   echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; }; then
-  ac_cv_search_Py_Initialize="-l$ac_lib"
+  ac_cv_search_Py_Main="-l$ac_lib"
 break
 else
   echo "$as_me: failed program was:" >&5
@@ -3326,36 +3341,30 @@ rm -f conftest.err conftest.$ac_objext \
 fi
 LIBS=$ac_func_search_save_LIBS
 fi
-echo "$as_me:$LINENO: result: $ac_cv_search_Py_Initialize" >&5
-echo "${ECHO_T}$ac_cv_search_Py_Initialize" >&6
-if test "$ac_cv_search_Py_Initialize" != no; then
-  test "$ac_cv_search_Py_Initialize" = "none required" || LIBS="$ac_cv_search_Py_Initialize $LIBS"
+echo "$as_me:$LINENO: result: $ac_cv_search_Py_Main" >&5
+echo "${ECHO_T}$ac_cv_search_Py_Main" >&6
+if test "$ac_cv_search_Py_Main" != no; then
+  test "$ac_cv_search_Py_Main" = "none required" || LIBS="$ac_cv_search_Py_Main $LIBS"
   :
 else
   python="no"
 fi
 
-fi
-if test "$python" = "yes" ; then
-  echo -n checking for Python.h...
-  Python_Incs=`echo /usr/include/*/Python.h | sort -r | sed -e 's/Python.h//'`
-  if test "$Python_Incs" = "" >/dev/null 2>&1 ; then
-    Python_Incs=`echo /usr/local/include/*/Python.h | sort -r | sed -e 's/Python.h//'`
-  fi
-
-  Python_Inc=""
-  for dir in $Python_Incs; do
-    Python_Inc=$dir
-  break
-  done
-  if test "$Python_Inc" = "" >/dev/null 2>&1 ; then
-   python="no"
-   echo "no"
+	if test -d /usr/include/$PyName ; then
+	  CPPFLAGS="$CPPFLAGS -I/usr/include/$PyName"
+	else
+	  python="no"
+	fi
+      fi
+    else
+      python="no"
+    fi
   else
-   CFLAGS="$CFLAGS -I$Python_Inc"
-   echo "yes"
+    python="no"
   fi
+  echo $python
 fi
+
 if test "$python" = "no" ; then
   cat >>confdefs.h <<\_ACEOF
 #define _NO_PYTHON 1
@@ -3375,7 +3384,7 @@ if test "${with_native_script+set}" = set; then
 else
   :
 fi;
-if test "ffscript" = "no" ; then
+if test "$ffscript" = "no" ; then
   cat >>confdefs.h <<\_ACEOF
 #define _NO_FFSCRIPT 1
 _ACEOF
