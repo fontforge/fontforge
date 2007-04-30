@@ -174,6 +174,8 @@ return( FlagsFromString(str,flags));
 	ret = 0;
 	for ( i=0; i<PySequence_Size(tuple); ++i ) {
 	    obj = PySequence_GetItem(tuple,i);
+	    if ( obj==Py_None )
+	continue;
 	    if ( !PyString_Check(obj)) {
 		PyErr_Format(PyExc_TypeError, "Bad flag tuple, must be strings");
 return( 0x80000000 );
@@ -5156,7 +5158,7 @@ static PyObject *PyFFSelection_select(PyObject *self, PyObject *args) {
 
     for ( i=0; i<cnt; ++i ) {
 	PyObject *arg = PyTuple_GetItem(args,i);
-	if ( PySequence_Check(arg)) {
+	if ( !PyString_Check(arg) && PySequence_Check(arg)) {
 	    int newflags = FlagsFromTuple(arg,select_flags);
 	    if ( newflags==0x80000000 )
 return( NULL );
@@ -9293,9 +9295,9 @@ static PyMODINIT_FUNC initPyFontForge(void) {
     static PyTypeObject *types[] = { &PyFF_PointType, &PyFF_ContourType,
 	    &PyFF_LayerType, &PyFF_GlyphPenType, &PyFF_GlyphType,
 	    &PyFF_CvtType, &PyFF_PrivateIterType, &PyFF_PrivateType,
-	    &PyFF_FontIterType, &PyFF_FontType, NULL };
+	    &PyFF_FontIterType, &PyFF_SelectionType, &PyFF_FontType, NULL };
     static char *names[] = { "point", "contour", "layer", "glyph", "glyphPen",
-	    "cvt", "privateiter", "private", "fontiter", "font", NULL };
+	    "cvt", "privateiter", "private", "fontiter", "selection", "font", NULL };
 
     for ( i=0; types[i]!=NULL; ++i ) {
 	types[i]->ob_type = &PyType_Type;		/* Or does Type_Ready do this??? */
