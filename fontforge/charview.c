@@ -1363,15 +1363,17 @@ static void DrawTransOrigin(CharView *cv, GWindow pixmap) {
     GDrawDrawLine(pixmap,x,y-4,x,y+4,transformorigincol);
 }
 
-static void DrawVLine(CharView *cv,GWindow pixmap,real pos,Color fg, int flags) {
+static void DrawVLine(CharView *cv,GWindow pixmap,real pos,Color fg, int flags, GImage *lock) {
     char buf[20];
-    int x = cv->xoff + rint(pos*cv->scale);
+    int x = cv->xoff + rint(pos*cv->scale), nx;
     DrawLine(cv,pixmap,pos,-32768,pos,32767,fg);
     if ( flags&1 ) {
 	if ( x>-400 && x<cv->width+400 ) {
 	    dtos( buf, pos);
 	    GDrawSetFont(pixmap,cv->small);
 	    GDrawDrawText8(pixmap,x+5,cv->sas+3,buf,-1,NULL,metricslabelcol);
+	    if ( lock!=NULL )
+		GDrawDrawImage(pixmap,lock,NULL,x+5,3+cv->sfh);
 	}
     }
     if ( ItalicConstrained && cv->sc->parent->italicangle!=0 ) {
@@ -1544,7 +1546,7 @@ return;
 	    false,clip);
     SplinePointListsFree(head);
     if ( cv->apmine->type==at_mark || cv->apmine->type==at_centry ) {
-	DrawVLine(cv,pixmap,trans[4],anchoredoutlinecol,false);
+	DrawVLine(cv,pixmap,trans[4],anchoredoutlinecol,false,NULL);
 	DrawLine(cv,pixmap,-8096,trans[5],8096,trans[5],anchoredoutlinecol);
     }
 }
@@ -1720,7 +1722,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		    cv->showpoints && cv->drawmode==dm_grid,&clip);
 	}
 	if ( cv->showhmetrics ) {
-	    DrawVLine(cv,pixmap,0,coordcol,false);
+	    DrawVLine(cv,pixmap,0,coordcol,false,NULL);
 	    DrawLine(cv,pixmap,-8096,0,8096,0,coordcol);
 	    DrawLine(cv,pixmap,-8096,sf->ascent,8096,sf->ascent,coordcol);
 	    DrawLine(cv,pixmap,-8096,-sf->descent,8096,-sf->descent,coordcol);
@@ -1786,14 +1788,17 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		false,&clip);
 
     if ( cv->showhmetrics && cv->searcher==NULL ) {
-	DrawVLine(cv,pixmap,cv->sc->width,(!cv->inactive && cv->widthsel)?widthselcol:widthcol,true);
+	RefChar *lock = HasUseMyMetrics(cv->sc);
+	if ( lock!=NULL ) cv->sc->width = lock->sc->width;
+	DrawVLine(cv,pixmap,cv->sc->width,(!cv->inactive && cv->widthsel)?widthselcol:widthcol,true,
+		lock!=NULL ? &GIcon_lock : NULL);
 	for ( pst=cv->sc->possub; pst!=NULL && pst->type!=pst_lcaret; pst=pst->next );
 	if ( pst!=NULL ) {
 	    for ( i=0; i<pst->u.lcaret.cnt; ++i )
-		DrawVLine(cv,pixmap,pst->u.lcaret.carets[i],lcaretcol,true);
+		DrawVLine(cv,pixmap,pst->u.lcaret.carets[i],lcaretcol,true,NULL);
 	}
 	if ( cv->show_ft_results || cv->dv!=NULL )
-	    DrawVLine(cv,pixmap,cv->ft_gridfitwidth,widthgridfitcol,true);
+	    DrawVLine(cv,pixmap,cv->ft_gridfitwidth,widthgridfitcol,true,NULL);
     }
     if ( cv->showvmetrics ) {
 	int len, y = -cv->yoff + cv->height - rint((sf->vertical_origin-cv->sc->vwidth)*cv->scale);
