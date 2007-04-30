@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Jan-2002 -->
-  <!-- AP: Last modified: 17-Sep-2006 -->
+  <!-- AP: Last modified: 30-Apr-2007 -->
   <TITLE>Command Line Arguments</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -74,6 +74,11 @@ $ fontforge -c script-string [arguments]
       -help
     <DD>
       Bring up a <A HREF="helpmenu.html">browser</A> looking at this documentation.
+    <DT>
+      -lang={py|ff}
+    <DD>
+      Specifies whether the script should be interpretted as a python script or
+      a fontforge script.
     <DT>
       -version
     <DD>
@@ -202,6 +207,11 @@ $ fontforge -c script-string [arguments]
       not be loaded unless explicitly requested. If unset (or if set to any other
       value) then preferences will be loaded when ff starts up with a user interface,
       and will not be loaded if ff starts up executing a script.
+    <DT>
+      <CODE>FONTFORGE_LANGUAGE</CODE>
+    <DD>
+      Provides a default interpreter to use when executing a script. Must be either
+      "py" or "ff"/"pe".
   </DL>
   <P>
     <HR>

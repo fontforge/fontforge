@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 29-Apr-2007 -->
+  <!-- AP: Last modified: 30-Apr-2007 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -16,13 +16,14 @@
   I assume you have a working knowlege of python (because I do not).
   <A href="http://www.python.org/doc/">Python documentation may be found on
   the web.</A> FontForge implements two python modules -- one great huge one
-  called <CODE>fontforge</CODE> which provides access to as much of FontForge's
-  functionality as I've had time to write, and one tiny one called
-  <CODE>psMat</CODE> which provides quick access to some useful transformations
-  expressed as PostScript matrices.
+  called <CODE><A HREF="python.html#fontforge">fontforge</A></CODE> which provides
+  access to as much of FontForge's functionality as I've had time to write,
+  and one tiny one called
+  <CODE><A HREF="python.html#psMat">psMat</A></CODE> which provides quick access
+  to some useful transformations expressed as PostScript matrices.
   <TABLE id="module" border=1>
     <CAPTION>
-      psMat
+      <A NAME="psMat">psMat</A>
     </CAPTION>
     <TR>
       <TH span=3>Methods</TH>
@@ -35,7 +36,7 @@
     <TR>
       <TD><CODE>identity</CODE></TD>
       <TD><CODE>()</CODE></TD>
-      <TD>returns an identity matrix as a tuple</TD>
+      <TD>returns an identity matrix as a 6 element tuple</TD>
     </TR>
     <TR>
       <TD><CODE>compose</CODE></TD>
@@ -83,7 +84,7 @@
   <P>
   <TABLE id="module" border=1>
     <CAPTION>
-      fontforge
+      <A NAME="fontforge">fontforge</A>
     </CAPTION>
     <TR>
       <TH colspan=3>Methods</TH>
