@@ -49,11 +49,15 @@ void SCSynchronizeWidth(SplineChar *sc,real newwidth, real oldwidth, FontView *f
     struct splinecharlist *dlist;
     FontView *fv = sc->parent->fv;
     RefChar *r = HasUseMyMetrics(sc);
+    int isprobablybase;
 
     sc->widthset = true;
     if( r!=NULL ) {
-	sc->width = r->sc->width;
+	if ( oldwidth==r->sc->width ) {
+	    sc->width = r->sc->width;
 return;
+	}
+	newwidth = r->sc->width;
     }
     if ( newwidth==oldwidth )
 return;
@@ -73,10 +77,17 @@ return;
     if ( !adjustwidth )
 return;
 
+    isprobablybase = true;
     if ( sc->unicodeenc==-1 || sc->unicodeenc>=0x10000 ||
 	    !isalpha(sc->unicodeenc) || iscombining(sc->unicodeenc))
-return;
+	isprobablybase = false;
+
     for ( dlist=sc->dependents; dlist!=NULL; dlist=dlist->next ) {
+	RefChar *metrics = HasUseMyMetrics(dlist->sc);
+	if ( metrics!=NULL && metrics->sc!=sc )
+    continue;
+	else if ( metrics==NULL && !isprobablybase )
+    continue;
 	if ( dlist->sc->width==oldwidth &&
 		(flagfv==NULL || !flagfv->selected[flagfv->map->backmap[dlist->sc->orig_pos]])) {
 	    SCSynchronizeWidth(dlist->sc,newwidth,oldwidth,fv);
@@ -101,6 +112,7 @@ void SCSynchronizeLBearing(SplineChar *sc,real off) {
     DStemInfo *d;
     StemInfo *h;
     HintInstance *hi;
+    int isprobablybase;
 
     for ( h=sc->vstem; h !=NULL; h=h->next )
 	h->start += off;
@@ -119,12 +131,18 @@ void SCSynchronizeLBearing(SplineChar *sc,real off) {
     if ( !adjustlbearing )
 return;
 
+    isprobablybase = true;
     if ( sc->unicodeenc==-1 || sc->unicodeenc>=0x10000 ||
 	    !isalpha(sc->unicodeenc) || iscombining(sc->unicodeenc))
-return;
+	isprobablybase = false;
 
     for ( dlist=sc->dependents; dlist!=NULL; dlist=dlist->next ) {
-	if ( sc->width!=dlist->sc->width )
+	RefChar *metrics = HasUseMyMetrics(dlist->sc);
+	if ( metrics!=NULL && metrics->sc!=sc )
+    continue;
+	else if ( metrics==NULL && !isprobablybase )
+    continue;
+	else if ( metrics==NULL && sc->width!=dlist->sc->width )
     continue;
 	SCPreserveState(dlist->sc,false);
 	SplinePointListShift(dlist->sc->layers[ly_fore].splines,off,true);

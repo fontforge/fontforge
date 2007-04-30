@@ -813,7 +813,6 @@ void MVRegenChar(MetricsView *mv, SplineChar *sc) {
 	BDFCharFree(mv->show->glyphs[sc->orig_pos]);
 	mv->show->glyphs[sc->orig_pos] = NULL;
     }
-    MVRemetric(mv);
     for ( i=0; i<mv->glyphcnt; ++i ) {
 	if ( mv->glyphs[i].sc == sc )
     break;
@@ -2257,10 +2256,15 @@ return;
     for ( i=0; i<mv->glyphcnt; ++i )
 	if ( mv->perchar[i].selected )
     break;
-    i = mv->glyphs[i].orig_index;		/* Index in the string of chars, not glyphs */
+    if ( i!=mv->glyphcnt )	/* Something selected */
+	i = mv->glyphs[i].orig_index;		/* Index in the string of chars, not glyphs */
+    else if ( mi->mid==MID_InsertCharA )
+	i = mv->clen;
+    else
+	i = 0;
     if ( mi->mid==MID_InsertCharA ) {
-	if ( i==mv->clen ) i = mv->clen-1;
-	++i;
+	if ( i!=mv->clen )
+	    ++i;
     } else {
 	if ( i==mv->clen ) i = 0;
     }
@@ -2274,6 +2278,7 @@ return;
     for ( j=mv->clen; j>i; --j )
 	mv->chars[j] = mv->chars[j-1]; 
     mv->chars[i] = SFMakeChar(sf,mv->fv->map,pos);
+    ++mv->clen;
     MVRemetric(mv);
     for ( j=0; j<mv->glyphcnt; ++j )
 	if ( mv->glyphs[j].orig_index==i ) {
@@ -3857,6 +3862,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     mv->text = GTextFieldCreate(gw,&gd,mv);
 
     gd.pos.x = gd.pos.x+gd.pos.width+10; --gd.pos.y;
+    gd.pos.width += 30;
     gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
     gd.handle_controlevent = MV_SubtableChanged;
     gd.label = NULL;
