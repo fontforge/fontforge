@@ -145,10 +145,25 @@ if test "$python" = "yes" ; then
   echo -n "Checking for python..."
   if python -c "import distutils.sysconfig ; print '-I%s' % distutils.sysconfig.get_config_var('INCLUDEPY')" >/dev/null 2>&1 ; then
     if python -c "import distutils.sysconfig ; print '%s/%s %s' % (distutils.sysconfig.get_config_var('LIBPL'),distutils.sysconfig.get_config_var('LDLIBRARY'),distutils.sysconfig.get_config_var('LIBS'))" >/dev/null 2>&1 ; then
-      PyIncs=`python -c "import distutils.sysconfig ; print '-I%s' % distutils.sysconfig.get_config_var('INCLUDEPY')"`
-      CFLAGS="$CFLAGS $PyIncs"
-      PyLibs=`python -c "import distutils.sysconfig ; print '%s/%s %s' % (distutils.sysconfig.get_config_var('LIBPL'),distutils.sysconfig.get_config_var('LDLIBRARY'),distutils.sysconfig.get_config_var('LIBS'))"`
-      LIBS="$LIBS $PyLibs"
+      PyVersion=`python -c "import distutils.sysconfig ; print '%s' % distutils.sysconfig.get_config_var('VERSION')"`
+      PySubVersion=`echo $PyVersion |sed -e 's/2.//'`
+      PyInc=`python -c "import distutils.sysconfig ; print '%s' % distutils.sysconfig.get_config_var('INCLUDEPY')"`
+      PyLib=`python -c "import distutils.sysconfig ; print '%s/%s' % (distutils.sysconfig.get_config_var('LIBPL'),distutils.sysconfig.get_config_var('LDLIBRARY'))"`
+      if test "$PySubVersion" \!= "" -a "$PySubVersion" -ge 3 -a -e $PyLib -a -e $PyInc; then
+	PyIncs=`python -c "import distutils.sysconfig ; print '-I%s' % distutils.sysconfig.get_config_var('INCLUDEPY')"`
+        PyLibs=`python -c "import distutils.sysconfig ; print '%s/%s %s' % (distutils.sysconfig.get_config_var('LIBPL'),distutils.sysconfig.get_config_var('LDLIBRARY'),distutils.sysconfig.get_config_var('LIBS'))"`
+        LIBS="$LIBS $PyLibs"
+	CPPFLAGS="$CPPFLAGS $PyIncs"
+      else
+	# sometimes python gets it wrong. The following doesn't work on mac
+	PyName="python$PyVersion"
+	AC_SEARCH_LIBS(Py_Main, $PyName python, : , python="no")
+	if test -d /usr/include/$PyName ; then
+	  CPPFLAGS="$CPPFLAGS -I/usr/include/$PyName"
+	else
+	  python="no"
+	fi
+      fi
     else
       python="no"
     fi
@@ -170,7 +185,7 @@ AC_ARG_WITH(native-script,
 	ffscript="no"
     fi
  ], : )
-if test "ffscript" = "no" ; then
+if test "$ffscript" = "no" ; then
   AC_DEFINE(_NO_FFSCRIPT)
 fi
 
