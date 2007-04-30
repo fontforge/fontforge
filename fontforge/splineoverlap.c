@@ -2343,6 +2343,8 @@ return( t1 );
 void SSRemoveBacktracks(SplineSet *ss) {
     SplinePoint *sp;
 
+    if ( ss==NULL )
+return;
     for ( sp=ss->first; ; ) {
 	if ( sp->next!=NULL && sp->prev!=NULL ) {
 	    SplinePoint *nsp = sp->next->to, *psp = sp->prev->from, *isp;
@@ -2367,6 +2369,10 @@ void SSRemoveBacktracks(SplineSet *ss) {
 		    SplinePointFree(isp);
 		    SplinePointFree(sp);
 		    SplineRefigure(psp->next);
+		    if ( ss->first==sp )
+			ss->first = psp;
+		    if ( ss->last==sp )
+			ss->last = psp;
 		    sp=psp;
 		} else if ( nlen<plen && (t=AdjacentSplinesMatch(sp->prev,sp->next,true))!=-1 ) {
 		    isp = SplineBisect(sp->prev,t);
@@ -2380,6 +2386,10 @@ void SSRemoveBacktracks(SplineSet *ss) {
 		    SplinePointFree(isp);
 		    SplinePointFree(sp);
 		    SplineRefigure(nsp->prev);
+		    if ( ss->first==sp )
+			ss->first = psp;
+		    if ( ss->last==sp )
+			ss->last = psp;
 		    sp=psp;
 		}
 	    }
