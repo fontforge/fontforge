@@ -2466,7 +2466,7 @@ return;
 
     for ( i=0; i<2; ++i ) {
 	GGadget *list = GWidgetGetControl(kcd->gw,CID_ClassList+i*100);
-	if ( i==0 && kcd->orig!=NULL && kcd->orig->firsts[0]!=NULL ) {
+	if ( i==0 && kcd->orig!=NULL && kcd->orig->firsts!=NULL && kcd->orig->firsts[0]!=NULL ) {
 	    /* OpenType can set class 0 of the first classes by using a coverage*/
 	    /*  table with more glyphs than are present in all the other classes */
 	    unichar_t *temp = uc_copy(kcd->orig->firsts[0]);
