@@ -3273,6 +3273,9 @@ static int tester(SplineChar *sc, struct lookup_subtable *sub) {
     int isv;
     AnchorPoint *ap;
 
+    if ( sc==NULL )
+return( false );
+
     for ( ap=sc->anchor; ap!=NULL; ap=ap->next )
 	if ( ap->anchor->subtable == sub )
 return( true );
@@ -3391,6 +3394,7 @@ void FVSelectByPST(FontView *fv) {
 				ti[cnt].text = (unichar_t *) copy(sub->subtable_name);
 			        ti[cnt].text_is_1byte = true;
 			        ti[cnt].userdata = sub;
+			        ti[cnt].selected = cnt==0;
 			    }
 			    ++cnt;
 			}
