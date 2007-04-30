@@ -2177,7 +2177,7 @@ static int MCD_InvalidClassList(const char *ret,char **classes, char **names,
     break;
 	end = strchr(pt,' ');
 	if ( end==NULL ) end = pt+strlen(pt);
-	for ( i=1; classes[i]!=NULL; ++i ) {
+	for ( i=1; (i < nclass) && (classes[i]!=NULL); ++i ) {
 	    if ( which==i )
 	continue;
 	    for ( tpt=classes[i]; *tpt; tpt = tend ) {
