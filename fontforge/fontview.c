@@ -9329,6 +9329,7 @@ static void FVChar(FontView *fv,GEvent *event) {
     } else if ( event->u.chr.keysym=='\\' && (event->u.chr.state&ksm_control) ) {
 	/* European keyboards need a funky modifier to get \ */
 	FVDoTransform(fv);
+#if !defined(_NO_FFSCRIPT) || !defined(_NO_PYTHON)
     } else if ( isdigit(event->u.chr.keysym) && (event->u.chr.state&ksm_control) &&
 	    (event->u.chr.state&ksm_meta) ) {
 	/* The Script menu isn't always up to date, so we might get one of */
@@ -9337,6 +9338,7 @@ static void FVChar(FontView *fv,GEvent *event) {
 	if ( index<0 ) index = 9;
 	if ( script_filenames[index]!=NULL )
 	    ExecuteScriptFile(fv,script_filenames[index]);
+#endif
     } else if ( event->u.chr.keysym == GK_Left ||
 	    event->u.chr.keysym == GK_Tab ||
 	    event->u.chr.keysym == GK_BackTab ||
@@ -10817,7 +10819,7 @@ void FontViewFree(FontView *fv) {
     free(fv->selected);
     free(fv->fontset);
 #ifndef _NO_PYTHON
-    PythonFreeFV(fv);
+    PyFF_FreeFV(fv);
 #endif
     free(fv);
 }

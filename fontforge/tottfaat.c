@@ -1401,7 +1401,7 @@ return( false );
 static struct feature *aat_dumpmorx_cvtopentypeforms(struct alltabs *at, SplineFont *sf,
 	FILE *temp, struct feature *features) {
     ASM *sm;
-    int32 *scripts;
+    uint32 *scripts;
     int featureType, featureSetting;
     int i;
     OTLookup *otl;

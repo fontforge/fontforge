@@ -4248,7 +4248,7 @@ return( NULL );
 	tag |= getc(sfd)<<8;
 	tag |= getc(sfd);
 	getc(sfd);		/* final quote */
-return( (OTLookup *) tag );
+return( (OTLookup *) (intpt) tag );
     } else {
 	ungetc(ch,sfd);
 	name = SFDReadUTF7Str(sfd);
@@ -5245,7 +5245,7 @@ exit(1);
 	    }
 	    otl = chunkalloc(sizeof(OTLookup));
 	    getint(sfd,&temp); otl->lookup_type = temp;
-	    getsint(sfd,&otl->lookup_flags);
+	    getint(sfd,&temp); otl->lookup_flags = temp;
 	    getint(sfd,&temp); otl->store_in_afm = temp;
 	    otl->lookup_name = SFDReadUTF7Str(sfd);
 	    if ( otl->lookup_type<gpos_single ) {
