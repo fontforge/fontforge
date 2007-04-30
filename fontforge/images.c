@@ -3354,6 +3354,36 @@ static struct _GImage downicon0_base = {
     1
 };
 
+static uint8 lock0_data[] = {
+    0xe0, 0xff, 
+    0xdf, 0x7f, 
+    0xbf, 0xbf, 
+    0xbf, 0xbf, 
+    0xbf, 0xbf, 
+    0xbf, 0xbf, 
+    0xbf, 0xbf, 
+    0x0, 0x1f, 
+    0x0, 0x1f, 
+    0x0, 0x1f, 
+    0xe, 0x1f, 
+    0xe, 0x1f, 
+    0x4, 0x1f, 
+    0x4, 0x1f, 
+    0x84, 0x3f, 
+    0x80, 0x3f, 
+    0xc0, 0x7f, 
+    0xe0, 0xff, 
+};
+
+static struct _GImage lock0_base = {
+    it_mono,
+    15420,12,18,2,
+    (uint8 *) lock0_data,
+    &magnify0_clut,
+    1
+};
+
+
 
 GImage GIcon_small3drotate = { 0, &small3drotate0_base };
 GImage GIcon_smallperspective = { 0, &smallperspective0_base };
@@ -3404,6 +3434,8 @@ GImage GIcon_menumark = { 0, &menumark_base };
 
 GImage GIcon_up = { 0, &upicon0_base };
 GImage GIcon_down = { 0, &downicon0_base };
+
+GImage GIcon_lock = { 0, &lock0_base };
 
 static GClut clut = { 2, 0, 1,
     0x0, 0xb0b0b0 };

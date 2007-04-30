@@ -135,6 +135,7 @@ extern GImage GIcon_smallskew, GIcon_smallscale, GIcon_smallrotate,
 	GIcon_smallrect, GIcon_smallpoly, GIcon_smallstar,
 	GIcon_smallpencil, GIcon_smallhand,
 	GIcon_FontForgeLogo, GIcon_FontForgeBack, GIcon_FontForgeGuide;
+extern GImage GIcon_lock;
 extern GImage GIcon_menumark;
 extern GImage GIcon_rmoverlap, GIcon_exclude, GIcon_intersection, GIcon_findinter;
 extern GImage GIcon_outline, GIcon_inline, GIcon_shadow, GIcon_wireframe;
