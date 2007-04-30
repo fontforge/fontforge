@@ -2960,19 +2960,19 @@ void FVTrans(FontView *fv,SplineChar *sc,real transform[6], uint8 *sel,
 	}
     }
     if ( transform[1]==0 && transform[2]==0 ) {
-	TransHints(sc->hstem,transform[3],transform[5],transform[0],transform[4],flags&fvt_round_to_int);
-	TransHints(sc->vstem,transform[0],transform[4],transform[3],transform[5],flags&fvt_round_to_int);
+	if ( transform[0]==1 && transform[3]==1 &&
+		transform[5]==0 && transform[4]!=0 && 
+		sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 &&
+		isalpha(sc->unicodeenc)) {
+	    SCUndoSetLBearingChange(sc,(int) rint(transform[4]));
+	    SCSynchronizeLBearing(sc,transform[4]);	/* this moves the hints */
+	} else {
+	    TransHints(sc->hstem,transform[3],transform[5],transform[0],transform[4],flags&fvt_round_to_int);
+	    TransHints(sc->vstem,transform[0],transform[4],transform[3],transform[5],flags&fvt_round_to_int);
+	}
     }
     if ( flags&fvt_round_to_int )
 	SCRound2Int(sc,1.0);
-    if ( transform[0]==1 && transform[3]==1 && transform[1]==0 &&
-	    transform[2]==0 && transform[5]==0 &&
-	    transform[4]!=0 && 
-	    sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 &&
-	    isalpha(sc->unicodeenc)) {
-	SCUndoSetLBearingChange(sc,(int) rint(transform[4]));
-	SCSynchronizeLBearing(sc,transform[4]);
-    }
     if ( flags&fvt_dobackground ) {
 	ImageList *img;
 	SCPreserveBackground(sc);
