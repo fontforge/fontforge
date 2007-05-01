@@ -8486,7 +8486,7 @@ return;
 /* GT: when translating this please leave the "SIL Open Font License" in */
 /* GT: English (possibly translating it in parentheses). I believe there */
 /* GT: are legal reasons for this. */
-/* GT: So "Añadir SIL Open Font License (licencia de fuentes libres)"
+/* GT: So "Añadir SIL Open Font License (licencia de fuentes libres)" */
     tnlabel[5].text = (unichar_t *) S_("Add SIL Open Font License");
     tnlabel[5].text_is_1byte = true;
     tnlabel[5].text_in_resource = true;
