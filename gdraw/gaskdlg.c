@@ -97,7 +97,7 @@ return( false );
 return( true );
 }
 
-#define GLINE_MAX	10
+#define GLINE_MAX	20
 
 static int FindLineBreaks(const unichar_t *question, GTextInfo linebreaks[GLINE_MAX+1]) {
     int lb, i;
