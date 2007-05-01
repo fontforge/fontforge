@@ -8483,6 +8483,10 @@ return;
     tngcd[4].creator = GMatrixEditCreate;
 
     tngcd[5].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+/* GT: when translating this please leave the "SIL Open Font License" in */
+/* GT: English (possibly translating it in parentheses). I believe there */
+/* GT: are legal reasons for this. */
+/* GT: So "Añadir SIL Open Font License (licencia de fuentes libres)"
     tnlabel[5].text = (unichar_t *) S_("Add SIL Open Font License");
     tnlabel[5].text_is_1byte = true;
     tnlabel[5].text_in_resource = true;
@@ -8508,15 +8512,10 @@ return;
     tngcd[6].gd.label = &tnlabel[6];
     tngcd[6].gd.handle_controlevent = GFI_HelpOFL;
     tngcd[6].gd.popup_msg = (unichar_t *) _(
-	"The SIL Open Font License (OFL) is designed for free/libre/open font projects.\n"
-	"Most other FLOSS licenses are designed for conventional software and are problematic for fonts.\n"
-	"The OFL is a community-approved license and is well-suited for releasing fonts to be freely \n"
-	"used, studied, copied, modified, embedded, merged and distributed while maintaining artistic integrity.\n"
-        "You are encouraged you to use it if you can.\n"
 	"\n"
-	"For more details about the OFL - and the corresponding FAQ - click here\n"
-	"\n"
-	"Simply press this button to add the OFL metadata to your font.\n"
+	"Click here to go to http://scripts.sil.org/OFL \n"
+	"to get all the details about the Open Font License \n"
+	"and to read the corresponding FAQ. \n"
 	"\n");
     tngcd[6].creator = GButtonCreate;
     tnharray2[0] = &tngcd[5]; tnharray2[1] = &tngcd[6]; tnharray2[2] = GCD_Glue; tnharray2[3] = NULL;
