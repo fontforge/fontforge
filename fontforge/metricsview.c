@@ -1378,7 +1378,7 @@ return;					/* Nothing changed */
 	IError("No change when there should have been one in MV_TextChanged");
     if ( u_strlen(ret)>=mv->cmax ) {
 	int oldmax=mv->cmax;
-	mv->max = u_strlen(ret)+10;
+	mv->cmax = u_strlen(ret)+10;
 	mv->chars = grealloc(mv->chars,mv->cmax*sizeof(SplineChar *));
 	memset(mv->chars+oldmax,'\0',(mv->max-oldmax)*sizeof(SplineChar *));
     }
