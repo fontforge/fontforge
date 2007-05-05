@@ -2212,7 +2212,7 @@ printf( "-%s-\n", toknames[tok]);
 	  break;
 	  case pt_closepath:
 	    if ( cur!=NULL && cur->first!=NULL && cur->first!=cur->last ) {
-		if ( cur->first->me.x==cur->last->me.x && cur->first->me.y==cur->last->me.y ) {
+		if ( RealNear(cur->first->me.x,cur->last->me.x) && RealNear(cur->first->me.y,cur->last->me.y) ) {
 		    SplinePoint *oldlast = cur->last;
 		    cur->first->prevcp = oldlast->prevcp;
 		    cur->first->noprevcp = false;
@@ -3456,7 +3456,7 @@ static void closepath(SplinePointList *cur, int is_type2) {
 return;		/* The "path" is just a single point created by a moveto */
 		/* Probably we're just doing another moveto */
     if ( cur!=NULL && cur->first!=NULL && cur->first!=cur->last ) {
-	if ( cur->first->me.x==cur->last->me.x && cur->first->me.y==cur->last->me.y ) {
+	if ( RealNear(cur->first->me.x,cur->last->me.x) && RealNear(cur->first->me.y,cur->last->me.y) ) {
 	    SplinePoint *oldlast = cur->last;
 	    cur->first->prevcp = oldlast->prevcp;
 	    cur->first->noprevcp = false;
