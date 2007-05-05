@@ -1003,12 +1003,29 @@ int CVMoveSelection(CharView *cv, real dx, real dy, uint32 input_state) {
     double fudge;
     extern float snapdistance;
     int j;
+    int changed = false, outlinechanged = false;
+    SplinePointList *spl;
+    SplinePoint *sp;
 
     transform[0] = transform[3] = 1.0;
     transform[1] = transform[2] = 0.0;
     transform[4] = dx; transform[5] = dy;
     if ( transform[4]==0 && transform[5]==0 )
 return(false);
+    for ( spl=cv->layerheads[cv->drawmode]->splines; spl!=NULL && !outlinechanged; spl=spl->next ) {
+	for ( sp=spl->first ;; ) {
+	    if ( sp->selected ) {
+		outlinechanged = true;
+	break;
+	    }
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==spl->first )
+	break;
+	}
+    }
+
     SplinePointListTransform(cv->layerheads[cv->drawmode]->splines,transform,false);
 
     for ( refs = cv->layerheads[cv->drawmode]->refs; refs!=NULL; refs=refs->next ) if ( refs->selected ) {
@@ -1018,12 +1035,14 @@ return(false);
 	refs->bb.miny += transform[5]; refs->bb.maxy += transform[5];
 	for ( j=0; j<refs->layer_cnt; ++j )
 	    SplinePointListTransform(refs->layers[j].splines,transform,true);
+	outlinechanged = true;
     }
     if ( cv->drawmode==dm_fore ) {
 	if ( cv->showanchor ) {
 	    for ( ap=cv->sc->anchor; ap!=NULL; ap=ap->next ) if ( ap->selected ) {
 		ap->me.x += transform[4];
 		ap->me.y += transform[5];
+		changed = true;
 	    }
 	}
     }
@@ -1033,6 +1052,7 @@ return(false);
 	img->bb.minx += transform[4]; img->bb.maxx += transform[4];
 	img->bb.miny += transform[5]; img->bb.maxy += transform[5];
 	SCOutOfDateBackground(cv->sc);
+	changed = true;
     }
     fudge = snapdistance/cv->scale/2;
     if ( cv->widthsel ) {
@@ -1044,6 +1064,7 @@ return(false);
 	    cv->sc->width += dx;
 	if ( cv->sc->width>=-fudge && cv->sc->width<fudge )
 	    cv->sc->width = 0;
+	changed = true;
     }
     if ( cv->vwidthsel ) {
 	if ( cv->sc->vwidth-dy>0 && ((int16) (cv->sc->vwidth-dy))<0 )
@@ -1054,8 +1075,12 @@ return(false);
 	    cv->sc->vwidth -= dy;
 	if ( cv->sc->vwidth>=-fudge && cv->sc->vwidth<fudge )
 	    cv->sc->vwidth = 0;
+	changed = true;
     }
-    CVSetCharChanged(cv,true);
+    if ( outlinechanged )
+	CVSetCharChanged(cv,true);
+    else if ( changed )
+	CVSetCharChanged(cv,2);
     if ( input_state&ksm_alt )
 return( false );			/* Don't merge if the meta key is down */
 

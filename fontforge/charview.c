@@ -3267,6 +3267,8 @@ void CVSetCharChanged(CharView *cv,int changed) {
     SplineFont *sf = fv->sf;
     SplineChar *sc = cv->sc;
     int oldchanged = sf->changed;
+    /* A changed argument of 2 means the outline didn't change, but something */
+    /*  else (width, anchorpoint) did */
 
     if ( changed )
 	SFSetModTime(sf);
@@ -3277,10 +3279,10 @@ void CVSetCharChanged(CharView *cv,int changed) {
 		fv->cidmaster->changed = true;
 	}
     } else {
-	if ( cv->drawmode==dm_fore )
+	if ( cv->drawmode==dm_fore && changed!=2 )
 	    sf->onlybitmaps = false;
-	if ( sc->changed != changed ) {
-	    sc->changed = changed;
+	if ( (sc->changed==0) != (changed==0) ) {
+	    sc->changed = (changed!=0);
 	    FVToggleCharChanged(sc);
 	    SCRefreshTitles(sc);
 	    if ( changed ) {
@@ -3289,7 +3291,7 @@ void CVSetCharChanged(CharView *cv,int changed) {
 		    fv->cidmaster->changed = true;
 	    }
 	}
-	if ( changed ) {
+	if ( changed==1 ) {
 	    instrcheck(sc);
 	    SCDeGridFit(sc);
 	    if ( sc->parent->onlybitmaps )
