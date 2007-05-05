@@ -8103,7 +8103,7 @@ void FVRegenChar(FontView *fv,SplineChar *sc) {
     if ( fv->v==NULL )			/* Can happen in scripts */
 return;
 
-    sc->changedsincelasthinted = true;
+    /* sc->changedsincelasthinted = true;*/	/* Why was this here? */
     if ( sc->orig_pos>=fv->filled->glyphcnt )
 	IError("Character out of bounds in bitmap font %d>=%d", sc->orig_pos, fv->filled->glyphcnt );
     else
