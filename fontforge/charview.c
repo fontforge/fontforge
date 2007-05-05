@@ -4956,7 +4956,13 @@ static void CVMenuAPAttachSC(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     AnchorPoint *ap;
     AnchorClass *ac;
 
-    for ( ap = cv->sc->anchor; ap!=NULL && !ap->selected; ap=ap->next );
+    ap = mi->ti.userdata;
+    if ( ap==NULL )
+	for ( ap = cv->sc->anchor; ap!=NULL && !ap->selected; ap=ap->next );
+    if ( ap==NULL )
+	ap = cv->sc->anchor;
+    if ( ap==NULL )
+return;
     type = ap->type;
     cv->apmine = ap;
     ac = ap->anchor;
@@ -7696,20 +7702,6 @@ static void cv_cblistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
     SplineFont *sf = sc->parent;
     PST *pst;
     char *name;
-    AnchorPoint *ap, *found;
-
-    found = NULL;
-    for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
-	if ( ap->selected ) {
-	    if ( found==NULL )
-		found = ap;
-	    else {
-		/* Can't deal with two selected anchors */
-		found = NULL;
-    break;
-	    }
-	}
-    }
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
@@ -7717,13 +7709,13 @@ static void cv_cblistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = sc->anchor==NULL;
 	  break;
 	  case MID_AnchorControl:
-	    mi->ti.disabled = found==NULL;
+	    mi->ti.disabled = sc->anchor==NULL;
 	  break;
 	  case MID_AnchorGlyph:
 	    if ( cv->apmine!=NULL )
 		mi->ti.disabled = false;
 	    else
-		mi->ti.disabled = found==NULL;
+		mi->ti.disabled = sc->anchor==NULL;
 	  break;
 	  case MID_KernPairs:
 	    mi->ti.disabled = sc->kerns==NULL;
@@ -7938,7 +7930,9 @@ static void CVMenuAnchorsAway(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     AnchorPoint *ap;
 
-    for ( ap = cv->sc->anchor; ap!=NULL && !ap->selected; ap = ap->next );
+    ap = mi->ti.userdata;
+    if ( ap==NULL )
+	for ( ap = cv->sc->anchor; ap!=NULL && !ap->selected; ap = ap->next );
     if ( ap==NULL ) ap= cv->sc->anchor;
     if ( ap==NULL )
 return;
