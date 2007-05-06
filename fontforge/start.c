@@ -206,6 +206,7 @@ static void initlibrarysearchpath(void) {
     /*  otherwise leave alone. On the mac people often use fink to */
     /*  install image libs. For some reason fink installs in a place */
     /*  the dynamic loader doesn't find */
+    /* (And fink's attempts to set the PATH variables generally don't work */
     setenv("DYLD_LIBRARY_PATH","/sw/lib",0);
 #endif
 }
@@ -575,6 +576,43 @@ return( PREFIX "/share/locale" );
 return( sharedir );
 }
 
+#if defined(__Mac) && !(defined(FONTFORGE_CONFIG_NO_WINDOWING_UI) || defined( X_DISPLAY_MISSING ))
+static int uses_local_x(int argc,char **argv) {
+    int i;
+    char *arg;
+
+    for ( i=1; i<argc; ++i ) {
+	arg = argv[i];
+	if ( *arg=='-' ) {
+	    if ( arg[0]=='-' && arg[1]=='-' )
+		++arg;
+	    if ( strcmp(arg,"-display")==0 )
+return( false );		/* we use a different display */
+	    if ( strcmp(arg,"-script")==0 )
+return( false );		/* we use a script, no x display at all */
+	    if ( strcmp(arg,"-")==0 )
+return( false );		/* script on stdin */
+	} else {
+	    /* Is this argument a script file ? */
+	    FILE *temp = fopen(argv[i],"r");
+	    char buffer[200];
+	    if ( temp==NULL )
+return( true );			/* not a script file, so need local local X */
+	    buffer[0] = '\0';
+	    fgets(buffer,sizeof(buffer),temp);
+	    fclose(temp);
+	    if ( buffer[0]=='#' && buffer[1]=='!' &&
+		    (strstr(buffer,"pfaedit")!=NULL || strstr(buffer,"fontforge")!=NULL )) {
+return( false );		/* is a script file, so no need for X */
+
+return( true );			/* not a script, so needs X */
+	    }
+	}
+    }
+return( true );
+}
+#endif
+
 int FontForgeMain( int argc, char **argv ) {
     extern const char *source_modtime_str;
     const char *load_prefs = getenv("FONTFORGE_LOADPREFS");
@@ -640,6 +678,15 @@ int FontForgeMain( int argc, char **argv ) {
     textdomain("FontForge");
 #if !defined( FONTFORGE_CONFIG_GTK )
     GResourceUseGetText();
+#endif
+
+#if defined(__Mac) && !(defined(FONTFORGE_CONFIG_NO_WINDOWING_UI) || defined( X_DISPLAY_MISSING ))
+    /* Start X if they haven't already done so. Well... try anyway */
+    /* Must be before we change DYLD_LIBRARY_PATH or X won't start */
+    if ( uses_local_x(argc,argv) && getenv("DISPLAY")==NULL ) {
+	system( "open /Applications/Utilities/X11.app/" );
+	setenv("DISPLAY",":0.0",0);
+    }
 #endif
 
     SetDefaults();
