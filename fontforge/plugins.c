@@ -25,7 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#if !defined(NODYNAMIC)
+#if !defined(NOPLUGIN)
 
 #include "plugins.h"
 #include "dynamic.h"

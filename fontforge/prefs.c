@@ -869,7 +869,7 @@ void LoadPrefs(void) {
     char *pt;
     struct prefs_list *pl;
 
-#if !defined(NODYNAMIC)
+#if !defined(NOPLUGIN)
     LoadPluginDir(NULL);
 #endif
     LoadPfaEditEncodings();
