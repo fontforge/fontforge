@@ -14,6 +14,8 @@ libgdraw_OBJECTS =  choosericons.obj,divisors.obj,drawboxborder.obj,\
  gtextfield.obj,gtextinfo.obj,gwidgets.obj,gxdraw.obj,ghvbox.obj,\
  gmatrixedit.obj,gspacer.obj
 
+libgdraw_OBJECTS1=gdrawable.obj
+
 CFLAGS=/nowarn/incl=([-.inc])/name=(as_is,short)\
 	/define=("NOTHREADS=1","_NO_XKB=1","_STATIC_LIBFREETYPE=1",\
 	"_STATIC_LIBPNG=1","HAVE_LIBINTL_H=1","_NO_XINPUT=1",\
@@ -25,6 +27,7 @@ all : [-.libs]libgdraw.olb
 
 [-.libs]libgdraw.olb : $(libgdraw_OBJECTS)
 	library/create [-.libs]libgdraw.olb $(libgdraw_OBJECTS)
+	library [-.libs]libgdraw.olb $(libgdraw_OBJECTS1)
 
 choosericons.obj : choosericons.c
 divisors.obj : divisors.c
@@ -91,3 +94,4 @@ gxdraw.obj : gxdraw.c
 ghvbox.obj : ghvbox.c
 gmatrixedit.obj : gmatrixedit.c
 gspacer.obj : gspacer.c
+gdrawable.obj : gdrawable.c

@@ -2,6 +2,7 @@ CFLAGS=/nowarn/incl=([-.inc])/name=(as_is,short)/define=(\
 	"_STATIC_LIBFREETYPE=1","_STATIC_LIBPNG=1","HAVE_LIBINTL_H=1",\
 	"_STATIC_LIBUNINAMESLIST=1","_STATIC_LIBXML=1","_NO_XINPUT=1",\
 	"_STATIC_LIBUNGIF=1","_STATIC_LIBJPEG=1","_STATIC_LIBTIFF=1",\
+	"_NO_PYTHON=1",\
         "FONTFORGE_CONFIG_DEVICETABLES=1","PLUGINDIR=""/FONTFORGE$PLUGINS""")
 
 fontforge_OBJECTS =  alignment.obj,autohint.obj,autosave.obj,autowidth.obj,\
@@ -30,7 +31,7 @@ fontforge_OBJECTS6=splineorder2.obj,genttfinstrs.obj,ttfinstrs.obj,cvgridfit.obj
 	cvdebug.obj,showatt.obj,kernclass.obj,nonlineartrans.obj,effects.obj,\
 	histograms.obj,ttfspecial.obj,svg.obj,parsettfatt.obj,contextchain.obj
 
-fontforge_OBJECTS7=macenc.obj,statemachine.obj,typofeatures.obj,splinerefigure.obj,mm.obj,\
+fontforge_OBJECTS7=macenc.obj,statemachine.obj,splinerefigure.obj,mm.obj,\
 	parsettfvar.obj,tottfvar.obj,pua.obj,stemdb.obj,anchorsaway.obj,\
 	palmfonts.obj,cvdgloss.obj,groups.obj,parsepdf.obj,plugins.obj
 
@@ -172,7 +173,6 @@ parsettfatt.obj : parsettfatt.c
 contextchain.obj : contextchain.c
 macenc.obj : macenc.c
 statemachine.obj : statemachine.c
-typofeatures.obj : typofeatures.c
 splinerefigure.obj : splinerefigure.c
 mm.obj : mm.c
 parsettfvar.obj : parsettfvar.c
