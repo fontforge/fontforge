@@ -9717,7 +9717,7 @@ msgstr ""
 #
 #: fontinfo.c:8486
 msgid "Add SIL Open Font License"
-msgstr "添加SIL开放字体许可"
+msgstr "添加SIL Open Font License (开放字体许可)"
 
 #
 #: fontinfo.c:8492
