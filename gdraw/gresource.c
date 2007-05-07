@@ -117,9 +117,11 @@ return( -1 );
 	    if ( cmp!=0 ) ++test;
     break;
 	}
-	if ( cmp>0 )
+	if ( cmp>0 ) {
 	    bottom=test+1;
-	else
+	    if ( bottom==top )
+    break;
+	} else
 	    top = test;
     }
     rbase = test;
@@ -138,9 +140,11 @@ return( -1 );
 	    if ( cmp==0 ) ++test;
     break;
 	}
-	if ( cmp==0 )
+	if ( cmp==0 ) {
 	    bottom=test+1;
-	else
+	    if ( bottom==top )
+    break;
+	} else
 	    top = test;
     }
     rsummit = test;
