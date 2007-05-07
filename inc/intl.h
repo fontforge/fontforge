@@ -58,6 +58,9 @@
 # define bind_textdomain_codeset(domain,enc)	gwwv_bind_textdomain_codeset(domain,enc)
 # define textdomain(domain)			gwwv_textdomain(domain)
 
+# ifdef dgettext
+#  undef dgettext
+# endif
 # define dgettext(domain,str)	gwwv_dgettext(domain,str)
 
 char *gwwv_bindtextdomain(const char *, const char *);
