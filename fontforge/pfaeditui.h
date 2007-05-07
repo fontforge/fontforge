@@ -148,6 +148,7 @@ extern GWindow logo_icon;
 extern GImage GIcon_sel2ptr, GIcon_rightpointer, GIcon_angle, GIcon_distance,
 	GIcon_selectedpoint, GIcon_mag;
 extern GImage GIcon_up, GIcon_down;
+extern GImage OFL_logo;
 
 extern GTextInfo encodingtypes[];
 extern GTextInfo *EncodingTypesFindEnc(GTextInfo *encodingtypes, Encoding *enc);

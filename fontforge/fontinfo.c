@@ -8507,6 +8507,8 @@ return;
 
     tngcd[6].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     tnlabel[6].text = (unichar_t *) S_("?");
+    tnlabel[6].image_precedes = true;
+    tnlabel[6].image = &OFL_logo;
     tnlabel[6].text_is_1byte = true;
     tnlabel[6].text_in_resource = true;
     tngcd[6].gd.label = &tnlabel[6];
