@@ -588,6 +588,8 @@ static int uses_local_x(int argc,char **argv) {
 		++arg;
 	    if ( strcmp(arg,"-display")==0 )
 return( false );		/* we use a different display */
+	    if ( strcmp(arg,"-c")==0 )
+return( false );		/* we use a script string, no x display at all */
 	    if ( strcmp(arg,"-script")==0 )
 return( false );		/* we use a script, no x display at all */
 	    if ( strcmp(arg,"-")==0 )
