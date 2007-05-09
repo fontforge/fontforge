@@ -1366,7 +1366,7 @@ return;
 
 static int matrixeditsub_e_h(GWindow gw, GEvent *event) {
     GMatrixEdit *gme = (GMatrixEdit *) GDrawGetUserData(gw);
-    int r;
+    int r,c;
 
     GGadgetPopupExternalEvent(event);
     if (( event->type==et_mouseup || event->type==et_mousedown ) &&
@@ -1408,8 +1408,11 @@ return( true );
 	  case GK_BackTab:
 	  backtab:
 	    if ( (!gme->edit_active || (r=GME_FinishEditPreserve(gme,r))!=-1) &&
-		    gme->active_col>0 )
-		GMatrixEdit_StartSubGadgets(gme,r,gme->active_col-1,event);
+		    gme->active_col>0 ) {
+		for ( c = gme->active_col-1; c>=0 && gme->col_data[c].hidden; --c );
+		if ( c>=0 )
+		    GMatrixEdit_StartSubGadgets(gme,r,c,event);
+	    }
 return( true );
 	  break;
 	  case GK_Tab:
@@ -1418,13 +1421,25 @@ return( true );
 	    /* Else fall through */
 	  case GK_Right: case GK_KP_Right:
 	    if ( (!gme->edit_active || (r=GME_FinishEditPreserve(gme,r))!=-1) &&
-		    gme->active_col<gme->cols-1 )
-		GMatrixEdit_StartSubGadgets(gme,r,gme->active_col+1,event);
+		    gme->active_col<gme->cols-1 ) {
+		for ( c = gme->active_col+1; c<gme->cols && gme->col_data[c].hidden; ++c );
+		if ( c<gme->cols )
+		    GMatrixEdit_StartSubGadgets(gme,r,c,event);
+	    }
 return( true );
 	  break;
 	  case GK_Return: case GK_KP_Enter:
-	    if ( gme->edit_active )
-		GME_FinishEdit(gme);
+	    if ( gme->edit_active && (r=GME_FinishEditPreserve(gme,r))!=-1 ) {
+		GEvent dummy;
+		memset(&dummy,0,sizeof(dummy));
+		dummy.w = event->w;
+		dummy.type = et_mousedown;
+		dummy.u.mouse.state = event->u.chr.state;
+		dummy.u.mouse.x = gme->off_left+gme->col_data[0].x+1;
+		dummy.u.mouse.y = gme->off_top + (r+1)*(gme->fh+gme->vpad);
+		dummy.u.mouse.button = 1;
+		GMatrixEdit_StartSubGadgets(gme,r+1,0,&dummy);
+	    }
 return( true );
 	}
 	if ( gme->handle_key!=NULL )
