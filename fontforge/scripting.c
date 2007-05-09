@@ -9560,6 +9560,21 @@ static void ExecPython(GGadget *g, GEvent *e) {
 }
 #endif
 
+#if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
+static void _SD_LangChanged(struct sd_data *sd) {
+    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_Call),
+	    !GGadgetIsChecked(GWidgetGetControl(sd->gw,CID_Python)));
+}
+    
+static int SD_LangChanged(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	struct sd_data *sd = GDrawGetUserData(GGadgetGetWindow(g));
+	_SD_LangChanged(sd);
+    }
+return( true );
+}
+#endif
+
 static int SD_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct sd_data *sd = GDrawGetUserData(GGadgetGetWindow(g));
@@ -9683,6 +9698,7 @@ void ScriptDlg(FontView *fv) {
 	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
+	gcd[i].gd.handle_controlevent = SD_LangChanged;
 	gcd[i++].creator = GRadioCreate;
 
 	gcd[i].gd.pos.x = 70; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y;
@@ -9692,6 +9708,7 @@ void ScriptDlg(FontView *fv) {
 	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
+	gcd[i].gd.handle_controlevent = SD_LangChanged;
 	gcd[i++].creator = GRadioCreate;
 #endif
 
@@ -9709,14 +9726,18 @@ void ScriptDlg(FontView *fv) {
 
 	gcd[i].gd.pos.x = -25; gcd[i].gd.pos.y = SD_Height-32;
 	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
+#if defined(_NO_FFSCRIPT)
+	gcd[i].gd.flags = gg_enabled | gg_but_cancel;
+#else
 	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+#endif
 	label[i].text = (unichar_t *) _("_Cancel");
 	label[i].text_is_1byte = true;
 	label[i].text_in_resource = true;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.mnemonic = 'C';
 	gcd[i].gd.handle_controlevent = SD_Cancel;
-	gcd[i].gd.cid = CID_Call;
+	gcd[i].gd.cid = CID_Cancel;
 	gcd[i++].creator = GButtonCreate;
 
 	gcd[i].gd.pos.x = (SD_Width-GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor))/2; gcd[i].gd.pos.y = SD_Height-40;
@@ -9728,7 +9749,7 @@ void ScriptDlg(FontView *fv) {
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.mnemonic = 'a';
 	gcd[i].gd.handle_controlevent = SD_Call;
-	gcd[i].gd.cid = CID_Cancel;
+	gcd[i].gd.cid = CID_Call;
 	gcd[i++].creator = GButtonCreate;
 
 	gcd[i].gd.pos.x = 2; gcd[i].gd.pos.y = 2;
@@ -9739,9 +9760,12 @@ void ScriptDlg(FontView *fv) {
 
 	GGadgetsCreate(gw,gcd);
     }
-    GWidgetIndicateFocusGadget(GWidgetGetControl(gw,CID_Script));
     sd.gw = gw;
     GDrawSetUserData(gw,&sd);
+    GWidgetIndicateFocusGadget(GWidgetGetControl(gw,CID_Script));
+#if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
+    _SD_LangChanged(&sd);
+#endif
     GDrawSetVisible(gw,true);
     while ( !sd.done )
 	GDrawProcessOneEvent(NULL);
