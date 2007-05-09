@@ -1180,6 +1180,12 @@ return( (g->funcs->handle_sel)(g,event) );
 	  if ( g->funcs->handle_timer )
 return( (g->funcs->handle_timer)(g,event) );
       break;
+      case et_controlevent:
+	if ( g->handle_controlevent!=NULL )
+return( (g->handle_controlevent)(g,event) );
+	else
+	    GDrawPostEvent(event);
+return( true );
     }
 return( false );
 }
