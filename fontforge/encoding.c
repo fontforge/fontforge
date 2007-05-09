@@ -2471,6 +2471,7 @@ EncMap *CompactEncMap(EncMap *map, SplineFont *sf) {
     free(map->map);
     map->map = newmap;
     map->enccount = inuse;
+    map->encmax = inuse;
     map->enc = &custom;
     memset(map->backmap,-1,sf->glyphcnt*sizeof(int));
     for ( i=inuse-1; i>=0; --i )
