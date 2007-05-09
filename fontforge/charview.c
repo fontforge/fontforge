@@ -3370,8 +3370,8 @@ void _SCCharChangedUpdate(SplineChar *sc,int changed) {
     if ( changed != -1 ) {
 	sc->changed_since_autosave = true;
 	SFSetModTime(sf);
-	if ( sc->changed!=changed ) {
-	    sc->changed = changed;
+	if ( (sc->changed==0) != (changed==0) ) {
+	    sc->changed = (changed!=0);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	    FVToggleCharChanged(sc);
 	    SCRefreshTitles(sc);
@@ -3387,7 +3387,8 @@ void _SCCharChangedUpdate(SplineChar *sc,int changed) {
 	    SCDeGridFit(sc);
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	}
-	if ( !sc->parent->onlybitmaps && !sc->parent->multilayer && !sc->parent->strokedfont && !sc->parent->order2 )
+	if ( !sc->parent->onlybitmaps && !sc->parent->multilayer &&
+		changed==1 && !sc->parent->strokedfont && !sc->parent->order2 )
 	    sc->changedsincelasthinted = true;
 	sc->changed_since_search = true;
 	sf->changed = true;
@@ -3745,8 +3746,12 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
     }
     cv->active_tool = cvt_none;
     CVToolsSetCursor(cv,event->u.mouse.state&~(1<<(7+event->u.mouse.button)),event->u.mouse.device);		/* X still has the buttons set in the state, even though we just released them. I don't want em */
+    /* CharChangedUpdate is a rather blunt tool. When moving anchor points with */
+    /*  the mouse we need finer control than it provides */
+    /* If recentchange is set then change should also be set, don't think we */
+    /*  need the full form of this call */
     if ( cv->needsrasterize || cv->recentchange )
-	CVCharChangedUpdate(cv);
+	_CVCharChangedUpdate(cv,2);
 }
 
 static void CVTimer(CharView *cv,GEvent *event) {
@@ -5208,7 +5213,7 @@ return;
 		CVMoveSelection(cv,dx*arrowAmount,dy*arrowAmount, event->u.chr.state);
 		if ( cv->widthsel )
 		    SCSynchronizeWidth(cv->sc,cv->sc->width,cv->sc->width-dx,NULL);
-		CVCharChangedUpdate(cv);
+		_CVCharChangedUpdate(cv,2);
 		CVInfoDraw(cv,cv->gw);
 	    }
 	}

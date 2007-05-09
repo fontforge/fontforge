@@ -1171,7 +1171,7 @@ return( true );			/* No op */
 	    AI_DisplayClass(ci,ci->ap);
 	    AI_TestOrdering(ci,ci->ap->me.x);
 	}
-	CVCharChangedUpdate(ci->cv);
+	_CVCharChangedUpdate(ci->cv,2);
     }
 return( true );
 }
@@ -1192,7 +1192,7 @@ static int AI_PosChanged(GGadget *g, GEvent *e) {
 return( true );
 	ap->me.x += dx;
 	ap->me.y += dy;
-	CVCharChangedUpdate(ci->cv);
+	_CVCharChangedUpdate(ci->cv,2);
     }
 return( true );
 }
@@ -1220,7 +1220,7 @@ static int AI_MatchChanged(GGadget *g, GEvent *e) {
 		ap->me = here;
 		ap->has_ttf_pt = true;
 		ap->ttf_pt_index = pt;
-		CVCharChangedUpdate(ci->cv);
+		_CVCharChangedUpdate(ci->cv,2);
 	    }
 	} else
 	    ap->has_ttf_pt = false;
