@@ -392,8 +392,6 @@ static void MVSetFeatures(MetricsView *mv) {
     char buf[8];
     uint32 *stds;
     const unichar_t *pt = _GGadgetGetTitle(mv->script);
-    int temp_add;
-    extern int add_DFLT_script;
 
     script = DEFAULT_SCRIPT;
     lang = DEFAULT_LANG;
@@ -403,9 +401,7 @@ static void MVSetFeatures(MetricsView *mv) {
 	lang = (pt[5]<<24) | (pt[6]<<16) | (pt[7]<<8) | pt[8];
     stds = StdFeaturesOfScript(script);
 
-    temp_add = add_DFLT_script; add_DFLT_script = false;
     tags = SFFeaturesInScriptLang(sf,-1,script,lang);
-    add_DFLT_script = temp_add;
     /* Never returns NULL */
     for ( cnt=0; tags[cnt]!=0; ++cnt );
 
@@ -1313,7 +1309,7 @@ static void MVVScroll(MetricsView *mv,struct sbevent *sb) {
 	GRect charrect;
 
 	mv->yoff = newpos;
-	charrect.x = 0; charrect.width = mv->dwidth;
+	charrect.x = mv->xstart; charrect.width = mv->dwidth-mv->xstart;
 	charrect.y = mv->topend+1; charrect.height = mv->displayend-mv->topend-1;
 	GScrollBarSetPos(mv->vsb,mv->yoff);
 	GDrawScroll(mv->gw,&charrect,0,diff);
