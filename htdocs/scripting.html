@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 30-Apr-2007 -->
+  <!-- AP: Last modified: 9-May-2007 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -1568,7 +1568,12 @@ Quit(0);
   area.
   <P>
   The current font of the script will be set to whatever font you invoked it
-  from.
+  from (in python this is <CODE>fontforge.activeFontInUI()</CODE>).
+  <P>
+  Note that if you try to print from a script the output will go to stdout.
+  If you have invoked fontforge from a window manager's menu stdout will often
+  be bound to /dev/null and not useful. Try starting fontforge from the command
+  line instead.
   <H2>
     The Scripts <A NAME="menu">Menu</A>
   </H2>
