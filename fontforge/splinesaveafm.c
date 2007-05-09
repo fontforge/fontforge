@@ -103,7 +103,7 @@ int LoadKerningDataFromAfm(SplineFont *sf, char *filename,EncMap *map) {
     char buffer[200], *pt, *ept, ch;
     SplineChar *sc1, *sc2;
     int off;
-    char name[44], second[44], lig[44];
+    char name[44], second[44], lig[44], buf2[100];
     PST *liga;
     double scale = (sf->ascent+sf->descent)/1000.0;
 
@@ -125,29 +125,34 @@ return( 0 );
 	    *ept = ch;
 	    off = strtol(ept,NULL,10);
 	    KPInsert(sc1,sc2,rint(off*scale),isv);
-	} else if ( sscanf( buffer, "C %*d ; WX %*d ; N %40s ; B %*d %*d %*d %*d ; L %40s %40s",
-		name, second, lig)==3 ) {
-	    sc1 = SFGetChar(sf,-1,lig);
-	    sc2 = SFGetChar(sf,-1,name);
-	    if ( sc2==NULL )
-		sc2 = SFGetChar(sf,-1,second);
-	    if ( sc1!=NULL ) {
-		sprintf( buffer, "%s %s", name, second);
-		for ( liga=sc1->possub; liga!=NULL; liga=liga->next ) {
-		    if ( liga->type == pst_ligature && strcmp(liga->u.lig.components,buffer)==0 )
-		break;
-		}
-		if ( liga==NULL ) {
-		    liga = chunkalloc(sizeof(PST));
-		    liga->subtable = SFSubTableFindOrMake(sf,
-			    CHR('l','i','g','a'),SCScriptFromUnicode(sc2),
-			    gsub_ligature);
-		    liga->subtable->lookup->store_in_afm = true;
-		    liga->type = pst_ligature;
-		    liga->next = sc1->possub;
-		    sc1->possub = liga;
-		    liga->u.lig.lig = sc1;
-		    liga->u.lig.components = copy( buffer );
+	} else if ( buffer[0]=='C' && isspace(buffer[1])) {
+	    char *pt;
+	    sc2 = NULL;
+	    for ( pt= strchr(buffer,';'); pt!=NULL; pt=strchr(pt+1,';') ) {
+		if ( sscanf( pt, "; N %40s", name )==1 )
+		    sc2 = SFGetChar(sf,-1,name);
+		else if ( sc2!=NULL &&
+			sscanf( pt, "; L %40s %40s", second, lig)==2 ) {
+		    sc1 = SFGetChar(sf,-1,lig);
+		    if ( sc1!=NULL ) {
+			sprintf( buf2, "%s %s", name, second);
+			for ( liga=sc1->possub; liga!=NULL; liga=liga->next ) {
+			    if ( liga->type == pst_ligature && strcmp(liga->u.lig.components,buf2)==0 )
+			break;
+			}
+			if ( liga==NULL ) {
+			    liga = chunkalloc(sizeof(PST));
+			    liga->subtable = SFSubTableFindOrMake(sf,
+				    CHR('l','i','g','a'),SCScriptFromUnicode(sc2),
+				    gsub_ligature);
+			    liga->subtable->lookup->store_in_afm = true;
+			    liga->type = pst_ligature;
+			    liga->next = sc1->possub;
+			    sc1->possub = liga;
+			    liga->u.lig.lig = sc1;
+			    liga->u.lig.components = copy( buf2 );
+			}
+		    }
 		}
 	    }
 	}
