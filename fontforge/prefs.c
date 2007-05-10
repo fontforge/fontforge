@@ -63,7 +63,6 @@ int ask_user_for_resolution = true;
 int stop_at_join = false;
 int cv_auto_goto = true;
 int recognizePUA = true;
-int add_DFLT_script = true;
 float arrowAmount=1;
 float snapdistance=3.5;
 float joinsnap=0;
@@ -355,19 +354,6 @@ static struct prefs_list {
 },
  opentype_list[] = {
 	{ N_("UseNewIndicScripts"), pr_bool, &use_second_indic_scripts, NULL, NULL, 'C', NULL, 0, N_("MS has changed (in August 2006) the inner workings of their Indic shaping\nengine, and to disambiguate this change has created a parallel set of script\ntags (generally ending in '2') for Indic writing systems. If you are working\nwith the new system set this flag, if you are working with the old unset it.\n(if you aren't doing Indic work, this flag is irrelevant).") },
-	{ N_("AddDFLTScript"), pr_bool, &add_DFLT_script, NULL, NULL, 'C', NULL, 0, N_(
-"There seems to be some debate on the use of the 'DFLT' script tag\n"
-"One meaning is that it should be used for all glyphs in the Unicode\n"
-"Common script (digits, punctuation, etc.). Some argue that it should\n"
-"also be used so that (almost) every lookup can be activated from\n"
-"the 'DFLT' script. The justification is that a few glyphs from the\n"
-"font might be used inside a longer run of text from another font,\n"
-"where the longer run establishes the script -- and that script happens\n"
-"not to be supported in the current font. In that case the shaping\n"
-"engine should use the 'DFLT' script within the current font.\n\n"
-"This preference item will automatically add the 'DFLT' script to\n"
-"all lookups that do not have it and are invoked by the 'dflt'\n"
-"language" ) },
 	{ NULL }
 },
 /* These are hidden, so will never appear in ui, hence, no "N_(" */

@@ -360,6 +360,7 @@ typedef struct otlookup {
     int lookup_index;		/* used during opentype generation */
     uint32 lookup_offset;
     uint32 lookup_length;
+    char *tempname;
 } OTLookup;
 
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
@@ -1384,6 +1385,8 @@ extern int LoadKerningDataFromOfm(SplineFont *sf, char *filename, EncMap *map);
 extern int LoadKerningDataFromPfm(SplineFont *sf, char *filename, EncMap *map);
 extern int LoadKerningDataFromMacFOND(SplineFont *sf, char *filename, EncMap *map);
 extern int LoadKerningDataFromMetricsFile(SplineFont *sf, char *filename, EncMap *map);
+extern void OTFFDumpFontLookups(FILE *out,SplineFont *sf);
+extern void OTFFDumpOneLookup(FILE *out,SplineFont *sf, OTLookup *otl);
 extern void SubsNew(SplineChar *to,enum possub_type type,int tag,char *components,
 	    SplineChar *default_script);
 extern void PosNew(SplineChar *to,int tag,int dx, int dy, int dh, int dv);
