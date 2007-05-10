@@ -2287,6 +2287,9 @@ static int CVChangeToFormer( GGadget *g, GEvent *e) {
 		    strcmp(sf->glyphs[gid]->name,cv->former_names[new_aspect])==0 )
 	break;
 	if ( gid<0 )
+	    /* They changed the name? See if we can get a unicode value from it */
+	    gid = SFFindGID(sf,-1,cv->former_names[new_aspect]);
+	if ( gid<0 )
 return( true );
 	CVChangeSC(cv,sf->glyphs[gid]);
     }

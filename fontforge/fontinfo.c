@@ -1251,6 +1251,10 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_LookupWin		11020		/* (GSUB, add 1 for GPOS) */
 #define CID_LookupVSB		11022		/* (GSUB, add 1 for GPOS) */
 #define CID_LookupHSB		11024		/* (GSUB, add 1 for GPOS) */
+#define CID_SaveLookup		11026
+#define CID_SaveOTFF		11027
+#define CID_AddAllAlternates	11028
+#define CID_AddDFLT		11029
 
 #define CID_MacAutomatic	16000
 #define CID_MacStyles		16001
@@ -5550,8 +5554,8 @@ void GFI_LookupEnableButtons(struct gfi_data *gfi, int isgpos) {
 	    sel.lookup_cnt+sel.sub_cnt!=0);
     GGadgetSetEnabled(GWidgetGetControl(gfi->gw,CID_LookupBottom),!sel.any_last &&
 	    sel.lookup_cnt+sel.sub_cnt==1);
-    GGadgetSetEnabled(GWidgetGetControl(gfi->gw,CID_AddLookup),sel.lookup_cnt<=1 &&
-	    sel.sub_cnt==0);
+    GGadgetSetEnabled(GWidgetGetControl(gfi->gw,CID_AddLookup),
+	    (sel.lookup_cnt+sel.sub_cnt<=1));
     GGadgetSetEnabled(GWidgetGetControl(gfi->gw,CID_AddSubtable),
 	    (sel.lookup_cnt==1 && sel.sub_cnt<=1) || (sel.lookup_cnt==0 && sel.sub_cnt==1));
     GGadgetSetEnabled(GWidgetGetControl(gfi->gw,CID_EditMetadata),
@@ -5565,6 +5569,7 @@ void GFI_LookupEnableButtons(struct gfi_data *gfi, int isgpos) {
 	    (sel.lookup_cnt>=2 && sel.sub_cnt==0 && sel.lookup_mergeable) ||
 	    (sel.lookup_cnt==0 && sel.sub_cnt>=2 && sel.sub_table_mergeable));
     GGadgetSetEnabled(GWidgetGetControl(gfi->gw,CID_RevertLookups),true);
+    GGadgetSetEnabled(GWidgetGetControl(gfi->gw,CID_LookupSort),lk->cnt>1 );
 
     for ( ofv=fv_list; ofv!=NULL; ofv = ofv->next ) {
 	SplineFont *osf = ofv->sf;
@@ -5986,6 +5991,14 @@ return( true );
 	for ( i=lk->cnt-1; i>=0; --i ) {
 	    if ( !lk->all[i].deleted && lk->all[i].selected )
 	break;
+	    if ( !lk->all[i].deleted && lk->all[i].open ) {
+		for ( j=0; j<lk->all[i].subtable_cnt; ++j )
+		    if ( !lk->all[i].subtables[j].deleted &&
+			    lk->all[i].subtables[j].selected )
+		break;
+		if ( j<lk->all[i].subtable_cnt )
+	break;
+	    }
 	}
 	if ( lk->cnt>=lk->max )
 	    lk->all = grealloc(lk->all,(lk->max+=10)*sizeof(struct lkinfo));
@@ -6560,6 +6573,512 @@ static void LookupPopup(GWindow gw,OTLookup *otl,struct lookup_subtable *sub) {
     GGadgetPreparePopup8(gw,popup_msg);
 }
 
+static void AddDFLT(OTLookup *otl) {
+    FeatureScriptLangList *fl;
+    struct scriptlanglist *sl;
+    int l;
+
+    for ( fl = otl->features; fl!=NULL; fl=fl->next ) {
+	int hasDFLT = false, hasdflt=false;
+	for ( sl=fl->scripts; sl!=NULL; sl=sl->next ) {
+	    if ( sl->script == DEFAULT_SCRIPT )
+		hasDFLT = true;
+	    for ( l=0; l<sl->lang_cnt; ++l ) {
+		uint32 lang = l<MAX_LANG ? sl->langs[l] : sl->morelangs[l-MAX_LANG];
+		if ( lang==DEFAULT_LANG ) {
+		    hasdflt = true;
+	    break;
+		}
+	    }
+	    if ( hasdflt && hasDFLT )
+	break;
+	}
+	if ( hasDFLT	/* Already there */ ||
+		!hasdflt /* Shouldn't add it */ )
+    continue;
+	sl = chunkalloc(sizeof(struct scriptlanglist));
+	sl->script = DEFAULT_SCRIPT;
+	sl->lang_cnt = 1;
+	sl->langs[0] = DEFAULT_LANG;
+	sl->next = fl->scripts;
+	fl->scripts = sl;
+    }
+}
+
+static void AALTRemoveOld(SplineFont *sf,struct lkdata *lk) {
+    int i;
+    FeatureScriptLangList *fl, *prev;
+
+    for ( i=0; i<lk->cnt; ++i ) {
+	if ( lk->all[i].deleted )
+    continue;
+	prev = NULL;
+	for ( fl = lk->all[i].lookup->features; fl!=NULL; prev=fl, fl=fl->next ) {
+	    if ( fl->featuretag==CHR('a','a','l','t') ) {
+		if ( fl==lk->all[i].lookup->features && fl->next==NULL )
+		    lk->all[i].deleted = true;
+		else {
+		    if ( prev==NULL )
+			lk->all[i].lookup->features = fl->next;
+		    else
+			prev->next = fl->next;
+		    fl->next = NULL;
+		    FeatureScriptLangListFree(fl);
+		}
+	break;
+	    }
+	}
+    }
+}
+
+		
+struct sllk { uint32 script; int cnt, max; OTLookup **lookups; int lcnt, lmax; uint32 *langs; };
+
+static void AddOTLToSllk(struct sllk *sllk, OTLookup *otl, struct scriptlanglist *sl) {
+    int i,j,k,l;
+
+    if ( otl->lookup_type==gsub_single || otl->lookup_type==gsub_alternate ) {
+	for ( i=0; i<sllk->cnt; ++i )
+	    if ( sllk->lookups[i]==otl )
+	break;
+	if ( i==sllk->cnt ) {
+	    if ( sllk->cnt>=sllk->max )
+		sllk->lookups = grealloc(sllk->lookups,(sllk->max+=5)*sizeof(OTLookup *));
+	    sllk->lookups[sllk->cnt++] = otl;
+	    for ( l=0; l<sl->lang_cnt; ++l ) {
+		uint32 lang = l<MAX_LANG ? sl->langs[l] : sl->morelangs[l-MAX_LANG];
+		for ( j=0; j<sllk->lcnt; ++j )
+		    if ( sllk->langs[j]==lang )
+		break;
+		if ( j==sllk->lcnt ) {
+		    if ( sllk->lcnt>=sllk->lmax )
+			sllk->langs = grealloc(sllk->langs,(sllk->lmax+=sl->lang_cnt+MAX_LANG)*sizeof(uint32));
+		    sllk->langs[sllk->lcnt++] = lang;
+		}
+	    }
+	}
+    } else if ( otl->lookup_type==gsub_context || otl->lookup_type==gsub_contextchain ) {
+	struct lookup_subtable *sub;
+	for ( sub=otl->subtables; sub!=NULL; sub=sub->next ) {
+	    FPST *fpst = sub->fpst;
+	    for ( j=0; j<fpst->rule_cnt; ++j ) {
+		struct fpst_rule *r = &fpst->rules[j];
+		for ( k=0; k<r->lookup_cnt; ++k )
+		    AddOTLToSllk(sllk,r->lookups[k].lookup,sl);
+	    }
+	}
+    }
+    /* reverse contextual chaining is weird and I shall ignore it. Adobe does too*/
+}
+
+static char *ComponentsFromPSTs(PST **psts,int pcnt) {
+    char **names=NULL;
+    int ncnt=0, nmax=0;
+    int i,j,len;
+    char *ret;
+
+    /* First find all the names */
+    for ( i=0; i<pcnt; ++i ) {
+	char *nlist = psts[i]->u.alt.components;
+	char *start, *pt, ch;
+
+	for ( start = nlist; ; ) {
+	    while ( *start==' ' )
+		++start;
+	    if ( *start=='\0' )
+	break;
+	    for ( pt=start; *pt!=' ' && *pt!='\0'; ++pt );
+	    ch = *pt; *pt = '\0';
+	    for ( j=0; j<ncnt; ++j )
+		if ( strcmp( start,names[j])==0 )
+	    break;
+	    if ( j==ncnt ) {
+		if ( ncnt>=nmax )
+		    names = grealloc(names,(nmax+=10)*sizeof(char *));
+		names[ncnt++] = copy(start);
+	    }
+	    *pt = ch;
+	    start = pt;
+	}
+    }
+
+    len = 0;
+    for ( i=0; i<ncnt; ++i )
+	len += strlen(names[i])+1;
+    if ( len==0 ) len=1;
+    ret = galloc(len);
+    len = 0;
+    for ( i=0; i<ncnt; ++i ) {
+	strcpy(ret+len,names[i]);
+	len += strlen(names[i]);
+	ret[len++] = ' ';
+    }
+    if ( len==0 )
+	*ret = '\0';
+    else
+	ret[len-1] = '\0';
+
+    for ( i=0; i<ncnt; ++i )
+	free(names[i]);
+    free(names);
+return( ret );
+}
+
+static void AALTCreateNew(SplineFont *sf, struct lkdata *lk) {
+    /* different script/lang combinations may need different 'aalt' lookups */
+    /*  well, let's just say different script combinations */
+    /* for each script/lang combo find all single/alternate subs for each */
+    /*  glyph. Merge those choices and create new lookup with that info */
+    struct sllk *sllk = NULL;
+    int sllk_cnt=0, sllk_max = 0;
+    int i,s;
+    OTLookup *otl;
+    struct lookup_subtable *sub;
+    PST **psts, *pst;
+    FeatureScriptLangList *fl;
+    struct scriptlanglist *sl;
+    int l,k,j,gid,pcnt;
+    SplineFont *_sf;
+    SplineChar *sc;
+
+    /* Find all scripts, and all the single/alternate lookups for each */
+    /*  and all the languages used for these in each script */
+    for ( i=0; i<lk->cnt; ++i ) {
+	otl = lk->all[i].lookup;
+	for ( fl=otl->features; fl!=NULL; fl=fl->next )
+	    for ( sl=fl->scripts; sl!=NULL; sl=sl->next ) {
+		for ( s=0; s<sllk_cnt; ++s )
+		    if ( sl->script == sllk[s].script )
+		break;
+		if ( s==sllk_cnt ) {
+		    if ( sllk_cnt>=sllk_max )
+			sllk = grealloc(sllk,(sllk_max+=10)*sizeof(struct sllk));
+		    memset(&sllk[sllk_cnt],0,sizeof(struct sllk));
+		    sllk[sllk_cnt++].script = sl->script;
+		}
+		AddOTLToSllk(&sllk[s], otl,sl);
+	    }
+    }
+    /* Each of these gets its own gsub_alternate lookup which gets inserted */
+    /*  at the head of the lookup list. Each lookup has one subtable */
+    for ( i=0; i<sllk_cnt; ++i ) {
+	if ( sllk[i].cnt==0 )		/* Script used, but provides no alternates */
+    continue;
+	/* Make the new lookup (and all its supporting data structures) */
+	otl = chunkalloc(sizeof(OTLookup));
+	otl->lookup_type = gsub_alternate;
+	otl->lookup_flags = sllk[i].lookups[0]->lookup_flags & pst_r2l;
+	otl->features = fl = chunkalloc(sizeof(FeatureScriptLangList));
+	fl->featuretag = CHR('a','a','l','t');
+	fl->scripts = sl = chunkalloc(sizeof(struct scriptlanglist));
+	sl->script = sllk[i].script;
+	sl->lang_cnt = sllk[i].lcnt;
+	if ( sl->lang_cnt>MAX_LANG )
+	    sl->morelangs = galloc((sl->lang_cnt-MAX_LANG)*sizeof(uint32));
+	for ( l=0; l<sl->lang_cnt; ++l )
+	    if ( l<MAX_LANG )
+		sl->langs[l] = sl->langs[l];
+	    else
+		sl->morelangs[l-MAX_LANG] = sl->langs[l];
+	otl->subtables = sub = chunkalloc(sizeof(struct lookup_subtable));
+	sub->lookup = otl;
+	sub->per_glyph_pst_or_kern = true;
+
+	/* Add it to the various lists it needs to be in */
+	if ( lk->cnt>=lk->max )
+	    lk->all = grealloc(lk->all,(lk->max+=10)*sizeof(struct lkinfo));
+	for ( k=lk->cnt; k>0; --k )
+	    lk->all[k] = lk->all[k-1];
+	memset(&lk->all[0],0,sizeof(struct lkinfo));
+	lk->all[0].lookup = otl;
+	lk->all[0].new = true;
+	++lk->cnt;
+	otl->next = sf->gsub_lookups;
+	sf->gsub_lookups = otl;
+
+	/* Now add the new subtable */
+	lk->all[0].subtables = gcalloc(1,sizeof(struct lksubinfo));
+	lk->all[0].subtable_cnt = lk->all[0].subtable_max = 1;
+	lk->all[0].subtables[0].subtable = sub;
+	lk->all[0].subtables[0].new = true;
+
+	/* Now look at every glyph in the font, and see if it has any of the */
+	/*  lookups we are interested in, and if it does, build a new pst */
+	/*  containing all posibilities listed on any of them */
+	if ( sf->cidmaster ) sf = sf->cidmaster;
+	psts = galloc(sllk[i].cnt*sizeof(PST *));
+	k=0;
+	do {
+	    _sf = k<sf->subfontcnt ? sf->subfonts[k] : sf;
+	    for ( gid=0; gid<_sf->glyphcnt; ++gid ) if ( (sc = _sf->glyphs[gid])!=NULL ) {
+		pcnt = 0;
+		for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
+		    if ( pst->subtable==NULL )
+		continue;
+		    for ( j=0; j<sllk[i].cnt; ++j )
+			if ( pst->subtable->lookup == sllk[i].lookups[j] )
+		    break;
+		    if ( j<sllk[i].cnt )
+			psts[pcnt++] = pst;
+		}
+		if ( pcnt==0 )
+	    continue;
+		pst = chunkalloc(sizeof(PST));
+		pst->subtable = sub;
+		pst->type = pst_alternate;
+		pst->next = sc->possub;
+		sc->possub = pst;
+		pst->u.alt.components = ComponentsFromPSTs(psts,pcnt);
+	    }
+	    ++k;
+	} while ( k<sf->subfontcnt );
+	free(psts);
+	NameOTLookup(otl,sf);
+    }
+
+    for ( i=0; i<sllk_cnt; ++i ) {
+	free( sllk[i].langs );
+	free( sllk[i].lookups );
+    }
+    free(sllk);
+}
+
+static void lookupmenu_dispatch(GWindow v, GMenuItem *mi, GEvent *e) {
+    GEvent dummy;
+    struct gfi_data *gfi = GDrawGetUserData(v);
+    int i;
+    char *buts[4];
+
+    if ( mi->mid==CID_SaveOTFF || mi->mid==CID_SaveLookup ) {
+	char *filename, *defname;
+	FILE *out;
+	int isgpos = GTabSetGetSel(GWidgetGetControl(gfi->gw,CID_Lookups));
+	struct lkdata *lk = &gfi->tables[isgpos];
+	OTLookup *otl = NULL;
+
+	if ( mi->mid==CID_SaveLookup ) {
+	    for ( i=0; i<lk->cnt && (!lk->all[i].selected || lk->all[i].deleted); ++i );
+	    if ( i==lk->cnt )
+return;
+	    otl = lk->all[i].lookup;
+	}
+	defname = strconcat(gfi->sf->fontname,".fea");
+	filename = gwwv_save_filename(_("Feature file?"),defname,"*.fea");
+	free(defname);
+	if ( filename==NULL )
+return;
+	/* Convert to def encoding !!! */
+	out = fopen(filename,"w");
+	if ( out==NULL ) {
+	    gwwv_post_error(_("Cannot open file"),_("Cannot open %s"), filename );
+	    free(filename);
+return;
+	}
+	if ( otl!=NULL )
+	    OTFFDumpOneLookup( out,gfi->sf,otl );
+	else
+	    OTFFDumpFontLookups( out,gfi->sf );
+	if ( ferror(out)) {
+	    gwwv_post_error(_("Output error"),_("An error occurred writing %s"), filename );
+	    free(filename);
+	    fclose(out);
+return;
+	}
+	free(filename);
+	fclose(out);
+    } else if ( mi->mid==CID_AddAllAlternates ) {
+	/* First we want to remove any old aalt-only lookups */
+	/*  (and remove the 'aalt' tag from any lookups with multiple features) */
+	/* Then add the new ones */
+	struct lkdata *lk = &gfi->tables[0];		/* GSUB */
+	int has_aalt_only=false, has_aalt_mixed = false;
+	int i, ret;
+	FeatureScriptLangList *fl;
+
+	for ( i=0; i<lk->cnt; ++i ) {
+	    if ( lk->all[i].deleted )
+	continue;
+	    for ( fl = lk->all[i].lookup->features; fl!=NULL; fl=fl->next ) {
+		if ( fl->featuretag==CHR('a','a','l','t') ) {
+		    if ( fl==lk->all[i].lookup->features && fl->next==NULL )
+			has_aalt_only = true;
+		    else
+			has_aalt_mixed = true;
+	    break;
+		}
+	    }
+	}
+	if ( has_aalt_only || has_aalt_mixed ) {
+#if defined(FONTFORGE_CONFIG_GDRAW)
+	    buts[0] = _("_OK"); buts[1] = _("_Cancel"); buts[2] = NULL;
+#elif defined(FONTFORGE_CONFIG_GTK)
+	    buts[0] = GTK_STOCK_OK; buts[1] = GTK_STOCK_CANCEL; buts[2] = NULL;
+#endif
+	    ret = gwwv_ask(has_aalt_only?_("Lookups will be removed"):_("Feature tags will be removed"),
+		    (const char **) buts,0,1,
+		    !has_aalt_mixed ?
+		    _("Warning: There are already some 'aalt' lookups in\n"
+		      "the font. If you proceed with this command those\n"
+		      "lookups will be removed and new lookups will be\n"
+		      "generated. The old information will be LOST.\n"
+		      " Is that what you want?") :
+		    !has_aalt_only ?
+		    _("Warning: There are already some 'aalt' lookups in\n"
+		      "the font but there are other feature tags associated\n"
+		      "with these lookups. If you proceed with this command\n"
+		      "the 'aalt' tag will be removed from those lookups,\n"
+		      "and new lookups will be generate which will NOT be\n"
+		      "associated with the other feature tag(s).\n"
+		      " Is that what you want?") :
+		    _("Warning: There are already some 'aalt' lookups in\n"
+		      "the font, some have no other feature tags associated\n"
+		      "with them and these will be removed, others have other\n"
+		      "tags associated and these will remain while the 'aalt'\n"
+		      "tag will be removed from the lookup -- a new lookup\n"
+		      "will be generated which is not associated with any\n"
+		      "other feature tags.\n"
+		      " Is that what you want?") );
+	    if ( ret==1 )
+return;
+	    AALTRemoveOld(gfi->sf,lk);
+	}
+	AALTCreateNew(gfi->sf,lk);	      
+	GDrawRequestExpose(GDrawableGetWindow(GWidgetGetControl(gfi->gw,CID_LookupWin+0)),NULL,true);
+    } else if ( mi->mid==CID_AddDFLT ) {
+	struct selection_bits sel;
+	int toall, ret, i;
+	char *buts[4];
+	int isgpos = GTabSetGetSel(GWidgetGetControl(gfi->gw,CID_Lookups));
+	struct lkdata *lk = &gfi->tables[isgpos];
+
+	LookupParseSelection(lk,&sel);
+#if defined(FONTFORGE_CONFIG_GDRAW)
+	if ( sel.lookup_cnt==0 ) {
+	    buts[0] = _("_Apply to All"); buts[1] = _("_Cancel"); buts[2]=NULL;
+	} else {
+	    buts[0] = _("_Apply to All"); buts[1] = _("_Apply to Selection"); buts[2] = _("_Cancel"); buts[3]=NULL;
+	}
+#elif defined(FONTFORGE_CONFIG_GTK)
+	if ( sel.lookup_cnt==0 ) {
+	    buts[0] = _("_Apply to All"); buts[1] = GTK_STOCK_CANCEL; buts[2]=NULL;
+	} else {
+	    buts[0] = _("_Apply to All"); buts[1] = _("_Apply to Selection"); buts[2] = GTK_STOCK_CANCEL; buts[3]=NULL;
+	}
+#endif
+	ret = gwwv_ask(_("Apply to:"),(const char **) buts,0,sel.lookup_cnt==0?1:2,_("Apply change to which lookups?"));
+	toall = false;
+	if ( ret==0 )
+	    toall = true;
+	else if ( (ret==1 && sel.lookup_cnt==0) || (ret==2 && sel.lookup_cnt!=0))
+return;
+	for ( i=0; i<lk->cnt; ++i ) {
+	    if ( lk->all[i].deleted )
+	continue;
+	    if ( lk->all[i].selected || toall ) {
+		AddDFLT(lk->all[i].lookup);
+	    }
+	}
+    } else {
+	memset(&dummy,0,sizeof(dummy));
+	dummy.type = et_controlevent;
+	dummy.u.control.subtype = et_buttonpress;
+	dummy.u.control.g = GWidgetGetControl(gfi->gw,mi->mid);
+	dummy.w = GGadgetGetWindow(dummy.u.control.g);
+	dummy.u.control.u.button.button = e->u.mouse.button;
+	GGadgetDispatchEvent(dummy.u.control.g,&dummy);
+    }
+}
+
+static GMenuItem lookuppopupmenu[] = {
+    { { (unichar_t *) N_("_Top"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 't' }, '\0', ksm_control, NULL, NULL, lookupmenu_dispatch, CID_LookupTop },
+    { { (unichar_t *) N_("_Up"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_control, NULL, NULL, lookupmenu_dispatch, CID_LookupUp },
+    { { (unichar_t *) N_("_Down"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, lookupmenu_dispatch, CID_LookupDown },
+    { { (unichar_t *) N_("_Bottom"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, lookupmenu_dispatch, CID_LookupBottom },
+    { { (unichar_t *) N_("_Sort"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, lookupmenu_dispatch, CID_LookupSort },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) N_("Add _Lookup"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, lookupmenu_dispatch, CID_AddLookup },
+    { { (unichar_t *) N_("Add Sub_table"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, lookupmenu_dispatch, CID_AddSubtable },
+    { { (unichar_t *) N_("Edit _Metadata"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, lookupmenu_dispatch, CID_EditMetadata },
+    { { (unichar_t *) N_("_Edit Data"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, lookupmenu_dispatch, CID_EditSubtable },
+    { { (unichar_t *) N_("De_lete"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, lookupmenu_dispatch, CID_DeleteLookup },
+    { { (unichar_t *) N_("_Merge"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, lookupmenu_dispatch, CID_MergeLookup },
+    { { (unichar_t *) N_("Sa_ve Lookup"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, lookupmenu_dispatch, CID_SaveLookup },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) N_("_Add 'aalt' features"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, lookupmenu_dispatch, CID_AddAllAlternates },
+    { { (unichar_t *) N_("Add 'D_FLT' script"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, lookupmenu_dispatch, CID_AddDFLT },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) N_("_Revert All"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, lookupmenu_dispatch, CID_RevertLookups },
+    { { (unichar_t *) N_("_Import"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, lookupmenu_dispatch, CID_RevertLookups },
+    { { (unichar_t *) N_("S_ave Feature File"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, lookupmenu_dispatch, CID_SaveOTFF },
+    { NULL }};
+
+static void LookupMenu(struct gfi_data *gfi,struct lkdata *lk,GEvent *event) {
+    struct selection_bits sel;
+    int i;
+
+    LookupParseSelection(lk,&sel);
+    for ( i=0; lookuppopupmenu[i].ti.text!=NULL || lookuppopupmenu[i].ti.line; ++i ) {
+	switch ( lookuppopupmenu[i].mid ) {
+	  case 0:
+	    /* Lines */;
+	  break;
+	  case CID_LookupTop:
+	    lookuppopupmenu[i].ti.disabled = sel.any_first || sel.lookup_cnt+sel.sub_cnt!=1;
+	  break;
+	  case CID_LookupUp:
+	    lookuppopupmenu[i].ti.disabled = sel.any_first || sel.lookup_cnt+sel.sub_cnt==0;
+	  break;
+	  case CID_LookupDown:
+	    lookuppopupmenu[i].ti.disabled = sel.any_last || sel.lookup_cnt+sel.sub_cnt==0;
+	  break;
+	  case CID_LookupBottom:
+	    lookuppopupmenu[i].ti.disabled = sel.any_last || sel.lookup_cnt+sel.sub_cnt!=1;
+	  break;
+	  case CID_LookupSort:
+	    lookuppopupmenu[i].ti.disabled = lk->cnt<=1;
+	  break;
+	  case CID_AddLookup:
+	    lookuppopupmenu[i].ti.disabled = sel.lookup_cnt+sel.sub_cnt>1;
+	  break;
+	  case CID_AddSubtable:
+	    lookuppopupmenu[i].ti.disabled = (sel.lookup_cnt!=1 || sel.sub_cnt>1) && (sel.lookup_cnt!=0 || sel.sub_cnt!=1);
+	  break;
+	  case CID_EditMetadata:
+	    lookuppopupmenu[i].ti.disabled = (sel.lookup_cnt!=1 || sel.sub_cnt!=0) &&
+			(sel.lookup_cnt!=0 || sel.sub_cnt!=1);
+	  break;
+	  case CID_EditSubtable:
+	    lookuppopupmenu[i].ti.disabled = sel.lookup_cnt!=0 || sel.sub_cnt!=1;
+	  break;
+	  case CID_DeleteLookup:
+	    lookuppopupmenu[i].ti.disabled = sel.lookup_cnt==0 && sel.sub_cnt==0;
+	  break;
+	  case CID_MergeLookup:
+	    lookuppopupmenu[i].ti.disabled = !(
+		    (sel.lookup_cnt>=2 && sel.sub_cnt==0 && sel.lookup_mergeable) ||
+		    (sel.lookup_cnt==0 && sel.sub_cnt>=2 && sel.sub_table_mergeable)  );
+	  break;
+	  case CID_RevertLookups:
+	    lookuppopupmenu[i].ti.disabled = false;
+	  break;
+	  case CID_SaveLookup:
+	    lookuppopupmenu[i].ti.disabled = sel.lookup_cnt!=1 || sel.sub_cnt!=0;
+	  break;
+	  case CID_AddDFLT:
+	    lookuppopupmenu[i].ti.disabled = lk->cnt==0;
+	  break;
+	  case CID_AddAllAlternates:
+	    lookuppopupmenu[i].ti.disabled = lk->cnt==0 || lk==&gfi->tables[1]/*Only applies to GSUB*/;
+	  break;
+	  case CID_SaveOTFF:
+	    lookuppopupmenu[i].ti.disabled = lk->cnt<=1;
+	  break;
+	}
+    }
+    GMenuCreatePopupMenu(event->w,event, lookuppopupmenu);
+}
+    
+
 static void LookupMouse(struct gfi_data *gfi, int isgpos, GEvent *event) {
     struct lkdata *lk = &gfi->tables[isgpos];
     int l = (event->u.mouse.y-LK_MARGIN)/gfi->fh + lk->off_top;
@@ -6577,7 +7096,7 @@ return;
 	if ( lk->all[i].deleted )
     continue;
 	if ( l==lcnt ) {
-	    if ( event->type==et_mousedown )
+	    if ( event->type==et_mouseup )
 return;
 	    else if ( event->type==et_mousemove ) {
 		LookupPopup(gw,lk->all[i].lookup,NULL);
@@ -6595,6 +7114,8 @@ return;
 		    lk->all[i].selected = !lk->all[i].selected;
 		GFI_LookupEnableButtons(gfi,isgpos);
 		GDrawRequestExpose(gw,NULL,true);
+		if ( event->u.mouse.button==3 )
+		    LookupMenu(gfi,lk,event);
 return;
 	    }
 	}
@@ -6604,7 +7125,7 @@ return;
 		if ( lk->all[i].subtables[j].deleted )
 	    continue;
 		if ( l==lcnt ) {
-		    if ( event->type==et_mousedown )
+		    if ( event->type==et_mouseup )
 return;
 		    else if ( event->type==et_mousemove ) {
 			LookupPopup(gw,lk->all[i].lookup,lk->all[i].subtables[j].subtable);
@@ -6622,6 +7143,8 @@ return;		/* Can't open this guy */
 				lk->all[i].subtables[j].selected = !lk->all[i].subtables[j].selected;
 			    GFI_LookupEnableButtons(gfi,isgpos);
 			    GDrawRequestExpose(gw,NULL,true);
+			    if ( event->u.mouse.button==3 )
+				LookupMenu(gfi,lk,event);
 			}
 return;
 		    }

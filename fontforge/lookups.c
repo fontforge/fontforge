@@ -34,8 +34,6 @@
 #include "ttf.h"
 #include <gkeysym.h>
 
-extern int add_DFLT_script;
-
 static int uint32_cmp(const void *_ui1, const void *_ui2) {
     if ( *(uint32 *) _ui1 > *(uint32 *)_ui2 )
 return( 1 );
@@ -167,22 +165,6 @@ a GPOS, but he says the GPOS won't work without a GSUB.)
     if ( cnt==0 )
 return( NULL );
 
-    if ( add_DFLT_script ) {
-	/* Adobe says that the DFLT script should contain all lookups found */
-	/*  in other scripts. In some cases the reason for this is obvious */
-	/*  the digits aren't really in any script and any lookups for them */
-	/*  should be present in all scripts -- even in scripts the font */
-	/*  doesn't support -- which means in the DFLT script */
-	for ( i=0; i<cnt; ++i )
-	    if ( scripts[i]==DEFAULT_SCRIPT )
-	break;
-	if ( i==cnt ) {
-	    if ( cnt>=tot )
-		scripts = grealloc(scripts,(tot+=10)*sizeof(uint32));
-	    scripts[cnt++] = DEFAULT_SCRIPT;
-	}
-    }
-
     /* We want our scripts in alphabetic order */
     qsort(scripts,cnt,sizeof(uint32),uint32_cmp);
     /* add a 0 entry to mark the end of the list */
@@ -233,15 +215,6 @@ uint32 *SFLangsInScript(SplineFont *sf,int gpos,uint32 script) {
 	}
     }
 
-    if ( script==DEFAULT_SCRIPT && add_DFLT_script && cnt==0 ) {
-	/* The default script only takes a default language */
-	/* If we are adding everything to DFLT (see above) then */
-	/*  we will need an entry with the default language */
-	if ( cnt>=tot )
-	    langs = grealloc(langs,(tot+=10)*sizeof(uint32));
-	langs[cnt++] = DEFAULT_LANG;
-    }
-
     if ( cnt==0 ) {
 	/* We add dummy script entries. Because Uniscribe will refuse to */
 	/*  process some scripts if they don't have an entry in both GPOS */
@@ -281,8 +254,18 @@ uint32 *SFFeaturesInScriptLang(SplineFont *sf,int gpos,uint32 script,uint32 lang
 	    for ( fl=test->features; fl!=NULL; fl=fl->next ) {
 		if ( fl->ismac )
 	    continue;
-		for ( sl=fl->scripts ; sl!=NULL; sl=sl->next ) {
-		    if ( sl->script==script || (add_DFLT_script && script==DEFAULT_SCRIPT)) {
+		if ( script==0xffffffff ) {
+		    for ( i=0; i<cnt; ++i ) {
+			if ( fl->featuretag==features[i] )
+		    break;
+		    }
+		    if ( i==cnt ) {
+			if ( cnt>=tot )
+			    features = grealloc(features,(tot+=10)*sizeof(uint32));
+			features[cnt++] = fl->featuretag;
+		    }
+		} else for ( sl=fl->scripts ; sl!=NULL; sl=sl->next ) {
+		    if ( sl->script==script ) {
 			for ( l=0; l<sl->lang_cnt; ++l ) {
 			    int testlang;
 			    if ( l<MAX_LANG )
@@ -346,7 +329,7 @@ OTLookup **SFLookupsInScriptLangFeature(SplineFont *sf,int gpos,uint32 script,ui
 	for ( fl=test->features; fl!=NULL; fl=fl->next ) {
 	    if ( fl->featuretag==feature ) {
 		for ( sl=fl->scripts ; sl!=NULL; sl=sl->next ) {
-		    if ( sl->script==script || (add_DFLT_script && script==DEFAULT_SCRIPT)) {
+		    if ( sl->script==script ) {
 			for ( l=0; l<sl->lang_cnt; ++l ) {
 			    int testlang;
 			    if ( l<MAX_LANG )
