@@ -97,6 +97,29 @@ return( true );
 return( false );
 }
 
+int DefaultLangTagInOneScriptList(struct scriptlanglist *sl) {
+    int l;
+
+    for ( l=0; l<sl->lang_cnt; ++l ) {
+	uint32 lang = l<MAX_LANG ? sl->langs[l] : sl->morelangs[l-MAX_LANG];
+	if ( lang==DEFAULT_LANG )
+return( true );
+    }
+return( false );
+}
+
+struct scriptlanglist *DefaultLangTagInScriptList(struct scriptlanglist *sl, int DFLT_ok) {
+
+    while ( sl!=NULL ) {
+	if ( !DFLT_ok && sl->script==DEFAULT_SCRIPT )
+    continue;
+	if ( DefaultLangTagInOneScriptList(sl))
+return( sl );
+	sl = sl->next;
+    }
+return( NULL );
+}
+
 uint32 *SFScriptsInLookups(SplineFont *sf,int gpos) {
     /* Presumes that either SFFindUnusedLookups or SFFindClearUnusedLookupBits */
     /*  has been called first */
@@ -990,9 +1013,17 @@ void NameOTLookup(OTLookup *otl,SplineFont *sf) {
     extern GTextInfo scripts[];
     char *format;
     struct lookup_subtable *subtable;
+    int k;
 
-    for ( fl=otl->features; fl!=NULL ; fl=fl->next ) {
-	userfriendly = TagFullName(sf,fl->featuretag, fl->ismac, true);
+    for ( k=0; k<2; ++k ) {
+	for ( fl=otl->features; fl!=NULL ; fl=fl->next ) {
+	    /* look first for a feature attached to a default language */
+	    if ( k==1 || DefaultLangTagInScriptList(fl->scripts,false)!=NULL ) {
+		userfriendly = TagFullName(sf,fl->featuretag, fl->ismac, true);
+		if ( userfriendly!=NULL )
+	break;
+	    }
+	}
 	if ( userfriendly!=NULL )
     break;
     }
@@ -1020,19 +1051,26 @@ void NameOTLookup(OTLookup *otl,SplineFont *sf) {
     if ( fl!=NULL && fl->scripts!=NULL ) {
 	char buf[8];
 	int j;
-	struct scriptlanglist *sl, *found;
+	struct scriptlanglist *sl, *found, *found2;
 	uint32 script_tag = fl->scripts->script;
-	found = NULL;
+	found = found2 = NULL;
 	for ( sl = fl->scripts; sl!=NULL; sl=sl->next ) {
 	    if ( sl->script == DEFAULT_SCRIPT )
 		/* Ignore it */;
-	    else if ( found==NULL )
-		found = sl;
-	    else {
-		found = NULL;
+	    else if ( DefaultLangTagInOneScriptList(sl)) {
+		if ( found==NULL )
+		    found = sl;
+		else {
+		    found = found2 = NULL;
 	break;
-	    }
+		}
+	    } else if ( found2 == NULL )
+		found2 = sl;
+	    else
+		found2 = (struct scriptlanglist *) -1;
 	}
+	if ( found==NULL && found2!=NULL && found2 != (struct scriptlanglist *) -1 )
+	    found = found2;
 	if ( found!=NULL ) {
 	    script_tag = found->script;
 	    for ( j=0; scripts[j].text!=NULL && script_tag!=(uint32) (intpt) scripts[j].userdata; ++j );

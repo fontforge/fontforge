@@ -6724,6 +6724,20 @@ static char *ComponentsFromPSTs(PST **psts,int pcnt) {
 return( ret );
 }
 
+static int SllkMatch(struct sllk *sllk,int s1,int s2) {
+    int i;
+
+    if ( sllk[s1].cnt != sllk[s2].cnt )
+return( false );
+
+    for ( i=0; i<sllk[s1].cnt; ++i ) {
+	if ( sllk[s1].lookups[i] != sllk[s2].lookups[i] )
+return( false );
+    }
+
+return( true );
+}
+
 static void AALTCreateNew(SplineFont *sf, struct lkdata *lk) {
     /* different script/lang combinations may need different 'aalt' lookups */
     /*  well, let's just say different script combinations */
@@ -6770,16 +6784,24 @@ static void AALTCreateNew(SplineFont *sf, struct lkdata *lk) {
 	otl->lookup_flags = sllk[i].lookups[0]->lookup_flags & pst_r2l;
 	otl->features = fl = chunkalloc(sizeof(FeatureScriptLangList));
 	fl->featuretag = CHR('a','a','l','t');
-	fl->scripts = sl = chunkalloc(sizeof(struct scriptlanglist));
-	sl->script = sllk[i].script;
-	sl->lang_cnt = sllk[i].lcnt;
-	if ( sl->lang_cnt>MAX_LANG )
-	    sl->morelangs = galloc((sl->lang_cnt-MAX_LANG)*sizeof(uint32));
-	for ( l=0; l<sl->lang_cnt; ++l )
-	    if ( l<MAX_LANG )
-		sl->langs[l] = sl->langs[l];
-	    else
-		sl->morelangs[l-MAX_LANG] = sl->langs[l];
+	/* Any other scripts with the same lookup set? */
+	for ( j=i; j<sllk_cnt; ++j ) {
+	    if ( i==j || SllkMatch(sllk,i,j)) {
+		sl = chunkalloc(sizeof(struct scriptlanglist));
+		sl->next = fl->scripts;
+		fl->scripts = sl;
+		sl->script = sllk[j].script;
+		sl->lang_cnt = sllk[j].lcnt;
+		if ( sl->lang_cnt>MAX_LANG )
+		    sl->morelangs = galloc((sl->lang_cnt-MAX_LANG)*sizeof(uint32));
+		for ( l=0; l<sl->lang_cnt; ++l )
+		    if ( l<MAX_LANG )
+			sl->langs[l] = sllk[j].langs[l];
+		    else
+			sl->morelangs[l-MAX_LANG] = sllk[j].langs[l];
+		if ( i!=j ) sllk[j].cnt = 0;	/* Mark as processed */
+	    }
+	}
 	otl->subtables = sub = chunkalloc(sizeof(struct lookup_subtable));
 	sub->lookup = otl;
 	sub->per_glyph_pst_or_kern = true;
