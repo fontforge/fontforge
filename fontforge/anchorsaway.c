@@ -373,7 +373,7 @@ static void AnchorD_ChangeSize(AnchorDlg *a) {
 
     GDrawSetCursor(a->gw,ct_watch);
     GDrawSync(NULL);
-    GDrawProcessPendingEvents(NULL);
+    /* GDrawProcessPendingEvents(NULL); */ /* Any expose events on the current dlg will cause a crash as there are no bdfc's now */
 
     a->scale = a->pixelsize / (double) (a->sc->parent->ascent + a->sc->parent->descent);
 
