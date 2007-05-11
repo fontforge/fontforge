@@ -27,7 +27,7 @@
 	<TD>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
 	  &nbsp;</TD>
 	<TD VALIGN="Bottom"><P ALIGN=Right>
-	  -- <SMALL>A Pheonix too Frequent<BR>
+	  -- <SMALL>A Phoenix too Frequent<BR>
 	  Christopher Fry, 1950</SMALL></TD>
       </TR>
       <TR>
@@ -46,6 +46,49 @@
     </TABLE>
   </BLOCKQUOTE>
   <UL>
+    <LI>
+      9-May-2007
+      <UL>
+	<LI>
+	  When ff parsed an afm file it only read the first ligature on a line.
+	<LI>
+	  The [Call...] button in the scripting dialog is meaningless for python scripts
+	  (or I don't know how to give it meaning) so disable it.
+	<LI>
+	  Vertical scrolling in the metrics view tried to scroll the list of features
+	  too.
+	<LI>
+	  Tab, and arrow keys didn't work in the matrixedit widget after I added hidden
+	  columns. Make Return do the expected thing (move to start of next line and
+	  create it if possible).
+	<LI>
+	  Patch by Pierre to fix uninitialized value when compacting encodings.
+	<LI>
+	  Typo in realloc of lookups meant that nothing happened (when it should have
+	  increased array size by 1).
+	<LI>
+	  Add the OFL icon to the fontinfo dlg.
+	<LI>
+	  Plugins were broken with regular link configure option.
+	<LI>
+	  Inkscape can start X on the mac before it tries to connect. Hmm. I can do
+	  that too. Inkscape manages to start X without an xterm. I don't know how
+	  to do that.
+	<LI>
+	  When reading PS and CharStrings, the closepath operator didn't allow for
+	  rounding errors.
+	<LI>
+	  Metrics View would crash if more than 20 glyphs entered.
+	<LI>
+	  Alexej Kryukov points out that it would be nice if moving an anchor point
+	  did not set "changed since last hinted.
+	<LI>
+	  Alexej Kryukov points out that the "changed since last hinted" flag gets
+	  set inappropriately.
+	<LI>
+	  Alexej Kryukov points out that the Anchor control menu item looked as though
+	  it had changed, but actually had not.
+      </UL>
     <LI>
       1-May-2007
       <UL>
