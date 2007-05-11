@@ -8016,7 +8016,8 @@ void FVRefreshChar(FontView *fv,int gid) {
     int i, j, enc;
     MetricsView *mv;
 
-    if ( fv->v==NULL || fv->colcnt==0 )	/* Can happen in scripts */
+    /* Can happen in scripts */ /* Can happen if we do an AutoHint when generating a tiny font for freetype context */
+    if ( fv->v==NULL || fv->colcnt==0 || fv->sf->glyphs[gid]== NULL )
 return;
     if ( fv->cur_subtable==NULL && strchr(fv->sf->glyphs[gid]->name,'.')!=NULL ) {
 	char *temp = copy(fv->sf->glyphs[gid]->name);

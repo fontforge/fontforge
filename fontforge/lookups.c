@@ -4680,7 +4680,8 @@ static int AC_OK(GGadget *g, GEvent *e) {
 		break;
 		if ( ac==NULL ) {
 		    if ( !justtest ) {
-			SFAddAnchorClass(acd->sf,acd->sub,classes[i].u.md_str);
+			ac = SFAddAnchorClass(acd->sf,acd->sub,classes[i].u.md_str);
+			ac->processed = true;
 		    }
 		} else if ( ac->subtable!=acd->sub ) {
 		    gwwv_post_error(_("Name in use"),_("The name, %.80s, has already been used to identify an anchor class in a different lookup subtable (%.80s)"),
