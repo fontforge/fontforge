@@ -4675,6 +4675,8 @@ static int AC_OK(GGadget *g, GEvent *e) {
 	    for ( ac = acd->sf->anchor; ac!=NULL; ac=ac->next )
 		ac->processed = false;
 	    for ( i=0; i<class_cnt; ++i ) {
+		if ( *classes[i].u.md_str=='\0' )
+	    continue;			/* Ignore blank lines. They pressed return once too much or something */
 		for ( ac = acd->sf->anchor; ac!=NULL; ac=ac->next )
 		    if ( strcmp(ac->name,classes[i].u.md_str)==0 )
 		break;
