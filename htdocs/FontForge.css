@@ -1,4 +1,5 @@
  BODY { margin: 1em 1.5em 20em 1.5em; background: #ccc; color: #000; font: 91% serif }
+ BODY#menued { margin: 0 1.5em 20em 1.5em; background: #ccc; color: #000; font: 91% serif }
  BODY#sidebar { margin: 3pt 3pt 3pt 3pt; background: #eee; color: #000}
  BODY#framed { margin: .5em 1em 4em 1em; background: #eee; color: #000}
  A:link { color: #333; text-decoration: underline }
@@ -6,7 +7,7 @@
  A:hover { text-decoration: none; color: #000; background-color: #eee }
  A:active { color: #5e0000 }
  A { text-decoration: none }
- #in { background: #fff; border: 1px solid #f00; padding: 1em }
+ #in { background: #fff; border: 1px solid #f00; padding: 1em; clear: both }
  #in-cartouche { background-image: url("ffcartouche.png"); border: 1px solid #f00; padding: 1em }
  #framed-in { background: #fff; border: 1px solid #f00; padding: 10px }
  TABLE#lit { background: #ddf; color: #000; }
@@ -17,3 +18,103 @@
  H1 { display: inline }
  TABLE#module { background: #ddf }
  TABLE#type { background: #ffd }
+
+/* menubar, stolen and modified from the sourceforge stylesheet */
+.menucontainer li
+{
+	display: inline;
+	list-style: none;
+	font-size: 90%;
+	font-family: arial;
+}
+
+.menucontainer .menubar
+{
+	margin: .5em 0;
+	padding: 0;
+	z-index: 10000 !important;
+	position: relative;
+}
+
+.menucontainer li a
+{
+	background: #333 ;
+	color: #fff !important;
+	border: 1px solid #89a;
+	border-bottom: 1px solid #789;
+}
+
+.menucontainer li.menu a
+{
+	background: #333 url("menu_down.png") no-repeat right bottom;
+	padding-right: 14px !important;
+}
+
+.menucontainer ul { padding: .3em 0; }
+
+.menucontainer .menubar li
+{
+	float: left;
+	margin: 0 0 -1.1px .4em;
+	padding: 0;
+	position: relative;
+}
+.menucontainer .menubar li li { margin: 0; padding: 0 !important}
+.menucontainer .menubar li a
+{
+	display: block;
+	padding: .1em .4em;
+	text-decoration: none;
+}
+
+.menucontainer .menubar li a:hover
+{
+	background: #345;
+	color: #fff !important;
+	border: 1px solid #234;
+	border-bottom: 1px solid #345;
+}
+
+.menucontainer .menubar li.menu a:hover
+{
+	background: #345 url("menu_down.png") no-repeat right bottom;
+}
+
+.menucontainer li:hover ul a
+{
+	background: #345 !important;
+	color: #cde !important;
+	border-top: 1px solid #345 !important;
+	border-bottom: 1px solid #345 !important;
+	padding: .1em 0 .1em 20px !important;
+	font-weight: normal !important;
+	
+}
+
+.menucontainer .menubar ul
+{
+	background: #345;
+	border: 1px solid #234;
+	border-top: none;
+	list-style: none;
+	margin: 0;
+	position: absolute;
+	top: -999em;
+	left: 0px;
+	padding-top: .5em;
+	z-index: 10002 !important;
+}
+
+.menucontainer .menubar li:hover ul
+{
+	top: 1.45em;
+	width: 14em;
+}
+
+.menucontainer .menubar ul li { float: none; }
+
+.menucontainer .menubar ul a:hover
+{
+	background: #456;
+	color: #fff;
+}
