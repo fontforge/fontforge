@@ -5989,13 +5989,17 @@ static int GFI_LookupAddLookup(GGadget *g, GEvent *e) {
 return( true );
 	}
 	for ( i=lk->cnt-1; i>=0; --i ) {
-	    if ( !lk->all[i].deleted && lk->all[i].selected )
+	    if ( !lk->all[i].deleted && lk->all[i].selected ) {
+		lk->all[i].selected = false;
 	break;
+	    }
 	    if ( !lk->all[i].deleted && lk->all[i].open ) {
 		for ( j=0; j<lk->all[i].subtable_cnt; ++j )
 		    if ( !lk->all[i].subtables[j].deleted &&
-			    lk->all[i].subtables[j].selected )
+			    lk->all[i].subtables[j].selected ) {
+			lk->all[i].subtables[j].selected = false;
 		break;
+		    }
 		if ( j<lk->all[i].subtable_cnt )
 	break;
 	    }
@@ -6007,6 +6011,7 @@ return( true );
 	memset(&lk->all[k],0,sizeof(struct lkinfo));
 	lk->all[k].lookup = otl;
 	lk->all[k].new = true;
+	lk->all[k].selected = true;
 	++lk->cnt;
 	if ( isgpos ) {
 	    otl->next = gfi->sf->gpos_lookups;
