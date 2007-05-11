@@ -6368,7 +6368,7 @@ static int GFI_LookupImportLookup(GGadget *g, GEvent *e) {
 	gcd[i].gd.flags = gg_enabled|gg_visible|gg_list_multiplesel|gg_utf8_popup;
 	gcd[i].gd.u.list = ti;
 	gcd[i].creator = GListCreate;
-	varray[2] = &gcd[i++]; varray[1] = NULL;
+	varray[2] = &gcd[i++]; varray[3] = NULL;
 
 	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
 	label[i].text = (unichar_t *) _("_Import");
@@ -6396,7 +6396,7 @@ static int GFI_LookupImportLookup(GGadget *g, GEvent *e) {
 	gcd[i].gd.pos.x = gcd[i].gd.pos.y = 2;
 	gcd[i].gd.flags = gg_enabled|gg_visible;
 	gcd[i].gd.u.boxelements = varray;
-	gcd[i].creator = GHVBoxCreate;
+	gcd[i].creator = GHVGroupCreate;
 
 	memset(&wattrs,0,sizeof(wattrs));
 	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
