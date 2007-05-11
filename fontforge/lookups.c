@@ -111,10 +111,10 @@ return( false );
 struct scriptlanglist *DefaultLangTagInScriptList(struct scriptlanglist *sl, int DFLT_ok) {
 
     while ( sl!=NULL ) {
-	if ( !DFLT_ok && sl->script==DEFAULT_SCRIPT )
-    continue;
-	if ( DefaultLangTagInOneScriptList(sl))
+	if ( DFLT_ok || sl->script!=DEFAULT_SCRIPT ) {
+	    if ( DefaultLangTagInOneScriptList(sl))
 return( sl );
+	}
 	sl = sl->next;
     }
 return( NULL );
