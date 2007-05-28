@@ -97,12 +97,14 @@ install: $(sharedir) all install_libs install_po
 uninstall:
 	-rm $(bindir)/fontforge
 	-rm $(bindir)/sfddiff
+	-rm $(bindir)/fontimage
 	-rm $(sharedir)/pfaedit-*.ui
 	-rm $(localedir)/*/LC_MESSAGES/FontForge.mo
+	-rm $(mandir)/man1/fontimage.1
 	-rm $(mandir)/man1/fontforge.1
 	-rm $(mandir)/man1/sfddiff.1
-	-rm $(libdir)/libgdraw.so*
-	-rm $(libdir)/libgunicode.so*
+	-rm $(libdir)/libgdraw.*
+	-rm $(libdir)/libgunicode.*
 	-rm $(sharedir)/*.cidmap
 	-rm -rf $(docdir)/*
 
