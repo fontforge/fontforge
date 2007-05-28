@@ -1240,7 +1240,7 @@ static int32 _GDraw_DrawUnencoded(GWindow gw, FontInstance *fi,
 	if ( pt!=text ) {
 	    unichar_t *strt;
 	    unichar_t altbuf[40], *apt, *aend = altbuf+sizeof(altbuf)/sizeof(unichar_t)-18;
-	    const unsigned short *const *ua_plane, *str;
+	    const unichar_t *const *ua_plane, *str;
 	    static GChar2b replacement_chr = { 0xff, 0xfd };
 	    int subdrawit = drawit;
 	    unichar_t accent;
@@ -1952,6 +1952,30 @@ return( 0 );
     if ( mods==NULL ) mods = &dummyfontmods;
 
     while ( text<end ) {
+#ifndef UNICHAR_T
+	if ( *text&0x1f0000 ) {
+	    int plane = (*text>>16);
+	    unichar_t *start = text;
+	    while ( (*text>>16)==plane && text<=end )
+		text++;
+	    /* the "encoding" we want to use is "unicodeplane-plane" which is */
+	    /* em_uplane+plane */
+	    enc = em_uplane0 + plane;
+	    fd = fi->fonts[enc];
+
+	    if ( fd!=NULL && fd->info==NULL )
+		_loadFontMetrics(disp,fd,fi);
+	    if ( fd!=NULL )
+		dist += _GDraw_Transform(gw,fd,NULL,enc,x+dist,y,start,text,mods,col,drawit,arg);
+	    if ( drawit==tf_rect ) {
+		arg->size.rbearing += dist;
+		arg->size.width = dist;
+	    }
+	    if ( drawit>=tf_stopat && arg->width>=arg->maxwidth )
+return( dist );
+    continue;
+	}
+#endif
 	if ( mods->has_charset ) {
 	    enc = mods->charset;
 	    next = end;
@@ -2101,21 +2125,24 @@ static int32 _GDraw_DoText8(GWindow gw, int32 x, int32 y,
 	const char *text, int32 cnt, FontMods *mods, Color col,
 	enum text_funcs drawit, struct tf_arg *arg) {
     const char *end = text+(cnt<0?strlen(text):cnt);
-    const char *start, *last;
     int32 dist = 0;
+#ifdef UNICHAR_16
+    const char *start, *last;
     struct font_data *fd;
-    struct font_instance *fi = gw->ggc->fi;
     GDisplay *disp = gw->display;
     int enc;
+    int i;
+#endif
+    struct font_instance *fi = gw->ggc->fi;
     unichar_t ubuffer[200], *upt;
     uint32 val;
-    int i;
 
     if ( fi==NULL )
 return( 0 );
 
     if ( mods==NULL ) mods = &dummyfontmods;
 
+#ifdef UNICHAR_16
     forever {
 	if ( text>=end )
     break;
@@ -2166,6 +2193,21 @@ return( 0 );
 return( dist );
 	}
     }
+#else
+    forever {
+	if ( text>=end )
+    break;
+	upt = ubuffer;
+	while ( text<=end &&
+		upt<ubuffer+sizeof(ubuffer)/sizeof(ubuffer[0])) {
+	    val = utf8_ildb(&text);
+	    if ( val==-1 )
+	break;
+	    *upt++ = val;
+	}
+	dist += _GDraw_DoText(gw,x+dist,y,ubuffer,upt-ubuffer,mods,col,drawit,arg);
+    }
+#endif
 return( dist );
 }
 

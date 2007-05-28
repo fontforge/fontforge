@@ -50,7 +50,7 @@ struct stdfuncs _GIO_stdfuncs = {
 static struct protocols {
     int index;
     unichar_t *proto;
-    void *handle;
+    DL_CONST void *handle;
     void *(*dispatcher)(GIOControl *gc);
     void (*cancel)(GIOControl *gc);
     void (*term)(void *);

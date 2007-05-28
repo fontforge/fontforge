@@ -24,6 +24,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #include "pfaeditui.h"
 #include <ustring.h>
 #include <utype.h>
@@ -119,16 +120,22 @@ static Encoding symbol = { "Symbol", 256, unicode_from_MacSymbol, NULL, &adobest
 
 Encoding *enclist = &symbol;
 
-const char *FindUCS2Name(void) {
+const char *FindUnicharName(void) {
     /* Iconv and libiconv use different names for UCS2. Just great. Perhaps */
     /*  different versions of each use still different names? */
     /* Even worse, both accept UCS-2, but under iconv it means native byte */
     /*  ordering and under libiconv it means big-endian */
     iconv_t test;
     static char *goodname = NULL;
+#ifdef UNICHAR_16
     static char *names[] = { "UCS-2", "UCS-2-INTERNAL", "UCS2", "ISO-10646/UCS2", "UNICODE", NULL };
     static char *namesle[] = { "UCS-2LE", "UNICODELITTLE", NULL };
     static char *namesbe[] = { "UCS-2BE", "UNICODEBIG", NULL };
+#else
+    static char *names[] = { "UCS-4", "UCS-4-INTERNAL", "UCS4", "ISO-10646-UCS-4", "UTF-32", NULL };
+    static char *namesle[] = { "UCS-4LE", "UTF-32LE", NULL };
+    static char *namesbe[] = { "UCS-4BE", "UTF-32BE", NULL };
+#endif
     char **testnames;
     int i;
     union {
@@ -166,7 +173,11 @@ return( goodname );
     }
 
     if ( goodname==NULL ) {
-	IError( "I can't figure out your version of iconv(). I need a name for the UCS2 encoding and I can't find one. Reconfigure --without-iconv. Bye.");
+#ifdef UNICHAR_16
+	IError( "I can't figure out your version of iconv(). I need a name for the UCS-2 encoding and I can't find one. Reconfigure --without-iconv. Bye.");
+#else
+	IError( "I can't figure out your version of iconv(). I need a name for the UCS-4 encoding and I can't find one. Reconfigure --without-iconv. Bye.");
+#endif
 	exit( 1 );
     }
 
@@ -182,7 +193,7 @@ return( goodname );
 }
 
 static int TryEscape( Encoding *enc,char *escape_sequence ) {
-    char from[20], ucs2[20];
+    char from[20], ucs[20];
     size_t fromlen, tolen;
     ICONV_CONST char *fpt;
     char *upt;
@@ -198,10 +209,10 @@ static int TryEscape( Encoding *enc,char *escape_sequence ) {
 	    from[esc_len] = i; from[esc_len+1] = j; from[esc_len+2] = 0;
 	    fromlen = esc_len+2;
 	    fpt = from;
-	    upt = ucs2;
-	    tolen = sizeof(ucs2);
+	    upt = ucs;
+	    tolen = sizeof(ucs);
 	    if ( iconv( enc->tounicode , &fpt, &fromlen, &upt, &tolen )!= (size_t) (-1) &&
-		    upt-ucs2==2 /* Exactly one character */ ) {
+		    upt-ucs==sizeof(unichar_t) /* Exactly one character */ ) {
 		if ( low==-1 ) {
 		    enc->low_page = low = i;
 		    enc->has_2byte = true;
@@ -227,7 +238,7 @@ Encoding *_FindOrMakeEncoding(const char *name,int make_it) {
     Encoding temp;
     uint8 good[256];
     int i, j, any, all;
-    char from[8], ucs2[20];
+    char from[8], ucs[20];
     size_t fromlen, tolen;
     ICONV_CONST char *fpt;
     char *upt;
@@ -306,10 +317,10 @@ return( &unicodefull );
 
     memset(&temp,0,sizeof(temp));
     temp.builtin = true;
-    temp.tounicode = iconv_open(FindUCS2Name(),iconv_name);
+    temp.tounicode = iconv_open(FindUnicharName(),iconv_name);
     if ( temp.tounicode==(iconv_t) -1 || temp.tounicode==NULL )
 return( NULL );			/* Iconv doesn't recognize this name */
-    temp.fromunicode = iconv_open(iconv_name,FindUCS2Name());
+    temp.fromunicode = iconv_open(iconv_name,FindUnicharName());
     if ( temp.fromunicode==(iconv_t) -1 || temp.fromunicode==NULL ) {
 	/* This should never happen, but if it does... */
 	iconv_close(temp.tounicode);
@@ -322,8 +333,8 @@ return( NULL );
 	from[0] = i; from[1] = 0;
 	fromlen = 1;
 	fpt = from;
-	upt = ucs2;
-	tolen = sizeof(ucs2);
+	upt = ucs;
+	tolen = sizeof(ucs);
 	if ( iconv( temp.tounicode , &fpt, &fromlen, &upt, &tolen )!= (size_t) (-1)) {
 	    good[i] = true;
 	    any = true;
@@ -342,10 +353,10 @@ return( NULL );
 		    from[0] = i; from[1] = j; from[2] = 0;
 		    fromlen = 2;
 		    fpt = from;
-		    upt = ucs2;
-		    tolen = sizeof(ucs2);
+		    upt = ucs;
+		    tolen = sizeof(ucs);
 		    if ( iconv( temp.tounicode , &fpt, &fromlen, &upt, &tolen )!= (size_t) (-1) &&
-			    upt-ucs2==2 /* Exactly one character */ ) {
+			    upt-ucs==sizeof(unichar_t) /* Exactly one character */ ) {
 			if ( temp.low_page==-1 )
 			    temp.low_page = i;
 			temp.high_page = i;
@@ -3004,13 +3015,31 @@ Encoding *ParseEncodingNameFromList(GGadget *listfield) {
 return( enc );
 }
 
-/*
-    Reencode <encoding list>
-	Load
-	Make from font
-	Remove
-    Force Encoding <encoding list>
-    Add glyph slots
-    Interpretation remains in fontinfo
-    CID Supplement (or in CID menu?)
-*/
+void SFExpandGlyphCount(SplineFont *sf, int newcnt) {
+    int old = sf->glyphcnt;
+    FontView *fv;
+
+    if ( old>=newcnt )
+return;
+    if ( sf->glyphmax<newcnt ) {
+	sf->glyphs = grealloc(sf->glyphs,newcnt*sizeof(SplineChar *));
+	sf->glyphmax = newcnt;
+    }
+    memset(sf->glyphs+sf->glyphcnt,0,(newcnt-sf->glyphcnt)*sizeof(SplineChar *));
+    sf->glyphcnt = newcnt;
+
+    for ( fv=sf->fv; fv!=NULL; fv=fv->nextsame ) {
+	if ( fv->sf==sf ) {	/* Beware of cid keyed fonts which might look at a different subfont */
+	    if ( fv->normal!=NULL )
+    continue;			/* If compacted then we haven't added any glyphs so haven't changed anything */
+	    /* Don't display any of these guys, so not mapped. */
+	    /*  No change to selection, or to map->map, but change to backmap */
+	    fv->map->backmap = grealloc(fv->map->backmap,newcnt*sizeof(int32));
+	    memset(fv->map->backmap+old,-1,(newcnt-old)*sizeof(int32));
+	}
+    }
+}
+	    
+
+    
+    

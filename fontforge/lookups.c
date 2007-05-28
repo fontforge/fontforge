@@ -1220,7 +1220,7 @@ return( fl );
 return( fl );
 }
 
-static struct scriptlanglist *SLCopy(struct scriptlanglist *sl) {
+struct scriptlanglist *SLCopy(struct scriptlanglist *sl) {
     struct scriptlanglist *newsl;
 
     newsl = chunkalloc(sizeof(struct scriptlanglist));

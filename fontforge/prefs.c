@@ -725,7 +725,7 @@ return( encs[i].enc );
 #if HAVE_ICONV_H
 	/* I only try to use iconv if the encoding doesn't match one I support*/
 	/*  loading iconv unicode data takes a while */
-	test = iconv_open(enc,FindUCS2Name());
+	test = iconv_open(enc,FindUnicharName());
 	if ( test==(iconv_t) (-1) || test==NULL ) {
 	    if ( last_complaint==NULL || strcmp(last_complaint,enc)!=0 ) {
 		fprintf( stderr, "Neither FontForge nor iconv() supports your encoding (%s) we will pretend\n you asked for latin1 instead.\n", enc );

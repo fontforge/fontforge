@@ -205,7 +205,7 @@ return( NULL );
 		*pt++ = enc->unicode[getc(ttf)];
 	    *pt = 0;
 	} else if ( enc->tounicode!=NULL ) {
-	    size_t inlen = len+1, outlen = 2*len+2;
+	    size_t inlen = len+1, outlen = sizeof(unichar_t)*(len+1);
 	    char *cstr = galloc(inlen);
 	    ICONV_CONST char *in = cstr;
 	    char *out;
@@ -213,6 +213,9 @@ return( NULL );
 	    out = (char *) str;
 	    iconv(enc->tounicode,&in,&inlen,&out,&outlen);
 	    out[0] = '\0'; out[1] = '\0';
+#ifndef UNICHAR_16
+	    out[2] = '\0'; out[3] = '\0';
+#endif
 	    free(cstr);
 	} else {
 	    str = uc_copy("");

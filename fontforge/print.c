@@ -2912,7 +2912,7 @@ static char *_simple[] = {
 static char *_simplechoices[] = {
 /* English */
     " A quick brown fox jumps over the lazy dog.",
-    "Few zebras validate my paradox, quoth Jack Xeno",
+    " Few zebras validate my paradox, quoth Jack Xeno",
     " A quick brown vixen jumps for the lazy dog.",
     " The quick blonde doxy jumps over an unfazed wag.",
 /* Swedish */
@@ -3260,54 +3260,55 @@ enum scripts { sc_latin, sc_greek, sc_cyrillic, sc_georgian, sc_hebrew,
 };
 static struct langsamples {
     char **sample;
-    char *lang;		/* ISO 639 two character abbreviation */
+    char *iso_lang;		/* ISO 639 two character abbreviation */
     enum scripts script;
+    uint32 otf_script, lang;
 } sample[] = {
-    { _simple, "various", sc_latin },
-    { _simplecyrill, "various", sc_cyrillic },
-    { _simplehebrew, "he", sc_hebrew },
-    { _simplekata, "ja", sc_katakana },
-    { _simplehira, "ja", sc_hiragana },
-    { _faust, "de", sc_latin },
-    { _pheadra, "fr", sc_latin },
-    { _antigone, "el", sc_greek },
-    { _annakarenena, "ru", sc_cyrillic },
-    { _debello, "la", sc_latin },
-    { _hebrew, "he", sc_hebrew },
-    { _arabic, "ar", sc_arabic },
-    { _hangulsijo, "ko", sc_hangul },
-    { _YihKing, "zh", sc_chinesetrad },
-    { _LiiBair, "zh", sc_chinesetrad },
-    { _Genji, "ja", sc_kanji },
-    { _IAmACat, "ja", sc_kanji },
-    { _donquixote, "es", sc_latin },
-    { _inferno, "it", sc_latin },
-    { _beorwulf, "enm", sc_latin },		/* 639-2 name for middle english */
-    { _muchado, "eng", sc_latin },		/* 639-2 name for modern english */
-    { _PippiGarOmBord, "sv", sc_latin },
-    { _mabinogion, "cy", sc_latin },
-    { _goodsoldier, "cs", sc_latin },
-    { _macedonian, "mk", sc_cyrillic },
-    { _bulgarian, "bg", sc_cyrillic },
-    { _belorussianjohn, "be", sc_cyrillic },
-    { _churchjohn, "cu", sc_cyrillic },
-    { _lithuanian, "lt", sc_latin },
-    { _polish, "pl", sc_latin },
-    { _slovene, "sl", sc_latin },
-    { _irishjohn, "ga", sc_latin },
-    { _basquejohn, "eu", sc_latin },
-    { _portjohn, "pt", sc_latin },
-    { _icelandicjohn, "is", sc_latin },
-    { _danishjohn, "da", sc_latin },
-    { _swedishjohn, "sv", sc_latin },
-    { _norwegianjohn, "no", sc_latin },
-    { _nnorwegianjohn, "no", sc_latin },
-    { _dutchjohn, "nl", sc_latin },
-    { _finnishjohn, "fi", sc_latin },
-    { _cherokeejohn, "chr", sc_latin },
-    { _thaijohn, "th", sc_latin },
-    { _georgianjohn, "ka", sc_georgian },
-    { _swahilijohn, "sw", sc_latin },
+    { _simple, "various", sc_latin, CHR('l','a','t','n'), CHR('E','N','G',' ') },
+    { _simplecyrill, "various", sc_cyrillic, CHR('c','y','r','l'), CHR('R','U','S',' ')},
+    { _simplehebrew, "he", sc_hebrew, CHR('h','e','b','r'), CHR('I','W','R',' ') },
+    { _simplekata, "ja", sc_katakana, CHR('k','a','n','a'), CHR('J','A','N',' ')},
+    { _simplehira, "ja", sc_hiragana, CHR('k','a','n','a'), CHR('J','A','N',' ')},
+    { _faust, "de", sc_latin, CHR('l','a','t','n'), CHR('D','E','U',' ')},
+    { _pheadra, "fr", sc_latin, CHR('l','a','t','n'), CHR('F','R','A',' ')},
+    { _antigone, "el", sc_greek, CHR('g','r','e','k'), CHR('P','G','R',' ')},	/* Is this polytonic? */
+    { _annakarenena, "ru", sc_cyrillic, CHR('c','y','r','l'), CHR('R','U','S',' ')},
+    { _debello, "la", sc_latin, CHR('l','a','t','n'), CHR('L','A','T',' ')},
+    { _hebrew, "he", sc_hebrew, CHR('h','e','b','r'), CHR('I','W','R',' ') },
+    { _arabic, "ar", sc_arabic, CHR('a','r','a','b'), CHR('A','R','A',' ')},
+    { _hangulsijo, "ko", sc_hangul, CHR('h','a','n','g'), CHR('K','O','R',' ')},
+    { _YihKing, "zh", sc_chinesetrad, CHR('h','a','n','i'), CHR('Z','H','T',' ')},
+    { _LiiBair, "zh", sc_chinesetrad, CHR('h','a','n','i'), CHR('Z','H','T',' ')},
+    { _Genji, "ja", sc_kanji, CHR('h','a','n','i'), CHR('J','A','N',' ')},
+    { _IAmACat, "ja", sc_kanji, CHR('h','a','n','i'), CHR('J','A','N',' ')},
+    { _donquixote, "es", sc_latin, CHR('l','a','t','n'), CHR('E','S','P',' ')},
+    { _inferno, "it", sc_latin, CHR('l','a','t','n'), CHR('I','T','A',' ')},
+    { _beorwulf, "enm", sc_latin, CHR('l','a','t','n'), CHR('E','N','G',' ')},		/* 639-2 name for middle english */
+    { _muchado, "eng", sc_latin, CHR('l','a','t','n'), CHR('E','N','G',' ')},		/* 639-2 name for modern english */
+    { _PippiGarOmBord, "sv", sc_latin, CHR('l','a','t','n'), CHR('S','V','E',' ')},
+    { _mabinogion, "cy", sc_latin, CHR('l','a','t','n'), CHR('W','E','L',' ')},
+    { _goodsoldier, "cs", sc_latin, CHR('l','a','t','n'), CHR('C','S','Y',' ')},
+    { _macedonian, "mk", sc_cyrillic, CHR('c','y','r','l'), CHR('M','K','D',' ')},
+    { _bulgarian, "bg", sc_cyrillic, CHR('c','y','r','l'), CHR('B','G','R',' ')},
+    { _belorussianjohn, "be", sc_cyrillic, CHR('c','y','r','l'), CHR('B','E','L',' ')},
+    { _churchjohn, "cu", sc_cyrillic, CHR('c','y','r','l'), CHR('C','S','L',' ')},
+    { _lithuanian, "lt", sc_latin, CHR('l','a','t','n'), CHR('L','T','H',' ')},
+    { _polish, "pl", sc_latin, CHR('l','a','t','n'), CHR('P','L','K',' ')},
+    { _slovene, "sl", sc_latin, CHR('l','a','t','n'), CHR('S','L','V',' ')},
+    { _irishjohn, "ga", sc_latin, CHR('l','a','t','n'), CHR('I','R','I',' ')},
+    { _basquejohn, "eu", sc_latin, CHR('l','a','t','n'), CHR('E','U','Q',' ')},
+    { _portjohn, "pt", sc_latin, CHR('l','a','t','n'), CHR('P','T','G',' ')},
+    { _icelandicjohn, "is", sc_latin, CHR('l','a','t','n'), CHR('I','S','L',' ')},
+    { _danishjohn, "da", sc_latin, CHR('l','a','t','n'), CHR('D','A','N',' ')},
+    { _swedishjohn, "sv", sc_latin, CHR('l','a','t','n'), CHR('S','V','E',' ')},
+    { _norwegianjohn, "no", sc_latin, CHR('l','a','t','n'), CHR('N','O','R',' ')},
+    { _nnorwegianjohn, "no", sc_latin, CHR('l','a','t','n'), CHR('N','O','R',' ')},
+    { _dutchjohn, "nl", sc_latin, CHR('l','a','t','n'), CHR('N','L','D',' ')},
+    { _finnishjohn, "fi", sc_latin, CHR('l','a','t','n'), CHR('F','I','N',' ')},
+    { _cherokeejohn, "chr", sc_latin, CHR('l','a','t','n'), CHR('C','H','R',' ')},
+    { _thaijohn, "th", sc_latin, CHR('l','a','t','n'), CHR('T','H','A',' ')},
+    { _georgianjohn, "ka", sc_georgian, CHR('g','e','o','r'), CHR('K','A','T',' ') },
+    { _swahilijohn, "sw", sc_latin, CHR('l','a','t','n'), CHR('S','W','K',' ')},
     { NULL }
 };
 #else
@@ -3342,7 +3343,7 @@ return;
 	    *pt = '\0';
 	}
 	for ( i=0; sample[i].sample!=NULL; ++i )
-	    if ( strcmp(sample[i].lang,langbuf)==0 ) {
+	    if ( strcmp(sample[i].iso_lang,langbuf)==0 ) {
 		struct langsamples temp;
 		temp = sample[i];
 		sample[i] = sample[2];
