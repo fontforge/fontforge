@@ -4650,6 +4650,9 @@ static void CVMenuRevertGlyph(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     if ( cv->sc->parent->filename==NULL || cv->sc->namechanged || cv->sc->parent->mm!=NULL )
 return;
+    if ( cv->sc->parent->sfd_version<2 )
+	gwwv_post_error(_("Old sfd file"),_("This font comes from an old format sfd file. Not all aspects of it can be reverted successfully."));
+
     sc = SFDReadOneChar(cv->sc->parent,cv->sc->name);
     if ( sc==NULL ) {
 	gwwv_post_error(_("Can't Find Glyph"),_("The glyph, %.80s, can't be found in the sfd file"),cv->sc->name);

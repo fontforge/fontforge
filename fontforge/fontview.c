@@ -1196,6 +1196,9 @@ void FontViewMenu_RevertGlyph(GtkMenuItem *menuitem, gpointer user_data) {
     EncMap *map = fv->map;
     CharView *cvs;
 
+    if ( fv->sf->sfd_version<2 )
+	gwwv_post_error(_("Old sfd file"),_("This font comes from an old format sfd file. Not all aspects of it can be reverted successfully."));
+
     for ( i=0; i<map->enccount; ++i ) if ( fv->selected[i] && (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL ) {
 	tsc = sf->glyphs[gid];
 	if ( tsc->namechanged ) {
