@@ -4158,27 +4158,27 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 			break;
 		}
 		if ( cur!=NULL && cur->first!=NULL && (cur->first!=cur->last || cur->first->next==NULL) ) {
-		    current.x += dx; current.y += dy;
+		    current.x = rint((current.x+dx)*1024)/1024; current.y = rint((current.y+dy)*1024)/1024;
 		    cur->last->nextcp = current;
 		    cur->last->nonextcp = false;
-		    current.x += dx2; current.y += dy2;
+		    current.x = rint((current.x+dx2)*1024)/1024; current.y = rint((current.y+dy2)*1024)/1024;
 		    pt = chunkalloc(sizeof(SplinePoint));
 		    pt->hintmask = pending_hm; pending_hm = NULL;
 		    pt->prevcp = current;
-		    current.x += dx3; current.y += dy3;
+		    current.x = rint((current.x+dx3)*1024)/1024; current.y = rint((current.y+dy3)*1024)/1024;
 		    pt->me = current;
 		    pt->nonextcp = true;
 		    CheckMake(cur->last,pt);
 		    SplineMake3(cur->last,pt);
 		    cur->last = pt;
 
-		    current.x += dx4; current.y += dy4;
+		    current.x = rint((current.x+dx4)*1024)/1024; current.y = rint((current.y+dy4)*1024)/1024;
 		    cur->last->nextcp = current;
 		    cur->last->nonextcp = false;
-		    current.x += dx5; current.y += dy5;
+		    current.x = rint((current.x+dx5)*1024)/1024; current.y = rint((current.y+dy5)*1024)/1024;
 		    pt = chunkalloc(sizeof(SplinePoint));
 		    pt->prevcp = current;
-		    current.x += dx6; current.y += dy6;
+		    current.x = rint((current.x+dx6)*1024)/1024; current.y = rint((current.y+dy6)*1024)/1024;
 		    pt->me = current;
 		    pt->nonextcp = true;
 		    CheckMake(cur->last,pt);
@@ -4391,7 +4391,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		    dy = stack[base++];
 		}
 		++polarity;
-		current.x += dx; current.y += dy;
+		current.x = rint((current.x+dx)*1024)/1024; current.y = rint((current.y+dy)*1024)/1024;
 		pt = chunkalloc(sizeof(SplinePoint));
 		pt->hintmask = pending_hm; pending_hm = NULL;
 		pt->me = current;
@@ -4427,7 +4427,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	  case 25: /* rlinecurve */
 	    base = 0;
 	    while ( sp>base+6 ) {
-		current.x += stack[base++]; current.y += stack[base++];
+		current.x = rint((current.x+stack[base++])*1024)/1024; current.y = rint((current.y+stack[base++])*1024)/1024;
 		if ( cur!=NULL ) {
 		    pt = chunkalloc(sizeof(SplinePoint));
 		    pt->hintmask = pending_hm; pending_hm = NULL;
@@ -4508,14 +4508,14 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		}
 		++polarity;
 		if ( cur!=NULL && cur->first!=NULL && (cur->first!=cur->last || cur->first->next==NULL) ) {
-		    current.x += dx; current.y += dy;
+		    current.x = rint((current.x+dx)*1024)/1024; current.y = rint((current.y+dy)*1024)/1024;
 		    cur->last->nextcp = current;
 		    cur->last->nonextcp = false;
-		    current.x += dx2; current.y += dy2;
+		    current.x = rint((current.x+dx2)*1024)/1024; current.y = rint((current.y+dy2)*1024)/1024;
 		    pt = chunkalloc(sizeof(SplinePoint));
 		    pt->hintmask = pending_hm; pending_hm = NULL;
 		    pt->prevcp = current;
-		    current.x += dx3; current.y += dy3;
+		    current.x = rint((current.x+dx3)*1024)/1024; current.y = rint((current.y+dy3)*1024)/1024;
 		    pt->me = current;
 		    pt->nonextcp = true;
 		    CheckMake(cur->last,pt);
@@ -4525,7 +4525,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		    LogError( _("No previous point on path in curveto in %s\n"), name );
 	    }
 	    if ( v==24 ) {
-		current.x += stack[base++]; current.y += stack[base++];
+		current.x = rint((current.x+stack[base++])*1024)/1024; current.y = rint((current.y+stack[base++])*1024)/1024;
 		if ( cur!=NULL ) {	/* In legal code, cur can't be null here, but I got something illegal... */
 		    pt = chunkalloc(sizeof(SplinePoint));
 		    pt->hintmask = pending_hm; pending_hm = NULL;
