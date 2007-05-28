@@ -1252,7 +1252,7 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_LookupVSB		11022		/* (GSUB, add 1 for GPOS) */
 #define CID_LookupHSB		11024		/* (GSUB, add 1 for GPOS) */
 #define CID_SaveLookup		11026
-#define CID_SaveOTFF		11027
+#define CID_SaveFeat		11027
 #define CID_AddAllAlternates	11028
 #define CID_AddDFLT		11029
 
@@ -6876,7 +6876,7 @@ static void lookupmenu_dispatch(GWindow v, GMenuItem *mi, GEvent *e) {
     int i;
     char *buts[4];
 
-    if ( mi->mid==CID_SaveOTFF || mi->mid==CID_SaveLookup ) {
+    if ( mi->mid==CID_SaveFeat || mi->mid==CID_SaveLookup ) {
 	char *filename, *defname;
 	FILE *out;
 	int isgpos = GTabSetGetSel(GWidgetGetControl(gfi->gw,CID_Lookups));
@@ -6902,9 +6902,9 @@ return;
 return;
 	}
 	if ( otl!=NULL )
-	    OTFFDumpOneLookup( out,gfi->sf,otl );
+	    FeatDumpOneLookup( out,gfi->sf,otl );
 	else
-	    OTFFDumpFontLookups( out,gfi->sf );
+	    FeatDumpFontLookups( out,gfi->sf );
 	if ( ferror(out)) {
 	    gwwv_post_error(_("Output error"),_("An error occurred writing %s"), filename );
 	    free(filename);
@@ -7036,7 +7036,7 @@ static GMenuItem lookuppopupmenu[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Revert All"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, lookupmenu_dispatch, CID_RevertLookups },
     { { (unichar_t *) N_("_Import"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, lookupmenu_dispatch, CID_RevertLookups },
-    { { (unichar_t *) N_("S_ave Feature File"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, lookupmenu_dispatch, CID_SaveOTFF },
+    { { (unichar_t *) N_("S_ave Feature File"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, '\0', ksm_control, NULL, NULL, lookupmenu_dispatch, CID_SaveFeat },
     { NULL }};
 
 static void LookupMenu(struct gfi_data *gfi,struct lkdata *lk,GEvent *event) {
@@ -7090,6 +7090,13 @@ static void LookupMenu(struct gfi_data *gfi,struct lkdata *lk,GEvent *event) {
 	  break;
 	  case CID_SaveLookup:
 	    lookuppopupmenu[i].ti.disabled = sel.lookup_cnt!=1 || sel.sub_cnt!=0;
+	    for ( i=0; i<lk->cnt; ++i ) if ( lk->all[i].selected ) {
+		int type = lk->all[i].lookup->lookup_type;
+		if ( type==kern_statemachine || type==morx_indic ||
+			type==morx_context || type==morx_insert )
+		    lookuppopupmenu[i].ti.disabled = true;
+	    break;
+	    }
 	  break;
 	  case CID_AddDFLT:
 	    lookuppopupmenu[i].ti.disabled = lk->cnt==0;
@@ -7097,7 +7104,7 @@ static void LookupMenu(struct gfi_data *gfi,struct lkdata *lk,GEvent *event) {
 	  case CID_AddAllAlternates:
 	    lookuppopupmenu[i].ti.disabled = lk->cnt==0 || lk==&gfi->tables[1]/*Only applies to GSUB*/;
 	  break;
-	  case CID_SaveOTFF:
+	  case CID_SaveFeat:
 	    lookuppopupmenu[i].ti.disabled = lk->cnt<=1;
 	  break;
 	}

@@ -8130,7 +8130,7 @@ return;
 
 int32 UniFromEnc(int enc, Encoding *encname) {
     char from[20];
-    unsigned short to[20];
+    unichar_t to[20];
     ICONV_CONST char *fpt;
     char *tpt;
     size_t fromlen, tolen;
@@ -8171,10 +8171,12 @@ return( -1 );
 	    if ( iconv(encname->tounicode,NULL,&fromlen,&tpt,&tolen)==(size_t) -1 )
 return( -1 );
 	}
-	if ( tpt-(char *) to == 2 )
+	if ( tpt-(char *) to == sizeof(unichar_t) )
 return( to[0] );
+#ifdef UNICHAR_16
 	else if ( tpt-(char *) to == 4 && to[0]>=0xd800 && to[0]<0xdc00 && to[1]>=0xdc00 )
 return( ((to[0]-0xd800)<<10) + (to[1]-0xdc00) + 0x10000 );
+#endif
     } else if ( encname->tounicode_func!=NULL ) {
 return( (encname->tounicode_func)(enc) );
     }
@@ -8182,7 +8184,7 @@ return( -1 );
 }
 
 int32 EncFromUni(int32 uni, Encoding *enc) {
-    short from[20];
+    unichar_t from[20];
     unsigned char to[20];
     ICONV_CONST char *fpt;
     char *tpt;
@@ -8223,7 +8225,7 @@ return( to[0] );
 		    strncmp((char *) to,enc->iso_2022_escape,enc->iso_2022_escape_len)==0 )
 return( (to[enc->iso_2022_escape_len]<<8) | to[enc->iso_2022_escape_len+1] );
 	} else {
-	    if ( tpt-(char *) to == 2 )
+	    if ( tpt-(char *) to == sizeof(unichar_t) )
 return( (to[0]<<8) | to[1] );
 	}
     } else if ( enc->fromunicode_func!=NULL ) {

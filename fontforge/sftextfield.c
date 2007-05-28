@@ -70,8 +70,8 @@ typedef struct sftextarea {
     int16 sel_start, sel_end, sel_base;
     int16 sel_oldstart, sel_oldend, sel_oldbase;
     int16 dd_cursor_pos;
-    unichar_t *text, *oldtext;
-    FontInstance *font;
+    uint32 *text, *oldtext;	/* Input glyphs (in unicode) */
+    FontInstance *font;		/* pointless */
     GTimer *pressed;
     GTimer *cursor;
     GCursor old_cursor;
@@ -85,6 +85,9 @@ typedef struct sftextarea {
     struct lineheights { int32 y; int16 as, fh; } *lineheights;
     struct fontlist {
 	int start, end;		/* starting and ending characters [start,end) */
+	uint32 *feats;		/* Ends with a 0 entry */
+	uint32 script, lang;
+	struct opentype_str *glyphs;
 	FontData *fd;
 	struct fontlist *next;
     } *fontlist, *oldfontlist;

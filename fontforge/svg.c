@@ -2069,7 +2069,7 @@ static void SVGParseGlyphBody(SplineChar *sc, xmlNodePtr glyph,int *flags) {
 static SplineChar *SVGParseGlyphArgs(xmlNodePtr glyph,int defh, int defv) {
     SplineChar *sc = SplineCharCreate();
     xmlChar *name, *form, *glyphname, *unicode, *orientation;
-    int32 *u;
+    uint32 *u;
     char buffer[100];
 
     name = _xmlGetProp(glyph,(xmlChar *) "horiz-adv-x");
@@ -2096,7 +2096,12 @@ static SplineChar *SVGParseGlyphArgs(xmlNodePtr glyph,int defh, int defv) {
     glyphname = _xmlGetProp(glyph,(xmlChar *) "glyph-name");
     orientation = _xmlGetProp(glyph,(xmlChar *) "orientation");
     if ( unicode!=NULL ) {
+
+#ifdef UNICHAR_16
 	u = utf82u32_copy((char *) unicode);
+#else
+	u = utf82u_copy((char *) unicode);
+#endif
 	_xmlFree(unicode);
 	if ( u[1]=='\0' ) {
 	    sc->unicodeenc = u[0];
@@ -2159,14 +2164,18 @@ return( sc );
 
 static void SVGLigatureFixupCheck(SplineChar *sc,xmlNodePtr glyph) {
     xmlChar *unicode;
-    int32 *u;
+    uint32 *u;
     int len, len2;
     SplineChar **chars, *any = NULL;
     char *comp, *pt;
 
     unicode = _xmlGetProp(glyph,(xmlChar *) "unicode");
     if ( unicode!=NULL ) {
+#ifdef UNICHAR_16
 	u = utf82u32_copy((char *) unicode);
+#else
+	u = utf82u_copy((char *) unicode);
+#endif
 	_xmlFree(unicode);
 	if ( u[1]!='\0' ) {
 	    for ( len=0; u[len]!=0; ++len );
@@ -2225,7 +2234,7 @@ static void SVGLigatureFixupCheck(SplineChar *sc,xmlNodePtr glyph) {
 }
 
 static char *SVGGetNames(SplineFont *sf,xmlChar *g,xmlChar *utf8,SplineChar **sc) {
-    int32 *u=NULL;
+    uint32 *u=NULL;
     char *names;
     int len, i, ch;
     SplineChar *temp;
@@ -2234,7 +2243,11 @@ static char *SVGGetNames(SplineFont *sf,xmlChar *g,xmlChar *utf8,SplineChar **sc
     *sc = NULL;
     len = 0;
     if ( utf8!=NULL ) {
+#ifdef UNICHAR_16
 	u = utf82u32_copy((char *) utf8);
+#else
+	u = utf82u_copy((char *) utf8);
+#endif
 	for ( i=0; u[i]!=0; ++i ) {
 	    temp = SFGetChar(sf,u[i],NULL);
 	    if ( temp!=NULL ) {

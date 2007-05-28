@@ -1385,8 +1385,10 @@ extern int LoadKerningDataFromOfm(SplineFont *sf, char *filename, EncMap *map);
 extern int LoadKerningDataFromPfm(SplineFont *sf, char *filename, EncMap *map);
 extern int LoadKerningDataFromMacFOND(SplineFont *sf, char *filename, EncMap *map);
 extern int LoadKerningDataFromMetricsFile(SplineFont *sf, char *filename, EncMap *map);
-extern void OTFFDumpFontLookups(FILE *out,SplineFont *sf);
-extern void OTFFDumpOneLookup(FILE *out,SplineFont *sf, OTLookup *otl);
+extern void FeatDumpFontLookups(FILE *out,SplineFont *sf);
+extern void FeatDumpOneLookup(FILE *out,SplineFont *sf, OTLookup *otl);
+extern void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename);
+extern void SFApplyFeatureFilename(SplineFont *sf,char *filename);
 extern void SubsNew(SplineChar *to,enum possub_type type,int tag,char *components,
 	    SplineChar *default_script);
 extern void PosNew(SplineChar *to,int tag,int dx, int dy, int dh, int dv);
@@ -1578,6 +1580,7 @@ extern EncMap *CompactEncMap(EncMap *map, SplineFont *sf);
 extern EncMap *EncMapNew(int encmax, int backmax, Encoding *enc);
 extern EncMap *EncMap1to1(int enccount);
 extern EncMap *EncMapCopy(EncMap *map);
+extern void SFExpandGlyphCount(SplineFont *sf, int newcnt);
 extern void ScriptLangListFree(struct scriptlanglist *sl);
 extern void FeatureScriptLangListFree(FeatureScriptLangList *fl);
 extern void SplineFontFree(SplineFont *sf);
@@ -1864,7 +1867,7 @@ extern int SCSetMetaData(SplineChar *sc,char *name,int unienc,
 
 extern enum uni_interp interp_from_encoding(Encoding *enc,enum uni_interp interp);
 extern const char *EncName(Encoding *encname);
-extern const char*FindUCS2Name(void);
+extern const char*FindUnicharName(void);
 extern Encoding *_FindOrMakeEncoding(const char *name,int make_it);
 extern Encoding *FindOrMakeEncoding(const char *name);
 extern void SFDDumpMacFeat(FILE *sfd,MacFeat *mf);
@@ -2228,6 +2231,7 @@ extern OTLookup *SFFindLookup(SplineFont *sf,char *name);
 extern void NameOTLookup(OTLookup *otl,SplineFont *sf);
 extern void FListAppendScriptLang(FeatureScriptLangList *fl,uint32 script_tag,uint32 lang_tag);
 extern void FListsAppendScriptLang(FeatureScriptLangList *fl,uint32 script_tag,uint32 lang_tag);
+struct scriptlanglist *SLCopy(struct scriptlanglist *sl);
 extern FeatureScriptLangList *FeatureListCopy(FeatureScriptLangList *fl);
 extern void FLMerge(OTLookup *into, OTLookup *from);
 extern FeatureScriptLangList *FLOrder(FeatureScriptLangList *fl);

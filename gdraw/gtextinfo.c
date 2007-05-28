@@ -833,12 +833,12 @@ void GStringSetFallbackArray(const unichar_t **array,const unichar_t *mn,const i
 }
 
 char *sgettext(const char *msgid) {
-    char *msgval = _(msgid);
+    const char *msgval = _(msgid);
     char *found;
     if (msgval == msgid)
 	if ( (found = strrchr (msgid, '|'))!=NULL )
 	    msgval = found+1;
-return msgval;
+return (char *) msgval;
 }
 
 #if defined( HAVE_LIBINTL_H ) && !defined( NODYNAMIC ) && !defined ( _STATIC_LIBINTL )
