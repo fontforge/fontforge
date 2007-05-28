@@ -1107,12 +1107,14 @@ void NameOTLookup(OTLookup *otl,SplineFont *sf) {
 
     if ( otl->subtables==NULL )
 	/* IError( _("Lookup with no subtables"))*/;
-    else if ( otl->subtables->next==NULL )
-	otl->subtables->subtable_name = copy(otl->lookup_name);
     else {
 	int cnt = 0;
 	for ( subtable = otl->subtables; subtable!=NULL; subtable=subtable->next, ++cnt ) {
-	    if ( subtable->per_glyph_pst_or_kern )
+	    if ( subtable==otl->subtables && subtable->next==NULL )
+/* GT: This string is used to generate a name for an OpenType lookup subtable. */
+/* GT:  %s is the lookup name */
+		format = _("%s subtable");
+	    else if ( subtable->per_glyph_pst_or_kern )
 /* GT: This string is used to generate a name for an OpenType lookup subtable. */
 /* GT:  %s is the lookup name, %d is the index of the subtable in the lookup */
 		format = _("%s per glyph data %d");
