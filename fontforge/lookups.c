@@ -1106,7 +1106,7 @@ void NameOTLookup(OTLookup *otl,SplineFont *sf) {
     free(userfriendly);
 
     if ( otl->subtables==NULL )
-	IError( _("Lookup with no subtables"));
+	/* IError( _("Lookup with no subtables"))*/;
     else if ( otl->subtables->next==NULL )
 	otl->subtables->subtable_name = copy(otl->lookup_name);
     else {
@@ -3298,7 +3298,7 @@ struct lookup_dlg {
     SplineFont *sf;
     GWindow gw, scriptgw;
     int isgpos;
-    int done, scriptdone;
+    int done, scriptdone, name_has_been_set;
     int ok;
     char *scriptret;
 };
@@ -3748,9 +3748,80 @@ static char *LK_ScriptsDlg(GGadget *g, int r, int c) {
 return( ld->scriptret );
 }
 
+static FeatureScriptLangList *LK_ParseFL(struct matrix_data *strings, int rows ) {
+    int i,j;
+    char *pt, *start;
+    FeatureScriptLangList *fl, *fhead, *flast;
+    struct scriptlanglist *sl, *slast;
+    unsigned char foo[4];
+    uint32 *langs=NULL;
+    int lmax=0, lcnt=0;
+    int feature, setting;
+
+    fhead = flast = NULL;
+    for ( i=0; i<rows; ++i ) {
+	fl = chunkalloc(sizeof(FeatureScriptLangList));
+	if ( sscanf(strings[2*i+0].u.md_str,"<%d,%d>", &feature, &setting )== 2 ) {
+	    fl->ismac = true;
+	    fl->featuretag = (feature<<16)|setting;
+	} else {
+	    memset(foo,' ',sizeof(foo));
+	    for ( j=0, pt = strings[2*i+0].u.md_str; j<4 && *pt; foo[j++] = *pt++ );
+	    fl->featuretag = (foo[0]<<24) | (foo[1]<<16) | (foo[2]<<8) | foo[3];
+	}
+	if ( flast==NULL )
+	    fhead = fl;
+	else
+	    flast->next = fl;
+	flast = fl;
+	/* Now do the script langs */
+	slast = NULL;
+	for ( start=strings[2*i+1].u.md_str; *start!='\0'; ) {
+	    memset(foo,' ',sizeof(foo));
+	    for ( j=0,pt=start; *pt!='{' && *pt!='\0'; ++pt )
+		foo[j++] = *pt;
+	    sl = chunkalloc(sizeof( struct scriptlanglist ));
+	    sl->script = (foo[0]<<24) | (foo[1]<<16) | (foo[2]<<8) | foo[3];
+	    if ( slast==NULL )
+		fl->scripts = sl;
+	    else
+		slast->next = sl;
+	    slast = sl;
+	    if ( *pt!='{' ) {
+		sl->lang_cnt = 1;
+		sl->langs[0] = DEFAULT_LANG;
+		start = pt;
+	    } else {
+		lcnt=0;
+		for ( start=pt+1; *start!='}' && *start!='\0' ; ) {
+		    memset(foo,' ',sizeof(foo));
+		    for ( j=0,pt=start; *pt!='}' && *pt!=',' && *pt!='\0'; foo[j++] = *pt++ );
+		    if ( lcnt>=lmax )
+			langs = grealloc(langs,(lmax+=20)*sizeof(uint32));
+		    langs[lcnt++] = (foo[0]<<24) | (foo[1]<<16) | (foo[2]<<8) | foo[3];
+		    start =  ( *pt==',' ) ? pt+1 : pt;
+		}
+		if ( *start=='}' ) ++start;
+		for ( j=0; j<lcnt && j<MAX_LANG; ++j )
+		    sl->langs[j] = langs[j];
+		if ( lcnt>MAX_LANG ) {
+		    sl->morelangs = galloc((lcnt-MAX_LANG)*sizeof(uint32));
+		    for ( ; j<lcnt; ++j )
+			sl->morelangs[j-MAX_LANG] = langs[j];
+		}
+		sl->lang_cnt = lcnt;
+	    }
+	    while ( *start==' ' ) ++start;
+	}
+    }
+    free(langs);
+return( fhead );
+}
+
 static void LK_FinishEdit(GGadget *g,int row, int col, int wasnew) {
+    struct lookup_dlg *ld = GDrawGetUserData(GGadgetGetWindow(g));
+
     if ( col==0 ) {
-	struct lookup_dlg *ld = GDrawGetUserData(GGadgetGetWindow(g));
 	int rows;
 	struct matrix_data *strings = GMatrixEditGet(g, &rows);
 
@@ -3758,6 +3829,21 @@ static void LK_FinishEdit(GGadget *g,int row, int col, int wasnew) {
 		(strcmp(strings[row].u.md_str,"liga")==0 ||
 		 strcmp(strings[row].u.md_str,"rlig")==0 ))
 	    GGadgetSetChecked( GWidgetGetControl(ld->gw,CID_LookupAfm ), true );
+    }
+    if ( row==0 && !ld->name_has_been_set && ld->orig->features==NULL ) {
+	int rows;
+	struct matrix_data *strings = GMatrixEditGet(g, &rows);
+	OTLookup *otl = ld->orig;
+	int old_type = otl->lookup_type;
+	FeatureScriptLangList *oldfl = otl->features;
+
+	otl->lookup_type = (intpt) GGadgetGetListItemSelected(GWidgetGetControl(ld->gw,CID_LookupType))->userdata;
+	otl->features = LK_ParseFL(strings,rows);
+	NameOTLookup(otl,ld->sf);
+	GGadgetSetTitle8(GWidgetGetControl(ld->gw,CID_LookupName),otl->lookup_name);
+	free(otl->lookup_name); otl->lookup_name = NULL;
+	FeatureScriptLangListFree(otl->features); otl->features = oldfl;
+	otl->lookup_type = old_type;
     }
 }
 
@@ -3955,6 +4041,16 @@ static GTextInfo *FeatureListFromLookupType(int lookup_type) {
 return( ti );
 }
 
+static int Lookup_NameChanged(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+	struct lookup_dlg *ld = GDrawGetUserData(GGadgetGetWindow(g));
+	if ( *_GGadgetGetTitle(g)!='\0' )
+	    ld->name_has_been_set = true;
+    }
+return( true );
+}
+
 static int LK_TypeChanged(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
@@ -3977,17 +4073,12 @@ static int Lookup_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct lookup_dlg *ld = GDrawGetUserData(GGadgetGetWindow(g));
 	int lookup_type = (intpt) GGadgetGetListItemSelected(GWidgetGetControl(ld->gw,CID_LookupType))->userdata;
-	int rows, i, j, isgpos;
+	int rows, i, isgpos;
 	struct matrix_data *strings = GMatrixEditGet(GWidgetGetControl(ld->gw,CID_LookupFeatures), &rows);
 	char *pt, *start, *name;
 	OTLookup *otl = ld->orig, *test;
 	int flags, afm;
-	FeatureScriptLangList *fl, *fhead, *flast;
-	struct scriptlanglist *sl, *slast;
-	unsigned char foo[4];
-	uint32 *langs=NULL;
-	int lmax=0, lcnt=0;
-	int feature, setting;
+	FeatureScriptLangList *fhead;
 
 	if ( lookup_type==ot_undef ) {
 	    gwwv_post_error(_("No Lookup Type Selected"),_("You must select a Lookup Type."));
@@ -4072,63 +4163,7 @@ return(true);
 	    afm = false;
 
 	/* Ok, we validated the feature script lang list. Now parse it */
-	fhead = flast = NULL;
-	for ( i=0; i<rows; ++i ) {
-	    fl = chunkalloc(sizeof(FeatureScriptLangList));
-	    if ( sscanf(strings[2*i+0].u.md_str,"<%d,%d>", &feature, &setting )== 2 ) {
-		fl->ismac = true;
-		fl->featuretag = (feature<<16)|setting;
-	    } else {
-		memset(foo,' ',sizeof(foo));
-		for ( j=0, pt = strings[2*i+0].u.md_str; j<4 && *pt; foo[j++] = *pt++ );
-		fl->featuretag = (foo[0]<<24) | (foo[1]<<16) | (foo[2]<<8) | foo[3];
-	    }
-	    if ( flast==NULL )
-		fhead = fl;
-	    else
-		flast->next = fl;
-	    flast = fl;
-	    /* Now do the script langs */
-	    slast = NULL;
-	    for ( start=strings[2*i+1].u.md_str; *start!='\0'; ) {
-		memset(foo,' ',sizeof(foo));
-		for ( j=0,pt=start; *pt!='{' && *pt!='\0'; ++pt )
-		    foo[j++] = *pt;
-		sl = chunkalloc(sizeof( struct scriptlanglist ));
-		sl->script = (foo[0]<<24) | (foo[1]<<16) | (foo[2]<<8) | foo[3];
-		if ( slast==NULL )
-		    fl->scripts = sl;
-		else
-		    slast->next = sl;
-		slast = sl;
-		if ( *pt!='{' ) {
-		    sl->lang_cnt = 1;
-		    sl->langs[0] = DEFAULT_LANG;
-		    start = pt;
-		} else {
-		    lcnt=0;
-		    for ( start=pt+1; *start!='}' && *start!='\0' ; ) {
-			memset(foo,' ',sizeof(foo));
-			for ( j=0,pt=start; *pt!='}' && *pt!=',' && *pt!='\0'; foo[j++] = *pt++ );
-			if ( lcnt>=lmax )
-			    langs = grealloc(langs,(lmax+=20)*sizeof(uint32));
-			langs[lcnt++] = (foo[0]<<24) | (foo[1]<<16) | (foo[2]<<8) | foo[3];
-			start =  ( *pt==',' ) ? pt+1 : pt;
-		    }
-		    if ( *start=='}' ) ++start;
-		    for ( j=0; j<lcnt && j<MAX_LANG; ++j )
-			sl->langs[j] = langs[j];
-		    if ( lcnt>MAX_LANG ) {
-			sl->morelangs = galloc((lcnt-MAX_LANG)*sizeof(uint32));
-			for ( ; j<lcnt; ++j )
-			    sl->morelangs[j-MAX_LANG] = langs[j];
-		    }
-		    sl->lang_cnt = lcnt;
-		}
-		while ( *start==' ' ) ++start;
-	    }
-	}
-	free(langs);
+	fhead = LK_ParseFL(strings,rows);
 	free( otl->lookup_name );
 	FeatureScriptLangListFree( otl->features );
 	otl->lookup_name = name;
@@ -4349,8 +4384,11 @@ int EditLookup(OTLookup *otl,int isgpos,SplineFont *sf) {
     gcd[10].gd.flags = gcd[9].gd.flags;
     gcd[10].gd.label = otl->lookup_name==NULL ? NULL : &label[10];
     gcd[10].gd.cid = CID_LookupName;
+    gcd[10].gd.handle_controlevent = Lookup_NameChanged;
     gcd[10].creator = GTextFieldCreate;
     harray2[1] = &gcd[10]; harray2[2] = NULL;
+    if ( otl->lookup_name!=NULL && *otl->lookup_name!='\0' )
+	ld.name_has_been_set = true;
 
     boxes[3].gd.flags = gg_enabled|gg_visible;
     boxes[3].gd.u.boxelements = harray2;
