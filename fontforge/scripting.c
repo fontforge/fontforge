@@ -65,6 +65,7 @@ struct keywords { enum token_type tok; char *name; } keywords[] = {
     { tt_endloop, "endloop" },
     { tt_shift, "shift" },
     { tt_return, "return" },
+    { tt_break, "break" },
     { 0, NULL }
 };
 
@@ -8194,7 +8195,7 @@ static void docall(Context *c,char *name,Val *val) {
 		}
 	    } else {
 		sub.lineno = 1;
-		while ( !sub.returned && (tok = NextToken(&sub))!=tt_eof ) {
+		while ( !sub.returned && !sub.broken && (tok = NextToken(&sub))!=tt_eof ) {
 		    backuptok(&sub);
 		    statement(&sub);
 		}
@@ -8950,15 +8951,16 @@ static void doforeach(Context *c) {
     memset(c->curfv->selected,0,selsize);
     i = 0;
 
+    c->broken = false;
     while ( 1 ) {
-	if ( c->returned )
+	if ( c->returned || c->broken )
     break;
 	if ( !c->donteval )	/* On a dry run go through loop once */
 	    while ( i<selsize && i<c->curfv->map->enccount && !sel[i]) ++i;
 	if ( i>=selsize || i>=c->curfv->map->enccount )
     break;
 	c->curfv->selected[i] = true;
-	while ( (tok=NextToken(c))!=tt_endloop && tok!=tt_eof && !c->returned ) {
+	while ( (tok=NextToken(c))!=tt_endloop && tok!=tt_eof && !c->returned && !c->broken ) {
 	    backuptok(c);
 	    statement(c);
 	}
@@ -8971,6 +8973,7 @@ static void doforeach(Context *c) {
 	if ( c->donteval )
     break;
     }
+    c->broken = false;
 
     nest = 0;
     while ( (tok=NextToken(c))!=tt_endloop || nest>0 ) {
@@ -8992,8 +8995,9 @@ static void dowhile(Context *c) {
     Val val;
     int nest;
 
+    c->broken = false;
     while ( 1 ) {
-	if ( c->returned )
+	if ( c->returned || c->broken )
     break;
 	tok=NextToken(c);
 	expect(c,tt_lparen,tok);
@@ -9008,7 +9012,7 @@ static void dowhile(Context *c) {
 	    if ( val.u.ival==0 )
     break;
 	}
-	while ( (tok=NextToken(c))!=tt_endloop && tok!=tt_eof && !c->returned ) {
+	while ( (tok=NextToken(c))!=tt_endloop && tok!=tt_eof && !c->returned && !c->broken) {
 	    backuptok(c);
 	    statement(c);
 	}
@@ -9019,6 +9023,7 @@ static void dowhile(Context *c) {
 	if ( c->donteval )
     break;
     }
+    c->broken = false;
 
     nest = 0;
     while ( (tok=NextToken(c))!=tt_endloop || nest>0 ) {
@@ -9046,7 +9051,7 @@ static void doif(Context *c) {
 	if ( val.type!=v_int && !c->donteval )
 	    ScriptError( c, "Expected integer expression in if condition");
 	if ( c->donteval || val.u.ival!=0 ) {
-	    while ( (tok=NextToken(c))!=tt_endif && tok!=tt_eof && tok!=tt_else && tok!=tt_elseif && !c->returned ) {
+	    while ( (tok=NextToken(c))!=tt_endif && tok!=tt_eof && tok!=tt_else && tok!=tt_elseif && !c->returned && !c->broken ) {
 		backuptok(c);
 		statement(c);
 	    }
@@ -9064,7 +9069,7 @@ static void doif(Context *c) {
 	    }
 	}
 	if ( tok==tt_else ) {
-	    while ( (tok=NextToken(c))!=tt_endif && tok!=tt_eof && !c->returned ) {
+	    while ( (tok=NextToken(c))!=tt_endif && tok!=tt_eof && !c->returned && !c->broken ) {
 		backuptok(c);
 		statement(c);
 	    }
@@ -9072,7 +9077,7 @@ static void doif(Context *c) {
 	} else if ( tok==tt_endif )
     break;
     }
-    if ( c->returned )
+    if ( c->returned || c->broken )
 return;
     if ( tok!=tt_endif && tok!=tt_eof ) {
 	nest = 0;
@@ -9117,6 +9122,8 @@ static void statement(Context *c) {
 	doshift(c);
     else if ( tok==tt_else || tok==tt_elseif || tok==tt_endif || tok==tt_endloop ) {
 	unexpected(c,tok);
+    } else if ( tok==tt_break ) {
+	c->broken = true;
     } else if ( tok==tt_return ) {
 	tok = NextToken(c);
 	backuptok(c);
@@ -9139,7 +9146,7 @@ static void statement(Context *c) {
 	    free( val.u.sval );
     }
     tok = NextToken(c);
-    if ( tok!=tt_eos && tok!=tt_eof && !c->returned )
+    if ( tok!=tt_eos && tok!=tt_eof && !c->returned && !c->broken )
 	ScriptError( c, "Unterminated statement" );
 }
 
@@ -9238,7 +9245,7 @@ static void ProcessNativeScript(int argc, char *argv[], FILE *script) {
 	ScriptError(&c, "No such file");
     else {
 	c.lineno = 1;
-	while ( !c.returned && (tok = NextToken(&c))!=tt_eof ) {
+	while ( !c.returned && !c.broken && (tok = NextToken(&c))!=tt_eof ) {
 	    backuptok(&c);
 	    statement(&c);
 	}
@@ -9444,7 +9451,7 @@ return;				/* Error return */
 	ScriptError(&c, "No such file");
     else {
 	c.lineno = 1;
-	while ( !c.returned && NextToken(&c)!=tt_eof ) {
+	while ( !c.returned && !c.broken && NextToken(&c)!=tt_eof ) {
 	    backuptok(&c);
 	    statement(&c);
 	}
@@ -9543,7 +9550,7 @@ return;			/* Error return */
 	rewind(c.script);
 	VerboseCheck();
 	c.lineno = 1;
-	while ( !c.returned && NextToken(&c)!=tt_eof ) {
+	while ( !c.returned && !c.broken && NextToken(&c)!=tt_eof ) {
 	    backuptok(&c);
 	    statement(&c);
 	}

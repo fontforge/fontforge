@@ -61,7 +61,7 @@ enum token_type { tt_name, tt_string, tt_number, tt_unicode, tt_real,
 	tt_incr, tt_decr,
 
 	tt_if, tt_else, tt_elseif, tt_endif, tt_while, tt_foreach, tt_endloop,
-	tt_shift, tt_return,
+	tt_shift, tt_return, tt_break,
 
 	tt_eof,
 
@@ -77,6 +77,7 @@ typedef struct context {
     unsigned int backedup: 1;		/* Irrelevant for user defined funcs */
     unsigned int donteval: 1;		/* Irrelevant for user defined funcs */
     unsigned int returned: 1;		/* Irrelevant for user defined funcs */
+    unsigned int broken: 1;		/* Irrelevant for user defined funcs */
     char tok_text[TOK_MAX+1];		/* Irrelevant for user defined funcs */
     enum token_type tok;		/* Irrelevant for user defined funcs */
     Val tok_val;			/* Irrelevant for user defined funcs */
