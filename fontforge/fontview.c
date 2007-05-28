@@ -4194,6 +4194,7 @@ void FontViewMenu_DisplaySubstitutions(GtkMenuItem *menuitem, gpointer user_data
 	char **names = NULL;
 	if ( sf->cidmaster ) sf=sf->cidmaster;
 	for ( k=0; k<2; ++k ) {
+	    cnt = 0;
 	    for ( otf = sf->gsub_lookups; otf!=NULL; otf=otf->next ) {
 		if ( otf->lookup_type==gsub_single ) {
 		    for ( sub=otf->subtables; sub!=NULL; sub=sub->next ) {
@@ -8406,7 +8407,7 @@ static void AddSubPST(SplineChar *sc,struct lookup_subtable *sub,char *variant) 
     PST *pst;
 
     pst = chunkalloc(sizeof(PST));
-    pst->type = gsub_single;
+    pst->type = pst_substitution;
     pst->subtable = sub;
     pst->u.alt.components = copy(variant);
     pst->next = sc->possub;

@@ -696,8 +696,10 @@ static GWindow ChoiceDlgCreate(struct dlg_info *d,const unichar_t *title,
     fh = as+ds;
     maxw = 220;
     for ( i=0; i<lb; ++i ) {
-	w = GDrawGetTextWidth(gw,qlabels[i].text,-1,NULL);
-	if ( w>maxw ) maxw = w;
+	if ( qlabels[i].text!=NULL ) {
+	    w = GDrawGetTextWidth(gw,qlabels[i].text,-1,NULL);
+	    if ( w>maxw ) maxw = w;
+	}
     }
     maxw += GDrawPointsToPixels(gw,20);
 
@@ -1230,9 +1232,11 @@ static GWindow ChoiceDlgCreate8(struct dlg_info *d,const char *title,
     fh = as+ds;
     maxw = 220;
     for ( i=0; i<cnt; ++i) {
-	w = GDrawGetText8Width(gw,(char *) llabels[i].text,-1,NULL);
-	if ( w>900 ) w = 900;
-	if ( w>maxw ) maxw = w;
+	if ( llabels[i].text!=NULL ) {		/* lines */
+	    w = GDrawGetText8Width(gw,(char *) llabels[i].text,-1,NULL);
+	    if ( w>900 ) w = 900;
+	    if ( w>maxw ) maxw = w;
+	}
     }
     for ( i=0; i<lb; ++i ) {
 	w = GDrawGetTextWidth(gw,qlabels[i].text,-1,NULL);
