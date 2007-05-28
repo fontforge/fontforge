@@ -367,7 +367,7 @@ static void dumpjis(FILE *output,FILE *header) {
 	continue;
 	    }
 	    if ( table[_unicode>>8]==NULL )
-		table[_unicode>>8] = calloc(256,2);
+		table[_unicode>>8] = calloc(256,sizeof(unichar_t));
 	    table[_unicode>>8][_unicode&0xff] = _orig;
 	    _orig -= 0x2121;
 	    _orig = (_orig>>8)*94 + (_orig&0xff);
@@ -406,7 +406,7 @@ static void dumpjis(FILE *output,FILE *header) {
 	continue;
 	    }
 	    if ( table[_unicode>>8]==NULL )
-		table[_unicode>>8] = calloc(256,2);
+		table[_unicode>>8] = calloc(256,sizeof(unichar_t));
 	    if ( table[_unicode>>8][_unicode&0xff]==0 )
 		table[_unicode>>8][_unicode&0xff] = _orig|0x8000;
 	    else
@@ -471,7 +471,7 @@ static void dumpjis(FILE *output,FILE *header) {
 	    fprintf( output, "    u_allzeros,\n" );
     fprintf( output, "};\n\n" );
     fprintf( header, "extern struct charmap2 jis_from_unicode;\n" );
-    fprintf( output, "struct charmap2 jis_from_unicode = { %d, %d, (unsigned short **) jis_from_unicode_, (unsigned short *) unicode_from_%s };\n\n",
+    fprintf( output, "struct charmap2 jis_from_unicode = { %d, %d, (unsigned short **) jis_from_unicode_, (unichar_t *) unicode_from_%s };\n\n",
 	    first, last, cjknames[j]);
 
     for ( k=first; k<=last; ++k )
@@ -528,7 +528,7 @@ static void dumpbig5(FILE *output,FILE *header) {
 	    }
 	    unicode[_orig-0xa100] = _unicode;
 	    if ( table[_unicode>>8]==NULL )
-		table[_unicode>>8] = calloc(256,2);
+		table[_unicode>>8] = calloc(256,sizeof(unichar_t));
 	    table[_unicode>>8][_unicode&0xff] = _orig;
 	    if ( used[_unicode>>8]==NULL ) {
 		used[_unicode>>8] = calloc(256,sizeof(long));
@@ -572,7 +572,7 @@ static void dumpbig5(FILE *output,FILE *header) {
 		fprintf( output, "    u_allzeros,\n" );
 	fprintf( output, "};\n\n" );
 	fprintf( header, "extern struct charmap2 %s_from_unicode;\n", cjknames[j]);
-	fprintf( output, "struct charmap2 %s_from_unicode = { %d, %d, (unsigned short **) %s_from_unicode_, (unsigned short *) unicode_from_%s };\n\n",
+	fprintf( output, "struct charmap2 %s_from_unicode = { %d, %d, (unsigned short **) %s_from_unicode_, (unichar_t *) unicode_from_%s };\n\n",
 		cjknames[j], first, last, cjknames[j], cjknames[j]);
 
 	for ( k=first; k<=last; ++k )
@@ -610,7 +610,7 @@ static void dumpbig5hkscs(FILE *output,FILE *header) {
 	    }
 	    unicode[_orig-0x8100] = _unicode;
 	    if ( table[_unicode>>8]==NULL )
-		table[_unicode>>8] = calloc(256,2);
+		table[_unicode>>8] = calloc(256,sizeof(unichar_t));
 	    table[_unicode>>8][_unicode&0xff] = _orig;
 	    if ( used[_unicode>>8]==NULL ) {
 		used[_unicode>>8] = calloc(256,sizeof(long));
@@ -654,7 +654,7 @@ static void dumpbig5hkscs(FILE *output,FILE *header) {
 		fprintf( output, "    u_allzeros,\n" );
 	fprintf( output, "};\n\n" );
 	fprintf( header, "extern struct charmap2 %s_from_unicode;\n", cjknames[j]);
-	fprintf( output, "struct charmap2 %s_from_unicode = { %d, %d, (unsigned short **) %s_from_unicode_, (unsigned short *) unicode_from_%s };\n\n",
+	fprintf( output, "struct charmap2 %s_from_unicode = { %d, %d, (unsigned short **) %s_from_unicode_, (unichar_t *) unicode_from_%s };\n\n",
 		cjknames[j], first, last, cjknames[j], cjknames[j]);
 
 	for ( k=first; k<=last; ++k )
@@ -702,7 +702,7 @@ static void dumpWansung(FILE *output,FILE *header) {
 		}
 		if ( _orig>=0x2121 && (_orig&0xff)>=0x21 && _orig<=0x7e7e && (_orig&0xff)<=0x7e ) {
 		    if ( table[_unicode>>8]==NULL )
-			table[_unicode>>8] = calloc(256,2);
+			table[_unicode>>8] = calloc(256,sizeof(unichar_t));
 		    table[_unicode>>8][_unicode&0xff] = _orig;
 		    _orig -= 0x2121;
 		    _orig = (_orig>>8)*94 + (_orig&0xff);
@@ -718,7 +718,7 @@ static void dumpWansung(FILE *output,FILE *header) {
 		}
 		if ( _johab>=0x8431 && _johab<=0xf9fe ) {
 		    if ( jtable[_unicode>>8]==NULL )
-			jtable[_unicode>>8] = calloc(256,2);
+			jtable[_unicode>>8] = calloc(256,sizeof(unichar_t));
 		    jtable[_unicode>>8][_unicode&0xff] = _johab;
 		    _johab -= 0x8400;
 		    junicode[_johab] = _unicode;
@@ -766,7 +766,7 @@ static void dumpWansung(FILE *output,FILE *header) {
 		fprintf( output, "    u_allzeros,\n" );
 	fprintf( output, "};\n\n" );
 	fprintf( header, "extern struct charmap2 %s_from_unicode;\n", cjknames[j]);
-	fprintf( output, "struct charmap2 %s_from_unicode = { %d, %d, (unsigned short **) %s_from_unicode_, (unsigned short *) unicode_from_%s };\n\n",
+	fprintf( output, "struct charmap2 %s_from_unicode = { %d, %d, (unsigned short **) %s_from_unicode_, (unichar_t *) unicode_from_%s };\n\n",
 		cjknames[j], first, last, cjknames[j], cjknames[j]);
 
 	if ( first==-1 )
@@ -812,7 +812,7 @@ static void dumpWansung(FILE *output,FILE *header) {
 		fprintf( output, "    u_allzeros,\n" );
 	fprintf( output, "};\n\n" );
 	fprintf( header, "extern struct charmap2 johab_from_unicode;\n" );
-	fprintf( output, "struct charmap2 johab_from_unicode = { %d, %d, (unsigned short **) johab_from_unicode_, (unsigned short *) unicode_from_johab };\n\n",
+	fprintf( output, "struct charmap2 johab_from_unicode = { %d, %d, (unsigned short **) johab_from_unicode_, (unichar_t *) unicode_from_johab };\n\n",
 		first, last );
 
 	if ( first==-1 )
@@ -855,7 +855,7 @@ static void dumpgb2312(FILE *output,FILE *header) {
 	    continue;
 		}
 		if ( table[_unicode>>8]==NULL )
-		    table[_unicode>>8] = calloc(256,2);
+		    table[_unicode>>8] = calloc(256,sizeof(unichar_t));
 		table[_unicode>>8][_unicode&0xff] = _orig;
 		_orig -= 0x2121;
 		_orig = (_orig>>8)*94 + (_orig&0xff);
@@ -902,7 +902,7 @@ static void dumpgb2312(FILE *output,FILE *header) {
 		fprintf( output, "    u_allzeros,\n" );
 	fprintf( output, "};\n\n" );
 	fprintf( header, "extern struct charmap2 %s_from_unicode;\n", cjknames[j]);
-	fprintf( output, "struct charmap2 %s_from_unicode = { %d, %d, (unsigned short **) %s_from_unicode_, (unsigned short *) unicode_from_%s };\n\n",
+	fprintf( output, "struct charmap2 %s_from_unicode = { %d, %d, (unsigned short **) %s_from_unicode_, (unichar_t *) unicode_from_%s };\n\n",
 		cjknames[j], first, last, cjknames[j], cjknames[j]);
 
 	if ( first==-1 )

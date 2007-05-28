@@ -7,8 +7,8 @@ libdir = @libdir@
 VPATH = @srcdir@
 bindir = @bindir@
 
-GU_VERSION=2
-GU_REVISION=3
+GU_VERSION=3
+GU_REVISION=0
 GU_AGE=0
 
 LIBTOOL = @LIBTOOL@

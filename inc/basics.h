@@ -55,7 +55,11 @@ typedef uint8_t		uint8;
 	/* An integral type which can hold a pointer */
 typedef intptr_t	intpt;
 
+#ifdef UNICHAR_16
 typedef uint16 unichar_t;
+#else
+typedef uint32 unichar_t;
+#endif
 
 extern void *galloc(long size);
 extern void *gcalloc(int cnt, long size);
