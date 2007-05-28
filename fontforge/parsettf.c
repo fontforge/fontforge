@@ -193,14 +193,14 @@ static char *_readencstring(FILE *ttf,int offset,int len,
 	if ( enc==NULL )
 return( NULL );
 	if ( enc->is_unicodebmp ) {
-	    str = pt = galloc(len+2);
+	    str = pt = galloc((sizeof(unichar_t)/2)*len+sizeof(unichar_t));
 	    for ( i=0; i<len/2; ++i ) {
 		ch = getc(ttf)<<8;
 		*pt++ = ch | getc(ttf);
 	    }
 	    *pt = 0;
 	} else if ( enc->unicode!=NULL ) {
-	    str = pt = galloc(2*len+2);
+	    str = pt = galloc(sizeof(unichar_t)*len+sizeof(unichar_t));
 	    for ( i=0; i<len; ++i )
 		*pt++ = enc->unicode[getc(ttf)];
 	    *pt = 0;
