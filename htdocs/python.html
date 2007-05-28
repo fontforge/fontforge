@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 30-Apr-2007 -->
+  <!-- AP: Last modified: 28-May-2007 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -1762,6 +1762,11 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TD><CODE>os2_windescent_add</CODE></TD>
     </TR>
     <TR>
+      <TD><CODE>path</CODE></TD>
+      <TD colspan=2>(readonly) Returns a string (or None) containing the name of
+	the file from which the font was originally read (in this session)</TD>
+    </TR>
+    <TR>
       <TD><CODE>private</CODE></TD>
       <TD colspan=2>Returns a dictionary like object representing the PostScript
 	private dictionary for the font. Changing entries in this object will change
@@ -1777,6 +1782,12 @@ pen = None;				# Finalize the pen. This tells FontForge
 	set this with a tuple of integers (or boolean values). There should not be
 	more entries in the tuple than there are encoding slots in the current encoding.
 	A <CODE>True</CODE> or non-0 value means the slot is selected.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>sfd_path</CODE></TD>
+      <TD colspan=2>(readonly) Returns a string (or None) containing the name of
+	the sfd file associated with this font. Sometimes this will be the same as
+	path (above).</TD>
     </TR>
     <TR>
       <TD><CODE>sfnt_names</CODE></TD>
@@ -1987,6 +1998,8 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TD>Creates a new subtable within the specified lookup. The optional final
 	argument allows you to specify the ordering within the lookup. If not specified
 	this subtable will be first in the lookup.</TD>
+    </TR>
+    <TR>
       <TD><CODE>alterKerningClass</CODE></TD>
       <TD><CODE>(subtable-name,<BR>
 	&nbsp;first-classes,<BR>

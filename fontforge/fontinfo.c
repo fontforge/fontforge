@@ -7148,10 +7148,8 @@ return;
 		    lk->all[i].selected = !lk->all[i].selected;
 		GFI_LookupEnableButtons(gfi,isgpos);
 		GDrawRequestExpose(gw,NULL,true);
-#if 0
 		if ( event->u.mouse.button==3 )
 		    LookupMenu(gfi,lk,event);
-#endif
 return;
 	    }
 	}
