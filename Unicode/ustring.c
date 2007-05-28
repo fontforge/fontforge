@@ -476,7 +476,7 @@ return( ubuf );
 unichar_t *utf82u_strncpy(unichar_t *ubuf,const char *utf8buf,int len) {
     unichar_t *upt=ubuf, *uend=ubuf+len-1;
     const uint8 *pt = (const uint8 *) utf8buf, *end = pt+strlen(utf8buf);
-    int w;
+    int w, w2;
 
     while ( pt<end && *pt!='\0' && upt<uend ) {
 	if ( *pt<=127 )
@@ -487,6 +487,7 @@ unichar_t *utf82u_strncpy(unichar_t *ubuf,const char *utf8buf,int len) {
 	} else if ( *pt<=0xef ) {
 	    *upt = ((*pt&0xf)<<12) | ((pt[1]&0x3f)<<6) | (pt[2]&0x3f);
 	    pt += 3;
+#ifdef UNICHAR_16
 	} else if ( upt+1<uend ) {
 	    /* Um... I don't support surrogates */
 	    w = ( ((*pt&0x7)<<2) | ((pt[1]&0x30)>>4) )-1;
@@ -496,6 +497,13 @@ unichar_t *utf82u_strncpy(unichar_t *ubuf,const char *utf8buf,int len) {
 	} else {
 	    /* no space for surrogate */
 	    pt += 4;
+#else
+	} else {
+	    w = ( ((*pt&0x7)<<2) | ((pt[1]&0x30)>>4) )-1;
+	    w = (w<<6) | ((pt[1]&0xf)<<2) | ((pt[2]&0x30)>>4);
+	    w2 = ((pt[2]&0xf)<<6) | (pt[3]&0x3f);
+	    *upt = w*0x400 + w2 + 0x10000;
+#endif
 	}
 	++upt;
     }
@@ -507,8 +515,9 @@ unichar_t *utf82u_strcpy(unichar_t *ubuf,const char *utf8buf) {
 return( utf82u_strncpy(ubuf,utf8buf,strlen(utf8buf)+1));
 }
 
-int32 *utf82u32_strncpy(int32 *ubuf,const char *utf8buf,int len) {
-    int32 *upt=ubuf, *uend=ubuf+len-1;
+# ifdef UNICHAR_16
+uint32 *utf82u32_strncpy(uint32 *ubuf,const char *utf8buf,int len) {
+    uint32 *upt=ubuf, *uend=ubuf+len-1;
     const uint8 *pt = (const uint8 *) utf8buf;
     int w, w2;
 
@@ -534,9 +543,9 @@ int32 *utf82u32_strncpy(int32 *ubuf,const char *utf8buf,int len) {
 return( ubuf );
 }
 
-char *u322utf8_strncpy(char *utf8buf, const int32 *ubuf,int len) {
+char *u322utf8_strncpy(char *utf8buf, const uint32 *ubuf,int len) {
     uint8 *pt=(uint8 *) utf8buf, *end=(uint8 *) utf8buf+len-1;
-    const int32 *upt = ubuf;
+    const uint32 *upt = ubuf;
 
     while ( *upt!='\0' && pt<end ) {
 	if ( *upt<=127 )
@@ -568,7 +577,7 @@ char *u322utf8_strncpy(char *utf8buf, const int32 *ubuf,int len) {
 return( utf8buf );
 }
 
-char *u322utf8_copy(const int32 *ubuf) {
+char *u322utf8_copy(const uint32 *ubuf) {
     int i, len;
     char *buf;
 
@@ -584,6 +593,7 @@ char *u322utf8_copy(const int32 *ubuf) {
     buf = galloc(len+1);
 return( u322utf8_strncpy(buf,ubuf,len+1));
 }
+#endif
 
 unichar_t *utf82u_copyn(const char *utf8buf,int len) {
     unichar_t *ubuf = galloc((len+1)*sizeof(unichar_t));
@@ -606,17 +616,19 @@ void utf82u_strcat(unichar_t *to,const char *from) {
     utf82u_strcpy(to+u_strlen(to),from);
 }
 
-int32 *utf82u32_copy(const char *utf8buf) {
+#ifdef UNICHAR_16
+uint32 *utf82u32_copy(const char *utf8buf) {
     int len;
-    int32 *ubuf;
+    uint32 *ubuf;
 
     if ( utf8buf==NULL )
 return( NULL );
 
     len = strlen(utf8buf);
-    ubuf = galloc((len+1)*sizeof(int32));
+    ubuf = galloc((len+1)*sizeof(uint32));
 return( utf82u32_strncpy(ubuf,utf8buf,len+1));
 }
+#endif
 
 char *u2utf8_strcpy(char *utf8buf,const unichar_t *ubuf) {
     char *pt = utf8buf;
@@ -627,6 +639,7 @@ char *u2utf8_strcpy(char *utf8buf,const unichar_t *ubuf) {
 	else if ( *ubuf<0x800 ) {
 	    *pt++ = 0xc0 | (*ubuf>>6);
 	    *pt++ = 0x80 | (*ubuf&0x3f);
+#ifdef UNICHAR_16
 	} else if ( *ubuf>=0xd800 && *ubuf<0xdc00 && ubuf[1]>=0xdc00 && ubuf[1]<0xe000 ) {
 	    int u = ((*ubuf>>6)&0xf)+1, y = ((*ubuf&3)<<4) | ((ubuf[1]>>6)&0xf);
 	    *pt++ = 0xf0 | (u>>2);
@@ -637,6 +650,19 @@ char *u2utf8_strcpy(char *utf8buf,const unichar_t *ubuf) {
 	    *pt++ = 0xe0 | (*ubuf>>12);
 	    *pt++ = 0x80 | ((*ubuf>>6)&0x3f);
 	    *pt++ = 0x80 | (*ubuf&0x3f);
+#else
+	} else if ( *ubuf < 0x10000 ) {
+	    *pt++ = 0xe0 | (*ubuf>>12);
+	    *pt++ = 0x80 | ((*ubuf>>6)&0x3f);
+	    *pt++ = 0x80 | (*ubuf&0x3f);
+	} else {
+	    uint32 val = *ubuf-0x10000;
+	    int u = ((val&0xf0000)>>16)+1, z=(val&0x0f000)>>12, y=(val&0x00fc0)>>6, x=val&0x0003f;
+	    *pt++ = 0xf0 | (u>>2);
+	    *pt++ = 0x80 | ((u&3)<<4) | z;
+	    *pt++ = 0x80 | y;
+	    *pt++ = 0x80 | x;
+#endif
 	}
 	++ubuf;
     }
