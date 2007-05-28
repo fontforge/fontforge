@@ -6464,6 +6464,20 @@ ff_gs_bit(weight_width_slope_only)
 ff_gs_bit(onlybitmaps)
 ff_gs_bit(hasvmetrics)
 
+static PyObject *PyFF_Font_get_path(PyFF_Font *self,void *closure) { \
+    if ( self->fv->sf->origname==NULL )
+Py_RETURN_NONE;
+    else
+return( Py_BuildValue("s", self->fv->sf->origname ));
+}
+
+static PyObject *PyFF_Font_get_sfd_path(PyFF_Font *self,void *closure) { \
+    if ( self->fv->sf->filename==NULL )
+Py_RETURN_NONE;
+    else
+return( Py_BuildValue("s", self->fv->sf->filename ));
+}
+
 static PyObject *PyFF_Font_get_OS2_panose(PyFF_Font *self,void *closure) {
     int i;
     PyObject *tuple;
@@ -7058,6 +7072,12 @@ static PyGetSetDef PyFF_Font_getset[] = {
     {"cvt",
 	 (getter)PyFF_Font_get_cvt, (setter)PyFF_Font_set_cvt,
 	 "The font's TrueType cvt table", NULL},
+    {"path",
+	 (getter)PyFF_Font_get_path, (setter)PyFF_cant_set,
+	 "filename of the original font file loaded", NULL},
+    {"sfd_path",
+	 (getter)PyFF_Font_get_sfd_path, (setter)PyFF_cant_set,
+	 "filename of the sfd file containing this font (if any)", NULL},
     {"fontname",
 	 (getter)PyFF_Font_get_fontname, (setter)PyFF_Font_set_fontname,
 	 "font name", NULL},
