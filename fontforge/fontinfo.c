@@ -926,13 +926,20 @@ static const char italicspan[] = "Cursiva";
 static const char condensedspan[] = "Condensada";
 static const char expandedspan[] = "Amplida";
 
-static const char regulardutch[] = "Regelmatig";
+static const char regulardutch[] = "Normaal";
+static const char mediumdutch[] = "Normaal";
+static const char bookdutch[] = "Normaal";
 static const char bolddutch[] = "Vet";
-static const char lightdutch[] = "Licht";
+static const char demibolddutch[] = "Halfvet";
+static const char lightdutch[] = "Licht mager";
 static const char blackdutch[] = "Extra vet";
 static const char italicdutch[] = "Cursief";
+static const char italicdutch2[] = "italiek";
+static const char obliquedutch[] = "oblique";
+static const char obliquedutch2[] = "schuin";
 static const char condenseddutch[] = "Smal";
 static const char expandeddutch[] = "Breed";
+static const char outlinedutch[] = "Contour";
 
 static const char regularswed[] = "Mager";
 static const char boldswed[] = "Fet";
@@ -1031,30 +1038,30 @@ static struct langstyle regs[] = { {0x409, regulareng}, { 0x40c, regularfren }, 
 static struct langstyle meds[] = { {0x409, mediumeng}, { 0x410, mediumital },
 	{ 0x40c, mediumfren }, { 0x407, mediumgerm }, { 0x40e, mediumhu },
 	{ 0x406, mediumdanish}, {0x415, mediumpl }, { 0x804, "中等"}, 
-	{ 0x408, "µεσαία"}, { 0x42a, "Vừa"}, { 0 }};
+	{ 0x408, "µεσαία"}, { 0x42a, "Vừa"}, { 0x413, mediumdutch}, { 0 }};
 static struct langstyle books[] = { {0x409, bookeng}, { 0x410, bookital },
 	{ 0x407, bookgerm }, { 0x40e, bookhu }, { 0x40e, bookhu2 },
 	{ 0x415, bookpl}, { 0x804, "书体"}, { 0x408, "ßιßλίου"},
-	{ 0x42a, "Sách"}, { 0 }};
+	{ 0x42a, "Sách"}, { 0x413, bookdutch}, { 0 }};
 static struct langstyle bolds[] = { {0x409, boldeng}, { 0x410, boldital }, { 0x40c, boldfren }, { 0x407, boldgerm }, { 0x407, boldgerm2 }, { 0x40a, boldspan}, { 0x419, boldru }, { 0x40e, boldhu }, { 0x40e, boldhu2 }, 
 	{ 0x413, bolddutch}, { 0x41d, boldswed }, { 0x414, boldnor },
 	{ 0x406, bolddanish}, { 0x415, boldpl}, { 0x804, "粗体"},  
 	{ 0x408, "έντονη"}, { 0x42a, "Đậm"}, { 0 }};
 static struct langstyle italics[] = { {0x409, italiceng}, { 0x410, italicital }, { 0x40c, italicfren }, { 0x407, italicgerm }, { 0x40a, italicspan}, { 0x419, italicru }, { 0x40e, italichu },
-	{ 0x413, italicdutch}, { 0x41d, italicswed }, { 0x414, italicnor },
+	{ 0x413, italicdutch}, { 0x413, italicdutch2}, { 0x41d, italicswed }, { 0x414, italicnor },
 	{ 0x406, italicdanish}, { 0x415, italicpl}, { 0x804, "斜体"},
 	{ 0x408, "Λειψίας"}, { 0x42a, "Nghiêng" }, { 0 }};
 static struct langstyle obliques[] = { {0x409, obliqueeng}, { 0x410, obliqueital },
 	{ 0x40c, obliquefren }, { 0x407, obliquegerm }, { 0x419, obliqueru },
 	{ 0x40e, obliquehu }, { 0x40e, obliquehu2 }, {0x415, obliquepl},
 	{ 0x804, "斜体"}, { 0x408, "πλάγια"},
-	{ 0x42a, "Xiên" }, { 0 }};
+	{ 0x42a, "Xiên" }, { 0x413, obliquedutch}, { 0x413, obliquedutch2}, { 0 }};
 static struct langstyle demibolds[] = { {0x409, demiboldeng}, {0x409, demiboldeng3}, {0x409, demiboldeng5},
 	{ 0x410, demiboldital }, { 0x40c, demiboldfren }, { 0x40c, demiboldfren2 }, { 0x407, demiboldgerm }, { 0x407, demiboldgerm2 },
 	{ 0x419, demiboldru }, { 0x40e, demiboldhu }, { 0x40e, demiboldhu2 },
 	{ 0x406, demibolddanish}, { 0x415, demiboldpl },
 	{ 0x804, "略粗"}, { 0x408, "ηµιέντονη"},
-	{ 0x42a, "Nửa đậm"}, { 0 }};
+	{ 0x42a, "Nửa đậm"}, { 0x413, demibolddutch}, { 0 }};
 static struct langstyle heavys[] = { {0x409, heavyeng}, { 0x410, heavyital },
 	{ 0x419, heavyru }, { 0x40e, heavyhu }, { 0x40e, heavyhu2 },
 	{ 0x415, heavypl }, { 0x804, "粗"}, { 0 }};
@@ -1083,7 +1090,7 @@ static struct langstyle expandeds[] = { {0x409, expandedeng}, {0x410, expandedit
 static struct langstyle outlines[] = { {0x409, outlineeng}, {0x40c, outlinefren},
 	{0x407, outlinegerm}, {0x40e, outlinehu}, { 0x406, outlinedanish},
 	{0x415, outlinepl}, { 0x804, "轮廓"}, { 0x408, "περιγράμματος"},
-	{0x42a, "Nét ngoài" }, { 0 }};
+	{0x42a, "Nét ngoài" }, { 0x413, outlinedutch}, { 0 }};
 static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, heavys, blacks,
 	extralights, lights, thins, italics, obliques, condenseds, expandeds, outlines, NULL };
 
