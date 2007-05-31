@@ -4386,7 +4386,7 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	if ( info->ordering!=NULL )
 	    sprintf(buffer, "%.20s-%d", info->ordering, i );
 	else if ( info->map!=NULL && info->map->map[i]!=-1 )
-	    sprintf(buffer, "nounicode-%d-%d-%x", info->platform, info->specific,
+	    sprintf(buffer, "nounicode.%d.%d.%x", info->platform, info->specific,
 		    (int) info->map->map[i] );
 	else
 	    sprintf( buffer, "glyph%d", i );

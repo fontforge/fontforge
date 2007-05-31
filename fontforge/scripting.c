@@ -9298,7 +9298,7 @@ static void _CheckIsScript(int argc, char *argv[]) {
     char *arg;
 
 #ifndef _NO_PYTHON
-    FontForge_PythonInit();
+    /* FontForge_PythonInit(); */ /* !!!!!! debug (valgrind doesn't like python) */
 #endif
     if ( argc==1 )
 return;

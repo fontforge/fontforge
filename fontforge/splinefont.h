@@ -500,6 +500,7 @@ typedef struct generic_fpst {
 	} *lookups;
     } *rules;
     uint8 ticked;
+    uint8 effectively_by_glyphs;
 } FPST;
 
 enum asm_type { asm_indic, asm_context, asm_lig, asm_simple=4, asm_insert,
@@ -1116,7 +1117,7 @@ enum backedup_state { bs_dontknow=0, bs_not=1, bs_backedup=2 };
 typedef struct splinefont {
     char *fontname, *fullname, *familyname, *weight;
     char *copyright;
-    char *filename;
+    char *filename;				/* sfd name. NULL if we open a font, that's origname */
     char *defbasefilename;
     char *version;
     real italicangle, upos, uwidth;		/* In font info */
