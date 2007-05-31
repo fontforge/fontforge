@@ -3415,7 +3415,7 @@ return( _OTfmSplineFont(tfm,sf,formattype,map,65536));
 
 /* ************************************************************************** */
 
-enum metricsformat { mf_none, mf_afm, mf_amfm, mf_tfm, mf_ofm, mf_pfm };
+enum metricsformat { mf_none, mf_afm, mf_amfm, mf_tfm, mf_ofm, mf_pfm, mf_feat };
 
 static enum metricsformat MetricsFormatType(char *filename) {
     FILE *file = fopen(filename,"rb");
@@ -3470,6 +3470,8 @@ return( mf_ofm );
 	    (buffer[2]|(buffer[3]<<8)|(buffer[4]<<16)|(buffer[5]<<24))== sb.st_size )
 return( mf_pfm );
 
+    /* I don't see any distinquishing marks for a feature file */
+
     if ( strstrmatch(filename,".afm")!=NULL )
 return( mf_afm );
     if ( strstrmatch(filename,".amfm")!=NULL )
@@ -3480,6 +3482,8 @@ return( mf_tfm );
 return( mf_ofm );
     if ( strstrmatch(filename,".pfm")!=NULL )
 return( mf_pfm );
+    if ( strstrmatch(filename,".fea")!=NULL )
+return( mf_feat );
 
 return( mf_none );
 }
@@ -3497,6 +3501,9 @@ return( LoadKerningDataFromTfm(sf,filename,map));
 return( LoadKerningDataFromOfm(sf,filename,map));
       case mf_pfm:
 return( LoadKerningDataFromPfm(sf,filename,map));
+      case mf_feat:
+	SFApplyFeatureFilename(sf,filename);
+return( true );
 
       case mf_none:
       default:

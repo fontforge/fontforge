@@ -7048,7 +7048,7 @@ static GMenuItem lookuppopupmenu[] = {
 
 static void LookupMenu(struct gfi_data *gfi,struct lkdata *lk,GEvent *event) {
     struct selection_bits sel;
-    int i;
+    int i,j;
 
     LookupParseSelection(lk,&sel);
     for ( i=0; lookuppopupmenu[i].ti.text!=NULL || lookuppopupmenu[i].ti.line; ++i ) {
@@ -7097,8 +7097,8 @@ static void LookupMenu(struct gfi_data *gfi,struct lkdata *lk,GEvent *event) {
 	  break;
 	  case CID_SaveLookup:
 	    lookuppopupmenu[i].ti.disabled = sel.lookup_cnt!=1 || sel.sub_cnt!=0;
-	    for ( i=0; i<lk->cnt; ++i ) if ( lk->all[i].selected ) {
-		int type = lk->all[i].lookup->lookup_type;
+	    for ( j=0; j<lk->cnt; ++j ) if ( lk->all[j].selected ) {
+		int type = lk->all[j].lookup->lookup_type;
 		if ( type==kern_statemachine || type==morx_indic ||
 			type==morx_context || type==morx_insert )
 		    lookuppopupmenu[i].ti.disabled = true;

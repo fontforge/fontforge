@@ -1351,8 +1351,8 @@ return( temp );
 
 void MergeKernInfo(SplineFont *sf,EncMap *map) {
 #ifndef __Mac
-    static char wild[] = "*.{afm,tfm,ofm,pfm,bin,hqx,dfont}";
-    static char wild2[] = "*.{afm,amfm,tfm,ofm,pfm,bin,hqx,dfont}";
+    static char wild[] = "*.{afm,tfm,ofm,pfm,bin,hqx,dfont,fea}";
+    static char wild2[] = "*.{afm,amfm,tfm,ofm,pfm,bin,hqx,dfont,fea}";
 #else
     static char wild[] = "*";	/* Mac resource files generally don't have extensions */
     static char wild2[] = "*";
@@ -1395,8 +1395,8 @@ return( temp );
 
 void MergeKernInfo(SplineFont *sf,EncMap *map) {
 #ifndef __Mac
-    static char wild[] = "*.{afm,tfm,ofm,pfm,bin,hqx,dfont}";
-    static char wild2[] = "*.{afm,amfm,tfm,ofm,pfm,bin,hqx,dfont}";
+    static char wild[] = "*.{afm,tfm,ofm,pfm,bin,hqx,dfont,fea}";
+    static char wild2[] = "*.{afm,amfm,tfm,ofm,pfm,bin,hqx,dfont,fea}";
 #else
     static char wild[] = "*";	/* Mac resource files generally don't have extensions */
     static char wild2[] = "*";
@@ -8206,15 +8206,20 @@ return( -1 );
     } else if ( enc->fromunicode!=NULL ) {
 	/* I don't see how there can be any state to reset in this direction */
 	/*  So I don't reset it */
+#ifdef UNICHAR_16
 	if ( uni<0x10000 ) {
 	    from[0] = uni;
-	    fromlen = 2;
+	    fromlen = sizeof(unichar_t);
 	} else {
 	    uni -= 0x10000;
 	    from[0] = 0xd800 + (uni>>10);
 	    from[1] = 0xdc00 + (uni&0x3ff);
-	    fromlen = 4;
+	    fromlen = 2*sizeof(unichar_t);
 	}
+#else
+	from[0] = uni;
+	fromlen = sizeof(unichar_t);
+#endif
 	fpt = (char *) from; tpt = (char *) to; tolen = sizeof(to);
 	iconv(enc->fromunicode,NULL,NULL,NULL,NULL);	/* reset shift in/out, etc. */
 	if ( iconv(enc->fromunicode,&fpt,&fromlen,&tpt,&tolen)==(size_t) -1 )

@@ -3034,7 +3034,8 @@ return;
     continue;			/* If compacted then we haven't added any glyphs so haven't changed anything */
 	    /* Don't display any of these guys, so not mapped. */
 	    /*  No change to selection, or to map->map, but change to backmap */
-	    fv->map->backmap = grealloc(fv->map->backmap,newcnt*sizeof(int32));
+	    if ( newcnt>fv->map->backmax )
+		fv->map->backmap = grealloc(fv->map->backmap,(fv->map->backmax = newcnt+5)*sizeof(int32));
 	    memset(fv->map->backmap+old,-1,(newcnt-old)*sizeof(int32));
 	}
     }
