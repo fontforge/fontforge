@@ -1021,9 +1021,6 @@ return( false );
 	    MVSetSubtables(mv);
 	}
 
-	if ( !mv->vertical )
-	    MMKern(sc->parent,psc,sc,kp==NULL?offset:is_diff?offset:offset-kp->off,
-		    sub,kp);
 	if ( kp==NULL ) {
 	    kp = chunkalloc(sizeof(KernPair));
 	    kp->sc = sc;
@@ -1034,7 +1031,11 @@ return( false );
 		kp->next = psc->vkerns;
 		psc->vkerns = kp;
 	    }
+	    mv->glyphs[which-1].kp = kp;
 	}
+	if ( !mv->vertical )
+	    MMKern(sc->parent,psc,sc,kp==NULL?offset:is_diff?offset:offset-kp->off,
+		    sub,kp);
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 	/* If we change the kerning offset, then any pixel corrections*/
 	/*  will no longer apply (they only had meaning with the old  */
