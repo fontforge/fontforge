@@ -63,6 +63,9 @@ typedef struct sftextarea {
     unsigned int dobitext: 1;	/* has at least one right to left character */
     unsigned int password: 1;
     unsigned int dontdraw: 1;	/* Used when the tf is part of a larger control, and the control determines when to draw the tf */
+    unsigned int donthook: 1;	/* Used when the tf is part of a the gchardlg.c */
+    unsigned int numericfield: 1;
+    unsigned int incr_down: 1;	/* Direction of increments when numeric_scroll events happen */
     uint8 fh;
     uint8 as;
     uint8 nw;			/* Width of one character (an "n") */
@@ -82,6 +85,7 @@ typedef struct sftextarea {
     int32 bilen;		/* allocated size of bidata */
     int16 xmax;
     GIC *gic;
+    GTimer *numeric_scroll;
     struct lineheights { int32 y; int16 as, fh; } *lineheights;
     struct fontlist {
 	int start, end;		/* starting and ending characters [start,end) */
