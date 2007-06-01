@@ -1965,7 +1965,8 @@ static SplineSet *JoinAllNeeded(Intersection *ilist) {
 			        cur->first->next->from = test->last;
 			        SplinePointFree(cur->first);
 			        test->last = test->first;
-			    }
+			    } else
+				test->first = cur->first;
 			} else {
 			    if ( test->last->me.x!=cur->first->me.x || test->last->me.y!=cur->first->me.y )
 				SOError( "Join failed");
