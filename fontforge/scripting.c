@@ -3898,8 +3898,233 @@ static void bSetGlyphChanged(Context *c) {
     sf->changed_since_xuidchanged = changed_any;
 }
 
+static void SCFreeMostContents(SplineChar *sc) {
+    int i;
+
+    free(sc->name);
+    for ( i=0; i<sc->layer_cnt; ++i ) {
+	SplinePointListsFree(sc->layers[i].splines); sc->layers[i].splines = NULL;
+	RefCharsFree(sc->layers[i].refs); sc->layers[i].refs = NULL;
+	ImageListsFree(sc->layers[i].images); sc->layers[i].images = NULL;
+	/* image garbage collection????!!!! */
+	/* Keep undoes */
+    }
+    StemInfosFree(sc->hstem); sc->hstem = NULL;
+    StemInfosFree(sc->vstem); sc->vstem = NULL;
+    DStemInfosFree(sc->dstem); sc->dstem = NULL;
+    MinimumDistancesFree(sc->md); sc->md = NULL;
+    KernPairsFree(sc->kerns); sc->kerns = NULL;
+    KernPairsFree(sc->vkerns); sc->vkerns = NULL;
+    AnchorPointsFree(sc->anchor); sc->anchor = NULL;
+    SplineCharListsFree(sc->dependents); sc->dependents = NULL;
+    PSTFree(sc->possub); sc->possub = NULL;
+    free(sc->ttf_instrs); sc->ttf_instrs = NULL;
+    free(sc->countermasks); sc->countermasks = NULL;
+#ifdef FONTFORGE_CONFIG_TYPE3
+    /*free(sc->layers);*/	/* don't free this, leave it empty */
+#endif
+}
+
+static void SCReplaceWith(SplineChar *dest, SplineChar *src) {
+    int opos=dest->orig_pos, uenc=dest->unicodeenc;
+    Undoes *u[2], *r1;
+    struct splinecharlist *scl = dest->dependents;
+    RefChar *refs;
+    int layer;
+#ifdef FONTFORGE_CONFIG_TYPE3
+    int lc;
+    Layer *layers;
+#else
+    SplineSet *back = dest->layers[ly_back].splines;
+    ImageList *images = dest->layers[ly_back].images;
+#endif
+
+    if ( src==dest )
+return;
+
+    SCPreserveState(dest,2);
+    u[0] = dest->layers[ly_fore].undoes; u[1] = dest->layers[ly_back].undoes; r1 = dest->layers[ly_back].redoes;
+
+    free(dest->name);
+    for ( layer = ly_fore; layer<dest->layer_cnt; ++layer ) {
+	SplinePointListsFree(dest->layers[layer].splines);
+	RefCharsFree(dest->layers[layer].refs);
+#ifdef FONTFORGE_CONFIG_TYPE3
+	ImageListsFree(dest->layers[layer].images);
+#endif
+    }
+    StemInfosFree(dest->hstem);
+    StemInfosFree(dest->vstem);
+    DStemInfosFree(dest->dstem);
+    MinimumDistancesFree(dest->md);
+    KernPairsFree(dest->kerns);
+    KernPairsFree(dest->vkerns);
+    AnchorPointsFree(dest->anchor);
+    PSTFree(dest->possub);
+    free(dest->ttf_instrs);
+
+#ifdef FONTFORGE_CONFIG_TYPE3
+    layers = dest->layers;
+    lc = dest->layer_cnt;
+    *dest = *src;
+    dest->layers = galloc(dest->layer_cnt*sizeof(Layer));
+    memcpy(&dest->layers[ly_back],&layers[ly_back],sizeof(Layer));
+    for ( layer=ly_fore; layer<dest->layer_cnt; ++layer ) {
+	memcpy(&dest->layers[layer],&src->layers[layer],sizeof(Layer));
+	dest->layers[layer].undoes = dest->layers[layer].redoes = NULL;
+	src->layers[layer].splines = NULL;
+	src->layers[layer].images = NULL;
+	src->layers[layer].refs = NULL;
+    }
+    for ( layer=ly_fore; layer<dest->layer_cnt && layer<lc; ++layer )
+	dest->layers[layer].undoes = layers[layer].undoes;
+    for ( ; layer<lc; ++layer )
+	UndoesFree(layers[layer].undoes);
+    free(layers);
+#else
+    *dest = *src;
+    dest->layers[ly_back].images = images;
+    dest->layers[ly_back].splines = back;
+    dest->layers[ly_fore].undoes = u[0]; dest->layers[ly_back].undoes = u[1]; dest->layers[ly_fore].redoes = NULL; dest->layers[ly_back].redoes = r1;
+
+    src->layers[ly_fore].splines = NULL;
+    src->layers[ly_fore].refs = NULL;
+#endif
+    dest->orig_pos = opos; dest->unicodeenc = uenc;
+    dest->dependents = scl;
+    dest->namechanged = true;
+
+    src->name = NULL;
+    src->unicodeenc = -1;
+    src->hstem = NULL;
+    src->vstem = NULL;
+    src->dstem = NULL;
+    src->md = NULL;
+    src->kerns = NULL;
+    src->vkerns = NULL;
+    src->anchor = NULL;
+    src->possub = NULL;
+    src->ttf_instrs = NULL;
+    src->ttf_instrs_len = 0;
+    SplineCharFree(src);
+
+    /* Fix up dependant info */
+    for ( layer=ly_fore; layer<dest->layer_cnt; ++layer )
+	for ( refs = dest->layers[layer].refs; refs!=NULL; refs=refs->next ) {
+	    for ( scl=refs->sc->dependents; scl!=NULL; scl=scl->next )
+		if ( scl->sc==src )
+		    scl->sc = dest;
+	}
+    SCCharChangedUpdate(dest);
+}
+
+static int FSLMatch(FeatureScriptLangList *fl,uint32 feat_tag,uint32 script,uint32 lang) {
+    struct scriptlanglist *sl;
+    int l;
+
+    while ( fl!=NULL ) {
+	if ( fl->featuretag==feat_tag || feat_tag==CHR('*',' ',' ',' ')) {
+	    for ( sl=fl->scripts; sl!=NULL ; sl=sl->next ) {
+		if ( sl->script==script || script==CHR('*',' ',' ',' ')) {
+		    for ( l=0; l<sl->lang_cnt; ++l ) {
+			uint32 lng = l<MAX_LANG ? sl->langs[l] : sl->morelangs[l-MAX_LANG];
+			if ( lng==lang || lang==CHR('*',' ',' ',' '))
+return( true );
+		    }
+		}
+	    }
+	}
+	fl = fl->next;
+    }
+return( false );
+}
+		
+static void FVApplySubstitution(FontView *fv,uint32 script, uint32 lang, uint32 feat_tag) {
+    SplineFont *sf = fv->sf, *sf_sl=sf;
+    SplineChar *sc, *replacement;
+    PST *pst;
+    EncMap *map = fv->map;
+    int i, gid;
+    SplineChar **replacements;
+    uint8 *removes;
+    char namebuf[40];
+
+    if ( sf_sl->cidmaster!=NULL ) sf_sl = sf_sl->cidmaster;
+    else if ( sf_sl->mm!=NULL ) sf_sl = sf_sl->mm->normal;
+
+    /* I used to do replaces and removes as I went along, and then Werner */
+    /*  gave me a font were "a" was replaced by "b" replaced by "a" */
+    replacements = gcalloc(sf->glyphcnt,sizeof(SplineChar *));
+    removes = gcalloc(sf->glyphcnt,sizeof(uint8));
+
+    for ( i=0; i<map->enccount; ++i ) if ( fv->selected[i] &&
+	    (gid=map->map[i])!=-1 && (sc=sf->glyphs[gid])!=NULL ) {
+	for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
+	    if ( pst->type==pst_substitution &&
+		    FSLMatch(pst->subtable->lookup->features,feat_tag,script,lang))
+	break;
+	}
+	if ( pst!=NULL ) {
+	    replacement = SFGetChar(sf,-1,pst->u.subs.variant);
+	    if ( replacement!=NULL ) {
+		replacements[gid] = SplineCharCopy( replacement,sf,NULL );
+		removes[replacement->orig_pos] = true;
+	    }
+	}
+    }
+
+    for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc = sf->glyphs[gid])!=NULL ) {
+	if ( replacements[gid]!=NULL ) {
+	    SCReplaceWith(sc,replacements[gid]);
+	} else if ( removes[gid] ) {
+	    /* This is deliberatly in the else. We don't want to remove a glyph*/
+	    /*  we are about to replace */
+	    SCPreserveState(sc,2);
+	    SCFreeMostContents(sc);
+	    sprintf(namebuf,"NameMe.%d", sc->orig_pos);
+	    sc->name = copy(namebuf);
+	    sc->namechanged = true;
+	    sc->unicodeenc = -1;
+	    SCCharChangedUpdate(sc);
+	    /* Retain the undoes/redoes */
+	    /* Retain the dependents */
+	}
+    }
+
+    free(removes);
+    free(replacements);
+}
+
 static void bApplySubstitution(Context *c) {
-    ScriptError(c,"This scripting function no longer works.");
+    uint32 tags[3];
+    int i;
+
+    if ( c->a.argc!=4 )
+	ScriptError( c, "Wrong number of arguments");
+    else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str ||
+	      c->a.vals[3].type!=v_str )
+	ScriptError(c,"Bad argument type");
+    for ( i=0; i<3; ++i ) {
+	char *str = c->a.vals[i+1].u.sval;
+	char temp[4];
+	memset(temp,' ',4);
+	if ( *str ) {
+	    temp[0] = *str;
+	    if ( str[1] ) {
+		temp[1] = str[1];
+		if ( str[2] ) {
+		    temp[2] = str[2];
+		    if ( str[3] ) {
+			temp[3] = str[3];
+			if ( str[4] )
+			    ScriptError(c,"Tags/Scripts/Languages are represented by strings which are at most 4 characters long");
+		    }
+		}
+	    }
+	}
+	tags[i] = (temp[0]<<24)|(temp[1]<<16)|(temp[2]<<8)|temp[3];
+    }
+    FVApplySubstitution(c->curfv, tags[0], tags[1], tags[2]);
 }
 
 static void bTransform(Context *c) {
@@ -9298,7 +9523,7 @@ static void _CheckIsScript(int argc, char *argv[]) {
     char *arg;
 
 #ifndef _NO_PYTHON
-    FontForge_PythonInit();
+    /* FontForge_PythonInit(); */ /* !!!!!! debug (valgrind doesn't like python) */
 #endif
     if ( argc==1 )
 return;
