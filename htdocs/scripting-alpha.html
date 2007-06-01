@@ -289,7 +289,25 @@ AddSizeFeature(10,8,12.9,211,[[0x409,"Text"],[0x40c,"Texte"]])
 	    Adds a vertical stem hint to any selected glyphs. The hint starts at location
 	    "start" and is width wide. A hint will be added to all selected glyphs.
 	  <DT>
-	    <STRIKE><A NAME="ApplySubstitution">A</A>pplySubstitution(script,lang,tag)</STRIKE>
+	    <A NAME="ApplySubstitution">A</A>pplySubstitution(script,lang,tag)
+	  <DD>
+	    All three arguments must be strings of no more that four characters (shorter
+	    strings will be padded with blanks to become 4 character strings). For each
+	    selected glyph this command will look up that glyph's list of substitutions,
+	    and if it finds a substitution with the tag "tag" (and if that substitution
+	    matches the script and language combination) then it will apply the
+	    substitution-- that is it will find the variant glyph specified in the
+	    substitution and replace the current glyph with the variant, and clear the
+	    variant.
+	    <P>
+	    FontForge recognizes the string "*" as a wildcard for both the script and
+	    the language (not for the tag though). So if you wish to replace all glyphs
+	    with their vertical variants:
+	    <BLOCKQUOTE>
+	      <PRE>SelectAll()
+ApplySubstitution("*","*","vrt2")
+</PRE>
+	    </BLOCKQUOTE>
 	  <DT>
 	    <A NAME="Array">A</A>rray(size)
 	  <DD>

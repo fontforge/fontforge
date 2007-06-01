@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 28-May-2007 -->
+  <!-- AP: Last modified: 31-May-2007 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -1436,10 +1436,9 @@ pen = None;				# Finalize the pen. This tells FontForge
 	    A fontforge glyph.
 	  <LI>
 	    A tuple of flags.<BR>
-	    (For reasons obscure to me, if I type a single element tuple on the command
-	    line, python strips the tuple and leaves me with the element
-	    <CODE>(("more"),"A") =&gt; ("more","A")</CODE>. So if you have only one flag
-	    to specify, append a None to the end of the tuple. FF needs the flags to
+	    (If you wish to specify a single flag it must still be in a tuple, and you
+	    must append a trailing comma to the flag (so <CODE>("more",) </CODE>rather
+	    than just <CODE><STRIKE>("more")</STRIKE></CODE>). FF needs the flags to
 	    be in a tuple otherwise it can't distinguish them from glyph names)
 	    <DL>
 	      <DT>
