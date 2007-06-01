@@ -391,7 +391,7 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	    gcd[i+j].gd.flags = gg_enabled|gg_visible;
 	    gcd[i+j].gd.cid = i+1000;
 	    gcd[i+j].gd.handle_controlevent = GI_TransChange;
-	    gcd[i+j].creator = GTextFieldCreate;
+	    gcd[i+j].creator = (i>=4 ? GNumericFieldCreate : GTextFieldCreate);
 	    hvarray[5*(i/2)+1+(i&1)] = &gcd[i+j];
 	    if ( (i&1) ) { hvarray[5*(i/2)+3] = GCD_Glue; hvarray[5*(i/2)+4] = NULL; }
 	}
@@ -1345,7 +1345,7 @@ return;
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].gd.cid = CID_X;
 	gcd[j].gd.handle_controlevent = AI_PosChanged;
-	gcd[j].creator = GTextFieldCreate;
+	gcd[j].creator = GNumericFieldCreate;
 	harray1[1] = &gcd[j];
 	++j;
 
@@ -1364,7 +1364,7 @@ return;
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].gd.cid = CID_Y;
 	gcd[j].gd.handle_controlevent = AI_PosChanged;
-	gcd[j].creator = GTextFieldCreate;
+	gcd[j].creator = GNumericFieldCreate;
 	harray1[3] = &gcd[j]; harray1[4] = NULL;
 	++j;
 
@@ -1493,7 +1493,7 @@ return;
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].gd.cid = CID_LigIndex;
 	gcd[j].gd.handle_controlevent = AI_LigIndexChanged;
-	gcd[j].creator = GTextFieldCreate;
+	gcd[j].creator = GNumericFieldCreate;
 	harray3[1] = &gcd[j]; harray3[2] = NULL;
 	++j;
 
@@ -2649,7 +2649,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].gd.cid = CID_BaseX;
 	gcd[j].gd.handle_controlevent = PI_BaseChanged;
-	gcd[j].creator = GTextFieldCreate;
+	gcd[j].creator = GNumericFieldCreate;
 	harray2[2] = &gcd[j];
 	++j;
 
@@ -2657,7 +2657,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].gd.cid = CID_BaseY;
 	gcd[j].gd.handle_controlevent = PI_BaseChanged;
-	gcd[j].creator = GTextFieldCreate;
+	gcd[j].creator = GNumericFieldCreate;
 	harray2[3] = &gcd[j]; harray2[4] = GCD_Glue; harray2[5] = NULL;
 	++j;
 
@@ -2710,7 +2710,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].gd.cid = CID_PrevXOff;
 	gcd[j].gd.handle_controlevent = PI_PrevChanged;
-	gcd[j].creator = GTextFieldCreate;
+	gcd[j].creator = GNumericFieldCreate;
 	hvarray1[l++] = &gcd[j];
 	++j;
 
@@ -2718,7 +2718,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].gd.cid = CID_PrevYOff;
 	gcd[j].gd.handle_controlevent = PI_PrevChanged;
-	gcd[j].creator = GTextFieldCreate;
+	gcd[j].creator = GNumericFieldCreate;
 	hvarray1[l++] = &gcd[j]; hvarray1[l++] = GCD_ColSpan; hvarray1[l++] = NULL;
 	++j;
 
@@ -2735,7 +2735,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].gd.cid = CID_PrevR;
 	gcd[j].gd.handle_controlevent = PI_PrevChanged;
-	gcd[j].creator = GTextFieldCreate;
+	gcd[j].creator = GNumericFieldCreate;
 	hvarray1[l++] = &gcd[j];
 	++j;
 
@@ -2823,7 +2823,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].gd.cid = CID_NextXOff;
 	gcd[j].gd.handle_controlevent = PI_NextChanged;
-	gcd[j].creator = GTextFieldCreate;
+	gcd[j].creator = GNumericFieldCreate;
 	hvarray2[l++] = &gcd[j];
 	++j;
 
@@ -2831,7 +2831,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].gd.cid = CID_NextYOff;
 	gcd[j].gd.handle_controlevent = PI_NextChanged;
-	gcd[j].creator = GTextFieldCreate;
+	gcd[j].creator = GNumericFieldCreate;
 	hvarray2[l++] = &gcd[j]; hvarray2[l++] = GCD_ColSpan; hvarray2[l++] = NULL;
 	++j;
 
@@ -2848,7 +2848,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].gd.cid = CID_NextR;
 	gcd[j].gd.handle_controlevent = PI_NextChanged;
-	gcd[j].creator = GTextFieldCreate;
+	gcd[j].creator = GNumericFieldCreate;
 	hvarray2[l++] = &gcd[j];
 	++j;
 
@@ -2937,7 +2937,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].gd.cid = CID_PrevX;
 	gcd[j].gd.handle_controlevent = PI_PrevIntChanged;
-	gcd[j].creator = GTextFieldCreate;
+	gcd[j].creator = GNumericFieldCreate;
 	hvarray3[l++] = &gcd[j];
 	++j;
 
@@ -2945,7 +2945,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].gd.cid = CID_PrevY;
 	gcd[j].gd.handle_controlevent = PI_PrevIntChanged;
-	gcd[j].creator = GTextFieldCreate;
+	gcd[j].creator = GNumericFieldCreate;
 	hvarray3[l++] = &gcd[j]; hvarray3[l++] = NULL;
 	++j;
 
@@ -2963,7 +2963,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].gd.cid = CID_NextX;
 	gcd[j].gd.handle_controlevent = PI_NextIntChanged;
-	gcd[j].creator = GTextFieldCreate;
+	gcd[j].creator = GNumericFieldCreate;
 	hvarray3[l++] = &gcd[j];
 	++j;
 
@@ -2971,7 +2971,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].gd.cid = CID_NextY;
 	gcd[j].gd.handle_controlevent = PI_NextIntChanged;
-	gcd[j].creator = GTextFieldCreate;
+	gcd[j].creator = GNumericFieldCreate;
 	hvarray3[l++] = &gcd[j]; hvarray3[l++] = NULL; hvarray3[l++] = NULL;
 	++j;
 	gi.interp_end = j;

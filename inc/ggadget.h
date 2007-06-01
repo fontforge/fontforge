@@ -422,6 +422,7 @@ GGadget *GScrollBarCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GListCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GTextFieldCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GPasswordCreate(struct gwindow *base, GGadgetData *gd,void *data);
+GGadget *GNumericFieldCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GTextAreaCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GListFieldCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GMenuBarCreate(struct gwindow *base, GGadgetData *gd,void *data);

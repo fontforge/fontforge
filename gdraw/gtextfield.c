@@ -31,6 +31,7 @@
 #include "ggadgetP.h"
 #include "ustring.h"
 #include "utype.h"
+#include <math.h>
 
 extern void (*_GDraw_InsCharHook)(GDisplay *,unichar_t);
 
@@ -965,6 +966,25 @@ static void GTFPopupMenu(GTextField *gt, GEvent *event) {
     GMenuCreatePopupMenu(gt->g.base,event, gtf_popuplist);
 }
 
+static void GTextFieldIncrement(GTextField *gt,int amount) {
+    unichar_t *end;
+    double d = u_strtod(gt->text,&end);
+    char buf[40];
+
+    while ( *end==' ' ) ++end;
+    if ( *end!='\0' ) {
+	GDrawBeep(NULL);
+return;
+    }
+    d = floor(d)+amount;
+    sprintf(buf,"%g", d);
+    free(gt->oldtext);
+    gt->oldtext = gt->text;
+    gt->text = uc_copy(buf);
+    _ggadget_redraw(&gt->g);
+    GTextFieldChanged(gt,-1);
+}
+
 static int GTextFieldDoChange(GTextField *gt, GEvent *event) {
     int ss = gt->sel_start, se = gt->sel_end;
     int pos, l, xpos, sel;
@@ -1027,6 +1047,10 @@ return( 2 );
 return( 2 );
 	  break;
 	  case GK_Up: case GK_KP_Up:
+	    if ( gt->numericfield ) {
+		GTextFieldIncrement(gt,(event->u.chr.state&(ksm_shift|ksm_control))?10:1);
+return( 2 );
+	    }
 	    if ( !gt->multi_line )
 	  break;
 	    if ( !( event->u.chr.state&ksm_shift ) && gt->sel_start!=gt->sel_end )
@@ -1056,6 +1080,10 @@ return( 2 );
 return( 2 );
 	  break;
 	  case GK_Down: case GK_KP_Down:
+	    if ( gt->numericfield ) {
+		GTextFieldIncrement(gt,(event->u.chr.state&(ksm_shift|ksm_control))?-10:-1);
+return( 2 );
+	    }
 	    if ( !gt->multi_line )
 	  break;
 	    if ( !( event->u.chr.state&ksm_shift ) && gt->sel_start!=gt->sel_end )
@@ -1352,7 +1380,7 @@ static int gtextfield_expose(GWindow pixmap, GGadget *g, GEvent *event) {
     if ( g->state == gs_invisible || gt->dontdraw )
 return( false );
 
-    if ( gt->listfield ) r = &ge->fieldrect;
+    if ( gt->listfield || gt->numericfield ) r = &ge->fieldrect;
 
     GDrawPushClip(pixmap,r,&old1);
 
@@ -1425,6 +1453,30 @@ return( false );
 	GBoxDrawBorder(pixmap,&r,&_GListMark_Box,g->state,false);
 	GDrawPopClip(pixmap,&old2);
 	GDrawPopClip(pixmap,&old1);
+    } else if ( gt->numericfield ) {
+	int y;
+	int half;
+	GPoint pts[5];
+
+	GBoxDrawBackground(pixmap,&ge->buttonrect,g->box,
+		g->state==gs_enabled? gs_pressedactive: g->state,false);
+	/* GBoxDrawBorder(pixmap,&ge->buttonrect,g->box,g->state,false); */
+	/* GDrawDrawRect(pixmap,&ge->buttonrect,fg); */
+
+	y = ge->buttonrect.y + ge->buttonrect.height/2;
+	pts[0].x = ge->buttonrect.x+3;
+	pts[1].x = ge->buttonrect.x+ge->buttonrect.width-3;
+	pts[2].x = ge->buttonrect.x + ge->buttonrect.width/2;
+	half = pts[2].x-pts[0].x;
+	GDrawDrawLine(pixmap, ge->buttonrect.x,y, ge->buttonrect.x+ge->buttonrect.width,y, fg );
+	pts[0].y = pts[1].y = y-2;
+	pts[2].y = pts[1].y-half;
+	pts[3] = pts[0];
+	GDrawFillPoly(pixmap,pts,3,fg);
+	pts[0].y = pts[1].y = y+2;
+	pts[2].y = pts[1].y+half;
+	pts[3] = pts[0];
+	GDrawFillPoly(pixmap,pts,3,fg);
     }
 return( true );
 }
@@ -1438,6 +1490,20 @@ return( true );
 return( true );
     }
     ge->popup = GListPopupCreate(&ge->gt.g,GListFieldSelected,ge->ti);
+return( true );
+}
+
+static int gnumericfield_mouse(GTextField *gt, GEvent *event) {
+    GListField *ge = (GListField *) gt;
+    if ( event->type==et_mousedown ) {
+	gt->incr_down = event->u.mouse.y > (ge->buttonrect.y + ge->buttonrect.height/2);
+	GTextFieldIncrement(gt,gt->incr_down?-1:1);
+	if ( gt->numeric_scroll==NULL )
+	    gt->numeric_scroll = GDrawRequestTimer(gt->g.base,200,100,NULL);
+    } else if ( gt->numeric_scroll!=NULL ) {
+	GDrawCancelTimer(gt->numeric_scroll);
+	gt->numeric_scroll = NULL;
+    }
 return( true );
 }
 
@@ -1528,6 +1594,11 @@ return( false );
 	    event->u.mouse.y<ge->buttonrect.y+ge->buttonrect.height ) ||
 	( gt->listfield && ge->popup!=NULL ))
 return( glistfield_mouse(ge,event));
+    if ( gt->numericfield && event->u.mouse.x>=ge->buttonrect.x &&
+	    event->u.mouse.x<ge->buttonrect.x+ge->buttonrect.width &&
+	    event->u.mouse.y>=ge->buttonrect.y &&
+	    event->u.mouse.y<ge->buttonrect.y+ge->buttonrect.height )
+return( gnumericfield_mouse(gt,event));
     if (( event->type==et_mouseup || event->type==et_mousedown ) &&
 	    (event->u.mouse.button==4 || event->u.mouse.button==5) &&
 	    gt->vsb!=NULL )
@@ -1737,6 +1808,10 @@ return(false);
 	}
 return( true );
     }
+    if ( gt->numeric_scroll == event->u.timer.timer ) {
+	GTextFieldIncrement(gt,gt->incr_down?-1:1);
+return( true );
+    }
     if ( gt->pressed == event->u.timer.timer ) {
 	GEvent e;
 	GDrawSetFont(g->base,gt->font);
@@ -1849,6 +1924,7 @@ return;
 	(gt->vsb->g.funcs->destroy)(&gt->vsb->g);
     if ( gt->hsb!=NULL )
 	(gt->hsb->g.funcs->destroy)(&gt->hsb->g);
+    GDrawCancelTimer(gt->numeric_scroll);
     GDrawCancelTimer(gt->pressed);
     GDrawCancelTimer(gt->cursor);
     free(gt->lines);
@@ -2003,7 +2079,7 @@ static void gtextfield_move(GGadget *g, int32 x, int32 y ) {
     GTextField *gt = (GTextField *) g;
     int fxo=0, fyo=0, bxo, byo;
 
-    if ( gt->listfield ) {
+    if ( gt->listfield || gt->numericfield ) {
 	fxo = ((GListField *) gt)->fieldrect.x - g->r.x;
 	fyo = ((GListField *) gt)->fieldrect.y - g->r.y;
 	bxo = ((GListField *) gt)->buttonrect.x - g->r.x;
@@ -2014,7 +2090,7 @@ static void gtextfield_move(GGadget *g, int32 x, int32 y ) {
     if ( gt->hsb!=NULL )
 	_ggadget_move((GGadget *) (gt->hsb),x,y+(gt->hsb->g.r.y-g->r.y));
     _ggadget_move(g,x,y);
-    if ( gt->listfield ) {
+    if ( gt->listfield || gt->numericfield ) {
 	((GListField *) gt)->fieldrect.x = g->r.x + fxo;
 	((GListField *) gt)->fieldrect.y = g->r.y + fyo;
 	((GListField *) gt)->buttonrect.x = g->r.x + bxo;
@@ -2028,7 +2104,7 @@ static void gtextfield_resize(GGadget *g, int32 width, int32 height ) {
     int fxo=0, fwo=0, fyo=0, bxo, byo;
     int l;
 
-    if ( gt->listfield ) {
+    if ( gt->listfield || gt->numericfield ) {
 	fxo = ((GListField *) gt)->fieldrect.x - g->r.x;
 	fwo = g->r.width - ((GListField *) gt)->fieldrect.width;
 	fyo = ((GListField *) gt)->fieldrect.y - g->r.y;
@@ -2064,7 +2140,7 @@ static void gtextfield_resize(GGadget *g, int32 width, int32 height ) {
 	    _ggadget_redraw(&gt->g);
 	}
     }
-    if ( gt->listfield ) {
+    if ( gt->listfield || gt->numericfield) {
 	((GListField *) gt)->fieldrect.x = g->r.x + fxo;
 	((GListField *) gt)->fieldrect.width = g->r.width -fwo;
 	((GListField *) gt)->fieldrect.y = g->r.y + fyo;
@@ -2445,17 +2521,25 @@ static void GTextFieldFit(GTextField *gt) {
 	if ( !gt->wrap )
 	    GTextFieldAddHSb(gt);
     }
-    if ( gt->listfield ) {
+    if ( gt->listfield || gt->numericfield ) {
 	GListField *ge = (GListField *) gt;
 	int extra;
-	extra = GDrawPointsToPixels(gt->g.base,_GListMarkSize) +
-		2*GDrawPointsToPixels(gt->g.base,_GGadget_TextImageSkip) +
-		GBoxBorderWidth(gt->g.base,&_GListMark_Box);
+	if ( gt->listfield )
+	    extra = GDrawPointsToPixels(gt->g.base,_GListMarkSize) +
+		    GDrawPointsToPixels(gt->g.base,_GGadget_TextImageSkip) +
+		    2*GBoxBorderWidth(gt->g.base,&_GListMark_Box);
+	else {
+	    extra = GDrawPointsToPixels(gt->g.base,_GListMarkSize)/2 +
+		    GDrawPointsToPixels(gt->g.base,_GGadget_TextImageSkip);
+	    extra = (extra-1)|1;
+	}
 	ge->fieldrect = ge->buttonrect = gt->g.r;
 	ge->fieldrect.width -= extra;
 	extra -= GDrawPointsToPixels(gt->g.base,_GGadget_TextImageSkip)/2;
 	ge->buttonrect.x = ge->buttonrect.x+ge->buttonrect.width-extra;
 	ge->buttonrect.width = extra;
+	if ( gt->numericfield )
+	    ++ge->fieldrect.width;
     }
 }
 
@@ -2510,6 +2594,15 @@ GGadget *GPasswordCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 
 return( &gt->g );
 }
+
+GGadget *GNumericFieldCreate(struct gwindow *base, GGadgetData *gd,void *data) {
+    GTextField *gt = gcalloc(1,sizeof(GNumericField));
+    gt->numericfield = true;
+    _GTextFieldCreate(gt,base,gd,data,&gtextfield_box);
+
+return( &gt->g );
+}
+
 
 GGadget *GTextAreaCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     GTextField *gt = gcalloc(1,sizeof(GTextField));
