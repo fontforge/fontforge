@@ -8605,7 +8605,7 @@ static PyObject *PyFFFont_CreateUnicodeChar(PyObject *self, PyObject *args) {
     FontView *fv = ((PyFF_Font *) self)->fv;
     SplineChar *sc;
 
-    if ( !PyArg_ParseTuple(args,"i|s", &enc, &name ) )
+    if ( !PyArg_ParseTuple(args,"i|s", &uni, &name ) )
 return( NULL );
     if ( uni<-1 || uni>=unicode4_size ) {
 	PyErr_Format(PyExc_ValueError, "Unicode codepoint, %d, out of range, must be either -1 or between 0 and 0x10ffff", uni );
