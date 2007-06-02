@@ -2609,8 +2609,10 @@ void FVAddEncodingSlot(FontView *fv,int gid) {
 
     fv->selected = grealloc(fv->selected,map->enccount);
     fv->selected[enc] = 0;
-    fv->rowltot = (enc+1+fv->colcnt-1)/fv->colcnt;
-    GScrollBarSetBounds(fv->vsb,0,fv->rowltot,fv->rowcnt);
+    if ( fv->colcnt!=0 ) {		/* Ie. scripting vs. UI */
+	fv->rowltot = (enc+1+fv->colcnt-1)/fv->colcnt;
+	GScrollBarSetBounds(fv->vsb,0,fv->rowltot,fv->rowcnt);
+    }
 }
 
 void SFAddEncodingSlot(SplineFont *sf,int gid) {
@@ -2721,7 +2723,7 @@ void SFAddGlyphAndEncode(SplineFont *sf,SplineChar *sc,EncMap *basemap, int base
 	    FVAddEncodingSlot(fv,gid);
 	if ( map==basemap ) mapfound = true;
     }
-    if ( !mapfound )
+    if ( !mapfound && basemap!=NULL )
 	MapAddEnc(sf,sc,basemap,basemap,baseenc,gid,fv);
     sf->glyphs[gid] = sc;
     sc->orig_pos = gid;
