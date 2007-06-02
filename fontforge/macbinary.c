@@ -2742,10 +2742,16 @@ return( NULL );
 	    if ( kp->sc==sc2 )
 	break;
 	if ( kp==NULL ) {
+	    uint32 script;
 	    kp = chunkalloc(sizeof(KernPair));
 	    kp->sc = sc2;
 	    kp->next = sc1->kerns;
 	    sc1->kerns = kp;
+	    script = SCScriptFromUnicode(sc1);
+	    if ( script==DEFAULT_SCRIPT )
+		script = SCScriptFromUnicode(sc2);
+	    kp->subtable = SFSubTableFindOrMake(sc1->parent,CHR('k','e','r','n'),
+		    script, gpos_pair);
 	}
 	kp->off = offset;
     }
