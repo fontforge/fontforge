@@ -1742,7 +1742,7 @@ static void MVCut(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	break;
 	if ( i==-1 )
 return;
-	MVCopyChar(mv,mv->glyphs[i].sc,true);
+	MVCopyChar(mv,mv->glyphs[i].sc,ct_fullcopy);
 	MVClear(gw,mi,e);
     }
 }
@@ -1759,7 +1759,7 @@ static void MVCopy(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	break;
 	if ( i==-1 )
 return;
-	MVCopyChar(mv,mv->glyphs[i].sc,true);
+	MVCopyChar(mv,mv->glyphs[i].sc,ct_fullcopy);
     }
 }
 
@@ -1774,7 +1774,7 @@ return;
     break;
     if ( i==-1 )
 return;
-    MVCopyChar(mv,mv->glyphs[i].sc,false);
+    MVCopyChar(mv,mv->glyphs[i].sc,ct_reference);
 }
 
 static void MVMenuCopyWidth(GWindow gw,struct gmenuitem *mi,GEvent *e) {

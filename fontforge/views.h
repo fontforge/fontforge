@@ -790,6 +790,7 @@ extern RefChar *CopyContainsRef(SplineFont *);
 extern char **CopyGetPosSubData(enum possub_type *type,SplineFont **copied_from,
 	int pst_depth);
 extern void CopyReference(SplineChar *sc);
+extern void SCCopyLookupData(SplineChar *sc);
 extern void PasteRemoveSFAnchors(SplineFont *);
 extern void PasteAnchorClassMerge(SplineFont *sf,AnchorClass *into,AnchorClass *from);
 extern void PasteRemoveAnchorClass(SplineFont *sf,AnchorClass *dying);
@@ -799,7 +800,8 @@ extern void BCCopySelected(BDFChar *bc,int pixelsize,int depth);
 extern void PasteToBC(BDFChar *bc,int pixelsize,int depth,FontView *fv);
 extern void FVCopyWidth(FontView *fv,enum undotype ut);
 extern void FVCopyAnchors(FontView *fv);
-extern void FVCopy(FontView *fv, int fullcopy);
+enum fvcopy_type { ct_fullcopy, ct_reference, ct_lookups, ct_unlinkrefs };
+extern void FVCopy(FontView *fv, enum fvcopy_type copytype);
 extern void PasteIntoFV(FontView *fv, int pasteinto, real trans[6]);
 
 extern void SCUpdateAll(SplineChar *sc);
@@ -1193,7 +1195,7 @@ extern void CVRemoveTopUndo(CharView *cv);
 extern void CopySelected(CharView *cv);
 extern void CVCopyGridFit(CharView *cv);
 extern void CopyWidth(CharView *cv,enum undotype);
-extern void MVCopyChar(MetricsView *mv, SplineChar *sc, int fullcopy);
+extern void MVCopyChar(MetricsView *mv, SplineChar *sc, enum fvcopy_type fullcopy);
 extern void PasteIntoMV(MetricsView *mv,SplineChar *sc, int doclear);
 
 extern void CVShowPoint(CharView *cv, BasePoint *me);
