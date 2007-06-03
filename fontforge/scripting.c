@@ -2318,7 +2318,7 @@ static void bCopyReference(Context *c) {
 static void bCopyUnlinked(Context *c) {
     if ( c->a.argc!=1 )
 	ScriptError( c, "Wrong number of arguments");
-    FVCopy(c->curfv,2);
+    FVCopy(c->curfv,ct_unlinkrefs);
 }
 
 static void bCopyWidth(Context *c) {
@@ -9523,7 +9523,7 @@ static void _CheckIsScript(int argc, char *argv[]) {
     char *arg;
 
 #ifndef _NO_PYTHON
-    /* FontForge_PythonInit(); */ /* !!!!!! debug (valgrind doesn't like python) */
+    FontForge_PythonInit(); /* !!!!!! debug (valgrind doesn't like python) */
 #endif
     if ( argc==1 )
 return;

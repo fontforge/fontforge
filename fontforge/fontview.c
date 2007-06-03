@@ -1788,7 +1788,8 @@ void FontViewMenu_Metafont(GtkMenuItem *menuitem, gpointer user_data) {
 #define MID_SameGlyphAs	2130
 #define MID_RplRef	2131
 #define MID_PasteAfter	2132
-#define	MID_TTFInstr		2134
+#define	MID_TTFInstr	2134
+#define	MID_CopyLookupData	2135
 #define MID_Convert2CID	2800
 #define MID_Flatten	2801
 #define MID_InsertFont	2802
@@ -1893,7 +1894,19 @@ void FontViewMenu_Copy(GtkMenuItem *menuitem, gpointer user_data) {
 # endif
     if ( FVAnyCharSelected(fv)==-1 )
 return;
-    FVCopy(fv,true);
+    FVCopy(fv,ct_fullcopy);
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuCopyLookupData(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_CopyLookupData(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+    if ( FVAnyCharSelected(fv)==-1 )
+return;
+    FVCopy(fv,ct_lookups);
 }
 
 # ifdef FONTFORGE_CONFIG_GDRAW
@@ -1905,7 +1918,7 @@ void FontViewMenu_CopyRef(GtkMenuItem *menuitem, gpointer user_data) {
 # endif
     if ( FVAnyCharSelected(fv)==-1 )
 return;
-    FVCopy(fv,false);
+    FVCopy(fv,ct_reference);
 }
 
 # ifdef FONTFORGE_CONFIG_GDRAW
@@ -2513,7 +2526,7 @@ static void FVMenuCut(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 void FontViewMenu_Cut(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
-    FVCopy(fv,true);
+    FVCopy(fv,ct_fullcopy);
     FVClear(fv);
 }
 
@@ -5901,6 +5914,9 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_RplRef:
 	    mi->ti.disabled = pos==-1;
 	  break;
+	  case MID_CopyLookupData:
+	    mi->ti.disabled = pos==-1 || (fv->sf->gpos_lookups==NULL && fv->sf->gsub_lookups==NULL);
+	  break;
 	  case MID_CopyVWidth: 
 	    mi->ti.disabled = pos==-1 || !fv->sf->hasvmetrics;
 	  break;
@@ -6226,6 +6242,7 @@ static GMenuItem2 edlist[] = {
     { { (unichar_t *) N_("Cu_t"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 't' }, H_("Cut|Ctl+X"), NULL, NULL, FVMenuCut, MID_Cut },
     { { (unichar_t *) N_("_Copy"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Copy|Ctl+C"), NULL, NULL, FVMenuCopy, MID_Copy },
     { { (unichar_t *) N_("C_opy Reference"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, H_("Copy Reference|Ctl+G"), NULL, NULL, FVMenuCopyRef, MID_CopyRef },
+    { { (unichar_t *) N_("Copy _Lookup Data"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, H_("Copy Lookup Data|Alt+Ctl+C"), NULL, NULL, FVMenuCopyLookupData, MID_CopyLookupData },
     { { (unichar_t *) N_("Copy _Width"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'W' }, H_("Copy Width|Ctl+W"), NULL, NULL, FVMenuCopyWidth, MID_CopyWidth },
     { { (unichar_t *) N_("Copy _VWidth"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'V' }, H_("Copy VWidth|No Shortcut"), NULL, NULL, FVMenuCopyWidth, MID_CopyVWidth },
     { { (unichar_t *) N_("Co_py LBearing"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'p' }, H_("Copy LBearing|No Shortcut"), NULL, NULL, FVMenuCopyWidth, MID_CopyLBearing },
@@ -10839,14 +10856,14 @@ void FontViewFree(FontView *fv) {
 void FVFakeMenus(FontView *fv,int cmd) {
     switch ( cmd ) {
       case 0:	/* Cut */
-	FVCopy(fv,true);
+	FVCopy(fv,ct_fullcopy);
 	FVClear(fv);
       break;
       case 1:
-	FVCopy(fv,true);
+	FVCopy(fv,ct_fullcopy);
       break;
       case 2:	/* Copy reference */
-	FVCopy(fv,false);
+	FVCopy(fv,ct_lookups);
       break;
       case 3:
 	FVCopyWidth(fv,ut_width);

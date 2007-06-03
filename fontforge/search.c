@@ -1598,7 +1598,7 @@ static void CV2SC(CharView *cv, SplineChar *sc, SearchView *sv) {
     cv->searcher = sv;
 }
 
-static void SVCopyToCV(FontView *fv,int i,CharView *cv,int full) {
+static void SVCopyToCV(FontView *fv,int i,CharView *cv,enum fvcopy_type full) {
     fv->selected[i] = true;
     FVCopy(fv,full);
     SCClearContents(cv->sc);
@@ -1635,12 +1635,9 @@ void FVReplaceOutlineWithReference( FontView *fv, double fudge ) {
     for ( i=0; i<fv->map->enccount; ++i ) if ( selected[i] && (gid=fv->map->map[i])!=-1 &&
 	    sf->glyphs[gid]!=NULL )
 	++selcnt;
-#if defined(FONTFORGE_CONFIG_GDRAW)
+#if defined(FONTFORGE_CONFIG_GDRAW) || defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_start_indicator(10,_("Replace with Reference"),
-	    _("Replace with Reference"),0,selcnt,1);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gwwv_progress_start_indicator(10,_("Replace with Reference"),
-	    _("Replace Outline with Reference",0,selcnt,1);
+	    _("Replace Outline with Reference"),0,selcnt,1);
 #endif
 
     for ( i=0; i<fv->map->enccount; ++i ) if ( selected[i] && (gid=fv->map->map[i])!=-1 &&
@@ -1648,15 +1645,12 @@ void FVReplaceOutlineWithReference( FontView *fv, double fudge ) {
 	if ( IsASingleReferenceOrEmpty(sf->glyphs[gid]))
     continue;		/* No point in replacing something which is itself a ref with a ref to a ref */
 	memset(fv->selected,0,fv->map->enccount);
-	SVCopyToCV(fv,i,&sv->cv_srch,true);
-	SVCopyToCV(fv,i,&sv->cv_rpl,false);
+	SVCopyToCV(fv,i,&sv->cv_srch,ct_fullcopy);
+	SVCopyToCV(fv,i,&sv->cv_rpl,ct_reference);
 	sv->sc_srch.changed_since_autosave = sv->sc_rpl.changed_since_autosave = true;
 	SVResetPaths(sv);
 	if ( !_DoFindAll(sv) && selcnt==1 )
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    ff_post_notice(_("Not Found"),_("The outlines of glyph %2$.30s were not found in the font %1$.60s"),
-		    sf->fontname,sf->glyphs[gid]->name);
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GDRAW) || defined(FONTFORGE_CONFIG_GTK)
 	    ff_post_notice(_("Not Found"),_("The outlines of glyph %2$.30s were not found in the font %1$.60s"),
 		    sf->fontname,sf->glyphs[gid]->name);
 #endif
@@ -1665,17 +1659,11 @@ void FVReplaceOutlineWithReference( FontView *fv, double fudge ) {
 		changed[j] = 1;
 	CopyBufferFree();
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( !gwwv_progress_next())
-#elif defined(FONTFORGE_CONFIG_GTK)
-	if ( !gwwv_progress_next())
-#endif
     break;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gwwv_progress_end_indicator();
-#elif defined(FONTFORGE_CONFIG_GTK)
+#if defined(FONTFORGE_CONFIG_GDRAW) || defined(FONTFORGE_CONFIG_GTK)
     gwwv_progress_end_indicator();
 #endif
 

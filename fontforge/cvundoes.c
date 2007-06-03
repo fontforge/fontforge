@@ -401,7 +401,7 @@ void UndoesFree(Undoes *undo) {
 	    /* Nothing else to free */;
 	  break;
 	  case ut_state: case ut_tstate: case ut_statehint: case ut_statename:
-	  case ut_hints: case ut_anchors:
+	  case ut_hints: case ut_anchors: case ut_statelookup:
 	    SplinePointListsFree(undo->u.state.splines);
 	    RefCharsFree(undo->u.state.refs);
 	    MinimumDistancesFree(undo->u.state.md);
@@ -532,7 +532,7 @@ return(NULL);
     undo->u.state.hints = UHintCopy(sc,true);
     undo->u.state.instrs = (uint8*) copyn((char *) sc->ttf_instrs, sc->ttf_instrs_len);
     undo->u.state.instrs_len = sc->ttf_instrs_len;
-    undo->u.state.copied_from = sc->parent;
+    undo->copied_from = sc->parent;
 return( AddUndo(undo,&sc->layers[ly_fore].undoes,&sc->layers[ly_fore].redoes));
 }
 
@@ -576,7 +576,7 @@ return(NULL);
     undo->u.state.dostroke = sc->layers[layer].dostroke;
     undo->u.state.fillfirst = sc->layers[layer].fillfirst;
 #endif
-    undo->u.state.copied_from = sc->parent;
+    undo->copied_from = sc->parent;
 return( AddUndo(undo,&sc->layers[layer].undoes,&sc->layers[layer].redoes));
 }
 
@@ -614,7 +614,7 @@ return(NULL);
     undo->u.state.dostroke = sf->grid.dostroke;
     undo->u.state.fillfirst = sf->grid.fillfirst;
 #endif
-    undo->u.state.copied_from = sf;
+    undo->copied_from = sf;
 return( AddUndo(undo,&sf->grid.undoes,&sf->grid.redoes));
 }
 
@@ -1016,7 +1016,7 @@ void CopyBufferFree(void) {
 	UHintListFree(copybuffer.u.state.hints);
 	free(copybuffer.u.state.instrs);
       break;
-      case ut_state: case ut_statehint: case ut_anchors:
+      case ut_state: case ut_statehint: case ut_anchors: case ut_statelookup:
 	SplinePointListsFree(copybuffer.u.state.splines);
 	RefCharsFree(copybuffer.u.state.refs);
 	AnchorPointsFree(copybuffer.u.state.anchor);
@@ -1064,7 +1064,7 @@ static void *copybufferPt2str(void *_copybuffer,int32 *len) {
 	  case ut_composit:
 	    cur = cur->u.composit.state;
 	  break;
-	  case ut_state: case ut_statehint: case ut_statename:
+	  case ut_state: case ut_statehint: case ut_statename: case ut_statelookup:
     goto out;
 	  default:
 	    cur = NULL;
@@ -1158,7 +1158,7 @@ static void *copybuffer2svg(void *_copybuffer,int32 *len) {
 	  case ut_composit:
 	    cur = cur->u.composit.state;
 	  break;
-	  case ut_state: case ut_statehint: case ut_layers:
+	  case ut_state: case ut_statehint: case ut_layers: case ut_statelookup:
     goto out;
 	  default:
 	    cur = NULL;
@@ -1178,9 +1178,9 @@ return( copy(""));
     dummy.layer_cnt = 2;
     dummy.name = "dummy";
     if ( cur->undotype!=ut_layers )
-	dummy.parent = cur->u.state.copied_from;
+	dummy.parent = cur->copied_from;
     else if ( cur->u.multiple.mult!=NULL && cur->u.multiple.mult->undotype == ut_state )
-	dummy.parent = cur->u.multiple.mult->u.state.copied_from;
+	dummy.parent = cur->u.multiple.mult->copied_from;
     if ( dummy.parent==NULL )
 	dummy.parent = fv_list->sf;		/* Might not be right, but we need something */
 #ifdef FONTFORGE_CONFIG_TYPE3
@@ -1262,7 +1262,7 @@ static void *copybuffer2eps(void *_copybuffer,int32 *len) {
 	  case ut_composit:
 	    cur = cur->u.composit.state;
 	  break;
-	  case ut_state: case ut_statehint: case ut_layers:
+	  case ut_state: case ut_statehint: case ut_layers: case ut_statelookup:
     goto out;
 	  default:
 	    cur = NULL;
@@ -1282,9 +1282,9 @@ return( copy(""));
     dummy.layer_cnt = 2;
     dummy.name = "dummy";
     if ( cur->undotype!=ut_layers )
-	dummy.parent = cur->u.state.copied_from;
+	dummy.parent = cur->copied_from;
     else if ( cur->u.multiple.mult!=NULL && cur->u.multiple.mult->undotype == ut_state )
-	dummy.parent = cur->u.multiple.mult->u.state.copied_from;
+	dummy.parent = cur->u.multiple.mult->copied_from;
     if ( dummy.parent==NULL )
 	dummy.parent = fv_list->sf;		/* Might not be right, but we need something */
 #ifdef FONTFORGE_CONFIG_TYPE3
@@ -1414,8 +1414,12 @@ int CopyContainsSomething(void) {
     if ( cur->undotype==ut_composit )
 return( cur->u.composit.state!=NULL );
 
+    if ( cur->undotype==ut_statelookup && cur->copied_from==NULL )
+return( false );		/* That is, if the source font has been closed, we can't use this any more */
+
 return( cur->undotype==ut_state || cur->undotype==ut_tstate ||
 	cur->undotype==ut_statehint || cur->undotype==ut_statename ||
+	cur->undotype==ut_statelookup ||
 	cur->undotype==ut_width || cur->undotype==ut_vwidth ||
 	cur->undotype==ut_lbearing || cur->undotype==ut_rbearing ||
 	cur->undotype==ut_hints ||
@@ -1447,7 +1451,7 @@ return( NULL );
     if ( cur->u.state.splines!=NULL || cur->u.state.refs==NULL ||
 	    cur->u.state.refs->next != NULL )
 return( NULL );
-    if ( sf!=cur->u.state.copied_from )
+    if ( sf!=cur->copied_from )
 return( NULL );
 
 return( cur->u.state.refs );
@@ -1461,9 +1465,9 @@ static void _CopyBufferClearCopiedFrom(Undoes *cb, SplineFont *dying) {
     switch ( cb->undotype ) {
       case ut_noop:
       break;
-      case ut_state: case ut_statehint: case ut_statename:
-	if ( cb->u.state.copied_from == dying )
-	    cb->u.state.copied_from = NULL;
+      case ut_state: case ut_statehint: case ut_statename: case ut_statelookup:
+	if ( cb->copied_from == dying )
+	    cb->copied_from = NULL;
       break;
       case ut_width:
       case ut_vwidth:
@@ -1471,9 +1475,13 @@ static void _CopyBufferClearCopiedFrom(Undoes *cb, SplineFont *dying) {
       case ut_lbearing:
       break;
       case ut_composit:
+	if ( cb->copied_from == dying )
+	    cb->copied_from = NULL;
 	_CopyBufferClearCopiedFrom(cb->u.composit.state,dying);
       break;
       case ut_multiple: case ut_layers:
+	if ( cb->copied_from == dying )
+	    cb->copied_from = NULL;
 	for ( cb=cb->u.multiple.mult; cb!=NULL; cb=cb->next )
 	    _CopyBufferClearCopiedFrom(cb,dying);
       break;
@@ -1505,7 +1513,7 @@ void CopyReference(SplineChar *sc) {
     copybuffer.u.state.width = sc->width;
     copybuffer.u.state.vwidth = sc->vwidth;
     copybuffer.u.state.refs = ref = RefCharCreate();
-    copybuffer.u.state.copied_from = sc->parent;
+    copybuffer.copied_from = sc->parent;
 #ifdef FONTFORGE_CONFIG_TYPE3
     if ( ly_fore<sc->layer_cnt ) {
 	copybuffer.u.state.fill_brush = sc->layers[ly_fore].fill_brush;
@@ -1523,6 +1531,11 @@ void CopyReference(SplineChar *sc) {
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     XClipCheckEps();
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+}
+
+void SCCopyLookupData(SplineChar *sc) {
+    CopyReference(sc);
+    copybuffer.undotype = ut_statelookup;
 }
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -1582,7 +1595,7 @@ void CopySelected(CharView *cv) {
 	copybuffer.u.state.fillfirst = cv->layerheads[cv->drawmode]->fillfirst;
     }
 #endif
-    copybuffer.u.state.copied_from = cv->sc->parent;
+    copybuffer.copied_from = cv->sc->parent;
 
     XClipCheckEps();
 }
@@ -1600,24 +1613,24 @@ return;
     copybuffer.u.state.width = cv->ft_gridfitwidth;
     copybuffer.u.state.vwidth = sc->vwidth;
     copybuffer.u.state.splines = SplinePointListCopy(cv->gridfit);
-    copybuffer.u.state.copied_from = cv->sc->parent;
+    copybuffer.copied_from = cv->sc->parent;
 
     XClipCheckEps();
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 #ifdef FONTFORGE_CONFIG_TYPE3
-static Undoes *SCCopyAllLayer(SplineChar *sc,int full,int layer) {
+static Undoes *SCCopyAllLayer(SplineChar *sc,enum fvcopy_type full,int layer) {
 #else
-static Undoes *SCCopyAll(SplineChar *sc,int full) {
+static Undoes *SCCopyAll(SplineChar *sc,enum fvcopy_type full) {
     const int layer = ly_fore;
 #endif
     Undoes *cur;
     RefChar *ref;
     extern int copymetadata, copyttfinstr;
-    /* If full==1 copy the glyph as is. */
-    /* If full==0 put a reference to the glyph in the clipboard */
-    /* If full==2 copy the glyph, but unlink any references it contains */
+    /* If full==ct_fullcopy copy the glyph as is. */
+    /* If full==ct_reference put a reference to the glyph in the clipboard */
+    /* If full==ct_unlinkrefs copy the glyph, but unlink any references it contains */
     /*	so we end up with no references and a bunch of splines */
 
     cur = chunkalloc(sizeof(Undoes));
@@ -1627,10 +1640,10 @@ static Undoes *SCCopyAll(SplineChar *sc,int full) {
 	cur->was_order2 = sc->parent->order2;
 	cur->u.state.width = sc->width;
 	cur->u.state.vwidth = sc->vwidth;
-	if ( full ) {
+	if ( full==ct_fullcopy || full == ct_unlinkrefs ) {
 	    cur->undotype = copymetadata ? ut_statename : ut_statehint;
 	    cur->u.state.splines = SplinePointListCopy(sc->layers[layer].splines);
-	    if ( full==2 )
+	    if ( full==ct_unlinkrefs )
 		cur->u.state.splines = RefCharsCopyUnlinked(cur->u.state.splines,sc,layer);
 	    else
 		cur->u.state.refs = RefCharsCopyState(sc,layer);
@@ -1651,7 +1664,7 @@ static Undoes *SCCopyAll(SplineChar *sc,int full) {
 		cur->u.state.possub = NULL;
 	    }
 	} else {		/* Or just make a reference */
-	    cur->undotype = ut_state;
+	    cur->undotype = full==ct_reference ? ut_state : ut_statelookup;
 	    cur->u.state.refs = ref = RefCharCreate();
 	    ref->unicode_enc = sc->unicodeenc;
 	    ref->orig_pos = sc->orig_pos;
@@ -1668,20 +1681,20 @@ static Undoes *SCCopyAll(SplineChar *sc,int full) {
 	    cur->u.state.fillfirst = sc->layers[layer].fillfirst;
 	}
 #endif
-	cur->u.state.copied_from = sc->parent;
+	cur->copied_from = sc->parent;
     }
 return( cur );
 }
 
 #ifdef FONTFORGE_CONFIG_TYPE3
-static Undoes *SCCopyAll(SplineChar *sc,int full) {
+static Undoes *SCCopyAll(SplineChar *sc,enum fvcopy_type full) {
     int layer;
     Undoes *ret, *cur, *last=NULL;
 
     ret = chunkalloc(sizeof(Undoes));
     if ( sc==NULL ) {
 	ret->undotype = ut_noop;
-    } else if ( !full || !sc->parent->multilayer ) {	/* Make a reference */
+    } else if ( full==ct_reference || full==ct_lookups || !sc->parent->multilayer ) {	/* Make a reference */
 	chunkfree(ret,sizeof(Undoes));
 	ret = SCCopyAllLayer(sc,full,ly_fore );
     } else {
@@ -1693,7 +1706,7 @@ static Undoes *SCCopyAll(SplineChar *sc,int full) {
 	    else
 		last->next = cur;
 	    last = cur;
-	    full = false;
+	    /* full = ct_reference; 	Hunh? What was I thinking? */
 	}
     }
 return( ret );
@@ -1706,6 +1719,7 @@ void SCCopyWidth(SplineChar *sc,enum undotype ut) {
     CopyBufferFreeGrab();
 
     copybuffer.undotype = ut;
+    copybuffer.copied_from = sc->parent;
     switch ( ut ) {
       case ut_width:
 	copybuffer.u.width = sc->width;
@@ -1743,6 +1757,7 @@ static SplineChar *FindCharacter(SplineFont *into, SplineFont *from,RefChar *rf,
     /* More complicated cases are possible too, where from and into might */
     /*  be different -- but from has still been closed and reopened as something */
     /*  else */
+    /* Should be fixed now. We clear copied_from when we close a font */
     if ( from!=NULL && (
 	    rf->orig_pos>=from->glyphcnt || from->glyphs[rf->orig_pos]==NULL ||
 	    from->glyphs[rf->orig_pos]->unicodeenc!=rf->unicode_enc ))
@@ -1783,7 +1798,7 @@ static void PasteNonExistantRefCheck(SplineChar *sc,Undoes *paster,RefChar *ref,
     SplineSet *new, *spl;
     int yes = 3;
 
-    rsc = FindCharacter(sc->parent,paster->u.state.copied_from,ref,&fromsc);
+    rsc = FindCharacter(sc->parent,paster->copied_from,ref,&fromsc);
     if ( rsc!=NULL )
 	IError("We should never have called PasteNonExistantRefCheck if we had a glyph");
     if ( fromsc==NULL ) {
@@ -2143,7 +2158,7 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
 		ExtractHints(sc,paster->u.state.hints,true);
 		free(sc->ttf_instrs);
 		if ( paster->u.state.instrs_len!=0 && sc->parent->order2 &&
-			InstrsSameParent(sc,paster->u.state.copied_from)) {
+			InstrsSameParent(sc,paster->copied_from)) {
 		    sc->ttf_instrs = (uint8 *) copyn((char *) paster->u.state.instrs,paster->u.state.instrs_len);
 		    sc->ttf_instrs_len = paster->u.state.instrs_len;
 		} else {
@@ -2155,9 +2170,9 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
 	    SCSetMetaData(sc,paster->u.state.charname,
 		    paster->u.state.unicodeenc==0xffff?-1:paster->u.state.unicodeenc,
 		    paster->u.state.comment);
-	    PSTFree(sc->possub);
-	    for ( fvs = fv_list; fvs!=NULL && fvs->sf!=paster->u.state.copied_from; fvs=fvs->next );
+	    for ( fvs = fv_list; fvs!=NULL && fvs->sf!=paster->copied_from; fvs=fvs->next );
 	    if ( fvs!=NULL ) {	/* If we can't translate the lookups, the PSTs are meaningless */
+		PSTFree(sc->possub);
 		mc->sf_from = fvs->sf; mc->sf_to = sc->parent;
 		sc->possub = PSTCopy(paster->u.state.possub,sc,mc);
 	    }
@@ -2165,14 +2180,14 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
 	if ( paster->u.state.refs!=NULL ) {
 	    RefChar *new, *refs;
 	    SplineChar *rsc;
-	    double scale = PasteFigureScale(sc->parent,paster->u.state.copied_from);
+	    double scale = PasteFigureScale(sc->parent,paster->copied_from);
 	    for ( refs = paster->u.state.refs; refs!=NULL; refs=refs->next ) {
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 		if ( sc->searcherdummy )
-		    rsc = FindCharacter(sc->views->searcher->fv->sf,paster->u.state.copied_from,refs,NULL);
+		    rsc = FindCharacter(sc->views->searcher->fv->sf,paster->copied_from,refs,NULL);
 		else
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-		    rsc = FindCharacter(sc->parent,paster->u.state.copied_from,refs,NULL);
+		    rsc = FindCharacter(sc->parent,paster->copied_from,refs,NULL);
 		if ( rsc!=NULL && SCDependsOnSC(rsc,sc))
 #if defined(FONTFORGE_CONFIG_GTK)
 		    gwwv_post_error(_("Self-referential character"),_("Attempt to make a character that refers to itself"));
@@ -2284,7 +2299,405 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
     } else
 	_PasteToSC(sc,paster,fv,pasteinto,ly_fore,trans,mc);
 }
+
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+static void DevTabInto(struct vr *vr) {
+    ValDevTab *adjust;
+
+    if ( vr->adjust==NULL )
+return;		/* Nothing to do */
+    adjust = chunkalloc(sizeof(ValDevTab));
+    *adjust = *vr->adjust;
+    if ( adjust->xadjust.corrections!=NULL ) {
+	adjust->xadjust.corrections = galloc(adjust->xadjust.last_pixel_size-adjust->xadjust.first_pixel_size+1);
+	memcpy(adjust->xadjust.corrections,vr->adjust->xadjust.corrections,adjust->xadjust.last_pixel_size-adjust->xadjust.first_pixel_size+1);
+    }
+    if ( adjust->yadjust.corrections!=NULL ) {
+	adjust->yadjust.corrections = galloc(adjust->yadjust.last_pixel_size-adjust->yadjust.first_pixel_size+1);
+	memcpy(adjust->yadjust.corrections,vr->adjust->yadjust.corrections,adjust->yadjust.last_pixel_size-adjust->yadjust.first_pixel_size+1);
+    }
+    if ( adjust->xadv.corrections!=NULL ) {
+	adjust->xadv.corrections = galloc(adjust->xadv.last_pixel_size-adjust->xadv.first_pixel_size+1);
+	memcpy(adjust->xadv.corrections,vr->adjust->xadv.corrections,adjust->xadv.last_pixel_size-adjust->xadv.first_pixel_size+1);
+    }
+    if ( adjust->yadv.corrections!=NULL ) {
+	adjust->yadv.corrections = galloc(adjust->yadv.last_pixel_size-adjust->yadv.first_pixel_size+1);
+	memcpy(adjust->yadv.corrections,vr->adjust->yadv.corrections,adjust->yadv.last_pixel_size-adjust->yadv.first_pixel_size+1);
+    }
+}
 #endif
+
+static void PSTInto(SplineChar *sc,PST *pst,PST *frompst, struct lookup_subtable *sub) {
+    if ( pst==NULL ) {
+	pst = chunkalloc(sizeof(PST));
+	*pst = *frompst;
+	pst->subtable = sub;
+	pst->next = sc->possub;
+	sc->possub = pst;
+    } else {
+	if ( pst->type == pst_pair ) {
+	    free(pst->u.pair.paired);
+	    chunkfree(pst->u.pair.vr,sizeof(struct vr[2]));	/* We fail to free device tables */
+	} else if ( pst->type == pst_substitution || pst->type == pst_alternate ||
+		pst->type == pst_multiple || pst->type == pst_ligature )
+	    free(pst->u.subs.variant);
+    }
+    if ( pst->type == pst_substitution || pst->type == pst_alternate ||
+		pst->type == pst_multiple )
+	pst->u.subs.variant = copy( frompst->u.subs.variant );
+    else if ( pst->type == pst_ligature ) {
+	pst->u.lig.components = copy( frompst->u.lig.components );
+	pst->u.lig.lig = sc;
+    } else if ( pst->type==pst_pair ) {
+	pst->u.pair.paired = copy( frompst->u.pair.paired );
+	pst->u.pair.vr = chunkalloc(sizeof(struct vr[2]));
+	memcpy(pst->u.pair.vr,frompst->u.pair.vr,sizeof(struct vr[2]));
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	DevTabInto(&pst->u.pair.vr[0]);
+	DevTabInto(&pst->u.pair.vr[1]);
+#endif
+    } else if ( pst->type==pst_position ) {
+	memcpy(&pst->u.pos,&frompst->u.pos,sizeof(struct vr));
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	DevTabInto(&pst->u.pos);
+#endif
+    }
+}
+
+static void APInto(SplineChar *sc,AnchorPoint *ap,AnchorPoint *fromap,
+	AnchorClass *ac) {
+    if ( ap==NULL ) {
+	ap = chunkalloc(sizeof(AnchorPoint));
+	*ap = *fromap;
+	ap->anchor = ac;
+	ap->next = sc->anchor;
+	sc->anchor = ap;
+    } else {
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	free(ap->xadjust.corrections); free(ap->yadjust.corrections);
+	ap->xadjust = fromap->xadjust;
+	ap->yadjust = fromap->yadjust;
+#endif
+	ap->me = fromap->me;
+    }
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    if ( fromap->xadjust.corrections!=NULL ) {
+	ap->xadjust.corrections = galloc(ap->xadjust.last_pixel_size-ap->xadjust.first_pixel_size+1);
+	memcpy(ap->xadjust.corrections,fromap->xadjust.corrections,ap->xadjust.last_pixel_size-ap->xadjust.first_pixel_size+1);
+    }
+    if ( fromap->yadjust.corrections!=NULL ) {
+	ap->yadjust.corrections = galloc(ap->yadjust.last_pixel_size-ap->yadjust.first_pixel_size+1);
+	memcpy(ap->yadjust.corrections,fromap->yadjust.corrections,ap->yadjust.last_pixel_size-ap->xadjust.first_pixel_size+1);
+    }
+#endif
+}
+
+static void KPInto(SplineChar *owner,KernPair *kp,KernPair *fromkp,int isv,
+	SplineChar *other, struct lookup_subtable *sub) {
+    if ( kp==NULL ) {
+	kp = chunkalloc(sizeof(KernPair));
+	*kp = *fromkp;
+	kp->subtable = sub;
+	if ( isv ) {
+	    kp->next = owner->vkerns;
+	    owner->vkerns = kp;
+	} else {
+	    kp->next = owner->kerns;
+	    owner->kerns = kp;
+	}
+    }
+    kp->sc = other;
+    kp->off = fromkp->off;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    if ( kp->adjust!=NULL )
+	DeviceTableFree(kp->adjust);
+    if ( fromkp->adjust!=NULL )
+	kp->adjust = DeviceTableCopy(fromkp->adjust);
+    else
+	kp->adjust = NULL;
+#endif
+}
+
+static void SCPasteLookups(SplineChar *sc,SplineChar *fromsc,int pasteinto,
+	OTLookup **list, OTLookup **backpairlist, struct sfmergecontext *mc) {
+    PST *frompst, *pst;
+    int isv, gid;
+    KernPair *fromkp, *kp;
+    AnchorPoint *fromap, *ap;
+    AnchorClass *ac;
+    int i;
+    OTLookup *otl;
+    struct lookup_subtable *sub;
+    SplineFont *fromsf;
+    SplineChar *othersc;
+    SplineChar *test, *test2;
+    int changed = false;
+
+#if 0
+/* I don't think I want to do this. anything in the same lookup will be replaced */
+/*  anyway, and I don't think I should clear other entries */
+    if ( !pasteinto && sc!=fromsc ) {
+	PSTFree(sc->possub); sc->possub = NULL;
+	KernPairFree(sc->kerns); sc->kerns = NULL;
+	KernPairFree(sc->vkerns); sc->vkerns = NULL;
+    }
+#endif
+
+    for ( frompst = fromsc->possub; frompst!=NULL; frompst=frompst->next ) {
+	if ( frompst->subtable==NULL )
+    continue;
+	if ( frompst->type == pst_ligature && fromsc->parent==sc->parent )
+    continue;
+	otl = frompst->subtable->lookup;
+	for ( i=0; list[i]!=NULL && list[i]!=otl; ++i );
+	if ( list[i]==NULL )
+    continue;
+	sub = MCConvertSubtable(mc,frompst->subtable);
+	if ( otl->lookup_type!=gpos_pair ) {
+	    for ( pst=sc->possub; pst!=NULL && pst->subtable!=sub; pst=pst->next );
+	} else {
+	    for ( pst=sc->possub; pst!=NULL ; pst=pst->next ) {
+		if ( pst->subtable==sub &&
+			strcmp(frompst->u.pair.paired,pst->u.pair.paired)==0 )
+	    break;
+	    }
+	}
+	PSTInto(sc,pst,frompst,sub);
+	changed = true;
+    }
+
+    for ( fromap = fromsc->anchor; fromap!=NULL; fromap=fromap->next ) {
+	otl = fromap->anchor->subtable->lookup;
+	for ( i=0; list[i]!=NULL && list[i]!=otl; ++i );
+	if ( list[i]==NULL )
+    continue;
+	ac = MCConvertAnchorClass(mc,fromap->anchor);
+	for ( ap=sc->anchor; ap!=NULL &&
+		!(ap->anchor==ac && ap->type==fromap->type && ap->lig_index==fromap->lig_index);
+		ap=ap->next );
+	APInto(sc,ap,fromap,ac);
+	changed = true;
+    }
+
+    for ( isv=0; isv<2; ++isv ) {
+	for ( fromkp = isv ? fromsc->vkerns : fromsc->kerns; fromkp!=NULL; fromkp=fromkp->next ) {
+	    otl = fromkp->subtable->lookup;
+	    for ( i=0; list[i]!=NULL && list[i]!=otl; ++i );
+	    if ( list[i]==NULL )
+    continue;
+	    sub = MCConvertSubtable(mc,fromkp->subtable);
+	    if ( sub==NULL )
+    continue;
+	    if ( fromsc->parent==sc->parent )
+		othersc = fromkp->sc;
+	    else
+		othersc = SFGetChar(sc->parent,fromkp->sc->unicodeenc,fromkp->sc->name);
+	    if ( othersc!=NULL ) {
+		for ( kp = isv ? sc->vkerns : sc->kerns; kp!=NULL; kp=kp->next ) {
+		    if ( kp->subtable == sub && kp->sc == othersc )
+		break;
+		}
+		KPInto(sc,kp,fromkp,isv,othersc,sub);
+		changed = true;
+	    }
+	}
+	if ( backpairlist==NULL )
+    continue;
+	fromsf = fromsc->parent;
+	for ( gid=fromsf->glyphcnt-1; gid>=0; --gid ) if ( (test=fromsf->glyphs[gid])!=NULL ) {
+	    for ( fromkp = isv ? test->vkerns : test->kerns; fromkp!=NULL; fromkp=fromkp->next ) {
+		if ( fromkp->sc!=fromsc )
+	    continue;
+		otl = fromkp->subtable->lookup;
+		for ( i=0; backpairlist[i]!=NULL && backpairlist[i]!=otl; ++i );
+		if ( backpairlist[i]==NULL )
+	    continue;
+		sub = MCConvertSubtable(mc,fromkp->subtable);
+		if ( fromsf==sc->parent )
+		    test2 = test;
+		else
+		    test2 = SFGetChar(sc->parent,test->unicodeenc,test->name);
+		if ( test2==NULL || sub==NULL )
+	    continue;
+		for ( kp = isv ? test2->vkerns : test2->kerns; kp!=NULL; kp=kp->next ) {
+		    if ( kp->subtable==sub && kp->sc == sc )
+		break;
+		}
+		KPInto(test2,kp,fromkp,isv,sc,sub);
+		_SCCharChangedUpdate(test2,2);
+	    }
+	}
+    }
+    if ( changed )
+	_SCCharChangedUpdate(sc,2);
+}
+
+static void SCPasteLookupsMid(SplineChar *sc,Undoes *paster,int pasteinto,
+	OTLookup **list, OTLookup **backpairlist, struct sfmergecontext *mc) {
+    SplineChar *fromsc;
+
+    (void) FindCharacter(sc->parent,paster->copied_from,
+	    paster->u.state.refs,&fromsc);
+    if ( fromsc==NULL ) {
+	gwwv_post_error(_("Missing glyph"),_("Could not find original glyph"));
+return;
+    }
+    SCPasteLookups(sc,fromsc,pasteinto,list,backpairlist,mc);
+}
+
+static int HasNonClass(OTLookup *otl) {
+    struct lookup_subtable *sub;
+    for ( sub = otl->subtables; sub!=NULL; sub=sub->next )
+	if ( sub->kc==NULL )
+return( true );
+
+return( false );
+}
+
+static OTLookup **GetLookupsToCopy(SplineFont *sf,OTLookup ***backpairlist, int is_same) {
+    int cnt, bcnt, ftot=0, doit, isgpos, i, ret;
+    char **choices = NULL, *sel;
+    OTLookup *otl, **list1=NULL, **list2=NULL, **list, **blist;
+#if defined(FONTFORGE_CONFIG_GDRAW)
+    char *buttons[3];
+    buttons[0] = _("_OK");
+    buttons[1] = _("_Cancel");
+    buttons[2] = NULL;
+#elif defined(FONTFORGE_CONFIG_GTK)
+    static char *buttons[] = { GTK_STOCK_OK, GTK_STOCK_CANCEL, NULL };
+#endif
+
+    *backpairlist = NULL;
+
+    for ( doit=0; doit<2; ++doit ) {
+	bcnt = cnt = 0;
+	for ( isgpos=0; isgpos<2; ++isgpos ) {
+	    for ( otl = isgpos ? sf->gpos_lookups : sf->gsub_lookups ; otl!=NULL; otl=otl->next ) {
+		if ( otl->lookup_type == gsub_single ||
+			otl->lookup_type == gsub_multiple ||
+			otl->lookup_type == gsub_alternate ||
+			otl->lookup_type == gsub_ligature ||
+			otl->lookup_type == gpos_single ||
+			otl->lookup_type == gpos_cursive ||
+			otl->lookup_type == gpos_mark2base ||
+			otl->lookup_type == gpos_mark2ligature ||
+			otl->lookup_type == gpos_mark2mark ||
+			(otl->lookup_type == gpos_pair && HasNonClass(otl))) {
+		    if ( doit ) {
+			list1[cnt] = otl;
+			choices[cnt++] = copy(otl->lookup_name);
+			if ( otl->lookup_type==gpos_pair ) {
+/* GT: I'm not happy with this phrase. Suggestions for improvements are welcome */
+/* GT:  Here I am generating a list of lookup names representing data that can */
+/* GT:  be copied from one glyph to another. For a kerning (pairwise) lookup */
+/* GT:  the first entry in the list (marked by the lookup name by itself) will */
+/* GT:  mean all data where the current glyph is the first glyph in a kerning */
+/* GT:  pair. But we can also (separatedly) copy data where the current glyph */
+/* GT:  is the second glyph in the kerning pair, and that's what this line */
+/* GT:  refers to. The "%s" will be filled in with the lookup name */
+			    char *format = _("Second glyph of %s");
+			    char *space = galloc(strlen(format)+strlen(otl->lookup_name)+1);
+			    sprintf(space, format, otl->lookup_name );
+			    list2[bcnt] = otl;
+			    choices[ftot+1+bcnt++] = space;
+			}
+		    } else {
+			++cnt;
+			if ( otl->lookup_type==gpos_pair )
+			    ++bcnt;
+		    }
+		}
+	    }
+	}
+	if ( cnt==0 ) {	/* If cnt==0 then bcnt must be too */
+	    gwwv_post_error(_("No Lookups"),_("No lookups to copy"));
+return( NULL );
+	}
+	if ( !doit ) {
+	    ftot = cnt;
+	    choices = galloc((cnt+bcnt+2)*sizeof(char *));
+	    sel = gcalloc(cnt+bcnt+1,1);
+	    list1 = galloc(cnt*sizeof(OTLookup *));
+	    if ( bcnt==0 ) {
+		choices[cnt] = NULL;
+		list2 = NULL;
+	    } else {
+		choices[cnt] = copy("-");
+		choices[bcnt+cnt+1] = NULL;
+		list2 = galloc(bcnt*sizeof(OTLookup *));
+	    }
+	}
+    }
+    ret = gwwv_choose_multiple(_("Lookups"),(const char **) choices,sel,bcnt==0?cnt: cnt+bcnt+1,
+	    buttons, _("Choose which lookups to copy"));
+    list = NULL;
+    if ( ret>=0 ) {
+	for ( i=cnt=0; i<ftot; ++i ) {
+	    if ( sel[i] )
+		++cnt;
+	}
+	list = galloc((cnt+1)*sizeof(OTLookup *));
+	for ( i=cnt=0; i<ftot; ++i ) {
+	    if ( sel[i] )
+		list[cnt++] = list1[i];
+	}
+	list[cnt] = NULL;
+	blist = NULL;
+	if ( bcnt!=0 ) {
+	    for ( i=cnt=0; i<bcnt; ++i ) {
+		if ( sel[i+ftot+1] )
+		    ++cnt;
+	    }
+	    if ( cnt!=0 ) {
+		blist = galloc((cnt+1)*sizeof(OTLookup *));
+		for ( i=cnt=0; i<bcnt; ++i ) {
+		    if ( sel[i+ftot+1] )
+			blist[cnt++] = list2[i];
+		}
+		blist[cnt] = NULL;
+	    }
+	    *backpairlist = blist;
+	}
+	if ( blist==NULL && list[0]==NULL ) {
+	    free(list);
+	    list = NULL;
+	}
+    }
+    free( sel );
+    for ( i=0; choices[i]!=NULL; ++i )
+	free( choices[i]);
+    free(choices);
+    free(list1);
+    free(list2);
+return( list );
+}
+#endif
+
+static void SCPasteLookupsTop(SplineChar *sc,Undoes *paster) {
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    OTLookup **list, **backpairlist;
+    SplineChar *fromsc;
+    struct sfmergecontext mc;
+
+    if ( paster->copied_from==NULL )
+return;
+    (void) FindCharacter(sc->parent,paster->copied_from,
+	    paster->u.state.refs,&fromsc);
+    if ( fromsc==NULL ) {
+	gwwv_post_error(_("Missing glyph"),_("Could not find original glyph"));
+return;
+    }
+    list = GetLookupsToCopy(fromsc->parent,&backpairlist,fromsc->parent==sc->parent);
+    if ( list==NULL )
+return;
+    memset(&mc,0,sizeof(mc));
+    mc.sf_from = paster->copied_from; mc.sf_to = sc->parent;
+    SCPasteLookups(sc,fromsc,true,list,backpairlist,&mc);
+    free(list);
+    free(backpairlist);
+    SFFinishMergeContext(&mc);
+#endif
+}
 
 /* I wish I could get rid of this if FONTFORGE_CONFIG_NO_WINDOWING_UI	*/
 /*  but FVReplaceOutlineWithReference depends on it, and I want that	*/
@@ -2312,6 +2725,9 @@ return;
       break;
       case ut_anchors:
 	APMerge(cvsc,paster->u.state.anchor);
+      break;
+      case ut_statelookup:
+	SCPasteLookupsTop(cvsc,paster);
       break;
       case ut_state: case ut_statehint: case ut_statename:
 	wasempty =cv->drawmode==dm_fore && cvsc->layers[ly_fore].splines==NULL &&
@@ -2357,7 +2773,7 @@ return;
 	    ExtractHints(cvsc,paster->u.state.hints,true);
 	    free(cvsc->ttf_instrs);
 	    if ( paster->u.state.instrs_len!=0 && cvsc->parent->order2 &&
-		    InstrsSameParent(cvsc,paster->u.state.copied_from)) {
+		    InstrsSameParent(cvsc,paster->copied_from)) {
 		cvsc->ttf_instrs = (uint8 *) copyn((char *) paster->u.state.instrs,paster->u.state.instrs_len);
 		cvsc->ttf_instrs_len = paster->u.state.instrs_len;
 	    } else {
@@ -2372,9 +2788,9 @@ return;
 	    SplineChar *sc;
 	    for ( refs = paster->u.state.refs; refs!=NULL; refs=refs->next ) {
 		if ( cv->searcher!=NULL )
-		    sc = FindCharacter(cv->searcher->fv->sf,paster->u.state.copied_from,refs,NULL);
+		    sc = FindCharacter(cv->searcher->fv->sf,paster->copied_from,refs,NULL);
 		else {
-		    sc = FindCharacter(cvsc->parent,paster->u.state.copied_from,refs,NULL);
+		    sc = FindCharacter(cvsc->parent,paster->copied_from,refs,NULL);
 		    if ( sc!=NULL && SCDependsOnSC(sc,cvsc)) {
 			gwwv_post_error(_("Self-referential character"),_("Attempt to make a character that refers to itself"));
 			sc = NULL;
@@ -2407,9 +2823,9 @@ return;
 	    SplinePointList *new, *spl;
 	    for ( refs = paster->u.state.refs; refs!=NULL; refs=refs->next ) {
 		if ( cv->searcher!=NULL )
-		    sc = FindCharacter(cv->searcher->fv->sf,paster->u.state.copied_from,refs,NULL);
+		    sc = FindCharacter(cv->searcher->fv->sf,paster->copied_from,refs,NULL);
 		else
-		    sc = FindCharacter(cvsc->parent,paster->u.state.copied_from,refs,NULL);
+		    sc = FindCharacter(cvsc->parent,paster->copied_from,refs,NULL);
 		if ( sc!=NULL ) {
 		    new = SplinePointListTransform(SplinePointListCopy(sc->layers[ly_back].splines),refs->transform,true);
 		    SplinePointListSelect(new,true);
@@ -2669,6 +3085,7 @@ void FVCopyWidth(FontView *fv,enum undotype ut) {
     }
     copybuffer.undotype = ut_multiple;
     copybuffer.u.multiple.mult = head;
+    copybuffer.copied_from = fv->sf;
     if ( !any )
 	LogError( _("No selection\n") );
 }
@@ -2696,11 +3113,12 @@ void FVCopyAnchors(FontView *fv) {
     }
     copybuffer.undotype = ut_multiple;
     copybuffer.u.multiple.mult = head;
+    copybuffer.copied_from = fv->sf;
     if ( !any )
 	LogError( _("No selection\n") );
 }
 
-void FVCopy(FontView *fv, int fullcopy) {
+void FVCopy(FontView *fv, enum fvcopy_type fullcopy) {
     int i, any = false;
     BDFFont *bdf;
     Undoes *head=NULL, *last=NULL, *cur;
@@ -2709,15 +3127,16 @@ void FVCopy(FontView *fv, int fullcopy) {
     extern int onlycopydisplayed;
     int gid;
     SplineChar *sc;
-    /* If fullcopy==1 copy the glyph as is. */
-    /* If fullcopy==0 put a reference to the glyph in the clipboard */
-    /* If fullcopy==2 copy the glyph, but unlink any references it contains */
+    /* If fullcopy==ct_fullcopy copy the glyph as is. */
+    /* If fullcopy==ct_reference put a reference to the glyph in the clipboard */
+    /* If fullcopy==ct_lookups put a reference to the glyph in the clip but mark that we are only interested in its lookups */
+    /* If fullcopy==ct_unlinkrefs copy the glyph, but unlink any references it contains */
     /*	so we end up with no references and a bunch of splines */
 
     for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] ) {
 	any = true;
 	sc = (gid = fv->map->map[i])==-1 ? NULL : fv->sf->glyphs[gid];
-	if ( onlycopydisplayed && fv->filled==fv->show ) {
+	if (( onlycopydisplayed && fv->filled==fv->show ) || fullcopy==ct_lookups ) {
 	    cur = SCCopyAll(sc,fullcopy);
 	} else if ( onlycopydisplayed ) {
 	    cur = BCCopyAll(gid==-1?NULL:fv->show->glyphs[gid],fv->show->pixelsize,BDFDepth(fv->show));
@@ -2758,6 +3177,7 @@ return;
     CopyBufferFreeGrab();
     copybuffer.undotype = ut_multiple;
     copybuffer.u.multiple.mult = head;
+    copybuffer.copied_from = fv->sf;
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     XClipCheckEps();
@@ -2765,14 +3185,14 @@ return;
 }
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-void MVCopyChar(MetricsView *mv, SplineChar *sc, int fullcopy) {
+void MVCopyChar(MetricsView *mv, SplineChar *sc, enum fvcopy_type fullcopy) {
     BDFFont *bdf;
     Undoes *cur=NULL;
     Undoes *bhead=NULL, *blast=NULL, *bcur;
     Undoes *state;
     extern int onlycopydisplayed;
 
-    if ( onlycopydisplayed && mv->bdf==NULL ) {
+    if (( onlycopydisplayed && mv->bdf==NULL ) || fullcopy == ct_lookups ) {
 	cur = SCCopyAll(sc,fullcopy);
     } else if ( onlycopydisplayed ) {
 	cur = BCCopyAll(BDFMakeGID(mv->bdf,sc->orig_pos),mv->bdf->pixelsize,BDFDepth(mv->bdf));
@@ -2849,6 +3269,12 @@ static BDFFont *BitmapCreateCheck(FontView *fv,int *yestoall, int first, int pix
 return( bdf );
 }
 
+static int copybufferHasLookups(Undoes *cb) {
+    if ( cb->undotype==ut_multiple )
+	cb = cb->u.multiple.mult;
+return( cb->undotype==ut_statelookup );
+}
+
 void PasteIntoFV(FontView *fv,int pasteinto,real trans[6]) {
     Undoes *cur=NULL, *bmp;
     BDFFont *bdf;
@@ -2859,16 +3285,24 @@ void PasteIntoFV(FontView *fv,int pasteinto,real trans[6]) {
     SplineFont *sf = fv->sf, *origsf = sf;
     MMSet *mm = sf->mm;
     struct sfmergecontext mc;
+    OTLookup **list = NULL, **backpairlist=NULL;
 
     fv->refstate = 0;
     memset(&mc,0,sizeof(mc));
-    mc.sf_to = fv->sf;
+    mc.sf_to = fv->sf; mc.sf_from = copybuffer.copied_from;
 
     cur = &copybuffer;
     for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] )
 	++cnt;
     if ( cnt==0 ) {
 	fprintf( stderr, "No Selection\n" );
+return;
+    }
+
+    if ( copybufferHasLookups(&copybuffer)) {
+	list = GetLookupsToCopy(copybuffer.copied_from,&backpairlist,
+		copybuffer.copied_from==fv->sf);
+	if ( list==NULL )
 return;
     }
 
@@ -2931,6 +3365,9 @@ return;
 	forever {
 	    switch ( cur->undotype ) {
 	      case ut_noop:
+	      break;
+	      case ut_statelookup:
+		SCPasteLookupsMid(SFMakeChar(sf,fv->map,i),cur,pasteinto,list,backpairlist,&mc);
 	      break;
 	      case ut_state: case ut_width: case ut_vwidth:
 	      case ut_lbearing: case ut_rbearing:
@@ -3008,6 +3445,7 @@ return;
     if ( oldsel!=fv->selected )
 	free(oldsel);
     SFFinishMergeContext(&mc);
+    free(list); free(backpairlist);
 }
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -3099,7 +3537,7 @@ static void _PasteAnchorClassManip(SplineFont *sf,AnchorClass *into,AnchorClass 
 	    temp = temp->u.composit.state;
 	    /* Fall through */;
 	  case ut_state: case ut_statehint: case ut_statename:
-	    if ( temp->u.state.copied_from!=sf )
+	    if ( temp->copied_from!=sf )
 return;
 	    if ( from==NULL ) {
 		AnchorPointsFree(temp->u.state.anchor);

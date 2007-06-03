@@ -613,6 +613,7 @@ typedef struct macfeat {
 typedef struct undoes {
     struct undoes *next;
     enum undotype { ut_none=0, ut_state, ut_tstate, ut_statehint, ut_statename,
+	    ut_statelookup,
 	    ut_anchors,
 	    ut_width, ut_vwidth, ut_lbearing, ut_rbearing, ut_possub,
 	    ut_hints, ut_bitmap, ut_bitmapsel, ut_composit, ut_multiple, ut_layers,
@@ -643,7 +644,6 @@ typedef struct undoes {
 	    unsigned int dostroke: 1;
 	    unsigned int fillfirst: 1;
 #endif
-	    struct splinefont *copied_from;
 	} state;
 	int width;	/* used by both ut_width and ut_vwidth */
 	int lbearing;	/* used by ut_lbearing */
@@ -669,11 +669,11 @@ typedef struct undoes {
 	    enum possub_type pst;
 	    char **data;		/* First 4 bytes is tag, then space then data */
 	    struct undoes *more_pst;
-	    struct splinefont *copied_from;
 	    short cnt,max;		/* Not always set */
 	} possub;
 	uint8 *bitmap;
     } u;
+    struct splinefont *copied_from;
 } Undoes;
 
 typedef struct bdfchar {
@@ -1539,9 +1539,13 @@ struct sfmergecontext {
     struct lookup_cvt { OTLookup *from, *to; int old;} *lks;
     int scnt;
     struct sub_cvt { struct lookup_subtable *from, *to; int old;} *subs;
+    int acnt;
+    struct ac_cvt { AnchorClass *from, *to; int old;} *acs;
     char *prefix;
 };
 extern PST *PSTCopy(PST *base,SplineChar *sc,struct sfmergecontext *mc);
+extern struct lookup_subtable *MCConvertSubtable(struct sfmergecontext *mc,struct lookup_subtable *sub);
+extern AnchorClass *MCConvertAnchorClass(struct sfmergecontext *mc,AnchorClass *ac);
 extern void SFFinishMergeContext(struct sfmergecontext *mc);
 extern SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into,struct sfmergecontext *);
 extern BDFChar *BDFCharCopy(BDFChar *bc);

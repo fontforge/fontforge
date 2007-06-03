@@ -63,7 +63,7 @@ static RefChar *RefCharsCopy(RefChar *ref) {
 return( rhead );
 }
 
-static OTLookup *ConvertLookup(struct sfmergecontext *mc,OTLookup *otl) {
+static OTLookup *MCConvertLookup(struct sfmergecontext *mc,OTLookup *otl) {
     int l;
     OTLookup *newotl;
 
@@ -88,7 +88,7 @@ return( mc->lks[l].to );
 return( newotl );
 }
 
-static struct lookup_subtable *ConvertSubtable(struct sfmergecontext *mc,struct lookup_subtable *sub) {
+struct lookup_subtable *MCConvertSubtable(struct sfmergecontext *mc,struct lookup_subtable *sub) {
     int s;
     struct lookup_subtable *newsub;
 
@@ -152,10 +152,62 @@ return( mc->subs[s].to );
 
     mc->subs[s].to = newsub = chunkalloc(sizeof(struct lookup_subtable));
     newsub->subtable_name = strconcat(mc->prefix,sub->subtable_name);
-    newsub->lookup = ConvertLookup(mc,sub->lookup);
+    newsub->lookup = MCConvertLookup(mc,sub->lookup);
     newsub->anchor_classes = sub->anchor_classes;
     newsub->per_glyph_pst_or_kern = sub->per_glyph_pst_or_kern;
 return( newsub );
+}
+
+AnchorClass *MCConvertAnchorClass(struct sfmergecontext *mc,AnchorClass *ac) {
+    int a;
+    AnchorClass *newac;
+
+    if ( mc==NULL || mc->sf_from==mc->sf_to )
+return( ac );		/* No translation needed */
+    if ( mc->acnt==0 ) {
+	int acnt;
+	AnchorClass *testac, *testac2;
+	int doit;
+	char *temp;
+
+	/* Not initialized */
+	for ( doit = 0; doit<2; ++doit ) {
+	    acnt = 0;
+	    for ( testac=mc->sf_from->anchor; testac!=NULL; testac=testac->next ) {
+		if ( doit ) {
+		    mc->acs[acnt].from = testac;
+		    temp = strconcat(mc->prefix,testac->name);
+		    for ( testac2 = mc->sf_to->anchor; testac2!=NULL; testac2=testac2->next )
+			if ( strcmp(testac2->name,temp)==0 )
+		    break;
+		    mc->acs[acnt].to = testac2;
+		    free(temp);
+		    mc->acs[acnt].old = mc->acs[acnt].to!=NULL;
+		}
+		++acnt;
+	    }
+	    if ( !doit ) {
+		mc->acnt = acnt;
+		mc->acs = gcalloc(acnt,sizeof(struct ac_cvt));
+	    }
+	}
+    }
+
+    for ( a=0; a<mc->acnt; ++a ) {
+	if ( mc->acs[a].from == ac )
+    break;
+    }
+    if ( a==mc->acnt )
+return( NULL );
+    if ( mc->acs[a].to!=NULL )
+return( mc->acs[a].to );
+
+    mc->acs[a].to = newac = chunkalloc(sizeof(AnchorClass));
+    newac->name = strconcat(mc->prefix,ac->name);
+    newac->subtable = MCConvertSubtable(mc,ac->subtable);
+    newac->next = mc->sf_to->anchor;
+    mc->sf_to->anchor = newac;
+return( newac );
 }
 
 void SFFinishMergeContext(struct sfmergecontext *mc) {
@@ -209,6 +261,7 @@ return;
     free(mc->prefix);
     free(mc->lks);
     free(mc->subs);
+    free(mc->acs);
 }
 
 PST *PSTCopy(PST *base,SplineChar *sc,struct sfmergecontext *mc) {
@@ -217,7 +270,7 @@ PST *PSTCopy(PST *base,SplineChar *sc,struct sfmergecontext *mc) {
     for ( ; base!=NULL; base = base->next ) {
 	cur = chunkalloc(sizeof(PST));
 	*cur = *base;
-	cur->subtable = ConvertSubtable(mc,base->subtable);
+	cur->subtable = MCConvertSubtable(mc,base->subtable);
 	if ( cur->type==pst_ligature ) {
 	    cur->u.lig.components = copy(cur->u.lig.components);
 	    cur->u.lig.lig = sc;
@@ -289,7 +342,7 @@ static void AnchorClassesAdd(SplineFont *into, SplineFont *from, struct sfmergec
 	    *cur = *fac;
 	    cur->next = NULL;
 	    cur->name = copy(cur->name);
-	    cur->subtable = ConvertSubtable(mc,cur->subtable);
+	    cur->subtable = MCConvertSubtable(mc,cur->subtable);
 	    if ( last==NULL )
 		into->anchor = cur;
 	    else
@@ -310,12 +363,12 @@ static void FPSTsAdd(SplineFont *into, SplineFont *from,struct sfmergecontext *m
 	for ( last = into->possub; last->next!=NULL; last=last->next );
     for ( fpst = from->possub; fpst!=NULL; fpst=fpst->next ) {
 	nfpst = FPSTCopy(fpst);
-	nfpst->subtable = ConvertSubtable(mc,fpst->subtable);
+	nfpst->subtable = MCConvertSubtable(mc,fpst->subtable);
 	nfpst->subtable->fpst = nfpst;
 	for ( i=0; i<nfpst->rule_cnt; ++i ) {
 	    struct fpst_rule *r = &nfpst->rules[i], *oldr = &fpst->rules[i];
 	    for ( k=0; k<r->lookup_cnt; ++k ) {
-		r->lookups[k].lookup = ConvertLookup(mc,oldr->lookups[k].lookup);
+		r->lookups[k].lookup = MCConvertLookup(mc,oldr->lookups[k].lookup);
 	    }
 	}
 	if ( last==NULL )
@@ -336,7 +389,7 @@ static void ASMsAdd(SplineFont *into, SplineFont *from,struct sfmergecontext *mc
     for ( sm = from->sm; sm!=NULL; sm=sm->next ) {
 	nsm = chunkalloc(sizeof(ASM));
 	*nsm = *sm;
-	nsm->subtable = ConvertSubtable(mc,sm->subtable);
+	nsm->subtable = MCConvertSubtable(mc,sm->subtable);
 	nsm->subtable->sm = nsm;
 	nsm->classes = galloc(nsm->class_cnt*sizeof(char *));
 	for ( i=0; i<nsm->class_cnt; ++i )
@@ -350,9 +403,9 @@ static void ASMsAdd(SplineFont *into, SplineFont *from,struct sfmergecontext *mc
 	    }
 	} else if ( nsm->type == asm_context ) {
 	    for ( i=0; i<nsm->class_cnt*nsm->state_cnt; ++i ) {
-		nsm->state[i].u.context.mark_lookup = ConvertLookup(mc,
+		nsm->state[i].u.context.mark_lookup = MCConvertLookup(mc,
 			nsm->state[i].u.context.mark_lookup);
-		nsm->state[i].u.context.cur_lookup = ConvertLookup(mc,
+		nsm->state[i].u.context.cur_lookup = MCConvertLookup(mc,
 			nsm->state[i].u.context.cur_lookup);
 	    }
 	} else if ( nsm->type == asm_insert ) {
@@ -368,7 +421,7 @@ static KernClass *_KernClassCopy(KernClass *kc,SplineFont *into,SplineFont *from
     KernClass *nkc;
 
     nkc = KernClassCopy(kc);
-    nkc->subtable = ConvertSubtable(mc,kc->subtable);
+    nkc->subtable = MCConvertSubtable(mc,kc->subtable);
     nkc->subtable->kc = nkc;
 return( nkc );
 }
@@ -480,7 +533,7 @@ static KernPair *KernsCopy(KernPair *kp,int *mapping,SplineFont *into,
 		into->glyphs[index]!=NULL ) {
 	    new = chunkalloc(sizeof(KernPair));
 	    new->off = kp->off;
-	    new->subtable = ConvertSubtable(mc,kp->subtable);
+	    new->subtable = MCConvertSubtable(mc,kp->subtable);
 	    new->sc = into->glyphs[index];
 	    if ( head==NULL )
 		head = new;
