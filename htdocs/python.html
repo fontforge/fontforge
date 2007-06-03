@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 31-May-2007 -->
+  <!-- AP: Last modified: 3-Jun-2007 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -370,6 +370,14 @@
       <TD colspan=3>Does not support the repeat concept</TD>
     </TR>
     <TR>
+      <TH colspan=3>Iterator Protocol</TH>
+    </TR>
+    <TR>
+      <TD><CODE>__iter__</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Returns an iterator for the contour which will return the points in order.</TD>
+    </TR>
+    <TR>
       <TH colspan=3>Methods</TH>
     </TR>
     <TR>
@@ -610,6 +618,14 @@
     </TR>
     <TR>
       <TD colspan=3>Does not support the repeat, slice and contains concepts</TD>
+    </TR>
+    <TR>
+      <TH colspan=3>Iterator Protocol</TH>
+    </TR>
+    <TR>
+      <TD><CODE>__iter__</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Returns an iterator for the layer which will return the contours in order.</TD>
     </TR>
     <TR>
       <TH colspan=3>Methods</TH>
@@ -1387,9 +1403,9 @@ pen = None;				# Finalize the pen. This tells FontForge
     <TR>
       <TD><CODE>__iter__</CODE></TD>
       <TD><CODE>()</CODE></TD>
-      <TD>Returns an iterator for the selection which will run all selected glyphs
-	in encoding order. Note if an encoding slot does not contain a glyph it will
-	be skipped.</TD>
+      <TD>Returns an iterator for the selection which will return all selected
+	glyphs in encoding order. Note if a (selected) encoding slot does not contain
+	a glyph it will be skipped.</TD>
     </TR>
     <TR>
       <TH colspan=3>Methods</TH>
