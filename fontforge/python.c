@@ -2033,7 +2033,7 @@ static PyObject *PyFFLayer_InPlaceConcat( PyObject *_self, PyObject *_c2 ) {
     PyFF_Contour *dummies[1];
 
     if ( PyType_IsSubtype(&PyFF_ContourType,c2->ob_type) &&
-	    self->is_quadratic == c2->is_quadratic ) {
+	    self->is_quadratic == ((PyFF_Contour *) c2)->is_quadratic ) {
 	memset(&dummy,0,sizeof(dummy));
 	dummy.cntr_cnt = 1;
 	dummy.contours = dummies; dummies[0] = (PyFF_Contour *) _c2;
@@ -4523,7 +4523,7 @@ static struct flaglist trans_flags[] = {
     { "round", fvt_round_to_int },
     NULL };
 
-static PyObject *PyFFGlyph_Transform(PyFF_Layer *self, PyObject *args) {
+static PyObject *PyFFGlyph_Transform(PyObject *self, PyObject *args) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     int i;
     double m[6];
