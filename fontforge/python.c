@@ -729,6 +729,83 @@ return( self );
 }
 
 /* ************************************************************************** */
+/* Contour iterator type */
+/* ************************************************************************** */
+
+typedef struct {
+    PyObject_HEAD
+    int pos;
+    PyFF_Contour *contour;
+} contouriterobject;
+static PyTypeObject PyFF_ContourIterType;
+
+static PyObject *contouriter_new(PyObject *contour) {
+    contouriterobject *ci;
+    ci = PyObject_New(contouriterobject, &PyFF_ContourIterType);
+    if (ci == NULL)
+return NULL;
+    ci->contour = ((PyFF_Contour *) contour);
+    Py_INCREF(contour);
+    ci->pos = 0;
+return (PyObject *)ci;
+}
+
+static void contouriter_dealloc(contouriterobject *ci) {
+    Py_XDECREF(ci->contour);
+    PyObject_Del(ci);
+}
+
+static PyObject *contouriter_iternext(contouriterobject *ci) {
+    PyFF_Contour *contour = ci->contour;
+    PyObject *pt;
+
+    if ( contour == NULL)
+return NULL;
+
+    if ( ci->pos<contour->pt_cnt ) {
+	pt = (PyObject *) contour->points[ci->pos++];
+	Py_INCREF(pt);
+return( pt );
+    }
+
+return NULL;
+}
+
+static PyTypeObject PyFF_ContourIterType = {
+	PyObject_HEAD_INIT(&PyType_Type)
+	0,					/* ob_size */
+	"contouriter",				/* tp_name */
+	sizeof(contouriterobject),		/* tp_basicsize */
+	0,					/* tp_itemsize */
+	/* methods */
+	(destructor)contouriter_dealloc,	/* tp_dealloc */
+	0,					/* tp_print */
+	0,					/* tp_getattr */
+	0,					/* tp_setattr */
+	0,					/* tp_compare */
+	0,					/* tp_repr */
+	0,					/* tp_as_number */
+	0,					/* tp_as_sequence */
+	0,					/* tp_as_mapping */
+	0,					/* tp_hash */
+	0,					/* tp_call */
+	0,					/* tp_str */
+	0,					/* tp_getattro */
+	0,					/* tp_setattro */
+	0,					/* tp_as_buffer */
+	Py_TPFLAGS_DEFAULT,			/* tp_flags */
+ 	0,					/* tp_doc */
+ 	0,					/* tp_traverse */
+ 	0,					/* tp_clear */
+	0,					/* tp_richcompare */
+	0,					/* tp_weaklistoffset */
+	PyObject_SelfIter,			/* tp_iter */
+	(iternextfunc)contouriter_iternext,	/* tp_iternext */
+	0,					/* tp_methods */
+	0,
+};
+
+/* ************************************************************************** */
 /* Contours */
 /* ************************************************************************** */
 static int PyFFContour_clear(PyFF_Contour *self) {
@@ -1803,7 +1880,7 @@ static PyTypeObject PyFF_ContourType = {
     (inquiry)PyFFContour_clear,  /* tp_clear */
     0,		               /* tp_richcompare */
     0,		               /* tp_weaklistoffset */
-    0,		               /* tp_iter */
+    contouriter_new,	       /* tp_iter */
     0,		               /* tp_iternext */
     PyFFContour_methods,       /* tp_methods */
     0,			       /* tp_members */
@@ -1816,6 +1893,83 @@ static PyTypeObject PyFF_ContourType = {
     (initproc)PyFFContour_init,/* tp_init */
     0,                         /* tp_alloc */
     PyFFContour_new,           /* tp_new */
+};
+
+/* ************************************************************************** */
+/* Layer iterator type */
+/* ************************************************************************** */
+
+typedef struct {
+    PyObject_HEAD
+    int pos;
+    PyFF_Layer *layer;
+} layeriterobject;
+static PyTypeObject PyFF_LayerIterType;
+
+static PyObject *layeriter_new(PyObject *layer) {
+    layeriterobject *li;
+    li = PyObject_New(layeriterobject, &PyFF_LayerIterType);
+    if (li == NULL)
+return NULL;
+    li->layer = ((PyFF_Layer *) layer);
+    Py_INCREF(layer);
+    li->pos = 0;
+return (PyObject *)li;
+}
+
+static void layeriter_dealloc(layeriterobject *li) {
+    Py_XDECREF(li->layer);
+    PyObject_Del(li);
+}
+
+static PyObject *layeriter_iternext(layeriterobject *li) {
+    PyFF_Layer *layer = li->layer;
+    PyObject *c;
+
+    if ( layer == NULL)
+return NULL;
+
+    if ( li->pos<layer->cntr_cnt ) {
+	c = (PyObject *) layer->contours[li->pos++];
+	Py_INCREF(c);
+return( c );
+    }
+
+return NULL;
+}
+
+static PyTypeObject PyFF_LayerIterType = {
+	PyObject_HEAD_INIT(&PyType_Type)
+	0,					/* ob_size */
+	"layeriter",				/* tp_name */
+	sizeof(layeriterobject),		/* tp_basicsize */
+	0,					/* tp_itemsize */
+	/* methods */
+	(destructor)layeriter_dealloc,	/* tp_dealloc */
+	0,					/* tp_print */
+	0,					/* tp_getattr */
+	0,					/* tp_setattr */
+	0,					/* tp_compare */
+	0,					/* tp_repr */
+	0,					/* tp_as_number */
+	0,					/* tp_as_sequence */
+	0,					/* tp_as_mapping */
+	0,					/* tp_hash */
+	0,					/* tp_call */
+	0,					/* tp_str */
+	0,					/* tp_getattro */
+	0,					/* tp_setattro */
+	0,					/* tp_as_buffer */
+	Py_TPFLAGS_DEFAULT,			/* tp_flags */
+ 	0,					/* tp_doc */
+ 	0,					/* tp_traverse */
+ 	0,					/* tp_clear */
+	0,					/* tp_richcompare */
+	0,					/* tp_weaklistoffset */
+	PyObject_SelfIter,			/* tp_iter */
+	(iternextfunc)layeriter_iternext,	/* tp_iternext */
+	0,					/* tp_methods */
+	0,
 };
 
 /* ************************************************************************** */
@@ -2491,7 +2645,7 @@ static PyTypeObject PyFF_LayerType = {
     (inquiry)PyFFLayer_clear,  /* tp_clear */
     0,		               /* tp_richcompare */
     0,		               /* tp_weaklistoffset */
-    0,		               /* tp_iter */
+    layeriter_new,	       /* tp_iter */
     0,		               /* tp_iternext */
     PyFFLayer_methods,         /* tp_methods */
     0,			       /* tp_members */
@@ -5567,7 +5721,7 @@ static PyTypeObject PyFF_PrivateType = {
     0,                         /* tp_descr_get */
     0,                         /* tp_descr_set */
     0,                         /* tp_dictoffset */
-    0,				/* tp_init */
+    0,			       /* tp_init */
     0,                         /* tp_alloc */
     0			       /* tp_new */
 };
