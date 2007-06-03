@@ -9474,9 +9474,13 @@ static PyMODINIT_FUNC initPyFontForge(void) {
     static PyTypeObject *types[] = { &PyFF_PointType, &PyFF_ContourType,
 	    &PyFF_LayerType, &PyFF_GlyphPenType, &PyFF_GlyphType,
 	    &PyFF_CvtType, &PyFF_PrivateIterType, &PyFF_PrivateType,
-	    &PyFF_FontIterType, &PyFF_SelectionType, &PyFF_FontType, NULL };
+	    &PyFF_FontIterType, &PyFF_SelectionType, &PyFF_FontType,
+	    &PyFF_ContourIterType, &PyFF_LayerIterType,
+	    NULL };
     static char *names[] = { "point", "contour", "layer", "glyph", "glyphPen",
-	    "cvt", "privateiter", "private", "fontiter", "selection", "font", NULL };
+	    "cvt", "privateiter", "private", "fontiter", "selection", "font",
+	    "contouriter", "layeriter",
+	    NULL };
 
     for ( i=0; types[i]!=NULL; ++i ) {
 	types[i]->ob_type = &PyType_Type;		/* Or does Type_Ready do this??? */
