@@ -624,9 +624,11 @@ typedef struct searchview {
     unsigned long long matched_refs;	/* Bit map of which refs in the char were matched */
     unsigned long long matched_ss;	/* Bit map of which splines in the char were matched */
 				    /* In multi-path mode */
+    unsigned long long matched_ss_start;/* Bit map of which splines we tried to start matches with */
 #else
     unsigned long matched_refs;
     unsigned long matched_ss;
+    unsigned long matched_ss_start;
 #endif
 } SearchView;
 #endif
