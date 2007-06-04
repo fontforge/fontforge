@@ -342,12 +342,13 @@ static int SPMatches(SplinePoint *sp, SearchView *s, SplineSet *path, int orient
     real transform[6];
     BasePoint *p, res;
     if ( oriented ) {
+	double fudge = s->fudge<.1 ? 10*s->fudge : s->fudge;
 	SVBuildTrans(s,transform);
 	p = &path->first->me;
 	res.x = transform[0]*p->x + transform[2]*p->y + transform[4];
 	res.y = transform[1]*p->x + transform[3]*p->y + transform[5];
-	if ( sp->me.x>res.x+.01 || sp->me.x<res.x-.01 ||
-		sp->me.y>res.y+.01 || sp->me.y<res.y-.01 )
+	if ( sp->me.x>res.x+fudge || sp->me.x<res.x-fudge ||
+		sp->me.y>res.y+fudge || sp->me.y<res.y-fudge )
 return( false );
 
 return( SPMatchesO(sp,s,path));
@@ -392,13 +393,13 @@ return( false );
 /*  matches a path in the character exactly, and each ref also. A searched for*/
 /*  path can not match a subset of a path */
 static int SCMatchesFull(SplineChar *sc,SearchView *s) {
-    /* don't look in refs because we can't do a replace there */
+    /* don't look to match paths in refs because we can't do a replace there */
     SplineSet *spl, *s_spl, *s_r_spl;
     SplinePoint *sp;
     RefChar *r, *s_r;
-    int i, first;
+    int i, first, ref_first;
 
-    s->matched_ss = s->matched_refs = 0;
+    s->matched_ss = s->matched_refs = s->matched_ss_start = 0;
     first = true;
     for ( s_r = s->sc_srch.layers[ly_fore].refs; s_r!=NULL; s_r = s_r->next ) {
 	for ( r = sc->layers[ly_fore].refs, i=0; r!=NULL; r=r->next, ++i ) if ( !(s->matched_refs&(1<<i)) ) {
@@ -422,7 +423,13 @@ static int SCMatchesFull(SplineChar *sc,SearchView *s) {
 return( false );
 	s->matched_refs |= 1<<i;
     }
+    ref_first = first;
 
+ retry:
+    if ( ref_first )
+	s->matched_x = s->matched_y = 0;
+    s->matched_ss = s->matched_ss_start;	/* Don't use any of these contours, they don't work */
+    first = ref_first;
     for ( s_spl = s->path, s_r_spl=s->revpath; s_spl!=NULL; s_spl=s_spl->next, s_r_spl = s_r_spl->next ) {
 	for ( spl=sc->layers[ly_fore].splines, i=0; spl!=NULL; spl=spl->next, ++i ) if ( !(s->matched_ss&(1<<i)) ) {
 	    s->matched_spl = spl;
@@ -456,9 +463,21 @@ return( false );
 		}
 	    }
 	}
-	if ( spl==NULL )
+	if ( spl==NULL ) {
+	    if ( s_spl == s->path )
 return( false );
-	s->matched_ss |= 1<<i;
+	    /* Ok, we could not find a match starting from the contour */
+	    /*  we started with. However if there are multiple contours */
+	    /*  in the search pattern, that might just mean that we a bad */
+	    /*  transform, so start from scratch and try some other contours */
+	    /*  but don't test anything we've already ruled out */
+ goto retry;
+	}
+	if ( s_spl == s->path ) {
+	    s->matched_ss_start |= 1<<i;
+	    s->matched_ss = 1<<i;		/* Ok, the contours in matched_ss_start didn't work as starting points, but we still must test them with the current transform against other contours */
+	} else
+	    s->matched_ss |= 1<<i;
 	first = false;
     }
 return( true );
