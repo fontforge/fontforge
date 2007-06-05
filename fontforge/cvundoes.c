@@ -2299,7 +2299,9 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
     } else
 	_PasteToSC(sc,paster,fv,pasteinto,ly_fore,trans,mc);
 }
+#endif
 
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 static void DevTabInto(struct vr *vr) {
     ValDevTab *adjust;
