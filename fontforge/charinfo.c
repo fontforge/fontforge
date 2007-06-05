@@ -796,132 +796,143 @@ void KpMDParse(SplineFont *sf,SplineChar *sc,struct lookup_subtable *sub,
     KernPair *kp;
     int isv, iskpable, offset, newv;
     char *dvstr;
+    char *pt, *start;
+    int ch;
 
-    other = SFGetChar(sc->parent,-1,possub[cols*i+1].u.md_str);
-    for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
-	if ( pst->subtable == sub &&
-		strcmp(possub[cols*i+1].u.md_str,pst->u.pair.paired)==0 )
+    for ( start=possub[cols*i+1].u.md_str; ; ) {
+	while ( *start==' ' ) ++start;
+	if ( *start=='\0' )
     break;
-    }
-    kp = NULL;
-    if ( pst==NULL && other!=NULL ) {
-	for ( isv=0; isv<2; ++isv ) {
-	    for ( kp = isv ? sc->vkerns : sc->kerns; kp!=NULL; kp=kp->next )
-		if ( kp->subtable==(void *) possub[cols*i+0].u.md_ival &&
-			kp->sc == other )
-	    break;
-	    if ( kp!=NULL )
+	for ( pt=start; *pt!='\0' && *pt!=' '; ++pt );
+	ch = *pt; *pt = '\0';
+	other = SFGetChar(sc->parent,-1,start);
+	for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
+	    if ( pst->subtable == sub &&
+		    strcmp(start,pst->u.pair.paired)==0 )
 	break;
 	}
-    }
-    newv = false;
-    if ( other==NULL )
-	iskpable = false;
-    else if ( sub->vertical_kerning ) {
-	newv = true;
-	iskpable = possub[cols*i+PAIR_DX1].u.md_ival==0 &&
-		    possub[cols*i+PAIR_DY1].u.md_ival==0 &&
-		    possub[cols*i+PAIR_DX_ADV1].u.md_ival==0 &&
-		    possub[cols*i+PAIR_DX2].u.md_ival==0 &&
-		    possub[cols*i+PAIR_DY2].u.md_ival==0 &&
-		    possub[cols*i+PAIR_DX_ADV2].u.md_ival==0 &&
-		    possub[cols*i+PAIR_DY_ADV2].u.md_ival==0;
-	offset = possub[cols*i+PAIR_DY1].u.md_ival;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
-	iskpable &= (possub[cols*i+PAIR_DX1+1].u.md_str==NULL || *possub[cols*i+PAIR_DX1+1].u.md_str==0 ) &&
-		    (possub[cols*i+PAIR_DY1+1].u.md_str==0 || *possub[cols*i+PAIR_DY1+1].u.md_str==0 ) &&
-		    (possub[cols*i+PAIR_DX_ADV1+1].u.md_str==0 || *possub[cols*i+PAIR_DX_ADV1+1].u.md_str==0 ) &&
-		    (possub[cols*i+PAIR_DX2+1].u.md_str==0 || *possub[cols*i+PAIR_DX2+1].u.md_str==0 ) &&
-		    (possub[cols*i+PAIR_DY2+1].u.md_str==0 || *possub[cols*i+PAIR_DY2+1].u.md_str==0 ) &&
-		    (possub[cols*i+PAIR_DX_ADV2+1].u.md_str==0 || *possub[cols*i+PAIR_DX_ADV2+1].u.md_str==0 ) &&
-		    (possub[cols*i+PAIR_DY_ADV2+1].u.md_str==0 || *possub[cols*i+PAIR_DY_ADV2+1].u.md_str==0 );
-	dvstr = possub[cols*i+PAIR_DY1+1].u.md_str;
-#endif
-    } else if ( sub->lookup->lookup_flags & pst_r2l ) {
-	iskpable = possub[cols*i+PAIR_DX1].u.md_ival==0 &&
-		    possub[cols*i+PAIR_DY1].u.md_ival==0 &&
-		    possub[cols*i+PAIR_DX_ADV1].u.md_ival==0 &&
-		    possub[cols*i+PAIR_DY_ADV1].u.md_ival==0 &&
-		    possub[cols*i+PAIR_DX2].u.md_ival==0 &&
-		    possub[cols*i+PAIR_DY2].u.md_ival==0 &&
-		    possub[cols*i+PAIR_DY_ADV2].u.md_ival==0;
-	offset = possub[cols*i+PAIR_DX_ADV2].u.md_ival;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
-	iskpable &= (possub[cols*i+PAIR_DX1+1].u.md_str==NULL || *possub[cols*i+PAIR_DX1+1].u.md_str==0 ) &&
-		    (possub[cols*i+PAIR_DY1+1].u.md_str==0 || *possub[cols*i+PAIR_DY1+1].u.md_str==0 ) &&
-		    (possub[cols*i+PAIR_DX_ADV1+1].u.md_str==0 || *possub[cols*i+PAIR_DX_ADV1+1].u.md_str==0 ) &&
-		    (possub[cols*i+PAIR_DY_ADV1+1].u.md_str==0 || *possub[cols*i+PAIR_DY_ADV1+1].u.md_str==0 ) &&
-		    (possub[cols*i+PAIR_DX2+1].u.md_str==0 || *possub[cols*i+PAIR_DX2+1].u.md_str==0 ) &&
-		    (possub[cols*i+PAIR_DY2+1].u.md_str==0 || *possub[cols*i+PAIR_DY2+1].u.md_str==0 ) &&
-		    (possub[cols*i+PAIR_DY_ADV2+1].u.md_str==0 || *possub[cols*i+PAIR_DY_ADV2+1].u.md_str==0 );
-	dvstr = possub[cols*i+PAIR_DX_ADV2+1].u.md_str;
-#endif
-    } else {
-	iskpable = possub[cols*i+PAIR_DX1].u.md_ival==0 &&
-		    possub[cols*i+PAIR_DY1].u.md_ival==0 &&
-		    possub[cols*i+PAIR_DY_ADV1].u.md_ival==0 &&
-		    possub[cols*i+PAIR_DX2].u.md_ival==0 &&
-		    possub[cols*i+PAIR_DY2].u.md_ival==0 &&
-		    possub[cols*i+PAIR_DX_ADV2].u.md_ival==0 &&
-		    possub[cols*i+PAIR_DY_ADV2].u.md_ival==0;
-	offset = possub[cols*i+PAIR_DX_ADV1].u.md_ival;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
-	iskpable &= (possub[cols*i+PAIR_DX1+1].u.md_str==NULL || *possub[cols*i+PAIR_DX1+1].u.md_str==0 ) &&
-		    (possub[cols*i+PAIR_DY1+1].u.md_str==0 || *possub[cols*i+PAIR_DY1+1].u.md_str==0 ) &&
-		    (possub[cols*i+PAIR_DY_ADV1+1].u.md_str==0 || *possub[cols*i+PAIR_DY_ADV1+1].u.md_str==0 ) &&
-		    (possub[cols*i+PAIR_DX2+1].u.md_str==0 || *possub[cols*i+PAIR_DX2+1].u.md_str==0 ) &&
-		    (possub[cols*i+PAIR_DY2+1].u.md_str==0 || *possub[cols*i+PAIR_DY2+1].u.md_str==0 ) &&
-		    (possub[cols*i+PAIR_DX_ADV2+1].u.md_str==0 || *possub[cols*i+PAIR_DX_ADV2+1].u.md_str==0 ) &&
-		    (possub[cols*i+PAIR_DY_ADV2+1].u.md_str==0 || *possub[cols*i+PAIR_DY_ADV2+1].u.md_str==0 );
-	dvstr = possub[cols*i+PAIR_DX_ADV1+1].u.md_str;
-#endif
-    }
-    if ( iskpable ) {
-	if ( kp==NULL ) {
-	    /* If there's a pst, ignore it, it will not get ticked and will*/
-	    /*  be freed later */
-	    kp = chunkalloc(sizeof(KernPair));
-	    kp->subtable = sub;
-	    kp->sc = other;
-	    if ( newv ) {
-		kp->next = sc->vkerns;
-		sc->vkerns = kp;
-	    } else {
-		kp->next = sc->kerns;
-		sc->kerns = kp;
+	kp = NULL;
+	if ( pst==NULL && other!=NULL ) {
+	    for ( isv=0; isv<2; ++isv ) {
+		for ( kp = isv ? sc->vkerns : sc->kerns; kp!=NULL; kp=kp->next )
+		    if ( kp->subtable==(void *) possub[cols*i+0].u.md_ival &&
+			    kp->sc == other )
+		break;
+		if ( kp!=NULL )
+	    break;
 	    }
 	}
+	newv = false;
+	if ( other==NULL )
+	    iskpable = false;
+	else if ( sub->vertical_kerning ) {
+	    newv = true;
+	    iskpable = possub[cols*i+PAIR_DX1].u.md_ival==0 &&
+			possub[cols*i+PAIR_DY1].u.md_ival==0 &&
+			possub[cols*i+PAIR_DX_ADV1].u.md_ival==0 &&
+			possub[cols*i+PAIR_DX2].u.md_ival==0 &&
+			possub[cols*i+PAIR_DY2].u.md_ival==0 &&
+			possub[cols*i+PAIR_DX_ADV2].u.md_ival==0 &&
+			possub[cols*i+PAIR_DY_ADV2].u.md_ival==0;
+	    offset = possub[cols*i+PAIR_DY1].u.md_ival;
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
-	DeviceTableFree(kp->adjust);
-	kp->adjust = DeviceTableParse(NULL,dvstr);
+	    iskpable &= (possub[cols*i+PAIR_DX1+1].u.md_str==NULL || *possub[cols*i+PAIR_DX1+1].u.md_str==0 ) &&
+			(possub[cols*i+PAIR_DY1+1].u.md_str==0 || *possub[cols*i+PAIR_DY1+1].u.md_str==0 ) &&
+			(possub[cols*i+PAIR_DX_ADV1+1].u.md_str==0 || *possub[cols*i+PAIR_DX_ADV1+1].u.md_str==0 ) &&
+			(possub[cols*i+PAIR_DX2+1].u.md_str==0 || *possub[cols*i+PAIR_DX2+1].u.md_str==0 ) &&
+			(possub[cols*i+PAIR_DY2+1].u.md_str==0 || *possub[cols*i+PAIR_DY2+1].u.md_str==0 ) &&
+			(possub[cols*i+PAIR_DX_ADV2+1].u.md_str==0 || *possub[cols*i+PAIR_DX_ADV2+1].u.md_str==0 ) &&
+			(possub[cols*i+PAIR_DY_ADV2+1].u.md_str==0 || *possub[cols*i+PAIR_DY_ADV2+1].u.md_str==0 );
+	    dvstr = possub[cols*i+PAIR_DY1+1].u.md_str;
 #endif
-	kp->off = offset;
-	kp->kcid = true;
-    } else {
-	if ( pst == NULL ) {
-	    /* If there's a kp, ignore it, it will not get ticked and will*/
-	    /*  be freed later */
-	    pst = chunkalloc(sizeof(PST));
-	    pst->type = pst_pair;
-	    pst->subtable = sub;
-	    pst->next = sc->possub;
-	    sc->possub = pst;
-	    pst->u.pair.vr = chunkalloc(sizeof(struct vr [2]));
-	    pst->u.pair.paired = copy(possub[cols*i+1].u.md_str);
+	} else if ( sub->lookup->lookup_flags & pst_r2l ) {
+	    iskpable = possub[cols*i+PAIR_DX1].u.md_ival==0 &&
+			possub[cols*i+PAIR_DY1].u.md_ival==0 &&
+			possub[cols*i+PAIR_DX_ADV1].u.md_ival==0 &&
+			possub[cols*i+PAIR_DY_ADV1].u.md_ival==0 &&
+			possub[cols*i+PAIR_DX2].u.md_ival==0 &&
+			possub[cols*i+PAIR_DY2].u.md_ival==0 &&
+			possub[cols*i+PAIR_DY_ADV2].u.md_ival==0;
+	    offset = possub[cols*i+PAIR_DX_ADV2].u.md_ival;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	    iskpable &= (possub[cols*i+PAIR_DX1+1].u.md_str==NULL || *possub[cols*i+PAIR_DX1+1].u.md_str==0 ) &&
+			(possub[cols*i+PAIR_DY1+1].u.md_str==0 || *possub[cols*i+PAIR_DY1+1].u.md_str==0 ) &&
+			(possub[cols*i+PAIR_DX_ADV1+1].u.md_str==0 || *possub[cols*i+PAIR_DX_ADV1+1].u.md_str==0 ) &&
+			(possub[cols*i+PAIR_DY_ADV1+1].u.md_str==0 || *possub[cols*i+PAIR_DY_ADV1+1].u.md_str==0 ) &&
+			(possub[cols*i+PAIR_DX2+1].u.md_str==0 || *possub[cols*i+PAIR_DX2+1].u.md_str==0 ) &&
+			(possub[cols*i+PAIR_DY2+1].u.md_str==0 || *possub[cols*i+PAIR_DY2+1].u.md_str==0 ) &&
+			(possub[cols*i+PAIR_DY_ADV2+1].u.md_str==0 || *possub[cols*i+PAIR_DY_ADV2+1].u.md_str==0 );
+	    dvstr = possub[cols*i+PAIR_DX_ADV2+1].u.md_str;
+#endif
+	} else {
+	    iskpable = possub[cols*i+PAIR_DX1].u.md_ival==0 &&
+			possub[cols*i+PAIR_DY1].u.md_ival==0 &&
+			possub[cols*i+PAIR_DY_ADV1].u.md_ival==0 &&
+			possub[cols*i+PAIR_DX2].u.md_ival==0 &&
+			possub[cols*i+PAIR_DY2].u.md_ival==0 &&
+			possub[cols*i+PAIR_DX_ADV2].u.md_ival==0 &&
+			possub[cols*i+PAIR_DY_ADV2].u.md_ival==0;
+	    offset = possub[cols*i+PAIR_DX_ADV1].u.md_ival;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	    iskpable &= (possub[cols*i+PAIR_DX1+1].u.md_str==NULL || *possub[cols*i+PAIR_DX1+1].u.md_str==0 ) &&
+			(possub[cols*i+PAIR_DY1+1].u.md_str==0 || *possub[cols*i+PAIR_DY1+1].u.md_str==0 ) &&
+			(possub[cols*i+PAIR_DY_ADV1+1].u.md_str==0 || *possub[cols*i+PAIR_DY_ADV1+1].u.md_str==0 ) &&
+			(possub[cols*i+PAIR_DX2+1].u.md_str==0 || *possub[cols*i+PAIR_DX2+1].u.md_str==0 ) &&
+			(possub[cols*i+PAIR_DY2+1].u.md_str==0 || *possub[cols*i+PAIR_DY2+1].u.md_str==0 ) &&
+			(possub[cols*i+PAIR_DX_ADV2+1].u.md_str==0 || *possub[cols*i+PAIR_DX_ADV2+1].u.md_str==0 ) &&
+			(possub[cols*i+PAIR_DY_ADV2+1].u.md_str==0 || *possub[cols*i+PAIR_DY_ADV2+1].u.md_str==0 );
+	    dvstr = possub[cols*i+PAIR_DX_ADV1+1].u.md_str;
+#endif
 	}
+	if ( iskpable ) {
+	    if ( kp==NULL ) {
+		/* If there's a pst, ignore it, it will not get ticked and will*/
+		/*  be freed later */
+		kp = chunkalloc(sizeof(KernPair));
+		kp->subtable = sub;
+		kp->sc = other;
+		if ( newv ) {
+		    kp->next = sc->vkerns;
+		    sc->vkerns = kp;
+		} else {
+		    kp->next = sc->kerns;
+		    sc->kerns = kp;
+		}
+	    }
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
-	VRDevTabParse(&pst->u.pair.vr[0],&possub[cols*i+PAIR_DX1+1]);
-	VRDevTabParse(&pst->u.pair.vr[1],&possub[cols*i+PAIR_DX2]+1);
+	    DeviceTableFree(kp->adjust);
+	    kp->adjust = DeviceTableParse(NULL,dvstr);
 #endif
-	pst->u.pair.vr[0].xoff = possub[cols*i+PAIR_DX1].u.md_ival;
-	pst->u.pair.vr[0].yoff = possub[cols*i+PAIR_DY1].u.md_ival;
-	pst->u.pair.vr[0].h_adv_off = possub[cols*i+PAIR_DX_ADV1].u.md_ival;
-	pst->u.pair.vr[0].v_adv_off = possub[cols*i+PAIR_DY_ADV1].u.md_ival;
-	pst->u.pair.vr[1].xoff = possub[cols*i+PAIR_DX2].u.md_ival;
-	pst->u.pair.vr[1].yoff = possub[cols*i+PAIR_DY2].u.md_ival;
-	pst->u.pair.vr[1].h_adv_off = possub[cols*i+PAIR_DX_ADV2].u.md_ival;
-	pst->u.pair.vr[1].v_adv_off = possub[cols*i+PAIR_DY_ADV2].u.md_ival;
-	pst->ticked = true;
+	    kp->off = offset;
+	    kp->kcid = true;
+	} else {
+	    if ( pst == NULL ) {
+		/* If there's a kp, ignore it, it will not get ticked and will*/
+		/*  be freed later */
+		pst = chunkalloc(sizeof(PST));
+		pst->type = pst_pair;
+		pst->subtable = sub;
+		pst->next = sc->possub;
+		sc->possub = pst;
+		pst->u.pair.vr = chunkalloc(sizeof(struct vr [2]));
+		pst->u.pair.paired = copy(start);
+	    }
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	    VRDevTabParse(&pst->u.pair.vr[0],&possub[cols*i+PAIR_DX1+1]);
+	    VRDevTabParse(&pst->u.pair.vr[1],&possub[cols*i+PAIR_DX2]+1);
+#endif
+	    pst->u.pair.vr[0].xoff = possub[cols*i+PAIR_DX1].u.md_ival;
+	    pst->u.pair.vr[0].yoff = possub[cols*i+PAIR_DY1].u.md_ival;
+	    pst->u.pair.vr[0].h_adv_off = possub[cols*i+PAIR_DX_ADV1].u.md_ival;
+	    pst->u.pair.vr[0].v_adv_off = possub[cols*i+PAIR_DY_ADV1].u.md_ival;
+	    pst->u.pair.vr[1].xoff = possub[cols*i+PAIR_DX2].u.md_ival;
+	    pst->u.pair.vr[1].yoff = possub[cols*i+PAIR_DY2].u.md_ival;
+	    pst->u.pair.vr[1].h_adv_off = possub[cols*i+PAIR_DX_ADV2].u.md_ival;
+	    pst->u.pair.vr[1].v_adv_off = possub[cols*i+PAIR_DY_ADV2].u.md_ival;
+	    pst->ticked = true;
+	}
+	*pt = ch;
+	start = pt;
     }
 }
 
@@ -1004,7 +1015,7 @@ return( false );
 		    buts[1] = _("_Cancel");
 		    buts[2] = NULL;
 		    if ( gwwv_ask(_("Missing glyph"),(const char **) buts,0,1,_("In lookup subtable %.30s you refer to a glyph named %.80s, which is not in the font yet. Was this intentional?"),
-			    ((struct lookup_subtable *) possub[cols*j+0].u.md_ival)->subtable_name,
+			    ((struct lookup_subtable *) possub[cols*i+0].u.md_ival)->subtable_name,
 			    start)==1 ) {
 			*pt = ch;
 return( false );
@@ -1014,7 +1025,7 @@ return( false );
 		    buts[1] = _("_Cancel");
 		    buts[2] = NULL;
 		    if ( gwwv_ask(_("Substitution generates itself"),(const char **) buts,0,1,_("In lookup subtable %.30s you replace a glyph with itself. Was this intentional?"),
-			    ((struct lookup_subtable *) possub[cols*j+0].u.md_ival)->subtable_name)==1 ) {
+			    ((struct lookup_subtable *) possub[cols*i+0].u.md_ival)->subtable_name)==1 ) {
 			*pt = ch;
 return( false );
 		    }
