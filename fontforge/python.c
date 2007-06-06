@@ -923,18 +923,20 @@ return( -1 );
 
     val = (val!=0);
     if ( val == self->is_quadratic )
-return( 1 );
-    ss = SSFromContour(self,NULL);
-    PyFFContour_clear(self);
-    if ( val )
-	ss2 = SplineSetsTTFApprox(ss);
-    else
-	ss2 = SplineSetsPSApprox(ss);
-    SplinePointListFree(ss);
+return( 0 );
+    if ( self->pt_cnt!=0 ) {
+	ss = SSFromContour(self,NULL);
+	PyFFContour_clear(self);
+	if ( val )
+	    ss2 = SplineSetsTTFApprox(ss);
+	else
+	    ss2 = SplineSetsPSApprox(ss);
+	SplinePointListFree(ss);
+	ContourFromSS(ss2,self);
+	SplinePointListFree(ss2);
+    }
     self->is_quadratic = (val!=0);
-    ContourFromSS(ss2,self);
-    SplinePointListFree(ss2);
-return( 1 );
+return( 0 );
 }
 
 static PyObject *PyFF_Contour_get_closed(PyFF_Contour *self,void *closure) {
@@ -950,7 +952,7 @@ return( -1 );
 
     val = (val!=0);
     if ( val == self->closed )
-return( 1 );
+return( 0 );
     if ( !val ) {
 	self->closed = false;
 	if ( self->pt_cnt>1 && self->points[0]->on_curve )
@@ -965,7 +967,7 @@ return( 1 );
 	    Py_DECREF(self->points[self->pt_cnt]);
 	}
     }
-return( 1 );
+return( 0 );
 }
 
 static PyGetSetDef PyFFContour_getset[] = {
@@ -2118,7 +2120,7 @@ return( -1 );
 
     val = (val!=0);
     if ( val == self->is_quadratic )
-return( 1 );
+return( 0 );
     ss = SSFromLayer(self);
     PyFFLayer_clear(self);
     if ( val )
@@ -2129,7 +2131,7 @@ return( 1 );
     self->is_quadratic = (val!=0);
     LayerFromSS(ss2,self);
     SplinePointListFree(ss2);
-return( 1 );
+return( 0 );
 }
 
 static PyGetSetDef PyFFLayer_getset[] = {
