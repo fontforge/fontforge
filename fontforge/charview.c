@@ -2286,9 +2286,17 @@ static int CVChangeToFormer( GGadget *g, GEvent *e) {
 	    if ( sf->glyphs[gid]!=NULL &&
 		    strcmp(sf->glyphs[gid]->name,cv->former_names[new_aspect])==0 )
 	break;
-	if ( gid<0 )
+	if ( gid<0 ) {
 	    /* They changed the name? See if we can get a unicode value from it */
-	    gid = SFFindGID(sf,-1,cv->former_names[new_aspect]);
+	    int unienc = UniFromName(cv->former_names[new_aspect],sf->uni_interp,cv->fv->map->enc);
+	    if ( unienc>=0 ) {
+		gid = SFFindGID(sf,unienc,cv->former_names[new_aspect]);
+		if ( gid>=0 ) {
+		    free(cv->former_names[new_aspect]);
+		    cv->former_names[new_aspect] = copy(sf->glyphs[gid]->name);
+		}
+	    }
+	}
 	if ( gid<0 )
 return( true );
 	CVChangeSC(cv,sf->glyphs[gid]);
@@ -5321,43 +5329,47 @@ static void CVNextPrevPt(CharView *cv,struct gmenuitem *mi) {
     SplineSet *spl, *ss;
     int x, y;
 
-    if ( mi->mid != MID_FirstPt && !CVOneThingSel(cv,&selpt,&spl,&r,&il,NULL))
-return;
-    other = selpt;
-    if ( mi->mid == MID_NextPt ) {
-	if ( other->next!=NULL && other->next->to!=spl->first )
-	    other = other->next->to;
-	else {
-	    if ( spl->next == NULL )
-		spl = cv->layerheads[cv->drawmode]->splines;
-	    else
-		spl = spl->next;
-	    other = spl->first;
-	}
-    } else if ( mi->mid == MID_PrevPt ) {
-	if ( other!=spl->first ) {
-	    other = other->prev->from;
-	} else {
-	    if ( spl==cv->layerheads[cv->drawmode]->splines ) {
-		for ( ss = cv->layerheads[cv->drawmode]->splines; ss->next!=NULL; ss=ss->next );
-	    } else {
-		for ( ss = cv->layerheads[cv->drawmode]->splines; ss->next!=spl; ss=ss->next );
-	    }
-	    spl = ss;
-	    other = ss->last;
-	    if ( spl->last==spl->first && spl->last->prev!=NULL )
-		other = other->prev->from;
-	}
-    } else if ( mi->mid == MID_FirstPt ) {
+    if ( mi->mid != MID_FirstPt ) {
 	if ( cv->layerheads[cv->drawmode]->splines==NULL )
 return;
 	other = (cv->layerheads[cv->drawmode]->splines)->first;
 	CVClearSel(cv);
-    } else if ( mi->mid == MID_FirstPtNextCont ) {
-	if ( spl->next!=NULL )
-	    other = spl->next->first;
-	else
-	    other = NULL;
+    } else {
+	if ( !CVOneThingSel(cv,&selpt,&spl,&r,&il,NULL) || spl==NULL )
+return;
+	other = selpt;
+	if ( spl==NULL )
+return;
+	else if ( mi->mid == MID_NextPt ) {
+	    if ( other->next!=NULL && other->next->to!=spl->first )
+		other = other->next->to;
+	    else {
+		if ( spl->next == NULL )
+		    spl = cv->layerheads[cv->drawmode]->splines;
+		else
+		    spl = spl->next;
+		other = spl->first;
+	    }
+	} else if ( mi->mid == MID_PrevPt ) {
+	    if ( other!=spl->first ) {
+		other = other->prev->from;
+	    } else {
+		if ( spl==cv->layerheads[cv->drawmode]->splines ) {
+		    for ( ss = cv->layerheads[cv->drawmode]->splines; ss->next!=NULL; ss=ss->next );
+		} else {
+		    for ( ss = cv->layerheads[cv->drawmode]->splines; ss->next!=spl; ss=ss->next );
+		}
+		spl = ss;
+		other = ss->last;
+		if ( spl->last==spl->first && spl->last->prev!=NULL )
+		    other = other->prev->from;
+	    }
+	} else if ( mi->mid == MID_FirstPtNextCont ) {
+	    if ( spl->next!=NULL )
+		other = spl->next->first;
+	    else
+		other = NULL;
+	}
     }
     if ( selpt!=NULL )
 	selpt->selected = false;
