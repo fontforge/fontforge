@@ -993,6 +993,7 @@ static PyObject *PyFFContour_Concat( PyObject *_c1, PyObject *_c2 ) {
     int i;
     PyFF_Contour dummy;
     PyFF_Point *dummies[1];
+    double x,y;
 
     if ( PyType_IsSubtype(&PyFF_PointType,c2->ob_type) ) {
 	memset(&dummy,0,sizeof(dummy));
@@ -1002,8 +1003,16 @@ static PyObject *PyFFContour_Concat( PyObject *_c1, PyObject *_c2 ) {
     } else if ( !PyType_IsSubtype(&PyFF_ContourType,c1->ob_type) ||
 	    !PyType_IsSubtype(&PyFF_ContourType,c2->ob_type) ||
 	    c1->is_quadratic != c2->is_quadratic ) {
-	PyErr_Format(PyExc_TypeError, "Both arguments must be Contours of the same order");
+	if ( PyTuple_Check(_c2) && PyArg_ParseTuple(_c2,"dd",&x,&y)) {
+	    PyFF_Point *pt = PyFFPoint_CNew(x,y,true);
+	    memset(&dummy,0,sizeof(dummy));
+	    dummy.pt_cnt = 1;
+	    dummy.points = dummies; dummies[0] = pt;
+	    c2 = &dummy;
+	} else {
+	    PyErr_Format(PyExc_TypeError, "Both arguments must be Contours of the same order");
 return( NULL );
+	}
     }
     self = (PyFF_Contour *)PyFF_ContourType.tp_alloc(&PyFF_ContourType, 0);
     self->is_quadratic = c1->is_quadratic;
@@ -1026,6 +1035,7 @@ static PyObject *PyFFContour_InPlaceConcat( PyObject *_self, PyObject *_c2 ) {
     int i, old_cnt;
     PyFF_Contour dummy;
     PyFF_Point *dummies[1];
+    double x,y;
 
     if ( PyType_IsSubtype(&PyFF_PointType,c2->ob_type) ) {
 	memset(&dummy,0,sizeof(dummy));
@@ -1035,8 +1045,16 @@ static PyObject *PyFFContour_InPlaceConcat( PyObject *_self, PyObject *_c2 ) {
     } else if ( !PyType_IsSubtype(&PyFF_ContourType,self->ob_type) ||
 	    !PyType_IsSubtype(&PyFF_ContourType,c2->ob_type) ||
 	    self->is_quadratic != c2->is_quadratic ) {
-	PyErr_Format(PyExc_TypeError, "Both arguments must be Contours of the same order");
+	if ( PyTuple_Check(_c2) && PyArg_ParseTuple(_c2,"dd",&x,&y)) {
+	    PyFF_Point *pt = PyFFPoint_CNew(x,y,true);
+	    memset(&dummy,0,sizeof(dummy));
+	    dummy.pt_cnt = 1;
+	    dummy.points = dummies; dummies[0] = pt;
+	    c2 = &dummy;
+	} else {
+	    PyErr_Format(PyExc_TypeError, "Both arguments must be Contours of the same order");
 return( NULL );
+	}
     }
     old_cnt = self->pt_cnt;
     self->pt_max = self->pt_cnt = self->pt_cnt + c2->pt_cnt;
