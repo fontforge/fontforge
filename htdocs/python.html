@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 4-Jun-2007 -->
+  <!-- AP: Last modified: 6-Jun-2007 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -1388,14 +1388,29 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TD colspan=3>This represents a font's selection. You may index it with an
 	encoding value (in the encoding ISO-646-US (ASCII) the character "A" has
 	encoding index 65), or with a glyph's name, or with a string like "uXXXXX"
-	where XXXXX represent the glyphs unicode codepoint in hex, or with a fontforge
-	glyph object.</TD>
+	where XXXXX represent the glyph's unicode codepoint in hex, or with a fontforge
+	glyph object. The value of indexing into a selection will be either True
+	or False.
+	<BLOCKQUOTE>
+	  <PRE><FONT COLOR="Gray">&gt;&gt;&gt;</FONT> print fontforge.activeFontInUI().selection[65]
+<FONT COLOR="Gray">True</FONT>
+</PRE>
+	</BLOCKQUOTE>
+      </TD>
     </TR>
     <TR>
       <TH colspan=3>Members</TH>
     </TR>
     <TR>
-      <TD colspan=3>None</TD>
+      <TH>member</TH>
+      <TH colspan=2>comments</TH>
+    </TR>
+    <TR>
+      <TD><CODE>byGlyphs</CODE></TD>
+      <TD colspan=2>Returns another selection, just the same as this one except
+	that its iterator function will return glyphs (rather than encoding slots)
+	and will only return those entries for which glyphs exist. (This is read
+	only)</TD>
     </TR>
     <TR>
       <TH colspan=3>Iterator Protocol</TH>
@@ -1404,8 +1419,7 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TD><CODE>__iter__</CODE></TD>
       <TD><CODE>()</CODE></TD>
       <TD>Returns an iterator for the selection which will return all selected
-	glyphs in encoding order. Note if a (selected) encoding slot does not contain
-	a glyph it will be skipped.</TD>
+	encoding slots in encoding order.</TD>
     </TR>
     <TR>
       <TH colspan=3>Methods</TH>
