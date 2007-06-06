@@ -114,6 +114,7 @@ typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
     FontView *fv;
+    int by_glyphs;
 } PyFF_Selection;
 static PyTypeObject PyFF_SelectionType;
 
@@ -5245,6 +5246,15 @@ static PyObject *PyFFSelection_Str(PyFF_Selection *self) {
 return( PyString_FromFormat( "<Selection for %s>", self->fv->sf->fontname ));
 }
 
+static PyObject *PyFFSelection_ByGlyphs(PyFF_Selection *real_selection,void *closure) {
+    PyFF_Selection *self;
+
+    self = PyObject_New(PyFF_Selection, &PyFF_SelectionType);
+    self->fv = real_selection->fv;
+    self->by_glyphs=1;
+Py_RETURN( self );
+}
+
 /* ************************************************************************** */
 /* Font Selection based methods */
 /* ************************************************************************** */
@@ -5384,7 +5394,7 @@ Py_RETURN(self);
 static PyObject *fontiter_New(PyObject *font, int bysel);
 
 static PyObject *PySelection_iter(PyObject *self) {
-return( fontiter_New(self, true));
+return( fontiter_New(self, 1+((PyFF_Selection *) self)->by_glyphs ));
 }
 
 static PyMethodDef PyFFSelection_methods[] = {
@@ -5394,6 +5404,13 @@ static PyMethodDef PyFFSelection_methods[] = {
     { "changed", PyFFSelection_Changed, METH_NOARGS, "Selects those glyphs which have changed" },
     { "invert", PyFFSelection_Invert, METH_NOARGS, "Inverts the selection" },
     NULL
+};
+
+static PyGetSetDef PyFFSelection_getset[] = {
+    {"byGlyphs",
+	 (getter)PyFFSelection_ByGlyphs, (setter)PyFF_cant_set,
+	 "returns a selection object whose iterator will return glyph objects (rather than encoding indeces)", NULL},
+    {NULL}  /* Sentinel */
 };
 
 /* ************************************************************************** */
@@ -5487,7 +5504,7 @@ static PyTypeObject PyFF_SelectionType = {
     0,		               /* tp_iternext */
     PyFFSelection_methods,     /* tp_methods */
     0,			       /* tp_members */
-    0,			       /* tp_getset */
+    PyFFSelection_getset,      /* tp_getset */
     0,                         /* tp_base */
     0,                         /* tp_dict */
     0,                         /* tp_descr_get */
@@ -5791,13 +5808,23 @@ return NULL;
 return( Py_BuildValue("s",sf->glyphs[di->pos++]->name) );
 	    ++di->pos;
 	}
-    } else {
+    } else if ( di->byselection==2 ) {
 	int gid;
 	FontView *fv = di->fv;
 	int enccount = fv->map->enccount;
 	while ( di->pos < enccount ) {
 	    if ( fv->selected[di->pos] && (gid=fv->map->map[di->pos])!=-1 &&
-		    SCWorthOutputting(fv->sf->glyphs[di->pos]) )
+		    SCWorthOutputting(fv->sf->glyphs[gid]) ) {
+		++di->pos;
+return( PySC_From_SC_I( fv->sf->glyphs[gid] ) );
+	    }
+	    ++di->pos;
+	}
+    } else {
+	FontView *fv = di->fv;
+	int enccount = fv->map->enccount;
+	while ( di->pos < enccount ) {
+	    if ( fv->selected[di->pos] )
 return( Py_BuildValue("i",di->pos++ ) );
 	    ++di->pos;
 	}
