@@ -8711,6 +8711,45 @@ return( NULL );
 Py_RETURN( self );
 }
 
+static PyObject *PyFFFont_GenerateFeature(PyObject *self, PyObject *args) {
+    char *filename;
+    char *locfilename = NULL;
+    char *lookup_name = NULL;
+    FontView *fv = ((PyFF_Font *) self)->fv;
+    FILE *out;
+    OTLookup *otl = NULL;
+    int err;
+
+    if ( !PyArg_ParseTuple(args,"es|s","UTF-8",&filename,&lookup_name) )
+return( NULL );
+    locfilename = utf82def_copy(filename);
+    free(filename);
+
+    if ( lookup_name!=NULL ) {
+	otl = SFFindLookup(fv->sf,lookup_name);
+	if ( otl == NULL ) {
+	    PyErr_Format(PyExc_EnvironmentError, "No lookup named %s", lookup_name );
+return( NULL );
+	}
+    }
+    out = fopen(locfilename,"w");
+    if ( out==NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "Failed to open file, %s, for writing", locfilename );
+return( NULL );
+    }
+    if ( otl!=NULL )
+	FeatDumpOneLookup(out,fv->sf,otl);
+    else
+	FeatDumpFontLookups(out,fv->sf);
+    err = ferror(out);
+    if ( fclose(out)!=0 || err ) {
+	PyErr_Format(PyExc_EnvironmentError, "IO error on file %s", locfilename);
+return( NULL );
+    }
+    free(locfilename);
+Py_RETURN( self );
+}
+
 static PyObject *PyFFFont_MergeKern(PyObject *self, PyObject *args) {
     char *filename;
     char *locfilename = NULL;
@@ -9234,7 +9273,9 @@ static PyMethodDef PyFF_Font_methods[] = {
     { "compareFonts", (PyCFunction) PyFFFont_compareFonts, METH_VARARGS, "Compares two fonts and stores the result into a file"},
     { "save", PyFFFont_Save, METH_VARARGS, "Save the current font to a sfd file" },
     { "generate", (PyCFunction) PyFFFont_Generate, METH_VARARGS | METH_KEYWORDS, "Save the current font to a standard font file" },
-    { "mergeKern", PyFFFont_MergeKern, METH_VARARGS, "Merge kerning data into the current font from an external file" },
+    { "generateFeatureFile", (PyCFunction) PyFFFont_GenerateFeature, METH_VARARGS, "Creates an adobe feature file containing all features and lookups" },
+    { "mergeKern", PyFFFont_MergeKern, METH_VARARGS, "Merge feature data into the current font from an external file" },
+    { "mergeFeature", PyFFFont_MergeKern, METH_VARARGS, "Merge feature data into the current font from an external file" },
     { "mergeFonts", PyFFFont_MergeFonts, METH_VARARGS, "Merge two fonts" },
     { "interpolateFonts", PyFFFont_InterpolateFonts, METH_VARARGS, "Interpolate between two fonts returning a new one" },
     { "createChar", PyFFFont_CreateUnicodeChar, METH_VARARGS, "Creates a (blank) glyph at the specified unicode codepoint" },

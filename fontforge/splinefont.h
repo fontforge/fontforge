@@ -2238,6 +2238,7 @@ extern void FListAppendScriptLang(FeatureScriptLangList *fl,uint32 script_tag,ui
 extern void FListsAppendScriptLang(FeatureScriptLangList *fl,uint32 script_tag,uint32 lang_tag);
 struct scriptlanglist *SLCopy(struct scriptlanglist *sl);
 extern FeatureScriptLangList *FeatureListCopy(FeatureScriptLangList *fl);
+extern void SLMerge(FeatureScriptLangList *into, struct scriptlanglist *fsl);
 extern void FLMerge(OTLookup *into, OTLookup *from);
 extern FeatureScriptLangList *FLOrder(FeatureScriptLangList *fl);
 extern int FeatureScriptTagInFeatureScriptList(uint32 tag, uint32 script, FeatureScriptLangList *fl);

@@ -1946,6 +1946,39 @@ static void bGenerateFamily(Context *c) {
     }
 }
 
+static void bGenerateFeatureFile(Context *c) {
+    SplineFont *sf = c->curfv->sf;
+    char *t;
+    char *locfilename;
+    OTLookup *otl = NULL;
+    FILE *out;
+    int err;
+
+    if ( c->a.argc!=2 && c->a.argc!=3 )
+	ScriptError( c, "Wrong number of arguments");
+    if ( c->a.vals[1].type!=v_str || (c->a.argc==3 && c->a.vals[2].type!=v_str ))
+	ScriptError( c, "Bad type of argument");
+    if ( c->a.argc==3 ) {
+	otl = SFFindLookup(sf,c->a.vals[2].u.sval);
+	if ( otl==NULL )
+	    ScriptError(c,"Unknown lookup");
+    }
+
+    t = script2utf8_copy(c->a.vals[1].u.sval);
+    locfilename = utf82def_copy(t);
+    out = fopen(locfilename,"w");
+    if ( out==NULL )
+	ScriptError(c,"Failed to open output file");
+    if ( otl!=NULL )
+	FeatDumpOneLookup(out,sf,otl);
+    else
+	FeatDumpFontLookups(out,sf);
+    err = ferror(out);
+    if ( fclose(out)!=0 || err )
+	ScriptError(c,"IO Error");
+    free(t); free(locfilename);
+}
+
 static void bControlAfmLigatureOutput(Context *c) {
     ScriptError(c,"This scripting function no longer works.");
 }
@@ -7676,6 +7709,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "Save", bSave },
     { "Generate", bGenerate },
     { "GenerateFamily", bGenerateFamily },
+    { "GenerateFeatureFile", bGenerateFeatureFile },
     { "ControlAfmLigatureOutput", bControlAfmLigatureOutput },
 #ifdef FONTFORGE_CONFIG_WRITE_PFM
     { "WritePfm", bWritePfm },
@@ -7684,6 +7718,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "Export", bExport },
     { "FontImage", bFontImage },
     { "MergeKern", bMergeKern },
+    { "MergeFeature", bMergeKern },
     { "PrintSetup", bPrintSetup, 1 },
     { "PrintFont", bPrintFont },
 /* Edit Menu */

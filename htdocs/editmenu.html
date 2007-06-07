@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 24-Mar-2007 -->
+  <!-- AP: Last modified: 7-Jun-2007 -->
   <TITLE>The Edit Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -24,7 +24,7 @@
 	      >Source</A>
       </UL>
     <LI>
-      <A href="overview.html#Overview">Introduction</A>
+      <A href="overview.html">Introduction</A>
     <LI>
       <A href="editexample.html">Tutorial</A>
     <LI class="menu">
@@ -95,6 +95,8 @@
       <A HREF="#Copy">Copy</A>
     <LI>
       <A HREF="#Reference">Copy Reference</A>
+    <LI>
+      <A HREF="#CopyLookup">Copy Lookup Data</A>
     <LI>
       <A HREF="#Width">Copy Width</A>
     <LI>
@@ -263,6 +265,20 @@
       the clipboard (only available in foreground mode).
       <P>
       This command is not available in the Bitmap View.
+    <DT>
+      <A NAME="CopyLookup">Copy Lookup Data</A>
+    <DD>
+      Copies lookup data (substitutions, ligatures, kerning, anchor points, etc)
+      from the selected glyphs. This command does not work quite as expected:
+      <UL>
+	<LI>
+	  The data are not actually copied. Instead fontforge makes a note of which
+	  glyphs it copied the data from. FontForge actually copies the data when the
+	  user does a Paste (so any changes in the lookup data will be pasted).
+	<LI>
+	  When the user does a Paste s/he will be prompted with a dialog asking what
+	  lookups should be copied.
+      </UL>
     <DT>
       Copy <A NAME="Width">Width</A>
     <DD>
