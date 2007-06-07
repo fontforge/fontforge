@@ -3058,7 +3058,11 @@ return( NULL );
 	/*  this has been fixed. FF used to do what Adobe did. Many programs */
 	/*  expect broken sizes tables now. Therefore allow the user to chose */
 	/*  which kind to output */
+#if 0
 	putshort(g___,size_params_loc-((at->gi.flags&ttf_flag_brokensize)?feature_list_table_start:size_params_ptr));
+#else
+	putshort(g___,size_params_loc-size_params_ptr);
+#endif
 	fseek(g___,size_params_loc,SEEK_SET);
 	putshort(g___,sf->design_size);
 	if ( sf->fontstyle_id!=0 || sf->fontstyle_name!=NULL ||
