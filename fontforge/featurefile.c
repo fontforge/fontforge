@@ -1658,6 +1658,7 @@ struct parseState {
     unsigned int lookup_in_sf_warned: 1;
     unsigned int in_vkrn: 1;
     unsigned int backedup: 1;
+    unsigned int skipping: 1;
     SplineFont *sf;
     struct scriptlanglist *def_langsyses;
     struct glyphclasses { char *classname, *glyphs; struct glyphclasses *next; } *classes;
@@ -1966,8 +1967,10 @@ return;
 	    tok->tokbuf[0] = ch;
 	    tok->tokbuf[1] = '\0';
 	} else {
-	    LogError(_("Unexpected character (0x%02X) on line %d of %s"), ch, tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
-	    ++tok->err_count;
+	    if ( !tok->skipping ) {
+		LogError(_("Unexpected character (0x%02X) on line %d of %s"), ch, tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+		++tok->err_count;
+	    }
   goto skip_whitespace;
 	}
     }
@@ -2062,6 +2065,10 @@ static void fea_skip_to_semi(struct parseState *tok) {
 static void fea_skip_to_close_curly(struct parseState *tok) {
     int nest=0;
 
+    tok->skipping = true;
+    /* The table blocks have slightly different syntaxes and can take strings */
+    /* and floating point numbers. So don't complain about unknown chars when */
+    /*  in a table (that's skipping) */
     while ( tok->type!=tk_char || tok->tokbuf[0]!='}' || nest>0 ) {
 	fea_ParseTok(tok);
 	if ( tok->type==tk_char ) {
@@ -2071,6 +2078,7 @@ static void fea_skip_to_close_curly(struct parseState *tok) {
 	if ( tok->type==tk_eof )
     break;
     }
+    tok->skipping = false;
 }
 
 static void fea_now_semi(struct parseState *tok) {
@@ -4128,21 +4136,29 @@ static void fea_ParseTableKeywords(struct parseState *tok, struct tablekeywords 
 		tv = NULL;
 		fea_ParseTok(tok);
 	    } else {
-		fea_ParseTok(tok);
 		if ( tv!=NULL )
 		    tv->value = tok->value;
+		if ( strcmp(keys[index].name,"FontRevision")==0 ) {
+		    /* Can take a float */
+		    FILE *in = tok->inlist[tok->inc_depth];
+		    int ch = getc(in);
+		    if ( ch=='.' )
+			for ( ch=getc(in); isdigit(ch); ch=getc(in));
+		    ungetc(ch,in);
+		}
 		if ( index!=-1 && keys[index].cnt!=1 ) {
 		    int is_panose = strcmp(keys[index].name,"Panose")==0 && tv!=NULL;
 		    if ( is_panose )
 			tv->panose_vals[0] = tv->value;
 		    for ( i=1; ; ++i ) {
+			fea_ParseTok(tok);
 			if ( tok->type!=tk_int )
 		    break;
 			if ( is_panose && i<10 && tv!=NULL )
 			    tv->panose_vals[i] = tok->value;
-			fea_ParseTok(tok);
 		    }
-		}
+		} else
+		    fea_ParseTok(tok);
 	    }
 	}
 	if ( tok->type!=tk_char || tok->tokbuf[0]!=';' ) {
@@ -5231,8 +5247,9 @@ static struct feat_item *fea_ApplyFeatureList(struct parseState *tok,
 	    f = f->next;
     continue;
 	  case ft_lookup_start:
-	    start = f->next;
-	    f = fea_SetLookupLink(start,ot_undef);
+	    start = f;
+	    start->lookup_next = f->next;
+	    f = fea_SetLookupLink(start->next,ot_undef);
 	    if ( f!=NULL && f->type == ft_lookup_end )
 		f = f->next;
 	    otl = fea_ApplyLookupList(tok,start,lookup_flags);
@@ -5311,8 +5328,7 @@ static struct feat_item *fea_ApplyFeatureList(struct parseState *tok,
 	    } else
 		ltype = fea_LookupTypeFromItem(f);
 	    start = f;
-	    f = fea_SetLookupLink(start->next,ltype);
-	    start->lookup_next = start->next;
+	    f = fea_SetLookupLink(start,ltype);
 	    otl = fea_ApplyLookupList(tok,start,lookup_flags);
 	    fea_AttachFeatureToLookup(otl,feature_tag,sl);
     continue;
