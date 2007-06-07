@@ -1015,101 +1015,104 @@ void NameOTLookup(OTLookup *otl,SplineFont *sf) {
     struct lookup_subtable *subtable;
     int k;
 
-    for ( k=0; k<2; ++k ) {
-	for ( fl=otl->features; fl!=NULL ; fl=fl->next ) {
-	    /* look first for a feature attached to a default language */
-	    if ( k==1 || DefaultLangTagInScriptList(fl->scripts,false)!=NULL ) {
-		userfriendly = TagFullName(sf,fl->featuretag, fl->ismac, true);
-		if ( userfriendly!=NULL )
-	break;
-	    }
-	}
-	if ( userfriendly!=NULL )
-    break;
-    }
-    if ( userfriendly==NULL ) {
-	if ( (otl->lookup_type&0xff)>= 0xf0 )
-	    lookuptype = _("State Machine");
-	else if ( (otl->lookup_type>>8)<2 && (otl->lookup_type&0xff)<10 )
-	    lookuptype = _(lookup_type_names[otl->lookup_type>>8][otl->lookup_type&0xff]);
-	else
-	    lookuptype = S_("LookupType|Unknown");
-	for ( fl=otl->features; fl!=NULL && !fl->ismac; fl=fl->next );
-	if ( fl==NULL )
-	    userfriendly = copy(lookuptype);
-	else {
-	    userfriendly = galloc( strlen(lookuptype) + 10);
-	    sprintf( userfriendly, "%s '%c%c%c%c'", lookuptype,
-		fl->featuretag>>24,
-		fl->featuretag>>16,
-		fl->featuretag>>8 ,
-		fl->featuretag );
-	}
-    }
-    script = NULL;
-    if ( fl==NULL ) fl = otl->features;
-    if ( fl!=NULL && fl->scripts!=NULL ) {
-	char buf[8];
-	int j;
-	struct scriptlanglist *sl, *found, *found2;
-	uint32 script_tag = fl->scripts->script;
-	found = found2 = NULL;
-	for ( sl = fl->scripts; sl!=NULL; sl=sl->next ) {
-	    if ( sl->script == DEFAULT_SCRIPT )
-		/* Ignore it */;
-	    else if ( DefaultLangTagInOneScriptList(sl)) {
-		if ( found==NULL )
-		    found = sl;
-		else {
-		    found = found2 = NULL;
-	break;
+    if ( otl->lookup_name==NULL ) {
+	for ( k=0; k<2; ++k ) {
+	    for ( fl=otl->features; fl!=NULL ; fl=fl->next ) {
+		/* look first for a feature attached to a default language */
+		if ( k==1 || DefaultLangTagInScriptList(fl->scripts,false)!=NULL ) {
+		    userfriendly = TagFullName(sf,fl->featuretag, fl->ismac, true);
+		    if ( userfriendly!=NULL )
+	    break;
 		}
-	    } else if ( found2 == NULL )
-		found2 = sl;
-	    else
-		found2 = (struct scriptlanglist *) -1;
+	    }
+	    if ( userfriendly!=NULL )
+	break;
 	}
-	if ( found==NULL && found2!=NULL && found2 != (struct scriptlanglist *) -1 )
-	    found = found2;
-	if ( found!=NULL ) {
-	    script_tag = found->script;
-	    for ( j=0; scripts[j].text!=NULL && script_tag!=(uint32) (intpt) scripts[j].userdata; ++j );
-	    if ( scripts[j].text!=NULL )
-		script = copy( S_((char *) scripts[j].text) );
+	if ( userfriendly==NULL ) {
+	    if ( (otl->lookup_type&0xff)>= 0xf0 )
+		lookuptype = _("State Machine");
+	    else if ( (otl->lookup_type>>8)<2 && (otl->lookup_type&0xff)<10 )
+		lookuptype = _(lookup_type_names[otl->lookup_type>>8][otl->lookup_type&0xff]);
+	    else
+		lookuptype = S_("LookupType|Unknown");
+	    for ( fl=otl->features; fl!=NULL && !fl->ismac; fl=fl->next );
+	    if ( fl==NULL )
+		userfriendly = copy(lookuptype);
 	    else {
-		buf[0] = '\'';
-		buf[1] = fl->scripts->script>>24;
-		buf[2] = (fl->scripts->script>>16)&0xff;
-		buf[3] = (fl->scripts->script>>8)&0xff;
-		buf[4] = fl->scripts->script&0xff;
-		buf[5] = '\'';
-		buf[6] = 0;
-		script = copy(buf);
+		userfriendly = galloc( strlen(lookuptype) + 10);
+		sprintf( userfriendly, "%s '%c%c%c%c'", lookuptype,
+		    fl->featuretag>>24,
+		    fl->featuretag>>16,
+		    fl->featuretag>>8 ,
+		    fl->featuretag );
 	    }
 	}
-    }
+	script = NULL;
+	if ( fl==NULL ) fl = otl->features;
+	if ( fl!=NULL && fl->scripts!=NULL ) {
+	    char buf[8];
+	    int j;
+	    struct scriptlanglist *sl, *found, *found2;
+	    uint32 script_tag = fl->scripts->script;
+	    found = found2 = NULL;
+	    for ( sl = fl->scripts; sl!=NULL; sl=sl->next ) {
+		if ( sl->script == DEFAULT_SCRIPT )
+		    /* Ignore it */;
+		else if ( DefaultLangTagInOneScriptList(sl)) {
+		    if ( found==NULL )
+			found = sl;
+		    else {
+			found = found2 = NULL;
+	    break;
+		    }
+		} else if ( found2 == NULL )
+		    found2 = sl;
+		else
+		    found2 = (struct scriptlanglist *) -1;
+	    }
+	    if ( found==NULL && found2!=NULL && found2 != (struct scriptlanglist *) -1 )
+		found = found2;
+	    if ( found!=NULL ) {
+		script_tag = found->script;
+		for ( j=0; scripts[j].text!=NULL && script_tag!=(uint32) (intpt) scripts[j].userdata; ++j );
+		if ( scripts[j].text!=NULL )
+		    script = copy( S_((char *) scripts[j].text) );
+		else {
+		    buf[0] = '\'';
+		    buf[1] = fl->scripts->script>>24;
+		    buf[2] = (fl->scripts->script>>16)&0xff;
+		    buf[3] = (fl->scripts->script>>8)&0xff;
+		    buf[4] = fl->scripts->script&0xff;
+		    buf[5] = '\'';
+		    buf[6] = 0;
+		    script = copy(buf);
+		}
+	    }
+	}
 /* GT: This string is used to generate a name for each OpenType lookup. */
 /* GT: The %s will be filled with the user friendly name of the feature used to invoke the lookup */
 /* GT: The second %s (if present) is the script */
 /* GT: While the %d is the index into the lookup list and is used to disambiguate it */
 /* GT: In case that is needed */
-    if ( script!=NULL ) {
-	format = _("%s in %s lookup %d");
-	otl->lookup_name = galloc( strlen(userfriendly)+strlen(format)+strlen(script)+10 );
-	sprintf( otl->lookup_name, format, userfriendly, script, otl->lookup_index );
-    } else {
-	format = _("%s lookup %d");
-	otl->lookup_name = galloc( strlen(userfriendly)+strlen(format)+10 );
-	sprintf( otl->lookup_name, format, userfriendly, otl->lookup_index );
+	if ( script!=NULL ) {
+	    format = _("%s in %s lookup %d");
+	    otl->lookup_name = galloc( strlen(userfriendly)+strlen(format)+strlen(script)+10 );
+	    sprintf( otl->lookup_name, format, userfriendly, script, otl->lookup_index );
+	} else {
+	    format = _("%s lookup %d");
+	    otl->lookup_name = galloc( strlen(userfriendly)+strlen(format)+10 );
+	    sprintf( otl->lookup_name, format, userfriendly, otl->lookup_index );
+	}
+	free(script);
+	free(userfriendly);
     }
-    free(script);
-    free(userfriendly);
 
     if ( otl->subtables==NULL )
 	/* IError( _("Lookup with no subtables"))*/;
     else {
 	int cnt = 0;
-	for ( subtable = otl->subtables; subtable!=NULL; subtable=subtable->next, ++cnt ) {
+	for ( subtable = otl->subtables; subtable!=NULL; subtable=subtable->next, ++cnt )
+		if ( subtable->subtable_name==NULL ) {
 	    if ( subtable==otl->subtables && subtable->next==NULL )
 /* GT: This string is used to generate a name for an OpenType lookup subtable. */
 /* GT:  %s is the lookup name */
@@ -1278,10 +1281,10 @@ static void LangMerge(struct scriptlanglist *into, struct scriptlanglist *from) 
     }
 }
 
-static void SLMerge(FeatureScriptLangList *into, FeatureScriptLangList *from) {
-    struct scriptlanglist *isl, *fsl;
+void SLMerge(FeatureScriptLangList *into, struct scriptlanglist *fsl) {
+    struct scriptlanglist *isl;
 
-    for ( fsl = from->scripts; fsl!=NULL; fsl = fsl->next ) {
+    for ( ; fsl!=NULL; fsl = fsl->next ) {
 	for ( isl=into->scripts; isl!=NULL; isl=isl->next ) {
 	    if ( fsl->script==isl->script )
 	break;
@@ -1307,7 +1310,7 @@ void FLMerge(OTLookup *into, OTLookup *from) {
 	break;
 	}
 	if ( ifl!=NULL )
-	    SLMerge(ffl,ifl);
+	    SLMerge(ffl,ifl->scripts);
 	else {
 	    ifl = FeatureListCopy(ffl);
 	    ifl->next = into->features;

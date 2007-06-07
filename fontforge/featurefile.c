@@ -1468,12 +1468,14 @@ struct tablevalues {
     struct tablevalues *next;
 };
 
+enum feat_type { ft_lookup_start, ft_lookup_end, ft_feat_start, ft_feat_end,
+    ft_table, ft_names, ft_gdefclasses, ft_lcaret, ft_tablekeys,
+    ft_sizeparams,
+    ft_subtable, ft_script, ft_lang, ft_lookupflags, ft_langsys,
+    ft_pst, ft_pstclass, ft_fpst, ft_ap, ft_lookup_ref };
 struct feat_item {
-    enum feat_type { ft_lookup_start, ft_lookup_end, ft_feat_start, ft_feat_end,
-	ft_table,
-	ft_sizeparams, ft_names, ft_gdefclasses, ft_lcaret, ft_tablekeys,
-	ft_subtable, ft_script, ft_lang, ft_lookupflags, ft_langsys,
-	ft_pst, ft_pstclass, ft_fpst, ft_ap, ft_lookup_ref } type;
+    uint16 /* enum feat_type */ type;
+    uint8 ticked;
     union {
 	SplineChar *sc;		/* For psts, aps */
 	char *class;		/* List of glyph names for kerning by class, lcarets */
@@ -1485,7 +1487,7 @@ struct feat_item {
     } u1;
     union {
 	PST *pst;
-		/* For kerning by class we'll generate an invalide pst with the class as the "paired" field */
+		/* For kerning by class we'll generate an invalid pst with the class as the "paired" field */
 	FPST *fpst;
 	AnchorPoint *ap;
 	int lookupflags;
@@ -1493,11 +1495,140 @@ struct feat_item {
 	int exclude_dflt;		/* for lang tags */
 	struct nameid *names;		/* size params */
 	struct tablevalues *tvals;
-	int *lcaret;
+	int16 *lcaret;
     } u2;
     char *mark_class;			/* For mark to base-ligature-mark, names of all marks which attach to this anchor */
-    struct feat_item *next;
+    struct feat_item *next, *lookup_next;
 };
+
+static int strcmpD(const void *_str1, const void *_str2) {
+    const char *str1 = *(const char **)_str1, *str2 = *(const char **) _str2;
+return( strcmp(str1,str2));
+}
+
+/* Ok, somes strings overlap so can't use normal strcpy */
+static char *mystrcpy(char *str1, const char *str2) {
+    int ch;
+    char *dest = str1;
+
+    while ( (ch = *str2++)!='\0' )
+	*str1++ = ch;
+    *str1 = '\0';
+return( dest );
+}
+
+/* Order glyph classes just so we can do a simple string compare to check for */
+/*  class match. So the order doesn't really matter, just so it is consistent */
+static char *fea_canonicalClassOrder(char *class) {
+    int name_cnt, i;
+    char *pt, **names, *cpt;
+    char *temp = copy(class);
+
+    name_cnt = 0;
+    for ( pt = class; ; ) {
+	while ( *pt==' ' ) ++pt;
+	if ( *pt=='\0' )
+    break;
+	for ( ; *pt!=' ' && *pt!='\0'; ++pt );
+	++name_cnt;
+    }
+
+    names = galloc(name_cnt*sizeof(char *));
+    name_cnt = 0;
+    for ( pt = temp; ; ) {
+	while ( *pt==' ' ) ++pt;
+	if ( *pt=='\0' )
+    break;
+	for ( names[name_cnt++]=pt ; *pt!=' ' && *pt!='\0'; ++pt );
+	if ( *pt==' ' )
+	    *pt++ = '\0';
+    }
+
+    qsort(names,name_cnt,sizeof(char *),strcmpD);
+    cpt = class;
+    for ( i=0; i<name_cnt; ++i ) {
+	strcpy(cpt,names[i]);
+	cpt += strlen(cpt);
+	*cpt++ = ' ';
+    }
+    if ( name_cnt!=0 )
+	cpt[-1] = '\0';
+    free(names);
+    free(temp);
+
+return( class );
+}
+
+static int fea_classesIntersect(char *class1, char *class2) {
+    char *pt1, *start1, *pt2, *start2;
+    int ch1, ch2;
+
+    for ( pt1=class1 ; ; ) {
+	while ( *pt1==' ' ) ++pt1;
+	if ( *pt1=='\0' )
+return( 0 );
+	for ( start1 = pt1; *pt1!=' ' && *pt1!='\0'; ++pt1 );
+	ch1 = *pt1; *pt1 = '\0';
+	for ( pt2=class2 ; ; ) {
+	    while ( *pt2==' ' ) ++pt2;
+	    if ( *pt2=='\0' )
+	break;
+	    for ( start2 = pt2; *pt2!=' ' && *pt2!='\0'; ++pt2 );
+	    ch2 = *pt2; *pt2 = '\0';
+	    if ( strcmp(start1,start2)==0 ) {
+		*pt2 = ch2; *pt1 = ch1;
+return( 1 );
+	    }
+	    *pt2 = ch2;
+	}
+	*pt1 = ch1;
+    }
+}
+
+static char *fea_classesSplit(char *class1, char *class2) {
+    char *pt1, *start1, *pt2, *start2;
+    int ch1, ch2;
+    int len = strlen(class1), len2 = strlen(class2);
+    char *intersection, *ipt;
+
+    if ( len2>len ) len = len2;
+    intersection = ipt = galloc(len2+1);
+    
+    for ( pt1=class1 ; ; ) {
+	while ( *pt1==' ' ) ++pt1;
+	if ( *pt1=='\0' )
+    break;
+	for ( start1 = pt1; *pt1!=' ' && *pt1!='\0'; ++pt1 );
+	ch1 = *pt1; *pt1 = '\0';
+	for ( pt2=class2 ; ; ) {
+	    while ( *pt2==' ' ) ++pt2;
+	    if ( *pt2=='\0' )
+	break;
+	    for ( start2 = pt2; *pt2!=' ' && *pt2!='\0'; ++pt2 );
+	    ch2 = *pt2; *pt2 = '\0';
+	    if ( strcmp(start1,start2)==0 ) {
+		/* Here's a glyph name in both classes. Remove it from each */
+		/*  and add to the new intersection class */
+		strcpy(ipt,start1);
+		ipt += strlen(ipt);
+		*ipt++ = ' ';
+		*pt2 = ch2; *pt1 = ch1;
+		while ( *pt2==' ' ) ++pt2;
+		while ( *pt1==' ' ) ++pt1;
+		mystrcpy(start1,pt1); ch1 = *pt1;
+		mystrcpy(start2,pt2);
+	break;
+	    }
+	    *pt2 = ch2;
+	}
+	*pt1 = ch1;
+    }
+    if ( ipt!=intersection )
+	ipt[-1] = '\0';
+    else
+	*intersection = '\0';		/* Should never happen (we only call this if there is one) */
+return( intersection );
+}
 
 #define MAXT	40
 #define MAXI	5
@@ -1532,6 +1663,8 @@ struct parseState {
     struct glyphclasses { char *classname, *glyphs; struct glyphclasses *next; } *classes;
     struct feat_item *sofar;
     int base;			/* normally numbers are base 10, but in the case of languages in stringids, they can be octal or hex */
+    OTLookup *created, *last;	/* Ordered, but not sorted into GSUB, GPOS yet */
+    AnchorClass *accreated;
 };
 
 static struct keywords {
@@ -2058,7 +2191,7 @@ return( copy( sc->name ));
 static SplineChar *fea_glyphname_get(struct parseState *tok,char *name) {
     SplineFont *sf = tok->sf;
     SplineChar *sc = SFGetChar(sf,-1,name);
-    int enc;
+    int enc, gid;
 
     if ( sf->subfontcnt!=0 ) {
 	LogError(_("Reference to a glyph name in a CID-keyed font on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
@@ -2069,8 +2202,21 @@ return(sc);
     if ( sc!=NULL )
 return( sc );
     enc = SFFindSlot(sf,sf->fv->map,-1,name);
-    if ( enc!=-1 )
-return( SFMakeChar(sf,sf->fv->map,enc));
+    if ( enc!=-1 ) {
+	sc = SFMakeChar(sf,sf->fv->map,enc);
+	if ( sc!=NULL ) {
+	    sc->widthset = true;
+	    free(sc->name);
+	    sc->name = copy(name);
+	}
+return( sc );
+    }
+    
+    for ( gid=sf->glyphcnt-1; gid>=0; --gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
+	if ( strcmp(sc->name,name)==0 )
+return( sc );
+    }
+
 /* Don't encode it (not in current encoding), just add it, so we needn't */
 /*  mess with maps or selections */
     SFExpandGlyphCount(sf,sf->glyphcnt+1);
@@ -2078,6 +2224,9 @@ return( SFMakeChar(sf,sf->fv->map,enc));
     sc->name = copy(name);
     sc->unicodeenc = UniFromName(name,ui_none,&custom);
     sc->parent = sf;
+    sc->vwidth = (sf->ascent+sf->descent);
+    sc->width = 6*sc->vwidth/10;
+    sc->widthset = true;		/* So we don't lose the glyph */
     sc->orig_pos = sf->glyphcnt-1;
     sf->glyphs[sc->orig_pos] = sc;
 return( sc );
@@ -2598,7 +2747,7 @@ static struct markedglyphs *fea_ParseMarkedGlyphs(struct parseState *tok,
 	    cur->name_or_class = fea_ParseGlyphClass(tok);
 	} else if ( allow_marks && tok->type==tk_char &&
 		(tok->tokbuf[0]=='\'' || tok->tokbuf[0]=='"') && last!=NULL ) {
-	    if ( last_mark!=tok->tokbuf[0] || (prev!=NULL && !prev->has_marks)) {
+	    if ( last_mark!=tok->tokbuf[0] || (prev!=NULL && prev->mark_count==0)) {
 		++mark_cnt;
 		last_mark = tok->tokbuf[0];
 	    }
@@ -2915,7 +3064,7 @@ static FPST *fea_markedglyphs_to_fpst(struct parseState *tok,struct markedglyphs
     struct fpst_rule *r;
     struct feat_item *item, *head;
 
-    for ( g=glyphs; g!=NULL && g->mark_count!=0; g=g->next ) {
+    for ( g=glyphs; g!=NULL && g->mark_count==0; g=g->next ) {
 	++bcnt;
 	if ( !g->is_name ) all_single = false;
     }
@@ -3295,7 +3444,7 @@ static void fea_ParsePosition(struct parseState *tok, int enumer) {
 	    if ( tok->type==tk_name )
 		mark_class = copy(tok->tokbuf);
 	    else
-		mark_class = fea_ParseGlyphClass(tok);
+		mark_class = fea_canonicalClassOrder(fea_ParseGlyphClass(tok));
 	    if ( glyphs->is_mark && glyphs->ap_cnt>1 ) {
 		LogError(_("Mark to base anchor statements may only have one anchor on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 		++tok->err_count;
@@ -3405,7 +3554,7 @@ return( ot_undef );		/* Can't happen */
 	}
       break;
       default:
-return( ot_undef );
+return( ot_undef );		/* Can happen */
     }
 }
 
@@ -3463,8 +3612,9 @@ return( 1 );
 
 static void fea_ParseLookupDef(struct parseState *tok, int could_be_stat ) {
     char *lookup_name;
-    struct feat_item *item;
+    struct feat_item *item, *first_after_mark;
     enum otlookup_type lookuptype;
+    int has_marks;
     int ret;
 
     fea_ParseTok(tok);
@@ -3498,6 +3648,7 @@ return;
     item->next = tok->sofar;
     tok->sofar = item;
 
+    first_after_mark = NULL;
     forever {
 	fea_ParseTok(tok);
 	if ( tok->err_count>100 )
@@ -3509,11 +3660,44 @@ return;
 	} else if ( (ret = fea_LookupSwitch(tok))==0 ) {
 	    LogError(_("Unexpected token, %s, in lookup definition on line %d of %s"), tok->tokbuf, tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 	    if ( tok->type==tk_name && strcmp(tok->tokbuf,"subs")==0 )
-		LogError(" Perhaps you meant to say 'sub' rather than 'subs'?" );
+		LogError(_(" Perhaps you meant to use the keyword 'sub' rather than 'subs'?") );
 	    ++tok->err_count;
 return;
 	} else if ( ret==2 )
     break;
+	/* Ok, mark classes must either contain exactly the same glyphs, or */
+	/*  they may not intersect at all */
+	/* Mark2* lookups are not well documented (because adobe FDK doesn't */
+	/*  support them) but I'm going to assume that if I have some mark */
+	/*  statements, then some pos statement, then another mark statement */
+	/*  that I begin a new subtable with the second set of marks (and a */
+	/*  different set of mark classes) */
+	if ( tok->sofar!=NULL && tok->sofar->type==ft_subtable )
+	    first_after_mark = NULL;
+	else if ( tok->sofar!=NULL && tok->sofar->type==ft_ap ) {
+	    if ( tok->sofar->u2.ap->type == at_mark )
+		first_after_mark = NULL;
+	    else if ( tok->sofar->mark_class==NULL )
+		/* we don't have to worry about Cursive connections */;
+	    else if ( first_after_mark == NULL )
+		first_after_mark = tok->sofar;
+	    else {
+		struct feat_item *f;
+		for ( f = tok->sofar->next; f!=NULL; f=f->next ) {
+		    if ( f->type!=ft_ap || f->mark_class==NULL )
+		continue;
+		    if ( strcmp(tok->sofar->mark_class,f->mark_class)==0 )
+		continue;		/* same glyphs, that's ok */
+		    else if ( fea_classesIntersect(tok->sofar->mark_class,f->mark_class)) {
+			LogError(_("Mark classes must either be exactly the same or contain no common glyphs\n But the class on line %d of %s contains a match."),
+				tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+			++tok->err_count;
+		    }
+		    if ( f==first_after_mark )
+		break;
+		}
+	    }
+	}
     }
     fea_ParseTok(tok);
     if ( tok->type!=tk_name || strcmp(tok->tokbuf,lookup_name)!=0 ) {
@@ -3525,8 +3709,11 @@ return;
 
     /* Make sure all entries in this lookup of the same lookup type */
     lookuptype = ot_undef;
+    has_marks = false;
     for ( item=tok->sofar ; item!=NULL && item->type!=ft_lookup_start; item=item->next ) {
 	enum otlookup_type cur = fea_LookupTypeFromItem(item);
+	if ( item->type==ft_ap && item->u2.ap->type == at_mark )
+	    has_marks = true;
 	if ( cur==ot_undef )	/* Some entries in the list (lookupflags) have no type */
 	    /* Tum, ty, tum tum */;
 	else if ( lookuptype==ot_undef )
@@ -3540,6 +3727,12 @@ return;
     }
     if ( lookuptype==ot_undef ) {
 	LogError(_("This lookup has no effect, I can't figure out its type on line %d of %s"),
+		tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+	++tok->err_count;
+    } else if ( has_marks && lookuptype!=gpos_mark2base &&
+		lookuptype!=gpos_mark2mark &&
+		lookuptype!=gpos_mark2ligature ) {
+	LogError(_("Mark glyphs may not be specified with this type of lookup on line %d of %s"),
 		tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 	++tok->err_count;
     }
@@ -3688,21 +3881,20 @@ static struct feat_item *fea_ParseSizeMenuName(struct parseState *tok, struct fe
     /* Since fontforge only supports windows strings here I shall parse and */
     /*  ignore mac strings */
     struct nameid *string;
-    struct feat_item *item;
 
     string = fea_ParseNameId(tok,-1);
 
     if ( string!=NULL ) {
-	if ( item==NULL ) {
-	    item = chunkalloc(sizeof(struct feat_item));
-	    item->type = ft_sizeparams;
-	    item->next = tok->sofar;
-	    tok->sofar = item;
+	if ( feat==NULL ) {
+	    feat = chunkalloc(sizeof(struct feat_item));
+	    feat->type = ft_sizeparams;
+	    feat->next = tok->sofar;
+	    tok->sofar = feat;
 	}
-	string->next = item->u2.names;
-	item->u2.names = string;
+	string->next = feat->u2.names;
+	feat->u2.names = string;
     }
-return( item );
+return( feat );
 }
 
 static void fea_ParseFeatureDef(struct parseState *tok) {
@@ -3988,7 +4180,7 @@ static void fea_ParseGDEFTable(struct parseState *tok) {
     /* LigatureCaret <glyph>|<glyph class> <caret value>+ */
     int i;
     struct feat_item *item;
-    int *carets=NULL, len=0, max=0;
+    int16 *carets=NULL; int len=0, max=0;
 
     forever {
 	fea_ParseTok(tok);
@@ -4036,7 +4228,7 @@ static void fea_ParseGDEFTable(struct parseState *tok) {
 		else
 	    break;
 		if ( len>=max )
-		    carets = grealloc(carets,(max+=10)*sizeof(int));
+		    carets = grealloc(carets,(max+=10)*sizeof(int16));
 		carets[len++] = tok->value;
 	    }
 	    if ( tok->type!=tk_char || tok->tokbuf[0]!=';' ) {
@@ -4044,6 +4236,9 @@ static void fea_ParseGDEFTable(struct parseState *tok) {
 		++tok->err_count;
 		fea_skip_to_semi(tok);
 	    }
+	    item->u2.lcaret = galloc((len+1)*sizeof(int16));
+	    memcpy(item->u2.lcaret,carets,len*sizeof(int16));
+	    item->u2.lcaret[len] = 0;
 	} else if ( strcmp(tok->tokbuf,"GlyphClassDef")==0 ) {
 	    item = chunkalloc(sizeof(struct feat_item));
 	    item->type = ft_gdefclasses;
@@ -4128,8 +4323,1133 @@ return;
     fea_end_statement(tok);
 }
 
+/* ************************************************************************** */
+/* ******************************* Free feat ******************************** */
+/* ************************************************************************** */
+
+static void NameIdFree(struct nameid *nm) {
+    struct nameid *nmnext;
+
+    while ( nm!=NULL ) {
+	nmnext = nm->next;
+	free( nm->utf8_str );
+	chunkfree(nm,sizeof(*nm));
+	nm = nmnext;
+    }
+}
+
+static void TableValsFree(struct tablevalues *tb) {
+    struct tablevalues *tbnext;
+
+    while ( tb!=NULL ) {
+	tbnext = tb->next;
+	chunkfree(tb,sizeof(*tb));
+	tb = tbnext;
+    }
+}
+
+static void fea_featitemFree(struct feat_item *item) {
+    struct feat_item *next;
+    int i,j;
+
+    while ( item!=NULL ) {
+	next = item->next;
+	switch ( item->type ) {
+	  case ft_lookup_end:
+	  case ft_feat_end:
+	  case ft_table:
+	  case ft_subtable:
+	  case ft_script:
+	  case ft_lang:
+	  case ft_lookupflags:
+	    /* Nothing needs freeing */;
+	  break;
+	  case ft_feat_start:
+	  case ft_langsys:
+	    ScriptLangListFree( item->u2.sl);
+	  break;
+	  case ft_lookup_start:
+	  case ft_lookup_ref:
+	    free( item->u1.lookup_name );
+	  break;
+	  case ft_sizeparams:
+	    free( item->u1.params );
+	    NameIdFree( item->u2.names );
+	  break;
+	  case ft_names:
+	    NameIdFree( item->u2.names );
+	  break;
+	  case ft_gdefclasses:
+	    for ( i=0; i<4; ++i )
+		free(item->u1.gdef_classes[i]);
+	    chunkfree(item->u1.gdef_classes,sizeof(char *[4]));
+	  break;
+	  case ft_lcaret:
+	    free( item->u2.lcaret );
+	  break;
+	  case ft_tablekeys:
+	    TableValsFree( item->u2.tvals );
+	  break;
+	  case ft_pst:
+	    PSTFree( item->u2.pst );
+	  break;
+	  case ft_pstclass:
+	    free( item->u1.class );
+	    PSTFree( item->u2.pst );
+	  break;
+	  case ft_ap:
+	    AnchorPointsFree( item->u2.ap );
+	    free( item->mark_class );
+	  break;
+	  case ft_fpst:
+	    if ( item->u2.fpst!=NULL ) {
+		for ( i=0; i<item->u2.fpst->rule_cnt; ++i ) {
+		    struct fpst_rule *r = &item->u2.fpst->rules[i];
+		    for ( j=0; j<r->lookup_cnt; ++j ) {
+			if ( r->lookups[j].lookup!=NULL ) {
+			    struct feat_item *nested = (struct feat_item *) (r->lookups[j].lookup);
+			    fea_featitemFree(nested);
+			    r->lookups[j].lookup = NULL;
+			}
+		    }
+		}
+		FPSTFree(item->u2.fpst);
+	    }
+	  break;
+	  default:
+	    IError("Don't know how to free a feat_item of type %d", item->type );
+	  break;
+	}
+	chunkfree(item,sizeof(*item));
+	item = next;
+    }
+}
+
+static void fea_ParseFeatureFile(struct parseState *tok) {
+
+    forever {
+	fea_ParseTok(tok);
+	if ( tok->err_count>100 )
+    break;
+	switch ( tok->type ) {
+	  case tk_class:
+	    fea_ParseGlyphClassDef(tok);
+	  break;
+	  case tk_lookup:
+	    fea_ParseLookupDef(tok,false);
+	  break;
+	  case tk_languagesystem:
+	    fea_ParseLangSys(tok,false);
+	  break;
+	  case tk_feature:
+	    fea_ParseFeatureDef(tok);
+	  break;
+	  case tk_table:
+	    fea_ParseTableDef(tok);
+	  break;
+	  case tk_anonymous:
+	    LogError(_("FontForge does not support anonymous tables on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+	    fea_skip_to_close_curly(tok);
+	  break;
+	  case tk_eof:
+  goto end_loop;
+	  default:
+	    LogError(_("Unexpected token, %s, on line %d of %s"), tok->tokbuf, tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+	    ++tok->err_count;
+  goto end_loop;
+      }
+    }
+  end_loop:;
+}
+
+/* ************************************************************************** */
+/* ******************************* Apply feat ******************************* */
+/* ************************************************************************** */
+static int fea_FeatItemEndsLookup(enum feat_type type) {
+return( type==ft_lookup_end || type == ft_feat_end ||
+	    type == ft_table || type == ft_script ||
+	    type == ft_lang || type == ft_langsys ||
+	    type == ft_lookup_ref );
+}
+
+static struct feat_item *fea_SetLookupLink(struct feat_item *nested,
+	enum otlookup_type type) {
+    struct feat_item *prev = NULL;
+    enum otlookup_type found_type;
+
+    while ( nested!=NULL ) {
+	/* Stop when we find something which forces a new lookup */
+	if ( fea_FeatItemEndsLookup(nested->type) )
+    break;
+	if ( nested->ticked ) {
+	    nested = nested->next;
+    continue;
+	}
+	found_type = fea_LookupTypeFromItem(nested);
+	if ( type==ot_undef || found_type == ot_undef || found_type == type ) {
+	    if ( nested->type!=ft_ap || nested->u2.ap->type!=at_mark )
+		nested->ticked = true;		/* Marks might get used in more than one lookup */
+	    if ( prev!=NULL )
+		prev->lookup_next = nested;
+	    prev = nested;
+	}
+	nested = nested->next;
+    }
+return( nested );
+}
+
+static void fea_ApplyLookupListPST(struct parseState *tok,
+	struct feat_item *lookup_data,OTLookup *otl) {
+    struct lookup_subtable *sub = NULL, *last=NULL;
+    struct feat_item *l;
+    /* Simple pst's are easy. We just attach them to their proper glyphs */
+    /*  and then clear the feat_item pst slot (so we don't free them later) */
+    /* There might be a subtable break */
+    /* There might be a lookupflags */
+
+    for ( l = lookup_data; l!=NULL; l=l->lookup_next ) {
+	switch ( l->type ) {
+	  case ft_lookup_start:
+	  case ft_lookupflags:
+	    /* Ignore these, already handled them */;
+	  break;
+	  case ft_subtable:
+	    sub = NULL;
+	  break;
+	  case ft_pst:
+	    if ( sub==NULL ) {
+		sub = chunkalloc(sizeof(struct lookup_subtable));
+		sub->lookup = otl;
+		sub->per_glyph_pst_or_kern = true;
+		if ( last==NULL )
+		    otl->subtables = sub;
+		else
+		    last->next = sub;
+		last = sub;
+	    }
+	    l->u2.pst->subtable = sub;
+	    l->u2.pst->next = l->u1.sc->possub;
+	    l->u1.sc->possub = l->u2.pst;
+	    l->u2.pst = NULL;			/* So we don't free it later */
+	  break;
+	  default:
+	    IError("Unexpected feature type %d in a PST feature", l->type );
+	  break;
+	}
+    }
+}
+
+static OTLookup *fea_ApplyLookupList(struct parseState *tok,
+	struct feat_item *lookup_data,int lookup_flag);
+
+static void fea_ApplyLookupListContextual(struct parseState *tok,
+	struct feat_item *lookup_data,OTLookup *otl) {
+    struct lookup_subtable *sub = NULL, *last=NULL;
+    struct feat_item *l;
+    int i,j;
+    /* Fpst's are almost as easy as psts. We don't worry about subtables */
+    /*  (every fpst gets a new subtable, so the statement is irrelevant) */
+    /* the only complication is that we must recursively handle a lookup list */
+    /* There might be a lookupflags */
+
+    for ( l = lookup_data; l!=NULL; l=l->lookup_next ) {
+	switch ( l->type ) {
+	  case ft_lookup_start:
+	  case ft_lookupflags:
+	  case ft_subtable:
+	    /* Ignore these, already handled them */;
+	  break;
+	  case ft_fpst:
+	    sub = chunkalloc(sizeof(struct lookup_subtable));
+	    sub->lookup = otl;
+	    if ( last==NULL )
+		otl->subtables = sub;
+	    else
+		last->next = sub;
+	    last = sub;
+	    sub->fpst = l->u2.fpst;
+	    l->u2.fpst = NULL;
+	    sub->fpst->subtable = sub;
+	    for ( i=0; i<sub->fpst->rule_cnt; ++i ) {
+		struct fpst_rule *r = &sub->fpst->rules[i];
+		for ( j=0; j<r->lookup_cnt; ++j ) {
+		    if ( r->lookups[j].lookup!=NULL ) {
+			struct feat_item *nested = (struct feat_item *) (r->lookups[j].lookup);
+			fea_SetLookupLink(nested,ot_undef);
+			r->lookups[j].lookup = fea_ApplyLookupList(tok,nested,otl->lookup_flags);	/* Not really sure what the lookup flag should be here. */
+			fea_featitemFree(nested);
+		    }
+		}
+	    }
+	  break;
+	  default:
+	    IError("Unexpected feature type %d in a FPST feature", l->type );
+	  break;
+	}
+    }
+}
+
+static void fea_ApplyLookupListCursive(struct parseState *tok,
+	struct feat_item *lookup_data,OTLookup *otl) {
+    struct lookup_subtable *sub = NULL, *last=NULL;
+    struct feat_item *l;
+    AnchorPoint *aplast, *ap;
+    AnchorClass *ac = NULL;
+    /* Cursive's are also easy. There might be two ap's in the list so slight */
+    /*  care needed when adding them to a glyph, and we must create an anchorclass */
+    /* There might be a subtable break */
+    /* There might be a lookupflags */
+
+    for ( l = lookup_data; l!=NULL; l=l->lookup_next ) {
+	switch ( l->type ) {
+	  case ft_lookup_start:
+	  case ft_lookupflags:
+	    /* Ignore these, already handled them */;
+	  break;
+	  case ft_subtable:
+	    sub = NULL;
+	  break;
+	  case ft_ap:
+	    if ( sub==NULL ) {
+		sub = chunkalloc(sizeof(struct lookup_subtable));
+		sub->lookup = otl;
+		sub->anchor_classes = true;
+		if ( last==NULL )
+		    otl->subtables = sub;
+		else
+		    last->next = sub;
+		last = sub;
+		ac = chunkalloc(sizeof(AnchorClass));
+		ac->subtable = sub;
+		ac->type = act_curs;
+		ac->next = tok->accreated;
+		tok->accreated = ac;
+	    }
+	    aplast = NULL;
+	    for ( ap=l->u2.ap; ap!=NULL; ap=ap->next ) {
+		aplast = ap;
+		ap->anchor = ac;
+	    }
+	    aplast->next = l->u1.sc->anchor;
+	    l->u1.sc->anchor = l->u2.ap;
+	    l->u2.ap = NULL;			/* So we don't free them later */
+	  break;
+	  default:
+	    IError("Unexpected feature type %d in a cursive feature", l->type );
+	  break;
+	}
+    }
+}
+
+static void fea_ApplyLookupListMark2(struct parseState *tok,
+	struct feat_item *lookup_data,int mcnt,OTLookup *otl) {
+    /* Mark2* lookups are not well documented (because adobe FDK doesn't */
+    /*  support them) but I'm going to assume that if I have some mark */
+    /*  statements, then some pos statement, then another mark statement */
+    /*  that I begin a new subtable with the second set of marks (and a */
+    /*  different set of mark classes) */
+    char **classes;
+    AnchorClass **acs;
+    int ac_cnt, i;
+    struct lookup_subtable *sub = NULL, *last=NULL;
+    struct feat_item *mark_start, *l;
+    AnchorPoint *ap, *aplast;
+
+    classes = galloc(mcnt*sizeof(char *));
+    acs = galloc(mcnt*sizeof(AnchorClass *));
+    ac_cnt = 0;
+    while ( lookup_data != NULL ) {
+	sub = NULL;
+	/* Skip any subtable marks */
+	while ( lookup_data!=NULL &&
+		(lookup_data->type==ft_subtable ||
+		 lookup_data->type==ft_lookup_start ||
+		 lookup_data->type==ft_lookupflags ) )
+	    lookup_data = lookup_data->lookup_next;
+
+	/* Skip over the marks, we'll deal with them after we know the mark classes */
+	mark_start = lookup_data;
+	while ( lookup_data!=NULL &&
+		((lookup_data->type==ft_ap && lookup_data->u2.ap->type==at_mark) ||
+		 lookup_data->type==ft_lookup_start ||
+		 lookup_data->type==ft_lookupflags ) )
+	    lookup_data = lookup_data->lookup_next;
+
+	/* Now process the base glyphs and figure out the mark classes */
+	while ( lookup_data!=NULL &&
+		((lookup_data->type==ft_ap && lookup_data->mark_class!=NULL) ||
+		 lookup_data->type==ft_lookup_start ||
+		 lookup_data->type==ft_lookupflags ) ) {
+	    if ( lookup_data->type == ft_ap ) {
+		for ( i=0; i<ac_cnt; ++i ) {
+		    if ( strcmp(lookup_data->mark_class,classes[i])==0 )
+		break;
+		}
+		if ( i==ac_cnt ) {
+		    ++ac_cnt;
+		    classes[i] = lookup_data->mark_class;
+		    acs[i] = chunkalloc(sizeof(AnchorClass));
+		    if ( sub==NULL ) {
+			sub = chunkalloc(sizeof(struct lookup_subtable));
+			sub->lookup = otl;
+			sub->anchor_classes = true;
+			if ( last==NULL )
+			    otl->subtables = sub;
+			else
+			    last->next = sub;
+			last = sub;
+		    }
+		    acs[i]->subtable = sub;
+		    acs[i]->type = otl->lookup_type==gpos_mark2mark ? act_mkmk :
+				    otl->lookup_type==gpos_mark2base ? act_mark :
+					    act_mklg;
+		    acs[i]->next = tok->accreated;
+		    tok->accreated = acs[i];
+		}
+		aplast = NULL;
+		for ( ap=lookup_data->u2.ap; ap!=NULL; ap=ap->next ) {
+		    aplast = ap;
+		    ap->anchor = acs[i];
+		}
+		aplast->next = lookup_data->u1.sc->anchor;
+		lookup_data->u1.sc->anchor = lookup_data->u2.ap;
+		lookup_data->u2.ap = NULL;	/* So we don't free them later */
+	    }
+	    lookup_data = lookup_data->next;
+	}
+
+	/* Now go back and assign the marks to the correct anchor classes */
+	for ( l=mark_start; l!=NULL &&
+		((l->type==ft_ap && l->u2.ap->type==at_mark) ||
+		 l->type==ft_lookup_start ||
+		 l->type==ft_lookupflags ) ;
+		l = l->lookup_next ) {
+	    if ( l->type==ft_ap ) {
+		for ( i=0; i<ac_cnt; ++i ) {
+		    if ( fea_classesIntersect(l->u1.sc->name,classes[i])) {
+			AnchorPoint *ap = AnchorPointsCopy(l->u2.ap);
+			/* We make a copy of this anchor point because marks */
+			/*  might be used in more than one lookup. It makes */
+			/*  sense for a user to define a set of marks to be */
+			/*  used with both a m2base and a m2lig lookup within */
+			/*  a feature */
+			ap->anchor = acs[i];
+			ap->next = l->u1.sc->anchor;
+			l->u1.sc->anchor = ap;
+		break;
+		    }
+		}
+	    }
+	}
+    }
+}
+
+struct class_set {
+    char **classes;
+    int cnt, max;
+};
+
+/* We've got a set of glyph classes -- but they are the classes that make sense */
+/*  to the user and so there's no guarantee that there aren't two classes with */
+/*  the same glyph(s) */
+/* Simplify the list so that: There are no duplicates classes and each name */
+/*  appears in at most one class. This is what we need */
+static void fea_canonicalClassSet(struct class_set *set) {
+    int i,j,k;
+
+    /* Remove any duplicate classes */
+    qsort(set->classes,set->cnt,sizeof(char *), strcmpD);
+    for ( i=0; i<set->cnt; ++i ) {
+	for ( j=i+1; j<set->cnt; ++j )
+	    if ( strcmp(set->classes[i],set->classes[j])!=0 )
+	break;
+	if ( j>i+1 ) {
+	    int off = j-(i+1);
+	    for ( k=i+1; k<j; ++k )
+		free(set->classes[k]);
+	    for ( k=j ; k<set->cnt; ++k )
+		set->classes[k-off] = set->classes[k];
+	    set->cnt -= off;
+	}
+    }
+    for ( i=1; i<set->cnt; ++i ) {
+	if ( fea_classesIntersect(set->classes[i-1],set->classes[i]) ) {
+	    if ( set->cnt>=set->max )
+		set->classes = grealloc(set->classes,(set->max+=20)*sizeof(char *));
+	    set->classes[set->cnt++] = fea_classesSplit(set->classes[i-1],set->classes[i]);
+	}
+    }
+}
+
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+static void KCFillDevTab(KernClass *kc,int index,DeviceTable *dt) {
+    if ( dt==NULL || dt->corrections == NULL )
+return;
+    if ( kc->adjusts == NULL )
+	kc->adjusts = gcalloc(kc->first_cnt*kc->second_cnt,sizeof(DeviceTable));
+    kc->adjusts[index] = *dt;
+    kc->adjusts[index].corrections = galloc(dt->last_pixel_size-dt->first_pixel_size+1);
+    memcpy(kc->adjusts[index].corrections,dt->corrections,dt->last_pixel_size-dt->first_pixel_size+1);
+
+}
+
+static void KPFillDevTab(KernPair *kp,DeviceTable *dt) {
+    if ( dt==NULL || dt->corrections == NULL )
+return;
+    kp->adjust = chunkalloc(sizeof(DeviceTable));
+    *kp->adjust = *dt;
+    kp->adjust->corrections = galloc(dt->last_pixel_size-dt->first_pixel_size+1);
+    memcpy(kp->adjust->corrections,dt->corrections,dt->last_pixel_size-dt->first_pixel_size+1);
+}
+#endif
+
+static void fea_fillKernClass(KernClass *kc,struct feat_item *l) {
+    int i,j;
+    PST *pst;
+
+    while ( l!=NULL && l->type!=ft_subtable ) {
+	if ( l->type==ft_pstclass ) {
+	    pst = l->u2.pst;
+	    for ( i=1; i<kc->first_cnt; ++i ) {
+		if ( fea_classesIntersect(kc->firsts[i],l->u1.class) ) {
+		    for ( j=1; j<kc->first_cnt; ++j ) {
+			if ( fea_classesIntersect(kc->seconds[j],pst->u.pair.paired) ) {
+			    /* FontForge only supports kerning classes in one direction at a time, not full value records */
+			    if ( pst->u.pair.vr[0].h_adv_off != 0 ) {
+				kc->offsets[i*kc->second_cnt+j] = pst->u.pair.vr[0].h_adv_off;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+				if ( pst->u.pair.vr[0].adjust!=NULL )
+				    KCFillDevTab(kc,i*kc->second_cnt+j,&pst->u.pair.vr[0].adjust->xadv);
+#endif
+			    } else if ( pst->u.pair.vr[0].v_adv_off != 0 ) {
+				kc->offsets[i*kc->second_cnt+j] = pst->u.pair.vr[0].v_adv_off;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+				if ( pst->u.pair.vr[0].adjust!=NULL )
+				    KCFillDevTab(kc,i*kc->second_cnt+j,&pst->u.pair.vr[0].adjust->yadv);
+#endif
+			    } else if ( pst->u.pair.vr[1].h_adv_off != 0 ) {
+				kc->offsets[i*kc->second_cnt+j] = pst->u.pair.vr[1].h_adv_off;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+				if ( pst->u.pair.vr[1].adjust!=NULL )
+				    KCFillDevTab(kc,i*kc->second_cnt+j,&pst->u.pair.vr[1].adjust->xadv);
+#endif
+			    }
+			    if ( strcmp(kc->seconds[j],pst->u.pair.paired)==0 )
+		    break;
+			}
+		    }
+		    if ( strcmp(kc->firsts[i],l->u1.class)==0 )
+	    break;
+		}
+	    }
+	}
+	l = l->lookup_next;
+    }
+}
+
+static void fea_ApplyLookupListPair(struct parseState *tok,
+	struct feat_item *lookup_data,int kmax,OTLookup *otl) {
+    /* kcnt is the number of left/right glyph-name-lists we must sort into classes */
+    struct feat_item *l, *first;
+    struct class_set lefts, rights;
+    struct lookup_subtable *sub = NULL, *lastsub=NULL;
+    SplineChar *sc, *other;
+    PST *pst;
+    KernPair *kp;
+    KernClass *kc;
+    int vkern, kcnt, i;
+
+    memset(&lefts,0,sizeof(lefts));
+    memset(&rights,0,sizeof(rights));
+    if ( kmax!=0 ) {
+	lefts.classes = galloc(kmax*sizeof(char *));
+	rights.classes = galloc(kmax*sizeof(char *));
+	lefts.max = rights.max = kmax;
+    }
+    vkern = false;
+    for ( l = lookup_data; l!=NULL; ) {
+	first = l;
+	kcnt = 0;
+	while ( l!=NULL && l->type!=ft_subtable ) {
+	    if ( l->type == ft_pst ) {
+		if ( sub==NULL ) {
+		    sub = chunkalloc(sizeof(struct lookup_subtable));
+		    sub->lookup = otl;
+		    sub->per_glyph_pst_or_kern = true;
+		    if ( lastsub==NULL )
+			otl->subtables = sub;
+		    else
+			lastsub->next = sub;
+		    lastsub = sub;
+		}
+		pst = l->u2.pst;
+		sc = l->u1.sc;
+		l->u2.pst = NULL;
+		kp = NULL;
+		other = SFGetChar(sc->parent,-1,pst->u.pair.paired);
+		if ( pst->u.pair.vr[0].xoff==0 && pst->u.pair.vr[0].yoff==0 &&
+			pst->u.pair.vr[1].xoff==0 && pst->u.pair.vr[1].yoff==0 &&
+			pst->u.pair.vr[1].v_adv_off==0 &&
+			other!=NULL ) {
+		    if ( (otl->lookup_flags&pst_r2l) &&
+			    (pst->u.pair.vr[0].h_adv_off==0 && pst->u.pair.vr[0].v_adv_off==0 )) {
+			kp = chunkalloc(sizeof(KernPair));
+			kp->off = pst->u.pair.vr[1].h_adv_off;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+			if ( pst->u.pair.vr[1].adjust!=NULL )
+			    KPFillDevTab(kp,&pst->u.pair.vr[1].adjust->xadv);
+#endif
+		    } else if ( !(otl->lookup_flags&pst_r2l) &&
+			    (pst->u.pair.vr[1].h_adv_off==0 && pst->u.pair.vr[0].v_adv_off==0 )) {
+			kp = chunkalloc(sizeof(KernPair));
+			kp->off = pst->u.pair.vr[0].h_adv_off;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+			if ( pst->u.pair.vr[0].adjust!=NULL )
+			    KPFillDevTab(kp,&pst->u.pair.vr[0].adjust->xadv);
+#endif
+		    } else if ( (pst->u.pair.vr[0].h_adv_off==0 && pst->u.pair.vr[1].h_adv_off==0 )) {
+			vkern = sub->vertical_kerning = true;
+			kp = chunkalloc(sizeof(KernPair));
+			kp->off = pst->u.pair.vr[0].v_adv_off;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+			if ( pst->u.pair.vr[0].adjust!=NULL )
+			    KPFillDevTab(kp,&pst->u.pair.vr[0].adjust->yadv);
+#endif
+		    }
+		}
+		if ( kp!=NULL ) {
+		    kp->sc = other;
+		    kp->subtable = sub;
+		    if ( vkern ) {
+			kp->next = sc->vkerns;
+			sc->vkerns = kp;
+		    } else {
+			kp->next = sc->kerns;
+			sc->kerns = kp;
+		    }
+		    PSTFree(pst);
+		} else {
+		    pst->subtable = sub;
+		    pst->next = sc->possub;
+		    sc->possub = pst;
+		}
+	    } else if ( l->type == ft_pstclass ) {
+		lefts.classes[kcnt] = copy(fea_canonicalClassOrder(l->u1.class));
+		rights.classes[kcnt++] = copy(fea_canonicalClassOrder(l->u2.pst->u.pair.paired));
+	    }
+	    l = l->lookup_next;
+	}
+	if ( kcnt!=0 ) {
+	    lefts.cnt = rights.cnt = kcnt;
+	    fea_canonicalClassSet(&lefts);
+	    fea_canonicalClassSet(&rights);
+
+	    sub = chunkalloc(sizeof(struct lookup_subtable));
+	    sub->lookup = otl;
+	    if ( lastsub==NULL )
+		otl->subtables = sub;
+	    else
+		lastsub->next = sub;
+	    lastsub = sub;
+
+	    sub->kc = kc = chunkalloc(sizeof(KernClass));
+	    kc->first_cnt = lefts.cnt+1; kc->second_cnt = rights.cnt+1;
+	    kc->firsts = galloc(kc->first_cnt*sizeof(char *));
+	    kc->seconds = galloc(kc->second_cnt*sizeof(char *));
+	    kc->firsts[0] = kc->seconds[0] = NULL;
+	    for ( i=0; i<lefts.cnt; ++i )
+		kc->firsts[i+1] = lefts.classes[i];
+	    for ( i=0; i<rights.cnt; ++i )
+		kc->seconds[i+1] = rights.classes[i];
+	    kc->subtable = sub;
+	    kc->offsets = gcalloc(kc->first_cnt*kc->second_cnt,sizeof(int16));
+	    fea_fillKernClass(kc,first);
+	    if ( sub->vertical_kerning ) {
+		kc->next = tok->sf->vkerns;
+		tok->sf->vkerns = kc;
+	    } else {
+		kc->next = tok->sf->kerns;
+		tok->sf->kerns = kc;
+	    }
+	}
+	sub = NULL;
+	while ( l!=NULL && l->type==ft_subtable )
+	    l = l->lookup_next;
+    }
+    if ( kmax!=0 ) {
+	free(lefts.classes);
+	free(rights.classes);
+    }
+}
+
+static OTLookup *fea_ApplyLookupList(struct parseState *tok,
+	struct feat_item *lookup_data,int lookup_flag) {
+    /* A lookup list might consist just of a lookup_ref so find the lookup named u1.lookup_name */
+    /* A lookup_start is optional and provides the lookup name */
+    /* A lookupflags is optional and may occur anywhere u2.lookupflags */
+    /* An ap is for mark2 types for the mark u1.sc and u2.ap (not grouped in anchor classes yet) */
+    /* A fpst is for contextuals u2.fpst (rule.lookups[i].lookup are lookup lists in their own rights that need to become lookups) */
+    /* A subtable means a subtable break, make up a new name, ignore multiple subtable entries */
+    /* A pst is for simple things u1.sc, u2.pst */
+    /* A pstclass is for kerning classes u1.class, u2.pst (paired may be a class list too) */
+    /* An ap is for cursive types for the u1.sc and u2.ap (an entry and an exit ap) */
+    /* An ap is for mark2 types for the base u1.sc and u2.ap and mark_class */
+    OTLookup *otl;
+    int kcnt, mcnt;
+    struct feat_item *l;
+    enum otlookup_type temp;
+
+    if ( lookup_data->type == ft_lookup_ref ) {
+	for ( otl=tok->created; otl!=NULL; otl=otl->next )
+	    if ( otl->lookup_name!=NULL &&
+		    strcmp(otl->lookup_name,lookup_data->u1.lookup_name)==0)
+return( otl );
+return( SFFindLookup(tok->sf,lookup_data->u1.lookup_name));
+    }
+
+    otl = chunkalloc(sizeof(OTLookup));
+    otl->lookup_flags = lookup_flag;
+    otl->lookup_type = ot_undef;
+    if ( tok->last==NULL )
+	tok->created = otl;
+    else
+	tok->last->next = otl;
+    tok->last = otl;
+
+    /* Search first for class counts */
+    kcnt = mcnt = 0;
+    for ( l = lookup_data; l!=NULL; l=l->lookup_next ) {
+	if ( l->type == ft_ap && l->mark_class!=NULL )
+	    ++mcnt;
+	else if ( l->type == ft_pstclass )
+	    ++kcnt;
+	else if ( l->type == ft_lookupflags )
+	    otl->lookup_flags = l->u2.lookupflags;
+	else if ( l->type == ft_lookup_start ) {
+	    otl->lookup_name = l->u1.lookup_name;
+	    l->u1.lookup_name = NULL;			/* So we don't free it later */
+	}
+	temp = fea_LookupTypeFromItem(l);
+	if ( temp==ot_undef )
+	    /* Tum ty tum tum. No information */;
+	else if ( otl->lookup_type == ot_undef )
+	    otl->lookup_type = temp;
+	else if ( otl->lookup_type != temp )
+	    IError(_("Mismatch lookup types inside a parsed lookup"));
+    }
+    if ( otl->lookup_type==gpos_mark2base ||
+	    otl->lookup_type==gpos_mark2ligature ||
+	    otl->lookup_type==gpos_mark2mark )
+	fea_ApplyLookupListMark2(tok,lookup_data,mcnt,otl);
+    else if ( mcnt!=0 )
+	IError(_("Mark anchors provided when nothing can use them"));
+    else if ( otl->lookup_type==gpos_cursive )
+	fea_ApplyLookupListCursive(tok,lookup_data,otl);
+    else if ( otl->lookup_type==gpos_pair )
+	fea_ApplyLookupListPair(tok,lookup_data,kcnt,otl);
+    else if ( otl->lookup_type==gpos_contextchain ||
+	    otl->lookup_type==gsub_contextchain )
+	fea_ApplyLookupListContextual(tok,lookup_data,otl);
+    else
+	fea_ApplyLookupListPST(tok,lookup_data,otl);
+return( otl );
+}
+
+static struct otfname *fea_NameID2OTFName(struct nameid *names) {
+    struct otfname *head=NULL, *cur;
+
+    while ( names!=NULL ) {
+	cur = chunkalloc(sizeof(struct otfname));
+	cur->lang = names->language;
+	cur->name = names->utf8_str;
+	names->utf8_str = NULL;
+	cur->next = head;
+	head = cur;
+	names = names->next;
+    }
+return( head );
+}
+
+static void fea_AttachFeatureToLookup(OTLookup *otl,uint32 feat_tag,
+	struct scriptlanglist *sl) {
+    FeatureScriptLangList *fl;
+
+    for ( fl = otl->features; fl!=NULL && fl->featuretag!=feat_tag; fl=fl->next );
+    if ( fl==NULL ) {
+	fl = chunkalloc(sizeof(FeatureScriptLangList));
+	fl->next = otl->features;
+	otl->features = fl;
+	fl->featuretag = feat_tag;
+	fl->scripts = SLCopy(sl);
+    } else
+	SLMerge(fl,sl);
+}
+
+static void fea_NameID2NameTable(SplineFont *sf, struct nameid *names) {
+    struct ttflangname *cur;
+
+    while ( names!=NULL ) {
+	for ( cur = sf->names; cur!=NULL && cur->lang!=names->language; cur=cur->next );
+	if ( cur==NULL ) {
+	    cur = chunkalloc(sizeof(struct ttflangname));
+	    cur->lang = names->language;
+	    cur->next = sf->names;
+	    sf->names = cur;
+	}
+	free(cur->names[names->strid]);
+	cur->names[names->strid] = names->utf8_str;
+	names->utf8_str = NULL;
+	names = names->next;
+    }
+}
+
+static void fea_TableByKeywords(SplineFont *sf, struct feat_item *f) {
+    struct tablevalues *tv;
+    struct tablekeywords *offsets = f->u1.offsets, *cur;
+    int i;
+
+    if ( !sf->pfminfo.pfmset ) {
+	SFDefaultOS2Info(&sf->pfminfo,sf,sf->fontname);
+	sf->pfminfo.pfmset = sf->pfminfo.subsuper_set = sf->pfminfo.panose_set =
+	    sf->pfminfo.hheadset = sf->pfminfo.vheadset = true;
+    }
+    for ( tv = f->u2.tvals; tv!=NULL; tv=tv->next ) {
+	cur = &offsets[tv->index];
+	if ( cur->offset==-1 )
+	    /* We don't support this guy, whatever he may be, but we did parse it */;
+	else if ( cur->cnt==1 ) {
+	    if ( cur->size==4 )
+		*((uint32 *) (((uint8 *) sf) + cur->offset)) = tv->value;
+	    else if ( cur->size==2 )
+		*((uint16 *) (((uint8 *) sf) + cur->offset)) = tv->value;
+	    else
+		*((uint8 *) (((uint8 *) sf) + cur->offset)) = tv->value;
+	    if ( strcmp(cur->name,"Ascender")==0 )
+		sf->pfminfo.hheadascent_add = false;
+	    else if ( strcmp(cur->name,"Descender")==0 )
+		sf->pfminfo.hheaddescent_add = false;
+	    else if ( strcmp(cur->name,"winAscent")==0 )
+		sf->pfminfo.winascent_add = false;
+	    else if ( strcmp(cur->name,"winDescent")==0 )
+		sf->pfminfo.windescent_add = false;
+	    else if ( strcmp(cur->name,"TypoAscender")==0 )
+		sf->pfminfo.typoascent_add = false;
+	    else if ( strcmp(cur->name,"TypoDescender")==0 )
+		sf->pfminfo.typodescent_add = false;
+	} else if ( cur->cnt==10 && cur->size==1 ) {
+	    for ( i=0; i<10; ++i )
+		(((uint8 *) sf) + cur->offset)[i] = tv->panose_vals[i];
+	}
+    }
+}
+
+static void fea_GDefGlyphClasses(SplineFont *sf, struct feat_item *f) {
+    int i, ch;
+    char *pt, *start;
+    SplineChar *sc;
+
+    for ( i=0; i<4; ++i ) if ( f->u1.gdef_classes[i]!=NULL ) {
+	for ( pt=f->u1.gdef_classes[i]; ; ) {
+	    while ( *pt==' ' ) ++pt;
+	    if ( *pt=='\0' )
+	break;
+	    for ( start = pt; *pt!=' ' && *pt!='\0'; ++pt );
+	    ch = *pt; *pt = '\0';
+	    sc = SFGetChar(sf,-1,start);
+	    *pt = ch;
+	    if ( sc!=NULL )
+		sc->glyph_class = i+1;
+	}
+    }
+}
+
+static void fea_GDefLigCarets(SplineFont *sf, struct feat_item *f) {
+    int i, ch;
+    char *pt, *start;
+    SplineChar *sc;
+    PST *pst, *prev, *next;
+
+    for ( pt=f->u1.class; ; ) {
+	while ( *pt==' ' ) ++pt;
+	if ( *pt=='\0' )
+    break;
+	for ( start = pt; *pt!=' ' && *pt!='\0'; ++pt );
+	ch = *pt; *pt = '\0';
+	sc = SFGetChar(sf,-1,start);
+	*pt = ch;
+	if ( sc!=NULL ) {
+	    for ( prev=NULL, pst=sc->possub; pst!=NULL; pst=next ) {
+		next = pst->next;
+		if ( pst->type!=pst_lcaret )
+		    prev = pst;
+		else {
+		    if ( prev==NULL )
+			sc->possub = next;
+		    else
+			prev->next = next;
+		    pst->next = NULL;
+		    PSTFree(pst);
+		}
+	    }
+	    for ( i=0; f->u2.lcaret[i]!=0; ++i );
+	    pst = chunkalloc(sizeof(PST));
+	    pst->next = sc->possub;
+	    sc->possub = pst;
+	    pst->type = pst_lcaret;
+	    pst->u.lcaret.cnt = i;
+	    pst->u.lcaret.carets = f->u2.lcaret;
+	    f->u2.lcaret = NULL;
+	}
+    }
+}
+
+static struct feat_item *fea_ApplyFeatureList(struct parseState *tok,
+	struct feat_item *feat_data) {
+    int lookup_flags = 0;
+    uint32 feature_tag = feat_data->u1.tag;
+    struct scriptlanglist *sl = feat_data->u2.sl;
+    struct feat_item *f, *start;
+    OTLookup *otl;
+    int saw_script = false;
+    enum otlookup_type ltype;
+
+    feat_data->u2.sl = NULL;
+
+    for ( f=feat_data->next; f!=NULL && f->type!=ft_feat_end ; ) {
+	if ( f->ticked ) {
+	    f = f->next;
+    continue;
+	}
+	switch ( f->type ) {
+	  case ft_lookupflags:
+	    lookup_flags = f->u2.lookupflags;
+	    f = f->next;
+    continue;
+	  case ft_lookup_ref:
+	    otl = fea_ApplyLookupList(tok,f,lookup_flags);
+	    fea_AttachFeatureToLookup(otl,feature_tag,sl);
+	    f = f->next;
+    continue;
+	  case ft_lookup_start:
+	    start = f->next;
+	    f = fea_SetLookupLink(start,ot_undef);
+	    if ( f!=NULL && f->type == ft_lookup_end )
+		f = f->next;
+	    otl = fea_ApplyLookupList(tok,start,lookup_flags);
+	    fea_AttachFeatureToLookup(otl,feature_tag,sl);
+    continue;
+	  case ft_script:
+	    ScriptLangListFree(sl);
+	    sl = chunkalloc(sizeof(struct scriptlanglist));
+	    sl->script = f->u1.tag;
+	    sl->lang_cnt = 1;
+	    sl->langs[0] = DEFAULT_LANG;
+	    saw_script = true;
+	    f = f->next;
+    continue;
+	  case ft_lang:
+	    if ( !saw_script ) {
+		ScriptLangListFree(sl);
+		sl = chunkalloc(sizeof(struct scriptlanglist));
+		sl->script = CHR('l','a','t','n');
+	    }
+	    sl->langs[0] = f->u1.tag;
+	    sl->lang_cnt = 1;
+	    if ( !f->u2.exclude_dflt ) {
+		if ( sl->langs[0]!=DEFAULT_LANG ) {
+		    sl->langs[1] = DEFAULT_LANG;
+		    sl->lang_cnt = 2;
+		}
+	    }
+	    f = f->next;
+    continue;
+	  case ft_langsys:
+	    ScriptLangListFree(sl);
+	    saw_script = false;
+	    sl = f->u2.sl;
+	    f->u2.sl = NULL;
+	    f = f->next;
+    continue;
+	  case ft_sizeparams:
+	    if ( f->u1.params!=NULL ) {
+		tok->sf->design_size = f->u1.params[0];
+		tok->sf->fontstyle_id = f->u1.params[1];
+		tok->sf->design_range_bottom = f->u1.params[2];
+		tok->sf->design_range_top = f->u1.params[3];
+	    }
+	    OtfNameListFree(tok->sf->fontstyle_name);
+	    tok->sf->fontstyle_name = fea_NameID2OTFName(f->u2.names);
+	    f = f->next;
+    continue;
+	  case ft_subtable:
+	    f = f->next;
+    continue;
+	  case ft_pst:
+	  case ft_pstclass:
+	  case ft_ap:
+	  case ft_fpst:
+	    if ( f->type==ft_ap && f->u2.ap->type==at_mark ) {
+		struct feat_item *n, *a;
+		/* skip over the marks */
+		for ( n=f; n!=NULL && n->type == ft_ap && n->u2.ap->type==at_mark; n=n->next );
+		/* find the next thing which can use those marks (might not be anything) */
+		for ( a=n; a!=NULL; a=a->next ) {
+		    if ( a->ticked )
+		continue;
+		    if ( fea_FeatItemEndsLookup(a->type) ||
+			    a->type==ft_subtable || a->type==ft_ap )
+		break;
+		}
+		if ( a==NULL || fea_FeatItemEndsLookup(a->type) || a->type==ft_subtable ||
+			(a->type==ft_ap && a->u2.ap->type == at_mark )) {
+		    /* There's nothing else that can use these marks so we are */
+		    /*  done with them. Skip over all of them */
+		    f = n;
+    continue;
+		}
+		ltype = fea_LookupTypeFromItem(a);
+	    } else
+		ltype = fea_LookupTypeFromItem(f);
+	    start = f;
+	    f = fea_SetLookupLink(start->next,ltype);
+	    start->lookup_next = start->next;
+	    otl = fea_ApplyLookupList(tok,start,lookup_flags);
+	    fea_AttachFeatureToLookup(otl,feature_tag,sl);
+    continue;
+	  default:
+	    IError("Unexpected feature item in feature definition %d", f->type );
+	    f = f->next;
+	}
+    }
+    if ( f!=NULL && f->type == ft_feat_end )
+	f = f->next;
+return( f );
+}
+
+static void fea_ApplyFile(struct parseState *tok, struct feat_item *item) {
+    struct feat_item *f, *start;
+
+    for ( f=item; f!=NULL ; ) {
+	switch ( f->type ) {
+	  case ft_lookup_start:
+	    start = f;
+	    start->lookup_next = f->next;
+	    f = fea_SetLookupLink(start->next,ot_undef);
+	    if ( f!=NULL && f->type == ft_lookup_end )
+		f = f->next;
+	    fea_ApplyLookupList(tok,start,0);
+    continue;
+	  case ft_feat_start:
+	    f = fea_ApplyFeatureList(tok,f);
+    continue;
+	  case ft_table:
+	    /* I store things all mushed together, so this tag is useless to me*/
+	    /*  ignore it. The stuff inside the table matters though... */
+	    f = f->next;
+    continue;
+	  case ft_names:
+	    fea_NameID2NameTable(tok->sf,f->u2.names);
+	    f = f->next;
+    continue;
+	  case ft_tablekeys:
+	    fea_TableByKeywords(tok->sf,f);
+	    f = f->next;
+    continue;
+	  case ft_gdefclasses:
+	    fea_GDefGlyphClasses(tok->sf,f);
+	    f = f->next;
+    continue;
+	  case ft_lcaret:
+	    fea_GDefLigCarets(tok->sf,f);
+	    f = f->next;
+    continue;
+	  default:
+	    IError("Unexpected feature item in feature file %d", f->type );
+	    f = f->next;
+	}
+    }
+}
+
+static struct feat_item *fea_reverseList(struct feat_item *f) {
+    struct feat_item *n = NULL, *p = NULL;
+
+    p = NULL;
+    while ( f!=NULL ) {
+	n = f->next;
+	f->next = p;
+	p = f;
+	f = n;
+    }
+return( p );
+}
+
+static void fea_NameLookups(struct parseState *tok) {
+    SplineFont *sf = tok->sf;
+    OTLookup *gpos_last, *gsub_last, *otl, *otlnext;
+    int gp_cnt=0, gs_cnt=0, acnt;
+    AnchorClass *ac, *acnext, *an;
+
+    for ( gpos_last = sf->gpos_lookups; gpos_last!=NULL; gpos_last=gpos_last->next )
+	gpos_last->lookup_index = gp_cnt++;
+    for ( gsub_last = sf->gsub_lookups; gsub_last!=NULL; gsub_last=gsub_last->next )
+	gsub_last->lookup_index = gs_cnt++;
+
+    for ( otl = tok->created; otl!=NULL; otl=otlnext ) {
+	otlnext = otl->next;
+	otl->next = NULL;
+	if ( otl->lookup_name!=NULL && SFFindLookup(sf,otl->lookup_name)!=NULL ) {
+	    int cnt=0;
+	    char *namebuf = galloc(strlen( otl->lookup_name )+8 );
+	    /* Name already in use, modify it */
+	    do { 
+		sprintf(namebuf,"%s-%d", otl->lookup_name, cnt++ );
+	    } while ( SFFindLookup(sf,namebuf)!=NULL );
+	    free(otl->lookup_name);
+	    otl->lookup_name = namebuf;
+	}
+	if ( otl->lookup_type < gpos_start ) {
+	    if ( gsub_last==NULL )
+		sf->gsub_lookups = otl;
+	    else
+		gsub_last->next = otl;
+	    gsub_last = otl;
+	    otl->lookup_index = gs_cnt++;
+	} else {
+	    if ( gpos_last==NULL )
+		sf->gpos_lookups = otl;
+	    else
+		gpos_last->next = otl;
+	    gpos_last = otl;
+	    otl->lookup_index = gp_cnt++;
+	}
+	NameOTLookup(otl,sf);		/* But only if it has no name */
+    }
+
+    /* Now name and attach any unnamed anchor classes (order here doesn't matter) */
+    acnt = 0;
+    for ( ac=tok->accreated; ac!=NULL; ac=acnext ) {
+	acnext = ac->next;
+	if ( ac->name==NULL ) {
+	    char buf[50];
+	    do {
+		snprintf(buf,sizeof(buf),_("Anchor-%d"), acnt++ );
+		for ( an=sf->anchor; an!=NULL && strcmp(an->name,buf)!=0; an=an->next );
+	    } while ( an!=NULL );
+	    ac->name = copy(buf);
+	}
+	ac->next = sf->anchor;
+	sf->anchor = ac;
+    }
+
+    sf->changed = true;
+    FVSetTitle(sf->fv);
+    if ( sf->fv->v!=NULL )
+	GDrawRequestExpose(sf->fv->v,NULL,false);
+}
+	
 void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename) {
     struct parseState tok;
+    struct glyphclasses *gc, *gcnext;
 
     memset(&tok,0,sizeof(tok));
     tok.line[0] = 1;
@@ -4139,45 +5459,20 @@ void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename) {
     if ( sf->cidmaster ) sf = sf->cidmaster;
     tok.sf = sf;
 
-    forever {
-	fea_ParseTok(&tok);
-	if ( tok.err_count>100 )
-    break;
-	switch ( tok.type ) {
-	  case tk_class:
-	    fea_ParseGlyphClassDef(&tok);
-	  break;
-	  case tk_lookup:
-	    fea_ParseLookupDef(&tok,false);
-	  break;
-	  case tk_languagesystem:
-	    fea_ParseLangSys(&tok,false);
-	  break;
-	  case tk_feature:
-	    fea_ParseFeatureDef(&tok);
-	  break;
-	  case tk_table:
-	    fea_ParseTableDef(&tok);
-	  break;
-	  case tk_anonymous:
-	    LogError(_("FontForge does not support anonymous tables on line %d of %s"), tok.line[tok.inc_depth], tok.filename[tok.inc_depth] );
-	    fea_skip_to_close_curly(&tok);
-	  break;
-	  case tk_eof:
-  goto end_loop;
-	  default:
-	    LogError(_("Unexpected token, %s, on line %d of %s"), tok.tokbuf, tok.line[tok.inc_depth], tok.filename[tok.inc_depth] );
-	    ++tok.err_count;
-  goto end_loop;
-      }
-    }
-  end_loop:
+    fea_ParseFeatureFile(&tok);
     if ( tok.err_count==0 ) {
-	/* !!! apply features, lookups, tables */
+	tok.sofar = fea_reverseList(tok.sofar);
+	fea_ApplyFile(&tok, tok.sofar);
+	fea_NameLookups(&tok);
     } else
 	gwwv_post_error("Not applied","There were errors when parsing the feature file and the features have not been applied");
-    /* !!!!! Free the default langsystems */;
-    /* Free the glyph classes */;
+    fea_featitemFree(tok.sofar);
+    ScriptLangListFree(tok.def_langsyses);
+    for ( gc = tok.classes; gc!=NULL; gc=gcnext ) {
+	gcnext = gc->next;
+	free(gc->classname); free(gc->glyphs);
+	chunkfree(gc,sizeof(struct glyphclasses));
+    }
 }
 
 void SFApplyFeatureFilename(SplineFont *sf,char *filename) {

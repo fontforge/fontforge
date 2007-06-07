@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 13-Mar-2007 -->
+  <!-- AP: Last modified: 7-Jun-2007 -->
   <TITLE>Font Info</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -803,8 +803,33 @@
   merge two subtables (if they are in the same lookup and are similar enough).
   <P>
   It is possible to import lookups from other fonts (which must already be
-  loaded into fontforge.<BR Clear=ALL>
-  <BR CLEAR=ALL>
+  loaded into fontforge.
+  <P>
+  There is a popup menu, available by right clicking on an entry, which provides
+  these functions as well as:
+  <DL>
+    <DT>
+      Save Lookup
+    <DD>
+      Saves the currently selected lookup to an Adobe Feature File of its very
+      own.
+    <DT>
+      Add 'aalt' features
+    <DD>
+      FontForge can automagically generate an 'aalt' feature consisting of every
+      single and alternate substitution of each glyph.
+    <DT>
+      Add 'DFLT' script
+    <DD>
+      Add the DFLT script to all selected lookups
+    <DT>
+      Save Feature File
+    <DD>
+      Saves all lookups (both GSUB and GPOS) to an
+      <A HREF="http://www.adobe.com/devnet/opentype/afdko/topic_feature_file_syntax.html">Adobe
+      Feature File</A>.<BR Clear=ALL>
+      <BR CLEAR=ALL>
+  </DL>
   <H2>
     <IMG SRC="fontinfo-macstyle.png" WIDTH="376" HEIGHT="608" ALIGN="Right" ALT="Font Info Mac Styles">
     <A NAME="Mac-Style">Mac Style</A> &amp; FOND

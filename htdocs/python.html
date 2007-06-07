@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 6-Jun-2007 -->
+  <!-- AP: Last modified: 7-Jun-2007 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -2214,6 +2214,12 @@ pen = None;				# Finalize the pen. This tells FontForge
 	See also <A href="#font-save">save()</A>.</TD>
     </TR>
     <TR>
+      <TD><CODE>generateFeatureFile</CODE></TD>
+      <TD><CODE>(filename[,lookup-name])</CODE></TD>
+      <TD>Generates an adobe feature file for the current font. If a lookup-name
+	is specified then only data for that lookup will be generated.</TD>
+    </TR>
+    <TR>
       <TD><CODE>getKerningClass</CODE></TD>
       <TD><CODE>(subtable-name)</CODE></TD>
       <TD>Returns a tuple whose entries are: (first-classes, second-classes, offsets).
@@ -2286,10 +2292,15 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TD>Merges the font in the file into the current font.</TD>
     </TR>
     <TR>
+      <TD><CODE>mergeFeature</CODE></TD>
+      <TD><CODE>(filename)</CODE></TD>
+      <TD>Merge feature and lookup information from an adobe feature file, or metrics
+	information from the (afm,tfm,etc) file into the current font.</TD>
+    </TR>
+    <TR>
       <TD><CODE>mergeKern</CODE></TD>
       <TD><CODE>(filename)</CODE></TD>
-      <TD>Merge metrics information from the (afm,tfm,etc) file into the current
-	font.</TD>
+      <TD>Deprecated name for mergeFeature above</TD>
     </TR>
     <TR>
       <TD><CODE>mergeLookups</CODE></TD>

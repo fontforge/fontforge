@@ -1357,7 +1357,7 @@ void MergeKernInfo(SplineFont *sf,EncMap *map) {
     static char wild[] = "*";	/* Mac resource files generally don't have extensions */
     static char wild2[] = "*";
 #endif
-    char *ret = gwwv_open_filename(_("Merge Kern Info"),NULL,
+    char *ret = gwwv_open_filename(_("Merge Feature Info"),NULL,
 	    sf->mm!=NULL?wild2:wild,NULL);
 
     if ( ret==NULL )		/* Cancelled */
@@ -1404,7 +1404,7 @@ void MergeKernInfo(SplineFont *sf,EncMap *map) {
 #if defined(FONTFORGE_CONFIG_GTK)
     gsize read, written;
 #endif
-    char *ret = gwwv_open_filename(_("Merge Kern Info"),NULL,
+    char *ret = gwwv_open_filename(_("Merge Feature Info"),NULL,
 	    sf->mm!=NULL?wild2:wild,NULL);
     char *temp;
 
@@ -6179,7 +6179,7 @@ static GMenuItem2 fllist[] = {
     { { (unichar_t *) N_("Generate Mac _Family..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Generate Mac Family...|Alt+Ctl+G"), NULL, NULL, FVMenuGenerateFamily },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Import..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Import...|Ctl+Shft+I"), NULL, NULL, FVMenuImport },
-    { { (unichar_t *) N_("_Merge Kern Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Merge Kern Info...|Alt+Ctl+Shft+K"), NULL, NULL, FVMenuMergeKern },
+    { { (unichar_t *) N_("_Merge Feature Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Merge Kern Info...|Alt+Ctl+Shft+K"), NULL, NULL, FVMenuMergeKern },
     { { (unichar_t *) N_("_Revert File"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Revert File|Ctl+Shft+R"), NULL, NULL, FVMenuRevert, MID_Revert },
     { { (unichar_t *) N_("Revert To _Backup"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Revert To Backup|No Shortcut"), NULL, NULL, FVMenuRevertBackup, MID_RevertToBackup },
     { { (unichar_t *) N_("Revert Gl_yph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Revert Glyph|Alt+Ctl+R"), NULL, NULL, FVMenuRevertGlyph, MID_RevertGlyph },

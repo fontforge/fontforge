@@ -1348,10 +1348,6 @@ extern void SMD_Close(struct statemachinedlg *smd);
 extern void GFI_FinishSMNew(struct gfi_data *d,ASM *sm, int success,int isnew);
 extern void GFI_SMDEnd(struct gfi_data *d);
 
-extern void SFRemoveFeatureDlg(SplineFont *sf);
-extern void SFCopyFeatureToFontDlg(SplineFont *sf);
-extern void SFRetagFeatureDlg(SplineFont *sf);
-
 extern void MMChangeBlend(MMSet *mm,FontView *fv,int tonew);
 extern void MMWizard(MMSet *mm);
 
