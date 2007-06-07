@@ -25,7 +25,7 @@ CFLAGS=/nowarn/incl=([-.inc])/name=(as_is,short)\
 all : [-.libs]libgdraw.olb
 	write sys$output "gdraw finished"
 
-[-.libs]libgdraw.olb : $(libgdraw_OBJECTS)
+[-.libs]libgdraw.olb : $(libgdraw_OBJECTS) $(libgdraw_OBJECTS1)
 	library/create [-.libs]libgdraw.olb $(libgdraw_OBJECTS)
 	library [-.libs]libgdraw.olb $(libgdraw_OBJECTS1)
 
