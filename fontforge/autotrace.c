@@ -318,7 +318,7 @@ return;
 	    waitpid(pid,&status,0);
 	    if ( WIFEXITED(status)) {
 		rewind(ps);
-		new = localSplinesFromEntities(EntityInterpretPS(ps),bgcol,ispotrace);
+		new = localSplinesFromEntities(EntityInterpretPS(ps,NULL),bgcol,ispotrace);
 		transform[0] = images->xscale; transform[3] = images->yscale;
 		transform[1] = transform[2] = 0;
 		transform[4] = images->xoff;
