@@ -30,9 +30,7 @@
 #include "gresource.h"
 #include "errno.h"
 
-#ifndef NODYNAMIC
-# include <dynamic.h>
-#endif
+#include <dynamic.h>
 
 struct stdfuncs _GIO_stdfuncs = {
     GIOguessMimeType, _GIO_decomposeURL, _GIO_PostSuccess, _GIO_PostInter,
