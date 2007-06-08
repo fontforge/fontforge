@@ -1308,7 +1308,7 @@ static void dump_gsubgpos(FILE *out, SplineFont *sf) {
 			    for ( fl=otl->features; fl!=NULL; fl=fl->next ) if ( fl->featuretag==feats[i] ) {
 				for ( sl=fl->scripts; sl!=NULL; sl=sl->next ) if ( sl->script==scripts[s] ) {
 				    for ( subl=0; subl<sl->lang_cnt; ++subl ) {
-					uint32 lang = subl<MAX_LANG ? sl->langs[subl] : sl->morelangs[l-MAX_LANG];
+					uint32 lang = subl<MAX_LANG ? sl->langs[subl] : sl->morelangs[subl-MAX_LANG];
 			                if ( lang==langs[l] )
 			    goto found;
 				    }
@@ -3062,7 +3062,7 @@ return( sofar );
 }
 
 static FPST *fea_markedglyphs_to_fpst(struct parseState *tok,struct markedglyphs *glyphs,
-	int is_pos) {
+	int is_pos,int is_ignore) {
     struct markedglyphs *g;
     int bcnt=0, ncnt=0, fcnt=0, cnt;
     int all_single=true;
@@ -3094,6 +3094,8 @@ static FPST *fea_markedglyphs_to_fpst(struct parseState *tok,struct markedglyphs
     fpst->format = all_single ? pst_glyphs : pst_coverage;
     fpst->rule_cnt = 1;
     fpst->rules = r = gcalloc(1,sizeof(struct fpst_rule));
+    if ( is_ignore )
+	mmax = 0;
     r->lookup_cnt = mmax;
     r->lookups = gcalloc(mmax,sizeof(struct seqlookup));
     for ( i=0; i<mmax; ++i )
@@ -3172,7 +3174,7 @@ static void fea_ParseIgnore(struct parseState *tok) {
     forever {
 	glyphs = fea_ParseMarkedGlyphs(tok,false/* don't parse value records, etc*/,
 		true/*allow marks*/,false/* no lookups */);
-	fpst = fea_markedglyphs_to_fpst(tok,glyphs,false);
+	fpst = fea_markedglyphs_to_fpst(tok,glyphs,false,true);
 	if ( is_pos )
 	    fpst->type = pst_chainpos;
 	fea_markedglyphsFree(glyphs);
@@ -3274,7 +3276,7 @@ static void fea_ParseSubstitute(struct parseState *tok) {
 	}
     } else {
 	/* Contextual */
-	FPST *fpst = fea_markedglyphs_to_fpst(tok,glyphs,false);
+	FPST *fpst = fea_markedglyphs_to_fpst(tok,glyphs,false,false);
 	struct fpst_rule *r = fpst->rules;
 	if ( tok->type!=tk_by ) {
 	    LogError(_("Expected 'by' keyword in substitution on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
@@ -3509,7 +3511,7 @@ static void fea_ParsePosition(struct parseState *tok, int enumer) {
 	}
     } else {
 	/* Contextual */
-	(void) fea_markedglyphs_to_fpst(tok,glyphs,true);
+	(void) fea_markedglyphs_to_fpst(tok,glyphs,true,false);
     }
     fea_now_semi(tok);
     fea_markedglyphsFree(glyphs);
@@ -4979,6 +4981,9 @@ static void fea_ApplyLookupListPair(struct parseState *tok,
 		kc->seconds[i+1] = rights.classes[i];
 	    kc->subtable = sub;
 	    kc->offsets = gcalloc(kc->first_cnt*kc->second_cnt,sizeof(int16));
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	    kc->adjusts = gcalloc(kc->first_cnt*kc->second_cnt,sizeof(DeviceTable));
+#endif
 	    fea_fillKernClass(kc,first);
 	    if ( sub->vertical_kerning ) {
 		kc->next = tok->sf->vkerns;
