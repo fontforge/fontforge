@@ -313,16 +313,19 @@ return;
 void SCImportPSFile(SplineChar *sc,int layer,FILE *ps,int doclear,int flags) {
     SplinePointList *spl, *espl;
     SplineSet **head;
+    int empty, width;
 
     if ( ps==NULL )
 return;
+    width = UNDEFINED_WIDTH;
+    empty = sc->layers[layer].splines==NULL && sc->layers[layer].refs==NULL;
 #ifdef FONTFORGE_CONFIG_TYPE3
     if ( sc->parent->multilayer && layer>ly_back ) {
-	SCAppendEntityLayers(sc, EntityInterpretPS(ps));
+	SCAppendEntityLayers(sc, EntityInterpretPS(ps,&width));
     } else
 #endif
     {
-	spl = SplinePointListInterpretPS(ps,flags,sc->parent->strokedfont);
+	spl = SplinePointListInterpretPS(ps,flags,sc->parent->strokedfont,&width);
 	if ( spl==NULL ) {
 	    gwwv_post_error( _("Too Complex or Bad"), _("I'm sorry this file is too complex for me to understand (or is erroneous, or is empty)") );
 return;
@@ -343,6 +346,8 @@ return;
 	espl->next = *head;
 	*head = spl;
     }
+    if ( (empty || doclear) && width!=UNDEFINED_WIDTH )
+	SCSynchronizeWidth(sc,width,sc->width,NULL);
     SCCharChangedUpdate(sc);
 }
 

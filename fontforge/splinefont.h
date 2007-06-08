@@ -1958,7 +1958,8 @@ extern void SFSplinesFromLayers(SplineFont *sf,int tostroke);
 extern void SFSetLayerWidthsStroked(SplineFont *sf, real strokewidth);
 extern SplineSet *SplinePointListInterpretSVG(char *filename,char *memory, int memlen, int em_size, int ascent,int stroked);
 extern SplineSet *SplinePointListInterpretGlif(char *filename,char *memory, int memlen, int em_size, int ascent,int stroked);
-extern SplinePointList *SplinePointListInterpretPS(FILE *ps,int flags,int stroked);
+#define UNDEFINED_WIDTH	-999999
+extern SplinePointList *SplinePointListInterpretPS(FILE *ps,int flags,int stroked,int *width);
 extern void PSFontInterpretPS(FILE *ps,struct charprocs *cp,char **encoding);
 extern struct enc *PSSlurpEncodings(FILE *file);
 extern int EvaluatePS(char *str,real *stack,int size);

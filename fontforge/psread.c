@@ -49,6 +49,7 @@ typedef struct _io {
 typedef struct io {
     struct _io *top;
     int endedstopped;
+    int advance_width;		/* Can be set from a PS comment by MF2PT1 */
 } IO;
 
 typedef struct growbuf {
@@ -447,12 +448,21 @@ static int nextpstoken(IO *wrapper, real *val, char *tokbuf, int tbsize) {
     int ch, r, i;
     char *pt, *end;
 
+    pt = tokbuf;
+    end = pt+tbsize-1;
+
     /* Eat whitespace and comments. Comments last to eol (or formfeed) */
     while ( 1 ) {
 	while ( isspace(ch = nextch(wrapper)) );
 	if ( ch!='%' )
     break;
-	while ( (ch=nextch(wrapper))!=EOF && ch!='\r' && ch!='\n' && ch!='\f' );
+	while ( (ch=nextch(wrapper))!=EOF && ch!='\r' && ch!='\n' && ch!='\f' )
+	    if ( pt<end )
+		*pt++ = ch;
+	*pt='\0';
+	/* Some comments have meanings (that we care about) */
+	sscanf( tokbuf, " MF2PT1: bbox 0 %*d %d %*d", &wrapper->advance_width );
+	pt = tokbuf;
     }
 
     if ( ch==EOF )
@@ -2818,6 +2828,8 @@ printf( "-%s-\n", toknames[tok]);
 	ec->splines = ent;
     }
     ECCatagorizePoints(ec);
+    if ( ec->width == UNDEFINED_WIDTH )
+	ec->width = wrapper->advance_width;
     setlocale(LC_NUMERIC,oldloc);
 #ifdef FONTFORGE_CONFIG_TYPE3
     free(tokbuf);
@@ -2828,6 +2840,7 @@ static void InterpretPS(FILE *ps, char *psstr, EntityChar *ec, RetStack *rs) {
     IO wrapper;
 
     memset(&wrapper,0,sizeof(wrapper));
+    wrapper.advance_width = UNDEFINED_WIDTH;
     pushio(&wrapper,ps,psstr,0);
     _InterpretPS(&wrapper,ec,rs);
 }
@@ -3212,22 +3225,28 @@ SplinePointList *SplinesFromEntities(Entity *ent,int *flags,int is_stroked) {
 return( SplinesFromEntityChar(&ec,flags,is_stroked));
 }
 
-SplinePointList *SplinePointListInterpretPS(FILE *ps,int flags,int is_stroked) {
+SplinePointList *SplinePointListInterpretPS(FILE *ps,int flags,int is_stroked, int *width) {
     EntityChar ec;
     SplineChar sc;
 
     memset(&ec,'\0',sizeof(ec));
+    ec.width = ec.vwidth = UNDEFINED_WIDTH;
     memset(&sc,0,sizeof(sc)); sc.name = "<No particular character>";
     ec.sc = &sc;
     InterpretPS(ps,NULL,&ec,NULL);
+    if ( width!=NULL )
+	*width = ec.width;
 return( SplinesFromEntityChar(&ec,&flags,is_stroked));
 }
 
-Entity *EntityInterpretPS(FILE *ps) {
+Entity *EntityInterpretPS(FILE *ps,int *width) {
     EntityChar ec;
 
     memset(&ec,'\0',sizeof(ec));
+    ec.width = ec.vwidth = UNDEFINED_WIDTH;
     InterpretPS(ps,NULL,&ec,NULL);
+    if ( width!=NULL )
+	*width = ec.width;
 return( ec.splines );
 }
 
@@ -3257,6 +3276,7 @@ static void SCInterpretPS(FILE *ps,SplineChar *sc, int *flags) {
     ungetc(ch,ps);
 
     memset(&wrapper,0,sizeof(wrapper));
+    wrapper.advance_width = UNDEFINED_WIDTH;
     if ( ch!='<' ) {
 	pushio(&wrapper,ps,NULL,0);
 
@@ -3292,6 +3312,7 @@ void PSFontInterpretPS(FILE *ps,struct charprocs *cp,char **encoding) {
     int flags = -1;
 
     wrapper.top = NULL;
+    wrapper.advance_width = UNDEFINED_WIDTH;
     pushio(&wrapper,ps,NULL,0);
 
     while ( (tok = nextpstoken(&wrapper,&dval,tokbuf,sizeof(tokbuf)))!=pt_eof && tok!=pt_end ) {
@@ -3372,6 +3393,7 @@ Encoding *PSSlurpEncodings(FILE *file) {
     int tok;
 
     wrapper.top = NULL;
+    wrapper.advance_width = UNDEFINED_WIDTH;
     pushio(&wrapper,file,NULL,0);
 
     while ( (tok = nextpstoken(&wrapper,&dval,tokbuf,sizeof(tokbuf)))!=pt_eof ) {
