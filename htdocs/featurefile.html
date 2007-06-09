@@ -1,0 +1,348 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 8-Jun-2007 -->
+  <!-- AP: Last modified: 8-Jun-2007 -->
+  <TITLE>FontForge's implementation of Adobe's Feature File syntax.</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+  <H1>
+    Major differences between FontForge's and Adobe's interpretation of feature
+    files
+  </H1>
+  <P>
+  Adobe specifies the syntax for their
+  <A HREF="http://www.adobe.com/devnet/opentype/afdko/topic_feature_file_syntax.html">feature
+  files</A>. Sadly this syntax is not adequate for specifying all of OpenType.
+  <OL>
+    <LI>
+      Adobe does not support anchors, nor any of the lookups that use anchors.
+      Adobe does provide a syntax for these, but notes that their tools do not
+      (yet) use that syntax, and that the syntax may change in the future.<BR>
+      FontForge does support the documented syntax (and I hope it doesn't change
+      in the future).
+    <LI>
+      Adobe does not support device tables. Again Adobe does provide a syntax for
+      them (with the caveat that that syntax may change).<BR>
+      FontForge does support the documented syntax (assuming FF has been configured
+      with device table support -- if not then FF will simply parse and ignore
+      device tables)
+    <LI>
+      Adobe does not support ligature carets. Again Adobe does provide a syntax
+      (with the standard caveat).<BR>
+      FontForge does support the documented syntax.
+    <LI>
+      Adobe does not support several substitutions within a single contextual lookup
+      rule. But they do provide a syntax.<BR>
+      FontForge does support the documented syntax.
+    <LI>
+      Adobe does not provide a syntax for contextual lookups where leading or final
+      glyphs in the match sequence (not backtrack, not lookahead) are not substituted
+      or positioned. I think in complicated lookups this may be problematic...
+    <LI>
+      Adobe does not provide a syntax for contextual multiple substitution (this
+      would be ambiguous with the documented but unsupported syntax for several
+      substitutions within one contextual rule).<BR>
+      I have made <A HREF="#extension">one extension to the syntax</A> to allow
+      for this.
+    <LI>
+      Adobe does not support contextual mark positioning. They do provide a syntax
+      for it, but the syntax does not seem adequate to me (as I don't see how the
+      mark anchors are specified).<BR>
+      FontForge uses the <A HREF="featurefile.html#extension">extension</A> mentioned
+      above for this. 
+	<HR>
+    <LI>
+      Adobe does not support the "required" keyword for features<BR>
+      FontForge doesn't either but will parse and ignore it.
+    <LI>
+      Adobe does not support GDEF mark classes. Nor do they provide a syntax for
+      them.<BR>
+      FontForge does not support this concept either.
+    <LI>
+      Adobe does not support reverse contextual substitution lookups. Nor do they
+      provide a syntax.<BR>
+      FontForge does not support this either. 
+	<HR>
+    <LI>
+      Adobe allows you to specify that a lookup should be made into an extension
+      lookup.<BR>
+      FontForge will parse and ignore this. It will decide whether a lookup should
+      become an extension lookup when it writes out the tables. It will put lookups
+      in extension lookups if they would require 4 byte offsets.
+    <LI>
+      FontForge will parse and ignore "<CODE>anonymous</CODE>" tables. I can't
+      figure out from the spec how they should be dealt with.
+    <LI>
+      FontForge does not support all the table fields that can be set in a feature
+      file. For instance FontForge fills in the CodePageRange field of the OS/2
+      table depending on what characters are in the font, not on what users say
+      is in the font -- so FontForge will parse and ignore any attempt to set this
+      field.
+    <LI>
+      FontForge will not create 'aalt' lookups the way the FDK does. Instead FF
+      will parse and ignore the 'feature' statements within an 'aalt' feature.
+      FontForge has its own commands for creating 'aalt' (<CODE>Font
+      Info-&gt;Lookups-&gt;(popup menu)-&gt;Add 'aalt' features</CODE>)
+  </OL>
+  <P>
+  Adobe tells me there is a new version of the FDK coming out later this summer
+  (2007) which will address these issues.
+  <H2>
+    FontForge's <A NAME="extension">extension</A>
+  </H2>
+  <P>
+  When FontForge finds a contextual lookup for which there is no syntax, it
+  will describe the controlled lookup in its own lookup block, and provide
+  a pointer to that lookup in the contextual.
+  <P>
+  So, suppose you wanted a contextual lookup to decompose the "ff" ligature.
+  This might be desireable when outputting hex numbers. FontForge would produce:
+  <BLOCKQUOTE>
+    <PRE>lookup ff_decomp_nested {
+  subs ff by f f
+} ff_decomp_nested;
+
+@hexdigits=[zero one two three four five six seven eight nine a-f]
+subs @hexdigits ff' by &lt;lookup ff_decomp_nested&gt;
+subs ff' @hexdigits by &lt;lookup ff_decomp_nested&gt;
+</PRE>
+  </BLOCKQUOTE>
+  <H2>
+    Parsing a feature file
+  </H2>
+  <P>
+  Use <CODE><A HREF="filemenu.html#Merge-feature">File-&gt;Merge Feature Info
+  </A></CODE>(formerly <CODE>File-&gt;Merge Kern Info</CODE>)
+  <H2>
+    Outputting a feature file
+  </H2>
+  <P>
+  Use <CODE><A HREF="fontinfo.html#Lookups">File-&gt;Font
+  Info-&gt;Lookups</A></CODE>, then right click on a lookup (to produce a popup
+  menu) and select <CODE>Save Feature File</CODE>
+  <P>
+  You can also generate a feature file containing a single lookup by selecting
+  that lookup, producing the popup menu and selecting <CODE>Save Lookup</CODE>
+  <H2>
+    Example Feature File
+  </H2>
+  <BLOCKQUOTE>
+    <PRE># GSUB
+
+lookup idecomposition {
+  lookupflag 0;
+    sub i' [acutecomb gravecomb ] by dotlessi ;
+    sub i' dotbelowcomb [acutecomb gravecomb ] by dotlessi ;
+} idecomposition;
+
+lookup Numericsuperscripts {
+  lookupflag 0;
+    sub zero by zero.superior ;
+    sub one by onesuperior ;
+    ... <SMALL>(substitutions omitted)</SMALL>
+    sub nine by nine.superior ;
+} Numericsuperscripts;
+
+lookup smcpLowercasetoSmallCapitalsinL {
+  lookupflag 0;
+    sub a by a.sc ;
+    sub b by b.sc ;
+    ... <SMALL>(substitutions omitted)</SMALL>
+    sub z by z.sc ;
+} smcpLowercasetoSmallCapitalsinL;
+
+lookup ligaStandardLigaturesinLatinloo {
+  lookupflag 0;
+    sub f i  by fi;
+    sub f l  by fl;
+    sub f f  by ff;
+    sub f f i  by ffi;
+    sub f f l  by ffl;
+} ligaStandardLigaturesinLatinloo;
+
+lookup dligDiscretionaryLigaturesinLat {
+  lookupflag 0;
+    sub c h  by c_h;
+    sub c t  by c_t;
+    sub f b  by f_b;
+    sub f r  by f_r;
+    sub f t  by f_t;
+    sub longs h  by longs_h;
+    sub s h  by s_h;
+    sub longs i  by longs_i;
+    sub longs l  by longs_l;
+    sub longs longs  by longs_longs;
+    sub longs longs i  by longs_longs_i;
+    sub longs longs l  by longs_longs_l;
+    sub longs t  by longs_t;
+    sub s t  by s_t;
+    sub I J  by IJ;
+    sub i j  by ij;
+} dligDiscretionaryLigaturesinLat;
+
+lookup fracDiagonalFractionslookup3 {
+  lookupflag 0;
+    sub one slash two  by onehalf;
+    sub one fraction two  by onehalf;
+    sub one slash four  by onequarter;
+    sub one fraction four  by onequarter;
+    sub three slash four  by threequarters;
+    sub three fraction four  by threequarters;
+} fracDiagonalFractionslookup3;
+
+feature \mark {
+  script DFLT;
+     language dflt ;
+      lookup idecomposition;
+
+  script latn;
+     language dflt ;
+      lookup idecomposition;
+} \mark;
+
+feature subs {
+  script DFLT;
+     language dflt ;
+      lookup Numericsuperscripts;
+
+  script cyrl;
+     language dflt ;
+      lookup Numericsuperscripts;
+
+  script grek;
+     language dflt ;
+      lookup Numericsuperscripts;
+
+  script latn;
+     language dflt ;
+      lookup Numericsuperscripts;
+} subs;
+
+feature sups {
+  script DFLT;
+     language dflt ;
+      lookup Numericsuperscripts;
+
+  script cyrl;
+     language dflt ;
+      lookup Numericsuperscripts;
+
+  script grek;
+     language dflt ;
+      lookup Numericsuperscripts;
+
+  script latn;
+     language dflt ;
+      lookup Numericsuperscripts;
+} sups;
+
+feature smcp {
+  script latn;
+     language dflt ;
+      lookup smcpLowercasetoSmallCapitalsinL;
+} smcp;
+
+feature liga {
+  script latn;
+     language dflt ;
+      lookup ligaStandardLigaturesinLatinloo;
+} liga;
+
+feature dlig {
+  script latn;
+     language dflt ;
+      lookup dligDiscretionaryLigaturesinLat;
+} dlig;
+
+feature frac {
+  script DFLT;
+     language dflt ;
+      lookup fracDiagonalFractionslookup3;
+} frac;
+
+# GPOS 
+
+lookup LatinMarks {
+  lookupflag 0;
+    mark dotbelowcomb &lt;anchor -164 -45&gt;;
+    pos a &lt;anchor 207 -54&gt; mark [dotbelowcomb ];
+    pos e &lt;anchor 222 -54&gt; mark [dotbelowcomb ];
+    pos i &lt;anchor 60 -54> mark [dotbelowcomb ];
+    pos o &lt;anchor 165 -54&gt; mark [dotbelowcomb ];
+    pos u &lt;anchor 213 -54&gt; mark [dotbelowcomb ];
+    pos dotlessi &lt;anchor 60 -54&gt; mark [dotbelowcomb ];
+    mark acutecomb &lt;anchor -163 598&gt;;
+    mark gravecomb &lt;anchor -108 598&gt;;
+    pos a &lt;anchor 180 558&gt; mark [acutecomb gravecomb ];
+    pos e &lt;anchor 180 558&gt; mark [acutecomb gravecomb ];
+    pos o &lt;anchor 180 558&gt; mark [acutecomb gravecomb ];
+    pos u &lt;anchor 164 558&gt; mark [acutecomb gravecomb ];
+    pos dotlessi &lt;anchor 68 558&gt; mark [acutecomb gravecomb ];
+} LatinMarks;
+
+lookup Subscriptadjustmenttosuperscrip {
+  lookupflag 0;
+    pos onesuperior &lt;0 -850 0 0&gt;;
+    pos threesuperior &lt;0 -850 0 0&gt;;
+    ... <SMALL>(positionings omitted)</SMALL>
+    pos six.superior &lt;0 -850 0 0&gt;;
+} Subscriptadjustmenttosuperscrip;
+
+lookup kernHorizontalKerninginLatinloo {
+  lookupflag 0;
+    pos T u -109;
+    pos T o -103;
+    pos T e -121;
+    pos T a -97;
+    pos V e -36;
+    pos W u -30;
+    pos W o -42;
+    pos W e -48;
+    pos X u -97;
+    pos Y u -48;
+    pos Y o -73;
+    pos Y e -60;
+    pos Y a -54;
+} kernHorizontalKerninginLatinloo;
+
+feature \mark {
+  script DFLT;
+     language dflt ;
+      lookup LatinMarks;
+
+  script latn;
+     language dflt ;
+      lookup LatinMarks;
+} \mark;
+
+feature subs {
+  script DFLT;
+     language dflt ;
+      lookup Subscriptadjustmenttosuperscrip;
+
+  script cyrl;
+     language dflt ;
+      lookup Subscriptadjustmenttosuperscrip;
+
+  script grek;
+     language dflt ;
+      lookup Subscriptadjustmenttosuperscrip;
+
+  script latn;
+     language dflt ;
+      lookup Subscriptadjustmenttosuperscrip;
+} subs;
+
+feature kern {
+  script latn;
+     language dflt ;
+      lookup kernHorizontalKerninginLatinloo;
+} kern;
+</PRE>
+  </BLOCKQUOTE>
+</DIV>
+</BODY></HTML>

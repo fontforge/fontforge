@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 30-Apr-2007 -->
+  <!-- AP: Last modified: 7-Jun-2007 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -47,16 +47,115 @@
   </BLOCKQUOTE>
   <UL>
     <LI>
+      07-June-2007
+      <UL>
+	<LI>
+	  Add support for Adobe's feature file syntax.<BR>
+	  Use Merge Kern (now Merge Feature) to read one<BR>
+	  Use Element-&gt;Font Info-&gt;Lookups-&gt;popup menu-&gt;Save to generate
+	  one
+	  <P>
+	  Sigh. Adobe documents a feature file syntax they don't fully support, and
+	  even their documented syntax is inadequate to represent all the complexities
+	  of OpenType.
+	  <P>
+	  FontForge supports anchors and device tables and will parse lookups which
+	  contain these. This is a syntax which Adobe documents but does not implement.
+	  Adobe also warns that this syntax may change when they get around to implementing
+	  it.
+	  <P>
+	  FontForge makes one extension to the syntax which allows me to specify complex
+	  contextual features.
+	  <P>
+	  Neither I nor Adobe support reverse contextual substitutions, nor GDEF mark
+	  classes.
+	<LI>
+	  Add a popup menu to the lookups pane of font info.
+	<LI>
+	  Change the name of <CODE>File-&gt;Merge Kern Info </CODE>to
+	  <CODE>File-&gt;Merge Feature Info</CODE>
+	<LI>
+	  Remove the code to produce the old, broken, 'size' feature.
+	<LI>
+	  An earlier patch, designed to make the tabset work in the charview even if
+	  the user changed the name, didn't work.
+	<LI>
+	  Bug in the selection iterator.<BR>
+	  Also Max Rabkin points out the docs say the iterator returns selected glyphs
+	  rather than encoding slots. Fix the docs, then add a member (.byGlyphs) which
+	  will make the iterator return glyphs.
+	<LI>
+	  Accept contour += (1,2) rather than forcing people to say contour +=
+	  fontforge.point(1,2)
+	<LI>
+	  Was using an error return from two setter functions (contour.set_closed,
+	  set_is_quadratic) when I should have returned success.
+	<LI>
+	  Crash when mistyping a glyph name in Glyph Info possub panes. Probably in
+	  the equivalent lookup dlgs too.
+	<LI>
+	  If a glyph contained two copies of another glyph, and one of those copies
+	  was off by enough that ff didn't recognize it, the depending on how the contours
+	  were ordered, ff might fail to recognize the first glyph too, even though
+	  it did match.
+	<LI>
+	  Add iterators to contours and layers. Python users seem to expect them even
+	  when they aren't documented to exist.
+	<LI>
+	  layer += contour didn't work in python. I was examining a bit through the
+	  wrong data type.
+	<LI>
+	  Provide a mechanism for copying lookup information from one glyph to another.
+	  (<CODE>Edit-&gt;Copy Lookup Data</CODE>)
+	<LI>
+	  Loading kerning info from a mac 'FOND' resource was broken by the lookup
+	  change.
+	<LI>
+	  Python scripting command font.createChar didn't. Partial patch from Max Rabkin.
+	<LI>
+	  Adding a kerning pair from the metrics view would often add two or three
+	  pairs with the same character combination and different values.
+	<LI>
+	  Another remove overlap bug. Introduced recently.
+	<LI>
+	  Reinstate Apply Substitutions scripting command.
+	<LI>
+	  Add some dutch styles.
+	<LI>
+	  Make yet another attempt to correct for rounding errors when loading a postscript
+	  font.
+	<LI>
+	  Add a way to get a font's filename to python.
+	<LI>
+	  Werner points out that in scripting I use "break" in an example. It isn't
+	  documented to work and I don't implement it but I do show it. Oops. Ok, make
+	  it work.
+	<LI>
+	  Display substitutions was broken.
+	<LI>
+	  When generating default names for subtables, it is confusing to name them
+	  the same as the lookup.
+	<LI>
+	  Change to using USC4 from UCS2 internally.
+	<LI>
+	  Provide default names for lookups once the user sets the feature.
+	<LI>
+	  Disambiguate some strings for the polish translation
+	<LI>
+	  Revert glyph should not work for old sfd files.
+      </UL>
+    <LI>
       11-May-2007
       <UL>
 	<LI>
-Loading some afm files would go into an infinite loop. (Introduced 9-May)
+	  Loading some afm files would go into an infinite loop. (Introduced 9-May)
 	<LI>
-[Import] button on Font Info->Lookups crashed.
+	  [Import] button on Font Info-&gt;Lookups crashed.
 	<LI>
-Fix a number of problems related to anchor classes.
+	  Fix a number of problems related to anchor classes.
 	<LI>
-After the user does an [Add Lookup] we should select the new lookup, to make it easier for him/her to do an [Add Subtable].
+	  After the user does an [Add Lookup] we should select the new lookup, to make
+	  it easier for him/her to do an [Add Subtable].
       </UL>
     <LI>
       9-May-2007
