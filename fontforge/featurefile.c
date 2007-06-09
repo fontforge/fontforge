@@ -1146,21 +1146,21 @@ void FeatDumpOneLookup(FILE *out,SplineFont *sf, OTLookup *otl) {
     for ( fl = otl->features; fl!=NULL; fl=fl->next ) {
 	fprintf( out, "\nfeature %s%c%c%c%c {\n",
 		fl->featuretag==CHR('m','a','r','k') ? "\\" : "",
-		fl->featuretag>>24, fl->featuretag>16, fl->featuretag>>8, fl->featuretag );
+		fl->featuretag>>24, fl->featuretag>>16, fl->featuretag>>8, fl->featuretag );
 	for ( sl = fl->scripts; sl!=NULL; sl=sl->next ) {
 	    fprintf( out, "  script %c%c%c%c;\n",
-		    sl->script>>24, sl->script>16, sl->script>>8, sl->script );
+		    sl->script>>24, sl->script>>16, sl->script>>8, sl->script );
 	    for ( l=0; l<sl->lang_cnt; ++l ) {
 		uint32 lang = l<MAX_LANG ? sl->langs[l] : sl->morelangs[l-MAX_LANG];
 		fprintf( out, "     language %c%c%c%c %s;\n",
-			lang>>24, lang>16, lang>>8, lang,
+			lang>>24, lang>>16, lang>>8, lang,
 			lang!=DEFAULT_LANG ? "exclude_dflt" : "" );
 		fprintf( out, "      lookup %s;\n", lookupname(otl));
 	    }
 	}
 	fprintf( out, "\n} %s%c%c%c%c;\n",
 		fl->featuretag==CHR('m','a','r','k') ? "\\" : "",
-		fl->featuretag>>24, fl->featuretag>16, fl->featuretag>>8, fl->featuretag );
+		fl->featuretag>>24, fl->featuretag>>16, fl->featuretag>>8, fl->featuretag );
     }
 }
 
