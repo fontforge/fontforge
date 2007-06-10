@@ -4714,7 +4714,7 @@ static int AC_OK(GGadget *g, GEvent *e) {
 
 	acd = GDrawGetUserData(GGadgetGetWindow(g));
 	classes = GMatrixEditGet(GWidgetGetControl(acd->gw,CID_Anchors), &class_cnt);
-	acd->sub->anchor_classes = class_cnt!=0;
+	acd->sub->anchor_classes = true /*class_cnt!=0*/;
 	for ( justtest=1; justtest>=0 ; --justtest ) {
 	    for ( ac = acd->sf->anchor; ac!=NULL; ac=ac->next )
 		ac->processed = false;
