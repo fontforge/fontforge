@@ -447,6 +447,7 @@ return( false );
 static int nextpstoken(IO *wrapper, real *val, char *tokbuf, int tbsize) {
     int ch, r, i;
     char *pt, *end;
+    float mf2pt_advance_width;
 
     pt = tokbuf;
     end = pt+tbsize-1;
@@ -461,7 +462,8 @@ static int nextpstoken(IO *wrapper, real *val, char *tokbuf, int tbsize) {
 		*pt++ = ch;
 	*pt='\0';
 	/* Some comments have meanings (that we care about) */
-	sscanf( tokbuf, " MF2PT1: bbox 0 %*d %d %*d", &wrapper->advance_width );
+	sscanf( tokbuf, " MF2PT1: bbox %*g %*g %g %*g", &mf2pt_advance_width );
+	wrapper->advance_width = mf2pt_advance_width;
 	pt = tokbuf;
     }
 
