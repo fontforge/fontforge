@@ -253,23 +253,42 @@ return( false );
 return( true );
 }
 
-static unichar_t **GotoCompletion(GGadget *t) {
-    const unichar_t *pt, *spt; unichar_t **ret;
+static unichar_t **GotoCompletion(GGadget *t,int from_tab) {
+    unichar_t *pt, *spt; unichar_t **ret;
     int gid, cnt, doit, match_len;
     SplineChar *sc;
     GotoData *d = GDrawGetUserData(GGadgetGetWindow(t));
     SplineFont *sf = d->sf;
+    int do_wildcards;
 
-    spt = _GGadgetGetTitle(t);
+    pt = spt = (unichar_t *) _GGadgetGetTitle(t);
     if ( pt==NULL )
 return( NULL );
+    while ( *pt && *pt!='*' && *pt!='?' && *pt!='[' && *pt!='{' )
+	++pt;
+    do_wildcards = *pt!='\0';
+    if ( do_wildcards && !from_tab )
+return( NULL );
+    if ( do_wildcards ) {
+	pt = spt;
+	spt = galloc((u_strlen(spt)+2)*sizeof(unichar_t));
+	u_strcpy(spt,pt);
+	uc_strcat(spt,"*");
+    }
 
     match_len = u_strlen(spt);
     ret = NULL;
     for ( doit=0; doit<2; ++doit ) {
 	cnt=0;
 	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
-	    if ( uc_strncmp(spt,sc->name,match_len)==0 ) {
+	    int matched;
+	    if ( do_wildcards ) {
+		unichar_t *temp = utf82u_copy(sc->name);
+		matched = GGadgetWildMatch((unichar_t *) spt,temp,false);
+		free(temp);
+	    } else
+		matched = uc_strncmp(spt,sc->name,match_len)==0;
+	    if ( matched ) {
 		if ( doit )
 		    ret[cnt] = utf82u_copy(sc->name);
 		++cnt;
@@ -278,10 +297,12 @@ return( NULL );
 	if ( doit )
 	    ret[cnt] = NULL;
 	else if ( cnt==0 )
-return( NULL );
+    break;
 	else
 	    ret = galloc((cnt+1)*sizeof(unichar_t *));
     }
+    if ( do_wildcards )
+	free(spt);
 return( ret );
 }
 
