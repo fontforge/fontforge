@@ -1233,7 +1233,7 @@ return( true );
 	}
     } else {
 	GTextField_Replace(gt,event->u.chr.chars);
-return( true );
+return( 4 /* Do name completion */ );
     }
 
     if ( gt->sel_start == gt->sel_end )
@@ -1767,17 +1767,21 @@ return( false );
     }
 
     switch ( GTextFieldDoChange(gt,event)) {
+      case 4:
+	/* We should try name completion */
+	if ( gt->completionfield && ((GCompletionField *) gt)->completion!=NULL &&
+		gt->was_completing && gt->sel_start == u_strlen(gt->text))
+	    GTextFieldComplete(gt,false);
+	else
+	    GTextFieldChanged(gt,-1);
+      break;
       case 3:
 	/* They typed a Tab */
       break;
       case 2:
       break;
       case true:
-	if ( gt->completionfield && ((GCompletionField *) gt)->completion!=NULL &&
-		gt->was_completing && gt->sel_start == u_strlen(gt->text))
-	    GTextFieldComplete(gt,false);
-	else
-	    GTextFieldChanged(gt,-1);
+	GTextFieldChanged(gt,-1);
       break;
       case false:
 return( false );
@@ -2811,7 +2815,7 @@ static void GTextFieldComplete(GTextField *gt,int from_tab) {
     int i, len, orig_len;
     unichar_t *pt1, *pt2, ch;
 
-    ret = (gc->completion)(&gt->g);
+    ret = (gc->completion)(&gt->g,from_tab);
     if ( ret==NULL || ret[0]==NULL ) {
 	if ( from_tab ) GDrawBeep(NULL);
 	free(ret);
@@ -2855,7 +2859,7 @@ static int GCompletionHandleKey(GTextField *gt,GEvent *event) {
     GCompletionField *gc = (GCompletionField *) gt;
     int dir = 0;
 
-    if ( gc->choice_popup==NULL )
+    if ( gc->choice_popup==NULL || event->type == et_charup )
 return( false );
 
     if ( event->u.chr.keysym == GK_Up || event->u.chr.keysym == GK_KP_Up )

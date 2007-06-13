@@ -436,7 +436,7 @@ return( true );
 return( true );
 }
 
-static unichar_t **GFileChooserCompletion(GGadget *t) {
+static unichar_t **GFileChooserCompletion(GGadget *t,int from_tab) {
     GFileChooser *gfc;
     const unichar_t *pt, *spt; unichar_t **ret;
     GTextInfo **ti;

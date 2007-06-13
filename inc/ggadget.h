@@ -117,7 +117,7 @@ typedef struct ggadget *GGadgetSet;
 enum sb_type { sb_upline, sb_downline, sb_uppage, sb_downpage, sb_track, sb_trackrelease };
 
 typedef int (*GGadgetHandler)(GGadget *,GEvent *);
-typedef unichar_t **(*GTextCompletionHandler)(GGadget *);
+typedef unichar_t **(*GTextCompletionHandler)(GGadget *,int from_tab);
 
 typedef struct ggadgetdata {
     GRect pos;

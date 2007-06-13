@@ -2684,6 +2684,38 @@ return( false );
 return( true );
 }
 
+static unichar_t **NameCompletion(GGadget *t,int from_tab) {
+    const unichar_t *spt; unichar_t **ret;
+    GTextInfo **ti;
+    int32 len;
+    int i, cnt, doit, match_len;
+
+    spt = _GGadgetGetTitle(t);
+    if ( spt==NULL )
+return( NULL );
+
+    match_len = u_strlen(spt);
+    ti = GGadgetGetList(t,&len);
+    ret = NULL;
+    for ( doit=0; doit<2; ++doit ) {
+	cnt=0;
+	for ( i=0; i<len; ++i ) {
+	    if ( u_strncmp(ti[i]->text,spt,match_len)==0 ) {
+		if ( doit )
+		    ret[cnt] = u_copy(ti[i]->text);
+		++cnt;
+	    }
+	}
+	if ( doit )
+	    ret[cnt] = NULL;
+	else if ( cnt==0 )
+return( NULL );
+	else
+	    ret = galloc((cnt+1)*sizeof(unichar_t *));
+    }
+return( ret );
+}
+
 void SCCharInfo(SplineChar *sc,EncMap *map,int enc) {
     CharInfo *ci;
     GRect pos;
@@ -2764,7 +2796,7 @@ return;
 	ugcd[1].gd.flags = gg_enabled|gg_visible;
 	ugcd[1].gd.mnemonic = 'N';
 	ugcd[1].gd.cid = CID_UName;
-	ugcd[1].creator = GListFieldCreate;
+	ugcd[1].creator = GListCompletionCreate;
 	ugcd[1].data = (void *) (-2);
 	uhvarray[1] = &ugcd[1]; uhvarray[2] = NULL;
 
@@ -3222,6 +3254,8 @@ return;
 	mbox[0].creator = GHVGroupCreate;
 
 	GGadgetsCreate(ci->gw,mbox);
+	GCompletionFieldSetCompletion(ugcd[1].ret,NameCompletion);
+
 	GHVBoxSetExpandableRow(mbox[0].ret,0);
 	GHVBoxSetExpandableCol(mbox[2].ret,gb_expandgluesame);
 	GHVBoxSetExpandableCol(mbox[3].ret,gb_expandgluesame);
