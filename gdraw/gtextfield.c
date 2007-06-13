@@ -46,6 +46,11 @@ static void GListFieldSelected(GGadget *g, int i);
 static int GTextField_Show(GTextField *gt, int pos);
 static void GTPositionGIC(GTextField *gt);
 
+static void GCompletionDestroy(GCompletionField *gc);
+static void GTextFieldComplete(GTextField *gt,int from_tab);
+static int GCompletionHandleKey(GTextField *gt,GEvent *event);
+
+
 static void GTextFieldChanged(GTextField *gt,int src) {
     GEvent e;
 
@@ -984,7 +989,7 @@ return;
     _ggadget_redraw(&gt->g);
     GTextFieldChanged(gt,-1);
 }
-
+    
 static int GTextFieldDoChange(GTextField *gt, GEvent *event) {
     int ss = gt->sel_start, se = gt->sel_end;
     int pos, l, xpos, sel;
@@ -1204,6 +1209,11 @@ return( true );
 	    }
 	  break;
 	  case GK_Tab:
+	    if ( gt->completionfield && ((GCompletionField *) gt)->completion!=NULL ) {
+		GTextFieldComplete(gt,true);
+		gt->was_completing = true;
+return( 3 );
+	    }
 	    if ( gt->accepts_tabs ) {
 		GTextField_Replace(gt,tabstr);
 return( true );
@@ -1588,6 +1598,9 @@ static int gtextfield_mouse(GGadget *g, GEvent *event) {
 return( false );
     if ( event->type == et_crossing )
 return( false );
+    if ( gt->completionfield && ((GCompletionField *) gt)->choice_popup!=NULL &&
+	    event->type==et_mousedown )
+	GCompletionDestroy((GCompletionField *) gt);
     if (( gt->listfield && event->u.mouse.x>=ge->buttonrect.x &&
 	    event->u.mouse.x<ge->buttonrect.x+ge->buttonrect.width &&
 	    event->u.mouse.y>=ge->buttonrect.y &&
@@ -1729,6 +1742,10 @@ return( false );
 return( true );
     }
 
+    if ( gt->completionfield && ((GCompletionField *) gt)->choice_popup!=NULL &&
+	    GCompletionHandleKey(gt,event))
+return( true );
+
     if ( event->type == et_charup )
 return( false );
     if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ||
@@ -1750,10 +1767,17 @@ return( false );
     }
 
     switch ( GTextFieldDoChange(gt,event)) {
+      case 3:
+	/* They typed a Tab */
+      break;
       case 2:
       break;
       case true:
-	GTextFieldChanged(gt,-1);
+	if ( gt->completionfield && ((GCompletionField *) gt)->completion!=NULL &&
+		gt->was_completing && gt->sel_start == u_strlen(gt->text))
+	    GTextFieldComplete(gt,false);
+	else
+	    GTextFieldChanged(gt,-1);
       break;
       case false:
 return( false );
@@ -1919,6 +1943,8 @@ return;
 	}
 	GTextInfoArrayFree(glf->ti);
     }
+    if ( gt->completionfield )
+	GCompletionDestroy((GCompletionField *) g);
 
     if ( gt->vsb!=NULL )
 	(gt->vsb->g.funcs->destroy)(&gt->vsb->g);
@@ -2603,6 +2629,16 @@ GGadget *GNumericFieldCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 return( &gt->g );
 }
 
+GGadget *GTextCompletionCreate(struct gwindow *base, GGadgetData *gd,void *data) {
+    GTextField *gt = gcalloc(1,sizeof(GCompletionField));
+    gt->accepts_tabs = true;
+    gt->completionfield = true;
+    gt->was_completing = true;
+    ((GCompletionField *) gt)->completion = gd->u.completion;
+    _GTextFieldCreate(gt,base,gd,data,&gtextfield_box);
+
+return( &gt->g );
+}
 
 GGadget *GTextAreaCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     GTextField *gt = gcalloc(1,sizeof(GTextField));
@@ -2635,4 +2671,217 @@ GGadget *GListFieldCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     _GTextFieldCreate(&ge->gt,base,gd,data,&gtextfield_box);
     ge->gt.g.funcs = &glistfield_funcs;
 return( &ge->gt.g );
+}
+
+GGadget *GListCompletionCreate(struct gwindow *base, GGadgetData *gd,void *data) {
+    GListField *ge = gcalloc(1,sizeof(GCompletionField));
+
+    ge->gt.listfield = true;
+    if ( gd->u.list!=NULL )
+	ge->ti = GTextInfoArrayFromList(gd->u.list,&ge->ltot);
+    ge->gt.accepts_tabs = true;
+    ge->gt.completionfield = true;
+    ge->gt.was_completing = true;
+    _GTextFieldCreate(&ge->gt,base,gd,data,&gtextfield_box);
+    ge->gt.g.funcs = &glistfield_funcs;
+return( &ge->gt.g );
+}
+
+/* ************************************************************************** */
+/* ***************************** text completion **************************** */
+/* ************************************************************************** */
+
+static void GCompletionDestroy(GCompletionField *gc) {
+    int i;
+
+    if ( gc->choice_popup!=NULL ) {
+	GWindow cp = gc->choice_popup;
+	gc->choice_popup = NULL;
+	GDrawSetUserData(cp,NULL);
+	GDrawDestroyWindow(cp);
+    }
+    if ( gc->choices!=NULL ) {
+	for ( i=0; gc->choices[i]!=NULL; ++i )
+	    free(gc->choices[i]);
+	free(gc->choices);
+	gc->choices = NULL;
+    }
+}
+
+static int popup_eh(GWindow popup,GEvent *event) {
+    GGadget *owner = GDrawGetUserData(popup);
+    GTextField *gt = (GTextField *) owner;
+    GCompletionField *gc = (GCompletionField *) owner;
+    GRect old1, r;
+    Color fg;
+    int i, bp;
+
+    if ( owner==NULL )		/* dying */
+return( true );
+
+    bp = GBoxBorderWidth(owner->base,owner->box);
+    if ( event->type == et_expose ) {
+	GDrawPushClip(popup,&event->u.expose.rect,&old1);
+	GDrawSetFont(popup,gt->font);
+	GBoxDrawBackground(popup,&event->u.expose.rect,owner->box,
+		owner->state,false);
+	GDrawGetSize(popup,&r);
+	r.x = r.y = 0;
+	GBoxDrawBorder(popup,&r,owner->box,owner->state,false);
+	r.x += bp; r.width -= 2*bp;
+	fg = owner->box->main_foreground==COLOR_DEFAULT?GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(popup)):
+		owner->box->main_foreground;
+	for ( i=0; gc->choices[i]!=NULL; ++i ) {
+	    if ( i==gc->selected ) {
+		r.y = i*gt->fh+bp;
+		r.height = gt->fh;
+		GDrawFillRect(popup,&r,owner->box->active_border);
+	    }
+	    GDrawDrawText(popup,bp,i*gt->fh+gt->as+bp,gc->choices[i],-1,NULL,fg);
+	}
+	GDrawPopClip(popup,&old1);
+    } else if ( event->type == et_mouseup ) {
+	gc->selected = (event->u.mouse.y-bp)/gt->fh;
+	if ( gc->selected>=0 && gc->selected<gc->ctot ) {
+	    GTextFieldSetTitle(owner,gc->choices[gc->selected]);
+	    GTextFieldChanged(gt,-1);
+	    GCompletionDestroy(gc);
+	} else {
+	    gc->selected = -1;
+	    GDrawRequestExpose(popup,NULL,false);
+	}
+    } else if ( event->type == et_char ) {
+return( gtextfield_key(owner,event));
+    }
+return( true );
+}
+
+static void GCompletionCreatePopup(GCompletionField *gc) {
+    int width, maxw, i;
+    GWindowAttrs pattrs;
+    GWindow base = gc->gl.gt.g.base;
+    GDisplay *disp = GDrawGetDisplayOfWindow(base);
+    GWindow root = GDrawGetRoot(disp);
+    int bp = GBoxBorderWidth(base,gc->gl.gt.g.box);
+    GRect pos, screen;
+    GPoint pt;
+
+    GDrawSetFont(base,gc->gl.gt.font);
+
+    maxw = 0;
+    for ( i=0; i<gc->ctot; ++i ) {
+	width = GDrawGetTextWidth(base,gc->choices[i],-1,NULL);
+	if ( width > maxw ) maxw = width;
+    }
+    maxw += 2*bp;
+    if ( maxw < gc->gl.gt.g.r.width )
+	maxw = gc->gl.gt.g.r.width;
+
+    pattrs.mask = wam_events|wam_nodecor|wam_positioned|wam_cursor|
+	    wam_transient/*|wam_bordwidth|wam_bordcol*/;
+    pattrs.event_masks = -1;
+    pattrs.nodecoration = true;
+    pattrs.positioned = true;
+    pattrs.cursor = ct_pointer;
+    pattrs.transient = GWidgetGetTopWidget(base);
+    pattrs.border_width = 1;
+    pattrs.border_color = gc->gl.gt.g.box->main_foreground;
+
+    pos.width = maxw; pos.height = gc->gl.gt.fh*gc->ctot+2*bp;
+    GDrawGetSize(root,&screen);
+    pt.x = gc->gl.gt.g.r.x;
+    pt.y = gc->gl.gt.g.r.y + gc->gl.gt.g.r.height;
+    GDrawTranslateCoordinates(base,root,&pt);
+    if (  pt.y+pos.height > screen.height &&
+	    (screen.height - (pt.y+pos.height)) < ( pt.y-gc->gl.gt.g.r.height-pos.height ) ) {
+	/* Is there more room above the widget ?? */
+	pt.y -= gc->gl.gt.g.r.height;
+	pt.y -= pos.height;
+    }
+    pos.x = pt.x; pos.y = pt.y;
+
+    gc->choice_popup = GDrawCreateTopWindow(disp,&pos,popup_eh,gc,&pattrs);
+    GDrawSetVisible(gc->choice_popup,true);
+    /* Don't grab this one. User should be free to ignore it */
+}
+
+static void GTextFieldComplete(GTextField *gt,int from_tab) {
+    GCompletionField *gc = (GCompletionField *) gt;
+    unichar_t **ret;
+    int i, len, orig_len;
+    unichar_t *pt1, *pt2, ch;
+
+    ret = (gc->completion)(&gt->g);
+    if ( ret==NULL || ret[0]==NULL ) {
+	if ( from_tab ) GDrawBeep(NULL);
+	free(ret);
+    } else if ( ret[1]==NULL ) {
+	GTextFieldSetTitle(&gt->g,ret[0]);
+	GTextFieldChanged(gt,-1);
+	free(ret[1]);
+	free(ret);
+    } else {
+	gc->choices = ret;
+	gc->selected = -1;
+	orig_len = u_strlen(gt->text);
+	len = u_strlen(ret[0]);
+	for ( i=1; ret[i]!=NULL; ++i ) {
+	    for ( pt1=ret[0], pt2=ret[i]; *pt1==*pt2 && pt1-ret[0]<len ; ++pt1, ++pt2 );
+	    len = pt1-ret[0];
+	}
+	if ( from_tab ) GDrawBeep(NULL);
+	if ( orig_len!=len ) {
+	    ch = ret[0][len]; ret[0][len] = '\0';
+	    GTextFieldSetTitle(&gt->g,ret[0]);
+	    ret[0][len] = ch;
+	    if ( !from_tab )
+		GTextFieldSelect(&gt->g,orig_len,len);
+	    GTextFieldChanged(gt,-1);
+	}
+	if ( i>=20 ) {
+	    /* Too many choices. Don't popup a list of them */
+	    gc->choices = NULL;
+	    for ( i=0; ret[i]!=NULL; ++i )
+		free(ret[i]);
+	    free(ret);
+	} else {
+	    gc->ctot = i;
+	    GCompletionCreatePopup(gc);
+	}
+    }
+}
+
+static int GCompletionHandleKey(GTextField *gt,GEvent *event) {
+    GCompletionField *gc = (GCompletionField *) gt;
+    int dir = 0;
+
+    if ( gc->choice_popup==NULL )
+return( false );
+
+    if ( event->u.chr.keysym == GK_Up || event->u.chr.keysym == GK_KP_Up )
+	dir = -1;
+    else if ( event->u.chr.keysym == GK_Down || event->u.chr.keysym == GK_KP_Down )
+	dir = 1;
+
+    if ( dir==0 || event->u.chr.chars[0]!='\0' ) {
+	/* For normal characters we destroy the popup window and pretend it */
+	/*  wasn't there */
+	GCompletionDestroy(gc);
+	if ( event->u.chr.keysym == GK_Escape )
+	    gt->was_completing = false;
+return( event->u.chr.keysym == GK_Escape );	/* Eat an escape, other chars will be processed further */
+    }
+
+    if (( gc->selected==-1 && dir==-1 ) || ( gc->selected==gc->ctot-1 && dir==1 ))
+return( true );
+    gc->selected += dir;
+    if ( gc->selected!=-1 )
+	GTextFieldSetTitle(&gt->g,gc->choices[gc->selected]);
+    GTextFieldChanged(gt,-1);
+    GDrawRequestExpose(gc->choice_popup,NULL,false);
+return( true );
+}
+
+void GCompletionFieldSetCompletion(GGadget *g,GTextCompletionHandler completion) {
+    ((GCompletionField *) g)->completion = completion;
 }

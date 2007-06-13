@@ -1268,6 +1268,7 @@ static void GXDrawDestroyWindow(GWindow w) {
     } else {
 	/*GTimerRemoveWindowTimers(gw);*/ /* Moved to _GXDraw_CleanUpWindow, not all windows are actively destroyed */
 	gw->is_dying = true;
+	if ( gw->display->grab_window==w ) gw->display->grab_window = NULL;
 	XDestroyWindow(gw->display->display,gw->w);
 	/* Windows should be freed when we get the destroy event */
     }

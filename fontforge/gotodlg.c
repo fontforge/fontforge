@@ -253,116 +253,135 @@ return( false );
 return( true );
 }
 
-int GotoChar(SplineFont *sf,EncMap *map) {
-    int enc = -1;
-    char *ret;
+static unichar_t **GotoCompletion(GGadget *t) {
+    const unichar_t *pt, *spt; unichar_t **ret;
+    int gid, cnt, doit, match_len;
+    SplineChar *sc;
+    GotoData *d = GDrawGetUserData(GGadgetGetWindow(t));
+    SplineFont *sf = d->sf;
 
-    if ( map->enc->only_1byte ) {
-	/* In one byte encodings don't bother with the range list. It won't */
-	/*  have enough entries to be useful */
-	ret = gwwv_ask_string(_("Goto"),NULL,_("Enter the name of a glyph in the font"));
-	if ( ret==NULL )
-return(-1);
-	enc = NameToEncoding(sf,map,ret);
-	if ( enc<0 || enc>=map->enccount )
-	    enc = -1;
-	if ( enc==-1 )
-	    ff_post_notice(_("Goto"),_("Could not find the glyph: %.70s"),ret);
-	free(ret);
-return( enc );
-    } else {
-	GRect pos;
-	GWindow gw;
-	GWindowAttrs wattrs;
-	GGadgetCreateData gcd[9];
-	GTextInfo label[9];
-	static GotoData gd;
-	GTextInfo *ranges = AvailableRanges(sf,map);
-	int i, wid, temp;
-	unichar_t ubuf[100];
+    spt = _GGadgetGetTitle(t);
+    if ( pt==NULL )
+return( NULL );
 
-	memset(&gd,0,sizeof(gd));
-	gd.sf = sf;
-	gd.map = map;
-	gd.ret = -1;
-	gd.ranges = ranges;
-
-	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
-	wattrs.event_masks = ~(1<<et_charup);
-	wattrs.restrict_input_to_me = 1;
-	wattrs.undercursor = 1;
-	wattrs.cursor = ct_pointer;
-	wattrs.utf8_window_title = _("Goto");
-	wattrs.is_dlg = true;
-	pos.x = pos.y = 0;
-	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,170));
-	pos.height = GDrawPointsToPixels(NULL,90);
-	gd.gw = gw = GDrawCreateTopWindow(NULL,&pos,goto_e_h,&gd,&wattrs);
-
-	GDrawSetFont(gw,GGadgetGetFont(NULL));		/* Default gadget font */
-	wid = GDrawGetText8Width(gw,_("Enter the name of a glyph in the font"),-1,NULL);
-	for ( i=0; ranges[i].text!=NULL; ++i ) {
-	    uc_strncpy(ubuf,(char *) (ranges[i].text),sizeof(ubuf)/sizeof(ubuf[0])-1);
-	    temp = GDrawGetTextWidth(gw,ubuf,-1,NULL);
-	    if ( temp>wid )
-		wid = temp;
+    match_len = u_strlen(spt);
+    ret = NULL;
+    for ( doit=0; doit<2; ++doit ) {
+	cnt=0;
+	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
+	    if ( uc_strncmp(spt,sc->name,match_len)==0 ) {
+		if ( doit )
+		    ret[cnt] = utf82u_copy(sc->name);
+		++cnt;
+	    }
 	}
-	if ( pos.width<wid+20 ) {
-	    pos.width = wid+20;
-	    GDrawResize(gw,pos.width,pos.height);
-	}
-
-	memset(&label,0,sizeof(label));
-	memset(&gcd,0,sizeof(gcd));
-
-	label[0].text = (unichar_t *) _("Enter the name of a glyph in the font");
-	label[0].text_is_1byte = true;
-	gcd[0].gd.label = &label[0];
-	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5; 
-	gcd[0].gd.flags = gg_enabled|gg_visible;
-	gcd[0].creator = GLabelCreate;
-
-	gcd[1].gd.pos.x = 5; gcd[1].gd.pos.y = 17;  gcd[1].gd.pos.width = GDrawPixelsToPoints(NULL,wid);
-	gcd[1].gd.flags = gg_enabled|gg_visible|gg_text_xim;
-	gcd[1].gd.cid = CID_Name;
-	gcd[1].gd.u.list = ranges;
-	gcd[1].creator = GListFieldCreate;
-
-	gcd[2].gd.pos.x = 20-3; gcd[2].gd.pos.y = 90-35-3;
-	gcd[2].gd.pos.width = -1; gcd[2].gd.pos.height = 0;
-	gcd[2].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[2].text = (unichar_t *) _("_OK");
-	label[2].text_is_1byte = true;
-	label[2].text_in_resource = true;
-	gcd[2].gd.mnemonic = 'O';
-	gcd[2].gd.label = &label[2];
-	gcd[2].gd.handle_controlevent = Goto_OK;
-	gcd[2].creator = GButtonCreate;
-
-	gcd[3].gd.pos.x = -20; gcd[3].gd.pos.y = 90-35;
-	gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
-	gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[3].text = (unichar_t *) _("_Cancel");
-	label[3].text_is_1byte = true;
-	label[3].text_in_resource = true;
-	gcd[3].gd.label = &label[3];
-	gcd[3].gd.mnemonic = 'C';
-	gcd[3].gd.handle_controlevent = Goto_Cancel;
-	gcd[3].creator = GButtonCreate;
-
-	gcd[4].gd.pos.x = 2; gcd[4].gd.pos.y = 2;
-	gcd[4].gd.pos.width = pos.width-4; gcd[4].gd.pos.height = pos.height-2;
-	gcd[4].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
-	gcd[4].creator = GGroupCreate;
-
-	GGadgetsCreate(gw,gcd);
-	GDrawSetVisible(gw,true);
-	while ( !gd.done )
-	    GDrawProcessOneEvent(NULL);
-	GDrawDestroyWindow(gw);
-	free(ranges);
-return( gd.ret );
+	if ( doit )
+	    ret[cnt] = NULL;
+	else if ( cnt==0 )
+return( NULL );
+	else
+	    ret = galloc((cnt+1)*sizeof(unichar_t *));
     }
+return( ret );
+}
+
+int GotoChar(SplineFont *sf,EncMap *map) {
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[9];
+    GTextInfo label[9];
+    static GotoData gd;
+    GTextInfo *ranges = NULL;
+    int i, wid, temp;
+    unichar_t ubuf[100];
+
+    if ( !map->enc->only_1byte )
+	ranges = AvailableRanges(sf,map);
+    memset(&gd,0,sizeof(gd));
+    gd.sf = sf;
+    gd.map = map;
+    gd.ret = -1;
+    gd.ranges = ranges;
+
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.restrict_input_to_me = 1;
+    wattrs.undercursor = 1;
+    wattrs.cursor = ct_pointer;
+    wattrs.utf8_window_title = _("Goto");
+    wattrs.is_dlg = true;
+    pos.x = pos.y = 0;
+    pos.width = GGadgetScale(GDrawPointsToPixels(NULL,170));
+    pos.height = GDrawPointsToPixels(NULL,90);
+    gd.gw = gw = GDrawCreateTopWindow(NULL,&pos,goto_e_h,&gd,&wattrs);
+
+    GDrawSetFont(gw,GGadgetGetFont(NULL));		/* Default gadget font */
+    wid = GDrawGetText8Width(gw,_("Enter the name of a glyph in the font"),-1,NULL);
+    for ( i=0; ranges[i].text!=NULL; ++i ) {
+	uc_strncpy(ubuf,(char *) (ranges[i].text),sizeof(ubuf)/sizeof(ubuf[0])-1);
+	temp = GDrawGetTextWidth(gw,ubuf,-1,NULL);
+	if ( temp>wid )
+	    wid = temp;
+    }
+    if ( pos.width<wid+20 ) {
+	pos.width = wid+20;
+	GDrawResize(gw,pos.width,pos.height);
+    }
+
+    memset(&label,0,sizeof(label));
+    memset(&gcd,0,sizeof(gcd));
+
+    label[0].text = (unichar_t *) _("Enter the name of a glyph in the font");
+    label[0].text_is_1byte = true;
+    gcd[0].gd.label = &label[0];
+    gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5; 
+    gcd[0].gd.flags = gg_enabled|gg_visible;
+    gcd[0].creator = GLabelCreate;
+
+    gcd[1].gd.pos.x = 5; gcd[1].gd.pos.y = 17;  gcd[1].gd.pos.width = GDrawPixelsToPoints(NULL,wid);
+    gcd[1].gd.flags = gg_enabled|gg_visible|gg_text_xim;
+    gcd[1].gd.cid = CID_Name;
+    if ( ranges==NULL )
+	gcd[1].creator = GTextCompletionCreate;
+    else {
+	gcd[1].gd.u.list = ranges;
+	gcd[1].creator = GListCompletionCreate;
+    }
+
+    gcd[2].gd.pos.x = 20-3; gcd[2].gd.pos.y = 90-35-3;
+    gcd[2].gd.pos.width = -1; gcd[2].gd.pos.height = 0;
+    gcd[2].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    label[2].text = (unichar_t *) _("_OK");
+    label[2].text_is_1byte = true;
+    label[2].text_in_resource = true;
+    gcd[2].gd.label = &label[2];
+    gcd[2].gd.handle_controlevent = Goto_OK;
+    gcd[2].creator = GButtonCreate;
+
+    gcd[3].gd.pos.x = -20; gcd[3].gd.pos.y = 90-35;
+    gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
+    gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    label[3].text = (unichar_t *) _("_Cancel");
+    label[3].text_is_1byte = true;
+    label[3].text_in_resource = true;
+    gcd[3].gd.label = &label[3];
+    gcd[3].gd.handle_controlevent = Goto_Cancel;
+    gcd[3].creator = GButtonCreate;
+
+    gcd[4].gd.pos.x = 2; gcd[4].gd.pos.y = 2;
+    gcd[4].gd.pos.width = pos.width-4; gcd[4].gd.pos.height = pos.height-2;
+    gcd[4].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
+    gcd[4].creator = GGroupCreate;
+
+    GGadgetsCreate(gw,gcd);
+    GCompletionFieldSetCompletion(gcd[1].ret,GotoCompletion);
+    GDrawSetVisible(gw,true);
+    while ( !gd.done )
+	GDrawProcessOneEvent(NULL);
+    GDrawDestroyWindow(gw);
+    free(ranges);
+return( gd.ret );
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

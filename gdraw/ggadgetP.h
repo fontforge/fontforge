@@ -261,6 +261,8 @@ typedef struct gtextfield {
     unsigned int donthook: 1;	/* Used when the tf is part of a the gchardlg.c */
     unsigned int numericfield: 1;
     unsigned int incr_down: 1;	/* Direction of increments when numeric_scroll events happen */
+    unsigned int completionfield: 1;
+    unsigned int was_completing: 1;
     uint8 fh;
     uint8 as;
     uint8 nw;			/* Width of one character (an "n") */
@@ -290,6 +292,14 @@ typedef struct glistfield {
     uint16 ltot;
     GWindow popup;
 } GListField;
+
+typedef struct gcompletionfield {
+    GListField gl;
+    unichar_t **choices;
+    uint16 ctot; int16 selected;
+    GWindow choice_popup;
+    GTextCompletionHandler completion;
+} GCompletionField;
 
 typedef struct gnumericfield {
     GTextField gt;
