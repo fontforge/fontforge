@@ -117,6 +117,7 @@ typedef struct ggadget *GGadgetSet;
 enum sb_type { sb_upline, sb_downline, sb_uppage, sb_downpage, sb_track, sb_trackrelease };
 
 typedef int (*GGadgetHandler)(GGadget *,GEvent *);
+typedef unichar_t **(*GTextCompletionHandler)(GGadget *);
 
 typedef struct ggadgetdata {
     GRect pos;
@@ -135,6 +136,7 @@ typedef struct ggadgetdata {
 	struct ggadgetcreatedata **boxelements;	/* An array of things to go in the box */
 	struct matrixinit *matrix;
 	GDrawEH drawable_e_h;	/* Drawable event handler */
+	GTextCompletionHandler completion;
     } u;
     enum gg_flags { gg_visible=1, gg_enabled=2, gg_pos_in_pixels=4,
 	gg_sb_vert=8, gg_line_vert=gg_sb_vert,
@@ -295,6 +297,7 @@ GGadgetHandler GGadgetGetHandler(GGadget *g);
 void GTextFieldSelect(GGadget *g,int sel_start, int sel_end);
 void GTextFieldShow(GGadget *g,int pos);
 void GTextFieldReplace(GGadget *g,const unichar_t *txt);
+void GCompletionFieldSetCompletion(GGadget *g,GTextCompletionHandler completion);
 void GGadgetClearList(GGadget *g);
 void GGadgetSetList(GGadget *g, GTextInfo **ti, int32 copyit);
 GTextInfo **GGadgetGetList(GGadget *g,int32 *len);	/* Do not free!!! */
@@ -423,8 +426,10 @@ GGadget *GListCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GTextFieldCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GPasswordCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GNumericFieldCreate(struct gwindow *base, GGadgetData *gd,void *data);
+GGadget *GTextCompletionCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GTextAreaCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GListFieldCreate(struct gwindow *base, GGadgetData *gd,void *data);
+GGadget *GListCompletionCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GMenuBarCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GMenu2BarCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GTabSetCreate(struct gwindow *base, GGadgetData *gd,void *data);

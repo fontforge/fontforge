@@ -436,6 +436,44 @@ return( true );
 return( true );
 }
 
+static unichar_t **GFileChooserCompletion(GGadget *t) {
+    GFileChooser *gfc;
+    const unichar_t *pt, *spt; unichar_t **ret;
+    GTextInfo **ti;
+    int32 len;
+    int i, cnt, doit, match_len;
+
+    pt = spt = _GGadgetGetTitle(t);
+    if ( pt==NULL )
+return( NULL );
+    while ( *pt && *pt!='/' && *pt!='*' && *pt!='?' && *pt!='[' && *pt!='{' )
+	++pt;
+    if ( *pt!='\0' )
+return( NULL );		/* Can't complete if not in cur directory or has wildcards */
+
+    match_len = u_strlen(spt);
+    gfc = (GFileChooser *) GGadgetGetUserData(t);
+    ti = GGadgetGetList(&gfc->files->g,&len);
+    ret = NULL;
+    for ( doit=0; doit<2; ++doit ) {
+	cnt=0;
+	for ( i=0; i<len; ++i ) {
+	    if ( u_strncmp(ti[i]->text,spt,match_len)==0 ) {
+		if ( doit )
+		    ret[cnt] = u_copy(ti[i]->text);
+		++cnt;
+	    }
+	}
+	if ( doit )
+	    ret[cnt] = NULL;
+	else if ( cnt==0 )
+return( NULL );
+	else
+	    ret = galloc((cnt+1)*sizeof(unichar_t *));
+    }
+return( ret );
+}
+
 static unichar_t *GFileChooserGetCurDir(GFileChooser *gfc,int dirindex) {
     GTextInfo **ti;
     int32 len; int j, cnt;
@@ -1031,9 +1069,10 @@ static void GFileChooserCreateChildren(GFileChooser *gfc, int flags) {
     gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
     gd.handle_controlevent = GFileChooserTextChanged;
     if ( flags&gg_file_pulldown )
-	gfc->name = (GTextField *) GListFieldCreate(gfc->g.base,&gd,gfc);
+	gfc->name = (GTextField *) GListCompletionCreate(gfc->g.base,&gd,gfc);
     else
-	gfc->name = (GTextField *) GTextFieldCreate(gfc->g.base,&gd,gfc);
+	gfc->name = (GTextField *) GTextCompletionCreate(gfc->g.base,&gd,gfc);
+    GCompletionFieldSetCompletion(&gfc->name->g,GFileChooserCompletion);
     gfc->name->g.contained = true;
 
     gd.pos.height = gfc->g.r.height-

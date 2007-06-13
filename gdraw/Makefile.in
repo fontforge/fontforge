@@ -10,7 +10,7 @@ libdir = @libdir@
 
 GD_VERSION=2
 GD_REVISION=0
-GD_AGE=0
+GD_AGE=1
 
 LIBTOOL = @LIBTOOL@
 CC = @CC@

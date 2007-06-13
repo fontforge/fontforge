@@ -123,6 +123,7 @@ struct openfilefilters def_font_filters[] = {
 	 N_("SVG"), "*.svg{.gz,.Z,.bz2,}",
 #endif
 	 N_("FontForge's SFD"), "*.sfd{.gz,.Z,.bz2,}",
+	 N_("Backup SFD"), "*.sfd~",
 	 N_("Extract from PDF"), "*.pdf{.gz,.Z,.bz2,}",
 	 "-", NULL,
 	 N_("All Files"), "*",
@@ -488,7 +489,7 @@ return( false );
     GGadgetGetSize(list,&size);
     if ( event->u.mouse.x < size.x || event->u.mouse.y <size.y ||
 	    event->u.mouse.x >= size.x+size.width ||
-	    event->u.mouse.y >= size.y+size.width )
+	    event->u.mouse.y >= size.y+size.height )
 return( false );
     pos = GListIndexFromY(list,event->u.mouse.y);
     if ( pos == d->filename_popup_pos )
