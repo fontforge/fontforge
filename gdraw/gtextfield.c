@@ -2749,13 +2749,14 @@ static void GCompletionDestroy(GCompletionField *gc) {
     }
 }
 
-static void GTextFieldSetTitleRmDotDotDot(GGadget *g,unichar_t *tit) {
+static int GTextFieldSetTitleRmDotDotDot(GGadget *g,unichar_t *tit) {
     unichar_t *pt = uc_strstr(tit," ...");
     if ( pt!=NULL )
 	*pt = '\0';
     GTextFieldSetTitle(g,tit);
     if ( pt!=NULL )
 	*pt = ' ';
+return( pt!=NULL );
 }
 
 static int popup_eh(GWindow popup,GEvent *event) {
@@ -2793,9 +2794,11 @@ return( true );
     } else if ( event->type == et_mouseup ) {
 	gc->selected = (event->u.mouse.y-bp)/gt->fh;
 	if ( gc->selected>=0 && gc->selected<gc->ctot ) {
-	    GTextFieldSetTitleRmDotDotDot(owner,gc->choices[gc->selected]);
+	    int tryagain = GTextFieldSetTitleRmDotDotDot(owner,gc->choices[gc->selected]);
 	    GTextFieldChanged(gt,-1);
 	    GCompletionDestroy(gc);
+	    if ( tryagain )
+		GTextFieldComplete(gt,false);
 	} else {
 	    gc->selected = -1;
 	    GDrawRequestExpose(popup,NULL,false);
@@ -2864,6 +2867,9 @@ static int ucmp(const void *_s1, const void *_s2) {
 return( u_strcmp(*(const unichar_t **)_s1,*(const unichar_t **)_s2));
 }
 
+#define MAXLINES	30		/* Maximum # entries allowed in popup window */
+#define MAXBRACKETS	30		/* Maximum # chars allowed in [] pairs */
+
 static void GTextFieldComplete(GTextField *gt,int from_tab) {
     GCompletionField *gc = (GCompletionField *) gt;
     unichar_t **ret;
@@ -2899,34 +2905,51 @@ static void GTextFieldComplete(GTextField *gt,int from_tab) {
 	}
 	qsort(ret,i,sizeof(unichar_t *),ucmp);
 	gc->ctot = i;
-	if ( i>=30 ) {
+	if ( i>=MAXLINES ) {
 	    /* Try to shrink the list by just showing initial stubs of the */
 	    /*  names with multiple entries with a common next character */
 	    /* So if we have matched against "a" and we have "abc", "abd" "acc" */
 	    /*  the show "ab..." and "acc" */
 	    unichar_t **ret2=NULL, last_ch = -1;
-	    int cnt, doit;
+	    int cnt, doit, type2=false;
 	    for ( doit=0; doit<2; ++doit ) {
 		for ( i=cnt=0; ret[i]!=NULL; ++i ) {
 		    if ( last_ch!=ret[i][len] ) {
-			if ( doit ) {
+			if ( doit && type2 ) {
+			    int c2 = cnt/MAXBRACKETS, c3 = cnt%MAXBRACKETS;
+			    if ( ret[i][len]=='\0' )
+		continue;
+			    if ( c3==0 ) {
+				ret2[c2] = gcalloc((len+MAXBRACKETS+2+4+1),sizeof(unichar_t));
+			        memcpy(ret2[c2],ret[i],len*sizeof(unichar_t));
+			        ret2[c2][len] = '[';
+			    }
+			    ret2[c2][len+1+c3] = ret[i][len];
+			    uc_strcpy(ret2[c2]+len+2+c3,"] ...");
+			} else if ( doit ) {
 			    ret2[cnt] = galloc((u_strlen(ret[i])+5)*sizeof(unichar_t));
 			    u_strcpy(ret2[cnt],ret[i]);
 			}
 			++cnt;
 			last_ch = ret[i][len];
-		    } else if ( doit ) {
+		    } else if ( doit && !type2 ) {
 			int j;
 			for ( j=len+1; ret[i][j]!='\0' && ret[i][j] == ret2[cnt-1][j]; ++j );
 			uc_strcpy(ret2[cnt-1]+j," ...");
 		    }
 		}
-		if ( cnt>=30 )
+		if ( cnt>=MAXLINES*MAXBRACKETS )
 	    break;
-		else if ( !doit )
+		if ( cnt>=MAXLINES && !doit ) {
+		    type2 = (cnt+MAXBRACKETS-1)/MAXBRACKETS;
+		    ret2 = galloc((type2+1)*sizeof(unichar_t *));
+		} else if ( !doit )
 		    ret2 = galloc((cnt+1)*sizeof(unichar_t *));
-		else
+		else {
+		    if ( type2 )
+			cnt = type2;
 		    ret2[cnt] = NULL;
+		}
 	    }
 	    if ( ret2!=NULL ) {
 		for ( i=0; ret[i]!=NULL; ++i )
@@ -2936,7 +2959,7 @@ static void GTextFieldComplete(GTextField *gt,int from_tab) {
 		i = gc->ctot = cnt;
 	    }
 	}
-	if ( gc->ctot>=30 ) {
+	if ( gc->ctot>=MAXLINES ) {
 	    /* Too many choices. Don't popup a list of them */
 	    gc->choices = NULL;
 	    for ( i=0; ret[i]!=NULL; ++i )
@@ -2967,7 +2990,8 @@ return( false );
 	GCompletionDestroy(gc);
 	if ( event->u.chr.keysym == GK_Escape )
 	    gt->was_completing = false;
-return( event->u.chr.keysym == GK_Escape );	/* Eat an escape, other chars will be processed further */
+return( event->u.chr.keysym == GK_Escape ||	/* Eat an escape, other chars will be processed further */
+	    event->u.chr.keysym == GK_Return );
     }
 
     if (( gc->selected==-1 && dir==-1 ) || ( gc->selected==gc->ctot-1 && dir==1 ))
