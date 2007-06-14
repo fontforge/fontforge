@@ -298,6 +298,7 @@ void GTextFieldSelect(GGadget *g,int sel_start, int sel_end);
 void GTextFieldShow(GGadget *g,int pos);
 void GTextFieldReplace(GGadget *g,const unichar_t *txt);
 void GCompletionFieldSetCompletion(GGadget *g,GTextCompletionHandler completion);
+void GCompletionFieldSetCompletionMode(GGadget *g,int enabled);
 void GGadgetClearList(GGadget *g);
 void GGadgetSetList(GGadget *g, GTextInfo **ti, int32 copyit);
 GTextInfo **GGadgetGetList(GGadget *g,int32 *len);	/* Do not free!!! */
@@ -429,7 +430,7 @@ GGadget *GNumericFieldCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GTextCompletionCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GTextAreaCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GListFieldCreate(struct gwindow *base, GGadgetData *gd,void *data);
-GGadget *GListCompletionCreate(struct gwindow *base, GGadgetData *gd,void *data);
+GGadget *GSimpleListFieldCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GMenuBarCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GMenu2BarCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GTabSetCreate(struct gwindow *base, GGadgetData *gd,void *data);

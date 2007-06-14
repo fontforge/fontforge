@@ -459,8 +459,16 @@ return( NULL );		/* Can't complete if not in cur directory or has wildcards */
 	cnt=0;
 	for ( i=0; i<len; ++i ) {
 	    if ( u_strncmp(ti[i]->text,spt,match_len)==0 ) {
-		if ( doit )
-		    ret[cnt] = u_copy(ti[i]->text);
+		if ( doit ) {
+		    if ( ti[i]->checked /* isdirectory */ ) {
+			int len = u_strlen(ti[i]->text);
+			ret[cnt] = galloc((len+2)*sizeof(unichar_t));
+			u_strcpy(ret[cnt],ti[i]->text);
+			ret[cnt][len] = '/';
+			ret[cnt][len+1] = '\0';
+		    } else 
+			ret[cnt] = u_copy(ti[i]->text);
+		}
 		++cnt;
 	    }
 	}
@@ -1069,10 +1077,11 @@ static void GFileChooserCreateChildren(GFileChooser *gfc, int flags) {
     gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
     gd.handle_controlevent = GFileChooserTextChanged;
     if ( flags&gg_file_pulldown )
-	gfc->name = (GTextField *) GListCompletionCreate(gfc->g.base,&gd,gfc);
+	gfc->name = (GTextField *) GListFieldCreate(gfc->g.base,&gd,gfc);
     else
 	gfc->name = (GTextField *) GTextCompletionCreate(gfc->g.base,&gd,gfc);
     GCompletionFieldSetCompletion(&gfc->name->g,GFileChooserCompletion);
+    GCompletionFieldSetCompletionMode(&gfc->name->g,true);
     gfc->name->g.contained = true;
 
     gd.pos.height = gfc->g.r.height-
