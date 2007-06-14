@@ -2749,6 +2749,15 @@ static void GCompletionDestroy(GCompletionField *gc) {
     }
 }
 
+static void GTextFieldSetTitleRmDotDotDot(GGadget *g,unichar_t *tit) {
+    unichar_t *pt = uc_strstr(tit," ...");
+    if ( pt!=NULL )
+	*pt = '\0';
+    GTextFieldSetTitle(g,tit);
+    if ( pt!=NULL )
+	*pt = ' ';
+}
+
 static int popup_eh(GWindow popup,GEvent *event) {
     GGadget *owner = GDrawGetUserData(popup);
     GTextField *gt = (GTextField *) owner;
@@ -2784,7 +2793,7 @@ return( true );
     } else if ( event->type == et_mouseup ) {
 	gc->selected = (event->u.mouse.y-bp)/gt->fh;
 	if ( gc->selected>=0 && gc->selected<gc->ctot ) {
-	    GTextFieldSetTitle(owner,gc->choices[gc->selected]);
+	    GTextFieldSetTitleRmDotDotDot(owner,gc->choices[gc->selected]);
 	    GTextFieldChanged(gt,-1);
 	    GCompletionDestroy(gc);
 	} else {
@@ -2815,8 +2824,9 @@ static void GCompletionCreatePopup(GCompletionField *gc) {
 	if ( width > maxw ) maxw = width;
     }
     maxw += 2*bp;
-    if ( maxw < gc->gl.gt.g.r.width )
-	maxw = gc->gl.gt.g.r.width;
+    pos.width = maxw; pos.height = gc->gl.gt.fh*gc->ctot+2*bp;
+    if ( pos.width < gc->gl.gt.g.r.width )
+	pos.width = gc->gl.gt.g.r.width;
 
     pattrs.mask = wam_events|wam_nodecor|wam_positioned|wam_cursor|
 	    wam_transient/*|wam_bordwidth|wam_bordcol*/;
@@ -2828,22 +2838,30 @@ static void GCompletionCreatePopup(GCompletionField *gc) {
     pattrs.border_width = 1;
     pattrs.border_color = gc->gl.gt.g.box->main_foreground;
 
-    pos.width = maxw; pos.height = gc->gl.gt.fh*gc->ctot+2*bp;
     GDrawGetSize(root,&screen);
     pt.x = gc->gl.gt.g.r.x;
     pt.y = gc->gl.gt.g.r.y + gc->gl.gt.g.r.height;
     GDrawTranslateCoordinates(base,root,&pt);
-    if (  pt.y+pos.height > screen.height &&
-	    (screen.height - (pt.y+pos.height)) < ( pt.y-gc->gl.gt.g.r.height-pos.height ) ) {
-	/* Is there more room above the widget ?? */
-	pt.y -= gc->gl.gt.g.r.height;
-	pt.y -= pos.height;
+    if (  pt.y+pos.height > screen.height ) {
+	if ( pt.y-gc->gl.gt.g.r.height-pos.height>=0 ) {
+	    /* Is there more room above the widget ?? */
+	    pt.y -= gc->gl.gt.g.r.height;
+	    pt.y -= pos.height;
+	} else if ( pt.x + gc->gl.gt.g.r.width + maxw <= screen.width ) {
+	    pt.x += gc->gl.gt.g.r.width;
+	    pt.y = 0;
+	} else
+	    pt.x = pt.y = 0;
     }
     pos.x = pt.x; pos.y = pt.y;
 
     gc->choice_popup = GDrawCreateTopWindow(disp,&pos,popup_eh,gc,&pattrs);
     GDrawSetVisible(gc->choice_popup,true);
     /* Don't grab this one. User should be free to ignore it */
+}
+
+static int ucmp(const void *_s1, const void *_s2) {
+return( u_strcmp(*(const unichar_t **)_s1,*(const unichar_t **)_s2));
 }
 
 static void GTextFieldComplete(GTextField *gt,int from_tab) {
@@ -2879,7 +2897,46 @@ static void GTextFieldComplete(GTextField *gt,int from_tab) {
 		GTextFieldSelect(&gt->g,orig_len,len);
 	    GTextFieldChanged(gt,-1);
 	}
-	if ( i>=20 ) {
+	qsort(ret,i,sizeof(unichar_t *),ucmp);
+	gc->ctot = i;
+	if ( i>=30 ) {
+	    /* Try to shrink the list by just showing initial stubs of the */
+	    /*  names with multiple entries with a common next character */
+	    /* So if we have matched against "a" and we have "abc", "abd" "acc" */
+	    /*  the show "ab..." and "acc" */
+	    unichar_t **ret2=NULL, last_ch = -1;
+	    int cnt, doit;
+	    for ( doit=0; doit<2; ++doit ) {
+		for ( i=cnt=0; ret[i]!=NULL; ++i ) {
+		    if ( last_ch!=ret[i][len] ) {
+			if ( doit ) {
+			    ret2[cnt] = galloc((u_strlen(ret[i])+5)*sizeof(unichar_t));
+			    u_strcpy(ret2[cnt],ret[i]);
+			}
+			++cnt;
+			last_ch = ret[i][len];
+		    } else if ( doit ) {
+			int j;
+			for ( j=len+1; ret[i][j]!='\0' && ret[i][j] == ret2[cnt-1][j]; ++j );
+			uc_strcpy(ret2[cnt-1]+j," ...");
+		    }
+		}
+		if ( cnt>=30 )
+	    break;
+		else if ( !doit )
+		    ret2 = galloc((cnt+1)*sizeof(unichar_t *));
+		else
+		    ret2[cnt] = NULL;
+	    }
+	    if ( ret2!=NULL ) {
+		for ( i=0; ret[i]!=NULL; ++i )
+		    free(ret[i]);
+		free(ret);
+		ret = gc->choices = ret2;
+		i = gc->ctot = cnt;
+	    }
+	}
+	if ( gc->ctot>=30 ) {
 	    /* Too many choices. Don't popup a list of them */
 	    gc->choices = NULL;
 	    for ( i=0; ret[i]!=NULL; ++i )
@@ -2917,7 +2974,7 @@ return( event->u.chr.keysym == GK_Escape );	/* Eat an escape, other chars will b
 return( true );
     gc->selected += dir;
     if ( gc->selected!=-1 )
-	GTextFieldSetTitle(&gt->g,gc->choices[gc->selected]);
+	GTextFieldSetTitleRmDotDotDot(&gt->g,gc->choices[gc->selected]);
     GTextFieldChanged(gt,-1);
     GDrawRequestExpose(gc->choice_popup,NULL,false);
 return( true );
