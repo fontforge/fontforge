@@ -368,7 +368,7 @@ int GotoChar(SplineFont *sf,EncMap *map) {
 	gcd[1].creator = GTextCompletionCreate;
     else {
 	gcd[1].gd.u.list = ranges;
-	gcd[1].creator = GListCompletionCreate;
+	gcd[1].creator = GListFieldCreate;
     }
 
     gcd[2].gd.pos.x = 20-3; gcd[2].gd.pos.y = 90-35-3;
@@ -398,6 +398,7 @@ int GotoChar(SplineFont *sf,EncMap *map) {
 
     GGadgetsCreate(gw,gcd);
     GCompletionFieldSetCompletion(gcd[1].ret,GotoCompletion);
+    GCompletionFieldSetCompletionMode(gcd[1].ret,true);
     GDrawSetVisible(gw,true);
     while ( !gd.done )
 	GDrawProcessOneEvent(NULL);

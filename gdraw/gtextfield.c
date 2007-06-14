@@ -2157,6 +2157,10 @@ static void gtextfield_resize(GGadget *g, int32 width, int32 height ) {
     }
     _ggadget_resize(g,gtwidth, gtheight);
 
+    if ( gt->hsb==NULL && gt->xoff_left!=0 && !gt->multi_line &&
+	    GDrawGetTextWidth(gt->g.base,gt->text,-1,NULL)<gt->g.inner.width )
+	gt->xoff_left = 0;
+
     GTextFieldRefigureLines(gt,0);
     if ( gt->vsb!=NULL ) {
 	GScrollBarSetBounds(&gt->vsb->g,0,gt->lcnt-1,gt->g.inner.height/gt->fh);
@@ -2666,7 +2670,7 @@ return;
     GTextFieldChanged(&ge->gt,i);
 }
 
-GGadget *GListFieldCreate(struct gwindow *base, GGadgetData *gd,void *data) {
+GGadget *GSimpleListFieldCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     GListField *ge = gcalloc(1,sizeof(GListField));
 
     ge->gt.listfield = true;
@@ -2677,7 +2681,39 @@ GGadget *GListFieldCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 return( &ge->gt.g );
 }
 
-GGadget *GListCompletionCreate(struct gwindow *base, GGadgetData *gd,void *data) {
+static unichar_t **GListField_NameCompletion(GGadget *t,int from_tab) {
+    const unichar_t *spt; unichar_t **ret;
+    GTextInfo **ti;
+    int32 len;
+    int i, cnt, doit, match_len;
+
+    spt = _GGadgetGetTitle(t);
+    if ( spt==NULL )
+return( NULL );
+
+    match_len = u_strlen(spt);
+    ti = GGadgetGetList(t,&len);
+    ret = NULL;
+    for ( doit=0; doit<2; ++doit ) {
+	cnt=0;
+	for ( i=0; i<len; ++i ) {
+	    if ( u_strncmp(ti[i]->text,spt,match_len)==0 ) {
+		if ( doit )
+		    ret[cnt] = u_copy(ti[i]->text);
+		++cnt;
+	    }
+	}
+	if ( doit )
+	    ret[cnt] = NULL;
+	else if ( cnt==0 )
+return( NULL );
+	else
+	    ret = galloc((cnt+1)*sizeof(unichar_t *));
+    }
+return( ret );
+}
+
+GGadget *GListFieldCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     GListField *ge = gcalloc(1,sizeof(GCompletionField));
 
     ge->gt.listfield = true;
@@ -2685,7 +2721,8 @@ GGadget *GListCompletionCreate(struct gwindow *base, GGadgetData *gd,void *data)
 	ge->ti = GTextInfoArrayFromList(gd->u.list,&ge->ltot);
     ge->gt.accepts_tabs = true;
     ge->gt.completionfield = true;
-    ge->gt.was_completing = true;
+    /* ge->gt.was_completing = true; */
+    ((GCompletionField *) ge)->completion = GListField_NameCompletion;
     _GTextFieldCreate(&ge->gt,base,gd,data,&gtextfield_box);
     ge->gt.g.funcs = &glistfield_funcs;
 return( &ge->gt.g );
@@ -2888,4 +2925,8 @@ return( true );
 
 void GCompletionFieldSetCompletion(GGadget *g,GTextCompletionHandler completion) {
     ((GCompletionField *) g)->completion = completion;
+}
+
+void GCompletionFieldSetCompletionMode(GGadget *g,int enabled) {
+    ((GTextField *) g)->was_completing = enabled;
 }
