@@ -978,7 +978,7 @@ return( NULL );
 /* ************************************************************************** */
 
 static int TextWidth1(struct font_data *fd,char *transbuf,int len) {
-    int offset = fd->info->min_char_or_byte2, ch1, ch2;
+    int offset = fd->info->min_char_or_byte2, ch1, ch2, bound = fd->info->max_char_or_byte2;
     register XCharStruct *per_char = fd->info->per_char;
     register unsigned char *tpt = (unsigned char *) transbuf, *end = tpt+len;
     register struct kern_info **kerns=fd->kerns, *kpt;
@@ -990,7 +990,7 @@ return( len*fd->info->max_bounds.width );
     if ( kerns==NULL ) {
 	ch1 = *tpt-offset;
 	while ( tpt<end ) {
-	    if ( ch1>=0 )
+	    if ( ch1>=0 && *tpt<bound )
 		width += per_char[ch1].width;
 	    ch1 = *++tpt-offset;
 	}
