@@ -9216,9 +9216,8 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	}
     }
     if ( fv->showhmetrics&fvm_baseline ) {
-	int baseline = (fv->sf->ascent*fv->magnify*fv->show->pixelsize)/em+1;
 	for ( i=0; i<=fv->rowcnt; ++i )
-	    GDrawDrawLine(pixmap,0,i*fv->cbh+fv->lab_height+baseline,fv->width,i*fv->cbh+fv->lab_height+baseline,METRICS_BASELINE);
+	    GDrawDrawLine(pixmap,0,i*fv->cbh+fv->lab_height+fv->show->ascent+1,fv->width,i*fv->cbh+fv->lab_height+fv->show->ascent+1,METRICS_BASELINE);
     }
     GDrawPopClip(pixmap,&old);
     GDrawSetDither(NULL, true);
