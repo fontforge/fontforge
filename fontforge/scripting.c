@@ -9722,14 +9722,14 @@ return;				/* Error return */
 
 #if !defined(_NO_FFSCRIPT) || !defined(_NO_PYTHON)
 
-void ExecuteScriptFile(FontView *fv, char *filename) {
+void ExecuteScriptFile(FontView *fv, SplineChar *sc, char *filename) {
 #if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
-    if ( PythonLangFromExt(filename))
-	PyFF_ScriptFile(fv,filename);
+    if ( sc!=NULL || PythonLangFromExt(filename))
+	PyFF_ScriptFile(fv,sc,filename);
     else
 	ExecuteNativeScriptFile(fv,filename);
 #elif !defined(_NO_PYTHON)
-    PyFF_ScriptFile(fv,filename);
+    PyFF_ScriptFile(fv,sc,filename);
 #elif !defined(_NO_FFSCRIPT)
     ExecuteNativeScriptFile(fv,filename);
 #endif
@@ -9739,6 +9739,7 @@ void ExecuteScriptFile(FontView *fv, char *filename) {
 struct sd_data {
     int done;
     FontView *fv;
+    SplineChar *sc;
     GWindow gw;
     int oldh;
 };
@@ -9829,7 +9830,7 @@ static void ExecPython(GGadget *g, GEvent *e) {
     running_script = true;
 
     str = GGadgetGetTitle8(GWidgetGetControl(sd->gw,CID_Script));
-    PyFF_ScriptString(sd->fv,str);
+    PyFF_ScriptString(sd->fv,sd->sc,str);
     free(str);
     running_script = false;
 }
@@ -9924,7 +9925,7 @@ return( true );
 #endif
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-void ScriptDlg(FontView *fv) {
+void ScriptDlg(FontView *fv,CharView *cv) {
 # if defined(FONTFORGE_CONFIG_GTK)
 # elif defined( FONTFORGE_CONFIG_GDRAW )
     GRect pos;
@@ -9938,6 +9939,7 @@ void ScriptDlg(FontView *fv) {
 
     memset(&sd,0,sizeof(sd));
     sd.fv = fv;
+    sd.sc = cv==NULL ? NULL : cv->sc;
     sd.oldh = pos.height = GDrawPointsToPixels(NULL,SD_Height);
 
     if ( gw==NULL ) {
@@ -10035,6 +10037,9 @@ void ScriptDlg(FontView *fv) {
 
 	GGadgetsCreate(gw,gcd);
     }
+#if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_FF),cv==NULL);
+#endif
     sd.gw = gw;
     GDrawSetUserData(gw,&sd);
     GWidgetIndicateFocusGadget(GWidgetGetControl(gw,CID_Script));

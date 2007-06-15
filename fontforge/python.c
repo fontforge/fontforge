@@ -51,6 +51,7 @@
 #include <unistd.h>
 
 static FontView *fv_active_in_ui = NULL;
+static SplineChar *sc_active_in_ui = NULL;
 
 /* A contour is a list of points, some on curve, some off. */
 /* A closed contour is a circularly linked list */
@@ -439,6 +440,14 @@ static PyObject *PyFF_ActiveFont(PyObject *self, PyObject *args) {
 Py_RETURN_NONE;
 
 return( PyFV_From_FV_I( fv_active_in_ui ));
+}
+
+static PyObject *PyFF_ActiveGlyph(PyObject *self, PyObject *args) {
+
+    if ( sc_active_in_ui==NULL )
+Py_RETURN_NONE;
+
+return( PySC_From_SC_I( sc_active_in_ui ));
 }
 
 static FontView *FVAppend(FontView *fv) {
@@ -9443,7 +9452,10 @@ static PyMethodDef FontForge_methods[] = {
     { "printSetup", PyFF_printSetup, METH_VARARGS, "Prepare to print a font sample (select default printer or file, page size, etc.)" },
     { "parseTTInstrs", PyFF_ParseTTFInstrs, METH_VARARGS, "Takes a string and parses it into a tuple of truetype instruction bytes"},
     { "unParseTTInstrs", PyFF_UnParseTTFInstrs, METH_VARARGS, "Takes a tuple of truetype instruction bytes and converts to a human readable string"},
-    { "activeFontInUI", PyFF_ActiveFont, METH_NOARGS, "If invoked from the UI, this returns the currently active font"},
+    { "activeFont", PyFF_ActiveFont, METH_NOARGS, "If invoked from the UI, this returns the currently active font. When not in UI this returns None"},
+    /* Deprecated name for the above */
+    { "activeFontInUI", PyFF_ActiveFont, METH_NOARGS, "If invoked from the UI, this returns the currently active font. When not in UI this returns None"},
+    { "activeGlyph", PyFF_ActiveGlyph, METH_NOARGS, "If invoked from the UI, this returns the currently active glyph (or None)"},
     {NULL}  /* Sentinel */
 };
 
@@ -9626,10 +9638,11 @@ void PyFF_Main(int argc,char **argv,int start) {
     exit( Py_Main( i-start+1,newargv ));
 }
 
-void PyFF_ScriptFile(FontView *fv,char *filename) {
+void PyFF_ScriptFile(FontView *fv,SplineChar *sc, char *filename) {
     FILE *fp = fopen(filename,"r");
 
     fv_active_in_ui = fv;		/* Make fv known to interpreter */
+    sc_active_in_ui = sc;		/* Make sc known to interpreter */
     if ( fp==NULL )
 	LogError( "Can't open %s", filename );
     else {
@@ -9638,9 +9651,10 @@ void PyFF_ScriptFile(FontView *fv,char *filename) {
     }
 }
 
-void PyFF_ScriptString(FontView *fv,char *str) {
+void PyFF_ScriptString(FontView *fv,SplineChar *sc, char *str) {
 
     fv_active_in_ui = fv;		/* Make fv known to interpreter */
+    sc_active_in_ui = sc;		/* Make sc known to interpreter */
     PyRun_SimpleString(str);
 }
 
