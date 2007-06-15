@@ -3926,10 +3926,9 @@ return( sc );
 	    sc->layers[ly_fore].refs->transform[2]==0 && sc->layers[ly_fore].refs->transform[3]==1 &&
 	    sc->layers[ly_fore].refs->transform[4]==0 && sc->layers[ly_fore].refs->transform[5]==0 ) {
 	char *basename = sc->layers[ly_fore].refs->sc->name;
-	int len = strlen(basename);
-	if ( strncmp(sc->name,basename,len)==0 &&
-		(sc->name[len]=='.' || sc->name[len]=='\0'))
-	    matched = sc->layers[ly_fore].refs->sc;
+	if ( strcmp(sc->name,basename)!=0 )
+    break;
+	matched = sc->layers[ly_fore].refs->sc;
 	sc = sc->layers[ly_fore].refs->sc;
     }
 return( matched );
