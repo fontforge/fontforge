@@ -2015,14 +2015,23 @@ static void Bitmapper(Context *c,int isavail) {
 }
 
 static void bBitmapsAvail(Context *c) {
-    Bitmapper(c,true);
+    int shows_bitmap = false;
+    BDFFont *bdf;
+
     if ( c->curfv->show!=NULL ) {
+	for ( bdf=c->curfv->sf->bitmaps; bdf!=NULL; bdf = bdf->next )
+	    if ( bdf==c->curfv->show )
+	break;
+	shows_bitmap = bdf!=NULL;
+    }
+    Bitmapper(c,true);
+    if ( shows_bitmap && c->curfv->show!=NULL ) {
 	BDFFont *bdf;
 	for ( bdf=c->curfv->sf->bitmaps; bdf!=NULL; bdf = bdf->next )
 	    if ( bdf==c->curfv->show )
 	break;
 	if ( bdf==NULL )
-	    c->curfv->show = NULL;
+	    c->curfv->show = c->curfv->sf->bitmaps;
     }
 }
 
@@ -9558,7 +9567,7 @@ static void _CheckIsScript(int argc, char *argv[]) {
     char *arg;
 
 #ifndef _NO_PYTHON
-    FontForge_PythonInit(); /* !!!!!! debug (valgrind doesn't like python) */
+    /* FontForge_PythonInit(); /* !!!!!! debug (valgrind doesn't like python) */
 #endif
     if ( argc==1 )
 return;
@@ -9979,7 +9988,7 @@ void ScriptDlg(FontView *fv,CharView *cv) {
 	gcd[i++].creator = GRadioCreate;
 
 	gcd[i].gd.pos.x = 70; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y;
-	gcd[i].gd.flags = gg_visible | gg_enabled;
+	gcd[i].gd.flags = gg_visible | gg_enabled;	/* disabled if cv!=NULL later */
 	gcd[i].gd.cid = CID_FF;
 	label[i].text = (unichar_t *) _("_FF");
 	label[i].text_is_1byte = true;
