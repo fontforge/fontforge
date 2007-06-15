@@ -822,7 +822,7 @@ extern void SCLayersChange(SplineChar *sc);
 extern void SFLayerChange(SplineFont *sf);
 extern void SCTile(SplineChar *sc);
 
-extern void ExecuteScriptFile(FontView *fv, char *filename);
+extern void ExecuteScriptFile(FontView *fv, SplineChar *sc, char *filename);
 extern void DictionaryFree(struct dictionary *dica);
 
 extern void BCCharChangedUpdate(BDFChar *bc);
@@ -1268,7 +1268,7 @@ extern void MetaFont(FontView *fv,CharView *cv,SplineChar *sc);
 extern void CVConstrainSelection(CharView *cv,int type);
 extern void CVMakeParallel(CharView *cv);
 
-extern void ScriptDlg(FontView *fv);
+extern void ScriptDlg(FontView *fv,CharView *cv);
 
 # if HANYANG
 extern void MenuNewComposition(GWindow gw, struct gmenuitem *, GEvent *);

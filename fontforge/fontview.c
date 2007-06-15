@@ -1631,7 +1631,7 @@ void FontViewMenu_ExecScript(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
 
-    ScriptDlg(fv);
+    ScriptDlg(fv,NULL);
 }
 #endif
 
@@ -9366,7 +9366,7 @@ static void FVChar(FontView *fv,GEvent *event) {
 	int index = event->u.chr.keysym-'1';
 	if ( index<0 ) index = 9;
 	if ( script_filenames[index]!=NULL )
-	    ExecuteScriptFile(fv,script_filenames[index]);
+	    ExecuteScriptFile(fv,NULL,script_filenames[index]);
 #endif
     } else if ( event->u.chr.keysym == GK_Left ||
 	    event->u.chr.keysym == GK_Tab ||

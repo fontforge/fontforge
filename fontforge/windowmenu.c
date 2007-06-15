@@ -189,7 +189,7 @@ static void ScriptSelect(GWindow base,struct gmenuitem *mi,GEvent *e) {
     /*  refer to something out of bounds. Hence the check */
     if ( index<0 || script_filenames[index]==NULL )
 return;
-    ExecuteScriptFile(fv,script_filenames[index]);
+    ExecuteScriptFile(fv,NULL,script_filenames[index]);
 }
 
 /* Builds up a menu containing any user defined scripts */
@@ -375,7 +375,7 @@ static void ScriptSelect(GtkMenuItem *menuitem, gpointer user_data) {
     /*  refer to something out of bounds. Hence the check */
     if ( index<0 || script_filenames[index]==NULL )
 return;
-    ExecuteScriptFile(fv,script_filenames[index]);
+    ExecuteScriptFile(fv,NULL,script_filenames[index]);
 }
 
 void ScriptMenuBuild(GtkMenuItem *menuitem, gpointer user_data) {

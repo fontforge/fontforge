@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 9-Jun-2007 -->
+  <!-- AP: Last modified: 14-Jun-2007 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -215,10 +215,17 @@
       <TD>Returns a tuple of all fonts currently loaded into fontforge for editing</TD>
     </TR>
     <TR>
-      <TD><CODE>activeFontInUI</CODE></TD>
+      <TD><CODE>activeFont</CODE></TD>
       <TD><CODE>()</CODE></TD>
       <TD>If the script were invoked from the File-&gt;Execute Script... dialog,
 	this returns the font that was active at the time. Otherwise it returns None.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>activeGlyph</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>If the script were invoked from the File-&gt;Execute Script... dialog
+	from an outline glyph window this returns the glyph that was active at the
+	time. Otherwise it returns None.</TD>
     </TR>
     <TR>
       <TD><CODE>fontsInFile</CODE></TD>
