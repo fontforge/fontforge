@@ -40,7 +40,7 @@ static void SpAdjustTo(SplinePoint *sp,real newx, real newy) {
 }
 
 static void SpaceOne(CharView *cv,SplinePoint *sp) {
-    SplinePoint *prev = sp->prev->from, *next = sp->next->to;
+    SplinePoint *prev, *next;
     BasePoint v, new;
     real len, off;
     /* Rotate the coordinate system so that one axis is parallel to the */
@@ -49,9 +49,18 @@ static void SpaceOne(CharView *cv,SplinePoint *sp) {
     /*  the axis (ie. the other coord) remains unchanged */
     /* Of course we do this with dot products rather than actual rotations */
 
+    if ( sp->next==NULL || sp->prev==NULL )
+return;
+
+    prev = sp->prev->from; next = sp->next->to;
+    if ( prev==next )
+return;
+
     v.x = next->me.x - prev->me.x;
     v.y = next->me.y - prev->me.y;
     len = sqrt(v.x*v.x + v.y*v.y);
+    if ( len==0 )
+return;
     v.x /= len; v.y /= len;
     off = (sp->me.x-prev->me.x)*v.y - (sp->me.y-prev->me.y)*v.x;
     new.x = (next->me.x + prev->me.x)/2 + off*v.y;
