@@ -66,6 +66,8 @@ typedef struct sftextarea {
     unsigned int donthook: 1;	/* Used when the tf is part of a the gchardlg.c */
     unsigned int numericfield: 1;
     unsigned int incr_down: 1;	/* Direction of increments when numeric_scroll events happen */
+    unsigned int completionfield: 1;
+    unsigned int was_completing: 1;
     uint8 fh;
     uint8 as;
     uint8 nw;			/* Width of one character (an "n") */
@@ -73,7 +75,7 @@ typedef struct sftextarea {
     int16 sel_start, sel_end, sel_base;
     int16 sel_oldstart, sel_oldend, sel_oldbase;
     int16 dd_cursor_pos;
-    uint32 *text, *oldtext;	/* Input glyphs (in unicode) */
+    unichar_t *text, *oldtext;	/* Input glyphs (in unicode) */
     FontInstance *font;		/* pointless */
     GTimer *pressed;
     GTimer *cursor;
@@ -102,7 +104,8 @@ typedef struct sftextarea {
     } *sfmaps;
     FontData *generated;
     void *cbcontext;
-    void (*changefontcallback)(void *,SplineFont *,enum sftf_fonttype,int size,int aa);
+    void (*changefontcallback)(void *,SplineFont *,enum sftf_fonttype,int size,int aa,
+	    uint32 script, uint32 lang, uint32 *features);
     FontData *last_fd;
 } SFTextArea;
 
@@ -119,6 +122,31 @@ static unichar_t nullstr[] = { 0 },
 
 static int SFTextArea_Show(SFTextArea *st, int pos);
 static void GTPositionGIC(SFTextArea *st);
+
+static uint32 *TagsCopy(uint32 *tags) {
+    int i;
+    uint32 *ret;
+
+    if ( tags==NULL )
+return( NULL );
+    for ( i=0; tags[i]!=0; ++i );
+    ret = galloc((i+1)*sizeof(uint32));
+    for ( i=0; tags[i]!=0; ++i )
+	ret[i] = tags[i];
+    ret[i] = 0;
+return( ret );
+}
+
+static int TagsSame(uint32 *tags1, uint32 *tags2) {
+    int i;
+
+    if ( tags1==NULL || tags2==NULL )
+return( tags1==NULL && tags2==NULL );
+
+    for ( i=0; tags1[i]!=0 && tags1[i]==tags2[i]; ++i );
+return( tags1[i]==tags2[i] );
+return( false );
+}
 
 static void SFTextAreaProcessBi(SFTextArea *st, int start_of_change) {
     int i, pos;
@@ -541,6 +569,7 @@ static void fontlistfree(struct fontlist *fl ) {
 
     for ( ; fl!=NULL; fl=nfl ) {
 	nfl = fl->next;
+	free(fl->feats);
 	chunkfree(fl,sizeof(struct fontlist));
     }
 }
@@ -579,6 +608,7 @@ static struct fontlist *fontlistcopy(struct fontlist *fl ) {
     for ( ; fl!=NULL; fl=fl->next ) {
 	nfl = chunkalloc(sizeof(struct fontlist));
 	*nfl = *fl;
+	nfl->feats = TagsCopy(fl->feats);
 	if ( nhead == NULL )
 	    nhead = nfl;
 	else
@@ -612,9 +642,10 @@ static void fontlistmergecheck(SFTextArea *st) {
 return;
     fontlistcheck(st);
     for ( fl = st->fontlist; fl!=NULL; fl=next ) {
-	for ( next=fl->next; next!=NULL && next->fd==fl->fd ; next = fl->next ) {
+	for ( next=fl->next; next!=NULL && next->fd==fl->fd && next->lang==fl->lang && next->script==fl->script && TagsSame(next->feats,fl->feats); next = fl->next ) {
 	    fl->next = next->next;
 	    fl->end = next->end;
+	    free(next->feats);
 	    chunkfree(next,sizeof(struct fontlist));
 	}
     }
@@ -643,6 +674,7 @@ return;
 	fl->end = st->sel_start + rpllen;
 	for ( test=fl->next; test!=NULL && st->sel_end>=test->end; test=next ) {
 	    next = test->next;
+	    free(test->feats);
 	    chunkfree(test,sizeof(struct fontlist));
 	    checkmerge=true;
 	}
@@ -1819,9 +1851,10 @@ static void STChangeCheck(SFTextArea *st) {
     struct fontlist *fl;
 
     for ( fl=st->fontlist; fl!=NULL && fl->end<st->sel_end; fl=fl->next );
-    if ( fl==NULL || fl->fd==st->last_fd || st->changefontcallback==NULL )
+    if ( fl==NULL || /* fl->fd==st->last_fd ||*/ st->changefontcallback==NULL )
 return;
-    (st->changefontcallback)(st->cbcontext,fl->fd->sf,fl->fd->fonttype,fl->fd->pixelsize,fl->fd->antialias);
+    (st->changefontcallback)(st->cbcontext,fl->fd->sf,fl->fd->fonttype,
+	    fl->fd->pixelsize,fl->fd->antialias,fl->script,fl->lang,fl->feats);
     st->last_fd = fl->fd;
 }
     
@@ -2710,18 +2743,9 @@ return( ret );
 }
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-int SFTFSetFont(GGadget *g, int start, int end, SplineFont *sf,
-	enum sftf_fonttype fonttype, int size, int antialias) {
-    /* Sets the font for the region between start and end. If start==-1 it */
-    /*  means use the current selection (and ignore end). If end==-1 it means */
-    /*  strlen(g->text) */
-    /* I'm not going to mess with making this undoable. Nor am I going to clear*/
-    /*  out the undoes. So if someone does an undo after this it will undo */
-    /*  two things. Tough. */
-    SFTextArea *st = (SFTextArea *) g;
-    FontData *cur;
+static int SFTF_NormalizeStartEnd(SFTextArea *st, int start, int *_end) {
+    int end = *_end;
     int len = u_strlen(st->text);
-    struct fontlist *new, *fl, *prev, *next;
 
     if ( st->generated==NULL ) {
 	start = 0;
@@ -2734,60 +2758,246 @@ int SFTFSetFont(GGadget *g, int start, int end, SplineFont *sf,
     if ( end>len ) end = len;
     if ( start<0 ) start = 0;
     if ( start>end ) start = end;
+    *_end = end;
+return( start );
+}
+
+static struct fontlist *SFTFBreakFontList(SFTextArea *st,int start,int end) {
+    /* We are going to change some item in the fontlist between start and end */
+    /* Make sure that after this call there will be an entry which starts at */
+    /*  start and (perhaps) another which ends at end */
+    struct fontlist *new, *fl, *prev, *next, *first;
+
+    if ( st->fontlist==NULL ) {
+	new = chunkalloc(sizeof(struct fontlist));
+	new->start = start;
+	new->end = end;
+	st->fontlist = new;
+return( new );
+    }
+
+    prev = next = NULL;
+    for ( fl=st->fontlist; fl!=NULL && fl->end<start; fl=fl->next )
+	prev = fl;
+    if ( fl==NULL ) {
+	fl = chunkalloc(sizeof(struct fontlist));
+	*fl = *prev;
+	fl->feats = TagsCopy(prev->feats);
+	fl->start = prev->end;
+	fl->end = end;
+    }
+    if ( fl->start == start )
+	first = fl;
+    else {
+	new = chunkalloc(sizeof(struct fontlist));
+	*new = *fl;
+	new->feats = TagsCopy(fl->feats);
+	new->start = start;
+	fl->end = start;
+	fl->next = new;
+	first = new;
+    }
+    prev = first;
+    for ( fl=first; fl!=NULL && fl->start<end ; fl=fl->next )
+	prev = fl;
+    if ( fl==NULL && prev->end<end )
+	prev->end = end;
+    if ( prev->end>end ) {
+	fl = chunkalloc(sizeof(struct fontlist));
+	*fl = *prev;
+	fl->feats = TagsCopy(prev->feats);
+	fl->start = end;
+	prev->end = end;
+    }
+return( first );
+}
+
+static void SFTFMetaChangeCleanup(SFTextArea *st,int start) {
+    fontlistmergecheck(st);
+    SFTextAreaRefigureLines(st, start);
+    GDrawRequestExpose(st->g.base,&st->g.inner,false);
+    if ( st->changefontcallback != NULL )
+	STChangeCheck(st);
+}
+
+int SFTFSetFontData(GGadget *g, int start, int end, SplineFont *sf,
+	enum sftf_fonttype fonttype, int size, int antialias) {
+    /* Sets the font for the region between start and end. If start==-1 it */
+    /*  means use the current selection (and ignore end). If end==-1 it means */
+    /*  strlen(g->text) */
+    /* I'm not going to mess with making this undoable. Nor am I going to clear*/
+    /*  out the undoes. So if someone does an undo after this it will undo */
+    /*  two things. Tough. */
+    SFTextArea *st = (SFTextArea *) g;
+    FontData *cur;
+    struct fontlist *fl;
 
     cur = FindFontData(st, sf, fonttype, size, antialias);
     if ( cur==NULL )
 return( false );
 
-    new = chunkalloc(sizeof(struct fontlist));
-    new->start = start;
-    new->end = end;
-    new->fd = cur;
-
-    prev = next = NULL;
-    for ( fl=st->fontlist; fl!=NULL; fl=next ) {
-	next = fl->next;
-	if ( new->end>=fl->start && new->end<fl->end ) {
-	    if ( new->end==fl->start )
-    break;
-	    next = chunkalloc(sizeof(struct fontlist));
-	    *next = *fl;
-	    next->start = new->end;
-	    fl->end = new->end;
-	}
-	if ( fl->start>=new->start && fl->end<=new->end ) {
-	    chunkfree(fl,sizeof(struct fontlist));
-	    if ( prev==NULL )
-		st->fontlist = next;
-	    else
-		prev->next = next;
-	} else if ( new->start>fl->start && new->start<fl->end ) {
-	    fl->end = new->start;
-	    prev = fl;
-	} else if ( fl->end<=new->start ) {
-	    prev = fl;
-	} else if ( fl->start>=new->end )
-    break;
+    start = SFTF_NormalizeStartEnd(st, start, &end);
+    fl = SFTFBreakFontList(st,start,end);
+    while ( fl!=NULL && fl->end<=end ) {
+	fl->fd = cur;
+	fl = fl->next;
     }
-    new->next = fl;
-    if ( prev==NULL )
-	st->fontlist = new;
-    else
-	prev->next = new;
-    fontlistmergecheck(st);
-    SFTextAreaRefigureLines(st, start);
-    GDrawRequestExpose(g->base,&g->inner,false);
-    if ( st->changefontcallback != NULL )
-	STChangeCheck(st);
+
+    SFTFMetaChangeCleanup(st,start);
+return( true );
+}
+
+int SFTFSetFont(GGadget *g, int start, int end, SplineFont *sf) {
+    SFTextArea *st = (SFTextArea *) g;
+    FontData *cur;
+    struct fontlist *fl;
+
+    start = SFTF_NormalizeStartEnd(st, start, &end);
+    fl = SFTFBreakFontList(st,start,end);
+    while ( fl!=NULL && fl->end<=end ) {
+	if ( fl->fd->sf!=sf ) {
+	    cur = FindFontData(st, sf, fl->fd->fonttype, fl->fd->pixelsize, fl->fd->antialias);
+	    if ( cur!=NULL )
+		fl->fd = cur;
+	}
+	fl = fl->next;
+    }
+
+    SFTFMetaChangeCleanup(st,start);
+return( true );
+}
+
+int SFTFSetFontType(GGadget *g, int start, int end, enum sftf_fonttype fonttype) {
+    SFTextArea *st = (SFTextArea *) g;
+    FontData *cur;
+    struct fontlist *fl;
+
+    start = SFTF_NormalizeStartEnd(st, start, &end);
+    fl = SFTFBreakFontList(st,start,end);
+    while ( fl!=NULL && fl->end<=end ) {
+	if ( fl->fd->fonttype!=fonttype ) {
+	    cur = FindFontData(st, fl->fd->sf, fonttype, fl->fd->pixelsize, fl->fd->antialias);
+	    if ( cur!=NULL )
+		fl->fd = cur;
+	}
+	fl = fl->next;
+    }
+
+    SFTFMetaChangeCleanup(st,start);
+return( true );
+}
+
+int SFTFSetSize(GGadget *g, int start, int end, int pixelsize) {
+    SFTextArea *st = (SFTextArea *) g;
+    FontData *cur;
+    struct fontlist *fl;
+
+    start = SFTF_NormalizeStartEnd(st, start, &end);
+    fl = SFTFBreakFontList(st,start,end);
+    while ( fl!=NULL && fl->end<=end ) {
+	if ( fl->fd->pixelsize!=pixelsize ) {
+	    cur = FindFontData(st, fl->fd->sf, fl->fd->fonttype, pixelsize, fl->fd->antialias);
+	    if ( cur!=NULL )
+		fl->fd = cur;
+	}
+	fl = fl->next;
+    }
+
+    SFTFMetaChangeCleanup(st,start);
+return( true );
+}
+
+int SFTFSetAntiAlias(GGadget *g, int start, int end, int antialias) {
+    SFTextArea *st = (SFTextArea *) g;
+    FontData *cur;
+    struct fontlist *fl;
+
+    start = SFTF_NormalizeStartEnd(st, start, &end);
+    fl = SFTFBreakFontList(st,start,end);
+    while ( fl!=NULL && fl->end<=end ) {
+	if ( fl->fd->antialias!=antialias ) {
+	    cur = FindFontData(st, fl->fd->sf, fl->fd->fonttype, fl->fd->pixelsize, antialias);
+	    if ( cur!=NULL )
+		fl->fd = cur;
+	}
+	fl = fl->next;
+    }
+
+    SFTFMetaChangeCleanup(st,start);
+return( true );
+}
+
+int SFTFSetScriptLang(GGadget *g, int start, int end, uint32 script, uint32 lang) {
+    SFTextArea *st = (SFTextArea *) g;
+    struct fontlist *fl;
+
+    start = SFTF_NormalizeStartEnd(st, start, &end);
+    fl = SFTFBreakFontList(st,start,end);
+    while ( fl!=NULL && fl->end<=end ) {
+	if ( fl->script != script ) {
+	    free(fl->feats);
+	    fl->feats = TagsCopy(StdFeaturesOfScript(script));
+	}
+	fl->script = script;
+	fl->lang = lang;
+	fl = fl->next;
+    }
+
+    SFTFMetaChangeCleanup(st,start);
+return( true );
+}
+
+int SFTFSetFeatures(GGadget *g, int start, int end, uint32 *features) {
+    SFTextArea *st = (SFTextArea *) g;
+    struct fontlist *fl;
+
+    start = SFTF_NormalizeStartEnd(st, start, &end);
+    fl = SFTFBreakFontList(st,start,end);
+    while ( fl!=NULL && fl->end<=end ) {
+	free(fl->feats);
+	fl->feats = TagsCopy(features);
+	fl = fl->next;
+    }
+
+    SFTFMetaChangeCleanup(st,start);
 return( true );
 }
 
 void SFTFRegisterCallback(GGadget *g, void *cbcontext,
-	void (*changefontcallback)(void *,SplineFont *,enum sftf_fonttype,int size,int aa)) {
+	void (*changefontcallback)(void *,SplineFont *,enum sftf_fonttype,int size,int aa, uint32 script, uint32 lang, uint32 *feats)) {
     SFTextArea *st = (SFTextArea *) g;
 
     st->cbcontext = cbcontext;
     st->changefontcallback = changefontcallback;
+}
+
+void SFTFProvokeCallback(GGadget *g) {
+    SFTextArea *st = (SFTextArea *) g;
+    st->last_fd = NULL;
+    STChangeCheck(st);
+}
+
+void SFTFInitLangSys(GGadget *g, int end, uint32 script, uint32 lang) {
+    SFTextArea *st = (SFTextArea *) g;
+    struct fontlist *prev, *next;
+
+    if ( (st->text!=NULL && st->text[0]!='\0') || st->fontlist==NULL ) {
+	IError( "SFTFInitLangSys can only be called during initialization" );
+return;
+    }
+    if ( st->fontlist!=NULL && st->fontlist->script==0 ) {
+	next = st->fontlist;
+    } else {
+	for ( prev = st->fontlist; prev->next!=NULL; prev=prev->next );
+	next = chunkalloc(sizeof(struct fontlist));
+	*next = *prev;
+	prev->next = next;
+	next->start = prev->end;
+    }
+    next->script = script;
+    next->lang = lang;
+    next->end = end;
+    next->feats = TagsCopy(StdFeaturesOfScript(script));
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 

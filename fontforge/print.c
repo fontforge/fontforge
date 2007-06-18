@@ -2909,7 +2909,7 @@ static char *_simple[] = {
     " A quick brown fox jumps over the lazy dog.",
     NULL
 };
-static char *_simplechoices[] = {
+static char *_simplelatnchoices[] = {
 /* English */
     " A quick brown fox jumps over the lazy dog.",
     " Few zebras validate my paradox, quoth Jack Xeno",
@@ -2935,6 +2935,20 @@ static char *_simplechoices[] = {
 /* Czech (from http://shiar.net/misc/txt/pangram.en) */
     " příliš žluťoučký kůň úpěl ďábelské kódy ",
     NULL
+};
+static uint32 _simplelatnlangs[] = {
+    CHR('E','N','G',' '),
+    CHR('E','N','G',' '),
+    CHR('E','N','G',' '),
+    CHR('E','N','G',' '),
+    CHR('S','V','E',' '),
+    CHR('D','E','U',' '),
+    CHR('F','R','A',' '),
+    CHR('F','R','A',' '),
+    CHR('N','L','D',' '),
+    CHR('P','L','K',' '),
+    CHR('S','L','V',' '),
+    CHR('C','S','Y',' ')
 };
 
 /* Hebrew (from http://shiar.net/misc/txt/pangram.en) */
@@ -2963,6 +2977,10 @@ static char *_simplecyrillchoices[] = {
 /* "In the deep forests of South citrus lived... /answer/Yeah but falsificated one!" */
     " В чащах юга жил-был цитрус -- да, но фальшивый экземпляръ!",
     NULL
+};
+static uint32 _simplecyrilliclangs[] = {
+    CHR('R','U','S',' '),
+    CHR('R','U','S',' ')
 };
 /* Russian */
 static char *_annakarenena[] = {
@@ -3328,6 +3346,7 @@ static void OrderSampleByLang(void) {
     const char *lang = getenv("LANG");
     char langbuf[12], *pt;
     int i,j;
+    int simple_pos;
 
     if ( lang==NULL )
 return;
@@ -3352,10 +3371,30 @@ return;
 	    }
     }
     out:
+    simple_pos = 0;
     if ( strcmp(langbuf,"sv")==0 )
-	_simple[0] = _simplechoices[4];
-    else if ( strcmp(langbuf,"en")==0 && _simple[0] == _simplechoices[4] )
-	_simple[0] = _simplechoices[0];
+	simple_pos = 4;
+    else if ( strcmp(langbuf,"de")==0 )
+	simple_pos = 5;
+    else if ( strcmp(langbuf,"fr")==0 )
+	simple_pos = 6 + (rand()&1);
+    else if ( strcmp(langbuf,"nl")==0 )
+	simple_pos = 8;
+    else if ( strcmp(langbuf,"pl")==0 )
+	simple_pos = 9;
+    else if ( strcmp(langbuf,"pl")==0 )
+	simple_pos = 10;
+    else if ( strcmp(langbuf,"cz")==0 )
+	simple_pos = 11;
+    else
+	simple_pos = rand()&3;
+    _simple[0] = _simplelatnchoices[simple_pos];
+    sample[0].lang = _simplelatnlangs[simple_pos];
+
+    for ( j=0; _simplecyrillchoices[j]!=NULL; ++j );
+    simple_pos = rand()%j;
+    _simplecyrill[0] = _simplecyrillchoices[simple_pos];
+    sample[1].lang = _simplecyrilliclangs[simple_pos];
 }
 
 static int AllChars( SplineFont *sf, const char *str, int istwobyte) {
@@ -3391,15 +3430,11 @@ return( false );
 return( true );
 }
 
-unichar_t *PrtBuildDef( SplineFont *sf, int istwobyte ) {
+unichar_t *PrtBuildDef( SplineFont *sf, int istwobyte,void *tf,
+	void (*langsyscallback)(void *tf, int end, uint32 script, uint32 lang) ) {
     int i, j, gotem, len, any=0;
     unichar_t *ret=NULL;
     char **cur;
-
-    for ( j=0; _simplechoices[j]!=NULL; ++j );
-    _simple[0] = _simplechoices[rand()%j];
-    for ( j=0; _simplecyrillchoices[j]!=NULL; ++j );
-    _simplecyrill[0] = _simplecyrillchoices[rand()%j];
 
     OrderSampleByLang();
 
@@ -3412,7 +3447,7 @@ unichar_t *PrtBuildDef( SplineFont *sf, int istwobyte ) {
 		gotem = AllChars(sf,cur[j],istwobyte);
 	    if ( !gotem && sample[i].sample==_simple ) {
 		gotem = true;
-		_simple[0] = _simplechoices[1];
+		_simple[0] = _simplelatnchoices[1];
 	    } else if ( !gotem && sample[i].sample==_LiiBair ) {
 		cur = _LiiBairShort;
 		gotem = true;
@@ -3432,6 +3467,8 @@ unichar_t *PrtBuildDef( SplineFont *sf, int istwobyte ) {
 		if ( ret )
 		    ret[len] = '\n';
 		++len;
+		if ( ret && langsyscallback!=NULL )
+		    (langsyscallback)(tf,len,sample[i].otf_script,sample[i].lang);
 	    }
 	}
 
@@ -3444,6 +3481,8 @@ unichar_t *PrtBuildDef( SplineFont *sf, int istwobyte ) {
 		if ( ret )
 		    ret[len] = '\n';
 		++len;
+		if ( ret && langsyscallback!=NULL )
+		    (langsyscallback)(tf,len,CHR('l','a','t','n'),CHR('E','N','G',' '));
 	    }
 	    if ( SFGetChar(sf,0x411,NULL)!=NULL ) {
 		if ( ret )
@@ -3456,6 +3495,8 @@ unichar_t *PrtBuildDef( SplineFont *sf, int istwobyte ) {
 		    if ( ret )
 			ret[len] = '\n';
 		    ++len;
+		    if ( ret && langsyscallback!=NULL )
+			(langsyscallback)(tf,len,CHR('c','y','r','l'),CHR('R','U','S',' '));
 		}
 	    }
 	}
@@ -3616,7 +3657,7 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     gcd[5].gd.pos.width = 60;
     gcd[5].gd.flags = gg_visible | gg_enabled;
     gcd[5].gd.cid = CID_PointSize;
-    gcd[5].creator = GTextFieldCreate;
+    gcd[5].creator = GNumericFieldCreate;
 
 
     label[6].text = (unichar_t *) _("Sample _Text:");
@@ -3631,7 +3672,7 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
 
     label[7].text = pdefs[di].text;
     if ( label[7].text==NULL || pi.map->enc!=pdefs[di].last_cs )
-	label[7].text = PrtBuildDef(pi.sf,pi.twobyte);
+	label[7].text = PrtBuildDef(pi.sf,pi.twobyte,NULL,NULL);
     gcd[7].gd.label = &label[7];
     gcd[7].gd.mnemonic = 'T';
     gcd[7].gd.pos.x = 5; gcd[7].gd.pos.y = 13+gcd[6].gd.pos.y; 
@@ -3754,7 +3795,7 @@ void ScriptPrint(FontView *fv,int type,int32 *pointsizes,char *samplefile,
 	if ( samplefile!=NULL && *samplefile!='\0' )
 	    sample = FileToUString(samplefile,65536);
 	if ( sample==NULL )
-	    sample = PrtBuildDef(pi.sf,pi.twobyte);
+	    sample = PrtBuildDef(pi.sf,pi.twobyte,NULL,NULL);
     }
     if ( pi.printtype==pt_file || pi.printtype==pt_pdf ) {
 	if ( outputfile==NULL ) {

@@ -900,11 +900,13 @@ extern int BitmapControl(FontView *fv,int32 *sizes,int isavail,int rasterize);
 #if defined(FONTFORGE_CONFIG_GTK)
 extern void ScriptPrint(FontView *fv,int type,int32 *pointsizes,char *samplefile,
 	char *sample, char *outputfile);
-extern char *PrtBuildDef( SplineFont *sf, int istwobyte );
+extern char *PrtBuildDef( SplineFont *sf, int istwobyte,
+	void (*langsyscallback)(void *tf, int end, uint32 script, uint32 lang), void *tf );
 #elif defined(FONTFORGE_CONFIG_GDRAW)
 extern void ScriptPrint(FontView *fv,int type,int32 *pointsizes,char *samplefile,
 	unichar_t *sample, char *outputfile);
-extern unichar_t *PrtBuildDef( SplineFont *sf, int istwobyte );
+extern unichar_t *PrtBuildDef( SplineFont *sf, int istwobyte, void *tf,
+	void (*langsyscallback)(void *tf, int end, uint32 script, uint32 lang) );
 #endif
 
 extern char *Kern2Text(SplineChar *other,KernPair *kp,int isv);
@@ -1223,6 +1225,9 @@ extern void MVReKern(MetricsView *mv);
 extern MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf);
 extern void MetricsViewFree(MetricsView *mv);
 extern void MVRefreshAll(MetricsView *mv);
+extern void MV_FriendlyFeatures(GGadget *g, int pos);
+extern GTextInfo *SLOfFont(SplineFont *sf);
+extern uint32 *StdFeaturesOfScript(uint32 script);
 
 extern void DoPrefs(void);
 #if defined(FONTFORGE_CONFIG_GTK)
@@ -1252,10 +1257,19 @@ extern void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv);
 #if defined(FONTFORGE_CONFIG_GTK)
 #elif defined(FONTFORGE_CONFIG_GDRAW)
 enum sftf_fonttype { sftf_pfb, sftf_ttf, sftf_otf, sftf_bitmap, sftf_pfaedit };
-extern int SFTFSetFont(GGadget *g, int start, int end, SplineFont *sf,
+extern int SFTFSetFontData(GGadget *g, int start, int end, SplineFont *sf,
 	enum sftf_fonttype, int size, int antialias);
+extern int SFTFSetFont(GGadget *g, int start, int end, SplineFont *sf);
+extern int SFTFSetFontType(GGadget *g, int start, int end, enum sftf_fonttype);
+extern int SFTFSetSize(GGadget *g, int start, int end, int size);
+extern int SFTFSetAntiAlias(GGadget *g, int start, int end, int antialias);
+extern int SFTFSetScriptLang(GGadget *g, int start, int end, uint32 script, uint32 lang);
+extern int SFTFSetFeatures(GGadget *g, int start, int end, uint32 *features);
 extern void SFTFRegisterCallback(GGadget *g, void *cbcontext,
-	void (*changefontcallback)(void *,SplineFont *,enum sftf_fonttype,int size,int aa));
+	void (*changefontcallback)(void *,SplineFont *,enum sftf_fonttype,int size,int aa,
+		uint32 script, uint32 lang, uint32 *features));
+extern void SFTFProvokeCallback(GGadget *g);
+extern void SFTFInitLangSys(GGadget *g, int end, uint32 script, uint32 lang);
 extern GGadget *SFTextAreaCreate(struct gwindow *base, GGadgetData *gd,void *data);
 #endif
 extern void DisplayDlg(SplineFont *sf);
