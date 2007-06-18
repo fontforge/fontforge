@@ -50,7 +50,7 @@ static double mv_scales[] = { 2.0, 1.5, 1.0, 2.0/3.0, .5, 1.0/3.0, .25, .2, 1.0/
 
 static int MVSetVSb(MetricsView *mv);
 
-static uint32 *StdFeaturesOfScript(uint32 script) {
+uint32 *StdFeaturesOfScript(uint32 script) {
     int i;
 
     for ( i=0; script_2_std[i].script!=0; ++i )
@@ -1461,7 +1461,7 @@ static int MV_FeaturesChanged(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static void MV_FriendlyFeatures(GGadget *g, int pos) {
+void MV_FriendlyFeatures(GGadget *g, int pos) {
     int32 len;
     GTextInfo **ti = GGadgetGetList(g,&len);
 
@@ -3666,7 +3666,8 @@ return( GGadgetDispatchEvent(mv->vsb,event));
     }
 return( true );
 }
-static GTextInfo *SLOfFont(SplineFont *sf) {
+
+GTextInfo *SLOfFont(SplineFont *sf) {
     uint32 *scripttags, *langtags;
     int s, l, i, k, cnt;
     extern GTextInfo scripts[], languages[];
