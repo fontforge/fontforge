@@ -280,6 +280,7 @@ static void DSP_ChangeFontCallback(void *context,SplineFont *sf,enum sftf_fontty
 	    ti[cnt] = gcalloc( 1,sizeof(GTextInfo));
 	    ti[cnt]->bg = COLOR_DEFAULT;
 	    ti[cnt]->fg = COLOR_CREATE(0x70,0x70,0x70);
+	    ti[cnt]->selected = true;
 	    buf[0] = feats[i]>>24; buf[1] = feats[i]>>16; buf[2] = feats[i]>>8; buf[3] = feats[i]; buf[4] = 0;
 	    ti[cnt]->text = uc_copy(buf);
 	    ti[cnt++]->userdata = (void *) (intpt) feats[i];
@@ -821,7 +822,8 @@ void DisplayDlg(SplineFont *sf) {
     boxes[6].gd.u.boxelements = barray;
     boxes[6].creator = GHBoxCreate;
     varray2[4] = &boxes[6]; varray2[5] = NULL;
-    varray2[6] = NULL;
+    varray2[6] = GCD_Glue;  varray2[7] = NULL;
+    varray2[8] = NULL;
 
     boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
     boxes[0].gd.flags = gg_enabled|gg_visible;
@@ -845,6 +847,7 @@ void DisplayDlg(SplineFont *sf) {
     GHVBoxSetExpandableCol(boxes[2].ret,gb_expandglue);
     GHVBoxSetExpandableCol(boxes[3].ret,gb_expandglue);
     GHVBoxSetExpandableCol(boxes[4].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(boxes[5].ret,gb_expandglue);
     GHVBoxSetExpandableCol(boxes[6].ret,gb_expandglue);
     GHVBoxFitWindow(boxes[0].ret);
     
