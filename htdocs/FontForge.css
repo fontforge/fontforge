@@ -118,3 +118,10 @@
 	background: #456;
 	color: #fff;
 }
+
+.zhtutorial span {  background-image: url("tutorial-zh_TW.png"); padding: 0 0 6px 40px; }
+.zhtutorial span:hover {  background-image: url("tutorial-zh_TW-hover.png"); padding: 0 0 6px 40px; }
+.jatutorial span {  background-image: url("tutorial-ja.png"); padding: 0 0 4px 117px; }
+.jatutorial span:hover {  background-image: url("tutorial-ja-hover.png"); padding: 0 0 4px 117px; }
+.jamanual span {  background-image: url("manual-ja.png"); padding: 0 0 4px 264px; }
+.jamanual span:hover {  background-image: url("manual-ja-hover.png"); padding: 0 0 4px 264px; }
