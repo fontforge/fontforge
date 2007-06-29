@@ -59,12 +59,12 @@ fontforge: $(fontforge_OBJECTS)
 	$(CC) -o fontforge $(LDFLAGS) $(fontforge_OBJECTS) $(LIBS)
 
 sfddiff: sfddiff.pe
-	echo "#!$(bindir)/fontforge" >sfddiff
+	echo "#!$(bindir)/fontforge -lang=ff" >sfddiff
 	cat sfddiff.pe >>sfddiff
 	chmod +x sfddiff
 
 fontimage: fontimage.pe
-	echo "#!$(bindir)/fontforge" >fontimage
+	echo "#!$(bindir)/fontforge -lang=ff" >fontimage
 	cat fontimage.pe >>fontimage
 	chmod +x fontimage
 

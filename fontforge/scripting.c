@@ -9532,10 +9532,13 @@ static void ProcessNativeScript(int argc, char *argv[], FILE *script) {
 
 #if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
 static int PythonLangFromExt(char *prog) {
-    char *ext;
+    char *ext, *base;
 
     if ( prog==NULL )
 return( -1 );
+    base = strrchr(prog,'/');
+    if ( base!=NULL )
+	prog = base+1;
     ext = strrchr(prog,'.');
     if ( ext==NULL )
 return( -1 );
@@ -9569,7 +9572,7 @@ static void _CheckIsScript(int argc, char *argv[]) {
     char *arg;
 
 #ifndef _NO_PYTHON
-    /* FontForge_PythonInit(); /* !!!!!! debug (valgrind doesn't like python) */
+    FontForge_PythonInit(); /* !!!!!! debug (valgrind doesn't like python) */
 #endif
     if ( argc==1 )
 return;
