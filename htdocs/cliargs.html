@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Jan-2002 -->
-  <!-- AP: Last modified: 30-Apr-2007 -->
+  <!-- AP: Last modified: 28-Jun-2007 -->
   <TITLE>Command Line Arguments</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -38,9 +38,10 @@ $ fontforge -c script-string [arguments]
     <DT>
       -c script-string
     <DD>
-      If FontForge's first argument is "-c" then the argument that follows will
-      be treated as a string containing scripting commands, and those commands
-      will be executed. All remaining arguments will be passed to the script.
+      If FontForge's first (or second, if the first is -lang) argument is "-c"
+      then the argument that follows will be treated as a string containing scripting
+      commands, and those commands will be executed. All remaining arguments will
+      be passed to the script.
       <BLOCKQUOTE>
 	<PRE>$ fontforge -c 'Open($1); Generate($2)' foo.sfd foo.ttf
 </PRE>
