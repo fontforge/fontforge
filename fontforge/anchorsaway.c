@@ -1232,7 +1232,7 @@ void AnchorControl(SplineChar *sc,AnchorPoint *ap) {
     gcd[k].gd.cid = CID_DisplaySize;
     gcd[k].gd.handle_controlevent = AnchorD_DisplaySizeChanged;
 #ifndef FONTFORGE_CONFIG_DEVICETABLES
-    gcd[k++].creator = GTextFieldCreate;
+    gcd[k++].creator = GNumericFieldCreate;
     gcd[k].gd.popup_msg = gcd[k-1].gd.popup_msg = (unichar_t *)
 	    _("The size at which the current glyph is rasterized.\nFor small pixelsize you may want to use the magnification\nfactor below to get a clearer view.");
 #else
@@ -1281,7 +1281,7 @@ void AnchorControl(SplineChar *sc,AnchorPoint *ap) {
     gcd[k].gd.handle_controlevent = AnchorD_PositionChanged;
     gcd[k].gd.popup_msg = gcd[k-1].gd.popup_msg = (unichar_t *)
 	    _("The X coordinate of the anchor point in this glyph");
-    gcd[k++].creator = GTextFieldCreate;
+    gcd[k++].creator = GNumericFieldCreate;
     hvarray[hv++] = &gcd[k-1]; hvarray[hv++] = GCD_ColSpan; hvarray[hv++] = GCD_Glue; hvarray[hv++] = NULL;
 
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
@@ -1305,7 +1305,7 @@ void AnchorControl(SplineChar *sc,AnchorPoint *ap) {
     gcd[k].gd.handle_controlevent = AnchorD_CorrectionChanged;
     gcd[k].gd.popup_msg = gcd[k-1].gd.popup_msg = (unichar_t *)
 	    _("This is the number of pixels by which the anchor\nshould be moved horizontally when the glyph is\nrasterized at the above size.  This information\nis part of the device table for this anchor.\nDevice tables are particularly important at small\npixelsizes where rounding errors will have a\nproportionally greater effect.");
-    gcd[k++].creator = GTextFieldCreate;
+    gcd[k++].creator = GNumericFieldCreate;
     hvarray[hv++] = &gcd[k-1]; hvarray[hv++] = GCD_Glue; hvarray[hv++] = NULL;
 #endif
 
@@ -1329,7 +1329,7 @@ void AnchorControl(SplineChar *sc,AnchorPoint *ap) {
     gcd[k].gd.handle_controlevent = AnchorD_PositionChanged;
     gcd[k].gd.popup_msg = gcd[k-1].gd.popup_msg = (unichar_t *)
 	    _("The Y coordinate of the anchor point in this glyph");
-    gcd[k++].creator = GTextFieldCreate;
+    gcd[k++].creator = GNumericFieldCreate;
     hvarray[hv++] = &gcd[k-1]; hvarray[hv++] = GCD_ColSpan; hvarray[hv++] = GCD_Glue; hvarray[hv++] = NULL;
 
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
@@ -1353,7 +1353,7 @@ void AnchorControl(SplineChar *sc,AnchorPoint *ap) {
     gcd[k].gd.handle_controlevent = AnchorD_CorrectionChanged;
     gcd[k].gd.popup_msg = gcd[k-1].gd.popup_msg = (unichar_t *)
 	    _("This is the number of pixels by which the anchor\nshould be moved vertically when the glyph is\nrasterized at the above size.  This information\nis part of the device table for this anchor.\nDevice tables are particularly important at small\npixelsizes where rounding errors will have a\nproportionally greater effect.");
-    gcd[k++].creator = GTextFieldCreate;
+    gcd[k++].creator = GNumericFieldCreate;
     hvarray[hv++] = &gcd[k-1]; hvarray[hv++] = GCD_Glue; hvarray[hv++] = NULL;
 #endif
 
