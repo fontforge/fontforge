@@ -464,6 +464,8 @@ static int nextpstoken(IO *wrapper, real *val, char *tokbuf, int tbsize) {
 	/* Some comments have meanings (that we care about) */
 	if ( sscanf( tokbuf, " MF2PT1: bbox %*g %*g %g %*g", &mf2pt_advance_width )==1 )
 	    wrapper->advance_width = mf2pt_advance_width;
+	else if ( sscanf( tokbuf, " MF2PT1: glyph_dimensions %*g %*g %g %*g", &mf2pt_advance_width )==1 )
+	    wrapper->advance_width = mf2pt_advance_width;
 	pt = tokbuf;
     }
 
