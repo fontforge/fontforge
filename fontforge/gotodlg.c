@@ -222,10 +222,12 @@ static int Goto_OK(GGadget *g, GEvent *e) {
 	gw = GGadgetGetWindow(g);
 	d = GDrawGetUserData(gw);
 	ret = GGadgetGetTitle8(GWidgetGetControl(gw,CID_Name));
-	for ( i=0; d->ranges[i].text!=NULL; ++i ) {
-	    if ( strcmp(ret,(char *) d->ranges[i].text)==0 ) {
-		d->ret = (intpt) d->ranges[i].userdata;
-	break;
+	if ( d->ranges!=NULL ) {
+	    for ( i=0; d->ranges[i].text!=NULL; ++i ) {
+		if ( strcmp(ret,(char *) d->ranges[i].text)==0 ) {
+		    d->ret = (intpt) d->ranges[i].userdata;
+	    break;
+		}
 	    }
 	}
 	if ( d->ret==-1 ) {
