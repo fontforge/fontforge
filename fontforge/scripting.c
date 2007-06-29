@@ -9464,19 +9464,21 @@ static void ProcessNativeScript(int argc, char *argv[], FILE *script) {
     if ( script!=NULL ) {
 	if ( argc<2 || strcmp(argv[1],"-")!=0 )
 	    i = 0;
-    } else if ( strcmp(argv[1],"-nosplash")==0 || strcmp(argv[1],"--nosplash")==0 ) {
-	++i;
-	if ( argc>1 && (strcmp(argv[2],"-script")==0 || strcmp(argv[2],"--script")==0 ))
+    } else {
+	if ( argc>i+1 && (strcmp(argv[i],"-nosplash")==0 || strcmp(argv[i],"--nosplash")==0 ))
 	    ++i;
-    } else if ( strcmp(argv[1],"-script")==0 || strcmp(argv[1],"--script")==0 )
-	++i;
-    else if ( strcmp(argv[1],"-dry")==0 || strcmp(argv[1],"--dry")==0 ) {
-	++i;
-	dry = 1;
-    } else if (( strcmp(argv[1],"-c")==0 || strcmp(argv[1],"--c")==0) &&
-	    argc>=2 ) {
-	++i;
-	string = argv[2];
+	if ( argc>i+1 && (strncmp(argv[i],"-lang=",6)==0 || strncmp(argv[i],"--lang=",7)==0 ))
+	    ++i;
+	if ( strcmp(argv[i],"-script")==0 || strcmp(argv[i],"--script")==0 )
+	    ++i;
+	else if ( strcmp(argv[i],"-dry")==0 || strcmp(argv[i],"--dry")==0 ) {
+	    ++i;
+	    dry = 1;
+	} else if (( strcmp(argv[i],"-c")==0 || strcmp(argv[i],"--c")==0) &&
+		argc>=i+1 ) {
+	    ++i;
+	    string = argv[i];
+	}
     }
     memset( &c,0,sizeof(c));
     c.a.argc = argc-i;
