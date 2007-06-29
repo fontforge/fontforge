@@ -573,10 +573,11 @@ struct opentype_str {
     struct vr vr;
     struct kernpair *kp;
     struct kernclass *kc;
-    int kc_index;
+    int16 kc_index;
     int16 lig_pos;		/* when skipping marks to form a ligature keep track of what ligature element a mark was attached to */
     int16 context_pos;		/* When doing a contextual match remember which glyphs are used, and where in the match they occur. Skipped glyphs have -1 */
     int16 orig_index;
+    void *fd;
 };
 
 struct macname {
@@ -2256,7 +2257,7 @@ extern struct lookup_subtable *SFSubTableMake(SplineFont *sf,uint32 tag,uint32 s
 	int lookup_type );
 extern OTLookup *OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf, OTLookup *from_otl);
 extern struct opentype_str *ApplyTickedFeatures(SplineFont *sf,uint32 *flist, uint32 script, uint32 lang,
-	SplineChar **glyphs);
+	int pixelsize, SplineChar **glyphs);
 extern int VerticalKernFeature(SplineFont *sf, OTLookup *otl, int ask);
 
 extern int KCFindIndex(KernClass *kc,char *name1, char *name2);

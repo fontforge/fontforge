@@ -747,7 +747,7 @@ static void MVRemetric(MetricsView *mv) {
 	    feats[cnt++] = (ti[i]->text[0]<<24) | (ti[i]->text[1]<<16) | (ti[i]->text[2]<<8) | ti[i]->text[3];
 
     free(mv->glyphs);
-    mv->glyphs = ApplyTickedFeatures(mv->sf,feats,script, lang, mv->chars);
+    mv->glyphs = ApplyTickedFeatures(mv->sf,feats,script, lang, mv->pixelsize, mv->chars);
     free(feats);
     if ( goodsc!=NULL )
 	mv->right_to_left = SCRightToLeft(goodsc)?1:0;
@@ -781,15 +781,15 @@ static void MVRemetric(MetricsView *mv) {
 	bdfc = mv->bdf!=NULL ? mv->bdf->glyphs[sc->orig_pos] : BDFPieceMeal(mv->show,sc->orig_pos);
 	mv->perchar[i].dwidth = bdfc->width;
 	mv->perchar[i].dx = x;
-	mv->perchar[i].xoff = rint(mv->glyphs[i].vr.xoff*scale);
-	mv->perchar[i].yoff = rint(mv->glyphs[i].vr.yoff*scale);
-	mv->perchar[i].kernafter = rint(mv->glyphs[i].vr.h_adv_off*scale);
+	mv->perchar[i].xoff = mv->glyphs[i].vr.xoff;
+	mv->perchar[i].yoff = mv->glyphs[i].vr.yoff;
+	mv->perchar[i].kernafter = mv->glyphs[i].vr.h_adv_off;
 	x += bdfc->width + mv->perchar[i].kernafter;
 
 	mv->perchar[i].dheight = rint(sc->vwidth*scale);
 	mv->perchar[i].dy = y;
 	if ( mv->vertical ) {
-	    mv->perchar[i].kernafter = rint(mv->glyphs[i].vr.v_adv_off*scale);
+	    mv->perchar[i].kernafter = mv->glyphs[i].vr.v_adv_off;
 	    y += mv->perchar[i].dheight + mv->perchar[i].kernafter;
 	}
     }

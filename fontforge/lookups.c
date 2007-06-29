@@ -1839,6 +1839,8 @@ struct lookup_data {
     int lcnt, lmax;
     SplineChar ***ligs;		/* For each ligature we have an array of SplineChars that are its components preceded by the ligature glyph itself */
 				/*  NULL terminated */
+    int pixelsize;
+    double scale;
 };
 
 static int ApplyLookupAtPos(uint32 tag, OTLookup *otl,struct lookup_data *data,int pos);
@@ -2245,6 +2247,15 @@ return( 0 );
 return( retpos );
 }
 
+static int FigureDeviceTable(DeviceTable *dt,int pixelsize) {
+
+    if ( dt==NULL || dt->corrections==NULL || pixelsize<dt->first_pixel_size ||
+	    pixelsize>dt->last_pixel_size )
+return( 0 );
+
+return( dt->corrections[pixelsize - dt->last_pixel_size] );
+}
+
 static int ApplySinglePosAtPos(struct lookup_subtable *sub,struct lookup_data *data,int pos) {
     PST *pst;
 
@@ -2252,10 +2263,18 @@ static int ApplySinglePosAtPos(struct lookup_subtable *sub,struct lookup_data *d
     if ( pst==NULL )
 return( 0 );
 
-    data->str[pos].vr.xoff += pst->u.pos.xoff;
-    data->str[pos].vr.yoff += pst->u.pos.yoff;
-    data->str[pos].vr.h_adv_off += pst->u.pos.h_adv_off;
-    data->str[pos].vr.v_adv_off += pst->u.pos.v_adv_off;
+    data->str[pos].vr.xoff += rint( pst->u.pos.xoff * data->scale );
+    data->str[pos].vr.yoff += rint( pst->u.pos.yoff * data->scale );
+    data->str[pos].vr.h_adv_off += rint( pst->u.pos.h_adv_off * data->scale );
+    data->str[pos].vr.v_adv_off += rint( pst->u.pos.v_adv_off * data->scale );
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    if ( pst->u.pos.adjust!=NULL ) {
+	data->str[pos].vr.xoff += FigureDeviceTable(&pst->u.pos.adjust->xadjust,data->pixelsize);
+	data->str[pos].vr.yoff += FigureDeviceTable(&pst->u.pos.adjust->yadjust,data->pixelsize);
+	data->str[pos].vr.h_adv_off += FigureDeviceTable(&pst->u.pos.adjust->xadv,data->pixelsize);
+	data->str[pos].vr.v_adv_off += FigureDeviceTable(&pst->u.pos.adjust->yadv,data->pixelsize);
+    }
+#endif
 return( pos+1 );
 }
 
@@ -2273,24 +2292,40 @@ return( 0 );
 return( 0 );
 	data->str[pos].kc_index = within;
 	data->str[pos].kc = sub->kc;
-	if ( sub->vertical_kerning )
+	if ( sub->vertical_kerning ) {
 	    data->str[pos].vr.v_adv_off += sub->kc->offsets[within];
-	else if ( sub->lookup->lookup_flags & pst_r2l )
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	    data->str[pos].vr.v_adv_off += FigureDeviceTable(&sub->kc->adjusts[within],data->pixelsize);
+#endif
+	} else if ( sub->lookup->lookup_flags & pst_r2l ) {
 	    data->str[npos].vr.h_adv_off += sub->kc->offsets[within];
-	else
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	    data->str[npos].vr.h_adv_off += FigureDeviceTable(&sub->kc->adjusts[within],data->pixelsize);
+#endif
+	} else {
 	    data->str[pos].vr.h_adv_off += sub->kc->offsets[within];
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	    data->str[pos].vr.h_adv_off += FigureDeviceTable(&sub->kc->adjusts[within],data->pixelsize);
+#endif
+	}
 return( pos+1 );
     } else {
 	for ( pst=data->str[pos].sc->possub; pst!=NULL; pst=pst->next ) {
 	    if ( pst->subtable==sub && strcmp(pst->u.pair.paired,data->str[npos].sc->name)==0 ) {
-		data->str[pos].vr.xoff += pst->u.pair.vr[0].xoff;
-		data->str[pos].vr.yoff += pst->u.pair.vr[0].yoff;
-		data->str[pos].vr.h_adv_off += pst->u.pair.vr[0].h_adv_off;
-		data->str[pos].vr.v_adv_off += pst->u.pair.vr[0].v_adv_off;
-		data->str[npos].vr.xoff += pst->u.pair.vr[1].xoff;
-		data->str[npos].vr.yoff += pst->u.pair.vr[1].yoff;
-		data->str[npos].vr.h_adv_off += pst->u.pair.vr[1].h_adv_off;
-		data->str[npos].vr.v_adv_off += pst->u.pair.vr[1].v_adv_off;
+		data->str[pos].vr.xoff += rint( pst->u.pair.vr[0].xoff * data->scale);
+		data->str[pos].vr.yoff += rint( pst->u.pair.vr[0].yoff * data->scale);
+		data->str[pos].vr.h_adv_off += rint( pst->u.pair.vr[0].h_adv_off * data->scale);
+		data->str[pos].vr.v_adv_off += rint( pst->u.pair.vr[0].v_adv_off * data->scale);
+		data->str[npos].vr.xoff += rint( pst->u.pair.vr[1].xoff * data->scale);
+		data->str[npos].vr.yoff += rint( pst->u.pair.vr[1].yoff * data->scale);
+		data->str[npos].vr.h_adv_off += rint( pst->u.pair.vr[1].h_adv_off * data->scale);
+		data->str[npos].vr.v_adv_off += rint( pst->u.pair.vr[1].v_adv_off * data->scale);
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+		/* I got bored. I should do all of them */
+		if ( pst->u.pair.vr[0].adjust!=NULL ) {
+		    data->str[pos].vr.h_adv_off += FigureDeviceTable(&pst->u.pair.vr[0].adjust->xadv,data->pixelsize);
+		}
+#endif
 return( pos+1 );	/* We do NOT want to return npos+1 */
 	    }
 	}
@@ -2298,12 +2333,22 @@ return( pos+1 );	/* We do NOT want to return npos+1 */
 	    for ( kp = isv ? data->str[pos].sc->vkerns : data->str[pos].sc->kerns; kp!=NULL; kp=kp->next ) {
 		if ( kp->subtable == sub && kp->sc == data->str[npos].sc ) {
 		    data->str[pos].kp = kp;
-		    if ( isv )
-			data->str[pos].vr.v_adv_off += kp->off;
-		    else if ( sub->lookup->lookup_flags & pst_r2l )
-			data->str[npos].vr.h_adv_off += kp->off;
-		    else
-			data->str[pos].vr.h_adv_off += kp->off;
+		    if ( isv ) {
+			data->str[pos].vr.v_adv_off += rint( kp->off * data->scale);
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+			data->str[pos].vr.v_adv_off += FigureDeviceTable(kp->adjust,data->pixelsize);
+#endif
+		    } else if ( sub->lookup->lookup_flags & pst_r2l ) {
+			data->str[npos].vr.h_adv_off += rint( kp->off * data->scale);
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+			data->str[npos].vr.h_adv_off += FigureDeviceTable(kp->adjust,data->pixelsize);
+#endif
+		    } else {
+			data->str[pos].vr.h_adv_off += rint( kp->off * data->scale);
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+			data->str[pos].vr.h_adv_off += FigureDeviceTable(kp->adjust,data->pixelsize);
+#endif
+		    }
 return( pos+1 );
 		}
 	    }
@@ -2358,11 +2403,23 @@ return( 0 );
     if ( ap1==NULL )
 return( 0 );
 
-    data->str[npos].vr.yoff = ap1->me.y - ap2->me.y;
+    data->str[npos].vr.yoff = rint((ap1->me.y - ap2->me.y) * data->scale);
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    data->str[npos].vr.yoff += FigureDeviceTable(&ap1->yadjust,data->pixelsize)-
+		FigureDeviceTable(&ap2->yadjust,data->pixelsize);
+#endif
     if ( sub->lookup->lookup_flags&pst_r2l ) {
-	data->str[npos].vr.xoff = -(ap1->me.x - ap2->me.x);
+	data->str[npos].vr.xoff = rint( -(ap1->me.x - ap2->me.x)*data->scale );
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	data->str[npos].vr.xoff -= FigureDeviceTable(&ap1->xadjust,data->pixelsize)-
+		    FigureDeviceTable(&ap2->xadjust,data->pixelsize);
+#endif
     } else {
-	data->str[npos].vr.xoff = ap1->me.x - ap2->me.x - data->str[pos].sc->width;
+	data->str[npos].vr.xoff = rint( (ap1->me.x - ap2->me.x - data->str[pos].sc->width)*data->scale );
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	data->str[npos].vr.xoff += FigureDeviceTable(&ap1->xadjust,data->pixelsize)-
+		    FigureDeviceTable(&ap2->xadjust,data->pixelsize);
+#endif
     }
 return( pos+1 );
 }
@@ -2500,7 +2557,7 @@ return( 0 );
 /*  a transformed string with substitutions applied and containing positioning */
 /*  info */
 struct opentype_str *ApplyTickedFeatures(SplineFont *sf,uint32 *flist, uint32 script, uint32 lang,
-	SplineChar **glyphs) {
+	int pixelsize, SplineChar **glyphs) {
     int isgpos, cnt;
     OTLookup *otl;
     struct lookup_data data;
@@ -2517,6 +2574,8 @@ struct opentype_str *ApplyTickedFeatures(SplineFont *sf,uint32 *flist, uint32 sc
     }
     if ( sf->cidmaster!=NULL ) sf=sf->cidmaster;
     data.sf = sf;
+    data.pixelsize = pixelsize;
+    data.scale = pixelsize/(double) (sf->ascent+sf->descent);
 
     /* Indic glyph reordering???? */
     for ( isgpos=0; isgpos<2; ++isgpos ) {
