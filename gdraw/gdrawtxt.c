@@ -2198,7 +2198,7 @@ return( dist );
 	if ( text>=end )
     break;
 	upt = ubuffer;
-	while ( text<=end &&
+	while ( text<end &&
 		upt<ubuffer+sizeof(ubuffer)/sizeof(ubuffer[0])) {
 	    val = utf8_ildb(&text);
 	    if ( val==-1 )
