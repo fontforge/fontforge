@@ -2489,7 +2489,7 @@ static void gposLookupSwitch(FILE *ttf, int st,
 	struct ttfinfo *info, struct lookup *l, struct lookup_subtable *subtable,
 	struct lookup *alllooks) {
 
-    switch ( l->otlookup->lookup_type ) {
+    switch ( l->type | 0x100 ) {
       case gpos_single:
 	gposSimplePos(ttf,st,info,l,subtable);
       break;  
@@ -2524,7 +2524,7 @@ static void gsubLookupSwitch(FILE *ttf, int st,
 	struct ttfinfo *info, struct lookup *l, struct lookup_subtable *subtable, int justinuse,
 	struct lookup *alllooks) {
 
-    switch ( l->otlookup->lookup_type ) {
+    switch ( l->type ) {
       case gsub_single:
 	gsubSimpleSubTable(ttf,st,info,l,subtable,justinuse);
       break;
