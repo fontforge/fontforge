@@ -4447,10 +4447,10 @@ return(-1);
 		}
 return( -1 );
 	    }
-	    if ( !sp->nonextcp && last<sp->nextcpindex )
-		last = sp->nextcpindex;
+	    if ( !sp->nonextcp && last<=sp->nextcpindex )
+		last = sp->nextcpindex+1;
 	    else if ( sp->ttfindex!=0xffff )
-		last = sp->ttfindex;
+		last = sp->ttfindex+1;
 	    if ( sp->next==NULL )
 	break;
 	    sp = sp->next->to;
@@ -4472,6 +4472,10 @@ return( 0x800000 );
 return( -1 );
 	}
 	last += ret;
+	if ( last>pnum ) {
+	    IError("Point match failure last=%d, pnum=%d", last, pnum );
+return( 0x800000 );
+	}
     }
 return( last );		/* Count of number of points in the character */
 }
