@@ -2293,17 +2293,17 @@ return( 0 );
 	data->str[pos].kc_index = within;
 	data->str[pos].kc = sub->kc;
 	if ( sub->vertical_kerning ) {
-	    data->str[pos].vr.v_adv_off += sub->kc->offsets[within];
+	    data->str[pos].vr.v_adv_off += rint( sub->kc->offsets[within] * data->scale );
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    data->str[pos].vr.v_adv_off += FigureDeviceTable(&sub->kc->adjusts[within],data->pixelsize);
 #endif
 	} else if ( sub->lookup->lookup_flags & pst_r2l ) {
-	    data->str[npos].vr.h_adv_off += sub->kc->offsets[within];
+	    data->str[npos].vr.h_adv_off += rint( sub->kc->offsets[within] * data->scale );
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    data->str[npos].vr.h_adv_off += FigureDeviceTable(&sub->kc->adjusts[within],data->pixelsize);
 #endif
 	} else {
-	    data->str[pos].vr.h_adv_off += sub->kc->offsets[within];
+	    data->str[pos].vr.h_adv_off += rint( sub->kc->offsets[within] * data->scale );
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 	    data->str[pos].vr.h_adv_off += FigureDeviceTable(&sub->kc->adjusts[within],data->pixelsize);
 #endif
