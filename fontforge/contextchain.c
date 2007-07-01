@@ -1770,7 +1770,7 @@ static void _CCD_DoLEditNew(struct contextchaindlg *ccd,int off,int isedit) {
 
     GGadgetsCreate(gw,gcd);
     isgpos = ( ccd->fpst->type==pst_contextpos || ccd->fpst->type==pst_chainpos );
-    GGadgetSetList(gcd[3].ret, ti = SFLookupListFromType(ccd->sf,ot_undef),false);
+    GGadgetSetList(gcd[3].ret, ti = SFLookupListFromType(ccd->sf,isgpos?gpos_start:gsub_start),false);
     for ( i=0; ti[i]->text!=NULL; ++i )
 	if ( u_strcmp(lstr,ti[i]->text)==0 ) {
 	    GGadgetSelectOneListItem(gcd[3].ret,i);
@@ -1789,7 +1789,7 @@ static void _CCD_DoLEditNew(struct contextchaindlg *ccd,int off,int isedit) {
 	if ( err )
   goto retry;
 	pt = _GGadgetGetTitle(gcd[3].ret);
-	if ( *pt=='\0' ) {
+	if ( pt==NULL || *pt=='\0' ) {
 	    gwwv_post_error("Please select a lookup", "Please select a lookup");
   goto retry;
 	}
