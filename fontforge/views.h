@@ -915,6 +915,24 @@ extern char *PST2Text(PST *pst,SplineFont *sf);
 
 extern void FVStrokeItScript(FontView *fv, StrokeInfo *si);
 
+struct lcg_zones {
+    /* everything abvoe this should be moved down (default xheight/2) */
+    int top_zone;
+    /* everything below this should be moved up (default xheight/2) */
+    /* anything in between should be stationary */
+    int bottom_zone;
+
+    SplineSet *(*embolden_hook)(SplineSet *,struct lcg_zones *,SplineSet *);
+    void (*embolden_width)(SplineChar *sc, struct lcg_zones *);
+
+    double stroke_width;
+    uint8 removeoverlap;
+};
+/* This order is the same order as the radio buttons in the embolden dlg */
+enum embolden_type { embolden_lcg, embolden_cjk, embolden_auto, embolden_custom };
+void FVEmbolden(FontView *fv,enum embolden_type type,struct lcg_zones *zones);
+void EmboldenDlg(FontView *fv, CharView *cv);
+
 extern int FVParseSelectByPST(FontView *fv,struct lookup_subtable *sub,
 	int search_type);
 #if defined(FONTFORGE_CONFIG_GTK)

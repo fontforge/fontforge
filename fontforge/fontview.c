@@ -1673,6 +1673,16 @@ void FontViewMenu_Metafont(GtkMenuItem *menuitem, gpointer user_data) {
 }
 
 # ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuEmbolden(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_Embolden(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+    EmboldenDlg(fv,NULL);
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
 #define MID_24	2001
 #define MID_36	2002
 #define MID_48	2004
@@ -1696,7 +1706,8 @@ void FontViewMenu_Metafont(GtkMenuItem *menuitem, gpointer user_data) {
 #define MID_BitmapMag	2028
 #define MID_CharInfo	2201
 #define MID_FindProblems 2216
-#define MID_MetaFont	2217
+#define MID_Embolden	2217
+#define MID_MetaFont	2218
 #define MID_Transform	2202
 #define MID_Stroke	2203
 #define MID_RmOverlap	2204
@@ -6001,7 +6012,7 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_MetaFont: case MID_Effects:
 	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps || order2;
 	  break;
-	  case MID_Round: case MID_Correct:
+	  case MID_Embolden: case MID_Round: case MID_Correct:
 	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps;
 	  break;
 #ifdef FONTFORGE_CONFIG_TILEPATH
@@ -6346,7 +6357,8 @@ static GMenuItem2 ellist[] = {
     { { (unichar_t *) N_("Add E_xtrema"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Add Extrema|Ctl+Shft+X"), NULL, NULL, FVMenuAddExtrema, MID_AddExtrema },
     { { (unichar_t *) N_("Roun_d"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, NULL, rndlist, NULL, NULL, MID_Round },
     { { (unichar_t *) N_("Effects"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, NULL, eflist, NULL, NULL, MID_Effects },
-    { { (unichar_t *) N_("_Meta Font..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Meta Font...|Ctl+Shft+!"), NULL, NULL, FVMenuMetaFont, MID_MetaFont },
+    { { (unichar_t *) N_("Em_bolden..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Meta Font...|Ctl+Shft+!"), NULL, NULL, FVMenuEmbolden, MID_Embolden },
+    { { (unichar_t *) N_("_Meta Font..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Meta Font...|No Shortcut"), NULL, NULL, FVMenuMetaFont, MID_MetaFont },
     { { (unichar_t *) N_("Autot_race"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'r' }, H_("Autotrace|Ctl+Shft+T"), NULL, NULL, FVMenuAutotrace, MID_Autotrace },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Correct Direction"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'D' }, H_("Correct Direction|Ctl+Shft+D"), NULL, NULL, FVMenuCorrectDir, MID_Correct },

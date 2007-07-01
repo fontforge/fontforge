@@ -1120,8 +1120,11 @@ static SplineSet *SSFixupOverlap(StrokeInfo *si,SplineChar *sc,
 		    ssplus = next;
 		else
 		    prev->next = next;
-	    } else
+	    } else {
 		prev = spl;
+		if ( si->removeexternal )
+		    SplineSetReverse(spl);
+	    }
 	}
     }
 return( ssplus );
@@ -1910,6 +1913,68 @@ static SplineSet *SSRemoveUTurns(SplineSet *base, StrokeInfo *si) {
 return( base );
 }
 
+static void SSRemoveColinearPoints(SplineSet *ss) {
+    SplinePoint *sp, *nsp, *nnsp;
+    BasePoint dir, ndir;
+    double len;
+    int removed;
+
+    sp = ss->first;
+    if ( sp->prev==NULL )
+return;
+    nsp = sp->next->to;
+    if ( nsp==sp )
+return;
+    dir.x = nsp->me.x - sp->me.x; dir.y = nsp->me.y - sp->me.y;
+    len = dir.x*dir.x + dir.y*dir.y;
+    if ( len!=0 ) {
+	len = sqrt(len);
+	dir.x /= len; dir.y /= len;
+    }
+    nnsp = nsp->next->to;
+    if ( nnsp==sp )
+return;
+    memset(&ndir,0,sizeof(ndir));
+    forever {
+	removed = false;
+	if ( nsp->next->islinear ) {
+	    ndir.x = nnsp->me.x - nsp->me.x; ndir.y = nnsp->me.y - nsp->me.y;
+	    len = ndir.x*ndir.x + ndir.y*ndir.y;
+	    if ( len!=0 ) {
+		len = sqrt(len);
+		ndir.x /= len; ndir.y /= len;
+	    }
+	}
+	if ( sp->next->islinear && nsp->next->islinear ) {
+	    double dot =dir.x*ndir.y - dir.y*ndir.x;
+	    if ( dot<.001 && dot>-.001 ) {
+		sp->next->to = nnsp;
+		nnsp->prev = sp->next;
+		SplineRefigure(sp->next);
+		SplineFree(nsp->next);
+		SplinePointFree(nsp);
+		if ( ss->first==nsp ) ss->first = sp;
+		if ( ss->last ==nsp ) ss->last  = sp;
+		removed = true;
+	    } else
+		sp = nsp;
+	} else
+	    sp = nsp;
+	dir = ndir;
+	nsp = nnsp;
+	nnsp = nsp->next->to;
+	if ( !removed && sp==ss->first )
+    break;
+    }
+}
+
+static void SSesRemoveColinearPoints(SplineSet *ss) {
+    while ( ss!=NULL ) {
+	SSRemoveColinearPoints(ss);
+	ss = ss->next;
+    }
+}
+
 SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
     SplineSet *ret, *temp, *temp2;
     SplineSet *order3 = NULL;
@@ -1953,6 +2018,11 @@ SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
 	SplinePointListFree(order3);
 	ret = temp;
     }
+    /* We tend to get (small) rounding errors */
+    SplineSetsRound2Int(ret,1024.);
+    /* If we use butt line caps or miter joins then we will likely have */
+    /*  some spurious colinear points. If we do, remove them */
+    SSesRemoveColinearPoints(ret);
 return( ret );
 }
 
@@ -1966,19 +2036,13 @@ SplineSet *SSStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
     /*int was_clock = true;*/
 
     for ( ; spl!=NULL; spl = spl->next ) {
-#if 0
-	if ( si->removeinternal || si->removeexternal )
-	    was_clock = SplinePointListIsClockwise(spl);
-#endif
 	cur = SplineSetStroke(spl,si,sc);
+	if ( cur==NULL )		/* Can happen if stroke overlaps itself into nothing */
+    continue;
 	if ( head==NULL )
 	    head = cur;
 	else
 	    last->next = cur;
-#if 0
-	if ( was_clock==0 ) 	/* there'd better be only one spl in cur */
-	    SplineSetReverse(cur);
-#endif
 	while ( cur->next!=NULL ) cur = cur->next;
 	last = cur;
     }
