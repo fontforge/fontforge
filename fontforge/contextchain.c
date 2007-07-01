@@ -1771,11 +1771,12 @@ static void _CCD_DoLEditNew(struct contextchaindlg *ccd,int off,int isedit) {
     GGadgetsCreate(gw,gcd);
     isgpos = ( ccd->fpst->type==pst_contextpos || ccd->fpst->type==pst_chainpos );
     GGadgetSetList(gcd[3].ret, ti = SFLookupListFromType(ccd->sf,isgpos?gpos_start:gsub_start),false);
-    for ( i=0; ti[i]->text!=NULL; ++i )
-	if ( u_strcmp(lstr,ti[i]->text)==0 ) {
+    for ( i=0; ti[i]->text!=NULL; ++i ) {
+	if ( u_strcmp(lstr,ti[i]->text)==0 )
 	    GGadgetSelectOneListItem(gcd[3].ret,i);
-    break;
-	}
+	if ( ccd->fpst!=NULL && ti[i]->userdata == ccd->fpst->subtable->lookup )
+	    ti[i]->disabled = true;
+    }
     GDrawSetVisible(gw,true);
 
   retry:
