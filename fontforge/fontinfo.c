@@ -5782,7 +5782,7 @@ static int GFI_LookupOrder(GGadget *g, GEvent *e) {
 	    continue;
 		if ( lk->all[i].selected ) {
 		    temp = lk->all[i];
-		    for ( k=i; k<lk->cnt-1; --k )
+		    for ( k=i; k<lk->cnt-1; ++k )
 			lk->all[k] = lk->all[k+1];
 		    lk->all[lk->cnt-1] = temp;
     goto done;
