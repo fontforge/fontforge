@@ -27,6 +27,7 @@
 #include "pfaeditui.h"
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <ustring.h>
+#include <utype.h>
 #include <gkeysym.h>
 #include <math.h>
 
@@ -37,6 +38,8 @@ typedef struct strokedlg {
     int done;
     GWindow gw;
     CharView *cv;
+    FontView *fv;
+    SplineFont *sf;
     void (*strokeit)(void *,StrokeInfo *);
     StrokeInfo *si;
     GRect r1, r2;
@@ -1515,5 +1518,630 @@ int LayerDialog(Layer *layer) {
     GDrawDestroyWindow(ld.gw);
 return( ld.ok );
 }
-#endif
+#endif		/* TYPE3 */
+
+/* ************************************************************************** */
+/* ***************************** Embolden Dialog **************************** */
+/* ************************************************************************** */
+
+struct ptmoves {
+    SplinePoint *sp;
+    BasePoint pdir, ndir;
+    double factor;
+    BasePoint newpos;
+};
+
+static SplineSet *LCG_EmboldenHook(SplineSet *ss_expanded,struct lcg_zones *zones,
+	SplineSet *orig) {
+    SplineSet *ss;
+    SplinePoint *sp, *nsp, *psp;
+    int cnt, ccnt, i;
+    struct ptmoves *ptmoves;
+    BasePoint dir1, dir2;
+    double len;
+    real transform[6];
+    /* When we do an expand stroke we expect that a glyph's bounding box will */
+    /*  increase by half the stroke width in each direction. Now we want to do*/
+    /*  different operations in each dimension. We don't want to increase the */
+    /*  x-height, or the cap height, whereas it is ok to make the glyph wider */
+    /*  but it would be nice to preserve the left and right side bearings. */
+    /* So shift the glyph over by width/2 (this preserves the left side bearing)*/
+    /* Increment the width by width (this preserves the right side bearing)   */
+    /* The y dimension is more complex. In a normal latin (greek, cyrillic)   */
+    /*  font the x-height is key, in a font with only capital letters it would*/
+    /*  be the cap-height. In the subset of the font containing superscripts  */
+    /*  we might want to key off of the superscript size. The expansion will  */
+    /*  mean that the glyph protrudes width/2 below the baseline, and width/2 */
+    /*  above the x-height and cap-height. Neither of those is acceptable. So */
+    /*  choose some intermediate level, say x-height/2, any point above this  */
+    /*  moves down by width/2, any point below this moves up by width/2 */
+    /* That'll work for many glyphs. But consider "o", depending on how it is */
+    /*  designed we might be moving the leftmost point either up or down when */
+    /*  it should remain near the center. So perhaps we have a band which is  */
+    /*  width wide right around x-height/2 and points in that band don't move */
+    /* Better. Consider a truetype "o" were there will be intermediate points */
+    /*  Between the top-most and left-most. These shouldn't move by the full */
+    /*  width/2. They should move by some interpolated amount. Based on the */
+    /*  center of the glyph? That would screw up "h". Take the normal to the */
+    /*  curve. Dot it into the y direction. Move the point by that fraction */
+    /* Control points should be interpolated between the movements of their */
+    /*  on-curve points */
+
+    ccnt = 0;
+    for ( ss = ss_expanded; ss!=NULL ; ss=ss->next ) {
+	if ( ss->first->prev==NULL )
+    continue;
+	for ( cnt=0, sp=ss->first; ; ) {
+	    sp = sp->next->to; ++cnt;
+	    if ( sp==ss->first )
+	break;
+	}
+	if ( cnt>ccnt ) ccnt = cnt;
+    }
+    if ( ccnt==0 )
+return(ss_expanded);			/* No points? Nothing to do */
+    ptmoves = galloc((ccnt+1)*sizeof(struct ptmoves));
+    for ( ss = ss_expanded; ss!=NULL ; ss=ss->next ) {
+	if ( ss->first->prev==NULL )
+    continue;
+	for ( cnt=0, sp=ss->first; ; ) {
+	    ptmoves[cnt].sp = sp;
+	    ptmoves[cnt].newpos = sp->me;
+	    if ( sp->nonextcp ) {
+		dir1.x = sp->next->to->me.x - sp->me.x;
+		dir1.y = sp->next->to->me.y - sp->me.y;
+	    } else {
+		dir1.x = sp->nextcp.x - sp->me.x;
+		dir1.y = sp->nextcp.y - sp->me.y;
+	    }
+	    len = dir1.x*dir1.x + dir1.y*dir1.y;
+	    if ( len!=0 ) {
+		len = sqrt(len);
+		dir1.x /= len;
+		dir1.y /= len;
+	    }
+	    ptmoves[cnt].ndir = dir1;
+	    if ( dir1.x<0 ) dir1.x = -dir1.x;
+
+	    if ( sp->noprevcp ) {
+		dir2.x = sp->prev->from->me.x - sp->me.x;
+		dir2.y = sp->prev->from->me.y - sp->me.y;
+	    } else {
+		dir2.x = sp->prevcp.x - sp->me.x;
+		dir2.y = sp->prevcp.y - sp->me.y;
+	    }
+	    len = dir2.x*dir2.x + dir2.y*dir2.y;
+	    if ( len!=0 ) {
+		len = sqrt(len);
+		dir2.x /= len;
+		dir2.y /= len;
+	    }
+	    ptmoves[cnt].pdir = dir2;
+	    if ( dir2.x<0 ) dir2.x = -dir2.x;
+	    
+	    ptmoves[cnt].factor = dir1.x>dir2.x ? dir1.x : dir2.x;
+
+	    sp = sp->next->to; ++cnt;
+	    if ( sp==ss->first )
+	break;
+	}
+	ptmoves[cnt] = ptmoves[0];	/* Life is easier if we don't have to worry about edge effects */
+	for ( i=0; i<cnt; ++i ) {
+	    int p = i==0?cnt-1:i-1, sign = 0;
+	    sp = ptmoves[i].sp;
+	    nsp = ptmoves[i+1].sp;
+	    psp = ptmoves[p].sp;
+	    if ( sp->me.y>=zones->top_zone )
+		sign = -1;
+	    else if ( sp->me.y<zones->bottom_zone )
+		sign = 1;
+	    if ( sign ) {
+		ptmoves[i].newpos.y += sign*zones->stroke_width*ptmoves[i].factor/2;
+		/* This is to improve the looks of diagonal stems */
+		if ( sp->next->islinear && sp->prev->islinear && nsp->next->islinear &&
+			nsp->me.y == sp->me.y &&
+			ptmoves[i].pdir.x*ptmoves[i+1].ndir.x + ptmoves[i].pdir.y*ptmoves[i+1].ndir.y<-.999 ) {
+		    if ( ptmoves[i].pdir.y<0 )
+			sign = -sign;
+		    ptmoves[i].newpos.x += sign*zones->stroke_width*ptmoves[i].pdir.x;
+		} else if ( sp->next->islinear && sp->prev->islinear && psp->next->islinear &&
+			psp->me.y == sp->me.y &&
+			ptmoves[i].ndir.x*ptmoves[p].pdir.x + ptmoves[i].ndir.y*ptmoves[p].pdir.y<-.999 ) {
+		    if ( ptmoves[i].ndir.y<0 )
+			sign = -sign;
+		    ptmoves[i].newpos.x += sign*zones->stroke_width*ptmoves[i].ndir.x;
+		}
+	    }
+	}
+	ptmoves[cnt].newpos = ptmoves[0].newpos;
+	for ( i=0; i<cnt; ++i ) {
+	    sp = ptmoves[i].sp;
+	    nsp = ptmoves[i+1].sp;
+	    if ( sp->nonextcp )
+		sp->nextcp = ptmoves[i].newpos;
+	    if ( nsp->noprevcp )
+		nsp->prevcp = ptmoves[i+1].newpos;
+	    if ( sp->me.y!=nsp->me.y ) {
+		sp->nextcp.y = ptmoves[i].newpos.y + (sp->nextcp.y-sp->me.y)*
+				    (ptmoves[i+1].newpos.y - ptmoves[i].newpos.y)/
+				    (nsp->me.y - sp->me.y);
+		nsp->prevcp.y = ptmoves[i].newpos.y + (nsp->prevcp.y-sp->me.y)*
+				    (ptmoves[i+1].newpos.y - ptmoves[i].newpos.y)/
+				    (nsp->me.y - sp->me.y);
+		if ( sp->me.x!=nsp->me.x ) {
+		    sp->nextcp.x = ptmoves[i].newpos.x + (sp->nextcp.x-sp->me.x)*
+					(ptmoves[i+1].newpos.x - ptmoves[i].newpos.x)/
+					(nsp->me.x - sp->me.x);
+		    nsp->prevcp.x = ptmoves[i].newpos.x + (nsp->prevcp.x-sp->me.x)*
+					(ptmoves[i+1].newpos.x - ptmoves[i].newpos.x)/
+					(nsp->me.x - sp->me.x);
+		}
+	    }
+	}
+	for ( i=0; i<cnt; ++i )
+	    ptmoves[i].sp->me = ptmoves[i].newpos;
+	for ( i=0; i<cnt; ++i )
+	    SplineRefigure(ptmoves[i].sp->next);
+    }
+    free(ptmoves);
+
+    /* Now correct the left side bearing */
+    memset(transform,0,sizeof(transform));
+    transform[0] = transform[3] = 1;
+    transform[4] = zones->stroke_width/2;
+    SplinePointListTransform(ss_expanded,transform,true);
+return(ss_expanded);
+}
+
+static void LCG_EmboldenWidthHook(SplineChar *sc, struct lcg_zones *zones) {
+    SCSynchronizeWidth(sc,sc->width+rint(2*zones->stroke_width),sc->width,NULL);
+}
+
+static void SCEmbolden(SplineChar *sc, struct lcg_zones *zones, int layer) {
+    StrokeInfo si;
+    SplineSet *temp;
+
+    memset(&si,0,sizeof(si));
+    si.stroke_type = si_std;
+    si.join = lj_miter;
+    si.cap = lc_square;
+    if ( zones->stroke_width>=0 ) {
+	si.radius = zones->stroke_width/2.;
+	si.removeinternal = true;
+    } else {
+	si.radius = -zones->stroke_width/2.;
+	si.removeexternal = true;
+    }
+    si.removeoverlapifneeded = zones->removeoverlap;
+    si.toobigwarn = true;
+
+    if ( layer==-2 ) {
+	SCPreserveState(sc,false);
+	for ( layer = ly_fore; layer<sc->layer_cnt; ++layer ) {
+	    temp = SSStroke(sc->layers[layer].splines,&si,sc);
+	    if ( zones->embolden_hook!=NULL )
+		temp = (zones->embolden_hook)(temp,zones,sc->layers[layer].splines);
+	    SplinePointListsFree( sc->layers[layer].splines );
+	    sc->layers[layer].splines = temp;
+	}
+	if ( zones->embolden_width!=NULL )
+	    (zones->embolden_width)(sc,zones);
+    } else if ( layer>=0 ) {
+	SCPreserveLayer(sc,layer,false);
+	temp = SSStroke(sc->layers[layer].splines,&si,sc);
+	if ( zones->embolden_hook!=NULL )
+	    temp = (zones->embolden_hook)(temp,zones,sc->layers[layer].splines);
+	if ( zones->embolden_width!=NULL && layer==ly_fore )
+	    (zones->embolden_width)(sc,zones);
+	SplinePointListsFree( sc->layers[layer].splines );
+	sc->layers[layer].splines = temp;
+    }
+    SCCharChangedUpdate(sc);
+}
+
+static struct {
+    uint32 script;
+    SplineSet *(*embolden_hook)(SplineSet *,struct lcg_zones *,SplineSet *);
+    void (*embolden_width)(SplineChar *sc, struct lcg_zones *);
+} script_hooks[] = {
+    { CHR('l','a','t','n'), LCG_EmboldenHook, LCG_EmboldenWidthHook },
+    { CHR('c','y','r','l'), LCG_EmboldenHook, LCG_EmboldenWidthHook },
+    { CHR('g','r','e','k'), LCG_EmboldenHook, LCG_EmboldenWidthHook },
+    0
+};
+
+static struct {
+    unichar_t from, to;
+    SplineSet *(*embolden_hook)(SplineSet *,struct lcg_zones *,SplineSet *);
+    void (*embolden_width)(SplineChar *sc, struct lcg_zones *);
+} char_hooks[] = {
+    { '0','9', LCG_EmboldenHook, LCG_EmboldenWidthHook },
+    { '$','%', LCG_EmboldenHook, LCG_EmboldenWidthHook },
+    { '$','%', LCG_EmboldenHook, LCG_EmboldenWidthHook },
+    0
+};
+
+static void ZoneInit(SplineFont *sf, struct lcg_zones *zones,enum embolden_type type) {
+
+    if ( type == embolden_lcg || type == embolden_custom ) {
+	zones->embolden_hook = LCG_EmboldenHook;
+	zones->embolden_width = LCG_EmboldenWidthHook;
+    } else {
+	zones->embolden_hook = NULL;
+	zones->embolden_width = NULL;
+    }
+}
+
+static void PerGlyphInit(SplineChar *sc, struct lcg_zones *zones,
+	enum embolden_type type, BlueData *bd) {
+    int j;
+
+    if ( type == embolden_auto ) {
+	zones->embolden_hook = NULL;
+	zones->embolden_width = NULL;
+	for ( j=0; char_hooks[j].from!=0; ++j ) {
+	    if ( sc->unicodeenc>=char_hooks[j].from && sc->unicodeenc<=char_hooks[j].to ) {
+		zones->embolden_hook = char_hooks[j].embolden_hook;
+		zones->embolden_width = char_hooks[j].embolden_width;
+	break;
+	    }
+	}
+	if ( zones->embolden_hook == NULL ) {
+	    uint32 script = SCScriptFromUnicode(sc);
+	    for ( j=0; script_hooks[j].script!=0; ++j ) {
+		if ( script==script_hooks[j].script ) {
+		    zones->embolden_hook = script_hooks[j].embolden_hook;
+		    zones->embolden_width = script_hooks[j].embolden_width;
+	    break;
+		}
+	    }
+	}
+    }
+    if ( type == embolden_lcg || type == embolden_auto ) {
+	if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 && isupper(sc->unicodeenc)) {
+	    zones->top_zone = bd->caph>0 ? bd->caph/3 :
+			    (sc->parent->ascent/4);
+	    zones->bottom_zone = bd->caph>0 ? 2*bd->caph/3 :
+			    (sc->parent->ascent/2);
+	} else {
+	    zones->top_zone = bd->xheight>0 ? bd->xheight/3 :
+			    bd->caph>0 ? bd->caph/3 :
+			    (sc->parent->ascent/4);
+	    zones->bottom_zone = bd->xheight>0 ? 2*bd->xheight/3 :
+			    bd->caph>0 ? 2*bd->caph/3 :
+			    (sc->parent->ascent/2);
+	}
+    }
+}
+
+void FVEmbolden(FontView *fv,enum embolden_type type,struct lcg_zones *zones) {
+    int i, gid;
+    SplineChar *sc;
+    BlueData bd;
+
+    ZoneInit(fv->sf,zones,type);
+    QuickBlues(fv->sf, &bd);
+
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
+	    (gid = fv->map->map[i])!=-1 && (sc=fv->sf->glyphs[gid])!=NULL ) {
+	PerGlyphInit(sc,zones,type, &bd);
+	SCEmbolden(sc, zones, -2);		/* -2 => all foreground layers */
+    }
+}
+
+static void CVEmbolden(CharView *cv,enum embolden_type type,struct lcg_zones *zones) {
+    SplineChar *sc = cv->sc;
+    BlueData bd;
+
+    if ( cv->drawmode == dm_grid )
+return;
+
+    ZoneInit(sc->parent,zones,type);
+    QuickBlues(sc->parent, &bd);
+
+    PerGlyphInit(sc,zones,type, &bd);
+    SCEmbolden(sc, zones, CVLayer(cv));
+}
+
+#define CID_EmBdWidth	1001
+#define CID_LCG		1002
+#define CID_CJK		1003
+#define CID_Auto	1004
+#define CID_Custom	1005
+#define CID_TopZone	1006
+#define CID_BottomZone	1007
+/* #define CID_CleanupSelfIntersect	1024*/
+
+static SplineFont *lastsf = NULL;
+static enum embolden_type last_type = embolden_auto;
+static struct lcg_zones last_zones;
+static int last_width;
+static int last_overlap = true;
+
+static int Embolden_OK(GGadget *g, GEvent *e) {
+    enum embolden_type type;
+    struct lcg_zones zones;
+    int err = false;
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GWindow ew = GGadgetGetWindow(g);
+	StrokeDlg *ed = GDrawGetUserData(ew);
+	memset(&zones,0,sizeof(zones));
+	err = false;
+	zones.stroke_width = GetReal8(ew,CID_EmBdWidth,_("Embolden by"),&err);
+	type = GGadgetIsChecked( GWidgetGetControl(ew,CID_LCG)) ? embolden_lcg :
+		GGadgetIsChecked( GWidgetGetControl(ew,CID_CJK)) ? embolden_cjk :
+		GGadgetIsChecked( GWidgetGetControl(ew,CID_Auto)) ? embolden_auto :
+			embolden_custom;
+	if ( type == embolden_custom ) {
+	    zones.top_zone = GetReal8(ew,CID_TopZone,_("Top Zone"),&err);
+	    zones.bottom_zone = GetReal8(ew,CID_BottomZone,_("Bottom Zone"),&err);
+	}
+	if ( err )
+return( true );
+
+	lastsf = ed->sf;
+	last_type = type;
+	last_width = zones.stroke_width;
+	last_overlap = zones.removeoverlap = GGadgetIsChecked( GWidgetGetControl(ew,CID_CleanupSelfIntersect));
+	if ( type == embolden_custom )
+	    last_zones = zones;
+
+	if ( ed->fv!=NULL )
+	    FVEmbolden(ed->fv, type, &zones);
+	else
+	    CVEmbolden(ed->cv, type, &zones);
+	ed->done = true;
+    }
+return( true );
+}
+
+static int Embolden_Cancel(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	StrokeDlg *ed = GDrawGetUserData(GGadgetGetWindow(g));
+	ed->done = true;
+    }
+return( true );
+}
+
+static int Embolden_Radio(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	StrokeDlg *ed = GDrawGetUserData(GGadgetGetWindow(g));
+	if (GGadgetIsChecked( GWidgetGetControl(ed->gw,CID_Custom)) ) {
+	    GGadgetSetEnabled(GWidgetGetControl(ed->gw,CID_TopZone),true);
+	    GGadgetSetEnabled(GWidgetGetControl(ed->gw,CID_BottomZone),true);
+	} else {
+	    GGadgetSetEnabled(GWidgetGetControl(ed->gw,CID_TopZone),false);
+	    GGadgetSetEnabled(GWidgetGetControl(ed->gw,CID_BottomZone),false);
+	}
+    }
+return( true );
+}
+
+static int embolden_e_h(GWindow gw, GEvent *event) {
+    if ( event->type==et_close ) {
+	StrokeDlg *ed = GDrawGetUserData(gw);
+	ed->done = true;
+    } else if ( event->type == et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    help("elementmenu.html#Embolden");
+return( true );
+	}
+return( false );
+    }
+return( true );
+}
+
+void EmboldenDlg(FontView *fv, CharView *cv) {
+    StrokeDlg ed;
+    SplineFont *sf = fv!=NULL ? fv->sf : cv->sc->parent;
+    BlueData bd;
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[15], boxes[6], *barray[8], *rarray[6], *hvarray[24];
+    GTextInfo label[15];
+    int k;
+    char topzone[40], botzone[40], emb_width[40];
+
+    QuickBlues(sf, &bd);
+
+    memset(&ed,0,sizeof(ed));
+    ed.fv = fv;
+    ed.cv = cv;
+    ed.sf = sf;
+
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.restrict_input_to_me = 1;
+    wattrs.undercursor = 1;
+    wattrs.cursor = ct_pointer;
+    wattrs.utf8_window_title = _("Embolden...");
+    wattrs.is_dlg = true;
+    pos.x = pos.y = 0;
+    pos.width = 100;
+    pos.height = 100;
+    ed.gw = gw = GDrawCreateTopWindow(NULL,&pos,embolden_e_h,&ed,&wattrs);
+
+
+    k=0;
+
+    memset(gcd,0,sizeof(gcd));
+    memset(boxes,0,sizeof(boxes));
+    memset(label,0,sizeof(label));
+    label[k].text = (unichar_t *) _("Embolden by:");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLabelCreate;
+    hvarray[0] = &gcd[k-1];
+
+    sprintf( emb_width, "%d", sf==lastsf ? last_width : (sf->ascent+sf->descent)/20 );
+    label[k].text = (unichar_t *) emb_width;
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 80; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-3;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k].gd.cid = CID_EmBdWidth;
+    gcd[k++].creator = GNumericFieldCreate;
+    hvarray[1] = &gcd[k-1]; hvarray[2] = NULL;
+
+    label[k].text = (unichar_t *) _("_LCG");
+    gcd[k].gd.popup_msg = (unichar_t *) _("Embolden as appropriate for Latin, Cyrillic and Greek scripts");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[k].gd.cid = CID_LCG;
+    gcd[k].gd.handle_controlevent = Embolden_Radio;
+    gcd[k++].creator = GRadioCreate;
+    rarray[0] = &gcd[k-1];
+
+    label[k].text = (unichar_t *) _("_CJK");
+    gcd[k].gd.popup_msg = (unichar_t *) _("Embolden as appropriate for Chinese, Japanese, Korean scripts");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[k].gd.cid = CID_CJK;
+    gcd[k].gd.handle_controlevent = Embolden_Radio;
+    gcd[k++].creator = GRadioCreate;
+    rarray[1] = &gcd[k-1];
+
+    label[k].text = (unichar_t *) _("_Auto");
+    gcd[k].gd.popup_msg = (unichar_t *) _("Choose the appropriate method depending on the glyph's script");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[k].gd.cid = CID_Auto;
+    gcd[k].gd.handle_controlevent = Embolden_Radio;
+    gcd[k++].creator = GRadioCreate;
+    rarray[2] = &gcd[k-1];
+
+    label[k].text = (unichar_t *) _("C_ustom");
+    gcd[k].gd.popup_msg = (unichar_t *) _("User controls the emboldening with the next two fields");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[k].gd.cid = CID_Custom;
+    gcd[k].gd.handle_controlevent = Embolden_Radio;
+    gcd[k++].creator = GRadioCreate;
+    rarray[3] = &gcd[k-1]; rarray[4] = GCD_Glue; rarray[5] = NULL;
+
+    if ( lastsf==sf )
+	gcd[k-4 + embolden_auto].gd.flags |= gg_cb_on;
+    else
+	gcd[k-4 + last_type].gd.flags |= gg_cb_on;
+
+    boxes[3].gd.flags = gg_enabled|gg_visible;
+    boxes[3].gd.u.boxelements = rarray;
+    boxes[3].creator = GHBoxCreate;
+    hvarray[3] = &boxes[3]; hvarray[4] = GCD_ColSpan; hvarray[5] = NULL;
+
+    label[k].text = (unichar_t *) _("_Top zone:");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLabelCreate;
+    hvarray[6] = &gcd[k-1];
+
+    sprintf( topzone, "%d", lastsf==sf && last_type==embolden_custom ? last_zones.top_zone :
+			(int) rint(bd.xheight>0 ? 2*bd.xheight/3 :
+			bd.caph>0 ? 2*bd.caph/3 :
+			(sf->ascent/2)) );
+    label[k].text = (unichar_t *) topzone;
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 80; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-3;
+    gcd[k].gd.flags = gg_visible;
+    gcd[k].gd.cid = CID_TopZone;
+    gcd[k++].creator = GNumericFieldCreate;
+    hvarray[7] = &gcd[k-1]; hvarray[8] = NULL;
+
+    label[k].text = (unichar_t *) _("_Bottom zone:");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+31;
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLabelCreate;
+    hvarray[9] = &gcd[k-1];
+
+    sprintf( botzone, "%d", lastsf==sf && last_type==embolden_custom ? last_zones.bottom_zone :
+			(int) rint(bd.xheight>0 ? bd.xheight/3 :
+			bd.caph>0 ? bd.caph/3 :
+			(sf->ascent/4)) );
+    label[k].text = (unichar_t *) botzone;
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 80; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-3;
+    gcd[k].gd.flags = gg_visible;
+    gcd[k].gd.cid = CID_BottomZone;
+    gcd[k++].creator = GNumericFieldCreate;
+    hvarray[10] = &gcd[k-1]; hvarray[11] = NULL;
+
+    label[k].text = (unichar_t *) _("Cleanup Self Intersect");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup | (last_overlap?gg_cb_on:0);
+    gcd[k].gd.cid = CID_CleanupSelfIntersect;
+    gcd[k].gd.popup_msg = (unichar_t *) _("When FontForge detects that an expanded stroke will self-intersect,\nthen setting this option will cause it to try to make things nice\nby removing the intersections");
+    gcd[k++].creator = GCheckBoxCreate;
+    hvarray[12] = &gcd[k-1]; hvarray[13] = GCD_ColSpan; hvarray[14] = NULL;
+
+    hvarray[15] = GCD_Glue; hvarray[16] = GCD_Glue; hvarray[17] = NULL;
+
+    gcd[k].gd.pos.x = 30-3; gcd[k].gd.pos.y = 5;
+    gcd[k].gd.pos.width = -1;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    label[k].text = (unichar_t *) _("_OK");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.handle_controlevent = Embolden_OK;
+    gcd[k++].creator = GButtonCreate;
+    barray[0] = GCD_Glue; barray[1] = &gcd[k-1]; barray[2] = GCD_Glue;
+
+    gcd[k].gd.pos.x = -30; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;
+    gcd[k].gd.pos.width = -1;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    label[k].text = (unichar_t *) _("_Cancel");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.handle_controlevent = Embolden_Cancel;
+    gcd[k].creator = GButtonCreate;
+    barray[3] = GCD_Glue; barray[4] = &gcd[k]; barray[5] = GCD_Glue;
+    barray[6] = NULL;
+
+    boxes[4].gd.flags = gg_enabled|gg_visible;
+    boxes[4].gd.u.boxelements = barray;
+    boxes[4].creator = GHBoxCreate;
+    hvarray[18] = &boxes[4]; hvarray[19] = GCD_ColSpan; hvarray[20] = NULL;
+    hvarray[21] = NULL;
+
+    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = hvarray;
+    boxes[0].creator = GHVGroupCreate;
+
+    GGadgetsCreate(gw,boxes);
+    GHVBoxSetExpandableRow(boxes[0].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(boxes[3].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(boxes[4].ret,gb_expandgluesame);
+    GHVBoxFitWindow(boxes[0].ret);
+    GDrawSetVisible(gw,true);
+
+    while ( !ed.done )
+	GDrawProcessOneEvent(NULL);
+    GDrawDestroyWindow(gw);
+}
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
