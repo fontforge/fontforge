@@ -561,7 +561,7 @@ char *FVOpenFont(char *title, const char *defaultfile,
 unichar_t *FVOpenFont(char *title, const char *defaultfile, int mult) {
 #endif
     GRect pos;
-    int i, filter;
+    int i, filter, renamei;
     GWindow gw;
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[11], boxes[5], *varray[9], *harray1[7], *harray2[4], *harray3[9];
@@ -634,6 +634,7 @@ unichar_t *FVOpenFont(char *title, const char *defaultfile, int mult) {
     harray2[0] = &gcd[i];
     gcd[i++].creator = GLabelCreate;
 
+    renamei = i;
     gcd[i].gd.pos.x = 0; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y-6;
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     gcd[i].gd.popup_msg = (unichar_t *) _("In the saved font, force all glyph names to match those in the specified namelist");
@@ -753,7 +754,7 @@ unichar_t *FVOpenFont(char *title, const char *defaultfile, int mult) {
 
     memset(&d,'\0',sizeof(d));
     d.gfc = gcd[0].ret;
-    d.rename = gcd[2].ret;
+    d.rename = gcd[renamei].ret;
 
     GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
