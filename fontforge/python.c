@@ -2581,6 +2581,32 @@ Py_RETURN( self );		/* no contours=> nothing to do */
 Py_RETURN( self );
 }
 
+static PyObject *PyFFLayer_interpolateNewLayer(PyFF_Layer *self, PyObject *args) {
+    double amount;
+    PyObject *obj;
+    SplineSet *ss, *otherss, *newss;
+    SplineChar dummy;
+
+    if ( !PyArg_ParseTuple(args,"Od", &obj, &amount ) )
+return( NULL );
+    if ( !PyType_IsSubtype(&PyFF_LayerType,obj->ob_type) ) {
+	PyErr_Format(PyExc_TypeError, "Value must be a (FontForge) Layer");
+return( NULL );
+    }
+
+    memset(&dummy,0,sizeof(dummy));		/* Only used for error messages */
+    dummy.name = _("<no glyph>");
+
+    ss = SSFromLayer(self);
+    otherss = SSFromLayer((PyFF_Layer *) obj);
+    newss = SplineSetsInterpolate(ss,otherss,amount,&dummy);
+    obj = (PyObject *) LayerFromSS(newss,NULL);
+    SplinePointListsFree(ss);
+    SplinePointListsFree(otherss);
+    SplinePointListsFree(newss);
+return( obj );
+}
+
 static PyObject *PyFFLayer_BoundingBox(PyFF_Layer *self, PyObject *args) {
     double xmin, xmax, ymin, ymax;
     int i,j,none;
@@ -2630,6 +2656,8 @@ static PyMethodDef PyFFLayer_methods[] = {
 	     "Round contours on a layer" },
     {"cluster", (PyCFunction)PyFFLayer_Cluster, METH_VARARGS,
 	     "Round contours on a layer" },
+    {"interpolateNewLayer", (PyCFunction)PyFFLayer_interpolateNewLayer, METH_VARARGS,
+	     "Creates a new layer by interpolating between this one and the one in the first argument" },
     {"boundingBox", (PyCFunction)PyFFLayer_BoundingBox, METH_NOARGS,
 	     "Finds a bounding box for the layer (xmin,ymin,xmax,ymax)" },
     {"correctDirection", (PyCFunction)PyFFLayer_Correct, METH_NOARGS,
@@ -8879,6 +8907,40 @@ return( NULL );
 return( PySC_From_SC_I( sc ));
 }
 
+static PyObject *PyFFFont_CreateInterpolatedGlyph(PyObject *self, PyObject *args) {
+    FontView *fv = ((PyFF_Font *) self)->fv;
+    SplineFont *sf = fv->sf;
+    PyObject *from, *to;
+    double by;
+    SplineChar *sc;
+    int baseenc;
+
+    if ( !PyArg_ParseTuple(args,"OOd",&from,&to,&by) )
+return( NULL );
+   if ( !PyType_IsSubtype(&PyFF_GlyphType,from->ob_type) ||
+	   !PyType_IsSubtype(&PyFF_GlyphType,to->ob_type)) {
+	PyErr_Format(PyExc_TypeError, "Expected glyph objects");
+return( NULL );
+    }
+    if ( SFGetChar(fv->sf,((PyFF_Glyph *) from)->sc->unicodeenc,((PyFF_Glyph *) from)->sc->name)!=NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "This glyph already exists in the font");
+return( NULL );
+    }
+
+    sc = SplineCharInterpolate(((PyFF_Glyph *) from)->sc,((PyFF_Glyph *) to)->sc,by);
+    if ( sc==NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "Interpolation failed");
+return( NULL );
+    }
+
+    baseenc = EncFromUni(sc->unicodeenc,fv->map->enc);
+    if ( baseenc==-1 )
+	baseenc = fv->map->enccount+1;
+
+    SFAddGlyphAndEncode(sf,sc,fv->map,baseenc);
+return( PySC_From_SC_I( sc ));
+}
+
 static PyObject *PyFFFont_findEncodingSlot(PyObject *self, PyObject *args) {
     int uni= -1;
     char *name=NULL;
@@ -9288,6 +9350,7 @@ static PyMethodDef PyFF_Font_methods[] = {
     { "mergeFonts", PyFFFont_MergeFonts, METH_VARARGS, "Merge two fonts" },
     { "interpolateFonts", PyFFFont_InterpolateFonts, METH_VARARGS, "Interpolate between two fonts returning a new one" },
     { "createChar", PyFFFont_CreateUnicodeChar, METH_VARARGS, "Creates a (blank) glyph at the specified unicode codepoint" },
+    { "createInterpolatedGlyph", PyFFFont_CreateInterpolatedGlyph, METH_VARARGS, "Creates (and returns) a new glyph interpolated between the two arguments." },
     { "createMappedChar", PyFFFont_CreateMappedChar, METH_VARARGS, "Creates a (blank) glyph at the specified encoding" },
     { "getTableData", PyFFFont_GetTableData, METH_VARARGS, "Returns a tuple, one entry per byte (as unsigned integers) of the table"},
     { "setTableData", PyFFFont_SetTableData, METH_VARARGS, "Sets the table to a tuple of bytes"},

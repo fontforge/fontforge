@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 14-Jun-2007 -->
+  <!-- AP: Last modified: 2-Jul-2007 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -707,6 +707,13 @@
       <TD><CODE>()</CODE></TD>
       <TD>Removes overlapping areas. See also <A href="#l-intersect">intersect</A>
 	and <A href="#l-exclude">exclude</A>.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>interpolateNewLayer</CODE></TD>
+      <TD><CODE>(other-layer,amount)</CODE></TD>
+      <TD>Creates (and returns) a new layer which contains splines interpolated
+	from the current layer and the first argument. If amount is 0 the result
+	will look like the current layer, if 1 then like the first argument.</TD>
     </TR>
     <TR>
       <TD><CODE><A name="l-round">round</A></CODE></TD>
@@ -1937,8 +1944,6 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TD>Adds an anchor class to the specified (anchor) subtable.</TD>
     </TR>
     <TR>
-    </TR>
-    <TR>
       <TD><CODE>addKerningClass</CODE></TD>
       <TD><CODE>(lookup-name,new-subtable-name,<BR>
 	&nbsp;first-classes,<BR>
@@ -1951,8 +1956,6 @@ pen = None;				# Finalize the pen. This tells FontForge
 	offsets. There must be as many entries as
 	<CODE>len(first-class)*len(second-class)</CODE>. The optional after argument
 	is used to specify the order of the subtable within the lookup.</TD>
-    </TR>
-    <TR>
     </TR>
     <TR>
       <TD><CODE><A name="font-addLookup">addLookup</A></CODE></TD>
@@ -2133,6 +2136,14 @@ pen = None;				# Finalize the pen. This tells FontForge
 	this font and optionally name it. If you wish to create an glyph with no
 	unicode codepoint set the first argument to -1 and specify a name. If there
 	is already a character there, return it (it will not be renamed).</TD>
+    </TR>
+    <TR>
+      <TD><CODE>createInterpolatedGlyph</CODE></TD>
+      <TD><CODE>(glyph1,glyph2,amount)</CODE></TD>
+      <TD>Create (and return) a glyph with the same unicode code point as glyph1.
+	The glyph may not already exist. The contents of the glyph will be formed
+	by interpolating between glyph1 and glyph2. If amount==0 the result will
+	look like glyph1, or 1 then like glyph2.</TD>
     </TR>
     <TR>
       <TD><CODE>createMappedChar</CODE></TD>

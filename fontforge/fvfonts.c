@@ -1479,7 +1479,7 @@ return( cur );
     }
 }
 
-static SplineSet *InterpSplineSets(SplineSet *base, SplineSet *other, real amount, SplineChar *sc) {
+SplineSet *SplineSetsInterpolate(SplineSet *base, SplineSet *other, real amount, SplineChar *sc) {
     SplineSet *head=NULL, *last=NULL, *cur;
 
     /* we could do something really complex to try and figure out which spline*/
@@ -1599,25 +1599,20 @@ static void LayerInterpolate(Layer *to,Layer *base,Layer *other,real amount,Spli
     else
 	LogError( "Different settings on stroke linejoin in layer %d of %s\n", lc, sc->name );
 
-    to->splines = InterpSplineSets(base->splines,other->splines,amount,sc);
+    to->splines = SplineSetsInterpolate(base->splines,other->splines,amount,sc);
     to->refs = InterpRefs(base->refs,other->refs,amount,sc);
     if ( base->images!=NULL || other->images!=NULL )
 	LogError( "I can't even imagine how to attempt to interpolate images in layer %d of %s\n", lc, sc->name );
 }
 #endif
 
-static void InterpolateChar(SplineFont *new, int orig_pos, SplineChar *base, SplineChar *other, real amount) {
+SplineChar *SplineCharInterpolate(SplineChar *base, SplineChar *other, real amount) {
     SplineChar *sc;
 
     if ( base==NULL || other==NULL )
-return;
+return( NULL );
     sc = SplineCharCreate();
-    sc->orig_pos = orig_pos;
     sc->unicodeenc = base->unicodeenc;
-    new->glyphs[orig_pos] = sc;
-    if ( orig_pos+1>new->glyphcnt )
-	new->glyphcnt = orig_pos+1;
-    sc->parent = new;
     sc->changed = true;
     sc->views = NULL;
     sc->dependents = NULL;
@@ -1647,12 +1642,26 @@ return;
     } else
 #endif
     {
-	sc->layers[ly_fore].splines = InterpSplineSets(base->layers[ly_fore].splines,other->layers[ly_fore].splines,amount,sc);
+	sc->layers[ly_fore].splines = SplineSetsInterpolate(base->layers[ly_fore].splines,other->layers[ly_fore].splines,amount,sc);
 	sc->layers[ly_fore].refs = InterpRefs(base->layers[ly_fore].refs,other->layers[ly_fore].refs,amount,sc);
     }
     sc->changedsincelasthinted = true;
     sc->widthset = base->widthset;
     sc->glyph_class = base->glyph_class;
+return( sc );
+}
+
+static void _SplineCharInterpolate(SplineFont *new, int orig_pos, SplineChar *base, SplineChar *other, real amount) {
+    SplineChar *sc;
+
+    sc = SplineCharInterpolate(base,other,amount);
+    if ( sc==NULL )
+return;
+    sc->orig_pos = orig_pos;
+    new->glyphs[orig_pos] = sc;
+    if ( orig_pos+1>new->glyphcnt )
+	new->glyphcnt = orig_pos+1;
+    sc->parent = new;
 }
 
 static void IFixupSC(SplineFont *sf, SplineChar *sc,int i) {
@@ -1714,7 +1723,7 @@ return( NULL );
     for ( i=0; i<base->glyphcnt; ++i ) if ( base->glyphs[i]!=NULL ) {
 	index = SFFindExistingSlot(other,base->glyphs[i]->unicodeenc,base->glyphs[i]->name);
 	if ( index!=-1 && other->glyphs[index]!=NULL ) {
-	    InterpolateChar(new,i,base->glyphs[i],other->glyphs[index],amount);
+	    _SplineCharInterpolate(new,i,base->glyphs[i],other->glyphs[index],amount);
 	    if ( new->glyphs[i]!=NULL )
 		new->glyphs[i]->kerns = InterpKerns(base->glyphs[i]->kerns,
 			other->glyphs[index]->kerns,amount,new,new->glyphs[i]);
