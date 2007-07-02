@@ -5923,6 +5923,7 @@ static int ModSF(FILE *asfd,SplineFont *sf) {
     temp.gpos_lookups = sf->gpos_lookups;
     temp.gsub_lookups = sf->gsub_lookups;
     temp.anchor = sf->anchor;
+    temp.sfd_version = 2;
 
     if ( getname(asfd,tok)!=1 || strcmp(tok,"Encoding:")!=0 )
 return(false);
