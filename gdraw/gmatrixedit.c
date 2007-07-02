@@ -1118,6 +1118,7 @@ return( copy(str));
 static void GMatrixEdit_StartSubGadgets(GMatrixEdit *gme,int r, int c,GEvent *event) {
     int i;
     struct matrix_data *d;
+    int old_off_left = gme->off_left;	/* We sometimes scroll */
 
     /* new row */
     if ( c==0 && r==gme->rows && event->type == et_mousedown &&
@@ -1151,6 +1152,7 @@ return;
     gme->active_col = c; gme->active_row = r;
     GME_EnableDelete(gme);
 
+    GMatrixEditScrollToRowCol(&gme->g,r,c);
     d = &gme->data[r*gme->cols+c];
     if ( event->type==et_mousedown && event->u.mouse.button==3 ) {
 	if ( gme->popupmenu!=NULL )
@@ -1162,7 +1164,7 @@ return;
     } else if ( gme->col_data[c].me_type==me_funcedit &&
 	    event->type==et_mousedown &&
 	    event->u.mouse.x>gme->col_data[c].x + gme->col_data[c].width -
-		(gme->mark_size+gme->mark_skip) - gme->off_left ) {
+		(gme->mark_size+gme->mark_skip) - old_off_left ) {
 	char *ret = (gme->col_data[c].func)(&gme->g,r,c);
 	if ( ret!=NULL ) {
 	    /* I don't bother validating it because I expect the function to */
@@ -1176,7 +1178,7 @@ return;
 	    gme->col_data[c].me_type==me_stringchoicetag) &&
 	    event->type==et_mousedown &&
 	    event->u.mouse.x>gme->col_data[c].x + gme->col_data[c].width -
-		(gme->mark_size+gme->mark_skip) - gme->off_left ) {
+		(gme->mark_size+gme->mark_skip) - old_off_left ) {
 	GME_StringChoices(gme,event,r,c);
     } else {
 	char *str = MD_Text(gme,gme->active_row,gme->active_col);
@@ -1981,4 +1983,47 @@ void GMatrixEditSetColumnChoices(GGadget *g, int col, GTextInfo *ti) {
 int GMatrixEditGetColCnt(GGadget *g) {
     GMatrixEdit *gme = (GMatrixEdit *) g;
 return( gme->cols );
+}
+
+void GMatrixEditScrollToRowCol(GGadget *g,int r, int c) {
+    GMatrixEdit *gme = (GMatrixEdit *) g;
+    int rows_shown = gme->vsb->r.height/(gme->fh+gme->vpad);
+    int context = rows_shown/3;
+    int needs_expose = false;
+    int width = gme->hsb->r.width;
+    int i;
+
+    if ( r<0 ) r = 0; else if ( r>=gme->rows ) r = gme->rows-1;
+    if ( r<gme->off_top || r>=gme->off_top+rows_shown ) {
+	gme->off_top = r-context;
+	if ( gme->off_top<0 )
+	    gme->off_top = 0;
+	needs_expose = true;
+    }
+    if ( c<0 ) c = 0; else if ( c>=gme->cols ) c = gme->cols-1;
+    for ( i=0; i<gme->cols; ++i ) {
+	if ( gme->col_data[i].x-gme->off_left>=0 )
+    break;
+    }
+    if ( c<i ) {
+	if ( c>0 && gme->col_data[c-1].width + gme->col_data[c].width<width )
+	    gme->off_left = gme->col_data[c-1].x;
+	else
+	    gme->off_left = gme->col_data[c  ].x;
+	needs_expose = true;
+    } else {
+	for ( ; i<gme->cols; ++i ) {
+	    if ( gme->col_data[i].x+gme->col_data[i].width-gme->off_left>width )
+	break;
+	}
+	if ( c>=i && gme->col_data[c].x!=gme->off_left ) {
+	    gme->off_left = gme->col_data[c].x;
+	    needs_expose = true;
+	}
+    }
+    if ( needs_expose ) {
+	GScrollBarSetPos(gme->hsb,gme->off_left);
+	GScrollBarSetPos(gme->vsb,gme->off_top);
+	GDrawRequestExpose(gme->nested,NULL,false);
+    }
 }
