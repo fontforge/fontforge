@@ -4082,7 +4082,7 @@ return(NULL);
 		if ( index>index_max ) index_max = index;
 	    }
 	}
-	subs = gcalloc(index_max,sizeof(OTLookup *));
+	subs = gcalloc(index_max+1,sizeof(OTLookup *));
 
 	for ( i=0; i<st->nclasses*st->nstates; ++i ) {
 	    if ( as->state[i].u.context.mark_lookup!=NULL ) {
