@@ -374,6 +374,7 @@ int GMatrixEditGetColCnt(GGadget *g);
 int GMatrixEditGetActiveRow(GGadget *g);
 int GMatrixEditGetActiveCol(GGadget *g);
 void GMatrixEditDeleteRow(GGadget *g,int row);
+void GMatrixEditScrollToRowCol(GGadget *g,int r, int c);
 int GMatrixEditStringDlg(GGadget *g,int row,int col);
 void GMatrixEditSetNewText(GGadget *g, char *text);
 void GMatrixEditSetOtherButtonEnable(GGadget *g, void (*sob)(GGadget *g, int r, int c));
