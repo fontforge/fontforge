@@ -651,10 +651,16 @@ return;
 	    AdjustBP(&nsc_p->prevcp,&nsc_p->me,&nr_p->prevcp,&nr_p->me,&fudge,s);
 	    AdjustAll(nsc_p,&sc_p->me,&nr_p->me,&r_p->me,&fudge,s);
 	    nsc_p->pointtype = nr_p->pointtype;
-	    if ( nsc_p->next!=NULL )
+	    if ( nsc_p->next!=NULL ) {
+		if ( nsc_p->next->order2 )
+		    nsc_p->next->to->prevcp = nsc_p->nextcp;
 		SplineRefigure(nsc_p->next);
-	    if ( nsc_p->prev!=NULL )
+	    }
+	    if ( nsc_p->prev!=NULL ) {
+		if ( nsc_p->prev->order2 )
+		    nsc_p->prev->from->nextcp = nsc_p->prevcp;
 		SplineRefigure(nsc_p->prev);
+	    }
 	    p_p = np_p; sc_p = nsc_p; r_p = nr_p;
 	}
     }
