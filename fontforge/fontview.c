@@ -8221,7 +8221,7 @@ int32 EncFromUni(int32 uni, Encoding *enc) {
     size_t fromlen, tolen;
     int i;
 
-    if ( enc->is_custom || enc->is_original || enc->is_compact )
+    if ( enc->is_custom || enc->is_original || enc->is_compact || uni==-1 )
 return( -1 );
     if ( enc->is_unicodebmp || enc->is_unicodefull )
 return( uni<enc->char_cnt ? uni : -1 );
