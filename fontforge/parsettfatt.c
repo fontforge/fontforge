@@ -2917,6 +2917,7 @@ return( subs[nest_index] );
     name = galloc(strlen(parent->lookup_name)+strlen(format)+10);
     sprintf( name, format, parent->lookup_name, nest_index );
     otl->lookup_name = name;
+    otl->subtables->subtable_name = strconcat3(name," ",_("subtable"));
     OTLAppend(info,otl,false);
     subs[nest_index] = otl;
 return( otl );
