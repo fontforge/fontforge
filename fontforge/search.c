@@ -79,16 +79,18 @@ return( CoordMatches(sxoff*s->matched_co+syoff*s->matched_si,pxoff,s) &&
 	CoordMatches(-sxoff*s->matched_si+syoff*s->matched_co,pyoff,s) );
 }
 
-static int SPMatchesF(SplinePoint *sp, SearchView *s, SplineSet *path, int substring ) {
+static int SPMatchesF(SplinePoint *sp, SearchView *s, SplineSet *path,
+	SplinePoint *sc_path_first, int substring ) {
     SplinePoint *sc_sp, *nsc_sp, *p_sp, *np_sp;
     int flip, flipmax;
     double rot, scale;
+    int saw_sc_first = false;
 
     s->matched_sp = sp;
     for (sc_sp=sp, p_sp=path->first; ; ) {
 	if ( p_sp->next==NULL ) {
 	    if ( substring || sc_sp->next==NULL ) {
-		s->last_sp = sc_sp;
+		s->last_sp = saw_sc_first ? NULL : sp;
 return( true );
 	    }
     break;
@@ -106,22 +108,25 @@ return( true );
     break;
 	if ( np_sp==path->first ) {
 	    if ( nsc_sp==sp ) {
-		s->last_sp = sp;
+		s->last_sp = saw_sc_first ? NULL : sp;
 return( true );
 	    }
     break;
 	}
 	sc_sp = nsc_sp;
+	if ( sc_sp == sc_path_first )
+	    saw_sc_first = true;
 	p_sp = np_sp;
     }
 
     if ( s->tryflips ) for ( flip=flip_x ; flip<=flip_xy; ++flip ) {
 	int xsign = (flip&1) ? -1 : 1, ysign = (flip&2) ? -1 : 1;
+	saw_sc_first = false;
 	for (sc_sp=sp, p_sp=path->first; ; ) {
 	    if ( p_sp->next==NULL ) {
 		if ( substring || sc_sp->next==NULL ) {
 		    s->matched_flip = flip;
-		    s->last_sp = sc_sp;
+		    s->last_sp = saw_sc_first ? NULL : sp;
 return( true );
 		} else
     break;
@@ -140,12 +145,14 @@ return( true );
 	    if ( np_sp==path->first ) {
 		if ( nsc_sp==sp ) {
 		    s->matched_flip = flip;
-		    s->last_sp = sp;
+		    s->last_sp = saw_sc_first ? NULL : sp;
 return( true );
 		} else
     break;
 	    }
 	    sc_sp = nsc_sp;
+	    if ( sc_sp == sc_path_first )
+		saw_sc_first = true;
 	    p_sp = np_sp;
 	}
     }
@@ -155,7 +162,8 @@ return( true );
 	    flipmax = flip_xy;
 	else
 	    flipmax = flip_none;
-	for ( flip=flip_none ; flip<flipmax; ++flip ) {	p_sp = path->first;
+	for ( flip=flip_none ; flip<flipmax; ++flip ) {
+	    p_sp = path->first;
 	    np_sp = p_sp->next->to;	/* if p_sp->next were NULL, we'd have returned by now */
 	    sc_sp = sp;
 	    if ( sc_sp->next==NULL )
@@ -203,13 +211,14 @@ return( false );
 		s->matched_co=0,s->matched_si=-1;
 	    else
 		s->matched_co = cos(rot), s->matched_si = sin(rot);
+	    saw_sc_first = false;
 	    for (sc_sp=sp, p_sp=path->first; ; ) {
 		if ( p_sp->next==NULL ) {
 		    if ( substring || sc_sp->next==NULL ) {
 			s->matched_flip = flip;
 			s->matched_rot = rot;
 			s->matched_scale = scale;
-			s->last_sp = sc_sp;
+			s->last_sp = saw_sc_first ? NULL : sp;
 return( true );
 		    } else
 return( false );
@@ -227,12 +236,14 @@ return( false );
 			s->matched_flip = flip;
 			s->matched_rot = rot;
 			s->matched_scale = scale;
-			s->last_sp = sp;
+			s->last_sp = saw_sc_first ? NULL : sp;
 return( true );
 		    } else
 return( false );
 		}
 		sc_sp = nsc_sp;
+		if ( sc_sp == sc_path_first )
+		    saw_sc_first = true;
 		p_sp = np_sp;
 	    }
 	}
@@ -338,7 +349,8 @@ static void SVFigureTranslation(SearchView *s,BasePoint *p,SplinePoint *sp) {
     s->matched_y = sp->me.y - res.y;
 }
 
-static int SPMatches(SplinePoint *sp, SearchView *s, SplineSet *path, int oriented ) {
+static int SPMatches(SplinePoint *sp, SearchView *s, SplineSet *path,
+	SplinePoint *sc_path_first, int oriented ) {
     real transform[6];
     BasePoint *p, res;
     if ( oriented ) {
@@ -353,7 +365,7 @@ return( false );
 
 return( SPMatchesO(sp,s,path));
     } else {
-	if ( !SPMatchesF(sp,s,path,false))
+	if ( !SPMatchesF(sp,s,path,sc_path_first,false))
 return( false );
 	SVFigureTranslation(s,&path->first->me,sp);
 return( true );
@@ -369,11 +381,11 @@ static int SCMatchesIncomplete(SplineChar *sc,SearchView *s,int startafter) {
 
     for ( spl=startafter?s->matched_spl:sc->layers[ly_fore].splines; spl!=NULL; spl=spl->next ) {
 	s->matched_spl = spl;
-	for ( sp=startafter?s->last_sp:spl->first; ; ) {
-	    if ( SPMatchesF(sp,s,s->path,true)) {
+	for ( sp=startafter?s->last_sp:spl->first; sp!=NULL; ) {
+	    if ( SPMatchesF(sp,s,s->path,spl->first,true)) {
 		SVFigureTranslation(s,&s->path->first->me,sp);
 return( true );
-	    } else if ( s->tryreverse && SPMatchesF(sp,s,s->revpath,true)) {
+	    } else if ( s->tryreverse && SPMatchesF(sp,s,s->revpath,spl->first,true)) {
 		SVFigureTranslation(s,&s->revpath->first->me,sp);
 		s->wasreversed = true;
 return( true );
@@ -435,9 +447,9 @@ return( false );
 	    s->matched_spl = spl;
 	    if ( spl->first->prev==NULL ) {	/* Open */
 		if ( s_spl->first!=s_spl->last ) {
-		    if ( SPMatches(spl->first,s,s_spl,1-first))
+		    if ( SPMatches(spl->first,s,s_spl,spl->first,1-first))
 	break;
-		    if ( s->tryreverse && SPMatches(spl->first,s,s_r_spl,1-first)) {
+		    if ( s->tryreverse && SPMatches(spl->first,s,s_r_spl,spl->first,1-first)) {
 			s->wasreversed = true;
 	break;
 		    }
@@ -446,11 +458,11 @@ return( false );
 		if ( s_spl->first==s_spl->last ) {
 		    int found = false;
 		    for ( sp=spl->first; ; ) {
-			if ( SPMatches(sp,s,s_spl,1-first)) {
+			if ( SPMatches(sp,s,s_spl,spl->first,1-first)) {
 			    found = true;
 		    break;
 			}
-			if ( s->tryreverse && SPMatches(sp,s,s_r_spl,1-first)) {
+			if ( s->tryreverse && SPMatches(sp,s,s_r_spl,spl->first,1-first)) {
 			    s->wasreversed = found = true;
 		    break;
 			}
@@ -483,7 +495,7 @@ return( false );
 return( true );
 }
 
-static void AdjustBP(BasePoint *changeme,BasePoint *rel,
+static int AdjustBP(BasePoint *changeme,BasePoint *rel,
 	BasePoint *shouldbe, BasePoint *shouldberel,
 	BasePoint *fudge,
 	SearchView *s) {
@@ -499,6 +511,7 @@ static void AdjustBP(BasePoint *changeme,BasePoint *rel,
     yoff *= s->matched_scale;
     changeme->x = xoff*s->matched_co - yoff*s->matched_si + fudge->x  + rel->x;
     changeme->y = yoff*s->matched_co + xoff*s->matched_si + fudge->y  + rel->y;
+return( changeme->x==rel->x && changeme->y==rel->y );
 }
 
 static void AdjustAll(SplinePoint *change,BasePoint *rel,
@@ -511,6 +524,9 @@ static void AdjustAll(SplinePoint *change,BasePoint *rel,
     AdjustBP(&change->me,rel,shouldbe,shouldberel,fudge,s);
     change->nextcp.x += change->me.x-old.x; change->nextcp.y += change->me.y-old.y;
     change->prevcp.x += change->me.x-old.x; change->prevcp.y += change->me.y-old.y;
+
+    change->nonextcp = (change->nextcp.x==change->me.x && change->nextcp.y==change->me.y);
+    change->noprevcp = (change->prevcp.x==change->me.x && change->prevcp.y==change->me.y);
 }
 
 static SplinePoint *RplInsertSP(SplinePoint *after,SplinePoint *rpl,SearchView *s, BasePoint *fudge) {
@@ -525,6 +541,8 @@ static SplinePoint *RplInsertSP(SplinePoint *after,SplinePoint *rpl,SearchView *
     new->prevcp.y = transform[1]*rpl->prevcp.x + transform[3]*rpl->prevcp.y + transform[5];
     new->nextcp.x = transform[0]*rpl->nextcp.x + transform[2]*rpl->nextcp.y + transform[4];
     new->nextcp.y = transform[1]*rpl->nextcp.x + transform[3]*rpl->nextcp.y + transform[5];
+    new->nonextcp = (new->nextcp.x==new->me.x && new->nextcp.y==new->me.y);
+    new->noprevcp = (new->prevcp.x==new->me.x && new->prevcp.y==new->me.y);
     new->pointtype = rpl->pointtype;
     new->selected = true;
     if ( after->next==NULL ) {
@@ -601,7 +619,7 @@ static void DoReplaceIncomplete(SplineChar *sc,SearchView *s) {
 
     for ( sc_p = s->matched_sp, p_p = path->first, r_p = rpath->first; ; ) {
 	if ( p_p->next==NULL && r_p->next==NULL ) {
-	    s->last_sp = sc_p;
+	    s->last_sp = s->last_sp==NULL ? NULL : sc_p;	/* If we crossed the contour start, move to next contour */
 return;		/* done */
 	} else if ( p_p->next==NULL ) {
 	    /* The search pattern is shorter that the replace pattern */
@@ -617,7 +635,7 @@ return;		/* done */
 		SplineFree(sc_p->next);
 		sc_p->next = NULL;
 		s->matched_spl->last = sc_p;
-		s->last_sp = sc_p;
+		s->last_sp = s->last_sp==NULL ? NULL : sc_p;
 return;
 	    } else {
 		nsc_p = nsc_p->next->to;
@@ -635,9 +653,9 @@ return;
 	    }
 	    np_p = p_p->next->to; nsc_p = sc_p->next->to; nr_p = r_p->next->to;
 	    if ( p_p==path->first ) {
-		AdjustBP(&sc_p->nextcp,&sc_p->me,&r_p->nextcp,&r_p->me,&fudge,s);
+		sc_p->nonextcp = AdjustBP(&sc_p->nextcp,&sc_p->me,&r_p->nextcp,&r_p->me,&fudge,s);
 		if ( p_p->prev!=NULL )
-		    AdjustBP(&sc_p->prevcp,&sc_p->me,&r_p->prevcp,&r_p->me,&fudge,s);
+		    sc_p->noprevcp = AdjustBP(&sc_p->prevcp,&sc_p->me,&r_p->prevcp,&r_p->me,&fudge,s);
 		sc_p->me.x += xoff; sc_p->me.y += yoff;
 		sc_p->nextcp.x += xoff; sc_p->nextcp.y += yoff;
 		sc_p->prevcp.x += xoff; sc_p->prevcp.y += yoff;
@@ -647,8 +665,8 @@ return;
 	    if ( np_p==path->first )
 return;
 	    if ( np_p->next!=NULL )
-		AdjustBP(&nsc_p->nextcp,&nsc_p->me,&nr_p->nextcp,&nr_p->me,&fudge,s);
-	    AdjustBP(&nsc_p->prevcp,&nsc_p->me,&nr_p->prevcp,&nr_p->me,&fudge,s);
+		nsc_p->nonextcp = AdjustBP(&nsc_p->nextcp,&nsc_p->me,&nr_p->nextcp,&nr_p->me,&fudge,s);
+	    nsc_p->noprevcp = AdjustBP(&nsc_p->prevcp,&nsc_p->me,&nr_p->prevcp,&nr_p->me,&fudge,s);
 	    AdjustAll(nsc_p,&sc_p->me,&nr_p->me,&r_p->me,&fudge,s);
 	    nsc_p->pointtype = nr_p->pointtype;
 	    if ( nsc_p->next!=NULL ) {
