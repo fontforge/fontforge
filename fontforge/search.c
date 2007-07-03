@@ -45,6 +45,7 @@ static SearchView *searcher=NULL;
 #define CID_ReplaceAll	1008
 #define CID_Cancel	1009
 #define CID_TopBox	1010
+#define CID_Fuzzy	1011
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static int CoordMatches(real real_off, real search_off, SearchView *s) {
@@ -989,7 +990,16 @@ static void DoFindAll(SearchView *sv) {
 #endif
 }
 
-static void SVParseDlg(SearchView *sv) {
+static double old_fudge = .001;
+
+static int SVParseDlg(SearchView *sv) {
+    int err=false;
+    double fudge;
+
+    fudge = GetReal8(sv->gw,CID_Fuzzy,_("Match Fuzziness:"),&err);
+    if ( err )
+return( false );
+    old_fudge = fudge;
 
     sv->tryreverse = true;
     sv->tryflips = GGadgetIsChecked(GWidgetGetControl(sv->gw,CID_Flipping));
@@ -1030,14 +1040,16 @@ static void SVParseDlg(SearchView *sv) {
 	    sv->rpointcnt = i;
 	}
     }
-    sv->fudge = sv->tryrotate ? .01 : .001;
+    sv->fudge = fudge;
     sv->fudge_percent = sv->tryrotate ? .01 : .001;
+return( true );
 }
 
 static int SV_Find(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	SearchView *sv = (SearchView *) GDrawGetUserData(GGadgetGetWindow(g));
-	SVParseDlg(sv);
+	if ( !SVParseDlg(sv))
+return( true );
 	sv->findall = sv->replaceall = false;
 	DoFindOne(sv,false);
     }
@@ -1047,7 +1059,8 @@ return( true );
 static int SV_FindAll(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	SearchView *sv = (SearchView *) GDrawGetUserData(GGadgetGetWindow(g));
-	SVParseDlg(sv);
+	if ( !SVParseDlg(sv))
+return( true );
 	sv->findall = true;
 	sv->replaceall = false;
 	DoFindAll(sv);
@@ -1059,7 +1072,8 @@ static int SV_RplFind(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	SearchView *sv = (SearchView *) GDrawGetUserData(GGadgetGetWindow(g));
 	RefChar *rf;
-	SVParseDlg(sv);
+	if ( !SVParseDlg(sv))
+return( true );
 	sv->findall = sv->replaceall = false;
 	for ( rf=sv->sc_rpl.layers[ly_fore].refs; rf!=NULL; rf = rf->next ) {
 	    if ( SCDependsOnSC(rf->sc,sv->curchar)) {
@@ -1080,7 +1094,8 @@ return( true );
 static int SV_RplAll(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	SearchView *sv = (SearchView *) GDrawGetUserData(GGadgetGetWindow(g));
-	SVParseDlg(sv);
+	if ( !SVParseDlg(sv))
+return( true );
 	sv->findall = false;
 	sv->replaceall = true;
 	DoFindAll(sv);
@@ -1428,11 +1443,13 @@ SearchView *SVCreate(FontView *fv) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[12], boxes[4], *butarray[14], *allowarray[6], *varray[8];
-    GTextInfo label[12];
+    GGadgetCreateData gcd[14], boxes[6], *butarray[14], *allowarray[6],
+	    *fudgearray[4], *halfarray[3], *varray[8];
+    GTextInfo label[14];
     FontRequest rq;
     int as, ds, ld;
     static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
+    char fudgebuf[20];
 
     if ( searcher!=NULL ) {
 	if ( SVAttachFV(fv,true)) {
@@ -1576,17 +1593,43 @@ return( NULL );
     butarray[9] = GCD_Glue; butarray[10] = &gcd[9];
     butarray[11] = GCD_Glue; butarray[12] = GCD_Glue; butarray[13] = NULL;
 
+    label[10].text = (unichar_t *) _("_Match Fuzziness:");
+    label[10].text_is_1byte = true;
+    label[10].text_in_resource = true;
+    gcd[10].gd.label = &label[10];
+    gcd[10].gd.flags = gg_enabled|gg_visible;
+    gcd[10].creator = GLabelCreate;
+    fudgearray[0] = &gcd[10];
+
+    sprintf(fudgebuf,"%g",old_fudge);
+    label[11].text = (unichar_t *) fudgebuf;
+    label[11].text_is_1byte = true;
+    label[11].text_in_resource = true;
+    gcd[11].gd.label = &label[11];
+    gcd[11].gd.flags = gg_enabled|gg_visible;
+    gcd[11].creator = GTextFieldCreate;
+    fudgearray[1] = &gcd[11]; fudgearray[2] = GCD_Glue; fudgearray[3] = NULL;
+
     boxes[2].gd.flags = gg_enabled|gg_visible;
     boxes[2].gd.u.boxelements = allowarray;
     boxes[2].creator = GHBoxCreate;
 
     boxes[3].gd.flags = gg_enabled|gg_visible;
-    boxes[3].gd.u.boxelements = butarray;
+    boxes[3].gd.u.boxelements = fudgearray;
     boxes[3].creator = GHBoxCreate;
+    halfarray[0] = &boxes[2]; halfarray[1] = &boxes[3]; halfarray[2] = NULL;
 
-    varray[0] = GCD_Glue; varray[1] = &boxes[2];
+    boxes[4].gd.flags = gg_enabled|gg_visible;
+    boxes[4].gd.u.boxelements = halfarray;
+    boxes[4].creator = GHBoxCreate;
+
+    boxes[5].gd.flags = gg_enabled|gg_visible;
+    boxes[5].gd.u.boxelements = butarray;
+    boxes[5].creator = GHBoxCreate;
+
+    varray[0] = GCD_Glue; varray[1] = &boxes[4];
     varray[2] = &gcd[4]; varray[3] = GCD_Glue;
-    varray[4] = &boxes[3]; varray[5] = NULL;
+    varray[4] = &boxes[5]; varray[5] = NULL;
 
     boxes[0].gd.flags = gg_enabled|gg_visible;
     boxes[0].gd.u.boxelements = varray;
@@ -1604,7 +1647,7 @@ return( NULL );
     GGadgetSetTitle8(GWidgetGetControl(gw,CID_Find),_("Find"));
     sv->showsfindnext = false;
     GDrawRequestTimer(gw,1000,1000,NULL);
-    sv->button_height = GDrawPointsToPixels(gw,64);
+    sv->button_height = GDrawPointsToPixels(gw,74);
     GDrawResize(gw,650,400);		/* Force a resize event */
 
     GDrawSetVisible(sv->gw,true);
