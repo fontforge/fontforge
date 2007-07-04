@@ -163,7 +163,7 @@ return( true );
 	    flipmax = flip_xy;
 	else
 	    flipmax = flip_none;
-	for ( flip=flip_none ; flip<flipmax; ++flip ) {
+	for ( flip=flip_none ; flip<=flipmax; ++flip ) {
 	    p_sp = path->first;
 	    np_sp = p_sp->next->to;	/* if p_sp->next were NULL, we'd have returned by now */
 	    sc_sp = sp;
@@ -591,7 +591,6 @@ static void DoReplaceIncomplete(SplineChar *sc,SearchView *s) {
     SplinePoint *sc_p, *nsc_p, *p_p, *np_p, *r_p, *nr_p;
     BasePoint fudge;
     SplineSet *path, *rpath;
-    real xoff, yoff, temp;
 
     if ( s->wasreversed ) {
 	path = s->revpath;
@@ -600,18 +599,6 @@ static void DoReplaceIncomplete(SplineChar *sc,SearchView *s) {
 	path = s->path;
 	rpath = s->replacepath;
     }
-
-    xoff = rpath->first->me.x-path->first->me.x;
-    yoff = rpath->first->me.y-path->first->me.y;
-    if ( s->matched_flip&1 )
-	xoff=-xoff;
-    if ( s->matched_flip&2 )
-	yoff =-yoff;
-    xoff *= s->matched_scale;
-    yoff *= s->matched_scale;
-    temp = xoff*s->matched_co - yoff*s->matched_si;
-    yoff = yoff*s->matched_co + xoff*s->matched_si;
-    xoff = temp;
 
     /* Total "fudge" amount should be spread evenly over each point */
     FudgeFigure(sc,s,path,&fudge);
@@ -657,9 +644,6 @@ return;
 		sc_p->nonextcp = AdjustBP(&sc_p->nextcp,&sc_p->me,&r_p->nextcp,&r_p->me,&fudge,s);
 		if ( p_p->prev!=NULL )
 		    sc_p->noprevcp = AdjustBP(&sc_p->prevcp,&sc_p->me,&r_p->prevcp,&r_p->me,&fudge,s);
-		sc_p->me.x += xoff; sc_p->me.y += yoff;
-		sc_p->nextcp.x += xoff; sc_p->nextcp.y += yoff;
-		sc_p->prevcp.x += xoff; sc_p->prevcp.y += yoff;
 		if ( sc_p->prev!=NULL )
 		    SplineRefigure(sc_p->prev);
 	    }
@@ -1607,6 +1591,7 @@ return( NULL );
     label[11].text_in_resource = true;
     gcd[11].gd.label = &label[11];
     gcd[11].gd.flags = gg_enabled|gg_visible;
+    gcd[11].gd.cid = CID_Fuzzy;
     gcd[11].creator = GTextFieldCreate;
     fudgearray[1] = &gcd[11]; fudgearray[2] = GCD_Glue; fudgearray[3] = NULL;
 
@@ -1642,6 +1627,7 @@ return( NULL );
     GHVBoxSetPadding(boxes[2].ret,6,3);
     GHVBoxSetExpandableCol(boxes[2].ret,gb_expandglue);
     GHVBoxSetExpandableCol(boxes[3].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(boxes[5].ret,gb_expandglue);
     GGadgetResize(boxes[0].ret,pos.width,pos.height);
 
     GGadgetSetTitle8(GWidgetGetControl(gw,CID_Find),_("Find"));
