@@ -674,6 +674,10 @@ static void readttfhead(FILE *ttf,struct ttfinfo *info) {
     flags = getushort(ttf);
     info->optimized_for_cleartype = (flags&(1<<13))?1:0;
     info->emsize = getushort(ttf);
+
+    info->ascent = .8*info->emsize;
+    info->descent = info->emsize-info->ascent;
+
     for ( i=0; i<12; ++i )
 	getushort(ttf);
     info->macstyle = getushort(ttf);
@@ -704,9 +708,6 @@ static void readttfhhea(FILE *ttf,struct ttfinfo *info) {
     info->pfminfo.linegap = getushort(ttf);
     info->pfminfo.hheadset = true;
     /*info->ascent = info->pfminfo.hhead_ascent;*/
-
-    info->ascent = .8*info->emsize;
-    info->descent = info->emsize-info->ascent;
 
     for ( i=0; i<12; ++i )
 	getushort(ttf);
