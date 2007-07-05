@@ -1794,6 +1794,7 @@ OTLookup *OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf, OTLookup *fr
     OTLookup *otl = chunkalloc(sizeof(OTLookup));
     struct lookup_subtable *sub, *last, *from_sub;
     char *prefix = strconcat(from_sf->fontname,"-");
+    int scnt;
 
     into_sf->changed = true;
 
@@ -1804,12 +1805,18 @@ OTLookup *OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf, OTLookup *fr
     SortInsertLookup(into_sf,otl);
 
     last = NULL;
+    scnt = 0;
     for ( from_sub = from_otl->subtables; from_sub!=NULL; from_sub=from_sub->next ) {
 	sub = chunkalloc(sizeof(struct lookup_subtable));
 	*sub = *from_sub;
 	sub->lookup = otl;
 	sub->subtable_name = strconcat(prefix,from_sub->subtable_name);
 	sub->suffix = copy(sub->suffix);
+	if ( last==NULL )
+	    otl->subtables = sub;
+	else
+	    last->next = sub;
+	last = sub;
 	if ( from_sub->kc!=NULL )
 	    sub->kc = SF_AddKernClass(into_sf, from_sub->kc, sub, from_sf, prefix);
 	else if ( from_sub->fpst!=NULL )
@@ -1820,6 +1827,19 @@ OTLookup *OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf, OTLookup *fr
 	    SF_AddAnchorClasses(into_sf, from_sub, sub, from_sf, prefix);
 	else
 	    SF_AddPSTKern(into_sf, from_sub, sub, from_sf, prefix);
+	++scnt;
+    }
+    if ( into_sf->fontinfo ) {
+	int isgpos = otl->lookup_type>=gpos_start;
+	struct lkdata *lk = &into_sf->fontinfo->tables[isgpos];
+	int i;
+	for ( i=0; i<lk->cnt; ++i )
+	    if ( lk->all[i].lookup==otl )
+	break;
+	lk->all[i].subtable_cnt = lk->all[i].subtable_max = scnt;
+	lk->all[i].subtables = gcalloc(scnt,sizeof(struct lksubinfo));
+	for ( sub=otl->subtables, scnt=0; sub!=NULL; sub=sub->next, ++scnt )
+	    lk->all[i].subtables[scnt].subtable = sub;
     }
 return( otl );
 }
