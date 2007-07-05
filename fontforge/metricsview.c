@@ -1360,9 +1360,9 @@ static void MVTextChanged(MetricsView *mv) {
 	if ( *pt!=mv->chars[i]->unicodeenc &&
 		(*pt!=0xfffd || mv->chars[i]->unicodeenc!=-1 ))
     break;
-    if ( i==mv->glyphcnt && *pt=='\0' )
+    if ( i==mv->clen && *pt=='\0' )
 return;					/* Nothing changed */
-    for ( ept=ret+u_strlen(ret)-1, ei=mv->glyphcnt-1; ; --ei, --ept )
+    for ( ept=ret+u_strlen(ret)-1, ei=mv->clen-1; ; --ei, --ept )
 	if ( ei<0 || ept<ret || (*ept!=mv->chars[ei]->unicodeenc &&
 		(*ept!=0xfffd || mv->chars[ei]->unicodeenc!=-1 ))) {
 	    ++ei; ++ept;
@@ -1373,10 +1373,10 @@ return;					/* Nothing changed */
 	}
     if ( ei==i && ept==pt )
 	IError("No change when there should have been one in MV_TextChanged");
-    if ( u_strlen(ret)>=mv->cmax ) {
-	int oldmax=mv->cmax;
-	mv->cmax = u_strlen(ret)+10;
-	mv->chars = grealloc(mv->chars,mv->cmax*sizeof(SplineChar *));
+    if ( u_strlen(ret)>=mv->clen ) {
+	int oldmax=mv->clen;
+	mv->clen = u_strlen(ret)+10;
+	mv->chars = grealloc(mv->chars,mv->clen*sizeof(SplineChar *));
 	memset(mv->chars+oldmax,'\0',(mv->max-oldmax)*sizeof(SplineChar *));
     }
 
@@ -1386,16 +1386,16 @@ return;					/* Nothing changed */
 	    ++missing;
 
     if ( ept-pt-missing > ei-i ) {
-	if ( i<mv->glyphcnt ) {
+	if ( i<mv->clen ) {
 	    int diff = (ept-pt-missing) - (ei-i);
-	    hold = galloc((mv->glyphcnt+diff+6)*sizeof(SplineChar *));
-	    for ( j=mv->glyphcnt-1; j>=ei; --j )
+	    hold = galloc((mv->clen+diff+6)*sizeof(SplineChar *));
+	    for ( j=mv->clen-1; j>=ei; --j )
 		hold[j+diff] = mv->chars[j];
-	    start = ei+diff; end = mv->glyphcnt+diff;
+	    start = ei+diff; end = mv->clen+diff;
 	}
     } else if ( ept-pt-missing != ei-i ) {
 	int diff = (ept-pt-missing) - (ei-i);
-	for ( j=ei; j<mv->glyphcnt; ++j )
+	for ( j=ei; j<mv->clen; ++j )
 	    if ( j+diff>=0 )
 		mv->chars[j+diff] = mv->chars[j];
     }
