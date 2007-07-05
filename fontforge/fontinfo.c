@@ -6286,15 +6286,18 @@ static int import_e_h(GWindow gw, GEvent *event) {
 return( true );
 	}
 return( false );
-    } else if ( event->type==et_controlevent && event->u.control.subtype == et_buttonactivate ) {
-	switch ( GGadgetGetCid(event->u.control.g)) {
-	  case CID_OK:
+    } else if ( event->type==et_controlevent ) {
+	if ( event->u.control.subtype == et_buttonactivate ) {
+	    switch ( GGadgetGetCid(event->u.control.g)) {
+	      case CID_OK:
+		*done = 2;
+	      break;
+	      case CID_Cancel:
+		*done = true;
+	      break;
+	    }
+	} else if ( event->u.control.subtype == et_listdoubleclick )
 	    *done = 2;
-	  break;
-	  case CID_Cancel:
-	    *done = true;
-	  break;
-	}
     }
 return( true );
 }
