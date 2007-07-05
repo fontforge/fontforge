@@ -499,7 +499,6 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, Encoding **_enc,
     int pixelsize = -1, pixel_size2= -1, point_size = -1;
     int ascent= -1, descent= -1, enc, cnt;
     char tok[100], encname[100], weight[100], italic[100], buffer[300], *buf;
-    int ch;
     int found_copyright=0;
     int inprops=false;
     int pcnt=0, pmax=0;
@@ -560,15 +559,19 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, Encoding **_enc,
     
 	if ( strcmp(tok,"FONT")==0 ) {
 	    if ( sscanf(buf,"-%*[^-]-%[^-]-%[^-]-%[^-]-%*[^-]-", family, weight, italic )!=0 ) {
-		while ( (ch = getc(bdf))!='-' && ch!='\n' && ch!=EOF );
-		if ( ch=='-' ) {
-		    fscanf(bdf,"%d", &pixelsize );
-		    if ( pixelsize<0 ) pixelsize = -pixelsize;	/* An extra - screwed things up once... */
-		    while ( (ch = getc(bdf))!='-' && ch!='\n' && ch!=EOF );
-		    if ( ch=='-' ) {
-			fscanf(bdf,"%d", &point_size );
-			if ( point_size<0 ) point_size = -point_size;
-		    }
+		char *pt=buf;
+		int dcnt=0;
+		while ( *pt=='-' && dcnt<7 ) { ++pt; ++dcnt; }
+		while ( *pt!='-' && *pt!='\n' && *pt!='\0' && dcnt<7 ) {
+		    while ( *pt!='-' && *pt!='\n' && *pt!='\0' ) ++pt;
+		    while ( *pt=='-' && dcnt<7 ) { ++pt; ++dcnt; }
+		}
+		sscanf(pt,"%d", &pixelsize );
+		if ( pixelsize<0 ) pixelsize = -pixelsize;	/* An extra - screwed things up once... */
+		while ( *pt!='-' && *pt!='\n' && *pt!='\0' ) ++pt;
+		if ( *pt=='-' ) {
+		    sscanf(++pt,"%d", &point_size );
+		    if ( point_size<0 ) point_size = -point_size;
 		}
 	    } else {
 		if ( *buf!='\0' && !isdigit(*buf))
@@ -576,13 +579,9 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, Encoding **_enc,
 	    }
 	} else if ( strcmp(tok,"SIZE")==0 ) {
 	    int junk;
-	    sscanf(buf, "%d %d %d", &point_size, &junk, &defs->res );
+	    sscanf(buf, "%d %d %d %d", &point_size, &junk, &defs->res, depth );
 	    if ( pixelsize==-1 )
 		pixelsize = rint( point_size*defs->res/72.0 );
-	    while ((ch = getc(bdf))==' ' || ch=='\t' );
-	    ungetc(ch,bdf);
-	    if ( isdigit(ch))
-		fscanf(bdf, "%d", depth);
 	} else if ( strcmp(tok,"BITSPERPIXEL")==0 ||
 		strcmp(tok,"BITS_PER_PIXEL")==0 ) {
 	    sscanf(buf, "%d", depth);
