@@ -1377,8 +1377,8 @@ static void DrawVLine(CharView *cv,GWindow pixmap,real pos,Color fg, int flags, 
 	}
     }
     if ( ItalicConstrained && cv->sc->parent->italicangle!=0 ) {
-	double s = sin(-cv->sc->parent->italicangle*3.1415926535897932/180.);
-	int xoff = rint(8096*s);
+	double t = tan(-cv->sc->parent->italicangle*3.1415926535897932/180.);
+	int xoff = rint(8096*t);
 	DrawLine(cv,pixmap,pos-xoff,-8096,pos+xoff,8096,italiccoordcol);
     }
 }
@@ -1642,6 +1642,9 @@ return;				/* no points. no side bearings */
 	    dtos( buf, sc->width-bounds[1]->x);
 	    x = x + (x2-x-GDrawGetText8Width(pixmap,buf,-1,NULL))/2;
 	    GDrawDrawText8(pixmap,x,y-4,buf,-1,NULL,metricslabelcol);
+	}
+	if ( ItalicConstrained && cv->sc->parent->italicangle!=0 ) {
+	    double s = sin(-cv->sc->parent->italicangle*3.1415926535897932/180.);
 	}
     }
 
