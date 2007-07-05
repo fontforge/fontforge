@@ -2407,6 +2407,8 @@ return( NULL );
 	     COLOR_RED(bg) + (l*(COLOR_RED(fg)-COLOR_RED(bg)))/((1<<clut_scale)-1),
 	     COLOR_GREEN(bg) + (l*(COLOR_GREEN(fg)-COLOR_GREEN(bg)))/((1<<clut_scale)-1),
 	     COLOR_BLUE(bg) + (l*(COLOR_BLUE(fg)-COLOR_BLUE(bg)))/((1<<clut_scale)-1) );
+    BDFCharFree(me);
+    BDFCharFree(other);
 return( img );
 }
 
