@@ -691,7 +691,7 @@ static void BuildASM(struct node *node,struct att_dlg *att) {
     }
 
     lines = NULL;
-    space = galloc( 5*sm->class_cnt+40 );
+    space = galloc( 81*sm->class_cnt+40 );
     for ( i=0; i<2; ++i ) {
 	len = 0;
 
