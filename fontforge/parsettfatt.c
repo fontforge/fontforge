@@ -3012,7 +3012,7 @@ return;
     } else if ( (sc=info->chars[gnum])==NULL )
 return;
 
-    fseek(ttf,info->lcar_start+offset+6,SEEK_SET);	/* skip over the lcar table header */
+    fseek(ttf,info->lcar_start+offset,SEEK_SET);
     cnt = getushort(ttf);
     pst = chunkalloc(sizeof(PST));
     pst->type = pst_lcaret;
