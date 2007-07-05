@@ -1594,6 +1594,33 @@ static void FindQuickBounds(SplineSet *ss,BasePoint **bounds) {
     }
 }
 
+static void SSFindItalicBounds(SplineSet *ss,double t,SplinePoint **left, SplinePoint **right) {
+    SplinePoint *sp;
+
+    if ( t==0 )
+return;
+
+    for ( ; ss!=NULL; ss=ss->next ) {
+	sp = ss->first;
+	if ( sp->next==NULL || sp->next->to==sp )	/* Ignore contours with one point. Often tt points for moving references or anchors */
+    continue;
+	forever {
+	    if ( *left==NULL )
+		*left = *right = sp;
+	    else {
+		double xoff = sp->me.y*t;
+		if ( sp->me.x-xoff < (*left)->me.x - (*left)->me.y*t ) *left = sp;
+		if ( sp->me.x-xoff > (*right)->me.x - (*right)->me.y*t ) *right = sp;
+	    }
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==ss->first )
+	break;
+	}
+    }
+}
+
 static void CVSideBearings(GWindow pixmap, CharView *cv) {
     SplineChar *sc = cv->sc;
     RefChar *ref;
@@ -1644,7 +1671,44 @@ return;				/* no points. no side bearings */
 	    GDrawDrawText8(pixmap,x,y-4,buf,-1,NULL,metricslabelcol);
 	}
 	if ( ItalicConstrained && cv->sc->parent->italicangle!=0 ) {
-	    double s = sin(-cv->sc->parent->italicangle*3.1415926535897932/180.);
+	    double t = tan(-cv->sc->parent->italicangle*3.1415926535897932/180.);
+	    if ( t!=0 ) {
+		SplinePoint *leftmost=NULL, *rightmost=NULL;
+		for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+		    SSFindItalicBounds(sc->layers[layer].splines,t,&leftmost,&rightmost);
+		    for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next )
+			for ( l=0; l<ref->layer_cnt; ++l )
+			    SSFindItalicBounds(ref->layers[l].splines,t,&leftmost,&rightmost);
+		}
+		if ( leftmost!=NULL ) {
+		    x = rint(leftmost->me.y*t*cv->scale) + cv->xoff;
+		    x2 = rint(leftmost->me.x*cv->scale) + cv->xoff;
+		    y = cv->height-cv->yoff-rint(leftmost->me.y*cv->scale);
+		    DrawPLine(cv,pixmap,x,y,x2,y,italiccoordcol);
+		     /* arrow heads */
+		     DrawPLine(cv,pixmap,x,y,x+4,y+4,italiccoordcol);
+		     DrawPLine(cv,pixmap,x,y,x+4,y-4,italiccoordcol);
+		     DrawPLine(cv,pixmap,x2,y,x2-4,y-4,italiccoordcol);
+		     DrawPLine(cv,pixmap,x2,y,x2-4,y+4,italiccoordcol);
+		    dtos( buf, leftmost->me.x-leftmost->me.y*t);
+		    x = x + (x2-x-GDrawGetText8Width(pixmap,buf,-1,NULL))/2;
+		    GDrawDrawText8(pixmap,x,y+12,buf,-1,NULL,italiccoordcol);
+		}
+		if ( rightmost!=NULL ) {
+		    x = rint(rightmost->me.x*cv->scale) + cv->xoff;
+		    y = cv->height-cv->yoff-rint(rightmost->me.y*cv->scale);
+		    x2 = rint((sc->width + rightmost->me.y*t)*cv->scale) + cv->xoff;
+		    DrawPLine(cv,pixmap,x,y,x2,y,italiccoordcol);
+		     /* arrow heads */
+		     DrawPLine(cv,pixmap,x,y,x+4,y+4,italiccoordcol);
+		     DrawPLine(cv,pixmap,x,y,x+4,y-4,italiccoordcol);
+		     DrawPLine(cv,pixmap,x2,y,x2-4,y-4,italiccoordcol);
+		     DrawPLine(cv,pixmap,x2,y,x2-4,y+4,italiccoordcol);
+		    dtos( buf, sc->width+rightmost->me.y*t-rightmost->me.x);
+		    x = x + (x2-x-GDrawGetText8Width(pixmap,buf,-1,NULL))/2;
+		    GDrawDrawText8(pixmap,x,y+12,buf,-1,NULL,italiccoordcol);
+		}
+	    }
 	}
     }
 
