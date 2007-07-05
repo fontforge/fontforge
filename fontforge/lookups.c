@@ -2403,19 +2403,22 @@ return( 0 );
     if ( ap1==NULL )
 return( 0 );
 
-    data->str[npos].vr.yoff = rint((ap1->me.y - ap2->me.y) * data->scale);
+    data->str[npos].vr.yoff = data->str[pos].vr.yoff +
+	    rint((ap1->me.y - ap2->me.y) * data->scale);
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
     data->str[npos].vr.yoff += FigureDeviceTable(&ap1->yadjust,data->pixelsize)-
 		FigureDeviceTable(&ap2->yadjust,data->pixelsize);
 #endif
     if ( sub->lookup->lookup_flags&pst_r2l ) {
-	data->str[npos].vr.xoff = rint( -(ap1->me.x - ap2->me.x)*data->scale );
+	data->str[npos].vr.xoff = data->str[pos].vr.xoff +
+		rint( -(ap1->me.x - ap2->me.x)*data->scale );
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 	data->str[npos].vr.xoff -= FigureDeviceTable(&ap1->xadjust,data->pixelsize)-
 		    FigureDeviceTable(&ap2->xadjust,data->pixelsize);
 #endif
     } else {
-	data->str[npos].vr.xoff = rint( (ap1->me.x - ap2->me.x - data->str[pos].sc->width)*data->scale );
+	data->str[npos].vr.xoff = data->str[pos].vr.xoff +
+		rint( (ap1->me.x - ap2->me.x - data->str[pos].sc->width)*data->scale );
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 	data->str[npos].vr.xoff += FigureDeviceTable(&ap1->xadjust,data->pixelsize)-
 		    FigureDeviceTable(&ap2->xadjust,data->pixelsize);
