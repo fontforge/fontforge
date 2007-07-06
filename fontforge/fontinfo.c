@@ -5793,7 +5793,7 @@ static int GFI_LookupOrder(GGadget *g, GEvent *e) {
 		    continue;
 			if ( lk->all[i].subtables[j].selected ) {
 			    temp2 = lk->all[i].subtables[j];
-			    for ( k=j; k<lk->all[i].subtable_cnt-1; --k )
+			    for ( k=j; k<lk->all[i].subtable_cnt-1; ++k )
 				lk->all[i].subtables[k] = lk->all[i].subtables[k+1];
 			    lk->all[i].subtables[lk->all[i].subtable_cnt-1] = temp2;
     goto done;
@@ -5832,7 +5832,7 @@ static int GFI_LookupOrder(GGadget *g, GEvent *e) {
 		    lk->all[i+1] = temp;
 		}
 		if ( lk->all[i].open ) {
-		    for ( j=0; j<lk->all[i].subtable_cnt; ++j ) {
+		    for ( j=lk->all[i].subtable_cnt-1; j>=0; --j ) {
 			if ( lk->all[i].subtables[j].deleted )
 		    continue;
 			if ( lk->all[i].subtables[j].selected && j!=lk->all[i].subtable_cnt-1 ) {
