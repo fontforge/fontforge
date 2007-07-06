@@ -1373,11 +1373,11 @@ return;					/* Nothing changed */
 	}
     if ( ei==i && ept==pt )
 	IError("No change when there should have been one in MV_TextChanged");
-    if ( u_strlen(ret)>=mv->clen ) {
-	int oldmax=mv->clen;
-	mv->clen = u_strlen(ret)+10;
-	mv->chars = grealloc(mv->chars,mv->clen*sizeof(SplineChar *));
-	memset(mv->chars+oldmax,'\0',(mv->max-oldmax)*sizeof(SplineChar *));
+    if ( u_strlen(ret)>=mv->cmax ) {
+	int oldmax=mv->cmax;
+	mv->cmax = u_strlen(ret)+10;
+	mv->chars = grealloc(mv->chars,mv->cmax*sizeof(SplineChar *));
+	memset(mv->chars+oldmax,'\0',(mv->cmax-oldmax)*sizeof(SplineChar *));
     }
 
     missing = 0;
