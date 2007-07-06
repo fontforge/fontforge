@@ -3854,6 +3854,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
 
     gd.pos.x = gd.pos.x+gd.pos.width+10;
     gd.pos.width = GDrawPointsToPixels(mv->gw,200);
+    gd.pos.height = gsize.height;
     label.text = (unichar_t *) buf;
     gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_text_xim;
     gd.handle_controlevent = MV_TextChanged;
