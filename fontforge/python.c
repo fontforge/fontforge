@@ -8675,7 +8675,7 @@ Py_RETURN( self );
 }
 
 /* filename, bitmaptype,flags,resolution,mult-sfd-file,namelist */
-static char *gen_keywords[] = { "bitmap_type", "flags", "bitmap_resolution",
+static char *gen_keywords[] = { "filename", "bitmap_type", "flags", "bitmap_resolution",
 	"subfont_directory", "namelist", NULL };
 struct flaglist gen_flags[] = {
     { "afm", 0x0001 },
