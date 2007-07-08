@@ -2877,6 +2877,21 @@ static void OTLAppend(struct ttfinfo *info,OTLookup *otl,int gpos) {
     otl->lookup_index = pos;
 }
 
+static void OTLRemove(struct ttfinfo *info,OTLookup *otl,int gpos) {
+    /* Remove the most recent lookup. We got bad data and can't use it */
+    OTLookup *prev, **base;
+    int pos=0;
+
+    base = gpos ? &info->gpos_lookups : &info->gsub_lookups;
+    if ( *base==otl )
+	*base = NULL;
+    else if ( *base!=NULL ) {
+	for ( prev = *base; prev->next!=NULL && prev->next!=otl; prev = prev->next );
+	prev->next = NULL;
+    }
+    OTLookupFree(otl);
+}
+
 static OTLookup *NewMacLookup(struct ttfinfo *info,int gpos) {
     OTLookup *otl;
 
@@ -4543,7 +4558,9 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 	    kc->subtable = otl->subtables;
 	    InfoNameOTLookup(otl,info);
 	} else {
+	    LogError(_("Invalid format (%d) for subtable of 'kern' table"), format );
 	    fseek(ttf,len-header_size,SEEK_CUR);
+	    OTLRemove(info,otl,true);
 	}
     }
 }
