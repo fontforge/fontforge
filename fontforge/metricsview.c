@@ -1356,7 +1356,7 @@ static void MVTextChanged(MetricsView *mv) {
 	direction_change = true;
 	mv->right_to_left = !mv->right_to_left;
     }
-    for ( pt=ret, i=0; i<mv->glyphcnt && *pt!='\0'; ++i, ++pt )
+    for ( pt=ret, i=0; i<mv->clen && *pt!='\0'; ++i, ++pt )
 	if ( *pt!=mv->chars[i]->unicodeenc &&
 		(*pt!=0xfffd || mv->chars[i]->unicodeenc!=-1 ))
     break;
