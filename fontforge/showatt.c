@@ -1594,6 +1594,8 @@ static void BuildTable(struct node *node,struct att_dlg *att) {
 
     /* Build the list of scripts that are mentioned in the font */
     scriptlist = SFScriptsInLookups(_sf,!isgsub);
+    if ( scriptlist==NULL )
+return;
     for ( i=0; scriptlist[i]!=0; ++i );
     script_max = i;
     scriptnodes = gcalloc(script_max+1,sizeof(struct node));
