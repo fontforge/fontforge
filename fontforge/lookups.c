@@ -1243,6 +1243,9 @@ FeatureScriptLangList *FeatureListCopy(FeatureScriptLangList *fl) {
     FeatureScriptLangList *newfl;
     struct scriptlanglist *sl, *prev;
 
+    if ( fl==NULL )
+return( NULL );
+
     newfl = chunkalloc(sizeof(FeatureScriptLangList));
     *newfl = *fl;
     newfl->next = NULL;
@@ -2167,6 +2170,7 @@ return( pos+1 );
 	    data->str[pos+i].sc = mults[i];
 	    data->str[pos+i].orig_index = data->str[pos].orig_index;
 	}
+	data->cnt += (mcnt-1);
 return( pos+mcnt );
     }
 }
