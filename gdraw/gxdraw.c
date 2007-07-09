@@ -3855,10 +3855,14 @@ static void *GXDrawRequestSelection(GWindow w,enum selnames sn, char *typename, 
 		    *len *= sd->unitsize;
 		} else {
 		    bytelen = sd->unitsize*sd->cnt;
-		    temp = galloc(bytelen+2);
+		    temp = galloc(bytelen+4);
 		    memcpy(temp,sd->data,bytelen);
 		    temp[bytelen] = '\0';
 		    temp[bytelen+1] = '\0';
+#ifndef UNICHAR_16
+		    temp[bytelen+2] = '\0';
+		    temp[bytelen+3] = '\0';
+#endif
 		    *len = bytelen;
 		}
 return( temp );
@@ -3884,10 +3888,14 @@ return( NULL );
     }
 
     bytelen = nitems * (actual_format/8);
-    temp = galloc(bytelen+2);
+    temp = galloc(bytelen+4);
     memcpy(temp,prop,bytelen);
     temp[bytelen]='\0';
     temp[bytelen+1]='\0';		/* Nul terminate unicode strings too */
+#ifndef UNICHAR_16
+    temp[bytelen+2] = '\0';
+    temp[bytelen+3] = '\0';
+#endif
     if ( len!=NULL )
 	*len = bytelen;
     XFree(prop);
