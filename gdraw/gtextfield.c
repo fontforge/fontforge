@@ -387,9 +387,10 @@ static void *genunicodedata(void *_gt,int32 *len) {
     GTextField *gt = _gt;
     unichar_t *temp;
     *len = gt->sel_end-gt->sel_start + 1;
-    temp = galloc((*len+1)*sizeof(unichar_t));
+    temp = galloc((*len+2)*sizeof(unichar_t));
     temp[0] = 0xfeff;		/* KDE expects a byte order flag */
     u_strncpy(temp+1,gt->text+gt->sel_start,gt->sel_end-gt->sel_start);
+    temp[*len+1] = 0;
 return( temp );
 }
 
@@ -435,9 +436,15 @@ static void GTextFieldGrabPrimarySelection(GTextField *gt) {
 
     GDrawGrabSelection(gt->g.base,sn_primary);
     gt->sel_start = ss; gt->sel_end = se;
+#ifdef UNICHAR_16
     GDrawAddSelectionType(gt->g.base,sn_primary,"text/plain;charset=ISO-10646-UCS-2",gt,gt->sel_end-gt->sel_start,
 	    sizeof(unichar_t),
 	    genunicodedata,noop);
+#else
+    GDrawAddSelectionType(gt->g.base,sn_primary,"text/plain;charset=ISO-10646-UCS-4",gt,gt->sel_end-gt->sel_start,
+	    sizeof(unichar_t),
+	    genunicodedata,noop);
+#endif
     GDrawAddSelectionType(gt->g.base,sn_primary,"UTF8_STRING",gt,gt->sel_end-gt->sel_start,
 	    sizeof(char),
 	    genutf8data,noop);
@@ -452,9 +459,15 @@ static void GTextFieldGrabPrimarySelection(GTextField *gt) {
 static void GTextFieldGrabDDSelection(GTextField *gt) {
 
     GDrawGrabSelection(gt->g.base,sn_drag_and_drop);
+#ifdef UNICHAR_16
     GDrawAddSelectionType(gt->g.base,sn_drag_and_drop,"text/plain;charset=ISO-10646-UCS-2",gt,gt->sel_end-gt->sel_start,
 	    sizeof(unichar_t),
 	    ddgenunicodedata,noop);
+#else
+    GDrawAddSelectionType(gt->g.base,sn_drag_and_drop,"text/plain;charset=ISO-10646-UCS-4",gt,gt->sel_end-gt->sel_start,
+	    sizeof(unichar_t),
+	    ddgenunicodedata,noop);
+#endif
     GDrawAddSelectionType(gt->g.base,sn_drag_and_drop,"STRING",gt,gt->sel_end-gt->sel_start,sizeof(char),
 	    ddgenlocaldata,noop);
 }
@@ -464,6 +477,10 @@ static void GTextFieldGrabSelection(GTextField *gt, enum selnames sel ) {
     if ( gt->sel_start!=gt->sel_end ) {
 	unichar_t *temp;
 	char *ctemp, *ctemp2;
+#ifndef UNICHAR_16
+	int i;
+	uint16 *u2temp;
+#endif
 
 	GDrawGrabSelection(gt->g.base,sel);
 	temp = galloc((gt->sel_end-gt->sel_start + 2)*sizeof(unichar_t));
@@ -471,9 +488,22 @@ static void GTextFieldGrabSelection(GTextField *gt, enum selnames sel ) {
 	u_strncpy(temp+1,gt->text+gt->sel_start,gt->sel_end-gt->sel_start);
 	ctemp = u2utf8_copy(temp+1);
 	ctemp2 = u2def_copy(temp+1);
+#ifdef UNICHAR_16
 	GDrawAddSelectionType(gt->g.base,sel,"text/plain;charset=ISO-10646-UCS-2",temp,u_strlen(temp),
 		sizeof(unichar_t),
 		NULL,NULL);
+#else
+	GDrawAddSelectionType(gt->g.base,sel,"text/plain;charset=ISO-10646-UCS-4",temp,u_strlen(temp),
+		sizeof(unichar_t),
+		NULL,NULL);
+	u2temp = galloc((gt->sel_end-gt->sel_start + 2)*sizeof(uint16));
+	for ( i=0; temp[i]!=0; ++i )
+	    u2temp[i] = temp[i];
+	u2temp[i] = 0;
+	GDrawAddSelectionType(gt->g.base,sel,"text/plain;charset=ISO-10646-UCS-2",u2temp,u_strlen(temp),
+		2,
+		NULL,NULL);
+#endif
 	GDrawAddSelectionType(gt->g.base,sel,"UTF8_STRING",copy(ctemp),strlen(ctemp),
 		sizeof(char),
 		NULL,NULL);
@@ -574,6 +604,7 @@ static void GTextFieldSelectWords(GTextField *gt,int last) {
 }
 
 static void GTextFieldPaste(GTextField *gt,enum selnames sel) {
+#ifdef UNICHAR_16
     if ( GDrawSelectionHasType(gt->g.base,sel,"Unicode") ||
 	    GDrawSelectionHasType(gt->g.base,sel,"text/plain;charset=ISO-10646-UCS-2")) {
 	unichar_t *temp;
@@ -585,11 +616,41 @@ static void GTextFieldPaste(GTextField *gt,enum selnames sel) {
 	if ( temp!=NULL )
 	    GTextField_Replace(gt,temp[0]==0xfeff?temp+1:temp);
 	free(temp);
+#else
+    if ( GDrawSelectionHasType(gt->g.base,sel,"text/plain;charset=ISO-10646-UCS-4")) {
+	unichar_t *temp;
+	int32 len;
+	temp = GDrawRequestSelection(gt->g.base,sel,"text/plain;charset=ISO-10646-UCS-4",&len);
+	/* Bug! I don't handle byte reversed selections. But I don't think there should be any anyway... */
+	if ( temp!=NULL )
+	    GTextField_Replace(gt,temp[0]==0xfeff?temp+1:temp);
+	free(temp);
+    } else if ( GDrawSelectionHasType(gt->g.base,sel,"Unicode") ||
+	    GDrawSelectionHasType(gt->g.base,sel,"text/plain;charset=ISO-10646-UCS-2")) {
+	unichar_t *temp;
+	uint16 *temp2;
+	int32 len;
+	temp2 = GDrawRequestSelection(gt->g.base,sel,"text/plain;charset=ISO-10646-UCS-2",&len);
+	if ( temp2==NULL || len==0 )
+	    temp2 = GDrawRequestSelection(gt->g.base,sel,"Unicode",&len);
+	if ( temp2!=NULL ) {
+	    int i;
+	    temp = galloc((len/2+1)*sizeof(unichar_t));
+	    for ( i=0; temp2[i]!=0; ++i )
+		temp[i] = temp2[i];
+	    temp[i] = 0;
+	    GTextField_Replace(gt,temp[0]==0xfeff?temp+1:temp);
+	    free(temp);
+	}
+	free(temp2);
+#endif
     } else if ( GDrawSelectionHasType(gt->g.base,sel,"UTF8_STRING") ||
 	    GDrawSelectionHasType(gt->g.base,sel,"text/plain;charset=UTF-8")) {
 	unichar_t *temp; char *ctemp;
 	int32 len;
 	ctemp = GDrawRequestSelection(gt->g.base,sel,"UTF8_STRING",&len);
+	if ( ctemp==NULL || len==0 )
+	    ctemp = GDrawRequestSelection(gt->g.base,sel,"text/plain;charset=UTF-8",&len);
 	if ( ctemp!=NULL ) {
 	    temp = utf82u_copyn(ctemp,strlen(ctemp));
 	    GTextField_Replace(gt,temp);
