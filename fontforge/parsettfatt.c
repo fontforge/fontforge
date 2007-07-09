@@ -2880,7 +2880,6 @@ static void OTLAppend(struct ttfinfo *info,OTLookup *otl,int gpos) {
 static void OTLRemove(struct ttfinfo *info,OTLookup *otl,int gpos) {
     /* Remove the most recent lookup. We got bad data and can't use it */
     OTLookup *prev, **base;
-    int pos=0;
 
     base = gpos ? &info->gpos_lookups : &info->gsub_lookups;
     if ( *base==otl )

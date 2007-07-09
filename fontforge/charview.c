@@ -1355,7 +1355,7 @@ return;
 	    CVDrawSplineSet(cv,pixmap,refs->layers[0].splines,oldoutlinecol,false,clip);
     /* Don't do images... */
 }
-    
+
 static void DrawTransOrigin(CharView *cv, GWindow pixmap) {
     int x = rint(cv->p.cx*cv->scale) + cv->xoff, y = cv->height-cv->yoff-rint(cv->p.cy*cv->scale);
 
@@ -4348,8 +4348,11 @@ static void CVVScroll(CharView *cv,struct sbevent *sb) {
 	GDrawScroll(cv->v,NULL,0,diff);
 	if (( cv->showvhints && cv->sc->vstem!=NULL) || cv->showhmetrics ) {
 	    GRect r;
+	    RefChar *lock = HasUseMyMetrics(cv->sc);
 	    r.x = 0; r.width = cv->width;
 	    r.height = 2*cv->sfh+6;
+	    if ( lock!=NULL )
+		r.height = cv->sfh+3+GImageGetHeight(&GIcon_lock);
 	    if ( diff>0 )
 		r.y = 0;
 	    else
