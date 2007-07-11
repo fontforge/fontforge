@@ -1551,6 +1551,8 @@ return;
 	    if ( entry->xadjust.corrections!=NULL || entry->yadjust.corrections!=NULL )
 		offset += 4 + DevTabLen(&entry->xadjust) + DevTabLen(&entry->yadjust);
 #endif
+	    if ( gi->is_ttf && entry->has_ttf_pt )
+		offset += 2;
 	} else
 	    putshort(gpos,0);
 	if ( exit!=NULL ) {
@@ -1561,7 +1563,7 @@ return;
 		offset += 4 + DevTabLen(&exit->xadjust) + DevTabLen(&exit->yadjust);
 	    else
 #endif
-	    if ( gi->is_ttf && ap->has_ttf_pt )
+	    if ( gi->is_ttf && exit->has_ttf_pt )
 		offset += 2;
 	} else
 	    putshort(gpos,0);
