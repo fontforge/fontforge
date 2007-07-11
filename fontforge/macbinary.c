@@ -1471,6 +1471,7 @@ return( false );
 
     pt = strrchr(fname,'/');
     filename = def2u_copy(pt==NULL?fname:pt+1);
+    memset(&info,0,sizeof(info));
     ((FInfo *) (info.finderInfo))->fdType = mb->type;
     ((FInfo *) (info.finderInfo))->fdCreator = mb->creator;
     ret = FSCreateFileUnicode(&parentref,u_strlen(filename), (UniChar *) filename,
