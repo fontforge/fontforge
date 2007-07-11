@@ -5843,6 +5843,7 @@ SplineChar *SFDReadOneChar(SplineFont *cur_sf,const char *name) {
     char tok[2000];
     uint32 pos;
     SplineFont sf;
+    int version;
 
     if ( cur_sf->save_to_dir ) {
 	snprintf(tok,sizeof(tok),"%s/" FONT_PROPS,cur_sf->filename);
@@ -5856,7 +5857,8 @@ return( NULL );
     memset(&sf,0,sizeof(sf));
     sf.ascent = 800; sf.descent = 200;
     if ( cur_sf->cidmaster ) cur_sf = cur_sf->cidmaster;
-    if ( SFDStartsCorrectly(sfd,tok)>=2 ) {
+    if ( (version = SFDStartsCorrectly(sfd,tok))>=2 ) {
+	sf.sfd_version = version;
 	sf.gpos_lookups = cur_sf->gpos_lookups;
 	sf.gsub_lookups = cur_sf->gsub_lookups;
 	sf.anchor = cur_sf->anchor;
