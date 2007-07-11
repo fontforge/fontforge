@@ -222,6 +222,7 @@ static int Stroke_OK(GGadget *g, GEvent *e) {
 	    err = true;
 	}
 	si->radius = GetReal8(sw,CID_Width,_("Stroke _Width:"),&err)/2;
+	if ( si->radius<0 ) si->radius = -si->radius;	/* Behavior is said to be very slow (but correct) for negative strokes */
 	if ( si->stroke_type == si_elipse ) {
 	    si->penangle = GetReal8(sw,CID_PenAngle2,_("Pen _Angle:"),&err);
 	    if ( si->penangle>180 || si->penangle < -180 ) {
