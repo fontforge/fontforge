@@ -232,7 +232,7 @@ static int Goto_OK(GGadget *g, GEvent *e) {
 	}
 	if ( d->ret==-1 ) {
 	    d->ret = NameToEncoding(d->sf,d->map,ret);
-	    if ( d->ret<0 || d->ret>=d->map->enccount )
+	    if ( d->ret<0 || (d->ret>=d->map->enccount && d->sf->cidmaster==NULL ))
 		d->ret = -1;
 	    if ( d->ret==-1 ) {
 		ff_post_notice(_("Goto"),_("Could not find the glyph: %.70s"),ret);

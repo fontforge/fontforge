@@ -4147,6 +4147,68 @@ static void FVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     _FVMenuChangeChar(fv,mi->mid);
 }
 
+static void CIDSetEncMap(FontView *fv, SplineFont *new ) {
+    int gcnt = new->glyphcnt;
+
+    if ( fv->cidmaster!=NULL && gcnt!=fv->sf->glyphcnt ) {
+	int i;
+	if ( fv->map->encmax<gcnt ) {
+	    fv->map->map = grealloc(fv->map->map,gcnt*sizeof(int));
+	    fv->map->backmap = grealloc(fv->map->backmap,gcnt*sizeof(int));
+	    fv->map->backmax = fv->map->encmax = gcnt;
+	}
+	for ( i=0; i<gcnt; ++i )
+	    fv->map->map[i] = fv->map->backmap[i] = i;
+	if ( gcnt<fv->map->enccount )
+	    memset(fv->selected+gcnt,0,fv->map->enccount-gcnt);
+	else {
+	    free(fv->selected);
+	    fv->selected = gcalloc(gcnt,sizeof(char));
+	}
+	fv->map->enccount = gcnt;
+    }
+    fv->sf = new;
+    new->fv = fv;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    FVSetTitle(fv);
+    FontViewReformatOne(fv);
+#endif
+}
+
+static void FVShowSubFont(FontView *fv,SplineFont *new) {
+    MetricsView *mv, *mvnext;
+    BDFFont *newbdf;
+    int wascompact = fv->normal!=NULL;
+
+    for ( mv=fv->sf->metrics; mv!=NULL; mv = mvnext ) {
+	/* Don't bother trying to fix up metrics views, just not worth it */
+	mvnext = mv->next;
+	GDrawDestroyWindow(mv->gw);
+    }
+    if ( wascompact ) {
+	EncMapFree(fv->map);
+	fv->map = fv->normal;
+	fv->normal = NULL;
+	fv->selected = grealloc(fv->selected,fv->map->enccount);
+	memset(fv->selected,0,fv->map->enccount);
+    }
+    CIDSetEncMap(fv,new);
+    if ( wascompact ) {
+	fv->normal = EncMapCopy(fv->map);
+	CompactEncMap(fv->map,fv->sf);
+	FontViewReformatOne(fv);
+	FVSetTitle(fv);
+    }
+    newbdf = SplineFontPieceMeal(fv->sf,fv->filled->pixelsize,
+	    (fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0),
+	    NULL);
+    BDFFontFree(fv->filled);
+    if ( fv->filled == fv->show )
+	fv->show = newbdf;
+    fv->filled = newbdf;
+    GDrawRequestExpose(fv->v,NULL,true);
+}
+
 # if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuGotoChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
@@ -4155,6 +4217,23 @@ void FontViewMenu_Goto(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     int pos = GotoChar(fv->sf,fv->map);
+    if ( fv->cidmaster!=NULL && pos!=-1 && !fv->map->enc->is_compact ) {
+	SplineFont *cidmaster = fv->cidmaster;
+	int k, hadk= cidmaster->subfontcnt;
+	for ( k=0; k<cidmaster->subfontcnt; ++k ) {
+	    SplineFont *sf = cidmaster->subfonts[k];
+	    if ( pos<sf->glyphcnt && sf->glyphs[pos]!=NULL )
+	break;
+	    if ( pos<sf->glyphcnt )
+		hadk = k;
+	}
+	if ( k==cidmaster->subfontcnt && pos>=fv->sf->glyphcnt )
+	    k = hadk;
+	if ( k!=cidmaster->subfontcnt && cidmaster->subfonts[k] != fv->sf )
+	    FVShowSubFont(fv,cidmaster->subfonts[k]);
+	if ( pos>=fv->sf->glyphcnt )
+	    pos = -1;
+    }
     FVChangeChar(fv,pos);
 }
 
@@ -5316,34 +5395,6 @@ return;
 # endif
 }
 
-static void CIDSetEncMap(FontView *fv, SplineFont *new ) {
-    int gcnt = new->glyphcnt;
-
-    if ( fv->cidmaster!=NULL && gcnt!=fv->sf->glyphcnt ) {
-	int i;
-	if ( fv->map->encmax<gcnt ) {
-	    fv->map->map = grealloc(fv->map->map,gcnt*sizeof(int));
-	    fv->map->backmap = grealloc(fv->map->backmap,gcnt*sizeof(int));
-	    fv->map->backmax = fv->map->encmax = gcnt;
-	}
-	for ( i=0; i<gcnt; ++i )
-	    fv->map->map[i] = fv->map->backmap[i] = i;
-	if ( gcnt<fv->map->enccount )
-	    memset(fv->selected+gcnt,0,fv->map->enccount-gcnt);
-	else {
-	    free(fv->selected);
-	    fv->selected = gcalloc(gcnt,sizeof(char));
-	}
-	fv->map->enccount = gcnt;
-    }
-    fv->sf = new;
-    new->fv = fv;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    FVSetTitle(fv);
-    FontViewReformatOne(fv);
-#endif
-}
-
 # ifdef FONTFORGE_CONFIG_GDRAW
 static void FVMenuShowSubFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
@@ -5352,37 +5403,7 @@ static void FontViewMenu_ShowSubFont(GtkMenuItem *menuitem, gpointer user_data) 
     FontView *fv = FV_From_MI(menuitem);
 # endif
     SplineFont *new = mi->ti.userdata;
-    MetricsView *mv, *mvnext;
-    BDFFont *newbdf;
-    int wascompact = fv->normal!=NULL;
-
-    for ( mv=fv->sf->metrics; mv!=NULL; mv = mvnext ) {
-	/* Don't bother trying to fix up metrics views, just not worth it */
-	mvnext = mv->next;
-	GDrawDestroyWindow(mv->gw);
-    }
-    if ( wascompact ) {
-	EncMapFree(fv->map);
-	fv->map = fv->normal;
-	fv->normal = NULL;
-	fv->selected = grealloc(fv->selected,fv->map->enccount);
-	memset(fv->selected,0,fv->map->enccount);
-    }
-    CIDSetEncMap(fv,new);
-    if ( wascompact ) {
-	fv->normal = EncMapCopy(fv->map);
-	CompactEncMap(fv->map,fv->sf);
-	FontViewReformatOne(fv);
-	FVSetTitle(fv);
-    }
-    newbdf = SplineFontPieceMeal(fv->sf,fv->filled->pixelsize,
-	    (fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0),
-	    NULL);
-    BDFFontFree(fv->filled);
-    if ( fv->filled == fv->show )
-	fv->show = newbdf;
-    fv->filled = newbdf;
-    GDrawRequestExpose(fv->v,NULL,true);
+    FVShowSubFont(fv,new);
 }
 
 # ifdef FONTFORGE_CONFIG_GDRAW

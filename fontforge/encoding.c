@@ -1245,6 +1245,7 @@ struct cidmap *FindCidMap(char *registry,char *ordering,int supplement,SplineFon
     char buf[100];
     int ret;
 
+    if ( sf!=NULL && sf->cidmaster ) sf = sf->cidmaster;
     if ( sf!=NULL && sf->loading_cid_map )
 return( NULL );
 
