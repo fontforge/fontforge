@@ -2281,7 +2281,7 @@ static void CI_FreeKernedImage(const void *_ci, GImage *img) {
 
 static const int kern_popup_size = 100;
 
-static BDFChar *Rasterize(CharInfo *ci,SplineChar *sc) {
+static BDFChar *Rasterize(SplineChar *sc) {
     void *freetypecontext=NULL;
     BDFChar *ret;
 
@@ -2313,8 +2313,8 @@ static GImage *CI_GetKernedImage(const void *_ci) {
 
     if ( othersc==NULL )
 return( NULL );
-    me = Rasterize(ci,ci->sc);
-    other = Rasterize(ci,othersc);
+    me = Rasterize(ci->sc);
+    other = Rasterize(othersc);
     if ( sub->vertical_kerning ) {
 	int vwidth = rint(ci->sc->vwidth*scale);
 	kern = rint( old[cols*ci->r+PAIR_DY_ADV1].u.md_ival*scale );
@@ -2412,6 +2412,139 @@ return( NULL );
 return( img );
 }
 
+#define ICON_WIDTH 15
+
+GImage *PST_GetImage(GGadget *pstk,SplineFont *sf,
+	struct lookup_subtable *sub,int popup_r, SplineChar *sc ) {
+    int rows, cols = GMatrixEditGetColCnt(pstk);
+    struct matrix_data *old = GMatrixEditGet(pstk,&rows);
+    BDFChar *me, **extras;
+    int width, xmin, xmax, ymin, ymax;
+    GImage *img;
+    struct _GImage *base;
+    Color fg, bg;
+    int l,clut_scale;
+    int x,y;
+    SplineChar *other;
+    int extracnt;
+    int i,j;
+
+    if ( sc==NULL || sub==NULL )
+return( NULL );
+    me = Rasterize(sc);
+    ymin = me->ymin; ymax = me->ymax;
+    xmin = me->xmin; xmax = me->xmax; width = me->width;
+    extracnt = 0; extras = NULL;
+    if ( sub->lookup->lookup_type>=gsub_single && sub->lookup->lookup_type<=gsub_ligature ) {
+	char *subs = old[cols*popup_r+1].u.md_str, *pt, *start;
+	int ch;
+	for ( pt=subs; *pt ; ++extracnt ) {
+	    while ( *pt!=' ' && *pt!='\0' ) ++pt;
+	    if ( *pt==' ' )
+		while ( *pt==' ' ) ++pt;
+	}
+	extras = galloc(extracnt*sizeof(BDFChar *));
+	extracnt = 0;
+	for ( pt=subs; *pt ; ) {
+	    start = pt;
+	    while ( *pt!=' ' && *pt!='\0' ) ++pt;
+	    ch = *pt; *pt = '\0';
+	    other = SFGetChar(sf,-1, start);
+	    *pt = ch;
+	    if ( other!=NULL ) {
+		if ( extracnt==0 ) width += ICON_WIDTH;
+		extras[extracnt] = Rasterize(other);
+		if ( width+extras[extracnt]->xmin < xmin ) xmin = width+extras[extracnt]->xmin;
+		if ( width+extras[extracnt]->xmax > xmax ) xmax = width+extras[extracnt]->xmax;
+		if ( extras[extracnt]->ymin < ymin ) ymin = extras[extracnt]->ymin;
+		if ( extras[extracnt]->ymax > ymax ) ymax = extras[extracnt]->ymax;
+		width += extras[extracnt++]->width;
+	    }
+	    if ( *pt==' ' )
+		while ( *pt==' ' ) ++pt;
+	}
+    }
+
+    if ( ymax<=0 ) ymax = 1;
+    if ( ymin>0 ) ymin = 0;
+    if ( xmax<0 )
+return( NULL );
+    if ( xmin>0 ) xmin = 0;
+
+    img = GImageCreate(it_index,xmax - xmin + 2,ymax-ymin+2);
+    base = img->u.image;
+    memset(base->data,'\0',base->bytes_per_line*base->height);
+
+    width = -xmin;
+    ++width;
+
+    for ( y=me->ymin; y<=me->ymax; ++y ) {
+	for ( x=me->xmin; x<=me->xmax; ++x ) {
+	    base->data[(1+ymax-y)*base->bytes_per_line + (x+width)] =
+		    me->bitmap[(me->ymax-y)*me->bytes_per_line + (x-me->xmin)];
+	}
+    }
+    width += me->width;
+    if ( extracnt!=0 ) {
+	int pixel = me->depth == 8 ? 0xff : 0xf;
+	if ( sub->lookup->lookup_type!=gsub_ligature ) {
+	    for ( j = -1; j<2; j+=2 ) {
+		y = 1+ymax/2 + j*2;
+		for ( x=1; x<ICON_WIDTH-5; ++x )
+		    base->data[y*base->bytes_per_line + (x+width)] = pixel;
+		for ( x=ICON_WIDTH-8; x<ICON_WIDTH-1; ++x )
+		    base->data[(y+j*(ICON_WIDTH-4-x))*base->bytes_per_line + (x+width)] = pixel;
+	    }
+	} else {
+	    for ( j = -1; j<2; j+=2 ) {
+		y = 1+ymax/2 + j*2;
+		for ( x=5; x<ICON_WIDTH-1; ++x )
+		    base->data[y*base->bytes_per_line + (x+width)] = pixel;
+		for ( x=8; x>1 ; --x )
+		    base->data[(y+j*(x-3))*base->bytes_per_line + (x+width)] = pixel;
+	    }
+	}
+	width += ICON_WIDTH;
+	for ( i=0; i<extracnt; ++i ) {
+	    BDFChar *other = extras[i];
+	    for ( y=other->ymin; y<=other->ymax; ++y ) {
+		for ( x=other->xmin; x<=other->xmax; ++x ) {
+		    base->data[(1+ymax-y)*base->bytes_per_line + (x+width)] =
+			    other->bitmap[(other->ymax-y)*other->bytes_per_line + (x-other->xmin)];
+		}
+	    }
+	    width += other->width;
+	}
+    }
+    memset(base->clut,'\0',sizeof(*base->clut));
+    bg = GDrawGetDefaultBackground(NULL);
+    fg = GDrawGetDefaultForeground(NULL);
+    clut_scale = me->depth == 8 ? 8 : 4;
+    base->clut->clut_len = 1<<clut_scale;
+    for ( l=0; l<(1<<clut_scale); ++l )
+	base->clut->clut[l] =
+	    COLOR_CREATE(
+	     COLOR_RED(bg) + (l*(COLOR_RED(fg)-COLOR_RED(bg)))/((1<<clut_scale)-1),
+	     COLOR_GREEN(bg) + (l*(COLOR_GREEN(fg)-COLOR_GREEN(bg)))/((1<<clut_scale)-1),
+	     COLOR_BLUE(bg) + (l*(COLOR_BLUE(fg)-COLOR_BLUE(bg)))/((1<<clut_scale)-1) );
+     BDFCharFree(me);
+     for ( i=0; i<extracnt; ++i )
+	 BDFCharFree(extras[i]);
+     free(extras);
+return( img );
+}
+
+static GImage *_CI_GetImage(const void *_ci) {
+    CharInfo *ci = (CharInfo *) _ci;
+    int offset = GTabSetGetSel(GWidgetGetControl(ci->gw,CID_Tabs))-2;
+    GGadget *pstk = GWidgetGetControl(ci->gw,CID_List+offset*100);
+    int rows, cols = GMatrixEditGetColCnt(pstk);
+    struct matrix_data *old = GMatrixEditGet(pstk,&rows);
+    struct lookup_subtable *sub = (struct lookup_subtable *) (old[cols*ci->r+0].u.md_ival);
+
+return( PST_GetImage(pstk,ci->sc->parent,sub,ci->r,ci->sc) );
+}
+
 static void CI_KerningPopupPrepare(GGadget *g, int r, int c) {
     CharInfo *ci = GDrawGetUserData(GGadgetGetWindow(g));
     int rows, cols = GMatrixEditGetColCnt(g);
@@ -2421,6 +2554,12 @@ static void CI_KerningPopupPrepare(GGadget *g, int r, int c) {
 return;
     ci->r = r; ci->c = c;
     GGadgetPreparePopupImage(GGadgetGetWindow(g),NULL,ci,CI_GetKernedImage,CI_FreeKernedImage);
+}
+
+static void CI_SubsPopupPrepare(GGadget *g, int r, int c) {
+    CharInfo *ci = GDrawGetUserData(GGadgetGetWindow(g));
+    ci->r = r; ci->c = c;
+    GGadgetPreparePopupImage(GGadgetGetWindow(g),NULL,ci,_CI_GetImage,CI_FreeKernedImage);
 }
 
 static void CIFillup(CharInfo *ci) {
@@ -3241,6 +3380,8 @@ return;
 		    newstrings[i]);
 	}
 	GHVBoxSetExpandableRow(pstbox[pst_pair-1][0].ret,0);
+	for ( i=0; i<6; ++i )
+	    GMatrixEditSetMouseMoveReporter(psgcd[i][0].ret,CI_SubsPopupPrepare);
 	GMatrixEditSetMouseMoveReporter(psgcd[pst_pair-1][0].ret,CI_KerningPopupPrepare);
 	for ( i=6; i<7; ++i ) {
 	    GHVBoxSetExpandableRow(pstbox[i][0].ret,0);

@@ -5187,144 +5187,14 @@ static void PST_FreeImage(const void *_pstkd, GImage *img) {
     GImageDestroy(img);
 }
 
-static const int kern_popup_size = 100;
-
-static BDFChar *Rasterize(PSTKernDlg *pstkd,SplineChar *sc) {
-    void *freetypecontext=NULL;
-    BDFChar *ret;
-
-    freetypecontext = FreeTypeFontContext(sc->parent,sc,sc->parent->fv);
-    if ( freetypecontext==NULL ) {
-	ret = SplineCharFreeTypeRasterize(freetypecontext,sc->orig_pos,kern_popup_size,8);
-	FreeTypeFreeContext(freetypecontext);
-    } else
-	ret = SplineCharAntiAlias(sc,kern_popup_size,4);
-return( ret );
-}
-
-#define ICON_WIDTH 15
-
-static GImage *PST_GetImage(const void *_pstkd) {
+static GImage *_PST_GetImage(const void *_pstkd) {
     PSTKernDlg *pstkd = (PSTKernDlg *) _pstkd;
     GGadget *pstk = GWidgetGetControl(pstkd->gw,CID_PSTList);
     int rows, cols = GMatrixEditGetColCnt(pstk);
     struct matrix_data *old = GMatrixEditGet(pstk,&rows);
-    BDFChar *me, **extras;
-    int width, xmin, xmax, ymin, ymax;
-    GImage *img;
-    struct _GImage *base;
-    Color fg, bg;
-    int l,clut_scale;
-    int x,y;
-    struct lookup_subtable *sub = pstkd->sub;
     SplineChar *sc = SFGetChar(pstkd->sf,-1, old[cols*pstkd->popup_r].u.md_str);
-    SplineChar *other;
-    int extracnt;
-    int i,j;
 
-    if ( sc==NULL || sub==NULL )
-return( NULL );
-    me = Rasterize(pstkd,sc);
-    ymin = me->ymin; ymax = me->ymax;
-    xmin = me->xmin; xmax = me->xmax; width = me->width;
-    extracnt = 0; extras = NULL;
-    if ( sub->lookup->lookup_type>=gsub_single && sub->lookup->lookup_type<=gsub_ligature ) {
-	char *subs = old[cols*pstkd->popup_r+1].u.md_str, *pt, *start;
-	int ch;
-	for ( pt=subs; *pt ; ++extracnt ) {
-	    while ( *pt!=' ' && *pt!='\0' ) ++pt;
-	    if ( *pt==' ' )
-		while ( *pt==' ' ) ++pt;
-	}
-	extras = galloc(extracnt*sizeof(BDFChar *));
-	extracnt = 0;
-	for ( pt=subs; *pt ; ) {
-	    start = pt;
-	    while ( *pt!=' ' && *pt!='\0' ) ++pt;
-	    ch = *pt; *pt = '\0';
-	    other = SFGetChar(pstkd->sf,-1, start);
-	    *pt = ch;
-	    if ( other!=NULL ) {
-		if ( extracnt==0 ) width += ICON_WIDTH;
-		extras[extracnt] = Rasterize(pstkd,other);
-		if ( width+extras[extracnt]->xmin < xmin ) xmin = width+extras[extracnt]->xmin;
-		if ( width+extras[extracnt]->xmax > xmax ) xmax = width+extras[extracnt]->xmax;
-		if ( extras[extracnt]->ymin < ymin ) ymin = extras[extracnt]->ymin;
-		if ( extras[extracnt]->ymax > ymax ) ymax = extras[extracnt]->ymax;
-		width += extras[extracnt++]->width;
-	    }
-	    if ( *pt==' ' )
-		while ( *pt==' ' ) ++pt;
-	}
-    }
-
-    if ( ymax<=0 ) ymax = 1;
-    if ( ymin>0 ) ymin = 0;
-    if ( xmax<0 )
-return( NULL );
-    if ( xmin>0 ) xmin = 0;
-
-    img = GImageCreate(it_index,xmax - xmin + 2,ymax-ymin+2);
-    base = img->u.image;
-    memset(base->data,'\0',base->bytes_per_line*base->height);
-
-    width = -xmin;
-    ++width;
-
-    for ( y=me->ymin; y<=me->ymax; ++y ) {
-	for ( x=me->xmin; x<=me->xmax; ++x ) {
-	    base->data[(1+ymax-y)*base->bytes_per_line + (x+width)] =
-		    me->bitmap[(me->ymax-y)*me->bytes_per_line + (x-me->xmin)];
-	}
-    }
-    width += me->width;
-    if ( extracnt!=0 ) {
-	int pixel = me->depth == 8 ? 0xff : 0xf;
-	if ( sub->lookup->lookup_type!=gsub_ligature ) {
-	    for ( j = -1; j<2; j+=2 ) {
-		y = 1+ymax/2 + j*2;
-		for ( x=1; x<ICON_WIDTH-5; ++x )
-		    base->data[y*base->bytes_per_line + (x+width)] = pixel;
-		for ( x=ICON_WIDTH-8; x<ICON_WIDTH-1; ++x )
-		    base->data[(y+j*(ICON_WIDTH-4-x))*base->bytes_per_line + (x+width)] = pixel;
-	    }
-	} else {
-	    for ( j = -1; j<2; j+=2 ) {
-		y = 1+ymax/2 + j*2;
-		for ( x=5; x<ICON_WIDTH-1; ++x )
-		    base->data[y*base->bytes_per_line + (x+width)] = pixel;
-		for ( x=8; x>1 ; --x )
-		    base->data[(y+j*(x-3))*base->bytes_per_line + (x+width)] = pixel;
-	    }
-	}
-	width += ICON_WIDTH;
-	for ( i=0; i<extracnt; ++i ) {
-	    BDFChar *other = extras[i];
-	    for ( y=other->ymin; y<=other->ymax; ++y ) {
-		for ( x=other->xmin; x<=other->xmax; ++x ) {
-		    base->data[(1+ymax-y)*base->bytes_per_line + (x+width)] =
-			    other->bitmap[(other->ymax-y)*other->bytes_per_line + (x-other->xmin)];
-		}
-	    }
-	    width += other->width;
-	}
-    }
-    memset(base->clut,'\0',sizeof(*base->clut));
-    bg = GDrawGetDefaultBackground(NULL);
-    fg = GDrawGetDefaultForeground(NULL);
-    clut_scale = me->depth == 8 ? 8 : 4;
-    base->clut->clut_len = 1<<clut_scale;
-    for ( l=0; l<(1<<clut_scale); ++l )
-	base->clut->clut[l] =
-	    COLOR_CREATE(
-	     COLOR_RED(bg) + (l*(COLOR_RED(fg)-COLOR_RED(bg)))/((1<<clut_scale)-1),
-	     COLOR_GREEN(bg) + (l*(COLOR_GREEN(fg)-COLOR_GREEN(bg)))/((1<<clut_scale)-1),
-	     COLOR_BLUE(bg) + (l*(COLOR_BLUE(fg)-COLOR_BLUE(bg)))/((1<<clut_scale)-1) );
-     BDFCharFree(me);
-     for ( i=0; i<extracnt; ++i )
-	 BDFCharFree(extras[i]);
-     free(extras);
-return( img );
+return( PST_GetImage(pstk,pstkd->sf,pstkd->sub,pstkd->popup_r,sc) );
 }
 
 static void PST_PopupPrepare(GGadget *g, int r, int c) {
@@ -5337,7 +5207,7 @@ return;
 	SFGetChar(pstkd->sf,-1, old[cols*r].u.md_str)==NULL )
 return;
     pstkd->popup_r = r;
-    GGadgetPreparePopupImage(GGadgetGetWindow(g),NULL,pstkd,PST_GetImage,PST_FreeImage);
+    GGadgetPreparePopupImage(GGadgetGetWindow(g),NULL,pstkd,_PST_GetImage,PST_FreeImage);
 }
 
 static void PSTMatrixInit(struct matrixinit *mi,SplineFont *_sf, struct lookup_subtable *sub, PSTKernDlg *pstkd) {
