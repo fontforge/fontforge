@@ -624,7 +624,7 @@ return( em_iso8859_1 );		/* Anything will do, no characters */
     above = 0;
     if ( ch=='\t' ) some = 0;
     else for ( level=0; level<name_cnt+3; ++level ) {
-	some = unicode_backtrans[ch>>8][ch&0xff] | (1<<em_unicode);
+	some = (ch>=0x10000)? 0 : unicode_backtrans[ch>>8][ch&0xff] | (1<<em_unicode);
 	for ( ; level<name_cnt+3; ++level ) {
 	    if ( some&fi->level_masks[level] )
 	break;
@@ -651,7 +651,8 @@ return( em_iso8859_1 );		/* Anything will do, no characters */
 		/*  letter they combine with. Even if they aren't in that font*/
 	continue;
 	    else {
-		some = unicode_backtrans[ch>>8][ch&0xff] | (1<<em_unicode);
+		some = (ch>=0x10000) ? 0 :
+			(unicode_backtrans[ch>>8][ch&0xff] | (1<<em_unicode));
 	    }
 	    if ( some&above )		/* a better font matches this character*/
 	break;
@@ -731,7 +732,7 @@ return( i );
 	for ( text = strt; text<end; ++text ) {
 	    ch = *text;
 	    some = 0;
-	    if ( text!=strt && iscombining(ch))
+	    if ( ch>=0x10000 || (text!=strt && iscombining(ch)))
 	continue;
 	    if ( (plane = unicode_backtrans[ch>>8])!=NULL )
 		some = plane[ch&0xff];
@@ -752,7 +753,7 @@ return( em_max+level );
 	for ( text = strt+1; text<end; ++text ) {
 	    ch = *text;
 	    some = 0;
-	    if ( text!=strt && iscombining(ch))
+	    if ( ch>=0x10000 || (text!=strt && iscombining(ch)))
 	continue;
 	    if ( (plane = unicode_backtrans[ch>>8])!=NULL )
 		some = plane[ch&0xff];
@@ -936,7 +937,9 @@ return( tryme );
     }
 
     for ( level=0; level<fi->fam->name_cnt+3; ++level ) {
-	some = unicode_backtrans[ch>>8][ch&0xff] | (1<<em_unicode);
+	some = 0;
+	if ( ch<0x10000 )
+	    some = unicode_backtrans[ch>>8][ch&0xff] | (1<<em_unicode);
 	some &= fi->level_masks[level];
 	if ( some==(1<<em_unicode) ) {
 	    if ( UnicodeCharExists(fi->mapped_to,fi->unifonts[level],ch,fi)) {
@@ -1251,7 +1254,7 @@ static int32 _GDraw_DrawUnencoded(GWindow gw, FontInstance *fi,
 		/* If it's not in a mapping see if there's an alternate */
 		/*  representation which might be (ie half vs. full width) */
 		/*  Also decomposes accented letters, long s to short, ligs, etc. */
-		if ( (ua_plane = unicode_alternates[ch>>8])!=NULL &&
+		if ( ch<0x10000 && (ua_plane = unicode_alternates[ch>>8])!=NULL &&
 			(str=ua_plane[ch&0xff])!=NULL &&
 			PickAccentFont(fi,NULL,*str,&accent)!=NULL ) {
 		    /* The final check means we've got at least one character*/
@@ -1298,7 +1301,7 @@ return( x-xbase-letter_spacing );
 		/* the first character is allowed to have an alternate */
 		/*  if we failed to find a font for it we'll drop down to here*/
 		for ( npt=text+1 ; npt<pt; ++npt )
-		    if ( (ua_plane = unicode_alternates[*npt>>8])!=NULL &&
+		    if ( *npt<0x10000 && (ua_plane = unicode_alternates[*npt>>8])!=NULL &&
 			    ua_plane[*npt&0xff]!=NULL )
 		break;
 	    } else
