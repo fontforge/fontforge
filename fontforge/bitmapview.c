@@ -287,9 +287,14 @@ static void BVChangeChar(BitmapView *bv, int i, int fitit ) {
     BDFFont *bdf = bv->bdf;
     EncMap *map = bv->fv->map;
 
-    if ( i<0 || i>=map->enccount )
+    if ( bv->fv->cidmaster!=NULL && !map->enc->is_compact && i<bdf->glyphcnt &&
+	    (bc=bdf->glyphs[i])!=NULL ) {
+	/* The attached bitmap fonts don't have the complexities of subfonts-- they are flat */
+    } else {
+	if ( i<0 || i>=map->enccount )
 return;
-    bc = BDFMakeChar(bdf,map,i);
+	bc = BDFMakeChar(bdf,map,i);
+    }
 
     if ( bc==NULL || bv->bc == bc )
 return;

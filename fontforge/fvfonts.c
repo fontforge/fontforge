@@ -717,8 +717,17 @@ return ( -1 );
 /*  be found. (or for unencoded glyphs where it is found). Returns -1 else */
 int SFFindSlot(SplineFont *sf, EncMap *map, int unienc, const char *name ) {
     int index=-1, pos;
+    struct cidmap *cidmap;
 
-    if ( (map->enc->is_custom || map->enc->is_compact ||
+    if ( sf->cidmaster!=NULL && !map->enc->is_compact &&
+		(cidmap = FindCidMap(sf->cidmaster->cidregistry,
+				    sf->cidmaster->ordering,
+				    sf->cidmaster->supplement,
+				    sf->cidmaster))!=NULL )
+	index = NameUni2CID(cidmap,unienc,name);
+    if ( index!=-1 )
+	/* All done */;
+    else if ( (map->enc->is_custom || map->enc->is_compact ||
 	    map->enc->is_original) && unienc!=-1 ) {
 	if ( unienc<map->enccount && map->map[unienc]!=-1 &&
 		sf->glyphs[map->map[unienc]]!=NULL &&

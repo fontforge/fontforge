@@ -2316,7 +2316,7 @@ return;
 return;
 	} else if ( mi->mid==MID_ReplaceChar ) {
 	    pos = GotoChar(sf,mv->fv->map);
-	    if ( pos<0 )
+	    if ( pos<0 || pos>=mv->fv->map->enccount)
 return;
 	}
 	if ( pos>=0 && pos<map->enccount ) {
