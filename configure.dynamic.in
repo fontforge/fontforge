@@ -175,6 +175,9 @@ fi
 
 if test "$python" = "no" ; then
   AC_DEFINE(_NO_PYTHON)
+else
+  AC_SUBST(PYTHON_LIB_NAME)
+  PYTHON_LIB_NAME="python$PyVersion"
 fi
 
 ffscript="yes"
