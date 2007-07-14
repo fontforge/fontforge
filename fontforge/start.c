@@ -156,7 +156,8 @@ static void _dousage(void) {
     printf( "\t-usage\t\t\t (displays this message, and exits)\n" );
     printf( "\t-help\t\t\t (displays this message, invokes a browser)\n\t\t\t\t  (Using the BROWSER environment variable)\n" );
     printf( "\t-version\t\t (prints the version of fontforge and exits)\n" );
-    printf( "\t-lang=py\t\t use python for scripts\n" );
+    printf( "\t-library-status\t (prints information about optional libraries\n\t\t\t\t and exits)\n" );
+    printf( "\t-lang=py\t\t use python for scripts (may precede -script)\n" );
     printf( "\t-lang=ff\t\t use fontforge's legacy scripting language\n" );
     printf( "\t-script scriptfile\t (executes scriptfile)\n" );
     printf( "\t\tmust be the first option (or follow -lang).\n" );
@@ -189,6 +190,91 @@ exit(0);
 static void dohelp(void) {
     _dousage();
     help("overview.html");
+exit(0);
+}
+
+static struct library_descriptor {
+    char *libname;
+    char *entry_point;
+    char *description;
+    char *url;
+    struct library_descriptor *depends_on;
+} libs[] = {
+    {
+#ifdef PYTHON_LIB_NAME
+	#PYTHON_LIB_NAME,
+#else
+	"libpython-",		/* a bad name */
+#endif
+	"Py_Main",
+	"This allows users to write python scripts in fontforge",
+	"http://www.python.org/"
+    },
+    { "libz", "deflateEnd", "This is a prerequisite for reading png files,\n\t and is used for some pdf files.", "http://www.gzip.org/zlib/" },
+    { "libpng", "png_create_read_struct", "This is one way to read png files.", "http://www.libpng.org/pub/png/libpng.html", &libs[1] },
+    { "libpng12", "png_create_read_struct", "This is another way to read png files.", "http://www.libpng.org/pub/png/libpng.html", &libs[1] },
+    { "libjpeg", "jpeg_CreateDecompress", "This allows fontforge to load jpeg images.", "http://www.ijg.org/" },
+    { "libgif", "DGifOpenFileName", "This allows fontforge to open gif images.", "http://gnuwin32.sf.net/packages/libungif.htm" },
+    { "libungif", "DGifOpenFileName", "This allows fontforge to open gif images.", "http://gnuwin32.sf.net/packages/libungif.htm" },
+    { "libxml2", "xmlParseFile", "This allows fontforge to load svg files and fonts and ufo fonts.", "http://xmlsoft.org/" },
+    { "libuninameslist", "UnicodeNameAnnot", "This provides fontforge with the names of all (named) unicode characters", "http://libuninameslist.sf.net/" },
+    { "libfreetype", "FT_New_Memory_Face", "This provides a better rasterizer than the one built in to fontforge", "http://freetype.sf.net/" },
+    { NULL }
+};
+
+static void _dolibrary(void) {
+    int i;
+    char buffer[300];
+    int fail, isfreetype, hasdebugger;
+    DL_CONST void *lib_handle;
+
+    fprintf( stderr, "\n" );
+    for ( i=0; libs[i].libname!=NULL; ++i ) {
+	fail = false;
+	if ( libs[i].depends_on!=NULL ) {
+	    sprintf( buffer, "%s%s", libs[i].depends_on->libname, SO_EXT );
+	    lib_handle = dlopen(buffer,RTLD_LAZY);
+	    if ( lib_handle==NULL )
+		fail = 3;
+	    else {
+		if ( dlsym(lib_handle,libs[i].depends_on->entry_point)==NULL )
+		    fail = 4;
+	    }
+	}
+	if ( !fail ) {
+	    sprintf( buffer, "%s%s", libs[i].libname, SO_EXT );
+	    lib_handle = dlopen(buffer,RTLD_LAZY);
+	    if ( lib_handle==NULL )
+		fail = true;
+	    else {
+		if ( dlsym(lib_handle,libs[i].entry_point)==NULL )
+		    fail = 2;
+	    }
+	}
+	isfreetype = strcmp(libs[i].libname,"libfreetype")==0;
+	hasdebugger = false;
+	if ( !fail && isfreetype && dlsym(lib_handle,"TT_RunIns")!=NULL )
+	    hasdebugger = true;
+	fprintf( stderr, "%-15s - %s\n", libs[i].libname,
+		fail==0 ? "is present and appears functional on your system." :
+		fail==1 ? "is not present on your system." :
+		fail==2 ? "is present on your system but is not functional." :
+		fail==3 ? "a prerequisite library is missing." :
+			"a prerequisite library is not functional." );
+	fprintf( stderr, "\t%s\n", libs[i].description );
+	if ( isfreetype ) {
+	    if ( hasdebugger )
+		fprintf( stderr, "\tThis version of freetype includes the byte code interpreter\n\t which means you can use fontforge as a truetype debugger.\n" );
+	    else
+		fprintf( stderr, "\tThis version of freetype does notinclude the byte code interpreter\n\t which means you cannot use fontforge as a truetype debugger.\n\t If you want the debugger you must download freetype source,\n\t enable the bytecode interpreter, and then build it.\n" );
+	}
+	if ( fail || (isfreetype && !hasdebugger))
+	    fprintf( stderr, "\tYou may download %s from %s .\n", libs[i].libname, libs[i].url );
+    }
+}
+
+static void dolibrary(void) {
+    _dolibrary();
 exit(0);
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
@@ -764,6 +850,8 @@ int FontForgeMain( int argc, char **argv ) {
 	    dousage();
 	else if ( strcmp(pt,"-version")==0 )
 	    doversion();
+	else if ( strcmp(pt,"-library-status")==0 )
+	    dolibrary();
     }
 
 # ifdef FONTFORGE_CONFIG_GDRAW
