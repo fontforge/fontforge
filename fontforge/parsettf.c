@@ -2966,9 +2966,9 @@ static void cffprivatefillup(struct psdict *private, struct topdicts *dict) {
     privateaddreal(private,"BlueFuzz",dict->bluefuzz);
     privateaddintarray(private,"StdHW",dict->stdhw);
     privateaddintarray(private,"StdVW",dict->stdvw);
-    privateadd(private,"SnapStemH",
+    privateadd(private,"StemSnapH",
 	    realarray2str(dict->stemsnaph,sizeof(dict->stemsnaph)/sizeof(dict->stemsnaph[0])));
-    privateadd(private,"SnapStemV",
+    privateadd(private,"StemSnapV",
 	    realarray2str(dict->stemsnapv,sizeof(dict->stemsnapv)/sizeof(dict->stemsnapv[0])));
     if ( dict->forcebold )
 	privateadd(private,"ForceBold",copy("true"));
