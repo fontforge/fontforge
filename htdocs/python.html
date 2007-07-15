@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 2-Jul-2007 -->
+  <!-- AP: Last modified: 15-Jul-2007 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -302,6 +302,11 @@
 	control point)</TD>
     </TR>
     <TR>
+      <TD><CODE>selected</CODE></TD>
+      <TD colspan=2>Whether this point is selected in the UI. If an off-curve point
+	is selected in means the preceding (interpolated) on-curve point is selected.</TD>
+    </TR>
+    <TR>
     </TR>
     <TR>
       <TH colspan=3>Methods</TH>
@@ -327,6 +332,32 @@
     <CAPTION>
       <A name="Contour">contour</A>
     </CAPTION>
+    <TR>
+      <TH colspan=3>Description</TH>
+    </TR>
+    <TR>
+      <TD colspan=3>A contour is a collection of points. A contour may be either
+	based on cubic or quadratic splines. 
+	<P>
+	If based on cubic splines there should be either 0 or 2 off-curve points
+	between every two on-curve points. If there are no off-curve points then
+	we have a line between those two points. If there are 2 off-curve points
+	we have a cubic bezier curve between the two end points.
+	<P>
+	If based on quadratic splines things are more complex. Again, two adjacent
+	on-curve points yield a line between those points. Two on-curve points with
+	an off-curve point between them yields a quadratic bezier curve. However
+	if there are two adjacent off-curve points then an on-curve point will be
+	interpolated between them. (This should be familiar to anyone who has read
+	the truetype 'glyf' table docs).
+	<P>
+	For examples of what these splines can look like see the
+	<A HREF="bezier.html">section on bezier curves</A>.
+	<P>
+	A contour may be open in which case it is just a long wiggly line, or closed
+	when it is more like a circle with an inside and an outside. Unless you are
+	making stroked fonts all your contours should eventually be closed.</TD>
+    </TR>
     <TR>
       <TH colspan=3>Members</TH>
     </TR>
@@ -1406,7 +1437,7 @@ pen = None;				# Finalize the pen. This tells FontForge
 	glyph object. The value of indexing into a selection will be either True
 	or False.
 	<BLOCKQUOTE>
-	  <PRE><FONT COLOR="Gray">&gt;&gt;&gt;</FONT> print fontforge.activeFontInUI().selection[65]
+	  <PRE><FONT COLOR="Gray">&gt;&gt;&gt;</FONT> print fontforge.activeFont().selection[65]
 <FONT COLOR="Gray">True</FONT>
 </PRE>
 	</BLOCKQUOTE>

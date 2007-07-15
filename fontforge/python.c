@@ -65,7 +65,8 @@ typedef struct ff_point {
     PyObject_HEAD
     /* Type-specific fields go here. */
     float x,y;
-    int on_curve;
+    uint8 on_curve;
+    uint8 selected;
 } PyFF_Point;
 static PyTypeObject PyFF_PointType;
 
@@ -661,8 +662,10 @@ static PyMemberDef FFPoint_members[] = {
      "x coordinate"},
     {"y", T_FLOAT, offsetof(PyFF_Point, y), 0,
      "y coordinate"},
-    {"on_curve", T_INT, offsetof(PyFF_Point, on_curve), 0,
+    {"on_curve", T_UBYTE, offsetof(PyFF_Point, on_curve), 0,
      "whether this point lies on the curve or is a control point"},
+    {"selected", T_UBYTE, offsetof(PyFF_Point, selected), 0,
+     "whether this point is selected"},
     {NULL}  /* Sentinel */
 };
 
@@ -677,11 +680,14 @@ static PyObject *PyFFPoint_New(PyTypeObject *type, PyObject *args, PyObject *kwd
 
     self = (PyFF_Point *)type->tp_alloc(type, 0);
     if ( self!=NULL ) {
+	int on, sel;
 	self->x = self->y = 0;
-	self->on_curve = 1;
-	if ( args!=NULL && !PyArg_ParseTuple(args, "|ffi",
-		    &self->x, &self->y, &self->on_curve))
+	on = 1; sel = 0;
+	if ( args!=NULL && !PyArg_ParseTuple(args, "|ffii",
+		    &self->x, &self->y, &on, &sel))
 return( NULL );
+	self->on_curve = on;
+	self->selected = sel;
     }
 
     return (PyObject *)self;
@@ -729,12 +735,13 @@ static PyTypeObject PyFF_PointType = {
     PyFFPoint_New	       /* tp_new */
 };
 
-static PyFF_Point *PyFFPoint_CNew(double x, double y, int on_curve) {
+static PyFF_Point *PyFFPoint_CNew(double x, double y, int on_curve, int sel) {
     /* Convenience routine for creating a new point from C */
     PyFF_Point *self = (PyFF_Point *) PyFFPoint_New(&PyFF_PointType,NULL,NULL);
     self->x = x;
     self->y = y;
     self->on_curve = on_curve;
+    self->selected = sel;
 return( self );
 }
 
@@ -966,7 +973,7 @@ return( 0 );
     if ( !val ) {
 	self->closed = false;
 	if ( self->pt_cnt>1 && self->points[0]->on_curve )
-	    self->points[self->pt_cnt++] = PyFFPoint_CNew(self->points[0]->x,self->points[0]->y,true);
+	    self->points[self->pt_cnt++] = PyFFPoint_CNew(self->points[0]->x,self->points[0]->y,true,false);
     } else {
 	self->closed = true;
 	if ( self->pt_cnt>1 && self->points[0]->on_curve &&
@@ -1014,7 +1021,7 @@ static PyObject *PyFFContour_Concat( PyObject *_c1, PyObject *_c2 ) {
 	    !PyType_IsSubtype(&PyFF_ContourType,c2->ob_type) ||
 	    c1->is_quadratic != c2->is_quadratic ) {
 	if ( PyTuple_Check(_c2) && PyArg_ParseTuple(_c2,"dd",&x,&y)) {
-	    PyFF_Point *pt = PyFFPoint_CNew(x,y,true);
+	    PyFF_Point *pt = PyFFPoint_CNew(x,y,true,false);
 	    memset(&dummy,0,sizeof(dummy));
 	    dummy.pt_cnt = 1;
 	    dummy.points = dummies; dummies[0] = pt;
@@ -1056,7 +1063,7 @@ static PyObject *PyFFContour_InPlaceConcat( PyObject *_self, PyObject *_c2 ) {
 	    !PyType_IsSubtype(&PyFF_ContourType,c2->ob_type) ||
 	    self->is_quadratic != c2->is_quadratic ) {
 	if ( PyTuple_Check(_c2) && PyArg_ParseTuple(_c2,"dd",&x,&y)) {
-	    PyFF_Point *pt = PyFFPoint_CNew(x,y,true);
+	    PyFF_Point *pt = PyFFPoint_CNew(x,y,true,false);
 	    memset(&dummy,0,sizeof(dummy));
 	    dummy.pt_cnt = 1;
 	    dummy.points = dummies; dummies[0] = pt;
@@ -1240,7 +1247,7 @@ return( NULL );
 return( NULL );
     if ( 1>self->pt_max )
 	self->points = PyMem_Resize(self->points,PyFF_Point *,self->pt_max += 10);
-    self->points[0] = PyFFPoint_CNew(x,y,true);
+    self->points[0] = PyFFPoint_CNew(x,y,true,false);
     self->pt_cnt = 1;
 
 Py_RETURN( self );
@@ -1271,7 +1278,7 @@ return( NULL );
 	self->points = PyMem_Resize(self->points,PyFF_Point *,self->pt_max += 10);
     for ( i=self->pt_cnt-1; i>pos; --i )
 	self->points[i+1] = self->points[i];
-    self->points[pos+1] = PyFFPoint_CNew(x,y,true);
+    self->points[pos+1] = PyFFPoint_CNew(x,y,true,false);
 
 Py_RETURN( self );
 }
@@ -1290,9 +1297,9 @@ return( NULL );
 	if ( !PyArg_ParseTuple( args, "dddddd|i", &x[0], &y[0], &x[1], &y[1], &x[2], &y[2], &pos ))
 return( NULL );
     }
-    np = PyFFPoint_CNew(x[0],y[0],false);
-    pp = PyFFPoint_CNew(x[1],y[1],false);
-    p = PyFFPoint_CNew(x[2],y[2],true);
+    np = PyFFPoint_CNew(x[0],y[0],false,false);
+    pp = PyFFPoint_CNew(x[1],y[1],false,false);
+    p = PyFFPoint_CNew(x[2],y[2],true,false);
     if ( p==NULL ) {
 	Py_XDECREF(pp);
 	Py_XDECREF(np);
@@ -1332,8 +1339,8 @@ return( NULL );
 	if ( !PyArg_ParseTuple( args, "dddd|i", &x[0], &y[0], &x[1], &y[1], &pos ))
 return( NULL );
     }
-    cp = PyFFPoint_CNew(x[0],y[0],false);
-    p = PyFFPoint_CNew(x[1],y[1],true);
+    cp = PyFFPoint_CNew(x[0],y[0],false,false);
+    p = PyFFPoint_CNew(x[1],y[1],true,false);
     if ( p==NULL ) {
 	Py_XDECREF(cp);
 return( NULL );
@@ -1382,7 +1389,7 @@ return( NULL );
     for ( i=self->pt_cnt-1; i>pos; --i )
 	self->points[i+1] = self->points[i];
     if ( p==NULL )
-	self->points[pos+1] = PyFFPoint_CNew(x,y,on);
+	self->points[pos+1] = PyFFPoint_CNew(x,y,on,false);
     else {
 	self->points[pos+1] = p;
 	Py_INCREF( (PyObject *) p);
@@ -2764,6 +2771,7 @@ return( NULL );
 	if ( !c->points[0]->on_curve ) {
 	    if ( c->pt_cnt==1 ) {
 		ss->first = ss->last = SplinePointCreate(c->points[0]->x,c->points[0]->y);
+		ss->first->selected = c->points[0]->selected;
 return( ss );
 	    }
 	    ++i;
@@ -2773,6 +2781,7 @@ return( ss );
 	while ( i<c->pt_cnt ) {
 	    if ( c->points[i]->on_curve ) {
 		sp = SplinePointCreate(c->points[i]->x,c->points[i]->y);
+		sp->selected = c->points[i]->selected;
 		sp->ttfindex = next++;
 		index = -1;
 		if ( i>0 && !c->points[i-1]->on_curve )
@@ -2792,6 +2801,7 @@ return( ss );
 	    } else {
 		if ( !c->points[i-1]->on_curve ) {
 		    sp = SplinePointCreate((c->points[i]->x+c->points[i-1]->x)/2,(c->points[i]->y+c->points[i-1]->y)/2);
+		    sp->selected = c->points[i]->selected;
 		    sp->ttfindex = -1;
 		    sp->prevcp.x = c->points[i-1]->x;
 		    sp->prevcp.y = c->points[i-1]->y;
@@ -2813,6 +2823,7 @@ return( ss );
 	    i = c->pt_cnt;
 	    if ( !c->points[i-1]->on_curve ) {
 		sp = SplinePointCreate((c->points[0]->x+c->points[i-1]->x)/2,(c->points[0]->y+c->points[i-1]->y)/2);
+		sp->selected = c->points[0]->selected;
 		sp->ttfindex = -1;
 		sp->prevcp.x = c->points[i-1]->x;
 		sp->prevcp.y = c->points[i-1]->y;
@@ -2838,6 +2849,7 @@ return( ss );
 	    if ( !c->points[i]->on_curve )
 	continue;
 	    sp = SplinePointCreate(c->points[i]->x,c->points[i]->y);
+	    sp->selected = c->points[i]->selected;
 	    sp->ttfindex = next++;
 	    nexti = previ = -1;
 	    if ( i==0 )
@@ -2909,7 +2921,7 @@ static PyFF_Contour *ContourFromSS(SplineSet *ss,PyFF_Contour *ret) {
     for ( k=0; k<2; ++k ) {
 	if ( ss->first->next == NULL ) {
 	    if ( k )
-		ret->points[0] = PyFFPoint_CNew(ss->first->me.x,ss->first->me.y,true);
+		ret->points[0] = PyFFPoint_CNew(ss->first->me.x,ss->first->me.y,true,ss->first->selected);
 	    cnt = 1;
 	} else if ( ss->first->next->order2 ) {
 	    ret->is_quadratic = true;
@@ -2918,18 +2930,19 @@ static PyFF_Contour *ContourFromSS(SplineSet *ss,PyFF_Contour *ret) {
 	    if ( ss->first->ttfindex==0xffff ) {
 		skip = ss->first->prev->from;
 		if ( k )
-		    ret->points[cnt] = PyFFPoint_CNew(skip->nextcp.x,skip->nextcp.y,false);
+		    ret->points[cnt] = PyFFPoint_CNew(skip->nextcp.x,skip->nextcp.y,false,skip->selected);
 		++cnt;
 	    }
 	    for ( sp=ss->first; ; ) {
 		if ( sp->ttfindex!=0xffff ) {
 		    if ( k )
-			ret->points[cnt] = PyFFPoint_CNew(sp->me.x,sp->me.y,true);
+			ret->points[cnt] = PyFFPoint_CNew(sp->me.x,sp->me.y,true,sp->selected);
 		    ++cnt;
 		}
 		if ( sp->nextcpindex!=0xffff && sp!=skip ) {
 		    if ( k )
-			ret->points[cnt] = PyFFPoint_CNew(sp->nextcp.x,sp->nextcp.y,false);
+			ret->points[cnt] = PyFFPoint_CNew(sp->nextcp.x,sp->nextcp.y,false,
+				sp->ttfindex==0xffff && sp->selected);
 		    ++cnt;
 		}
 		if ( sp->next==NULL )
@@ -2942,14 +2955,14 @@ static PyFF_Contour *ContourFromSS(SplineSet *ss,PyFF_Contour *ret) {
 	    ret->is_quadratic = false;
 	    for ( sp=ss->first, cnt=0; ; ) {
 		if ( k )
-		    ret->points[cnt] = PyFFPoint_CNew(sp->me.x,sp->me.y,true);
+		    ret->points[cnt] = PyFFPoint_CNew(sp->me.x,sp->me.y,true, sp->selected);
 		++cnt;			/* Sp itself */
 		if ( sp->next==NULL )
 	    break;
 		if ( !sp->nonextcp || !sp->next->to->noprevcp ) {
 		    if ( k ) {
-			ret->points[cnt  ] = PyFFPoint_CNew(sp->nextcp.x,sp->nextcp.y,false);
-			ret->points[cnt+1] = PyFFPoint_CNew(sp->next->to->prevcp.x,sp->next->to->prevcp.y,false);
+			ret->points[cnt  ] = PyFFPoint_CNew(sp->nextcp.x,sp->nextcp.y,false,false);
+			ret->points[cnt+1] = PyFFPoint_CNew(sp->next->to->prevcp.x,sp->next->to->prevcp.y,false,false);
 		    }
 		    cnt += 2;		/* not a line => 2 control points */
 		}
