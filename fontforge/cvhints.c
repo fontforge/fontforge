@@ -683,6 +683,11 @@ return(true);
 	    SCHintsChanged(hd->cv->sc);
 	}
 	h = chunkalloc(sizeof(StemInfo));
+	if ( width==-21 || width==-20 ) {
+	    base += width;
+	    width = -width;
+	    h->ghost = true;
+	}
 	h->start = base;
 	h->width = width;
 	if ( hd->ishstem ) {
