@@ -15,6 +15,8 @@ extern const void *gwwv_NSAddImage(char *name,uint32_t options);
 /*   It would have been nice if the Mac's docs had mentioned that the linker adds*/
 /*   an underscore to symbol names.... */
 #   define dlsym(image,symname) NSAddressOfSymbol(NSLookupSymbolInImage(image,"_" symname,NSLOOKUPSYMBOLINIMAGE_OPTION_BIND|NSLOOKUPSYMBOLINIMAGE_OPTION_RETURN_ON_ERROR))
+#   define dlsymmod(symname) ("_" symname)
+#   define dlsymbare(image,symname) NSAddressOfSymbol(NSLookupSymbolInImage(image,symname,NSLOOKUPSYMBOLINIMAGE_OPTION_BIND|NSLOOKUPSYMBOLINIMAGE_OPTION_RETURN_ON_ERROR))
 #   define DL_CONST	const
 #   define dlclose(image_ptr)	/* Don't know how to do this on mac */
 #   define dlerror()		"Error when loading dynamic library"
@@ -31,5 +33,10 @@ void *libtool_laopen(const char *filename, int flags);
 #endif
 #define DL_CONST
 #  endif
+
+# ifndef dlsymmod
+#   define dlsymmod(symname) (symname)
+#   define dlsymbare(image,symname) dlsym(image,symname)
+# endif
 
 #endif
