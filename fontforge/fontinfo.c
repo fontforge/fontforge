@@ -7271,7 +7271,7 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20],
 	    vbuf[20], uibuf[12], vorig[20], embuf[20];
     char dszbuf[20], dsbbuf[20], dstbuf[21], sibuf[20], swbuf[20];
-    int i,j,k, psrow;
+    int i,j,k,g, psrow;
     int mcs;
     char title[130];
     /* static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 'o', 's', 'p', 'a', 'c', 'e',',','c','a','s','l','o','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };*/
@@ -8929,9 +8929,14 @@ return;
     gaspharray[j++] = &gaspgcd[i];
     gaspgcd[i++].creator = GLabelCreate;
 
+    for ( g=0; gaspversions[g].text!=NULL; ++g )
+	gaspversions[g].selected = false;
+    g = ( sf->gasp_version>=0 && sf->gasp_version<g ) ? sf->gasp_version : 0;
+    
+    gaspversions[g].selected = true;
     gaspgcd[i].gd.flags = gg_visible | gg_enabled;
     gaspgcd[i].gd.cid = CID_GaspVersion;
-    gaspgcd[i].gd.label = &gaspversions[sf->gasp_version];
+    gaspgcd[i].gd.label = &gaspversions[g];
     gaspgcd[i].gd.u.list = gaspversions;
     gaspharray[j++] = &gaspgcd[i];
     gaspgcd[i].gd.handle_controlevent = GFI_GaspVersion;
