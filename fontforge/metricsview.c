@@ -2254,17 +2254,21 @@ return;
 	if ( mv->perchar[i].selected )
     break;
     if ( i!=mv->glyphcnt )	/* Something selected */
-	i = mv->glyphs[i].orig_index;		/* Index in the string of chars, not glyphs */
+	/* Ok... */;
     else if ( mi->mid==MID_InsertCharA )
-	i = mv->clen;
+	i = mv->glyphcnt;
     else
 	i = 0;
     if ( mi->mid==MID_InsertCharA ) {
-	if ( i!=mv->clen )
+	if ( i!=mv->glyphcnt )
 	    ++i;
     } else {
-	if ( i==mv->clen ) i = 0;
+	if ( i==mv->glyphcnt ) i = 0;
     }
+    if ( i==mv->glyphcnt )
+	i = mv->clen;
+    else
+	i = mv->glyphs[i].orig_index;		/* Index in the string of chars, not glyphs */
 
     if ( mv->clen+1>=mv->cmax ) {
 	int oldmax=mv->cmax;
