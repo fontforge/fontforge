@@ -1922,6 +1922,9 @@ static int GlyphNameInClass(char *name,char *class ) {
     char *pt;
     int len = strlen(name);
 
+    if ( class==NULL )
+return( false );
+
     pt = class;
     while ( (pt=strstr(pt,name))!=NULL ) {
 	if ( pt==NULL )
@@ -2055,8 +2058,19 @@ return( 0 );
     continue;		/* didn't match */
 	} else if ( fpst->format==pst_class ) {
 	    for ( i=pos, cpos=0; i<data->cnt && cpos<rule->u.class.ncnt; i = skipglyphs(lookup_flags,data,i+1)) {
-		if ( !GlyphNameInClass(data->str[i].sc->name,fpst->nclass[rule->u.class.nclasses[cpos]]) )
+		int class = rule->u.class.nclasses[cpos];
+		if ( class!=0 ) {
+		    if ( !GlyphNameInClass(data->str[i].sc->name,fpst->nclass[class]) )
 	    break;
+		} else {
+		    int c;
+		    /* Ok, to match class 0 we must fail to match all other classes */
+		    for ( c=1; c<fpst->nccnt; ++c )
+			if ( !GlyphNameInClass(data->str[i].sc->name,fpst->nclass[c]) )
+		    break;
+		    if ( c!=fpst->nccnt )
+	    break;		/* It matched another class => not in class 0 */
+		}
 		data->str[i].context_pos = cpos++;
 	    }
 	    if ( cpos<rule->u.class.ncnt )
@@ -2558,6 +2572,9 @@ static void ApplyLookup(uint32 tag, OTLookup *otl,struct lookup_data *data) {
 static uint32 FSLLMatches(FeatureScriptLangList *fl,uint32 *flist,uint32 script,uint32 lang) {
     int i,l;
     struct scriptlanglist *sl;
+
+    if ( flist==NULL )
+return( 0 );
 
     while ( fl!=NULL ) {
 	for ( i=0; flist[i]!=0; ++i ) {
