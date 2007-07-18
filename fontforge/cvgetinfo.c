@@ -695,19 +695,32 @@ return( -3 );
 return( waslig );
 }
 
-AnchorClass *AnchorClassUnused(SplineChar *sc,int *waslig) {
+static AnchorClass *_AnchorClassUnused(SplineChar *sc,int *waslig, int classmatch) {
     AnchorClass *an, *maybe;
     int val, maybelig;
     SplineFont *sf;
+    int ismarkglyph, isligatureglyph;
+    PST *pst;
     /* Are there any anchors with this name? If so can't reuse it */
     /*  unless they are ligature anchors */
     /*  or 'curs' anchors, which allow exactly two points (entry, exit) */
     /*  or 'mkmk' anchors, which allow a mark to be both a base and an attach */
 
+    ismarkglyph = (sc->width==0) || sc->glyph_class==(3+1) ||
+	    ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 && iscombining(sc->unicodeenc)) ||
+	    ( sc->anchor!=NULL && (sc->anchor->type == at_mark || sc->anchor->type == at_basemark));
+    for ( pst = sc->possub; pst!=NULL && pst->type!=pst_ligature; pst=pst->next );
+    isligatureglyph = (pst!=NULL) || sc->glyph_class==2+1;
+
     *waslig = false; maybelig = false; maybe = NULL;
     sf = sc->parent;
     if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
     for ( an=sf->anchor; an!=NULL; an=an->next ) {
+	if ( classmatch ) {
+	    if (( an->type == act_mklg && !isligatureglyph && !ismarkglyph ) ||
+		    ( an->type == act_mkmk && !ismarkglyph ))
+    continue;
+	}
 	val = IsAnchorClassUsed(sc,an);
 	if ( val>=0 ) {
 	    *waslig = val;
@@ -721,6 +734,10 @@ return( an );
 return( maybe );
 }
 
+AnchorClass *AnchorClassUnused(SplineChar *sc,int *waslig) {
+return( _AnchorClassUnused(sc,waslig,false));
+}
+
 static AnchorPoint *AnchorPointNew(CharView *cv) {
     AnchorClass *an;
     AnchorPoint *ap;
@@ -728,7 +745,10 @@ static AnchorPoint *AnchorPointNew(CharView *cv) {
     SplineChar *sc = cv->sc;
     PST *pst;
 
-    an = AnchorClassUnused(sc,&waslig);
+    an = _AnchorClassUnused(sc,&waslig,true);
+    if ( an==NULL )
+	an = AnchorClassUnused(sc,&waslig);
+
     if ( an==NULL )
 return(NULL);
     ap = chunkalloc(sizeof(AnchorPoint));
@@ -737,6 +757,7 @@ return(NULL);
     ap->me.y = cv->p.cy; /* cv->p.cy = 0; */
     ap->type = an->type==act_mark ? at_basechar :
 		an->type==act_mkmk ? at_basemark :
+		an->type==act_mklg ? at_baselig :
 		at_centry;
     for ( pst = cv->sc->possub; pst!=NULL && pst->type!=pst_ligature; pst=pst->next );
     if ( waslig<-1 && an->type==act_mkmk ) {
@@ -746,11 +767,11 @@ return(NULL);
     else if ( waslig==-3 || an->type==act_curs )
 	ap->type = at_centry;
     else if (( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 &&
-	    iscombining(sc->unicodeenc)) || sc->width==0 || sc->glyph_class==2 /* base class+1 */)
+	    iscombining(sc->unicodeenc)) || sc->width==0 || sc->glyph_class==(3+1) /* mark class+1 */)
 	ap->type = at_mark;
     else if ( an->type==act_mkmk )
 	ap->type = at_basemark;
-    else if ( pst!=NULL || waslig )
+    else if (( pst!=NULL || waslig || sc->glyph_class==2+1) && an->type==act_mklg )
 	ap->type = at_baselig;
     if (( ap->type==at_basechar || ap->type==at_baselig ) && an->type==act_mkmk )
 	ap->type = at_basemark;
@@ -812,7 +833,7 @@ static void AI_DisplayClass(GIData *ci,AnchorPoint *ap) {
     int saw[at_max];
 
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_BaseChar),ac->type==act_mark);
-    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_BaseLig),ac->type==act_mark);
+    GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_BaseLig),ac->type==act_mklg);
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_BaseMark),ac->type==act_mkmk);
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_CursEntry),ac->type==act_curs);
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_CursExit),ac->type==act_curs);
@@ -1114,17 +1135,20 @@ return( true );			/* No op */
 	} else if ( an->type==act_mkmk ) {
 	    if ( ntype!=at_basemark && ntype!=at_mark )
 		ntype = at_basemark;
-	} else if ( ntype==at_centry || ntype==at_cexit || ntype==at_basemark ) {
+	} else if ( ntype==at_centry || ntype==at_cexit || ntype==at_basemark ||
+		ntype==at_baselig || ntype == at_basechar ) {
 	    PST *pst;
 	    for ( pst = ci->sc->possub; pst!=NULL && pst->type!=pst_ligature; pst=pst->next );
-	    if ( ci->sc->unicodeenc!=-1 && ci->sc->unicodeenc<0x10000 &&
-		    iscombining(ci->sc->unicodeenc))
+	    if (ci->sc->glyph_class==3+1 ||
+		    (ci->sc->unicodeenc!=-1 && ci->sc->unicodeenc<0x10000 &&
+		    iscombining(ci->sc->unicodeenc)))
 		ntype = at_mark;
-	    else if ( pst!=NULL )
+	    else if (( pst!=NULL || ci->sc->glyph_class==2+1 ) && an->type==act_mklg )
 		ntype = at_baselig;
 	    else
 		ntype = at_basechar;
 	}
+	
 	sawentry = sawexit = false;
 	for ( ap=ci->sc->anchor; ap!=NULL; ap = ap->next ) {
 	    if ( ap!=ci->ap && ap->anchor==an ) {
