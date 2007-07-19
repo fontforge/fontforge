@@ -962,8 +962,16 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
 	IError("Bad reverse encoding");
 	map->backmap[sc->orig_pos] = -1;
     }
-    fprintf(sfd, "Encoding: %d %d %d\n", (int) map->backmap[sc->orig_pos], sc->unicodeenc,
-	    newgids!=NULL?newgids[sc->orig_pos]:sc->orig_pos);
+    if ( sc->unicodeenc!=-1 &&
+	    ((map->enc->is_unicodebmp && sc->unicodeenc<0x10000) ||
+	     (map->enc->is_unicodefull && sc->unicodeenc<unicode4_size)) )
+	/* If we have altunis, then the backmap may not give the primary */
+	/*  unicode code point, which is what we need here */
+	fprintf(sfd, "Encoding: %d %d %d\n", sc->unicodeenc, sc->unicodeenc,
+		newgids!=NULL?newgids[sc->orig_pos]:sc->orig_pos);
+    else
+	fprintf(sfd, "Encoding: %d %d %d\n", (int) map->backmap[sc->orig_pos], sc->unicodeenc,
+		newgids!=NULL?newgids[sc->orig_pos]:sc->orig_pos);
     if ( sc->altuni ) {
 	fprintf( sfd, "AltUni:" );
 	for ( altuni = sc->altuni; altuni!=NULL; altuni=altuni->next )
