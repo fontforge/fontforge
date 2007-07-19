@@ -6358,10 +6358,10 @@ static void bAddAnchorPoint(Context *c) {
 	    ScriptError( c, "Wrong number of arguments");
     }
 
-    if (( type==at_baselig && t->type!=act_mark ) ||
+    if (( type==at_baselig && t->type!=act_mklg ) ||
 	    ( type==at_basechar && t->type!=act_mark ) ||
 	    ( type==at_basemark && t->type!=act_mkmk ) ||
-	    ( type==at_mark && !(t->type==act_mark || t->type==act_mkmk) ) ||
+	    ( type==at_mark && !(t->type==act_mark || t->type==act_mkmk || t->type==act_mklg) ) ||
 	    ( (type==at_centry || type==at_cexit) && t->type!=act_curs ))
 	ScriptError(c,"Type of anchor class does not match type requested for anchor point" );
 
