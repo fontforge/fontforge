@@ -266,16 +266,17 @@ uint32 *SFFeaturesInScriptLang(SplineFont *sf,int gpos,uint32 script,uint32 lang
     OTLookup *test;
     FeatureScriptLangList *fl;
     struct scriptlanglist *sl;
+    /* gpos==0 => GSUB, gpos==1 => GPOS, gpos==-1 => both, gpos==-2 => Both & morx & kern */
 
     if ( sf->cidmaster ) sf=sf->cidmaster;
     for ( isg = 0; isg<2; ++isg ) {
-	if ( gpos!=-1 && isg!=gpos )
+	if ( gpos>=0 && isg!=gpos )
     continue;
 	for ( test = isg ? sf->gpos_lookups : sf->gsub_lookups; test!=NULL; test = test->next ) {
 	    if ( test->unused )
 	continue;
 	    for ( fl=test->features; fl!=NULL; fl=fl->next ) {
-		if ( fl->ismac )
+		if ( fl->ismac && gpos!=-2 )
 	    continue;
 		if ( script==0xffffffff ) {
 		    for ( i=0; i<cnt; ++i ) {
@@ -289,22 +290,29 @@ uint32 *SFFeaturesInScriptLang(SplineFont *sf,int gpos,uint32 script,uint32 lang
 		    }
 		} else for ( sl=fl->scripts ; sl!=NULL; sl=sl->next ) {
 		    if ( sl->script==script ) {
-			for ( l=0; l<sl->lang_cnt; ++l ) {
+			int matched = false;
+			if ( fl->ismac && gpos==-2 )
+			    matched = true;
+			else for ( l=0; l<sl->lang_cnt; ++l ) {
 			    int testlang;
 			    if ( l<MAX_LANG )
 				testlang = sl->langs[l];
 			    else
 				testlang = sl->morelangs[l-MAX_LANG];
 			    if ( testlang==lang ) {
-				for ( i=0; i<cnt; ++i ) {
-				    if ( fl->featuretag==features[i] )
-				break;
-				}
-				if ( i==cnt ) {
-				    if ( cnt>=tot )
-					features = grealloc(features,(tot+=10)*sizeof(uint32));
-				    features[cnt++] = fl->featuretag;
-				}
+				matched = true;
+			break;
+			    }
+			}
+			if ( matched ) {
+			    for ( i=0; i<cnt; ++i ) {
+				if ( fl->featuretag==features[i] )
+			    break;
+			    }
+			    if ( i==cnt ) {
+				if ( cnt>=tot )
+				    features = grealloc(features,(tot+=10)*sizeof(uint32));
+				features[cnt++] = fl->featuretag;
 			    }
 			}
 		    }
@@ -1868,6 +1876,300 @@ struct lookup_data {
 
 static int ApplyLookupAtPos(uint32 tag, OTLookup *otl,struct lookup_data *data,int pos);
 
+static int GlyphNameInClass(char *name,char *class ) {
+    char *pt;
+    int len = strlen(name);
+
+    if ( class==NULL )
+return( false );
+
+    pt = class;
+    while ( (pt=strstr(pt,name))!=NULL ) {
+	if ( pt==NULL )
+return( false );
+	if ( (pt==class || pt[-1]==' ') && (pt[len]=='\0' || pt[len]==' '))
+return( true );
+	pt+=len;
+    }
+
+return( false );
+}
+
+/* ************************************************************************** */
+/* ************************ Apply Apple State Machines ********************** */
+/* ************************************************************************** */
+
+static void ApplyMacIndicRearrangement(struct lookup_data *data,int verb,
+	int first_pos,int last_pos) {
+    struct opentype_str temp, temp2, temp3, temp4;
+    int i;
+
+    if ( first_pos==-1 || last_pos==-1 || last_pos <= first_pos )
+return;
+    switch ( verb ) {
+      case 1: /* Ax => xA */
+	temp = data->str[first_pos];
+	for ( i= first_pos; i<last_pos; ++i )
+	    data->str[i] = data->str[i+1];
+	data->str[last_pos] = temp;
+      break;
+      case 2: /* xD => Dx */
+	temp = data->str[last_pos];
+	for ( i= last_pos; i>first_pos; --i )
+	    data->str[i] = data->str[i-1];
+	data->str[first_pos] = temp;
+      break;
+      case 3: /* AxD => DxA */
+	temp = data->str[last_pos];
+	data->str[last_pos] = data->str[first_pos];
+	data->str[first_pos] = temp;
+      break;
+      case 4: /* ABx => xAB */
+	temp = data->str[first_pos];
+	temp2 = data->str[first_pos+1];
+	for ( i= first_pos; i<last_pos-1; ++i )
+	    data->str[i] = data->str[i+21];
+	data->str[last_pos-1] = temp;
+	data->str[last_pos] = temp2;
+      break;
+      case 5: /* ABx => xBA */
+	temp = data->str[first_pos];
+	temp2 = data->str[first_pos+1];
+	for ( i= first_pos; i<last_pos-1; ++i )
+	    data->str[i] = data->str[i+21];
+	data->str[last_pos-1] = temp2;
+	data->str[last_pos] = temp;
+      break;
+      case 6: /* xCD => CDx */
+	temp = data->str[last_pos];
+	temp2 = data->str[last_pos-1];
+	for ( i= last_pos; i>first_pos+1; --i )
+	    data->str[i] = data->str[i-2];
+	data->str[first_pos+1] = temp;
+	data->str[first_pos] = temp2;
+      break;
+      case 7: /* xCD => DCx */
+	temp = data->str[last_pos];
+	temp2 = data->str[last_pos-1];
+	for ( i= last_pos; i>first_pos+1; --i )
+	    data->str[i] = data->str[i-2];
+	data->str[first_pos+1] = temp2;
+	data->str[first_pos] = temp;
+      break;
+      case 8: /* AxCD => CDxA */
+	temp = data->str[first_pos];
+	temp2 = data->str[last_pos-1];
+	temp3 = data->str[last_pos];
+	for ( i= last_pos-1; i>first_pos; --i )
+	    data->str[i] = data->str[i-1];
+	data->str[first_pos+1] = temp2;
+	data->str[first_pos] = temp3;
+	data->str[last_pos] = temp;
+      break;
+      case 9: /* AxCD => DCxA */
+	temp = data->str[first_pos];
+	temp2 = data->str[last_pos-1];
+	temp3 = data->str[last_pos];
+	for ( i= last_pos-1; i>first_pos; --i )
+	    data->str[i] = data->str[i-1];
+	data->str[first_pos+1] = temp3;
+	data->str[first_pos] = temp2;
+	data->str[last_pos] = temp;
+      break;
+      case 10: /* ABxD => DxAB */
+	temp = data->str[first_pos];
+	temp2 = data->str[first_pos+1];
+	temp3 = data->str[last_pos];
+	for ( i= first_pos+1; i<last_pos; ++i )
+	    data->str[i] = data->str[i+1];
+	data->str[first_pos] = temp3;
+	data->str[last_pos-1] = temp;
+	data->str[last_pos] = temp2;
+      break;
+      case 11: /* ABxD => DxBA */
+	temp = data->str[first_pos];
+	temp2 = data->str[first_pos+1];
+	temp3 = data->str[last_pos];
+	for ( i= first_pos+1; i<last_pos; ++i )
+	    data->str[i] = data->str[i+1];
+	data->str[first_pos] = temp3;
+	data->str[last_pos-1] = temp2;
+	data->str[last_pos] = temp;
+      break;
+      case 12: /* ABxCD => CDxAB */
+	temp = data->str[first_pos];
+	temp2 = data->str[first_pos+1];
+	temp3 = data->str[last_pos-1];
+	temp4 = data->str[last_pos];
+	data->str[last_pos] = temp2;
+	data->str[last_pos-1] = temp;
+	data->str[first_pos+1] = temp4;
+	data->str[first_pos] = temp3;
+      break;
+      case 13: /* ABxCD => CDxBA */
+	temp = data->str[first_pos];
+	temp2 = data->str[first_pos+1];
+	temp3 = data->str[last_pos-1];
+	temp4 = data->str[last_pos];
+	data->str[last_pos] = temp;
+	data->str[last_pos-1] = temp2;
+	data->str[first_pos+1] = temp4;
+	data->str[first_pos] = temp3;
+      break;
+      case 14: /* ABxCD => DCxAB */
+	temp = data->str[first_pos];
+	temp2 = data->str[first_pos+1];
+	temp3 = data->str[last_pos-1];
+	temp4 = data->str[last_pos];
+	data->str[last_pos] = temp2;
+	data->str[last_pos-1] = temp;
+	data->str[first_pos+1] = temp3;
+	data->str[first_pos] = temp4;
+      break;
+      case 15: /* ABxCD => DCxBA */
+	temp = data->str[first_pos];
+	temp2 = data->str[first_pos+1];
+	temp3 = data->str[last_pos-1];
+	temp4 = data->str[last_pos];
+	data->str[last_pos] = temp;
+	data->str[last_pos-1] = temp2;
+	data->str[first_pos+1] = temp3;
+	data->str[first_pos] = temp4;
+      break;
+    }
+}
+
+static int ApplyMacInsert(struct lookup_data *data,int ipos,int cnt,
+	char *glyphnames, int orig_index) {
+    SplineChar *inserts[32];
+    char *start, *pt;
+    int i, ch;
+
+    if ( cnt==0 || glyphnames==NULL || ipos == -1 )
+return( 0 );
+
+    for ( i=0, start = glyphnames; i<cnt; ) {
+	while ( *start==' ' ) ++start;
+	if ( *start=='\0' )
+    break;
+	for ( pt = start; *pt!=' ' && *pt!='\0'; ++pt );
+	ch = *pt; *pt = '\0';
+	inserts[i] = SFGetChar(data->sf,-1,start);
+	*pt = ch;
+	if ( inserts[i]!=NULL )
+	    ++i;
+    }
+    cnt = i;
+    if ( i==0 )
+return( 0 );
+    for ( i= data->cnt; i>=ipos; --i )
+	data->str[i+cnt] = data->str[i];
+    memset(data->str+ipos,0,cnt*sizeof(struct opentype_str));
+    for ( i=0; i<cnt; ++i ) {
+	data->str[ipos+i].sc = inserts[i];
+	data->str[ipos+i].orig_index = orig_index;
+    }
+return( cnt );
+}
+
+static void ApplyAppleStateMachine(uint32 tag, OTLookup *otl,struct lookup_data *data) {
+    struct lookup_subtable *sub;
+    int state, class, pos, mark_pos, markend_pos, i;
+    ASM *sm;
+    int cnt_cur, cnt_mark;
+    struct asm_state *entry;
+    int kern_stack[8], kcnt;		/* Kerning state machines handle at most 8 glyphs */
+    /* Flaws: Line processing has not been done yet, so we are never in the */
+    /*  start of line state and we never get an end of line token. We never */
+    /*  get deleted tokens either, those glyphs are just gone */
+    /* Class 0: End of text */
+    /* Class 1: Glyph not in any classes */
+    /* Class 2: Deleted (we never see) */
+    /* Class 3: End of line (we never see) */
+
+    /* Mac doesn't have the concept of subtables, but a user could create one */
+    /*  it will get flattened out into its own "lookup" when written to a file*/
+    /*  So if there are multiple subtables, just process them all */
+    for ( sub=otl->subtables; sub!=NULL; sub=sub->next ) {
+	sm = sub->sm;
+
+	state = 0;
+	mark_pos = markend_pos = -1;
+	for ( pos = 0; pos<=data->cnt; ) {
+	    if ( pos==data->cnt )
+		class = 0;
+	    else {
+		for ( class = sm->class_cnt-1; class>3; --class )
+		    if ( GlyphNameInClass(data->str[i].sc->name,sm->classes[class]) )
+		break;
+		if ( class==3 )
+		    class = 1;		/* Glyph not in any class */;
+	    }
+	    entry = &sm->state[state*sm->class_cnt+class];
+	    switch ( otl->lookup_type ) {
+	      case morx_context:
+		if ( entry->u.context.cur_lookup!=NULL )
+		    ApplyLookupAtPos(0,entry->u.context.cur_lookup,data,pos);
+		if ( entry->u.context.mark_lookup!=NULL && mark_pos!=-1 ) {
+		    ApplyLookupAtPos(0,entry->u.context.mark_lookup,data,mark_pos);
+		    mark_pos = -1;
+		}
+	      break;
+	      case morx_indic:
+		if ( entry->flags & 0x2000 )
+		    markend_pos = pos;
+		if ( (entry->flags&0xf)!=0 ) {
+		    ApplyMacIndicRearrangement(data,entry->flags&0xf,mark_pos,markend_pos);
+		    mark_pos = markend_pos = -1;
+		}
+	      break;
+	      case morx_insert:
+		/* I live in total ignorance of what I should do if the glyph */
+		/*  "is Kashida like"... so I ignore those flags. */
+		cnt_cur = (entry->flags>>5)&0x1f;
+		cnt_mark = (entry->flags&0x1f);
+		if ( data->cnt + cnt_cur + cnt_mark >= data->max )
+		    data->str = grealloc(data->str,(data->max = data->cnt + cnt_cur + cnt_mark +20)*sizeof(struct opentype_str));
+		if ( cnt_cur!=0 )
+		    cnt_cur = ApplyMacInsert(data,(entry->flags& 0x0800)? pos : pos+1,
+			    cnt_cur,entry->u.insert.cur_ins,data->str[pos].orig_index);
+		if ( cnt_mark!=0 && mark_pos!=-1 ) {
+		    cnt_mark = ApplyMacInsert(data,(entry->flags& 0x0800)? mark_pos : mark_pos+1,
+			    cnt_mark,entry->u.insert.mark_ins,data->str[mark_pos].orig_index);
+		    mark_pos = -1;
+		} else
+		    cnt_mark = 0;
+		pos += cnt_cur+cnt_mark;
+	      break;
+	      case kern_statemachine:
+		if ( entry->u.kern.kcnt!=0 ) {
+		    for ( i=0; i<kcnt && i<entry->u.kern.kcnt; ++i )
+			data->str[kern_stack[i]].vr.h_adv_off +=
+				entry->u.kern.kerns[i];
+		    kcnt = 0;
+		}
+		if ( entry->flags & 0x8000 ) {
+		    for ( i=6; i>=0; --i )
+			kern_stack[i+1] = kern_stack[i];
+		    kern_stack[0] = pos;
+		    if ( ++kcnt>8 ) kcnt = 8;
+		}
+	      break;
+	    }
+	    if ( entry->flags & 0x8000 )
+		mark_pos = pos;		/* The docs do not state whether this happens before or after substitutions are applied at the mark */
+					/* after is more useful. So assume that */
+	    if ( !(entry->flags & 0x4000) )
+		++pos;
+	    state = entry->next_state;
+	}
+    }
+}
+
+/* ************************************************************************** */
+/* ************************* Apply OpenType Lookups ************************* */
+/* ************************************************************************** */
+
 static void LigatureFree(struct lookup_data *data) {
     int i;
 
@@ -1916,25 +2218,6 @@ static void LigatureSearch(struct lookup_subtable *sub, struct lookup_data *data
 	data->ligs = grealloc(data->ligs,(data->lmax+=1)*sizeof(SplineChar **));
     data->ligs[cnt] = NULL;
     data->lcnt = cnt;
-}
-
-static int GlyphNameInClass(char *name,char *class ) {
-    char *pt;
-    int len = strlen(name);
-
-    if ( class==NULL )
-return( false );
-
-    pt = class;
-    while ( (pt=strstr(pt,name))!=NULL ) {
-	if ( pt==NULL )
-return( false );
-	if ( (pt==class || pt[-1]==' ') && (pt[len]=='\0' || pt[len]==' '))
-return( true );
-	pt+=len;
-    }
-
-return( false );
 }
 
 static int skipglyphs(int lookup_flags, struct lookup_data *data, int pos) {
@@ -2134,10 +2417,19 @@ static int ApplySingleSubsAtPos(struct lookup_subtable *sub,struct lookup_data *
 return( 0 );
 
     sc = SFGetChar(data->sf,-1,pst->u.subs.variant);
-    if ( sc==NULL )
-return( 0 );
-    data->str[pos].sc = sc;
+    if ( sc!=NULL ) {
+	data->str[pos].sc = sc;
 return( pos+1 );
+    } else if ( strcmp(pst->u.subs.variant,MAC_DELETED_GLYPH_NAME)==0 ) {
+	/* Under AAT we delete the glyph. But OpenType doesn't have that concept */
+	int i;
+	for ( i=pos+1; i<data->cnt; ++i )
+	    data->str[pos-1] = data->str[pos];
+	--data->cnt;
+return( pos );
+    } else {
+return( 0 );
+    }
 }
 
 static int ApplyMultSubsAtPos(struct lookup_subtable *sub,struct lookup_data *data,int pos) {
@@ -2560,12 +2852,19 @@ return( 0 );
 
 static void ApplyLookup(uint32 tag, OTLookup *otl,struct lookup_data *data) {
     int pos, npos;
+    int lt = otl->lookup_type;
 
-    for ( pos = 0; pos<data->cnt; ) {
-	npos = ApplyLookupAtPos(tag,otl,data,pos);
-	if ( npos==0 )
-	    npos = pos+1;
-	pos = npos;
+    if ( lt == morx_indic || lt == morx_context || lt == morx_insert ||
+	    lt == kern_statemachine )
+	ApplyAppleStateMachine(tag,otl,data);
+    else {
+	/* OpenType */
+	for ( pos = 0; pos<data->cnt; ) {
+	    npos = ApplyLookupAtPos(tag,otl,data,pos);
+	    if ( npos==0 )
+		npos = pos+1;
+	    pos = npos;
+	}
     }
 }
 
@@ -2584,6 +2883,8 @@ return( 0 );
 	if ( flist[i]!=0 ) {
 	    for ( sl=fl->scripts; sl!=NULL; sl=sl->next ) {
 		if ( sl->script == script ) {
+		    if ( fl->ismac )	/* Language irrelevant on macs (scripts too, but we pretend they matter) */
+return( fl->featuretag );
 		    for ( l=0; l<sl->lang_cnt; ++l )
 			if ( (l<MAX_LANG && sl->langs[l]==lang) ||
 				(l>=MAX_LANG && sl->morelangs[l-MAX_LANG]==lang))

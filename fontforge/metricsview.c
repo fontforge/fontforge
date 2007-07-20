@@ -389,7 +389,7 @@ static void MVSetFeatures(MetricsView *mv) {
     int i, j, cnt;
     GTextInfo **ti=NULL;
     uint32 *tags = NULL, script, lang;
-    char buf[8];
+    char buf[16];
     uint32 *stds;
     const unichar_t *pt = _GGadgetGetTitle(mv->script);
 
@@ -401,7 +401,7 @@ static void MVSetFeatures(MetricsView *mv) {
 	lang = (pt[5]<<24) | (pt[6]<<16) | (pt[7]<<8) | pt[8];
     stds = StdFeaturesOfScript(script);
 
-    tags = SFFeaturesInScriptLang(sf,-1,script,lang);
+    tags = SFFeaturesInScriptLang(sf,-2,script,lang);
     /* Never returns NULL */
     for ( cnt=0; tags[cnt]!=0; ++cnt );
 
@@ -411,8 +411,13 @@ static void MVSetFeatures(MetricsView *mv) {
     for ( i=0; i<cnt; ++i ) {
 	ti[i] = gcalloc( 1,sizeof(GTextInfo));
 	ti[i]->fg = ti[i]->bg = COLOR_DEFAULT;
-	buf[0] = tags[i]>>24; buf[1] = tags[i]>>16; buf[2] = tags[i]>>8; buf[3] = tags[i]; buf[4] = 0;
+	if ( (tags[i]>>24)<' ' || (tags[i]>>24)>0x7e )
+	    sprintf( buf, "<%d,%d>", tags[i]>>16, tags[i]&0xffff );
+	else {
+	    buf[0] = tags[i]>>24; buf[1] = tags[i]>>16; buf[2] = tags[i]>>8; buf[3] = tags[i]; buf[4] = 0;
+	}
 	ti[i]->text = uc_copy(buf);
+	ti[i]->userdata = (void *) (intpt) tags[i];
 	for ( j=0; stds[j]!=0; ++j ) {
 	    if ( stds[j] == tags[i] ) {
 		ti[i]->selected = true;
@@ -744,7 +749,7 @@ static void MVRemetric(MetricsView *mv) {
     feats = gcalloc(cnt+1,sizeof(uint32));
     for ( i=cnt=0; i<len; ++i )
 	if ( ti[i]->selected )
-	    feats[cnt++] = (ti[i]->text[0]<<24) | (ti[i]->text[1]<<16) | (ti[i]->text[2]<<8) | ti[i]->text[3];
+	    feats[cnt++] = (intpt) ti[i]->userdata;
 
     free(mv->glyphs);
     mv->glyphs = ApplyTickedFeatures(mv->sf,feats,script, lang, mv->pixelsize, mv->chars);
@@ -1560,7 +1565,6 @@ return( true );
 #define MID_Center	2600
 #define MID_OpenBitmap	2700
 #define MID_OpenOutline	2701
-#define MID_Display	2706
 #define MID_Cut		2101
 #define MID_Copy	2102
 #define MID_Paste	2103
@@ -1641,12 +1645,6 @@ static void MVMenuGenerateFamily(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void MVMenuPrint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     PrintDlg(NULL,NULL,mv);
-}
-
-static void MVMenuDisplay(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
-
-    DisplayDlg(mv->sf);
 }
 
 static void MVUndo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -2490,7 +2488,6 @@ static GMenuItem2 fllist[] = {
     { { (unichar_t *) N_("_Merge Feature Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Merge Kern Info...|Ctl+Shft+K"), NULL, NULL, MVMenuMergeKern },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Print..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Print...|Ctl+P"), NULL, NULL, MVMenuPrint },
-    { { (unichar_t *) N_("_Display..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'D' }, H_("Display...|Alt+Ctl+P"), NULL, NULL, MVMenuDisplay, MID_Display },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("Pr_eferences..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'e' }, H_("Preferences...|No Shortcut"), NULL, NULL, MenuPrefs },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
@@ -2704,16 +2701,12 @@ static GMenuItem2 mtlist[] = {
 };
 
 static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    /*MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);*/
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_Recent:
 	    mi->ti.disabled = !RecentFilesAny();
-	  break;
-	  case MID_Display:
-	    mi->ti.disabled = (mv->sf->onlybitmaps && mv->sf->bitmaps==NULL) ||
-		    mv->sf->multilayer;
 	  break;
 	}
     }
