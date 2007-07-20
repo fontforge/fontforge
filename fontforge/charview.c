@@ -4601,7 +4601,6 @@ return( true );
 #define MID_OpenBitmap	2700
 #define MID_Revert	2702
 #define MID_Recent	2703
-#define MID_Display	2706
 #define MID_RevertGlyph	2707
 
 #define MID_MMReblend	2800
@@ -4750,12 +4749,6 @@ static void CVMenuPrint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     PrintDlg(NULL,cv->sc,NULL);
 }
 
-static void CVMenuDisplay(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    CharView *cv = (CharView *) GDrawGetUserData(gw);
-
-    DisplayDlg(cv->sc->parent);
-}
-
 #if !defined(_NO_PYTHON)
 static void CVMenuExecute(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
@@ -4779,10 +4772,6 @@ static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_Recent:
 	    mi->ti.disabled = !RecentFilesAny();
-	  break;
-	  case MID_Display:
-	    mi->ti.disabled = (cv->fv->sf->onlybitmaps && cv->fv->sf->bitmaps==NULL) ||
-		    cv->fv->sf->multilayer;
 	  break;
 	}
     }
@@ -8089,7 +8078,6 @@ static GMenuItem2 fllist[] = {
     { { (unichar_t *) N_("Revert Gl_yph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Revert Glyph|Alt+Ctl+R"), NULL, NULL, CVMenuRevertGlyph, MID_RevertGlyph },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Print..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Print...|Ctl+P"), NULL, NULL, CVMenuPrint },
-    { { (unichar_t *) N_("_Display..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'D' }, H_("Display...|Alt+Ctl+P"), NULL, NULL, CVMenuDisplay, MID_Display },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
 #if !defined(_NO_PYTHON)
     { { (unichar_t *) N_("E_xecute Script..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Execute Script...|Ctl+."), NULL, NULL, CVMenuExecute },

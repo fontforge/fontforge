@@ -570,14 +570,17 @@ typedef struct generic_asm {		/* Apple State Machine */
 
 struct opentype_str {
     struct splinechar *sc;
-    struct vr vr;
+    struct vr vr;		/* Scaled and rounded gpos modifications */
     struct kernpair *kp;
     struct kernclass *kc;
+    int16 advance_width;	/* Basic advance, modifications in vr, scaled and rounded */
     int16 kc_index;
     int16 lig_pos;		/* when skipping marks to form a ligature keep track of what ligature element a mark was attached to */
     int16 context_pos;		/* When doing a contextual match remember which glyphs are used, and where in the match they occur. Skipped glyphs have -1 */
-    int16 orig_index;
-    void *fd;
+    int32 orig_index;
+    void *fl;
+    unsigned int line_break_after: 1;
+    unsigned int r2l: 1;
 };
 
 struct macname {
@@ -1065,7 +1068,7 @@ typedef struct splinechar {
     unsigned int namechanged: 1;
     unsigned int blended: 1;	/* An MM blended character */
     unsigned int unused_so_far: 1;
-    unsigned int glyph_class: 3; /* 0=> fontforge determines class automagically, else one more than the class value in gdef */
+    unsigned int glyph_class: 3; /* 0=> fontforge determines class automagically, else one more than the class value in gdef so 2+1=>lig, 3+1=>mark */
     unsigned int numberpointsbackards: 1;
     unsigned int instructions_out_of_date: 1;
     unsigned int complained_about_ptnums: 1;

@@ -3916,6 +3916,7 @@ static struct flaglist ap_types[] = {
     { "basemark", at_basemark },
     { "entry", at_centry },
     { "exit", at_cexit },
+    { "baselig", at_baselig },
     NULL };
 
 static PyObject *PyFF_Glyph_get_anchorPoints(PyFF_Glyph *self,void *closure) {

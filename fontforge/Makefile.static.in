@@ -27,7 +27,7 @@ fontforge_OBJECTS =  autohint.o autosave.o autowidth.o bitmapdlg.o \
  sfd.o splashimage.o splinefill.o splineoverlap.o splinesave.o \
  splinesaveafm.o splinestroke.o splineutil.o splineutil2.o stamp.o \
  start.o tottf.o transform.o uiutil.o utils.o windowmenu.o  \
- zapfnomen.o othersubrs.o autotrace.o openfontdlg.o encoding.o print.o \
+ zapfnomen.o othersubrs.o autotrace.o openfontdlg.o encoding.o \
  problems.o metafont.o alignment.o parsettfbmf.o \
  macbinary.o crctab.o scripting.o freetype.o gotodlg.o search.o \
  combinations.o tilepath.o sftextfield.o displayfonts.o ikarus.o \
