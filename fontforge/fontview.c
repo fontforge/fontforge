@@ -1611,17 +1611,6 @@ void FontViewMenu_Print(GtkMenuItem *menuitem, gpointer user_data) {
     PrintDlg(fv,NULL,NULL);
 }
 
-# if defined(FONTFORGE_CONFIG_GDRAW)
-static void FVMenuDisplay(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-# elif defined(FONTFORGE_CONFIG_GTK)
-void FontViewMenu_Display(GtkMenuItem *menuitem, gpointer user_data) {
-    FontView *fv = FV_From_MI(menuitem);
-# endif
-
-    DisplayDlg(fv->sf);
-}
-
 #if !defined(_NO_FFSCRIPT) || !defined(_NO_PYTHON)
 # if defined(FONTFORGE_CONFIG_GDRAW)
 static void FVMenuExecute(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -1772,7 +1761,6 @@ void FontViewMenu_Embolden(GtkMenuItem *menuitem, gpointer user_data) {
 #define MID_Recent	2703
 #define MID_Print	2704
 #define MID_ScriptMenu	2705
-#define MID_Display	2706
 #define MID_RevertGlyph	2707
 #define MID_RevertToBackup 2708
 #define MID_Cut		2101
@@ -5897,10 +5885,6 @@ static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_Print:
 	    mi->ti.disabled = fv->sf->onlybitmaps;
 	  break;
-	  case MID_Display:
-	    mi->ti.disabled = (fv->sf->onlybitmaps && fv->sf->bitmaps==NULL) ||
-			fv->sf->multilayer;
-	  break;
 	}
     }
 }
@@ -6217,7 +6201,6 @@ static GMenuItem2 fllist[] = {
     { { (unichar_t *) N_("Revert Gl_yph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Revert Glyph|Alt+Ctl+R"), NULL, NULL, FVMenuRevertGlyph, MID_RevertGlyph },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Print..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Print...|Ctl+P"), NULL, NULL, FVMenuPrint, MID_Print },
-    { { (unichar_t *) N_("_Display..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'D' }, H_("Display...|Alt+Ctl+P"), NULL, NULL, FVMenuDisplay, MID_Display },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
 #if !defined(_NO_FFSCRIPT) || !defined(_NO_PYTHON)
     { { (unichar_t *) N_("E_xecute Script..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Execute Script...|Ctl+."), NULL, NULL, FVMenuExecute },

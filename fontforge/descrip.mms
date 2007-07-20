@@ -20,7 +20,7 @@ fontforge_OBJECTS3=sfd.obj,splashimage.obj,splinefill.obj,splineoverlap.obj,spli
  splinesaveafm.obj,splinestroke.obj,splineutil.obj,splineutil2.obj,stamp.obj,\
  start.obj,tottf.obj,transform.obj,uiutil.obj,utils.obj,windowmenu.obj
 
-fontforge_OBJECTS4=zapfnomen.obj,othersubrs.obj,autotrace.obj,openfontdlg.obj,encoding.obj,print.obj,\
+fontforge_OBJECTS4=zapfnomen.obj,othersubrs.obj,autotrace.obj,openfontdlg.obj,encoding.obj,\
  problems.obj,crctab.obj,macbinary.obj,scripting.obj
  
 fontforge_OBJECTS5=displayfonts.obj,combinations.obj,sftextfield.obj,ikarus.obj,\
@@ -137,7 +137,6 @@ othersubrs.obj : othersubrs.c
 autotrace.obj : autotrace.c
 openfontdlg.obj : openfontdlg.c
 encoding.obj : encoding.c
-print.ob : print.c
 problems.obj : problems.c
 crctab.obj : crctab.c
 macbinary.obj : macbinary.c

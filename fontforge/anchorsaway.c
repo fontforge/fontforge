@@ -32,6 +32,8 @@
 #include <utype.h>
 #include <math.h>
 
+/* The dialog should contain a lig index !!!! */
+
 typedef struct anchord {
     GWindow gw;
     int ctl_len;

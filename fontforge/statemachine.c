@@ -1194,8 +1194,10 @@ static void SMD_Fillup(SMD *smd) {
 	    buf[strlen(buf)-1] = '\0';
 	GGadgetSetTitle8(GWidgetGetControl(smd->editgw,CID_Kerns),buf);
     } else {
+	if ( this->u.context.mark_lookup != NULL )
 	GGadgetSetTitle8(GWidgetGetControl(smd->editgw,CID_TagMark),this->u.context.mark_lookup->lookup_name);
-	GGadgetSetTitle8(GWidgetGetControl(smd->editgw,CID_TagCur),this->u.context.cur_lookup->lookup_name);
+	if ( this->u.context.cur_lookup != NULL )
+	    GGadgetSetTitle8(GWidgetGetControl(smd->editgw,CID_TagCur),this->u.context.cur_lookup->lookup_name);
     }
 
     GGadgetSetEnabled(GWidgetGetControl(smd->editgw,CID_Up), state!=0 );
