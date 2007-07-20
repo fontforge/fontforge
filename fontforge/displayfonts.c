@@ -1489,6 +1489,7 @@ static void outputchar(PI *pi, SplineChar *sc) {
 }
 
 static void PIFontSample(PI *pi,unichar_t *sample) {
+    gwwv_post_notice("Not yet Implemented","Not Yet Implemented");
 }
 
 /* ************************************************************************** */
