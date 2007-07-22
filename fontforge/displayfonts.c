@@ -125,6 +125,7 @@ static struct printdefaults {
     unichar_t *text;
 } pdefs[] = { { &custom, pt_fontdisplay }, { &custom, pt_chars }, { &custom, pt_fontdisplay }};
 /* defaults for print from fontview, charview, metricsview */
+static int lastdpi = 0;
 
 /* ************************************************************************** */
 /* ***************************** Printing Stuff ***************************** */
@@ -3424,7 +3425,7 @@ return( true );
 	    }
 	    DSP_SetFont(di,false);
 	} else
-	    SFTFSetSize(GWidgetGetControl(di->gw,CID_SampleText),-1,-1,
+	    SFTFSetAntiAlias(GWidgetGetControl(di->gw,CID_SampleText),-1,-1,
 		    GGadgetIsChecked(GWidgetGetControl(di->gw,CID_AA)));
     }
 return( true );
@@ -3523,6 +3524,7 @@ return( true );
 	if ( sample==NULL )
 return( true );		/* Happens during startup */
 	SFTFSetDPI(sample,dpi);
+	lastdpi = dpi;
 	GGadgetRedraw(sample);
     } else if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
 	/* Don't change the font on each change to the text field, that might */
@@ -3551,8 +3553,10 @@ static void DSP_DpiChangedTimer(DI *di) {
 
 static int DSP_Refresh(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	/* DI *di = GDrawGetUserData(GGadgetGetWindow(g)); */
-	/* !!!! */
+	DI *di = GDrawGetUserData(GGadgetGetWindow(g));
+	GGadget *sample = GWidgetGetControl(di->gw,CID_SampleText);
+	SFTFRefreshFonts(sample);		/* Clear any font info and get new font maps, etc. */
+	SFTFProvokeCallback(sample);		/* Refresh the feature list too */
     }
 return( true );
 }
@@ -3906,7 +3910,10 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     gcd[13].gd.popup_msg = (unichar_t *) _("Specifies screen dots per inch");
     gcd[13].creator = GLabelCreate;
 
-    dpi = GDrawPointsToPixels(NULL,72);
+    if ( lastdpi==0 )
+	dpi = GDrawPointsToPixels(NULL,72);
+    else
+	dpi = lastdpi;
     sprintf( dpibuf, "%d", dpi );
     label[14].text = (unichar_t *) dpibuf;
     label[14].text_is_1byte = true;
@@ -3918,7 +3925,7 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     gcd[14].gd.handle_controlevent = DSP_DpiChanged;
     gcd[14].creator = GNumericFieldCreate;
 
-    gcd[15].gd.flags = gg_visible /*| gg_enabled*/ | gg_utf8_popup ;
+    gcd[15].gd.flags = gg_visible | gg_enabled | gg_utf8_popup ;
     gcd[15].gd.popup_msg = (unichar_t *) _("FontForge does not update this window when a change is made to the font.\nIf a font has changed press the button to force an update");
     label[15].text = (unichar_t *) _("_Refresh");
     label[15].text_is_1byte = true;
@@ -4094,7 +4101,6 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     GGadgetSetTitle(gcd[11].ret, temp);
     free(temp);
     SFTFRegisterCallback(gcd[11].ret,&di,DSP_ChangeFontCallback);
-    SFTFProvokeCallback(gcd[11].ret);
 
     GHVBoxSetExpandableRow(boxes[0].ret,0);
     GHVBoxSetExpandableCol(boxes[2].ret,gb_expandglue);
@@ -4109,6 +4115,10 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     GHVBoxSetExpandableCol(boxes[11].ret,gb_expandglue);
     GHVBoxSetExpandableCol(boxes[12].ret,gb_expandglue);
     GHVBoxFitWindow(boxes[0].ret);
+
+    SFTextAreaSelect(gcd[11].ret,0,0);
+    SFTextAreaShow(gcd[11].ret,0);
+    SFTFProvokeCallback(gcd[11].ret);
     
     GDrawSetVisible(di.gw,true);
     while ( !di.done )
