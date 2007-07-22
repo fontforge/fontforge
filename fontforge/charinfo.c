@@ -35,6 +35,8 @@
 #include <gkeysym.h>
 extern int lookup_hideunused;
 
+static int last_gi_aspect = 0;
+
 typedef struct charinfo {
     CharView *cv;
     EncMap *map;
@@ -45,6 +47,7 @@ typedef struct charinfo {
     int done, first, changed;
     struct lookup_subtable *old_sub;
     int r,c;
+    int lc_seen, lc_aspect;
 } CharInfo;
 
 #define CI_Width	218
@@ -65,6 +68,8 @@ typedef struct charinfo {
 #define CID_TeX_Depth	1013
 #define CID_TeX_Sub	1014
 #define CID_TeX_Super	1015
+
+#define CID_LCCount	1016
 
 /* Offsets for repeated fields. add 100*index */
 #define CID_List	1020
@@ -1150,6 +1155,7 @@ static int _CI_OK(CharInfo *ci) {
     FontView *fvs;
     int err = false;
     int tex_height, tex_depth, tex_sub, tex_super;
+    int lc_cnt=-1;
 
     val = ParseUValue(ci->gw,CID_UValue,true,ci->sc->parent);
     if ( val==-2 )
@@ -1160,6 +1166,15 @@ return( false );
     tex_super  = gettex(ci->gw,CID_TeX_Super ,_("Superscript Pos:"),&err);
     if ( err )
 return( false );
+    if ( ci->lc_seen ) {
+	lc_cnt = GetInt8(ci->gw,CID_LCCount,_("Ligature Caret Count"),&err);
+	if ( err )
+return( false );
+	if ( lc_cnt<0 || lc_cnt>100 ) {
+	    gwwv_post_error(_("Bad Lig. Caret Count"),_("Unreasonable ligature caret count"));
+return( false );
+	}
+    }
     nm = _GGadgetGetTitle(GWidgetGetControl(ci->gw,CID_UName));
     if ( !CI_NameCheck(nm) )
 return( false );
@@ -1196,6 +1211,34 @@ return( false );
     }
     if ( ret )
 	ci->sc->parent->changed = true;
+    if ( ret && ci->lc_seen ) {
+	PST *pst, *prev=NULL;
+	int i;
+	for ( pst = ci->sc->possub; pst!=NULL && pst->type!=pst_lcaret; pst=pst->next )
+	    prev = pst;
+	if ( pst==NULL && lc_cnt==0 )
+	    /* Nothing to do */;
+	else if ( pst!=NULL && lc_cnt==0 ) {
+	    if ( prev==NULL )
+		ci->sc->possub = pst->next;
+	    else
+		prev->next = pst->next;
+	    pst->next = NULL;
+	    PSTFree(pst);
+	} else {
+	    if ( pst==NULL ) {
+		pst = chunkalloc(sizeof(PST));
+		pst->type = pst_lcaret;
+		pst->next = ci->sc->possub;
+		ci->sc->possub = pst;
+	    }
+	    if ( lc_cnt>pst->u.lcaret.cnt )
+		pst->u.lcaret.carets = grealloc(pst->u.lcaret.carets,lc_cnt*sizeof(int16));
+	    for ( i=pst->u.lcaret.cnt; i<lc_cnt; ++i )
+		pst->u.lcaret.carets[i] = 0;
+	    pst->u.lcaret.cnt = lc_cnt;
+	}
+    }
 return( ret );
 }
 
@@ -1473,6 +1516,10 @@ void SCLigCaretCheck(SplineChar *sc,int clean) {
     /* Check to see if this is a ligature character, and if so, does it have */
     /*  a ligature caret structure. If a lig but no lig caret structure then */
     /*  create a lig caret struct */
+    /* This is not entirely sufficient. If we have an old type1 font with afm */
+    /*  file then there was no way of saying "ffi = f + f + i" instead you    */
+    /*  said "ffi = ff + i" (only two component ligatures allowed). This means*/
+    /*  we'd get the wrong number of lcaret positions */
 
     for ( pst=sc->possub, prev=NULL; pst!=NULL; prev = pst, pst=pst->next ) {
 	if ( pst->type == pst_lcaret ) {
@@ -2562,6 +2609,54 @@ static void CI_SubsPopupPrepare(GGadget *g, int r, int c) {
     GGadgetPreparePopupImage(GGadgetGetWindow(g),NULL,ci,_CI_GetImage,CI_FreeKernedImage);
 }
 
+static void CI_NoteAspect(CharInfo *ci) {
+    int new_aspect = GTabSetGetSel(GWidgetGetControl(ci->gw,CID_Tabs));
+    PST *pst;
+    int cnt;
+    char buf[20];
+
+    last_gi_aspect = new_aspect;
+    if ( new_aspect == ci->lc_aspect && !ci->lc_seen ) {
+	ci->lc_seen = true;
+	for ( pst=ci->sc->possub; pst!=NULL && pst->type!=pst_lcaret; pst=pst->next );
+	if ( pst==NULL ) {
+	    int rows, cols, i;
+	    struct matrix_data *possub;
+	    /* Normally we look for ligatures in the possub list, but here*/
+	    /*  we will examine the ligature pane itself to get the most */
+	    /*  up to date info */
+	    possub = GMatrixEditGet(GWidgetGetControl(ci->gw,CID_List+(pst_ligature-1)*100), &rows );
+	    cols = GMatrixEditGetColCnt(GWidgetGetControl(ci->gw,CID_List+(pst_ligature-1)*100) );
+	    cnt = 0;
+	    for ( i=0; i<rows; ++i ) {
+		char *pt = possub[cols*i+1].u.md_str;
+		int comp = 0;
+		while ( *pt!='\0' ) {
+		    while ( *pt==' ' ) ++pt;
+		    if ( *pt=='\0' )
+		break;
+		    while ( *pt!=' ' && *pt!='\0' ) ++pt;
+		    ++comp;
+		}
+		if ( comp>cnt ) cnt = comp;
+	    }
+	    --cnt;		/* We want one fewer caret than there are components -- carets go BETWEEN components */
+	} else
+	    cnt = pst->u.lcaret.cnt;
+	if ( cnt<0 ) cnt = 0;
+	sprintf( buf, "%d", cnt );
+	GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_LCCount),buf);
+    }
+}
+
+static int CI_AspectChange(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	CharInfo *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	CI_NoteAspect(ci);
+    }
+return( true );
+}
+
 static void CIFillup(CharInfo *ci) {
     SplineChar *sc = ci->sc;
     SplineFont *sf = sc->parent;
@@ -2584,6 +2679,7 @@ static void CIFillup(CharInfo *ci) {
 	ci->oldsc->charinfo = NULL;
     sc->charinfo = ci;
     ci->oldsc = sc;
+    ci->lc_seen = false;
 
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,-1), ci->enc>0 &&
 	    ((gid=ci->map->map[ci->enc-1])==-1 ||
@@ -2755,6 +2851,8 @@ static void CIFillup(CharInfo *ci) {
 	buffer[0] = '\0';
     uc_strcpy(ubuf,buffer);
     GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_TeX_Super),ubuf);
+
+    CI_NoteAspect(ci);
 }
 
 static int CI_NextPrev(GGadget *g, GEvent *e) {
@@ -2830,15 +2928,18 @@ void SCCharInfo(SplineChar *sc,EncMap *map,int enc) {
     GRect pos;
     GWindowAttrs wattrs;
     GGadgetCreateData ugcd[12], cgcd[6], psgcd[7][7], cogcd[3], mgcd[9], tgcd[10];
+    GGadgetCreateData lcgcd[3];
     GTextInfo ulabel[12], clabel[6], pslabel[7][6], colabel[3], mlabel[9], tlabel[10];
+    GTextInfo lclabel[3];
     GGadgetCreateData mbox[4], *mvarray[7], *mharray1[7], *mharray2[8];
     GGadgetCreateData ubox[3], *uhvarray[19], *uharray[6];
     GGadgetCreateData cbox[3], *cvarray[5], *charray[4];
     GGadgetCreateData pstbox[7][4], *pstvarray[7][5], *pstharray1[7][8];
     GGadgetCreateData cobox[2], *covarray[4];
     GGadgetCreateData tbox[2], *thvarray[16];
+    GGadgetCreateData lcbox[2], *lchvarray[3][4];
     int i;
-    GTabInfo aspects[13];
+    GTabInfo aspects[14];
     static GBox smallbox = { bt_raised, bs_rect, 2, 1, 0, 0, 0,0,0,0, COLOR_DEFAULT,COLOR_DEFAULT };
     static int boxset=0;
     FontRequest rq;
@@ -3221,6 +3322,33 @@ return;
 	tbox[0].gd.u.boxelements = thvarray;
 	tbox[0].creator = GHVBoxCreate;
 
+	memset(&lcgcd,0,sizeof(lcgcd));
+	memset(&lcbox,0,sizeof(lcbox));
+	memset(&lclabel,0,sizeof(lclabel));
+
+	lclabel[0].text = (unichar_t *) _("Ligature Caret Count:");
+	lclabel[0].text_is_1byte = true;
+	lclabel[0].text_in_resource = true;
+	lcgcd[0].gd.label = &lclabel[0];
+	lcgcd[0].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	lcgcd[0].gd.popup_msg = (unichar_t *) _("Ligature caret locations are used by a text editor\nwhen it needs to draw a text edit caret inside a\nligature. This means there should be a caret between\neach ligature component so if there are n components\nthere should be n-1 caret locations.\n  You may adjust the caret locations themselves in the\noutline glyph view (drag them from to origin to the\nappropriate place)." );
+	lcgcd[0].creator = GLabelCreate;
+	lchvarray[0][0] = &lcgcd[0];
+
+	lcgcd[1].gd.pos.width = 50;
+	lcgcd[1].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	lcgcd[1].gd.cid = CID_LCCount;
+	lcgcd[1].gd.popup_msg = (unichar_t *) _("Ligature caret locations are used by a text editor\nwhen it needs to draw a text edit caret inside a\nligature. This means there should be a caret between\neach ligature component so if there are n components\nthere should be n-1 caret locations.\n  You may adjust the caret locations themselves in the\noutline glyph view (drag them from to origin to the\nappropriate place)." );
+	lcgcd[1].creator = GNumericFieldCreate;
+	lchvarray[0][1] = &lcgcd[1]; lchvarray[0][2] = GCD_Glue; lchvarray[0][3] = NULL;
+
+	lchvarray[1][0] = lchvarray[1][1] = lchvarray[1][2] = GCD_Glue;
+	lchvarray[1][3] = lchvarray[2][0] = NULL;
+
+	lcbox[0].gd.flags = gg_enabled|gg_visible;
+	lcbox[0].gd.u.boxelements = lchvarray[0];
+	lcbox[0].creator = GHVBoxCreate;
+
 	memset(&mgcd,0,sizeof(mgcd));
 	memset(&mbox,0,sizeof(mbox));
 	memset(&mlabel,0,sizeof(mlabel));
@@ -3280,6 +3408,11 @@ return;
 	aspects[i].text_is_1byte = true;
 	aspects[i++].gcd = cobox;
 
+	ci->lc_aspect = i;
+	aspects[i].text = (unichar_t *) _("Lig. Carets");
+	aspects[i].text_is_1byte = true;
+	aspects[i++].gcd = lcbox;
+
 	aspects[i].text = (unichar_t *) _("Counters");
 	aspects[i].text_is_1byte = true;
 	aspects[i++].gcd = pstbox[6];
@@ -3287,6 +3420,8 @@ return;
 	aspects[i].text = (unichar_t *) U_("ΤεΧ");		/* TeX */
 	aspects[i].text_is_1byte = true;
 	aspects[i++].gcd = tbox;
+
+	aspects[last_gi_aspect].selected = true;
 
 	mgcd[0].gd.pos.x = 4; mgcd[0].gd.pos.y = 6;
 	mgcd[0].gd.u.tabs = aspects;
@@ -3296,6 +3431,7 @@ return;
 	mgcd[0].gd.flags = gg_visible | gg_enabled | gg_tabset_vert;
 #endif
 	mgcd[0].gd.cid = CID_Tabs;
+	mgcd[0].gd.handle_controlevent = CI_AspectChange;
 	mgcd[0].creator = GTabSetCreate;
 	mvarray[0] = &mgcd[0]; mvarray[1] = NULL;
 
@@ -3393,6 +3529,8 @@ return;
 	GHVBoxSetExpandableCol(tbox[0].ret,1);
 	GHVBoxSetPadding(tbox[0].ret,6,4);
 
+	GHVBoxSetExpandableRow(lcbox[0].ret,gb_expandglue);
+	GHVBoxSetExpandableCol(lcbox[0].ret,gb_expandglue);
 	GHVBoxFitWindow(mbox[0].ret);
 	
 	memset(&rq,0,sizeof(rq));
