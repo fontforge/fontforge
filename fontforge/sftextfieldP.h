@@ -125,6 +125,10 @@ typedef struct sftextarea {
 
 extern SFTextArea *SFTFConvertToPrint(GGadget *g, int width, int height, int dpi);
 extern struct sfmaps *SFMapOfSF(SFTextArea *st,SplineFont *sf);
+extern void SFTFRefreshFonts(GGadget *g);
+extern void SFTextAreaShow(GGadget *g,int pos);
+extern void SFTextAreaSelect(GGadget *g,int start, int end);
+extern void SFTextAreaReplace(GGadget *g,const unichar_t *txt);
 
 extern struct gfuncs sftextarea_funcs;
 #endif

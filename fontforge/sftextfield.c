@@ -34,10 +34,6 @@
 #include <utype.h>
 #include <chardata.h>
 
-void SFTextAreaShow(GGadget *g,int pos);
-void SFTextAreaSelect(GGadget *g,int start, int end);
-void SFTextAreaReplace(GGadget *g,const unichar_t *txt);
-
 static GBox sftextarea_box = { /* Don't initialize here */ 0 };
 static int sftextarea_inited = false;
 static FontInstance *sftextarea_font;
@@ -2504,6 +2500,7 @@ static void sftextarea_resize(GGadget *g, int32 width, int32 height ) {
 	    _ggadget_redraw(&st->g);
 	}
     }
+    SFTextAreaShow(&st->g,st->sel_start);
 }
 
 static GRect *sftextarea_getsize(GGadget *g, GRect *r ) {
@@ -2817,18 +2814,8 @@ return( &st->g );
 }
 #endif
 
-struct sfmaps *SFMapOfSF(SFTextArea *st,SplineFont *sf) {
-    struct sfmaps *sfmaps;
-
-    for ( sfmaps=st->sfmaps; sfmaps!=NULL; sfmaps=sfmaps->next )
-	if ( sfmaps->sf==sf )
-return( sfmaps );
-
-    sfmaps = chunkalloc(sizeof(struct sfmaps));
-    sfmaps->sf = sf;
-    sfmaps->next = st->sfmaps;
-    st->sfmaps = sfmaps;
-    sfmaps->map = EncMapFromEncoding(sf,FindOrMakeEncoding("Unicode"));
+static void SFMapFill(struct sfmaps *sfmaps,SplineFont *sf) {
+    sfmaps->map = EncMapFromEncoding(sf,FindOrMakeEncoding("UnicodeFull"));
     sfmaps->notdef_gid = SFFindGID(sf,-1,".notdef");
     if ( sfmaps->notdef_gid==-1 ) {
 	SplineChar *notdef = SplineCharCreate();
@@ -2841,6 +2828,20 @@ return( sfmaps );
 	notdef->searcherdummy = true;
 	notdef->orig_pos = -1;
     }
+}
+
+struct sfmaps *SFMapOfSF(SFTextArea *st,SplineFont *sf) {
+    struct sfmaps *sfmaps;
+
+    for ( sfmaps=st->sfmaps; sfmaps!=NULL; sfmaps=sfmaps->next )
+	if ( sfmaps->sf==sf )
+return( sfmaps );
+
+    sfmaps = chunkalloc(sizeof(struct sfmaps));
+    sfmaps->sf = sf;
+    sfmaps->next = st->sfmaps;
+    st->sfmaps = sfmaps;
+    SFMapFill(sfmaps,sf);
 return( sfmaps );
 }
 
@@ -2880,7 +2881,8 @@ static FontData *RegenFontData(SFTextArea *st, FontData *ret) {
 	ret->bdf = SplineFontPieceMeal(ret->sf,pixelsize,ret->antialias,NULL);
     else {
 	for ( test=st->generated; test!=NULL; test=test->next )
-	    if ( test->sf == ret->sf && test->fonttype == ret->fonttype )
+	    if ( test!=ret && test->bdf!=NULL && test->sf == ret->sf &&
+		    test->fonttype == ret->fonttype )
 	break;
 	ret->depends_on = test;
 	ftc = NULL;
@@ -2906,6 +2908,21 @@ return( ret );
     }
     if ( freeold )
 	BDFFontFree(old);
+
+    if ( ret->bdf->clut ) {
+	ret->gi.u.image = &ret->base;
+	ret->base.image_type = it_index;
+	ret->base.clut = ret->bdf->clut;
+	ret->base.trans = 0;
+    } else {
+	memset(&ret->clut,'\0',sizeof(ret->clut));
+	ret->gi.u.image = &ret->base;
+	ret->base.image_type = it_mono;
+	ret->base.clut = &ret->clut;
+	ret->clut.clut_len = 2;
+	ret->clut.clut[0] = GDrawGetDefaultBackground(NULL);
+	ret->base.trans = 0;
+    }
 return( ret );
 }
 
@@ -2928,20 +2945,6 @@ return( test );
 return( NULL );
 
     ret->sfmap = SFMapOfSF(st,sf);
-    if ( ret->bdf->clut ) {
-	ret->gi.u.image = &ret->base;
-	ret->base.image_type = it_index;
-	ret->base.clut = ret->bdf->clut;
-	ret->base.trans = 0;
-    } else {
-	memset(&ret->clut,'\0',sizeof(ret->clut));
-	ret->gi.u.image = &ret->base;
-	ret->base.image_type = it_mono;
-	ret->base.clut = &ret->clut;
-	ret->clut.clut_len = 2;
-	ret->clut.clut[0] = GDrawGetDefaultBackground(NULL);
-	ret->base.trans = 0;
-    }
     ret->next = st->generated;
     st->generated = ret;
 return( ret );
@@ -3243,7 +3246,37 @@ return;
 	RegenFontData(st,fd);
     }
     SFTextAreaRefigureLines(st,0,-1);
-    _ggadget_redraw(g);
+    SFTextAreaShow(&st->g,st->sel_start);	/* Refigure scrollbars for new size */
+	    /* And force an expose event */
+}
+
+void SFTFRefreshFonts(GGadget *g) {
+    SFTextArea *st = (SFTextArea *) g;
+    FontData *fd;
+    struct sfmaps *sfmaps;
+
+    /* First regenerate the EncMaps. Glyphs might have been added or removed */
+    for ( sfmaps = st->sfmaps; sfmaps!=NULL; sfmaps = sfmaps->next ) {
+	EncMapFree(sfmaps->map);
+	SplineCharFree(sfmaps->fake_notdef);
+	sfmaps->fake_notdef = NULL;
+	SFMapFill(sfmaps,sfmaps->sf);
+    }
+
+    /* Then free all old generated bitmaps */
+    /* need to do this first because otherwise we might reuse a freetype context */
+    for ( fd = st->generated; fd!=NULL; fd=fd->next ) {
+	if ( fd->fonttype!=sftf_bitmap ) {
+	    BDFFontFree(fd->bdf);
+	    fd->bdf = NULL;
+	}
+    }
+    for ( fd = st->generated; fd!=NULL; fd=fd->next ) {
+	RegenFontData(st,fd);
+    }
+    SFTextAreaRefigureLines(st,0,-1);
+    SFTextAreaShow(&st->g,st->sel_start);	/* Refigure scrollbars for new size */
+	    /* And force an expose event */
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
