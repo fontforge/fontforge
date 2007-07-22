@@ -379,6 +379,14 @@ return(true);
 return( GProgressProcess(current));
 }
 
+int GProgressReset(void) {
+
+    if ( current==NULL )
+return(true);
+    current->sofar = 0;
+return( GProgressProcess(current));
+}
+
 void GProgressPauseTimer(void) {
     if ( current==NULL || current->visible || current->dying || current->paused )
 return;

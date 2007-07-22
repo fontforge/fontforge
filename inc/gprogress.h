@@ -52,6 +52,7 @@ extern void GProgressEnableStop(int enabled);		/* Allows you to disable and enab
 extern int GProgressNextStage(void);	/* Move to the next stage in the topmost indicator */
 extern int GProgressNext(void);		/* Increment progress by one sub-entity */
 extern int GProgressIncrementBy(int cnt);	/* Increment progress by cnt sub-entities */
+extern int GProgressReset(void);	/* Set progress to 0 */
 extern void GProgressPauseTimer(void);	/* Don't bring up the progress dlg because of */
 extern void GProgressResumeTimer(void);	/*  time spent between a pause and resume */
 extern void GProgressShow(void);	/* Display the damn thing whether we should or not */
@@ -71,6 +72,7 @@ extern void GProgressChangeLine2_8(const char *line2); /* Changes the text in th
 #define gwwv_progress_change_total	GProgressChangeTotal
 #define gwwv_progress_change_stages	GProgressChangeStages
 #define gwwv_progress_increment		GProgressIncrementBy
+#define gwwv_progress_reset		GProgressReset
 #define gwwv_progress_pause_timer	GProgressPauseTimer
 #define gwwv_progress_resume_timer	GProgressResumeTimer
 #define gwwv_progress_enable_stop	GProgressEnableStop
