@@ -262,12 +262,29 @@ static void SFFigureLineHeight(SFTextArea *st,int l,int p) {
     int width=0;
 
     for ( i=0; line[i]!=NULL; ++i ) {
-	BDFFont *bdf = ((struct fontlist *) (line[i]->fl))->fd->bdf;
-	if ( as<bdf->ascent ) as = bdf->ascent;
-	if ( ds<bdf->descent ) ds = bdf->descent;
+	FontData *fd = ((struct fontlist *) (line[i]->fl))->fd;
+	BDFFont *bdf = fd->bdf;
+	if ( bdf!=NULL ) {
+	    if ( as<bdf->ascent ) as = bdf->ascent;
+	    if ( ds<bdf->descent ) ds = bdf->descent;
+	} else {
+	    double scale = fd->pointsize*st->dpi/(72.0*(fd->sf->ascent+fd->sf->descent));
+	    if ( as<scale*fd->sf->ascent ) as = scale*fd->sf->ascent;
+	    if ( ds<scale*fd->sf->descent ) ds = scale*fd->sf->descent;
+	}
 	width += line[i]->advance_width + line[i]->vr.h_adv_off;
     }
-    if ( as+ds==0 ) { as = st->as; ds = st->fh-as; }
+    if ( as+ds==0 ) {
+	struct fontlist *fl, *last = st->fontlist;
+	for ( fl=st->fontlist; fl!=NULL && st->paras[p].start_pos<fl->end; fl=fl->next )
+	    last = fl;
+	if ( fl!=NULL ) {
+	    FontData *fd = fl->fd;
+	    double scale = fd->pointsize*st->dpi/(72.0*(fd->sf->ascent+fd->sf->descent));
+	    if ( as<scale*fd->sf->ascent ) as = scale*fd->sf->ascent;
+	    if ( ds<scale*fd->sf->descent ) ds = scale*fd->sf->descent;
+	}
+    }
     st->lineheights[l].fh = as+ds;
     st->lineheights[l].as = as;
     st->lineheights[l].linelen = width;
@@ -2800,7 +2817,7 @@ return( &st->g );
 }
 #endif
 
-static struct sfmaps *SFMapOfSF(SFTextArea *st,SplineFont *sf) {
+struct sfmaps *SFMapOfSF(SFTextArea *st,SplineFont *sf) {
     struct sfmaps *sfmaps;
 
     for ( sfmaps=st->sfmaps; sfmaps!=NULL; sfmaps=sfmaps->next )
@@ -3233,6 +3250,8 @@ return;
 SFTextArea *SFTFConvertToPrint(GGadget *g, int width, int height, int dpi) {
     SFTextArea *st = (SFTextArea *) g;
     SFTextArea *print = gcalloc(1,sizeof(SFTextArea));
+    struct fontlist *fl;
+    struct fontdata *fd1, *fd2;
 
     print->multi_line = true;
     print->accepts_returns = true;
@@ -3240,10 +3259,17 @@ SFTextArea *SFTFConvertToPrint(GGadget *g, int width, int height, int dpi) {
     print->dpi = dpi;
     print->g.inner.width = width;
     print->g.inner.height = height;
+    print->g.funcs = &sftextarea_funcs;
 
     print->text = u_copy(st->text);
     print->generated = FontDataCopyNoBDF(print,st->generated);
     print->fontlist = fontlistcopy(st->fontlist);
+    for ( fl = print->fontlist; fl!=NULL; fl=fl->next ) {
+	for ( fd1=st->generated, fd2=print->generated; fd1!=NULL && fd1!=fl->fd;
+		fd1=fd1->next, fd2=fd2->next );
+	fl->fd = fd2;
+    }
+    print->ps = -1;
     SFTextAreaRefigureLines(print,0,-1);
 return( print );
 }
@@ -3269,6 +3295,8 @@ void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height) {
     st->accepts_returns = true;
     st->wrap = true;
     st->dpi = 72;
+    st->ps = -1;
+    st->g.funcs = &sftextarea_funcs;
     SFMapOfSF(st,sf);
 
     cnt = arr->argc/2;

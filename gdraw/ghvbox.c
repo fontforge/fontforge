@@ -630,8 +630,14 @@ return;
     /* Make any offset simmetrical */
     outer.width += 2*g->r.x;
     outer.height += 2*g->r.y;
-    if ( cur.width!=outer.width || cur.height!=outer.height )
+    if ( cur.width!=outer.width || cur.height!=outer.height ) {
 	GDrawResize(g->base, outer.width, outer.height );
-    else
+	/* We want to get the resize before we set the window visible */
+	/*  and window managers make synchronizing an issue... */
+	GDrawSync(GDrawGetDisplayOfWindow(g->base));
+	GDrawProcessPendingEvents(GDrawGetDisplayOfWindow(g->base));
+	GDrawSync(GDrawGetDisplayOfWindow(g->base));
+	GDrawProcessPendingEvents(GDrawGetDisplayOfWindow(g->base));
+    } else
 	GGadgetResize(g, outer.width-2*g->r.x, outer.height-2*g->r.y );
 }
