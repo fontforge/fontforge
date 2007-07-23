@@ -778,6 +778,7 @@ void _FVCloseWindows(FontView *fv) {
     MetricsView *mv, *mnext;
     SplineFont *sf = fv->cidmaster?fv->cidmaster:fv->sf->mm!=NULL?fv->sf->mm->normal : fv->sf;
 
+    PrintWindowClose();
     if ( fv->nextsame==NULL && fv->sf->fv==fv && fv->sf->kcld!=NULL )
 	KCLD_End(fv->sf->kcld);
     if ( fv->nextsame==NULL && fv->sf->fv==fv && fv->sf->vkcld!=NULL )

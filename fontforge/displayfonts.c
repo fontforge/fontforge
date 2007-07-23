@@ -118,6 +118,8 @@ typedef struct printinfo {
     int wassfid, wasfn, wasps;
 } PI, DI;
 
+static PI *printwindow;
+
 static struct printdefaults {
     Encoding *last_cs;
     enum printtype pt;
@@ -2415,7 +2417,7 @@ return(true);
 	if ( pi->pt==pt_fontsample )
 	    GGadgetDestroy(&pi->sample->g);
 
-	pi->done = true;
+	GDrawDestroyWindow(pi->gw);
     }
 return( true );
 }
@@ -3034,7 +3036,7 @@ unichar_t *PrtBuildDef( SplineFont *sf, void *tf,
 	}
 
 	if ( ret ) {
-	    ret[len-1]='\0';
+	    ret[len]='\0';
 return( ret );
 	}
 	if ( len == 0 ) {
@@ -3555,8 +3557,20 @@ static int DSP_Refresh(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	DI *di = GDrawGetUserData(GGadgetGetWindow(g));
 	GGadget *sample = GWidgetGetControl(di->gw,CID_SampleText);
+	GGadget *fontnames = GWidgetGetControl(di->gw,CID_Font);
+	GTextInfo *sel = GGadgetGetListItemSelected(fontnames);
+	GTextInfo *fn;
+
 	SFTFRefreshFonts(sample);		/* Clear any font info and get new font maps, etc. */
 	SFTFProvokeCallback(sample);		/* Refresh the feature list too */
+
+	/* One thing we don't have to worry about is a font being removed */
+	/*  if that happens we just close this window. Too hard to fix up for */
+	/* But a font might be added... */
+	fn = FontNames(sel!=NULL? (SplineFont *) (sel->userdata) : di->mainsf);
+	GGadgetSetList(fontnames,GTextInfoArrayFromList(fn,NULL),false);
+	GGadgetSetEnabled(fontnames,fn[1].text!=NULL);
+	GTextInfoListFree(fn);
     }
 return( true );
 }
@@ -3652,7 +3666,7 @@ static int DSP_Done(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GWindow gw = GGadgetGetWindow(g);
 	DI *di = GDrawGetUserData(gw);
-	di->done = true;
+	GDrawDestroyWindow(di->gw);
     }
 return( true );
 }
@@ -3660,7 +3674,12 @@ return( true );
 static int dsp_e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	DI *di = GDrawGetUserData(gw);
-	di->done = true;
+	GDrawDestroyWindow(di->gw);
+    } else if ( event->type==et_destroy ) {
+	DI *di = GDrawGetUserData(gw);
+	TextInfoDataFree(di->scriptlangs);
+	free(di);
+	printwindow = NULL;
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	    help("display.html");
@@ -3693,7 +3712,6 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
 	    *regenarray[6];
     GTextInfo label[17], mlabel[5], plabel[8];
     GTabInfo aspects[3];
-    DI di;
     int dpi;
     char buf[12], dpibuf[12], sizebuf[12];
     SplineFont *sf = fv!=NULL ? fv->sf : sc!=NULL ? sc->parent : mv->fv->sf;
@@ -3703,22 +3721,30 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     int cnt;
     int fromwindow = fv!=NULL?0:sc!=NULL?1:2;
 
+    if ( printwindow!=NULL ) {
+	GDrawSetVisible(printwindow->gw,true);
+	GDrawRaise(printwindow->gw);
+return;
+    }
+
     if ( sf->cidmaster )
 	sf = sf->cidmaster;
 
-    PIInit(&di,fv,sc,mv);
+    printwindow = gcalloc(1,sizeof(DI));
+
+    PIInit(printwindow,fv,sc,mv);
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
-    wattrs.restrict_input_to_me = 1;
+    wattrs.restrict_input_to_me = false;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
     wattrs.utf8_window_title = _("Print...");
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,410));
     pos.height = GDrawPointsToPixels(NULL,330);
-    di.gw = GDrawCreateTopWindow(NULL,&pos,dsp_e_h,&di,&wattrs);
+    printwindow->gw = GDrawCreateTopWindow(NULL,&pos,dsp_e_h,printwindow,&wattrs);
 
     memset(&label,0,sizeof(label));
     memset(&mlabel,0,sizeof(mlabel));
@@ -3734,11 +3760,11 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     gcd[0].gd.popup_msg = (unichar_t *) _("Select some text, then use this list to change the\nfont in which those characters are displayed.");
     gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6; 
     gcd[0].gd.pos.width = 150;
-    gcd[0].gd.flags = (fv_list==NULL || fv_list->next==NULL) ?
-	    (gg_visible | gg_utf8_popup):
-	    (gg_visible | gg_enabled | gg_utf8_popup);
     gcd[0].gd.cid = CID_Font;
     gcd[0].gd.u.list = FontNames(sf);
+    gcd[0].gd.flags = (fv_list==NULL || gcd[0].gd.u.list[1].text==NULL ) ?
+	    (gg_visible | gg_utf8_popup):
+	    (gg_visible | gg_enabled | gg_utf8_popup);
     gcd[0].gd.handle_controlevent = DSP_FontChanged;
     gcd[0].creator = GListButtonCreate;
     varray[0] = &gcd[0]; varray[1] = NULL;
@@ -3867,7 +3893,7 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     gcd[9].gd.pos.width = 150;
     gcd[9].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     gcd[9].gd.cid = CID_ScriptLang;
-    gcd[9].gd.u.list = di.scriptlangs = SLOfFont(sf);
+    gcd[9].gd.u.list = printwindow->scriptlangs = SLOfFont(sf);
     gcd[9].gd.handle_controlevent = DSP_ScriptLangChanged;
     gcd[9].creator = GListFieldCreate;
     varray[6] = &gcd[9]; varray[7] = NULL; varray[8] = NULL;
@@ -4009,7 +4035,7 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     pgcd[3].creator = GLabelCreate;
     ptarray[0] = &pgcd[3];
 
-    sprintf(sizebuf,"%d",di.pointsize);
+    sprintf(sizebuf,"%d",printwindow->pointsize);
     plabel[4].text = (unichar_t *) sizebuf;
     plabel[4].text_is_1byte = true;
     pgcd[4].gd.label = &plabel[4];
@@ -4089,18 +4115,18 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     boxes[0].gd.u.boxelements = varray5[0];
     boxes[0].creator = GHVGroupCreate;
 
-    GGadgetsCreate(di.gw,boxes);
+    GGadgetsCreate(printwindow->gw,boxes);
     GListSetSBAlwaysVisible(gcd[10].ret,true);
     GListSetPopupCallback(gcd[10].ret,MV_FriendlyFeatures);
 
     GTextInfoListFree(gcd[0].gd.u.list);
-    DSP_SetFont(&di,true);
+    DSP_SetFont(printwindow,true);
     SFTFSetDPI(gcd[11].ret,dpi);
     temp = PrtBuildDef(sf,gcd[11].ret,
 	    (void (*)(void *, int, uint32, uint32))SFTFInitLangSys);
     GGadgetSetTitle(gcd[11].ret, temp);
     free(temp);
-    SFTFRegisterCallback(gcd[11].ret,&di,DSP_ChangeFontCallback);
+    SFTFRegisterCallback(gcd[11].ret,printwindow,DSP_ChangeFontCallback);
 
     GHVBoxSetExpandableRow(boxes[0].ret,0);
     GHVBoxSetExpandableCol(boxes[2].ret,gb_expandglue);
@@ -4119,12 +4145,13 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     SFTextAreaSelect(gcd[11].ret,0,0);
     SFTextAreaShow(gcd[11].ret,0);
     SFTFProvokeCallback(gcd[11].ret);
-    
-    GDrawSetVisible(di.gw,true);
-    while ( !di.done )
-	GDrawProcessOneEvent(NULL);
-    GDrawDestroyWindow(di.gw);
-    TextInfoDataFree(di.scriptlangs);
+
+    GDrawSetVisible(printwindow->gw,true);
+}
+
+void PrintWindowClose(void) {
+    if ( printwindow!=NULL )
+	GDrawDestroyWindow(printwindow->gw);
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 

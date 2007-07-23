@@ -401,7 +401,7 @@ static void SFTextAreaRefigureLines(SFTextArea *st, int start_of_change,
 		fl->ottext[i].fl = fl;
 		fl->ottext[i].advance_width = rint( fl->ottext[i].sc->width * scale );
 	    }
-	    if ( st->text[fl->end]=='\n' )
+	    if ( st->text[fl->end]=='\n' || st->text[fl->end]=='\0' )
 		++pcnt;
 	}
     }
@@ -588,7 +588,7 @@ return;
 	    if ( fl==NULL )
     break;
 	    if ( fl->start<=pt-st->text ) {
-		if ( fl->next==NULL || fl->next->start == pt+1-st->text )
+		if ( fl->next!=NULL && fl->next->start == pt+1-st->text )
 		    fl->end = pt-st->text;
 		else {
 		    next = chunkalloc(sizeof(struct fontlist));
@@ -924,8 +924,6 @@ static int SFTextArea_Show(SFTextArea *st, int pos) {
     i = SFTextAreaFindLine(st,pos);
 
     loff = st->loff_top;
-    if ( st->lineheights[st->lcnt-1].y<st->g.inner.height )
-	loff = 0;
     for ( page=1; st->loff_top+page<st->lcnt && st->lineheights[st->loff_top+page].y-st->lineheights[st->loff_top].y<=st->g.inner.height;
 	    ++page );
     if ( --page < 1 ) page = 1;
@@ -937,6 +935,8 @@ static int SFTextArea_Show(SFTextArea *st, int pos) {
     if ( loff > st->lcnt-endpage )
 	loff = st->lcnt-endpage;
     if ( loff<0 ) loff = 0;
+    if ( st->lcnt==0 || st->lineheights[st->lcnt-1].y<st->g.inner.height )
+	loff = 0;
 
     xoff = st->xoff_left;
     x = 0;
@@ -1301,12 +1301,16 @@ return( false );
 }
 
 static int GTBackPos(SFTextArea *st,int pos, int ismeta) {
-    int newpos, xloc, l;
+    int newpos/*, xloc, l*/;
 
     if ( ismeta )
 	newpos = SFTextAreaSelBackword(st->text,pos);
     else
 	newpos = pos-1;
+#if 0		/* Why did I think this mattered? */
+    /* Best just to step over each ligature component even if the cursor */
+    /*  stays put. Or that's what I think today */
+
     /* There are some cases (a ligature of a ligature perhaps) where we can't */
     /*  show a difference between pos and pos-1, so keep subtracting until we */
     /*  can */
@@ -1316,12 +1320,13 @@ static int GTBackPos(SFTextArea *st,int pos, int ismeta) {
 	    SFTextAreaFindLine(st,newpos) == l &&
 	    xloc == SFTextAreaGetXPosFromOffset(st,l,newpos) )
 	--newpos;
+#endif
     if ( newpos==-1 ) newpos = 0;
 return( newpos );
 }
 
 static int GTForePos(SFTextArea *st,int pos, int ismeta) {
-    int newpos=pos, xloc, l;
+    int newpos=pos/*, xloc, l*/;
 
     if ( ismeta )
 	newpos = SFTextAreaSelForeword(st->text,pos);
@@ -1329,6 +1334,10 @@ static int GTForePos(SFTextArea *st,int pos, int ismeta) {
 	if ( st->text[pos]!=0 )
 	    newpos = pos+1;
     }
+#if 0		/* Why did I think this mattered? */
+    /* Best just to step over each ligature component even if the cursor */
+    /*  stays put. Or that's what I think today */
+
     /* There are some cases (a ligature of a ligature perhaps) where we can't */
     /*  show a difference between pos and pos-1, so keep subtracting until we */
     /*  can */
@@ -1338,6 +1347,7 @@ static int GTForePos(SFTextArea *st,int pos, int ismeta) {
 	    SFTextAreaFindLine(st,newpos) == l &&
 	    xloc == SFTextAreaGetXPosFromOffset(st,l,newpos) )
 	++newpos;
+#endif
 return( newpos );
 }
 
