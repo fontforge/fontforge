@@ -39,7 +39,7 @@ fontforge_OBJECTS =  autohint.o autosave.o autowidth.o bitmapdlg.o \
  parsettfvar.o tottfvar.o pua.o stemdb.o anchorsaway.o \
  palmfonts.o cvdgloss.o groups.o parsepdf.o @FF_EXTRA_FILES@ main.o plugins.o \
  bdfinfo.o glyphcomp.o unicoderange.o ufo.o ofl.o lookups.o sfd1.o \
- python.o featurefile.o
+ python.o featurefile.o nowakowskittfinstr.o
 DIFFOBJS = sfddiff.o sfd.o diffstubs.o stamp.o namelist.o pua.o
 ACORNOBJS = acorn2sfd.o sfd.o diffstubs.o psunicodenames.o stamp.o
 
