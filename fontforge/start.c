@@ -134,6 +134,7 @@ exit(0);
 static void _dousage(void) {
     printf( "fontforge [options] [fontfiles]\n" );
     printf( "\t-new\t\t\t (creates a new font)\n" );
+    printf( "\t-last\t\t\t (loads the last sfd file closed)\n" );
 #if HANYANG
     printf( "\t-newkorean\t\t (creates a new korean font)\n" );
 #endif
