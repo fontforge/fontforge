@@ -547,9 +547,11 @@ return( GGadgetDispatchEvent((GGadget *) (d->gfc),event));
     } else if ( event->type == et_resize ) {
 	GRect r, size;
 	struct gfc_data *d = GDrawGetUserData(gw);
-	GDrawGetSize(gw,&size);
-	GGadgetGetSize(d->gfc,&r);
-	GGadgetResize(d->gfc,size.width-2*r.x,r.height);
+	if ( d->gfc!=NULL ) {
+	    GDrawGetSize(gw,&size);
+	    GGadgetGetSize(d->gfc,&r);
+	    GGadgetResize(d->gfc,size.width-2*r.x,r.height);
+	}
     }
 return( event->type!=et_char );
 }
@@ -573,6 +575,8 @@ unichar_t *FVOpenFont(char *title, const char *defaultfile, int mult) {
     char **nlnames;
     GTextInfo *namelistnames, **filts;
     int cnt;
+
+    memset(&d,'\0',sizeof(d));
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;
@@ -733,6 +737,10 @@ unichar_t *FVOpenFont(char *title, const char *defaultfile, int mult) {
     gcd[i++].creator = GGroupCreate;
 
     GGadgetsCreate(gw,boxes);
+
+    d.gfc = gcd[0].ret;
+    d.rename = gcd[renamei].ret;
+
     GGadgetSetList(harray1[2]->ret,(filts = StandardFilters()),true);
     GHVBoxSetExpandableRow(boxes[0].ret,0);
     GHVBoxSetExpandableCol(boxes[2].ret,gb_expandglue);
@@ -751,10 +759,6 @@ unichar_t *FVOpenFont(char *title, const char *defaultfile, int mult) {
 	GGadgetSetList(tf,GTextInfoFromChars(RecentFiles,RECENT_MAX),false);
     }
     GGadgetSetTitle8(gcd[0].ret,defaultfile);
-
-    memset(&d,'\0',sizeof(d));
-    d.gfc = gcd[0].ret;
-    d.rename = gcd[renamei].ret;
 
     GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
