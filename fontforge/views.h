@@ -910,6 +910,8 @@ extern void ScriptPrint(FontView *fv,int type,int32 *pointsizes,char *samplefile
 extern unichar_t *PrtBuildDef( SplineFont *sf, void *tf,
 	void (*langsyscallback)(void *tf, int end, uint32 script, uint32 lang) );
 #endif
+extern void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv);
+extern void PrintWindowClose(void);
 
 extern char *Kern2Text(SplineChar *other,KernPair *kp,int isv);
 extern char *PST2Text(PST *pst,SplineFont *sf);
@@ -1274,7 +1276,6 @@ extern unichar_t *FVOpenFont(char *title, const char *defaultfile, int mult);
 #endif
 
 
-extern void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv);
 
 #if defined(FONTFORGE_CONFIG_GTK)
 #elif defined(FONTFORGE_CONFIG_GDRAW)
