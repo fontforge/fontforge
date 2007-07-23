@@ -3370,7 +3370,7 @@ void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height) {
 	last->end = len-1;
 
 	last->script = script; last->lang = DEFAULT_LANG;
-	last->feats = StdFeaturesOfScript(script);
+	last->feats = TagsCopy(StdFeaturesOfScript(script));
     }
     st->text[len++] = '\0';
     

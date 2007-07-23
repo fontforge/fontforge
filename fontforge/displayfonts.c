@@ -116,6 +116,7 @@ typedef struct printinfo {
     int lastfont, intext;
     SFTextArea *sample;
     int wassfid, wasfn, wasps;
+    int lastx, lasty;
 } PI, DI;
 
 static PI *printwindow;
@@ -173,7 +174,8 @@ static void pdf_addpage(PI *pi) {
 static void pdf_finishpage(PI *pi) {
     long streamlength;
 
-    fprintf( pi->out, "Q\n" );
+    if ( pi->pt!=pt_fontsample )
+	fprintf( pi->out, "Q\n" );
     streamlength = ftell(pi->out)-pi->start_cur_page;
     fprintf( pi->out, "\nendstream\n" );
     fprintf( pi->out, "endobj\n" );
@@ -887,7 +889,6 @@ static void dump_pdftrailer(PI *pi) {
 	free(pi->sfbits[i].our_font_objs);
 	free(pi->sfbits[i].fonts);
     }
-    free( pi->sfbits );
     free(pi->object_offsets);
     free(pi->page_objects);
 }
@@ -1510,7 +1511,7 @@ static void samplestartpage(PI *pi ) {
 	pdf_addpage(pi);
 	fprintf( pi->out, "BT\n  /FTB 12 Tf\n  80 %d Td\n", pageheight-84 );
 	if ( pi->pt==pt_fontsample )
-	    fprintf(pi->out,"(Sample Text from %s) Tj\n", sfbit->sf->fullname );
+	    fprintf(pi->out,"(Sample Text from %s) Tj\nET\n", sfbit->sf->fullname );
 	else {
 	    fprintf(pi->out,"(Sample Sizes of %s) Tj\n", sfbit->sf->fullname );
 	    fprintf(pi->out,"ET\nq 1 0 0 1 40 %d cm\n", pi->pageheight-34-
@@ -1573,13 +1574,14 @@ static void outputotchar(PI *pi,struct opentype_str *osc,int x,int baseline) {
     if ( pi->printtype==pt_pdf ) {
 	int fn = sfbit->iscid?0:sfbit->fonts[enc/256];
 	if ( pi->wassfid!=sfid || fn!=pi->wasfn || fd->pointsize!=pi->wasps ) {
-	    fprintf(pi->out,"/F%d-%d %d Tf\n  <", sfid, fn, fd->pointsize);
+	    fprintf(pi->out,"/F%d-%d %d Tf\n ", sfid, fn, fd->pointsize);
 	    pi->wassfid = sfid; pi->wasfn = fn; pi->wasps = fd->pointsize;
-	} else
-	    putc('<',pi->out);
+	}
 	fprintf(pi->out, "%g %g Td ",
-		(x+osc->vr.xoff)*pi->scale,
-		(baseline+osc->vr.yoff)*pi->scale );
+		(x+osc->vr.xoff-pi->lastx)*pi->scale,
+		(baseline+osc->vr.yoff-pi->lasty)*pi->scale );
+	pi->lastx = x+osc->vr.xoff; pi->lasty = baseline+osc->vr.yoff;
+	putc('<',pi->out);
 	outputchar(pi,sfid,sc);
 	fprintf( pi->out, "> Tj\n" );
     } else {
@@ -1629,12 +1631,22 @@ return;
     dump_prologue(pi);
 
     samplestartpage(pi);
+    if ( pi->printtype==pt_pdf ) {
+	fprintf(pi->out, "BT\n" );
+	pi->lastx = pi->lasty = 0;
+    }
     y = top = rint((pageheight - 96)/pi->scale);	/* In dpi units */
     bottom = rint(36/pi->scale);			/* multiply by scale to get ps points */
 
     for ( i=0; i<st->lcnt; ++i ) {
 	if ( y - st->lineheights[i].fh < bottom ) {
+	    if ( pi->printtype==pt_pdf )
+		fprintf(pi->out, "ET\n" );
 	    samplestartpage(pi);
+	    if ( pi->printtype==pt_pdf ) {
+		fprintf(pi->out, "BT\n" );
+		pi->lastx = pi->lasty = 0;
+	    }
 	    y = top;
 	}
 	x = rint(36/pi->scale);
@@ -1646,6 +1658,8 @@ return;
 	    x += line[j]->advance_width + line[j]->vr.h_adv_off;
 	}
     }
+    if ( pi->printtype==pt_pdf )
+	fprintf(pi->out, "ET\n" );
     dump_trailer(pi);
 }
 
@@ -4017,7 +4031,10 @@ return;
 
     if ( pdefs[fromwindow].pt==pt_chars && cnt==0 )
 	pdefs[fromwindow].pt = pt_fontdisplay;
-    pgcd[pdefs[fromwindow].pt].gd.flags |= gg_cb_on;
+    if ( pdefs[fromwindow].pt == pt_fontsample )
+	pgcd[pt_fontdisplay].gd.flags |= gg_cb_on;
+    else
+	pgcd[pdefs[fromwindow].pt].gd.flags |= gg_cb_on;
 
     varray3[2][0] = GCD_HPad10; varray3[2][1] = &pgcd[2]; varray3[2][2] = GCD_Glue; varray3[2][3] = NULL;
     varray3[3][0] = NULL;
@@ -4204,6 +4221,7 @@ void ScriptPrint(FontView *fv,int type,int32 *pointsizes,char *samplefile,
     PI pi;
     char buf[100];
     SFTextArea *st;
+    unichar_t temp[2];
 
     PIInit(&pi,fv,NULL,NULL);
     if ( pointsizes!=NULL ) {
@@ -4213,6 +4231,7 @@ void ScriptPrint(FontView *fv,int type,int32 *pointsizes,char *samplefile,
     pi.pt = type;
     if ( type==pt_fontsample ) {
 	st = gcalloc(1,sizeof(SFTextArea));
+	temp[0] = 0;
 	st->multi_line = true;
 	st->accepts_returns = true;
 	st->wrap = true;
@@ -4220,7 +4239,9 @@ void ScriptPrint(FontView *fv,int type,int32 *pointsizes,char *samplefile,
 	st->ps = -1;
 	st->g.inner.width = st->g.inner.width = (pagewidth-1*72)*printdpi/72;
 	st->g.funcs = &sftextarea_funcs;
+	st->text = u_copy(temp);
 	SFMapOfSF(st,fv->sf);
+	SFTFSetFontData(&st->g,0,-1, fv->sf,sftf_otf,pi.pointsize,true);
 
 	if ( samplefile!=NULL && *samplefile!='\0' )
 	    sample = FileToUString(samplefile,65536);
