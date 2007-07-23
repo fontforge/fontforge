@@ -757,41 +757,6 @@ static void AnchorD_DoCancel(AnchorDlg *a) {
     a->done = true;
 }
 
-static int anchord_e_h(GWindow gw, GEvent *event) {
-    AnchorDlg *a = GDrawGetUserData(gw);
-
-    switch ( event->type ) {
-      case et_close:
-	AnchorD_DoCancel(a);
-      break;
-      case et_char:
-	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("anchorcontrol.html");
-return( true );
-	}
-return( false );
-      break;
-      case et_mouseup: case et_mousemove: case et_mousedown:
-return( AnchorD_Mouse(a,event));
-      break;
-      case et_expose:
-	AnchorD_Expose(a,gw,event);
-      break;
-      case et_resize:
-	AnchorD_Resize(a);
-	GDrawRequestExpose(a->gw,NULL,false);
-      break;
-      case et_controlevent:
-	switch( event->u.control.subtype ) {
-	  case et_scrollbarchange:
-	    AnchorD_HScroll(a,&event->u.control.u.sb);
-	  break;
-	}
-      break;
-    }
-return( true );
-}
-
 static int AnchorD_MagnificationChanged(GGadget *g, GEvent *e) {
     AnchorDlg *a = GDrawGetUserData(GGadgetGetWindow(g));
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
@@ -1129,6 +1094,72 @@ static int AnchorD_GlyphChanged(GGadget *g, GEvent *e) {
 		AnchorD_ChangeGlyph(a,sc,ap);
 	    }
 	}
+    }
+return( true );
+}
+
+static void AnchorD_NextPrev(AnchorDlg *a,int incr) {
+    GGadget *g = GWidgetGetControl(a->gw,CID_Glyph);
+    int len;
+    GTextInfo **ti = GGadgetGetList(g,&len);
+    int sel = GGadgetGetFirstListSelectedItem(g);
+
+    for ( sel += incr; sel>0 && sel<len; sel+=incr ) {
+	if ( !( ti[sel]->userdata == Add_Mark ||
+		ti[sel]->userdata == Add_Base ||
+		ti[sel]->line ||
+		ti[sel]->disabled ))
+    break;
+    }
+    if ( sel==0 || sel>=len )
+	GDrawBeep(NULL);
+    else {
+	char *name = u2utf8_copy(ti[sel]->text);
+	SplineChar *sc = SFGetChar(a->sc->parent,-1,name);
+
+	free(name);
+	GGadgetSelectOneListItem(g,sel);
+	AnchorD_ChangeGlyph(a,sc,ti[sel]->userdata);
+    }
+}
+
+static int anchord_e_h(GWindow gw, GEvent *event) {
+    AnchorDlg *a = GDrawGetUserData(gw);
+
+    switch ( event->type ) {
+      case et_close:
+	AnchorD_DoCancel(a);
+      break;
+      case et_char:
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    help("anchorcontrol.html");
+return( true );
+	} else if ( event->u.chr.keysym == GK_Page_Down || event->u.chr.keysym == GK_KP_Page_Down ) {
+	    AnchorD_NextPrev(a,1);
+return( true );
+	} else if ( event->u.chr.keysym == GK_Page_Up || event->u.chr.keysym == GK_KP_Page_Up ) {
+	    AnchorD_NextPrev(a,-1);
+return( true );
+	}
+return( false );
+      break;
+      case et_mouseup: case et_mousemove: case et_mousedown:
+return( AnchorD_Mouse(a,event));
+      break;
+      case et_expose:
+	AnchorD_Expose(a,gw,event);
+      break;
+      case et_resize:
+	AnchorD_Resize(a);
+	GDrawRequestExpose(a->gw,NULL,false);
+      break;
+      case et_controlevent:
+	switch( event->u.control.subtype ) {
+	  case et_scrollbarchange:
+	    AnchorD_HScroll(a,&event->u.control.u.sb);
+	  break;
+	}
+      break;
     }
 return( true );
 }
