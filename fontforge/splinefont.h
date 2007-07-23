@@ -1841,6 +1841,7 @@ extern HintInstance *HICopyTrans(HintInstance *hi, real mul, real offset);
 extern void MDAdd(SplineChar *sc, int x, SplinePoint *sp1, SplinePoint *sp2);
 extern int SFNeedsAutoHint( SplineFont *_sf);
 extern void SCAutoInstr( SplineChar *sc,BlueData *bd );
+extern void NowakowskiSCAutoInstr( SplineChar *sc,BlueData *bd );
 extern void CVT_ImportPrivate(SplineFont *sf);
 extern void SCModifyHintMasksAdd(SplineChar *sc,StemInfo *new);
 extern void SCClearHints(SplineChar *sc);
