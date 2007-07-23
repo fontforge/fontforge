@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 7-Jun-2007 -->
+  <!-- AP: Last modified: 22-Jul-2007 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -46,6 +46,271 @@
     </TABLE>
   </BLOCKQUOTE>
   <UL>
+    <LI>
+      22-July-2007
+      <UL>
+	<LI>
+	  I have merged (and substantially rewritten) the Print and Display Dialogs.
+	  There is now only one menu item (Print) which (vaguely) the old Display dlg
+	  except that it can now be printed. The text area widget now supports OpenType
+	  features just as the metrics view does. It also supports ligature carets.
+	  <P>
+	  The dialog is no longer modal, however it does not get updated with each
+	  change to the font (that would make moving a point around in the outline
+	  view far too sluggish), instead there is a [Refresh] button the user can
+	  press to force an update.
+	<LI>
+	  It occurred to me that fontforge's current mechanism for setting ligature
+	  carets requires that there be a ligature substitution is the exact number
+	  of components used to make the glyph. But in indic fonts ligatures are often
+	  made up out of other ligatures (I think) which means that there won't be
+	  enough caret positions.
+	  <P>
+	  So I've added a Ligature Caret count to the Element-&gt;Glyph Info dialog
+	  to give the user control over it when necessary.
+	<LI>
+	  Add minimal support for applying apple state machine lookups in metrics view.
+	  Support is minimal because:
+	  <UL>
+	    <LI>
+	      Apple seems to figure line breaks before doing substitution process but I
+	      do it afterward so I don't know where the line breaks are and I can't enter
+	      either the line start or line end state.
+	    <LI>
+	      When I delete a glyph I delete it. Apple inserts a deleted glyph mark and
+	      then removes that later. State machines can respond to deleted glyphs, but
+	      I can't.
+	    <LI>
+	      I don't try to figure out which feature,settings should be on by default.
+	      So the user must pick them out manually.
+	  </UL>
+	<LI>
+	  Add popup graphics to the Glyph Info and Lookup subtable dialogs to show
+	  substitutions (that is if there is an entry like 'smcp' a =&gt; a.sc then
+	  create a popup window showing the "a" glyph and the "a.sc" so the user can
+	  see what happens.
+	<LI>
+	  Another futile attempt at an embolden command. Element-&gt;Embolden
+	<LI>
+	  If we have a glyph with multiple encodings, and the secondary encodings occur
+	  after the primary ones, then the backmap will probably contain a secondary
+	  encoding, which means that when we go to load the font in we will probably
+	  notice the secondary encoding twice and forget the primary.
+	<LI>
+	  I used not to distinguish between ligature anchors and normal mark to base
+	  anchors. Unfortunately when I moved to lookups (from features) I had to introduce
+	  that distinction. But I didn't work through all the implications and have
+	  fixed a number of bugs related to that.
+	<LI>
+	  Barry SCHWARTZ complains that font info says "fontnames must" but that the
+	  cited adobe tech note only says "should". So change "must" to "should".
+	<LI>
+	  When processing class-based contextual lookups fontforge could not handle
+	  class 0 (the class containing "all glyphs not in another class") add code
+	  to do that.
+	<LI>
+	  If the user did not select a Gasp Version (note: active selection was needed,
+	  just seeing that it was correct and leaving it didn't work) then [OK] would
+	  leave the font with an invalid version and on some systems caused a crash.
+	<LI>
+	  View-&gt;Insert Glyph After didn't work well on a ligature glyph. It would
+	  insert the glyph after the first component of the ligature, not after the
+	  last -- which would make more sense.
+	<LI>
+	  Misnamed some private dict entries when loading from otf.
+	<LI>
+	  Make entry of ghost hints better.
+	<LI>
+	  Add the ability to determine whether a point is selected or not from python.
+	<LI>
+	  Add a mechanism so the user can ask fontforge to check for the existance
+	  of optional libraries.
+	<LI>
+	  Add range checks to some library routines which blindly referenced some BMP
+	  arrays with codepoints outside bmp. Broken by UCS2-&gt;UCS4 change.
+	<LI>
+	  Werner wants GotoChar to be able to switch sub-fonts in a cid keyed font.
+	  This may introduce bugs...
+	<LI>
+	  Revert glyph still wasn't working.
+	<LI>
+	  Someone complained that using a negative stroke took a very long time but
+	  produced correct results. Um. Ok. It's easy always to use the absolute value.
+	<LI>
+	  Oops. The mac uses UCS2 for filenames, so when I moved to UCS4 I should have
+	  changed the mac resource file interface.
+	<LI>
+	  When creating a mac resource file we only set the type/creator fields and
+	  failed to initialize the finderFlags.
+	<LI>
+	  Fixed crash bug in generating a cursive connection anchor sub-table.
+	<LI>
+	  In TrueType composite glyphs with the USE_MY_METRICS bit set the lock icon
+	  wasn't scrolled properly.
+	<LI>
+	  The change from UCS2 to UCS4 broke text copy/paste.<BR>
+	  We failed to add a terminating NUL of the right size in all cases<BR>
+	  We continued to use charset=UCS-2 when it should have been UCS-4
+	<LI>
+	  FF crashed when trying to View-&gt;Show ATT on a font that appears to me
+	  to contain an invalid 'kern' sub-table. I have removed the proximate cause
+	  of the crash. I have provided a warning that the kern table appears invalid.
+	  And I have cleaned up my internals after detecting the bad sub-table (I had
+	  a lookup with a feature but no script and this caused problems).
+	<LI>
+	  Multiple substitutions in the metrics view did not properly update the count
+	  of glyphs to be displayed.
+	<LI>
+	  If nothing changed in the metrics input field and the output contained a
+	  ligature (or a mult subs I suspect). FF would complain.
+	<LI>
+	  in python, font.generate() didn't work. The PyArg_ParseTupleAndKeywords behaves
+	  in a way I did not expect.
+	<LI>
+	  [Bottom] and [Down] still didn't work for lookup subtables.
+	<LI>
+	  Try to force the text field in the metricsview to a fixed size. In some fonts
+	  it seems to be initialized to a huge value.
+	<LI>
+	  Add ability to display italic side bearings in the char view.
+	<LI>
+	  The lines drawn for italic fonts to show the italic origin and width were
+	  at slightly the wrong angle (I used a sine when I should have used a tangent).
+	<LI>
+	  If a font did not have any horizontal metrics then ff would not set the em-size.
+	<LI>
+	  Show Att trampled on memory when displaying apple contextual substitution
+	  state machines.
+	<LI>
+	  Wasn't parsing apple's 'lcar' table properly.
+	<LI>
+	  if a font contained a 'post' table but didn't name all names (or something
+	  like that), then the attempt to name the glyph based on the encoding was
+	  broken after the encoding change.
+	<LI>
+	  FF did not recognize that a bdf file was greymaped. Broken by the bdf properties
+	  work a year ago or so.
+	<LI>
+	  The import lookups button in fontinfo forgot about the subtables (sort of).
+	<LI>
+	  The metricsview used the wrong count field to determine whether things changed.
+	  It used the glyph count, not the char count (which meant that when we had
+	  a ligature and the number of chars was greater than the number of glyphs,
+	  things got confused.)
+	<LI>
+	  In the metrics view, anchored attachments only worked if the base glyph were
+	  itself unmoved (that is the mark was placed relative to the unmoved location,
+	  not the actual location).
+	<LI>
+	  The search dialog should provide user with control over the error bound.<BR>
+	  The rotate checkbox didn't work if the flip checkbox wasn't checked.
+	<LI>
+	  If a replace contour added a control point to a point that did not have one
+	  (went from a line to a curve) then that control point would get lost.<BR>
+	  If a search matched across the start point of a contour then search/replace
+	  could go into an infinite loop if the search and replace paths were the same.
+	<LI>
+	  Find/Replace (replace) didn't work on quadratic splines.
+	<LI>
+	  Add two python methods:
+	  <UL>
+	    <LI>
+	      Layer.interpolateNewLayer(other-layer,amount)
+	    <LI>
+	      Font.createInterpolatedGlyph(glyph1,glyph2,amount)
+	  </UL>
+	  <P>
+	  The first creates a new layer by interpolating between the current layer
+	  and the layer in the first argument.<BR>
+	  The second creates a new glyph in the font by interpolating between the first
+	  two arguments. The glyph's unicodecode point and name will be copied from
+	  the first argument (the font must not already contain this glyph).<BR>
+	  If amount is 0 the result will look like the first glyph, if 1 then like
+	  the second.
+	<LI>
+	  When recovering from a crash, FF would sometimes complain about a mismatched
+	  version number. Don't.
+	<LI>
+	  Problems parsing 'mort' tables could cause a crash.
+	<LI>
+	  When building a contextual lookup, don't list that lookup as something that
+	  it could invoke (ie. list all lookups in this table (GPOS/GSUB) except for
+	  ourselves). Don't want to encourage users to create infinite lookup loops.
+	<LI>
+	  Point matching didn't work when there were references to references and multiple
+	  references within a glyph.
+	<LI>
+	  FF was having problems with extension lookups with multiple sub tables.
+	<LI>
+	  We were trying to print a trailing NUL in some strings from the fontview.
+	<LI>
+	  Kerning by classes got broken in metricsview by the addition of support for
+	  device tables.
+	<LI>
+	  A GPOS contextual lookup only listed GSUB lookups in the lookup/sequence
+	  dlg<BR>
+	  Pressing [OK] in the lookup/sequence dlg caused a crash if no lookup selected.
+	<LI>
+	  Openfontdlg was looking at the filter listbutton rather than the rename namelist
+	  listbutton.
+	<LI>
+	  mf2pt1 now uses "glyph_dimensions" rather than "bbox"
+	<LI>
+	  The metrics view should now handle device tables.
+	<LI>
+	  Goto could crash when used on small encodings.
+	<LI>
+	  -lang wasn't permitted before -c.
+	<LI>
+	  Use numeric text fields for anchor positioning.
+	<LI>
+	  Graham Asher points out that the meanings of underline position in the 'post'
+	  table and the FontInfo dictionary are different. One refers to the top of
+	  the underline rectangle and one to the center of it.
+	<LI>
+	  Align point would crash if the selected point were the end point of a contour
+	  (or if the two points around it were in the same place).
+	<LI>
+	  The baseline was not properly located when displaying it in the fontview.
+	<LI>
+	  The scripting command BitmapsAvail would generally cause FF to crash if done
+	  when there was a UI..
+	<LI>
+	  We seem to be misimplementing my obsolete (sfd file) convention for having
+	  duplicate encodings point to the same glyph. Result was that occasionally
+	  a glyph would be removed and a pointer to something it refered to would be
+	  put in its place.
+	<LI>
+	  Change the name of activeFontInUI to activeFont<BR>
+	  Add an activeGlyph method.<BR>
+	  Add the ability to call a python script from a outline view.
+	<LI>
+	  Hmmm. If a textfield is shifted right, and then resized so there's now room
+	  for all the text, the unshift it.
+	<LI>
+	  Werner suggests that it would be useful to be able to specify wildcards in
+	  the goto dlg.
+	<LI>
+	  Michael Zedler tells me that glyphs output by mf2pt1 contain a line:
+	  <PRE> % MF2PT1: bbox 0 90 834 422
+</PRE>
+	  <P>
+	  where the third (so called) bounding box entry is actually the glyph's advance
+	  width. I was reluctant to use this at first, because that clearly isn't something
+	  that belongs in a bounding box...
+	<LI>
+	  Werner tells me that lilypond uses a slightly different syntax for the MF2PT1
+	  bbox comment, so make our parsing slightly more generous.
+	<LI>
+	  When creating a new lookup subtable for an anchored lookup, it did not get
+	  marked as having anchor classes and feature file output failed because of
+	  that.
+	<LI>
+	  When outputing single lookups, the feature, script and language tags all
+	  had ^A where they should have had the second letter of the tag.
+	<LI>
+	  Remove the code to produce the old, broken, 'size' feature.
+      </UL>
     <LI>
       07-June-2007
       <UL>
