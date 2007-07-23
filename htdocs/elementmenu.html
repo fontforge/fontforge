@@ -172,6 +172,8 @@
 	  <A HREF="#Wireframe">Wireframe</A>
       </UL>
     <LI>
+      <A HREF="#Embolden">Embolden...</A>
+    <LI>
       <A HREF="#MetaFont">MetaFont...</A>
     <LI>
       <A HREF="#AutoTrace">AutoTrace</A>
@@ -664,6 +666,17 @@
 	<DD>
 	  Changes the selected glyphs to give them a 3D wireframe look.
       </DL>
+    <DT>
+      <A NAME="Embolden">Embolden</A>...
+    <DD>
+      This is a simplistic command to embolden glyphs. It sometimes works.
+      <P>
+      For CJK glyphs it simply expands the strokes of the font outward.
+      <P>
+      For LCG (Latin, Cyrillic, Greek) glyphs it expands the stroke outward and
+      then moves everything below a certain point up, and everything above another
+      point down. This doesn't always work, especially if there are lots of points
+      (a TrueType lowcase "s" tends to be problematic), but sometimes it does.
     <DT>
       <A NAME="MetaFont">MetaFont</A>...
     <DD>
