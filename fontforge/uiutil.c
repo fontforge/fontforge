@@ -80,6 +80,22 @@ real GetReal8(GWindow gw,int cid,char *name,int *err) {
 return( val );
 }
 
+int GetCalmInt8(GWindow gw,int cid,char *name,int *err) {
+    char *txt, *end;
+    int val;
+
+    txt = GGadgetGetTitle8(GWidgetGetControl(gw,cid));
+    val = strtol(txt,&end,10);
+    if ( *txt=='-' && end==txt && txt[1]=='\0' )
+	end = txt+1;
+    if ( *end!='\0' ) {
+	GDrawBeep(NULL);
+	*err = true;
+    }
+    free(txt);
+return( val );
+}
+
 int GetInt8(GWindow gw,int cid,char *name,int *err) {
     char *txt, *end;
     int val;
