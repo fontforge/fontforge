@@ -2164,7 +2164,7 @@ static void SFSetupBitmap(SplineFont *sf,BDFFont *strike,EncMap *map) {
     if ( strike->glyphcnt>sf->glyphcnt )
 	ExtendSF(sf,map,strike->glyphcnt,true);
     for ( i=0; i<strike->glyphcnt; ++i ) if ( strike->glyphs[i]!=NULL ) {
-	if ( sf->glyphs[i]==NULL ) {
+	if ( i>=sf->glyphcnt || sf->glyphs[i]==NULL ) {
 	    int enc=-1;
 	    if ( strike->glyphs[i]->sc->unicodeenc!=-1 )
 		enc = EncFromUni(strike->glyphs[i]->sc->unicodeenc,map->enc);
@@ -2177,7 +2177,7 @@ static void SFSetupBitmap(SplineFont *sf,BDFFont *strike,EncMap *map) {
 	} else
 	    strike->glyphs[i]->sc = sf->glyphs[i];
 	sc = strike->glyphs[i]->sc;
-	if ( !sc->widthset ) {
+	if ( sc!=NULL && !sc->widthset ) {
 	    sc->widthset = true;
 	    sc->width = strike->glyphs[i]->width*(sf->ascent+sf->descent)/strike->pixelsize;
 	}
