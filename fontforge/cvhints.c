@@ -280,8 +280,8 @@ static int RH_TextChanged(GGadget *g, GEvent *e) {
 	if ( hd->active!=NULL ) {
 	    int cid = GGadgetGetCid(g);
 	    int err=0;
-	    int start = GetInt8(hd->gw,CID_Base,_("_Base:"),&err);
-	    int width = GetInt8(hd->gw,CID_Width,_("_Size:"),&err);
+	    int start = GetCalmInt8(hd->gw,CID_Base,_("Base:"),&err);
+	    int width = GetCalmInt8(hd->gw,CID_Width,_("Size:"),&err);
 	    if ( err )
 return( true );
 	    if ( GGadgetIsChecked(GWidgetGetControl(GGadgetGetWindow(g),CID_MovePoints)) ) {

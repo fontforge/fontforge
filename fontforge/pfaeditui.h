@@ -163,6 +163,7 @@ extern int GetInt(GWindow gw,int cid,char *name,int *err);
 extern void Protest(char *label);
 extern real GetCalmReal8(GWindow gw,int cid,char *namer,int *err);
 extern real GetReal8(GWindow gw,int cid,char *namer,int *err);
+extern int GetCalmInt8(GWindow gw,int cid,char *name,int *err);
 extern int GetInt8(GWindow gw,int cid,char *namer,int *err);
 extern void Protest8(char *labelr);
 
