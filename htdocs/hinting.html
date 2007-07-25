@@ -2,278 +2,280 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 3-May-2001 -->
-  <!-- AP: Last modified: 13-Oct-2004 -->
+  <!-- AP: Last modified: 25-Jul-2007 -->
   <TITLE>Hinting</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
 <DIV id="in">
-<H1 ALIGN=Center>
-  Hinting
-</H1>
-<P>
-Postscript originally required that hints should not overlap. Now it requires
-that any active set of hints be non-overlapping, but it allows you to change
-sets as you move through the glyph.
-<P>
-So to implement hinting with hint substitution FontForge needs to know not
-only the position and width of the stem being hinted, but also where the
-stem should be active. And it needs to know what stems overlap which other
-stems.
-<P>
-<IMG SRC="Hints.png" WIDTH="406" HEIGHT="399" ALIGN="Left"> The horizontal
-stems are drawn in light green. The vertical stems are drawn in light blue.
-The areas where the stems are active are filled in as rectangles, outside
-of that area the stems' outlines are drawn with dotted lines. Most of these
-stems do not conflict with any other stems, but two, the bottom two horizontal
-stems conflict with each other. All the non-overlapping stem hints may be
-active at the same time, but only one of the two conflicting stem hints may
-be active. As FontForge outputs the glyph it decides at each point what stems
-need to be active, and activates them.
-<P>
-Postscript now allows FontForge to control relative counter sizes. Counters
-are the spaces between adjacent stems. In the example at left there are two
-counters of equal sizes between the horizontal stems on the left, and three
-counters of equal sizes on the right. These form two independent counter
-groups, and FontForge's Hints-&gt;Auto Counter command will generate a counter
-description for each of them. You may also control the counters directly
-by using the Counters pane of the Element-&gt;Char Info dialog.
-<P>
-Counters spaces appear between vertical stems too, and in this case FontForge
-would output one counter group for the vertical stems.
-<H2 Clear=All>
-  Serifs
-</H2>
-<P>
-<IMG SRC="serif.png" WIDTH="248" HEIGHT="227" ALIGN="Right">One of the major
-advantages of hint substitution is that it allows certain standard serif
-situations to be described. In the example at right, the serif one the left
-is smaller than the stem a bit further right.
-<P>
-<IMG SRC="serif2.png" WIDTH="158" HEIGHT="110" ALIGN="Left">But it doesn't
-solve all problems (or I don't know how to use it to do so). Consider the
-serif on the right. Hint substitution would allow us to define a hint for
-the main vertical stem and for the short vertical stem that corresponds to
-the serif. But the problem that needs to be solved is making the distance
-between the left edge of the serif and the left edge of the stem be the same
-as the distance between the right edge of the stem and the right edge of
-the serif. But doing so would require overlapping hints, active at the same
-time. <SMALL>I think</SMALL>
-<H2>
-  Automatic Hinting
-</H2>
-<P>
-FontForge's AutoHint command can be used to figure out horizontal and vertical
-stem hints. It will also find hint substitution points (if any are needed),
-and will check for the simple counter description allowed by OpenType for
-non-Asian fonts (the equivalent of h/vstem3 hints in type1 fonts).
-<P>
-Whenever you change a glyph FontForge keeps track of that fact that the hints
-are out of date (when you autohint a glyph, or make a manual change to the
-hints FontForge resets this flag). If you generate a postscript font from
-something that contains glyphs with out of date hints, then FontForge will
-automagically regenerate them.
-<P>
-This may not always be appropriate. You can turn this off in general with
-the HintForGen preference item. You may turn it off for an individual glyph
-with the Hints-&gt;Don't AutoHint command.
-<H2>
-  Manual Hinting
-</H2>
-<P>
-I hope that the FontForge's autohint command will be good enough that manual
-efforts will not be needed. But hopes like this are rarely fulfilled.
-<P>
-The AutoHint command should find all stems in a glyph. Some of them it deems
-to be useless and will remove them. If you find that FontForge is removing
-a hint that you think is important then invoke Hint-&gt;AutoHint with the
-shift key held down, this will tell FontForge not to prune any of the stems.
-You may then use Review Hints to prune things yourself.
-<P>
-If you find that you must create your own hints, FontForge will only allow
-you to specify the position and width of the hint, it will then go off and
-try to guess the extents where the hint should be active.
-<P>
-You may manually:
-<UL>
+  <H1 ALIGN=Center>
+    Hinting
+  </H1>
+  <P>
+  Postscript originally required that hints should not overlap. Now it requires
+  that any active set of hints be non-overlapping, but it allows you to change
+  sets as you move through the glyph.
+  <P>
+  So to implement hinting with hint substitution FontForge needs to know not
+  only the position and width of the stem being hinted, but also where the
+  stem should be active. And it needs to know what stems overlap which other
+  stems.
+  <P>
+  <IMG SRC="Hints.png" WIDTH="406" HEIGHT="399" ALIGN="Left"> The horizontal
+  stems are drawn in light green. The vertical stems are drawn in light blue.
+  The areas where the stems are active are filled in as rectangles, outside
+  of that area the stems' outlines are drawn with dotted lines. Most of these
+  stems do not conflict with any other stems, but two, the bottom two horizontal
+  stems conflict with each other. All the non-overlapping stem hints may be
+  active at the same time, but only one of the two conflicting stem hints may
+  be active. As FontForge outputs the glyph it decides at each point what stems
+  need to be active, and activates them.
+  <P>
+  Postscript now allows FontForge to control relative counter sizes. Counters
+  are the spaces between adjacent stems. In the example at left there are two
+  counters of equal sizes between the horizontal stems on the left, and three
+  counters of equal sizes on the right. These form two independent counter
+  groups, and FontForge's Hints-&gt;Auto Counter command will generate a counter
+  description for each of them. You may also control the counters directly
+  by using the Counters pane of the Element-&gt;Char Info dialog.
+  <P>
+  Counters spaces appear between vertical stems too, and in this case FontForge
+  would output one counter group for the vertical stems.
+  <H2 Clear=All>
+    Serifs
+  </H2>
+  <P>
+  <IMG SRC="serif.png" WIDTH="248" HEIGHT="227" ALIGN="Right">One of the major
+  advantages of hint substitution is that it allows certain standard serif
+  situations to be described. In the example at right, the serif one the left
+  is smaller than the stem a bit further right.
+  <P>
+  <IMG SRC="serif2.png" WIDTH="158" HEIGHT="110" ALIGN="Left">But it doesn't
+  solve all problems (or I don't know how to use it to do so). Consider the
+  serif on the right. Hint substitution would allow us to define a hint for
+  the main vertical stem and for the short vertical stem that corresponds to
+  the serif. But the problem that needs to be solved is making the distance
+  between the left edge of the serif and the left edge of the stem be the same
+  as the distance between the right edge of the stem and the right edge of
+  the serif. But doing so would require overlapping hints, active at the same
+  time. <SMALL>I think</SMALL>
+  <H2>
+    Automatic Hinting
+  </H2>
+  <P>
+  FontForge's AutoHint command can be used to figure out horizontal and vertical
+  stem hints. It will also find hint substitution points (if any are needed),
+  and will check for the simple counter description allowed by OpenType for
+  non-Asian fonts (the equivalent of h/vstem3 hints in type1 fonts).
+  <P>
+  Whenever you change a glyph FontForge keeps track of that fact that the hints
+  are out of date (when you autohint a glyph, or make a manual change to the
+  hints FontForge resets this flag). If you generate a postscript font from
+  something that contains glyphs with out of date hints, then FontForge will
+  automagically regenerate them.
+  <P>
+  This may not always be appropriate. You can turn this off in general with
+  the HintForGen preference item. You may turn it off for an individual glyph
+  with the Hints-&gt;Don't AutoHint command.
+  <H2>
+    Manual Hinting
+  </H2>
+  <P>
+  I hope that the FontForge's autohint command will be good enough that manual
+  efforts will not be needed. But hopes like this are rarely fulfilled.
+  <P>
+  The AutoHint command should find all stems in a glyph. Some of them it deems
+  to be useless and will remove them. If you find that FontForge is removing
+  a hint that you think is important then invoke Hint-&gt;AutoHint with the
+  shift key held down, this will tell FontForge not to prune any of the stems.
+  You may then use Review Hints to prune things yourself.
+  <P>
+  If you find that you must create your own hints, FontForge will only allow
+  you to specify the position and width of the hint, it will then go off and
+  try to guess the extents where the hint should be active.
+  <P>
+  You may manually:
+  <UL>
+    <LI>
+      Clear all horizontal stem hints
+    <LI>
+      Clear all vertical stem hints
+    <LI>
+      Select two points and create a vertical stem hint that whose width is horizontal
+      distance between the two points
+    <LI>
+      Select two points and create a horizontal stem hint whose width is the vertical
+      distance between the two points
+    <LI>
+      Create a horizontal hint starting at an arbitrary y location with an arbitrary
+      vertical width.
+    <LI>
+      Create a vertical hint starting at an arbitrary x location with an arbitrary
+      horizontal width.
+    <LI>
+      Review all your hints, manually changing or removing any (or all).
+  </UL>
+  <P>
+  Once you have made a manual change to a glyph's hints with any of the above
+  commands, that glyph will be marked "Don't AutoHint" until you explicitly
+  call the AutoHint command on it. You may also explicitly use the
+  Hints-&gt;Don't AutoHint command to turn off FontForge's automatic hinting
+  attempts.
+  <P>
+  You may also manually
+  <UL>
+    <LI>
+      Set hint change-over points
+    <LI>
+      Set counter groups for a glyph
+  </UL>
+  <P>
+  These do not set the "Don't AutoHint" bit.
+  <H3>
+    Manual Hint Substitution Points
+  </H3>
+  <P>
+  FontForge's Hints-&gt;Hint Substitution Pts command will automatically figure
+  out where hint substitution should occur, but if this isn't good enough you
+  may do it manually with the <A HREF="getinfo.html#HintMask">Element-&gt;Get
+  Info</A> command (when the selection is a single point to which you want
+  to attach a hintmask).
+  <P>
+  If a glyph has conflicting hints then the first point in the glyph (the first
+  point on the first contour) MUST have a hintmask attached to it. If it does
+  not, the FontForge will automatically figure substitution points when it
+  generates the font. Other points are not required (but may) have a hintmask.
+  <P>
+  The hintmask specifies what hints should be active when that point is positioned,
+  and will control all subsequent points until a new hintmask is established.
+  So in the
+  following<IMG SRC="charwithhintmask.png" WIDTH="309" HEIGHT="322" ALIGN="Left"><IMG
+      SRC="hintmaskinfo.png" WIDTH="321" HEIGHT="459" ALIGN="Right"> example, the
+  selected point (on left) has the highlit hints active at it, In the glyph
+  view the currently active stems are drawn much darker than the inactive ones.
+  Points with hintmasks attached to them have circles drawn around them.
+  <P>
+  Remember to hold the control key down when making disjoint
+  selections.<BR CLEAR=ALL>
+  <H3>
+    Manual <A NAME="Counter">Counter</A> Groups
+  </H3>
+  <P>
+  FontForge also has a Hints-&gt;Auto Counter command which tries to figure
+  out what stems form a counter group.
+  <P>
+  Again you can do this manually, with the
+  <A HREF="charinfo.html#CounterMasks">Counter</A> pane of the Element-&gt;Char
+  Info dialog. When creating a new counter group you are presented with a dialog
+  very similar to the one above in which you must select a set of hints that
+  bound a set of counters.
+  <H2>
+    Hints and previously existing fonts.
+  </H2>
+  <P>
+  FontForge will not be able to convert TrueType instructions into PostScript
+  hints when it reads a TrueType font (the format is too complex, there are
+  too many possibilities, instead FontForge stores all the truetype instructions
+  and writes them back out uninterpretted).
+  <P>
+  From a Type1 font it will happily read all the hints in a glyph, and keep
+  track of hint substitution points. It will not read counter hints though.
+  <P>
+  In an OpenType (Type2) font FontForge will read in all the hints, keep track
+  of hint substitution points and the counter hints.
+  <H2>
+    Hinting and TrueType
+  </H2>
+  <P>
+  FontForge does a really bad job of "hinting" (actually generating instructions
+  for) truetype. Generally you will get better results with unhinted glyphs
+  than with glyphs autoinstructed by fontforge.
+  <!--
+  <P>
+  Hinting TrueType fonts opens a far wider range of possibilities. I have added
+  several types of hints that are specific to truetype (and will be ignored
+  by the postscript generation routines). These by no means exhaust the
+  capabilities of TrueType.
+  <UL>
   <LI>
-    Clear all horizontal stem hints
+  Diagonal Stem Hints<BR>
+  These look similar to the horizontal and vertical stem hints that postscript
+  understands but they allow you to constrain the width of diagonal stems as
+  well.
   <LI>
-    Clear all vertical stem hints
+  Minimum Distance Hints<BR>
+  TrueType allows you to say that the distance between two features should
+  never vanish. Every stem hint will automatically have one of these across
+  it, but there may be other places where they will be useful. In particular
+  you can insure that there is always white space after a glyph by putting
+  a minimum distance hint between a point on the right edge of that glyph and
+  the width line, also these hints can be used to solve the serif problems
+  mentioned above.
   <LI>
-    Select two points and create a vertical stem hint that whose width is horizontal
-    distance between the two points
-  <LI>
-    Select two points and create a horizontal stem hint whose width is the vertical
-    distance between the two points
-  <LI>
-    Create a horizontal hint starting at an arbitrary y location with an arbitrary
-    vertical width.
-  <LI>
-    Create a vertical hint starting at an arbitrary x location with an arbitrary
-    horizontal width.
-  <LI>
-    Review all your hints, manually changing or removing any (or all).
-</UL>
-<P>
-Once you have made a manual change to a glyph's hints with any of the above
-commands, that glyph will be marked "Don't AutoHint" until you explicitly
-call the AutoHint command on it. You may also explicitly use the
-Hints-&gt;Don't AutoHint command to turn off FontForge's automatic hinting
-attempts.
-<P>
-You may also manually
-<UL>
-  <LI>
-    Set hint change-over points
-  <LI>
-    Set counter groups for a glyph
-</UL>
-<P>
-These do not set the "Don't AutoHint" bit.
-<H3>
-  Manual Hint Substitution Points
-</H3>
-<P>
-FontForge's Hints-&gt;Hint Substitution Pts command will automatically figure
-out where hint substitution should occur, but if this isn't good enough you
-may do it manually with the <A HREF="getinfo.html#HintMask">Element-&gt;Get
-Info</A> command (when the selection is a single point to which you want
-to attach a hintmask).
-<P>
-If a glyph has conflicting hints then the first point in the glyph (the first
-point on the first contour) MUST have a hintmask attached to it. If it does
-not, the FontForge will automatically figure substitution points when it
-generates the font. Other points are not required (but may) have a hintmask.
-<P>
-The hintmask specifies what hints should be active when that point is positioned,
-and will control all subsequent points until a new hintmask is established.
-So in the
-following<IMG SRC="charwithhintmask.png" WIDTH="309" HEIGHT="322" ALIGN="Left"><IMG
-    SRC="hintmaskinfo.png" WIDTH="321" HEIGHT="459" ALIGN="Right"> example, the
-selected point (on left) has the highlit hints active at it, In the glyph
-view the currently active stems are drawn much darker than the inactive ones.
-Points with hintmasks attached to them have circles drawn around them.
-<P>
-Remember to hold the control key down when making disjoint
-selections.<BR CLEAR=ALL>
-<H3>
-  Manual <A NAME="Counter">Counter</A> Groups
-</H3>
-<P>
-FontForge also has a Hints-&gt;Auto Counter command which tries to figure
-out what stems form a counter group.
-<P>
-Again you can do this manually, with the
-<A HREF="charinfo.html#CounterMasks">Counter</A> pane of the Element-&gt;Char
-Info dialog. When creating a new counter group you are presented with a dialog
-very similar to the one above in which you must select a set of hints that
-bound a set of counters.
-<H2>
-  Hints and previously existing fonts.
-</H2>
-<P>
-FontForge will not be able to convert TrueType instructions into PostScript
-hints when it reads a TrueType font (the format is too complex, there are
-too many possibilities, instead FontForge stores all the truetype instructions
-and writes them back out uninterpretted).
-<P>
-From a Type1 font it will happily read all the hints in a glyph, and keep
-track of hint substitution points. It will not read counter hints though.
-<P>
-In an OpenType (Type2) font FontForge will read in all the hints, keep track
-of hint substitution points and the counter hints.
-<H2>
-  Hinting and TrueType
-</H2>
-<P>
-FontForge does a really bad job of "hinting" (actually generating instructions
-for) truetype. Generally you will get better results with unhinted glyphs
-than with glyphs autoinstructed by fontforge.
-<P>
-Hinting TrueType fonts opens a far wider range of possibilities. I have added
-several types of hints that are specific to truetype (and will be ignored
-by the postscript generation routines). These by no means exhaust the
-capabilities of TrueType.
-<UL>
-  <LI>
-    Diagonal Stem Hints<BR>
-    These look similar to the horizontal and vertical stem hints that postscript
-    understands but they allow you to constrain the width of diagonal stems as
-    well.
-  <LI>
-    Minimum Distance Hints<BR>
-    TrueType allows you to say that the distance between two features should
-    never vanish. Every stem hint will automatically have one of these across
-    it, but there may be other places where they will be useful. In particular
-    you can insure that there is always white space after a glyph by putting
-    a minimum distance hint between a point on the right edge of that glyph and
-    the width line, also these hints can be used to solve the serif problems
-    mentioned above.
-  <LI>
-    Round to Grid<BR>
-    TrueType can move points to the rasterization grid before rasterizing glyphs.
-    Stem hints and minimum distance hints will automagically be rounded, but
-    there might be other cases where rounding is useful.
-</UL>
-<H2>
+  Round to Grid<BR>
+  TrueType can move points to the rasterization grid before rasterizing glyphs.
+  Stem hints and minimum distance hints will automagically be rounded, but
+  there might be other cases where rounding is useful.
+  </UL>
+  <H2>
   Examples of Minimum Distance Hinting
-</H2>
-<P>
-<TABLE BORDER CELLPADDING="2">
+  </H2>
+  <P>
+  <TABLE BORDER CELLPADDING="2">
   <TR>
-    <TD><IMG SRC="Ehinted.png" WIDTH="189" HEIGHT="208"></TD>
-    <TD><IMG SRC="EhintedTtf.png" WIDTH="127" HEIGHT="145"><BR>
-      <SMALL>A fully hinted glyph is<BR>
-      completely grid fit, but<BR>
-      the difference between<BR>
-      stem lengths is lost.</SMALL></TD>
+  <TD><IMG SRC="Ehinted.png" WIDTH="189" HEIGHT="208"></TD>
+  <TD><IMG SRC="EhintedTtf.png" WIDTH="127" HEIGHT="145"><BR>
+  <SMALL>A fully hinted glyph is<BR>
+  completely grid fit, but<BR>
+  the difference between<BR>
+  stem lengths is lost.</SMALL></TD>
   </TR>
   <TR>
-    <TD><IMG SRC="Efore.png" WIDTH="188" HEIGHT="208"></TD>
-    <TD><IMG SRC="EforeTtf.png" WIDTH="127" HEIGHT="145"><SMALL><BR>
-      One attempt to solve the<BR>
-      above problem, compare<BR>
-      to below.</SMALL></TD>
+  <TD><IMG SRC="Efore.png" WIDTH="188" HEIGHT="208"></TD>
+  <TD><IMG SRC="EforeTtf.png" WIDTH="127" HEIGHT="145"><SMALL><BR>
+  One attempt to solve the<BR>
+  above problem, compare<BR>
+  to below.</SMALL></TD>
   </TR>
   <TR>
-    <TD><IMG SRC="Eback.png" WIDTH="189" HEIGHT="208"></TD>
-    <TD><IMG SRC="EbackTtf.png" WIDTH="127" HEIGHT="145"><SMALL><BR>
-      Note how the different<BR>
-      directions in the md hint<BR>
-      change the rasterization</SMALL></TD>
+  <TD><IMG SRC="Eback.png" WIDTH="189" HEIGHT="208"></TD>
+  <TD><IMG SRC="EbackTtf.png" WIDTH="127" HEIGHT="145"><SMALL><BR>
+  Note how the different<BR>
+  directions in the md hint<BR>
+  change the rasterization</SMALL></TD>
   </TR>
-</TABLE>
-<H2>
-  Hint questions:
-</H2>
-<P>
-I find the hint documentation inadequate for me to do a good job at hinting.
-<UL>
-  <LI>
-    Section 2.4 of
-    <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5015.Type1_Supp.pdf">T1_Supp.pdf
-    </A>says that vertical counters are offset from the lbearing, but the example
-    2.6 shows them being offset from 0.
-  <LI>
-    In
-    <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5177.Type2.pdf">Type2</A>
-    is it ok to use Counter mask if LanguageGroup is not 1 and the stems don't
-    fit into a *stem3 pattern? Or can cntrmask only be used for *stem3 in latin
-    letters?
-  <LI>
-    <IMG SRC="NoPointHint.png" WIDTH="194" HEIGHT="232" ALIGN="Right">How do
-    hints work? Is a hint meaningful if there are no points associated with it?
-    As in the "O" at right, where the two vertical stems have no points associated
-    with them.
-  <LI>
-    Is it meaningful for a hint to have points only on one side of it? Can reasonable
-    hints be written for the serif cap above left?
-</UL>
-<P>
-<A HREF="overview.html#Hints">Overview of Hinting in Postscript and
-TrueType</A>.<BR>
-<A HREF="hintsmenu.html">Hinting menu.</A>
+  </TABLE>
+  -->
+  <H2>
+    Hint questions:
+  </H2>
+  <P>
+  I find the hint documentation inadequate for me to do a good job at hinting.
+  <UL>
+    <LI>
+      Section 2.4 of
+      <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5015.Type1_Supp.pdf">T1_Supp.pdf
+      </A>says that vertical counters are offset from the lbearing, but the example
+      2.6 shows them being offset from 0.
+    <LI>
+      In
+      <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5177.Type2.pdf">Type2</A>
+      is it ok to use Counter mask if LanguageGroup is not 1 and the stems don't
+      fit into a *stem3 pattern? Or can cntrmask only be used for *stem3 in latin
+      letters?
+    <LI>
+      <IMG SRC="NoPointHint.png" WIDTH="194" HEIGHT="232" ALIGN="Right">How do
+      hints work? Is a hint meaningful if there are no points associated with it?
+      As in the "O" at right, where the two vertical stems have no points associated
+      with them.
+    <LI>
+      Is it meaningful for a hint to have points only on one side of it? Can reasonable
+      hints be written for the serif cap above left?
+  </UL>
+  <P>
+  <A HREF="overview.html#Hints">Overview of Hinting in Postscript and
+  TrueType</A>.<BR>
+  <A HREF="hintsmenu.html">Hinting menu.</A>
 </DIV>
 </BODY></HTML>
