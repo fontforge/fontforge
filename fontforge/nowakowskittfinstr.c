@@ -1062,7 +1062,7 @@ static uint8 *dogeninstructions(InstrCt *ct) {
 
     /* instruct right sidebearing */
     /* TODO! Solve the case of transformed references */
-    if (ct->sc.width != 0) {
+    if (ct->sc->width != 0) {
 	ct->pt = pushpoint(ct->pt, ct->ptcnt+1);
 	*(ct->pt)++ = MDRP_min_rnd_white;
     }
