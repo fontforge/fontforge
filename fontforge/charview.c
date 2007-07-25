@@ -4571,6 +4571,7 @@ return( true );
 #define MID_AutoHint	2400
 #define MID_ClearHStem	2401
 #define MID_ClearVStem	2402
+#define MID_ClearDStem	2403
 #define MID_AddHHint	2404
 #define MID_AddVHint	2405
 #define MID_AddDHint	2406
@@ -7569,78 +7570,85 @@ static void CVMenuClearHints(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	StemInfosFree(cv->sc->vstem);
 	cv->sc->vstem = NULL;
 	cv->sc->vconflicts = false;
+    } else if ( mi->mid==MID_ClearDStem ) {
+	DStemInfosFree(cv->sc->dstem);
+	cv->sc->dstem = NULL;
     }
     cv->sc->manualhints = true;
-    SCClearHintMasks(cv->sc,true);
-    SCOutOfDateBackground(cv->sc);
-    SCUpdateAll(cv->sc);
+    
+    if ( mi->mid != MID_ClearDStem ) {
+        SCClearHintMasks(cv->sc,true);
+        SCOutOfDateBackground(cv->sc);
+        SCUpdateAll(cv->sc);
+    }
 }
 
 static void CVMenuAddHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    SplinePoint *sp1, *sp2, *sp3, *sp4;
+    SplinePoint *sp[4];
     StemInfo *h=NULL;
     DStemInfo *d;
+    int num;
 
-    if ( !CVTwoForePointsSelected(cv,&sp1,&sp2))
+    num = CVNumForePointsSelected(cv,sp);
+
+    /* We need exactly 2 points to specify a horizontal or vertical stem
+       and exactly 4 points to specify a diagonal stem */
+    if ( !(num == 2 && mi->mid != MID_AddDHint) && 
+         !(num == 4 && mi->mid == MID_AddDHint))
 return;
 
     SCPreserveHints(cv->sc);
     SCHintsChanged(cv->sc);
     if ( mi->mid==MID_AddHHint ) {
-	if ( sp1->me.y==sp2->me.y )
+	if ( sp[0]->me.y==sp[1]->me.y )
 return;
 	h = chunkalloc(sizeof(StemInfo));
-	if ( sp2->me.y>sp1->me.y ) {
-	    h->start = sp1->me.y;
-	    h->width = sp2->me.y-sp1->me.y;
+	if ( sp[1]->me.y>sp[0]->me.y ) {
+	    h->start = sp[0]->me.y;
+	    h->width = sp[1]->me.y-sp[0]->me.y;
 	} else {
-	    h->start = sp2->me.y;
-	    h->width = sp1->me.y-sp2->me.y;
+	    h->start = sp[1]->me.y;
+	    h->width = sp[0]->me.y-sp[1]->me.y;
 	}
-	SCGuessHHintInstancesAndAdd(cv->sc,h,sp1->me.x,sp2->me.x);
+	SCGuessHHintInstancesAndAdd(cv->sc,h,sp[0]->me.x,sp[1]->me.x);
 	cv->sc->hconflicts = StemListAnyConflicts(cv->sc->hstem);
     } else if ( mi->mid==MID_AddVHint ) {
-	if ( sp1->me.x==sp2->me.x )
+	if ( sp[0]->me.x==sp[1]->me.x )
 return;
 	h = chunkalloc(sizeof(StemInfo));
-	if ( sp2->me.x>sp1->me.x ) {
-	    h->start = sp1->me.x;
-	    h->width = sp2->me.x-sp1->me.x;
+	if ( sp[1]->me.x>sp[0]->me.x ) {
+	    h->start = sp[0]->me.x;
+	    h->width = sp[1]->me.x-sp[0]->me.x;
 	} else {
-	    h->start = sp2->me.x;
-	    h->width = sp1->me.x-sp2->me.x;
+	    h->start = sp[1]->me.x;
+	    h->width = sp[0]->me.x-sp[1]->me.x;
 	}
-	SCGuessVHintInstancesAndAdd(cv->sc,h,sp1->me.y,sp2->me.y);
+	SCGuessVHintInstancesAndAdd(cv->sc,h,sp[0]->me.y,sp[1]->me.y);
 	cv->sc->vconflicts = StemListAnyConflicts(cv->sc->vstem);
     } else {
-	if ( !CVIsDiagonalable(sp1,sp2,&sp3,&sp4))
+	if ( !CVIsDiagonalable( sp ))
 return;
-	/* Make sure sp1<->sp3 is further left than sp2<->sp4 */
-	if ( sp1->me.x > sp2->me.x + (sp1->me.y-sp2->me.y) * (sp4->me.x-sp2->me.x)/(sp4->me.y-sp2->me.y) ) {
-	    SplinePoint *temp;
-	    temp = sp1; sp1 = sp2; sp2 = temp;
-	    temp = sp3; sp3=sp4; sp4=temp;
-	}
-	/* Make sure sp1,sp2 are at the top */
-	if ( sp1->me.y<sp3->me.y ) {
-	    SplinePoint *temp;
-	    temp = sp1; sp1=sp3; sp3=temp;
-	    temp = sp2; sp2=sp4; sp4=temp;
-	}
-	d = chunkalloc(sizeof(DStemInfo));
+	/* No additional tests, as the points should have already been
+           reordered by CVIsDiagonalable */
+        d = chunkalloc(sizeof(DStemInfo));
 	d->next = cv->sc->dstem;
 	cv->sc->dstem = d;
-	d->leftedgetop = sp1->me;
-	d->rightedgetop = sp2->me;
-	d->leftedgebottom = sp3->me;
-	d->rightedgebottom = sp4->me;
+	d->leftedgetop = sp[0]->me;
+	d->rightedgetop = sp[1]->me;
+	d->leftedgebottom = sp[2]->me;
+	d->rightedgebottom = sp[3]->me;
     }
     cv->sc->manualhints = true;
-    if ( h!=NULL && cv->sc->parent->mm==NULL )
-	SCModifyHintMasksAdd(cv->sc,h);
-    else
-	SCClearHintMasks(cv->sc,true);
+    
+    /* Hint Masks are not relevant for diagonal stems, so modifying
+       diagonal stems should not affect them */
+    if ( (mi->mid==MID_AddVHint) || (mi->mid==MID_AddHHint) ) {
+        if ( h!=NULL && cv->sc->parent->mm==NULL )
+	    SCModifyHintMasksAdd(cv->sc,h);
+        else
+	    SCClearHintMasks(cv->sc,true);
+    }
     SCOutOfDateBackground(cv->sc);
     SCUpdateAll(cv->sc);
 }
@@ -7661,11 +7669,13 @@ return;
 
 static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    SplinePoint *sp1, *sp2, *sp3, *sp4;
+    SplinePoint *sp[4];
     int multilayer = cv->sc->parent->multilayer;
+    int i=0, num = 0;
 
-    sp1 = sp2 = NULL;
-    CVTwoForePointsSelected(cv,&sp1,&sp2);
+    for (i=0; i<4; i++) {sp[i]=NULL;}
+    
+    num = CVNumForePointsSelected(cv,sp);
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
@@ -7690,13 +7700,13 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = cv->sc->ttf_instrs_len==0;
 	  break;
 	  case MID_AddHHint:
-	    mi->ti.disabled = sp2==NULL || sp2->me.y==sp1->me.y || multilayer;
+	    mi->ti.disabled = num != 2 || sp[1]->me.y==sp[0]->me.y || multilayer;
 	  break;
 	  case MID_AddVHint:
-	    mi->ti.disabled = sp2==NULL || sp2->me.x==sp1->me.x || multilayer;
+	    mi->ti.disabled = num != 2 || sp[1]->me.x==sp[0]->me.x || multilayer;
 	  break;
 	  case MID_AddDHint:
-	    mi->ti.disabled = !CVIsDiagonalable(sp1,sp2,&sp3,&sp4) || multilayer;
+	    mi->ti.disabled = num != 4 || !CVIsDiagonalable(sp) || multilayer;
 	  break;
 	  case MID_ReviewHints:
 	    mi->ti.disabled = (cv->sc->hstem==NULL && cv->sc->vstem==NULL ) || multilayer;
@@ -8345,6 +8355,7 @@ static GMenuItem2 htlist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Clear HStem"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Clear HStem|No Shortcut"), NULL, NULL, CVMenuClearHints, MID_ClearHStem },
     { { (unichar_t *) N_("Clear _VStem"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'V' }, H_("Clear VStem|No Shortcut"), NULL, NULL, CVMenuClearHints, MID_ClearVStem },
+    { { (unichar_t *) N_("Clear DStem"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'V' }, H_("Clear DStem|No Shortcut"), NULL, NULL, CVMenuClearHints, MID_ClearDStem },
     { { (unichar_t *) N_("Clear Instructions"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Clear Instructions|No Shortcut"), NULL, NULL, CVMenuClearInstrs, MID_ClearInstr },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Add HHint"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("Add HHint|No Shortcut"), NULL, NULL, CVMenuAddHint, MID_AddHHint },

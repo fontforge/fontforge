@@ -2872,8 +2872,7 @@ static DStemInfo *SFDReadDHints(FILE *sfd) {
 	    last->next = cur;
 	last = cur;
     }
-    DStemInfosFree(head);
-return( NULL );
+return( head );
 }
 
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
