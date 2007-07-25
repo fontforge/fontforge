@@ -1182,6 +1182,8 @@ static void startpage(PI *pi ) {
 
     if ( pi->printtype==pt_pdf ) {
 	pdf_addpage(pi);
+	if ( pi->pt == pt_chars )
+return;
 	fprintf(pi->out,"q 1 0 0 1 40 %d cm\n", pi->pageheight-54 );
 	fprintf( pi->out, "BT\n  /FTB 12 Tf\n  193.2 -10.92 Td\n" );
 	fprintf(pi->out,"(Font Display for %s) Tj\n", pi->mainsf->fontname );
