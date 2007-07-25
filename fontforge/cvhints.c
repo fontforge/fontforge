@@ -59,40 +59,118 @@ return( true );
 return( false );
 }
 
-static int DiagCheck(SplinePoint *sp1, SplinePoint *sp2, Spline *s1, Spline *s2,
-	SplinePoint **sp3, SplinePoint **sp4 ) {
+/* This is an improved version of the CVTwoForePointsSelected function.
+   Unlike the former, it doesn't just check if there are exactly two points
+   selected, but rather returns the number of selected points (whatever this
+   number can be) and puts references to those points into an array. It is up
+   to the calling code to see if the returned result is satisfiable (there
+   should be exactly two points selected for specifying a vertical or
+   horizontal stem and four points for a diagonal stem). */
+int CVNumForePointsSelected(CharView *cv, SplinePoint **sp) {
+    SplineSet *spl;
+    SplinePoint *test, *sps[4], *first;
+    int i, cnt;
 
-    if ( s1==NULL || s2==NULL || !s1->knownlinear || !s2->knownlinear )
-return( false );
-    *sp3 = s1->from==sp1?s1->to:s1->from;
-    *sp4 = s2->from==sp2?s2->to:s2->from;
-    if ( *sp3==sp2 || *sp4==sp1 || *sp3==*sp4 )
-return( false );
-
-    /* No horizontal,vertical edges */
-    if ( sp1->me.x == (*sp3)->me.x || sp1->me.y==(*sp3)->me.y ||
-	    sp2->me.x == (*sp4)->me.x || sp2->me.y==(*sp4)->me.y )
-return( false );
-
-    /* Consistanly ordered */
-    if (( (sp1->me.y>(*sp3)->me.y) && (sp2->me.y<(*sp4)->me.y)) ||
-	    ( (sp1->me.y<(*sp3)->me.y) && (sp2->me.y>(*sp4)->me.y)) )
-return ( false );
-
-    /* Similar slopes */
-return( RealApprox((sp1->me.y-(*sp3)->me.y)/(sp1->me.x-(*sp3)->me.x),
-	    (sp2->me.y-(*sp4)->me.y)/(sp2->me.x-(*sp4)->me.x)) );
+    if ( cv->drawmode!=dm_fore )
+return( 0 ) ;
+    cnt = 0;
+    for ( spl = cv->sc->layers[ly_fore].splines; spl!=NULL; spl = spl->next ) {
+	first = NULL;
+	for ( test = spl->first; test!=first; test = test->next->to ) {
+	    if ( test->selected ) {
+		sps[cnt++] = test;
+		if ( cnt>4 )
+return( 0 );
+	    }
+	    if ( first == NULL ) first = test;
+	    if ( test->next==NULL )
+	break;
+	}
+    }
+    for (i=0; i<cnt; i++) {
+        sp[i] = sps[i];
+    }
+return( cnt );
 }
 
-int CVIsDiagonalable(SplinePoint *sp1, SplinePoint *sp2, SplinePoint **sp3, SplinePoint **sp4) {
+static int DiagCheck( SplinePoint **vec1, SplinePoint **vec2 ) {
 
-    if ( sp1==NULL || sp2==NULL )
+    /* No horizontal,vertical edges */
+    if ( vec1[0]->me.x == vec1[1]->me.x || vec1[0]->me.y==vec1[1]->me.y ||
+	    vec2[0]->me.x == vec2[1]->me.x || vec2[0]->me.y==vec2[1]->me.y )
 return( false );
+    /* We are not checking the direction of vectors, as this test should 
+       have already been performed in CVIsDiagonalable */
 
-return( DiagCheck(sp1,sp2,sp1->next,sp2->next,sp3,sp4) ||
-	DiagCheck(sp1,sp2,sp1->next,sp2->prev,sp3,sp4) ||
-	DiagCheck(sp1,sp2,sp1->prev,sp2->next,sp3,sp4) ||
-	DiagCheck(sp1,sp2,sp1->prev,sp2->prev,sp3,sp4));
+    /* Similar slopes */
+return( RealApprox((vec1[0]->me.y-vec1[1]->me.y)/(vec1[0]->me.x-vec1[1]->me.x),
+	    (vec2[0]->me.y-vec2[1]->me.y)/(vec2[0]->me.x-vec2[1]->me.x)) );
+}
+
+/* Since this function now deals with 4 arbitrarily selected points,
+   it has to try to combine them by different ways in order to see
+   if they actually can specify a diagonal stem. The reordered points 
+   are placed back to array passed to the function.*/
+int CVIsDiagonalable(SplinePoint **sp ) {
+
+    SplinePoint *vec1[2], *vec2[2], *temp;
+    int i, j, k = 0;
+
+    for (i=0; i<4; i++) {
+        if (sp[i] == NULL)
+return( false );
+    }
+    
+    /* Assume that the first point passed to the function is the starting
+       point of the first of two vectors. Then try all possible combinations
+       (there are 3), ensure the vectors are consistantly ordered, and
+       check if they are parallel.*/
+    vec1[0] = sp[0];
+    
+    for (i=1; i<4; i++) {
+        vec1[1] = sp[i];
+        
+        for (j=1; j<4; j++) {
+            if (j != i)
+                vec2[k++] = sp[j];
+        }
+        
+        /* Ensure points are consistantly ordered */
+        if (( (vec1[0]->me.y>vec1[1]->me.y) && (vec2[0]->me.y<vec2[1]->me.y)) ||
+	    ( (vec1[0]->me.y<vec1[1]->me.y) && (vec2[0]->me.y>vec2[1]->me.y)) ) {
+            
+            temp = vec2[0]; vec2[0] = vec2[1]; vec2[1] = temp;
+        }
+        
+        if (DiagCheck (vec1, vec2)) {
+	    /* Make sure vec1[0]<->vec1[1] is further left than vec2[0]<->vec2[1] */
+	    if ( vec1[0]->me.x > vec2[0]->me.x + (vec1[0]->me.y-vec2[0]->me.y) 
+                * (vec2[1]->me.x-vec2[0]->me.x)/(vec2[1]->me.y-vec2[0]->me.y) ) {
+                
+	        temp = vec1[0]; vec1[0] = vec1[1]; vec1[1] = temp;
+	        temp = vec2[0]; vec2[0] = vec2[1]; vec2[1]=temp;
+	    }
+	    /* Make sure vec1[0],vec1[1] are at the top */
+	    if ( vec1[0]->me.y<vec1[1]->me.y ) {
+	        SplinePoint *temp;
+	        temp = vec1[0]; vec1[0]=vec1[1]; vec1[1]=temp;
+	        temp = vec2[0]; vec2[0]=vec2[1]; vec2[1]=temp;
+	    }
+            
+            sp[0] = vec1[0];
+            sp[1] = vec2[0];
+            sp[2] = vec1[1];
+            sp[3] = vec2[1];
+            
+            /*fprintf (stderr, "%f,%f %f,%f %f,%f %f,%f",
+                sp[0]->me.x, sp[0]->me.y, sp[1]->me.x, sp[1]->me.y, 
+                sp[2]->me.x, sp[2]->me.y, sp[3]->me.x, sp[3]->me.y);*/
+            
+return ( true );
+        }
+    }
+
+return( false );
 }
 
 
