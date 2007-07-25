@@ -98,6 +98,11 @@ return( tab );
 }
 #endif
 
+/* We'll need at least three stack levels and a twilight point (and thus also
+ * a twilight zone). We must ensure this is indicated in 'maxp' table.
+ * Note: we'll surely need more stack levels in the future. Twilight point
+ * count may vary depending on hinting method; for now, one is enough.
+ */
 static void init_maxp(InstrCt *ct) {
     struct ttf_table *tab = SFFindTable(ct->sc->parent,CHR('m','a','x','p'));
 
@@ -121,13 +126,18 @@ static void init_maxp(InstrCt *ct) {
     if (zones<2) zones=2;
     /* if (twpts<ct->gi->bd->bluecnt) twpts=ct->gi->bd->bluecnt; */
     if (twpts<1) twpts=1;
-    if (stack<2) stack=2; /* we'll surely need more in future */
+    if (stack<3) stack=3; /* we'll surely need more in future */
 
     memputshort(tab->data, 7*sizeof(uint16), zones);
     memputshort(tab->data, 8*sizeof(uint16), twpts);
     memputshort(tab->data,12*sizeof(uint16), stack);
 }
 
+/* Turning dropout control on will dramatically improve mono rendering, even
+ * without further hinting, especcialy for light typefaces. And turning hinting
+ * off at veeery small pixel sizes is required, because hints tend to visually
+ * tear outlines apart when not having enough workspace.
+ */
 static void init_prep(InstrCt *ct) {
     struct ttf_table *tab = SFFindTable(ct->sc->parent,CHR('p','r','e','p'));
 
@@ -142,7 +152,7 @@ static void init_prep(InstrCt *ct) {
 
 	tab->data[0]  = 0x4b;
 	tab->data[1]  = 0xb0;
-	tab->data[2]  = 0x05; /* hinting-off threshold */
+	tab->data[2]  = 0x05; /* hinting threshold - should be configurable */
 	tab->data[3]  = 0x50;
 	tab->data[4]  = 0x58;
 	tab->data[5]  = 0xb1;
@@ -453,20 +463,29 @@ static void RunOnPoints(InstrCt *ct, void (*runme)(int p, SplinePoint *sp, Instr
 
  * The zone count must be set to 2, the twilight point count must be nonzero.
  * This is done automagically, otherwise this method wouldn't work at all.
- * See init_maxp. Currecnty there is only one twilight point used, but there
+ * See init_maxp. Currently there is only one twilight point used, but there
  * may be needed one or even two points per blue zone if some advanced snapping
  * and counter managing is to be done.
 
- * The inner (leftwards) contours should not be snapped to the blue zone.
- * This could have created weird artifacts.
+ * The inner (leftwards) contours aren't snapped to the blue zone.
+ * This could have created weird artifacts. Of course this will fail for
+ * glyphs with wrong direction, but I won't handle it for now.
+ 
+ * TODO! Remind the user to correct direction or do it for him.
+
+ * TODO! Try to do this with a single push and looped MDRP.
 
  * If we didn't snapped any point to a blue zone, we shouldn't mark any HStem
  * edges done. This could made some important points on inner contours missed.
- * even if the hint's edge is done, geninstrs() should seek for such points.
+
+ * Note! We mark as 'done' all edges that are inside the blue zone.
+ * If a HStem is entirely within a blue zone, its width WON'T BE USED.
+ * So if HStem's edges are within different blue zones (I saw this used
+ * for hinting serifs).
  */
 static void snap_to_bluezone(int p, SplinePoint *sp, InstrCt *ct) {
     real coord = ct->bp[p].y;
-    real fudge = 0; /* This should be BlueFuzz */
+    real fudge = 0; /* This should be BlueFuzz from PS Private Dictionary */
 
     if ((ct->cdir) &&
         (coord >= ct->edge.base-fudge) && (coord <= ct->edge.end+fudge) &&
@@ -478,8 +497,10 @@ static void snap_to_bluezone(int p, SplinePoint *sp, InstrCt *ct) {
 	*(ct->pt)++ = MDRP_rnd_grey;
 	ct->touched[p] |= tf_y;
 
-	/* a visual signal of snapping, for debugging only */
+#if 0 
+	/* a visual signal of snapping, for debugging purposes only */
 	sp->selected = true;
+#endif
     }
 }
 
@@ -515,7 +536,7 @@ static void snap_to_blues(InstrCt *ct) {
 	/* Any points instructed? */
 	if (ct->pt == current) ct->pt = backup;
 	else {
-	    *(ct->pt)++ = RTG;
+	    *(ct->pt)++ = RTG; /* restore default round state */
 
 	    /* Signalize that some HStem edges are now done */
 	    for ( hint=ct->sc->hstem; hint!=NULL; hint=hint->next ) {
@@ -582,27 +603,84 @@ static void search_edge(int p, SplinePoint *sp, InstrCt *ct) {
     }
 }
 
-/* Initialize the InstrCt for instructing given edge */
+/* Initialize the InstrCt for instructing given edge.
+ * We try to hint only those points on edge that are necessary.
+ * IUP will do the rest.
+ */
+
+static int sortbynum(const void *a, const void *b) { return *(int *)a > *(int *)b; }
+
 static void init_edge(InstrCt *ct, real base) {
     ct->edge.base = base;
     ct->edge.refpt = -1;
     ct->edge.refscore = 0;
     ct->edge.othercnt = 0;
     ct->edge.others = NULL;
+
     RunOnPoints(ct, &search_edge);
+
+    if (ct->edge.othercnt == 0)
+return;
+
+    int i, next, leading_unneeded=0, final_unneeded=0;
+    int *others = ct->edge.others;
+    int othercnt = ct->edge.othercnt;
+    int refpt = ct->edge.refpt;
+
+    /* now remove unneeded points */
+
+#define NextP(_p) NextOnContour(ct->contourends, ct->bp, _p)
+
+    qsort(others, othercnt, sizeof(int), sortbynum);
+
+    if ((NextP(others[0]) == others[othercnt-1]) || (NextP(refpt) == others[0]))
+	leading_unneeded = 1;
+
+    if (NextP(others[othercnt-1]) == refpt) final_unneeded = 1;
+
+    for (i=0; (i < othercnt-1) && (others[i] < refpt); i++) {
+	next = NextP(others[i]);
+	if ((next == others[i+1]) || (next == refpt)) others[i] = -1;
+    }
+
+    for (i=othercnt-1; (i > 0) && (others[i] > refpt); i--)
+	if ((NextP(others[i-1]) == others[i]) || (NextP(refpt) == others[i]))
+	    others[i] = -1;
+
+    if (leading_unneeded) {
+	for(i=0; (i < othercnt) && (others[i] == -1); i++);
+	if (i < othercnt) others[i] = -1;
+    }
+
+    if (final_unneeded) {
+	for(i=othercnt-1; (i >= 0) && (others[i] == -1); i--);
+	if (i >= 0) others[i] = -1; 
+    }
+
+    for (i=next=0; i<othercnt; i++)
+	if (others[i] != -1)
+	    others[next++] = others[i];
+    
+    ct->edge.othercnt = next;
+
+    if (ct->edge.othercnt == 0) {
+	free(ct->edge.others);
+	ct->edge.others = NULL;
+    }
+
+#undef NextP
 }
 
 /* Finish instructing the edge. The 'command' must be
  * either of: SHP, SHPIX, IP, FLIPPT or ALIGNRP.
- 
+
+ * TODO! 
  * Possible strategies:
  *   - do point by point (currently used, poor space efficiency)
- *   - remove neighbours (RunOnPoints should have done this) (IUP[] will care)
  *   - push all the stock at once (or bytes and words separately)
- *   - when the stuff is pushed, use SLOOP (or don't)
-
- * static void sortbynum(void *a, void *b) { return (int)*a > (int)*b; }
+ *   - when the stuff is pushed, try to use SLOOP or relative jumps.
  */
+
 static void finish_edge(InstrCt *ct, uint8 command) {
 
     if (ct->edge.othercnt==0)
@@ -610,15 +688,8 @@ return;
 
     int i;
     int *others = ct->edge.others;
-    int othercnt = ct->edge.othercnt;
 
-    /* Sort the points by their numbers and count the 'bytes' and 'words' */
-    /* qsort(others, othercnt*sizeof(others[0]), sortbynum);
-     * for(i=0; i<othercnt; ++i) if (others[i] > 255) break;
-     * int firstword = i;
-     */
-
-    for(i=0; i<(othercnt); i++) {
+    for(i=0; i<(ct->edge.othercnt); i++) {
 	ct->pt = pushpoint(ct->pt, others[i]);
 	*(ct->pt)++ = command;
 	ct->touched[others[i]] |= (ct->xdir?tf_x:tf_y);
@@ -866,6 +937,28 @@ static uint8 *gen_md_instrs(struct glyphinstrs *gi, uint8 *instrs,MinimumDistanc
 return(instrs);
 }
 
+
+/* Rounding extremae to grid is generally a good idea, so I do this by default.
+ * Yet it is possible that rounding an extremum is wrong, and that some other
+ * points might also be rounded. There once was a 'round to x/y grid' flag for
+ * each point with an UI to set it. It's gone now, but could probably be helpful
+ * in future.
+ */
+ 
+/* This is supposed to be called within RunOnPoints().
+ */
+static void do_extrema(int ttfindex, SplinePoint *sp, InstrCt *ct) {
+    if (!(ct->touched[ttfindex] & (ct->xdir?tf_x:tf_y)) &&
+	 (ct->xdir?IsXExtremum(sp):IsYExtremum(sp)))
+    {
+	ct->pt = pushpoint(ct->pt,ttfindex);
+	*(ct->pt)++ = MDAP_rnd;
+	ct->touched[ttfindex] |= ct->xdir?tf_x:tf_y;
+    }
+}
+
+/* And this is supposed to be ported so it can be called RunOnPoints().
+ */
 static uint8 *gen_rnd_instrs(struct glyphinstrs *gi, uint8 *instrs,SplineSet *ttfss,
 	BasePoint *bp, int ptcnt, int xdir, uint8 *touched) {
     int mask = xdir ? 1 : 2;
@@ -890,22 +983,14 @@ static uint8 *gen_rnd_instrs(struct glyphinstrs *gi, uint8 *instrs,SplineSet *tt
 return( instrs );
 }
 
-static void do_extrema(int ttfindex, SplinePoint *sp, InstrCt *ct) {
-    if (!(ct->touched[ttfindex] & (ct->xdir?tf_x:tf_y)) &&
-	 (ct->xdir?IsXExtremum(sp):IsYExtremum(sp)))
-    {
-	ct->pt = pushpoint(ct->pt,ttfindex);
-	*(ct->pt)++ = MDAP_rnd;
-	ct->touched[ttfindex] |= ct->xdir?tf_x:tf_y;
-    }
-}
-
 static uint8 *dogeninstructions(InstrCt *ct) {
     StemInfo *hint;
     int max;
+    uint8 *backup;
     DStemInfo *dstem;
 
     /* very basic preparations for default hinting */
+    /* TODO! Move this to the end so that we have knowledge how deep stack do we need. */
     init_maxp(ct);
     init_prep(ct);
 
@@ -950,13 +1035,12 @@ static uint8 *dogeninstructions(InstrCt *ct) {
 	    geninstrs(ct,hint);
 
     /* Extremae and others should take shifts by stems into account. */
-    /* The code needs some refinement, as IUP[] instructions appear */
-    /* several times and could be reduced in cases where unneeded. */
     *(ct->pt)++ = IUP_y;
+    backup = ct->pt;
     RunOnPoints(ct, &do_extrema);
-    *(ct->pt)++ = IUP_y;
-    ct->pt = gen_rnd_instrs(ct->gi,ct->pt,ct->ss,ct->bp,ct->ptcnt,false,ct->touched);
-    ct->pt = gen_md_instrs(ct->gi,ct->pt,ct->sc->md,ct->ss,ct->bp,ct->ptcnt,false,ct->touched);
+    if (backup != ct->pt) *(ct->pt)++ = IUP_y;
+//    ct->pt = gen_rnd_instrs(ct->gi,ct->pt,ct->ss,ct->bp,ct->ptcnt,false,ct->touched);
+//    ct->pt = gen_md_instrs(ct->gi,ct->pt,ct->sc->md,ct->ss,ct->bp,ct->ptcnt,false,ct->touched);
 
     /* next instruct vertical features (=> movement in x) */
     ct->xdir = true;
@@ -971,13 +1055,12 @@ static uint8 *dogeninstructions(InstrCt *ct) {
     ct->pt = pushpoint(ct->pt, ct->ptcnt+1);
     *(ct->pt)++ = MDRP_min_rnd_white;
 
-    /* Extremae and othera should take shifts by stems into account. */
-    /* The code needs some refinement, as IUP[] instructions appear */
-    /* several times and could be reduced in cases where unneeded. */
+    /* Extremae and others should take shifts by stems into account. */
     *(ct->pt)++ = IUP_x;
     RunOnPoints(ct, &do_extrema);
-    *(ct->pt)++ = IUP_x;
-    ct->pt = gen_rnd_instrs(ct->gi,ct->pt,ct->ss,ct->bp,ct->ptcnt,true,ct->touched);
+    backup = ct->pt;
+    if (backup != ct->pt) *(ct->pt)++ = IUP_x;
+//    ct->pt = gen_rnd_instrs(ct->gi,ct->pt,ct->ss,ct->bp,ct->ptcnt,true,ct->touched);
 
     /* finally instruct diagonal stems (=> movement in x) */
     /*  This is done after vertical stems because it involves */
