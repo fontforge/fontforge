@@ -102,6 +102,9 @@ return( tab );
  * a twilight zone). We must ensure this is indicated in 'maxp' table.
  * Note: we'll surely need more stack levels in the future. Twilight point
  * count may vary depending on hinting method; for now, one is enough.
+ *
+ * TODO! I don't know why, but FF sometimes won't set the stack depth.
+ * Either I or FF is perhaps using wrong offset.
  */
 static void init_maxp(InstrCt *ct) {
     struct ttf_table *tab = SFFindTable(ct->sc->parent,CHR('m','a','x','p'));
@@ -804,8 +807,10 @@ static void geninstrs(InstrCt *ct, StemInfo *hint) {
 	/* preserve counters and widths, like in freetype2. */
 	/* For horizontal stems, interpolating between blues MUST be done. */
 	/* rp0 and rp1 are set to refpt after its positioning */
-	ct->pt = pushpoint(ct->pt, ct->edge.refpt);
-	if (!ct->xdir || first) *ct->pt++ = MDAP_rnd;
+	if (!ct->xdir || first) {
+	    ct->pt = pushpoint(ct->pt, ct->edge.refpt);
+	    *ct->pt++ = MDAP_rnd;
+	}
 	else {
 	  ct->pt = pushpointstem(ct->pt, ct->edge.refpt, ct->edge.refpt);
 	  *ct->pt++ = MDRP_rp0_min_rnd_white;
@@ -1034,6 +1039,8 @@ static uint8 *dogeninstructions(InstrCt *ct) {
 	if ( !hint->startdone || !hint->enddone )
 	    geninstrs(ct,hint);
 
+    /* TODO! Instruct top and bottom bearings for fonts which have them. */
+
     /* Extremae and others should take shifts by stems into account. */
     *(ct->pt)++ = IUP_y;
     backup = ct->pt;
@@ -1052,13 +1059,18 @@ static uint8 *dogeninstructions(InstrCt *ct) {
     for ( hint=ct->sc->vstem; hint!=NULL; hint=hint->next )
 	if ( !hint->startdone || !hint->enddone )
 	    geninstrs(ct,hint);
-    ct->pt = pushpoint(ct->pt, ct->ptcnt+1);
-    *(ct->pt)++ = MDRP_min_rnd_white;
+
+    /* instruct right sidebearing */
+    /* TODO! Solve the case of transformed references */
+    if (ct->sc.width != 0) {
+	ct->pt = pushpoint(ct->pt, ct->ptcnt+1);
+	*(ct->pt)++ = MDRP_min_rnd_white;
+    }
 
     /* Extremae and others should take shifts by stems into account. */
     *(ct->pt)++ = IUP_x;
-    RunOnPoints(ct, &do_extrema);
     backup = ct->pt;
+    RunOnPoints(ct, &do_extrema);
     if (backup != ct->pt) *(ct->pt)++ = IUP_x;
 //    ct->pt = gen_rnd_instrs(ct->gi,ct->pt,ct->ss,ct->bp,ct->ptcnt,true,ct->touched);
 
@@ -1128,6 +1140,14 @@ return;
 
     if ( sc->vstem==NULL && sc->hstem==NULL && sc->dstem==NULL && sc->md==NULL )
 return;
+
+    /* TODO!
+     *
+     * I'm having problems with references that are rotated or flipped
+     * horizontally. Basically, such glyphs can get negative width. Such widths
+     * are treated very differently under Freetype (OK) and Windows (terribly
+     * shifted), and I suppose other rasterizers can also complain.
+     */
     if ( sc->layers[ly_fore].splines==NULL )
 return;
 
