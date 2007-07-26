@@ -1391,7 +1391,7 @@ static int KCD_Edit(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	KernClassDlg *kcd = GDrawGetUserData(GGadgetGetWindow(g));
 	int off = GGadgetGetCid(g)-CID_ClassEdit;
-	if ( GGadgetGetFirstListSelectedItem(GWidgetGetControl(kcd->gw,CID_ClassList+off))>0 )
+	if ( off==0 || GGadgetGetFirstListSelectedItem(GWidgetGetControl(kcd->gw,CID_ClassList+off))>0 )
 	    _KCD_DoEditNew(kcd,true,off);
     }
 return( true );
