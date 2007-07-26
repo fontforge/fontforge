@@ -648,6 +648,9 @@ static void GME_StrSmallEdit(GMatrixEdit *gme,char *str, GEvent *event) {
     GGadgetSetTitle8(gme->tf,str);
     GGadgetSetVisible(gme->tf,true);
     GGadgetSetEnabled(gme->tf,true);
+    GCompletionFieldSetCompletion(gme->tf,gme->col_data[gme->active_col].completer);
+    ((GTextField *) (gme->tf))->accepts_tabs = false;
+    ((GTextField *) (gme->tf))->was_completing = gme->col_data[gme->active_col].completer!=NULL;
     GWidgetIndicateFocusGadget(gme->tf);
     if ( event->type == et_mousedown )
 	GGadgetDispatchEvent(gme->tf,event);
@@ -1747,7 +1750,8 @@ GGadget *GMatrixEditCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 	sub_gd.label = &label;
 	sub_gd.box = &small;
 	sub_gd.flags = gg_enabled | gg_pos_in_pixels | gg_dontcopybox | gg_text_xim;
-	gme->tf = GTextFieldCreate(gme->nested,&sub_gd,gme);
+	gme->tf = GTextCompletionCreate(gme->nested,&sub_gd,gme);
+	((GTextField *) (gme->tf))->accepts_tabs = false;
     }
 
     gme->mark_length = GDrawPointsToPixels(gme->nested,_GListMarkSize);
@@ -2024,6 +2028,14 @@ void GMatrixEditScrollToRowCol(GGadget *g,int r, int c) {
     if ( needs_expose ) {
 	GScrollBarSetPos(gme->hsb,gme->off_left);
 	GScrollBarSetPos(gme->vsb,gme->off_top);
-	GDrawRequestExpose(gme->nested,NULL,false);
+	GGadgetRedraw(gme);
+	/* GDrawRequestExpose(gme->nested,NULL,false);*/
     }
+}
+
+void GMatrixEditSetColumnCompletion(GGadget *g, int col,
+	GTextCompletionHandler completion) {
+    GMatrixEdit *gme = (GMatrixEdit *) g;
+
+    gme->col_data[col].completer = completion;
 }

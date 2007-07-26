@@ -2586,6 +2586,9 @@ static GImage *_CI_GetImage(const void *_ci) {
     struct matrix_data *old = GMatrixEditGet(pstk,&rows);
     struct lookup_subtable *sub = (struct lookup_subtable *) (old[cols*ci->r+0].u.md_ival);
 
+    if ( ci->r>=rows )
+return( NULL );
+
 return( PST_GetImage(pstk,ci->sc->parent,sub,ci->r,ci->sc) );
 }
 
@@ -2593,6 +2596,7 @@ static void CI_KerningPopupPrepare(GGadget *g, int r, int c) {
     CharInfo *ci = GDrawGetUserData(GGadgetGetWindow(g));
     int rows, cols = GMatrixEditGetColCnt(g);
     struct matrix_data *old = GMatrixEditGet(g,&rows);
+
     if ( c<0 || c>=cols || r<0 || r>=rows || old[cols*r+1].u.md_str==NULL ||
 	SFGetChar(ci->sc->parent,-1, old[cols*r+1].u.md_str)==NULL )
 return;
@@ -2602,8 +2606,27 @@ return;
 
 static void CI_SubsPopupPrepare(GGadget *g, int r, int c) {
     CharInfo *ci = GDrawGetUserData(GGadgetGetWindow(g));
+    int rows, cols = GMatrixEditGetColCnt(g);
+
+    (void) GMatrixEditGet(g,&rows);
+    if ( c<0 || c>=cols || r<0 || r>=rows )
+return;
     ci->r = r; ci->c = c;
     GGadgetPreparePopupImage(GGadgetGetWindow(g),NULL,ci,_CI_GetImage,CI_FreeKernedImage);
+}
+
+static unichar_t **CI_GlyphNameCompletion(GGadget *t,int from_tab) {
+    CharInfo *ci = GDrawGetUserData(GDrawGetParentWindow(GGadgetGetWindow(t)));
+    SplineFont *sf = ci->sc->parent;
+
+return( SFGlyphNameCompletion(sf,t,from_tab,false));
+}
+
+static unichar_t **CI_GlyphListCompletion(GGadget *t,int from_tab) {
+    CharInfo *ci = GDrawGetUserData(GDrawGetParentWindow(GGadgetGetWindow(t)));
+    SplineFont *sf = ci->sc->parent;
+
+return( SFGlyphNameCompletion(sf,t,from_tab,true));
 }
 
 static void CI_NoteAspect(CharInfo *ci) {
@@ -3484,8 +3507,13 @@ return;
 	GHVBoxSetExpandableCol(cbox[2].ret,gb_expandglue);
 
 	for ( i=0; i<6; ++i ) {
-	    GMatrixEditSetNewText(GWidgetGetControl(ci->gw,CID_List+i*100),
-		    newstrings[i]);
+	    GGadget *g = GWidgetGetControl(ci->gw,CID_List+i*100);
+	    GMatrixEditSetNewText(g, newstrings[i]);
+	    if ( i==pst_substitution-1 || i==pst_pair-1 )
+		GMatrixEditSetColumnCompletion(g,1,CI_GlyphNameCompletion);
+	    else if ( i==pst_alternate-1 || i==pst_multiple-1 ||
+		    i==pst_ligature-1)
+		GMatrixEditSetColumnCompletion(g,1,CI_GlyphListCompletion);
 	}
 	GHVBoxSetExpandableRow(pstbox[pst_pair-1][0].ret,0);
 	for ( i=0; i<6; ++i )
