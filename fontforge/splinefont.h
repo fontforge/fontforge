@@ -1170,7 +1170,7 @@ struct ttflangname {
     struct ttflangname *next;
 };
 
-#define MATHValue(name) int16 name; DeviceTable
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
 struct MATH {
 /* From the MATH Constants subtable (constants for positioning glyphs. Not PI)*/
     int16 ScriptPercentScaleDown;
@@ -1283,6 +1283,69 @@ struct MATH {
 /* Global constants from other subtables */
     uint16 MinConnectorOverlap;			/* in the math variants sub-table */
 };
+#else
+struct MATH {
+/* From the MATH Constants subtable (constants for positioning glyphs. Not PI)*/
+    int16 ScriptPercentScaleDown;
+    int16 ScriptScriptPercentScaleDown;
+    uint16 DeleimitedSubFormulaMinHeight;
+    uint16 DisplayOperatorMinHeight;
+    int16 MathLeading;
+    int16 AxisHeight;
+    int16 AccentBaseHeight;
+    int16 FlattenedAccentBaseHeight;
+    int16 SubscriptShiftDown;
+    int16 SubscriptTopMax;
+    int16 SubscriptBaselineDropMin;
+    int16 SuperscriptShiftUp;
+    int16 SuperscriptShiftUpCramped;
+    int16 SuperscriptBottomMin;
+    int16 SuperscriptBaselineDropMax;
+    int16 SubSuperscriptGapMin;
+    int16 SuperscriptBottomMaxWithSubscript;
+    int16 SpaceAfterScript;
+    int16 UpperLimitGapMin;
+    int16 UpperLimitBaselineRiseMin;
+    int16 LowerLimitGapMin;
+    int16 LowerLimitBaselineDropMin;
+    int16 StackTopShiftUp;
+    int16 StackTopDisplayStyleShiftUp;
+    int16 StackBottomShiftDown;
+    int16 StackBottomDisplayStyleShiftDown;
+    int16 StackGapMin;
+    int16 StackDisplayStyleGapMin;
+    int16 StretchStackTopShiftUp;
+    int16 StretchStackBottomShiftDown;
+    int16 StretchStackGapAboveMin;
+    int16 StretchStackGapBelowMin;
+    int16 FractionNumeratorShiftUp;
+    int16 FractionNumeratorDisplayStyleShiftUp;
+    int16 FractionDenominatorShiftDown;
+    int16 FractionDenominatorDisplayStyleShiftDown;
+    int16 FractionNumeratorGapMin;
+    int16 FractionNumeratorDisplayStyleGapMin;
+    int16 FractionRuleThickness;
+    int16 FractionDenominatorGapMin;
+    int16 FractionDenominatorDisplayStyleGapMin;
+    int16 SkewedFractionHorizontalGap;
+    int16 SkewedFractionVerticalGap;
+    int16 OverbarVerticalGap;
+    int16 OverbarRuleThickness;
+    int16 OverbarExtraAscender;
+    int16 UnderbarVerticalGap;
+    int16 UnderbarRuleThickness;
+    int16 UnderbarExtraDescender;
+    int16 RadicalVerticalGap;
+    int16 RadicalDisplayStyleVerticalGap;
+    int16 RadicalRuleThickness;
+    int16 RadicalExtraAscender;
+    int16 RadicalKernBeforeDegree;
+    int16 RadicalKernAfterDegree;
+    uint16 RadicalDegreeBottomRaisePercent;
+/* Global constants from other subtables */
+    uint16 MinConnectorOverlap;			/* in the math variants sub-table */
+};
+#endif
 
 enum backedup_state { bs_dontknow=0, bs_not=1, bs_backedup=2 };
 typedef struct splinefont {
