@@ -6492,6 +6492,89 @@ static int PSTKD_Cancel(GGadget *g, GEvent *e) {
 return( true );
 }
 
+unichar_t **SFGlyphNameCompletion(SplineFont *sf,GGadget *t,int from_tab,
+	int new_name_after_space) {
+    unichar_t *pt, *spt, *basept, *wild; unichar_t **ret;
+    int gid, cnt, doit, match_len;
+    SplineChar *sc;
+    int do_wildcards;
+
+    pt = spt = basept = (unichar_t *) _GGadgetGetTitle(t);
+    if ( pt==NULL || *pt=='\0' )
+return( NULL );
+    if ( new_name_after_space ) {
+	if (( spt = u_strrchr(spt,' '))== NULL )
+	    spt = basept;
+	else {
+	    pt = ++spt;
+	    if ( *pt=='\0' )
+return( NULL );
+	}
+    }
+    while ( *pt && *pt!='*' && *pt!='?' && *pt!='[' && *pt!='{' )
+	++pt;
+    do_wildcards = *pt!='\0';
+    if ( do_wildcards && !from_tab )
+return( NULL );
+    wild = NULL;
+    if ( do_wildcards ) {
+	pt = spt;
+	wild = galloc((u_strlen(spt)+2)*sizeof(unichar_t));
+	u_strcpy(wild,pt);
+	uc_strcat(wild,"*");
+    }
+
+    match_len = u_strlen(spt);
+    ret = NULL;
+    for ( doit=0; doit<2; ++doit ) {
+	cnt=0;
+	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
+	    int matched;
+	    if ( do_wildcards ) {
+		unichar_t *temp = utf82u_copy(sc->name);
+		matched = GGadgetWildMatch((unichar_t *) wild,temp,false);
+		free(temp);
+	    } else
+		matched = uc_strncmp(spt,sc->name,match_len)==0;
+	    if ( matched ) {
+		if ( doit ) {
+		    if ( spt==basept ) {
+			ret[cnt] = utf82u_copy(sc->name);
+		    } else {
+			unichar_t *temp = galloc((spt-basept+strlen(sc->name)+1)*sizeof(unichar_t));
+			u_strncpy(temp,basept,spt-basept);
+			utf82u_strcpy(temp+(spt-basept),sc->name);
+			ret[cnt] = temp;
+		    }
+		}
+		++cnt;
+	    }
+	}
+	if ( doit )
+	    ret[cnt] = NULL;
+	else if ( cnt==0 )
+    break;
+	else
+	    ret = galloc((cnt+1)*sizeof(unichar_t *));
+    }
+    free(wild);
+return( ret );
+}
+
+static unichar_t **PSTKD_GlyphNameCompletion(GGadget *t,int from_tab) {
+    PSTKernDlg *pstkd = GDrawGetUserData(GDrawGetParentWindow(GGadgetGetWindow(t)));
+    SplineFont *sf = pstkd->sf;
+
+return( SFGlyphNameCompletion(sf,t,from_tab,false));
+}
+
+static unichar_t **PSTKD_GlyphListCompletion(GGadget *t,int from_tab) {
+    PSTKernDlg *pstkd = GDrawGetUserData(GDrawGetParentWindow(GGadgetGetWindow(t)));
+    SplineFont *sf = pstkd->sf;
+
+return( SFGlyphNameCompletion(sf,t,from_tab,true));
+}
+
 static int pstkd_e_h(GWindow gw, GEvent *event) {
     PSTKernDlg *pstkd = GDrawGetUserData(gw);
 
@@ -6798,6 +6881,14 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub) {
 	GHVBoxSetExpandableCol(box[1].ret,gb_expandglue);
     GHVBoxSetExpandableCol(box[0].ret,gb_expandglue);
     GMatrixEditAddButtons(gcd[mi_pos].ret,buttongcd);
+    GMatrixEditSetColumnCompletion(gcd[mi_pos].ret,0,PSTKD_GlyphNameCompletion);
+    if ( sub->lookup->lookup_type == gsub_single || sub->lookup->lookup_type==gpos_pair )
+	GMatrixEditSetColumnCompletion(gcd[mi_pos].ret,1,PSTKD_GlyphNameCompletion);
+    else if ( sub->lookup->lookup_type == gsub_multiple ||
+	    sub->lookup->lookup_type==gsub_alternate ||
+	    sub->lookup->lookup_type==gsub_ligature )
+	GMatrixEditSetColumnCompletion(gcd[mi_pos].ret,1,PSTKD_GlyphListCompletion);
+
     if ( sub->lookup->lookup_type == gpos_pair )
 	GMatrixEditSetTextChangeReporter(gcd[mi_pos].ret,PSTKD_METextChanged);
     else

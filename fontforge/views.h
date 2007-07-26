@@ -1437,6 +1437,8 @@ extern int EditSubtable(struct lookup_subtable *sub,int isgpos,SplineFont *sf,
 	struct subtable_data *sd);
 extern void _LookupSubtableContents(SplineFont *sf, struct lookup_subtable *sub,
 	struct subtable_data *sd);
+extern unichar_t **SFGlyphNameCompletion(SplineFont *sf,GGadget *t,int from_tab,
+	int new_name_after_space);
 
 extern void SFBdfProperties(SplineFont *sf, EncMap *map, BDFFont *thisone);
 

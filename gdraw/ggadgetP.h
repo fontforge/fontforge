@@ -386,6 +386,7 @@ typedef struct gmatrixedit {
 	char *(*func)(GGadget *,int r,int c); /* Produces a string to display if md_str==NULL */
 	GMenuItem *enum_vals;
 	void (*enable_enum)(GGadget *,GMenuItem *, int r, int c);
+	GTextCompletionHandler completer;
 	char *title;
 	int16 width, x;			/* Relative to inner.x */
 	uint8 fixed;

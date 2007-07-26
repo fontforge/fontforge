@@ -2705,6 +2705,7 @@ GGadget *GTextCompletionCreate(struct gwindow *base, GGadgetData *gd,void *data)
     gt->was_completing = true;
     ((GCompletionField *) gt)->completion = gd->u.completion;
     _GTextFieldCreate(gt,base,gd,data,&gtextfield_box);
+    gt->accepts_tabs = ((GCompletionField *) gt)->completion != NULL;
 
 return( &gt->g );
 }
@@ -3067,6 +3068,7 @@ return( true );
 
 void GCompletionFieldSetCompletion(GGadget *g,GTextCompletionHandler completion) {
     ((GCompletionField *) g)->completion = completion;
+    ((GTextField *) g)->accepts_tabs = ((GCompletionField *) g)->completion != NULL;
 }
 
 void GCompletionFieldSetCompletionMode(GGadget *g,int enabled) {

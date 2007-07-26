@@ -388,6 +388,7 @@ void GMatrixEditAddButtons(GGadget *g, GGadgetCreateData *gcd);
 void GMatrixEditEnableColumn(GGadget *g, int col, int enabled);
 void GMatrixEditShowColumn(GGadget *g, int col, int visible);
 void GMatrixEditSetColumnChoices(GGadget *g, int col, GTextInfo *ti);
+void GMatrixEditSetColumnCompletion(GGadget *g, int col, GTextCompletionHandler completion);
 
 GWindow GDrawableGetWindow(GGadget *g);
 
@@ -450,42 +451,5 @@ GGadget *CreateGadgets(struct gwindow *base, GGadgetCreateData *gcd);
 GTextInfo **GTextInfoArrayFromList(GTextInfo *ti, uint16 *cnt);
 
 extern unichar_t *utf82u_mncopy(const char *utf8buf,unichar_t *mn);
-
-#if 0
-void GadgetRedraw(Gadget *g);
-void GadgetSetBox(Gadget *g,Box *b);
-Box *GadgetGetBox(Gadget *g);
-Rect *GadgetGetPos(Gadget *g);
-void GadgetMove(Gadget *g, int x, int y);
-void GadgetResize(Gadget *g, int width, int height);
-void GadgetReposition(Gadget *g, Rect *r);
-void GadgetSetVisible(Gadget *g, int visible);
-int GadgetIsVisible(Gadget *g);
-void GadgetSetEnabled(Gadget *g, int enabled);
-int GadgetIsEnabled(Gadget *g);
-void GadgetSetFocus(Gadget *g);
-int GadgetHasFocus(Gadget *g);
-void GadgetSetMnemonic(Gadget *g, int ch);
-int GadgetGetMnemonic(Gadget *g);
-void GadgetSetAccel(Gadget *g, int ch, short mask);
-int GadgetGetAccelChar(Gadget *g);
-short GadgetGetAccelMask(Gadget *g);
-
-void GadgetSetTitle(Gadget *g,const unichar_t *title);
-unichar_t *GadgetGetTitle(Gadget *g);
-void GadgetSetFont(Gadget *g,GFont *font);
-GFont *GadgetGetFont(Gadget *g);
-
-void GadgetSetCheck(Gadget *g,int checked);
-int GadgetGetChecked(Gadget *g);
-
-void GadgetClearList(Gadget *g);
-void GadgetSetListTI(Gadget *g,GTextInfo *ti);
-void GadgetSetList(Gadget *g,unichar_t **list);
-void GadgetPrependToList(Gadget *g,unichar_t *
-
-void GadgetSetMenuItem(Gadget *,MenuItem *m);
-MenuItem *GadgetGetMenuItem(Gadget *);
-#endif
 
 #endif
