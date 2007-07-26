@@ -7575,6 +7575,11 @@ static uint32 StrToTag(char *tag_name, int *was_mac) {
     uint8 foo[4];
     int feat, set;
 
+    if ( tag_name==NULL ) {
+	PyErr_Format(PyExc_TypeError, "OpenType tags must be represented strings" );
+return( 0xffffffff );
+    }
+
     if ( was_mac!=NULL && sscanf(tag_name,"<%d,%d>", &feat, &set )==2 ) {
 	*was_mac = true;
 return( (feat<<16) | set );
@@ -7994,6 +7999,9 @@ return( NULL );
     sub->kc->firsts = class1_strs;
     sub->kc->seconds = class2_strs;
     sub->kc->offsets = offs;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    sub->kc->adjusts = gcalloc(cnt1*cnt2,sizeof(DeviceTable));
+#endif
 
     if ( sub->vertical_kerning ) {
 	sub->kc->next = sf->vkerns;
@@ -8008,7 +8016,7 @@ Py_RETURN( self );
 
 static PyObject *PyFFFont_alterKerningClass(PyObject *self, PyObject *args) {
     SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
-    char *lookup, *subtable, *after_str=NULL;
+    char *subtable;
     int i;
     struct lookup_subtable *sub;
     PyObject *class1s, *class2s, *offsets;
@@ -8016,8 +8024,8 @@ static PyObject *PyFFFont_alterKerningClass(PyObject *self, PyObject *args) {
     int cnt1, cnt2;
     int16 *offs;
 
-    if ( !PyArg_ParseTuple(args,"ssOOO|s", &lookup, &subtable, &class1s, &class2s,
-	    &offsets, &after_str ))
+    if ( !PyArg_ParseTuple(args,"sOOO", &subtable, &class1s, &class2s,
+	    &offsets ))
 return( NULL );
 
     sub = SFFindLookupSubtable(sf,subtable);
@@ -8049,6 +8057,9 @@ return( NULL );
     sub->kc->firsts = class1_strs;
     sub->kc->seconds = class2_strs;
     sub->kc->offsets = offs;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    sub->kc->adjusts = gcalloc(cnt1*cnt2,sizeof(DeviceTable));
+#endif
 
 Py_RETURN( self );
 }
@@ -8268,6 +8279,8 @@ return( -1 );
 static int ParseLookupFlags(SplineFont *sf,PyObject *flagtuple) {
     int i, flags=0, cnt, temp;
 
+    if ( PyInt_Check(flagtuple))
+return( PyInt_AsLong(flagtuple));
     if ( PyString_Check(flagtuple))
 return( ParseLookupFlagsItem(sf,flagtuple));
     cnt = PySequence_Size(flagtuple);
@@ -8328,20 +8341,20 @@ return( (FeatureScriptLangList *) -1 );
 	}
 	sltail = NULL;
 	for ( s=0; s<PySequence_Size(scripts); ++s ) {
-	    PyObject *subs = PySequence_GetItem(tuple,s);
-	    if ( !PySequence_Check(subs)) {
+	    PyObject *scriptsubs = PySequence_GetItem(scripts,s);
+	    if ( !PySequence_Check(scriptsubs)) {
 		PyErr_Format(PyExc_TypeError, "A script list is composed of a tuple of tuples" );
 return( (FeatureScriptLangList *) -1 );
-	    } else if ( PySequence_Size(subs)!=2 ) {
+	    } else if ( PySequence_Size(scriptsubs)!=2 ) {
 		PyErr_Format(PyExc_TypeError, "A script list is composed of a tuple of tuples each containing two elements");
 return( (FeatureScriptLangList *) -1 );
-	    } else if ( !PyString_Check(PySequence_GetItem(subs,0)) ||
-		    !PySequence_Check(PySequence_GetItem(subs,1))) {
+	    } else if ( !PyString_Check(PySequence_GetItem(scriptsubs,0)) ||
+		    !PySequence_Check(PySequence_GetItem(scriptsubs,1))) {
 		PyErr_Format(PyExc_TypeError, "Bad type for argument");
 return( (FeatureScriptLangList *) -1 );
 	    }
 	    sl = chunkalloc(sizeof(struct scriptlanglist));
-	    sl->script = StrToTag(PyString_AsString(PySequence_GetItem(subs,0)),NULL);
+	    sl->script = StrToTag(PyString_AsString(PySequence_GetItem(scriptsubs,0)),NULL);
 	    if ( sl->script==0xffffffff )
 return( (FeatureScriptLangList *) -1 );
 	    if ( sltail==NULL )
@@ -8349,8 +8362,14 @@ return( (FeatureScriptLangList *) -1 );
 	    else
 		sltail->next = sl;
 	    sltail = sl;
-	    langs = PySequence_GetItem(subs,1);
-	    if ( !PySequence_Check(langs)) {
+	    langs = PySequence_GetItem(scriptsubs,1);
+	    if ( PyString_Check(langs) ) {
+		uint32 lang = StrToTag(PyString_AsString(langs),NULL);
+		if ( lang==0xffffffff )
+return( (FeatureScriptLangList *) -1 );
+		sl->lang_cnt = 1;
+		sl->langs[0] = lang;
+	    } else if ( !PySequence_Check(langs)) {
 		PyErr_Format(PyExc_TypeError, "A language list is composed of a tuple of strings" );
 return( (FeatureScriptLangList *) -1 );
 	    } else if ( PySequence_Size(langs)==0 ) {
@@ -8384,7 +8403,7 @@ static PyObject *PyFFFont_addLookup(PyObject *self, PyObject *args) {
     int flags;
     FeatureScriptLangList *fl;
 
-    if ( !PyArg_ParseTuple(args,"ssOO|s", &lookup_str, &type, &flags, &featlist, &after_str ))
+    if ( !PyArg_ParseTuple(args,"ssOO|s", &lookup_str, &type, &flagtuple, &featlist, &after_str ))
 return( NULL );
 
     otl = SFFindLookup(sf,lookup_str);
