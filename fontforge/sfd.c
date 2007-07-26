@@ -990,10 +990,8 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
 		sc->widthset?"W":"",
 		sc->views!=NULL?"O":"",
 		sc->instructions_out_of_date?"I":"");
-    if ( sc->tex_height!=TEX_UNDEF || sc->tex_depth!=TEX_UNDEF ||
-	    sc->tex_sub_pos!=TEX_UNDEF || sc->tex_super_pos!=TEX_UNDEF )
-	fprintf( sfd, "TeX: %d %d %d %d\n", sc->tex_height, sc->tex_depth,
-		sc->tex_sub_pos, sc->tex_super_pos );
+    if ( sc->tex_height!=TEX_UNDEF || sc->tex_depth!=TEX_UNDEF )
+	fprintf( sfd, "TeX: %d %d\n", sc->tex_height, sc->tex_depth );
 #if HANYANG
     if ( sc->compositionunit )
 	fprintf( sfd, "CompositionUnit: %d %d\n", sc->jamo, sc->varient );
@@ -3292,8 +3290,14 @@ return( NULL );
 	} else if ( strmatch(tok,"TeX:")==0 ) {
 	    getsint(sfd,&sc->tex_height);
 	    getsint(sfd,&sc->tex_depth);
-	    getsint(sfd,&sc->tex_sub_pos);
-	    getsint(sfd,&sc->tex_super_pos);
+	    while ( isspace(ch=getc(sfd)) && ch!='\n' && ch!='\r');
+	    ungetc(ch,sfd);
+	    if ( ch!='\n' && ch!='\r' ) {
+		int old_tex;
+		/* Used to store two extra values here */
+		getsint(sfd,&old_tex);
+		getsint(sfd,&old_tex);
+	    }
 #if HANYANG
 	} else if ( strmatch(tok,"CompositionUnit:")==0 ) {
 	    getsint(sfd,&sc->jamo);

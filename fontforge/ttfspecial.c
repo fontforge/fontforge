@@ -424,13 +424,19 @@ return;
 /*  short  glyph-count						 */
 /*  array[glyph-count] of { int16 height,depth }		 */
 
+/* 'TeX ' 'itlc' per-glyph italic correction subtable		 */
+/*  short  version number 0					 */
+/*  short  glyph-count						 */
+/*  array[glyph-count] of int16 italic_correction		 */
+
+/* !!!!!!!!!!! OBSOLETE !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
 /* 'TeX ' 'sbsp' per-glyph sub/super script positioning subtable */
 /*  short  version number 0					 */
 /*  short  glyph-count						 */
 /*  array[glyph-count] of { int16 sub,super }			 */
 
 #undef MAX_SUBTABLE_TYPES
-#define MAX_SUBTABLE_TYPES	3
+#define MAX_SUBTABLE_TYPES	4
 
 struct TeX_subtabs {
     int next;
@@ -558,24 +564,24 @@ return;
     /* always aligned */
 }
 
-static void TeX_dumpSubSuper(SplineFont *sf, struct TeX_subtabs *tex, struct alltabs *at ) {
-    FILE *sbsp;
+static void TeX_dumpItalicCorr(SplineFont *sf, struct TeX_subtabs *tex, struct alltabs *at ) {
+    FILE *itlc;
     int i,j,k,last_g, gid;
 
     for ( i=at->gi.gcnt-1; i>=0; --i ) {
 	gid = at->gi.bygid[i];
 	if ( gid!=-1 && sf->glyphs[gid]!=NULL &&
-		(sf->glyphs[gid]->tex_sub_pos!=TEX_UNDEF || sf->glyphs[gid]->tex_super_pos!=TEX_UNDEF))
+		sf->glyphs[gid]->italic_correction!=TEX_UNDEF )
     break;
     }
-    if ( i<0 )		/* No sub/super info */
+    if ( i<0 )		/* No italic_correction info */
 return;
 
-    tex->subtabs[tex->next].tag = CHR('s','b','s','p');
-    tex->subtabs[tex->next++].data = sbsp = tmpfile();
+    tex->subtabs[tex->next].tag = CHR('i','t','l','c');
+    tex->subtabs[tex->next++].data = itlc = tmpfile();
 
-    putshort(sbsp,0);				/* sub-table version number */
-    putshort(sbsp,sf->glyphs[gid]->ttf_glyph+1);/* data for this many glyphs */
+    putshort(itlc,0);				/* sub-table version number */
+    putshort(itlc,sf->glyphs[gid]->ttf_glyph+1);/* data for this many glyphs */
 
     last_g = -1;
     for ( j=0; j<=i; ++j ) {
@@ -583,12 +589,10 @@ return;
 	if ( gid!=-1 && sf->glyphs[gid]!=NULL ) {
 	    SplineChar *sc = sf->glyphs[gid];
 	    for ( k=last_g+1; k<sc->ttf_glyph; ++k ) {
-		putshort(sbsp,0);
-		putshort(sbsp,0);
+		putshort(itlc,0);
+		putshort(itlc,0);
 	    }
-	    putshort( sbsp, sc->tex_sub_pos==TEX_UNDEF ? sc->width : sc->tex_sub_pos );
-	    putshort( sbsp, sc->tex_super_pos!=TEX_UNDEF ? sc->tex_super_pos :
-			    sc->tex_sub_pos!=TEX_UNDEF ? sc->width - sc->tex_sub_pos :
+	    putshort( itlc, sc->italic_correction!=TEX_UNDEF ? sc->italic_correction :
 				    0 );
 	    last_g = sc->ttf_glyph;
 	}
@@ -608,7 +612,7 @@ return;
     memset(&tex,0,sizeof(tex));
     TeX_dumpFontParams(sf,&tex,at);
     TeX_dumpHeightDepth(sf,&tex,at);
-    TeX_dumpSubSuper(sf,&tex,at);
+    TeX_dumpItalicCorr(sf,&tex,at);
 
     if ( tex.next==0 )
 return;		/* No subtables */
@@ -683,7 +687,7 @@ return;
     }
 }
 
-static void TeX_readSubSuper(FILE *ttf,struct ttfinfo *info,uint32 base) {
+static void TeX_readItalicCorr(FILE *ttf,struct ttfinfo *info,uint32 base) {
     int i,gcnt;
 
     fseek(ttf,base,SEEK_SET);
@@ -691,12 +695,10 @@ static void TeX_readSubSuper(FILE *ttf,struct ttfinfo *info,uint32 base) {
 return;
     gcnt = getushort(ttf);
     for ( i=0; i<gcnt && i<info->glyph_cnt; ++i ) {
-	int super, sub;
-	sub = getushort(ttf);
-	super = getushort(ttf);
+	int ital;
+	ital = getushort(ttf);
 	if ( info->chars[i]!=NULL ) {
-	    info->chars[i]->tex_sub_pos = sub;
-	    info->chars[i]->tex_super_pos = super;
+	    info->chars[i]->italic_correction = ital;
 	}
     }
 }
@@ -723,8 +725,8 @@ return;
       case CHR('h','t','d','p'):
 	TeX_readHeightDepth(ttf,info,info->tex_start+tagoff[i].offset);
       break;
-      case CHR('s','b','s','p'):
-	TeX_readSubSuper(ttf,info,info->tex_start+tagoff[i].offset);
+      case CHR('i','t','l','c'):
+	TeX_readItalicCorr(ttf,info,info->tex_start+tagoff[i].offset);
       break;
       default:
 	LogError( _("Unknown subtable '%c%c%c%c' in 'TeX ' table, ignored\n"),

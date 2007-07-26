@@ -4953,7 +4953,7 @@ SplineChar *SplineCharCreate(void) {
     LayerDefault(&sc->layers[0]);
     LayerDefault(&sc->layers[1]);
 #endif
-    sc->tex_height = sc->tex_depth = sc->tex_sub_pos = sc->tex_super_pos =
+    sc->tex_height = sc->tex_depth = sc->italic_correction = sc->top_accent_horiz =
 	    TEX_UNDEF;
 return( sc );
 }
