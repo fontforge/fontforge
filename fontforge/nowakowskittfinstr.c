@@ -636,7 +636,8 @@ return;
 
     qsort(others, othercnt, sizeof(int), sortbynum);
 
-    if ((NextP(others[0]) == others[othercnt-1]) || (NextP(refpt) == others[0]))
+    if (((others[0] < refpt) && (NextP(others[0]) == others[othercnt-1])) ||
+        (NextP(refpt) == others[0]))
 	leading_unneeded = 1;
 
     if (NextP(others[othercnt-1]) == refpt) final_unneeded = 1;
