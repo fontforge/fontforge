@@ -7962,8 +7962,8 @@ static PyObject *PyFFFont_addKerningClass(PyObject *self, PyObject *args) {
     int cnt1, cnt2;
     int16 *offs;
 
-    if ( !PyArg_ParseTuple(args,"sOOO", &subtable, &class1s, &class2s,
-	    &offsets ))
+    if ( !PyArg_ParseTuple(args,"ssOOO|s", &lookup, &subtable, &class1s, &class2s,
+	    &offsets, &after_str ))
 return( NULL );
 
     cnt1 = ParseClassNames(class1s,&class1_strs);
