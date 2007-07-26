@@ -1028,6 +1028,44 @@ typedef struct layer /* : reflayer */{
 
 enum layer_type { ly_grid= -1, ly_back=0, ly_fore=1 /* Possibly other foreground layers for multi-layered things */ };
 
+/* For the 'MATH' table (and for TeX) */
+struct glyphvariants {
+    char *variants;	/* Space separated list of glyph names */
+/* Glyph assembly */
+    int italic_correction;	/* Of the composed glyph */
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    DeviceTable *italic_adjusts;
+#endif
+    int part_cnt;
+    struct {
+	char *component;
+	unsigned int is_extender;	/* This component may be skipped or repeated */
+	uint16 startConnectorLength;
+	uint16 endConnectorLength;
+	uint16 fullAdvance;
+    } *parts;
+};
+
+/* For the 'MATH' table */
+struct mathkernvertex {
+    int cnt;		/* There is one more kern entry than height entry */
+	    /* So the last mkd should have its height ignored */
+    struct mathkerndata {
+	int16 height,kern;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	DeviceTable *height_adjusts;
+	DeviceTable *kern_adjusts;
+#endif
+    } *mkd;
+};
+	
+struct mathkern {
+    struct mathkernvertex top_right;
+    struct mathkernvertex top_left;
+    struct mathkernvertex bottom_right;
+    struct mathkernvertex bottom_left;
+};
+
 typedef struct splinechar {
     char *name;
     int unicodeenc;
@@ -1093,9 +1131,24 @@ typedef struct splinechar {
     int16 ttf_instrs_len;
     int16 countermask_cnt;
     HintMask *countermasks;
-    int16 tex_height, tex_depth;
-    int16 tex_sub_pos, tex_super_pos;	/* Only for math fonts */
     struct altuni { struct altuni *next; int unienc; } *altuni;
+/* for TeX */
+    int16 tex_height, tex_depth;
+/* TeX also uses italic_correction and glyph variants below */
+/* For the 'MATH' table (and for TeX) */
+    unsigned int is_extended_shape: 1;
+    int16 italic_correction;
+    int16 top_accent_horiz;		/* MATH table allows you to specific a*/
+		/* horizontal anchor for accent attachments, vertical */
+		/* positioning is done elsewhere */
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    DeviceTable *italic_adjusts;
+    DeviceTable *top_accent_adjusts;
+#endif
+    struct glyphvariants *horiz_variants;
+    struct glyphvariants *vert_variants;
+    struct mathkern *mathkern;
+/* End of MATH/TeX fields */
 #ifndef _NO_PYTHON
     void *python_sc_object;
     void *python_data;
@@ -1115,6 +1168,120 @@ struct ttflangname {
     char *names[ttf_namemax];			/* in utf8 */
     int frommac[(ttf_namemax+31)/32];		/* Used when parsing the 'name' table */
     struct ttflangname *next;
+};
+
+#define MATHValue(name) int16 name; DeviceTable
+struct MATH {
+/* From the MATH Constants subtable (constants for positioning glyphs. Not PI)*/
+    int16 ScriptPercentScaleDown;
+    int16 ScriptScriptPercentScaleDown;
+    uint16 DeleimitedSubFormulaMinHeight;
+    uint16 DisplayOperatorMinHeight;
+    int16 MathLeading;
+    DeviceTable *MathLeading_adjust;
+    int16 AxisHeight;
+    DeviceTable *AxisHeight_adjust;
+    int16 AccentBaseHeight;
+    DeviceTable *AccentBaseHeight_adjust;
+    int16 FlattenedAccentBaseHeight;
+    DeviceTable *FlattenedAccentBaseHeight_adjust;
+    int16 SubscriptShiftDown;
+    DeviceTable *SubscriptShiftDown_adjust;
+    int16 SubscriptTopMax;
+    DeviceTable *SubscriptTopMax_adjust;
+    int16 SubscriptBaselineDropMin;
+    DeviceTable *SubscriptBaselineDropMin_adjust;
+    int16 SuperscriptShiftUp;
+    DeviceTable *SuperscriptShiftUp_adjust;
+    int16 SuperscriptShiftUpCramped;
+    DeviceTable *SuperscriptShiftUpCramped_adjust;
+    int16 SuperscriptBottomMin;
+    DeviceTable *SuperscriptBottomMin_adjust;
+    int16 SuperscriptBaselineDropMax;
+    DeviceTable *SuperscriptBaselineDropMax_adjust;
+    int16 SubSuperscriptGapMin;
+    DeviceTable *SubSuperscriptGapMin_adjust;
+    int16 SuperscriptBottomMaxWithSubscript;
+    DeviceTable *SuperscriptBottomMaxWithSubscript_adjust;
+    int16 SpaceAfterScript;
+    DeviceTable *SpaceAfterScript_adjust;
+    int16 UpperLimitGapMin;
+    DeviceTable *UpperLimitGapMin_adjust;
+    int16 UpperLimitBaselineRiseMin;
+    DeviceTable *UpperLimitBaselineRiseMin_adjust;
+    int16 LowerLimitGapMin;
+    DeviceTable *LowerLimitGapMin_adjust;
+    int16 LowerLimitBaselineDropMin;
+    DeviceTable *LowerLimitBaselineDropMin_adjust;
+    int16 StackTopShiftUp;
+    DeviceTable *StackTopShiftUp_adjust;
+    int16 StackTopDisplayStyleShiftUp;
+    DeviceTable *StackTopDisplayStyleShiftUp_adjust;
+    int16 StackBottomShiftDown;
+    DeviceTable *StackBottomShiftDown_adjust;
+    int16 StackBottomDisplayStyleShiftDown;
+    DeviceTable *StackBottomDisplayStyleShiftDown_adjust;
+    int16 StackGapMin;
+    DeviceTable *StackGapMin_adjust;
+    int16 StackDisplayStyleGapMin;
+    DeviceTable *StackDisplayStyleGapMin_adjust;
+    int16 StretchStackTopShiftUp;
+    DeviceTable *StretchStackTopShiftUp_adjust;
+    int16 StretchStackBottomShiftDown;
+    DeviceTable *StretchStackBottomShiftDown_adjust;
+    int16 StretchStackGapAboveMin;
+    DeviceTable *StretchStackGapAboveMin_adjust;
+    int16 StretchStackGapBelowMin;
+    DeviceTable *StretchStackGapBelowMin_adjust;
+    int16 FractionNumeratorShiftUp;
+    DeviceTable *FractionNumeratorShiftUp_adjust;
+    int16 FractionNumeratorDisplayStyleShiftUp;
+    DeviceTable *FractionNumeratorDisplayStyleShiftUp_adjust;
+    int16 FractionDenominatorShiftDown;
+    DeviceTable *FractionDenominatorShiftDown_adjust;
+    int16 FractionDenominatorDisplayStyleShiftDown;
+    DeviceTable *FractionDenominatorDisplayStyleShiftDown_adjust;
+    int16 FractionNumeratorGapMin;
+    DeviceTable *FractionNumeratorGapMin_adjust;
+    int16 FractionNumeratorDisplayStyleGapMin;
+    DeviceTable *FractionNumeratorDisplayStyleGapMin_adjust;
+    int16 FractionRuleThickness;
+    DeviceTable *FractionRuleThickness_adjust;
+    int16 FractionDenominatorGapMin;
+    DeviceTable *FractionDenominatorGapMin_adjust;
+    int16 FractionDenominatorDisplayStyleGapMin;
+    DeviceTable *FractionDenominatorDisplayStyleGapMin_adjust;
+    int16 SkewedFractionHorizontalGap;
+    DeviceTable *SkewedFractionHorizontalGap_adjust;
+    int16 SkewedFractionVerticalGap;
+    DeviceTable *SkewedFractionVerticaGap_adjust;
+    int16 OverbarVerticalGap;
+    DeviceTable *OverbarVerticalGap_adjust;
+    int16 OverbarRuleThickness;
+    DeviceTable *OverbarRuleThickness_adjust;
+    int16 OverbarExtraAscender;
+    DeviceTable *OverbarExtraAscender_adjust;
+    int16 UnderbarVerticalGap;
+    DeviceTable *UnderbarVerticalGap_adjust;
+    int16 UnderbarRuleThickness;
+    DeviceTable *UnderbarRuleThickness_adjust;
+    int16 UnderbarExtraDescender;
+    DeviceTable *UnderbarExtraDescender_adjust;
+    int16 RadicalVerticalGap;
+    DeviceTable *RadicalVerticalGap_adjust;
+    int16 RadicalDisplayStyleVerticalGap;
+    DeviceTable *RadicalDisplayStyleVerticalGap_adjust;
+    int16 RadicalRuleThickness;
+    DeviceTable *RadicalRuleThickness_adjust;
+    int16 RadicalExtraAscender;
+    DeviceTable *RadicalExtraAscender_adjust;
+    int16 RadicalKernBeforeDegree;
+    DeviceTable *RadicalKernBeforeDegree_adjust;
+    int16 RadicalKernAfterDegree;
+    DeviceTable *RadicalKernAfterDegree_adjust;
+    uint16 RadicalDegreeBottomRaisePercent;
+/* Global constants from other subtables */
+    uint16 MinConnectorOverlap;			/* in the math variants sub-table */
 };
 
 enum backedup_state { bs_dontknow=0, bs_not=1, bs_backedup=2 };
@@ -1277,6 +1444,7 @@ typedef struct splinefont {
 	uint16 ppem;
 	uint16 flags;
     } *gasp;
+    struct MATH *MATH;
     uint8 sfd_version;			/* Used only when reading in an sfd file */
     struct gfi_data *fontinfo;
 } SplineFont;

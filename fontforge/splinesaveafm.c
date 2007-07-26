@@ -449,14 +449,6 @@ return;
 
 #define BigEndianWord(pt) ((((uint8 *) pt)[0]<<24) | (((uint8 *) pt)[1]<<16) | (((uint8 *) pt)[2]<<8) | (((uint8 *) pt)[3]))
 
-static void tfmDoItalicCor(SplineFont *sf,int i,real italic_cor, EncMap *map) {
-
-    if ( i>=map->enccount || map->map[i]==-1 || sf->glyphs[map->map[i]]==NULL )
-return;
-
-    PosNew(sf->glyphs[map->map[i]],CHR('I','T','L','C'),0,0,italic_cor,0);
-}
-
 int LoadKerningDataFromTfm(SplineFont *sf, char *filename,EncMap *map) {
     FILE *file = fopen(filename,"rb");
     int i, tag, left, ictag;
@@ -540,16 +532,8 @@ return( 0 );
 		sc->tex_height = BigEndianWord(tfmd.httab+4*height)*scale;
 	    if ( depth<tfmd.depth_size )
 		sc->tex_depth = BigEndianWord(tfmd.dptab+4*depth)*scale;
-	    if ( !is_math ) {
-		if ( ictag!=0 && ictag<tfmd.italic_size )
-		    tfmDoItalicCor(sf,i,BigEndianWord(tfmd.ictab+4*ictag)*scale,map);
-		/* we ignore the width. I trust the real width in the file more */
-	    } else {
-		if ( width<tfmd.width_size )
-		    sc->tex_sub_pos = BigEndianWord(tfmd.widtab+4*width)*scale;
-		if ( ictag!=0 && ictag<tfmd.italic_size )
-		    sc->tex_super_pos = BigEndianWord(tfmd.ictab+4*ictag)*scale;
-	    }
+	    if ( ictag!=0 && ictag<tfmd.italic_size )
+		sc->italic_correction = BigEndianWord(tfmd.ictab+4*ictag)*scale;
 	}
     }
 
@@ -770,16 +754,8 @@ return( 0 );
 		sc->tex_height = BigEndianWord(tfmd.httab+4*height)*scale;
 	    if ( depth<tfmd.depth_size )
 		sc->tex_depth = BigEndianWord(tfmd.dptab+4*depth)*scale;
-	    if ( !is_math ) {
-		if ( ictag!=0 && ictag<tfmd.italic_size )
-		    tfmDoItalicCor(sf,i,BigEndianWord(tfmd.ictab+4*ictag)*scale,map);
-		/* we ignore the width. I trust the real width in the file more */
-	    } else {
-		if ( width<tfmd.width_size )
-		    sc->tex_sub_pos = BigEndianWord(tfmd.widtab+4*width)*scale;
-		if ( ictag!=0 && ictag<tfmd.italic_size )
-		    sc->tex_super_pos = BigEndianWord(tfmd.ictab+4*ictag)*scale;
-	    }
+	    if ( ictag!=0 && ictag<tfmd.italic_size )
+		sc->italic_correction = BigEndianWord(tfmd.ictab+4*ictag)*scale;
 	}
     }
 
@@ -2846,20 +2822,6 @@ return( 0 );	/* In omega this means Top, Left */
 }
 #endif
 
-static PST *SCFindPST(SplineChar *sc,int type,uint32 tag ) {
-    PST *pst;
-
-    FeatureScriptLangList *fl;
-    for ( pst = sc->possub; pst!=NULL; pst=pst->next ) {
-	if ( pst->subtable!=NULL ) {
-	    for ( fl=pst->subtable->lookup->features; fl!=NULL; fl=fl->next )
-		if ( fl->featuretag==tag )
-return( pst );
-	}
-    }
-return( NULL );
-}
-
 static int _OTfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map,int maxc) {
     struct tfm_header header;
     char *full=NULL, *encname;
@@ -2884,10 +2846,8 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map
     int style, any;
     uint32 *lkarray;
     struct ligkern *o_lkarray=NULL;
-    PST *pst;
     char *familyname;
     int anyITLC;
-    int is_math = sf->texdata.type==tex_math || sf->texdata.type==tex_mathext;
     real scale = (1<<20)/(double) (sf->ascent+sf->descent);
     int toobig_warn = false;
 
@@ -2995,7 +2955,7 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map
     anyITLC = false;
     for ( i=0; i<maxc && i<map->enccount; ++i )
 	if ( map->map[i]!=-1 && SCWorthOutputting(sf->glyphs[map->map[i]])) {
-	    if ( (pst=SCFindPST(sf->glyphs[map->map[i]],pst_position,CHR('I','T','L','C')))!=NULL ) {
+	    if ( sf->glyphs[map->map[i]]->italic_correction!=TEX_UNDEF ) {
 		anyITLC = true;
 	break;
 	    }
@@ -3007,49 +2967,24 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map
 		SplineCharFindBounds(sc,&b);
 		heights[i] = b.maxy*scale; depths[i] = -b.miny*scale;
 	    }
-#if 0		/* Werner changed his mind about this */
-	    if ( (sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 && isideographic(sc->unicodeenc)) ||
-		    (sc->unicodeenc>=0xAC00 && sc->unicodeenc<=0xD7A3) ||
-		    (sc->unicodeenc>=0x20000 && sc->unicodeenc<=0x2A6D6) ||
-		    (sc->unicodeenc>=0x2F800 && sc->unicodeenc<=0x2FA1D)) {
-		/* CJK glyphs should default to the "quadratic bounding box" */
-		/*  whatever that is. The Em square seems to be a reasonable */
-		/*  appoximation. */
-		heights[i] = sf->ascent*scale;
-		depths[i] = -sf->descent*scale;
-	    }
-#endif
 	    if ( sc->tex_height!=TEX_UNDEF )
 		heights[i] = sc->tex_height*scale;
 	    if ( sc->tex_depth!=TEX_UNDEF )
 		depths[i] = sc->tex_depth*scale;
 	    if ( depths[i]<0 ) depths[i] = 0;		/* Werner says depth should never be negative. Something about how accents are positioned */
-	    if ( !is_math ) {
-		if ( sc->width==0 )
-		    widths[i] = 1;	/* TeX/Omega use a 0 width as a flag for non-existant character. Stupid. So zero width glyphs must be given the smallest posible non-zero width, to ensure they exists. GRRR. */
-		else if ( sc->width*scale >= (16<<20) ) {
-		    LogError( _("The width of %s is too big to fit in a tfm fix_word, it shall be truncated to the largest size allowed."), sc->name );
-		    widths[i] = (16<<20)-1;
-		} else
-		    widths[i] = sc->width*scale;
-		if ( (pst=SCFindPST(sc,pst_position,CHR('I','T','L','C')))!=NULL )
-		    italics[i] = pst->u.pos.h_adv_off*scale;
-		else if ( (style&sf_italic) && b.maxx>sc->width && !anyITLC )
-		    italics[i] = ((b.maxx-sc->width) +
-				(sf->ascent+sf->descent)/16.0)*scale;
-					    /* With a 1/16 em white space after it */
-	    } else {
-		if ( sc->tex_sub_pos!=TEX_UNDEF )
-		    widths[i] = sc->tex_sub_pos*scale;
-		else
-		    widths[i] = sc->width*scale;
-		if ( sc->tex_super_pos!=TEX_UNDEF )
-		    italics[i] = sc->tex_super_pos*scale;
-		else if ( sc->tex_sub_pos!=TEX_UNDEF )
-		    italics[i] = (sc->width - sc->tex_sub_pos)*scale;
-		else
-		    italics[i] = 0;
-	    }
+	    if ( sc->width==0 )
+		widths[i] = 1;	/* TeX/Omega use a 0 width as a flag for non-existant character. Stupid. So zero width glyphs must be given the smallest posible non-zero width, to ensure they exists. GRRR. */
+	    else if ( sc->width*scale >= (16<<20) ) {
+		LogError( _("The width of %s is too big to fit in a tfm fix_word, it shall be truncated to the largest size allowed."), sc->name );
+		widths[i] = (16<<20)-1;
+	    } else
+		widths[i] = sc->width*scale;
+	    if ( sc->italic_correction!=TEX_UNDEF )
+		italics[i] = sc->italic_correction*scale;
+	    else if ( (style&sf_italic) && b.maxx>sc->width && !anyITLC )
+		italics[i] = ((b.maxx-sc->width) +
+			    (sf->ascent+sf->descent)/16.0)*scale;
+					/* With a 1/16 em white space after it */
 	    if ( widths[i]<0 ) widths[i] = 0;
 	    if ( first==-1 ) first = i;
 	    last = i;

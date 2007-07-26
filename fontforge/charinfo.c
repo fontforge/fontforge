@@ -66,8 +66,7 @@ typedef struct charinfo {
 
 #define CID_TeX_Height	1012
 #define CID_TeX_Depth	1013
-#define CID_TeX_Sub	1014
-#define CID_TeX_Super	1015
+#define CID_TeX_Italic	1014
 
 #define CID_LCCount	1016
 
@@ -1154,7 +1153,7 @@ static int _CI_OK(CharInfo *ci) {
     const unichar_t *nm;
     FontView *fvs;
     int err = false;
-    int tex_height, tex_depth, tex_sub, tex_super;
+    int tex_height, tex_depth, italic;
     int lc_cnt=-1;
 
     val = ParseUValue(ci->gw,CID_UValue,true,ci->sc->parent);
@@ -1162,8 +1161,7 @@ static int _CI_OK(CharInfo *ci) {
 return( false );
     tex_height = gettex(ci->gw,CID_TeX_Height,_("Height:"),&err);
     tex_depth  = gettex(ci->gw,CID_TeX_Depth ,_("Depth:") ,&err);
-    tex_sub    = gettex(ci->gw,CID_TeX_Sub   ,_("Subscript Pos:"),&err);
-    tex_super  = gettex(ci->gw,CID_TeX_Super ,_("Superscript Pos:"),&err);
+    italic     = gettex(ci->gw,CID_TeX_Italic,_("ItalicCorrection:"),&err);
     if ( err )
 return( false );
     if ( ci->lc_seen ) {
@@ -1206,8 +1204,7 @@ return( false );
 	CI_ParseCounters(ci);
 	ci->sc->tex_height = tex_height;
 	ci->sc->tex_depth  = tex_depth;
-	ci->sc->tex_sub_pos   = tex_sub;
-	ci->sc->tex_super_pos = tex_super;
+	ci->sc->italic_correction = italic;
     }
     if ( ret )
 	ci->sc->parent->changed = true;
@@ -2838,19 +2835,12 @@ static void CIFillup(CharInfo *ci) {
     uc_strcpy(ubuf,buffer);
     GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_TeX_Depth),ubuf);
 
-    if ( sc->tex_sub_pos!=TEX_UNDEF )
-	sprintf(buffer,"%d",sc->tex_sub_pos);
+    if ( sc->italic_correction!=TEX_UNDEF )
+	sprintf(buffer,"%d",sc->italic_correction);
     else
 	buffer[0] = '\0';
     uc_strcpy(ubuf,buffer);
-    GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_TeX_Sub),ubuf);
-
-    if ( sc->tex_super_pos!=TEX_UNDEF )
-	sprintf(buffer,"%d",sc->tex_super_pos);
-    else
-	buffer[0] = '\0';
-    uc_strcpy(ubuf,buffer);
-    GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_TeX_Super),ubuf);
+    GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_TeX_Italic),ubuf);
 
     CI_NoteAspect(ci);
 }
@@ -2944,7 +2934,6 @@ void SCCharInfo(SplineChar *sc,EncMap *map,int enc) {
     static int boxset=0;
     FontRequest rq;
     GFont *font;
-    int is_math = sc->parent->texdata.type==tex_math || sc->parent->texdata.type==tex_mathext;
 
     CharInfoInit();
 
@@ -3283,40 +3272,23 @@ return;
 	tgcd[3].creator = GTextFieldCreate;
 	thvarray[4] = &tgcd[3]; thvarray[5] = NULL;
 
-	tlabel[4].text = (unichar_t *) _("Subscript Position:");
+	tlabel[4].text = (unichar_t *) _("Italic Correction:");
 	tlabel[4].text_is_1byte = true;
 	tgcd[4].gd.label = &tlabel[4];
 	tgcd[4].gd.pos.x = 5; tgcd[4].gd.pos.y = 57+4; 
-	tgcd[4].gd.flags = is_math ? (gg_enabled|gg_visible|gg_utf8_popup) :
-		(gg_visible|gg_utf8_popup);
+	tgcd[4].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
 	tgcd[4].gd.popup_msg = tgcd[0].gd.popup_msg;
 	tgcd[4].creator = GLabelCreate;
 	thvarray[6] = &tgcd[4];
 
 	tgcd[5].gd.pos.x = 85; tgcd[5].gd.pos.y = 57; tgcd[5].gd.pos.width = 50;
-	tgcd[5].gd.flags = is_math ? (gg_enabled|gg_visible|gg_text_xim) :
-		(gg_visible);
-	tgcd[5].gd.cid = CID_TeX_Sub;
+	tgcd[5].gd.flags = gg_enabled|gg_visible|gg_text_xim;
+	tgcd[5].gd.cid = CID_TeX_Italic;
 	tgcd[5].creator = GTextFieldCreate;
 	thvarray[7] = &tgcd[5]; thvarray[8] = NULL;
 
-	tgcd[6].gd.pos.x = 5; tgcd[6].gd.pos.y = 83+4;
-	tgcd[6].gd.flags = tgcd[4].gd.flags;
-	tlabel[6].text = (unichar_t *) _("Superscript Pos:");
-	tlabel[6].text_is_1byte = true;
-	tgcd[6].gd.label = &tlabel[6];
-	tgcd[6].gd.popup_msg = tgcd[0].gd.popup_msg;
-	tgcd[6].creator = GLabelCreate;
-	thvarray[9] = &tgcd[6];
-
-	tgcd[7].gd.pos.x = 85; tgcd[7].gd.pos.y = 83; tgcd[7].gd.pos.width = 50;
-	tgcd[7].gd.flags = tgcd[5].gd.flags;
-	tgcd[7].gd.cid = CID_TeX_Super;
-	tgcd[7].creator = GTextFieldCreate;
-	thvarray[10] = &tgcd[7]; thvarray[11] = NULL;
-
-	thvarray[12] = GCD_Glue; thvarray[13] = GCD_Glue; thvarray[14] = NULL;
-	thvarray[15] = NULL;
+	thvarray[9] = GCD_Glue; thvarray[10] = GCD_Glue; thvarray[11] = NULL;
+	thvarray[12] = NULL;
 
 	tbox[0].gd.flags = gg_enabled|gg_visible;
 	tbox[0].gd.u.boxelements = thvarray;
