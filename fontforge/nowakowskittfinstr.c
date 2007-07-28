@@ -128,7 +128,7 @@ static void init_maxp(InstrCt *ct) {
 
     uint16 zones = memushort(tab->data, 32,  7*sizeof(uint16));
     uint16 twpts = memushort(tab->data, 32,  8*sizeof(uint16));
-    uint16 fdefs = memushort(tab->data, 32, 11*sizeof(uint16));
+    uint16 fdefs = memushort(tab->data, 32, 10*sizeof(uint16));
     uint16 stack = memushort(tab->data, 32, 12*sizeof(uint16));
 
     if (zones<2) zones=2;
@@ -138,7 +138,7 @@ static void init_maxp(InstrCt *ct) {
 
     memputshort(tab->data, 7*sizeof(uint16), zones);
     memputshort(tab->data, 8*sizeof(uint16), twpts);
-    memputshort(tab->data,11*sizeof(uint16), fdefs);
+    memputshort(tab->data,10*sizeof(uint16), fdefs);
     memputshort(tab->data,12*sizeof(uint16), stack);
 }
 
@@ -220,10 +220,11 @@ static void init_fpgm(InstrCt *ct) {
 	0xb0, // PUSHB_1
 	0x00, //   0
 	0x2c, // FDEF
-	0xb1, //   PUSHB_2
-	0x00, //     0
+	0xb0, //   PUSHB_1
 	0x00, //     0
 	0x13, //   SZP0
+	0xb0, //   PUSHB_1
+	0x00, //     0
 	0x23, //   SWAP
 	0x3f, //   MIAP[rnd]
 	0x7d, //   RDTG
@@ -462,12 +463,12 @@ static int __same_angle(int *contourends, BasePoint *bp, int p, double angle) {
     NextTangent = atan2(bp[NextPoint].y - bp[p].y, bp[NextPoint].x - bp[p].x);
 
     /* If at least one of the tangents is close to the given angle, return true. */
-    /* 'Close' means about 10 deg, i.e. about 0.174 rad. */
+    /* 'Close' means about 5 deg, i.e. about 0.087 rad. */
     PrevTangent = fabs(PrevTangent-angle);
     NextTangent = fabs(NextTangent-angle);
     while (PrevTangent > M_PI) PrevTangent -= 2*M_PI;
     while (NextTangent > M_PI) NextTangent -= 2*M_PI;
-return (fabs(PrevTangent) <= 0.174) || (fabs(NextTangent) <= 0.174);
+return (fabs(PrevTangent) <= 0.087) || (fabs(NextTangent) <= 0.087);
 }
 
 static int same_angle(int *contourends, BasePoint *bp, int p, double angle) {
@@ -604,23 +605,21 @@ static void RunOnPoints(InstrCt *ct, int contour_direction,
 
 /* search for points to be snapped to an edge - to be used in RunOnPoints() */
 static void search_edge(int p, SplinePoint *sp, InstrCt *ct) {
-    int tmp, score = 1;
+    int tmp, score = 0;
     real coord = ct->xdir?ct->bp[p].x:ct->bp[p].y;
     real fudge = ct->gi->fudge;
     uint8 touchflag = ct->xdir?tf_x:tf_y;
 
-    if ((fabs(coord - ct->edge.base) <= fudge) &&
-	same_angle(ct->contourends, ct->bp, p, ct->xdir?0.5*M_PI:0.0)) {
+    if (fabs(coord - ct->edge.base) <= fudge) {
+	if (same_angle(ct->contourends, ct->bp, p, ct->xdir?0.5*M_PI:0.0)) score++;
+	if (ct->xdir?IsXExtremum(sp):IsYExtremum(sp)) score+=4;
+	if (ct->xdir?IsXObtuseCorner(ct->contourends, ct->bp, p):
+	             IsYObtuseCorner(ct->contourends, ct->bp, p)) score+=4;
+	if (score && (sp->ttfindex != 0xffff)) score+=2;
 
-	if (ct->touched[p]) score += 4;
-	if (ct->xdir?IsXExtremum(sp):IsYExtremum(sp)) {
-	    score+=2;
-	    if (sp->ttfindex==p) score++;
-	}
-	else if (IsAcuteCorner(ct->contourends, ct->bp, p) || 
-	  ct->xdir?IsXObtuseCorner(ct->contourends, ct->bp, p):
-	  IsYObtuseCorner(ct->contourends, ct->bp, p)
-	) score++;
+	if (!score)
+return;
+	else if (ct->touched[p]) score+=8;
 
 	if (score > ct->edge.refscore) {
 	    tmp = ct->edge.refpt;
