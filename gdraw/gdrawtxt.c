@@ -614,7 +614,7 @@ enum charset GDrawFindEncoding(unichar_t *text, int32 len, FontInstance *fi,
     const unsigned long * plane;
     int name_cnt = fi->fam->name_cnt;
 
-    for ( ; text<end && iszerowidth(ch = *text) ; ++text );
+    for ( ; text<end && (ch = *text)<0x10000 && iszerowidth(ch) ; ++text );
     if ( text==end ) {
 	if ( next!=NULL )
 	    *next = text;
@@ -646,7 +646,7 @@ return( em_iso8859_1 );		/* Anything will do, no characters */
 	    ch = *text;
 	    if ( ch=='\t' )
 		some = 0;
-	    else if ( iscombining(ch))
+	    else if ( ch<0x10000 && iscombining(ch))
 		/* Combining accents MUST be in the same text clump as the */
 		/*  letter they combine with. Even if they aren't in that font*/
 	continue;
@@ -680,7 +680,7 @@ return( i );
 	if ( sofar & (1<<em_unicode) ) {
 	    unichar_t *curend = text;
 	    for ( text = strt; text<curend; ++text )
-		if ( !iscombining(*text) &&
+		if ( *text<0x10000 && !iscombining(*text) &&
 			!UnicodeCharExists(fi->mapped_to,fi->unifonts[level],*text,fi ))
 	    break;
 	    if ( text!=strt ) {
@@ -1228,8 +1228,8 @@ static int32 _GDraw_DrawUnencoded(GWindow gw, FontInstance *fi,
 		    ( ch>=0x206a && ch<=0x206f ) ||
 		    ( ch>=0x2190 && ch<=0x2193 ) ||
 		    ch == 0xfeff ||
-		    iszerowidth(ch) ||
-		    (iscombining(ch) && pt!=text) )
+		    (ch<0x10000 && iszerowidth(ch)) ||
+		    (ch<0x10000 && iscombining(ch) && pt!=text) )
 	break;
 	}
 
@@ -1392,7 +1392,7 @@ return( x-xbase+(stop-text)*(uwidth+letter_spacing)-letter_spacing );
 	    if ( ch=='\t' ) {
 		/* tab hack */
 		cw = 3*pixel_size/2;
-	    } else if ( iszerowidth(ch) || (iscombining(ch) && pt!=text) )
+	    } else if ( ch<0x10000 && (iszerowidth(ch) || (iscombining(ch) && pt!=text)) )
 		cw = 0;
 		/* zero width spaces, control characters, etc. */
 		/* accents modifying something */
@@ -1586,7 +1586,7 @@ static int32 _GDraw_Transform(GWindow gw, struct font_data *fd, struct font_data
 		starts_word = isspace(ch) && !isnobreak(ch);
 		if ( ch==_SOFT_HYPHEN && !(mods->mods&tm_showsofthyphen))
 	continue;
-		if ( iszerowidth(ch) || (iscombining(ch) && text-1!=strt))
+		if ( ch<0x10000 && ( iszerowidth(ch) || (iscombining(ch) && text-1!=strt)))
 	continue;
 		if ( mods->mods&(tm_initialcaps|tm_upper|tm_lower) ) {
 		    if ( mods->mods&tm_initialcaps ) {
@@ -1908,7 +1908,7 @@ return( dist );
     if ( spacing==0 ) spacing = 1;	/* this big a gap between char and accent */
     memset(&dummy,'\0',sizeof(dummy));
 
-    for ( ++text ; text<end && iscombining(*text); ++text ) {
+    for ( ++text ; text<end && *text<0x10000 && iscombining(*text); ++text ) {
 	afd = PickAccentFont(fi,fd,*text, &accent);
 	if ( afd==NULL )
 	    /* Oh well, we couldn't find the accent, just skip it */;
@@ -2023,7 +2023,7 @@ return( dist );
 		    dist += _GDraw_Transform(gw,fd,sc,enc,x+dist,y,text,next,mods,col,drawit,arg);
 		text = comb = next;
 	    } else {
-		for ( comb=text+1; comb<next && !iscombining(*comb); ++comb );
+		for ( comb=text+1; comb<next && *comb<0x10000 && !iscombining(*comb); ++comb );
 		if ( comb<next )
 		    --comb;
 		if ( comb>text ) {
@@ -2046,7 +2046,7 @@ return( dist );
 		    dist += _GDraw_DrawUnencoded(gw,fi,x+dist,y,text,comb,mods,col,drawit,arg);
 		else
 		    dist += ComposeCharacter(gw,fi,fd,sc,enc,x+dist,y,text,next,mods,col,drawit,arg);
-		for ( text=comb+1; text<next && iscombining(*text); ++text );
+		for ( text=comb+1; text<next && *text<0x10000 && iscombining(*text); ++text );
 		if ( drawit>=tf_stopat && arg->width>=arg->maxwidth )
 return( dist );
 	    }
@@ -2331,7 +2331,7 @@ void GDrawArabicForms(GBiText *bd, int32 start, int32 end) {
 	int ch = *pt;
 	if ( ch>=0x600 && ch<=0x6ff && ArabicForms[ch-0x600].isletter ) {
 	    if ( !ArabicForms[ch-0x600].joindual ) letter_left = false;
-	    for ( rpt = pt+1; rpt<last && (iscombining(*rpt) || *rpt==0x200d); ++rpt );
+	    for ( rpt = pt+1; rpt<last && *rpt<0x10000 && (iscombining(*rpt) || *rpt==0x200d); ++rpt );
 	    if ( rpt==last || *rpt<0x600 || *rpt>0x6ff ||
 		    !ArabicForms[*rpt-0x600].isletter ) {
 		if ( letter_left )	/* letter left but none right */
@@ -2369,7 +2369,7 @@ void GDrawArabicForms(GBiText *bd, int32 start, int32 end) {
 	    if (( was_alef = ch==0x627 /*|| ch==0xFE8E*/ ))
 		alef_pt = pt;
 	    letter_left = true;
-	} else if ( !iscombining(ch) && ch!=0x200d )
+	} else if ( ch<0x10000 && !iscombining(ch) && ch!=0x200d )
 	    was_alef = letter_left = false;
     }
 }
@@ -2590,8 +2590,8 @@ void GDrawBiText2(GBiText *bd, int32 start, int32 end) {
     /* combiners must always follow (in string order) the character they modify*/
     /*  but now combiners in r2l text will precede it */
     for ( pos = start; pos<end; ++pos ) {
-	if ( iscombining(bd->text[pos]) && (bd->level[pos]&1) /*&& pos!=start*/ ) {
-	    for ( epos = pos; epos<end && iscombining(bd->text[epos]) ; ++epos );
+	if ( bd->text[pos]<0x10000 && iscombining(bd->text[pos]) && (bd->level[pos]&1) /*&& pos!=start*/ ) {
+	    for ( epos = pos; epos<end && bd->text[epos]<0x10000 && iscombining(bd->text[epos]) ; ++epos );
 	    if ( epos<end ) {
 		for ( i=pos,j=epos; i<j; ++i, --j ) {
 		    unichar_t temp = bd->text[i], *tpt = bd->original[i];
