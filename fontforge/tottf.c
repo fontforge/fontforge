@@ -79,6 +79,8 @@ Optional for bitmaps
 	GPOS		(opentype, if kern,anchor data are present)
 	GSUB		(opentype, if ligature (other subs) data are present)
 	GDEF		(opentype, if anchor data are present)
+MATH
+	MATH		(MS proposal, if math data present)
 Apple variation tables (for distortable (multiple master type) fonts)
 	fvar		(font variations)
 	gvar		(glyph variations)
@@ -5030,6 +5032,7 @@ return( false );
 
 	pfed_dump(at,sf);
 	tex_dump(at,sf);
+	ttf_math_dump(at,sf);
     }
     if ( sf->subfonts!=NULL ) {
 	free(sf->glyphs); sf->glyphs = NULL;
@@ -5116,6 +5119,18 @@ return( false );
 	at->tabdir.tabs[i].tag = CHR('T','e','X',' ');
 	at->tabdir.tabs[i].data = at->tex;
 	at->tabdir.tabs[i++].length = at->texlen;
+    }
+
+    if ( at->os2f!=NULL ) {
+	at->tabdir.tabs[i].tag = CHR('O','S','/','2');
+	at->tabdir.tabs[i].data = at->os2f;
+	at->tabdir.tabs[i++].length = at->os2len;
+    }
+
+    if ( at->math!=NULL ) {
+	at->tabdir.tabs[i].tag = CHR('M','A','T','H');
+	at->tabdir.tabs[i].data = at->math;
+	at->tabdir.tabs[i++].length = at->mathlen;
     }
 
     if ( at->bdf!=NULL ) {

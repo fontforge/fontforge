@@ -233,10 +233,11 @@ int CVClearSel(CharView *cv) {
 	    if ( ap->selected ) { if ( cv->showanchor ) needsupdate = true; ap->selected = false; }
     for ( img=cv->layerheads[cv->drawmode]->images; img!=NULL; img = img->next )
 	if ( img->selected ) { needsupdate = true; img->selected = false; }
-    if ( cv->p.nextcp || cv->p.prevcp || cv->widthsel || cv->vwidthsel )
+    if ( cv->p.nextcp || cv->p.prevcp || cv->widthsel || cv->vwidthsel ||
+	    cv->icsel || cv->tah_sel )
 	needsupdate = true;
     cv->p.nextcp = cv->p.prevcp = false;
-    cv->widthsel = cv->vwidthsel = false;
+    cv->widthsel = cv->vwidthsel = cv->icsel = cv->tah_sel = false;
 return( needsupdate );
 }
 
@@ -543,7 +544,7 @@ return( false );
 
 void CVMouseDownPointer(CharView *cv, FindSel *fs, GEvent *event) {
     int needsupdate = false;
-    int dowidth, dovwidth, nearcaret;
+    int dowidth, dovwidth, doic, dotah, nearcaret;
     RefChar *usemymetrics = HasUseMyMetrics(cv->sc);
 
     if ( cv->pressed==NULL )
@@ -556,6 +557,15 @@ return;
     dowidth = ( cv->showhmetrics && cv->p.cx>cv->sc->width-fs->fudge &&
 		cv->p.cx<cv->sc->width+fs->fudge && cv->searcher==NULL &&
 		usemymetrics==NULL );
+    doic = ( cv->showhmetrics && cv->sc->italic_correction!=TEX_UNDEF &&
+		cv->sc->italic_correction!=0 &&
+		cv->p.cx>cv->sc->width+cv->sc->italic_correction-fs->fudge &&
+		cv->p.cx<cv->sc->width+cv->sc->italic_correction+fs->fudge &&
+		cv->searcher==NULL );
+    dotah = ( cv->showhmetrics && cv->sc->top_accent_horiz!=TEX_UNDEF &&
+		cv->p.cx>cv->sc->top_accent_horiz-fs->fudge &&
+		cv->p.cx<cv->sc->top_accent_horiz+fs->fudge &&
+		cv->searcher==NULL );
     dovwidth = ( cv->showvmetrics && cv->sc->parent->hasvmetrics && cv->searcher == NULL &&
 		cv->p.cy>cv->sc->parent->vertical_origin-cv->sc->vwidth-fs->fudge &&
 		cv->p.cy<cv->sc->parent->vertical_origin-cv->sc->vwidth+fs->fudge &&
@@ -568,6 +578,8 @@ return;
 	    (fs->p->ap==NULL || !fs->p->ap->selected) &&
 	    (!dowidth || !cv->widthsel) &&
 	    (!dovwidth || !cv->vwidthsel) &&
+	    (!doic || !cv->icsel) &&
+	    (!dotah || !cv->tah_sel) &&
 	    !(event->u.mouse.state&ksm_shift))
 	needsupdate = CVClearSel(cv);
     if ( !fs->p->anysel ) {
@@ -598,6 +610,36 @@ return;
 		CVInfoDraw(cv,cv->gw);
 		fs->p->anysel = true;
 		cv->expandedge = ee_down;
+	    } else
+		cv->expandedge = ee_none;
+	    SetCur(cv);
+	    needsupdate = true;
+	} else if ( doic ) {
+	    if ( event->u.mouse.state&ksm_shift )
+		cv->icsel = !cv->icsel;
+	    else
+		cv->icsel = true;
+	    if ( cv->icsel ) {
+		cv->oldic = cv->sc->italic_correction+cv->sc->width;
+		fs->p->cx = cv->sc->italic_correction+cv->sc->width;
+		CVInfoDraw(cv,cv->gw);
+		fs->p->anysel = true;
+		cv->expandedge = ee_right;
+	    } else
+		cv->expandedge = ee_none;
+	    SetCur(cv);
+	    needsupdate = true;
+	} else if ( dotah ) {
+	    if ( event->u.mouse.state&ksm_shift )
+		cv->tah_sel = !cv->tah_sel;
+	    else
+		cv->tah_sel = true;
+	    if ( cv->tah_sel ) {
+		cv->oldtah = cv->sc->top_accent_horiz;
+		fs->p->cx = cv->sc->top_accent_horiz;
+		CVInfoDraw(cv,cv->gw);
+		fs->p->anysel = true;
+		cv->expandedge = ee_right;
 	    } else
 		cv->expandedge = ee_none;
 	    SetCur(cv);
@@ -1075,6 +1117,28 @@ return(false);
 	    cv->sc->vwidth -= dy;
 	if ( cv->sc->vwidth>=-fudge && cv->sc->vwidth<fudge )
 	    cv->sc->vwidth = 0;
+	changed = true;
+    }
+    if ( cv->icsel ) {
+	if ( cv->sc->italic_correction+dx>0 && ((int16) (cv->sc->italic_correction+dx))<0 )
+	    cv->sc->italic_correction = 32767-1;
+	else if ( cv->sc->italic_correction+dx<0 && ((int16) (cv->sc->italic_correction+dx))>0 )
+	    cv->sc->italic_correction = -32768;
+	else
+	    cv->sc->italic_correction += dx;
+	if ( cv->sc->italic_correction>=-fudge && cv->sc->italic_correction<fudge )
+	    cv->sc->italic_correction = 0;
+	changed = true;
+    }
+    if ( cv->tah_sel ) {
+	if ( cv->sc->top_accent_horiz+dx>0 && ((int16) (cv->sc->top_accent_horiz+dx))<0 )
+	    cv->sc->top_accent_horiz = 32767-1;
+	else if ( cv->sc->top_accent_horiz+dx<0 && ((int16) (cv->sc->top_accent_horiz+dx))>0 )
+	    cv->sc->top_accent_horiz = -32768;
+	else
+	    cv->sc->top_accent_horiz += dx;
+	if ( cv->sc->top_accent_horiz>=-fudge && cv->sc->top_accent_horiz<fudge )
+	    cv->sc->top_accent_horiz = 0;
 	changed = true;
     }
     if ( outlinechanged )

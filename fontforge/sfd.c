@@ -945,6 +945,87 @@ static void SFDDumpRefs(FILE *sfd,RefChar *refs, char *name,EncMap *map, int *ne
     }
 }
 
+static void SFDDumpMathVertex(FILE *sfd,struct mathkernvertex *vert,char *name) {
+    int i;
+
+    if ( vert==NULL || vert->cnt==0 )
+return;
+
+    fprintf( sfd, "%s %d ", name, vert->cnt );
+    for ( i=0; i<vert->cnt; ++i ) {
+	fprintf( sfd, " %d", vert->mkd[i].height );
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	SFDDumpDeviceTable(sfd,vert->mkd[i].height_adjusts );
+#endif
+	fprintf( sfd, ",%d", vert->mkd[i].kern );
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	SFDDumpDeviceTable(sfd,vert->mkd[i].kern_adjusts );
+#endif
+    }
+    putc('\n',sfd );
+}
+
+static void SFDDumpGlyphVariants(FILE *sfd,struct glyphvariants *gv,char *name) {
+    int i;
+
+    if ( gv->variants!=NULL )
+	fprintf( sfd, "GlyphVariants%s: %s\n", name, gv->variants );
+    if ( gv->part_cnt!=0 ) {
+	if ( gv->italic_correction!=0 ) {
+	    fprintf( sfd, "GlyphComposition%sIC: %d", name, gv->italic_correction );
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	    if ( gv->italic_adjusts!=NULL ) {
+		putc(' ',sfd);
+		SFDDumpDeviceTable(sfd,gv->italic_adjusts);
+	    }
+#endif
+	    putc('\n',sfd);
+	}
+	fprintf( sfd, "GlyphComposition%s: %d ", name, gv->part_cnt );
+	for ( i=0; i<gv->part_cnt; ++i ) {
+	    fprintf( sfd, " %s,%d,%d,%d,%d", gv->parts[i].component,
+		    gv->parts[i].is_extender,
+		    gv->parts[i].startConnectorLength,
+		    gv->parts[i].endConnectorLength,
+		    gv->parts[i].fullAdvance);
+	}
+	putc('\n',sfd);
+    }
+}
+
+static void SFDDumpCharMath(FILE *sfd,SplineChar *sc) {
+    if ( sc->italic_correction!=TEX_UNDEF && sc->italic_correction!=0 ) {
+	fprintf( sfd, "ItalicCorrection: %d", sc->italic_correction );
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	if ( sc->italic_adjusts!=NULL ) {
+	    putc(' ',sfd);
+	    SFDDumpDeviceTable(sfd,sc->italic_adjusts);
+	}
+#endif
+	putc('\n',sfd);
+    }
+    if ( sc->top_accent_horiz!=TEX_UNDEF ) {
+	fprintf( sfd, "TopAccentHorizontal: %d", sc->top_accent_horiz );
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	if ( sc->top_accent_adjusts!=NULL ) {
+	    putc(' ',sfd);
+	    SFDDumpDeviceTable(sfd,sc->top_accent_adjusts);
+	}
+#endif
+	putc('\n',sfd);
+    }
+    if ( sc->is_extended_shape )
+	fprintf( sfd, "IsExtendedShape: %d\n", sc->is_extended_shape );
+    SFDDumpGlyphVariants(sfd,sc->vert_variants,"Vertical");
+    SFDDumpGlyphVariants(sfd,sc->horiz_variants,"Horizontal");
+    if ( sc->mathkern!=NULL ) {
+	SFDDumpMathVertex(sfd,&sc->mathkern->top_right,"TopRightVertex:");
+	SFDDumpMathVertex(sfd,&sc->mathkern->top_left,"TopLeftVertex:");
+	SFDDumpMathVertex(sfd,&sc->mathkern->bottom_right,"BottomRightVertex:");
+	SFDDumpMathVertex(sfd,&sc->mathkern->bottom_left,"BottomLeftVertex:");
+    }
+}
+
 #ifdef FONTFORGE_CONFIG_TYPE3
 static char *joins[] = { "miter", "round", "bevel", "inher", NULL };
 static char *caps[] = { "butt", "round", "square", "inher", NULL };
@@ -992,6 +1073,10 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
 		sc->instructions_out_of_date?"I":"");
     if ( sc->tex_height!=TEX_UNDEF || sc->tex_depth!=TEX_UNDEF )
 	fprintf( sfd, "TeX: %d %d\n", sc->tex_height, sc->tex_depth );
+    if ( sc->is_extended_shape || sc->italic_correction!=TEX_UNDEF ||
+	    sc->top_accent_horiz!=TEX_UNDEF || sc->vert_variants!=NULL ||
+	    sc->horiz_variants!=NULL || sc->mathkern!=NULL )
+	SFDDumpCharMath(sfd,sc);
 #if HANYANG
     if ( sc->compositionunit )
 	fprintf( sfd, "CompositionUnit: %d %d\n", sc->jamo, sc->varient );
@@ -1720,6 +1805,21 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 	SFDDumpGasp(sfd,sf);
     if ( sf->design_size!=0 )
 	SFDDumpDesignSize(sfd,sf);
+    if ( sf->MATH!=NULL ) {
+	struct MATH *math = sf->MATH;
+	for ( i=0; math_constants_descriptor[i].script_name!=NULL; ++i ) {
+	    fprintf( sfd, "MATH:%s: %d", math_constants_descriptor[i].script_name,
+		    *((int16 *) (((char *) (math)) + math_constants_descriptor[i].offset)) );
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	    if ( math_constants_descriptor[i].devtab_offset>=0 ) {
+		DeviceTable **devtab = (DeviceTable **) (((char *) (math)) + math_constants_descriptor[i].devtab_offset );
+		putc(' ',sfd);
+		SFDDumpDeviceTable(sfd,*devtab);
+	    }
+#endif
+	    putc('\n',sfd);
+	}
+    }
     if ( sf->subfontcnt!=0 ) {
 	/* CID fonts have no encodings, they have registry info instead */
 	fprintf(sfd, "Registry: %s\n", sf->cidregistry );
@@ -2874,23 +2974,25 @@ return( head );
 }
 
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
-static void SFDReadDeviceTable(FILE *sfd,DeviceTable *adjust) {
+static DeviceTable *SFDReadDeviceTable(FILE *sfd,DeviceTable *adjust) {
     int i, junk, first, last, ch, len;
 
     while ( (ch=getc(sfd))==' ' );
     if ( ch=='{' ) {
 	while ( (ch=getc(sfd))==' ' );
 	if ( ch=='}' )
-return;
+return(NULL);
 	else
 	    ungetc(ch,sfd);
+	if ( adjust==NULL )
+	    adjust = chunkalloc(sizeof(DeviceTable));
 	getint(sfd,&first);
 	ch = getc(sfd);		/* Should be '-' */
 	getint(sfd,&last);
 	len = last-first+1;
 	if ( len<=0 ) {
 	    IError( "Bad device table, invalid length.\n" );
-return;
+return(NULL);
 	}
 	adjust->first_pixel_size = first;
 	adjust->last_pixel_size = last;
@@ -2905,6 +3007,7 @@ return;
 	if ( ch!='}' ) ungetc(ch,sfd);
     } else
 	ungetc(ch,sfd);
+return( adjust );
 }
 
 static ValDevTab *SFDReadValDevTab(FILE *sfd) {
@@ -3187,6 +3290,68 @@ static void SCDefaultInterpolation(SplineChar *sc) {
     }
 }
 
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+static void SFDParseMathValueRecord(FILE *sfd,int16 *value,DeviceTable **devtab) {
+    getsint(sfd,value);
+    *devtab = SFDReadDeviceTable(sfd,NULL);
+}
+#else
+static void SFDParseMathValueRecord(FILE *sfd,int16 *value) {
+    getsint(sfd,value);
+    SFDSkipDeviceTable(sfd);
+}
+#endif
+
+static struct glyphvariants *SFDParseGlyphComposition(FILE *sfd,
+	struct glyphvariants *gv, char *tok) {
+    int i;
+
+    if ( gv==NULL )
+	gv = chunkalloc(sizeof(struct glyphvariants));
+    getint(sfd,&gv->part_cnt);
+    gv->parts = gcalloc(gv->part_cnt,sizeof(struct gv_part));
+    for ( i=0; i<gv->part_cnt; ++i ) {
+	int temp, ch;
+	getname(sfd,tok);
+	gv->parts[i].component = copy(tok);
+	while ( (ch=getc(sfd))==' ' );
+	if ( ch!=',' ) ungetc(ch,sfd);
+	getint(sfd,&temp);
+	gv->parts[i].is_extender = temp;
+	while ( (ch=getc(sfd))==' ' );
+	if ( ch!=',' ) ungetc(ch,sfd);
+	getsint(sfd,&gv->parts[i].startConnectorLength);
+	while ( (ch=getc(sfd))==' ' );
+	if ( ch!=',' ) ungetc(ch,sfd);
+	getsint(sfd,&gv->parts[i].endConnectorLength);
+	while ( (ch=getc(sfd))==' ' );
+	if ( ch!=',' ) ungetc(ch,sfd);
+	getsint(sfd,&gv->parts[i].fullAdvance);
+    }
+return( gv );
+}
+
+static void SFDParseVertexKern(FILE *sfd, struct mathkernvertex *vertex) {
+    int i,ch;
+
+    getint(sfd,&vertex->cnt);
+    vertex->mkd = gcalloc(vertex->cnt,sizeof(struct mathkerndata));
+    for ( i=0; i<vertex->cnt; ++i ) {
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	SFDParseMathValueRecord(sfd,&vertex->mkd[i].height,&vertex->mkd[i].height_adjusts);
+	while ( (ch=getc(sfd))==' ' );
+	if ( ch!=EOF && ch!=',' )
+	    ungetc(ch,sfd);
+	SFDParseMathValueRecord(sfd,&vertex->mkd[i].kern,&vertex->mkd[i].kern_adjusts);
+#else
+	SFDParseMathValueRecord(sfd,&vertex->mkd[i].height);
+	while ( (ch=getc(sfd))==' ' );
+	if ( ch!=EOF && ch!=',' )
+	    ungetc(ch,sfd);
+	SFDParseMathValueRecord(sfd,&vertex->mkd[i].kern);
+#endif
+    }
+}
 static int orig_pos;
 
 static SplineChar *SFDGetChar(FILE *sfd,SplineFont *sf) {
@@ -3293,11 +3458,74 @@ return( NULL );
 	    while ( isspace(ch=getc(sfd)) && ch!='\n' && ch!='\r');
 	    ungetc(ch,sfd);
 	    if ( ch!='\n' && ch!='\r' ) {
-		int old_tex;
+		int16 old_tex;
 		/* Used to store two extra values here */
 		getsint(sfd,&old_tex);
 		getsint(sfd,&old_tex);
+		if ( sc->tex_height==0 && sc->tex_depth==0 )		/* Fixup old bug */
+		    sc->tex_height = sc->tex_depth = TEX_UNDEF;
 	    }
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	} else if ( strmatch(tok,"ItalicCorrection:")==0 ) {
+	    SFDParseMathValueRecord(sfd,&sc->italic_correction,&sc->italic_adjusts);
+	} else if ( strmatch(tok,"TopAccentHorizontal:")==0 ) {
+	    SFDParseMathValueRecord(sfd,&sc->top_accent_horiz,&sc->top_accent_adjusts);
+	} else if ( strmatch(tok,"GlyphCompositionVerticalIC:")==0 ) {
+	    if ( sc->vert_variants==NULL )
+		sc->vert_variants = chunkalloc(sizeof(struct glyphvariants));
+	    SFDParseMathValueRecord(sfd,&sc->vert_variants->italic_correction,&sc->vert_variants->italic_adjusts);
+	} else if ( strmatch(tok,"GlyphCompositionHorizontalIC:")==0 ) {
+	    if ( sc->horiz_variants==NULL )
+		sc->horiz_variants = chunkalloc(sizeof(struct glyphvariants));
+	    SFDParseMathValueRecord(sfd,&sc->horiz_variants->italic_correction,&sc->horiz_variants->italic_adjusts);
+#else
+	} else if ( strmatch(tok,"ItalicCorrection:")==0 ) {
+	    SFDParseMathValueRecord(sfd,&sc->italic_correction);
+	} else if ( strmatch(tok,"TopAccentHorizontal:")==0 ) {
+	    SFDParseMathValueRecord(sfd,&sc->top_accent_horiz);
+	} else if ( strmatch(tok,"GlyphCompositionVerticalIC:")==0 ) {
+	    if ( sc->vert_variants==NULL )
+		sc->vert_variants = chunkalloc(sizeof(struct glyphvariants));
+	    SFDParseMathValueRecord(sfd,&sc->vert_variants->italic_correction);
+	} else if ( strmatch(tok,"GlyphCompositionHorizontalIC:")==0 ) {
+	    if ( sc->horiz_variants==NULL )
+		sc->horiz_variants = chunkalloc(sizeof(struct glyphvariants));
+	    SFDParseMathValueRecord(sfd,&sc->horiz_variants->italic_correction);
+#endif
+	} else if ( strmatch(tok,"IsExtendedShape:")==0 ) {
+	    int temp;
+	    getint(sfd,&temp);
+	    sc->is_extended_shape = temp;
+	} else if ( strmatch(tok,"GlyphVariantsVertical:")==0 ) {
+	    if ( sc->vert_variants==NULL )
+		sc->vert_variants = chunkalloc(sizeof(struct glyphvariants));
+	    geteol(sfd,tok);
+	    sc->vert_variants->variants = copy(tok);
+	} else if ( strmatch(tok,"GlyphVariantsHorizontal:")==0 ) {
+	    if ( sc->horiz_variants==NULL )
+		sc->horiz_variants = chunkalloc(sizeof(struct glyphvariants));
+	    geteol(sfd,tok);
+	    sc->horiz_variants->variants = copy(tok);
+	} else if ( strmatch(tok,"GlyphCompositionVertical:")==0 ) {
+	    sc->vert_variants = SFDParseGlyphComposition(sfd, sc->vert_variants,tok);
+	} else if ( strmatch(tok,"GlyphCompositionHorizontal:")==0 ) {
+	    sc->horiz_variants = SFDParseGlyphComposition(sfd, sc->horiz_variants,tok);
+	} else if ( strmatch(tok,"TopRightVertex:")==0 ) {
+	    if ( sc->mathkern==NULL )
+		sc->mathkern = chunkalloc(sizeof(struct mathkern));
+	    SFDParseVertexKern(sfd, &sc->mathkern->top_right);
+	} else if ( strmatch(tok,"TopLeftVertex:")==0 ) {
+	    if ( sc->mathkern==NULL )
+		sc->mathkern = chunkalloc(sizeof(struct mathkern));
+	    SFDParseVertexKern(sfd, &sc->mathkern->top_left);
+	} else if ( strmatch(tok,"BottomRightVertex:")==0 ) {
+	    if ( sc->mathkern==NULL )
+		sc->mathkern = chunkalloc(sizeof(struct mathkern));
+	    SFDParseVertexKern(sfd, &sc->mathkern->bottom_right);
+	} else if ( strmatch(tok,"BottomLeftVertex:")==0 ) {
+	    if ( sc->mathkern==NULL )
+		sc->mathkern = chunkalloc(sizeof(struct mathkern));
+	    SFDParseVertexKern(sfd, &sc->mathkern->bottom_left);
 #if HANYANG
 	} else if ( strmatch(tok,"CompositionUnit:")==0 ) {
 	    getsint(sfd,&sc->jamo);
@@ -4915,6 +5143,33 @@ static void SFDParseLookup(FILE *sfd,SplineFont *sf,OTLookup *otl) {
     free(langs);
 }
 
+static void SFDParseMathItem(FILE *sfd,SplineFont *sf,char *tok) {
+    /* The first five characters of a math item's keyword will be "MATH:" */
+    /*  the rest will be one of the entries in math_constants_descriptor */
+    int i;
+    struct MATH *math;
+
+    if ( (math = sf->MATH) == NULL )
+	math = sf->MATH = gcalloc(1,sizeof(struct MATH));
+    for ( i=0; math_constants_descriptor[i].script_name!=NULL; ++i ) {
+	if ( strmatch(tok+5,math_constants_descriptor[i].script_name)==0 ) {
+	    int16 *pos = (int16 *) (((char *) (math)) + math_constants_descriptor[i].offset );
+	    getsint(sfd,pos);
+	    if ( math_constants_descriptor[i].devtab_offset != -1 ) {
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+		DeviceTable **devtab = (DeviceTable **) (((char *) (math)) + math_constants_descriptor[i].devtab_offset );
+		*devtab = SFDReadDeviceTable(sfd,*devtab);
+#else
+		/* A value of -2 means that there would be a device table if */
+		/*  we supported them, so we should be prepared to skip one */
+		SFDSkipDeviceTable(sfd);
+#endif
+    break;
+	    }
+	}
+    }
+}
+
 static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
 	int fromdir, char *dirname, int sfdversion) {
     SplineFont *sf;
@@ -5496,47 +5751,10 @@ exit(1);
 		    lastan->next = an;
 		lastan = an;
 	    }
-#if 0
-	} else if ( strmatch(tok,"GenTags:")==0 ) {
-	    int temp; uint32 tag;
-	    getint(sfd,&temp);
-	    sf->gentags.tt_cur = temp;
-	    sf->gentags.tt_max = sf->gentags.tt_cur+10;
-	    sf->gentags.tagtype = galloc(sf->gentags.tt_max*sizeof(struct tagtype));
-	    ch = getc(sfd);
-	    i = 0;
-	    while ( ch!='\n' && ch!='\r' ) {
-		while ( ch==' ' ) ch = getc(sfd);
-		if ( ch=='\n' || ch==EOF )
-	    break;
-		ch2 = getc(sfd);
-		if ( ch=='p' && ch2=='s' ) sf->gentags.tagtype[i].type = pst_position;
-		else if ( ch=='p' && ch2=='r' ) sf->gentags.tagtype[i].type = pst_pair;
-		else if ( ch=='s' && ch2=='b' ) sf->gentags.tagtype[i].type = pst_substitution;
-		else if ( ch=='a' && ch2=='s' ) sf->gentags.tagtype[i].type = pst_alternate;
-		else if ( ch=='m' && ch2=='s' ) sf->gentags.tagtype[i].type = pst_multiple;
-		else if ( ch=='l' && ch2=='g' ) sf->gentags.tagtype[i].type = pst_ligature;
-		else if ( ch=='a' && ch2=='n' ) sf->gentags.tagtype[i].type = pst_anchors;
-		else if ( ch=='c' && ch2=='p' ) sf->gentags.tagtype[i].type = pst_contextpos;
-		else if ( ch=='c' && ch2=='s' ) sf->gentags.tagtype[i].type = pst_contextsub;
-		else if ( ch=='p' && ch2=='c' ) sf->gentags.tagtype[i].type = pst_chainpos;
-		else if ( ch=='s' && ch2=='c' ) sf->gentags.tagtype[i].type = pst_chainsub;
-		else if ( ch=='r' && ch2=='s' ) sf->gentags.tagtype[i].type = pst_reversesub;
-		else if ( ch=='n' && ch2=='l' ) sf->gentags.tagtype[i].type = pst_null;
-		else ch2 = EOF;
-		(void) getc(sfd);
-		tag = getc(sfd)<<24;
-		tag |= getc(sfd)<<16;
-		tag |= getc(sfd)<<8;
-		tag |= getc(sfd);
-		(void) getc(sfd);
-		if ( ch2!=EOF )
-		    sf->gentags.tagtype[i++].tag = tag;
-		ch = getc(sfd);
-	    }
-#endif
 	} else if ( strmatch(tok,"TtfTable:")==0 ) {
 	    SFDGetTtfTable(sfd,sf,lastttf);
+	} else if ( strncmp(tok,"MATH:",5)==0 ) {
+	    SFDParseMathItem(sfd,sf,tok);
 	} else if ( strmatch(tok,"TableOrder:")==0 ) {
 	    int temp;
 	    struct table_ordering *ord;

@@ -47,7 +47,7 @@ typedef struct charinfo {
     int done, first, changed;
     struct lookup_subtable *old_sub;
     int r,c;
-    int lc_seen, lc_aspect;
+    int lc_seen, lc_aspect, vert_aspect;
 } CharInfo;
 
 #define CI_Width	218
@@ -67,16 +67,26 @@ typedef struct charinfo {
 #define CID_TeX_Height	1012
 #define CID_TeX_Depth	1013
 #define CID_TeX_Italic	1014
+#define CID_HorAccent	1015
+/* Room for one more here, if we need it */
+#define CID_TeX_HeightD	1017
+#define CID_TeX_DepthD	1018
+#define CID_TeX_ItalicD	1019
+#define CID_HorAccentD	1020
 
-#define CID_LCCount	1016
+#define CID_ItalicDevTab	1022
+#define CID_AccentDevTab	1023
 
-/* Offsets for repeated fields. add 100*index */
-#define CID_List	1020
-#define CID_New		1021
-#define CID_Delete	1022
-#define CID_Edit	1023
-#define CID_Copy	1024
-#define CID_Paste	1025
+#define CID_IsExtended	1024
+#define CID_LCCount	1040
+
+/* Offsets for repeated fields. add 100*index (index<6) */
+#define CID_List	1220
+#define CID_New		1221
+#define CID_Delete	1222
+#define CID_Edit	1223
+#define CID_Copy	1224
+#define CID_Paste	1225
 
 #define CID_PST		1111
 #define CID_Tag		1112
@@ -84,6 +94,12 @@ typedef struct charinfo {
 #define CID_SelectResults	1114
 #define CID_MergeResults	1115
 #define CID_RestrictSelection	1116
+
+/* Offsets for repeated fields. add 100*index (index<2) */ /* 0=>Vert, 1=>Hor */
+#define CID_VariantList		2000
+#define CID_ExtItalicCor	2001
+#define CID_ExtItalicDev	2002
+#define CID_ExtensionList	2003
 
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 #define SIM_DX		1
@@ -705,7 +721,7 @@ return( false );
     *_low = low; *_high = high;
 return( true );
 }
-    
+
 DeviceTable *DeviceTableParse(DeviceTable *dv,char *dvstr) {
     char *pt, *end;
     int low, high, pixel, cor;
@@ -1146,6 +1162,51 @@ return( TEX_UNDEF );
 return( GetInt8(gw,cid,msg,err));
 }
 
+static struct glyphvariants *CI_ParseVariants(struct glyphvariants *gv,
+	CharInfo *ci, int is_horiz,
+	char *italic_correction_devtab, int italic_correction,
+	int only_parts) {
+    char *variants = GGadgetGetTitle8(GWidgetGetControl(ci->gw,CID_VariantList+is_horiz*100));
+    GGadget *construct = GWidgetGetControl(ci->gw,CID_ExtensionList+is_horiz*100);
+    int rows, cols = GMatrixEditGetColCnt(construct);
+    struct matrix_data *stuff = GMatrixEditGet(construct,&rows);
+    int i;
+
+    if ( (variants==NULL || variants[0]=='\0' || only_parts) && rows==0 ) {
+	free(variants);
+	GlyphVariantsFree(gv);
+return( NULL );
+    }
+    if ( gv==NULL )
+	gv = chunkalloc(sizeof(struct glyphvariants));
+    free(gv->variants);
+    if ( only_parts )
+	free(variants);
+    else if ( variants!=NULL && *variants!='\0' )
+	gv->variants = variants;
+    else {
+	gv->variants = NULL;
+	free( variants);
+    }
+    if ( !only_parts ) {
+	gv->italic_correction = italic_correction;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	gv->italic_adjusts = DeviceTableParse(gv->italic_adjusts,italic_correction_devtab);
+#endif
+    }
+
+    gv->part_cnt = rows;
+    gv->parts = gcalloc(rows,sizeof(struct gv_part));
+    for ( i=0; i<rows; ++i ) {
+	gv->parts[i].component = copy(stuff[i*cols+0].u.md_str);
+	gv->parts[i].is_extender = stuff[i*cols+1].u.md_ival;
+	gv->parts[i].startConnectorLength = stuff[i*cols+2].u.md_ival;
+	gv->parts[i].endConnectorLength = stuff[i*cols+3].u.md_ival;
+	gv->parts[i].fullAdvance = stuff[i*cols+4].u.md_ival;
+    }
+return( gv );
+}
+    
 static int _CI_OK(CharInfo *ci) {
     int val;
     int ret, refresh_fvdi=0;
@@ -1153,17 +1214,28 @@ static int _CI_OK(CharInfo *ci) {
     const unichar_t *nm;
     FontView *fvs;
     int err = false;
-    int tex_height, tex_depth, italic;
+    int tex_height, tex_depth, italic, topaccent;
+    int hic, vic;
     int lc_cnt=-1;
+    char *italicdevtab=NULL, *accentdevtab=NULL, *hicdt=NULL, *vicdt=NULL;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    int low,high;
+#endif
 
     val = ParseUValue(ci->gw,CID_UValue,true,ci->sc->parent);
     if ( val==-2 )
 return( false );
-    tex_height = gettex(ci->gw,CID_TeX_Height,_("Height:"),&err);
-    tex_depth  = gettex(ci->gw,CID_TeX_Depth ,_("Depth:") ,&err);
-    italic     = gettex(ci->gw,CID_TeX_Italic,_("ItalicCorrection:"),&err);
+    tex_height = gettex(ci->gw,CID_TeX_Height,_("Height"),&err);
+    tex_depth  = gettex(ci->gw,CID_TeX_Depth ,_("Depth") ,&err);
+    italic     = gettex(ci->gw,CID_TeX_Italic,_("Italic Correction"),&err);
+    topaccent  = gettex(ci->gw,CID_HorAccent,_("Top Accent Horizontal Pos"),&err);
     if ( err )
 return( false );
+    hic = GetInt8(ci->gw,CID_ExtItalicCor+1*100,_("Horizontal Extension Italic Correction"),&err);
+    vic = GetInt8(ci->gw,CID_ExtItalicCor+0*100,_("Vertical Extension Italic Correction"),&err);
+    if ( err )
+return( false );
+
     if ( ci->lc_seen ) {
 	lc_cnt = GetInt8(ci->gw,CID_LCCount,_("Ligature Caret Count"),&err);
 	if ( err )
@@ -1176,8 +1248,26 @@ return( false );
     nm = _GGadgetGetTitle(GWidgetGetControl(ci->gw,CID_UName));
     if ( !CI_NameCheck(nm) )
 return( false );
-    if ( !CI_ProcessPosSubs(ci))
+
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    italicdevtab = GGadgetGetTitle8(GWidgetGetControl(ci->gw,CID_ItalicDevTab));
+    accentdevtab = GGadgetGetTitle8(GWidgetGetControl(ci->gw,CID_AccentDevTab));
+    hicdt = GGadgetGetTitle8(GWidgetGetControl(ci->gw,CID_ExtItalicDev+1*100));
+    vicdt = GGadgetGetTitle8(GWidgetGetControl(ci->gw,CID_ExtItalicDev+0*100));
+    if ( !DeviceTableOK(italicdevtab,&low,&high) || !DeviceTableOK(accentdevtab,&low,&high) ||
+	    !DeviceTableOK(hicdt,&low,&high) || !DeviceTableOK(vicdt,&low,&high)) {
+	free( accentdevtab );
+	free( italicdevtab );
+	free(hicdt); free(vicdt);
 return( false );
+    }
+#endif
+    if ( !CI_ProcessPosSubs(ci)) {
+	free( accentdevtab );
+	free( italicdevtab );
+	free(hicdt); free(vicdt);
+return( false );
+    }
     name = u2utf8_copy( nm );
     if ( strcmp(name,ci->sc->name)!=0 || val!=ci->sc->unicodeenc )
 	refresh_fvdi = 1;
@@ -1205,7 +1295,19 @@ return( false );
 	ci->sc->tex_height = tex_height;
 	ci->sc->tex_depth  = tex_depth;
 	ci->sc->italic_correction = italic;
+	ci->sc->is_extended_shape = GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_IsExtended));
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	ci->sc->italic_adjusts = DeviceTableParse(ci->sc->italic_adjusts,italicdevtab);
+	ci->sc->top_accent_adjusts = DeviceTableParse(ci->sc->top_accent_adjusts,accentdevtab);
+#endif
     }
+    ci->sc->horiz_variants = CI_ParseVariants(ci->sc->horiz_variants,ci,1,hicdt,hic,false);
+    ci->sc->vert_variants  = CI_ParseVariants(ci->sc->vert_variants ,ci,0,vicdt,vic,false);
+
+    free( accentdevtab );
+    free( italicdevtab );
+    free(hicdt); free(vicdt);
+
     if ( ret )
 	ci->sc->parent->changed = true;
     if ( ret && ci->lc_seen ) {
@@ -2458,6 +2560,205 @@ return( img );
 
 #define ICON_WIDTH 15
 
+GImage *GV_GetConstructedImage(SplineChar *sc,struct glyphvariants *gv, int is_horiz) {
+    SplineFont *sf = sc->parent;
+    BDFChar *me, **others;
+    double scale = kern_popup_size/(double) (sf->ascent+sf->descent);
+    GImage *img;
+    struct _GImage *base;
+    Color fg, bg;
+    int l,clut_scale;
+    int x,y;
+    int i,j;
+
+    if ( gv->part_cnt==0 )
+return( NULL );
+    me = Rasterize(sc);
+    others = galloc(gv->part_cnt*sizeof(BDFChar *));
+    for ( i=0; i<gv->part_cnt; ++i ) {
+	SplineChar *othersc = SFGetChar(sf,-1,gv->parts[i].component);
+	if ( othersc==NULL ) {
+	    for ( j=0; j<i; ++j )
+		BDFCharFree(others[j]);
+	    free(others);
+return( NULL );
+	}
+	others[i] = Rasterize(othersc);
+    }
+    if ( is_horiz ) {
+	int ymin, ymax;
+	int width, xoff;
+
+	xoff = me->xmin<0 ? -me->xmin : 0;
+	width = xoff + me->width + ICON_WIDTH;
+	ymin = me->ymin; ymax = me->ymax;
+	for ( i=0; i<gv->part_cnt; ++i ) {
+	    int overlap;
+	    if ( i==gv->part_cnt-1 )
+		overlap=0;
+	    else {
+		overlap = gv->parts[i].endConnectorLength>gv->parts[i+1].startConnectorLength ?
+			gv->parts[i+1].startConnectorLength :
+			gv->parts[i].endConnectorLength;
+		overlap = rint( scale*overlap );
+	    }
+	    width += rint(gv->parts[i].fullAdvance*scale) - overlap;
+	    if ( others[i]->ymin<ymin ) ymin = others[i]->ymin;
+	    if ( others[i]->ymax>ymax ) ymax = others[i]->ymax;
+	}
+	if ( ymax<=0 ) ymax = 1;
+	if ( ymin>0 ) ymin = 0;
+	img = GImageCreate(it_index,width+10,ymax-ymin+2);
+	base = img->u.image;
+	memset(base->data,'\0',base->bytes_per_line*base->height);
+
+	++xoff;		/* One pixel margin */
+
+	for ( y=me->ymin; y<=me->ymax; ++y ) {
+	    for ( x=me->xmin; x<=me->xmax; ++x ) {
+		base->data[(1+ymax-y)*base->bytes_per_line + (x+xoff)] =
+			me->bitmap[(me->ymax-y)*me->bytes_per_line + (x-me->xmin)];
+	    }
+	}
+	xoff += me->width;
+	{
+	    int pixel = me->depth == 8 ? 0xff : 0xf;
+	    for ( j = -1; j<2; j+=2 ) {
+		y = 1+ymax/2 + j*2;
+		for ( x=1; x<ICON_WIDTH-5; ++x )
+		    base->data[y*base->bytes_per_line + (x+width)] = pixel;
+		for ( x=ICON_WIDTH-8; x<ICON_WIDTH-1; ++x )
+		    base->data[(y+j*(ICON_WIDTH-4-x))*base->bytes_per_line + (x+width)] = pixel;
+	    }
+	    xoff += ICON_WIDTH;
+	}
+	for ( i=0; i<gv->part_cnt; ++i ) {
+	    int overlap;
+	    if ( i==gv->part_cnt-1 )
+		overlap=0;
+	    else {
+		overlap = gv->parts[i].endConnectorLength>gv->parts[i+1].startConnectorLength ?
+			gv->parts[i+1].startConnectorLength :
+			gv->parts[i].endConnectorLength;
+		overlap = rint( scale*overlap );
+	    }
+	    for ( y=others[i]->ymin; y<=others[i]->ymax; ++y ) {
+		for ( x=others[i]->xmin; x<=others[i]->xmax; ++x ) {
+		    int n = others[i]->bitmap[(others[i]->ymax-y)*others[i]->bytes_per_line + (x-others[i]->xmin)];
+		    if ( n>base->data[(ymax-y)*base->bytes_per_line + (x+xoff)] )
+			base->data[(ymax-y)*base->bytes_per_line + (x+xoff)] = n;
+		}
+	    }
+	    xoff += rint(gv->parts[i].fullAdvance*scale) - overlap;
+	}
+    } else {
+	int xmin, xmax, ymin, ymax;
+	int yoff, xoff, width;
+
+	xoff = me->xmin<0 ? -me->xmin : 0;
+	width = xoff + me->width + ICON_WIDTH;
+	ymin = me->ymin; ymax = me->ymax;
+	xmin = xmax = 0;
+	for ( i=0; i<gv->part_cnt; ++i ) {
+	    int overlap;
+	    if ( i==gv->part_cnt-1 )
+		overlap=0;
+	    else {
+		overlap = gv->parts[i].endConnectorLength>gv->parts[i+1].startConnectorLength ?
+			gv->parts[i+1].startConnectorLength :
+			gv->parts[i].endConnectorLength;
+		overlap = rint( scale*overlap );
+	    }
+	    if ( ymin>others[i]->ymin+yoff ) ymin = others[i]->ymin+yoff;
+	    if ( ymax<others[i]->ymax+yoff ) ymax = others[i]->ymax+yoff;
+	    yoff += rint(gv->parts[i].fullAdvance*scale) - overlap;
+	    if ( others[i]->xmin<xmin ) xmin = others[i]->xmin;
+	    if ( others[i]->xmax>xmax ) xmax = others[i]->xmax;
+	}
+	if ( xmin<-width ) {
+	    xoff = -xmin-width;
+	    width = -xmin;
+	}
+	if ( xmax>0 )
+	    width += xmax;
+	if ( ymax<=0 ) ymax = 1;
+	if ( ymin>0 ) ymin = 0;
+	img = GImageCreate(it_index,width+2,ymax-ymin+2);
+	base = img->u.image;
+	memset(base->data,'\0',base->bytes_per_line*base->height);
+
+	++xoff;		/* One pixel margin */
+
+	for ( y=me->ymin; y<=me->ymax; ++y ) {
+	    for ( x=me->xmin; x<=me->xmax; ++x ) {
+		base->data[(1+ymax-y)*base->bytes_per_line + (x+xoff)] =
+			me->bitmap[(me->ymax-y)*me->bytes_per_line + (x-me->xmin)];
+	    }
+	}
+	xoff += me->width;
+	{
+	    int pixel = me->depth == 8 ? 0xff : 0xf;
+	    for ( j = -1; j<2; j+=2 ) {
+		y = 1+ymax/2 + j*2;
+		for ( x=1; x<ICON_WIDTH-5; ++x )
+		    base->data[y*base->bytes_per_line + (x+width)] = pixel;
+		for ( x=ICON_WIDTH-8; x<ICON_WIDTH-1; ++x )
+		    base->data[(y+j*(ICON_WIDTH-4-x))*base->bytes_per_line + (x+width)] = pixel;
+	    }
+	    xoff += ICON_WIDTH;
+	}
+	for ( i=0; i<gv->part_cnt; ++i ) {
+	    int overlap;
+	    if ( i==gv->part_cnt-1 )
+		overlap=0;
+	    else {
+		overlap = gv->parts[i].endConnectorLength>gv->parts[i+1].startConnectorLength ?
+			gv->parts[i+1].startConnectorLength :
+			gv->parts[i].endConnectorLength;
+		overlap = rint( scale*overlap );
+	    }
+	    for ( y=others[i]->ymin; y<=others[i]->ymax; ++y ) {
+		for ( x=others[i]->xmin; x<=others[i]->xmax; ++x ) {
+		    int n = others[i]->bitmap[(others[i]->ymax-y)*others[i]->bytes_per_line + (x-others[i]->xmin)];
+		    if ( n>base->data[(ymax-y-yoff)*base->bytes_per_line + (x+xoff)] )
+			base->data[(ymax-y-yoff)*base->bytes_per_line + (x+xoff)] = n;
+		}
+	    }
+	    yoff += rint(gv->parts[i].fullAdvance*scale) - overlap;
+	}
+    }
+    for ( i=0; i<gv->part_cnt; ++i )
+	BDFCharFree(others[i]);
+    BDFCharFree(me);
+    free(others);
+
+    memset(base->clut,'\0',sizeof(*base->clut));
+    bg = GDrawGetDefaultBackground(NULL);
+    fg = GDrawGetDefaultForeground(NULL);
+    clut_scale = me->depth == 8 ? 8 : 4;
+    base->clut->clut_len = 1<<clut_scale;
+    for ( l=0; l<(1<<clut_scale); ++l )
+	base->clut->clut[l] =
+	    COLOR_CREATE(
+	     COLOR_RED(bg) + (l*(COLOR_RED(fg)-COLOR_RED(bg)))/((1<<clut_scale)-1),
+	     COLOR_GREEN(bg) + (l*(COLOR_GREEN(fg)-COLOR_GREEN(bg)))/((1<<clut_scale)-1),
+	     COLOR_BLUE(bg) + (l*(COLOR_BLUE(fg)-COLOR_BLUE(bg)))/((1<<clut_scale)-1) );
+return( img );
+}
+
+static GImage *CI_GetConstructedImage(const void *_ci) {
+    CharInfo *ci = (CharInfo *) _ci;
+    GImage *ret;
+    int is_horiz = GTabSetGetSel(GWidgetGetControl(ci->gw,CID_Tabs))-ci->vert_aspect;
+    struct glyphvariants *gv;
+
+    gv = CI_ParseVariants(NULL,ci,is_horiz,NULL,0,true);
+
+    ret = GV_GetConstructedImage(ci->sc,gv,is_horiz);
+    GlyphVariantsFree(gv);
+return( ret );
+}
+
 GImage *PST_GetImage(GGadget *pstk,SplineFont *sf,
 	struct lookup_subtable *sub,int popup_r, SplineChar *sc ) {
     int rows, cols = GMatrixEditGetColCnt(pstk);
@@ -2553,8 +2854,9 @@ return( NULL );
 	    BDFChar *other = extras[i];
 	    for ( y=other->ymin; y<=other->ymax; ++y ) {
 		for ( x=other->xmin; x<=other->xmax; ++x ) {
-		    base->data[(1+ymax-y)*base->bytes_per_line + (x+width)] =
-			    other->bitmap[(other->ymax-y)*other->bytes_per_line + (x-other->xmin)];
+		    if ( other->bitmap[(other->ymax-y)*other->bytes_per_line + (x-other->xmin)] != 0 )
+			base->data[(1+ymax-y)*base->bytes_per_line + (x+width)] =
+				other->bitmap[(other->ymax-y)*other->bytes_per_line + (x-other->xmin)];
 		}
 	    }
 	    width += other->width;
@@ -2615,6 +2917,16 @@ return;
     GGadgetPreparePopupImage(GGadgetGetWindow(g),NULL,ci,_CI_GetImage,CI_FreeKernedImage);
 }
 
+static void CI_ConstructionPopupPrepare(GGadget *g, int r, int c) {
+    CharInfo *ci = GDrawGetUserData(GGadgetGetWindow(g));
+    int rows/*, cols = GMatrixEditGetColCnt(g)*/;
+
+    (void) GMatrixEditGet(g,&rows);
+    if ( rows==0 )
+return;
+    GGadgetPreparePopupImage(GGadgetGetWindow(g),NULL,ci,CI_GetConstructedImage,CI_FreeKernedImage);
+}
+
 static unichar_t **CI_GlyphNameCompletion(GGadget *t,int from_tab) {
     CharInfo *ci = GDrawGetUserData(GDrawGetParentWindow(GGadgetGetWindow(t)));
     SplineFont *sf = ci->sc->parent;
@@ -2627,6 +2939,159 @@ static unichar_t **CI_GlyphListCompletion(GGadget *t,int from_tab) {
     SplineFont *sf = ci->sc->parent;
 
 return( SFGlyphNameCompletion(sf,t,from_tab,true));
+}
+
+
+static void extpart_finishedit(GGadget *g, int r, int c, int wasnew) {
+    int rows;
+    struct matrix_data *possub;
+    CharInfo *ci;
+    int is_horiz,cols;
+    DBounds b;
+    double full_advance;
+    SplineChar *sc;
+
+    if ( c!=0 )
+return;
+    if ( !wasnew )
+return;
+    /* If they add a new glyph to the sequence set some defaults for it. */
+    /*  only the full advance has any likelyhood of being correct */
+    ci = GDrawGetUserData(GGadgetGetWindow(g));
+    is_horiz = GTabSetGetSel(GWidgetGetControl(ci->gw,CID_Tabs))-ci->vert_aspect;
+    possub = GMatrixEditGet(g, &rows);
+    cols = GMatrixEditGetColCnt(g);
+    if ( possub[r*cols+0].u.md_str==NULL )
+return;
+    sc = SFGetChar(ci->sc->parent,-1,possub[r*cols+0].u.md_str);
+    if ( sc==NULL )
+return;
+    SplineCharFindBounds(sc,&b);
+    if ( is_horiz )
+	full_advance = b.maxx - b.minx;
+    else
+	full_advance = b.maxy - b.miny;
+    possub[r*cols+2].u.md_ival = possub[r*cols+3].u.md_ival = rint(full_advance/3);
+    possub[r*cols+4].u.md_ival = rint(full_advance);
+    GGadgetRedraw(g);
+}
+
+static GTextInfo truefalse[] = {
+    { (unichar_t *) N_("false"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("true"),  NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1},
+    NULL };
+
+static struct col_init extensionpart[] = {
+    { me_string , NULL, NULL, NULL, N_("Glyph") },
+    { me_enum, NULL, truefalse, NULL, N_("Extender") },
+/* GT: "Len" is an abreviation for "Length" */
+    { me_int, NULL, NULL, NULL, N_("StartLen") },
+    { me_int, NULL, NULL, NULL, N_("EndLen") },
+    { me_int, NULL, NULL, NULL, N_("FullLen") },
+    };
+struct matrixinit mi_extensionpart =
+    { sizeof(extensionpart)/sizeof(struct col_init), extensionpart, 0, NULL, NULL, NULL, extpart_finishedit };
+
+static int isxheight(int uni) {
+    if ( uni>=0x10000 || !islower(uni))
+return( false );
+
+    if ( uni=='a' || uni=='c' || uni=='e' || uni=='i' || uni=='j' ||
+	    (uni>='m' && uni<='z') ||
+	    uni==0x131 || uni==0x237 || /* Ignore accented letters except the dotlessi/j */
+	    (uni>=0x250 && uni<0x253) || uni==0x254 || uni==0x255 ||
+	    (uni>=0x258 && uni<0x265) || uni==0x269 || uni==0x26A ||
+	    (uni>=0x26f && uni<=0x277) || uni==0x279 ||
+	    uni==0x3b1 || uni==0x3b3 || uni==0x3b5 || uni==0x3b7 ||
+	    uni==0x3b9 || uni==0x3ba || uni==0x3bc || uni==0x3bd ||
+	    (uni>=0x3bf && uni<=0x3c7) || uni==0x3c9 ||
+	    (uni>=0x400 && uni<=0x45f))
+return( true );
+
+return( false );
+}
+
+static int isbaseline(int uni) {
+    /* Treat rounded letters as being on the base line */
+    /* But don't bother including guys that normally are on the baseline */
+
+    if ( (uni>='a' && uni<'g') || uni=='h' || uni=='i' ||
+	    (uni>='k' && uni<='o') || (uni>='r' && uni<'y') || uni=='z' ||
+	    (uni>='A' && uni<='Z' ) ||
+	    uni==0x3b0 || uni==0x3b4 || uni==0x3b5 || (uni>=0x3b8 && uni<0x3bb) ||
+	    uni==0x3bd || uni==0x3bf || uni==0x3c0 || (uni>=0x3c2 && uni<0x3c6) ||
+	    uni==0x3c8 || uni==0x3c7 || uni==0x3c9 ||
+	    (uni>=0x390 || uni<0x3af) ||
+	    (uni>=0x400 && uni>0x40f) || (uni>=0x410 && uni<=0x413) ||
+	    (uni>=0x415 && uni<0x425) || uni==0x427 || uni==0x428 ||
+	    (uni>=0x42a && uni<0x433) || (uni>=0x435 && uni<0x45e) )
+return( true );
+
+return( false );
+}
+
+static int TeX_Default(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	CharInfo *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	int cid = GGadgetGetCid(g);
+	DBounds b;
+	int value;
+	SplineChar *basesc = NULL;
+	SplineFont *sf = ci->sc->parent;
+	int style;
+	char buf[12];
+
+	basesc = ci->sc;
+	/* Try to align the top of lowercase (xheight) letters all at the */
+	/*  same height. Ditto for uppercase & ascender letters */
+	if ( cid==CID_TeX_HeightD && ci->sc->unicodeenc<0x10000 &&
+		isxheight(ci->sc->unicodeenc) &&
+		(basesc = SFGetChar(sf,'x',NULL))!=NULL )
+	    /* Done */;
+	else if ( cid==CID_TeX_HeightD && ci->sc->unicodeenc<0x10000 &&
+		islower(ci->sc->unicodeenc) &&
+		(basesc = SFGetChar(sf,'l',NULL))!=NULL )
+	    /* Done */;
+	else if ( cid==CID_TeX_HeightD && ci->sc->unicodeenc<0x10000 &&
+		isupper(ci->sc->unicodeenc) &&
+		(basesc = SFGetChar(sf,'I',NULL))!=NULL )
+	    /* Done */;
+	else if ( cid==CID_TeX_DepthD && ci->sc->unicodeenc<0x10000 &&
+		isbaseline(ci->sc->unicodeenc) &&
+		(basesc = SFGetChar(sf,'I',NULL))!=NULL )
+	    /* Done */;
+	SplineCharFindBounds(basesc,&b);
+	style = MacStyleCode(sf,NULL);
+
+	if ( cid == CID_TeX_HeightD ) {
+	    value = rint(b.maxy);
+	    if ( value<0 ) value = 0;
+	} else if ( cid == CID_TeX_DepthD ) {
+	    value = -rint(b.miny);
+	    if ( value<5 ) value = 0;
+	} else if ( cid == CID_HorAccentD ) {
+	    double italic_off = (b.maxy-b.miny)*tan(-sf->italicangle);
+	    if ( b.maxx-b.minx-italic_off < 0 )
+		value = rint(b.minx + (b.maxx-b.minx)/2);
+	    else
+		value = rint(b.minx + italic_off + (b.maxx - b.minx - italic_off)/2);
+	} else if ( (style&sf_italic) || sf->italicangle!=0 ) {
+	    value = rint((b.maxx-ci->sc->width) +
+			    (sf->ascent+sf->descent)/16.0);
+	} else
+	    value = 0;
+	sprintf( buf, "%d", value );
+	GGadgetSetTitle8(GWidgetGetControl(ci->gw,cid-5),buf);
+    }
+return( true );
+}
+
+static int CI_SubSuperPositionings(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	/*CharInfo *ci = GDrawGetUserData(GGadgetGetWindow(g));*/
+	/* !!!!! */
+    }
+return( true );
 }
 
 static void CI_NoteAspect(CharInfo *ci) {
@@ -2691,6 +3156,9 @@ static void CIFillup(CharInfo *ci) {
     KernPair *kp;
     unichar_t ubuf[4];
     GTextInfo **ti;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    char *devtabstr;
+#endif
 
     sprintf(buf,_("Glyph Info for %.40s"),sc->name);
     GDrawSetWindowTitles8(ci->gw, buf, _("Glyph Info..."));
@@ -2848,24 +3316,87 @@ static void CIFillup(CharInfo *ci) {
 	sprintf(buffer,"%d",sc->tex_height);
     else
 	buffer[0] = '\0';
-    uc_strcpy(ubuf,buffer);
-    GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_TeX_Height),ubuf);
+    GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_TeX_Height),buffer);
 
     if ( sc->tex_depth!=TEX_UNDEF )
 	sprintf(buffer,"%d",sc->tex_depth);
     else
 	buffer[0] = '\0';
-    uc_strcpy(ubuf,buffer);
-    GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_TeX_Depth),ubuf);
+    GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_TeX_Depth),buffer);
 
     if ( sc->italic_correction!=TEX_UNDEF )
 	sprintf(buffer,"%d",sc->italic_correction);
     else
 	buffer[0] = '\0';
-    uc_strcpy(ubuf,buffer);
-    GGadgetSetTitle(GWidgetGetControl(ci->gw,CID_TeX_Italic),ubuf);
+    GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_TeX_Italic),buffer);
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    DevTabToString(&devtabstr,sc->italic_adjusts);
+    GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_ItalicDevTab),devtabstr==NULL?"":devtabstr);
+    free(devtabstr);
+#endif
 
-    CI_NoteAspect(ci);
+    if ( sc->top_accent_horiz!=TEX_UNDEF )
+	sprintf(buffer,"%d",sc->top_accent_horiz);
+    else
+	buffer[0] = '\0';
+    GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_HorAccent),buffer);
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    DevTabToString(&devtabstr,sc->top_accent_adjusts);
+    GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_AccentDevTab),devtabstr==NULL?"":devtabstr);
+    free(devtabstr);
+#endif
+
+    GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_IsExtended),sc->is_extended_shape);
+
+    {
+	GGadget *g = GWidgetGetControl(ci->gw,CID_VariantList+0*100);
+	if ( sc->vert_variants==NULL || sc->vert_variants->variants==NULL )
+	    GGadgetSetTitle8(g,"");
+	else
+	    GGadgetSetTitle8(g,sc->vert_variants->variants);
+	sprintf(buffer,"%d",sc->vert_variants!=NULL?sc->vert_variants->italic_correction:0);
+	GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_ExtItalicCor+0*100),buffer);
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	DevTabToString(&devtabstr,sc->vert_variants!=NULL?
+		sc->vert_variants->italic_adjusts:
+		NULL);
+	GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_ExtItalicDev+0*100),devtabstr==NULL?"":devtabstr);
+	free(devtabstr);
+#endif
+
+	g = GWidgetGetControl(ci->gw,CID_VariantList+1*100);
+	if ( sc->horiz_variants==NULL || sc->horiz_variants->variants==NULL )
+	    GGadgetSetTitle8(g,"");
+	else
+	    GGadgetSetTitle8(g,sc->vert_variants->variants);
+	sprintf(buffer,"%d",sc->vert_variants!=NULL?sc->horiz_variants->italic_correction:0);
+	GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_ExtItalicCor+1*100),buffer);
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	DevTabToString(&devtabstr,sc->horiz_variants!=NULL?
+		sc->horiz_variants->italic_adjusts:
+		NULL);
+	GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_ExtItalicDev+1*100),devtabstr==NULL?"":devtabstr);
+	free(devtabstr);
+#endif
+    }
+    for ( i=0; i<2; ++i ) {
+	struct glyphvariants *gv = i ? sc->vert_variants : sc->horiz_variants;
+	GGadget *g = GWidgetGetControl(ci->gw,CID_ExtensionList+i*100);
+	int cols = GMatrixEditGetColCnt(g), j;
+	if ( gv==NULL ) {
+	    GMatrixEditSet(g, NULL,0,false);
+    continue;
+	}
+	mds[i] = gcalloc(gv->part_cnt*cols,sizeof(struct matrix_data));
+	for ( j=0; j<gv->part_cnt; ++j ) {
+	    mds[i][j*cols+0].u.md_str = copy(gv->parts[j].component);
+	    mds[i][j*cols+1].u.md_ival = gv->parts[j].is_extender;
+	    mds[i][j*cols+2].u.md_ival = gv->parts[j].startConnectorLength;
+	    mds[i][j*cols+3].u.md_ival = gv->parts[j].endConnectorLength;
+	    mds[i][j*cols+4].u.md_ival = gv->parts[j].fullAdvance;
+	}
+	GMatrixEditSet(g, mds[i],gv->part_cnt,false);
+    }
 }
 
 static int CI_NextPrev(GGadget *g, GEvent *e) {
@@ -2940,19 +3471,20 @@ void SCCharInfo(SplineChar *sc,EncMap *map,int enc) {
     CharInfo *ci;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData ugcd[12], cgcd[6], psgcd[7][7], cogcd[3], mgcd[9], tgcd[10];
-    GGadgetCreateData lcgcd[3];
-    GTextInfo ulabel[12], clabel[6], pslabel[7][6], colabel[3], mlabel[9], tlabel[10];
-    GTextInfo lclabel[3];
+    GGadgetCreateData ugcd[12], cgcd[6], psgcd[7][7], cogcd[3], mgcd[9], tgcd[16];
+    GGadgetCreateData lcgcd[3], vargcd[2][7];
+    GTextInfo ulabel[12], clabel[6], pslabel[7][6], colabel[3], mlabel[9], tlabel[16];
+    GTextInfo lclabel[3], varlabel[2][6];
     GGadgetCreateData mbox[4], *mvarray[7], *mharray1[7], *mharray2[8];
     GGadgetCreateData ubox[3], *uhvarray[19], *uharray[6];
     GGadgetCreateData cbox[3], *cvarray[5], *charray[4];
     GGadgetCreateData pstbox[7][4], *pstvarray[7][5], *pstharray1[7][8];
     GGadgetCreateData cobox[2], *covarray[4];
-    GGadgetCreateData tbox[2], *thvarray[16];
+    GGadgetCreateData tbox[3], *thvarray[36], *tbarray[4];
     GGadgetCreateData lcbox[2], *lchvarray[3][4];
+    GGadgetCreateData varbox[2][2], *varhvarray[2][5][4];
     int i;
-    GTabInfo aspects[14];
+    GTabInfo aspects[16];
     static GBox smallbox = { bt_raised, bs_rect, 2, 1, 0, 0, 0,0,0,0, COLOR_DEFAULT,COLOR_DEFAULT };
     static int boxset=0;
     FontRequest rq;
@@ -3270,48 +3802,159 @@ return;
 	tgcd[0].gd.label = &tlabel[0];
 	tgcd[0].gd.pos.x = 5; tgcd[0].gd.pos.y = 5+4; 
 	tgcd[0].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-	tgcd[0].gd.popup_msg = (unichar_t *) _("These fields are the metrics fields used by TeX\nThe height and depth are pretty self-explanatory,\nexcept that they are corrected for optical distortion.\nSo 'x' and 'o' probably have the same height.\nSubscript and Superscript positions\nare only used in math fonts and should be left blank elsewhere");
+	tgcd[0].gd.popup_msg = (unichar_t *) _("The height and depth fields are the metrics fields used\nby TeX, they are corrected for optical distortion.\nSo 'x' and 'o' probably have the same height.");
 	tgcd[0].creator = GLabelCreate;
 	thvarray[0] = &tgcd[0];
 
 	tgcd[1].gd.pos.x = 85; tgcd[1].gd.pos.y = 5;
-	tgcd[1].gd.flags = gg_enabled|gg_visible;
+	tgcd[1].gd.pos.width = 60;
+	tgcd[1].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
 	tgcd[1].gd.cid = CID_TeX_Height;
 	tgcd[1].creator = GTextFieldCreate;
-	thvarray[1] = &tgcd[1]; thvarray[2] = NULL;
+	tgcd[1].gd.popup_msg = tgcd[0].gd.popup_msg;
+	thvarray[1] = &tgcd[1];
 
-	tlabel[2].text = (unichar_t *) _("Depth:");
+	tlabel[2].text = (unichar_t *) _("Guess");
 	tlabel[2].text_is_1byte = true;
 	tgcd[2].gd.label = &tlabel[2];
-	tgcd[2].gd.pos.x = 5; tgcd[2].gd.pos.y = 31+4; 
 	tgcd[2].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	tgcd[2].gd.cid = CID_TeX_HeightD;
+	tgcd[2].gd.handle_controlevent = TeX_Default;
+	tgcd[2].creator = GButtonCreate;
 	tgcd[2].gd.popup_msg = tgcd[0].gd.popup_msg;
-	tgcd[2].creator = GLabelCreate;
-	thvarray[3] = &tgcd[2];
+	thvarray[2] = &tgcd[2]; thvarray[3] = GCD_Glue; thvarray[4] = NULL;
 
-	tgcd[3].gd.pos.x = 85; tgcd[3].gd.pos.y = 31;
+	tlabel[3].text = (unichar_t *) _("Depth:");
+	tlabel[3].text_is_1byte = true;
+	tgcd[3].gd.label = &tlabel[3];
+	tgcd[3].gd.pos.x = 5; tgcd[3].gd.pos.y = 31+4; 
 	tgcd[3].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-	tgcd[3].gd.cid = CID_TeX_Depth;
-	tgcd[3].creator = GTextFieldCreate;
-	thvarray[4] = &tgcd[3]; thvarray[5] = NULL;
+	tgcd[3].gd.popup_msg = tgcd[0].gd.popup_msg;
+	tgcd[3].creator = GLabelCreate;
+	thvarray[5] = &tgcd[3];
 
-	tlabel[4].text = (unichar_t *) _("Italic Correction:");
-	tlabel[4].text_is_1byte = true;
-	tgcd[4].gd.label = &tlabel[4];
-	tgcd[4].gd.pos.x = 5; tgcd[4].gd.pos.y = 57+4; 
+	tgcd[4].gd.pos.x = 85; tgcd[4].gd.pos.y = 31;
+	tgcd[4].gd.pos.width = 60;
 	tgcd[4].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	tgcd[4].gd.cid = CID_TeX_Depth;
+	tgcd[4].creator = GTextFieldCreate;
 	tgcd[4].gd.popup_msg = tgcd[0].gd.popup_msg;
-	tgcd[4].creator = GLabelCreate;
 	thvarray[6] = &tgcd[4];
 
-	tgcd[5].gd.pos.x = 85; tgcd[5].gd.pos.y = 57; tgcd[5].gd.pos.width = 50;
-	tgcd[5].gd.flags = gg_enabled|gg_visible|gg_text_xim;
-	tgcd[5].gd.cid = CID_TeX_Italic;
-	tgcd[5].creator = GTextFieldCreate;
-	thvarray[7] = &tgcd[5]; thvarray[8] = NULL;
+	tlabel[5].text = (unichar_t *) _("Guess");
+	tlabel[5].text_is_1byte = true;
+	tgcd[5].gd.label = &tlabel[5];
+	tgcd[5].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	tgcd[5].gd.cid = CID_TeX_DepthD;
+	tgcd[5].gd.handle_controlevent = TeX_Default;
+	tgcd[5].creator = GButtonCreate;
+	tgcd[5].gd.popup_msg = tgcd[0].gd.popup_msg;
+	thvarray[7] = &tgcd[5];  thvarray[8] = GCD_Glue; thvarray[9] = NULL;
 
-	thvarray[9] = GCD_Glue; thvarray[10] = GCD_Glue; thvarray[11] = NULL;
-	thvarray[12] = NULL;
+	tlabel[6].text = (unichar_t *) _("Italic Correction:");
+	tlabel[6].text_is_1byte = true;
+	tgcd[6].gd.label = &tlabel[6];
+	tgcd[6].gd.pos.x = 5; tgcd[6].gd.pos.y = 57+4; 
+	tgcd[6].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	tgcd[6].creator = GLabelCreate;
+	tgcd[6].gd.popup_msg = (unichar_t *) _("The Italic correction field is used by both TeX and the MS 'MATH'\ntable. It is used when joining slanted text (italic) to upright.\nIt is the amount of extra white space needed so the slanted text\nwill not run into the upright text.");
+	thvarray[10] = &tgcd[6];
+
+	tgcd[7].gd.pos.x = 85; tgcd[7].gd.pos.y = 57;
+	tgcd[7].gd.pos.width = 60;
+	tgcd[7].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	tgcd[7].gd.cid = CID_TeX_Italic;
+	tgcd[7].creator = GTextFieldCreate;
+	tgcd[7].gd.popup_msg = tgcd[6].gd.popup_msg;
+	thvarray[11] = &tgcd[7];
+
+	tlabel[8].text = (unichar_t *) _("Guess");
+	tlabel[8].text_is_1byte = true;
+	tgcd[8].gd.label = &tlabel[8];
+	tgcd[8].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	tgcd[8].gd.cid = CID_TeX_ItalicD;
+	tgcd[8].gd.handle_controlevent = TeX_Default;
+	tgcd[8].creator = GButtonCreate;
+	tgcd[8].gd.popup_msg = tgcd[6].gd.popup_msg;
+	thvarray[12] = &tgcd[8];
+
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	tgcd[9].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	tgcd[9].gd.cid = CID_ItalicDevTab;
+	tgcd[9].creator = GTextFieldCreate;
+	tgcd[9].gd.popup_msg = (unichar_t *) _("A device table for italic correction.\nExpects a comma separated list of <pixelsize>\":\"<adjustment>\nAs \"9:-1,12:1,13:1\"");
+	thvarray[13] = &tgcd[9]; thvarray[14] = NULL;
+#else
+	thvarray[13] = GCD_Glue; thvarray[14] = NULL;
+#endif
+
+	tlabel[10].text = (unichar_t *) _("Top Accent Pos:");
+	tlabel[10].text_is_1byte = true;
+	tgcd[10].gd.label = &tlabel[10];
+	tgcd[10].gd.pos.x = 5; tgcd[10].gd.pos.y = 57+4; 
+	tgcd[10].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	tgcd[10].gd.popup_msg = tgcd[9].gd.popup_msg;
+	tgcd[10].creator = GLabelCreate;
+	tgcd[10].gd.popup_msg = (unichar_t *) _("In the MS 'MATH' table this value specifies where (horizontally)\nan accent should be placed above the glyph. Vertical placement\nis handled by other means");
+	thvarray[15] = &tgcd[10];
+
+	tgcd[11].gd.pos.x = 85; tgcd[11].gd.pos.y = 57;
+	tgcd[11].gd.pos.width = 60;
+	tgcd[11].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	tgcd[11].gd.cid = CID_HorAccent;
+	tgcd[11].creator = GTextFieldCreate;
+	tgcd[11].gd.popup_msg = tgcd[9].gd.popup_msg;
+	thvarray[16] = &tgcd[11];
+
+	tlabel[12].text = (unichar_t *) _("Guess");
+	tlabel[12].text_is_1byte = true;
+	tgcd[12].gd.label = &tlabel[12];
+	tgcd[12].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	tgcd[12].gd.cid = CID_HorAccentD;
+	tgcd[12].gd.handle_controlevent = TeX_Default;
+	tgcd[12].creator = GButtonCreate;
+	tgcd[12].gd.popup_msg = tgcd[10].gd.popup_msg;
+	thvarray[17] = &tgcd[12];
+
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	tgcd[13].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	tgcd[13].gd.cid = CID_AccentDevTab;
+	tgcd[13].creator = GTextFieldCreate;
+	tgcd[13].gd.popup_msg = (unichar_t *) _("A device table for horizontal accent positioning.\nExpects a comma separated list of <pixelsize>\":\"<adjustment>\nAs \"9:-1,12:1,13:1\"");
+	thvarray[18] = &tgcd[13]; thvarray[19] = NULL;
+#else
+	thvarray[18] = GCD_Glue; thvarray[19] = NULL;
+#endif
+
+	tlabel[14].text = (unichar_t *) _("Is Extended Shape");
+	tlabel[14].text_is_1byte = true;
+	tgcd[14].gd.label = &tlabel[14];
+	tgcd[14].gd.pos.x = 5; tgcd[14].gd.pos.y = 57+4; 
+	tgcd[14].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	tgcd[14].gd.cid = CID_IsExtended;
+	tgcd[14].creator = GCheckBoxCreate;
+	tgcd[14].gd.popup_msg = (unichar_t *) _("Is this an extended shape (like a tall parenthesis)?\nExtended shapes need special attention for vertical\nsuperscript placement.");
+	thvarray[20] = &tgcd[14];
+	thvarray[21] = thvarray[22] = GCD_ColSpan; thvarray[23] = GCD_Glue; thvarray[24] = NULL;
+
+	tlabel[15].text = (unichar_t *) _("Sub/Superscript Kerning");
+	tlabel[15].text_is_1byte = true;
+	tgcd[15].gd.label = &tlabel[15];
+	tgcd[15].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	tgcd[15].gd.handle_controlevent = CI_SubSuperPositionings;
+	tgcd[15].creator = GButtonCreate;
+	tgcd[15].gd.popup_msg = (unichar_t *) _("Brings up a dialog which gives fine control over\nhorizontal positioning of subscripts and superscripts\ndepending on their vertical positioning.");
+	tbarray[0] = GCD_Glue; tbarray[1] = &tgcd[15]; tbarray[2] = GCD_Glue; tbarray[3] = NULL;
+
+	tbox[2].gd.flags = gg_enabled|gg_visible;
+	tbox[2].gd.u.boxelements = tbarray;
+	tbox[2].creator = GHBoxCreate;
+
+	thvarray[25] = &tbox[2];
+	thvarray[26] = thvarray[27] = thvarray[28] = GCD_ColSpan; thvarray[29] = NULL;
+
+	thvarray[30] = thvarray[31] = thvarray[32] = thvarray[33] = GCD_Glue; thvarray[34] = NULL;
+	thvarray[35] = NULL;
 
 	tbox[0].gd.flags = gg_enabled|gg_visible;
 	tbox[0].gd.u.boxelements = thvarray;
@@ -3343,6 +3986,77 @@ return;
 	lcbox[0].gd.flags = gg_enabled|gg_visible;
 	lcbox[0].gd.u.boxelements = lchvarray[0];
 	lcbox[0].creator = GHVBoxCreate;
+
+	memset(&vargcd,0,sizeof(vargcd));
+	memset(&varbox,0,sizeof(varbox));
+	memset(&varlabel,0,sizeof(varlabel));
+
+	for ( i=0; i<2; ++i ) {
+	    varlabel[i][0].text = (unichar_t *) _("Variant Glyphs:");
+	    varlabel[i][0].text_is_1byte = true;
+	    vargcd[i][0].gd.label = &varlabel[i][0];
+	    vargcd[i][0].gd.pos.x = 5; vargcd[i][0].gd.pos.y = 57+4; 
+	    vargcd[i][0].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	    vargcd[i][0].creator = GLabelCreate;
+	    vargcd[i][0].gd.popup_msg = (unichar_t *) _("A list of the names of pre defined glyphs which represent\nbigger versions of the current glyph.");
+	    varhvarray[i][0][0] = &vargcd[i][0];
+
+	    vargcd[i][1].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	    vargcd[i][1].gd.cid = CID_VariantList+i*100;
+	    vargcd[i][1].creator = GTextCompletionCreate;
+	    vargcd[i][1].gd.popup_msg = vargcd[i][0].gd.popup_msg;
+	    varhvarray[i][0][1] = &vargcd[i][1]; varhvarray[i][0][2] = GCD_ColSpan; varhvarray[i][0][3] = NULL;
+
+	    varlabel[i][2].text = (unichar_t *) _("Glyph Extension Components");
+	    varlabel[i][2].text_is_1byte = true;
+	    vargcd[i][2].gd.label = &varlabel[i][2];
+	    vargcd[i][2].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	    vargcd[i][2].creator = GLabelCreate;
+	    vargcd[i][2].gd.popup_msg = (unichar_t *) _("A really big version of this glyph may be made up of the\nfollowing component glyphs. They will be stacked either\nhorizontally or vertically. Glyphs marked as Extenders may\nbe removed or repeated (to make shorter or longer versions).\nThe StartLength is the length of the flat section at the\nstart of the glyph which may be overlapped with the previous\nglyph, while the EndLength is the similar region at the end\nof the glyph. The FullLength is the full length of the glyph." );
+	    varhvarray[i][1][0] = &vargcd[i][2];
+	    varhvarray[i][1][1] = varhvarray[i][1][2] = GCD_ColSpan; varhvarray[i][1][3] = NULL;
+
+/* GT: "Cor" is an abbreviation for correction */
+	    varlabel[i][3].text = (unichar_t *) _("Italic Cor:");
+	    varlabel[i][3].text_is_1byte = true;
+	    vargcd[i][3].gd.label = &varlabel[i][3];
+	    vargcd[i][3].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	    vargcd[i][3].creator = GLabelCreate;
+	    vargcd[i][3].gd.popup_msg = (unichar_t *) _("The italic correction of the composed glyph. Should be independant of glyph size");
+	    varhvarray[i][2][0] = &vargcd[i][3];
+
+	    vargcd[i][4].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	    vargcd[i][4].gd.pos.width = 60;
+	    vargcd[i][4].gd.cid = CID_ExtItalicCor+i*100;
+	    vargcd[i][4].creator = GTextFieldCreate;
+	    vargcd[i][4].gd.popup_msg = vargcd[i][4].gd.popup_msg;
+	    varhvarray[i][2][1] = &vargcd[i][4];
+
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	    vargcd[i][5].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	    vargcd[i][5].gd.pos.width = 60;
+	    vargcd[i][5].gd.cid = CID_ExtItalicDev+i*100;
+	    vargcd[i][5].creator = GTextFieldCreate;
+	    vargcd[i][5].gd.popup_msg = vargcd[i][3].gd.popup_msg;
+	    varhvarray[i][2][2] = &vargcd[i][5];
+#else
+	    varhvarray[i][2][2] = GCD_Glue;
+#endif
+	    varhvarray[i][2][3] = NULL;
+
+	    vargcd[i][6].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	    vargcd[i][6].gd.u.matrix = &mi_extensionpart;
+	    vargcd[i][6].gd.cid = CID_ExtensionList+i*100;
+	    vargcd[i][6].creator = GMatrixEditCreate;
+	    varhvarray[i][3][0] = &vargcd[i][6];
+	    varhvarray[i][3][1] = varhvarray[i][3][2] = GCD_ColSpan; varhvarray[i][3][3] = NULL;
+
+	    varhvarray[i][4][0] = NULL;
+
+	    varbox[i][0].gd.flags = gg_enabled|gg_visible;
+	    varbox[i][0].gd.u.boxelements = varhvarray[i][0];
+	    varbox[i][0].creator = GHVBoxCreate;
+	}
 
 	memset(&mgcd,0,sizeof(mgcd));
 	memset(&mbox,0,sizeof(mbox));
@@ -3401,20 +4115,35 @@ return;
 
 	aspects[i].text = (unichar_t *) _("Components");
 	aspects[i].text_is_1byte = true;
+	aspects[i].nesting = 1;
 	aspects[i++].gcd = cobox;
 
 	ci->lc_aspect = i;
 	aspects[i].text = (unichar_t *) _("Lig. Carets");
 	aspects[i].text_is_1byte = true;
+	aspects[i].nesting = 1;
 	aspects[i++].gcd = lcbox;
 
 	aspects[i].text = (unichar_t *) _("Counters");
 	aspects[i].text_is_1byte = true;
 	aspects[i++].gcd = pstbox[6];
 
-	aspects[i].text = (unichar_t *) U_("ΤεΧ");		/* TeX */
+	aspects[i].text = (unichar_t *) U_("ΤεΧ & Math");	/* TeX */
 	aspects[i].text_is_1byte = true;
 	aspects[i++].gcd = tbox;
+
+	ci->vert_aspect = i;
+/* GT: "Vert." is an abbreviation for Vertical */
+	aspects[i].text = (unichar_t *) U_("Vert. Variants");
+	aspects[i].text_is_1byte = true;
+	aspects[i].nesting = 1;
+	aspects[i++].gcd = varbox[0];
+
+/* GT: "Horiz." is an abbreviation for Horizontal */
+	aspects[i].text = (unichar_t *) U_("Horiz. Variants");
+	aspects[i].text_is_1byte = true;
+	aspects[i].nesting = 1;
+	aspects[i++].gcd = varbox[1];
 
 	aspects[last_gi_aspect].selected = true;
 
@@ -3526,11 +4255,16 @@ return;
 
 	GHVBoxSetExpandableRow(cobox[0].ret,gb_expandglue);
 	GHVBoxSetExpandableRow(tbox[0].ret,gb_expandglue);
-	GHVBoxSetExpandableCol(tbox[0].ret,1);
+	GHVBoxSetExpandableCol(tbox[0].ret,gb_expandglue);
 	GHVBoxSetPadding(tbox[0].ret,6,4);
+	GHVBoxSetExpandableCol(tbox[2].ret,gb_expandglue);
 
 	GHVBoxSetExpandableRow(lcbox[0].ret,gb_expandglue);
 	GHVBoxSetExpandableCol(lcbox[0].ret,gb_expandglue);
+
+	GHVBoxSetExpandableRow(varbox[0][0].ret,3);
+	GHVBoxSetExpandableRow(varbox[1][0].ret,3);
+
 	GHVBoxFitWindow(mbox[0].ret);
 	
 	memset(&rq,0,sizeof(rq));
@@ -3540,6 +4274,12 @@ return;
 	font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(ci->gw),&rq);
 	for ( i=0; i<5; ++i )
 	    GGadgetSetFont(psgcd[i][0].ret,font);
+	for ( i=0; i<2; ++i ) {
+	    GCompletionFieldSetCompletion(vargcd[i][1].ret,CI_GlyphNameCompletion);
+	    GCompletionFieldSetCompletionMode(vargcd[i][1].ret,true);
+	    GMatrixEditSetColumnCompletion(vargcd[i][6].ret,0,CI_GlyphNameCompletion);
+	    GMatrixEditSetMouseMoveReporter(vargcd[i][6].ret,CI_ConstructionPopupPrepare);
+	}
 
     CIFillup(ci);
 
@@ -3820,11 +4560,14 @@ return;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 void CharInfoInit(void) {
-    static GTextInfo *lists[] = { glyphclasses, std_colors, NULL };
+    static GTextInfo *lists[] = { glyphclasses, std_colors, truefalse, NULL };
     static int done = 0;
     int i, j;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     static char **cnames[] = { newstrings, NULL };
+    static struct col_init *col_inits[] = { extensionpart, devtabci,
+	simplesubsci, ligatureci, altsubsci, multsubsci, simpleposci,
+	pairposci, NULL };
 #endif
 
     if ( done )
@@ -3837,5 +4580,8 @@ return;
     for ( i=0; cnames[i]!=NULL; ++i )
 	for ( j=0; cnames[i][j]!=NULL; ++j )
 	    cnames[i][j] = _(cnames[i][j]);
+    for ( i=0; col_inits[i]!=NULL; ++i )
+	for ( j=0; col_inits[i][j].title!=NULL; ++j )
+	    col_inits[i][j].title=_(col_inits[i][j].title);
 #endif
 }    

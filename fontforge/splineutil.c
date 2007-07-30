@@ -4958,6 +4958,42 @@ SplineChar *SplineCharCreate(void) {
 return( sc );
 }
 
+void GlyphVariantsFree(struct glyphvariants *gv) {
+    int i;
+
+    if ( gv==NULL )
+return;
+    free(gv->variants);
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    DeviceTableFree(gv->italic_adjusts);
+#endif
+    for ( i=0; i<gv->part_cnt; ++i )
+	free( gv->parts[i].component );
+    free(gv->parts);
+    chunkfree(gv,sizeof(*gv));
+}
+
+void MathKernVContentsFree(struct mathkernvertex *mk) {
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    int i;
+    for ( i=0; i<mk->cnt; ++i ) {
+	DeviceTableFree(mk->mkd[i].height_adjusts);
+	DeviceTableFree(mk->mkd[i].kern_adjusts);
+    }
+#endif
+    free(mk->mkd);
+}
+
+void MathKernFree(struct mathkern *mk) {
+    int i;
+
+    if ( mk==NULL )
+return;
+    for ( i=0; i<4; ++i )
+	MathKernVContentsFree( &(&mk->top_right)[i] );
+    chunkfree(mk,sizeof(*mk));
+}
+
 void SplineCharListsFree(struct splinecharlist *dlist) {
     struct splinecharlist *dnext;
     for ( ; dlist!=NULL; dlist = dnext ) {
@@ -4996,6 +5032,13 @@ return;
     free(sc->layers);
 #endif
     AltUniFree(sc->altuni);
+    GlyphVariantsFree(sc->horiz_variants);
+    GlyphVariantsFree(sc->vert_variants);
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    DeviceTableFree(sc->italic_adjusts);
+    DeviceTableFree(sc->top_accent_adjusts);
+#endif
+    MathKernFree(sc->mathkern);
 #ifndef _NO_PYTHON
     PyFF_FreeSC(sc);
 #endif

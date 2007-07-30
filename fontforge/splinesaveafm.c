@@ -386,9 +386,15 @@ return;
     }
 }
 
+int doesGlyphExpandHorizontally(SplineChar *sc) {
+return( false );
+}
+
 static void tfmDoCharList(SplineFont *sf,int i,struct tfmdata *tfmd,EncMap *map) {
     int used[256], ucnt, len, was;
     char *components;
+    SplineChar *sc;
+    struct glyphvariants **gvbase;
 
     if ( i>=map->enccount || map->map[i]==-1 || sf->glyphs[map->map[i]]==NULL ||
 	    i<tfmd->first || i>tfmd->last )
@@ -408,20 +414,28 @@ return;
     if ( ucnt<=1 )
 return;
 
+    sc = sf->glyphs[used[0]];
+    if ( sc==NULL )
+return;
     components = galloc(len+1); components[0] = '\0';
     for ( i=1; i<ucnt; ++i ) {
 	strcat(components,sf->glyphs[used[i]]->name);
 	if ( i!=ucnt-1 )
 	    strcat(components," ");
     }
-    SubsNew(sf->glyphs[used[0]],pst_alternate,CHR('T','C','H','L'),components,
-	    sf->glyphs[used[0]]);
+    gvbase = doesGlyphExpandHorizontally(sc)?&sc->horiz_variants: &sc->vert_variants;
+    if ( *gvbase==NULL )
+	*gvbase = chunkalloc(sizeof(struct glyphvariants));
+    (*gvbase)->variants = components;
 }
 
 static void tfmDoExten(SplineFont *sf,int i,struct tfmdata *tfmd,int left,EncMap *map) {
-    int j, len, k, gid, gid2;
-    char *names[4], *components;
+    int j, k, gid, gid2, cnt;
+    SplineChar *bits[4], *bats[5];
     uint8 *ext;
+    SplineChar *sc;
+    struct glyphvariants **gvbase;
+    int is_horiz;
 
     if ( i>=map->enccount || (gid=map->map[i])==-1 || sf->glyphs[gid]==NULL )
 return;
@@ -430,21 +444,50 @@ return;
 
     ext = tfmd->ext + 4*left;
 
-    names[0] = names[1] = names[2] = names[3] = ".notdef";
-    for ( j=len=0; j<4; ++j ) {
+    sc = sf->glyphs[gid];
+    if ( sc==NULL )
+return;
+    is_horiz = doesGlyphExpandHorizontally(sc);
+    gvbase = is_horiz?&sc->horiz_variants: &sc->vert_variants;
+    if ( *gvbase==NULL )
+	*gvbase = chunkalloc(sizeof(struct glyphvariants));
+
+    memset(bits,0,sizeof(bits));
+    for ( j=0; j<4; ++j ) {
 	k = ext[j];
 	if ( k!=0 && k<map->enccount && (gid2 = map->map[k])!=-1 && sf->glyphs[gid2]!=NULL )
-	    names[j] = sf->glyphs[gid2]->name;
-	len += strlen(names[j])+1;
+	    bits[j] = sf->glyphs[gid2];
     }
-    components = galloc(len); components[0] = '\0';
-    for ( j=0; j<4; ++j ) {
-	strcat(components,names[j]);
-	if ( j!=3 )
-	    strcat(components," ");
+    /* 0=>bottom, 1=>middle, 2=>top, 3=>extender */
+    cnt = 0;
+    if ( bits[0]!=NULL )
+	bats[cnt++] = bits[0];
+    if ( bits[3]!=NULL )
+	bats[cnt++] = bits[3];
+    if ( bits[1]!=NULL ) {
+	bats[cnt++] = bits[1];
+	if ( bits[3]!=NULL )
+	    bats[cnt++] = bits[3];
     }
-    SubsNew(sf->glyphs[gid],pst_multiple,CHR('T','E','X','L'),components,
-	    sf->glyphs[gid]);
+    if ( bits[2]!=NULL )
+	bats[cnt++] = bits[1];
+
+    (*gvbase)->part_cnt = cnt;
+    (*gvbase)->parts = gcalloc(cnt,sizeof(struct gv_part));
+    for ( j=0; j<cnt; ++j ) {
+	DBounds b;
+	double len;
+	SplineCharFindBounds(bats[j],&b);
+	if ( is_horiz )
+	    len = b.maxx;
+	else
+	    len = b.maxy;
+	(*gvbase)->parts[j].component = copy(bats[j]->name);
+	(*gvbase)->parts[j].is_extender = bats[j]==bits[3];
+	(*gvbase)->parts[j].startConnectorLength = len/4;
+	(*gvbase)->parts[j].endConnectorLength = len/4;
+	(*gvbase)->parts[j].fullAdvance = len;
+    }
 }
 
 #define BigEndianWord(pt) ((((uint8 *) pt)[0]<<24) | (((uint8 *) pt)[1]<<16) | (((uint8 *) pt)[2]<<8) | (((uint8 *) pt)[3]))
@@ -609,9 +652,11 @@ return;
 /* almost the same as the tfm version except that we deal with shorts rather */
 /*  than bytes */
 static void ofmDoExten(SplineFont *sf,int i,struct tfmdata *tfmd,int left,EncMap *map) {
-    int j, len, k, gid, gid2;
-    char *names[4], *components;
+    int j, k, gid, gid2, cnt;
     uint8 *ext;
+    SplineChar *sc, *bits[4], *bats[4];
+    struct glyphvariants **gvbase;
+    int is_horiz;
 
     if ( i>=map->enccount || (gid=map->map[i])==-1 || sf->glyphs[gid]==NULL )
 return;
@@ -620,21 +665,50 @@ return;
 
     ext = tfmd->ext + 4*left;
 
-    names[0] = names[1] = names[2] = names[3] = ".notdef";
-    for ( j=len=0; j<4; ++j ) {
+    sc = sf->glyphs[gid];
+    if ( sc==NULL )
+return;
+    is_horiz = doesGlyphExpandHorizontally(sc);
+    gvbase = is_horiz?&sc->horiz_variants: &sc->vert_variants;
+    if ( *gvbase==NULL )
+	*gvbase = chunkalloc(sizeof(struct glyphvariants));
+
+    memset(bits,0,sizeof(bits));
+    for ( j=0; j<4; ++j ) {
 	k = ExtShort(j);
 	if ( k!=0 && k<map->enccount && (gid2 = map->map[k])!=-1 && sf->glyphs[gid2]!=NULL )
-	    names[j] = sf->glyphs[gid2]->name;
-	len += strlen(names[j])+1;
+	    bits[j] = sf->glyphs[gid2];
     }
-    components = galloc(len); components[0] = '\0';
-    for ( j=0; j<4; ++j ) {
-	strcat(components,names[j]);
-	if ( j!=3 )
-	    strcat(components," ");
+    /* 0=>bottom, 1=>middle, 2=>top, 3=>extender */
+    cnt = 0;
+    if ( bits[0]!=NULL )
+	bats[cnt++] = bits[0];
+    if ( bits[3]!=NULL )
+	bats[cnt++] = bits[3];
+    if ( bits[1]!=NULL ) {
+	bats[cnt++] = bits[1];
+	if ( bits[3]!=NULL )
+	    bats[cnt++] = bits[3];
     }
-    SubsNew(sf->glyphs[gid],pst_multiple,CHR('T','E','X','L'),components,
-	    sf->glyphs[gid]);
+    if ( bits[2]!=NULL )
+	bats[cnt++] = bits[1];
+
+    (*gvbase)->part_cnt = cnt;
+    (*gvbase)->parts = gcalloc(cnt,sizeof(struct gv_part));
+    for ( j=0; j<cnt; ++j ) {
+	DBounds b;
+	double len;
+	SplineCharFindBounds(bats[j],&b);
+	if ( is_horiz )
+	    len = b.maxx;
+	else
+	    len = b.maxy;
+	(*gvbase)->parts[j].component = copy(bats[j]->name);
+	(*gvbase)->parts[j].is_extender = bats[j]==bits[3];
+	(*gvbase)->parts[j].startConnectorLength = len/4;
+	(*gvbase)->parts[j].endConnectorLength = len/4;
+	(*gvbase)->parts[j].fullAdvance = len;
+    }
 }
 
 int LoadKerningDataFromOfm(SplineFont *sf, char *filename,EncMap *map) {
@@ -2536,20 +2610,21 @@ return( new );
 }
 
 static void FindCharlists(SplineFont *sf,int *charlistindex,EncMap *map,int maxc) {
-    PST *pst;
     int i, last, ch;
-    char *pt, *end;
+    char *pt, *end, *variants;
 
     memset(charlistindex,-1,(maxc+1)*sizeof(int));
     for ( i=0; i<maxc && i<map->enccount; ++i ) if ( map->map[i]!=-1 && SCWorthOutputting(sf->glyphs[map->map[i]])) {
 	SplineChar *sc = sf->glyphs[map->map[i]];
-	for ( pst=sc->possub; pst!=NULL; pst=pst->next )
-	    if ( pst->type == pst_alternate &&
-		    FeatureTagInFeatureScriptList(CHR('T','C','H','L'),pst->subtable->lookup->features))
-	break;
-	if ( pst!=NULL ) {
+
+	variants = NULL;
+	if ( sc->vert_variants!=NULL && sc->vert_variants->variants!=NULL )
+	    variants = sc->vert_variants->variants;
+	else if ( sc->horiz_variants!=NULL && sc->horiz_variants->variants!=NULL )
+	    variants = sc->horiz_variants->variants;
+	if ( variants!=NULL ) {
 	    last = i;
-	    for ( pt=pst->u.alt.components; *pt; pt = end ) {
+	    for ( pt=variants; *pt; pt = end ) {
 		end = strchr(pt,' ');
 		if ( end==NULL )
 		    end = pt+strlen(pt);
@@ -2569,45 +2644,56 @@ static void FindCharlists(SplineFont *sf,int *charlistindex,EncMap *map,int maxc
 
 static int FindExtensions(SplineFont *sf,struct extension *extensions,int *extenindex,
 	EncMap *map,int maxc) {
-    PST *pst;
-    int i, ecnt=0, ch;
-    char *pt, *end;
-    int16 founds[4]; int fcnt, enc;
+    int i;
+    int j,k;
+    char *foundnames[4];
+    int16 founds[4]; int fcnt, ecnt=0;
 
     memset(extenindex,-1,(maxc+1)*sizeof(int));
     for ( i=0; i<maxc && i<map->enccount; ++i ) if ( map->map[i]!=-1 && SCWorthOutputting(sf->glyphs[map->map[i]])) {
 	SplineChar *sc = sf->glyphs[map->map[i]];
-	for ( pst=sc->possub; pst!=NULL; pst=pst->next )
-	    if ( pst->type == pst_multiple &&
-		    FeatureTagInFeatureScriptList(CHR('T','E','X','L'),pst->subtable->lookup->features))
-	break;
-	if ( pst!=NULL ) {
+	struct glyphvariants *gv;
+
+	gv=NULL;
+	if ( sc->vert_variants!=NULL && sc->vert_variants->part_cnt>0 )
+	    gv = sc->vert_variants;
+	else if ( sc->horiz_variants!=NULL && sc->horiz_variants->part_cnt>0 )
+	    gv = sc->horiz_variants;
+	if ( gv!=NULL ) {
 	    fcnt = 0;
+	    foundnames[0] = foundnames[1] = foundnames[2] = foundnames[3] = NULL;
+	    for ( j=k=0; j<gv->part_cnt; ++j ) {
+		if ( !gv->parts[j].is_extender ) {
+		    if ( k>=3 ) {
+			k=4;
+	    break;
+		    } else if ( k==1 && j==gv->part_cnt-1 )
+			foundnames[2] = gv->parts[j].component;
+		    else
+			foundnames[k++] = gv->parts[j].component;
+		} else {
+		    if ( foundnames[3]==NULL || strcmp(foundnames[3],gv->parts[j].component)==0 ) {
+			foundnames[3] = gv->parts[j].component;
+			if ( k==0 )
+			    k=1;		/* Can't be first */
+		    } else {
+			k = 4;
+	    break;
+		    }
+		}
+	    }
 	    founds[0] = founds[1] = founds[2] = founds[3] = 0;
-	    for ( pt=pst->u.alt.components; *pt; pt = end ) {
-		end = strchr(pt,' ');
-		if ( end==NULL )
-		    end = pt+strlen(pt);
-		ch = *end;
-		*end = '\0';
-		if ( strcmp(pt,".notdef")==0 )		/* Idiom for a place holder */
-		    sc = NULL;
+	    for ( j=0; j<4; ++j ) if ( foundnames[j]!=NULL ) {
+		sc = SFGetChar(sf,-1,foundnames[j]);
+		if ( sc==NULL )
+		    k=4;
+		else if ( map->backmap[sc->orig_pos]<maxc &&
+			map->backmap[sc->orig_pos]!=-1 )
+		    founds[j] = map->backmap[sc->orig_pos];
 		else
-		    sc = SFGetChar(sf,-1,pt);
-		*end = ch;
-		while ( *end==' ' ) ++end;
-		if ( sc!=NULL && map->backmap[sc->orig_pos]<maxc )
-		    enc = map->backmap[sc->orig_pos];
-		else
-		    enc = 0;
-		if ( fcnt<4 )
-		    founds[fcnt++] = enc;
+		    k=4;
 	    }
-	    if ( fcnt==1 ) {
-		founds[3] = founds[0];
-		founds[0] = 0;
-	    }
-	    if ( fcnt>0 ) {
+	    if ( k!=4 ) {
 		extenindex[i] = ecnt;
 		memcpy(extensions[ecnt].extens,founds,sizeof(founds));
 		++ecnt;
@@ -2963,7 +3049,8 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map
     for ( i=0; i<maxc && i<map->enccount; ++i ) {
 	if ( map->map[i]!=-1 && SCWorthOutputting(sf->glyphs[map->map[i]])) {
 	    SplineChar *sc = sf->glyphs[map->map[i]];
-	    if ( sc->tex_height==TEX_UNDEF || sc->tex_depth==TEX_UNDEF ) {
+	    if ( sc->tex_height==TEX_UNDEF || sc->tex_depth==TEX_UNDEF ||
+		    sc->italic_correction==TEX_UNDEF ) {
 		SplineCharFindBounds(sc,&b);
 		heights[i] = b.maxy*scale; depths[i] = -b.miny*scale;
 	    }

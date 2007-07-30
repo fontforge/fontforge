@@ -4646,3 +4646,320 @@ return;
     }
 return;
 }
+
+/******************************************************************************/
+/* ******************************* MATH Table ******************************* */
+/* ********************** (Not strictly OpenType yet) *********************** */
+/******************************************************************************/
+
+/* ******************************** Read MATH ******************************* */
+
+static void ttf_math_read_constants(FILE *ttf,struct ttfinfo *info, uint32 start) {
+    struct MATH *math;
+    int i;
+    uint16 off;
+
+    fseek(ttf,start,SEEK_SET);
+    info->math = math = gcalloc(1,sizeof(struct MATH));
+
+    for ( i=0; math_constants_descriptor[i].script_name!=NULL; ++i ) {
+	int16 *pos = (int16 *) (((char *) (math)) + math_constants_descriptor[i].offset );
+	if ( pos == (int16 *) &math->MinConnectorOverlap )
+    continue;		/* Actually lives in the Variant table, not here */
+	*pos = getushort(ttf);
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	if ( math_constants_descriptor[i].devtab_offset >= 0 ) {
+	    DeviceTable **devtab = (DeviceTable **) (((char *) (math)) + math_constants_descriptor[i].devtab_offset );
+	    off = getushort(ttf);
+	    if ( off!=0 ) {
+		*devtab = chunkalloc(sizeof(DeviceTable));
+		ReadDeviceTable(ttf,*devtab,start+off);
+	    }
+	}
+#else
+	/* No support for device tables, skip it */
+	if ( math_constants_descriptor[i].devtab_offset != -1 )
+	    (void) getushort(ttf);
+#endif
+    }
+}
+
+static void ttf_math_read_icta(FILE *ttf,struct ttfinfo *info, uint32 start, int is_ic) {
+    /* The italic correction and top accent sub-tables have the same format */
+    int coverage, cnt, i, val, offset;
+    uint16 *glyphs;
+
+    fseek(ttf,start,SEEK_SET);
+    coverage = getushort(ttf);
+    cnt = getushort(ttf);
+    glyphs = getCoverageTable(ttf,start+coverage,info);
+    if ( glyphs==NULL )
+return;
+    fseek(ttf,start+4,SEEK_SET);
+    for ( i=0; i<cnt; ++i ) if ( glyphs[i]<info->glyph_cnt ) {
+	val = (int16) getushort(ttf);
+	if ( is_ic )
+	    info->chars[ glyphs[i] ]->italic_correction = val;
+	else
+	    info->chars[ glyphs[i] ]->top_accent_horiz = val;
+	offset = getushort(ttf);
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	if ( offset!=0 ) {
+	    DeviceTable *dv = chunkalloc(sizeof(DeviceTable));
+	    ReadDeviceTable(ttf,dv,start+offset);
+	    if ( is_ic )
+		info->chars[ glyphs[i] ]->italic_adjusts = dv;
+	    else
+		info->chars[ glyphs[i] ]->top_accent_adjusts = dv;
+	}
+#endif
+    }
+    free(glyphs);
+}
+
+static void ttf_math_read_extended(FILE *ttf,struct ttfinfo *info, uint32 start) {
+    int i;
+    uint16 *glyphs;
+
+    glyphs = getCoverageTable(ttf,start,info);
+    if ( glyphs==NULL )
+return;
+    for ( i=0; glyphs[i]!=0xffff; ++i )
+	info->chars[ glyphs[i] ]->is_extended_shape = true;
+    free(glyphs);
+}
+
+static void ttf_math_read_mathkernv(FILE *ttf, uint32 start,struct mathkernvertex *mkv) {
+    int cnt, i;
+
+    fseek(ttf,start,SEEK_SET);
+    /* There is one more width than height. I store the width count */
+    /*  and guess a dummy height later */
+    mkv->cnt = cnt = getushort(ttf)+1;
+    mkv->mkd = gcalloc(cnt,sizeof(struct mathkerndata));
+
+    for ( i=0; i<cnt-1; ++i ) {
+	mkv->mkd[i].height = getushort(ttf);
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	mkv->mkd[i].height_adjusts = (void *) (intpt) getushort(ttf);
+#else
+	(void) getushort(ttf);
+#endif
+    }
+
+    for ( i=0; i<cnt; ++i ) {
+	mkv->mkd[i].kern = getushort(ttf);
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	mkv->mkd[i].kern_adjusts = (void *) (intpt) getushort(ttf);
+#else
+	(void) getushort(ttf);
+#endif
+    }
+
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    for ( i=0; i<cnt; ++i ) {
+	DeviceTable *dv;
+	uint32 offset;
+	if ( mkv->mkd[i].height_adjusts!=NULL ) {
+	    offset = start + (intpt) mkv->mkd[i].height_adjusts;
+	    mkv->mkd[i].height_adjusts = dv = chunkalloc(sizeof(DeviceTable));
+	    ReadDeviceTable(ttf,dv,offset);
+	}
+	if ( mkv->mkd[i].kern_adjusts!=NULL ) {
+	    offset = start + (intpt) mkv->mkd[i].kern_adjusts;
+	    mkv->mkd[i].kern_adjusts = dv = chunkalloc(sizeof(DeviceTable));
+	    ReadDeviceTable(ttf,dv,offset);
+	}
+    }
+#endif
+
+    if ( cnt>=3 )
+	mkv->mkd[cnt-1].height = 2*mkv->mkd[cnt-2].height - mkv->mkd[cnt-3].height;
+    else if ( cnt>=2 )
+	mkv->mkd[cnt-1].height = mkv->mkd[cnt-2].height + 100;
+}
+
+static void ttf_math_read_mathkern(FILE *ttf,struct ttfinfo *info, uint32 start) {
+    int coverage, cnt, i;
+    uint16 *glyphs;
+    struct koff { uint16 tr, tl, br, bl; } *koff;
+
+    fseek(ttf,start,SEEK_SET);
+    coverage = getushort(ttf);
+    cnt = getushort(ttf);
+    koff = galloc(cnt*sizeof(struct koff));
+    for ( i=0; i<cnt; ++i ) {
+	koff[i].tr = getushort(ttf);
+	koff[i].tl = getushort(ttf);
+	koff[i].br = getushort(ttf);
+	koff[i].bl = getushort(ttf);
+    }
+    glyphs = getCoverageTable(ttf,start+coverage,info);
+    if ( glyphs==NULL ) {
+	free(koff);
+return;
+    }
+    for ( i=0; i<cnt; ++i ) if ( glyphs[i]<info->glyph_cnt ) {
+	SplineChar *sc = info->chars[ glyphs[i]];
+	sc->mathkern = chunkalloc(sizeof(struct mathkern));
+	if ( koff[i].tr!=0 )
+	    ttf_math_read_mathkernv(ttf,start+koff[i].tr,&sc->mathkern->top_right);
+	if ( koff[i].tl!=0 )
+	    ttf_math_read_mathkernv(ttf,start+koff[i].tl,&sc->mathkern->top_left);
+	if ( koff[i].br!=0 )
+	    ttf_math_read_mathkernv(ttf,start+koff[i].br,&sc->mathkern->bottom_right);
+	if ( koff[i].bl!=0 )
+	    ttf_math_read_mathkernv(ttf,start+koff[i].bl,&sc->mathkern->bottom_left);
+    }
+    free(koff);
+    free(glyphs);
+}
+
+static void ttf_math_read_glyphinfo(FILE *ttf,struct ttfinfo *info, uint32 start) {
+    int icoff,taoff,esoff,kioff;
+
+    fseek(ttf,start,SEEK_SET);
+    icoff = getushort(ttf);
+    taoff = getushort(ttf);
+    esoff = getushort(ttf);
+    kioff = getushort(ttf);
+
+    if ( icoff!=0 )
+	ttf_math_read_icta(ttf,info,start+icoff,true);
+    if ( taoff!=0 )
+	ttf_math_read_icta(ttf,info,start+taoff,false);
+    if ( esoff!=0 )
+	ttf_math_read_extended(ttf,info,start+esoff);
+    if ( kioff!=0 )
+	ttf_math_read_mathkern(ttf,info,start+kioff);
+}
+
+static struct glyphvariants *ttf_math_read_gvtable(FILE *ttf,struct ttfinfo *info, uint32 start) {
+    struct glyphvariants *gv = chunkalloc(sizeof(struct glyphvariants));
+    int ga_offset;
+    int vcnt;
+    uint16 *glyphs;
+    int i, j, len;
+    char *pt;
+    int ic_offset, pcnt;
+    SplineChar *sc;
+
+    fseek(ttf,start,SEEK_SET);
+    ga_offset = getushort(ttf);
+    vcnt      = getushort(ttf);
+    if ( vcnt!=0 ) {
+	glyphs    = galloc(vcnt*sizeof(uint16));
+	len = 0;
+	for ( i=0; i<vcnt; ++i ) {
+	    glyphs[i] = getushort(ttf);
+	    if ( glyphs[i]<info->glyph_cnt && (sc = info->chars[ glyphs[i]])!=NULL )
+		len += strlen(sc->name)+1;
+	}
+	if ( len!=0 ) {
+	    gv->variants = pt = galloc(len);
+	    for ( i=0; i<vcnt; ++i ) {
+		if ( glyphs[i]<info->glyph_cnt && (sc = info->chars[ glyphs[i]])!=NULL ) {
+		    strcpy(pt+len,sc->name);
+		    len += strlen(sc->name);
+		    pt[len++] = ' ';
+		}
+	    }
+	    pt[len-1] = '\0';
+	}
+	free(glyphs);
+    }
+    if ( ga_offset!=0 ) {
+	start += ga_offset;
+	fseek(ttf,start,SEEK_SET);
+	gv->italic_correction = getushort(ttf);
+	ic_offset = getushort(ttf);
+	gv->part_cnt = pcnt = getushort(ttf);
+	gv->parts = gcalloc(pcnt,sizeof(struct gv_part));
+	for ( i=j=0; i<pcnt; ++i ) {
+	    int gid, start, end, full, flags;
+	    gid = getushort(ttf);
+	    start = getushort(ttf);
+	    end = getushort(ttf);
+	    full = getushort(ttf);
+	    flags = getushort(ttf);
+	    if ( gid<info->glyph_cnt && (sc = info->chars[gid])!=NULL ) {
+		gv->parts[j].component = copy( sc->name );
+		gv->parts[j].startConnectorLength = start;
+		gv->parts[j].endConnectorLength = end;
+		gv->parts[j].fullAdvance = full;
+		gv->parts[j++].is_extender = flags&1;
+	    }
+	}
+	gv->part_cnt = j;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	if ( ic_offset!=0 ) {
+	    gv->italic_adjusts = chunkalloc(sizeof(DeviceTable));
+	    ReadDeviceTable(ttf,gv->italic_adjusts,start+ic_offset);
+	}
+#endif
+    }
+return( gv );
+}
+
+static void ttf_math_read_variants(FILE *ttf,struct ttfinfo *info, uint32 start) {
+    int vcoverage, hcoverage, vcnt, hcnt;
+    int *hoffs, *voffs;
+    uint16 *hglyphs, *vglyphs;
+    int i;
+
+    fseek(ttf,start,SEEK_SET);
+    if ( info->math==NULL )
+	info->math = gcalloc(1,sizeof(struct MATH));
+    info->math->MinConnectorOverlap = getushort(ttf);
+    vcoverage = getushort(ttf);
+    hcoverage = getushort(ttf);
+    vcnt = getushort(ttf);
+    hcnt = getushort(ttf);
+    hoffs = galloc(hcnt*sizeof(int));
+    voffs = galloc(vcnt*sizeof(int));
+
+    for ( i=0; i<vcnt; ++i )
+	voffs[i] = getushort(ttf);
+    for ( i=0; i<hcnt; ++i )
+	hoffs[i] = getushort(ttf);
+    vglyphs = getCoverageTable(ttf,start+vcoverage,info);
+    hglyphs = getCoverageTable(ttf,start+hcoverage,info);
+
+    if ( vglyphs!=NULL ) {
+	for ( i=0; i<vcnt; ++i ) if ( vglyphs[i]<info->glyph_cnt && voffs[i]!=0) {
+	    SplineChar *sc = info->chars[ vglyphs[i]];
+	    sc->vert_variants = ttf_math_read_gvtable(ttf,info,start+voffs[i]);
+	}
+    }
+    if ( hglyphs!=NULL ) {
+	for ( i=0; i<hcnt; ++i ) if ( hglyphs[i]<info->glyph_cnt && hoffs[i]!=0) {
+	    SplineChar *sc = info->chars[ hglyphs[i]];
+	    sc->horiz_variants = ttf_math_read_gvtable(ttf,info,start+hoffs[i]);
+	}
+    }
+
+    free(vglyphs); free(voffs);
+    free(hglyphs); free(hoffs);
+}
+
+void ttf_math_read(FILE *ttf,struct ttfinfo *info) {
+    int constants, glyphinfo, variants;
+    if ( info->math_start==0 )
+return;
+    fseek(ttf,info->math_start,SEEK_SET);
+
+    info->g_bounds = info->math_start+info->math_length;
+
+    if ( getlong(ttf)!=0x00010000 )
+return;
+    constants = getushort(ttf);
+    glyphinfo = getushort(ttf);
+    variants = getushort(ttf);
+
+    if ( constants!=0 )
+	ttf_math_read_constants(ttf,info,info->math_start+constants);
+    if ( glyphinfo!=0 )
+	ttf_math_read_glyphinfo(ttf,info,info->math_start+glyphinfo);
+    if ( variants!=0 )
+	ttf_math_read_variants(ttf,info,info->math_start+variants);
+}

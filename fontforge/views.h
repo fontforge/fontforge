@@ -255,8 +255,10 @@ typedef struct charview {
     unsigned int joinvalid:1;
     unsigned int widthsel:1;
     unsigned int vwidthsel:1;
+    unsigned int icsel:1;
+    unsigned int tah_sel:1;		/* 32 */
     unsigned int inactive:1;			/* When in a search view */
-    unsigned int show_ft_results: 1;	/* 32 */
+    unsigned int show_ft_results: 1;
     unsigned int coderange: 2;			/* For the debugger */
     unsigned int autonomous_ruler_w: 1;
     unsigned int showcpinfo: 1;
@@ -337,6 +339,7 @@ typedef struct charview {
     struct jamodisplay *jamodisplay;
 #endif
     real oldwidth, oldvwidth;
+    int16 oldic, oldtah;
 #if _ModKeysAutoRepeat
 # if defined(FONTFORGE_CONFIG_GTK)
 # elif defined(FONTFORGE_CONFIG_GDRAW)
@@ -1150,6 +1153,8 @@ extern SplineChar *SuffixCheck(SplineChar *sc,char *suffix);
 extern void SCSubtableDefaultSubsCheck(SplineChar *sc, struct lookup_subtable *sub, struct matrix_data *possub, int col_cnt, int r);
 extern GImage *PST_GetImage(GGadget *pstk,SplineFont *sf,
 	struct lookup_subtable *sub,int popup_r, SplineChar *sc );
+extern GImage *GV_GetConstructedImage(SplineChar *sc,struct glyphvariants *gv,
+	int is_horiz);
 extern void CVGetInfo(CharView *cv);
 extern void CVPGetInfo(CharView *cv);
 extern int  SCUsedBySubs(SplineChar *sc);
@@ -1453,4 +1458,7 @@ extern GMenuItem2 helplist[];
 extern BasePoint last_ruler_offset[];
 
 #endif	/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+
+extern void MathInit(void);
+extern void SFMathDlg(SplineFont *sf);
 #endif	/* _VIEWS_H */
