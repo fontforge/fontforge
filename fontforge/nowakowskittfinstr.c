@@ -1,4 +1,6 @@
-/* Copyright (C) 2000-2007 by George Williams & Michal Nowakowski */
+/* Copyright (C) 2000-2007 by 
+   George Williams, Michal Nowakowski & Alexey Kryukov */
+
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -134,7 +136,8 @@ static void init_maxp(InstrCt *ct) {
     if (zones<2) zones=2;
     if (twpts<1) twpts=1;
     if (fdefs<1) fdefs=1;
-    if (stack<3) stack=3; /* we'll surely need more in future */
+    /* A TEMPORARY fix */
+    if (stack<256) stack=256; /* we'll surely need more in future */
 
     memputshort(tab->data, 7*sizeof(uint16), zones);
     memputshort(tab->data, 8*sizeof(uint16), twpts);
@@ -226,6 +229,7 @@ static void init_fpgm(InstrCt *ct) {
 	0xb0, //   PUSHB_1
 	0x00, //     0
 	0x23, //   SWAP
+	0x7c, //   RUTG
 	0x3f, //   MIAP[rnd]
 	0x7d, //   RDTG
 	0x20, //   DUP
@@ -412,6 +416,7 @@ return( addpoint(instrs,isword,stem));
 static uint8 *pushpoints(uint8 *instrs, int ptcnt, const int *pts) {
     int i, isword = 0;
     for (i=0; i<ptcnt; i++) if (pts[i]>255) isword=1;
+    if (ptcnt > 255) isword = 1; /* or use several NPUSHB if all are bytes */
     instrs = pushheader(instrs,isword,ptcnt);
     for (i=0; i<ptcnt; i++) instrs = addpoint(instrs, isword, pts[i]);
 return( instrs );
@@ -1478,7 +1483,7 @@ return( false );
         newfv = GetVector ( start->pt,end->pt,false );
         if (!RealApprox((*fv)->x, newfv->x) || !RealApprox((*fv)->y, newfv->y)) {
             (*fv)->x = newfv->x; (*fv)->y = newfv->y;
-        
+	
             *instrs = pushheader( *instrs,ptcnt>255,2 );
             *instrs = addpoint( *instrs,ptcnt>255,start->num );
             *instrs = addpoint( *instrs,ptcnt>255,end->num );
