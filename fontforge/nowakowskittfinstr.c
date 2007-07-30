@@ -155,7 +155,7 @@ static void init_prep(InstrCt *ct) {
     {
 	0x4b, // MPPEM
 	0xb0, // PUSHB_1
-	0x07, //   hinting threshold - should be configurable
+	0x07, //   7 - hinting threshold - should be configurable
 	0x50, // LT
 	0x58, // IF
 	0xb1, //   PUSHB_2
@@ -168,8 +168,17 @@ static void init_prep(InstrCt *ct) {
 	0xff, //   ...still that 511
 	0x85, // SCANCTRL
 	0xb0, // PUSHB_1
-	0x01, //   1
-	0x1d  // SCVTCI
+	0x01, //   70/64 = about 1.094 pixel
+	0x1d, // SCVTCI
+	0x4b, // MPPEM
+	0xb0, // PUSHB_1
+	0x32, //   50 PPEM - a threshold below which we'll use larger CVT cut-in
+	0x52, // GT
+	0x58, // IF
+	0xb0, // PUSHB_1
+	0x01, //   128/64 = 2 pixels
+	0x1d, // SCVTCI
+	0x59  // EIF
     };
 
     int alert;
