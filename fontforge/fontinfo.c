@@ -9898,6 +9898,9 @@ return;
     aspects[i].text = (unichar_t *) S_("OpenType|Lookups");
     aspects[i].text_is_1byte = true;
     aspects[i++].gcd = &lkbox[5];
+/* On my system the "lookups line appears indented. That seems to be because */
+/*  the letter "L" has more of a left-side bearing than it should. It is not */
+/*  a bug in the nesting level. Remember this next time it bugs me */
 
     aspects[i].text = (unichar_t *) _("Mac");
     aspects[i].text_is_1byte = true;
@@ -9975,7 +9978,7 @@ return;
     mb[0].gd.pos.x = mb[0].gd.pos.y = 2;
     mb[0].gd.flags = gg_enabled|gg_visible;
     mb[0].gd.u.boxelements = marray;
-    mb[0].creator = GHVBoxCreate;
+    mb[0].creator = GHVGroupCreate;
 
     memset(&mb2,0,sizeof(mb2));
     mb2.gd.flags = gg_enabled|gg_visible;

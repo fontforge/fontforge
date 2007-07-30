@@ -1858,6 +1858,12 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	if ( lock!=NULL ) cv->sc->width = lock->sc->width;
 	DrawVLine(cv,pixmap,cv->sc->width,(!cv->inactive && cv->widthsel)?widthselcol:widthcol,true,
 		lock!=NULL ? &GIcon_lock : NULL);
+	if ( cv->sc->italic_correction!=TEX_UNDEF && cv->sc->italic_correction!=0 ) {
+	    GDrawSetDashedLine(pixmap,2,2,0);
+	    DrawVLine(cv,pixmap,cv->sc->width+cv->sc->italic_correction,(!cv->inactive && cv->icsel)?widthselcol:widthcol,
+		    false, NULL);
+	    GDrawSetDashedLine(pixmap,0,0,0);
+	}
 	for ( pst=cv->sc->possub; pst!=NULL && pst->type!=pst_lcaret; pst=pst->next );
 	if ( pst!=NULL ) {
 	    for ( i=0; i<pst->u.lcaret.cnt; ++i )
@@ -1865,6 +1871,9 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	}
 	if ( cv->show_ft_results || cv->dv!=NULL )
 	    DrawVLine(cv,pixmap,cv->ft_gridfitwidth,widthgridfitcol,true,NULL);
+	if ( cv->sc->top_accent_horiz!=TEX_UNDEF )
+	    DrawVLine(cv,pixmap,cv->sc->top_accent_horiz,(!cv->inactive && cv->tah_sel)?widthselcol:anchorcol,true,
+		    NULL);
     }
     if ( cv->showvmetrics ) {
 	int len, y = -cv->yoff + cv->height - rint((sf->vertical_origin-cv->sc->vwidth)*cv->scale);

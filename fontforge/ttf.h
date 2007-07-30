@@ -199,6 +199,10 @@ struct ttfinfo {
     uint32 mort_start;
     uint32 morx_start;
 
+		/* MATH Table */
+    uint32 math_start;
+    uint32 math_length;
+
 		/* Info for instructions */
     uint32 cvt_start, cvt_len;
     uint32 prep_start, prep_len;
@@ -271,6 +275,7 @@ struct ttfinfo {
 #endif
     int gasp_cnt;
     struct gasp *gasp;
+    struct MATH *math;
 };
 
 #define MAX_TAB	48
@@ -560,6 +565,8 @@ struct alltabs {
     int maxplen;
     FILE *os2f;
     int os2len;
+    FILE *math;
+    int mathlen;
     FILE *cvtf;
     int cvtlen;
     FILE *fpgmf;		/* Copied from an original ttf file and dumped out. Never generated */
@@ -774,6 +781,9 @@ extern void ttf_bdf_read(FILE *ttf,struct ttfinfo *info);
 	/* The FFTM table, to some timestamps I'd like */
 extern int ttf_fftm_dump(SplineFont *sf,struct alltabs *at);
 
+    /* The MATH table */
+extern void ttf_math_dump(struct alltabs *at, SplineFont *sf);
+extern void ttf_math_read(FILE *ttf,struct ttfinfo *info);
 
     /* Parsing advanced typography */
 extern void readmacfeaturemap(FILE *ttf,struct ttfinfo *info);

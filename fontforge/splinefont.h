@@ -1032,14 +1032,14 @@ enum layer_type { ly_grid= -1, ly_back=0, ly_fore=1 /* Possibly other foreground
 struct glyphvariants {
     char *variants;	/* Space separated list of glyph names */
 /* Glyph assembly */
-    int italic_correction;	/* Of the composed glyph */
+    int16 italic_correction;	/* Of the composed glyph */
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
     DeviceTable *italic_adjusts;
 #endif
     int part_cnt;
-    struct {
+    struct gv_part {
 	char *component;
-	unsigned int is_extender;	/* This component may be skipped or repeated */
+	unsigned int is_extender: 1;	/* This component may be skipped or repeated */
 	uint16 startConnectorLength;
 	uint16 endConnectorLength;
 	uint16 fullAdvance;
@@ -1058,7 +1058,7 @@ struct mathkernvertex {
 #endif
     } *mkd;
 };
-	
+
 struct mathkern {
     struct mathkernvertex top_right;
     struct mathkernvertex top_left;
@@ -1145,8 +1145,8 @@ typedef struct splinechar {
     DeviceTable *italic_adjusts;
     DeviceTable *top_accent_adjusts;
 #endif
-    struct glyphvariants *horiz_variants;
     struct glyphvariants *vert_variants;
+    struct glyphvariants *horiz_variants;
     struct mathkern *mathkern;
 /* End of MATH/TeX fields */
 #ifndef _NO_PYTHON
@@ -1175,7 +1175,7 @@ struct MATH {
 /* From the MATH Constants subtable (constants for positioning glyphs. Not PI)*/
     int16 ScriptPercentScaleDown;
     int16 ScriptScriptPercentScaleDown;
-    uint16 DeleimitedSubFormulaMinHeight;
+    uint16 DelimitedSubFormulaMinHeight;
     uint16 DisplayOperatorMinHeight;
     int16 MathLeading;
     DeviceTable *MathLeading_adjust;
@@ -1254,7 +1254,7 @@ struct MATH {
     int16 SkewedFractionHorizontalGap;
     DeviceTable *SkewedFractionHorizontalGap_adjust;
     int16 SkewedFractionVerticalGap;
-    DeviceTable *SkewedFractionVerticaGap_adjust;
+    DeviceTable *SkewedFractionVerticalGap_adjust;
     int16 OverbarVerticalGap;
     DeviceTable *OverbarVerticalGap_adjust;
     int16 OverbarRuleThickness;
@@ -1811,6 +1811,9 @@ extern struct macname *MacNameCopy(struct macname *mn);
 extern void MacNameListFree(struct macname *mn);
 extern void MacSettingListFree(struct macsetting *ms);
 extern void MacFeatListFree(MacFeat *mf);
+extern void GlyphVariantsFree(struct glyphvariants *gv);
+extern void MathKernVContentsFree(struct mathkernvertex *mk);
+extern void MathKernFree(struct mathkern *mk);
 extern void SplineCharListsFree(struct splinecharlist *dlist);
 extern void SplineCharFreeContents(SplineChar *sc);
 extern void SplineCharFree(SplineChar *sc);
@@ -1824,6 +1827,8 @@ extern void SFExpandGlyphCount(SplineFont *sf, int newcnt);
 extern void ScriptLangListFree(struct scriptlanglist *sl);
 extern void FeatureScriptLangListFree(FeatureScriptLangList *fl);
 extern void SplineFontFree(SplineFont *sf);
+extern void MATHFree(struct MATH *math);
+extern struct MATH *MathTableNew(SplineFont *sf);
 extern void OtfNameListFree(struct otfname *on);
 extern void MarkClassFree(int cnt,char **classes,char **names);
 extern void MMSetFreeContents(MMSet *mm);
@@ -2090,6 +2095,7 @@ extern int SplineFontIsFlexible(SplineFont *sf,int flags);
 extern int SCDrawsSomething(SplineChar *sc);
 extern int SCWorthOutputting(SplineChar *sc);
 extern int SFFindNotdef(SplineFont *sf, int fixed);
+extern int doesGlyphExpandHorizontally(SplineChar *sc);
 extern int IsntBDFChar(BDFChar *bdfc);
 extern int CIDWorthOutputting(SplineFont *cidmaster, int enc); /* Returns -1 on failure, font number on success */
 extern int AmfmSplineFont(FILE *afm, MMSet *mm,int formattype,EncMap *map);
@@ -2514,4 +2520,13 @@ extern void PyFF_FreeSC(SplineChar *sc);
 struct gtextinfo;
 extern void scriptingSaveEnglishNames(struct gtextinfo *ids,struct gtextinfo *langs);
 #endif
+
+extern struct math_constants_descriptor {
+    char *ui_name;
+    char *script_name;
+    int offset;
+    int devtab_offset;
+    char *message;
+    int new_page;
+} math_constants_descriptor[];
 #endif

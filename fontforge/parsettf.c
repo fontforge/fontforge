@@ -554,6 +554,10 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	  case CHR('l','c','a','r'):
 	    info->lcar_start = offset;
 	  break;
+	  case CHR('M','A','T','H'):
+	    info->math_start = offset;
+	    info->math_length = length;
+	  break;
 	  case CHR('m','o','r','t'):
 	    info->mort_start = offset;
 	  break;
@@ -4709,6 +4713,8 @@ return( 0 );
 	pfed_read(ttf,info);
     if ( info->tex_start!=0 )
 	tex_read(ttf,info);
+    if ( info->math_start!=0 )
+	ttf_math_read(ttf,info);
     setlocale(LC_NUMERIC,oldloc);
     if ( !info->onlystrikes && info->glyphlocations_start!=0 && info->glyph_start!=0 )
 	ttfFixupReferences(info);
@@ -5036,6 +5042,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 
     sf->gasp_cnt = info->gasp_cnt;
     sf->gasp = info->gasp;
+    sf->MATH = info->math;
 
     sf->texdata = info->texdata;
 

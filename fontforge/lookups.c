@@ -3518,10 +3518,12 @@ GTextInfo languages[] = {
 };
 
 struct opentype_feature_friendlynames friendlies[] = {
+#if 0		/* They get stuffed into the 'MATH' table now */
 /* I added these first three features to allow round-trip conversion of tfm files */
     { CHR('I','T','L','C'),	"ITLC", N_("Italic Correction"),	gpos_single_mask },
     { CHR('T','C','H','L'),	"TCHL", N_("TeX Glyphlist"),		gsub_alternate_mask },
     { CHR('T','E','X','L'),	"TEXL", N_("TeX Extension List"),	gsub_multiple_mask },
+#endif
 /* Normal OpenType features follow */
     { CHR('a','a','l','t'),	"aalt", N_("Access All Alternates"),	gsub_single_mask|gsub_alternate_mask },
     { CHR('a','b','v','f'),	"abvf", N_("Above Base Forms"),		gsub_single_mask },

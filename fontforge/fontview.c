@@ -1636,6 +1636,16 @@ void FontViewMenu_FontInfo(GtkMenuItem *menuitem, gpointer user_data) {
 }
 
 # ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuMATHInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_MATHInfo(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+    SFMathDlg(fv->sf);
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
 static void FVMenuFindProblems(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
@@ -6357,6 +6367,7 @@ static GMenuItem2 rndlist[] = {
 static GMenuItem2 ellist[] = {
     { { (unichar_t *) N_("_Font Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Font Info...|Ctl+Shft+F"), NULL, NULL, FVMenuFontInfo },
     { { (unichar_t *) N_("Glyph _Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Glyph Info...|Ctl+I"), NULL, NULL, FVMenuCharInfo, MID_CharInfo },
+    { { (unichar_t *) N_("_MATH Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("MATH Info...|No Shortcut"), NULL, NULL, FVMenuMATHInfo },
     { { (unichar_t *) N_("BDF Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("BDF Info...|No Shortcut"), NULL, NULL, FVMenuBDFInfo, MID_StrikeInfo },
     { { (unichar_t *) N_("S_how Dependent"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'D' }, NULL, delist, delistcheck },
     { { (unichar_t *) N_("Find Pr_oblems..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, H_("Find Problems...|Ctl+E"), NULL, NULL, FVMenuFindProblems, MID_FindProblems },
@@ -8381,9 +8392,6 @@ static SplineChar *_SFMakeChar(SplineFont *sf,EncMap *map,int enc) {
     SplineChar dummy, *sc;
     SplineFont *ssf;
     int j, real_uni, gid;
-#ifdef FONTFORGE_CONFIG_TYPE3
-    Layer *l;
-#endif
     extern const int cns14pua[], amspua[];
 
     if ( enc>=map->enccount )
@@ -8424,18 +8432,11 @@ return( sc );
 return( sc );
 	}
 	sc = SplineCharCreate();
-#ifdef FONTFORGE_CONFIG_TYPE3
-	l = sc->layers;
-	*sc = dummy;
-	sc->layers = l;		/* It's empty, no need to copy dummy's layers */
-	if ( sf->strokedfont ) {
-	    l[ly_fore].dostroke = true;
-	    l[ly_fore].dofill = false;
-	}
-#else
-	*sc = dummy;
-#endif
-	sc->name = copy(sc->name);
+	sc->unicodeenc = dummy.unicodeenc;
+	sc->name = copy(dummy.name);
+	sc->width = dummy.width;
+	sc->parent = sf;
+	sc->orig_pos = 0xffff;
 	/*SCLigDefault(sc);*/
 	SFAddGlyphAndEncode(sf,sc,map,enc);
     }

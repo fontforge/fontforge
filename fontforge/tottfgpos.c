@@ -3427,3 +3427,70 @@ return;					/* No anchor positioning, no ligature carets */
     if ( at->gdeflen&1 ) putc('\0',at->gdef);
     if ( (at->gdeflen+1)&2 ) putshort(at->gdef,0);
 }
+
+/******************************************************************************/
+/* ******************************* MATH Table ******************************* */
+/* ********************** (Not strictly OpenType yet) *********************** */
+/******************************************************************************/
+
+void ttf_math_dump(struct alltabs *at, SplineFont *sf) {
+    FILE *mathf;
+    int i;
+    uint32 devtab_offsets[60], const_start, gi_start, v_start;
+
+    if ( sf->MATH==NULL )
+return;
+
+    at->math = mathf = tmpfile();
+
+    putlong(mathf,  0x00010000 );		/* Version 1 */
+    putshort(mathf, 10);			/* Offset to constants */
+    putshort(mathf,  0);			/* GlyphInfo, fix later */
+    putshort(mathf,  0);			/* Variants, fix later */
+
+    /* Start on constants */
+    memset(devtab_offsets,0,sizeof(devtab_offsets));
+    const_start = ftell(mathf);
+    for ( i=0; math_constants_descriptor[i].script_name!=NULL; ++i ) {
+	int16 *pos = (int16 *) (((char *) (sf->MATH)) + math_constants_descriptor[i].offset );
+	if ( pos == (int16 *) &sf->MATH->MinConnectorOverlap )
+    continue;		/* Actually lives in the Variant table, not here */
+	putshort(mathf, *pos);
+	if ( math_constants_descriptor[i].devtab_offset != -1 ) {
+	    devtab_offsets[i] = ftell(mathf);
+	    putshort(mathf, 0);		/* Fix up later if we support device tables */
+	}
+    }
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    for ( i=0; math_constants_descriptor[i].script_name!=NULL; ++i ) {
+	int16 *pos = (int16 *) (((char *) (sf->MATH)) + math_constants_descriptor[i].offset );
+	DeviceTable **devtab = (DeviceTable **) (((char *) (sf->MATH)) + math_constants_descriptor[i].devtab_offset );
+	if ( pos == (int16 *) &sf->MATH->MinConnectorOverlap )
+    continue;		/* Actually lives in the Variant table, not here */
+	if ( math_constants_descriptor[i].devtab_offset >= 0 && *devtab!=NULL ) {
+	    uint32 here = ftell(mathf);
+	    fseek(mathf,devtab_offsets[i],SEEK_SET);
+	    putshort(mathf, here-const_start);
+	    fseek(mathf,here,SEEK_SET);
+	    dumpgposdevicetable(mathf,*devtab);
+	}
+    }
+#endif
+
+    gi_start = ftell(mathf);
+    fseek(mathf,6,SEEK_SET);
+    putshort(mathf,gi_start);
+    fseek(mathf,gi_start,SEEK_SET);
+
+    putshort(mathf,0);		/* Italics correction */
+    putshort(mathf,0);		/* top accent */
+    putshort(mathf,0);		/* is extended shape */
+    putshort(mathf,0);		/* math kern info */
+
+    v_start = ftell(mathf);
+    fseek(mathf,8,SEEK_SET);
+    putshort(mathf,v_start);
+    fseek(mathf,v_start,SEEK_SET);
+
+    
+}
