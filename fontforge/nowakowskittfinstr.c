@@ -46,7 +46,8 @@
 #define SRP2                    (0x12)
 #define SZP0                    (0x13)
 #define RTG                     (0x18)
-#define CALL			(0x2b)
+#define DUP                     (0x20)
+#define CALL                    (0x2b)
 #define MDAP                    (0x2e)
 #define MDAP_rnd                (0x2f)
 #define IUP_y                   (0x30)
@@ -55,6 +56,9 @@
 #define SHP_rp1                 (0x33)
 #define MIAP                    (0x3e)
 #define MIAP_rnd                (0x3f)
+#define ADD                     (0x60)
+#define MUL                     (0x63)
+#define NEG                     (0x65)
 #define RDTG                    (0x7d)
 #define MDRP_rnd_grey           (0xc4)
 #define MDRP_min_rnd_black      (0xcd)
@@ -215,8 +219,8 @@ static void init_prep(InstrCt *ct) {
 	    LogError(_("Can't insert 'prep'"),
 		_("There exists a 'prep' code incompatible with FontForge's. "
 		  "It can't be guaranteed it will work well. It is suggested "
-		  "to allow FontForge to insert its code and then append user's"
-		  "own."
+		  "to allow FontForge to insert its code and then append user"
+		  "'s own."
 		 ));
 	}
 
@@ -289,7 +293,7 @@ static void init_fpgm(InstrCt *ct) {
 		  "so that FontForge could insert his code there on next instructing."
 		  "It will be then possible to append user's code to FontForge's, "
 		  "but using high function numbers is extremely advised due to "
-		  "possible updates.\n"
+		  "possible updates."
 		 ));
 	}
     }
@@ -437,6 +441,69 @@ static uint8 *pushpoints(uint8 *instrs, int ptcnt, const int *pts) {
     if (ptcnt > 255) isword = 1; /* TODO! use several NPUSHB if all are bytes */
     instrs = pushheader(instrs,isword,ptcnt);
     for (i=0; i<ptcnt; i++) instrs = addpoint(instrs, isword, pts[i]);
+return( instrs );
+}
+
+/* As we don't have "push F26dot6" command in truetype instructions,
+   we need to do this by hand. As we can explicitly push only 16-bit
+   quantities, we need to push a F26dot6 value in halves, shift left
+   the more significant half and add halves.
+   
+   There are no checks for overflow!
+ */
+static uint8 *pushF26Dot6(uint8 *instrs, double num) {
+    unsigned int a, elems[3];
+    int negative=0;
+
+    if (num < 0) {
+	negative=1;
+	num*=-1.0;
+    }
+
+    num *= 64;
+    a = rint(num);
+    elems[0] = a % 65536;
+    elems[1] = (unsigned int)rint(a / 65536.0) % 65536;
+    elems[2] = 16384;
+
+    if (elems[1]) {
+#if OPTIMIZE_TTF_INSTRS
+        instrs = pushpoints(instrs, 3, elems);
+	*instrs++ = DUP;
+        *instrs++ = MUL;
+	*instrs++ = MUL;
+        *instrs++ = ADD;
+#else
+        instrs = pushpoints(instrs, 3, elems);
+        *instrs++ = MUL;
+	instrs = pushpoint(instrs, 16384);
+	*instrs++ = MUL;
+        *instrs++ = ADD;
+#endif
+    }
+    else instrs = pushpoint(instrs, elems[0]);
+
+    if (negative) *instrs++ = NEG;
+
+return( instrs );
+}
+
+/* Push a EF2Dot14. No checks for overflow!
+ */
+static uint8 *pushEF2Dot14(uint8 *instrs, double num) {
+    unsigned int a;
+    int negative=0;
+
+    if (num < 0) {
+	negative=1;
+	num*=-1.0;
+    }
+    
+    num *= 16384;
+    a = rint(num);
+    instrs = pushpoint(instrs, a);
+    if (negative) *instrs++ = NEG;
+
 return( instrs );
 }
 
@@ -842,7 +909,8 @@ return;
 
 static void snap_to_blues(InstrCt *ct) {
     int i, cvt, cvt2;
-    StemInfo *hint;          /* for HStems affected wit blues */
+    int therewerestems;      /* were there any HStems snapped to this blue? */
+    StemInfo *hint;          /* for HStems affected by blues */
     real base, advance, tmp; /* for the hint */
     int callargs[4] = { 0/*pt*/, 0/*cvt*/, 0 };
 
@@ -882,6 +950,8 @@ return;
 #endif
 
     for (i=0; i<bluecnt; i++) {
+	therewerestems = 0;	
+
 	/* decide the cvt index */
 	if ((cvt = rint(blues[i][0])) < 0) cvt = rint(blues[i][1]);
 	cvt = callargs[1] = TTF__getcvtval(ct->gi->sf,cvt);
@@ -937,6 +1007,8 @@ return;
 	    if (hint->start == base) hint->startdone = true;
 	    else hint->enddone = true;
 
+	    therewerestems = 1;
+
 	    if (hint->ghost && ((hint->width == 20) || (hint->width == 21))) {
 		hint->startdone = hint->enddone = true;
 		continue;
@@ -967,41 +1039,39 @@ return;
 	    else hint->enddone = true;
 	}
 
-#if 0
 	/* Now I'll try to find points not snapped by any previous stem hint. */
 	/* This will ensure correct glyph heights even if there are no hints. */
-	/* NOTE! Seemingly, that was a bad idea */
+	if (therewerestems) {
+	    base = (blues[i][0] + blues[i][1]) / 2.0;
+	    real fudge = ct->gi->fudge;
+	    ct->gi->fudge = fabs(base - blues[i][0]);
+	    init_edge(ct, base, EXTERNAL_CONTOURS);
+	    ct->gi->fudge = fudge;
+	    optimize_edge(ct);
 
-	base = (blues[i][0] + blues[i][1]) / 2.0;
-	real fudge = ct->gi->fudge;
-	ct->gi->fudge = fabs(base - blues[i][0]);
-	init_edge(ct, base, EXTERNAL_CONTOURS);
-	ct->gi->fudge = fudge;
-	optimize_edge(ct);
+	    if (ct->edge.refpt == -1) continue;
 
-	if (ct->edge.refpt == -1) continue;
+	    if (!(ct->touched[ct->edge.refpt] || ct->affected[ct->edge.refpt])) {
+		callargs[0] = ct->edge.refpt;
+		ct->pt = pushpoints(ct->pt, 3, callargs);
+		*(ct->pt)++ = CALL;
+		ct->touched[ct->edge.refpt] |= tf_y;
+	    }
 
-	if (!(ct->touched[ct->edge.refpt] || ct->affected[ct->edge.refpt])) {
-	    callargs[0] = ct->edge.refpt;
-	    ct->pt = pushpoints(ct->pt, 3, callargs);
-	    *(ct->pt)++ = CALL;
-	    ct->touched[ct->edge.refpt] |= tf_y;
+	    int j;
+	    for (j=0; j<ct->edge.othercnt; j++) {
+		callargs[0] = ct->edge.others[j];
+		ct->pt = pushpoints(ct->pt, 3, callargs);
+		*(ct->pt)++ = CALL;
+		ct->touched[ct->edge.others[j]] |= tf_y;
+	    }
+
+	    if (ct->edge.othercnt > 0) {
+		free(ct->edge.others);
+		ct->edge.others = NULL;
+		ct->edge.othercnt = 0;
+	    }
 	}
-
-	int j;
-	for (j=0; j<ct->edge.othercnt; j++) {
-	    callargs[0] = ct->edge.others[j];
-	    ct->pt = pushpoints(ct->pt, 3, callargs);
-	    *(ct->pt)++ = CALL;
-	    ct->touched[ct->edge.others[j]] |= tf_y;
-	}
-
-	if (ct->edge.othercnt > 0) {
-	    free(ct->edge.others);
-	    ct->edge.others = NULL;
-	    ct->edge.othercnt = 0;
-	}
-#endif
     }
 }
 
@@ -1366,7 +1436,7 @@ return( -1 );
 }
 
 /* Order the given diagonal stems by the X coordinate of the left edge top,
-   and by Y if X is the same. The order is arbtrary, but may be essential for
+   and by Y if X is the same. The order is arbitrary, but may be essential for
    things like "W", so we should be sure that we are doing diagonals from
    left to right. At the same time find some additional data which should
    be associated with each stem but aren't initially stored in DStemInfo,
@@ -1408,14 +1478,14 @@ static DStem  *DStemSort(DStemInfo *d, BasePoint *bp, int ptcnt, uint8 *touched)
         cur->used = true;
 
         newhead = chunkalloc( sizeof( DStem ) );
-	newhead->pts[0].pt = &(di->leftedgetop);
-	newhead->pts[0].num = BpIndex( &di->leftedgetop,bp,ptcnt );
-	newhead->pts[1].pt = &(di->leftedgebottom);
-	newhead->pts[1].num = BpIndex( &di->leftedgebottom,bp,ptcnt );
-	newhead->pts[2].pt = &(di->rightedgetop);
-	newhead->pts[2].num = BpIndex( &di->rightedgetop,bp,ptcnt );
-	newhead->pts[3].pt = &(di->rightedgebottom);
-	newhead->pts[3].num = BpIndex( &di->rightedgebottom,bp,ptcnt );
+        newhead->pts[0].pt = &(di->leftedgetop);
+        newhead->pts[0].num = BpIndex( &di->leftedgetop,bp,ptcnt );
+        newhead->pts[1].pt = &(di->leftedgebottom);
+        newhead->pts[1].num = BpIndex( &di->leftedgebottom,bp,ptcnt );
+        newhead->pts[2].pt = &(di->rightedgetop);
+        newhead->pts[2].num = BpIndex( &di->rightedgetop,bp,ptcnt );
+        newhead->pts[3].pt = &(di->rightedgebottom);
+        newhead->pts[3].num = BpIndex( &di->rightedgebottom,bp,ptcnt );
         newhead->width = DStemWidth( &di->leftedgetop,&di->leftedgebottom,
             &di->rightedgetop,&di->rightedgebottom );
         newhead->done = false;
@@ -1427,7 +1497,7 @@ static DStem  *DStemSort(DStemInfo *d, BasePoint *bp, int ptcnt, uint8 *touched)
 return( head );
 }
 
-/* Run on points and check each points agains each diagonale. In case the
+/* Run on points and check each point agains each diagonale. In case the
    point is the diagonale's starting or ending point, or is positioned on 
    that line, associate the information about the that line with the given
    point and put it into an array. Note that we have to do this on a relatively
@@ -1496,8 +1566,8 @@ return 0;
 static int SetFreedomVector( uint8 **instrs,int pnum,int ptcnt,
     uint8 *touched,DiagPointInfo *diagpts,
     NumberedPoint *lp1,NumberedPoint *lp2,BasePoint **fv) {
-    
-    int i;
+
+    int i, pushpts[2];
     NumberedPoint *start, *end;
     BasePoint *newfv;
     
@@ -1516,10 +1586,8 @@ return( false );
         if (!RealApprox((*fv)->x, newfv->x) || !RealApprox((*fv)->y, newfv->y)) {
             (*fv)->x = newfv->x; (*fv)->y = newfv->y;
 	
-            *instrs = pushheader( *instrs,ptcnt>255,2 );
-            *instrs = addpoint( *instrs,ptcnt>255,start->num );
-            *instrs = addpoint( *instrs,ptcnt>255,end->num );
-
+            pushpts[0] = start->num; pushpts[1] = end->num;
+            *instrs = pushpoints( *instrs,2,pushpts );
             *(*instrs)++ = 0x08;       /*SFVTL[parallel]*/
         }
         chunkfree (newfv, sizeof( BasePoint ) );
@@ -1589,6 +1657,7 @@ static uint8 *FixDstem( InstrCt *ct, DStem **ds, DiagPointInfo *diagpts, BasePoi
     NumberedPoint *v1, *v2;
     real distance;
     uint8 *instrs, *touched;
+    int pushpts[2];
     
     if ((*ds)->done)
 return (ct->pt);
@@ -1608,11 +1677,10 @@ return (ct->pt);
         a2 = (startnum == 3)?(*ds)->pts[2].num:(*ds)->pts[3].num;
         b1 = (*ds)->pts[0].num; b2 = (*ds)->pts[1].num;
     }
-    instrs = pushheader( instrs,ptcnt>255,2 );
-    instrs = addpoint( instrs,ptcnt>255,v1->num );
-    instrs = addpoint( instrs,ptcnt>255,v2->num );
-
+    pushpts[0]=v1->num; pushpts[1]=v2->num;
+    instrs = pushpoints( instrs,2,pushpts );
     *instrs++ = 0x87;       /*SDPVTL [orthogonal] */
+    
     if (SetFreedomVector( &instrs,a1,ptcnt,touched,diagpts,v1,v2,&fv )) {
         instrs = pushpoint(instrs,a1);
         *instrs++ = MDAP;
@@ -1641,7 +1709,7 @@ return (ct->pt);
     distance = TTF_getcvtval(ct->gi->sf,(*ds)->width);
     
     if ( SetFreedomVector( &instrs,b1,ptcnt,touched,diagpts,v1,v2,&fv )) {
-        instrs = pushpointstem(instrs,b1,distance);
+        instrs = pushpointstem( instrs,b1,distance );
         *instrs++ = 0xe0+0x19;  /* MIRP, srp0, minimum, black */
         touched[b1] |= tf_d; 
         if (!MarkLineFinished( b1,(*ds)->pts[0].num,(*ds)->pts[1].num,diagpts ))
@@ -1667,6 +1735,7 @@ static uint8 *FixPointOnLine (DiagPointInfo *diagpts,PointVector *line,
     uint8 *instrs, *touched;
     BasePoint *newpv;
     int ptcnt;
+    int pushpts[3];
 
     touched = ct->touched;
     instrs = ct->pt;
@@ -1678,19 +1747,16 @@ static uint8 *FixPointOnLine (DiagPointInfo *diagpts,PointVector *line,
 
         (*pv)->x = newpv->x; (*pv)->y = newpv->y;
 
-        instrs = pushheader( instrs,ptcnt>255,2 );
-        instrs = addpoint( instrs,ptcnt>255,line->pt1->num );
-        instrs = addpoint( instrs,ptcnt>255,line->pt2->num );
-
+        pushpts[0]=line->pt1->num; pushpts[1]=line->pt2->num;
+        instrs = pushpoints( instrs,2,pushpts );
         *instrs++ = 0x07;         /*SPVTL[orthogonal]*/
     }
 
     if ( SetFreedomVector( &instrs,pt->num,ptcnt,touched,diagpts,line->pt1,line->pt2,&(*fv) ) ) {
         if ( *rp0!=line->pt1->num ) {
             *rp0=line->pt1->num;
-            instrs = pushheader( instrs,ptcnt>255,2 );
-            instrs = addpoint( instrs,ptcnt>255,pt->num );
-            instrs = addpoint( instrs,ptcnt>255,line->pt1->num );
+            pushpts[0]=pt->num; pushpts[1]=line->pt1->num;
+            instrs = pushpoints( instrs,2,pushpts );
             *instrs++ = 0x10;	    /* Set RP0, SRP0 */
         } else {
             instrs = pushpoint( instrs,pt->num );
@@ -1706,10 +1772,12 @@ static uint8 *FixPointOnLine (DiagPointInfo *diagpts,PointVector *line,
             if ( *rp1!=line->pt1->num || *rp2!=line->pt2->num) {
                 *rp1=line->pt1->num;
                 *rp2=line->pt2->num;
-                instrs = pushheader( instrs,ptcnt>255,3 );
-                instrs = addpoint( instrs,ptcnt>255,pt->num );
-                instrs = addpoint( instrs,ptcnt>255,line->pt2->num );
-                instrs = addpoint( instrs,ptcnt>255,line->pt1->num );
+
+                pushpts[0]=pt->num; 
+                pushpts[1]=line->pt2->num;
+                pushpts[2]=line->pt1->num;
+                instrs = pushpoints( instrs,3,pushpts );
+
                 *instrs++ = 0x11;	    /* Set RP1, SRP1 */
                 *instrs++ = 0x12;	    /* Set RP2, SRP2 */
             } else {
@@ -1724,7 +1792,7 @@ return ( instrs );
 
 /* When all stem edges have already been positioned, run through other
    points which are known to be related with some diagonales and position
-   them too. This may include both intersections and point which just
+   them too. This may include both intersections and points which just
    lie on a diagonal line. This function does not care about starting/ending
    points of stems, unless they should be additinally positioned relatively
    to another stem. Thus is can handle things like "X" or "K". */
@@ -1764,21 +1832,22 @@ static uint8 *MovePointsToIntersections( InstrCt *ct,DiagPointInfo *diagpts,
 return ( ct->pt );
 }
 
-/* Finally explicitly touch all affected points by X and Y (uless they
+/* Finally explicitly touch all affected points by X and Y (unless they
    have already been), so that subsequent YUP's can't distort our
    stems. */
 static uint8 *TouchDStemPoints( InstrCt *ct,DiagPointInfo *diagpts, 
     BasePoint *fv ) {
     
-    int i, ptcnt, numx=0, numy=0, numpushes=0;
-    uint8 *instrs, *touched, *tobefixedy, *tobefixedx;
+    int i, ptcnt, numx=0, numy=0;
+    int *tobefixedy, *tobefixedx;
+    uint8 *instrs, *touched;
 
     touched = ct->touched;
     instrs = ct->pt;
     ptcnt = ct->ptcnt;
     
-    tobefixedy = gcalloc( ptcnt,1 );
-    tobefixedx = gcalloc( ptcnt,1 );
+    tobefixedy = chunkalloc( ptcnt*sizeof( int ) );
+    tobefixedx = chunkalloc( ptcnt*sizeof( int ) );
 
     for ( i=0; i<ptcnt; i++ ) {
         if ( diagpts[i].count > 0 ) {
@@ -1794,29 +1863,15 @@ static uint8 *TouchDStemPoints( InstrCt *ct,DiagPointInfo *diagpts,
         }
     }
 
-    numpushes = numy + numx;
-    
-    instrs = pushheader( instrs,ptcnt>255,numpushes );
-    for ( i=0 ; i<numx ; i++ )
-        instrs = addpoint( instrs,ptcnt>255,tobefixedx[i] );
-    
-    for ( i=0 ; i<numy ; i++ )
-        instrs = addpoint( instrs,ptcnt>255,tobefixedy[i] );
-    
     if ( numy>0 ) {
         if ( !(fv->x == 0 && fv->y == 1) ) *instrs++ = SVTCA_y;
-        
-        fv->x=0; fv->y=1;
-        for ( i=0 ; i<numy ; i++ )
-            *instrs++ = MDAP;
+        fprintf (stderr,"%d\n",numy);
+        instrs = instructpoints ( instrs,numy,tobefixedy,MDAP );
     }
 
     if ( numx>0 ) {
         if ( !(fv->x == 1 && fv->y == 0) ) *instrs++ = SVTCA_x;
-
-        fv->x=1; fv->y=0;
-        for ( i=0 ; i<numx ; i++ )
-            *instrs++ = MDAP;
+        instrs = instructpoints ( instrs,numx,tobefixedx,MDAP );
     }
 
     chunkfree( tobefixedy,ptcnt );
