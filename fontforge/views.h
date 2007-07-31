@@ -1025,6 +1025,7 @@ extern GTextInfo *GListChangeLine8(GGadget *list,int pos, const char *line);
 extern GTextInfo *GListAppendLine8(GGadget *list,const char *line,int select);
 #endif
 extern void CharInfoInit(void);
+extern char *DevTab_Dlg(GGadget *g, int r, int c);
 extern int DeviceTableOK(char *dvstr, int *_low, int *_high);
 extern DeviceTable *DeviceTableParse(DeviceTable *dv,char *dvstr);
 extern void VRDevTabParse(struct vr *vr,struct matrix_data *md);
@@ -1155,6 +1156,10 @@ extern GImage *PST_GetImage(GGadget *pstk,SplineFont *sf,
 	struct lookup_subtable *sub,int popup_r, SplineChar *sc );
 extern GImage *GV_GetConstructedImage(SplineChar *sc,struct glyphvariants *gv,
 	int is_horiz);
+extern GImage *SC_GetLinedImage(SplineChar *sc, int pos, int is_italic_cor);
+extern struct glyphvariants *GV_ParseConstruction(struct glyphvariants *gv,
+	struct matrix_data *stuff, int rows, int cols);
+extern void GV_ToMD(GGadget *g, struct glyphvariants *gv);
 extern void CVGetInfo(CharView *cv);
 extern void CVPGetInfo(CharView *cv);
 extern int  SCUsedBySubs(SplineChar *sc);

@@ -29,6 +29,8 @@
 #include <math.h>
 #include <stddef.h>
 #include <gkeysym.h>
+#include <ustring.h>
+#include <utype.h>
 
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 #define MCD(ui_name,name,msg,np) { ui_name, #name, offsetof(struct MATH,name), -1,msg,np }
@@ -111,17 +113,125 @@ static char *aspectnames[] = {
     NULL
 };
 
+static char *GlyphConstruction_Dlg(GGadget *g, int r, int c);
+static void extpart_finishedit(GGadget *g, int r, int c, int wasnew);
+
+static GTextInfo truefalse[] = {
+    { (unichar_t *) N_("false"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("true"),  NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1},
+    NULL };
+
+static struct col_init exten_shape_ci[] = {
+    { me_string, NULL, NULL, NULL, N_("Glyph") },
+    { me_enum, NULL, truefalse, NULL, N_("Is Extension Shape") },
+    };
+
+static struct col_init italic_cor_ci[] = {
+    { me_string, NULL, NULL, NULL, N_("Glyph") },
+    { me_int, NULL, NULL, NULL, N_("Italic Correction") },
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    { me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") },
+#endif
+    };
+
+static struct col_init top_accent_ci[] = {
+    { me_string, NULL, NULL, NULL, N_("Glyph") },
+    { me_int, NULL, NULL, NULL, N_("Top Accent Horiz. Pos") },
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    { me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") },
+#endif
+    };
+
+static struct col_init glyph_variants_ci[] = {
+    { me_string, NULL, NULL, NULL, N_("Glyph") },
+    { me_string, NULL, NULL, NULL, N_("Pre-Built Larger Variants") },
+    };
+
+static struct col_init glyph_construction_ci[] = {
+    { me_string, NULL, NULL, NULL, N_("Glyph") },
+/* GT: Italic correction */
+    { me_int, NULL, NULL, NULL, N_("I.C.") },
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    { me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") },
+#endif
+    { me_funcedit, GlyphConstruction_Dlg, NULL, NULL, N_("Parts List") },
+    };
+
+static struct col_init math_kern_ci[] = {
+    { me_string, NULL, NULL, NULL, N_("Glyph") },
+    { me_string, NULL, NULL, NULL, N_("Not yet Implemented") },
+    };
+
+struct matrixinit mis[] = {
+    { sizeof(exten_shape_ci)/sizeof(struct col_init), exten_shape_ci, 0, NULL, NULL, NULL, NULL },
+    { sizeof(italic_cor_ci)/sizeof(struct col_init), italic_cor_ci, 0, NULL, NULL, NULL, NULL },
+    { sizeof(top_accent_ci)/sizeof(struct col_init), top_accent_ci, 0, NULL, NULL, NULL, NULL },
+    { sizeof(math_kern_ci)/sizeof(struct col_init), math_kern_ci, 0, NULL, NULL, NULL, NULL },
+    { sizeof(glyph_variants_ci)/sizeof(struct col_init), glyph_variants_ci, 0, NULL, NULL, NULL, NULL },
+    { sizeof(glyph_construction_ci)/sizeof(struct col_init), glyph_construction_ci, 0, NULL, NULL, NULL, NULL },
+    { sizeof(glyph_variants_ci)/sizeof(struct col_init), glyph_variants_ci, 0, NULL, NULL, NULL, NULL },
+    { sizeof(glyph_construction_ci)/sizeof(struct col_init), glyph_construction_ci, 0, NULL, NULL, NULL, NULL },
+    { 0 }
+};
+
+static struct col_init extensionpart[] = {
+    { me_string , NULL, NULL, NULL, N_("Glyph") },
+    { me_enum, NULL, truefalse, NULL, N_("Extender") },
+/* GT: "Len" is an abreviation for "Length" */
+    { me_int, NULL, NULL, NULL, N_("StartLen") },
+    { me_int, NULL, NULL, NULL, N_("EndLen") },
+    { me_int, NULL, NULL, NULL, N_("FullLen") },
+    };
+static struct matrixinit mi_extensionpart =
+    { sizeof(extensionpart)/sizeof(struct col_init), extensionpart, 0, NULL, NULL, NULL, extpart_finishedit };
+
+
+#define CID_Exten	1000
+#define CID_Italic	1001
+#define CID_TopAccent	1002
+#define CID_MathKern	1003
+#define CID_VGlyphVar	1004
+#define CID_VGlyphConst	1005
+#define CID_HGlyphVar	1004
+#define CID_HGlyphConst	1005
+
+static char *gi_aspectnames[] = {
+    N_("Exten Shapes"),
+    N_("Italic Correction"),
+    N_("Top Accent"),
+    N_("Math Kern"),
+    N_("Vert. Variants"),
+    N_("Vert. Construction"),
+    N_("Hor. Variants"),
+    N_("Hor. Construction"),
+    NULL
+};
+
+
 void MathInit(void) {
-    int i;
+    int i, j;
     static int inited = false;
+    static struct col_init *ci[] = { exten_shape_ci, italic_cor_ci,
+	    top_accent_ci, glyph_variants_ci, glyph_construction_ci,
+	    extensionpart, math_kern_ci, NULL };
+    static GTextInfo *tis[] = { truefalse, NULL };
+    static char **chars[] = { aspectnames, gi_aspectnames, NULL };
 
     if ( inited )
 return;
 
-    for ( i=0; aspectnames[i]!=NULL; ++i )
-	aspectnames[i] = _(aspectnames[i]);
+    for ( j=0; chars[j]!=NULL; ++j )
+	for ( i=0; chars[j][i]!=NULL; ++i )
+	    chars[j][i] = _(chars[j][i]);
     for ( i=0; math_constants_descriptor[i].ui_name!=NULL; ++i )
 	math_constants_descriptor[i].ui_name=_(math_constants_descriptor[i].ui_name);
+    for ( j=0; tis[j]!=NULL; ++j )
+	for ( i=0; tis[j][i].text!=NULL; ++i )
+	    tis[j][i].text = (unichar_t *) _((char *) tis[j][i].text);
+    for ( j=0; ci[j]!=NULL; ++j )
+	for ( i=0; ci[j][i].title!=NULL; ++i )
+	    ci[j][i].title = _(ci[j][i].title);
+	    
     inited = true;
 }
 
@@ -203,17 +313,159 @@ return;
     free(math);
 }
 
+static int GV_StringCheck(SplineFont *sf,char *str) {
+    char *start, *pt;
+    int scnt, pcnt, ch;
+    SplineChar *sc;
+
+    pcnt = 0;
+    for ( start = str ; ; ) {
+	while ( *start==' ' ) ++start;
+	for ( pt=start; *pt!=':' && *pt!=' ' && *pt!='\0' ; ++pt );
+	ch = *pt;
+	if ( ch==' ' || ch=='\0' )
+return( -1 );
+	if ( sf!=NULL ) {
+	    *pt = '\0';
+	    sc = SFGetChar(sf,-1,start);
+	    *pt = ch;
+	    if ( sc==NULL )
+return( -1 );
+	}
+	scnt = 0;
+	while ( *pt!=' ' && *pt!='\0' ) {
+	    if ( *pt==':' ) ++scnt;
+	    else if ( !isdigit( *pt ))
+return( -1 );
+	    ++pt;
+	}
+	if ( scnt!=4 )
+return( -1 );
+	++pcnt;
+	start = pt;
+    }
+return( pcnt );
+}
+
+static struct glyphvariants *GV_FromString(struct glyphvariants *gv,char *str) {
+    int pcnt = GV_StringCheck(NULL,str);
+    char *start, *pt;
+    int ch, temp;
+
+    if ( pcnt<=0 )
+return( gv );
+    if ( gv==NULL )
+	gv = chunkalloc(sizeof(struct glyphvariants));
+    gv->part_cnt = pcnt;
+    gv->parts = gcalloc(pcnt,sizeof(struct gv_part));
+    pcnt = 0;
+    for ( start = str ; ; ) {
+	while ( *start==' ' ) ++start;
+	for ( pt=start; *pt!=':' ; ++pt );
+	ch = *pt; *pt = '\0';
+	gv->parts[pcnt].component = copy(start);
+	*pt = ch;
+	sscanf(pt,":%d:%hd:%hd:%hd", &temp,
+		&gv->parts[pcnt].startConnectorLength,
+		&gv->parts[pcnt].endConnectorLength,
+		&gv->parts[pcnt].fullAdvance);
+	gv->parts[pcnt].is_extender = temp;
+	while ( *pt!=' ' && *pt!='\0' ) ++pt;
+	++pcnt;
+	start = pt;
+    }
+return( gv );
+}
+
+static char *GV_ToString(struct glyphvariants *gv) {
+    int i, len;
+    char buffer[80], *str;
+
+    if ( gv==NULL || gv->part_cnt==0 )
+return( NULL );
+    for ( i=len=0; i<gv->part_cnt; ++i ) {
+	len += strlen(gv->parts[i].component);
+	sprintf( buffer, ":%d:%d:%d:%d ", gv->parts[i].is_extender,
+		gv->parts[i].startConnectorLength,
+		gv->parts[i].endConnectorLength,
+		gv->parts[i].fullAdvance);
+	len += strlen( buffer );
+    }
+    str = galloc(len+1);
+    for ( i=len=0; i<gv->part_cnt; ++i ) {
+	strcpy(str+len,gv->parts[i].component);
+	len += strlen(gv->parts[i].component);
+	sprintf( buffer, ":%d:%d:%d:%d ", gv->parts[i].is_extender,
+		gv->parts[i].startConnectorLength,
+		gv->parts[i].endConnectorLength,
+		gv->parts[i].fullAdvance);
+	strcpy(str+len,buffer);
+	len += strlen( buffer );
+    }
+    if ( len!=0 )
+	str[len-1] = '\0';
+    else
+	*str = '\0';
+return( str );
+}
+
+static int SF_NameListCheck(SplineFont *sf,char *list) {
+    char *start, *pt;
+    int ch;
+    SplineChar *sc;
+
+    if ( list==NULL )
+return( true );
+
+    for ( start = list ; ; ) {
+	while ( *start== ' ' ) ++start;
+	if ( *start=='\0' )
+return( true );
+	for ( pt=start ; *pt!=' ' && *pt!='\0'; ++pt );
+	ch = *pt; *pt = '\0';
+	sc = SFGetChar(sf,-1,start);
+	*pt = ch;
+	start = pt;
+	if ( sc==NULL )
+return( false );
+    }
+}
+
 typedef struct mathdlg {
     GWindow gw;
     SplineFont *sf;
     struct MATH *math;
-    int done;
-    int ok;
+    uint8 done;
+    uint8 ok;
+    uint16 popup_r;
+    GGadget *popup_g;
+    /* Used by glyphconstruction_dlg */
+    SplineChar *sc;
+    int is_horiz;
 } MathDlg;
 
+static unichar_t **MATH_GlyphNameCompletion(GGadget *t,int from_tab) {
+    MathDlg *math = GDrawGetUserData(GDrawGetParentWindow(GGadgetGetWindow(t)));
+    SplineFont *sf = math->sf;
+
+return( SFGlyphNameCompletion(sf,t,from_tab,false));
+}
+
+static unichar_t **MATH_GlyphListCompletion(GGadget *t,int from_tab) {
+    MathDlg *math = GDrawGetUserData(GDrawGetParentWindow(GGadgetGetWindow(t)));
+    SplineFont *sf = math->sf;
+
+return( SFGlyphNameCompletion(sf,t,from_tab,true));
+}
+
 static void MATH_Init(MathDlg *math) {
-    int i;
+    int i, cnt, ccnt, ta, h;
     char buffer[20];
+    GGadget *g;
+    struct matrix_data *mds;
+    SplineFont *sf = math->sf;
+    SplineChar *sc;
+    int cols;
 
     for ( i=0; math_constants_descriptor[i].ui_name!=NULL; ++i ) {
 	GGadget *tf = GWidgetGetControl(math->gw,2*i+1);
@@ -234,13 +486,382 @@ static void MATH_Init(MathDlg *math) {
 	}
 #endif
     }
+
+    /* Extension Shapes */
+    for ( i=cnt=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL )
+	if ( sc->is_extended_shape )
+	    ++cnt;
+    mds = gcalloc(cnt*2,sizeof(struct matrix_data));
+    for ( i=cnt=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL )
+	if ( sc->is_extended_shape ) {
+	    mds[2*cnt+0].u.md_str = copy(sc->name);
+	    mds[2*cnt+1].u.md_ival = true;
+	    ++cnt;
+	}
+    GMatrixEditSet(GWidgetGetControl(math->gw,CID_Exten), mds,cnt,false);
+
+    /* Italic Correction && Top Angle Horizontal Position */
+    for ( ta=0; ta<2; ++ta ) {
+	g = GWidgetGetControl(math->gw,ta?CID_TopAccent:CID_Italic );
+	cols = GMatrixEditGetColCnt(g);
+	for ( i=cnt=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
+	    if ( (ta==0 && sc->italic_correction!=TEX_UNDEF ) ||
+		    (ta==1 && sc->top_accent_horiz!=TEX_UNDEF))
+		++cnt;
+	}
+	mds = gcalloc(cnt*cols,sizeof(struct matrix_data));
+	for ( i=cnt=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
+	    if ( ta==0 && sc->italic_correction!=TEX_UNDEF ) {
+		mds[cols*cnt+0].u.md_str = copy(sc->name);
+		mds[cols*cnt+1].u.md_ival = sc->italic_correction;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+		DevTabToString(&mds[cols*cnt+2].u.md_str,sc->italic_adjusts);
+#endif
+		++cnt;
+	    } else if ( ta==1 &&sc->top_accent_horiz!=TEX_UNDEF ) {
+		mds[cols*cnt+0].u.md_str = copy(sc->name);
+		mds[cols*cnt+1].u.md_ival = sc->top_accent_horiz;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+		DevTabToString(&mds[cols*cnt+2].u.md_str,sc->top_accent_adjusts);
+#endif
+		++cnt;
+	    }
+	}
+	GMatrixEditSet(g, mds,cnt,false);
+    }
+
+    /* Math Kern */
+    g = GWidgetGetControl(math->gw,CID_MathKern);
+    cols = GMatrixEditGetColCnt(g);
+    for ( i=cnt=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL )
+	if ( sc->mathkern!=NULL )
+	    ++cnt;
+    mds = gcalloc(cnt*cols,sizeof(struct matrix_data));
+    for ( i=cnt=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL )
+	if ( sc->mathkern!=NULL ) {
+	    mds[cols*cnt+0].u.md_str = copy(sc->name);
+	    ++cnt;
+	}
+    GMatrixEditSet(g, mds,cnt,false);
+
+    /* Horizontal/Vertical Glyph Variants */
+    for ( h=0; h<2; ++h ) {
+	g = GWidgetGetControl(math->gw,CID_VGlyphVar+2*h);
+	cols = GMatrixEditGetColCnt(g);
+	for ( i=cnt=ccnt=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
+	    struct glyphvariants *gv = h ? sc->horiz_variants : sc->vert_variants;
+	    if ( gv!=NULL && gv->variants!=NULL )
+		++cnt;
+	    if ( gv!=NULL && gv->part_cnt!=0 )
+		++ccnt;
+	}
+	mds = gcalloc(cnt*cols,sizeof(struct matrix_data));
+	for ( i=cnt=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
+	    struct glyphvariants *gv = h ? sc->horiz_variants : sc->vert_variants;
+	    if ( gv!=NULL && gv->variants!=NULL ) {
+		mds[cols*cnt+0].u.md_str = copy(sc->name);
+		mds[cols*cnt+1].u.md_str = copy(gv->variants);
+		++cnt;
+	    }
+	}
+	GMatrixEditSet(g, mds,cnt,false);
+
+	/* Glyph Construction */
+	g = GWidgetGetControl(math->gw,CID_VGlyphConst+2*h);
+	cols = GMatrixEditGetColCnt(g);
+	mds = gcalloc(ccnt*cols,sizeof(struct matrix_data));
+	for ( i=cnt=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
+	    struct glyphvariants *gv = h ? sc->horiz_variants : sc->vert_variants;
+	    if ( gv!=NULL && gv->part_cnt!=0 ) {
+		mds[cols*cnt+0].u.md_str = copy(sc->name);
+		mds[cols*cnt+1].u.md_ival = gv->italic_correction;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+		DevTabToString(&mds[cols*cnt+2].u.md_str,gv->italic_adjusts);
+#endif
+		mds[cols*cnt+cols-1].u.md_str = GV_ToString(gv);
+		++cnt;
+	    }
+	}
+	GMatrixEditSet(g, mds,cnt,false);
+    }
+}
+
+static void MATH_FreeImage(const void *_math, GImage *img) {
+    GImageDestroy(img);
+}
+
+static GImage *_MATHVar_GetImage(const void *_math) {
+    MathDlg *math = (MathDlg *) _math;
+    GGadget *varlist = math->popup_g;
+    int rows, cols = GMatrixEditGetColCnt(varlist);
+    struct matrix_data *old = GMatrixEditGet(varlist,&rows);
+    SplineChar *sc = SFGetChar(math->sf,-1, old[cols*math->popup_r].u.md_str);
+    static OTLookup dummyl = { NULL, gsub_multiple };
+    static struct lookup_subtable dummys = { NULL, NULL, &dummyl };
+
+return( PST_GetImage(varlist,math->sf,&dummys,math->popup_r,sc) );
+}
+
+static void MATHVar_PopupPrepare(GGadget *g, int r, int c) {
+    MathDlg *math = GDrawGetUserData(GGadgetGetWindow(g));
+    int rows, cols = GMatrixEditGetColCnt(g);
+    struct matrix_data *old = GMatrixEditGet(g,&rows);
+
+    if ( c<0 || c>=cols || r<0 || r>=rows || old[cols*r].u.md_str==NULL ||
+	SFGetChar(math->sf,-1, old[cols*r+0].u.md_str)==NULL )
+return;
+    math->popup_r = r;
+    math->popup_g = g;
+    GGadgetPreparePopupImage(GGadgetGetWindow(g),NULL,math,_MATHVar_GetImage,MATH_FreeImage);
+}
+
+static GImage *_MATHConst_GetImage(const void *_math) {
+    MathDlg *math = (MathDlg *) _math;
+    GGadget *varlist = math->popup_g;
+    int rows, cols = GMatrixEditGetColCnt(varlist);
+    struct matrix_data *old = GMatrixEditGet(varlist,&rows);
+    SplineChar *sc = SFGetChar(math->sf,-1, old[cols*math->popup_r].u.md_str);
+    struct glyphvariants *gv = GV_FromString(NULL,old[cols*math->popup_r+cols-1].u.md_str);
+    GImage *ret;
+
+    ret = GV_GetConstructedImage(sc,gv,GGadgetGetCid(varlist)==CID_HGlyphConst);
+    GlyphVariantsFree(gv);
+return( ret );
+}
+
+static void MATHConst_PopupPrepare(GGadget *g, int r, int c) {
+    MathDlg *math = GDrawGetUserData(GGadgetGetWindow(g));
+    int rows, cols = GMatrixEditGetColCnt(g);
+    struct matrix_data *old = GMatrixEditGet(g,&rows);
+
+    if ( c<0 || c>=cols || r<0 || r>=rows || old[cols*r].u.md_str==NULL ||
+	SFGetChar(math->sf,-1, old[cols*r+0].u.md_str)==NULL )
+return;
+    math->popup_r = r;
+    math->popup_g = g;
+    GGadgetPreparePopupImage(GGadgetGetWindow(g),NULL,math,_MATHConst_GetImage,MATH_FreeImage);
+}
+
+static GImage *_MATHLine_GetImage(const void *_math) {
+    MathDlg *math = (MathDlg *) _math;
+    GGadget *varlist = math->popup_g;
+    int rows, cols = GMatrixEditGetColCnt(varlist);
+    struct matrix_data *old = GMatrixEditGet(varlist,&rows);
+    SplineChar *sc = SFGetChar(math->sf,-1, old[cols*math->popup_r].u.md_str);
+
+return( SC_GetLinedImage(sc,old[cols*math->popup_r+1].u.md_ival,GGadgetGetCid(varlist)==CID_Italic));
+}
+
+static void MATHLine_PopupPrepare(GGadget *g, int r, int c) {
+    MathDlg *math = GDrawGetUserData(GGadgetGetWindow(g));
+    int rows, cols = GMatrixEditGetColCnt(g);
+    struct matrix_data *old = GMatrixEditGet(g,&rows);
+
+    if ( c<0 || c>=cols || r<0 || r>=rows || old[cols*r].u.md_str==NULL ||
+	SFGetChar(math->sf,-1, old[cols*r+0].u.md_str)==NULL )
+return;
+    math->popup_r = r;
+    math->popup_g = g;
+    GGadgetPreparePopupImage(GGadgetGetWindow(g),NULL,math,_MATHLine_GetImage,MATH_FreeImage);
+}
+
+static GImage *_GVC_GetImage(const void *_math) {
+    MathDlg *math = (MathDlg *) _math;
+    GGadget *varlist = math->popup_g;
+    int rows, cols = GMatrixEditGetColCnt(varlist);
+    struct matrix_data *old = GMatrixEditGet(varlist,&rows);
+    GImage *ret;
+    struct glyphvariants *gv;
+
+    gv = GV_ParseConstruction(NULL,old,rows,cols);
+    ret = GV_GetConstructedImage(math->sc,gv,math->is_horiz);
+    GlyphVariantsFree(gv);
+return( ret );
+}
+
+static void extpart_finishedit(GGadget *g, int r, int c, int wasnew) {
+    int rows;
+    struct matrix_data *stuff;
+    MathDlg *math;
+    int cols;
+    DBounds b;
+    double full_advance;
+    SplineChar *sc;
+
+    if ( c!=0 )
+return;
+    if ( !wasnew )
+return;
+    /* If they added a new glyph to the sequence then set some defaults for it. */
+    /*  only the full advance has any likelyhood of being correct */
+    math = GDrawGetUserData(GGadgetGetWindow(g));
+    stuff = GMatrixEditGet(g, &rows);
+    cols = GMatrixEditGetColCnt(g);
+    if ( stuff[r*cols+0].u.md_str==NULL )
+return;
+    sc = SFGetChar(math->sf,-1,stuff[r*cols+0].u.md_str);
+    if ( sc==NULL )
+return;
+    SplineCharFindBounds(sc,&b);
+    if ( math->is_horiz )
+	full_advance = b.maxx - b.minx;
+    else
+	full_advance = b.maxy - b.miny;
+    stuff[r*cols+2].u.md_ival = stuff[r*cols+3].u.md_ival = rint(full_advance/3);
+    stuff[r*cols+4].u.md_ival = rint(full_advance);
+    GGadgetRedraw(g);
+}
+
+static void GVC_PopupPrepare(GGadget *g, int r, int c) {
+    MathDlg *math = GDrawGetUserData(GGadgetGetWindow(g));
+
+    math->popup_g = g;
+    if ( math->sc==NULL )
+return;
+    GGadgetPreparePopupImage(GGadgetGetWindow(g),NULL,math,_GVC_GetImage,MATH_FreeImage);
+}
+
+static int GVC_OK(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	MathDlg *math = GDrawGetUserData(GGadgetGetWindow(g));
+	math->done = true;
+	math->ok = true;
+    }
+return( true );
+}
+
+static int MATH_Cancel(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	MathDlg *math = GDrawGetUserData(GGadgetGetWindow(g));
+	math->done = true;
+    }
+return( true );
+}
+
+static int gc_e_h(GWindow gw, GEvent *event) {
+    MathDlg *math = GDrawGetUserData(gw);
+
+    if ( event->type==et_close ) {
+	math->done = true;
+    } else if ( event->type==et_char ) {
+	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
+	    help("math.html#GlyphConstruction");
+return( true );
+	}
+return( false );
+    }
+return( true );
+}
+
+static char *GlyphConstruction_Dlg(GGadget *g, int r, int c) {
+    MathDlg *math = GDrawGetUserData(GGadgetGetWindow(g));
+    MathDlg md;
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    int rows, cols = GMatrixEditGetColCnt(g);
+    struct matrix_data *old = GMatrixEditGet(g,&rows);
+    GGadgetCreateData *harray[7], mgcd[4], *varray[6], mboxes[3];
+    GTextInfo mlabel[3];
+    struct glyphvariants *gv;
+    char *ret;
+
+    memset(&md,0,sizeof(md));
+    md.sf = math->sf;
+    md.is_horiz = GGadgetGetCid(g)==CID_HGlyphConst;
+    md.sc = SFGetChar(md.sf,-1,old[r*cols+cols-1].u.md_str);
+
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.restrict_input_to_me = 1;
+    wattrs.undercursor = 1;
+    wattrs.cursor = ct_pointer;
+    wattrs.utf8_window_title = _("MATH table");
+    pos.x = pos.y = 0;
+    pos.width = 100;
+    pos.height = 100;
+    md.gw = gw = GDrawCreateTopWindow(NULL,&pos,gc_e_h,&md,&wattrs);
+
+    memset(mgcd,0,sizeof(mgcd));
+    memset(mlabel,0,sizeof(mlabel));
+    memset(mboxes,0,sizeof(mboxes));
+
+    mgcd[0].gd.flags = gg_visible | gg_enabled;
+    mgcd[0].gd.u.matrix = &mi_extensionpart;
+    mgcd[0].gd.cid = CID_VGlyphConst;
+    mgcd[0].creator = GMatrixEditCreate;
+
+    mgcd[1].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    mlabel[1].text = (unichar_t *) _("_OK");
+    mlabel[1].text_is_1byte = true;
+    mlabel[1].text_in_resource = true;
+    mgcd[1].gd.label = &mlabel[1];
+    mgcd[1].gd.handle_controlevent = GVC_OK;
+    mgcd[1].creator = GButtonCreate;
+
+    mgcd[2].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    mlabel[2].text = (unichar_t *) _("_Cancel");
+    mlabel[2].text_is_1byte = true;
+    mlabel[2].text_in_resource = true;
+    mgcd[2].gd.label = &mlabel[2];
+    mgcd[2].gd.handle_controlevent = MATH_Cancel;
+    mgcd[2].creator = GButtonCreate;
+
+    harray[0] = GCD_Glue; harray[1] = &mgcd[1]; harray[2] = GCD_Glue;
+    harray[3] = GCD_Glue; harray[4] = &mgcd[2]; harray[5] = GCD_Glue;
+    harray[6] = NULL;
+
+    mboxes[2].gd.flags = gg_enabled|gg_visible;
+    mboxes[2].gd.u.boxelements = harray;
+    mboxes[2].creator = GHBoxCreate;
+
+    varray[0] = &mgcd[0]; varray[1] = NULL;
+    varray[2] = &mboxes[2]; varray[3] = NULL;
+    varray[4] = NULL;
+
+    mboxes[0].gd.pos.x = mboxes[0].gd.pos.y = 2;
+    mboxes[0].gd.flags = gg_enabled|gg_visible;
+    mboxes[0].gd.u.boxelements = varray;
+    mboxes[0].creator = GHVGroupCreate;
+
+    GGadgetsCreate(gw,mboxes);
+    GHVBoxSetExpandableRow(mboxes[0].ret,0);
+    GHVBoxSetExpandableCol(mboxes[2].ret,gb_expandgluesame);
+    GMatrixEditSetColumnCompletion(mgcd[0].ret,0,MATH_GlyphNameCompletion);
+    GMatrixEditSetMouseMoveReporter(mgcd[0].ret,GVC_PopupPrepare);
+
+    /* If it's unparseable, this will give 'em nothing */
+    gv = GV_FromString(NULL,old[r*cols+cols-1].u.md_str);
+    GV_ToMD(mgcd[0].ret,gv);
+    GlyphVariantsFree(gv);
+
+    GHVBoxFitWindow(mboxes[0].ret);
+
+    GDrawSetVisible(md.gw,true);
+
+    while ( !md.done )
+	GDrawProcessOneEvent(NULL);
+
+    if ( md.ok ) {
+	int rs, cs = GMatrixEditGetColCnt(mgcd[0].ret);
+	struct matrix_data *stuff = GMatrixEditGet(mgcd[0].ret,&rs);
+	gv = GV_ParseConstruction(NULL,stuff,rs,cs);
+	ret = GV_ToString(gv);
+	GlyphVariantsFree(gv);
+    } else
+	ret = old[r*cols+cols-1].u.md_str;
+    GDrawDestroyWindow(md.gw);
+return( ret );
 }
 
 static int MATH_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	MathDlg *math = GDrawGetUserData(GGadgetGetWindow(g));
 	int err=false;
-	int i,high,low;
+	int cid,i,high,low;
+	SplineFont *sf = math->sf;
+	SplineChar *sc;
 
 	/* Two passes. First checks that everything is parsable */
 	for ( i=0; math_constants_descriptor[i].ui_name!=NULL; ++i ) {
@@ -254,14 +875,54 @@ return( true );
 		if ( !DeviceTableOK(str,&low,&high)) {
 		    gwwv_post_error(_("Bad device table"), _("Bad device table for %s"),
 			    math_constants_descriptor[i].ui_name);
+		    free(str);
 return( true );
 		}
 		free(str);
 	    }
 #endif
 	}
+	/* Now check that the various glyph lists are parseable */
+	for ( cid=CID_Exten; cid<=CID_HGlyphConst; ++cid ) {
+	    GGadget *g = GWidgetGetControl(math->gw,cid);
+	    int rows, cols = GMatrixEditGetColCnt(g);
+	    struct matrix_data *old = GMatrixEditGet(g,&rows);
+	    for ( i=0; i<rows; ++i ) {
+		if ( SFGetChar(sf,-1,old[i*cols+0].u.md_str)==NULL ) {
+		    gwwv_post_error(_("Missing Glyph"), _("There is no glyph named %s (used in %s)"),
+			    old[i*cols+0].u.md_str, gi_aspectnames[cid-CID_Exten]);
+return( true );
+		}
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+		if ( cid==CID_Italic || cid==CID_TopAccent ||
+			cid == CID_VGlyphConst || cid == CID_HGlyphConst ) {
+		    if ( !DeviceTableOK(old[i*cols+2].u.md_str,&low,&high)) {
+			gwwv_post_error(_("Bad device table"), _("Bad device table for glyph %s in %s"),
+				old[i*cols+0].u.md_str, gi_aspectnames[cid-CID_Exten]);
+return( true );
+		    }
+		}
+#endif
+		if ( cid == CID_VGlyphConst || cid == CID_HGlyphConst ) {
+		    if ( GV_StringCheck(sf,old[i*cols+cols-1].u.md_str)==-1 ) {
+			gwwv_post_error(_("Bad Parts List"), _("Bad parts list for glyph %s in %s"),
+				old[i*cols+0].u.md_str, gi_aspectnames[cid-CID_Exten]);
+return( true );
+		    }
+		}
+		if ( cid == CID_VGlyphConst || cid == CID_HGlyphConst ) {
+		    if ( !SF_NameListCheck(sf,old[i*cols+1].u.md_str)) {
+			gwwv_post_error(_("Bad Variants List"), _("Bad Variants list for glyph %s in %s"),
+				old[i*cols+0].u.md_str, gi_aspectnames[cid-CID_Exten]);
+return( true );
+		    }
+		}
+	    }
+	}
 
+	/*********************************************/
 	/* Ok, if we got this far it should be legal */
+	/*********************************************/
 	for ( i=0; math_constants_descriptor[i].ui_name!=NULL; ++i ) {
 	    int16 *pos = (int16 *) (((char *) (math->math)) + math_constants_descriptor[i].offset );
 	    *pos = GetInt8(math->gw,2*i+1,math_constants_descriptor[i].ui_name,&err);
@@ -277,17 +938,72 @@ return( true );
 	    }
 #endif
 	}
-	math->sf->MATH = math->math;
+	sf->MATH = math->math;
+
+	/* As for the per-glyph stuff... Well the only way I can insure that */
+	/* things which have been removed in the dlg are removed in the font */
+	/* is to clear everything now, and start from a blank slate when I   */
+	/* parse stuff. (Except for math kerning which I don't support here) */
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
+	    sc->is_extended_shape = false;
+	    sc->italic_correction = TEX_UNDEF;
+	    sc->top_accent_horiz  = TEX_UNDEF;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	    DeviceTableFree(sc->italic_adjusts);
+	    DeviceTableFree(sc->top_accent_adjusts);
+	    sc->italic_adjusts = sc->top_accent_adjusts = NULL;
+#endif
+	    GlyphVariantsFree(sc->vert_variants);
+	    GlyphVariantsFree(sc->horiz_variants);
+	    sc->vert_variants = sc->horiz_variants = NULL;
+	    /* MathKernFree(sc->mathkern); sc->mathkern = NULL; */
+	}
+	/* Then process each table to set whatever it sets */
+	for ( cid=CID_Exten; cid<=CID_HGlyphConst; ++cid ) {
+	    GGadget *g = GWidgetGetControl(math->gw,cid);
+	    int rows, cols = GMatrixEditGetColCnt(g);
+	    struct matrix_data *old = GMatrixEditGet(g,&rows);
+	    for ( i=0; i<rows; ++i ) {
+		sc = SFGetChar(sf,-1,old[i*cols+0].u.md_str);
+		if ( cid==CID_Exten )
+		    sc->is_extended_shape = old[i*cols+1].u.md_ival;
+		else if ( cid==CID_Italic ) {
+		    sc->italic_correction = old[i*cols+1].u.md_ival;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+		    sc->italic_adjusts = DeviceTableParse(NULL,old[i*cols+2].u.md_str);
+#endif
+		} else if ( cid==CID_TopAccent ) {
+		    sc->top_accent_horiz = old[i*cols+1].u.md_ival;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+		    sc->top_accent_adjusts = DeviceTableParse(NULL,old[i*cols+2].u.md_str);
+#endif
+		} else if ( cid==CID_VGlyphVar || cid==CID_HGlyphVar ) {
+		    struct glyphvariants **gvp = cid == CID_VGlyphVar ?
+			    &sc->vert_variants : &sc->horiz_variants;
+		    char *str = old[i*cols+1].u.md_str;
+		    if ( str!=NULL ) while ( *str==' ' ) ++str;
+		    if ( str!=NULL && *str!='\0' ) {
+			*gvp = chunkalloc(sizeof(struct glyphvariants));
+			(*gvp)->variants = copy( str );
+		    }
+		} else if ( cid==CID_VGlyphConst || cid==CID_HGlyphConst ) {
+		    struct glyphvariants **gvp = cid == CID_VGlyphConst ?
+			    &sc->vert_variants : &sc->horiz_variants;
+		    *gvp = GV_FromString(*gvp,old[cols*i+cols-1].u.md_str);
+		    if ( *gvp!=NULL && (*gvp)->part_cnt!=0 ) {
+			(*gvp)->italic_correction = old[i*cols+1].u.md_ival;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+			(*gvp)->italic_adjusts = DeviceTableParse(NULL,old[i*cols+2].u.md_str);
+#endif
+		    }
+		}
+	    }
+	}
+
+	/* Done! */
+
 	math->done = true;
 	math->ok = true;
-    }
-return( true );
-}
-
-static int MATH_Cancel(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	MathDlg *math = GDrawGetUserData(GGadgetGetWindow(g));
-	math->done = true;
     }
 return( true );
 }
@@ -312,15 +1028,16 @@ return( true );
 
 void SFMathDlg(SplineFont *sf) {
     MathDlg md;
-    int i, page, row;
+    int i, j, page, row, h;
+    GGadget *g;
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[MAX_PAGE][MAX_ROW][3], boxes[MAX_PAGE][2],
 	    *hvarray[MAX_PAGE][MAX_ROW+1][4], *harray[7], mgcd[4],
-	    *varray[6], mboxes[3];
+	    *varray[6], mboxes[3], gi[8][2];
     GTextInfo label[MAX_PAGE][MAX_ROW], mlabel[3];
-    GTabInfo aspects[MAX_PAGE+1];
+    GTabInfo aspects[MAX_PAGE+8+1];
 
     MathInit();
 
@@ -347,6 +1064,7 @@ void SFMathDlg(SplineFont *sf) {
     memset(label,0,sizeof(label));
     memset(boxes,0,sizeof(boxes));
     memset(aspects,0,sizeof(aspects));
+    memset(gi,0,sizeof(gi));
 
     page = row = 0;
     for ( i=0; math_constants_descriptor[i].ui_name!=NULL; ++i ) {
@@ -414,6 +1132,17 @@ return;
 return;
     }
 
+    for ( j=0; mis[j].col_cnt!=0; ++j ) {
+	gi[j][0].gd.flags = gg_enabled|gg_visible;
+	gi[j][0].gd.u.matrix = &mis[j];
+	gi[j][0].gd.cid = CID_Exten+j;
+	gi[j][0].creator = GMatrixEditCreate;
+
+	aspects[i+j].text = (unichar_t *) gi_aspectnames[j];
+	aspects[i+j].text_is_1byte = true;
+	aspects[i+j].gcd = gi[j];
+    }
+
     memset(mgcd,0,sizeof(mgcd));
     memset(mlabel,0,sizeof(mlabel));
     memset(mboxes,0,sizeof(mboxes));
@@ -463,6 +1192,17 @@ return;
 	GHVBoxSetExpandableCol(boxes[i][0].ret,2);
 	GHVBoxSetExpandableRow(boxes[i][0].ret,gb_expandglue);
     }
+    for ( j=0; mis[j].col_cnt!=0; ++j )
+	GMatrixEditSetColumnCompletion(gi[j][0].ret,0,MATH_GlyphNameCompletion);
+    for ( h=0; h<2; ++h ) {
+	g = GWidgetGetControl(md.gw,CID_VGlyphVar+2*h);
+	GMatrixEditSetColumnCompletion(g,1,MATH_GlyphListCompletion);
+	GMatrixEditSetMouseMoveReporter(g,MATHVar_PopupPrepare);
+	g = GWidgetGetControl(md.gw,CID_VGlyphConst+2*h);
+	GMatrixEditSetMouseMoveReporter(g,MATHConst_PopupPrepare);
+    }
+    GMatrixEditSetMouseMoveReporter(GWidgetGetControl(md.gw,CID_Italic),MATHLine_PopupPrepare);
+    GMatrixEditSetMouseMoveReporter(GWidgetGetControl(md.gw,CID_TopAccent),MATHLine_PopupPrepare);
     MATH_Init(&md);
     GHVBoxFitWindow(mboxes[0].ret);
 
