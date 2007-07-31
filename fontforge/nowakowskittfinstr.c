@@ -33,6 +33,11 @@
 #include "ttf.h"
 #include "splinefont.h"
 
+/* non-optimized instructions will be using a stack of depth 3, allowing
+ * for easy testing whether the code leaves trash on the stack or not.
+ */
+#define OPTIMIZE_TTF_INSTRS 1
+
 /* define some often used instructions */
 #define SVTCA_y                 (0x00)
 #define SVTCA_x                 (0x01)
@@ -136,8 +141,12 @@ static void init_maxp(InstrCt *ct) {
     if (zones<2) zones=2;
     if (twpts<1) twpts=1;
     if (fdefs<1) fdefs=1;
-    /* A TEMPORARY fix */
-    if (stack<256) stack=256; /* we'll surely need more in future */
+
+#if OPTIMIZE_TTF_INSTRS
+    if (stack<256) stack=256;
+#else
+    if (stack<3) stack=3;
+#endif
 
     memputshort(tab->data, 7*sizeof(uint16), zones);
     memputshort(tab->data, 8*sizeof(uint16), twpts);
@@ -168,7 +177,7 @@ static void init_prep(InstrCt *ct) {
 	0xff, //   ...still that 511
 	0x85, // SCANCTRL
 	0xb0, // PUSHB_1
-	0x01, //   70/64 = about 1.094 pixel
+	0x46, //   70/64 = about 1.094 pixel
 	0x1d, // SCVTCI
 	0x4b, // MPPEM
 	0xb0, // PUSHB_1
@@ -176,7 +185,7 @@ static void init_prep(InstrCt *ct) {
 	0x52, // GT
 	0x58, // IF
 	0xb0, // PUSHB_1
-	0x01, //   128/64 = 2 pixels
+	0x80, //   128/64 = 2 pixels
 	0x1d, // SCVTCI
 	0x59  // EIF
     };
@@ -425,9 +434,40 @@ return( addpoint(instrs,isword,stem));
 static uint8 *pushpoints(uint8 *instrs, int ptcnt, const int *pts) {
     int i, isword = 0;
     for (i=0; i<ptcnt; i++) if (pts[i]>255) isword=1;
-    if (ptcnt > 255) isword = 1; /* or use several NPUSHB if all are bytes */
+    if (ptcnt > 255) isword = 1; /* TODO! use several NPUSHB if all are bytes */
     instrs = pushheader(instrs,isword,ptcnt);
     for (i=0; i<ptcnt; i++) instrs = addpoint(instrs, isword, pts[i]);
+return( instrs );
+}
+
+/* An apparatus for instructing sets of points with given truetype command.
+ * The command must pop exactly 1 element from the stack and mustn't push any.
+ * If SHP, SHPIX, IP, FLIPPT or ALIGNRP used, I may try to use SLOOP in future.
+ *
+ * These points must be marked as 'touched' elsewhere! this punction only
+ * generates intructions.
+ *
+ * Possible strategies:
+ *   - do point by point (currently used, poor space efficiency)
+ *   - push all the stock at once (better, but has
+ *     poor space efficiency in case of a word among several bytes).
+ *   - push bytes and words separately
+ *   - when the stuff is pushed, try to use SLOOP.
+ */
+static uint8 *instructpoints(uint8 *instrs, int ptcnt, const int *pts, uint8 command) {
+    int i;
+
+#if OPTIMIZE_TTF_INSTRS
+    instrs = pushpoints(instrs, ptcnt<=255?ptcnt:255, pts);
+    for (i=0; i<ptcnt; i++) *instrs++ = command;
+    if (ptcnt>255) instrs=instructpoints(instrs, ptcnt-255, pts+255, command);
+#else
+    for (i=0; i<ptcnt; i++) {
+	instrs = pushpoint(instrs, pts[i]);
+	*instrs++ = command;
+    }
+#endif
+
 return( instrs );
 }
 
@@ -607,11 +647,9 @@ static void RunOnPoints(InstrCt *ct, int contour_direction,
  * Hinting a stem edge is broken in two steps. First: init_edge() seeks for
  * points to snap and chooses one that will be used as a reference point - it
  * should be then instructed elsewhere (a general method of edge positioning).
- * Finally, finish_edge() instructs the rest of points found with given command:
- * SHP, SHPIX, IP, FLIPPT or ALIGNRP (in future the function may use SLOOP to
- * minimize the size of generated ttf code, so other opcodes mustn't be used).
- * It also tries not to instruct unneeded points on an edge, relying on IUP[].
- *
+ * Finally, finish_edge() instructs the rest of points found with given command,
+ * using instructpoints().
+ * 
  * The contour_direction option of init_edge() is for hinting blues - snapping
  * internal contour to a bluezone seems just plainly wrong.
  *
@@ -737,38 +775,19 @@ return;
 #undef NextP
 }
 
-/* Finish instructing the edge. The 'command' must be
- * either of: SHP, SHPIX, IP, FLIPPT or ALIGNRP.
-
- * We try to hint only those points on edge that are necessary.
- * IUP will do the rest.
-
- * TODO! 
- * Possible strategies:
- *   - do point by point (currently used, poor space efficiency)
- *   - push all the stock at once (better, but has
- *     poor space efficiency in case of a word among several bytes).
- *   - push bytes and words separately
- *   - when the stuff is pushed, try to use SLOOP.
+/* Finish instructing the edge. Try to hint only those points on edge that are
+ * necessary - IUP should do the rest.
  */
 static void finish_edge(InstrCt *ct, uint8 command) {
+    int i;
 
     optimize_edge(ct);
     if (ct->edge.othercnt==0)
 return;
 
-    int i;
-    int othercnt = ct->edge.othercnt;
-    int *others = ct->edge.others;
-
-    /* This will need to signal maximum stack depth. */
-//    ct->pt = pushpoints(ct->pt, othercnt, others);
-
-    for(i=0; i<othercnt; i++) {
-	ct->pt = pushpoint(ct->pt, others[i]); /* to be gone */
-	*(ct->pt)++ = command;
-	ct->touched[others[i]] |= (ct->xdir?tf_x:tf_y);
-    }
+    ct->pt=instructpoints(ct->pt, ct->edge.othercnt, ct->edge.others, command);
+    for(i=0; i<ct->edge.othercnt; i++)
+	ct->touched[ct->edge.others[i]] |= (ct->xdir?tf_x:tf_y);
 
     free(ct->edge.others);
     ct->edge.others=NULL;
@@ -889,15 +908,19 @@ return;
 	    if ((base + ct->gi->fudge < blues[i][0]) ||
 		(base - ct->gi->fudge > blues[i][1]))
 	    {
-		if (hint->ghost && ((hint->width == 20) || (hint->width == 21)))
-		    continue;
-
 		tmp = base;
 		base = advance;
 		advance = tmp;
 
 		if ((base + ct->gi->fudge < blues[i][0]) ||
 		    (base - ct->gi->fudge > blues[i][1])) continue;
+
+		/* ghost hints need the right edge to be snapped */
+		if (hint->ghost && ((hint->width == 20) || (hint->width == 21))) {
+		    tmp = base;
+		    base = advance;
+		    advance = tmp;
+		}
 	    }
 
 	    /* instruct the stem */
