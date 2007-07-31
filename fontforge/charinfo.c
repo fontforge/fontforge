@@ -1162,6 +1162,25 @@ return( TEX_UNDEF );
 return( GetInt8(gw,cid,msg,err));
 }
 
+struct glyphvariants *GV_ParseConstruction(struct glyphvariants *gv,
+	struct matrix_data *stuff, int rows, int cols) {
+    int i;
+
+    if ( gv==NULL )
+	gv = chunkalloc(sizeof(struct glyphvariants));
+
+    gv->part_cnt = rows;
+    gv->parts = gcalloc(rows,sizeof(struct gv_part));
+    for ( i=0; i<rows; ++i ) {
+	gv->parts[i].component = copy(stuff[i*cols+0].u.md_str);
+	gv->parts[i].is_extender = stuff[i*cols+1].u.md_ival;
+	gv->parts[i].startConnectorLength = stuff[i*cols+2].u.md_ival;
+	gv->parts[i].endConnectorLength = stuff[i*cols+3].u.md_ival;
+	gv->parts[i].fullAdvance = stuff[i*cols+4].u.md_ival;
+    }
+return( gv );
+}
+
 static struct glyphvariants *CI_ParseVariants(struct glyphvariants *gv,
 	CharInfo *ci, int is_horiz,
 	char *italic_correction_devtab, int italic_correction,
@@ -1170,7 +1189,6 @@ static struct glyphvariants *CI_ParseVariants(struct glyphvariants *gv,
     GGadget *construct = GWidgetGetControl(ci->gw,CID_ExtensionList+is_horiz*100);
     int rows, cols = GMatrixEditGetColCnt(construct);
     struct matrix_data *stuff = GMatrixEditGet(construct,&rows);
-    int i;
 
     if ( (variants==NULL || variants[0]=='\0' || only_parts) && rows==0 ) {
 	free(variants);
@@ -1194,16 +1212,7 @@ return( NULL );
 	gv->italic_adjusts = DeviceTableParse(gv->italic_adjusts,italic_correction_devtab);
 #endif
     }
-
-    gv->part_cnt = rows;
-    gv->parts = gcalloc(rows,sizeof(struct gv_part));
-    for ( i=0; i<rows; ++i ) {
-	gv->parts[i].component = copy(stuff[i*cols+0].u.md_str);
-	gv->parts[i].is_extender = stuff[i*cols+1].u.md_ival;
-	gv->parts[i].startConnectorLength = stuff[i*cols+2].u.md_ival;
-	gv->parts[i].endConnectorLength = stuff[i*cols+3].u.md_ival;
-	gv->parts[i].fullAdvance = stuff[i*cols+4].u.md_ival;
-    }
+    gv = GV_ParseConstruction(gv,stuff,rows,cols);
 return( gv );
 }
     
@@ -1256,6 +1265,7 @@ return( false );
     vicdt = GGadgetGetTitle8(GWidgetGetControl(ci->gw,CID_ExtItalicDev+0*100));
     if ( !DeviceTableOK(italicdevtab,&low,&high) || !DeviceTableOK(accentdevtab,&low,&high) ||
 	    !DeviceTableOK(hicdt,&low,&high) || !DeviceTableOK(vicdt,&low,&high)) {
+	gwwv_post_error( _("Bad Device Table Adjustment"),_("A device table adjustment specified for the MATH table is invalid") );
 	free( accentdevtab );
 	free( italicdevtab );
 	free(hicdt); free(vicdt);
@@ -1939,7 +1949,7 @@ return( false );
 return( true );
 }
 
-static char *DevTab_Dlg(GGadget *g, int r, int c) {
+char *DevTab_Dlg(GGadget *g, int r, int c) {
     int rows, k, j;
     struct matrix_data *strings = GMatrixEditGet(g, &rows);
     char *dvstr = strings[2*r+c].u.md_str;
@@ -2558,6 +2568,70 @@ return( NULL );
 return( img );
 }
 
+/* Draws an image of a glyph with a vertical bar down the middle. */
+/*  used to show italic correction position (we also dot in the width line) */
+/*  and top accent horizontal position for the MATH table */
+GImage *SC_GetLinedImage(SplineChar *sc, int pos, int is_italic_cor) {
+    BDFChar *me;
+    double scale = kern_popup_size/(double) (sc->parent->ascent+sc->parent->descent);
+    int miny, maxy, minx, maxx;
+    GImage *img;
+    struct _GImage *base;
+    Color fg, bg;
+    int l,clut_scale;
+    int x,y, xoffset, yoffset;
+    int pixel;
+
+    if ( is_italic_cor )
+	pos += sc->width;
+    pos = rint( pos*scale );
+    if ( pos<-100 || pos>100 )
+return( NULL );
+    me = Rasterize(sc);
+    if ( pos<me->xmin-10 || pos>me->xmax+30 ) {
+	BDFCharFree(me);
+return( NULL );
+    }
+    if ( (minx=me->xmin)>0 ) minx = 0;
+    if ( (maxx=me->xmax)<me->width ) maxx = me->width;
+    if ( pos<minx ) minx = pos-2;
+    if ( pos>maxx ) maxx = pos+2;
+    miny = me->ymin + 1;
+    maxy = me->ymax + 1;
+
+    pixel = me->depth == 8 ? 0xff : 0xf;
+
+    img = GImageCreate(it_index,maxx-minx+2,maxy-miny+2);
+    base = img->u.image;
+    memset(base->data,'\0',base->bytes_per_line*base->height);
+
+    xoffset = 1 - minx;
+    yoffset = 1 + maxy;
+    for ( y=me->ymin; y<=me->ymax; ++y ) {
+	for ( x=me->xmin; x<=me->xmax; ++x ) {
+	    base->data[(yoffset-y)*base->bytes_per_line + (x+xoffset)] =
+		    me->bitmap[(me->ymax-y)*me->bytes_per_line + (x-me->xmin)];
+	}
+	base->data[(yoffset-y)*base->bytes_per_line + (pos+xoffset)] = pixel;
+	if ( is_italic_cor && (y&1 ))
+	    base->data[(yoffset-y)*base->bytes_per_line + (me->width+xoffset)] = pixel;
+    }
+    
+    memset(base->clut,'\0',sizeof(*base->clut));
+    bg = GDrawGetDefaultBackground(NULL);
+    fg = GDrawGetDefaultForeground(NULL);
+    clut_scale = me->depth == 8 ? 8 : 4;
+    base->clut->clut_len = 1<<clut_scale;
+    for ( l=0; l<(1<<clut_scale); ++l )
+	base->clut->clut[l] =
+	    COLOR_CREATE(
+	     COLOR_RED(bg) + (l*(COLOR_RED(fg)-COLOR_RED(bg)))/((1<<clut_scale)-1),
+	     COLOR_GREEN(bg) + (l*(COLOR_GREEN(fg)-COLOR_GREEN(bg)))/((1<<clut_scale)-1),
+	     COLOR_BLUE(bg) + (l*(COLOR_BLUE(fg)-COLOR_BLUE(bg)))/((1<<clut_scale)-1) );
+    BDFCharFree(me);
+return( img );
+}
+
 #define ICON_WIDTH 15
 
 GImage *GV_GetConstructedImage(SplineChar *sc,struct glyphvariants *gv, int is_horiz) {
@@ -2571,7 +2645,7 @@ GImage *GV_GetConstructedImage(SplineChar *sc,struct glyphvariants *gv, int is_h
     int x,y;
     int i,j;
 
-    if ( gv->part_cnt==0 )
+    if ( gv==NULL || gv->part_cnt==0 )
 return( NULL );
     me = Rasterize(sc);
     others = galloc(gv->part_cnt*sizeof(BDFChar *));
@@ -2955,7 +3029,7 @@ static void extpart_finishedit(GGadget *g, int r, int c, int wasnew) {
 return;
     if ( !wasnew )
 return;
-    /* If they add a new glyph to the sequence set some defaults for it. */
+    /* If they added a new glyph to the sequence then set some defaults for it. */
     /*  only the full advance has any likelyhood of being correct */
     ci = GDrawGetUserData(GGadgetGetWindow(g));
     is_horiz = GTabSetGetSel(GWidgetGetControl(ci->gw,CID_Tabs))-ci->vert_aspect;
@@ -2989,7 +3063,7 @@ static struct col_init extensionpart[] = {
     { me_int, NULL, NULL, NULL, N_("EndLen") },
     { me_int, NULL, NULL, NULL, N_("FullLen") },
     };
-struct matrixinit mi_extensionpart =
+static struct matrixinit mi_extensionpart =
     { sizeof(extensionpart)/sizeof(struct col_init), extensionpart, 0, NULL, NULL, NULL, extpart_finishedit };
 
 static int isxheight(int uni) {
@@ -3140,6 +3214,24 @@ static int CI_AspectChange(GGadget *g, GEvent *e) {
 	CI_NoteAspect(ci);
     }
 return( true );
+}
+
+void GV_ToMD(GGadget *g, struct glyphvariants *gv) {
+    int cols = GMatrixEditGetColCnt(g), j;
+    struct matrix_data *mds;
+    if ( gv==NULL ) {
+	GMatrixEditSet(g, NULL,0,false);
+return;
+    }
+    mds = gcalloc(gv->part_cnt*cols,sizeof(struct matrix_data));
+    for ( j=0; j<gv->part_cnt; ++j ) {
+	mds[j*cols+0].u.md_str = copy(gv->parts[j].component);
+	mds[j*cols+1].u.md_ival = gv->parts[j].is_extender;
+	mds[j*cols+2].u.md_ival = gv->parts[j].startConnectorLength;
+	mds[j*cols+3].u.md_ival = gv->parts[j].endConnectorLength;
+	mds[j*cols+4].u.md_ival = gv->parts[j].fullAdvance;
+    }
+    GMatrixEditSet(g, mds,gv->part_cnt,false);
 }
 
 static void CIFillup(CharInfo *ci) {
@@ -3382,20 +3474,7 @@ static void CIFillup(CharInfo *ci) {
     for ( i=0; i<2; ++i ) {
 	struct glyphvariants *gv = i ? sc->vert_variants : sc->horiz_variants;
 	GGadget *g = GWidgetGetControl(ci->gw,CID_ExtensionList+i*100);
-	int cols = GMatrixEditGetColCnt(g), j;
-	if ( gv==NULL ) {
-	    GMatrixEditSet(g, NULL,0,false);
-    continue;
-	}
-	mds[i] = gcalloc(gv->part_cnt*cols,sizeof(struct matrix_data));
-	for ( j=0; j<gv->part_cnt; ++j ) {
-	    mds[i][j*cols+0].u.md_str = copy(gv->parts[j].component);
-	    mds[i][j*cols+1].u.md_ival = gv->parts[j].is_extender;
-	    mds[i][j*cols+2].u.md_ival = gv->parts[j].startConnectorLength;
-	    mds[i][j*cols+3].u.md_ival = gv->parts[j].endConnectorLength;
-	    mds[i][j*cols+4].u.md_ival = gv->parts[j].fullAdvance;
-	}
-	GMatrixEditSet(g, mds[i],gv->part_cnt,false);
+	GV_ToMD(g, gv);
     }
 }
 

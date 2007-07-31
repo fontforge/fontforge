@@ -3432,11 +3432,434 @@ return;					/* No anchor positioning, no ligature carets */
 /* ******************************* MATH Table ******************************* */
 /* ********************** (Not strictly OpenType yet) *********************** */
 /******************************************************************************/
+enum math_bits { mb_constants=0x01, mb_italic=0x02, mb_topaccent=0x04,
+	mb_extended=0x08, mb_mathkern=0x10, mb_vertvariant=0x20,
+	mb_horizvariant=0x40,
+	mb_all = 0x7f,
+	mb_gi=(mb_italic|mb_topaccent|mb_extended|mb_mathkern),
+	mb_gv=(mb_vertvariant|mb_horizvariant) };
+
+static int MathBits(struct alltabs *at, SplineFont *sf) {
+    int i, gid, ret;
+    SplineChar *sc;
+
+    ret = sf->MATH ? mb_constants : 0;
+
+    for ( i=0; i<at->gi.gcnt; ++i ) {
+	if ( (gid=at->gi.bygid[i])!=-1 && (sc=sf->glyphs[gid])!=NULL ) {
+	    if ( sc->italic_correction!=TEX_UNDEF )
+		ret |= mb_italic;
+	    if ( sc->top_accent_horiz!=TEX_UNDEF )
+		ret |= mb_topaccent;
+	    if ( sc->is_extended_shape )
+		ret |= mb_extended;
+	    if ( sc->mathkern!=NULL )
+		ret |= mb_mathkern;
+	    if ( sc->vert_variants!=NULL )
+		ret |= mb_vertvariant;
+	    if ( sc->horiz_variants!=NULL )
+		ret |= mb_horizvariant;
+	    if ( ret==mb_all )
+return( mb_all );
+	}
+    }
+return( ret );
+}
+
+static void ttf_math_dump_italic_top(FILE *mathf,struct alltabs *at, SplineFont *sf, int is_italic) {
+    int i, gid, len;
+    SplineChar *sc, **glyphs;
+    uint32 coverage_pos, coverage_table;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    uint32 devtab_offset;
+    DeviceTable *devtab;
+#endif
+
+    /* Figure out our glyph list (and count) */
+    for ( i=len=0; i<at->gi.gcnt; ++i )
+	if ( (gid=at->gi.bygid[i])!=-1 && (sc=sf->glyphs[gid])!=NULL )
+	    if ( (is_italic && sc->italic_correction!=TEX_UNDEF) || (!is_italic && sc->top_accent_horiz!=TEX_UNDEF))
+		++len;
+    glyphs = galloc((len+1)*sizeof(SplineChar *));
+    for ( i=len=0; i<at->gi.gcnt; ++i )
+	if ( (gid=at->gi.bygid[i])!=-1 && (sc=sf->glyphs[gid])!=NULL )
+	    if ( (is_italic && sc->italic_correction!=TEX_UNDEF) || (!is_italic && sc->top_accent_horiz!=TEX_UNDEF))
+		glyphs[len++] = sc;
+    glyphs[len] = NULL;
+
+    coverage_pos = ftell(mathf);
+    putshort(mathf,0);			/* Coverage table, return to this */
+    putshort(mathf,len);
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    devtab_offset = 4 + 4*len;
+#endif
+    for ( i=0; i<len; ++i ) {
+	putshort(mathf,is_italic ? glyphs[i]->italic_correction : glyphs[i]->top_accent_horiz );
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	devtab = is_italic ? glyphs[i]->italic_adjusts : glyphs[i]->top_accent_adjusts;
+	if ( devtab!=NULL ) {
+	    putshort(mathf,devtab_offset);
+	    devtab_offset += devtaboffsetsize(devtab);
+	} else
+#endif
+	    putshort(mathf,0);
+    }
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    for ( i=0; i<len; ++i ) {
+	devtab = is_italic ? glyphs[i]->italic_adjusts : glyphs[i]->top_accent_adjusts;
+	if ( devtab!=NULL )
+	    dumpgposdevicetable(mathf,devtab);
+    }
+    if ( devtab_offset!=ftell(mathf) )
+	IError("Devicetable end did not match expected end in MathKern table, expected=%d, actual=%d",
+		devtab_offset, ftell(mathf));
+#endif
+    coverage_table = ftell(mathf);
+    fseek( mathf, coverage_pos, SEEK_SET);
+    putshort(mathf,coverage_table-coverage_pos);
+    fseek(mathf,coverage_table,SEEK_SET);
+    dumpcoveragetable(mathf,glyphs);
+    free(glyphs);
+}
+
+static void ttf_math_dump_extended(FILE *mathf,struct alltabs *at, SplineFont *sf) {
+    int i, gid, len;
+    SplineChar *sc, **glyphs;
+
+    for ( i=len=0; i<at->gi.gcnt; ++i )
+	if ( (gid=at->gi.bygid[i])!=-1 && (sc=sf->glyphs[gid])!=NULL )
+	    if ( sc->is_extended_shape )
+		++len;
+    glyphs = galloc((len+1)*sizeof(SplineChar *));
+    for ( i=len=0; i<at->gi.gcnt; ++i )
+	if ( (gid=at->gi.bygid[i])!=-1 && (sc=sf->glyphs[gid])!=NULL )
+	    if ( sc->is_extended_shape )
+		glyphs[len++] = sc;
+    glyphs[len] = NULL;
+    dumpcoveragetable(mathf,glyphs);
+    free(glyphs);
+}
+
+static int mkv_len(struct mathkernvertex *mkv) {
+return( 8*mkv->cnt-4 );
+}
+
+static int ttf_math_dump_mathkernvertex(FILE *mathf,struct mathkernvertex *mkv,
+	int devtab_pos) {
+    int i;
+    uint32 here = ftell(mathf);
+
+    putshort(mathf,mkv->cnt-1);
+
+    for ( i=0; i<mkv->cnt-1; ++i ) {
+	putshort(mathf,mkv->mkd[i].height);
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	if ( mkv->mkd[i].height_adjusts!=NULL ) {
+	    putshort(mathf,devtab_pos-here);
+	    devtab_pos += devtaboffsetsize(mkv->mkd[i].height_adjusts);
+	} else
+#endif
+	    putshort(mathf,0);
+    }
+    for ( i=0; i<mkv->cnt; ++i ) {
+	putshort(mathf,mkv->mkd[i].kern);
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	if ( mkv->mkd[i].kern_adjusts!=NULL ) {
+	    putshort(mathf,devtab_pos-here);
+	    devtab_pos += devtaboffsetsize(mkv->mkd[i].kern_adjusts);
+	} else
+#endif
+	    putshort(mathf,0);
+    }
+return( devtab_pos );
+}
+
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+static void ttf_math_dump_mathkerndevtab(FILE *mathf,struct mathkernvertex *mkv) {
+    int i;
+
+    for ( i=0; i<mkv->cnt-1; ++i )
+	if ( mkv->mkd[i].height_adjusts!=NULL )
+	    dumpgposdevicetable(mathf,mkv->mkd[i].height_adjusts);
+    for ( i=0; i<mkv->cnt; ++i )
+	if ( mkv->mkd[i].kern_adjusts!=NULL )
+	    dumpgposdevicetable(mathf,mkv->mkd[i].kern_adjusts);
+}
+#endif
+
+static void ttf_math_dump_mathkern(FILE *mathf,struct alltabs *at, SplineFont *sf) {
+    int i, gid, len;
+    SplineChar *sc, **glyphs;
+    uint32 coverage_pos, coverage_table, kr_pos;
+
+    /* Figure out our glyph list (and count) */
+    for ( i=len=0; i<at->gi.gcnt; ++i )
+	if ( (gid=at->gi.bygid[i])!=-1 && (sc=sf->glyphs[gid])!=NULL )
+	    if ( sc->mathkern!=NULL )
+		++len;
+    glyphs = galloc((len+1)*sizeof(SplineChar *));
+    for ( i=len=0; i<at->gi.gcnt; ++i )
+	if ( (gid=at->gi.bygid[i])!=-1 && (sc=sf->glyphs[gid])!=NULL )
+	    if ( sc->mathkern!=NULL )
+		glyphs[len++] = sc;
+    glyphs[len] = NULL;
+
+    coverage_pos = ftell(mathf);
+    putshort(mathf,0);			/* Coverage table, return to this */
+    putshort(mathf,len);
+    kr_pos = coverage_pos + 4 + 8*len;
+    for ( i=0; i<len; ++i ) {
+	struct mathkern *mk = glyphs[i]->mathkern;
+	uint32 here = ftell(mathf);
+	if ( mk->top_right.cnt==0 )
+	    putshort(mathf,0);
+	else {
+	    putshort(mathf,kr_pos-here);
+	    kr_pos += mkv_len(&mk->top_right);
+	}
+	if ( mk->top_left.cnt==0 )
+	    putshort(mathf,0);
+	else {
+	    putshort(mathf,kr_pos-here);
+	    kr_pos += mkv_len(&mk->top_left);
+	}
+	if ( mk->bottom_right.cnt==0 )
+	    putshort(mathf,0);
+	else {
+	    putshort(mathf,kr_pos-here);
+	    kr_pos += mkv_len(&mk->bottom_right);
+	}
+	if ( mk->bottom_left.cnt==0 )
+	    putshort(mathf,0);
+	else {
+	    putshort(mathf,kr_pos-here);
+	    kr_pos += mkv_len(&mk->bottom_left);
+	}
+    }
+    for ( i=0; i<len; ++i ) {
+	struct mathkern *mk = glyphs[i]->mathkern;
+	if ( mk->top_right.cnt==0 )
+	    kr_pos = ttf_math_dump_mathkernvertex(mathf,&mk->top_right,kr_pos);
+	if ( mk->top_left.cnt==0 )
+	    kr_pos = ttf_math_dump_mathkernvertex(mathf,&mk->top_left,kr_pos);
+	if ( mk->bottom_right.cnt==0 )
+	    kr_pos = ttf_math_dump_mathkernvertex(mathf,&mk->bottom_right,kr_pos);
+	if ( mk->bottom_left.cnt==0 )
+	    kr_pos = ttf_math_dump_mathkernvertex(mathf,&mk->bottom_left,kr_pos);
+    }
+    
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    for ( i=0; i<len; ++i ) {
+	struct mathkern *mk = glyphs[i]->mathkern;
+	if ( mk->top_right.cnt==0 )
+	    ttf_math_dump_mathkerndevtab(mathf,&mk->top_right);
+	if ( mk->top_left.cnt==0 )
+	    ttf_math_dump_mathkerndevtab(mathf,&mk->top_left);
+	if ( mk->bottom_right.cnt==0 )
+	    ttf_math_dump_mathkerndevtab(mathf,&mk->bottom_right);
+	if ( mk->bottom_left.cnt==0 )
+	    ttf_math_dump_mathkerndevtab(mathf,&mk->bottom_left);
+    }
+#endif
+
+    coverage_table = ftell(mathf);
+    fseek( mathf, coverage_pos, SEEK_SET);
+    putshort(mathf,coverage_table-coverage_pos);
+    fseek(mathf,coverage_table,SEEK_SET);
+    dumpcoveragetable(mathf,glyphs);
+    free(glyphs);
+}
+
+static int gv_len(SplineFont *sf, struct glyphvariants *gv) {
+    char *pt, *start;
+    int ch, cnt;
+    SplineChar *sc;
+
+    if ( gv==NULL || gv->variants==NULL )
+return( 0 );
+    cnt = 0;
+    for ( start=gv->variants ;; ) {
+	while ( *start==' ' ) ++start;
+	if ( *start=='\0' )
+return( 4+4*cnt );		/* MathGlyphConstructionTable */
+	for ( pt = start ; *pt!=' ' && *pt!='\0'; ++pt );
+	ch = *pt; *pt = '\0';
+	sc = SFGetChar(sf,-1,start);
+	*pt = ch;
+	if ( sc!=NULL )
+	    ++cnt;
+    }
+}
+
+static int gvc_len(struct glyphvariants *gv) {
+    if ( gv->part_cnt==0 )
+return( 0 );
+
+return( 6+10*gv->part_cnt );
+}
+
+static uint32 ttf_math_dump_mathglyphconstructiontable(FILE *mathf,
+	struct glyphvariants *gv,SplineFont *sf, uint32 pos) {
+    char *pt, *start;
+    int ch, cnt;
+    SplineChar *sc;
+    uint32 here = ftell(mathf);
+    DBounds b;
+
+    putshort(mathf,gv->part_cnt==0? 0 : pos-here);
+    if ( gv->variants==NULL ) {
+	putshort(mathf,0);
+    } else {
+	cnt = 0;
+	for ( start=gv->variants ;; ) {
+	    while ( *start==' ' ) ++start;
+	    if ( *start=='\0' )
+	break;
+	    for ( pt = start ; *pt!=' ' && *pt!='\0'; ++pt );
+	    ch = *pt; *pt = '\0';
+	    sc = SFGetChar(sf,-1,start);
+	    *pt = ch;
+	    if ( sc!=NULL )
+		++cnt;
+	}
+	putshort(mathf,cnt);
+	for ( start=gv->variants ;; ) {
+	    while ( *start==' ' ) ++start;
+	    if ( *start=='\0' )
+	break;
+	    for ( pt = start ; *pt!=' ' && *pt!='\0'; ++pt );
+	    ch = *pt; *pt = '\0';
+	    sc = SFGetChar(sf,-1,start);
+	    *pt = ch;
+	    if ( sc!=NULL ) {
+		putshort(mathf,sc->ttf_glyph);
+		SplineCharFindBounds(sc,&b);
+		putshort(mathf,b.maxy-b.miny);
+	    }
+	}
+    }
+return( pos + gvc_len(gv));
+}
+
+static uint32 ttf_math_dump_mathglyphassemblytable(FILE *mathf,
+	struct glyphvariants *gv,SplineFont *sf, uint32 devtab_pos) {
+    SplineChar *sc;
+    uint32 here = ftell(mathf);
+    int i;
+
+    if ( gv->part_cnt==0 )
+return( devtab_pos );
+    putshort(mathf,gv->italic_correction);
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    if ( gv->italic_adjusts!=NULL ) {
+	putshort(mathf,devtab_pos-here);
+	devtab_pos += devtaboffsetsize(gv->italic_adjusts);
+    } else
+#endif
+	putshort(mathf,0);
+    putshort(mathf,gv->part_cnt);
+    for ( i=0; i<gv->part_cnt; ++i ) {
+	sc = SFGetChar(sf,-1,gv->parts[i].component);
+	if ( sc==NULL )
+	    putshort(mathf,0);		/* .notdef */
+	else
+	    putshort(mathf,sc->ttf_glyph);
+	putshort(mathf,gv->parts[i].startConnectorLength);
+	putshort(mathf,gv->parts[i].endConnectorLength);
+	putshort(mathf,gv->parts[i].fullAdvance);
+	putshort(mathf,gv->parts[i].is_extender);
+    }
+return(devtab_pos);
+}
+
+static void ttf_math_dump_glyphvariant(FILE *mathf,struct alltabs *at, SplineFont *sf) {
+    int i, gid, vlen, hlen;
+    SplineChar *sc, **vglyphs, **hglyphs;
+    uint32 coverage_pos, coverage_table, offset, pos;
+
+    /* Figure out our glyph list (and count) */
+    for ( i=vlen=hlen=0; i<at->gi.gcnt; ++i )
+	if ( (gid=at->gi.bygid[i])!=-1 && (sc=sf->glyphs[gid])!=NULL ) {
+	    if ( sc->vert_variants!=NULL )
+		++vlen;
+	    if ( sc->horiz_variants!=NULL )
+		++hlen;
+	}
+
+    vglyphs = galloc((vlen+1)*sizeof(SplineChar *));
+    hglyphs = galloc((hlen+1)*sizeof(SplineChar *));
+    for ( i=vlen=hlen=0; i<at->gi.gcnt; ++i )
+	if ( (gid=at->gi.bygid[i])!=-1 && (sc=sf->glyphs[gid])!=NULL ) {
+	    if ( sc->vert_variants!=NULL )
+		vglyphs[vlen++] = sc;
+	    if ( sc->horiz_variants!=NULL )
+		hglyphs[hlen++] = sc;
+	}
+    vglyphs[vlen] = NULL;
+    hglyphs[hlen] = NULL;
+
+    putshort(mathf,sf->MATH==NULL?(sf->ascent+sf->descent)/50 : sf->MATH->MinConnectorOverlap );
+    coverage_pos = ftell(mathf);
+    putshort(mathf,0);			/* Vertical Coverage table, return to this */
+    putshort(mathf,0);			/* Horizontal Coverage table, return to this */
+    putshort(mathf,vlen);
+    putshort(mathf,hlen);
+    offset = 5*2+vlen*2+hlen*2;
+    for ( i=0; i<vlen; ++i ) {
+	putshort(mathf,offset);
+	offset += gv_len(sf,vglyphs[i]->vert_variants);
+    }
+    for ( i=0; i<hlen; ++i ) {
+	putshort(mathf,offset);
+	offset += gv_len(sf,hglyphs[i]->horiz_variants);
+    }
+    pos = (coverage_pos-2)+offset;
+    for ( i=0; i<vlen; ++i )
+	pos = ttf_math_dump_mathglyphconstructiontable(mathf,
+		vglyphs[i]->vert_variants,sf,pos);
+    for ( i=0; i<hlen; ++i )
+	pos = ttf_math_dump_mathglyphconstructiontable(mathf,
+		hglyphs[i]->vert_variants,sf,pos);
+
+    for ( i=0; i<vlen; ++i )
+	pos = ttf_math_dump_mathglyphassemblytable(mathf,
+		vglyphs[i]->vert_variants,sf,pos);
+    for ( i=0; i<hlen; ++i )
+	pos = ttf_math_dump_mathglyphassemblytable(mathf,
+		hglyphs[i]->vert_variants,sf,pos);
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    for ( i=0; i<vlen; ++i )
+	if ( vglyphs[i]->vert_variants->part_cnt!=0 &&
+		vglyphs[i]->vert_variants->italic_adjusts!=NULL )
+	    dumpgposdevicetable(mathf,vglyphs[i]->vert_variants->italic_adjusts);
+    for ( i=0; i<hlen; ++i )
+	if ( hglyphs[i]->horiz_variants->part_cnt!=0 &&
+		hglyphs[i]->horiz_variants->italic_adjusts!=NULL )
+	    dumpgposdevicetable(mathf,hglyphs[i]->horiz_variants->italic_adjusts);
+#endif
+    if ( vlen!=0 ) {
+	coverage_table = ftell(mathf);
+	fseek( mathf, coverage_pos, SEEK_SET);
+	putshort(mathf,coverage_table-(coverage_pos-2));
+	fseek(mathf,coverage_table,SEEK_SET);
+	dumpcoveragetable(mathf,vglyphs);
+    }
+    free(vglyphs);
+    if ( hlen!=0 ) {
+	coverage_table = ftell(mathf);
+	fseek( mathf, coverage_pos+2, SEEK_SET);
+	putshort(mathf,coverage_table-(coverage_pos-2));
+	fseek(mathf,coverage_table,SEEK_SET);
+	dumpcoveragetable(mathf,hglyphs);
+    }
+    free(hglyphs);
+}
 
 void ttf_math_dump(struct alltabs *at, SplineFont *sf) {
     FILE *mathf;
     int i;
     uint32 devtab_offsets[60], const_start, gi_start, v_start;
+    int bits = MathBits(at,sf);
 
     if ( sf->MATH==NULL )
 return;
@@ -3477,20 +3900,66 @@ return;
     }
 #endif
 
-    gi_start = ftell(mathf);
-    fseek(mathf,6,SEEK_SET);
-    putshort(mathf,gi_start);
-    fseek(mathf,gi_start,SEEK_SET);
+    if ( bits&mb_gi ) {
+	gi_start = ftell(mathf);
+	fseek(mathf,6,SEEK_SET);
+	putshort(mathf,gi_start);
+	fseek(mathf,gi_start,SEEK_SET);
 
-    putshort(mathf,0);		/* Italics correction */
-    putshort(mathf,0);		/* top accent */
-    putshort(mathf,0);		/* is extended shape */
-    putshort(mathf,0);		/* math kern info */
+	putshort(mathf,0);		/* Italics correction */
+	putshort(mathf,0);		/* top accent */
+	putshort(mathf,0);		/* is extended shape */
+	putshort(mathf,0);		/* math kern info */
 
-    v_start = ftell(mathf);
-    fseek(mathf,8,SEEK_SET);
-    putshort(mathf,v_start);
-    fseek(mathf,v_start,SEEK_SET);
+	if ( bits&mb_italic ) {
+	    v_start = ftell(mathf);
+	    fseek(mathf,gi_start,SEEK_SET);
+	    putshort(mathf,v_start);
+	    fseek(mathf,v_start,SEEK_SET);
 
-    
+	    ttf_math_dump_italic_top(mathf,at,sf,true);
+	}
+
+	if ( bits&mb_topaccent ) {
+	    v_start = ftell(mathf);
+	    fseek(mathf,gi_start+2,SEEK_SET);
+	    putshort(mathf,v_start);
+	    fseek(mathf,v_start,SEEK_SET);
+
+	    ttf_math_dump_italic_top(mathf,at,sf,false);
+	}
+
+	if ( bits&mb_extended ) {
+	    v_start = ftell(mathf);
+	    fseek(mathf,gi_start+4,SEEK_SET);
+	    putshort(mathf,v_start);
+	    fseek(mathf,v_start,SEEK_SET);
+
+	    ttf_math_dump_extended(mathf,at,sf);
+	}
+
+	if ( bits&mb_mathkern ) {
+	    v_start = ftell(mathf);
+	    fseek(mathf,gi_start+4,SEEK_SET);
+	    putshort(mathf,v_start);
+	    fseek(mathf,v_start,SEEK_SET);
+
+	    ttf_math_dump_mathkern(mathf,at,sf);
+	}
+    }
+
+    if ( bits&mb_gv ) {
+	v_start = ftell(mathf);
+	fseek(mathf,8,SEEK_SET);
+	putshort(mathf,v_start);
+	fseek(mathf,v_start,SEEK_SET);
+
+	ttf_math_dump_glyphvariant(mathf,at,sf);
+    }
+
+    at->mathlen = ftell(mathf);
+    if ( ftell(mathf)&1 )
+	putc('\0',mathf);
+    if ( ftell(mathf)&2 )
+	putshort(mathf,0);
 }

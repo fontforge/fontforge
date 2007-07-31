@@ -4851,7 +4851,8 @@ static struct glyphvariants *ttf_math_read_gvtable(FILE *ttf,struct ttfinfo *inf
 	glyphs    = galloc(vcnt*sizeof(uint16));
 	len = 0;
 	for ( i=0; i<vcnt; ++i ) {
-	    glyphs[i] = getushort(ttf);
+	    glyphs[i]      = getushort(ttf);
+	    /* sizes[i] = */ getushort(ttf);
 	    if ( glyphs[i]<info->glyph_cnt && (sc = info->chars[ glyphs[i]])!=NULL )
 		len += strlen(sc->name)+1;
 	}

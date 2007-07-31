@@ -5567,33 +5567,33 @@ static void PSTMatrixInit(struct matrixinit *mi,SplineFont *_sf, struct lookup_s
 /* GT: concept which allows small corrections for small pixel sizes where */
 /* GT: rounding errors (in kerning for example) may smush too glyphs together */
 /* GT: or space them too far apart. Generally not a problem for big pixelsizes*/
-	{ me_string, NULL, NULL, NULL, N_("Adjust") },
+	{ me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") },
 	{ me_int, NULL, NULL, NULL, NU_("∆y") },	/* delta-y */
-	{ me_string, NULL, NULL, NULL, N_("Adjust") },
+	{ me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") },
 	{ me_int, NULL, NULL, NULL, NU_("∆x_adv") },	/* delta-x-adv */
-	{ me_string, NULL, NULL, NULL, N_("Adjust") },
+	{ me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") },
 	{ me_int, NULL, NULL, NULL, NU_("∆y_adv") },	/* delta-y-adv */
-	{ me_string, NULL, NULL, NULL, N_("Adjust") }
+	{ me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") }
 	};
     static struct col_init pairposci[] = {
 	{ me_string , NULL, NULL, NULL, N_("First Glyph Name") },
 	{ me_string , NULL, NULL, NULL, N_("Second Glyph Name") },
 	{ me_int, NULL, NULL, NULL, NU_("∆x #1") },	/* delta-x */
-	{ me_string, NULL, NULL, NULL, N_("Adjust") },
+	{ me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") },
 	{ me_int, NULL, NULL, NULL, NU_("∆y #1") },	/* delta-y */
-	{ me_string, NULL, NULL, NULL, N_("Adjust") },
+	{ me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") },
 	{ me_int, NULL, NULL, NULL, NU_("∆x_adv #1") },	/* delta-x-adv */
-	{ me_string, NULL, NULL, NULL, N_("Adjust") },
+	{ me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") },
 	{ me_int, NULL, NULL, NULL, NU_("∆y_adv #1") },	/* delta-y-adv */
-	{ me_string, NULL, NULL, NULL, N_("Adjust") },
+	{ me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") },
 	{ me_int, NULL, NULL, NULL, NU_("∆x #2") },	/* delta-x */
-	{ me_string, NULL, NULL, NULL, N_("Adjust") },
+	{ me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") },
 	{ me_int, NULL, NULL, NULL, NU_("∆y #2") },	/* delta-y */
-	{ me_string, NULL, NULL, NULL, N_("Adjust") },
+	{ me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") },
 	{ me_int, NULL, NULL, NULL, NU_("∆x_adv #2") },	/* delta-x-adv */
-	{ me_string, NULL, NULL, NULL, N_("Adjust") },
+	{ me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") },
 	{ me_int, NULL, NULL, NULL, NU_("∆y_adv #2") },	/* delta-y-adv */
-	{ me_string, NULL, NULL, NULL, N_("Adjust") }
+	{ me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") }
 	};
 #else
 #define SIM_DX		1
