@@ -5121,12 +5121,6 @@ return( false );
 	at->tabdir.tabs[i++].length = at->texlen;
     }
 
-    if ( at->os2f!=NULL ) {
-	at->tabdir.tabs[i].tag = CHR('O','S','/','2');
-	at->tabdir.tabs[i].data = at->os2f;
-	at->tabdir.tabs[i++].length = at->os2len;
-    }
-
     if ( at->math!=NULL ) {
 	at->tabdir.tabs[i].tag = CHR('M','A','T','H');
 	at->tabdir.tabs[i].data = at->math;

@@ -4858,7 +4858,7 @@ static struct glyphvariants *ttf_math_read_gvtable(FILE *ttf,struct ttfinfo *inf
 	}
 	if ( len!=0 ) {
 	    gv->variants = pt = galloc(len);
-	    for ( i=0; i<vcnt; ++i ) {
+	    for ( i=len=0; i<vcnt; ++i ) {
 		if ( glyphs[i]<info->glyph_cnt && (sc = info->chars[ glyphs[i]])!=NULL ) {
 		    strcpy(pt+len,sc->name);
 		    len += strlen(sc->name);
@@ -4923,8 +4923,11 @@ static void ttf_math_read_variants(FILE *ttf,struct ttfinfo *info, uint32 start)
 	voffs[i] = getushort(ttf);
     for ( i=0; i<hcnt; ++i )
 	hoffs[i] = getushort(ttf);
-    vglyphs = getCoverageTable(ttf,start+vcoverage,info);
-    hglyphs = getCoverageTable(ttf,start+hcoverage,info);
+    vglyphs = hglyphs = NULL;
+    if ( vcoverage!=0 )
+	vglyphs = getCoverageTable(ttf,start+vcoverage,info);
+    if ( hcoverage!=0 )
+	hglyphs = getCoverageTable(ttf,start+hcoverage,info);
 
     if ( vglyphs!=NULL ) {
 	for ( i=0; i<vcnt; ++i ) if ( vglyphs[i]<info->glyph_cnt && voffs[i]!=0) {

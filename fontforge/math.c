@@ -115,6 +115,8 @@ static char *aspectnames[] = {
 
 static char *GlyphConstruction_Dlg(GGadget *g, int r, int c);
 static void extpart_finishedit(GGadget *g, int r, int c, int wasnew);
+static void italic_finishedit(GGadget *g, int r, int c, int wasnew);
+static void topaccent_finishedit(GGadget *g, int r, int c, int wasnew);
 
 static GTextInfo truefalse[] = {
     { (unichar_t *) N_("false"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -124,6 +126,7 @@ static GTextInfo truefalse[] = {
 static struct col_init exten_shape_ci[] = {
     { me_string, NULL, NULL, NULL, N_("Glyph") },
     { me_enum, NULL, truefalse, NULL, N_("Is Extension Shape") },
+    0
     };
 
 static struct col_init italic_cor_ci[] = {
@@ -132,6 +135,7 @@ static struct col_init italic_cor_ci[] = {
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
     { me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") },
 #endif
+    0
     };
 
 static struct col_init top_accent_ci[] = {
@@ -140,11 +144,13 @@ static struct col_init top_accent_ci[] = {
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
     { me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") },
 #endif
+    0
     };
 
 static struct col_init glyph_variants_ci[] = {
     { me_string, NULL, NULL, NULL, N_("Glyph") },
     { me_string, NULL, NULL, NULL, N_("Pre-Built Larger Variants") },
+    0
     };
 
 static struct col_init glyph_construction_ci[] = {
@@ -155,22 +161,24 @@ static struct col_init glyph_construction_ci[] = {
     { me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") },
 #endif
     { me_funcedit, GlyphConstruction_Dlg, NULL, NULL, N_("Parts List") },
+    0
     };
 
 static struct col_init math_kern_ci[] = {
     { me_string, NULL, NULL, NULL, N_("Glyph") },
     { me_string, NULL, NULL, NULL, N_("Not yet Implemented") },
+    0
     };
 
 struct matrixinit mis[] = {
-    { sizeof(exten_shape_ci)/sizeof(struct col_init), exten_shape_ci, 0, NULL, NULL, NULL, NULL },
-    { sizeof(italic_cor_ci)/sizeof(struct col_init), italic_cor_ci, 0, NULL, NULL, NULL, NULL },
-    { sizeof(top_accent_ci)/sizeof(struct col_init), top_accent_ci, 0, NULL, NULL, NULL, NULL },
-    { sizeof(math_kern_ci)/sizeof(struct col_init), math_kern_ci, 0, NULL, NULL, NULL, NULL },
-    { sizeof(glyph_variants_ci)/sizeof(struct col_init), glyph_variants_ci, 0, NULL, NULL, NULL, NULL },
-    { sizeof(glyph_construction_ci)/sizeof(struct col_init), glyph_construction_ci, 0, NULL, NULL, NULL, NULL },
-    { sizeof(glyph_variants_ci)/sizeof(struct col_init), glyph_variants_ci, 0, NULL, NULL, NULL, NULL },
-    { sizeof(glyph_construction_ci)/sizeof(struct col_init), glyph_construction_ci, 0, NULL, NULL, NULL, NULL },
+    { sizeof(exten_shape_ci)/sizeof(struct col_init)-1, exten_shape_ci, 0, NULL, NULL, NULL, NULL },
+    { sizeof(italic_cor_ci)/sizeof(struct col_init)-1, italic_cor_ci, 0, NULL, NULL, NULL, italic_finishedit },
+    { sizeof(top_accent_ci)/sizeof(struct col_init)-1, top_accent_ci, 0, NULL, NULL, NULL, topaccent_finishedit },
+    { sizeof(math_kern_ci)/sizeof(struct col_init)-1, math_kern_ci, 0, NULL, NULL, NULL, NULL },
+    { sizeof(glyph_variants_ci)/sizeof(struct col_init)-1, glyph_variants_ci, 0, NULL, NULL, NULL, NULL },
+    { sizeof(glyph_construction_ci)/sizeof(struct col_init)-1, glyph_construction_ci, 0, NULL, NULL, NULL, NULL },
+    { sizeof(glyph_variants_ci)/sizeof(struct col_init)-1, glyph_variants_ci, 0, NULL, NULL, NULL, NULL },
+    { sizeof(glyph_construction_ci)/sizeof(struct col_init)-1, glyph_construction_ci, 0, NULL, NULL, NULL, NULL },
     { 0 }
 };
 
@@ -181,9 +189,10 @@ static struct col_init extensionpart[] = {
     { me_int, NULL, NULL, NULL, N_("StartLen") },
     { me_int, NULL, NULL, NULL, N_("EndLen") },
     { me_int, NULL, NULL, NULL, N_("FullLen") },
+    0
     };
 static struct matrixinit mi_extensionpart =
-    { sizeof(extensionpart)/sizeof(struct col_init), extensionpart, 0, NULL, NULL, NULL, extpart_finishedit };
+    { sizeof(extensionpart)/sizeof(struct col_init)-1, extensionpart, 0, NULL, NULL, NULL, extpart_finishedit };
 
 
 #define CID_Exten	1000
@@ -192,8 +201,8 @@ static struct matrixinit mi_extensionpart =
 #define CID_MathKern	1003
 #define CID_VGlyphVar	1004
 #define CID_VGlyphConst	1005
-#define CID_HGlyphVar	1004
-#define CID_HGlyphConst	1005
+#define CID_HGlyphVar	1006
+#define CID_HGlyphConst	1007
 
 static char *gi_aspectnames[] = {
     N_("Exten Shapes"),
@@ -321,6 +330,8 @@ static int GV_StringCheck(SplineFont *sf,char *str) {
     pcnt = 0;
     for ( start = str ; ; ) {
 	while ( *start==' ' ) ++start;
+	if ( *start=='\0' )
+return( pcnt );
 	for ( pt=start; *pt!=':' && *pt!=' ' && *pt!='\0' ; ++pt );
 	ch = *pt;
 	if ( ch==' ' || ch=='\0' )
@@ -344,7 +355,6 @@ return( -1 );
 	++pcnt;
 	start = pt;
     }
-return( pcnt );
 }
 
 static struct glyphvariants *GV_FromString(struct glyphvariants *gv,char *str) {
@@ -361,6 +371,8 @@ return( gv );
     pcnt = 0;
     for ( start = str ; ; ) {
 	while ( *start==' ' ) ++start;
+	if ( *start=='\0' )
+return( gv );
 	for ( pt=start; *pt!=':' ; ++pt );
 	ch = *pt; *pt = '\0';
 	gv->parts[pcnt].component = copy(start);
@@ -374,7 +386,6 @@ return( gv );
 	++pcnt;
 	start = pt;
     }
-return( gv );
 }
 
 static char *GV_ToString(struct glyphvariants *gv) {
@@ -679,6 +690,68 @@ static GImage *_GVC_GetImage(const void *_math) {
 return( ret );
 }
 
+static void italic_finishedit(GGadget *g, int r, int c, int wasnew) {
+    int rows;
+    struct matrix_data *stuff;
+    MathDlg *math;
+    int cols;
+    DBounds b;
+    SplineChar *sc;
+
+    if ( c!=0 )
+return;
+    if ( !wasnew )
+return;
+    /* If they added a new glyph to the sequence then set some defaults for it. */
+    /*  only the full advance has any likelyhood of being correct */
+    math = GDrawGetUserData(GGadgetGetWindow(g));
+    stuff = GMatrixEditGet(g, &rows);
+    cols = GMatrixEditGetColCnt(g);
+    if ( stuff[r*cols+0].u.md_str==NULL )
+return;
+    sc = SFGetChar(math->sf,-1,stuff[r*cols+0].u.md_str);
+    if ( sc==NULL )
+return;
+    SplineCharFindBounds(sc,&b);
+    if ( b.maxx>sc->width ) {
+	stuff[r*cols+1].u.md_ival = rint((b.maxx-sc->width) +
+			(math->sf->ascent+math->sf->descent)/16.0);
+	GGadgetRedraw(g);
+    }
+}
+
+static void topaccent_finishedit(GGadget *g, int r, int c, int wasnew) {
+    int rows;
+    struct matrix_data *stuff;
+    MathDlg *math;
+    int cols;
+    DBounds b;
+    SplineChar *sc;
+    double italic_off;
+
+    if ( c!=0 )
+return;
+    if ( !wasnew )
+return;
+    /* If they added a new glyph to the sequence then set some defaults for it. */
+    /*  only the full advance has any likelyhood of being correct */
+    math = GDrawGetUserData(GGadgetGetWindow(g));
+    stuff = GMatrixEditGet(g, &rows);
+    cols = GMatrixEditGetColCnt(g);
+    if ( stuff[r*cols+0].u.md_str==NULL )
+return;
+    sc = SFGetChar(math->sf,-1,stuff[r*cols+0].u.md_str);
+    if ( sc==NULL )
+return;
+    SplineCharFindBounds(sc,&b);
+    italic_off = (b.maxy-b.miny)*tan(-math->sf->italicangle);
+    if ( b.maxx-b.minx-italic_off < 0 )
+	stuff[r*cols+1].u.md_ival = rint(b.minx + (b.maxx-b.minx)/2);
+    else
+	stuff[r*cols+1].u.md_ival = rint(b.minx + italic_off + (b.maxx - b.minx - italic_off)/2);
+    GGadgetRedraw(g);
+}
+
 static void extpart_finishedit(GGadget *g, int r, int c, int wasnew) {
     int rows;
     struct matrix_data *stuff;
@@ -769,7 +842,7 @@ static char *GlyphConstruction_Dlg(GGadget *g, int r, int c) {
     memset(&md,0,sizeof(md));
     md.sf = math->sf;
     md.is_horiz = GGadgetGetCid(g)==CID_HGlyphConst;
-    md.sc = SFGetChar(md.sf,-1,old[r*cols+cols-1].u.md_str);
+    md.sc = SFGetChar(md.sf,-1,old[r*cols+0].u.md_str);
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;
@@ -777,7 +850,7 @@ static char *GlyphConstruction_Dlg(GGadget *g, int r, int c) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = _("MATH table");
+    wattrs.utf8_window_title = _("Glyph Construction");
     pos.x = pos.y = 0;
     pos.width = 100;
     pos.height = 100;
@@ -850,7 +923,7 @@ static char *GlyphConstruction_Dlg(GGadget *g, int r, int c) {
 	ret = GV_ToString(gv);
 	GlyphVariantsFree(gv);
     } else
-	ret = old[r*cols+cols-1].u.md_str;
+	ret = copy( old[r*cols+cols-1].u.md_str );
     GDrawDestroyWindow(md.gw);
 return( ret );
 }

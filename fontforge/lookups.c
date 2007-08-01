@@ -3661,10 +3661,12 @@ static struct col_init scriptci[] = {
 /* GT: and the cursive handwriting style. Here we mean the general writing system. */
     { me_stringchoicetag , NULL, scripts, NULL, N_("writing system|Script") },
     { me_funcedit, LK_LangsDlg, NULL, NULL, N_("Language(s)") },
+    0
     };
 static struct col_init featureci[] = {
     { me_stringchoicetrans , NULL, NULL, NULL, N_("Feature") },
     { me_funcedit, LK_ScriptsDlg, NULL, NULL, N_("Script(s) & Language(s)") },
+    0
     };
 
 void LookupUIInit(void) {
@@ -5212,7 +5214,8 @@ static void ACDMatrixInit(struct matrixinit *mi,SplineFont *sf, struct lookup_su
     AnchorClass *ac;
     struct matrix_data *md;
     static struct col_init ci[1] = {
-	{ me_string , NULL, NULL, NULL, N_("Anchor Class Name") }
+	{ me_string , NULL, NULL, NULL, N_("Anchor Class Name") },
+	0
 	};
     static int initted = false;
 
@@ -5537,15 +5540,18 @@ static void PSTMatrixInit(struct matrixinit *mi,SplineFont *_sf, struct lookup_s
     struct matrix_data *md;
     static struct col_init simplesubsci[2] = {
 	{ me_string , NULL, NULL, NULL, N_("Base Glyph Name") },
-	{ me_string, NULL, NULL, NULL, N_("Replacement Glyph Name") }
+	{ me_string, NULL, NULL, NULL, N_("Replacement Glyph Name") },
+	0
 	};
     static struct col_init ligatureci[2] = {
 	{ me_string , NULL, NULL, NULL, N_("Ligature Glyph Name") },
-	{ me_string, NULL, NULL, NULL, N_("Source Glyph Names") }
+	{ me_string, NULL, NULL, NULL, N_("Source Glyph Names") },
+	0
 	};
     static struct col_init altmultsubsci[2] = {
 	{ me_string , NULL, NULL, NULL, N_("Base Glyph Name") },
-	{ me_string, NULL, NULL, NULL, N_("Replacement Glyph Names") }
+	{ me_string, NULL, NULL, NULL, N_("Replacement Glyph Names") },
+	0
 	};
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 #define SIM_DX		1
@@ -5573,7 +5579,8 @@ static void PSTMatrixInit(struct matrixinit *mi,SplineFont *_sf, struct lookup_s
 	{ me_int, NULL, NULL, NULL, NU_("∆x_adv") },	/* delta-x-adv */
 	{ me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") },
 	{ me_int, NULL, NULL, NULL, NU_("∆y_adv") },	/* delta-y-adv */
-	{ me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") }
+	{ me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") },
+	0
 	};
     static struct col_init pairposci[] = {
 	{ me_string , NULL, NULL, NULL, N_("First Glyph Name") },
@@ -5593,7 +5600,8 @@ static void PSTMatrixInit(struct matrixinit *mi,SplineFont *_sf, struct lookup_s
 	{ me_int, NULL, NULL, NULL, NU_("∆x_adv #2") },	/* delta-x-adv */
 	{ me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") },
 	{ me_int, NULL, NULL, NULL, NU_("∆y_adv #2") },	/* delta-y-adv */
-	{ me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") }
+	{ me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") },
+	0
 	};
 #else
 #define SIM_DX		1
@@ -5613,7 +5621,8 @@ static void PSTMatrixInit(struct matrixinit *mi,SplineFont *_sf, struct lookup_s
 	{ me_int, NULL, NULL, NULL, NU_("∆x") },	/* delta-x */
 	{ me_int, NULL, NULL, NULL, NU_("∆y") },	/* delta-y */
 	{ me_int, NULL, NULL, NULL, NU_("∆x_adv") },	/* delta-x-adv */
-	{ me_int, NULL, NULL, NULL, NU_("∆y_adv") }	/* delta-y-adv */
+	{ me_int, NULL, NULL, NULL, NU_("∆y_adv") },	/* delta-y-adv */
+	0
 	};
     static struct col_init pairposci[10] = {
 	{ me_string , NULL, NULL, NULL, N_("First Glyph Name") },
@@ -5625,16 +5634,17 @@ static void PSTMatrixInit(struct matrixinit *mi,SplineFont *_sf, struct lookup_s
 	{ me_int, NULL, NULL, NULL, NU_("∆x #2") },	/* delta-x */
 	{ me_int, NULL, NULL, NULL, NU_("∆y #2") },	/* delta-y */
 	{ me_int, NULL, NULL, NULL, NU_("∆x_adv #2") },	/* delta-x-adv */
-	{ me_int, NULL, NULL, NULL, NU_("∆y_adv #2") }	/* delta-y-adv */
+	{ me_int, NULL, NULL, NULL, NU_("∆y_adv #2") },	/* delta-y-adv */
+	0
 	};
 #endif
     static struct { int ltype; int cnt; struct col_init *ci; } fuf[] = {
-	{ gsub_single, sizeof(simplesubsci)/sizeof(struct col_init), simplesubsci },
-	{ gsub_multiple, sizeof(altmultsubsci)/sizeof(struct col_init), altmultsubsci },
-	{ gsub_alternate, sizeof(altmultsubsci)/sizeof(struct col_init), altmultsubsci },
-	{ gsub_ligature, sizeof(ligatureci)/sizeof(struct col_init), ligatureci },
-	{ gpos_single, sizeof(simpleposci)/sizeof(struct col_init), simpleposci },
-	{ gpos_pair, sizeof(pairposci)/sizeof(struct col_init), pairposci },
+	{ gsub_single, sizeof(simplesubsci)/sizeof(struct col_init)-1, simplesubsci },
+	{ gsub_multiple, sizeof(altmultsubsci)/sizeof(struct col_init)-1, altmultsubsci },
+	{ gsub_alternate, sizeof(altmultsubsci)/sizeof(struct col_init)-1, altmultsubsci },
+	{ gsub_ligature, sizeof(ligatureci)/sizeof(struct col_init)-1, ligatureci },
+	{ gpos_single, sizeof(simpleposci)/sizeof(struct col_init)-1, simpleposci },
+	{ gpos_pair, sizeof(pairposci)/sizeof(struct col_init)-1, pairposci },
 	{ 0 }
 	};
     static int initted = false;
