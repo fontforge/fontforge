@@ -3939,7 +3939,7 @@ return;
 
 	if ( bits&mb_mathkern ) {
 	    v_start = ftell(mathf);
-	    fseek(mathf,gi_start+4,SEEK_SET);
+	    fseek(mathf,gi_start+6,SEEK_SET);
 	    putshort(mathf,v_start-gi_start);
 	    fseek(mathf,v_start,SEEK_SET);
 
