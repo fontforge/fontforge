@@ -46,6 +46,7 @@
 #define SRP2                    (0x12)
 #define SZP0                    (0x13)
 #define RTG                     (0x18)
+#define SMD			(0x1a)
 #define DUP                     (0x20)
 #define CALL                    (0x2b)
 #define MDAP                    (0x2e)
@@ -248,10 +249,12 @@ static void init_fpgm(InstrCt *ct) {
 	0xb0, //   PUSHB_1
 	0x00, //     0
 	0x13, //   SZP0
+	0xb0, //   PUSHB_0
+	0x4a, //     74
+	0x76, //   SROUND
 	0xb0, //   PUSHB_1
 	0x00, //     0
 	0x23, //   SWAP
-	0x7c, //   RUTG
 	0x3f, //   MIAP[rnd]
 	0x7d, //   RDTG
 	0x20, //   DUP
@@ -539,7 +542,7 @@ return( instrs );
 }
 
 /* Find previous point index on the contour. */
-static int PrevOnContour(int *contourends, BasePoint *bp, int p) {
+static int PrevOnContour(int *contourends, int p) {
     int i;
 
     if (p == 0) return contourends[0];
@@ -553,7 +556,7 @@ static int PrevOnContour(int *contourends, BasePoint *bp, int p) {
 }
 
 /* Find next point index on the contour. */
-static int NextOnContour(int *contourends, BasePoint *bp, int p) {
+static int NextOnContour(int *contourends, int p) {
     int i;
 
     if (p == 0) return 1;
@@ -577,8 +580,8 @@ static int __same_angle(int *contourends, BasePoint *bp, int p, double angle) {
     int PrevPoint, NextPoint;
     double PrevTangent, NextTangent;
 
-    PrevPoint = PrevOnContour(contourends, bp, p);
-    NextPoint = NextOnContour(contourends, bp, p);
+    PrevPoint = PrevOnContour(contourends, p);
+    NextPoint = NextOnContour(contourends, p);
 
     PrevTangent = atan2(bp[p].y - bp[PrevPoint].y, bp[p].x - bp[PrevPoint].x);
     NextTangent = atan2(bp[NextPoint].y - bp[p].y, bp[NextPoint].x - bp[p].x);
@@ -614,28 +617,34 @@ return (!sp->nonextcp && !sp->noprevcp && sp->nextcp.y==sp->me.y && sp->prevcp.y
  * An acute corner is one with angle between its tangents less than 90 deg.
  * I won't distinct X and Y tight corners, as they usually need hinting in
  * both directions.
- * An obtuse corner is one with angle between its tangents close to 180 deg.
+ * An corner is one with angle between its tangents close to 180 deg.
  * I'll distinct X and Y flat corners, as they usually need hinting only
  * in one direction.
+ * TODO! Really?
  */
 static int IsAcuteCorner(int *contourends, BasePoint *bp, int p) {
 return 0;
 }
 
-static int IsXObtuseCorner(int *contourends, BasePoint *bp, int p) {
-    int PrevPoint = PrevOnContour(contourends, bp, p);
-    int NextPoint = NextOnContour(contourends, bp, p);
+static int IsXCornerExtremum(int *contourends, BasePoint *bp, int p) {
+    int PrevPoint = PrevOnContour(contourends, p);
+    int NextPoint = NextOnContour(contourends, p);
 
 return ((bp[PrevPoint].x > bp[p].x) && (bp[NextPoint].x > bp[p].x)) ||
        ((bp[PrevPoint].x < bp[p].x) && (bp[NextPoint].x < bp[p].x));
 }
 
-static int IsYObtuseCorner(int *contourends, BasePoint *bp, int p) {
-    int PrevPoint = PrevOnContour(contourends, bp, p);
-    int NextPoint = NextOnContour(contourends, bp, p);
+static int IsYCornerExtremum(int *contourends, BasePoint *bp, int p) {
+    int PrevPoint = PrevOnContour(contourends, p);
+    int NextPoint = NextOnContour(contourends, p);
 
 return ((bp[PrevPoint].y > bp[p].y) && (bp[NextPoint].y > bp[p].y)) ||
        ((bp[PrevPoint].y < bp[p].y) && (bp[NextPoint].y < bp[p].y));
+}
+
+static int IsCornerExtremum(int *contourends, BasePoint *bp, int p) {
+return IsXCornerExtremum(contourends, bp, p) ||
+       IsYCornerExtremum(contourends, bp, p);
 }
 
 /* I found it easier to write an iterator that calls given function for each
@@ -680,7 +689,7 @@ static void RunOnPoints(InstrCt *ct, int contour_direction,
 	for ( sp=ss->first; ; ) {
 	    if (sp->ttfindex == 0xffff) {
 		if (ct->xdir?IsXExtremum(sp):IsYExtremum(sp)) {
-		    if (!done[p = PrevOnContour(ct->contourends, ct->bp, sp->nextcpindex)]) {
+		    if (!done[p = PrevOnContour(ct->contourends, sp->nextcpindex)]) {
 			runme(p, sp, ct);
 			done[p] = true;
 		    }
@@ -732,8 +741,12 @@ static void search_edge(int p, SplinePoint *sp, InstrCt *ct) {
     if (fabs(coord - ct->edge.base) <= fudge) {
 	if (same_angle(ct->contourends, ct->bp, p, ct->xdir?0.5*M_PI:0.0)) score++;
 	if (ct->xdir?IsXExtremum(sp):IsYExtremum(sp)) score+=4;
-	if (ct->xdir?IsXObtuseCorner(ct->contourends, ct->bp, p):
-	             IsYObtuseCorner(ct->contourends, ct->bp, p)) score+=4;
+#if 1
+	if (ct->xdir?IsXCornerExtremum(ct->contourends, ct->bp, p):
+	             IsYCornerExtremum(ct->contourends, ct->bp, p)) score+=4;
+#else
+	if (IsCornerExtremum(ct->contourends, ct->bp, p)) score+=4;
+#endif
 	if (score && (sp->ttfindex != 0xffff)) score+=2;
 
 	if (!score)
@@ -788,7 +801,7 @@ static void init_edge(InstrCt *ct, real base, int contour_direction) {
 static int sortbynum(const void *a, const void *b) { return *(int *)a > *(int *)b; }
 
 static void optimize_edge(InstrCt *ct) {
-#define NextP(_p) NextOnContour(ct->contourends, ct->bp, _p)
+#define NextP(_p) NextOnContour(ct->contourends, _p)
 
     if ((ct->edge.othercnt == 0) || (ct->sc->dstem))
 return;
@@ -1335,6 +1348,8 @@ static void do_rounded(int ttfindex, SplinePoint *sp, InstrCt *ct) {
 #endif
 
 /* Everything related with diagonal hinting goes here */
+
+#define DIAG_MIN_DISTANCE   (0.84375)
 
 /* This structure is used to keep a point number together with
    its coordinates */
@@ -1914,14 +1929,21 @@ return;
     fv=chunkalloc( sizeof( struct basepoint ) );
     fv->x=1; fv->y=0;
 
+    ct->pt = pushF26Dot6( ct->pt,DIAG_MIN_DISTANCE );
+    *(ct->pt)++ = SMD; /* Set Minimum Distance */
+
     for ( curds=ds; curds!=NULL; curds=curds->next )
         ct->pt = FixDstem ( ct,&curds,diagpts,fv );
     
     ct->pt = MovePointsToIntersections( ct,diagpts,fv );
     ct->pt = TouchDStemPoints ( ct,diagpts,fv);
 
+    ct->pt = pushF26Dot6( ct->pt,1.0 );
+    *(ct->pt)++ = SMD; /* Set Minimum Distance */
+
     chunkfree( fv,sizeof(struct basepoint ));
     DStemFree( ds,diagpts,ct->ptcnt );
+
     free( diagpts );
 }
 
