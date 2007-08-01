@@ -922,7 +922,7 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
     /*  then the glyphs to which they kern, and by how much */
     glyphs = SFOrderedGlyphsWithPSTinSubtable(sf,sub);
     for ( cnt=0; glyphs[cnt]!=NULL; ++cnt);
-    seconds = galloc(cnt*sizeof(struct sckppst));
+    seconds = galloc(cnt*sizeof(struct sckppst *));
     for ( cnt=0; glyphs[cnt]!=NULL; ++cnt) {
 	for ( k=0; k<2; ++k ) {
 	    devtablen = 0;
@@ -977,7 +977,7 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
 	struct sckppst *test = seconds[cnt], *test2;
 	for ( i=cnt-1; i>=0; --i ) {
 	    test2 = seconds[i];
-	    if ( test[0].tot != test2[0].tot )
+	    if ( test[0].tot != test2[0].tot || test2[0].samewas!=0xffff )
 	continue;
 	    for ( j=test[0].tot-1; j>=0; --j ) {
 		if ( test[j].other_gid != test2[j].other_gid )
@@ -1009,12 +1009,12 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
 	    }
 	    if ( j>=0 )
 	continue;
-	    test2[0].samewas = j;
+	    test[0].samewas = i;
 	break;
 	}
     }
 
-    /* Ok, how many offsets must we output? Normall kerning will just use */
+    /* Ok, how many offsets must we output? Normal kerning will just use */
     /*  one offset (with perhaps a device table), but the standard allows */
     /*  us to adjust 8 different values (with 8 different device tables) */
     /* Find out which we need */
@@ -2921,10 +2921,6 @@ return( NULL );
 
     len2 = 0;
     for ( otf=all; otf!=NULL; otf=otf->next ) if ( otf->lookup_index!=-1 ) {
-	if ( otf->needs_extension ) {
-	    putshort(efile,1);	/* exten subtable format (there's only one) */
-	    putshort(efile,otf->lookup_type&0xff);
-	}
 	for ( sub = otf->subtables; sub!=NULL; sub=sub->next ) {
 	    if ( sub->subtable_offset==-1 )
 	continue;
