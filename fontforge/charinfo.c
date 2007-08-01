@@ -2451,7 +2451,7 @@ static BDFChar *Rasterize(SplineChar *sc) {
     BDFChar *ret;
 
     freetypecontext = FreeTypeFontContext(sc->parent,sc,sc->parent->fv);
-    if ( freetypecontext==NULL ) {
+    if ( freetypecontext!=NULL ) {
 	ret = SplineCharFreeTypeRasterize(freetypecontext,sc->orig_pos,kern_popup_size,8);
 	FreeTypeFreeContext(freetypecontext);
     } else
@@ -2717,9 +2717,9 @@ return( NULL );
 		    y = 1+me->ymax/2;
 		y = ymax-y + j*2;
 		for ( x=1; x<ICON_WIDTH-5; ++x )
-		    base->data[y*base->bytes_per_line + (x+width)] = pixel;
+		    base->data[y*base->bytes_per_line + (x+xoff)] = pixel;
 		for ( x=ICON_WIDTH-8; x<ICON_WIDTH-1; ++x )
-		    base->data[(y+j*(ICON_WIDTH-4-x))*base->bytes_per_line + (x+width)] = pixel;
+		    base->data[(y+j*(ICON_WIDTH-4-x))*base->bytes_per_line + (x+xoff)] = pixel;
 	    }
 	    xoff += ICON_WIDTH;
 	}

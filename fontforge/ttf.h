@@ -782,8 +782,8 @@ extern void ttf_bdf_read(FILE *ttf,struct ttfinfo *info);
 extern int ttf_fftm_dump(SplineFont *sf,struct alltabs *at);
 
     /* The MATH table */
-extern void ttf_math_dump(struct alltabs *at, SplineFont *sf);
-extern void ttf_math_read(FILE *ttf,struct ttfinfo *info);
+extern void otf_dump_math(struct alltabs *at, SplineFont *sf);
+extern void otf_read_math(FILE *ttf,struct ttfinfo *info);
 
     /* Parsing advanced typography */
 extern void readmacfeaturemap(FILE *ttf,struct ttfinfo *info);

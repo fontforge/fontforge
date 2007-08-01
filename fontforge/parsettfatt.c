@@ -475,9 +475,11 @@ static int addKernPair(struct ttfinfo *info, int glyph1, int glyph2,
 	    }
 	} else if ( kp->subtable!=subtable )
 return( true );
-    } else
+    } else if ( glyph1>=info->glyph_cnt || glyph2>=info->glyph_cnt ) {
+	/* Might be NULL in a ttc file where we omit glyphs */
 	LogError( _("Bad kern pair: glyphs %d & %d should have been < %d\n"),
 		glyph1, glyph2, info->glyph_cnt );
+    }
 return( false );
 }
 
@@ -4457,9 +4459,11 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 			kp->next = chars[left]->kerns;
 			chars[left]->kerns = kp;
 		    }
-		} else
+		} else if ( left>=info->glyph_cnt || right>=info->glyph_cnt ) {
+		    /* Holes happen when reading ttc files. They are probably ok */
 		    LogError( _("Bad kern pair: glyphs %d & %d must be less than %d\n"),
 			    left, right, info->glyph_cnt );
+		}
 	    }
 	    InfoNameOTLookup(otl,info);
 	} else if ( flags_good && format==1 ) {
@@ -4696,7 +4700,7 @@ static void ttf_math_read_icta(FILE *ttf,struct ttfinfo *info, uint32 start, int
     if ( glyphs==NULL )
 return;
     fseek(ttf,start+4,SEEK_SET);
-    for ( i=0; i<cnt; ++i ) if ( glyphs[i]<info->glyph_cnt ) {
+    for ( i=0; i<cnt; ++i ) if ( glyphs[i]<info->glyph_cnt && info->chars[ glyphs[i]]!=NULL ) {
 	val = (int16) getushort(ttf);
 	if ( is_ic )
 	    info->chars[ glyphs[i] ]->italic_correction = val;
@@ -4724,7 +4728,7 @@ static void ttf_math_read_extended(FILE *ttf,struct ttfinfo *info, uint32 start)
     glyphs = getCoverageTable(ttf,start,info);
     if ( glyphs==NULL )
 return;
-    for ( i=0; glyphs[i]!=0xffff; ++i )
+    for ( i=0; glyphs[i]!=0xffff; ++i ) if ( glyphs[i]<info->glyph_cnt && info->chars[ glyphs[i]]!=NULL )
 	info->chars[ glyphs[i] ]->is_extended_shape = true;
     free(glyphs);
 }
@@ -4799,7 +4803,7 @@ static void ttf_math_read_mathkern(FILE *ttf,struct ttfinfo *info, uint32 start)
 	free(koff);
 return;
     }
-    for ( i=0; i<cnt; ++i ) if ( glyphs[i]<info->glyph_cnt ) {
+    for ( i=0; i<cnt; ++i ) if ( glyphs[i]<info->glyph_cnt && info->chars[ glyphs[i]]!=NULL ) {
 	SplineChar *sc = info->chars[ glyphs[i]];
 	sc->mathkern = chunkalloc(sizeof(struct mathkern));
 	if ( koff[i].tr!=0 )
@@ -4932,13 +4936,15 @@ static void ttf_math_read_variants(FILE *ttf,struct ttfinfo *info, uint32 start)
     if ( vglyphs!=NULL ) {
 	for ( i=0; i<vcnt; ++i ) if ( vglyphs[i]<info->glyph_cnt && voffs[i]!=0) {
 	    SplineChar *sc = info->chars[ vglyphs[i]];
-	    sc->vert_variants = ttf_math_read_gvtable(ttf,info,start+voffs[i]);
+	    if ( sc!=NULL )
+		sc->vert_variants = ttf_math_read_gvtable(ttf,info,start+voffs[i]);
 	}
     }
     if ( hglyphs!=NULL ) {
 	for ( i=0; i<hcnt; ++i ) if ( hglyphs[i]<info->glyph_cnt && hoffs[i]!=0) {
 	    SplineChar *sc = info->chars[ hglyphs[i]];
-	    sc->horiz_variants = ttf_math_read_gvtable(ttf,info,start+hoffs[i]);
+	    if ( sc!=NULL )
+		sc->horiz_variants = ttf_math_read_gvtable(ttf,info,start+hoffs[i]);
 	}
     }
 
@@ -4946,7 +4952,7 @@ static void ttf_math_read_variants(FILE *ttf,struct ttfinfo *info, uint32 start)
     free(hglyphs); free(hoffs);
 }
 
-void ttf_math_read(FILE *ttf,struct ttfinfo *info) {
+void otf_read_math(FILE *ttf,struct ttfinfo *info) {
     int constants, glyphinfo, variants;
     if ( info->math_start==0 )
 return;

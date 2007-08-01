@@ -4997,6 +4997,7 @@ return( false );
 	    otf_dumpgpos(at,sf);
 	    otf_dumpgsub(at,sf);
 	    otf_dumpgdef(at,sf);
+	    otf_dump_math(at,sf);	/* Not strictly OpenType yet */
 	}
 	if ( at->dovariations )
 	    ttf_dumpvariations(at,sf);
@@ -5032,7 +5033,6 @@ return( false );
 
 	pfed_dump(at,sf);
 	tex_dump(at,sf);
-	ttf_math_dump(at,sf);
     }
     if ( sf->subfonts!=NULL ) {
 	free(sf->glyphs); sf->glyphs = NULL;
