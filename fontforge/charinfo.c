@@ -1831,9 +1831,10 @@ struct devtab_dlg {
     DeviceTable devtab;
 };
 
-static struct col_init devtabci[2] = {
+static struct col_init devtabci[] = {
     { me_int, NULL, NULL, NULL, N_("Pixel Size") },
     { me_int, NULL, NULL, NULL, N_("Correction") },
+    0
     };
 
 static void DevTabMatrixInit(struct matrixinit *mi,char *dvstr) {
@@ -2056,21 +2057,25 @@ return( copy(dvstr));
 static void finishedit(GGadget *g, int r, int c, int wasnew);
 static void enable_enum(GGadget *g, GMenuItem *mi, int r, int c);
 
-static struct col_init simplesubsci[2] = {
+static struct col_init simplesubsci[] = {
     { me_enum , NULL, NULL, enable_enum, N_("Subtable") },
-    { me_string, NULL, NULL, NULL, N_("Replacement Glyph Name") }
+    { me_string, NULL, NULL, NULL, N_("Replacement Glyph Name") },
+    0
     };
-static struct col_init ligatureci[2] = {
+static struct col_init ligatureci[] = {
     { me_enum , NULL, NULL, NULL, N_("Subtable") },	/* There can be multiple ligatures for a glyph */
-    { me_string, NULL, NULL, NULL, N_("Source Glyph Names") }
+    { me_string, NULL, NULL, NULL, N_("Source Glyph Names") },
+    0
     };
-static struct col_init altsubsci[2] = {
+static struct col_init altsubsci[] = {
     { me_enum , NULL, NULL, enable_enum, N_("Subtable") },
-    { me_string, NULL, NULL, NULL, N_("Replacement Glyph Names") }
+    { me_string, NULL, NULL, NULL, N_("Replacement Glyph Names") },
+    0
     };
-static struct col_init multsubsci[2] = {
+static struct col_init multsubsci[] = {
     { me_enum , NULL, NULL, enable_enum, N_("Subtable") },
-    { me_string, NULL, NULL, NULL, N_("Replacement Glyph Names") }
+    { me_string, NULL, NULL, NULL, N_("Replacement Glyph Names") },
+    0
     };
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 static struct col_init simpleposci[] = {
@@ -2086,7 +2091,8 @@ static struct col_init simpleposci[] = {
     { me_int, NULL, NULL, NULL, NU_("∆x_adv") },	/* delta-x-adv */
     { me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") },
     { me_int, NULL, NULL, NULL, NU_("∆y_adv") },	/* delta-y-adv */
-    { me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") }
+    { me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") },
+    0
     };
 static struct col_init pairposci[] = {
     { me_enum , NULL, NULL, NULL, N_("Subtable") },	/* There can be multiple kern-pairs for a glyph */
@@ -2106,17 +2112,19 @@ static struct col_init pairposci[] = {
     { me_int, NULL, NULL, NULL, NU_("∆x_adv #2") },	/* delta-x-adv */
     { me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") },
     { me_int, NULL, NULL, NULL, NU_("∆y_adv #2") },	/* delta-y-adv */
-    { me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") }
+    { me_funcedit, DevTab_Dlg, NULL, NULL, N_("Adjust") },
+    0
     };
 #else
-static struct col_init simpleposci[5] = {
+static struct col_init simpleposci[] = {
     { me_enum , NULL, NULL, enable_enum, N_("Subtable") },
     { me_int, NULL, NULL, NULL, NU_("∆x") },	/* delta-x */
     { me_int, NULL, NULL, NULL, NU_("∆y") },	/* delta-y */
     { me_int, NULL, NULL, NULL, NU_("∆x_adv") },	/* delta-x-adv */
-    { me_int, NULL, NULL, NULL, NU_("∆y_adv") }	/* delta-y-adv */
+    { me_int, NULL, NULL, NULL, NU_("∆y_adv") },	/* delta-y-adv */
+    0
     };
-static struct col_init pairposci[10] = {
+static struct col_init pairposci[] = {
     { me_enum , NULL, NULL, NULL, N_("Subtable") },	/* There can be multiple kern-pairs for a glyph */
     { me_string , NULL, NULL, NULL, N_("Second Glyph Name") },
     { me_int, NULL, NULL, NULL, NU_("∆x #1") },	/* delta-x */
@@ -2126,18 +2134,19 @@ static struct col_init pairposci[10] = {
     { me_int, NULL, NULL, NULL, NU_("∆x #2") },	/* delta-x */
     { me_int, NULL, NULL, NULL, NU_("∆y #2") },	/* delta-y */
     { me_int, NULL, NULL, NULL, NU_("∆x_adv #2") },	/* delta-x-adv */
-    { me_int, NULL, NULL, NULL, NU_("∆y_adv #2") }	/* delta-y-adv */
+    { me_int, NULL, NULL, NULL, NU_("∆y_adv #2") },	/* delta-y-adv */
+    0
     };
 #endif
 static int pst2lookuptype[] = { ot_undef, gpos_single, gpos_pair, gsub_single,
      gsub_alternate, gsub_multiple, gsub_ligature, 0 };
 struct matrixinit mi[] = {
-    { sizeof(simpleposci)/sizeof(struct col_init), simpleposci, 0, NULL, NULL, NULL, finishedit },
-    { sizeof(pairposci)/sizeof(struct col_init), pairposci, 0, NULL, NULL, NULL, finishedit },
-    { sizeof(simplesubsci)/sizeof(struct col_init), simplesubsci, 0, NULL, NULL, NULL, finishedit },
-    { sizeof(altsubsci)/sizeof(struct col_init), altsubsci, 0, NULL, NULL, NULL, finishedit },
-    { sizeof(multsubsci)/sizeof(struct col_init), multsubsci, 0, NULL, NULL, NULL, finishedit },
-    { sizeof(ligatureci)/sizeof(struct col_init), ligatureci, 0, NULL, NULL, NULL, finishedit },
+    { sizeof(simpleposci)/sizeof(struct col_init)-1, simpleposci, 0, NULL, NULL, NULL, finishedit },
+    { sizeof(pairposci)/sizeof(struct col_init)-1, pairposci, 0, NULL, NULL, NULL, finishedit },
+    { sizeof(simplesubsci)/sizeof(struct col_init)-1, simplesubsci, 0, NULL, NULL, NULL, finishedit },
+    { sizeof(altsubsci)/sizeof(struct col_init)-1, altsubsci, 0, NULL, NULL, NULL, finishedit },
+    { sizeof(multsubsci)/sizeof(struct col_init)-1, multsubsci, 0, NULL, NULL, NULL, finishedit },
+    { sizeof(ligatureci)/sizeof(struct col_init)-1, ligatureci, 0, NULL, NULL, NULL, finishedit },
     { 0 }
     };
 
@@ -2663,6 +2672,10 @@ return( NULL );
 	int ymin, ymax;
 	int width, xoff;
 
+	for ( i=1; i<gv->part_cnt; ++i ) {	/* Normalize all but first. Makes construction easier */
+	    others[i]->xmax -= others[i]->xmin;
+	    others[i]->xmin = 0;
+	}
 	xoff = me->xmin<0 ? -me->xmin : 0;
 	width = xoff + me->width + ICON_WIDTH;
 	ymin = me->ymin; ymax = me->ymax;
@@ -2676,11 +2689,11 @@ return( NULL );
 			gv->parts[i].endConnectorLength;
 		overlap = rint( scale*overlap );
 	    }
-	    width += rint(gv->parts[i].fullAdvance*scale) - overlap;
+	    width += rint(gv->parts[i].fullAdvance*scale) - overlap + others[i]->xmin/* Only does anything if i==0, then it normalizes the rest to the same baseline */;
 	    if ( others[i]->ymin<ymin ) ymin = others[i]->ymin;
 	    if ( others[i]->ymax>ymax ) ymax = others[i]->ymax;
 	}
-	if ( ymax<=0 ) ymax = 1;
+	if ( ymax<=ICON_WIDTH ) ymax = ICON_WIDTH;
 	if ( ymin>0 ) ymin = 0;
 	img = GImageCreate(it_index,width+10,ymax-ymin+2);
 	base = img->u.image;
@@ -2698,7 +2711,11 @@ return( NULL );
 	{
 	    int pixel = me->depth == 8 ? 0xff : 0xf;
 	    for ( j = -1; j<2; j+=2 ) {
-		y = 1+ymax/2 + j*2;
+		if ( me->ymax<-me->ymin )
+		    y = (me->ymax+me->ymin)/2;
+		else
+		    y = 1+me->ymax/2;
+		y = ymax-y + j*2;
 		for ( x=1; x<ICON_WIDTH-5; ++x )
 		    base->data[y*base->bytes_per_line + (x+width)] = pixel;
 		for ( x=ICON_WIDTH-8; x<ICON_WIDTH-1; ++x )
@@ -2723,16 +2740,22 @@ return( NULL );
 			base->data[(ymax-y)*base->bytes_per_line + (x+xoff)] = n;
 		}
 	    }
-	    xoff += rint(gv->parts[i].fullAdvance*scale) - overlap;
+	    xoff += rint(gv->parts[i].fullAdvance*scale) - overlap + others[i]->xmin/* Only does anything if i==0, then it normalizes the rest to the same baseline */;
 	}
     } else {
 	int xmin, xmax, ymin, ymax;
 	int yoff, xoff, width;
 
+	for ( i=1; i<gv->part_cnt; ++i ) {	/* Normalize all but first. Makes construction easier */
+	    others[i]->ymax -= others[i]->ymin;
+	    others[i]->ymin = 0;
+	}
+
 	xoff = me->xmin<0 ? -me->xmin : 0;
 	width = xoff + me->width + ICON_WIDTH;
 	ymin = me->ymin; ymax = me->ymax;
 	xmin = xmax = 0;
+	yoff = 0;
 	for ( i=0; i<gv->part_cnt; ++i ) {
 	    int overlap;
 	    if ( i==gv->part_cnt-1 )
@@ -2745,7 +2768,7 @@ return( NULL );
 	    }
 	    if ( ymin>others[i]->ymin+yoff ) ymin = others[i]->ymin+yoff;
 	    if ( ymax<others[i]->ymax+yoff ) ymax = others[i]->ymax+yoff;
-	    yoff += rint(gv->parts[i].fullAdvance*scale) - overlap;
+	    yoff += rint(gv->parts[i].fullAdvance*scale) - overlap + others[i]->ymin/* Only does anything if i==0, then it normalizes the rest to the same baseline */;
 	    if ( others[i]->xmin<xmin ) xmin = others[i]->xmin;
 	    if ( others[i]->xmax>xmax ) xmax = others[i]->xmax;
 	}
@@ -2755,7 +2778,7 @@ return( NULL );
 	}
 	if ( xmax>0 )
 	    width += xmax;
-	if ( ymax<=0 ) ymax = 1;
+	if ( ymax<=ICON_WIDTH ) ymax = ICON_WIDTH;
 	if ( ymin>0 ) ymin = 0;
 	img = GImageCreate(it_index,width+2,ymax-ymin+2);
 	base = img->u.image;
@@ -2773,14 +2796,19 @@ return( NULL );
 	{
 	    int pixel = me->depth == 8 ? 0xff : 0xf;
 	    for ( j = -1; j<2; j+=2 ) {
-		y = 1+ymax/2 + j*2;
+		if ( me->ymax<-me->ymin )
+		    y = (me->ymax+me->ymin)/2;
+		else
+		    y = 1+me->ymax/2;
+		y = ymax-y + j*2;
 		for ( x=1; x<ICON_WIDTH-5; ++x )
-		    base->data[y*base->bytes_per_line + (x+width)] = pixel;
+		    base->data[y*base->bytes_per_line + (x+xoff)] = pixel;
 		for ( x=ICON_WIDTH-8; x<ICON_WIDTH-1; ++x )
-		    base->data[(y+j*(ICON_WIDTH-4-x))*base->bytes_per_line + (x+width)] = pixel;
+		    base->data[(y+j*(ICON_WIDTH-4-x))*base->bytes_per_line + (x+xoff)] = pixel;
 	    }
 	    xoff += ICON_WIDTH;
 	}
+	yoff=0;
 	for ( i=0; i<gv->part_cnt; ++i ) {
 	    int overlap;
 	    if ( i==gv->part_cnt-1 )
@@ -2798,7 +2826,7 @@ return( NULL );
 			base->data[(ymax-y-yoff)*base->bytes_per_line + (x+xoff)] = n;
 		}
 	    }
-	    yoff += rint(gv->parts[i].fullAdvance*scale) - overlap;
+	    yoff += rint(gv->parts[i].fullAdvance*scale) - overlap + others[i]->ymin/* Only does anything if i==0, then it normalizes the rest to the same baseline */;
 	}
     }
     for ( i=0; i<gv->part_cnt; ++i )
@@ -3062,9 +3090,10 @@ static struct col_init extensionpart[] = {
     { me_int, NULL, NULL, NULL, N_("StartLen") },
     { me_int, NULL, NULL, NULL, N_("EndLen") },
     { me_int, NULL, NULL, NULL, N_("FullLen") },
+    0
     };
 static struct matrixinit mi_extensionpart =
-    { sizeof(extensionpart)/sizeof(struct col_init), extensionpart, 0, NULL, NULL, NULL, extpart_finishedit };
+    { sizeof(extensionpart)/sizeof(struct col_init)-1, extensionpart, 0, NULL, NULL, NULL, extpart_finishedit };
 
 static int isxheight(int uni) {
     if ( uni>=0x10000 || !islower(uni))
@@ -3138,11 +3167,18 @@ static int TeX_Default(GGadget *g, GEvent *e) {
 	style = MacStyleCode(sf,NULL);
 
 	if ( cid == CID_TeX_HeightD ) {
-	    value = rint(b.maxy);
+	    if ( basesc!=ci->sc && basesc->tex_height!=TEX_UNDEF )
+		value = basesc->tex_height;
+	    else
+		value = rint(b.maxy);
 	    if ( value<0 ) value = 0;
 	} else if ( cid == CID_TeX_DepthD ) {
-	    value = -rint(b.miny);
-	    if ( value<5 ) value = 0;
+	    if ( basesc!=ci->sc && basesc->tex_depth!=TEX_UNDEF )
+		value = basesc->tex_depth;
+	    else {
+		value = -rint(b.miny);
+		if ( value<5 ) value = 0;
+	    }
 	} else if ( cid == CID_HorAccentD ) {
 	    double italic_off = (b.maxy-b.miny)*tan(-sf->italicangle);
 	    if ( b.maxx-b.minx-italic_off < 0 )
@@ -3460,8 +3496,8 @@ static void CIFillup(CharInfo *ci) {
 	if ( sc->horiz_variants==NULL || sc->horiz_variants->variants==NULL )
 	    GGadgetSetTitle8(g,"");
 	else
-	    GGadgetSetTitle8(g,sc->vert_variants->variants);
-	sprintf(buffer,"%d",sc->vert_variants!=NULL?sc->horiz_variants->italic_correction:0);
+	    GGadgetSetTitle8(g,sc->horiz_variants->variants);
+	sprintf(buffer,"%d",sc->horiz_variants!=NULL?sc->horiz_variants->italic_correction:0);
 	GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_ExtItalicCor+1*100),buffer);
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 	DevTabToString(&devtabstr,sc->horiz_variants!=NULL?
@@ -3472,7 +3508,7 @@ static void CIFillup(CharInfo *ci) {
 #endif
     }
     for ( i=0; i<2; ++i ) {
-	struct glyphvariants *gv = i ? sc->vert_variants : sc->horiz_variants;
+	struct glyphvariants *gv = i ? sc->horiz_variants : sc->vert_variants ;
 	GGadget *g = GWidgetGetControl(ci->gw,CID_ExtensionList+i*100);
 	GV_ToMD(g, gv);
     }

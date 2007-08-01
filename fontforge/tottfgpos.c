@@ -3688,6 +3688,7 @@ return( 4+4*cnt );		/* MathGlyphConstructionTable */
 	*pt = ch;
 	if ( sc!=NULL )
 	    ++cnt;
+	start = pt;
     }
 }
 
@@ -3721,6 +3722,7 @@ static uint32 ttf_math_dump_mathglyphconstructiontable(FILE *mathf,
 	    *pt = ch;
 	    if ( sc!=NULL )
 		++cnt;
+	    start = pt;
 	}
 	putshort(mathf,cnt);
 	for ( start=gv->variants ;; ) {
@@ -3736,6 +3738,7 @@ static uint32 ttf_math_dump_mathglyphconstructiontable(FILE *mathf,
 		SplineCharFindBounds(sc,&b);
 		putshort(mathf,b.maxy-b.miny);
 	    }
+	    start=pt;
 	}
     }
 return( pos + gvc_len(gv));

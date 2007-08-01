@@ -968,6 +968,9 @@ return;
 static void SFDDumpGlyphVariants(FILE *sfd,struct glyphvariants *gv,char *name) {
     int i;
 
+    if ( gv==NULL )
+return;
+
     if ( gv->variants!=NULL )
 	fprintf( sfd, "GlyphVariants%s: %s\n", name, gv->variants );
     if ( gv->part_cnt!=0 ) {
@@ -983,7 +986,7 @@ static void SFDDumpGlyphVariants(FILE *sfd,struct glyphvariants *gv,char *name) 
 	}
 	fprintf( sfd, "GlyphComposition%s: %d ", name, gv->part_cnt );
 	for ( i=0; i<gv->part_cnt; ++i ) {
-	    fprintf( sfd, " %s,%d,%d,%d,%d", gv->parts[i].component,
+	    fprintf( sfd, " %s%%%d,%d,%d,%d", gv->parts[i].component,
 		    gv->parts[i].is_extender,
 		    gv->parts[i].startConnectorLength,
 		    gv->parts[i].endConnectorLength,
@@ -3315,7 +3318,7 @@ static struct glyphvariants *SFDParseGlyphComposition(FILE *sfd,
 	getname(sfd,tok);
 	gv->parts[i].component = copy(tok);
 	while ( (ch=getc(sfd))==' ' );
-	if ( ch!=',' ) ungetc(ch,sfd);
+	if ( ch!='%' ) ungetc(ch,sfd);
 	getint(sfd,&temp);
 	gv->parts[i].is_extender = temp;
 	while ( (ch=getc(sfd))==' ' );
@@ -5152,7 +5155,9 @@ static void SFDParseMathItem(FILE *sfd,SplineFont *sf,char *tok) {
     if ( (math = sf->MATH) == NULL )
 	math = sf->MATH = gcalloc(1,sizeof(struct MATH));
     for ( i=0; math_constants_descriptor[i].script_name!=NULL; ++i ) {
-	if ( strmatch(tok+5,math_constants_descriptor[i].script_name)==0 ) {
+	char *name = math_constants_descriptor[i].script_name;
+	int len = strlen( name );
+	if ( strncmp(tok+5,name,len)==0 && tok[5+len] == ':' && tok[6+len]=='\0' ) {
 	    int16 *pos = (int16 *) (((char *) (math)) + math_constants_descriptor[i].offset );
 	    getsint(sfd,pos);
 	    if ( math_constants_descriptor[i].devtab_offset != -1 ) {

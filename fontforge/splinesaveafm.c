@@ -406,6 +406,7 @@ return;
 		i>=tfmd->first && i<=tfmd->last ) {
 	    used[ucnt++] = map->map[i];
 	    len += strlen(sf->glyphs[map->map[i]]->name)+1;
+	    sf->glyphs[map->map[i]]->is_extended_shape = true;
 	}
 	was = i;
 	i = tfmd->charlist[i];
@@ -455,8 +456,10 @@ return;
     memset(bits,0,sizeof(bits));
     for ( j=0; j<4; ++j ) {
 	k = ext[j];
-	if ( k!=0 && k<map->enccount && (gid2 = map->map[k])!=-1 && sf->glyphs[gid2]!=NULL )
+	if ( k!=0 && k<map->enccount && (gid2 = map->map[k])!=-1 && sf->glyphs[gid2]!=NULL ) {
 	    bits[j] = sf->glyphs[gid2];
+	    bits[j]->is_extended_shape = true;
+	}
     }
     /* 0=>bottom, 1=>middle, 2=>top, 3=>extender */
     cnt = 0;
@@ -676,8 +679,10 @@ return;
     memset(bits,0,sizeof(bits));
     for ( j=0; j<4; ++j ) {
 	k = ExtShort(j);
-	if ( k!=0 && k<map->enccount && (gid2 = map->map[k])!=-1 && sf->glyphs[gid2]!=NULL )
+	if ( k!=0 && k<map->enccount && (gid2 = map->map[k])!=-1 && sf->glyphs[gid2]!=NULL ) {
 	    bits[j] = sf->glyphs[gid2];
+	    bits[j]->is_extended_shape = true;
+	}
     }
     /* 0=>bottom, 1=>middle, 2=>top, 3=>extender */
     cnt = 0;
