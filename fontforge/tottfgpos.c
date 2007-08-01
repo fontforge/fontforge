@@ -3495,7 +3495,7 @@ static void ttf_math_dump_italic_top(FILE *mathf,struct alltabs *at, SplineFont 
 	devtab = is_italic ? glyphs[i]->italic_adjusts : glyphs[i]->top_accent_adjusts;
 	if ( devtab!=NULL ) {
 	    putshort(mathf,devtab_offset);
-	    devtab_offset += devtaboffsetsize(devtab);
+	    devtab_offset += DevTabLen(devtab);
 	} else
 #endif
 	    putshort(mathf,0);
@@ -3506,9 +3506,9 @@ static void ttf_math_dump_italic_top(FILE *mathf,struct alltabs *at, SplineFont 
 	if ( devtab!=NULL )
 	    dumpgposdevicetable(mathf,devtab);
     }
-    if ( devtab_offset!=ftell(mathf) )
-	IError("Devicetable end did not match expected end in MathKern table, expected=%d, actual=%d",
-		devtab_offset, ftell(mathf));
+    if ( devtab_offset!=ftell(mathf)-coverage_pos )
+	IError("Devicetable end did not match expected end in %s table, expected=%d, actual=%d",
+		is_italic ? "italic" : "top accent", devtab_offset, ftell(mathf)-coverage_pos );
 #endif
     coverage_table = ftell(mathf);
     fseek( mathf, coverage_pos, SEEK_SET);
@@ -3552,7 +3552,7 @@ static int ttf_math_dump_mathkernvertex(FILE *mathf,struct mathkernvertex *mkv,
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 	if ( mkv->mkd[i].height_adjusts!=NULL ) {
 	    putshort(mathf,devtab_pos-here);
-	    devtab_pos += devtaboffsetsize(mkv->mkd[i].height_adjusts);
+	    devtab_pos += DevTabLen(mkv->mkd[i].height_adjusts);
 	} else
 #endif
 	    putshort(mathf,0);
@@ -3562,7 +3562,7 @@ static int ttf_math_dump_mathkernvertex(FILE *mathf,struct mathkernvertex *mkv,
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 	if ( mkv->mkd[i].kern_adjusts!=NULL ) {
 	    putshort(mathf,devtab_pos-here);
-	    devtab_pos += devtaboffsetsize(mkv->mkd[i].kern_adjusts);
+	    devtab_pos += DevTabLen(mkv->mkd[i].kern_adjusts);
 	} else
 #endif
 	    putshort(mathf,0);
@@ -3752,7 +3752,7 @@ return( devtab_pos );
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
     if ( gv->italic_adjusts!=NULL ) {
 	putshort(mathf,devtab_pos-here);
-	devtab_pos += devtaboffsetsize(gv->italic_adjusts);
+	devtab_pos += DevTabLen(gv->italic_adjusts);
     } else
 #endif
 	putshort(mathf,0);
@@ -3818,14 +3818,14 @@ static void ttf_math_dump_glyphvariant(FILE *mathf,struct alltabs *at, SplineFon
 		vglyphs[i]->vert_variants,sf,pos);
     for ( i=0; i<hlen; ++i )
 	pos = ttf_math_dump_mathglyphconstructiontable(mathf,
-		hglyphs[i]->vert_variants,sf,pos);
+		hglyphs[i]->horiz_variants,sf,pos);
 
     for ( i=0; i<vlen; ++i )
 	pos = ttf_math_dump_mathglyphassemblytable(mathf,
 		vglyphs[i]->vert_variants,sf,pos);
     for ( i=0; i<hlen; ++i )
 	pos = ttf_math_dump_mathglyphassemblytable(mathf,
-		hglyphs[i]->vert_variants,sf,pos);
+		hglyphs[i]->horiz_variants,sf,pos);
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
     for ( i=0; i<vlen; ++i )
 	if ( vglyphs[i]->vert_variants->part_cnt!=0 &&
@@ -3854,7 +3854,7 @@ static void ttf_math_dump_glyphvariant(FILE *mathf,struct alltabs *at, SplineFon
     free(hglyphs);
 }
 
-void ttf_math_dump(struct alltabs *at, SplineFont *sf) {
+void otf_dump_math(struct alltabs *at, SplineFont *sf) {
     FILE *mathf;
     int i;
     uint32 devtab_offsets[60], const_start, gi_start, v_start;
@@ -3913,7 +3913,7 @@ return;
 	if ( bits&mb_italic ) {
 	    v_start = ftell(mathf);
 	    fseek(mathf,gi_start,SEEK_SET);
-	    putshort(mathf,v_start);
+	    putshort(mathf,v_start-gi_start);
 	    fseek(mathf,v_start,SEEK_SET);
 
 	    ttf_math_dump_italic_top(mathf,at,sf,true);
@@ -3922,7 +3922,7 @@ return;
 	if ( bits&mb_topaccent ) {
 	    v_start = ftell(mathf);
 	    fseek(mathf,gi_start+2,SEEK_SET);
-	    putshort(mathf,v_start);
+	    putshort(mathf,v_start-gi_start);
 	    fseek(mathf,v_start,SEEK_SET);
 
 	    ttf_math_dump_italic_top(mathf,at,sf,false);
@@ -3931,7 +3931,7 @@ return;
 	if ( bits&mb_extended ) {
 	    v_start = ftell(mathf);
 	    fseek(mathf,gi_start+4,SEEK_SET);
-	    putshort(mathf,v_start);
+	    putshort(mathf,v_start-gi_start);
 	    fseek(mathf,v_start,SEEK_SET);
 
 	    ttf_math_dump_extended(mathf,at,sf);
@@ -3940,7 +3940,7 @@ return;
 	if ( bits&mb_mathkern ) {
 	    v_start = ftell(mathf);
 	    fseek(mathf,gi_start+4,SEEK_SET);
-	    putshort(mathf,v_start);
+	    putshort(mathf,v_start-gi_start);
 	    fseek(mathf,v_start,SEEK_SET);
 
 	    ttf_math_dump_mathkern(mathf,at,sf);

@@ -4714,7 +4714,7 @@ return( 0 );
     if ( info->tex_start!=0 )
 	tex_read(ttf,info);
     if ( info->math_start!=0 )
-	ttf_math_read(ttf,info);
+	otf_read_math(ttf,info);
     setlocale(LC_NUMERIC,oldloc);
     if ( !info->onlystrikes && info->glyphlocations_start!=0 && info->glyph_start!=0 )
 	ttfFixupReferences(info);

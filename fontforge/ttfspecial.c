@@ -632,6 +632,8 @@ return;		/* No subtables */
 	fseek(tex.subtabs[i].data,0,SEEK_SET);
 	ttfcopyfile(file,tex.subtabs[i].data,tex.subtabs[i].offset,"TeX-subtable");
     }
+    if ( ftell(file)&2 )
+	putshort(file,0);
     if ( ftell(file)&3 )
 	IError("'TeX ' table not properly aligned");
     at->texlen = ftell(file);
