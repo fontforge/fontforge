@@ -3507,7 +3507,7 @@ static void ttf_math_dump_italic_top(FILE *mathf,struct alltabs *at, SplineFont 
 	    dumpgposdevicetable(mathf,devtab);
     }
     if ( devtab_offset!=ftell(mathf)-coverage_pos )
-	IError("Devicetable end did not match expected end in %s table, expected=%d, actual=%d",
+	IError("Actual end did not match expected end in %s table, expected=%d, actual=%d",
 		is_italic ? "italic" : "top accent", devtab_offset, ftell(mathf)-coverage_pos );
 #endif
     coverage_table = ftell(mathf);
@@ -3537,7 +3537,7 @@ static void ttf_math_dump_extended(FILE *mathf,struct alltabs *at, SplineFont *s
 }
 
 static int mkv_len(struct mathkernvertex *mkv) {
-return( 8*mkv->cnt-4 );
+return( 2+8*mkv->cnt-4 );
 }
 
 static int ttf_math_dump_mathkernvertex(FILE *mathf,struct mathkernvertex *mkv,
@@ -3586,7 +3586,7 @@ static void ttf_math_dump_mathkerndevtab(FILE *mathf,struct mathkernvertex *mkv)
 static void ttf_math_dump_mathkern(FILE *mathf,struct alltabs *at, SplineFont *sf) {
     int i, gid, len;
     SplineChar *sc, **glyphs;
-    uint32 coverage_pos, coverage_table, kr_pos;
+    uint32 coverage_pos, coverage_table, kr_pos, midpos2;
 
     /* Figure out our glyph list (and count) */
     for ( i=len=0; i<at->gi.gcnt; ++i )
@@ -3606,57 +3606,67 @@ static void ttf_math_dump_mathkern(FILE *mathf,struct alltabs *at, SplineFont *s
     kr_pos = coverage_pos + 4 + 8*len;
     for ( i=0; i<len; ++i ) {
 	struct mathkern *mk = glyphs[i]->mathkern;
-	uint32 here = ftell(mathf);
 	if ( mk->top_right.cnt==0 )
 	    putshort(mathf,0);
 	else {
-	    putshort(mathf,kr_pos-here);
+	    putshort(mathf,kr_pos-coverage_pos);
 	    kr_pos += mkv_len(&mk->top_right);
 	}
 	if ( mk->top_left.cnt==0 )
 	    putshort(mathf,0);
 	else {
-	    putshort(mathf,kr_pos-here);
+	    putshort(mathf,kr_pos-coverage_pos);
 	    kr_pos += mkv_len(&mk->top_left);
 	}
 	if ( mk->bottom_right.cnt==0 )
 	    putshort(mathf,0);
 	else {
-	    putshort(mathf,kr_pos-here);
+	    putshort(mathf,kr_pos-coverage_pos);
 	    kr_pos += mkv_len(&mk->bottom_right);
 	}
 	if ( mk->bottom_left.cnt==0 )
 	    putshort(mathf,0);
 	else {
-	    putshort(mathf,kr_pos-here);
+	    putshort(mathf,kr_pos-coverage_pos);
 	    kr_pos += mkv_len(&mk->bottom_left);
 	}
     }
+    if ( ftell(mathf)!=coverage_pos + 4 + 8*len )
+	IError("Actual midpoint1 did not match expected midpoint1 in mathkern table, expected=%d, actual=%d",
+		coverage_pos + 4 + 8*len, ftell(mathf) );
+
+    midpos2 = kr_pos;
     for ( i=0; i<len; ++i ) {
 	struct mathkern *mk = glyphs[i]->mathkern;
-	if ( mk->top_right.cnt==0 )
+	if ( mk->top_right.cnt!=0 )
 	    kr_pos = ttf_math_dump_mathkernvertex(mathf,&mk->top_right,kr_pos);
-	if ( mk->top_left.cnt==0 )
+	if ( mk->top_left.cnt!=0 )
 	    kr_pos = ttf_math_dump_mathkernvertex(mathf,&mk->top_left,kr_pos);
-	if ( mk->bottom_right.cnt==0 )
+	if ( mk->bottom_right.cnt!=0 )
 	    kr_pos = ttf_math_dump_mathkernvertex(mathf,&mk->bottom_right,kr_pos);
-	if ( mk->bottom_left.cnt==0 )
+	if ( mk->bottom_left.cnt!=0 )
 	    kr_pos = ttf_math_dump_mathkernvertex(mathf,&mk->bottom_left,kr_pos);
     }
+    if ( ftell(mathf)!=midpos2)
+	IError("Actual midpoint2 did not match expected midpoint2 in mathkern table, expected=%d, actual=%d",
+		midpos2, ftell(mathf) );
     
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
     for ( i=0; i<len; ++i ) {
 	struct mathkern *mk = glyphs[i]->mathkern;
-	if ( mk->top_right.cnt==0 )
+	if ( mk->top_right.cnt!=0 )
 	    ttf_math_dump_mathkerndevtab(mathf,&mk->top_right);
-	if ( mk->top_left.cnt==0 )
+	if ( mk->top_left.cnt!=0 )
 	    ttf_math_dump_mathkerndevtab(mathf,&mk->top_left);
-	if ( mk->bottom_right.cnt==0 )
+	if ( mk->bottom_right.cnt!=0 )
 	    ttf_math_dump_mathkerndevtab(mathf,&mk->bottom_right);
-	if ( mk->bottom_left.cnt==0 )
+	if ( mk->bottom_left.cnt!=0 )
 	    ttf_math_dump_mathkerndevtab(mathf,&mk->bottom_left);
     }
 #endif
+    if ( kr_pos!=ftell(mathf) )
+	IError("Actual end did not match expected end in mathkern table, expected=%d, actual=%d",
+		kr_pos, ftell(mathf) );
 
     coverage_table = ftell(mathf);
     fseek( mathf, coverage_pos, SEEK_SET);

@@ -2605,8 +2605,8 @@ return( NULL );
     if ( (maxx=me->xmax)<me->width ) maxx = me->width;
     if ( pos<minx ) minx = pos-2;
     if ( pos>maxx ) maxx = pos+2;
-    miny = me->ymin + 1;
-    maxy = me->ymax + 1;
+    miny = me->ymin - 4;
+    maxy = me->ymax + 4;
 
     pixel = me->depth == 8 ? 0xff : 0xf;
 
@@ -2621,6 +2621,8 @@ return( NULL );
 	    base->data[(yoffset-y)*base->bytes_per_line + (x+xoffset)] =
 		    me->bitmap[(me->ymax-y)*me->bytes_per_line + (x-me->xmin)];
 	}
+    }
+    for ( y=miny; y<=maxy; ++y ) {
 	base->data[(yoffset-y)*base->bytes_per_line + (pos+xoffset)] = pixel;
 	if ( is_italic_cor && (y&1 ))
 	    base->data[(yoffset-y)*base->bytes_per_line + (me->width+xoffset)] = pixel;
@@ -2912,7 +2914,7 @@ return( NULL );
 	}
     }
 
-    if ( ymax<=0 ) ymax = 1;
+    if ( ymax<=ICON_WIDTH ) ymax = ICON_WIDTH;
     if ( ymin>0 ) ymin = 0;
     if ( xmax<0 )
 return( NULL );
@@ -2936,7 +2938,11 @@ return( NULL );
 	int pixel = me->depth == 8 ? 0xff : 0xf;
 	if ( sub->lookup->lookup_type!=gsub_ligature ) {
 	    for ( j = -1; j<2; j+=2 ) {
-		y = 1+ymax/2 + j*2;
+		if ( me->ymax<-me->ymin )
+		    y = (me->ymax+me->ymin)/2;
+		else
+		    y = 1+me->ymax/2;
+		y = ymax-y + j*2;
 		for ( x=1; x<ICON_WIDTH-5; ++x )
 		    base->data[y*base->bytes_per_line + (x+width)] = pixel;
 		for ( x=ICON_WIDTH-8; x<ICON_WIDTH-1; ++x )

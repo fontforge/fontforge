@@ -406,7 +406,7 @@ return;
 		i>=tfmd->first && i<=tfmd->last ) {
 	    used[ucnt++] = map->map[i];
 	    len += strlen(sf->glyphs[map->map[i]]->name)+1;
-	    sf->glyphs[map->map[i]]->is_extended_shape = true;
+	    /*sf->glyphs[map->map[i]]->is_extended_shape = true;*/	/* MS does not do this in their fonts */
 	}
 	was = i;
 	i = tfmd->charlist[i];
@@ -458,7 +458,7 @@ return;
 	k = ext[j];
 	if ( k!=0 && k<map->enccount && (gid2 = map->map[k])!=-1 && sf->glyphs[gid2]!=NULL ) {
 	    bits[j] = sf->glyphs[gid2];
-	    bits[j]->is_extended_shape = true;
+	    /* bits[j]->is_extended_shape = true;*/	/* MS does not do this in their fonts */
 	}
     }
     /* 0=>bottom, 1=>middle, 2=>top, 3=>extender */
@@ -681,7 +681,7 @@ return;
 	k = ExtShort(j);
 	if ( k!=0 && k<map->enccount && (gid2 = map->map[k])!=-1 && sf->glyphs[gid2]!=NULL ) {
 	    bits[j] = sf->glyphs[gid2];
-	    bits[j]->is_extended_shape = true;
+	    /* bits[j]->is_extended_shape = true;*/	/* MS does not do this in their fonts */
 	}
     }
     /* 0=>bottom, 1=>middle, 2=>top, 3=>extender */

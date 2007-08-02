@@ -2880,6 +2880,106 @@ void VrTrans(struct vr *vr,real transform[6]) {
     vr->v_adv_off = rint(transform[2]*x + transform[3]*y);
 }
 
+static void GV_Trans(struct glyphvariants *gv,real transform[6], int is_v) {
+    int i;
+
+    if ( gv==NULL )
+return;
+    gv->italic_correction = rint(gv->italic_correction*transform[0]);
+    is_v = 3*is_v;
+    for ( i=0; i<gv->part_cnt; ++i ) {
+	gv->parts[i].startConnectorLength = rint( gv->parts[i].startConnectorLength*transform[is_v] );
+	gv->parts[i].endConnectorLength = rint( gv->parts[i].endConnectorLength*transform[is_v] );
+	gv->parts[i].fullAdvance = rint( gv->parts[i].fullAdvance*transform[is_v] );
+    }
+}
+
+static void MKV_Trans(struct mathkernvertex *mkv,real transform[6]) {
+    int i;
+
+    for ( i=0; i<mkv->cnt; ++i ) {
+	mkv->mkd[i].kern  = rint( mkv->mkd[i].kern  *transform[0]);
+	mkv->mkd[i].height= rint( mkv->mkd[i].height*transform[0]);
+    }
+}
+
+static void MK_Trans(struct mathkern *mk,real transform[6]) {
+    if ( mk==NULL )
+return;
+    MKV_Trans(&mk->top_right,transform);
+    MKV_Trans(&mk->top_left ,transform);
+    MKV_Trans(&mk->bottom_right,transform);
+    MKV_Trans(&mk->bottom_left ,transform);
+}
+
+static void MATH_Trans(struct MATH *math,real transform[6]) {
+    if ( math==NULL )
+return;
+    math->DelimitedSubFormulaMinHeight = rint( math->DelimitedSubFormulaMinHeight*transform[3]);
+    math->DisplayOperatorMinHeight = rint( math->DisplayOperatorMinHeight*transform[3]);
+    math->MathLeading = rint( math->MathLeading*transform[3]);
+    math->AxisHeight = rint( math->AxisHeight*transform[3]);
+    math->AccentBaseHeight = rint( math->AccentBaseHeight*transform[3]);
+    math->FlattenedAccentBaseHeight = rint( math->FlattenedAccentBaseHeight*transform[3]);
+    math->SubscriptShiftDown = rint( math->SubscriptShiftDown*transform[3]);
+    math->SubscriptTopMax = rint( math->SubscriptTopMax*transform[3]);
+    math->SubscriptBaselineDropMin = rint( math->SubscriptBaselineDropMin*transform[3]);
+    math->SuperscriptShiftUp = rint( math->SuperscriptShiftUp*transform[3]);
+    math->SuperscriptShiftUpCramped = rint( math->SuperscriptShiftUpCramped*transform[3]);
+    math->SuperscriptBottomMin = rint( math->SuperscriptBottomMin*transform[3]);
+    math->SuperscriptBaselineDropMax = rint( math->SuperscriptBaselineDropMax*transform[3]);
+    math->SubSuperscriptGapMin = rint( math->SubSuperscriptGapMin*transform[3]);
+    math->SuperscriptBottomMaxWithSubscript = rint( math->SuperscriptBottomMaxWithSubscript*transform[3]);
+    /* SpaceAfterScript is horizontal and is below */
+    math->UpperLimitGapMin = rint( math->UpperLimitGapMin*transform[3]);
+    math->UpperLimitBaselineRiseMin = rint( math->UpperLimitBaselineRiseMin*transform[3]);
+    math->LowerLimitGapMin = rint( math->LowerLimitGapMin*transform[3]);
+    math->LowerLimitBaselineDropMin = rint( math->LowerLimitBaselineDropMin*transform[3]);
+    math->StackTopShiftUp = rint( math->StackTopShiftUp*transform[3]);
+    math->StackTopDisplayStyleShiftUp = rint( math->StackTopDisplayStyleShiftUp*transform[3]);
+    math->StackBottomShiftDown = rint( math->StackBottomShiftDown*transform[3]);
+    math->StackBottomDisplayStyleShiftDown = rint( math->StackBottomDisplayStyleShiftDown*transform[3]);
+    math->StackGapMin = rint( math->StackGapMin*transform[3]);
+    math->StackDisplayStyleGapMin = rint( math->StackDisplayStyleGapMin*transform[3]);
+    math->StretchStackTopShiftUp = rint( math->StretchStackTopShiftUp*transform[3]);
+    math->StretchStackBottomShiftDown = rint( math->StretchStackBottomShiftDown*transform[3]);
+    math->StretchStackGapAboveMin = rint( math->StretchStackGapAboveMin*transform[3]);
+    math->StretchStackGapBelowMin = rint( math->StretchStackGapBelowMin*transform[3]);
+    math->FractionNumeratorShiftUp = rint( math->FractionNumeratorShiftUp*transform[3]);
+    math->FractionNumeratorDisplayStyleShiftUp = rint( math->FractionNumeratorDisplayStyleShiftUp*transform[3]);
+    math->FractionDenominatorShiftDown = rint( math->FractionDenominatorShiftDown*transform[3]);
+    math->FractionDenominatorDisplayStyleShiftDown = rint( math->FractionDenominatorDisplayStyleShiftDown*transform[3]);
+    math->FractionNumeratorGapMin = rint( math->FractionNumeratorGapMin*transform[3]);
+    math->FractionNumeratorDisplayStyleGapMin = rint( math->FractionNumeratorDisplayStyleGapMin*transform[3]);
+    math->FractionRuleThickness = rint( math->FractionRuleThickness*transform[3]);
+    math->FractionDenominatorGapMin = rint( math->FractionDenominatorGapMin*transform[3]);
+    math->FractionDenominatorDisplayStyleGapMin = rint( math->FractionDenominatorDisplayStyleGapMin*transform[3]);
+    /* SkewedFractionHorizontalGap is horizontal and is below */
+    math->SkewedFractionVerticalGap = rint( math->SkewedFractionVerticalGap*transform[3]);
+    math->OverbarVerticalGap = rint( math->OverbarVerticalGap*transform[3]);
+    math->OverbarRuleThickness = rint( math->OverbarRuleThickness*transform[3]);
+    math->OverbarExtraAscender = rint( math->OverbarExtraAscender*transform[3]);
+    math->UnderbarVerticalGap = rint( math->UnderbarVerticalGap*transform[3]);
+    math->UnderbarRuleThickness = rint( math->UnderbarRuleThickness*transform[3]);
+    math->UnderbarExtraDescender = rint( math->UnderbarExtraDescender*transform[3]);
+    math->RadicalVerticalGap = rint( math->RadicalVerticalGap*transform[3]);
+    math->RadicalDisplayStyleVerticalGap = rint( math->RadicalDisplayStyleVerticalGap*transform[3]);
+    math->RadicalRuleThickness = rint( math->RadicalRuleThickness*transform[3]);
+    math->RadicalExtraAscender = rint( math->RadicalExtraAscender*transform[3]);
+    math->RadicalDegreeBottomRaisePercent = rint( math->RadicalDegreeBottomRaisePercent*transform[3]);
+
+    /* Horizontals */
+    math->SpaceAfterScript = rint( math->SpaceAfterScript*transform[0]);
+    math->SkewedFractionHorizontalGap = rint( math->SkewedFractionHorizontalGap*transform[0]);
+    math->RadicalKernBeforeDegree = rint( math->RadicalKernBeforeDegree*transform[0]);
+    math->RadicalKernAfterDegree = rint( math->RadicalKernAfterDegree*transform[0]);
+
+    /* This number is the same for both horizontal and vertical connections */
+    /*  Use the vertical amount as a) will probably be the same and */
+    /*   b) most are vertical anyway */
+    math->RadicalKernAfterDegree = rint( math->RadicalKernAfterDegree*transform[0]);
+}
+
 static void KCTrans(KernClass *kc,double scale) {
     /* Again these are offsets, so I don't apply translation */
     int i;
@@ -2937,6 +3037,19 @@ void FVTrans(FontView *fv,SplineChar *sc,real transform[6], uint8 *sel,
 	    }
 	}
     }
+
+    if ( sc->tex_height!=TEX_UNDEF )
+	sc->tex_height = rint(sc->tex_height*transform[3]);
+    if ( sc->tex_depth !=TEX_UNDEF )
+	sc->tex_depth  = rint(sc->tex_depth *transform[3]);
+    if ( sc->italic_correction!=TEX_UNDEF )
+	sc->italic_correction = rint(sc->italic_correction *transform[0]);
+    if ( sc->top_accent_horiz !=TEX_UNDEF )
+	sc->top_accent_horiz  = rint(sc->top_accent_horiz *transform[0]);
+    GV_Trans(sc->vert_variants ,transform, true);
+    GV_Trans(sc->horiz_variants,transform, false);
+    MK_Trans(sc->mathkern,transform);
+
     for ( ap=sc->anchor; ap!=NULL; ap=ap->next )
 	ApTransform(ap,transform);
     for ( i=ly_fore; i<sc->layer_cnt; ++i ) {
@@ -3107,6 +3220,8 @@ void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
 	    KCTrans(kc,transform[0]);
 	for ( kc=sf->vkerns; kc!=NULL; kc=kc->next )
 	    KCTrans(kc,transform[3]);
+	if ( sf->MATH!=NULL )
+	    MATH_Trans(sf->MATH,transform);
     }
 }
 
