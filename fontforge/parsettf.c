@@ -2905,13 +2905,15 @@ return( NULL );
 return( ret );
 }
 
-static char *realarray2str(real *array, int size) {
+static char *realarray2str(real *array, int size, int must_be_even) {
     int i,j;
     char *pt, *ret;
 
     for ( i=size-1; i>=0 && array[i]==0; --i );
     if ( i==-1 )
 return( NULL );
+    if ( must_be_even && !(i&1) && array[i]<0 )
+	++i;			/* Someone gave us a bluevalues of [-20 0] and we reported [-20] */
     ret = pt = galloc((i+1)*20+12);
     *pt++ = '[';
     for ( j=0; j<=i; ++j ) {
@@ -2958,22 +2960,22 @@ static void cffprivatefillup(struct psdict *private, struct topdicts *dict) {
     private->keys = galloc(14*sizeof(char *));
     private->values = galloc(14*sizeof(char *));
     privateadd(private,"BlueValues",
-	    realarray2str(dict->bluevalues,sizeof(dict->bluevalues)/sizeof(dict->bluevalues[0])));
+	    realarray2str(dict->bluevalues,sizeof(dict->bluevalues)/sizeof(dict->bluevalues[0]),true));
     privateadd(private,"OtherBlues",
-	    realarray2str(dict->otherblues,sizeof(dict->otherblues)/sizeof(dict->otherblues[0])));
+	    realarray2str(dict->otherblues,sizeof(dict->otherblues)/sizeof(dict->otherblues[0]),true));
     privateadd(private,"FamilyBlues",
-	    realarray2str(dict->familyblues,sizeof(dict->familyblues)/sizeof(dict->familyblues[0])));
+	    realarray2str(dict->familyblues,sizeof(dict->familyblues)/sizeof(dict->familyblues[0]),true));
     privateadd(private,"FamilyOtherBlues",
-	    realarray2str(dict->familyotherblues,sizeof(dict->familyotherblues)/sizeof(dict->familyotherblues[0])));
+	    realarray2str(dict->familyotherblues,sizeof(dict->familyotherblues)/sizeof(dict->familyotherblues[0]),true));
     privateaddreal(private,"BlueScale",dict->bluescale);
     privateaddreal(private,"BlueShift",dict->blueshift);
     privateaddreal(private,"BlueFuzz",dict->bluefuzz);
     privateaddintarray(private,"StdHW",dict->stdhw);
     privateaddintarray(private,"StdVW",dict->stdvw);
     privateadd(private,"StemSnapH",
-	    realarray2str(dict->stemsnaph,sizeof(dict->stemsnaph)/sizeof(dict->stemsnaph[0])));
+	    realarray2str(dict->stemsnaph,sizeof(dict->stemsnaph)/sizeof(dict->stemsnaph[0]),false));
     privateadd(private,"StemSnapV",
-	    realarray2str(dict->stemsnapv,sizeof(dict->stemsnapv)/sizeof(dict->stemsnapv[0])));
+	    realarray2str(dict->stemsnapv,sizeof(dict->stemsnapv)/sizeof(dict->stemsnapv[0]),false));
     if ( dict->forcebold )
 	privateadd(private,"ForceBold",copy("true"));
     if ( dict->forceboldthreshold!=0 )
