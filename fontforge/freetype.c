@@ -542,7 +542,10 @@ BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int gid,
 return( bdfc );
 
  fail:
+    if ( depth==1 )
 return( SplineCharRasterize(ftc->sf->glyphs[gid],pixelsize) );
+    else
+return( SplineCharAntiAlias(ftc->sf->glyphs[gid],pixelsize,4));
 }
 
 BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int depth) {
