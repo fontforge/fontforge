@@ -192,7 +192,7 @@ static void init_maxp(InstrCt *ct) {
 
     if (zones<2) zones=2;
     if (twpts<1) twpts=1;
-    if (fdefs<1) fdefs=1;
+    if (fdefs<2) fdefs=2;
 
 #if OPTIMIZE_TTF_INSTRS
     if (stack<256) stack=256;
@@ -216,7 +216,7 @@ static void init_prep(InstrCt *ct) {
     {
 	0x4b, // MPPEM
 	0xb0, // PUSHB_1
-	0x07, //   7 - hinting threshold - should be configurable
+	0x08, //   9 - hinting threshold - should be configurable
 	0x50, // LT
 	0x58, // IF
 	0xb1, //   PUSHB_2
@@ -288,6 +288,7 @@ static void init_fpgm(InstrCt *ct) {
     uint8 new_fpgm[] = 
     {
 	/* Function 0: position a point within a blue zone (given via cvt).
+	 * TODO! twilight points should be set up in 'prep'.
 	 * Syntax: PUSHB_3 point cvt_of_blue 0 CALL
 	 */
 	0xb0, // PUSHB_1
@@ -296,14 +297,27 @@ static void init_fpgm(InstrCt *ct) {
 	0xb0, //   PUSHB_1
 	0x00, //     0
 	0x13, //   SZP0
-	0xb0, //   PUSHB_0
-	0x4a, //     74
-	0x76, //   SROUND
+	0x4b, //   MPPEM
+	0xb0, //   PUSHB_1
+	0x1e, //     30 - under this weight blues will be specially rounded
+	0x50, //   LT
+	0x58, //   IF
+	0xb0, //     PUSHB_0
+	0x4a, //       74
+	0x76, //     SROUND
+	0x59, //   EIF
 	0xb0, //   PUSHB_1
 	0x00, //     0
 	0x23, //   SWAP
 	0x3f, //   MIAP[rnd]
+	0x18, //   RTG
+	0x4b, //   MPPEM
+	0xb0, //   PUSHB_1
+	0x32, //     50 - under this weight overshoots will be suppressed
+	0x50, //   LT
+	0x58, //   IF
 	0x7d, //   RDTG
+	0x59, //   EIF
 	0x20, //   DUP
 	0xd4, //   MDRP[rp0,rnd,grey]
 	0xb0, //   PUSHB_1
@@ -311,6 +325,29 @@ static void init_fpgm(InstrCt *ct) {
 	0x13, //   SZP0
 	0x2e, //   MDAP[no-rnd]
 	0x18, //   RTG
+	0x2d, // ENDF
+
+	/* Function 1: check if the gridfitted position of a point is too far
+         * from its original position, and shift it, if necessary.
+	 * Syntax: PUSHB_2 point 1 CALL
+	 */
+	0xb0, // PUSHB_1
+	0x01, //   1
+	0x2c, // FDEF
+        0x20, //   DUP
+        0x20, //   DUP
+        0x47, //   GC[cur]
+        0x23, //   SWAP
+        0x46, //   GC[orig]
+        0x61, //   SUB
+        0x6a, //   ROUND[white]
+        0x20, //   DUP
+        0x58, //   IF
+        0x38, //     SHPIX
+	0x1b, //   ELSE
+	0x21, //     POP
+	0x21, //     POP
+        0x59, //   EIF
 	0x2d  // ENDF
     };
 
@@ -875,6 +912,8 @@ static void optimize_segment(int segstart, int segend, InstrCt *ct) {
     if (segstart==segend)
 return;
 
+    fprintf(stderr, "segstart: %d, segend: %d\n", segstart, segend);
+
     /* purely for aesthetic reasons - can be safely removed. */
     qsort(others+segstart, segend+1-segstart, sizeof(int), sortbynum);
 
@@ -888,8 +927,8 @@ return;
 	    ct->affected[others[i]] |= ct->diagpts[others[i]].count?0:touchflag;
     }
     else {
-	for (i=segstart; !ct->oncurve[others[i]] && i<=segend; i++) ;
-	if (ct->oncurve[others[i]]) local_refpt = others[i];
+	for (i=segstart; i<=segend && !ct->oncurve[others[i]]; i++);
+	if (i<=segend) local_refpt = others[i];
 
 	if (findoffs(others+segstart, segend+1-segstart, ct->edge.refpt) != -1)
 	    local_refpt = ct->edge.refpt;
@@ -923,8 +962,10 @@ return;
     while (next < othercnt) {
 	p = others[segstart = next++];
 
-	while(next < othercnt && (i = findoffs(others+next, othercnt-next,
+	fprintf(stderr, "loop1, next=%d\n", next);
+	while((next < othercnt) && (i = findoffs(others+next, othercnt-next,
 				    NextOnContour(ct->contourends, p))) != -1) {
+	    fprintf(stderr, "1i: %d\n", i+next);
 	    p = others[i+=next];
 	    others[i] = others[next];
 	    others[next++] = p;
@@ -932,8 +973,10 @@ return;
 
 	p=others[segstart];
 
-	while(next < othercnt && (i = findoffs(others+next, othercnt-next,
+	fprintf(stderr, "loop2, next=%d\n", next);
+	while((next < othercnt) && (i = findoffs(others+next, othercnt-next,
 				    PrevOnContour(ct->contourends, p))) != -1) {
+	    fprintf(stderr, "2i: %d\n", i+next);
 	    p = others[i+=next];
 	    others[i] = others[next];
 	    others[next++] = p;
@@ -1212,6 +1255,7 @@ static void geninstrs(InstrCt *ct, StemInfo *hint) {
     StemInfo *firsthint, *lasthint=NULL, *testhint;
     int first;
     int cvtindex=-1;
+    int callargs[2];
 
     /* if this hint has conflicts don't try to establish a minimum distance */
     /* between it and the last stem, there might not be one */        
@@ -1275,27 +1319,39 @@ static void geninstrs(InstrCt *ct, StemInfo *hint) {
 	}
     }
     else {
+	if (!ct->xdir) { /* will be simply put in place, just rounded */
+	    /* a primitive way to minimize rounding errors */
+	    if (fabs(hend) > fabs(hbase)) {
+		hbase = (base + width);
+		width = -width;
+		hend = base;
+	    }
+	}
+
 	init_edge(ct, hbase, ALL_CONTOURS);
 	if (ct->edge.refpt == -1) goto done;
 
         /* Now I must place the stem's origin in respect to others... */
-	/* The steps here are extremely simple and often do not work. */
-	/* What's really needed here is an iterative procedure that would */
-	/* preserve counters and widths, like in freetype2. */
+	/* TODO! What's really needed here is an iterative procedure that */
+	/* would preserve counters and widths, like in freetype2. */
 	/* For horizontal stems, interpolating between blues MUST be done. */
-	/* rp0 and rp1 are set to refpt after its positioning */
-	if (!ct->xdir || first) {
-	    ct->pt = pushpoint(ct->pt, ct->edge.refpt);
+	ct->pt = pushpoint(ct->pt, ct->edge.refpt);
+	ct->touched[ct->edge.refpt] |= (ct->xdir?tf_x:tf_y);
+
+	if (!ct->xdir) {
 	    *ct->pt++ = MDAP_rnd;
+	    finish_edge(ct, SHP_rp1);
 	}
 	else {
-	  ct->pt = pushpointstem(ct->pt, ct->edge.refpt, ct->edge.refpt);
-	  *ct->pt++ = MDRP_rp0_min_rnd_white;
-	  *ct->pt++ = MDAP;
-	}
+	    if (hint->hasconflicts) *ct->pt++ = MDRP_rp0_rnd_white;
+	    else *ct->pt++ = MDRP_rp0_min_rnd_white;
 
-	ct->touched[ct->edge.refpt] |= (ct->xdir?tf_x:tf_y);
-	finish_edge(ct, SHP_rp1);
+	    callargs[0] = ct->edge.refpt;
+	    callargs[1] = 1;
+	    ct->pt = pushpoints(ct->pt, 2, callargs);
+	    *(ct->pt)++ = CALL;
+	    finish_edge(ct, SHP_rp2);
+	}
 
 	/* Start the second edge */
 	init_edge(ct, hend, ALL_CONTOURS);
@@ -1303,11 +1359,11 @@ static void geninstrs(InstrCt *ct, StemInfo *hint) {
 
 	if (cvtindex == -1) {
 	  ct->pt = pushpoint(ct->pt, ct->edge.refpt);
-	  *ct->pt++ = MDRP_rp0_min_rnd_black; //CAUTION!
+	  *ct->pt++ = MDRP_rp0_min_rnd_black;
 	}
 	else {
 	    ct->pt = pushpointstem(ct->pt, ct->edge.refpt, cvtindex);
-	    *ct->pt++ = MIRP_rp0_min_rnd_black; //CAUTION!
+	    *ct->pt++ = MIRP_rp0_min_rnd_black;
 	}
 
 	ct->touched[ct->edge.refpt] |= (ct->xdir?tf_x:tf_y);
@@ -1456,8 +1512,10 @@ static BasePoint *GetVector ( BasePoint *top,BasePoint *bottom,int orth ) {
     hip=sqrt(( catx*catx )+( caty*caty ));
     retsin=caty/hip; retcos=catx/hip;
     
+    fprintf(stderr, "here1\n");
     ret=chunkalloc(sizeof(struct basepoint));
-    
+    fprintf(stderr, "here2\n");
+
     if( !orth ) {
         ret->x=retcos; ret->y=retsin;
     } else {
