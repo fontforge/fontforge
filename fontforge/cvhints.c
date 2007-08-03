@@ -27,6 +27,7 @@
 #include "pfaeditui.h"
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include "ustring.h"
+#include <math.h>
 
 int CVTwoForePointsSelected(CharView *cv, SplinePoint **sp1, SplinePoint **sp2) {
     SplineSet *spl;
@@ -93,6 +94,42 @@ return( 0 );
 return( cnt );
 }
 
+static double DStemWidth( SplinePoint *tl, SplinePoint *bl, 
+    SplinePoint *tr, SplinePoint *br ) {
+    
+    double tempx, tempy, len, stemwidth;
+
+    tempx = tl->me.x-bl->me.x;
+    tempy = tl->me.y-bl->me.y;
+    len = sqrt(tempx*tempx+tempy*tempy);
+    stemwidth = ((tr->me.x-tl->me.x)*tempy -
+	    (tr->me.y-tl->me.y)*tempx)/len;
+    if ( stemwidth<0 ) stemwidth = -stemwidth;
+    fprintf (stderr, "stem=%f\n", stemwidth);
+return( stemwidth );
+}
+
+static int DiagTooShort ( SplinePoint **vec1, SplinePoint **vec2 ) {
+    real catx1, caty1, hyp1, catx2, caty2, hyp2;
+    real width;
+    
+    catx1=vec1[0]->me.x-vec1[1]->me.x; 
+    caty1=vec1[0]->me.y-vec1[1]->me.y;
+    hyp1=sqrt(( catx1*catx1 )+( caty1*caty1 ));
+    if ( hyp1<0 ) hyp1 = -hyp1;
+    
+    catx2=vec2[0]->me.x-vec2[1]->me.x; 
+    caty2=vec2[0]->me.y-vec2[1]->me.y;
+    hyp2=sqrt(( catx2*catx2 )+( caty2*caty2 ));
+    if ( hyp2<0 ) hyp2 = -hyp2;
+    
+    width = DStemWidth (vec1[0], vec1[1], vec2[0], vec2[1]);
+    
+    if (width > ((hyp1+hyp2)/2))
+        return true;
+    return false;
+}
+
 static int DiagCheck( SplinePoint **vec1, SplinePoint **vec2 ) {
 
     /* No horizontal,vertical edges */
@@ -130,6 +167,7 @@ return( false );
     for (i=1; i<4; i++) {
         vec1[1] = sp[i];
         
+        k=0;
         for (j=1; j<4; j++) {
             if (j != i)
                 vec2[k++] = sp[j];
