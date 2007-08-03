@@ -147,8 +147,8 @@ return( false );
 	    if ( vec1[0]->me.x > vec2[0]->me.x + (vec1[0]->me.y-vec2[0]->me.y) 
                 * (vec2[1]->me.x-vec2[0]->me.x)/(vec2[1]->me.y-vec2[0]->me.y) ) {
                 
-	        temp = vec1[0]; vec1[0] = vec1[1]; vec1[1] = temp;
-	        temp = vec2[0]; vec2[0] = vec2[1]; vec2[1]=temp;
+	        temp=vec1[0]; vec1[0]=vec2[0]; vec2[0]=temp;
+	        temp=vec1[1]; vec1[1]=vec2[1]; vec2[1]=temp;
 	    }
 	    /* Make sure vec1[0],vec1[1] are at the top */
 	    if ( vec1[0]->me.y<vec1[1]->me.y ) {
