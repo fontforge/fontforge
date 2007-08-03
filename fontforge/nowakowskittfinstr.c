@@ -72,34 +72,81 @@
 #define MIRP_rp0_rnd_grey       (0xf4)
 #define MIRP_rp0_min_rnd_black  (0xfd)
 
+/******************************************************************************
+ *
+ * Many functions here need large or similar sets of arguments. I decided to
+ * define an 'instructing context' to have them in one place and keep functions'
+ * argument counts reasonably short. I first need to define some internal
+ * sub-structures, mainly for instructing alignment zones and diagonal stems.
+ *
+ ******************************************************************************/
+
+/* That's a legacy, it could be probably merged with instrct. */
 struct glyphinstrs {
     SplineFont *sf;
     BlueData *bd;
     int fudge;
 };
 
+/* This structure is used to keep a point number together with
+   its coordinates */
+typedef struct numberedpoint {
+    int num;
+    struct basepoint *pt;
+} NumberedPoint;
+
+/* A line, described by two points */
+typedef struct pointvector {
+    struct numberedpoint *pt1, *pt2;
+    int done;
+} PointVector;
+
+/* In this structure we store information about diagonales,
+   relatively to which the given point should be positioned */
+typedef struct diagpointinfo {
+    struct pointvector *line[2];
+    int count;
+} DiagPointInfo;
+
+/* Diagonal stem hints. This structure is a bit similar to DStemInfo FF
+   uses in other cases, but additionally stores point numbers and hint width */
+typedef struct dstem {
+    struct dstem *next;
+    struct numberedpoint pts[4];
+    int done;
+    real width;
+} DStem;
+
 typedef struct instrct {
     SplineChar *sc;
     SplineSet *ss;
     struct glyphinstrs *gi;  /* finally, I'll bring its members here */
-    int ptcnt;
-    int *contourends;
-    BasePoint *bp;
-    uint8 *touched;       /* these points got instructed */
-    uint8 *affected;      /* almost touched, but optimized out */
+    int ptcnt;            /* number of points in this glyph */
+    int *contourends;     /* points ending their contours. null-terminated. */
+
+    /* instructions */
     uint8 *instrs;        /* the beginning of the instructions */
     uint8 *pt;            /* the current position in the instructions */
 
-  /* stuff for hinting edges of stems and blues: */
+    /* properties, indexed by ttf point index. Could perhaps be compressed. */
+    BasePoint *bp;        /* point coordinates */
+    uint8 *oncurve;       /* boolean; these points are on-curve */
+    uint8 *touched;       /* touchflags; points explicitly instructed */
+    uint8 *affected;      /* touchflags; almost touched, but optimized out */
+
+    /* stuff for hinting diagonals */
+    DStem *diagstems;
+    DiagPointInfo *diagpts; /* indexed by ttf point index */
+
+    /* stuff for hinting edges (for stems and blues): */
     int xdir;             /* direction flag: x=true, y=false */
-    int cdir;             /* is current contour clockwise (outer)? */
+    int cdir;             /* is current contour outer? - blues need this */
     struct __edge {
 	real base;        /* where the edge is */
-	real end;         /* the second edge - currently only for blue snapping */
-	int refpt;        /* best ref. point for this base, ttf index, -1 if none */
-	int refscore;     /* quality of basept, for searching better one, 0 if none */
-	int othercnt;     /* count of other points worth instructing for this edge */
-	int *others;      /* ttf indexes of these points */
+	int refpt;        /* best ref. point for an edge, ttf index, -1 if none */
+	int refscore;     /* its quality, for searching better one, 0 if none */
+	int othercnt;     /* count of other points to instruct for this edge */
+	int *others;      /* their ttf indexes, optimize_edge() is advised */
     } edge;
 } InstrCt;
 
@@ -431,12 +478,17 @@ static uint8 *pushpoint(uint8 *instrs,int pt) {
 return( addpoint(instrs,pt>255,pt));
 }
 
-static uint8 *pushpointstem(uint8 *instrs,int pt, int stem) {
+#define pushnum(a, b) pushpoint(a, b)
+
+static uint8 *pushpointstem(uint8 *instrs, int pt, int stem) {
     int isword = pt>255 || stem>255;
     instrs = pushheader(instrs,isword,2);
     instrs = addpoint(instrs,isword,pt);
 return( addpoint(instrs,isword,stem));
 }
+
+#define push2points(a, b, c) pushpointstem(a, b, c)
+#define push2nums(a, b, c) pushpointstem(a, b, c)
 
 static uint8 *pushpoints(uint8 *instrs, int ptcnt, const int *pts) {
     int i, isword = 0;
@@ -586,8 +638,8 @@ static int __same_angle(int *contourends, BasePoint *bp, int p, double angle) {
     PrevTangent = atan2(bp[p].y - bp[PrevPoint].y, bp[p].x - bp[PrevPoint].x);
     NextTangent = atan2(bp[NextPoint].y - bp[p].y, bp[NextPoint].x - bp[p].x);
 
-    /* If at least one of the tangents is close to the given angle, return true. */
-    /* 'Close' means about 5 deg, i.e. about 0.087 rad. */
+    /* If at least one of the tangents is close to the given angle, return */
+    /* true. 'Close' means about 5 deg, i.e. about 0.087 rad. */
     PrevTangent = fabs(PrevTangent-angle);
     NextTangent = fabs(NextTangent-angle);
     while (PrevTangent > M_PI) PrevTangent -= 2*M_PI;
@@ -599,74 +651,56 @@ static int same_angle(int *contourends, BasePoint *bp, int p, double angle) {
 return __same_angle(contourends, bp, p, angle) || __same_angle(contourends, bp, p, angle+M_PI);
 }
 
-/* I found it needed to write some simple functions to determine whether
- * a spline point is a vertical/horizontal extremum. I looked at the code
- * responsible for displaying a charview and found that FF also treats an
- * inflection point of a curve as an extremum. I'm not sure if this is OK,
- * but I retain this for consistency.
+/* I found it needed to write some simple functions to classify points snapped
+ * to hint's edges. Classification helps to establish the most accurate leading
+ * point for an edge. IsSnappable is a fallback routine.
  */
-static int IsXExtremum(SplinePoint *sp) {
-return (!sp->nonextcp && !sp->noprevcp && sp->nextcp.x==sp->me.x && sp->prevcp.x==sp->me.x);
+static int IsExtremum(int xdir, SplinePoint *sp) {
+return xdir?
+    (!sp->nonextcp && !sp->noprevcp && sp->nextcp.x==sp->me.x && sp->prevcp.x==sp->me.x):
+    (!sp->nonextcp && !sp->noprevcp && sp->nextcp.y==sp->me.y && sp->prevcp.y==sp->me.y);
 }
 
-static int IsYExtremum(SplinePoint *sp) {
-return (!sp->nonextcp && !sp->noprevcp && sp->nextcp.y==sp->me.y && sp->prevcp.y==sp->me.y);
+static int IsCornerExtremum(int xdir, int *contourends, BasePoint *bp, int p) {
+    int PrevPoint = PrevOnContour(contourends, p);
+    int NextPoint = NextOnContour(contourends, p);
+
+return xdir?
+    ((bp[PrevPoint].x > bp[p].x && bp[NextPoint].x > bp[p].x) ||
+     (bp[PrevPoint].x < bp[p].x && bp[NextPoint].x < bp[p].x)):
+    ((bp[PrevPoint].y > bp[p].y && bp[NextPoint].y > bp[p].y) ||
+     (bp[PrevPoint].y < bp[p].y && bp[NextPoint].y < bp[p].y));
 }
 
-/* Other interesting points are corners. I'll name two types of them.
- * An acute corner is one with angle between its tangents less than 90 deg.
- * I won't distinct X and Y tight corners, as they usually need hinting in
- * both directions.
- * An corner is one with angle between its tangents close to 180 deg.
- * I'll distinct X and Y flat corners, as they usually need hinting only
- * in one direction.
- * TODO! Really?
- */
-static int IsAcuteCorner(int *contourends, BasePoint *bp, int p) {
+static int IsSnappable(InstrCt *ct, int p) {
+    int Prev = PrevOnContour(ct->contourends, p);
+    int Next = NextOnContour(ct->contourends, p);
+    BasePoint *bp = ct->bp;
+    int coord = ct->xdir ? bp[p].x : bp[p].y;
+
+    if ((coord != ct->edge.base) || (!ct->oncurve[p]))
 return 0;
+
+return ct->xdir?
+    (abs(bp[Prev].x - bp[p].x) <= abs(bp[Prev].y - bp[p].y) ||
+     abs(bp[Next].x - bp[p].x) <= abs(bp[Next].y - bp[p].y)):
+    (abs(bp[Prev].x - bp[p].x) >= abs(bp[Prev].y - bp[p].y) ||
+     abs(bp[Next].x - bp[p].x) >= abs(bp[Next].y - bp[p].y));
 }
 
-static int IsXCornerExtremum(int *contourends, BasePoint *bp, int p) {
-    int PrevPoint = PrevOnContour(contourends, p);
-    int NextPoint = NextOnContour(contourends, p);
-
-return ((bp[PrevPoint].x > bp[p].x) && (bp[NextPoint].x > bp[p].x)) ||
-       ((bp[PrevPoint].x < bp[p].x) && (bp[NextPoint].x < bp[p].x));
-}
-
-static int IsYCornerExtremum(int *contourends, BasePoint *bp, int p) {
-    int PrevPoint = PrevOnContour(contourends, p);
-    int NextPoint = NextOnContour(contourends, p);
-
-return ((bp[PrevPoint].y > bp[p].y) && (bp[NextPoint].y > bp[p].y)) ||
-       ((bp[PrevPoint].y < bp[p].y) && (bp[NextPoint].y < bp[p].y));
-}
-
-static int IsCornerExtremum(int *contourends, BasePoint *bp, int p) {
-return IsXCornerExtremum(contourends, bp, p) ||
-       IsYCornerExtremum(contourends, bp, p);
-}
-
-/* I found it easier to write an iterator that calls given function for each
- * point worth instructing than repeating the same loops all the time. Each
- * function passed to the iterator may need different set of arguments. So I
- * decided to make a container for them to leave argument lists reasonably short.
- * The control points are normally skipped, as instructing them seems to cause
- * more damages than profits. An exception is made for interpolated extrema:
- * as they can't be directly instructed, their control points are used.
- * The iterator won't run a function twice on the same point in any case.
+/******************************************************************************
+ *
+ * I found it easier to write an iterator that calls given function for each
+ * point worth instructing than repeating the same loops all the time.
+ *
+ * The control points are not skipped, but runmes often eliminate them as
+ * instructing them seems to cause more damages than profits. They are included
+ * here because edge optimizer cam be simpler and work more reliably then.
  *
  * The contour_direction option is for blues - snapping internal contour to a
  * blue zone is plain wrong.
  *
- * TODO! If there is an edge consisting of on-curve points interlaced with off-
- * curve points, only on-curve points will be added to the edge, and thus
- * optimize_edge won't be able to do the job well. It seems that introduction
- * of edge optimizer made skipping on-curve points obsolete. I'll turn this
- * off, but this may require a slight rewrite of other functions that don't
- * rely on edge optimizer. Also, the optimizer should be modified not to leave
- * off-curve points whenever possible.
- */
+ ******************************************************************************/
 #define EXTERNAL_CONTOURS 0
 #define ALL_CONTOURS 1
 #define INTERNAL_CONTOURS 2
@@ -687,22 +721,35 @@ static void RunOnPoints(InstrCt *ct, int contour_direction,
 	    ((contour_direction == INTERNAL_CONTOURS) && ct->cdir)) continue;
 
 	for ( sp=ss->first; ; ) {
-	    if (sp->ttfindex == 0xffff) {
-		if (ct->xdir?IsXExtremum(sp):IsYExtremum(sp)) {
-		    if (!done[p = PrevOnContour(ct->contourends, sp->nextcpindex)]) {
-			runme(p, sp, ct);
-			done[p] = true;
-		    }
-		    /* this section seems unneeded - one point is enough */
-		    //if (!done[p = sp->nextcpindex]) {
-		    //    runme(p, sp, ct);
-		    //    done[p] = true;
-		    //}
+	    if (sp->ttfindex != 0xffff) {
+		if (!sp->noprevcp &&
+		    !done[p = PrevOnContour(ct->contourends, sp->ttfindex)])
+		{
+		    runme(p, sp, ct);
+		    done[p] = true;
+		}
+
+		if (!done[p = sp->ttfindex]) {
+		    runme(p, sp, ct);
+		    done[p] = true;
+		}
+
+		if (!sp->nonextcp && !done[p = sp->nextcpindex])
+		{
+		    runme(p, sp, ct);
+		    done[p] = true;
 		}
 	    }
-	    else if (!done[p = sp->ttfindex]) {
-		runme(p, sp, ct);
-		done[p] = true;
+	    else if (!sp->nonextcp) {
+		if (!done[p = PrevOnContour(ct->contourends, sp->nextcpindex)]) {
+		    runme(p, sp, ct);
+		    done[p] = true;
+		}
+
+		if (!done[p = sp->nextcpindex]) {
+	    	    runme(p, sp, ct);
+	    	    done[p] = true;
+		}
 	    }
 
 	    if ( sp->next==NULL ) break;
@@ -712,6 +759,11 @@ static void RunOnPoints(InstrCt *ct, int contour_direction,
     }
 
     free(done);
+}
+
+/* One of first functions to run: determine which points lie on their curves. */
+static void find_control_pts(int p, SplinePoint *sp, InstrCt *ct) {
+    if (p == sp->ttfindex) ct->oncurve[p] |= 1;
 }
 
 /******************************************************************************
@@ -724,7 +776,8 @@ static void RunOnPoints(InstrCt *ct, int contour_direction,
  * points to snap and chooses one that will be used as a reference point - it
  * should be then instructed elsewhere (a general method of edge positioning).
  * Finally, finish_edge() instructs the rest of points found with given command,
- * using instructpoints().
+ * using instructpoints(). It normally optimizes an edge before instructing,
+ * but not in presence of diagonal hints.
  * 
  * The contour_direction option of init_edge() is for hinting blues - snapping
  * internal contour to a bluezone seems just plainly wrong.
@@ -740,18 +793,16 @@ static void search_edge(int p, SplinePoint *sp, InstrCt *ct) {
 
     if (fabs(coord - ct->edge.base) <= fudge) {
 	if (same_angle(ct->contourends, ct->bp, p, ct->xdir?0.5*M_PI:0.0)) score++;
-	if (ct->xdir?IsXExtremum(sp):IsYExtremum(sp)) score+=4;
-#if 1
-	if (ct->xdir?IsXCornerExtremum(ct->contourends, ct->bp, p):
-	             IsYCornerExtremum(ct->contourends, ct->bp, p)) score+=4;
-#else
-	if (IsCornerExtremum(ct->contourends, ct->bp, p)) score+=4;
-#endif
-	if (score && (sp->ttfindex != 0xffff)) score+=2;
+	if (IsExtremum(ct->xdir, sp)) score+=4;
+	if (IsCornerExtremum(ct->xdir, ct->contourends, ct->bp, p)) score+=4;
+	if (!score && IsSnappable(ct, p)) score++;
+	if (score && ct->oncurve[p]) score+=2;
 
 	if (!score)
 return;
-	else if (ct->touched[p]) score+=8;
+
+	if (ct->diagstems && ct->diagpts[p].count) score+=8;
+	if (ct->touched[p] & touchflag) score+=24;
 
 	if (score > ct->edge.refscore) {
 	    tmp = ct->edge.refpt;
@@ -760,7 +811,7 @@ return;
 	    p = tmp;
 	}
 
-	if ((p!=-1) && !(ct->touched[p] & touchflag)) {
+	if ((p!=-1) && !((ct->touched[p] | ct->affected[p]) & touchflag)) {
 	    ct->edge.othercnt++;
 
 	    if (ct->edge.othercnt==1) ct->edge.others=(int *)gcalloc(1, sizeof(int));
@@ -771,8 +822,7 @@ return;
     }
 }
 
-/* Initialize the InstrCt for instructing given edge.
- */
+/* Initialize the InstrCt for instructing given edge. */
 static void init_edge(InstrCt *ct, real base, int contour_direction) {
     ct->edge.base = base;
     ct->edge.refpt = -1;
@@ -786,73 +836,122 @@ static void init_edge(InstrCt *ct, real base, int contour_direction) {
  * 'segments' (in FreeType's sense) and leaves only one point per segment.
  * A segment to which refpt belong is completely removed (refpt is enough).
  *
+ * optimize_edge() is the right high-level function to call with instructing
+ * context (an edge must be previously initialized with init_edge). It calls
+ * optimize_segment() internally - a function that is otherwise unsafe.
+ *
  * Optimizer is deliberately turned off if diagonal stems are present.
  *
- * TODO! This function won't remove obvious neighbors if there is a control
- * (off-curve) point between them, because RunOnPoints skips off-curve points
- * if possible. And if it is rewritten not to skip them (quite simple in fact),
- * the optimizer itself should be taught to do so itself if possible
- * (and that's somewhat trickier).
- 
- * TODO! #2 If diagonal stems are present, optimizer should remove off-curve
+ * TODO! If diagonal stems are present, optimizer should remove off-curve
  * points and nothing more. Or it can work as usual but preserving points
  * that will be used by diagonal stem hinter. We'll see.
  */
-static int sortbynum(const void *a, const void *b) { return *(int *)a > *(int *)b; }
 
-static void optimize_edge(InstrCt *ct) {
-#define NextP(_p) NextOnContour(ct->contourends, _p)
+/* To be used with qsort() - sorts integer array in ascending order. */
+static int sortbynum(const void *a, const void *b) {
+    return *(int *)a > *(int *)b;
+}
 
-    if ((ct->edge.othercnt == 0) || (ct->sc->dstem))
+/* Find element's index within an array - return -1 if element not found. */
+static int findoffs(const int *elems, int elemcnt, int val) {
+    int i;
+    for (i=0; i<elemcnt; i++) if (elems[i]==val) return i;
+    return -1;
+}
+
+/* In given ct, others[segstart...segend] form a continuous segment on an edge
+   parallel to one of coordinate axes. If there are no diagonal hints, we can
+   instruct just one point of a segment, preferring refpt if included, and
+   preferring on-curve points ovef off-curve. Otherwise we must instruct all
+   points used by diagonal hinter along with refpt if included. We mark points
+   that are not to be instructed as 'affected'.
+ */
+static void optimize_segment(int segstart, int segend, InstrCt *ct) {
+    int i, local_refpt=-1;
+    int *others = ct->edge.others;
+    int touchflag = (ct->xdir)?tf_x:tf_y;
+    int ondiags = 0;
+
+    if (segstart==segend)
 return;
 
-    int i, next, leading_unneeded=0, final_unneeded=0;
+    /* purely for aesthetic reasons - can be safely removed. */
+    qsort(others+segstart, segend+1-segstart, sizeof(int), sortbynum);
+
+    /* are there any to be used with dstems? */
+    if (ct->diagstems)
+	for (i=segstart; !ondiags && i<=segend; i++)
+	    ondiags = ct->diagpts[others[i]].count;
+
+    if (ondiags) {
+	for (i=segstart; i<=segend; i++)
+	    ct->affected[others[i]] |= ct->diagpts[others[i]].count?0:touchflag;
+    }
+    else {
+	for (i=segstart; !ct->oncurve[others[i]] && i<=segend; i++) ;
+	if (ct->oncurve[others[i]]) local_refpt = others[i];
+
+	if (findoffs(others+segstart, segend+1-segstart, ct->edge.refpt) != -1)
+	    local_refpt = ct->edge.refpt;
+
+	if (local_refpt==-1) local_refpt = others[segstart];
+
+	for (i=segstart; i<=segend; i++)
+	    ct->affected[others[i]] |= local_refpt==others[i]?0:touchflag;
+    }
+}
+
+/* Subdivide an edge into segments and optimize segments separately.
+ * A segment consists oh a point, his neighbours, their neighbours...
+ */
+static void optimize_edge(InstrCt *ct) {
+    int i, p, segstart, next;
+    int refpt = ct->edge.refpt;
     int *others = ct->edge.others;
     int othercnt = ct->edge.othercnt;
-    int refpt = ct->edge.refpt;
-    uint8 *affected = ct->affected;
     int touchflag = (ct->xdir)?tf_x:tf_y;
 
-    qsort(others, othercnt, sizeof(int), sortbynum);
+    if (othercnt == 0)
+return;
 
-    if (((others[0] < refpt) && (NextP(others[0]) == others[othercnt-1])) ||
-        (NextP(refpt) == others[0]))
-	leading_unneeded = 1;
+    /* add edge.refpt to edge.others */
+    ct->edge.othercnt = ++othercnt;
+    ct->edge.others = others = (int *)grealloc(others, othercnt*sizeof(int));
+    others[othercnt-1]=refpt;
 
-    if (NextP(others[othercnt-1]) == refpt) final_unneeded = 1;
+    next = 0;
+    while (next < othercnt) {
+	p = others[segstart = next++];
 
-    for (i=0; (i < othercnt-1) && (others[i] < refpt); i++) {
-	next = NextP(others[i]);
-	if ((next == others[i+1]) || (next == refpt))
-	    affected[others[i]] |= touchflag;
-    }
+	while(next < othercnt && (i = findoffs(others+next, othercnt-next,
+				    NextOnContour(ct->contourends, p))) != -1) {
+	    p = others[i+=next];
+	    others[i] = others[next];
+	    others[next++] = p;
+	}
 
-    for (i=othercnt-1; (i > 0) && (others[i] > refpt); i--)
-	if ((NextP(others[i-1]) == others[i]) || (NextP(refpt) == others[i]))
-	    affected[others[i]] |= touchflag;
+	p=others[segstart];
 
-    if (leading_unneeded) {
-	for(i=0; (i < othercnt) && (others[i] == -1); i++);
-	if (i < othercnt) affected[others[i]] |= touchflag;
-    }
+	while(next < othercnt && (i = findoffs(others+next, othercnt-next,
+				    PrevOnContour(ct->contourends, p))) != -1) {
+	    p = others[i+=next];
+	    others[i] = others[next];
+	    others[next++] = p;
+	}
 
-    if (final_unneeded) {
-	for(i=othercnt-1; (i >= 0) && (others[i] == -1); i--);
-	if (i >= 0) affected[others[i]] |= touchflag;
+	optimize_segment(segstart, next-1, ct);
     }
 
     for (i=next=0; i<othercnt; i++)
-	if (!(affected[others[i]] & touchflag))
+	if (!(ct->affected[others[i]] & touchflag) && (others[i] != refpt))
 	    others[next++] = others[i];
 
-    ct->edge.othercnt = next;
-
-    if (ct->edge.othercnt == 0) {
-	free(ct->edge.others);
+    if ((ct->edge.othercnt = next) == 0) {
+	free(others);
 	ct->edge.others = NULL;
     }
-
-#undef NextP
+    else /* purely for aesthetic reasons - could be safely removed. */
+	qsort(others, ct->edge.othercnt, sizeof(int), sortbynum);
 }
 
 /* Finish instructing the edge. Try to hint only those points on edge that are
@@ -913,7 +1012,7 @@ return;
  * glyphs with wrong direction, but I won't handle it for now.
  *
  * TODO! Remind the user to correct direction or do it for him.
- * TODO! Try to do this with a single push and looped MDRP.
+ * TODO! Try to instruct 'free points' with single push and LOOPCALL.
  *
  * If we didn't snapped any point to a blue zone, we shouldn't mark any HStem
  * edges done. This could made some important points on inner contours missed.
@@ -953,14 +1052,6 @@ return;
 	blues[next][0] = ct->gi->bd->blues[i][0];
 	blues[next++][1] = ct->gi->bd->blues[i][1];
     }
-
-#if 1
-    /* For debugging purposes only */
-    if (next != bluecnt) {
-	IError("We have a stupid but serious bug in snapping to blues. Please tell the author.");
-return;
-    }
-#endif
 
     for (i=0; i<bluecnt; i++) {
 	therewerestems = 0;	
@@ -1053,7 +1144,6 @@ return;
 	}
 
 	/* Now I'll try to find points not snapped by any previous stem hint. */
-	/* This will ensure correct glyph heights even if there are no hints. */
 	if (therewerestems) {
 	    base = (blues[i][0] + blues[i][1]) / 2.0;
 	    real fudge = ct->gi->fudge;
@@ -1064,7 +1154,7 @@ return;
 
 	    if (ct->edge.refpt == -1) continue;
 
-	    if (!(ct->touched[ct->edge.refpt] || ct->affected[ct->edge.refpt])) {
+	    if (!(ct->touched[ct->edge.refpt]&tf_y || ct->affected[ct->edge.refpt]&tf_y)) {
 		callargs[0] = ct->edge.refpt;
 		ct->pt = pushpoints(ct->pt, 3, callargs);
 		*(ct->pt)++ = CALL;
@@ -1325,14 +1415,16 @@ return(instrs);
  */
 
 static void do_extrema(int ttfindex, SplinePoint *sp, InstrCt *ct) {
-    if (!(ct->touched[ttfindex] & (ct->xdir?tf_x:tf_y)) &&
-	!(ct->affected[ttfindex] & (ct->xdir?tf_x:tf_y)) &&
-	 (ct->xdir?IsXExtremum(sp):IsYExtremum(sp)) &&
-	 ((sp->ttfindex != 0xffff) || (ttfindex != sp->nextcpindex)))
+    int touchflag = ct->xdir?tf_x:tf_y;
+
+    if (IsExtremum(ct->xdir, sp) &&
+	!(ct->touched[ttfindex] & touchflag) &&
+	!(ct->affected[ttfindex] & touchflag) &&
+	((sp->ttfindex != 0xffff) || (ttfindex != sp->nextcpindex)))
     {
 	ct->pt = pushpoint(ct->pt,ttfindex);
 	*(ct->pt)++ = MDAP_rnd;
-	ct->touched[ttfindex] |= ct->xdir?tf_x:tf_y;
+	ct->touched[ttfindex] |= touchflag;
     }
 }
 
@@ -1350,35 +1442,6 @@ static void do_rounded(int ttfindex, SplinePoint *sp, InstrCt *ct) {
 /* Everything related with diagonal hinting goes here */
 
 #define DIAG_MIN_DISTANCE   (0.84375)
-
-/* This structure is used to keep a point number together with
-   its coordinates */
-typedef struct numberedpoint {
-    int num;
-    struct basepoint *pt;
-} NumberedPoint;
-
-/* A line, described by two points */
-typedef struct pointvector {
-    struct numberedpoint *pt1, *pt2;
-    int done;
-} PointVector;
-
-/* In this structure we store information about diagonales,
-   relatively to which the given point should be positioned */
-typedef struct diagpointinfo {
-    struct pointvector *line[2];
-    int count;
-} DiagPointInfo;
-
-/* Diagonal stem hints. This structure is a bit similar to DStemInfo FF
-   uses in other cases, but additionally stores point numbers and hint width */
-typedef struct dstem {
-    struct dstem *next;
-    struct numberedpoint pts[4];
-    int done;
-    real width;
-} DStem;
 
 /* Takes a line defined by two points and returns a vector decribed as a 
    pair of x and y values, such that the value (x2 + y2) is equal to 1.
@@ -1456,7 +1519,7 @@ return( -1 );
    left to right. At the same time find some additional data which should
    be associated with each stem but aren't initially stored in DStemInfo,
    and put them into DStem structures */
-static DStem  *DStemSort(DStemInfo *d, BasePoint *bp, int ptcnt, uint8 *touched) {
+static DStem  *DStemSort(DStemInfo *d, BasePoint *bp, int ptcnt) {
     DStemInfo *di, *di2, *cur=NULL;
     DStem *head, *newhead;
     real xmaxcur, xmaxtest, ymaxcur, ymaxtest;
@@ -1519,7 +1582,8 @@ return( head );
    early stage, as it may be important to know, if the given point is subject
    to the subsequent diagonale hinting, before any actual processing of
    diagonal stems is started.*/
-static DiagPointInfo *GetDiagPoints ( InstrCt *ct, DStem *ds ) {
+static DiagPointInfo *GetDiagPoints ( InstrCt *ct ) {
+    DStem *ds = ct->diagstems;
     DStem *curds;
     DiagPointInfo *diagpts;
     int i, j, ptcnt, num;
@@ -1914,17 +1978,15 @@ static void DStemFree( DStem *ds,DiagPointInfo *diagpts,int cnt ) {
 }
 
 static void DStemInfoGeninst( InstrCt *ct ) {
-    DStemInfo *di;
     DStem *ds, *curds;
     BasePoint *fv;
     DiagPointInfo *diagpts;
-    
-    di = ct->sc->dstem;
-    if (di == NULL)
+
+    if (ct->diagstems == NULL)
 return;
 
-    ds = DStemSort( di,ct->bp,ct->ptcnt,ct->touched );
-    diagpts = GetDiagPoints( ct,ds );
+    ds = ct->diagstems;
+    diagpts = ct->diagpts;
 
     fv=chunkalloc( sizeof( struct basepoint ) );
     fv->x=1; fv->y=0;
@@ -1942,9 +2004,6 @@ return;
     *(ct->pt)++ = SMD; /* Set Minimum Distance */
 
     chunkfree( fv,sizeof(struct basepoint ));
-    DStemFree( ds,diagpts,ct->ptcnt );
-
-    free( diagpts );
 }
 
 /* End of the code related with diagonal stems */
@@ -1979,6 +2038,14 @@ static uint8 *dogeninstructions(InstrCt *ct) {
 	hint->enddone = hint->startdone = false;
     for ( hint=ct->sc->hstem; hint!=NULL; hint=hint->next )
 	hint->enddone = hint->startdone = false;
+
+    /* We prepare some info about diagonal stems, so that we could respect */
+    /* diagonals during optimization od stem hint edges. These contents */
+    /* need to be explicitly freed after hinting diagonals. */
+    if (ct->sc->dstem) {
+	ct->diagstems = DStemSort(ct->sc->dstem, ct->bp, ct->ptcnt);
+	ct->diagpts = GetDiagPoints(ct);
+    }
 
     /* We start from instructing horizontal features (=> movement in y) */
     /*  Do this first so that the diagonal hinter will have everything moved */
@@ -2034,6 +2101,11 @@ static uint8 *dogeninstructions(InstrCt *ct) {
     DStemInfoGeninst(ct);
     //ct->pt = gen_md_instrs(ct->gi,ct->pt,ct->sc->md,ct->ss,ct->bp,ct->ptcnt,true,ct->touched);
 
+    if (ct->sc->dstem) {
+	DStemFree(ct->diagstems, ct->diagpts, ct->ptcnt);
+	free(ct->diagpts);
+    }
+
     /* Interpolate untouched points */
     *(ct->pt)++ = IUP_y;
     *(ct->pt)++ = IUP_x;
@@ -2054,6 +2126,7 @@ void NowakowskiSCAutoInstr(SplineChar *sc, BlueData *bd) {
     int cnt, contourcnt;
     BasePoint *bp;
     int *contourends;
+    uint8 *oncurve;
     uint8 *touched;
     uint8 *affected;
     SplineSet *ss;
@@ -2121,6 +2194,7 @@ return;
 
     contourends = galloc((contourcnt+1)*sizeof(int));
     bp = galloc(cnt*sizeof(BasePoint));
+    oncurve = gcalloc(cnt,1);
     touched = gcalloc(cnt,1);
     affected = gcalloc(cnt,1);
     contourcnt = cnt = 0;
@@ -2140,11 +2214,16 @@ return;
     ct.ptcnt = cnt;
     ct.contourends = contourends;
     ct.bp = bp;
+    ct.oncurve = oncurve;
     ct.touched = touched;
     ct.affected = affected;
+    ct.diagstems = NULL;
+    ct.diagpts = NULL;
 
+    RunOnPoints(&ct, ALL_CONTOURS, find_control_pts);
     dogeninstructions(&ct);
 
+    free(oncurve);
     free(touched);
     free(affected);
     free(bp);
