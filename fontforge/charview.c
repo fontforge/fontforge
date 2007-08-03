@@ -7584,7 +7584,7 @@ static void CVMenuClearHints(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	cv->sc->dstem = NULL;
     }
     cv->sc->manualhints = true;
-    
+
     if ( mi->mid != MID_ClearDStem ) {
         SCClearHintMasks(cv->sc,true);
     }
