@@ -7587,9 +7587,9 @@ static void CVMenuClearHints(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     
     if ( mi->mid != MID_ClearDStem ) {
         SCClearHintMasks(cv->sc,true);
-        SCOutOfDateBackground(cv->sc);
-        SCUpdateAll(cv->sc);
     }
+    SCOutOfDateBackground(cv->sc);
+    SCUpdateAll(cv->sc);
 }
 
 static void CVMenuAddHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
