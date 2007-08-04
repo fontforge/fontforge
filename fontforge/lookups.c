@@ -5213,7 +5213,7 @@ static void ACDMatrixInit(struct matrixinit *mi,SplineFont *sf, struct lookup_su
     int cnt;
     AnchorClass *ac;
     struct matrix_data *md;
-    static struct col_init ci[1] = {
+    static struct col_init ci[] = {
 	{ me_string , NULL, NULL, NULL, N_("Anchor Class Name") },
 	0
 	};
@@ -5538,17 +5538,17 @@ return;
 static void PSTMatrixInit(struct matrixinit *mi,SplineFont *_sf, struct lookup_subtable *sub, PSTKernDlg *pstkd) {
     int cnt;
     struct matrix_data *md;
-    static struct col_init simplesubsci[2] = {
+    static struct col_init simplesubsci[] = {
 	{ me_string , NULL, NULL, NULL, N_("Base Glyph Name") },
 	{ me_string, NULL, NULL, NULL, N_("Replacement Glyph Name") },
 	0
 	};
-    static struct col_init ligatureci[2] = {
+    static struct col_init ligatureci[] = {
 	{ me_string , NULL, NULL, NULL, N_("Ligature Glyph Name") },
 	{ me_string, NULL, NULL, NULL, N_("Source Glyph Names") },
 	0
 	};
-    static struct col_init altmultsubsci[2] = {
+    static struct col_init altmultsubsci[] = {
 	{ me_string , NULL, NULL, NULL, N_("Base Glyph Name") },
 	{ me_string, NULL, NULL, NULL, N_("Replacement Glyph Names") },
 	0

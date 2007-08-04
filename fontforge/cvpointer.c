@@ -481,13 +481,13 @@ void CVCheckResizeCursors(CharView *cv) {
 	if ( cv->expandedge == ee_none ) {
 	    RefChar *usemymetrics = HasUseMyMetrics(cv->sc);
 	    if ( cv->showhmetrics && cv->info.x > cv->sc->width-fudge &&
-		    cv->info.x<cv->sc->width+fudge && cv->searcher==NULL &&
+		    cv->info.x<cv->sc->width+fudge && cv->container==NULL &&
 		    usemymetrics==NULL )
 		cv->expandedge = ee_right;
 	    else if ( cv->showhmetrics && NearCaret(cv->sc,cv->info.x,fudge)!=-1 &&
 		    usemymetrics==NULL )
 		cv->expandedge = ee_right;
-	    if ( cv->showvmetrics && cv->sc->parent->hasvmetrics && cv->searcher==NULL &&
+	    if ( cv->showvmetrics && cv->sc->parent->hasvmetrics && cv->container==NULL &&
 		    cv->info.y > cv->sc->parent->vertical_origin-cv->sc->vwidth-fudge &&
 		    cv->info.y < cv->sc->parent->vertical_origin-cv->sc->vwidth+fudge )
 		cv->expandedge = ee_down;
@@ -555,18 +555,18 @@ void CVMouseDownPointer(CharView *cv, FindSel *fs, GEvent *event) {
     if ( ImgRefEdgeSelected(cv,fs,event))
 return;
     dowidth = ( cv->showhmetrics && cv->p.cx>cv->sc->width-fs->fudge &&
-		cv->p.cx<cv->sc->width+fs->fudge && cv->searcher==NULL &&
+		cv->p.cx<cv->sc->width+fs->fudge && cv->container==NULL &&
 		usemymetrics==NULL );
     doic = ( cv->showhmetrics && cv->sc->italic_correction!=TEX_UNDEF &&
 		cv->sc->italic_correction!=0 &&
 		cv->p.cx>cv->sc->width+cv->sc->italic_correction-fs->fudge &&
 		cv->p.cx<cv->sc->width+cv->sc->italic_correction+fs->fudge &&
-		cv->searcher==NULL );
+		cv->container==NULL );
     dotah = ( cv->showhmetrics && cv->sc->top_accent_horiz!=TEX_UNDEF &&
 		cv->p.cx>cv->sc->top_accent_horiz-fs->fudge &&
 		cv->p.cx<cv->sc->top_accent_horiz+fs->fudge &&
-		cv->searcher==NULL );
-    dovwidth = ( cv->showvmetrics && cv->sc->parent->hasvmetrics && cv->searcher == NULL &&
+		cv->container==NULL );
+    dovwidth = ( cv->showvmetrics && cv->sc->parent->hasvmetrics && cv->container == NULL &&
 		cv->p.cy>cv->sc->parent->vertical_origin-cv->sc->vwidth-fs->fudge &&
 		cv->p.cy<cv->sc->parent->vertical_origin-cv->sc->vwidth+fs->fudge &&
 		usemymetrics==NULL );

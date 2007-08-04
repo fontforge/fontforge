@@ -70,6 +70,7 @@ static void MatrixDataFree(GMatrixEdit *gme) {
 		gme->col_data[c].me_type == me_stringchoicetrans ||
 		gme->col_data[c].me_type == me_stringchoicetag ||
 		gme->col_data[c].me_type == me_funcedit ||
+		gme->col_data[c].me_type == me_button ||
 		gme->col_data[c].me_type == me_func )
 	    free( gme->data[r*gme->cols+c].u.md_str );
     }
@@ -208,6 +209,7 @@ return( 0 );
 	width = max;
       break;
       case me_func:
+      case me_button:
       case me_stringchoice: case me_stringchoicetrans: case me_stringchoicetag:
       case me_funcedit:
       case me_string: case me_bigstr:
@@ -712,7 +714,7 @@ return( false );
   goto good;
       case me_stringchoice: case me_stringchoicetrans: case me_stringchoicetag:
       case me_funcedit:
-      case me_string: case me_bigstr: case me_func:
+      case me_string: case me_bigstr: case me_func: case me_button:
 	if ( gme->validatestr!=NULL )
 	    end = (gme->validatestr)(&gme->g,gme->active_row,gme->active_col,gme->wasnew,str);
 	if ( *end!='\0' ) {
@@ -809,6 +811,7 @@ return;
     for ( c=0; c<gme->cols; ++c ) {
 	if ( gme->col_data[c].me_type == me_string || gme->col_data[c].me_type == me_bigstr ||
 		gme->col_data[c].me_type == me_func || gme->col_data[c].me_type == me_funcedit ||
+		gme->col_data[c].me_type == me_button ||
 		gme->col_data[c].me_type == me_stringchoice ||
 		gme->col_data[c].me_type == me_stringchoicetag ||
 		gme->col_data[c].me_type == me_stringchoicetrans ) {
@@ -1106,6 +1109,7 @@ static char *MD_Text(GMatrixEdit *gme,int r, int c ) {
       break;
       case me_string: case me_bigstr:
       case me_funcedit:
+      case me_button:
       case me_stringchoice: case me_stringchoicetrans: case me_stringchoicetag:
 	str = d->u.md_str;
       break;
@@ -1164,6 +1168,16 @@ return;
 	GDrawBeep(NULL);
     } else if ( gme->col_data[c].me_type==me_enum ) {
 	GME_Choices(gme,event,r,c);
+    } else if ( gme->col_data[c].me_type==me_button &&
+	    event->type==et_mousedown ) {
+	char *ret = (gme->col_data[c].func)(&gme->g,r,c);
+	if ( ret!=NULL ) {
+	    /* I don't bother validating it because I expect the function to */
+	    /*  do that for me */
+	    free(gme->data[r*gme->cols+c].u.md_str);
+	    gme->data[r*gme->cols+c].u.md_str = ret;
+	    GDrawRequestExpose(gme->nested,NULL,false);
+	}
     } else if ( gme->col_data[c].me_type==me_funcedit &&
 	    event->type==et_mousedown &&
 	    event->u.mouse.x>gme->col_data[c].x + gme->col_data[c].width -
@@ -1653,6 +1667,7 @@ GGadget *GMatrixEditCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     for ( c=0; c<gme->cols; ++c ) {
 	enum me_type me_type = gme->col_data[c].me_type;
 	if ( me_type==me_string || me_type==me_bigstr || me_type==me_func ||
+		me_type==me_button ||
 		me_type==me_funcedit || me_type==me_stringchoice ||
 		me_type==me_stringchoicetrans || me_type==me_stringchoicetag ) {
 	    for ( r=0; r<gme->rows; ++r )
@@ -1778,6 +1793,7 @@ void GMatrixEditSet(GGadget *g,struct matrix_data *data, int rows, int copy_it) 
 	for ( c=0; c<gme->cols; ++c ) {
 	    enum me_type me_type = gme->col_data[c].me_type;
 	    if ( me_type==me_string || me_type==me_bigstr || me_type==me_func ||
+		    me_type==me_button ||
 		    me_type==me_funcedit || me_type==me_stringchoice ||
 		    me_type==me_stringchoicetrans || me_type==me_stringchoicetag ) {
 		for ( r=0; r<rows; ++r )

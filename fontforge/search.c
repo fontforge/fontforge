@@ -1031,7 +1031,7 @@ return( true );
 
 static int SV_Find(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	SearchView *sv = (SearchView *) GDrawGetUserData(GGadgetGetWindow(g));
+	SearchView *sv = (SearchView *) ((CharView *) GDrawGetUserData(GGadgetGetWindow(g)))->container;
 	if ( !SVParseDlg(sv))
 return( true );
 	sv->findall = sv->replaceall = false;
@@ -1042,7 +1042,7 @@ return( true );
 
 static int SV_FindAll(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	SearchView *sv = (SearchView *) GDrawGetUserData(GGadgetGetWindow(g));
+	SearchView *sv = (SearchView *) ((CharView *) GDrawGetUserData(GGadgetGetWindow(g)))->container;
 	if ( !SVParseDlg(sv))
 return( true );
 	sv->findall = true;
@@ -1054,7 +1054,7 @@ return( true );
 
 static int SV_RplFind(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	SearchView *sv = (SearchView *) GDrawGetUserData(GGadgetGetWindow(g));
+	SearchView *sv = (SearchView *) ((CharView *) GDrawGetUserData(GGadgetGetWindow(g)))->container;
 	RefChar *rf;
 	if ( !SVParseDlg(sv))
 return( true );
@@ -1077,7 +1077,7 @@ return( true );
 
 static int SV_RplAll(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	SearchView *sv = (SearchView *) GDrawGetUserData(GGadgetGetWindow(g));
+	SearchView *sv = (SearchView *) ((CharView *) GDrawGetUserData(GGadgetGetWindow(g)))->container;
 	if ( !SVParseDlg(sv))
 return( true );
 	sv->findall = false;
@@ -1089,13 +1089,13 @@ return( true );
 
 /* ************************************************************************** */
 
-void SVMenuClose(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    GDrawSetVisible(gw,false);
+void SV_DoClose(struct cvcontainer *cvc) {
+    GDrawSetVisible(((SearchView *) cvc)->gw,false);
 }
 
 static int SV_Cancel(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate )
-	SVMenuClose(GGadgetGetWindow(g),NULL,e);
+	SV_DoClose(((CharView *) GDrawGetUserData(GGadgetGetWindow(g)))->container);
 return( true );
 }
 
@@ -1158,6 +1158,7 @@ void SVMakeActive(SearchView *sv,CharView *cv) {
 return;
     sv->cv_srch.inactive = sv->cv_rpl.inactive = true;
     cv->inactive = false;
+    GDrawSetUserData(sv->gw,cv);
     GDrawRequestExpose(sv->cv_srch.v,NULL,false);
     GDrawRequestExpose(sv->cv_rpl.v,NULL,false);
     GDrawGetSize(sv->gw,&r);
@@ -1242,7 +1243,7 @@ static void SearchViewFree(SearchView *sv) {
 }
 
 static int sv_e_h(GWindow gw, GEvent *event) {
-    SearchView *sv = (SearchView *) GDrawGetUserData(gw);
+    SearchView *sv = (SearchView *) ((CharView *) GDrawGetUserData(gw))->container;
 
     switch ( event->type ) {
       case et_expose:
@@ -1259,7 +1260,7 @@ static int sv_e_h(GWindow gw, GEvent *event) {
 	SVCheck(sv);
       break;
       case et_close:
-	SVMenuClose(gw,NULL,NULL);
+	SV_DoClose((struct cvcontainer *) sv);
       break;
       case et_create:
       break;
@@ -1370,7 +1371,7 @@ void SVDetachFV(FontView *fv) {
     fv->sv = NULL;
     if ( searcher==NULL || searcher->fv!=fv )
 return;
-    SVMenuClose(searcher->gw,NULL,NULL);
+    SV_DoClose((struct cvcontainer *) searcher);
     for ( other=fv_list; other!=NULL; other=other->next ) {
 	if ( other!=fv ) {
 	    SVAttachFV(fv,false);
@@ -1415,6 +1416,16 @@ static SearchView *SVFillup(SearchView *sv, FontView *fv) {
     sv->dummy_fv.cbw = sv->dummy_fv.cbh = default_fv_font_size+1;
     sv->dummy_fv.magnify = 1;
 
+    sv->cv_srch.container = (struct cvcontainer *) sv;
+    sv->cv_rpl.inactive = true;
+    sv->cv_rpl.container = (struct cvcontainer *) sv;
+
+    sv->dummy_fv.map = &sv->dummy_map;
+    sv->dummy_map.map = sv->map;
+    sv->dummy_map.backmap = sv->backmap;
+    sv->dummy_map.enccount = sv->dummy_map.encmax = sv->dummy_map.backmax = 2;
+    sv->dummy_map.enc = &custom;
+
     sv->fv = fv;
     if ( fv!=NULL )
 	fv->sv = sv;
@@ -1457,7 +1468,7 @@ return( NULL );
     pos.height = 400;
     pos.x = GGadgetScale(104)+6;
     DefaultY(&pos);
-    sv->gw = gw = GDrawCreateTopWindow(NULL,&pos,sv_e_h,sv,&wattrs);
+    sv->gw = gw = GDrawCreateTopWindow(NULL,&pos,sv_e_h,&sv->cv_srch,&wattrs);
     SVSetTitle(sv);
 
     memset(&rq,0,sizeof(rq));
@@ -1667,7 +1678,7 @@ static void CV2SC(CharView *cv, SplineChar *sc, SearchView *sv) {
     cv->layerheads[dm_back] = &sc->layers[ly_back];
     cv->layerheads[dm_grid] = NULL;
     cv->drawmode = dm_fore;
-    cv->searcher = sv;
+    cv->container = (struct cvcontainer *) sv;
 }
 
 static void SVCopyToCV(FontView *fv,int i,CharView *cv,enum fvcopy_type full) {
