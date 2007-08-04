@@ -1659,6 +1659,17 @@ return( -1 );
 return( 0 );
 }
 
+static int mkd_order_height(const void *_mkd1, const void *_mkd2) {
+    const struct mathkerndata *mkd1 = (const struct mathkerndata *) _mkd1;
+    const struct mathkerndata *mkd2 = (const struct mathkerndata *) _mkd2;
+    if ( mkd1->height > mkd2->height )
+return( 1 );
+    else if ( mkd1->height < mkd2->height )
+return( -1 );
+
+return( 0 );
+}
+
 static int MKD_Parse(MathKernDlg *mkd) {
     int i, cnt, j, k;
     SplineSet *ss;
@@ -1780,6 +1791,7 @@ return( false );
 		mkv->mkd[j].kern_adjusts   = DeviceTableParse(NULL,old[j*cols+3].u.md_str);
 #endif
 	    }
+	    qsort(mkv->mkd,rows,sizeof(struct mathkerndata),mkd_order_height);
 	    mkv->cnt = rows;
 	    if ( rows!=0 )
 		allzeroes=false;

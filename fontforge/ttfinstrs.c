@@ -1615,7 +1615,7 @@ return( false );
 return( true );
 }
 
-static void SV_DoClose(ShortView *sv) {
+static void _SV_DoClose(ShortView *sv) {
 
     sv->destroyed = true;
     GDrawDestroyWindow(sv->gw);
@@ -1625,7 +1625,7 @@ static int SV_Cancel(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	ShortView *sv = GDrawGetUserData(GGadgetGetWindow(g));
 
-	SV_DoClose(sv);
+	_SV_DoClose(sv);
     }
 return( true );
 }
@@ -1668,7 +1668,7 @@ return( true );
 	    sv->table->len = sv->len;
 	}
 	sv->sf->changed = true;
-	SV_DoClose(sv);
+	_SV_DoClose(sv);
     }
 return( true );
 }
@@ -1855,7 +1855,7 @@ static int sv_e_h(GWindow gw, GEvent *event) {
 	}
       break;
       case et_close:
-	SV_DoClose(sv);
+	_SV_DoClose(sv);
       break;
       case et_destroy:
 	ShortViewFree(sv);
