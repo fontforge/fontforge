@@ -114,9 +114,11 @@ static char *aspectnames[] = {
 };
 
 static char *GlyphConstruction_Dlg(GGadget *g, int r, int c);
+static char *MKChange_Dlg(GGadget *g, int r, int c);
 static void extpart_finishedit(GGadget *g, int r, int c, int wasnew);
 static void italic_finishedit(GGadget *g, int r, int c, int wasnew);
 static void topaccent_finishedit(GGadget *g, int r, int c, int wasnew);
+static void mathkern_finishedit(GGadget *g, int r, int c, int wasnew);
 
 static GTextInfo truefalse[] = {
     { (unichar_t *) N_("false"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -166,7 +168,7 @@ static struct col_init glyph_construction_ci[] = {
 
 static struct col_init math_kern_ci[] = {
     { me_string, NULL, NULL, NULL, N_("Glyph") },
-    { me_string, NULL, NULL, NULL, N_("Not yet Implemented") },
+    { me_button, MKChange_Dlg, NULL, NULL, N_("Height/Kern Data") },
     0
     };
 
@@ -174,7 +176,7 @@ struct matrixinit mis[] = {
     { sizeof(exten_shape_ci)/sizeof(struct col_init)-1, exten_shape_ci, 0, NULL, NULL, NULL, NULL },
     { sizeof(italic_cor_ci)/sizeof(struct col_init)-1, italic_cor_ci, 0, NULL, NULL, NULL, italic_finishedit },
     { sizeof(top_accent_ci)/sizeof(struct col_init)-1, top_accent_ci, 0, NULL, NULL, NULL, topaccent_finishedit },
-    { sizeof(math_kern_ci)/sizeof(struct col_init)-1, math_kern_ci, 0, NULL, NULL, NULL, NULL },
+    { sizeof(math_kern_ci)/sizeof(struct col_init)-1, math_kern_ci, 0, NULL, NULL, NULL, mathkern_finishedit },
     { sizeof(glyph_variants_ci)/sizeof(struct col_init)-1, glyph_variants_ci, 0, NULL, NULL, NULL, NULL },
     { sizeof(glyph_construction_ci)/sizeof(struct col_init)-1, glyph_construction_ci, 0, NULL, NULL, NULL, NULL },
     { sizeof(glyph_variants_ci)/sizeof(struct col_init)-1, glyph_variants_ci, 0, NULL, NULL, NULL, NULL },
@@ -216,6 +218,14 @@ static char *gi_aspectnames[] = {
     NULL
 };
 
+static char *cornernames[] = {
+    N_("Top Right"),
+    N_("Top Left"),
+    N_("Bottom Right"),
+    N_("Bottom Right"),
+    NULL
+};
+
 
 void MathInit(void) {
     int i, j;
@@ -224,7 +234,7 @@ void MathInit(void) {
 	    top_accent_ci, glyph_variants_ci, glyph_construction_ci,
 	    extensionpart, math_kern_ci, NULL };
     static GTextInfo *tis[] = { truefalse, NULL };
-    static char **chars[] = { aspectnames, gi_aspectnames, NULL };
+    static char **chars[] = { aspectnames, gi_aspectnames, cornernames, NULL };
 
     if ( inited )
 return;
@@ -477,6 +487,7 @@ static void MATH_Init(MathDlg *math) {
     SplineFont *sf = math->sf;
     SplineChar *sc;
     int cols;
+    char *change = _("Change");
 
     for ( i=0; math_constants_descriptor[i].ui_name!=NULL; ++i ) {
 	GGadget *tf = GWidgetGetControl(math->gw,2*i+1);
@@ -551,6 +562,7 @@ static void MATH_Init(MathDlg *math) {
     for ( i=cnt=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL )
 	if ( sc->mathkern!=NULL ) {
 	    mds[cols*cnt+0].u.md_str = copy(sc->name);
+	    mds[cols*cnt+1].u.md_str = copy(change);
 	    ++cnt;
 	}
     GMatrixEditSet(g, mds,cnt,false);
@@ -752,6 +764,27 @@ return;
     GGadgetRedraw(g);
 }
 
+static void mathkern_finishedit(GGadget *g, int r, int c, int wasnew) {
+    int rows;
+    struct matrix_data *stuff;
+    MathDlg *math;
+    int cols;
+    SplineChar *sc;
+
+    if ( c!=0 || !wasnew )
+return;
+    /* Popup up a dlg if they added a glyph */
+    math = GDrawGetUserData(GGadgetGetWindow(g));
+    stuff = GMatrixEditGet(g, &rows);
+    cols = GMatrixEditGetColCnt(g);
+    if ( stuff[r*cols+0].u.md_str==NULL )
+return;
+    sc = SFGetChar(math->sf,-1,stuff[r*cols+0].u.md_str);
+    if ( sc==NULL )
+return;
+    MathKernDialog(sc);
+}
+
 static void extpart_finishedit(GGadget *g, int r, int c, int wasnew) {
     int rows;
     struct matrix_data *stuff;
@@ -926,6 +959,22 @@ static char *GlyphConstruction_Dlg(GGadget *g, int r, int c) {
 	ret = copy( old[r*cols+cols-1].u.md_str );
     GDrawDestroyWindow(md.gw);
 return( ret );
+}
+
+static char *MKChange_Dlg(GGadget *g, int r, int c) {
+    MathDlg *math = GDrawGetUserData(GGadgetGetWindow(g));
+    int rows, cols = GMatrixEditGetColCnt(g);
+    struct matrix_data *old = GMatrixEditGet(g,&rows);
+    SplineChar *sc;
+
+    if ( old[r*cols+0].u.md_str==NULL )
+return( NULL );
+    sc = SFGetChar(math->sf,-1,old[r*cols+0].u.md_str);
+    if ( sc==NULL )
+return( NULL );
+
+    MathKernDialog(sc);
+return( NULL );
 }
 
 static int MATH_OK(GGadget *g, GEvent *e) {
@@ -1287,4 +1336,598 @@ return;
 	MATHFree(md.math);
 
     GDrawDestroyWindow(md.gw);
+}
+
+/* ************************************************************************** */
+/* ****************************** Math Kern Dlg ***************************** */
+/* ************************************************************************** */
+
+#define CID_TopBox	1000
+#define CID_Glyph	1001
+
+static void MKD_SetGlyphList(MathKernDlg *mkd, SplineChar *sc) {
+    SplineFont *sf = sc->parent;
+    int k,cnt, gid;
+    GTextInfo **tis = NULL;
+    SplineChar *test;
+
+    for ( k=0; k<2; ++k ) {
+	cnt = 0;
+	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (test=sf->glyphs[gid])!=NULL ) {
+	    if ( test==sc || test->mathkern!=NULL ) {
+		if ( k ) {
+		    tis[cnt] = gcalloc(1,sizeof(GTextInfo));
+		    tis[cnt]->text = utf82u_copy(test->name);
+		    tis[cnt]->userdata = test;
+		    tis[cnt]->selected = test==sc;
+		    tis[cnt]->fg = tis[cnt]->bg = COLOR_DEFAULT;
+		}
+		++cnt;
+	    }
+	}
+	if ( !k )
+	    tis = galloc((cnt+1)*sizeof(GTextInfo *));
+	else
+	    tis[cnt] = gcalloc(1,sizeof(GTextInfo));
+    }
+    GGadgetSetList(GWidgetGetControl(mkd->gw,CID_Glyph),tis,false);
+}
+    
+static void MKDResize(MathKernDlg *mkd, GEvent *event) {
+    int width, height;
+    int i;
+
+    if ( !event->u.resize.sized )
+return;
+
+    GGadgetMove(GWidgetGetControl(mkd->gw,CID_TopBox),4,4);
+    GGadgetResize(GWidgetGetControl(mkd->gw,CID_TopBox),
+	    event->u.resize.size.width-8,
+	    event->u.resize.size.height-12);
+    
+    width = (event->u.resize.size.width-4*mkd->mid_space)/4;
+    height = (event->u.resize.size.height-mkd->cv_y-mkd->button_height-8);
+    if ( width<70 || height<80 ) {
+	if ( width<70 ) width = 70;
+	width = 4*(width+mkd->mid_space);
+	if ( height<80 ) height = 80;
+	height += mkd->cv_y+mkd->button_height+8;
+	GDrawResize(mkd->gw,width,height);
+return;
+    }
+    if ( width!=mkd->cv_width || height!=mkd->cv_height ) {
+	mkd->cv_width = width; mkd->cv_height = height;
+	for ( i=0; i<4; ++i ) {
+	    CharView *cv = (&mkd->cv_topright)+i;
+	    GDrawResize(cv->gw,width,height);
+	    if ( i!=0 )
+		GDrawMove(cv->gw,10+i*(mkd->cv_width+mkd->mid_space),mkd->cv_y);
+	}
+    }
+
+    GDrawSync(NULL);
+    GDrawProcessPendingEvents(NULL);
+    GDrawRequestExpose(mkd->gw,NULL,false);
+}
+
+
+static void MKDDraw(MathKernDlg *mkd, GWindow pixmap, GEvent *event) {
+    GRect r;
+    int i;
+
+    GDrawSetLineWidth(pixmap,0);
+    for ( i=0; i<4; ++i ) {
+	CharView *cv = (&mkd->cv_topright)+i;
+
+	r.x = 10+i*(mkd->cv_width+mkd->mid_space)-1; r.y=mkd->cv_y-1;
+	r.width = mkd->cv_width+1; r.height = mkd->cv_height+1;
+	GDrawDrawRect(pixmap,&r,0);
+
+	GDrawSetFont(pixmap,cv->inactive ? mkd->plain : mkd->bold);
+	GDrawDrawText8(pixmap,r.x,mkd->mbh+5+mkd->as,cornernames[i],-1,NULL,0);
+    }
+}
+
+void MKDMakeActive(MathKernDlg *mkd,CharView *cv) {
+    GRect r;
+    int i;
+
+    if ( mkd==NULL )
+return;
+    for ( i=0; i<4; ++i )
+	(&mkd->cv_topright)[i].inactive = true;
+    cv->inactive = false;
+    GDrawSetUserData(mkd->gw,cv);
+    for ( i=0; i<4; ++i )
+	GDrawRequestExpose((&mkd->cv_topright)[i].v,NULL,false);
+    GDrawGetSize(mkd->gw,&r);
+    r.x = 0;
+    r.y = mkd->mbh;
+    r.height = mkd->fh+10;
+    GDrawRequestExpose(mkd->gw,&r,false);
+}
+
+void MKDChar(MathKernDlg *mkd, GEvent *event) {
+    int i;
+    for ( i=0; i<4; ++i )
+	if ( !(&mkd->cv_topright)[i].inactive )
+    break;
+
+    if ( event->u.chr.keysym==GK_Tab || event->u.chr.keysym==GK_BackTab ) {
+	if ( event->u.chr.keysym==GK_Tab ) ++i; else --i;
+	if ( i<0 ) i=3; else if ( i>3 ) i = 0;
+	MKDMakeActive(mkd,(&mkd->cv_topright)+i);
+    } else
+	CVChar((&mkd->cv_topright)+i,event);
+}
+
+void MKD_DoClose(struct cvcontainer *cvc) {
+    MathKernDlg *mkd = (MathKernDlg *) cvc;
+    int i;
+
+    for ( i=0; i<4; ++i ) {
+	SplineChar *msc = &(&mkd->sc_topright)[i];
+	SplinePointListsFree(msc->layers[0].splines);
+	SplinePointListsFree(msc->layers[1].splines);
+#ifdef FONTFORGE_CONFIG_TYPE3
+	free( msc->layers );
+#endif
+    }
+
+    mkd->done = true;
+}
+
+static int mkd_e_h(GWindow gw, GEvent *event) {
+    MathKernDlg *mkd = (MathKernDlg *) ((CharView *) GDrawGetUserData(gw))->container;
+    int i;
+
+    switch ( event->type ) {
+      case et_expose:
+	MKDDraw(mkd,gw,event);
+      break;
+      case et_resize:
+	if ( event->u.resize.sized )
+	    MKDResize(mkd,event);
+      break;
+      case et_char:
+	MKDChar(mkd,event);
+      break;
+      case et_close:
+	MKD_DoClose((struct cvcontainer *) mkd);
+      break;
+      case et_create:
+      break;
+      case et_map:
+	for ( i=0; i<4; ++i ) {
+	    CharView *cv = (&mkd->cv_topright)+i;
+	    if ( !cv->inactive ) {
+		if ( event->u.map.is_visible )
+		    CVPaletteActivate(cv);
+		else
+		    CVPalettesHideIfMine(cv);
+	break;
+	    }
+	}
+	/* mkd->isvisible = event->u.map.is_visible; */
+      break;
+    }
+return( true );
+}
+
+static void MKDFillup(MathKernDlg *mkd, SplineChar *sc) {
+    int i, j, rows;
+    SplineSet *last, *cur;
+    RefChar *ref;
+    GTextInfo **list;
+
+    for ( i=0; i<4; ++i ) {
+	SplineChar *msc = &(&mkd->sc_topright)[i];
+	struct mathkernvertex *mkv = sc->mathkern==NULL ? NULL : &(&sc->mathkern->top_right)[i];
+	msc->width = sc->width;
+	msc->italic_correction = sc->italic_correction;
+	msc->top_accent_horiz = sc->top_accent_horiz;
+	last = NULL;
+	SplinePointListsFree(msc->layers[0].splines);
+	SplinePointListsFree(msc->layers[1].splines);
+	msc->layers[0].splines = msc->layers[1].splines = NULL;
+
+	/* copy the character itself into the background */
+	last = msc->layers[0].splines = SplinePointListCopy(sc->layers[ly_fore].splines);
+	if ( last!=NULL )
+	    while ( last->next!=NULL ) last = last->next;
+	for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
+	    if ( last==NULL )
+		cur = SplinePointListCopy(ref->layers[0].splines);
+	    if ( last==NULL )
+		msc->layers[0].splines = cur;
+	    else
+		last->next = cur;
+	    if ( cur!=NULL )
+		for ( last=cur; last->next==NULL; last = last->next );
+	}
+	/* Now copy the dots from the mathkern vertex structure */
+	last = NULL;
+	for ( j=0; j<mkv->cnt; ++j ) {
+	    cur = chunkalloc(sizeof(SplineSet));
+	    cur->first = cur->last = SplinePointCreate(mkv->mkd[j].kern + ((i&1)?0:sc->width), mkv->mkd[j].height );
+	    cur->first->pointtype = pt_corner;
+	    if ( last==NULL )
+		msc->layers[ly_fore].splines = cur;
+	    else
+		last->next = cur;
+	    last = cur;
+	}
+    }
+    mkd->cursc = sc;
+
+    list = GGadgetGetList(GWidgetGetControl(mkd->gw,CID_Glyph),&rows);
+    for ( i=rows-1; i>=0; --i )
+	if ( list[i]->userdata==sc )
+    break;
+    if ( i>=0 )
+	GGadgetSelectOneListItem(GWidgetGetControl(mkd->gw,CID_Glyph),i);
+}
+
+static void MKDFillupRefresh(MathKernDlg *mkd, SplineChar *sc) {
+    int i;
+
+    MKDFillup(mkd, sc);
+    for ( i=0; i<4; ++i ) {
+	CharView *cv = &mkd->cv_topright + i;
+	GDrawRequestExpose(cv->gw,NULL,false);
+	GDrawRequestExpose(cv->v,NULL,false);
+    }
+}
+
+static int bp_order_height(const void *bpp1, const void *bpp2) {
+    const BasePoint *bp1 = *(const BasePoint **) bpp1;
+    const BasePoint *bp2 = *(const BasePoint **) bpp2;
+    if ( bp1->y > bp2->y )
+return( 1 );
+    else if ( bp1->y < bp2->y )
+return( -1 );
+
+return( 0 );
+}
+
+static int MKD_Parse(MathKernDlg *mkd) {
+    int i, cnt, j, k;
+    SplineSet *ss;
+    SplinePoint *sp;
+    BasePoint **bases;
+    int allzeros = true;
+
+    if ( mkd->cursc->mathkern==NULL )
+	mkd->cursc->mathkern = chunkalloc(sizeof(struct mathkern));
+
+    for ( i=0; i<3; ++i ) {
+	SplineChar *msc = &(&mkd->sc_topright)[i];
+	struct mathkernvertex *mkv = &(&mkd->cursc->mathkern->top_right)[i];
+
+	for ( k=0; k<2; ++k ) {
+	    cnt = 0;
+	    for ( ss = msc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
+		for ( sp=ss->first ; ; ) {
+		    if ( k )
+			bases[cnt] = &sp->me;
+		    ++cnt;
+		    if ( sp->next == NULL )
+		break;
+		    sp = sp->next->to;
+		    if ( sp == ss->first )
+		break;
+		}
+	    }
+	    if ( !k )
+		bases = galloc(cnt*sizeof(BasePoint *));
+	}
+	qsort(bases,cnt,sizeof(BasePoint *),bp_order_height);
+	if ( cnt>mkv->cnt ) {
+	    mkv->mkd = grealloc(mkv->mkd,cnt*sizeof(struct mathkernvertex));
+	    if ( mkv->cnt!=0 )
+		memset(mkv->mkd+mkv->cnt,0,(cnt-mkv->cnt)*sizeof(struct mathkernvertex));
+	}
+	for ( j=0; j<cnt; ++j ) {
+	    bases[j]->x = rint(bases[j]->x);
+	    if ( !(i&1) ) bases[j]->x -= mkd->cursc->width;
+	    bases[j]->y = rint(bases[j]->y);
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	    /* If we have a previous entry with this height retain the height dv */
+	    /* If we have a previous entry with this height and width retain the width dv too */
+	    for ( k=j; k<mkv->cnt; ++k )
+		if ( bases[j]->y == mkv->mkd[k].height )
+	    break;
+	    if ( k!=j ) {
+		DeviceTableFree(mkv->mkd[j].height_adjusts);
+		DeviceTableFree(mkv->mkd[j].kern_adjusts);
+		mkv->mkd[j].height_adjusts = mkv->mkd[j].kern_adjusts = NULL;
+	    }
+	    if ( k<mkv->cnt ) {
+		mkv->mkd[j].height_adjusts = mkv->mkd[k].height_adjusts;
+		if ( bases[j]->x == mkv->mkd[k].kern )
+		    mkv->mkd[j].kern_adjusts = mkv->mkd[k].kern_adjusts;
+		else
+		    DeviceTableFree(mkv->mkd[k].kern_adjusts);
+		mkv->mkd[k].height_adjusts = mkv->mkd[k].kern_adjusts = NULL;
+	    }
+#endif
+	    mkv->mkd[j].height = bases[j]->y;
+	    mkv->mkd[j].kern   = bases[j]->x;
+	}
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	for ( ; j<mkv->cnt; ++j ) {
+	    DeviceTableFree(mkv->mkd[j].height_adjusts);
+	    DeviceTableFree(mkv->mkd[j].kern_adjusts);
+	    mkv->mkd[j].height_adjusts = mkv->mkd[j].kern_adjusts = NULL;
+	}
+#endif
+	mkv->cnt = cnt;
+	free(bases);
+	if ( cnt!=0 )
+	    allzeros = false;
+    }
+    if ( allzeros ) {
+	MathKernFree(mkd->cursc->mathkern);
+	mkd->cursc->mathkern = NULL;
+    }
+    /* The only potential error is two entries with the same height, and I don't */
+    /*  check for that */
+return( true );
+}
+
+static int MathKernD_GlyphChanged(GGadget *g, GEvent *e) {
+    MathKernDlg *mkd = (MathKernDlg *) (((CharView *) GDrawGetUserData(GGadgetGetWindow(g)))->container);
+    if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
+	GTextInfo *sel = GGadgetGetListItemSelected(g);
+
+	if ( sel!=NULL && MKD_Parse(mkd)) {
+	    SplineChar *sc = sel->userdata;
+	    MKDFillupRefresh(mkd, sc);
+	}
+    }
+return( true );
+}
+
+static int MathKernD_Cancel(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate )
+	MKD_DoClose(((CharView *) GDrawGetUserData(GGadgetGetWindow(g)))->container);
+return( true );
+}
+
+static int MathKernD_OK(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	MathKernDlg *mkd = (MathKernDlg *) (((CharView *) GDrawGetUserData(GGadgetGetWindow(g)))->container);
+	if ( MKD_Parse(mkd) )
+	    MKD_DoClose( (struct cvcontainer *) mkd );
+    }
+return( true );
+}
+
+static int MKD_Can_Navigate(struct cvcontainer *cvc, enum nav_type type) {
+return( true );
+}
+
+static int MKD_Can_Open(struct cvcontainer *cvc) {
+return( false );
+}
+
+static void MKD_Do_Navigate(struct cvcontainer *cvc, enum nav_type type) {
+    MathKernDlg *mkd = ( MathKernDlg * ) cvc;
+    SplineChar *sc = NULL;
+    int pos;
+    GGadget *list = GWidgetGetControl(mkd->gw,CID_Glyph);
+    int32 rows;
+    GTextInfo **tis;
+
+    if ( !MKD_Parse(mkd))
+return;
+
+    if ( type == nt_goto ) {
+	SplineFont *sf = mkd->cursc->parent;
+	int enc = GotoChar(sf,sf->fv->map);
+	if ( enc==-1 || sf->fv->map->map[enc]==-1 || (sc = sf->glyphs[ sf->fv->map->map[enc] ])==NULL )
+return;
+	if ( sc->mathkern==NULL )
+	    MKD_SetGlyphList(mkd,sc);
+    } else if ( type == nt_next || type == nt_nextdef ) {
+	tis = GGadgetGetList(list,&rows);
+	for ( pos=rows-1; pos>=0; --pos )
+	    if ( tis[pos]->selected )
+	break;
+	++pos;
+	if ( pos==rows )
+return;
+	sc = tis[pos]->userdata;
+    } else {
+	tis = GGadgetGetList(list,&rows);
+	for ( pos=rows-1; pos>=0; --pos )
+	    if ( tis[pos]->selected )
+	break;
+	if ( pos<=0 )
+return;
+	--pos;
+	sc = tis[pos]->userdata;
+    }
+    MKDFillupRefresh(mkd,sc);
+}
+
+struct cvcontainer_funcs mathkern_funcs = {
+    cvc_mathkern,
+    (void (*) (struct cvcontainer *cvc,CharView *cv)) MKDMakeActive,
+    (void (*) (struct cvcontainer *cvc,GEvent *)) MKDChar,
+    MKD_Can_Navigate,
+    MKD_Do_Navigate,
+    MKD_Can_Open,
+    MKD_DoClose
+};
+
+static void MKDInit(MathKernDlg *mkd,SplineChar *sc) {
+    int i;
+
+    memset(mkd,0,sizeof(*mkd));
+    mkd->base.funcs = &mathkern_funcs;
+
+    for ( i=0; i<4; ++i ) {
+	SplineChar *msc = &(&mkd->sc_topright)[i];
+	CharView *mcv = &(&mkd->cv_topright)[i];
+	msc->orig_pos = i;
+	msc->unicodeenc = -1;
+	msc->name = i==0 ? "TopRight" :
+		    i==1 ? "TopLeft"  :
+		    i==2 ? "BottomRight":
+			    "BottomLeft";
+	msc->parent = &mkd->dummy_sf;
+	msc->layer_cnt = 2;
+#ifdef FONTFORGE_CONFIG_TYPE3
+	msc->layers = gcalloc(2,sizeof(Layer));
+	LayerDefault(&msc->layers[0]);
+	LayerDefault(&msc->layers[1]);
+#endif
+	mkd->chars[i] = msc;
+
+	mcv->sc = msc;
+	mcv->layerheads[dm_fore] = &msc->layers[ly_fore];
+	mcv->layerheads[dm_back] = &msc->layers[ly_back];
+	mcv->layerheads[dm_grid] = NULL;
+	mcv->drawmode = dm_fore;
+	mcv->container = (struct cvcontainer *) mkd;
+	mcv->inactive = i!=0;
+    }
+    mkd->dummy_sf.glyphs = mkd->chars;
+    mkd->dummy_sf.glyphcnt = mkd->dummy_sf.glyphmax = 4;
+    mkd->dummy_sf.pfminfo.fstype = -1;
+    mkd->dummy_sf.fontname = mkd->dummy_sf.fullname = mkd->dummy_sf.familyname = "dummy";
+    mkd->dummy_sf.weight = "Medium";
+    mkd->dummy_sf.origname = "dummy";
+    mkd->dummy_sf.ascent = sc->parent->ascent;
+    mkd->dummy_sf.descent = sc->parent->descent;
+    mkd->dummy_sf.order2 = sc->parent->order2;
+    mkd->dummy_sf.anchor = NULL;
+
+    mkd->dummy_sf.fv = &mkd->dummy_fv;
+    mkd->dummy_fv.sf = &mkd->dummy_sf;
+    mkd->dummy_fv.selected = mkd->sel;
+    mkd->dummy_fv.cbw = mkd->dummy_fv.cbh = default_fv_font_size+1;
+    mkd->dummy_fv.magnify = 1;
+
+    mkd->dummy_fv.map = &mkd->dummy_map;
+    mkd->dummy_map.map = mkd->map;
+    mkd->dummy_map.backmap = mkd->backmap;
+    mkd->dummy_map.enccount = mkd->dummy_map.encmax = mkd->dummy_map.backmax = 4;
+    mkd->dummy_map.enc = &custom;
+}
+
+void MathKernDialog(SplineChar *sc) {
+    MathKernDlg mkd;
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[5], boxes[4], *harray[8], *varray[5], *garray[5];
+    GTextInfo label[5];
+    FontRequest rq;
+    int as, ds, ld;
+    static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
+    int i,k;
+
+    MKDInit( &mkd, sc );
+
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_isdlg|wam_restrict|wam_undercursor|wam_utf8_wtitle;
+    wattrs.is_dlg = true;
+    wattrs.restrict_input_to_me = 1;
+    wattrs.undercursor = 1;
+    wattrs.event_masks = -1;
+    wattrs.cursor = ct_pointer;
+    wattrs.utf8_window_title = _("Math Kerning");
+    pos.width = 600;
+    pos.height = 400;
+    mkd.gw = gw = GDrawCreateTopWindow(NULL,&pos,mkd_e_h,&mkd.cv_topright,&wattrs);
+
+    memset(&rq,0,sizeof(rq));
+    rq.family_name = helv;
+    rq.point_size = 12;
+    rq.weight = 400;
+    mkd.plain = GDrawInstanciateFont(NULL,&rq);
+    rq.weight = 700;
+    mkd.bold = GDrawInstanciateFont(NULL,&rq);
+    GDrawFontMetrics(mkd.plain,&as,&ds,&ld);
+    mkd.fh = as+ds; mkd.as = as;
+
+    MKDCharViewInits(&mkd);
+
+    memset(&label,0,sizeof(label));
+    memset(&gcd,0,sizeof(gcd));
+    memset(&boxes,0,sizeof(boxes));
+
+    k = 0;
+    gcd[k].gd.flags = gg_visible|gg_enabled ;
+    gcd[k].gd.cid = CID_Glyph;
+    gcd[k].gd.handle_controlevent = MathKernD_GlyphChanged;
+    gcd[k++].creator = GListButtonCreate;
+
+    label[k].text = (unichar_t *) _("_OK");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_but_default;
+    gcd[k].gd.handle_controlevent = MathKernD_OK;
+    gcd[k++].creator = GButtonCreate;
+
+    label[k].text = (unichar_t *) _("_Done");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_but_cancel;
+    gcd[k].gd.handle_controlevent = MathKernD_Cancel;
+    gcd[k].creator = GButtonCreate;
+
+    harray[0] = GCD_Glue; harray[1] = &gcd[1]; harray[2] = GCD_Glue;
+    harray[3] = GCD_Glue; harray[4] = &gcd[2]; harray[5] = GCD_Glue;
+    harray[6] = NULL;
+
+    boxes[2].gd.flags = gg_enabled|gg_visible;
+    boxes[2].gd.u.boxelements = harray;
+    boxes[2].creator = GHBoxCreate;
+
+    garray[0] = &gcd[0]; garray[1] = GCD_Glue; garray[2] = NULL;
+    boxes[3].gd.flags = gg_enabled|gg_visible;
+    boxes[3].gd.u.boxelements = garray;
+    boxes[3].creator = GHBoxCreate;
+
+    varray[0] = GCD_Glue;
+    varray[1] = &boxes[3];
+    varray[2] = &boxes[2];
+    varray[3] = NULL;
+
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = varray;
+    boxes[0].gd.cid = CID_TopBox;
+    boxes[0].creator = GVBoxCreate;
+
+    GGadgetsCreate(gw,boxes);
+
+    MKD_SetGlyphList(&mkd, sc);
+    MKDFillup( &mkd, sc );
+
+    GHVBoxSetExpandableRow(boxes[0].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(boxes[2].ret,gb_expandgluesame);
+    GHVBoxSetExpandableCol(boxes[3].ret,gb_expandglue);
+    GGadgetResize(boxes[0].ret,pos.width,pos.height);
+
+    mkd.button_height = GDrawPointsToPixels(gw,60);
+    GDrawResize(gw,1000,400);		/* Force a resize event */
+
+    GDrawSetVisible(mkd.gw,true);
+
+    while ( !mkd.done )
+	GDrawProcessOneEvent(NULL);
+
+    for ( i=0; i<4; ++i ) {
+	CharView *cv = &mkd.cv_topright + i;
+	if ( cv->backimgs!=NULL ) {
+	    GDrawDestroyWindow(cv->backimgs);
+	    cv->backimgs = NULL;
+	}
+    }
+    GDrawDestroyWindow(mkd.gw);
 }

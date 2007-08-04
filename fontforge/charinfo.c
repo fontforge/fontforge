@@ -3204,8 +3204,8 @@ return( true );
 
 static int CI_SubSuperPositionings(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	/*CharInfo *ci = GDrawGetUserData(GGadgetGetWindow(g));*/
-	/* !!!!! */
+	CharInfo *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	MathKernDialog(ci->sc);
     }
 return( true );
 }
@@ -4058,7 +4058,7 @@ return;
 	thvarray[20] = &tgcd[14];
 	thvarray[21] = thvarray[22] = GCD_ColSpan; thvarray[23] = GCD_Glue; thvarray[24] = NULL;
 
-	tlabel[15].text = (unichar_t *) _("Sub/Superscript Kerning");
+	tlabel[15].text = (unichar_t *) _("Math Kerning");	/* Graphical */
 	tlabel[15].text_is_1byte = true;
 	tgcd[15].gd.label = &tlabel[15];
 	tgcd[15].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;

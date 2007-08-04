@@ -909,7 +909,8 @@ void SplineCharQuickBounds(SplineChar *sc, DBounds *b) {
 	    }
 	}
     }
-    if ( sc->parent->strokedfont && (b->minx!=b->maxx || b->miny!=b->maxy)) {
+    if ( sc->parent!=NULL && sc->parent->strokedfont &&
+	    (b->minx!=b->maxx || b->miny!=b->maxy)) {
 	real sw = sc->parent->strokewidth;
 	b->minx -= sw; b->miny -= sw;
 	b->maxx += sw; b->maxy += sw;

@@ -4733,7 +4733,8 @@ return;
     free(glyphs);
 }
 
-static void ttf_math_read_mathkernv(FILE *ttf, uint32 start,struct mathkernvertex *mkv) {
+static void ttf_math_read_mathkernv(FILE *ttf, uint32 start,struct mathkernvertex *mkv,
+	SplineChar *sc, int istop) {
     int cnt, i;
 
     fseek(ttf,start,SEEK_SET);
@@ -4781,6 +4782,14 @@ static void ttf_math_read_mathkernv(FILE *ttf, uint32 start,struct mathkernverte
 	mkv->mkd[cnt-1].height = 2*mkv->mkd[cnt-2].height - mkv->mkd[cnt-3].height;
     else if ( cnt>=2 )
 	mkv->mkd[cnt-1].height = mkv->mkd[cnt-2].height + 100;
+    else if ( cnt==1 ) {
+	if ( istop ) {
+	    DBounds b;
+	    SplineCharQuickBounds(sc,&b);
+	    mkv->mkd[cnt-1].height = b.maxy;
+	} else
+	    mkv->mkd[cnt-1].height = 0;
+    }
 }
 
 static void ttf_math_read_mathkern(FILE *ttf,struct ttfinfo *info, uint32 start) {
@@ -4807,13 +4816,13 @@ return;
 	SplineChar *sc = info->chars[ glyphs[i]];
 	sc->mathkern = chunkalloc(sizeof(struct mathkern));
 	if ( koff[i].tr!=0 )
-	    ttf_math_read_mathkernv(ttf,start+koff[i].tr,&sc->mathkern->top_right);
+	    ttf_math_read_mathkernv(ttf,start+koff[i].tr,&sc->mathkern->top_right,sc,true);
 	if ( koff[i].tl!=0 )
-	    ttf_math_read_mathkernv(ttf,start+koff[i].tl,&sc->mathkern->top_left);
+	    ttf_math_read_mathkernv(ttf,start+koff[i].tl,&sc->mathkern->top_left,sc,true);
 	if ( koff[i].br!=0 )
-	    ttf_math_read_mathkernv(ttf,start+koff[i].br,&sc->mathkern->bottom_right);
+	    ttf_math_read_mathkernv(ttf,start+koff[i].br,&sc->mathkern->bottom_right,sc,false);
 	if ( koff[i].bl!=0 )
-	    ttf_math_read_mathkernv(ttf,start+koff[i].bl,&sc->mathkern->bottom_left);
+	    ttf_math_read_mathkernv(ttf,start+koff[i].bl,&sc->mathkern->bottom_left,sc,false);
     }
     free(koff);
     free(glyphs);

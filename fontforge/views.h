@@ -349,7 +349,7 @@ typedef struct charview {
     GWindow oldkeyw;
 # endif
 #endif
-    struct searchview *searcher;	/* The sv within which this view is embedded (if it is) */
+    struct cvcontainer *container;		/* The sv (or whatever) within which this view is embedded (if it is embedded) */
     PST *lcarets;
     int16 nearcaret;
 	/* freetype results display */
@@ -564,8 +564,24 @@ typedef struct findsel {
     PressedOn *p;
 } FindSel;
 
+enum nav_type { nt_prevdef, nt_prev, nt_goto, nt_next, nt_nextdef };
+struct cvcontainer_funcs {
+    enum cv_container_type { cvc_searcher, cvc_mathkern } type;
+    void (*activateMe)(struct cvcontainer *cvc,CharView *cv);
+    void (*charEvent)(struct cvcontainer *cvc,GEvent *event);
+    int (*canNavigate)(struct cvcontainer *cvc,enum nav_type type);
+    void (*doNavigate)(struct cvcontainer *cvc,enum nav_type type);
+    int (*canOpen)(struct cvcontainer *cvc);
+    void (*doClose)(struct cvcontainer *cvc);
+};
+
+struct cvcontainer {
+    struct cvcontainer_funcs *funcs;
+};
+
 #if !defined( FONTFORGE_CONFIG_NO_WINDOWING_UI ) || defined(_DEFINE_SEARCHVIEW_)
 typedef struct searchview {
+    struct cvcontainer base;
     FontView dummy_fv;
     SplineFont dummy_sf;
     SplineChar sc_srch, sc_rpl;
@@ -634,6 +650,33 @@ typedef struct searchview {
     unsigned long matched_ss_start;
 #endif
 } SearchView;
+#endif
+
+#if !defined( FONTFORGE_CONFIG_NO_WINDOWING_UI )
+typedef struct mathkernview {
+    struct cvcontainer base;
+    FontView dummy_fv;
+    SplineFont dummy_sf;
+    SplineChar sc_topright, sc_topleft, sc_bottomright, sc_bottomleft;
+    SplineChar *chars[4];
+    EncMap dummy_map;
+    int32 map[4], backmap[4];
+    uint8 sel[4];
+    CharView cv_topright, cv_topleft, cv_bottomright, cv_bottomleft;
+    CharView *lastcv;
+/* ****** */
+    GWindow gw;
+    GGadget *mb;
+    GFont *plain, *bold;
+    int mbh;
+    int fh, as;
+    int mid_space, cv_y;
+    int cv_width, cv_height;
+    short button_height, button_width;
+/* ****** */
+    SplineChar *cursc;
+    int done;
+} MathKernDlg;
 #endif
 
 struct lkdata {
@@ -1328,13 +1371,19 @@ extern void Disp_DefaultTemplate(CharView *cv);
 
 extern SearchView *SVCreate(FontView *fv);
 extern void SVCharViewInits(SearchView *sv);
+extern void SV_DoClose(struct cvcontainer *cvc);
 #ifdef FONTFORGE_CONFIG_GDRAW
-extern void SVMenuClose(GWindow gw,struct gmenuitem *mi,GEvent *e);
 extern void SVChar(SearchView *sv, GEvent *event);
 #endif
 extern void SVMakeActive(SearchView *sv,CharView *cv);
 extern int SVAttachFV(FontView *fv,int ask_if_difficult);
 extern void SVDetachFV(FontView *fv);
+
+extern void MKDMakeActive(MathKernDlg *mkd,CharView *cv);
+extern void MKDChar(MathKernDlg *mkd, GEvent *event);
+extern void MKD_DoClose(struct cvcontainer *cvc);
+extern void MKDCharViewInits(MathKernDlg *mkd);
+extern void MathKernDialog(SplineChar *sc);
 
 extern void ShowAtt(SplineFont *sf);
 extern void FontCompareDlg(FontView *fv);
