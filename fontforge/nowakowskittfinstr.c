@@ -33,7 +33,7 @@
 #include "ttf.h"
 #include "splinefont.h"
 
-/* non-optimized instructions will be using a stack of depth 3, allowing
+/* non-optimized instructions will be using a stack of depth 4, allowing
  * for easy testing whether the code leaves trash on the stack or not.
  */
 #define OPTIMIZE_TTF_INSTRS 1
@@ -161,7 +161,7 @@ return( tab );
 }
 #endif
 
-/* We'll need at least three stack levels and a twilight point (and thus also
+/* We'll need at least four stack levels and a twilight point (and thus also
  * a twilight zone). We also currently define one function in fpgm. We must
  * ensure this is indicated in 'maxp' table. Note: we'll surely need more
  * stack levels in the future. Twilight point count may vary depending on
@@ -197,7 +197,7 @@ static void init_maxp(InstrCt *ct) {
 #if OPTIMIZE_TTF_INSTRS
     if (stack<256) stack=256;
 #else
-    if (stack<3) stack=3;
+    if (stack<4) stack=4;
 #endif
 
     memputshort(tab->data, 7*sizeof(uint16), zones);
@@ -210,6 +210,10 @@ static void init_maxp(InstrCt *ct) {
  * without further hinting, especcialy for light typefaces. And turning hinting
  * off at veeery small pixel sizes is required, because hints tend to visually
  * tear outlines apart when not having enough workspace.
+ *
+ * TODO! We should take 'gasp' table into account. We also should set up blues
+ * here (separate twilight point for each alignment zone) and normalize stem
+ * weights via cvt deltas.
  */
 static void init_prep(InstrCt *ct) {
     uint8 new_prep[] =
@@ -912,8 +916,6 @@ static void optimize_segment(int segstart, int segend, InstrCt *ct) {
     if (segstart==segend)
 return;
 
-    fprintf(stderr, "segstart: %d, segend: %d\n", segstart, segend);
-
     /* purely for aesthetic reasons - can be safely removed. */
     qsort(others+segstart, segend+1-segstart, sizeof(int), sortbynum);
 
@@ -962,10 +964,8 @@ return;
     while (next < othercnt) {
 	p = others[segstart = next++];
 
-	fprintf(stderr, "loop1, next=%d\n", next);
 	while((next < othercnt) && (i = findoffs(others+next, othercnt-next,
 				    NextOnContour(ct->contourends, p))) != -1) {
-	    fprintf(stderr, "1i: %d\n", i+next);
 	    p = others[i+=next];
 	    others[i] = others[next];
 	    others[next++] = p;
@@ -973,10 +973,8 @@ return;
 
 	p=others[segstart];
 
-	fprintf(stderr, "loop2, next=%d\n", next);
 	while((next < othercnt) && (i = findoffs(others+next, othercnt-next,
 				    PrevOnContour(ct->contourends, p))) != -1) {
-	    fprintf(stderr, "2i: %d\n", i+next);
 	    p = others[i+=next];
 	    others[i] = others[next];
 	    others[next++] = p;
@@ -1512,9 +1510,7 @@ static BasePoint *GetVector ( BasePoint *top,BasePoint *bottom,int orth ) {
     hip=sqrt(( catx*catx )+( caty*caty ));
     retsin=caty/hip; retcos=catx/hip;
     
-    fprintf(stderr, "here1\n");
     ret=chunkalloc(sizeof(struct basepoint));
-    fprintf(stderr, "here2\n");
 
     if( !orth ) {
         ret->x=retcos; ret->y=retsin;
