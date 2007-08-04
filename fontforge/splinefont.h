@@ -1816,6 +1816,7 @@ extern void MacFeatListFree(MacFeat *mf);
 extern void GlyphVariantsFree(struct glyphvariants *gv);
 extern void MathKernVContentsFree(struct mathkernvertex *mk);
 extern void MathKernFree(struct mathkern *mk);
+extern struct mathkern *MathKernCopy(struct mathkern *mk);
 extern void SplineCharListsFree(struct splinecharlist *dlist);
 extern void SplineCharFreeContents(SplineChar *sc);
 extern void SplineCharFree(SplineChar *sc);

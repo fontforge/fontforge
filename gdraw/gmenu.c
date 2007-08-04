@@ -1099,7 +1099,9 @@ static void GMenuBarDrawDownArrow(GWindow pixmap, GMenuBar *mb, int x) {
 static int gmenubar_expose(GWindow pixmap, GGadget *g, GEvent *expose) {
     GMenuBar *mb = (GMenuBar *) g;
     GRect r,old1,old2, old3;
-    Color fg = mb->g.box->main_foreground;
+    Color fg = g->state==gs_disabled?g->box->disabled_foreground:
+		    g->box->main_foreground==COLOR_DEFAULT?GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap)):
+		    g->box->main_foreground;
     int i;
 
     if ( fg==COLOR_DEFAULT )

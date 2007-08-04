@@ -666,6 +666,7 @@ typedef struct mathkernview {
     CharView *lastcv;
 /* ****** */
     GWindow gw;
+    GWindow cvparent_w;
     GGadget *mb;
     GFont *plain, *bold;
     int mbh;
@@ -675,7 +676,10 @@ typedef struct mathkernview {
     short button_height, button_width;
 /* ****** */
     SplineChar *cursc;
-    int done;
+    struct mathkern *orig_mathkern;
+    uint8 saved_mathkern;		/* Can't just check if orig is non-NULL, because NULL is a perfectly valid initial state */
+    uint8 last_aspect;
+    uint8 done;
 } MathKernDlg;
 #endif
 

@@ -9212,7 +9212,7 @@ void MKDCharViewInits(MathKernDlg *mkd) {
 
     mkd->mid_space = 20;
     for ( i=3; i>=0; --i ) {	/* Create backwards so palettes get set in topright (last created) */
-	pos.y = mkd->mbh+mkd->fh+10; pos.height = 220;	/* Size doesn't matter, adjusted later */
+	pos.y = mkd->fh+10; pos.height = 220;	/* Size doesn't matter, adjusted later */
 	pos.width = pos.height; pos.x = 10+i*(pos.width+20);
 	mkd->cv_y = pos.y;
 	mkd->cv_height = pos.height; mkd->cv_width = pos.width;
@@ -9220,7 +9220,7 @@ void MKDCharViewInits(MathKernDlg *mkd) {
 	wattrs.mask = wam_events|wam_cursor;
 	wattrs.event_masks = -1;
 	wattrs.cursor = ct_mypointer;
-	(&mkd->cv_topright)[i].gw = GWidgetCreateSubWindow(mkd->gw,&pos,mkd_cv_e_h,(&mkd->cv_topright)+i,&wattrs);
+	(&mkd->cv_topright)[i].gw = GWidgetCreateSubWindow(mkd->cvparent_w,&pos,mkd_cv_e_h,(&mkd->cv_topright)+i,&wattrs);
 	_CharViewCreate((&mkd->cv_topright)+i, (&mkd->sc_topright)+i, &mkd->dummy_fv, i);
     }
 }
