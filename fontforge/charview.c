@@ -9071,27 +9071,6 @@ return;
 	mblist_nomm[i].ti.text = (unichar_t *) _((char *) mblist_nomm[i].ti.text);
 }
 
-static int SV_Can_Navigate(struct cvcontainer *cvc, enum nav_type type) {
-return( false );
-}
-
-static int SV_Can_Open(struct cvcontainer *cvc) {
-return( true );
-}
-
-static void SV_Do_Navigate(struct cvcontainer *cvc, enum nav_type type) {
-}
-
-struct cvcontainer_funcs searcher_funcs = {
-    cvc_searcher,
-    (void (*) (struct cvcontainer *cvc,CharView *cv)) SVMakeActive,
-    (void (*) (struct cvcontainer *cvc,GEvent *)) SVChar,
-    SV_Can_Navigate,
-    SV_Do_Navigate,
-    SV_Can_Open,
-    SV_DoClose
-};
-
 static int sv_cv_e_h(GWindow gw, GEvent *event) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
@@ -9146,7 +9125,6 @@ void SVCharViewInits(SearchView *sv) {
     GRect pos, gsize;
 
     CharViewInit();
-    sv->base.funcs = &searcher_funcs;
 
     memset(&gd,0,sizeof(gd));
     gd.flags = gg_visible | gg_enabled;

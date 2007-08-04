@@ -1381,7 +1381,30 @@ return;
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
+static int SV_Can_Navigate(struct cvcontainer *cvc, enum nav_type type) {
+return( false );
+}
+
+static int SV_Can_Open(struct cvcontainer *cvc) {
+return( true );
+}
+
+static void SV_Do_Navigate(struct cvcontainer *cvc, enum nav_type type) {
+}
+
+struct cvcontainer_funcs searcher_funcs = {
+    cvc_searcher,
+    (void (*) (struct cvcontainer *cvc,CharView *cv)) SVMakeActive,
+    (void (*) (struct cvcontainer *cvc,GEvent *)) SVChar,
+    SV_Can_Navigate,
+    SV_Do_Navigate,
+    SV_Can_Open,
+    SV_DoClose
+};
+
 static SearchView *SVFillup(SearchView *sv, FontView *fv) {
+
+    sv->base.funcs = &searcher_funcs;
 
     sv->sc_srch.orig_pos = 0; sv->sc_srch.unicodeenc = -1; sv->sc_srch.name = "Search";
     sv->sc_rpl.orig_pos = 1; sv->sc_rpl.unicodeenc = -1; sv->sc_rpl.name = "Replace";
