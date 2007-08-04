@@ -753,9 +753,10 @@ GGadget *GTabSetCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     if ( gd->flags&gg_tabset_nowindow ) gts->nowindow = true;
 
     for ( i=0; gd->u.tabs[i].text!=NULL; ++i )
-	if ( gd->u.tabs[i].gcd!=NULL && !(gd->flags&gg_tabset_nowindow)) {
+	if ( !(gd->flags&gg_tabset_nowindow)) {
 	    gts->tabs[i].w = GDrawCreateSubWindow(base,&gts->g.inner,sendtoparent_eh,GDrawGetUserData(base),&childattrs);
-	    GGadgetsCreate(gts->tabs[i].w,gd->u.tabs[i].gcd);
+	    if ( gd->u.tabs[i].gcd!=NULL )
+		GGadgetsCreate(gts->tabs[i].w,gd->u.tabs[i].gcd);
 	    if ( gts->sel==i && (gd->flags & gg_visible ))
 		GDrawSetVisible(gts->tabs[i].w,true);
 	} else

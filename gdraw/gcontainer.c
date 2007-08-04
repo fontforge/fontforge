@@ -1027,7 +1027,12 @@ return( NULL );
 }
 
 GGadget *_GWidgetGetGadgets(GWindow gw) {
-    GContainerD *gd = (GContainerD *) (gw->widget_data);
+    GContainerD *gd;
+
+    if ( gw==NULL )
+return( NULL );
+
+    gd = (GContainerD *) (gw->widget_data);
 
     if ( gd==NULL || !gd->iscontainer )
 return( NULL );

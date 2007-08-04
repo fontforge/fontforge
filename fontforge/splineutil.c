@@ -4974,6 +4974,32 @@ return;
     chunkfree(gv,sizeof(*gv));
 }
 
+struct mathkern *MathKernCopy(struct mathkern *mk) {
+    int i,j;
+    struct mathkern *mknew;
+
+    if ( mk==NULL )
+return( NULL );
+    mknew = chunkalloc(sizeof(*mknew));
+    for ( i=0; i<4; ++i ) {
+	struct mathkernvertex *mkv = &(&mk->top_right)[i];
+	struct mathkernvertex *mknewv = &(&mk->top_right)[i];
+	mknewv->cnt = mkv->cnt;
+	if ( mknewv->cnt!=0 ) {
+	    mknewv->mkd = gcalloc(mkv->cnt,sizeof(struct mathkerndata));
+	    for ( j=0; j<mkv->cnt; ++j ) {
+		mknewv->mkd[j].height = mkv->mkd[j].height;
+		mknewv->mkd[j].kern   = mkv->mkd[j].kern;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+		mknewv->mkd[j].height_adjusts = DeviceTableCopy( mkv->mkd[j].height_adjusts );
+		mknewv->mkd[j].kern_adjusts   = DeviceTableCopy( mkv->mkd[j].kern_adjusts );
+#endif
+	    }
+	}
+    }
+return( mknew );
+}
+
 void MathKernVContentsFree(struct mathkernvertex *mk) {
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
     int i;
