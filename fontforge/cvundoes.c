@@ -2183,17 +2183,20 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
 	    double scale = PasteFigureScale(sc->parent,paster->copied_from);
 	    for ( refs = paster->u.state.refs; refs!=NULL; refs=refs->next ) {
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-		if ( sc->searcherdummy )
-		    rsc = FindCharacter(sc->views->searcher->fv->sf,paster->copied_from,refs,NULL);
-		else
+		if ( sc->views!=NULL && sc->views->container!=NULL ) {
+		    if ( sc->views->container->funcs->type == cvc_searcher )
+			rsc = FindCharacter(((SearchView *) (sc->views->container))->fv->sf,paster->copied_from,refs,NULL);
+		    else {
+			gwwv_post_error(_("Please don't do that"),_("You may not paste a reference into this window"));
+			rsc = (SplineChar *) -1;
+		    }
+		} else
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 		    rsc = FindCharacter(sc->parent,paster->copied_from,refs,NULL);
-		if ( rsc!=NULL && SCDependsOnSC(rsc,sc))
-#if defined(FONTFORGE_CONFIG_GTK)
-		    gwwv_post_error(_("Self-referential character"),_("Attempt to make a character that refers to itself"));
-#else
+		if ( rsc==(SplineChar *) -1 )
+		    /* Error above */;
+		else if ( rsc!=NULL && SCDependsOnSC(rsc,sc))
 		    gwwv_post_error(_("Self-referential glyph"),_("Attempt to make a glyph that refers to itself"));
-#endif
 		else if ( rsc!=NULL ) {
 		    new = RefCharCreate();
 		    *new = *refs;
@@ -2771,7 +2774,7 @@ return;
 		cv->layerheads[dm]->images = new;
 	    }
 	    SCOutOfDateBackground(cvsc);
-	} else if ( paster->undotype==ut_statehint && cv->searcher==NULL ) {
+	} else if ( paster->undotype==ut_statehint && cv->container==NULL ) {
 	    ExtractHints(cvsc,paster->u.state.hints,true);
 	    free(cvsc->ttf_instrs);
 	    if ( paster->u.state.instrs_len!=0 && cvsc->parent->order2 &&
@@ -2789,16 +2792,19 @@ return;
 	    RefChar *new, *refs;
 	    SplineChar *sc;
 	    for ( refs = paster->u.state.refs; refs!=NULL; refs=refs->next ) {
-		if ( cv->searcher!=NULL )
-		    sc = FindCharacter(cv->searcher->fv->sf,paster->copied_from,refs,NULL);
-		else {
+		if ( cv->container==NULL ) {
 		    sc = FindCharacter(cvsc->parent,paster->copied_from,refs,NULL);
 		    if ( sc!=NULL && SCDependsOnSC(sc,cvsc)) {
 			gwwv_post_error(_("Self-referential character"),_("Attempt to make a character that refers to itself"));
-			sc = NULL;
+			sc = (SplineChar *) -1;
 		    }
-		}
-		if ( sc!=NULL ) {
+		} else if ( cv->container->funcs->type == cvc_searcher )
+		    sc = FindCharacter(((SearchView *) (cv->container))->fv->sf,paster->copied_from,refs,NULL);
+		else
+		    sc = (SplineChar *) -1;
+		if ( sc==(SplineChar *) -1 )
+		    /* Already complained */;
+		else if ( sc!=NULL ) {
 		    new = RefCharCreate();
 		    *new = *refs;
 #ifdef FONTFORGE_CONFIG_TYPE3
@@ -2824,10 +2830,12 @@ return;
 	    SplineChar *sc;
 	    SplinePointList *new, *spl;
 	    for ( refs = paster->u.state.refs; refs!=NULL; refs=refs->next ) {
-		if ( cv->searcher!=NULL )
-		    sc = FindCharacter(cv->searcher->fv->sf,paster->copied_from,refs,NULL);
-		else
+		if ( cv->container==NULL )
 		    sc = FindCharacter(cvsc->parent,paster->copied_from,refs,NULL);
+		else if ( cv->container->funcs->type == cvc_searcher )
+		    sc = FindCharacter(((SearchView *) (cv->container))->fv->sf,paster->copied_from,refs,NULL);
+		else
+		    sc = NULL;
 		if ( sc!=NULL ) {
 		    new = SplinePointListTransform(SplinePointListCopy(sc->layers[ly_back].splines),refs->transform,true);
 		    SplinePointListSelect(new,true);
