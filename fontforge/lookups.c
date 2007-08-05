@@ -6006,8 +6006,8 @@ return;		/* Couldn't parse the numeric kerning info */
 
     if ( pstkd->display==NULL )
 	pstkd->display = SplineFontPieceMeal(pstkd->sf,pstkd->pixelsize,pf_antialias,NULL);
-    bc1 = BDFPieceMeal(pstkd->display,sc1->orig_pos);
-    bc2 = BDFPieceMeal(pstkd->display,sc2->orig_pos);
+    bc1 = BDFPieceMealCheck(pstkd->display,sc1->orig_pos);
+    bc2 = BDFPieceMealCheck(pstkd->display,sc2->orig_pos);
 
     GDrawGetSize(GDrawableGetWindow(GWidgetGetControl(pstkd->gw,CID_KernDisplay)),&size);
     if ( pstkd->sub->vertical_kerning ) {

@@ -3323,13 +3323,16 @@ static struct glyphvariants *SFDParseGlyphComposition(FILE *sfd,
 	gv->parts[i].is_extender = temp;
 	while ( (ch=getc(sfd))==' ' );
 	if ( ch!=',' ) ungetc(ch,sfd);
-	getsint(sfd,&gv->parts[i].startConnectorLength);
+	getint(sfd,&temp);
+	gv->parts[i].startConnectorLength=temp;
 	while ( (ch=getc(sfd))==' ' );
 	if ( ch!=',' ) ungetc(ch,sfd);
-	getsint(sfd,&gv->parts[i].endConnectorLength);
+	getint(sfd,&temp);
+	gv->parts[i].endConnectorLength = temp;
 	while ( (ch=getc(sfd))==' ' );
 	if ( ch!=',' ) ungetc(ch,sfd);
-	getsint(sfd,&gv->parts[i].fullAdvance);
+	getint(sfd,&temp);
+	gv->parts[i].fullAdvance = temp;
     }
 return( gv );
 }
