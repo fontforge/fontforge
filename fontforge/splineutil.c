@@ -4983,7 +4983,7 @@ return( NULL );
     mknew = chunkalloc(sizeof(*mknew));
     for ( i=0; i<4; ++i ) {
 	struct mathkernvertex *mkv = &(&mk->top_right)[i];
-	struct mathkernvertex *mknewv = &(&mk->top_right)[i];
+	struct mathkernvertex *mknewv = &(&mknew->top_right)[i];
 	mknewv->cnt = mkv->cnt;
 	if ( mknewv->cnt!=0 ) {
 	    mknewv->mkd = gcalloc(mkv->cnt,sizeof(struct mathkerndata));
