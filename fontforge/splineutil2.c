@@ -1128,7 +1128,7 @@ return( SplineMake2(from,to));
 	    } else if ( offp+incrp<tmax && tadiff<curdiff &&
 		    (tadiff<=fsdiff && tadiff<=fadiff && tadiff<=tsdiff)) {
 		offp += incrp;
-		if ( betterp>0 )
+		if ( betterp<0 )
 		    incrp /= 2;
 		betterp = 1;
 		nocnt = 0;
