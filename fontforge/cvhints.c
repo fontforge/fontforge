@@ -181,36 +181,39 @@ return( false );
         }
         
         if (DiagCheck (vec1, vec2)) {
-	    /* Make sure vec1[0]<->vec1[1] is further left than vec2[0]<->vec2[1] */
-	    if ( vec1[0]->me.x > vec2[0]->me.x + (vec1[0]->me.y-vec2[0]->me.y) 
-                * (vec2[1]->me.x-vec2[0]->me.x)/(vec2[1]->me.y-vec2[0]->me.y) ) {
-                
-	        temp=vec1[0]; vec1[0]=vec2[0]; vec2[0]=temp;
-	        temp=vec1[1]; vec1[1]=vec2[1]; vec2[1]=temp;
-	    }
-	    /* Make sure vec1[0],vec1[1] are at the top */
-	    if ( vec1[0]->me.y<vec1[1]->me.y ) {
-	        SplinePoint *temp;
-	        temp = vec1[0]; vec1[0]=vec1[1]; vec1[1]=temp;
-	        temp = vec2[0]; vec2[0]=vec2[1]; vec2[1]=temp;
-	    }
+            /* Make sure this is a real line, rather than just two
+               short spline segments which occasionally have happened to be
+               parallel. This is necessary to correctly handle things which may
+               be "diagonalable" in 2 different directions (like slash in some 
+               designs). */
+            if (!DiagTooShort (vec1, vec2)) {
             
-            sp[0] = vec1[0];
-            sp[1] = vec2[0];
-            sp[2] = vec1[1];
-            sp[3] = vec2[1];
-            
-            /*fprintf (stderr, "%f,%f %f,%f %f,%f %f,%f",
-                sp[0]->me.x, sp[0]->me.y, sp[1]->me.x, sp[1]->me.y, 
-                sp[2]->me.x, sp[2]->me.y, sp[3]->me.x, sp[3]->me.y);*/
-            
+	        /* Make sure vec1[0]<->vec1[1] is further left than vec2[0]<->vec2[1] */
+	        if ( vec1[0]->me.x > vec2[0]->me.x + (vec1[0]->me.y-vec2[0]->me.y) 
+                    * (vec2[1]->me.x-vec2[0]->me.x)/(vec2[1]->me.y-vec2[0]->me.y) ) {
+
+	            temp=vec1[0]; vec1[0]=vec2[0]; vec2[0]=temp;
+	            temp=vec1[1]; vec1[1]=vec2[1]; vec2[1]=temp;
+	        }
+	        /* Make sure vec1[0],vec1[1] are at the top */
+	        if ( vec1[0]->me.y<vec1[1]->me.y ) {
+	            SplinePoint *temp;
+	            temp = vec1[0]; vec1[0]=vec1[1]; vec1[1]=temp;
+	            temp = vec2[0]; vec2[0]=vec2[1]; vec2[1]=temp;
+	        }
+
+                sp[0] = vec1[0];
+                sp[1] = vec2[0];
+                sp[2] = vec1[1];
+                sp[3] = vec2[1];
+
 return ( true );
+            }
         }
     }
 
 return( false );
 }
-
 
 #define CID_Base	1001
 #define CID_Width	1002
