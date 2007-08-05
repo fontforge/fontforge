@@ -59,7 +59,7 @@ struct math_constants_descriptor math_constants_descriptor[] = {
     MCDD(N_("SubSuperscriptGapMin:"),SubSuperscriptGapMin,SubSuperscriptGapMin_adjust,N_("Minimum gap between the supersecript and subscript ink."),0),
     MCDD(N_("SuperscriptBottomMaxWithSubscript:"),SuperscriptBottomMaxWithSubscript,SuperscriptBottomMaxWithSubscript_adjust,N_("The maximum level to which the (ink) bottom\nof superscript can be pushed to increase the\ngap between superscript and subscript, before\nsubscript starts being moved down."),0),
     MCDD(N_("SpaceAfterScript:"),SpaceAfterScript,SpaceAfterScript_adjust,N_("Extra white space to be added after each\nub/superscript."),0),
-    MCDD(N_("UpperLimitGapMin:"),UpperLimitGapMin,UpperLimitGapMin_adjust,N_("Minimum gap between the bottom of the\nupper limit, and the top fo the base operator."),1),
+    MCDD(N_("UpperLimitGapMin:"),UpperLimitGapMin,UpperLimitGapMin_adjust,N_("Minimum gap between the bottom of the\nupper limit, and the top of the base operator."),1),
     MCDD(N_("UpperLimitBaselineRiseMin:"),UpperLimitBaselineRiseMin,UpperLimitBaselineRiseMin_adjust,N_("Minimum distance between the baseline of an upper\nlimit and the bottom of the base operator."),0),
     MCDD(N_("LowerLimitGapMin:"),LowerLimitGapMin,LowerLimitGapMin_adjust,N_("Standard shift up applied to the top element of\na stack."),0),
     MCDD(N_("LowerLimitBaselineDropMin:"),LowerLimitBaselineDropMin,LowerLimitBaselineDropMin_adjust,N_("Minimum distance between the baseline of the\nlower limit and bottom of the base operator."),0),
@@ -127,7 +127,7 @@ static GTextInfo truefalse[] = {
 
 static struct col_init exten_shape_ci[] = {
     { me_string, NULL, NULL, NULL, N_("Glyph") },
-    { me_enum, NULL, truefalse, NULL, N_("Is Extension Shape") },
+    { me_enum, NULL, truefalse, NULL, N_("Is Extended Shape") },
     0
     };
 
@@ -1592,15 +1592,20 @@ static void MKDFillup(MathKernDlg *mkd, SplineChar *sc) {
 	    }
 	    /* Now copy the dots from the mathkern vertex structure */
 	    last = NULL;
-	    for ( j=0; j<mkv->cnt; ++j ) {
-		cur = chunkalloc(sizeof(SplineSet));
-		cur->first = cur->last = SplinePointCreate(mkv->mkd[j].kern + ((i&1)?0:sc->width), mkv->mkd[j].height );
-		cur->first->pointtype = pt_corner;
-		if ( last==NULL )
-		    msc->layers[ly_fore].splines = cur;
-		else
-		    last->next = cur;
-		last = cur;
+	    if ( mkv!=NULL ) {
+		for ( j=0; j<mkv->cnt; ++j ) {
+		    cur = chunkalloc(sizeof(SplineSet));
+		    cur->first = cur->last = SplinePointCreate(mkv->mkd[j].kern +
+			    ((i&1)?0:sc->width) +
+			    ((i&2)?0:sc->italic_correction==TEX_UNDEF?0:sc->italic_correction),
+			mkv->mkd[j].height );
+		    cur->first->pointtype = pt_corner;
+		    if ( last==NULL )
+			msc->layers[ly_fore].splines = cur;
+		    else
+			last->next = cur;
+		    last = cur;
+		}
 	    }
 	}
     } else {
@@ -1711,6 +1716,7 @@ static int MKD_Parse(MathKernDlg *mkd) {
 	    for ( j=0; j<cnt; ++j ) {
 		bases[j]->x = rint(bases[j]->x);
 		if ( !(i&1) ) bases[j]->x -= mkd->cursc->width;
+		if ( !(i&2) ) bases[j]->x -= mkd->cursc->italic_correction==TEX_UNDEF?0:mkd->cursc->italic_correction;
 		bases[j]->y = rint(bases[j]->y);
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 		/* If we have a previous entry with this height retain the height dv */
@@ -1727,9 +1733,12 @@ static int MKD_Parse(MathKernDlg *mkd) {
 		    mkv->mkd[j].height_adjusts = mkv->mkd[k].height_adjusts;
 		    if ( bases[j]->x == mkv->mkd[k].kern )
 			mkv->mkd[j].kern_adjusts = mkv->mkd[k].kern_adjusts;
-		    else
+		    else {
 			DeviceTableFree(mkv->mkd[k].kern_adjusts);
-		    mkv->mkd[k].height_adjusts = mkv->mkd[k].kern_adjusts = NULL;
+			mkv->mkd[k].kern_adjusts = NULL;
+		    }
+		    if ( j!=k )
+			mkv->mkd[k].height_adjusts = mkv->mkd[k].kern_adjusts = NULL;
 		}
 #endif
 		mkv->mkd[j].height = bases[j]->y;
