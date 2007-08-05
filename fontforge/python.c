@@ -4658,7 +4658,7 @@ return( NULL );
     temp.subtable = sub;
 
     if ( sub->lookup->lookup_type==gpos_single ) {
-	if ( !PyArg_ParseTuple(args,"(shhhh)", &subname,
+	if ( !PyArg_ParseTuple(args,"shhhh", &subname,
 		&temp.u.pos.xoff, &temp.u.pos.yoff,
 		&temp.u.pos.h_adv_off, &temp.u.pos.v_adv_off))
 return( NULL );
@@ -4666,7 +4666,7 @@ return( NULL );
     } else if ( sub->lookup->lookup_type==gpos_pair ) {
 	temp.type = pst_pair;
 	temp.u.pair.vr = chunkalloc(sizeof(struct vr [2]));
-	if ( !PyArg_ParseTuple(args,"(sshhhhhhhh)", &subname, &other,
+	if ( !PyArg_ParseTuple(args,"sshhhhhhhh", &subname, &other,
 		&temp.u.pair.vr[0].xoff, &temp.u.pair.vr[0].yoff,
 		&temp.u.pair.vr[0].h_adv_off, &temp.u.pair.vr[0].v_adv_off,
 		&temp.u.pair.vr[1].xoff, &temp.u.pair.vr[1].yoff,
@@ -4702,12 +4702,12 @@ Py_RETURN( self );
 	}
 	temp.u.pair.paired = copy(other);
     } else if ( sub->lookup->lookup_type==gsub_single ) {
-	if ( !PyArg_ParseTuple(args,"(ss)", &subname, &other))
+	if ( !PyArg_ParseTuple(args,"ss", &subname, &other))
 return( NULL );
 	temp.type = pst_substitution;
 	temp.u.subs.variant = copy(other);
     } else {
-	if ( !PyArg_ParseTuple(args,"(sO)", &subname, &others))
+	if ( !PyArg_ParseTuple(args,"sO", &subname, &others))
 return( NULL );
 	other = GlyphNamesFromTuple(others);
 	if ( other==NULL )
