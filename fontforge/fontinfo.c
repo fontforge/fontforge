@@ -4352,7 +4352,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	if ( strings==NULL || gasp==NULL )
 return( true );
 	if ( gasprows>0 && gasp[5*gasprows-5].u.md_ival!=65535 ) {
-	    gwwv_post_error(_("Bad Grid Fiting table"),_("The 'gasp' (Grid Fit) table must end with a pixel entry of 65535"));
+	    gwwv_post_error(_("Bad Grid Fitting table"),_("The 'gasp' (Grid Fit) table must end with a pixel entry of 65535"));
 return( true );
 	}
 	if ( !CheckNames(d))
@@ -8138,7 +8138,7 @@ return;
     vlabel[15].text_is_1byte = true;
     vlabel[15].text_in_resource = true;
     vgcd[15].gd.label = &vlabel[15];
-    vgcd[15].gd.popup_msg = (unichar_t *) _("The 'OS/2' table has changed slightly over the years,\nGenerally fields have been added, but occasionally their\nmeanings have been redefined." );
+    vgcd[15].gd.popup_msg = (unichar_t *) _("The 'OS/2' table has changed slightly over the years.\nGenerally fields have been added, but occasionally their\nmeanings have been redefined." );
     vgcd[15].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     vgcd[15].creator = GLabelCreate;
 
@@ -8285,7 +8285,7 @@ return;
     metgcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
 	/* value set later */
     metgcd[i].gd.cid = CID_UseTypoMetrics;
-    metgcd[i].gd.popup_msg = (unichar_t *) _("The spec already says that the typeo metrics should be\nused to determine line spacing. But so many\nprograms fail to follow the spec that MS desided a bit\nwas needed to remind them to do so.");
+    metgcd[i].gd.popup_msg = (unichar_t *) _("The specification already says that the typo metrics should be\nused to determine line spacing. But so many\nprograms fail to follow the spec. that MS decided an additional\nbit was needed to remind them to do so.");
     metarray[j++] = &metgcd[i]; metarray[j++] = GCD_ColSpan; metarray[j++] = GCD_Glue;
     metgcd[i++].creator = GCheckBoxCreate;
     metarray[j++] = NULL;
@@ -8943,7 +8943,7 @@ return;
     gaspgcd[i++].creator = GListButtonCreate;
     gaspharray[j++] = GCD_HPad10;
 
-    gasplabel[i].text = (unichar_t *) _("Optimized For Cleartype");
+    gasplabel[i].text = (unichar_t *) _("Optimized For ClearType");
     gasplabel[i].text_is_1byte = true;
     gasplabel[i].text_in_resource = true;
     gaspgcd[i].gd.label = &gasplabel[i];

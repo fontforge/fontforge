@@ -2695,7 +2695,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rfgcd[3].gd.pos.x = 3; rfgcd[3].gd.pos.y = rfgcd[2].gd.pos.y+17; 
     rfgcd[3].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( refsbadtransformps ) rfgcd[3].gd.flags |= gg_cb_on;
-    rfgcd[3].gd.popup_msg = (unichar_t *) _("Type1 and 2 fonts only support translation of references.\nThe first four entries of the transformation matix should be\n[1 0 0 1].");
+    rfgcd[3].gd.popup_msg = (unichar_t *) _("Type1 and 2 fonts only support translation of references.\nThe first four entries of the transformation matrix should be\n[1 0 0 1].");
     rfgcd[3].gd.cid = CID_RefBadTransformPS;
     rfgcd[3].creator = GCheckBoxCreate;
 
