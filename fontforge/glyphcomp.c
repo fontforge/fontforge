@@ -1906,7 +1906,7 @@ static void MatchLookups(struct font_diff *fd) {
     fd->lcnt2 = lcnt;
     fd->l1match2 = gcalloc(lcnt,sizeof(OTLookup *));
     fd->scnt1 = scnt;
-    fd->s2match1 = gcalloc(scnt,sizeof(OTLookup *));
+    fd->s1match2 = gcalloc(scnt,sizeof(OTLookup *));
 
     for ( otl=fd->is_gpos ? sf1->gpos_lookups : sf1->gsub_lookups; otl!=NULL; otl=otl->next ) {
 	for ( otl2=fd->is_gpos ? sf2->gpos_lookups : sf2->gsub_lookups; otl2!=NULL; otl2=otl2->next ) {
