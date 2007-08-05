@@ -33,11 +33,11 @@ BasePoint last_ruler_offset[2] = { {0,0}, {0,0} };
 
 static void SlopeToBuf(char *buf,char *label,double dx, double dy) {
     if ( dx==0 && dy==0 )
-	sprintf( buf, _("%sNo Slope"), label );
+	sprintf( buf, _("%s No Slope"), label );
     else if ( dx==0 )
-	sprintf( buf, "%sdy/dx= ∞, %4g°", label, atan2(dy,dx)*180/3.1415926535897932);
+	sprintf( buf, "%s dy/dx= ∞, %4g°", label, atan2(dy,dx)*180/3.1415926535897932);
     else
-	sprintf( buf, "%sdy/dx= %4g, %4g°", label, dy/dx, atan2(dy,dx)*180/3.1415926535897932);
+	sprintf( buf, "%s dy/dx= %4g, %4g°", label, dy/dx, atan2(dy,dx)*180/3.1415926535897932);
 }
 
 static void CurveToBuf(char *buf,CharView *cv,Spline *s, double t) {
@@ -117,7 +117,7 @@ return( false );
 	    t = cv->p.t;
 	    dx = (3*s->splines[0].a*t+2*s->splines[0].b)*t+s->splines[0].c;
 	    dy = (3*s->splines[1].a*t+2*s->splines[1].b)*t+s->splines[1].c;
-	    SlopeToBuf(buf," ",dx,dy);
+	    SlopeToBuf(buf,"",dx,dy);
 	} else if ( cv->p.sp!=NULL ) {
 	    if ( cv->p.sp->nonextcp )
 		strcpy(buf,_("No Next Control Point"));
@@ -135,7 +135,7 @@ return( false );
 	    s = cv->p.sp->next;
 	    dx = s->splines[0].c;
 	    dy = s->splines[1].c;
-	    SlopeToBuf(buf,_(" Next "),dx,dy);
+	    SlopeToBuf(buf,_(" Next"),dx,dy);
 	} else if ( cv->p.sp!=NULL ) {
 	    if ( cv->p.sp->noprevcp )
 		strcpy(buf,_("No Previous Control Point"));
@@ -153,7 +153,7 @@ return( false );
 	    s = cv->p.sp->prev;
 	    dx = (3*s->splines[0].a*1+2*s->splines[0].b)*1+s->splines[0].c;
 	    dy = (3*s->splines[1].a*1+2*s->splines[1].b)*1+s->splines[1].c;
-	    SlopeToBuf(buf,_(" Prev "),dx,dy);
+	    SlopeToBuf(buf,_(" Prev"),dx,dy);
 	} else
 return( false );
       break;
@@ -172,7 +172,7 @@ return( false );
 	    s = cv->p.sp->prev;
 	    dx = (3*s->splines[0].a*1+2*s->splines[0].b)*1+s->splines[0].c;
 	    dy = (3*s->splines[1].a*1+2*s->splines[1].b)*1+s->splines[1].c;
-	    SlopeToBuf(buf,_(" Prev "),dx,dy);
+	    SlopeToBuf(buf,_(" Prev"),dx,dy);
 	} else
 return( false );
       break;
