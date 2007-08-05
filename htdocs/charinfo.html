@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 24-Mar-2007 -->
+  <!-- AP: Last modified: 4-Aug-2007 -->
   <TITLE>Char Info</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -40,7 +40,9 @@
     <LI>
       <A HREF="#CounterMasks">Counter Masks</A>
     <LI>
-      <A HREF="#TeX">TeX</A>
+      <A HREF="#TeX">TeX &amp; Math</A>
+    <LI>
+      <A HREF="#Variants">Variants</A>
   </UL>
   <P>
   <A NAME="Unicode">This dialog </A>allows you to set the name and unicode
@@ -151,16 +153,50 @@
   this field directly (it changes when you change the unicode value or glyph
   name associated with this glyph).<BR CLEAR=ALL>
   <P>
-  <IMG SRC="charinfo-tex.png" ALIGN="Right" WIDTH="429" HEIGHT="333"> The
+  <IMG SRC="charinfo-tex.png" ALIGN="Right" WIDTH="544" HEIGHT="364"> The
   <A NAME="TeX">TeX</A> pane allows you to specify glyph specific information
   used in TeX tmf files. The height and depth fields are often the same as
   the glyph's bounding box (if you don't fill these in that's what fontforge
   will use by default), but they should be corrected for optical distortion,
   so in glyphs like "o" these fields should be clipped to the x-height and
-  baseline (ff isn't smart enough to do this for you).
+  baseline (ff will attempt to do this when you press <CODE>[Guess]</CODE>).
   <P>
-  The Subscript and Superscript Positions are only used in TeX Math (and
-  Math-extension) fonts.<BR CLEAR=ALL>
+  The Italic correction is used by both TeX and the new OpenType
+  <A HREF="math.html#Italic">MATH</A> table. In the MATH table you may also
+  specify a device table to correct rounding errors at small pixel sizes.
+  <P>
+  The Top Accent Position is another concept from the
+  <A HREF="math.html#TopAccent">MATH table</A> and provides a horizontal position
+  over which to position math accents (vertical positioning is done somewhere
+  else).
+  <P>
+  For extremely tall glyphs the normal mechanisms for positioning superscripts
+  are inappropriate and the <CODE>[] Is Extended Shape</CODE> checkbox alerts
+  the typesetter to this fact.
+  <P>
+  The [Math Kerning] button brings up the <A HREF="math.html#MathKern">Math
+  Kerning dialog</A> which gives you fine control over the placement of subscripts
+  and superscripts near the glyph.<BR CLEAR=ALL>
+  <H3>
+    <A NAME="Variants">Variants </A>
+  </H3>
+  <P>
+  <IMG SRC="charinfo-variants.png" WIDTH="545" HEIGHT="384" ALIGN="Right">There
+  are two panes for variants, one for glyphs that get longer horizontally and
+  one for glyphs that get longer vertically.
+  <P>
+  In mathmatical typesetting the size of a parenthesis will depend on the vertical
+  size of the formula within that parenthesis. As formulae can be arbetarily
+  complex they may be arbetarily tall, so there needs to be a way of making
+  arbetarily big parentheses. This pane provides two mechanisms.
+  <P>
+  At the top you may specify a list of prebuilt glyphs each a little bigger
+  than the one before.
+  <P>
+  Underneath you may specify a way of building really big parentheses by combining
+  several component glyphs. See the description of this in the
+  <A HREF="math.html#GlyphConstruction">MATH Info dialog </A>for more
+  details.<BR CLEAR="ALL">
   <P>
   The Next and Prev buttons allow you to move from one glyph to the next (if,
   for example, you need to enter encodings for a range of glyphs).
@@ -176,6 +212,8 @@
       <A HREF="fontinfo.html">The font info dialog</A>
     <LI>
       <A HREF="getinfo.html">The get info dialogs</A>
+    <LI>
+      <A HREF="math.html">The MATH info dialog</A>
   </UL>
   <P ALIGN=Center>
   -- <A HREF="elementmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A>
