@@ -120,7 +120,7 @@ static void MVVExpose(MetricsView *mv, GWindow pixmap, GEvent *event) {
 	    GDrawDrawLine(pixmap,0, yp,mv->dwidth,yp,0x808080);
 	}
 	y += mv->perchar[i].yoff;
-	bdfc = mv->bdf==NULL ?	BDFPieceMeal(mv->show,mv->glyphs[i].sc->orig_pos) :
+	bdfc = mv->bdf==NULL ?	BDFPieceMealCheck(mv->show,mv->glyphs[i].sc->orig_pos) :
 				mv->bdf->glyphs[mv->glyphs[i].sc->orig_pos];
 	if ( bdfc==NULL )
     continue;
@@ -257,7 +257,7 @@ return;
 	    x += mv->perchar[i].kernafter-mv->perchar[i].xoff;
 	else
 	    x += mv->perchar[i].xoff;
-	bdfc = mv->bdf==NULL ?	BDFPieceMeal(mv->show,mv->glyphs[i].sc->orig_pos) :
+	bdfc = mv->bdf==NULL ?	BDFPieceMealCheck(mv->show,mv->glyphs[i].sc->orig_pos) :
 				mv->bdf->glyphs[mv->glyphs[i].sc->orig_pos];
 	if ( bdfc==NULL )
     continue;
@@ -461,7 +461,7 @@ return;
 	r.width -= mv->perchar[i].xoff;
     } else
 	r.width += mv->perchar[i].xoff;
-    bdfc = mv->bdf==NULL ?  BDFPieceMeal(mv->show,mv->glyphs[i].sc->orig_pos) :
+    bdfc = mv->bdf==NULL ?  BDFPieceMealCheck(mv->show,mv->glyphs[i].sc->orig_pos) :
 			    mv->bdf->glyphs[mv->glyphs[i].sc->orig_pos];
     if ( bdfc==NULL )
 return;
@@ -783,7 +783,7 @@ static void MVRemetric(MetricsView *mv) {
     for ( i=0; i<cnt; ++i ) {
 	MVRefreshValues(mv,i);
 	sc = mv->glyphs[i].sc;
-	bdfc = mv->bdf!=NULL ? mv->bdf->glyphs[sc->orig_pos] : BDFPieceMeal(mv->show,sc->orig_pos);
+	bdfc = mv->bdf!=NULL ? mv->bdf->glyphs[sc->orig_pos] : BDFPieceMealCheck(mv->show,sc->orig_pos);
 	mv->perchar[i].dwidth = bdfc->width;
 	mv->perchar[i].dx = x;
 	mv->perchar[i].xoff = mv->glyphs[i].vr.xoff;
@@ -1197,7 +1197,7 @@ return(0);		/* Setting the scroll bar is premature */
 	min = -ybase;
 	max = mv->displayend-mv->topend-ybase;
 	for ( i=0; i<mv->glyphcnt; ++i ) {
-	    BDFChar *bdfc = mv->bdf==NULL ? BDFPieceMeal(mv->show,mv->glyphs[i].sc->orig_pos) :
+	    BDFChar *bdfc = mv->bdf==NULL ? BDFPieceMealCheck(mv->show,mv->glyphs[i].sc->orig_pos) :
 				mv->bdf->glyphs[mv->glyphs[i].sc->orig_pos];
 	    if ( bdfc!=NULL ) {
 		if ( min>-bdfc->ymax ) min = -bdfc->ymax;
@@ -3032,7 +3032,7 @@ static void _MVVMouse(MetricsView *mv,GEvent *event) {
 	y = mv->perchar[i].dy + mv->perchar[i].yoff;
 	x = xbase - mv->pixelsize/2 - mv->perchar[i].xoff;
 	if ( mv->bdf==NULL ) {
-	    BDFChar *bdfc = BDFPieceMeal(mv->show,mv->glyphs[i].sc->orig_pos);
+	    BDFChar *bdfc = BDFPieceMealCheck(mv->show,mv->glyphs[i].sc->orig_pos);
 	    if ( event->u.mouse.x >= x+bdfc->xmin &&
 		event->u.mouse.x <= x+bdfc->xmax &&
 		event->u.mouse.y <= (y+as)-bdfc->ymin &&
@@ -3162,7 +3162,7 @@ static void _MVVMouse(MetricsView *mv,GEvent *event) {
 	    }
 	} else {
 	    int olda = mv->activeoff;
-	    BDFChar *bdfc = BDFPieceMeal(mv->show,mv->glyphs[i].sc->orig_pos);
+	    BDFChar *bdfc = BDFPieceMealCheck(mv->show,mv->glyphs[i].sc->orig_pos);
 	    mv->activeoff = diff;
 	    MVRedrawI(mv,i,bdfc->xmin+olda,bdfc->xmax+olda);
 	}
@@ -3276,7 +3276,7 @@ return;
 		(apl=hitsaps(mv,i,event->u.mouse.x-x,y-event->u.mouse.y))!=NULL )
     break;
 #endif
-	    bdfc = BDFPieceMeal(mv->show,mv->glyphs[i].sc->orig_pos);
+	    bdfc = BDFPieceMealCheck(mv->show,mv->glyphs[i].sc->orig_pos);
 	    if ( event->u.mouse.x >= x+bdfc->xmin &&
 		event->u.mouse.x <= x+bdfc->xmax &&
 		event->u.mouse.y <= y-bdfc->ymin &&
@@ -3420,7 +3420,7 @@ return;
 	} else if ( mv->pressedwidth ) {
 	    int ow = mv->perchar[i].dwidth;
 	    if ( mv->right_to_left ) diff = -diff;
-	    bdfc = BDFPieceMeal(mv->show,mv->glyphs[i].sc->orig_pos);
+	    bdfc = BDFPieceMealCheck(mv->show,mv->glyphs[i].sc->orig_pos);
 	    mv->perchar[i].dwidth = bdfc->width + diff;
 	    if ( ow!=mv->perchar[i].dwidth ) {
 		for ( j=i+1; j<mv->glyphcnt; ++j )
@@ -3451,7 +3451,7 @@ return;
 	    }
 	} else {
 	    int olda = mv->activeoff;
-	    bdfc = BDFPieceMeal(mv->show,mv->glyphs[i].sc->orig_pos);
+	    bdfc = BDFPieceMealCheck(mv->show,mv->glyphs[i].sc->orig_pos);
 	    mv->activeoff = diff;
 	    MVRedrawI(mv,i,bdfc->xmin+olda,bdfc->xmax+olda);
 	}
@@ -3723,6 +3723,7 @@ return( NULL );
 	if ( !k )
 	    ret = gcalloc((cnt+1),sizeof(GTextInfo));
     }
+    free(scripttags);
 return( ret );
 }
 

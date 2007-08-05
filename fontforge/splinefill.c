@@ -1759,6 +1759,15 @@ return(NULL);
 return( bdf->glyphs[index] );
 }
 
+BDFChar *BDFPieceMealCheck(BDFFont *bdf, int index) {
+    if ( index<0 || index>=bdf->glyphcnt )
+return( NULL );
+    if ( bdf->glyphs[index]!=NULL )
+return( bdf->glyphs[index]);
+
+return(BDFPieceMeal(bdf,index));
+}
+
 /* Piecemeal fonts are only used as the display font in the fontview */
 /*  as such they are simple fonts (ie. we only display the current cid subfont) */
 BDFFont *SplineFontPieceMeal(SplineFont *sf,int pixelsize,int flags,void *ftc) {
