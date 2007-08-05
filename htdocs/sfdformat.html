@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 25-Mar-2007 -->
+  <!-- AP: Last modified: 4-Aug-2007 -->
   <TITLE>Spline Font Database File Format</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -14,7 +14,7 @@
   </H1>
   <P>
   <FONT COLOR="Red"><STRONG>This page is often grievously out of date. It was
-  a fair approximation to reality on 25 March 2007.</STRONG></FONT> Even if
+  a fair approximation to reality on 4 August 2007.</STRONG></FONT> Even if
   out of date it should be helpful, but if you really need to know the current
   format look at
   <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/fontforge/sfd.c">sfd.c</A>
@@ -68,9 +68,9 @@
       lookup-subtable. Bad things will probably happen if the lookup subtable isn't
       in the font.
     <LI>
-      If you copy a glyph containing references these are done by glyph index (which
-      is probably different from font to font). You may end up refering to the
-      wrong glyph.
+      If you copy a glyph containing references -- these are done by glyph index
+      (which is probably different from font to font). You may end up refering
+      to the wrong glyph.
   </UL>
   <H3>
     <A NAME="Font-Header">Font Header</A>
@@ -557,6 +557,24 @@ MacFeat: 2 1 2
 EndSplineSet
 </PRE>
   </BLOCKQUOTE>
+  <P>
+  If your font contains a 'MATH' table you will see lines like:
+  <BLOCKQUOTE>
+    <PRE>MATH:ScriptPercentScaleDown: 80
+MATH:ScriptScriptPercentScaleDown: 60
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  I shall not list all the posible entries. Basically there is one for every
+  constant that lives in the math table. The names are the same as the names
+  in the (English) MATH Info dialog.
+  <P>
+  Most math constants may also specify device tables (for more on
+  <A HREF="sfdformat.html#device-table">device tables see below</A>):
+  <BLOCKQUOTE>
+    <PRE>MATH:SubscriptShiftDown: 483 {12-17 1,0,0,0,1,1}
+</PRE>
+  </BLOCKQUOTE>
   <H3>
     <A NAME="Outline-Char-Data">Outline Character Data</A>
   </H3>
@@ -900,6 +918,45 @@ LCarets2: 1 650
     <PRE>Colour: ff0000
 </PRE>
   </BLOCKQUOTE>
+  <H4>
+    TeX &amp; MATH data
+  </H4>
+  <P>
+  A line like
+  <BLOCKQUOTE>
+    <PRE>TEX: 0 425
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  Specifies the tfm height and depth of a glyph.
+  <BLOCKQUOTE>
+    <PRE>ItalicCorrection: 50
+TopAccentHorizontal: 400
+IsExtendedShape: 1
+GlyphVariantsVertical: parenleft.big parenleft.bigger parenleft.biggest
+GlyphConstructionVertical: 3  uni239D%0,0,300,4733 uni239C%1,2500,2500,2501 uni239B%0,300,0,4733
+TopRightVertex: 2 0,0{13-15 1,0,1} 100,10
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  Specifies the Italic Correction (either from a tfm file or the MATH table).
+  Italic Correction may also include a device table.<BR>
+  Specifies the horizontal placement of top accents in mathmatical typesetting.
+  This may also include a device table.<BR>
+  Specifies the current glyph is an extended shape (and therefore may need
+  special superscript positioning).
+  <P>
+  For both glyph variants and construction the word "Vertical" may be replaced
+  with Horizontal for glyphs that grow horizontally.<BR>
+  The first number in GlyphConstruction is the number of components. Each component
+  is represented by a glyphname, followed by "%", followed by an indication
+  of whether this is an extender, followed by the start overlap length, the
+  end overlap length and the full length.
+  <P>
+  Math Kerning info may be specified for each vertex of the glyph (TopRight,
+  TopLeft, BottomRight, BottomLeft). First is a count of the number of points,
+  then the height, kerning pairs for each. Device tables are permitted and
+  may follow directly after either the height or the kerning value.
   <H4>
     Outline character extensions for multilayered fonts (type3)
   </H4>
