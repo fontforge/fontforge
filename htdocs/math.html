@@ -136,6 +136,12 @@
   FontForge displays bottom left attachments relative to the origin of the
   glyph.<BR>
   FontForge displays top left attachments relative to the italic correction.
+  <P>
+  Note: If you are familiar with the MATH table spec you will recall that the
+  last kern value does not have a height attached to it. FontForge tries to
+  guess a reasonable value for the unspecified height (because it makes editing
+  easier if I let the user move a point around), but have no fears, that guessed
+  at value will never show up in the MATH table itself.
   <H3>
     Vertical and Horizontal Glyph Variants
   </H3>

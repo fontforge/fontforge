@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 26-Oct-2005 -->
-  <!-- AP: Last modified: 8-May-2006 -->
+  <!-- AP: Last modified: 6-Aug-2007 -->
   <TITLE>FontForge install procedures for cygwin (MS/Windows)</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -63,10 +63,10 @@
     <LI>
       Run it. It will ask you what components of cygwin you wish to install
     <LI>
-      You will need the default stuff, plus the X window system
+      You will need the default stuff, plus the X window system, libpng, and libxml2.
       <P>
       Most of what you need you get by default. But you must explicitly request
-      X11. Scroll down the list of catagories:
+      X11 and the libraries. Scroll down the list of catagories:
       <UL>
 	<LI>
 	  Near (or at) the bottom, click on the [+] beside X11. Then make sure the
@@ -97,12 +97,13 @@
 	  </UL>
       </UL>
       <P>
-      By accepting the default settings you actually download tens or hundreds
-      of megabytes more than you need. L. Tikhomrov has actually gone through and
-      figured out which packages are neccesary for a minimal install and has kindly
-      written this up in a <A HREF="ff_cygwin_set.pdf">pdf document</A>. It takes
-      a bit more work, but if you are short on space (or time) it may be worth
-      it.
+      Do something similar for each of the libraries.
+      <P>
+      By accepting the default settings you will download tens or hundreds of megabytes
+      more than you need. L. Tikhomrov has actually gone through and figured out
+      which packages are neccesary for a minimal install and has kindly written
+      this up in a <A HREF="ff_cygwin_set.pdf">pdf document</A>. It takes a bit
+      more work, but if you are short on space (or time) it may be worth it.
     <LI>
       Once you have cygwin installed, start it. This should give you a terminal
       window running bash (a unix shell)
@@ -160,76 +161,82 @@
 </PRE>
       </BLOCKQUOTE>
     <LI>
-      Then edit the file ~/.bashrc by (again do not type "$", use control-D (^D)
-      to end):
-      <BLOCKQUOTE>
-	<PRE><FONT COLOR="Gray">$ </FONT>cat &gt;&gt; ~/.bashrc
-PATH=${PATH}:/usr/local/bin ; export PATH
-MANPATH=${MANPATH:-}:/usr/local/man ; export MANPATH
-^D
+      Then each time you want to run fontforge, start X11
+      <UL>
+	<LI>
+	  On recent cygwin systems you may start X by invoking:
+	  <BLOCKQUOTE>
+	    <PRE>C:\cygwin\usr\X11R6\bin\startxwin.bat
 </PRE>
-      </BLOCKQUOTE>
-    <LI>
-      Then each time you want to run fontforge, type:
-      <BLOCKQUOTE>
-	<PRE><FONT COLOR="Gray">$ </FONT>xinit
+	  </BLOCKQUOTE>
+	<LI>
+	  Or:
+	  <BLOCKQUOTE>
+	    <PRE>startx
 </PRE>
-      </BLOCKQUOTE>
-    <LI>
-      This should bring up X in a large window that covers the screen and within
-      that should be a subwindow, an xterm, running bash.
-    <LI>
-      From the xterm you first start a window manager
-      <BLOCKQUOTE>
-	<PRE><FONT COLOR="Gray">$ </FONT>twm &amp;
+	  </BLOCKQUOTE>
+	<LI>
+	  While on older systems try:
+	  <BLOCKQUOTE>
+	    <PRE><FONT COLOR="Gray">$ </FONT>xinit
 </PRE>
-      </BLOCKQUOTE>
-    <LI>
-      And then you should be able start FontForge.
-      <BLOCKQUOTE>
-	<PRE><FONT COLOR="Gray">$ </FONT>fontforge -new
+	  </BLOCKQUOTE>
+	<LI>
+	  This should bring up X in a large window that covers the screen and within
+	  that should be a subwindow, an xterm, running bash.
+	<LI>
+	  From the xterm you first start a window manager
+	  <BLOCKQUOTE>
+	    <PRE><FONT COLOR="Gray">$ </FONT>twm &amp;
 </PRE>
-      </BLOCKQUOTE>
+	  </BLOCKQUOTE>
+	<LI>
+	  And then you should be able start FontForge.
+	  <BLOCKQUOTE>
+	    <PRE><FONT COLOR="Gray">$ </FONT>fontforge -new
+</PRE>
+	  </BLOCKQUOTE>
+      </UL>
+      <H3>
+	<A NAME="Notes">Notes</A>
+      </H3>
+      <P>
+      <FONT COLOR="Red"><STRONG>Caveat: </STRONG></FONT>cygwin has a different
+      approach to the file system than Windows. A filename like
+      <CODE>C:\windows\fonts\arial.ttf </CODE>will be called
+      <CODE>/cygdrive/c/windows/fonts/arial.ttf </CODE>under cygwin (backslashes
+      are replaced by slashes, and the initial drive "<CODE>C:</CODE>" becomes
+      "<CODE>/cygdrive/c</CODE>".
+      <P>
+      Similarly a cygwin filename
+      "<CODE>/home/&lt;username&gt;/myfont.ttf</CODE>" becomes
+      "<CODE>C:\cygwin\home\&lt;username&gt;\myfont.ttf</CODE>"
+      <P>
+      <STRONG><FONT COLOR="Red">Caveat</FONT>:</STRONG> Do <STRONG>NOT</STRONG>
+      try to install a font by using fontforge to write the font directly to the
+      Windows\Fonts directory. This doesn't work. Windows needs to do some magic
+      when installing a font that it can't do if fontforge writes directly there.
+      Instead have fontforge create the font somewhere else and then use Windows'
+      own drag &amp; drop technique to move the font from there into Windows\Fonts.
+      <P>
+      <STRONG><FONT COLOR="Red">Caveat</FONT>:</STRONG> I've been told that on
+      Win 98 you need to have "Microsoft Network Login" installed to run X. I never
+      found this to be true myself, but if you have problems it might be something
+      to try.
+      <P>
+	<HR>
+      <UL>
+	<LI>
+	  <A HREF="source-build.html#MS">Building and installing from source</A>
+	<LI>
+	  <A HREF="source-build.html#Dependencies">Dependencies (external libraries/helper
+	  programs)</A>
+	<LI>
+	  <A HREF="source-build.html#Documentation">Installing documentation</A>
+	<LI>
+	  <A HREF="running.html#cygwin">Running FontForge</A>
+      </UL>
+      <P>
   </UL>
-  <H3>
-    <A NAME="Notes">Notes</A>
-  </H3>
-  <P>
-  <FONT COLOR="Red"><STRONG>Caveat: </STRONG></FONT>cygwin has a different
-  approach to the file system than Windows. A filename like
-  <CODE>C:\windows\fonts\arial.ttf </CODE>will be called
-  <CODE>/cygdrive/c/windows/fonts/arial.ttf </CODE>under cygwin (backslashes
-  are replaced by slashes, and the initial drive "<CODE>C:</CODE>" becomes
-  "<CODE>/cygdrive/c</CODE>".
-  <P>
-  Similarly a cygwin filename
-  "<CODE>/home/&lt;username&gt;/myfont.ttf</CODE>" becomes
-  "<CODE>C:\cygwin\home\&lt;username&gt;\myfont.ttf</CODE>"
-  <P>
-  <STRONG><FONT COLOR="Red">Caveat</FONT>:</STRONG> Do <STRONG>NOT</STRONG>
-  try to install a font by using fontforge to write the font directly to the
-  Windows\Fonts directory. This doesn't work. Windows needs to do some magic
-  when installing a font that it can't do if fontforge writes directly there.
-  Instead have fontforge create the font somewhere else and then use Windows'
-  own drag &amp; drop technique to move the font from there into Windows\Fonts.
-  <P>
-  <STRONG><FONT COLOR="Red">Caveat</FONT>:</STRONG> I've been told that on
-  Win 98 you need to have "Microsoft Network Login" installed to run X. I never
-  found this to be true myself, but if you have problems it might be something
-  to try.
-  <P>
-    <HR>
-  <UL>
-    <LI>
-      <A HREF="source-build.html#MS">Building and installing from source</A>
-    <LI>
-      <A HREF="source-build.html#Dependencies">Dependencies (external libraries/helper
-      programs)</A>
-    <LI>
-      <A HREF="source-build.html#Documentation">Installing documentation</A>
-    <LI>
-      <A HREF="running.html#cygwin">Running FontForge</A>
-  </UL>
-  <P>
 </DIV>
 </BODY></HTML>
