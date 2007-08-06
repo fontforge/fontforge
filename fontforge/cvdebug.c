@@ -29,7 +29,7 @@
 #include <math.h>
 #include <gkeysym.h>
 #include <ustring.h>
-#include <utype.h>
+#include <ctype.h>		/* must use ctype here because freetype headers include it (prior to 2.3.5) */
 #include <gresource.h>
 
 int debug_wins = dw_registers|dw_stack;
