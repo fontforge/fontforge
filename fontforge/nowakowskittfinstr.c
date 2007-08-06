@@ -1567,6 +1567,39 @@ return( i );
 return( -1 );
 }
 
+/* Test if given diagonal stems are valid, i.e. there is a spline point
+   corresponding to each edge of each stem. Exclude invalid stems from
+   the list.*/
+static void DStemInfosTest( DStemInfo **d, BasePoint *bp, int ptcnt ) {
+    DStemInfo *cur,*prev=NULL,*temp;
+    
+    cur = *d;
+    while ( cur!=NULL ) { 
+        if (BpIndex( &cur->leftedgetop,bp,ptcnt )==-1 ||
+            BpIndex( &cur->leftedgebottom,bp,ptcnt )==-1 ||
+            BpIndex( &cur->rightedgetop,bp,ptcnt )==-1 ||
+            BpIndex( &cur->rightedgebottom,bp,ptcnt )==-1) {
+             
+            if ( prev!=NULL ) {
+                prev->next=cur->next;
+                DStemInfoFree( cur );
+                cur=prev->next;
+            } else {
+                temp=cur;
+                *d=cur=cur->next;
+                DStemInfoFree( temp );
+            }
+
+        } else {
+            temp=cur;
+            cur=cur->next;
+            prev=temp;
+        }
+    }
+
+return;
+}
+
 /* Order the given diagonal stems by the X coordinate of the left edge top,
    and by Y if X is the same. The order is arbitrary, but may be essential for
    things like "W", so we should be sure that we are doing diagonals from
@@ -1998,7 +2031,6 @@ static uint8 *TouchDStemPoints( InstrCt *ct,DiagPointInfo *diagpts,
 
     if ( numy>0 ) {
         if ( !(fv->x == 0 && fv->y == 1) ) *instrs++ = SVTCA_y;
-        fprintf (stderr,"%d\n",numy);
         instrs = instructpoints ( instrs,numy,tobefixedy,MDAP );
     }
 
@@ -2094,9 +2126,10 @@ static uint8 *dogeninstructions(InstrCt *ct) {
 	hint->enddone = hint->startdone = false;
 
     /* We prepare some info about diagonal stems, so that we could respect */
-    /* diagonals during optimization od stem hint edges. These contents */
+    /* diagonals during optimization of stem hint edges. These contents */
     /* need to be explicitly freed after hinting diagonals. */
     if (ct->sc->dstem) {
+	DStemInfosTest(&(ct->sc->dstem), ct->bp, ct->ptcnt);
 	ct->diagstems = DStemSort(ct->sc->dstem, ct->bp, ct->ptcnt);
 	ct->diagpts = GetDiagPoints(ct);
     }
