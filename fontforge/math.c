@@ -1044,7 +1044,7 @@ return( true );
 return( true );
 		    }
 		}
-		if ( cid == CID_VGlyphConst || cid == CID_HGlyphConst ) {
+		if ( cid == CID_VGlyphVar || cid == CID_HGlyphVar ) {
 		    if ( !SF_NameListCheck(sf,old[i*cols+1].u.md_str)) {
 			gwwv_post_error(_("Bad Variants List"), _("Bad Variants list for glyph %s in %s"),
 				old[i*cols+0].u.md_str, gi_aspectnames[cid-CID_Exten]);
