@@ -2866,10 +2866,8 @@ static GImage *CI_GetConstructedImage(const void *_ci) {
 return( ret );
 }
 
-GImage *PST_GetImage(GGadget *pstk,SplineFont *sf,
-	struct lookup_subtable *sub,int popup_r, SplineChar *sc ) {
-    int rows, cols = GMatrixEditGetColCnt(pstk);
-    struct matrix_data *old = GMatrixEditGet(pstk,&rows);
+GImage *NameList_GetImage(SplineFont *sf,SplineChar *sc,char *namelist,
+	int isliga ) {
     BDFChar *me, **extras;
     int width, xmin, xmax, ymin, ymax;
     GImage *img;
@@ -2880,41 +2878,40 @@ GImage *PST_GetImage(GGadget *pstk,SplineFont *sf,
     SplineChar *other;
     int extracnt;
     int i,j;
+    char *subs = namelist, *pt, *start;
+    int ch;
 
-    if ( sc==NULL || sub==NULL )
+    if ( sc==NULL || sf==NULL )
 return( NULL );
     me = Rasterize(sc);
     ymin = me->ymin; ymax = me->ymax;
     xmin = me->xmin; xmax = me->xmax; width = me->width;
     extracnt = 0; extras = NULL;
-    if ( sub->lookup->lookup_type>=gsub_single && sub->lookup->lookup_type<=gsub_ligature ) {
-	char *subs = old[cols*popup_r+1].u.md_str, *pt, *start;
-	int ch;
-	for ( pt=subs; *pt ; ++extracnt ) {
-	    while ( *pt!=' ' && *pt!='\0' ) ++pt;
-	    if ( *pt==' ' )
-		while ( *pt==' ' ) ++pt;
+
+    for ( pt=subs; *pt ; ++extracnt ) {
+	while ( *pt!=' ' && *pt!='\0' ) ++pt;
+	if ( *pt==' ' )
+	    while ( *pt==' ' ) ++pt;
+    }
+    extras = galloc(extracnt*sizeof(BDFChar *));
+    extracnt = 0;
+    for ( pt=subs; *pt ; ) {
+	start = pt;
+	while ( *pt!=' ' && *pt!='\0' ) ++pt;
+	ch = *pt; *pt = '\0';
+	other = SFGetChar(sf,-1, start);
+	*pt = ch;
+	if ( other!=NULL ) {
+	    if ( extracnt==0 ) width += ICON_WIDTH;
+	    extras[extracnt] = Rasterize(other);
+	    if ( width+extras[extracnt]->xmin < xmin ) xmin = width+extras[extracnt]->xmin;
+	    if ( width+extras[extracnt]->xmax > xmax ) xmax = width+extras[extracnt]->xmax;
+	    if ( extras[extracnt]->ymin < ymin ) ymin = extras[extracnt]->ymin;
+	    if ( extras[extracnt]->ymax > ymax ) ymax = extras[extracnt]->ymax;
+	    width += extras[extracnt++]->width;
 	}
-	extras = galloc(extracnt*sizeof(BDFChar *));
-	extracnt = 0;
-	for ( pt=subs; *pt ; ) {
-	    start = pt;
-	    while ( *pt!=' ' && *pt!='\0' ) ++pt;
-	    ch = *pt; *pt = '\0';
-	    other = SFGetChar(sf,-1, start);
-	    *pt = ch;
-	    if ( other!=NULL ) {
-		if ( extracnt==0 ) width += ICON_WIDTH;
-		extras[extracnt] = Rasterize(other);
-		if ( width+extras[extracnt]->xmin < xmin ) xmin = width+extras[extracnt]->xmin;
-		if ( width+extras[extracnt]->xmax > xmax ) xmax = width+extras[extracnt]->xmax;
-		if ( extras[extracnt]->ymin < ymin ) ymin = extras[extracnt]->ymin;
-		if ( extras[extracnt]->ymax > ymax ) ymax = extras[extracnt]->ymax;
-		width += extras[extracnt++]->width;
-	    }
-	    if ( *pt==' ' )
-		while ( *pt==' ' ) ++pt;
-	}
+	if ( *pt==' ' )
+	    while ( *pt==' ' ) ++pt;
     }
 
     if ( ymax<=ICON_WIDTH ) ymax = ICON_WIDTH;
@@ -2939,7 +2936,7 @@ return( NULL );
     width += me->width;
     if ( extracnt!=0 ) {
 	int pixel = me->depth == 8 ? 0xff : 0xf;
-	if ( sub->lookup->lookup_type!=gsub_ligature ) {
+	if ( !isliga ) {
 	    for ( j = -1; j<2; j+=2 ) {
 		if ( me->ymax<-me->ymin )
 		    y = (me->ymax+me->ymin)/2;
@@ -2989,6 +2986,20 @@ return( NULL );
 	 BDFCharFree(extras[i]);
      free(extras);
 return( img );
+}
+
+GImage *PST_GetImage(GGadget *pstk,SplineFont *sf,
+	struct lookup_subtable *sub,int popup_r, SplineChar *sc ) {
+    int rows, cols = GMatrixEditGetColCnt(pstk);
+    struct matrix_data *old = GMatrixEditGet(pstk,&rows);
+
+    if ( sc==NULL || sub==NULL )
+return( NULL );
+    if ( sub->lookup->lookup_type<gsub_single || sub->lookup->lookup_type>gsub_ligature )
+return( NULL );
+
+return( NameList_GetImage(sf,sc,old[cols*popup_r+1].u.md_str,
+	sub->lookup->lookup_type<=gsub_ligature));
 }
 
 static GImage *_CI_GetImage(const void *_ci) {

@@ -1201,6 +1201,8 @@ extern SplineChar *SuffixCheck(SplineChar *sc,char *suffix);
 extern void SCSubtableDefaultSubsCheck(SplineChar *sc, struct lookup_subtable *sub, struct matrix_data *possub, int col_cnt, int r);
 extern GImage *PST_GetImage(GGadget *pstk,SplineFont *sf,
 	struct lookup_subtable *sub,int popup_r, SplineChar *sc );
+extern GImage *NameList_GetImage(SplineFont *sf,SplineChar *sc,char *namelist,
+	int isliga );
 extern GImage *GV_GetConstructedImage(SplineChar *sc,struct glyphvariants *gv,
 	int is_horiz);
 extern GImage *SC_GetLinedImage(SplineChar *sc, int pos, int is_italic_cor);

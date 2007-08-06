@@ -71,6 +71,7 @@ struct att_dlg {
     struct node *current;
     enum dlg_type { dt_show_att, dt_font_comp } dlg_type;
     FontView *fv1, *fv2;
+    struct node *popup_node;
 };
 
 static void BuildGSUBlookups(struct node *node,struct att_dlg *att);
@@ -2108,34 +2109,88 @@ return;
     }
 }
 
+static void _ATT_FreeImage(const void *_ci, GImage *img) {
+    GImageDestroy(img);
+}
+
+static GImage *_ATT_PopupImage(const void *_att) {
+    const struct att_dlg *att = _att;
+    char *start, *pt;
+    int ch;
+    SplineChar *sc;
+    int isliga;
+
+    if ( att->popup_node==NULL || att->popup_node->label==NULL )
+return( NULL );
+    for ( start=att->popup_node->label; *start==' '; ++start );
+    for ( pt=start; *pt!='\0' && *pt!=' '; ++pt );
+    ch = *pt; *pt = '\0';
+    sc = SFGetChar(att->sf,-1,start);
+    *pt = ch;
+    if ( sc==NULL )
+return( NULL );
+
+    isliga = false;
+    while ( *pt==' ' || *pt=='=' || *pt=='>' || *pt=='<' ) {
+	if ( *pt=='<' ) isliga = true;
+	++pt;
+    }
+    if ( *pt=='\0' )
+return( NULL );
+return( NameList_GetImage(att->sf,sc,pt,isliga));
+}
+
+static void ATTStartPopup(struct att_dlg *att,struct node *node) {
+    att->popup_node = node;
+    GGadgetPreparePopupImage(att->v,NULL,att,_ATT_PopupImage,_ATT_FreeImage);
+}
+
 static void AttMouse(struct att_dlg *att,GEvent *event) {
     int l, depth;
     struct node *node;
     GRect r;
 
-    if ( event->type!=et_mouseup )
+    if ( event->type==et_mousedown ) {
+	GGadgetEndPopup();
+	if ( event->u.mouse.button==3 ) {
+	    static int done=false;
+	    if ( !done ) {
+		done = true;
+		att_popuplist[0].ti.text = (unichar_t *) _( (char *)att_popuplist[0].ti.text);
+	    }
+	    GMenuCreatePopupMenu(att->v,event, att_popuplist);
+	}
 return;
+    }
 
     l = (event->u.mouse.y/att->fh);
     depth=0;
     node = NodeFindLPos(att->tables,l+att->off_top,&depth);
-    ATTChangeCurrent(att,node);
-    if ( event->u.mouse.y > l*att->fh+att->as ||
-	    event->u.mouse.x<5+8*depth ||
-	    event->u.mouse.x>=5+8*depth+att->as || node==NULL ) {
-	    /* Not in +/- rectangle */
-	if ( event->u.mouse.x > 5+8*depth+att->as && node!=NULL &&
-		att->dlg_type == dt_font_comp && event->u.mouse.clicks>1 )
-	    FontCompActivate(att,node);
+    if ( event->type==et_mouseup ) {
+	ATTChangeCurrent(att,node);
+	if ( event->u.mouse.y > l*att->fh+att->as ||
+		event->u.mouse.x<5+8*depth ||
+		event->u.mouse.x>=5+8*depth+att->as || node==NULL ) {
+		/* Not in +/- rectangle */
+	    if ( event->u.mouse.x > 5+8*depth+att->as && node!=NULL &&
+		    att->dlg_type == dt_font_comp && event->u.mouse.clicks>1 )
+		FontCompActivate(att,node);
 return;
+	}
+	node->open = !node->open;
+
+	SizeCnt(att,att->tables,0);
+
+	r.x = 0; r.width = 3000;
+	r.y = l*att->fh; r.height = 3000;
+	GDrawRequestExpose(att->v,&r,false);
+    } else if ( event->type == et_mousemove ) {
+	GGadgetEndPopup();
+	if ( node!=NULL && (strstr(node->label," => ")!=NULL ||
+			    strstr(node->label," <= ")!=NULL )) {
+	    ATTStartPopup(att,node);
+	}
     }
-    node->open = !node->open;
-
-    SizeCnt(att,att->tables,0);
-
-    r.x = 0; r.width = 3000;
-    r.y = l*att->fh; r.height = 3000;
-    GDrawRequestExpose(att->v,&r,false);
 }
 
 static void AttScroll(struct att_dlg *att,struct sbevent *sb) {
@@ -2322,15 +2377,7 @@ return( GGadgetDispatchEvent(att->vsb,event));
       case et_char:
 return( AttChar(att,event));
       case et_mousedown:
-	if ( event->u.mouse.button==3 ) {
-	    static int done=false;
-	    if ( !done ) {
-		done = true;
-		att_popuplist[0].ti.text = (unichar_t *) _( (char *)att_popuplist[0].ti.text);
-	    }
-	    GMenuCreatePopupMenu(gw,event, att_popuplist);
-	}
-      break;
+      case et_mousemove:
       case et_mouseup:
 	AttMouse(att,event);
       break;
