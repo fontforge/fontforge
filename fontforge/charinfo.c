@@ -1151,6 +1151,9 @@ return( false );
 	    }
 	}
     }
+    for ( isv=0; isv<2; ++isv )
+	for ( kp = isv ? sc->vkerns : sc->kerns; kp!=NULL; kp=kp->next )
+	    kp->kcid = 0;
 return( true );
 }
 

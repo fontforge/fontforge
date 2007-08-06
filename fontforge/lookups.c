@@ -6484,6 +6484,19 @@ return( true );
 	    }
 	    ++k;
 	} while ( k<pstkd->sf->subfontcnt );
+
+	/* The field we use to tick kern pairs must be reset to false */
+	k=0;
+	do {
+	    for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc = sf->glyphs[gid])!=NULL ) {
+		for ( isv=0; isv<2; ++isv ) {
+		    for ( kp = isv ? sc->vkerns : sc->kerns; kp!=NULL; kp=kp->next ) {
+			kp->kcid = false;
+		    }
+		}
+	    }
+	    ++k;
+	} while ( k<pstkd->sf->subfontcnt );
 	PSTKD_SetSuffix(pstkd);
 	pstkd->done = true;
     }
