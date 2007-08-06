@@ -222,6 +222,8 @@ return( false );
 }
 
 int hasFreeTypeByteCode(void) {
+    static int complained = 0;
+
     if ( !hasFreeType())
 return( false );
 
@@ -230,12 +232,22 @@ return( false );
 /*  so we we were compliled before 2.3.5 and face a 2.3.5+ library then */
 /*  we can't use the interpretter. Similarly if we were compiled after 2.3.5 */
 /*  and face a less recent library we can't either */
-/* Here we are compliled with an old library, so if the dynamic one is new we fail */
-    if ( FreeTypeAtLeast(2,3,5))
+/* Here we are compiled with an old library, so if the dynamic one is new we fail */
+    if ( FreeTypeAtLeast(2,3,5)) {
+	if ( !complained ) {
+	    LogError("This version of FontForge expects freetype 2.3.4 or less.");
+	    complained = true;
+	}
 return( false );
+    }
 #else
-    if ( !FreeTypeAtLeast(2,3,5))
+    if ( !FreeTypeAtLeast(2,3,5)) {
+	if ( !complained ) {
+	    LogError("This version of FontForge expects freetype 2.3.5 or more.");
+	    complained = true;
+	}
 return( false );
+    }
 #endif
 
 #if defined(_STATIC_LIBFREETYPE) || defined(NODYNAMIC)
