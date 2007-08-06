@@ -2337,10 +2337,10 @@ return(NULL);
 			v2 = strtol(start2,NULL,10);
 			for ( ++v1; v1<=v2; ++v1 ) {
 			    if ( range_len==2 )
-				sprintf( last_glyph, "%.*s%02d%s", start2-tok->tokbuf,
+				sprintf( last_glyph, "%.*s%02d%s", (int) (start2-tok->tokbuf),
 					tok->tokbuf, v1, start2+2 );
 			    else
-				sprintf( last_glyph, "%.*s%03d%s", start2-tok->tokbuf,
+				sprintf( last_glyph, "%.*s%03d%s", (int) (start2-tok->tokbuf),
 					tok->tokbuf, v1, start2+3 );
 			    contents = fea_glyphname_validate(tok,last_glyph);
 			    if ( v1==v2 )
