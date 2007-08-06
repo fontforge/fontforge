@@ -11014,7 +11014,7 @@ void FVFakeMenus(FontView *fv,int cmd) {
 	FVCopy(fv,ct_fullcopy);
       break;
       case 2:	/* Copy reference */
-	FVCopy(fv,ct_lookups);
+	FVCopy(fv,ct_reference);
       break;
       case 3:
 	FVCopyWidth(fv,ut_width);
