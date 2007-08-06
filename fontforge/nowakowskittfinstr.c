@@ -1187,8 +1187,8 @@ return;
 	/* Now I'll try to find points not snapped by any previous stem hint. */
 	if (therewerestems) {
 	    base = (blues[i][0] + blues[i][1]) / 2.0;
-	    real fudge = ct->gi->fudge;
-	    ct->gi->fudge = fabs(base - blues[i][0]);
+	    int fudge = ct->gi->fudge;
+	    ct->gi->fudge = rint(fabs(base - blues[i][0]));
 	    init_edge(ct, base, EXTERNAL_CONTOURS);
 	    ct->gi->fudge = fudge;
 	    optimize_edge(ct);
