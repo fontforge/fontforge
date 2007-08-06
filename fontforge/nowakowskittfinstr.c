@@ -2204,6 +2204,7 @@ static uint8 *dogeninstructions(InstrCt *ct) {
     );
 
     ct->sc->ttf_instrs_len = (ct->pt)-(ct->instrs);
+    ct->sc->instructions_out_of_date = false;
 return ct->sc->ttf_instrs = grealloc(ct->instrs,(ct->pt)-(ct->instrs));
 }
 
