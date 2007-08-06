@@ -224,6 +224,20 @@ return( false );
 int hasFreeTypeByteCode(void) {
     if ( !hasFreeType())
 return( false );
+
+#if FREETYPE_MAJOR==2 && (FREETYPE_MINOR<3 || (FREETYPE_MINOR==3 && FREETYPE_PATCH<5))
+/* The internal data structures of the bytecode interpreter changed in 2.3.5 */
+/*  so we we were compliled before 2.3.5 and face a 2.3.5+ library then */
+/*  we can't use the interpretter. Similarly if we were compiled after 2.3.5 */
+/*  and face a less recent library we can't either */
+/* Here we are compliled with an old library, so if the dynamic one is new we fail */
+    if ( FreeTypeAtLeast(2,3,5))
+return( false );
+#else
+    if ( !FreeTypeAtLeast(2,3,5))
+return( false );
+#endif
+
 #if defined(_STATIC_LIBFREETYPE) || defined(NODYNAMIC)
     /* In a static library, we can assume our headers are accurate */
 # ifdef TT_CONFIG_OPTION_BYTECODE_INTERPRETER
