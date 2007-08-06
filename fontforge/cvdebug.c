@@ -29,6 +29,7 @@
 #include <math.h>
 #include <gkeysym.h>
 #include <ustring.h>
+#include <utype.h>
 #include <gresource.h>
 
 int debug_wins = dw_registers|dw_stack;
@@ -53,6 +54,12 @@ void CVDebugPointPopup(CharView *cv) {
 # include <internal/internal.h>
 #endif
 #include "ttinterp.h"
+
+#if FREETYPE_MAJOR==2 && (FREETYPE_MINOR<3 || (FREETYPE_MINOR==3 && FREETYPE_PATCH<5))
+# define PPEM(exc)	((exc)->size->metrics.x_ppem)
+#else
+# define PPEM(exc)	((exc)->size->root.metrics.x_ppem)
+#endif
 
 static Color rasterbackcol = 0xffffff;
 
@@ -227,7 +234,7 @@ return;
     /* Instruction control, scan control, scan type, phase, threshold for super rounding */
 
     y += 2;
-    sprintf( buffer, "Pixels/Em: %d", exc->size->metrics.x_ppem ); uc_strcpy(ubuffer,buffer);
+    sprintf( buffer, "Pixels/Em: %d", PPEM(exc) ); uc_strcpy(ubuffer,buffer);
     GDrawDrawText(pixmap,3,y,ubuffer,-1,NULL,0); y += dv->ii.fh;
 }
 
@@ -689,9 +696,9 @@ static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
     /*  isn't going to give us that, it rounds. Rather than guess how it does */
     /*  that, let's just ask it... */
     /* The exact size is: cv->ft_pointsize*cv->ft_dpi/72.0 */
-    /* Rounded size is:   exc->size.x_ppem (or y_ppem) */
+    /* Rounded size is:   exc->size->root.metrics.x_ppem (or y_ppem) */
     if ( exc!=NULL )
-	dv->scale = (cv->sc->parent->ascent+cv->sc->parent->descent)/((double) exc->size->metrics.x_ppem) / (1<<6);
+	dv->scale = (cv->sc->parent->ascent+cv->sc->parent->descent)/((double) PPEM(exc)) / (1<<6);
     if ( cv!=NULL && cv->coderange!=range ) {
 	cv->coderange = range;
 	CVInfoDraw(cv,cv->gw);
