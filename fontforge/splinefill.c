@@ -1728,7 +1728,7 @@ BDFChar *BDFPieceMeal(BDFFont *bdf, int index) {
     SplineChar *sc;
     extern int use_freetype_to_rasterize_fv;
 
-    if ( index==-1 )
+    if ( index<0 )
 return( NULL );
     if ( bdf->glyphcnt<bdf->sf->glyphcnt ) {
 	if ( bdf->glyphmax<bdf->sf->glyphcnt )
@@ -1736,6 +1736,9 @@ return( NULL );
 	memset(bdf->glyphs+bdf->glyphcnt,0,(bdf->glyphmax-bdf->glyphcnt)*sizeof(SplineChar *));
 	bdf->glyphcnt = bdf->sf->glyphcnt;
     }
+    if ( index >= bdf->glyphcnt )
+return( NULL );
+
     sc = bdf->sf->glyphs[index];
     if ( sc==NULL )
 return(NULL);
@@ -1760,8 +1763,11 @@ return( bdf->glyphs[index] );
 }
 
 BDFChar *BDFPieceMealCheck(BDFFont *bdf, int index) {
-    if ( index<0 || index>=bdf->glyphcnt )
+    if ( index<0 )
 return( NULL );
+    if ( index>=bdf->glyphcnt )
+return(BDFPieceMeal(bdf,index));
+
     if ( bdf->glyphs[index]!=NULL )
 return( bdf->glyphs[index]);
 
