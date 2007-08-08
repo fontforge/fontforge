@@ -6016,7 +6016,7 @@ return;		/* Couldn't parse the numeric kerning info */
 	xorig = size.width/10;
 	yorig = size.height/20;
 	xorig /= mag; yorig /= mag;
-	PSTKern_DrawGlyph(pixmap,xorig+vr1.xoff,yorig+vwidth1+vr1.yoff, bc1, mag);
+	PSTKern_DrawGlyph(pixmap,xorig+vr1.xoff,yorig+vwidth1-vr1.yoff, bc1, mag);
 	PSTKern_DrawGlyph(pixmap,xorig+vr2.xoff,yorig+vwidth1+vwidth2+vr1.v_adv_off-vr2.yoff, bc2, mag);
     } else if ( pstkd->sub->lookup->lookup_flags&pst_r2l ) {
 	xorig = 9*size.width/10;
@@ -6024,16 +6024,16 @@ return;		/* Couldn't parse the numeric kerning info */
 	GDrawDrawLine(pixmap,xorig,0,xorig,size.height, 0x808080);
 	GDrawDrawLine(pixmap,0,yorig,size.width,yorig, 0x808080);
 	xorig /= mag; yorig /= mag;
-	PSTKern_DrawGlyph(pixmap,xorig-bc1->width-vr1.h_adv_off-vr1.xoff,yorig+vr1.yoff, bc1, mag);
-	PSTKern_DrawGlyph(pixmap,xorig-bc1->width-vr1.h_adv_off-bc2->width-vr2.h_adv_off-vr2.xoff,yorig+vr2.yoff, bc2, mag);
+	PSTKern_DrawGlyph(pixmap,xorig-bc1->width-vr1.h_adv_off-vr1.xoff,yorig-vr1.yoff, bc1, mag);
+	PSTKern_DrawGlyph(pixmap,xorig-bc1->width-vr1.h_adv_off-bc2->width-vr2.h_adv_off-vr2.xoff,yorig-vr2.yoff, bc2, mag);
     } else {
 	xorig = size.width/10;
 	yorig = pstkd->sf->ascent*size.height/(pstkd->sf->ascent+pstkd->sf->descent);
 	GDrawDrawLine(pixmap,xorig,0,xorig,size.height, 0x808080);
 	GDrawDrawLine(pixmap,0,yorig,size.width,yorig, 0x808080);
 	xorig /= mag; yorig /= mag;
-	PSTKern_DrawGlyph(pixmap,xorig+vr1.xoff,yorig+vr1.yoff, bc1, mag);
-	PSTKern_DrawGlyph(pixmap,xorig+bc1->width+vr1.h_adv_off+vr2.xoff,yorig+vr2.yoff, bc2, mag);
+	PSTKern_DrawGlyph(pixmap,xorig+vr1.xoff,yorig-vr1.yoff, bc1, mag);
+	PSTKern_DrawGlyph(pixmap,xorig+bc1->width+vr1.h_adv_off+vr2.xoff,yorig-vr2.yoff, bc2, mag);
     }
 }
 
