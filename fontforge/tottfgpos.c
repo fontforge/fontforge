@@ -3909,7 +3909,8 @@ return;
     }
 #endif
 
-    if ( bits&mb_gi ) {
+    /* The spec does not say this can be NULL */
+    if ( 1 /* bits&mb_gi*/ ) {
 	gi_start = ftell(mathf);
 	fseek(mathf,6,SEEK_SET);
 	putshort(mathf,gi_start);
@@ -3957,7 +3958,8 @@ return;
 	}
     }
 
-    if ( bits&mb_gv ) {
+    /* The spec does not say this can be NULL */
+    if ( 1 /* bits&mb_gv*/ ) {
 	v_start = ftell(mathf);
 	fseek(mathf,8,SEEK_SET);
 	putshort(mathf,v_start);
