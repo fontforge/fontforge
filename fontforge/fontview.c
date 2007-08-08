@@ -5804,11 +5804,28 @@ return;
 }
 
 # ifdef FONTFORGE_CONFIG_GDRAW
+static SplineChar *FVFindACharInDisplay(FontView *fv) {
+    int start, end, enc, gid;
+    EncMap *map = fv->map;
+    SplineFont *sf = fv->sf;
+    SplineChar *sc;
+
+    start = fv->rowoff*fv->colcnt;
+    end = start + fv->rowcnt*fv->colcnt;
+    for ( enc = start; enc<end && enc<map->enccount; ++enc ) {
+	if ( (gid=map->map[enc])!=-1 && (sc=sf->glyphs[gid])!=NULL )
+return( sc );
+    }
+return( NULL );
+}
+
 static void FVMenuReencode(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     Encoding *enc = NULL;
     EncMap *map;
+    SplineChar *sc;
 
+    sc = FVFindACharInDisplay(fv);
     enc = FindOrMakeEncoding(mi->ti.userdata);
     if ( enc==&custom )
 	fv->map->enc = &custom;
@@ -5826,6 +5843,11 @@ static void FVMenuReencode(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SFReplaceEncodingBDFProps(fv->sf,fv->map);
     FVSetTitle(fv);
     FontViewReformatOne(fv);
+    if ( sc!=NULL ) {
+	int enc = fv->map->backmap[sc->orig_pos];
+	if ( enc!=-1 )
+	    FVScrollToChar(fv,enc);
+    }
 }
 
 static void FVMenuForceEncode(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -6719,7 +6741,9 @@ static void FVMenuRemoveUnused(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 static void FVMenuCompact(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int oldcount = fv->map->enccount;
+    SplineChar *sc;
 
+    sc = FVFindACharInDisplay(fv);
     if ( fv->normal!=NULL ) {
 	EncMapFree(fv->map);
 	fv->map = fv->normal;
@@ -6736,6 +6760,11 @@ static void FVMenuCompact(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     if ( oldcount!=fv->map->enccount )
 	FontViewReformatOne(fv);
     FVSetTitle(fv);
+    if ( sc!=NULL ) {
+	int enc = fv->map->backmap[sc->orig_pos];
+	if ( enc!=-1 )
+	    FVScrollToChar(fv,enc);
+    }
 #endif
 }
 
