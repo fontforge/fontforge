@@ -1023,6 +1023,7 @@ static void _FVRevert(FontView *fv,int tobackup) {
     MetricsView *mv, *mvnext;
     int i;
     FontView *fvs;
+    EncMap *map;
 
     if ( old->origname==NULL )
 return;
@@ -1130,18 +1131,27 @@ return;
 	    gtk_widget_destroy(mv->gw);
 # endif
 	}
+	if ( fvs==fv )
+	    map = temp->map;
+	else
+	    map = EncMapFromEncoding(fv->sf,fv->map->enc);
+	if ( map->enccount>fvs->map->enccount ) {
+	    fvs->selected = grealloc(fvs->selected,map->enccount);
+	    memset(fvs->selected+fvs->map->enccount,0,map->enccount-fvs->map->enccount);
+	}
+	EncMapFree(fv->map);
+	fv->map = map;
+	if ( fvs->normal!=NULL ) {
+	    EncMapFree(fvs->normal);
+	    fvs->normal = EncMapCopy(fvs->map);
+	    CompactEncMap(fvs->map,fv->sf);
+	}
     }
 # ifdef FONTFORGE_CONFIG_GDRAW
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);
 # endif
 #endif
-    if ( temp->map->enccount>fv->map->enccount ) {
-	fv->selected = grealloc(fv->selected,temp->map->enccount);
-	memset(fv->selected+fv->map->enccount,0,temp->map->enccount-fv->map->enccount);
-    }
-    EncMapFree(fv->map);
-    fv->map = temp->map;
     SFClearAutoSave(old);
     temp->fv = fv->sf->fv;
     for ( fvs=fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame )
