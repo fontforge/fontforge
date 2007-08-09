@@ -47,6 +47,98 @@
   </BLOCKQUOTE>
   <UL>
     <LI>
+      08-August-2007
+      <UL>
+	<LI>
+	  Support for MicroSoft's new 'MATH' opentype table.
+	  <A href="math.html">Element-&gt;Math Info</A>.
+	<LI>
+	  Michal Nowakowski and Alexej Kryukov have improved truetype hinting.
+	<LI>
+	  kerning display is off in a pairwise lookup window if a y position adjustment
+	  were requested.
+	<LI>
+	  When reverting a compacted font ff thought the font was compacted even when
+	  it was not.
+	<LI>
+	  Make some effort to retain context when changing encodings.
+	<LI>
+	  ff scripting command CopyReference() was broken.
+	<LI>
+	  Werner wants little popup windows in show att. Give him some for substitutions.
+	<LI>
+	  If you examined a kerning pair subtable (either with glyph info or from double
+	  clicking on the subtable in the lookup pane) and then pressed [OK], and then
+	  generated an afm (tfm, old-style kern table, etc.) you would lose all the
+	  kern pairs you examined.
+	<LI>
+	  Patch by Barry SCHWARTZ to feature file output on 64bit machines.
+	<LI>
+	  In freetype 2.3.5 the binary layout of the execution context changed.<BR>
+	  This means that if ff is compiled against a 2.3.4 library it can't debug
+	  truetype if linked with a 2.3.5 library (and vice versa).<BR>
+	  So put in checks to see that the library version matches what we expect.
+	  <P>
+	  Also the contents of one of the structures has changed a bit, and a value
+	  that used to live in one field has moved to another (the ppem value moved
+	  from (exc)-&gt;size-&gt;metrics.x_ppem to
+	  (exc)-&gt;size-&gt;root.metrics.x_ppem.
+	  <P>
+	  Well, David warned me that this might happen.
+	  <P>
+	  Warn the user (rather than just silently failing) when we have a freetype
+	  version mismatch.
+	<LI>
+	  Patch from Barry SCHWARTZ. python fontforge.font.addPosSub was expecting
+	  its args inside a redundant tuple.
+	<LI>
+	  New Vietnamese translation from Clytie.<BR>
+	  Also some spelling corrections in the original messages.
+	<LI>
+	  Patch by Barry SCHWARTZ to lookup/subtable comparison.
+	<LI>
+	  If a metricsview was open, then creating a new glyph slot would potentially
+	  screw up memory and sometimes crashed.
+	<LI>
+	  Edit-&gt;Merge (and simplify) still have bugs.
+	<LI>
+	  Fix two memory leaks in the metrics view (one was huge).
+	<LI>
+	  If freetype failed to rasterize a glyph, then we would fall back on returning
+	  a bitmap image from our own rasterizer -- even if we asked freetype for a
+	  greymap. this caused problems when routines expected byte data rather than
+	  bit data.
+	<LI>
+	  If we were given a cff (otf) font, with a bluevalues array which ended in
+	  0 (as [-20 0]) then we would omit the final zero ([-20]).
+	<LI>
+	  Outputting extension subtables appears to have been broken.
+	<LI>
+	  The code which was supposed to detect two glyphs with the same set of kerning
+	  pairs and use the same data for them didn't work (forcing us to get an extension
+	  table which also didn't work).
+	<LI>
+	  Add some more checks against non-BMP characters when drawing text.
+	<LI>
+	  For first characters in the kern pair dlg, when editing class 0, the [Edit]
+	  button was enabled but did nothing. Should work now.
+	<LI>
+	  ff could crash if it tried to create a popup image of the <New> line in the
+	  substitution pane of Glyph Info.
+	<LI>
+	  Horizontal Scrolling in the matrix edit widget sometimes forgot to move the
+	  column labels.
+	<LI>
+	  Add glyph name completion to lookup subtable dlg and glyph info panes.
+	<LI>
+	  addKerningClass didn't parse its arguments correctly.
+	<LI>
+	  Drat. When printing full page glyphs to a pdf file, the glyph was shifted
+	  up by almost the full page and we got a second (and incorrect) title.
+	<LI>
+	  MS proposes two new feature tags with it's new 'MATH' table.
+      </UL>
+    <LI>
       23-July-2007
       <UL>
 	<LI>
