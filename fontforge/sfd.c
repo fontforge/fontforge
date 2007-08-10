@@ -3551,8 +3551,12 @@ return( NULL );
 	} else if ( strmatch(tok,"CounterMasks:")==0 ) {
 	    getsint(sfd,&sc->countermask_cnt);
 	    sc->countermasks = gcalloc(sc->countermask_cnt,sizeof(HintMask));
-	    for ( i=0; i<sc->countermask_cnt; ++i )
+	    for ( i=0; i<sc->countermask_cnt; ++i ) {
+		int ch;
+		while ( (ch=getc(sfd))==' ' );
+		ungetc(ch,sfd);
 		SFDGetHintMask(sfd,&sc->countermasks[i]);
+	    }
 	} else if ( strmatch(tok,"AnchorPoint:")==0 ) {
 	    lastap = SFDReadAnchorPoints(sfd,sc,lastap);
 	} else if ( strmatch(tok,"Fore")==0 ) {
