@@ -80,13 +80,11 @@ typedef struct charinfo {
 #define CID_IsExtended	1024
 #define CID_LCCount	1040
 
-/* Offsets for repeated fields. add 100*index (index<6) */
+/* Offsets for repeated fields. add 100*index (index<=6) */
 #define CID_List	1220
 #define CID_New		1221
 #define CID_Delete	1222
 #define CID_Edit	1223
-#define CID_Copy	1224
-#define CID_Paste	1225
 
 #define CID_PST		1111
 #define CID_Tag		1112
@@ -465,7 +463,6 @@ static int CI_CounterSelChanged(GGadget *g, GEvent *e) {
 	int offset = GGadgetGetCid(g)-CID_List;
 	GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_Delete+offset),sel!=-1);
 	GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_Edit+offset),sel!=-1);
-	GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_Copy+offset),sel!=-1);
     } else if ( e->type==et_controlevent && e->u.control.subtype == et_listdoubleclick ) {
 	CharInfo *ci = GDrawGetUserData(GGadgetGetWindow(g));
 	int offset = GGadgetGetCid(g)-CID_List;
@@ -3864,7 +3861,7 @@ return;
 	    pslabel[6][1].text_is_1byte = true;
 	    pslabel[6][1].text_in_resource = true;
 	    psgcd[6][1].gd.label = &pslabel[6][1];
-	    psgcd[6][1].gd.cid = CID_New+i*100;
+	    psgcd[6][1].gd.cid = CID_New+6*100;
 	    psgcd[6][1].gd.handle_controlevent = CI_NewCounter;
 	    psgcd[6][1].gd.box = &smallbox;
 	    psgcd[6][1].creator = GButtonCreate;
@@ -3876,7 +3873,7 @@ return;
 	    pslabel[6][2].text_is_1byte = true;
 	    pslabel[6][2].text_in_resource = true;
 	    psgcd[6][2].gd.label = &pslabel[6][2];
-	    psgcd[6][2].gd.cid = CID_Delete+i*100;
+	    psgcd[6][2].gd.cid = CID_Delete+6*100;
 	    psgcd[6][2].gd.handle_controlevent = CI_DeleteCounter;
 	    psgcd[6][2].gd.box = &smallbox;
 	    psgcd[6][2].creator = GButtonCreate;
@@ -3888,7 +3885,7 @@ return;
 	    pslabel[6][3].text_is_1byte = true;
 	    pslabel[6][3].text_in_resource = true;
 	    psgcd[6][3].gd.label = &pslabel[6][3];
-	    psgcd[6][3].gd.cid = CID_Edit+i*100;
+	    psgcd[6][3].gd.cid = CID_Edit+6*100;
 	    psgcd[6][3].gd.handle_controlevent = CI_EditCounter;
 	    psgcd[6][3].gd.box = &smallbox;
 	    psgcd[6][3].creator = GButtonCreate;
