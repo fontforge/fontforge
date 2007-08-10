@@ -7,6 +7,7 @@
 typedef unsigned int uint32;
 typedef int int32;
 typedef short int16;
+typedef signed char int8;
 typedef unsigned short uint16;
 typedef unsigned char uint8;
 #define true	1
@@ -85,6 +86,8 @@ struct ttfinfo {
     int gpos_start;		/* OpenType glyph positioning, kerning etc. */
     		/* GSUB */
     int gsub_start;		/* OpenType glyph substitution, ligatures etc. */
+		/* hdmx */
+    int hdmx_start;
 		/* head */
     int head_start;
 		/* hhea */
@@ -98,6 +101,8 @@ struct ttfinfo {
 		/* loca */
     int glyphlocations_start;	/* there are glyph_cnt of these, from maxp tab */
     int loca_length;		/* actually glypn_cnt is wrong. Use the table length (divided by size) instead */
+		/* MATH */
+    int math_start;
 		/* maxp */
     int maxp_start;		/* maximum number of glyphs */
     int maxp_length;
@@ -273,8 +278,8 @@ exit ( 1 );
 	readcff(ttf,util,info);
 exit(0);
     } else if ( v==CHR('t','y','p','1')) {
-	fprintf(stderr, "This is apple's embedding of a type1 font in a truetype file. I don't know how to parse it. I'd like a copy to look at if you don't mind sending me one... gww@silcom.com\n" );
-exit ( 1 );
+	printf( "version='typ1', " );
+	/* This is apple's embedding of a type1 font in a truetype file. I don't know how to parse it. I'd like a copy to look at if you don't mind sending me one... gww@silcom.com */
     } else
 	printf( "version=%g, ", version );
     printf( "numtables=%d, searchRange=%d entrySel=%d rangeshift=%d\n",
@@ -370,6 +375,9 @@ exit ( 1 );
 	  case CHR('E','B','S','C'):	/* Apple uses the same as MS on this one */
 	    info->bitmapscale_start = offset;
 	  break;
+	  case CHR('h','d','m','x'):
+	    info->hdmx_start = offset;
+	  break;
 	  case CHR('b','h','e','d'):	/* Fonts with bitmaps but no outlines get bhea */
 	  case CHR('h','e','a','d'):
 	    info->head_start = offset;
@@ -392,6 +400,9 @@ exit ( 1 );
 	    info->glyphlocations_start = offset;
 	    info->loca_length = length;
 	    info->glyph_cnt = length/2-1;
+	  break;
+	  case CHR('M','A','T','H'):
+	    info->math_start = offset;
 	  break;
 	  case CHR('m','a','x','p'):
 	    info->maxp_start = offset;
@@ -2236,7 +2247,7 @@ static void showfeaturelist(FILE *ttf,int feature_start ) {
     free( feature_record_names );
 }
 
-static uint16 *showCoverageTable(FILE *ttf, int coverage_offset) {
+static uint16 *showCoverageTable(FILE *ttf, int coverage_offset, int specified_cnt) {
     int format, cnt, i,j, rcnt;
     uint16 *glyphs=NULL;
     int start, end, ind, max;
@@ -2265,12 +2276,15 @@ static uint16 *showCoverageTable(FILE *ttf, int coverage_offset) {
 	    }
 	    for ( j=start; j<=end; ++j )
 		glyphs[j-start+ind] = j;
-	    if ( end-start+ind>cnt ) {
+	    if ( end-start+1+ind>cnt ) {
 		glyphs[end-start+1+ind] = 0xffff;
-		cnt = end-start+ind;
+		cnt = end-start+1+ind;
 	    }
 	}
     }
+    if ( specified_cnt>=0 && cnt!=specified_cnt )
+	fprintf(stderr, "! > Bad coverage table: Calculated Count(%d) does not match specified (%d)\n",
+		cnt, specified_cnt );
 return( glyphs );
 }
 
@@ -2375,7 +2389,7 @@ static void gposPairSubTable(FILE *ttf, int which, int stoffset, struct ttfinfo 
 	ps_offsets = calloc(cnt,sizeof(short));
 	for ( i=0; i<cnt; ++i )
 	    ps_offsets[i] = getushort(ttf);
-	glyphs = showCoverageTable(ttf,stoffset+coverage);
+	glyphs = showCoverageTable(ttf,stoffset+coverage, cnt);
 	for ( i=0; i<cnt; ++i ) {
 	    fseek(ttf,stoffset+ps_offsets[i],SEEK_SET);
 	    printf( "\t    PairCnt=%d\n", pair_cnt = getushort(ttf));
@@ -2392,7 +2406,7 @@ static void gposPairSubTable(FILE *ttf, int which, int stoffset, struct ttfinfo 
 	free(ps_offsets);
     } else if ( subformat==2 ) {
 	printf( "\t   Class based kerning (not displayed)\n" );
-	PrintGlyphs( showCoverageTable(ttf,stoffset+coverage),info);
+	PrintGlyphs( showCoverageTable(ttf,stoffset+coverage,cnt),info);
     } else {
 	printf( "\t   !!! unknown sub-table format !!!!\n" );
     }
@@ -2429,9 +2443,9 @@ static void gposMarkToBaseSubTable(FILE *ttf, int which, int stoffset, struct tt
     printf( "\t   Mark Offset=%d\n", markoff = getushort(ttf));
     printf( "\t   Base Offset=%d\n", baseoff = getushort(ttf));
     printf( "\t   Mark Glyphs\n" );
-    mglyphs = showCoverageTable(ttf,stoffset+mcoverage);
+    mglyphs = showCoverageTable(ttf,stoffset+mcoverage, classcnt);
     printf( "\t   Base Glyphs\n" );
-    bglyphs = showCoverageTable(ttf,stoffset+bcoverage);
+    bglyphs = showCoverageTable(ttf,stoffset+bcoverage, -1);
     fseek(ttf,stoffset+baseoff,SEEK_SET);
     printf( "\t    Base Glyph Count=%d\n", getushort(ttf));
     offsets = malloc(classcnt*sizeof(uint16));
@@ -2482,7 +2496,7 @@ static void gsubSingleSubTable(FILE *ttf, int which, int stoffset, struct ttfinf
     if ( type==1 ) {
 	uint16 delta = getushort(ttf);
 	printf( "\t   Delta=%d\n", delta);
-	glyphs = showCoverageTable(ttf,stoffset+coverage);
+	glyphs = showCoverageTable(ttf,stoffset+coverage, -1);
 	printf( "\t   Which means ...\n" );
 	for ( i=0; glyphs[i]!=0xffff; ++i )
 	    printf( "\t\tGlyph %d (%s) -> %d (%s)\n", glyphs[i],
@@ -2493,7 +2507,7 @@ static void gsubSingleSubTable(FILE *ttf, int which, int stoffset, struct ttfinf
 	int here;
 	printf( "\t   Count=%d\n", cnt = getushort(ttf));
 	here = ftell(ttf);
-	glyphs = showCoverageTable(ttf,stoffset+coverage);
+	glyphs = showCoverageTable(ttf,stoffset+coverage, cnt);
 	fseek(ttf,here,SEEK_SET);
 	for ( i=0; i<cnt; ++i ) {
 	    int val = getushort(ttf);
@@ -2518,7 +2532,7 @@ static void gsubMultipleSubTable(FILE *ttf, int which, int stoffset, struct ttfi
     seq_offsets = malloc(cnt*sizeof(uint16));
     for ( i=0; i<cnt; ++i )
 	printf( "\t    Sequence Offsets[%d]=%d\n", i, seq_offsets[i]=getushort(ttf));
-    glyphs = showCoverageTable(ttf,stoffset+coverage);
+    glyphs = showCoverageTable(ttf,stoffset+coverage, cnt);
     for ( i=0; i<cnt; ++i ) {
 	fseek(ttf,stoffset+seq_offsets[i],SEEK_SET);
 	printf( "\t    Glyph sequence[%d] for glyph %d (%s)\n", i, glyphs[i], glyphs[i]>=info->glyph_cnt ? "!!!! Bad Glyph !!!!" : info->glyph_names == NULL ? "" : info->glyph_names[glyphs[i]]);
@@ -2545,7 +2559,7 @@ static void gsubAlternateSubTable(FILE *ttf, int which, int stoffset, struct ttf
     seq_offsets = malloc(cnt*sizeof(uint16));
     for ( i=0; i<cnt; ++i )
 	printf( "\t    Alternate Set Offsets[%d]=%d\n", i, seq_offsets[i]=getushort(ttf));
-    glyphs = showCoverageTable(ttf,stoffset+coverage);
+    glyphs = showCoverageTable(ttf,stoffset+coverage, cnt);
     for ( i=0; i<cnt; ++i ) {
 	fseek(ttf,stoffset+seq_offsets[i],SEEK_SET);
 	printf( "\t    Glyph alternates[%d] for glyph %d (%s)\n", i, glyphs[i], glyphs[i]>=info->glyph_cnt ? "!!!! Bad Glyph !!!!" : info->glyph_names == NULL ? "" : info->glyph_names[glyphs[i]]);
@@ -2572,7 +2586,7 @@ static void gsubLigatureSubTable(FILE *ttf, int which, int stoffset, struct ttfi
     ls_offsets = malloc(cnt*sizeof(uint16));
     for ( i=0; i<cnt; ++i )
 	printf( "\t    Lig Set Offsets[%d]=%d\n", i, ls_offsets[i]=getushort(ttf));
-    glyphs = showCoverageTable(ttf,stoffset+coverage);
+    glyphs = showCoverageTable(ttf,stoffset+coverage,cnt);
     for ( i=0; i<cnt; ++i ) {
 	fseek(ttf,stoffset+ls_offsets[i],SEEK_SET);
 	printf( "\t    Ligature Set[%d] for glyph %d %s\n", i, glyphs[i], glyphs[i]>=info->glyph_cnt ? "!!!! Bad Glyph !!!!" : info->glyph_names == NULL ? "" : info->glyph_names[glyphs[i]]);
@@ -2775,7 +2789,7 @@ static void gdefshowligcaretlist(FILE *ttf,int offset,struct ttfinfo *info) {
     lc_offsets = malloc(cnt*sizeof(uint16));
     for ( i=0; i<cnt; ++i )
 	printf( "\t    Lig Caret Offsets[%d]=%d\n", i, lc_offsets[i]=getushort(ttf));
-    glyphs = showCoverageTable(ttf,offset+coverage);
+    glyphs = showCoverageTable(ttf,offset+coverage,cnt);
     for ( i=0; i<cnt; ++i ) {
 	fseek(ttf,offset+lc_offsets[i],SEEK_SET);
 	printf("\t    Carets for glyph %d (%s)\n", glyphs[i],
@@ -5865,8 +5879,8 @@ static int readttfbitmapscale(FILE *ttf,FILE *util, struct ttfinfo *info) {
     int newx, newy, oldx, oldy;
 
     fseek(ttf,info->bitmapscale_start,SEEK_SET);
-    printf( "\nBitmap scaling data (at %d for %d bytes)\n", info->bitmapscale_start);
-    printf( "\tVersion: %x\n", getlong(ttf));
+    printf( "\nBitmap scaling data (at %d)\n", info->bitmapscale_start);
+    printf( "\tVersion: 0x%08x\n", getlong(ttf));
     printf( "\tnum Sizes: %d\n", cnt = getlong(ttf));
     for ( i=0; i<cnt; ++i ) {
 	printf( " Scaling Info %d\n", i );
@@ -5890,7 +5904,7 @@ static int readttfbitmaps(FILE *ttf,FILE *util, struct ttfinfo *info) {
 
     fseek(ttf,info->bitmaploc_start,SEEK_SET);
     printf( "\nBitmap location data (at %d for %d bytes)\n", info->bitmaploc_start, info->bitmaploc_length);
-    printf( "\tVersion: %x\n", getlong(ttf));
+    printf( "\tVersion: 0x%08\n", getlong(ttf));
     printf( "\tnumStrikes: %d\n", cnt = getlong(ttf));
     for ( i=0; i<cnt; ++i ) {
 	printf( "\t indexSubTableArrayOffset: %d\n", offset = getlong(ttf));
@@ -5911,6 +5925,346 @@ static int readttfbitmaps(FILE *ttf,FILE *util, struct ttfinfo *info) {
 	readttfIndexSizeSubTab(ttf,info->bitmaploc_start+offset,size,num,info);
 	fseek(ttf,here,SEEK_SET);
     }
+return( 1 );
+}
+
+static int readttfhdmx(FILE *ttf,FILE *util, struct ttfinfo *info) {
+    int cnt,size,i;
+    int gid;
+    int pos;
+
+    fseek(ttf,info->hdmx_start,SEEK_SET);
+    printf( "\nHorizontal device metrics (at %d)\n", info->hdmx_start);
+    printf( "\tVersion: 0x%08\n", getushort(ttf));
+    printf( "\tnum Records: %d\n", cnt = getushort(ttf));
+    printf( "\trecord Size: %d\n", size = getlong(ttf));
+    pos = ftell(ttf);
+    for ( i=0; i<cnt; ++i ) {
+	fseek(ttf,pos+i*size,SEEK_SET);
+	printf( " Device widths at %dppem\n", getc(ttf));
+	printf( " Max Width %d\n", getc(ttf));
+	for ( gid=0; gid<info->glyph_cnt; ++gid ) {
+	    if ( info->glyph_names!=NULL && info->glyph_names[gid]!=NULL )
+		printf("\t\t%s:\t%d\n", info->glyph_names[gid], getc(ttf));
+	}
+    }
+return( 1 );
+}
+
+static void PrintDeviceTable(FILE *ttf, uint32 start) {
+    uint32 here = ftell(ttf);
+    int first, last, type;
+    signed char *corrections;
+    int i,b,c, w;
+    int any;
+
+    fseek(ttf,start,SEEK_SET);
+    first = getushort(ttf);
+    last = getushort(ttf);
+    type = getushort(ttf);
+    if ( type!=1 && type!=2 && type!=3 )
+	fprintf( stderr, "! > Bad device table type: %d (must be 1,2, or 3)\n",
+		type );
+    if ( first>last )
+	fprintf( stderr, "! > Bad device table first>last (first=%d last=%d)\n",
+		first, last );
+    else {
+	c = last-first+1;
+	corrections = malloc(c);
+	if ( type==1 ) {
+	    for ( i=0; i<c; i+=8 ) {
+		w = getushort(ttf);
+		for ( b=0; b<8 && i+b<c; ++b )
+		    corrections[i+b] = ((int16) ((w<<(b*2))&0xc000))>>14;
+	    }
+	} else if ( type==2 ) {
+	    for ( i=0; i<c; i+=4 ) {
+		w = getushort(ttf);
+		for ( b=0; b<4 && i+b<c; ++b )
+		    corrections[i+b] = ((int16) ((w<<(b*4))&0xf000))>>12;
+	    }
+	} else {
+	    for ( i=0; i<c; ++i )
+		corrections[i] = (int8) getc(ttf);
+	}
+	putchar('{');
+	any = false;
+	for ( i=0; i<c; ++i ) {
+	    if ( corrections[i]!=0 ) {
+		if ( any ) putchar(' ');
+		any = true;
+		printf( "%d:%d", first+i, corrections[i]);
+	    }
+	}
+	free( corrections );
+	printf( "}[%d-%d sized %d]", first,last, type );
+    }
+    fseek( ttf, here, SEEK_SET );
+}
+    
+static void PrintMathValueRecord(FILE *ttf, uint32 start) {
+    int val;
+    uint32 devtaboffset;
+
+    val = (short) getushort(ttf);
+    devtaboffset = getushort(ttf);
+    printf( "%d", val );
+    if ( devtaboffset!=0 )
+	PrintDeviceTable(ttf,start+devtaboffset);
+}
+
+static void readttfmathConstants(FILE *ttf,uint32 start, struct ttfinfo *info) {
+    int i;
+
+    fseek(ttf,start,SEEK_SET);
+    printf( "\n MATH Constants sub-table (at %d)\n", start);
+    for ( i=0; i<4; ++i )
+	printf( "\t    Constant %d: %d\n", i, getushort(ttf));
+    for ( ; i<4+51; ++i ) {
+	printf( "\t    Constant %d: ", i );
+	PrintMathValueRecord(ttf,start);
+	printf( "\n");
+    }
+    /* And one final constant */
+    printf( "\t    Constant %d: %d\n", i, getushort(ttf));
+    printf( "\n");
+    if ( feof(ttf) ) {
+	fprintf( stderr, "!> Unexpected end of file!\n" );
+return;
+    }
+}
+
+static void readttfmathICTA(FILE *ttf,uint32 start, struct ttfinfo *info, int is_ic) {
+    int coverage, cnt, i;
+    uint16 *glyphs;
+    uint32 here;
+
+    fseek(ttf,start,SEEK_SET);
+    if ( is_ic )
+	printf( "\n  MATH Italics Correction sub-table (at %d)\n", start);
+    else
+	printf( "\n  MATH Top Accent Attachment sub-table (at %d)\n", start);
+    printf( "\t   Coverage Offset=%d\n", coverage = getushort(ttf));
+    printf( "\t   Count=%d\n", cnt = getushort(ttf));
+    if ( feof(ttf) ) {
+	fprintf( stderr, "!> Unexpected end of file!\n" );
+return;
+    }
+    here = ftell(ttf);
+    glyphs = showCoverageTable(ttf,start+coverage,cnt);
+    fseek(ttf,here,SEEK_SET);
+    for ( i=0; i<cnt; ++i ) {
+	printf( "\t\tGlyph %s(%d): ",
+		glyphs[i]>=info->glyph_cnt ? "!!! Bad Glyph !!!" : info->glyph_names==NULL ? "" : info->glyph_names[glyphs[i]],
+		glyphs[i]);
+	PrintMathValueRecord(ttf,start);
+	printf( "\n");
+    }
+    free(glyphs);
+    printf( "\n");
+}
+
+static void PrintMathKernTable(FILE *ttf,uint32 start, struct ttfinfo *info) {
+    int cnt, i;
+    uint32 here = ftell(ttf);
+
+    fseek(ttf,start,SEEK_SET);
+    cnt = getushort(ttf);
+    for ( i=0; i<cnt; ++i ) {
+	printf( "\t\t\tHeights %d: ", i );
+	PrintMathValueRecord(ttf,start);
+	printf( "\n");
+    }
+    for ( i=0; i<=cnt; ++i ) {
+	printf( "\t\t\tKerns %d: ", i );
+	PrintMathValueRecord(ttf,start);
+	printf( "\n");
+    }
+    fseek(ttf,here,SEEK_SET);
+}
+
+static void readttfmathKern(FILE *ttf,uint32 start, struct ttfinfo *info) {
+    int coverage, cnt, i, j;
+    uint16 *glyphs;
+    uint32 here;
+    static char *cornernames[] = { "TopRight:", "TopLeft:", "BottomRight:", "BottomLeft:" };
+
+    fseek(ttf,start,SEEK_SET);
+    printf( "\n  MATH Kerning sub-table (at %d)\n", start);
+    printf( "\t   Coverage Offset=%d\n", coverage = getushort(ttf));
+    printf( "\t   Count=%d\n", cnt = getushort(ttf));
+    if ( feof(ttf) ) {
+	fprintf( stderr, "!> Unexpected end of file!\n" );
+return;
+    }
+    here = ftell(ttf);
+    glyphs = showCoverageTable(ttf,start+coverage,cnt);
+    fseek(ttf,here,SEEK_SET);
+    for ( i=0; i<cnt; ++i ) {
+	printf( "\t\tGlyph %s(%d):\n",
+		glyphs[i]>=info->glyph_cnt ? "!!! Bad Glyph !!!" : info->glyph_names==NULL ? "" : info->glyph_names[glyphs[i]],
+		glyphs[i]);
+	for ( j=0; j<4; ++j ) {
+	    int offset = getushort(ttf);
+	    if ( offset!=0 ) {
+		printf( "\t\t %s\n", cornernames[j]);
+		PrintMathKernTable(ttf,start+offset,info);
+	    }
+	}
+    }
+    free(glyphs);
+    printf( "\n");
+}
+
+static void readttfmathGlyphInfo(FILE *ttf,uint32 start, struct ttfinfo *info) {
+    uint32 ic, ta, es, mk;
+
+    fseek(ttf,start,SEEK_SET);
+    printf( "\n MATH Glyph Info sub-table (at %d)\n", start);
+    printf( "\tOffset to Italic Correction: %d\n", ic = getushort(ttf));
+    printf( "\tOffset to Top Accent: %d\n", ta = getushort(ttf));
+    printf( "\tOffset to Extended Shape: %d\n", es = getushort(ttf));
+    printf( "\tOffset to Math Kern: %d\n", mk = getushort(ttf));
+    if ( feof(ttf) ) {
+	fprintf( stderr, "!> Unexpected end of file!\n" );
+return;
+    }
+
+    if ( ic!=0 )
+	readttfmathICTA(ttf,start+ic,info,1);
+    if ( ta!=0 )
+	readttfmathICTA(ttf,start+ta,info,0);
+    if ( es!=0 ) {
+	printf( "\n  MATH Extended Shape sub-table (at %d)\n", start+es);
+	free( showCoverageTable(ttf,start+es,-1));
+    }
+    if ( mk!=0 )
+	readttfmathKern(ttf,start+mk,info);
+}
+
+static void PrintMathGlyphConstruction(FILE *ttf,uint32 start, struct ttfinfo *info) {
+    uint32 here = ftell(ttf);
+    int offset, variant_cnt, part_cnt;
+    int i;
+
+    fseek(ttf,start,SEEK_SET);
+    printf( "\t\t  Glyph Assembly Offset=%d\n", offset = getushort(ttf));
+    printf( "\t\t  Variant Count=%d\n", variant_cnt = getushort(ttf));
+    if ( feof(ttf) ) {
+	fprintf( stderr, "!> Unexpected end of file!\n" );
+return;
+    }
+    if ( variant_cnt!=0 ) {
+	printf("\t\t  Variants: " );
+	for ( i=0; i<variant_cnt; ++i ) {
+	    int gid, adv;
+	    gid = getushort(ttf);
+	    adv = getushort(ttf);
+	    printf( " %s:%d",
+		    gid>=info->glyph_cnt ? "!!! Bad Glyph !!!" : info->glyph_names==NULL ? "" : info->glyph_names[gid],
+		    adv);
+	}
+	printf( "\n" );
+    }
+    if ( offset!=0 ) {
+	fseek(ttf,start+offset,SEEK_SET);
+	printf( "\t\t  Glyph Assembly Italic Correction: " );
+	PrintMathValueRecord(ttf,start+offset);
+	printf( "\n\t\t  Part Count=%d\n", part_cnt = getushort(ttf));
+	for ( i=0; i<part_cnt; ++i ) {
+	    int gid = getushort(ttf), flags;
+	    printf( "\t\t    %s",
+		    gid>=info->glyph_cnt ? "!!! Bad Glyph !!!" : info->glyph_names==NULL ? "" : info->glyph_names[gid]);
+	    printf( " start=%d", getushort(ttf));
+	    printf( " end=%d", getushort(ttf));
+	    printf( " full=%d", getushort(ttf));
+	    flags = getushort(ttf);
+	    printf( " flags=%04x(%s%s)", flags, (flags&1)?"Extender":"Required",
+		    (flags&0xfffe)?",Unknown flags!!!!":"");
+	}
+    }
+    fseek(ttf,here,SEEK_SET);
+}
+
+static void readttfmathVariants(FILE *ttf,uint32 start, struct ttfinfo *info) {
+    int vcoverage, vcnt, hcoverage, hcnt, i, offset;
+    uint16 *vglyphs=NULL, *hglyphs=NULL;
+    uint32 here;
+
+    fseek(ttf,start,SEEK_SET);
+    printf( "\n MATH Variants sub-table (at %d)\n", start);
+    printf( "\t  MinConnectorOverlap=%d\n", getushort(ttf));
+    printf( "\t  VCoverage Offset=%d\n", vcoverage = getushort(ttf));
+    printf( "\t  HCoverage Offset=%d\n", hcoverage = getushort(ttf));
+    printf( "\t  VCount=%d\n", vcnt = getushort(ttf));
+    printf( "\t  HCount=%d\n", hcnt = getushort(ttf));
+    if ( feof(ttf) ) {
+	fprintf( stderr, "!> Unexpected end of file!\n" );
+return;
+    }
+    here = ftell(ttf);
+    if ( vcoverage!=0 )
+	vglyphs = showCoverageTable(ttf,start+vcoverage,vcnt);
+    else {
+	vglyphs = NULL;
+	if ( vcnt!=0 )
+	    fprintf( stderr, "! > Bad coverage table: Offset=NUL, but cnt=%d\n", vcnt );
+    }
+    if ( hcoverage!=0 )
+	hglyphs = showCoverageTable(ttf,start+hcoverage,hcnt);
+    else {
+	hglyphs = NULL;
+	if ( hcnt!=0 )
+	    fprintf( stderr, "! > Bad coverage table: Offset=NUL, but cnt=%d\n", hcnt );
+    }
+    fseek(ttf,here,SEEK_SET);
+    for ( i=0; i<vcnt; ++i ) {
+	printf( "\t\tV Glyph %s(%d):\n",
+		vglyphs[i]>=info->glyph_cnt ? "!!! Bad Glyph !!!" : info->glyph_names==NULL ? "" : info->glyph_names[vglyphs[i]],
+		vglyphs[i]);
+	offset = getushort(ttf);
+	PrintMathGlyphConstruction(ttf,start+offset,info);
+    }
+    free(vglyphs);
+    for ( i=0; i<hcnt; ++i ) {
+	printf( "\t\tH Glyph %s(%d):\n",
+		hglyphs[i]>=info->glyph_cnt ? "!!! Bad Glyph !!!" : info->glyph_names==NULL ? "" : info->glyph_names[hglyphs[i]],
+		hglyphs[i]);
+	offset = getushort(ttf);
+	PrintMathGlyphConstruction(ttf,start+offset,info);
+    }
+    free(hglyphs);
+    printf( "\n");
+}
+
+static int readttfmath(FILE *ttf,FILE *util, struct ttfinfo *info) {
+    int version;
+    uint32 constants, glyphinfo, variants;
+
+    fseek(ttf,info->math_start,SEEK_SET);
+    printf( "\nMATH table (at %d)\n", info->math_start);
+    printf( "\tVersion: 0x%08\n", version = getlong(ttf));
+    if ( version!=0x00010000 )
+	fprintf( stderr, "!> Bad version number for math table.\n" );
+    printf( "\tOffset to Constants: %d\n", constants = getushort(ttf));
+    printf( "\tOffset to GlyphInfo: %d\n", glyphinfo = getushort(ttf));
+    printf( "\tOffset to Variants: %d\n", variants = getushort(ttf));
+    if ( feof(ttf) ) {
+	fprintf( stderr, "!> Unexpected end of file!\n" );
+return( 0 );
+    }
+    if ( constants!=0 )
+	readttfmathConstants(ttf,info->math_start+constants,info);
+    else
+	fprintf( stderr, "!> NUL Offset not expected for math constant table.\n" );
+    if ( glyphinfo!=0 )
+	readttfmathGlyphInfo(ttf,info->math_start+glyphinfo,info);
+    else
+	fprintf( stderr, "!> NUL Offset not expected for math Glyph Info table.\n" );
+    if ( variants!=0 )
+	readttfmathVariants(ttf,info->math_start+variants,info);
+    else
+	fprintf( stderr, "!> NUL Offset not expected for math Variants table.\n" );
 return( 1 );
 }
 
@@ -5983,6 +6337,10 @@ return;
 	readttfapplefvar(ttf,util,&info);
     if ( info.gvar_start!=0 )
 	readttfapplegvar(ttf,util,&info);
+    if ( info.hdmx_start!=0 )
+	readttfhdmx(ttf,util,&info);
+    if ( info.math_start!=0 )
+	readttfmath(ttf,util,&info);
     if ( info.glyphlocations_start!=0 ) {
 	int i, pos;
 	fseek(ttf,info.glyphlocations_start,SEEK_SET);
