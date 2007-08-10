@@ -9898,8 +9898,13 @@ return( true );
 }
 
 static int sd_e_h(GWindow gw, GEvent *event) {
+    struct sd_data *sd = GDrawGetUserData(gw);
+
+    if ( sd==NULL )
+return( true );
+    
     if ( event->type==et_close ) {
-	SD_DoCancel( GDrawGetUserData(gw));
+	SD_DoCancel( sd );
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	    help("scripting.html");
@@ -9910,7 +9915,6 @@ return( false );
 	/* Above palettes */
 	GDrawRaise(gw);
     } else if ( event->type == et_resize ) {
-	struct sd_data *sd = GDrawGetUserData(gw);
 	GRect newsize, gpos;
 	int space;
 	GDrawGetSize(gw,&newsize);
@@ -10073,6 +10077,7 @@ void ScriptDlg(FontView *fv,CharView *cv) {
 	GDrawRequestExpose(list->v,NULL,false);
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);
+    GDrawSetUserData(gw,NULL);
 #endif
 }
 #endif
