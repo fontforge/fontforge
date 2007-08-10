@@ -18504,7 +18504,7 @@ static struct psaltnames psaltnames[] = {
 	{ "pi1", 0x03d6 },
 	{ "hyphen-minus", 0x002d },
 	{ "hyphenminus", 0x002d },
-	{ "nonmarkingreturn", 0x000c },
+	{ "nonmarkingreturn", 0x000d },
 	{ "micro", 0x00b5 },
 	{ "Dmacron", 0x0110 },
 	{ "kra", 0x0138 },
