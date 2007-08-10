@@ -6304,7 +6304,8 @@ static void bAddAnchorPoint(Context *c) {
     if ( c->a.argc<5 )
 	ScriptError( c, "Wrong number of arguments");
     else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str ||
-	    c->a.vals[3].type!=v_int || c->a.vals[4].type!=v_int )
+	    (c->a.vals[3].type!=v_int && c->a.vals[3].type!=v_real ) ||
+	    (c->a.vals[4].type!=v_int && c->a.vals[4].type!=v_real ))
 	ScriptError( c, "Bad type for argument");
 
     for ( t=sf->anchor; t!=NULL; t=t->next )
@@ -6382,8 +6383,8 @@ static void bAddAnchorPoint(Context *c) {
 
     ap = chunkalloc(sizeof(AnchorPoint));
     ap->anchor = t;
-    ap->me.x = c->a.vals[3].u.ival;
-    ap->me.y = c->a.vals[4].u.ival;
+    ap->me.x = (c->a.vals[3].type==v_int)? c->a.vals[3].u.ival : rint(c->a.vals[3].u.fval);
+    ap->me.y = (c->a.vals[4].type==v_int)? c->a.vals[4].u.ival : rint(c->a.vals[4].u.fval);
     ap->type = type;
     ap->lig_index = ligindex;
     ap->next = sc->anchor;
@@ -9572,7 +9573,9 @@ static void _CheckIsScript(int argc, char *argv[]) {
     char *arg;
 
 #ifndef _NO_PYTHON
+# ifndef GWW_TEST
     FontForge_PythonInit(); /* !!!!!! debug (valgrind doesn't like python) */
+# endif
 #endif
     if ( argc==1 )
 return;
