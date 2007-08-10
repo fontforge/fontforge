@@ -4847,7 +4847,8 @@ static void ttf_math_read_glyphinfo(FILE *ttf,struct ttfinfo *info, uint32 start
 	ttf_math_read_mathkern(ttf,info,start+kioff);
 }
 
-static struct glyphvariants *ttf_math_read_gvtable(FILE *ttf,struct ttfinfo *info, uint32 start) {
+static struct glyphvariants *ttf_math_read_gvtable(FILE *ttf,struct ttfinfo *info, uint32 start,
+	enum gsub_inusetype justinuse ) {
     struct glyphvariants *gv = chunkalloc(sizeof(struct glyphvariants));
     int ga_offset;
     int vcnt;
@@ -4861,26 +4862,35 @@ static struct glyphvariants *ttf_math_read_gvtable(FILE *ttf,struct ttfinfo *inf
     ga_offset = getushort(ttf);
     vcnt      = getushort(ttf);
     if ( vcnt!=0 ) {
-	glyphs    = galloc(vcnt*sizeof(uint16));
-	len = 0;
-	for ( i=0; i<vcnt; ++i ) {
-	    glyphs[i]      = getushort(ttf);
-	    /* sizes[i] = */ getushort(ttf);
-	    if ( glyphs[i]<info->glyph_cnt && (sc = info->chars[ glyphs[i]])!=NULL )
-		len += strlen(sc->name)+1;
-	}
-	if ( len!=0 ) {
-	    gv->variants = pt = galloc(len);
-	    for ( i=len=0; i<vcnt; ++i ) {
-		if ( glyphs[i]<info->glyph_cnt && (sc = info->chars[ glyphs[i]])!=NULL ) {
-		    strcpy(pt+len,sc->name);
-		    len += strlen(sc->name);
-		    pt[len++] = ' ';
-		}
+	if ( justinuse==git_justinuse ) {
+	    for ( i=0; i<vcnt; ++i ) {
+		int gid = getushort(ttf);
+		/* sizes[i] = */ getushort(ttf);
+		if ( gid>=0 && gid<info->glyph_cnt )
+		    info->inuse[gid] = true;
 	    }
-	    pt[len-1] = '\0';
+	} else {
+	    glyphs    = galloc(vcnt*sizeof(uint16));
+	    len = 0;
+	    for ( i=0; i<vcnt; ++i ) {
+		glyphs[i]      = getushort(ttf);
+		/* sizes[i] = */ getushort(ttf);
+		if ( glyphs[i]<info->glyph_cnt && (sc = info->chars[ glyphs[i]])!=NULL )
+		    len += strlen(sc->name)+1;
+	    }
+	    if ( len!=0 ) {
+		gv->variants = pt = galloc(len);
+		for ( i=len=0; i<vcnt; ++i ) {
+		    if ( glyphs[i]<info->glyph_cnt && (sc = info->chars[ glyphs[i]])!=NULL ) {
+			strcpy(pt+len,sc->name);
+			len += strlen(sc->name);
+			pt[len++] = ' ';
+		    }
+		}
+		pt[len-1] = '\0';
+	    }
+	    free(glyphs);
 	}
-	free(glyphs);
     }
     if ( ga_offset!=0 ) {
 	start += ga_offset;
@@ -4888,7 +4898,8 @@ static struct glyphvariants *ttf_math_read_gvtable(FILE *ttf,struct ttfinfo *inf
 	gv->italic_correction = getushort(ttf);
 	ic_offset = getushort(ttf);
 	gv->part_cnt = pcnt = getushort(ttf);
-	gv->parts = gcalloc(pcnt,sizeof(struct gv_part));
+	if ( justinuse==git_normal )
+	    gv->parts = gcalloc(pcnt,sizeof(struct gv_part));
 	for ( i=j=0; i<pcnt; ++i ) {
 	    int gid, start, end, full, flags;
 	    gid = getushort(ttf);
@@ -4896,26 +4907,36 @@ static struct glyphvariants *ttf_math_read_gvtable(FILE *ttf,struct ttfinfo *inf
 	    end = getushort(ttf);
 	    full = getushort(ttf);
 	    flags = getushort(ttf);
-	    if ( gid<info->glyph_cnt && (sc = info->chars[gid])!=NULL ) {
-		gv->parts[j].component = copy( sc->name );
-		gv->parts[j].startConnectorLength = start;
-		gv->parts[j].endConnectorLength = end;
-		gv->parts[j].fullAdvance = full;
-		gv->parts[j++].is_extender = flags&1;
+	    if ( justinuse==git_justinuse ) {
+		if ( gid<info->glyph_cnt )
+		    info->inuse[gid] = true;
+	    } else {
+		if ( gid<info->glyph_cnt && (sc = info->chars[gid])!=NULL ) {
+		    gv->parts[j].component = copy( sc->name );
+		    gv->parts[j].startConnectorLength = start;
+		    gv->parts[j].endConnectorLength = end;
+		    gv->parts[j].fullAdvance = full;
+		    gv->parts[j++].is_extender = flags&1;
+		}
 	    }
 	}
 	gv->part_cnt = j;
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
-	if ( ic_offset!=0 ) {
+	if ( ic_offset!=0 && justinuse==git_normal ) {
 	    gv->italic_adjusts = chunkalloc(sizeof(DeviceTable));
 	    ReadDeviceTable(ttf,gv->italic_adjusts,start+ic_offset);
 	}
 #endif
     }
+    if ( justinuse==git_justinuse ) {
+	chunkfree(gv,sizeof(*gv));
+return( NULL );
+    }
 return( gv );
 }
 
-static void ttf_math_read_variants(FILE *ttf,struct ttfinfo *info, uint32 start) {
+static void ttf_math_read_variants(FILE *ttf,struct ttfinfo *info, uint32 start,
+	enum gsub_inusetype justinuse) {
     int vcoverage, hcoverage, vcnt, hcnt;
     int *hoffs, *voffs;
     uint16 *hglyphs, *vglyphs;
@@ -4944,16 +4965,22 @@ static void ttf_math_read_variants(FILE *ttf,struct ttfinfo *info, uint32 start)
 
     if ( vglyphs!=NULL ) {
 	for ( i=0; i<vcnt; ++i ) if ( vglyphs[i]<info->glyph_cnt && voffs[i]!=0) {
-	    SplineChar *sc = info->chars[ vglyphs[i]];
-	    if ( sc!=NULL )
-		sc->vert_variants = ttf_math_read_gvtable(ttf,info,start+voffs[i]);
+	    if ( justinuse == git_normal ) {
+		SplineChar *sc = info->chars[ vglyphs[i]];
+		if ( sc!=NULL )
+		    sc->vert_variants = ttf_math_read_gvtable(ttf,info,start+voffs[i],justinuse);
+	    } else if ( info->inuse[ vglyphs[i]])
+		    ttf_math_read_gvtable(ttf,info,start+voffs[i],justinuse);
 	}
     }
     if ( hglyphs!=NULL ) {
 	for ( i=0; i<hcnt; ++i ) if ( hglyphs[i]<info->glyph_cnt && hoffs[i]!=0) {
-	    SplineChar *sc = info->chars[ hglyphs[i]];
-	    if ( sc!=NULL )
-		sc->horiz_variants = ttf_math_read_gvtable(ttf,info,start+hoffs[i]);
+	    if ( justinuse == git_normal ) {
+		SplineChar *sc = info->chars[ hglyphs[i]];
+		if ( sc!=NULL )
+		    sc->horiz_variants = ttf_math_read_gvtable(ttf,info,start+hoffs[i],justinuse);
+	    } else if ( info->inuse[ hglyphs[i]])
+		    ttf_math_read_gvtable(ttf,info,start+hoffs[i],justinuse);
 	}
     }
 
@@ -4961,7 +4988,8 @@ static void ttf_math_read_variants(FILE *ttf,struct ttfinfo *info, uint32 start)
     free(hglyphs); free(hoffs);
 }
 
-void otf_read_math(FILE *ttf,struct ttfinfo *info) {
+static void _otf_read_math(FILE *ttf,struct ttfinfo *info,
+	enum gsub_inusetype justinuse) {
     int constants, glyphinfo, variants;
     if ( info->math_start==0 )
 return;
@@ -4975,10 +5003,21 @@ return;
     glyphinfo = getushort(ttf);
     variants = getushort(ttf);
 
-    if ( constants!=0 )
-	ttf_math_read_constants(ttf,info,info->math_start+constants);
-    if ( glyphinfo!=0 )
-	ttf_math_read_glyphinfo(ttf,info,info->math_start+glyphinfo);
+    if ( justinuse == git_normal ) {
+	if ( constants!=0 )
+	    ttf_math_read_constants(ttf,info,info->math_start+constants);
+	if ( glyphinfo!=0 )
+	    ttf_math_read_glyphinfo(ttf,info,info->math_start+glyphinfo);
+    }
     if ( variants!=0 )
-	ttf_math_read_variants(ttf,info,info->math_start+variants);
+	ttf_math_read_variants(ttf,info,info->math_start+variants,justinuse);
+    info->g_bounds = 0;
+}
+
+void otf_read_math(FILE *ttf,struct ttfinfo *info) {
+    _otf_read_math(ttf,info,git_normal);
+}
+
+void otf_read_math_used(FILE *ttf,struct ttfinfo *info) {
+    _otf_read_math(ttf,info,git_justinuse);
 }
