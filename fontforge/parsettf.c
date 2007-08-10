@@ -1658,8 +1658,10 @@ static void readttfglyphs(FILE *ttf,struct ttfinfo *info) {
 	readttfencodings(ttf,info,true);
 	if ( info->gsub_start!=0 )		/* Some glyphs may appear in substitutions and not in the encoding... */
 	    readttfgsubUsed(ttf,info);
-	    /* I don't bother to read the morx table because mac doesn't */
-	    /*  support ttc files */
+	if ( info->math_start!=0 )
+	    otf_read_math_used(ttf,info);
+	/* I don't bother to read the morx table because mac doesn't */
+	/*  support ttc files */
 	anyread = true;
 	while ( anyread ) {
 	    anyread = false;

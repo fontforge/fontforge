@@ -441,7 +441,7 @@ static void AnchorGuessContext(SplineFont *sf,struct alltabs *at) {
 }
 
 static void dumpcoveragetable(FILE *gpos,SplineChar **glyphs) {
-    int i, last = -2, range_cnt=0, start;
+    int i, last = -2, range_cnt=0, start, r;
     /* the glyph list should already be sorted */
     /* figure out whether it is better (smaller) to use an array of glyph ids */
     /*  or a set of glyph id ranges */
@@ -464,12 +464,14 @@ static void dumpcoveragetable(FILE *gpos,SplineChar **glyphs) {
 	putshort(gpos,2);		/* Coverage format=2 => range list */
 	putshort(gpos,range_cnt);	/* count of ranges */
 	last = -2; start = -2;		/* start is a index in our glyph array, last is ttf_glyph */
+	r = 0;
 	for ( i=0; glyphs[i]!=NULL; ++i ) {
 	    if ( glyphs[i]->ttf_glyph!=last+1 ) {
 		if ( last!=-2 ) {
 		    putshort(gpos,glyphs[start]->ttf_glyph);	/* start glyph ID */
 		    putshort(gpos,last);			/* end glyph ID */
 		    putshort(gpos,start);			/* coverage index of start glyph */
+		    ++r;
 		}
 		start = i;
 	    }
@@ -479,7 +481,10 @@ static void dumpcoveragetable(FILE *gpos,SplineChar **glyphs) {
 	    putshort(gpos,glyphs[start]->ttf_glyph);	/* start glyph ID */
 	    putshort(gpos,last);			/* end glyph ID */
 	    putshort(gpos,start);			/* coverage index of start glyph */
+	    ++r;
 	}
+	if ( r!=range_cnt )
+	    IError("Miscounted ranges in format 2 coverage table output");
     }
 }
 
