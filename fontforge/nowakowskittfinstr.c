@@ -72,21 +72,51 @@
 #define MIRP_rp0_rnd_grey       (0xf4)
 #define MIRP_rp0_min_rnd_black  (0xfd)
 
+
 /******************************************************************************
  *
  * Many functions here need large or similar sets of arguments. I decided to
  * define an 'instructing context' to have them in one place and keep functions'
  * argument counts reasonably short. I first need to define some internal
- * sub-structures, mainly for instructing alignment zones and diagonal stems.
+ * sub-structures for instructing alignment zones, diagonal stems and CVT.
  *
  ******************************************************************************/
 
-/* That's a legacy, it could be probably merged with instrct. */
+/* That's a legacy, it could be probably merged with InstrCt. */
 struct glyphinstrs {
     SplineFont *sf;
     BlueData *bd;
-    int fudge;
+    real fudge;
 };
+
+/* Structs for CVT management start here */
+
+typedef struct bluezone {
+    real base;
+    int cvtindex;
+    real family_base;
+    int family_cvtindex;
+    real overshoot;
+} BlueZone;
+
+typedef struct stdstem {
+    real width;
+    int cvtindex;
+} StdStem;
+
+typedef struct cvtdata {
+    BlueZone Blues[15];    /* like in BlueData */
+    int      BlueCnt;
+    StdStem  StdHW;
+    StdStem  *StemSnapH;   /* StdHW excluded */
+    int      StemSnapHCnt;
+    StdStem  StdVW;
+    StdStem  *StemSnapV;   /* StdVW excluded */
+    int      StemSnapVCnt;
+} CvtData;
+
+/* Here the structs needed for CVT management end. */
+/* Structs for diagonal hinter start here */
 
 /* This structure is used to keep a point number together with
    its coordinates */
@@ -117,6 +147,8 @@ typedef struct dstem {
     real width;
 } DStem;
 
+/* here the structs needed for diagonal hinting end. */
+
 typedef struct instrct {
     SplineChar *sc;
     SplineSet *ss;
@@ -124,9 +156,18 @@ typedef struct instrct {
     int ptcnt;            /* number of points in this glyph */
     int *contourends;     /* points ending their contours. null-terminated. */
 
+    /* Did we initialize the tables needed? 'maxp' is skipped because */
+    /* its initialization always succeeds. */
+    int fpgm_done;
+    int cvt_done;
+    int prep_done;
+
     /* instructions */
     uint8 *instrs;        /* the beginning of the instructions */
     uint8 *pt;            /* the current position in the instructions */
+
+    /* cvt stuff */
+    CvtData *cvtinfo;
 
     /* properties, indexed by ttf point index. Could perhaps be compressed. */
     BasePoint *bp;        /* point coordinates */
@@ -151,6 +192,18 @@ typedef struct instrct {
 } InstrCt;
 
 extern int autohint_before_generate;
+
+/******************************************************************************
+ *
+ * We need to initialize some tables before autohinting: 'maxp', 'fpgm', 'cvt'
+ * and 'prep'.
+ *
+ * TODO!
+ *
+ * We should do it once, not once every glyph. We also need to define fallbacks
+ * when a certain table could not be initialized.
+ *
+ ******************************************************************************/
 
 #if 0		/* in getttfinstrs.c */
 struct ttf_table *SFFindTable(SplineFont *sf,uint32 tag) {
@@ -206,79 +259,6 @@ static void init_maxp(InstrCt *ct) {
     memputshort(tab->data,12*sizeof(uint16), stack);
 }
 
-/* Turning dropout control on will dramatically improve mono rendering, even
- * without further hinting, especcialy for light typefaces. And turning hinting
- * off at veeery small pixel sizes is required, because hints tend to visually
- * tear outlines apart when not having enough workspace.
- *
- * TODO! We should take 'gasp' table into account. We also should set up blues
- * here (separate twilight point for each alignment zone) and normalize stem
- * weights via cvt deltas.
- */
-static void init_prep(InstrCt *ct) {
-    uint8 new_prep[] =
-    {
-	0x4b, // MPPEM
-	0xb0, // PUSHB_1
-	0x08, //   9 - hinting threshold - should be configurable
-	0x50, // LT
-	0x58, // IF
-	0xb1, //   PUSHB_2
-	0x01, //     1
-	0x01, //     1
-	0x8e, //   INSTCTRL
-	0x59, // EIF
-	0xb8, // PUSHW_1
-	0x01, //   511
-	0xff, //   ...still that 511
-	0x85, // SCANCTRL
-	0xb0, // PUSHB_1
-	0x46, //   70/64 = about 1.094 pixel
-	0x1d, // SCVTCI
-	0x4b, // MPPEM
-	0xb0, // PUSHB_1
-	0x32, //   50 PPEM - a threshold below which we'll use larger CVT cut-in
-	0x52, // GT
-	0x58, // IF
-	0xb0, // PUSHB_1
-	0x80, //   128/64 = 2 pixels
-	0x1d, // SCVTCI
-	0x59  // EIF
-    };
-
-    int alert;
-    struct ttf_table *tab = SFFindTable(ct->sc->parent,CHR('p','r','e','p'));
-
-    if ( tab==NULL || (tab->len==0) ) {
-	tab = chunkalloc(sizeof(struct ttf_table));
-	tab->next = ct->sc->parent->ttf_tables;
-	ct->sc->parent->ttf_tables = tab;
-	tab->tag = CHR('p','r','e','p');
-
-	tab->len = tab->maxlen = sizeof(new_prep);
-	tab->data = grealloc(tab->data, sizeof(new_prep));
-	memmove(tab->data, new_prep, sizeof(new_prep));
-    }
-    else {
-	/* there already is a font program. */
-	alert = 1;
-	if (tab->len >= sizeof(new_prep))
-	    if (!memcmp(tab->data, new_prep, sizeof(new_prep)))
-		alert = 0;  /* it's ours, perhaps with user's extensions. */
-
-	/* Log warning message. */
-	if (alert) {
-	    LogError(_("Can't insert 'prep'"),
-		_("There exists a 'prep' code incompatible with FontForge's. "
-		  "It can't be guaranteed it will work well. It is suggested "
-		  "to allow FontForge to insert its code and then append user"
-		  "'s own."
-		 ));
-	}
-
-    }
-}
-
 /* Other hinting software puts certain actions in FPGM to ease developer's life
  * and compress the code. I feel that having a 'standard' library of functions
  * could also help FF users.
@@ -332,7 +312,8 @@ static void init_fpgm(InstrCt *ct) {
 	0x2d, // ENDF
 
 	/* Function 1: check if the gridfitted position of a point is too far
-         * from its original position, and shift it, if necessary.
+         * from its original position, and shift it, if necessary. This assures
+	 * almost linear advance width to PPEM scaling.
 	 * Syntax: PUSHB_2 point 1 CALL
 	 */
 	0xb0, // PUSHB_1
@@ -368,6 +349,8 @@ static void init_fpgm(InstrCt *ct) {
 	tab->len = tab->maxlen = sizeof(new_fpgm);
 	tab->data = grealloc(tab->data, sizeof(new_fpgm));
 	memmove(tab->data, new_fpgm, sizeof(new_fpgm));
+
+        ct->fpgm_done = 1;
     }
     else {
 	/* there already is a font program. */
@@ -379,14 +362,106 @@ static void init_fpgm(InstrCt *ct) {
 	/* Log warning message. */
 	if (alert) {
 	    ff_post_notice(_("Can't insert 'fpgm'"),
-		_("There exists an 'fpgm' that seems incompatible with FontForge's. "
-		  "Instructions generated will behave wrong. Please clear the `fpgm` "
-		  "so that FontForge could insert his code there on next instructing."
-		  "It will be then possible to append user's code to FontForge's, "
-		  "but using high function numbers is extremely advised due to "
-		  "possible updates."
+		_("There exists a 'fpgm' code that seems incompatible with "
+		  "FontForge's. Instructions generated will be of lower "
+		  "quality. If legacy hinting is to be scrapped, it is "
+		  "suggested to clear the `fpgm` and repeat autoinstructing. "
+		  "It will be then possible to append user's code to "
+		  "FontForge's 'fpgm', but due to possible future updates, "
+		  "it is extremely advised to use high numbers for user's "
+		  "functions."
 		 ));
+
+	    ct->fpgm_done = 0;
 	}
+	else ct->fpgm_done = 1;
+    }
+}
+
+/* Set up cvtinfo in instruction context, and init CVT table accordingly.
+ */
+static void init_cvt(InstrCt *ct) {
+    // create an empty cvtinfo
+    // import blues
+    // import StdHW & StdVW
+    // import StemSnapH & StemSnapW
+    // build cvt out of cvtinfo
+    ct->cvt_done = 0;
+}
+
+/* Turning dropout control on will dramatically improve mono rendering, even
+ * without further hinting, especcialy for light typefaces. And turning hinting
+ * off at veeery small pixel sizes is required, because hints tend to visually
+ * tear outlines apart when not having enough workspace.
+ *
+ * TODO! We should take 'gasp' table into account. We also should set up blues
+ * here (separate twilight point for each alignment zone) and normalize stem
+ * weights via cvt deltas.
+ */
+static void init_prep(InstrCt *ct) {
+    uint8 new_prep[] =
+    {
+	0x4b, // MPPEM
+	0xb0, // PUSHB_1
+	0x08, //   9 - hinting threshold - should be configurable
+	0x50, // LT
+	0x58, // IF
+	0xb1, //   PUSHB_2
+	0x01, //     1
+	0x01, //     1
+	0x8e, //   INSTCTRL
+	0x59, // EIF
+	0xb8, // PUSHW_1
+	0x01, //   511
+	0xff, //   ...still that 511
+	0x85, // SCANCTRL
+	0xb0, // PUSHB_1
+	0x46, //   70/64 = about 1.094 pixel
+	0x1d, // SCVTCI
+	0x4b, // MPPEM
+	0xb0, // PUSHB_1
+	0x32, //   50 PPEM - a threshold below which we'll use larger CVT cut-in
+	0x52, // GT
+	0x58, // IF
+	0xb0, // PUSHB_1
+	0x80, //   128/64 = 2 pixels
+	0x1d, // SCVTCI
+	0x59  // EIF
+    };
+
+    int alert;
+    struct ttf_table *tab = SFFindTable(ct->sc->parent,CHR('p','r','e','p'));
+
+    if ( tab==NULL || (tab->len==0) ) {
+	tab = chunkalloc(sizeof(struct ttf_table));
+	tab->next = ct->sc->parent->ttf_tables;
+	ct->sc->parent->ttf_tables = tab;
+	tab->tag = CHR('p','r','e','p');
+
+	tab->len = tab->maxlen = sizeof(new_prep);
+	tab->data = grealloc(tab->data, sizeof(new_prep));
+	memmove(tab->data, new_prep, sizeof(new_prep));
+
+        ct->prep_done = 1;
+    }
+    else {
+	/* there already is a font program. */
+	alert = 1;
+	if (tab->len >= sizeof(new_prep))
+	    if (!memcmp(tab->data, new_prep, sizeof(new_prep)))
+		alert = 0;  /* it's ours, perhaps with user's extensions. */
+
+	/* Log warning message. */
+	if (alert) {
+	    LogError(_("Can't insert 'prep'"),
+		_("There exists a 'prep' code incompatible with FontForge's. "
+		  "It can't be guaranteed it will work well. It is suggested "
+		  "to allow FontForge to insert its code and then append user"
+		  "'s own."
+		 ));
+            ct->prep_done = 0;
+	}
+        else ct->prep_done = 1;
     }
 }
 
@@ -486,6 +561,14 @@ return;
     _CVT_ImportPrivateString(sf,PSDictHasEntry(sf->private,"FamilyOtherBlues"));
 }
 #endif
+
+static int GetBlueFuzz(SplineFont *sf) {
+    char *str, *end;
+
+    if ( sf->private==NULL || (str=PSDictHasEntry(sf->private,"BlueFuzz"))==NULL || !isdigit(str[0]) )
+return 1;
+return strtod(str, &end);
+}
 
 static uint8 *pushheader(uint8 *instrs, int isword, int tot) {
     if ( isword ) {
@@ -1066,6 +1149,7 @@ static void snap_to_blues(InstrCt *ct) {
     StemInfo *hint;          /* for HStems affected by blues */
     real base, advance, tmp; /* for the hint */
     int callargs[4] = { 0/*pt*/, 0/*cvt*/, 0 };
+    real fudge;
 
     /* Create an array of blues ordered as said above. */
     int baseline, next;
@@ -1120,15 +1204,15 @@ return;
 	     * this bluezone, and advance was. This seems a bit controversial.
 	     * For now, I keep this turned on.
 	     */
-	    if ((base + ct->gi->fudge < blues[i][0]) ||
-		(base - ct->gi->fudge > blues[i][1]))
+	    if ((base + GetBlueFuzz(ct->gi->sf) < blues[i][0]) ||
+		(base - GetBlueFuzz(ct->gi->sf) > blues[i][1]))
 	    {
 		tmp = base;
 		base = advance;
 		advance = tmp;
 
-		if ((base + ct->gi->fudge < blues[i][0]) ||
-		    (base - ct->gi->fudge > blues[i][1])) continue;
+		if ((base + GetBlueFuzz(ct->gi->sf) < blues[i][0]) ||
+		    (base - GetBlueFuzz(ct->gi->sf) > blues[i][1])) continue;
 
 		/* ghost hints need the right edge to be snapped */
 		if (hint->ghost && ((hint->width == 20) || (hint->width == 21))) {
@@ -1142,10 +1226,16 @@ return;
 	    init_edge(ct, base, EXTERNAL_CONTOURS);
 	    if (ct->edge.refpt == -1) continue;
 	    callargs[0] = ct->edge.refpt;
-	    ct->pt = pushpoints(ct->pt, 3, callargs);
-	    *(ct->pt)++ = CALL;
-	    //ct->pt = pushpointstem(ct->pt, ct->edge.refpt, cvt);
-	    //*(ct->pt)++ = MIAP_rnd;
+	    
+	    if (ct->fpgm_done) {
+	      ct->pt = pushpoints(ct->pt, 3, callargs);
+	      *(ct->pt)++ = CALL;
+	    }
+	    else {
+	      ct->pt = pushpoints(ct->pt, 2, callargs);
+	      *(ct->pt)++ = MIAP_rnd;
+	    }
+
 	    ct->touched[ct->edge.refpt] |= tf_y;
 
 	    finish_edge(ct, SHP_rp1);
@@ -1187,26 +1277,41 @@ return;
 	/* Now I'll try to find points not snapped by any previous stem hint. */
 	if (therewerestems) {
 	    base = (blues[i][0] + blues[i][1]) / 2.0;
-	    int fudge = ct->gi->fudge;
-	    ct->gi->fudge = rint(fabs(base - blues[i][0]));
+	    fudge = ct->gi->fudge;
+	    ct->gi->fudge = fabs(base - blues[i][0]) + GetBlueFuzz(ct->gi->sf);
 	    init_edge(ct, base, EXTERNAL_CONTOURS);
-	    ct->gi->fudge = fudge;
 	    optimize_edge(ct);
 
 	    if (ct->edge.refpt == -1) continue;
 
 	    if (!(ct->touched[ct->edge.refpt]&tf_y || ct->affected[ct->edge.refpt]&tf_y)) {
 		callargs[0] = ct->edge.refpt;
-		ct->pt = pushpoints(ct->pt, 3, callargs);
-		*(ct->pt)++ = CALL;
+		
+		if (ct->fpgm_done) {
+		  ct->pt = pushpoints(ct->pt, 3, callargs);
+		  *(ct->pt)++ = CALL;
+		}
+		else {
+		  ct->pt = pushpoints(ct->pt, 2, callargs);
+		  *(ct->pt)++ = MIAP_rnd;
+		}
+
 		ct->touched[ct->edge.refpt] |= tf_y;
 	    }
 
 	    int j;
 	    for (j=0; j<ct->edge.othercnt; j++) {
 		callargs[0] = ct->edge.others[j];
-		ct->pt = pushpoints(ct->pt, 3, callargs);
-		*(ct->pt)++ = CALL;
+		
+		if (ct->fpgm_done) {
+		  ct->pt = pushpoints(ct->pt, 3, callargs);
+		  *(ct->pt)++ = CALL;
+		}
+		else {
+		  ct->pt = pushpoints(ct->pt, 2, callargs);
+		  *(ct->pt)++ = MIAP_rnd;
+		}
+
 		ct->touched[ct->edge.others[j]] |= tf_y;
 	    }
 
@@ -1215,6 +1320,8 @@ return;
 		ct->edge.others = NULL;
 		ct->edge.othercnt = 0;
 	    }
+	    
+	    ct->gi->fudge = fudge;
 	}
     }
 }
@@ -1343,11 +1450,14 @@ static void geninstrs(InstrCt *ct, StemInfo *hint) {
 	else {
 	    if (hint->hasconflicts) *ct->pt++ = MDRP_rp0_rnd_white;
 	    else *ct->pt++ = MDRP_rp0_min_rnd_white;
+	    
+            if (ct->fpgm_done) {
+	      callargs[0] = ct->edge.refpt;
+	      callargs[1] = 1;
+	      ct->pt = pushpoints(ct->pt, 2, callargs);
+	      *(ct->pt)++ = CALL;
+	    }
 
-	    callargs[0] = ct->edge.refpt;
-	    callargs[1] = 1;
-	    ct->pt = pushpoints(ct->pt, 2, callargs);
-	    *(ct->pt)++ = CALL;
 	    finish_edge(ct, SHP_rp2);
 	}
 
@@ -2100,8 +2210,8 @@ static uint8 *dogeninstructions(InstrCt *ct) {
     DStemInfo *dstem;
 
     /* very basic preparations for default hinting */
-    /* TODO! Move init_maxp to the end, to use some collected statistics. */
     init_maxp(ct);
+    init_cvt(ct);
     init_prep(ct);
     init_fpgm(ct);
 
@@ -2274,7 +2384,7 @@ return;
 
     gi.sf = sc->parent;
     gi.bd = bd;
-    gi.fudge = (sc->parent->ascent+sc->parent->descent)/500;
+    gi.fudge = (sc->parent->ascent+sc->parent->descent)/500.0;
 
     contourcnt = 0;
     for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next, ++contourcnt );
