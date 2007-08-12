@@ -2157,10 +2157,14 @@ return;
 return;
     }
 
-    for ( h=sc->hstem; h!=NULL ; h=h->next )
+    for ( h=sc->hstem, i=0; h!=NULL ; h=h->next, ++i ) {
 	h->used = false;
-    for ( h=sc->vstem; h!=NULL ; h=h->next )
+	h->hintnumber = i;
+    }
+    for ( h=sc->vstem; h!=NULL ; h=h->next, ++i  ) {
 	h->used = false;
+	h->hintnumber = i;
+    }
 
     mc = 0;
     
