@@ -2024,8 +2024,9 @@ return;
 
 static void SCFigureSimpleCounterMasks(SplineChar *sc) {
     SplineChar *scs[MmMax];
-    int hadh3, hadv3, i;
+    int hadh3, hadv3, i, vbase;
     HintMask mask;
+    StemInfo *h;
 
     if ( sc->countermask_cnt!=0 )
 return;
@@ -2037,8 +2038,9 @@ return;
 	memset(mask,0,sizeof(mask));
 	if ( hadh3 ) mask[0] = 0x80|0x40|0x20;
 	if ( hadv3 ) {
+	    for ( h=sc->hstem, vbase=0; h!=NULL; h=h->next, ++vbase );
 	    for ( i=0; i<3 ; ++i ) {
-		int j = i+sc->vstem->hintnumber;
+		int j = i+vbase;
 		mask[j>>3] |= (0x80>>(j&7));
 	    }
 	}
