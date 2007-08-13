@@ -67,9 +67,10 @@ return( false );
    to the calling code to see if the returned result is satisfiable (there
    should be exactly two points selected for specifying a vertical or
    horizontal stem and four points for a diagonal stem). */
-int CVNumForePointsSelected(CharView *cv, SplinePoint **sp) {
+int CVNumForePointsSelected(CharView *cv, BasePoint **bp) {
     SplineSet *spl;
-    SplinePoint *test, *sps[4], *first;
+    SplinePoint *test, *first;
+    BasePoint *bps[4];
     int i, cnt;
 
     if ( cv->drawmode!=dm_fore )
@@ -79,7 +80,7 @@ return( 0 ) ;
 	first = NULL;
 	for ( test = spl->first; test!=first; test = test->next->to ) {
 	    if ( test->selected ) {
-		sps[cnt++] = test;
+		bps[cnt++] = &(test->me);
 		if ( cnt>4 )
 return( 0 );
 	    }
@@ -89,130 +90,9 @@ return( 0 );
 	}
     }
     for (i=0; i<cnt; i++) {
-        sp[i] = sps[i];
+        bp[i] = bps[i];
     }
 return( cnt );
-}
-
-static double DStemWidth( SplinePoint *tl, SplinePoint *bl, 
-    SplinePoint *tr, SplinePoint *br ) {
-    
-    double tempx, tempy, len, stemwidth;
-
-    tempx = tl->me.x-bl->me.x;
-    tempy = tl->me.y-bl->me.y;
-    len = sqrt(tempx*tempx+tempy*tempy);
-    stemwidth = ((tr->me.x-tl->me.x)*tempy -
-	    (tr->me.y-tl->me.y)*tempx)/len;
-    if ( stemwidth<0 ) stemwidth = -stemwidth;
-    fprintf (stderr, "stem=%f\n", stemwidth);
-return( stemwidth );
-}
-
-static int DiagTooShort ( SplinePoint **vec1, SplinePoint **vec2 ) {
-    real catx1, caty1, hyp1, catx2, caty2, hyp2;
-    real width;
-    
-    catx1=vec1[0]->me.x-vec1[1]->me.x; 
-    caty1=vec1[0]->me.y-vec1[1]->me.y;
-    hyp1=sqrt(( catx1*catx1 )+( caty1*caty1 ));
-    if ( hyp1<0 ) hyp1 = -hyp1;
-    
-    catx2=vec2[0]->me.x-vec2[1]->me.x; 
-    caty2=vec2[0]->me.y-vec2[1]->me.y;
-    hyp2=sqrt(( catx2*catx2 )+( caty2*caty2 ));
-    if ( hyp2<0 ) hyp2 = -hyp2;
-    
-    width = DStemWidth (vec1[0], vec1[1], vec2[0], vec2[1]);
-    
-    if (width > ((hyp1+hyp2)/2))
-        return true;
-    return false;
-}
-
-static int DiagCheck( SplinePoint **vec1, SplinePoint **vec2 ) {
-
-    /* No horizontal,vertical edges */
-    if ( vec1[0]->me.x == vec1[1]->me.x || vec1[0]->me.y==vec1[1]->me.y ||
-	    vec2[0]->me.x == vec2[1]->me.x || vec2[0]->me.y==vec2[1]->me.y )
-return( false );
-    /* We are not checking the direction of vectors, as this test should 
-       have already been performed in CVIsDiagonalable */
-
-    /* Similar slopes */
-return( RealApprox((vec1[0]->me.y-vec1[1]->me.y)/(vec1[0]->me.x-vec1[1]->me.x),
-	    (vec2[0]->me.y-vec2[1]->me.y)/(vec2[0]->me.x-vec2[1]->me.x)) );
-}
-
-/* Since this function now deals with 4 arbitrarily selected points,
-   it has to try to combine them by different ways in order to see
-   if they actually can specify a diagonal stem. The reordered points 
-   are placed back to array passed to the function.*/
-int CVIsDiagonalable(SplinePoint **sp ) {
-
-    SplinePoint *vec1[2], *vec2[2], *temp;
-    int i, j, k = 0;
-
-    for (i=0; i<4; i++) {
-        if (sp[i] == NULL)
-return( false );
-    }
-    
-    /* Assume that the first point passed to the function is the starting
-       point of the first of two vectors. Then try all possible combinations
-       (there are 3), ensure the vectors are consistantly ordered, and
-       check if they are parallel.*/
-    vec1[0] = sp[0];
-    
-    for (i=1; i<4; i++) {
-        vec1[1] = sp[i];
-        
-        k=0;
-        for (j=1; j<4; j++) {
-            if (j != i)
-                vec2[k++] = sp[j];
-        }
-        
-        /* Ensure points are consistantly ordered */
-        if (( (vec1[0]->me.y>vec1[1]->me.y) && (vec2[0]->me.y<vec2[1]->me.y)) ||
-	    ( (vec1[0]->me.y<vec1[1]->me.y) && (vec2[0]->me.y>vec2[1]->me.y)) ) {
-            
-            temp = vec2[0]; vec2[0] = vec2[1]; vec2[1] = temp;
-        }
-        
-        if (DiagCheck (vec1, vec2)) {
-            /* Make sure this is a real line, rather than just two
-               short spline segments which occasionally have happened to be
-               parallel. This is necessary to correctly handle things which may
-               be "diagonalable" in 2 different directions (like slash in some 
-               designs). */
-            if (!DiagTooShort (vec1, vec2)) {
-            
-	        /* Make sure vec1[0]<->vec1[1] is further left than vec2[0]<->vec2[1] */
-	        if ( vec1[0]->me.x > vec2[0]->me.x + (vec1[0]->me.y-vec2[0]->me.y) 
-                    * (vec2[1]->me.x-vec2[0]->me.x)/(vec2[1]->me.y-vec2[0]->me.y) ) {
-
-	            temp=vec1[0]; vec1[0]=vec2[0]; vec2[0]=temp;
-	            temp=vec1[1]; vec1[1]=vec2[1]; vec2[1]=temp;
-	        }
-	        /* Make sure vec1[0],vec1[1] are at the top */
-	        if ( vec1[0]->me.y<vec1[1]->me.y ) {
-	            SplinePoint *temp;
-	            temp = vec1[0]; vec1[0]=vec1[1]; vec1[1]=temp;
-	            temp = vec2[0]; vec2[0]=vec2[1]; vec2[1]=temp;
-	        }
-
-                sp[0] = vec1[0];
-                sp[1] = vec2[0];
-                sp[2] = vec1[1];
-                sp[3] = vec2[1];
-
-return ( true );
-            }
-        }
-    }
-
-return( false );
 }
 
 #define CID_Base	1001

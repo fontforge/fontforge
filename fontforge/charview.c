@@ -7593,6 +7593,7 @@ static void CVMenuNowakAutoInstr(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
     NowakowskiSCAutoInstr(cv->sc,NULL);
+    SCUpdateAll(cv->sc);
 }
 
 static void CVMenuClearHints(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -7623,12 +7624,12 @@ static void CVMenuClearHints(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void CVMenuAddHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    SplinePoint *sp[4];
+    BasePoint *bp[4];
     StemInfo *h=NULL;
     DStemInfo *d;
     int num;
 
-    num = CVNumForePointsSelected(cv,sp);
+    num = CVNumForePointsSelected( cv,bp );
 
     /* We need exactly 2 points to specify a horizontal or vertical stem
        and exactly 4 points to specify a diagonal stem */
@@ -7639,43 +7640,44 @@ return;
     SCPreserveHints(cv->sc);
     SCHintsChanged(cv->sc);
     if ( mi->mid==MID_AddHHint ) {
-	if ( sp[0]->me.y==sp[1]->me.y )
+	if ( bp[0]->y==bp[1]->y )
 return;
 	h = chunkalloc(sizeof(StemInfo));
-	if ( sp[1]->me.y>sp[0]->me.y ) {
-	    h->start = sp[0]->me.y;
-	    h->width = sp[1]->me.y-sp[0]->me.y;
+	if ( bp[1]->y>bp[0]->y ) {
+	    h->start = bp[0]->y;
+	    h->width = bp[1]->y-bp[0]->y;
 	} else {
-	    h->start = sp[1]->me.y;
-	    h->width = sp[0]->me.y-sp[1]->me.y;
+	    h->start = bp[1]->y;
+	    h->width = bp[0]->y-bp[1]->y;
 	}
-	SCGuessHHintInstancesAndAdd(cv->sc,h,sp[0]->me.x,sp[1]->me.x);
+	SCGuessHHintInstancesAndAdd(cv->sc,h,bp[0]->x,bp[1]->x);
 	cv->sc->hconflicts = StemListAnyConflicts(cv->sc->hstem);
     } else if ( mi->mid==MID_AddVHint ) {
-	if ( sp[0]->me.x==sp[1]->me.x )
+	if ( bp[0]->x==bp[1]->x )
 return;
 	h = chunkalloc(sizeof(StemInfo));
-	if ( sp[1]->me.x>sp[0]->me.x ) {
-	    h->start = sp[0]->me.x;
-	    h->width = sp[1]->me.x-sp[0]->me.x;
+	if ( bp[1]->x>bp[0]->x ) {
+	    h->start = bp[0]->x;
+	    h->width = bp[1]->x-bp[0]->x;
 	} else {
-	    h->start = sp[1]->me.x;
-	    h->width = sp[0]->me.x-sp[1]->me.x;
+	    h->start = bp[1]->x;
+	    h->width = bp[0]->x-bp[1]->x;
 	}
-	SCGuessVHintInstancesAndAdd(cv->sc,h,sp[0]->me.y,sp[1]->me.y);
+	SCGuessVHintInstancesAndAdd(cv->sc,h,bp[0]->y,bp[1]->y);
 	cv->sc->vconflicts = StemListAnyConflicts(cv->sc->vstem);
     } else {
-	if ( !CVIsDiagonalable( sp ))
+	if ( !IsDiagonalable( bp ))
 return;
 	/* No additional tests, as the points should have already been
            reordered by CVIsDiagonalable */
         d = chunkalloc(sizeof(DStemInfo));
-	d->next = cv->sc->dstem;
-	cv->sc->dstem = d;
-	d->leftedgetop = sp[0]->me;
-	d->rightedgetop = sp[1]->me;
-	d->leftedgebottom = sp[2]->me;
-	d->rightedgebottom = sp[3]->me;
+	memcpy( &(d->leftedgetop),bp[0],sizeof( BasePoint ) );
+	memcpy( &(d->rightedgetop),bp[1],sizeof( BasePoint ) );
+	memcpy( &(d->leftedgebottom),bp[2],sizeof( BasePoint ) );
+	memcpy( &(d->rightedgebottom),bp[3],sizeof( BasePoint ) );
+
+        if (!MergeDStemInfo(&(cv->sc->dstem), d))
+            chunkfree( d,sizeof(DStemInfo) );
     }
     cv->sc->manualhints = true;
     
@@ -7707,13 +7709,13 @@ return;
 
 static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    SplinePoint *sp[4];
+    BasePoint *bp[4];
     int multilayer = cv->sc->parent->multilayer;
     int i=0, num = 0;
 
-    for (i=0; i<4; i++) {sp[i]=NULL;}
+    for (i=0; i<4; i++) {bp[i]=NULL;}
     
-    num = CVNumForePointsSelected(cv,sp);
+    num = CVNumForePointsSelected(cv,bp);
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
@@ -7738,13 +7740,13 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = cv->sc->ttf_instrs_len==0;
 	  break;
 	  case MID_AddHHint:
-	    mi->ti.disabled = num != 2 || sp[1]->me.y==sp[0]->me.y || multilayer;
+	    mi->ti.disabled = num != 2 || bp[1]->y==bp[0]->y || multilayer;
 	  break;
 	  case MID_AddVHint:
-	    mi->ti.disabled = num != 2 || sp[1]->me.x==sp[0]->me.x || multilayer;
+	    mi->ti.disabled = num != 2 || bp[1]->x==bp[0]->x || multilayer;
 	  break;
 	  case MID_AddDHint:
-	    mi->ti.disabled = num != 4 || !CVIsDiagonalable(sp) || multilayer;
+	    mi->ti.disabled = num != 4 || !IsDiagonalable( bp ) || multilayer;
 	  break;
 	  case MID_ReviewHints:
 	    mi->ti.disabled = (cv->sc->hstem==NULL && cv->sc->vstem==NULL ) || multilayer;
