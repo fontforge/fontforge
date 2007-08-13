@@ -2,445 +2,478 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 13-Feb-2003 -->
-  <!-- AP: Last modified: 22-Mar-2005 -->
+  <!-- AP: Last modified: 13-Aug-2007 -->
   <TITLE>TrueType and OpenType tables supported by FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
 <BODY>
 <DIV id="in">
-<H1 ALIGN=Center>
-  TrueType and OpenType tables supported by FontForge
-</H1>
-<P>
-<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6.html">Apple</A>,
-<A HREF="http://www.microsoft.com/typography/tt/tt.htm">MS</A> and
-<A HREF="http://partners.adobe.com/public/developer/opentype/index_spec.html">Adobe</A>
-all have their descriptions of TrueType and OpenType. MS and Adobe's versions
-are essentially the same, while Apple's differ significantly from either.
-<TABLE BORDER CELLPADDING="2">
-  <TR>
-    <TH>name</TH>
-    <TH>long name</TH>
-    <TH>FontForge's use</TH>
-    <TH>Apple<BR>
-      docs</TH>
-    <TH>Adobe<BR>
-      docs</TH>
-  </TR>
-  <TR>
-    <TD>avar</TD>
-    <TD>axis variation</TD>
-    <TD>Used to specify piecewise linear sections of axes for distortable fonts</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6avar.html">avar</A></TD>
-    <TD><P ALIGN=Center>
-      *</TD>
-  </TR>
-  <TR>
-    <TD>bdat</TD>
-    <TD>bitmap data</TD>
-    <TD>Provides the actual bitmap data for all bitmap glyphs in Apple fonts.
-      'EBDT' is used by MS/Adobe instead (and has the same format)</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6bdat.html">bdat</A></TD>
-    <TD><P ALIGN=Center>
-      *</TD>
-  </TR>
-  <TR>
-    <TD>bhed</TD>
-    <TD>bitmap font header</TD>
-    <TD>Replaces the 'head' table in Apple's bitmap only fonts. (similar to 'head')</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6bhed.html">bhed</A></TD>
-    <TD><P ALIGN=Center>
-      *</TD>
-  </TR>
-  <TR>
-    <TD>bloc</TD>
-    <TD>bitmap location data</TD>
-    <TD>Provides pointers to the appropriate bitmap data for each bitmap glyph
-      in Apple fonts. 'EBLC' is used by MS/Adobe instead (and has the same format)</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6bloc.html">bloc</A></TD>
-    <TD><P ALIGN=Center>
-      *</TD>
-  </TR>
-  <TR>
-    <TD>CFF</TD>
-    <TD><A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5176.CFF.pdf">Compact
-      Font Format</A></TD>
-    <TD>Provides all the outline data (and sometimes glyph names as well) for
-      the PostScript
-      <A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5177.Type2.pdf">Type2</A>
-      font that is the heart of an OpenType font. Vaguely equivalent to 'glyf'
-      , 'loca' and 'post' combined.</TD>
-    <TD><P ALIGN=Center>
-      *</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://partners.adobe.com/public/developer/opentype/index_cff.html">CFF</A></TD>
-  </TR>
-  <TR>
-    <TD>cmap</TD>
-    <TD>character code mapping</TD>
-    <TD>Provides at least one encoding from a stream of bytes to glyphs in the
-      font. FontForge provides at least three encodings in every font (one for
-      Mac Roman, one for Mac Unicode, one for MS Unicode). For some fonts it will
-      additionally provide a CJK encoding (Big5, SJIS, etc) or an extended unicode
-      encoding which will cover code points outside of the BMP.
-      <P>
-      For fonts with special 1-byte encodings (such as symbol) it will provide
-      a "symbol" encoding which maps a known page in the corporate use area to
-      the glyphs.</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6cmap.html">cmap</A></TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://partners.adobe.com/public/developer/opentype/index_cmap.html">cmap</A></TD>
-  </TR>
-  <TR>
-    <TD>cvar</TD>
-    <TD>variations on cvt table</TD>
-    <TD>Used to specify hinting differences in distortable fonts</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6cvar.html">cvar</A></TD>
-    <TD><P ALIGN=Center>
-      *</TD>
-  </TR>
-  <TR>
-    <TD>cvt</TD>
-    <TD>control value table</TD>
-    <TD>FontForge uses this when it attempts to hint truetype fonts (FontForge
-      will read it from a font and save it into another).</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6cvt.html">cvt</A></TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://partners.adobe.com/public/developer/opentype/index_cvt.html">cvt</A></TD>
-  </TR>
-  <TR>
-    <TD>EBDT</TD>
-    <TD>embedded bitmap data</TD>
-    <TD>Provides the actual bitmap data for all bitmap glyphs in MS/Adobe fonts.
-      'bdat' is used by Apple instead (and has the same format)</TD>
-    <TD><P ALIGN=Center>
-      *</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://partners.adobe.com/public/developer/opentype/index_ebdt.html">EBDT</A></TD>
-  </TR>
-  <TR>
-    <TD>EBLC</TD>
-    <TD>embedded bitmap location</TD>
-    <TD>Provides pointers to the appropriate bitmap data for each bitmap glyph
-      in MS/Adobe fonts. 'bloc' is used by Apple instead (and has the same format)</TD>
-    <TD><P ALIGN=Center>
-      *</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://partners.adobe.com/public/developer/opentype/index_eblc.html">EBLC</A></TD>
-  </TR>
-  <TR>
-    <TD>EBSC</TD>
-    <TD>embedded bitmap scaling</TD>
-    <TD>Provides information on how to scale bitmaps (on those rare occasions
-      where this is desirable). FontForge uses it when making bitmap only fonts
-      for windows.</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6EBSC.html">EBSC</A></TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://partners.adobe.com/public/developer/opentype/index_ebsc.html">EBSC</A></TD>
-  </TR>
-  <TR>
-    <TD>feat</TD>
-    <TD>layout feature table</TD>
-    <TD>Maps features specified in Apple's 'morx' (or 'mort') tables into names
-      provided in the 'name' table. FontForge generates this when it generates
-      a 'morx' table.</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6feat.html">feat</A></TD>
-    <TD><P ALIGN=Center>
-      *</TD>
-  </TR>
-  <TR>
-    <TD>fpgm</TD>
-    <TD>font program</TD>
-    <TD>FontForge never generates this, but it will preserve it and allows users
-      to edit it.</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6fpgm.html">fpgm</A></TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://partners.adobe.com/public/developer/opentype/index_fpgm.html">fpgm</A></TD>
-  </TR>
-  <TR>
-    <TD>fvar</TD>
-    <TD>font variations</TD>
-    <TD>Provides top level information about distortable fonts. Specifies the
-      types of distortions possible.</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6fvar.html">fvar</A></TD>
-    <TD><P ALIGN=Center>
-      *</TD>
-  </TR>
-  <TR>
-    <TD>gasp</TD>
-    <TD>grid-fitting and scan conversion</TD>
-    <TD>When FontForge does not attempt to hint a truetype font it will generate
-      this table which tells the rasterizer not to to do grid-fitting (hinting)
-      but to do anti-aliasing instead.</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6gasp.html">gasp</A></TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://partners.adobe.com/public/developer/opentype/index_gasp.html">gasp</A></TD>
-  </TR>
-  <TR>
-    <TD>GDEF</TD>
-    <TD>glyph definition</TD>
-    <TD>Divides glyphs into various classes that make using the GPOS/GSUB tables
-      easier. Also provides internal caret positions for ligatures. It is approximately
-      equivalent to Apple's 'prop' and 'lcar' tables combined.</TD>
-    <TD><P ALIGN=Center>
-      *</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats5.html">GDEF</A></TD>
-  </TR>
-  <TR>
-    <TD>glyf</TD>
-    <TD>glyph outline</TD>
-    <TD>Provides outline information for truetype glyphs. Vaguely equivalent
-      to 'CFF '.</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6glyf.html">glyf</A></TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://partners.adobe.com/public/developer/opentype/index_glyf.html">glyf</A></TD>
-  </TR>
-  <TR>
-    <TD>GPOS</TD>
-    <TD>glyph positioning</TD>
-    <TD>Provides kerning information, mark-to-base, etc. for opentype fonts.
-      See the <A HREF="gposgsub.html#GPOS">chapter on GPOS</A> in FontForge for
-      more information. Vaguely equivalent to 'kern' and 'opbd' tables.</TD>
-    <TD><P ALIGN=Center>
-      *</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats1.html">GPOS</A></TD>
-  </TR>
-  <TR>
-    <TD>GSUB</TD>
-    <TD>glyph substitution</TD>
-    <TD>Provides ligature information, swash, etc. for opentype fonts. See the
-      <A HREF="gposgsub.html#GSUB">chapter on GSUB</A> in FontForge for more
-      information. Vaguely equivalent to 'morx'.</TD>
-    <TD><P ALIGN=Center>
-      *</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats1.html">GSUB</A></TD>
-  </TR>
-  <TR>
-    <TD>gvar</TD>
-    <TD>glyph variations</TD>
-    <TD>This table contains the meat of a distortable font. It specifies how
-      each glyph can be distorted.</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6gvar.html">gvar</A></TD>
-    <TD><P ALIGN=Center>
-      *</TD>
-  </TR>
-  <TR>
-    <TD>head</TD>
-    <TD>font header</TD>
-    <TD>Contains general font information, such as the size of the em-square,
-      a time stamp, check sum infomation, etc.</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6head.html">head</A></TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://partners.adobe.com/public/developer/opentype/index_head.html">head</A></TD>
-  </TR>
-  <TR>
-    <TD>hhea</TD>
-    <TD>horizontal header</TD>
-    <TD>This table contains font-wide horizontal metric information.</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6hhea.html">hhea</A></TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://partners.adobe.com/public/developer/opentype/index_hhea.html">hhea</A></TD>
-  </TR>
-  <TR>
-    <TD>hmtx</TD>
-    <TD>horizontal metrics</TD>
-    <TD>This contains the per-glyph horizontal metrics.</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6hmtx.html">hmtx</A></TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://partners.adobe.com/public/developer/opentype/index_hmtx.html">hmtx</A></TD>
-  </TR>
-  <TR>
-    <TD>kern</TD>
-    <TD>kerning</TD>
-    <TD>Provides kerning information for Apple's truetype fonts (and for older
-      MS truetype fonts). In OpenType fonts this information is contained in the
-      GPOS table.</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6kern.html">kern</A></TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://partners.adobe.com/public/developer/opentype/index_kern.html">kern</A></TD>
-  </TR>
-  <TR>
-    <TD>lcar</TD>
-    <TD>ligature caret</TD>
-    <TD>This table provides the location of carets within ligatures in an Apple
-      font. This information is contained in the GDEF table in opentype fonts.</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6lcar.html">lcar</A></TD>
-    <TD><P ALIGN=Center>
-      *</TD>
-  </TR>
-  <TR>
-    <TD>loca</TD>
-    <TD>glyph location</TD>
-    <TD>This provides a pointer into the 'glyf' table for each glyph in the font.
-      It is required for truetype and meaningless for opentype (where vaguely
-      equivalent information is provided in the CFF table).</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6loca.html">loca</A></TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://partners.adobe.com/public/developer/opentype/index_loca.html">loca</A></TD>
-  </TR>
-  <TR>
-    <TD>maxp</TD>
-    <TD>maximum profile</TD>
-    <TD>Provides general "maximum" information about the font. This contains:
-      the maximum number of glyphs in a font, the maximum number of points in a
-      glyph, the maximum number of references in a glyph, etc.</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6maxp.html">maxp</A></TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://partners.adobe.com/public/developer/opentype/index_maxp.html">maxp</A></TD>
-  </TR>
-  <TR>
-    <TD>mort</TD>
-    <TD>metamorphosis</TD>
-    <TD>FontForge will read this table but not generate it. This table has been
-      replaced by the 'morx' table which will be generated instead. It is vaguely
-      equivalent to the GSUB table.</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6mort.html">mort</A></TD>
-    <TD><P ALIGN=Center>
-      *</TD>
-  </TR>
-  <TR>
-    <TD>morx</TD>
-    <TD>extended metamorphosis</TD>
-    <TD>Provides ligature information, swash, etc. for apple's truetype fonts.
-      FontForge can read and write this table. See the
-      <A HREF="gposgsub.html#AAT">chapter on morx</A> in FontForge for more
-      information. Vaguely equivalent to 'GSUB'.</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6morx.html">morx</A></TD>
-    <TD><P ALIGN=Center>
-      *</TD>
-  </TR>
-  <TR>
-    <TD>name</TD>
-    <TD>name</TD>
-    <TD>Provides certain standard strings relevant to the font (font name, family
-      name, license, etc.) in various languages. In Apple fonts also provides the
-      names of various features of the 'morx'/'mort' table.</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6name.html">name</A></TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://partners.adobe.com/public/developer/opentype/index_name.html">name</A></TD>
-  </TR>
-  <TR>
-    <TD>opbd</TD>
-    <TD>optical bounds</TD>
-    <TD>This table provides optical bound information for each glyph in the table
-      in an Apple font. This information may also be provided in the GPOS table
-      of an opentype font.</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6opbd.html">opbd</A></TD>
-    <TD><P ALIGN=Center>
-      *</TD>
-  </TR>
-  <TR>
-    <TD>PfEd</TD>
-    <TD>FontForge's personal table</TD>
-    <TD>This table is unique to FontForge. It can contain things like FontForge's
-      comments, and colors.I describe its format
-      <A HREF="non-standard.html">here</A>.</TD>
-    <TD><P ALIGN=Center>
-      *</TD>
-    <TD><P ALIGN=Center>
-      *</TD>
-  </TR>
-  <TR>
-    <TD>post</TD>
-    <TD>glyph name and postscript compatibility</TD>
-    <TD>This table provides some additional postscript information (italic angle),
-      but mostly it provides names for all glyphs.</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6post.html">post</A></TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://partners.adobe.com/public/developer/opentype/index_post.html">post</A></TD>
-  </TR>
-  <TR>
-    <TD>prep</TD>
-    <TD>cvt program</TD>
-    <TD>FontForge never generatest this table itself, but it will retain it when
-      reading other fonts, and it allows users to edit it.</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6prep.html">prep</A></TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://partners.adobe.com/public/developer/opentype/index_prep.html">prep</A></TD>
-  </TR>
-  <TR>
-    <TD>prop</TD>
-    <TD>glyph properties</TD>
-    <TD>Provides the unicode properties of each glyph for an Apple font. This
-      table bears some similarities to the GDEF table.</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6prop.html">prop</A></TD>
-    <TD><P ALIGN=Center>
-      *</TD>
-  </TR>
-  <TR>
-    <TD>TeX</TD>
-    <TD>TeX information</TD>
-    <TD>This table is unique to FontForge and is for use by TeX. I describe its
-      format <A HREF="non-standard.html">here</A>.</TD>
-    <TD><P ALIGN=Center>
-      *</TD>
-    <TD><P ALIGN=Center>
-      *</TD>
-  </TR>
-  <TR>
-    <TD>vhea</TD>
-    <TD>vertical header</TD>
-    <TD>FontForge generates this table for fonts with vertical metrics. This
-      table contains font-wide vertical metric information.</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6vhea.html">vhea</A></TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://partners.adobe.com/public/developer/opentype/index_vhea.html">vhea</A></TD>
-  </TR>
-  <TR>
-    <TD>vmtx</TD>
-    <TD>vertical metrics</TD>
-    <TD>FontForge generates this table for fonts with vertical metrics. This
-      contains the per-glyph vertical metrics.</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6vmtx.html">vmtx</A></TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://partners.adobe.com/public/developer/opentype/index_vmtx.html">vmtx</A></TD>
-  </TR>
-  <TR>
-    <TD>VORG</TD>
-    <TD>Vertical origin</TD>
-    <TD>Specifies the vertical origin of the baseline of sub-fonts of a CID keyed
-      opentype font.</TD>
-    <TD><P ALIGN=Center>
-      *</TD>
-    <TD><P ALIGN=Center>
-      <A HREF="http://partners.adobe.com/public/developer/opentype/index_vorg.html">VORG</A></TD>
-  </TR>
-</TABLE>
-<P>
-<A HREF="gposgsub.html">Advanced Typography tables in FontForge</A>
+  <H1 ALIGN=Center>
+    TrueType and OpenType tables supported by FontForge
+  </H1>
+  <P>
+  <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6.html">Apple</A>,
+  <A HREF="http://www.microsoft.com/typography/tt/tt.htm">MS</A> and
+  <A HREF="http://partners.adobe.com/public/developer/opentype/index_spec.html">Adobe</A>
+  all have their descriptions of TrueType and OpenType. MS and Adobe's versions
+  are essentially the same, while Apple's differ significantly from either.
+  <TABLE BORDER CELLPADDING="2">
+    <TR>
+      <TH>name</TH>
+      <TH>long name</TH>
+      <TH>FontForge's use</TH>
+      <TH>Apple<BR>
+	docs</TH>
+      <TH>Adobe<BR>
+	docs</TH>
+    </TR>
+    <TR>
+      <TD>avar</TD>
+      <TD>axis variation</TD>
+      <TD>Used to specify piecewise linear sections of axes for distortable fonts</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6avar.html">avar</A></TD>
+      <TD><P ALIGN=Center>
+	*</TD>
+    </TR>
+    <TR>
+      <TD>BDF&nbsp;</TD>
+      <TD>X11 BDF header</TD>
+      <TD>This table is not part of the official TrueType or OpenType specs. It
+	contains the header information from old bdf fonts. I describe its format
+	<A HREF="non-standard.html">here</A>.</TD>
+      <TD><P ALIGN=Center>
+	*</TD>
+      <TD><P ALIGN=Center>
+	*</TD>
+    </TR>
+    <TR>
+      <TD>bdat</TD>
+      <TD>bitmap data</TD>
+      <TD>Provides the actual bitmap data for all bitmap glyphs in Apple fonts.
+	'EBDT' is used by MS/Adobe instead (and has the same format)</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6bdat.html">bdat</A></TD>
+      <TD><P ALIGN=Center>
+	*</TD>
+    </TR>
+    <TR>
+      <TD>bhed</TD>
+      <TD>bitmap font header</TD>
+      <TD>Replaces the 'head' table in Apple's bitmap only fonts. (similar to 'head')</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6bhed.html">bhed</A></TD>
+      <TD><P ALIGN=Center>
+	*</TD>
+    </TR>
+    <TR>
+      <TD>bloc</TD>
+      <TD>bitmap location data</TD>
+      <TD>Provides pointers to the appropriate bitmap data for each bitmap glyph
+	in Apple fonts. 'EBLC' is used by MS/Adobe instead (and has the same format)</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6bloc.html">bloc</A></TD>
+      <TD><P ALIGN=Center>
+	*</TD>
+    </TR>
+    <TR>
+      <TD>CFF</TD>
+      <TD><A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5176.CFF.pdf">Compact
+	Font Format</A></TD>
+      <TD>Provides all the outline data (and sometimes glyph names as well) for
+	the PostScript
+	<A HREF="http://partners.adobe.com/asn/developer/pdfs/tn/5177.Type2.pdf">Type2</A>
+	font that is the heart of an OpenType font. Vaguely equivalent to 'glyf'
+	, 'loca' and 'post' combined.</TD>
+      <TD><P ALIGN=Center>
+	*</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://partners.adobe.com/public/developer/opentype/index_cff.html">CFF</A></TD>
+    </TR>
+    <TR>
+      <TD>cmap</TD>
+      <TD>character code mapping</TD>
+      <TD>Provides at least one encoding from a stream of bytes to glyphs in the
+	font. FontForge provides at least three encodings in every font (one for
+	Mac Roman, one for Mac Unicode, one for MS Unicode). For some fonts it will
+	additionally provide a CJK encoding (Big5, SJIS, etc) or an extended unicode
+	encoding which will cover code points outside of the BMP.
+	<P>
+	For fonts with special 1-byte encodings (such as symbol) it will provide
+	a "symbol" encoding which maps a known page in the corporate use area to
+	the glyphs.</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6cmap.html">cmap</A></TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://partners.adobe.com/public/developer/opentype/index_cmap.html">cmap</A></TD>
+    </TR>
+    <TR>
+      <TD>cvar</TD>
+      <TD>variations on cvt table</TD>
+      <TD>Used to specify hinting differences in distortable fonts</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6cvar.html">cvar</A></TD>
+      <TD><P ALIGN=Center>
+	*</TD>
+    </TR>
+    <TR>
+      <TD>cvt</TD>
+      <TD>control value table</TD>
+      <TD>FontForge uses this when it attempts to hint truetype fonts (FontForge
+	will read it from a font and save it into another).</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6cvt.html">cvt</A></TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://partners.adobe.com/public/developer/opentype/index_cvt.html">cvt</A></TD>
+    </TR>
+    <TR>
+      <TD>EBDT</TD>
+      <TD>embedded bitmap data</TD>
+      <TD>Provides the actual bitmap data for all bitmap glyphs in MS/Adobe fonts.
+	'bdat' is used by Apple instead (and has the same format)</TD>
+      <TD><P ALIGN=Center>
+	*</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://partners.adobe.com/public/developer/opentype/index_ebdt.html">EBDT</A></TD>
+    </TR>
+    <TR>
+      <TD>EBLC</TD>
+      <TD>embedded bitmap location</TD>
+      <TD>Provides pointers to the appropriate bitmap data for each bitmap glyph
+	in MS/Adobe fonts. 'bloc' is used by Apple instead (and has the same format)</TD>
+      <TD><P ALIGN=Center>
+	*</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://partners.adobe.com/public/developer/opentype/index_eblc.html">EBLC</A></TD>
+    </TR>
+    <TR>
+      <TD>EBSC</TD>
+      <TD>embedded bitmap scaling</TD>
+      <TD>Provides information on how to scale bitmaps (on those rare occasions
+	where this is desirable). FontForge uses it when making bitmap only fonts
+	for windows.</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6EBSC.html">EBSC</A></TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://partners.adobe.com/public/developer/opentype/index_ebsc.html">EBSC</A></TD>
+    </TR>
+    <TR>
+      <TD>feat</TD>
+      <TD>layout feature table</TD>
+      <TD>Maps features specified in Apple's 'morx' (or 'mort') tables into names
+	provided in the 'name' table. FontForge generates this when it generates
+	a 'morx' table.</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6feat.html">feat</A></TD>
+      <TD><P ALIGN=Center>
+	*</TD>
+    </TR>
+    <TR>
+      <TD>FFTM</TD>
+      <TD>FontForge timestamp</TD>
+      <TD>This table is unique to FontForge. It contains three timestamps: First
+	FontForge's version date, then when the font was generated, and when the
+	font was created. I describe its format <A HREF="non-standard.html">here</A>.</TD>
+      <TD><P ALIGN=Center>
+	*</TD>
+      <TD><P ALIGN=Center>
+	*</TD>
+    </TR>
+    <TR>
+      <TD>fpgm</TD>
+      <TD>font program</TD>
+      <TD>FontForge never generates this, but it will preserve it and allows users
+	to edit it.</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6fpgm.html">fpgm</A></TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://partners.adobe.com/public/developer/opentype/index_fpgm.html">fpgm</A></TD>
+    </TR>
+    <TR>
+      <TD>fvar</TD>
+      <TD>font variations</TD>
+      <TD>Provides top level information about distortable fonts. Specifies the
+	types of distortions possible.</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6fvar.html">fvar</A></TD>
+      <TD><P ALIGN=Center>
+	*</TD>
+    </TR>
+    <TR>
+      <TD>gasp</TD>
+      <TD>grid-fitting and scan conversion</TD>
+      <TD>When FontForge does not attempt to hint a truetype font it will generate
+	this table which tells the rasterizer not to to do grid-fitting (hinting)
+	but to do anti-aliasing instead.</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6gasp.html">gasp</A></TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://partners.adobe.com/public/developer/opentype/index_gasp.html">gasp</A></TD>
+    </TR>
+    <TR>
+      <TD>GDEF</TD>
+      <TD>glyph definition</TD>
+      <TD>Divides glyphs into various classes that make using the GPOS/GSUB tables
+	easier. Also provides internal caret positions for ligatures. It is approximately
+	equivalent to Apple's 'prop' and 'lcar' tables combined.</TD>
+      <TD><P ALIGN=Center>
+	*</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats5.html">GDEF</A></TD>
+    </TR>
+    <TR>
+      <TD>glyf</TD>
+      <TD>glyph outline</TD>
+      <TD>Provides outline information for truetype glyphs. Vaguely equivalent
+	to 'CFF '.</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6glyf.html">glyf</A></TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://partners.adobe.com/public/developer/opentype/index_glyf.html">glyf</A></TD>
+    </TR>
+    <TR>
+      <TD>GPOS</TD>
+      <TD>glyph positioning</TD>
+      <TD>Provides kerning information, mark-to-base, etc. for opentype fonts.
+	See the <A HREF="gposgsub.html#GPOS">chapter on GPOS</A> in FontForge for
+	more information. Vaguely equivalent to 'kern' and 'opbd' tables.</TD>
+      <TD><P ALIGN=Center>
+	*</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats1.html">GPOS</A></TD>
+    </TR>
+    <TR>
+      <TD>GSUB</TD>
+      <TD>glyph substitution</TD>
+      <TD>Provides ligature information, swash, etc. for opentype fonts. See the
+	<A HREF="gposgsub.html#GSUB">chapter on GSUB</A> in FontForge for more
+	information. Vaguely equivalent to 'morx'.</TD>
+      <TD><P ALIGN=Center>
+	*</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats1.html">GSUB</A></TD>
+    </TR>
+    <TR>
+      <TD>gvar</TD>
+      <TD>glyph variations</TD>
+      <TD>This table contains the meat of a distortable font. It specifies how
+	each glyph can be distorted.</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6gvar.html">gvar</A></TD>
+      <TD><P ALIGN=Center>
+	*</TD>
+    </TR>
+    <TR>
+      <TD>head</TD>
+      <TD>font header</TD>
+      <TD>Contains general font information, such as the size of the em-square,
+	a time stamp, check sum infomation, etc.</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6head.html">head</A></TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://partners.adobe.com/public/developer/opentype/index_head.html">head</A></TD>
+    </TR>
+    <TR>
+      <TD>hhea</TD>
+      <TD>horizontal header</TD>
+      <TD>This table contains font-wide horizontal metric information.</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6hhea.html">hhea</A></TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://partners.adobe.com/public/developer/opentype/index_hhea.html">hhea</A></TD>
+    </TR>
+    <TR>
+      <TD>hmtx</TD>
+      <TD>horizontal metrics</TD>
+      <TD>This contains the per-glyph horizontal metrics.</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6hmtx.html">hmtx</A></TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://partners.adobe.com/public/developer/opentype/index_hmtx.html">hmtx</A></TD>
+    </TR>
+    <TR>
+      <TD>kern</TD>
+      <TD>kerning</TD>
+      <TD>Provides kerning information for Apple's truetype fonts (and for older
+	MS truetype fonts). In OpenType fonts this information is contained in the
+	GPOS table.</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6kern.html">kern</A></TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://partners.adobe.com/public/developer/opentype/index_kern.html">kern</A></TD>
+    </TR>
+    <TR>
+      <TD>lcar</TD>
+      <TD>ligature caret</TD>
+      <TD>This table provides the location of carets within ligatures in an Apple
+	font. This information is contained in the GDEF table in opentype fonts.</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6lcar.html">lcar</A></TD>
+      <TD><P ALIGN=Center>
+	*</TD>
+    </TR>
+    <TR>
+      <TD>loca</TD>
+      <TD>glyph location</TD>
+      <TD>This provides a pointer into the 'glyf' table for each glyph in the font.
+	It is required for truetype and meaningless for opentype (where vaguely
+	equivalent information is provided in the CFF table).</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6loca.html">loca</A></TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://partners.adobe.com/public/developer/opentype/index_loca.html">loca</A></TD>
+    </TR>
+    <TR>
+      <TD>MATH</TD>
+      <TD>mathematical typesetting</TD>
+      <TD>Provides general information needed for mathematical typesetting.<BR>
+	This is a new table (August 2007) and there is currently no publicly available
+	documentation for it.</TD>
+      <TD><P ALIGN=Center>
+	*</TD>
+      <TD><P ALIGN=Center>
+	*</TD>
+    </TR>
+    <TR>
+      <TD>maxp</TD>
+      <TD>maximum profile</TD>
+      <TD>Provides general "maximum" information about the font. This contains:
+	the maximum number of glyphs in a font, the maximum number of points in a
+	glyph, the maximum number of references in a glyph, etc.</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6maxp.html">maxp</A></TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://partners.adobe.com/public/developer/opentype/index_maxp.html">maxp</A></TD>
+    </TR>
+    <TR>
+      <TD>mort</TD>
+      <TD>metamorphosis</TD>
+      <TD>FontForge will read this table but not generate it. This table has been
+	replaced by the 'morx' table which will be generated instead. It is vaguely
+	equivalent to the GSUB table.</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6mort.html">mort</A></TD>
+      <TD><P ALIGN=Center>
+	*</TD>
+    </TR>
+    <TR>
+      <TD>morx</TD>
+      <TD>extended metamorphosis</TD>
+      <TD>Provides ligature information, swash, etc. for apple's truetype fonts.
+	FontForge can read and write this table. See the
+	<A HREF="gposgsub.html#AAT">chapter on morx</A> in FontForge for more
+	information. Vaguely equivalent to 'GSUB'.</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6morx.html">morx</A></TD>
+      <TD><P ALIGN=Center>
+	*</TD>
+    </TR>
+    <TR>
+      <TD>name</TD>
+      <TD>name</TD>
+      <TD>Provides certain standard strings relevant to the font (font name, family
+	name, license, etc.) in various languages. In Apple fonts also provides the
+	names of various features of the 'morx'/'mort' table.</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6name.html">name</A></TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://partners.adobe.com/public/developer/opentype/index_name.html">name</A></TD>
+    </TR>
+    <TR>
+      <TD>opbd</TD>
+      <TD>optical bounds</TD>
+      <TD>This table provides optical bound information for each glyph in the table
+	in an Apple font. This information may also be provided in the GPOS table
+	of an opentype font.</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6opbd.html">opbd</A></TD>
+      <TD><P ALIGN=Center>
+	*</TD>
+    </TR>
+    <TR>
+      <TD>PfEd</TD>
+      <TD>FontForge's personal table</TD>
+      <TD>This table is unique to FontForge. It can contain things like FontForge's
+	comments, and colors.I describe its format
+	<A HREF="non-standard.html">here</A>.</TD>
+      <TD><P ALIGN=Center>
+	*</TD>
+      <TD><P ALIGN=Center>
+	*</TD>
+    </TR>
+    <TR>
+      <TD>post</TD>
+      <TD>glyph name and postscript compatibility</TD>
+      <TD>This table provides some additional postscript information (italic angle),
+	but mostly it provides names for all glyphs.</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6post.html">post</A></TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://partners.adobe.com/public/developer/opentype/index_post.html">post</A></TD>
+    </TR>
+    <TR>
+      <TD>prep</TD>
+      <TD>cvt program</TD>
+      <TD>FontForge never generatest this table itself, but it will retain it when
+	reading other fonts, and it allows users to edit it.</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6prep.html">prep</A></TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://partners.adobe.com/public/developer/opentype/index_prep.html">prep</A></TD>
+    </TR>
+    <TR>
+      <TD>prop</TD>
+      <TD>glyph properties</TD>
+      <TD>Provides the unicode properties of each glyph for an Apple font. This
+	table bears some similarities to the GDEF table.</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6prop.html">prop</A></TD>
+      <TD><P ALIGN=Center>
+	*</TD>
+    </TR>
+    <TR>
+      <TD>TeX</TD>
+      <TD>TeX information</TD>
+      <TD>This table is unique to FontForge and is for use by TeX. I describe its
+	format <A HREF="non-standard.html">here</A>.</TD>
+      <TD><P ALIGN=Center>
+	*</TD>
+      <TD><P ALIGN=Center>
+	*</TD>
+    </TR>
+    <TR>
+      <TD>vhea</TD>
+      <TD>vertical header</TD>
+      <TD>FontForge generates this table for fonts with vertical metrics. This
+	table contains font-wide vertical metric information.</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6vhea.html">vhea</A></TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://partners.adobe.com/public/developer/opentype/index_vhea.html">vhea</A></TD>
+    </TR>
+    <TR>
+      <TD>vmtx</TD>
+      <TD>vertical metrics</TD>
+      <TD>FontForge generates this table for fonts with vertical metrics. This
+	contains the per-glyph vertical metrics.</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6vmtx.html">vmtx</A></TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://partners.adobe.com/public/developer/opentype/index_vmtx.html">vmtx</A></TD>
+    </TR>
+    <TR>
+      <TD>VORG</TD>
+      <TD>Vertical origin</TD>
+      <TD>Specifies the vertical origin of the baseline of sub-fonts of a CID keyed
+	opentype font.</TD>
+      <TD><P ALIGN=Center>
+	*</TD>
+      <TD><P ALIGN=Center>
+	<A HREF="http://partners.adobe.com/public/developer/opentype/index_vorg.html">VORG</A></TD>
+    </TR>
+  </TABLE>
+  <P>
+  <A HREF="gposgsub.html">Advanced Typography tables in FontForge</A>
 </DIV>
 </BODY></HTML>
