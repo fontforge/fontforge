@@ -2957,22 +2957,33 @@ return( head );
 }
 
 static DStemInfo *SFDReadDHints(FILE *sfd) {
-    DStemInfo *head=NULL, *last=NULL, *cur;
-    DStemInfo d;
+    DStemInfo *head=NULL, *cur;
+    int i;
+    BasePoint *bp[4];
 
-    memset(&d,'\0',sizeof(d));
-    while ( getreal(sfd,&d.leftedgetop.x)==1 && getreal(sfd,&d.leftedgetop.y) &&
-	    getreal(sfd,&d.rightedgetop.x)==1 && getreal(sfd,&d.rightedgetop.y) &&
-	    getreal(sfd,&d.leftedgebottom.x)==1 && getreal(sfd,&d.leftedgebottom.y) &&
-	    getreal(sfd,&d.rightedgebottom.x)==1 && getreal(sfd,&d.rightedgebottom.y) ) {
-	cur = chunkalloc(sizeof(DStemInfo));
-	*cur = d;
-	if ( head == NULL )
-	    head = cur;
-	else
-	    last->next = cur;
-	last = cur;
+    for ( i=0 ; i<4 ; i++ ) bp[i] = chunkalloc( sizeof( BasePoint ));
+
+    while ( getreal(sfd,&bp[0]->x) && getreal(sfd,&bp[0]->y) &&
+	    getreal(sfd,&bp[1]->x) && getreal(sfd,&bp[1]->y) &&
+	    getreal(sfd,&bp[2]->x) && getreal(sfd,&bp[2]->y) &&
+	    getreal(sfd,&bp[3]->x) && getreal(sfd,&bp[3]->y) ) {
+        
+        /* Ensure that point coordinates specified in the sfd file really
+          form a diagonal line */
+        if (IsDiagonalable( bp )) {
+	    cur = chunkalloc( sizeof(DStemInfo) );
+	    memcpy( &(cur->leftedgetop),bp[0],sizeof( BasePoint ) );
+	    memcpy( &(cur->rightedgetop),bp[1],sizeof( BasePoint ) );
+	    memcpy( &(cur->leftedgebottom),bp[2],sizeof( BasePoint ) );
+	    memcpy( &(cur->rightedgebottom),bp[3],sizeof( BasePoint ) );
+            
+            if (!MergeDStemInfo(&head, cur))
+                chunkfree( cur,sizeof(DStemInfo) );
+        }
     }
+
+    for ( i=0 ; i<4 ; i++ ) chunkfree( bp[i],sizeof( BasePoint ));
+
 return( head );
 }
 
@@ -3547,7 +3558,7 @@ return( NULL );
 	    SCGuessVHintInstancesList(sc);		/* For reading in old .sfd files */
 	    sc->vconflicts = StemListAnyConflicts(sc->vstem);
 	} else if ( strmatch(tok,"DStem:")==0 ) {
-	    sc->dstem = SFDReadDHints(sfd);
+	    sc->dstem = SFDReadDHints( sfd );
 	} else if ( strmatch(tok,"CounterMasks:")==0 ) {
 	    getsint(sfd,&sc->countermask_cnt);
 	    sc->countermasks = gcalloc(sc->countermask_cnt,sizeof(HintMask));

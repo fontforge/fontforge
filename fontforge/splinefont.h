@@ -1718,6 +1718,15 @@ extern int RealApprox(real a,real b);
 extern int RealWithin(real a,real b,real fudge);
 extern int RealRatio(real a,real b,real fudge);
 
+extern int IsDiagonalable(BasePoint **bp);
+extern int PointOnLine(BasePoint *top,BasePoint *bottom,BasePoint *test);
+extern int IsCoLinear(BasePoint *top1, BasePoint *bottom1, BasePoint *top2, 
+    BasePoint *bottom2);
+extern double GetDStemWidth(BasePoint *tl,BasePoint *bl, 
+    BasePoint *tr,BasePoint *br);
+extern int MergeDStemInfo(DStemInfo **ds, DStemInfo *test);
+extern void DStemInfoTest(SplineChar *sc);
+
 extern void LineListFree(LineList *ll);
 extern void LinearApproxFree(LinearApprox *la);
 extern void SplineFree(Spline *spline);
