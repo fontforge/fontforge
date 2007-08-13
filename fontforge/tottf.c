@@ -4846,7 +4846,7 @@ return( out );
 }
 
 static int tagcomp(const void *_t1, const void *_t2) {
-    struct taboff *t1 = (struct taboff *) _t1, *t2 = (struct taboff *) _t2;
+    struct taboff *t1 = *((struct taboff **) _t1), *t2 = *((struct taboff **) _t2);
 return( (int) (t1->tag - t2->tag) );
 }
 
@@ -5055,6 +5055,12 @@ return( false );
 
     i = 0;
 
+    if ( at->bdf!=NULL ) {
+	at->tabdir.tabs[i].tag = CHR('B','D','F',' ');
+	at->tabdir.tabs[i].data = at->bdf;
+	at->tabdir.tabs[i++].length = at->bdflen;
+    }
+
     if ( format==ff_otf || format==ff_otfcid ) {
 	at->tabdir.tabs[i].tag = CHR('C','F','F',' ');
 	at->tabdir.tabs[i].length = at->cfflen;
@@ -5127,12 +5133,6 @@ return( false );
 	at->tabdir.tabs[i].tag = CHR('M','A','T','H');
 	at->tabdir.tabs[i].data = at->math;
 	at->tabdir.tabs[i++].length = at->mathlen;
-    }
-
-    if ( at->bdf!=NULL ) {
-	at->tabdir.tabs[i].tag = CHR('B','D','F',' ');
-	at->tabdir.tabs[i].data = at->bdf;
-	at->tabdir.tabs[i++].length = at->bdflen;
     }
 
     if ( at->vorgf!=NULL ) {
@@ -5338,8 +5338,6 @@ return( false );
     }
     if ( tab!=NULL )
 	IError("Some user supplied tables omitted. Up sizeof tabs array in struct tabdir in ttf.h" );
-
-    qsort(at->tabdir.tabs,i,sizeof(struct taboff),tagcomp);
     
     at->tabdir.numtab = i;
     at->tabdir.searchRange = (i<16?8:i<32?16:i<64?32:64)*16;
@@ -5348,6 +5346,7 @@ return( false );
     for ( i=0; i<at->tabdir.numtab; ++i ) {
 	struct taboff *tab = &at->tabdir.tabs[i];
 	at->tabdir.ordered[i] = tab;
+	at->tabdir.alpha[i] = tab;
 /* This is the ordering of tables in ARIAL. I've no idea why it makes a */
 /*  difference to order them, time to do a seek seems likely to be small, but */
 /*  other people make a big thing about ordering them so I'll do it. */
@@ -5402,6 +5401,7 @@ return( false );
        }
 
     qsort(at->tabdir.ordered,at->tabdir.numtab,sizeof(struct taboff *),tcomp);
+    qsort(at->tabdir.alpha,i,sizeof(struct taboff *),tagcomp);
 
     offset = sizeof(int32)+4*sizeof(int16) + at->tabdir.numtab*4*sizeof(int32);
     for ( i=0; i<at->tabdir.numtab; ++i ) if ( at->tabdir.ordered[i]->data!=NULL ) {
@@ -5439,23 +5439,23 @@ static void dumpttf(FILE *ttf,struct alltabs *at, enum fontformat format) {
     putshort(ttf,at->tabdir.entrySel);
     putshort(ttf,at->tabdir.rangeShift);
     for ( i=0; i<at->tabdir.numtab; ++i ) {
-	if ( at->tabdir.tabs[i].tag==CHR('h','e','a','d') || at->tabdir.tabs[i].tag==CHR('b','h','e','d') )
+	if ( at->tabdir.alpha[i]->tag==CHR('h','e','a','d') || at->tabdir.alpha[i]->tag==CHR('b','h','e','d') )
 	    head_index = i;
-	putlong(ttf,at->tabdir.tabs[i].tag);
-	putlong(ttf,at->tabdir.tabs[i].checksum);
-	putlong(ttf,at->tabdir.tabs[i].offset);
-	putlong(ttf,at->tabdir.tabs[i].length);
+	putlong(ttf,at->tabdir.alpha[i]->tag);
+	putlong(ttf,at->tabdir.alpha[i]->checksum);
+	putlong(ttf,at->tabdir.alpha[i]->offset);
+	putlong(ttf,at->tabdir.alpha[i]->length);
     }
 
     for ( i=0; i<at->tabdir.numtab; ++i ) if ( at->tabdir.ordered[i]->data!=NULL )
 	if ( !ttfcopyfile(ttf,at->tabdir.ordered[i]->data,
-		at->tabdir.ordered[i]->offset,Tag2String(at->tabdir.tabs[i].tag)))
+		at->tabdir.ordered[i]->offset,Tag2String(at->tabdir.ordered[i]->tag)))
 	    at->error = true;
 
     checksum = filecheck(ttf);
     checksum = 0xb1b0afba-checksum;
     if ( head_index!=-1 )
-	fseek(ttf,at->tabdir.tabs[head_index].offset+2*sizeof(int32),SEEK_SET);
+	fseek(ttf,at->tabdir.alpha[head_index]->offset+2*sizeof(int32),SEEK_SET);
     putlong(ttf,checksum);
 
     /* ttfcopyfile closed all the files (except ttf) */
