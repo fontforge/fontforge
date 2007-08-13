@@ -2530,6 +2530,7 @@ extern void PyFF_ScriptFile(struct fontview *fv,SplineChar *sc,char *filename);
 extern void PyFF_ScriptString(struct fontview *fv,SplineChar *sc,char *str);
 extern void PyFF_FreeFV(struct fontview *fv);
 extern void PyFF_FreeSC(SplineChar *sc);
+extern void PyFF_ProcessInitFiles(void);
 struct gtextinfo;
 extern void scriptingSaveEnglishNames(struct gtextinfo *ids,struct gtextinfo *langs);
 #endif

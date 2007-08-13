@@ -1172,6 +1172,9 @@ return(false);
 	} else if ( format==fv_eps ) {
 	    SCImportPS(sc,toback?ly_back:ly_fore,start,flags&sf_clearbeforeinput,flags&~sf_clearbeforeinput);
 	    ++tot;
+	} else if ( format>=fv_pythonbase ) {
+	    PyFF_SCImport(sc,format-fv_pythonbase,start, toback,flags&sf_clearbeforeinput);
+	    ++tot;
 	}
 	if ( endpath==NULL )
     break;
@@ -1385,6 +1388,10 @@ return( true );
 		d->done = FVImportImages(d->fv,temp,format,toback,-1);
 	    else if ( format==fv_gliftemplate )
 		d->done = FVImportImageTemplate(d->fv,temp,format,toback,-1);
+	    else if ( format==fv_glif )
+		d->done = FVImportImages(d->fv,temp,format,toback,-1);
+	    else if ( format>=fv_pythonbase )
+		d->done = FVImportImages(d->fv,temp,format,toback,-1);
 	} else if ( d->bv!=NULL )
 	    d->done = BVImportImage(d->bv,temp);
 	else {
@@ -1399,8 +1406,11 @@ return( true );
 	    else if ( format==fv_glif )
 		ImportGlif(d->cv,temp);
 #endif
-	    else
+	    else if ( format==fv_fig )
 		ImportFig(d->cv,temp);
+	    else if ( format>=fv_pythonbase )
+		PyFF_SCImport(d->cv->sc,format-fv_pythonbase,temp,
+			d->cv->drawmode==dm_back, false);
 	}
 	free(temp);
     }
@@ -1420,8 +1430,22 @@ return( true );
 static int GFD_Format(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	int format = GGadgetGetFirstListSelectedItem(g);
-	GFileChooserSetFilterText(d->gfc,d->fv==NULL?wildchr[format]:wildfnt[format]);
+	int format = (intpt) (GGadgetGetListItemSelected(d->format)->userdata);
+	if ( format<fv_pythonbase )
+	    GFileChooserSetFilterText(d->gfc,d->fv==NULL?wildchr[format]:wildfnt[format]);
+	else {
+	    char *text;
+	    char *ae = py_ie[format-fv_pythonbase].all_extensions;
+	    unichar_t *utext;
+	    text = galloc(strlen(ae)+10);
+	    if ( strchr(ae,','))
+		sprintf( text, "*.{%s}", ae );
+	    else
+		sprintf( text, "*.%s", ae );
+	    utext = utf82u_copy(text);
+	    GFileChooserSetFilterText(d->gfc,utext);
+	    free(text); free(utext);
+	}
 	GFileChooserRefreshList(d->gfc);
 	if ( d->fv!=NULL ) {
 	    if ( format==fv_bdf || format==fv_ttf || format==fv_pcf ||
@@ -1433,7 +1457,8 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 		GGadgetSetEnabled(d->background,true);
 	    } else if ( format==fv_eps || format==fv_epstemplate ||
 			format==fv_svg || format==fv_svgtemplate ||
-			format==fv_glif || format==fv_gliftemplate ) {
+			format==fv_glif || format==fv_gliftemplate ||
+			format>=fv_pythonbase ) {
 		GGadgetSetChecked(d->background,false);
 		GGadgetSetEnabled(d->background,true);
 	    } else {			/* Images */
@@ -1480,6 +1505,7 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
     int i, format;
     int bs = GIntGetResource(_NUM_Buttonsize), bsbigger, totwid, scalewid;
     static int done= false;
+    GTextInfo *cur_formats, *base;
 
     if ( !done ) {
 	for ( i=0; formats[i].text!=NULL; ++i )
@@ -1487,6 +1513,29 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
 	for ( i=0; fvformats[i].text!=NULL; ++i )
 	    fvformats[i].text = (unichar_t *) _((char *) fvformats[i].text);
 	done = true;
+    }
+    base = cur_formats = fv==NULL?formats:fvformats;
+    if ( py_ie!=NULL ) {
+	int cnt, extras;
+	for ( cnt=0; base[cnt].text!=NULL; ++cnt );
+	for ( i=extras=0; py_ie[i].name!=NULL; ++i )
+	    if ( py_ie[i].import!=NULL )
+		++extras;
+	if ( extras!=0 ) {
+	    cur_formats = gcalloc(extras+cnt+1,sizeof(GTextInfo));
+	    for ( cnt=0; base[cnt].text!=NULL; ++cnt ) {
+		cur_formats[cnt] = base[cnt];
+		cur_formats[cnt].text = (unichar_t *) copy( (char *) base[cnt].text );
+	    }
+	    for ( i=extras=0; py_ie[i].name!=NULL; ++i ) {
+		if ( py_ie[i].import!=NULL ) {
+		    cur_formats[cnt+extras].text = (unichar_t *) copy(py_ie[i].name);
+		    cur_formats[cnt+extras].text_is_1byte = true;
+		    cur_formats[cnt+extras].userdata = (void *) (intpt) (fv_pythonbase+i);
+		    ++extras;
+		}
+	    }
+	}
     }
 
     memset(&wattrs,0,sizeof(wattrs));
@@ -1562,7 +1611,7 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
 	last_format=0;
     }
     format = fv==NULL?last_format:flast_format;
-    gcd[5].gd.u.list = fv==NULL?formats:fvformats;
+    gcd[5].gd.u.list = cur_formats;
     gcd[5].gd.label = &gcd[5].gd.u.list[format];
     gcd[5].gd.handle_controlevent = GFD_Format;
     gcd[5].creator = GListButtonCreate;
@@ -1632,6 +1681,9 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
     d.format = gcd[5].ret;
     if ( fv!=NULL )
 	d.background = gcd[6].ret;
+
+    if ( cur_formats!=formats && cur_formats!=fvformats )
+	GTextInfoListFree(cur_formats);
 
     GWidgetHidePalettes();
     GDrawSetVisible(gw,true);

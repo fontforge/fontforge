@@ -930,6 +930,9 @@ int FontForgeMain( int argc, char **argv ) {
     InitToolIconClut(default_background);
 # endif
     InitCursors();
+#ifndef _NO_PYTHON
+    PyFF_ProcessInitFiles();
+#endif
 
 # ifdef FONTFORGE_CONFIG_GTK
     if ( splash ) {

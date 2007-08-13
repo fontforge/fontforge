@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 16-Sep-2001 -->
-  <!-- AP: Last modified: 15-Jul-2006 -->
+  <!-- AP: Last modified: 8-Aug-2007 -->
   <TITLE>Older changes to FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -13,6 +13,1387 @@
   <A HREF="pfaeditchangelog.html">Changes to PfaEdit (predecessor to
   FontForge)</A>
   <UL>
+    <LI>
+      20-Dec-2006
+      <UL>
+	<LI>
+	  Patch by Johan Winge fixing a bug in dragging out a magnification rectangle
+	<LI>
+	  Patch from SUSE fixing a variable which can be uninitialized.
+      </UL>
+    <LI>
+      19-Dec-2006
+      <UL>
+	<LI>
+	  I have received many complaints about the grey background, so I have tried
+	  various other backgrounds -- and gotten complaints on all of them. Currently
+	  try using a white background by default and add a
+	  <A HREF="faq.html#background">discussion in the FAQ</A> about changing it.
+	<LI>
+	  Add support for Unified Font Objects (a directory holding many Glyph Interchange
+	  Format files). People at the Open Font Library seem to think this is useful.
+	  Also support for importing/exporting glyphs in glif.
+	<LI>
+	  People asked me to implement the UFO/GLIF format in part because each glyph
+	  is stored in a separate file giving finer granularity to version control.
+	  I worry about using UFO/GLIF because it is not documented to store all the
+	  information needed to regenerate a font (being mainly concerned with glyph
+	  outlines). So I've implemented a directory based version of the sfd format
+	  which I hope will provide the one glyph per file format people say they want.
+	<LI>
+	  MS has extended the 'gasp' table to give users control over clear type. Version
+	  number has changed too. FF now supports the new bits.
+	<LI>
+	  MS has also added a cleartype bit to the head table.
+	<LI>
+	  Hmm. I wasn't setting the apple specific bits of the head table properly.
+	<LI>
+	  Allow the user to create an empty bitmap strike.
+	<LI>
+	  Add the ability to remove bitmap glyphs from a strike.
+	<LI>
+	  Fix a couple of memory leaks.
+	<LI>
+	  The docs don't mention this, but... mangal.ttf has a NULL offset for the
+	  lookahead class definition, so if that happens -- no classes.
+	<LI>
+	  Werner doesn't like that I always add dummy bitmaps for .notdef, .null &amp;
+	  nonmarkingreturn. It seemed logical to me that if I were prepared to add
+	  those glyphs to the outline font I should be prepared to add them to the
+	  bitmap strike. But Werner (I think) sees bitmap strikes as containing exceptional
+	  glyphs which need special handling, whereas I just saw them as complete fonts.
+	  So in this context I guess there is no need to add these glyphs. As a compromise
+	  I have decided that I will add the glyphs to the bitmap strike if I added
+	  the glyphs to the outline font.
+	<LI>
+	  Add scripting functions:
+	  <UL>
+	    <LI>
+	      SelectMoreIf
+	    <LI>
+	      SelectMoreSingletonsIf
+	    <LI>
+	      SelectSingletonsIf
+	  </UL>
+	<LI>
+	  The changed flag wasn't being set in Remove ATT.
+	<LI>
+	  GetPosSub scripting command trashed memory.
+	<LI>
+	  Make default char of OS/2 be space for otf and .notdef for ttf. This is a
+	  guess at what should be done.
+	<LI>
+	  FF was still setting firstcharindex in OS/2 incorrectly. The problem is that
+	  glyph 1 (or 2?) has encoding 0 in the mac cmap table while it is not referenced
+	  at all in the windows cmap.
+	<LI>
+	  Wasn't setting os2_typelinegap field when reading an sfnt.
+	<LI>
+	  In a font without any LCG characters, fontforge set the OS/2 capheight and
+	  xheight fields to -1e10. It should have been 0. Patch by Roozbeh Pournader.
+	<LI>
+	  Patch by Roozbeh Pournader. Regular bit in fsSel in OS/2 was being set when
+	  it should not have been.
+	<LI>
+	  Werner suggests that when looking at a bitmap strike, nextdef and prevdef
+	  look at the next glyph defined in the strike rather than the font as a whole.
+	  Useful for sparse bitmaps
+	<LI>
+	  Werner wants to be able to set bitmap magnification in the font view.
+	<LI>
+	  The "Recalculate Bitmaps" button in the bitmap view should adjust its positioning
+	  as the window is resized (and be sensitive to other languages which might
+	  have different button widths).
+	<LI>
+	  there was an uninitialized variable used in parsing contextual by coverage
+	  table.
+	<LI>
+	  Werner points out that when double clicking on a bitmap glyph in the font
+	  view, the glyph is created / rasterized without using freetype.
+	<LI>
+	  Sigh. Ok. make the size of the label font in the fontview configurable.
+	  <PRE>fontforge.FontView.FontSize: 24
+</PRE>
+	<LI>
+	  Werner finds "Original" confusing for an encoding and suggests "Glyph Order"
+	  instead.
+	<LI>
+	  MS has revealed the meaning of a few new GETINFO bits. Put them in the Gloss
+	  window.
+	<LI>
+	  Set/Select aren't very informative in class definition windows, change to
+	  "Set from font"/"Select in Font"
+	<LI>
+	  Improve the way glyphs are centered in the outline char view. At least I
+	  hope it's an improvement.
+	<LI>
+	  Oh. It is perfectly legal to have a context chain rule with no substitutions.
+	  This can be used to avoid matches in complex cases so:
+	  <PRE>[a-z] a b =&gt; does nothing
+a b [a-z] =&gt; does nothing
+a b =&gt; substitutes
+</PRE>
+	  <P>
+	  will only substitute of "ab" is a word all to itself.
+	<LI>
+	  If the metrics view were displaying text containing non UNICODE characters
+	  then some edits in the text field which displays glyphs would leave us with
+	  the replacement character showing instead.
+	<LI>
+	  Werner wants to know whether storage locations are uninitialized or not,
+	  and to get warnings when reading an uninit value.
+	<LI>
+	  Werner wants to see IF statements indented in truetype instruction display.
+	<LI>
+	  FF wasn't telling freetype to set the mono bit when loading a glyph, which
+	  meant that GETINFO would return the wrong value for mono rasterization.
+	<LI>
+	  If there are too many numbers after an NPUSH[BW] instruction, FF silently
+	  ignores them.
+	<LI>
+	  Anti-Aliased rasters still weren't aligned properly with the outlines in
+	  the debug window.
+	<LI>
+	  When debugging I provided popup information for anti-aliased rasters. But
+	  I didn't for mono rasters.
+	<LI>
+	  ff would crash when asked to debug fpgm/prep (because my rasterization routine
+	  didn't work if there were no contours).
+	<LI>
+	  Werner wants to turn off auto goto in the charview when debugging is going
+	  on.
+	<LI>
+	  The gloss information for delta point (and cvt) was wrong if the magnitude
+	  selector was 7. I claimed it moved (changed) by 0, when it should have been
+	  by -1.
+	<LI>
+	  Werner wants to be able to set memory watch points on storage and cvt locations.
+	  Set these through the cvt/storage windows by clicking on the appropriate
+	  locations. Modify the points window so the user can set watch points by clicking
+	  on it too.
+	<LI>
+	  The Points window would sometimes scroll in unexpected ways.
+	<LI>
+	  Werner wants to see the raw value of a "WS" instruction in the gloss.
+	<LI>
+	  merge fonts would get the script lang index of merged kern pairs wrong.
+	<LI>
+	  Correct some of icc's warnings
+	<LI>
+	  Apostolos points out that NAME_MAX isn't defined on solaris, but _POSIX_NAME_MAX
+	  is. But _POSIX_NAME_MAX doesn't seem to be defined on linux.
+	<LI>
+	  Display fonts would crash if you tried to change the font. But introduced
+	  in last release.
+	<LI>
+	  Patch from Mike FABIAN. Rasterizing by freetype only initialized a variable
+	  if CONFIG_TYPE3 (multilayer) was set.
+	<LI>
+	  StrSplit &amp; StrJoin scripting functions.
+	<LI>
+	  Patch by R&Atilde;&#188;diger Oertel. Strncat could overflow a buffer.
+	<LI>
+	  Make simplify do point catagorization, and not just of points changed.
+	<LI>
+	  Curved stems are also limited by geometry. Can't just assume control points
+	  work.
+	<LI>
+	  Why are pdf files listed as a source of bitmap fonts?
+	<LI>
+	  When examining a bitmap font, metrics view would crash when asked to look
+	  at a non-existant glyph.
+	<LI>
+	  The list of verbs for indic glyph rearrangement didn't display.
+	<LI>
+	  Converting from the mac korean encoding didn't work.
+	<LI>
+	  Images imported into a bdf character did not set the character used bit.
+	<LI>
+	  Add a CopyAnchors command.
+	<LI>
+	  Patch from Raph Levien. FF mishandled seac if the accent were not translated.
+      </UL>
+    <LI>
+      26-Oct-2006
+      <UL>
+	<LI>
+	  If a large group of glyphs were autohinted at once, and one of those glyphs
+	  contained a reference to a glyph that appeared after it in the font, then
+	  that glyph would still end up with the dirty hint mark set.
+	<LI>
+	  It was impossible to set preferences on the Accents pane. They would either
+	  always be 0 (or false), or make spurious complaints.
+	<LI>
+	  Add a Ucs4 scripting command (reverses Utf8).
+	<LI>
+	  when creating an array with [...] notation (in scripting) I forgot to dereference
+	  lvalues.
+	<LI>
+	  Add scripting commands
+	  <UL>
+	    <LI>
+	      Revert
+	    <LI>
+	      RevertToBackup
+	  </UL>
+	  <P>
+	  Make the "+" operator concatenate arrays
+	  <PRE>
+  [1,2] + [3,4] == [1,2,3,4]
+  [1,2] + 3 == [1,2,3]
+</PRE>
+	<LI>
+	  Add a scripting command, FontImage, which generates a font thumbnail.
+	<LI>
+	  Make it possible to save the Font Display dlg as an image.
+	<LI>
+	  Clean up the Display dialog a bit. The concept of "unhinted" truetype is
+	  obsolete. Remove it.
+	<LI>
+	  At Andrey V. Panov's request I have added a scripting command "CopyUnlinked"
+	  which behaves like Copy except that any references will be unlinked (turned
+	  into splines) as they are placed in the clipboard.
+	<LI>
+	  I believe OpenType would prefer if formed arabic glyphs didn't use their
+	  unicode encodings, but used simple substitutions instead. Accept both for
+	  svg output (previously we only accepted unicode encodings).
+	<LI>
+	  Patch from debian (bug392688) from Wojciech Mu*a and K*stutis Bili*nas
+      </UL>
+    <LI>
+      19-Oct-2006
+      <UL>
+	<LI>
+	  Patch from Mike FABIAN, array overflow in creating PS Private dialog
+	<LI>
+	  The instructions out of date flag was only getting reset if the user made
+	  a change in the edit instrs dialog. If s/he just pressed [OK] it would remain
+	  on.
+	<LI>
+	  Make libintl be another library we'll try to dlopen. This is complicated
+	  because on linux libintl is part of libc so there we must link directly.
+	  Further complicated because fink install script has a bug and doesn't put
+	  /sw/lib in DYLD_LIBRARY_PATH so we have to look there ourselves.
+	<LI>
+	  Locale strings aren't required to contain an encoding (which the locale docs
+	  incorrectly call a charset). Michal Nowakowski points me to nl_langinfo which
+	  will give me the encoding even if not specified in the locale.
+	<LI>
+	  Add pdf files to the standard format list for openfontdlg
+      </UL>
+    <LI>
+      14-Oct-2006
+      <UL>
+	<LI>
+	  New translations: Greek, Simplified Chinese, German, Polish.
+	<LI>
+	  Using the help command would generally crash fontforge on cygwin.
+	<LI>
+	  Adobe uses the American spelling of diaeresis (that is dieresis), but some
+	  fonts contain glyph names with the European spelling. So add that as an
+	  alternate.
+	<LI>
+	  If a bdf font contained an unencoded .notdef glyph, then we crashed.
+	<LI>
+	  Adding Greek translations for font styles. (Thanks to Apostolos)
+	<LI>
+	  If we aren't dealing with a TeX math font, then the "Sub/super"script positioning
+	  fields of Glyph Info-&gt;TeX aren't meaningful. So grey them out.
+	<LI>
+	  Remove internal/external did the wrong thing in expand stroke if we also
+	  removed overlap and had counter-clockwise splines.
+	<LI>
+	  Alexej Kryukov points out that reverting a glyph with anchors lost the anchors.
+	<LI>
+	  Add simplified Chinese style names to our built-in lists.
+	<LI>
+	  Problem reading autotraced input.
+	<LI>
+	  The encoding change of last summer broke tfm output with glyph lists or extension
+	  characters.
+	<LI>
+	  If add extrema added a point too close to a start/end point expand stroke
+	  could generate NaNs.
+	<LI>
+	  FF could crash when adding extrema to an open contour.
+	<LI>
+	  Add Polish styles to the translation list.
+	<LI>
+	  Add a scripting function to set the gasp table.
+	<LI>
+	  Add support for the 'gasp' table.
+	<LI>
+	  Alexej Kryukov wants format 6 cmap tables.
+	<LI>
+	  After editing instructions the debugger would incorrectly complain that
+	  instructions were out of date.
+	<LI>
+	  Michal Nowakowski complains that "Instructions are out of date" warning appears
+	  too many times when doing a global transformation. Make it only pop up as
+	  a dlg once and thereafter occur as a LogError.
+	<LI>
+	  If a font contained only space glyphs it could still be marked onlybitmaps
+	  and not allow outline generation.
+	<LI>
+	  Show ATT did not translate scripts &amp; languages.
+	<LI>
+	  Parsing an empty list of ttf instructions crashed Michael Zedler's machine.
+	<LI>
+	  Make type1 generation use (essentially) the same subroutine mechanism as
+	  type2.
+	<LI>
+	  Local subroutines were being freed twice in cff cid-keyed font generation.
+	<LI>
+	  Removing an alternate unicode encoding (Detach Glyphs) was broken in some
+	  cases.
+	<LI>
+	  FF failed to perform some simplifications on the last spline of a closed
+	  contour.
+	<LI>
+	  Various fixes for Michal N.
+	<LI>
+	  Add scripting interfaces to many of the ctype functions.
+	<LI>
+	  Add a scripting interface to the 'size' feature, now that Adobe has finally
+	  decided what to do about 'size'.
+	<LI>
+	  Had the wrong title for kerning state machine dlgs.
+	<LI>
+	  Redo the preference dlg.
+	<LI>
+	  The two preference items, AlwaysGenApple, and AlwaysGenOpenType, were a bad
+	  choice on my part and have lead to considerable confusion. I mentioned some
+	  time ago that I would remove them if there were no objection.
+	  <P>
+	  There was no objection.
+	  <P>
+	  I have now removed them.
+	  <P>
+	  I also made the SetPrefs scripting function sort of work if the user tries
+	  to set one of these (it will set the appropriate flags in the default option
+	  set used by generate).
+	  <P>
+	  The defaults of these flags were different on the Mac from everywhere else.
+	  This meant that a script could do different things on the Mac and on linux.
+	  That seems like a bad idea. I have changed things so that the default options
+	  setting for generate is always OpenType.
+	  <P>
+	  <STRONG>THIS IS AN INCOMPATIBLE CHANGE AND SCRIPTS ON THE MAC COULD NOW BEHAVE
+	  DIFFERENTLY.</STRONG>
+	<LI>
+	  Patch from Michal Nowakowski to have ff number points after conversion to
+	  quadratic.
+	<LI>
+	  Try to provide disambiguation for all strings "New" so that in languages
+	  where "New" must agree in gender with the thing being created translators
+	  will be happier.
+	<LI>
+	  Remove the po/Makefile.in and redo the configure script to build it (so that
+	  I don't have to modify it each time I get a new language).
+	<LI>
+	  Extend the knife tool so that if Meta (Alt) is held down it will move any
+	  spline it intersects (rather than cutting the spline).
+	<LI>
+	  FF would crash if $HOME (the directory that is, not the environment variable)
+	  did not exist.
+	<LI>
+	  I guess it makes sense that if ff read in a compressed sfd file then using
+	  a simple File-&gt;Save command (not Save As) should produce another compressed
+	  sfd file.
+	<LI>
+	  When scaling a reference in otf output we had problems if the reference had
+	  more than one contour.
+	<LI>
+	  If we deleted many glyphs from a font we are sometimes left with kern pairs
+	  pointing to things not worth outputting. Make sure we don't generate kerning
+	  info for them.
+	<LI>
+	  Ligature carets were not being scaled by scale to em.
+	<LI>
+	  Patch from mfabian at suse.
+	<LI>
+	  If a user has a font with a glyph that is bigger than 16*em-size (in many
+	  dimensions) and that user generates a tfm file, then warn him that the glyph
+	  can't be expressed in a tfm file and truncate the size to the biggest legal
+	  value.
+	<LI>
+	  Attempt to mitigate the effects of X claiming to have a font when it doesn't.
+	<LI>
+	  Saving CID keyed fonts would look at garbage memory for its encoding data
+	  if not saved from the biggest subfont.
+	<LI>
+	  Add support for version 4 of the OS/2 table.
+	<LI>
+	  If Interpretation was set in a font then when generating a 8/16 type cmap
+	  fontforge always went down the traditional chinese (big5) branch.
+	<LI>
+	  MS has changed their indic shaping engine. It still uses the same features
+	  but they are applied differently. To disambiguate this change they have created
+	  a parallel set of script tags for the indic writing system. FontForge should
+	  recognize these and use them when appropriate.
+	<LI>
+	  When Adobe first released fonts with a 'size' feature they did not follow
+	  the opentype specification. In August of 2006 they announced an incompatible
+	  change to bring fonts produced after that date in line with the specification.
+	  Unfortunately there are programs which depend on the old, broken format.
+	  <P>
+	  Legacy programs will not work when given a font in the correct format. New
+	  programs should be able to handle either correct or broken 'size' features.
+	  <P>
+	  A few of Adobe's programs make use of the 'size' feature, and XeTeX does.
+	  I know of no others (besides font editors). Both intend to upgrade their
+	  programs... So this may be less of an issue than I initially feared.
+	  <P>
+	  FontForge should now be able to read in a size feature in either format and
+	  gives the user the option of producing 'size' features in either format on
+	  output.
+	<LI>
+	  For Japanese fonts we tried to use cp932 (a variant of sjis) but then halfway
+	  through didn't know what to do with it.
+	<LI>
+	  Another fix for saving sub-opentype fonts from a cid font.
+	<LI>
+	  From a script, if a user asks to generate a ttf outline font with ttf bitmaps
+	  from a database with no outlines then technically this isn't supposed to
+	  work. But it used to and it's easy enough to tweak so that it works again.
+	<LI>
+	  <STRONG>Update to Unicode 5.0</STRONG>
+	<LI>
+	  Again when adding accents to the left of a glyph we should shift the glyph
+	  over to give it a reasonable lbearing.
+	<LI>
+	  When building an accented glyph, we generally want use_my_metrics set on
+	  the reference. But if we add an accent to right (horn) or left (psili/varia
+	  on cap greeks) we want to turn it off. We did turn it off on the right side,
+	  but not on the left.
+	<LI>
+	  Philipp Poll points out that ScaleToEm doesn't scale the OS/2 metrics (and
+	  some other stuff). Actually it does, but font info did the scaling BEFORE
+	  setting the values. So the metrics get scaled, and then reset to the values
+	  in fontinfo (which usually means they don't get changed).
+	<LI>
+	  Fix some memory leaks.
+	<LI>
+	  Some fixes for pcf loading.
+	<LI>
+	  Various fixes to CID keyed fonts.
+	<LI>
+	  Even the pretty ttf approximation routines need to worry about diametrically
+	  opposed control points.
+	<LI>
+	  When generating multiple type1 fonts, output the bounding box of each as
+	  that of the full font. This will make it vaguely likely that applications
+	  will get the same line spacing.
+	<LI>
+	  Oops. The vertical metrics bit wasn't preserved when flattening a cid font.
+	<LI>
+	  Ack! Window titles and such were being interpreted in Latin1 and not in UTF-8.
+	<LI>
+	  Interpretation of PostScript arc operator failed if the two angles were 360
+	  degrees apart. Normalization made them both the same.
+	<LI>
+	  Try to clean up bitmap only sfnt generation.
+	<LI>
+	  pcf wasn't in the Open Font dialog format list (nor was pmf, nor pdf)<BR>
+	  Add a filter for TeX bitmap fonts.
+	<LI>
+	  Provide a mechanism (if a preference item is set) for picking a cmap when
+	  loading a font.
+      </UL>
+    <LI>
+      22-Aug-2006
+      <UL>
+	<LI>
+	  Add a pane to the Preference dlg allowing user to control some of fontforge's
+	  hint creation.
+	<LI>
+	  Someone complained that Find Problems-&gt;Path Direction got the wrong answer.
+	  It got the wrong answer because they had a self-intersecting path (which
+	  screws up all concepts of in/out-side. So try to make it clear that they
+	  should do a find intersecting paths first.
+	<LI>
+	  Update my opentype scripts list (in particular include music).
+	<LI>
+	  Due to a typo, ff thought pretty much everything outside unicode BMP was
+	  in the hebrew script.
+	<LI>
+	  Add a new command to the point menu which allows you to specify a spline
+	  and one coordinate (either X or Y) on that spline. FF will calculate the
+	  other coordinate and add a point there.
+	<LI>
+	  CODE2000 contains an anchor class with only base glyphs (no mark glyphs)
+	  as part of a set of anchor classes. FF crashed.
+	<LI>
+	  Patch by Nix. svg.c did not compile when designed to be linked directly with
+	  libxml (instead of dlopening it).
+	<LI>
+	  Redo the font open dlg so that there's a list of standard filters and a mechanism
+	  for changing that list. Remember the last filter used.
+	<LI>
+	  If a popup menu is huge it used to appear under the cursor. This meant that
+	  even if the user didn't mean to s/he would have selected something and
+	  press/release would not be a no-op. This was a problem with the Font Info
+	  -&gt;TTF Names
+	<LI>
+	  Patch from SUSE. Use of uninitialized local variable. But the result is never
+	  used, so just remove the offending lines.
+	<LI>
+	  Emulate gtk's boxes and use that to do automatic dialog layout. Get the font
+	  info dlg working (and then several others too). This means that the layout
+	  is no longer optimized for English, but will look better in other languages
+	  (I hope).
+	<LI>
+	  Add an information to Font Info to display what unicode character ranges
+	  are supplied by the font.
+	<LI>
+	  Philipp Poll points out that when generating versioned fonts (ie. Ambrosia-1.0
+	  rather than just Ambrosia) you don't want the filename to default to the
+	  fontname (the fontname will be Ambrosia), instead you want some way of specifying
+	  a default filename. So add that to the Names pane of the Font Info dlg.
+	<LI>
+	  Try to keep track of font creation and modification times. NOTE: This is
+	  different from file times (which is what appears to be stored in the 'head'
+	  table of an sfnt file). Add a new table 'FFTM' to our sfnt output with these
+	  timestamps (and the timestamp of fontforge itself, just in case we ever care).
+	<LI>
+	  Mark classes could not be set from the selection.
+	<LI>
+	  Ben Laenen points out that if an order2 glyph has a dependent which refers
+	  to it using point matching and we keep changing the point number on the glyph
+	  then we'll keep getting warning messages. He suggests one message.
+	<LI>
+	  Empty glyphs weren't marked with red Xs any more.
+	<LI>
+	  In font compare, when comparing two contextual/chaining lookups, I forgot
+	  that class[0] was always NULL.
+	<LI>
+	  Open contours caused the ttf point renumberer to crash.
+	<LI>
+	  A font can have many kerning pairs. More than will fit in one GPOS subtable
+	  (which essentially has a 64k data limit or a bit more than 10,000 kern pairs).
+	  So be prepared to generate many sub-tables each dealing with a subset of
+	  the (first) glyphs.
+	<LI>
+	  If an apple mutually exclusive feature had a default setting which wasn't
+	  0 then my previous patch didn't work.
+	<LI>
+	  If guessing bluevalues found no OtherBlues, fontinfo-&gt;PS Private would
+	  create an incorrect OtherBlues value [0]
+	<LI>
+	  Support clipboards containing image/svg
+	<LI>
+	  Ralf Stubner points out that the maximum zone size of bluezones is determined
+	  by 1/BlueScale. So adjust BlueScale if the max zone is too big.
+	<LI>
+	  Merge fonts didn't merge anchors and got into a terrible mess. Let's merge
+	  kern classes and state machines too. Merging kern classes may be a bad idea.
+	  We don't really merge them we just copy them so that if the same glyph is
+	  mentioned in two classes unexpected things might happen.
+	<LI>
+	  ff could crash on an sfd file containing erroneous anchors (such as might
+	  be generated by the merge fonts command).
+	<LI>
+	  Once upon a time, Apple was so concerned about accuracy of floating point
+	  operations that they required all operations be performed in IEEE extended
+	  (80bit). This had the interesting side effect that a program which conformed
+	  to Apple's standards could not also conform to ANSI C (which required operations
+	  use double temporaries for double values). I find it somewhat ironic, therefore,
+	  that gcc on the mac doesn't even promote floats to doubles. FF needs the
+	  extra accuracy provided by a double (an extended type doesn't seem to provide
+	  additional assistance unfortunately). So on the mac we got extrema that weren't,
+	  which meant that remove overlap didn't.
+	<LI>
+	  If we had a mac feature which had multiple subtables (ie. a state machine
+	  for a contextual substitution, and a non-contextual substitution too) then
+	  we produced a bad chain in the morx table.
+	<LI>
+	  Merge &amp; Simplify would sometimes generate solutions using control points
+	  which were diametrically opposed to what they should be.
+	<LI>
+	  Yet another attempt to do a better job of autohinting.
+	<LI>
+	  Add a "Revert to Backup" command.
+	<LI>
+	  Put code in to correct for single bit (sometimes double bit) errors when
+	  search from extrema. This is at a lower level than the previous patch.
+	<LI>
+	  Output of extension lookups wasn't working
+	<LI>
+	  Fixed a problem in the ttf names pane of Font Info.
+	<LI>
+	  A slight improvement to magnifying by dragging a rectangle.
+	<LI>
+	  The first time you click on a transition in a Font Info-&gt;Mac SM-&gt;Indic
+	  state machine, ff would crash.
+	<LI>
+	  Tihkomirov points out that it isn't clear how to delete a ttf name from the
+	  name pane of fontinfo. So add some popup help. The language &amp; string
+	  ID menus in that pane were sorted on the wrong key
+	<LI>
+	  Was not preserving (unparsed) tables properly. Several bugs.
+	<LI>
+	  When loading an apple bitmap font (with no hmtx tables) we need to dummy
+	  up widths for the outline glyphs.
+      </UL>
+    <LI>
+      15-Jul-2006
+      <UL>
+	<LI>
+	  Apple's bitmap only fonts should not have an 'hhea' nor an 'hmtx' table<BR>
+	  Dummy up outline glyph widths when we don't have a 'hmtx' table by looking
+	  at bitmap widths for that glyph.<BR>
+	  ftxvalidate complains if the vertical line metrics are 0. Even in a strike
+	  with no vertical metrics information. So dummy something up.
+	<LI>
+	  Was getting the flags wrong for turning off features in an apple morx chain.
+	<LI>
+	  When outputing mark-to-base sub-tables with multiple marks I neglected to
+	  output an NUL offsets for the anchors that weren't there. So if a glyph had
+	  only one anchor (instead of two, or however many) then the offsets would
+	  be all wrong.
+	<LI>
+	  The SetPref() scripting function was misdocumented to be called SetPrefs()
+	  so accept both names.
+	<LI>
+	  When building an accented letter out of glyphs with an anchor class ff would
+	  increase the advance width of the accented glyph by the size (xmax-xmin)
+	  of the accent.
+	<LI>
+	  Expand the functionality of the ruler tool so that it also shows curvature.
+	<LI>
+	  When importing a bitmap font from a mac binary or an sfnt and the encodings
+	  of the destination and the bitmap did not match, then things got rather screwed
+	  up and might crash.
+	<LI>
+	  patch from KANOU. the ref check routine in glyphcomp compared one reference
+	  to itself.
+      </UL>
+    <LI>
+      03-Jul-2006
+      <UL>
+	<LI>
+	  Type2 charstrings have no closepath operator. I used to think that meant
+	  I could not omit the final vector. In fact it means I can omit the final
+	  vector AND the closepath operator.
+	<LI>
+	  If we had a font with no complete code pages we used to generate a version
+	  0 OS/2 table without codepage info. But now windows refuses to install such
+	  a font. Instead generate a bogus codepage field which claims to have latin1
+	  (even though it doesn't).
+	  <P>
+	  Windows won't use a font where the codepages field is 0.
+	<LI>
+	  When generating a FOND for a bitmap only sfnt, we created dummy 'NFNT' resources
+	  with the wrong resource ids. Which meant we got garbage when the font was
+	  used.
+	<LI>
+	  Make the TabSets in the font &amp; glyph info dialogs run vertically rather
+	  than hor izontally. (Add an option to get the old display back).
+	<LI>
+	  Approximate Spline from Point Slopes sometimes set the control point while
+	  leavi ng the nonextcp flag on.
+	<LI>
+	  Add Extrema only looked at how close a point was to the extrema in one dimension.
+	  While that dimension is more important, make a less stringent check on the
+	  other.
+	<LI>
+	  Expand Stroke removes "U-turns" from splines because they confuse it. But
+	  the routine that did that got a bit rambunctious and did the wrong thing
+	  on a circular arc.
+	<LI>
+	  If a font did not contain an OS/2 table then we didn't retain the 'hhea'
+	  ascent/ descent.
+	<LI>
+	  Various fixes from Matthias Kilian of OpenBSD.
+	<LI>
+	  When asking for default 'subs' features, every glyph gets assigned U+2080.
+	<LI>
+	  Display the curvature information at each point. In Point Info dlg, and in
+	  a pop up window when editing cps.
+	<LI>
+	  Add two new menu commands/scripting commands:
+	  <UL>
+	    <LI>
+	      Canonical Start Points (CanonicalStart())
+	    <LI>
+	      Canonical Contours (CanonicalContours())
+	  </UL>
+	  <P>
+	  The first sets the start point of each contour to the leftmost point, while
+	  the second orders the contours by their leftmost points. This will slightly
+	  reduce the size of output charstrings. It will also make more things available
+	  to be put in subroutines.
+	<LI>
+	  Print Multi-Size &amp; Full Page printed the wrong glyphs from the font view.
+	  Broken since the encoding change.
+	<LI>
+	  When stroking a contour that makes a 180degree turn, ff did not give it a
+	  semi-circle if linejoin was set to round.
+	<LI>
+	  SPLCopyTranslatedHintMasks didn't work if there were more than one contour
+	  being copied.
+	<LI>
+	  Nathan Summers points out that if the XUID is garbage the ff can go into
+	  an infinite loop when generating an otf/cff font.
+	<LI>
+	  Somehow the XUID and UniqueID fields crept off the bottom of the fontinfo
+	  Names p ane and weren't visible or modifyable. Give them their own pane now.
+	<LI>
+	  Apply some patches (with some changes) from Nathan Summers to the truetype
+	  debugger.
+	<LI>
+	  The property count in BDF fonts is wrong.
+	<LI>
+	  Ralf Stubner points out that the notdef glyph in an otf font should look
+	  like that in a ttf font, and not like that in a type1 font. (that is there
+	  should be something in the glyph).
+	<LI>
+	  Add support for group "encodings" which have empty spaces for unused glyphs.
+	<LI>
+	  make another attempt to find a good default sli for glyphs with no default
+	  script.
+	<LI>
+	  Typo in scripting function DefaultATT.
+	<LI>
+	  The View-&gt;Display Substitutions has been broken since the encoding change
+	  last summer.
+	<LI>
+	  Mark glyphs with out of date instructions differently from those with no
+	  instructions.
+	<LI>
+	  The last change to the cvt table generally did not get made.
+	<LI>
+	  Make glyph compare check for point matching in anchor points and in references.
+	<LI>
+	  Add a warning message about out of date instructions when generating a font.
+	<LI>
+	  When generating a font with anchor points matched to ttf points, ff failed
+	  to allocate enough space for them and offsets got all confused.
+	<LI>
+	  Oops. Some variables which should have been static were dynamic. Which meant
+	  we kept dlopening libfreetype.
+	<LI>
+	  If we had an anchor point which positioned itself with point matching, and
+	  we ge nerated an otf font then we'd output a lookup which tried to do point
+	  matching i n postscript. Only do point matching if we are sure we're in a
+	  tt font.
+	<LI>
+	  Add a preference item to control clearing of tt instructions.
+	<LI>
+	  Printing a multi-size page of a truetype font crashed.
+	<LI>
+	  Anchor Point dlg didn't work well with matching tt points.
+	<LI>
+	  Add a field to allow users to search for a glyph name within a kerning class.
+	<LI>
+	  Interesting. In kerning by classes, if the coverage table does not match
+	  the glyphs specified in all the classes (for the first (left) glyph), then
+	  any glyphs in the coverage table but not in any class should be treated as
+	  being in class 0.
+	<LI>
+	  Add something to the font view's copy from menu to control whether truetype
+	  instructions are copied or not.
+	<LI>
+	  Add some more problems to find problems
+	  <UL>
+	    <LI>
+	      Check for glyphs with both contours and references.
+	    <LI>
+	      Find out of date point matched references.
+	    <LI>
+	      Find references with transformation matrices which can't be expressed (as
+	      refs) in truetype
+	    <LI>
+	      Find references with transformation matrices which aren't translations (and
+	      so can't be expressed (as refs) in type1/2 fonts.
+	  </UL>
+	<LI>
+	  Allow the user to turn off composite info in afm files.
+	<LI>
+	  otf kerning classes were dumped in the wrong order.
+	<LI>
+	  In GaramondPremrPro.otf (version 001.000) Adobe has coverage tables (for
+	  some context chaining subs) which have the glyphs mentioned multiple times.
+	  I suppose this is legal, but it is annoying. I want my strings to have each
+	  glyph appear at most once. So add a little thingy to remove duplicate glyphs
+	  when we generate a list of glyph names.
+	<LI>
+	  Adobe has depreciated the use of PUA to represent small caps, old style numerals,
+	  etc. Add a preference item so that ff will no longer recognize "a.sc" as
+	  having a PUA encoding.
+	<LI>
+	  The tool tip for the preference item "NameListForNewFonts" was wrong.
+	<LI>
+	  Horizontal scrolling in the show att dlg was too slow. It was by pixel. Make
+	  it be by something which approximates the width of a character.
+	<LI>
+	  Add a new scripting command to give a font's bounding box.
+	<LI>
+	  Sigh. Within a GPOS lookup, sub-tables are not additive. Only one will be
+	  applied at a time. So order the 'kern' lookup so that pair-wise kerning comes
+	  out first (to override class kerning).
+	<LI>
+	  Was sometimes outputting mkmk base-mark attachement points as the mark attachment
+	  point.
+	<LI>
+	  Clytie Siddall has many suggestions about how to make the translation process
+	  easier for translators. He also tells me how to insert contextual comments
+	  into the program source, and provides many fixes for typoes.
+	<LI>
+	  The OS/2 version 1,2 has a different defn of avgCharWidth than OS/2 version
+	  3(,4) does. Display of CJK fonts is supposed to break under windows if using
+	  the v3 defn.
+	  <P>
+	  Use the appropriate defn for the version we happen to be outputting.
+	<LI>
+	  Autohinting crashed on glyphs in an order2 font if the glyph contained both
+	  an outline and a reference.
+	<LI>
+	  Pressing the help key in the main windows went to the overview page, not
+	  to the contextual help for the window.
+	<LI>
+	  Add a warning when 'CFF ' widths and 'hmtx' widths differ (when loading a
+	  font).
+	<LI>
+	  Set the default and normative widths too late after the cff subroutine change.
+	<LI>
+	  Make double clicking in the list of kern pair/anchor combinations bring up
+	  either Kern Pair Closeup dlg or Anchors Away.
+	<LI>
+	  The Anchor control dlg didn't work after the encoding change.
+	<LI>
+	  Add a popup message to explain what "Cor:" means.
+	<LI>
+	  Doing a Close() from a script didn't work if the windowing system were open.
+	<LI>
+	  Yet another bug in type1 hinting output.
+	<LI>
+	  Some versions of realloc don't like allocating 0 bytes.
+	<LI>
+	  Users expect ff to recognize a glyph name "Diaeresis", even though Adobe
+	  (following standard American, but not European spelling) spells it "Dieresis".
+	<LI>
+	  GhostScript has canniptions when it gets a version 3 OS/2 table in a ttf
+	  file.
+	<LI>
+	  Can't add a flex hint when there's a hintmask at the mid point.
+	<LI>
+	  The hintmask part of PointInfo would not let you clear a hintmask.
+	<LI>
+	  Add a new command to the fontview: Edit-&gt;Select-&gt;Select by Name<BR>
+	  and a new scripting command: SelectAllInstancesOf
+	  <P>
+	  Both will select all encoding slots containing the named glyph (or unicode
+	  value)
+	<LI>
+	  Add scripting command: RemoveDetachedGlyphs
+	<LI>
+	  Was setting typo linegap to hhead linegap.
+	<LI>
+	  Using the X clipboard to paste into the character view has been broken at
+	  least since I added multi-layered editing.
+	<LI>
+	  Add a pref to control whether we prefer to use spacing or combining accents
+	  when building accented glyphs.
+	<LI>
+	  Spacing in the group dlg was sometimes off.
+	<LI>
+	  More hinting fixes. If the edges of a stem aren't quite parallel we had problems
+	<LI>
+	  Add some new built in variables: $order, $em, $ascent, $descent
+	<LI>
+	  The 'TeX ' table was output incorrectly if glyph's order wasn't the same
+	  in the sf as in the ttf.
+	<LI>
+	  Allow the [*] Back visibility checkbox to control whether the grid fit lines
+	  are visible or not.
+	<LI>
+	  If scripting is in verbose mode, flush the output buffer before calling a
+	  built in procedure (so any errors it generates will at least show the right
+	  line).
+	<LI>
+	  Ambrose LI points out that the master font in a cid keyed font should match
+	  the ascent/descent of at least one of its subfonts (so that the
+	  typoAscent/Descent f ields will default correctly).
+	<LI>
+	  Spend some quality time with valgrind looking (oh, and fixing) memory leaks.
+	<LI>
+	  Make ControlAfmLigatureOutput (scripting command) apply to ofm/tfm files
+	  too.
+	<LI>
+	  Oops. When parsing mac state machines I was using sizeof(long) when I should
+	  have said sizeof(int32). It gave rather bad results on 64bit machines.
+	<LI>
+	  Add a scripting function to load a user defined cidmap file.
+	<LI>
+	  Hmm. sizeof(point)==8 on AMD64, but structures are aligned to 4. This means
+	  our chunk alloc routines complain. So if we're given something that isn't
+	  in units of sizeof(pointer) then just round it up.
+	<LI>
+	  lookup ordering within GSUB has been totally broken at least since I added
+	  the code to coalesce lookups for kerning.
+	<LI>
+	  Kanou suggests changing function name that includes Char to be Glyph. Well
+	  a few do really mean Char, but the rest should be Glyph. Leave the old names
+	  there bu t document them as deprecated.
+	<LI>
+	  Make CID keyed fonts use the new subroutine mechanism too. We can use global
+	  subrs now too!
+	<LI>
+	  Oops. Familyname can be NULL, and we were indescriminately checking to make
+	  sure its length was less than 31.
+	<LI>
+	  Make a better use of subroutines when generating otf fonts. Doesn't work
+	  for CID fonts yet.
+	<LI>
+	  We crashed if we changed from one cid sub-font to another when compacted.
+	<LI>
+	  Oops. I made ff work with ft22 if the debugger was being built... but it
+	  failed to compile if people didn't build the debugger.
+	<LI>
+	  Oops a scripting function was marked as not needing a font when it did
+	  (HasPreservedTable &amp; friends).
+	<LI>
+	  More for font compare. If there is a difference in a glyph in the two fonts
+	  add the option for including the outlines of the second glyph into the first.
+	  If the first font is missing a glyph, add an option to insert it with the
+	  outlines in the background.
+	<LI>
+	  Good heavens, someone wants to play with acorn2sfd. Make it compile again.
+      </UL>
+    <LI>
+      08-Apr-2006
+      <UL>
+	<LI>
+	  Patch by Mike Frysinger from gentoo. Use the HOME environment variable in
+	  preference to /etc/passwd.
+	<LI>
+	  Werner wants to see raw data in the points window of the debugger. My guess
+	  is that most people won't be interested in this mode (and it makes the window
+	  a bit uglier) so I've made it configurable. --with-debug-raw-points
+	<LI>
+	  Write sfddiff as a fontforge script and put it back into the install process.
+	<LI>
+	  Add code to font compare so it can do the old sfddiff --merge option (if
+	  two corresponding glyphs differ, add the outlines of the second to the background
+	  of the first).
+	<LI>
+	  Someone wanted acorn2sfd! Make it compile again.
+	<LI>
+	  Make configure look for libgif
+      </UL>
+    <LI>
+      06-Apr-2006
+      <UL>
+	<LI>
+	  Patch by Ian Jackson of Ubuntu. When in an empty glyph (one not WorthOutputting)
+	  then doing a View-&gt;Show Grid Fit would cause a crash.
+	<LI>
+	  The PLRM says that formfeed is whitespace. The T1_Spec says that it is not.
+	  After an eexec the T1_Spec is right (and ff was following the PLRM
+	  definition).<BR>
+	  Also add a check to insure that the first character we generate in pfb encryption
+	  isn't a white space character.
+	<LI>
+	  On some windows systems (mine at least), windows will refuse to install a
+	  postscript font if the fontname or familyname of that font is longer than
+	  31 characters. These are the names in the Font Dictionary of the postscript
+	  font itself, not the names in the 'name' table (for otf fonts).
+	<LI>
+	  Make ff compile with freetype 2.2.0
+	<LI>
+	  The popup menu of text fields was garbage.
+	<LI>
+	  Make a change to pfm output which might allow non windows ANSI encoded fonts
+	  to work.
+	<LI>
+	  Allow the freehand tool to work in quadratic fonts.
+	<LI>
+	  Didn't always refigure splines properly when using Get Info in quadratic
+	  mode. Patch by Michal Nowakowski.
+	<LI>
+	  Trying to invoke the KDE browser (for help) didn't work. Patch by Dimitar
+	  Zhekov
+	<LI>
+	  Still losing instructions if contours begin with off-curve points.
+	<LI>
+	  if a font had a defined notdef glyph, then FF would usually enter it incorrectly
+	  in the 'hmtx' table.
+	<LI>
+	  In the Select menu, Width had an extra underscore.
+	<LI>
+	  Wasn't looking in the right place to get the right weight name in an otf
+	  font.
+	<LI>
+	  People have been complaining about the UI for drawing quadratic (truetype)
+	  curves. It was consistent with the UI for drawing cubic (postscript) curves,
+	  but it seems hard to draw quadratics that way. Rather than concentrating
+	  on the on-curve points (as in cubics), now concentrate on the off-curve points.
+	  So the pen-tool behaves quite differently now in quadratic mode. As does
+	  Element-&gt;Get info.
+	<LI>
+	  A patch added back in 2004 to make vertical substitutions work for Japanese
+	  (to work around a bug in Windows to be precise) had a bug itself if more
+	  than one language was involved.
+	<LI>
+	  When outputting an inline copy of a reference in otf fonts with translated
+	  hintmasks we did the wrong translation for vertical stems and got garbage
+	  results.
+	<LI>
+	  New command to allow user to enter X,Y coordinates of a point and have that
+	  point be selected. I want this for debugging. It might be useful generally.
+	<LI>
+	  Fixed problems with type2 subroutines containing glyphs with conflicts.
+	<LI>
+	  ReplaceWithReference had too large a fudge factor and found macron when it
+	  should have found macron.sc in minionpro-regular.
+	<LI>
+	  If an alternate/multiple subs had more than 30 components then we lost all
+	  those after 30 when generating opentype GSUB table.
+	<LI>
+	  Hmm. Sometimes least squares does give the answer we want for merge. So give
+	  it a try.
+	<LI>
+	  Patch by kanou to fix some translation problem.
+	<LI>
+	  In the shape tools (round rect, ellipse): Instead of generating a quadratic
+	  shape at the start, generate a cubic shape and convert to quadratic. The
+	  convert routine now knows about how to find integer control points and such.
+	<LI>
+	  Patch from Kanou to get more grid size values for looking at bitmaps.
+	<LI>
+	  If a glyph starts with a control point then ff would sometimes throw out
+	  the ttf instructions, thinking it wasn't numbered properly.
+	<LI>
+	  A merge in a quadratic font produced a straight line. Even when it shouldn't
+	  have.
+	<LI>
+	  Change namelists to support non-ASCII glyph names.
+	<LI>
+	  Oops. Some hinting scripting commands had a "b" prepended to their name by
+	  mistake. Sigh. From now on support both names.
+	<LI>
+	  When pasting a glyph with hints into an empty glyph, we shouldn't set the
+	  "in need of autohinting" flag. (Actually, we might should if the original
+	  copy were done in a glyph with out of date hints.... but that gets more
+	  complicated).
+	<LI>
+	  Patch to make loading bdf fonts more efficient.
+	<LI>
+	  Add Kanou's "fontview" font to the list of fonts searched by default for
+	  the fontview window.
+	<LI>
+	  FF did not mark ghost hints as different from normal hints.
+	<LI>
+	  Interpolating fonts broke when I did the encoding change last summer.
+	<LI>
+	  Patch from Kanou to prevent the hash function from returning negative numbers.
+	  (and crashing)
+	<LI>
+	  Add a menu and a scripting command to compare two fonts.
+	<LI>
+	  Oops. There's a stray underscore in a field in font info.
+	<LI>
+	  Refresh font view(s) after changing glyph name/unicode in glyph info in case
+	  those are being displayed.
+	<LI>
+	  If a name entered in the goto dlg was a single unicode char, then goto would
+	  treat it as such. Normally this is fine, but a user might use the underscore
+	  character (for example) as a glyph name and not assign it to U+005F. So check
+	  for the name too.
+	<LI>
+	  Rewrite the cubic-&gt;quadratic conversion code. It now looks much prettier
+	  and tries to position intermediate points on integer (or half integer) locations
+	  so there won't be unexpected rounding later. It's slightly less accurate
+	  though.
+	<LI>
+	  Many changes to the postscript hinting code.
+	<LI>
+	  If a glyph contained references but no alphabetic characters then Glyph Info
+	  would crash.
+	<LI>
+	  Scripting command AskUser doesn't work unless FF_SCRIPT_IN_LATIN1 is set.
+	  Patch by Kanou.
+	<LI>
+	  In some error messages I ended a sentence with a comma. Make it a full stop.
+	<LI>
+	  Patches from Kanou to make Japanese translation better.
+	<LI>
+	  Kanou points out that the code which handles modifications to the unicode
+	  char textfield (in glyph info) complains about the wrong things and he provides
+	  a patch.
+	<LI>
+	  Hand tool failed to scroll background images (probably failed on hints too).
+	<LI>
+	  When doing a copy splines with hintmask operation we neglected to refigure
+	  the spline after transforming the end points. This was ok since we never
+	  used that info -- except if the splines were quadratic and we needed to convert
+	  to cubic. So when generating a ps font from a quadratic database, and the
+	  font contained references with scaling/rotation/etc. then we'd get erroneous
+	  results.
+	<LI>
+	  In Find Problems, the Flipped Reference check could fail if the reference
+	  contained a contours which intersected (themselves or each other).
+	<LI>
+	  Make ff aware of ExtraLight as a valid weight when setting a default value
+	  for the PS weight string.
+	<LI>
+	  When the user clicked on a textfield with attached pulldown list, ff would
+	  get an event saying the first entry on the list had been chosen. This meant
+	  that the Tag dialog (used for new ligatures/substitutions/etc. would show
+	  the first tag in the list instead of blank.
+	<LI>
+	  Include some glyph name synonems from Richard Kinch's TrueTeX list.
+	<LI>
+	  Determination of whether a ghost hint is top (-20) or bottom (-21) should
+	  depend on the current contour, not on the glyph as a whole.
+	<LI>
+	  If a glyph consists solely of references then add
+	  _&lt;ref-name-1&gt;_&lt;ref-name-2&gt;...&lt;ref-name-n&gt; to the list of
+	  possible names. Sometimes also add uniXXXXXXXX.
+	<LI>
+	  Kanou wants to translate some more strings.
+	<LI>
+	  Barry.SCHWARTZ wants to be able to reencode a font to compact from a script.
+	<LI>
+	  Barry.SCHWARTZ points out that my "cfg" files contain no newlines. Shows
+	  how much use they've received:-)
+	<LI>
+	  Barry.SCHWARTZ points out that when generating an afm file for an otf font
+	  only the first 256 characters were given encodings.
+	<LI>
+	  Simplify much improved.
+	<LI>
+	  Make simplify for quadratic splines aware of the peculiarities of truetype.
+	  So one simplification is to make a point interpolateable. And removing a
+	  point is not always good if it means points that were interpolateable become
+	  non-interpolateable.
+	<LI>
+	  After examining (and stealing with permission) Huw Davies's code in
+	  wine/tools/fnt2fon.c I believe I can now produce .fon files.
+	<LI>
+	  Add support for reading bitmap references (from an sfnt bitmap)
+	<LI>
+	  Patch by Kanou. cvknife didn't compile in one mode.
+	<LI>
+	  Typo in an error message
+	<LI>
+	  Add a command to show points of inflection (also change View-&gt;Mark Extrema
+	  to show where extrema occur on a spline if not at the endpoints)
+	<LI>
+	  Patch by Michal Nowakowski. Uninitialized variable in simplify dlg.
+	<LI>
+	  glyph names for unencoded glyphs were always "uniFFFFFFFF" should be
+	  "NameMe-&lt;n&gt; broken by last summer's encoding changes.
+	<LI>
+	  Werner wants CC (composite character) entries in afm for GPOS mark-to-base
+	  features.
+	<LI>
+	  The switch to utf8 last summer broke font info-&gt;Size
+	<LI>
+	  Allow users to ask for both 'GPOS' and old-style 'kern' tables. FontLab does
+	  this. The OpenType list is generally disapproving of the idea.
+	<LI>
+	  If we tried to put more than about 10000 kerning pairs into one old-style
+	  kerning sub-table then we'd overflow various shorts. So split it up after
+	  about 10000 kp into several different sub-tables.
+	<LI>
+	  Round to Int screwed up interpolated points.
+	<LI>
+	  When generating a tfm file don't generate a width bigger than 16*em-size
+	  (even if the font says to) because TeX will throw it out.
+	<LI>
+	  Alexey Kryukov's patch to fix an error message.
+	<LI>
+	  Printing a CID keyed truetype font to a pdf file produced a very odd ordering
+	  of glyphs (compacting some and omitting others and getting errors when it
+	  ran out of glyphs but asked for more).
+	<LI>
+	  Alexey Kryukov suggests repunctuating an error message.
+	<LI>
+	  Johan Winge suggests an improvement to converting cubic splines to quadratic:
+	  If we end up using a line when looking at the spline as a whole, try breaking
+	  it at the point(s) of inflection first. It seems like a good idea.
+	<LI>
+	  Johan Winge also points out that I identify points as tangents when they
+	  should not be. This is because I use one measure of sloppiness no matter
+	  how close the cps are to the base point when determining colinear. It's probably
+	  best to have a variable measure depending on how far the cp is from the base
+	  point.
+	<LI>
+	  Alexey Kryukov thinks Add Unencoded Slots should work in the compacted view
+	  by making the thing have a custom encoding.
+	<LI>
+	  Scripting reencode didn't get rid of the "compacted" mark.
+	<LI>
+	  Ralf Stubner points out that I produce type1 charstrings which end in "seac
+	  endchar" when a simple "seac" is sufficient. He's right.
+	<LI>
+	  When generating opentype tables in from a single sub-font of a cid-keyed
+	  font (ie. user asked for a ttf font generated from one sub-font) ff would
+	  crash.
+	<LI>
+	  We didn't hint bold fonts well (anything where stems were bigger than em-size/10)
+	<LI>
+	  When generating a type1 font with a glyph containing a reference that had
+	  to be unlinked, then the vertical stems in that reference would not be hinted.
+	<LI>
+	  When guessing points at which to attach hints in type1/2 read in we failed
+	  if the points were too widely spaced. Be a bit more lenient.
+	<LI>
+	  SetCharName didn't check its flag value properly.
+	<LI>
+	  Uncompacting a font caused memory problems.
+	<LI>
+	  Fix simple crash in metafont.
+	<LI>
+	  When importing unencoded glyphs into an already existing font, we would sometimes
+	  fail to find the matching glyph (and would create a new one).
+	<LI>
+	  If a font contain an encoded glyph called ".notdef" and that glyph was not
+	  the first glyph, then type1 fonts had a .notdef glyph at a random place in
+	  the font. Now freetype seems to renumber glyphs so .notdef is always glyph
+	  0 which fontforge did not expect and produced some strange results when
+	  rasterizing (tested on 2.1.10). Fix is simple: always make notdef be first
+	  in the chars dictionary and then all is happy.
+	<LI>
+	  Add new scripting command to compare two glyphs. I want this for testsuites,
+	  other people might find a use for it.
+	<LI>
+	  gniibe reports that the scripting function Export() produces bitmap images
+	  with the wrong format and provides a patch.
+      </UL>
+    <LI>
+      9-Feb-2006
+      <UL>
+	<LI>
+	  Instead of refusing to do expand stroke/remove overlap for order2 fonts,
+	  why not convert the contours to order3, do the function and convert back.
+	<LI>
+	  Once more we are numbering points badly.
+	<LI>
+	  If we clear a glyph which is being referred to (and we don't unlink it first)
+	  then when we save it into an sfd file we get a reference to a glyph at orig_pos
+	  -1 (because the cleared glyph isn't stored in the sfd) which causes an error
+	  when reading it back in.
+	<LI>
+	  If a copyright message were an exact multiple of 100 characters long, fontforge
+	  would screw up memory (and potentially crash) when reading it in from an
+	  sfd file.
+	<LI>
+	  The Merge/Simplify command (which Add Extrema now calls) had problems when
+	  the control points were very close to the base point so that the point was
+	  (to the human eye) a corner point.
+	<LI>
+	  Add support for the r2l script N'Ko. MS says opentype will use script 'nko
+	  ', ISO says the tag should be 'nkoo'. Follow opentype.
+	<LI>
+	  Kanou tells me that Syriac &amp; Thaana are also r2l scripts and should be
+	  added to my list.
+	<LI>
+	  If FF was given multiple fonts on the command line the sizes of the font
+	  windows would jump around in a very peculiar fashion.
+	<LI>
+	  Add the concept of a namelist. Users can specify what names they want for
+	  new glyphs, or can force an entire font into a new naming scheme. Changes
+	  to
+	  <UL>
+	    <LI>
+	      FontInfo
+	    <LI>
+	      Open
+	    <LI>
+	      Generate (Family)
+	    <LI>
+	      Preferences
+	    <LI>
+	      and the Encoding menu.
+	    <LI>
+	      New scripting functions:
+	      <UL>
+		<LI>
+		  LoadNamelist(filename)
+		<LI>
+		  LoadNamelistDir([dir])
+		<LI>
+		  RenameGlyphs(namelist)
+		<LI>
+		  Extended Generate (scripting) to take a namelist argument.
+	      </UL>
+	  </UL>
+	<LI>
+	  If users didn't have libuninameslist installed we were still generating spurious
+	  ligatures for numero and TM. (and others)
+	<LI>
+	  KANOU points out that if you comment out a bdf glyph (with COMMENT) fontforge
+	  sort of reads it anyway.
+	<LI>
+	  Kanou needs to distinquish between the script latin and the language.
+	<LI>
+	  SplineRemoveAnnoyingExtrema1 got tweaked a little too much in attempting
+	  not to generate insane control points.
+      </UL>
+    <LI>
+      25-Jan-2006
+      <UL>
+	<LI>
+	  If you try to create a bitmap only sfnt but provide pixelsizes for no valid
+	  bitmap strikes, the fontforge would crash.
+	<LI>
+	  Chia points out that I should use the PIXEL_SIZE property to set a bdf font's
+	  pixelsize (instead of using font ascent+descent).
+	<LI>
+	  Trying to rasterize a glyph with a coordinate of 1e7 caused a crash.
+	<LI>
+	  The change to make Add Extrema remove points near the extrema failed to consider
+	  the possbility that some of those points might be corner.
+	<LI>
+	  In Gentium Roman, when searching for bluevalues, the baseline is further
+	  than 1 standard deviation from the mean of glyph ymin. Change the range searched
+	  so that 0 is always included.
+	<LI>
+	  In Font Info-&gt;PS Private, if we selected OtherBlues and pressed [Guess]
+	  it did not change the OtherBlues value.
+	<LI>
+	  The gettext patch changed Histograms-&gt;Blue Values menu item into a line.
+	<LI>
+	  When changing the order of a font, ff would ask if you minded losing the
+	  undoes. There's no point in asking the question if the font hasn't been modified
+	  (it has no undoes).
+	<LI>
+	  The Point Info dlg should enforce that curved points cps are colinear (so
+	  if the user changes one cp, the dlg should change the other to be in the
+	  opposite direction.
+	<LI>
+	  There was a path though PointInfo that called SplineRefigure3, which meant
+	  that splines got marked as cubics even when they should have been quadratics.
+	<LI>
+	  Using a rotated elliptical pen in expand stroke did not work
+	<LI>
+	  Add a homedir button to the file chooser dialogs.
+      </UL>
+    <LI>
+      17-Jan-2006
+      <UL>
+	<LI>
+	  Make the Import() scripting command accept {bdf,pcf}.gz files
+	<LI>
+	  Reading utf7 (ttf name) strings from an sfd file was broken if one of the
+	  characters had bit 15 (high bit) set and its position in the string mod 3
+	  was 1.
+	<LI>
+	  My horizontal line metrics in the sfnt bitmap strike header were incorrect
+	<LI>
+	  Use the horizontal line metrics (if they work) to set the ascent/descent
+	  of a bitmap strike.
+      </UL>
+    <LI>
+      15-Jan-2006
+      <UL>
+	<LI>
+	  The change to fold all COMMENTS into one bdf property broke the sfnt 'BDF
+	  ' table routines.
+      </UL>
     <LI>
       14-Jan-2006
       <UL>

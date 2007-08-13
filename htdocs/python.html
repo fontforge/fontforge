@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 5-Aug-2007 -->
+  <!-- AP: Last modified: 12-Aug-2007 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -250,6 +250,286 @@
       <TD><CODE>(sequence)</CODE></TD>
       <TD>Reverse of the above. Converts a binary string into a human (sort of)
 	readable string</TD>
+    </TR>
+    <TR>
+      <TH colspan=3>User Interface Methods</TH>
+    </TR>
+    <TR>
+      <TD colspan=3>Users may define scripts to be run when menu items are invoked.
+	Some of these scripts will want to ask users questions, so this section provides
+	routines to determine if fontforge has a user interface, a command to add
+	menu items, and various small standard dialogs to interact with the user.
+	I do not currently provide a mechanism for allowing people to define special
+	purpose dialogs (for example they might want to ask more than one question
+	in a dialog, and I don't support that).
+	<P>
+	When FontForge starts (if it's a fontforge with python) it will look at the
+	directory $(PREFIX)/share/fontforge/python and attempt to run all files in
+	that directory which end in ".py". Presumably these files will allow people
+	to customize the user interface to suit their needs
+	<H3>
+	  Example
+	</H3>
+	<BLOCKQUOTE>
+	  <PRE>import fontforge;
+
+def nameGlyph(junk,glyph):
+  print glyph.glyphname;
+
+fontforge.registerMenuItem(nameGlyph,None,None,"Glyph","None","Print Glyph Name");
+
+def neverEnableMe(junk,glyph):
+  return False;
+
+fontforge.registerMenuItem(nameGlyph,neverEnableMe,None,"Glyph","None","SubMenu","Print Glyph Name");
+
+def importGlyph(junk,glyph,filename,toback):
+  print "Import";
+  print glyph.glyphname;
+  print filename;
+def exportGlyph(junk,glyph,filename):
+  print "Import";
+  print glyph.glyphname;
+  print filename;
+
+fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","foo,foobar")
+</PRE>
+	</BLOCKQUOTE>
+	<P>
+	The first call will define a menu item in the Tools menu of the Glyph window.
+	The menu will be called "Print Glyph Name". It has no shortcut to invoke
+	it. It needs no external data. It is always enabled. And when activated it
+	will invoke the function "nameGlyph" whch prints the name of the glyph in
+	the window from which the command is invoked.
+	<P>
+	The second call defines a menu item in a submenu of the Tools menu. This
+	submenu is called "SubMenu". This item will never be enabled -- but if it
+	were enabled it would again call "nameGlyph" to print the name of the current
+	glyph.
+	<P>
+	The last provides a way to import and export files of type "foosball" (or
+	it would if the routines did anything).
+	<P>
+	Not a very useful example</TD>
+    </TR>
+    <TR>
+      <TD><CODE>hasUserInterface</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Returns True if this session of FontForge has a user interface</TD>
+    </TR>
+    <TR>
+      <TD><CODE>registerMenuItem</CODE></TD>
+      <TD><CODE>(menu-function,<BR>
+	enable_function,<BR>
+	data,<BR>
+	which_window,<BR>
+	shortcut_string,<BR>
+	{submenu-names,}<BR>
+	menu-name-string)</CODE></TD>
+      <TD>If fontforge has a user interface this will add this menu item to FontForge's
+	Tool menu, either in the font or the outline glyph view (or both).
+	<DL>
+	  <DT>
+	    menu-function
+	  <DD>
+	    This is the function that will be called when the menu item is activated.
+	    It will be passed two arguments, the first is the data value specified here
+	    (which may be None, indeed will probably usually be None), and the second
+	    is the glyph or font (depending on the window type) from which the menu item
+	    was activated. Its return value is ignored.
+	  <DT>
+	    enable_function
+	  <DD>
+	    This may be None -- in which case the menu item will always be enabled. Otherwise
+	    it will be called before the menu pops up on the screen to determine whether
+	    this item should be enabled. It will be passed the same arguments as above.
+	    It should return True if the item should be enabled and False otherwise.
+	  <DT>
+	    data
+	  <DD>
+	    This can be whatever you want (including None). FontForge keeps track of
+	    it and passes it to both of the above functions. Use it if you need to provide
+	    some context for the menu item.
+	  <DT>
+	    which_window
+	  <DD>
+	    May be either of the strings "Font" or "Glyph (or the tuple
+	    <CODE>("Font","Glyph")</CODE>) and it determines which type of window will
+	    have this menu item in its "Tools" menu.
+	  <DT>
+	    shortcut-string
+	  <DD>
+	    May be None if you do not wish to supply a shortcut. Otherwise should be
+	    a string like "Menu Name|Cntl-H" (the syntax is defined in the
+	    <A HREF="uitranslationnotes.html#HotKeys">translation section</A>).
+	  <DT>
+	    submenu-names
+	  <DD>
+	    You may specify as many of these as you wish (including leaving them out
+	    altogether), this allows you to organize the Tools menu into submenus. (If
+	    a submenu of this name does not currently exist, fontforge will create it).
+	  <DT>
+	    menu-name
+	  <DD>
+	    The name that will appear in the menu for this item.
+	</DL>
+	<P>
+	This will only affect windows created after this command is executed. Normally
+	the command will be executed at startup and so it will affect all windows.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>registerImportExport</CODE></TD>
+      <TD><CODE>(import-function,<BR>
+	export_function,<BR>
+	data,<BR>
+	name,<BR>
+	extension,<BR>
+	[extension-list])</CODE></TD>
+      <TD>This will add the capability to import or export files of a given type,
+	presumably a way of specifying the splines in a given glyph.
+	<DL>
+	  <DT>
+	    import-function
+	  <DD>
+	    The function to call to import a file into a glyph. It will be called with:
+	    The data argument (specified below), A pointer to the glyph into which the
+	    import is to happen, A filename, A flag indicating whether the import should
+	    go to the background layer or foreground.
+	    <P>
+	    This function may be None. In which case there is no import method for this
+	    file type.
+	  <DT>
+	    export-function
+	  <DD>
+	    The function to call to export a glyph into a file. It will be called with:
+	    The data argument (see below), a pointer to the glyph, and a filename.
+	    <P>
+	    This function may be None, in which case there is no export method for this
+	    file type.
+	  <DT>
+	    data
+	  <DD>
+	    Anything you like (including None). It will be passed to the import/export
+	    routines and can provide them with context if they need that.
+	  <DT>
+	    name
+	  <DD>
+	    The name to be displayed in the user interface for this file type. This may
+	    just be the extension, or it might be something more informative.
+	  <DT>
+	    extension
+	  <DD>
+	    This is the default extension for this file type. It is used by the export
+	    dialog to pick an extension for the generated filename.
+	  <DT>
+	    extension-list
+	  <DD>
+	    Some file types have more than one common extension (eps files are usually
+	    named "eps", but I have also seen "ps" and "art" used). The import dialog
+	    needs to filter all possible filenames of this file type. This argument should
+	    be a comma seperated list of extensions. It may be omitted, in which case
+	    it defaults to being the same as the "extension" argument above.
+	</DL>
+      </TD>
+    </TR>
+    <TR>
+      <TD><CODE>logWarning</CODE></TD>
+      <TD><CODE>(msg)</CODE></TD>
+      <TD>Adds the message (a string) to FontForge's Warnings window. (if you wish
+	to display a % character you must represent it as two percents). If there
+	is no user interface the output will go to stderr.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>postError</CODE></TD>
+      <TD><CODE>(msg)</CODE></TD>
+      <TD>Creates a popup dialog to display the message (a string) in that dlg.
+	(if you wish to display a % character you must represent it as two percents).
+	If there is no user interface the output will go to stderr.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>postNotice</CODE></TD>
+      <TD><CODE>(msg)</CODE></TD>
+      <TD>Creates a little window which will silently vanish after a minute or
+	two and displays the message (a string) in that window. (if you wish to display
+	a % character you must represent it as two percents). If there is no user
+	interface the output will go to stderr.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>openFilename</CODE></TD>
+      <TD><CODE>(question,[def-name,[filter]])</CODE></TD>
+      <TD>All arguments are strings. The first is a question asked to the user
+	(for which a filename to open is presumed to be the answer). The second is
+	optional and provides a default filename. The third is optional and provides
+	a filter (like "*.sfd")
+	<P>
+	The result is either a filename or None if the user canceled the dialog.
+	<P>
+	Throws an exception if there is no user interface.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>saveFilename</CODE></TD>
+      <TD><CODE>(question,[def-name,[filter]])</CODE></TD>
+      <TD>All arguments are strings. The first is a question asked to the user
+	(for which a filename to save something to is presumed to be the answer).
+	The second is optional and provides a default filename. The third is optional
+	and provides a filter (like "*.sfd")
+	<P>
+	The result is either a filename or None if the user canceled the dialog.
+	<P>
+	Throws an exception if there is no user interface.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>ask</CODE></TD>
+      <TD><CODE>(title,question,answers,<BR>
+	[def,cancel])</CODE></TD>
+      <TD>Allows you to ask the user a multiple choice question. It popups up a
+	dialog posing the question with a list of buttons ranged underneath it --
+	one for each answer.
+	<P>
+	The first argument is the dialog's title, the second is the question to be
+	asked, the third is a tuple of strings -- each string will become a button,
+	the fourth and fifth arguments are option, the fourth is the index in the
+	answer array that will be the default answer (the one invoked if the user
+	presses the [Return] key), and the fifth is the answer invoked if the user
+	presses the [Escape] key. If omitted the default answer will be the first,
+	and the cancel answer will be the last.
+	<P>
+	The function returns the index in the answer array of the answer choosen
+	by the user.
+	<P>
+	Throws an exception if there is no user interface.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>askChoice</CODE></TD>
+      <TD><CODE>(title,question,answers,<BR>
+	[def])</CODE></TD>
+      <TD>Similar to the above allows you to ask the user a multiple choice question.
+	It popups up a dialog posing the question with a scrollable list of choices
+	-- one for each answer.
+	<P>
+	The first argument is the dialog's title, the second is the question to be
+	asked, the third is a tuple of strings -- each string will become a button,
+	the fourth and fifth arguments are option, the fourth is the index in the
+	answer array that will be the default answer (the one invoked if the user
+	presses the [Return] key). If omitted the default answer will be the first.
+	<P>
+	The function returns the index in the answer array of the answer choosen
+	by the user. If the user cancels the dialog, a -1 is returned.
+	<P>
+	Throws an exception if there is no user interface.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>askString</CODE></TD>
+      <TD><CODE>(title,question,[def-string])</CODE></TD>
+      <TD>Allows you to as the user a question for which a string is the answer.
+	<P>
+	The first argument is the dialog's title, the second is the question to be
+	asked, the third is optional and specified a default answer.
+	<P>
+	The function returns the string the user typed or None if they cancelled
+	the dialog.
+	<P>
+	Throws an exception if there is no user interface.</TD>
     </TR>
     <TR>
       <TH colspan=3>Types</TH>

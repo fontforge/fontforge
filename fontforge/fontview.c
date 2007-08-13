@@ -7642,6 +7642,9 @@ static GMenuItem2 mblist[] = {
     { { (unichar_t *) N_("_File"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'F' }, NULL, fllist, fllistcheck },
     { { (unichar_t *) N_("_Edit"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'E' }, NULL, edlist, edlistcheck },
     { { (unichar_t *) N_("E_lement"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, NULL, ellist, ellistcheck },
+#ifndef _NO_PYTHON
+    { { (unichar_t *) N_("_Tools"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, NULL, NULL, fvpy_tllistcheck},
+#endif
     { { (unichar_t *) N_("H_ints"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'i' }, NULL, htlist, htlistcheck },
     { { (unichar_t *) N_("E_ncoding"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'V' }, NULL, enlist, enlistcheck },
     { { (unichar_t *) N_("_View"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'V' }, NULL, vwlist, vwlistcheck },
@@ -10490,6 +10493,11 @@ FontView *FontViewCreate(SplineFont *sf) {
     memset(&gd,0,sizeof(gd));
     gd.flags = gg_visible | gg_enabled;
     helplist[0].invoke = FVMenuContextualHelp;
+#ifndef _NO_PYTHON
+    if ( fvpy_menu!=NULL )
+	mblist[3].ti.disabled = false;
+    mblist[3].sub = fvpy_menu;
+#endif		/* _NO_PYTHON */
     gd.u.menu2 = mblist;
     fv->mb = GMenu2BarCreate( gw, &gd, NULL);
     GGadgetGetSize(fv->mb,&gsize);

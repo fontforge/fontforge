@@ -7722,8 +7722,11 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_AutoHint:
 	    mi->ti.disabled = multilayer;
 	  break;
-	  case MID_HintSubsPt: case MID_AutoCounter:
+	  case MID_HintSubsPt:
 	    mi->ti.disabled = cv->sc->parent->order2 || multilayer;
+	  break;
+	  case MID_AutoCounter:
+	    mi->ti.disabled = multilayer;
 	  break;
 	  case MID_DontAutoHint:
 	    mi->ti.disabled = cv->sc->parent->order2 || multilayer;
@@ -8745,6 +8748,9 @@ static GMenuItem2 mblist[] = {
     { { (unichar_t *) N_("_Edit"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'E' }, NULL, edlist, edlistcheck },
     { { (unichar_t *) N_("_Point"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, NULL, ptlist, ptlistcheck },
     { { (unichar_t *) N_("E_lement"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, NULL, ellist, ellistcheck },
+#ifndef _NO_PYTHON
+    { { (unichar_t *) N_("_Tools"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, NULL, NULL, cvpy_tllistcheck},
+#endif
     { { (unichar_t *) N_("H_ints"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, NULL, htlist, htlistcheck },
     { { (unichar_t *) N_("_View"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'V' }, NULL, vwlist, vwlistcheck },
     { { (unichar_t *) N_("_Metrics"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, NULL, mtlist, mtlistcheck },
@@ -8760,6 +8766,9 @@ static GMenuItem2 mblist_nomm[] = {
     { { (unichar_t *) N_("_Edit"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'E' }, NULL, edlist, edlistcheck },
     { { (unichar_t *) N_("_Point"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, NULL, ptlist, ptlistcheck },
     { { (unichar_t *) N_("E_lement"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, NULL, ellist, ellistcheck },
+#ifndef _NO_PYTHON
+    { { (unichar_t *) N_("_Tools"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, NULL, NULL, cvpy_tllistcheck},
+#endif
     { { (unichar_t *) N_("H_ints"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, NULL, htlist, htlistcheck },
     { { (unichar_t *) N_("_View"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'V' }, NULL, vwlist, vwlistcheck },
     { { (unichar_t *) N_("_Metrics"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, NULL, mtlist, mtlistcheck },
@@ -8989,6 +8998,11 @@ CharView *CharViewCreate(SplineChar *sc, FontView *fv,int enc) {
     memset(&gd,0,sizeof(gd));
     gd.flags = gg_visible | gg_enabled;
     helplist[0].invoke = CVMenuContextualHelp;
+#ifndef _NO_PYTHON
+    if ( cvpy_menu!=NULL )
+	mblist[4].ti.disabled = mblist_nomm[4].ti.disabled = false;
+    mblist[4].sub = mblist_nomm[4].sub = cvpy_menu;
+#endif		/* _NO_PYTHON */
     gd.u.menu2 = sc->parent->mm==NULL ? mblist_nomm : mblist;
     cv->mb = GMenu2BarCreate( gw, &gd, NULL);
     GGadgetGetSize(cv->mb,&gsize);

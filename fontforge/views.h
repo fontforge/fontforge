@@ -813,7 +813,8 @@ enum fvformats { fv_bdf, fv_ttf, fv_pk, fv_pcf, fv_mac, fv_win, fv_palm,
 	fv_image, fv_imgtemplate, fv_eps, fv_epstemplate,
 	fv_svg, fv_svgtemplate,
 	fv_glif, fv_gliftemplate,
-	fv_fig };
+	fv_fig,
+	fv_pythonbase = 0x100 };
 extern int HasSVG(void);
 extern void SCImportSVG(SplineChar *sc,int layer,char *path,char  *memory, int memlen,int doclear);
 extern int HasUFO(void);
@@ -1520,4 +1521,21 @@ extern BasePoint last_ruler_offset[];
 
 extern void MathInit(void);
 extern void SFMathDlg(SplineFont *sf);
+
+extern GMenuItem2 *cvpy_menu, *fvpy_menu;
+extern void cvpy_tllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e);
+extern void fvpy_tllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e);
+
+extern struct python_import_export {
+    struct _object *import;	/* None becomes NULL */
+    struct _object *export;	/* None becomes NULL */
+    struct _object *data;	/* None stays None */
+    char *name;
+    char *extension;
+    char *all_extensions;
+} *py_ie;
+extern void PyFF_SCExport(SplineChar *sc,int ie_index,char *filename);
+extern void PyFF_SCImport(SplineChar *sc,int ie_index,char *filename,
+	int toback, int clear);
+
 #endif	/* _VIEWS_H */

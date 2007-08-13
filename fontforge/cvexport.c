@@ -785,23 +785,23 @@ struct gfc_data {
 
 
 static GTextInfo bcformats[] = {
-    { (unichar_t *) N_("X Bitmap"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("BMP"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("X Bitmap"), NULL, 0, 0, (void *) 0, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("BMP"), NULL, 0, 0, (void *) 1, 0, 0, 0, 0, 0, 0, 0, 1 },
 #ifndef _NO_LIBPNG
-    { (unichar_t *) N_("png"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("png"), NULL, 0, 0, (void *) 2, 0, 0, 0, 0, 0, 0, 0, 1 },
 #endif
     { NULL }};
 
 static GTextInfo formats[] = {
-    { (unichar_t *) N_("EPS"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 1, 0, 1 },
-    { (unichar_t *) N_("XFig"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("SVG"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("Glif"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("PDF"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("X Bitmap"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("BMP"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("EPS"), NULL, 0, 0, (void *) 0, 0, 0, 0, 0, 0, 1, 0, 1 },
+    { (unichar_t *) N_("XFig"), NULL, 0, 0, (void *) 1, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("SVG"), NULL, 0, 0, (void *) 2, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Glif"), NULL, 0, 0, (void *) 3, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("PDF"), NULL, 0, 0, (void *) 4, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("X Bitmap"), NULL, 0, 0, (void *) 5, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("BMP"), NULL, 0, 0, (void *) 6, 0, 0, 0, 0, 0, 0, 0, 1 },
 #ifndef _NO_LIBPNG
-    { (unichar_t *) N_("png"), NULL, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("png"), NULL, 0, 0, (void *) 7, 0, 0, 0, 0, 0, 0, 0, 1 },
 #endif
     { NULL }};
 static int last_format = 0;
@@ -811,7 +811,7 @@ static void DoExport(struct gfc_data *d,unichar_t *path) {
     int format, good;
 
     temp = cu_copy(path);
-    last_format = format = GGadgetGetFirstListSelectedItem(d->format);
+    last_format = format = (intpt) (GGadgetGetListItemSelected(d->format)->userdata);
     if ( d->bc )
 	last_format += 4;
     if ( d->bc!=NULL )
@@ -826,8 +826,10 @@ static void DoExport(struct gfc_data *d,unichar_t *path) {
 	good = ExportGlif(temp,d->sc);
     else if ( format==4 )
 	good = ExportPDF(temp,d->sc);
-    else
+    else if ( format==5 )
 	good = ExportXBM(temp,d->sc,format-5);
+    else if ( format>=fv_pythonbase )
+	PyFF_SCExport(d->sc,format-fv_pythonbase,temp);
     if ( !good )
 	gwwv_post_error(_("Save Failed"),_("Save Failed"));
     free(temp);
@@ -888,7 +890,7 @@ static int GFD_Format(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	unichar_t *pt, *file, *f2;
-	int format = GGadgetGetFirstListSelectedItem(g);
+	int format = (intpt) (GGadgetGetListItemSelected(d->format)->userdata);
 	file = GGadgetGetTitle(d->gfc);
 	f2 = galloc(sizeof(unichar_t) * (u_strlen(file)+6));
 	u_strcpy(f2,file);
@@ -898,6 +900,8 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	    pt = f2+u_strlen(f2);
 	if ( d->bc!=NULL )
 	    uc_strcpy(pt,format==0?".xbm":format==1?".bmp":".png");
+	else if ( format>=fv_pythonbase )
+	    uc_strcpy(pt+1,py_ie[format-fv_pythonbase].extension);
 	else
 	    uc_strcpy(pt,format==0?".eps":
 			 format==1?".fig":
@@ -991,6 +995,7 @@ static int _Export(SplineChar *sc,BDFChar *bc) {
     int _format, i;
     int bs = GIntGetResource(_NUM_Buttonsize), bsbigger, totwid;
     static int done = false;
+    GTextInfo *cur_formats;
 
     if ( !done ) {
 	for ( i=0; formats[i].text!=NULL; ++i )
@@ -998,6 +1003,29 @@ static int _Export(SplineChar *sc,BDFChar *bc) {
 	for ( i=0; bcformats[i].text!=NULL; ++i )
 	    bcformats[i].text= (unichar_t *) _((char *) bcformats[i].text);
 	done = true;
+    }
+    cur_formats = bc==NULL ? formats : bcformats;
+    if ( bc==NULL && py_ie!=NULL ) {
+	int cnt, extras;
+	for ( cnt=0; formats[cnt].text!=NULL; ++cnt );
+	for ( i=extras=0; py_ie[i].name!=NULL; ++i )
+	    if ( py_ie[i].export!=NULL )
+		++extras;
+	if ( extras!=0 ) {
+	    cur_formats = gcalloc(extras+cnt+1,sizeof(GTextInfo));
+	    for ( cnt=0; formats[cnt].text!=NULL; ++cnt ) {
+		cur_formats[cnt] = formats[cnt];
+		cur_formats[cnt].text = (unichar_t *) copy( (char *) formats[cnt].text );
+	    }
+	    for ( i=extras=0; py_ie[i].name!=NULL; ++i ) {
+		if ( py_ie[i].export!=NULL ) {
+		    cur_formats[cnt+extras].text = (unichar_t *) copy(py_ie[i].name);
+		    cur_formats[cnt+extras].text_is_1byte = true;
+		    cur_formats[cnt+extras].userdata = (void *) (intpt) (fv_pythonbase+i);
+		    ++extras;
+		}
+	    }
+	}
     }
 
     memset(&wattrs,0,sizeof(wattrs));
@@ -1072,18 +1100,18 @@ static int _Export(SplineChar *sc,BDFChar *bc) {
     }
     gcd[6].gd.pos.x = 55; gcd[6].gd.pos.y = 194; 
     gcd[6].gd.flags = gg_visible | gg_enabled ;
-    gcd[6].gd.u.list = bc!=NULL?bcformats:formats;
+    gcd[6].gd.u.list = cur_formats;
     if ( bc!=NULL ) {
 	bcformats[0].disabled = bc->byte_data;
 	if ( _format==0 ) _format=1;
     }
-    gcd[6].gd.label = &gcd[6].gd.u.list[_format];
+    gcd[6].gd.label = &cur_formats[_format];
     gcd[6].gd.u.list[0].selected = true;
     gcd[6].gd.handle_controlevent = GFD_Format;
     gcd[6].creator = GListButtonCreate;
-    for ( i=0; gcd[6].gd.u.list[i].text!=NULL; ++i )
-	gcd[6].gd.u.list[i].selected =false;
-    gcd[6].gd.u.list[_format].selected = true;
+    for ( i=0; cur_formats[i].text!=NULL; ++i )
+	cur_formats[i].selected =false;
+    cur_formats[_format].selected = true;
 
     GGadgetsCreate(gw,gcd);
     GGadgetSetUserData(gcd[2].ret,gcd[0].ret);
@@ -1091,6 +1119,8 @@ static int _Export(SplineChar *sc,BDFChar *bc) {
     GFileChooserConnectButtons(gcd[0].ret,gcd[1].ret,gcd[2].ret);
     if ( bc!=NULL )
 	ext = _format==0 ? "xbm" : _format==1 ? "bmp" : "png";
+    else if ( _format>=fv_pythonbase )
+	ext = py_ie[_format-fv_pythonbase].extension;
     else
 	ext = _format==0?"eps":_format==1?"fig":_format==2?"svg":
 		_format==3?"glif":
@@ -1113,6 +1143,9 @@ static int _Export(SplineChar *sc,BDFChar *bc) {
     GGadgetSetTitle(gcd[0].ret,ubuf);
     GFileChooserGetChildren(gcd[0].ret,&pulldown,&files,&tf);
     GWidgetIndicateFocusGadget(tf);
+
+    if ( cur_formats!=formats && cur_formats!=bcformats )
+	GTextInfoListFree(cur_formats);
 
     memset(&d,'\0',sizeof(d));
     d.sc = sc;
