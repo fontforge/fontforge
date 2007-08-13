@@ -49,6 +49,8 @@
 #include "scriptfuncs.h"
 #include <math.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <dirent.h>
 
 static FontView *fv_active_in_ui = NULL;
 static SplineChar *sc_active_in_ui = NULL;
@@ -594,6 +596,547 @@ return( NULL );
     else if ( pcmd!=NULL && (iptype==0 || iptype==1) )
 	printlazyprinter = copy(pcmd);
 Py_RETURN(self);
+}
+
+/* ************************************************************************** */
+/* ************************* Import/Export routines ************************* */
+/* ************************************************************************** */
+
+struct python_import_export *py_ie;
+static int ie_cnt, ie_max;
+
+void PyFF_SCImport(SplineChar *sc,int ie_index,char *filename,
+	int toback, int clear) {
+    int layer = toback?ly_back:ly_fore;
+    PyObject *arglist, *result, *glyph = PySC_From_SC(sc);
+
+    if ( ie_index>=ie_cnt )
+return;
+    SCPreserveLayer(sc,layer,false);
+    if ( clear ) {
+	SplinePointListsFree(sc->layers[layer].splines);
+	sc->layers[layer].splines = NULL;
+    }
+
+    sc_active_in_ui = sc;
+
+    arglist = PyTuple_New(4);
+    Py_XINCREF(py_ie[ie_index].data);
+    Py_XINCREF(glyph);
+    PyTuple_SetItem(arglist,0,py_ie[ie_index].data);
+    PyTuple_SetItem(arglist,1,glyph);
+    PyTuple_SetItem(arglist,2,PyString_Decode(filename,strlen(filename),"UTF-8",NULL));
+    PyTuple_SetItem(arglist,3,Py_BuildValue("i",toback));
+    result = PyEval_CallObject(py_ie[ie_index].import, arglist);
+    Py_DECREF(arglist);
+    Py_DECREF(result);
+}
+
+void PyFF_SCExport(SplineChar *sc,int ie_index,char *filename) {
+    PyObject *arglist, *result, *glyph = PySC_From_SC(sc);
+
+    if ( ie_index>=ie_cnt )
+return;
+
+    sc_active_in_ui = sc;
+
+    arglist = PyTuple_New(3);
+    Py_XINCREF(py_ie[ie_index].data);
+    Py_XINCREF(glyph);
+    PyTuple_SetItem(arglist,0,py_ie[ie_index].data);
+    PyTuple_SetItem(arglist,1,glyph);
+    PyTuple_SetItem(arglist,2,PyString_Decode(filename,strlen(filename),"UTF-8",NULL));
+    result = PyEval_CallObject(py_ie[ie_index].export, arglist);
+    Py_DECREF(arglist);
+    Py_DECREF(result);
+    sc_active_in_ui = NULL;
+}
+
+static PyObject *PyFF_registerImportExport(PyObject *self, PyObject *args) {
+    PyObject *import, *export, *data;
+    char *name, *exten, *exten_list=NULL;
+    /* I'm assuming the extensions are in ASCII so no conversion will be needed*/
+
+    if ( !PyArg_ParseTuple(args,"OOOess|s", &import, &export, &data,
+	    "UTF-8", &name, &exten, &exten_list ))
+return( NULL );
+    if ( import==Py_None && export==Py_None )
+Py_RETURN_NONE;			/* Well, that was pointless */
+    if ( import==Py_None )
+	import=NULL;
+    else if ( !PyCallable_Check(import) ) {
+	PyErr_Format(PyExc_TypeError, "First argument is not callable" );
+return( NULL );
+    }
+    if ( export==Py_None )
+	export=NULL;
+    else if ( !PyCallable_Check(export) ) {
+	PyErr_Format(PyExc_TypeError, "Second argument is not callable" );
+return( NULL );
+    }
+
+    Py_XINCREF(import);
+    Py_XINCREF(export);
+    Py_XINCREF(data);
+
+    if ( ie_cnt>=ie_max )
+	py_ie = grealloc(py_ie,(ie_max += 10)*sizeof(struct python_import_export));
+    py_ie[ie_cnt].import = import;
+    py_ie[ie_cnt].export = export;
+    py_ie[ie_cnt].data = data;
+    py_ie[ie_cnt].name = name;
+    py_ie[ie_cnt].extension = copy(exten);
+    py_ie[ie_cnt].all_extensions = copy(exten_list==NULL ? exten : exten_list);
+    ++ie_cnt;
+    
+Py_RETURN_NONE;
+}
+
+/* ************************************************************************** */
+/* ************************ User Interface routines ************************* */
+/* ************************************************************************** */
+
+static struct python_menu_info {
+    PyObject *func;
+    PyObject *check_enabled;		/* May be None (which I change to NULL) */
+    PyObject *data;			/* May be None (left as None) */
+} *cvpy_menu_data = NULL, *fvpy_menu_data = NULL;
+static int cvpy_menu_cnt=0, cvpy_menu_max = 0;
+static int fvpy_menu_cnt=0, fvpy_menu_max = 0;
+
+GMenuItem2 *cvpy_menu, *fvpy_menu;
+
+static void py_tllistcheck(struct gmenuitem *mi,PyObject *owner,
+	struct python_menu_info *menu_data, int menu_cnt) {
+    PyObject *arglist, *result;
+
+    if ( menu_data==NULL )
+return;
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	if ( mi->mid==-1 )		/* Submenu */
+    continue;
+	if ( mi->mid<0 || mi->mid>=menu_cnt ) {
+	    fprintf( stderr, "Bad Menu ID in python menu %d\n", mi->mid );
+	    mi->ti.disabled = true;
+    continue;
+	}
+	if ( menu_data[mi->mid].check_enabled==NULL ) {
+	    mi->ti.disabled = false;
+    continue;
+	}
+	arglist = PyTuple_New(2);
+	Py_XINCREF(menu_data[mi->mid].data);
+	Py_XINCREF(owner);
+	PyTuple_SetItem(arglist,0,menu_data[mi->mid].data);
+	PyTuple_SetItem(arglist,1,owner);
+	result = PyEval_CallObject(menu_data[mi->mid].check_enabled, arglist);
+	Py_DECREF(arglist);
+	if ( !PyInt_Check(result)) {
+	    char *menu_item_name = u2utf8_copy(mi->ti.text);
+	    LogError( "Return from enabling function for menu item %s must be boolean", menu_item_name );
+	    free( menu_item_name );
+	    mi->ti.disabled = true;
+	} else
+	    mi->ti.disabled = PyInt_AsLong(result)==0;
+	Py_DECREF(result);
+    }
+}
+
+static void py_menuactivate(struct gmenuitem *mi,PyObject *owner,
+	struct python_menu_info *menu_data, int menu_cnt) {
+    PyObject *arglist, *result;
+
+    if ( mi->mid==-1 )		/* Submenu */
+return;
+    if ( mi->mid<0 || mi->mid>=menu_cnt ) {
+	fprintf( stderr, "Bad Menu ID in python menu %d\n", mi->mid );
+return;
+    }
+    if ( menu_data[mi->mid].func==NULL ) {
+return;
+    }
+    arglist = PyTuple_New(2);
+    Py_XINCREF(menu_data[mi->mid].data);
+    Py_XINCREF(owner);
+    PyTuple_SetItem(arglist,0,menu_data[mi->mid].data);
+    PyTuple_SetItem(arglist,1,owner);
+    result = PyEval_CallObject(menu_data[mi->mid].func, arglist);
+    Py_DECREF(arglist);
+    Py_DECREF(result);
+}
+
+void cvpy_tllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    PyObject *pysc = PySC_From_SC(cv->sc);
+
+    if ( cvpy_menu_data==NULL )
+return;
+
+    sc_active_in_ui = cv->sc;
+    py_tllistcheck(mi,pysc,cvpy_menu_data,cvpy_menu_cnt);
+    sc_active_in_ui = NULL;
+}
+
+static void cvpy_menuactivate(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    PyObject *pysc = PySC_From_SC(cv->sc);
+
+    if ( cvpy_menu_data==NULL )
+return;
+
+    sc_active_in_ui = cv->sc;
+    py_menuactivate(mi,pysc,cvpy_menu_data,cvpy_menu_cnt);
+    sc_active_in_ui = NULL;
+}
+
+void fvpy_tllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    PyObject *pyfv = PyFV_From_FV(fv);
+
+    if ( cvpy_menu_data==NULL )
+return;
+
+    fv_active_in_ui = fv;
+    py_tllistcheck(mi,pyfv,fvpy_menu_data,fvpy_menu_cnt);
+    fv_active_in_ui = NULL;
+}
+
+static void fvpy_menuactivate(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    PyObject *pyfv = PyFV_From_FV(fv);
+
+    if ( fvpy_menu_data==NULL )
+return;
+
+    fv_active_in_ui = fv;
+    py_menuactivate(mi,pyfv,fvpy_menu_data,fvpy_menu_cnt);
+    fv_active_in_ui = NULL;
+}
+
+enum { menu_fv=1, menu_cv=2 };
+static struct flaglist menuviews[] = {
+    { "Font", menu_fv },
+    { "Glyph", menu_cv },
+    { "Char", menu_cv },
+    NULL
+};
+
+static int MenuDataAdd(PyObject *func,PyObject *check,PyObject *data,int is_cv) {
+    Py_INCREF(func);
+    if ( check!=NULL )
+	Py_INCREF(check);
+    Py_INCREF(data);
+
+    if ( is_cv ) {
+	if ( cvpy_menu_cnt >= cvpy_menu_max )
+	    cvpy_menu_data = grealloc(cvpy_menu_data,(cvpy_menu_max+=10)*sizeof(struct python_menu_info));
+	cvpy_menu_data[cvpy_menu_cnt].func = func;
+	cvpy_menu_data[cvpy_menu_cnt].check_enabled = check;
+	cvpy_menu_data[cvpy_menu_cnt].data = data;
+return( cvpy_menu_cnt++ );
+    } else {
+	if ( fvpy_menu_cnt >= fvpy_menu_max )
+	    fvpy_menu_data = grealloc(fvpy_menu_data,(fvpy_menu_max+=10)*sizeof(struct python_menu_info));
+	fvpy_menu_data[fvpy_menu_cnt].func = func;
+	fvpy_menu_data[fvpy_menu_cnt].check_enabled = check;
+	fvpy_menu_data[fvpy_menu_cnt].data = data;
+return( fvpy_menu_cnt++ );
+    }
+}
+
+static void InsertSubMenus(PyObject *args,GMenuItem2 **mn, int is_cv) {
+    int i, j, cnt;
+    PyObject *func, *check, *data;
+    char *shortcut_str;
+    GMenuItem2 *mmn;
+
+    /* I've done type checking already */
+    cnt = PyTuple_Size(args);
+    func = PyTuple_GetItem(args,0);
+    if ( (check = PyTuple_GetItem(args,1))==Py_None )
+	check = NULL;
+    data = PyTuple_GetItem(args,2);
+    if ( PyTuple_GetItem(args,4)==Py_None )
+	shortcut_str = NULL;
+    else
+	shortcut_str = PyString_AsString(PyTuple_GetItem(args,4));
+
+    for ( i=5; i<cnt; ++i ) {
+	PyObject *submenu_utf8 = PyString_AsEncodedObject(PyTuple_GetItem(args,i),
+		"UTF-8",NULL);
+	unichar_t *submenuu = utf82u_copy( PyString_AsString(submenu_utf8) );
+	Py_DECREF(submenu_utf8);
+
+	j = 0;
+	if ( *mn != NULL ) {
+	    for ( j=0; (*mn)[j].ti.text!=NULL || (*mn)[j].ti.line; ++j ) {
+		if ( (*mn)[j].ti.text==NULL )
+	    continue;
+		if ( u_strcmp((*mn)[j].ti.text,submenuu)==0 )
+	    break;
+	    }
+	}
+	if ( *mn==NULL || (*mn)[j].ti.text==NULL ) {
+	    *mn = grealloc(*mn,(j+2)*sizeof(GMenuItem2));
+	    memset(*mn+j,0,2*sizeof(GMenuItem2));
+	}
+	mmn = *mn;
+	if ( mmn[j].ti.text==NULL ) {
+	    mmn[j].ti.text = submenuu;
+	    mmn[j].ti.fg = mmn[j].ti.bg = COLOR_DEFAULT;
+	    if ( i!=cnt-1 ) {
+		mmn[j].mid = -1;
+		mmn[j].moveto = is_cv ? cvpy_tllistcheck : fvpy_tllistcheck;
+		mn = &mmn[j].sub;
+	    } else {
+		mmn[j].shortcut = shortcut_str;
+		mmn[j].invoke = is_cv ? cvpy_menuactivate : fvpy_menuactivate;
+		mmn[j].mid = MenuDataAdd(func,check,data,is_cv);
+	    }
+	} else {
+	    if ( i!=cnt-1 )
+		mn = &mmn[j].sub;
+	    else {
+		mmn[j].shortcut = shortcut_str;
+		mmn[j].invoke = is_cv ? cvpy_menuactivate : fvpy_menuactivate;
+		mmn[j].mid = MenuDataAdd(func,check,data,is_cv);
+		fprintf( stderr, "Redefining menu item %s\n", u2utf8_copy(submenuu) );
+		free(submenuu);
+	    }
+	}
+    }
+}
+
+/* (function,check_enabled,data,(char/font),shortcut_str,{sub-menu,}menu-name) */
+static PyObject *PyFF_registerMenuItem(PyObject *self, PyObject *args) {
+    int i, cnt;
+    int flags;
+    PyObject *utf8_name;
+
+    if ( !no_windowing_ui ) {
+	cnt = PyTuple_Size(args);
+	if ( cnt<6 ) {
+	    PyErr_Format(PyExc_TypeError, "Too few arguments");
+return( NULL );
+	}
+	if (!PyCallable_Check(PyTuple_GetItem(args,0))) {
+	    PyErr_Format(PyExc_TypeError, "First argument is not callable" );
+return( NULL );
+	}
+	if (PyTuple_GetItem(args,1)!=Py_None &&
+		!PyCallable_Check(PyTuple_GetItem(args,1))) {
+	    PyErr_Format(PyExc_TypeError, "First argument is not callable" );
+return( NULL );
+	}
+	flags = FlagsFromTuple(PyTuple_GetItem(args,3), menuviews );
+	if ( flags==-1 ) {
+	    PyErr_Format(PyExc_ValueError, "Unknown window for menu" );
+return( NULL );
+	}
+	if ( PyTuple_GetItem(args,4)!=Py_None ) {
+	    char *shortcut_str = PyString_AsString(PyTuple_GetItem(args,4));
+	    if ( shortcut_str==NULL )
+return( NULL );
+	}
+	for ( i=5; i<cnt; ++i ) {
+	    utf8_name = PyString_AsEncodedObject(PyTuple_GetItem(args,i),
+			"UTF-8",NULL);
+	    if ( utf8_name==NULL )
+return( NULL );
+	    Py_DECREF(utf8_name);
+	}
+	if ( flags&menu_fv )
+	    InsertSubMenus(args,&fvpy_menu,false );
+	if ( flags&menu_cv )
+	    InsertSubMenus(args,&cvpy_menu,true );
+    }
+
+Py_RETURN_NONE;
+}
+
+static PyObject *PyFF_hasUserInterface(PyObject *self, PyObject *args) {
+    PyObject *ret = no_windowing_ui ? Py_False : Py_True;
+
+    Py_INCREF(ret);
+return( ret );
+}
+
+static PyObject *PyFF_logError(PyObject *self, PyObject *args) {
+    char *msg;
+    if ( !PyArg_ParseTuple(args,"es","UTF-8", &msg) )
+return( NULL );
+    LogError(msg);
+    free(msg);
+Py_RETURN_NONE;
+}
+
+static PyObject *PyFF_postError(PyObject *self, PyObject *args) {
+    char *msg, *title;
+    if ( !PyArg_ParseTuple(args,"eses","UTF-8", &title, "UTF-8", &msg) )
+return( NULL );
+    gwwv_post_error(title,msg);		/* Prints to stderr if no ui */
+Py_RETURN_NONE;
+}
+
+static PyObject *PyFF_postNotice(PyObject *self, PyObject *args) {
+    char *msg, *title;
+    if ( !PyArg_ParseTuple(args,"eses","UTF-8", &title, "UTF-8", &msg) )
+return( NULL );
+    gwwv_post_notice(title,msg);		/* Prints to stderr if no ui */
+Py_RETURN_NONE;
+}
+
+static PyObject *PyFF_openFilename(PyObject *self, PyObject *args) {
+    char *title,*def=NULL,*filter=NULL;
+    char *ret;
+    PyObject *reto;
+
+    if ( no_windowing_ui ) {
+	PyErr_Format(PyExc_EnvironmentError, "No user interface");
+return( NULL );
+    }
+
+    if ( !PyArg_ParseTuple(args,"es|ess","UTF-8", &title, "UTF-8", &def, &filter) )
+return( NULL );
+
+    ret = gwwv_open_filename(title,def,filter,NULL);
+    free(title);
+    free(def);
+    if ( ret==NULL )
+Py_RETURN_NONE;
+    reto = PyString_Decode(ret,strlen(ret),"UTF-8",NULL);
+    free(ret);
+return( reto );
+}
+
+static PyObject *PyFF_saveFilename(PyObject *self, PyObject *args) {
+    char *title,*def=NULL,*filter=NULL;
+    char *ret;
+    PyObject *reto;
+
+    if ( no_windowing_ui ) {
+	PyErr_Format(PyExc_EnvironmentError, "No user interface");
+return( NULL );
+    }
+
+    if ( !PyArg_ParseTuple(args,"es|ess","UTF-8", &title, "UTF-8", &def, &filter) )
+return( NULL );
+
+    ret = gwwv_save_filename(title,def,filter);
+    free(title);
+    free(def);
+    if ( ret==NULL )
+Py_RETURN_NONE;
+    reto = PyString_Decode(ret,strlen(ret),"UTF-8",NULL);
+    free(ret);
+return( reto );
+}
+
+static PyObject *PyFF_ask(PyObject *self, PyObject *args) {
+    char *title,*quest, **answers;
+    int def=0, cancel=-1, cnt;
+    PyObject *answero;
+    int i, ret;
+
+    if ( no_windowing_ui ) {
+	PyErr_Format(PyExc_EnvironmentError, "No user interface");
+return( NULL );
+    }
+
+    if ( !PyArg_ParseTuple(args,"esesO|ii","UTF-8", &title, "UTF-8", &quest, &answero, &def, &cancel) )
+return( NULL );
+    if ( !PySequence_Check(answero) || PyString_Check(answero)) {
+	PyErr_Format(PyExc_TypeError, "Expected a tuple of strings for the third argument");
+return( NULL );
+    }
+    cnt = PySequence_Size(answero);
+    answers = galloc((cnt+1)*sizeof(char *));
+    answers[cnt] = NULL;
+    if ( cancel==-1 )
+	cancel = cnt-1;
+    if ( cancel<0 || cancel>=cnt || def<0 || def>=cnt ) {
+	PyErr_Format(PyExc_ValueError, "Value out of bounds for 4th or 5th argument");
+return( NULL );
+    }
+    for ( i=0; i<cnt; ++i ) {
+	PyObject *utf8_name = PyString_AsEncodedObject(PyTuple_GetItem(answero,i),
+		    "UTF-8",NULL);
+	if ( utf8_name==NULL )
+return( NULL );
+	answers[i] = copy(PyString_AsString(utf8_name));
+	Py_DECREF(utf8_name);
+    }
+
+    ret = gwwv_ask(title,(const char **) answers,def,cancel,quest);
+    free(title);
+    free(quest);
+    free(answers);
+return( Py_BuildValue("i",ret));
+}
+
+static PyObject *PyFF_askChoices(PyObject *self, PyObject *args) {
+    char *title,*quest, **answers;
+    int def=0, cnt;
+    PyObject *answero;
+    int i, ret;
+
+    if ( no_windowing_ui ) {
+	PyErr_Format(PyExc_EnvironmentError, "No user interface");
+return( NULL );
+    }
+
+    if ( !PyArg_ParseTuple(args,"es:esO|i","UTF-8", &title, "UTF-8", &quest, &answero, &def) )
+return( NULL );
+    if ( !PySequence_Check(answero) || PyString_Check(answero)) {
+	PyErr_Format(PyExc_TypeError, "Expected a tuple of strings for the third argument");
+return( NULL );
+    }
+    cnt = PySequence_Size(answero);
+    answers = galloc((cnt+1)*sizeof(char *));
+    answers[cnt] = NULL;
+    if ( def<0 || def>=cnt ) {
+	PyErr_Format(PyExc_ValueError, "Value out of bounds for 4th argument");
+return( NULL );
+    }
+    for ( i=0; i<cnt; ++i ) {
+	PyObject *utf8_name = PyString_AsEncodedObject(PyTuple_GetItem(answero,i),
+		    "UTF-8",NULL);
+	if ( utf8_name==NULL )
+return( NULL );
+	answers[i] = copy(PyString_AsString(utf8_name));
+	Py_DECREF(utf8_name);
+    }
+
+    ret = gwwv_choose(title,(const char **) answers,cnt,def,quest);
+    free(title);
+    free(quest);
+    free(answers);
+return( Py_BuildValue("i",ret));
+}
+
+static PyObject *PyFF_askString(PyObject *self, PyObject *args) {
+    char *title,*quest, *def = NULL;
+    char *ret;
+    PyObject *reto;
+
+    if ( no_windowing_ui ) {
+	PyErr_Format(PyExc_EnvironmentError, "No user interface");
+return( NULL );
+    }
+
+    if ( !PyArg_ParseTuple(args,"eses|es","UTF-8", &title, "UTF-8", &quest, "UTF-8", &def) )
+return( NULL );
+
+    ret = gwwv_ask_string(title,def,quest);
+    free(title);
+    free(quest);
+    free(def);
+    if ( ret==NULL )
+Py_RETURN_NONE;
+    reto = Py_BuildValue("s",ret);
+    free(ret);
+return( reto );
 }
 
 /* ************************************************************************** */
@@ -9552,6 +10095,18 @@ static PyMethodDef FontForge_methods[] = {
     /* Deprecated name for the above */
     { "activeFontInUI", PyFF_ActiveFont, METH_NOARGS, "If invoked from the UI, this returns the currently active font. When not in UI this returns None"},
     { "activeGlyph", PyFF_ActiveGlyph, METH_NOARGS, "If invoked from the UI, this returns the currently active glyph (or None)"},
+    /* Access to the User Interface ... if any */
+    { "hasUserInterface", PyFF_hasUserInterface, METH_NOARGS, "Returns whether this fontforge session has a user interface (True if it has opened windows) or is just running a script (False)"},
+    { "registerImportExport", PyFF_registerImportExport, METH_VARARGS, "Adds an import/export spline conversion module"},
+    { "registerMenuItem", PyFF_registerMenuItem, METH_VARARGS, "Adds a menu item (which runs a python script) to the font or glyph (or both) windows -- in the Tools menu"},
+    { "logWarning", PyFF_logError, METH_VARARGS, "Adds a non-fatal message to the Warnings window"},
+    { "postError", PyFF_postError, METH_VARARGS, "Pops up an error dialog box with the given title and message" },
+    { "postNotice", PyFF_postNotice, METH_VARARGS, "Pops up an notice window with the given title and message" },
+    { "openFilename", PyFF_openFilename, METH_VARARGS, "Pops up a file picker dialog asking the user for a filename to open" },
+    { "saveFilename", PyFF_saveFilename, METH_VARARGS, "Pops up a file picker dialog asking the user for a filename to use for saving" },
+    { "ask", PyFF_ask, METH_VARARGS, "Pops up a dialog asking the user a question and providing a set of buttons for the user to reply with" },
+    { "askChoices", PyFF_askChoices, METH_VARARGS, "Pops up a dialog asking the user a question and providing a scrolling list for the user to reply with" },
+    { "askString", PyFF_askString, METH_VARARGS, "Pops up a dialog asking the user a question and providing a textfield for the user to reply with" },
     {NULL}  /* Sentinel */
 };
 
@@ -9710,6 +10265,9 @@ extern int no_windowing_ui, running_script;
 
 void PyFF_Stdin(void) {
     no_windowing_ui = running_script = true;
+
+    PyFF_ProcessInitFiles();
+
     if ( isatty(fileno(stdin)))
 	PyRun_InteractiveLoop(stdin,"<stdin>");
     else
@@ -9722,6 +10280,9 @@ void PyFF_Main(int argc,char **argv,int start) {
     int i;
 
     no_windowing_ui = running_script = true;
+
+    PyFF_ProcessInitFiles();
+
     newargv= gcalloc(argc+1,sizeof(char *));
     arg = argv[start];
     if ( *arg=='-' && arg[1]=='-' ) ++arg;
@@ -9768,5 +10329,41 @@ void PyFF_FreeSC(SplineChar *sc) {
 	Py_DECREF( (PyObject *) (sc->python_sc_object));
     }
     Py_XDECREF( (PyObject *) (sc->python_data));
+}
+
+void PyFF_ProcessInitFiles(void) {
+#if defined( PREFIX )
+    DIR *diro;
+    struct dirent *ent;
+    char buffer[1025];
+    char *dir;
+    static int done = false;
+
+    if ( done )
+return;
+    done = true;
+
+    dir = PREFIX "/share/fontforge/python";
+
+    diro = opendir(dir);
+    if ( diro==NULL )		/* It's ok not to have any python init scripts */
+return;
+
+    while ( (ent = readdir(diro))!=NULL ) {
+	char *pt = strrchr(ent->d_name,'.');
+	if ( pt==NULL )
+    continue;
+	if ( strcmp(pt,".py")==0 ) {
+	    FILE *fp;
+	    sprintf( buffer, "%s/%s", dir, ent->d_name );
+	    fp = fopen(buffer,"r");
+	    if ( fp==NULL )
+    continue;
+	    PyRun_SimpleFile(fp,buffer);
+	    fclose(fp);
+	}
+    }
+    closedir(diro);
+#endif
 }
 #endif		/* _NO_PYTHON */

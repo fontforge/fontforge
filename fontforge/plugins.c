@@ -123,7 +123,7 @@ return;
     diro = opendir(dir);
     if ( diro==NULL )		/* It's ok not to have any plugins */
 return;
-    
+
     while ( (ent = readdir(diro))!=NULL ) {
 	if ( isdyname(ent->d_name) ) {
 	    sprintf( buffer, "%s/%s", dir, ent->d_name );
