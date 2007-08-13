@@ -294,7 +294,9 @@ struct tabdir {
 	uint16 dup_of;
 	uint16 orderingval;
     } tabs[MAX_TAB];		/* room for all the above tables */
-    struct taboff *ordered[MAX_TAB];
+				/* Not in any particular order. */
+    struct taboff *ordered[MAX_TAB];	/* Ordered the way the tables should be output in file */
+    struct taboff *alpha[MAX_TAB];	/* Ordered alphabetically by tag for the ttf header */
 };
 
 struct glyphhead {
