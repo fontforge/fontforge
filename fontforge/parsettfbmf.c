@@ -455,6 +455,10 @@ void TTFLoadBitmaps(FILE *ttf,struct ttfinfo *info,int onlyone) {
     /*  vertical data. So only pick out the ones we can use */
     bigval = biggest = -1;
     for ( i = j = 0; i<cnt; ++i ) {
+	if ( feof(ttf)) {
+	    IError( "End of file while reading embedded bitmaps" );
+    break;
+	}
 	good = true;
 	sizes[j].indexSubTableArrayOffset = getlong(ttf);
 	/* size = */ getlong(ttf);
