@@ -3359,6 +3359,14 @@ return;
     }
 }
 
+static void SCTickValidationState(SplineChar *sc) {
+    struct splinecharlist *dlist;
+
+    sc->validation_state = vs_unknown;
+    for ( dlist=sc->dependents; dlist!=NULL; dlist=dlist->next )
+	SCTickValidationState(dlist->sc);
+}
+
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 void CVSetCharChanged(CharView *cv,int changed) {
     FontView *fv = cv->fv;
@@ -3377,8 +3385,10 @@ void CVSetCharChanged(CharView *cv,int changed) {
 		fv->cidmaster->changed = true;
 	}
     } else {
-	if ( cv->drawmode==dm_fore && changed!=2 )
+	if ( cv->drawmode==dm_fore && changed==1 ) {
 	    sf->onlybitmaps = false;
+	    SCTickValidationState(cv->sc);
+	}
 	if ( (sc->changed==0) != (changed==0) ) {
 	    sc->changed = (changed!=0);
 	    FVToggleCharChanged(sc);
@@ -3492,6 +3502,7 @@ void _SCCharChangedUpdate(SplineChar *sc,int changed) {
 	sf->changed = true;
 	sf->changed_since_autosave = true;
 	sf->changed_since_xuidchanged = true;
+	SCTickValidationState(sc);
 	_SCHintsChanged(sc);
     }
     if ( sf->cidmaster!=NULL )

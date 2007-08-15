@@ -1080,6 +1080,8 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
 	    sc->top_accent_horiz!=TEX_UNDEF || sc->vert_variants!=NULL ||
 	    sc->horiz_variants!=NULL || sc->mathkern!=NULL )
 	SFDDumpCharMath(sfd,sc);
+    if ( sc->validation_state&vs_known )
+	fprintf( sfd, "Validated: %d\n", sc->validation_state );
 #if HANYANG
     if ( sc->compositionunit )
 	fprintf( sfd, "CompositionUnit: %d %d\n", sc->jamo, sc->varient );
@@ -3575,6 +3577,8 @@ return( NULL );
 	    current_layer = ly_fore;
 	} else if ( strmatch(tok,"MinimumDistance:")==0 ) {
 	    SFDGetMinimumDistances(sfd,sc);
+	} else if ( strmatch(tok,"Validated:")==0 ) {
+	    getsint(sfd,&sc->validation_state);
 	} else if ( strmatch(tok,"Back")==0 ) {
 	    while ( isspace(ch=getc(sfd)));
 	    ungetc(ch,sfd);

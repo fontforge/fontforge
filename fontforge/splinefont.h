@@ -1068,6 +1068,22 @@ struct mathkern {
     struct mathkernvertex bottom_left;
 };
 
+enum validation_state { vs_unknown = 0,
+	vs_known=0x01,				/* It has been validated */
+	vs_opencontour=0x02,
+	vs_selfintersects=0x04,
+	vs_wrongdirection=0x08,
+	vs_flippedreferences=0x10,		/* special case of wrong direction */
+	vs_missingextrema=0x20,
+	    /* Last two are postscript only */
+	vs_toomanypoints=0x40,
+	vs_toomanyhints=0x80,
+
+	vs_last = vs_toomanyhints,
+	vs_maskps = 0xfe,
+	vs_maskttf = 0x3e
+	};
+
 typedef struct splinechar {
     char *name;
     int unicodeenc;
@@ -1112,7 +1128,8 @@ typedef struct splinechar {
     unsigned int numberpointsbackards: 1;
     unsigned int instructions_out_of_date: 1;
     unsigned int complained_about_ptnums: 1;
-    /* 10 bits left (one more if we ignore compositionunit below) */
+    unsigned int vs_open: 1;
+    /* 9 bits left (one more if we ignore compositionunit below) */
 #if HANYANG
     unsigned int compositionunit: 1;
     int16 jamo, varient;
@@ -1155,6 +1172,8 @@ typedef struct splinechar {
     void *python_sc_object;
     void *python_data;
 #endif
+    uint16 validation_state;
+    uint16 old_vs;
 } SplineChar;
 
 #define TEX_UNDEF 0x7fff
@@ -1512,6 +1531,7 @@ typedef struct splinefont {
     struct MATH *MATH;
     uint8 sfd_version;			/* Used only when reading in an sfd file */
     struct gfi_data *fontinfo;
+    struct val_data *valwin;
 } SplineFont;
 
 /* I am going to simplify my life and not encourage intermediate designs */
@@ -2543,4 +2563,7 @@ extern struct math_constants_descriptor {
     char *message;
     int new_page;
 } math_constants_descriptor[];
+
+extern int SCValidate(SplineChar *sc);
+extern int SFValidate(SplineFont *sf, int force);
 #endif

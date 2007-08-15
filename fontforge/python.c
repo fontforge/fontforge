@@ -4587,6 +4587,10 @@ return( -1 );
 return( 0 );
 }
 
+static PyObject *PyFF_Glyph_get_validation_state(PyFF_Glyph *self,void *closure) {
+return( Py_BuildValue("i", self->sc->validation_state ));
+}
+
 static PyGetSetDef PyFF_Glyph_getset[] = {
     {"userdata",
 	 (getter)PyFF_Glyph_get_userdata, (setter)PyFF_Glyph_set_userdata,
@@ -4654,6 +4658,9 @@ static PyGetSetDef PyFF_Glyph_getset[] = {
     {"vhints",
 	 (getter)PyFF_Glyph_get_vhints, (setter)PyFF_Glyph_set_vhints,
 	 "The vertical hints of the glyph as a tuple, one entry per hint. Each hint is itself a tuple containing the start location and width of the hint", NULL},
+    {"validation_state",
+	 (getter)PyFF_Glyph_get_validation_state, (setter)PyFF_cant_set,
+	 "glyph's validation state", NULL},
     {NULL}  /* Sentinel */
 };
 
@@ -5287,6 +5294,15 @@ static PyObject *PyFFGlyph_selfIntersects(PyObject *self, PyObject *args) {
 return( ret );
 }
 
+static PyObject *PyFFGlyph_validate(PyObject *self, PyObject *args) {
+    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
+    PyObject *ret;
+
+    ret = SCValidate(sc) ? Py_True : Py_False;
+    Py_INCREF( ret );
+return( ret );
+}
+
 static struct flaglist trans_flags[] = {
     { "partialRefs", fvt_partialreftrans },
     { "round", fvt_round_to_int },
@@ -5492,6 +5508,7 @@ static PyMethodDef PyFF_Glyph_methods[] = {
     { "removePosSub", PyFFGlyph_removePosSub, METH_VARARGS, "Removes position/substitution data from the glyph"},
     { "round", (PyCFunction)PyFFGlyph_Round, METH_VARARGS, "Rounds point coordinates (and reference translations) to integers"},
     { "selfIntersects", (PyCFunction)PyFFGlyph_selfIntersects, METH_NOARGS, "Returns whether this glyph intersects itself" },
+    { "validate", (PyCFunction)PyFFGlyph_validate, METH_NOARGS, "Returns whether this glyph is valid for output (if not check validation_state" },
     { "simplify", (PyCFunction)PyFFGlyph_Simplify, METH_VARARGS, "Simplifies a glyph" },
     { "stroke", (PyCFunction)PyFFGlyph_Stroke, METH_VARARGS, "Strokes the countours in a glyph"},
     { "transform", (PyCFunction)PyFFGlyph_Transform, METH_VARARGS, "Transform a glyph by a 6 element matrix." },
@@ -9914,6 +9931,15 @@ return( NULL );
 return( Py_BuildValue("i", ret ));
 }
 
+static PyObject *PyFFFont_validate(PyObject *self, PyObject *args) {
+    SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
+    int force=false;
+
+    if ( !PyArg_ParseTuple(args,"|i",&force) )
+return( NULL );
+return( Py_BuildValue("i", SFValidate(sf,force)));
+}
+
 static PyMethodDef PyFF_Font_methods[] = {
     { "appendSFNTName", PyFFFont_appendSFNTName, METH_VARARGS, "Adds or replaces a name in the sfnt 'name' table. Takes three arguments, a language, a string id, and the string value" },
     { "close", PyFFFont_close, METH_NOARGS, "Frees up memory for the current font. Any python pointers to it will become invalid." },
@@ -9973,7 +9999,8 @@ static PyMethodDef PyFF_Font_methods[] = {
     { "canonicalContours", (PyCFunction) PyFFFont_canonicalContours, METH_NOARGS, "Orders the contours in the current glyph by the x coordinate of their leftmost point. (This can reduce the size of the postscript charstring needed to describe the glyph(s)."},
     { "canonicalStart", (PyCFunction) PyFFFont_canonicalStart, METH_NOARGS, "Sets the start point of all the contours of the current glyph to be the leftmost point on the contour."},
     { "cluster", (PyCFunction) PyFFFont_Cluster, METH_VARARGS, "Cluster the points of a glyph towards common values" },
-    { "compareGlyphs", (PyCFunction) PyFFFont_compareGlyphs, METH_VARARGS, "Compares two sets of glyphs"},
+    /*{ "compareGlyphs", (PyCFunction) PyFFFont_compareGlyphs, METH_VARARGS, "Compares two sets of glyphs"},*/
+    /* compareGlyphs assumes an old scripting context */
     { "correctDirection", (PyCFunction) PyFFFont_Correct, METH_NOARGS, "Orient a layer so that external contours are clockwise and internal counter clockwise." },
     { "intersect", (PyCFunction) PyFFFont_Intersect, METH_NOARGS, "Leaves the areas where the contours of a glyph overlap."},
     { "removeOverlap", (PyCFunction) PyFFFont_RemoveOverlap, METH_NOARGS, "Remove overlapping areas from a glyph"},
@@ -9981,6 +10008,7 @@ static PyMethodDef PyFF_Font_methods[] = {
     { "simplify", (PyCFunction)PyFFFont_Simplify, METH_VARARGS, "Simplifies a glyph" },
     { "stroke", (PyCFunction)PyFFFont_Stroke, METH_VARARGS, "Strokes the countours in a glyph"},
     { "transform", (PyCFunction)PyFFFont_Transform, METH_VARARGS, "Transform a glyph by a 6 element matrix." },
+    { "validate", PyFFFont_validate, METH_VARARGS, "Check whether a font is valid and return True if it is." },
 
     NULL
 };

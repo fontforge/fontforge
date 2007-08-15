@@ -66,6 +66,9 @@ static int nfnt_warned = false, post_warned = false;
 #define CID_TTF_OFM		1111
 #define CID_TTF_BrokenSize	1112
 
+#ifdef HAVE_PTHREAD_H
+#include <pthread.h>
+#endif
 
 struct gfc_data {
     int done;
@@ -81,6 +84,7 @@ struct gfc_data {
     GGadget *bmpsizes;
     GGadget *options;
     GGadget *rename;
+    GGadget *validate;
     int ps_flags;		/* The ordering of these flags fields is */
     int ttf_flags;		/*  important. We index into them */
     int otf_flags;		/*  don't reorder or put junk in between */
@@ -88,6 +92,11 @@ struct gfc_data {
     uint8 optset[3];
     SplineFont *sf;
     EncMap *map;
+#ifdef HAVE_PTHREAD_H
+    uint8 please_die_thread;
+    uint8 thread_active;
+    pthread_t validate_thread;
+#endif
 };
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
@@ -183,6 +192,7 @@ int old_ttf_flags = ttf_flag_otmode;
 int old_otf_flags = ttf_flag_otmode;
 int old_ps_flags = ps_flag_afm|ps_flag_round;
 int old_psotb_flags = ps_flag_afm;
+int old_validate = true;
 
 int oldformatstate = ff_pfb;
 int oldbitmapstate = 0;
@@ -2476,6 +2486,38 @@ return;
 		cur->map = EncMapFromEncoding(cur->sf,d->map->enc);
 	    }
 	}
+    } else if ( !d->sf->multilayer && !d->sf->strokedfont ) {
+#ifdef HAVE_PTHREAD_H
+	if ( d->thread_active ) {
+	    d->please_die_thread = true;
+	    pthread_join(d->validate_thread,NULL);
+	    d->thread_active = false;
+	}
+#endif
+	if ( oldformatstate == ff_ptype3 )
+	    /* No point in validating type3 fonts */;
+	else if ( (old_validate = GGadgetIsChecked(d->validate))) {
+	    int vs = SFValidate(d->sf,false);
+	    int mask = oldformatstate<=ff_cffcid ? vs_maskps :
+		 oldformatstate<=ff_ttfdfont ? vs_maskttf :
+		 oldformatstate<=ff_otfciddfont ? vs_maskps :
+		 oldformatstate==ff_svg ? vs_maskttf :
+		 d->sf->order2 ? vs_maskttf : vs_maskps;
+	    if ( vs&mask ) {
+		const char *rsb[3];
+
+		rsb[0] =  _("_Review");
+		rsb[1] =  _("_Save");
+		rsb[2]=NULL;
+		if ( gwwv_ask(_("Errors detected"),rsb,0,0,_("The font contains errors.\nWould you like to review the errors or save the font anyway?"))==0 ) {
+		    d->done = true;
+		    d->ret = false;
+		    SFValidationWindow(d->sf,oldformatstate);
+return;
+		}
+		/* Ok... they want to proceed */
+	    }
+	}
     }
 
     switch ( d->sod_which ) {
@@ -2858,13 +2900,38 @@ static unichar_t *uStyleName(SplineFont *sf) {
 return( uc_copy(buffer+1));
 }
 
+#ifdef HAVE_PTHREAD_H
+static void *BackgroundValidate(void *_d) {
+    struct gfc_data *d = _d;
+    SplineFont *sf = d->sf, *ssf;
+    int k, gid;
+    SplineChar *sc;
+
+    if ( sf->cidmaster!=NULL )
+	sf = sf->cidmaster;
+    k=0;
+    do {
+	ssf = sf->subfontcnt==0 ? sf : sf->subfonts[k];
+	for ( gid = 0; gid<ssf->glyphcnt; ++gid ) if ( (sc=ssf->glyphs[gid])!=NULL ) {
+	    if ( d->please_die_thread )
+pthread_exit(NULL);
+	    if ( !(sc->validation_state&vs_known) )
+		SCValidate(sc);
+	}
+	++k;
+    } while ( k<sf->subfontcnt );
+
+return( NULL );
+}
+#endif
+
 typedef SplineFont *SFArray[48];
 
 int SFGenerateFont(SplineFont *sf,int family,EncMap *map) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[18+2*48+2], *varray[13], *hvarray[13], *famarray[3*50+1],
+    GGadgetCreateData gcd[19+2*48+2], *varray[13], *hvarray[18], *famarray[3*50+1],
 	    *harray[10], boxes[5];
     GTextInfo label[18+2*48+2];
     struct gfc_data d;
@@ -2881,6 +2948,16 @@ int SFGenerateFont(SplineFont *sf,int family,EncMap *map) {
     char **nlnames;
     int cnt, any;
     GTextInfo *namelistnames;
+
+    memset(&d,'\0',sizeof(d));
+    d.sf = sf;
+#ifdef HAVE_PTHREAD_H
+    /* If I can't create the thread, that's not a real problem. The font just*/
+    /*  won't be prevalidated */
+    if ( !sf->multilayer && !sf->strokedfont )
+	if ( pthread_create(&d.validate_thread,NULL,BackgroundValidate,(void *) &d)==0 )
+	    d.thread_active = true;
+#endif
 
     if ( !done ) {
 	done = true;
@@ -3270,7 +3347,25 @@ return( 0 );
     }
     gcd[k++].gd.u.list = namelistnames;
     free(nlnames);
-    hvarray[10] = &gcd[k-1]; hvarray[11] = NULL; hvarray[12] = NULL;
+    hvarray[10] = &gcd[k-1]; hvarray[11] = NULL;
+
+    if ( !family ) {
+	label[k].text = (unichar_t *) _("Validate Before Saving");
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 8; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+24+6;
+	if ( sf->multilayer || sf->strokedfont )
+	    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+	else if ( old_validate )
+	    gcd[k].gd.flags = (gg_enabled | gg_visible | gg_cb_on | gg_utf8_popup);
+	else
+	    gcd[k].gd.flags = (gg_enabled | gg_visible | gg_utf8_popup);
+	gcd[k].gd.popup_msg = (unichar_t *) _("Check the glyph outlines for standard errors before saving\nThis can be slow.");
+	gcd[k++].creator = GCheckBoxCreate;
+	hvarray[12] = &gcd[k-1]; hvarray[13] = GCD_ColSpan; hvarray[14] = GCD_ColSpan;
+	hvarray[15] = NULL; hvarray[16] = NULL;
+    } else
+	hvarray[12] = NULL;
 
     boxes[3].gd.flags = gg_enabled|gg_visible;
     boxes[3].gd.u.boxelements = hvarray;
@@ -3381,7 +3476,6 @@ return( 0 );
 	GGadgetSetVisible(tf,ofs!=ff_pfbmacbin);
 #endif
 
-    memset(&d,'\0',sizeof(d));
     d.sf = sf;
     d.map = map;
     d.family = family;
@@ -3391,6 +3485,7 @@ return( 0 );
     d.bmptype = gcd[8].ret;
     d.bmpsizes = gcd[9].ret;
     d.rename = gcd[11].ret;
+    d.validate = gcd[12].ret;
     d.gw = gw;
 
     d.ps_flags = old_ps_flags;
@@ -3403,6 +3498,13 @@ return( 0 );
     while ( !d.done )
 	GDrawProcessOneEvent(NULL);
     GDrawDestroyWindow(gw);
+#ifdef HAVE_PTHREAD_H
+    if ( d.thread_active ) {
+	d.please_die_thread = true;
+	pthread_join(d.validate_thread,NULL);
+	d.thread_active = false;
+    }
+#endif
 return(d.ret);
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
