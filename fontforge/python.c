@@ -10370,19 +10370,10 @@ void PyFF_FreeSC(SplineChar *sc) {
     Py_XDECREF( (PyObject *) (sc->python_data));
 }
 
-void PyFF_ProcessInitFiles(void) {
-#if defined( PREFIX )
+static void LoadFilesInPythonInitDir(char *dir) {
     DIR *diro;
     struct dirent *ent;
     char buffer[1025];
-    char *dir;
-    static int done = false;
-
-    if ( done )
-return;
-    done = true;
-
-    dir = PREFIX "/share/fontforge/python";
 
     diro = opendir(dir);
     if ( diro==NULL )		/* It's ok not to have any python init scripts */
@@ -10403,6 +10394,25 @@ return;
 	}
     }
     closedir(diro);
+}
+
+void PyFF_ProcessInitFiles(void) {
+    static int done = false;
+    char buffer[1025];
+
+    if ( done )
+return;
+    done = true;
+
+#if defined( PREFIX )
+    /* Load the system directory */
+    LoadFilesInPythonInitDir( PREFIX "/share/fontforge/python" );
 #endif
+    /* Load the user directory */
+    if ( getPfaEditDir(buffer)!=NULL ) {
+	strcpy(buffer,getPfaEditDir(buffer));
+	strcat(buffer,"/python");
+	LoadPluginDir(buffer);
+    }
 }
 #endif		/* _NO_PYTHON */
