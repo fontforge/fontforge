@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 28-Jun-2001 -->
-  <!-- AP: Last modified: 24-Mar-2007 -->
+  <!-- AP: Last modified: 15-Aug-2007 -->
   <TITLE>Finding common font problems automagically</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -126,7 +126,7 @@
   less than the "Irrelevant Factor" times the distance between the two end
   points of the spline controlled by this control point.<BR Clear=Right>
   <P>
-  <IMG SRC="findprobs-paths.png" WIDTH="307" HEIGHT="431" ALIGN="Right"><STRONG><BIG>Open
+  <IMG SRC="findprobs-paths.png" WIDTH="307" HEIGHT="439" ALIGN="Right"><STRONG><BIG>Open
   Paths</BIG></STRONG>
   <P>
   All of your paths should be closed, that is they shouldn't have any end points
@@ -166,6 +166,12 @@
   Currently the command will report the same error several times if you do
   not fix the problem. That's sort of a bug, but I don't see an easy way around
   it yet.
+  <H3>
+    <STRONG>Check Missing Extrema</STRONG>
+  </H3>
+  <P>
+  Both PostScript and TrueType would like you to have points at the maxima
+  and minima (the extrema) of a path. This checks that you do.
   <H3>
     <STRONG>More Points Than</STRONG>
   </H3>

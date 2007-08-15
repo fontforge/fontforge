@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 9-Apr-2006 -->
-  <!-- AP: Last modified: 22-Jul-2007 -->
+  <!-- AP: Last modified: 15-Aug-2007 -->
   <TITLE>Scripting functions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -1441,6 +1441,10 @@ GenerateFamily("All.otf.dfont","dfont",16,a)
 	      <LI>
 		"BBox" returns a 4 element array containing [minimum-x-value, minimum-y-value,
 		maximum-x-value, maximum-y-value] of the glyph.
+	      <LI>
+		"ValidationState" returns a bitmask of the glyph's validation state. (See
+		the <A HREF="python.html#validation-state">ff python docs</A> for the bit
+		break down)
 	      <LI>
 		"Kern" (there must be a second argument here which specifies another glyph
 		as in Select()) Returns the kern offset between the two glyphs (or 0 if none).
@@ -3122,6 +3126,13 @@ SetGasp([8,2,16,1,65535,3])
     <TR VALIGN=TOP>
       <TD BGCOLOR=yellow><A NAME="V">V</A></TD>
       <TD><DL>
+	  <DT>
+	    <A NAME="VFlip"></A>Validate([force])
+	  <DD>
+	    Validates the font and returns a bitmask of errors. If the font passes it
+	    will return 0. Normally each glyph will cache its validation_state and it
+	    will not be recalculated. If you pass a non-zero argument to the routine
+	    then it will force recalculation of each glyph -- this can be slow.
 	  <DT>
 	    <A NAME="VFlip">V</A>Flip([about-y])
 	  <DD>
