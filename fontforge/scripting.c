@@ -7222,6 +7222,8 @@ return;
 	    c->return_val.u.ival = sc->layer_cnt;
 	else if ( strmatch( c->a.vals[1].u.sval,"PointCount")==0 )
 	    c->return_val.u.ival = SCNumberPoints(sc);
+	else if ( strmatch( c->a.vals[1].u.sval,"ValidationState")==0 )
+	    c->return_val.u.ival = sc->validation_state;
 	else if ( strmatch( c->a.vals[1].u.sval,"RefCount")==0 ) {
 	    for ( i=0, layer=ly_fore; layer<sc->layer_cnt; ++layer )
 		for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next, ++i )
@@ -7640,6 +7642,21 @@ static void bCompareFonts(Context *c) {
     fclose( diffs );
 }
 
+static void bValidate(Context *c) {
+    int force = false;
+
+    if ( c->a.argc>2 )
+	ScriptError( c, "Wrong number of arguments");
+    if ( c->a.argc==2 ) {
+	if ( c->a.vals[1].type!=v_int )
+	    ScriptError( c, "Bad type for argument");
+	force = c->a.vals[1].u.ival;
+    }
+
+    c->return_val.type = v_int;
+    c->return_val.u.ival = SFValidate(c->curfv->sf, force );
+}
+
 static struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[] = {
 /* Generic utilities */
     { "Print", bPrint, 1 },
@@ -7953,6 +7970,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "SetGlyphTeX", bSetGlyphTeX },
     { "CompareGlyphs", bCompareGlyphs },
     { "CompareFonts", bCompareFonts },
+    { "Validate", bValidate },
     { NULL }
 };
 

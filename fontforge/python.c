@@ -5301,11 +5301,8 @@ return( ret );
 
 static PyObject *PyFFGlyph_validate(PyObject *self, PyObject *args) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc;
-    PyObject *ret;
 
-    ret = SCValidate(sc) ? Py_True : Py_False;
-    Py_INCREF( ret );
-return( ret );
+return( Py_BuildValue( "i", SCValidate(sc)) );
 }
 
 static struct flaglist trans_flags[] = {
@@ -9914,6 +9911,7 @@ return( NULL );
 Py_RETURN( self );
 }
 
+#if 0
 static PyObject *PyFFFont_compareGlyphs(PyFF_Font *self, PyObject *args) {
     /* Compare selected glyphs against the contents of the clipboard	*/
     /* Three comparisons:						*/
@@ -9935,6 +9933,7 @@ return( NULL );
 
 return( Py_BuildValue("i", ret ));
 }
+#endif
 
 static PyObject *PyFFFont_validate(PyObject *self, PyObject *args) {
     SplineFont *sf = ((PyFF_Font *) self)->fv->sf;
