@@ -2498,11 +2498,7 @@ return;
 	    /* No point in validating type3 fonts */;
 	else if ( (old_validate = GGadgetIsChecked(d->validate))) {
 	    int vs = SFValidate(d->sf,false);
-	    int mask = oldformatstate<=ff_cffcid ? vs_maskps :
-		 oldformatstate<=ff_ttfdfont ? vs_maskttf :
-		 oldformatstate<=ff_otfciddfont ? vs_maskps :
-		 oldformatstate==ff_svg ? vs_maskttf :
-		 d->sf->order2 ? vs_maskttf : vs_maskps;
+	    int mask = VSMaskFromFormat(d->sf,oldformatstate);
 	    if ( vs&mask ) {
 		const char *rsb[3];
 

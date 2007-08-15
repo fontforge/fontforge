@@ -1075,13 +1075,17 @@ enum validation_state { vs_unknown = 0,
 	vs_wrongdirection=0x08,
 	vs_flippedreferences=0x10,		/* special case of wrong direction */
 	vs_missingextrema=0x20,
-	    /* Last two are postscript only */
-	vs_toomanypoints=0x40,
-	vs_toomanyhints=0x80,
+	vs_missingglyphnameingsub=0x40,
+	    /* Last few are postscript only */
+	vs_toomanypoints=0x80,
+	vs_toomanyhints=0x100,
+	vs_badglyphname=0x200,
 
-	vs_last = vs_toomanyhints,
-	vs_maskps = 0xfe,
-	vs_maskttf = 0x3e
+	vs_last = vs_badglyphname,
+	vs_maskps = 0x3fe,
+	vs_maskcid = 0x1fe,
+	vs_maskttf = 0x7e,
+	vs_maskfindproblems = 0x1be
 	};
 
 typedef struct splinechar {
@@ -2566,4 +2570,5 @@ extern struct math_constants_descriptor {
 
 extern int SCValidate(SplineChar *sc);
 extern int SFValidate(SplineFont *sf, int force);
+extern int VSMaskFromFormat(SplineFont *sf, enum fontformat format);
 #endif

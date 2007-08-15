@@ -39,7 +39,6 @@ struct problems {
     unsigned int openpaths: 1;
     unsigned int intersectingpaths: 1;
     unsigned int pointstooclose: 1;
-    /*unsigned int missingextrema: 1;*/
     unsigned int xnearval: 1;
     unsigned int ynearval: 1;
     unsigned int ynearstd: 1;		/* baseline, xheight, cap, ascent, descent, etc. */
@@ -49,6 +48,7 @@ struct problems {
     unsigned int hintwithnopt: 1;
     unsigned int ptnearhint: 1;
     unsigned int hintwidthnearval: 1;
+    unsigned int missingextrema: 1;
     unsigned int direction: 1;
     unsigned int flippedrefs: 1;
     unsigned int cidmultiple: 1;
@@ -102,7 +102,7 @@ struct problems {
 };
 
 static int openpaths=1, pointstooclose=1/*, missing=0*/, doxnear=0, doynear=0;
-static int intersectingpaths=1;
+static int intersectingpaths=1, missingextrema=1;
 static int doynearstd=1, linestd=1, cpstd=1, cpodd=1, hintnopt=0, ptnearhint=0;
 static int hintwidth=0, direction=1, flippedrefs=1, bitmaps=0;
 static int cidblank=0, cidmultiple=1, advancewidth=0, vadvancewidth=0;
@@ -166,6 +166,7 @@ static double irrelevantfactor = .005;
 #define CID_RefBadTransformTTF	1043
 #define CID_RefBadTransformPS	1044
 #define CID_MixedContoursRefs	1045
+#define CID_MissingExtrema	1046
 
 
 static void FixIt(struct problems *p) {
@@ -271,6 +272,9 @@ return;
 	sp->nextcp.y += p->expected-sp->me.y;
 	sp->me.y = p->expected;
 	ncp_changed = pcp_changed = true;
+    } else if ( p->explaining==_("The selected spline attains its extrema somewhere other than its endpoints") ) {
+	SplineCharAddExtrema(p->sc,p->sc->layers[ly_fore].splines,
+		ae_between_selected,p->sc->parent->ascent+p->sc->parent->descent);
     } else if ( p->explaining==_("The selected line segment is nearly horizontal") ) {
 	if ( sp->me.y!=p->found ) {
 	    sp=sp->next->to;
@@ -517,6 +521,7 @@ return;
 	    explain==_("The control point above the selected point is nearly vertical") || explain==_("The control point below the selected point is nearly vertical") ||
 	    explain==_("The control point right of the selected point is nearly vertical") || explain==_("The control point left of the selected point is nearly vertical") ||
 	    explain==_("This path should have been drawn in a counter-clockwise direction") || explain==_("This path should have been drawn in a clockwise direction") ||
+	    explain==_("The selected spline attains its extrema somewhere other than its endpoints") ||
 	    explain==_("This glyph's advance width is different from the standard width") ||
 	    explain==_("This glyph's vertical advance is different from the standard width");
     GGadgetSetVisible(GWidgetGetControl(p->explainw,CID_Fix),fixable);
@@ -1445,6 +1450,46 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	}
     }
 
+    if ( p->missingextrema && !p->finish ) {
+	SplineSet *ss;
+	Spline *s, *first;
+	double len2, bound2 = (p->sc->parent->ascent + p->sc->parent->descent)/100.0;
+	double x,y;
+	extended extrema[4];
+
+	bound2 *= bound2;
+	for ( ss = sc->layers[ly_fore].splines; ss!=NULL && !p->finish; ss=ss->next ) {
+	    first = NULL;
+	    for ( s=ss->first->next ; s!=NULL && s!=first && !p->finish; s=s->to->next ) {
+		if ( first==NULL )
+		    first = s;
+		/* rough appoximation to spline's length */
+		x = (s->from->nextcp.x-s->from->me.x);
+		y = (s->from->nextcp.y-s->from->me.y);
+		len2 = x*x + y*y;
+		x = (s->to->prevcp.x-s->from->nextcp.x);
+		y = (s->to->prevcp.y-s->from->nextcp.y);
+		len2 += x*x + y*y;
+		x = (s->to->me.x-s->to->prevcp.x);
+		y = (s->to->me.y-s->to->prevcp.y);
+		len2 += x*x + y*y;
+		/* short splines (serifs) need not to have points at their extrema */
+		/*  But how do we define "short"? */
+		if ( len2>bound2 && Spline2DFindExtrema(s,extrema)>0 ) {
+		    s->from->selected = true;
+		    s->to->selected = true;
+		    ExplainIt(p,sc,_("The selected spline attains its extrema somewhere other than its endpoints"),0,0);
+		    if ( p->ignorethis ) {
+			p->missingextrema = false;
+	    break;
+		    }
+		}
+	    }
+	    if ( !p->missingextrema )
+	break;
+	}
+    }
+
     if ( p->flippedrefs && !p->finish && ( cv==NULL || cv->drawmode==dm_fore )) {
 	RefChar *ref;
 	for ( ref = sc->layers[ly_fore].refs; ref!=NULL ; ref = ref->next )
@@ -2257,7 +2302,7 @@ static int Prob_DoAll(GGadget *g, GEvent *e) {
 	int set = GGadgetGetCid(g)==CID_SetAll;
 	GWindow gw = GGadgetGetWindow(g);
 	static int cbs[] = { CID_OpenPaths, CID_IntersectingPaths,
-	    CID_PointsTooClose, CID_XNear,
+	    CID_PointsTooClose, CID_XNear, CID_MissingExtrema,
 	    CID_YNear, CID_YNearStd, CID_HintNoPt, CID_PtNearHint,
 	    CID_HintWidthNear, CID_LineStd, CID_Direction, CID_CpStd,
 	    CID_CpOdd, CID_FlippedRefs, CID_Bitmaps, CID_AdvanceWidth,
@@ -2299,6 +2344,7 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	hintnopt = p->hintwithnopt = GGadgetIsChecked(GWidgetGetControl(gw,CID_HintNoPt));
 	ptnearhint = p->ptnearhint = GGadgetIsChecked(GWidgetGetControl(gw,CID_PtNearHint));
 	hintwidth = p->hintwidthnearval = GGadgetIsChecked(GWidgetGetControl(gw,CID_HintWidthNear));
+	missingextrema = p->missingextrema = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingExtrema));
 	direction = p->direction = GGadgetIsChecked(GWidgetGetControl(gw,CID_Direction));
 	flippedrefs = p->flippedrefs = GGadgetIsChecked(GWidgetGetControl(gw,CID_FlippedRefs));
 	bitmaps = p->bitmaps = GGadgetIsChecked(GWidgetGetControl(gw,CID_Bitmaps));
@@ -2359,7 +2405,7 @@ return( true );
 		direction || p->cidmultiple || p->cidblank || p->flippedrefs ||
 		p->bitmaps || p->advancewidth || p->vadvancewidth || p->stem3 ||
 		p->irrelevantcontrolpoints || p->badsubs || p->missingglyph ||
-		p->toomanypoints || p->toomanyhints ||
+		p->toomanypoints || p->toomanyhints || p->missingextrema ||
 		p->toodeeprefs || multuni || multname ||
 		p->ptmatchrefsoutofdate || p->refsbadtransformttf ||
 		p->mixedcontoursrefs || p->refsbadtransformps ) {
@@ -2368,6 +2414,31 @@ return( true );
 	p->done = true;
     }
 return( true );
+}
+
+static void DummyFindProblems(CharView *cv) {
+    struct problems p;
+
+    memset(&p,0,sizeof(p));
+    p.fv = cv->fv; p.cv=cv;
+    p.lastcharopened = cv->sc;
+
+    p.openpaths = true;
+    p.intersectingpaths = true;
+    p.direction = true;
+    p.flippedrefs = true;
+    p.missingextrema = true;
+    p.toomanypoints = true;
+    p.toomanyhints = true;
+
+    p.pointsmax = 1500;
+    p.hintsmax = 96;
+
+    p.explain = true;
+    
+    DoProbs(&p);
+    if ( p.explainw!=NULL )
+	GDrawDestroyWindow(p.explainw);
 }
 
 static int Prob_Cancel(GGadget *g, GEvent *e) {
@@ -2621,28 +2692,39 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pagcd[3].gd.cid = CID_Direction;
     pagcd[3].creator = GCheckBoxCreate;
 
-    palabel[4].text = (unichar_t *) _("_More points than:");
+    palabel[4].text = (unichar_t *) _("Check _missing extrema");
     palabel[4].text_is_1byte = true;
     palabel[4].text_in_resource = true;
     pagcd[4].gd.label = &palabel[4];
-    pagcd[4].gd.mnemonic = 'r';
-    pagcd[4].gd.pos.x = 3; pagcd[4].gd.pos.y = pagcd[3].gd.pos.y+21; 
+    pagcd[4].gd.pos.x = 3; pagcd[4].gd.pos.y = pagcd[3].gd.pos.y+17; 
     pagcd[4].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    if ( toomanypoints ) pagcd[4].gd.flags |= gg_cb_on;
-    pagcd[4].gd.popup_msg = (unichar_t *) _("The PostScript Language Reference Manual (Appendix B) says that\nan interpreter need not support paths with more than 1500 points.\nI think this count includes control points. From PostScript's point\nof view, all the contours in a character make up one path. Modern\ninterpreters tend to support paths with more points than this limit.\n(Note a truetype font after conversion to PS will contain\ntwice as many control points)");
-    pagcd[4].gd.cid = CID_TooManyPoints;
+    if ( missingextrema ) pagcd[4].gd.flags |= gg_cb_on;
+    pagcd[4].gd.popup_msg = (unichar_t *) _("Postscript and TrueType require that when a path\nreaches its maximum or minimum position\nthere must be a point at that location.");
+    pagcd[4].gd.cid = CID_MissingExtrema;
     pagcd[4].creator = GCheckBoxCreate;
 
-    sprintf( pmax, "%d", pointsmax );
-    palabel[5].text = (unichar_t *) pmax;
+    palabel[5].text = (unichar_t *) _("_More points than:");
     palabel[5].text_is_1byte = true;
+    palabel[5].text_in_resource = true;
     pagcd[5].gd.label = &palabel[5];
-    pagcd[5].gd.pos.x = 105; pagcd[5].gd.pos.y = pagcd[4].gd.pos.y-3;
-    pagcd[5].gd.pos.width = 50; 
+    pagcd[5].gd.mnemonic = 'r';
+    pagcd[5].gd.pos.x = 3; pagcd[5].gd.pos.y = pagcd[4].gd.pos.y+21; 
     pagcd[5].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    if ( toomanypoints ) pagcd[5].gd.flags |= gg_cb_on;
     pagcd[5].gd.popup_msg = (unichar_t *) _("The PostScript Language Reference Manual (Appendix B) says that\nan interpreter need not support paths with more than 1500 points.\nI think this count includes control points. From PostScript's point\nof view, all the contours in a character make up one path. Modern\ninterpreters tend to support paths with more points than this limit.\n(Note a truetype font after conversion to PS will contain\ntwice as many control points)");
-    pagcd[5].gd.cid = CID_PointsMax;
-    pagcd[5].creator = GTextFieldCreate;
+    pagcd[5].gd.cid = CID_TooManyPoints;
+    pagcd[5].creator = GCheckBoxCreate;
+
+    sprintf( pmax, "%d", pointsmax );
+    palabel[6].text = (unichar_t *) pmax;
+    palabel[6].text_is_1byte = true;
+    pagcd[6].gd.label = &palabel[6];
+    pagcd[6].gd.pos.x = 105; pagcd[6].gd.pos.y = pagcd[5].gd.pos.y-3;
+    pagcd[6].gd.pos.width = 50; 
+    pagcd[6].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    pagcd[6].gd.popup_msg = (unichar_t *) _("The PostScript Language Reference Manual (Appendix B) says that\nan interpreter need not support paths with more than 1500 points.\nI think this count includes control points. From PostScript's point\nof view, all the contours in a character make up one path. Modern\ninterpreters tend to support paths with more points than this limit.\n(Note a truetype font after conversion to PS will contain\ntwice as many control points)");
+    pagcd[6].gd.cid = CID_PointsMax;
+    pagcd[6].creator = GTextFieldCreate;
 
 /* ************************************************************************** */
 
@@ -3115,6 +3197,34 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
+/* ************************************************************************** */
+/* ***************************** Validation code **************************** */
+/* ************************************************************************** */
+
+static int SFValidNameList(SplineFont *sf, char *list) {
+    char *start, *pt;
+    int ch;
+    SplineChar *sc;
+
+    for ( start = list ; ; ) {
+	while ( *start==' ' ) ++start;
+	if ( *start=='\0' )
+return( true );
+	for ( pt=start; *pt!=':' && *pt!=' ' && *pt!='\0' ; ++pt );
+	ch = *pt;
+	if ( ch==' ' || ch=='\0' )
+return( -1 );
+	if ( sf!=NULL ) {
+	    *pt = '\0';
+	    sc = SFGetChar(sf,-1,start);
+	    *pt = ch;
+	    if ( sc==NULL )
+return( -1 );
+	}
+	start = pt;
+    }
+}
+
 int SCValidate(SplineChar *sc) {
     SplineSet *ss;
     Spline *s1, *s2, *s, *first;
@@ -3126,8 +3236,68 @@ int SCValidate(SplineChar *sc) {
     SplineSet *base = LayerAllSplines(&sc->layers[ly_fore]);
     double len2, bound2, x, y;
     extended extrema[4];
+    PST *pst;
+    extern int allow_utf8_glyphnames;
 
     sc->validation_state = 0;
+
+    if ( !allow_utf8_glyphnames ) {
+	if ( strlen(sc->name)>31 )
+	    sc->validation_state |= vs_badglyphname|vs_known;
+	else {
+	    char *pt;
+	    for ( pt = sc->name; *pt; ++pt ) {
+		if (( *pt>='A' && *pt<='Z' ) ||
+			(*pt>='a' && *pt<='z' ) ||
+			(*pt>='0' && *pt<='9' ) ||
+			*pt == '.' || *pt == '_' )
+		    /* That's ok */;
+		else {
+		    sc->validation_state |= vs_badglyphname|vs_known;
+	    break;
+		}
+	    }
+	}
+    }
+
+    for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
+	if ( pst->type==pst_substitution &&
+		!SCWorthOutputting(SFGetChar(sc->parent,-1,pst->u.subs.variant))) {
+	    sc->validation_state |= vs_badglyphname|vs_known;
+    break;
+	} else if ( pst->type==pst_pair &&
+		!SCWorthOutputting(SFGetChar(sc->parent,-1,pst->u.pair.paired))) {
+	    sc->validation_state |= vs_badglyphname|vs_known;
+    break;
+	} else if ( (pst->type==pst_alternate || pst->type==pst_multiple || pst->type==pst_ligature) &&
+		!SFValidNameList(sc->parent,pst->u.mult.components)) {
+	    sc->validation_state |= vs_badglyphname|vs_known;
+    break;
+	}
+    }
+    if ( sc->vert_variants!=NULL && sc->vert_variants->variants != NULL &&
+	    !SFValidNameList(sc->parent,sc->vert_variants->variants) )
+	sc->validation_state |= vs_badglyphname|vs_known;
+    else if ( sc->horiz_variants!=NULL && sc->horiz_variants->variants != NULL &&
+	    !SFValidNameList(sc->parent,sc->horiz_variants->variants) )
+	sc->validation_state |= vs_badglyphname|vs_known;
+    else {
+	int i;
+	if ( sc->vert_variants!=NULL ) {
+	    for ( i=0; i<sc->vert_variants->part_cnt; ++i ) {
+		if ( !SCWorthOutputting(SFGetChar(sc->parent,-1,sc->vert_variants->parts[i].component)))
+		    sc->validation_state |= vs_badglyphname|vs_known;
+	    break;
+	    }
+	}
+	if ( sc->horiz_variants!=NULL ) {
+	    for ( i=0; i<sc->horiz_variants->part_cnt; ++i ) {
+		if ( !SCWorthOutputting(SFGetChar(sc->parent,-1,sc->horiz_variants->parts[i].component)))
+		    sc->validation_state |= vs_badglyphname|vs_known;
+	    break;
+	    }
+	}
+    }
 
     for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
 	/* TrueType uses single points to move things around so ignore them */
@@ -3213,7 +3383,7 @@ int SCValidate(SplineChar *sc) {
     break_2_loops:;
 
     sc->validation_state |= vs_known;
-return( sc->validation_state==vs_known );
+return( sc->validation_state&~vs_known );
 }
 
 int SFValidate(SplineFont *sf, int force) {
@@ -3284,6 +3454,18 @@ struct val_data {
     CharView *lastcv;
 };
 
+static char *vserrornames[] = {
+    N_("Open Contour"),
+    N_("Self Intersecting"),
+    N_("Wrong Direction"),
+    N_("Flipped References"),
+    N_("Missing Points at Extrema"),
+    N_("Unknown glyph referenced in GSUB/GPOS/MATH"),
+    N_("Too Many Points"),
+    N_("Too Many Hints"),
+    N_("Bad Glyph Name")
+};
+
 static int VW_FindLine(struct val_data *vw,int line, int *skips) {
     int gid,k, cidmax = vw->cidmax;
     SplineFont *sf = vw->sf;
@@ -3320,6 +3502,41 @@ return( gid );
 	}
     }
     *skips = 0;
+return( -1 );
+}
+
+static int VW_FindSC(struct val_data *vw,SplineChar *sought) {
+    int gid,k, cidmax = vw->cidmax;
+    SplineFont *sf = vw->sf;
+    SplineFont *sub;
+    SplineChar *sc;
+    int sofar;
+    int bit;
+
+    sofar = 0;
+    for ( gid=0; gid<cidmax ; ++gid ) {
+	if ( sf->subfontcnt==0 )
+	    sc = sf->glyphs[gid];
+	else {
+	    for ( k=0; k<sf->subfontcnt; ++k ) {
+		sub = sf->subfonts[k];
+		if ( gid<sub->glyphcnt && (sc = sub->glyphs[gid])!=NULL )
+	    break;
+	    }
+	}
+	/* Ignore it if it has not been validated */
+	/* Ignore it if it is good */
+	if ( sc!=NULL && (sc->validation_state&vs_known) &&
+		(sc->validation_state&vw->mask)!=0 ) {
+	    if ( sc==sought )
+return( sofar );
+	    ++sofar;
+	    if ( sc->vs_open )
+		for ( bit=(vs_known<<1) ; bit<=vs_last; bit<<=1 )
+		    if ( (bit&vw->mask) && (sc->validation_state&bit) )
+			++sofar;
+	}
+    }
 return( -1 );
 }
 
@@ -3440,6 +3657,29 @@ static void VWMenuConnect(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
+static void VWMenuInlineRefs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    struct val_data *vw = (struct val_data *) GDrawGetUserData(gw);
+    SplineChar *sc = vw->sc;
+    int vs = sc->validation_state;
+    int changed = false;
+    RefChar *ref, *refnext;
+
+    for ( ref= sc->layers[ly_fore].refs; ref!=NULL; ref=refnext ) {
+	refnext = ref->next;
+	if ( !changed )
+	    SCPreserveState(sc,false);
+	changed = true;
+	SCRefToSplines(sc,ref);
+    }
+    if ( changed ) {
+	SCCharChangedUpdate(sc);
+
+	SCValidate(vw->sc);
+	if ( vs != vw->sc->validation_state )
+	    VW_Remetric(vw);
+    }
+}
+
 static void VWMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     struct val_data *vw = (struct val_data *) GDrawGetUserData(gw);
     SplineChar *sc = vw->sc;
@@ -3453,6 +3693,32 @@ static void VWMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SCValidate(vw->sc);
     if ( vs != vw->sc->validation_state )
 	VW_Remetric(vw);
+}
+
+static void VWMenuInlineFlippedRefs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    struct val_data *vw = (struct val_data *) GDrawGetUserData(gw);
+    SplineChar *sc = vw->sc;
+    int vs = sc->validation_state;
+    int changed = false;
+    RefChar *ref, *refnext;
+
+    for ( ref= sc->layers[ly_fore].refs; ref!=NULL; ref=refnext ) {
+	refnext = ref->next;
+	if ( ref->transform[0]*ref->transform[3]<0 ||
+		(ref->transform[0]==0 && ref->transform[1]*ref->transform[2]>0)) {
+	    if ( !changed )
+		SCPreserveState(sc,false);
+	    changed = true;
+	    SCRefToSplines(sc,ref);
+	}
+    }
+    if ( changed ) {
+	SCCharChangedUpdate(sc);
+
+	SCValidate(vw->sc);
+	if ( vs != vw->sc->validation_state )
+	    VW_Remetric(vw);
+    }
 }
 
 static void VWMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -3470,7 +3736,7 @@ static void VWMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	VW_Remetric(vw);
 }
 
-static void VWMenuExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+static void VWMenuGoodExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     struct val_data *vw = (struct val_data *) GDrawGetUserData(gw);
     SplineFont *sf = vw->sf;
     int emsize = sf->ascent+sf->descent;
@@ -3479,6 +3745,37 @@ static void VWMenuExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     SCPreserveState(sc,false);
     SplineCharAddExtrema(sc,sc->layers[ly_fore].splines,ae_only_good,emsize);
+    SCCharChangedUpdate(sc);
+
+    SCValidate(vw->sc);
+    if ( vs != vw->sc->validation_state )
+	VW_Remetric(vw);
+}
+
+static void VWMenuAllExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    struct val_data *vw = (struct val_data *) GDrawGetUserData(gw);
+    SplineFont *sf = vw->sf;
+    int emsize = sf->ascent+sf->descent;
+    SplineChar *sc = vw->sc;
+    int vs = sc->validation_state;
+
+    SCPreserveState(sc,false);
+    SplineCharAddExtrema(sc,sc->layers[ly_fore].splines,ae_all,emsize);
+    SCCharChangedUpdate(sc);
+
+    SCValidate(vw->sc);
+    if ( vs != vw->sc->validation_state )
+	VW_Remetric(vw);
+}
+
+static void VWMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    struct val_data *vw = (struct val_data *) GDrawGetUserData(gw);
+    SplineChar *sc = vw->sc;
+    int vs = sc->validation_state;
+    static struct simplifyinfo smpl = { sf_normal,.75,.05,0,-1 };
+
+    SCPreserveState(sc,false);
+    sc->layers[ly_fore].splines = SplineCharSimplify(sc,sc->layers[ly_fore].splines,&smpl);
     SCCharChangedUpdate(sc);
 
     SCValidate(vw->sc);
@@ -3527,26 +3824,286 @@ static void VWReuseCV(struct val_data *vw, SplineChar *sc) {
     }
     vw->lastgid = sc->orig_pos;
     vw->lastcv = cv;
+
+    if ( sc->validation_state & vs_maskfindproblems & vw->mask )
+	DummyFindProblems(cv);
 }
 
 static void VWMenuOpenGlyph(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     struct val_data *vw = (struct val_data *) GDrawGetUserData(gw);
     VWReuseCV(vw,vw->sc);
 }
+
+static void VWMenuGotoGlyph(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    struct val_data *vw = (struct val_data *) GDrawGetUserData(gw);
+    FontView *fv = vw->sf->fv;
+    int enc = GotoChar(vw->sf,fv->map);
+    int gid, line;
+    SplineChar *sc;
+
+    if ( enc==-1 )
+return;
+    gid = fv->map->map[enc];
+    if ( gid==-1 || (sc=vw->sf->glyphs[gid])==NULL ) {
+	gwwv_post_error(_("Glyph not in font"), _("Glyph not in font"));
+return;
+    } else if ( (sc->validation_state&vw->mask)==0 ) {
+	gwwv_post_notice(_("Glyph Valid"), _("No problems detected in %s"),
+		sc->name );
+return;
+    }
+
+    line = VW_FindSC(vw,sc);
+    if ( line==-1 )
+	IError("Glyph doesn't exist?");
+
+    if ( line + vw->vlcnt > vw->lcnt )
+	line = vw->lcnt-vw->vlcnt;
+    if ( line<0 )
+	line = 0;
+    if ( vw->loff_top!=line ) {
+	vw->loff_top = line;
+	GScrollBarSetPos(vw->vsb,line);
+	GDrawRequestExpose(vw->v,NULL,false);
+    }
+}
     
 
-#define MID_ConnectOpen	102
-#define MID_RmOverlap	103
-#define MID_AddExtrema	104
+#define MID_SelectOpen	102
+#define MID_SelectRO	103
+#define MID_SelectDir	104
+#define MID_SelectExtr	105
+#define MID_SelectErrors	106
+
+static void VWMenuSelect(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    struct val_data *vw = (struct val_data *) GDrawGetUserData(gw);
+    FontView *fv = vw->sf->fv;
+    int mask = mi->mid == MID_SelectErrors ? vw->mask :
+	    mi->mid == MID_SelectOpen ? vs_opencontour :
+	    mi->mid == MID_SelectRO ? vs_selfintersects :
+	    mi->mid == MID_SelectDir ? vs_wrongdirection :
+	    mi->mid == MID_SelectExtr ? vs_missingextrema : 0;
+    EncMap *map = fv->map;
+    int i, gid;
+    SplineChar *sc;
+
+    for ( i=0; i<map->enccount; ++i ) {
+	fv->selected[i] = false;
+	gid = map->map[i];
+	if ( gid!=-1 && (sc=vw->sf->glyphs[gid])!=NULL &&
+		(sc->validation_state & mask) )
+	    fv->selected[i] = true;
+    }
+    GDrawSetVisible(fv->gw,true);
+    GDrawRaise(fv->gw);
+    GDrawRequestExpose(fv->v,NULL,false);
+}
+
+static GMenuItem vw_subselect[] = {
+    { { (unichar_t *) N_("Errors"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0 }, '\0', 0, NULL, NULL, VWMenuSelect, MID_SelectErrors },
+    { { (unichar_t *) N_("Open Contours"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0 }, '\0', 0, NULL, NULL, VWMenuSelect, MID_SelectOpen },
+    { { (unichar_t *) N_("Bad Direction"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0 }, '\0', 0, NULL, NULL, VWMenuSelect, MID_SelectDir },
+    { { (unichar_t *) N_("Self Intersections"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0 }, '\0', 0, NULL, NULL, VWMenuSelect, MID_SelectRO },
+    { { (unichar_t *) N_("Missing Extrema"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0 }, '\0', 0, NULL, NULL, VWMenuSelect, MID_SelectExtr },
+    NULL
+};
+
+static void VWMenuManyConnect(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    struct val_data *vw = (struct val_data *) GDrawGetUserData(gw);
+    SplineChar *sc;
+    int k, gid;
+    SplineFont *sf;
+
+    k=0;
+    do {
+	sf = k<vw->sf->subfontcnt ? vw->sf->subfonts[k] : vw->sf;
+	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL && (sc->validation_state&vs_opencontour) ) {
+	    int vs = sc->validation_state;
+	    int changed = false;
+	    SplineSet *ss;
+
+	    for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
+		if ( ss->first->prev==NULL && ss->first->next!=NULL ) {
+		    if ( !changed ) {
+			SCPreserveState(sc,false);
+			changed = true;
+		    }
+		    SplineMake(ss->last,ss->first,sc->parent->order2);
+		    ss->last = ss->first;
+		}
+	    }
+	    if ( changed ) {
+		SCCharChangedUpdate(sc);
+		SCValidate(vw->sc);
+		if ( vs != vw->sc->validation_state )
+		    VW_Remetric(vw);
+	    }
+	}
+	++k;
+    } while ( k<vw->sf->subfontcnt );
+}
+
+static void VWMenuManyOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    struct val_data *vw = (struct val_data *) GDrawGetUserData(gw);
+    SplineChar *sc;
+    int k, gid;
+    SplineFont *sf;
+
+    k=0;
+    do {
+	sf = k<vw->sf->subfontcnt ? vw->sf->subfonts[k] : vw->sf;
+	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL && (sc->validation_state&vs_selfintersects) ) {
+	    int vs = sc->validation_state;
+
+	    /* If it's only got references, I could inline them, since the */
+	    /*  intersection would occur between two refs. But that seems */
+	    /*  to extreme to do to an unsuspecting user */
+	    if ( !SCRoundToCluster(sc,-2,false,.03,.12))
+		SCPreserveState(sc,false);
+	    sc->layers[ly_fore].splines = SplineSetRemoveOverlap(sc,sc->layers[ly_fore].splines,over_remove);
+	    SCCharChangedUpdate(sc);
+	    SCValidate(vw->sc);
+	    if ( vs != vw->sc->validation_state )
+		VW_Remetric(vw);
+	}
+	++k;
+    } while ( k<vw->sf->subfontcnt );
+}
+
+static void VWMenuManyCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    struct val_data *vw = (struct val_data *) GDrawGetUserData(gw);
+    SplineChar *sc;
+    int k, gid;
+    SplineFont *sf;
+    RefChar *ref, *refnext;
+    int changed;
+
+    k=0;
+    do {
+	sf = k<vw->sf->subfontcnt ? vw->sf->subfonts[k] : vw->sf;
+	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL && (sc->validation_state&vs_wrongdirection) ) {
+	    int vs = sc->validation_state;
+
+	    SCPreserveState(sc,false);
+	    /* But a flipped reference is just wrong so I have no compunctions*/
+	    /*  about inlining it and then correcting its direction */
+	    
+	    for ( ref= sc->layers[ly_fore].refs; ref!=NULL; ref=refnext ) {
+		refnext = ref->next;
+		if ( ref->transform[0]*ref->transform[3]<0 ||
+			(ref->transform[0]==0 && ref->transform[1]*ref->transform[2]>0)) {
+		    SCRefToSplines(sc,ref);
+		}
+	    }
+	    sc->layers[ly_fore].splines = SplineSetsCorrect(sc->layers[ly_fore].splines,&changed);
+	    SCCharChangedUpdate(sc);
+	    SCValidate(vw->sc);
+	    if ( vs != vw->sc->validation_state )
+		VW_Remetric(vw);
+	}
+	++k;
+    } while ( k<vw->sf->subfontcnt );
+}
+
+static void VWMenuManyGoodExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    struct val_data *vw = (struct val_data *) GDrawGetUserData(gw);
+    SplineChar *sc;
+    int k, gid;
+    SplineFont *sf = vw->sf;
+    int emsize = sf->ascent+sf->descent;
+
+    k=0;
+    do {
+	sf = k<vw->sf->subfontcnt ? vw->sf->subfonts[k] : vw->sf;
+	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL && (sc->validation_state&vs_missingextrema) ) {
+	    int vs = sc->validation_state;
+
+	    SCPreserveState(sc,false);
+	    SplineCharAddExtrema(sc,sc->layers[ly_fore].splines,ae_only_good,emsize);
+	    SCCharChangedUpdate(sc);
+	    SCValidate(vw->sc);
+	    if ( vs != vw->sc->validation_state )
+		VW_Remetric(vw);
+	}
+	++k;
+    } while ( k<vw->sf->subfontcnt );
+}
+
+static void VWMenuManyAllExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    struct val_data *vw = (struct val_data *) GDrawGetUserData(gw);
+    SplineChar *sc;
+    int k, gid;
+    SplineFont *sf = vw->sf;
+    int emsize = sf->ascent+sf->descent;
+
+    k=0;
+    do {
+	sf = k<vw->sf->subfontcnt ? vw->sf->subfonts[k] : vw->sf;
+	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL && (sc->validation_state&vs_missingextrema) ) {
+	    int vs = sc->validation_state;
+
+	    SCPreserveState(sc,false);
+	    SplineCharAddExtrema(sc,sc->layers[ly_fore].splines,ae_all,emsize);
+	    SCCharChangedUpdate(sc);
+	    SCValidate(vw->sc);
+	    if ( vs != vw->sc->validation_state )
+		VW_Remetric(vw);
+	}
+	++k;
+    } while ( k<vw->sf->subfontcnt );
+}
+
+static void VWMenuManySimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    struct val_data *vw = (struct val_data *) GDrawGetUserData(gw);
+    SplineChar *sc;
+    int k, gid;
+    SplineFont *sf;
+    static struct simplifyinfo smpl = { sf_normal,.75,.05,0,-1 };
+
+    k=0;
+    do {
+	sf = k<vw->sf->subfontcnt ? vw->sf->subfonts[k] : vw->sf;
+	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL && (sc->validation_state&vs_toomanypoints) ) {
+	    int vs = sc->validation_state;
+
+	    SCPreserveState(sc,false);
+	    sc->layers[ly_fore].splines = SplineCharSimplify(sc,sc->layers[ly_fore].splines,&smpl);
+	    SCCharChangedUpdate(sc);
+	    SCValidate(vw->sc);
+	    if ( vs != vw->sc->validation_state )
+		VW_Remetric(vw);
+	}
+	++k;
+    } while ( k<vw->sf->subfontcnt );
+}
+
+static GMenuItem vw_subfixup[] = {
+    { { (unichar_t *) N_("Open Contours"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0 }, '\0', 0, NULL, NULL, VWMenuManyConnect },
+    { { (unichar_t *) N_("Self Intersections"), &GIcon_rmoverlap, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 0 }, 0,0, NULL, NULL, VWMenuManyOverlap },
+    { { (unichar_t *) N_("Bad Directions"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 0 }, 0,0, NULL, NULL, VWMenuManyCorrectDir },
+    { { (unichar_t *) N_("Missing Extrema (cautiously)"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 0 }, 0,0, NULL, NULL, VWMenuManyGoodExtrema },
+    { { (unichar_t *) N_("Missing Extrema"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 0 }, 0,0, NULL, NULL, VWMenuManyAllExtrema },
+    { { (unichar_t *) N_("Too Many Points"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 0 }, 0,0, NULL, NULL, VWMenuManySimplify },
+    NULL
+};
 
 static GMenuItem vw_popuplist[] = {
-    { { (unichar_t *) N_("Close Open Contours"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0 }, '\0', 0, NULL, NULL, VWMenuConnect, MID_ConnectOpen },
-    { { (unichar_t *) N_("Remove Overlap"), &GIcon_rmoverlap, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 0 }, 0,0, NULL, NULL, VWMenuOverlap, MID_RmOverlap },
+    { { (unichar_t *) N_("Close Open Contours"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0 }, '\0', 0, NULL, NULL, VWMenuConnect },
+    { { (unichar_t *) N_("Inline All References"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 0 }, 0,0, NULL, NULL, VWMenuInlineRefs },
+    { { (unichar_t *) N_("Remove Overlap"), &GIcon_rmoverlap, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 0 }, 0,0, NULL, NULL, VWMenuOverlap },
+    { { (unichar_t *) N_("Inline Flipped References"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 0 }, 0,0, NULL, NULL, VWMenuInlineFlippedRefs },
     { { (unichar_t *) N_("Correct Direction"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 0 }, 0,0, NULL, NULL, VWMenuCorrectDir },
-    { { (unichar_t *) N_("Add Extrema"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 0 }, 0,0, NULL, NULL, VWMenuExtrema, MID_AddExtrema },
+    { { (unichar_t *) N_("Add Good Extrema"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 0 }, 0,0, NULL, NULL, VWMenuGoodExtrema },
+    { { (unichar_t *) N_("Add All Extrema"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 0 }, 0,0, NULL, NULL, VWMenuAllExtrema },
+    { { (unichar_t *) N_("Simplify"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 0 }, 0,0, NULL, NULL, VWMenuSimplify },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("Revalidate"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0 }, '\0', 0, NULL, NULL, VWMenuRevalidate },
     { { (unichar_t *) N_("Open Glyph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0 }, '\0', 0, NULL, NULL, VWMenuOpenGlyph },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) N_("Scroll To Glyph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0 }, '\0', 0, NULL, NULL, VWMenuGotoGlyph },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) N_("Select Glyphs With"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0 }, '\0', 0, vw_subselect },
+    { { (unichar_t *) N_("Try To Fix Glyphs With"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0 }, '\0', 0, vw_subfixup },
     { NULL }
 };
 
@@ -3573,8 +4130,12 @@ return;
 	}
 	vw_popuplist[0].ti.disabled = (sc->validation_state&vs_opencontour)?0:1;
 	vw_popuplist[1].ti.disabled = (sc->validation_state&vs_selfintersects)?0:1;
-	vw_popuplist[2].ti.disabled = (sc->validation_state&vs_wrongdirection)?0:1;
-	vw_popuplist[3].ti.disabled = (sc->validation_state&vs_missingextrema)?0:1;
+	vw_popuplist[2].ti.disabled = (sc->validation_state&vs_selfintersects)?0:1;
+	vw_popuplist[3].ti.disabled = (sc->validation_state&vs_flippedreferences)?0:1;
+	vw_popuplist[4].ti.disabled = (sc->validation_state&vs_wrongdirection)?0:1;
+	vw_popuplist[5].ti.disabled = (sc->validation_state&vs_missingextrema)?0:1;
+	vw_popuplist[6].ti.disabled = (sc->validation_state&vs_missingextrema)?0:1;
+	vw_popuplist[7].ti.disabled = (sc->validation_state&vs_toomanypoints)?0:1;
 	vw->sc = sc;
 	GMenuCreatePopupMenu(vw->v,e, vw_popuplist);
     }
@@ -3587,15 +4148,6 @@ static void VWDrawWindow(GWindow pixmap,struct val_data *vw, GEvent *e) {
     int sofar;
     int bit, skips, y, m;
     GRect old, r;
-    static char *errornames[] = {
-	N_("Open Contour"),
-	N_("Self Intersecting"),
-	N_("Wrong Direction"),
-	N_("Flipped References"),
-	N_("Missing Points at Extrema"),
-	N_("Too Many Points"),
-	N_("Too Many Hints")
-    };
 
     GDrawPushClip(pixmap,&e->u.expose.rect,&old);
     GDrawFillRect(pixmap,&e->u.expose.rect,GDrawGetDefaultBackground(NULL));
@@ -3639,7 +4191,7 @@ return;
 	    if ( sc->vs_open ) {
 		for ( m=0, bit=(vs_known<<1) ; bit<=vs_last; ++m, bit<<=1 )
 		    if ( (bit&vw->mask) && (sc->validation_state&bit) ) {
-			GDrawDrawText8(pixmap,10+r.width+r.x,y,_(errornames[m]),-1,NULL,0xff0000 );
+			GDrawDrawText8(pixmap,10+r.width+r.x,y,_(vserrornames[m]),-1,NULL,0xff0000 );
 			y += vw->fh;
 			++sofar;
 		    }
@@ -3763,6 +4315,22 @@ return( false );
 return( true );
 }
 
+int VSMaskFromFormat(SplineFont *sf, enum fontformat format) {
+    if ( format==ff_cid || format==ff_cffcid || format==ff_otfcid || format==ff_otfciddfont )
+return( vs_maskcid );
+    else if ( format<=ff_cff )
+return( vs_maskps );
+    else if ( format<=ff_ttfdfont )
+return( vs_maskttf );
+    else if ( format<=ff_otfdfont )
+return( vs_maskps );
+    else if ( format==ff_svg )
+return( vs_maskttf );
+    else
+return( sf->subfontcnt!=0 || sf->cidmaster!=NULL ? vs_maskcid :
+	sf->order2 ? vs_maskttf : vs_maskps );
+}
+
 void SFValidationWindow(SplineFont *sf,enum fontformat format) {
     GWindowAttrs wattrs;
     GRect pos;
@@ -3779,13 +4347,9 @@ void SFValidationWindow(SplineFont *sf,enum fontformat format) {
     int as, ds, ld;
     int mask;
 
-    mask = format<=ff_cffcid ? vs_maskps :
-	 format<=ff_ttfdfont ? vs_maskttf :
-	 format<=ff_otfciddfont ? vs_maskps :
-	 format==ff_svg ? vs_maskttf :
-	 sf->order2 ? vs_maskttf : vs_maskps;
-     if ( sf->cidmaster )
-	 sf = sf->cidmaster;
+    if ( sf->cidmaster )
+	sf = sf->cidmaster;
+    mask = VSMaskFromFormat(sf,format);
 
     if ( sf->valwin!=NULL ) {
 	/* Don't need to force a revalidation because if the window exists */
