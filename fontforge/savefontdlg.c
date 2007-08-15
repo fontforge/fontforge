@@ -2486,7 +2486,7 @@ return;
 		cur->map = EncMapFromEncoding(cur->sf,d->map->enc);
 	    }
 	}
-    } else if ( !d->sf->multilayer && !d->sf->strokedfont ) {
+    } else if ( !d->sf->multilayer && !d->sf->strokedfont && !d->sf->onlybitmaps ) {
 #ifdef HAVE_PTHREAD_H
 	if ( d->thread_active ) {
 	    d->please_die_thread = true;
@@ -2494,7 +2494,7 @@ return;
 	    d->thread_active = false;
 	}
 #endif
-	if ( oldformatstate == ff_ptype3 )
+	if ( oldformatstate == ff_ptype3 || oldformatstate == ff_none )
 	    /* No point in validating type3 fonts */;
 	else if ( (old_validate = GGadgetIsChecked(d->validate))) {
 	    int vs = SFValidate(d->sf,false);
@@ -2954,7 +2954,7 @@ int SFGenerateFont(SplineFont *sf,int family,EncMap *map) {
 #ifdef HAVE_PTHREAD_H
     /* If I can't create the thread, that's not a real problem. The font just*/
     /*  won't be prevalidated */
-    if ( !sf->multilayer && !sf->strokedfont )
+    if ( !sf->multilayer && !sf->strokedfont && !sf->onlybitmaps )
 	if ( pthread_create(&d.validate_thread,NULL,BackgroundValidate,(void *) &d)==0 )
 	    d.thread_active = true;
 #endif
@@ -3354,7 +3354,7 @@ return( 0 );
 	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.pos.x = 8; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+24+6;
-	if ( sf->multilayer || sf->strokedfont )
+	if ( sf->multilayer || sf->strokedfont || sf->onlybitmaps )
 	    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
 	else if ( old_validate )
 	    gcd[k].gd.flags = (gg_enabled | gg_visible | gg_cb_on | gg_utf8_popup);
