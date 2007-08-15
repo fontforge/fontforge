@@ -3114,3 +3114,798 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
 	GDrawDestroyWindow(p.explainw);
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+
+int SCValidate(SplineChar *sc) {
+    SplineSet *ss;
+    Spline *s1, *s2, *s, *first;
+    SplinePoint *sp;
+    RefChar *ref;
+    int lastscan= -1;
+    int cnt;
+    StemInfo *h;
+    SplineSet *base = LayerAllSplines(&sc->layers[ly_fore]);
+    double len2, bound2, x, y;
+    extended extrema[4];
+
+    sc->validation_state = 0;
+
+    for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
+	/* TrueType uses single points to move things around so ignore them */
+	if ( ss->first->next==NULL )
+	    /* Do Nothing */;
+	else if ( ss->first->prev==NULL ) {
+	    sc->validation_state |= vs_opencontour|vs_known;
+    break;
+	}
+    }
+
+    /* If there's an open contour we can't really tell whether it self-intersects */
+    if ( sc->validation_state & vs_opencontour )
+	/* sc->validation_state |= vs_selfintersects*/;
+    else {
+	if ( SplineSetIntersect(base,&s1,&s2) )
+	    sc->validation_state |= vs_selfintersects|vs_known;
+    }
+
+    /* If there's a self-intersection we are guaranteed that both the self- */
+    /*  intersecting contours will be in the wrong direction at some point */
+    if ( sc->validation_state & vs_selfintersects )
+	/*sc->validation_state |= vs_wrongdirection*/;
+    else {
+	if ( SplineSetsDetectDir(&base,&lastscan)!=NULL )
+	    sc->validation_state |= vs_wrongdirection|vs_known;
+    }
+
+    /* Different kind of "wrong direction" */
+    for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
+	if ( ref->transform[0]*ref->transform[3]<0 ||
+		(ref->transform[0]==0 && ref->transform[1]*ref->transform[2]>0)) {
+	    sc->validation_state |= vs_flippedreferences|vs_known;
+    break;
+	}
+    }
+
+    for ( h=sc->hstem, cnt=0; h!=NULL; h=h->next, ++cnt );
+    for ( h=sc->vstem       ; h!=NULL; h=h->next, ++cnt );
+    if ( cnt>=96 )
+	sc->validation_state |= vs_toomanyhints|vs_known;
+
+    for ( ss=sc->layers[ly_fore].splines, cnt=0; ss!=NULL; ss=ss->next ) {
+	for ( sp=ss->first; ; ) {
+	    ++cnt;
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==ss->first )
+	break;
+	}
+    }
+    if ( cnt>1500 )
+	sc->validation_state |= vs_toomanypoints|vs_known;
+
+    LayerUnAllSplines(&sc->layers[ly_fore]);
+
+    /* Only check the splines in the glyph, not those in refs */
+    bound2 = (sc->parent->ascent + sc->parent->descent)/100.0;
+    bound2 *= bound2;
+    for ( ss=sc->layers[ly_fore].splines, cnt=0; ss!=NULL; ss=ss->next ) {
+	first = NULL;
+	for ( s=ss->first->next ; s!=NULL && s!=first; s=s->to->next ) {
+	    if ( first==NULL )
+		first = s;
+	    /* rough appoximation to spline's length */
+	    x = (s->from->nextcp.x-s->from->me.x);
+	    y = (s->from->nextcp.y-s->from->me.y);
+	    len2 = x*x + y*y;
+	    x = (s->to->prevcp.x-s->from->nextcp.x);
+	    y = (s->to->prevcp.y-s->from->nextcp.y);
+	    len2 += x*x + y*y;
+	    x = (s->to->me.x-s->to->prevcp.x);
+	    y = (s->to->me.y-s->to->prevcp.y);
+	    len2 += x*x + y*y;
+	    /* short splines (serifs) are allowed not to have points at their extrema */
+	    if ( len2>bound2 && Spline2DFindExtrema(s,extrema)>0 ) {
+		sc->validation_state |= vs_missingextrema|vs_known;
+    goto break_2_loops;
+	    }
+	}
+    }
+    break_2_loops:;
+
+    sc->validation_state |= vs_known;
+return( sc->validation_state==vs_known );
+}
+
+int SFValidate(SplineFont *sf, int force) {
+    int k, gid;
+    SplineFont *sub;
+    int any = 0;
+    SplineChar *sc;
+    int cnt=0;
+
+    if ( sf->cidmaster )
+	sf = sf->cidmaster;
+
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    if ( !no_windowing_ui ) {
+	cnt = 0;
+	k = 0;
+	do {
+	    sub = sf->subfontcnt==0 ? sf : sf->subfonts[k];
+	    for ( gid=0; gid<sub->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
+		if ( force || !(sc->validation_state&vs_known) )
+		    ++cnt;
+	    }
+	    ++k;
+	} while ( k<sf->subfontcnt );
+	if ( cnt!=0 )
+	    gwwv_progress_start_indicator(10,_("Validating..."),_("Validating..."),0,cnt,1);
+    }
+#endif
+
+    k = 0;
+    do {
+	sub = sf->subfontcnt==0 ? sf : sf->subfonts[k];
+	for ( gid=0; gid<sub->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
+	    if ( force || !(sc->validation_state&vs_known) ) {
+		SCValidate(sc);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+		if ( !gwwv_progress_next())
+return( -1 );
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+	    }
+	    any |= sc->validation_state;
+	}
+	++k;
+    } while ( k<sf->subfontcnt );
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    gwwv_progress_end_indicator();
+# endif
+return( any&~vs_known );
+}
+
+struct val_data {
+    GWindow gw;
+    GWindow v;
+    GGadget *vsb;
+    int lcnt;
+    int loff_top;
+    int vlcnt;
+    SplineFont *sf;
+    int cidmax;
+    enum validation_state mask;
+    GTimer *recheck;
+    int laststart;
+    int finished_first_pass;
+    int as,fh;
+    GFont *font;
+    SplineChar *sc;		/* used by popup menu */
+    int lastgid;
+    CharView *lastcv;
+};
+
+static int VW_FindLine(struct val_data *vw,int line, int *skips) {
+    int gid,k, cidmax = vw->cidmax;
+    SplineFont *sf = vw->sf;
+    SplineFont *sub;
+    SplineChar *sc;
+    int sofar, tot;
+    int bit;
+
+    sofar = 0;
+    for ( gid=0; gid<cidmax ; ++gid ) {
+	if ( sf->subfontcnt==0 )
+	    sc = sf->glyphs[gid];
+	else {
+	    for ( k=0; k<sf->subfontcnt; ++k ) {
+		sub = sf->subfonts[k];
+		if ( gid<sub->glyphcnt && (sc = sub->glyphs[gid])!=NULL )
+	    break;
+	    }
+	}
+	/* Ignore it if it has not been validated */
+	/* Ignore it if it is good */
+	if ( sc!=NULL && (sc->validation_state&vs_known) &&
+		(sc->validation_state&vw->mask)!=0 ) {
+	    tot = 1;
+	    if ( sc->vs_open )
+		for ( bit=(vs_known<<1) ; bit<=vs_last; bit<<=1 )
+		    if ( (bit&vw->mask) && (sc->validation_state&bit) )
+			++tot;
+	    if ( sofar+tot>line ) {
+		*skips = line-sofar;
+return( gid );
+	    }
+	    sofar += tot;
+	}
+    }
+    *skips = 0;
+return( -1 );
+}
+
+static int VW_VScroll(GGadget *g, GEvent *e) {
+    struct val_data *vw = (struct val_data *) GDrawGetUserData(GGadgetGetWindow(g));
+    int newpos = vw->loff_top;
+
+    switch( e->u.control.u.sb.type ) {
+      case et_sb_top:
+        newpos = 0;
+      break;
+      case et_sb_uppage:
+        newpos -= 9*vw->vlcnt/10;
+      break;
+      case et_sb_up:
+        newpos -= vw->vlcnt/15;
+      break;
+      case et_sb_down:
+        newpos += vw->vlcnt/15;
+      break;
+      case et_sb_downpage:
+        newpos += 9*vw->vlcnt/10;
+      break;
+      case et_sb_bottom:
+        newpos = 0;
+      break;
+      case et_sb_thumb:
+      case et_sb_thumbrelease:
+        newpos = e->u.control.u.sb.pos+vw->vlcnt;
+      break;
+      case et_sb_halfup:
+        newpos -= vw->vlcnt/30;
+      break;
+      case et_sb_halfdown:
+        newpos += vw->vlcnt/30;
+      break;
+    }
+    if ( newpos + vw->vlcnt > vw->lcnt )
+	newpos = vw->lcnt-vw->vlcnt;
+    if ( newpos<0 )
+	newpos = 0;
+    if ( vw->loff_top!=newpos ) {
+	vw->loff_top = newpos;
+	GScrollBarSetPos(vw->vsb,newpos);
+	GDrawRequestExpose(vw->v,NULL,false);
+    }
+return( true );
+}
+
+static void VW_SetSb(struct val_data *vw) {
+    if ( vw->loff_top + vw->vlcnt > vw->lcnt )
+	vw->loff_top = vw->lcnt-vw->vlcnt;
+    if ( vw->loff_top<0 )
+	vw->loff_top = 0;
+    GScrollBarSetBounds(vw->vsb,0,vw->lcnt,vw->vlcnt);
+    GScrollBarSetPos(vw->vsb,vw->loff_top);
+}
+    
+static void VW_Remetric(struct val_data *vw) {
+    int gid,k, cidmax = vw->cidmax;
+    SplineFont *sub, *sf = vw->sf;
+    SplineChar *sc;
+    int sofar, tot;
+    int bit;
+
+    sofar = 0;
+    for ( gid=0; gid<cidmax ; ++gid ) {
+	if ( sf->subfontcnt==0 )
+	    sc = sf->glyphs[gid];
+	else {
+	    for ( k=0; k<sf->subfontcnt; ++k ) {
+		sub = sf->subfonts[k];
+		if ( gid<sub->glyphcnt && (sc = sub->glyphs[gid])!=NULL )
+	    break;
+	    }
+	}
+	/* Ignore it if it has not been validated */
+	/* Ignore it if it is good */
+	if ( sc!=NULL && (sc->validation_state&vs_known) &&
+		(sc->validation_state&vw->mask)!=0 ) {
+	    tot = 1;
+	    if ( sc->vs_open )
+		for ( bit=(vs_known<<1) ; bit<=vs_last; bit<<=1 )
+		    if ( (bit&vw->mask) && (sc->validation_state&bit) )
+			++tot;
+	    sofar += tot;
+	}
+    }
+    if ( vw->lcnt!=sofar ) {
+	vw->lcnt = sofar;
+	VW_SetSb(vw);
+    }
+    GDrawRequestExpose(vw->v,NULL,false);
+}
+
+static void VWMenuConnect(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    struct val_data *vw = (struct val_data *) GDrawGetUserData(gw);
+    SplineChar *sc = vw->sc;
+    int vs = sc->validation_state;
+    int changed = false;
+    SplineSet *ss;
+
+    for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
+	if ( ss->first->prev==NULL && ss->first->next!=NULL ) {
+	    if ( !changed ) {
+		SCPreserveState(sc,false);
+		changed = true;
+	    }
+	    SplineMake(ss->last,ss->first,sc->parent->order2);
+	    ss->last = ss->first;
+	}
+    }
+    if ( changed ) {
+	SCCharChangedUpdate(sc);
+	SCValidate(vw->sc);
+	if ( vs != vw->sc->validation_state )
+	    VW_Remetric(vw);
+    }
+}
+
+static void VWMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    struct val_data *vw = (struct val_data *) GDrawGetUserData(gw);
+    SplineChar *sc = vw->sc;
+    int vs = sc->validation_state;
+
+    if ( !SCRoundToCluster(sc,-2,false,.03,.12))
+	SCPreserveState(sc,false);
+    sc->layers[ly_fore].splines = SplineSetRemoveOverlap(sc,sc->layers[ly_fore].splines,over_remove);
+    SCCharChangedUpdate(sc);
+
+    SCValidate(vw->sc);
+    if ( vs != vw->sc->validation_state )
+	VW_Remetric(vw);
+}
+
+static void VWMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    struct val_data *vw = (struct val_data *) GDrawGetUserData(gw);
+    SplineChar *sc = vw->sc;
+    int vs = sc->validation_state;
+    int changed = false;
+
+    SCPreserveState(sc,false);
+    sc->layers[ly_fore].splines = SplineSetsCorrect(sc->layers[ly_fore].splines,&changed);
+    SCCharChangedUpdate(sc);
+
+    SCValidate(vw->sc);
+    if ( vs != vw->sc->validation_state )
+	VW_Remetric(vw);
+}
+
+static void VWMenuExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    struct val_data *vw = (struct val_data *) GDrawGetUserData(gw);
+    SplineFont *sf = vw->sf;
+    int emsize = sf->ascent+sf->descent;
+    SplineChar *sc = vw->sc;
+    int vs = sc->validation_state;
+
+    SCPreserveState(sc,false);
+    SplineCharAddExtrema(sc,sc->layers[ly_fore].splines,ae_only_good,emsize);
+    SCCharChangedUpdate(sc);
+
+    SCValidate(vw->sc);
+    if ( vs != vw->sc->validation_state )
+	VW_Remetric(vw);
+}
+
+static void VWMenuRevalidate(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    struct val_data *vw = (struct val_data *) GDrawGetUserData(gw);
+    int vs = vw->sc->validation_state;
+    SCValidate(vw->sc);
+    if ( vs != vw->sc->validation_state )
+	VW_Remetric(vw);
+}
+
+static void VWReuseCV(struct val_data *vw, SplineChar *sc) {
+    int k;
+    SplineChar *sctest;
+    SplineFont *sf = vw->sf;
+    CharView *cv;
+
+    /* See if the last cv we used is still open. This is a little complex as */
+    /*  we must make sure that the splinechar is still in the font, and then */
+    /*  that the cv is still attached to it */
+    cv = NULL;
+    if ( vw->lastgid!=-1 && vw->lastcv!=NULL ) {
+	sctest = NULL;
+	if ( sf->subfontcnt==0 ) {
+	    if ( vw->lastgid<sf->glyphcnt )
+		sctest = sf->glyphs[vw->lastgid];
+	} else {
+	    for ( k = 0; k<sf->subfontcnt; ++k )
+		if ( vw->lastgid<sf->subfonts[k]->glyphcnt )
+		    if ( (sctest = sf->subfonts[k]->glyphs[vw->lastgid])!=NULL )
+	    break;
+	}
+	if ( sctest!=NULL )
+	    for ( cv=sctest->views; cv!=NULL && cv!=vw->lastcv; cv=cv->next );
+    }
+    if ( cv==NULL )
+	cv = CharViewCreate(sc,vw->sf->fv,vw->sf->fv->map->backmap[sc->orig_pos]);
+    else {
+	CVChangeSC(cv,sc);
+	GDrawSetVisible(cv->gw,true);
+	GDrawRaise(cv->gw);
+    }
+    vw->lastgid = sc->orig_pos;
+    vw->lastcv = cv;
+}
+
+static void VWMenuOpenGlyph(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    struct val_data *vw = (struct val_data *) GDrawGetUserData(gw);
+    VWReuseCV(vw,vw->sc);
+}
+    
+
+#define MID_ConnectOpen	102
+#define MID_RmOverlap	103
+#define MID_AddExtrema	104
+
+static GMenuItem vw_popuplist[] = {
+    { { (unichar_t *) N_("Close Open Contours"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0 }, '\0', 0, NULL, NULL, VWMenuConnect, MID_ConnectOpen },
+    { { (unichar_t *) N_("Remove Overlap"), &GIcon_rmoverlap, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 0 }, 0,0, NULL, NULL, VWMenuOverlap, MID_RmOverlap },
+    { { (unichar_t *) N_("Correct Direction"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 0 }, 0,0, NULL, NULL, VWMenuCorrectDir },
+    { { (unichar_t *) N_("Add Extrema"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 0 }, 0,0, NULL, NULL, VWMenuExtrema, MID_AddExtrema },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) N_("Revalidate"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0 }, '\0', 0, NULL, NULL, VWMenuRevalidate },
+    { { (unichar_t *) N_("Open Glyph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0 }, '\0', 0, NULL, NULL, VWMenuOpenGlyph },
+    { NULL }
+};
+
+static void VWMouse(struct val_data *vw, GEvent *e) {
+    int skips;
+    int gid = VW_FindLine(vw,vw->loff_top + e->u.mouse.y/vw->fh, &skips);
+    SplineChar *sc;
+
+    if ( gid==-1 || (sc = vw->sf->glyphs[gid])==NULL )
+return;
+    if ( e->u.mouse.clicks==2 && e->type==et_mouseup ) {
+	VWReuseCV(vw,sc);
+    } else if ( e->type==et_mouseup && e->u.mouse.x<10+vw->as && skips==0 ) {
+	sc->vs_open = !sc->vs_open;
+	VW_Remetric(vw);
+    } else if ( e->type==et_mousedown && e->u.mouse.button==3 ) {
+	static int initted = false;
+	if ( !initted ) {
+	    int i;
+	    initted = true;
+	    for ( i=0; vw_popuplist[i].ti.text!=NULL || vw_popuplist[i].ti.line; ++i )
+		if ( vw_popuplist[i].ti.text!=NULL )
+		    vw_popuplist[i].ti.text = (unichar_t *) _( (char *)vw_popuplist[i].ti.text);
+	}
+	vw_popuplist[0].ti.disabled = (sc->validation_state&vs_opencontour)?0:1;
+	vw_popuplist[1].ti.disabled = (sc->validation_state&vs_selfintersects)?0:1;
+	vw_popuplist[2].ti.disabled = (sc->validation_state&vs_wrongdirection)?0:1;
+	vw_popuplist[3].ti.disabled = (sc->validation_state&vs_missingextrema)?0:1;
+	vw->sc = sc;
+	GMenuCreatePopupMenu(vw->v,e, vw_popuplist);
+    }
+}
+
+static void VWDrawWindow(GWindow pixmap,struct val_data *vw, GEvent *e) {
+   int gid,k, cidmax = vw->cidmax;
+    SplineFont *sub, *sf=vw->sf;
+    SplineChar *sc;
+    int sofar;
+    int bit, skips, y, m;
+    GRect old, r;
+    static char *errornames[] = {
+	N_("Open Contour"),
+	N_("Self Intersecting"),
+	N_("Wrong Direction"),
+	N_("Flipped References"),
+	N_("Missing Points at Extrema"),
+	N_("Too Many Points"),
+	N_("Too Many Hints")
+    };
+
+    GDrawPushClip(pixmap,&e->u.expose.rect,&old);
+    GDrawFillRect(pixmap,&e->u.expose.rect,GDrawGetDefaultBackground(NULL));
+    GDrawSetFont(pixmap,vw->font);
+    gid = VW_FindLine(vw,vw->loff_top, &skips);
+    if ( gid==-1 ) {
+	GDrawDrawText8(pixmap,2,(vw->vlcnt-1)*vw->fh/2 + vw->as,
+		vw->finished_first_pass ? _("Passed Validation") : _("Thinking..."),
+		-1,NULL,0x000000 );
+	GDrawPopClip(pixmap,&old);
+return;
+    }
+
+    y = vw->as - skips*vw->fh;
+    sofar = -skips;
+    for ( ; gid<cidmax && sofar<vw->vlcnt ; ++gid ) {
+	if ( sf->subfontcnt==0 )
+	    sc = sf->glyphs[gid];
+	else {
+	    for ( k=0; k<sf->subfontcnt; ++k ) {
+		sub = sf->subfonts[k];
+		if ( gid<sub->glyphcnt && (sc = sub->glyphs[gid])!=NULL )
+	    break;
+	    }
+	}
+	/* Ignore it if it has not been validated */
+	/* Ignore it if it is good */
+	r.width = r.height = vw->as;
+	if ( sc!=NULL && (sc->validation_state&vs_known) &&
+		(sc->validation_state&vw->mask)!=0 ) {
+	    r.x = 2;   r.y = y-vw->as+1;
+	    GDrawDrawRect(pixmap,&r,0x000000);
+	    GDrawDrawLine(pixmap,r.x+2,r.y+vw->as/2,r.x+vw->as-2,r.y+vw->as/2,
+		    0x000000);
+	    if ( !sc->vs_open )
+		GDrawDrawLine(pixmap,r.x+vw->as/2,r.y+2,r.x+vw->as/2,r.y+vw->as-2,
+			0x000000);
+	    GDrawDrawText8(pixmap,r.x+r.width+2,y,sc->name,-1,NULL,0x000000 );
+	    y += vw->fh;
+	    ++sofar;
+	    if ( sc->vs_open ) {
+		for ( m=0, bit=(vs_known<<1) ; bit<=vs_last; ++m, bit<<=1 )
+		    if ( (bit&vw->mask) && (sc->validation_state&bit) ) {
+			GDrawDrawText8(pixmap,10+r.width+r.x,y,_(errornames[m]),-1,NULL,0xff0000 );
+			y += vw->fh;
+			++sofar;
+		    }
+	    }
+	}
+    }
+    GDrawPopClip(pixmap,&old);
+}
+
+static int VWCheckup(struct val_data *vw) {
+    /* Check some glyphs to see what their validation state is or if they have*/
+    /*  changed */
+    int gid, k, cnt=0;
+    int max;
+    SplineFont *sf=vw->sf, *sub;
+    int cntmax = vw->finished_first_pass ? 40 : 60;
+    SplineChar *sc;
+    int a_change = false;
+    int firstv = true;
+
+    if ( sf->subfontcnt==0 )
+	max = vw->cidmax = sf->glyphcnt;
+    else
+	max = vw->cidmax;
+
+    for ( gid=vw->laststart; gid<max && cnt<cntmax && gid<vw->laststart+2000; ++gid ) {
+	if ( sf->subfontcnt==0 )
+	    sc = sf->glyphs[gid];
+	else {
+	    for ( k=0; k<sf->subfontcnt; ++k ) {
+		sub = sf->subfonts[k];
+		if ( gid<sub->glyphcnt && (sc = sub->glyphs[gid])!=NULL )
+	    break;
+	    }
+	}
+	if ( sc!=NULL && !(sc->validation_state&vs_known)) {
+	    if ( firstv ) {
+		GDrawSetCursor(vw->v,ct_watch);
+		GDrawSync(NULL);
+		firstv = false;
+	    }
+	    SCValidate(sc);
+	    ++cnt;
+	}
+	if ( sc->validation_state!=sc->old_vs ) {
+	    a_change = true;
+	    sc->old_vs = sc->validation_state;
+	}
+    }
+    if ( gid<max )
+	vw->laststart = gid;
+    else {
+	vw->laststart = 0;
+	if ( !vw->finished_first_pass ) {
+	    vw->finished_first_pass = true;
+	    GDrawCancelTimer(vw->recheck);
+	    /* Check less frequently now we've completed a full scan */
+	    vw->recheck = GDrawRequestTimer(vw->v,3000,3000,NULL);
+	}
+    }
+    if ( a_change )
+	VW_Remetric(vw);
+    if ( !firstv )
+	GDrawSetCursor(vw->v,ct_mypointer);
+return( a_change );
+}
+
+static int VW_OK(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct val_data *vw = (struct val_data *) GDrawGetUserData(GGadgetGetWindow(g));
+	GDrawDestroyWindow(vw->gw);
+    }
+return( true );
+}
+	
+static int vwv_e_h(GWindow gw, GEvent *event) {
+    struct val_data *vw = (struct val_data *) GDrawGetUserData(gw);
+
+    switch ( event->type ) {
+      case et_expose:
+	if ( vw->recheck==NULL ) {
+	    vw->recheck = GDrawRequestTimer(vw->v,500,500,NULL);
+	    VWCheckup(vw);
+	} else
+	    VWDrawWindow(gw,vw,event);
+      break;
+      case et_mouseup:
+      case et_mousedown:
+      case et_mousemove:
+	VWMouse(vw,event);
+      break;
+      case et_char:
+return( false );
+      break;
+      case et_resize: {
+	int vlcnt = event->u.resize.size.height/vw->fh;
+	vw->vlcnt = vlcnt;
+	VW_SetSb(vw);
+	GDrawRequestExpose(vw->v,NULL,false);
+      } break;
+      case et_timer:
+	VWCheckup(vw);
+      break;
+    }
+return( true );
+}
+
+static int vw_e_h(GWindow gw, GEvent *event) {
+    struct val_data *vw = (struct val_data *) GDrawGetUserData(gw);
+
+    if ( event->type==et_close ) {
+	GDrawDestroyWindow(gw);
+    } else if ( event->type == et_char ) {
+return( false );
+    } else if ( event->type == et_destroy ) {
+	if ( vw->sf!=NULL )
+	    vw->sf->valwin = NULL;
+	chunkfree(vw,sizeof(*vw));
+    }
+return( true );
+}
+
+void SFValidationWindow(SplineFont *sf,enum fontformat format) {
+    GWindowAttrs wattrs;
+    GRect pos;
+    GWindow gw;
+    GGadgetCreateData gcd[4], boxes[4], *harray[4], *butarray[8], *varray[3];
+    GTextInfo label[4];
+    struct val_data *valwin;
+    char buffer[200];
+    int k, gid;
+    int cidmax;
+    SplineFont *sub;
+    SplineChar *sc;
+    FontRequest rq;
+    int as, ds, ld;
+    int mask;
+
+    mask = format<=ff_cffcid ? vs_maskps :
+	 format<=ff_ttfdfont ? vs_maskttf :
+	 format<=ff_otfciddfont ? vs_maskps :
+	 format==ff_svg ? vs_maskttf :
+	 sf->order2 ? vs_maskttf : vs_maskps;
+     if ( sf->cidmaster )
+	 sf = sf->cidmaster;
+
+    if ( sf->valwin!=NULL ) {
+	/* Don't need to force a revalidation because if the window exists */
+	/*  it's been doing that all by itself */
+	if ( mask!=sf->valwin->mask ) {
+	    /* But if we go from postscript to truetype the types of errors */
+	    /*  change, so what we display might be different */
+	    sf->valwin->mask = mask;
+	    VW_Remetric(sf->valwin);
+	}
+	GDrawSetVisible(sf->valwin->gw,true);
+	GDrawRaise(sf->valwin->gw);
+return;
+    }
+
+    if ( sf->subfontcnt!=0 ) {
+	cidmax = 0;
+	for ( k=0; k<sf->subfontcnt; ++k )
+	    if ( sf->subfonts[k]->glyphcnt > cidmax )
+		cidmax = sf->subfonts[k]->glyphcnt;
+    } else
+	cidmax = sf->glyphcnt;
+
+    /* Init all glyphs as undrawn */
+    for ( gid=0; gid<cidmax ; ++gid ) {
+	if ( sf->subfontcnt==0 )
+	    sc = sf->glyphs[gid];
+	else {
+	    for ( k=0; k<sf->subfontcnt; ++k ) {
+		sub = sf->subfonts[k];
+		if ( gid<sub->glyphcnt && (sc = sub->glyphs[gid])!=NULL )
+	    break;
+	    }
+	}
+	if ( sc!=NULL ) {
+	    sc->old_vs = 0;
+	    sc->vs_open = true;		/* !!!!! debugging, change to false */
+	}
+    }
+
+    valwin = chunkalloc(sizeof(struct val_data));
+    valwin->sf = sf;
+    valwin->mask = mask;
+    valwin->cidmax = cidmax;
+    valwin->lastgid = -1;
+
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg;
+    wattrs.event_masks = -1;
+    wattrs.cursor = ct_mypointer;
+    sprintf( buffer, _("Validation of %.100s"), sf->fontname );
+    wattrs.utf8_window_title = buffer;
+    wattrs.is_dlg = true;
+    wattrs.undercursor = 1;
+    pos.x = pos.y = 0;
+    pos.width = GDrawPointsToPixels(NULL,200);
+    pos.height = GDrawPointsToPixels(NULL,300);
+    valwin->gw = gw = GDrawCreateTopWindow(NULL,&pos,vw_e_h,valwin,&wattrs);
+
+    memset(&rq,0,sizeof(rq));
+    rq.utf8_family_name = "Helvetica";
+    rq.point_size = 11;
+    rq.weight = 400;
+    valwin->font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gw),&rq);
+    GDrawFontMetrics(valwin->font,&as,&ds,&ld);
+    valwin->fh = as+ds;
+    valwin->as = as;
+
+    memset(&label,0,sizeof(label));
+    memset(&gcd,0,sizeof(gcd));
+    memset(&boxes,0,sizeof(boxes));
+
+    k = 0;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.u.drawable_e_h = vwv_e_h;
+    gcd[k++].creator = GDrawableCreate;
+
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_sb_vert;
+    gcd[k].gd.handle_controlevent = VW_VScroll;
+    gcd[k++].creator = GScrollBarCreate;
+    harray[0] = &gcd[k-2]; harray[1] = &gcd[k-1]; harray[2] = NULL; harray[3] = NULL;
+
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    label[k].text = (unichar_t *) _("_OK");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.handle_controlevent = VW_OK;
+    gcd[k++].creator = GButtonCreate;
+    butarray[0] = GCD_Glue; butarray[1] = &gcd[k-1]; butarray[2] = GCD_Glue; butarray[3] = NULL;
+
+    boxes[2].gd.flags = gg_enabled|gg_visible;
+    boxes[2].gd.u.boxelements = harray;
+    boxes[2].creator = GHVGroupCreate;
+
+    boxes[3].gd.flags = gg_enabled|gg_visible;
+    boxes[3].gd.u.boxelements = butarray;
+    boxes[3].creator = GHBoxCreate;
+    varray[0] = &boxes[2]; varray[1] = &boxes[3]; varray[2] = NULL;
+
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = varray;
+    boxes[0].creator = GVBoxCreate;
+
+    GGadgetsCreate(gw,boxes);
+    valwin->vsb = gcd[1].ret;
+    valwin->v = GDrawableGetWindow(gcd[0].ret);
+    GHVBoxSetExpandableRow(boxes[0].ret,0);
+    GHVBoxSetExpandableCol(boxes[2].ret,0);
+    GHVBoxSetPadding(boxes[2].ret,0,0);
+    GHVBoxSetExpandableCol(boxes[3].ret,gb_expandglue);
+    GHVBoxFitWindow(boxes[0].ret);
+
+    GDrawSetVisible(gw,true);
+}
+
+void ValidationDestroy(SplineFont *sf) {
+    if ( sf->valwin!=NULL ) {
+	sf->valwin->sf = NULL;
+	GDrawDestroyWindow(sf->valwin->gw);
+	sf->valwin = NULL;
+    }
+}

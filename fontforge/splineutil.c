@@ -3180,6 +3180,7 @@ return( zcnt );
 }
 #endif
 
+#if 0
 static int QuarticSolve(Quartic *q,extended ts[4]) {
     int i,j,k;
 
@@ -3203,6 +3204,7 @@ return( -1 );
     }
 return(i+1);
 }
+#endif
 
 extended SplineSolve(const Spline1D *sp, real tmin, real tmax, extended sought,real err) {
     /* We want to find t so that spline(t) = sought */
@@ -3567,6 +3569,7 @@ return( soln );
 return( soln+1 );
 }
 
+#if 0
 static int AddQuadraticSoln(extended s,const Spline *s1, const Spline *s2, BasePoint pts[3],
 	extended t1s[3], extended t2s[3], int soln ) {
     extended t, x, y, d;
@@ -3603,6 +3606,7 @@ return( AddPoint(x,y,t,s,pts,t1s,t2s,soln));
     }
 return( soln );
 }
+#endif
 
 static void IterateSolve(const Spline1D *sp,extended ts[3]) {
     /* The closed form solution has too many rounding errors for my taste... */
@@ -3835,11 +3839,9 @@ int SplinesIntersect(const Spline *s1, const Spline *s2, BasePoint pts[9],
 	extended t1s[10], extended t2s[10]) {	/* One extra for a trailing -1 */
     BasePoint min1, max1, min2, max2;
     int soln = 0;
-    extended x,y,s,t, ac0, ac1;
-    extended d;
+    extended x,y,t, ac0, ac1;
     int i,j,found;
-    Spline1D spline, temp;
-    Quartic quad;
+    Spline1D spline;
     extended tempts[4];	/* 3 solns for cubics, 4 for quartics */
     extended extrema1[6], extrema2[6];
     int ecnt1, ecnt2;
@@ -3958,6 +3960,7 @@ return( false );
 	    soln = AddPoint(x,y,t,tempts[i],pts,t1s,t2s,soln);
 	}
 return( soln!=0 );
+#if 0		/* This doesn't work. */
     } else if ( s1->isquadratic && s2->isquadratic ) {
 	temp.a = 0;
 	temp.b = s1->splines[1].b*s2->splines[0].b - s1->splines[0].b*s2->splines[1].b;
@@ -3999,6 +4002,7 @@ return( soln!=0 );
 	    soln = AddQuadraticSoln(s,s1,s2,pts,t1s,t2s,soln);
 	}
 return( soln!=0 );
+#endif
     }
     /* if one of the splines is quadratic then we can get an expression */
     /*  relating c*t+d to poly(s^3), and substituting this back we get */
