@@ -630,7 +630,8 @@ return;
     result = PyEval_CallObject(py_ie[ie_index].import, arglist);
     Py_DECREF(arglist);
     Py_XDECREF(result);
-    /* !!!!! If result == NULL how to I get python to print an error? */
+    if ( PyErr_Occurred()==NULL )
+	PyErr_Print();
 }
 
 void PyFF_SCExport(SplineChar *sc,int ie_index,char *filename) {
@@ -650,7 +651,8 @@ return;
     result = PyEval_CallObject(py_ie[ie_index].export, arglist);
     Py_DECREF(arglist);
     Py_XDECREF(result);
-    /* !!!!! If result == NULL how to I get python to print an error? */
+    if ( PyErr_Occurred()==NULL )
+	PyErr_Print();
     sc_active_in_ui = NULL;
 }
 
@@ -735,7 +737,7 @@ return;
 	result = PyEval_CallObject(menu_data[mi->mid].check_enabled, arglist);
 	Py_DECREF(arglist);
 	if ( result==NULL )
-	    /* !!!! How do I report an error to python? */;
+	    /* Oh. An error. How fun. See below */;
 	else if ( !PyInt_Check(result)) {
 	    char *menu_item_name = u2utf8_copy(mi->ti.text);
 	    LogError( "Return from enabling function for menu item %s must be boolean", menu_item_name );
@@ -744,6 +746,8 @@ return;
 	} else
 	    mi->ti.disabled = PyInt_AsLong(result)==0;
 	Py_XDECREF(result);
+	if ( PyErr_Occurred()==NULL )
+	    PyErr_Print();
     }
 }
 
@@ -768,7 +772,8 @@ return;
     result = PyEval_CallObject(menu_data[mi->mid].func, arglist);
     Py_DECREF(arglist);
     Py_XDECREF(result);
-    /* !!!! How do I report this error to python */
+    if ( PyErr_Occurred()==NULL )
+	PyErr_Print();
 }
 
 void cvpy_tllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -2280,6 +2285,8 @@ return;
     Py_DECREF(args_tuple);
     Py_XDECREF(result);
     Py_DECREF(func);
+    if ( PyErr_Occurred()==NULL )
+	PyErr_Print();
 }
 
 static PyObject *PointTuple(PyFF_Point *pt) {
