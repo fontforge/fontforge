@@ -1172,9 +1172,11 @@ return(false);
 	} else if ( format==fv_eps ) {
 	    SCImportPS(sc,toback?ly_back:ly_fore,start,flags&sf_clearbeforeinput,flags&~sf_clearbeforeinput);
 	    ++tot;
+#ifndef _NO_PYTHON
 	} else if ( format>=fv_pythonbase ) {
 	    PyFF_SCImport(sc,format-fv_pythonbase,start, toback,flags&sf_clearbeforeinput);
 	    ++tot;
+#endif
 	}
 	if ( endpath==NULL )
     break;
@@ -1408,9 +1410,11 @@ return( true );
 #endif
 	    else if ( format==fv_fig )
 		ImportFig(d->cv,temp);
+#ifndef _NO_PYTHON
 	    else if ( format>=fv_pythonbase )
 		PyFF_SCImport(d->cv->sc,format-fv_pythonbase,temp,
 			d->cv->drawmode==dm_back, false);
+#endif
 	}
 	free(temp);
     }
@@ -1433,6 +1437,7 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	int format = (intpt) (GGadgetGetListItemSelected(d->format)->userdata);
 	if ( format<fv_pythonbase )
 	    GFileChooserSetFilterText(d->gfc,d->fv==NULL?wildchr[format]:wildfnt[format]);
+#ifndef _NO_PYTHON
 	else {
 	    char *text;
 	    char *ae = py_ie[format-fv_pythonbase].all_extensions;
@@ -1446,6 +1451,7 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	    GFileChooserSetFilterText(d->gfc,utext);
 	    free(text); free(utext);
 	}
+#endif
 	GFileChooserRefreshList(d->gfc);
 	if ( d->fv!=NULL ) {
 	    if ( format==fv_bdf || format==fv_ttf || format==fv_pcf ||
@@ -1515,6 +1521,7 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
 	done = true;
     }
     base = cur_formats = fv==NULL?formats:fvformats;
+#ifndef _NO_PYTHON
     if ( py_ie!=NULL ) {
 	int cnt, extras;
 	for ( cnt=0; base[cnt].text!=NULL; ++cnt );
@@ -1537,6 +1544,7 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
 	    }
 	}
     }
+#endif
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;
