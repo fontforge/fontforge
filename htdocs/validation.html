@@ -1,0 +1,108 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 15-Aug-2007 -->
+  <!-- AP: Last modified: 15-Aug-2007 -->
+  <TITLE>The font validation window</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+  <H1 ALIGN=Center>
+    Font Validation window
+  </H1>
+  <P>
+  <IMG SRC="validation.png" WIDTH="328" HEIGHT="482" ALIGN="Right">Both PostScript
+  and TrueType impose some restrictions on the data that define a font. Before
+  you save a font you should do a quick check (well... it's not always quick)
+  to insure that you are not breaking any rules.
+  <UL>
+    <LI>
+      No open contours
+    <LI>
+      No paths may intersect.
+    <LI>
+      All paths must be drawn in a consistent direction. Clockwise for external
+      paths, anti-clockwise for internal paths. (Actually PostScript requires the
+      exact opposite, but FontForge reverses PostScript contours when it loads
+      them so that everything is consistant internally -- and reverses them again
+      when it saves them, of course).
+    <LI>
+      There may be no flipped references (this is a special case of the above,
+      a flipped reference will have its contours drawn in the wrong direction).
+    <LI>
+      There must be points everywhere a contour attains a local maximum or minimum,
+      horizontally or vertically. (Actually there are exceptions to this rule,
+      for small curved sections like serifs. The exception is not defined very
+      well, and FontForge makes a guess and will not report errors if the spline
+      is small -- but the actual definition of "small" is somewhat arbetrary).
+    <LI>
+      All opentype substitution commands must refer to real glyphs.
+    <LI>
+      In PostScript fonts there is a limit of 1500 points in a glyph.
+    <LI>
+      In PostScript fonts there is a limit of 96 hints in a glyph.
+    <LI>
+      In PostScript, non-cid-keyed fonts, glyph names may not be longer than 31
+      characters and may contain only "A"-"Z", "a"-"z", "0"-"9", "_" and ".". (If
+      you have the UnicodeGlyphNames preference item check, FontForge disables
+      this check because it assumes you know what you are doing and you are planning
+      to rename the glyphs before they get saved anyway).
+  </UL>
+  <P>
+  Validating a font can take a long time. So FontForge caches the validation
+  state of each glyph (saving it to the sfd file so it is valid across invocations)
+  and will only validate those glyphs which have changed since the last validation.
+  This means that although the first validation may be slow, subsequent validations
+  will probably be very fast -- so don't be discouraged by the time it takes
+  to do this the first time.
+  <P>
+  The Validation window will recheck the state of the font as you edit it.
+  So if you leave the window open you will see glyphs popping into the window
+  and out of it as you create and fix problems.
+  <P>
+  If you double click on a line in the window then FontForge will open an outline
+  glyph editing window for that glyph, and run a small version of
+  <A HREF="problems.html">Element-&gt;Find Problems </A>to help you track down
+  exactly where in the glyph the error(s) occurred.
+  <P>
+  If you right click, you will get a popup menu which has various options which
+  may fix some of the problems in the glyph. There are also options to:
+  <UL>
+    <LI>
+      scroll the window to display the errors of a particular glyph
+    <LI>
+      revalidate the glyph (usually this happens when needed... but just in case
+      fontforge screws up this option is present)
+    <LI>
+      Select all glyphs with a particular error in the font view
+    <LI>
+      Try to do a batch fix of all glyphs with a particular error.
+  </UL>
+  <P>
+  I say that these options "may" fix problems. Let me give some examples where
+  they can't.
+  <UL>
+    <LI>
+      If a glyph contains a reference which is drawn in the wrong direction then
+      you can't fix it in the refering glyph.
+    <LI>
+      If a glyph contains two references which intersect one another, then Remove
+      Overlap can't fix them. You must inline the references before you can correct
+      them.
+    <LI>
+      The normal Add Extrema command is cautious about adding extrema which would
+      be very close to the end-points of a spline (because when you round those
+      points to integers they may end up lying right on top of the end points,
+      or because rounding the control points may cause significant distortion of
+      the spline's shape). Unfortunately these are exactly the cases which are
+      most likely to occur. So FontForge has two variants of Add Extrema, which
+      which adds what it thinks are "Good" extrema, and one which will add all
+      extrema even if they are likely to cause problems later.
+      <P>
+      When the Add Good Extrema command does not fix your problem, you may be better
+      off examining the glyph yourself and seeing if you can redesign it manually.
+  </UL>
+</DIV>
+</BODY></HTML>

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Sep-2002 -->
-  <!-- AP: Last modified: 12-Mar-2007 -->
+  <!-- AP: Last modified: 15-Aug-2007 -->
   <TITLE>Generate Font Dialog</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -13,7 +13,7 @@
     Generate Font Dialog
   </H1>
   <P>
-  <IMG SRC="generate.png" WIDTH="414" HEIGHT="462" ALIGN="Right">This generates
+  <IMG SRC="generate.png" ALIGN="Right" WIDTH="398" HEIGHT="478">This generates
   font files, both outline and bitmap. You may choose not to generate either,
   you may generate an afm file or a pfm file, you may select the type of postscript
   output, you may select which pixelsizes of bitmap to generate.
@@ -315,6 +315,12 @@
   See the section on <A HREF="encodingmenu.html#namelist">namelists</A> for
   a discussion of the "Force glyph names to" field.
   <P>
+  If you leave [] Validate Before Saving checked then FontForge will attempt
+  to validate your font. If it passes then FontForge will save it without bothering
+  you further, but if it fails FontForge will give you the option of reviewing
+  errors and fixing them. It will pop up a <A HREF="validation.html">validation
+  window</A>.
+  <P>
   If you generate a TrueType or OpenType font with the OpenType mode set (note:
   the term "OpenType" means two things, a truetype wrapper around a postscript
   font, or a set of tables containing typographic information -- here the OpenType
@@ -322,10 +328,10 @@
   <A HREF="gposgsub.html">GPOS, GSUB, and GDEF tables</A>. These contain kerning,
   ligature information, arabic forms data, anchor points, etc.
   <P>
-  Apple does not support these OpenType layout tables. If you set Apple mode
-  <A HREF="gposgsub.html#AAT">'kern', 'opbd', 'morx', 'feat', 'lcar' and 'prop'
-  </A>tables may be generated instead. (and a couple of other small differences
-  will appear).
+  Apple does not completely support these OpenType layout tables. If you set
+  Apple mode <A HREF="gposgsub.html#AAT">'kern', 'opbd', 'morx', 'feat', 'lcar'
+  and 'prop' </A>tables may be generated instead. (and a couple of other small
+  differences will appear).
   <P>
   If you set both Apple and OpenType then both sets of tables will be generated.
   If you set neither, then only the 'kern' table will be generated, and it

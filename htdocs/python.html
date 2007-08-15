@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 12-Aug-2007 -->
+  <!-- AP: Last modified: 15-Aug-2007 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -264,9 +264,14 @@
 	in a dialog, and I don't support that).
 	<P>
 	When FontForge starts (if it's a fontforge with python) it will look at the
-	directory $(PREFIX)/share/fontforge/python and attempt to run all files in
-	that directory which end in ".py". Presumably these files will allow people
-	to customize the user interface to suit their needs
+	directories <CODE>$(PREFIX)/share/fontforge/python</CODE> and
+	<CODE>~/.PfaEdit/python</CODE> and attempt to run all files in those directories
+	which end in ".py". Presumably these files will allow people to customize
+	the user interface to suit their needs.
+	<P>
+	Currently it reads the files in directory order (which is generally somewhere
+	between creation order and totally random). It will read the system directory
+	before the user directory.
 	<H3>
 	  Example
 	</H3>
@@ -1351,6 +1356,56 @@ pen = None;				# Finalize the pen. This tells FontForge
 	a tuple of starting locations and widths.</TD>
     </TR>
     <TR>
+      <TD><CODE><A NAME="validation-state">validation</A>_state</CODE></TD>
+      <TD colspan=2>A bit mask indicating some problems this glyph might have.
+	<TABLE BORDER CELLPADDING="2">
+	  <TR>
+	    <TD>0x1</TD>
+	    <TD>If set then this glyph has been validated.<BR>
+	      If unset then other bits are meaningless.</TD>
+	  </TR>
+	  <TR>
+	    <TD>0x2</TD>
+	    <TD>Glyph has an open contour.</TD>
+	  </TR>
+	  <TR>
+	    <TD>0x4</TD>
+	    <TD>Glyph intersects itself somewhere.</TD>
+	  </TR>
+	  <TR>
+	    <TD>0x8</TD>
+	    <TD>At least one contour is drawn in the wrong direction</TD>
+	  </TR>
+	  <TR>
+	    <TD>0x10</TD>
+	    <TD>At least one reference in the glyph has been flipped<BR>
+	      (and so is drawn in the wrong direction)</TD>
+	  </TR>
+	  <TR>
+	    <TD>0x20</TD>
+	    <TD>Missing extrema</TD>
+	  </TR>
+	  <TR>
+	    <TD>0x40</TD>
+	    <TD>A glyph name referred to from this glyph, in an opentype table, is not
+	      present in the font.</TD>
+	  </TR>
+	  <TR>
+	    <TD>0x80</TD>
+	    <TD>PostScript has a limit of 1500 points in a glyph.</TD>
+	  </TR>
+	  <TR>
+	    <TD>0x100</TD>
+	    <TD>PostScript has a limit of 96 hints in a glyph.</TD>
+	  </TR>
+	  <TR>
+	    <TD>0x200</TD>
+	    <TD>Invalid glyph name.</TD>
+	  </TR>
+	</TABLE>
+      </TD>
+    </TR>
+    <TR>
       <TD><CODE><A name="g-width">width</A></CODE></TD>
       <TD colspan=2>The advance width of the glyph. See also
 	<A HREF="#g-vwidth">vwidth</A>.</TD>
@@ -1683,6 +1738,15 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TD><CODE>()</CODE></TD>
       <TD>Unlinks all the references to the current glyph within any other glyph
 	in the font.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>validate</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Validates the glyph and returns the
+	<CODE><A HREF="python.html#validation-state">validation_state</A></CODE>
+	of the glyph (except bit 0x1 is clear). If the glyph passed the validation
+	then the return value will be 0 (not 0x1). Otherwise the return value will
+	be the set of errors found.</TD>
     </TR>
     <TR>
       <TD><CODE>draw</CODE></TD>
@@ -2739,6 +2803,24 @@ pen = None;				# Finalize the pen. This tells FontForge
 	' and 'maxp'. FF may also save tables which you explicitly request. Do not
 	expect to set binary data for tables like 'GPOS' or 'glyf' which FF will
 	generate when it creates a font... that information is not currently available.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>validate</CODE></TD>
+      <TD><CODE>([force])</CODE></TD>
+      <TD>Validates the font and returns a bit mask of all errors from all glyphs
+	(as defined in the
+	<CODE><A HREF="python.html#validation-state">validation_state</A></CODE>
+	of a glyph -- except bit 0x1 is clear). If the font passed the validation
+	then the return value will be 0 (not 0x1). Otherwise the return value will
+	be the set of errors found.
+	<P>
+	Note: The set of errors is slightly different for TrueType and PostScript
+	output. The returned mask contains the list of potential errors. You must
+	figure out which apply to you.
+	<P>
+	Normally each glyph will cache its validation_state and it will not be
+	recalculated. If you pass a non-zero argument to the routine then it will
+	force recalculation of each glyph -- this can be slow.s</TD>
     </TR>
     <TR>
       <TH colspan=3>Selection based interface<BR>
