@@ -94,13 +94,13 @@ struct glyphinstrs {
 typedef struct bluezone {
     real base;
     int cvtindex;
-    real family_base;
-    int family_cvtindex;
-    real overshoot;
+    real family_base;      /* NaN if none */
+    int family_cvtindex;   /* -1 if done */
+    real overshoot;        /* relative to baseline, NOT to base */
 } BlueZone;
 
 typedef struct stdstem {
-    real width;
+    real width;            /* -1 if none */
     int cvtindex;
 } StdStem;
 
@@ -167,7 +167,7 @@ typedef struct instrct {
     uint8 *pt;            /* the current position in the instructions */
 
     /* cvt stuff */
-    CvtData *cvtinfo;
+    CvtData cvtinfo;
 
     /* properties, indexed by ttf point index. Could perhaps be compressed. */
     BasePoint *bp;        /* point coordinates */
@@ -195,6 +195,343 @@ extern int autohint_before_generate;
 
 /******************************************************************************
  *
+ * We need to initialize cvtinfo before initializing 'prep', because we want
+ * to do bluezone positioning and stem width normalisation there.
+ *
+ ******************************************************************************/
+
+/* 
+ * Helper routines: read PS private entry and return its contents.
+ */
+static real *ParsePSArray(const char *str, int *rescnt) {
+    char *end;
+    real d, *results=NULL;
+
+    if ((rescnt == NULL) || (str == NULL))
+return NULL;
+
+    *rescnt = 0;
+
+    while (*str)
+    {
+        while (!isdigit(*str) && *str!='-' && *str!='+' && *str!='.' && *str!='\0')
+	    ++str;
+
+	if ( *str=='\0' )
+    break;
+
+        d = strtod(str, &end);
+
+        if ( d>=-32768 && d<=32767 ) {
+            if (*rescnt) {
+                results = grealloc(results, sizeof(real)*(++(*rescnt)));
+	        results[*rescnt-1] = d;
+            }
+            else (results = gcalloc(*rescnt=1, sizeof(real)))[0] = d;
+	}
+
+        str = end;
+    }
+
+return results;
+}
+
+static real *GetNParsePSArray(SplineFont *sf, char *name, int *rescnt) {
+return ParsePSArray(PSDictHasEntry(sf->private, name), rescnt);
+}
+
+/*
+ * To be used with qsort() - sorts BlueZone array by base in ascending order.
+ */
+static int SortBlues(const void *a, const void *b) {
+    return ((BlueZone *)a)->base > ((BlueZone *)b)->base;
+}
+
+/*
+ * Tell if the two blues intersect. Bs are bases, Os are overshoots.
+ */
+static int BluesIntersect(real b1, real o1, real b2, real o2) {
+    real t;
+
+    if (b1 > o1) {
+        t = o1;
+	o1 = b1;
+	b1 = t;
+    }
+
+    if (b2 > o2) {
+        t = o2;
+	o2 = b2;
+	b2 = t;
+    }
+    
+return !((b2 > o1) || (o2 < b1));
+}
+
+/* Import blue data into cvtinfo. Include family blues too. We assume that blues
+ * are needed for family blues to make sense. If there are only family blues,
+ * we treat them as normal blues. Otherwise, if a family blue zone don't match
+ * any normal blue zone, or if they match perfectly, it is ignored.
+ */
+static void CvtInfoImportBlues(InstrCt *ct) {
+    int bluecnt = 0;
+    int i, j, cnt;
+    real *values;
+
+    int HasPSBlues =
+             (PSDictHasEntry(ct->gi->sf->private, "BlueValues") != NULL) ||
+             (PSDictHasEntry(ct->gi->sf->private, "OtherBlues") != NULL);
+
+    int HasPSFamilyBlues =
+             (PSDictHasEntry(ct->gi->sf->private, "FamilyBlues") != NULL) ||
+             (PSDictHasEntry(ct->gi->sf->private, "FamilyOtherBlues") != NULL);
+
+    char *PrimaryBlues = HasPSBlues ? "BlueValues" : "FamilyBlues";
+    char *OtherBlues = HasPSBlues ? "OtherBlues" : "FamilyOtherBlues";
+
+    if (HasPSBlues || HasPSFamilyBlues){
+        values = GetNParsePSArray(ct->gi->sf, PrimaryBlues, &cnt);
+	cnt /= 2;
+	if (cnt > 7) cnt = 7;
+
+	if (values != NULL) {
+	    ct->cvtinfo.BlueCnt = bluecnt = cnt;
+
+	    /* First pair is a bottom zone (see Type1 specification). */
+	    ct->cvtinfo.Blues[0].base = values[1];
+	    ct->cvtinfo.Blues[0].overshoot = values[0];
+	    ct->cvtinfo.Blues[0].family_base = strtod("NAN", NULL);
+
+	    /* Next pairs are top zones (see Type1 specification). */
+	    for (i=1; i<bluecnt; i++) {
+	        ct->cvtinfo.Blues[i].family_base = strtod("NAN", NULL);
+		ct->cvtinfo.Blues[i].base = values[2*i];
+		ct->cvtinfo.Blues[i].overshoot = values[2*i+1];
+	    }
+
+	    free(values);
+	}
+
+        values = GetNParsePSArray(ct->gi->sf, OtherBlues, &cnt);
+	cnt /= 2;
+	if (cnt > 5) cnt = 5;
+
+	if (values != NULL) {
+	    ct->cvtinfo.BlueCnt += cnt;
+
+	    /* All pairs are bottom zones (see Type1 specification). */
+	    for (i=0; i<cnt; i++) {
+	        ct->cvtinfo.Blues[i+bluecnt].family_base = strtod("NAN", NULL);
+		ct->cvtinfo.Blues[i+bluecnt].base = values[2*i+1];
+		ct->cvtinfo.Blues[i+bluecnt].overshoot = values[2*i];
+	    }
+
+	    free(values);
+	    bluecnt += cnt;
+	}
+
+	/* Add family data to blues */
+	if (HasPSBlues && HasPSFamilyBlues) {
+            values = GetNParsePSArray(ct->gi->sf, "FamilyBlues", &cnt);
+	    cnt /= 2;
+	    if (cnt > 7) cnt = 7;
+
+	    if (values != NULL) {
+	        /* First pair is a bottom zone (see Type1 specification). */
+	        for (j=0; j<bluecnt; j++)
+		    if (finite(ct->cvtinfo.Blues[j].family_base))
+		        continue;
+		    else if (values[1] != ct->cvtinfo.Blues[j].base &&
+		             BluesIntersect(ct->cvtinfo.Blues[j].base,
+		                       ct->cvtinfo.Blues[j].overshoot,
+				       values[0], values[1]))
+		        ct->cvtinfo.Blues[j].family_base = values[1];
+
+		/* Next pairs are top zones (see Type1 specification). */
+		for (i=1; i<cnt; i++) {
+		    for (j=0; j<bluecnt; j++)
+		        if (finite(ct->cvtinfo.Blues[j].family_base))
+			    continue;
+			else if (values[2*i] != ct->cvtinfo.Blues[j].base &&
+			         BluesIntersect(ct->cvtinfo.Blues[j].base,
+				           ct->cvtinfo.Blues[j].overshoot,
+					   values[2*i], values[2*i+1]))
+			    ct->cvtinfo.Blues[j].family_base = values[2*i];
+		}
+
+		free(values);
+	    }
+	    
+            values = GetNParsePSArray(ct->gi->sf, "FamilyOtherBlues", &cnt);
+	    cnt /= 2;
+	    if (cnt > 5) cnt = 5;
+
+	    if (values != NULL) {
+		/* All pairs are bottom zones (see Type1 specification). */
+		for (i=0; i<cnt; i++) {
+		    for (j=0; j<bluecnt; j++)
+		        if (finite(ct->cvtinfo.Blues[j].family_base))
+			    continue;
+			else if (values[2*i+1] != ct->cvtinfo.Blues[j].base &&
+			         BluesIntersect(ct->cvtinfo.Blues[j].base,
+				           ct->cvtinfo.Blues[j].overshoot,
+					   values[2*i], values[2*i+1]))
+			    ct->cvtinfo.Blues[j].family_base = values[2*i+1];
+		}
+
+		free(values);
+	    }
+	}
+    }
+    else if (ct->gi->bd->bluecnt) {
+        /* If there are no PS private entries, we have */
+	/* to use FF's quickly guessed fallback blues. */
+        ct->cvtinfo.BlueCnt = bluecnt = ct->gi->bd->bluecnt;
+
+        for (i=0; i<bluecnt; i++) {
+	    ct->cvtinfo.Blues[i].family_base = strtod("NAN", NULL);
+	    ct->cvtinfo.Blues[i].family_cvtindex = -1;
+
+	    if (ct->gi->bd->blues[i][1] <= 0) {
+	        ct->cvtinfo.Blues[i].base = ct->gi->bd->blues[i][1];
+		ct->cvtinfo.Blues[i].overshoot = ct->gi->bd->blues[i][0];
+	    }
+	    else {
+	        ct->cvtinfo.Blues[i].base = ct->gi->bd->blues[i][0];
+		ct->cvtinfo.Blues[i].overshoot = ct->gi->bd->blues[i][1];
+	    }
+        }
+    }
+
+    /* Purely for aesthetical reasons. */    
+    qsort(ct->cvtinfo.Blues, ct->cvtinfo.BlueCnt, sizeof(BlueZone), SortBlues);
+}
+
+/*
+ * Import stem data into instrct.
+ * We don't deal with diagonal stems here.
+ */
+static void CvtInfoImportStems(InstrCt *ct) {
+    int i, cnt, next;
+    real *values;
+
+    /* Import StdHW & StemSnapH */
+    if ((values = GetNParsePSArray(ct->gi->sf, "StdHW", &cnt)) != NULL) {
+        ct->cvtinfo.StdHW.width = *values;
+        free(values);
+    }
+
+    if ((values = GetNParsePSArray(ct->gi->sf, "StemSnapH", &cnt)) != NULL) {
+        ct->cvtinfo.StemSnapH = gcalloc(cnt, sizeof(StdStem));
+
+        for (next=i=0; i<cnt; i++)
+	    if (values[i] != ct->cvtinfo.StdHW.width)
+	        ct->cvtinfo.StemSnapH[next++].width = values[i];
+
+	if (!next) {
+	    free(ct->cvtinfo.StemSnapH);
+	    ct->cvtinfo.StemSnapH = NULL;
+	}
+
+	ct->cvtinfo.StemSnapHCnt = next;
+        free(values);
+    }
+
+    /* Import StdVW & StemSnapV */
+    if ((values = GetNParsePSArray(ct->gi->sf, "StdVW", &cnt)) != NULL) {
+        ct->cvtinfo.StdVW.width = *values;
+        free(values);
+    }
+
+    if ((values = GetNParsePSArray(ct->gi->sf, "StemSnapV", &cnt)) != NULL) {
+        ct->cvtinfo.StemSnapV = gcalloc(cnt, sizeof(StdStem));
+
+        for (next=i=0; i<cnt; i++)
+	    if (values[i] != ct->cvtinfo.StdVW.width)
+	        ct->cvtinfo.StemSnapV[next++].width = values[i];
+
+	if (!next) {
+	    free(ct->cvtinfo.StemSnapV);
+	    ct->cvtinfo.StemSnapV = NULL;
+	}
+
+	ct->cvtinfo.StemSnapVCnt = next;
+        free(values);
+    }
+}
+
+/* Set up cvtinfo in instruction context.
+ * TODO! Build actual cvt table if possible. If not, assign cvt indexes
+ * in fallback mode.
+ */
+static void init_cvt(InstrCt *ct) {
+    int i, cvtindex = 0;
+
+    ct->cvtinfo.BlueCnt = 0;
+    ct->cvtinfo.StdHW.width = -1;
+    ct->cvtinfo.StemSnapH = NULL;
+    ct->cvtinfo.StemSnapHCnt = 0;
+    ct->cvtinfo.StdVW.width = -1;
+    ct->cvtinfo.StemSnapV = NULL;
+    ct->cvtinfo.StemSnapVCnt = 0;
+    
+    CvtInfoImportBlues(ct);
+    CvtInfoImportStems(ct);
+
+    /* Assign cvt indexes */
+
+#if 1
+    fprintf(stderr, "Blues:\n");
+#endif
+
+    for (i=0; i<ct->cvtinfo.BlueCnt; i++) {
+        ct->cvtinfo.Blues[i].cvtindex = cvtindex++;
+	if (finite(ct->cvtinfo.Blues[i].family_base))
+	    ct->cvtinfo.Blues[i].family_cvtindex = cvtindex++;
+#if 1
+	fprintf(stderr, "  %i:\n", i);
+	fprintf(stderr, "    base:      %f\n", (double)ct->cvtinfo.Blues[i].base);
+	fprintf(stderr, "    overshoot: %f\n", (double)ct->cvtinfo.Blues[i].overshoot);
+	fprintf(stderr, "    base cvt:  %d\n", ct->cvtinfo.Blues[i].cvtindex);
+
+	if (finite(ct->cvtinfo.Blues[i].family_base)) {
+	    fprintf(stderr, "    fam base:  %f\n", (double)ct->cvtinfo.Blues[i].family_base);
+	    fprintf(stderr, "    fam cvt:   %d\n", ct->cvtinfo.Blues[i].family_cvtindex);
+	}
+#endif
+    }
+
+    if (ct->cvtinfo.StdHW.width != -1)
+        ct->cvtinfo.StdHW.cvtindex = cvtindex++;
+
+    for (i=0; i<ct->cvtinfo.StemSnapHCnt; i++)
+        ct->cvtinfo.StemSnapH[i].cvtindex = cvtindex++;
+
+    if (ct->cvtinfo.StdVW.width != -1)
+        ct->cvtinfo.StdVW.cvtindex = cvtindex++;
+
+    for (i=0; i<ct->cvtinfo.StemSnapVCnt; i++)
+        ct->cvtinfo.StemSnapV[i].cvtindex = cvtindex++;
+
+    //TODO! if we can't use it, reassign cvt indexes in fallback mode.
+
+    ct->cvt_done = 0;
+}
+
+static void FreeCvtInfo(InstrCt *ct) {
+    ct->cvtinfo.BlueCnt = 0;
+    ct->cvtinfo.StdHW.width = -1;
+    if (ct->cvtinfo.StemSnapHCnt != 0) free(ct->cvtinfo.StemSnapH);
+    ct->cvtinfo.StemSnapHCnt = 0;
+    ct->cvtinfo.StemSnapH = NULL;
+    ct->cvtinfo.StdVW.width = -1;
+    if (ct->cvtinfo.StemSnapVCnt != 0) free(ct->cvtinfo.StemSnapV);
+    ct->cvtinfo.StemSnapVCnt = 0;
+    ct->cvtinfo.StemSnapV = NULL;
+}
+
+/******************************************************************************
+ *
  * We need to initialize some tables before autohinting: 'maxp', 'fpgm', 'cvt'
  * and 'prep'.
  *
@@ -218,9 +555,7 @@ return( tab );
  * a twilight zone). We also currently define one function in fpgm. We must
  * ensure this is indicated in 'maxp' table. Note: we'll surely need more
  * stack levels in the future. Twilight point count may vary depending on
- * hinting method; for now, one is enough.
- *
- * TODO! I don't know why, but FF sometimes won't set the stack depth.
+ * hinting method; one may be enough, but
  */
 static void init_maxp(InstrCt *ct) {
     struct ttf_table *tab = SFFindTable(ct->sc->parent,CHR('m','a','x','p'));
@@ -243,9 +578,15 @@ static void init_maxp(InstrCt *ct) {
     uint16 fdefs = memushort(tab->data, 32, 10*sizeof(uint16));
     uint16 stack = memushort(tab->data, 32, 12*sizeof(uint16));
 
+    if (ct->fpgm_done)
+        if (fdefs<2) fdefs=2;
+
     if (zones<2) zones=2;
-    if (twpts<1) twpts=1;
-    if (fdefs<2) fdefs=2;
+
+    if (ct->prep_done) {
+        if (twpts < ct->cvtinfo.BlueCnt) twpts = ct->cvtinfo.BlueCnt;
+    }
+    else if (twpts<1) twpts=1;
 
 #if OPTIMIZE_TTF_INSTRS
     if (stack<256) stack=256;
@@ -267,6 +608,9 @@ static void init_maxp(InstrCt *ct) {
  * be placed below it. It's good to first clear font's hinting tables, then
  * autohint it, and then insert user's own code and do the manual hinting of
  * glyphs that do need it.
+ *
+ * TODO! It's quite possible that functions used may depend on whether we
+ * succeeded in cvt/prep initialization or not.
  */
 static void init_fpgm(InstrCt *ct) {
     uint8 new_fpgm[] = 
@@ -336,7 +680,6 @@ static void init_fpgm(InstrCt *ct) {
 	0x2d  // ENDF
     };
 
-    int alert;
     struct ttf_table *tab = SFFindTable(ct->sc->parent,CHR('f','p','g','m'));
 
     if ( tab==NULL || (tab->len==0) ) {
@@ -354,13 +697,13 @@ static void init_fpgm(InstrCt *ct) {
     }
     else {
 	/* there already is a font program. */
-	alert = 1;
+	ct->fpgm_done = 0;
 	if (tab->len >= sizeof(new_fpgm))
 	    if (!memcmp(tab->data, new_fpgm, sizeof(new_fpgm)))
-		alert = 0;  /* it's ours, perhaps with user's extensions. */
+		ct->fpgm_done = 1;  /* it's ours. */
 
 	/* Log warning message. */
-	if (alert) {
+	if (!ct->fpgm_done)
 	    ff_post_notice(_("Can't insert 'fpgm'"),
 		_("There exists a 'fpgm' code that seems incompatible with "
 		  "FontForge's. Instructions generated will be of lower "
@@ -370,24 +713,11 @@ static void init_fpgm(InstrCt *ct) {
 		  "FontForge's 'fpgm', but due to possible future updates, "
 		  "it is extremely advised to use high numbers for user's "
 		  "functions."
-		 ));
-
-	    ct->fpgm_done = 0;
-	}
-	else ct->fpgm_done = 1;
+	    ));
     }
 }
 
-/* Set up cvtinfo in instruction context, and init CVT table accordingly.
- */
-static void init_cvt(InstrCt *ct) {
-    // create an empty cvtinfo
-    // import blues
-    // import StdHW & StdVW
-    // import StemSnapH & StemSnapW
-    // build cvt out of cvtinfo
-    ct->cvt_done = 0;
-}
+
 
 /* Turning dropout control on will dramatically improve mono rendering, even
  * without further hinting, especcialy for light typefaces. And turning hinting
@@ -429,7 +759,6 @@ static void init_prep(InstrCt *ct) {
 	0x59  // EIF
     };
 
-    int alert;
     struct ttf_table *tab = SFFindTable(ct->sc->parent,CHR('p','r','e','p'));
 
     if ( tab==NULL || (tab->len==0) ) {
@@ -446,22 +775,19 @@ static void init_prep(InstrCt *ct) {
     }
     else {
 	/* there already is a font program. */
-	alert = 1;
+	ct->prep_done = 0;
 	if (tab->len >= sizeof(new_prep))
 	    if (!memcmp(tab->data, new_prep, sizeof(new_prep)))
-		alert = 0;  /* it's ours, perhaps with user's extensions. */
+		ct->prep_done = 1;  /* it's ours */
 
 	/* Log warning message. */
-	if (alert) {
+	if (!ct->prep_done)
 	    LogError(_("Can't insert 'prep'"),
 		_("There exists a 'prep' code incompatible with FontForge's. "
 		  "It can't be guaranteed it will work well. It is suggested "
 		  "to allow FontForge to insert its code and then append user"
 		  "'s own."
-		 ));
-            ct->prep_done = 0;
-	}
-        else ct->prep_done = 1;
+	    ));
     }
 }
 
@@ -705,7 +1031,7 @@ static uint8 *instructpoints(uint8 *instrs, int ptcnt, const int *pts, uint8 com
 
 #if OPTIMIZE_TTF_INSTRS
     instrs = pushpoints(instrs, ptcnt<=255?ptcnt:255, pts);
-    for (i=0; i<ptcnt; i++) *instrs++ = command;
+    for (i=0; i<(ptcnt<=255?ptcnt:255); i++) *instrs++ = command;
     if (ptcnt>255) instrs=instructpoints(instrs, ptcnt-255, pts+255, command);
 #else
     for (i=0; i<ptcnt; i++) {
@@ -1123,6 +1449,8 @@ return;
  * work at all. Currently there is only one twilight point used, but there
  * may be needed one or even two points per blue zone if some advanced snapping
  * and counter managing is to be done.
+ *
+ * TODO! Use the information from cv->cvtdata
  *
  * Snapping relies on function 0 in FPGM, see init_fpgm().
  *
@@ -2210,10 +2538,10 @@ static uint8 *dogeninstructions(InstrCt *ct) {
     DStemInfo *dstem;
 
     /* very basic preparations for default hinting */
-    init_maxp(ct);
     init_cvt(ct);
     init_prep(ct);
     init_fpgm(ct);
+    init_maxp(ct);
 
     /* Maximum instruction length is 6 bytes for each point in each dimension */
     /*  2 extra bytes to finish up. And one byte to switch from x to y axis */
@@ -2297,6 +2625,8 @@ static uint8 *dogeninstructions(InstrCt *ct) {
     /*  moving some points out-of their vertical stems. */
     DStemInfoGeninst(ct);
     //ct->pt = gen_md_instrs(ct->gi,ct->pt,ct->sc->md,ct->ss,ct->bp,ct->ptcnt,true,ct->touched);
+
+    FreeCvtInfo(ct);
 
     if (ct->sc->dstem) {
 	DStemFree(ct->diagstems, ct->diagpts, ct->ptcnt);
