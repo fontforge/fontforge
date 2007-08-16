@@ -2568,6 +2568,7 @@ extern struct math_constants_descriptor {
     int new_page;
 } math_constants_descriptor[];
 
+extern char *VSErrorsFromMask(int mask);
 extern int SCValidate(SplineChar *sc);
 extern int SFValidate(SplineFont *sf, int force);
 extern int VSMaskFromFormat(SplineFont *sf, enum fontformat format);

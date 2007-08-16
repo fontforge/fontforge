@@ -3466,6 +3466,28 @@ static char *vserrornames[] = {
     N_("Bad Glyph Name")
 };
 
+char *VSErrorsFromMask(int mask) {
+    int bit, m;
+    int len;
+    char *ret;
+
+    len = 0;
+    for ( m=0, bit=(vs_known<<1) ; bit<=vs_last; ++m, bit<<=1 )
+	if ( mask&bit )
+	    len += strlen( _(vserrornames[m]))+2;
+    ret = galloc(len+1);
+    len = 0;
+    for ( m=0, bit=(vs_known<<1) ; bit<=vs_last; ++m, bit<<=1 )
+	if ( mask&bit ) {
+	    ret[len++] =' ';
+	    strcpy(ret+len,_(vserrornames[m]));
+	    len += strlen( ret+len );
+	    ret[len++] ='\n';
+	}
+    ret[len] = '\0';
+return( ret );
+}
+
 static int VW_FindLine(struct val_data *vw,int line, int *skips) {
     int gid,k, cidmax = vw->cidmax;
     SplineFont *sf = vw->sf;
