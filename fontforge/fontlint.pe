@@ -1,0 +1,50 @@
+
+if ( Strtol($version)<20070815 )
+  Error( "Please upgrade to a more recent version of fontforge" )
+endif
+
+if ( $argc <= 1 )
+  Print( "fontlint: {fontfile}" )
+  Print( "  Validates the listed fonts" )
+return( 1 );
+endif
+
+while ( $argc > 1 )
+  Open( $1 )
+  mask = Validate()
+  if ( mask==0 )
+    Print("Validation " + $fontname + " ...Passed")
+  else
+    Print("Validation " + $fontname + " ...Failed")
+    if ( mask & 0x2 )
+      Print( "  Open Contour" )
+    endif
+    if ( mask & 0x4 )
+      Print( "  Self Intersecting Glyph" )
+    endif
+    if ( mask & 0x8 )
+      Print( "  Wrong Direction" )
+    endif
+    if ( mask & 0x10 )
+      Print( "  Flipped Reference" )
+    endif
+    if ( mask & 0x20 )
+      Print( "  Missing Points at Extrema" )
+    endif
+    if ( mask & 0x40 )
+      Print( "  Unknown glyph referenced in GSUB/GPOS/MATH" )
+    endif
+    if ( mask & 0x80 )
+      Print( "  Too Many Points" )
+    endif
+    if ( mask & 0x100 )
+      Print( "  Too Many Hints" )
+    endif
+    if ( mask & 0x200 )
+      Print( "  Bad Glyph Name" )
+    endif
+Quit( 1 )
+  endif
+  Close()
+  shift
+endloop

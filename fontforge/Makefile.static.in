@@ -53,7 +53,7 @@ LIBS = -L../libs $(X_LIBS) ../libs/libgdraw.a ../libs/libgunicode.a \
     $(X_PRE_LIBS) $(X_11LIB) $(X_EXTRA_LIBS) @LIBS@ $(STATIC_LIBS) -lm
 DLIBS = ../libs/libgunicode.a @LIBS@ $(STATIC_LIBS) -lm
 
-all: fontforge sfddiff fontimage
+all: fontforge sfddiff fontimage fontlint
 
 fontforge: $(fontforge_OBJECTS)
 	$(CC) -o fontforge $(LDFLAGS) $(fontforge_OBJECTS) $(LIBS)
@@ -67,6 +67,11 @@ fontimage: fontimage.pe
 	echo "#!$(bindir)/fontforge -lang=ff" >fontimage
 	cat fontimage.pe >>fontimage
 	chmod +x fontimage
+
+fontlint: fontlint.pe
+	echo "#!$(bindir)/fontforge -lang=ff" >fontlint
+	cat fontlint.pe >>fontlint
+	chmod +x fontlint
 
 sfddiff.old: $(DIFFOBJS)
 	$(LIBTOOL) --mode=link $(CC) -o sfddiff.old $(DIFFOBJS) $(DLIBS)
