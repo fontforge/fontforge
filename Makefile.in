@@ -80,6 +80,7 @@ install: $(sharedir) all install_libs install_po
 	$(LIBTOOL) --mode=install $(INSTALL) -c fontforge/fontforge $(bindir)
 	$(LIBTOOL) --mode=install $(INSTALL) -c fontforge/sfddiff $(bindir)
 	$(LIBTOOL) --mode=install $(INSTALL) -c fontforge/fontimage $(bindir)
+	$(LIBTOOL) --mode=install $(INSTALL) -c fontforge/fontlint $(bindir)
 #	-rm -f $(bindir)/pfaedit
 #	(cd $(bindir) ; ln -s fontforge pfaedit)
 #	$(INSTALL_DATA) fontforge/pfaedit-*.ui $(sharedir)
