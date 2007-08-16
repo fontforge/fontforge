@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 4-Aug-2007 -->
+  <!-- AP: Last modified: 16-Aug-2007 -->
   <TITLE>Char Info</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -13,7 +13,7 @@
     Glyph Info
   </H1>
   <H2>
-    <IMG SRC="charinfo.png" WIDTH="397" HEIGHT="437" ALIGN="Right">
+    <IMG SRC="charinfo.png" WIDTH="462" HEIGHT="384" ALIGN="Right">
     <A NAME="Character">Glyph</A> Info
   </H2>
   <UL>
@@ -56,7 +56,22 @@
   The Glyph class field is for the opentype 'GDEF' table. You can usually leave
   it set to automatic. FontForge will then figure out the class, and whether
   it should be output into GDEF. You can see what FontForge does in
-  <A HREF="showatt.html">View-&gt;Show ATT</A>.<BR CLEAR=ALL>
+  <A HREF="showatt.html">View-&gt;Show ATT</A>.
+  <P>
+  The <CODE>[] Mark for Unlink, Remove Overlap Before Save</CODE> checkbox
+  sounds absurdly complicated. Consider the glyphs Aring, Ccedilla, and Oogonek.
+  In traditional design the accent of each of these glyphs will overlap the
+  base letter. Unfortunately neither TrueType nor PostScript allows contours
+  to intersect. You can solve this problem by unlinking the references that
+  make up the glyph and then running Element-&gt;Remove Overlap. But that has
+  problems of its own... now when you change the base letter (or the accent)
+  the change will no longer be reflected in the composite glyph. This little
+  checkbox neatly solves that problem. If the glyph is composed of references
+  which overlap, and you wish to retain the references, but you wish it to
+  be output without an overlap, simply check this box. Then when it comes time
+  to save the font, ff will perform the unlink and then run remove overlap,
+  save the font, and then restore the glyph to its original
+  condition.<BR CLEAR=ALL>
   <P>
   <IMG SRC="charinfo-comment.png" WIDTH="307" HEIGHT="359" ALIGN="Right">You
   can assign an arbitrary (unicode) <A NAME="comment">comment</A> to the glyph.
