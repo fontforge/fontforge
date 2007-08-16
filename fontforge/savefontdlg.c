@@ -1884,7 +1884,8 @@ return( 1 );
 return( err );
 }
 
-static int _DoSave(SplineFont *sf,char *newname,int32 *sizes,int res,EncMap *map) {
+static int _DoSave(SplineFont *sf,char *newname,int32 *sizes,int res,
+	EncMap *map, char *subfontdefinition) {
     char *path;
     int err=false;
     int iscid = oldformatstate==ff_cid || oldformatstate==ff_cffcid ||
@@ -1892,7 +1893,7 @@ static int _DoSave(SplineFont *sf,char *newname,int32 *sizes,int res,EncMap *map
     int flags = 0;
 
     if ( oldformatstate == ff_multiple )
-return( WriteMultiplePSFont(sf,newname,sizes,res,NULL,map));
+return( WriteMultiplePSFont(sf,newname,sizes,res,subfontdefinition,map));
 
     if ( oldformatstate<=ff_cffcid )
 	flags = old_ps_flags;
@@ -2042,6 +2043,43 @@ return( true );
     if ( !err )
 	SavePrefs();
 return( err );
+}
+
+static void PrepareUnlinkRmOvrlp(SplineFont *sf) {
+    int gid;
+    SplineChar *sc;
+    RefChar *ref, *refnext;
+    extern int no_windowing_ui, maxundoes;
+    int old_nwui = no_windowing_ui, old_maxundoes = maxundoes;
+
+    if ( maxundoes==0 ) maxundoes = 1;		/* Force undoes */
+
+    for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL && sc->unlink_rm_ovrlp_save_undo ) {
+	if ( autohint_before_generate && sc!=NULL &&
+		sc->changedsincelasthinted && !sc->manualhints )
+	    SplineCharAutoHint(sc,NULL);	/* Do this now, else we get an unwanted undo on the stack from hinting */
+	no_windowing_ui = false;
+	SCPreserveState(sc,false);
+	for ( ref= sc->layers[ly_fore].refs; ref!=NULL; ref=refnext ) {
+	    refnext = ref->next;
+	    SCRefToSplines(sc,ref);
+	}
+	no_windowing_ui = true;			/* Clustering wants to create an undo that I don't need */
+	SCRoundToCluster(sc,-2,false,.03,.12);
+	no_windowing_ui = false;
+	sc->layers[ly_fore].splines = SplineSetRemoveOverlap(sc,sc->layers[ly_fore].splines,over_remove);
+    }
+    no_windowing_ui = old_nwui;
+    maxundoes = old_maxundoes;
+}
+
+static void RestoreUnlinkRmOvrlp(SplineFont *sf) {
+    int gid;
+    SplineChar *sc;
+
+    for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL && sc->unlink_rm_ovrlp_save_undo ) {
+	SCDoUndo(sc,ly_fore);
+    }
 }
 
 static int32 *AllBitmapSizes(SplineFont *sf) {
@@ -2281,11 +2319,15 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
     }
 
     former = NULL;
-    if ( rename_to!=NULL ) {
-	if ( sfs!=NULL ) {
-	    for ( sfl=sfs; sfl!=NULL; sfl=sfl->next )
+    if ( sfs!=NULL ) {
+	for ( sfl=sfs; sfl!=NULL; sfl=sfl->next ) {
+	    PrepareUnlinkRmOvrlp(sfl->sf);
+	    if ( rename_to!=NULL )
 		sfl->former_names = SFTemporaryRenameGlyphsToNamelist(sfl->sf,rename_to);
-	} else
+	}
+    } else {
+	PrepareUnlinkRmOvrlp(sf);
+	if ( rename_to!=NULL )
 	    former = SFTemporaryRenameGlyphsToNamelist(sf,rename_to);
     }
 
@@ -2298,18 +2340,20 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	else
 	    flags = old_otf_flags;
 	ret = WriteMacFamily(filename,sfs,oldformatstate,oldbitmapstate,flags,map);
-    } else if ( oldformatstate == ff_multiple ) {
-	ret = !WriteMultiplePSFont(sf,filename,sizes,res,subfontdefinition,map);
     } else {
-	ret = !_DoSave(sf,filename,sizes,res,map);
+	ret = !_DoSave(sf,filename,sizes,res,map,subfontdefinition);
     }
     free(freeme);
 
-    if ( rename_to!=NULL ) {
-	if ( sfs!=NULL ) {
-	    for ( sfl=sfs; sfl!=NULL; sfl=sfl->next )
+    if ( sfs!=NULL ) {
+	for ( sfl=sfs; sfl!=NULL; sfl=sfl->next ) {
+	    RestoreUnlinkRmOvrlp(sfl->sf);
+	    if ( rename_to!=NULL )
 		SFTemporaryRestoreGlyphNames(sfl->sf,sfl->former_names);
-	} else
+	}
+    } else {
+	RestoreUnlinkRmOvrlp(sf);
+	if ( rename_to!=NULL )
 	    SFTemporaryRestoreGlyphNames(sf,former);
     }
 
@@ -2538,24 +2582,32 @@ return;
     }
 
     former = NULL;
-    if ( rename_to!=NULL && !iscid ) {
-	if ( sfs!=NULL ) {
-	    for ( sfl=sfs; sfl!=NULL; sfl=sfl->next )
+    if ( d->family && sfs!=NULL ) {
+	for ( sfl=sfs; sfl!=NULL; sfl=sfl->next ) {
+	    PrepareUnlinkRmOvrlp(sfl->sf);
+	    if ( rename_to!=NULL && !iscid )
 		sfl->former_names = SFTemporaryRenameGlyphsToNamelist(sfl->sf,rename_to);
-	} else
+	}
+    } else {
+	PrepareUnlinkRmOvrlp(d->sf);
+	if ( rename_to!=NULL && !iscid )
 	    former = SFTemporaryRenameGlyphsToNamelist(d->sf,rename_to);
     }
 
     if ( !d->family )
-	err = _DoSave(d->sf,temp,sizes,0x80000000,d->map);
+	err = _DoSave(d->sf,temp,sizes,0x80000000,d->map, NULL);
     else
 	err = !WriteMacFamily(temp,sfs,oldformatstate,oldbitmapstate,flags,d->map);
 
-    if ( rename_to!=NULL && !iscid ) {
-	if ( sfs!=NULL ) {
-	    for ( sfl=sfs; sfl!=NULL; sfl=sfl->next )
+    if ( d->family && sfs!=NULL ) {
+	for ( sfl=sfs; sfl!=NULL; sfl=sfl->next ) {
+	    RestoreUnlinkRmOvrlp(sfl->sf);
+	    if ( rename_to!=NULL && !iscid )
 		SFTemporaryRestoreGlyphNames(sfl->sf,sfl->former_names);
-	} else
+	}
+    } else {
+	RestoreUnlinkRmOvrlp(d->sf);
+	if ( rename_to!=NULL && !iscid )
 	    SFTemporaryRestoreGlyphNames(d->sf,former);
     }
     if ( !iscid )
@@ -2917,7 +2969,7 @@ static void *BackgroundValidate(void *_d) {
 	    if ( d->please_die_thread )
 pthread_exit(NULL);
 	    if ( !(sc->validation_state&vs_known) )
-		SCValidate(sc);
+		SCValidate(sc,true);
 	}
 	++k;
     } while ( k<sf->subfontcnt );

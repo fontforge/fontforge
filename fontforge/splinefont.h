@@ -1133,7 +1133,8 @@ typedef struct splinechar {
     unsigned int instructions_out_of_date: 1;
     unsigned int complained_about_ptnums: 1;
     unsigned int vs_open: 1;
-    /* 9 bits left (one more if we ignore compositionunit below) */
+    unsigned int unlink_rm_ovrlp_save_undo: 1;
+    /* 8 bits left (one more if we ignore compositionunit below) */
 #if HANYANG
     unsigned int compositionunit: 1;
     int16 jamo, varient;
@@ -2569,7 +2570,7 @@ extern struct math_constants_descriptor {
 } math_constants_descriptor[];
 
 extern char *VSErrorsFromMask(int mask);
-extern int SCValidate(SplineChar *sc);
+extern int SCValidate(SplineChar *sc, int force);
 extern int SFValidate(SplineFont *sf, int force);
 extern int VSMaskFromFormat(SplineFont *sf, enum fontformat format);
 #endif

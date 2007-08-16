@@ -80,6 +80,8 @@ typedef struct charinfo {
 #define CID_IsExtended	1024
 #define CID_LCCount	1040
 
+#define CID_UnlinkRmOverlap	1041
+
 /* Offsets for repeated fields. add 100*index (index<=6) */
 #define CID_List	1220
 #define CID_New		1221
@@ -1285,6 +1287,7 @@ return( false );
     SCPreserveState(ci->sc,2);
     ret = SCSetMetaData(ci->sc,name,val,comment);
     free(name); free(comment);
+    ci->sc->unlink_rm_ovrlp_save_undo = GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_UnlinkRmOverlap));
     if ( refresh_fvdi ) {
 	for ( fvs=ci->sc->parent->fv; fvs!=NULL; fvs=fvs->next ) {
 	    GDrawRequestExpose(fvs->gw,NULL,false);	/* Redraw info area just in case this char is selected */
@@ -3437,6 +3440,8 @@ static void CIFillup(CharInfo *ci) {
 
     GGadgetSelectOneListItem(GWidgetGetControl(ci->gw,CID_Color),0);
 
+    GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_UnlinkRmOverlap),sc->unlink_rm_ovrlp_save_undo);
+
     GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_Comment),
 	    sc->comment?sc->comment:"");
     GGadgetSelectOneListItem(GWidgetGetControl(ci->gw,CID_GClass),sc->glyph_class);
@@ -3608,7 +3613,7 @@ void SCCharInfo(SplineChar *sc,EncMap *map,int enc) {
     GTextInfo ulabel[12], clabel[6], pslabel[7][6], colabel[3], mlabel[9], tlabel[16];
     GTextInfo lclabel[3], varlabel[2][6];
     GGadgetCreateData mbox[4], *mvarray[7], *mharray1[7], *mharray2[8];
-    GGadgetCreateData ubox[3], *uhvarray[19], *uharray[6];
+    GGadgetCreateData ubox[3], *uhvarray[22], *uharray[6];
     GGadgetCreateData cbox[3], *cvarray[5], *charray[4];
     GGadgetCreateData pstbox[7][4], *pstvarray[7][5], *pstharray1[7][8];
     GGadgetCreateData cobox[2], *covarray[4];
@@ -3722,50 +3727,60 @@ return;
 	ugcd[5].creator = GTextFieldCreate;
 	uhvarray[7] = &ugcd[5]; uhvarray[8] = NULL;
 
-	ugcd[6].gd.pos.x = 5; ugcd[6].gd.pos.y = 83+4;
+	ugcd[6].gd.pos.x = 12; ugcd[6].gd.pos.y = 117;
 	ugcd[6].gd.flags = gg_visible | gg_enabled;
-	ulabel[6].text = (unichar_t *) _("OT _Glyph Class:");
+	ulabel[6].text = (unichar_t *) _("Set From N_ame");
 	ulabel[6].text_is_1byte = true;
 	ulabel[6].text_in_resource = true;
+	ugcd[6].gd.mnemonic = 'a';
 	ugcd[6].gd.label = &ulabel[6];
-	ugcd[6].creator = GLabelCreate;
-	uhvarray[9] = &ugcd[6];
+	ugcd[6].gd.handle_controlevent = CI_SName;
+	ugcd[6].creator = GButtonCreate;
+	uharray[0] = GCD_Glue; uharray[1] = &ugcd[6];
 
-	ugcd[7].gd.pos.x = 85; ugcd[7].gd.pos.y = 83;
+	ugcd[7].gd.pos.x = 107; ugcd[7].gd.pos.y = 117;
 	ugcd[7].gd.flags = gg_visible | gg_enabled;
-	ugcd[7].gd.cid = CID_GClass;
-	ugcd[7].gd.u.list = glyphclasses;
-	ugcd[7].creator = GListButtonCreate;
-	uhvarray[10] = &ugcd[7]; uhvarray[11] = NULL;
-
-	ugcd[8].gd.pos.x = 12; ugcd[8].gd.pos.y = 117;
-	ugcd[8].gd.flags = gg_visible | gg_enabled;
-	ulabel[8].text = (unichar_t *) _("Set From N_ame");
-	ulabel[8].text_is_1byte = true;
-	ulabel[8].text_in_resource = true;
-	ugcd[8].gd.mnemonic = 'a';
-	ugcd[8].gd.label = &ulabel[8];
-	ugcd[8].gd.handle_controlevent = CI_SName;
-	ugcd[8].creator = GButtonCreate;
-	uharray[0] = GCD_Glue; uharray[1] = &ugcd[8];
-
-	ugcd[9].gd.pos.x = 107; ugcd[9].gd.pos.y = 117;
-	ugcd[9].gd.flags = gg_visible | gg_enabled;
-	ulabel[9].text = (unichar_t *) _("Set From Val_ue");
-	ulabel[9].text_is_1byte = true;
-	ulabel[9].text_in_resource = true;
-	ugcd[9].gd.mnemonic = 'l';
-	ugcd[9].gd.label = &ulabel[9];
-	ugcd[9].gd.handle_controlevent = CI_SValue;
-	ugcd[9].creator = GButtonCreate;
-	uharray[2] = GCD_Glue; uharray[3] = &ugcd[9]; uharray[4] = GCD_Glue; uharray[5] = NULL;
+	ulabel[7].text = (unichar_t *) _("Set From Val_ue");
+	ulabel[7].text_is_1byte = true;
+	ulabel[7].text_in_resource = true;
+	ugcd[7].gd.mnemonic = 'l';
+	ugcd[7].gd.label = &ulabel[7];
+	ugcd[7].gd.handle_controlevent = CI_SValue;
+	ugcd[7].creator = GButtonCreate;
+	uharray[2] = GCD_Glue; uharray[3] = &ugcd[7]; uharray[4] = GCD_Glue; uharray[5] = NULL;
 
 	ubox[2].gd.flags = gg_enabled|gg_visible;
 	ubox[2].gd.u.boxelements = uharray;
 	ubox[2].creator = GHBoxCreate;
-	uhvarray[12] = &ubox[2]; uhvarray[13] = GCD_ColSpan; uhvarray[14] = NULL;
-	uhvarray[15] = GCD_Glue; uhvarray[16] = GCD_Glue; uhvarray[17] = NULL;
-	uhvarray[18] = NULL;
+	uhvarray[9] = &ubox[2]; uhvarray[10] = GCD_ColSpan; uhvarray[11] = NULL;
+
+	ugcd[8].gd.pos.x = 5; ugcd[8].gd.pos.y = 83+4;
+	ugcd[8].gd.flags = gg_visible | gg_enabled;
+	ulabel[8].text = (unichar_t *) _("OT _Glyph Class:");
+	ulabel[8].text_is_1byte = true;
+	ulabel[8].text_in_resource = true;
+	ugcd[8].gd.label = &ulabel[8];
+	ugcd[8].creator = GLabelCreate;
+	uhvarray[12] = &ugcd[8];
+
+	ugcd[9].gd.pos.x = 85; ugcd[9].gd.pos.y = 83;
+	ugcd[9].gd.flags = gg_visible | gg_enabled;
+	ugcd[9].gd.cid = CID_GClass;
+	ugcd[9].gd.u.list = glyphclasses;
+	ugcd[9].creator = GListButtonCreate;
+	uhvarray[13] = &ugcd[9]; uhvarray[14] = NULL;
+
+	ugcd[10].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+	ulabel[10].text = (unichar_t *) _("Mark for Unlink, Remove Overlap Before Save");
+	ulabel[10].text_is_1byte = true;
+	ulabel[10].text_in_resource = true;
+	ugcd[10].gd.label = &ulabel[10];
+	ugcd[10].gd.cid = CID_UnlinkRmOverlap;
+	ugcd[10].gd.popup_msg = (unichar_t *) _("A few glyphs, like Aring, Ccedilla, Eogonek\nare composed of two overlapping references.\nOften it is desireable to retain the references\n(so that changes made to the base glyph are\nreflected in the composed glyph), but that\nmeans you are stuck with overlapping contours.\nThis flag means that just before saving the\nfont, fontforge will unlink the references,\nand run remove overlap on them, then just\nafter saving it will undo the operation\nthereby retaining the references.");
+	ugcd[10].creator = GCheckBoxCreate;
+	uhvarray[15] = &ugcd[10]; uhvarray[16] = GCD_ColSpan; uhvarray[17] = NULL;
+	uhvarray[18] = GCD_Glue; uhvarray[19] = GCD_Glue; uhvarray[20] = NULL;
+	uhvarray[21] = NULL;
 
 	ubox[0].gd.flags = gg_enabled|gg_visible;
 	ubox[0].gd.u.boxelements = uhvarray;
