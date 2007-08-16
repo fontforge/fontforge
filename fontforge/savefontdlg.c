@@ -2501,11 +2501,16 @@ return;
 	    int mask = VSMaskFromFormat(d->sf,oldformatstate);
 	    if ( vs&mask ) {
 		const char *rsb[3];
+		char *errs;
+		int ret;
 
 		rsb[0] =  _("_Review");
 		rsb[1] =  _("_Save");
 		rsb[2]=NULL;
-		if ( gwwv_ask(_("Errors detected"),rsb,0,0,_("The font contains errors.\nWould you like to review the errors or save the font anyway?"))==0 ) {
+		errs = VSErrorsFromMask(vs&mask);
+		ret = gwwv_ask(_("Errors detected"),rsb,0,0,_("The font contains errors.\n%sWould you like to review the errors or save the font anyway?"),errs);
+		free(errs);
+		if ( ret==0 ) {
 		    d->done = true;
 		    d->ret = false;
 		    SFValidationWindow(d->sf,oldformatstate);
