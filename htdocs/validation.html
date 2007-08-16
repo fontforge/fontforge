@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 15-Aug-2007 -->
-  <!-- AP: Last modified: 15-Aug-2007 -->
+  <!-- AP: Last modified: 16-Aug-2007 -->
   <TITLE>The font validation window</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -104,5 +104,21 @@
       When the Add Good Extrema command does not fix your problem, you may be better
       off examining the glyph yourself and seeing if you can redesign it manually.
   </UL>
+  <P>
+  There is another pair of entries in the menu which sort of postpone dealing
+  with the issue. Consider the glyphs Aring, Ccedilla and Oogonek. Frequently
+  these glyphs are designed so that the accent will overlap the base letter.
+  One would like to leave the glyph as being made up of references, but one
+  would like to get rid of the overlap when the font is generated. There is
+  a special flag in <A HREF="charinfo.html"><CODE>Element-&gt;Glyph
+  Info-&gt;Unicode-&gt;Mark for Unlink, Remove Overlap before Save</CODE>
+  </A>which will make fontforge unlink a glyph's references, and then run
+  Element-&gt;Remove Overlap on them just before saving them. Then after saving
+  it will reverse the operation and leave you with the original references.
+  <P>
+  So there are a pair of menu items (one for the current glyph, one for all
+  glyphs that meet certain criteria) which will set this flag for the relevant
+  glyph(s). Once this flag is set FontForge will no longer report that the
+  glyph self-intersects.
 </DIV>
 </BODY></HTML>

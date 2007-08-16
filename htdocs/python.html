@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 15-Aug-2007 -->
+  <!-- AP: Last modified: 16-Aug-2007 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -1347,6 +1347,12 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TD colspan=2>The glyph's unicode code point, or -1</TD>
     </TR>
     <TR>
+      <TD><CODE>unlinkRmOvrlpSave</CODE></TD>
+      <TD colspan=2>A flag that indicates the glyph's references should be unlinked
+	and remove overlap run on it before the font is saved (and then the original
+	references replaced after the save finishes)</TD>
+    </TR>
+    <TR>
       <TD><CODE>userdata</CODE></TD>
       <TD colspan=2>Whatever you want (contents are not saved in an sfd file)</TD>
     </TR>
@@ -1741,12 +1747,14 @@ pen = None;				# Finalize the pen. This tells FontForge
     </TR>
     <TR>
       <TD><CODE>validate</CODE></TD>
-      <TD><CODE>()</CODE></TD>
+      <TD><CODE>([force])</CODE></TD>
       <TD>Validates the glyph and returns the
 	<CODE><A HREF="python.html#validation-state">validation_state</A></CODE>
-	of the glyph (except bit 0x1 is clear). If the glyph passed the validation
-	then the return value will be 0 (not 0x1). Otherwise the return value will
-	be the set of errors found.</TD>
+	of the glyph (except bit 0x1 will always be clear). If the glyph passed the
+	validation then the return value will be 0 (not 0x1). Otherwise the return
+	value will be the set of errors found. If force is specified true this will
+	always be validated, if force is unspecified (or specified as false) then
+	it will return the cached value if it is known, otherwise will validate it.</TD>
     </TR>
     <TR>
       <TD><CODE>draw</CODE></TD>

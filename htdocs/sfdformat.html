@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 4-Aug-2007 -->
+  <!-- AP: Last modified: 16-Aug-2007 -->
   <TITLE>Spline Font Database File Format</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -14,7 +14,7 @@
   </H1>
   <P>
   <FONT COLOR="Red"><STRONG>This page is often grievously out of date. It was
-  a fair approximation to reality on 4 August 2007.</STRONG></FONT> Even if
+  a fair approximation to reality on 15 August 2007.</STRONG></FONT> Even if
   out of date it should be helpful, but if you really need to know the current
   format look at
   <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/fontforge/sfd.c">sfd.c</A>
@@ -906,18 +906,20 @@ LCarets2: 1 650
   of the number of carets defined, and the a list of the locations of those
   carets.
   <P>
-  A glyph may have an arbitrary comment associated with it, this will be output
-  in UTF-7
+  A glyph may also have
   <BLOCKQUOTE>
     <PRE>Comment: Hi
+Colour: ff0000
+Validated: 1
+UnlinkRmOvrlpSave: 1
 </PRE>
   </BLOCKQUOTE>
   <P>
-  or a color
-  <BLOCKQUOTE>
-    <PRE>Colour: ff0000
-</PRE>
-  </BLOCKQUOTE>
+  The first is an arbitrary comment, this will be output in UTF-7, the second
+  a color (output as a 6 hex digit RGB value), the cached validation state
+  (a bitmask, see the python docs for the bits' meanings), and a flag that
+  the glyph should have its references unlinked and remove overlap run before
+  the font is saved.
   <H4>
     TeX &amp; MATH data
   </H4>
