@@ -5308,8 +5308,11 @@ return( ret );
 
 static PyObject *PyFFGlyph_validate(PyObject *self, PyObject *args) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc;
+    int force=false;
 
-return( Py_BuildValue( "i", SCValidate(sc)) );
+    if ( !PyArg_ParseTuple(args,"|i",&force) )
+return( NULL );
+return( Py_BuildValue( "i", SCValidate(sc,force)) );
 }
 
 static struct flaglist trans_flags[] = {

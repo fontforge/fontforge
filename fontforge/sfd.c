@@ -1067,6 +1067,8 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
 	fprintf(sfd, "VWidth: %d\n", sc->vwidth );
     if ( sc->glyph_class!=0 )
 	fprintf(sfd, "GlyphClass: %d\n", sc->glyph_class );
+    if ( sc->unlink_rm_ovrlp_save_undo )
+	fprintf(sfd, "UnlinkRmOvrlpSave: %d\n", sc->unlink_rm_ovrlp_save_undo );
     if ( sc->changedsincelasthinted|| sc->manualhints || sc->widthset )
 	fprintf(sfd, "Flags: %s%s%s%s%s\n",
 		sc->changedsincelasthinted?"H":"",
@@ -3459,6 +3461,9 @@ return( NULL );
 	} else if ( strmatch(tok,"GlyphClass:")==0 ) {
 	    getint(sfd,&temp);
 	    sc->glyph_class = temp;
+	} else if ( strmatch(tok,"UnlinkRmOvrlpSave:")==0 ) {
+	    getint(sfd,&temp);
+	    sc->unlink_rm_ovrlp_save_undo = temp;
 	} else if ( strmatch(tok,"Flags:")==0 ) {
 	    while ( isspace(ch=getc(sfd)) && ch!='\n' && ch!='\r');
 	    while ( ch!='\n' && ch!='\r' ) {
