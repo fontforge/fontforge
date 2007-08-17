@@ -55,6 +55,8 @@
 static FontView *fv_active_in_ui = NULL;
 static SplineChar *sc_active_in_ui = NULL;
 static PyObject *pickler, *unpickler;		/* cPickle.dumps, cPickle.loads */
+static PyObject *_new_point, *_new_contour, *_new_layer;	/* Python handles to c functions, needed for pickler */
+static void PyFF_PickleTypesInit(void);
 
 /* A contour is a list of points, some on curve, some off. */
 /* A closed contour is a circularly linked list */
@@ -1172,6 +1174,23 @@ return( NULL );
 return( (PyObject *) self );
 }
 
+static PyObject *PyFFPoint_pickleReducer(PyFF_Point *self, PyObject *args) {
+    PyObject *reductionTuple, *argTuple;
+
+    if ( _new_point==NULL )
+	PyFF_PickleTypesInit();
+    reductionTuple = PyTuple_New(2);
+    Py_INCREF(_new_point);
+    PyTuple_SetItem(reductionTuple,0,_new_point);
+    argTuple = PyTuple_New(4);
+    PyTuple_SetItem(reductionTuple,1,argTuple);
+    PyTuple_SetItem(argTuple,0,Py_BuildValue("d", self->x));
+    PyTuple_SetItem(argTuple,1,Py_BuildValue("d", self->y));
+    PyTuple_SetItem(argTuple,2,Py_BuildValue("i", self->on_curve));
+    PyTuple_SetItem(argTuple,3,Py_BuildValue("i", self->selected));
+return( reductionTuple );
+}
+
 static int PyFFPoint_compare(PyFF_Point *self,PyObject *other) {
     double x, y;
 
@@ -1226,6 +1245,8 @@ static PyMemberDef FFPoint_members[] = {
 static PyMethodDef FFPoint_methods[] = {
     {"transform", (PyCFunction)PyFFPoint_Transform, METH_VARARGS,
 	     "Transforms the point by the transformation matrix (a 6 element tuple of reals)" },
+    {"__reduce__", (PyCFunction)PyFFPoint_pickleReducer, METH_NOARGS,
+	     "cPickle calls this routine when it wants to pickle us" },
     NULL
 };
 
@@ -2107,6 +2128,26 @@ return( NULL );
 Py_RETURN( self );
 }
 
+static PyObject *PyFFContour_pickleReducer(PyFF_Contour *self, PyObject *args) {
+    PyObject *reductionTuple, *argTuple;
+    int i;
+
+    if ( _new_contour==NULL )
+	PyFF_PickleTypesInit();
+    reductionTuple = PyTuple_New(2);
+    Py_INCREF(_new_contour);
+    PyTuple_SetItem(reductionTuple,0,_new_contour);
+    argTuple = PyTuple_New(2+self->pt_cnt);
+    PyTuple_SetItem(reductionTuple,1,argTuple);
+    PyTuple_SetItem(argTuple,0,Py_BuildValue("i", self->is_quadratic));
+    PyTuple_SetItem(argTuple,1,Py_BuildValue("i", self->closed));
+    for ( i=0; i<self->pt_cnt; ++i ) {
+	Py_INCREF((PyObject *)self->points[i]);
+	PyTuple_SetItem(argTuple,2+i,(PyObject *) self->points[i]);
+    }
+return( reductionTuple );
+}
+
 static PyObject *PyFFContour_Round(PyFF_Contour *self, PyObject *args) {
     double factor=1;
     int i;
@@ -2442,6 +2483,8 @@ static PyMethodDef PyFFContour_methods[] = {
 	     "or the one through the specified point for control points." },
     {"draw", (PyCFunction)PyFFContour_draw, METH_VARARGS,
 	     "Support for the \"pen\" protocol (I hope)\nhttp://just.letterror.com/ltrwiki/PenProtocol" },
+    {"__reduce__", (PyCFunction)PyFFContour_pickleReducer, METH_NOARGS,
+	     "cPickle calls this routine when it wants to pickle us" },
     {NULL}  /* Sentinel */
 };
 
@@ -2919,6 +2962,25 @@ return( NULL );
 Py_RETURN( self );
 }
 
+static PyObject *PyFFLayer_pickleReducer(PyFF_Layer *self, PyObject *args) {
+    PyObject *reductionTuple, *argTuple;
+    int i;
+
+    if ( _new_layer==NULL )
+	PyFF_PickleTypesInit();
+    reductionTuple = PyTuple_New(2);
+    Py_INCREF(_new_layer);
+    PyTuple_SetItem(reductionTuple,0,_new_layer);
+    argTuple = PyTuple_New(1+self->cntr_cnt);
+    PyTuple_SetItem(reductionTuple,1,argTuple);
+    PyTuple_SetItem(argTuple,0,Py_BuildValue("i", self->is_quadratic));
+    for ( i=0; i<self->cntr_cnt; ++i ) {
+	Py_INCREF((PyObject *)self->contours[i]);
+	PyTuple_SetItem(argTuple,1+i,(PyObject *)self->contours[i]);
+    }
+return( reductionTuple );
+}
+
 static PyObject *PyFFLayer_Round(PyFF_Layer *self, PyObject *args) {
     double factor=1;
     int i,j;
@@ -3235,6 +3297,8 @@ static PyMethodDef PyFFLayer_methods[] = {
 	     "Exclude the area of the argument (also a layer) from the current layer" },
     {"draw", (PyCFunction)PyFFLayer_draw, METH_VARARGS,
 	     "Support for the \"pen\" protocol (I hope)\nhttp://just.letterror.com/ltrwiki/PenProtocol" },
+    {"__reduce__", (PyCFunction)PyFFLayer_pickleReducer, METH_NOARGS,
+	     "cPickle calls this routine when it wants to pickle us" },
     {NULL}  /* Sentinel */
 };
 
@@ -3991,18 +4055,21 @@ return( sc1<sc2 ? -1 : 1 );
 /* ************************************************************************** */
 
 static PyObject *PyFF_Glyph_get_userdata(PyFF_Glyph *self,void *closure) {
-    if ( self->sc->python_data==NULL ) {
-	self->sc->python_data = Py_None;
-	Py_INCREF(Py_None);
-    }
-    Py_XINCREF( (PyObject *) (self->sc->python_data) );
+    if ( self->sc->python_data==NULL )
+Py_RETURN_NONE;
+    Py_INCREF( (PyObject *) (self->sc->python_data) );
 return( self->sc->python_data );
 }
 
 static int PyFF_Glyph_set_userdata(PyFF_Glyph *self,PyObject *value,void *closure) {
     PyObject *old = self->sc->python_data;
 
-    Py_INCREF(value);
+    /* I'd rather not store None, because C routines don't understand it */
+    /*  and they occasionally need to know whether there is something real */
+    /*  in this field. */
+    if ( value==Py_None )
+	value = NULL;
+    Py_XINCREF(value);
     self->sc->python_data = value;
     Py_XDECREF(old);
 return( 0 );
@@ -7005,15 +7072,24 @@ return( 0 );
 }
 
 static PyObject *PyFF_Font_get_userdata(PyFF_Font *self,void *closure) {
-    Py_XINCREF( (PyObject *) (self->fv->sf->python_data) );
-return( self->fv->sf->python_data );
+    SplineFont *sf = self->fv->sf;
+    if ( sf->python_data==NULL )
+Py_RETURN_NONE;
+    Py_INCREF( (PyObject *) (sf->python_data) );
+return( sf->python_data );
 }
 
 static int PyFF_Font_set_userdata(PyFF_Font *self,PyObject *value,void *closure) {
-    PyObject *old = self->fv->sf->python_data;
+    SplineFont *sf = self->fv->sf;
+    PyObject *old = sf->python_data;
 
-    Py_INCREF(value);
-    self->fv->sf->python_data = value;
+    /* I'd rather not store None, because C routines don't understand it */
+    /*  and they occasionally need to know whether there is something real */
+    /*  in this field. */
+    if ( value==Py_None )
+	value = NULL;
+    Py_XINCREF(value);
+    sf->python_data = value;
     Py_XDECREF(old);
 return( 0 );
 }
@@ -10272,6 +10348,11 @@ static void PyFF_PicklerInit(void) {
 	PyRun_SimpleString("import cPickle;\nimport __FontForge_Internals___;\n__FontForge_Internals___.initPickles(cPickle.dumps,cPickle.loads);");
 }
 
+static void PyFF_PickleTypesInit(void) {
+    if ( _new_point==NULL )
+	PyRun_SimpleString("import __FontForge_Internals___;\n__FontForge_Internals___.initPickleTypes(__FontForge_Internals___.newPoint,__FontForge_Internals___.newContour,__FontForge_Internals___.newLayer);");
+}
+
 char *PyFF_PickleMeToString(void *pydata) {
     PyObject *pyobj, *arglist, *result;
     char *ret = NULL;
@@ -10318,8 +10399,87 @@ return( NULL );
 Py_RETURN_NONE;
 }
 
+static PyObject *PyFFi_initPickleTypes(PyObject *noself, PyObject *args) {
+
+    if ( !PyArg_ParseTuple(args,"OOO",&_new_point, &_new_contour, &_new_layer ))
+return( NULL );
+    Py_INCREF(_new_point); Py_INCREF(_new_contour); Py_INCREF(_new_layer);
+Py_RETURN_NONE;
+}
+
+static PyObject *PyFFi_newPoint(PyObject *noself, PyObject *args) {
+return( PyFFPoint_New(&PyFF_PointType,args,NULL));
+}
+
+static PyObject *PyFFi_newContour(PyObject *noself, PyObject *args) {
+    PyFF_Contour *self = (PyFF_Contour *) PyFFContour_new(&PyFF_ContourType,NULL,NULL);
+    int i, len;
+
+    if ( self==NULL )
+return( NULL );
+    len = PyTuple_Size(args);
+    if ( len<2 ) {
+	PyErr_Format(PyExc_TypeError, "Too few arguments");
+return( NULL );
+    }
+    self->is_quadratic = PyInt_AsLong(PyTuple_GetItem(args,0));
+    if ( PyErr_Occurred()!=NULL )
+return( NULL );
+    self->closed = PyInt_AsLong(PyTuple_GetItem(args,1));
+    if ( PyErr_Occurred()!=NULL )
+return( NULL );
+    self->pt_cnt = self->pt_max = len-2;
+    self->points = PyMem_New(PyFF_Point *,self->pt_max);
+    if ( self->points==NULL )
+return( NULL );
+    for ( i=0; i<len-2; ++i ) {
+	PyObject *obj = PyTuple_GetItem(args,2+i);
+	if ( !PyType_IsSubtype(&PyFF_PointType,obj->ob_type) ) {
+	    PyErr_Format(PyExc_TypeError, "Expected FontForge points.");
+return( NULL );
+	}
+	Py_INCREF(obj);
+	self->points[i] = (PyFF_Point *) obj;
+    }
+return( (PyObject *) self );
+}
+
+static PyObject *PyFFi_newLayer(PyObject *noself, PyObject *args) {
+    PyFF_Layer *self = (PyFF_Layer *) PyFFLayer_new(&PyFF_LayerType,NULL,NULL);
+    int i, len;
+
+    if ( self==NULL )
+return( NULL );
+    len = PyTuple_Size(args);
+    if ( len<1 ) {
+	PyErr_Format(PyExc_TypeError, "Too few arguments");
+return( NULL );
+    }
+    self->is_quadratic = PyInt_AsLong(PyTuple_GetItem(args,0));
+    if ( PyErr_Occurred()!=NULL )
+return( NULL );
+    self->cntr_cnt = self->cntr_max = len-2;
+    self->contours = PyMem_New(PyFF_Contour *,self->cntr_max);
+    if ( self->contours==NULL )
+return( NULL );
+    for ( i=0; i<len-1; ++i ) {
+	PyObject *obj = PyTuple_GetItem(args,1+i);
+	if ( !PyType_IsSubtype(&PyFF_ContourType,obj->ob_type) ) {
+	    PyErr_Format(PyExc_TypeError, "Expected FontForge Contours.");
+return( NULL );
+	}
+	Py_INCREF(obj);
+	self->contours[i] = (PyFF_Contour *) obj;
+    }
+return( (PyObject *) self );
+}
+
 static PyMethodDef FontForge_internal_methods[] = {
     { "initPickles", PyFFi_initPickles, METH_VARARGS, "Set the pickle/unpickle globals so I can call them from C" },
+    { "initPickleTypes", PyFFi_initPickleTypes, METH_VARARGS, "Set the some globals so I can call C functions from python" },
+    { "newPoint", PyFFi_newPoint, METH_VARARGS, "Top level function to create a new point, needed (I think) for the pickler" },
+    { "newContour", PyFFi_newContour, METH_VARARGS, "Top level function to create a new contour, needed (I think) for the pickler" },
+    { "newLayer", PyFFi_newLayer, METH_VARARGS, "Top level function to create a new layer, needed (I think) for the pickler" },
     NULL
 };
 

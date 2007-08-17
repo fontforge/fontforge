@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 16-Aug-2007 -->
+  <!-- AP: Last modified: 17-Aug-2007 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -611,6 +611,15 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
       <TD><CODE>(tuple)</CODE></TD>
       <TD>Transforms the point by the transformation matrix</TD>
     </TR>
+    <TR>
+      <TH colspan=3>Pickling Methods</TH>
+    </TR>
+    <TR>
+      <TD><CODE>__reduce__</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>This function allows the pickler to work on this type. I don't think
+	it is useful for anything else.</TD>
+    </TR>
   </TABLE>
   <P>
   <TABLE id="type" border=1>
@@ -901,12 +910,28 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
       <TD>Draw the contour to the
 	<A href="http://just.letterror.com/ltrwiki/PenProtocol">pen argument.</A></TD>
     </TR>
+    <TR>
+      <TH colspan=3>Pickling Methods</TH>
+    </TR>
+    <TR>
+      <TD><CODE>__reduce__</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>This function allows the pickler to work on this type. I don't think
+	it is useful for anything else.</TD>
+    </TR>
   </TABLE>
   <P>
   <TABLE id="type" border=1>
     <CAPTION>
       <A name="Layer">layer</A>
     </CAPTION>
+    <TR>
+      <TH colspan=3>Description</TH>
+    </TR>
+    <TR>
+      <TD colspan=3>A layer is a collection of contours. All the contours must
+	be the same order (all quadratic or all cubic).</TD>
+    </TR>
     <TR>
       <TH colspan=3>Members</TH>
     </TR>
@@ -1146,6 +1171,15 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
       <TD>Draw the layer to the
 	<A href="http://just.letterror.com/ltrwiki/PenProtocol">pen argument.</A></TD>
     </TR>
+    <TR>
+      <TH colspan=3>Pickling Methods</TH>
+    </TR>
+    <TR>
+      <TD><CODE>__reduce__</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>This function allows the pickler to work on this type. I don't think
+	it is useful for anything else.</TD>
+    </TR>
   </TABLE>
   <P>
   <TABLE id="type" border=1>
@@ -1176,7 +1210,8 @@ pen = None;				# Finalize the pen. This tells FontForge
 			                # it to refresh the display (if a UI is active).
 </PRE>
 	</BLOCKQUOTE>
-      </TD>
+	<P>
+	This type may not be pickled.</TD>
     </TR>
     <TR>
       <TH colspan=3>Members</TH>
@@ -1262,6 +1297,17 @@ pen = None;				# Finalize the pen. This tells FontForge
     <CAPTION>
       <A name="Glyph">glyph</A>
     </CAPTION>
+    <TR>
+      <TH colspan=3>Description</TH>
+    </TR>
+    <TR>
+      <TD colspan=3>The glyph type refers to a fontforge Glyph object. It has no
+	independant life of its own, it always lives within a font. It has all the
+	things you expect to be associated with a glyph: a glyph name, a unicode
+	encoding, a drawing layer, GPOS/GSUB features...
+	<P>
+	This type may not be pickled.</TD>
+    </TR>
     <TR>
       <TH colspan=3>Members</TH>
     </TR>
@@ -1795,7 +1841,8 @@ pen = None;				# Finalize the pen. This tells FontForge
 <FONT COLOR="Gray">True</FONT>
 </PRE>
 	</BLOCKQUOTE>
-      </TD>
+	<P>
+	This type may not be pickled.</TD>
     </TR>
     <TR>
       <TH colspan=3>Members</TH>
@@ -1913,6 +1960,16 @@ pen = None;				# Finalize the pen. This tells FontForge
     <CAPTION>
       <A name="Font">font</A>
     </CAPTION>
+    <TR>
+      <TH colspan=3>Description</TH>
+    </TR>
+    <TR>
+      <TD colspan=3>The font type refers to a fontforge Font object. It generally
+	contains a list of glyphs, an encoding to order those glyphs, a fontname,
+	a list of GPOS/GSUB lookups and many other things.
+	<P>
+	This type may not be pickled.</TD>
+    </TR>
     <TR>
       <TH colspan=3>Members</TH>
     </TR>
