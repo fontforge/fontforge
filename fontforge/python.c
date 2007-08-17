@@ -54,6 +54,7 @@
 
 static FontView *fv_active_in_ui = NULL;
 static SplineChar *sc_active_in_ui = NULL;
+static PyObject *pickler, *unpickler;		/* cPickle.dumps, cPickle.loads */
 
 /* A contour is a list of points, some on curve, some off. */
 /* A closed contour is a circularly linked list */
@@ -630,7 +631,7 @@ return;
     result = PyEval_CallObject(py_ie[ie_index].import, arglist);
     Py_DECREF(arglist);
     Py_XDECREF(result);
-    if ( PyErr_Occurred()==NULL )
+    if ( PyErr_Occurred()!=NULL )
 	PyErr_Print();
 }
 
@@ -651,7 +652,7 @@ return;
     result = PyEval_CallObject(py_ie[ie_index].export, arglist);
     Py_DECREF(arglist);
     Py_XDECREF(result);
-    if ( PyErr_Occurred()==NULL )
+    if ( PyErr_Occurred()!=NULL )
 	PyErr_Print();
     sc_active_in_ui = NULL;
 }
@@ -746,7 +747,7 @@ return;
 	} else
 	    mi->ti.disabled = PyInt_AsLong(result)==0;
 	Py_XDECREF(result);
-	if ( PyErr_Occurred()==NULL )
+	if ( PyErr_Occurred()!=NULL )
 	    PyErr_Print();
     }
 }
@@ -772,7 +773,7 @@ return;
     result = PyEval_CallObject(menu_data[mi->mid].func, arglist);
     Py_DECREF(arglist);
     Py_XDECREF(result);
-    if ( PyErr_Occurred()==NULL )
+    if ( PyErr_Occurred()!=NULL )
 	PyErr_Print();
 }
 
@@ -2285,7 +2286,7 @@ return;
     Py_DECREF(args_tuple);
     Py_XDECREF(result);
     Py_DECREF(func);
-    if ( PyErr_Occurred()==NULL )
+    if ( PyErr_Occurred()!=NULL )
 	PyErr_Print();
 }
 
@@ -4083,6 +4084,21 @@ return( -1 );
 return( 0 );
 }
 
+static PyObject *PyFF_Glyph_get_unlinkRmOvrlpSave(PyFF_Glyph *self,void *closure) {
+
+return( Py_BuildValue("i", self->sc->unlink_rm_ovrlp_save_undo ));
+}
+
+static int PyFF_Glyph_set_unlinkRmOvrlpSave(PyFF_Glyph *self,PyObject *value,void *closure) {
+    int val;
+
+    val = PyInt_AsLong(value);
+    if ( PyErr_Occurred()!=NULL )
+return( -1 );
+    self->sc->unlink_rm_ovrlp_save_undo = val;
+return( 0 );
+}
+
 static PyObject *PyFF_Glyph_get_originalgid(PyFF_Glyph *self,void *closure) {
 
 return( Py_BuildValue("i", self->sc->orig_pos ));
@@ -4643,6 +4659,9 @@ static PyGetSetDef PyFF_Glyph_getset[] = {
     {"ttinstrs",
 	 (getter)PyFF_Glyph_get_ttfinstrs, (setter)PyFF_Glyph_set_ttfinstrs,
 	 "TrueType Instructions for this glyph", NULL},
+    {"unlinkRmOvrlpSave",
+	 (getter)PyFF_Glyph_get_unlinkRmOvrlpSave, (setter)PyFF_Glyph_set_unlinkRmOvrlpSave,
+	 "A flag which indicates that before the glyph is saved ff should unlink its references and run remove overlap on it.", NULL},
     {"changed",
 	 (getter)PyFF_Glyph_get_changed, (setter)PyFF_Glyph_set_changed,
 	 "Flag indicating whether this glyph has changed", NULL},
@@ -6986,15 +7005,15 @@ return( 0 );
 }
 
 static PyObject *PyFF_Font_get_userdata(PyFF_Font *self,void *closure) {
-    Py_XINCREF( (PyObject *) (self->fv->python_data) );
-return( self->fv->python_data );
+    Py_XINCREF( (PyObject *) (self->fv->sf->python_data) );
+return( self->fv->sf->python_data );
 }
 
 static int PyFF_Font_set_userdata(PyFF_Font *self,PyObject *value,void *closure) {
-    PyObject *old = self->fv->python_data;
+    PyObject *old = self->fv->sf->python_data;
 
     Py_INCREF(value);
-    self->fv->python_data = value;
+    self->fv->sf->python_data = value;
     Py_XDECREF(old);
 return( 0 );
 }
@@ -10248,6 +10267,55 @@ static PyMethodDef psMat_methods[] = {
     NULL
 };
 
+char *PyFF_PickleMeToString(void *pydata) {
+    PyObject *pyobj, *arglist, *result;
+    char *ret = NULL;
+
+    pyobj = pydata;
+    arglist = PyTuple_New(2);
+    Py_XINCREF(pyobj);
+    PyTuple_SetItem(arglist,0,pyobj);
+    PyTuple_SetItem(arglist,1,Py_BuildValue("i",0));	/* ASCII protocol */
+    result = PyEval_CallObject(pickler, arglist);
+    Py_DECREF(arglist);
+    if ( result!=NULL )
+	ret = copy(PyString_AsString(result));
+    Py_XDECREF(result);
+    if ( PyErr_Occurred()!=NULL ) {
+	PyErr_Print();
+	free(ret);
+return( NULL );
+    } else
+return( ret );
+}
+
+void *PyFF_UnPickleMeToObjects(char *str) {
+    PyObject *arglist, *result;
+
+    arglist = PyTuple_New(1);
+    PyTuple_SetItem(arglist,0,Py_BuildValue("s",str));
+    result = PyEval_CallObject(unpickler, arglist);
+    Py_DECREF(arglist);
+    if ( PyErr_Occurred()!=NULL ) {
+	PyErr_Print();
+return( NULL );
+    } else
+return( result );
+}
+
+static PyObject *PyFFi_initPickles(PyObject *noself, PyObject *args) {
+
+    if ( !PyArg_ParseTuple(args,"OO",&pickler, &unpickler ))
+return( NULL );
+    Py_INCREF(pickler); Py_INCREF(unpickler);
+Py_RETURN_NONE;
+}
+
+static PyMethodDef FontForge_internal_methods[] = {
+    { "initPickles", PyFFi_initPickles, METH_VARARGS, "Set the pickle/unpickle globals so I can call them from C" },
+    NULL
+};
+
 void PyFF_ErrorString(const char *msg,const char *str) {
     char *cond = (char *) msg;
     if ( str!=NULL )
@@ -10292,6 +10360,13 @@ return;
     m = Py_InitModule3("psMat", psMat_methods,
                        "PostScript Matrix manipulation");
     /* No types, just tuples */
+
+    /* I need some way to pickle objects from C. The only way I can think to */
+    /*  do that is to go through this kludge. Define a dummy module with one */
+    /*  function, and then invoke that function to store handles to the pickler */
+    m = Py_InitModule3("__FontForge_Internals___", FontForge_internal_methods,
+                       "I use this at start up to get access to certain python objects I need. I don't expect users ever to care about it.");
+    PyRun_SimpleString("import cPickle;\nimport __FontForge_Internals___;\n__FontForge_Internals___.initPickles(cPickle.dumps,cPickle.loads);");
 }
 
 void FontForge_PythonInit(void) {
@@ -10362,7 +10437,10 @@ void PyFF_FreeFV(FontView *fv) {
 	((PyFF_Font *) (fv->python_fv_object))->fv = NULL;
 	Py_DECREF( (PyObject *) (fv->python_fv_object));
     }
-    Py_XDECREF( (PyObject *) (fv->python_data));
+}
+
+void PyFF_FreeSF(SplineFont *sf) {
+    Py_XDECREF( (PyObject *) (sf->python_data));
 }
 
 void PyFF_FreeSC(SplineChar *sc) {

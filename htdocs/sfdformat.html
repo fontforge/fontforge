@@ -253,6 +253,17 @@ EndPrivate
 </PRE>
   </BLOCKQUOTE>
   <P>
+  Some fonts may have python data:
+  <BLOCKQUOTE>
+    <PRE>PickledData: "I3
+."
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  This is arbetrary python pickled data (protocol=0) which got set by a python
+  script. FontForge stores it as a string. If there are either double quotes
+  or backslashes inside the string they will be preceded by a backslash.
+  <P>
   If your font has any lookups
   <BLOCKQUOTE>
     <PRE>
@@ -905,6 +916,17 @@ LCarets2: 1 650
   the current glyph is to be decomposed into. A ligature caret contains a count
   of the number of carets defined, and the a list of the locations of those
   carets.
+  <P>
+  Some glyphs may have python data:
+  <BLOCKQUOTE>
+    <PRE>PickledData: "I3
+."
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  This is arbetrary python pickled data (protocol=0) which got set by a python
+  script. FontForge stores it as a string. If there are either double quotes
+  or backslashes inside the string they will be preceded by a backslash.
   <P>
   A glyph may also have
   <BLOCKQUOTE>

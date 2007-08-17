@@ -1175,8 +1175,8 @@ typedef struct splinechar {
 /* End of MATH/TeX fields */
 #ifndef _NO_PYTHON
     void *python_sc_object;
-    void *python_data;
 #endif
+    void *python_data;		/* If python this will hold a python object, if not python this will hold a string containing a pickled object. We do nothing with it (if not python) except save it back out unchanged */
     uint16 validation_state;
     uint16 old_vs;
 } SplineChar;
@@ -1537,6 +1537,7 @@ typedef struct splinefont {
     uint8 sfd_version;			/* Used only when reading in an sfd file */
     struct gfi_data *fontinfo;
     struct val_data *valwin;
+    void *python_data;		/* If python this will hold a python object, if not python this will hold a string containing a pickled object. We do nothing with it (if not python) except save it back out unchanged */
 } SplineFont;
 
 /* I am going to simplify my life and not encourage intermediate designs */
@@ -2555,7 +2556,10 @@ extern void PyFF_ScriptFile(struct fontview *fv,SplineChar *sc,char *filename);
 extern void PyFF_ScriptString(struct fontview *fv,SplineChar *sc,char *str);
 extern void PyFF_FreeFV(struct fontview *fv);
 extern void PyFF_FreeSC(SplineChar *sc);
+extern void PyFF_FreeSF(SplineFont *sf);
 extern void PyFF_ProcessInitFiles(void);
+extern char *PyFF_PickleMeToString(void *pydata);
+extern void *PyFF_UnPickleMeToObjects(char *str);
 struct gtextinfo;
 extern void scriptingSaveEnglishNames(struct gtextinfo *ids,struct gtextinfo *langs);
 #endif
