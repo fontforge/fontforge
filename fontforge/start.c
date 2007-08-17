@@ -38,9 +38,7 @@
 #include <sys/time.h>
 #include <locale.h>
 #include <unistd.h>
-#if !defined(_NO_LIBUNINAMESLIST) && !defined(_STATIC_LIBUNINAMESLIST) && !defined(NODYNAMIC)
-#  include <dynamic.h>
-#endif
+#include <dynamic.h>
 #ifdef __Mac
 # include <stdlib.h>		/* getenv,setenv */
 #endif
