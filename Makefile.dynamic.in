@@ -52,62 +52,62 @@ distclean cleaner:
 
 install_libs: libs
 # You may need to be root to do the install
-	mkdir -p $(libdir)
-	#-rm $(libdir)/libgdraw.so* $(libdir)/libgunicode.so.*
-	$(LIBTOOL) --mode=install $(INSTALL) -c libgunicode.la $(libdir)/libgunicode.la
-	$(LIBTOOL) --mode=install $(INSTALL) -c libgdraw.la $(libdir)/libgdraw.la
-	$(LIBTOOL) --mode=finish $(libdir)
-	mkdir -p $(libdir)/pkgconfig
-	$(INSTALL_DATA) fontforge.pc $(libdir)/pkgconfig
+	mkdir -p $(DESTDIR)$(libdir)
+	#-rm $(DESTDIR)$(libdir)/libgdraw.so* $(DESTDIR)$(libdir)/libgunicode.so.*
+	$(LIBTOOL) --mode=install $(INSTALL) -c libgunicode.la $(DESTDIR)$(libdir)/libgunicode.la
+	$(LIBTOOL) --mode=install $(INSTALL) -c libgdraw.la $(DESTDIR)$(libdir)/libgdraw.la
+	$(LIBTOOL) --mode=finish $(DESTDIR)$(libdir)
+	mkdir -p $(DESTDIR)$(libdir)/pkgconfig
+	$(INSTALL_DATA) fontforge.pc $(DESTDIR)$(libdir)/pkgconfig
 
 install_docs:
-	mkdir -p $(docdir)
-	mkdir -p $(docdir)/flags $(docdir)/ja
+	mkdir -p $(DESTDIR)$(docdir)
+	mkdir -p $(DESTDIR)$(docdir)/flags $(DESTDIR)$(docdir)/ja
 #explicit use of sh to make sure we don't invoke csh with different "if" syntax
-	-sh -c "if test -d $(srcdir)/htdocs/ja >/dev/null ; then mkdir -p $(docdir)/ja ; fi"
-	-$(INSTALL_DATA) $(srcdir)/htdocs/*.{html,png,gif,pdf} $(docdir)
-	-$(INSTALL_DATA) $(srcdir)/htdocs/flags/* $(docdir)/flags
-	-$(INSTALL_DATA) $(srcdir)/htdocs/ja/* $(docdir)/ja
+	-sh -c "if test -d $(srcdir)/htdocs/ja >/dev/null ; then mkdir -p $(DESTDIR)$(docdir)/ja ; fi"
+	-$(INSTALL_DATA) $(srcdir)/htdocs/*.{html,png,gif,pdf} $(DESTDIR)$(docdir)
+	-$(INSTALL_DATA) $(srcdir)/htdocs/flags/* $(DESTDIR)$(docdir)/flags
+	-$(INSTALL_DATA) $(srcdir)/htdocs/ja/* $(DESTDIR)$(docdir)/ja
 
 install_po:
 	( cd po ; make install )
 
-install: $(sharedir) all install_libs install_po
+install: $(DESTDIR)$(sharedir) all install_libs install_po
 # You may need to be root to do the install
-	mkdir -p $(bindir)
-	mkdir -p $(mandir)/man1
-	mkdir -p $(sharedir)
-	$(LIBTOOL) --mode=install $(INSTALL) -c fontforge/fontforge $(bindir)
-	$(LIBTOOL) --mode=install $(INSTALL) -c fontforge/sfddiff $(bindir)
-	$(LIBTOOL) --mode=install $(INSTALL) -c fontforge/fontimage $(bindir)
-	$(LIBTOOL) --mode=install $(INSTALL) -c fontforge/fontlint $(bindir)
-#	-rm -f $(bindir)/pfaedit
-#	(cd $(bindir) ; ln -s fontforge pfaedit)
-#	$(INSTALL_DATA) fontforge/pfaedit-*.ui $(sharedir)
+	mkdir -p $(DESTDIR)$(bindir)
+	mkdir -p $(DESTDIR)$(mandir)/man1
+	mkdir -p $(DESTDIR)$(sharedir)
+	$(LIBTOOL) --mode=install $(INSTALL) -c fontforge/fontforge $(DESTDIR)$(bindir)
+	$(LIBTOOL) --mode=install $(INSTALL) -c fontforge/sfddiff $(DESTDIR)$(bindir)
+	$(LIBTOOL) --mode=install $(INSTALL) -c fontforge/fontimage $(DESTDIR)$(bindir)
+	$(LIBTOOL) --mode=install $(INSTALL) -c fontforge/fontlint $(DESTDIR)$(bindir)
+#	-rm -f $(DESTDIR)$(bindir)/pfaedit
+#	(cd $(DESTDIR)$(bindir) ; ln -s fontforge pfaedit)
+#	$(INSTALL_DATA) fontforge/pfaedit-*.ui $(DESTDIR)$(sharedir)
 #The next line will fail for most installs. If you have downloaded the cidmaps
 # this will install them. If you haven't it won't. You only need the cidmaps
 # if you are editing CID keyed files (and even then you can live without them
-	-$(INSTALL_DATA) $(srcdir)/cidmap/*.cidmap $(sharedir) >/dev/null 2>&1
-	$(INSTALL_DATA) $(srcdir)/fontforge/fontforge.1 $(mandir)/man1
-	$(INSTALL_DATA) $(srcdir)/fontforge/sfddiff.1 $(mandir)/man1
-	$(INSTALL_DATA) $(srcdir)/fontforge/fontimage.1 $(mandir)/man1
+	-$(INSTALL_DATA) $(srcdir)/cidmap/*.cidmap $(DESTDIR)$(sharedir) >/dev/null 2>&1
+	$(INSTALL_DATA) $(srcdir)/fontforge/fontforge.1 $(DESTDIR)$(mandir)/man1
+	$(INSTALL_DATA) $(srcdir)/fontforge/sfddiff.1 $(DESTDIR)$(mandir)/man1
+	$(INSTALL_DATA) $(srcdir)/fontforge/fontimage.1 $(DESTDIR)$(mandir)/man1
 #explicit use of sh to make sure we don't invoke csh with different "if" syntax
 	sh -c "if test -d $(srcdir)/htdocs >/dev/null ; then $(MAKE) install_docs ; fi"
 	sh < systemspecific
 
 uninstall:
-	-rm $(bindir)/fontforge
-	-rm $(bindir)/sfddiff
-	-rm $(bindir)/fontimage
-	-rm $(sharedir)/pfaedit-*.ui
-	-rm $(localedir)/*/LC_MESSAGES/FontForge.mo
-	-rm $(mandir)/man1/fontimage.1
-	-rm $(mandir)/man1/fontforge.1
-	-rm $(mandir)/man1/sfddiff.1
-	-rm $(libdir)/libgdraw.*
-	-rm $(libdir)/libgunicode.*
-	-rm $(sharedir)/*.cidmap
-	-rm -rf $(docdir)/*
+	-rm $(DESTDIR)$(bindir)/fontforge
+	-rm $(DESTDIR)$(bindir)/sfddiff
+	-rm $(DESTDIR)$(bindir)/fontimage
+	-rm $(DESTDIR)$(sharedir)/pfaedit-*.ui
+	-rm $(DESTDIR)$(localedir)/*/LC_MESSAGES/FontForge.mo
+	-rm $(DESTDIR)$(mandir)/man1/fontimage.1
+	-rm $(DESTDIR)$(mandir)/man1/fontforge.1
+	-rm $(DESTDIR)$(mandir)/man1/sfddiff.1
+	-rm $(DESTDIR)$(libdir)/libgdraw.*
+	-rm $(DESTDIR)$(libdir)/libgunicode.*
+	-rm $(DESTDIR)$(sharedir)/*.cidmap
+	-rm -rf $(DESTDIR)$(docdir)/*
 
-$(sharedir):
-	mkdir -p $(sharedir)
+$(DESTDIR)$(sharedir):
+	mkdir -p $(DESTDIR)$(sharedir)

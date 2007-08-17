@@ -39,7 +39,7 @@ distclean: clean
 	$(LIBTOOL) --mode=link $(CC) -export-dynamic -module -o $@ $< $(LIBS)
 
 install: all
-	mkdir -p $(plugindir)
-	-mv .libs/*.{so,dll,dylib,lai}* $(plugindir)
-	mv *.la $(plugindir)
+	mkdir -p $(DESTDIR)$(plugindir)
+	-mv .libs/*.{so,dll,dylib,lai}* $(DESTDIR)$(plugindir)
+	mv *.la $(DESTDIR)$(plugindir)
 
