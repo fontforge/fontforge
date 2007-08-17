@@ -63,14 +63,14 @@ fontforge: main.o $(fontforge_LIBOBJECTS)
 	$(LIBTOOL) --mode=link $(CC) -export-dynamic $(LDFLAGS) -o fontforge main.o $(fontforge_LIBOBJECTS) $(LIBS)
 
 sfddiff: sfddiff.pe
-	echo "#!$(bindir)/fontforge -lang=ff" >sfddiff
-	cat sfddiff.pe >>sfddiff
-	chmod +x sfddiff
+	echo "#!$(bindir)/fontforge -lang=ff" > $@
+	cat $< >> $@
+	chmod +x $@
 
 fontimage: fontimage.pe
-	echo "#!$(bindir)/fontforge -lang=ff" >fontimage
-	cat fontimage.pe >>fontimage
-	chmod +x fontimage
+	echo "#!$(bindir)/fontforge -lang=ff" > $@
+	cat $< >> $@
+	chmod +x $@
 
 fontlint: fontlint.pe
 	echo "#!$(bindir)/fontforge -lang=ff" >fontlint
