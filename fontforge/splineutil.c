@@ -5070,7 +5070,9 @@ return;
     DeviceTableFree(sc->top_accent_adjusts);
 #endif
     MathKernFree(sc->mathkern);
-#ifndef _NO_PYTHON
+#if defined(_NO_PYTHON)
+    free( sc->python_data );	/* It's a string of pickled data which we leave as a string */
+#else
     PyFF_FreeSC(sc);
 #endif
 }
@@ -5413,6 +5415,11 @@ return;
     OtfNameListFree(sf->fontstyle_name);
     MarkClassFree(sf->mark_class_cnt,sf->mark_classes,sf->mark_class_names);
     free( sf->gasp );
+#if defined(_NO_PYTHON)
+    free( sf->python_data );	/* It's a string of pickled data which we leave as a string */
+#else
+    PyFF_FreeSF(sf);
+#endif
     free(sf);
 }
 

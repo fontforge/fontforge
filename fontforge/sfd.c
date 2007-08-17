@@ -1029,6 +1029,65 @@ static void SFDDumpCharMath(FILE *sfd,SplineChar *sc) {
     }
 }
 
+static void SFDPickleMe(FILE *sfd,void *python_data) {
+    char *string, *pt;
+
+#ifdef _NO_PYTHON
+    string = (char *) python_data;
+#else
+    string = PyFF_PickleMeToString(python_data);
+#endif
+    if ( string==NULL )
+return;
+    fprintf( sfd, "PickledData: \"" );
+    for ( pt=string; *pt; ++pt ) {
+	if ( *pt=='\\' || *pt=='"' )
+	    putc('\\',sfd);
+	putc(*pt,sfd);
+    }
+    fprintf( sfd, "\"\n");
+#ifndef _NO_PYTHON
+    free(string);
+#endif
+}
+
+static void *SFDUnPickle(FILE *sfd) {
+    int ch, quoted;
+    static int max = 0;
+    static char *buf = NULL;
+    char *pt, *end;
+    int cnt;
+
+    pt = buf; end = buf+max;
+    while ( (ch=getc(sfd))!='"' && ch!='\n' && ch!=EOF );
+    if ( ch!='"' )
+return( NULL );
+
+    quoted = false;
+    while ( ((ch=getc(sfd))!='"' || quoted) && ch!=EOF ) {
+	if ( !quoted && ch=='\\' )
+	    quoted = true;
+	else {
+	    if ( pt>=end ) {
+		cnt = pt-buf;
+		buf = grealloc(buf,(max+=200)+1);
+		pt = buf+cnt;
+		end = buf+max;
+	    }
+	    *pt++ = ch;
+	}
+    }
+    if ( pt==buf )
+return( NULL );
+    *pt='\0';
+#ifdef _NO_PYTHON
+return( copy(buf));
+#else
+return( PyFF_UnPickleMeToObjects(buf));
+#endif
+    /* buf is a static buffer, I don't free it, I'll reuse it next time */
+}
+
 #ifdef FONTFORGE_CONFIG_TYPE3
 static char *joins[] = { "miter", "round", "bevel", "inher", NULL };
 static char *caps[] = { "butt", "round", "square", "inher", NULL };
@@ -1084,6 +1143,8 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
 	SFDDumpCharMath(sfd,sc);
     if ( sc->validation_state&vs_known )
 	fprintf( sfd, "Validated: %d\n", sc->validation_state );
+    if ( sc->python_data!=NULL )
+	SFDPickleMe(sfd,sc->python_data);
 #if HANYANG
     if ( sc->compositionunit )
 	fprintf( sfd, "CompositionUnit: %d %d\n", sc->jamo, sc->varient );
@@ -1827,6 +1888,8 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 	    putc('\n',sfd);
 	}
     }
+    if ( sf->python_data!=NULL )
+	SFDPickleMe(sfd,sf->python_data);
     if ( sf->subfontcnt!=0 ) {
 	/* CID fonts have no encodings, they have registry info instead */
 	fprintf(sfd, "Registry: %s\n", sf->cidregistry );
@@ -3584,6 +3647,8 @@ return( NULL );
 	    SFDGetMinimumDistances(sfd,sc);
 	} else if ( strmatch(tok,"Validated:")==0 ) {
 	    getsint(sfd,&sc->validation_state);
+	} else if ( strmatch(tok,"PickledData:")==0 ) {
+	    sc->python_data = SFDUnPickle(sfd);
 	} else if ( strmatch(tok,"Back")==0 ) {
 	    while ( isspace(ch=getc(sfd)));
 	    ungetc(ch,sfd);
@@ -5825,6 +5890,8 @@ exit( 1 );
 	    SFDGetPrivate(sfd,sf);
 	} else if ( strmatch(tok,"BeginSubrs:")==0 ) {	/* leave in so we don't croak on old sfd files */
 	    SFDGetSubrs(sfd,sf);
+	} else if ( strmatch(tok,"PickledData:")==0 ) {
+	    sf->python_data = SFDUnPickle(sfd);
 	} else if ( strmatch(tok,"MMCounts:")==0 ) {
 	    MMSet *mm = sf->mm = chunkalloc(sizeof(MMSet));
 	    getint(sfd,&mm->instance_count);

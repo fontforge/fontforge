@@ -545,7 +545,6 @@ typedef struct fontview {
     struct lookup_subtable *cur_subtable;
 #ifndef _NO_PYTHON
     void *python_fv_object;
-    void *python_data;
 #endif
 } FontView;
 

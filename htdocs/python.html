@@ -1354,7 +1354,9 @@ pen = None;				# Finalize the pen. This tells FontForge
     </TR>
     <TR>
       <TD><CODE>userdata</CODE></TD>
-      <TD colspan=2>Whatever you want (contents are not saved in an sfd file)</TD>
+      <TD colspan=2>Whatever you want (these data will be saved as a pickled object
+	in the sfd file. It is your job to insure that whatever you put here can
+	be pickled)</TD>
     </TR>
     <TR>
       <TD><CODE>vhints</CODE></TD>
@@ -2262,7 +2264,9 @@ pen = None;				# Finalize the pen. This tells FontForge
     </TR>
     <TR>
       <TD><CODE>userdata</CODE></TD>
-      <TD colspan=2>Whatever you want (contents are not saved in an sfd file)</TD>
+      <TD colspan=2>Whatever you want (these data will be saved as a pickled object
+	in the sfd file. It is your job to insure that whatever you put here can
+	be pickled)</TD>
     </TR>
     <TR>
       <TD><CODE>uwidth</CODE></TD>
