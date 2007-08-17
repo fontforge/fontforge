@@ -10267,10 +10267,16 @@ static PyMethodDef psMat_methods[] = {
     NULL
 };
 
+static void PyFF_PicklerInit(void) {
+    if ( pickler==NULL )
+	PyRun_SimpleString("import cPickle;\nimport __FontForge_Internals___;\n__FontForge_Internals___.initPickles(cPickle.dumps,cPickle.loads);");
+}
+
 char *PyFF_PickleMeToString(void *pydata) {
     PyObject *pyobj, *arglist, *result;
     char *ret = NULL;
 
+    PyFF_PicklerInit();
     pyobj = pydata;
     arglist = PyTuple_New(2);
     Py_XINCREF(pyobj);
@@ -10292,6 +10298,7 @@ return( ret );
 void *PyFF_UnPickleMeToObjects(char *str) {
     PyObject *arglist, *result;
 
+    PyFF_PicklerInit();
     arglist = PyTuple_New(1);
     PyTuple_SetItem(arglist,0,Py_BuildValue("s",str));
     result = PyEval_CallObject(unpickler, arglist);
@@ -10366,7 +10373,6 @@ return;
     /*  function, and then invoke that function to store handles to the pickler */
     m = Py_InitModule3("__FontForge_Internals___", FontForge_internal_methods,
                        "I use this at start up to get access to certain python objects I need. I don't expect users ever to care about it.");
-    PyRun_SimpleString("import cPickle;\nimport __FontForge_Internals___;\n__FontForge_Internals___.initPickles(cPickle.dumps,cPickle.loads);");
 }
 
 void FontForge_PythonInit(void) {
