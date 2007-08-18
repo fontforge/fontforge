@@ -1,0 +1,55 @@
+.\" Manual page for fontlint by George Williams
+.\" Copyright © 2006 by George Williams.
+.TH FONTLINT 1 "17 August 2007"
+.SH NAME
+.B fontlint - check a font
+.SH SYNOPSIS
+.B fontlint
+.I fontfile ...
+.SH DESCRIPTION
+The program
+.B fontlint
+loads a font (or more than one), which may be in any format
+.IR fontforge (1)
+can read, and checks the font for certain common errors
+.br
+.ti +4n
+* Intersecting contours
+.br
+.ti +4n
+* Incorrectly oriented contours
+.br
+.ti +4n
+* Extrema not marked by points
+.br
+And for PostScript fonts:
+.br
+.ti +4n
+* Too many points in a glyph
+.br
+.ti +4n
+* Too many hints in a glyph
+.br
+.ti +4n
+* Bad glyph name
+
+.SH OPTIONS
+None.
+.\" .SH ENVIRONMENT
+.\" .SH FILES
+.\" .SH EXAMPLES
+.\" .SH DIAGNOSTICS
+.SH "SEE ALSO"
+.BR fontforge (1)
+.LP
+The HTML version of the
+.I fontforge
+manual at:
+.br
+\fChttp://fontforge.sourceforge.net/\fP
+.\" .SH STANDARDS
+.\" .SH HISTORY
+.SH AUTHOR
+Copyright (C) 2007 by George Williams (gww@silcom.com).
+.\" .SH BUGS
+.\" end of file

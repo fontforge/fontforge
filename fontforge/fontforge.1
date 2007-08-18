@@ -15,7 +15,10 @@
 .IR pixeld ]
 .RB [ \-display
 .IR str ]
+.RB [ \-lang=ff ]
+.RB [ \-lang=py ]
 .RB [ \-last ]
+.RB [ \-library-status ]
 .RB [ \-help ]
 .RB [ \-keyboard
 .IR ktype ]
@@ -151,6 +154,15 @@ will open the last
 .I n
 fonts.
 .TP
+.B \-lang=ff
+Interpret the script with the fontforge interpreter.
+.TP
+.B \-lang=py
+Interpret the script with the python interpreter.
+.TP
+.B \-library-status
+Prints information about optional libraries.
+.TP
 .B \-new
 Create a new font with the ISO 8859-1 encoding
 (the international encoding standard for western Europe,
@@ -254,7 +266,7 @@ available online at:
 used to be called
 .BR pfaedit.
 .SH AUTHOR
-Copyright (C) 2000-2004 by George Williams (gww@silcom.com).
+Copyright (C) 2000-2007 by George Williams (gww@silcom.com).
 Original manual page by Tom Harvey, subsequently modified by George Williams.
 Heavily rewritten and modified to use standard
 .IR \-man " (5) macros by R.P.C. Rodgers (rodgers@nlm.nih.gov), 23 October 2002."

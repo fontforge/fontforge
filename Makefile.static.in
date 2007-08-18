@@ -75,6 +75,7 @@ install: $(sharedir) all install_libs install_po
 	$(INSTALL_DATA) $(srcdir)/fontforge/fontforge.1 $(mandir)/man1
 	$(INSTALL_DATA) $(srcdir)/fontforge/sfddiff.1 $(mandir)/man1
 	$(INSTALL_DATA) $(srcdir)/fontforge/fontimage.1 $(mandir)/man1
+	$(INSTALL_DATA) $(srcdir)/fontforge/fontlint.1 $(mandir)/man1
 	mkdir -p $(libdir)/pkgconfig
 	$(INSTALL_DATA) fontforge.pc $(libdir)/pkgconfig
 #explicit use of sh to make sure we don't invoke csh with different "if" syntax
