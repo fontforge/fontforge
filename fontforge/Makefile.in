@@ -108,7 +108,7 @@ install:
 	( cd .. ; make install )
 
 FontForge-MenuShortCuts.pot: *.c
-	xgettext --from-code=UTF-8 -kH_ -oFontForge-MenuShortCuts.pot *.c ../gdraw/*.c
+	xgettext -kH_ -oFontForge-MenuShortCuts.pot *.c ../gdraw/*.c
 	patch < potmstitle.patch
 
 FontForge.pot: *.c utf8.pot
