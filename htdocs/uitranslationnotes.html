@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 19-Aug-2006 -->
-  <!-- AP: Last modified: 27-Mar-2007 -->
+  <!-- AP: Last modified: 17-Aug-2007 -->
   <TITLE>User Interface Translation Notes</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -74,23 +74,26 @@
   In a gettext based package, the translatable strings live in a "pot" file.
   In FontForge's case it is called "FontForge.pot".
   <P>
+  You can download the <A href="FontForge.pot.bz2">current version of this
+  file from here;</A> it will be updated at least each time I make a release
+  and possibly more frequently.
+  <!--<P>
   Each source distribution I make contains the then current FontForge.pot file
   in the top level directory of the distribution. You may find a copy of the
-  <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;package_id=114328">current
+  <A HREF="http://sourceforge.net/project/showfiles.php?group_id=103338&amp;amp;package_id=114328">current
   distribution on sourceforge</A>, it will be called something like
-  fontforge_full-20060817.tar.bz2.
+  fontforge_full-20060817.tar.bz2.-->
   <P>
   After you have downloaded one of these packages, either copy the tarball
   to where you are, or move to the directory containing the tarball (I can't
   provide explicit instructions here, because I don't know where your browser
   put the file) and type (do not type "$"):
   <BLOCKQUOTE>
-    <PRE><FONT COLOR="Gray">$ </FONT>bunzip2 fontforge*.tar.bz2
-<FONT COLOR="Gray">$ </FONT>tar xf fontforge*.tar
+    <PRE><FONT COLOR="Gray">$ </FONT>bunzip2 FontForge.pot.bz2
 </PRE>
   </BLOCKQUOTE>
   <P>
-  Then edit the file<CODE> fontforge-*/FontForge.pot</CODE>.
+  Then edit the file<CODE> FontForge.pot</CODE>.
   <H4>
     from the <A NAME="src-cvs">cvs</A> tree
   </H4>
@@ -459,6 +462,9 @@ msgstr[1] "<FONT COLOR="Red">%d Groupes</FONT>"
   gettext "text domain").
   <P>
   The hot key pot file is called: <TT>FontForge-MenuShortCuts.pot</TT>
+  <P>
+  (It can also be obtained <A HREF="FontForge-MenuShortCuts.pot.bz2">from the
+  website</A>, or generated from the cvs tree)
   <P>
   This file consists of a sequence of entries that look like:
   <BLOCKQUOTE>
