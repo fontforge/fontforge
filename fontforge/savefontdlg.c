@@ -2045,12 +2045,16 @@ return( true );
 return( err );
 }
 
-static void PrepareUnlinkRmOvrlp(SplineFont *sf) {
+static void PrepareUnlinkRmOvrlp(SplineFont *sf,char *filename) {
     int gid;
     SplineChar *sc;
     RefChar *ref, *refnext;
     extern int no_windowing_ui, maxundoes;
     int old_nwui = no_windowing_ui, old_maxundoes = maxundoes;
+
+#if !defined(_NO_PYTHON)
+    PyFF_CallDictFunc(sf->python_temporary,"generateFontPostHook","fs",sf->fv,filename);
+#endif
 
     if ( maxundoes==0 ) maxundoes = 1;		/* Force undoes */
 
@@ -2073,13 +2077,16 @@ static void PrepareUnlinkRmOvrlp(SplineFont *sf) {
     maxundoes = old_maxundoes;
 }
 
-static void RestoreUnlinkRmOvrlp(SplineFont *sf) {
+static void RestoreUnlinkRmOvrlp(SplineFont *sf,char *filename) {
     int gid;
     SplineChar *sc;
 
     for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL && sc->unlink_rm_ovrlp_save_undo ) {
 	SCDoUndo(sc,ly_fore);
     }
+#if !defined(_NO_PYTHON)
+    PyFF_CallDictFunc(sf->python_temporary,"generateFontPostHook","fs",sf->fv,filename);
+#endif
 }
 
 static int32 *AllBitmapSizes(SplineFont *sf) {
@@ -2321,12 +2328,12 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
     former = NULL;
     if ( sfs!=NULL ) {
 	for ( sfl=sfs; sfl!=NULL; sfl=sfl->next ) {
-	    PrepareUnlinkRmOvrlp(sfl->sf);
+	    PrepareUnlinkRmOvrlp(sfl->sf,filename);
 	    if ( rename_to!=NULL )
 		sfl->former_names = SFTemporaryRenameGlyphsToNamelist(sfl->sf,rename_to);
 	}
     } else {
-	PrepareUnlinkRmOvrlp(sf);
+	PrepareUnlinkRmOvrlp(sf,filename);
 	if ( rename_to!=NULL )
 	    former = SFTemporaryRenameGlyphsToNamelist(sf,rename_to);
     }
@@ -2347,12 +2354,12 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 
     if ( sfs!=NULL ) {
 	for ( sfl=sfs; sfl!=NULL; sfl=sfl->next ) {
-	    RestoreUnlinkRmOvrlp(sfl->sf);
+	    RestoreUnlinkRmOvrlp(sfl->sf,filename);
 	    if ( rename_to!=NULL )
 		SFTemporaryRestoreGlyphNames(sfl->sf,sfl->former_names);
 	}
     } else {
-	RestoreUnlinkRmOvrlp(sf);
+	RestoreUnlinkRmOvrlp(sf,filename);
 	if ( rename_to!=NULL )
 	    SFTemporaryRestoreGlyphNames(sf,former);
     }
@@ -2584,12 +2591,12 @@ return;
     former = NULL;
     if ( d->family && sfs!=NULL ) {
 	for ( sfl=sfs; sfl!=NULL; sfl=sfl->next ) {
-	    PrepareUnlinkRmOvrlp(sfl->sf);
+	    PrepareUnlinkRmOvrlp(sfl->sf,temp);
 	    if ( rename_to!=NULL && !iscid )
 		sfl->former_names = SFTemporaryRenameGlyphsToNamelist(sfl->sf,rename_to);
 	}
     } else {
-	PrepareUnlinkRmOvrlp(d->sf);
+	PrepareUnlinkRmOvrlp(d->sf,temp);
 	if ( rename_to!=NULL && !iscid )
 	    former = SFTemporaryRenameGlyphsToNamelist(d->sf,rename_to);
     }
@@ -2601,12 +2608,12 @@ return;
 
     if ( d->family && sfs!=NULL ) {
 	for ( sfl=sfs; sfl!=NULL; sfl=sfl->next ) {
-	    RestoreUnlinkRmOvrlp(sfl->sf);
+	    RestoreUnlinkRmOvrlp(sfl->sf,temp);
 	    if ( rename_to!=NULL && !iscid )
 		SFTemporaryRestoreGlyphNames(sfl->sf,sfl->former_names);
 	}
     } else {
-	RestoreUnlinkRmOvrlp(d->sf);
+	RestoreUnlinkRmOvrlp(d->sf,temp);
 	if ( rename_to!=NULL && !iscid )
 	    SFTemporaryRestoreGlyphNames(d->sf,former);
     }

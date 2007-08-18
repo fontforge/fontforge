@@ -1536,6 +1536,7 @@ extern struct python_import_export {
 extern void PyFF_SCExport(SplineChar *sc,int ie_index,char *filename);
 extern void PyFF_SCImport(SplineChar *sc,int ie_index,char *filename,
 	int toback, int clear);
+extern void PyFF_InitFontHook(FontView *fv);
 
 extern void SFValidationWindow(SplineFont *sf,enum fontformat format);
 extern void ValidationDestroy(SplineFont *sf);

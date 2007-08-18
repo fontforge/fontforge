@@ -10408,6 +10408,9 @@ FontView *_FontViewCreate(SplineFont *sf) {
     fv->glyphlabel = default_fv_glyphlabel;
 
     fv->end_pos = -1;
+#ifndef _NO_PYTHON
+    PyFF_InitFontHook(fv);
+#endif
 return( fv );
 }
 

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 17-Aug-2007 -->
+  <!-- AP: Last modified: 18-Aug-2007 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -86,6 +86,37 @@
     <CAPTION>
       <A NAME="fontforge">fontforge</A>
     </CAPTION>
+    <TR>
+      <TH colspan=3>Global Variables</TH>
+    </TR>
+    <TR>
+      <TH>variable</TH>
+      <TH colspan=2>comments</TH>
+    </TR>
+    <TR>
+      <TD><CODE>hooks</CODE></TD>
+      <TD colspan=2>A dictionary which the user may fill to associate certain fontforge
+	events with a python function to be run when those events happen. The function
+	will be passed the font (or possibly glyph) for which the relevant event
+	occurred.
+	<TABLE BORDER CELLPADDING="2">
+	  <CAPTION>
+	    Hook names
+	  </CAPTION>
+	  <TR>
+	    <TD>newFontHook</TD>
+	    <TD>This function will be called when a new font has been created.</TD>
+	  </TR>
+	  <TR>
+	    <TD>loadFontHook</TD>
+	    <TD>This function will be called when a font is loaded from disk.<BR>
+	      (if a font has an "initScriptString" entry in its persistant dictionary,
+	      that script will be invoked before this function).</TD>
+	  </TR>
+	</TABLE>
+	<P>
+	Other hooks are defined in a font's own temporary and persistant dictionaries.</TD>
+    </TR>
     <TR>
       <TH colspan=3>Methods</TH>
     </TR>
@@ -1399,10 +1430,19 @@ pen = None;				# Finalize the pen. This tells FontForge
 	references replaced after the save finishes)</TD>
     </TR>
     <TR>
-      <TD><CODE>userdata</CODE></TD>
+      <TD><CODE>persistant</CODE></TD>
       <TD colspan=2>Whatever you want (these data will be saved as a pickled object
 	in the sfd file. It is your job to insure that whatever you put here can
 	be pickled)</TD>
+    </TR>
+    <TR>
+      <TD><CODE>temporary</CODE></TD>
+      <TD colspan=2>Whatever you want (these data will be lost once the font is
+	closed)</TD>
+    </TR>
+    <TR>
+      <TD><CODE>userdata</CODE></TD>
+      <TD colspan=2>Deprecated name for temporary above</TD>
     </TR>
     <TR>
       <TD><CODE>vhints</CODE></TD>
@@ -2320,10 +2360,55 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TD colspan=2>underline position</TD>
     </TR>
     <TR>
+      <TD><CODE>persistant</CODE></TD>
+      <TD colspan=2>Whatever you want -- though I recommend you store a dict here
+	(these data will be saved as a pickled object in the sfd file. It is your
+	job to insure that whatever you put here can be pickled)
+	<P>
+	If you do store a dict then the following entries will be treated specially:
+	<TABLE border=1>
+	  <TR>
+	    <TD>initScriptString</TD>
+	    <TD>If present, and if this is a string, then each time the font is loaded
+	      from an sfd file, this string will be passed to the python interpretter.
+	      Note: This is a string, not a function. Function code cannot be pickled.
+	      Since it is a string it will receive no arguments, but the current font will
+	      be available in the activeFont method of the fontforge module.
+	      <P>
+	      This string will be interpretted before the loadFontHook of the module hooks
+	      dictionary.
+	      <P>
+	      One possible behavior for this string is to define function hooks to be stored
+	      in the temporary dict described below.</TD>
+	  </TR>
+	</TABLE>
+      </TD>
+    </TR>
+    <TR>
+      <TD><CODE>temporary</CODE></TD>
+      <TD colspan=2>Whatever you want -- though I recommend you store a dict here
+	(these data will be lost once the font is closed)
+	<P>
+	If you do store a dict then the following entries will be treated specially:
+	<TABLE border=1>
+	  <TR>
+	    <TD>generateFontPreHook</TD>
+	    <TD>If present, and if this is a function it will be called just before a
+	      font is generated. It will be called with the font and the filename to which
+	      the font will be written.</TD>
+	  </TR>
+	  <TR>
+	    <TD>generateFontPostHook</TD>
+	    <TD>If present, and if this is a function it will be called just after a
+	      font is generated. It will be called with the font and the filename to which
+	      the font will be written.</TD>
+	  </TR>
+	</TABLE>
+      </TD>
+    </TR>
+    <TR>
       <TD><CODE>userdata</CODE></TD>
-      <TD colspan=2>Whatever you want (these data will be saved as a pickled object
-	in the sfd file. It is your job to insure that whatever you put here can
-	be pickled)</TD>
+      <TD colspan=2>Deprecated name for temporary above</TD>
     </TR>
     <TR>
       <TD><CODE>uwidth</CODE></TD>

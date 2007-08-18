@@ -1175,8 +1175,9 @@ typedef struct splinechar {
 /* End of MATH/TeX fields */
 #ifndef _NO_PYTHON
     void *python_sc_object;
+    void *python_temporary;
 #endif
-    void *python_data;		/* If python this will hold a python object, if not python this will hold a string containing a pickled object. We do nothing with it (if not python) except save it back out unchanged */
+    void *python_persistant;		/* If python this will hold a python object, if not python this will hold a string containing a pickled object. We do nothing with it (if not python) except save it back out unchanged */
     uint16 validation_state;
     uint16 old_vs;
 } SplineChar;
@@ -1537,7 +1538,10 @@ typedef struct splinefont {
     uint8 sfd_version;			/* Used only when reading in an sfd file */
     struct gfi_data *fontinfo;
     struct val_data *valwin;
-    void *python_data;		/* If python this will hold a python object, if not python this will hold a string containing a pickled object. We do nothing with it (if not python) except save it back out unchanged */
+#if !defined(_NO_PYTHON)
+    void *python_temporary;
+#endif
+    void *python_persistant;		/* If python this will hold a python object, if not python this will hold a string containing a pickled object. We do nothing with it (if not python) except save it back out unchanged */
 } SplineFont;
 
 /* I am going to simplify my life and not encourage intermediate designs */
@@ -2560,6 +2564,8 @@ extern void PyFF_FreeSF(SplineFont *sf);
 extern void PyFF_ProcessInitFiles(void);
 extern char *PyFF_PickleMeToString(void *pydata);
 extern void *PyFF_UnPickleMeToObjects(char *str);
+struct _object;		/* Python Object */
+extern void PyFF_CallDictFunc(struct _object *dict,char *key,char *argtypes, ... );
 struct gtextinfo;
 extern void scriptingSaveEnglishNames(struct gtextinfo *ids,struct gtextinfo *langs);
 #endif

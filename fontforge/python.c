@@ -51,9 +51,11 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include <stdarg.h>
 
 static FontView *fv_active_in_ui = NULL;
 static SplineChar *sc_active_in_ui = NULL;
+static PyObject *hook_dict;			/* Dictionary of python hook scripts (to be activated when certain fontforge events happen) */
 static PyObject *pickler, *unpickler;		/* cPickle.dumps, cPickle.loads */
 static PyObject *_new_point, *_new_contour, *_new_layer;	/* Python handles to c functions, needed for pickler */
 static void PyFF_PickleTypesInit(void);
@@ -4054,15 +4056,15 @@ return( sc1<sc2 ? -1 : 1 );
 /* Glyph getters/setters */
 /* ************************************************************************** */
 
-static PyObject *PyFF_Glyph_get_userdata(PyFF_Glyph *self,void *closure) {
-    if ( self->sc->python_data==NULL )
+static PyObject *PyFF_Glyph_get_temporary(PyFF_Glyph *self,void *closure) {
+    if ( self->sc->python_temporary==NULL )
 Py_RETURN_NONE;
-    Py_INCREF( (PyObject *) (self->sc->python_data) );
-return( self->sc->python_data );
+    Py_INCREF( (PyObject *) (self->sc->python_temporary) );
+return( self->sc->python_temporary );
 }
 
-static int PyFF_Glyph_set_userdata(PyFF_Glyph *self,PyObject *value,void *closure) {
-    PyObject *old = self->sc->python_data;
+static int PyFF_Glyph_set_temporary(PyFF_Glyph *self,PyObject *value,void *closure) {
+    PyObject *old = self->sc->python_temporary;
 
     /* I'd rather not store None, because C routines don't understand it */
     /*  and they occasionally need to know whether there is something real */
@@ -4070,7 +4072,28 @@ static int PyFF_Glyph_set_userdata(PyFF_Glyph *self,PyObject *value,void *closur
     if ( value==Py_None )
 	value = NULL;
     Py_XINCREF(value);
-    self->sc->python_data = value;
+    self->sc->python_temporary = value;
+    Py_XDECREF(old);
+return( 0 );
+}
+
+static PyObject *PyFF_Glyph_get_persistant(PyFF_Glyph *self,void *closure) {
+    if ( self->sc->python_persistant==NULL )
+Py_RETURN_NONE;
+    Py_INCREF( (PyObject *) (self->sc->python_persistant) );
+return( self->sc->python_persistant );
+}
+
+static int PyFF_Glyph_set_persistant(PyFF_Glyph *self,PyObject *value,void *closure) {
+    PyObject *old = self->sc->python_persistant;
+
+    /* I'd rather not store None, because C routines don't understand it */
+    /*  and they occasionally need to know whether there is something real */
+    /*  in this field. */
+    if ( value==Py_None )
+	value = NULL;
+    Py_XINCREF(value);
+    self->sc->python_persistant = value;
     Py_XDECREF(old);
 return( 0 );
 }
@@ -4688,8 +4711,14 @@ return( Py_BuildValue("i", self->sc->validation_state ));
 
 static PyGetSetDef PyFF_Glyph_getset[] = {
     {"userdata",
-	 (getter)PyFF_Glyph_get_userdata, (setter)PyFF_Glyph_set_userdata,
-	 "arbetrary user data", NULL},
+	 (getter)PyFF_Glyph_get_temporary, (setter)PyFF_Glyph_set_temporary,
+	 "arbetrary (non persistant) user data (deprecated name for temporary)", NULL},
+    {"temporary",
+	 (getter)PyFF_Glyph_get_temporary, (setter)PyFF_Glyph_set_temporary,
+	 "arbetrary (non persistant) user data", NULL},
+    {"persistant",
+	 (getter)PyFF_Glyph_get_persistant, (setter)PyFF_Glyph_set_persistant,
+	 "arbetrary persistant user data", NULL},
     {"anchorPoints",
 	 (getter)PyFF_Glyph_get_anchorPoints, (setter)PyFF_Glyph_set_anchorPoints,
 	 "glyph name", NULL},
@@ -7071,17 +7100,17 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Font_get_userdata(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_temporary(PyFF_Font *self,void *closure) {
     SplineFont *sf = self->fv->sf;
-    if ( sf->python_data==NULL )
+    if ( sf->python_temporary==NULL )
 Py_RETURN_NONE;
-    Py_INCREF( (PyObject *) (sf->python_data) );
-return( sf->python_data );
+    Py_INCREF( (PyObject *) (sf->python_temporary) );
+return( sf->python_temporary );
 }
 
-static int PyFF_Font_set_userdata(PyFF_Font *self,PyObject *value,void *closure) {
+static int PyFF_Font_set_temporary(PyFF_Font *self,PyObject *value,void *closure) {
     SplineFont *sf = self->fv->sf;
-    PyObject *old = sf->python_data;
+    PyObject *old = sf->python_temporary;
 
     /* I'd rather not store None, because C routines don't understand it */
     /*  and they occasionally need to know whether there is something real */
@@ -7089,7 +7118,30 @@ static int PyFF_Font_set_userdata(PyFF_Font *self,PyObject *value,void *closure)
     if ( value==Py_None )
 	value = NULL;
     Py_XINCREF(value);
-    sf->python_data = value;
+    sf->python_temporary = value;
+    Py_XDECREF(old);
+return( 0 );
+}
+
+static PyObject *PyFF_Font_get_persistant(PyFF_Font *self,void *closure) {
+    SplineFont *sf = self->fv->sf;
+    if ( sf->python_persistant==NULL )
+Py_RETURN_NONE;
+    Py_INCREF( (PyObject *) (sf->python_persistant) );
+return( sf->python_persistant );
+}
+
+static int PyFF_Font_set_persistant(PyFF_Font *self,PyObject *value,void *closure) {
+    SplineFont *sf = self->fv->sf;
+    PyObject *old = sf->python_persistant;
+
+    /* I'd rather not store None, because C routines don't understand it */
+    /*  and they occasionally need to know whether there is something real */
+    /*  in this field. */
+    if ( value==Py_None )
+	value = NULL;
+    Py_XINCREF(value);
+    sf->python_persistant = value;
     Py_XDECREF(old);
 return( 0 );
 }
@@ -7968,8 +8020,14 @@ return( PyFF_Font_SetMaxpValue(self,value,"Zones"));
 
 static PyGetSetDef PyFF_Font_getset[] = {
     {"userdata",
-	 (getter)PyFF_Font_get_userdata, (setter)PyFF_Font_set_userdata,
-	 "arbetrary user data", NULL},
+	 (getter)PyFF_Font_get_temporary, (setter)PyFF_Font_set_temporary,
+	 "arbetrary (non-persistant) user data (deprecated name for temporary)", NULL},
+    {"temporary",
+	 (getter)PyFF_Font_get_temporary, (setter)PyFF_Font_set_temporary,
+	 "arbetrary (non-persistant) user data", NULL},
+    {"persistant",
+	 (getter)PyFF_Font_get_persistant, (setter)PyFF_Font_set_persistant,
+	 "arbetrary persistant user data", NULL},
     {"sfnt_names",
 	 (getter)PyFF_Font_get_sfntnames, (setter)PyFF_Font_set_sfntnames,
 	 "The sfnt 'name' table. A tuple of all ms names.\nEach name is itself a tuple of strings (language,strid,name)\nMac names will be automagically created from ms names", NULL},
@@ -10523,6 +10581,11 @@ return;
 	Py_INCREF(types[i]);
 	PyModule_AddObject(m, names[i], (PyObject *)types[i]);
     }
+    /* Add a dictionary in which the user may define hooks -- scripts to run */
+    /*  when certain events happen in fontforge (like loading a file) */
+    hook_dict = PyDict_New();
+    Py_INCREF(hook_dict);
+    PyModule_AddObject(m, "hooks", hook_dict);
 
     m = Py_InitModule3("psMat", psMat_methods,
                        "PostScript Matrix manipulation");
@@ -10532,10 +10595,11 @@ return;
     /*  do that is to go through this kludge. Define a dummy module with one */
     /*  function, and then invoke that function to store handles to the pickler */
     m = Py_InitModule3("__FontForge_Internals___", FontForge_internal_methods,
-                       "I use this at start up to get access to certain python objects I need. I don't expect users ever to care about it.");
+                       "I use this to get access to certain python objects I need, and to hide some internal python functions. I don't expect users ever to care about it.");
 }
 
 void FontForge_PythonInit(void) {
+    Py_SetProgramName("fontforge");
     PyImport_AppendInittab("fontforge", initPyFontForge);
 #ifdef MAC
     PyMac_Initialize();
@@ -10606,7 +10670,8 @@ void PyFF_FreeFV(FontView *fv) {
 }
 
 void PyFF_FreeSF(SplineFont *sf) {
-    Py_XDECREF( (PyObject *) (sf->python_data));
+    Py_XDECREF( (PyObject *) (sf->python_persistant));
+    Py_XDECREF( (PyObject *) (sf->python_temporary));
 }
 
 void PyFF_FreeSC(SplineChar *sc) {
@@ -10614,7 +10679,8 @@ void PyFF_FreeSC(SplineChar *sc) {
 	((PyFF_Glyph *) (sc->python_sc_object))->sc = NULL;
 	Py_DECREF( (PyObject *) (sc->python_sc_object));
     }
-    Py_XDECREF( (PyObject *) (sc->python_data));
+    Py_XDECREF( (PyObject *) (sc->python_persistant));
+    Py_XDECREF( (PyObject *) (sc->python_temporary));
 }
 
 static void LoadFilesInPythonInitDir(char *dir) {
@@ -10661,5 +10727,79 @@ return;
 	strcat(buffer,"/python");
 	LoadPluginDir(buffer);
     }
+}
+
+void PyFF_CallDictFunc(PyObject *dict,char *key,char *argtypes, ... ) {
+    PyObject *func, *arglist, *result;
+    char *pt;
+    va_list ap;
+    int i;
+
+    if ( dict==NULL || !PyMapping_Check(dict) ||
+	    !PyMapping_HasKeyString(dict,key) ||
+	    (func = PyMapping_GetItemString(dict,key))==NULL )
+return;
+    if ( !PyCallable_Check(func)) {
+	LogError( "%s: Is not callable", key );
+	Py_DECREF(func);
+return;
+    }
+    va_start(ap,argtypes);
+
+    arglist = PyTuple_New(strlen(argtypes));
+    for ( pt=argtypes, i=0; *pt; ++pt, ++i ) {
+	PyObject *arg;
+	if ( *pt=='f' )
+	    arg = PyFV_From_FV_I( va_arg(ap,FontView *));
+	else if ( *pt=='g' )
+	    arg = PySC_From_SC_I( va_arg(ap,SplineChar *));
+	else if ( *pt=='s' )
+	    arg = Py_BuildValue("s", va_arg(ap, char *));
+	else if ( *pt=='i' )
+	    arg = Py_BuildValue("i", va_arg(ap, int));
+	else if ( *pt=='n' ) {
+	    arg = Py_None;
+	    Py_INCREF(arg);
+	} else {
+	    IError("Unknown argument type in CallDictFunc" );
+	    arg = Py_None;
+	    Py_INCREF(arg);
+	}
+	PyTuple_SetItem(arglist,i,arg);
+    }
+    va_end(ap);
+    result = PyEval_CallObject(func, arglist);
+    Py_DECREF(arglist);
+    Py_XDECREF(result);
+    if ( PyErr_Occurred()!=NULL )
+	PyErr_Print();
+}
+
+void PyFF_InitFontHook(FontView *fv) {
+    /* Ok we just created a new fontview, and attached it to a splinefont */
+    /*  We have not added a window or menu to it yet */
+    SplineFont *sf = fv->sf;
+    PyObject *obj;
+
+    if ( fv->nextsame!=NULL )		/* Duplicate window looking at previously loaded font */
+return;
+
+    fv_active_in_ui = fv;		/* Make fv known to interpreter */
+
+    /* First check if it has a initScriptString in the persistant dictionary */
+    /* (If we loaded from an sfd file) */
+    obj = NULL;
+    if ( sf->python_persistant!=NULL && PyMapping_Check(sf->python_persistant) &&
+	    (obj = PyMapping_GetItemString(sf->python_persistant,"initScriptString"))!=NULL &&
+	    PyString_Check(obj)) {
+	char *str = PyString_AsString(obj);
+	PyRun_SimpleString(str);
+    }
+    Py_XDECREF(obj);
+
+    if ( sf->new )
+	PyFF_CallDictFunc(hook_dict,"newFontHook","f", fv );
+    else
+	PyFF_CallDictFunc(hook_dict,"loadFontHook","f", fv );
 }
 #endif		/* _NO_PYTHON */
