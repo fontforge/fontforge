@@ -1143,8 +1143,8 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
 	SFDDumpCharMath(sfd,sc);
     if ( sc->validation_state&vs_known )
 	fprintf( sfd, "Validated: %d\n", sc->validation_state );
-    if ( sc->python_data!=NULL )
-	SFDPickleMe(sfd,sc->python_data);
+    if ( sc->python_persistant!=NULL )
+	SFDPickleMe(sfd,sc->python_persistant);
 #if HANYANG
     if ( sc->compositionunit )
 	fprintf( sfd, "CompositionUnit: %d %d\n", sc->jamo, sc->varient );
@@ -1888,8 +1888,8 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 	    putc('\n',sfd);
 	}
     }
-    if ( sf->python_data!=NULL )
-	SFDPickleMe(sfd,sf->python_data);
+    if ( sf->python_persistant!=NULL )
+	SFDPickleMe(sfd,sf->python_persistant);
     if ( sf->subfontcnt!=0 ) {
 	/* CID fonts have no encodings, they have registry info instead */
 	fprintf(sfd, "Registry: %s\n", sf->cidregistry );
@@ -3648,7 +3648,7 @@ return( NULL );
 	} else if ( strmatch(tok,"Validated:")==0 ) {
 	    getsint(sfd,&sc->validation_state);
 	} else if ( strmatch(tok,"PickledData:")==0 ) {
-	    sc->python_data = SFDUnPickle(sfd);
+	    sc->python_persistant = SFDUnPickle(sfd);
 	} else if ( strmatch(tok,"Back")==0 ) {
 	    while ( isspace(ch=getc(sfd)));
 	    ungetc(ch,sfd);
@@ -5891,7 +5891,7 @@ exit( 1 );
 	} else if ( strmatch(tok,"BeginSubrs:")==0 ) {	/* leave in so we don't croak on old sfd files */
 	    SFDGetSubrs(sfd,sf);
 	} else if ( strmatch(tok,"PickledData:")==0 ) {
-	    sf->python_data = SFDUnPickle(sfd);
+	    sf->python_persistant = SFDUnPickle(sfd);
 	} else if ( strmatch(tok,"MMCounts:")==0 ) {
 	    MMSet *mm = sf->mm = chunkalloc(sizeof(MMSet));
 	    getint(sfd,&mm->instance_count);
