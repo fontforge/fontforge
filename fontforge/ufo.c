@@ -24,12 +24,19 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
+#ifndef _NO_PYTHON
+# include "Python.h"
+# include "structmember.h"
+#else
+# include <utype.h>
+#endif
+
 #include "pfaeditui.h"
 #include <unistd.h>
 #include <math.h>
 #include <time.h>
 #include <locale.h>
-#include <utype.h>
 #include <chardata.h>
 #include <gfile.h>
 #include <ustring.h>
@@ -54,6 +61,145 @@ static char *buildname(char *basedir,char *sub) {
     strcat(fname,sub);
 return( fname );
 }
+
+/* ************************************************************************** */
+/* *************************   Python lib Output    ************************* */
+/* ************************************************************************** */
+#ifndef _NO_PYTHON
+static int PyObjDumpable(PyObject *value);
+static void DumpPyObject( FILE *file, PyObject *value );
+#endif
+
+static void DumpPythonLib(FILE *file,void *python_persistant,SplineChar *sc) {
+    StemInfo *h;
+    int has_hints = (sc!=NULL && (sc->hstem!=NULL || sc->vstem!=NULL ));
+	
+#ifdef _NO_PYTHON
+    if ( has_hints ) {
+	/* Not officially part of the UFO/glif spec, but used by robofab */
+	fprintf( file, "  <lib>\n" );
+	fprintf( file, "    <dict>\n" );
+#else
+    PyObject *dict = python_persistant, *items, *key, *value;
+    int i, len;
+    char *str;
+
+    if ( has_hints || (dict!=NULL && PyMapping_Check(dict)) ) {
+	if ( sc!=NULL ) {
+	    fprintf( file, "  <lib>\n" );
+	    fprintf( file, "    <dict>\n" );
+	}
+	if ( has_hints ) {
+#endif	
+	    fprintf( file, "      <key>com.fontlab.hintData</key>\n" );
+	    fprintf( file, "      <dict>\n" );
+	    if ( sc->hstem!=NULL ) {
+		fprintf( file, "\t<key>hhints</key>\n" );
+		fprintf( file, "\t<array>\n" );
+		for ( h = sc->hstem; h!=NULL; h=h->next ) {
+		    fprintf( file, "\t  <dict>\n" );
+		    fprintf( file, "\t    <key>position</key>" );
+		    fprintf( file, "\t    <integer>%d</integer>\n", (int) rint(h->start));
+		    fprintf( file, "\t    <key>width</key>" );
+		    fprintf( file, "\t    <integer>%d</integer>\n", (int) rint(h->width));
+		    fprintf( file, "\t  </dict>\n" );
+		}
+		fprintf( file, "\t</array>\n" );
+	    }
+	    if ( sc->vstem!=NULL ) {
+		fprintf( file, "\t<key>vhints</key>\n" );
+		fprintf( file, "\t<array>\n" );
+		for ( h = sc->vstem; h!=NULL; h=h->next ) {
+		    fprintf( file, "\t  <dict>\n" );
+		    fprintf( file, "\t    <key>position</key>\n" );
+		    fprintf( file, "\t    <integer>%d</integer>\n", (int) rint(h->start));
+		    fprintf( file, "\t    <key>width</key>\n" );
+		    fprintf( file, "\t    <integer>%d</integer>\n", (int) rint(h->width));
+		    fprintf( file, "\t  </dict>\n" );
+		}
+		fprintf( file, "\t</array>\n" );
+	    }
+	    fprintf( file, "      </dict>\n" );
+#ifndef _NO_PYTHON
+	}
+	/* Ok, look at the persistant data and output it (all except for a */
+	/*  hint entry -- we've already handled that with the real hints, */
+	/*  no point in retaining out of date hints too */
+	if ( dict != NULL ) {
+	    items = PyMapping_Items(dict);
+	    len = PySequence_Size(items);
+	    for ( i=0; i<len; ++i ) {
+		PyObject *item = PySequence_GetItem(items,i);
+		key = PyTuple_GetItem(item,0);
+		if ( !PyString_Check(key))		/* Keys need not be strings */
+	    continue;
+		str = PyString_AsString(key);
+		if ( strcmp(str,"com.fontlab.hintData")==0 && sc!=NULL )	/* Already done */
+	    continue;
+		value = PyTuple_GetItem(item,1);
+		if ( !PyObjDumpable(value))
+	    continue;
+		fprintf( file, "    <key>%s</key>\n", str );
+		DumpPyObject( file, value );
+	    }
+	}
+#endif
+	if ( sc!=NULL ) {
+	    fprintf( file, "    </dict>\n" );
+	    fprintf( file, "  </lib>\n" );
+	}
+    }
+}
+
+#ifndef _NO_PYTHON
+static int PyObjDumpable(PyObject *value) {
+    if ( PyInt_Check(value))
+return( true );
+    if ( PyFloat_Check(value))
+return( true );
+    if ( PySequence_Check(value))		/* Catches strings and tuples */
+return( true );
+    if ( PyMapping_Check(value))
+return( true );
+    if ( PyBool_Check(value))
+return( true );
+    if ( value == Py_None )
+return( true );
+
+return( false );
+}
+
+static void DumpPyObject( FILE *file, PyObject *value ) {
+    if ( PyMapping_Check(value))
+	DumpPythonLib(file,value,NULL);
+    else if ( PyString_Check(value)) {		/* Must precede the sequence check */
+	char *str = PyString_AsString(value);
+	fprintf( file, "      <string>%s</string>\n", str );
+    } else if ( value==Py_True )
+	fprintf( file, "      <true/>\n" );
+    else if ( value==Py_False )
+	fprintf( file, "      <false/>\n" );
+    else if ( value==Py_None )
+	fprintf( file, "      <none/>\n" );
+    else if (PyInt_Check(value))
+	fprintf( file, "      <integer>%ld</integer>\n", PyInt_AsLong(value) );
+    else if (PyInt_Check(value))
+	fprintf( file, "      <real>%g</real>\n", PyFloat_AsDouble(value) );
+    else if (PySequence_Check(value)) {
+	int i, len = PySequence_Size(value);
+
+	fprintf( file, "      <array>\n" );
+	for ( i=0; i<len; ++i ) {
+	    PyObject *obj = PySequence_GetItem(value,i);
+	    if ( PyObjDumpable(obj)) {
+		fprintf( file, "  ");
+		DumpPyObject(file,obj);
+	    }
+	}
+	fprintf( file, "      </array>\n" );
+    }
+}
+#endif
 
 /* ************************************************************************** */
 /* ****************************   GLIF Output    **************************** */
@@ -127,43 +273,7 @@ return( false );
 	}
 	fprintf( glif, "  </outline>\n" );
     }
-    if ( sc->hstem!=NULL || sc->vstem!=NULL ) {
-	StemInfo *h;
-	/* Not officially part of the UFO/glif spec, but used by robofab */
-	fprintf( glif, "  <lib>\n" );
-	fprintf( glif, "    <dict>\n" );
-	fprintf( glif, "      <key>com.fontlab.hintData</key>\n" );
-	fprintf( glif, "      <dict>\n" );
-	if ( sc->hstem!=NULL ) {
-	    fprintf( glif, "\t<key>hhints</key>\n" );
-	    fprintf( glif, "\t<array>\n" );
-	    for ( h = sc->hstem; h!=NULL; h=h->next ) {
-		fprintf( glif, "\t  <dict>\n" );
-		fprintf( glif, "\t    <key>position</key>" );
-		fprintf( glif, "\t    <integer>%d</integer>\n", (int) rint(h->start));
-		fprintf( glif, "\t    <key>width</key>" );
-		fprintf( glif, "\t    <integer>%d</integer>\n", (int) rint(h->width));
-		fprintf( glif, "\t  </dict>\n" );
-	    }
-	    fprintf( glif, "\t</array>\n" );
-	}
-	if ( sc->vstem!=NULL ) {
-	    fprintf( glif, "\t<key>vhints</key>\n" );
-	    fprintf( glif, "\t<array>\n" );
-	    for ( h = sc->vstem; h!=NULL; h=h->next ) {
-		fprintf( glif, "\t  <dict>\n" );
-		fprintf( glif, "\t    <key>position</key>\n" );
-		fprintf( glif, "\t    <integer>%d</integer>\n", (int) rint(h->start));
-		fprintf( glif, "\t    <key>width</key>\n" );
-		fprintf( glif, "\t    <integer>%d</integer>\n", (int) rint(h->width));
-		fprintf( glif, "\t  </dict>\n" );
-	    }
-	    fprintf( glif, "\t</array>\n" );
-	}
-	fprintf( glif, "      </dict>\n" );
-	fprintf( glif, "    </dict>\n" );
-	fprintf( glif, "  </lib>\n" );
-    }
+    DumpPythonLib(glif,sc->python_persistant,sc);
     fprintf( glif, "</glyph>\n" );
     err = ferror(glif);
     if ( fclose(glif))
@@ -337,13 +447,17 @@ return( PListOutputTrailer(plist));
 }
 
 static int UFOOutputLib(char *basedir,SplineFont *sf) {
-    FILE *plist = PListCreate( basedir, "lib.plist" );
+#ifndef _NO_PYTHON
+    if ( sf->python_persistant!=NULL && PyMapping_Check(sf->python_persistant) ) {
+	FILE *plist = PListCreate( basedir, "lib.plist" );
 
-    if ( plist==NULL )
+	if ( plist==NULL )
 return( false );
-    /* No idea what this is */
-    /* Should I omit a file I don't use? Or leave it blank? */
+	DumpPythonLib(plist,sf->python_persistant,NULL);
 return( PListOutputTrailer(plist));
+    }
+#endif
+return( true );
 }
 
 int WriteUFOFont(char *basedir,SplineFont *sf,enum fontformat ff,int flags,
@@ -564,6 +678,102 @@ return( kids );
     }
 return( NULL );
 }
+
+#ifndef _NO_PYTHON
+static PyObject *XMLEntryToPython(xmlDocPtr doc,xmlNodePtr entry);
+
+static PyObject *LibToPython(xmlDocPtr doc,xmlNodePtr dict) {
+    PyObject *pydict = PyDict_New();
+    PyObject *item;
+    xmlNodePtr keys, temp;
+
+    for ( keys=dict->children; keys!=NULL; keys=keys->next ) {
+	if ( _xmlStrcmp(keys->name,(const xmlChar *) "key")== 0 ) {
+	    char *keyname = (char *) _xmlNodeListGetString(doc,keys->children,true);
+	    for ( temp=keys->next; temp!=NULL; temp=temp->next ) {
+		if ( _xmlStrcmp(temp->name,(const xmlChar *) "text")!=0 )
+	    break;
+	    }
+	    item = XMLEntryToPython(doc,temp);
+	    if ( item!=NULL )
+		PyDict_SetItemString(pydict, keyname, item );
+	    if ( temp==NULL )
+	break;
+	    else if ( _xmlStrcmp(temp->name,(const xmlChar *) "key")!=0 )
+		keys = temp->next;
+	    free(keyname);
+	}
+    }
+return( pydict );
+}
+
+static PyObject *XMLEntryToPython(xmlDocPtr doc,xmlNodePtr entry) {
+    char *contents;
+
+    if ( _xmlStrcmp(entry->name,(const xmlChar *) "true")==0 ) {
+	Py_INCREF(Py_True);
+return( Py_True );
+    }
+    if ( _xmlStrcmp(entry->name,(const xmlChar *) "false")==0 ) {
+	Py_INCREF(Py_False);
+return( Py_False );
+    }
+    if ( _xmlStrcmp(entry->name,(const xmlChar *) "none")==0 ) {
+	Py_INCREF(Py_None);
+return( Py_None );
+    }
+
+    if ( _xmlStrcmp(entry->name,(const xmlChar *) "dict")==0 )
+return( LibToPython(doc,entry));
+    if ( _xmlStrcmp(entry->name,(const xmlChar *) "array")==0 ) {
+	xmlNodePtr sub;
+	int cnt;
+	PyObject *ret, *item;
+	/* I'm translating "Arrays" as tuples... not sure how to deal with */
+	/*  actual python arrays. But these look more like tuples than arrays*/
+	/*  since each item gets its own type */
+
+	for ( cnt=0, sub=entry->children; sub!=NULL; sub=sub->next ) {
+	    if ( _xmlStrcmp(sub->name,(const xmlChar *) "text")==0 )
+	continue;
+	    ++cnt;
+	}
+	ret = PyTuple_New(cnt);
+	for ( cnt=0, sub=entry->children; sub!=NULL; sub=sub->next ) {
+	    if ( _xmlStrcmp(sub->name,(const xmlChar *) "text")==0 )
+	continue;
+	    item = XMLEntryToPython(doc,sub);
+	    if ( item==NULL ) {
+		item = Py_None;
+		Py_INCREF(item);
+	    }
+	    PyTuple_SetItem(ret,cnt,item);
+	    ++cnt;
+	}
+return( ret );
+    }
+
+    contents = (char *) _xmlNodeListGetString(doc,entry->children,true);
+    if ( _xmlStrcmp(entry->name,(const xmlChar *) "integer")==0 ) {
+	long val = strtol(contents,NULL,0);
+	free(contents);
+return( Py_BuildValue("i",val));
+    }
+    if ( _xmlStrcmp(entry->name,(const xmlChar *) "real")==0 ) {
+	double val = strtod(contents,NULL);
+	free(contents);
+return( Py_BuildValue("d",val));
+    }
+    if ( _xmlStrcmp(entry->name,(const xmlChar *) "string")==0 ) {
+	PyObject *ret = Py_BuildValue("s",contents);
+	free(contents);
+return( ret );
+    }
+    LogError("Unknown python type <%s> when reading UFO/GLIF lib data.", (char *) entry->name);
+    free( contents );
+return( NULL );
+}
+#endif
 
 static StemInfo *GlifParseHints(xmlDocPtr doc,xmlNodePtr dict,char *hinttype) {
     StemInfo *head=NULL, *last=NULL, *h;
@@ -882,6 +1092,9 @@ return( NULL );
 			}
 		    }
 		}
+#ifndef _NO_PYTHON
+		sc->python_persistant = LibToPython(doc,dict);
+#endif
 	    }
 	}
     }
@@ -1186,12 +1399,27 @@ return( NULL );
     UFOHandleKern(sf,basedir,0);
     UFOHandleKern(sf,basedir,1);
 
-    setlocale(LC_NUMERIC,oldloc);
-
     sf->order2 = SFFindOrder(sf);
     SFSetOrder(sf,sf->order2);
 
     sf->map = EncMapFromEncoding(sf,FindOrMakeEncoding("Unicode"));
+
+#ifndef _NO_PYTHON
+    temp = buildname(basedir,"lib.plist");
+    doc = NULL;
+    if ( GFileExists(temp))
+	doc = _xmlParseFile(temp);
+    free(temp);
+    plist = _xmlDocGetRootElement(doc);
+    dict = FindNode(plist->children,"dict");
+    if ( _xmlStrcmp(plist->name,(const xmlChar *) "plist")!=0 || dict==NULL ) {
+	LogError(_("Expected property list file"));
+    } else {
+	sf->python_persistant = LibToPython(doc,dict);
+    }
+    _xmlFreeDoc(doc);
+#endif
+    setlocale(LC_NUMERIC,oldloc);
 return( sf );
 }
 
