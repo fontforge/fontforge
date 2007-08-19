@@ -2960,7 +2960,7 @@ static unichar_t *uStyleName(SplineFont *sf) {
 return( uc_copy(buffer+1));
 }
 
-#ifdef HAVE_PTHREAD_H
+#if 0 && defined( HAVE_PTHREAD_H )
 static void *BackgroundValidate(void *_d) {
     struct gfc_data *d = _d;
     SplineFont *sf = d->sf, *ssf;
@@ -3011,7 +3011,8 @@ int SFGenerateFont(SplineFont *sf,int family,EncMap *map) {
 
     memset(&d,'\0',sizeof(d));
     d.sf = sf;
-#ifdef HAVE_PTHREAD_H
+#if 0 && defined(HAVE_PTHREAD_H)
+    /* Drat. my allocation routines are not thread safe */
     /* If I can't create the thread, that's not a real problem. The font just*/
     /*  won't be prevalidated */
     if ( !sf->multilayer && !sf->strokedfont && !sf->onlybitmaps )

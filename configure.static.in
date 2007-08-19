@@ -237,8 +237,10 @@ if test "$ac_cv_lib_freetype_FT_New_Memory_Face" = "yes" ; then
     AC_CHECK_LIB(freetype, TT_RunIns, gww_hasbytecode="yes", : )
   ])
 fi
-AC_CHECK_LIB(pthread, pthread_create, LIBS="$LIBS -lpthread", gww_hasbytecode="no")
-AC_CHECK_HEADERS([pthread.h], : , gww_hasbytecode="no")
+if test "$gww_hasbytecode" = "yes" ; then
+  AC_CHECK_LIB(pthread, pthread_create, LIBS="$LIBS -lpthread", gww_hasbytecode="no")
+  AC_CHECK_HEADERS([pthread.h], : , gww_hasbytecode="no")
+fi
 
 if test \( "$gww_hasbytecode" = "yes" \) -a \( "$FreeType2_IncRoot" != "" \); then
  gww_hasbytecode="no"
