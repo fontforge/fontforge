@@ -1873,7 +1873,7 @@ return;
 	ungetc(peekch,in);
     }
 
-    if ( isdigit(ch) || ch=='-' || ch=='+' || (ch=='\\' && isdigit(peekch)) ) {
+    if ( isdigit(ch) || ch=='+' || ((ch=='-' || ch=='\\') && isdigit(peekch)) ) {
 	tok->type = tk_int;
 	if ( ch=='-' || ch=='+' ) {
 	    if ( ch=='-' ) {
@@ -2982,6 +2982,11 @@ static struct feat_item *fea_process_sub_single(struct parseState *tok,
 	temp = fea_glyphname_get(tok,rpl->name_or_class);
 	if ( temp!=NULL ) {
 	    start = glyphs->name_or_class;
+	    if ( start==NULL ) {
+		LogError(_("Internal state messed up on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+		++tok->err_count;
+return( sofar );
+	    }
 	    forever {
 		while ( *start==' ' ) ++start;
 		if ( *start=='\0' )
