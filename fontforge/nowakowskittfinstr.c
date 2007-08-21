@@ -562,7 +562,7 @@ static void init_cvt(InstrCt *ct) {
         free(cvt);
 
 	if (!ct->cvt_done) {
-	    ff_post_notice(_("Can't insert 'cvt'"),
+	    LogError(_("Can't insert 'cvt'"),
 		_("There already exists a 'cvt' table, perhaps legacy. "
 		  "FontForge can use it, but can't make any assumptions on "
 		  "values stored there, so generated instructions will be of "
@@ -791,7 +791,7 @@ static void init_fpgm(InstrCt *ct) {
 
 	/* Log warning message. */
 	if (!ct->fpgm_done)
-	    ff_post_notice(_("Can't insert 'fpgm'"),
+	    LogError(_("Can't insert 'fpgm'"),
 		_("There exists a 'fpgm' code that seems incompatible with "
 		  "FontForge's. Instructions generated will be of lower "
 		  "quality. If legacy hinting is to be scrapped, it is "
