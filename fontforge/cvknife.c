@@ -129,57 +129,70 @@ void CVMouseUpKnife(CharView *cv, GEvent *event) {
 		if ( s->to!=spl->first )
 		    nexts = s->to->next;
 		if ( SplinesIntersect(s,&dummy,inters,t1s,t2s)>0 ) {
-		    for ( i=0; i<4 && t1s[i]!=-1 && (t1s[i]<.0001 || t1s[i]>1-.0001); ++i );
 		    if ( event->u.mouse.state&ksm_meta ) {
-			/* With meta down we just remove the spline rather than */
-			/* cutting it */
-			foundsomething = true;
-			nexts = NULL;
-			if ( !ever )
-			    CVPreserveState(cv);
-			ever = true;
-			if ( spl->first==spl->last ) {
-			    spl->first = s->to;
-			    spl->last = s->from;
-			} else {
-			    spl2 = chunkalloc(sizeof(SplineSet));
-			    spl2->next = spl->next;
-			    spl->next = spl2;
-			    spl2->first = s->to;
-			    spl2->last = spl->last;
-			    spl->last = s->from;
+			for ( i=0; i<4 && t1s[i]!=-1 && (t1s[i]<.0001 || t1s[i]>1-.0001); ++i );
+			if ( i<4 && t1s[i]!=-1 ) {
+			    /* With meta down we just remove the spline rather than */
+			    /* cutting it */
+			    foundsomething = true;
+			    nexts = NULL;
+			    if ( !ever )
+				CVPreserveState(cv);
+			    ever = true;
+			    if ( spl->first==spl->last ) {
+				spl->first = s->to;
+				spl->last = s->from;
+			    } else {
+				spl2 = chunkalloc(sizeof(SplineSet));
+				spl2->next = spl->next;
+				spl->next = spl2;
+				spl2->first = s->to;
+				spl2->last = spl->last;
+				spl->last = s->from;
+			    }
+			    s->to->prev = s->from->next = NULL;
+			    SplineFree(s);
 			}
-			s->to->prev = s->from->next = NULL;
-			SplineFree(s);
-		    } else if ( i<4 && t1s[i]!=-1 ) {
-			/* There's at least one intersection point that isn't */
-			/*  too close to an end point. Cut here, and then */
-			/*  start all over again (we may need to alter the */
-			/*  splineset structure so drastically that we just */
-			/*  can't continue these loops) */
-			foundsomething = true;
-			nexts = NULL;
-			if ( !ever )
-			    CVPreserveState(cv);
-			ever = true;
-			/* Insert a break here */
-			mid = SplineBisect(s,t1s[i]);
-			mid2 = chunkalloc(sizeof(SplinePoint));
-			*mid2 = *mid;
-			mid2->hintmask = NULL;
-			mid->next = NULL;
-			mid2->prev = NULL;
-			mid2->next->from = mid2;
-			if ( spl->first==spl->last ) {
-			    spl->first = mid2;
-			    spl->last = mid;
-			} else {
-			    spl2 = chunkalloc(sizeof(SplineSet));
-			    spl2->next = spl->next;
-			    spl->next = spl2;
-			    spl2->first = mid2;
-			    spl2->last = spl->last;
-			    spl->last = mid;
+		    } else {
+			for ( i=0; i<4 && t1s[i]!=-1 &&
+				(( t1s[i]<.001 && s->from->prev==NULL ) ||
+			         ( t1s[i]>1-.001 && s->to->next == NULL ));
+				++i );
+			if ( i<4 && t1s[i]!=-1 ) {
+			    foundsomething = true;
+			    nexts = NULL;
+			    if ( !ever )
+				CVPreserveState(cv);
+			    ever = true;
+			    if ( t1s[i]<.001 ) {
+				mid = s->from;
+			    } else if ( t1s[i]>1-.001 ) {
+				mid = s->to;
+			    } else
+				mid = SplineBisect(s,t1s[i]);
+			    /* if the intersection is close to an end point */
+			    /*  cut at the end point, else break in the middle */
+			    /*  Cut here, and then */
+			    /*  start all over again (we may need to alter the */
+			    /*  splineset structure so drastically that we just */
+			    /*  can't continue these loops) */
+			    mid2 = chunkalloc(sizeof(SplinePoint));
+			    *mid2 = *mid;
+			    mid2->hintmask = NULL;
+			    mid->next = NULL;
+			    mid2->prev = NULL;
+			    mid2->next->from = mid2;
+			    if ( spl->first==spl->last ) {
+				spl->first = mid2;
+				spl->last = mid;
+			    } else {
+				spl2 = chunkalloc(sizeof(SplineSet));
+				spl2->next = spl->next;
+				spl->next = spl2;
+				spl2->first = mid2;
+				spl2->last = spl->last;
+				spl->last = mid;
+			    }
 			}
 		    }
 		}
