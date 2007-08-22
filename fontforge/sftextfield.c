@@ -272,10 +272,10 @@ static void SFFigureLineHeight(SFTextArea *st,int l,int p) {
     }
     if ( as+ds==0 ) {
 	struct fontlist *fl, *last = st->fontlist;
-	for ( fl=st->fontlist; fl!=NULL && st->paras[p].start_pos<fl->end; fl=fl->next )
+	for ( fl=st->fontlist; fl!=NULL && st->paras[p].start_pos>=fl->start; fl=fl->next )
 	    last = fl;
-	if ( fl!=NULL ) {
-	    FontData *fd = fl->fd;
+	if ( last!=NULL ) {
+	    FontData *fd = last->fd;
 	    double scale = fd->pointsize*st->dpi/(72.0*(fd->sf->ascent+fd->sf->descent));
 	    if ( as<scale*fd->sf->ascent ) as = scale*fd->sf->ascent;
 	    if ( ds<scale*fd->sf->descent ) ds = scale*fd->sf->descent;
