@@ -145,6 +145,7 @@ return( false );
 	}
 	sofar += slen;
 	if (( pcnt<td->pcnt-1 || td->path->first==td->path->last ) &&
+		spline->to->next!=NULL &&
 		!((spline->to->pointtype==pt_curve && !spline->to->nonextcp && !spline->to->noprevcp) ||
 		  (spline->to->pointtype==pt_tangent && spline->to->nonextcp+spline->to->noprevcp==1 )) ) {
 	    /* We aren't interested in joins where the two splines are tangent */
@@ -198,8 +199,10 @@ static void TDAddPoints(TD *td) {
 		    /* Do Nothing, already broken here */;
 		else if ( (tsp->to->me.y>len || tsp->to->prevcp.y>len || tsp->from->me.y>len || tsp->from->nextcp.y>len) &&
 			  (tsp->to->me.y<len || tsp->to->prevcp.y<len || tsp->from->me.y<len || tsp->from->nextcp.y<len) &&
-			  SplineSolveFull(&tsp->splines[1],len,ts) )
-		    SplineBisect(tsp,ts[0]);
+			  SplineSolveFull(&tsp->splines[1],len,ts) ) {
+		    SplinePoint *mid = SplineBisect(tsp,ts[0]);
+		    tsp = mid->next;
+		}
 		if ( tsp->to == spl->first )
 	    break;
 	    }
@@ -622,6 +625,7 @@ static void TileSplineSets(TD *td,SplineSet **head,int order2) {
 
 static void TileIt(SplineSet **head,SplineSet *tile,
 	enum tilepos tilepos, enum tilescale tilescale,
+	int include_whitespace,
 	int doall,int order2) {
     TD td;
     real trans[6];
@@ -635,7 +639,7 @@ static void TileIt(SplineSet **head,SplineSet *tile,
     SplineSetFindBounds(tile,&td.bb);
     trans[0] = trans[3] = 1;
     trans[1] = trans[2] = 0;
-    trans[5] = td.bb.miny;
+    trans[5] = include_whitespace ? 0 : -td.bb.miny;
     trans[4] = -td.bb.minx;
     if ( tilepos==tp_center )
 	trans[4] -= (td.bb.maxx-td.bb.minx)/2;
@@ -651,6 +655,7 @@ static void TileIt(SplineSet **head,SplineSet *tile,
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static enum tilepos tilepos=tp_center;
 static enum tilescale tilescale=ts_tilescale;
+static int include_whitespace=false;
 
 #define CID_Center	1001
 #define CID_Left	1002
@@ -658,6 +663,7 @@ static enum tilescale tilescale=ts_tilescale;
 #define	CID_Tile	1011
 #define CID_TileScale	1012
 #define CID_Scale	1013
+#define CID_IncludeWhiteSpaceBelowTile	1021
 
 struct tiledlg {
     int done;
@@ -681,6 +687,7 @@ static int TD_OK(GGadget *g, GEvent *e) {
 	    tilescale = ts_tilescale;
 	else
 	    tilescale = ts_scale;
+	include_whitespace = GGadgetIsChecked(GWidgetGetControl(gw,CID_IncludeWhiteSpaceBelowTile));
     }
 return( true );
 }
@@ -713,8 +720,8 @@ static int TileAsk(void) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[10];
-    GTextInfo label[10];
+    GGadgetCreateData gcd[12];
+    GTextInfo label[12];
 
     memset(&d,0,sizeof(d));
 
@@ -727,7 +734,7 @@ static int TileAsk(void) {
     wattrs.utf8_window_title = _("Tile Path...");
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,GGadgetScale(220));
-    pos.height = GDrawPointsToPixels(NULL,92);
+    pos.height = GDrawPointsToPixels(NULL,116);
     gw = GDrawCreateTopWindow(NULL,&pos,td_e_h,&d,&wattrs);
 
     memset(gcd,0,sizeof(gcd));
@@ -804,30 +811,47 @@ static int TileAsk(void) {
     gcd[6].gd.cid = CID_Scale;
     gcd[6].creator = GRadioCreate;
 
-    gcd[7].gd.pos.x = 20-3; gcd[7].gd.pos.y = gcd[6].gd.pos.y+26;
-    gcd[7].gd.pos.width = -1; gcd[7].gd.pos.height = 0;
-    gcd[7].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[7].text = (unichar_t *) _("_OK");
-    label[7].text_is_1byte = true;
-    label[7].text_in_resource = true;
-    gcd[7].gd.mnemonic = 'O';
-    gcd[7].gd.label = &label[7];
-    gcd[7].gd.handle_controlevent = TD_OK;
-    gcd[7].creator = GButtonCreate;
+    gcd[7].gd.pos.x = 5; gcd[7].gd.pos.y = GDrawPointsToPixels(NULL,gcd[6].gd.pos.y+20);
+    gcd[7].gd.pos.width = pos.width-10;
+    gcd[7].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels ;
+    gcd[7].creator = GLineCreate;
 
-    gcd[8].gd.pos.x = -20; gcd[8].gd.pos.y = gcd[7].gd.pos.y+3;
-    gcd[8].gd.pos.width = -1; gcd[8].gd.pos.height = 0;
-    gcd[8].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[8].text = (unichar_t *) _("_Cancel");
+    gcd[8].gd.pos.x = gcd[0].gd.pos.x; gcd[8].gd.pos.y = gcd[6].gd.pos.y+24;
+    gcd[8].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    label[8].text = (unichar_t *) _("_Include Whitespace below Tile");
     label[8].text_is_1byte = true;
     label[8].text_in_resource = true;
     gcd[8].gd.label = &label[8];
-    gcd[8].gd.mnemonic = 'C';
-    gcd[8].gd.handle_controlevent = TD_Cancel;
-    gcd[8].creator = GButtonCreate;
+    gcd[8].gd.popup_msg = (unichar_t *) _("Normally the Tile will consist of everything\nwithin the minimum bounding box of the tile --\nso adjacent tiles will abut directly on one\nanother. If you wish whitespace between tiles\nset this flag");
+    gcd[8].gd.cid = CID_IncludeWhiteSpaceBelowTile;
+    gcd[8].creator = GRadioCreate;
+
+    gcd[9].gd.pos.x = 20-3; gcd[9].gd.pos.y = gcd[8].gd.pos.y+26;
+    gcd[9].gd.pos.width = -1; gcd[9].gd.pos.height = 0;
+    gcd[9].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    label[9].text = (unichar_t *) _("_OK");
+    label[9].text_is_1byte = true;
+    label[9].text_in_resource = true;
+    gcd[9].gd.mnemonic = 'O';
+    gcd[9].gd.label = &label[9];
+    gcd[9].gd.handle_controlevent = TD_OK;
+    gcd[9].creator = GButtonCreate;
+
+    gcd[10].gd.pos.x = -20; gcd[10].gd.pos.y = gcd[9].gd.pos.y+3;
+    gcd[10].gd.pos.width = -1; gcd[10].gd.pos.height = 0;
+    gcd[10].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    label[10].text = (unichar_t *) _("_Cancel");
+    label[10].text_is_1byte = true;
+    label[10].text_in_resource = true;
+    gcd[10].gd.label = &label[10];
+    gcd[10].gd.mnemonic = 'C';
+    gcd[10].gd.handle_controlevent = TD_Cancel;
+    gcd[10].creator = GButtonCreate;
 
     gcd[0+tilepos].gd.flags |= gg_cb_on;
     gcd[4+tilescale].gd.flags |= gg_cb_on;
+    if ( include_whitespace )
+	gcd[8].gd.flags |= gg_cb_on;
 
     GGadgetsCreate(gw,gcd);
     GDrawSetVisible(gw,true);
@@ -853,7 +877,8 @@ return;
 
     tile = SplinePointListCopy(tile);
     CVPreserveState(cv);
-    TileIt(&cv->layerheads[cv->drawmode]->splines,tile, tilepos,tilescale, !anypoints,cv->sc->parent->order2);
+    TileIt(&cv->layerheads[cv->drawmode]->splines,tile, tilepos,tilescale,
+	    include_whitespace, !anypoints,cv->sc->parent->order2);
     CVCharChangedUpdate(cv);
     SplinePointListsFree(tile);
     cv->lastselpt = NULL;
@@ -873,7 +898,8 @@ return;
 
     tile = SplinePointListCopy(tile);
     SCPreserveState(sc,false);
-    TileIt(&sc->layers[ly_fore].splines,tile, tilepos,tilescale, true, sc->parent->order2);
+    TileIt(&sc->layers[ly_fore].splines,tile, tilepos,tilescale,
+	    include_whitespace, true, sc->parent->order2);
     SCCharChangedUpdate(sc);
     SplinePointListsFree(tile);
 }
@@ -904,7 +930,8 @@ return;
 		sc->layers[ly_fore].splines!=NULL ) {
 	    sc->ticked = true;
 	    SCPreserveState(sc,false);
-	    TileIt(&sc->layers[ly_fore].splines,tile, tilepos,tilescale, true, fv->sf->order2);
+	    TileIt(&sc->layers[ly_fore].splines,tile, tilepos,tilescale,
+		    include_whitespace, true, fv->sf->order2);
 	    SCCharChangedUpdate(sc);
 	}
     SplinePointListsFree(tile);
