@@ -3051,8 +3051,8 @@ static StemInfo *GDFindStems(struct glyphdata *gd, int major) {
 	stem = &gd->stems[i];
 	if ( stem->toobig )
     continue;
-	if ((( stem->unit.y>.99 || stem->unit.y<-.99) && major==1 ) ||
-		(( stem->unit.x>.99 || stem->unit.x<-.99) && major==0 )) {
+	if ((( stem->unit.x<.05 && stem->unit.x>-.05) && major==1 ) ||
+		(( stem->unit.y<.05 && stem->unit.y>-.05) && major==0 )) {
 	    double l = (&stem->left.x)[other], r = (&stem->right.x)[other];
 	    int j, hasl=false, hasr=false;
 	    for ( j=0; j<stem->chunk_cnt; ++j ) {
@@ -3089,6 +3089,54 @@ static StemInfo *GDFindStems(struct glyphdata *gd, int major) {
 return( head );
 }
 
+static DStemInfo *GDFindDStems(struct glyphdata *gd) {
+    int i, j ;
+    DStemInfo *head = NULL, *cur ;
+    BasePoint *bp[4];
+    struct stemdata *stem;
+
+    for ( i=0; i<gd->stemcnt; ++i ) {
+	stem = &gd->stems[i];
+	if ( stem->toobig || stem->len==0 )
+    continue;
+	
+        if ( stem->unit.y == 0 || stem->unit.x == 0 )
+    continue;
+
+        for ( j=0; j<4; j++ ) bp[j]=NULL;
+    
+	for ( j=0; j<stem->chunk_cnt; ++j ) {
+            if ( stem->chunks[j].l!=NULL ) {
+                if ( bp[0]==NULL || bp[0]->y < stem->chunks[j].l->sp->me.y )
+                    bp[0] = &stem->chunks[j].l->sp->me;
+                if ( bp[2]==NULL || bp[2]->y > stem->chunks[j].l->sp->me.y )
+                    bp[2] = &stem->chunks[j].l->sp->me;
+            }
+
+            if ( stem->chunks[j].r!=NULL ) {
+                if ( bp[1]==NULL || bp[1]->y < stem->chunks[j].r->sp->me.y )
+                    bp[1] = &stem->chunks[j].r->sp->me;
+                if ( bp[3]==NULL || bp[3]->y > stem->chunks[j].r->sp->me.y )
+                    bp[3] = &stem->chunks[j].r->sp->me;
+            }
+	}
+        
+        if ( bp[0]!=NULL && bp[1]!=NULL && bp[0]!=bp[2] && bp[1]!=bp[3] ) {
+            if ( IsDiagonalable( bp )) {
+	        cur = chunkalloc( sizeof(DStemInfo) );
+	        memcpy( &(cur->leftedgetop),bp[0],sizeof( BasePoint ) );
+	        memcpy( &(cur->rightedgetop),bp[1],sizeof( BasePoint ) );
+	        memcpy( &(cur->leftedgebottom),bp[2],sizeof( BasePoint ) );
+	        memcpy( &(cur->rightedgebottom),bp[3],sizeof( BasePoint ) );
+
+                if (!MergeDStemInfo( &head, cur ))
+                    chunkfree( cur,sizeof(DStemInfo) );
+            }
+        }
+    }
+return( head );
+}
+
 void _SplineCharAutoHint( SplineChar *sc, BlueData *bd, struct glyphdata *gd2 ) {
     struct glyphdata *gd;
 
@@ -3106,11 +3154,13 @@ void _SplineCharAutoHint( SplineChar *sc, BlueData *bd, struct glyphdata *gd2 ) 
     sc->manualhints = false;
 
     if ( (gd=gd2)==NULL )
-	gd = GlyphDataBuild(sc,true);
+	gd = GlyphDataBuild( sc,false );
     if ( gd!=NULL ) {
 	GDPreprocess(gd);
 	sc->vstem = GDFindStems(gd,1);
 	sc->hstem = GDFindStems(gd,0);
+	if ( !gd->only_hv )
+	    sc->dstem = GDFindDStems(gd);
 	if ( gd2==NULL ) GlyphDataFree(gd);
 	sc->hstem = CheckForGhostHints(sc->hstem,sc,bd);
     }
