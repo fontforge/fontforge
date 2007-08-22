@@ -2741,7 +2741,6 @@ static void AskForLangName(GGadget *list,int sel) {
 	else
 	    GListChangeLine8(list,sel,cname)->userdata =
 		    ti[lang_index]->userdata;
-	free(name);
     }
 
     GDrawDestroyWindow(gw);
