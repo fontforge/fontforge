@@ -2536,6 +2536,8 @@ void SPLStartToLeftmost(SplineChar *sc,SplinePointList *spl, int *changed) {
 	    if ( sp->me.x < best->me.x ||
 		    (sp->me.x==best->me.x && (fabs(sp->me.y)<fabs(best->me.y))) )
 		best = sp;
+	    if ( sp->next==NULL )
+	break;
 	    sp = sp->next->to;
 	    if ( sp==spl->first )
 	break;
