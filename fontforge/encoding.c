@@ -2596,6 +2596,7 @@ return;
 
     sf->glyphs[sc->orig_pos] = NULL;
     SplineCharFree(sc);
+    GlyphHashFree(sf);
 }
 
 void FVAddEncodingSlot(FontView *fv,int gid) {
