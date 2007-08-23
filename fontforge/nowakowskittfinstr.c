@@ -387,7 +387,7 @@ static void CvtInfoImportBlues(InstrCt *ct) {
 
 		free(values);
 	    }
-	    
+
             values = GetNParsePSArray(ct->gi->sf, "FamilyOtherBlues", &cnt);
 	    cnt /= 2;
 	    if (cnt > 5) cnt = 5;
@@ -488,7 +488,7 @@ static void CvtInfoImportStems(InstrCt *ct) {
 	    ct->cvtinfo.StemSnapH = NULL;
 	}
     }
-    
+
     /* Import StdVW & StemSnapV */
     if ((values = GetNParsePSArray(ct->gi->sf, "StdVW", &cnt)) != NULL) {
         ct->cvtinfo.StdVW.width = *values;
@@ -1118,6 +1118,9 @@ static uint8 *normalize_stems(uint8 *prep_head, int xdir, InstrCt *ct) {
     int otherstemcnt = xdir?ct->cvtinfo.StemSnapVCnt:ct->cvtinfo.StemSnapHCnt;
     int callargs[4];
 
+    if (mainstem->width == -1)
+return prep_head;
+
     *prep_head++ = xdir?SVTCA_x:SVTCA_y;
     prep_head = push2nums(prep_head, xdir?1:0, mainstem->cvtindex);
     *prep_head++ = 0x45; //RCVT
@@ -1246,20 +1249,14 @@ static void init_prep(InstrCt *ct) {
  * If none found, we return -1.
  */
 static int CVTSeekStem(int xdir, CvtData *CvtInfo, double value, double fudge) {
-    StdStem *mainstem, *otherstems;
-    int i, otherstemcnt, closestcvt=-1;
+    StdStem *mainstem = xdir?&(CvtInfo->StdVW):&(CvtInfo->StdHW);
+    StdStem *otherstems = xdir?CvtInfo->StemSnapV:CvtInfo->StemSnapH;
+    int otherstemcnt = xdir?CvtInfo->StemSnapVCnt:CvtInfo->StemSnapHCnt;
+    int i, closestcvt=-1;
     double mindelta=1e20, delta, closestwidth=1e20;
 
-    if (xdir) {
-        mainstem = &(CvtInfo->StdVW);
-	otherstems = CvtInfo->StemSnapV;
-	otherstemcnt = CvtInfo->StemSnapVCnt;
-    }
-    else {
-        mainstem = &(CvtInfo->StdHW);
-	otherstems = CvtInfo->StemSnapH;
-	otherstemcnt = CvtInfo->StemSnapHCnt;
-    }
+    if (mainstem->width == -1)
+return -1;
 
     delta = fabs(mainstem->width - value);
 
@@ -2818,7 +2815,7 @@ static uint8 *TouchDStemPoints( InstrCt *ct,DiagPointInfo *diagpts,
     touched = ct->touched;
     instrs = ct->pt;
     ptcnt = ct->ptcnt;
-    
+return instrs;
     tobefixedy = chunkalloc( ptcnt*sizeof( int ) );
     tobefixedx = chunkalloc( ptcnt*sizeof( int ) );
 
@@ -2918,8 +2915,8 @@ static uint8 *dogeninstructions(InstrCt *ct) {
     /*  each stem, and worry about intersections, etc. */
     /*  That should be an over-estimate */
     max=2;
-    if ( ct->sc->vstem!=NULL ) max += ct->ptcnt*6;
-    if ( ct->sc->hstem!=NULL ) max += ct->ptcnt*6+1;
+    if ( ct->sc->vstem!=NULL ) max += ct->ptcnt*8;
+    if ( ct->sc->hstem!=NULL ) max += ct->ptcnt*8+4;
     for ( dstem=ct->sc->dstem; dstem!=NULL; max+=7+4*6+100, dstem=dstem->next );
     if ( ct->sc->md!=NULL ) max += ct->ptcnt*12;
     max += ct->ptcnt*6;			/* in case there are any rounds */
@@ -3011,6 +3008,7 @@ static uint8 *dogeninstructions(InstrCt *ct) {
 	"We miscalculated the glyph's instruction set length\n"
 	"When processing TTF instructions (hinting) of %s", ct->sc->name
     );
+    else fprintf(stderr, "%d %d\n", (ct->pt)-(ct->instrs), max);
 
     ct->sc->ttf_instrs_len = (ct->pt)-(ct->instrs);
     ct->sc->instructions_out_of_date = false;
