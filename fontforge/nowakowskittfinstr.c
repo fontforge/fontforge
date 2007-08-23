@@ -2815,7 +2815,7 @@ static uint8 *TouchDStemPoints( InstrCt *ct,DiagPointInfo *diagpts,
     touched = ct->touched;
     instrs = ct->pt;
     ptcnt = ct->ptcnt;
-return instrs;
+
     tobefixedy = chunkalloc( ptcnt*sizeof( int ) );
     tobefixedx = chunkalloc( ptcnt*sizeof( int ) );
 
@@ -3008,7 +3008,6 @@ static uint8 *dogeninstructions(InstrCt *ct) {
 	"We miscalculated the glyph's instruction set length\n"
 	"When processing TTF instructions (hinting) of %s", ct->sc->name
     );
-    else fprintf(stderr, "%d %d\n", (ct->pt)-(ct->instrs), max);
 
     ct->sc->ttf_instrs_len = (ct->pt)-(ct->instrs);
     ct->sc->instructions_out_of_date = false;
