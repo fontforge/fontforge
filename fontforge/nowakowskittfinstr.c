@@ -33,10 +33,15 @@
 #include "ttf.h"
 #include "splinefont.h"
 
-/* non-optimized instructions will be using a stack of depth 4, allowing
+/* non-optimized instructions will be using a stack of depth 6, allowing
  * for easy testing whether the code leaves trash on the stack or not.
  */
 #define OPTIMIZE_TTF_INSTRS 1
+#if OPTIMIZE_TTF_INSTRS
+#define STACK_DEPTH 255
+#else
+#define STACK_DEPTH 6
+#endif
 
 /* define some often used instructions */
 #define SVTCA_y                 (0x00)
@@ -55,11 +60,14 @@
 #define IUP_x                   (0x31)
 #define SHP_rp2                 (0x32)
 #define SHP_rp1                 (0x33)
+#define MSIRP                   (0x3a)
+#define MSIRP_rp0               (0x3b)
 #define MIAP                    (0x3e)
 #define MIAP_rnd                (0x3f)
 #define ADD                     (0x60)
 #define MUL                     (0x63)
 #define NEG                     (0x65)
+#define SROUND                  (0x76)
 #define RDTG                    (0x7d)
 #define MDRP_rnd_grey           (0xc4)
 #define MDRP_min_rnd_black      (0xcd)
@@ -68,8 +76,10 @@
 #define MDRP_rp0_min_rnd_black  (0xdd)
 #define MDRP_rp0_min_rnd_white  (0xde)
 #define MIRP_rnd_grey           (0xe4)
+#define MIRP_min_black          (0xe9)
 #define MIRP_min_rnd_black      (0xed)
 #define MIRP_rp0_rnd_grey       (0xf4)
+#define MIRP_rp0_min_black      (0xf9)
 #define MIRP_rp0_min_rnd_black  (0xfd)
 
 
@@ -91,14 +101,18 @@ struct glyphinstrs {
 
 /* Structs for CVT management start here */
 
+/* 'highest' and 'lowest' are TTF point indexes if points with largest and 
+ * smallest Y coordinate snapped to this blue zone. They are used when
+ * instructing other horizontal stems.
+ */
 typedef struct bluezone {
     real base;
     int cvtindex;
     real family_base;      /* NaN if none */
     int family_cvtindex;
     real overshoot;        /* relative to baseline, NOT to base */
-    int toppoint;          /* For HStems interpolation */
-    int lowpoint;          /* For HStems interpolation */
+    int highest;
+    int lowest;
 } BlueZone;
 
 typedef struct stdstem {
@@ -107,7 +121,7 @@ typedef struct stdstem {
 } StdStem;
 
 typedef struct cvtdata {
-    BlueZone Blues[15];    /* like in BlueData */
+    BlueZone Blues[12];    /* like in BlueData */
     int      BlueCnt;
     StdStem  StdHW;
     StdStem  *StemSnapH;   /* StdHW excluded */
@@ -415,8 +429,19 @@ static void CvtInfoImportBlues(InstrCt *ct) {
         }
     }
 
+    /* Highpoints and lowpoints are not set yet. */
+    for (i=0; i<ct->cvtinfo.BlueCnt; i++)
+        ct->cvtinfo.Blues[i].highest = ct->cvtinfo.Blues[i].lowest = -1;
+
     /* I assume ascending order in snap_to_blues(). */    
     qsort(ct->cvtinfo.Blues, ct->cvtinfo.BlueCnt, sizeof(BlueZone), SortBlues);
+}
+
+/*
+ * To be used with qsort() - sorts StdStem array by width in ascending order.
+ */
+static int SortStems(const void *a, const void *b) {
+    return ((StdStem *)a)->width > ((StdStem *)b)->width;
 }
 
 /*
@@ -447,6 +472,21 @@ static void CvtInfoImportStems(InstrCt *ct) {
 
 	ct->cvtinfo.StemSnapHCnt = next;
         free(values);
+
+        /* I assume ascending order here and in normalize_stems(). */
+        qsort(ct->cvtinfo.StemSnapH, ct->cvtinfo.StemSnapHCnt, sizeof(StdStem), SortStems);
+    }
+
+    if (ct->cvtinfo.StdHW.width == -1 && ct->cvtinfo.StemSnapH != NULL) {
+        cnt = ct->cvtinfo.StemSnapHCnt;
+	i = cnt/2;
+	ct->cvtinfo.StdHW.width = ct->cvtinfo.StemSnapH[i].width;
+	memmove(ct->cvtinfo.StemSnapH+i, ct->cvtinfo.StemSnapH+i+1, cnt-i-1);
+
+	if (--ct->cvtinfo.StemSnapHCnt == 0) {
+	    free(ct->cvtinfo.StemSnapH);
+	    ct->cvtinfo.StemSnapH = NULL;
+	}
     }
     
     /* Import StdVW & StemSnapV */
@@ -469,6 +509,21 @@ static void CvtInfoImportStems(InstrCt *ct) {
 
 	ct->cvtinfo.StemSnapVCnt = next;
         free(values);
+
+        /* I assume ascending order here and in normalize_stems(). */
+        qsort(ct->cvtinfo.StemSnapV, ct->cvtinfo.StemSnapVCnt, sizeof(StdStem), SortStems);
+    }
+
+    if (ct->cvtinfo.StdVW.width == -1 && ct->cvtinfo.StemSnapV != NULL) {
+        cnt = ct->cvtinfo.StemSnapVCnt;
+	i = cnt/2;
+	ct->cvtinfo.StdVW.width = ct->cvtinfo.StemSnapV[i].width;
+	memmove(ct->cvtinfo.StemSnapV+i, ct->cvtinfo.StemSnapV+i+1, cnt-i-1);
+
+	if (--ct->cvtinfo.StemSnapVCnt == 0) {
+	    free(ct->cvtinfo.StemSnapV);
+	    ct->cvtinfo.StemSnapV = NULL;
+	}
     }
 }
 
@@ -612,22 +667,169 @@ static void FreeCvtInfo(InstrCt *ct) {
 
 /******************************************************************************
  *
- * We need to initialize some tables before autohinting: 'maxp', 'fpgm', 'cvt'
- * and 'prep'.
- *
- * TODO!
- *
- * We should do it once, not once every glyph. We also need to define fallbacks
- * when a certain table could not be initialized.
+ * Some low-lewel routines to add data to bytecode instruction stream.
  *
  ******************************************************************************/
 
+static uint8 *pushheader(uint8 *instrs, int isword, int tot) {
+    if ( isword ) {
+	if ( tot>8 ) {
+	    *instrs++ = 0x41;		/* N(next byte) Push words */
+	    *instrs++ = tot;
+	} else
+	    *instrs++ = 0xb8+(tot-1);	/* Push Words */
+    } else {
+	if ( tot>8 ) {
+	    *instrs++ = 0x40;		/* N(next byte) Push bytes */
+	    *instrs++ = tot;
+	} else
+	    *instrs++ = 0xb0+(tot-1);	/* Push bytes */
+    }
+return( instrs );
+}
 
-/* We'll need at least four stack levels and a twilight point (and thus also
- * a twilight zone). We also currently define three functions in fpgm. We must
- * ensure this is indicated in 'maxp' table. Note: we'll surely need more
- * stack levels in the future. Twilight point count may vary depending on
- * hinting method; one may be enough, but
+static uint8 *addpoint(uint8 *instrs,int isword,int pt) {
+    if ( !isword ) {
+	*instrs++ = pt;
+    } else {
+	*instrs++ = pt>>8;
+	*instrs++ = pt&0xff;
+    }
+return( instrs );
+}
+
+static uint8 *pushpoint(uint8 *instrs,int pt) {
+    instrs = pushheader(instrs,pt>255,1);
+return( addpoint(instrs,pt>255,pt));
+}
+
+#define pushnum(a, b) pushpoint(a, b)
+
+static uint8 *pushpointstem(uint8 *instrs, int pt, int stem) {
+    int isword = pt>255 || stem>255;
+    instrs = pushheader(instrs,isword,2);
+    instrs = addpoint(instrs,isword,pt);
+return( addpoint(instrs,isword,stem));
+}
+
+#define push2points(a, b, c) pushpointstem(a, b, c)
+#define push2nums(a, b, c) pushpointstem(a, b, c)
+
+static uint8 *pushpoints(uint8 *instrs, int ptcnt, const int *pts) {
+    int i, isword = 0;
+    for (i=0; i<ptcnt; i++) if (pts[i]>255) isword=1;
+
+    /* It's an error to push more than STACK_DEPTH points. */
+    if (ptcnt > STACK_DEPTH)
+        IError("Truetype stack overflow will occur.");
+    
+    if (ptcnt > 255 && !isword) {
+        instrs = pushpoints(instrs, 255, pts);
+	ptcnt-=255;
+	pts+=255;
+    }
+
+    instrs = pushheader(instrs,isword,ptcnt);
+    for (i=0; i<ptcnt; i++) instrs = addpoint(instrs, isword, pts[i]);
+return( instrs );
+}
+
+#define pushnums(a, b, c) pushpoints(a, b, c)
+
+/* As we don't have "push F26dot6" command in truetype instructions,
+   we need to do this by hand. As we can explicitly push only 16-bit
+   quantities, we need to push a F26dot6 value in halves, shift left
+   the more significant half and add halves.
+   
+   There are no checks for overflow!
+ */
+static uint8 *pushF26Dot6(uint8 *instrs, double num) {
+    unsigned int a, elems[3];
+    int negative=0;
+
+    if (num < 0) {
+	negative=1;
+	num*=-1.0;
+    }
+
+    num *= 64;
+    a = rint(num);
+    elems[0] = a % 65536;
+    elems[1] = (unsigned int)rint(a / 65536.0) % 65536;
+    elems[2] = 16384;
+
+    if (elems[1]) {
+        instrs = pushpoints(instrs, 3, elems);
+	*instrs++ = DUP;
+        *instrs++ = MUL;
+	*instrs++ = MUL;
+        *instrs++ = ADD;
+    }
+    else instrs = pushpoint(instrs, elems[0]);
+
+    if (negative) *instrs++ = NEG;
+
+return( instrs );
+}
+
+/* Push a EF2Dot14. No checks for overflow!
+ */
+static uint8 *pushEF2Dot14(uint8 *instrs, double num) {
+    unsigned int a;
+    int negative=0;
+
+    if (num < 0) {
+	negative=1;
+	num*=-1.0;
+    }
+    
+    num *= 16384;
+    a = rint(num);
+    instrs = pushpoint(instrs, a);
+    if (negative) *instrs++ = NEG;
+
+return( instrs );
+}
+
+/* An apparatus for instructing sets of points with given truetype command.
+ * The command must pop exactly 1 element from the stack and mustn't push any.
+ * If SHP, SHPIX, IP, FLIPPT or ALIGNRP used, I may try to use SLOOP in future.
+ *
+ * These points must be marked as 'touched' elsewhere! this punction only
+ * generates intructions.
+ *
+ * Possible strategies:
+ *   - do point by point (currently used, poor space efficiency)
+ *   - push all the stock at once (better, but has
+ *     poor space efficiency in case of a word among several bytes).
+ *   - push bytes and words separately
+ *   - when the stuff is pushed, try to use SLOOP.
+ */
+static uint8 *instructpoints(uint8 *instrs, int ptcnt, const int *pts, uint8 command) {
+    int i;
+
+    instrs = pushpoints(instrs, ptcnt<=STACK_DEPTH?ptcnt:STACK_DEPTH, pts);
+    for (i=0; i<(ptcnt<=STACK_DEPTH?ptcnt:STACK_DEPTH); i++) *instrs++ = command;
+    if (ptcnt>STACK_DEPTH) instrs=instructpoints(instrs, ptcnt-STACK_DEPTH, pts+STACK_DEPTH, command);
+
+return( instrs );
+}
+
+
+/******************************************************************************
+ *
+ * We need to initialize some tables before autohinting: 'maxp', 'fpgm', 'cvt'
+ * and 'prep'.
+ *
+ * TODO! We should do it once, not once every glyph.
+ *
+ ******************************************************************************/
+
+/* We'll need at least STACK_DEPTH stack levels and a twilight point (and thus
+ * also a twilight zone). We also currently define five functions in fpgm, and
+ * we use two storage locations to keep some factors for normalizing widths of
+ * stems that don't use 'cvt' values (in future). We must ensure this is
+ * indicated in the 'maxp' table.
  */
 static void init_maxp(InstrCt *ct) {
     struct ttf_table *tab = SFFindTable(ct->sc->parent,CHR('m','a','x','p'));
@@ -647,21 +849,24 @@ static void init_maxp(InstrCt *ct) {
 
     uint16 zones = memushort(tab->data, 32,  7*sizeof(uint16));
     uint16 twpts = memushort(tab->data, 32,  8*sizeof(uint16));
+    uint16 store = memushort(tab->data, 32,  9*sizeof(uint16));
     uint16 fdefs = memushort(tab->data, 32, 10*sizeof(uint16));
     uint16 stack = memushort(tab->data, 32, 12*sizeof(uint16));
 
-    if (zones<2) zones=2;
-    if (twpts<1) twpts=1;
-    if (ct->fpgm_done && fdefs<3) fdefs=3;
+    if (ct->fpgm_done && zones<2) zones=2;
+    if (ct->fpgm_done && twpts<1) twpts=1;
+    if (ct->fpgm_done && ct->prep_done && store<2) store=2;
+    if (ct->fpgm_done && fdefs<5) fdefs=5;
 
 #if OPTIMIZE_TTF_INSTRS
-    if (stack<256) stack=256;
+    if (stack<256) stack=256; //STACK_DEPTH+1, for count argument for NPUSHB.
 #else
-    if (stack<4) stack=4;
+    if (stack<STACK_DEPTH) stack=STACK_DEPTH;
 #endif
 
     memputshort(tab->data, 7*sizeof(uint16), zones);
     memputshort(tab->data, 8*sizeof(uint16), twpts);
+    memputshort(tab->data, 9*sizeof(uint16), store);
     memputshort(tab->data,10*sizeof(uint16), fdefs);
     memputshort(tab->data,12*sizeof(uint16), stack);
 }
@@ -674,9 +879,6 @@ static void init_maxp(InstrCt *ct) {
  * be placed below it. It's good to first clear font's hinting tables, then
  * autohint it, and then insert user's own code and do the manual hinting of
  * glyphs that do need it.
- *
- * TODO! It's quite possible that functions used may depend on whether we
- * succeeded in cvt/prep initialization or not.
  */
 static void init_fpgm(InstrCt *ct) {
     uint8 new_fpgm[] = 
@@ -747,7 +949,8 @@ static void init_fpgm(InstrCt *ct) {
 	0x2d, // ENDF
 
 	/* Function 2: round a 'cvt' entry as a black distance, respecting
-	 * minimum distance. Used for rounding stems before normalization.
+	 * minimum distance of 1px. This is used for rounding stems after
+	 * width normalization.
 	 * Syntax: PUSHB_2 cvt_index 2 CALL
 	 */
 	0xb0, // PUSHB_1
@@ -757,29 +960,111 @@ static void init_fpgm(InstrCt *ct) {
 	0x45, //   RCVT
 	0x69, //   ROUND[black]
 	0x20, //   DUP
-	0x65, //   NEG
+	0xb0, //   PUSHB_1
+	0x01, //     1
+	0x52, //   GT
 	0x58, //   IF
 	0xb0, //     PUSHB_1
-	0x01, //       2
+	0x01, //       1
 	0x60, //     ADD
 	0x59, //   EIF
-	0x00, //   WCVTP
+	0x44, //   WCVTP
+	0x2d, // ENDF
+
+	/* Function 3: add a storage cell value to the cvt entry.
+	 * Used as the first step in normalizing stems.
+	 * Syntax: PUSHB_3 cell_index cvt_index 3 CALL
+	 */
+	0xb0, // PUSHB_1
+	0x03, //   3
+	0x2c, // FDEF
+	0x20, //   DUP
+	0x45, //   RCVT
+	0xb0, //   PUSHB_1
+	0x03, //     3
+	0x26, //   MINDEX
+	0x43, //   RS
+	0x60, //   ADD
+	0x44, //   WCVTP
+	0x2d, // ENDF
+
+	/* Function 4: round a 'cvt' entry, taking a reference cvt entry into
+	 * account in a way defined by a third, boolean argument: if true, add
+	 * 0.5px to the entry before rounding and truncate it if it's larger
+	 * than reference entry (that's for stems lesser than standard width);
+	 * do the opposite if false. This is for normalizing cvt stems, it's
+	 * used after function 3.
+	 * Syntax: PUSHB_4 ref_cvt_index cvt_index rnd_type 4 CALL
+	 */
+	0xb0, // PUSHB_1
+	0x04, //   4
+	0x2c, // FDEF
+	0x58, //   IF
+	0xb0, //     PUSHB_1
+	0x46, //       70
+	0x76, //     SROUND
+	0x20, //     DUP
+	0xb0, //     PUSHB_1
+	0x02, //       2
+	0x2b, //     CALL
+	0x20, //     DUP
+	0x45, //     RCVT
+	0xb0, //     PUSHB_1
+	0x03, //       3
+	0x26, //     MINDEX
+	0x45, //     RCVT
+	0x20, //     DUP
+	0xb0, //     PUSHB_1
+	0x03, //       3
+	0x25, //     CINDEX
+	0x52, //     GT
+	0x1b, //   ELSE
+	0xb0, //     PUSHB_1
+	0x4a, //       74
+	0x76, //     SROUND
+	0x20, //     DUP
+	0xb0, //     PUSHB_1
+	0x02, //       2
+	0x2b, //     CALL
+	0x20, //     DUP
+	0x45, //     RCVT
+	0xb0, //     PUSHB_1
+	0x03, //       3
+	0x26, //     MINDEX
+	0x45, //     RCVT
+	0x20, //     DUP
+	0xb0, //     PUSHB_1
+	0x03, //       3
+	0x25, //     CINDEX
+	0x50, //     LT
+	0x59, //   EIF
+	0x58, //   IF
+	0x23, //   SWAP
+	0x59, //   EIF
+	0x21, //   POP
+	0x44, //   WCVTP
+	0x18, //   RTG
 	0x2d  // ENDF
     };
 
     struct ttf_table *tab = SFFindTable(ct->sc->parent,CHR('f','p','g','m'));
 
-    if ( tab==NULL || (tab->len==0) ) {
-	/* We can safely update font program. */
+    if ( tab==NULL ) {
+	/* We have to create such table. */
 	tab = chunkalloc(sizeof(struct ttf_table));
 	tab->next = ct->sc->parent->ttf_tables;
 	ct->sc->parent->ttf_tables = tab;
 	tab->tag = CHR('f','p','g','m');
+	tab->len = 0;
+    }
 
+    if (tab->len==0 || 
+        (tab->len < sizeof(new_fpgm) && !memcmp(tab->data, new_fpgm, tab->len)))
+    {
+	/* We can safely update font program. */
 	tab->len = tab->maxlen = sizeof(new_fpgm);
 	tab->data = grealloc(tab->data, sizeof(new_fpgm));
 	memmove(tab->data, new_fpgm, sizeof(new_fpgm));
-
         ct->fpgm_done = 1;
     }
     else {
@@ -804,16 +1089,73 @@ static void init_fpgm(InstrCt *ct) {
     }
 }
 
+/* This stem normalizer is based on simple concept from FreeType.
+ *
+ * First round the standard width (function 2) and store the difference between
+ * rounded and unrounded standard widths somewhere (storage 0 for horizontal and
+ * 1 for vertical stems). Add this difference to every other cvt stem width
+ * (fpgm function 3).
+ * 
+ * Furthermore, if a stem is narrower than standard width, add half a pixel to
+ * it before rounding, otherwise substitute half a pixel before rounding. This
+ * is done by setting round state rather than truetype bytecode arithmetic
+ * instructions. Finally, the width is checked not to exceed standard width.
+ * See fpgm function 4.
+ *
+ * TODO!
+ * Stems not using 'cvt' need to be normalized separately in their glyph
+ * programs. I hereby fpgm reserve function number 5 for that purpose.
+ *
+ * TODO!
+ * It's possible that in future there will be separate fpgm function to set
+ * appropriate round state for stems larger/smaller than standard width
+ * at monochrome/antialiased/cleartype rendering.
+ */
+static uint8 *normalize_stems(uint8 *prep_head, int xdir, InstrCt *ct) {
+    int i;
+    StdStem *mainstem = xdir?&(ct->cvtinfo.StdVW):&(ct->cvtinfo.StdHW);
+    StdStem *otherstems = xdir?ct->cvtinfo.StemSnapV:ct->cvtinfo.StemSnapH;
+    int otherstemcnt = xdir?ct->cvtinfo.StemSnapVCnt:ct->cvtinfo.StemSnapHCnt;
+    int callargs[4];
+
+    *prep_head++ = xdir?SVTCA_x:SVTCA_y;
+    prep_head = push2nums(prep_head, xdir?1:0, mainstem->cvtindex);
+    *prep_head++ = 0x45; //RCVT
+    callargs[0] = callargs[1] = mainstem->cvtindex;
+    callargs[2] = 2;
+    prep_head = pushnums(prep_head, 3, callargs);
+    *prep_head++ = CALL;
+    *prep_head++ = 0x45; //RCVT
+    *prep_head++ = 0x23; //SWAP
+    *prep_head++ = 0x61; //SUB
+    *prep_head++ = 0x42; //WS
+    
+    for (i=0; i<otherstemcnt; i++) {
+        callargs[0] = xdir?1:0;
+	callargs[1] = otherstems[i].cvtindex;
+	callargs[2] = 3;
+	prep_head = pushnums(prep_head, 3, callargs);
+	*prep_head++ = CALL;
+
+	callargs[0] = mainstem->cvtindex;
+	callargs[2] = mainstem->width<otherstems[i].width?1:0;
+	callargs[3] = 4;
+	prep_head = pushnums(prep_head, 4, callargs);
+	*prep_head++ = CALL;
+    }
+
+return prep_head;
+}
+
 /* Turning dropout control on will dramatically improve mono rendering, even
  * without further hinting, especcialy for light typefaces. And turning hinting
  * off at veeery small pixel sizes is required, because hints tend to visually
  * tear outlines apart when not having enough workspace.
  *
- * TODO! We should take 'gasp' table into account. We also should set up blues,
- * round and normalize stem weights here.
+ * TODO! We should take 'gasp' table into account and set up blues here.
  */
 static void init_prep(InstrCt *ct) {
-    uint8 new_prep[] =
+    uint8 new_prep_preamble[] =
     {
 	0x4b, // MPPEM
 	0xb0, // PUSHB_1
@@ -843,20 +1185,41 @@ static void init_prep(InstrCt *ct) {
 	0x59  // EIF
     };
 
-    int preplen = sizeof(new_prep);
+    int preplen = sizeof(new_prep_preamble);
+    int prepmaxlen = preplen;
+    uint8 *new_prep, *prep_head;
+
+    if (ct->cvt_done)
+        prepmaxlen += 28+11*(ct->cvtinfo.StemSnapHCnt+ct->cvtinfo.StemSnapVCnt);
+
+    new_prep = gcalloc(prepmaxlen, sizeof(uint8));
+    memmove(new_prep, new_prep_preamble, preplen*sizeof(uint8));
+    prep_head = new_prep + preplen;
+
+    if (ct->cvt_done && ct->fpgm_done) {
+        prep_head = normalize_stems(prep_head, 0, ct);
+        prep_head = normalize_stems(prep_head, 1, ct);
+        preplen = prep_head - new_prep;
+    }
+
     struct ttf_table *tab = SFFindTable(ct->sc->parent,CHR('p','r','e','p'));
 
-    /* Try to implant the new 'prep'. */
-    if ( tab==NULL || (tab->len==0) ) {
+    if ( tab==NULL ) {
+	/* We have to create such table. */
 	tab = chunkalloc(sizeof(struct ttf_table));
 	tab->next = ct->sc->parent->ttf_tables;
 	ct->sc->parent->ttf_tables = tab;
 	tab->tag = CHR('p','r','e','p');
+	tab->len = 0;
+    }
 
+    if (tab->len==0 || 
+        (tab->len < preplen && !memcmp(tab->data, new_prep, tab->len)))
+    {
+	/* We can safely update cvt program. */
 	tab->len = tab->maxlen = preplen;
 	tab->data = grealloc(tab->data, preplen);
 	memmove(tab->data, new_prep, preplen);
-
         ct->prep_done = 1;
     }
     else {
@@ -875,11 +1238,17 @@ static void init_prep(InstrCt *ct) {
 		  "'s own."
 	    ));
     }
+
+    free(new_prep);
 }
 
+/* We are given a stem weight and try to find matching one in CVT.
+ * If none found, we return -1.
+ */
 static int CVTSeekStem(int xdir, CvtData *CvtInfo, double value, double fudge) {
     StdStem *mainstem, *otherstems;
-    int i, otherstemcnt;
+    int i, otherstemcnt, closestcvt=-1;
+    double mindelta=1e20, delta, closestwidth=1e20;
 
     if (xdir) {
         mainstem = &(CvtInfo->StdVW);
@@ -892,13 +1261,28 @@ static int CVTSeekStem(int xdir, CvtData *CvtInfo, double value, double fudge) {
 	otherstemcnt = CvtInfo->StemSnapHCnt;
     }
 
-    if (fabs(mainstem->width - value) <= fudge)
-return mainstem->cvtindex;
+    delta = fabs(mainstem->width - value);
 
-    for (i=0; i<otherstemcnt; i++)
-        if (fabs(otherstems[i].width - value) <= fudge)
-return otherstems[i].cvtindex;
+    if (delta < mindelta) {
+        mindelta = delta;
+	closestwidth = mainstem->width;
+        closestcvt = mainstem->cvtindex;
+    }
 
+    for (i=0; i<otherstemcnt; i++) {
+        delta = fabs(otherstems[i].width - value);
+	
+        if (delta < mindelta) {
+            mindelta = delta;
+	    closestwidth = otherstems[i].width;
+	    closestcvt = otherstems[i].cvtindex;
+	}
+    }
+
+    if (mindelta <= fudge)
+return closestcvt;
+    if (value/closestwidth < 1.11 && value/closestwidth > 0.9)
+return closestcvt;
 return -1;
 }
 
@@ -979,153 +1363,6 @@ static int GetBlueFuzz(SplineFont *sf) {
     if ( sf->private==NULL || (str=PSDictHasEntry(sf->private,"BlueFuzz"))==NULL || !isdigit(str[0]) )
 return 1;
 return strtod(str, &end);
-}
-
-static uint8 *pushheader(uint8 *instrs, int isword, int tot) {
-    if ( isword ) {
-	if ( tot>8 ) {
-	    *instrs++ = 0x41;		/* N(next byte) Push words */
-	    *instrs++ = tot;
-	} else
-	    *instrs++ = 0xb8+(tot-1);	/* Push Words */
-    } else {
-	if ( tot>8 ) {
-	    *instrs++ = 0x40;		/* N(next byte) Push bytes */
-	    *instrs++ = tot;
-	} else
-	    *instrs++ = 0xb0+(tot-1);	/* Push bytes */
-    }
-return( instrs );
-}
-
-static uint8 *addpoint(uint8 *instrs,int isword,int pt) {
-    if ( !isword ) {
-	*instrs++ = pt;
-    } else {
-	*instrs++ = pt>>8;
-	*instrs++ = pt&0xff;
-    }
-return( instrs );
-}
-
-static uint8 *pushpoint(uint8 *instrs,int pt) {
-    instrs = pushheader(instrs,pt>255,1);
-return( addpoint(instrs,pt>255,pt));
-}
-
-#define pushnum(a, b) pushpoint(a, b)
-
-static uint8 *pushpointstem(uint8 *instrs, int pt, int stem) {
-    int isword = pt>255 || stem>255;
-    instrs = pushheader(instrs,isword,2);
-    instrs = addpoint(instrs,isword,pt);
-return( addpoint(instrs,isword,stem));
-}
-
-#define push2points(a, b, c) pushpointstem(a, b, c)
-#define push2nums(a, b, c) pushpointstem(a, b, c)
-
-static uint8 *pushpoints(uint8 *instrs, int ptcnt, const int *pts) {
-    int i, isword = 0;
-    for (i=0; i<ptcnt; i++) if (pts[i]>255) isword=1;
-    if (ptcnt > 255) isword = 1; /* TODO! use several NPUSHB if all are bytes */
-    instrs = pushheader(instrs,isword,ptcnt);
-    for (i=0; i<ptcnt; i++) instrs = addpoint(instrs, isword, pts[i]);
-return( instrs );
-}
-
-/* As we don't have "push F26dot6" command in truetype instructions,
-   we need to do this by hand. As we can explicitly push only 16-bit
-   quantities, we need to push a F26dot6 value in halves, shift left
-   the more significant half and add halves.
-   
-   There are no checks for overflow!
- */
-static uint8 *pushF26Dot6(uint8 *instrs, double num) {
-    unsigned int a, elems[3];
-    int negative=0;
-
-    if (num < 0) {
-	negative=1;
-	num*=-1.0;
-    }
-
-    num *= 64;
-    a = rint(num);
-    elems[0] = a % 65536;
-    elems[1] = (unsigned int)rint(a / 65536.0) % 65536;
-    elems[2] = 16384;
-
-    if (elems[1]) {
-#if OPTIMIZE_TTF_INSTRS
-        instrs = pushpoints(instrs, 3, elems);
-	*instrs++ = DUP;
-        *instrs++ = MUL;
-	*instrs++ = MUL;
-        *instrs++ = ADD;
-#else
-        instrs = pushpoints(instrs, 3, elems);
-        *instrs++ = MUL;
-	instrs = pushpoint(instrs, 16384);
-	*instrs++ = MUL;
-        *instrs++ = ADD;
-#endif
-    }
-    else instrs = pushpoint(instrs, elems[0]);
-
-    if (negative) *instrs++ = NEG;
-
-return( instrs );
-}
-
-/* Push a EF2Dot14. No checks for overflow!
- */
-static uint8 *pushEF2Dot14(uint8 *instrs, double num) {
-    unsigned int a;
-    int negative=0;
-
-    if (num < 0) {
-	negative=1;
-	num*=-1.0;
-    }
-    
-    num *= 16384;
-    a = rint(num);
-    instrs = pushpoint(instrs, a);
-    if (negative) *instrs++ = NEG;
-
-return( instrs );
-}
-
-/* An apparatus for instructing sets of points with given truetype command.
- * The command must pop exactly 1 element from the stack and mustn't push any.
- * If SHP, SHPIX, IP, FLIPPT or ALIGNRP used, I may try to use SLOOP in future.
- *
- * These points must be marked as 'touched' elsewhere! this punction only
- * generates intructions.
- *
- * Possible strategies:
- *   - do point by point (currently used, poor space efficiency)
- *   - push all the stock at once (better, but has
- *     poor space efficiency in case of a word among several bytes).
- *   - push bytes and words separately
- *   - when the stuff is pushed, try to use SLOOP.
- */
-static uint8 *instructpoints(uint8 *instrs, int ptcnt, const int *pts, uint8 command) {
-    int i;
-
-#if OPTIMIZE_TTF_INSTRS
-    instrs = pushpoints(instrs, ptcnt<=255?ptcnt:255, pts);
-    for (i=0; i<(ptcnt<=255?ptcnt:255); i++) *instrs++ = command;
-    if (ptcnt>255) instrs=instructpoints(instrs, ptcnt-255, pts+255, command);
-#else
-    for (i=0; i<ptcnt; i++) {
-	instrs = pushpoint(instrs, pts[i]);
-	*instrs++ = command;
-    }
-#endif
-
-return( instrs );
 }
 
 /* Find previous point index on the contour. */
@@ -1410,11 +1647,7 @@ static void init_edge(InstrCt *ct, real base, int contour_direction) {
  * context (an edge must be previously initialized with init_edge). It calls
  * optimize_segment() internally - a function that is otherwise unsafe.
  *
- * Optimizer is deliberately turned off if diagonal stems are present.
- *
- * TODO! If diagonal stems are present, optimizer should remove off-curve
- * points and nothing more. Or it can work as usual but preserving points
- * that will be used by diagonal stem hinter. We'll see.
+ * Optimizer doesn't optimize out points used by diagonal hinter.
  */
 
 /* To be used with qsort() - sorts integer array in ascending order. */
@@ -1570,8 +1803,6 @@ return;
  * may be needed one or even two points per blue zone if some advanced snapping
  * and counter managing is to be done.
  *
- * TODO! Use the information from cv->cvtdata
- *
  * Snapping relies on function 0 in FPGM, see init_fpgm().
  *
  * Using MIAP (single cvt, relying on cut-in) instead of twilight points
@@ -1585,6 +1816,7 @@ return;
  *
  * TODO! Remind the user to correct direction or do it for him.
  * TODO! Try to instruct 'free points' with single push and LOOPCALL.
+ * TODO! Snap both inner and outer contours if there are any matching inner (?)
  *
  * If we didn't snapped any point to a blue zone, we shouldn't mark any HStem
  * edges done. This could made some important points on inner contours missed.
@@ -1661,7 +1893,7 @@ return;
 	    init_edge(ct, base, EXTERNAL_CONTOURS);
 	    if (ct->edge.refpt == -1) continue;
 	    callargs[0] = ct->edge.refpt;
-
+	    
 	    if (ct->fpgm_done) {
 	      ct->pt = pushpoints(ct->pt, 3, callargs);
 	      *(ct->pt)++ = CALL;
@@ -1693,12 +1925,18 @@ return;
 	    init_edge(ct, advance, ALL_CONTOURS);
 	    if (ct->edge.refpt == -1) continue;
 	    if (cvt2 == -1) {
-		ct->pt = pushpoint(ct->pt, ct->edge.refpt);
-		*(ct->pt)++ = MDRP_min_rnd_black;
+	        ct->pt = push2nums(ct->pt, ct->edge.refpt,
+	            ct->cvtinfo.StdHW.width<fabs(hint->width)?70:74);
+	        *ct->pt++ = SROUND;
+		*ct->pt++ = MDRP_min_rnd_black;
+		*ct->pt++ = RTG;
 	    }
 	    else {
 		ct->pt = pushpointstem(ct->pt, ct->edge.refpt, cvt2);
-		*(ct->pt)++ = MIRP_min_rnd_black;
+
+		if (ct->cvt_done && ct->prep_done)
+		    *ct->pt++ = MIRP_min_black;
+		else *ct->pt++ = MIRP_min_rnd_black;
 	    }
 	    ct->touched[ct->edge.refpt] |= tf_y;
 
@@ -1787,13 +2025,12 @@ return;
  ******************************************************************************/
 
 static void geninstrs(InstrCt *ct, StemInfo *hint) {
-    real hbase, base, width, hend;
+    real hbase, base, width, hend, stdwidth;
     StemInfo *h;
     real fudge = ct->gi->fudge;
     StemInfo *firsthint, *lasthint=NULL, *testhint;
     int first;
     int cvtindex=-1;
-    int callargs[2];
 
     /* if this hint has conflicts don't try to establish a minimum distance */
     /* between it and the last stem, there might not be one */        
@@ -1811,10 +2048,10 @@ static void geninstrs(InstrCt *ct, StemInfo *hint) {
     if (!hint->hasconflicts) first = false;
 
     /* Check whether to use CVT value or shift the stuff directly */
+    stdwidth = ct->xdir?ct->cvtinfo.StdVW.width:ct->cvtinfo.StdHW.width;
     hbase = base = rint(hint->start);
     width = rint(hint->width);
     hend = hbase + width;
-
     cvtindex = CVTSeekStem(ct->xdir, &(ct->cvtinfo), fabs(width), fudge);
 
     /* flip the hint if needed */
@@ -1841,8 +2078,14 @@ static void geninstrs(InstrCt *ct, StemInfo *hint) {
 	if (ct->edge.refpt == -1) goto done;
 
 	if (cvtindex == -1) {
-	    ct->pt = pushpoint(ct->pt, ct->edge.refpt);
-	    *ct->pt++ = MDRP_min_rnd_black;
+	    ct->pt = push2nums(ct->pt, ct->edge.refpt,
+	        stdwidth<fabs(width)?70:74);
+	    *ct->pt++ = SROUND;
+
+	    if (hint->hasconflicts) *ct->pt++ = MDRP_min_rnd_black;
+	    else *ct->pt++ = MDRP_rp0_min_rnd_black;
+
+	    *ct->pt++ = RTG;
 	}
 	else {
 	    ct->pt = pushpointstem(ct->pt, ct->edge.refpt, cvtindex);
@@ -1879,21 +2122,24 @@ static void geninstrs(InstrCt *ct, StemInfo *hint) {
 	ct->pt = pushpoint(ct->pt, ct->edge.refpt);
 	ct->touched[ct->edge.refpt] |= (ct->xdir?tf_x:tf_y);
 
-	if (!ct->xdir) {
+	if (!first && hint->hasconflicts) {
+	   *ct->pt++ = MDRP_rp0_rnd_white;
+	    finish_edge(ct, SHP_rp2);
+	}
+	else if (!ct->xdir) {
 	    *ct->pt++ = MDAP_rnd;
 	    finish_edge(ct, SHP_rp1);
 	}
+	else if (hint == firsthint) {
+	    *ct->pt++ = MDRP_rp0_rnd_white;
+	    finish_edge(ct, SHP_rp2);
+	}
 	else {
-	    if (!first && hint->hasconflicts) *ct->pt++ = MDRP_rp0_rnd_white;
-	    else {
-	        *ct->pt++ = MDRP_rp0_min_rnd_white;
-	    
-                if (ct->fpgm_done) {
-	            callargs[0] = ct->edge.refpt;
-	            callargs[1] = 1;
-	            ct->pt = pushpoints(ct->pt, 2, callargs);
-	            *(ct->pt)++ = CALL;
-		}
+	    *ct->pt++ = MDRP_rp0_min_rnd_white;
+
+            if (ct->fpgm_done) {
+	        ct->pt = push2nums(ct->pt, ct->edge.refpt, 1);
+	        *(ct->pt)++ = CALL;
 	    }
 
 	    finish_edge(ct, SHP_rp2);
@@ -1904,12 +2150,25 @@ static void geninstrs(InstrCt *ct, StemInfo *hint) {
 	if (ct->edge.refpt == -1) goto done;
 
 	if (cvtindex == -1) {
-	  ct->pt = pushpoint(ct->pt, ct->edge.refpt);
-	  *ct->pt++ = MDRP_rp0_min_rnd_black;
+	    ct->pt = push2nums(ct->pt, ct->edge.refpt,
+	        stdwidth<fabs(width)?70:74);
+	    *ct->pt++ = SROUND;
+
+	    if (hint->hasconflicts) *ct->pt++ = MDRP_min_rnd_black;
+	    else *ct->pt++ = MDRP_rp0_min_rnd_black;
+
+	    *ct->pt++ = RTG;
 	}
 	else {
 	    ct->pt = pushpointstem(ct->pt, ct->edge.refpt, cvtindex);
-	    *ct->pt++ = MIRP_rp0_min_rnd_black;
+	    if (ct->cvt_done && ct->prep_done) {
+	        if (hint->hasconflicts) *ct->pt++ = MIRP_min_black;
+	        else *ct->pt++ = MIRP_rp0_min_black;
+	    }
+	    else {
+	        if (hint->hasconflicts) *ct->pt++=MIRP_min_rnd_black;
+	        else *ct->pt++ = MIRP_rp0_min_rnd_black;
+	    }
 	}
 
 	ct->touched[ct->edge.refpt] |= (ct->xdir?tf_x:tf_y);
@@ -2649,8 +2908,8 @@ static uint8 *dogeninstructions(InstrCt *ct) {
 
     /* very basic preparations for default hinting */
     init_cvt(ct);
-    init_prep(ct);
     init_fpgm(ct);
+    init_prep(ct);
     init_maxp(ct);
 
     /* Maximum instruction length is 6 bytes for each point in each dimension */
@@ -2814,10 +3073,12 @@ return;
 
     /* TODO!
      *
-     * I'm having problems with references that are rotated or flipped
-     * horizontally. Basically, such glyphs can get negative width. Such widths
-     * are treated very differently under Freetype (OK) and Windows (terribly
-     * shifted), and I suppose other rasterizers can also complain.
+     * We're having problems with references utilizing 'use my metrics' that are
+     * rotated or flipped horizontally. Basically, such glyphs can get negative
+     * width and behave strangely when the glyph referred is instructed. Such
+     * widths are treated very differently under Freetype (OK) and Windows
+     * (terribly shifted), and I suppose other rasterizers can also complain.
+     * Perhaps we should advise turning 'use my metrics' off.
      */
     if ( sc->layers[ly_fore].splines==NULL )
 return;
