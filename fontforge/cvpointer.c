@@ -844,7 +844,7 @@ return( any );
 void CVAdjustControl(CharView *cv,BasePoint *cp, BasePoint *to) {
     SplinePoint *sp = cv->p.sp;
     BasePoint *othercp = cp==&sp->nextcp?&sp->prevcp:&sp->nextcp;
-    int refig = false;
+    int refig = false, otherchanged = false;
 
     if ( sp->ttfindex==0xffff && cv->fv->sf->order2 ) {
 	/* If the point itself is implied, then it's the control points that */
@@ -855,12 +855,14 @@ void CVAdjustControl(CharView *cv,BasePoint *cp, BasePoint *to) {
 	*cp = *to;
 	refig = true;
     } else if ( sp->pointtype==pt_corner ) {
-	cp->x = to->x;
-	cp->y = to->y;
+	*cp = *to;
     } else if ( sp->pointtype==pt_curve ) {
 	cp->x = to->x;
 	cp->y = to->y;
-	if (( cp->x!=sp->me.x || cp->y!=sp->me.y ) && !cv->sc->parent->order2 ) {
+	if (( cp->x!=sp->me.x || cp->y!=sp->me.y ) &&
+		(!cv->sc->parent->order2 ||
+		 (cp==&sp->nextcp && sp->next!=NULL && sp->next->to->ttfindex==0xffff) ||
+		 (cp==&sp->prevcp && sp->prev!=NULL && sp->prev->from->ttfindex==0xffff)) ) {
 	    double len1, len2;
 	    len1 = sqrt((cp->x-sp->me.x)*(cp->x-sp->me.x) +
 			(cp->y-sp->me.y)*(cp->y-sp->me.y));
@@ -869,11 +871,12 @@ void CVAdjustControl(CharView *cv,BasePoint *cp, BasePoint *to) {
 	    len2 /= len1;
 	    othercp->x = len2 * (sp->me.x-cp->x) + sp->me.x;
 	    othercp->y = len2 * (sp->me.y-cp->y) + sp->me.y;
+	    otherchanged = true;
 	    if ( sp->next!=NULL && othercp==&sp->nextcp )
 		SplineRefigure3(sp->next);
 	    if ( sp->prev!=NULL && othercp==&sp->prevcp )
 		SplineRefigure3(sp->prev);
-	} 
+	}
 	if ( cp==&sp->nextcp ) sp->prevcpdef = false;
 	else sp->nextcpdef = false;
     } else {
@@ -900,20 +903,21 @@ void CVAdjustControl(CharView *cv,BasePoint *cp, BasePoint *to) {
     }
 
     if ( cv->fv->sf->order2 ) {
-	if ( cp==&sp->nextcp && sp->next!=NULL ) {
+	if ( (cp==&sp->nextcp || otherchanged) && sp->next!=NULL ) {
 	    SplinePoint *osp = sp->next->to;
 	    if ( osp->ttfindex==0xffff ) {
-		osp->prevcp = *to;
-		osp->me.x = (to->x+osp->nextcp.x)/2;
-		osp->me.y = (to->y+osp->nextcp.y)/2;
+		osp->prevcp = sp->nextcp;
+		osp->me.x = (osp->prevcp.x+osp->nextcp.x)/2;
+		osp->me.y = (osp->prevcp.y+osp->nextcp.y)/2;
 		SplineRefigure(osp->next);
 	    }
-	} else if ( cp==&sp->prevcp && sp->prev!=NULL ) {
+	}
+	if ( (cp==&sp->prevcp || otherchanged) && sp->prev!=NULL ) {
 	    SplinePoint *osp = sp->prev->from;
 	    if ( osp->ttfindex==0xffff ) {
-		osp->nextcp = *to;
-		osp->me.x = (to->x+osp->prevcp.x)/2;
-		osp->me.y = (to->y+osp->prevcp.y)/2;
+		osp->nextcp = sp->prevcp;
+		osp->me.x = (osp->prevcp.x+osp->nextcp.x)/2;
+		osp->me.y = (osp->prevcp.y+osp->nextcp.y)/2;
 		SplineRefigure(osp->prev);
 	    }
 	}
