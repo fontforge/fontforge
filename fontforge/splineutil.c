@@ -1492,6 +1492,20 @@ SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[
 	    if ( pfirst==NULL ) pfirst = spt;
 	    if ( allpoints || spt->selected ) {
 		TransformPoint(spt,transform);
+		if ( !allpoints ) {
+		    if ( spt->next!=NULL && spt->next->order2 && spt->next->to->ttfindex==0xffff ) {
+			SplinePoint *to = spt->next->to;
+			to->prevcp = spt->nextcp;
+			to->me.x = (to->prevcp.x+to->nextcp.x)/2;
+			to->me.y = (to->prevcp.y+to->nextcp.y)/2;
+		    }
+		    if ( spt->prev!=NULL && spt->prev->order2 && spt->prev->from->ttfindex==0xffff ) {
+			SplinePoint *from = spt->prev->from;
+			from->nextcp = spt->prevcp;
+			from->me.x = (from->prevcp.x+from->nextcp.x)/2;
+			from->me.y = (from->prevcp.y+from->nextcp.y)/2;
+		    }
+		}
 		anysel = true;
 	    } else
 		allsel = alldone = false;
