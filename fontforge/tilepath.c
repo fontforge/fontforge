@@ -58,6 +58,7 @@ typedef struct tiledata {
 			        /*  higher than the last */
     SplineSet *result;		/* Final result after transformation */
     DBounds bb;			/* Of the basetile */
+    double firstheight;		/* Height of the first tile if it is different (ie. if it doesn't include white space) */
 
     SplineSet *path;
     double plength;		/* Length of path */
@@ -75,6 +76,7 @@ typedef struct tiledata {
 	real sofar;
     } *joins;			/* an array of [pcnt or pcnt-1], one of each join */
 
+    int translate_first;
     enum tilepos { tp_left, tp_center, tp_right } tilepos;
     enum tilescale { ts_tile, ts_tilescale, ts_scale } tilescale;
     /* ts_scale means that we scale the one tile until it height is the same */
@@ -89,6 +91,7 @@ typedef struct tiledata {
 
     int doallpaths;
 } TD;
+enum whitespace_type { ws_include=0x1, ws_but_not_first=0x2 };
 
 static int TDMakeSamples(TD *td) {
     Spline *spline, *first;
@@ -405,23 +408,23 @@ static void TileLine(TD *td) {
 
     switch ( td->tilescale ) {
       case ts_tile:
-	tilecnt = ceil( td->plength/td->bb.maxy );
+	tilecnt = ceil( (td->plength-td->firstheight)/td->bb.maxy )+1;
       break;
       case ts_scale:
-	scale = td->plength/td->bb.maxy ;
+	scale = 1 + (td->plength-td->firstheight)/td->bb.maxy ;
       break;
       case ts_tilescale:
-	scale = td->plength/td->bb.maxy ;
+	scale = 1 + (td->plength-td->firstheight)/td->bb.maxy ;
 	tilecnt = floor( scale );
 	if ( tilecnt==0 )
 	    tilecnt = 1;
-	else if ( scale-tilecnt>.707 )
+	else if ( scale-tilecnt>.55 )
 	    ++tilecnt;
-	scale = td->plength/(tilecnt*td->bb.maxy);
+	scale = td->plength/(td->firstheight + (tilecnt-1)*td->bb.maxy);
       break;
     }
 
-    y = 0;
+    y = td->translate_first ? -td->bb.miny*scale : 0;
     trans[0] = 1; trans[3] = scale;		/* Only scale y */
     trans[1] = trans[2] = trans[4] = trans[5] = 0;
     for ( i=0; i<tilecnt; ++i ) {
@@ -639,7 +642,7 @@ static void TileIt(SplineSet **head,SplineSet *tile,
     SplineSetFindBounds(tile,&td.bb);
     trans[0] = trans[3] = 1;
     trans[1] = trans[2] = 0;
-    trans[5] = include_whitespace ? 0 : -td.bb.miny;
+    trans[5] = (include_whitespace&ws_include) ? 0 : -td.bb.miny;
     trans[4] = -td.bb.minx;
     if ( tilepos==tp_center )
 	trans[4] -= (td.bb.maxx-td.bb.minx)/2;
@@ -648,6 +651,13 @@ static void TileIt(SplineSet **head,SplineSet *tile,
     if ( trans[4]!=0 || trans[5]!=0 )
 	SplinePointListTransform(tile,trans,true);
     SplineSetFindBounds(tile,&td.bb);
+    if ( (include_whitespace&ws_but_not_first) && td.bb.miny>.01 ) {
+	td.translate_first = true;
+	td.firstheight = td.bb.maxy - td.bb.miny;
+    } else {
+	td.translate_first = false;
+	td.firstheight = td.bb.maxy;
+    }
 
     TileSplineSets(&td,head,order2);
 }
@@ -664,6 +674,7 @@ static int include_whitespace=false;
 #define CID_TileScale	1012
 #define CID_Scale	1013
 #define CID_IncludeWhiteSpaceBelowTile	1021
+#define CID_ButNotForFirstTile		1022
 
 struct tiledlg {
     int done;
@@ -687,7 +698,9 @@ static int TD_OK(GGadget *g, GEvent *e) {
 	    tilescale = ts_tilescale;
 	else
 	    tilescale = ts_scale;
-	include_whitespace = GGadgetIsChecked(GWidgetGetControl(gw,CID_IncludeWhiteSpaceBelowTile));
+	include_whitespace =
+	    (GGadgetIsChecked(GWidgetGetControl(gw,CID_IncludeWhiteSpaceBelowTile)) ? ws_include : 0 ) |
+	    (GGadgetIsChecked(GWidgetGetControl(gw,CID_ButNotForFirstTile)) ? ws_but_not_first : 0 );
     }
 return( true );
 }
@@ -720,8 +733,8 @@ static int TileAsk(void) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[12];
-    GTextInfo label[12];
+    GGadgetCreateData gcd[13];
+    GTextInfo label[13];
 
     memset(&d,0,sizeof(d));
 
@@ -734,7 +747,7 @@ static int TileAsk(void) {
     wattrs.utf8_window_title = _("Tile Path...");
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,GGadgetScale(220));
-    pos.height = GDrawPointsToPixels(NULL,116);
+    pos.height = GDrawPointsToPixels(NULL,132);
     gw = GDrawCreateTopWindow(NULL,&pos,td_e_h,&d,&wattrs);
 
     memset(gcd,0,sizeof(gcd));
@@ -824,34 +837,46 @@ static int TileAsk(void) {
     gcd[8].gd.label = &label[8];
     gcd[8].gd.popup_msg = (unichar_t *) _("Normally the Tile will consist of everything\nwithin the minimum bounding box of the tile --\nso adjacent tiles will abut directly on one\nanother. If you wish whitespace between tiles\nset this flag");
     gcd[8].gd.cid = CID_IncludeWhiteSpaceBelowTile;
-    gcd[8].creator = GRadioCreate;
+    gcd[8].creator = GCheckBoxCreate;
 
-    gcd[9].gd.pos.x = 20-3; gcd[9].gd.pos.y = gcd[8].gd.pos.y+26;
-    gcd[9].gd.pos.width = -1; gcd[9].gd.pos.height = 0;
-    gcd[9].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[9].text = (unichar_t *) _("_OK");
+    gcd[9].gd.pos.x = gcd[0].gd.pos.x+10; gcd[9].gd.pos.y = gcd[8].gd.pos.y+16;
+    gcd[9].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    label[9].text = (unichar_t *) _("But not for first Tile");
     label[9].text_is_1byte = true;
     label[9].text_in_resource = true;
-    gcd[9].gd.mnemonic = 'O';
     gcd[9].gd.label = &label[9];
-    gcd[9].gd.handle_controlevent = TD_OK;
-    gcd[9].creator = GButtonCreate;
+    gcd[9].gd.popup_msg = (unichar_t *) _("However it usually looks funny to have a gap at the start\nOf the tiling, so don't include whitespace on the first iteration");
+    gcd[9].gd.cid = CID_ButNotForFirstTile;
+    gcd[9].creator = GCheckBoxCreate;
 
-    gcd[10].gd.pos.x = -20; gcd[10].gd.pos.y = gcd[9].gd.pos.y+3;
+    gcd[10].gd.pos.x = 20-3; gcd[10].gd.pos.y = gcd[9].gd.pos.y+26;
     gcd[10].gd.pos.width = -1; gcd[10].gd.pos.height = 0;
-    gcd[10].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[10].text = (unichar_t *) _("_Cancel");
+    gcd[10].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    label[10].text = (unichar_t *) _("_OK");
     label[10].text_is_1byte = true;
     label[10].text_in_resource = true;
+    gcd[10].gd.mnemonic = 'O';
     gcd[10].gd.label = &label[10];
-    gcd[10].gd.mnemonic = 'C';
-    gcd[10].gd.handle_controlevent = TD_Cancel;
+    gcd[10].gd.handle_controlevent = TD_OK;
     gcd[10].creator = GButtonCreate;
+
+    gcd[11].gd.pos.x = -20; gcd[11].gd.pos.y = gcd[10].gd.pos.y+3;
+    gcd[11].gd.pos.width = -1; gcd[11].gd.pos.height = 0;
+    gcd[11].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    label[11].text = (unichar_t *) _("_Cancel");
+    label[11].text_is_1byte = true;
+    label[11].text_in_resource = true;
+    gcd[11].gd.label = &label[11];
+    gcd[11].gd.mnemonic = 'C';
+    gcd[11].gd.handle_controlevent = TD_Cancel;
+    gcd[11].creator = GButtonCreate;
 
     gcd[0+tilepos].gd.flags |= gg_cb_on;
     gcd[4+tilescale].gd.flags |= gg_cb_on;
-    if ( include_whitespace )
+    if ( include_whitespace&ws_include )
 	gcd[8].gd.flags |= gg_cb_on;
+    if ( include_whitespace&ws_but_not_first )
+	gcd[9].gd.flags |= gg_cb_on;
 
     GGadgetsCreate(gw,gcd);
     GDrawSetVisible(gw,true);
