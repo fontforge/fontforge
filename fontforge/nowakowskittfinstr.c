@@ -2843,8 +2843,8 @@ static uint8 *TouchDStemPoints( InstrCt *ct,DiagPointInfo *diagpts,
         instrs = instructpoints ( instrs,numx,tobefixedx,MDAP );
     }
 
-    chunkfree( tobefixedy,ptcnt );
-    chunkfree( tobefixedx,ptcnt );
+    chunkfree( tobefixedy, ptcnt*sizeof( int ) );
+    chunkfree( tobefixedx, ptcnt*sizeof( int ) );
 return instrs;
 }
 
