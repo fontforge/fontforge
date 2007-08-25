@@ -961,12 +961,12 @@ static void init_fpgm(InstrCt *ct) {
 	0x69, //   ROUND[black]
 	0x20, //   DUP
 	0xb0, //   PUSHB_1
-	0x01, //     1
-	0x52, //   GT
+	0x40, //     64, that's one pixel as F26Dot6
+	0x50, //   LT
 	0x58, //   IF
+	0x21, //     POP
 	0xb0, //     PUSHB_1
-	0x01, //       1
-	0x60, //     ADD
+	0x40, //       64
 	0x59, //   EIF
 	0x44, //   WCVTP
 	0x2d, // ENDF
@@ -980,19 +980,17 @@ static void init_fpgm(InstrCt *ct) {
 	0x2c, // FDEF
 	0x20, //   DUP
 	0x45, //   RCVT
-	0xb0, //   PUSHB_1
-	0x03, //     3
-	0x26, //   MINDEX
+	0x8a, //   ROLL
 	0x43, //   RS
 	0x60, //   ADD
 	0x44, //   WCVTP
 	0x2d, // ENDF
 
 	/* Function 4: round a 'cvt' entry, taking a reference cvt entry into
-	 * account in a way defined by a third, boolean argument: if true, add
-	 * 0.5px to the entry before rounding and truncate it if it's larger
+	 * account in a way defined by a third, boolean argument: if 0 (false),
+	 * add 0.5px to the entry before rounding and truncate it if it's larger
 	 * than reference entry (that's for stems lesser than standard width);
-	 * do the opposite if false. This is for normalizing cvt stems, it's
+	 * otherwise do the opposite. This is for normalizing cvt stems, it's
 	 * used after function 3.
 	 * Syntax: PUSHB_4 ref_cvt_index cvt_index rnd_type 4 CALL
 	 */
@@ -1009,9 +1007,7 @@ static void init_fpgm(InstrCt *ct) {
 	0x2b, //     CALL
 	0x20, //     DUP
 	0x45, //     RCVT
-	0xb0, //     PUSHB_1
-	0x03, //       3
-	0x26, //     MINDEX
+	0x8a, //     ROLL
 	0x45, //     RCVT
 	0x20, //     DUP
 	0xb0, //     PUSHB_1
@@ -1028,9 +1024,7 @@ static void init_fpgm(InstrCt *ct) {
 	0x2b, //     CALL
 	0x20, //     DUP
 	0x45, //     RCVT
-	0xb0, //     PUSHB_1
-	0x03, //       3
-	0x26, //     MINDEX
+	0x8a, //     ROLL
 	0x45, //     RCVT
 	0x20, //     DUP
 	0xb0, //     PUSHB_1
@@ -1258,6 +1252,7 @@ static int CVTSeekStem(int xdir, CvtData *CvtInfo, double value, double fudge) {
     if (mainstem->width == -1)
 return -1;
 
+    value = fabs(value);
     delta = fabs(mainstem->width - value);
 
     if (delta < mindelta) {
@@ -1773,6 +1768,77 @@ return;
     ct->edge.othercnt = 0;
 }
 
+/* Each stem hint has 'startdone' and 'enddone' flag, indicating whether 'start'
+ * or 'end' edge is hinted or not. This functions marks as done all edges at
+ * specified coordinate, starting from given hint (hints sometimes share edges).
+ */
+static void mark_startenddones(StemInfo *hint, double value, double fudge) {
+    StemInfo *h;
+
+    for (h=hint; h!=NULL; h=h->next) {
+        if (fabs(h->start - value) <= fudge) h->startdone = true;
+        if (fabs(h->start+h->width - value) <= fudge) h->enddone = true;
+    }
+}
+
+/* Given the refpt for one of this hint's edges is already positioned, this
+ * function aligns 'others' (SHP with given shp_rp) for this edge and positions
+ * the second edge, optionally setting its refpt as rp0.
+ */
+static void finish_stem(StemInfo *hint, int shp_rp1, int chg_rp0, InstrCt *ct) {
+    if (hint == NULL)
+return;
+
+    int rp0 = ct->edge.refpt;
+    real coord = ct->edge.base;
+    StdStem *StdW = ct->xdir?&(ct->cvtinfo.StdVW):&(ct->cvtinfo.StdHW);
+    int cvtindex =
+        CVTSeekStem(ct->xdir, &(ct->cvtinfo), hint->width, ct->gi->fudge);
+
+    ct->touched[rp0] |= ct->xdir?tf_x:tf_y;
+    finish_edge(ct, shp_rp1?SHP_rp1:SHP_rp2);
+    mark_startenddones(hint, coord, ct->gi->fudge);
+
+    if (!ct->xdir && hint->ghost && ((hint->width==20) || (hint->width==21)))
+return;
+
+    if (fabs(hint->start - coord) < 0.0001) {
+        if (hint->ghost) coord = hint->start - hint->width;
+	else coord = hint->start + hint->width;
+    }
+    else coord = hint->start;
+
+    init_edge(ct, coord, ALL_CONTOURS);
+    if (ct->edge.refpt == -1)
+return;
+
+    if (cvtindex != -1) {
+	ct->pt = push2nums(ct->pt, ct->edge.refpt, cvtindex);
+
+	if (ct->cvt_done && ct->fpgm_done && ct->prep_done)
+	    *(ct->pt)++ = chg_rp0?MIRP_rp0_min_black:MIRP_min_black;
+	else *(ct->pt)++ = chg_rp0?MIRP_min_rnd_black:MIRP_rp0_min_rnd_black;
+    }
+    else {
+	if (ct->cvt_done && ct->fpgm_done && ct->prep_done && StdW->width!=-1) {
+	    /* TODO! This is only partial normalization! */
+            int rndstate = fabs(hint->width)>StdW->width?70:74;
+	    ct->pt = push2nums(ct->pt, rndstate, ct->edge.refpt);
+	    *ct->pt = SROUND;
+	    *ct->pt = chg_rp0?MDRP_rp0_min_rnd_black:MDRP_min_rnd_black;
+	    *ct->pt = RTG;
+	}
+	else {
+	    ct->pt = pushpoint(ct->pt, ct->edge.refpt);
+	    *(ct->pt)++ = chg_rp0?MDRP_rp0_min_rnd_black:MDRP_min_rnd_black;
+	}
+    }
+
+    ct->touched[ct->edge.refpt] |= ct->xdir?tf_x:tf_y;
+    finish_edge(ct, SHP_rp2);
+    mark_startenddones(hint, coord, ct->gi->fudge);
+}
+
 /******************************************************************************
  * I decided to do snapping to blues at the very beginning of the instructing.
  *
@@ -1821,7 +1887,7 @@ return;
  ******************************************************************************/
 
 static void snap_to_blues(InstrCt *ct) {
-    int i, cvt, cvt2;
+    int i, cvt;
     int therewerestems;      /* were there any HStems snapped to this blue? */
     StemInfo *hint;          /* for HStems affected by blues */
     real base, advance, tmp; /* for the hint */
@@ -1850,7 +1916,7 @@ return;
 	/* Process all hints with edges within ccurrent blue zone. */
 	for ( hint=ct->sc->hstem; hint!=NULL; hint=hint->next ) {
 	    if (hint->startdone || hint->enddone) continue;
-	    
+
 	    /* Which edge to start at? */
 	    /*Starting at the other would usually be wrong. */
 	    if (blues[queue[i]].overshoot < blues[queue[i]].base || 
@@ -1887,59 +1953,25 @@ return;
 	    }
 
 	    /* instruct the stem */
-	    init_edge(ct, base, EXTERNAL_CONTOURS);
+	    init_edge(ct, base, ALL_CONTOURS); /* stems don't care */
 	    if (ct->edge.refpt == -1) continue;
 	    callargs[0] = ct->edge.refpt;
 	    
 	    if (ct->fpgm_done) {
-	      ct->pt = pushpoints(ct->pt, 3, callargs);
-	      *(ct->pt)++ = CALL;
+	        ct->pt = pushpoints(ct->pt, 3, callargs);
+	        *(ct->pt)++ = CALL;
 	    }
 	    else {
-	      ct->pt = pushpoints(ct->pt, 2, callargs);
-	      *(ct->pt)++ = MIAP_rnd;
+	        ct->pt = pushpoints(ct->pt, 2, callargs);
+	        *(ct->pt)++ = MIAP_rnd;
 	    }
 
-	    ct->touched[ct->edge.refpt] |= tf_y;
-
-	    finish_edge(ct, SHP_rp1);
-	    if (hint->start == base) hint->startdone = true;
-	    else hint->enddone = true;
-
+	    finish_stem(hint, true, false, ct);
 	    therewerestems = 1;
-
-	    if (hint->ghost && ((hint->width == 20) || (hint->width == 21))) {
-		hint->startdone = hint->enddone = true;
-		continue;
-	    }
 
 	    /* TODO! It might be worth to instruct at least one edge of each */
 	    /* hint overlapping with currently processed. This would preserve */
 	    /* relative hint placement in some difficult areas. */
-
-	    cvt2 = CVTSeekStem(0, &(ct->cvtinfo), hint->width, ct->gi->fudge);
-
-	    init_edge(ct, advance, ALL_CONTOURS);
-	    if (ct->edge.refpt == -1) continue;
-	    if (cvt2 == -1) {
-	        ct->pt = push2nums(ct->pt, ct->edge.refpt,
-	            ct->cvtinfo.StdHW.width<fabs(hint->width)?70:74);
-	        *ct->pt++ = SROUND;
-		*ct->pt++ = MDRP_min_rnd_black;
-		*ct->pt++ = RTG;
-	    }
-	    else {
-		ct->pt = pushpointstem(ct->pt, ct->edge.refpt, cvt2);
-
-		if (ct->cvt_done && ct->prep_done)
-		    *ct->pt++ = MIRP_min_black;
-		else *ct->pt++ = MIRP_min_rnd_black;
-	    }
-	    ct->touched[ct->edge.refpt] |= tf_y;
-
-	    finish_edge(ct, SHP_rp2);
-	    if (hint->start == advance) hint->startdone = true;
-	    else hint->enddone = true;
 	}
 
 	/* Now I'll try to find points not snapped by any previous stem hint. */
@@ -2023,11 +2055,11 @@ return;
 
 static void geninstrs(InstrCt *ct, StemInfo *hint) {
     real hbase, base, width, hend, stdwidth;
-    StemInfo *h;
     real fudge = ct->gi->fudge;
     StemInfo *firsthint, *lasthint=NULL, *testhint;
-    int first;
+    int first; /* if it's the first stem of overlapping stems' cluster */
     int cvtindex=-1;
+    static int rp0;
 
     /* if this hint has conflicts don't try to establish a minimum distance */
     /* between it and the last stem, there might not be one */        
@@ -2044,12 +2076,15 @@ static void geninstrs(InstrCt *ct, StemInfo *hint) {
     first = lasthint==NULL;
     if (!hint->hasconflicts) first = false;
 
+    /* We're tracking current rp0 */
+    if (hint == firsthint) rp0 = ct->ptcnt;
+
     /* Check whether to use CVT value or shift the stuff directly */
     stdwidth = ct->xdir?ct->cvtinfo.StdVW.width:ct->cvtinfo.StdHW.width;
-    hbase = base = rint(hint->start);
-    width = rint(hint->width);
+    hbase = base = hint->start;
+    width = hint->width;
     hend = hbase + width;
-    cvtindex = CVTSeekStem(ct->xdir, &(ct->cvtinfo), fabs(width), fudge);
+    cvtindex = CVTSeekStem(ct->xdir, &(ct->cvtinfo), width, fudge);
 
     /* flip the hint if needed */
     if (hint->enddone) {
@@ -2063,40 +2098,21 @@ static void geninstrs(InstrCt *ct, StemInfo *hint) {
 	 * Ghost hints can get skipped, that's a bug.
 	 */
 	init_edge(ct, hbase, ALL_CONTOURS);
-	if (ct->edge.refpt == -1) goto done;
-	ct->pt = pushpoint(ct->pt, ct->edge.refpt);
-	*ct->pt++ = MDAP; /* sets rp0 and rp1 */
-
-	/* Still unhinted points on that edge? */
-	if (ct->edge.othercnt != 0) finish_edge(ct, SHP_rp1);
-
-	/* set a reference point on the other edge */
-	init_edge(ct, hend, ALL_CONTOURS);
-	if (ct->edge.refpt == -1) goto done;
-
-	if (cvtindex == -1) {
-	    ct->pt = push2nums(ct->pt, ct->edge.refpt,
-	        stdwidth<fabs(width)?70:74);
-	    *ct->pt++ = SROUND;
-
-	    if (hint->hasconflicts) *ct->pt++ = MDRP_min_rnd_black;
-	    else *ct->pt++ = MDRP_rp0_min_rnd_black;
-
-	    *ct->pt++ = RTG;
-	}
-	else {
-	    ct->pt = pushpointstem(ct->pt, ct->edge.refpt, cvtindex);
-	    *ct->pt++ = MIRP_min_rnd_black;
+	if (ct->edge.refpt == -1) return;
+	
+	if (rp0 != ct->edge.refpt) {
+	    rp0 = ct->edge.refpt;
+	    ct->pt = pushpoint(ct->pt, rp0);
+	    *ct->pt++ = MDAP; /* sets rp0 and rp1 */
 	}
 
-	ct->touched[ct->edge.refpt] |= (ct->xdir?tf_x:tf_y);
-
-	/* finish the edge and prepare for the next stem hint */
-	finish_edge(ct, SHP_rp2);
+	finish_stem(hint, true, !hint->hasconflicts, ct);
+	if (!hint->hasconflicts) rp0 = ct->edge.refpt;
 
 	if (hint->startdone) {
 	    ct->pt = pushpoint(ct->pt, ct->edge.refpt);
 	    *ct->pt++ = SRP0;
+	    rp0 = ct->edge.refpt;
 	}
     }
     else {
@@ -2109,78 +2125,46 @@ static void geninstrs(InstrCt *ct, StemInfo *hint) {
 	    }
 	}
 
-	init_edge(ct, hbase, ALL_CONTOURS);
-	if (ct->edge.refpt == -1) goto done;
-
         /* Now I must place the stem's origin in respect to others... */
 	/* TODO! What's really needed here is an iterative procedure that */
 	/* would preserve counters and widths, like in freetype2. */
 	/* For horizontal stems, interpolating between blues MUST be done. */
-	ct->pt = pushpoint(ct->pt, ct->edge.refpt);
-	ct->touched[ct->edge.refpt] |= (ct->xdir?tf_x:tf_y);
+
+	init_edge(ct, hbase, ALL_CONTOURS);
+	if (ct->edge.refpt == -1) return;
+	else rp0 = ct->edge.refpt;
 
 	if (!first && hint->hasconflicts) {
-	   *ct->pt++ = MDRP_rp0_rnd_white;
-	    finish_edge(ct, SHP_rp2);
+	    ct->pt = pushpoint(ct->pt, rp0);
+	    *ct->pt++ = MDRP_rp0_rnd_white;
+	    finish_stem(hint, false, !hint->hasconflicts, ct);
 	}
 	else if (!ct->xdir) {
+	    ct->pt = pushpoint(ct->pt, rp0);
 	    *ct->pt++ = MDAP_rnd;
-	    finish_edge(ct, SHP_rp1);
+	    finish_stem(hint, true, !hint->hasconflicts, ct);
 	}
 	else if (hint == firsthint) {
+	    ct->pt = pushpoint(ct->pt, rp0);
 	    *ct->pt++ = MDRP_rp0_rnd_white;
-	    finish_edge(ct, SHP_rp2);
+	    finish_stem(hint, false, !hint->hasconflicts, ct);
 	}
 	else {
-	    *ct->pt++ = MDRP_rp0_min_rnd_white;
-
             if (ct->fpgm_done) {
-	        ct->pt = push2nums(ct->pt, ct->edge.refpt, 1);
+	        int callargs[3] = {rp0, 1, rp0};
+	        ct->pt = pushnums(ct->pt, 3, callargs);
+	        *ct->pt++ = MDRP_rp0_min_rnd_white;
 	        *(ct->pt)++ = CALL;
 	    }
-
-	    finish_edge(ct, SHP_rp2);
-	}
-
-	/* Start the second edge */
-	init_edge(ct, hend, ALL_CONTOURS);
-	if (ct->edge.refpt == -1) goto done;
-
-	if (cvtindex == -1) {
-	    ct->pt = push2nums(ct->pt, ct->edge.refpt,
-	        stdwidth<fabs(width)?70:74);
-	    *ct->pt++ = SROUND;
-
-	    if (hint->hasconflicts) *ct->pt++ = MDRP_min_rnd_black;
-	    else *ct->pt++ = MDRP_rp0_min_rnd_black;
-
-	    *ct->pt++ = RTG;
-	}
-	else {
-	    ct->pt = pushpointstem(ct->pt, ct->edge.refpt, cvtindex);
-	    if (ct->cvt_done && ct->prep_done) {
-	        if (hint->hasconflicts) *ct->pt++ = MIRP_min_black;
-	        else *ct->pt++ = MIRP_rp0_min_black;
-	    }
 	    else {
-	        if (hint->hasconflicts) *ct->pt++=MIRP_min_rnd_black;
-	        else *ct->pt++ = MIRP_rp0_min_rnd_black;
+	        ct->pt = pushpoint(ct->pt, rp0);
+	        *ct->pt++ = MDRP_rp0_min_rnd_white;
 	    }
+
+	    finish_stem(hint, false, !hint->hasconflicts, ct);
 	}
 
-	ct->touched[ct->edge.refpt] |= (ct->xdir?tf_x:tf_y);
-	finish_edge(ct, SHP_rp2);
-    }
-
-    done:
-
-    for ( h=hint->next; h!=NULL && h->start<=hint->start+hint->width; h=h->next ) {
-	if ( (h->start>=hint->start-ct->gi->fudge && h->start<=hint->start+ct->gi->fudge) ||
-		(h->start>=hint->start+hint->width-ct->gi->fudge && h->start<=hint->start+hint->width+ct->gi->fudge) )
-	    h->startdone = true;
-	if ( (h->start+h->width>=hint->start-ct->gi->fudge && h->start+h->width<=hint->start+ct->gi->fudge) ||
-		(h->start+h->width>=hint->start+hint->width-ct->gi->fudge && h->start+h->width<=hint->start+hint->width+ct->gi->fudge) )
-	    h->enddone = true;
+        if (!hint->hasconflicts) rp0 = ct->edge.refpt;
     }
 }
 
