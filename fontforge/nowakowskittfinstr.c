@@ -1802,15 +1802,17 @@ return;
     if (!ct->xdir && hint->ghost && ((hint->width==20) || (hint->width==21)))
 return;
 
-    if (fabs(hint->start - coord) < 0.0001) {
+    if (fabs(hint->start - coord) < hint->width) {
         if (hint->ghost) coord = hint->start - hint->width;
 	else coord = hint->start + hint->width;
     }
     else coord = hint->start;
 
     init_edge(ct, coord, ALL_CONTOURS);
-    if (ct->edge.refpt == -1)
+    if (ct->edge.refpt == -1) {
+        ct->edge.refpt = rp0;
 return;
+    }
 
     if (cvtindex != -1) {
 	ct->pt = push2nums(ct->pt, ct->edge.refpt, cvtindex);
@@ -1823,10 +1825,10 @@ return;
 	if (ct->cvt_done && ct->fpgm_done && ct->prep_done && StdW->width!=-1) {
 	    /* TODO! This is only partial normalization! */
             int rndstate = fabs(hint->width)>StdW->width?70:74;
-	    ct->pt = push2nums(ct->pt, rndstate, ct->edge.refpt);
-	    *ct->pt = SROUND;
-	    *ct->pt = chg_rp0?MDRP_rp0_min_rnd_black:MDRP_min_rnd_black;
-	    *ct->pt = RTG;
+	    ct->pt = push2nums(ct->pt, ct->edge.refpt, rndstate);
+	    *(ct->pt)++ = SROUND;
+	    *(ct->pt)++ = chg_rp0?MDRP_rp0_min_rnd_black:MDRP_min_rnd_black;
+	    *(ct->pt)++ = RTG;
 	}
 	else {
 	    ct->pt = pushpoint(ct->pt, ct->edge.refpt);
@@ -2103,7 +2105,7 @@ static void geninstrs(InstrCt *ct, StemInfo *hint) {
 	if (rp0 != ct->edge.refpt) {
 	    rp0 = ct->edge.refpt;
 	    ct->pt = pushpoint(ct->pt, rp0);
-	    *ct->pt++ = MDAP; /* sets rp0 and rp1 */
+	    *(ct->pt)++ = MDAP; /* sets rp0 and rp1 */
 	}
 
 	finish_stem(hint, true, !hint->hasconflicts, ct);
@@ -2111,7 +2113,7 @@ static void geninstrs(InstrCt *ct, StemInfo *hint) {
 
 	if (hint->startdone) {
 	    ct->pt = pushpoint(ct->pt, ct->edge.refpt);
-	    *ct->pt++ = SRP0;
+	    *(ct->pt)++ = SRP0;
 	    rp0 = ct->edge.refpt;
 	}
     }
@@ -2136,29 +2138,29 @@ static void geninstrs(InstrCt *ct, StemInfo *hint) {
 
 	if (!first && hint->hasconflicts) {
 	    ct->pt = pushpoint(ct->pt, rp0);
-	    *ct->pt++ = MDRP_rp0_rnd_white;
+	    *(ct->pt)++ = MDRP_rp0_rnd_white;
 	    finish_stem(hint, false, !hint->hasconflicts, ct);
 	}
 	else if (!ct->xdir) {
 	    ct->pt = pushpoint(ct->pt, rp0);
-	    *ct->pt++ = MDAP_rnd;
+	    *(ct->pt)++ = MDAP_rnd;
 	    finish_stem(hint, true, !hint->hasconflicts, ct);
 	}
 	else if (hint == firsthint) {
 	    ct->pt = pushpoint(ct->pt, rp0);
-	    *ct->pt++ = MDRP_rp0_rnd_white;
+	    *(ct->pt)++ = MDRP_rp0_rnd_white;
 	    finish_stem(hint, false, !hint->hasconflicts, ct);
 	}
 	else {
             if (ct->fpgm_done) {
 	        int callargs[3] = {rp0, 1, rp0};
 	        ct->pt = pushnums(ct->pt, 3, callargs);
-	        *ct->pt++ = MDRP_rp0_min_rnd_white;
+	        *(ct->pt)++ = MDRP_rp0_min_rnd_white;
 	        *(ct->pt)++ = CALL;
 	    }
 	    else {
 	        ct->pt = pushpoint(ct->pt, rp0);
-	        *ct->pt++ = MDRP_rp0_min_rnd_white;
+	        *(ct->pt)++ = MDRP_rp0_min_rnd_white;
 	    }
 
 	    finish_stem(hint, false, !hint->hasconflicts, ct);
