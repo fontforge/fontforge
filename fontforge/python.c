@@ -10567,6 +10567,11 @@ static PyMODINIT_FUNC initPyFontForge(void) {
 	    "cvt", "privateiter", "private", "fontiter", "selection", "font",
 	    "contouriter", "layeriter",
 	    NULL };
+    static int initted = false;
+
+    if ( initted )
+return;
+    initted = true;
 
     for ( i=0; types[i]!=NULL; ++i ) {
 	types[i]->ob_type = &PyType_Type;		/* Or does Type_Ready do this??? */
@@ -10606,6 +10611,7 @@ void FontForge_PythonInit(void) {
 #else
     Py_Initialize();
 #endif
+    initPyFontForge();
 }
 
 extern int no_windowing_ui, running_script;
