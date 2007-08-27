@@ -3199,7 +3199,7 @@ return( false );
 	    if ( sp==ss->first )
 	break;
 	}
-	if ( starts_with_cp ) --pnum;
+	/* if ( starts_with_cp ) --pnum; */
     }
 return( true );
 }
