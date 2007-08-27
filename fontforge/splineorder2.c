@@ -814,6 +814,9 @@ SplineSet *SSttfApprox(SplineSet *ss) {
     first = NULL;
     for ( spline=ss->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
 	ret->last = ttfApprox(spline,ret->last);
+	ret->last->ptindex = spline->to->ptindex;
+	ret->last->ttfindex = spline->to->ttfindex;
+	ret->last->nextcpindex = spline->to->nextcpindex;
 	if ( spline->to->hintmask != NULL ) {
 	    ret->last->hintmask = chunkalloc(sizeof(HintMask));
 	    memcpy(ret->last->hintmask,spline->to->hintmask,sizeof(HintMask));

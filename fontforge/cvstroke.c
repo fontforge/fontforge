@@ -1530,17 +1530,241 @@ struct ptmoves {
     BasePoint pdir, ndir;
     double factor;
     BasePoint newpos;
+    uint8 touched;
 };
 
+static int MaxContourCount(SplineSet *ss) {
+    int cnt, ccnt;
+    SplinePoint *sp;
+
+    ccnt = 0;
+    for ( ; ss!=NULL ; ss=ss->next ) {
+	if ( ss->first->prev==NULL )
+    continue;
+	for ( cnt=0, sp=ss->first; ; ) {
+	    sp = sp->next->to; ++cnt;
+	    if ( sp==ss->first )
+	break;
+	}
+	if ( cnt>ccnt ) ccnt = cnt;
+    }
+return( ccnt );
+}
+
+static int PtMovesInitToContour(struct ptmoves *ptmoves,SplineSet *ss) {
+    int cnt;
+    SplinePoint *sp;
+    BasePoint dir1, dir2;
+    double len;
+
+    for ( cnt=0, sp=ss->first; ; ) {
+	ptmoves[cnt].sp = sp;
+	ptmoves[cnt].newpos = sp->me;
+	ptmoves[cnt].touched = false;
+	if ( sp->nonextcp ) {
+	    dir1.x = sp->next->to->me.x - sp->me.x;
+	    dir1.y = sp->next->to->me.y - sp->me.y;
+	} else {
+	    dir1.x = sp->nextcp.x - sp->me.x;
+	    dir1.y = sp->nextcp.y - sp->me.y;
+	}
+	len = dir1.x*dir1.x + dir1.y*dir1.y;
+	if ( len!=0 ) {
+	    len = sqrt(len);
+	    dir1.x /= len;
+	    dir1.y /= len;
+	}
+	ptmoves[cnt].ndir = dir1;
+	if ( dir1.x<0 ) dir1.x = -dir1.x;
+
+	if ( sp->noprevcp ) {
+	    dir2.x = sp->prev->from->me.x - sp->me.x;
+	    dir2.y = sp->prev->from->me.y - sp->me.y;
+	} else {
+	    dir2.x = sp->prevcp.x - sp->me.x;
+	    dir2.y = sp->prevcp.y - sp->me.y;
+	}
+	len = dir2.x*dir2.x + dir2.y*dir2.y;
+	if ( len!=0 ) {
+	    len = sqrt(len);
+	    dir2.x /= len;
+	    dir2.y /= len;
+	}
+	ptmoves[cnt].pdir = dir2;
+	if ( dir2.x<0 ) dir2.x = -dir2.x;
+	
+	ptmoves[cnt].factor = dir1.x>dir2.x ? dir1.x : dir2.x;
+
+	sp = sp->next->to; ++cnt;
+	if ( sp==ss->first )
+    break;
+    }
+    ptmoves[cnt] = ptmoves[0];	/* Life is easier if we don't have to worry about edge effects */
+return( cnt );
+}
+
+static void InterpolateControlPointsAndSet(struct ptmoves *ptmoves,int cnt) {
+    SplinePoint *sp, *nsp;
+    int i;
+
+    ptmoves[cnt].newpos = ptmoves[0].newpos;
+    for ( i=0; i<cnt; ++i ) {
+	sp = ptmoves[i].sp;
+	nsp = ptmoves[i+1].sp;
+	if ( sp->nonextcp )
+	    sp->nextcp = ptmoves[i].newpos;
+	if ( nsp->noprevcp )
+	    nsp->prevcp = ptmoves[i+1].newpos;
+	if ( sp->me.y!=nsp->me.y ) {
+	    sp->nextcp.y = ptmoves[i].newpos.y + (sp->nextcp.y-sp->me.y)*
+				(ptmoves[i+1].newpos.y - ptmoves[i].newpos.y)/
+				(nsp->me.y - sp->me.y);
+	    nsp->prevcp.y = ptmoves[i].newpos.y + (nsp->prevcp.y-sp->me.y)*
+				(ptmoves[i+1].newpos.y - ptmoves[i].newpos.y)/
+				(nsp->me.y - sp->me.y);
+	    if ( sp->me.x!=nsp->me.x ) {
+		sp->nextcp.x = ptmoves[i].newpos.x + (sp->nextcp.x-sp->me.x)*
+				    (ptmoves[i+1].newpos.x - ptmoves[i].newpos.x)/
+				    (nsp->me.x - sp->me.x);
+		nsp->prevcp.x = ptmoves[i].newpos.x + (nsp->prevcp.x-sp->me.x)*
+				    (ptmoves[i+1].newpos.x - ptmoves[i].newpos.x)/
+				    (nsp->me.x - sp->me.x);
+	    }
+	}
+    }
+    for ( i=0; i<cnt; ++i )
+	ptmoves[i].sp->me = ptmoves[i].newpos;
+    for ( i=0; i<cnt; ++i )
+	SplineRefigure(ptmoves[i].sp->next);
+}
+
+static void CorrectLeftSideBearing(SplineSet *ss_expanded,SplineChar *sc,int layer) {
+    real transform[6];
+    DBounds old, new;
+    /* Now correct the left side bearing */
+
+    SplineSetFindBounds(sc->layers[layer].splines,&old);
+    SplineSetFindBounds(ss_expanded,&new);
+    memset(transform,0,sizeof(transform));
+    transform[0] = transform[3] = 1;
+    transform[4] = old.minx - new.minx;
+    if ( transform[4]!=0 ) {
+	SplinePointListTransform(ss_expanded,transform,true);
+	if ( layer==ly_fore )
+	    SCSynchronizeLBearing(sc,transform[4]);
+    }
+}
+
+static SplinePoint *FindMatchingPoint(int ptindex,SplineSet *ss) {
+    SplinePoint *sp;
+
+    if( ptindex==0 )
+return( NULL );
+    for ( ; ss!=NULL; ss=ss->next ) {
+	for ( sp=ss->first; ; ) {
+	    if ( sp->ptindex == ptindex )
+return( sp );
+	    if ( sp->next == NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==ss->first )
+	break;
+	}
+    }
+return( NULL );
+}
+
+static StemInfo *OnHint(StemInfo *stems,double searchy,double *othery) {
+    StemInfo *h;
+
+    for ( h=stems; h!=NULL; h=h->next ) {
+	if ( h->start == searchy ) {
+	    *othery = h->start+h->width;
+return( h );
+	} else if ( h->start+h->width == searchy ) {
+	    *othery = h->start;
+return( h );
+	}
+    }
+
+    for ( h=stems; h!=NULL; h=h->next ) {
+	if ( searchy>=h->start-2 && searchy<=h->start+2 ) {
+	    *othery = h->start+h->width;
+return( h );
+	} else if ( searchy>=h->start+h->width-2 && searchy<=h->start+h->width+2 ) {
+	    *othery = h->start;
+return( h );
+	}
+    }
+
+return( NULL );
+}
+
+static StemInfo *MightBeOnHint(StemInfo *stems,struct lcg_zones *zones,
+	struct ptmoves *pt,double *othery) {
+    double offset;
+
+    if ( pt->ndir.y!=0 && pt->pdir.y!=0 )
+return( NULL );			/* Not horizontal, not on a stem */
+
+    offset = (pt->ndir.y==0 && pt->ndir.x>0) ||
+	    (pt->pdir.y==0 && pt->pdir.x<0 ) ?  zones->stroke_width/2
+					     : -zones->stroke_width/2;
+return( OnHint(stems,pt->sp->me.y-offset,othery));
+}
+
+static int InHintAroundZone(StemInfo *stems,double searchy,double contains_y) {
+    StemInfo *h;
+
+    for ( h=stems; h!=NULL; h=h->next ) {
+	if ( h->start >= searchy && h->start+h->width<=searchy &&
+		 h->start >= contains_y && h->start+h->width<=contains_y )
+return( true );
+    }
+return( false );
+}
+
+static int IsStartPoint(SplinePoint *sp, SplineChar *sc, int layer) {
+    SplineSet *ss;
+    
+    if ( sp->ptindex==0 )
+return( false );
+    for ( ss=sc->layers[layer].splines; ss!=NULL; ss=ss->next ) {
+	if ( ss->first->ptindex==sp->ptindex )
+return( true );
+    }
+return( false );
+}
+
+static void FindStartPoint(SplineSet *ss_expanded, SplineChar *sc, int layer) {
+    SplinePoint *sp;
+    SplineSet *ss;
+
+    for ( ss=ss_expanded; ss!=NULL; ss=ss->next ) {
+	int found = false;
+	if ( ss->first->prev==NULL )
+    continue;
+	for ( sp=ss->first; ; ) {
+	    if ( IsStartPoint(sp,sc,layer) ) {
+		ss->first = ss->last = sp;
+		found = true;
+	break;
+	    }
+	    sp = sp->prev->from;
+	    if ( sp==ss->first )
+	break;
+	}
+	if ( !found )
+	    ss->first = ss->last = sp->prev->from;		/* Often true */
+    }
+}
+
 static SplineSet *LCG_EmboldenHook(SplineSet *ss_expanded,struct lcg_zones *zones,
-	SplineSet *orig) {
+	SplineChar *sc, int layer) {
     SplineSet *ss;
     SplinePoint *sp, *nsp, *psp;
     int cnt, ccnt, i;
     struct ptmoves *ptmoves;
-    BasePoint dir1, dir2;
-    double len;
-    real transform[6];
     /* When we do an expand stroke we expect that a glyph's bounding box will */
     /*  increase by half the stroke width in each direction. Now we want to do*/
     /*  different operations in each dimension. We don't want to increase the */
@@ -1568,65 +1792,14 @@ static SplineSet *LCG_EmboldenHook(SplineSet *ss_expanded,struct lcg_zones *zone
     /* Control points should be interpolated between the movements of their */
     /*  on-curve points */
 
-    ccnt = 0;
-    for ( ss = ss_expanded; ss!=NULL ; ss=ss->next ) {
-	if ( ss->first->prev==NULL )
-    continue;
-	for ( cnt=0, sp=ss->first; ; ) {
-	    sp = sp->next->to; ++cnt;
-	    if ( sp==ss->first )
-	break;
-	}
-	if ( cnt>ccnt ) ccnt = cnt;
-    }
+    ccnt = MaxContourCount(ss_expanded);
     if ( ccnt==0 )
 return(ss_expanded);			/* No points? Nothing to do */
     ptmoves = galloc((ccnt+1)*sizeof(struct ptmoves));
     for ( ss = ss_expanded; ss!=NULL ; ss=ss->next ) {
 	if ( ss->first->prev==NULL )
     continue;
-	for ( cnt=0, sp=ss->first; ; ) {
-	    ptmoves[cnt].sp = sp;
-	    ptmoves[cnt].newpos = sp->me;
-	    if ( sp->nonextcp ) {
-		dir1.x = sp->next->to->me.x - sp->me.x;
-		dir1.y = sp->next->to->me.y - sp->me.y;
-	    } else {
-		dir1.x = sp->nextcp.x - sp->me.x;
-		dir1.y = sp->nextcp.y - sp->me.y;
-	    }
-	    len = dir1.x*dir1.x + dir1.y*dir1.y;
-	    if ( len!=0 ) {
-		len = sqrt(len);
-		dir1.x /= len;
-		dir1.y /= len;
-	    }
-	    ptmoves[cnt].ndir = dir1;
-	    if ( dir1.x<0 ) dir1.x = -dir1.x;
-
-	    if ( sp->noprevcp ) {
-		dir2.x = sp->prev->from->me.x - sp->me.x;
-		dir2.y = sp->prev->from->me.y - sp->me.y;
-	    } else {
-		dir2.x = sp->prevcp.x - sp->me.x;
-		dir2.y = sp->prevcp.y - sp->me.y;
-	    }
-	    len = dir2.x*dir2.x + dir2.y*dir2.y;
-	    if ( len!=0 ) {
-		len = sqrt(len);
-		dir2.x /= len;
-		dir2.y /= len;
-	    }
-	    ptmoves[cnt].pdir = dir2;
-	    if ( dir2.x<0 ) dir2.x = -dir2.x;
-	    
-	    ptmoves[cnt].factor = dir1.x>dir2.x ? dir1.x : dir2.x;
-
-	    sp = sp->next->to; ++cnt;
-	    if ( sp==ss->first )
-	break;
-	}
-	ptmoves[cnt] = ptmoves[0];	/* Life is easier if we don't have to worry about edge effects */
+	cnt = PtMovesInitToContour(ptmoves,ss);
 	for ( i=0; i<cnt; ++i ) {
 	    int p = i==0?cnt-1:i-1, sign = 0;
 	    sp = ptmoves[i].sp;
@@ -1654,53 +1827,187 @@ return(ss_expanded);			/* No points? Nothing to do */
 		}
 	    }
 	}
-	ptmoves[cnt].newpos = ptmoves[0].newpos;
-	for ( i=0; i<cnt; ++i ) {
-	    sp = ptmoves[i].sp;
-	    nsp = ptmoves[i+1].sp;
-	    if ( sp->nonextcp )
-		sp->nextcp = ptmoves[i].newpos;
-	    if ( nsp->noprevcp )
-		nsp->prevcp = ptmoves[i+1].newpos;
-	    if ( sp->me.y!=nsp->me.y ) {
-		sp->nextcp.y = ptmoves[i].newpos.y + (sp->nextcp.y-sp->me.y)*
-				    (ptmoves[i+1].newpos.y - ptmoves[i].newpos.y)/
-				    (nsp->me.y - sp->me.y);
-		nsp->prevcp.y = ptmoves[i].newpos.y + (nsp->prevcp.y-sp->me.y)*
-				    (ptmoves[i+1].newpos.y - ptmoves[i].newpos.y)/
-				    (nsp->me.y - sp->me.y);
-		if ( sp->me.x!=nsp->me.x ) {
-		    sp->nextcp.x = ptmoves[i].newpos.x + (sp->nextcp.x-sp->me.x)*
-					(ptmoves[i+1].newpos.x - ptmoves[i].newpos.x)/
-					(nsp->me.x - sp->me.x);
-		    nsp->prevcp.x = ptmoves[i].newpos.x + (nsp->prevcp.x-sp->me.x)*
-					(ptmoves[i+1].newpos.x - ptmoves[i].newpos.x)/
-					(nsp->me.x - sp->me.x);
-		}
-	    }
-	}
-	for ( i=0; i<cnt; ++i )
-	    ptmoves[i].sp->me = ptmoves[i].newpos;
-	for ( i=0; i<cnt; ++i )
-	    SplineRefigure(ptmoves[i].sp->next);
+	InterpolateControlPointsAndSet(ptmoves,cnt);
     }
     free(ptmoves);
 
-    /* Now correct the left side bearing */
-    memset(transform,0,sizeof(transform));
-    transform[0] = transform[3] = 1;
-    transform[4] = zones->stroke_width/2;
-    SplinePointListTransform(ss_expanded,transform,true);
+    CorrectLeftSideBearing(ss_expanded,sc,layer);
 return(ss_expanded);
 }
 
-static void LCG_EmboldenWidthHook(SplineChar *sc, struct lcg_zones *zones) {
+static SplineSet *LCG_HintedEmboldenHook(SplineSet *ss_expanded,struct lcg_zones *zones,
+	SplineChar *sc,int layer) {
+    SplineSet *ss;
+    SplinePoint *sp, *nsp, *psp, *origsp;
+    int cnt, ccnt, i, n, p, j;
+    struct ptmoves *ptmoves;
+    StemInfo *h;
+    double othery;
+    /* Anything below the baseline moves up by width/2 */
+    /* Anything that was on the base line moves up so that it still is on the baseline */
+    /*  If it's a diagonal stem, may want to move in x as well as y */
+    /* Anything on a hint one side of which is on the base line, then the other */
+    /*  side moves up so it is hint->width + width above the baseline */
+
+    /* Same for either x-height or cap-height, except that everything moves down */
+
+    /* Any points on hints between baseline/x-height are fixed */
+
+    /* Other points between baseline/x-height follow IUP rules */
+
+    if ( layer!=ly_fore || sc->hstem==NULL )
+return( LCG_EmboldenHook(ss_expanded,zones,sc,layer));
+
+    FindStartPoint(ss_expanded,sc,layer);
+    ccnt = MaxContourCount(ss_expanded);
+    if ( ccnt==0 )
+return(ss_expanded);			/* No points? Nothing to do */
+    ptmoves = galloc((ccnt+1)*sizeof(struct ptmoves));
+    for ( ss = ss_expanded; ss!=NULL ; ss=ss->next ) {
+	if ( ss->first->prev==NULL )
+    continue;
+	cnt = PtMovesInitToContour(ptmoves,ss);
+	/* Touch (usually move) all points which are either in our zones or on a hint */
+	for ( i=0; i<cnt; ++i ) {
+	    int sign = 0;
+	    sp = ptmoves[i].sp;
+	    origsp = FindMatchingPoint(sp->ptindex,sc->layers[layer].splines);
+	    h = NULL; othery = 0;
+	    if ( origsp!=NULL )
+		h = OnHint(sc->hstem,origsp->me.y,&othery);
+	    else
+		h = MightBeOnHint(sc->hstem,zones,&ptmoves[i],&othery);
+
+	    if ( h==NULL && origsp!=NULL &&
+			    (InHintAroundZone(sc->hstem,origsp->me.y,zones->top_bound) ||
+			     InHintAroundZone(sc->hstem,origsp->me.y,zones->bottom_bound)) )
+		/* It's not on the hint, so we want to interpolate it even if */
+		/*  it's in an area we'd normally move (tahoma "s" has two */
+		/*  points which fall on the baseline but aren't on the bottom */
+		/*  hint */
+		/* Do Nothing */;
+	    else if ( sp->me.y>=zones->top_bound || (h!=NULL && othery>=zones->top_bound))
+		sign = -1;
+	    else if ( sp->me.y<=zones->bottom_bound || (h!=NULL && othery<=zones->bottom_bound))
+		sign = 1;
+	    else if ( h!=NULL ) {
+		/* Point on a hint. This one not in the zones, so it is fixed */
+		ptmoves[i].touched = true;
+	    }
+	    if ( sign ) {
+		ptmoves[i].touched = true;
+		p = i==0?cnt-1:i-1;
+		nsp = ptmoves[i+1].sp;
+		psp = ptmoves[p].sp;
+		if ( origsp!=NULL && ((origsp->me.y>=zones->bottom_bound-2 && origsp->me.y<=zones->bottom_bound+2 ) ||
+			(origsp->me.y>=zones->top_bound-2 && origsp->me.y<=zones->top_bound+2 )) ) {
+		    ptmoves[i].newpos.y += sign*zones->stroke_width*ptmoves[i].factor/2;
+		    /* This is to improve the looks of diagonal stems */
+		    if ( sp->next->islinear && sp->prev->islinear && nsp->next->islinear &&
+			    nsp->me.y == sp->me.y &&
+			    ptmoves[i].pdir.x*ptmoves[i+1].ndir.x + ptmoves[i].pdir.y*ptmoves[i+1].ndir.y<-.999 ) {
+			if ( ptmoves[i].pdir.y<0 )
+			    sign = -sign;
+			ptmoves[i].newpos.x += sign*zones->stroke_width*ptmoves[i].pdir.x;
+		    } else if ( sp->next->islinear && sp->prev->islinear && psp->next->islinear &&
+			    psp->me.y == sp->me.y &&
+			    ptmoves[i].ndir.x*ptmoves[p].pdir.x + ptmoves[i].ndir.y*ptmoves[p].pdir.y<-.999 ) {
+			if ( ptmoves[i].ndir.y<0 )
+			    sign = -sign;
+			ptmoves[i].newpos.x += sign*zones->stroke_width*ptmoves[i].ndir.x;
+		    }
+		} else
+		    ptmoves[i].newpos.y += sign*zones->stroke_width/2;
+	    }
+	}
+	/* Now find each untouched point and interpolate how it moves */
+	for ( i=0; i<cnt; ++i ) if ( !ptmoves[i].touched ) {
+	    for ( p=i-1; p!=i; --p ) {
+		if ( p<0 ) {
+		    p=cnt-1;
+		    if ( p==i )
+	    break;
+		}
+		if ( ptmoves[p].touched )
+	    break;
+	    }
+	    if ( p==i )
+	break;			/* Nothing on the contour touched. Can't change anything */
+	    for ( n=i+1; n!=i; ++n ) {
+		if ( n>=cnt ) {
+		    n=0;
+		    if ( n==i )
+	    break;
+		}
+		if ( ptmoves[n].touched )
+	    break;
+	    }
+	    nsp = ptmoves[n].sp;
+	    psp = ptmoves[p].sp;
+	    for ( j=p+1; j!=n; ++j ) {
+		if ( j==cnt ) {
+		    j=0;
+		    if ( n==0 )
+	    break;
+		}
+		sp = ptmoves[j].sp;
+		if (( sp->me.y>nsp->me.y && sp->me.y>psp->me.y ) ||
+			(sp->me.y<nsp->me.y && sp->me.y<psp->me.y )) {
+		    /* If it isn't between them, then average the movements */
+		    /* this case should not happen */
+		    ptmoves[j].newpos.y += (ptmoves[n].newpos.y-nsp->me.y +
+					    ptmoves[p].newpos.y-psp->me.y)/2;
+		    ptmoves[j].newpos.x += (ptmoves[n].newpos.x-nsp->me.x +
+					    ptmoves[p].newpos.x-psp->me.x)/2;
+		    /* LogError("Hmm. This shouldn't happen, but probably doesn't matter.\n" ); */
+		} else {
+		    double ydiff;
+		    ydiff = nsp->me.y - psp->me.y;		/* Not zero, by above test */
+		    ptmoves[j].newpos.y += (ptmoves[p].newpos.y-psp->me.y)
+					    + (sp->me.y-psp->me.y)*(ptmoves[n].newpos.y-nsp->me.y-(ptmoves[p].newpos.y-psp->me.y))/ydiff;
+		    /* Note we even interpolate the x direction depending on */
+		    /*  y position */
+		    ptmoves[j].newpos.x += (ptmoves[p].newpos.x-psp->me.x)
+					    + (sp->me.y-psp->me.y)*(ptmoves[n].newpos.x-nsp->me.x-(ptmoves[p].newpos.x-psp->me.x))/ydiff;
+		}
+		ptmoves[j].touched = true;
+	    }
+	}
+	InterpolateControlPointsAndSet(ptmoves,cnt);
+    }
+    free(ptmoves);
+
+    CorrectLeftSideBearing(ss_expanded,sc,layer);
+return( ss_expanded );
+}
+
+static void LCG_EmboldenWidthHook(SplineChar *sc, struct lcg_zones *zones,
+	DBounds *old, DBounds *new) {
     SCSynchronizeWidth(sc,sc->width+rint(2*zones->stroke_width),sc->width,NULL);
 }
 
+static void NumberLayerPoints(SplineSet *ss) {
+    int cnt;
+    SplinePoint *pt;
+
+    cnt = 1;
+    for ( ; ss!=NULL; ss=ss->next ) {
+	for ( pt=ss->first; ; ) {
+	    pt->ptindex = cnt++;
+	    if ( pt->next==NULL )
+	break;
+	    pt = pt->next->to;
+	    if ( pt==ss->first )
+	break;
+	}
+    }
+}
+	    
 static void SCEmbolden(SplineChar *sc, struct lcg_zones *zones, int layer) {
     StrokeInfo si;
     SplineSet *temp;
+    DBounds old, new;
+    int clear_hints;
 
     memset(&si,0,sizeof(si));
     si.stroke_type = si_std;
@@ -1716,55 +2023,77 @@ static void SCEmbolden(SplineChar *sc, struct lcg_zones *zones, int layer) {
     si.removeoverlapifneeded = zones->removeoverlap;
     si.toobigwarn = true;
 
+    clear_hints = false;
+    if ( (layer==-2 || layer==ly_fore) && zones->wants_hints &&
+	    sc->hstem == NULL && sc->vstem==NULL && sc->dstem==NULL ) {
+	_SplineCharAutoHint(sc,zones->bd,NULL,false);
+	clear_hints = true;
+    }
+
     if ( layer==-2 ) {
 	SCPreserveState(sc,false);
+	SplineCharFindBounds(sc,&old);
 	for ( layer = ly_fore; layer<sc->layer_cnt; ++layer ) {
+	    NumberLayerPoints(sc->layers[layer].splines);
 	    temp = SSStroke(sc->layers[layer].splines,&si,sc);
 	    if ( zones->embolden_hook!=NULL )
-		temp = (zones->embolden_hook)(temp,zones,sc->layers[layer].splines);
+		temp = (zones->embolden_hook)(temp,zones,sc,layer);
 	    SplinePointListsFree( sc->layers[layer].splines );
 	    sc->layers[layer].splines = temp;
 	}
+	SplineCharFindBounds(sc,&new);
 	if ( zones->embolden_width!=NULL )
-	    (zones->embolden_width)(sc,zones);
+	    (zones->embolden_width)(sc,zones,&old,&new);
     } else if ( layer>=0 ) {
 	SCPreserveLayer(sc,layer,false);
+	NumberLayerPoints(sc->layers[layer].splines);
+	SplineSetFindBounds(sc->layers[layer].splines,&old);
 	temp = SSStroke(sc->layers[layer].splines,&si,sc);
 	if ( zones->embolden_hook!=NULL )
-	    temp = (zones->embolden_hook)(temp,zones,sc->layers[layer].splines);
+	    temp = (zones->embolden_hook)(temp,zones,sc,layer);
+	SplineSetFindBounds(temp,&new);
 	if ( zones->embolden_width!=NULL && layer==ly_fore )
-	    (zones->embolden_width)(sc,zones);
+	    (zones->embolden_width)(sc,zones,&old,&new);
 	SplinePointListsFree( sc->layers[layer].splines );
 	sc->layers[layer].splines = temp;
+    }
+
+    if ( clear_hints ) {
+	StemInfosFree(sc->vstem); sc->vstem=NULL;
+	StemInfosFree(sc->hstem); sc->hstem=NULL;
+	DStemInfosFree(sc->dstem); sc->dstem=NULL;
     }
     SCCharChangedUpdate(sc);
 }
 
 static struct {
     uint32 script;
-    SplineSet *(*embolden_hook)(SplineSet *,struct lcg_zones *,SplineSet *);
-    void (*embolden_width)(SplineChar *sc, struct lcg_zones *);
+    SplineSet *(*embolden_hook)(SplineSet *,struct lcg_zones *,SplineChar *, int layer);
+    void (*embolden_width)(SplineChar *sc, struct lcg_zones *,DBounds *old, DBounds *new);
 } script_hooks[] = {
-    { CHR('l','a','t','n'), LCG_EmboldenHook, LCG_EmboldenWidthHook },
-    { CHR('c','y','r','l'), LCG_EmboldenHook, LCG_EmboldenWidthHook },
-    { CHR('g','r','e','k'), LCG_EmboldenHook, LCG_EmboldenWidthHook },
+    { CHR('l','a','t','n'), LCG_HintedEmboldenHook, LCG_EmboldenWidthHook },
+    { CHR('c','y','r','l'), LCG_HintedEmboldenHook, LCG_EmboldenWidthHook },
+    { CHR('g','r','e','k'), LCG_HintedEmboldenHook, LCG_EmboldenWidthHook },
     0
 };
 
 static struct {
     unichar_t from, to;
-    SplineSet *(*embolden_hook)(SplineSet *,struct lcg_zones *,SplineSet *);
-    void (*embolden_width)(SplineChar *sc, struct lcg_zones *);
+    SplineSet *(*embolden_hook)(SplineSet *,struct lcg_zones *,SplineChar *, int layer);
+    void (*embolden_width)(SplineChar *sc, struct lcg_zones *,DBounds *old, DBounds *new);
 } char_hooks[] = {
-    { '0','9', LCG_EmboldenHook, LCG_EmboldenWidthHook },
-    { '$','%', LCG_EmboldenHook, LCG_EmboldenWidthHook },
-    { '$','%', LCG_EmboldenHook, LCG_EmboldenWidthHook },
+    { '0','9', LCG_HintedEmboldenHook, LCG_EmboldenWidthHook },
+    { '$','%', LCG_HintedEmboldenHook, LCG_EmboldenWidthHook },
+    { '$','%', LCG_HintedEmboldenHook, LCG_EmboldenWidthHook },
     0
 };
 
 static void ZoneInit(SplineFont *sf, struct lcg_zones *zones,enum embolden_type type) {
 
-    if ( type == embolden_lcg || type == embolden_custom ) {
+    if ( type == embolden_lcg ) {
+	zones->embolden_hook = LCG_HintedEmboldenHook;
+	zones->embolden_width = LCG_EmboldenWidthHook;
+    } else if ( type == embolden_custom ) {
 	zones->embolden_hook = LCG_EmboldenHook;
 	zones->embolden_width = LCG_EmboldenWidthHook;
     } else {
@@ -1799,20 +2128,27 @@ static void PerGlyphInit(SplineChar *sc, struct lcg_zones *zones,
 	}
     }
     if ( type == embolden_lcg || type == embolden_auto ) {
+	zones->bottom_bound = 0;
 	if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 && isupper(sc->unicodeenc)) {
-	    zones->top_zone = bd->caph>0 ? bd->caph/3 :
+	    zones->bottom_zone = bd->caph>0 ? bd->caph/3 :
 			    (sc->parent->ascent/4);
-	    zones->bottom_zone = bd->caph>0 ? 2*bd->caph/3 :
+	    zones->top_zone = bd->caph>0 ? 2*bd->caph/3 :
 			    (sc->parent->ascent/2);
+	    zones->top_bound = bd->caph>0?bd->caph:4*sc->parent->ascent/5;
 	} else {
-	    zones->top_zone = bd->xheight>0 ? bd->xheight/3 :
+	    zones->bottom_zone = bd->xheight>0 ? bd->xheight/3 :
 			    bd->caph>0 ? bd->caph/3 :
 			    (sc->parent->ascent/4);
-	    zones->bottom_zone = bd->xheight>0 ? 2*bd->xheight/3 :
+	    zones->top_zone = bd->xheight>0 ? 2*bd->xheight/3 :
 			    bd->caph>0 ? 2*bd->caph/3 :
+			    (sc->parent->ascent/2);
+	    zones->top_bound = bd->xheight>0 ? bd->xheight :
+			    bd->caph>0 ? bd->caph :
 			    (sc->parent->ascent/2);
 	}
     }
+    zones->wants_hints = zones->embolden_hook == LCG_HintedEmboldenHook;
+    zones->bd = bd;
 }
 
 void FVEmbolden(FontView *fv,enum embolden_type type,struct lcg_zones *zones) {
@@ -1857,7 +2193,7 @@ static SplineFont *lastsf = NULL;
 static enum embolden_type last_type = embolden_auto;
 static struct lcg_zones last_zones;
 static int last_width;
-static int last_overlap = true;
+static int last_overlap = false;
 
 static int Embolden_OK(GGadget *g, GEvent *e) {
     enum embolden_type type;

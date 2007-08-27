@@ -970,17 +970,29 @@ extern char *PST2Text(PST *pst,SplineFont *sf);
 extern void FVStrokeItScript(FontView *fv, StrokeInfo *si);
 
 struct lcg_zones {
-    /* everything abvoe this should be moved down (default xheight/2) */
+    /* info for unhinted processing */
+     /* everything abvoe this should be moved down (default xheight/2) */
     int top_zone;
-    /* everything below this should be moved up (default xheight/2) */
-    /* anything in between should be stationary */
+     /* everything below this should be moved up (default xheight/2) */
+     /* anything in between should be stationary */
     int bottom_zone;
 
-    SplineSet *(*embolden_hook)(SplineSet *,struct lcg_zones *,SplineSet *);
-    void (*embolden_width)(SplineChar *sc, struct lcg_zones *);
+    /* info for hinted processing */
+     /* everything above & at this should be moved down */
+     /* also anything on the other side of a hint from this should be moved down */
+    int top_bound;
+     /* everything below & at this should be moved down */
+     /* also anything on the other side of a hint from this should be moved down */
+    int bottom_bound;
 
-    double stroke_width;
+    SplineSet *(*embolden_hook)(SplineSet *,struct lcg_zones *,SplineChar *,int layer);
+    void (*embolden_width)(SplineChar *sc, struct lcg_zones *, DBounds *old, DBounds *new);
+    int wants_hints;
+
+    double stroke_width;	/* negative number to lighten, positive to embolden */
     uint8 removeoverlap;
+
+    BlueData *bd;
 };
 /* This order is the same order as the radio buttons in the embolden dlg */
 enum embolden_type { embolden_lcg, embolden_cjk, embolden_auto, embolden_custom };

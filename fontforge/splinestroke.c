@@ -371,6 +371,8 @@ static void MakeJoints(SplinePoint *from,SplinePoint *to,StrokeInfo *si,
 	mid->pointtype = pt_corner;
 	SplineMake3(from,mid);
 	SplineMake3(mid,to);
+	if ( from->ptindex == to->ptindex )
+	    mid->ptindex = from->ptindex;
     } else {
 	double cplen = CircleCpDist(nangle-pangle);
 	mid = NULL;
@@ -858,6 +860,7 @@ static int DoIntersect_Splines(struct strokedspline *before,
 	    after->minusfrom = SplineCopyAfter(afterat,&after->minusto);
 	    SplineFreeBetween(before->minusfrom,before->minusto,false/*keep minusfrom*/,true);
 	    before->minusto = SplinePointCreate(afterat->me.x,afterat->me.y);
+	    before->minusto->ptindex = afterat->ptindex;
 	    before->minusfrom->nextcp = before->minusfrom->me;
 	    before->minusfrom->nonextcp = true;
 	    SplineMake3(before->minusfrom,before->minusto);	/* This line goes backwards */
@@ -884,6 +887,7 @@ static int DoIntersect_Splines(struct strokedspline *before,
 	    /* No intersection everything can stay as it is */
 	    if ( force_connect && BasePtDistance(&after->minusfrom->me,&before->minusto->me)>3 ) {
 		beforeat = SplinePointCreate(after->minusfrom->me.x,after->minusfrom->me.y);
+		beforeat->ptindex = after->minusfrom->ptindex;
 		if ( si->join==lj_round )
 		    SplineMakeRound(before->minusto,beforeat,si->radius);
 		else
@@ -1134,6 +1138,10 @@ static SplinePoint *SPNew(SplinePoint *base,BasePoint *pos,BasePoint *cp,int isn
     SplinePoint *sp = SplinePointCreate(pos->x,pos->y);
 
     sp->pointtype = base->pointtype;
+    /* Embolden wants these three preserved */
+    sp->ptindex = base->ptindex;
+    sp->ttfindex = base->ttfindex;
+    sp->nextcpindex = base->nextcpindex;
     if ( isnext ) {
 	sp->nextcp.x = pos->x + (cp->x-base->me.x);
 	sp->nextcp.y = pos->y + (cp->y-base->me.y);
