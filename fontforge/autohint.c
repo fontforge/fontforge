@@ -1979,7 +1979,9 @@ static DStemInfo *RefDHintsMerge(DStemInfo *into, DStemInfo *rh, real xmul, real
 return( into );
 }
 
-static void AutoHintRefs(SplineChar *sc,BlueData *bd, int picky) {
+static void __SplineCharAutoHint( SplineChar *sc, BlueData *bd, int gen_undoes );
+
+static void AutoHintRefs(SplineChar *sc,BlueData *bd, int picky, int gen_undoes) {
     RefChar *ref;
 
     /* Add hints for base characters before accent hints => if there are any */
@@ -1990,9 +1992,9 @@ static void AutoHintRefs(SplineChar *sc,BlueData *bd, int picky) {
 		if ( !ref->sc->manualhints && ref->sc->changedsincelasthinted &&
 			(ref->sc->layers[ly_fore].refs!=NULL &&
 			 ref->sc->layers[ly_fore].splines==NULL))
-		    AutoHintRefs(ref->sc,bd,true);
+		    AutoHintRefs(ref->sc,bd,true,gen_undoes);
 	    } else if ( !ref->sc->manualhints && ref->sc->changedsincelasthinted )
-		SplineCharAutoHint(ref->sc,bd);
+		__SplineCharAutoHint(ref->sc,bd,gen_undoes);
 	    if ( ref->sc->unicodeenc!=-1 && ref->sc->unicodeenc<0x10000 &&
 		    isalnum(ref->sc->unicodeenc) ) {
 		sc->hstem = RefHintsMerge(sc->hstem,ref->sc->hstem,ref->transform[3], ref->transform[5], ref->transform[0], ref->transform[4]);
@@ -3137,10 +3139,12 @@ static DStemInfo *GDFindDStems(struct glyphdata *gd) {
 return( head );
 }
 
-void _SplineCharAutoHint( SplineChar *sc, BlueData *bd, struct glyphdata *gd2 ) {
+void _SplineCharAutoHint( SplineChar *sc, BlueData *bd, struct glyphdata *gd2,
+	int gen_undoes ) {
     struct glyphdata *gd;
 
-    SCPreserveHints(sc);
+    if ( gen_undoes )
+	SCPreserveHints(sc);
     StemInfosFree(sc->vstem); sc->vstem=NULL;
     StemInfosFree(sc->hstem); sc->hstem=NULL;
     DStemInfosFree(sc->dstem); sc->dstem=NULL;
@@ -3165,24 +3169,28 @@ void _SplineCharAutoHint( SplineChar *sc, BlueData *bd, struct glyphdata *gd2 ) 
 	sc->hstem = CheckForGhostHints(sc->hstem,sc,bd);
     }
 
-    AutoHintRefs(sc,bd,false);
+    AutoHintRefs(sc,bd,false,gen_undoes);
 }
 
-void SplineCharAutoHint( SplineChar *sc, BlueData *bd ) {
+static void __SplineCharAutoHint( SplineChar *sc, BlueData *bd, int gen_undoes ) {
     MMSet *mm = sc->parent->mm;
     int i;
 
     if ( mm==NULL )
-	_SplineCharAutoHint(sc,bd,NULL);
+	_SplineCharAutoHint(sc,bd,NULL,gen_undoes);
     else {
 	for ( i=0; i<mm->instance_count; ++i )
 	    if ( sc->orig_pos < mm->instances[i]->glyphcnt )
-		_SplineCharAutoHint(mm->instances[i]->glyphs[sc->orig_pos],NULL,NULL);
+		_SplineCharAutoHint(mm->instances[i]->glyphs[sc->orig_pos],NULL,NULL,gen_undoes);
 	if ( sc->orig_pos < mm->normal->glyphcnt )
-	    _SplineCharAutoHint(mm->normal->glyphs[sc->orig_pos],NULL,NULL);
+	    _SplineCharAutoHint(mm->normal->glyphs[sc->orig_pos],NULL,NULL,gen_undoes);
     }
     SCFigureHintMasks(sc);
     SCUpdateAll(sc);
+}
+
+void SplineCharAutoHint( SplineChar *sc, BlueData *bd ) {
+    __SplineCharAutoHint(sc,bd,true);
 }
 
 void SFSCAutoHint( SplineChar *sc, BlueData *bd ) {
@@ -3274,7 +3282,7 @@ void SplineFontAutoHintRefs( SplineFont *_sf) {
 		SCPreserveHints(sc);
 		StemInfosFree(sc->vstem); sc->vstem=NULL;
 		StemInfosFree(sc->hstem); sc->hstem=NULL;
-		AutoHintRefs(sc,bd,true);
+		AutoHintRefs(sc,bd,true,true);
 	    }
 	}
 	++k;
