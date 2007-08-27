@@ -1903,12 +1903,13 @@ static void snap_to_blues(InstrCt *ct) {
     if (bluecnt == 0)
 return;
 
-    /* Fill the processing queue - baseline zone goes first, other zones next */
-    /* sorted in CvtInfoImportBlues() by their placement (ascending order). */
+    /* Fill the processing queue - baseline goes first, then botton zones */
+    /* sorted by base in ascending order, then top zones sorted in descending */
+    /* order. I assume the blues are sorted in ascending order first. */
     for (i=0; (i < bluecnt) && (blues[i].base < 0); i++);
     queue[0] = i;
     for (i=0; i<queue[0]; i++) queue[i+1] = i;
-    for (i=queue[0]+1; i<bluecnt; i++) queue[i] = i;
+    for (i=queue[0]+1; i<bluecnt; i++) queue[i] = bluecnt - i + queue[0];
 
     /* Process the blues. */
     for (i=0; i<bluecnt; i++) {
