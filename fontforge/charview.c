@@ -4550,7 +4550,7 @@ return( true );
 #define MID_Autotrace	2212
 #define MID_Round	2213
 #define MID_Embolden	2217
-#define MID_MetaFont	2218
+#define MID_Condense	2218
 #define MID_Average	2219
 #define MID_SpacePts	2220
 #define MID_SpaceRegion	2221
@@ -4563,7 +4563,7 @@ return( true );
 #define MID_Exclude	2228
 #define MID_Intersection	2229
 #define MID_FindInter	2230
-#define MID_Effects	2231
+#define MID_Styles	2231
 #define MID_SimplifyMore	2232
 #define MID_First	2233
 #define MID_Earlier	2234
@@ -4828,14 +4828,9 @@ static void CVMenuEmbolden(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     EmboldenDlg(NULL,cv);
 }
 
-static void CVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+static void CVMenuCondense(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-#ifdef GWW_TEST
-    extern int ChangeWeight(SplineChar *sc,double factor,double add);
-    ChangeWeight(cv->sc,2.0,25);
-#else
-    MetaFont(NULL,cv,NULL);
-#endif
+    CondenseExtendDlg(NULL,cv);
 }
 
 static void CVMenuInline(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -5733,6 +5728,40 @@ static void CVCut(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     _CVCut(cv);
 }
+
+void SCCopyFgToBg(SplineChar *sc, int show) {
+    SplinePointList *fore, *end;
+
+    SCPreserveBackground(sc);
+    fore = SplinePointListCopy(sc->layers[ly_fore].splines);
+    if ( fore!=NULL ) {
+	SplinePointListsFree(sc->layers[ly_back].splines);
+	sc->layers[ly_back].splines = NULL;
+	for ( end = fore; end->next!=NULL; end = end->next );
+	end->next = sc->layers[ly_back].splines;
+	sc->layers[ly_back].splines = fore;
+	if ( show )
+	    SCCharChangedUpdate(sc);
+    }
+}
+
+#ifdef FONTFORGE_CONFIG_COPY_BG_TO_FG
+void SCCopyBgToFg(SplineChar *sc, int show) {
+    SplinePointList *back, *end;
+
+    SCPreserveState(sc, true);
+    back = SplinePointListCopy(sc->layers[ly_back].splines);
+    if ( back!=NULL ) {
+	SplinePointListsFree(sc->layers[ly_fore].splines);
+	sc->layers[ly_fore].splines = NULL;
+	for ( end = back; end->next!=NULL; end = end->next );
+	end->next = sc->layers[ly_fore].splines;
+	sc->layers[ly_fore].splines = back;
+	if ( show )
+	    SCCharChangedUpdate(sc);
+    }
+}
+#endif /* FONTFORGE_CONFIG_COPY_BG_TO_FG */
 
 static void CVCopyFgBg(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
@@ -7513,18 +7542,13 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	  case MID_Correct:
 	    mi->ti.disabled = !anypoints || dir==2;
 	  break;
-	  case MID_Embolden:
-	    mi->ti.disabled = cv->drawmode!=dm_fore || cv->sc->layers[ly_fore].refs!=NULL;
-	  break;
-	  case MID_MetaFont:
-	    mi->ti.disabled = cv->drawmode!=dm_fore || cv->sc->layers[ly_fore].refs!=NULL || order2;
+	  case MID_Embolden: case MID_Condense:
+	    mi->ti.disabled = cv->drawmode!=dm_fore ;
 	  break;
 	  case MID_Stroke:
 	  case MID_RmOverlap:
+	  case MID_Styles:
 	    mi->ti.disabled = cv->layerheads[cv->drawmode]->splines==NULL;
-	  break;
-	  case MID_Effects:
-	    mi->ti.disabled = ( cv->layerheads[cv->drawmode]->splines==NULL || order2 );
 	  break;
 #ifdef FONTFORGE_CONFIG_TILEPATH
 	  case MID_TilePath:
@@ -8326,6 +8350,8 @@ static GMenuItem2 rmlist[] = {
 };
 
 static GMenuItem2 eflist[] = {
+    { { (unichar_t *) N_("Em_bolden..."), &GIcon_bold, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Embolden...|Ctl+Shft+!"), NULL, NULL, CVMenuEmbolden, MID_Embolden },
+    { { (unichar_t *) N_("Condense/Extend..."), &GIcon_condense, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Condense...|No Shortcut"), NULL, NULL, CVMenuCondense, MID_Condense },
     { { (unichar_t *) N_("_Inline"), &GIcon_inline, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'O' }, H_("Inline|No Shortcut"), NULL, NULL, CVMenuInline },
     { { (unichar_t *) N_("_Outline"), &GIcon_outline, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Outline|No Shortcut"), NULL, NULL, CVMenuOutline },
     { { (unichar_t *) N_("_Shadow"), &GIcon_shadow, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, true, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Shadow|No Shortcut"), NULL, NULL, CVMenuShadow },
@@ -8378,9 +8404,7 @@ static GMenuItem2 ellist[] = {
     { { (unichar_t *) N_("O_verlap"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'v' }, NULL, rmlist, NULL, NULL, MID_RmOverlap },
     { { (unichar_t *) N_("_Simplify"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, NULL, smlist, smlistcheck, NULL, MID_Simplify },
     { { (unichar_t *) N_("Add E_xtrema"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Add Extrema|Ctl+Shft+X"), NULL, NULL, CVMenuAddExtrema, MID_AddExtrema },
-    { { (unichar_t *) N_("Effects"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, NULL, eflist, NULL, NULL, MID_Effects },
-    { { (unichar_t *) N_("Em_bolden..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Meta Font...|Ctl+Shft+!"), NULL, NULL, CVMenuEmbolden, MID_Embolden },
-    { { (unichar_t *) N_("_Meta Font..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Meta Font...|No Shortcut"), NULL, NULL, CVMenuMetaFont, MID_MetaFont },
+    { { (unichar_t *) N_("Styles"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, NULL, eflist, NULL, NULL, MID_Styles },
     { { (unichar_t *) N_("Autot_race"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'r' }, H_("Autotrace|Ctl+Shft+T"), NULL, NULL, CVMenuAutotrace, MID_Autotrace },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("A_lign"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, NULL, allist, allistcheck },

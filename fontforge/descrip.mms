@@ -6,7 +6,7 @@ CFLAGS=/nowarn/incl=([-.inc])/name=(as_is,short)/define=(\
         "FONTFORGE_CONFIG_DEVICETABLES=1","PLUGINDIR=""/FONTFORGE$PLUGINS""")
 
 fontforge_OBJECTS =  alignment.obj,autohint.obj,autosave.obj,autowidth.obj,\
- bitmapdlg.obj,metafont.obj,parsettfbmf.obj,\
+ bitmapdlg.obj,scstyles.obj,parsettfbmf.obj,\
  bitmapview.obj,bvedit.obj,charview.obj,cursors.obj
 
 fontforge_OBJECTS1=cvaddpoints.obj,cvexport.obj,cvgetinfo.obj,cvhints.obj,cvimages.obj,cvknife.obj,\
@@ -81,7 +81,7 @@ autohint.obj : autohint.c
 autosave.obj : autosave.c
 autowidth.obj : autowidth.c
 bitmapdlg.obj : bitmapdlg.c
-metafont.obj : metafont.c
+scstyles.obj : scstyles.c
 parsettfbmf.obj : parsettfbmf.c
 bitmapview.obj : bitmapview.c
 bvedit.obj : bvedit.c

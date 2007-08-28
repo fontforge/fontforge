@@ -1542,7 +1542,6 @@ return( true );
 #define MID_InsertCharA	2026
 #define MID_CharInfo	2201
 #define MID_FindProblems 2216
-#define MID_MetaFont	2217
 #define MID_Transform	2202
 #define MID_Stroke	2203
 #define MID_RmOverlap	2204
@@ -2093,17 +2092,6 @@ static void MVMenuRound2Int(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
-static void MVMenuMetaFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
-    int i;
-
-    for ( i=mv->glyphcnt-1; i>=0; --i )
-	if ( mv->perchar[i].selected )
-    break;
-    if ( i!=-1 )
-	MetaFont(NULL, NULL, mv->glyphs[i].sc);
-}
-
 static void MVMenuAutotrace(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     int i;
@@ -2585,7 +2573,6 @@ static GMenuItem2 ellist[] = {
     { { (unichar_t *) N_("Add E_xtrema"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Add Extrema|Ctl+Shft+X"), NULL, NULL, MVMenuAddExtrema, MID_AddExtrema },
     { { (unichar_t *) N_("To _Int"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("To Int|Ctl+Shft+_"), NULL, NULL, MVMenuRound2Int, MID_Round },
     { { (unichar_t *) N_("Effects"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, NULL, eflist, NULL, NULL, MID_Effects },
-    { { (unichar_t *) N_("_Meta Font..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Meta Font...|Ctl+Shft+!"), NULL, NULL, MVMenuMetaFont, MID_MetaFont },
     { { (unichar_t *) N_("Autot_race"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'r' }, H_("Autotrace|Ctl+Shft+T"), NULL, NULL, MVMenuAutotrace, MID_Autotrace },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Correct Direction"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'D' }, H_("Correct Direction|Ctl+Shft+D"), NULL, NULL, MVMenuCorrectDir, MID_Correct },
@@ -2781,9 +2768,6 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_ShowDependents:
 	    mi->ti.disabled = sc==NULL || sc->dependents == NULL;
-	  break;
-	  case MID_MetaFont:
-	    mi->ti.disabled = sc==NULL || order2;
 	  break;
 	  case MID_FindProblems:
 	  case MID_Transform:

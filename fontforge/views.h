@@ -998,6 +998,7 @@ struct lcg_zones {
 enum embolden_type { embolden_lcg, embolden_cjk, embolden_auto, embolden_custom };
 void FVEmbolden(FontView *fv,enum embolden_type type,struct lcg_zones *zones);
 void EmboldenDlg(FontView *fv, CharView *cv);
+void CondenseExtendDlg(FontView *fv, CharView *cv);
 
 extern int FVParseSelectByPST(FontView *fv,struct lookup_subtable *sub,
 	int search_type);
@@ -1372,7 +1373,6 @@ extern void ShowAboutScreen(void);
 extern void DelayEvent(void (*func)(void *), void *data);
 
 extern void FindProblems(FontView *fv,CharView *cv,SplineChar *sc);
-extern void MetaFont(FontView *fv,CharView *cv,SplineChar *sc);
 extern void CVConstrainSelection(CharView *cv,int type);
 extern void CVMakeParallel(CharView *cv);
 

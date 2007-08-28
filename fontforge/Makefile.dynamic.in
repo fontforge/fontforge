@@ -31,7 +31,7 @@ fontforge_LIBOBJECTS =  autohint.o autosave.o autowidth.o bitmapdlg.o \
  splinesaveafm.o splinestroke.o splineutil.o splineutil2.o stamp.o \
  start.o tottf.o transform.o uiutil.o utils.o windowmenu.o  \
  zapfnomen.o othersubrs.o autotrace.o openfontdlg.o encoding.o \
- problems.o metafont.o alignment.o parsettfbmf.o \
+ problems.o scstyles.o alignment.o parsettfbmf.o \
  macbinary.o crctab.o scripting.o freetype.o gotodlg.o search.o \
  combinations.o tilepath.o sftextfield.o displayfonts.o ikarus.o \
  cvhand.o cvfreehand.o simplifydlg.o winfonts.o tottfgpos.o tottfaat.o \

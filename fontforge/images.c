@@ -3168,6 +3168,60 @@ static struct _GImage findinter_base = {
     1
 };
 
+static uint8 bold_data[] = {
+    0xff, 0xff, 
+    0x80, 0x7f, 
+    0x80, 0x3f, 
+    0x80, 0x1f, 
+    0x8f, 0x1f, 
+    0x8f, 0x1f, 
+    0x80, 0x1f, 
+    0x80, 0x3f, 
+    0x80, 0x3f, 
+    0x8f, 0x1f, 
+    0x8f, 0x8f, 
+    0x8f, 0x8f, 
+    0x80, 0xf, 
+    0x80, 0xf, 
+    0x80, 0x1f, 
+    0xff, 0xff, 
+};
+
+static struct _GImage bold_base = {
+    it_mono,
+    15420,16,16,2,
+    (uint8 *) bold_data,
+    &magnify0_clut,
+    1
+};
+
+static uint8 condense_data[] = {
+    0xff, 0xff, 
+    0x8f, 0xff, 
+    0xb7, 0xff, 
+    0xbb, 0xff, 
+    0xbb, 0xff, 
+    0xbb, 0xff, 
+    0xb7, 0xff, 
+    0x8f, 0xff, 
+    0xb7, 0xff, 
+    0xbb, 0xff, 
+    0xbd, 0xff, 
+    0xbd, 0xff, 
+    0xbd, 0xff, 
+    0xbb, 0xff, 
+    0x87, 0xff, 
+    0xff, 0xff, 
+};
+
+static struct _GImage condense_base = {
+    it_mono,
+    15420,16,16,2,
+    (uint8 *) condense_data,
+    &magnify0_clut,
+    1
+};
+
 static uint8 outline_data[] = {
     0xff, 0xff, 
     0x80, 0xf, 
@@ -3425,6 +3479,8 @@ GImage GIcon_intersection = { 0, &intersection_base };
 GImage GIcon_rmoverlap = { 0, &rmoverlap_base };
 GImage GIcon_findinter = { 0, &findinter_base };
 
+GImage GIcon_bold = { 0, &bold_base };
+GImage GIcon_condense = { 0, &condense_base };
 GImage GIcon_outline = { 0, &outline_base };
 GImage GIcon_inline = { 0, &inline_base };
 GImage GIcon_shadow = { 0, &shadow_base };
