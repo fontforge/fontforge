@@ -38,7 +38,7 @@
  */
 #define OPTIMIZE_TTF_INSTRS 1
 #if OPTIMIZE_TTF_INSTRS
-#define STACK_DEPTH 255
+#define STACK_DEPTH 256
 #else
 #define STACK_DEPTH 6
 #endif
@@ -68,6 +68,7 @@
 #define MUL                     (0x63)
 #define NEG                     (0x65)
 #define SROUND                  (0x76)
+#define RUTG                    (0x7c)
 #define RDTG                    (0x7d)
 #define MDRP_rnd_grey           (0xc4)
 #define MDRP_min_rnd_black      (0xcd)
@@ -849,24 +850,16 @@ static void init_maxp(InstrCt *ct) {
 
     uint16 zones = memushort(tab->data, 32,  7*sizeof(uint16));
     uint16 twpts = memushort(tab->data, 32,  8*sizeof(uint16));
-    uint16 store = memushort(tab->data, 32,  9*sizeof(uint16));
     uint16 fdefs = memushort(tab->data, 32, 10*sizeof(uint16));
     uint16 stack = memushort(tab->data, 32, 12*sizeof(uint16));
 
     if (ct->fpgm_done && zones<2) zones=2;
     if (ct->fpgm_done && twpts<1) twpts=1;
-    if (ct->fpgm_done && ct->prep_done && store<2) store=2;
-    if (ct->fpgm_done && fdefs<5) fdefs=5;
-
-#if OPTIMIZE_TTF_INSTRS
-    if (stack<256) stack=256; //STACK_DEPTH+1, for count argument for NPUSHB.
-#else
+    if (ct->fpgm_done && fdefs<4) fdefs=4;
     if (stack<STACK_DEPTH) stack=STACK_DEPTH;
-#endif
 
     memputshort(tab->data, 7*sizeof(uint16), zones);
     memputshort(tab->data, 8*sizeof(uint16), twpts);
-    memputshort(tab->data, 9*sizeof(uint16), store);
     memputshort(tab->data,10*sizeof(uint16), fdefs);
     memputshort(tab->data,12*sizeof(uint16), stack);
 }
@@ -948,17 +941,51 @@ static void init_fpgm(InstrCt *ct) {
         0x59, //   EIF
 	0x2d, // ENDF
 
-	/* Function 2: round a 'cvt' entry as a black distance, respecting
-	 * minimum distance of 1px. This is used for rounding stems after
-	 * width normalization.
-	 * Syntax: PUSHB_2 cvt_index 2 CALL
+	/* Function 2: Try to snap stem width given on stack to given cvt entry.
+	 * Leave the resulting width on the stack. Mode 1 is used for widths
+	 * larger than given cvt entry, 0 otherwise. Used as the first step in
+	 * normalizing stems.
+	 * Syntax: PUSHB_3 width mode cvt_index 2 CALL
 	 */
 	0xb0, // PUSHB_1
 	0x02, //   2
 	0x2c, // FDEF
-	0x20, //   DUP
 	0x45, //   RCVT
+	0x20, //   DUP
+	0x8a, //   ROLL
+	0xb0, //   PUSHB_1
+	0x40, //     64
+	0x23, //   SWAP
+	0x58, //   IF
+	0x60, //     ADD
+	0xb0, //     PUSHB_1
+	0x03, //       3
+	0x25, //     CINDEX
+	0x52, //     GT
+	0x1b, //   ELSE
+	0x61, //     SUB
+	0xb0, //     PUSHB_1
+	0x03, //       3
+	0x25, //     CINDEX
+	0x50, //     LT
+	0x59, //   EIF
+	0x58, //   IF
+	0x23, //     SWAP
+	0x59, //   EIF
+	0x21, //   POP
+	0x2d, // ENDF
+
+	/* Function 3: round a stack element as a black distance, respecting
+	 * minimum distance of 1px. This is used for rounding stems after width
+	 * normalization. Often preceeded with SROUND, so finally sets RTG.
+	 * Leaves the rounded width on the stack.
+	 * Syntax: PUSHB_2 width_to_be_rounded 3 CALL
+	 */
+	0xb0, // PUSHB_1
+	0x03, //   3
+	0x2c, // FDEF
 	0x69, //   ROUND[black]
+	0x18, //   RTG
 	0x20, //   DUP
 	0xb0, //   PUSHB_1
 	0x40, //     64, that's one pixel as F26Dot6
@@ -968,76 +995,6 @@ static void init_fpgm(InstrCt *ct) {
 	0xb0, //     PUSHB_1
 	0x40, //       64
 	0x59, //   EIF
-	0x44, //   WCVTP
-	0x2d, // ENDF
-
-	/* Function 3: add a storage cell value to the cvt entry.
-	 * Used as the first step in normalizing stems.
-	 * Syntax: PUSHB_3 cell_index cvt_index 3 CALL
-	 */
-	0xb0, // PUSHB_1
-	0x03, //   3
-	0x2c, // FDEF
-	0x20, //   DUP
-	0x45, //   RCVT
-	0x8a, //   ROLL
-	0x43, //   RS
-	0x60, //   ADD
-	0x44, //   WCVTP
-	0x2d, // ENDF
-
-	/* Function 4: round a 'cvt' entry, taking a reference cvt entry into
-	 * account in a way defined by a third, boolean argument: if 0 (false),
-	 * add 0.5px to the entry before rounding and truncate it if it's larger
-	 * than reference entry (that's for stems lesser than standard width);
-	 * otherwise do the opposite. This is for normalizing cvt stems, it's
-	 * used after function 3.
-	 * Syntax: PUSHB_4 ref_cvt_index cvt_index rnd_type 4 CALL
-	 */
-	0xb0, // PUSHB_1
-	0x04, //   4
-	0x2c, // FDEF
-	0x58, //   IF
-	0xb0, //     PUSHB_1
-	0x46, //       70
-	0x76, //     SROUND
-	0x20, //     DUP
-	0xb0, //     PUSHB_1
-	0x02, //       2
-	0x2b, //     CALL
-	0x20, //     DUP
-	0x45, //     RCVT
-	0x8a, //     ROLL
-	0x45, //     RCVT
-	0x20, //     DUP
-	0xb0, //     PUSHB_1
-	0x03, //       3
-	0x25, //     CINDEX
-	0x52, //     GT
-	0x1b, //   ELSE
-	0xb0, //     PUSHB_1
-	0x4a, //       74
-	0x76, //     SROUND
-	0x20, //     DUP
-	0xb0, //     PUSHB_1
-	0x02, //       2
-	0x2b, //     CALL
-	0x20, //     DUP
-	0x45, //     RCVT
-	0x8a, //     ROLL
-	0x45, //     RCVT
-	0x20, //     DUP
-	0xb0, //     PUSHB_1
-	0x03, //       3
-	0x25, //     CINDEX
-	0x50, //     LT
-	0x59, //   EIF
-	0x58, //   IF
-	0x23, //   SWAP
-	0x59, //   EIF
-	0x21, //   POP
-	0x44, //   WCVTP
-	0x18, //   RTG
 	0x2d  // ENDF
     };
 
@@ -1106,7 +1063,7 @@ static void init_fpgm(InstrCt *ct) {
  * at monochrome/antialiased/cleartype rendering.
  */
 static uint8 *normalize_stems(uint8 *prep_head, int xdir, InstrCt *ct) {
-    int i;
+    int i, t;
     StdStem *mainstem = xdir?&(ct->cvtinfo.StdVW):&(ct->cvtinfo.StdHW);
     StdStem *otherstems = xdir?ct->cvtinfo.StemSnapV:ct->cvtinfo.StemSnapH;
     int otherstemcnt = xdir?ct->cvtinfo.StemSnapVCnt:ct->cvtinfo.StemSnapHCnt;
@@ -1115,32 +1072,72 @@ static uint8 *normalize_stems(uint8 *prep_head, int xdir, InstrCt *ct) {
     if (mainstem->width == -1)
 return prep_head;
 
+    /* set up the standard width */
     *prep_head++ = xdir?SVTCA_x:SVTCA_y;
-    prep_head = push2nums(prep_head, xdir?1:0, mainstem->cvtindex);
+    prep_head = pushnum(prep_head, mainstem->cvtindex);
+    *prep_head++ = DUP;
+    *prep_head++ = DUP;
     *prep_head++ = 0x45; //RCVT
-    callargs[0] = callargs[1] = mainstem->cvtindex;
+
+    callargs[0] = 0;
+    callargs[1] = mainstem->cvtindex;
     callargs[2] = 2;
     prep_head = pushnums(prep_head, 3, callargs);
     *prep_head++ = CALL;
-    *prep_head++ = 0x45; //RCVT
-    *prep_head++ = 0x23; //SWAP
-    *prep_head++ = 0x61; //SUB
-    *prep_head++ = 0x42; //WS
+
+    prep_head = pushnum(prep_head, 3);
+    *prep_head++ = CALL;
+
+    *prep_head++ = 0x44; //WCVTP
+
+    /* set up other standard widths */
+    for (i=0; i<otherstemcnt && otherstems[i].width < mainstem->width; i++);
+    t = i-1;
     
-    for (i=0; i<otherstemcnt; i++) {
-        callargs[0] = xdir?1:0;
-	callargs[1] = otherstems[i].cvtindex;
-	callargs[2] = 3;
+    for (i=t; i>=0; i--) {
+        prep_head = pushnum(prep_head, otherstems[i].cvtindex);
+        *prep_head++ = DUP;
+	*prep_head++ = DUP;
+        *prep_head++ = 0x45; //RCVT
+
+        callargs[0] = 0;
+	callargs[1] = i==t?mainstem->cvtindex:otherstems[i+1].cvtindex;
+	callargs[2] = 2;
 	prep_head = pushnums(prep_head, 3, callargs);
 	*prep_head++ = CALL;
 
-	callargs[0] = mainstem->cvtindex;
-	callargs[2] = mainstem->width<otherstems[i].width?1:0;
-	callargs[3] = 4;
-	prep_head = pushnums(prep_head, 4, callargs);
-	*prep_head++ = CALL;
+        if (xdir) {
+            prep_head = push2nums(prep_head, 3, 70);
+	    *prep_head++ = SROUND;
+        }
+        else prep_head = pushnum(prep_head, 3);
+        *prep_head++ = CALL;
+
+        *prep_head++ = 0x44; //WCVTP
     }
 
+    for (i=t+1; i<otherstemcnt; i++) {
+        prep_head = pushnum(prep_head, otherstems[i].cvtindex);
+        *prep_head++ = DUP;
+	*prep_head++ = DUP;
+        *prep_head++ = 0x45; //RCVT
+
+        callargs[0] = 1;
+	callargs[1] = i==t+1?mainstem->cvtindex:otherstems[i-1].cvtindex;
+	callargs[2] = 2;
+	prep_head = pushnums(prep_head, 3, callargs);
+	*prep_head++ = CALL;
+
+        if (xdir) {
+            prep_head = push2nums(prep_head, 3, 70);
+	    *prep_head++ = SROUND;
+        }
+        else prep_head = pushnum(prep_head, 3);
+        *prep_head++ = CALL;
+
+        *prep_head++ = 0x44; //WCVTP
+    }
+    
 return prep_head;
 }
 
@@ -1187,7 +1184,7 @@ static void init_prep(InstrCt *ct) {
     uint8 *new_prep, *prep_head;
 
     if (ct->cvt_done)
-        prepmaxlen += 28+11*(ct->cvtinfo.StemSnapHCnt+ct->cvtinfo.StemSnapVCnt);
+        prepmaxlen += 40+38*(ct->cvtinfo.StemSnapHCnt+ct->cvtinfo.StemSnapVCnt);
 
     new_prep = gcalloc(prepmaxlen, sizeof(uint8));
     memmove(new_prep, new_prep_preamble, preplen*sizeof(uint8));
@@ -1242,7 +1239,7 @@ static void init_prep(InstrCt *ct) {
 /* We are given a stem weight and try to find matching one in CVT.
  * If none found, we return -1.
  */
-static int CVTSeekStem(int xdir, CvtData *CvtInfo, double value, double fudge) {
+static int CVTSeekStem(int xdir, CvtData *CvtInfo, double value, double fudge, int can_fail) {
     StdStem *mainstem = xdir?&(CvtInfo->StdVW):&(CvtInfo->StdHW);
     StdStem *otherstems = xdir?CvtInfo->StemSnapV:CvtInfo->StemSnapH;
     int otherstemcnt = xdir?CvtInfo->StemSnapVCnt:CvtInfo->StemSnapHCnt;
@@ -1275,7 +1272,9 @@ return -1;
 return closestcvt;
     if (value/closestwidth < 1.11 && value/closestwidth > 0.9)
 return closestcvt;
+    if (can_fail)
 return -1;
+return closestcvt;
 }
 
 #if 0		/* in getttfinstrs.c */
@@ -1793,7 +1792,7 @@ return;
     real coord = ct->edge.base;
     StdStem *StdW = ct->xdir?&(ct->cvtinfo.StdVW):&(ct->cvtinfo.StdHW);
     int cvtindex =
-        CVTSeekStem(ct->xdir, &(ct->cvtinfo), hint->width, ct->gi->fudge);
+        CVTSeekStem(ct->xdir, &(ct->cvtinfo), hint->width, ct->gi->fudge, true);
 
     ct->touched[rp0] |= ct->xdir?tf_x:tf_y;
     finish_edge(ct, shp_rp1?SHP_rp1:SHP_rp2);
@@ -1824,11 +1823,14 @@ return;
     else {
 	if (ct->cvt_done && ct->fpgm_done && ct->prep_done && StdW->width!=-1) {
 	    /* TODO! This is only partial normalization! */
-            int rndstate = fabs(hint->width)>StdW->width?70:74;
-	    ct->pt = push2nums(ct->pt, ct->edge.refpt, rndstate);
-	    *(ct->pt)++ = SROUND;
+
+	    if (ct->xdir) {
+	        ct->pt = push2nums(ct->pt, ct->edge.refpt, 70);
+		*(ct->pt)++ = SROUND;
+	    }
+	    else ct->pt = pushpoint(ct->pt, ct->edge.refpt);
+
 	    *(ct->pt)++ = chg_rp0?MDRP_rp0_min_rnd_black:MDRP_min_rnd_black;
-	    *(ct->pt)++ = RTG;
 	}
 	else {
 	    ct->pt = pushpoint(ct->pt, ct->edge.refpt);
@@ -2058,10 +2060,8 @@ return;
 
 static void geninstrs(InstrCt *ct, StemInfo *hint) {
     real hbase, base, width, hend, stdwidth;
-    real fudge = ct->gi->fudge;
     StemInfo *firsthint, *lasthint=NULL, *testhint;
     int first; /* if it's the first stem of overlapping stems' cluster */
-    int cvtindex=-1;
     static int rp0;
 
     /* if this hint has conflicts don't try to establish a minimum distance */
@@ -2087,7 +2087,6 @@ static void geninstrs(InstrCt *ct, StemInfo *hint) {
     hbase = base = hint->start;
     width = hint->width;
     hend = hbase + width;
-    cvtindex = CVTSeekStem(ct->xdir, &(ct->cvtinfo), width, fudge);
 
     /* flip the hint if needed */
     if (hint->enddone) {
