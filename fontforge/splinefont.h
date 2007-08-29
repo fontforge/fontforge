@@ -782,6 +782,7 @@ typedef struct bdffont {
     unsigned int piecemeal: 1;
     unsigned int bbsized: 1;
     unsigned int ticked: 1;
+    unsigned int unhinted_freetype: 1;
     struct bdffont *next;
     struct clut *clut;
     char *foundry;
@@ -1938,7 +1939,7 @@ extern void BDFClut(BDFFont *bdf, int linear_scale);
 extern int BDFDepth(BDFFont *bdf);
 extern BDFChar *BDFPieceMeal(BDFFont *bdf, int index);
 extern BDFChar *BDFPieceMealCheck(BDFFont *bdf, int index);
-enum piecemeal_flags { pf_antialias=1, pf_bbsized=2 };
+enum piecemeal_flags { pf_antialias=1, pf_bbsized=2, pf_ft_nohints=4 };
 extern BDFFont *SplineFontPieceMeal(SplineFont *sf,int pixelsize,int flags,void *freetype_context);
 extern void BDFCharFindBounds(BDFChar *bc,IBounds *bb);
 extern BDFFont *BitmapFontScaleTo(BDFFont *old, int to);
