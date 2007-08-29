@@ -633,6 +633,7 @@ static void ZoneInit(SplineFont *sf, struct lcg_zones *zones,enum embolden_type 
 static void PerGlyphInit(SplineChar *sc, struct lcg_zones *zones,
 	enum embolden_type type, BlueData *bd) {
     int j;
+    SplineChar *hebrew;
 
     if ( type == embolden_auto ) {
 	zones->embolden_hook = NULL;
@@ -657,13 +658,14 @@ static void PerGlyphInit(SplineChar *sc, struct lcg_zones *zones,
     }
     if ( type == embolden_lcg || type == embolden_auto ) {
 	zones->bottom_bound = 0;
-	if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 && isupper(sc->unicodeenc)) {
-	    zones->bottom_zone = bd->caph>0 ? bd->caph/3 :
-			    (sc->parent->ascent/4);
-	    zones->top_zone = bd->caph>0 ? 2*bd->caph/3 :
-			    (sc->parent->ascent/2);
-	    zones->top_bound = bd->caph>0?bd->caph:4*sc->parent->ascent/5;
-	} else {
+	if ( SCScriptFromUnicode(sc)==CHR('h','e','b','r') &&
+		(hebrew=SFGetChar(sc->parent,0x05df,NULL))!=NULL ) {
+	    DBounds b;
+	    SplineCharFindBounds(hebrew,&b);
+	    zones->bottom_zone = b.maxy/3;
+	    zones->top_zone = 2*b.maxy/3;
+	    zones->top_bound = b.maxy;
+	} else if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 && islower(sc->unicodeenc)) {
 	    zones->bottom_zone = bd->xheight>0 ? bd->xheight/3 :
 			    bd->caph>0 ? bd->caph/3 :
 			    (sc->parent->ascent/4);
@@ -673,6 +675,14 @@ static void PerGlyphInit(SplineChar *sc, struct lcg_zones *zones,
 	    zones->top_bound = bd->xheight>0 ? bd->xheight :
 			    bd->caph>0 ? bd->caph :
 			    (sc->parent->ascent/2);
+	} else {
+	    /* The default behavior is to treat everything unknown like a */
+	    /*  capital latin letter. */
+	    zones->bottom_zone = bd->caph>0 ? bd->caph/3 :
+			    (sc->parent->ascent/4);
+	    zones->top_zone = bd->caph>0 ? 2*bd->caph/3 :
+			    (sc->parent->ascent/2);
+	    zones->top_bound = bd->caph>0?bd->caph:4*sc->parent->ascent/5;
 	}
     }
     zones->wants_hints = zones->embolden_hook == LCG_HintedEmboldenHook;
