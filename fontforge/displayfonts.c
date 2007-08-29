@@ -3251,10 +3251,12 @@ static void DSP_ChangeFontCallback(void *context,SplineFont *sf,enum sftf_fontty
 	    GGadgetSelectOneListItem(GWidgetGetControl(di->gw,CID_Font),i);
 	    /*GGadgetSetTitle(GWidgetGetControl(di->gw,CID_Font),ti[i]->text);*/
 	}
-	set = hasFreeType() && !sf->onlybitmaps && sf->subfontcnt==0;
+	set = hasFreeType() && !sf->onlybitmaps && sf->subfontcnt==0 &&
+		!sf->strokedfont && !sf->multilayer;
 	GGadgetSetEnabled(GWidgetGetControl(di->gw,CID_pfb),set);
 	GGadgetSetEnabled(GWidgetGetControl(di->gw,CID_ttf),set);
-	set = hasFreeType() && !sf->onlybitmaps;
+	set = hasFreeType() && !sf->onlybitmaps &&
+		!sf->strokedfont && !sf->multilayer;
 	GGadgetSetEnabled(GWidgetGetControl(di->gw,CID_otf),set);
 	GGadgetSetEnabled(GWidgetGetControl(di->gw,CID_bitmap),sf->bitmaps!=NULL);
 	GGadgetSetEnabled(GWidgetGetControl(di->gw,CID_pfaedit),!sf->onlybitmaps);
@@ -3607,7 +3609,8 @@ static int DSP_RadioSet(GGadget *g, GEvent *e) {
 		GGadgetSetEnabled(GWidgetGetControl(di->gw,CID_AA),flags&gg_enabled);
 		GGadgetSetChecked(GWidgetGetControl(di->gw,CID_AA),flags&gg_cb_on);
 		if ( best!=NULL ) {
-		    sprintf( size, "%d", best->pixelsize );
+		    sprintf( size, "%g",
+			    rint(best->pixelsize*72.0/SFTFGetDPI(GWidgetGetControl(di->gw,CID_SampleText))) );
 		    uc_strcpy(usize,size);
 		    GGadgetSetTitle(GWidgetGetControl(di->gw,CID_Size),usize);
 		}
@@ -3840,7 +3843,7 @@ return;
     gcd[4].gd.handle_controlevent = DSP_RadioSet;
     gcd[4].gd.popup_msg = (unichar_t *) _("Specifies file format used to pass the font to freetype\n  pfb -- is the standard postscript type1\n  ttf -- is truetype\n  otf -- is opentype\n  bitmap -- not passed to freetype for rendering\n    bitmap fonts must already be generated\n  FontForge -- uses FontForge's own rasterizer, not\n    freetype's. Only as last resort");
     gcd[4].creator = GRadioCreate;
-    if ( sf->subfontcnt!=0 || !hasfreetype || sf->onlybitmaps ) gcd[4].gd.flags = gg_visible;
+    if ( sf->subfontcnt!=0 || !hasfreetype || sf->onlybitmaps || sf->strokedfont || sf->multilayer ) gcd[4].gd.flags = gg_visible| gg_utf8_popup;
     farray[0] = &gcd[4];
 
     label[5].text = (unichar_t *) "ttf";
@@ -3852,7 +3855,7 @@ return;
     gcd[5].gd.handle_controlevent = DSP_RadioSet;
     gcd[5].gd.popup_msg = (unichar_t *) _("Specifies file format used to pass the font to freetype\n  pfb -- is the standard postscript type1\n  ttf -- is truetype\n  otf -- is opentype\n  bitmap -- not passed to freetype for rendering\n    bitmap fonts must already be generated\n  FontForge -- uses FontForge's own rasterizer, not\n    freetype's. Only as last resort");
     gcd[5].creator = GRadioCreate;
-    if ( sf->subfontcnt!=0 || !hasfreetype || sf->onlybitmaps ) gcd[5].gd.flags = gg_visible;
+    if ( sf->subfontcnt!=0 || !hasfreetype || sf->onlybitmaps || sf->strokedfont || sf->multilayer ) gcd[5].gd.flags = gg_visible| gg_utf8_popup;
     else if ( sf->order2 ) gcd[5].gd.flags |= gg_cb_on;
     farray[1] = &gcd[5];
 
@@ -3865,7 +3868,7 @@ return;
     gcd[6].gd.handle_controlevent = DSP_RadioSet;
     gcd[6].gd.popup_msg = (unichar_t *) _("Specifies file format used to pass the font to freetype\n  pfb -- is the standard postscript type1\n  ttf -- is truetype\n  otf -- is opentype\n  bitmap -- not passed to freetype for rendering\n    bitmap fonts must already be generated\n  FontForge -- uses FontForge's own rasterizer, not\n    freetype's. Only as last resort");
     gcd[6].creator = GRadioCreate;
-    if ( !hasfreetype || sf->onlybitmaps ) gcd[6].gd.flags = gg_visible;
+    if ( !hasfreetype || sf->onlybitmaps || sf->strokedfont || sf->multilayer ) gcd[6].gd.flags = gg_visible| gg_utf8_popup;
     else if ( sf->subfontcnt!=0 || !sf->order2 ) gcd[6].gd.flags |= gg_cb_on;
     farray[2] = &gcd[6];
     
@@ -3879,8 +3882,8 @@ return;
     gcd[7].gd.handle_controlevent = DSP_RadioSet;
     gcd[7].gd.popup_msg = (unichar_t *) _("Specifies file format used to pass the font to freetype\n  pfb -- is the standard postscript type1\n  ttf -- is truetype\n  otf -- is opentype\n  bitmap -- not passed to freetype for rendering\n    bitmap fonts must already be generated\n  FontForge -- uses FontForge's own rasterizer, not\n    freetype's. Only as last resort");
     gcd[7].creator = GRadioCreate;
-    if ( sf->bitmaps==NULL ) gcd[7].gd.flags = gg_visible;
-    else if ( !hasfreetype || sf->onlybitmaps ) gcd[7].gd.flags |= gg_cb_on;
+    if ( sf->bitmaps==NULL ) gcd[7].gd.flags = gg_visible| gg_utf8_popup;
+    else if ( sf->onlybitmaps ) gcd[7].gd.flags |= gg_cb_on;
     farray[3] = &gcd[7];
 
     label[8].text = (unichar_t *) "FontForge";
@@ -3892,8 +3895,9 @@ return;
     gcd[8].gd.handle_controlevent = DSP_RadioSet;
     gcd[8].gd.popup_msg = (unichar_t *) _("Specifies file format used to pass the font to freetype\n  pfb -- is the standard postscript type1\n  ttf -- is truetype\n  otf -- is opentype\n  bitmap -- not passed to freetype for rendering\n    bitmap fonts must already be generated\n  FontForge -- uses FontForge's own rasterizer, not\n    freetype's. Only as last resort");
     gcd[8].creator = GRadioCreate;
-    if ( !hasfreetype && sf->bitmaps==NULL ) gcd[8].gd.flags |= gg_cb_on;
-    else if ( sf->onlybitmaps ) gcd[8].gd.flags = gg_visible;
+    if ( sf->onlybitmaps ) gcd[8].gd.flags = gg_visible | gg_utf8_popup;
+    if ( (!hasfreetype && sf->bitmaps==NULL) || sf->strokedfont || sf->multilayer ) gcd[8].gd.flags |= gg_cb_on;
+    else if ( sf->onlybitmaps ) gcd[8].gd.flags = gg_visible| gg_utf8_popup;
     farray[4] = &gcd[8]; farray[5] = GCD_Glue; farray[6] = NULL;
 
     boxes[3].gd.flags = gg_enabled|gg_visible;

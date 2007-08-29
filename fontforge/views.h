@@ -1364,7 +1364,8 @@ extern void SFTFRegisterCallback(GGadget *g, void *cbcontext,
 	void (*changefontcallback)(void *,SplineFont *,enum sftf_fonttype,int size,int aa,
 		uint32 script, uint32 lang, uint32 *features));
 extern void SFTFProvokeCallback(GGadget *g);
-extern void SFTFSetDPI(GGadget *g, float dpi);
+extern void  SFTFSetDPI(GGadget *g, float dpi);
+extern float SFTFGetDPI(GGadget *g);
 extern void SFTFInitLangSys(GGadget *g, int end, uint32 script, uint32 lang);
 extern GGadget *SFTextAreaCreate(struct gwindow *base, GGadgetData *gd,void *data);
 #endif

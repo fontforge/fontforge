@@ -178,7 +178,10 @@ return( x );
 	if ( col!=-1 ) {
 	    if ( !fd->antialias )
 		fd->clut.clut[1] = col;		/* Only works for bitmaps */
-	    fd->base.clut->trans_index = 0;
+	    if ( fd->base.clut!=NULL )
+		fd->base.clut->trans_index = 0;
+	    else
+		fd->base.trans = 0;
 	    fd->base.data = bdfc->bitmap;
 	    fd->base.bytes_per_line = bdfc->bytes_per_line;
 	    fd->base.width = bdfc->xmax-bdfc->xmin+1;
@@ -2886,8 +2889,12 @@ static FontData *RegenFontData(SFTextArea *st, FontData *ret) {
 	    ret->bdf = ok;
     } else if ( !hasFreeType() && ret->fonttype!=sftf_pfaedit )
 	ret->fonttype = sftf_pfaedit;
+    else if ( ret->sf->multilayer || ret->sf->strokedfont )
+	ret->fonttype = sftf_pfaedit;
 
-    if ( ret->fonttype==sftf_pfaedit )
+    if ( ret->bdf!=NULL )
+	/* Already done */;
+    else if ( ret->fonttype==sftf_pfaedit )
 	ret->bdf = SplineFontPieceMeal(ret->sf,pixelsize,ret->antialias,NULL);
     else {
 	for ( test=st->generated; test!=NULL; test=test->next )
@@ -3258,6 +3265,12 @@ return;
     SFTextAreaRefigureLines(st,0,-1);
     SFTextAreaShow(&st->g,st->sel_start);	/* Refigure scrollbars for new size */
 	    /* And force an expose event */
+}
+
+float SFTFGetDPI(GGadget *g) {
+    SFTextArea *st = (SFTextArea *) g;
+
+return( st->dpi );
 }
 
 void SFTFRefreshFonts(GGadget *g) {

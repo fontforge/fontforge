@@ -4347,6 +4347,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	int rows, gasprows;
 	struct matrix_data *strings = GMatrixEditGet(GWidgetGetControl(d->gw,CID_TNames), &rows);
 	struct matrix_data *gasp    = GMatrixEditGet(GWidgetGetControl(d->gw,CID_Gasp), &gasprows);
+	int was_ml = sf->multilayer, was_stroke = sf->strokedfont;
 
 	if ( strings==NULL || gasp==NULL )
 return( true );
@@ -4727,7 +4728,7 @@ return(true);
 	    for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame )
 		FVSetTitle(fvs);
 	}
-	if ( reformat_fv )
+	if ( reformat_fv || was_ml!=sf->multilayer || was_stroke!=sf->strokedfont )
 	    FontViewReformatAll(sf);
 	sf->changed = true;
 	SFSetModTime(sf);

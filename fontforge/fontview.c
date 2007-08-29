@@ -10231,6 +10231,7 @@ return;
 void FontViewReformatAll(SplineFont *sf) {
     BDFFont *new, *old;
     FontView *fvs, *fv;
+    MetricsView *mvs;
 
     if ( sf->fv->v==NULL || sf->fv->colcnt==0 )			/* Can happen in scripts */
 return;
@@ -10266,6 +10267,11 @@ return;
 	}
 	GDrawRequestExpose(fv->v,NULL,false);
 	GDrawSetCursor(fv->v,ct_pointer);
+    }
+    for ( mvs=sf->metrics; mvs!=NULL; mvs=mvs->next ) if ( mvs->bdf==NULL ) {
+	BDFFontFree(mvs->show);
+	mvs->show = SplineFontPieceMeal(sf,mvs->pixelsize,mvs->antialias?pf_antialias:0,NULL);
+	GDrawRequestExpose(mvs->gw,NULL,false);
     }
 }
 
