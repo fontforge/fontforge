@@ -855,7 +855,7 @@ static void init_maxp(InstrCt *ct) {
 
     if (ct->fpgm_done && zones<2) zones=2;
     if (ct->fpgm_done && twpts<1) twpts=1;
-    if (ct->fpgm_done && fdefs<4) fdefs=4;
+    if (ct->fpgm_done && fdefs<5) fdefs=5;
     if (stack<STACK_DEPTH) stack=STACK_DEPTH;
 
     memputshort(tab->data, 7*sizeof(uint16), zones);
@@ -945,7 +945,7 @@ static void init_fpgm(InstrCt *ct) {
 	 * Leave the resulting width on the stack. Mode 1 is used for widths
 	 * larger than given cvt entry, 0 otherwise. Used as the first step in
 	 * normalizing stems.
-	 * Syntax: PUSHB_3 width mode cvt_index 2 CALL
+	 * Syntax: PUSHX_3 width mode cvt_index 2 CALL
 	 */
 	0xb0, // PUSHB_1
 	0x02, //   2
@@ -979,7 +979,7 @@ static void init_fpgm(InstrCt *ct) {
 	 * minimum distance of 1px. This is used for rounding stems after width
 	 * normalization. Often preceeded with SROUND, so finally sets RTG.
 	 * Leaves the rounded width on the stack.
-	 * Syntax: PUSHB_2 width_to_be_rounded 3 CALL
+	 * Syntax: PUSHX_2 width_to_be_rounded 3 CALL
 	 */
 	0xb0, // PUSHB_1
 	0x03, //   3
@@ -995,7 +995,31 @@ static void init_fpgm(InstrCt *ct) {
 	0xb0, //     PUSHB_1
 	0x40, //       64
 	0x59, //   EIF
-	0x2d  // ENDF
+	0x2d, // ENDF
+	
+	/* Function 4: scale a value given on stack in FUnits to pixels. Leave
+	 * the scaled value on the stack. This is used for normalizing stems not
+	 * regularized via CVT. Nonetheless, it requires at least one CVT entry.
+	 * Syntax: PUSHX_2 width_to_be_scaled 4 CALL
+	 */
+	0xb0, // PUSHB_1
+	0x04, //   4
+	0x2c, // FDEF
+	0xb1, //   PUSHB_2
+	0x00, //     0
+	0x00, //     0
+	0x45, //   RCVT
+	0x23, //   SWAP
+	0x8a, //   ROLL
+	0x70, //   WCVTF
+	0xb1, //   PUSHB_2
+	0x00, //     0
+	0x00, //     0
+	0x45, //   RCVT
+	0x23, //   SWAP
+	0x8a, //   ROLL
+	0x44, //   WCVTP
+	0x2d, // ENDF
     };
 
     struct ttf_table *tab = SFFindTable(ct->sc->parent,CHR('f','p','g','m'));
@@ -1788,9 +1812,12 @@ static void finish_stem(StemInfo *hint, int shp_rp1, int chg_rp0, InstrCt *ct) {
     if (hint == NULL)
 return;
 
+    int i;
     int rp0 = ct->edge.refpt;
     real coord = ct->edge.base;
     StdStem *StdW = ct->xdir?&(ct->cvtinfo.StdVW):&(ct->cvtinfo.StdHW);
+    StdStem *StemSnap = ct->xdir?ct->cvtinfo.StemSnapV:ct->cvtinfo.StemSnapH;
+    int StemSnapCnt = ct->xdir?ct->cvtinfo.StemSnapVCnt:ct->cvtinfo.StemSnapHCnt;
     int cvtindex =
         CVTSeekStem(ct->xdir, &(ct->cvtinfo), hint->width, ct->gi->fudge, true);
 
@@ -1822,15 +1849,39 @@ return;
     }
     else {
 	if (ct->cvt_done && ct->fpgm_done && ct->prep_done && StdW->width!=-1) {
-	    /* TODO! This is only partial normalization! */
+	    int callargs[3];
+
+	    callargs[0] = ct->edge.refpt;
+	    callargs[1] = (int)rint(fabs(hint->width));
+	    callargs[2] = 4;
+	    ct->pt = pushnums(ct->pt, 3, callargs);
+	    *(ct->pt)++ = CALL;
+
+	    cvtindex = CVTSeekStem(ct->xdir, &(ct->cvtinfo), hint->width, ct->gi->fudge, false);
+	    for (i=0; i<StemSnapCnt && StemSnap[i].cvtindex != cvtindex; i++) ;
+
+	    if (fabs(hint->width) > StdW->width) callargs[0] = 1;
+	    else callargs[0] = 0;
+	    callargs[1] = cvtindex;
+	    callargs[2] = 2;
+	    ct->pt = pushnums(ct->pt, 3, callargs);
+	    *(ct->pt)++ = CALL;
 
 	    if (ct->xdir) {
-	        ct->pt = push2nums(ct->pt, ct->edge.refpt, 70);
+	        ct->pt = push2nums(ct->pt, 3, 70);
 		*(ct->pt)++ = SROUND;
 	    }
-	    else ct->pt = pushpoint(ct->pt, ct->edge.refpt);
+	    else ct->pt = pushnum(ct->pt, 3);
+	    *(ct->pt)++ = CALL;
 
-	    *(ct->pt)++ = chg_rp0?MDRP_rp0_min_rnd_black:MDRP_min_rnd_black;
+	    if (ct->xdir) {
+	        if (ct->bp[rp0].x > ct->bp[ct->edge.refpt].x) *(ct->pt)++ = NEG;
+	    }
+	    else {
+	        if (ct->bp[rp0].y > ct->bp[ct->edge.refpt].y) *(ct->pt)++ = NEG;
+	    }
+
+	    *(ct->pt)++ = chg_rp0?MSIRP_rp0:MSIRP;
 	}
 	else {
 	    ct->pt = pushpoint(ct->pt, ct->edge.refpt);
