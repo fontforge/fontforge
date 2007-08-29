@@ -331,6 +331,24 @@ static SplinePoint *ChordMid(double angle,BasePoint *center,BasePoint *from,
 return( sp );
 }
 
+static int IntersectionTooFar(BasePoint *inter,SplinePoint *from,SplinePoint *to,StrokeInfo *si) {
+    /* Things look really ugly when we try to miter acute angles -- we get */
+    /* huge spikes. So if mitering is going to give bad results, just bevel */
+    double len, xoff, yoff;
+
+    xoff = inter->x-from->me.x; yoff = inter->y-from->me.y;
+    len = xoff*xoff + yoff*yoff;
+    if ( len > (5*si->radius * 5*si->radius) )
+return( true );
+
+    xoff = inter->x-to->me.x; yoff = inter->y-to->me.y;
+    len = xoff*xoff + yoff*yoff;
+    if ( len > (5*si->radius * 5*si->radius) )
+return( true );
+
+return( false );
+}
+
 static void MakeJoints(SplinePoint *from,SplinePoint *to,StrokeInfo *si,
 	BasePoint *inter, BasePoint *center,
 	int incr,double pangle, double nangle, real factor) {
@@ -364,15 +382,15 @@ static void MakeJoints(SplinePoint *from,SplinePoint *to,StrokeInfo *si,
 	    }
 	    SplineMake3(mid,to);
 	}
-    } else if ( si->join==lj_bevel ) {
-	SplineMake3(from,to);
-    } else if ( si->join == lj_miter ) {
+    } else if ( si->join == lj_miter && !IntersectionTooFar(inter,from,to,si)) {
 	mid = SplinePointCreate(inter->x,inter->y);
 	mid->pointtype = pt_corner;
 	SplineMake3(from,mid);
 	SplineMake3(mid,to);
 	if ( from->ptindex == to->ptindex )
 	    mid->ptindex = from->ptindex;
+    } else if ( si->join==lj_bevel ) {
+	SplineMake3(from,to);
     } else {
 	double cplen = CircleCpDist(nangle-pangle);
 	mid = NULL;

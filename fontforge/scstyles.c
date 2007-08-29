@@ -236,6 +236,19 @@ return( true );
 return( false );
 }
 
+static int InHintConflictsZone(StemInfo *stems,StemInfo *me,double contains_y,
+	double off) {
+    StemInfo *h;
+
+    for ( h=stems; h!=NULL; h=h->next ) if ( h!=me && h->hasconflicts ) {
+	 if ( ((h->start <= contains_y && h->start+h->width>=contains_y) ||
+		  (h->start <= contains_y-off && h->start+h->width>=contains_y-off )) &&
+		 h->start<=me->start+me->width && h->start+h->width>=me->start )
+return( true );
+    }
+return( false );
+}
+
 static int IsStartPoint(SplinePoint *sp, SplineChar *sc, int layer) {
     SplineSet *ss;
     
@@ -389,19 +402,21 @@ return(ss_expanded);			/* No points? Nothing to do */
 		h = OnHint(sc->hstem,origsp->me.y,&othery);
 	    else
 		h = MightBeOnHint(sc->hstem,zones,&ptmoves[i],&othery);
-
-	    if ( h==NULL && origsp!=NULL &&
+	    if ( sp->me.y>=zones->top_bound || (h!=NULL && othery+zones->stroke_width/2>=zones->top_bound))
+		sign = -1;
+	    else if ( sp->me.y<=zones->bottom_bound || (h!=NULL && othery-zones->stroke_width/2<=zones->bottom_bound))
+		sign = 1;
+	    else if ( (origsp!=NULL &&
 			    (InHintAroundZone(sc->hstem,origsp->me.y,zones->top_bound) ||
-			     InHintAroundZone(sc->hstem,origsp->me.y,zones->bottom_bound)) )
+			     InHintAroundZone(sc->hstem,origsp->me.y,zones->bottom_bound)) ) ||
+		( h!=NULL && h->hasconflicts &&
+			(InHintConflictsZone(sc->hstem,h,zones->top_bound,zones->stroke_width/2) ||
+			 InHintConflictsZone(sc->hstem,h,zones->bottom_bound,-zones->stroke_width/2))) )
 		/* It's not on the hint, so we want to interpolate it even if */
 		/*  it's in an area we'd normally move (tahoma "s" has two */
 		/*  points which fall on the baseline but aren't on the bottom */
 		/*  hint */
 		/* Do Nothing */;
-	    else if ( sp->me.y>=zones->top_bound || (h!=NULL && othery>=zones->top_bound))
-		sign = -1;
-	    else if ( sp->me.y<=zones->bottom_bound || (h!=NULL && othery<=zones->bottom_bound))
-		sign = 1;
 	    else if ( h!=NULL ) {
 		/* Point on a hint. This one not in the zones, so it is fixed */
 		ptmoves[i].touched = true;
