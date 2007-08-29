@@ -1392,12 +1392,10 @@ return( NULL );
     bdfc->bitmap = es.bitmap;
     bdfc->depth = depth;
     bdfc->bytes_per_line = es.bytes_per_line;
-#ifdef FONTFORGE_CONFIG_TYPE3
     if ( depth==8 ) {
 	bdfc->byte_data = true;
 	bdfc->bytes_per_line *= 8;
     }
-#endif
     BCCompressBitmap(bdfc);
     FreeEdges(&es);
 return( bdfc );
@@ -1721,7 +1719,6 @@ return;
     new.byte_data = true;
     new.depth = max==3 ? 2 : max==15 ? 4 : 8;
     new.bitmap = gcalloc( (new.ymax-new.ymin+1) * new.bytes_per_line, sizeof(uint8));
-#ifdef FONTFORGE_CONFIG_TYPE3
     if ( bc->depth>1 ) {
 	uint32 *sum = gcalloc(new.bytes_per_line,sizeof(uint32));
 	for ( i=0; i<=bc->ymax-bc->ymin; ++i ) {
@@ -1740,9 +1737,6 @@ return;
 	    }
 	}
     } else {
-#else
-    {
-#endif
 	for ( i=0; i<=bc->ymax-bc->ymin; ++i ) {
 	    bpt = bc->bitmap + i*bc->bytes_per_line;
 	    pt = new.bitmap + (i/linear_scale)*new.bytes_per_line;
@@ -1869,7 +1863,6 @@ return( bdf );
 
 BDFChar *BDFPieceMeal(BDFFont *bdf, int index) {
     SplineChar *sc;
-    extern int use_freetype_to_rasterize_fv;
 
     if ( index<0 )
 return( NULL );
@@ -1888,19 +1881,16 @@ return(NULL);
     if ( bdf->freetype_context )
 	bdf->glyphs[index] = SplineCharFreeTypeRasterize(bdf->freetype_context,
 		sc->orig_pos,bdf->truesize,bdf->clut?8:1);
-    else {
-	if ( use_freetype_to_rasterize_fv && !sc->parent->multilayer &&
-		!sc->parent->strokedfont )
-	    bdf->glyphs[index] = SplineCharFreeTypeRasterizeNoHints(sc,
-		    bdf->truesize,bdf->clut?4:1);
+    else if ( bdf->unhinted_freetype )
+	bdf->glyphs[index] = SplineCharFreeTypeRasterizeNoHints(sc,
+		bdf->truesize,bdf->clut?4:1);
+    else
+	bdf->glyphs[index] = NULL;
+    if ( bdf->glyphs[index]==NULL ) {
+	if ( bdf->clut )
+	    bdf->glyphs[index] = SplineCharAntiAlias(sc,bdf->truesize,4);
 	else
-	    bdf->glyphs[index] = NULL;
-	if ( bdf->glyphs[index]==NULL ) {
-	    if ( bdf->clut )
-		bdf->glyphs[index] = SplineCharAntiAlias(sc,bdf->truesize,4);
-	    else
-		bdf->glyphs[index] = SplineCharRasterize(sc,bdf->truesize);
-	}
+	    bdf->glyphs[index] = SplineCharRasterize(sc,bdf->truesize);
     }
 return( bdf->glyphs[index] );
 }
@@ -1941,6 +1931,8 @@ BDFFont *SplineFontPieceMeal(SplineFont *sf,int pixelsize,int flags,void *ftc) {
 	scale = pixelsize / (real) (sf->ascent+sf->descent);
 	bdf->ascent = rint(sf->ascent*scale);
     }
+    if ( flags&pf_ft_nohints )
+	bdf->unhinted_freetype = true;
 
     bdf->sf = sf;
     bdf->glyphcnt = bdf->glyphmax = sf->glyphcnt;
