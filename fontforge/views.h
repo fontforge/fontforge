@@ -1351,7 +1351,7 @@ extern unichar_t *FVOpenFont(char *title, const char *defaultfile, int mult);
 
 #if defined(FONTFORGE_CONFIG_GTK)
 #elif defined(FONTFORGE_CONFIG_GDRAW)
-enum sftf_fonttype { sftf_pfb, sftf_ttf, sftf_otf, sftf_bitmap, sftf_pfaedit };
+enum sftf_fonttype { sftf_pfb, sftf_ttf, sftf_otf, sftf_nohints, sftf_bitmap, sftf_pfaedit };
 extern int SFTFSetFontData(GGadget *g, int start, int end, SplineFont *sf,
 	enum sftf_fonttype, int size, int antialias);
 extern int SFTFSetFont(GGadget *g, int start, int end, SplineFont *sf);

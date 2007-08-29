@@ -83,6 +83,7 @@ static unsigned char fontview2_bits[] = {
 extern int _GScrollBar_Width;
 
 static int fv_fontsize = -13, fv_fs_init=0;
+extern int use_freetype_to_rasterize_fv;
 #endif
 
 enum glyphlable { gl_glyph, gl_name, gl_unicode, gl_encoding };
@@ -4330,7 +4331,8 @@ static void FVShowSubFont(FontView *fv,SplineFont *new) {
 	FVSetTitle(fv);
     }
     newbdf = SplineFontPieceMeal(fv->sf,fv->filled->pixelsize,
-	    (fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0),
+	    (fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0)|
+		(use_freetype_to_rasterize_fv && !fv->sf->strokedfont && !fv->sf->multilayer?pf_ft_nohints:0),
 	    NULL);
     BDFFontFree(fv->filled);
     if ( fv->filled == fv->show )
@@ -4771,7 +4773,8 @@ void FontViewMenu_PixelSize(GtkMenuItem *menuitem, gpointer user_data) {
 	break;
 	    old = fvs->filled;
 	    new = SplineFontPieceMeal(fvs->sf,dspsize,
-		(fvs->antialias?pf_antialias:0)|(fvs->bbsized?pf_bbsized:0),
+		(fvs->antialias?pf_antialias:0)|(fvs->bbsized?pf_bbsized:0)|
+		    (use_freetype_to_rasterize_fv && !fvs->sf->strokedfont && !fvs->sf->multilayer?pf_ft_nohints:0),
 		NULL);
 	    for ( fvss=fvs; fvss!=NULL; fvss = fvss->nextsame ) {
 		if ( fvss->filled==old ) {
@@ -10245,7 +10248,8 @@ return;
 	old = fv->filled;
 				/* In CID fonts fv->sf may not be same as sf */
 	new = SplineFontPieceMeal(fv->sf,fv->filled->pixelsize,
-		(fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0),
+		(fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0)|
+		    (use_freetype_to_rasterize_fv && !sf->strokedfont && !sf->multilayer?pf_ft_nohints:0),
 		NULL);
 	for ( fvs=fv; fvs!=NULL; fvs=fvs->nextsame )
 	    if ( fvs->filled == old ) {
@@ -10561,7 +10565,8 @@ FontView *FontViewCreate(SplineFont *sf) {
 	bdf = fv->nextsame->show;
     } else {
 	bdf = SplineFontPieceMeal(fv->sf,sf->display_size<0?-sf->display_size:default_fv_font_size,
-		(fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0),
+		(fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0)|
+		    (use_freetype_to_rasterize_fv && !sf->strokedfont && !sf->multilayer?pf_ft_nohints:0),
 		NULL);
 	fv->filled = bdf;
 	if ( sf->display_size>0 ) {

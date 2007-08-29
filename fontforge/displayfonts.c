@@ -2351,6 +2351,7 @@ static void DoPrinting(PI *pi,char *filename) {
 #define CID_pfb		2005
 #define CID_ttf		2006
 #define CID_otf		2007
+#define CID_nohints	2008
 #define CID_bitmap	2009
 #define CID_pfaedit	2010
 #define CID_SampleText	2011
@@ -3203,6 +3204,7 @@ static enum sftf_fonttype DSP_FontType(DI *di) {
     type = GGadgetIsChecked(GWidgetGetControl(di->gw,CID_pfb))? sftf_pfb :
 	   GGadgetIsChecked(GWidgetGetControl(di->gw,CID_ttf))? sftf_ttf :
 	   GGadgetIsChecked(GWidgetGetControl(di->gw,CID_otf))? sftf_otf :
+	   GGadgetIsChecked(GWidgetGetControl(di->gw,CID_nohints))? sftf_nohints :
 	   GGadgetIsChecked(GWidgetGetControl(di->gw,CID_pfaedit))? sftf_pfaedit :
 	   sftf_bitmap;
 return( type );
@@ -3258,6 +3260,7 @@ static void DSP_ChangeFontCallback(void *context,SplineFont *sf,enum sftf_fontty
 	set = hasFreeType() && !sf->onlybitmaps &&
 		!sf->strokedfont && !sf->multilayer;
 	GGadgetSetEnabled(GWidgetGetControl(di->gw,CID_otf),set);
+	GGadgetSetEnabled(GWidgetGetControl(di->gw,CID_nohints),hasFreeType());
 	GGadgetSetEnabled(GWidgetGetControl(di->gw,CID_bitmap),sf->bitmaps!=NULL);
 	GGadgetSetEnabled(GWidgetGetControl(di->gw,CID_pfaedit),!sf->onlybitmaps);
     }
@@ -3268,6 +3271,8 @@ static void DSP_ChangeFontCallback(void *context,SplineFont *sf,enum sftf_fontty
 	GGadgetSetChecked(GWidgetGetControl(di->gw,CID_ttf),true);
     else if ( type==sftf_otf )
 	GGadgetSetChecked(GWidgetGetControl(di->gw,CID_otf),true);
+    else if ( type==sftf_nohints )
+	GGadgetSetChecked(GWidgetGetControl(di->gw,CID_nohints),true);
     else if ( type==sftf_pfaedit )
 	GGadgetSetChecked(GWidgetGetControl(di->gw,CID_pfaedit),true);
     else
@@ -3382,7 +3387,7 @@ return( true );
 	    GGadgetSetEnabled(GWidgetGetControl(di->gw,CID_AA),flags&gg_enabled);
 	    GGadgetSetChecked(GWidgetGetControl(di->gw,CID_AA),flags&gg_cb_on);
 	    GGadgetSetChecked(GWidgetGetControl(di->gw,CID_bitmap),true);
-	    for ( i=CID_pfb; i<=CID_otf; ++i )
+	    for ( i=CID_pfb; i<=CID_nohints; ++i )
 		GGadgetSetEnabled(GWidgetGetControl(di->gw,i),false);
 	    if ( best!=NULL ) {
 		sprintf( size, "%d", best->pixelsize );
@@ -3725,7 +3730,7 @@ void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     GRect pos;
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[17], boxes[15], mgcd[5], pgcd[8],
-	    *harray[8], *farray[7], *barray[4],
+	    *harray[8], *farray[8], *barray[4],
 	    *barray2[8], *varray[9], *varray2[9], *harray2[4],
 	    *varray3[4][4], *ptarray[4], *varray4[4], *varray5[4][2],
 	    *regenarray[6];
@@ -3871,65 +3876,78 @@ return;
     if ( !hasfreetype || sf->onlybitmaps || sf->strokedfont || sf->multilayer ) gcd[6].gd.flags = gg_visible| gg_utf8_popup;
     else if ( sf->subfontcnt!=0 || !sf->order2 ) gcd[6].gd.flags |= gg_cb_on;
     farray[2] = &gcd[6];
-    
 
-    label[7].text = (unichar_t *) "bitmap";
+    label[7].text = (unichar_t *) "nohints";
     label[7].text_is_1byte = true;
     gcd[7].gd.label = &label[7];
-    gcd[7].gd.pos.x = 148; gcd[7].gd.pos.y = gcd[4].gd.pos.y; 
+    gcd[7].gd.pos.x = 114; gcd[7].gd.pos.y = gcd[4].gd.pos.y; 
     gcd[7].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    gcd[7].gd.cid = CID_bitmap;
+    gcd[7].gd.cid = CID_nohints;
     gcd[7].gd.handle_controlevent = DSP_RadioSet;
-    gcd[7].gd.popup_msg = (unichar_t *) _("Specifies file format used to pass the font to freetype\n  pfb -- is the standard postscript type1\n  ttf -- is truetype\n  otf -- is opentype\n  bitmap -- not passed to freetype for rendering\n    bitmap fonts must already be generated\n  FontForge -- uses FontForge's own rasterizer, not\n    freetype's. Only as last resort");
+    gcd[7].gd.popup_msg = (unichar_t *) _("Specifies file format used to pass the font to freetype\n  pfb -- is the standard postscript type1\n  ttf -- is truetype\n  otf -- is opentype\n  nohints -- freetype rasterizes without hints\n  bitmap -- not passed to freetype for rendering\n    bitmap fonts must already be generated\n  FontForge -- uses FontForge's own rasterizer, not\n    freetype's. Only as last resort");
     gcd[7].creator = GRadioCreate;
-    if ( sf->bitmaps==NULL ) gcd[7].gd.flags = gg_visible| gg_utf8_popup;
-    else if ( sf->onlybitmaps ) gcd[7].gd.flags |= gg_cb_on;
+    if ( !hasfreetype || sf->onlybitmaps ) gcd[7].gd.flags = gg_visible| gg_utf8_popup;
+    else if ( sf->strokedfont || sf->multilayer ) gcd[7].gd.flags |= gg_cb_on;
     farray[3] = &gcd[7];
+    
 
-    label[8].text = (unichar_t *) "FontForge";
+    label[8].text = (unichar_t *) "bitmap";
     label[8].text_is_1byte = true;
     gcd[8].gd.label = &label[8];
-    gcd[8].gd.pos.x = 200; gcd[8].gd.pos.y = gcd[4].gd.pos.y; 
+    gcd[8].gd.pos.x = 148; gcd[8].gd.pos.y = gcd[4].gd.pos.y; 
     gcd[8].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    gcd[8].gd.cid = CID_pfaedit;
+    gcd[8].gd.cid = CID_bitmap;
     gcd[8].gd.handle_controlevent = DSP_RadioSet;
     gcd[8].gd.popup_msg = (unichar_t *) _("Specifies file format used to pass the font to freetype\n  pfb -- is the standard postscript type1\n  ttf -- is truetype\n  otf -- is opentype\n  bitmap -- not passed to freetype for rendering\n    bitmap fonts must already be generated\n  FontForge -- uses FontForge's own rasterizer, not\n    freetype's. Only as last resort");
     gcd[8].creator = GRadioCreate;
-    if ( sf->onlybitmaps ) gcd[8].gd.flags = gg_visible | gg_utf8_popup;
-    if ( (!hasfreetype && sf->bitmaps==NULL) || sf->strokedfont || sf->multilayer ) gcd[8].gd.flags |= gg_cb_on;
-    else if ( sf->onlybitmaps ) gcd[8].gd.flags = gg_visible| gg_utf8_popup;
-    farray[4] = &gcd[8]; farray[5] = GCD_Glue; farray[6] = NULL;
+    if ( sf->bitmaps==NULL ) gcd[8].gd.flags = gg_visible| gg_utf8_popup;
+    else if ( sf->onlybitmaps ) gcd[8].gd.flags |= gg_cb_on;
+    farray[4] = &gcd[8];
+
+    label[9].text = (unichar_t *) "FontForge";
+    label[9].text_is_1byte = true;
+    gcd[9].gd.label = &label[9];
+    gcd[9].gd.pos.x = 200; gcd[9].gd.pos.y = gcd[4].gd.pos.y; 
+    gcd[9].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[9].gd.cid = CID_pfaedit;
+    gcd[9].gd.handle_controlevent = DSP_RadioSet;
+    gcd[9].gd.popup_msg = (unichar_t *) _("Specifies file format used to pass the font to freetype\n  pfb -- is the standard postscript type1\n  ttf -- is truetype\n  otf -- is opentype\n  bitmap -- not passed to freetype for rendering\n    bitmap fonts must already be generated\n  FontForge -- uses FontForge's own rasterizer, not\n    freetype's. Only as last resort");
+    gcd[9].creator = GRadioCreate;
+    if ( sf->onlybitmaps ) gcd[9].gd.flags = gg_visible | gg_utf8_popup;
+    if ( !hasfreetype && sf->bitmaps==NULL ) gcd[9].gd.flags |= gg_cb_on;
+    else if ( sf->onlybitmaps ) gcd[9].gd.flags = gg_visible| gg_utf8_popup;
+    farray[5] = &gcd[9]; farray[6] = GCD_Glue; farray[7] = NULL;
 
     boxes[3].gd.flags = gg_enabled|gg_visible;
     boxes[3].gd.u.boxelements = farray;
     boxes[3].creator = GHBoxCreate;
     varray[4] = &boxes[3]; varray[5] = NULL;
 
-    label[9].text = (unichar_t *) "DFLT{dflt}";
-    label[9].text_is_1byte = true;
-    gcd[9].gd.label = &label[9];
-    gcd[9].gd.popup_msg = (unichar_t *) _("Select some text, then use this list to specify\nthe current script & language.");
-    gcd[9].gd.pos.x = 12; gcd[9].gd.pos.y = 6; 
-    gcd[9].gd.pos.width = 150;
-    gcd[9].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    gcd[9].gd.cid = CID_ScriptLang;
-    gcd[9].gd.u.list = printwindow->scriptlangs = SLOfFont(sf);
-    gcd[9].gd.handle_controlevent = DSP_ScriptLangChanged;
-    gcd[9].creator = GListFieldCreate;
-    varray[6] = &gcd[9]; varray[7] = NULL; varray[8] = NULL;
+    label[10].text = (unichar_t *) "DFLT{dflt}";
+    label[10].text_is_1byte = true;
+    gcd[10].gd.label = &label[10];
+    gcd[10].gd.popup_msg = (unichar_t *) _("Select some text, then use this list to specify\nthe current script & language.");
+    gcd[10].gd.pos.x = 12; gcd[10].gd.pos.y = 6; 
+    gcd[10].gd.pos.width = 150;
+    gcd[10].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[10].gd.cid = CID_ScriptLang;
+    gcd[10].gd.u.list = printwindow->scriptlangs = SLOfFont(sf);
+    gcd[10].gd.handle_controlevent = DSP_ScriptLangChanged;
+    gcd[10].creator = GListFieldCreate;
+    varray[6] = &gcd[10]; varray[7] = NULL; varray[8] = NULL;
 
     boxes[4].gd.flags = gg_enabled|gg_visible;
     boxes[4].gd.u.boxelements = varray;
     boxes[4].creator = GHVBoxCreate;
     harray2[1] = &boxes[4]; harray2[2] = GCD_Glue; harray2[3] = NULL;
 
-    gcd[10].gd.popup_msg = (unichar_t *) _("Select some text, then use this list to specify\nactive features.");
-    gcd[10].gd.pos.width = 50;
-    gcd[10].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | gg_list_alphabetic | gg_list_multiplesel;
-    gcd[10].gd.cid = CID_Features;
-    gcd[10].gd.handle_controlevent = DSP_FeaturesChanged;
-    gcd[10].creator = GListCreate;
-    harray2[0] = &gcd[10];
+    gcd[11].gd.popup_msg = (unichar_t *) _("Select some text, then use this list to specify\nactive features.");
+    gcd[11].gd.pos.width = 50;
+    gcd[11].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | gg_list_alphabetic | gg_list_multiplesel;
+    gcd[11].gd.cid = CID_Features;
+    gcd[11].gd.handle_controlevent = DSP_FeaturesChanged;
+    gcd[11].creator = GListCreate;
+    harray2[0] = &gcd[11];
 
     boxes[5].gd.flags = gg_enabled|gg_visible;
     boxes[5].gd.u.boxelements = harray2;
@@ -3937,51 +3955,51 @@ return;
     varray2[0] = &boxes[5]; varray2[1] = NULL;
 
 
-    gcd[11].gd.pos.x = 5; gcd[11].gd.pos.y = 20+gcd[11].gd.pos.y; 
-    gcd[11].gd.pos.width = 400; gcd[11].gd.pos.height = 236; 
-    gcd[11].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap | gg_text_xim;
-    gcd[11].gd.handle_controlevent = DSP_TextChanged;
-    gcd[11].gd.cid = CID_SampleText;
-    gcd[11].creator = SFTextAreaCreate;
-    varray2[2] = &gcd[11]; varray2[3] = NULL;
+    gcd[12].gd.pos.x = 5; gcd[12].gd.pos.y = 20+gcd[12].gd.pos.y; 
+    gcd[12].gd.pos.width = 400; gcd[12].gd.pos.height = 236; 
+    gcd[12].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap | gg_text_xim;
+    gcd[12].gd.handle_controlevent = DSP_TextChanged;
+    gcd[12].gd.cid = CID_SampleText;
+    gcd[12].creator = SFTextAreaCreate;
+    varray2[2] = &gcd[12]; varray2[3] = NULL;
 
-    gcd[12].gd.flags = gg_visible | gg_enabled ;
-    gcd[12].creator = GLineCreate;
-    varray2[4] = &gcd[12]; varray2[5] = NULL;
+    gcd[13].gd.flags = gg_visible | gg_enabled ;
+    gcd[13].creator = GLineCreate;
+    varray2[4] = &gcd[13]; varray2[5] = NULL;
 
-    label[13].text = (unichar_t *) "DPI:";
-    label[13].text_is_1byte = true;
-    gcd[13].gd.label = &label[13];
-    gcd[13].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    gcd[13].gd.popup_msg = (unichar_t *) _("Specifies screen dots per inch");
-    gcd[13].creator = GLabelCreate;
+    label[14].text = (unichar_t *) "DPI:";
+    label[14].text_is_1byte = true;
+    gcd[14].gd.label = &label[14];
+    gcd[14].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[14].gd.popup_msg = (unichar_t *) _("Specifies screen dots per inch");
+    gcd[14].creator = GLabelCreate;
 
     if ( lastdpi==0 )
 	dpi = GDrawPointsToPixels(NULL,72);
     else
 	dpi = lastdpi;
     sprintf( dpibuf, "%d", dpi );
-    label[14].text = (unichar_t *) dpibuf;
-    label[14].text_is_1byte = true;
-    gcd[14].gd.label = &label[14];
-    gcd[14].gd.pos.width = 50;
-    gcd[14].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    gcd[14].gd.popup_msg = (unichar_t *) _("Specifies screen dots per inch");
-    gcd[14].gd.cid = CID_DPI;
-    gcd[14].gd.handle_controlevent = DSP_DpiChanged;
-    gcd[14].creator = GNumericFieldCreate;
-
-    gcd[15].gd.flags = gg_visible | gg_enabled | gg_utf8_popup ;
-    gcd[15].gd.popup_msg = (unichar_t *) _("FontForge does not update this window when a change is made to the font.\nIf a font has changed press the button to force an update");
-    label[15].text = (unichar_t *) _("_Refresh");
+    label[15].text = (unichar_t *) dpibuf;
     label[15].text_is_1byte = true;
-    label[15].text_in_resource = true;
     gcd[15].gd.label = &label[15];
-    gcd[15].gd.handle_controlevent = DSP_Refresh;
-    gcd[15].creator = GButtonCreate;
+    gcd[15].gd.pos.width = 50;
+    gcd[15].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[15].gd.popup_msg = (unichar_t *) _("Specifies screen dots per inch");
+    gcd[15].gd.cid = CID_DPI;
+    gcd[15].gd.handle_controlevent = DSP_DpiChanged;
+    gcd[15].creator = GNumericFieldCreate;
 
-    regenarray[0] = &gcd[13]; regenarray[1] = &gcd[14]; regenarray[2] = GCD_Glue;
-    regenarray[3] = &gcd[15]; regenarray[4] = NULL;
+    gcd[16].gd.flags = gg_visible | gg_enabled | gg_utf8_popup ;
+    gcd[16].gd.popup_msg = (unichar_t *) _("FontForge does not update this window when a change is made to the font.\nIf a font has changed press the button to force an update");
+    label[16].text = (unichar_t *) _("_Refresh");
+    label[16].text_is_1byte = true;
+    label[16].text_in_resource = true;
+    gcd[16].gd.label = &label[16];
+    gcd[16].gd.handle_controlevent = DSP_Refresh;
+    gcd[16].creator = GButtonCreate;
+
+    regenarray[0] = &gcd[14]; regenarray[1] = &gcd[15]; regenarray[2] = GCD_Glue;
+    regenarray[3] = &gcd[16]; regenarray[4] = NULL;
 
     boxes[12].gd.flags = gg_enabled|gg_visible;
     boxes[12].gd.u.boxelements = regenarray;
@@ -4139,17 +4157,17 @@ return;
     boxes[0].creator = GHVGroupCreate;
 
     GGadgetsCreate(printwindow->gw,boxes);
-    GListSetSBAlwaysVisible(gcd[10].ret,true);
-    GListSetPopupCallback(gcd[10].ret,MV_FriendlyFeatures);
+    GListSetSBAlwaysVisible(gcd[11].ret,true);
+    GListSetPopupCallback(gcd[11].ret,MV_FriendlyFeatures);
 
     GTextInfoListFree(gcd[0].gd.u.list);
     DSP_SetFont(printwindow,true);
-    SFTFSetDPI(gcd[11].ret,dpi);
-    temp = PrtBuildDef(sf,gcd[11].ret,
+    SFTFSetDPI(gcd[12].ret,dpi);
+    temp = PrtBuildDef(sf,gcd[12].ret,
 	    (void (*)(void *, int, uint32, uint32))SFTFInitLangSys);
-    GGadgetSetTitle(gcd[11].ret, temp);
+    GGadgetSetTitle(gcd[12].ret, temp);
     free(temp);
-    SFTFRegisterCallback(gcd[11].ret,printwindow,DSP_ChangeFontCallback);
+    SFTFRegisterCallback(gcd[12].ret,printwindow,DSP_ChangeFontCallback);
 
     GHVBoxSetExpandableRow(boxes[0].ret,0);
     GHVBoxSetExpandableCol(boxes[2].ret,gb_expandglue);
@@ -4165,9 +4183,9 @@ return;
     GHVBoxSetExpandableCol(boxes[12].ret,gb_expandglue);
     GHVBoxFitWindow(boxes[0].ret);
 
-    SFTextAreaSelect(gcd[11].ret,0,0);
-    SFTextAreaShow(gcd[11].ret,0);
-    SFTFProvokeCallback(gcd[11].ret);
+    SFTextAreaSelect(gcd[12].ret,0,0);
+    SFTextAreaShow(gcd[12].ret,0);
+    SFTFProvokeCallback(gcd[12].ret);
 
     GDrawSetVisible(printwindow->gw,true);
 }

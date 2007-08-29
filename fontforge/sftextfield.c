@@ -2889,13 +2889,16 @@ static FontData *RegenFontData(SFTextArea *st, FontData *ret) {
 	    ret->bdf = ok;
     } else if ( !hasFreeType() && ret->fonttype!=sftf_pfaedit )
 	ret->fonttype = sftf_pfaedit;
-    else if ( ret->sf->multilayer || ret->sf->strokedfont )
+    else if (( ret->sf->multilayer || ret->sf->strokedfont ) && ret->fonttype!=sftf_nohints )
 	ret->fonttype = sftf_pfaedit;
 
     if ( ret->bdf!=NULL )
 	/* Already done */;
     else if ( ret->fonttype==sftf_pfaedit )
-	ret->bdf = SplineFontPieceMeal(ret->sf,pixelsize,ret->antialias,NULL);
+	ret->bdf = SplineFontPieceMeal(ret->sf,pixelsize,ret->antialias?pf_antialias:0,NULL);
+    else if ( ret->fonttype==sftf_nohints )
+	ret->bdf = SplineFontPieceMeal(ret->sf,pixelsize,
+		(ret->antialias?pf_antialias:0)|pf_ft_nohints,NULL);
     else {
 	for ( test=st->generated; test!=NULL; test=test->next )
 	    if ( test!=ret && test->bdf!=NULL && test->sf == ret->sf &&
