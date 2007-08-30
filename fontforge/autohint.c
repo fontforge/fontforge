@@ -1318,194 +1318,6 @@ HintInstance *HICopyTrans(HintInstance *hi, real mul, real offset) {
 return( first );
 }
 
-static int inhints(StemInfo *stems,real base, real width) {
-
-    while ( stems!=NULL ) {
-	if ( stems->start==base || stems->start+stems->width==base+width ||
-		stems->start+stems->width==base || stems->start==base+width )
-return( true );
-	stems = stems->next;
-    }
-return( false );
-}
-
-static StemInfo *GhostAdd(StemInfo *ghosts, StemInfo *stems, real base,
-	real width, real xstart, real xend ) {
-    StemInfo *s, *prev, *test;
-    HintInstance *hi;
-
-    if ( base!=rint(base))
-return( ghosts );
-
-    if ( xstart>xend ) {
-	real temp = xstart;
-	xstart = xend;
-	xend = temp;
-    }
-    if ( width==20 ) base -= 20;
-
-    if ( inhints(stems,base,width))
-return(ghosts);		/* already recorded */
-    if ( StemWouldConflict(stems,base,width))
-return(ghosts);		/* Let's not add a conflicting ghost hint */
-    if ( StemWouldConflict(ghosts,base,width))
-return(ghosts);
-
-    for ( s=ghosts; s!=NULL; s=s->next )
-	if ( s->start==base && s->width==width )
-    break;
-    if ( s==NULL ) {
-	s = chunkalloc(sizeof(StemInfo));
-	s->start = base;
-	s->width = width;
-	s->ghost = true;
-	if ( ghosts==NULL || base<ghosts->start ) {
-	    s->next = ghosts;
-	    ghosts = s;
-	} else {
-	    for ( prev=ghosts, test=ghosts->next; test!=NULL && base<test->start;
-		    prev = test, test = test->next);
-	    prev->next = s;
-	    s->next = test;
-	}
-    }
-    hi = chunkalloc(sizeof(HintInstance));
-    hi->begin = xstart;
-    hi->end = xend;
-    s->where = HIMerge(s->where,hi);
-return( ghosts );
-}
-
-static StemInfo *CheckForGhostHints(StemInfo *stems,SplineChar *sc, BlueData *bd) {
-    /* PostScript doesn't allow a hint to stretch from one alignment zone to */
-    /*  another. (Alignment zones are the things in bluevalues).  */
-    /* Oops, I got this wrong. PS doesn't allow a hint to start in a bottom */
-    /*  zone and stretch to a top zone. Everything in OtherBlues is a bottom */
-    /*  zone. The baseline entry in BlueValues is also a bottom zone. Every- */
-    /*  thing else in BlueValues is a top-zone. */
-    /* This means */
-    /*  that we can't define a horizontal stem hint which stretches from */
-    /*  the baseline to the top of a capital I, or the x-height of lower i */
-    /*  If we find any such hints we must remove them, and replace them with */
-    /*  ghost hints. The bottom hint has height -21, and the top -20 */
-    BlueData _bd;
-    SplineFont *sf = sc->parent;
-    StemInfo *prev, *s, *n, *snext, *ghosts = NULL;
-    SplineSet *spl, *spl_next;
-    Spline *spline, *first;
-    SplinePoint *sp, *sp2;
-    real base, width/*, toobig = (sc->parent->ascent+sc->parent->descent)/2*/;
-    int i,startfound, widthfound;
-    DBounds b;
-
-    /* Get the alignment zones */
-    if ( bd==NULL ) {
-	QuickBlues(sf,&_bd);
-	bd = &_bd;
-    }
-
-    /* look for any stems stretching from one zone to another and remove them */
-    /*  (I used to turn them into ghost hints here, but that didn't work (for */
-    /*  example on "E" where we don't need any ghosts from the big stem because*/
-    /*  the narrow stems provide the hints that PS needs */
-    /* However, there are counter-examples. in Garamond-Pro the "T" character */
-    /*  has a horizontal stem at the top which stretches between two adjacent */
-    /*  bluezones. Removing it is wrong. Um... Thanks Adobe */
-    /* I misunderstood. Both of these were top-zones */
-    for ( prev=NULL, s=stems; s!=NULL; s=snext ) {
-	snext = s->next;
-	startfound = widthfound = -1;
-	for ( i=0; i<bd->bluecnt; ++i ) {
-	    if ( s->start>=bd->blues[i][0]-1 && s->start<=bd->blues[i][1]+1 )
-		startfound = i;
-	    else if ( s->start+s->width>=bd->blues[i][0]-1 && s->start+s->width<=bd->blues[i][1]+1 )
-		widthfound = i;
-	}
-	if ( startfound!=-1 && widthfound!=-1 &&
-		( s->start>0 || s->start+s->width<=0 ))
-	    startfound = widthfound = -1;
-	if ( startfound!=-1 && widthfound!=-1 ) {
-	    if ( prev==NULL )
-		stems = snext;
-	    else
-		prev->next = snext;
-	    s->next = NULL;
-	    StemInfoFree(s);
-	} else
-	    prev = s;
-    }
-
-    /* Now look and see if we can find any edges which lie in */
-    /*  these zones.  Edges which are not currently in hints */
-    /* Use the current contour to determine top or bottom */
-    for ( spl = sc->layers[ly_fore].splines; spl!=NULL; spl = spl->next ) if ( spl->first->prev!=NULL ) {
-	first = NULL;
-	spl_next = spl->next; spl->next = NULL;
-	SplineSetQuickBounds(spl,&b);
-	spl->next = spl_next;
-	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline = spline->to->next ) {
-	    base = spline->from->me.y;
-	    if ( spline->knownlinear && base == spline->to->me.y ) {
-		for ( i=0; i<bd->bluecnt; ++i ) {
-		    if ( base>=bd->blues[i][0]-1 && base<=bd->blues[i][1]+1 )
-		break;
-		}
-		if ( i!=bd->bluecnt ) {
-		    if ( spline->from->me.y+21 > b.maxy )
-			width = 20;
-		    else if ( spline->from->me.y-20 < b.miny )
-			width = 21;
-		    else {
-			for ( sp2= spline->from->prev->from; sp2!=spline->from && sp2->me.y==spline->from->me.y; sp2=sp2->prev->from );
-			width = (sp2->me.y > spline->from->me.y)?21:20;
-		    }
-		    ghosts = GhostAdd(ghosts,stems, base,width,spline->from->me.x,spline->to->me.x);
-		}
-	    }
-	    if ( first==NULL ) first = spline;
-	}
-	/* And check for the horizontal top of a curved surface */
-	for ( sp = spl->first; ; ) {
-	    base = sp->me.y;
-	    if ( !sp->nonextcp && !sp->noprevcp && sp->nextcp.y==base &&
-		    sp->prevcp.y==base ) {
-		for ( i=0; i<bd->bluecnt; ++i ) {
-		    if ( base>=bd->blues[i][0]-1 && base<=bd->blues[i][1]+1 )
-		break;
-		}
-		if ( i!=bd->bluecnt ) {
-		    if ( sp->me.y+21 > b.maxy )
-			width = 20;
-		    else if ( sp->me.y-20 < b.miny )
-			width = 21;
-		    else {
-			for ( sp2= sp->prev->from; sp2!=sp && sp2->me.y==spline->from->me.y; sp2=sp2->prev->from );
-			width = (sp2->me.y > sp->me.y)?21:20;
-		    }
-		    ghosts = GhostAdd(ghosts,stems, base,width,(sp->me.x+sp->prevcp.x)/2,(sp->me.x+sp->nextcp.x)/2);
-		}
-	    }
-	    sp = sp->next->to;
-	    if ( sp == spl->first )
-	break;
-	}
-    }
-
-    /* Finally add any ghosts we've got back into the stem list */
-    for ( s=ghosts; s!=NULL; s=snext ) {
-	snext = s->next;
-	for ( prev=NULL, n=stems; n!=NULL && s->start>n->start; prev=n, n=n->next );
-	if ( prev==NULL ) {
-	    s->next = stems;
-	    stems = s;
-	} else {
-	    prev->next = s;
-	    s->next = n;
-	}
-    }
-return( stems );
-}
-
 static HintInstance *SCGuessHintPoints(SplineChar *sc, StemInfo *stem,int major, int off) {
     SplinePoint *starts[20], *ends[20];
     int spt=0, ept=0;
@@ -3043,6 +2855,78 @@ static void GDPreprocess(struct glyphdata *gd) {
     }
 }
 
+static int inhints(StemInfo *stems,real base, real width) {
+
+    while ( stems!=NULL ) {
+	if ( stems->start==base || stems->start+stems->width==base+width ||
+		stems->start+stems->width==base || stems->start==base+width )
+return( true );
+	stems = stems->next;
+    }
+return( false );
+}
+
+static StemInfo *GhostAdd( StemInfo *ghosts, StemInfo *stems, 
+    struct stemdata *new ) {
+    StemInfo *s, *prev, *test;
+    double base, width;
+    
+    width = new->width;
+    base = new->left.y;
+
+    if ( inhints(stems,base,width))
+return(ghosts);		/* already recorded */
+    if ( StemWouldConflict(stems,base,width))
+return(ghosts);		/* Let's not add a conflicting ghost hint */
+    if ( StemWouldConflict(ghosts,base,width))
+return(ghosts);
+
+    s = chunkalloc(sizeof(StemInfo));
+    s->start = base;
+    s->width = width;
+    s->ghost = true;
+    s->where = StemAddHIFromActive( new,false );
+
+    if ( ghosts==NULL || base<ghosts->start ) {
+	s->next = ghosts;
+	ghosts = s;
+    } else {
+	for ( prev=ghosts, test=ghosts->next; test!=NULL && base<test->start;
+		prev = test, test = test->next);
+	prev->next = s;
+	s->next = test;
+    }
+
+return( ghosts );
+}
+
+/* Imagine a slightly slanted serif, like vertical serifs in "E", "F", "L"
+/* or "Z". In order to ensure such serifs are marked with a hint, we check
+/* the stem vector direction less strictly than in other cases. However, 
+/* for this approach to work, both the key points of the hint should immediately
+/* follow each other on the spline */
+static int IsPossibleSerifStem( struct stemdata *stem,int vertical ) {
+    int i;
+    SplinePoint *lpt,*rpt;
+    
+    if ( (( stem->unit.x>.99 || stem->unit.x<-.99) && vertical==0 ) ||
+	 (( stem->unit.y>.99 || stem->unit.y<-.99) && vertical==1 ) ) {
+         
+         if ( stem->chunk_cnt > 0 ) {
+            for ( i=0; i<stem->chunk_cnt; ++i ) {
+		if ( stem->chunks[i].l!=NULL && stem->chunks[i].r!=NULL ) {
+                    lpt = stem->chunks[i].l->sp;
+                    rpt = stem->chunks[i].r->sp;
+                    
+                    if ( lpt->next->to == rpt || lpt->prev->from == rpt )
+return( true );
+                }
+	    }
+         }
+    }
+return( false );
+}
+
 static StemInfo *GDFindStems(struct glyphdata *gd, int major) {
     int i;
     StemInfo *head = NULL, *cur, *p, *t;
@@ -3053,8 +2937,9 @@ static StemInfo *GDFindStems(struct glyphdata *gd, int major) {
 	stem = &gd->stems[i];
 	if ( stem->toobig )
     continue;
-	if ((( stem->unit.x<.05 && stem->unit.x>-.05) && major==1 ) ||
-		(( stem->unit.y<.05 && stem->unit.y>-.05) && major==0 )) {
+	if ((( stem->unit.y<.05 && stem->unit.y>-.05 ) && major==0 ) ||
+		(( stem->unit.x<.05 && stem->unit.x>-.05 ) && major==1 ) ||
+                IsPossibleSerifStem( stem,major )) {
 	    double l = (&stem->left.x)[other], r = (&stem->right.x)[other];
 	    int j, hasl=false, hasr=false;
 	    for ( j=0; j<stem->chunk_cnt; ++j ) {
@@ -3102,23 +2987,28 @@ static DStemInfo *GDFindDStems(struct glyphdata *gd) {
 	if ( stem->toobig || stem->len==0 )
     continue;
 	
-        if ( stem->unit.y == 0 || stem->unit.x == 0 )
+        if ( ( stem->unit.y > -.05 && stem->unit.y < .05 ) || 
+             ( stem->unit.x > -.05 && stem->unit.x < .05 ) )
     continue;
 
         for ( j=0; j<4; j++ ) bp[j]=NULL;
     
 	for ( j=0; j<stem->chunk_cnt; ++j ) {
             if ( stem->chunks[j].l!=NULL ) {
-                if ( bp[0]==NULL || bp[0]->y < stem->chunks[j].l->sp->me.y )
+                if ( ( bp[0]==NULL || bp[0]->y < stem->chunks[j].l->sp->me.y )
+                    && stem->chunks[j].l->sp->ttfindex < gd->realcnt )
                     bp[0] = &stem->chunks[j].l->sp->me;
-                if ( bp[2]==NULL || bp[2]->y > stem->chunks[j].l->sp->me.y )
+                if ( ( bp[2]==NULL || bp[2]->y > stem->chunks[j].l->sp->me.y )
+                    && stem->chunks[j].l->sp->ttfindex < gd->realcnt )
                     bp[2] = &stem->chunks[j].l->sp->me;
             }
 
             if ( stem->chunks[j].r!=NULL ) {
-                if ( bp[1]==NULL || bp[1]->y < stem->chunks[j].r->sp->me.y )
+                if ( ( bp[1]==NULL || bp[1]->y < stem->chunks[j].r->sp->me.y )
+                    && stem->chunks[j].r->sp->ttfindex < gd->realcnt )
                     bp[1] = &stem->chunks[j].r->sp->me;
-                if ( bp[3]==NULL || bp[3]->y > stem->chunks[j].r->sp->me.y )
+                if ( ( bp[3]==NULL || bp[3]->y > stem->chunks[j].r->sp->me.y )
+                    && stem->chunks[j].r->sp->ttfindex < gd->realcnt )
                     bp[3] = &stem->chunks[j].r->sp->me;
             }
 	}
@@ -3137,6 +3027,34 @@ static DStemInfo *GDFindDStems(struct glyphdata *gd) {
         }
     }
 return( head );
+}
+
+static StemInfo *GDFindGhostHints( struct glyphdata *gd,StemInfo *hstems ) {
+    int i;
+    struct stemdata *stem;
+    StemInfo *prev, *s, *n, *snext, *ghosts = NULL;
+
+    for ( i=0; i<gd->stemcnt; ++i ) {
+	stem = &gd->stems[i];
+	if ( !stem->ghost )
+    continue;
+        
+        ghosts = GhostAdd( ghosts,hstems,stem );
+    }
+
+    /* Finally add any ghosts we've got back into the stem list */
+    for ( s=ghosts; s!=NULL; s=snext ) {
+	snext = s->next;
+	for ( prev=NULL, n=hstems; n!=NULL && s->start>n->start; prev=n, n=n->next );
+	if ( prev==NULL ) {
+	    s->next = hstems;
+	    hstems = s;
+	} else {
+	    prev->next = s;
+	    s->next = n;
+	}
+    }
+return( hstems );
 }
 
 void _SplineCharAutoHint( SplineChar *sc, BlueData *bd, struct glyphdata *gd2,
@@ -3158,15 +3076,15 @@ void _SplineCharAutoHint( SplineChar *sc, BlueData *bd, struct glyphdata *gd2,
     sc->manualhints = false;
 
     if ( (gd=gd2)==NULL )
-	gd = GlyphDataBuild( sc,false );
+	gd = GlyphDataBuild( sc,bd,false );
     if ( gd!=NULL ) {
 	GDPreprocess(gd);
 	sc->vstem = GDFindStems(gd,1);
 	sc->hstem = GDFindStems(gd,0);
+	sc->hstem = GDFindGhostHints( gd,sc->hstem );
 	if ( !gd->only_hv )
 	    sc->dstem = GDFindDStems(gd);
 	if ( gd2==NULL ) GlyphDataFree(gd);
-	sc->hstem = CheckForGhostHints(sc->hstem,sc,bd);
     }
 
     AutoHintRefs(sc,bd,false,gen_undoes);
