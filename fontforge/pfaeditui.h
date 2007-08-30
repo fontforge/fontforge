@@ -69,7 +69,7 @@ extern GImage GIcon_sel2ptr, GIcon_rightpointer, GIcon_angle, GIcon_distance,
 	GIcon_selectedpoint, GIcon_mag;
 extern GImage GIcon_menumark;
 extern GImage GIcon_rmoverlap, GIcon_exclude, GIcon_intersection, GIcon_findinter;
-extern GImage GIcon_bold, GIcon_condense;
+extern GImage GIcon_bold, GIcon_condense, GIcon_oblique;
 extern GImage GIcon_outline, GIcon_inline, GIcon_shadow, GIcon_wireframe;
 extern GImage def_image, red_image, blue_image, green_image, magenta_image,
 	yellow_image, cyan_image, white_image;
@@ -139,7 +139,7 @@ extern GImage GIcon_smallskew, GIcon_smallscale, GIcon_smallrotate,
 extern GImage GIcon_lock;
 extern GImage GIcon_menumark;
 extern GImage GIcon_rmoverlap, GIcon_exclude, GIcon_intersection, GIcon_findinter;
-extern GImage GIcon_bold, GIcon_condense;
+extern GImage GIcon_bold, GIcon_condense, GIcon_oblique;
 extern GImage GIcon_outline, GIcon_inline, GIcon_shadow, GIcon_wireframe;
 extern GImage def_image, red_image, blue_image, green_image, magenta_image,
 	yellow_image, cyan_image, white_image;
