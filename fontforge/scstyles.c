@@ -1309,7 +1309,7 @@ static void SCCondenseExtend(struct counterinfo *ci,SplineChar *sc, int layer) {
     if ( ci->correct_italic && sc->parent->italicangle!=0 ) {
 	memset(transform,0,sizeof(transform));
 	transform[0] = transform[3] = 1;
-	transform[2] = -tan( sc->parent->italicangle * 3.1415926535897932/180.0 );
+	transform[2] = tan( sc->parent->italicangle * 3.1415926535897932/180.0 );
 	SplinePointListTransform(sc->layers[layer].splines,transform,true);
 	StemInfosFree(sc->vstem); sc->vstem=NULL;
     }
@@ -1355,7 +1355,7 @@ static void SCCondenseExtend(struct counterinfo *ci,SplineChar *sc, int layer) {
 	/* If we unskewed it, we want to skew it now */
 	memset(transform,0,sizeof(transform));
 	transform[0] = transform[3] = 1;
-	transform[2] = tan( sc->parent->italicangle * 3.1415926535897932/180.0 );
+	transform[2] = -tan( sc->parent->italicangle * 3.1415926535897932/180.0 );
 	SplinePointListTransform(sc->layers[layer].splines,transform,true);
     }
     
