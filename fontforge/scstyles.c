@@ -1648,4 +1648,43 @@ void CondenseExtendDlg(FontView *fv, CharView *cv) {
     GDrawDestroyWindow(gw);
 }
 
+/* ************************************************************************** */
+/* ***************************** Oblique Dialog ***************************** */
+/* ************************************************************************** */
+
+void ObliqueDlg(FontView *fv, CharView *cv) {
+    static double last_angle = -10, temp;
+    char def[40], *ret, *end;
+    real transform[6];
+
+    sprintf( def, "%g", last_angle );
+    ret = gwwv_ask_string(_("Italic Slant..."),def,_("By what angle (in degrees) do you want to slant the font?"));
+    if ( ret==NULL )
+return;
+    temp = strtod(ret,&end);
+    if ( *end || temp>90 || temp<-90 ) {
+	free(ret);
+	gwwv_post_error( _("Bad Number"),_("Bad Number") );
+return;
+    }
+
+    last_angle = temp;
+    memset(transform,0,sizeof(transform));
+    transform[0] = transform[3] = 1;
+    transform[2] = -tan( last_angle * 3.1415926535897932/180.0 );
+    if ( cv!=NULL ) {
+	CVPreserveState(cv);
+	CVTransFunc(cv,transform,fvt_dontmovewidth);
+	CVCharChangedUpdate(cv);
+    } else {
+	int i, gid;
+	SplineChar *sc;
+
+	for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
+		(gid = fv->map->map[i])!=-1 && (sc=fv->sf->glyphs[gid])!=NULL ) {
+	    FVTrans(fv,sc,transform,NULL,fvt_dontmovewidth);
+	}
+    }
+}
+
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

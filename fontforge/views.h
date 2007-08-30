@@ -999,6 +999,7 @@ enum embolden_type { embolden_lcg, embolden_cjk, embolden_auto, embolden_custom 
 void FVEmbolden(FontView *fv,enum embolden_type type,struct lcg_zones *zones);
 void EmboldenDlg(FontView *fv, CharView *cv);
 void CondenseExtendDlg(FontView *fv, CharView *cv);
+void ObliqueDlg(FontView *fv, CharView *cv);
 
 extern int FVParseSelectByPST(FontView *fv,struct lookup_subtable *sub,
 	int search_type);
