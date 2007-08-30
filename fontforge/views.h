@@ -985,14 +985,16 @@ struct lcg_zones {
      /* also anything on the other side of a hint from this should be moved down */
     int bottom_bound;
 
+    enum counter_type { ct_squish, ct_retain, ct_auto } counter_type;
+
     SplineSet *(*embolden_hook)(SplineSet *,struct lcg_zones *,SplineChar *,int layer);
-    void (*embolden_width)(SplineChar *sc, struct lcg_zones *, DBounds *old, DBounds *new);
     int wants_hints;
 
     double stroke_width;	/* negative number to lighten, positive to embolden */
     uint8 removeoverlap;
 
     BlueData *bd;
+    double stdvw;
 };
 /* This order is the same order as the radio buttons in the embolden dlg */
 enum embolden_type { embolden_lcg, embolden_cjk, embolden_auto, embolden_custom };
