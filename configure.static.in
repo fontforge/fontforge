@@ -411,53 +411,48 @@ AC_ARG_WITH(noui,
 
 test -d libs || mkdir libs
 
-dnl Build a po/Makefile.in with appropriate instructions for installing all locales
-
+dnl Build a $ac_confdir/po/Makefile.in with appropriate instructions for installing all locales
 
 if test "$gww_has_gettext" = "yes" >/dev/null 2>&1 ; then
- mofiles=""
- for localefile in po/*.po; do
-   locale=`echo $localefile | sed 's/po\///' | sed 's/\.po//'`
-   mofiles="$mofiles $locale.mo"
- done
+   mofiles="$(cd $ac_confdir/po && ls *.po | sed -e 's#\.po#\.mo#g')"
 
- cat </dev/null >po/Makefile.in
- echo 'prefix = @prefix@' >> po/Makefile.in
- echo 'localedir = $(prefix)/share/locale' >> po/Makefile.in
- echo 'INSTALL = @INSTALL@' >> po/Makefile.in
- echo 'INSTALL_DATA = @INSTALL_DATA@' >> po/Makefile.in
- echo '' >> po/Makefile.in
- echo "MOFILES =" $mofiles >> po/Makefile.in
- echo '' >> po/Makefile.in
- echo '.SUFFIXES:' >> po/Makefile.in
- echo '.SUFFIXES: .po .mo' >> po/Makefile.in
- echo '' >> po/Makefile.in
- echo 'all: $(MOFILES)' >> po/Makefile.in
- echo '' >> po/Makefile.in
- echo '.po.mo:' >> po/Makefile.in
- echo '	msgfmt -o $@ $<' >> po/Makefile.in
- echo '' >> po/Makefile.in
- echo 'install:' >> po/Makefile.in
+ cat </dev/null >$ac_confdir/po/Makefile.in
+ echo 'prefix = @prefix@' >> $ac_confdir/po/Makefile.in
+ echo 'localedir = $(prefix)/share/locale' >> $ac_confdir/po/Makefile.in
+ echo 'INSTALL = @INSTALL@' >> $ac_confdir/po/Makefile.in
+ echo 'INSTALL_DATA = @INSTALL_DATA@' >> $ac_confdir/po/Makefile.in
+ echo '' >> $ac_confdir/po/Makefile.in
+ echo "MOFILES =" $mofiles >> $ac_confdir/po/Makefile.in
+ echo '' >> $ac_confdir/po/Makefile.in
+ echo '.SUFFIXES:' >> $ac_confdir/po/Makefile.in
+ echo '.SUFFIXES: .po .mo' >> $ac_confdir/po/Makefile.in
+ echo '' >> $ac_confdir/po/Makefile.in
+ echo 'all: $(MOFILES)' >> $ac_confdir/po/Makefile.in
+ echo '' >> $ac_confdir/po/Makefile.in
+ echo '.po.mo:' >> $ac_confdir/po/Makefile.in
+ echo '	msgfmt -o $@ $<' >> $ac_confdir/po/Makefile.in
+ echo '' >> $ac_confdir/po/Makefile.in
+ echo 'install:' >> $ac_confdir/po/Makefile.in
 
- for localefile in po/*.po; do
-   locale=`echo $localefile | sed 's/po\///' | sed 's/\.po//'`
-   echo '	mkdir -p $(localedir)/'$locale'/LC_MESSAGES' >> po/Makefile.in
-   echo '	$(INSTALL_DATA)' $locale.mo '$(localedir)/'$locale'/LC_MESSAGES/FontForge.mo' >> po/Makefile.in
- done
+  for localefile in $mofiles; do
+    locale="${localefile%%.mo}"
+    echo '	mkdir -p $(DESTDIR)$(localedir)/'$locale'/LC_MESSAGES'       >> $ac_confdir/po/Makefile.in
+    echo '	$(INSTALL_DATA)' $localefile '$(DESTDIR)$(localedir)/'$locale'/LC_MESSAGES/FontForge.mo'       >> $ac_confdir/po/Makefile.in
+  done
 else
- cat </dev/null >po/Makefile.in
- echo 'all:' >> po/Makefile.in
- echo '	' >> po/Makefile.in
- echo '' >> po/Makefile.in
- echo 'install:' >> po/Makefile.in
- echo '	' >> po/Makefile.in
- echo '' >> po/Makefile.in
+ cat </dev/null >$ac_confdir/po/Makefile.in
+ echo 'all:' >> $ac_confdir/po/Makefile.in
+ echo '	' >> $ac_confdir/po/Makefile.in
+ echo '' >> $ac_confdir/po/Makefile.in
+ echo 'install:' >> $ac_confdir/po/Makefile.in
+ echo '	' >> $ac_confdir/po/Makefile.in
+ echo '' >> $ac_confdir/po/Makefile.in
 fi
 
 dnl end code for locale files.
 
 AC_SUBST(VERSION)
-VERSION=`cat VERSION`
+VERSION=`cat $ac_confdir/VERSION`
 
 AC_SUBST(WFLAGS)
 if test "$GCC" = yes; then
@@ -466,13 +461,13 @@ else
   WFLAGS=""
 fi
 
-cp Makefile.static.in Makefile.in
-cp Unicode/Makefile.static.in Unicode/Makefile.in
-cp gdraw/Makefile.static.in gdraw/Makefile.in
-cp fontforge/Makefile.static.in fontforge/Makefile.in
+cp $ac_confdir/Makefile.dynamic.in $ac_confdir/Makefile.in
+cp $ac_confdir/Unicode/Makefile.dynamic.in $ac_confdir/Unicode/Makefile.in
+cp $ac_confdir/gdraw/Makefile.dynamic.in $ac_confdir/gdraw/Makefile.in
+cp $ac_confdir/fontforge/Makefile.dynamic.in $ac_confdir/fontforge/Makefile.in
 AC_OUTPUT(Makefile Unicode/Makefile gdraw/Makefile fontforge/Makefile po/Makefile systemspecific fontforge.pc )
 if test -e umap >/dev/null 2>&1 ; then
-  cp umap/Makefile.dynamic.in umap/Makefile.in
+  cp $ac_confdir/umap/Makefile.dynamic.in $ac_confdir/umap/Makefile.in
   AC_OUTPUT( umap/Makefile )
 fi
 

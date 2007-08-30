@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA RANLIB ac_ct_RANLIB build build_cpu build_vendor build_os host host_cpu host_vendor host_os HOST FF_EXTRA_FILES CPP EGREP X_CFLAGS X_PRE_LIBS X_LIBS X_EXTRA_LIBS X_11LIB STATIC_LIBS VERSION WFLAGS LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA RANLIB ac_ct_RANLIB build build_cpu build_vendor build_os host host_cpu host_vendor host_os HOST FF_EXTRA_FILES PYTHON_LIB_NAME CPP EGREP X_CFLAGS X_PRE_LIBS X_LIBS X_EXTRA_LIBS X_11LIB STATIC_LIBS VERSION WFLAGS LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -845,6 +845,16 @@ if test -n "$ac_init_help"; then
 
   cat <<\_ACEOF
 
+Optional Features:
+  --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
+  --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
+  --enable-multilayer     Control whether we build with support for type3/svg
+                          fonts containing multilayered drawing with strokes,
+                          fills, images, etc.
+  --enable-devicetables   Control whether we build with support for device
+                          tables which allow fine control of kerning (etc.) at
+                          small point sizes
+
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
@@ -856,8 +866,6 @@ Optional Packages:
   --with-freetype-bytecode   Control whether we build with the bytecode interpreter
   --with-freetype-src=dir   Specify freetype source directory
   --with-x                use the X Window System
-  --with-multilayer   Control whether we build with support for type3/svg fonts containing multilayered drawing with strokes, fills, images, etc.
-  --with-devicetables   Control whether we build with support for device tables which allow fine control of kerning (etc.) at small point sizes
   --with-gtk   Control whether we build using the gtk toolkit (does not work yet)
   --with-gdraw   Control whether we build using fontforge's traditional toolkit (gdraw)
   --with-noui   Control whether we build without any ui, just the ability to run scripts
@@ -3214,7 +3222,9 @@ if test "$python" = "yes" ; then
       PySubVersion=`echo $PyVersion |sed -e 's/2.//'`
       PyInc=`python -c "import distutils.sysconfig ; print '%s' % distutils.sysconfig.get_config_var('INCLUDEPY')"`
       PyLib=`python -c "import distutils.sysconfig ; print '%s/%s' % (distutils.sysconfig.get_config_var('LIBPL'),distutils.sysconfig.get_config_var('LDLIBRARY'))"`
-      if test "$PySubVersion" \!= "" -a "$PySubVersion" -ge 3 -a -e $PyLib -a -e $PyInc; then
+      if test "$PySubVersion" \!= "" -a "$PySubVersion" -le 2 ; then
+        python="no"
+      elif test "$PySubVersion" \!= "" -a "$PySubVersion" -ge 3 -a -e $PyLib -a -e $PyInc; then
 	PyIncs=`python -c "import distutils.sysconfig ; print '-I%s' % distutils.sysconfig.get_config_var('INCLUDEPY')"`
         PyLibs=`python -c "import distutils.sysconfig ; print '%s/%s %s' % (distutils.sysconfig.get_config_var('LIBPL'),distutils.sysconfig.get_config_var('LDLIBRARY'),distutils.sysconfig.get_config_var('LIBS'))"`
         LIBS="$LIBS $PyLibs"
@@ -3370,6 +3380,9 @@ if test "$python" = "no" ; then
 #define _NO_PYTHON 1
 _ACEOF
 
+else
+
+  PYTHON_LIB_NAME="python$PyVersion"
 fi
 ffscript="yes"
 
@@ -6118,7 +6131,7 @@ fi
 fi;
 fi
 if test "$gww_hasbytecode" = "yes" ; then
- echo "$as_me:$LINENO: checking for pthread_create in -lpthread" >&5
+  echo "$as_me:$LINENO: checking for pthread_create in -lpthread" >&5
 echo $ECHO_N "checking for pthread_create in -lpthread... $ECHO_C" >&6
 if test "${ac_cv_lib_pthread_pthread_create+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -6187,6 +6200,158 @@ if test $ac_cv_lib_pthread_pthread_create = yes; then
 else
   gww_hasbytecode="no"
 fi
+
+
+for ac_header in pthread.h
+do
+as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
+if eval "test \"\${$as_ac_Header+set}\" = set"; then
+  echo "$as_me:$LINENO: checking for $ac_header" >&5
+echo $ECHO_N "checking for $ac_header... $ECHO_C" >&6
+if eval "test \"\${$as_ac_Header+set}\" = set"; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+fi
+echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_Header'}'`" >&5
+echo "${ECHO_T}`eval echo '${'$as_ac_Header'}'`" >&6
+else
+  # Is the header compilable?
+echo "$as_me:$LINENO: checking $ac_header usability" >&5
+echo $ECHO_N "checking $ac_header usability... $ECHO_C" >&6
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+$ac_includes_default
+#include <$ac_header>
+_ACEOF
+rm -f conftest.$ac_objext
+if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
+  (eval $ac_compile) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } &&
+	 { ac_try='test -z "$ac_c_werror_flag"
+			 || test ! -s conftest.err'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; } &&
+	 { ac_try='test -s conftest.$ac_objext'
+  { (eval echo "$as_me:$LINENO: \"$ac_try\"") >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); }; }; then
+  ac_header_compiler=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+ac_header_compiler=no
+fi
+rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
+echo "$as_me:$LINENO: result: $ac_header_compiler" >&5
+echo "${ECHO_T}$ac_header_compiler" >&6
+
+# Is the header present?
+echo "$as_me:$LINENO: checking $ac_header presence" >&5
+echo $ECHO_N "checking $ac_header presence... $ECHO_C" >&6
+cat >conftest.$ac_ext <<_ACEOF
+/* confdefs.h.  */
+_ACEOF
+cat confdefs.h >>conftest.$ac_ext
+cat >>conftest.$ac_ext <<_ACEOF
+/* end confdefs.h.  */
+#include <$ac_header>
+_ACEOF
+if { (eval echo "$as_me:$LINENO: \"$ac_cpp conftest.$ac_ext\"") >&5
+  (eval $ac_cpp conftest.$ac_ext) 2>conftest.er1
+  ac_status=$?
+  grep -v '^ *+' conftest.er1 >conftest.err
+  rm -f conftest.er1
+  cat conftest.err >&5
+  echo "$as_me:$LINENO: \$? = $ac_status" >&5
+  (exit $ac_status); } >/dev/null; then
+  if test -s conftest.err; then
+    ac_cpp_err=$ac_c_preproc_warn_flag
+    ac_cpp_err=$ac_cpp_err$ac_c_werror_flag
+  else
+    ac_cpp_err=
+  fi
+else
+  ac_cpp_err=yes
+fi
+if test -z "$ac_cpp_err"; then
+  ac_header_preproc=yes
+else
+  echo "$as_me: failed program was:" >&5
+sed 's/^/| /' conftest.$ac_ext >&5
+
+  ac_header_preproc=no
+fi
+rm -f conftest.err conftest.$ac_ext
+echo "$as_me:$LINENO: result: $ac_header_preproc" >&5
+echo "${ECHO_T}$ac_header_preproc" >&6
+
+# So?  What about this header?
+case $ac_header_compiler:$ac_header_preproc:$ac_c_preproc_warn_flag in
+  yes:no: )
+    { echo "$as_me:$LINENO: WARNING: $ac_header: accepted by the compiler, rejected by the preprocessor!" >&5
+echo "$as_me: WARNING: $ac_header: accepted by the compiler, rejected by the preprocessor!" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header: proceeding with the compiler's result" >&5
+echo "$as_me: WARNING: $ac_header: proceeding with the compiler's result" >&2;}
+    ac_header_preproc=yes
+    ;;
+  no:yes:* )
+    { echo "$as_me:$LINENO: WARNING: $ac_header: present but cannot be compiled" >&5
+echo "$as_me: WARNING: $ac_header: present but cannot be compiled" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header:     check for missing prerequisite headers?" >&5
+echo "$as_me: WARNING: $ac_header:     check for missing prerequisite headers?" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header: see the Autoconf documentation" >&5
+echo "$as_me: WARNING: $ac_header: see the Autoconf documentation" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header:     section \"Present But Cannot Be Compiled\"" >&5
+echo "$as_me: WARNING: $ac_header:     section \"Present But Cannot Be Compiled\"" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header: proceeding with the preprocessor's result" >&5
+echo "$as_me: WARNING: $ac_header: proceeding with the preprocessor's result" >&2;}
+    { echo "$as_me:$LINENO: WARNING: $ac_header: in the future, the compiler will take precedence" >&5
+echo "$as_me: WARNING: $ac_header: in the future, the compiler will take precedence" >&2;}
+    (
+      cat <<\_ASBOX
+## ------------------------------------------ ##
+## Report this to the AC_PACKAGE_NAME lists.  ##
+## ------------------------------------------ ##
+_ASBOX
+    ) |
+      sed "s/^/$as_me: WARNING:     /" >&2
+    ;;
+esac
+echo "$as_me:$LINENO: checking for $ac_header" >&5
+echo $ECHO_N "checking for $ac_header... $ECHO_C" >&6
+if eval "test \"\${$as_ac_Header+set}\" = set"; then
+  echo $ECHO_N "(cached) $ECHO_C" >&6
+else
+  eval "$as_ac_Header=\$ac_header_preproc"
+fi
+echo "$as_me:$LINENO: result: `eval echo '${'$as_ac_Header'}'`" >&5
+echo "${ECHO_T}`eval echo '${'$as_ac_Header'}'`" >&6
+
+fi
+if test `eval echo '${'$as_ac_Header'}'` = yes; then
+  cat >>confdefs.h <<_ACEOF
+#define `echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+ :
+else
+  gww_hasbytecode="no"
+fi
+
+done
 
 fi
 
@@ -8462,10 +8627,9 @@ fi
  fi
 fi
 
-
-# Check whether --with-multilayer or --without-multilayer was given.
-if test "${with_multilayer+set}" = set; then
-  withval="$with_multilayer"
+# Check whether --enable-multilayer or --disable-multilayer was given.
+if test "${enable_multilayer+set}" = set; then
+  enableval="$enable_multilayer"
 
     if test "$withval" != "no" >/dev/null 2>&1 ; then
 	cat >>confdefs.h <<\_ACEOF
@@ -8478,10 +8642,9 @@ else
   :
 fi;
 
-
-# Check whether --with-devicetables or --without-devicetables was given.
-if test "${with_devicetables+set}" = set; then
-  withval="$with_devicetables"
+# Check whether --enable-devicetables or --disable-devicetables was given.
+if test "${enable_devicetables+set}" = set; then
+  enableval="$enable_devicetables"
 
     if test "$withval" != "no" >/dev/null 2>&1 ; then
 	cat >>confdefs.h <<\_ACEOF
@@ -8547,50 +8710,45 @@ fi;
 test -d libs || mkdir libs
 
 
-
 if test "$gww_has_gettext" = "yes" >/dev/null 2>&1 ; then
- mofiles=""
- for localefile in po/*.po; do
-   locale=`echo $localefile | sed 's/po\///' | sed 's/\.po//'`
-   mofiles="$mofiles $locale.mo"
- done
+   mofiles="$(cd $ac_confdir/po && ls *.po | sed -e 's#\.po#\.mo#g')"
 
- cat </dev/null >po/Makefile.in
- echo 'prefix = @prefix@' >> po/Makefile.in
- echo 'localedir = $(prefix)/share/locale' >> po/Makefile.in
- echo 'INSTALL = @INSTALL@' >> po/Makefile.in
- echo 'INSTALL_DATA = @INSTALL_DATA@' >> po/Makefile.in
- echo '' >> po/Makefile.in
- echo "MOFILES =" $mofiles >> po/Makefile.in
- echo '' >> po/Makefile.in
- echo '.SUFFIXES:' >> po/Makefile.in
- echo '.SUFFIXES: .po .mo' >> po/Makefile.in
- echo '' >> po/Makefile.in
- echo 'all: $(MOFILES)' >> po/Makefile.in
- echo '' >> po/Makefile.in
- echo '.po.mo:' >> po/Makefile.in
- echo '	msgfmt -o $@ $<' >> po/Makefile.in
- echo '' >> po/Makefile.in
- echo 'install:' >> po/Makefile.in
+ cat </dev/null >$ac_confdir/po/Makefile.in
+ echo 'prefix = @prefix@' >> $ac_confdir/po/Makefile.in
+ echo 'localedir = $(prefix)/share/locale' >> $ac_confdir/po/Makefile.in
+ echo 'INSTALL = @INSTALL@' >> $ac_confdir/po/Makefile.in
+ echo 'INSTALL_DATA = @INSTALL_DATA@' >> $ac_confdir/po/Makefile.in
+ echo '' >> $ac_confdir/po/Makefile.in
+ echo "MOFILES =" $mofiles >> $ac_confdir/po/Makefile.in
+ echo '' >> $ac_confdir/po/Makefile.in
+ echo '.SUFFIXES:' >> $ac_confdir/po/Makefile.in
+ echo '.SUFFIXES: .po .mo' >> $ac_confdir/po/Makefile.in
+ echo '' >> $ac_confdir/po/Makefile.in
+ echo 'all: $(MOFILES)' >> $ac_confdir/po/Makefile.in
+ echo '' >> $ac_confdir/po/Makefile.in
+ echo '.po.mo:' >> $ac_confdir/po/Makefile.in
+ echo '	msgfmt -o $@ $<' >> $ac_confdir/po/Makefile.in
+ echo '' >> $ac_confdir/po/Makefile.in
+ echo 'install:' >> $ac_confdir/po/Makefile.in
 
- for localefile in po/*.po; do
-   locale=`echo $localefile | sed 's/po\///' | sed 's/\.po//'`
-   echo '	mkdir -p $(localedir)/'$locale'/LC_MESSAGES' >> po/Makefile.in
-   echo '	$(INSTALL_DATA)' $locale.mo '$(localedir)/'$locale'/LC_MESSAGES/FontForge.mo' >> po/Makefile.in
- done
+  for localefile in $mofiles; do
+    locale="${localefile%%.mo}"
+    echo '	mkdir -p $(DESTDIR)$(localedir)/'$locale'/LC_MESSAGES'       >> $ac_confdir/po/Makefile.in
+    echo '	$(INSTALL_DATA)' $localefile '$(DESTDIR)$(localedir)/'$locale'/LC_MESSAGES/FontForge.mo'       >> $ac_confdir/po/Makefile.in
+  done
 else
- cat </dev/null >po/Makefile.in
- echo 'all:' >> po/Makefile.in
- echo '	' >> po/Makefile.in
- echo '' >> po/Makefile.in
- echo 'install:' >> po/Makefile.in
- echo '	' >> po/Makefile.in
- echo '' >> po/Makefile.in
+ cat </dev/null >$ac_confdir/po/Makefile.in
+ echo 'all:' >> $ac_confdir/po/Makefile.in
+ echo '	' >> $ac_confdir/po/Makefile.in
+ echo '' >> $ac_confdir/po/Makefile.in
+ echo 'install:' >> $ac_confdir/po/Makefile.in
+ echo '	' >> $ac_confdir/po/Makefile.in
+ echo '' >> $ac_confdir/po/Makefile.in
 fi
 
 
 
-VERSION=`cat VERSION`
+VERSION=`cat $ac_confdir/VERSION`
 
 
 if test "$GCC" = yes; then
@@ -8599,10 +8757,10 @@ else
   WFLAGS=""
 fi
 
-cp Makefile.static.in Makefile.in
-cp Unicode/Makefile.static.in Unicode/Makefile.in
-cp gdraw/Makefile.static.in gdraw/Makefile.in
-cp fontforge/Makefile.static.in fontforge/Makefile.in
+cp $ac_confdir/Makefile.dynamic.in $ac_confdir/Makefile.in
+cp $ac_confdir/Unicode/Makefile.dynamic.in $ac_confdir/Unicode/Makefile.in
+cp $ac_confdir/gdraw/Makefile.dynamic.in $ac_confdir/gdraw/Makefile.in
+cp $ac_confdir/fontforge/Makefile.dynamic.in $ac_confdir/fontforge/Makefile.in
                                                                       ac_config_files="$ac_config_files Makefile Unicode/Makefile gdraw/Makefile fontforge/Makefile po/Makefile systemspecific fontforge.pc"
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -9267,6 +9425,7 @@ s,@host_vendor@,$host_vendor,;t t
 s,@host_os@,$host_os,;t t
 s,@HOST@,$HOST,;t t
 s,@FF_EXTRA_FILES@,$FF_EXTRA_FILES,;t t
+s,@PYTHON_LIB_NAME@,$PYTHON_LIB_NAME,;t t
 s,@CPP@,$CPP,;t t
 s,@EGREP@,$EGREP,;t t
 s,@X_CFLAGS@,$X_CFLAGS,;t t
@@ -9548,7 +9707,7 @@ if test "$no_create" != yes; then
 fi
 
 if test -e umap >/dev/null 2>&1 ; then
-  cp umap/Makefile.dynamic.in umap/Makefile.in
+  cp $ac_confdir/umap/Makefile.dynamic.in $ac_confdir/umap/Makefile.in
             ac_config_files="$ac_config_files umap/Makefile"
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -10214,6 +10373,7 @@ s,@host_vendor@,$host_vendor,;t t
 s,@host_os@,$host_os,;t t
 s,@HOST@,$HOST,;t t
 s,@FF_EXTRA_FILES@,$FF_EXTRA_FILES,;t t
+s,@PYTHON_LIB_NAME@,$PYTHON_LIB_NAME,;t t
 s,@CPP@,$CPP,;t t
 s,@EGREP@,$EGREP,;t t
 s,@X_CFLAGS@,$X_CFLAGS,;t t
