@@ -399,60 +399,6 @@ void RefCharsFree(RefChar *ref) {
     }
 }
 
-static extended SolveCubic(extended a, extended b, extended c, extended d, double err, extended t0) {
-    /* find t between t0 and .5 where at^3+bt^2+ct+d == +/- err */
-    extended t, val, offset;
-    int first;
-
-    offset=a;
-    if ( a<0 ) offset = -a;
-    if ( b<0 ) offset -= b; else offset += b;
-    if ( c<0 ) offset -= c; else offset += c;
-    offset += 1;		/* Make sure it isn't 0 */
-    offset = err/(10.*offset);
-    if ( offset<.00001 ) offset = .00001; else if ( offset>.01 ) offset = .01;
-
-    first = 1;
-    for ( t=t0+offset; t<.5; t += offset ) {
-	val = ((a*t+b)*t+c)*t+d;
-	if ( val>=err || val<=-err )
-    break;
-	first = 0;
-    }
-    if ( !first )
-	t -= offset;
-    if ( t>.5 ) t=.5;
-
-return( t );
-}
-
-static extended SolveCubicBack(extended a, extended b, extended c, extended d, double err, extended t0) {
-    /* find t between .5 and t0 where at^3+bt^2+ct+d == +/- err */
-    extended t, val, offset;
-    int first;
-
-    offset=a;
-    if ( a<0 ) offset = -a;
-    if ( b<0 ) offset -= b; else offset += b;
-    if ( c<0 ) offset -= c; else offset += c;
-    offset += 1;		/* Make sure it isn't 0 */
-    offset = err/(10.*offset);
-    if ( offset<.00001 ) offset = .00001; else if ( offset>.01 ) offset = .01;
-
-    first = 1;
-    for ( t=t0-offset; t>.5; t -= offset ) {
-	val = ((a*t+b)*t+c)*t+d;
-	if ( val>=err || val<=-err )
-    break;
-	first = 0;
-    }
-    if ( !first )
-	t -= offset;
-    if ( t<.5 ) t=.5;
-
-return( t );
-}
-
 /* Remove line segments which are just one point long */
 /* Merge colinear line segments */
 /* Merge two segments each of which involves a single pixel change in one dimension (cut corners) */ 
@@ -499,12 +445,114 @@ return;
     }
 }
 
+typedef struct spline1 {
+    Spline1D sp;
+    real s0, s1;
+    real c0, c1;
+} Spline1;
+
+static void FigureSpline1(Spline1 *sp1,bigreal t0, bigreal t1, Spline1D *sp ) {
+    bigreal s = (t1-t0);
+    if ( sp->a==0 && sp->b==0 ) {
+	sp1->sp.d = sp->d + t0*sp->c;
+	sp1->sp.c = s*sp->c;
+	sp1->sp.b = sp1->sp.a = 0;
+    } else {
+	sp1->sp.d = sp->d + t0*(sp->c + t0*(sp->b + t0*sp->a));
+	sp1->sp.c = s*(sp->c + t0*(2*sp->b + 3*sp->a*t0));
+	sp1->sp.b = s*s*(sp->b+3*sp->a*t0);
+	sp1->sp.a = s*s*s*sp->a;
+#if 0		/* Got invoked once on a perfectly good spline */
+	sp1->s1 = sp1->sp.a+sp1->sp.b+sp1->sp.c+sp1->sp.d;
+	if ( ((sp1->s1>.001 || sp1->s1<-.001) && !RealNear((double) sp1->sp.a+sp1->sp.b+sp1->sp.c+sp1->sp.d,sp1->s1)) ||
+		!RealNear(sp1->sp.d,sp1->s0))
+	    IError( "Created spline does not work in FigureSpline1");
+#endif
+    }
+    sp1->c0 = sp1->sp.c/3 + sp1->sp.d;
+    sp1->c1 = sp1->c0 + (sp1->sp.b+sp1->sp.c)/3;
+}
+
+static LineList *SplineSegApprox(LineList *last, Spline *spline, double start, double end, real scale) {
+    /* Divide into n equal segments */
+    /* (first point is already on the line list) */
+    /* what's a good value for n? Perhaps the normal distance of the control */
+    /*  points to the line between the end points. */
+    int i,n;
+    double t, diff, len;
+    double x,y;
+    LineList *cur;
+    BasePoint startp, endp, slope, off;
+    double temp;
+
+    n = 6;
+    if ( start==0 && end==1 ) {
+	/* No different from the latter case, except we can optimize here */
+	/*  and it's easier to understand what is happening in the simple */
+	/*  case */
+	slope.x = spline->to->me.x - spline->from->me.x;
+	slope.y = spline->to->me.y - spline->from->me.y;
+	len = slope.x*slope.x + slope.y*slope.y;
+	if ( len==0 )
+return( last );
+	len = sqrt(len);
+	slope.x /= len; slope.y /= len;
+	off.x = spline->from->nextcp.x - spline->from->me.x;
+	off.y = spline->from->nextcp.y - spline->from->me.y;
+	temp = (off.x*slope.y - off.y*slope.x) * scale;
+	if ( temp<0 ) temp = -temp;
+	if ( temp>n ) n = temp;
+	off.x = spline->to->prevcp.x - spline->from->me.x;
+	off.y = spline->to->prevcp.y - spline->from->me.y;
+	temp = (off.x*slope.y - off.y*slope.x) * scale;
+	if ( temp<0 ) temp = -temp;
+	if ( temp>n ) n = temp;
+    } else {
+	Spline1 xsp, ysp;
+	startp.x = ((spline->splines[0].a*start+spline->splines[0].b)*start+spline->splines[0].c)*start + spline->splines[0].d;
+	startp.y = ((spline->splines[1].a*start+spline->splines[1].b)*start+spline->splines[1].c)*start + spline->splines[1].d;
+	endp.x = ((spline->splines[0].a*end+spline->splines[0].b)*end+spline->splines[0].c)*end + spline->splines[0].d;
+	endp.y = ((spline->splines[1].a*end+spline->splines[1].b)*end+spline->splines[1].c)*end + spline->splines[1].d;
+	slope.x = endp.x - startp.x;
+	slope.y = endp.y - startp.y;
+	FigureSpline1(&xsp,start,end,&spline->splines[0]);
+	FigureSpline1(&ysp,start,end,&spline->splines[1]);
+	len = slope.x*slope.x + slope.y*slope.y;
+	if ( len==0 )
+return( last );
+	len = sqrt(len);
+	slope.x /= len; slope.y /= len;
+	off.x = xsp.c0 - startp.x;
+	off.y = ysp.c0 - startp.y;
+	temp = (off.x*slope.y - off.y*slope.x) * scale;
+	if ( temp<0 ) temp = -temp;
+	if ( temp>n ) n = temp;
+	off.x = xsp.c1 - endp.x;
+	off.y = ysp.c1 - endp.y;
+	temp = (off.x*slope.y - off.y*slope.x) * scale;
+	if ( temp<0 ) temp = -temp;
+	if ( temp>n ) n = temp;
+    }
+
+    diff = (end-start)/n;
+    for ( t=start+diff, i=1; i<=n; ++i, t+=diff ) {
+	if ( i==n ) t = end;		/* Avoid rounding errors */
+	cur = chunkalloc(sizeof(LineList) );
+	x = ((spline->splines[0].a*t+spline->splines[0].b)*t+spline->splines[0].c)*t + spline->splines[0].d;
+	y = ((spline->splines[1].a*t+spline->splines[1].b)*t+spline->splines[1].c)*t + spline->splines[1].d;
+	cur->here.x = rint(x*scale);
+	cur->here.y = rint(y*scale);
+	last->next = cur;
+	last = cur;
+    }
+return( last );
+}
+
 LinearApprox *SplineApproximate(Spline *spline, real scale) {
     LinearApprox *test;
-    LineList *cur, *last=NULL, *prev;
-    double tx,ty,t;
-    double slpx, slpy;
-    double intx, inty;
+    LineList *cur, *last=NULL;
+    double poi[2], lastt;
+    int i;
 
     for ( test = spline->approx; test!=NULL && test->scale!=scale; test = test->next );
     if ( test!=NULL )
@@ -519,68 +567,24 @@ return( test );
     cur->here.x = rint(spline->from->me.x*scale);
     cur->here.y = rint(spline->from->me.y*scale);
     test->lines = last = cur;
+
     if ( spline->knownlinear ) {
 	cur = chunkalloc(sizeof(LineList) );
 	cur->here.x = rint(spline->to->me.x*scale);
 	cur->here.y = rint(spline->to->me.y*scale);
 	last->next = cur;
+    } else if ( spline->isquadratic ) {
+	last = SplineSegApprox(last,spline,0,1,scale);
     } else {
-	/* find t so that (xt,yt) is a half pixel off from (cx*t+dx,cy*t+dy) */
-	/* min t of scale*(ax*t^3+bx*t^2)==.5, scale*(ay*t^3+by*t^2)==.5 */
-	/* I do this from both ends in. this is because I miss essential */
-	/*  symmetry if I go from one end to the other. */
-	/* first start at 0 and go to .5, the first linear approximation is easy */
-	/*  it's just the function itself ignoring higher orders, so the error*/
-	/*  is just the higher orders */
-	tx = SolveCubic(spline->splines[0].a,spline->splines[0].b,0,0,.5/scale,0);
-	ty = SolveCubic(spline->splines[1].a,spline->splines[1].b,0,0,.5/scale,0);
-	t = (tx<ty)?tx:ty;
-	cur = chunkalloc(sizeof(LineList) );
-	cur->here.x = rint( (((spline->splines[0].a*t+spline->splines[0].b)*t+spline->splines[0].c)*t + spline->splines[0].d)*scale );
-	cur->here.y = rint( (((spline->splines[1].a*t+spline->splines[1].b)*t+spline->splines[1].c)*t + spline->splines[1].d)*scale );
-	last->next = cur;
-	last = cur;
-	while ( t<.5 ) {
-	    slpx = (3*spline->splines[0].a*t+2*spline->splines[0].b)*t+spline->splines[0].c;
-	    slpy = (3*spline->splines[1].a*t+2*spline->splines[1].b)*t+spline->splines[1].c;
-	    intx = ((spline->splines[0].a*t+spline->splines[0].b)*t+spline->splines[0].c-slpx)*t + spline->splines[0].d;
-	    inty = ((spline->splines[1].a*t+spline->splines[1].b)*t+spline->splines[1].c-slpy)*t + spline->splines[1].d;
-	    tx = SolveCubic(spline->splines[0].a,spline->splines[0].b,spline->splines[0].c-slpx,spline->splines[0].d-intx,.5/scale,t);
-	    ty = SolveCubic(spline->splines[1].a,spline->splines[1].b,spline->splines[1].c-slpy,spline->splines[1].d-inty,.5/scale,t);
-	    t = (tx<ty)?tx:ty;
-	    cur = chunkalloc(sizeof(LineList));
-	    cur->here.x = rint( (((spline->splines[0].a*t+spline->splines[0].b)*t+spline->splines[0].c)*t + spline->splines[0].d)*scale );
-	    cur->here.y = rint( (((spline->splines[1].a*t+spline->splines[1].b)*t+spline->splines[1].c)*t + spline->splines[1].d)*scale );
-	    last->next = cur;
-	    last = cur;
+	Spline2DFindPointsOfInflection(spline,poi);
+	lastt=0;
+	for ( i=0; i<2 && poi[i]!=-1; ++i ) {
+	    last = SplineSegApprox(last,spline,lastt,poi[i],scale);
+	    lastt = poi[i];
 	}
-
-	/* Now start at t=1 and work back to t=.5 */
-	prev = NULL;
-	cur = chunkalloc(sizeof(LineList) );
-	cur->here.x = rint(spline->to->me.x*scale);
-	cur->here.y = rint(spline->to->me.y*scale);
-	prev = cur;
-	t=1.0;
-	while ( 1 ) {
-	    slpx = (3*spline->splines[0].a*t+2*spline->splines[0].b)*t+spline->splines[0].c;
-	    slpy = (3*spline->splines[1].a*t+2*spline->splines[1].b)*t+spline->splines[1].c;
-	    intx = ((spline->splines[0].a*t+spline->splines[0].b)*t+spline->splines[0].c-slpx)*t + spline->splines[0].d;
-	    inty = ((spline->splines[1].a*t+spline->splines[1].b)*t+spline->splines[1].c-slpy)*t + spline->splines[1].d;
-	    tx = SolveCubicBack(spline->splines[0].a,spline->splines[0].b,spline->splines[0].c-slpx,spline->splines[0].d-intx,.5/scale,t);
-	    ty = SolveCubicBack(spline->splines[1].a,spline->splines[1].b,spline->splines[1].c-slpy,spline->splines[1].d-inty,.5/scale,t);
-	    t = (tx>ty)?tx:ty;
-	    cur = chunkalloc(sizeof(LineList) );
-	    cur->here.x = rint( (((spline->splines[0].a*t+spline->splines[0].b)*t+spline->splines[0].c)*t + spline->splines[0].d)*scale );
-	    cur->here.y = rint( (((spline->splines[1].a*t+spline->splines[1].b)*t+spline->splines[1].c)*t + spline->splines[1].d)*scale );
-	    cur->next = prev;
-	    prev = cur;
-	    if ( t<=.5 )
-	break;
-	}
-	last->next = cur;
-	SimplifyLineList(test->lines);
+	last = SplineSegApprox(last,spline,lastt,1,scale);
     }
+    SimplifyLineList(test->lines);
     if ( test->lines->next==NULL ) {
 	test->oneline = 1;
 	test->onepoint = 1;
@@ -5859,4 +5863,145 @@ int SplineSetsRemoveAnnoyingExtrema(SplineSet *ss,double err) {
 	ss = ss->next;
     }
 return( changed );
+}
+
+SplinePoint *SplineBisect(Spline *spline, extended t) {
+    Spline1 xstart, xend;
+    Spline1 ystart, yend;
+    Spline *spline1, *spline2;
+    SplinePoint *mid;
+    SplinePoint *old0, *old1;
+    Spline1D *xsp = &spline->splines[0], *ysp = &spline->splines[1];
+    int order2 = spline->order2;
+
+#ifdef DEBUG
+    if ( t<=1e-3 || t>=1-1e-3 )
+	IError("Bisection to create a zero length spline");
+#endif
+    xstart.s0 = xsp->d; ystart.s0 = ysp->d;
+    xend.s1 = (extended) xsp->a+xsp->b+xsp->c+xsp->d;
+    yend.s1 = (extended) ysp->a+ysp->b+ysp->c+ysp->d;
+    xstart.s1 = xend.s0 = ((xsp->a*t+xsp->b)*t+xsp->c)*t + xsp->d;
+    ystart.s1 = yend.s0 = ((ysp->a*t+ysp->b)*t+ysp->c)*t + ysp->d;
+    FigureSpline1(&xstart,0,t,xsp);
+    FigureSpline1(&xend,t,1,xsp);
+    FigureSpline1(&ystart,0,t,ysp);
+    FigureSpline1(&yend,t,1,ysp);
+
+    mid = chunkalloc(sizeof(SplinePoint));
+    mid->me.x = xstart.s1;	mid->me.y = ystart.s1;
+    if ( order2 ) {
+	mid->nextcp.x = xend.sp.d + xend.sp.c/2;
+	mid->nextcp.y = yend.sp.d + yend.sp.c/2;
+	mid->prevcp.x = xstart.sp.d + xstart.sp.c/2;
+	mid->prevcp.y = ystart.sp.d + ystart.sp.c/2;
+    } else {
+	mid->nextcp.x = xend.c0;	mid->nextcp.y = yend.c0;
+	mid->prevcp.x = xstart.c1;	mid->prevcp.y = ystart.c1;
+    }
+    if ( mid->me.x==mid->nextcp.x && mid->me.y==mid->nextcp.y )
+	mid->nonextcp = true;
+    if ( mid->me.x==mid->prevcp.x && mid->me.y==mid->prevcp.y )
+	mid->noprevcp = true;
+
+    old0 = spline->from; old1 = spline->to;
+    if ( order2 ) {
+	old0->nextcp = mid->prevcp;
+	old1->prevcp = mid->nextcp;
+    } else {
+	old0->nextcp.x = xstart.c0;	old0->nextcp.y = ystart.c0;
+	old1->prevcp.x = xend.c1;	old1->prevcp.y = yend.c1;
+    }
+    old0->nonextcp = (old0->nextcp.x==old0->me.x && old0->nextcp.y==old0->me.y);
+    old1->noprevcp = (old1->prevcp.x==old1->me.x && old1->prevcp.y==old1->me.y);
+    old0->nextcpdef = false;
+    old1->prevcpdef = false;
+    SplineFree(spline);
+
+    spline1 = chunkalloc(sizeof(Spline));
+    spline1->splines[0] = xstart.sp;	spline1->splines[1] = ystart.sp;
+    spline1->from = old0;
+    spline1->to = mid;
+    spline1->order2 = order2;
+    old0->next = spline1;
+    mid->prev = spline1;
+    if ( SplineIsLinear(spline1)) {
+	spline1->islinear = spline1->from->nonextcp = spline1->to->noprevcp = true;
+	spline1->from->nextcp = spline1->from->me;
+	spline1->to->prevcp = spline1->to->me;
+    }
+    SplineRefigure(spline1);
+
+    spline2 = chunkalloc(sizeof(Spline));
+    spline2->splines[0] = xend.sp;	spline2->splines[1] = xend.sp;
+    spline2->from = mid;
+    spline2->to = old1;
+    spline2->order2 = order2;
+    mid->next = spline2;
+    old1->prev = spline2;
+    if ( SplineIsLinear(spline2)) {
+	spline2->islinear = spline2->from->nonextcp = spline2->to->noprevcp = true;
+	spline2->from->nextcp = spline2->from->me;
+	spline2->to->prevcp = spline2->to->me;
+    }
+    SplineRefigure(spline2);
+return( mid );
+}
+
+Spline *SplineSplit(Spline *spline, extended ts[3]) {
+    /* Split the current spline in up to 3 places */
+    Spline1 splines[2][4];
+    int i,cnt;
+    bigreal base;
+    SplinePoint *last, *sp;
+    Spline *new;
+    int order2 = spline->order2;
+
+    memset(splines,0,sizeof(splines));
+    base=0;
+    for ( i=cnt=0; i<3 && ts[i]!=-1; ++i ) {
+	if ( base>1-1e-3 )			/* Avoid tiny splines */
+    break;
+	else if ( base<ts[i]-1e-3 ) {
+	    FigureSpline1(&splines[0][cnt],base,ts[i],&spline->splines[0]);
+	    FigureSpline1(&splines[1][cnt++],base,ts[i],&spline->splines[1]);
+	    base = ts[i];
+	}
+    }
+    if ( base==0 )
+return( spline );
+
+    FigureSpline1(&splines[0][cnt],base,1.0,&spline->splines[0]);
+    FigureSpline1(&splines[1][cnt],base,1.0,&spline->splines[1]);
+
+    last = spline->from;
+    for ( i=0; i<=cnt; ++i ) {
+	if ( order2 ) {
+	    last->nextcp.x = splines[0][i].sp.d+splines[0][i].sp.c/2;
+	    last->nextcp.y = splines[1][i].sp.d+splines[1][i].sp.c/2;
+	} else {
+	    last->nextcp.x = splines[0][i].c0;
+	    last->nextcp.y = splines[1][i].c0;
+	}
+	if ( i==cnt )
+	    sp = spline->to;
+	else {
+	    sp = chunkalloc(sizeof(SplinePoint));
+	    sp->me.x = splines[0][i+1].sp.d;
+	    sp->me.y = splines[1][i+1].sp.d;
+	}
+	if ( order2 ) {
+	    sp->prevcp = last->nextcp;
+	    SplineMake2(last,sp);
+	} else {
+	    sp->prevcp.x = splines[0][i].c1;
+	    sp->prevcp.y = splines[1][i].c1;
+	    SplineMake3(last,sp);
+	}
+	last = sp;
+    }
+
+    new = spline->from->next;
+    SplineFree(spline);
+return( new );
 }
