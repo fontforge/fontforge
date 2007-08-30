@@ -902,19 +902,6 @@ return( true );
 return( false );
 }
 
-static int InHintConflictsZone(StemInfo *stems,StemInfo *me,double contains_y,
-	double off) {
-    StemInfo *h;
-
-    for ( h=stems; h!=NULL; h=h->next ) if ( h!=me && h->hasconflicts ) {
-	 if ( ((h->start <= contains_y && h->start+h->width>=contains_y) ||
-		  (h->start <= contains_y-off && h->start+h->width>=contains_y-off )) &&
-		 h->start<=me->start+me->width && h->start+h->width>=me->start )
-return( true );
-    }
-return( false );
-}
-
 static int IsStartPoint(SplinePoint *sp, SplineChar *sc, int layer) {
     SplineSet *ss;
     
@@ -1147,13 +1134,14 @@ return(ss_expanded);			/* No points? Nothing to do */
 		sp = ptmoves[j].sp;
 		if (( sp->me.y>nsp->me.y && sp->me.y>psp->me.y ) ||
 			(sp->me.y<nsp->me.y && sp->me.y<psp->me.y )) {
-		    /* If it isn't between them, then average the movements */
-		    /* this case should not happen */
-		    ptmoves[j].newpos.y += (ptmoves[n].newpos.y-nsp->me.y +
-					    ptmoves[p].newpos.y-psp->me.y)/2;
-		    ptmoves[j].newpos.x += (ptmoves[n].newpos.x-nsp->me.x +
-					    ptmoves[p].newpos.x-psp->me.x)/2;
-		    /* LogError("Hmm. This shouldn't happen, but probably doesn't matter.\n" ); */
+		    if (( sp->me.y>nsp->me.y && nsp->me.y>psp->me.y ) ||
+			    (sp->me.y<nsp->me.y && nsp->me.y<psp->me.y )) {
+			ptmoves[j].newpos.y += ptmoves[n].newpos.y-nsp->me.y;
+			ptmoves[j].newpos.x += ptmoves[n].newpos.x-nsp->me.x ;
+		    } else {
+			ptmoves[j].newpos.y += ptmoves[p].newpos.y-psp->me.y;
+			ptmoves[j].newpos.x += ptmoves[p].newpos.x-psp->me.x ;
+		    }
 		} else {
 		    double ydiff;
 		    ydiff = nsp->me.y - psp->me.y;		/* Not zero, by above test */
@@ -1313,6 +1301,53 @@ static void ZoneInit(SplineFont *sf, struct lcg_zones *zones,enum embolden_type 
     }
 }
 
+static double BlueSearch(char *bluestring, double value, double bestvalue) {
+    char *end;
+    double try, diff, bestdiff;
+
+    if ( *bluestring=='[' ) ++bluestring;
+    if ( (bestdiff = bestvalue-value)<0 ) bestdiff = -bestdiff;
+
+    forever {
+	try = strtod(bluestring,&end);
+	if ( bluestring==end )
+return( bestvalue );
+	if ( (diff = try-value)<0 ) diff = -diff;
+	if ( diff<bestdiff ) {
+	    bestdiff = diff;
+	    bestvalue = try;
+	}
+	bluestring = end;
+	(void) strtod(bluestring,&end);		/* Skip the top of blue zone value */
+	bluestring = end;
+    }
+}
+
+static double SearchBlues(SplineFont *sf,int type,double value) {
+    char *blues, *others;
+    double bestvalue;
+
+    if ( type=='x' )
+	value = sf->ascent/2;		/* Guess that the x-height is about half the ascent and then see what we find */
+    if ( type=='I' )
+	value = 4*sf->ascent/5;		/* Guess that the cap-height is 4/5 the ascent */
+
+    blues = others = NULL;
+    if ( sf->private!=NULL ) {
+	blues = PSDictHasEntry(sf->private,"BlueValues");
+	others = PSDictHasEntry(sf->private,"OtherBlues");
+    }
+    bestvalue = 0x100000;		/* Random number outside coord range */
+    if ( blues!=NULL )
+	bestvalue = BlueSearch(blues,value,bestvalue);
+    if ( others!=NULL )
+	bestvalue = BlueSearch(others,value,bestvalue);
+    if ( bestvalue == 0x100000 )
+return( value );
+
+return( bestvalue );
+}
+
 static void PerGlyphInit(SplineChar *sc, struct lcg_zones *zones,
 	enum embolden_type type, BlueData *bd) {
     int j;
@@ -1346,6 +1381,8 @@ static void PerGlyphInit(SplineChar *sc, struct lcg_zones *zones,
 	    zones->top_zone = 2*b.maxy/3;
 	    zones->top_bound = b.maxy;
 	} else if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 && islower(sc->unicodeenc)) {
+	    if ( bd->xheight<=0 )
+		bd->xheight = SearchBlues(sc->parent,'x',0);
 	    zones->bottom_zone = bd->xheight>0 ? bd->xheight/3 :
 			    bd->caph>0 ? bd->caph/3 :
 			    (sc->parent->ascent/4);
@@ -1355,14 +1392,24 @@ static void PerGlyphInit(SplineChar *sc, struct lcg_zones *zones,
 	    zones->top_bound = bd->xheight>0 ? bd->xheight :
 			    bd->caph>0 ? 2*bd->caph/3 :
 			    (sc->parent->ascent/2);
-	} else {
-	    /* The default behavior is to treat everything unknown like a */
-	    /*  capital latin letter. */
+	} else if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 && isupper(sc->unicodeenc)) {
+	    if ( bd->caph<0 )
+		bd->caph = SearchBlues(sc->parent,'I',0);
 	    zones->bottom_zone = bd->caph>0 ? bd->caph/3 :
 			    (sc->parent->ascent/4);
 	    zones->top_zone = bd->caph>0 ? 2*bd->caph/3 :
 			    (sc->parent->ascent/2);
 	    zones->top_bound = bd->caph>0?bd->caph:4*sc->parent->ascent/5;
+	} else {
+	    /* It's not upper case. It's not lower case. Hmm. Look for blue */
+	    /*  values near the top and bottom of the glyph */
+	    DBounds b;
+
+	    SplineCharFindBounds(sc,&b);
+	    zones->top_bound = SearchBlues(sc->parent,0,b.maxy);
+	    zones->bottom_bound = SearchBlues(sc->parent,-1,b.miny);
+	    zones->top_zone = zones->bottom_bound + 3*(zones->top_bound-zones->bottom_bound)/4;
+	    zones->bottom_zone = zones->bottom_bound + (zones->top_bound-zones->bottom_bound)/4;
 	}
     }
     zones->wants_hints = zones->embolden_hook == LCG_HintedEmboldenHook;
