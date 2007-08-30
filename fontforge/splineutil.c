@@ -1497,7 +1497,7 @@ SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[
 	    if ( allpoints || spt->selected ) {
 		TransformPoint(spt,transform);
 		if ( !allpoints ) {
-		    if ( spt->next!=NULL && spt->next->order2 && spt->next->to->ttfindex==0xffff ) {
+		    if ( spt->next!=NULL && spt->next->order2 && !spt->next->to->selected && spt->next->to->ttfindex==0xffff ) {
 			SplinePoint *to = spt->next->to;
 			to->prevcp = spt->nextcp;
 			to->me.x = (to->prevcp.x+to->nextcp.x)/2;
