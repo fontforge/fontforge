@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 15-Aug-2007 -->
+  <!-- AP: Last modified: 29-Aug-2007 -->
   <TITLE>The Element Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -112,6 +112,24 @@
     <LI>
       <A HREF="#RemoveBitmaps">Remove Bitmap Glyphs...</A>
     <LI>
+      Styles
+      <UL>
+	<LI>
+	  <A HREF="elementmenu.html#Embolden">Embolden</A>
+	<LI>
+	  <A HREF="#Oblique">Oblique</A>
+	<LI>
+	  <A HREF="#Condense">Condense/Extend</A>
+	<LI>
+	  <A HREF="#Outline">Outline</A>
+	<LI>
+	  <A HREF="#Inline">Inline</A>
+	<LI>
+	  <A HREF="#Shadow">Shadow</A>
+	<LI>
+	  <A HREF="#Wireframe">Wireframe</A>
+      </UL>
+    <LI>
       Transformations
       <UL>
 	<LI>
@@ -163,22 +181,6 @@
       </UL>
     <LI>
       <A HREF="elementmenu.html#Add-Extrema">Add Extrema</A>
-    <LI>
-      Effects
-      <UL>
-	<LI>
-	  <A HREF="#Outline">Outline</A>
-	<LI>
-	  <A HREF="#Inline">Inline</A>
-	<LI>
-	  <A HREF="#Shadow">Shadow</A>
-	<LI>
-	  <A HREF="#Wireframe">Wireframe</A>
-      </UL>
-    <LI>
-      <A HREF="#Embolden">Embolden...</A>
-    <LI>
-      <A HREF="#MetaFont">MetaFont...</A>
     <LI>
       <A HREF="#AutoTrace">AutoTrace</A>
     <LI>
@@ -428,6 +430,57 @@
       leaving the strike otherwise intact). The dialog is similar to the above
       two. Any indicated glyphs will be removed from the specified strikes.
     <DT>
+      Styles
+    <DD>
+      There are many <A HREF="Styles.html">standard variations</A> on Latin (Greek,
+      Cyrillic) fonts. Some of them apply to other scripts -- making a font darker
+      (bolder) is common to many scripts, though the actual mechanics differ from
+      script to script) Others -- such as Italic -- are more specialized.
+      <DL>
+	<DT>
+	  <A NAME="Embolden">Embolden</A>...
+	<DD>
+	  This is a simplistic command to embolden glyphs. It sometimes works.
+	  <P>
+	  For CJK glyphs it simply expands the strokes of the font outward.
+	  <P>
+	  For LCG (Latin, Cyrillic, Greek) glyphs it expands the stroke outward and
+	  then moves everything below a certain point up, and everything above another
+	  point down. This doesn't always work.
+	<DT>
+	  <A NAME="Oblique">Oblique</A>
+	<DD>
+	  This is a first stage toward making an italic font (or all that's involved
+	  in making an oblique font). It will slant the letters.
+	<DT>
+	  <A NAME="Condense">Condense</A>/Extend
+	<DD>
+	  Allows you to change the width of the counters and side bearings of a glyph.
+	  The algorithm only works on simple latin glyphs, and it has problems with
+	  diagonal stems.
+	<DT>
+	  <A NAME="Outline">Outline</A>
+	<DD>
+	  <IMG SRC="OutlineInline.png" WIDTH="146" HEIGHT="70" ALIGN="Right">Changes
+	  the selected glyphs so that instead of being a solid block, only the outline
+	  of the glyph is visible. The glyphs' bounding boxes will not change.
+	<DT>
+	  <A NAME="Inline">Inline</A>
+	<DD>
+	  Changes the selected glyphs so that the glyph is surrounded by an outline.
+	  The glyphs' bounding boxes will not change.
+	<DT>
+	  <A NAME="Shadow">Shadow</A>
+	<DD>
+	  Changes the selected glyphs to give them each a
+	  shadow.<IMG SRC="ShadowWireframe.png" WIDTH="171" HEIGHT="69" ALIGN="Right">
+	  The user has control over the shadow size and angle.
+	<DT>
+	  <A NAME="Wireframe">Wireframe</A>
+	<DD>
+	  Changes the selected glyphs to give them a 3D wireframe look.
+      </DL>
+    <DT>
       Transformations
     <DD>
       This sub-menu has rather different choices in the bitmap view from the other
@@ -654,52 +707,6 @@
       contour (rather than just the current spline) attains its maximum/minimum
       value at this point. If the added extrema is extremely close to an already
       existing point, fontforge may remove that point to avoid creating tiny splines.
-    <DT>
-      Effects
-    <DD>
-      Not in quadratic (truetype) fonts.
-      <DL>
-	<DT>
-	  <A NAME="Outline">Outline</A>
-	<DD>
-	  <IMG SRC="OutlineInline.png" WIDTH="146" HEIGHT="70" ALIGN="Right">Changes
-	  the selected glyphs so that instead of being a solid block, only the outline
-	  of the glyph is visible. The glyphs' bounding boxes will not change.
-	<DT>
-	  <A NAME="Inline">Inline</A>
-	<DD>
-	  Changes the selected glyphs so that the glyph is surrounded by an outline.
-	  The glyphs' bounding boxes will not change.
-	<DT>
-	  <A NAME="Shadow">Shadow</A>
-	<DD>
-	  Changes the selected glyphs to give them each a
-	  shadow.<IMG SRC="ShadowWireframe.png" WIDTH="171" HEIGHT="69" ALIGN="Right">
-	  The user has control over the shadow size and angle.
-	<DT>
-	  <A NAME="Wireframe">Wireframe</A>
-	<DD>
-	  Changes the selected glyphs to give them a 3D wireframe look.
-      </DL>
-    <DT>
-      <A NAME="Embolden">Embolden</A>...
-    <DD>
-      This is a simplistic command to embolden glyphs. It sometimes works.
-      <P>
-      For CJK glyphs it simply expands the strokes of the font outward.
-      <P>
-      For LCG (Latin, Cyrillic, Greek) glyphs it expands the stroke outward and
-      then moves everything below a certain point up, and everything above another
-      point down. This doesn't always work, especially if there are lots of points
-      (a TrueType lowcase "s" tends to be problematic), but sometimes it does.
-    <DT>
-      <A NAME="MetaFont">MetaFont</A>...
-    <DD>
-      This <A HREF="MetaFont.html">dialog</A> is only present in the font and outline
-      glyph views, not in quadratic (truetype) fonts. It allows you to make fonts
-      bolder or condensed. It doesn't work very well.<FONT COLOR="Red"><BR>
-      <STRONG>NOTE</STRONG></FONT>: It does <EM>not</EM> read TeX .mf files. The
-      name is chosen because it has some similarity in terms of features.
     <DT>
       <A NAME="AutoTrace">AutoTrace</A>
     <DD>
