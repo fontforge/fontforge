@@ -119,6 +119,8 @@ struct stemdata {
     uint8 toobig;		/* Stem is fatter than tall, unlikely to be a real stem */
     uint8 positioned;
     uint8 ticked;
+    uint8 ghost;
+    int blue;			/* Blue zone a ghost hint is attached to */
     double len, clen;		/* Length of linear segments. clen adds "length" of curved bits */
     struct stembundle *bundle;
     double lpos, rpos;		/* When placed in a bundle, relative to the bundle's basepoint in l_to_r */
@@ -147,7 +149,7 @@ struct stembundle {
 };
     
 
-extern struct glyphdata *GlyphDataBuild(SplineChar *sc, int only_hv);
+extern struct glyphdata *GlyphDataBuild(SplineChar *sc, BlueData *bd, int only_hv);
 extern void GlyphDataFree(struct glyphdata *gd);
 
 #endif		/* _STEMDB_H_ */
