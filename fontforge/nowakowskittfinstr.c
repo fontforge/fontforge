@@ -43,6 +43,9 @@
 #define STACK_DEPTH 6
 #endif
 
+/* for experiments with rounding non-cvt stems  */
+#define PUSH_STEMS_DIRECTLY 0
+
 /* define some often used instructions */
 #define SVTCA_y                 (0x00)
 #define SVTCA_x                 (0x01)
@@ -119,6 +122,8 @@ typedef struct bluezone {
 typedef struct stdstem {
     real width;            /* -1 if none */
     int cvtindex;
+    struct stdstem *snapto;/* NULL means stem isn't snapped to any other */
+    int stopat;            /* at which ppem stop snapping to snapto */
 } StdStem;
 
 typedef struct cvtdata {
@@ -549,7 +554,7 @@ static void init_cvt(InstrCt *ct) {
     CvtInfoImportBlues(ct);
     CvtInfoImportStems(ct);
 
-    cvtsize = 0;
+    cvtsize = 1;
     if (ct->cvtinfo.StdHW.width != -1) cvtsize++;
     if (ct->cvtinfo.StdVW.width != -1) cvtsize++;
     cvtsize += ct->cvtinfo.StemSnapHCnt;
@@ -941,35 +946,18 @@ static void init_fpgm(InstrCt *ct) {
         0x59, //   EIF
 	0x2d, // ENDF
 
-	/* Function 2: Try to snap stem width given on stack to given cvt entry.
-	 * Leave the resulting width on the stack. Mode 1 is used for widths
-	 * larger than given cvt entry, 0 otherwise. Used as the first step in
-	 * normalizing stems.
-	 * Syntax: PUSHX_3 width mode cvt_index 2 CALL
+	/* Function 2: Below given ppem, substitute the width with cvt entry.
+	 * Leave the resulting width on the stack. Used as the first step in
+	 * normalizing stems, see normalize_stem().
+	 * Syntax: PUSHX_3 width cvt_index ppem 2 CALL
 	 */
 	0xb0, // PUSHB_1
 	0x02, //   2
 	0x2c, // FDEF
-	0x45, //   RCVT
-	0x20, //   DUP
-	0x8a, //   ROLL
-	0xb0, //   PUSHB_1
-	0x40, //     64
-	0x23, //   SWAP
+	0x4b, //   MPPEM
+	0x52, //   GT
 	0x58, //   IF
-	0x60, //     ADD
-	0xb0, //     PUSHB_1
-	0x03, //       3
-	0x25, //     CINDEX
-	0x52, //     GT
-	0x1b, //   ELSE
-	0x61, //     SUB
-	0xb0, //     PUSHB_1
-	0x03, //       3
-	0x25, //     CINDEX
-	0x50, //     LT
-	0x59, //   EIF
-	0x58, //   IF
+	0x45, //     RCVT
 	0x23, //     SWAP
 	0x59, //   EIF
 	0x21, //   POP
@@ -996,7 +984,8 @@ static void init_fpgm(InstrCt *ct) {
 	0x40, //       64
 	0x59, //   EIF
 	0x2d, // ENDF
-	
+
+#if PUSH_STEMS_DIRECTLY
 	/* Function 4: scale a value given on stack in FUnits to pixels. Leave
 	 * the scaled value on the stack. This is used for normalizing stems not
 	 * regularized via CVT. Nonetheless, it requires at least one CVT entry.
@@ -1020,6 +1009,22 @@ static void init_fpgm(InstrCt *ct) {
 	0x8a, //   ROLL
 	0x44, //   WCVTP
 	0x2d, // ENDF
+#else
+	/* Function 4: measure accurate absolute scaled distance between rp0 and
+	 * pt, leave pt and distance on the stack, pt may be moved.
+	 * Syntax: PUSHX_3 rp0 pt 4 CALL
+	 */
+	0xb0, // PUSHB_1
+	0x04, //   4
+	0x2c, // FDEF
+	0x20, //   DUP
+	0x20, //   DUP
+	0xc0, //   MDRP[grey] //preserve _MASTER_ outline distance
+	0x8a, //   ROLL
+	0x49, //   MD[grid] // now MD is accurate
+	0x64, //   ABS
+	0x2d  // ENDF
+#endif
     };
 
     struct ttf_table *tab = SFFindTable(ct->sc->parent,CHR('f','p','g','m'));
@@ -1064,54 +1069,119 @@ static void init_fpgm(InstrCt *ct) {
     }
 }
 
-/* This stem normalizer is based on simple concept from FreeType.
+/* This stem normalizer is heavily based on simple concept from FreeType2.
  *
- * First round the standard width (function 2) and store the difference between
- * rounded and unrounded standard widths somewhere (storage 0 for horizontal and
- * 1 for vertical stems). Add this difference to every other cvt stem width
- * (fpgm function 3).
- * 
- * Furthermore, if a stem is narrower than standard width, add half a pixel to
- * it before rounding, otherwise substitute half a pixel before rounding. This
- * is done by setting round state rather than truetype bytecode arithmetic
- * instructions. Finally, the width is checked not to exceed standard width.
- * See fpgm function 4.
+ * First round the StdW. Then for each StemSnap (going outwards from StdW) check
+ * if it's within 1px from its already rounded neighbor, and if so, snap it
+ * before rounding. From all vertical stems (but not StdHW itself), 0.25px is
+ * subtracted before rounding. Similar method is used for non-cvt stems, they're
+ * snapped to the closest standard width if possible.
  *
- * TODO!
- * Stems not using 'cvt' need to be normalized separately in their glyph
- * programs. I hereby fpgm reserve function number 5 for that purpose.
+ * NOTE: because of tiny scaling errors, we have to compute ppem at which each
+ * stem stops being snapped to its already-rounded neighbor here instead of
+ * relegating this to the truetype bytecide interpreter.
  *
  * TODO!
  * It's possible that in future there will be separate fpgm function to set
- * appropriate round state for stems larger/smaller than standard width
- * at monochrome/antialiased/cleartype rendering.
+ * appropriate round state for horizontal/vertical stems for monochrome/
+ * antialiased/cleartype rendering.
+ */
+
+/*
+ * Return width (in pixels) of given stem, taking snaps into account.
+ */
+#define SNAP_THRESHOLD (48)
+static int compute_stem_width(int xdir, StdStem *stem, int EM, int ppem) {
+    int scaled_width; /* in 1/64th pixels */
+    int snapto_width; /* in 1/64th pixels */
+
+    scaled_width = (int)rint((rint(fabs(stem->width)) * ppem * 64.0)/EM);
+    if (scaled_width < 64) scaled_width = 64;
+
+    if (stem->snapto != NULL)
+    {
+        if (stem->stopat > ppem) {
+	    snapto_width = 64*compute_stem_width(xdir, stem->snapto, EM, ppem);
+	    if (abs(snapto_width - scaled_width) < 64) scaled_width = snapto_width;
+	}
+
+	if (xdir) scaled_width -= 16;
+    }
+
+return (scaled_width + 32) / 64;
+}
+
+/*
+ * Normalize a single stem. The code generated assumes there is a scaled stem
+ * width on bytecode interpreter's stack, and leaves normalized width there.
+ */
+static uint8 *normalize_stem(uint8 *prep_head, int xdir, StdStem *stem, InstrCt *ct) {
+    int callargs[3];
+    int i;
+
+    stem->stopat = 65536;
+
+    if (stem->snapto != NULL)
+    {
+        /* compute ppem at which to stop snapping stem to stem->snapto */
+        int EM = ct->gi->sf->ascent + ct->gi->sf->descent;
+
+        for (i=7; i<65536; i++) {
+	    int width_parent = compute_stem_width(xdir, stem->snapto, EM, i);
+	    int width_me = compute_stem_width(xdir, stem, EM, i);
+	    
+	    if (width_parent != width_me) {
+	        stem->stopat = i;
+		break;
+	    }
+	}
+
+	/* snap if below given ppem */
+	callargs[0] = stem->snapto->cvtindex;
+	callargs[1] = stem->stopat;
+	callargs[2] = 2;
+	prep_head = pushnums(prep_head, 3, callargs);
+	*prep_head++ = CALL;
+
+        /* Round[black], respecting minimum distance of 1 px */
+	/* Vertical stems (but not StdVW) use special rounding threshold. */
+	/* The rounding function restores default round state at the end. */
+        if (xdir) {
+            prep_head = push2nums(prep_head, 3, 70);
+	    *prep_head++ = SROUND;
+        }
+        else prep_head = pushnum(prep_head, 3);
+
+        *prep_head++ = CALL;
+    }
+    else {
+        /* simply round[black] respecting minimum distance of 1 px */
+        prep_head = pushnum(prep_head, 3);
+	*prep_head++ = CALL;
+    }
+
+return prep_head;
+}
+
+/*
+ * Normalize the standard stems in 'prep'.
  */
 static uint8 *normalize_stems(uint8 *prep_head, int xdir, InstrCt *ct) {
     int i, t;
     StdStem *mainstem = xdir?&(ct->cvtinfo.StdVW):&(ct->cvtinfo.StdHW);
     StdStem *otherstems = xdir?ct->cvtinfo.StemSnapV:ct->cvtinfo.StemSnapH;
     int otherstemcnt = xdir?ct->cvtinfo.StemSnapVCnt:ct->cvtinfo.StemSnapHCnt;
-    int callargs[4];
 
     if (mainstem->width == -1)
 return prep_head;
 
     /* set up the standard width */
+    mainstem->snapto = NULL;
     *prep_head++ = xdir?SVTCA_x:SVTCA_y;
     prep_head = pushnum(prep_head, mainstem->cvtindex);
     *prep_head++ = DUP;
-    *prep_head++ = DUP;
     *prep_head++ = 0x45; //RCVT
-
-    callargs[0] = 0;
-    callargs[1] = mainstem->cvtindex;
-    callargs[2] = 2;
-    prep_head = pushnums(prep_head, 3, callargs);
-    *prep_head++ = CALL;
-
-    prep_head = pushnum(prep_head, 3);
-    *prep_head++ = CALL;
-
+    prep_head = normalize_stem(prep_head, xdir, mainstem, ct);
     *prep_head++ = 0x44; //WCVTP
 
     /* set up other standard widths */
@@ -1119,46 +1189,20 @@ return prep_head;
     t = i-1;
     
     for (i=t; i>=0; i--) {
+        otherstems[i].snapto = i==t?mainstem:otherstems+i+1;
         prep_head = pushnum(prep_head, otherstems[i].cvtindex);
-        *prep_head++ = DUP;
 	*prep_head++ = DUP;
         *prep_head++ = 0x45; //RCVT
-
-        callargs[0] = 0;
-	callargs[1] = i==t?mainstem->cvtindex:otherstems[i+1].cvtindex;
-	callargs[2] = 2;
-	prep_head = pushnums(prep_head, 3, callargs);
-	*prep_head++ = CALL;
-
-        if (xdir) {
-            prep_head = push2nums(prep_head, 3, 70);
-	    *prep_head++ = SROUND;
-        }
-        else prep_head = pushnum(prep_head, 3);
-        *prep_head++ = CALL;
-
+	prep_head = normalize_stem(prep_head, xdir, otherstems+i, ct);
         *prep_head++ = 0x44; //WCVTP
     }
 
     for (i=t+1; i<otherstemcnt; i++) {
-        prep_head = pushnum(prep_head, otherstems[i].cvtindex);
-        *prep_head++ = DUP;
+        otherstems[i].snapto = i==t+1?mainstem:otherstems+i-1;
+	prep_head = pushnum(prep_head, otherstems[i].cvtindex);
 	*prep_head++ = DUP;
         *prep_head++ = 0x45; //RCVT
-
-        callargs[0] = 1;
-	callargs[1] = i==t+1?mainstem->cvtindex:otherstems[i-1].cvtindex;
-	callargs[2] = 2;
-	prep_head = pushnums(prep_head, 3, callargs);
-	*prep_head++ = CALL;
-
-        if (xdir) {
-            prep_head = push2nums(prep_head, 3, 70);
-	    *prep_head++ = SROUND;
-        }
-        else prep_head = pushnum(prep_head, 3);
-        *prep_head++ = CALL;
-
+	prep_head = normalize_stem(prep_head, xdir, otherstems+i, ct);
         *prep_head++ = 0x44; //WCVTP
     }
     
@@ -1263,23 +1307,24 @@ static void init_prep(InstrCt *ct) {
 /* We are given a stem weight and try to find matching one in CVT.
  * If none found, we return -1.
  */
-static int CVTSeekStem(int xdir, CvtData *CvtInfo, double value, double fudge, int can_fail) {
+static StdStem *CVTSeekStem(int xdir, CvtData *CvtInfo, double value, double fudge, int can_fail) {
     StdStem *mainstem = xdir?&(CvtInfo->StdVW):&(CvtInfo->StdHW);
     StdStem *otherstems = xdir?CvtInfo->StemSnapV:CvtInfo->StemSnapH;
+    StdStem *closest = NULL;
     int otherstemcnt = xdir?CvtInfo->StemSnapVCnt:CvtInfo->StemSnapHCnt;
-    int i, closestcvt=-1;
+    int i;
     double mindelta=1e20, delta, closestwidth=1e20;
 
     if (mainstem->width == -1)
-return -1;
+return NULL;
 
     value = fabs(value);
     delta = fabs(mainstem->width - value);
 
     if (delta < mindelta) {
         mindelta = delta;
-	closestwidth = mainstem->width;
-        closestcvt = mainstem->cvtindex;
+	closestwidth = rint(mainstem->width);
+	closest = mainstem;
     }
 
     for (i=0; i<otherstemcnt; i++) {
@@ -1288,17 +1333,17 @@ return -1;
         if (delta < mindelta) {
             mindelta = delta;
 	    closestwidth = otherstems[i].width;
-	    closestcvt = otherstems[i].cvtindex;
+	    closest = otherstems+i;
 	}
     }
 
     if (mindelta <= fudge)
-return closestcvt;
+return closest;
     if (value/closestwidth < 1.11 && value/closestwidth > 0.9)
-return closestcvt;
+return closest;
     if (can_fail)
-return -1;
-return closestcvt;
+return NULL;
+return closest;
 }
 
 #if 0		/* in getttfinstrs.c */
@@ -1812,13 +1857,10 @@ static void finish_stem(StemInfo *hint, int shp_rp1, int chg_rp0, InstrCt *ct) {
     if (hint == NULL)
 return;
 
-    int i;
     int rp0 = ct->edge.refpt;
     real coord = ct->edge.base;
     StdStem *StdW = ct->xdir?&(ct->cvtinfo.StdVW):&(ct->cvtinfo.StdHW);
-    StdStem *StemSnap = ct->xdir?ct->cvtinfo.StemSnapV:ct->cvtinfo.StemSnapH;
-    int StemSnapCnt = ct->xdir?ct->cvtinfo.StemSnapVCnt:ct->cvtinfo.StemSnapHCnt;
-    int cvtindex =
+    StdStem *ClosestStem =
         CVTSeekStem(ct->xdir, &(ct->cvtinfo), hint->width, ct->gi->fudge, true);
 
     ct->touched[rp0] |= ct->xdir?tf_x:tf_y;
@@ -1840,8 +1882,8 @@ return;
 return;
     }
 
-    if (cvtindex != -1) {
-	ct->pt = push2nums(ct->pt, ct->edge.refpt, cvtindex);
+    if (ClosestStem != NULL) {
+	ct->pt = push2nums(ct->pt, ct->edge.refpt, ClosestStem->cvtindex);
 
 	if (ct->cvt_done && ct->fpgm_done && ct->prep_done)
 	    *(ct->pt)++ = chg_rp0?MIRP_rp0_min_black:MIRP_min_black;
@@ -1849,30 +1891,25 @@ return;
     }
     else {
 	if (ct->cvt_done && ct->fpgm_done && ct->prep_done && StdW->width!=-1) {
-	    int callargs[3];
+	    StdStem stem;
 
+	    stem.width = (int)rint(fabs(hint->width));
+	    stem.snapto = 
+	        CVTSeekStem(ct->xdir, &(ct->cvtinfo), hint->width, ct->gi->fudge, false);
+
+	    int callargs[3];
+#if PUSH_STEMS_DIRECTLY
 	    callargs[0] = ct->edge.refpt;
-	    callargs[1] = (int)rint(fabs(hint->width));
+	    callargs[1] = stem.width;
+#else
+	    callargs[0] = rp0;
+	    callargs[1] = ct->edge.refpt;
+#endif
 	    callargs[2] = 4;
 	    ct->pt = pushnums(ct->pt, 3, callargs);
 	    *(ct->pt)++ = CALL;
 
-	    cvtindex = CVTSeekStem(ct->xdir, &(ct->cvtinfo), hint->width, ct->gi->fudge, false);
-	    for (i=0; i<StemSnapCnt && StemSnap[i].cvtindex != cvtindex; i++) ;
-
-	    if (fabs(hint->width) > StdW->width) callargs[0] = 1;
-	    else callargs[0] = 0;
-	    callargs[1] = cvtindex;
-	    callargs[2] = 2;
-	    ct->pt = pushnums(ct->pt, 3, callargs);
-	    *(ct->pt)++ = CALL;
-
-	    if (ct->xdir) {
-	        ct->pt = push2nums(ct->pt, 3, 70);
-		*(ct->pt)++ = SROUND;
-	    }
-	    else ct->pt = pushnum(ct->pt, 3);
-	    *(ct->pt)++ = CALL;
+	    ct->pt = normalize_stem(ct->pt, ct->xdir, &stem, ct);
 
 	    if (ct->xdir) {
 	        if (ct->bp[rp0].x > ct->bp[ct->edge.refpt].x) *(ct->pt)++ = NEG;
