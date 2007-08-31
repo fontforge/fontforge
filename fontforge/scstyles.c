@@ -185,8 +185,8 @@ static void PerGlyphFindCounters(struct counterinfo *ci,SplineChar *sc, int laye
 	    if ( HintActiveAt(h,y)) {
 		if ( i<8 ) {
 		    CIAdd(ci,BOT_Z,h->start,h->width);
-		    y += (8-i)*diff;
-		    i = 8;
+		    y += (7-i)*diff;
+		    i = 7;
 		} else if ( i==8 ) {
 		    CIAdd(ci,BOT_Z,h->start,h->width);
 		    CIAdd(ci,TOP_Z,h->start,h->width);
@@ -248,6 +248,30 @@ static void PerGlyphFindCounters(struct counterinfo *ci,SplineChar *sc, int laye
 	    ci->zones[z][i].moveto = ci->zones[z][i-1].moveto + ci->zones[z][i-1].newwidth +
 		    ci->c_factor/100.0 * (ci->zones[z][i].start-(ci->zones[z][i-1].start+ci->zones[z][i-1].width)) +
 		    ci->c_add;
+	}
+    }
+
+    if ( ci->has_two_zones ) {
+	int j,k;
+	double diff;
+	/* Now are there any common stems in the two zones? Common stems */
+	/*  should be forced to the same location even if that isn't what */
+	/*  we calculated above */
+	for ( i=0; i<ci->cnts[0]; ++i ) {
+	    for ( j=0; j<ci->cnts[1]; ++j ) {
+		if ( ci->zones[0][i].start == ci->zones[1][j].start &&
+			ci->zones[0][i].moveto != ci->zones[1][j].moveto ) {
+		    if ( ci->zones[0][i].moveto > ci->zones[1][j].moveto ) {
+			diff = ci->zones[0][i].moveto - ci->zones[1][j].moveto;
+			for ( k=j; k<ci->cnts[1]; ++k )
+			    ci->zones[1][j].moveto += diff;
+		    } else {
+			diff = ci->zones[1][j].moveto - ci->zones[0][i].moveto;
+			for ( k=j; k<ci->cnts[0]; ++k )
+			    ci->zones[0][i].moveto += diff;
+		    }
+		}
+	    }
 	}
     }
 }
@@ -406,7 +430,7 @@ return;
 }
 
 static double SFStdVW(SplineFont *sf) {
-    double stdvw;
+    double stdvw = 0;
     char *ret;
 
     if ( sf->private!=NULL && (ret=PSDictHasEntry(sf->private,"StdVW"))!=NULL )
@@ -483,7 +507,7 @@ static int style_e_h(GWindow gw, GEvent *event) {
 	ed->done = true;
     } else if ( event->type == et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("elementmenu.html#Style");
+	    help("Styles.html#Embolden");
 return( true );
 	}
 return( false );
@@ -1009,7 +1033,7 @@ return(ss_expanded);			/* No points? Nothing to do */
     }
     free(ptmoves);
 
-    if ( zones->counter_type != ct_squish )
+    if ( zones->counter_type == ct_retain || (sc->width!=0 && zones->counter_type == ct_auto))
 	CorrectLeftSideBearing(ss_expanded,sc,layer);
 return(ss_expanded);
 }
@@ -1159,7 +1183,7 @@ return(ss_expanded);			/* No points? Nothing to do */
     }
     free(ptmoves);
 
-    if ( zones->counter_type != ct_squish )
+    if ( zones->counter_type == ct_retain || (sc->width!=0 && zones->counter_type == ct_auto))
 	CorrectLeftSideBearing(ss_expanded,sc,layer);
 return( ss_expanded );
 }
@@ -1183,6 +1207,7 @@ static void AdjustCounters(SplineChar *sc, struct lcg_zones *zones,
     ci.boundry = (zones->top_bound+zones->bottom_bound)/2;
     ci.c_add = zones->stroke_width;
     ci.c_factor = ci.sb_factor = 100;
+    StemInfosFree(sc->vstem); sc->vstem = NULL;
     SCCondenseExtend(&ci,sc,ly_fore);
 }
 
@@ -1255,10 +1280,10 @@ static void SCEmbolden(SplineChar *sc, struct lcg_zones *zones, int layer) {
 	if ( zones->embolden_hook!=NULL )
 	    temp = (zones->embolden_hook)(temp,zones,sc,layer);
 	SplineSetFindBounds(temp,&new);
-	if ( adjust_counters && layer==ly_fore )
-	    AdjustCounters(sc,zones,&old,&new);
 	SplinePointListsFree( sc->layers[layer].splines );
 	sc->layers[layer].splines = temp;
+	if ( adjust_counters && layer==ly_fore )
+	    AdjustCounters(sc,zones,&old,&new);
     }
 
     if ( layer==-2 || layer==ly_fore ) {
