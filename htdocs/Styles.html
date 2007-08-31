@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 23-Jun-2001 -->
-  <!-- AP: Last modified: 30-Aug-2007 -->
+  <!-- AP: Last modified: 31-Aug-2007 -->
   <TITLE>Stylistic Transformations on Fonts</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -428,7 +428,7 @@
   counter sizes and side bearings are increased (or decreased for condensed).
   <H3>
     The <A NAME="Embolden">Change</A> Weight
-    dialog<IMG SRC="ChangeWeight.png" WIDTH="332" HEIGHT="248" ALIGN="Right">
+    dialog<IMG SRC="ChangeWeight.png" WIDTH="332" HEIGHT="281" ALIGN="Right">
   </H3>
   <P>
   The Change Weight dialog starts out by stroking the glyph (Element-&gt;Expand
@@ -471,16 +471,11 @@
 	the internal counters expanded to be closer to their original size.</TD>
       <TD>Now consider the case of a serifed font. The serifs on the B above have
 	become huge, disproportionally bigger than they were in the original glyph.
-	This is probably not a good thing, but I haven't figured out how to fix it
-	yet. 
-	<P>
-	The best I can suggest is that you use the search and replace command to
-	search through the font for huge serifs and replace them with more decorous
-	ones.</TD>
+      </TD>
     </TR>
   </TABLE>
   <P>
-  <IMG SRC="ChangeWeight.png" WIDTH="332" HEIGHT="248" ALIGN="Left">Going back
+  <IMG SRC="ChangeWeight.png" WIDTH="332" HEIGHT="281" ALIGN="Left">Going back
   to the original dialog. The first field specifies the amount by which each
   stem should get bigger.
   <P>
@@ -500,6 +495,10 @@
   <P>
   Any point which is on a hint which falls somewhere between Top Zone and Bottom
   Zone will be fixed where it is. (Points on the middle stem of "B").
+  <P>
+  Any point which is Serif Height above the "Bottom Hint" (or Serif Height
+  below Top Hint) will remain where it is, meaning that some simple serifs
+  will not be expanded to an inappropriate size.
   <P>
   Any other points will be interpolated between the points which move (rather
   like the TrueType IUP instruction -- indeed, the process of making a glyph
