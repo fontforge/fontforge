@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 29-Aug-2007 -->
+  <!-- AP: Last modified: 30-Aug-2007 -->
   <TITLE>The Element Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -115,7 +115,7 @@
       Styles
       <UL>
 	<LI>
-	  <A HREF="elementmenu.html#Embolden">Embolden</A>
+	  <A HREF="#Embolden">Change Weight...</A>
 	<LI>
 	  <A HREF="#Oblique">Oblique</A>
 	<LI>
@@ -438,15 +438,20 @@
       script to script) Others -- such as Italic -- are more specialized.
       <DL>
 	<DT>
-	  <A NAME="Embolden">Embolden</A>...
+	  <A NAME="Embolden">Change Weight</A>...
 	<DD>
-	  This is a simplistic command to embolden glyphs. It sometimes works.
+	  This is a simplistic command to make the stems of glyphs darker or lighter.
+	  It sometimes works.
 	  <P>
 	  For CJK glyphs it simply expands the strokes of the font outward.
 	  <P>
 	  For LCG (Latin, Cyrillic, Greek) glyphs it expands the stroke outward and
 	  then moves everything below a certain point up, and everything above another
-	  point down. This doesn't always work.
+	  point down. This is based on heuristics and will fail if a glyph is even
+	  the slightest bit unexpected.<BR>
+	  For other writing systems FontForge will do something, currently it will
+	  fall into one of the two cases above.<BR>
+	  See the <A HREF="Styles.html#Embolden">Change Weight dialog</A>.
 	<DT>
 	  <A NAME="Oblique">Oblique</A>
 	<DD>
@@ -457,7 +462,8 @@
 	<DD>
 	  Allows you to change the width of the counters and side bearings of a glyph.
 	  The algorithm only works on simple latin glyphs, and it has problems with
-	  diagonal stems.
+	  diagonal stems. See the <A HREF="Styles.html#Condense">Condense/Extend
+	  dialog</A>.
 	<DT>
 	  <A NAME="Outline">Outline</A>
 	<DD>
