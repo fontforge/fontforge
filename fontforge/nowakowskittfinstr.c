@@ -2564,7 +2564,7 @@ static DiagPointInfo *GetDiagPoints ( InstrCt *ct ) {
                 if ((i == curds->pts[j].num || i == curds->pts[j+1].num) ||
                     IsPointOnLine( curds->pts[j].pt, curds->pts[j+1].pt, &(ct->bp[i]) )) {
                     
-                    if ( diagpts[i].count <= 2 ) {
+                    if ( diagpts[i].count < 2 ) {
                         num = diagpts[i].count;
                         diagpts[i].line[num] = 
                             chunkalloc(sizeof(struct pointvector));
