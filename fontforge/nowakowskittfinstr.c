@@ -623,7 +623,7 @@ static void init_cvt(InstrCt *ct) {
         free(cvt);
 
 	if (!ct->cvt_done) {
-	    LogError(_("Can't insert 'cvt'"),
+	    LogError(_("Can't insert 'cvt': %s\n"),
 		_("There already exists a 'cvt' table, perhaps legacy. "
 		  "FontForge can use it, but can't make any assumptions on "
 		  "values stored there, so generated instructions will be of "
@@ -1056,7 +1056,7 @@ static void init_fpgm(InstrCt *ct) {
 
 	/* Log warning message. */
 	if (!ct->fpgm_done)
-	    LogError(_("Can't insert 'fpgm'"),
+	    LogError(_("Can't insert 'fpgm': %s\n"),
 		_("There exists a 'fpgm' code that seems incompatible with "
 		  "FontForge's. Instructions generated will be of lower "
 		  "quality. If legacy hinting is to be scrapped, it is "
@@ -1293,7 +1293,7 @@ static void init_prep(InstrCt *ct) {
 
 	/* Log warning message. */
 	if (!ct->prep_done)
-	    LogError(_("Can't insert 'prep'"),
+	    LogError(_("Can't insert 'prep': %s\n"),
 		_("There exists a 'prep' code incompatible with FontForge's. "
 		  "It can't be guaranteed it will work well. It is suggested "
 		  "to allow FontForge to insert its code and then append user"
