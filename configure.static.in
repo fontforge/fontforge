@@ -461,13 +461,13 @@ else
   WFLAGS=""
 fi
 
-cp $ac_confdir/Makefile.dynamic.in $ac_confdir/Makefile.in
-cp $ac_confdir/Unicode/Makefile.dynamic.in $ac_confdir/Unicode/Makefile.in
-cp $ac_confdir/gdraw/Makefile.dynamic.in $ac_confdir/gdraw/Makefile.in
-cp $ac_confdir/fontforge/Makefile.dynamic.in $ac_confdir/fontforge/Makefile.in
+cp $ac_confdir/Makefile.static.in $ac_confdir/Makefile.in
+cp $ac_confdir/Unicode/Makefile.static.in $ac_confdir/Unicode/Makefile.in
+cp $ac_confdir/gdraw/Makefile.static.in $ac_confdir/gdraw/Makefile.in
+cp $ac_confdir/fontforge/Makefile.static.in $ac_confdir/fontforge/Makefile.in
 AC_OUTPUT(Makefile Unicode/Makefile gdraw/Makefile fontforge/Makefile po/Makefile systemspecific fontforge.pc )
 if test -e umap >/dev/null 2>&1 ; then
-  cp $ac_confdir/umap/Makefile.dynamic.in $ac_confdir/umap/Makefile.in
+  cp $ac_confdir/umap/Makefile.static.in $ac_confdir/umap/Makefile.in
   AC_OUTPUT( umap/Makefile )
 fi
 
