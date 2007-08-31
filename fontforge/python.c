@@ -4820,6 +4820,100 @@ static PyObject *PyFFGlyph_canonicalStart(PyObject *self, PyObject *args) {
 Py_RETURN( self );
 }
 
+static struct flaglist cw_types[] = {
+    { "lcg", embolden_lcg },
+    { "cjk", embolden_cjk },
+    { "auto", embolden_auto },
+    { "custom", embolden_custom },
+    { "LCG", embolden_lcg },
+    { "CJK", embolden_cjk },
+    NULL };
+
+static struct flaglist co_types[] = {
+    { "squish", ct_squish },
+    { "retain", ct_retain },
+    { "auto", ct_auto },
+    NULL };
+
+static enum embolden_type CW_ParseArgs(SplineFont *sf, struct lcg_zones *zones, PyObject *args) {
+    enum embolden_type type;
+    char *type_name="auto", *counter_name = "auto";
+    PyObject *zoneO=NULL;
+    int just_top;
+
+    memset(zones,0,sizeof(*zones));
+    zones->serif_height = -1;
+    zones->serif_fuzz = .9;
+
+    if ( !PyArg_ParseTuple(args,"d|sddsiO",
+	    &zones->stroke_width, &type_name,
+	    &zones->serif_height, &zones->serif_fuzz,
+	    &counter_name,
+	    &zones->removeoverlap,
+	    &zoneO ))
+return( embolden_error );
+    type = FlagsFromString(type_name,cw_types);
+    if ( type==0x80000000 )
+return( embolden_error );
+    zones->counter_type = FlagsFromString(counter_name,co_types);
+    if ( zones->counter_type==0x80000000 )
+return( embolden_error );
+
+    just_top = true;
+    if ( zoneO==NULL )
+	zones->top_bound = sf->ascent/2;
+    else if ( PyInt_Check(zoneO))
+	zones->top_bound = PyInt_AsLong(zoneO);
+    else if ( PyTuple_Check(zoneO)) {
+	if ( !PyArg_ParseTuple(args,"dddd",
+		&zones->top_bound,&zones->top_zone,&zones->bottom_zone,&zones->bottom_bound))
+return( embolden_error );
+	just_top = false;
+    }
+    if ( just_top ) {
+	/* Bottom defaults to 0, and the other two are between */
+	zones->top_zone = 3*zones->top_bound/4;
+	zones->bottom_zone = zones->top_bound/4;
+    }
+	
+return( type );
+}
+
+static PyObject *PyFFGlyph_changeWeight(PyObject *self, PyObject *args) {
+    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
+    enum embolden_type type;
+    struct lcg_zones zones;
+
+    type = CW_ParseArgs(sc->parent,&zones,args);
+    if ( type == embolden_error )
+return( NULL );
+    ScriptSCEmbolden(sc,type,&zones);
+
+Py_RETURN( self );
+}
+
+static PyObject *PyFFGlyph_condenseExtend(PyObject *self, PyObject *args) {
+    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
+    struct counterinfo ci;
+
+    memset(&ci,0,sizeof(ci));
+    ci.sb_factor = ci.sb_add = -10000;
+    ci.correct_italic = true;
+
+    if ( !PyArg_ParseTuple(args,"dd|ddi",&ci.c_factor, &ci.c_add, &ci.sb_factor, &ci.sb_add,
+	    &ci.correct_italic ))
+return( NULL );
+    ci.c_factor *= 100;			/* UI uses a percent */
+    if ( ci.sb_factor == -10000 )
+	ci.sb_factor = ci.c_factor;
+    if ( ci.sb_add == -10000 )
+	ci.sb_add = ci.c_add;
+    CI_Init(&ci,sc->parent);
+    ScriptSCCondenseExtend(sc,&ci);
+
+Py_RETURN( self );
+}
+
 static PyObject *PyFFGlyph_AddReference(PyObject *self, PyObject *args) {
     double m[6];
     real transform[6];
@@ -5622,6 +5716,8 @@ static PyMethodDef PyFF_Glyph_methods[] = {
     { "build", PyFFGlyph_Build, METH_NOARGS, "If the current glyph is an accented character\nand all components are in the font\nthen build it out of references" },
     { "canonicalContours", (PyCFunction) PyFFGlyph_canonicalContours, METH_NOARGS, "Orders the contours in the current glyph by the x coordinate of their leftmost point. (This can reduce the size of the postscript charstring needed to describe the glyph(s)."},
     { "canonicalStart", (PyCFunction) PyFFGlyph_canonicalStart, METH_NOARGS, "Sets the start point of all the contours of the current glyph to be the leftmost point on the contour."},
+    { "changeWeight", (PyCFunction) PyFFGlyph_changeWeight, METH_VARARGS, "Change the weight (thickness) of the stems of the glyph"},
+    { "condenseExtend", (PyCFunction) PyFFGlyph_condenseExtend, METH_VARARGS, "Change the widths of the counters and side bearings of the glyph"},
     { "clear", (PyCFunction) PyFFGlyph_clear, METH_NOARGS, "Clears the contents of a glyph and makes it not worth outputting" },
     { "cluster", (PyCFunction) PyFFGlyph_Cluster, METH_VARARGS, "Cluster the points of a glyph towards common values" },
     { "correctDirection", (PyCFunction) PyFFGlyph_Correct, METH_NOARGS, "Orient a layer so that external contours are clockwise and internal counter clockwise." },
@@ -9908,6 +10004,41 @@ static PyObject *PyFFFont_canonicalStart(PyObject *self, PyObject *args) {
 Py_RETURN( self );
 }
 
+static PyObject *PyFFFont_changeWeight(PyObject *self, PyObject *args) {
+    FontView *fv = ((PyFF_Font *) self)->fv;
+    enum embolden_type type;
+    struct lcg_zones zones;
+
+    type = CW_ParseArgs(fv->sf,&zones,args);
+    if ( type == embolden_error )
+return( NULL );
+    FVEmbolden(fv,type,&zones);
+
+Py_RETURN( self );
+}
+
+static PyObject *PyFFFont_condenseExtend(PyObject *self, PyObject *args) {
+    FontView *fv = ((PyFF_Font *) self)->fv;
+    struct counterinfo ci;
+
+    memset(&ci,0,sizeof(ci));
+    ci.sb_factor = ci.sb_add = -10000;
+    ci.correct_italic = true;
+
+    if ( !PyArg_ParseTuple(args,"dd|ddi",&ci.c_factor, &ci.c_add, &ci.sb_factor, &ci.sb_add,
+	    &ci.correct_italic ))
+return( NULL );
+    ci.c_factor *= 100;			/* UI uses a percent */
+    if ( ci.sb_factor == -10000 )
+	ci.sb_factor = ci.c_factor;
+    if ( ci.sb_add == -10000 )
+	ci.sb_add = ci.c_add;
+    CI_Init(&ci,fv->sf);
+    FVCondenseExtend(fv,&ci);
+
+Py_RETURN( self );
+}
+
 static PyObject *PyFFFont_autoHint(PyObject *self, PyObject *args) {
     FontView *fv = ((PyFF_Font *) self)->fv;
 
@@ -10165,6 +10296,8 @@ static PyMethodDef PyFF_Font_methods[] = {
     { "build", PyFFFont_Build, METH_NOARGS, "If the current glyph is an accented character\nand all components are in the font\nthen build it out of references" },
     { "canonicalContours", (PyCFunction) PyFFFont_canonicalContours, METH_NOARGS, "Orders the contours in the current glyph by the x coordinate of their leftmost point. (This can reduce the size of the postscript charstring needed to describe the glyph(s)."},
     { "canonicalStart", (PyCFunction) PyFFFont_canonicalStart, METH_NOARGS, "Sets the start point of all the contours of the current glyph to be the leftmost point on the contour."},
+    { "changeWeight", (PyCFunction) PyFFFont_changeWeight, METH_VARARGS, "Change the weight (thickness) of the stems of the selected glyphs"},
+    { "condenseExtend", (PyCFunction) PyFFFont_condenseExtend, METH_VARARGS, "Change the widths of the counters and side bearings of the selected glyphs"},
     { "cluster", (PyCFunction) PyFFFont_Cluster, METH_VARARGS, "Cluster the points of a glyph towards common values" },
     /*{ "compareGlyphs", (PyCFunction) PyFFFont_compareGlyphs, METH_VARARGS, "Compares two sets of glyphs"},*/
     /* compareGlyphs assumes an old scripting context */

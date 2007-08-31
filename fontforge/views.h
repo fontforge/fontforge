@@ -992,13 +992,42 @@ struct lcg_zones {
     double serif_height, serif_fuzz;
 
     double stroke_width;	/* negative number to lighten, positive to embolden */
-    uint8 removeoverlap;
+    int removeoverlap;
 
-    BlueData *bd;
+    BlueData bd;
     double stdvw;
 };
 /* This order is the same order as the radio buttons in the embolden dlg */
-enum embolden_type { embolden_lcg, embolden_cjk, embolden_auto, embolden_custom };
+enum embolden_type { embolden_lcg, embolden_cjk, embolden_auto, embolden_custom, embolden_error };
+
+struct counterinfo {
+    double c_factor, c_add;		/* For counters */
+    double sb_factor, sb_add;		/* For side bearings */
+    int correct_italic;
+
+    BlueData bd;
+    double stdvw;
+
+    SplineChar *sc;
+    int layer;
+    DBounds bb;				/* Value before change */
+    double top_y, bottom_y, boundry;
+    int has_two_zones;
+#define TOP_Z	0
+#define BOT_Z	1
+    int cnts[2];
+    int maxes[2];
+    struct ci_zones {
+	double start, width;
+	double moveto, newwidth;	/* Only change width for diagonal stems*/
+    } *zones[2];
+};
+
+void FVCondenseExtend(FontView *fv,struct counterinfo *ci);
+void ScriptSCCondenseExtend(SplineChar *sc,struct counterinfo *ci);
+void CI_Init(struct counterinfo *ci,SplineFont *sf);
+double SFSerifHeight(SplineFont *sf);
+void ScriptSCEmbolden(SplineChar *sc,enum embolden_type type,struct lcg_zones *zones);
 void FVEmbolden(FontView *fv,enum embolden_type type,struct lcg_zones *zones);
 void EmboldenDlg(FontView *fv, CharView *cv);
 void CondenseExtendDlg(FontView *fv, CharView *cv);
