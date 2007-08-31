@@ -1011,7 +1011,15 @@ return(ss_expanded);			/* No points? Nothing to do */
 		sign = -1;
 	    else if ( sp->me.y<zones->bottom_zone )
 		sign = 1;
-	    if ( sign ) {
+		
+	    /* Fix vertical serifs */
+	    if ( zones->serif_height>0 &&
+		     RealWithin(sp->me.y,zones->bottom_bound+zones->serif_height+zones->stroke_width/2,zones->serif_fuzz) ) {
+		ptmoves[i].newpos.y = zones->bottom_bound+zones->serif_height;
+	    } else if ( zones->serif_height>0 &&
+		     RealWithin(sp->me.y,zones->top_bound-zones->serif_height-zones->stroke_width/2,zones->serif_fuzz) ) {
+		ptmoves[i].newpos.y = zones->top_bound-zones->serif_height;
+	    } else if ( sign ) {
 		ptmoves[i].newpos.y += sign*zones->stroke_width*ptmoves[i].factor/2;
 		/* This is to improve the looks of diagonal stems */
 		if ( sp->next->islinear && sp->prev->islinear && nsp->next->islinear &&
@@ -1080,7 +1088,19 @@ return(ss_expanded);			/* No points? Nothing to do */
 		h = OnHint(sc->hstem,origsp->me.y,&othery);
 	    else
 		h = MightBeOnHint(sc->hstem,zones,&ptmoves[i],&othery);
-	    if ( sp->me.y>=zones->top_bound || (h!=NULL && othery+zones->stroke_width/2>=zones->top_bound))
+
+	    /* Fix vertical serifs */
+	    if ( zones->serif_height>0 &&
+		    (( origsp!=NULL && RealWithin(origsp->me.y, zones->bottom_bound+zones->serif_height,zones->serif_fuzz)) ||
+		     RealWithin(sp->me.y,zones->bottom_bound+zones->serif_height+zones->stroke_width/2,zones->serif_fuzz)) ) {
+		ptmoves[i].touched = true;
+		ptmoves[i].newpos.y = zones->bottom_bound+zones->serif_height;
+	    } else if ( zones->serif_height>0 &&
+		    (( origsp!=NULL && RealWithin(origsp->me.y, zones->top_bound-zones->serif_height,zones->serif_fuzz)) ||
+		     RealWithin(sp->me.y,zones->top_bound-zones->serif_height-zones->stroke_width/2,zones->serif_fuzz)) ) {
+		ptmoves[i].touched = true;
+		ptmoves[i].newpos.y = zones->top_bound-zones->serif_height;
+	    } else if ( sp->me.y>=zones->top_bound || (h!=NULL && othery+zones->stroke_width/2>=zones->top_bound))
 		sign = -1;
 	    else if ( sp->me.y<=zones->bottom_bound || (h!=NULL && othery-zones->stroke_width/2<=zones->bottom_bound))
 		sign = 1;
@@ -1373,6 +1393,66 @@ return( value );
 return( bestvalue );
 }
 
+static double SFSerifHeight(SplineFont *sf) {
+    SplineChar *isc;
+    SplineSet *ss;
+    SplinePoint *sp;
+    DBounds b;
+
+    if ( sf->strokedfont || sf->multilayer )
+return( 0 );
+
+    isc = SFGetChar(sf,'I',NULL);
+    if ( isc==NULL )
+	isc = SFGetChar(sf,0x0399,"Iota");
+    if ( isc==NULL )
+	isc = SFGetChar(sf,0x0406,NULL);
+    if ( isc==NULL )
+return( 0 );
+
+    ss = isc->layers[ly_fore].splines;
+    if ( ss==NULL || ss->next!=NULL )		/* Too complicated, probably doesn't have simple serifs (black letter?) */
+return( 0 );
+    if ( ss->first->prev==NULL )
+return( 0 );
+    for ( sp=ss->first; ; ) {
+	if ( sp->me.y==0 )
+    break;
+	sp = sp->next->to;
+	if ( sp==ss->first )
+    break;
+    }
+    if ( sp->me.y!=0 )
+return( 0 );
+    SplineCharFindBounds(isc,&b);
+    if ( sp->next->to->me.y==0 || sp->next->to->next->to->me.y==0 ) {
+	SplinePoint *psp = sp->prev->from;
+	if ( psp->me.y>=b.maxy/3 )
+return( 0 );			/* Sans Serif, probably */
+	if ( !psp->nonextcp && psp->nextcp.x==psp->me.x ) {
+	    /* A curve point half-way up the serif? */
+	    psp = psp->prev->from;
+	    if ( psp->me.y>=b.maxy/3 )
+return( 0 );			/* I give up, I don't understand this */
+	}
+return( psp->me.y );
+    } else if ( sp->prev->from->me.y==0 || sp->prev->from->prev->from->me.y==0 ) {
+	SplinePoint *nsp = sp->next->to;
+	if ( nsp->me.y>=b.maxy/3 )
+return( 0 );			/* Sans Serif, probably */
+	if ( !nsp->nonextcp && nsp->nextcp.x==nsp->me.x ) {
+	    /* A curve point half-way up the serif? */
+	    nsp = nsp->next->to;
+	    if ( nsp->me.y>=b.maxy/3 )
+return( 0 );			/* I give up, I don't understand this */
+	}
+return( nsp->me.y );
+    }
+
+    /* Too complex for me */
+return( 0 );
+}
+
 static void PerGlyphInit(SplineChar *sc, struct lcg_zones *zones,
 	enum embolden_type type, BlueData *bd) {
     int j;
@@ -1485,6 +1565,8 @@ return;
 #define CID_Squish	1011
 #define CID_Retain	1012
 #define CID_CounterAuto	1013
+#define CID_SerifHeight	1014
+#define CID_SerifHFuzz	1015
 
 static SplineFont *lastsf = NULL;
 static enum embolden_type last_type = embolden_auto;
@@ -1507,6 +1589,8 @@ static int Embolden_OK(GGadget *g, GEvent *e) {
 		GGadgetIsChecked( GWidgetGetControl(ew,CID_CJK)) ? embolden_cjk :
 		GGadgetIsChecked( GWidgetGetControl(ew,CID_Auto)) ? embolden_auto :
 			embolden_custom;
+	zones.serif_height = GetReal8(ew,CID_SerifHeight,_("Serif Height"),&err);
+	zones.serif_fuzz = GetReal8(ew,CID_SerifHFuzz,_("Serif Height Fuzz"),&err);
 	if ( type == embolden_custom ) {
 	    zones.top_zone = GetReal8(ew,CID_TopZone,_("Top Zone"),&err);
 	    zones.bottom_zone = GetReal8(ew,CID_BottomZone,_("Bottom Zone"),&err);
@@ -1563,10 +1647,10 @@ void EmboldenDlg(FontView *fv, CharView *cv) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[23], boxes[6], *barray[8], *rarray[6], *carray[6], *hvarray[9][5];
-    GTextInfo label[23];
+    GGadgetCreateData gcd[27], boxes[6], *barray[8], *rarray[6], *carray[6], *hvarray[10][5];
+    GTextInfo label[27];
     int k;
-    char topzone[40], botzone[40], emb_width[40], tophint[40], bothint[40];
+    char topzone[40], botzone[40], emb_width[40], tophint[40], bothint[40], serifh[40];
 
     QuickBlues(sf, &bd);
 
@@ -1767,15 +1851,47 @@ void EmboldenDlg(FontView *fv, CharView *cv) {
     gcd[k++].creator = GNumericFieldCreate;
     hvarray[3][3] = &gcd[k-1]; hvarray[3][4] = NULL;
 
-    label[k].text = (unichar_t *) _("Cleanup Self Intersect");
+    label[k].text = (unichar_t *) _("Serif Height");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup | (last_overlap?gg_cb_on:0);
-    gcd[k].gd.cid = CID_CleanupSelfIntersect;
-    gcd[k].gd.popup_msg = (unichar_t *) _("When FontForge detects that an expanded stroke will self-intersect,\nthen setting this option will cause it to try to make things nice\nby removing the intersections");
-    gcd[k++].creator = GCheckBoxCreate;
-    hvarray[4][0] = &gcd[k-1]; hvarray[4][1] = hvarray[4][2] = hvarray[4][3] = GCD_ColSpan; hvarray[4][4] = NULL;
+    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup ;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Any points this high will be assumed to be on serifs,\nand will remain at that height after processing.\n(So serifs should remain the same size).\n(If you do wish the serifs to grow, set this to 0)");
+    gcd[k++].creator = GLabelCreate;
+    hvarray[4][0] = &gcd[k-1];
+
+    sprintf( serifh, "%g", SFSerifHeight(sf));
+    label[k].text = (unichar_t *) serifh;
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 80; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-3;
+    gcd[k].gd.pos.width = 60;
+    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[k].gd.cid = CID_SerifHeight;
+    gcd[k].gd.popup_msg = gcd[k-1].gd.popup_msg;
+    gcd[k++].creator = GNumericFieldCreate;
+    hvarray[4][1] = &gcd[k-1];
+
+    label[k].text = (unichar_t *) _("Fuzz");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup ;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Allow the height match to differ by this much");
+    gcd[k++].creator = GLabelCreate;
+    hvarray[4][2] = &gcd[k-1];
+
+    label[k].text = (unichar_t *) ".9";
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 80; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-3;
+    gcd[k].gd.pos.width = 60;
+    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[k].gd.cid = CID_SerifHFuzz;
+    gcd[k].gd.popup_msg = gcd[k-1].gd.popup_msg;
+    gcd[k++].creator = GNumericFieldCreate;
+    hvarray[4][3] = &gcd[k-1];
+    hvarray[4][4] = NULL;
 
     label[k].text = (unichar_t *) _("Counters:");
     gcd[k].gd.popup_msg = (unichar_t *) _("The simple application of this algorithm will squeeze counters\nThat is not normally seen in bold latin fonts");
@@ -1825,7 +1941,17 @@ void EmboldenDlg(FontView *fv, CharView *cv) {
     boxes[5].creator = GHBoxCreate;
     hvarray[5][0] = &boxes[5]; hvarray[5][1] = hvarray[5][2] = hvarray[5][3] = GCD_ColSpan; hvarray[5][4] = NULL;
 
-    hvarray[6][0] = hvarray[6][1] = hvarray[6][2] = hvarray[6][3] = GCD_Glue; hvarray[6][4] = NULL;
+    label[k].text = (unichar_t *) _("Cleanup Self Intersect");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup | (last_overlap?gg_cb_on:0);
+    gcd[k].gd.cid = CID_CleanupSelfIntersect;
+    gcd[k].gd.popup_msg = (unichar_t *) _("When FontForge detects that an expanded stroke will self-intersect,\nthen setting this option will cause it to try to make things nice\nby removing the intersections");
+    gcd[k++].creator = GCheckBoxCreate;
+    hvarray[6][0] = &gcd[k-1]; hvarray[6][1] = hvarray[6][2] = hvarray[6][3] = GCD_ColSpan; hvarray[6][4] = NULL;
+
+    hvarray[7][0] = hvarray[7][1] = hvarray[7][2] = hvarray[7][3] = GCD_Glue; hvarray[7][4] = NULL;
 
     gcd[k].gd.pos.x = 30-3; gcd[k].gd.pos.y = 5;
     gcd[k].gd.pos.width = -1;
@@ -1853,8 +1979,8 @@ void EmboldenDlg(FontView *fv, CharView *cv) {
     boxes[4].gd.flags = gg_enabled|gg_visible;
     boxes[4].gd.u.boxelements = barray;
     boxes[4].creator = GHBoxCreate;
-    hvarray[7][0] = &boxes[4]; hvarray[7][1] = hvarray[7][2] = hvarray[7][3] = GCD_ColSpan; hvarray[7][4] = NULL;
-    hvarray[8][0] = NULL;
+    hvarray[8][0] = &boxes[4]; hvarray[8][1] = hvarray[8][2] = hvarray[8][3] = GCD_ColSpan; hvarray[8][4] = NULL;
+    hvarray[9][0] = NULL;
 
     boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
     boxes[0].gd.flags = gg_enabled|gg_visible;
