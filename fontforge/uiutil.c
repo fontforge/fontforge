@@ -710,11 +710,15 @@ static void _LogError(const char *format,va_list ap) {
 #if defined( FONTFORGE_CONFIG_NO_WINDOWING_UI )
     str = utf82def_copy(buffer);
     fprintf(stderr,"%s",str);
+    if ( str[strlen(str)-1]!='\n' )
+	putc('\n',stderr);
     free(str);
 #else
     if ( no_windowing_ui ) {
 	str = utf82def_copy(buffer);
 	fprintf(stderr,"%s",str);
+	if ( str[strlen(str)-1]!='\n' )
+	    putc('\n',stderr);
 	free(str);
     } else {
 	if ( !ErrorWindowExists())
