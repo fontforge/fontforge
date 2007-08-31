@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 18-Aug-2007 -->
+  <!-- AP: Last modified: 31-Aug-2007 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -94,7 +94,7 @@
       <TH colspan=2>comments</TH>
     </TR>
     <TR>
-      <TD><CODE>hooks</CODE></TD>
+      <TD><CODE><A NAME="module-hooks">hooks</A></CODE></TD>
       <TD colspan=2>A dictionary which the user may fill to associate certain fontforge
 	events with a python function to be run when those events happen. The function
 	will be passed the font (or possibly glyph) for which the relevant event
@@ -115,7 +115,9 @@
 	  </TR>
 	</TABLE>
 	<P>
-	Other hooks are defined in a font's own temporary and persistant dictionaries.</TD>
+	Other hooks are defined in a font's own
+	<A HREF="#font-temporary">temporary</A> and
+	<A HREF="#font-persistant">persistant</A> dictionaries.</TD>
     </TR>
     <TR>
       <TH colspan=3>Methods</TH>
@@ -1615,6 +1617,44 @@ pen = None;				# Finalize the pen. This tells FontForge
 	it can also make more things available to be put in subroutines.</TD>
     </TR>
     <TR>
+      <TD><CODE>changeWeight</CODE></TD>
+      <TD><CODE>(stroke_width[,type,<BR>
+	serif_height,serif_fuzz,<BR>
+	counter_type,custom_zones])</CODE></TD>
+      <TD>See the <A HREF="Styles.html#Embolden">Element-&gt;Style-&gt;Change
+	Width</A> command for a more complete description of these arguments.
+	<P>
+	Stroke_width is the amount by which all stems are expanded.
+	<P>
+	Type is one of "LCG", "CJK", "auto", "custom".
+	<P>
+	Serif_height tells ff not to expand serifs which are that much off the baseline,
+	while serif_fuzz specifies the amount of fuzziness allowed in the match.
+	If you don't want special serif behavior set this to 0.
+	<P>
+	Counter_type is one of "squish", "retain", "auto".
+	<P>
+	Custom_zones is only meaningful if the type argument were "custom". It may
+	be either a number, which specifies the "top hint" value (bottom hint is
+	assumed to be 0, others are between), or a tuple of 4 numbers (top hint,
+	top zone, bottom zone, bottom hint).</TD>
+    </TR>
+    <TR>
+      <TD><CODE>condenseExtend</CODE></TD>
+      <TD><CODE>(c_factor,c_add[,sb_factor,sb_add,correct])</CODE></TD>
+      <TD>Condenses or extends the size of the counters and side-bearings of the
+	glyph. The first two arguments provide information on shrinking/growing the
+	counters, the second two the sidebearings. If the last two are omitted they
+	default to the same values as the first two.
+	<P>
+	A counter's width will become:<BR>
+	<CODE>&nbsp; &nbsp;new_width = c_factor * old_width + c_add</CODE>
+	<P>
+	If present the <CODE>correct</CODE> argument allows you to specify whether
+	you want to correct for the italic angle before condensing the glyph. (it
+	defaults to True)</TD>
+    </TR>
+    <TR>
       <TD><CODE>clear</CODE></TD>
       <TD><CODE>()</CODE></TD>
       <TD>Clears the contents of the glyph (and marks it as not
@@ -2360,7 +2400,7 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TD colspan=2>underline position</TD>
     </TR>
     <TR>
-      <TD><CODE>persistant</CODE></TD>
+      <TD><CODE><A NAME="font-persistant">persistant</A></CODE></TD>
       <TD colspan=2>Whatever you want -- though I recommend you store a dict here
 	(these data will be saved as a pickled object in the sfd file. It is your
 	job to insure that whatever you put here can be pickled)
@@ -2375,8 +2415,8 @@ pen = None;				# Finalize the pen. This tells FontForge
 	      Since it is a string it will receive no arguments, but the current font will
 	      be available in the activeFont method of the fontforge module.
 	      <P>
-	      This string will be interpretted before the loadFontHook of the module hooks
-	      dictionary.
+	      This string will be interpretted before the loadFontHook of the
+	      <A HREF="python.html#module-hooks">module hooks</A> dictionary.
 	      <P>
 	      One possible behavior for this string is to define function hooks to be stored
 	      in the temporary dict described below.</TD>
@@ -2385,7 +2425,7 @@ pen = None;				# Finalize the pen. This tells FontForge
       </TD>
     </TR>
     <TR>
-      <TD><CODE>temporary</CODE></TD>
+      <TD><CODE><A NAME="font-temporary">temporary</A></CODE></TD>
       <TD colspan=2>Whatever you want -- though I recommend you store a dict here
 	(these data will be lost once the font is closed)
 	<P>
@@ -2819,7 +2859,8 @@ pen = None;				# Finalize the pen. This tells FontForge
     </TR>
     <TR>
       <TD><CODE>lookupSetFeatureList</CODE></TD>
-      <TD><CODE>(lookup-name,feature-script-lang-tuple)</CODE></TD>
+      <TD><CODE>(lookup-name,<BR>
+	feature-script-lang-tuple)</CODE></TD>
       <TD>Sets the feature list of indicated lookup. The feature-script-lang tuple
 	is described at <A HREF="#font-addLookup">addLookup</A>.</TD>
     </TR>
@@ -2858,7 +2899,8 @@ pen = None;				# Finalize the pen. This tells FontForge
     </TR>
     <TR>
       <TD><CODE>mergeLookupSubtables</CODE></TD>
-      <TD><CODE>(subtable-name1,subtable-name2)</CODE></TD>
+      <TD><CODE>(subtable-name1,<BR>
+	subtable-name2)</CODE></TD>
       <TD>The subtables must be in the same lookup. Not all lookup types allow
 	their subtables to be merged (contextual subtables may not be merged, kerning
 	classes may not be (kerning pairs may be)). Any information bound to subtable2
@@ -3025,6 +3067,46 @@ pen = None;				# Finalize the pen. This tells FontForge
 	things it can also make more things available to be put in subroutines.</TD>
     </TR>
     <TR>
+      <TD><CODE>changeWeight</CODE></TD>
+      <TD><CODE>(stroke_width[,type,<BR>
+	serif_height,serif_fuzz,<BR>
+	counter_type,custom_zones])</CODE></TD>
+      <TD>See the <A HREF="Styles.html#Embolden">Element-&gt;Style-&gt;Change
+	Width</A> command for a more complete description of these arguments.
+	<P>
+	Stroke_width is the amount by which all stems are expanded.
+	<P>
+	Type is one of "LCG", "CJK", "auto", "custom".
+	<P>
+	Serif_height tells ff not to expand serifs which are that much off the baseline,
+	while serif_fuzz specifies the amount of fuzziness allowed in the match.
+	If you don't want special serif behavior set this to 0.
+	<P>
+	Counter_type is one of "squish", "retain", "auto".
+	<P>
+	Custom_zones is only meaningful if the type argument were "custom". It may
+	be either a number, which specifies the "top hint" value (bottom hint is
+	assumed to be 0, others are between), or a tuple of 4 numbers (top hint,
+	top zone, bottom zone, bottom hint).</TD>
+    </TR>
+    <TR>
+      <TD><CODE>condenseExtend</CODE></TD>
+      <TD><CODE>(c_factor,c_add<BR>
+	[,sb_factor,sb_add,<BR>
+	correct])</CODE></TD>
+      <TD>Condenses or extends the size of the counters and side-bearings of the
+	selected glyphs. The first two arguments provide information on shrinking/growing
+	the counters, the second two the sidebearings. If the last two are omitted
+	they default to the same values as the first two.
+	<P>
+	A counter's width will become:<BR>
+	<CODE>&nbsp; &nbsp;new_width = c_factor * old_width + c_add</CODE>
+	<P>
+	If present the <CODE>correct</CODE> argument allows you to specify whether
+	you want to correct for the italic angle before condensing the glyph. (it
+	defaults to True)</TD>
+    </TR>
+    <TR>
       <TD><CODE>clear</CODE></TD>
       <TD><CODE>()</CODE></TD>
       <TD>Clears the contents of all selected glyphs</TD>
@@ -3148,10 +3230,13 @@ pen = None;				# Finalize the pen. This tells FontForge
     </TR>
     <TR>
       <TD><CODE>stroke</CODE></TD>
-      <TD><CODE>("circular",width[,linecap,linejoin,flags])<BR>
-	("eliptical",width,minor-width,angle<BR>
+      <TD><CODE>("circular",width[,<BR>
+	&nbsp;linecap,linejoin,flags])<BR>
+	("eliptical",width,<BR>
+	&nbsp;minor-width,angle<BR>
 	&nbsp;[,linecap,linejoin,flags])<BR>
-	("caligraphic",width,height,angle[,flags])</CODE></TD>
+	("caligraphic",width,<BR>
+	&nbsp;height,angle[,flags])</CODE></TD>
       <TD>Strokes the contours of all selected glyphs using one of the indicated
 	pens. Line cap may be one of
 	<UL>
