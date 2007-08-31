@@ -1248,6 +1248,20 @@ static void NumberLayerPoints(SplineSet *ss) {
     }
 }
 	    
+static SplineSet *BoldSSStroke(SplineSet *ss,StrokeInfo *si,SplineChar *sc,int ro) {
+    SplineSet *temp;
+    Spline *s1, *s2;
+
+    /* We don't want to use the remove overlap built into SSStroke because */
+    /*  only looks at one contour at a time, but we need to look at all together */
+    /*  else we might get some unreal internal hints that will screw up */
+    /*  counter correction */
+    temp = SSStroke(ss,si,sc);
+    if ( ro && temp!=NULL && SplineSetIntersect(temp,&s1,&s2))
+	temp = SplineSetRemoveOverlap(sc,temp,over_remove);
+return( temp );
+}
+
 static void SCEmbolden(SplineChar *sc, struct lcg_zones *zones, int layer) {
     StrokeInfo si;
     SplineSet *temp;
@@ -1265,7 +1279,7 @@ static void SCEmbolden(SplineChar *sc, struct lcg_zones *zones, int layer) {
 	si.radius = -zones->stroke_width/2.;
 	si.removeexternal = true;
     }
-    si.removeoverlapifneeded = zones->removeoverlap;
+    si.removeoverlapifneeded = false;
     si.toobigwarn = true;
 
     if ( (layer==-2 || layer==ly_fore) && zones->wants_hints &&
@@ -1283,7 +1297,7 @@ static void SCEmbolden(SplineChar *sc, struct lcg_zones *zones, int layer) {
 	SplineCharFindBounds(sc,&old);
 	for ( layer = ly_fore; layer<sc->layer_cnt; ++layer ) {
 	    NumberLayerPoints(sc->layers[layer].splines);
-	    temp = SSStroke(sc->layers[layer].splines,&si,sc);
+	    temp = BoldSSStroke(sc->layers[layer].splines,&si,sc,zones->removeoverlap);
 	    if ( zones->embolden_hook!=NULL )
 		temp = (zones->embolden_hook)(temp,zones,sc,layer);
 	    SplinePointListsFree( sc->layers[layer].splines );
@@ -1296,7 +1310,7 @@ static void SCEmbolden(SplineChar *sc, struct lcg_zones *zones, int layer) {
 	SCPreserveLayer(sc,layer,false);
 	NumberLayerPoints(sc->layers[layer].splines);
 	SplineSetFindBounds(sc->layers[layer].splines,&old);
-	temp = SSStroke(sc->layers[layer].splines,&si,sc);
+	temp = BoldSSStroke(sc->layers[layer].splines,&si,sc,zones->removeoverlap);
 	if ( zones->embolden_hook!=NULL )
 	    temp = (zones->embolden_hook)(temp,zones,sc,layer);
 	SplineSetFindBounds(temp,&new);
@@ -1572,7 +1586,7 @@ static SplineFont *lastsf = NULL;
 static enum embolden_type last_type = embolden_auto;
 static struct lcg_zones last_zones;
 static int last_width;
-static int last_overlap = false;
+static int last_overlap = true;
 
 static int Embolden_OK(GGadget *g, GEvent *e) {
     enum embolden_type type;

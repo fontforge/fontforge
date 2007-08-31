@@ -1126,32 +1126,6 @@ static void SplineSetFixCPs(SplineSet *ss) {
     SPLCatagorizePoints(ss);
 }
 
-static SplineSet *SSFixupOverlap(StrokeInfo *si,SplineChar *sc,
-	SplineSet *ssplus,SplineSet *ssminus, int reversed) {
-    ssplus->next = ssminus;
-    ssplus = SplineSetRemoveOverlap(sc,ssplus,over_remove);
-    if ( si->removeinternal || si->removeexternal ) {
-	SplineSet *prev, *spl, *next;
-	prev = NULL;
-	for ( spl=ssplus; spl!=NULL; spl = next ) {
-	    int clock = SplinePointListIsClockwise(spl) ^ reversed;
-	    next = spl->next;
-	    if (( !clock && si->removeinternal ) || ( clock && si->removeexternal )) {
-		SplinePointListFree(spl);
-		if ( prev==NULL )
-		    ssplus = next;
-		else
-		    prev->next = next;
-	    } else {
-		prev = spl;
-		if ( si->removeexternal )
-		    SplineSetReverse(spl);
-	    }
-	}
-    }
-return( ssplus );
-}
-
 static SplinePoint *SPNew(SplinePoint *base,BasePoint *pos,BasePoint *cp,int isnext) {
     SplinePoint *sp = SplinePointCreate(pos->x,pos->y);
 
@@ -1552,6 +1526,7 @@ static SplineSet *_SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc)
     SplineSet *ssplus, *ssminus;
     int reversed = false;
     struct strokedspline *head, *cur, *first, *lastp, *lastm;
+    Spline *s1, *s2;
 
     si->gottoobiglocal = false;
 
@@ -1648,15 +1623,10 @@ return( ssplus );
 	    ssplus = ssminus;
 	    ssminus = temp;
 	}
-	/* I can't always detect an overlap, so let's always do the remove */
-		/* Sigh, no. That is still too dangerous */
-	/* Note: SSFixupOverlap will remove internal/external as needed */
 	SplineSetReverse(ssminus);
 	if ( ssplus != NULL )
 	    SplineSetReverse(ssplus);
-	if ( si->removeoverlapifneeded && si->gottoobiglocal && ssplus!=NULL )
-	    ssplus = SSFixupOverlap(si,sc,ssplus,ssminus,reversed);
-	else if ( si->removeinternal && ssplus!=NULL ) {
+	if ( si->removeinternal && ssplus!=NULL ) {
 	    SplinePointListFree(ssminus);
 	} else if ( si->removeexternal ) {
 	    SplinePointListFree(ssplus);
@@ -1671,6 +1641,10 @@ return( ssplus );
 	    /*  that doesn't work always if a contour self intersects */
 	    /* I think it should always be correct */
 	}
+	/* I can't always detect an overlap, so let's always do the remove */
+		/* Sigh, no. That is still too dangerous */
+	if ( si->removeoverlapifneeded && ssplus!=NULL && SplineSetIntersect(ssplus,&s1,&s2))
+	    ssplus = SplineSetRemoveOverlap(sc,ssplus,over_remove);
 	if ( reversed )		/* restore original, just in case we want it */
 	    SplineSetReverse(spl);
     } else if ( si->stroke_type==si_std || si->stroke_type==si_elipse )

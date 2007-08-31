@@ -4476,7 +4476,7 @@ return;
 	}
 	if ( sc!=NULL ) {
 	    sc->old_vs = 0;
-	    sc->vs_open = true;		/* !!!!! debugging, change to false */
+	    sc->vs_open = true;		/* should this default to false? */
 	}
     }
 
