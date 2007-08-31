@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 23-Jun-2001 -->
-  <!-- AP: Last modified: 29-Aug-2007 -->
+  <!-- AP: Last modified: 30-Aug-2007 -->
   <TITLE>Stylistic Transformations on Fonts</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -12,6 +12,13 @@
   <H1 ALIGN=Center>
     Stylistic Transformations on Fonts
   </H1>
+  <UL>
+    <LI>
+      <A HREF="#Embolden">Change Weight dialog</A>
+    <LI>
+      <A HREF="#Condense">Condense/Extend dialog</A>
+  </UL>
+  <P>
   <P>
   The Style sub-menu provides a series of dialogs which allow you to create
   some common stylistic variations of latin fonts.
@@ -28,7 +35,7 @@
   </UL>
   <P>
   The results will probably always need to be examined and fixed up by the
-  human eye, but they may provide a help in changing a font's attributes. 
+  human eye, but they may provide a help in changing a font's attributes.
   <P>
   It "works" best on sans serif, non-Oblique fonts. 
     <HR>
@@ -68,7 +75,7 @@
       <TD>Times New Roman</TD>
       <TD>1.7</TD>
       <TD></TD>
-      <TD></TD>
+      <TD>1</TD>
       <TD>1</TD>
       <TD>.98</TD>
     </TR>
@@ -420,6 +427,103 @@
   In these two transformations the stem width is held constant but the horizontal
   counter sizes and side bearings are increased (or decreased for condensed).
   <H3>
+    The <A NAME="Embolden">Change</A> Weight
+    dialog<IMG SRC="ChangeWeight.png" WIDTH="332" HEIGHT="248" ALIGN="Right">
   </H3>
+  <P>
+  The Change Weight dialog starts out by stroking the glyph (Element-&gt;Expand
+  Stroke) and removing the internal contour. This means that each stem in the
+  glyph will now be wider by the number of em units specified at the top of
+  the dialog. Of course, this number may be negative, in which case you will
+  be making a lighter, rather than a bolder variant of the glyph.
+  <P>
+  <IMG SRC="BoldHiraDA.png" WIDTH="270" HEIGHT="270" ALIGN="Left">For CJK fonts,
+  with complex shapes but without the constraint of the latin baseline and
+  cap height, this expansion is probably enough. The image at right shows the
+  Hiragana DA syllable -- the original glyph shape is in the background, and
+  the expanded shape is in the foreground.<BR Clear=All>
+  <P>
+  However if we do that to a latin (or Greek, or Cyrillic) glyph the result
+  is rather odd because the glyph no longer rests on the baseline, and also
+  extends above the cap-height (or x-height, or whatever line bounds this
+  particular glyph).
+  <TABLE BORDER CELLPADDING="2">
+    <TR>
+      <TD><P ALIGN=Center>
+	<IMG SRC="BexpandCJK.png" WIDTH="125" HEIGHT="217"></TD>
+      <TD><P ALIGN=Center>
+	<IMG SRC="BexpandLCGsquish.png" WIDTH="154" HEIGHT="218"></TD>
+      <TD><P ALIGN=Center>
+	<IMG SRC="BexpandLCG.png" WIDTH="176" HEIGHT="218"></TD>
+      <TD><IMG SRC="BexpandBigSerifs.png" WIDTH="213" HEIGHT="236"></TD>
+    </TR>
+    <TR VALIGN="Top">
+      <TD>Here the glyph has been expanded as if it were a CJK glyph. Note that
+	it now extends below the baseline and above the cap height. That is not good.</TD>
+      <TD>Here the glyph has been expanded as before, but the bottom stem has been
+	moved up just enough so that it now rides on the base line, and the top stem
+	has been moved down so it sits on the cap height.
+	<P>
+	But the counters are now much narrower than they were in the original glyph,
+	and the left and right side bearings have become squeezed.</TD>
+      <TD>In the final example, the glyph is expanded, the top and bottom stems
+	moved appropriately, the side bearings restored to their original size, and
+	the internal counters expanded to be closer to their original size.</TD>
+      <TD>Now consider the case of a serifed font. The serifs on the B above have
+	become huge, disproportionally bigger than they were in the original glyph.
+	This is probably not a good thing, but I haven't figured out how to fix it
+	yet. 
+	<P>
+	The best I can suggest is that you use the search and replace command to
+	search through the font for huge serifs and replace them with more decorous
+	ones.</TD>
+    </TR>
+  </TABLE>
+  <P>
+  <IMG SRC="ChangeWeight.png" WIDTH="332" HEIGHT="248" ALIGN="Left">Going back
+  to the original dialog. The first field specifies the amount by which each
+  stem should get bigger.
+  <P>
+  The radio buttons let you choose which method to use. CJK simply expands
+  the glyph and leaves it at that. LCG expands the glyph and then forces it
+  between the baseline and caps/x-height. Auto will chose which of those methods
+  to apply. Custom will basically use the LCG method but allows you to specify,
+  manually, what the interesting regions are in this particular glyph.
+  <P>
+  Any point above or on "Top Hint" will be moved down. Or if a point is on
+  a hint which surrounds "Top Hint" it will also be moved down. (Points on
+  the top stem of "B")
+  <P>
+  Any point below or on "Bottom Hint" will be moved up. Or if a point is on
+  a hint which surrounds "Bottom Hint" it will also be moved up. (Points on
+  the bottom stem of "B")
+  <P>
+  Any point which is on a hint which falls somewhere between Top Zone and Bottom
+  Zone will be fixed where it is. (Points on the middle stem of "B").
+  <P>
+  Any other points will be interpolated between the points which move (rather
+  like the TrueType IUP instruction -- indeed, the process of making a glyph
+  bolder is very like instructing a glyph).
+  <P>
+  [] Cleanup Self Intersect has the same meaning as the same field in the Expand
+  Stroke dialog.
+  <P>
+  And for the counters, &lt;&gt; Squish will result in the small counters that
+  come from expanding the glyph without doing anything to the counters,
+  &lt;&gt;Retain will attempt to retain the counters, and &lt;&gt;Auto will
+  Squish CJK glyphs and Retain LCG glyphs.
+  <H2>
+    <A NAME="Condense">Condense</A>/Extend
+    dialog<IMG SRC="CondenseExtend.png" WIDTH="321" HEIGHT="193" ALIGN="Right">
+  </H2>
+  <P>
+  This dialog allows you to change counter sizes without changing stem sizes
+  (in theory. It doesn't work too well with diagonal stems). You can make counters
+  bigger or smaller by a percentage, or by adding a fixed amount to them.
+  <P>
+  If the font has and Italic Angle specified in Font Info, then fontforge will
+  first unskew the glyph in the hopes of getting some vertical stems, then
+  Condense it, and the reskew it.
+  <P>
 </DIV>
 </BODY></HTML>

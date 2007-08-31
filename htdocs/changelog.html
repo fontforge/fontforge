@@ -47,10 +47,113 @@
   </BLOCKQUOTE>
   <UL>
     <LI>
-      ??-August-2007
+      30-August-2007
       <UL>
-	<LI>New traditional Chinese translation of the UI by Wei-Lun Chao.
-	<LI>Updated Vietnamese translation by Clytie Siddall.
+	<LI>
+	  New traditional Chinese translation of the UI by Wei-Lun Chao.
+	<LI>
+	  Updated Vietnamese translation by Clytie Siddall.
+	<LI>
+	  Removed the old MetaFont command (which didn't work) and replaced it with
+	  a styles menu (incorporating the old Effects menu, and a command to change
+	  weight, to condense/extend, and to oblique.
+	<LI>
+	  Lots of new work on the truetype autoinstructor by Alexej and Michal.
+	<LI>
+	  Add a validation dialog which can be run just before generating a font.
+	<LI>
+	  Try a different algorithm for approximating splines by line segments (for
+	  drawing them in the outline glyph view and elsewhere). This one should show
+	  symmetry better.
+	<LI>
+	  Provide the ability to ask freetype to rasterize glyphs without hints in
+	  the Print/Display dlg (even if the glyphs have hints, rasterize them without).
+	<LI>
+	  Oh dear, rasterizing stroked fonts only worked if multilayer was defined.
+	<LI>
+	  Try to improve display of stroked fonts.
+	<LI>
+	  When stroking splines don't let miter joins grow excessively.
+	<LI>
+	  FF would remove instructions from glyphs that had at least two contours the
+	  first of which started with a control point.
+	<LI>
+	  Add a short cut for Hide Grid in the metrics view.
+	<LI>
+	  Python 2.5 initializes itself differently from Python 2.[34]. 2.[34] delay
+	  the init until an import happens, while 2.5 does it at start up. I just assumed
+	  that when I called Py_Initialize that it did so. This led to a crash on 2.[34]
+	  when I tried to use my types before the user had tried to import fontforge.
+	<LI>
+	  Further improvements to tile path.
+	<LI>
+	  When moving a control point in a ttf font where one side of the cp was a
+	  real point, I would allow an implicit point on the far side of the real point
+	  to become real.
+	<LI>
+	  When dragging truetype points around, adjacent implicit points would remain
+	  where they were (and not be implicit any longer).
+	<LI>
+	  FF would randomly crash after removing a lot of glyphs.
+	<LI>
+	  The knife tool would not cut a contour if it landed on a point.
+	<LI>
+	  Trying to add a stylename to the size pane of fontinfo generally caused a
+	  crash.
+	<LI>
+	  All blank lines in the display dlg had the same line spacing as that of the
+	  first character displayed in the dlg.
+	<LI>
+	  I don't think feature files where handling classes defined with '-' properly.
+	<LI>
+	  Read the "lib" structures from UFO/GLIF files into our python persistant
+	  data. (And write our persistant data out if it's a dict).
+	<LI>
+	  Add the ability to call hooks (python functions) when various fontforge events
+	  take place.
+	<LI>
+	  Make fontforge's basic types (Point, Contour, and Layer) be picklable so
+	  they can now be saved in an sfd file.
+	<LI>
+	  Oops. With the inclusion of the library check argument, ff would not compile
+	  if NODYNAMIC were set.
+	<LI>
+	  FontForge now stores the "userdata" python members into the sfd file as pickled
+	  objects. (FontForge's own types are not currently pickleable).
+	<LI>
+	  Add the ability to mark a glyph so that just before being saved its references
+	  will be unlinked and we will run remove overlap on it. This means the user
+	  can work with the references (and get the automatic updating they confer)
+	  and still not have a self-intersecting glyph in the output (think Aring,
+	  Ccedilla, Eogonek).
+	<LI>
+	  Create a fontlint script file.
+	<LI>
+	  When dumping both apple and opentype bitmap tables if there were a BDF table,
+	  then we'd get garbage for 'bloc'/'bhed'.
+	<LI>
+	  Add some user interface commands to python, and more importantly, add the
+	  ability to create menu items which will invoke python scripts, and the ability
+	  to add import/export conversion filters (again, python scripts).
+	<LI>
+	  Counter hints for LCG glyphs came out wrong if autohint had not been applied
+	  first.
+	<LI>
+	  Counter masks were not read out of sfd files properly.
+	<LI>
+	  Selecting a counter mask in Glyph Info caused FF to crash.
+	<LI>
+	  The Execute Script dlg would sometimes complain about invalid scrollbar size
+	  when it got closed.
+	<LI>
+	  AddAnchorPoint (scripting command) should be prepared to cast real args to
+	  integers.
+	<LI>
+	  Just as I needed a special "in use" pass of GSUB when reading from a TTC,
+	  so I also need an "in use" pass of the MATH table.
+	<LI>
+	  All this time and I've mapped "nonmarkingreturn" (GID=2) to Unicode+000C
+	  instead of Unicode+000D. I'm a twit.
       </UL>
     <LI>
       08-August-2007
@@ -67,7 +170,7 @@
 	  When reverting a compacted font ff thought the font was compacted even when
 	  it was not.
 	<LI>
-	  Make some effort to retain context when changing encodings.
+	  Make some effort to retain context in the fontview when changing encodings.
 	<LI>
 	  ff scripting command CopyReference() was broken.
 	<LI>
