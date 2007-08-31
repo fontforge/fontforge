@@ -62,29 +62,6 @@
 /* If the font is italic, then skew it by the italic angle in hopes of getting*/
 /*  some real vertical stems, rehint, condense/extend & unskew */
 
-struct counterinfo {
-    double c_factor, c_add;		/* For counters */
-    double sb_factor, sb_add;		/* For side bearings */
-    uint8 correct_italic;
-
-    BlueData bd;
-    double stdvw;
-
-    SplineChar *sc;
-    int layer;
-    DBounds bb;				/* Value before change */
-    double top_y, bottom_y, boundry;
-    int has_two_zones;
-#define TOP_Z	0
-#define BOT_Z	1
-    int cnts[2];
-    int maxes[2];
-    struct ci_zones {
-	double start, width;
-	double moveto, newwidth;	/* Only change width for diagonal stems*/
-    } *zones[2];
-};
-
 static void CIAdd(struct counterinfo *ci,int z,double start,double width) {
     int i, j;
 
@@ -404,7 +381,7 @@ static void SCCondenseExtend(struct counterinfo *ci,SplineChar *sc, int layer) {
     SCCharChangedUpdate(sc);
 }
 
-static void FVCondenseExtend(FontView *fv,struct counterinfo *ci) {
+void FVCondenseExtend(FontView *fv,struct counterinfo *ci) {
     int i, gid;
     SplineChar *sc;
 
@@ -429,6 +406,14 @@ return;
     free( ci->zones[1]);
 }
 
+void ScriptSCCondenseExtend(SplineChar *sc,struct counterinfo *ci) {
+
+    SCCondenseExtend(ci, sc, ly_fore);
+
+    free( ci->zones[0]);
+    free( ci->zones[1]);
+}
+
 static double SFStdVW(SplineFont *sf) {
     double stdvw = 0;
     char *ret;
@@ -441,7 +426,7 @@ static double SFStdVW(SplineFont *sf) {
 return( stdvw );
 }
 
-static void CI_Init(struct counterinfo *ci,SplineFont *sf) {
+void CI_Init(struct counterinfo *ci,SplineFont *sf) {
 
     QuickBlues(sf, &ci->bd);
 
@@ -1220,7 +1205,7 @@ static void AdjustCounters(SplineChar *sc, struct lcg_zones *zones,
     /*  have made counters smaller by stroke_width (diagonal stems who knows) */
     /*  so make them bigger by that amount */
     memset(&ci,0,sizeof(ci));
-    ci.bd = *zones->bd;
+    ci.bd = zones->bd;
     ci.stdvw = zones->stdvw;
     ci.top_y = zones->top_bound;
     ci.bottom_y = zones->bottom_bound;
@@ -1284,7 +1269,7 @@ static void SCEmbolden(SplineChar *sc, struct lcg_zones *zones, int layer) {
 
     if ( (layer==-2 || layer==ly_fore) && zones->wants_hints &&
 	    sc->hstem == NULL && sc->vstem==NULL && sc->dstem==NULL ) {
-	_SplineCharAutoHint(sc,zones->bd,NULL,false);
+	_SplineCharAutoHint(sc,&zones->bd,NULL,false);
     }
 
     adjust_counters = zones->counter_type==ct_retain ||
@@ -1351,13 +1336,15 @@ static struct {
     0
 };
 
-static void ZoneInit(SplineFont *sf, struct lcg_zones *zones,enum embolden_type type) {
+static void LCG_ZoneInit(SplineFont *sf, struct lcg_zones *zones,enum embolden_type type) {
 
     if ( type == embolden_lcg || type == embolden_custom) {
 	zones->embolden_hook = LCG_HintedEmboldenHook;
     } else {
 	zones->embolden_hook = NULL;
     }
+    QuickBlues(sf, &zones->bd);
+    zones->stdvw = SFStdVW(sf);
 }
 
 static double BlueSearch(char *bluestring, double value, double bestvalue) {
@@ -1407,7 +1394,7 @@ return( value );
 return( bestvalue );
 }
 
-static double SFSerifHeight(SplineFont *sf) {
+double SFSerifHeight(SplineFont *sf) {
     SplineChar *isc;
     SplineSet *ss;
     SplinePoint *sp;
@@ -1468,7 +1455,7 @@ return( 0 );
 }
 
 static void PerGlyphInit(SplineChar *sc, struct lcg_zones *zones,
-	enum embolden_type type, BlueData *bd) {
+	enum embolden_type type) {
     int j;
     SplineChar *hebrew;
 
@@ -1500,25 +1487,25 @@ static void PerGlyphInit(SplineChar *sc, struct lcg_zones *zones,
 	    zones->top_zone = 2*b.maxy/3;
 	    zones->top_bound = b.maxy;
 	} else if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 && islower(sc->unicodeenc)) {
-	    if ( bd->xheight<=0 )
-		bd->xheight = SearchBlues(sc->parent,'x',0);
-	    zones->bottom_zone = bd->xheight>0 ? bd->xheight/3 :
-			    bd->caph>0 ? bd->caph/3 :
+	    if ( zones->bd.xheight<=0 )
+		zones->bd.xheight = SearchBlues(sc->parent,'x',0);
+	    zones->bottom_zone = zones->bd.xheight>0 ? zones->bd.xheight/3 :
+			    zones->bd.caph>0 ? zones->bd.caph/3 :
 			    (sc->parent->ascent/4);
-	    zones->top_zone = bd->xheight>0 ? 2*bd->xheight/3 :
-			    bd->caph>0 ? bd->caph/2 :
+	    zones->top_zone = zones->bd.xheight>0 ? 2*zones->bd.xheight/3 :
+			    zones->bd.caph>0 ? zones->bd.caph/2 :
 			    (sc->parent->ascent/3);
-	    zones->top_bound = bd->xheight>0 ? bd->xheight :
-			    bd->caph>0 ? 2*bd->caph/3 :
+	    zones->top_bound = zones->bd.xheight>0 ? zones->bd.xheight :
+			    zones->bd.caph>0 ? 2*zones->bd.caph/3 :
 			    (sc->parent->ascent/2);
 	} else if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 && isupper(sc->unicodeenc)) {
-	    if ( bd->caph<0 )
-		bd->caph = SearchBlues(sc->parent,'I',0);
-	    zones->bottom_zone = bd->caph>0 ? bd->caph/3 :
+	    if ( zones->bd.caph<0 )
+		zones->bd.caph = SearchBlues(sc->parent,'I',0);
+	    zones->bottom_zone = zones->bd.caph>0 ? zones->bd.caph/3 :
 			    (sc->parent->ascent/4);
-	    zones->top_zone = bd->caph>0 ? 2*bd->caph/3 :
+	    zones->top_zone = zones->bd.caph>0 ? 2*zones->bd.caph/3 :
 			    (sc->parent->ascent/2);
-	    zones->top_bound = bd->caph>0?bd->caph:4*sc->parent->ascent/5;
+	    zones->top_bound = zones->bd.caph>0?zones->bd.caph:4*sc->parent->ascent/5;
 	} else {
 	    /* It's not upper case. It's not lower case. Hmm. Look for blue */
 	    /*  values near the top and bottom of the glyph */
@@ -1532,38 +1519,39 @@ static void PerGlyphInit(SplineChar *sc, struct lcg_zones *zones,
 	}
     }
     zones->wants_hints = zones->embolden_hook == LCG_HintedEmboldenHook;
-    zones->bd = bd;
 }
 
 void FVEmbolden(FontView *fv,enum embolden_type type,struct lcg_zones *zones) {
     int i, gid;
     SplineChar *sc;
-    BlueData bd;
 
-    ZoneInit(fv->sf,zones,type);
-    QuickBlues(fv->sf, &bd);
-    zones->stdvw = SFStdVW(fv->sf);
+    LCG_ZoneInit(fv->sf,zones,type);
 
     for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
 	    (gid = fv->map->map[i])!=-1 && (sc=fv->sf->glyphs[gid])!=NULL ) {
-	PerGlyphInit(sc,zones,type, &bd);
+	PerGlyphInit(sc,zones,type);
 	SCEmbolden(sc, zones, -2);		/* -2 => all foreground layers */
     }
 }
 
 static void CVEmbolden(CharView *cv,enum embolden_type type,struct lcg_zones *zones) {
     SplineChar *sc = cv->sc;
-    BlueData bd;
 
     if ( cv->drawmode == dm_grid )
 return;
 
-    ZoneInit(sc->parent,zones,type);
-    QuickBlues(sc->parent, &bd);
-    zones->stdvw = SFStdVW(sc->parent);
+    LCG_ZoneInit(sc->parent,zones,type);
 
-    PerGlyphInit(sc,zones,type, &bd);
+    PerGlyphInit(sc,zones,type);
     SCEmbolden(sc, zones, CVLayer(cv));
+}
+
+void ScriptSCEmbolden(SplineChar *sc,enum embolden_type type,struct lcg_zones *zones) {
+
+    LCG_ZoneInit(sc->parent,zones,type);
+
+    PerGlyphInit(sc,zones,type);
+    SCEmbolden(sc, zones, ly_fore);
 }
 
 #define CID_EmBdWidth	1001
