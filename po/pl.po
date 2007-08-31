@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: FontForge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-08-30 18:30+0200\n"
+"POT-Creation-Date: 2007-08-31 09:07+0200\n"
 "PO-Revision-Date: 2006-09-16 10:22+0200\n"
 "Last-Translator: Michal Nowakowski\n"
 "Language-Team: Polish <pl@li.org>\n"
@@ -61,7 +61,7 @@ msgstr "_Maksymalna odległość między punktami części"
 #: metafont.c:2221 mm.c:1939 mm.c:1991 mm.c:2285 mm.c:3780 nonlineartrans.c:888
 #: nonlineartrans.c:1236 openfontdlg.c:350 openfontdlg.c:677 prefs.c:1324 prefs.c:2090
 #: problems.c:3165 problems.c:4526 savefontdlg.c:1008 savefontdlg.c:1193
-#: scripting.c:10034 scstyles.c:988 scstyles.c:1608 showatt.c:2507 showatt.c:2992
+#: scripting.c:10034 scstyles.c:676 scstyles.c:1833 showatt.c:2507 showatt.c:2992
 #: simplifydlg.c:370 statemachine.c:1638 statemachine.c:2585 tilepath.c:855
 #: transform.c:730 ttfinstrs.c:1309 ttfinstrs.c:1929 ttfinstrs.c:2063 ttfinstrs.c:2382
 #: ../gdraw/gaskdlg.c:1089 ../gdraw/gaskdlg.c:1119 ../gdraw/gaskdlg.c:1153
@@ -92,7 +92,7 @@ msgstr "_OK"
 #: openfontdlg.c:714 parsettf.c:4607 prefs.c:1334 prefs.c:2102 problems.c:3176
 #: savefontdlg.c:1019 savefontdlg.c:1205 savefontdlg.c:1342 savefontdlg.c:1368
 #: savefontdlg.c:2492 savefontdlg.c:2643 savefontdlg.c:3174 scripting.c:10050
-#: scstyles.c:999 scstyles.c:1619 search.c:1602 showatt.c:3002 simplifydlg.c:381
+#: scstyles.c:687 scstyles.c:1844 search.c:1602 showatt.c:3002 simplifydlg.c:381
 #: statemachine.c:1648 statemachine.c:2596 tilepath.c:866 transform.c:742
 #: ttfinstrs.c:1319 ttfinstrs.c:1940 ttfinstrs.c:2064 ttfinstrs.c:2393
 #: ../gdraw/gaskdlg.c:1090 ../gdraw/gaskdlg.c:1369 ../gdraw/gaskdlg.c:1428
@@ -527,7 +527,7 @@ msgstr "Dopuszczalne są tylko znaki z ASCII"
 #: bdfinfo.c:1017 bvedit.c:45 cvstroke.c:1033 fontview.c:341 fontview.c:4824
 #: fontview.c:5813 fontview.c:6691 fvimportbdf.c:1867 kernclass.c:399 kernclass.c:401
 #: macenc.c:2884 macenc.c:2886 macenc.c:3191 macenc.c:3193 prefs.c:1189 prefs.c:1195
-#: scstyles.c:1667 ttfinstrs.c:1560 ttfinstrs.c:1602
+#: scstyles.c:1893 ttfinstrs.c:1560 ttfinstrs.c:1602
 msgid "Bad Number"
 msgstr "Błędna liczba"
 
@@ -2242,8 +2242,8 @@ msgid "_Find Intersections"
 msgstr "_Znajdź przecięcia"
 
 #: charview.c:8358 fontview.c:6498
-msgid "Em_bolden..."
-msgstr "Pogrub..."
+msgid "Change _Weight..."
+msgstr "Zmień _grubość..."
 
 #: charview.c:8359 fontview.c:6499
 msgid "Obl_ique..."
@@ -2251,7 +2251,7 @@ msgstr "_Pochyl..."
 
 #: charview.c:8360 fontview.c:6500
 msgid "_Condense/Extend..."
-msgstr "_Zwęż/Porzerz..."
+msgstr "_Zmień szerokość..."
 
 #: charview.c:8361 fontview.c:6501 metricsview.c:2522
 msgid "_Inline"
@@ -3836,11 +3836,11 @@ msgstr "czasem trzeba ją wyłączyć. Kiedy jednak"
 msgid "Leave it on if possible though, it is useful."
 msgstr "nie sprawia kłopotów, warto mieć ją włączoną."
 
-#: cvimages.c:193 cvstroke.c:834 scstyles.c:973
+#: cvimages.c:193 cvstroke.c:834 scstyles.c:1770
 msgid "Cleanup Self Intersect"
 msgstr "Usuń przecięcia"
 
-#: cvimages.c:199 cvstroke.c:841 scstyles.c:979 scstyles.c:1596
+#: cvimages.c:199 cvstroke.c:841 scstyles.c:664 scstyles.c:1776
 msgid ""
 "When FontForge detects that an expanded stroke will self-intersect,\n"
 "then setting this option will cause it to try to make things nice\n"
@@ -8275,7 +8275,7 @@ msgstr ""
 msgid "Change"
 msgstr "Zmień"
 
-#: fontinfo.c:4542
+#: fontinfo.c:4542 scstyles.c:1800
 msgid "Retain"
 msgstr "Zachowaj"
 
@@ -20258,113 +20258,170 @@ msgstr "_FF"
 msgid "C_all..."
 msgstr "Wywoł_aj..."
 
-#: scstyles.c:754
-msgid "Embolden by"
-msgstr ""
-
-#: scstyles.c:760
-msgid "Top Zone"
-msgstr ""
-
-#: scstyles.c:761
-msgid "Bottom Zone"
-msgstr ""
-
-#: scstyles.c:843
-msgid "Embolden/Thin..."
-msgstr ""
-
-#: scstyles.c:856
-msgid "Embolden by:"
-msgstr ""
-
-#: scstyles.c:875
-msgid "_LCG"
-msgstr ""
-
-#: scstyles.c:876
-msgid "Embolden as appropriate for Latin, Cyrillic and Greek scripts"
-msgstr ""
-
-#: scstyles.c:886
-msgid "_CJK"
-msgstr ""
-
-#: scstyles.c:887
-msgid "Embolden as appropriate for Chinese, Japanese, Korean scripts"
-msgstr ""
-
-#: scstyles.c:897
-msgid "_Auto"
-msgstr ""
-
-#: scstyles.c:898
-msgid "Choose the appropriate method depending on the glyph's script"
-msgstr ""
-
-#: scstyles.c:908
-msgid "C_ustom"
-msgstr ""
-
-#: scstyles.c:909
-msgid "User controls the emboldening with the next two fields"
-msgstr ""
-
-#: scstyles.c:929
-msgid "_Top zone:"
-msgstr ""
-
-#: scstyles.c:951
-msgid "_Bottom zone:"
-msgstr ""
-
-#: scstyles.c:1426
+#: scstyles.c:476
 msgid "Counter Expansion Factor"
-msgstr ""
+msgstr "O ile przeskalować światła wewnątrzliterowe"
 
-#: scstyles.c:1427
+#: scstyles.c:477
 msgid "Counter Addition"
-msgstr ""
+msgstr "O ile powiększyć światła wewnątrzliterowe"
 
-#: scstyles.c:1428
+#: scstyles.c:478
 msgid "Side Bearing Expansion Factor"
-msgstr ""
+msgstr "O ile przeskalować odsadki boczne"
 
-#: scstyles.c:1429
+#: scstyles.c:479
 msgid "Side Bearing Addition"
-msgstr ""
+msgstr "O ile powiększyć odsadki boczne"
 
-#: scstyles.c:1476
+#: scstyles.c:540
 msgid "Condense/Extend..."
-msgstr ""
+msgstr "Zmiana szerokości..."
 
-#: scstyles.c:1492
+#: scstyles.c:556
 msgid "Scale By"
-msgstr ""
+msgstr "Skaluj o"
 
-#: scstyles.c:1502
+#: scstyles.c:566
 msgid "Add"
-msgstr ""
+msgstr "Powiększ o:"
+
+#: scstyles.c:576 scstyles.c:1780
+msgid "Counters:"
+msgstr "Światła:"
+
+#: scstyles.c:617
+msgid "Side Bearings:"
+msgstr "Odsadki boczne:"
+
+#: scstyles.c:658
+msgid "Correct for Italic Angle"
+msgstr "Korekta dla pochyłych"
+
+#: scstyles.c:1505
+msgid "Embolden by"
+msgstr "Pogrub o"
+
+#: scstyles.c:1511
+msgid "Top Zone"
+msgstr "Koniec strefy środkowej"
 
 #: scstyles.c:1512
-msgid "Counters:"
-msgstr ""
+msgid "Bottom Zone"
+msgstr "Początek strefy środkowej"
 
-#: scstyles.c:1551
-msgid "Side Bearings:"
-msgstr ""
+#: scstyles.c:1513
+msgid "Top Hint"
+msgstr "Początek strefy górnej"
 
-#: scstyles.c:1590
-msgid "Correct for Italic Angle"
-msgstr ""
+#: scstyles.c:1514
+msgid "Bottom Hint"
+msgstr "Koniec strefy dolnej"
+
+#: scstyles.c:1584
+msgid "Change Weight..."
+msgstr "Zmiana grubości..."
+
+#: scstyles.c:1597
+msgid "Embolden by:"
+msgstr "Pogrub o:"
+
+#: scstyles.c:1617
+msgid "em units"
+msgstr "jednostek"
+
+#: scstyles.c:1627
+msgid "_LCG"
+msgstr "_LCG"
+
+#: scstyles.c:1628
+msgid "Embolden as appropriate for Latin, Cyrillic and Greek scripts"
+msgstr "Tryb odpowiedni dla pism łacińskiego, greckiego i cyrylicy"
+
+#: scstyles.c:1638
+msgid "_CJK"
+msgstr "_CJK"
+
+#: scstyles.c:1639
+msgid "Embolden as appropriate for Chinese, Japanese, Korean scripts"
+msgstr "Tryb odpowiedni dla pism chińskiego, japońskiego i koreańskiego"
+
+#: scstyles.c:1649
+msgid "_Auto"
+msgstr "_Automatycznie"
+
+#: scstyles.c:1650
+msgid "Choose the appropriate method depending on the glyph's script"
+msgstr "Wybiera odpowiedni tryb na podstawie numerów unikodowych"
+
+#: scstyles.c:1660
+msgid "C_ustom"
+msgstr "_Dostosuj"
 
 #: scstyles.c:1661
+msgid "User controls the emboldening with the next two fields"
+msgstr ""
+"Uaktywnia poniższe pola pozwalające\n"
+"lepiej dostosować działanie algorytmu"
+
+#: scstyles.c:1681
+msgid "_Top hint:"
+msgstr "Początek strefy _górnej:"
+
+#: scstyles.c:1703
+msgid "_Zone:"
+msgstr "Koniec strefy ś_rodkowej:"
+
+#: scstyles.c:1726
+msgid "_Bottom hint:"
+msgstr "Koniec strefy do_lnej:"
+
+#: scstyles.c:1747
+msgid "Zone:"
+msgstr "Początek strefy środ_kowej:"
+
+#: scstyles.c:1781
+msgid ""
+"The simple application of this algorithm will squeeze counters\n"
+"That is not normally seen in bold latin fonts"
+msgstr ""
+"Zastosowanie algorytmu w podstawowej wersji ściśnie światła\n"
+"wewnątrzliterowe, czego zwykle nie spotyka się w typowych\n"
+"łacińskich fontach pogrubionych."
+
+#: scstyles.c:1789
+msgid "Squish"
+msgstr "Ściśnij"
+
+#: scstyles.c:1790
+msgid "Make the counters narrower"
+msgstr "Pozwala na ściśnięcie świateł wewnątrzliterowych"
+
+#: scstyles.c:1801
+msgid ""
+"Try to insure that the counters are as wide\n"
+"afterward as they were before"
+msgstr "Stara się zachować szerokość świateł wewnątrzliterowych"
+
+#: scstyles.c:1811
+msgid "Auto"
+msgstr "Automatycznie"
+
+#: scstyles.c:1812
+msgid ""
+"Retain counter size for glyphs using latin algorithm\n"
+"Squish them for those using CJK."
+msgstr ""
+"Stara się zachować szerokość świateł wewnątrzliterowych\n"
+"w glifach pism LCG i pozwala je ściskać w pismach CJK."
+
+#: scstyles.c:1887
 msgid "Italic Slant..."
-msgstr ""
+msgstr "Pochylenie w poziomie..."
 
-#: scstyles.c:1661
+#: scstyles.c:1887
 msgid "By what angle (in degrees) do you want to slant the font?"
-msgstr ""
+msgstr "O jaki kąt (w stopniach) pochylić?"
 
 #: search.c:946 search.c:971 search.c:973 search.c:1760
 msgid "Not Found"
@@ -20390,7 +20447,7 @@ msgstr "Znajdź następny"
 
 #: search.c:983
 msgid "Match Fuzziness:"
-msgstr ""
+msgstr "Dopuszczalny błąd:"
 
 #: search.c:1187 search.c:1333
 msgid "Search Pattern:"
@@ -20470,7 +20527,7 @@ msgstr "Zamień wszystkie"
 
 #: search.c:1614
 msgid "_Match Fuzziness:"
-msgstr ""
+msgstr "_Dopuszczalny błąd:"
 
 #: search.c:1746
 msgid "Replace Outline with Reference"
@@ -23063,6 +23120,9 @@ msgstr "65"
 #: ../gdraw/gtextinfo.c:657
 msgid "GGadget|ScaleFactor|100"
 msgstr "130"
+
+#~ msgid "Em_bolden..."
+#~ msgstr "Pogrub..."
 
 #~ msgid "_Meta Font..."
 #~ msgstr "Met_amorfoza..."
