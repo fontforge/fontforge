@@ -989,6 +989,7 @@ struct lcg_zones {
 
     SplineSet *(*embolden_hook)(SplineSet *,struct lcg_zones *,SplineChar *,int layer);
     int wants_hints;
+    double serif_height, serif_fuzz;
 
     double stroke_width;	/* negative number to lighten, positive to embolden */
     uint8 removeoverlap;
