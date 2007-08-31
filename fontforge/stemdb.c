@@ -1717,12 +1717,12 @@ static int IsSplinePeak( struct glyphdata *gd,struct splinepoint *sp,int outer,i
     if ( snext->to == NULL || sprev->from == NULL )
 return( false );
 
-    while ( snext->to->next != NULL && next == base ) {
+    while ( snext->to->next != NULL && snext->to != sp && next == base ) {
         next = ((real *) &snext->to->me.x)[!is_x];
         snext = snext->to->next;
     }
 
-    while ( sprev->from->prev != NULL && prev == base ) {
+    while ( sprev->from->prev != NULL && sprev->from != sp && prev == base ) {
         prev = ((real *) &sprev->from->me.x)[!is_x];
         sprev = sprev->from->prev;
     }
@@ -2788,17 +2788,14 @@ static void CheckForGhostHints( struct glyphdata *gd, BlueData *bd ) {
         
 	sp = gd->points[i].sp;
 	base = sp->me.y;
-        int peak = IsSplinePeak( gd,sp,false,false );
-        if ( peak ) {
-	    for ( j=0; j<bd->bluecnt; ++j ) {
-		if ( base>=bd->blues[j][0]-1 && base<=bd->blues[j][1]+1 )
-	    break;
-	    }
-	    if ( j!=bd->bluecnt ) {
-                if ( peak>0 ) width = 20;
-                else if ( peak<0 ) width = 21;
-	        stem = FindOrMakeGhostStem( gd,sp,j,width );
-	        chunk = AddToStem( stem,&gd->points[i],NULL,false,false,false,false );
+	for ( j=0; j<bd->bluecnt; ++j ) {
+	    if ( base>=bd->blues[j][0]-1 && base<=bd->blues[j][1]+1 ) {
+                int peak = IsSplinePeak( gd,sp,false,false );
+                if ( peak ) {
+                    width = ( peak>0 ) ? 20 : 21;
+                    stem = FindOrMakeGhostStem( gd,sp,j,width );
+                    chunk = AddToStem( stem,&gd->points[i],NULL,false,false,false,false );
+                }
 	    }
         }
     }
