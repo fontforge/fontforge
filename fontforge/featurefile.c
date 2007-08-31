@@ -1868,7 +1868,7 @@ return;
     }
 
     start = pt = tok->tokbuf;
-    if ( ch=='\\' ) {
+    if ( ch=='\\' || ch=='-' ) {
 	peekch=getc(in);
 	ungetc(peekch,in);
     }
