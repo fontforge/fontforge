@@ -1626,7 +1626,7 @@ return false;
    tests are required before we can add this stem to the given glyph. */
 int MergeDStemInfo( DStemInfo **ds, DStemInfo *test ) {
     DStemInfo *dn, *last, *next, *temp;
-    int colleft=false, colright=false;
+    int colleft=false, colright=false, merged=false;
     
     if ( *ds==NULL ) {
         *ds=test;
@@ -1643,49 +1643,61 @@ return( true );
            we will just merge stem data together instead of adding a new
            stem */
         if (IsLineCoIncident( &(dn->leftedgetop),&(dn->leftedgebottom),
+            &(test->leftedgetop),&(test->leftedgebottom) ) ||
+            IsCoLinear( &(dn->leftedgetop),&(dn->leftedgebottom),
             &(test->leftedgetop),&(test->leftedgebottom) ) ) {
             
             colleft=true;
-        } else {
-            if (IsCoLinear( &(dn->leftedgetop),&(dn->leftedgebottom),
-                &(test->leftedgetop),&(test->leftedgebottom) ) ) {
-
-                colleft=true;
-                if (test->leftedgetop.y > dn->leftedgetop.y) {
-                    dn->leftedgetop.y = test->leftedgetop.y;
-                    dn->leftedgetop.x = test->leftedgetop.x;
-                }
-                if (test->leftedgebottom.y < dn->leftedgebottom.y) {
-                    dn->leftedgebottom.y = test->leftedgebottom.y;
-                    dn->leftedgebottom.x = test->leftedgebottom.x;
-                }
-            }
-        }
-
+        } 
+        
         if (IsLineCoIncident( &(dn->rightedgetop),&(dn->rightedgebottom),
+            &(test->rightedgetop),&(test->rightedgebottom) ) ||
+            IsCoLinear( &(dn->rightedgetop),&(dn->rightedgebottom),
             &(test->rightedgetop),&(test->rightedgebottom) ) ) {
             
             colright=true;
-        } else {
-            if (IsCoLinear( &(dn->rightedgetop),&(dn->rightedgebottom),
-                &(test->rightedgetop),&(test->rightedgebottom) ) ) {
-
-                colright=true;
-                if (test->rightedgetop.y > dn->rightedgetop.y) {
-                    dn->rightedgetop.y = test->rightedgetop.y;
-                    dn->rightedgetop.x = test->rightedgetop.x;
-                }
-                if (test->rightedgebottom.y < dn->rightedgebottom.y) {
-                    dn->rightedgebottom.y = test->rightedgebottom.y;
-                    dn->rightedgebottom.x = test->rightedgebottom.x;
-                }
+        }
+        
+        /* We consider a stem colinear to another stem if either both 
+        /* edges are colinear to the corresponding edges of the second stem,
+        /* or at least one edge is colinear and at least one key point of
+        /* the second edge lies on the line described by the key points of
+        /* the corresponding edge of the second stem. */
+        if (( colleft && ( colright ||
+            PointOnLine( 
+            &(test->rightedgetop),&(dn->rightedgetop),&(dn->rightedgebottom) ) ||
+            PointOnLine( 
+            &(test->rightedgebottom),&(dn->rightedgetop),&(dn->rightedgebottom) ))) ||
+            ( colright && (
+            PointOnLine( 
+            &(test->leftedgetop),&(dn->leftedgetop),&(dn->leftedgebottom) ) ||
+            PointOnLine( 
+            &(test->leftedgebottom),&(dn->leftedgetop),&(dn->leftedgebottom) )))) {
+     
+            merged=true;
+            if (test->leftedgetop.y > dn->leftedgetop.y) {
+                dn->leftedgetop.y = test->leftedgetop.y;
+                dn->leftedgetop.x = test->leftedgetop.x;
             }
+            if (test->leftedgebottom.y < dn->leftedgebottom.y) {
+                dn->leftedgebottom.y = test->leftedgebottom.y;
+                dn->leftedgebottom.x = test->leftedgebottom.x;
+            }
+            if (test->rightedgetop.y > dn->rightedgetop.y) {
+                dn->rightedgetop.y = test->rightedgetop.y;
+                dn->rightedgetop.x = test->rightedgetop.x;
+            }
+            if (test->rightedgebottom.y < dn->rightedgebottom.y) {
+                dn->rightedgebottom.y = test->rightedgebottom.y;
+                dn->rightedgebottom.x = test->rightedgebottom.x;
+            }
+    break;
         }
     }
     
     /* Return (false) if the new stem has not been added, even if its data
        have been merged with another stem */
-    if (colleft && colright)
+    if ( merged )
 return false;
 
     /* Otherwise add the given stem to the list by such a way that diagonal 
