@@ -579,6 +579,7 @@ struct cvcontainer {
 };
 
 #if !defined( FONTFORGE_CONFIG_NO_WINDOWING_UI ) || defined(_DEFINE_SEARCHVIEW_)
+enum search_flags { sv_reverse = 0x1, sv_flips = 0x2, sv_rotate = 0x4, sv_scale = 0x8 };
 typedef struct searchview {
     struct cvcontainer base;
     FontView dummy_fv;
@@ -648,6 +649,7 @@ typedef struct searchview {
     unsigned long matched_ss;
     unsigned long matched_ss_start;
 #endif
+    int last_gid;
 } SearchView;
 #endif
 
@@ -1044,6 +1046,10 @@ extern void DropChars2Text(GWindow gw, GGadget *glyphs,GEvent *event);
 extern void FVSetWidthScript(FontView *fv,enum widthtype wtype,int val,int incr);
 
 extern void FVReplaceOutlineWithReference( FontView *fv, double fudge );
+extern int FVReplaceAll( FontView *fv, SplineSet *find, SplineSet *rpl, double fudge, int flags );
+extern void SVDestroy(struct searchview *sv);
+extern struct searchview *SVFromContour( FontView *fv, SplineSet *find, double fudge, int flags );
+extern SplineChar *SVFindNext(struct searchview *sv);
 
 extern void skewselect(BVTFunc *bvtf,real t);
 

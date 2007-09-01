@@ -6225,10 +6225,10 @@ return( NULL );
 Py_RETURN(self);
 }
 
-static PyObject *fontiter_New(PyObject *font, int bysel);
+static PyObject *fontiter_New(PyObject *font, int bysel, struct searchview *sv);
 
 static PyObject *PySelection_iter(PyObject *self) {
-return( fontiter_New(self, 1+((PyFF_Selection *) self)->by_glyphs ));
+return( fontiter_New(self, 1+((PyFF_Selection *) self)->by_glyphs, NULL ));
 }
 
 static PyMethodDef PyFFSelection_methods[] = {
@@ -6607,10 +6607,11 @@ typedef struct {
     int pos;
     int byselection;
     FontView *fv;
+    struct searchview *sv;
 } fontiterobject;
 static PyTypeObject PyFF_FontIterType;
 
-static PyObject *fontiter_New(PyObject *font, int bysel) {
+static PyObject *fontiter_New(PyObject *font, int bysel, struct searchview *sv) {
     fontiterobject *di;
     di = PyObject_New(fontiterobject, &PyFF_FontIterType);
     if (di == NULL)
@@ -6619,11 +6620,12 @@ return NULL;
     di->fv = ((PyFF_Font *) font)->fv;
     di->pos = 0;
     di->byselection = bysel;
+    di->sv = sv;
 return (PyObject *)di;
 }
 
 static PyObject *fontiter_new(PyObject *font) {
-return( fontiter_New(font,false) );
+return( fontiter_New(font,false,NULL) );
 }
 
 static void fontiter_dealloc(fontiterobject *di) {
@@ -6631,7 +6633,11 @@ static void fontiter_dealloc(fontiterobject *di) {
 }
 
 static PyObject *fontiter_iternextkey(fontiterobject *di) {
-    if ( !di->byselection ) {
+    if ( di->sv!=NULL ) {
+	SplineChar *sc = SVFindNext(di->sv);
+	if ( sc!=NULL )
+return( PySC_From_SC_I( sc ) );
+    } else if ( !di->byselection ) {
 	SplineFont *sf = di->sf;
 
 	if (sf == NULL)
@@ -9495,6 +9501,59 @@ return( Py_BuildValue("s", ac->subtable->subtable_name ));
 return( NULL );
 }
 
+static PyObject *PyFFFont_replaceAll(PyObject *self, PyObject *args) {
+    FontView *fv = ((PyFF_Font *) self)->fv;
+    PyObject *srch, *rpl;
+    SplineSet *srch_ss, *rpl_ss;
+    double err = .01;
+
+    if ( !PyArg_ParseTuple(args,"OO|d", &srch, &rpl, &err ))
+return( NULL );
+
+    if ( PyType_IsSubtype(&PyFF_LayerType,srch->ob_type) ) {
+	srch_ss = SSFromLayer((PyFF_Layer *) srch);
+    } else if ( PyType_IsSubtype(&PyFF_ContourType,srch->ob_type) ) {
+	srch_ss = SSFromContour((PyFF_Contour *) srch, NULL);
+    } else {
+	PyErr_Format(PyExc_TypeError, "Unexpected type");
+return( NULL );
+    }
+
+    if ( PyType_IsSubtype(&PyFF_LayerType,rpl->ob_type) ) {
+	rpl_ss = SSFromLayer((PyFF_Layer *) rpl);
+    } else if ( PyType_IsSubtype(&PyFF_ContourType,rpl->ob_type) ) {
+	rpl_ss = SSFromContour((PyFF_Contour *) rpl, NULL);
+    } else {
+	PyErr_Format(PyExc_TypeError, "Unexpected type");
+return( NULL );
+    }
+
+    /* srch_ss and rpl_ss will be freed by ReplaceAll */
+return( Py_BuildValue( "i", FVReplaceAll(fv,srch_ss,rpl_ss,err,sv_reverse|sv_flips)));
+}
+
+static PyObject *PyFFFont_find(PyObject *self, PyObject *args) {
+    FontView *fv = ((PyFF_Font *) self)->fv;
+    PyObject *srch;
+    SplineSet *srch_ss;
+    double err = .01;
+
+    if ( !PyArg_ParseTuple(args,"O|d", &srch, &err ))
+return( NULL );
+
+    if ( PyType_IsSubtype(&PyFF_LayerType,srch->ob_type) ) {
+	srch_ss = SSFromLayer((PyFF_Layer *) srch);
+    } else if ( PyType_IsSubtype(&PyFF_ContourType,srch->ob_type) ) {
+	srch_ss = SSFromContour((PyFF_Contour *) srch, NULL);
+    } else {
+	PyErr_Format(PyExc_TypeError, "Unexpected type");
+return( NULL );
+    }
+
+    /* srch_ss will be freed when the iterator dies */
+return( fontiter_New( self,false,SVFromContour(fv,srch_ss,err,sv_reverse|sv_flips)) );
+}
+
 static PyObject *PyFFFont_Save(PyObject *self, PyObject *args) {
     char *filename;
     char *locfilename = NULL, *pt;
@@ -10279,6 +10338,8 @@ static PyMethodDef PyFF_Font_methods[] = {
     { "removeGlyph", PyFFFont_removeGlyph, METH_VARARGS, "Removes the glyph from the font" },
     { "removeLookup", PyFFFont_removeLookup, METH_VARARGS, "Removes the named lookup" },
     { "removeLookupSubtable", PyFFFont_removeLookupSubtable, METH_VARARGS, "Removes the named lookup subtable" },
+    { "replaceAll", PyFFFont_replaceAll, METH_VARARGS, "Searches for a pattern in the font and replaces it with another everywhere it was found" },
+    { "find", PyFFFont_find, METH_VARARGS, "Searches for a pattern in the font and returns an iterator which produces glyphs with that pattern" },
 /* Selection based */
     { "clear", PyFFFont_clear, METH_NOARGS, "Clears all selected glyphs" },
     { "cut", PyFFFont_cut, METH_NOARGS, "Cuts all selected glyphs" },
