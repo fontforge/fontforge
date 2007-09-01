@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: FontForge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2007-08-31 09:07+0200\n"
+"POT-Creation-Date: 2007-09-01 10:44+0200\n"
 "PO-Revision-Date: 2006-09-16 10:22+0200\n"
 "Last-Translator: Michal Nowakowski\n"
 "Language-Team: Polish <pl@li.org>\n"
@@ -61,7 +61,7 @@ msgstr "_Maksymalna odległość między punktami części"
 #: metafont.c:2221 mm.c:1939 mm.c:1991 mm.c:2285 mm.c:3780 nonlineartrans.c:888
 #: nonlineartrans.c:1236 openfontdlg.c:350 openfontdlg.c:677 prefs.c:1324 prefs.c:2090
 #: problems.c:3165 problems.c:4526 savefontdlg.c:1008 savefontdlg.c:1193
-#: scripting.c:10034 scstyles.c:676 scstyles.c:1833 showatt.c:2507 showatt.c:2992
+#: scripting.c:10034 scstyles.c:663 scstyles.c:1963 showatt.c:2507 showatt.c:2992
 #: simplifydlg.c:370 statemachine.c:1638 statemachine.c:2585 tilepath.c:855
 #: transform.c:730 ttfinstrs.c:1309 ttfinstrs.c:1929 ttfinstrs.c:2063 ttfinstrs.c:2382
 #: ../gdraw/gaskdlg.c:1089 ../gdraw/gaskdlg.c:1119 ../gdraw/gaskdlg.c:1153
@@ -92,7 +92,7 @@ msgstr "_OK"
 #: openfontdlg.c:714 parsettf.c:4607 prefs.c:1334 prefs.c:2102 problems.c:3176
 #: savefontdlg.c:1019 savefontdlg.c:1205 savefontdlg.c:1342 savefontdlg.c:1368
 #: savefontdlg.c:2492 savefontdlg.c:2643 savefontdlg.c:3174 scripting.c:10050
-#: scstyles.c:687 scstyles.c:1844 search.c:1602 showatt.c:3002 simplifydlg.c:381
+#: scstyles.c:674 scstyles.c:1974 search.c:1603 showatt.c:3002 simplifydlg.c:381
 #: statemachine.c:1648 statemachine.c:2596 tilepath.c:866 transform.c:742
 #: ttfinstrs.c:1319 ttfinstrs.c:1940 ttfinstrs.c:2064 ttfinstrs.c:2393
 #: ../gdraw/gaskdlg.c:1090 ../gdraw/gaskdlg.c:1369 ../gdraw/gaskdlg.c:1428
@@ -527,7 +527,7 @@ msgstr "Dopuszczalne są tylko znaki z ASCII"
 #: bdfinfo.c:1017 bvedit.c:45 cvstroke.c:1033 fontview.c:341 fontview.c:4824
 #: fontview.c:5813 fontview.c:6691 fvimportbdf.c:1867 kernclass.c:399 kernclass.c:401
 #: macenc.c:2884 macenc.c:2886 macenc.c:3191 macenc.c:3193 prefs.c:1189 prefs.c:1195
-#: scstyles.c:1893 ttfinstrs.c:1560 ttfinstrs.c:1602
+#: scstyles.c:2023 ttfinstrs.c:1560 ttfinstrs.c:1602
 msgid "Bad Number"
 msgstr "Błędna liczba"
 
@@ -3836,11 +3836,11 @@ msgstr "czasem trzeba ją wyłączyć. Kiedy jednak"
 msgid "Leave it on if possible though, it is useful."
 msgstr "nie sprawia kłopotów, warto mieć ją włączoną."
 
-#: cvimages.c:193 cvstroke.c:834 scstyles.c:1770
+#: cvimages.c:193 cvstroke.c:834 scstyles.c:1948
 msgid "Cleanup Self Intersect"
 msgstr "Usuń przecięcia"
 
-#: cvimages.c:199 cvstroke.c:841 scstyles.c:664 scstyles.c:1776
+#: cvimages.c:199 cvstroke.c:841 scstyles.c:651 scstyles.c:1954
 msgid ""
 "When FontForge detects that an expanded stroke will self-intersect,\n"
 "then setting this option will cause it to try to make things nice\n"
@@ -4607,7 +4607,7 @@ msgstr "Przeksz_tałć pióro:"
 msgid "Don't Warn Again"
 msgstr "Nie ostrzegaj ponownie"
 
-#: cvundoes.c:1817 cvundoes.c:1835 fontview.c:2319 metricsview.c:1711 search.c:1331
+#: cvundoes.c:1817 cvundoes.c:1835 fontview.c:2319 metricsview.c:1711 search.c:1332
 msgid "Bad Reference"
 msgstr "Błędne odwołanie"
 
@@ -4688,11 +4688,11 @@ msgstr "Tak nie wolno!"
 msgid "You may not paste a reference into this window"
 msgstr "Nie wolno wklejać tu odwołań."
 
-#: cvundoes.c:2199 search.c:1065
+#: cvundoes.c:2199 search.c:1066
 msgid "Self-referential glyph"
 msgstr "Glif odwołuje się sam do siebie"
 
-#: cvundoes.c:2199 search.c:1065
+#: cvundoes.c:2199 search.c:1066
 msgid "Attempt to make a glyph that refers to itself"
 msgstr "Próba utworzenia glifu odwołującego się do samego siebie"
 
@@ -4739,11 +4739,11 @@ msgstr "Dane zecerskie"
 msgid "Choose which lookups to copy"
 msgstr "Jake dane zecerskie skopiować?"
 
-#: cvundoes.c:2798 search.c:1067
+#: cvundoes.c:2798 search.c:1068
 msgid "Self-referential character"
 msgstr "Odwołanie samo do siebie"
 
-#: cvundoes.c:2798 search.c:1067
+#: cvundoes.c:2798 search.c:1068
 msgid "Attempt to make a character that refers to itself"
 msgstr "Próba utworzenia znaku odwołującego się do samego siebie."
 
@@ -4916,6 +4916,15 @@ msgid ""
 "  FontForge -- uses FontForge's own rasterizer, not\n"
 "    freetype's. Only as last resort"
 msgstr ""
+"Wybór trybu pracy rasteryzatora freetype:\n"
+"  pfb -- standardowy postscriptowy type1\n"
+"  ttf -- truetype\n"
+"  otf -- opentype\n"
+"  bez hintów -- freetype ma nie używać hintów z fontu.\n"
+"  bitmap -- wyświeltane samodzielnie przez FontForge,\n"
+"    bitmapy muszą być utworzone wcześniej.\n"
+"  FontForge -- użycie własnego rasteryzatora FontForge\n"
+"    zamiast freetype. Ostateczność."
 
 #: displayfonts.c:3929
 msgid ""
@@ -8275,7 +8284,7 @@ msgstr ""
 msgid "Change"
 msgstr "Zmień"
 
-#: fontinfo.c:4542 scstyles.c:1800
+#: fontinfo.c:4542 scstyles.c:1920
 msgid "Retain"
 msgstr "Zachowaj"
 
@@ -9695,7 +9704,7 @@ msgstr "Ten sa_m glif"
 msgid "F_ind / Replace..."
 msgstr "Z_najdź / zastąp"
 
-#: fontview.c:6471 search.c:1745
+#: fontview.c:6471 search.c:1766
 msgid "Replace with Reference"
 msgstr "Zastąp odwołaniem"
 
@@ -9797,7 +9806,7 @@ msgstr "Nie udało się zapisać do %s"
 msgid "Load Namelist"
 msgstr "Wczytaj listę nazw glifów"
 
-#: fontview.c:7030 problems.c:2032 search.c:1582 ../gdraw/gsavefiledlg.c:72
+#: fontview.c:7030 problems.c:2032 search.c:1583 ../gdraw/gsavefiledlg.c:72
 msgid "Replace"
 msgstr "Zamień"
 
@@ -15822,8 +15831,9 @@ msgid "Projecting..."
 msgstr "projekcja..."
 
 #: nowakowskittfinstr.c:626
-msgid "Can't insert 'cvt'"
-msgstr ""
+#, c-format
+msgid "Can't insert 'cvt': %s\n"
+msgstr "Nie da się wstawić „cvt”: %s\n"
 
 #: nowakowskittfinstr.c:627
 msgid ""
@@ -15832,10 +15842,15 @@ msgid ""
 "quality. If legacy hinting is to be scrapped, it is suggested to clear the `cvt` and "
 "repeat autoinstructing. "
 msgstr ""
+"W tablicy „cvt” istnieją już dane; FontForge zrobiłby to inaczej. Wygenerowane "
+"instrukcje będą gorszej jakości. Jeśli utrata istniejących wcześniej w foncie "
+"instrukcji jest zamierzona, zaleca się pozwolić FontForgowi wpisać jego dane, a "
+"następnie dopisywać po nich swoje."
 
 #: nowakowskittfinstr.c:1059
-msgid "Can't insert 'fpgm'"
-msgstr "Nie da się wstawić „fpgm”"
+#, c-format
+msgid "Can't insert 'fpgm': %s\n"
+msgstr "Nie da się wstawić „fpgm”: %s\n"
 
 #: nowakowskittfinstr.c:1060
 msgid ""
@@ -15852,8 +15867,9 @@ msgstr ""
 "numerów funkcji."
 
 #: nowakowskittfinstr.c:1296
-msgid "Can't insert 'prep'"
-msgstr "Nie da się wstawić „prep”"
+#, c-format
+msgid "Can't insert 'prep': %s\n"
+msgstr "Nie da się wstawić „prep”: %s\n"
 
 #: nowakowskittfinstr.c:1297
 msgid ""
@@ -20258,129 +20274,157 @@ msgstr "_FF"
 msgid "C_all..."
 msgstr "Wywoł_aj..."
 
-#: scstyles.c:476
+#: scstyles.c:463
 msgid "Counter Expansion Factor"
 msgstr "O ile przeskalować światła wewnątrzliterowe"
 
-#: scstyles.c:477
+#: scstyles.c:464
 msgid "Counter Addition"
 msgstr "O ile powiększyć światła wewnątrzliterowe"
 
-#: scstyles.c:478
+#: scstyles.c:465
 msgid "Side Bearing Expansion Factor"
 msgstr "O ile przeskalować odsadki boczne"
 
-#: scstyles.c:479
+#: scstyles.c:466
 msgid "Side Bearing Addition"
 msgstr "O ile powiększyć odsadki boczne"
 
-#: scstyles.c:540
+#: scstyles.c:527
 msgid "Condense/Extend..."
 msgstr "Zmiana szerokości..."
 
-#: scstyles.c:556
+#: scstyles.c:543
 msgid "Scale By"
 msgstr "Skaluj o"
 
-#: scstyles.c:566
+#: scstyles.c:553
 msgid "Add"
 msgstr "Powiększ o:"
 
-#: scstyles.c:576 scstyles.c:1780
+#: scstyles.c:563 scstyles.c:1900
 msgid "Counters:"
 msgstr "Światła:"
 
-#: scstyles.c:617
+#: scstyles.c:604
 msgid "Side Bearings:"
 msgstr "Odsadki boczne:"
 
-#: scstyles.c:658
+#: scstyles.c:645
 msgid "Correct for Italic Angle"
 msgstr "Korekta dla pochyłych"
 
-#: scstyles.c:1505
+#: scstyles.c:1591
 msgid "Embolden by"
 msgstr "Pogrub o"
 
-#: scstyles.c:1511
+#: scstyles.c:1596 scstyles.c:1858
+msgid "Serif Height"
+msgstr "Grubość szeryfów"
+
+#: scstyles.c:1597
+msgid "Serif Height Fuzz"
+msgstr "Zmienność rozmiarów szeryfów"
+
+#: scstyles.c:1599
 msgid "Top Zone"
 msgstr "Koniec strefy środkowej"
 
-#: scstyles.c:1512
+#: scstyles.c:1600
 msgid "Bottom Zone"
 msgstr "Początek strefy środkowej"
 
-#: scstyles.c:1513
+#: scstyles.c:1601
 msgid "Top Hint"
 msgstr "Początek strefy górnej"
 
-#: scstyles.c:1514
+#: scstyles.c:1602
 msgid "Bottom Hint"
 msgstr "Koniec strefy dolnej"
 
-#: scstyles.c:1584
+#: scstyles.c:1672
 msgid "Change Weight..."
 msgstr "Zmiana grubości..."
 
-#: scstyles.c:1597
+#: scstyles.c:1685
 msgid "Embolden by:"
 msgstr "Pogrub o:"
 
-#: scstyles.c:1617
+#: scstyles.c:1705
 msgid "em units"
 msgstr "jednostek"
 
-#: scstyles.c:1627
+#: scstyles.c:1715
 msgid "_LCG"
 msgstr "_LCG"
 
-#: scstyles.c:1628
+#: scstyles.c:1716
 msgid "Embolden as appropriate for Latin, Cyrillic and Greek scripts"
 msgstr "Tryb odpowiedni dla pism łacińskiego, greckiego i cyrylicy"
 
-#: scstyles.c:1638
+#: scstyles.c:1726
 msgid "_CJK"
 msgstr "_CJK"
 
-#: scstyles.c:1639
+#: scstyles.c:1727
 msgid "Embolden as appropriate for Chinese, Japanese, Korean scripts"
 msgstr "Tryb odpowiedni dla pism chińskiego, japońskiego i koreańskiego"
 
-#: scstyles.c:1649
+#: scstyles.c:1737
 msgid "_Auto"
 msgstr "_Automatycznie"
 
-#: scstyles.c:1650
+#: scstyles.c:1738
 msgid "Choose the appropriate method depending on the glyph's script"
 msgstr "Wybiera odpowiedni tryb na podstawie numerów unikodowych"
 
-#: scstyles.c:1660
+#: scstyles.c:1748
 msgid "C_ustom"
 msgstr "_Dostosuj"
 
-#: scstyles.c:1661
+#: scstyles.c:1749
 msgid "User controls the emboldening with the next two fields"
 msgstr ""
 "Uaktywnia poniższe pola pozwalające\n"
 "lepiej dostosować działanie algorytmu"
 
-#: scstyles.c:1681
+#: scstyles.c:1769
 msgid "_Top hint:"
 msgstr "Początek strefy _górnej:"
 
-#: scstyles.c:1703
+#: scstyles.c:1791
 msgid "_Zone:"
 msgstr "Koniec strefy ś_rodkowej:"
 
-#: scstyles.c:1726
+#: scstyles.c:1814
 msgid "_Bottom hint:"
 msgstr "Koniec strefy do_lnej:"
 
-#: scstyles.c:1747
+#: scstyles.c:1835
 msgid "Zone:"
 msgstr "Początek strefy środ_kowej:"
 
-#: scstyles.c:1781
+#: scstyles.c:1863
+msgid ""
+"Any points this high will be assumed to be on serifs,\n"
+"and will remain at that height after processing.\n"
+"(So serifs should remain the same size).\n"
+"(If you do wish the serifs to grow, set this to 0)"
+msgstr ""
+"Wszystkie punkty odległe o tą wartość od stref górnej lub\n"
+"dolnej pozostaną na swoich miejscach. To może np. zapobiec\n"
+"pogrubieniu szeryfów poziomych, jeśli nie jest to pożądane.\n"
+"W przeciwnym razie należy ustawić tą wartość na 0."
+
+#: scstyles.c:1879
+msgid "Fuzz"
+msgstr "Zmienność rozmiarów"
+
+#: scstyles.c:1884
+msgid "Allow the height match to differ by this much"
+msgstr "Różnice w grubościach szeryfów jakie należy uwzględnić"
+
+#: scstyles.c:1901
 msgid ""
 "The simple application of this algorithm will squeeze counters\n"
 "That is not normally seen in bold latin fonts"
@@ -20389,25 +20433,25 @@ msgstr ""
 "wewnątrzliterowe, czego zwykle nie spotyka się w typowych\n"
 "łacińskich fontach pogrubionych."
 
-#: scstyles.c:1789
+#: scstyles.c:1909
 msgid "Squish"
 msgstr "Ściśnij"
 
-#: scstyles.c:1790
+#: scstyles.c:1910
 msgid "Make the counters narrower"
 msgstr "Pozwala na ściśnięcie świateł wewnątrzliterowych"
 
-#: scstyles.c:1801
+#: scstyles.c:1921
 msgid ""
 "Try to insure that the counters are as wide\n"
 "afterward as they were before"
 msgstr "Stara się zachować szerokość świateł wewnątrzliterowych"
 
-#: scstyles.c:1811
+#: scstyles.c:1931
 msgid "Auto"
 msgstr "Automatycznie"
 
-#: scstyles.c:1812
+#: scstyles.c:1932
 msgid ""
 "Retain counter size for glyphs using latin algorithm\n"
 "Squish them for those using CJK."
@@ -20415,62 +20459,62 @@ msgstr ""
 "Stara się zachować szerokość świateł wewnątrzliterowych\n"
 "w glifach pism LCG i pozwala je ściskać w pismach CJK."
 
-#: scstyles.c:1887
+#: scstyles.c:2017
 msgid "Italic Slant..."
 msgstr "Pochylenie w poziomie..."
 
-#: scstyles.c:1887
+#: scstyles.c:2017
 msgid "By what angle (in degrees) do you want to slant the font?"
 msgstr "O jaki kąt (w stopniach) pochylić?"
 
-#: search.c:946 search.c:971 search.c:973 search.c:1760
+#: search.c:978 search.c:1003 search.c:1005 search.c:1781
 msgid "Not Found"
 msgstr "niczego nie znaleziono"
 
-#: search.c:946
+#: search.c:978
 #, c-format
 msgid "The search pattern was not found again in the font %.100s"
 msgstr "Nie znaleziono następnego wystąpienia wzorca w foncie %.100s"
 
-#: search.c:946 search.c:971 search.c:973
+#: search.c:978 search.c:1003 search.c:1005
 #, c-format
 msgid "The search pattern was not found in the font %.100s"
 msgstr "W foncie %.100s nie znaleziono szukanego wzorca"
 
-#: search.c:948 search.c:1206 search.c:1284 search.c:1667
+#: search.c:980 search.c:1207 search.c:1285 search.c:1668
 msgid "Find"
 msgstr "Znajdź"
 
-#: search.c:959 search.c:1562
+#: search.c:991 search.c:1563
 msgid "Find Next"
 msgstr "Znajdź następny"
 
-#: search.c:983
+#: search.c:1015
 msgid "Match Fuzziness:"
 msgstr "Dopuszczalny błąd:"
 
-#: search.c:1187 search.c:1333
+#: search.c:1188 search.c:1334
 msgid "Search Pattern:"
 msgstr "Szukany wzorzec:"
 
-#: search.c:1193 search.c:1333
+#: search.c:1194 search.c:1334
 msgid "Replace Pattern:"
 msgstr "Czym podmienić:"
 
-#: search.c:1283
+#: search.c:1284
 #, c-format
 msgid "Find in %.100s"
 msgstr "Szukaj w %.100s"
 
-#: search.c:1323
+#: search.c:1324
 msgid "Yes"
 msgstr "Tak"
 
-#: search.c:1324 ../gdraw/gsavefiledlg.c:73
+#: search.c:1325 ../gdraw/gsavefiledlg.c:73
 msgid "Cancel"
 msgstr "Anuluj"
 
-#: search.c:1332
+#: search.c:1333
 #, c-format
 msgid ""
 "The %1$s contains a reference to %2$.20hs which does not exist in the new font.\n"
@@ -20479,11 +20523,11 @@ msgstr ""
 "Glif %1$s zawiera odwołanie do glifu %2$.20hs, który nie istnieje w nowym foncie.\n"
 "czy usunąć odwołanie?"
 
-#: search.c:1513
+#: search.c:1514
 msgid "Allow:"
 msgstr "Zezwól na:"
 
-#: search.c:1519 search.c:1529 search.c:1539 search.c:1549
+#: search.c:1520 search.c:1530 search.c:1540 search.c:1550
 msgid ""
 "Allow a match even if the search pattern has\n"
 "to be transformed by a combination of the\n"
@@ -20493,23 +20537,23 @@ msgstr ""
 "wzorzec musiałby być przekształcony za pomocą\n"
 "następujących transformacji:"
 
-#: search.c:1523
+#: search.c:1524
 msgid "Flipping"
 msgstr "Odbicie"
 
-#: search.c:1533
+#: search.c:1534
 msgid "Scaling"
 msgstr "Skalowanie"
 
-#: search.c:1543
+#: search.c:1544
 msgid "Rotating"
 msgstr "Obrót"
 
-#: search.c:1553
+#: search.c:1554
 msgid "Search Selected Chars"
 msgstr "Szukaj w zaznaczonych"
 
-#: search.c:1559
+#: search.c:1560
 msgid ""
 "Only search selected characters in the fontview.\n"
 "Normally we search all characters in the font."
@@ -20517,23 +20561,23 @@ msgstr ""
 "Ogranicza szukanie tylko do znaków wybranych w oknie\n"
 "widoku fontu. Normalnie przeszukiwane są wszystkie znaki."
 
-#: search.c:1572
+#: search.c:1573
 msgid "Find All"
 msgstr "Znajdź wszystkie"
 
-#: search.c:1592
+#: search.c:1593
 msgid "Replace All"
 msgstr "Zamień wszystkie"
 
-#: search.c:1614
+#: search.c:1615
 msgid "_Match Fuzziness:"
 msgstr "_Dopuszczalny błąd:"
 
-#: search.c:1746
+#: search.c:1767
 msgid "Replace Outline with Reference"
 msgstr "Zastąp obrys odwołaniem"
 
-#: search.c:1760
+#: search.c:1781
 #, c-format
 msgid "The outlines of glyph %2$.30s were not found in the font %1$.60s"
 msgstr "Nie znaleziono w foncie %1$.60s obrysów glifu %2$.30s"
@@ -21304,11 +21348,11 @@ msgid ""
 "%g, italic correction=%g"
 msgstr ""
 
-#: splinestroke.c:924 splinestroke.c:1438
+#: splinestroke.c:924 splinestroke.c:1412
 msgid "Bad Stroke"
 msgstr "Błędna kreska"
 
-#: splinestroke.c:924 splinestroke.c:1438
+#: splinestroke.c:924 splinestroke.c:1412
 #, c-format
 msgid ""
 "The stroke width is so big that the generated path\n"
@@ -23120,15 +23164,6 @@ msgstr "65"
 #: ../gdraw/gtextinfo.c:657
 msgid "GGadget|ScaleFactor|100"
 msgstr "130"
-
-#~ msgid "Em_bolden..."
-#~ msgstr "Pogrub..."
-
-#~ msgid "_Meta Font..."
-#~ msgstr "Met_amorfoza..."
-
-#~ msgid "_Sample Text"
-#~ msgstr "_Przykładowy tekst"
 
 #~ msgid "Prints the text below at the specified point size(s)"
 #~ msgstr "Drukuje poniższy tekst w określonych stopniach pisma."
