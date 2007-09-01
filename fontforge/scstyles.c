@@ -302,7 +302,8 @@ static void BPAdjustCE(BasePoint *bp, struct counterinfo *ci) {
 	BPAdjustCEZ(bp,ci,BOT_Z);
 }
 
-static void SCCondenseExtend(struct counterinfo *ci,SplineChar *sc, int layer) {
+static void SCCondenseExtend(struct counterinfo *ci,SplineChar *sc, int layer,
+	int do_undoes) {
     SplineSet *ss;
     SplinePoint *sp;
     Spline *s, *first;
@@ -312,7 +313,8 @@ static void SCCondenseExtend(struct counterinfo *ci,SplineChar *sc, int layer) {
     real transform[6];
     int order2 = sc->parent->order2;
 
-    SCPreserveLayer(sc,layer,false);
+    if ( do_undoes )
+	SCPreserveLayer(sc,layer,false);
 
     if ( ci->correct_italic && sc->parent->italicangle!=0 ) {
 	memset(transform,0,sizeof(transform));
@@ -387,7 +389,7 @@ void FVCondenseExtend(FontView *fv,struct counterinfo *ci) {
 
     for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
 	    (gid = fv->map->map[i])!=-1 && (sc=fv->sf->glyphs[gid])!=NULL ) {
-	SCCondenseExtend(ci,sc,ly_fore);
+	SCCondenseExtend(ci,sc,ly_fore,true);
     }
 
     free( ci->zones[0]);
@@ -400,7 +402,7 @@ static void CVCondenseExtend(CharView *cv,struct counterinfo *ci) {
     if ( cv->drawmode == dm_grid )
 return;
 
-    SCCondenseExtend(ci, sc, CVLayer(cv));
+    SCCondenseExtend(ci, sc, CVLayer(cv),true);
 
     free( ci->zones[0]);
     free( ci->zones[1]);
@@ -408,7 +410,7 @@ return;
 
 void ScriptSCCondenseExtend(SplineChar *sc,struct counterinfo *ci) {
 
-    SCCondenseExtend(ci, sc, ly_fore);
+    SCCondenseExtend(ci, sc, ly_fore,true);
 
     free( ci->zones[0]);
     free( ci->zones[1]);
@@ -1213,7 +1215,7 @@ static void AdjustCounters(SplineChar *sc, struct lcg_zones *zones,
     ci.c_add = zones->stroke_width;
     ci.c_factor = ci.sb_factor = 100;
     StemInfosFree(sc->vstem); sc->vstem = NULL;
-    SCCondenseExtend(&ci,sc,ly_fore);
+    SCCondenseExtend(&ci,sc,ly_fore,false);
 }
 
 static void NumberLayerPoints(SplineSet *ss) {
