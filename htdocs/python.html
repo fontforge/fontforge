@@ -2722,6 +2722,12 @@ pen = None;				# Finalize the pen. This tells FontForge
 	If there is already a character there, return it</TD>
     </TR>
     <TR>
+      <TD><CODE>find</CODE></TD>
+      <TD><CODE>(contour[,error-bound])</CODE></TD>
+      <TD>Searches the font for all glyphs containing the contour (or layer) and
+	returns an iterator which returns those glyphs.</TD>
+    </TR>
+    <TR>
       <TD><CODE>findEncodingSlot</CODE></TD>
       <TD><CODE>(uni)<BR>
 	(name)</CODE></TD>
@@ -2975,6 +2981,12 @@ pen = None;				# Finalize the pen. This tells FontForge
 	<STRONG>WARNING:</STRONG> This frees fontforge's storage to this glyph. If
 	you have any python pointers to that storage they will be looking at garbage.
 	This does not go through the usual python reference mechanism.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>replaceAll</CODE></TD>
+      <TD><CODE>(srch,rpl[,error-bound])</CODE></TD>
+      <TD>Searches the font for all occurances of the srch contour (or layer) and
+	replaces them with the replace contour (or layer).</TD>
     </TR>
     <TR>
       <TD><CODE><A name="font-save">save</A></CODE></TD>

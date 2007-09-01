@@ -788,6 +788,38 @@ static void SVResetPaths(SearchView *sv) {
 	    spl = SplineSetReverse(spl);
 	sv->sc_rpl.changed_since_autosave = false;
     }
+
+    /* Only do a sub pattern search if we have a single path and it is open */
+    /*  and there is either no replace pattern, or it is also a single open */
+    /*  path */
+    sv->subpatternsearch = sv->path!=NULL && sv->path->next==NULL &&
+	    sv->path->first->prev==NULL && sv->sc_srch.layers[ly_fore].refs==NULL;
+    if ( sv->replacepath!=NULL && (sv->replacepath->next!=NULL ||
+	    sv->replacepath->first->prev!=NULL ))
+	sv->subpatternsearch = false;
+    else if ( sv->sc_rpl.layers[ly_fore].refs!=NULL )
+	sv->subpatternsearch = false;
+
+    if ( sv->subpatternsearch ) {
+	int i;
+	SplinePoint *sp;
+	for ( sp=sv->path->first, i=0; ; ) {
+	    ++i;
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	}
+	sv->pointcnt = i;
+	if ( sv->replacepath!=NULL ) {
+	    for ( sp=sv->replacepath->first, i=0; ; ) {
+		++i;
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+	    }
+	    sv->rpointcnt = i;
+	}
+    }
 }
 
 static int SearchChar(SearchView *sv, int gid,int startafter) {
@@ -993,37 +1025,6 @@ return( false );
 
     SVResetPaths(sv);
 
-    /* Only do a sub pattern search if we have a single path and it is open */
-    /*  and there is either no replace pattern, or it is also a single open */
-    /*  path */
-    sv->subpatternsearch = sv->path!=NULL && sv->path->next==NULL &&
-	    sv->path->first->prev==NULL && sv->sc_srch.layers[ly_fore].refs==NULL;
-    if ( sv->replacepath!=NULL && (sv->replacepath->next!=NULL ||
-	    sv->replacepath->first->prev!=NULL ))
-	sv->subpatternsearch = false;
-    else if ( sv->sc_rpl.layers[ly_fore].refs!=NULL )
-	sv->subpatternsearch = false;
-
-    if ( sv->subpatternsearch ) {
-	int i;
-	SplinePoint *sp;
-	for ( sp=sv->path->first, i=0; ; ) {
-	    ++i;
-	    if ( sp->next==NULL )
-	break;
-	    sp = sp->next->to;
-	}
-	sv->pointcnt = i;
-	if ( sv->replacepath!=NULL ) {
-	    for ( sp=sv->replacepath->first, i=0; ; ) {
-		++i;
-		if ( sp->next==NULL )
-	    break;
-		sp = sp->next->to;
-	    }
-	    sv->rpointcnt = i;
-	}
-    }
     sv->fudge = fudge;
     sv->fudge_percent = sv->tryrotate ? .01 : .001;
 return( true );
@@ -1711,6 +1712,26 @@ static void SVCopyToCV(FontView *fv,int i,CharView *cv,enum fvcopy_type full) {
     PasteToCV(cv);
 }
 
+void SVDestroy(SearchView *sv) {
+    int i;
+
+    if ( sv==NULL )
+return;
+
+    SCClearContents(&sv->sc_srch);
+    SCClearContents(&sv->sc_rpl);
+    for ( i=0; i<sv->sc_srch.layer_cnt; ++i )
+	UndoesFree(sv->sc_srch.layers[i].undoes);
+    for ( i=0; i<sv->sc_rpl.layer_cnt; ++i )
+	UndoesFree(sv->sc_rpl.layers[i].undoes);
+#ifdef FONTFORGE_CONFIG_TYPE3
+    free(sv->sc_srch.layers);
+    free(sv->sc_rpl.layers);
+#endif
+    SplinePointListsFree(sv->revpath);
+    free(sv);
+}
+
 void FVReplaceOutlineWithReference( FontView *fv, double fudge ) {
     SearchView *sv;
     uint8 *selected, *changed;
@@ -1775,18 +1796,7 @@ void FVReplaceOutlineWithReference( FontView *fv, double fudge ) {
 
     fv->sv = oldsv;
 
-    SCClearContents(&sv->sc_srch);
-    SCClearContents(&sv->sc_rpl);
-    for ( i=0; i<sv->sc_srch.layer_cnt; ++i )
-	UndoesFree(sv->sc_srch.layers[i].undoes);
-    for ( i=0; i<sv->sc_rpl.layer_cnt; ++i )
-	UndoesFree(sv->sc_rpl.layers[i].undoes);
-#ifdef FONTFORGE_CONFIG_TYPE3
-    free(sv->sc_srch.layers);
-    free(sv->sc_rpl.layers);
-#endif
-    SplinePointListsFree(sv->revpath);
-    free(sv);
+    SVDestroy(sv);
 
     free(selected);
     memcpy(fv->selected,changed,fv->map->enccount);
@@ -1798,4 +1808,80 @@ void FVReplaceOutlineWithReference( FontView *fv, double fudge ) {
 	GDrawSetCursor(fv->v,ct_pointer);
     }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+}
+
+/* This will free both the find and rpl contours */
+int FVReplaceAll( FontView *fv, SplineSet *find, SplineSet *rpl, double fudge, int flags ) {
+    SearchView *sv;
+    int ret;
+    SearchView *oldsv = fv->sv;
+
+    sv = SVFillup( gcalloc(1,sizeof(SearchView)), fv);
+    sv->fudge_percent = .001;
+    sv->fudge = fudge;
+    CV2SC(&sv->cv_srch,&sv->sc_srch,sv);
+    CV2SC(&sv->cv_rpl,&sv->sc_rpl,sv);
+    sv->replaceall = true;
+
+    sv->tryreverse = (flags&sv_reverse);
+    sv->tryflips = (flags&sv_flips);
+    sv->tryrotate = (flags&sv_rotate);
+    sv->tryscale = (flags&sv_scale);
+
+    sv->sc_srch.layers[ly_fore].splines = find;
+    sv->sc_rpl .layers[ly_fore].splines = rpl;
+    sv->sc_srch.changed_since_autosave = sv->sc_rpl.changed_since_autosave = true;
+    SVResetPaths(sv);
+
+    ret = _DoFindAll(sv);
+
+    SVDestroy(sv);
+    fv->sv = oldsv;
+return( ret );
+}
+
+/* This will free both the find and rpl contours */
+SearchView *SVFromContour( FontView *fv, SplineSet *find, double fudge, int flags ) {
+    SearchView *sv;
+    SearchView *oldsv = fv->sv;
+
+    sv = SVFillup( gcalloc(1,sizeof(SearchView)), fv);
+    sv->fudge_percent = .001;
+    sv->fudge = fudge;
+    CV2SC(&sv->cv_srch,&sv->sc_srch,sv);
+
+    sv->tryreverse = (flags&sv_reverse);
+    sv->tryflips = (flags&sv_flips);
+    sv->tryrotate = (flags&sv_rotate);
+    sv->tryscale = (flags&sv_scale);
+
+    sv->sc_srch.layers[ly_fore].splines = find;
+    sv->sc_srch.changed_since_autosave = sv->sc_rpl.changed_since_autosave = true;
+    SVResetPaths(sv);
+
+    fv->sv = oldsv;
+    sv->last_gid = -1;
+return( sv );
+}
+
+SplineChar *SVFindNext(SearchView *sv) {
+    SearchView *oldsv;
+    int gid;
+    FontView *fv;
+
+    if ( sv==NULL )
+return( NULL );
+    fv = sv->fv;
+    oldsv = fv->sv;
+    fv->sv = sv;
+
+    for ( gid=sv->last_gid+1; gid<fv->sf->glyphcnt; ++gid ) {
+	if ( SearchChar(sv,gid,false) ) {
+	    sv->last_gid = gid;
+	    fv->sv = oldsv;
+return( fv->sf->glyphs[gid]);
+	}
+    }
+    fv->sv = oldsv;
+return( NULL );
 }
