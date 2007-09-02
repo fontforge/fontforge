@@ -1436,7 +1436,7 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	int format = (intpt) (GGadgetGetListItemSelected(d->format)->userdata);
 	if ( format<fv_pythonbase )
-	    GFileChooserSetFilterText(d->gfc,d->fv==NULL?wildchr[format]:wildfnt[format]);
+	    GFileChooserSetFilterText(d->gfc,wildfnt[format]);
 #ifndef _NO_PYTHON
 	else {
 	    char *text;
