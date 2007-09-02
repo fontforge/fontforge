@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
+#include "ttf.h"
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <gwidget.h>
 #include <ustring.h>
@@ -861,12 +862,12 @@ return( false );
 return( false );
 }
 
-static int RefDepth(RefChar *r) {
+static int probRefDepth(RefChar *r) {
     RefChar *ref;
     int cur, max=0;
 
     for ( ref= r->sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
-	cur = RefDepth(ref);
+	cur = probRefDepth(ref);
 	if ( cur>max ) max = cur;
     }
 return( max+1 );
@@ -877,7 +878,7 @@ static int SCRefDepth(SplineChar *sc) {
     int cur, max=0;
 
     for ( ref= sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
-	cur = RefDepth(ref);
+	cur = probRefDepth(ref);
 	if ( cur>max ) max = cur;
     }
 return( max );
@@ -3231,13 +3232,15 @@ int SCValidate(SplineChar *sc, int force) {
     SplinePoint *sp;
     RefChar *ref;
     int lastscan= -1;
-    int cnt;
+    int cnt, path_cnt, pt_cnt;
     StemInfo *h;
     SplineSet *base;
     double len2, bound2, x, y;
     extended extrema[4];
     PST *pst;
+    struct ttf_table *tab;
     extern int allow_utf8_glyphnames;
+    RefChar *r;
 
     if ( (sc->validation_state&vs_known) && !force )
   goto end;
@@ -3345,9 +3348,9 @@ int SCValidate(SplineChar *sc, int force) {
     if ( cnt>=96 )
 	sc->validation_state |= vs_toomanyhints|vs_known;
 
-    for ( ss=sc->layers[ly_fore].splines, cnt=0; ss!=NULL; ss=ss->next ) {
+    for ( ss=sc->layers[ly_fore].splines, pt_cnt=path_cnt=0; ss!=NULL; ss=ss->next, ++path_cnt ) {
 	for ( sp=ss->first; ; ) {
-	    ++cnt;
+	    ++pt_cnt;
 	    if ( sp->next==NULL )
 	break;
 	    sp = sp->next->to;
@@ -3355,7 +3358,7 @@ int SCValidate(SplineChar *sc, int force) {
 	break;
 	}
     }
-    if ( cnt>1500 )
+    if ( pt_cnt>1500 )
 	sc->validation_state |= vs_toomanypoints|vs_known;
 
     LayerUnAllSplines(&sc->layers[ly_fore]);
@@ -3386,6 +3389,55 @@ int SCValidate(SplineChar *sc, int force) {
 	}
     }
     break_2_loops:;
+
+    if ( (tab = SFFindTable(sc->parent,CHR('m','a','x','p')))!=NULL && tab->len>=32 ) {
+	/* If we have a maxp table then do some truetype checks */
+	/* these are only errors for fontlint, we'll fix them up when we */
+	/*  generate the font -- but fontlint needs to know this stuff */
+	int pt_max = memushort(tab->data,tab->len,3*sizeof(uint16));
+	int path_max = memushort(tab->data,tab->len,4*sizeof(uint16));
+	int composit_pt_max = memushort(tab->data,tab->len,5*sizeof(uint16));
+	int composit_path_max = memushort(tab->data,tab->len,6*sizeof(uint16));
+	int instr_len_max = memushort(tab->data,tab->len,13*sizeof(uint16));
+	int num_comp_max = memushort(tab->data,tab->len,14*sizeof(uint16));
+	int comp_depth_max  = memushort(tab->data,tab->len,15*sizeof(uint16));
+	int rd, rdtest;
+
+	/* Already figured out two of these */
+	if ( pt_cnt>=composit_pt_max )
+	    sc->validation_state |= vs_maxp_toomanycomppoints|vs_known;
+	if ( path_cnt>=composit_path_max )
+	    sc->validation_state |= vs_maxp_toomanycomppaths|vs_known;
+
+	for ( ss=sc->layers[ly_fore].splines, pt_cnt=path_cnt=0; ss!=NULL; ss=ss->next, ++path_cnt ) {
+	    for ( sp=ss->first; ; ) {
+		++pt_cnt;
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+		if ( sp==ss->first )
+	    break;
+	    }
+	}
+	if ( pt_cnt>=pt_max )
+	    sc->validation_state |= vs_maxp_toomanypoints|vs_known;
+	if ( path_cnt>=path_max )
+	    sc->validation_state |= vs_maxp_toomanypaths|vs_known;
+
+	if ( sc->ttf_instrs_len>=instr_len_max )
+	    sc->validation_state |= vs_maxp_instrtoolong|vs_known;
+
+	rd = 0;
+	for ( r=sc->layers[ly_fore].refs, cnt=0; r!=NULL; r=r->next, ++cnt ) {
+	    rdtest = RefDepth(r);
+	    if ( rdtest>rd )
+		rd = rdtest;
+	}
+	if ( cnt>=num_comp_max )
+	    sc->validation_state |= vs_maxp_toomanyrefs|vs_known;
+	if ( rd>=comp_depth_max )
+	    sc->validation_state |= vs_maxp_refstoodeep|vs_known;
+    }
   end:;
 
     sc->validation_state |= vs_known;
@@ -3401,6 +3453,7 @@ int SFValidate(SplineFont *sf, int force) {
     int any = 0;
     SplineChar *sc;
     int cnt=0;
+    struct ttf_table *tab;
 
     if ( sf->cidmaster )
 	sf = sf->cidmaster;
@@ -3443,6 +3496,23 @@ return( -1 );
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_end_indicator();
 # endif
+
+    if ( (tab = SFFindTable(sf,CHR('m','a','x','p')))!=NULL && tab->len>=32 ) {
+	/* If we have a maxp table then do some truetype checks */
+	/* these are only errors for fontlint, we'll fix them up when we */
+	/*  generate the font -- but fontlint needs to know this stuff */
+	int instr_len_max = memushort(tab->data,tab->len,13*sizeof(uint16));
+	if ( (tab = SFFindTable(sf,CHR('p','r','e','p')))!=NULL ) {
+	    if ( tab->len >= instr_len_max )
+		any |= vs_maxp_prepfpgmtoolong;
+	}
+	if ( (tab = SFFindTable(sf,CHR('f','p','g','m')))!=NULL ) {
+	    if ( tab->len >= instr_len_max )
+		any |= vs_maxp_prepfpgmtoolong;
+	}
+    }
+    /* a lot of asian ttf files have a bad postscript fontname stored in the */
+    /*  name table */
 return( any&~vs_known );
 }
 

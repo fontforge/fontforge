@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 28-Jun-2007 -->
+  <!-- AP: Last modified: 2-Sep-2007 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -347,6 +347,9 @@ endloop
       number of instances in a multiple master font.
     <LI>
       <CODE>$italicangle </CODE>the value of the postscript italic angle field
+    <LI>
+      <CODE>$loadState</CODE> a bitmask of non-fatal errors encountered when loading
+      the font.
     <LI>
       <CODE>$curcid </CODE>returns the fontname of the current font
     <LI>

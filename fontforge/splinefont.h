@@ -1077,10 +1077,19 @@ enum validation_state { vs_unknown = 0,
 	vs_flippedreferences=0x10,		/* special case of wrong direction */
 	vs_missingextrema=0x20,
 	vs_missingglyphnameingsub=0x40,
-	    /* Last few are postscript only */
+	    /* Next few are postscript only */
 	vs_toomanypoints=0x80,
 	vs_toomanyhints=0x100,
 	vs_badglyphname=0x200,
+	    /* Next few are only for fontlint */
+	vs_maxp_toomanypoints=0x400,
+	vs_maxp_toomanypaths=0x800,
+	vs_maxp_toomanycomppoints=0x1000,
+	vs_maxp_toomanycomppaths=0x2000,
+	vs_maxp_instrtoolong=0x4000,
+	vs_maxp_toomanyrefs=0x8000,
+	vs_maxp_refstoodeep=0x10000,
+	vs_maxp_prepfpgmtoolong=0x20000,
 
 	vs_last = vs_badglyphname,
 	vs_maskps = 0x3fe,
@@ -1376,6 +1385,16 @@ struct MATH {
 #endif
 
 enum backedup_state { bs_dontknow=0, bs_not=1, bs_backedup=2 };
+enum loadvalidation_state {
+	lvs_bad_ps_fontname    = 0x01,
+	lvs_bad_glyph_table    = 0x02,
+	lvs_bad_cff_table      = 0x04,
+	lvs_bad_metrics_table  = 0x08,
+	lvs_bad_cmap_table     = 0x10,
+	lvs_bad_bitmaps_table  = 0x20,
+	lvs_bad_gx_table       = 0x40,
+	lvs_bad_ot_table       = 0x80
+    };
 typedef struct splinefont {
     char *fontname, *fullname, *familyname, *weight;
     char *copyright;
@@ -1543,6 +1562,7 @@ typedef struct splinefont {
     void *python_temporary;
 #endif
     void *python_persistant;		/* If python this will hold a python object, if not python this will hold a string containing a pickled object. We do nothing with it (if not python) except save it back out unchanged */
+    enum loadvalidation_state loadvalidation_state;
 } SplineFont;
 
 /* I am going to simplify my life and not encourage intermediate designs */
@@ -2499,6 +2519,7 @@ extern void SFSetModTime(SplineFont *sf);
 extern void SFTimesFromFile(SplineFont *sf,FILE *);
 
 extern int SFHasInstructions(SplineFont *sf);
+extern int RefDepth(RefChar *ref);
 
 extern SplineChar *SCHasSubs(SplineChar *sc,uint32 tag);
 

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 1-Sep-2007 -->
+  <!-- AP: Last modified: 2-Sep-2007 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -1501,6 +1501,9 @@ pen = None;				# Finalize the pen. This tells FontForge
 	      present in the font.</TD>
 	  </TR>
 	  <TR>
+	    <TH COLSPAN=2>PostScript only</TH>
+	  </TR>
+	  <TR>
 	    <TD>0x80</TD>
 	    <TD>PostScript has a limit of 1500 points in a glyph.</TD>
 	  </TR>
@@ -1511,6 +1514,41 @@ pen = None;				# Finalize the pen. This tells FontForge
 	  <TR>
 	    <TD>0x200</TD>
 	    <TD>Invalid glyph name.</TD>
+	  </TR>
+	  <TR>
+	    <TH COLSPAN=2>TrueType only, errors in original file</TH>
+	  </TR>
+	  <TR>
+	    <TD>0x400</TD>
+	    <TD>More points in a glyph than allowed in 'maxp'</TD>
+	  </TR>
+	  <TR>
+	    <TD>0x800</TD>
+	    <TD>More paths in a glyph than allowed in 'maxp'</TD>
+	  </TR>
+	  <TR>
+	    <TD>0x1000</TD>
+	    <TD>More points in a composite glyph than allowed in 'maxp'</TD>
+	  </TR>
+	  <TR>
+	    <TD>0x2000</TD>
+	    <TD>More paths in a composite glyph than allowed in 'maxp'</TD>
+	  </TR>
+	  <TR>
+	    <TD>0x4000</TD>
+	    <TD>Instructions longer than allowed in 'maxp'</TD>
+	  </TR>
+	  <TR>
+	    <TD>0x8000</TD>
+	    <TD>More references in a glyph than allowed in 'maxp'</TD>
+	  </TR>
+	  <TR>
+	    <TD>0x10000</TD>
+	    <TD>References nested more deeply than allowed in 'maxp'</TD>
+	  </TR>
+	  <TR>
+	    <TD>0x20000</TD>
+	    <TD>'fpgm' or 'prep' tables longer than allowed in 'maxp'</TD>
 	  </TR>
 	</TABLE>
       </TD>
@@ -2223,6 +2261,46 @@ pen = None;				# Finalize the pen. This tells FontForge
     </TR>
     <TR>
       <TD><CODE>macstyle</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>loadState</CODE></TD>
+      <TD colspan=2>A bitmask indicating non-fatal errors found when loading the
+	font. (readonly)
+	<TABLE>
+	  <TR>
+	    <TD>0x01</TD>
+	    <TD>Bad PostScript entry in 'name' table</TD>
+	  </TR>
+	  <TR>
+	    <TD>0x02</TD>
+	    <TD>Bad 'glyf' or 'loca' table</TD>
+	  </TR>
+	  <TR>
+	    <TD>0x04</TD>
+	    <TD>Bad 'CFF ' table</TD>
+	  </TR>
+	  <TR>
+	    <TD>0x08</TD>
+	    <TD>Bad 'hhea', 'hmtx', 'vhea' or 'vmtx' table</TD>
+	  </TR>
+	  <TR>
+	    <TD>0x10</TD>
+	    <TD>Bad 'cmap' table</TD>
+	  </TR>
+	  <TR>
+	    <TD>0x20</TD>
+	    <TD>Bad 'EBLC', 'bloc', 'EBDT' or 'bdat' (embedded bitmap) table</TD>
+	  </TR>
+	  <TR>
+	    <TD>0x40</TD>
+	    <TD>Bad Apple GX advanced typography table</TD>
+	  </TR>
+	  <TR>
+	    <TD>0x80</TD>
+	    <TD>Bad OpenType advanced typography table</TD>
+	  </TR>
+	</TABLE>
+      </TD>
     </TR>
     <TR>
       <TD><CODE>maxp_FDEFs</CODE></TD>

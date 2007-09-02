@@ -8672,6 +8672,10 @@ static void handlename(Context *c,Val *val) {
 		if ( c->curfv==NULL ) ScriptError(c,"No current font");
 		val->type = v_int;
 		val->u.ival = c->curfv->sf->changed;
+	    } else if ( strcmp(name,"$loadState")==0 ) {
+		if ( c->curfv==NULL ) ScriptError(c,"No current font");
+		val->type = v_int;
+		val->u.ival = c->curfv->sf->loadvalidation_state;
 	    } else if ( strcmp(name,"$bitmaps")==0 ) {
 		SplineFont *sf;
 		BDFFont *bdf;
