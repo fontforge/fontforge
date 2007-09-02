@@ -102,10 +102,9 @@ static void user_error_fn(png_structp png_ptr, png_const_charp error_msg) {
 static void user_warning_fn(png_structp png_ptr, png_const_charp warning_msg) {
     fprintf(stderr,"%s\n", warning_msg);
 }
-   
-int GImageWritePng(GImage *gi, char *filename, int progressive) {
+
+int GImageWrite_Png(GImage *gi, FILE *fp, int progressive) {
     struct _GImage *base = gi->list_len==0?gi->u.image:gi->u.images[0];
-    FILE *fp;
     png_structp png_ptr;
     png_infop info_ptr;
     png_byte **rows;
@@ -115,28 +114,20 @@ int GImageWritePng(GImage *gi, char *filename, int progressive) {
 	if ( !loadpng())
 return( false );
 
-   /* open the file */
-   fp = fopen(filename, "wb");
-   if (!fp)
-return(false);
-
    png_ptr = _png_create_write_struct(PNG_LIBPNG_VER_STRING,
       (void *)NULL, user_error_fn, user_warning_fn);
 
    if (!png_ptr) {
-      fclose(fp);
 return(false);
    }
 
    info_ptr = _png_create_info_struct(png_ptr);
    if (!info_ptr) {
-      fclose(fp);
       _png_destroy_write_struct(&png_ptr,  (png_infopp)NULL);
 return(false);
    }
 
    if (setjmp(png_ptr->jmpbuf)) {
-      fclose(fp);
       _png_destroy_write_struct(&png_ptr,  (png_infopp)NULL);
 return(false);
    }
@@ -205,8 +196,23 @@ return(false);
     if ( info_ptr->palette!=NULL ) gfree(info_ptr->palette);
     _png_destroy_write_struct(&png_ptr, &info_ptr);
     gfree(rows);
-    fclose(fp);
 return( 1 );
+}
+
+int GImageWritePng(GImage *gi, char *filename, int progressive) {
+    FILE *fp;
+    int ret;
+
+    if ( libpng==NULL ) {
+	if ( !loadpng())
+return( false );
+    }
+    fp = fopen(filename, "wb");
+    if (!fp)
+return(false);
+    ret = GImageWrite_Png(gi,fp,progressive);
+    fclose(fp);
+return( ret );
 }
 #else
 #include <png.h>
@@ -228,37 +234,28 @@ static void user_error_fn(png_structp png_ptr, png_const_charp error_msg) {
 static void user_warning_fn(png_structp png_ptr, png_const_charp warning_msg) {
     fprintf(stderr,"%s\n", warning_msg);
 }
-   
-int GImageWritePng(GImage *gi, char *filename, int progressive) {
+
+int GImageWrite_Png(GImage *gi, FILE *fp, int progressive) {
     struct _GImage *base = gi->list_len==0?gi->u.image:gi->u.images[0];
-    FILE *fp;
     png_structp png_ptr;
     png_infop info_ptr;
     png_byte **rows;
     int i;
 
-   /* open the file */
-   fp = fopen(filename, "wb");
-   if (!fp)
-return(false);
-
    png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING,
       (void *)NULL, user_error_fn, user_warning_fn);
 
    if (!png_ptr) {
-      fclose(fp);
 return(false);
    }
 
    info_ptr = png_create_info_struct(png_ptr);
    if (!info_ptr) {
-      fclose(fp);
       png_destroy_write_struct(&png_ptr,  (png_infopp)NULL);
 return(false);
    }
 
    if (setjmp(png_ptr->jmpbuf)) {
-      fclose(fp);
       png_destroy_write_struct(&png_ptr,  (png_infopp)NULL);
 return(false);
    }
@@ -327,7 +324,18 @@ return(false);
     if ( info_ptr->palette!=NULL ) gfree(info_ptr->palette);
     png_destroy_write_struct(&png_ptr, &info_ptr);
     gfree(rows);
-    fclose(fp);
 return( 1 );
+}
+
+int GImageWritePng(GImage *gi, char *filename, int progressive) {
+    FILE *fp;
+
+   /* open the file */
+   fp = fopen(filename, "wb");
+   if (!fp)
+return(false);
+    ret = GImageWrite_Png(gi,fp,progressive);
+    fclose(fp);
+return( ret );
 }
 #endif

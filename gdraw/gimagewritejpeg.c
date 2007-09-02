@@ -185,26 +185,20 @@ return;
 }
 
 /* quality is a number between 0 and 100 */
-int GImageWriteJpeg(GImage *gi, char *filename, int quality, int progressive) {
+int GImageWrite_Jpeg(GImage *gi, FILE *outfile, int quality, int progressive) {
     struct _GImage *base = gi->list_len==0?gi->u.image:gi->u.images[0];
     struct jpeg_compress_struct cinfo;
     struct my_error_mgr jerr;
-    FILE * outfile;		/* target file */
     JSAMPROW row_pointer[1];	/* pointer to JSAMPLE row[s] */
 
     if ( libjpeg==NULL )
 	if ( !loadjpeg())
 return( 0 );
 
-  if ((outfile = fopen(filename, "wb")) == NULL) {
-    fprintf(stderr, "can't open %s\n", filename);
-return(0);
-  }
   cinfo.err = _jpeg_std_error(&jerr.pub);
   jerr.pub.error_exit = my_error_exit;
   if (setjmp(jerr.setjmp_buffer)) {
     _jpeg_destroy_compress(&cinfo);
-    fclose(outfile);
 return 0;
   }
   _jpeg_create_compress(&cinfo,JPEG_LIB_VERSION,(size_t) sizeof(struct jpeg_compress_struct));
@@ -230,10 +224,27 @@ return 0;
   }
   _jpeg_finish_compress(&cinfo);
   _jpeg_destroy_compress(&cinfo);
-  fclose(outfile);
   if ( cinfo.in_color_space != JCS_GRAYSCALE )
     gfree(row_pointer[0]);
 return( 1 );
+}
+
+int GImageWriteJpeg(GImage *gi, char *filename, int quality, int progressive) {
+    FILE * outfile;		/* target file */
+    int ret;
+
+    if ( libjpeg==NULL ) {
+	if ( !loadjpeg())
+return( 0 );
+    }
+
+  if ((outfile = fopen(filename, "wb")) == NULL) {
+    fprintf(stderr, "can't open %s\n", filename);
+return(0);
+  }
+  ret = GImageWrite_Jpeg(gi,outfile,quality,progressive);
+  fclose(outfile);
+return( ret );
 }
 #else
 #include <sys/types.h>
@@ -334,22 +345,16 @@ return;
 }
 
 /* quality is a number between 0 and 100 */
-int GImageWriteJpeg(GImage *gi, char *filename, int quality, int progressive) {
+int GImageWrite_Jpeg(GImage *gi, FILE *outfile, int quality, int progressive) {
     struct _GImage *base = gi->list_len==0?gi->u.image:gi->u.images[0];
     struct jpeg_compress_struct cinfo;
     struct my_error_mgr jerr;
-    FILE * outfile;		/* target file */
     JSAMPROW row_pointer[1];	/* pointer to JSAMPLE row[s] */
 
-  if ((outfile = fopen(filename, "wb")) == NULL) {
-    fprintf(stderr, "can't open %s\n", filename);
-return(0);
-  }
   cinfo.err = jpeg_std_error(&jerr.pub);
   jerr.pub.error_exit = my_error_exit;
   if (setjmp(jerr.setjmp_buffer)) {
     jpeg_destroy_compress(&cinfo);
-    fclose(outfile);
 return 0;
   }
   jpeg_CreateCompress(&cinfo,JPEG_LIB_VERSION,(size_t) sizeof(struct jpeg_compress_struct));
@@ -375,9 +380,21 @@ return 0;
   }
   jpeg_finish_compress(&cinfo);
   jpeg_destroy_compress(&cinfo);
-  fclose(outfile);
   if ( cinfo.in_color_space != JCS_GRAYSCALE )
     gfree(row_pointer[0]);
 return( 1 );
+}
+
+int GImageWriteJpeg(GImage *gi, char *filename, int quality, int progressive) {
+    FILE * outfile;		/* target file */
+    int ret;
+
+  if ((outfile = fopen(filename, "wb")) == NULL) {
+    fprintf(stderr, "can't open %s\n", filename);
+return(0);
+  }
+  ret = GImageWrite_Jpeg(gi,outfile,quality,progressive);
+  fclose(outfile);
+return( ret );
 }
 #endif
