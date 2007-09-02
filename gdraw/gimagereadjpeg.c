@@ -133,12 +133,11 @@ static void transferBufferToImage(struct jpegState *js,int ypos) {
     }
 }
 
-GImage *GImageReadJpeg(char *filename) {
+GImage *GImageRead_Jpeg(FILE *infile) {
     GImage *ret;
     struct _GImage *base;
     struct jpeg_decompress_struct cinfo;
     struct my_error_mgr jerr;
-    FILE * infile;		/* source file */
     JSAMPLE *rows[1];
     struct jpegState js;
     int ypos;
@@ -147,16 +146,10 @@ GImage *GImageReadJpeg(char *filename) {
 	if ( !loadjpeg())
 return( NULL );
 
-  if ((infile = fopen(filename, "rb")) == NULL) {
-    GDrawError( "can't open %s", filename);
-return( NULL );
-  }
-
   cinfo.err = _jpeg_std_error(&jerr.pub);
   jerr.pub.error_exit = my_error_exit;
   if (setjmp(jerr.setjmp_buffer)) {
     _jpeg_destroy_decompress(&cinfo);
-    fclose(infile);
 return( NULL );
   }
   
@@ -186,6 +179,23 @@ return( NULL );
   _jpeg_destroy_decompress(&cinfo);
   gfree(rows[0]);
 
+return( ret );
+}
+
+GImage *GImageReadJpeg(char *filename) {
+    GImage *ret;
+    FILE * infile;		/* source file */
+
+    if ( libjpeg==NULL )
+	if ( !loadjpeg())
+return( NULL );
+
+  if ((infile = fopen(filename, "rb")) == NULL) {
+    GDrawError( "can't open %s", filename);
+return( NULL );
+  }
+  ret = GImageRead_Jpeg(infile);
+  fclose(infile);
 return( ret );
 }
 #else
@@ -245,26 +255,20 @@ static void transferBufferToImage(struct jpegState *js,int ypos) {
     }
 }
 
-GImage *GImageReadJpeg(char *filename) {
+GImage *GImageReadJpeg(FILE *infile) {
     GImage *ret;
     struct _GImage *base;
     struct jpeg_decompress_struct cinfo;
     struct my_error_mgr jerr;
-    FILE * infile;		/* source file */
     JSAMPLE *rows[1];
     struct jpegState js;
     int ypos;
 
-  if ((infile = fopen(filename, "rb")) == NULL) {
-    GDrawError( "can't open %s", filename);
-return( NULL );
-  }
 
   cinfo.err = jpeg_std_error(&jerr.pub);
   jerr.pub.error_exit = my_error_exit;
   if (setjmp(jerr.setjmp_buffer)) {
     jpeg_destroy_decompress(&cinfo);
-    fclose(infile);
 return( NULL );
   }
   
@@ -294,6 +298,19 @@ return( NULL );
   jpeg_destroy_decompress(&cinfo);
   gfree(rows[0]);
 
+return( ret );
+}
+
+GImage *GImageReadJpeg(char *filename) {
+    GImage *ret;
+    FILE * infile;		/* source file */
+
+  if ((infile = fopen(filename, "rb")) == NULL) {
+    GDrawError( "can't open %s", filename);
+return( NULL );
+  }
+  ret = GImageRead_Jpeg(infile);
+  fclose(infile);
 return( ret );
 }
 #endif

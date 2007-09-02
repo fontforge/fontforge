@@ -39,9 +39,8 @@ static void putl(short s, FILE *file) {
     putc((s>>24)&0xff,file);
 }
 
-int GImageWriteBmp(GImage *gi, char *filename) {
+int GImageWrite_Bmp(GImage *gi, FILE *file) {
     struct _GImage *base = gi->list_len==0?gi->u.image:gi->u.images[0];
-    FILE *file;
     int headersize=40, preheadersize=14;
     int bitsperpixel, clutsize, ncol;
     int row, col, i;
@@ -63,8 +62,6 @@ int GImageWriteBmp(GImage *gi, char *filename) {
 	ncol = 0;
     }
 
-    if ((file=fopen(filename,"wb"))==NULL )
-return(false);
     putc('B',file);
     putc('M',file);
     putl(0,file);				/* filesize */
@@ -134,6 +131,16 @@ return(false);
     }
     fflush(file);
     i = ferror(file);
-    fclose(file);
 return( !i );
+}
+
+int GImageWriteBmp(GImage *gi, char *filename) {
+    FILE *file;
+    int ret;
+
+    if ((file=fopen(filename,"wb"))==NULL )
+return(false);
+    ret = GImageWrite_Bmp(gi,file);
+    fclose(file);
+return( ret );
 }

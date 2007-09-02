@@ -315,12 +315,78 @@ static int svg_sc_any(SplineChar *sc) {
 return( any );
 }
 
+#ifdef FONTFORGE_CONFIG_TYPE3
+static int base64tab[] = {
+    'A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z',
+    'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z',
+    '0','1','2','3','4','5','6','7','8','9','+', '/'
+};
+
+static void DataURI_ImageDump(FILE *file,struct gimage *img) {
+    char *mimetype=NULL;
+    FILE *imgf;
+    int done = false;
+    int threechars[3], fourchars[4], i, ch, ch_on_line;
+
+    /* Technically we can only put a file into an URI if the whole thing is */
+    /*  less than 1024 bytes long. But I shall ignore that issue */
+    imgf = tmpfile();
+#ifndef _NO_LIBPNG
+    done = GImageWrite_Png(img,imgf,false);
+    mimetype = "image/png";
+#elif !defined(_NO_LIBJPEG)
+    done = GImageWrite_Jpeg(img,imgf,78,false);
+    mimetype = "image/jpeg";
+#endif
+    if ( !done ) {
+	GImageWrite_Bmp(img,imgf);
+	mimetype = "image/bmp";
+    }
+
+    fprintf( file,"%s;base64,", mimetype );
+    rewind(imgf);
+
+    /* Now do base64 output conversion */
+
+    fclose(imgf);
+    ch = getc(imgf);
+    ch_on_line = 0;
+    while ( ch!=EOF ) {
+	threechars[0] = threechars[1] = threechars[2] = 0;
+	for ( i=0; i<3 && ch!=EOF ; ++i ) {
+	    threechars[i] = ch;
+	    ch = getc(imgf);
+	}
+	if ( i>0 ) {
+	    fourchars[0] = base64tab[threechars[0]>>2];
+	    fourchars[1] = base64tab[((threechars[0]&0x3)<<4)|(threechars[1]>>4)];
+	    fourchars[2] = base64tab[((threechars[1]&0xf)<<4)|(threechars[2]>>6)];
+	    fourchars[3] = base64tab[threechars[2]&0x3f];
+	    if ( i<3 )
+		fourchars[3] = '=';
+	    if ( i<2 )
+		fourchars[2] = '=';
+	    putc(fourchars[0],file);
+	    putc(fourchars[1],file);
+	    putc(fourchars[2],file);
+	    putc(fourchars[3],file);
+	    ch_on_line += 4;
+	    if ( ch_on_line>=72 ) {
+		putc('\n',file);
+		ch_on_line = 0;
+	    }
+	}
+    }
+}
+#endif
+
 static void svg_scpathdump(FILE *file, SplineChar *sc,char *endpath) {
     RefChar *ref;
     int lineout;
 #ifdef FONTFORGE_CONFIG_TYPE3
     int i,j;
     SplineSet *transed;
+    ImageList *images;
 #endif
 
     if ( !svg_sc_any(sc) ) {
@@ -383,6 +449,18 @@ static void svg_scpathdump(FILE *file, SplineChar *sc,char *endpath) {
 			SplinePointListsFree(transed);
 		    fprintf(file, "   </g>\n" );
 		}
+	    }
+	    for ( images=sc->layers[i].images ; images!=NULL; images = images->next ) {
+		struct _GImage *base;
+		fprintf(file, "      <image\n" );
+		base = images->image->list_len==0 ? images->image->u.image :
+			images->image->u.images[0];
+		fprintf(file, "\twidth=\"%g\"\n\theight=\"%g\"\n",
+			base->width*images->xscale, base->height*images->yscale );
+		fprintf(file, "\tx=\"%g\"\n\ty=\"%g\"\n", images->xoff, images->yoff );
+		fprintf(file, "xlink:href=\"data:" );
+		DataURI_ImageDump(file,images->image);
+		fprintf(file, "\">\n" );
 	    }
 	}
 #endif
@@ -1821,6 +1899,157 @@ static int xmlParseColor(xmlChar *name,uint32 *color) {
 return( doit );
 }
 
+static int base64ch(int ch) {
+    if ( ch>='A' && ch<='Z' )
+return( ch-'A' );
+    if ( ch>='a' && ch<='z' )
+return( ch-'a'+26 );
+    if ( ch>='0' && ch<='9' )
+return( ch-'0'+52 );
+    if ( ch=='+' )
+return( 62 );
+    if ( ch=='/' )
+return( 63 );
+    if ( ch=='=' )
+return( 64 );
+
+return( -1 );
+}
+
+static void DecodeBase64ToFile(FILE *tmp,char *str) {
+    char fourchars[4];
+    int i;
+
+    while ( *str ) {
+	fourchars[0] = fourchars[1] = fourchars[2] = fourchars[3] = 64;
+	for ( i=0; i<4; ++i ) {
+	    while ( isspace(*str) || base64ch(*str)==-1 ) ++str;
+	    if ( *str=='\0' )
+	break;
+	    fourchars[i] = base64ch(*str++);
+	}
+	if ( fourchars[0]<64 && fourchars[1]<64 ) {
+	    putc((fourchars[0]<<2)|(fourchars[1]>>4), tmp);
+	    if ( fourchars[2]<64 ) {
+		putc((fourchars[1]<<4)|(fourchars[2]>>2), tmp);
+		if ( fourchars[3]<64 )
+		    putc((fourchars[2]<<6)|fourchars[3], tmp);
+	    }
+	}
+    }
+}
+
+static GImage *GImageFromDataURI(char *uri) {
+    char *mimetype;
+    int is_base64=false, ch;
+    FILE *tmp;
+    GImage *img;
+
+    if ( uri==NULL )
+return( NULL );
+    if ( strncmp(uri,"data:",5)!=0 )
+return( NULL );
+    uri += 5;
+
+    mimetype = uri;
+    while ( *uri!=',' && *uri!=';' && *uri!='\0' ) ++uri;
+    if ( *uri=='\0' )
+return( NULL );
+    ch = *uri;
+    *uri='\0';
+    if ( ch==';' && strncmp(uri+1,"base64,",7)==0 ) {
+	is_base64=true;
+	uri += 6;
+	ch = ',';
+    } else if ( ch==';' )		/* Can't deal with other encoding methods */
+return( NULL );
+
+    ++uri;
+    if ( strcmp(mimetype,"image/png")==0 ||
+	    strcmp(mimetype,"image/jpeg")==0 ||
+	    strcmp(mimetype,"image/bmp")==0 )
+	/* These we support (if we've got the libraries) */;
+    else {
+	LogError("Unsupported mime type in data URI: %s\n", mimetype );
+return( NULL );
+    }
+    tmp = tmpfile();
+    if ( is_base64 )
+	DecodeBase64ToFile(tmp,uri);
+    else {
+	while ( *uri ) {
+	    putc(*uri,tmp);
+	    ++uri;
+	}
+    }
+    rewind(tmp);
+    if ( strcmp(mimetype,"image/png")==0 )
+	img = GImageRead_Png(tmp);
+    else if ( strcmp(mimetype,"image/jpeg")==0 )
+	img = GImageRead_Jpeg(tmp);
+    else if ( strcmp(mimetype,"image/bmp")==0 )
+	img = GImageRead_Bmp(tmp);
+    else
+	img = NULL;
+    fclose(tmp);
+return( img );
+}
+
+static Entity *SVGParseImage(xmlNodePtr svg) {
+    double x=0,y=0,width=1,height=1;
+    GImage *img;
+    struct _GImage *base;
+    Entity *ent;
+    xmlChar *val;
+
+    val = _xmlGetProp(svg,(xmlChar *) "x");
+    if ( val!=NULL ) {
+	x = strtod(val,NULL);
+	free(val);
+    }
+    val = _xmlGetProp(svg,(xmlChar *) "y");
+    if ( val!=NULL ) {
+	y = strtod(val,NULL);
+	free(val);
+    }
+
+    val = _xmlGetProp(svg,(xmlChar *) "width");
+    if ( val!=NULL ) {
+	width = strtod(val,NULL);
+	free(val);
+    }
+    val = _xmlGetProp(svg,(xmlChar *) "height");
+    if ( val!=NULL ) {
+	height = strtod(val,NULL);
+	free(val);
+    }
+
+    val = _xmlGetProp(svg,(xmlChar *) /*"xlink:href"*/ "href");
+    if ( val==NULL )
+return( NULL );
+    if ( strncmp(val,"data:",5)!=0 ) {
+	LogError("FontForge only supports embedded images in data: URIs\n");
+	free(val);
+return( NULL );		/* I can only handle data URIs */
+    }
+    img = GImageFromDataURI(val);
+    free(val);
+    if ( img==NULL )
+return( NULL );
+    base = img->list_len==0 ? img->u.image : img->u.images[0];
+
+    ent = chunkalloc(sizeof(Entity));
+    ent->type = et_image;
+    ent->u.image.image = img;
+    ent->u.image.transform[1] = ent->u.image.transform[2] = 0;
+    ent->u.image.transform[0] = width/base->width;
+    ent->u.image.transform[3] = height/base->height;
+    ent->u.image.transform[4] = x;
+    ent->u.image.transform[5] = y;
+    ent->u.image.col = 0xffffffff;
+return( ent );
+}
+
 static Entity *EntityCreate(SplinePointList *head,struct svg_state *state) {
     Entity *ent = gcalloc(1,sizeof(Entity));
     ent->type = et_splines;
@@ -1982,6 +2211,8 @@ return( NULL );
 	head = SVGParsePoly(svg,0);		/* points */
     } else if ( _xmlStrcmp(svg->name,(xmlChar *) "polygon")==0 ) {
 	head = SVGParsePoly(svg,1);		/* points */
+    } else if ( _xmlStrcmp(svg->name,(xmlChar *) "image")==0 ) {
+return( SVGParseImage(svg));
     } else
 return( NULL );
     if ( head==NULL )
@@ -2644,9 +2875,11 @@ static int EntFindOrder(Entity *ent) {
     int ret;
 
     while ( ent!=NULL ) {
-	ret = SPLFindOrder(ent->u.splines.splines);
-	if ( ret!=-1 )
+	if ( ent->type == et_splines ) {
+	    ret = SPLFindOrder(ent->u.splines.splines);
+	    if ( ret!=-1 )
 return( ret );
+	}
 	ent = ent->next;
     }
 return( -1 );    
@@ -2711,7 +2944,8 @@ static void SPLSetOrder(SplineSet *ss,int order2) {
 
 static void EntSetOrder(Entity *ent,int order2) {
     while ( ent!=NULL ) {
-	SPLSetOrder(ent->u.splines.splines,order2);
+	if ( ent->type == et_splines )
+	    SPLSetOrder(ent->u.splines.splines,order2);
 	ent = ent->next;
     }
 }
