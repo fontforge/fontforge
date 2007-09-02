@@ -250,6 +250,56 @@ static int PyFF_cant_set(PyFF_Font *self,PyObject *value, void *closure) {
 return( 0 );
 }
 
+static uint32 StrToTag(char *tag_name, int *was_mac) {
+    uint8 foo[4];
+    int feat, set;
+
+    if ( tag_name==NULL ) {
+	PyErr_Format(PyExc_TypeError, "OpenType tags must be represented strings" );
+return( 0xffffffff );
+    }
+
+    if ( was_mac!=NULL && sscanf(tag_name,"<%d,%d>", &feat, &set )==2 ) {
+	*was_mac = true;
+return( (feat<<16) | set );
+    }
+
+    if ( was_mac ) *was_mac = false;
+    foo[0] = foo[1] = foo[2] = foo[3] = ' ';
+    if ( *tag_name!='\0' ) {
+	foo[0] = tag_name[0];
+	if ( tag_name[1]!='\0' ) {
+	    foo[1] = tag_name[1];
+	    if ( tag_name[2]!='\0' ) {
+		foo[2] = tag_name[2];
+		if ( tag_name[3]!='\0' ) {
+		    foo[3] = tag_name[3];
+		    if ( tag_name[4]!='\0' ) {
+			PyErr_Format(PyExc_TypeError, "OpenType tags are limited to 4 characters: %s", tag_name);
+return( 0xffffffff );
+		    }
+		}
+	    }
+	}
+    }
+return( (foo[0]<<24) | (foo[1]<<16) | (foo[2]<<8) | foo[3] );
+}
+
+static PyObject *TagToPyString(uint32 tag,int ismac) {
+    char foo[30];
+
+    if ( ismac ) {
+	sprintf( foo,"<%d,%d>", tag>>16, tag&0xffff );
+    } else {
+	foo[0] = tag>>24;
+	foo[1] = tag>>16;
+	foo[2] = tag>>8;
+	foo[3] = tag;
+	foo[4] = '\0';
+    }
+return( PyString_FromString(foo));
+}
+
 /* ************************************************************************** */
 /* FontForge methods */
 /* ************************************************************************** */
@@ -4114,6 +4164,13 @@ return( -1 );
 return( 0 );
 }
 
+static PyObject *PyFF_Glyph_get_encoding(PyFF_Glyph *self,void *closure) {
+    SplineChar *sc = self->sc;
+    EncMap *map = sc->parent->fv->map;
+
+return( Py_BuildValue("i", map->backmap[sc->orig_pos] ));
+}
+
 static PyObject *PyFF_Glyph_get_unicode(PyFF_Glyph *self,void *closure) {
 
 return( Py_BuildValue("i", self->sc->unicodeenc ));
@@ -4705,6 +4762,12 @@ return( -1 );
 return( 0 );
 }
 
+static PyObject *PyFF_Glyph_get_script(PyFF_Glyph *self,void *closure) {
+    uint32 script = SCScriptFromUnicode(self->sc);
+
+return( TagToPyString(script, false ));
+}
+
 static PyObject *PyFF_Glyph_get_validation_state(PyFF_Glyph *self,void *closure) {
 return( Py_BuildValue("i", self->sc->validation_state ));
 }
@@ -4728,12 +4791,15 @@ static PyGetSetDef PyFF_Glyph_getset[] = {
     {"unicode",
 	 (getter)PyFF_Glyph_get_unicode, (setter)PyFF_Glyph_set_unicode,
 	 "Unicode code point for this glyph, or -1", NULL},
+    {"encoding",
+	 (getter)PyFF_Glyph_get_encoding, (setter)PyFF_cant_set,
+	 "Returns the glyph's encoding in the current font (readonly)", NULL},
     {"foreground",
 	 (getter)PyFF_Glyph_get_foreground, (setter)PyFF_Glyph_set_foreground,
 	 "Returns the foreground layer of the glyph", NULL},
     {"background",
 	 (getter)PyFF_Glyph_get_background, (setter)PyFF_Glyph_set_background,
-	 "Returns the foreground layer of the glyph", NULL},
+	 "Returns the background layer of the glyph", NULL},
     {"references",
 	 (getter)PyFF_Glyph_get_references, (setter)PyFF_Glyph_set_references,
 	 "A tuple of all references in the glyph", NULL},
@@ -4746,6 +4812,9 @@ static PyGetSetDef PyFF_Glyph_getset[] = {
     {"glyphclass",
 	 (getter)PyFF_Glyph_get_glyphclass, (setter)PyFF_Glyph_set_glyphclass,
 	 "glyph class", NULL},
+    {"script",
+	 (getter)PyFF_Glyph_get_script, (setter)PyFF_cant_set,
+	 "The OpenType script containing this glyph (readonly)", NULL},
     {"texheight",
 	 (getter)PyFF_Glyph_get_texheight, (setter)PyFF_Glyph_set_texheight,
 	 "TeX glyph height", NULL},
@@ -4763,7 +4832,7 @@ static PyGetSetDef PyFF_Glyph_getset[] = {
 	 "Flag indicating whether this glyph has changed", NULL},
     {"originalgid",
 	 (getter)PyFF_Glyph_get_originalgid, (setter)PyFF_cant_set,
-	 "Original GID", NULL},
+	 "Original GID (readonly)", NULL},
     {"width",
 	 (getter)PyFF_Glyph_get_width, (setter)PyFF_Glyph_set_width,
 	 "Glyph's advance width", NULL},
@@ -4778,7 +4847,7 @@ static PyGetSetDef PyFF_Glyph_getset[] = {
 	 "Glyph's vertical advance width", NULL},
     {"font",
 	 (getter)PyFF_Glyph_get_font, (setter)PyFF_cant_set,
-	 "Font containing the glyph", NULL},
+	 "Font containing the glyph (readonly)", NULL},
     {"hhints",
 	 (getter)PyFF_Glyph_get_hhints, (setter)PyFF_Glyph_set_hhints,
 	 "The horizontal hints of the glyph as a tuple, one entry per hint. Each hint is itself a tuple containing the start location and width of the hint", NULL},
@@ -4787,7 +4856,7 @@ static PyGetSetDef PyFF_Glyph_getset[] = {
 	 "The vertical hints of the glyph as a tuple, one entry per hint. Each hint is itself a tuple containing the start location and width of the hint", NULL},
     {"validation_state",
 	 (getter)PyFF_Glyph_get_validation_state, (setter)PyFF_cant_set,
-	 "glyph's validation state", NULL},
+	 "glyph's validation state (readonly)", NULL},
     {NULL}  /* Sentinel */
 };
 
@@ -6638,6 +6707,8 @@ static PyObject *fontiter_iternextkey(fontiterobject *di) {
 	if ( sc!=NULL )
 return( PySC_From_SC_I( sc ) );
     } else if ( !di->byselection ) {
+    } else switch ( di->byselection ) {
+      case 0: {
 	SplineFont *sf = di->sf;
 
 	if (sf == NULL)
@@ -6648,7 +6719,17 @@ return NULL;
 return( Py_BuildValue("s",sf->glyphs[di->pos++]->name) );
 	    ++di->pos;
 	}
-    } else if ( di->byselection==2 ) {
+      break;}
+      case 1: {		/* Encodings of selected glyphs (in encoding order) */
+	FontView *fv = di->fv;
+	int enccount = fv->map->enccount;
+	while ( di->pos < enccount ) {
+	    if ( fv->selected[di->pos] )
+return( Py_BuildValue("i",di->pos++ ) );
+	    ++di->pos;
+	}
+      break;}
+      case 2: {		/* Selected glyphs in encoding order */
 	int gid;
 	FontView *fv = di->fv;
 	int enccount = fv->map->enccount;
@@ -6660,14 +6741,30 @@ return( PySC_From_SC_I( fv->sf->glyphs[gid] ) );
 	    }
 	    ++di->pos;
 	}
-    } else {
+      break;}
+      case 3: {		/* All glyphs in GID order */
+	FontView *fv = di->fv;
+	int glyphcount = fv->sf->glyphcnt;
+	while ( di->pos < glyphcount ) {
+	    if ( SCWorthOutputting(fv->sf->glyphs[di->pos]) ) {
+return( PySC_From_SC_I( fv->sf->glyphs[di->pos++] ) );
+	    }
+	    ++di->pos;
+	}
+      break;}
+      case 4: {		/* All glyphs in encoding order */
+	int gid;
 	FontView *fv = di->fv;
 	int enccount = fv->map->enccount;
 	while ( di->pos < enccount ) {
-	    if ( fv->selected[di->pos] )
-return( Py_BuildValue("i",di->pos++ ) );
+	    if ( (gid=fv->map->map[di->pos])!=-1 &&
+		    SCWorthOutputting(fv->sf->glyphs[gid]) ) {
+		++di->pos;
+return( PySC_From_SC_I( fv->sf->glyphs[gid] ) );
+	    }
 	    ++di->pos;
 	}
+      break;}
     }
 
 return NULL;
@@ -8138,13 +8235,13 @@ static PyGetSetDef PyFF_Font_getset[] = {
 	 "A tuple of sizes of all bitmaps associated with the font", NULL},
     {"gpos_lookups",
 	 (getter)PyFF_Font_get_gpos_lookups, (setter)PyFF_cant_set,
-	 "The names of all lookups in the font's GPOS table", NULL},
+	 "The names of all lookups in the font's GPOS table (readonly)", NULL},
     {"gsub_lookups",
 	 (getter)PyFF_Font_get_gsub_lookups, (setter)PyFF_cant_set,
-	 "The names of all lookups in the font's GSUB table", NULL},
+	 "The names of all lookups in the font's GSUB table (readonly)", NULL},
     {"private",
 	 (getter)PyFF_Font_get_private, (setter)PyFF_cant_set,
-	 "The font's PostScript private dictionary", NULL},
+	 "The font's PostScript private dictionary (readonly)", NULL},
     {"selection",
 	 (getter)PyFF_Font_get_selection, (setter)PyFF_Font_set_selection,
 	 "The font's PostScript private dictionary", NULL},
@@ -8153,10 +8250,10 @@ static PyGetSetDef PyFF_Font_getset[] = {
 	 "The font's TrueType cvt table", NULL},
     {"path",
 	 (getter)PyFF_Font_get_path, (setter)PyFF_cant_set,
-	 "filename of the original font file loaded", NULL},
+	 "filename of the original font file loaded (readonly)", NULL},
     {"sfd_path",
 	 (getter)PyFF_Font_get_sfd_path, (setter)PyFF_cant_set,
-	 "filename of the sfd file containing this font (if any)", NULL},
+	 "filename of the sfd file containing this font (if any) (readonly)", NULL},
     {"fontname",
 	 (getter)PyFF_Font_get_fontname, (setter)PyFF_Font_set_fontname,
 	 "font name", NULL},
@@ -8189,10 +8286,10 @@ static PyGetSetDef PyFF_Font_getset[] = {
 	 "CID Ordering", NULL},
     {"cidsubfontcnt",
 	 (getter)PyFF_Font_get_cidsubfontcnt, (setter)PyFF_cant_set,
-	 "The number of sub fonts that make up a CID keyed font", NULL},
+	 "The number of sub fonts that make up a CID keyed font (readonly)", NULL},
     {"cidsubfontnames",
 	 (getter)PyFF_Font_get_cidsubfontnames, (setter)PyFF_cant_set,
-	 "The names of all the sub fonts that make up a CID keyed font", NULL},
+	 "The names of all the sub fonts that make up a CID keyed font (readonly)", NULL},
     {"italicangle",
 	 (getter)PyFF_Font_get_italicangle, (setter)PyFF_Font_set_italicangle,
 	 "The Italic angle (skewedness) of the font", NULL},
@@ -8381,7 +8478,7 @@ static PyGetSetDef PyFF_Font_getset[] = {
 	 "Flag indicating whether the font contains quadratic splines (truetype) or cubic (postscript)", NULL},
     {"multilayer",
 	 (getter)PyFF_Font_get_multilayer, (setter)PyFF_cant_set,
-	 "Flag indicating whether the font is multilayered (type3) or not", NULL},
+	 "Flag indicating whether the font is multilayered (type3) or not (readonly)", NULL},
     {"strokedfont",
 	 (getter)PyFF_Font_get_strokedfont, (setter)PyFF_Font_set_strokedfont,
 	 "Flag indicating whether the font is a stroked font or not", NULL},
@@ -8397,56 +8494,6 @@ static PyGetSetDef PyFF_Font_getset[] = {
 /* ************************************************************************** */
 /* Font Methods */
 /* ************************************************************************** */
-
-static uint32 StrToTag(char *tag_name, int *was_mac) {
-    uint8 foo[4];
-    int feat, set;
-
-    if ( tag_name==NULL ) {
-	PyErr_Format(PyExc_TypeError, "OpenType tags must be represented strings" );
-return( 0xffffffff );
-    }
-
-    if ( was_mac!=NULL && sscanf(tag_name,"<%d,%d>", &feat, &set )==2 ) {
-	*was_mac = true;
-return( (feat<<16) | set );
-    }
-
-    if ( was_mac ) *was_mac = false;
-    foo[0] = foo[1] = foo[2] = foo[3] = ' ';
-    if ( *tag_name!='\0' ) {
-	foo[0] = tag_name[0];
-	if ( tag_name[1]!='\0' ) {
-	    foo[1] = tag_name[1];
-	    if ( tag_name[2]!='\0' ) {
-		foo[2] = tag_name[2];
-		if ( tag_name[3]!='\0' ) {
-		    foo[3] = tag_name[3];
-		    if ( tag_name[4]!='\0' ) {
-			PyErr_Format(PyExc_TypeError, "OpenType tags are limited to 4 characters: %s", tag_name);
-return( 0xffffffff );
-		    }
-		}
-	    }
-	}
-    }
-return( (foo[0]<<24) | (foo[1]<<16) | (foo[2]<<8) | foo[3] );
-}
-
-static PyObject *TagToPyString(uint32 tag,int ismac) {
-    char foo[30];
-
-    if ( ismac ) {
-	sprintf( foo,"<%d,%d>", tag>>16, tag&0xffff );
-    } else {
-	foo[0] = tag>>24;
-	foo[1] = tag>>16;
-	foo[2] = tag>>8;
-	foo[3] = tag;
-	foo[4] = '\0';
-    }
-return( PyString_FromString(foo));
-}
 		    
 static PyObject *PyFFFont_GetTableData(PyObject *self, PyObject *args) {
     char *table_name;
@@ -9554,6 +9601,25 @@ return( NULL );
 return( fontiter_New( self,false,SVFromContour(fv,srch_ss,err,sv_reverse|sv_flips)) );
 }
 
+static PyObject *PyFFFont_glyphs(PyObject *self, PyObject *args) {
+    char *type = "GID";
+    int index;
+
+    if ( !PyArg_ParseTuple(args,"|s", type ))
+return( NULL );
+
+    if ( strcasecmp(type,"GID")==0 )
+	index = 3;
+    else if ( strcasecmp(type,"encoding")==0 )
+	index = 4;
+    else {
+	PyErr_Format(PyExc_TypeError, "Unexpected type");
+return( NULL );
+    }
+
+return( fontiter_New( self,index,NULL) );
+}
+
 static PyObject *PyFFFont_Save(PyObject *self, PyObject *args) {
     char *filename;
     char *locfilename = NULL, *pt;
@@ -10340,6 +10406,7 @@ static PyMethodDef PyFF_Font_methods[] = {
     { "removeLookupSubtable", PyFFFont_removeLookupSubtable, METH_VARARGS, "Removes the named lookup subtable" },
     { "replaceAll", PyFFFont_replaceAll, METH_VARARGS, "Searches for a pattern in the font and replaces it with another everywhere it was found" },
     { "find", PyFFFont_find, METH_VARARGS, "Searches for a pattern in the font and returns an iterator which produces glyphs with that pattern" },
+    { "glyphs", PyFFFont_glyphs, METH_VARARGS, "Returns an iterator over all glyphs" },
 /* Selection based */
     { "clear", PyFFFont_clear, METH_NOARGS, "Clears all selected glyphs" },
     { "cut", PyFFFont_cut, METH_NOARGS, "Cuts all selected glyphs" },
