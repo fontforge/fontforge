@@ -276,6 +276,15 @@ struct ttfinfo {
     int gasp_cnt;
     struct gasp *gasp;
     struct MATH *math;
+    /* Set of errors we found when loading the font */
+    unsigned int bad_ps_fontname: 1;
+    unsigned int bad_glyph_data: 1;
+    unsigned int bad_cff: 1;
+    unsigned int bad_metrics: 1;
+    unsigned int bad_cmap: 1;
+    unsigned int bad_embedded_bitmap: 1;
+    unsigned int bad_gx: 1;
+    unsigned int bad_ot: 1;
 };
 
 #define MAX_TAB	48
@@ -387,7 +396,6 @@ struct maxp {
     uint16 maxcomponentdepth;
 	/* Apple docs say: 0 (if no composits), maximum value 1 (one level of composit) */
 	/* OpenType docs say: 1 (if no composits), any depth allowed */
-    uint16 mbz;		/* pad out to a 4byte boundary */
 };
 
 struct nametab {

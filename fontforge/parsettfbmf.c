@@ -106,6 +106,7 @@ return;
 	/* Do nothing here */
 	if ( metrics==NULL ) {
 	    LogError( "Unexpected use of bitmap format 5, no metrics are appearant\n" );
+	    info->bad_embedded_bitmap = true;
 	    /*fseek(ttf,len,SEEK_CUR);*/
 return;
 	}
@@ -114,6 +115,7 @@ return;
 	/* format 4 is compressed apple and I'm not supporting it (Nor is MS) */
 	if ( imageformat==3 && !info->obscomplain ) {
 	    LogError( "This font contains bitmaps in the obsolete format 3 (And I can't read them)\n" );
+	    info->bad_embedded_bitmap = true;
 	    info->obscomplain = true;
 	} else if ( imageformat==4 ) {
 	    /* Apple doesn't describe it (fully) in their spec. */
@@ -123,6 +125,7 @@ return;
 	    info->cmpcomplain = true;
 	} else if ( !info->unkcomplain ) {
 	    LogError( "This font contains bitmaps in a format %d that I've never heard of\n", imageformat );
+	    info->bad_embedded_bitmap = true;
 	    info->unkcomplain = true;
 	}
 return;
@@ -247,7 +250,7 @@ return;
 #endif
 }
 
-static void BdfCRefFixup(BDFFont *bdf, int gid, int *warned) {
+static void BdfCRefFixup(BDFFont *bdf, int gid, int *warned, struct ttfinfo *info) {
     BDFChar *me = bdf->glyphs[gid];
     struct refbdfc *refs = (struct refbdfc *) (me->bitmap);
     int i;
@@ -259,12 +262,13 @@ static void BdfCRefFixup(BDFFont *bdf, int gid, int *warned) {
 	BDFChar *bdfc = rgid<bdf->glyphcnt ? bdf->glyphs[rgid] : NULL;
 	if ( bdfc!=NULL ) {
 	    if ( bdfc->isreference )
-		BdfCRefFixup(bdf,rgid, warned);
+		BdfCRefFixup(bdf,rgid, warned, info);
 	    BCPasteInto(me,bdfc,refs[i].xoff,refs[i].yoff, false, false);
 	} else if ( !*warned ) {
 	    /* Glyphs aren't named yet */
 	    LogError("Glyph %d in bitmap strike %d pixels refers to a missing glyph (%d)",
 		    gid, bdf->pixelsize, rgid );
+	    info->bad_embedded_bitmap = true;
 	    *warned = true;
 	}
     }
@@ -272,13 +276,13 @@ static void BdfCRefFixup(BDFFont *bdf, int gid, int *warned) {
     free(refs);
 }
 
-static void BdfRefFixup(BDFFont *bdf) {
+static void BdfRefFixup(BDFFont *bdf, struct ttfinfo *info) {
     int i;
     int warned = false;
 
     for ( i=0; i<bdf->glyphcnt; ++i )
 	if ( bdf->glyphs[i]!=NULL && bdf->glyphs[i]->isreference )
-	    BdfCRefFixup(bdf,i, &warned);
+	    BdfCRefFixup(bdf,i, &warned, info);
 }
 
 static void BdfCleanup(BDFFont *bdf,struct ttfinfo  *info) {
@@ -331,6 +335,7 @@ static void readttfbitmapfont(FILE *ttf,struct ttfinfo *info,
 	if ( last<first ) {
 	    LogError( "Bad format of subtable %d (of %d) in bloc/EBLC of strike with pixelsize=%d. First=%d, last=%d.\n",
 		    j, head->numIndexSubTables, bdf->pixelsize, first, last );
+	    info->bad_embedded_bitmap = true;
     continue;
 	}
 	loc = ftell(ttf);
@@ -421,11 +426,12 @@ static void readttfbitmapfont(FILE *ttf,struct ttfinfo *info,
 	  break;
 	  default:
 	    LogError("Didn't understand index format: %d\n", indexformat );
+	    info->bad_embedded_bitmap = true;
 	  break;
 	}
 	fseek(ttf,loc,SEEK_SET);
     }
-    BdfRefFixup(bdf);
+    BdfRefFixup(bdf,info);
     BdfCleanup(bdf,info);
 }
 

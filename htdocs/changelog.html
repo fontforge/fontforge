@@ -47,6 +47,22 @@
   </BLOCKQUOTE>
   <UL>
     <LI>
+      ??-Sept-2007
+      <UL>
+	<LI>
+	  Oops. When changing the weight of a glyph and retaining the counter
+	  sizes, fontforge would push two entries onto the undo stack rather
+	  than one. (So the user would have to do Edit->Undo twice to get back
+	  to where s/he started from).
+	<LI>
+	  Added two new python methods to font. <UL><LI>find(contour) will search the
+	  font for all glyphs containing contour and return an interator on
+	  that set.
+	  <LI>replaceAll(srch,rpl) Will search for the "srch" contour/layer in
+	  the font and replace it (each time it occurs) with the "rpl" contour/layer.
+	  </UL>
+      </UL>
+    <LI>
       31-August-2007
       <UL>
 	<LI>

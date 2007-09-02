@@ -7589,6 +7589,7 @@ ff_gs_int(descent)
 ff_gs_int(vertical_origin)
 ff_gs_int(uniqueid)
 ff_gs_int(supplement)
+ff_gs_int(loadvalidation_state)
 ff_gs_int2(macstyle)
 ff_gs_int2(os2_version)
 ff_gs_int2(gasp_version)
@@ -8323,6 +8324,9 @@ static PyGetSetDef PyFF_Font_getset[] = {
     {"cidsupplement",
 	 (getter)PyFF_Font_get_supplement, (setter)PyFF_Font_set_supplement,
 	 "CID Supplement", NULL},
+    {"loadStyle",
+	 (getter)PyFF_Font_get_loadvalidation_state, (setter)PyFF_cant_set,
+	 "A bitmask indicating non-fatal errors found when loading the font (readonly)", NULL},
     {"macstyle",
 	 (getter)PyFF_Font_get_macstyle, (setter)PyFF_Font_set_macstyle,
 	 "Mac Style Bits", NULL},

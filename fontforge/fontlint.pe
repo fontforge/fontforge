@@ -1,5 +1,5 @@
 
-if ( Strtol($version)<20070815 )
+if ( Strtol($version)<20070902 )
   Error( "Please upgrade to a more recent version of fontforge" )
 endif
 
@@ -12,7 +12,7 @@ endif
 while ( $argc > 1 )
   Open( $1 )
   mask = Validate()
-  if ( mask==0 )
+  if ( mask==0 && $loadState==0 )
     Print("Validation " + $fontname + " ...Passed")
   else
     Print("Validation " + $fontname + " ...Failed")
@@ -35,13 +35,63 @@ while ( $argc > 1 )
       Print( "  Unknown glyph referenced in GSUB/GPOS/MATH" )
     endif
     if ( mask & 0x80 )
-      Print( "  Too Many Points" )
+      Print( "  More points in a glyph than PostScript allows" )
     endif
     if ( mask & 0x100 )
       Print( "  Too Many Hints" )
     endif
     if ( mask & 0x200 )
       Print( "  Bad Glyph Name" )
+    endif
+    if ( mask & 0x400 )
+      Print( "  More points in a glyph than specified in 'maxp'" )
+    endif
+    if ( mask & 0x800 )
+      Print( "  More paths in a glyph than specified in 'maxp'" )
+    endif
+    if ( mask & 0x1000 )
+      Print( "  More points in a composite glyph than specified in 'maxp'" )
+    endif
+    if ( mask & 0x2000 )
+      Print( "  More paths in a composite glyph than specified in 'maxp'" )
+    endif
+    if ( mask & 0x4000 )
+      Print( "  Instructions longer than allowed in 'maxp'" )
+    endif
+    if ( mask & 0x8000 )
+      Print( "  More references in a glyph than specified in 'maxp'" )
+    endif
+    if ( mask & 0x10000 )
+      Print( "  References nested more deeply than specified in 'maxp'" )
+    endif
+    if ( mask & 0x20000 )
+      Print( "  'prep' or 'fpgm' tables are longer than specified in 'maxp'" )
+    endif
+
+    mask = $loadState;
+    if ( mask & 0x01 )
+      Print( "  Bad PostScript fontname entry in the 'name' table" )
+    endif
+    if ( mask & 0x02 )
+      Print( "  Bad 'glyf' or 'loca' table" )
+    endif
+    if ( mask & 0x04 )
+      Print( "  Bad 'CFF ' table" )
+    endif
+    if ( mask & 0x08 )
+      Print( "  Bad 'hhea', 'hmtx', 'vhea' or 'vmtx' table" )
+    endif
+    if ( mask & 0x10 )
+      Print( "  Bad 'cmap' table" )
+    endif
+    if ( mask & 0x20 )
+      Print( "  Bad 'EBDT', 'bdat', 'EBLC' or 'bloc' (embedded bitmap) table" )
+    endif
+    if ( mask & 0x40 )
+      Print( "  Bad Apple GX advanced typography table" )
+    endif
+    if ( mask & 0x80 )
+      Print( "  Bad OpenType advanced typography table" )
     endif
 Quit( 1 )
   endif

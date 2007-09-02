@@ -959,7 +959,7 @@ return( false );
 return( true );
 }
 
-static int RefDepth(RefChar *ref) {
+int RefDepth(RefChar *ref) {
     int rd, temp;
     SplineChar *sc = ref->sc;
 
