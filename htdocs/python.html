@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 31-Aug-2007 -->
+  <!-- AP: Last modified: 1-Sep-2007 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -1368,8 +1368,16 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TD colspan=2>Any comment you wish to associate with the glyph. UTF-8</TD>
     </TR>
     <TR>
+      <TD><CODE>encoding</CODE></TD>
+      <TD colspan=2>Returns the glyph's encoding in the font's encoding. (readonly)
+	<P>
+	If the glyph has multiple encodings, one will be picked at random.<BR>
+	If the glyph is not in the font's encoding then a number will be returned
+	beyond the encoding size (or in some cases -1 will be returned).</TD>
+    </TR>
+    <TR>
       <TD><CODE>font</CODE></TD>
-      <TD colspan=2>The font containing this glyph.</TD>
+      <TD colspan=2>The font containing this glyph. (readonly)</TD>
     </TR>
     <TR>
       <TD><CODE><A name="g-foreground">foreground</A></CODE></TD>
@@ -1397,8 +1405,13 @@ pen = None;				# Finalize the pen. This tells FontForge
     </TR>
     <TR>
       <TD><CODE>originalgid</CODE></TD>
-      <TD colspan=2>The GID of this glyph in the font it was read from. You may
-	not change this.</TD>
+      <TD colspan=2>The GID of this glyph in the font it was read from. (readonly)</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A NAME="glyph-persistant">persistant</A></CODE></TD>
+      <TD colspan=2>Whatever you want (these data will be saved as a pickled object
+	in the sfd file. It is your job to insure that whatever you put here can
+	be pickled). See also <A HREF="#glyph-temporary">the temporary</A> field.</TD>
     </TR>
     <TR>
       <TD><CODE><A name="g-references">references</A></CODE></TD>
@@ -1408,6 +1421,16 @@ pen = None;				# Finalize the pen. This tells FontForge
     <TR>
       <TD><CODE>right_side_bearing</CODE></TD>
       <TD colspan=2>The right side bearing of the glyph</TD>
+    </TR>
+    <TR>
+      <TD><CODE>script</CODE></TD>
+      <TD colspan=2>A string containing the OpenType 4 letter tag for the script
+	associated with this glyph (readonly)</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A NAME="glyph-temporary">temporary</A></CODE></TD>
+      <TD colspan=2>Whatever you want (these data will be lost once the font is
+	closed) See also <A HREF="#glyph-persistant">the persistant</A> field.</TD>
     </TR>
     <TR>
       <TD><CODE>texheight</CODE></TD>
@@ -1432,19 +1455,9 @@ pen = None;				# Finalize the pen. This tells FontForge
 	references replaced after the save finishes)</TD>
     </TR>
     <TR>
-      <TD><CODE>persistant</CODE></TD>
-      <TD colspan=2>Whatever you want (these data will be saved as a pickled object
-	in the sfd file. It is your job to insure that whatever you put here can
-	be pickled)</TD>
-    </TR>
-    <TR>
-      <TD><CODE>temporary</CODE></TD>
-      <TD colspan=2>Whatever you want (these data will be lost once the font is
-	closed)</TD>
-    </TR>
-    <TR>
       <TD><CODE>userdata</CODE></TD>
-      <TD colspan=2>Deprecated name for temporary above</TD>
+      <TD colspan=2>Deprecated name for <A HREF="#glyph-temporary">temporary field
+	above</A></TD>
     </TR>
     <TR>
       <TD><CODE>vhints</CODE></TD>
@@ -1454,6 +1467,7 @@ pen = None;				# Finalize the pen. This tells FontForge
     <TR>
       <TD><CODE><A NAME="validation-state">validation</A>_state</CODE></TD>
       <TD colspan=2>A bit mask indicating some problems this glyph might have.
+	(readonly)
 	<TABLE BORDER CELLPADDING="2">
 	  <TR>
 	    <TD>0x1</TD>
@@ -2332,6 +2346,31 @@ pen = None;				# Finalize the pen. This tells FontForge
 	the file from which the font was originally read (in this session)</TD>
     </TR>
     <TR>
+      <TD><CODE><A NAME="font-persistant">persistant</A></CODE></TD>
+      <TD colspan=2>Whatever you want -- though I recommend you store a dict here
+	(these data will be saved as a pickled object in the sfd file. It is your
+	job to insure that whatever you put here can be pickled)
+	<P>
+	If you do store a dict then the following entries will be treated specially:
+	<TABLE border=1>
+	  <TR>
+	    <TD>initScriptString</TD>
+	    <TD>If present, and if this is a string, then each time the font is loaded
+	      from an sfd file, this string will be passed to the python interpretter.
+	      Note: This is a string, not a function. Function code cannot be pickled.
+	      Since it is a string it will receive no arguments, but the current font will
+	      be available in the activeFont method of the fontforge module.
+	      <P>
+	      This string will be interpretted before the loadFontHook of the
+	      <A HREF="python.html#module-hooks">module hooks</A> dictionary.
+	      <P>
+	      One possible behavior for this string is to define function hooks to be stored
+	      in the temporary dict described below.</TD>
+	  </TR>
+	</TABLE>
+      </TD>
+    </TR>
+    <TR>
       <TD><CODE>private</CODE></TD>
       <TD colspan=2>Returns a dictionary like object representing the PostScript
 	private dictionary for the font. Changing entries in this object will change
@@ -2393,38 +2432,6 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TD colspan=2>the stroke width of a stroked font</TD>
     </TR>
     <TR>
-      <TD><CODE>uniqueid</CODE></TD>
-    </TR>
-    <TR>
-      <TD><CODE>upos</CODE></TD>
-      <TD colspan=2>underline position</TD>
-    </TR>
-    <TR>
-      <TD><CODE><A NAME="font-persistant">persistant</A></CODE></TD>
-      <TD colspan=2>Whatever you want -- though I recommend you store a dict here
-	(these data will be saved as a pickled object in the sfd file. It is your
-	job to insure that whatever you put here can be pickled)
-	<P>
-	If you do store a dict then the following entries will be treated specially:
-	<TABLE border=1>
-	  <TR>
-	    <TD>initScriptString</TD>
-	    <TD>If present, and if this is a string, then each time the font is loaded
-	      from an sfd file, this string will be passed to the python interpretter.
-	      Note: This is a string, not a function. Function code cannot be pickled.
-	      Since it is a string it will receive no arguments, but the current font will
-	      be available in the activeFont method of the fontforge module.
-	      <P>
-	      This string will be interpretted before the loadFontHook of the
-	      <A HREF="python.html#module-hooks">module hooks</A> dictionary.
-	      <P>
-	      One possible behavior for this string is to define function hooks to be stored
-	      in the temporary dict described below.</TD>
-	  </TR>
-	</TABLE>
-      </TD>
-    </TR>
-    <TR>
       <TD><CODE><A NAME="font-temporary">temporary</A></CODE></TD>
       <TD colspan=2>Whatever you want -- though I recommend you store a dict here
 	(these data will be lost once the font is closed)
@@ -2447,8 +2454,16 @@ pen = None;				# Finalize the pen. This tells FontForge
       </TD>
     </TR>
     <TR>
+      <TD><CODE>uniqueid</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>upos</CODE></TD>
+      <TD colspan=2>underline position</TD>
+    </TR>
+    <TR>
       <TD><CODE>userdata</CODE></TD>
-      <TD colspan=2>Deprecated name for temporary above</TD>
+      <TD colspan=2>Deprecated name for
+	<A HREF="python.html#font-temporary">temporary</A> above</TD>
     </TR>
     <TR>
       <TD><CODE>uwidth</CODE></TD>
@@ -2480,6 +2495,12 @@ pen = None;				# Finalize the pen. This tells FontForge
     <TR>
       <TD colspan=2><CODE>&lt;name&gt; in f</CODE></TD>
       <TD>Returns whether the font contains a glyph with the given name.</TD>
+    </TR>
+    <TR>
+      <TD colspan="2">Other iterators over the font:</TD>
+      <TD><A HREF="python.html#selection">selection</A>,
+	font.<A HREF="python.html#font-find">find</A>(),
+	font.<A HREF="python.html#font-glyphs">glyphs</A>()</TD>
     </TR>
     <TR>
       <TH colspan=3>Mapping Protocol</TH>
@@ -2722,7 +2743,7 @@ pen = None;				# Finalize the pen. This tells FontForge
 	If there is already a character there, return it</TD>
     </TR>
     <TR>
-      <TD><CODE>find</CODE></TD>
+      <TD><CODE><A NAME="font-find">find</A></CODE></TD>
       <TD><CODE>(contour[,error-bound])</CODE></TD>
       <TD>Searches the font for all glyphs containing the contour (or layer) and
 	returns an iterator which returns those glyphs.</TD>
@@ -2732,7 +2753,19 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TD><CODE>(uni)<BR>
 	(name)</CODE></TD>
       <TD>Tests whether a glyph with this codepoint or name is in the font's encoding
-	and returns the encoding slot. If the glyph is not present it returns -1.</TD>
+	and returns the encoding slot. If the glyph is not present it returns -1.
+	<P>
+	(If a glyph with that name/unicode is in the font, but is not in the encoding,
+	then an value beyond the end of the encoding will be returned).</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A NAME="font-glyphs">glyphs</A></CODE></TD>
+      <TD><CODE>([type])</CODE></TD>
+      <TD>Returns an interator which will return the glyphs in the font. By default
+	they will be returned in "GID" order, but if type is specified as "encoding"
+	they will be returned in encoding order. If returned in encoding order it
+	is possible that a glyph will be returned more than once if there are multiple
+	encoding slots which reference it.</TD>
     </TR>
     <TR>
       <TD><CODE><A name="f-generate">generate</A></CODE></TD>
