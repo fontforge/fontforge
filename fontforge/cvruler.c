@@ -30,6 +30,7 @@
 #include <ustring.h>
 
 BasePoint last_ruler_offset[2] = { {0,0}, {0,0} };
+int infowindowdistance = 30;
 
 static void SlopeToBuf(char *buf,char *label,double dx, double dy) {
     if ( dx==0 && dy==0 )
@@ -212,7 +213,7 @@ return( true );
 	
 static void RulerPlace(CharView *cv, GEvent *event) {
     unichar_t ubuf[80];
-    int width, x;
+    int width, x, y;
     GRect size;
     GPoint pt;
     int i,h,w;
@@ -253,10 +254,13 @@ static void RulerPlace(CharView *cv, GEvent *event) {
     GDrawGetSize(GDrawGetRoot(NULL),&size);
     pt.x = event->u.mouse.x; pt.y = event->u.mouse.y;
     GDrawTranslateCoordinates(cv->v,GDrawGetRoot(NULL),&pt);
-    x = pt.x + 26;
+    x = pt.x + infowindowdistance;
     if ( x+width > size.width )
-	x = pt.x - width-30;
-    GDrawMoveResize(cv->ruler_w,x,pt.y-cv->ras-2,width+4,h+4);
+	x = pt.x - width-infowindowdistance;
+    y = pt.y -cv->ras-2;
+    if ( y+h > size.height )
+	y = pt.y - h - cv->ras -10;
+    GDrawMoveResize(cv->ruler_w,x,y,width+4,h+4);
 }
 
 void CVMouseDownRuler(CharView *cv, GEvent *event) {
@@ -484,7 +488,7 @@ static void CpInfoPlace(CharView *cv, GEvent *event) {
 	    sp = NULL;
     }
 
-    x = pt.x + 26;
+    x = pt.x + infowindowdistance;
     y = pt.y - cv->ras-2;
     if ( sp!=NULL && x<=pt2.x-4 && x+width>=pt2.x+4 && y<=pt2.y-4 && y+h>=pt2.y+4 )
 	x = pt2.x + 4;
@@ -494,15 +498,17 @@ static void CpInfoPlace(CharView *cv, GEvent *event) {
 	    x = pt2.x - width - 4;
 	if ( x<0 ) {
 	    x = pt.x + 10;
-	    y = pt.y - h - 26;
+	    y = pt.y - h - infowindowdistance;
 	    if ( sp!=NULL && x<=pt2.x-4 && x+width>=pt2.x+4 && y<=pt2.y-4 && y+h>=pt2.y+4 )
 		y = pt2.y - h - 4;
 	    if ( y<0 )
-		y = pt.y+26;	/* If this doesn't work we have nowhere else to */
+		y = pt.y+infowindowdistance;	/* If this doesn't work we have nowhere else to */
 				/* try so don't check */
 	}
     }
-    GDrawMoveResize(cv->ruler_w,x,pt.y-cv->ras-2,width+4,h+4);
+    if ( y+h > size.height )
+	y = pt.y - h - cv->ras - 10;
+    GDrawMoveResize(cv->ruler_w,x,y,width+4,h+4);
 }
 
 void CPStartInfo(CharView *cv, GEvent *event) {
