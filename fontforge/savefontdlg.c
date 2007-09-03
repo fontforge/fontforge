@@ -1358,32 +1358,6 @@ return( false );
     }
 return( false );
 }
-
-static int CheckIfImages(SplineFont *sf) {
-    /* SVG doesn't support images (that I can figure out anyway) */
-    int i,j;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    char *buts[3];
-    buts[0] = _("_Yes");
-    buts[1] = _("_Cancel");
-    buts[2] = NULL;
-#elif defined(FONTFORGE_CONFIG_GTK)
-    static char *buts[3] = { GTK_STOCK_YES, GTK_STOCK_CANCEL, NULL };
-#endif
-
-    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
-	SplineChar *sc = sf->glyphs[i];
-	for ( j=ly_fore; j<sc->layer_cnt; ++j ) {
-	    if ( sc->layers[j].images!=NULL ) {
-		if ( gwwv_ask(_("Bad Drawing Operation"),(const char **) buts,0,1,_("This font contains at least one foreground image, but svg does not support that. Do you want to proceed anyway?"))==1 )
-return(true);
-
-return( false );
-	    }
-	}
-    }
-return( false );
-}
 #endif
 
 static char *SearchDirForWernerFile(char *dir,char *filename) {
@@ -1948,10 +1922,6 @@ return( true );
 		    bmap,flags,map);
 	  break;
 	  case ff_svg:
-#ifdef FONTFORGE_CONFIG_TYPE3
-	    if ( sf->multilayer && CheckIfImages(sf))
-return( true );
-#endif
 	    oerr = !WriteSVGFont(newname,sf,oldformatstate,flags,map);
 	  break;
 	  case ff_ufo:
@@ -3249,8 +3219,11 @@ return( 0 );
 	formattypes[ff_multiple].disabled = true;
 	formattypes[ff_ptype0].disabled = true;
 	formattypes[ff_cff].disabled = true;
+	formattypes[ff_cffcid].disabled = true;
 	formattypes[ff_cid].disabled = true;
 	formattypes[ff_ttf].disabled = true;
+	formattypes[ff_type42].disabled = true;
+	formattypes[ff_type42cid].disabled = true;
 	formattypes[ff_ttfsym].disabled = true;
 	formattypes[ff_ttfmacbin].disabled = true;
 	formattypes[ff_ttfdfont].disabled = true;

@@ -111,8 +111,10 @@ static int svg_outfontheader(FILE *file, SplineFont *sf) {
 	info.panose[6], info.panose[7], info.panose[8], info.panose[9]);
     fprintf( file, "    ascent=\"%d\"\n", sf->ascent );
     fprintf( file, "    descent=\"%d\"\n", -sf->descent );
-    fprintf( file, "    x-height=\"%g\"\n", (double) bd.xheight );
-    fprintf( file, "    cap-height=\"%g\"\n", (double) bd.caph );
+    if ( bd.xheight>0 )
+	fprintf( file, "    x-height=\"%g\"\n", (double) bd.xheight );
+    if ( bd.caph>0 )
+	fprintf( file, "    cap-height=\"%g\"\n", (double) bd.caph );
     fprintf( file, "    bbox=\"%g %g %g %g\"\n", (double) bb.minx, (double) bb.miny, (double) bb.maxx, (double) bb.maxy );
     fprintf( file, "    underline-thickness=\"%g\"\n", (double) sf->uwidth );
     fprintf( file, "    underline-position=\"%g\"\n", (double) sf->upos );
@@ -307,7 +309,7 @@ static int svg_sc_any(SplineChar *sc) {
 
     any = false;
     for ( i=ly_fore; i<sc->layer_cnt && !any; ++i ) {
-	any = sc->layers[i].splines!=NULL;
+	any = sc->layers[i].splines!=NULL || sc->layers[i].images!=NULL;
 	for ( ref=sc->layers[i].refs ; ref!=NULL && !any; ref = ref->next )
 	    for ( j=0; j<ref->layer_cnt && !any; ++j )
 		any = ref->layers[j].splines!=NULL;
@@ -327,16 +329,24 @@ static void DataURI_ImageDump(FILE *file,struct gimage *img) {
     FILE *imgf;
     int done = false;
     int threechars[3], fourchars[4], i, ch, ch_on_line;
+#if !defined( _NO_LIBJPEG)
+    struct _GImage *base = img->list_len==0 ? img->u.image : img->u.images[0];
+#endif
 
     /* Technically we can only put a file into an URI if the whole thing is */
     /*  less than 1024 bytes long. But I shall ignore that issue */
     imgf = tmpfile();
+#if !defined(_NO_LIBJPEG)
+    if ( base->image_type == it_true ) {
+	done = GImageWrite_Jpeg(img,imgf,78,false);
+	mimetype = "image/jpeg";
+    }
+#endif
 #ifndef _NO_LIBPNG
-    done = GImageWrite_Png(img,imgf,false);
-    mimetype = "image/png";
-#elif !defined(_NO_LIBJPEG)
-    done = GImageWrite_Jpeg(img,imgf,78,false);
-    mimetype = "image/jpeg";
+    if ( !done ) {
+	done = GImageWrite_Png(img,imgf,false);
+	mimetype = "image/png";
+    }
 #endif
     if ( !done ) {
 	GImageWrite_Bmp(img,imgf);
@@ -348,7 +358,7 @@ static void DataURI_ImageDump(FILE *file,struct gimage *img) {
 
     /* Now do base64 output conversion */
 
-    fclose(imgf);
+    rewind(imgf);
     ch = getc(imgf);
     ch_on_line = 0;
     while ( ch!=EOF ) {
@@ -360,7 +370,7 @@ static void DataURI_ImageDump(FILE *file,struct gimage *img) {
 	if ( i>0 ) {
 	    fourchars[0] = base64tab[threechars[0]>>2];
 	    fourchars[1] = base64tab[((threechars[0]&0x3)<<4)|(threechars[1]>>4)];
-	    fourchars[2] = base64tab[((threechars[1]&0xf)<<4)|(threechars[2]>>6)];
+	    fourchars[2] = base64tab[((threechars[1]&0xf)<<2)|(threechars[2]>>6)];
 	    fourchars[3] = base64tab[threechars[2]&0x3f];
 	    if ( i<3 )
 		fourchars[3] = '=';
@@ -377,6 +387,7 @@ static void DataURI_ImageDump(FILE *file,struct gimage *img) {
 	    }
 	}
     }
+    fclose(imgf);
 }
 #endif
 
@@ -458,9 +469,9 @@ static void svg_scpathdump(FILE *file, SplineChar *sc,char *endpath) {
 		fprintf(file, "\twidth=\"%g\"\n\theight=\"%g\"\n",
 			base->width*images->xscale, base->height*images->yscale );
 		fprintf(file, "\tx=\"%g\"\n\ty=\"%g\"\n", images->xoff, images->yoff );
-		fprintf(file, "xlink:href=\"data:" );
+		fprintf(file, "\txlink:href=\"data:" );
 		DataURI_ImageDump(file,images->image);
-		fprintf(file, "\">\n" );
+		fprintf(file, "\" />\n" );
 	    }
 	}
 #endif
