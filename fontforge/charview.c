@@ -8066,9 +8066,22 @@ static void CVMenuCenter(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     cv->drawmode = dm_fore;
 
+    memset(transform,0,sizeof(transform));
     transform[0] = transform[3] = 1.0;
     transform[1] = transform[2] = transform[5] = 0.0;
-    SplineCharFindBounds(cv->sc,&bb);
+    if ( cv->sc->parent->italicangle==0 )
+	SplineCharFindBounds(cv->sc,&bb);
+    else {
+	SplineSet *base, *temp;
+	base = LayerAllSplines(&cv->sc->layers[ly_fore]);
+	transform[2] = tan( cv->sc->parent->italicangle * 3.1415926535897932/180.0 );
+	temp = SplinePointListTransform(SplinePointListCopy(base),transform,true);
+	transform[2] = 0;
+	LayerUnAllSplines(&cv->sc->layers[ly_fore]);
+	SplineSetFindBounds(temp,&bb);
+	SplinePointListsFree(temp);
+    }
+	
     if ( mi->mid==MID_Center )
 	transform[4] = (cv->sc->width-(bb.maxx-bb.minx))/2 - bb.minx;
     else

@@ -4920,19 +4920,31 @@ void FVMetricsCenter(FontView *fv,int docenter) {
     SplineChar *sc;
     DBounds bb;
     IBounds ib;
-    real transform[6];
+    real transform[6], itransform[6];
     BVTFunc bvts[2];
     BDFFont *bdf;
 
+    memset(transform,0,sizeof(transform));
+    memset(itransform,0,sizeof(itransform));
     transform[0] = transform[3] = 1.0;
-    transform[1] = transform[2] = transform[5] = 0.0;
+    itransform[0] = itransform[3] = 1.0;
+    itransform[2] = tan( fv->sf->italicangle * 3.1415926535897932/180.0 );
     bvts[1].func = bvt_none;
     bvts[0].func = bvt_transmove; bvts[0].y = 0;
     if ( !fv->sf->onlybitmaps ) {
 	for ( i=0; i<fv->map->enccount; ++i ) {
 	    if ( fv->selected[i] && (gid=fv->map->map[i])!=-1 &&
 		    (sc = fv->sf->glyphs[gid])!=NULL ) {
-		SplineCharFindBounds(sc,&bb);
+		if ( itransform[2] == 0 )
+		    SplineCharFindBounds(sc,&bb);
+		else {
+		    SplineSet *base, *temp;
+		    base = LayerAllSplines(&sc->layers[ly_fore]);
+		    temp = SplinePointListTransform(SplinePointListCopy(base),itransform,true);
+		    LayerUnAllSplines(&sc->layers[ly_fore]);
+		    SplineSetFindBounds(temp,&bb);
+		    SplinePointListsFree(temp);
+		}
 		if ( docenter )
 		    transform[4] = (sc->width-(bb.maxx-bb.minx))/2 - bb.minx;
 		else
