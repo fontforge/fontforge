@@ -6500,6 +6500,7 @@ static void SplineSetsChangeCoord(SplineSet *spl,real old, real new,int isy) {
 
 void SCRound2Int(SplineChar *sc,real factor) {
     RefChar *r;
+    AnchorPoint *ap;
     StemInfo *stems;
     real old, new;
     int layer;
@@ -6529,6 +6530,11 @@ void SCRound2Int(SplineChar *sc,real factor) {
 	    RefCharFindBounds(r);
 	}
     }
+
+    for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
+	ap->me.x = rint(ap->me.x*factor)/factor;
+	ap->me.y = rint(ap->me.y*factor)/factor;
+    }
     SCCharChangedUpdate(sc);
 }
 
@@ -6550,6 +6556,7 @@ static void _CVMenuRound2Int(CharView *cv, double factor) {
     SplinePointList *spl;
     SplinePoint *sp;
     RefChar *r;
+    AnchorPoint *ap;
 
     CVPreserveState(cv);
     for ( spl= cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl=spl->next ) {
@@ -6572,6 +6579,12 @@ static void _CVMenuRound2Int(CharView *cv, double factor) {
 	    if ( r->selected || !anysel ) {
 		r->transform[4] = rint(r->transform[4]*factor)/factor;
 		r->transform[5] = rint(r->transform[5]*factor)/factor;
+	    }
+	}
+	for ( ap=cv->sc->anchor; ap!=NULL; ap=ap->next ) {
+	    if ( ap->selected || !anysel ) {
+		ap->me.x = rint(ap->me.x*factor)/factor;
+		ap->me.y = rint(ap->me.y*factor)/factor;
 	    }
 	}
     }
