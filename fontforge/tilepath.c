@@ -28,7 +28,6 @@
 #include <math.h>
 #include <gkeysym.h>
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #ifdef FONTFORGE_CONFIG_TILEPATH
 /* Given a path and a splineset */
 /* Treat the splineset as a tile and lay it down on the path until we reach the*/
@@ -53,12 +52,15 @@
 typedef struct tiledata {
     SplineSet *basetile;	/* Moved so that ymin==0, and x is adjusted */
 				/*  about the x-axis as implied by tilepos */
+    SplineSet *firsttile;
+    SplineSet *lasttile;
+    SplineSet *isolatedtile;
     SplineSet *tileset;		/* As many copies of the basetile as we are */
-				/*  going to need. Each successive one bb.ymax */
+				/*  going to need. Each successive one bb.maxy */
 			        /*  higher than the last */
     SplineSet *result;		/* Final result after transformation */
-    DBounds bb;			/* Of the basetile */
-    double firstheight;		/* Height of the first tile if it is different (ie. if it doesn't include white space) */
+    DBounds bb, fbb, lbb, ibb;	/* Of the basetile, first & last tiles */
+    uint8 include_white, finclude_white, linclude_white, iinclude_white;
 
     SplineSet *path;
     double plength;		/* Length of path */
@@ -76,7 +78,6 @@ typedef struct tiledata {
 	real sofar;
     } *joins;			/* an array of [pcnt or pcnt-1], one of each join */
 
-    int translate_first;
     enum tilepos { tp_left, tp_center, tp_right } tilepos;
     enum tilescale { ts_tile, ts_tilescale, ts_scale } tilescale;
     /* ts_scale means that we scale the one tile until it height is the same */
@@ -400,41 +401,111 @@ static SplineSet *SplinePointListMerge(SplineSet *old,SplineSet *new) {
 return( old );
 }
 
+#define Round_Up_At	.5
 static void TileLine(TD *td) {
     int tilecnt=1, i;
     double scale=1, y;
     real trans[6];
     SplineSet *new;
+    int use_first=false, use_last=false, use_isolated=false;
 
     switch ( td->tilescale ) {
       case ts_tile:
-	tilecnt = ceil( (td->plength-td->firstheight)/td->bb.maxy )+1;
+	if ( td->path->first->prev!=NULL )	/* Closed contours have no ends => all tiles intermediate */
+	    tilecnt = ceil( td->plength/td->bb.maxy );
+	else if ( td->plength<=td->ibb.maxy ) {
+	    tilecnt = 1;
+	    use_isolated = true;
+	} else if ( td->plength<=td->fbb.maxy ) {
+	    tilecnt = 1;
+	    use_first = true;
+	} else if ( td->plength<=td->fbb.maxy+td->lbb.maxy && td->firsttile!=NULL && td->lasttile!=NULL ) {
+	    tilecnt = 2;
+	    use_first = use_last = true;
+	} else {
+	    use_first = (td->firsttile!=NULL);
+	    use_last = (td->lasttile!=NULL);
+	    tilecnt = use_first+use_last+ceil( (td->plength-td->fbb.maxy-td->lbb.maxy)/td->bb.maxy );
+	}
       break;
       case ts_scale:
-	scale = 1 + (td->plength-td->firstheight)/td->bb.maxy ;
+	if ( td->isolatedtile!=NULL ) {
+	    use_isolated = true;
+	    scale = td->plength/td->ibb.maxy;
+	} else
+	    scale = td->plength/td->bb.maxy;
       break;
       case ts_tilescale:
-	scale = 1 + (td->plength-td->firstheight)/td->bb.maxy ;
-	tilecnt = floor( scale );
-	if ( tilecnt==0 )
+	tilecnt = -1;
+	if ( td->path->first->prev!=NULL )	/* Closed contours have no ends => all tiles intermediate */
+	    scale = td->plength/td->bb.maxy;
+	else if ( td->isolatedtile!=NULL &&
+		(( td->firsttile!=NULL && td->lasttile!=NULL && td->plength<td->fbb.maxy+Round_Up_At*td->lbb.maxy) ||
+		 ( td->firsttile!=NULL && td->lasttile==NULL && td->plength<td->fbb.maxy+Round_Up_At*td->bb.maxy) ||
+		 ( td->firsttile==NULL && td->lasttile==NULL && td->plength<(1+Round_Up_At)*td->bb.maxy)) ) {
+	    use_isolated = true;
+	    scale = td->plength/td->ibb.maxy;
 	    tilecnt = 1;
-	else if ( scale-tilecnt>.55 )
-	    ++tilecnt;
-	scale = td->plength/(td->firstheight + (tilecnt-1)*td->bb.maxy);
+	} else if ( td->firsttile!=NULL && td->lasttile!=NULL ) {
+	    if ( td->plength<td->fbb.maxy+Round_Up_At*td->lbb.maxy ) {
+		use_first = true;
+		tilecnt = 1;
+		scale = td->plength/td->fbb.maxy;
+	    } else if ( td->plength<td->fbb.maxy+td->lbb.maxy+Round_Up_At*td->bb.maxy ) {
+		use_first = use_last = true;
+		tilecnt = 2;
+		scale = 2*td->plength/(td->fbb.maxy+td->lbb.maxy);
+	    } else {
+		use_first = use_last = true;
+		scale = 2 + (td->plength-td->fbb.maxy-td->lbb.maxy)/td->bb.maxy;
+	    }
+	} else if ( td->firsttile!=NULL ) {
+	    if ( td->plength<td->fbb.maxy+Round_Up_At*td->bb.maxy ) {
+		use_first = true;
+		tilecnt = 1;
+		scale = td->plength/td->fbb.maxy;
+	    } else {
+		use_first = true;
+		scale = 1 + (td->plength-td->fbb.maxy)/td->bb.maxy;
+	    }
+	} else if ( td->lasttile!=NULL ) {
+	    if ( td->plength<td->lbb.maxy+Round_Up_At*td->bb.maxy ) {
+		use_last = true;
+		tilecnt = 1;
+		scale = td->plength/td->lbb.maxy;
+	    } else {
+		use_last = true;
+		scale = 1 + (td->plength-td->lbb.maxy)/td->bb.maxy;
+	    }
+	} else
+	    scale = td->plength/td->bb.maxy;
+	if ( tilecnt == -1 ) {
+	    tilecnt = floor( scale );
+	    if ( tilecnt==0 )
+		tilecnt = 1;
+	    else if ( scale-tilecnt>Round_Up_At )
+		++tilecnt;
+	    scale = td->plength/(use_first*td->fbb.maxy + use_last*td->lbb.maxy +
+			(tilecnt-use_first-use_last)*td->bb.maxy);
+	}
       break;
     }
 
-    y = td->translate_first ? -td->bb.miny*scale : 0;
     trans[0] = 1; trans[3] = scale;		/* Only scale y */
     trans[1] = trans[2] = trans[4] = trans[5] = 0;
+    y = 0;
     for ( i=0; i<tilecnt; ++i ) {
-	new = SplinePointListCopy(td->basetile);
+	int which = (i==0 && use_first) ? 1 :
+		    (i==0 && use_isolated ) ? 3 :
+		    (i==tilecnt-1 && use_last ) ? 2 :
+			    0;
+	new = SplinePointListCopy((&td->basetile)[which]);
 	trans[5] = y;
 	new = SplinePointListTransform(new,trans,true);
-	if ( i==tilecnt-1 && scale==1 )
+	if ( i==tilecnt-1 && td->tilescale==ts_tile )
 	    new = SplinePointListTruncateAtY(new,td->plength);
 	td->tileset = SplinePointListMerge(td->tileset,new);
-	y += td->bb.maxy*scale;
+	y += (&td->bb)[which].maxy*scale;
     }
     if ( td->pcnt>1 ) {
 	/* If there are fewer tiles than there are spline elements, then we */
@@ -626,46 +697,39 @@ static void TileSplineSets(TD *td,SplineSet **head,int order2) {
     }
 }
 
-static void TileIt(SplineSet **head,SplineSet *tile,
-	enum tilepos tilepos, enum tilescale tilescale,
-	int include_whitespace,
+static void TileIt(SplineSet **head,struct tiledata *td,
 	int doall,int order2) {
-    TD td;
     real trans[6];
+    int i;
+    SplineSet *thistile;
 
-    memset(&td,0,sizeof(td));
-    td.tilepos = tilepos;
-    td.tilescale = tilescale;
-    td.doallpaths = doall;
+    td->doallpaths = doall;
 
-    td.basetile = tile;
-    SplineSetFindBounds(tile,&td.bb);
     trans[0] = trans[3] = 1;
     trans[1] = trans[2] = 0;
-    trans[5] = (include_whitespace&ws_include) ? 0 : -td.bb.miny;
-    trans[4] = -td.bb.minx;
-    if ( tilepos==tp_center )
-	trans[4] -= (td.bb.maxx-td.bb.minx)/2;
-    else if ( tilepos==tp_left )
-	trans[4] = -td.bb.maxx;
-    if ( trans[4]!=0 || trans[5]!=0 )
-	SplinePointListTransform(tile,trans,true);
-    SplineSetFindBounds(tile,&td.bb);
-    if ( (include_whitespace&ws_but_not_first) && td.bb.miny>.01 ) {
-	td.translate_first = true;
-	td.firstheight = td.bb.maxy - td.bb.miny;
-    } else {
-	td.translate_first = false;
-	td.firstheight = td.bb.maxy;
+    for ( i=0; i<4; ++i ) if ( (thistile = (&td->basetile)[i])!=NULL ) {
+	DBounds *bb = &(&td->bb)[i];
+	SplineSetFindBounds(thistile,bb);
+	trans[5] = (&td->include_white)[i]&ws_include ? 0 : -bb->miny;
+	trans[4] = -bb->minx;
+	if ( td->tilepos==tp_center )
+	    trans[4] -= (bb->maxx-bb->minx)/2;
+	else if ( td->tilepos==tp_left )
+	    trans[4] = -bb->maxx;
+	if ( trans[4]!=0 || trans[5]!=0 )
+	    SplinePointListTransform(thistile,trans,true);
+	SplineSetFindBounds(thistile,bb);
     }
+    td->tileset = td->result = NULL;
 
-    TileSplineSets(&td,head,order2);
+    TileSplineSets(td,head,order2);
 }
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static enum tilepos tilepos=tp_center;
 static enum tilescale tilescale=ts_tilescale;
-static int include_whitespace=false;
+static int include_whitespace[4] = {0,0,0,0};
+static SplineSet *last_tiles[4];
 
 #define CID_Center	1001
 #define CID_Left	1002
@@ -673,269 +737,562 @@ static int include_whitespace=false;
 #define	CID_Tile	1011
 #define CID_TileScale	1012
 #define CID_Scale	1013
-#define CID_IncludeWhiteSpaceBelowTile	1021
-#define CID_ButNotForFirstTile		1022
+#define CID_IncludeWhiteSpaceBelowTile	1021	/* +[0...3] */
+#define CID_FirstTile	1025			/* +[0...3] for the other tiles */
 
-struct tiledlg {
-    int done;
-    int cancelled;
-};
+static void TPDSubResize(TilePathDlg *tpd, GEvent *event) {
+    int width, height;
+    int i;
 
-static int TD_OK(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	GWindow gw = GGadgetGetWindow(g);
-	struct tiledlg *d = GDrawGetUserData(gw);
-	d->done = true;
-	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_Center)) )
-	    tilepos = tp_center;
-	else if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_Left)) )
-	    tilepos = tp_left;
-	else
-	    tilepos = tp_right;
-	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_Tile)) )
-	    tilescale = ts_tile;
-	else if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TileScale)) )
-	    tilescale = ts_tilescale;
-	else
-	    tilescale = ts_scale;
-	include_whitespace =
-	    (GGadgetIsChecked(GWidgetGetControl(gw,CID_IncludeWhiteSpaceBelowTile)) ? ws_include : 0 ) |
-	    (GGadgetIsChecked(GWidgetGetControl(gw,CID_ButNotForFirstTile)) ? ws_but_not_first : 0 );
+    if ( !event->u.resize.sized )
+return;
+
+    width = event->u.resize.size.width;
+    height = event->u.resize.size.height;
+    if ( width!=tpd->cv_width || height!=tpd->cv_height ) {
+	tpd->cv_width = width; tpd->cv_height = height;
+	for ( i=0; i<4; ++i ) {
+	    CharView *cv = (&tpd->cv_first)+i;
+	    GDrawResize(cv->gw,width,height);
+	}
+    }
+
+    GDrawSync(NULL);
+    GDrawProcessPendingEvents(NULL);
+}
+
+static char *tilenames[] = { N_("First"), N_("Medial"), N_("Final"), N_("Isolated") };
+static void TPDDraw(TilePathDlg *tpd, GWindow pixmap, GEvent *event) {
+    GRect r,pos;
+    int i;
+
+    GDrawSetLineWidth(pixmap,0);
+    for ( i=0; i<4; ++i ) {
+	CharView *cv = (&tpd->cv_first)+i;
+
+	GGadgetGetSize(GWidgetGetControl(tpd->gw,CID_FirstTile+i),&pos);
+	r.x = pos.x; r.y = pos.y-1;
+	r.width = pos.width+1; r.height = pos.height+1;
+	GDrawDrawRect(pixmap,&r,0);
+
+	GDrawSetFont(pixmap,cv->inactive ? tpd->plain : tpd->bold);
+	GDrawDrawText8(pixmap,r.x,pos.y-2-tpd->fh+tpd->as,_(tilenames[i]),-1,NULL,0);
+    }
+}
+
+static void TPDMakeActive(TilePathDlg *tpd,CharView *cv) {
+    int i;
+
+    if ( tpd==NULL )
+return;
+    for ( i=0; i<4; ++i )
+	(&tpd->cv_first)[i].inactive = true;
+    cv->inactive = false;
+    GDrawSetUserData(tpd->gw,cv);
+    for ( i=0; i<4; ++i )
+	GDrawRequestExpose((&tpd->cv_first)[i].v,NULL,false);
+    GDrawRequestExpose(tpd->gw,NULL,false);
+}
+
+void TPDChar(TilePathDlg *tpd, GEvent *event) {
+    int i;
+    for ( i=0; i<4; ++i )
+	if ( !(&tpd->cv_first)[i].inactive )
+    break;
+
+    if ( event->u.chr.keysym==GK_Tab || event->u.chr.keysym==GK_BackTab ) {
+	if ( event->u.chr.keysym==GK_Tab ) ++i; else --i;
+	if ( i<0 ) i=3; else if ( i>3 ) i = 0;
+	TPDMakeActive(tpd,(&tpd->cv_first)+i);
+    } else
+	CVChar((&tpd->cv_first)+i,event);
+}
+
+static void TPD_DoClose(struct cvcontainer *cvc) {
+    TilePathDlg *tpd = (TilePathDlg *) cvc;
+    int i;
+
+    for ( i=0; i<4; ++i ) {
+	SplineChar *msc = &(&tpd->sc_first)[i];
+	SplinePointListsFree(msc->layers[0].splines);
+	SplinePointListsFree(msc->layers[1].splines);
+#ifdef FONTFORGE_CONFIG_TYPE3
+	free( msc->layers );
+#endif
+    }
+
+    tpd->done = true;
+}
+
+static int tpd_sub_e_h(GWindow gw, GEvent *event) {
+    TilePathDlg *tpd = (TilePathDlg *) ((CharView *) GDrawGetUserData(gw))->container;
+
+    switch ( event->type ) {
+      case et_resize:
+	if ( event->u.resize.sized )
+	    TPDSubResize(tpd,event);
+      break;
+      case et_char:
+	TPDChar(tpd,event);
+      break;
     }
 return( true );
 }
 
-static int TD_Cancel(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	GWindow gw = GGadgetGetWindow(g);
-	struct tiledlg *d = GDrawGetUserData(gw);
-	d->done = d->cancelled = true;
+static int tpd_e_h(GWindow gw, GEvent *event) {
+    TilePathDlg *tpd = (TilePathDlg *) ((CharView *) GDrawGetUserData(gw))->container;
+    int i;
+
+    switch ( event->type ) {
+      case et_expose:
+	TPDDraw(tpd, gw, event);
+      break;
+      case et_char:
+	TPDChar(tpd,event);
+      break;
+      case et_close:
+	TPD_DoClose((struct cvcontainer *) tpd);
+      break;
+      case et_create:
+      break;
+      case et_map:
+	for ( i=0; i<4; ++i ) {
+	    CharView *cv = (&tpd->cv_first)+i;
+	    if ( !cv->inactive ) {
+		if ( event->u.map.is_visible )
+		    CVPaletteActivate(cv);
+		else
+		    CVPalettesHideIfMine(cv);
+	break;
+	    }
+	}
+	/* tpd->isvisible = event->u.map.is_visible; */
+      break;
     }
 return( true );
 }
 
-static int td_e_h(GWindow gw, GEvent *event) {
-    if ( event->type==et_close ) {
-	struct tiledlg *d = GDrawGetUserData(gw);
-	d->done = d->cancelled = true;
-    } else if ( event->type==et_char ) {
-	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("tilepath.html");
+static int TilePathD_Cancel(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	TilePathDlg *tpd = (TilePathDlg *) (((CharView *) GDrawGetUserData(GGadgetGetWindow(g)))->container);
+	TPD_DoClose(&tpd->base);
+    }
+return( true );
+}
+
+static int TPD_Useless(SplineSet *ss) {
+    DBounds bb;
+
+    if ( ss==NULL )
+return( true );
+    SplineSetFindBounds(ss,&bb);
+return( bb.maxy==bb.miny );
+}
+
+static int TilePathD_OK(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	TilePathDlg *tpd = (TilePathDlg *) (((CharView *) GDrawGetUserData(GGadgetGetWindow(g)))->container);
+	struct tiledata *td = tpd->td;
+
+	if ( GGadgetIsChecked(GWidgetGetControl(tpd->gw,CID_Center)) )
+	    td->tilepos = tp_center;
+	else if ( GGadgetIsChecked(GWidgetGetControl(tpd->gw,CID_Left)) )
+	    td->tilepos = tp_left;
+	else
+	    td->tilepos = tp_right;
+	if ( GGadgetIsChecked(GWidgetGetControl(tpd->gw,CID_Tile)) )
+	    td->tilescale = ts_tile;
+	else if ( GGadgetIsChecked(GWidgetGetControl(tpd->gw,CID_TileScale)) )
+	    td->tilescale = ts_tilescale;
+	else
+	    td->tilescale = ts_scale;
+	if ( TPD_Useless(tpd->sc_medial.layers[ly_fore].splines) &&
+		(td->tilescale!=ts_scale ||
+		 TPD_Useless(tpd->sc_isolated.layers[ly_fore].splines)) ) {
+	    if ( td->tilescale == ts_scale )
+		gwwv_post_error(_("Bad Tile"),_("You must specify an isolated (or medial) tile"));
+	    else
+		gwwv_post_error(_("Bad Tile"),_("You must specify a medial tile"));
 return( true );
 	}
-return( false );
+
+	tilepos = td->tilepos;
+	tilescale = td->tilescale;
+
+	td->firsttile = tpd->sc_first.layers[ly_fore].splines;
+	    tpd->sc_first.layers[ly_fore].splines = NULL;
+	include_whitespace[0] = td->finclude_white = GGadgetIsChecked(GWidgetGetControl(tpd->gw,CID_IncludeWhiteSpaceBelowTile+0))?ws_include:0;
+	td->basetile = tpd->sc_medial.layers[ly_fore].splines;
+	    tpd->sc_medial.layers[ly_fore].splines = NULL;
+	include_whitespace[1] = td->include_white = GGadgetIsChecked(GWidgetGetControl(tpd->gw,CID_IncludeWhiteSpaceBelowTile+1))?ws_include:0;
+	td->lasttile = tpd->sc_final.layers[ly_fore].splines;
+	    tpd->sc_final.layers[ly_fore].splines = NULL;
+	include_whitespace[2] = td->linclude_white = GGadgetIsChecked(GWidgetGetControl(tpd->gw,CID_IncludeWhiteSpaceBelowTile+2))?ws_include:0;
+	td->isolatedtile = tpd->sc_isolated.layers[ly_fore].splines;
+	    tpd->sc_isolated.layers[ly_fore].splines = NULL;
+	include_whitespace[3] = td->iinclude_white = GGadgetIsChecked(GWidgetGetControl(tpd->gw,CID_IncludeWhiteSpaceBelowTile+3))?ws_include:0;
+
+	TPD_DoClose(&tpd->base);
+	tpd->oked = true;
     }
 return( true );
 }
 
-static int TileAsk(void) {
-    struct tiledlg d;
+static int TPD_Can_Navigate(struct cvcontainer *cvc, enum nav_type type) {
+return( false );
+}
+
+static int TPD_Can_Open(struct cvcontainer *cvc) {
+return( false );
+}
+
+struct cvcontainer_funcs tilepath_funcs = {
+    cvc_tilepath,
+    (void (*) (struct cvcontainer *cvc,CharView *cv)) TPDMakeActive,
+    (void (*) (struct cvcontainer *cvc,GEvent *)) TPDChar,
+    TPD_Can_Navigate,
+    NULL,
+    TPD_Can_Open,
+    TPD_DoClose
+};
+
+
+static void TPDInit(TilePathDlg *tpd,SplineFont *sf) {
+    int i;
+
+    memset(tpd,0,sizeof(*tpd));
+    tpd->base.funcs = &tilepath_funcs;
+
+    for ( i=0; i<4; ++i ) {
+	SplineChar *msc = &(&tpd->sc_first)[i];
+	CharView *mcv = &(&tpd->cv_first)[i];
+	msc->orig_pos = i;
+	msc->unicodeenc = -1;
+	msc->name = i==0 ? "First" :
+		    i==1 ? "Medial"  :
+		    i==2 ? "Last":
+			    "Isolated";
+	msc->parent = &tpd->dummy_sf;
+	msc->layer_cnt = 2;
+#ifdef FONTFORGE_CONFIG_TYPE3
+	msc->layers = gcalloc(2,sizeof(Layer));
+	LayerDefault(&msc->layers[0]);
+	LayerDefault(&msc->layers[1]);
+#endif
+	tpd->chars[i] = msc;
+
+	mcv->sc = msc;
+	mcv->layerheads[dm_fore] = &msc->layers[ly_fore];
+	mcv->layerheads[dm_back] = &msc->layers[ly_back];
+	mcv->layerheads[dm_grid] = NULL;
+	msc->layers[ly_fore].splines = last_tiles[i];
+	mcv->drawmode = dm_fore;
+	mcv->container = (struct cvcontainer *) tpd;
+	mcv->inactive = i!=0;
+    }
+    tpd->dummy_sf.glyphs = tpd->chars;
+    tpd->dummy_sf.glyphcnt = tpd->dummy_sf.glyphmax = 4;
+    tpd->dummy_sf.pfminfo.fstype = -1;
+    tpd->dummy_sf.fontname = tpd->dummy_sf.fullname = tpd->dummy_sf.familyname = "dummy";
+    tpd->dummy_sf.weight = "Medium";
+    tpd->dummy_sf.origname = "dummy";
+    tpd->dummy_sf.ascent = sf->ascent;
+    tpd->dummy_sf.descent = sf->descent;
+    tpd->dummy_sf.order2 = sf->order2;
+    tpd->dummy_sf.anchor = NULL;
+
+    tpd->dummy_sf.fv = &tpd->dummy_fv;
+    tpd->dummy_fv.sf = &tpd->dummy_sf;
+    tpd->dummy_fv.selected = tpd->sel;
+    tpd->dummy_fv.cbw = tpd->dummy_fv.cbh = default_fv_font_size+1;
+    tpd->dummy_fv.magnify = 1;
+
+    tpd->dummy_fv.map = &tpd->dummy_map;
+    tpd->dummy_map.map = tpd->map;
+    tpd->dummy_map.backmap = tpd->backmap;
+    tpd->dummy_map.enccount = tpd->dummy_map.encmax = tpd->dummy_map.backmax = 4;
+    tpd->dummy_map.enc = &custom;
+}
+
+static int TileAsk(struct tiledata *td,SplineFont *sf) {
+    TilePathDlg tpd;
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[13];
-    GTextInfo label[13];
+    GGadgetCreateData gcd[24], boxes[5], *harray[8], *varray[5],
+	*rhvarray[4][5], *chvarray[4][5];
+    GTextInfo label[24];
+    FontRequest rq;
+    int as, ds, ld;
+    static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
+    int i,k;
 
-    memset(&d,0,sizeof(d));
+    TPDInit( &tpd,sf );
+    tpd.td = td;
+    memset(td,0,sizeof(*td));
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;
-    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.mask = wam_events|wam_cursor|wam_isdlg|wam_restrict|wam_undercursor|wam_utf8_wtitle;
+    wattrs.is_dlg = true;
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
+    wattrs.event_masks = -1;
     wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = _("Tile Path...");
-    pos.x = pos.y = 0;
-    pos.width =GDrawPointsToPixels(NULL,GGadgetScale(220));
-    pos.height = GDrawPointsToPixels(NULL,132);
-    gw = GDrawCreateTopWindow(NULL,&pos,td_e_h,&d,&wattrs);
+    wattrs.utf8_window_title = _("Tile Path");
+    pos.width = 600;
+    pos.height = 300;
+    tpd.gw = gw = GDrawCreateTopWindow(NULL,&pos,tpd_e_h,&tpd.cv_first,&wattrs);
 
-    memset(gcd,0,sizeof(gcd));
-    memset(label,0,sizeof(label));
+    memset(&rq,0,sizeof(rq));
+    rq.family_name = helv;
+    rq.point_size = 12;
+    rq.weight = 400;
+    tpd.plain = GDrawInstanciateFont(NULL,&rq);
+    rq.weight = 700;
+    tpd.bold = GDrawInstanciateFont(NULL,&rq);
+    GDrawFontMetrics(tpd.plain,&as,&ds,&ld);
+    tpd.fh = as+ds; tpd.as = as;
 
-    gcd[0].gd.pos.x = 6; gcd[0].gd.pos.y = 6;
-    gcd[0].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    gcd[0].gd.mnemonic = 'L';
-    label[0].text = (unichar_t *) _("_Left");
-    label[0].text_is_1byte = true;
-    label[0].text_in_resource = true;
-    gcd[0].gd.label = &label[0];
-    gcd[0].gd.popup_msg = (unichar_t *) _("The tile (in the clipboard) should be placed to the left of the path\nas the path is traced from its start point to its end");
-    gcd[0].gd.cid = CID_Left;
-    gcd[0].creator = GRadioCreate;
+    memset(&label,0,sizeof(label));
+    memset(&gcd,0,sizeof(gcd));
+    memset(&boxes,0,sizeof(boxes));
 
-    gcd[1].gd.pos.x = 60; gcd[1].gd.pos.y = gcd[0].gd.pos.y;
-    gcd[1].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    gcd[1].gd.mnemonic = 'C';
-    label[1].text = (unichar_t *) _("C_enter");
-    label[1].text_is_1byte = true;
-    label[1].text_in_resource = true;
-    gcd[1].gd.label = &label[1];
-    gcd[1].gd.popup_msg = (unichar_t *) _("The tile (in the clipboard) should be centered on the path");
-    gcd[1].gd.cid = CID_Center;
-    gcd[1].creator = GRadioCreate;
+    k = 0;
+    gcd[k].gd.flags = gg_visible|gg_enabled ;		/* This space is for the menubar */
+    gcd[k].gd.pos.height = 18; gcd[k].gd.pos.width = 20;
+    gcd[k++].creator = GSpacerCreate;
 
-    gcd[2].gd.pos.x = 140; gcd[2].gd.pos.y = gcd[1].gd.pos.y;
-    gcd[2].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    gcd[2].gd.mnemonic = 'R';
-    label[2].text = (unichar_t *) _("_Right");
-    label[2].text_is_1byte = true;
-    label[2].text_in_resource = true;
-    gcd[2].gd.label = &label[2];
-    gcd[2].gd.popup_msg = (unichar_t *) _("The tile (in the clipboard) should be placed to the right of the path\nas the path is traced from its start point to its end");
-    gcd[2].gd.cid = CID_Right;
-    gcd[2].creator = GRadioCreate;
+    for ( i=0; i<4; ++i ) {
+	gcd[k].gd.pos.height = tpd.fh;
+	gcd[k].gd.flags = gg_visible | gg_enabled;
+	gcd[k++].creator = GSpacerCreate;
+	chvarray[0][i] = &gcd[k-1];
 
-    gcd[3].gd.pos.x = 5; gcd[3].gd.pos.y = GDrawPointsToPixels(NULL,gcd[2].gd.pos.y+20);
-    gcd[3].gd.pos.width = pos.width-10;
-    gcd[3].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels ;
-    gcd[3].creator = GLineCreate;
+	gcd[k].gd.pos.width = gcd[k].gd.pos.height = 200;
+	gcd[k].gd.flags = gg_visible | gg_enabled;
+	gcd[k].gd.cid = CID_FirstTile+i;
+	gcd[k].gd.u.drawable_e_h = tpd_sub_e_h;
+	gcd[k++].creator = GDrawableCreate;
+	chvarray[1][i] = &gcd[k-1];
 
-    gcd[4].gd.pos.x = gcd[0].gd.pos.x; gcd[4].gd.pos.y = gcd[2].gd.pos.y+24;
-    gcd[4].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    gcd[4].gd.mnemonic = 'T';
-    label[4].text = (unichar_t *) _("_Tile");
-    label[4].text_is_1byte = true;
-    label[4].text_in_resource = true;
-    gcd[4].gd.label = &label[4];
-    gcd[4].gd.popup_msg = (unichar_t *) _("Multiple copies of the selection should be tiled onto the path");
-    gcd[4].gd.cid = CID_Tile;
-    gcd[4].creator = GRadioCreate;
+	gcd[k].gd.pos.x = gcd[0].gd.pos.x; gcd[k].gd.pos.y = gcd[6].gd.pos.y+24;
+	gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+	if ( include_whitespace[i] ) gcd[k].gd.flags |= gg_cb_on;
+	label[k].text = (unichar_t *) _("Include Whitespace below Tile");
+	label[k].text_is_1byte = true;
+	label[k].text_in_resource = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.popup_msg = (unichar_t *) _("Normally the Tile will consist of everything\nwithin the minimum bounding box of the tile --\nso adjacent tiles will abut directly on one\nanother. If you wish whitespace between tiles\nset this flag");
+	gcd[k].gd.cid = CID_IncludeWhiteSpaceBelowTile+i;
+	gcd[k++].creator = GCheckBoxCreate;
+	chvarray[2][i] = &gcd[k-1];
+    }
+    chvarray[0][4] = chvarray[1][4] = chvarray[2][4] = chvarray[3][0] = NULL;
 
-    gcd[5].gd.pos.x = gcd[1].gd.pos.x; gcd[5].gd.pos.y = gcd[4].gd.pos.y;
-    gcd[5].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    gcd[5].gd.mnemonic = 'a';
-    label[5].text = (unichar_t *) _("Sc_ale & Tile");
-    label[5].text_is_1byte = true;
-    label[5].text_in_resource = true;
-    gcd[5].gd.label = &label[5];
-    gcd[5].gd.popup_msg = (unichar_t *) _("An integral number of the selection will be used to cover the path.\nIf the path length is not evenly divisible by the selection's\nheight, then the selection should be scaled slightly.");
-    gcd[5].gd.cid = CID_TileScale;
-    gcd[5].creator = GRadioCreate;
+    gcd[k].gd.pos.x = 6; gcd[k].gd.pos.y = 6;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[k].gd.mnemonic = 'L';
+    label[k].text = (unichar_t *) _("_Left");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.popup_msg = (unichar_t *) _("The tile (in the clipboard) should be placed to the left of the path\nas the path is traced from its start point to its end");
+    gcd[k].gd.cid = CID_Left;
+    gcd[k++].creator = GRadioCreate;
+    rhvarray[0][0] = &gcd[k-1];
 
-    gcd[6].gd.pos.x = gcd[2].gd.pos.x; gcd[6].gd.pos.y = gcd[5].gd.pos.y;
-    gcd[6].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    gcd[6].gd.mnemonic = 'S';
-    label[6].text = (unichar_t *) _("_Scale");
-    label[6].text_is_1byte = true;
-    label[6].text_in_resource = true;
-    gcd[6].gd.label = &label[6];
-    gcd[6].gd.popup_msg = (unichar_t *) _("The selection should be scaled so that it will cover the path's length");
-    gcd[6].gd.cid = CID_Scale;
-    gcd[6].creator = GRadioCreate;
+    gcd[k].gd.pos.x = 60; gcd[k].gd.pos.y = gcd[0].gd.pos.y;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[k].gd.mnemonic = 'C';
+    label[k].text = (unichar_t *) _("C_enter");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.popup_msg = (unichar_t *) _("The tile (in the clipboard) should be centered on the path");
+    gcd[k].gd.cid = CID_Center;
+    gcd[k++].creator = GRadioCreate;
+    rhvarray[0][1] = &gcd[k-1];
 
-    gcd[7].gd.pos.x = 5; gcd[7].gd.pos.y = GDrawPointsToPixels(NULL,gcd[6].gd.pos.y+20);
-    gcd[7].gd.pos.width = pos.width-10;
-    gcd[7].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels ;
-    gcd[7].creator = GLineCreate;
+    gcd[k].gd.pos.x = 140; gcd[k].gd.pos.y = gcd[1].gd.pos.y;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[k].gd.mnemonic = 'R';
+    label[k].text = (unichar_t *) _("_Right");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.popup_msg = (unichar_t *) _("The tile (in the clipboard) should be placed to the right of the path\nas the path is traced from its start point to its end");
+    gcd[k].gd.cid = CID_Right;
+    gcd[k++].creator = GRadioCreate;
+    rhvarray[0][2] = &gcd[k-1];
+    rhvarray[0][3] = GCD_Glue; rhvarray[0][4] = NULL;
 
-    gcd[8].gd.pos.x = gcd[0].gd.pos.x; gcd[8].gd.pos.y = gcd[6].gd.pos.y+24;
-    gcd[8].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    label[8].text = (unichar_t *) _("_Include Whitespace below Tile");
-    label[8].text_is_1byte = true;
-    label[8].text_in_resource = true;
-    gcd[8].gd.label = &label[8];
-    gcd[8].gd.popup_msg = (unichar_t *) _("Normally the Tile will consist of everything\nwithin the minimum bounding box of the tile --\nso adjacent tiles will abut directly on one\nanother. If you wish whitespace between tiles\nset this flag");
-    gcd[8].gd.cid = CID_IncludeWhiteSpaceBelowTile;
-    gcd[8].creator = GCheckBoxCreate;
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = GDrawPointsToPixels(NULL,gcd[2].gd.pos.y+20);
+    gcd[k].gd.pos.width = pos.width-10;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels ;
+    gcd[k++].creator = GLineCreate;
+    rhvarray[1][0] = &gcd[k-1];
+    rhvarray[1][1] = rhvarray[1][2] = GCD_ColSpan;
+    rhvarray[1][3] = GCD_Glue; rhvarray[1][4] = NULL;
 
-    gcd[9].gd.pos.x = gcd[0].gd.pos.x+10; gcd[9].gd.pos.y = gcd[8].gd.pos.y+16;
-    gcd[9].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    label[9].text = (unichar_t *) _("But not for first Tile");
-    label[9].text_is_1byte = true;
-    label[9].text_in_resource = true;
-    gcd[9].gd.label = &label[9];
-    gcd[9].gd.popup_msg = (unichar_t *) _("However it usually looks funny to have a gap at the start\nOf the tiling, so don't include whitespace on the first iteration");
-    gcd[9].gd.cid = CID_ButNotForFirstTile;
-    gcd[9].creator = GCheckBoxCreate;
+    gcd[k].gd.pos.x = gcd[0].gd.pos.x; gcd[k].gd.pos.y = gcd[2].gd.pos.y+24;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[k].gd.mnemonic = 'T';
+    label[k].text = (unichar_t *) _("_Tile");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.popup_msg = (unichar_t *) _("Multiple copies of the selection should be tiled onto the path");
+    gcd[k].gd.cid = CID_Tile;
+    gcd[k++].creator = GRadioCreate;
+    rhvarray[2][0] = &gcd[k-1];
 
-    gcd[10].gd.pos.x = 20-3; gcd[10].gd.pos.y = gcd[9].gd.pos.y+26;
-    gcd[10].gd.pos.width = -1; gcd[10].gd.pos.height = 0;
-    gcd[10].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[10].text = (unichar_t *) _("_OK");
-    label[10].text_is_1byte = true;
-    label[10].text_in_resource = true;
-    gcd[10].gd.mnemonic = 'O';
-    gcd[10].gd.label = &label[10];
-    gcd[10].gd.handle_controlevent = TD_OK;
-    gcd[10].creator = GButtonCreate;
+    gcd[k].gd.pos.x = gcd[1].gd.pos.x; gcd[k].gd.pos.y = gcd[4].gd.pos.y;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[k].gd.mnemonic = 'a';
+    label[k].text = (unichar_t *) _("Sc_ale & Tile");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.popup_msg = (unichar_t *) _("An integral number of the selection will be used to cover the path.\nIf the path length is not evenly divisible by the selection's\nheight, then the selection should be scaled slightly.");
+    gcd[k].gd.cid = CID_TileScale;
+    gcd[k++].creator = GRadioCreate;
+    rhvarray[2][1] = &gcd[k-1];
 
-    gcd[11].gd.pos.x = -20; gcd[11].gd.pos.y = gcd[10].gd.pos.y+3;
-    gcd[11].gd.pos.width = -1; gcd[11].gd.pos.height = 0;
-    gcd[11].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[11].text = (unichar_t *) _("_Cancel");
-    label[11].text_is_1byte = true;
-    label[11].text_in_resource = true;
-    gcd[11].gd.label = &label[11];
-    gcd[11].gd.mnemonic = 'C';
-    gcd[11].gd.handle_controlevent = TD_Cancel;
-    gcd[11].creator = GButtonCreate;
+    gcd[k].gd.pos.x = gcd[2].gd.pos.x; gcd[k].gd.pos.y = gcd[5].gd.pos.y;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[k].gd.mnemonic = 'S';
+    label[k].text = (unichar_t *) _("_Scale");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.popup_msg = (unichar_t *) _("The selection should be scaled so that it will cover the path's length");
+    gcd[k].gd.cid = CID_Scale;
+    gcd[k++].creator = GRadioCreate;
+    rhvarray[2][2] = &gcd[k-1];
+    rhvarray[2][3] = GCD_Glue; rhvarray[2][4] = NULL;
+    rhvarray[3][0] = NULL;
 
-    gcd[0+tilepos].gd.flags |= gg_cb_on;
-    gcd[4+tilescale].gd.flags |= gg_cb_on;
-    if ( include_whitespace&ws_include )
-	gcd[8].gd.flags |= gg_cb_on;
-    if ( include_whitespace&ws_but_not_first )
-	gcd[9].gd.flags |= gg_cb_on;
+    gcd[k-7+tilepos].gd.flags |= gg_cb_on;
+    gcd[k-3+tilescale].gd.flags |= gg_cb_on;
 
-    GGadgetsCreate(gw,gcd);
-    GDrawSetVisible(gw,true);
-    while ( !d.done )
+    label[k].text = (unichar_t *) _("_OK");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_but_default;
+    gcd[k].gd.handle_controlevent = TilePathD_OK;
+    gcd[k++].creator = GButtonCreate;
+
+    label[k].text = (unichar_t *) _("_Cancel");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_but_cancel;
+    gcd[k].gd.handle_controlevent = TilePathD_Cancel;
+    gcd[k++].creator = GButtonCreate;
+
+    harray[0] = GCD_Glue; harray[1] = &gcd[k-2]; harray[2] = GCD_Glue;
+    harray[3] = GCD_Glue; harray[4] = &gcd[k-1]; harray[5] = GCD_Glue;
+    harray[6] = NULL;
+
+    boxes[2].gd.flags = gg_enabled|gg_visible;
+    boxes[2].gd.u.boxelements = harray;
+    boxes[2].creator = GHBoxCreate;
+
+    boxes[3].gd.flags = gg_enabled|gg_visible;
+    boxes[3].gd.u.boxelements = chvarray[0];
+    boxes[3].creator = GHVBoxCreate;
+
+    boxes[4].gd.flags = gg_enabled|gg_visible;
+    boxes[4].gd.u.boxelements = rhvarray[0];
+    boxes[4].creator = GHVBoxCreate;
+
+    varray[0] = &gcd[0];
+    varray[1] = &boxes[3];
+    varray[2] = &boxes[4];
+    varray[3] = &boxes[2];
+    varray[4] = NULL;
+
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = varray;
+    boxes[0].creator = GVBoxCreate;
+
+    GGadgetsCreate(gw,boxes);
+
+    TPDCharViewInits(&tpd,CID_FirstTile);
+
+    GHVBoxSetExpandableRow(boxes[0].ret,1);
+    GHVBoxSetExpandableCol(boxes[2].ret,gb_expandgluesame);
+    GHVBoxSetExpandableRow(boxes[3].ret,1);
+    GHVBoxSetPadding(boxes[3].ret, 2, 2);
+    GHVBoxSetExpandableCol(boxes[4].ret,gb_expandglue);
+    GGadgetResize(boxes[0].ret,pos.width,pos.height);
+
+    TPDMakeActive(&tpd,&tpd.cv_medial);
+
+    GDrawResize(gw,1000,400);		/* Force a resize event */
+
+    GDrawSetVisible(tpd.gw,true);
+
+    while ( !tpd.done )
 	GDrawProcessOneEvent(NULL);
-    GDrawDestroyWindow(gw);
-return( !d.cancelled );
+
+    for ( i=0; i<4; ++i ) {
+	CharView *cv = &tpd.cv_first + i;
+	if ( cv->backimgs!=NULL ) {
+	    GDrawDestroyWindow(cv->backimgs);
+	    cv->backimgs = NULL;
+	}
+    }
+    GDrawDestroyWindow(tpd.gw);
+return( tpd.oked );
+}
+
+static void TDFree(struct tiledata *td) {
+
+    last_tiles[0] = td->firsttile;
+    last_tiles[1] = td->basetile;
+    last_tiles[2] = td->lasttile;
+    last_tiles[3] = td->isolatedtile;
 }
 
 void CVTile(CharView *cv) {
-    SplineSet *tile = ClipBoardToSplineSet();
+    struct tiledata td;
     int anypoints, anyrefs, anyimages, anyattach;
-
-    if ( tile==NULL )
-return;
 
     CVAnySel(cv,&anypoints,&anyrefs,&anyimages,&anyattach);
     if ( anyrefs || anyimages || anyattach )
 return;
 
-    if ( !TileAsk())
+    if ( !TileAsk(&td,cv->sc->parent))
 return;
 
-    tile = SplinePointListCopy(tile);
     CVPreserveState(cv);
-    TileIt(&cv->layerheads[cv->drawmode]->splines,tile, tilepos,tilescale,
-	    include_whitespace, !anypoints,cv->sc->parent->order2);
+    TileIt(&cv->layerheads[cv->drawmode]->splines,&td, !anypoints,cv->sc->parent->order2);
     CVCharChangedUpdate(cv);
-    SplinePointListsFree(tile);
+    TDFree(&td);
     cv->lastselpt = NULL;
 }
 
 void SCTile(SplineChar *sc) {
-    SplineSet *tile = ClipBoardToSplineSet();
-
-    if ( tile==NULL )
-return;
+    struct tiledata td;
 
     if ( sc->layers[ly_fore].splines==NULL )
 return;
 
-    if ( !TileAsk())
+    if ( !TileAsk(&td,sc->parent))
 return;
 
-    tile = SplinePointListCopy(tile);
     SCPreserveState(sc,false);
-    TileIt(&sc->layers[ly_fore].splines,tile, tilepos,tilescale,
-	    include_whitespace, true, sc->parent->order2);
+    TileIt(&sc->layers[ly_fore].splines,&td, true, sc->parent->order2);
     SCCharChangedUpdate(sc);
-    SplinePointListsFree(tile);
+    TDFree(&td);
 }
 
 void FVTile(FontView *fv) {
-    SplineSet *tile = ClipBoardToSplineSet();
+    struct tiledata td;
     SplineChar *sc;
     int i, gid;
-
-    if ( tile==NULL )
-return;
 
     for ( i=0; i<fv->map->enccount; ++i )
 	if ( fv->selected[i] && (gid=fv->map->map[i])!=-1 &&
@@ -944,10 +1301,9 @@ return;
     if ( i==fv->map->enccount )
 return;
 
-    if ( !TileAsk())
+    if ( !TileAsk(&td,fv->sf))
 return;
 
-    tile = SplinePointListCopy(tile);
     SFUntickAll(fv->sf);
     for ( i=0; i<fv->map->enccount; ++i )
 	if ( fv->selected[i] && (gid=fv->map->map[i])!=-1 &&
@@ -955,12 +1311,11 @@ return;
 		sc->layers[ly_fore].splines!=NULL ) {
 	    sc->ticked = true;
 	    SCPreserveState(sc,false);
-	    TileIt(&sc->layers[ly_fore].splines,tile, tilepos,tilescale,
-		    include_whitespace, true, fv->sf->order2);
+	    TileIt(&sc->layers[ly_fore].splines,&td, true, fv->sf->order2);
 	    SCCharChangedUpdate(sc);
 	}
-    SplinePointListsFree(tile);
+    TDFree(&td);
 }
+
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 #endif 		/* FONTFORGE_CONFIG_TILEPATH */
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

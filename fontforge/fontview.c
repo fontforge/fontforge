@@ -6191,7 +6191,6 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int anychars = FVAnyCharSelected(fv), gid;
     int anybuildable, anytraceable;
-    int order2 = fv->sf->order2;
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
@@ -6227,7 +6226,7 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  break;
 #ifdef FONTFORGE_CONFIG_TILEPATH
 	  case MID_TilePath:
-	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps || ClipBoardToSplineSet()==NULL || order2;
+	    mi->ti.disabled = anychars==-1 || fv->sf->onlybitmaps;
 	  break;
 #endif
 	  case MID_AvailBitmaps:

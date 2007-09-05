@@ -565,7 +565,7 @@ typedef struct findsel {
 
 enum nav_type { nt_prevdef, nt_prev, nt_goto, nt_next, nt_nextdef };
 struct cvcontainer_funcs {
-    enum cv_container_type { cvc_searcher, cvc_mathkern } type;
+    enum cv_container_type { cvc_searcher, cvc_mathkern, cvc_tilepath } type;
     void (*activateMe)(struct cvcontainer *cvc,CharView *cv);
     void (*charEvent)(struct cvcontainer *cvc,GEvent *event);
     int (*canNavigate)(struct cvcontainer *cvc,enum nav_type type);
@@ -682,6 +682,36 @@ typedef struct mathkernview {
     uint8 last_aspect;
     uint8 done;
 } MathKernDlg;
+
+# ifdef FONTFORGE_CONFIG_TILEPATH
+
+typedef struct tilepathdlg {
+    struct cvcontainer base;
+    FontView dummy_fv;
+    SplineFont dummy_sf;
+    SplineChar sc_first, sc_medial, sc_final, sc_isolated;
+    SplineChar *chars[4];
+    EncMap dummy_map;
+    int32 map[4], backmap[4];
+    uint8 sel[4];
+    CharView cv_first, cv_medial, cv_final, cv_isolated;
+    CharView *lastcv;
+/* ****** */
+    GWindow gw;
+    GGadget *mb;
+    GFont *plain, *bold;
+    int mbh;
+    int fh, as;
+    int mid_space, cv_y;
+    int cv_width, cv_height;
+/* ****** */
+    struct tiledata *td;
+    uint8 done, oked;
+} TilePathDlg;
+extern void TPDChar(TilePathDlg *tpd, GEvent *event);
+extern void TPDCharViewInits(TilePathDlg *tpd, int cid);
+#endif		/* Tile Path */
+
 #endif
 
 struct lkdata {
