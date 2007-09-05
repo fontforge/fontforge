@@ -1956,7 +1956,11 @@ return( 0 );
 
     while ( text<end ) {
 #ifndef UNICHAR_T
-	if ( *text&0x1f0000 ) {
+	if ( *text>=0x1f0000 ) {
+	    /* Not a valid Unicode character */
+	    ++text;
+    continue;
+	} else if ( *text&0x1f0000 ) {
 	    int plane = (*text>>16);
 	    unichar_t *start = text;
 	    while ( (*text>>16)==plane && text<=end )
