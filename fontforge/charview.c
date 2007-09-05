@@ -7498,7 +7498,6 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
     SplinePointList *spl;
     Spline *spline, *first;
     AnchorPoint *ap;
-    int order2 = cv->sc->parent->order2;
 
 #ifdef FONTFORGE_CONFIG_TILEPATH
     int badsel = false;
@@ -7570,7 +7569,7 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	  break;
 #ifdef FONTFORGE_CONFIG_TILEPATH
 	  case MID_TilePath:
-	    mi->ti.disabled = badsel || ClipBoardToSplineSet()==NULL || order2;
+	    mi->ti.disabled = badsel;
 	  break;
 #endif
 	  case MID_RegenBitmaps: case MID_RemoveBitmaps:
@@ -9307,4 +9306,82 @@ void MKDCharViewInits(MathKernDlg *mkd) {
 	_CharViewCreate((&mkd->cv_topright)+i, (&mkd->sc_topright)+i, &mkd->dummy_fv, i);
     }
 }
+
+/* Same for the Tile Path dlg */
+
+#ifdef FONTFORGE_CONFIG_TILEPATH
+static int tpd_cv_e_h(GWindow gw, GEvent *event) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    switch ( event->type ) {
+      case et_expose:
+	InfoExpose(cv,gw,event);
+	CVLogoExpose(cv,gw,event);
+      break;
+      case et_char:
+	TPDChar((TilePathDlg *) (cv->container),event);
+      break;
+      case et_charup:
+	CVCharUp(cv,event);
+      break;
+      case et_controlevent:
+	switch ( event->u.control.subtype ) {
+	  case et_scrollbarchange:
+	    if ( event->u.control.g == cv->hsb )
+		CVHScroll(cv,&event->u.control.u.sb);
+	    else
+		CVVScroll(cv,&event->u.control.u.sb);
+	  break;
+	}
+      break;
+      case et_map:
+	if ( event->u.map.is_visible )
+	    CVPaletteActivate(cv);
+	else
+	    CVPalettesHideIfMine(cv);
+      break;
+      case et_resize:
+	if ( event->u.resize.sized )
+	    CVResize(cv);
+      break;
+      case et_mouseup: case et_mousedown:
+	GGadgetEndPopup();
+	CVPaletteActivate(cv);
+      break;
+    }
+return( true );
+}
+
+void TPDCharViewInits(TilePathDlg *tpd, int cid) {
+    GGadgetData gd;
+    GWindowAttrs wattrs;
+    GRect pos, gsize;
+    int i;
+
+    CharViewInit();
+
+    memset(&gd,0,sizeof(gd));
+    gd.flags = gg_visible | gg_enabled;
+    helplist[0].invoke = CVMenuContextualHelp;
+    gd.u.menu2 = mblist_nomm;
+    tpd->mb = GMenu2BarCreate( tpd->gw, &gd, NULL);
+    GGadgetGetSize(tpd->mb,&gsize);
+    tpd->mbh = gsize.height;
+
+    tpd->mid_space = 20;
+    for ( i=3; i>=0; --i ) {	/* Create backwards so palettes get set in topright (last created) */
+	pos.y = 0; pos.height = 220;	/* Size doesn't matter, adjusted later */
+	pos.width = pos.height; pos.x = 0;
+	tpd->cv_y = pos.y;
+	tpd->cv_height = pos.height; tpd->cv_width = pos.width;
+	memset(&wattrs,0,sizeof(wattrs));
+	wattrs.mask = wam_events|wam_cursor;
+	wattrs.event_masks = -1;
+	wattrs.cursor = ct_mypointer;
+	(&tpd->cv_first)[i].gw = GWidgetCreateSubWindow(GDrawableGetWindow(GWidgetGetControl(tpd->gw,cid+i)),
+		&pos,tpd_cv_e_h,(&tpd->cv_first)+i,&wattrs);
+	_CharViewCreate((&tpd->cv_first)+i, (&tpd->sc_first)+i, &tpd->dummy_fv, i);
+    }
+}
+#endif		/* TilePath */
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
