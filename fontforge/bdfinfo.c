@@ -1721,7 +1721,7 @@ return;
     memset(&gd,'\0',sizeof(gd));
     memset(&label[0],'\0',sizeof(label[0]));
 
-    label[0].text = (unichar_t *) "\0";
+    label[0].text = (unichar_t *) "\0\0\0\0";
     label[0].font = bd.font;
     gd.pos.height = bd.fh;
     gd.pos.width = bd.vwidth-bd.value_x;
