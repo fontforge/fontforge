@@ -935,7 +935,8 @@ void MenuNew(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void FVMenuClose(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
-    DelayEvent((void (*)(void *)) _FVMenuClose, fv);
+    /*DelayEvent((void (*)(void *)) _FVMenuClose, fv);*/
+    _FVMenuClose(fv);
 }
 # elif defined(FONTFORGE_CONFIG_GTK)
 void Menu_New(GtkMenuItem *menuitem, gpointer user_data) {
@@ -7238,7 +7239,7 @@ static void enlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	    mi->ti.disabled = gid!=-1 && SCWorthOutputting(sf->glyphs[gid]);
 	  break;
 	  case MID_MakeFromFont:
-	    mi->ti.disabled = fv->cidmaster!=NULL || map->enccount>1024;
+	    mi->ti.disabled = fv->cidmaster!=NULL || map->enccount>1024 || map->enc!=&custom;
 	  break;
 	  case MID_RemoveEncoding:
 	  break;
