@@ -61,6 +61,7 @@ typedef struct tiledata {
     SplineSet *result;		/* Final result after transformation */
     DBounds bb, fbb, lbb, ibb;	/* Of the basetile, first & last tiles */
     uint8 include_white, finclude_white, linclude_white, iinclude_white;
+    double xscale[3];
 
     SplineSet *path;
     double plength;		/* Length of path */
@@ -689,6 +690,7 @@ static void TileSplineSets(TD *td,SplineSet **head,int order2) {
 	} else
 	    prev = spl;
     }
+    SPLCatagorizePoints(td->result);
     if ( *head==NULL )
 	*head = td->result;
     else {
