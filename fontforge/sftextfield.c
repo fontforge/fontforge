@@ -1931,6 +1931,7 @@ return( false );
 	    /* Does this para start out r2l or l2r? */
 	    p = st->lineheights[i].p;
 	    if ( st->paras[p].para[0]!=NULL &&
+		    st->paras[p].para[0]->fl!=NULL &&
 		    ScriptIsRightToLeft( ((struct fontlist *) (st->paras[p].para[0]->fl))->script ))
 		x = st->xmax - st->lineheights[i].linelen;
 	    else
