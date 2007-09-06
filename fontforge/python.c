@@ -739,7 +739,7 @@ return( NULL );
     Py_XINCREF(data);
 
     if ( ie_cnt>=ie_max )
-	py_ie = grealloc(py_ie,(ie_max += 10)*sizeof(struct python_import_export));
+	py_ie = grealloc(py_ie,((ie_max += 10)+1)*sizeof(struct python_import_export));
     py_ie[ie_cnt].import = import;
     py_ie[ie_cnt].export = export;
     py_ie[ie_cnt].data = data;
@@ -747,6 +747,7 @@ return( NULL );
     py_ie[ie_cnt].extension = copy(exten);
     py_ie[ie_cnt].all_extensions = copy(exten_list==NULL ? exten : exten_list);
     ++ie_cnt;
+    py_ie[ie_cnt].name = NULL;		/* End list marker */
     
 Py_RETURN_NONE;
 }
