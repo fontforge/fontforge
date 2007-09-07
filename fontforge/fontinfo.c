@@ -5542,7 +5542,7 @@ static void LookupParseSelection(struct lkdata *lk, struct selection_bits *sel) 
     sel->a_sub_lookup = a_sub_lookup;
     sel->any_first = any_first;
     sel->any_last = any_last;
-    sel->sub_table_mergeable = sub_mergeable && all_one_lookup && sub_cnt>=2 && lookup_cnt==0;
+    sel->sub_table_mergeable = sub_mergeable && all_one_lookup>=0 && sub_cnt>=2 && lookup_cnt==0;
     sel->lookup_mergeable = lookup_mergeable && lookup_cnt>=2 && sub_cnt==0;
 }
 
