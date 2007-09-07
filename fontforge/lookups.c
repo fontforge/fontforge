@@ -5051,6 +5051,7 @@ typedef struct anchorclassdlg {
 #define CID_Scripts	2004
 #define CID_BaseChar	2005
 #define CID_Suffix	2006
+#define CID_AllSame	2007
 
 #define CID_KernDisplay		2022
 #define CID_PixelSize		2023
@@ -5535,6 +5536,9 @@ return;
     GGadgetPreparePopupImage(GGadgetGetWindow(g),NULL,pstkd,_PST_GetImage,PST_FreeImage);
 }
 
+static void PSTKD_FinishSuffixedEdit(GGadget *g, int row, int col, int wasnew);
+static void PSTKD_InitSameAsRow(GGadget *g, int row);
+
 static void PSTMatrixInit(struct matrixinit *mi,SplineFont *_sf, struct lookup_subtable *sub, PSTKernDlg *pstkd) {
     int cnt;
     struct matrix_data *md;
@@ -5770,6 +5774,44 @@ static void PSTMatrixInit(struct matrixinit *mi,SplineFont *_sf, struct lookup_s
     }
     PSTKD_DoSort(pstkd,md,cnt,mi->col_cnt);
     mi->matrix_data = md;
+    if ( lookup_type==gsub_single )
+	mi->finishedit = PSTKD_FinishSuffixedEdit;
+    else if ( lookup_type==gpos_single )
+	mi->initrow = PSTKD_InitSameAsRow;
+}
+
+static void PSTKD_FinishSuffixedEdit(GGadget *g, int row, int col, int wasnew) {
+    PSTKernDlg *pstkd = GDrawGetUserData(GGadgetGetWindow(g));
+    int rows, cols = GMatrixEditGetColCnt(g);
+    struct matrix_data *psts = GMatrixEditGet(g,&rows);
+    char *suffix = GGadgetGetTitle8(GWidgetGetControl(pstkd->gw,CID_Suffix));
+    SplineChar *alt, *sc;
+
+    if ( col!=0 || !wasnew || psts[row*cols+0].u.md_str==NULL )
+return;
+    if ( *suffix=='\0' || ( suffix[0]=='.' && suffix[1]=='\0' ))
+return;
+    sc = SFGetChar(pstkd->sf,-1,psts[row*cols+0].u.md_str);
+    if ( sc==NULL )
+return;
+    alt = SuffixCheck(sc,suffix);
+    if ( alt!=NULL )
+	psts[row*cols+1].u.md_str = copy(alt->name);
+}
+
+static void PSTKD_InitSameAsRow(GGadget *g, int row) {
+    GWidget gw = GGadgetGetWindow(g);
+    int rows, cols = GMatrixEditGetColCnt(g);
+    struct matrix_data *psts = GMatrixEditGet(g,&rows);
+
+    if ( row==0 )
+return;
+    if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_AllSame)))
+return;
+    psts[row*cols+SIM_DX].u.md_ival = psts[0+SIM_DX].u.md_ival;
+    psts[row*cols+SIM_DY].u.md_ival = psts[0+SIM_DY].u.md_ival;
+    psts[row*cols+SIM_DX_ADV].u.md_ival = psts[0+SIM_DX_ADV].u.md_ival;
+    psts[row*cols+SIM_DY_ADV].u.md_ival = psts[0+SIM_DY_ADV].u.md_ival;
 }
 
 static int PSTKD_Sort(GGadget *g, GEvent *e) {
@@ -6167,14 +6209,24 @@ return( true );
 return( false );
 }
 
-static void PSTKD_DoPopulate(PSTKernDlg *pstkd,char *suffix) {
+enum pop_type { pt_all, pt_suffixed, pt_selected };
+
+static void PSTKD_DoPopulate(PSTKernDlg *pstkd,char *suffix, enum pop_type pt) {
     GGadget *pstk = GWidgetGetControl(pstkd->gw,CID_PSTList);
     int rows, row_max, old_rows, cols = GMatrixEditGetColCnt(pstk);
     struct matrix_data *old = GMatrixEditGet(pstk,&rows), *psts;
     int pos;
     int gid,k;
     SplineChar *sc, *alt;
-    SplineFont *sf;
+    int enc;
+    SplineFont *sf = pstkd->sf;
+    FontView *fv = sf->fv;
+    EncMap *map = fv->map;
+    GGadget *gallsame = GWidgetGetControl(pstkd->gw,CID_AllSame);
+    int allsame = false;
+
+    if ( gallsame!=NULL )
+	allsame = GGadgetIsChecked(gallsame);
 
     psts = MDCopy(old,rows,cols);
     old_rows = row_max = rows;
@@ -6183,15 +6235,18 @@ static void PSTKD_DoPopulate(PSTKernDlg *pstkd,char *suffix) {
 	sf = pstkd->sf->subfontcnt==0 ? pstkd->sf : pstkd->sf->subfonts[k];
 	for ( gid=0; gid<sf->glyphcnt; ++gid ) {
 	    if ( SCReasonable(sc = sf->glyphs[gid]) &&
-		    ScriptInFeatureScriptList(SCScriptFromUnicode(sc),
-			    pstkd->sub->lookup->features) &&
+		    (pt==pt_selected || ScriptInFeatureScriptList(SCScriptFromUnicode(sc),
+			    pstkd->sub->lookup->features)) &&
+		    (pt!=pt_selected || (gid<fv->sf->glyphcnt &&
+			    (enc = map->backmap[gid])!=-1 &&
+			    fv->selected[enc])) &&
 		    (pos = SCNameUnused(sc->name,old,old_rows,cols))!=-1 &&
 		    (pstkd->sub->lookup->lookup_type!=gsub_ligature ||
 			    SCIsLigature(sc)) ) {
 		alt = NULL;
 		if ( suffix!=NULL ) {
 		    alt = SuffixCheck(sc,suffix);
-		    if ( alt==NULL )
+		    if ( pt==pt_suffixed && alt==NULL )
 	    continue;
 		}
 		if ( pos==old_rows ) {
@@ -6209,7 +6264,12 @@ static void PSTKD_DoPopulate(PSTKernDlg *pstkd,char *suffix) {
 		}
 		if ( alt!=NULL ) 
 		    psts[pos*cols+1].u.md_str = copy(alt->name);
-		else if ( pstkd->sub->lookup->lookup_type!=gpos_pair )
+		else if ( allsame && pos!=0 ) {
+		    psts[pos*cols+SIM_DX].u.md_ival = psts[0+SIM_DX].u.md_ival;
+		    psts[pos*cols+SIM_DY].u.md_ival = psts[0+SIM_DY].u.md_ival;
+		    psts[pos*cols+SIM_DX_ADV].u.md_ival = psts[0+SIM_DX_ADV].u.md_ival;
+		    psts[pos*cols+SIM_DY_ADV].u.md_ival = psts[0+SIM_DY_ADV].u.md_ival;
+		} else if ( pstkd->sub->lookup->lookup_type!=gpos_pair )
 		    SCSubtableDefaultSubsCheck(sc,pstkd->sub,psts,cols,pos);
 	    }
 	}
@@ -6241,7 +6301,7 @@ static int PSTKD_PopulateWithSuffix(GGadget *g, GEvent *e) {
 	PSTKernDlg *pstkd = GDrawGetUserData(GGadgetGetWindow(g));
 	char *suffix = GGadgetGetTitle8(GWidgetGetControl(pstkd->gw,CID_Suffix));
 	if ( *suffix!='\0' && ( suffix[0]!='.' || suffix[1]!='\0' )) {
-	    PSTKD_DoPopulate(pstkd,suffix);
+	    PSTKD_DoPopulate(pstkd,suffix, pt_suffixed);
 	    PSTKD_SetSuffix(pstkd);
 	}
 	free(suffix);
@@ -6252,8 +6312,37 @@ return( true );
 static int PSTKD_Populate(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	PSTKernDlg *pstkd = GDrawGetUserData(GGadgetGetWindow(g));
+	GGadget *gsuffix = GWidgetGetControl(pstkd->gw,CID_Suffix);
+	char *suffix = NULL;
+	if ( gsuffix != NULL ) {
+	    suffix = GGadgetGetTitle8(gsuffix);
+	    if ( *suffix=='\0' || ( suffix[0]=='.' && suffix[1]=='\0' )) {
+		free(suffix);
+		suffix = NULL;
+	    }
+	}
 	PSTKD_SetSuffix(pstkd);
-	PSTKD_DoPopulate(pstkd,NULL);
+	PSTKD_DoPopulate(pstkd,suffix,pt_all);
+	free(suffix);
+    }
+return( true );
+}
+
+static int PSTKD_PopulateSelected(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	PSTKernDlg *pstkd = GDrawGetUserData(GGadgetGetWindow(g));
+	GGadget *gsuffix = GWidgetGetControl(pstkd->gw,CID_Suffix);
+	char *suffix = NULL;
+	if ( gsuffix != NULL ) {
+	    suffix = GGadgetGetTitle8(gsuffix);
+	    if ( *suffix=='\0' || ( suffix[0]=='.' && suffix[1]=='\0' )) {
+		free(suffix);
+		suffix = NULL;
+	    }
+	}
+	PSTKD_SetSuffix(pstkd);
+	PSTKD_DoPopulate(pstkd,suffix,pt_selected);
+	free(suffix);
     }
 return( true );
 }
@@ -6638,7 +6727,7 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub) {
     GWindowAttrs wattrs;
     char title[300];
     struct matrixinit mi;
-    GGadgetCreateData gcd[15], buttongcd[3], box[5];
+    GGadgetCreateData gcd[15], buttongcd[4], box[5];
     GGadgetCreateData *h1array[8], *h2array[7], *h3array[7], *varray[16];
     GTextInfo label[15], buttonlabel[2];
     int i,k,mi_pos, mi_k;
@@ -6761,20 +6850,29 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub) {
     buttongcd[0].gd.handle_controlevent = PSTKD_Populate;
     buttongcd[0].creator = GButtonCreate;
 
-    buttonlabel[1].text = (unichar_t *) _("_Remove Empty");
+    buttonlabel[1].text = (unichar_t *) _("_Add Selected");
     buttonlabel[1].text_is_1byte = true;
     buttonlabel[1].text_in_resource = true;
     buttongcd[1].gd.label = &buttonlabel[1];
     buttongcd[1].gd.pos.x = 5; buttongcd[1].gd.pos.y = 5+4;
-    buttongcd[1].gd.flags = sub->lookup->features==NULL ? gg_visible|gg_utf8_popup :
-	    gg_enabled|gg_visible|gg_utf8_popup;
-    buttongcd[1].gd.popup_msg = (unichar_t *)
+    buttongcd[1].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    buttongcd[0].gd.popup_msg = (unichar_t *) _("Add entries for all selected glyphs.");
+    buttongcd[1].gd.handle_controlevent = PSTKD_PopulateSelected;
+    buttongcd[1].creator = GButtonCreate;
+
+    buttonlabel[2].text = (unichar_t *) _("_Remove Empty");
+    buttonlabel[2].text_is_1byte = true;
+    buttonlabel[2].text_in_resource = true;
+    buttongcd[2].gd.label = &buttonlabel[2];
+    buttongcd[2].gd.pos.x = 5; buttongcd[2].gd.pos.y = 5+4;
+    buttongcd[2].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    buttongcd[2].gd.popup_msg = (unichar_t *)
 	    (sub->lookup->lookup_type == gpos_single ? _("Remove all \"empty\" entries -- those where all fields are 0") :
 	     sub->lookup->lookup_type == gpos_pair ? _("Remove all \"empty\" entries -- entries with no second glyph") :
 	     sub->lookup->lookup_type == gsub_ligature ? _("Remove all \"empty\" entries -- those with no source glyphs") :
 		_("Remove all \"empty\" entries -- those with no replacement glyphs"));
-    buttongcd[1].gd.handle_controlevent = PSTKD_RemoveEmpty;
-    buttongcd[1].creator = GButtonCreate;
+    buttongcd[2].gd.handle_controlevent = PSTKD_RemoveEmpty;
+    buttongcd[2].creator = GButtonCreate;
 
     if ( sub->lookup->lookup_type == gsub_single ) {
 	label[i].text = (unichar_t *) _("_Default Using Suffix:");
@@ -6812,6 +6910,18 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub) {
 	box[1].gd.u.boxelements = h2array;
 	box[1].creator = GHBoxCreate;
 	varray[k++] = &box[1]; varray[k++] = NULL;
+    } else if ( sub->lookup->lookup_type == gpos_single ) {
+	label[i].text = (unichar_t *) _("_Default New Entries to First");
+	label[i].text_is_1byte = true;
+	label[i].text_in_resource = true;
+	gcd[i].gd.label = &label[i];
+	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4; 
+	gcd[i].gd.flags = gg_enabled|gg_visible|gg_cb_on|gg_utf8_popup;
+	gcd[i].gd.popup_msg = (unichar_t *) _("When adding new entries, give them the same\ndelta values as those on the first line.");
+	gcd[i].gd.cid = CID_AllSame;
+	gcd[i].creator = GCheckBoxCreate;
+	varray[k++] = &gcd[i++]; varray[k++] = NULL;
+    
     } else if ( sub->lookup->lookup_type == gpos_pair ) {
 	label[i].text = (unichar_t *) _("Size:");
 	label[i].text_is_1byte = true;
