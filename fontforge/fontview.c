@@ -8280,6 +8280,8 @@ void FVRefreshChar(FontView *fv,int gid) {
     /* Can happen in scripts */ /* Can happen if we do an AutoHint when generating a tiny font for freetype context */
     if ( fv->v==NULL || fv->colcnt==0 || fv->sf->glyphs[gid]== NULL )
 return;
+#if 0
+    /* What on earth was this code for? it breaks updates of things like "a.sc"*/
     if ( fv->cur_subtable==NULL && strchr(fv->sf->glyphs[gid]->name,'.')!=NULL ) {
 	char *temp = copy(fv->sf->glyphs[gid]->name);
 	SplineChar *sc2;
@@ -8289,6 +8291,7 @@ return;
 	    gid = sc2->orig_pos;
 	free(temp);
     }
+#endif
 
     for ( fv=fv->sf->fv; fv!=NULL; fv = fv->nextsame ) {
 	for ( mv=fv->sf->metrics; mv!=NULL; mv=mv->next )
