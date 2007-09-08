@@ -5108,7 +5108,7 @@ static void bMergeFonts(Context *c) {
 	ScriptErrorString(c,"Can't find font", c->a.vals[1].u.sval);
     if ( sf->fv==NULL )
 	EncMapFree(sf->map);
-    MergeFont(c->curfv,sf);
+    MergeFont(c->curfv,sf,0);
 }
 
 static void bInterpolateFonts(Context *c) {
