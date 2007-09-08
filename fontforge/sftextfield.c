@@ -703,7 +703,10 @@ return;
 	}
 	fl->next = test;
 	if ( test!=NULL ) {
-	    test->start = fl->end;
+	    if ( st->text[fl->end]=='\n' )
+		test->start = fl->end+1;
+	    else
+		test->start = fl->end;
 	    test->end += diff;
 	    fl = test->next;
 	} else
