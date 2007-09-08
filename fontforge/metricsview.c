@@ -1024,6 +1024,7 @@ static int MV_ChangeKerning(MetricsView *mv, int which, int offset, int is_diff)
 return( false );
 	    mv->cur_subtable = sub;
 	    MVSetSubtables(mv);
+	    MVSetFeatures(mv);
 	}
 
 	if ( kp==NULL ) {

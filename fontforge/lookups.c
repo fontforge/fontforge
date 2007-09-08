@@ -7365,9 +7365,9 @@ void _LookupSubtableContents(SplineFont *sf, struct lookup_subtable *sub,
 	else
 	    sub->vertical_kerning = VerticalKernFeature(sf,sub->lookup,true);
 
-	if ( sd!=NULL && sd->flags&sdf_kernclass )
+	if ( sd!=NULL && (sd->flags&sdf_kernclass) )
 	    asked = 1;
-	else if ( sd!=NULL && sd->flags&sdf_kernclass )
+	else if ( sd!=NULL && (sd->flags&sdf_kernpair) )
 	    asked = 0;
 	else {
 	    buts[0] = _("_Pairs"); buts[1] = _("C_lasses"); buts[2] = _("_Cancel"); buts[3]=NULL;
