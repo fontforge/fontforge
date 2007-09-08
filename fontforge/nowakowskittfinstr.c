@@ -670,6 +670,41 @@ static void FreeCvtInfo(InstrCt *ct) {
 
 /******************************************************************************
  *
+ * Some routines to pick up particular data from PS Private.
+ *
+ ******************************************************************************/
+
+static int GetBlueFuzz(SplineFont *sf) {
+    char *str, *end;
+
+    if ( sf->private==NULL || (str=PSDictHasEntry(sf->private,"BlueFuzz"))==NULL || !isdigit(str[0]) )
+return 1;
+return strtod(str, &end);
+}
+
+/* Return BlueScale as PPEM at which we have to stop suppressing overshoots */
+static int GetBlueScale(SplineFont *sf) {
+    char *str, *end;
+    double bs;
+    int result;
+
+    if ( sf->private==NULL || (str=PSDictHasEntry(sf->private,"BlueScale"))==NULL )
+return 42;
+
+    bs = strtod(str, &end);
+    if (end==str || bs<=0.0) bs=0.039625;
+    bs*=240;
+    bs+=0.49;
+    bs*=300.0/72.0;
+
+    result = (int)rint(bs);
+    if (result>255) result = 255; /* Who would need such blue scale??? */
+
+return result;
+}
+
+/******************************************************************************
+ *
  * Some low-lewel routines to add data to bytecode instruction stream.
  *
  ******************************************************************************/
@@ -857,7 +892,7 @@ static void init_maxp(InstrCt *ct) {
 
     if (ct->fpgm_done && zones<2) zones=2;
     if (ct->fpgm_done && twpts<1) twpts=1;
-    if (ct->fpgm_done && fdefs<6) fdefs=6;
+    if (ct->fpgm_done && fdefs<7) fdefs=7;
     if (stack<STACK_DEPTH) stack=STACK_DEPTH;
 
     memputshort(tab->data, 7*sizeof(uint16), zones);
@@ -890,25 +925,31 @@ static void init_fpgm(InstrCt *ct) {
 	0x00, //     0
 	0x13, //   SZP0
 	0x4b, //   MPPEM
-	0xb0, //   PUSHB_1
-	0x1e, //     30 - under this weight blues will be specially rounded
+	0xb0, //   PUSHB_1 - under this ppem blues will be specially rounded
+	GetBlueScale(ct->sc->parent), 
 	0x50, //   LT
 	0x58, //   IF
 	0xb0, //     PUSHB_0
 	0x4a, //       74
-	0x76, //     SROUND
+	0x76, //     SROUND - round blues a bit up to grid
 	0x59, //   EIF
 	0xb0, //   PUSHB_1
 	0x00, //     0
 	0x23, //   SWAP
-	0x3f, //   MIAP[rnd]
-	0x18, //   RTG
-	0x4b, //   MPPEM
+	0x3f, //   MIAP[rnd] - blue zone positioned here
+	0x18, //   RTG - round state for overshoots in monochrome mode
 	0xb0, //   PUSHB_1
-	0x32, //     50 - under this weight overshoots will be suppressed
+	0x06, //     6
+	0x2b, //   CALL
+	0x58, //   IF
+	0x3d, //     RTDG - round state for overshoots in antialiased mode
+	0x59, //   EIF
+	0x4b, //   MPPEM
+	0xb0, //   PUSHB_1 - under following ppem overshoots will be suppressed
+	GetBlueScale(ct->sc->parent), 
 	0x50, //   LT
 	0x58, //   IF
-	0x7d, //   RDTG
+	0x7d, //   RDTG - suppress overshoots
 	0x59, //   EIF
 	0x20, //   DUP
 	0xd4, //   MDRP[rp0,rnd,grey]
@@ -955,7 +996,7 @@ static void init_fpgm(InstrCt *ct) {
 
 	/* Function 2: Below given ppem, substitute the width with cvt entry.
 	 * Leave the resulting width on the stack. Used as the first step in
-	 * normalizing stems, see normalize_stem().
+	 * normalizing cvt stems, see normalize_stem().
 	 * Syntax: PUSHX_3 width cvt_index ppem 2 CALL
 	 */
 	0xb0, // PUSHB_1
@@ -972,7 +1013,7 @@ static void init_fpgm(InstrCt *ct) {
 
 	/* Function 3: round a stack element as a black distance, respecting
 	 * minimum distance of 1px. This is used for rounding stems after width
-	 * normalization.
+	 * normalization. Often preceeded with SROUND, so finally sets RTG.
 	 * Leaves the rounded width on the stack.
 	 * Syntax: PUSHX_2 width_to_be_rounded 3 CALL
 	 */
@@ -1001,31 +1042,45 @@ static void init_fpgm(InstrCt *ct) {
 	0xb0, // PUSHB_1
 	0x04, //   4
 	0x2c, // FDEF
-	0x4b, //   MPPEM
-	0x52, //   GT
+	0xb0, //   PUSHB_1
+	0x06, //     5
+	0x2b, //   CALL
 	0x58, //   IF
+	0x21, //     POP
+	0x23, //     SWAP
+	0x21, //     POP
 	0x58, //     IF
-	0xfd, //       MIRP_rp0_min_rnd_black
+	0xd9, //       MDRP_rp0_min_black
 	0x1b, //     ELSE
-	0xed, //       MIRP_min_rnd_black
+	0xc9, //       MDRP_min_black
 	0x59, //     EIF
 	0x1b, //   ELSE
-	0x21, //     POP
-	0xb0, //     PUSHB_1
-	0x05, //       5
-	0x2b, //     CALL
+	0x4b, //     MPPEM
+	0x52, //     GT
 	0x58, //     IF
-	0xb0, //       PUSHB_1
-	0x46, //         70
-	0x76, //       SROUND
-	0x59, //     EIF
-	0x58, //     IF
-	0xdd, //       MDRP_rp0_min_rnd_black
+	0x58, //       IF
+	0xfd, //         MIRP_rp0_min_rnd_black
+	0x1b, //       ELSE
+	0xed, //         MIRP_min_rnd_black
+	0x59, //       EIF
 	0x1b, //     ELSE
-	0xcd, //       MDRP_min_rnd_black
+	0x21, //       POP
+	0xb0, //       PUSHB_1
+	0x05, //         5
+	0x2b, //       CALL
+	0x58, //       IF
+	0xb0, //         PUSHB_1
+	0x46, //           70
+	0x76, //         SROUND
+	0x59, //       EIF
+	0x58, //       IF
+	0xdd, //         MDRP_rp0_min_rnd_black
+	0x1b, //       ELSE
+	0xcd, //         MDRP_min_rnd_black
+	0x59, //       EIF
 	0x59, //     EIF
+	0x18, //     RTG
 	0x59, //   EIF
-	0x18, //   RTG
 	0x2d, // ENDF
 
 	/* Function 5: determine if we are hinting vertically. The function
@@ -1038,6 +1093,30 @@ static void init_fpgm(InstrCt *ct) {
 	0x0d, //   GFV
 	0x5c, //   NOT
 	0x5a, //   AND
+	0x2d, // ENDF
+
+	/* Function 6: check if we are hinting in grayscale.
+	 * CAUTION! Older FreeType versions lie if asked.
+	 * Syntax: PUSHB_1 6 CALL; leaves boolean on the stack.
+	 */
+	0xb0, // PUSHB_1
+	0x06, //   6
+	0x2c, // FDEF
+	0xb1, //   PUSHB_2
+	0x22, //     34
+	0x01, //     1
+	0x88, //   GETINFO
+	0x50, //   LT
+	0x58, //   IF
+	0xb0, //     PUSHB_1
+	0x20, //       32
+	0x88, //     GETINFO
+	0x5c, //     NOT
+	0x5c, //     NOT
+	0x1b, //   ELSE
+	0xb0, //     PUSHB_1
+	0x00, //       0
+	0x59, //   EIF
 	0x2d  // ENDF
     };
 
@@ -1135,14 +1214,14 @@ static uint8 *normalize_stem(uint8 *prep_head, int xdir, StdStem *stem, InstrCt 
     int callargs[3];
     int i;
 
-    stem->stopat = 65536;
+    stem->stopat = 32767;
 
     if (stem->snapto != NULL)
     {
         /* compute ppem at which to stop snapping stem to stem->snapto */
         int EM = ct->gi->sf->ascent + ct->gi->sf->descent;
 
-        for (i=7; i<65536; i++) {
+        for (i=7; i<32768; i++) {
 	    int width_parent = compute_stem_width(xdir, stem->snapto, EM, i);
 	    int width_me = compute_stem_width(xdir, stem, EM, i);
 	    
@@ -1260,7 +1339,7 @@ static void init_prep(InstrCt *ct) {
 	0xb0, // PUSHB_1
 	0x80, //   128/64 = 2 pixels
 	0x1d, // SCVTCI
-	0x59  // EIF
+	0x59, // EIF
     };
 
     int preplen = sizeof(new_prep_preamble);
@@ -1268,15 +1347,21 @@ static void init_prep(InstrCt *ct) {
     uint8 *new_prep, *prep_head;
 
     if (ct->cvt_done)
-        prepmaxlen += 40+38*(ct->cvtinfo.StemSnapHCnt+ct->cvtinfo.StemSnapVCnt);
+        prepmaxlen += 48+38*(ct->cvtinfo.StemSnapHCnt+ct->cvtinfo.StemSnapVCnt);
 
     new_prep = gcalloc(prepmaxlen, sizeof(uint8));
     memmove(new_prep, new_prep_preamble, preplen*sizeof(uint8));
     prep_head = new_prep + preplen;
 
     if (ct->cvt_done && ct->fpgm_done) {
+        /* Normalize stems only in monochrome mode */
+        prep_head = pushnum(prep_head, 5);
+	*prep_head++ = CALL;
+	*prep_head++ = 0x5c; // NOT
+	*prep_head++ = 0x58; // IF
         prep_head = normalize_stems(prep_head, 0, ct);
         prep_head = normalize_stems(prep_head, 1, ct);
+	*prep_head++ = 0x59; // EIF
         preplen = prep_head - new_prep;
     }
 
@@ -1353,9 +1438,7 @@ return NULL;
 	}
     }
 
-    if (mindelta <= fudge)
-return closest;
-    if (value/closestwidth < 1.11 && value/closestwidth > 0.9)
+    if (mindelta <= fudge*2.0)
 return closest;
     if (can_fail)
 return NULL;
@@ -1432,15 +1515,6 @@ return;
     _CVT_ImportPrivateString(sf,PSDictHasEntry(sf->private,"FamilyOtherBlues"));
 }
 #endif
-
-static int GetBlueFuzz(SplineFont *sf) {
-    char *str, *end;
-
-    if ( sf->private==NULL || (str=PSDictHasEntry(sf->private,"BlueFuzz"))==NULL || !isdigit(str[0]) )
-return 1;
-return strtod(str, &end);
-}
-
 /* Find previous point index on the contour. */
 static int PrevOnContour(int *contourends, int p) {
     int i;
@@ -1915,13 +1989,13 @@ return;
 	    StdStem stem;
 
 	    stem.width = (int)rint(fabs(hint->width));
-	    stem.stopat = 65535;
+	    stem.stopat = 32767;
 	    stem.snapto = 
 	        CVTSeekStem(ct->xdir, &(ct->cvtinfo), hint->width, ct->gi->fudge, false);
 
             int i, EM = ct->sc->parent->ascent + ct->sc->parent->descent;
 
-            for (i=7; i<65536; i++) {
+            for (i=7; i<32768; i++) {
 	        int width_parent = compute_stem_width(ct->xdir, stem.snapto, EM, i);
 		int width_me = compute_stem_width(ct->xdir, &stem, EM, i);
 		
