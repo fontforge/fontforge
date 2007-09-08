@@ -1575,8 +1575,8 @@ struct subtable_data {
 };
 
 extern GTextInfo **SFLookupListFromType(SplineFont *sf, int lookup_type );
-extern GTextInfo **SFSubtablesOfType(SplineFont *sf, int lookup_type, int kernclass);
-extern GTextInfo *SFSubtableListOfType(SplineFont *sf, int lookup_type, int kernclass);
+extern GTextInfo **SFSubtablesOfType(SplineFont *sf, int lookup_type, int kernclass, int add_none);
+extern GTextInfo *SFSubtableListOfType(SplineFont *sf, int lookup_type, int kernclass, int add_none);
 extern struct lookup_subtable *SFNewLookupSubtableOfType(SplineFont *sf, int lookup_type, struct subtable_data *sd );
 extern int EditLookup(OTLookup *otl,int isgpos,SplineFont *sf);
 extern int EditSubtable(struct lookup_subtable *sub,int isgpos,SplineFont *sf,
@@ -1585,6 +1585,7 @@ extern void _LookupSubtableContents(SplineFont *sf, struct lookup_subtable *sub,
 	struct subtable_data *sd);
 extern unichar_t **SFGlyphNameCompletion(SplineFont *sf,GGadget *t,int from_tab,
 	int new_name_after_space);
+extern void FVMassGlyphRename(FontView *fv);
 
 extern void SFBdfProperties(SplineFont *sf, EncMap *map, BDFFont *thisone);
 

@@ -1496,7 +1496,7 @@ static int AW_Subtable(GGadget *g, GEvent *e) {
 		sub = SFNewLookupSubtableOfType(wi->sf,gpos_pair,&sd);
 		if ( sub!=NULL ) {
 		    wi->subtable = sub;
-		    GGadgetSetList(g,SFSubtablesOfType(wi->sf,gpos_pair,false),false);
+		    GGadgetSetList(g,SFSubtablesOfType(wi->sf,gpos_pair,false,false),false);
 		}
 	    }
 	}
@@ -1838,7 +1838,7 @@ static void AutoWKDlg(FontView *fv,int autokern) {
     GHVBoxSetExpandableCol(varray[2]->ret,1);
     if ( autokern ) {
 	GTextInfo *ti;
-	GGadgetSetList(hvarray[16]->ret,SFSubtablesOfType(sf,gpos_pair,false),false);
+	GGadgetSetList(hvarray[16]->ret,SFSubtablesOfType(sf,gpos_pair,false,false),false);
 	ti = GGadgetGetListItemSelected(hvarray[16]->ret);
 	if ( ti==NULL ) {
 	    int32 len,j;

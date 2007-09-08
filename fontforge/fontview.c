@@ -1767,6 +1767,7 @@ void FontViewMenu_Condense(GtkMenuItem *menuitem, gpointer user_data) {
 #define MID_CanonicalContours	2243
 #define MID_RemoveBitmaps	2244
 #define MID_Validate		2245
+#define MID_MassRename		2246
 #define MID_Center	2600
 #define MID_Thirds	2601
 #define MID_SetWidth	2602
@@ -2806,6 +2807,16 @@ return;
 	SFBdfProperties(fv->sf,fv->map,fv->show);
     else
 	SFBdfProperties(fv->sf,fv->map,NULL);
+}
+
+# if defined(FONTFORGE_CONFIG_GDRAW)
+static void FVMenuMassRename(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_MassRename(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+    FVMassGlyphRename(fv);
 }
 
 # if defined(FONTFORGE_CONFIG_GDRAW)
@@ -6199,9 +6210,6 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = anychars<0 || (gid = fv->map->map[anychars])==-1 ||
 		    (fv->cidmaster!=NULL && fv->sf->glyphs[gid]==NULL);
 	  break;
-	  case MID_StrikeInfo:
-	    mi->ti.disabled = fv->sf->bitmaps==NULL;
-	  break;
 	  case MID_FindProblems:
 	    mi->ti.disabled = anychars==-1;
 	  break;
@@ -6383,6 +6391,22 @@ static void delistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
+static void infolistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    int anychars = FVAnyCharSelected(fv);
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	switch ( mi->mid ) {
+	  case MID_StrikeInfo:
+	    mi->ti.disabled = fv->sf->bitmaps==NULL;
+	  break;
+	  case MID_MassRename:
+	    mi->ti.disabled = anychars==-1;
+	  break;
+	}
+    }
+}
+
 static GMenuItem2 dummyitem[] = { { (unichar_t *) N_("Font|_New"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'N' }, NULL };
 static GMenuItem2 fllist[] = {
     { { (unichar_t *) N_("Font|_New"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'N' }, H_("New|Ctl+N"), NULL, NULL, MenuNew },
@@ -6548,12 +6572,18 @@ static GMenuItem2 rndlist[] = {
     { NULL }
 };
 
+static GMenuItem2 infolist[] = {
+    { { (unichar_t *) N_("_MATH Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("MATH Info...|No Shortcut"), NULL, NULL, FVMenuMATHInfo },
+    { { (unichar_t *) N_("_BDF Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("BDF Info...|No Shortcut"), NULL, NULL, FVMenuBDFInfo, MID_StrikeInfo },
+    { { (unichar_t *) N_("Show _Dependent"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, NULL, delist, delistcheck },
+    { { (unichar_t *) N_("Mass Glyph _Rename..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Mass Glyph Rename...|No Shortcut"), NULL, NULL, FVMenuMassRename, MID_MassRename },
+    { NULL }
+};
+
 static GMenuItem2 ellist[] = {
     { { (unichar_t *) N_("_Font Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Font Info...|Ctl+Shft+F"), NULL, NULL, FVMenuFontInfo },
     { { (unichar_t *) N_("Glyph _Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Glyph Info...|Ctl+I"), NULL, NULL, FVMenuCharInfo, MID_CharInfo },
-    { { (unichar_t *) N_("_MATH Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("MATH Info...|No Shortcut"), NULL, NULL, FVMenuMATHInfo },
-    { { (unichar_t *) N_("BDF Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("BDF Info...|No Shortcut"), NULL, NULL, FVMenuBDFInfo, MID_StrikeInfo },
-    { { (unichar_t *) N_("S_how Dependent"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'D' }, NULL, delist, delistcheck },
+    { { (unichar_t *) N_("Other Info"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, NULL, infolist, infolistcheck },
     { { (unichar_t *) N_("Find Pr_oblems..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, H_("Find Problems...|Ctl+E"), NULL, NULL, FVMenuFindProblems, MID_FindProblems },
     { { (unichar_t *) N_("_Validate..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, H_("Validate...|No Shortcut"), NULL, NULL, FVMenuValidate, MID_Validate },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
