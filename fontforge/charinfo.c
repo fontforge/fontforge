@@ -2312,7 +2312,7 @@ return;
     sub = SFNewLookupSubtableOfType(ci->sc->parent,pst2lookuptype[sel+1],&sd);
     if ( sub!=NULL ) {
 	possub[r*cols+0].u.md_ival = (intpt) sub;
-	ti = SFSubtableListOfType(ci->sc->parent, pst2lookuptype[sel+1], false);
+	ti = SFSubtableListOfType(ci->sc->parent, pst2lookuptype[sel+1], false, false);
 	GMatrixEditSetColumnChoices(g,0,ti);
 	GTextInfoListFree(ti);
 	if ( wasnew )
@@ -3840,7 +3840,7 @@ return;
 	    psgcd[i][0].gd.flags = gg_visible | gg_enabled;
 	    psgcd[i][0].gd.cid = CID_List+i*100;
 	    psgcd[i][0].gd.u.matrix = &mi[i];
-	    mi[i].col_init[0].enum_vals = SFSubtableListOfType(sc->parent, pst2lookuptype[i+1], false);
+	    mi[i].col_init[0].enum_vals = SFSubtableListOfType(sc->parent, pst2lookuptype[i+1], false, false);
 	    psgcd[i][0].creator = GMatrixEditCreate;
 	}
 	for ( i=pst_position; i<=pst_pair; ++i ) {

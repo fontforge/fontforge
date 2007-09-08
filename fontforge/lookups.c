@@ -7148,7 +7148,8 @@ return( NULL );
 return( sub );
 }
 
-GTextInfo **SFSubtablesOfType(SplineFont *sf, int lookup_type, int kernclass) {
+GTextInfo **SFSubtablesOfType(SplineFont *sf, int lookup_type, int kernclass,
+	int add_none) {
     int isgpos = (lookup_type>=gpos_start);
     int k, cnt, lcnt, pos;
     OTLookup *otl;
@@ -7160,6 +7161,15 @@ GTextInfo **SFSubtablesOfType(SplineFont *sf, int lookup_type, int kernclass) {
 
     for ( k=0; k<2; ++k ) {
 	cnt = lcnt = pos = 0;
+	if ( k && add_none ) {
+	    ti[pos] = gcalloc(1,sizeof(GTextInfo));
+	    ti[pos]->fg = ti[pos]->bg = COLOR_DEFAULT;
+	    ti[pos]->userdata = (void *) -1;
+	    ti[pos++]->text = utf82u_copy(_("No Subtable"));
+	    ti[pos] = gcalloc(1,sizeof(GTextInfo));
+	    ti[pos]->fg = ti[pos]->bg = COLOR_DEFAULT;
+	    ti[pos++]->line = true;
+	}
 	for ( otl = isgpos ? sf->gpos_lookups : sf->gsub_lookups; otl!=NULL; otl=otl->next ) {
 	    if ( otl->lookup_type==lookup_type && otl->subtables!=NULL ) {
 		if ( k ) {
@@ -7187,7 +7197,7 @@ GTextInfo **SFSubtablesOfType(SplineFont *sf, int lookup_type, int kernclass) {
 	    }
 	}
 	if ( !k ) {
-	    ti = gcalloc(cnt+lcnt+3,sizeof(GTextInfo*));
+	    ti = gcalloc(cnt+lcnt+3+2*add_none,sizeof(GTextInfo*));
 	} else {
 	    ti[pos] = gcalloc(1,sizeof(GTextInfo));
 	    ti[pos]->fg = ti[pos]->bg = COLOR_DEFAULT;
@@ -7203,11 +7213,11 @@ return( ti );
 return( NULL );
 }
 
-GTextInfo *SFSubtableListOfType(SplineFont *sf, int lookup_type, int kernclass) {
+GTextInfo *SFSubtableListOfType(SplineFont *sf, int lookup_type, int kernclass,int add_none) {
     GTextInfo **temp, *ti;
     int cnt;
 
-    temp = SFSubtablesOfType(sf,lookup_type,kernclass);
+    temp = SFSubtablesOfType(sf,lookup_type,kernclass,add_none);
     if ( temp==NULL )
 return( NULL );
     for ( cnt=0; temp[cnt]->text!=NULL || temp[cnt]->line; ++cnt );
@@ -7486,4 +7496,348 @@ return( sub );
     if ( isnew )
 	NameOTLookup(found,sf);
 return( sub );
+}
+
+/******************************************************************************/
+/****************************   Mass Glyph Rename   ***************************/
+/******************************************************************************/
+typedef struct massrenamedlg {
+    GWindow gw;
+    int done;
+    FontView *fv;
+} MassRenameDlg;
+
+#undef CID_Suffix
+#define CID_SubTable		1001
+#define CID_Suffix		1002
+#define CID_StartName		1003
+#define CID_ReplaceSuffix	1004
+
+static int MRD_OK(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	MassRenameDlg *mrd = GDrawGetUserData(GGadgetGetWindow(g));
+	int sel_cnt, enc, enc_max = mrd->fv->map->enccount;
+	char *start_name, *suffix;
+	int enc_start;
+	SplineChar *sc, *sourcesc;
+	GTextInfo *subti;
+	struct lookup_subtable *sub;
+	PST *pst;
+
+	for ( enc=sel_cnt=0; enc<enc_max; ++enc ) if ( mrd->fv->selected[enc] )
+	    ++sel_cnt;
+	start_name = GGadgetGetTitle8(GWidgetGetControl(mrd->gw,CID_StartName));
+	enc_start = SFFindSlot(mrd->fv->sf,mrd->fv->map,-1,start_name);
+	if ( enc_start==-1 ) {
+	    gwwv_post_error(_("No Start Glyph"), _("The encoding does not contain something named %.40s"), start_name );
+	    free(start_name);
+return( true );
+	}
+	free( start_name );
+	if ( enc_start+sel_cnt>=enc_max ) {
+	    gwwv_post_error(_("Not enough glyphs"), _("There aren't enough glyphs in the encoding to name all the selected characters"));
+return( true );
+	}
+
+	sub = NULL;
+	subti = GGadgetGetListItemSelected(GWidgetGetControl(mrd->gw,CID_SubTable));
+	if ( subti!=NULL )
+	    sub = subti->userdata;
+	if ( sub==(struct lookup_subtable *)-1 )
+	    sub = NULL;
+	if ( sub!=NULL ) {
+	    for ( enc=enc_start; enc<enc_start+sel_cnt; ++enc ) if ( mrd->fv->selected[enc]) {
+		gwwv_post_error(_("Can't specify a subtable here"), _("Some of the selected glyphs are also source glyphs, so they will be renamed, so they can't act as source glyphs for a lookup."));
+return( true );
+	    }
+	}
+
+	suffix = GGadgetGetTitle8(GWidgetGetControl(mrd->gw,CID_Suffix));
+	if ( *suffix=='\0' || (*suffix=='.' && suffix[1]=='\0')) {
+	    gwwv_post_error(_("Missing suffix"), _("If you don't specify a suffix, the glyphs don't get renamed."));
+	    free(suffix);
+return( true );
+	}
+	if ( *suffix!='.' ) {
+	    char *old = suffix;
+	    suffix = strconcat(".",suffix);
+	    free(old);
+	}
+
+	for ( enc=sel_cnt=0; enc<enc_max; ++enc ) if ( mrd->fv->selected[enc] ) {
+	    sc = SFMakeChar(mrd->fv->sf,mrd->fv->map,enc);
+	    sourcesc = SFMakeChar(mrd->fv->sf,mrd->fv->map,enc_start+sel_cnt);
+	    free(sc->name);
+	    sc->name = strconcat(sourcesc->name,suffix);
+	    sc->unicodeenc = -1;
+	    if ( sub!=NULL ) {
+		/* There can only be one single subs with this subtable */
+		/*  attached to the source glyph */
+		for ( pst=sourcesc->possub; pst!=NULL && pst->subtable!=sub; pst=pst->next );
+		if ( pst==NULL ) {
+		    pst = chunkalloc(sizeof(PST));
+		    pst->next = sourcesc->possub;
+		    sourcesc->possub = pst;
+		    pst->subtable = sub;
+		    pst->type = pst_substitution;
+		}
+		free(pst->u.subs.variant);
+		pst->u.subs.variant = copy(sc->name);
+	    }
+	    ++sel_cnt;
+	}
+	free(suffix);
+	mrd->done = true;
+    }
+return( true );
+}
+
+static int MRD_Cancel(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	MassRenameDlg *mrd = GDrawGetUserData(GGadgetGetWindow(g));
+	mrd->done = true;
+    }
+return( true );
+}
+
+static int MRD_SuffixChange(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+	MassRenameDlg *mrd = GDrawGetUserData(GGadgetGetWindow(g));
+	char *suffix = GGadgetGetTitle8(g);
+	int32 len;
+	int i;
+	GTextInfo **ti = GGadgetGetList(GWidgetGetControl(mrd->gw,CID_SubTable),&len);
+	struct lookup_subtable *sub;
+
+	for ( i=0; i<len; ++i ) {
+	    sub = ti[i]->userdata;
+	    if ( sub==NULL || sub==(struct lookup_subtable *) -1 )
+	continue;
+	    if ( sub->suffix==NULL )
+	continue;
+	    if ( strcmp(suffix,sub->suffix)==0 ) {
+		GGadgetSelectOneListItem(GWidgetGetControl(mrd->gw,CID_SubTable),i);
+return( true );
+	    }
+	}
+    }
+return( true );
+}
+
+static void MRD_SelectSubtable(MassRenameDlg *mrd,struct lookup_subtable *sub) {
+    int32 len;
+    GTextInfo **ti = GGadgetGetList(GWidgetGetControl(mrd->gw,CID_SubTable),&len);
+    int i, no_pos = -1;
+
+    for ( i=0; i<len; ++i ) if ( !ti[i]->line ) {
+	if ( ti[i]->userdata == sub )
+    break;
+	else if ( ti[i]->userdata == (void *) -1 )
+	    no_pos = i;
+    }
+    if ( i==len )
+	i = no_pos;
+    if ( i!=-1 )
+	GGadgetSelectOneListItem(GWidgetGetControl(mrd->gw,CID_SubTable),i);
+}
+
+static int MRD_Subtable(GGadget *g, GEvent *e) {
+    MassRenameDlg *mrd = GDrawGetUserData(GGadgetGetWindow(g));
+    GTextInfo *ti;
+    struct lookup_subtable *sub;
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
+	ti = GGadgetGetListItemSelected(g);
+	if ( ti!=NULL ) {
+	    if ( ti->userdata==NULL ) {
+		sub = SFNewLookupSubtableOfType(mrd->fv->sf,gsub_single,NULL);
+		if ( sub!=NULL )
+		    GGadgetSetList(g,SFSubtablesOfType(mrd->fv->sf,gsub_single,false,true),false);
+		MRD_SelectSubtable(mrd,sub);
+	    } else if ( (sub = ti->userdata) != (struct lookup_subtable *) -1 &&
+		    sub->suffix != NULL )
+		GGadgetSetTitle8(GWidgetGetControl(mrd->gw,CID_Suffix),sub->suffix);
+	}
+    }
+return( true );
+}
+
+static unichar_t **MRD_GlyphNameCompletion(GGadget *t,int from_tab) {
+    MassRenameDlg *mrd = GDrawGetUserData(GGadgetGetWindow(t));
+    SplineFont *sf = mrd->fv->sf;
+
+return( SFGlyphNameCompletion(sf,t,from_tab,false));
+}
+
+static int mrd_e_h(GWindow gw, GEvent *event) {
+    MassRenameDlg *mrd = GDrawGetUserData(gw);
+
+    switch ( event->type ) {
+      case et_char:
+return( false );
+      case et_close:
+	mrd->done = true;
+      break;
+    }
+return( true );
+}
+
+void FVMassGlyphRename(FontView *fv) {
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    MassRenameDlg mrd;
+    GGadgetCreateData gcd[13], *hvarray[10][3], *barray[8], boxes[3];
+    GTextInfo label[13];
+    int i,k,subtablek, startnamek;
+
+    memset(&mrd,0,sizeof(mrd));
+    mrd.fv = fv;
+
+    memset(&wattrs,0,sizeof(wattrs));
+    memset(&gcd,0,sizeof(gcd));
+    memset(&label,0,sizeof(label));
+
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.restrict_input_to_me = false;
+    wattrs.undercursor = 1;
+    wattrs.cursor = ct_pointer;
+    wattrs.utf8_window_title = _("Mass Glyph Rename");
+    wattrs.is_dlg = false;
+    pos.x = pos.y = 0;
+    pos.width = 100;
+    pos.height = 100;
+    mrd.gw = gw = GDrawCreateTopWindow(NULL,&pos,mrd_e_h,&mrd,&wattrs);
+
+    k = i = 0;
+
+    label[k].text = (unichar_t *) _("Rename all glyphs in the selection");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = 10;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k++].creator = GLabelCreate;
+    hvarray[i][0] = &gcd[k-1]; hvarray[i][1] = GCD_ColSpan; hvarray[i++][2] = NULL;
+
+    label[k].text = (unichar_t *) _("By appending the suffix:");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = 10;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k++].creator = GLabelCreate;
+    hvarray[i][0] = &gcd[k-1];
+
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.cid = CID_Suffix;
+    gcd[k].gd.handle_controlevent = MRD_SuffixChange;
+    gcd[k++].creator = GTextFieldCreate;
+    hvarray[i][1] = &gcd[k-1]; hvarray[i++][2] = NULL;
+
+    label[k].text = (unichar_t *) _("To the glyph names starting at:");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = 10;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[k].gd.popup_msg = (unichar_t *) _("So if you type \"A\" here the first selected glyph would be named \"A.suffix\".\nThe second \"B.suffix\", and so on.");
+    gcd[k++].creator = GLabelCreate;
+    hvarray[i][0] = &gcd[k-1];
+
+    startnamek = k;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[k].gd.cid = CID_StartName;
+    gcd[k].gd.popup_msg = (unichar_t *) _("So if you type \"A\" here the first selected glyph would be named \"A.suffix\".\nThe second \"B.suffix\", and so on.");
+    gcd[k++].creator = GTextCompletionCreate;
+    hvarray[i][1] = &gcd[k-1]; hvarray[i++][2] = NULL;
+
+    label[k].text = (unichar_t *) _("If one of those glyphs already has a suffix");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = 10;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k++].creator = GLabelCreate;
+    hvarray[i][0] = &gcd[k-1]; hvarray[i][1] = GCD_ColSpan; hvarray[i++][2] = NULL;
+
+    label[k].text = (unichar_t *) _("Append to it");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = 10;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k++].creator = GRadioCreate;
+    hvarray[i][0] = &gcd[k-1];
+
+    label[k].text = (unichar_t *) _("Replace it");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = 10;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_cb_on;
+    gcd[k++].creator = GRadioCreate;
+    hvarray[i][1] = &gcd[k-1]; hvarray[i++][2] = NULL;
+
+    label[k].text = (unichar_t *) _("Optionally, add this mapping to the lookup subtable:");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = 10;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k++].creator = GLabelCreate;
+    hvarray[i][0] = &gcd[k-1]; hvarray[i][1] = GCD_ColSpan; hvarray[i++][2] = NULL;
+
+    subtablek = k;
+    gcd[k].gd.flags = gg_enabled|gg_visible;
+    gcd[k].gd.cid = CID_SubTable;
+    gcd[k].gd.handle_controlevent = MRD_Subtable;
+    gcd[k++].creator = GListButtonCreate;
+    hvarray[i][0] = GCD_Glue; hvarray[i][1] = &gcd[k-1]; hvarray[i++][2] = NULL;
+    hvarray[i][0] = hvarray[i][1] = GCD_Glue; hvarray[i++][2] = NULL;
+
+    label[k].text = (unichar_t *) _("_OK");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_visible|gg_enabled | gg_but_default;
+    gcd[k].gd.handle_controlevent = MRD_OK;
+    gcd[k++].creator = GButtonCreate;
+
+    label[k].text = (unichar_t *) _("_Cancel");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_visible|gg_enabled | gg_but_cancel;
+    gcd[k].gd.handle_controlevent = MRD_Cancel;
+    gcd[k++].creator = GButtonCreate;
+
+    barray[0] = barray[2] = barray[3] = barray[4] = barray[6] = GCD_Glue; barray[7] = NULL;
+    barray[1] = &gcd[k-2]; barray[5] = &gcd[k-1];
+    hvarray[i][0] = &boxes[2]; hvarray[i][1] = GCD_ColSpan; hvarray[i++][2] = NULL;
+    hvarray[i][0] = NULL;
+
+    memset(boxes,0,sizeof(boxes));
+    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = hvarray[0];
+    boxes[0].creator = GHVGroupCreate;
+
+    boxes[2].gd.flags = gg_enabled|gg_visible;
+    boxes[2].gd.u.boxelements = barray;
+    boxes[2].creator = GHBoxCreate;
+
+    GGadgetsCreate(gw,boxes);
+    GHVBoxSetExpandableCol(boxes[2].ret,gb_expandgluesame);
+    GHVBoxSetExpandableRow(boxes[0].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(boxes[0].ret,1);
+
+    GGadgetSetList(gcd[subtablek].ret,SFSubtablesOfType(fv->sf,gsub_single,false,true),false);
+    GGadgetSelectOneListItem(gcd[subtablek].ret,0);
+    GCompletionFieldSetCompletion(gcd[startnamek].ret,MRD_GlyphNameCompletion);
+
+    GHVBoxFitWindow(boxes[0].ret);
+
+    GDrawSetVisible(gw,true);
+    while ( !mrd.done )
+	GDrawProcessOneEvent(NULL);
+
+    GDrawDestroyWindow(gw);
 }

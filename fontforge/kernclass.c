@@ -922,7 +922,7 @@ static int KP_Subtable(GGadget *g, GEvent *e) {
 		sub = SFNewLookupSubtableOfType(kcd->sf,gpos_pair,&sd);
 		if ( sub!=NULL ) {
 		    kcd->subtable = sub;
-		    GGadgetSetList(g,SFSubtablesOfType(kcd->sf,gpos_pair,false),false);
+		    GGadgetSetList(g,SFSubtablesOfType(kcd->sf,gpos_pair,false,false),false);
 		}
 		KP_SelectSubtable(kcd,kcd->subtable);
 	    }
@@ -2246,7 +2246,7 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class, SplineFont *
     GHVBoxSetExpandableCol(buttonbox.ret,gb_expandgluesame);
     if ( !for_class ) {
 	GHVBoxSetExpandableCol(flagbox.ret,gb_expandglue);
-	GGadgetSetList(flagarray[1]->ret,SFSubtablesOfType(sf,gpos_pair,false),false);
+	GGadgetSetList(flagarray[1]->ret,SFSubtablesOfType(sf,gpos_pair,false,false),false);
     }
 }
 
