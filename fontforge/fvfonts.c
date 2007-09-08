@@ -523,13 +523,17 @@ SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into,struct sfmergecontext
 return(nsc);
 }
 
+static int _SFFindExistingSlot(SplineFont *sf, int unienc, const char *name );
+
 static KernPair *KernsCopy(KernPair *kp,int *mapping,SplineFont *into,
 	struct sfmergecontext *mc) {
     KernPair *head = NULL, *last=NULL, *new;
     int index;
 
     while ( kp!=NULL ) {
-	if ( (index=mapping[kp->sc->orig_pos])>=0 && index<into->glyphcnt &&
+	if ( (index=mapping[kp->sc->orig_pos])<0 && mc->preserveCrossFontKerning )
+	    index =  _SFFindExistingSlot(into,kp->sc->unicodeenc,kp->sc->name);
+	if ( index>=0 && index<into->glyphcnt &&
 		into->glyphs[index]!=NULL ) {
 	    new = chunkalloc(sizeof(KernPair));
 	    new->off = kp->off;
@@ -1064,8 +1068,25 @@ static void _MergeFont(SplineFont *into,SplineFont *other,struct sfmergecontext 
 	    ++k;
 	} while ( k<other->subfontcnt );
     }
-    for ( i=0; i<other->glyphcnt; ++i ) if ( (index=mapping[i])!=-1 )
-	into->glyphs[index]->kerns = KernsCopy(other->glyphs[i]->kerns,mapping,into,mc);
+    for ( i=0; i<other->glyphcnt; ++i ) {
+	if ( (index=mapping[i])!=-1 )
+	    into->glyphs[index]->kerns = KernsCopy(other->glyphs[i]->kerns,mapping,into,mc);
+	else if ( mc->preserveCrossFontKerning && other->glyphs[i]!=NULL ) {
+	    KernPair *kpnew, *kpend;
+	    index = _SFFindExistingSlot(into,other->glyphs[i]->unicodeenc,other->glyphs[i]->name);
+	    if ( index!=-1 ) {
+		mc->preserveCrossFontKerning = false;
+		kpnew = KernsCopy(other->glyphs[i]->kerns,mapping,into,mc);
+		mc->preserveCrossFontKerning = true;
+		if ( kpnew ) {
+		    for ( kpend=kpnew; kpend->next!=NULL; kpend=kpend->next );
+		    kpend->next = into->glyphs[index]->kerns;
+		    into->glyphs[index]->kerns = kpnew;
+		}
+	    }
+	}
+    }
+
     free(mapping);
     GlyphHashFree(into);
     MergeFixupRefChars(into);
@@ -1078,11 +1099,12 @@ static void _MergeFont(SplineFont *into,SplineFont *other,struct sfmergecontext 
     GlyphHashFree(into);
 }
 
-static void __MergeFont(SplineFont *into,SplineFont *other) {
+static void __MergeFont(SplineFont *into,SplineFont *other, int preserveCrossFontKerning) {
     struct sfmergecontext mc;
 
     memset(&mc,0,sizeof(mc));
     mc.sf_from = other; mc.sf_to = into;
+    mc.preserveCrossFontKerning = preserveCrossFontKerning;
 
     AnchorClassesAdd(into,other,&mc);
     FPSTsAdd(into,other,&mc);
@@ -1090,9 +1112,11 @@ static void __MergeFont(SplineFont *into,SplineFont *other) {
     KernClassesAdd(into,other,&mc);
 
     _MergeFont(into,other,&mc);
+
+    SFFinishMergeContext(&mc);
 }
 
-static void CIDMergeFont(SplineFont *into,SplineFont *other) {
+static void CIDMergeFont(SplineFont *into,SplineFont *other, int preserveCrossFontKerning) {
     int i,j,k;
     SplineFont *i_sf, *o_sf;
     FontView *fvs;
@@ -1100,6 +1124,7 @@ static void CIDMergeFont(SplineFont *into,SplineFont *other) {
 
     memset(&mc,0,sizeof(mc));
     mc.sf_from = other; mc.sf_to = into;
+    mc.preserveCrossFontKerning = preserveCrossFontKerning;
 
     AnchorClassesAdd(into,other,&mc);
     FPSTsAdd(into,other,&mc);
@@ -1142,9 +1167,11 @@ static void CIDMergeFont(SplineFont *into,SplineFont *other) {
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     into->changed = true;
     GlyphHashFree(into);
+
+    SFFinishMergeContext(&mc);
 }
 
-void MergeFont(FontView *fv,SplineFont *other) {
+void MergeFont(FontView *fv,SplineFont *other, int preserveCrossFontKerning) {
 
     if ( fv->sf==other ) {
 	gwwv_post_error(_("Merging Problem"),_("Merging a font with itself achieves nothing"));
@@ -1163,13 +1190,13 @@ return;
     /*  If fv is CID and other is normal then merge other into the currently active font */
     /*  If both are CID then merge each subfont seperately */
     if ( fv->sf->cidmaster!=NULL && other->subfonts!=NULL )
-	CIDMergeFont(fv->sf->cidmaster,other);
+	CIDMergeFont(fv->sf->cidmaster,other,preserveCrossFontKerning);
     else
-	__MergeFont(fv->sf,other);
+	__MergeFont(fv->sf,other,preserveCrossFontKerning);
 }
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-static void MergeAskFilename(FontView *fv) {
+static void MergeAskFilename(FontView *fv,int preserveCrossFontKerning) {
     char *filename = GetPostscriptFontName(NULL,true);
     SplineFont *sf;
     char *eod, *fpt, *file, *full;
@@ -1192,8 +1219,21 @@ return;
 	    /* Do Nothing */;
 	else if ( sf->fv==fv )
 	    gwwv_post_error(_("Merging Problem"),_("Merging a font with itself achieves nothing"));
-	else
-	    MergeFont(fv,sf);
+	else {
+	    if ( preserveCrossFontKerning==-1 ) {
+		char *buts[4];
+		int ret;
+		buts[0] = _("_Yes"); buts[1] = _("_No"); buts[2] = _("_Cancel"); buts[3]=NULL;
+		ret = gwwv_ask(_("Kerning"),(const char **) buts,0,2,
+			_("Do you want to retain kerning information from the selected font\nwhen one of the glyphs being kerned will come from the base font?"));
+		if ( ret==2 ) {
+		    free(filename);
+return;
+		}
+		preserveCrossFontKerning = ret==0;
+	    }
+	    MergeFont(fv,sf,preserveCrossFontKerning);
+	}
 	file = fpt+2;
     } while ( fpt!=NULL );
     free(filename);
@@ -1237,12 +1277,14 @@ struct mf_data {
     GGadget *other;
     GGadget *amount;
 };
+#define CID_Preserve	1001
 
 static int MF_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GWindow gw = GGadgetGetWindow(g);
 	struct mf_data *d = GDrawGetUserData(gw);
 	int i, index = GGadgetGetFirstListSelectedItem(d->other);
+	int preserve = GGadgetIsChecked(GWidgetGetControl(gw,CID_Preserve));
 	FontView *fv;
 	for ( i=0, fv=fv_list; fv!=NULL; fv=fv->next ) {
 	    if ( fv==d->fv )
@@ -1252,9 +1294,9 @@ static int MF_OK(GGadget *g, GEvent *e) {
 	    ++i;
 	}
 	if ( fv==NULL )
-	    MergeAskFilename(d->fv);
+	    MergeAskFilename(d->fv,preserve);
 	else
-	    MergeFont(d->fv,fv->sf);
+	    MergeFont(d->fv,fv->sf,preserve);
 	d->done = true;
     }
 return( true );
@@ -1283,8 +1325,8 @@ void FVMergeFonts(FontView *fv) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[6];
-    GTextInfo label[6];
+    GGadgetCreateData gcd[7], *varray[9], *barray[8], boxes[4];
+    GTextInfo label[7];
     struct mf_data d;
     char buffer[80];
 
@@ -1292,7 +1334,7 @@ void FVMergeFonts(FontView *fv) {
     /*  no point asking the user if s/he wants to merge any of the loaded */
     /*  fonts, go directly to searching the disk */
     if ( fv_list==fv && fv_list->next==NULL )
-	MergeAskFilename(fv);
+	MergeAskFilename(fv,-1);
     else {
 	memset(&wattrs,0,sizeof(wattrs));
 	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;
@@ -1308,6 +1350,7 @@ void FVMergeFonts(FontView *fv) {
 
 	memset(&label,0,sizeof(label));
 	memset(&gcd,0,sizeof(gcd));
+	memset(&boxes,0,sizeof(boxes));
 
 	sprintf( buffer, _("Font to merge into %.20s"), fv->sf->fontname );
 	label[0].text = (unichar_t *) buffer;
@@ -1316,6 +1359,7 @@ void FVMergeFonts(FontView *fv) {
 	gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6; 
 	gcd[0].gd.flags = gg_visible | gg_enabled;
 	gcd[0].creator = GLabelCreate;
+	varray[0] = &gcd[0]; varray[1] = NULL;
 
 	gcd[1].gd.pos.x = 15; gcd[1].gd.pos.y = 21;
 	gcd[1].gd.pos.width = 120;
@@ -1324,30 +1368,55 @@ void FVMergeFonts(FontView *fv) {
 	gcd[1].gd.label = &gcd[1].gd.u.list[0];
 	gcd[1].gd.u.list[0].selected = true;
 	gcd[1].creator = GListButtonCreate;
+	varray[2] = &gcd[1]; varray[3] = NULL;
 
-	gcd[2].gd.pos.x = 15-3; gcd[2].gd.pos.y = 55-3;
-	gcd[2].gd.pos.width = -1; gcd[2].gd.pos.height = 0;
-	gcd[2].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[2].text = (unichar_t *) _("_OK");
+	label[2].text = (unichar_t *) _("Preserve cross-font kerning");
 	label[2].text_is_1byte = true;
-	label[2].text_in_resource = true;
-	gcd[2].gd.mnemonic = 'O';
 	gcd[2].gd.label = &label[2];
-	gcd[2].gd.handle_controlevent = MF_OK;
-	gcd[2].creator = GButtonCreate;
+	gcd[2].gd.pos.x = 12; gcd[2].gd.pos.y = 6; 
+	gcd[2].gd.flags = gg_visible | gg_enabled | gg_cb_on;
+	gcd[2].gd.cid = CID_Preserve;
+	gcd[2].creator = GCheckBoxCreate;
+	varray[4] = &gcd[2]; varray[5] = NULL;
 
-	gcd[3].gd.pos.x = -15; gcd[3].gd.pos.y = 55;
+	gcd[3].gd.pos.x = 15-3; gcd[3].gd.pos.y = 55-3;
 	gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
-	gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[3].text = (unichar_t *) _("_Cancel");
+	gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_default;
+	label[3].text = (unichar_t *) _("_OK");
 	label[3].text_is_1byte = true;
 	label[3].text_in_resource = true;
+	gcd[3].gd.mnemonic = 'O';
 	gcd[3].gd.label = &label[3];
-	gcd[3].gd.mnemonic = 'C';
-	gcd[3].gd.handle_controlevent = MF_Cancel;
+	gcd[3].gd.handle_controlevent = MF_OK;
 	gcd[3].creator = GButtonCreate;
 
-	GGadgetsCreate(gw,gcd);
+	gcd[4].gd.pos.x = -15; gcd[4].gd.pos.y = 55;
+	gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
+	gcd[4].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+	label[4].text = (unichar_t *) _("_Cancel");
+	label[4].text_is_1byte = true;
+	label[4].text_in_resource = true;
+	gcd[4].gd.label = &label[4];
+	gcd[4].gd.mnemonic = 'C';
+	gcd[4].gd.handle_controlevent = MF_Cancel;
+	gcd[4].creator = GButtonCreate;
+	barray[0] = barray[2] = barray[3] = barray[4] = barray[6] = GCD_Glue; barray[7] = NULL;
+	barray[1] = &gcd[3]; barray[5] = &gcd[4];
+
+	boxes[2].gd.flags = gg_enabled|gg_visible;
+	boxes[2].gd.u.boxelements = barray;
+	boxes[2].creator = GHBoxCreate;
+	varray[6] = &boxes[2]; varray[7] = NULL;
+	varray[8] = NULL;
+
+	boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+	boxes[0].gd.flags = gg_enabled|gg_visible;
+	boxes[0].gd.u.boxelements = varray;
+	boxes[0].creator = GHVGroupCreate;
+
+	GGadgetsCreate(gw,boxes);
+	GHVBoxSetExpandableCol(boxes[2].ret,gb_expandgluesame);
+	GHVBoxFitWindow(boxes[0].ret);
 
 	memset(&d,'\0',sizeof(d));
 	d.other = gcd[1].ret;

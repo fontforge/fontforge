@@ -7590,7 +7590,6 @@ ff_gs_int(descent)
 ff_gs_int(vertical_origin)
 ff_gs_int(uniqueid)
 ff_gs_int(supplement)
-ff_gs_int(loadvalidation_state)
 ff_gs_int2(macstyle)
 ff_gs_int2(os2_version)
 ff_gs_int2(gasp_version)
@@ -7635,6 +7634,10 @@ ff_gs_bit(use_typo_metrics)
 ff_gs_bit(weight_width_slope_only)
 ff_gs_bit(onlybitmaps)
 ff_gs_bit(hasvmetrics)
+
+static PyObject *PyFF_Font_get_loadvalidation_state(PyFF_Font *self,void *closure) {
+return( Py_BuildValue("i", self->fv->sf->loadvalidation_state));
+}
 
 static PyObject *PyFF_Font_get_path(PyFF_Font *self,void *closure) { \
     if ( self->fv->sf->origname==NULL )
@@ -9794,8 +9797,10 @@ static PyObject *PyFFFont_MergeFonts(PyObject *self, PyObject *args) {
     FontView *fv = ((PyFF_Font *) self)->fv;
     SplineFont *sf;
     int openflags=0;
+    int preserveCrossFontKerning = 0;
 
-    if ( !PyArg_ParseTuple(args,"es|i","UTF-8",&filename, &openflags) )
+    if ( !PyArg_ParseTuple(args,"es|ii","UTF-8",&filename, &openflags,
+	    &preserveCrossFontKerning) )
 return( NULL );
     locfilename = utf82def_copy(filename);
     free(filename);
@@ -9807,7 +9812,7 @@ return( NULL );
     }
     if ( sf->fv==NULL )
 	EncMapFree(sf->map);
-    MergeFont(fv,sf);
+    MergeFont(fv,sf,preserveCrossFontKerning);
 Py_RETURN( self );
 }
 

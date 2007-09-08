@@ -820,7 +820,7 @@ extern void BCClearAll(BDFChar *bc);
 extern void UnlinkThisReference(FontView *fv,SplineChar *sc);
 extern void FVFakeMenus(FontView *fv,int cmd);
 extern void FVMetricsCenter(FontView *fv,int docenter);
-extern void MergeFont(FontView *fv,SplineFont *other);
+extern void MergeFont(FontView *fv,SplineFont *other,int preserveCrossFontKerning);
 extern void FVMergeFonts(FontView *fv);
 SplineSet *SplineSetsInterpolate(SplineSet *base, SplineSet *other, real amount, SplineChar *sc);
 SplineChar *SplineCharInterpolate(SplineChar *base, SplineChar *other, real amount);
