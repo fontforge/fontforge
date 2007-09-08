@@ -922,14 +922,21 @@ static void init_fpgm(InstrCt *ct) {
 	0x18, //   RTG
 	0x2d, // ENDF
 
-	/* Function 1: check if the gridfitted position of a point is too far
-         * from its original position, and shift it, if necessary. This assures
-	 * almost linear advance width to PPEM scaling.
+	/* Function 1: Place given point relatively to previous. Check if the
+	 * gridfitted position of the point is too far from its original
+	 * position, and shift it, if necessary. The function is used to place
+	 * vertical stems, it assures almost linear advance width to PPEM
+	 * scaling. Shift amount is capped to at most 1 px to prevent some
+	 * weird artifacts at very small ppems.
 	 * Syntax: PUSHB_2 point 1 CALL
 	 */
 	0xb0, // PUSHB_1
 	0x01, //   1
 	0x2c, // FDEF
+        0x20, //   DUP
+        0x20, //   DUP
+	0xde, //   MDRP[rp0,min,rnd,white]
+	0x2f, //   MDAP[rnd], this will be needed in future
         0x20, //   DUP
         0x20, //   DUP
         0x47, //   GC[cur]
@@ -939,6 +946,9 @@ static void init_fpgm(InstrCt *ct) {
         0x6a, //   ROUND[white]
         0x20, //   DUP
         0x58, //   IF
+        0x20, //     DUP
+	0x64, //     ABS
+	0x62, //     DIV
         0x38, //     SHPIX
 	0x1b, //   ELSE
 	0x21, //     POP
@@ -2247,9 +2257,7 @@ static void geninstrs(InstrCt *ct, StemInfo *hint) {
 	}
 	else {
             if (ct->fpgm_done) {
-	        int callargs[3] = {rp0, 1, rp0};
-	        ct->pt = pushnums(ct->pt, 3, callargs);
-	        *(ct->pt)++ = MDRP_rp0_min_rnd_white;
+	        ct->pt = push2nums(ct->pt, rp0, 1);
 	        *(ct->pt)++ = CALL;
 	    }
 	    else {
