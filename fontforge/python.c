@@ -9799,8 +9799,8 @@ static PyObject *PyFFFont_MergeFonts(PyObject *self, PyObject *args) {
     int openflags=0;
     int preserveCrossFontKerning = 0;
 
-    if ( !PyArg_ParseTuple(args,"es|ii","UTF-8",&filename, &openflags,
-	    &preserveCrossFontKerning) )
+    if ( !PyArg_ParseTuple(args,"es|ii","UTF-8",&filename,
+	    &preserveCrossFontKerning, &openflags) )
 return( NULL );
     locfilename = utf82def_copy(filename);
     free(filename);
