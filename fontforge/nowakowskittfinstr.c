@@ -43,9 +43,6 @@
 #define STACK_DEPTH 6
 #endif
 
-/* for experiments with rounding non-cvt stems  */
-#define PUSH_STEMS_DIRECTLY 0
-
 /* define some often used instructions */
 #define SVTCA_y                 (0x00)
 #define SVTCA_x                 (0x01)
@@ -860,7 +857,7 @@ static void init_maxp(InstrCt *ct) {
 
     if (ct->fpgm_done && zones<2) zones=2;
     if (ct->fpgm_done && twpts<1) twpts=1;
-    if (ct->fpgm_done && fdefs<5) fdefs=5;
+    if (ct->fpgm_done && fdefs<6) fdefs=6;
     if (stack<STACK_DEPTH) stack=STACK_DEPTH;
 
     memputshort(tab->data, 7*sizeof(uint16), zones);
@@ -975,7 +972,7 @@ static void init_fpgm(InstrCt *ct) {
 
 	/* Function 3: round a stack element as a black distance, respecting
 	 * minimum distance of 1px. This is used for rounding stems after width
-	 * normalization. Often preceeded with SROUND, so finally sets RTG.
+	 * normalization.
 	 * Leaves the rounded width on the stack.
 	 * Syntax: PUSHX_2 width_to_be_rounded 3 CALL
 	 */
@@ -995,46 +992,53 @@ static void init_fpgm(InstrCt *ct) {
 	0x59, //   EIF
 	0x2d, // ENDF
 
-#if PUSH_STEMS_DIRECTLY
-	/* Function 4: scale a value given on stack in FUnits to pixels. Leave
-	 * the scaled value on the stack. This is used for normalizing stems not
-	 * regularized via CVT. Nonetheless, it requires at least one CVT entry.
-	 * Syntax: PUSHX_2 width_to_be_scaled 4 CALL
+	/* Function 4: Position the second edge of a stem that is not normally
+	 * regularized via cvt (but we snap it to cvt width below given ppem).
+	 * Vertical stems need special round state when not snapped to cvt
+	 * (basically, they are shortened by 0.25px before being rounded).
+	 * Syntax: PUSHX_5 pt cvt_index chg_rp0 ppem 4 CALL
 	 */
 	0xb0, // PUSHB_1
 	0x04, //   4
 	0x2c, // FDEF
-	0xb1, //   PUSHB_2
-	0x00, //     0
-	0x00, //     0
-	0x45, //   RCVT
-	0x23, //   SWAP
-	0x8a, //   ROLL
-	0x70, //   WCVTF
-	0xb1, //   PUSHB_2
-	0x00, //     0
-	0x00, //     0
-	0x45, //   RCVT
-	0x23, //   SWAP
-	0x8a, //   ROLL
-	0x44, //   WCVTP
+	0x4b, //   MPPEM
+	0x52, //   GT
+	0x58, //   IF
+	0x58, //     IF
+	0xfd, //       MIRP_rp0_min_rnd_black
+	0x1b, //     ELSE
+	0xed, //       MIRP_min_rnd_black
+	0x59, //     EIF
+	0x1b, //   ELSE
+	0x21, //     POP
+	0xb0, //     PUSHB_1
+	0x05, //       5
+	0x2b, //     CALL
+	0x58, //     IF
+	0xb0, //       PUSHB_1
+	0x46, //         70
+	0x76, //       SROUND
+	0x59, //     EIF
+	0x58, //     IF
+	0xdd, //       MDRP_rp0_min_rnd_black
+	0x1b, //     ELSE
+	0xcd, //       MDRP_min_rnd_black
+	0x59, //     EIF
+	0x59, //   EIF
+	0x18, //   RTG
 	0x2d, // ENDF
-#else
-	/* Function 4: measure accurate absolute scaled distance between rp0 and
-	 * pt, leave pt and distance on the stack, pt may be moved.
-	 * Syntax: PUSHX_3 rp0 pt 4 CALL
+
+	/* Function 5: determine if we are hinting vertically. The function
+	 * is crude and it's use is limited to conditions set by SVTCA[].
+	 * Syntax: PUSHB_1 5 CALL; leaves boolean on the stack.
 	 */
 	0xb0, // PUSHB_1
-	0x04, //   4
+	0x05, //   5
 	0x2c, // FDEF
-	0x20, //   DUP
-	0x20, //   DUP
-	0xc0, //   MDRP[grey] //preserve _MASTER_ outline distance
-	0x8a, //   ROLL
-	0x49, //   MD[grid] // now MD is accurate
-	0x64, //   ABS
+	0x0d, //   GFV
+	0x5c, //   NOT
+	0x5a, //   AND
 	0x2d  // ENDF
-#endif
     };
 
     struct ttf_table *tab = SFFindTable(ct->sc->parent,CHR('f','p','g','m'));
@@ -1911,31 +1915,30 @@ return;
 	    StdStem stem;
 
 	    stem.width = (int)rint(fabs(hint->width));
+	    stem.stopat = 65535;
 	    stem.snapto = 
 	        CVTSeekStem(ct->xdir, &(ct->cvtinfo), hint->width, ct->gi->fudge, false);
 
-	    int callargs[3];
-#if PUSH_STEMS_DIRECTLY
+            int i, EM = ct->sc->parent->ascent + ct->sc->parent->descent;
+
+            for (i=7; i<65536; i++) {
+	        int width_parent = compute_stem_width(ct->xdir, stem.snapto, EM, i);
+		int width_me = compute_stem_width(ct->xdir, &stem, EM, i);
+		
+		if (width_parent != width_me) {
+		    stem.stopat = i;
+		    break;
+		}
+	    }
+
+	    int callargs[5];
 	    callargs[0] = ct->edge.refpt;
-	    callargs[1] = stem.width;
-#else
-	    callargs[0] = rp0;
-	    callargs[1] = ct->edge.refpt;
-#endif
-	    callargs[2] = 4;
-	    ct->pt = pushnums(ct->pt, 3, callargs);
+	    callargs[1] = stem.snapto->cvtindex;
+	    callargs[2] = chg_rp0?1:0;
+	    callargs[3] = stem.stopat;
+	    callargs[4] = 4;
+	    ct->pt = pushnums(ct->pt, 5, callargs);
 	    *(ct->pt)++ = CALL;
-
-	    ct->pt = normalize_stem(ct->pt, ct->xdir, &stem, ct);
-
-	    if (ct->xdir) {
-	        if (ct->bp[rp0].x > ct->bp[ct->edge.refpt].x) *(ct->pt)++ = NEG;
-	    }
-	    else {
-	        if (ct->bp[rp0].y > ct->bp[ct->edge.refpt].y) *(ct->pt)++ = NEG;
-	    }
-
-	    *(ct->pt)++ = chg_rp0?MSIRP_rp0:MSIRP;
 	}
 	else {
 	    ct->pt = pushpoint(ct->pt, ct->edge.refpt);
