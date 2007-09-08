@@ -1090,7 +1090,7 @@ static void init_fpgm(InstrCt *ct) {
 /*
  * Return width (in pixels) of given stem, taking snaps into account.
  */
-#define SNAP_THRESHOLD (48)
+#define SNAP_THRESHOLD (64)
 static int compute_stem_width(int xdir, StdStem *stem, int EM, int ppem) {
     int scaled_width; /* in 1/64th pixels */
     int snapto_width; /* in 1/64th pixels */
@@ -1102,7 +1102,9 @@ static int compute_stem_width(int xdir, StdStem *stem, int EM, int ppem) {
     {
         if (stem->stopat > ppem) {
 	    snapto_width = 64*compute_stem_width(xdir, stem->snapto, EM, ppem);
-	    if (abs(snapto_width - scaled_width) < 64) scaled_width = snapto_width;
+
+	    if (abs(snapto_width - scaled_width) < SNAP_THRESHOLD)
+	        scaled_width = snapto_width;
 	}
 
 	if (xdir) scaled_width -= 16;
@@ -1638,10 +1640,15 @@ static void search_edge(int p, SplinePoint *sp, InstrCt *ct) {
     uint8 touchflag = ct->xdir?tf_x:tf_y;
 
     if (fabs(coord - ct->edge.base) <= fudge) {
-	if (same_angle(ct->contourends, ct->bp, p, ct->xdir?0.5*M_PI:0.0)) score++;
-	if (IsExtremum(ct->xdir, sp)) score+=4;
-	else if (IsCornerExtremum(ct->xdir, ct->contourends, ct->bp, p)) score+=4;
-	if (IsStrongPoint(ct->xdir, ct->contourends, ct->bp, sp)) score++;
+	if (IsCornerExtremum(ct->xdir, ct->contourends, ct->bp, p) ||
+	    IsExtremum(ct->xdir, sp)) score+=4;
+
+	if (same_angle(ct->contourends, ct->bp, p, ct->xdir?0.5*M_PI:0.0))
+	    score++;
+
+	if (p == sp->ttfindex && 
+	    IsStrongPoint(ct->xdir, ct->contourends, ct->bp, sp)) score++;
+
 	if (score && ct->oncurve[p]) score+=2;
 
 	if (!score)
@@ -1971,7 +1978,6 @@ return;
  *
  * TODO! Remind the user to correct direction or do it for him.
  * TODO! Try to instruct 'free points' with single push and LOOPCALL.
- * TODO! Snap both inner and outer contours if there are any matching inner (?)
  *
  * If we didn't snapped any point to a blue zone, we shouldn't mark any HStem
  * edges done. This could made some important points on inner contours missed.
