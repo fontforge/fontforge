@@ -1507,6 +1507,7 @@ static int MV_SubtableChanged(GGadget *g, GEvent *e) {
 return( true );
 	    mv->cur_subtable = sub;
 	    MVSetSubtables(mv);
+	    MVSetFeatures(mv);
 	} else if ( ti[len-2]->selected ) {	/* Idiots. They selected the line, can't have that */
 	    MVSetSubtables(mv);
 	    sub = mv->cur_subtable;
