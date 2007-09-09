@@ -4091,6 +4091,7 @@ static void FVApplySubstitution(FontView *fv,uint32 script, uint32 lang, uint32 
     SplineChar **replacements;
     uint8 *removes;
     char namebuf[40];
+    int flags = -1;
 
     if ( sf_sl->cidmaster!=NULL ) sf_sl = sf_sl->cidmaster;
     else if ( sf_sl->mm!=NULL ) sf_sl = sf_sl->mm->normal;
@@ -4122,15 +4123,7 @@ static void FVApplySubstitution(FontView *fv,uint32 script, uint32 lang, uint32 
 	} else if ( removes[gid] ) {
 	    /* This is deliberatly in the else. We don't want to remove a glyph*/
 	    /*  we are about to replace */
-	    SCPreserveState(sc,2);
-	    sprintf(namebuf,"%.27s.old", sc->name );
-	    SCFreeMostContents(sc);
-	    sc->name = copy(namebuf);
-	    sc->namechanged = true;
-	    sc->unicodeenc = -1;
-	    SCCharChangedUpdate(sc);
-	    /* Retain the undoes/redoes */
-	    /* Retain the dependents */
+	    SFRemoveGlyph(sf,sc,&flags);
 	}
     }
 
