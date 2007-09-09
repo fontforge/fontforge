@@ -321,6 +321,311 @@ static void FVSelectAll(FontView *fv) {
     fv->sel_index = 1;
 }
 
+static char *SubMatch(char *pattern, char *eop, char *name,int ignorecase) {
+    char ch, *ppt, *npt, *ept, *eon;
+
+    while ( pattern<eop && ( ch = *pattern)!='\0' ) {
+	if ( ch=='*' ) {
+	    if ( pattern[1]=='\0' )
+return( name+strlen(name));
+	    for ( npt=name; ; ++npt ) {
+		if ( (eon = SubMatch(pattern+1,eop,npt,ignorecase))!= NULL )
+return( eon );
+		if ( *npt=='\0' )
+return( NULL );
+	    }
+	} else if ( ch=='?' ) {
+	    if ( *name=='\0' )
+return( NULL );
+	    ++name;
+	} else if ( ch=='[' ) {
+	    /* [<char>...] matches the chars
+	    /* [<char>-<char>...] matches any char within the range (inclusive)
+	    /* the above may be concattenated and the resultant pattern matches
+	    /*		anything thing which matches any of them.
+	    /* [^<char>...] matches any char which does not match the rest of
+	    /*		the pattern
+	    /* []...] as a special case a ']' immediately after the '[' matches
+	    /*		itself and does not end the pattern */
+	    int found = 0, not=0;
+	    ++pattern;
+	    if ( pattern[0]=='^' ) { not = 1; ++pattern; }
+	    for ( ppt = pattern; (ppt!=pattern || *ppt!=']') && *ppt!='\0' ; ++ppt ) {
+		ch = *ppt;
+		if ( ppt[1]=='-' && ppt[2]!=']' && ppt[2]!='\0' ) {
+		    char ch2 = ppt[2];
+		    if ( (*name>=ch && *name<=ch2) ||
+			    (ignorecase && islower(ch) && islower(ch2) &&
+				    *name>=toupper(ch) && *name<=toupper(ch2)) ||
+			    (ignorecase && isupper(ch) && isupper(ch2) &&
+				    *name>=tolower(ch) && *name<=tolower(ch2))) {
+			if ( !not ) {
+			    found = 1;
+	    break;
+			}
+		    } else {
+			if ( not ) {
+			    found = 1;
+	    break;
+			}
+		    }
+		    ppt += 2;
+		} else if ( ch==*name || (ignorecase && tolower(ch)==tolower(*name)) ) {
+		    if ( !not ) {
+			found = 1;
+	    break;
+		    }
+		} else {
+		    if ( not ) {
+			found = 1;
+	    break;
+		    }
+		}
+	    }
+	    if ( !found )
+return( NULL );
+	    while ( *ppt!=']' && *ppt!='\0' ) ++ppt;
+	    pattern = ppt;
+	    ++name;
+	} else if ( ch=='{' ) {
+	    /* matches any of a comma seperated list of substrings */
+	    for ( ppt = pattern+1; *ppt!='\0' ; ppt = ept ) {
+		for ( ept=ppt; *ept!='}' && *ept!=',' && *ept!='\0'; ++ept );
+		npt = SubMatch(ppt,ept,name,ignorecase);
+		if ( npt!=NULL ) {
+		    char *ecurly = ept;
+		    while ( *ecurly!='}' && ecurly<eop && *ecurly!='\0' ) ++ecurly;
+		    if ( (eon=SubMatch(ecurly+1,eop,npt,ignorecase))!=NULL )
+return( eon );
+		}
+		if ( *ept=='}' )
+return( NULL );
+		if ( *ept==',' ) ++ept;
+	    }
+	} else if ( ch==*name ) {
+	    ++name;
+	} else if ( ignorecase && tolower(ch)==tolower(*name)) {
+	    ++name;
+	} else
+return( NULL );
+	++pattern;
+    }
+return( name );
+}
+
+/* Handles *?{}[] wildcards */
+static int WildMatch(char *pattern, char *name,int ignorecase) {
+    char *eop = pattern + strlen(pattern);
+
+    if ( pattern==NULL )
+return( true );
+
+    name = SubMatch(pattern,eop,name,ignorecase);
+    if ( name==NULL )
+return( false );
+    if ( *name=='\0' )
+return( true );
+
+return( false );
+}
+
+static int SS_ScriptChanged(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype != et_textfocuschanged ) {
+	char *txt = GGadgetGetTitle8(g);
+	char buf[8];
+	int i;
+	extern GTextInfo scripts[];
+
+	for ( i=0; scripts[i].text!=NULL; ++i ) {
+	    if ( strcmp((char *) scripts[i].text,txt)==0 )
+	break;
+	}
+	free(txt);
+	if ( scripts[i].text==NULL )
+return( true );
+	buf[0] = ((intpt) scripts[i].userdata)>>24;
+	buf[1] = ((intpt) scripts[i].userdata)>>16;
+	buf[2] = ((intpt) scripts[i].userdata)>>8 ;
+	buf[3] = ((intpt) scripts[i].userdata)    ;
+	buf[4] = 0;
+	GGadgetSetTitle8(g,buf);
+    }
+return( true );
+}
+
+static int SS_OK(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	int *done = GDrawGetUserData(GGadgetGetWindow(g));
+	*done = 2;
+    }
+return( true );
+}
+
+static int SS_Cancel(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	int *done = GDrawGetUserData(GGadgetGetWindow(g));
+	*done = true;
+    }
+return( true );
+}
+
+static int ss_e_h(GWindow gw, GEvent *event) {
+    int *done = GDrawGetUserData(gw);
+
+    switch ( event->type ) {
+      case et_char:
+return( false );
+      case et_close:
+	*done = true;
+      break;
+    }
+return( true );
+}
+
+static void FVSelectByScript(FontView *fv) {
+    int j, gid;
+    SplineChar *sc;
+    EncMap *map = fv->map;
+    SplineFont *sf = fv->sf;
+    extern GTextInfo scripts[];
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[4], *hvarray[5][2], *barray[8], boxes[3];
+    GTextInfo label[4];
+    int i,k;
+    int done = 0, merge;
+    char tagbuf[4];
+    uint32 tag;
+    const unichar_t *ret;
+
+    LookupUIInit();
+
+    memset(&wattrs,0,sizeof(wattrs));
+    memset(&gcd,0,sizeof(gcd));
+    memset(&label,0,sizeof(label));
+    memset(&boxes,0,sizeof(boxes));
+
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.restrict_input_to_me = false;
+    wattrs.undercursor = 1;
+    wattrs.cursor = ct_pointer;
+    wattrs.utf8_window_title = _("Select by Script");
+    wattrs.is_dlg = false;
+    pos.x = pos.y = 0;
+    pos.width = 100;
+    pos.height = 100;
+    gw = GDrawCreateTopWindow(NULL,&pos,ss_e_h,&done,&wattrs);
+
+    k = i = 0;
+
+    gcd[k].gd.flags = gg_visible|gg_enabled ;
+    gcd[k].gd.u.list = scripts;
+    gcd[k].gd.handle_controlevent = SS_ScriptChanged;
+    gcd[k++].creator = GListFieldCreate;
+    hvarray[i][0] = &gcd[k-1]; hvarray[i++][1] = NULL;
+
+    label[k].text = (unichar_t *) _("Merge into current selection");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k++].creator = GCheckBoxCreate;
+    hvarray[i][0] = &gcd[k-1]; hvarray[i++][1] = NULL;
+
+    hvarray[i][0] = GCD_Glue; hvarray[i++][1] = NULL;
+
+    label[k].text = (unichar_t *) _("_OK");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_visible|gg_enabled | gg_but_default;
+    gcd[k].gd.handle_controlevent = SS_OK;
+    gcd[k++].creator = GButtonCreate;
+
+    label[k].text = (unichar_t *) _("_Cancel");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_visible|gg_enabled | gg_but_cancel;
+    gcd[k].gd.handle_controlevent = SS_Cancel;
+    gcd[k++].creator = GButtonCreate;
+
+    barray[0] = barray[2] = barray[3] = barray[4] = barray[6] = GCD_Glue; barray[7] = NULL;
+    barray[1] = &gcd[k-2]; barray[5] = &gcd[k-1];
+    hvarray[i][0] = &boxes[2]; hvarray[i++][1] = NULL;
+    hvarray[i][0] = NULL;
+
+    memset(boxes,0,sizeof(boxes));
+    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = hvarray[0];
+    boxes[0].creator = GHVGroupCreate;
+
+    boxes[2].gd.flags = gg_enabled|gg_visible;
+    boxes[2].gd.u.boxelements = barray;
+    boxes[2].creator = GHBoxCreate;
+
+    GGadgetsCreate(gw,boxes);
+    GHVBoxSetExpandableCol(boxes[2].ret,gb_expandgluesame);
+    GHVBoxSetExpandableRow(boxes[0].ret,gb_expandglue);
+    
+
+    GHVBoxFitWindow(boxes[0].ret);
+
+    GDrawSetVisible(gw,true);
+    ret = NULL;
+    while ( !done ) {
+	GDrawProcessOneEvent(NULL);
+	if ( done==2 ) {
+	    ret = _GGadgetGetTitle(gcd[0].ret);
+	    if ( *ret=='\0' ) {
+		gwwv_post_error(_("No Script"),_("Please specify a script"));
+		done = 0;
+	    } else if ( u_strlen(ret)>4 ) {
+		gwwv_post_error(_("Bad Script"),_("Scripts are 4 letter tags"));
+		done = 0;
+	    }
+	}
+    }
+    memset(tagbuf,' ',4);
+    if ( done==2 && ret!=NULL ) {
+	tagbuf[0] = *ret;
+	if ( ret[1]!='\0' ) {
+	    tagbuf[1] = ret[1];
+	    if ( ret[2]!='\0' ) {
+		tagbuf[2] = ret[2];
+		if ( ret[3]!='\0' )
+		    tagbuf[3] = ret[3];
+	    }
+	}
+    }
+    merge = GGadgetIsChecked(gcd[1].ret);
+
+    GDrawDestroyWindow(gw);
+    if ( done==1 )
+return;
+    tag = (tagbuf[0]<<24) | (tagbuf[1]<<16) | (tagbuf[2]<<8) | tagbuf[3];
+
+    if ( !merge ) {
+	FVDeselectAll(fv);
+	fv->sel_index = 0;
+    }
+	
+    for ( j=0; j<map->enccount; ++j ) if ( (gid=map->map[j])!=-1 && (sc=sf->glyphs[gid])!=NULL ) {
+	if ( SCScriptFromUnicode(sc)==tag ) {
+	    fv->selected[j] = fv->sel_index+1;
+	    FVToggleCharSelected(fv,j);
+	}
+    }
+
+    if ( fv->sel_index<254 )
+	++fv->sel_index;
+}
+
 static void FVSelectByName(FontView *fv) {
     int j, gid;
     char *ret, *end;
@@ -329,7 +634,7 @@ static void FVSelectByName(FontView *fv) {
     SplineFont *sf = fv->sf;
     struct altuni *alt;
 
-    ret = gwwv_ask_string(_("Select all instances of the named glyph"),".notdef",_("Select all instances of the named glyph"));
+    ret = gwwv_ask_string(_("Select all instances of the wildcard pattern"),".notdef",_("Select all instances of the wildcard pattern"));
     if ( ret==NULL )
 return;
     FVDeselectAll(fv);
@@ -350,7 +655,7 @@ return;
 	}
     } else {
 	for ( j=0; j<map->enccount; ++j ) if ( (gid=map->map[j])!=-1 && (sc=sf->glyphs[gid])!=NULL ) {
-	    if ( strcmp(sc->name,ret)==0 ) {
+	    if ( WildMatch(ret,sc->name,false) ) {
 		fv->selected[j] = true;
 		FVToggleCharSelected(fv,j);
 	    }
@@ -2611,6 +2916,17 @@ void FontViewMenu_SelectByName(GtkMenuItem *menuitem, gpointer user_data) {
 # endif
 
     FVSelectByName(fv);
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuSelectByScript(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_SelectByScript(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+
+    FVSelectByScript(fv);
 }
 
 # ifdef FONTFORGE_CONFIG_GDRAW
@@ -6468,8 +6784,9 @@ static GMenuItem2 sllist[] = {
     { { (unichar_t *) N_("Select _All"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("Select All|Ctl+A"), NULL, NULL, FVMenuSelectAll },
     { { (unichar_t *) N_("_Invert Selection"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Invert Selection|Ctl+Escape"), NULL, NULL, FVMenuInvertSelection },
     { { (unichar_t *) N_("_Deselect All"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, H_("Deselect All|Escape"), NULL, NULL, FVMenuDeselectAll },
-    { { (unichar_t *) N_("_Select by Color"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Select by Color|No Shortcut"), sclist },
-    { { (unichar_t *) N_("Select by _Name..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Select by Name...|No Shortcut"), NULL, NULL, FVMenuSelectByName },
+    { { (unichar_t *) N_("Select by _Color"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Select by Color|No Shortcut"), sclist },
+    { { (unichar_t *) N_("Select by _Wildcard..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Select by Wildcard...|No Shortcut"), NULL, NULL, FVMenuSelectByName },
+    { { (unichar_t *) N_("Select by _Script..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Select by Script...|No Shortcut"), NULL, NULL, FVMenuSelectByScript },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Glyphs Worth Outputting"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Glyphs Worth Outputting|No Shortcut"), NULL,NULL, FVMenuSelectWorthOutputting },
     { { (unichar_t *) N_("_Changed Glyphs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Changed Glyphs|No Shortcut"), NULL,NULL, FVMenuSelectChanged },
