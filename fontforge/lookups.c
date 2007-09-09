@@ -7566,10 +7566,12 @@ return( true );
 	}
 
 	for ( enc=sel_cnt=0; enc<enc_max; ++enc ) if ( mrd->fv->selected[enc] ) {
+	    char *oldname;
 	    sc = SFMakeChar(mrd->fv->sf,mrd->fv->map,enc);
 	    sourcesc = SFMakeChar(mrd->fv->sf,mrd->fv->map,enc_start+sel_cnt);
-	    free(sc->name);
+	    oldname = sc->name;
 	    sc->name = strconcat(sourcesc->name,suffix);
+	    free(oldname);
 	    sc->unicodeenc = -1;
 	    if ( sub!=NULL ) {
 		/* There can only be one single subs with this subtable */
