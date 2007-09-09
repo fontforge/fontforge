@@ -3960,8 +3960,9 @@ static void SCFreeMostContents(SplineChar *sc) {
     AnchorPointsFree(sc->anchor); sc->anchor = NULL;
     SplineCharListsFree(sc->dependents); sc->dependents = NULL;
     PSTFree(sc->possub); sc->possub = NULL;
-    free(sc->ttf_instrs); sc->ttf_instrs = NULL;
+    free(sc->ttf_instrs); sc->ttf_instrs = NULL; sc->ttf_instrs_len = 0;
     free(sc->countermasks); sc->countermasks = NULL;
+    sc->widthset = false;
 #ifdef FONTFORGE_CONFIG_TYPE3
     /*free(sc->layers);*/	/* don't free this, leave it empty */
 #endif
@@ -4122,8 +4123,8 @@ static void FVApplySubstitution(FontView *fv,uint32 script, uint32 lang, uint32 
 	    /* This is deliberatly in the else. We don't want to remove a glyph*/
 	    /*  we are about to replace */
 	    SCPreserveState(sc,2);
+	    sprintf(namebuf,"%.27s.old", sc->name );
 	    SCFreeMostContents(sc);
-	    sprintf(namebuf,"NameMe.%d", sc->orig_pos);
 	    sc->name = copy(namebuf);
 	    sc->namechanged = true;
 	    sc->unicodeenc = -1;
@@ -4135,6 +4136,7 @@ static void FVApplySubstitution(FontView *fv,uint32 script, uint32 lang, uint32 
 
     free(removes);
     free(replacements);
+    GlyphHashFree(sf);
 }
 
 static void bApplySubstitution(Context *c) {
