@@ -3940,34 +3940,6 @@ static void bSetGlyphChanged(Context *c) {
     sf->changed_since_xuidchanged = changed_any;
 }
 
-static void SCFreeMostContents(SplineChar *sc) {
-    int i;
-
-    free(sc->name);
-    for ( i=0; i<sc->layer_cnt; ++i ) {
-	SplinePointListsFree(sc->layers[i].splines); sc->layers[i].splines = NULL;
-	RefCharsFree(sc->layers[i].refs); sc->layers[i].refs = NULL;
-	ImageListsFree(sc->layers[i].images); sc->layers[i].images = NULL;
-	/* image garbage collection????!!!! */
-	/* Keep undoes */
-    }
-    StemInfosFree(sc->hstem); sc->hstem = NULL;
-    StemInfosFree(sc->vstem); sc->vstem = NULL;
-    DStemInfosFree(sc->dstem); sc->dstem = NULL;
-    MinimumDistancesFree(sc->md); sc->md = NULL;
-    KernPairsFree(sc->kerns); sc->kerns = NULL;
-    KernPairsFree(sc->vkerns); sc->vkerns = NULL;
-    AnchorPointsFree(sc->anchor); sc->anchor = NULL;
-    SplineCharListsFree(sc->dependents); sc->dependents = NULL;
-    PSTFree(sc->possub); sc->possub = NULL;
-    free(sc->ttf_instrs); sc->ttf_instrs = NULL; sc->ttf_instrs_len = 0;
-    free(sc->countermasks); sc->countermasks = NULL;
-    sc->widthset = false;
-#ifdef FONTFORGE_CONFIG_TYPE3
-    /*free(sc->layers);*/	/* don't free this, leave it empty */
-#endif
-}
-
 static void SCReplaceWith(SplineChar *dest, SplineChar *src) {
     int opos=dest->orig_pos, uenc=dest->unicodeenc;
     Undoes *u[2], *r1;
@@ -4090,7 +4062,6 @@ static void FVApplySubstitution(FontView *fv,uint32 script, uint32 lang, uint32 
     int i, gid;
     SplineChar **replacements;
     uint8 *removes;
-    char namebuf[40];
     int flags = -1;
 
     if ( sf_sl->cidmaster!=NULL ) sf_sl = sf_sl->cidmaster;
