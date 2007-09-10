@@ -6729,7 +6729,7 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub) {
     struct matrixinit mi;
     GGadgetCreateData gcd[15], buttongcd[4], box[5];
     GGadgetCreateData *h1array[8], *h2array[7], *h3array[7], *varray[16];
-    GTextInfo label[15], buttonlabel[2];
+    GTextInfo label[15], buttonlabel[4];
     int i,k,mi_pos, mi_k;
 
     memset(&pstkd,0,sizeof(pstkd));
