@@ -974,7 +974,7 @@ static void init_fpgm(InstrCt *ct) {
         0x20, //   DUP
         0x20, //   DUP
 	0xde, //   MDRP[rp0,min,rnd,white]
-	0x2f, //   MDAP[rnd], this will be needed in future
+	0x2f, //   MDAP[rnd], this is needed for grayscale mode
         0x20, //   DUP
         0x20, //   DUP
         0x47, //   GC[cur]
@@ -1049,19 +1049,20 @@ static void init_fpgm(InstrCt *ct) {
 	0x21, //     POP
 	0x23, //     SWAP
 	0x21, //     POP
+	0x7a, //     ROFF
 	0x58, //     IF
-	0xd9, //       MDRP_rp0_min_black
+	0xdd, //       MDRP[rp0,min,rnd,black]
 	0x1b, //     ELSE
-	0xc9, //       MDRP_min_black
+	0xcd, //       MDRP[min,rnd,black]
 	0x59, //     EIF
 	0x1b, //   ELSE
 	0x4b, //     MPPEM
 	0x52, //     GT
 	0x58, //     IF
 	0x58, //       IF
-	0xfd, //         MIRP_rp0_min_rnd_black
+	0xfd, //         MIRP[rp0,min,rnd,black]
 	0x1b, //       ELSE
-	0xed, //         MIRP_min_rnd_black
+	0xed, //         MIRP[min,rnd,black]
 	0x59, //       EIF
 	0x1b, //     ELSE
 	0x21, //       POP
@@ -1074,13 +1075,13 @@ static void init_fpgm(InstrCt *ct) {
 	0x76, //         SROUND
 	0x59, //       EIF
 	0x58, //       IF
-	0xdd, //         MDRP_rp0_min_rnd_black
+	0xdd, //         MDRP[rp0,min,rnd,black]
 	0x1b, //       ELSE
-	0xcd, //         MDRP_min_rnd_black
+	0xcd, //         MDRP[min,rnd,black]
 	0x59, //       EIF
 	0x59, //     EIF
-	0x18, //     RTG
 	0x59, //   EIF
+	0x18, //   RTG
 	0x2d, // ENDF
 
 	/* Function 5: determine if we are hinting vertically. The function
@@ -1314,9 +1315,10 @@ return prep_head;
 static void init_prep(InstrCt *ct) {
     uint8 new_prep_preamble[] =
     {
+        /* Turn hinting off at very small pixel sizes */
 	0x4b, // MPPEM
 	0xb0, // PUSHB_1
-	0x08, //   9 - hinting threshold - should be configurable
+	0x08, //   8 - hinting threshold - should be configurable
 	0x50, // LT
 	0x58, // IF
 	0xb1, //   PUSHB_2
@@ -1324,22 +1326,33 @@ static void init_prep(InstrCt *ct) {
 	0x01, //     1
 	0x8e, //   INSTCTRL
 	0x59, // EIF
+
+	/* Enable dropout control */
 	0xb8, // PUSHW_1
 	0x01, //   511
 	0xff, //   ...still that 511
 	0x85, // SCANCTRL
-	0xb0, // PUSHB_1
-	0x46, //   70/64 = about 1.094 pixel
-	0x1d, // SCVTCI
+
+	/* Determine the cvt cut-in used */
+	0xb1, // PUSHB_2
+	0x46, //   70/64 = about 1.094 pixel (that's our default setting)
+	0x05, //   5
+	0x2b, // CALL
+	0x58, // IF
+	0x21, //   POP
+	0xb0, //   PUSHB_1
+	0x10, //     16/64 = 0.25 pixel (very low cut-in for grayscale mode)
+	0x59, // EIF
 	0x4b, // MPPEM
 	0xb0, // PUSHB_1
-	0x32, //   50 PPEM - a threshold below which we'll use larger CVT cut-in
+	0x14, //   20 PPEM - a threshold below which we'll use larger CVT cut-in
 	0x52, // GT
 	0x58, // IF
-	0xb0, // PUSHB_1
-	0x80, //   128/64 = 2 pixels
-	0x1d, // SCVTCI
+	0x21, //   POP
+	0xb0, //   PUSHB_1
+	0x80, //     128/64 = 2 pixels (extreme regularization for small ppems)
 	0x59, // EIF
+	0x1d  // SCVTCI
     };
 
     int preplen = sizeof(new_prep_preamble);
@@ -1354,7 +1367,7 @@ static void init_prep(InstrCt *ct) {
     prep_head = new_prep + preplen;
 
     if (ct->cvt_done && ct->fpgm_done) {
-        /* Normalize stems only in monochrome mode */
+        /* Normalize stems (only in monochrome mode) */
         prep_head = pushnum(prep_head, 5);
 	*prep_head++ = CALL;
 	*prep_head++ = 0x5c; // NOT
@@ -1438,7 +1451,9 @@ return NULL;
 	}
     }
 
-    if (mindelta <= fudge*2.0)
+    if (mindelta <= fudge)
+return closest;
+    if (value/closestwidth < 1.11 && value/closestwidth > 0.9)
 return closest;
     if (can_fail)
 return NULL;
