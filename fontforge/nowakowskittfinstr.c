@@ -103,8 +103,8 @@ struct glyphinstrs {
 /* Structs for CVT management start here */
 
 /* 'highest' and 'lowest' are TTF point indexes if points with largest and 
- * smallest Y coordinate snapped to this blue zone. They are used when
- * instructing other horizontal stems.
+ * smallest Y coordinate snapped to this blue zone (current glyph only).
+ * They are used when instructing other horizontal stems.
  */
 typedef struct bluezone {
     real base;
@@ -190,9 +190,9 @@ typedef struct instrct {
 
     /* properties, indexed by ttf point index. Could perhaps be compressed. */
     BasePoint *bp;        /* point coordinates */
-    uint8 *oncurve;       /* boolean; these points are on-curve */
     uint8 *touched;       /* touchflags; points explicitly instructed */
     uint8 *affected;      /* touchflags; almost touched, but optimized out */
+    uint8 *oncurve;       /* boolean; these points are on-curve */
 
     /* stuff for hinting diagonals */
     DStem *diagstems;
@@ -892,7 +892,7 @@ static void init_maxp(InstrCt *ct) {
 
     if (ct->fpgm_done && zones<2) zones=2;
     if (ct->fpgm_done && twpts<1) twpts=1;
-    if (ct->fpgm_done && fdefs<7) fdefs=7;
+    if (ct->fpgm_done && fdefs<8) fdefs=8;
     if (stack<STACK_DEPTH) stack=STACK_DEPTH;
 
     memputshort(tab->data, 7*sizeof(uint16), zones);
@@ -965,7 +965,8 @@ static void init_fpgm(InstrCt *ct) {
 	 * position, and shift it, if necessary. The function is used to place
 	 * vertical stems, it assures almost linear advance width to PPEM
 	 * scaling. Shift amount is capped to at most 1 px to prevent some
-	 * weird artifacts at very small ppems.
+	 * weird artifacts at very small ppems. In cleartype mode, no shift
+	 * is made at all.
 	 * Syntax: PUSHB_2 point 1 CALL
 	 */
 	0xb0, // PUSHB_1
@@ -975,21 +976,29 @@ static void init_fpgm(InstrCt *ct) {
         0x20, //   DUP
 	0xde, //   MDRP[rp0,min,rnd,white]
 	0x2f, //   MDAP[rnd], this is needed for grayscale mode
-        0x20, //   DUP
-        0x20, //   DUP
-        0x47, //   GC[cur]
-        0x23, //   SWAP
-        0x46, //   GC[orig]
-        0x61, //   SUB
-        0x6a, //   ROUND[white]
-        0x20, //   DUP
-        0x58, //   IF
+	0xb0, //   PUSHB_1
+	0x07, //     7
+	0x2b, //   CALL
+	0x5c, //   NOT
+	0x58, //   IF
         0x20, //     DUP
-	0x64, //     ABS
-	0x62, //     DIV
-        0x38, //     SHPIX
+        0x20, //     DUP
+        0x47, //     GC[cur]
+        0x23, //     SWAP
+        0x46, //     GC[orig]
+        0x61, //     SUB
+        0x6a, //     ROUND[white]
+        0x20, //     DUP
+        0x58, //     IF
+        0x20, //       DUP
+	0x64, //       ABS
+	0x62, //       DIV
+        0x38, //       SHPIX
+	0x1b, //     ELSE
+	0x21, //       POP
+	0x21, //       POP
+        0x59, //     EIF
 	0x1b, //   ELSE
-	0x21, //     POP
 	0x21, //     POP
         0x59, //   EIF
 	0x2d, // ENDF
@@ -1043,7 +1052,7 @@ static void init_fpgm(InstrCt *ct) {
 	0x04, //   4
 	0x2c, // FDEF
 	0xb0, //   PUSHB_1
-	0x06, //     5
+	0x06, //     6
 	0x2b, //   CALL
 	0x58, //   IF
 	0x21, //     POP
@@ -1111,6 +1120,30 @@ static void init_fpgm(InstrCt *ct) {
 	0x58, //   IF
 	0xb0, //     PUSHB_1
 	0x20, //       32
+	0x88, //     GETINFO
+	0x5c, //     NOT
+	0x5c, //     NOT
+	0x1b, //   ELSE
+	0xb0, //     PUSHB_1
+	0x00, //       0
+	0x59, //   EIF
+	0x2d, // ENDF
+	
+	/* Function 7: check if we are hinting in cleartype.
+	 * CAUTION! Older FreeType versions lie if asked.
+	 * Syntax: PUSHB_1 7 CALL; leaves boolean on the stack.
+	 */
+	0xb0, // PUSHB_1
+	0x07, //   6
+	0x2c, // FDEF
+	0xb1, //   PUSHB_2
+	0x24, //     36
+	0x01, //     1
+	0x88, //   GETINFO
+	0x50, //   LT
+	0x58, //   IF
+	0xb0, //     PUSHB_1
+	0x40, //       64
 	0x88, //     GETINFO
 	0x5c, //     NOT
 	0x5c, //     NOT
@@ -1315,6 +1348,12 @@ return prep_head;
 static void init_prep(InstrCt *ct) {
     uint8 new_prep_preamble[] =
     {
+	/* Enable dropout control */
+	0xb8, // PUSHW_1
+	0x01, //   511
+	0xff, //   ...still that 511
+	0x85, // SCANCTRL
+
         /* Turn hinting off at very small pixel sizes */
 	0x4b, // MPPEM
 	0xb0, // PUSHB_1
@@ -1327,16 +1366,10 @@ static void init_prep(InstrCt *ct) {
 	0x8e, //   INSTCTRL
 	0x59, // EIF
 
-	/* Enable dropout control */
-	0xb8, // PUSHW_1
-	0x01, //   511
-	0xff, //   ...still that 511
-	0x85, // SCANCTRL
-
 	/* Determine the cvt cut-in used */
 	0xb1, // PUSHB_2
 	0x46, //   70/64 = about 1.094 pixel (that's our default setting)
-	0x05, //   5
+	0x06, //   6
 	0x2b, // CALL
 	0x58, // IF
 	0x21, //   POP
@@ -1368,7 +1401,7 @@ static void init_prep(InstrCt *ct) {
 
     if (ct->cvt_done && ct->fpgm_done) {
         /* Normalize stems (only in monochrome mode) */
-        prep_head = pushnum(prep_head, 5);
+        prep_head = pushnum(prep_head, 6);
 	*prep_head++ = CALL;
 	*prep_head++ = 0x5c; // NOT
 	*prep_head++ = 0x58; // IF
@@ -1608,7 +1641,7 @@ return xdir?
      (bp[PrevPoint].y < bp[p].y && bp[NextPoint].y < bp[p].y));
 }
 
-static int IsStrongPoint(int xdir, int *contourends, BasePoint *bp, SplinePoint *sp) {
+static int IsAnglePoint(int *contourends, BasePoint *bp, SplinePoint *sp) {
     int PrevPoint, NextPoint, p=sp->ttfindex;
     double PrevTangent, NextTangent;
 
@@ -1621,6 +1654,41 @@ return 0;
     NextTangent = atan2(bp[NextPoint].y - bp[p].y, bp[NextPoint].x - bp[p].x);
 
 return fabs(PrevTangent - NextTangent) > 0.261;
+}
+
+static int IsInflectionPoint(int *contourends, BasePoint *bp, SplinePoint *sp) {
+    double CURVATURE_THRESHOLD = 1e-9;
+
+    if (IsAnglePoint(contourends, bp, sp))
+return 0;
+
+    struct spline *prev = sp->prev;
+    double in = 0;
+    while (prev != NULL && fabs(in) < CURVATURE_THRESHOLD) {
+        in = SplineCurvature(prev, 1);
+	if (fabs(in) < CURVATURE_THRESHOLD) in = SplineCurvature(prev, 0);
+	if (fabs(in) < CURVATURE_THRESHOLD) prev = prev->from->prev;
+	if (IsAnglePoint(contourends, bp, prev->to))
+    break;
+    }
+
+    struct spline *next = sp->next;
+    double out = 0;
+    while (next != NULL && fabs(out) < CURVATURE_THRESHOLD) {
+        out = SplineCurvature(next, 0);
+	if (fabs(out) < CURVATURE_THRESHOLD) out = SplineCurvature(next, 1);
+	if (fabs(out) < CURVATURE_THRESHOLD) next = next->to->next;
+	if (IsAnglePoint(contourends, bp, next->from))
+    break;
+    }
+
+    if (in==0 || out==0 || (prev != sp->prev && next != sp->next))
+return 0;
+
+    in/=fabs(in);
+    out/=fabs(out);
+
+return (in*out < 0);
 }
 
 static int IsSnappable(InstrCt *ct, int p) {
@@ -1716,7 +1784,6 @@ static void RunOnPoints(InstrCt *ct, int contour_direction,
 static void find_control_pts(int p, SplinePoint *sp, InstrCt *ct) {
     if (p == sp->ttfindex) ct->oncurve[p] |= 1;
 }
-
 /******************************************************************************
  *
  * Hinting is mostly aligning 'edges' (in FreeType's sense). Each stem hint
@@ -1750,7 +1817,7 @@ static void search_edge(int p, SplinePoint *sp, InstrCt *ct) {
 	    score++;
 
 	if (p == sp->ttfindex && 
-	    IsStrongPoint(ct->xdir, ct->contourends, ct->bp, sp)) score++;
+	    IsAnglePoint(ct->contourends, ct->bp, sp)) score++;
 
 	if (score && ct->oncurve[p]) score+=2;
 
