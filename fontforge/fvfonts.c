@@ -220,8 +220,10 @@ return;
 
     /* Get all the subtables in the right order */
     for ( s=0; s<mc->scnt; s=slast ) {
-	if ( mc->subs[s].to==NULL )
+	if ( mc->subs[s].to==NULL ) {
+	    slast = s+1;
     continue;
+	}
 	otl = mc->subs[s].to->lookup;
 	sub_last = otl->subtables = mc->subs[s].to;
 	for ( slast=s+1; slast<mc->scnt; ++slast ) {
