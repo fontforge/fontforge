@@ -7512,33 +7512,43 @@ typedef struct massrenamedlg {
 #define CID_Suffix		1002
 #define CID_StartName		1003
 #define CID_ReplaceSuffix	1004
+#define CID_Themselves		1005
 
 static int MRD_OK(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	MassRenameDlg *mrd = GDrawGetUserData(GGadgetGetWindow(g));
 	int sel_cnt, enc, enc_max = mrd->fv->map->enccount;
-	char *start_name, *suffix;
+	char *start_name, *suffix, *pt;
 	int enc_start;
 	SplineChar *sc, *sourcesc;
 	GTextInfo *subti;
 	struct lookup_subtable *sub;
 	PST *pst;
+	int themselves = GGadgetIsChecked(GWidgetGetControl(mrd->gw,CID_Themselves));
+	int rplsuffix = GGadgetIsChecked(GWidgetGetControl(mrd->gw,CID_ReplaceSuffix));
 
 	for ( enc=sel_cnt=0; enc<enc_max; ++enc ) if ( mrd->fv->selected[enc] )
 	    ++sel_cnt;
-	start_name = GGadgetGetTitle8(GWidgetGetControl(mrd->gw,CID_StartName));
-	enc_start = SFFindSlot(mrd->fv->sf,mrd->fv->map,-1,start_name);
-	if ( enc_start==-1 ) {
-	    gwwv_post_error(_("No Start Glyph"), _("The encoding does not contain something named %.40s"), start_name );
-	    free(start_name);
+	if ( !themselves ) {
+	    start_name = GGadgetGetTitle8(GWidgetGetControl(mrd->gw,CID_StartName));
+	    enc_start = SFFindSlot(mrd->fv->sf,mrd->fv->map,-1,start_name);
+	    if ( enc_start==-1 ) {
+		gwwv_post_error(_("No Start Glyph"), _("The encoding does not contain something named %.40s"), start_name );
+		free(start_name);
 return( true );
-	}
-	free( start_name );
-	if ( enc_start+sel_cnt>=enc_max ) {
-	    gwwv_post_error(_("Not enough glyphs"), _("There aren't enough glyphs in the encoding to name all the selected characters"));
+	    }
+	    free( start_name );
+	    if ( enc_start+sel_cnt>=enc_max ) {
+		gwwv_post_error(_("Not enough glyphs"), _("There aren't enough glyphs in the encoding to name all the selected characters"));
 return( true );
-	}
+	    }
+	    for ( enc=enc_start; enc<enc_start+sel_cnt; ++enc ) if ( mrd->fv->selected[enc]) {
+		gwwv_post_error(_("Bad selection"), _("You may not rename any of the base glyphs, but your selection overlaps the set of base glyphs."));
+return( true );
+	    }
+	} else
+	    enc_start = 0;
 
 	sub = NULL;
 	subti = GGadgetGetListItemSelected(GWidgetGetControl(mrd->gw,CID_SubTable));
@@ -7546,11 +7556,9 @@ return( true );
 	    sub = subti->userdata;
 	if ( sub==(struct lookup_subtable *)-1 )
 	    sub = NULL;
-	if ( sub!=NULL ) {
-	    for ( enc=enc_start; enc<enc_start+sel_cnt; ++enc ) if ( mrd->fv->selected[enc]) {
-		gwwv_post_error(_("Can't specify a subtable here"), _("Some of the selected glyphs are also source glyphs, so they will be renamed, so they can't act as source glyphs for a lookup."));
+	if ( sub!=NULL && themselves ) {
+	    gwwv_post_error(_("Can't specify a subtable here"), _("As the selected glyphs are also source glyphs, they will be renamed, so they can't act as source glyphs for a lookup."));
 return( true );
-	    }
 	}
 
 	suffix = GGadgetGetTitle8(GWidgetGetControl(mrd->gw,CID_Suffix));
@@ -7567,10 +7575,17 @@ return( true );
 
 	for ( enc=sel_cnt=0; enc<enc_max; ++enc ) if ( mrd->fv->selected[enc] ) {
 	    char *oldname;
-	    sc = SFMakeChar(mrd->fv->sf,mrd->fv->map,enc);
-	    sourcesc = SFMakeChar(mrd->fv->sf,mrd->fv->map,enc_start+sel_cnt);
+	    sourcesc = sc = SFMakeChar(mrd->fv->sf,mrd->fv->map,enc);
+	    if ( !themselves )
+		sourcesc = SFMakeChar(mrd->fv->sf,mrd->fv->map,enc_start+sel_cnt);
 	    oldname = sc->name;
-	    sc->name = strconcat(sourcesc->name,suffix);
+	    if ( rplsuffix && (pt=strchr(sourcesc->name,'.'))!=NULL ) {
+		char *name = galloc(pt-sourcesc->name+strlen(suffix)+2);
+		strcpy(name,sourcesc->name);
+		strcpy(name+(pt-sourcesc->name),suffix);
+		sc->name = name;
+	    } else
+		sc->name = strconcat(sourcesc->name,suffix);
 	    free(oldname);
 	    sc->unicodeenc = -1;
 	    if ( sub!=NULL ) {
@@ -7692,8 +7707,8 @@ void FVMassGlyphRename(FontView *fv) {
     GWindow gw;
     GWindowAttrs wattrs;
     MassRenameDlg mrd;
-    GGadgetCreateData gcd[13], *hvarray[10][3], *barray[8], boxes[3];
-    GTextInfo label[13];
+    GGadgetCreateData gcd[14], *hvarray[11][3], *barray[8], boxes[3];
+    GTextInfo label[14];
     int i,k,subtablek, startnamek;
 
     memset(&mrd,0,sizeof(mrd));
@@ -7739,13 +7754,22 @@ void FVMassGlyphRename(FontView *fv) {
     gcd[k++].creator = GTextFieldCreate;
     hvarray[i][1] = &gcd[k-1]; hvarray[i++][2] = NULL;
 
+    label[k].text = (unichar_t *) _("To their own names");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_Themselves;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_cb_on;
+    gcd[k++].creator = GRadioCreate;
+    hvarray[i][0] = &gcd[k-1];
+    hvarray[i][1] = GCD_ColSpan; hvarray[i++][2] = NULL;
+
     label[k].text = (unichar_t *) _("To the glyph names starting at:");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = 10;
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     gcd[k].gd.popup_msg = (unichar_t *) _("So if you type \"A\" here the first selected glyph would be named \"A.suffix\".\nThe second \"B.suffix\", and so on.");
-    gcd[k++].creator = GLabelCreate;
+    gcd[k++].creator = GRadioCreate;
     hvarray[i][0] = &gcd[k-1];
 
     startnamek = k;
@@ -7776,6 +7800,7 @@ void FVMassGlyphRename(FontView *fv) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = 10;
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_cb_on;
+    gcd[k].gd.cid = CID_ReplaceSuffix;
     gcd[k++].creator = GRadioCreate;
     hvarray[i][1] = &gcd[k-1]; hvarray[i++][2] = NULL;
 
@@ -7834,6 +7859,7 @@ void FVMassGlyphRename(FontView *fv) {
     GGadgetSetList(gcd[subtablek].ret,SFSubtablesOfType(fv->sf,gsub_single,false,true),false);
     GGadgetSelectOneListItem(gcd[subtablek].ret,0);
     GCompletionFieldSetCompletion(gcd[startnamek].ret,MRD_GlyphNameCompletion);
+    GWidgetIndicateFocusGadget(GWidgetGetControl(gw,CID_Suffix));
 
     GHVBoxFitWindow(boxes[0].ret);
 
