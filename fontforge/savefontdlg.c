@@ -39,8 +39,24 @@
 #include "psfont.h"
 
 static int nfnt_warned = false, post_warned = false;
+extern char *oflib_username, *oflib_password;
 
 #define CID_Family	2000
+
+#define CID_OFLibUpload	300
+#define CID_OFLibName	301
+#define CID_OFLibTags	302
+#define CID_OFLibDescription	303
+#define CID_OFLibArtists	304
+#define CID_OFLibNotSafe	305
+#define CID_OFLibUsername	306
+#define CID_OFLibPassword	307
+#define CID_OFLibRememberMe	308
+#define CID_OFLibOFL		309
+#define CID_OFLibPD		310
+#define CID_OFLibLine1		312
+#define CID_OFLibLine2		313
+#define CID_OFLibLabOffset	20
 
 #define CID_OK		1001
 #define CID_PS_AFM		1002
@@ -2355,6 +2371,39 @@ return( true );
 return( false );
 }
 
+static int OFLibUploadGather(struct gfc_data *d,unichar_t *path) {
+    OFLibData oflib;
+    int ret;
+
+    memset(&oflib,0,sizeof(oflib));
+    oflib.sf = d->sf;
+    oflib.pathspec = u2utf8_copy(path);
+    oflib.username = GGadgetGetTitle8(GWidgetGetControl(d->gw,CID_OFLibUsername));
+    oflib.password = GGadgetGetTitle8(GWidgetGetControl(d->gw,CID_OFLibPassword));
+    oflib.name     = GGadgetGetTitle8(GWidgetGetControl(d->gw,CID_OFLibName));
+    oflib.description = GGadgetGetTitle8(GWidgetGetControl(d->gw,CID_OFLibDescription));
+    oflib.tags     = GGadgetGetTitle8(GWidgetGetControl(d->gw,CID_OFLibTags));
+    oflib.artists  = GGadgetGetTitle8(GWidgetGetControl(d->gw,CID_OFLibArtists));
+    oflib.notsafeforwork = GGadgetIsChecked(GWidgetGetControl(d->gw,CID_OFLibNotSafe));
+    oflib.oflicense = GGadgetIsChecked(GWidgetGetControl(d->gw,CID_OFLibOFL));
+
+    ret = OFLibUploadFont( &oflib );
+    if ( ret && GGadgetIsChecked(GWidgetGetControl(d->gw,CID_OFLibRememberMe))) {
+	free(oflib_username); free(oflib_password);
+	oflib_username = copy( oflib.username );
+	oflib_password = copy( oflib.password );
+    }
+
+    free( oflib.pathspec );
+    free( oflib.username );
+    free( oflib.password );
+    free( oflib.name );
+    free( oflib.description );
+    free( oflib.tags );
+    free( oflib.artists );
+return ( ret );
+}
+
 static void DoSave(struct gfc_data *d,unichar_t *path) {
     int err=false;
     char *temp;
@@ -2591,6 +2640,8 @@ return;
 	force_names_when_saving = rename_to;
 
     free(temp);
+    if ( !err && GGadgetIsChecked(GWidgetGetControl(d->gw,CID_OFLibUpload)) )
+	err = !OFLibUploadGather(d,path);
     d->done = !err;
     d->ret = !err;
 }
@@ -2625,6 +2676,28 @@ static void _GFD_SaveOk(struct gfc_data *d) {
     unichar_t *ret;
     int formatstate = GGadgetGetFirstListSelectedItem(d->pstype);
 
+    if ( GGadgetIsChecked(GWidgetGetControl(d->gw, CID_OFLibUpload))) {
+	/* Check that we've got all the data we need for an oflib upload */
+	if ( *_GGadgetGetTitle(GWidgetGetControl(d->gw,CID_OFLibName))=='\0' ||
+		/* Can they get by without keywords? */
+		*_GGadgetGetTitle(GWidgetGetControl(d->gw,CID_OFLibTags))=='\0' ||
+		*_GGadgetGetTitle(GWidgetGetControl(d->gw,CID_OFLibDescription))=='\0' ||
+		/* Artists is definitely optional */
+		*_GGadgetGetTitle(GWidgetGetControl(d->gw,CID_OFLibUsername))=='\0' ||
+		*_GGadgetGetTitle(GWidgetGetControl(d->gw,CID_OFLibPassword))=='\0' ) {
+	    gwwv_post_error(_("Bad OFLib upload"),
+		    *_GGadgetGetTitle(GWidgetGetControl(d->gw,CID_OFLibPassword))=='\0' ?
+			    _("Missing OFLib password") :
+		    *_GGadgetGetTitle(GWidgetGetControl(d->gw,CID_OFLibUsername))=='\0' ?
+			    _("Missing OFLib username") :
+		    *_GGadgetGetTitle(GWidgetGetControl(d->gw,CID_OFLibDescription))=='\0' ?
+			    _("Missing OFLib description") :
+		    *_GGadgetGetTitle(GWidgetGetControl(d->gw,CID_OFLibName))=='\0' ?
+			    _("Missing OFLib name") :
+			    _("Missing OFLib keywords"));
+return;
+	}
+    }
     GFileChooserGetChildren(d->gfc,NULL,NULL,&tf);
     if ( *_GGadgetGetTitle(tf)!='\0' ) {
 	ret = GGadgetGetTitle(d->gfc);
@@ -2858,7 +2931,47 @@ static int GFD_BitmapFormat(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static int GFD_ToggleOFLib(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	static int cids[] = {
+	    CID_OFLibUsername, CID_OFLibPassword, CID_OFLibRememberMe, 
+	    CID_OFLibOFL, CID_OFLibPD,
+	    CID_OFLibName, CID_OFLibTags, CID_OFLibDescription, CID_OFLibArtists,
+	    CID_OFLibNotSafe,
+	    CID_OFLibLine1, CID_OFLibLine2,
+	    0 };
+	int i, visible = GGadgetIsChecked(g);
+
+	for ( i=0; cids[i]!=0; ++i ) {
+	    GGadgetSetVisible(GWidgetGetControl(d->gw,cids[i]),visible);
+	    g = GWidgetGetControl(d->gw,cids[i]+CID_OFLibLabOffset);
+	    if ( g!=NULL )
+		GGadgetSetVisible(g,visible);
+	}
+	    
+	GWidgetToDesiredSize(d->gw);
+    }
+return( true );
+}
+
+static int GFD_OFLibHelp(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	help("http://www.openfontlibrary.org/");
+    }
+return( true );
+}
+
+static int GFD_OFLibRegister(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	help("http://www.openfontlibrary.org/media/register");
+    }
+return( true );
+}
+
 static int e_h(GWindow gw, GEvent *event) {
+    extern int GGadgetWithin(GGadget *g, int x, int y);
+
     if ( event->type==et_close ) {
 	struct gfc_data *d = GDrawGetUserData(gw);
 	d->done = true;
@@ -2877,6 +2990,8 @@ return( false );
     } else if ( event->type == et_mousemove ||
 	    (event->type==et_mousedown && event->u.mouse.button==3 )) {
 	struct gfc_data *d = GDrawGetUserData(gw);
+	if ( !GGadgetWithin(d->gfc,event->u.mouse.x,event->u.mouse.y))
+return( false );
 	GFileChooserPopupCheck(d->gfc,event);
     } else if (( event->type==et_mouseup || event->type==et_mousedown ) &&
 	    (event->u.mouse.button==4 || event->u.mouse.button==5) ) {
@@ -2961,8 +3076,8 @@ int SFGenerateFont(SplineFont *sf,int family,EncMap *map) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[19+2*48+2], *varray[13], *hvarray[18], *famarray[3*50+1],
-	    *harray[10], boxes[5];
+    GGadgetCreateData gcd[19+2*48+2], *varray[13], *hvarray[34], *famarray[3*50+1],
+	    *harray[10], boxes[7], *oflarray[8][5], *oflibinfo[8];
     GTextInfo label[18+2*48+2];
     struct gfc_data d;
     GGadget *pulldown, *files, *tf;
@@ -2978,6 +3093,8 @@ int SFGenerateFont(SplineFont *sf,int family,EncMap *map) {
     char **nlnames;
     int cnt, any;
     GTextInfo *namelistnames;
+    GBox small_blue_box;
+    extern GBox _GGadget_button_box;
 
     memset(&d,'\0',sizeof(d));
     d.sf = sf;
@@ -3384,6 +3501,8 @@ return( 0 );
     hvarray[10] = &gcd[k-1]; hvarray[11] = NULL;
 
     if ( !family ) {
+	/* Too time consuming to validate lots of fonts, and what UI would I use? */
+	/*  so only do this if not family */
 	label[k].text = (unichar_t *) _("Validate Before Saving");
 	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
@@ -3397,7 +3516,240 @@ return( 0 );
 	gcd[k].gd.popup_msg = (unichar_t *) _("Check the glyph outlines for standard errors before saving\nThis can be slow.");
 	gcd[k++].creator = GCheckBoxCreate;
 	hvarray[12] = &gcd[k-1]; hvarray[13] = GCD_ColSpan; hvarray[14] = GCD_ColSpan;
-	hvarray[15] = NULL; hvarray[16] = NULL;
+	hvarray[15] = NULL;
+
+	/* And OFLib uploads of families won't work because they don't accept dfonts */
+	label[k].text = (unichar_t *) _("Upload to the");
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 8; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+24+6;
+	gcd[k].gd.flags = (gg_enabled | gg_visible | gg_utf8_popup);
+	gcd[k].gd.popup_msg = (unichar_t *) _("Once you have a final version of your font\nand if your font is licensed under the Open\nFont License, then you might consider uploading\nit to the Open Font Library. This is a website\nof Free/Libre fonts.\n\nYou must have previously registered with OFLib\nand have a valid username/password there.\n\nObviously you must be connected to the internet\nfor this to work.");
+	gcd[k].gd.cid = CID_OFLibUpload;
+	gcd[k].gd.handle_controlevent = GFD_ToggleOFLib;
+	gcd[k++].creator = GCheckBoxCreate;
+	oflibinfo[0] = &gcd[k-1];
+
+	small_blue_box = _GGadget_button_box;
+	small_blue_box.border_type = bt_box;
+	small_blue_box.border_width = 0;
+	small_blue_box.flags = box_foreground_shadow_outer;
+	small_blue_box.padding = 0;
+	small_blue_box.main_foreground = 0x0000ff;
+	small_blue_box.border_darker = small_blue_box.main_foreground;
+	small_blue_box.border_darkest = small_blue_box.border_brighter = small_blue_box.border_brightest =
+		small_blue_box.main_background == COLOR_DEFAULT ?
+			GDrawGetDefaultBackground(NULL) :
+			small_blue_box.main_background;
+
+	label[k].text = (unichar_t *) _("Open Font Library");
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.box = &small_blue_box;
+	gcd[k].gd.flags = gg_enabled | gg_visible | gg_dontcopybox | gg_utf8_popup;
+	gcd[k].gd.handle_controlevent = GFD_OFLibHelp;
+	gcd[k].gd.popup_msg = (unichar_t *) "http://openfontlibrary.org/";
+	gcd[k++].creator = GButtonCreate;
+	oflibinfo[1] = &gcd[k-1];
+	oflibinfo[2] = GCD_HPad10;
+
+	label[k].text = (unichar_t *) _("Register");
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.flags = gg_enabled | gg_visible | gg_dontcopybox | gg_utf8_popup;
+	gcd[k].gd.box = &small_blue_box;
+	gcd[k].gd.handle_controlevent = GFD_OFLibRegister;
+	gcd[k].gd.popup_msg = (unichar_t *) "http://openfontlibrary.org/media/register";
+	gcd[k++].creator = GButtonCreate;
+	oflibinfo[3] = &gcd[k-1];
+	oflibinfo[4] = GCD_Glue;
+	oflibinfo[5] = NULL;
+
+	boxes[6].gd.flags = gg_enabled|gg_visible;
+	boxes[6].gd.u.boxelements = oflibinfo;
+	boxes[6].creator = GHBoxCreate;
+
+	hvarray[16] = &boxes[6]; hvarray[17] = hvarray[18] = GCD_ColSpan;
+	hvarray[19] = NULL;
+
+	gcd[k].gd.flags = gg_enabled;
+	gcd[k].gd.cid = CID_OFLibLine1;
+	gcd[k++].creator = GLineCreate;
+	hvarray[20] = &gcd[k-1];
+	hvarray[21] = hvarray[22] = GCD_ColSpan; hvarray[23] = NULL;
+
+	label[k].text = (unichar_t *) _("Username:");
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.flags = (gg_enabled  | gg_utf8_popup);
+	gcd[k].gd.popup_msg = (unichar_t *) _("Username on OFLib");
+	gcd[k].gd.cid = CID_OFLibUsername + CID_OFLibLabOffset;
+	gcd[k++].creator = GLabelCreate;
+	oflarray[0][0] = &gcd[k-1];
+
+	label[k].text = (unichar_t *) oflib_username;
+	label[k].text_is_1byte = true;
+	if ( oflib_username!=NULL )
+	    gcd[k].gd.label = &label[k];
+	gcd[k].gd.flags = (gg_enabled  | gg_utf8_popup);
+	gcd[k].gd.popup_msg = (unichar_t *) _("Username on OFLib");
+	gcd[k].gd.cid = CID_OFLibUsername;
+	gcd[k++].creator = GTextFieldCreate;
+	oflarray[0][1] = &gcd[k-1];
+
+	label[k].text = (unichar_t *) _("Password:");
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.flags = (gg_enabled  | gg_utf8_popup);
+	gcd[k].gd.popup_msg = (unichar_t *) _("Password on OFLib");
+	gcd[k].gd.cid = CID_OFLibPassword + CID_OFLibLabOffset;
+	gcd[k++].creator = GLabelCreate;
+	oflarray[0][2] = &gcd[k-1];
+
+	label[k].text = (unichar_t *) oflib_password;
+	label[k].text_is_1byte = true;
+	if ( oflib_password!=NULL )
+	    gcd[k].gd.label = &label[k];
+	gcd[k].gd.flags = (gg_enabled  | gg_utf8_popup);
+	gcd[k].gd.popup_msg = (unichar_t *) _("Password on OFLib");
+	gcd[k].gd.cid = CID_OFLibPassword;
+	gcd[k++].creator = GPasswordCreate;
+	oflarray[0][3] = &gcd[k-1];
+	oflarray[0][4] = NULL;
+
+	label[k].text = (unichar_t *) _("Remember Me");
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.flags = (oflib_username!=NULL && oflib_password!=NULL) ?
+		(gg_enabled  | gg_cb_on | gg_utf8_popup) :
+		(gg_enabled  | gg_utf8_popup);
+	gcd[k].gd.popup_msg = (unichar_t *) _("FontForge will remember your username/password\nby storing them as plain text (insecurely) in your preference file");
+	gcd[k].gd.cid = CID_OFLibRememberMe;
+	gcd[k++].creator = GCheckBoxCreate;
+	oflarray[1][0] = GCD_Glue; oflarray[1][1] = &gcd[k-1];
+	oflarray[1][2] = oflarray[1][3] = GCD_ColSpan;
+	oflarray[1][4] = NULL;
+	
+
+	label[k].text = (unichar_t *) _("OFLib Name:");
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.flags = (gg_enabled  | gg_utf8_popup);
+	gcd[k].gd.popup_msg = (unichar_t *) _("Font name to display on OFLib");
+	gcd[k].gd.cid = CID_OFLibName + CID_OFLibLabOffset;
+	gcd[k++].creator = GLabelCreate;
+	oflarray[2][0] = &gcd[k-1];
+
+	label[k].text = (unichar_t *) sf->fullname;
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.flags = (gg_enabled  | gg_utf8_popup);
+	gcd[k].gd.popup_msg = (unichar_t *) _("Font name to display on OFLib");
+	gcd[k].gd.cid = CID_OFLibName;
+	gcd[k++].creator = GTextFieldCreate;
+	oflarray[2][1] = &gcd[k-1];
+
+	label[k].text = (unichar_t *) _("Artists:");
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.flags = (gg_enabled  | gg_utf8_popup);
+	gcd[k].gd.popup_msg = (unichar_t *) _("Other artists involved in the design of this font.\nCollaborators, etc.");
+	gcd[k].gd.cid = CID_OFLibArtists + CID_OFLibLabOffset;
+	gcd[k++].creator = GLabelCreate;
+	oflarray[2][2] = &gcd[k-1];
+
+	gcd[k].gd.flags = (gg_enabled  | gg_utf8_popup);
+	gcd[k].gd.popup_msg = (unichar_t *) _("Other artists involved in the design of this font.\nCollaborators, etc.");
+	gcd[k].gd.cid = CID_OFLibArtists;
+	gcd[k++].creator = GTextFieldCreate;
+	oflarray[2][3] = &gcd[k-1];
+	oflarray[2][4] = NULL;
+
+	label[k].text = (unichar_t *) _("Keyword Tags:");
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.flags = (gg_enabled  | gg_utf8_popup);
+	gcd[k].gd.popup_msg = (unichar_t *) _("A comma separated list of keywords that describe\nthe font to help others search for it.\nYou may use whatever keyword tags you desire.\nSuggestions: serif, sans_serif, bold, italic, oblique,\nextended, compressed, thin, demibold, black, outline, regular,\ndisplay, etc.");
+	gcd[k].gd.cid = CID_OFLibTags + CID_OFLibLabOffset;
+	gcd[k++].creator = GLabelCreate;
+	oflarray[3][0] = &gcd[k-1];
+
+	gcd[k].gd.flags = (gg_enabled  | gg_utf8_popup);
+	gcd[k].gd.popup_msg = (unichar_t *) _("A comma separated list of keywords that describe\nthe font to help others search for it.\nYou may use whatever keyword tags you desire.\nSuggestions: serif, sans_serif, bold, italic, oblique,\nextended, compressed, thin, demibold, black, outline,\nregular, display, etc.");
+	gcd[k].gd.cid = CID_OFLibTags;
+	gcd[k++].creator = GTextFieldCreate;
+	oflarray[3][1] = &gcd[k-1]; oflarray[3][2] = oflarray[3][3] = GCD_ColSpan;
+	oflarray[3][4] = NULL;
+
+	label[k].text = (unichar_t *) _("Description:");
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.flags = (gg_enabled  | gg_utf8_popup);
+	gcd[k].gd.popup_msg = (unichar_t *) _("A description of the font");
+	gcd[k].gd.cid = CID_OFLibDescription + CID_OFLibLabOffset;
+	gcd[k++].creator = GLabelCreate;
+	oflarray[4][0] = &gcd[k-1];
+
+	gcd[k].gd.pos.height = 4*12;
+	gcd[k].gd.flags = (gg_enabled  | gg_utf8_popup | gg_textarea_wrap);
+	gcd[k].gd.popup_msg = (unichar_t *) _("A description of the font");
+	gcd[k].gd.cid = CID_OFLibDescription;
+	gcd[k++].creator = GTextAreaCreate;
+	oflarray[4][1] = &gcd[k-1]; oflarray[4][2] = oflarray[4][3] = GCD_ColSpan;
+	oflarray[4][4] = NULL;
+
+	label[k].text = (unichar_t *) _("License:");
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.flags = (gg_enabled  | gg_utf8_popup);
+	gcd[k].gd.popup_msg = (unichar_t *) _("A description of the font");
+	gcd[k].gd.cid = CID_OFLibOFL + CID_OFLibLabOffset;
+	gcd[k++].creator = GLabelCreate;
+	oflarray[5][0] = &gcd[k-1];
+
+	label[k].text = (unichar_t *) _("SIL");
+	label[k].image_precedes = false;
+	label[k].image = &OFL_logo;
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.flags = (gg_enabled  | gg_utf8_popup | gg_cb_on);
+	gcd[k].gd.popup_msg = (unichar_t *) _("The SIL Open Font License\nPlease see http://scripts.sil.org/OFL");
+	gcd[k].gd.cid = CID_OFLibOFL;
+	gcd[k++].creator = GRadioCreate;
+	oflarray[5][1] = &gcd[k-1]; oflarray[5][2] = GCD_ColSpan;
+
+	label[k].text = (unichar_t *) _("Public Domain");
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.flags = (gg_enabled  | gg_utf8_popup );
+	gcd[k].gd.popup_msg = (unichar_t *) _("Public Domain");
+	gcd[k].gd.cid = CID_OFLibPD;
+	gcd[k++].creator = GRadioCreate;
+	oflarray[5][3] = &gcd[k-1]; oflarray[5][4] = NULL;
+
+	label[k].text = (unichar_t *) _("Not Safe for Work");
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.flags = gg_enabled  | gg_utf8_popup;
+	gcd[k].gd.popup_msg = (unichar_t *) _("If for some reason the font is deemed inappropriate\nfor a work environment.");
+	gcd[k].gd.cid = CID_OFLibNotSafe;
+	gcd[k++].creator = GCheckBoxCreate;
+	oflarray[6][0] = GCD_Glue; oflarray[6][1] = &gcd[k-1];
+	oflarray[6][2] = GCD_ColSpan; oflarray[6][3] = GCD_Glue;
+	oflarray[6][4] = NULL;
+	oflarray[7][0] = NULL;
+
+	boxes[5].gd.flags = gg_enabled|gg_visible;
+	boxes[5].gd.u.boxelements = oflarray[0];
+	boxes[5].creator = GHVBoxCreate;
+	hvarray[24] = &boxes[5]; hvarray[25] = hvarray[26] = GCD_ColSpan;
+	hvarray[27] = NULL;
+
+	gcd[k].gd.flags = gg_enabled;
+	gcd[k].gd.cid = CID_OFLibLine2;
+	gcd[k++].creator = GLineCreate;
+	hvarray[28] = &gcd[k-1];
+	hvarray[29] = hvarray[30] = GCD_ColSpan; hvarray[31] = hvarray[32] = NULL;
     } else
 	hvarray[12] = NULL;
 
@@ -3487,8 +3839,13 @@ return( 0 );
     GGadgetSetUserData(gcd[2].ret,gcd[0].ret);
     free(namelistnames);
     free(label[9].text);
-    for ( i=13; i<k; ++i ) if ( gcd[i].gd.popup_msg!=NULL )
-	free((unichar_t *) gcd[i].gd.popup_msg);
+    if ( family ) {
+	for ( i=13; i<k; ++i ) if ( gcd[i].gd.popup_msg!=NULL )
+	    free((unichar_t *) gcd[i].gd.popup_msg);
+    } else {
+	GHVBoxSetExpandableCol(boxes[5].ret,1);
+	GHVBoxSetExpandableCol(boxes[6].ret,gb_expandglue);
+    }
 
     GFileChooserConnectButtons(gcd[0].ret,gcd[1].ret,gcd[2].ret);
     {
