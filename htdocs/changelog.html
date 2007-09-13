@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 8-Aug-2007 -->
+  <!-- AP: Last modified: 13-Sep-2007 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -47,19 +47,112 @@
   </BLOCKQUOTE>
   <UL>
     <LI>
-      ??-Sept-2007
+      13-Sept-2007
       <UL>
 	<LI>
-	  Oops. When changing the weight of a glyph and retaining the counter
-	  sizes, fontforge would push two entries onto the undo stack rather
-	  than one. (So the user would have to do Edit->Undo twice to get back
-	  to where s/he started from).
+	  Added the ability to upload a font to the
+	  <A HREF="http://www.openfontlibrary.org/">open font library</A>. (You need
+	  to have created an account with them first).
 	<LI>
-	  Added two new python methods to font. <UL><LI>find(contour) will search the
-	  font for all glyphs containing contour and return an interator on
-	  that set.
-	  <LI>replaceAll(srch,rpl) Will search for the "srch" contour/layer in
-	  the font and replace it (each time it occurs) with the "rpl" contour/layer.
+	  Add a Edit-&gt;Select-&gt;Select by Script command<BR>
+	  Make the Select by Name take a wildcard (so you could select "*.sc").
+	<LI>
+	  ApplySubstitutions still had problems. Caused crashes in a font with
+	  instructions.
+	<LI>
+	  If one used the metrics view to create a kerning lookup then: there would
+	  be no 'kern' feature in the feature list yet, and the display would randomly
+	  lose track of kern pairs and then create new ones. Very confusing.
+	<LI>
+	  Hmm. In some cases Merge Fonts didn't copy over lookup info.<BR>
+	  Add the ability to merge cross-font kerning pairs (in case the two fonts
+	  being merged have the same glyphs for those which are in both fonts).
+	<LI>
+	  Provide a mass glyph rename menu item.
+	<LI>
+	  The [Merge] button in Font Info-&gt;Lookups was disabled when two subtables
+	  in the first lookup were selected.
+	<LI>
+	  If a glyph ended in a suffix (one.superior, etc.), then changes to that glyph
+	  were not reflected in the fontview.
+	<LI>
+	  Add the ability to Populate a lookup from the selection (in the lookup sub-table
+	  dialogs)<BR>
+	  Do a better job of providing default values for single substitutions &amp;
+	  positions.
+	<LI>
+	  In the Print/Display dlg, deleting something so that the next line was blank
+	  caused ff to crash.
+	<LI>
+	  The Encoding-&gt;Make From Font menu item should be disabled if the encoding
+	  is not custom.
+	<LI>
+	  Fixed a system specific crash in the BDF Info window.
+	<LI>
+	  Major rewrite of tilepath. Now has initial, medial, final &amp; isolated
+	  tiles which it will use depending on the circumstances. No longer uses the
+	  clipboard, but you can draw the tiles in the dlg.
+	<LI>
+	  In Italic/Oblique fonts (those where the font has an italic angle specified)
+	  make the center in width command correct for the italic angle.
+	<LI>
+	  Round to Int didn't round anchor points.
+	<LI>
+	  The Control Point Info window could wander off the bottom of the screen.
+	  I was very carefully calculating its position -- and then not using the result.
+	<LI>
+	  InkScape stuffs bitmap images into svg files using the data URI<BR>
+	  &nbsp; &nbsp;data:&lt;mimetype&gt;,&lt;data&gt;<BR>
+	  (see IETF standard RFC 2397)
+	  <P>
+	  So, I'll support this now as my only way of handling type3 style svg fonts
+	  with embedded bitmaps.
+	  <P>
+	  The standard points out that URIs are limitted to 1024 bytes, but I don't
+	  pay any attention to that restriction, and will stuff arbetrary sized images
+	  into these things.
+	<LI>
+	  The code that set up python import/export filters did not put an end of list
+	  entry after the last one. Sometimes it would be NULL (correct) and things
+	  would work and sometimes it would be garbage and things would crash.
+	<LI>
+	  Drat. In the outline glyph view, the Import command didn't set the filter
+	  properly when you changed the import type.
+	<LI>
+	  Extend fontforge to keep track of errors encountered when loading 'sfnt'
+	  files, and then have fontlint complain about them.
+	  <P>
+	  Also extend fontlint to do validity checking in glyphs against the 'maxp'
+	  table. (This won't matter when editing fonts, as ff will fixup the maxp values
+	  when it generates the font, but there might be some existing fonts with buggy
+	  'maxp' values).
+	<LI>
+	  Oops. When changing the weight of a glyph and retaining the counter sizes,
+	  fontforge would push two entries onto the undo stack rather than one. (So
+	  the user would have to do Edit-&gt;Undo twice to get back to where s/he started
+	  from).
+	<LI>
+	  Added several new python methods to font.
+	  <UL>
+	    <LI>
+	      find(contour) will search the font for all glyphs containing contour and
+	      return an interator on that set.
+	    <LI>
+	      replaceAll(srch,rpl) Will search for the "srch" contour/layer in the font
+	      and replace it (each time it occurs) with the "rpl" contour/layer.
+	    <LI>
+	      glyphs(type) returns an iterator over all glyphs in the font. If present
+	      type may be "GID" (default if omitted) or "encoding" and it indicates the
+	      order in which the glyphs will be returned.
+	  </UL>
+	  <P>
+	  Added some new members to glyph:
+	  <UL>
+	    <LI>
+	      encoding -- returns the glyph's encoding in the font
+	    <LI>
+	      script -- returns the OpenType tag (a 4 letter string) of the script of this
+	      glyph.
 	  </UL>
       </UL>
     <LI>

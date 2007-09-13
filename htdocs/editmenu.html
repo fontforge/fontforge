@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 7-Jun-2007 -->
+  <!-- AP: Last modified: 9-Sep-2007 -->
   <TITLE>The Edit Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -165,7 +165,9 @@
 	<LI>
 	  <A HREF="#Color">Select Color&gt;</A>
 	<LI>
-	  <A HREF="#SelectName">Select By Name</A>
+	  <A HREF="#SelectName">Select By Wildcard</A>...
+	<LI>
+	  <A HREF="#SelectScript">Select By Script...</A>
 	<LI>
 	  <A HREF="#SelChanged">Changed Glyphs</A>
 	<LI>
@@ -534,11 +536,17 @@
 	  glyphs, but if you hold down the shift key the selection will be extended
 	  to the colored glyphs.
 	<DT>
-	  <A NAME="SelectName">Select By Name...</A>
+	  <A NAME="SelectName">Select By Wildcard...</A>
 	<DD>
-	  A glyph may be mapped to more than one encoding slot. Select all encoding
-	  slots that refer to the named glyph. I think this is primarily useful for
-	  detaching .notdef.
+	  Select all glyphs that match the wildcard pattern specified. A glyph may
+	  also be mapped to more than one encoding slot. Select all encoding slots
+	  that refer to the named glyph. I think this is primarily useful for detaching
+	  .notdef.
+	<DT>
+	  <A NAME="SelectScript">Select By Script...</A>
+	<DD>
+	  Allows you to specify an OpenType script tag and then ff will select all
+	  glyphs which have that script.
 	<DT>
 	  <A NAME="SelChanged">Changed</A>
 	<DD>

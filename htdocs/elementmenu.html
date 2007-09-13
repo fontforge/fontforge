@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 30-Aug-2007 -->
+  <!-- AP: Last modified: 13-Sep-2007 -->
   <TITLE>The Element Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -101,6 +101,8 @@
 	<LI>
 	  <A HREF="#DepSubs">Substitutions</A>
       </UL>
+    <LI>
+      <A HREF="#MassRename">Mass Glyph Rename...</A>
     <LI>
       <A HREF="#Problems">Find Problems...</A>
     <LI>
@@ -298,6 +300,27 @@
 	  "fi" depended on it as a ligature, and if you select "A.swash" you might
 	  see that "A" depended on it as a 'swsh' alternate subs.
       </DL>
+    <DT>
+      <A NAME="MassRename">Mass Glyph Rename...</A>
+    <DD>
+      <IMG SRC="MassRename.png" WIDTH="429" HEIGHT="288" ALIGN="Right">This allows
+      you to rename a bunch of selected glyphs. It can be used in two ways, either:
+      <UL>
+	<LI>
+	  You want to rename all the selected glyphs by adding a suffix to their names
+	  (this might be useful if you are working with a small caps Type1 font that
+	  you wanted to convert to an otf font, where the old convention was just to
+	  name the glyphs as "a", "b" and so forth rather than "a.sc", "b.sc", etc.).
+	<LI>
+	  Or you can select a block of glyphs, and specify another glyph somewhere
+	  in the encoding, then the selected glyphs would get be named by appending
+	  the suffix to the sequence of glyphs starting with the one identified in
+	  the dialog. (This might be useful if you wanted to add a small caps collection
+	  to an existing font). In this case you may also specify a lookup subtable
+	  so that the base glyphs would get substituted by the appropriate renamed
+	  glyphs when that subtable was activated (this can't be done in the previous
+	  case, because there are no longer any base glyphs)
+      </UL>
     <DT>
       Find <A NAME="Problems">Problems</A>...
     <DD>
@@ -921,7 +944,13 @@
       </UL>
       <P>
       FontForge will also copy advanced typographic features, kerning, ligatures,
-      etc.
+      etc.<BR>
+      If one of the two glyphs of a kerning pair is in the mergee and the other
+      in the merger then you will be given the option of either ignoring this kerning
+      pair or adding it to the resultant font. This happens if both the mergee
+      and the merger contain a glyph, and the kerning pair is in the merger font
+      -- if that glyph is the same in both fonts then you would want to include
+      the kerning pair, but if it differs then you probably don't.
     <DT>
       <A NAME="Interpolate">Interpolate</A> Fonts...
     <DD>

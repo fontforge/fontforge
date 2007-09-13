@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 12-Mar-2007 -->
-  <!-- AP: Last modified: 4-Aug-2007 -->
+  <!-- AP: Last modified: 13-Sep-2007 -->
   <TITLE>Manipulating OpenType Lookups</TITLE>
 </HEAD>
 <BODY>
@@ -224,6 +224,9 @@ out a default replacement glyph then it will in provide that as the default
 value (if it can't figure out a good replacement it will just leave the right
 side blank).
 <P>
+The <CODE>[Add Selected] </CODE>button works in much the same way, but will
+only add glyphs selected in the font view.
+<P>
 The <CODE>[Default Using Suffix:] </CODE>button will behave similarly (except
 it will only insert entries for which FontForge can find a replacement, and
 glyph name of that replacement will be found by appending the specified suffix
@@ -261,8 +264,8 @@ live in an Apple Advanced Typography font.
     <A NAME="Single-pos">Single Positioning</A>
   </CAPTION>
   <TR>
-    <TD><IMG SRC="subtable-gpos-singlehide.png" WIDTH="415" HEIGHT="259"></TD>
-    <TD><IMG SRC="subtable-gpos-singlefull.png" WIDTH="647" HEIGHT="258"></TD>
+    <TD><IMG SRC="subtable-gpos-singlehide.png" WIDTH="415" HEIGHT="280"></TD>
+    <TD><IMG SRC="subtable-gpos-singlefull.png" WIDTH="647" HEIGHT="280"></TD>
   </TR>
 </TABLE>
 <P>
@@ -295,6 +298,10 @@ a further pixel, while if the pixel-size is 12 it should be moved up a pixel.
 The [] Hide Unused Columns check box will toggle between the two views above
 (well, not quite, I added two device table adjustments in the image on the
 right, so the adjustment column would remain after checking the checkbox).
+<P>
+Often all the adjustments in a subtable will be the same (the ones here are)
+so the [*] Default new entries to first check box will give all new entries
+the same value as the first line.
 <H3>
   <IMG SRC="subtable-gpos-kernpair.png" WIDTH="415" HEIGHT="472" ALIGN="Right"><A
       NAME="Pair">Pair</A> Positioning (kerning)
