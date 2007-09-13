@@ -2374,6 +2374,7 @@ return( false );
 static int OFLibUploadGather(struct gfc_data *d,unichar_t *path) {
     OFLibData oflib;
     int ret;
+    char *pt;
 
     memset(&oflib,0,sizeof(oflib));
     oflib.sf = d->sf;
@@ -2392,6 +2393,8 @@ static int OFLibUploadGather(struct gfc_data *d,unichar_t *path) {
 	free(oflib_username); free(oflib_password);
 	oflib_username = copy( oflib.username );
 	oflib_password = copy( oflib.password );
+	for ( pt=oflib_password; *pt!='\0' ; ++pt )
+	    *pt ^= 0xf;		/* Simple encryption */
     }
 
     free( oflib.pathspec );
@@ -3095,6 +3098,7 @@ int SFGenerateFont(SplineFont *sf,int family,EncMap *map) {
     GTextInfo *namelistnames;
     GBox small_blue_box;
     extern GBox _GGadget_button_box;
+    char *oflpwd;
 
     memset(&d,'\0',sizeof(d));
     d.sf = sf;
@@ -3606,7 +3610,11 @@ return( 0 );
 	gcd[k++].creator = GLabelCreate;
 	oflarray[0][2] = &gcd[k-1];
 
-	label[k].text = (unichar_t *) oflib_password;
+	label[k].text = (unichar_t *) copy(oflib_password);
+	if ( label[k].text!=NULL )
+	    for ( oflpwd = (char *) label[k].text; *oflpwd!='\0'; ++oflpwd )
+		*oflpwd ^= 0xf;		/* Simple encryption */
+	oflpwd = (char *) label[k].text;
 	label[k].text_is_1byte = true;
 	if ( oflib_password!=NULL )
 	    gcd[k].gd.label = &label[k];
@@ -3858,6 +3866,7 @@ return( 0 );
 	GGadgetSetTitle(gcd[0].ret,temp);
 	free(temp);
     }
+    free(oflpwd);
     GFileChooserGetChildren(gcd[0].ret,&pulldown,&files,&tf);
     GWidgetIndicateFocusGadget(tf);
 #if __Mac
