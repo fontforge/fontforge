@@ -2141,9 +2141,52 @@ extern int StemListAnyConflicts(StemInfo *stems);
 extern HintInstance *HICopyTrans(HintInstance *hi, real mul, real offset);
 extern void MDAdd(SplineChar *sc, int x, SplinePoint *sp1, SplinePoint *sp2);
 extern int SFNeedsAutoHint( SplineFont *_sf);
+
+typedef struct bluezone {
+    real base;
+    int cvtindex;
+    real family_base;      /* NaN if none */
+    int family_cvtindex;
+    real overshoot;        /* relative to baseline, NOT to base */
+    int highest;           /* used in autoinstructing for HStem positioning */
+    int lowest;            /* as above */
+} BlueZone;
+
+typedef struct stdstem {
+    real width;            /* -1 if none */
+    int cvtindex;
+    struct stdstem *snapto;/* NULL means stem isn't snapped to any other */
+    int stopat;            /* at which ppem stop snapping to snapto */
+} StdStem;
+
+typedef struct globalinstrct {
+    SplineFont *sf;
+    BlueData *bd;
+    double fudge;
+
+    /* Did we initialize the tables needed? 'maxp' is skipped because */
+    /* its initialization always succeeds. */
+    int cvt_done;
+    int fpgm_done;
+    int prep_done;
+
+    /* PS private data with truetype-specific information added */
+    BlueZone blues[12];    /* like in BlueData */
+    int      bluecnt;
+    StdStem  stdhw;
+    StdStem  *stemsnaph;   /* StdHW excluded */
+    int      stemsnaphcnt;
+    StdStem  stdvw;
+    StdStem  *stemsnapv;   /* StdVW excluded */
+    int      stemsnapvcnt;
+} GlobalInstrCt;
+
+extern void InitGlobalInstrCt( GlobalInstrCt *gic,SplineFont *sf,BlueData *bd );
+extern void FreeGlobalInstrCt( GlobalInstrCt *gic );
+extern void NowakowskiSCAutoInstr( GlobalInstrCt *gic,SplineChar *sc );
 extern void SCAutoInstr( SplineChar *sc,BlueData *bd );
-extern void NowakowskiSCAutoInstr( SplineChar *sc,BlueData *bd );
 extern void CVT_ImportPrivate(SplineFont *sf);
+
 extern void SCModifyHintMasksAdd(SplineChar *sc,StemInfo *new);
 extern void SCClearHints(SplineChar *sc);
 extern void SCClearHintMasks(SplineChar *sc,int counterstoo);

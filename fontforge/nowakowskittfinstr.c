@@ -93,52 +93,6 @@
  *
  ******************************************************************************/
 
-/* Structs for CVT management start here */
-
-/* 'highest' and 'lowest' are TTF point indexes if points with largest and 
- * smallest Y coordinate snapped to this blue zone (current glyph only).
- * They are used when instructing other horizontal stems.
- */
-typedef struct bluezone {
-    real base;
-    int cvtindex;
-    real family_base;      /* NaN if none */
-    int family_cvtindex;
-    real overshoot;        /* relative to baseline, NOT to base */
-    int highest;
-    int lowest;
-} BlueZone;
-
-typedef struct stdstem {
-    real width;            /* -1 if none */
-    int cvtindex;
-    struct stdstem *snapto;/* NULL means stem isn't snapped to any other */
-    int stopat;            /* at which ppem stop snapping to snapto */
-} StdStem;
-
-typedef struct globalinstrct {
-    SplineFont *sf;
-    BlueData *bd;
-    double fudge;
-
-    /* Did we initialize the tables needed? 'maxp' is skipped because */
-    /* its initialization always succeeds. */
-    int cvt_done;
-    int fpgm_done;
-    int prep_done;
-
-    /* PS private data with truetype-specific information added */
-    BlueZone blues[12];    /* like in BlueData */
-    int      bluecnt;
-    StdStem  stdhw;
-    StdStem  *stemsnaph;   /* StdHW excluded */
-    int      stemsnaphcnt;
-    StdStem  stdvw;
-    StdStem  *stemsnapv;   /* StdVW excluded */
-    int      stemsnapvcnt;
-} GlobalInstrCt;
-
-/* Here the structs needed for CVT management end. */
 /* Structs for diagonal hinter start here */
 
 /* This structure is used to keep a point number together with
@@ -3280,7 +3234,14 @@ return ct->sc->ttf_instrs = grealloc(ct->instrs,(ct->pt)-(ct->instrs));
  * Initialize Global Instructing Context
  *
  */
-static void InitGlobalInstrCt(GlobalInstrCt *gic, SplineFont *sf, BlueData *bd) {
+void InitGlobalInstrCt(GlobalInstrCt *gic, SplineFont *sf, BlueData *bd) {
+    BlueData _bd;
+
+    if (bd == NULL) {
+	QuickBlues(sf,&_bd);
+	bd = &_bd;
+    }
+
     gic->sf = sf;
     gic->bd = bd;
     gic->fudge = (sf->ascent+sf->descent)/500.0;
@@ -3308,7 +3269,7 @@ static void InitGlobalInstrCt(GlobalInstrCt *gic, SplineFont *sf, BlueData *bd) 
  * Finalize Global Instructing Context
  *
  */
-static void FreeGlobalInstrCt(GlobalInstrCt *gic) {
+void FreeGlobalInstrCt(GlobalInstrCt *gic) {
     gic->sf = NULL;
     gic->bd = NULL;
     gic->fudge = 0;
@@ -3328,8 +3289,7 @@ static void FreeGlobalInstrCt(GlobalInstrCt *gic) {
     gic->stemsnapv = NULL;
 }
 
-void NowakowskiSCAutoInstr(SplineChar *sc, BlueData *bd) {
-    BlueData _bd;
+void NowakowskiSCAutoInstr(GlobalInstrCt *gic, SplineChar *sc) {
     int cnt, contourcnt;
     BasePoint *bp;
     int *contourends;
@@ -3338,8 +3298,8 @@ void NowakowskiSCAutoInstr(SplineChar *sc, BlueData *bd) {
     uint8 *affected;
     SplineSet *ss;
     RefChar *ref;
-    GlobalInstrCt gic;
     InstrCt ct;
+    int i;
 
     if ( !sc->parent->order2 )
 return;
@@ -3374,12 +3334,7 @@ return;
 	    !sc->manualhints )
 	SplineCharAutoHint(sc,NULL);
 
-    if ( bd==NULL ) {
-	QuickBlues(sc->parent,&_bd);
-	bd = &_bd;
-    }
-
-    if ( sc->vstem==NULL && sc->hstem==NULL && sc->dstem==NULL && sc->md==NULL && !bd->bluecnt)
+    if ( sc->vstem==NULL && sc->hstem==NULL && sc->dstem==NULL && sc->md==NULL)
 return;
 
     /* TODO!
@@ -3394,9 +3349,6 @@ return;
 
     if ( sc->layers[ly_fore].splines==NULL )
 return;
-
-    /* TODO! this should be onde, font-widely */
-    InitGlobalInstrCt(&gic, sc->parent, bd);
 
     /* Start dealing with the glyph */
     contourcnt = 0;
@@ -3417,7 +3369,11 @@ return;
     }
     contourends[contourcnt] = 0;
 
-    ct.gic = &gic;
+    for (i=0; i<gic->bluecnt; i++)
+        gic->blues[i].highest = gic->blues[i].lowest = -1;
+
+    ct.gic = gic;
+
     ct.sc = sc;
     ct.ss = sc->layers[ly_fore].splines;
     ct.instrs = NULL;
@@ -3438,8 +3394,6 @@ return;
     free(affected);
     free(bp);
     free(contourends);
-
-    FreeGlobalInstrCt(&gic);
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     SCMarkInstrDlgAsChanged(sc);

@@ -5599,8 +5599,13 @@ void FontViewMenu_DontAutoHint(GtkMenuItem *menuitem, gpointer user_data) {
 static void FVAutoInstr(FontView *fv,int usenowak) {
     BlueData bd;
     int i, cnt=0, gid;
+    GlobalInstrCt gic;
 
     QuickBlues(fv->sf,&bd);
+
+    if ( usenowak )
+        InitGlobalInstrCt(&gic,fv->sf,&bd);
+
     for ( i=0; i<fv->map->enccount; ++i )
 	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
 		SCWorthOutputting(fv->sf->glyphs[gid]) )
@@ -5613,7 +5618,7 @@ static void FVAutoInstr(FontView *fv,int usenowak) {
 	    (gid = fv->map->map[i])!=-1 && SCWorthOutputting(fv->sf->glyphs[gid]) ) {
 	SplineChar *sc = fv->sf->glyphs[gid];
 	if ( usenowak )
-	    NowakowskiSCAutoInstr(sc,&bd);
+	    NowakowskiSCAutoInstr(&gic,sc);
 	else
 	    SCAutoInstr(sc,&bd);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -5621,6 +5626,10 @@ static void FVAutoInstr(FontView *fv,int usenowak) {
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     break;
     }
+    
+    if ( usenowak )
+        FreeGlobalInstrCt(&gic);
+
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     gwwv_progress_end_indicator();
 # endif
