@@ -93,13 +93,6 @@
  *
  ******************************************************************************/
 
-/* That's a legacy, it could be probably merged with InstrCt. */
-struct glyphinstrs {
-    SplineFont *sf;
-    BlueData *bd;
-    real fudge;
-};
-
 /* Structs for CVT management start here */
 
 /* 'highest' and 'lowest' are TTF point indexes if points with largest and 
@@ -123,16 +116,27 @@ typedef struct stdstem {
     int stopat;            /* at which ppem stop snapping to snapto */
 } StdStem;
 
-typedef struct cvtdata {
-    BlueZone Blues[12];    /* like in BlueData */
-    int      BlueCnt;
-    StdStem  StdHW;
-    StdStem  *StemSnapH;   /* StdHW excluded */
-    int      StemSnapHCnt;
-    StdStem  StdVW;
-    StdStem  *StemSnapV;   /* StdVW excluded */
-    int      StemSnapVCnt;
-} CvtData;
+typedef struct globalinstrct {
+    SplineFont *sf;
+    BlueData *bd;
+    double fudge;
+
+    /* Did we initialize the tables needed? 'maxp' is skipped because */
+    /* its initialization always succeeds. */
+    int cvt_done;
+    int fpgm_done;
+    int prep_done;
+
+    /* PS private data with truetype-specific information added */
+    BlueZone blues[12];    /* like in BlueData */
+    int      bluecnt;
+    StdStem  stdhw;
+    StdStem  *stemsnaph;   /* StdHW excluded */
+    int      stemsnaphcnt;
+    StdStem  stdvw;
+    StdStem  *stemsnapv;   /* StdVW excluded */
+    int      stemsnapvcnt;
+} GlobalInstrCt;
 
 /* Here the structs needed for CVT management end. */
 /* Structs for diagonal hinter start here */
@@ -169,24 +173,18 @@ typedef struct dstem {
 /* here the structs needed for diagonal hinting end. */
 
 typedef struct instrct {
+    /* Things that are global for font and should be
+       initialized before instructing particular glyph. */
+    GlobalInstrCt *gic;
+
     SplineChar *sc;
     SplineSet *ss;
-    struct glyphinstrs *gi;  /* finally, I'll bring its members here */
     int ptcnt;            /* number of points in this glyph */
     int *contourends;     /* points ending their contours. null-terminated. */
-
-    /* Did we initialize the tables needed? 'maxp' is skipped because */
-    /* its initialization always succeeds. */
-    int fpgm_done;
-    int cvt_done;
-    int prep_done;
 
     /* instructions */
     uint8 *instrs;        /* the beginning of the instructions */
     uint8 *pt;            /* the current position in the instructions */
-
-    /* cvt stuff */
-    CvtData cvtinfo;
 
     /* properties, indexed by ttf point index. Could perhaps be compressed. */
     BasePoint *bp;        /* point coordinates */
@@ -223,7 +221,7 @@ return( tab );
 
 /******************************************************************************
  *
- * We need to initialize cvtinfo before initializing 'prep', because we want
+ * We need to initialize gic before initializing 'prep', because we want
  * to do bluezone positioning and stem width normalisation there.
  *
  ******************************************************************************/
@@ -297,62 +295,62 @@ static int ZonesOverlap(real b1, real o1, real b2, real o2) {
 return !((b2 > o1) || (o2 < b1));
 }
 
-/* Import blue data into cvtinfo. Include family blues too. We assume that blues
+/* Import blue data into gic. Include family blues too. We assume that blues
  * are needed for family blues to make sense. If there are only family blues,
  * we treat them as normal blues. Otherwise, if a family blue zone don't match
  * any normal blue zone, or if they match perfectly, it is ignored.
  */
-static void CvtInfoImportBlues(InstrCt *ct) {
+static void GICImportBlues(GlobalInstrCt *gic) {
     int bluecnt = 0;
     int i, j, cnt;
     real *values;
 
     int HasPSBlues =
-             (PSDictHasEntry(ct->gi->sf->private, "BlueValues") != NULL) ||
-             (PSDictHasEntry(ct->gi->sf->private, "OtherBlues") != NULL);
+             (PSDictHasEntry(gic->sf->private, "BlueValues") != NULL) ||
+             (PSDictHasEntry(gic->sf->private, "OtherBlues") != NULL);
 
     int HasPSFamilyBlues =
-             (PSDictHasEntry(ct->gi->sf->private, "FamilyBlues") != NULL) ||
-             (PSDictHasEntry(ct->gi->sf->private, "FamilyOtherBlues") != NULL);
+             (PSDictHasEntry(gic->sf->private, "FamilyBlues") != NULL) ||
+             (PSDictHasEntry(gic->sf->private, "FamilyOtherBlues") != NULL);
 
     char *PrimaryBlues = HasPSBlues ? "BlueValues" : "FamilyBlues";
     char *OtherBlues = HasPSBlues ? "OtherBlues" : "FamilyOtherBlues";
 
     if (HasPSBlues || HasPSFamilyBlues){
-        values = GetNParsePSArray(ct->gi->sf, PrimaryBlues, &cnt);
+        values = GetNParsePSArray(gic->sf, PrimaryBlues, &cnt);
 	cnt /= 2;
 	if (cnt > 7) cnt = 7;
 
 	if (values != NULL) {
-	    ct->cvtinfo.BlueCnt = bluecnt = cnt;
+	    gic->bluecnt = bluecnt = cnt;
 
 	    /* First pair is a bottom zone (see Type1 specification). */
-	    ct->cvtinfo.Blues[0].base = values[1];
-	    ct->cvtinfo.Blues[0].overshoot = values[0];
-	    ct->cvtinfo.Blues[0].family_base = strtod("NAN", NULL);
+	    gic->blues[0].base = values[1];
+	    gic->blues[0].overshoot = values[0];
+	    gic->blues[0].family_base = strtod("NAN", NULL);
 
 	    /* Next pairs are top zones (see Type1 specification). */
 	    for (i=1; i<bluecnt; i++) {
-	        ct->cvtinfo.Blues[i].family_base = strtod("NAN", NULL);
-		ct->cvtinfo.Blues[i].base = values[2*i];
-		ct->cvtinfo.Blues[i].overshoot = values[2*i+1];
+	        gic->blues[i].family_base = strtod("NAN", NULL);
+		gic->blues[i].base = values[2*i];
+		gic->blues[i].overshoot = values[2*i+1];
 	    }
 
 	    free(values);
 	}
 
-        values = GetNParsePSArray(ct->gi->sf, OtherBlues, &cnt);
+        values = GetNParsePSArray(gic->sf, OtherBlues, &cnt);
 	cnt /= 2;
 	if (cnt > 5) cnt = 5;
 
 	if (values != NULL) {
-	    ct->cvtinfo.BlueCnt += cnt;
+	    gic->bluecnt += cnt;
 
 	    /* All pairs are bottom zones (see Type1 specification). */
 	    for (i=0; i<cnt; i++) {
-	        ct->cvtinfo.Blues[i+bluecnt].family_base = strtod("NAN", NULL);
-		ct->cvtinfo.Blues[i+bluecnt].base = values[2*i+1];
-		ct->cvtinfo.Blues[i+bluecnt].overshoot = values[2*i];
+	        gic->blues[i+bluecnt].family_base = strtod("NAN", NULL);
+		gic->blues[i+bluecnt].base = values[2*i+1];
+		gic->blues[i+bluecnt].overshoot = values[2*i];
 	    }
 
 	    free(values);
@@ -361,37 +359,37 @@ static void CvtInfoImportBlues(InstrCt *ct) {
 
 	/* Add family data to blues */
 	if (HasPSBlues && HasPSFamilyBlues) {
-            values = GetNParsePSArray(ct->gi->sf, "FamilyBlues", &cnt);
+            values = GetNParsePSArray(gic->sf, "FamilyBlues", &cnt);
 	    cnt /= 2;
 	    if (cnt > 7) cnt = 7;
 
 	    if (values != NULL) {
 	        /* First pair is a bottom zone (see Type1 specification). */
 	        for (j=0; j<bluecnt; j++)
-		    if (finite(ct->cvtinfo.Blues[j].family_base))
+		    if (finite(gic->blues[j].family_base))
 		        continue;
-		    else if (values[1] != ct->cvtinfo.Blues[j].base &&
-		             ZonesOverlap(ct->cvtinfo.Blues[j].base,
-		                       ct->cvtinfo.Blues[j].overshoot,
+		    else if (values[1] != gic->blues[j].base &&
+		             ZonesOverlap(gic->blues[j].base,
+		                       gic->blues[j].overshoot,
 				       values[0], values[1]))
-		        ct->cvtinfo.Blues[j].family_base = values[1];
+		        gic->blues[j].family_base = values[1];
 
 		/* Next pairs are top zones (see Type1 specification). */
 		for (i=1; i<cnt; i++) {
 		    for (j=0; j<bluecnt; j++)
-		        if (finite(ct->cvtinfo.Blues[j].family_base))
+		        if (finite(gic->blues[j].family_base))
 			    continue;
-			else if (values[2*i] != ct->cvtinfo.Blues[j].base &&
-			         ZonesOverlap(ct->cvtinfo.Blues[j].base,
-				           ct->cvtinfo.Blues[j].overshoot,
+			else if (values[2*i] != gic->blues[j].base &&
+			         ZonesOverlap(gic->blues[j].base,
+				           gic->blues[j].overshoot,
 					   values[2*i], values[2*i+1]))
-			    ct->cvtinfo.Blues[j].family_base = values[2*i];
+			    gic->blues[j].family_base = values[2*i];
 		}
 
 		free(values);
 	    }
 
-            values = GetNParsePSArray(ct->gi->sf, "FamilyOtherBlues", &cnt);
+            values = GetNParsePSArray(gic->sf, "FamilyOtherBlues", &cnt);
 	    cnt /= 2;
 	    if (cnt > 5) cnt = 5;
 
@@ -399,45 +397,45 @@ static void CvtInfoImportBlues(InstrCt *ct) {
 		/* All pairs are bottom zones (see Type1 specification). */
 		for (i=0; i<cnt; i++) {
 		    for (j=0; j<bluecnt; j++)
-		        if (finite(ct->cvtinfo.Blues[j].family_base))
+		        if (finite(gic->blues[j].family_base))
 			    continue;
-			else if (values[2*i+1] != ct->cvtinfo.Blues[j].base &&
-			         ZonesOverlap(ct->cvtinfo.Blues[j].base,
-				           ct->cvtinfo.Blues[j].overshoot,
+			else if (values[2*i+1] != gic->blues[j].base &&
+			         ZonesOverlap(gic->blues[j].base,
+				           gic->blues[j].overshoot,
 					   values[2*i], values[2*i+1]))
-			    ct->cvtinfo.Blues[j].family_base = values[2*i+1];
+			    gic->blues[j].family_base = values[2*i+1];
 		}
 
 		free(values);
 	    }
 	}
     }
-    else if (ct->gi->bd->bluecnt) {
+    else if (gic->bd->bluecnt) {
         /* If there are no PS private entries, we have */
 	/* to use FF's quickly guessed fallback blues. */
-        ct->cvtinfo.BlueCnt = bluecnt = ct->gi->bd->bluecnt;
+        gic->bluecnt = bluecnt = gic->bd->bluecnt;
 
         for (i=0; i<bluecnt; i++) {
-	    ct->cvtinfo.Blues[i].family_base = strtod("NAN", NULL);
-	    ct->cvtinfo.Blues[i].family_cvtindex = -1;
+	    gic->blues[i].family_base = strtod("NAN", NULL);
+	    gic->blues[i].family_cvtindex = -1;
 
-	    if (ct->gi->bd->blues[i][1] <= 0) {
-	        ct->cvtinfo.Blues[i].base = ct->gi->bd->blues[i][1];
-		ct->cvtinfo.Blues[i].overshoot = ct->gi->bd->blues[i][0];
+	    if (gic->bd->blues[i][1] <= 0) {
+	        gic->blues[i].base = gic->bd->blues[i][1];
+		gic->blues[i].overshoot = gic->bd->blues[i][0];
 	    }
 	    else {
-	        ct->cvtinfo.Blues[i].base = ct->gi->bd->blues[i][0];
-		ct->cvtinfo.Blues[i].overshoot = ct->gi->bd->blues[i][1];
+	        gic->blues[i].base = gic->bd->blues[i][0];
+		gic->blues[i].overshoot = gic->bd->blues[i][1];
 	    }
         }
     }
 
     /* Highpoints and lowpoints are not set yet. */
-    for (i=0; i<ct->cvtinfo.BlueCnt; i++)
-        ct->cvtinfo.Blues[i].highest = ct->cvtinfo.Blues[i].lowest = -1;
+    for (i=0; i<gic->bluecnt; i++)
+        gic->blues[i].highest = gic->blues[i].lowest = -1;
 
     /* I assume ascending order in snap_to_blues(). */    
-    qsort(ct->cvtinfo.Blues, ct->cvtinfo.BlueCnt, sizeof(BlueZone), SortBlues);
+    qsort(gic->blues, gic->bluecnt, sizeof(BlueZone), SortBlues);
 }
 
 /*
@@ -448,178 +446,172 @@ static int SortStems(const void *a, const void *b) {
 }
 
 /*
- * Import stem data into instrct.
- * We don't deal with diagonal stems here.
+ *
+ * Import stem data into gic. We don't deal with diagonal stems here.
+ *
  */
-static void CvtInfoImportStems(InstrCt *ct) {
+static void GICImportStems(GlobalInstrCt *gic) {
     int i, cnt, next;
     real *values;
 
     /* Import StdHW & StemSnapH */
-    if ((values = GetNParsePSArray(ct->gi->sf, "StdHW", &cnt)) != NULL) {
-        ct->cvtinfo.StdHW.width = *values;
+    if ((values = GetNParsePSArray(gic->sf, "StdHW", &cnt)) != NULL) {
+        gic->stdhw.width = *values;
         free(values);
     }
 
-    if ((values = GetNParsePSArray(ct->gi->sf, "StemSnapH", &cnt)) != NULL) {
-        ct->cvtinfo.StemSnapH = gcalloc(cnt, sizeof(StdStem));
+    if ((values = GetNParsePSArray(gic->sf, "StemSnapH", &cnt)) != NULL) {
+        gic->stemsnaph = gcalloc(cnt, sizeof(StdStem));
 
         for (next=i=0; i<cnt; i++)
-	    if (values[i] != ct->cvtinfo.StdHW.width)
-	        ct->cvtinfo.StemSnapH[next++].width = values[i];
+	    if (values[i] != gic->stdhw.width)
+	        gic->stemsnaph[next++].width = values[i];
 
 	if (!next) {
-	    free(ct->cvtinfo.StemSnapH);
-	    ct->cvtinfo.StemSnapH = NULL;
+	    free(gic->stemsnaph);
+	    gic->stemsnaph = NULL;
 	}
 
-	ct->cvtinfo.StemSnapHCnt = next;
+	gic->stemsnaphcnt = next;
         free(values);
 
         /* I assume ascending order here and in normalize_stems(). */
-        qsort(ct->cvtinfo.StemSnapH, ct->cvtinfo.StemSnapHCnt, sizeof(StdStem), SortStems);
+        qsort(gic->stemsnaph, gic->stemsnaphcnt, sizeof(StdStem), SortStems);
     }
 
-    if (ct->cvtinfo.StdHW.width == -1 && ct->cvtinfo.StemSnapH != NULL) {
-        cnt = ct->cvtinfo.StemSnapHCnt;
+    if (gic->stdhw.width == -1 && gic->stemsnaph != NULL) {
+        cnt = gic->stemsnaphcnt;
 	i = cnt/2;
-	ct->cvtinfo.StdHW.width = ct->cvtinfo.StemSnapH[i].width;
-	memmove(ct->cvtinfo.StemSnapH+i, ct->cvtinfo.StemSnapH+i+1, cnt-i-1);
+	gic->stdhw.width = gic->stemsnaph[i].width;
+	memmove(gic->stemsnaph+i, gic->stemsnaph+i+1, cnt-i-1);
 
-	if (--ct->cvtinfo.StemSnapHCnt == 0) {
-	    free(ct->cvtinfo.StemSnapH);
-	    ct->cvtinfo.StemSnapH = NULL;
+	if (--(gic->stemsnaphcnt) == 0) {
+	    free(gic->stemsnaph);
+	    gic->stemsnaph = NULL;
 	}
     }
 
     /* Import StdVW & StemSnapV */
-    if ((values = GetNParsePSArray(ct->gi->sf, "StdVW", &cnt)) != NULL) {
-        ct->cvtinfo.StdVW.width = *values;
+    if ((values = GetNParsePSArray(gic->sf, "StdVW", &cnt)) != NULL) {
+        gic->stdvw.width = *values;
         free(values);
     }
 
-    if ((values = GetNParsePSArray(ct->gi->sf, "StemSnapV", &cnt)) != NULL) {
-        ct->cvtinfo.StemSnapV = gcalloc(cnt, sizeof(StdStem));
+    if ((values = GetNParsePSArray(gic->sf, "StemSnapV", &cnt)) != NULL) {
+        gic->stemsnapv = gcalloc(cnt, sizeof(StdStem));
 
         for (next=i=0; i<cnt; i++)
-	    if (values[i] != ct->cvtinfo.StdVW.width)
-	        ct->cvtinfo.StemSnapV[next++].width = values[i];
+	    if (values[i] != gic->stdvw.width)
+	        gic->stemsnapv[next++].width = values[i];
 
 	if (!next) {
-	    free(ct->cvtinfo.StemSnapV);
-	    ct->cvtinfo.StemSnapV = NULL;
+	    free(gic->stemsnapv);
+	    gic->stemsnapv = NULL;
 	}
 
-	ct->cvtinfo.StemSnapVCnt = next;
+	gic->stemsnapvcnt = next;
         free(values);
 
         /* I assume ascending order here and in normalize_stems(). */
-        qsort(ct->cvtinfo.StemSnapV, ct->cvtinfo.StemSnapVCnt, sizeof(StdStem), SortStems);
+        qsort(gic->stemsnapv, gic->stemsnapvcnt, sizeof(StdStem), SortStems);
     }
 
-    if (ct->cvtinfo.StdVW.width == -1 && ct->cvtinfo.StemSnapV != NULL) {
-        cnt = ct->cvtinfo.StemSnapVCnt;
+    if (gic->stdvw.width == -1 && gic->stemsnapv != NULL) {
+        cnt = gic->stemsnapvcnt;
 	i = cnt/2;
-	ct->cvtinfo.StdVW.width = ct->cvtinfo.StemSnapV[i].width;
-	memmove(ct->cvtinfo.StemSnapV+i, ct->cvtinfo.StemSnapV+i+1, cnt-i-1);
+	gic->stdvw.width = gic->stemsnapv[i].width;
+	memmove(gic->stemsnapv+i, gic->stemsnapv+i+1, cnt-i-1);
 
-	if (--ct->cvtinfo.StemSnapVCnt == 0) {
-	    free(ct->cvtinfo.StemSnapV);
-	    ct->cvtinfo.StemSnapV = NULL;
+	if (--(gic->stemsnapvcnt) == 0) {
+	    free(gic->stemsnapv);
+	    gic->stemsnapv = NULL;
 	}
     }
 }
 
-/* Set up cvtinfo in instruction context and build actual cvt table. If we can't
+
+/* Set up Global Instructiing Context and build actual cvt table. If we can't
  * implant it, reassign cvt indices in fallback mode - that is, picking indexes
  * from existing cvt table (thus a cvt value can't be considered 'horizontal' or
  * 'vertical', and reliable stem normalization is thus impossible) and adding
  * some for new values.
  */
-static void init_cvt(InstrCt *ct) {
+static void init_cvt(GlobalInstrCt *gic) {
     int i, cvtindex, cvtsize;
     uint8 *cvt;
 
-    ct->cvtinfo.BlueCnt = 0;
-    ct->cvtinfo.StdHW.width = -1;
-    ct->cvtinfo.StemSnapH = NULL;
-    ct->cvtinfo.StemSnapHCnt = 0;
-    ct->cvtinfo.StdVW.width = -1;
-    ct->cvtinfo.StemSnapV = NULL;
-    ct->cvtinfo.StemSnapVCnt = 0;
-
-    CvtInfoImportBlues(ct);
-    CvtInfoImportStems(ct);
+    GICImportBlues(gic);
+    GICImportStems(gic);
 
     cvtsize = 1;
-    if (ct->cvtinfo.StdHW.width != -1) cvtsize++;
-    if (ct->cvtinfo.StdVW.width != -1) cvtsize++;
-    cvtsize += ct->cvtinfo.StemSnapHCnt;
-    cvtsize += ct->cvtinfo.StemSnapVCnt;
-    cvtsize += ct->cvtinfo.BlueCnt * 2; /* possible family blues */
+    if (gic->stdhw.width != -1) cvtsize++;
+    if (gic->stdvw.width != -1) cvtsize++;
+    cvtsize += gic->stemsnaphcnt;
+    cvtsize += gic->stemsnapvcnt;
+    cvtsize += gic->bluecnt * 2; /* possible family blues */
 
     cvt = gcalloc(cvtsize, cvtsize * sizeof(int16));
     cvtindex = 0;
 
     /* Assign cvt indices */
-    for (i=0; i<ct->cvtinfo.BlueCnt; i++) {
-        ct->cvtinfo.Blues[i].cvtindex = cvtindex;
-        memputshort(cvt, 2*cvtindex++, rint(ct->cvtinfo.Blues[i].base));
+    for (i=0; i<gic->bluecnt; i++) {
+        gic->blues[i].cvtindex = cvtindex;
+        memputshort(cvt, 2*cvtindex++, rint(gic->blues[i].base));
 
-	if (finite(ct->cvtinfo.Blues[i].family_base)) {
-	    ct->cvtinfo.Blues[i].family_cvtindex = cvtindex;
-            memputshort(cvt, 2*cvtindex++, rint(ct->cvtinfo.Blues[i].family_base));
+	if (finite(gic->blues[i].family_base)) {
+	    gic->blues[i].family_cvtindex = cvtindex;
+            memputshort(cvt, 2*cvtindex++, rint(gic->blues[i].family_base));
 	}
     }
 
-    if (ct->cvtinfo.StdHW.width != -1) {
-        ct->cvtinfo.StdHW.cvtindex = cvtindex;
-	memputshort(cvt, 2*cvtindex++, rint(ct->cvtinfo.StdHW.width));
+    if (gic->stdhw.width != -1) {
+        gic->stdhw.cvtindex = cvtindex;
+	memputshort(cvt, 2*cvtindex++, rint(gic->stdhw.width));
     }
 
-    for (i=0; i<ct->cvtinfo.StemSnapHCnt; i++) {
-        ct->cvtinfo.StemSnapH[i].cvtindex = cvtindex;
-	memputshort(cvt, 2*cvtindex++, rint(ct->cvtinfo.StemSnapH[i].width));
+    for (i=0; i<gic->stemsnaphcnt; i++) {
+        gic->stemsnaph[i].cvtindex = cvtindex;
+	memputshort(cvt, 2*cvtindex++, rint(gic->stemsnaph[i].width));
     }
 
-    if (ct->cvtinfo.StdVW.width != -1) {
-        ct->cvtinfo.StdVW.cvtindex = cvtindex;
-	memputshort(cvt, 2*cvtindex++, rint(ct->cvtinfo.StdVW.width));
+    if (gic->stdvw.width != -1) {
+        gic->stdvw.cvtindex = cvtindex;
+	memputshort(cvt, 2*cvtindex++, rint(gic->stdvw.width));
     }
 
-    for (i=0; i<ct->cvtinfo.StemSnapVCnt; i++) {
-        ct->cvtinfo.StemSnapV[i].cvtindex = cvtindex;
-	memputshort(cvt, 2*cvtindex++, rint(ct->cvtinfo.StemSnapV[i].width));
+    for (i=0; i<gic->stemsnapvcnt; i++) {
+        gic->stemsnapv[i].cvtindex = cvtindex;
+	memputshort(cvt, 2*cvtindex++, rint(gic->stemsnapv[i].width));
     }
 
     cvtsize = cvtindex;
     cvt = grealloc(cvt, cvtsize * sizeof(int16));
 
     /* Try to implant the new cvt table */
-    ct->cvt_done = 0;
+    gic->cvt_done = 0;
 
-    struct ttf_table *tab = SFFindTable(ct->sc->parent,CHR('c','v','t',' '));
+    struct ttf_table *tab = SFFindTable(gic->sf, CHR('c','v','t',' '));
 
     if ( tab==NULL ) {
 	tab = chunkalloc(sizeof(struct ttf_table));
-	tab->next = ct->sc->parent->ttf_tables;
-	ct->sc->parent->ttf_tables = tab;
+	tab->next = gic->sf->ttf_tables;
+	gic->sf->ttf_tables = tab;
 	tab->tag = CHR('c','v','t',' ');
 
 	tab->len = tab->maxlen = cvtsize * sizeof(int16);
 	if (tab->maxlen >256) tab->maxlen = 256;
         tab->data = cvt;
 
-        ct->cvt_done = 1;
+        gic->cvt_done = 1;
     }
     else {
         if (tab->len >= cvtsize * sizeof(int16) &&
 	    memcmp(cvt, tab->data, cvtsize * sizeof(int16)) == 0)
-	        ct->cvt_done = 1;
+	        gic->cvt_done = 1;
 
         free(cvt);
 
-	if (!ct->cvt_done) {
+	if (!gic->cvt_done) {
 	    LogError(_("Can't insert 'cvt': %s\n"),
 		_("There already exists a 'cvt' table, perhaps legacy. "
 		  "FontForge can use it, but can't make any assumptions on "
@@ -630,42 +622,30 @@ static void init_cvt(InstrCt *ct) {
 	}
     }
 
-    if (ct->cvt_done)
+    if (gic->cvt_done)
 return;
 
     /* Fallback mode starts here. */
 
-    for (i=0; i<ct->cvtinfo.BlueCnt; i++)
-        ct->cvtinfo.Blues[i].cvtindex =
-	    TTF_getcvtval(ct->gi->sf, ct->cvtinfo.Blues[i].base);
+    for (i=0; i<gic->bluecnt; i++)
+        gic->blues[i].cvtindex =
+	    TTF_getcvtval(gic->sf, gic->blues[i].base);
 
-    if (ct->cvtinfo.StdHW.width != -1)
-        ct->cvtinfo.StdHW.cvtindex =
-	    TTF_getcvtval(ct->gi->sf, ct->cvtinfo.StdHW.width);
+    if (gic->stdhw.width != -1)
+        gic->stdhw.cvtindex =
+	    TTF_getcvtval(gic->sf, gic->stdhw.width);
 
-    for (i=0; i<ct->cvtinfo.StemSnapHCnt; i++)
-        ct->cvtinfo.StemSnapH[i].cvtindex =
-	    TTF_getcvtval(ct->gi->sf, ct->cvtinfo.StemSnapH[i].width);
+    for (i=0; i<gic->stemsnaphcnt; i++)
+        gic->stemsnaph[i].cvtindex =
+	    TTF_getcvtval(gic->sf, gic->stemsnaph[i].width);
 
-    if (ct->cvtinfo.StdVW.width != -1)
-        ct->cvtinfo.StdVW.cvtindex =
-	    TTF_getcvtval(ct->gi->sf, ct->cvtinfo.StdVW.width);
+    if (gic->stdvw.width != -1)
+        gic->stdvw.cvtindex =
+	    TTF_getcvtval(gic->sf, gic->stdvw.width);
 
-    for (i=0; i<ct->cvtinfo.StemSnapVCnt; i++)
-        ct->cvtinfo.StemSnapV[i].cvtindex =
-	    TTF_getcvtval(ct->gi->sf, ct->cvtinfo.StemSnapV[i].width);
-}
-
-static void FreeCvtInfo(InstrCt *ct) {
-    ct->cvtinfo.BlueCnt = 0;
-    ct->cvtinfo.StdHW.width = -1;
-    if (ct->cvtinfo.StemSnapHCnt != 0) free(ct->cvtinfo.StemSnapH);
-    ct->cvtinfo.StemSnapHCnt = 0;
-    ct->cvtinfo.StemSnapH = NULL;
-    ct->cvtinfo.StdVW.width = -1;
-    if (ct->cvtinfo.StemSnapVCnt != 0) free(ct->cvtinfo.StemSnapV);
-    ct->cvtinfo.StemSnapVCnt = 0;
-    ct->cvtinfo.StemSnapV = NULL;
+    for (i=0; i<gic->stemsnapvcnt; i++)
+        gic->stemsnapv[i].cvtindex =
+	    TTF_getcvtval(gic->sf, gic->stemsnapv[i].width);
 }
 
 /******************************************************************************
@@ -869,13 +849,13 @@ return( instrs );
  * stems that don't use 'cvt' values (in future). We must ensure this is
  * indicated in the 'maxp' table.
  */
-static void init_maxp(InstrCt *ct) {
-    struct ttf_table *tab = SFFindTable(ct->sc->parent,CHR('m','a','x','p'));
+static void init_maxp(GlobalInstrCt *gic) {
+    struct ttf_table *tab = SFFindTable(gic->sf, CHR('m','a','x','p'));
 
     if ( tab==NULL ) {
 	tab = chunkalloc(sizeof(struct ttf_table));
-	tab->next = ct->sc->parent->ttf_tables;
-	ct->sc->parent->ttf_tables = tab;
+	tab->next = gic->sf->ttf_tables;
+	gic->sf->ttf_tables = tab;
 	tab->tag = CHR('m','a','x','p');
     }
 
@@ -890,9 +870,9 @@ static void init_maxp(InstrCt *ct) {
     uint16 fdefs = memushort(tab->data, 32, 10*sizeof(uint16));
     uint16 stack = memushort(tab->data, 32, 12*sizeof(uint16));
 
-    if (ct->fpgm_done && zones<2) zones=2;
-    if (ct->fpgm_done && twpts<1) twpts=1;
-    if (ct->fpgm_done && fdefs<8) fdefs=8;
+    if (gic->fpgm_done && zones<2) zones=2;
+    if (gic->fpgm_done && twpts<1) twpts=1;
+    if (gic->fpgm_done && fdefs<8) fdefs=8;
     if (stack<STACK_DEPTH) stack=STACK_DEPTH;
 
     memputshort(tab->data, 7*sizeof(uint16), zones);
@@ -910,7 +890,7 @@ static void init_maxp(InstrCt *ct) {
  * autohint it, and then insert user's own code and do the manual hinting of
  * glyphs that do need it.
  */
-static void init_fpgm(InstrCt *ct) {
+static void init_fpgm(GlobalInstrCt *gic) {
     uint8 new_fpgm[] = 
     {
 	/* Function 0: position a point within a blue zone (given via cvt).
@@ -926,7 +906,7 @@ static void init_fpgm(InstrCt *ct) {
 	0x13, //   SZP0
 	0x4b, //   MPPEM
 	0xb0, //   PUSHB_1 - under this ppem blues will be specially rounded
-	GetBlueScale(ct->sc->parent), 
+	GetBlueScale(gic->sf), 
 	0x50, //   LT
 	0x58, //   IF
 	0xb0, //     PUSHB_0
@@ -946,7 +926,7 @@ static void init_fpgm(InstrCt *ct) {
 	0x59, //   EIF
 	0x4b, //   MPPEM
 	0xb0, //   PUSHB_1 - under following ppem overshoots will be suppressed
-	GetBlueScale(ct->sc->parent), 
+	GetBlueScale(gic->sf), 
 	0x50, //   LT
 	0x58, //   IF
 	0x7d, //   RDTG - suppress overshoots
@@ -1154,13 +1134,13 @@ static void init_fpgm(InstrCt *ct) {
 	0x2d  // ENDF
     };
 
-    struct ttf_table *tab = SFFindTable(ct->sc->parent,CHR('f','p','g','m'));
+    struct ttf_table *tab = SFFindTable(gic->sf, CHR('f','p','g','m'));
 
     if ( tab==NULL ) {
 	/* We have to create such table. */
 	tab = chunkalloc(sizeof(struct ttf_table));
-	tab->next = ct->sc->parent->ttf_tables;
-	ct->sc->parent->ttf_tables = tab;
+	tab->next = gic->sf->ttf_tables;
+	gic->sf->ttf_tables = tab;
 	tab->tag = CHR('f','p','g','m');
 	tab->len = 0;
     }
@@ -1172,17 +1152,17 @@ static void init_fpgm(InstrCt *ct) {
 	tab->len = tab->maxlen = sizeof(new_fpgm);
 	tab->data = grealloc(tab->data, sizeof(new_fpgm));
 	memmove(tab->data, new_fpgm, sizeof(new_fpgm));
-        ct->fpgm_done = 1;
+        gic->fpgm_done = 1;
     }
     else {
 	/* there already is a font program. */
-	ct->fpgm_done = 0;
+	gic->fpgm_done = 0;
 	if (tab->len >= sizeof(new_fpgm))
 	    if (!memcmp(tab->data, new_fpgm, sizeof(new_fpgm)))
-		ct->fpgm_done = 1;  /* it's ours. */
+		gic->fpgm_done = 1;  /* it's ours. */
 
 	/* Log warning message. */
-	if (!ct->fpgm_done)
+	if (!gic->fpgm_done)
 	    LogError(_("Can't insert 'fpgm': %s\n"),
 		_("There exists a 'fpgm' code that seems incompatible with "
 		  "FontForge's. Instructions generated will be of lower "
@@ -1244,7 +1224,7 @@ return (scaled_width + 32) / 64;
  * Normalize a single stem. The code generated assumes there is a scaled stem
  * width on bytecode interpreter's stack, and leaves normalized width there.
  */
-static uint8 *normalize_stem(uint8 *prep_head, int xdir, StdStem *stem, InstrCt *ct) {
+static uint8 *normalize_stem(uint8 *prep_head, int xdir, StdStem *stem, GlobalInstrCt *gic) {
     int callargs[3];
     int i;
 
@@ -1253,7 +1233,7 @@ static uint8 *normalize_stem(uint8 *prep_head, int xdir, StdStem *stem, InstrCt 
     if (stem->snapto != NULL)
     {
         /* compute ppem at which to stop snapping stem to stem->snapto */
-        int EM = ct->gi->sf->ascent + ct->gi->sf->descent;
+        int EM = gic->sf->ascent + gic->sf->descent;
 
         for (i=7; i<32768; i++) {
 	    int width_parent = compute_stem_width(xdir, stem->snapto, EM, i);
@@ -1295,11 +1275,11 @@ return prep_head;
 /*
  * Normalize the standard stems in 'prep'.
  */
-static uint8 *normalize_stems(uint8 *prep_head, int xdir, InstrCt *ct) {
+static uint8 *normalize_stems(uint8 *prep_head, int xdir, GlobalInstrCt *gic) {
     int i, t;
-    StdStem *mainstem = xdir?&(ct->cvtinfo.StdVW):&(ct->cvtinfo.StdHW);
-    StdStem *otherstems = xdir?ct->cvtinfo.StemSnapV:ct->cvtinfo.StemSnapH;
-    int otherstemcnt = xdir?ct->cvtinfo.StemSnapVCnt:ct->cvtinfo.StemSnapHCnt;
+    StdStem *mainstem = xdir?&(gic->stdvw):&(gic->stdhw);
+    StdStem *otherstems = xdir?gic->stemsnapv:gic->stemsnaph;
+    int otherstemcnt = xdir?gic->stemsnapvcnt:gic->stemsnaphcnt;
 
     if (mainstem->width == -1)
 return prep_head;
@@ -1310,7 +1290,7 @@ return prep_head;
     prep_head = pushnum(prep_head, mainstem->cvtindex);
     *prep_head++ = DUP;
     *prep_head++ = 0x45; //RCVT
-    prep_head = normalize_stem(prep_head, xdir, mainstem, ct);
+    prep_head = normalize_stem(prep_head, xdir, mainstem, gic);
     *prep_head++ = 0x44; //WCVTP
 
     /* set up other standard widths */
@@ -1322,7 +1302,7 @@ return prep_head;
         prep_head = pushnum(prep_head, otherstems[i].cvtindex);
 	*prep_head++ = DUP;
         *prep_head++ = 0x45; //RCVT
-	prep_head = normalize_stem(prep_head, xdir, otherstems+i, ct);
+	prep_head = normalize_stem(prep_head, xdir, otherstems+i, gic);
         *prep_head++ = 0x44; //WCVTP
     }
 
@@ -1331,10 +1311,10 @@ return prep_head;
 	prep_head = pushnum(prep_head, otherstems[i].cvtindex);
 	*prep_head++ = DUP;
         *prep_head++ = 0x45; //RCVT
-	prep_head = normalize_stem(prep_head, xdir, otherstems+i, ct);
+	prep_head = normalize_stem(prep_head, xdir, otherstems+i, gic);
         *prep_head++ = 0x44; //WCVTP
     }
-    
+
 return prep_head;
 }
 
@@ -1345,7 +1325,7 @@ return prep_head;
  *
  * TODO! We should take 'gasp' table into account and set up blues here.
  */
-static void init_prep(InstrCt *ct) {
+static void init_prep(GlobalInstrCt *gic) {
     uint8 new_prep_preamble[] =
     {
 	/* Enable dropout control */
@@ -1392,32 +1372,32 @@ static void init_prep(InstrCt *ct) {
     int prepmaxlen = preplen;
     uint8 *new_prep, *prep_head;
 
-    if (ct->cvt_done)
-        prepmaxlen += 48+38*(ct->cvtinfo.StemSnapHCnt+ct->cvtinfo.StemSnapVCnt);
+    if (gic->cvt_done)
+        prepmaxlen += 48+38*(gic->stemsnaphcnt+gic->stemsnapvcnt);
 
     new_prep = gcalloc(prepmaxlen, sizeof(uint8));
     memmove(new_prep, new_prep_preamble, preplen*sizeof(uint8));
     prep_head = new_prep + preplen;
 
-    if (ct->cvt_done && ct->fpgm_done) {
+    if (gic->cvt_done && gic->fpgm_done) {
         /* Normalize stems (only in monochrome mode) */
         prep_head = pushnum(prep_head, 6);
 	*prep_head++ = CALL;
 	*prep_head++ = 0x5c; // NOT
 	*prep_head++ = 0x58; // IF
-        prep_head = normalize_stems(prep_head, 0, ct);
-        prep_head = normalize_stems(prep_head, 1, ct);
+        prep_head = normalize_stems(prep_head, 0, gic);
+        prep_head = normalize_stems(prep_head, 1, gic);
 	*prep_head++ = 0x59; // EIF
         preplen = prep_head - new_prep;
     }
 
-    struct ttf_table *tab = SFFindTable(ct->sc->parent,CHR('p','r','e','p'));
+    struct ttf_table *tab = SFFindTable(gic->sf, CHR('p','r','e','p'));
 
     if ( tab==NULL ) {
 	/* We have to create such table. */
 	tab = chunkalloc(sizeof(struct ttf_table));
-	tab->next = ct->sc->parent->ttf_tables;
-	ct->sc->parent->ttf_tables = tab;
+	tab->next = gic->sf->ttf_tables;
+	gic->sf->ttf_tables = tab;
 	tab->tag = CHR('p','r','e','p');
 	tab->len = 0;
     }
@@ -1429,17 +1409,17 @@ static void init_prep(InstrCt *ct) {
 	tab->len = tab->maxlen = preplen;
 	tab->data = grealloc(tab->data, preplen);
 	memmove(tab->data, new_prep, preplen);
-        ct->prep_done = 1;
+        gic->prep_done = 1;
     }
     else {
 	/* there already is a font program. */
-	ct->prep_done = 0;
+	gic->prep_done = 0;
 	if (tab->len >= preplen)
 	    if (!memcmp(tab->data, new_prep, preplen))
-		ct->prep_done = 1;  /* it's ours */
+		gic->prep_done = 1;  /* it's ours */
 
 	/* Log warning message. */
-	if (!ct->prep_done)
+	if (!gic->prep_done)
 	    LogError(_("Can't insert 'prep': %s\n"),
 		_("There exists a 'prep' code incompatible with FontForge's. "
 		  "It can't be guaranteed it will work well. It is suggested "
@@ -1454,11 +1434,11 @@ static void init_prep(InstrCt *ct) {
 /* We are given a stem weight and try to find matching one in CVT.
  * If none found, we return -1.
  */
-static StdStem *CVTSeekStem(int xdir, CvtData *CvtInfo, double value, double fudge, int can_fail) {
-    StdStem *mainstem = xdir?&(CvtInfo->StdVW):&(CvtInfo->StdHW);
-    StdStem *otherstems = xdir?CvtInfo->StemSnapV:CvtInfo->StemSnapH;
+static StdStem *CVTSeekStem(int xdir, GlobalInstrCt *gic, double value, int can_fail) {
+    StdStem *mainstem = xdir?&(gic->stdvw):&(gic->stdhw);
+    StdStem *otherstems = xdir?gic->stemsnapv:gic->stemsnaph;
     StdStem *closest = NULL;
-    int otherstemcnt = xdir?CvtInfo->StemSnapVCnt:CvtInfo->StemSnapHCnt;
+    int otherstemcnt = xdir?gic->stemsnapvcnt:gic->stemsnaphcnt;
     int i;
     double mindelta=1e20, delta, closestwidth=1e20;
 
@@ -1484,7 +1464,7 @@ return NULL;
 	}
     }
 
-    if (mindelta <= fudge)
+    if (mindelta <= gic->fudge)
 return closest;
     if (value/closestwidth < 1.11 && value/closestwidth > 0.9)
 return closest;
@@ -1806,7 +1786,7 @@ static void find_control_pts(int p, SplinePoint *sp, InstrCt *ct) {
 static void search_edge(int p, SplinePoint *sp, InstrCt *ct) {
     int tmp, score = 0;
     real coord = ct->xdir?ct->bp[p].x:ct->bp[p].y;
-    real fudge = ct->gi->fudge;
+    real fudge = ct->gic->fudge;
     uint8 touchflag = ct->xdir?tf_x:tf_y;
 
     if (fabs(coord - ct->edge.base) <= fudge) {
@@ -2028,21 +2008,27 @@ static void mark_startenddones(StemInfo *hint, double value, double fudge) {
 
 /* Given the refpt for one of this hint's edges is already positioned, this
  * function aligns 'others' (SHP with given shp_rp) for this edge and positions
- * the second edge, optionally setting its refpt as rp0.
+ * the second edge, optionally setting its refpt as rp0. It frees edge.others
+ * and sets edge.othercnt to zero, but it leaves edge.refpt set to last
+ * instructed edge.
  */
+#define use_rp1 (true)
+#define use_rp2 (false)
+#define set_new_rp0 (true)
+#define keep_old_rp0 (false)
 static void finish_stem(StemInfo *hint, int shp_rp1, int chg_rp0, InstrCt *ct) {
     if (hint == NULL)
 return;
 
     int rp0 = ct->edge.refpt;
     real coord = ct->edge.base;
-    StdStem *StdW = ct->xdir?&(ct->cvtinfo.StdVW):&(ct->cvtinfo.StdHW);
+    StdStem *StdW = ct->xdir?&(ct->gic->stdvw):&(ct->gic->stdhw);
     StdStem *ClosestStem =
-        CVTSeekStem(ct->xdir, &(ct->cvtinfo), hint->width, ct->gi->fudge, true);
+        CVTSeekStem(ct->xdir, ct->gic, hint->width, true);
 
     ct->touched[rp0] |= ct->xdir?tf_x:tf_y;
     finish_edge(ct, shp_rp1?SHP_rp1:SHP_rp2);
-    mark_startenddones(hint, coord, ct->gi->fudge);
+    mark_startenddones(hint, coord, ct->gic->fudge);
 
     if (!ct->xdir && hint->ghost && ((hint->width==20) || (hint->width==21)))
 return;
@@ -2062,20 +2048,22 @@ return;
     if (ClosestStem != NULL) {
 	ct->pt = push2nums(ct->pt, ct->edge.refpt, ClosestStem->cvtindex);
 
-	if (ct->cvt_done && ct->fpgm_done && ct->prep_done)
+	if (ct->gic->cvt_done && ct->gic->fpgm_done && ct->gic->prep_done)
 	    *(ct->pt)++ = chg_rp0?MIRP_rp0_min_black:MIRP_min_black;
 	else *(ct->pt)++ = chg_rp0?MIRP_min_rnd_black:MIRP_rp0_min_rnd_black;
     }
     else {
-	if (ct->cvt_done && ct->fpgm_done && ct->prep_done && StdW->width!=-1) {
+	if (ct->gic->cvt_done && ct->gic->fpgm_done && ct->gic->prep_done &&
+	    StdW->width!=-1)
+	{
 	    StdStem stem;
 
 	    stem.width = (int)rint(fabs(hint->width));
 	    stem.stopat = 32767;
 	    stem.snapto = 
-	        CVTSeekStem(ct->xdir, &(ct->cvtinfo), hint->width, ct->gi->fudge, false);
+	        CVTSeekStem(ct->xdir, ct->gic, hint->width, false);
 
-            int i, EM = ct->sc->parent->ascent + ct->sc->parent->descent;
+            int i, EM = ct->gic->sf->ascent + ct->gic->sf->descent;
 
             for (i=7; i<32768; i++) {
 	        int width_parent = compute_stem_width(ct->xdir, stem.snapto, EM, i);
@@ -2104,7 +2092,7 @@ return;
 
     ct->touched[ct->edge.refpt] |= ct->xdir?tf_x:tf_y;
     finish_edge(ct, SHP_rp2);
-    mark_startenddones(hint, coord, ct->gi->fudge);
+    mark_startenddones(hint, coord, ct->gic->fudge);
 }
 
 /******************************************************************************
@@ -2153,6 +2141,32 @@ return;
  *
  ******************************************************************************/
 
+static void update_blue_pts(int blueindex, InstrCt *ct) {
+    if (ct->edge.refpt == -1)
+return;
+
+    BasePoint *bp = ct->bp;
+    BlueZone *blues = ct->gic->blues;
+    int *others = ct->edge.others;
+    int i;
+    
+    if (blues[blueindex].highest == -1 ||
+        bp[ct->edge.refpt].y > bp[blues[blueindex].highest].y)
+            blues[blueindex].highest = ct->edge.refpt;
+
+    if (blues[blueindex].lowest == -1 ||
+        bp[ct->edge.refpt].y < bp[blues[blueindex].lowest].y)
+            blues[blueindex].lowest = ct->edge.refpt;
+
+    for (i=0; i<ct->edge.othercnt; i++) {
+        if (bp[others[i]].y > bp[blues[blueindex].highest].y)
+	    blues[blueindex].highest = others[i];
+
+        if (bp[others[i]].y < bp[blues[blueindex].lowest].y)
+	    blues[blueindex].lowest = others[i];
+    }
+}
+
 static void snap_to_blues(InstrCt *ct) {
     int i, cvt;
     int therewerestems;      /* were there any HStems snapped to this blue? */
@@ -2160,10 +2174,10 @@ static void snap_to_blues(InstrCt *ct) {
     real base, advance, tmp; /* for the hint */
     int callargs[4] = { 0/*pt*/, 0/*cvt*/, 0 };
     real fudge;
-    int bluecnt=ct->gi->bd->bluecnt;
+    int bluecnt=ct->gic->bluecnt;
     int queue[12];           /* Blue zones' indices in processing order */
-    BlueZone *blues = ct->cvtinfo.Blues;
-    real fuzz = GetBlueFuzz(ct->gi->sf);
+    BlueZone *blues = ct->gic->blues;
+    real fuzz = GetBlueFuzz(ct->gic->sf);
 
     if (bluecnt == 0)
 return;
@@ -2223,9 +2237,10 @@ return;
 	    /* instruct the stem */
 	    init_edge(ct, base, ALL_CONTOURS); /* stems don't care */
 	    if (ct->edge.refpt == -1) continue;
+	    update_blue_pts(queue[i], ct);
 	    callargs[0] = ct->edge.refpt;
-	    
-	    if (ct->fpgm_done) {
+
+	    if (ct->gic->fpgm_done) {
 	        ct->pt = pushpoints(ct->pt, 3, callargs);
 	        *(ct->pt)++ = CALL;
 	    }
@@ -2234,7 +2249,8 @@ return;
 	        *(ct->pt)++ = MIAP_rnd;
 	    }
 
-	    finish_stem(hint, true, false, ct);
+	    finish_stem(hint, use_rp1, keep_old_rp0, ct);
+	    update_blue_pts(queue[i], ct); /* this uses only refpt: who cares?*/
 	    therewerestems = 1;
 
 	    /* TODO! It might be worth to instruct at least one edge of each */
@@ -2245,8 +2261,8 @@ return;
 	/* Now I'll try to find points not snapped by any previous stem hint. */
 	if (therewerestems) {
 	    base = (blues[queue[i]].base + blues[queue[i]].overshoot) / 2.0;
-	    fudge = ct->gi->fudge;
-	    ct->gi->fudge = fabs(base - blues[queue[i]].base) + fuzz;
+	    fudge = ct->gic->fudge;
+	    ct->gic->fudge = fabs(base - blues[queue[i]].base) + fuzz;
 	    init_edge(ct, base, EXTERNAL_CONTOURS);
 	    optimize_edge(ct);
 
@@ -2255,7 +2271,7 @@ return;
 	    if (!(ct->touched[ct->edge.refpt]&tf_y || ct->affected[ct->edge.refpt]&tf_y)) {
 		callargs[0] = ct->edge.refpt;
 
-		if (ct->fpgm_done) {
+		if (ct->gic->fpgm_done) {
 		  ct->pt = pushpoints(ct->pt, 3, callargs);
 		  *(ct->pt)++ = CALL;
 		}
@@ -2271,7 +2287,7 @@ return;
 	    for (j=0; j<ct->edge.othercnt; j++) {
 		callargs[0] = ct->edge.others[j];
 		
-		if (ct->fpgm_done) {
+		if (ct->gic->fpgm_done) {
 		  ct->pt = pushpoints(ct->pt, 3, callargs);
 		  *(ct->pt)++ = CALL;
 		}
@@ -2283,13 +2299,15 @@ return;
 		ct->touched[ct->edge.others[j]] |= tf_y;
 	    }
 
+	    update_blue_pts(queue[i], ct);
+
 	    if (ct->edge.othercnt > 0) {
 		free(ct->edge.others);
 		ct->edge.others = NULL;
 		ct->edge.othercnt = 0;
 	    }
 	    
-	    ct->gi->fudge = fudge;
+	    ct->gic->fudge = fudge;
 	}
     }
 }
@@ -2346,7 +2364,7 @@ static void geninstrs(InstrCt *ct, StemInfo *hint) {
     if (hint == firsthint) rp0 = ct->ptcnt;
 
     /* Check whether to use CVT value or shift the stuff directly */
-    stdwidth = ct->xdir?ct->cvtinfo.StdVW.width:ct->cvtinfo.StdHW.width;
+    stdwidth = ct->xdir?ct->gic->stdvw.width:ct->gic->stdhw.width;
     hbase = base = hint->start;
     width = hint->width;
     hend = hbase + width;
@@ -2371,7 +2389,7 @@ static void geninstrs(InstrCt *ct, StemInfo *hint) {
 	    *(ct->pt)++ = MDAP; /* sets rp0 and rp1 */
 	}
 
-	finish_stem(hint, true, !hint->hasconflicts, ct);
+	finish_stem(hint, use_rp1, !hint->hasconflicts, ct);
 	if (!hint->hasconflicts) rp0 = ct->edge.refpt;
 
 	if (hint->startdone) {
@@ -2402,20 +2420,20 @@ static void geninstrs(InstrCt *ct, StemInfo *hint) {
 	if (!first && hint->hasconflicts) {
 	    ct->pt = pushpoint(ct->pt, rp0);
 	    *(ct->pt)++ = MDRP_rp0_rnd_white;
-	    finish_stem(hint, false, !hint->hasconflicts, ct);
+	    finish_stem(hint, use_rp2, !hint->hasconflicts, ct);
 	}
 	else if (!ct->xdir) {
 	    ct->pt = pushpoint(ct->pt, rp0);
 	    *(ct->pt)++ = MDAP_rnd;
-	    finish_stem(hint, true, !hint->hasconflicts, ct);
+	    finish_stem(hint, use_rp1, !hint->hasconflicts, ct);
 	}
 	else if (hint == firsthint) {
 	    ct->pt = pushpoint(ct->pt, rp0);
 	    *(ct->pt)++ = MDRP_rp0_rnd_white;
-	    finish_stem(hint, false, !hint->hasconflicts, ct);
+	    finish_stem(hint, use_rp2, !hint->hasconflicts, ct);
 	}
 	else {
-            if (ct->fpgm_done) {
+            if (ct->gic->fpgm_done) {
 	        ct->pt = push2nums(ct->pt, rp0, 1);
 	        *(ct->pt)++ = CALL;
 	    }
@@ -2424,7 +2442,7 @@ static void geninstrs(InstrCt *ct, StemInfo *hint) {
 	        *(ct->pt)++ = MDRP_rp0_min_rnd_white;
 	    }
 
-	    finish_stem(hint, false, !hint->hasconflicts, ct);
+	    finish_stem(hint, use_rp2, !hint->hasconflicts, ct);
 	}
 
         if (!hint->hasconflicts) rp0 = ct->edge.refpt;
@@ -2923,8 +2941,8 @@ return (ct->pt);
        already there. This approach would be wrong for vertical or horizontal
        stems, but for diagonales it is just unlikely that we can find an 
        acceptable predefined value in StemSnapH or StemSnapW */
-    distance = TTF_getcvtval(ct->gi->sf,(*ds)->width);
-    
+    distance = TTF_getcvtval(ct->gic->sf, (*ds)->width);
+
     if ( SetFreedomVector( &instrs,b1,ptcnt,touched,diagpts,v1,v2,&fv )) {
         instrs = pushpointstem( instrs,b1,distance );
         *instrs++ = 0xe0+0x19;  /* MIRP, srp0, minimum, black */
@@ -3150,11 +3168,9 @@ static uint8 *dogeninstructions(InstrCt *ct) {
     int max;
     DStemInfo *dstem;
 
-    /* very basic preparations for default hinting */
-    init_cvt(ct);
-    init_fpgm(ct);
-    init_prep(ct);
-    init_maxp(ct);
+
+    /* classify points prior to usage */
+    RunOnPoints(ct, ALL_CONTOURS, find_control_pts);
 
     /* Maximum instruction length is 6 bytes for each point in each dimension */
     /*  2 extra bytes to finish up. And one byte to switch from x to y axis */
@@ -3239,8 +3255,6 @@ static uint8 *dogeninstructions(InstrCt *ct) {
     DStemInfoGeninst(ct);
     //ct->pt = gen_md_instrs(ct->gi,ct->pt,ct->sc->md,ct->ss,ct->bp,ct->ptcnt,true,ct->touched);
 
-    FreeCvtInfo(ct);
-
     if (ct->sc->dstem) {
 	DStemFree(ct->diagstems, ct->diagpts, ct->ptcnt);
 	free(ct->diagpts);
@@ -3261,9 +3275,61 @@ static uint8 *dogeninstructions(InstrCt *ct) {
 return ct->sc->ttf_instrs = grealloc(ct->instrs,(ct->pt)-(ct->instrs));
 }
 
+/*
+ *
+ * Initialize Global Instructing Context
+ *
+ */
+static void InitGlobalInstrCt(GlobalInstrCt *gic, SplineFont *sf, BlueData *bd) {
+    gic->sf = sf;
+    gic->bd = bd;
+    gic->fudge = (sf->ascent+sf->descent)/500.0;
+
+    gic->cvt_done = false;
+    gic->fpgm_done = false;
+    gic->prep_done = false;
+
+    gic->bluecnt = 0;
+    gic->stdhw.width = -1;
+    gic->stemsnaph = NULL;
+    gic->stemsnaphcnt = 0;
+    gic->stdvw.width = -1;
+    gic->stemsnapv = NULL;
+    gic->stemsnapvcnt = 0;
+
+    init_cvt(gic);
+    init_fpgm(gic);
+    init_prep(gic);
+    init_maxp(gic);
+}
+
+/*
+ *
+ * Finalize Global Instructing Context
+ *
+ */
+static void FreeGlobalInstrCt(GlobalInstrCt *gic) {
+    gic->sf = NULL;
+    gic->bd = NULL;
+    gic->fudge = 0;
+    
+    gic->cvt_done = false;
+    gic->fpgm_done = false;
+    gic->prep_done = false;
+
+    gic->bluecnt = 0;
+    gic->stdhw.width = -1;
+    if (gic->stemsnaphcnt != 0) free(gic->stemsnaph);
+    gic->stemsnaphcnt = 0;
+    gic->stemsnaph = NULL;
+    gic->stdvw.width = -1;
+    if (gic->stemsnapvcnt != 0) free(gic->stemsnapv);
+    gic->stemsnapvcnt = 0;
+    gic->stemsnapv = NULL;
+}
+
 void NowakowskiSCAutoInstr(SplineChar *sc, BlueData *bd) {
     BlueData _bd;
-    struct glyphinstrs gi;
     int cnt, contourcnt;
     BasePoint *bp;
     int *contourends;
@@ -3272,6 +3338,7 @@ void NowakowskiSCAutoInstr(SplineChar *sc, BlueData *bd) {
     uint8 *affected;
     SplineSet *ss;
     RefChar *ref;
+    GlobalInstrCt gic;
     InstrCt ct;
 
     if ( !sc->parent->order2 )
@@ -3324,13 +3391,14 @@ return;
      * (terribly shifted), and I suppose other rasterizers can also complain.
      * Perhaps we should advise turning 'use my metrics' off.
      */
+
     if ( sc->layers[ly_fore].splines==NULL )
 return;
 
-    gi.sf = sc->parent;
-    gi.bd = bd;
-    gi.fudge = (sc->parent->ascent+sc->parent->descent)/500.0;
+    /* TODO! this should be onde, font-widely */
+    InitGlobalInstrCt(&gic, sc->parent, bd);
 
+    /* Start dealing with the glyph */
     contourcnt = 0;
     for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next, ++contourcnt );
     cnt = SSTtfNumberPoints(sc->layers[ly_fore].splines);
@@ -3349,9 +3417,9 @@ return;
     }
     contourends[contourcnt] = 0;
 
+    ct.gic = &gic;
     ct.sc = sc;
     ct.ss = sc->layers[ly_fore].splines;
-    ct.gi = &gi;
     ct.instrs = NULL;
     ct.pt = NULL;
     ct.ptcnt = cnt;
@@ -3363,7 +3431,6 @@ return;
     ct.diagstems = NULL;
     ct.diagpts = NULL;
 
-    RunOnPoints(&ct, ALL_CONTOURS, find_control_pts);
     dogeninstructions(&ct);
 
     free(oncurve);
@@ -3371,6 +3438,8 @@ return;
     free(affected);
     free(bp);
     free(contourends);
+
+    FreeGlobalInstrCt(&gic);
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     SCMarkInstrDlgAsChanged(sc);
