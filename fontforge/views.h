@@ -778,6 +778,20 @@ struct pov_data {
     double sintilt;		/* Used internally */
 };
 
+typedef struct {
+    SplineFont *sf;
+    char *pathspec;			/* In utf8, not necessarily local encoding */
+    char *username, *password;
+    char *name;
+    char *description;
+    char *tags;
+    char *artists;
+    int notsafeforwork;
+    int oflicense;
+} OFLibData;
+
+extern int OFLibUploadFont(OFLibData *);
+
 extern FontView *_FontViewCreate(SplineFont *sf);
 extern FontView *FontViewCreate(SplineFont *sf);
 extern void SplineFontSetUnChanged(SplineFont *sf);

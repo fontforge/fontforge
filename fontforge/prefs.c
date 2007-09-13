@@ -94,6 +94,8 @@ extern int old_ttf_flags;		/* in savefontdlg.c */
 extern int old_ps_flags;		/* in savefontdlg.c */
 extern int old_otf_flags;		/* in savefontdlg.c */
 extern int old_validate;		/* in savefontdlg.c */
+char *oflib_username = NULL;		/* in savefontdlg.c */
+char *oflib_password = NULL;		/* in savefontdlg.c */
 extern int oldsystem;			/* in bitmapdlg.c */
 extern int preferpotrace;		/* in autotrace.c */
 extern int autotrace_ask;		/* in autotrace.c */
@@ -394,6 +396,8 @@ static struct prefs_list {
 	{ "DefaultOutputFormat", pr_int, &oldformatstate, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultBitmapFormat", pr_int, &oldbitmapstate, NULL, NULL, '\0', NULL, 1 },
 	{ "SaveValidate", pr_int, &old_validate, NULL, NULL, '\0', NULL, 1 },
+	{ "OFLibUsername", pr_string, &oflib_username, NULL, NULL, '\0', NULL, 1 },
+	{ "OFLibPassword", pr_string, &oflib_password, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultTTFflags", pr_int, &old_ttf_flags, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultPSflags", pr_int, &old_ps_flags, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultOTFflags", pr_int, &old_otf_flags, NULL, NULL, '\0', NULL, 1 },
