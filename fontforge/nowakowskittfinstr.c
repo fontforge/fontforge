@@ -566,7 +566,7 @@ static void init_cvt(GlobalInstrCt *gic) {
         free(cvt);
 
 	if (!gic->cvt_done) {
-	    LogError(_("Can't insert 'cvt': %s\n"),
+	    gwwv_post_error(_("Can't insert 'cvt'"),
 		_("There already exists a 'cvt' table, perhaps legacy. "
 		  "FontForge can use it, but can't make any assumptions on "
 		  "values stored there, so generated instructions will be of "
@@ -1117,7 +1117,7 @@ static void init_fpgm(GlobalInstrCt *gic) {
 
 	/* Log warning message. */
 	if (!gic->fpgm_done)
-	    LogError(_("Can't insert 'fpgm': %s\n"),
+	    gwwv_post_error(_("Can't insert 'fpgm'"),
 		_("There exists a 'fpgm' code that seems incompatible with "
 		  "FontForge's. Instructions generated will be of lower "
 		  "quality. If legacy hinting is to be scrapped, it is "
@@ -1374,7 +1374,7 @@ static void init_prep(GlobalInstrCt *gic) {
 
 	/* Log warning message. */
 	if (!gic->prep_done)
-	    LogError(_("Can't insert 'prep': %s\n"),
+	    gwwv_post_error(_("Can't insert 'prep'"),
 		_("There exists a 'prep' code incompatible with FontForge's. "
 		  "It can't be guaranteed it will work well. It is suggested "
 		  "to allow FontForge to insert its code and then append user"
