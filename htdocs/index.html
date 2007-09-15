@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Nov-2000 -->
-  <!-- AP: Last modified: 19-Aug-2007 -->
+  <!-- AP: Last modified: 14-Sep-2007 -->
   <TITLE>FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -297,6 +297,16 @@
   <H2>
     <A NAME="known-bugs">Bugs</A>
   </H2>
+  <TABLE ALIGN="RIGHT" CLASS="lit">
+    <TR>
+      <TD>O, don't the days seem lank and long<BR>
+	When all goes right and nothing goes wrong,<BR>
+	And isn't your life extremely flat<BR>
+	With nothing whatever to grumble at!
+	<P Align="RIGHT">
+	<SMALL><I>Princess Ida, Act III</I>, W.S. Gilbert (&amp; Sullivan)</SMALL></TD>
+    </TR>
+  </TABLE>
   <P>
   This list includes the gross bugs that I'm aware of but don't know how to
   fix. Minor bugs get reported to me and are generally fixed within a week
@@ -327,8 +337,6 @@
       but in a type1 character, all contours are filled together. This can lead
       to unexpected side-effects if contours overlap. (configuring fontforge for
       <A HREF="multilayer.html">mutlilayered</A> editing can help with this)
-    <LI>
-      The MetaFont command doesn't work well.
     <LI>
       On linux boxes the dashed lines representing hints or the outlines of references
       get screwed up. I think this is a bug in the XServer on linux (it doesn't
@@ -385,10 +393,8 @@
       <I>I also have a brief tutorial in <A HREF="fontforge-tutorial.pdf">pdf
       format</A> and in <A HREF="editexample.html">html</A>.</I> This could also
       be translated into other languages (and would be a simpler job than trying
-      to translate the entire website, here is the
-      <A HREF="fontforge-tutorial.tex">TeX source</A> if you wish to attempt it).
-      The html has been translated into <A HREF="de/editexample.html">German</A>
-      and
+      to translate the entire website). The html has been translated into
+      <A HREF="de/editexample.html">German</A> and
       <A HREF="http://edt1023.sayya.org/fontforge/editexample.html">Chinese</A>.
     <LI>
       <EM>The UI can be translated into different languages.</EM> FontForge now
@@ -439,8 +445,8 @@
 	  Philipp Poll is providing a German UI.<BR>
 	  Last update (Apr 2007)
 	<LI>
-	  Michal Nowakowski is working on a Polish translation.<BR>
-	  Last update (Mar-2007)
+	  Michal Nowakowski is constantly updating the Polish translation.<BR>
+	  Last update (Sept-2007)
 	<LI>
 	  <A HREF="http://obelix.ee.duth.gr/~apostolo/">Apostolos Syropoulos </A>is
 	  working on a Greek translation<BR>
@@ -480,10 +486,8 @@
 	<LI>
 	  Autokern (might be fixed now)
 	<LI>
-	  Metafont
-	<LI>
-	  generating instructions to do hinting in truetype (especially hints for diagonal
-	  stems)
+	  Change Weight &amp; Condense/Extend make assumptions about glyphs that aren't
+	  always true.
       </UL>
     <LI>
       <I>References</I>
