@@ -5105,7 +5105,10 @@ Py_RETURN( self );
 static PyObject *PyFFGlyph_autoInstr(PyObject *self, PyObject *args) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc;
 
-    NowakowskiSCAutoInstr(sc,NULL);
+    GlobalInstrCt gic;
+    InitGlobalInstrCt(&gic,sc->parent,NULL);
+    NowakowskiSCAutoInstr(&gic,sc);
+    FreeGlobalInstrCt(&gic);
 Py_RETURN( self );
 }
 
