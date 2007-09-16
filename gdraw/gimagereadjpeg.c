@@ -255,7 +255,7 @@ static void transferBufferToImage(struct jpegState *js,int ypos) {
     }
 }
 
-GImage *GImageReadJpeg(FILE *infile) {
+GImage *GImageRead_Jpeg(FILE *infile) {
     GImage *ret;
     struct _GImage *base;
     struct jpeg_decompress_struct cinfo;
