@@ -820,6 +820,15 @@ static void dumpmissingglyph(SplineFont *sf,struct glyphinfo *gi,int fixedwidth)
     BasePoint bp[10];
     uint8 instrs[50];
     int stemcvt, stem;
+    char *stempt;
+
+    stem = 0;
+    if ( sf->private!=NULL && (stempt=PSDictHasEntry(sf->private,"StdVW"))!=NULL )
+	stem = strtod(stempt,NULL);
+    else if ( sf->private!=NULL && (stempt=PSDictHasEntry(sf->private,"StdHW"))!=NULL )
+	stem = strtod(stempt,NULL);
+    if ( stem<=0 )
+	stem = (sf->ascent+sf->descent)/30;
 
     gi->pointcounts[gi->next_glyph] = 8;
     gi->loca[gi->next_glyph++] = ftell(gi->glyphs);
@@ -828,8 +837,8 @@ static void dumpmissingglyph(SplineFont *sf,struct glyphinfo *gi,int fixedwidth)
     gh.numContours = 2;
     gh.ymin = 0;
     gh.ymax = 2*(sf->ascent+sf->descent)/3;
-    gh.xmax = (sf->ascent+sf->descent)/3;
-    gh.xmin = stem = gh.xmax/10;
+    gh.xmax = 5*stem+(sf->ascent+sf->descent)/10;
+    gh.xmin = stem;
     gh.xmax += stem;
     if ( gh.ymax>sf->ascent ) gh.ymax = sf->ascent;
     dumpghstruct(gi,&gh);
@@ -4870,8 +4879,11 @@ static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
     BDFFont *bdf;
     struct ttf_table *tab;
 
-    if ( strmatch(at->map->enc->enc_name,"symbol")==0 && format==ff_ttf )
-	format = ff_ttfsym;
+    tab = SFFindTable(sf,CHR('c','v','t',' '));
+    if ( tab!=NULL ) {
+	at->oldcvt = tab;
+	at->oldcvtlen = tab->len;
+    }
 
     SFDefaultOS2Info(&sf->pfminfo,sf,sf->fontname);
 
@@ -5413,6 +5425,30 @@ return( false );
 	struct taboff *tab = &at->tabdir.tabs[at->tabdir.ordered[i]->dup_of];
 	at->tabdir.ordered[i]->offset = tab->offset;
 	at->tabdir.ordered[i]->checksum = tab->checksum;
+    }
+
+    tab = SFFindTable(sf,CHR('c','v','t',' '));
+    if ( tab!=NULL ) {
+	if ( at->oldcvt!=NULL && at->oldcvtlen<tab->len )
+	    tab->len = at->oldcvtlen;
+	else if ( at->oldcvt==NULL ) {
+	    /* We created a cvt table when we output the .notdef glyph */
+	    /*  now that means AutoInstr thinks it no longer has a blank */
+	    /*  slate to work with, and will complain, much to the user's */
+	    /*  surprise.  So get rid of it */
+	    struct ttf_table *prev = NULL;
+	    for ( tab = sf->ttf_tables; tab!=NULL ; prev = tab, tab=tab->next )
+		if ( tab->tag==CHR('c','v','t',' ') )
+	    break;
+	    if ( tab!=NULL ) {
+		if ( prev==NULL )
+		    sf->ttf_tables = tab->next;
+		else
+		    prev->next = tab;
+		tab->next = NULL;
+		TtfTablesFree(tab);
+	    }
+	}
     }
 return( true );
 }
