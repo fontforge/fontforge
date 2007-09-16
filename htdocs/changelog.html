@@ -50,11 +50,15 @@
       15-Sept-2007
       <UL>
 	<LI>
-	  Further improvements to the auto instructor.
-	<LI>
 	  Added the ability to upload a font to the
 	  <A HREF="http://www.openfontlibrary.org/">open font library</A>. (You need
 	  to have created an account with them first).
+	<LI>
+	  Further improvements to the auto instructor.
+	<LI>
+	  When all glyphs are selected and the user auto-instructs, then
+	  FontForge will clear any legacy tables ('fpgm', 'prep' and 'cvt ').
+	  The old values will be of no use, and they just get in the way.
 	<LI>
 	  Add a Edit-&gt;Select-&gt;Select by Script command<BR>
 	  Make the Select by Name take a wildcard (so you could select "*.sc").
