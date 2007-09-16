@@ -7643,12 +7643,18 @@ static void CVMenuAutoInstr(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void CVMenuNowakAutoInstr(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
+    SplineChar *sc = cv->sc;
     GlobalInstrCt gic;
 
-    InitGlobalInstrCt(&gic, cv->sc->parent, NULL);
-    NowakowskiSCAutoInstr(&gic, cv->sc);
+    if ( sc->layers[ly_fore].splines!=NULL && sc->hstem==NULL && sc->vstem==NULL
+	    && sc->dstem==NULL && !no_windowing_ui )
+	gwwv_post_notice(_("Things could be better..."), _("Glyph, %s, has no hints. FontForge will not produce many instructions."),
+		sc->name );
+
+    InitGlobalInstrCt(&gic, sc->parent, NULL);
+    NowakowskiSCAutoInstr(&gic, sc);
     FreeGlobalInstrCt(&gic);
-    SCUpdateAll(cv->sc);
+    SCUpdateAll(sc);
 }
 
 static void CVMenuClearHints(GWindow gw,struct gmenuitem *mi,GEvent *e) {
