@@ -329,6 +329,7 @@ return( 1 );
 
 int GImageWritePng(GImage *gi, char *filename, int progressive) {
     FILE *fp;
+    int ret;
 
    /* open the file */
    fp = fopen(filename, "wb");
