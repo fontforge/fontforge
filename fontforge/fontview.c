@@ -5616,6 +5616,21 @@ return( false );
 return( true );
 }
 
+static int AnySelectedHints(FontView *fv) {
+    SplineFont *sf = fv->sf;
+    int gid, enc;
+    SplineChar *sc;
+
+    for ( enc=0; enc<fv->map->enccount; ++enc ) {
+	if ( fv->selected[enc] && (gid=fv->map->map[enc])!=-1 &&
+		(sc = sf->glyphs[gid])!=NULL &&
+		(sc->hstem!=NULL || sc->vstem!=NULL || sc->dstem!=NULL ))
+return( true );		/* A glyph with hints! */
+    }
+
+return( false );
+}
+
 static void ClearFpgmPrepCvt(SplineFont *sf) {
     struct ttf_table *tab, *prev = NULL, *next;
 
@@ -5645,6 +5660,10 @@ static void FVAutoInstr(FontView *fv,int usenowak) {
     /* (This way the auto hinter won't complain if they existed) */
     if ( fv->sf->ttf_tables!=NULL && AllGlyphsSelected(fv))
 	ClearFpgmPrepCvt(fv->sf);
+    if ( fv->sf->private==NULL && !no_windowing_ui )
+	gwwv_post_notice( _("Things could be better..."), _("You will get better instructions if you fill in the Private dictionary, Element->Font Info->Private, for the font"));
+    if ( !no_windowing_ui && !AnySelectedHints(fv))
+	gwwv_post_notice(_("Things could be better..."), _("The selected glyphs have no hints. FontForge will not produce many instructions."));
 
     QuickBlues(fv->sf,&bd);
 
