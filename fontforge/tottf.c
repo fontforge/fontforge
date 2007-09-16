@@ -5444,7 +5444,7 @@ return( false );
 		if ( prev==NULL )
 		    sf->ttf_tables = tab->next;
 		else
-		    prev->next = tab;
+		    prev->next = tab->next;
 		tab->next = NULL;
 		TtfTablesFree(tab);
 	    }

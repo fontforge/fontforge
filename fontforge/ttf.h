@@ -664,6 +664,8 @@ struct alltabs {
     int fontstyle_name_strid;	/* For GPOS 'size' */
     SplineFont *sf;
     EncMap *map;
+    struct ttf_table *oldcvt;
+    int oldcvtlen;
 };
 
 struct subhead { uint16 first, cnt, delta, rangeoff; };	/* a sub header in 8/16 cmap table */

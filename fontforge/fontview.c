@@ -5596,10 +5596,55 @@ void FontViewMenu_DontAutoHint(GtkMenuItem *menuitem, gpointer user_data) {
 }
 #endif
 
+static int AllGlyphsSelected(FontView *fv) {
+    SplineFont *sf = fv->sf;
+    int gid, enc;
+    SplineChar *sc;
+
+    for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc = sf->glyphs[gid])!=NULL )
+	sc->ticked = false;
+
+    for ( enc=0; enc<fv->map->enccount; ++enc ) {
+	if ( fv->selected[enc] && (gid=fv->map->map[enc])!=-1 &&
+		(sc = sf->glyphs[gid])!=NULL )
+	    sc->ticked = true;
+    }
+    for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc = sf->glyphs[gid])!=NULL )
+	if ( !sc->ticked )
+return( false );
+
+return( true );
+}
+
+static void ClearFpgmPrepCvt(SplineFont *sf) {
+    struct ttf_table *tab, *prev = NULL, *next;
+
+    for ( tab = sf->ttf_tables; tab!=NULL ; tab=next ) {
+	next = tab->next;
+	if ( tab->tag==CHR('c','v','t',' ') ||
+		tab->tag==CHR('f','p','g','m') ||
+		tab->tag==CHR('p','r','e','p') ) {
+	    if ( prev==NULL )
+		sf->ttf_tables = next;
+	    else
+		prev->next = next;
+	    tab->next = NULL;
+	    TtfTablesFree(tab);
+	} else
+	    prev = tab;
+    }
+}
+
 static void FVAutoInstr(FontView *fv,int usenowak) {
     BlueData bd;
     int i, cnt=0, gid;
     GlobalInstrCt gic;
+
+    /* If all glyphs are selected, then no legacy hint will remain after */
+    /*  instructing, so we might as well clear all the legacy tables too */
+    /* (This way the auto hinter won't complain if they existed) */
+    if ( fv->sf->ttf_tables!=NULL && AllGlyphsSelected(fv))
+	ClearFpgmPrepCvt(fv->sf);
 
     QuickBlues(fv->sf,&bd);
 
