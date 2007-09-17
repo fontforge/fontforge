@@ -1999,7 +1999,7 @@ return( NULL );
 	img = GImageRead_Png(tmp);
     else
 #endif
-#ifndef _NO_LIBPNG
+#ifndef _NO_LIBJPEG
     if ( strcmp(mimetype,"image/jpeg")==0 )
 	img = GImageRead_Jpeg(tmp);
     else
