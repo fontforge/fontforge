@@ -9532,8 +9532,8 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 	    (event->u.expose.rect.y+event->u.expose.rect.height+fv->cbh-1)/fv->cbh; ++i ) for ( j=0; j<fv->colcnt; ++j ) {
 	int index = (i+fv->rowoff)*fv->colcnt+j;
 	int feat_gid;
-	styles = 0;
 	SplineChar *sc;
+	styles = 0;
 	if ( fv->mapping!=NULL ) {
 	    if ( index>=fv->mapcnt ) index = fv->map->enccount;
 	    else
