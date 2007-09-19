@@ -7052,6 +7052,16 @@ static GMenuItem lookuppopupmenu[] = {
 static void LookupMenu(struct gfi_data *gfi,struct lkdata *lk,GEvent *event) {
     struct selection_bits sel;
     int i,j;
+    static int initted = false;
+
+    if ( !initted ) {
+        int i;
+        initted = true;
+
+        for ( i=0; lookuppopupmenu[i].ti.text!=NULL || lookuppopupmenu[i].ti.line; ++i )
+            if ( lookuppopupmenu[i].ti.text!=NULL )
+                lookuppopupmenu[i].ti.text = (unichar_t *) _( (char *)lookuppopupmenu[i].ti.text);
+    }
 
     LookupParseSelection(lk,&sel);
     for ( i=0; lookuppopupmenu[i].ti.text!=NULL || lookuppopupmenu[i].ti.line; ++i ) {
