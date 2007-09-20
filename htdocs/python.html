@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 8-Sep-2007 -->
+  <!-- AP: Last modified: 20-Sep-2007 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -21,6 +21,24 @@
   and one tiny one called
   <CODE><A HREF="python.html#psMat">psMat</A></CODE> which provides quick access
   to some useful transformations expressed as PostScript matrices.
+  <P>
+  The fontforge module also defines several types
+  <UL>
+    <LI>
+      <A href="#Point">point</A>
+    <LI>
+      <A href="#Contour">contour</A>
+    <LI>
+      <A href="#Layer">layer</A>
+    <LI>
+      <A href="#GlyphPen">glyphPen</A>
+    <LI>
+      <A href="#Glyph">glyph</A>
+    <LI>
+      <A href="#selection">selection</A>
+    <LI>
+      <A href="#Font">font</A>
+  </UL>
   <TABLE id="module" border=1>
     <CAPTION>
       <A NAME="psMat">psMat</A>
@@ -1768,7 +1786,7 @@ pen = None;				# Finalize the pen. This tells FontForge
 	of a ligature component glyph.</TD>
     </TR>
     <TR>
-      <TD><CODE>import</CODE></TD>
+      <TD><CODE>importOutlines</CODE></TD>
       <TD><CODE>(filename)</CODE></TD>
       <TD>Uses the file's extension to determine behavior. Imports outline descriptions
 	(eps, svg, glif files) into the forground layer. Imports image descriptions
