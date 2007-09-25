@@ -1716,6 +1716,11 @@ return;
 		strcmp(private->keys[sel],"StemSnapV")==0 ) {
 	    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Guess),true);
 	    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Hist),true);
+	} else if ( strcmp(private->keys[sel],"BlueScale")==0 &&
+		PSDictFindEntry(private,"BlueValues")!=-1 ) {
+	    /* We can guess a BlueShift value if we've got a BlueValues entry */
+	    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Guess),true);
+	    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Hist),false);
 	} else {
 	    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Guess),false);
 	    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Hist),false);
@@ -1845,6 +1850,14 @@ return( true );
 	    FindVStems(sf,stemsnap,snapcnt);
 	    PIPrivateCheck(d);
 	    SnapSet(d->private,stemsnap,snapcnt,"StdVW","StemSnapV");
+	} else if ( strcmp(private->keys[sel],"BlueScale")==0 &&
+		PSDictFindEntry(private,"BlueValues")!=-1 ) {
+	    /* Can guess BlueScale if we've got a BlueValues */
+	    double val = BlueScaleFigure(private,NULL,NULL);
+	    if ( val==-1 ) val = .039625;
+	    sprintf(buffer,"%g", val );
+	    PIPrivateCheck(d);
+	    PSDictChangeEntry(d->private,"BlueScale",buffer);
 	}
 	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_PrivateValues),
 		temp = uc_copy( d->private->values[sel]));
