@@ -3245,6 +3245,51 @@ return;
     }
 }
 
+static int glyphnameinlist(char *haystack,char *name) {
+    char *start, *pt;
+    int ch, match, slen = strlen(name);
+
+    for ( pt=haystack ; ; ) {
+	while ( *pt==' ' ) ++pt;
+	if ( *pt=='\0' )
+return( false );
+	start=pt;
+	while ( *pt!=' ' && *pt!='\0' ) ++pt;
+	if ( pt-start==slen ) {
+	    ch = *pt; *pt='\0';
+	    match = strcmp(start,name);
+	    *pt = ch;
+	    if ( match==0 )
+return( true );
+	}
+    }
+}
+
+static int ReferencedByGSUB(SplineChar *sc) {
+    PST *pst;
+    SplineFont *sf = sc->parent;
+    int gid;
+    SplineChar *testsc;
+    char *name = sc->name;
+
+    /* If it is itself a ligature it will be referenced by GSUB */
+    /* (because we store ligatures on the glyph generated) */
+    for ( pst=sc->possub; pst!=NULL; pst=pst->next )
+	if ( pst->type == pst_ligature )
+return( true );
+
+    for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (testsc=sf->glyphs[gid])!=NULL ) {
+	for ( pst=testsc->possub; pst!=NULL; pst=pst->next ) {
+	    if ( pst->type==pst_substitution || pst->type==pst_alternate ||
+		    pst->type==pst_multiple ) {
+		if ( glyphnameinlist(pst->u.mult.components,name) )
+return( true );
+	    }
+	}
+    }
+return( false );
+}
+
 int gdefclass(SplineChar *sc) {
     PST *pst;
     AnchorPoint *ap;
@@ -3265,11 +3310,16 @@ return( 2 );			/* Ligature */
 	ap = ap->next;
     if ( ap!=NULL && (ap->type==at_mark || ap->type==at_basemark) )
 return( 3 );
+	/* I not quite sure what a componant glyph is. Probably something */
+	/*  that is not in the cmap table and is referenced in other glyphs */
+	/* (I've never seen it used by others) */
+	/* (Note: No glyph in a CID font can be components as all CIDs mean */
+	/*  something) (I think) */
+    else if ( sc->unicodeenc==-1 && sc->dependents!=NULL &&
+	    sc->parent->cidmaster!=NULL && !ReferencedByGSUB(sc))
+return( 4 );
     else
 return( 1 );
-    /* I not quite sure what a componant glyph is. Probably something that */
-    /*  is not in the cmap table and is referenced in other glyphs */
-    /* Anyway I never return class 4 */ /* (I've never seen it used by others) */
 }
 
 void otf_dumpgdef(struct alltabs *at, SplineFont *sf) {
