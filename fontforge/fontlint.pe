@@ -1,5 +1,5 @@
 
-if ( Strtol($version)<20070902 )
+if ( Strtol($version)<20070924 )
   Error( "Please upgrade to a more recent version of fontforge" )
 endif
 
@@ -12,7 +12,11 @@ endif
 while ( $argc > 1 )
   Open( $1 )
   mask = Validate()
-  if ( mask==0 && $loadState==0 )
+  blues = $privateState
+  if ( $order==2 )
+    blues = blues & ~0x010000;
+  endif
+  if ( mask==0 && $loadState==0 && blues==0 )
     Print("Validation " + $fontname + " ...Passed")
   else
     Print("Validation " + $fontname + " ...Failed")
@@ -92,6 +96,73 @@ while ( $argc > 1 )
     endif
     if ( mask & 0x80 )
       Print( "  Bad OpenType advanced typography table" )
+    endif
+
+    if ( blues & 0x010000 )
+      Print( "  Missing BlueValues entry in PostScript Private dictionary" )
+    endif
+    if ( blues & 0x000001 )
+      Print( "  Odd number of elements in either the BlueValues or OtherBlues entries in the PostScript Private dictionary" )
+    endif
+    if ( blues & 0x000002 )
+      Print( "  Disordered elements in either the BlueValues or OtherBlues entries in the PostScript Private dictionary" )
+    endif
+    if ( blues & 0x000004 )
+      Print( "  Too many elements in either the BlueValues or OtherBlues entries in the PostScript Private dictionary" )
+    endif
+    if ( blues & 0x000008 )
+      Print( "  Elements too close in either the BlueValues or OtherBlues entries in the PostScript Private dictionary (must be at least 2*BlueFuzz+1 apart)" )
+    endif
+    if ( blues & 0x000010 )
+      Print( "  Non-integral elements in either the BlueValues or OtherBlues entries in the PostScript Private dictionary" )
+    endif
+    if ( blues & 0x000020 )
+      Print( "  Alignment zone height in either the BlueValues or OtherBlues is too big for the BlueScale in the PostScript Private dictionary" )
+    endif
+    if ( blues & 0x000100 )
+      Print( "  Odd number of elements in either the FamilyBlues or FamilyOtherBlues entries in the PostScript Private dictionary" )
+    endif
+    if ( blues & 0x000200 )
+      Print( "  Disordered elements in either the FamilyBlues or FamilyOtherBlues entries in the PostScript Private dictionary" )
+    endif
+    if ( blues & 0x000400 )
+      Print( "  Too many elements in either the FamilyBlues or FamilyOtherBlues entries in the PostScript Private dictionary" )
+    endif
+    if ( blues & 0x000800 )
+      Print( "  Elements too close in either the FamilyBlues or FamilyOtherBlues entries in the PostScript Private dictionary (must be at least 2*BlueFuzz+1 apart)" )
+    endif
+    if ( blues & 0x001000 )
+      Print( "  Non-integral elements in either the FamilyBlues or FamilyOtherBlues entries in the PostScript Private dictionary" )
+    endif
+    if ( blues & 0x002000 )
+      Print( "  Alignment zone height in either the FamilyBlues or FamilyOtherBlues is too big for the BlueScale in the PostScript Private dictionary" )
+    endif
+    if ( blues & 0x020000 )
+      Print( "  Bad BlueFuzz entry in PostScript Private dictionary" )
+    endif
+    if ( blues & 0x040000 )
+      Print( "  Bad BlueScale entry in PostScript Private dictionary" )
+    endif
+    if ( blues & 0x080000 )
+      Print( "  Bad StdHW entry in PostScript Private dictionary" )
+    endif
+    if ( blues & 0x100000 )
+      Print( "  Bad StdVW entry in PostScript Private dictionary" )
+    endif
+    if ( blues & 0x200000 )
+      Print( "  Bad StemSnapH entry in PostScript Private dictionary" )
+    endif
+    if ( blues & 0x400000 )
+      Print( "  Bad StemSnapV entry in PostScript Private dictionary" )
+    endif
+    if ( blues & 0x800000 )
+      Print( "  StemSnapH does not contain StdHW value in PostScript Private dictionary" )
+    endif
+    if ( blues & 0x1000000 )
+      Print( "  StemSnapV does not contain StdVW value in PostScript Private dictionary" )
+    endif
+    if ( blues & 0x2000000 )
+      Print( "  Bad BlueShift entry in PostScript Private dictionary" )
     endif
 Quit( 1 )
   endif
