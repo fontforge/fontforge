@@ -32,6 +32,205 @@
 #include <math.h>
 #include <gkeysym.h>
 
+static int CheckBluePair(char *blues, char *others, int bluefuzz) {
+    int bound = 2*bluefuzz+1;
+    int bluevals[10+14], cnt, pos=0;
+    int err = 0;
+    char *end;
+
+    if ( others!=NULL ) {
+	while ( *others==' ' ) ++others;
+	if ( *others=='[' || *others=='{' ) ++others;
+	for ( cnt=0; ; ++cnt ) {
+	    double temp;
+	    while ( *others==' ' ) ++others;
+	    if ( *others==']' || *others=='}' )
+	break;
+	    temp = strtod(others,&end);
+	    if ( temp!=rint(temp))
+		err |= pds_notintegral;
+	    else if ( end==others ) {
+		err |= pds_notintegral;
+	break;
+	    }
+	    others = end;
+	    if ( cnt>=10 )
+		err |= pds_toomany;
+	    else
+		bluevals[pos++] = temp;
+	}
+	if ( cnt&1 )
+	    err |= pds_odd;
+    }
+
+    while ( *blues==' ' ) ++blues;
+    if ( *blues=='{' || *blues=='[' ) ++blues;
+    for ( cnt=0; ; ++cnt ) {
+	double temp;
+	while ( *blues==' ' ) ++blues;
+	if ( *blues==']' || *blues=='}' )
+    break;
+	temp = strtod(blues,&end);
+	if ( temp!=rint(temp))
+	    err |= pds_notintegral;
+	else if ( end==blues ) {
+	    err |= pds_notintegral;
+    break;
+	}
+	blues = end;
+	if ( cnt>=14 )
+	    err |= pds_toomany;
+	else
+	    bluevals[pos++] = temp;
+    }
+    if ( cnt&1 )
+	err |= pds_odd;
+
+    /* Now there is nothing which says that otherblues must all be less than */
+    /*  blues. But the examples suggest it. And I shall assume it */
+
+    for ( cnt=0; cnt<pos; cnt+=2 ) {
+	if ( cnt+1<pos && bluevals[cnt]>=bluevals[cnt+1] )
+	    err |= pds_outoforder;
+	if ( cnt!=0 && bluevals[cnt-1]>=bluevals[cnt] )
+	    err |= pds_outoforder;
+	if ( cnt!=0 && bluevals[cnt-1]+bound>bluevals[cnt] )
+	    err |= pds_tooclose;
+    }
+return( err );
+}
+
+static int CheckStdW(struct psdict *dict,char *key ) {
+    char *str_val, *end;
+    double val;
+
+    if ( (str_val = PSDictHasEntry(dict,key))==NULL )
+return( true );
+    while ( *str_val==' ' ) ++str_val;
+    if ( *str_val!='[' && *str_val!='{' )
+return( false );
+    ++str_val;
+
+    val = strtod(str_val,&end);
+    while ( *end==' ' ) ++end;
+    if ( *end!=']' && *end!='}' )
+return( false );
+    ++end;
+    while ( *end==' ' ) ++end;
+    if ( *end!='\0' || end==str_val || val<=0 )
+return( false );
+
+return( true );
+}
+
+static int CheckStemSnap(struct psdict *dict,char *snapkey, char *stdkey ) {
+    char *str_val, *end;
+    double std_val = -1;
+    double stems[12], temp;
+    int cnt, found;
+    /* At most 12 double values, in order, must include Std?W value, array */
+
+    if ( (str_val = PSDictHasEntry(dict,stdkey))!=NULL ) {
+	while ( *str_val==' ' ) ++str_val;
+	if ( *str_val=='[' && *str_val!='{' ) ++str_val;
+	std_val = strtod(str_val,&end);
+    }
+
+    if ( (str_val = PSDictHasEntry(dict,snapkey))==NULL )
+return( false );
+    while ( *str_val==' ' ) ++str_val;
+    if ( *str_val!='[' && *str_val!='{' )
+return( false );
+    ++str_val;
+
+    found = false;
+    for ( cnt=0; ; ++cnt ) {
+	while ( *str_val==' ' ) ++str_val;
+	if ( *str_val==']' && *str_val!='}' )
+    break;
+	temp = strtod(str_val,&end);
+	if ( end==str_val )
+return( false );
+	str_val = end;
+	if ( cnt>=12 )
+return( false );
+	stems[cnt] = temp;
+	if ( cnt>0 && stems[cnt-1]>=stems[cnt] )
+return( false );
+	if ( stems[cnt] == std_val )
+	    found = true;
+    }
+    if ( !found && std_val>0 )
+return( -1 );
+
+return( true );
+}
+
+int ValidatePrivate(SplineFont *sf) {
+    int errs = 0;
+    char *blues, *bf, *test, *end;
+    int fuzz = 1;
+    double val;
+
+    if ( sf->private==NULL )
+return( pds_missingblue );
+
+    if ( (bf = PSDictHasEntry(sf->private,"BlueFuzz"))!=NULL ) {
+	fuzz = strtol(bf,&end,10);
+	if ( *end!='\0' || fuzz<0 )
+	    errs |= pds_badbluefuzz;
+    }
+
+    if ( (blues = PSDictHasEntry(sf->private,"BlueValues"))==NULL )
+	errs |= pds_missingblue;
+    else
+	errs |= CheckBluePair(blues,PSDictHasEntry(sf->private,"OtherBlues"),fuzz);
+
+    if ( (blues = PSDictHasEntry(sf->private,"FamilyBlues"))!=NULL )
+	errs |= CheckBluePair(blues,PSDictHasEntry(sf->private,"FamilyOtherBlues"),
+		fuzz)<<pds_shift;
+
+    if ( (test=PSDictHasEntry(sf->private,"BlueScale"))!=NULL ) {
+	val = strtod(test,&end);
+	if ( *end!='\0' || end==test || val<0 )
+	    errs |= pds_badbluescale;
+    }
+
+    if ( (test=PSDictHasEntry(sf->private,"BlueShift"))!=NULL ) {
+	int val = strtol(test,&end,10);
+	if ( *end!='\0' || end==test || val<0 )
+	    errs |= pds_badblueshift;
+    }
+
+    if ( !CheckStdW(sf->private,"StdHW"))
+	errs |= pds_badstdhw;
+    if ( !CheckStdW(sf->private,"StdVW"))
+	errs |= pds_badstdvw;
+
+    switch ( CheckStemSnap(sf->private,"StemSnapH", "StdHW")) {
+      case false:
+	errs |= pds_badstemsnaph;
+      break;
+      case -1:
+	errs |= pds_stemsnapnostdh;
+      break;
+    }
+    switch ( CheckStemSnap(sf->private,"StemSnapV", "StdVW")) {
+      case false:
+	errs |= pds_badstemsnapv;
+      break;
+      case -1:
+	errs |= pds_stemsnapnostdv;
+      break;
+    }
+
+return( errs );
+}
+
+/* ************************************************************************** */
+/* ***************************** Problems Dialog **************************** */
+/* ************************************************************************** */
+
 struct problems {
     FontView *fv;
     CharView *cv;
@@ -3404,10 +3603,12 @@ int SCValidate(SplineChar *sc, int force) {
 	int rd, rdtest;
 
 	/* Already figured out two of these */
-	if ( pt_cnt>=composit_pt_max )
-	    sc->validation_state |= vs_maxp_toomanycomppoints|vs_known;
-	if ( path_cnt>=composit_path_max )
-	    sc->validation_state |= vs_maxp_toomanycomppaths|vs_known;
+	if ( sc->layers[ly_fore].splines==NULL ) {
+	    if ( pt_cnt>composit_pt_max )
+		sc->validation_state |= vs_maxp_toomanycomppoints|vs_known;
+	    if ( path_cnt>composit_path_max )
+		sc->validation_state |= vs_maxp_toomanycomppaths|vs_known;
+	}
 
 	for ( ss=sc->layers[ly_fore].splines, pt_cnt=path_cnt=0; ss!=NULL; ss=ss->next, ++path_cnt ) {
 	    for ( sp=ss->first; ; ) {
@@ -3419,12 +3620,12 @@ int SCValidate(SplineChar *sc, int force) {
 	    break;
 	    }
 	}
-	if ( pt_cnt>=pt_max )
+	if ( pt_cnt>pt_max )
 	    sc->validation_state |= vs_maxp_toomanypoints|vs_known;
-	if ( path_cnt>=path_max )
+	if ( path_cnt>path_max )
 	    sc->validation_state |= vs_maxp_toomanypaths|vs_known;
 
-	if ( sc->ttf_instrs_len>=instr_len_max )
+	if ( sc->ttf_instrs_len>instr_len_max )
 	    sc->validation_state |= vs_maxp_instrtoolong|vs_known;
 
 	rd = 0;
@@ -3433,9 +3634,9 @@ int SCValidate(SplineChar *sc, int force) {
 	    if ( rdtest>rd )
 		rd = rdtest;
 	}
-	if ( cnt>=num_comp_max )
+	if ( cnt>num_comp_max )
 	    sc->validation_state |= vs_maxp_toomanyrefs|vs_known;
-	if ( rd>=comp_depth_max )
+	if ( rd>comp_depth_max )
 	    sc->validation_state |= vs_maxp_refstoodeep|vs_known;
     }
   end:;
@@ -3446,7 +3647,7 @@ return( sc->validation_state&~(vs_known|vs_selfintersects) );
 
 return( sc->validation_state&~vs_known );
 }
-
+    
 int SFValidate(SplineFont *sf, int force) {
     int k, gid;
     SplineFont *sub;
@@ -3503,11 +3704,11 @@ return( -1 );
 	/*  generate the font -- but fontlint needs to know this stuff */
 	int instr_len_max = memushort(tab->data,tab->len,13*sizeof(uint16));
 	if ( (tab = SFFindTable(sf,CHR('p','r','e','p')))!=NULL ) {
-	    if ( tab->len >= instr_len_max )
+	    if ( tab->len > instr_len_max )
 		any |= vs_maxp_prepfpgmtoolong;
 	}
 	if ( (tab = SFFindTable(sf,CHR('f','p','g','m')))!=NULL ) {
-	    if ( tab->len >= instr_len_max )
+	    if ( tab->len > instr_len_max )
 		any |= vs_maxp_prepfpgmtoolong;
 	}
     }
@@ -3526,6 +3727,7 @@ struct val_data {
     SplineFont *sf;
     int cidmax;
     enum validation_state mask;
+    int needs_blue;
     GTimer *recheck;
     int laststart;
     int finished_first_pass;
@@ -3548,7 +3750,37 @@ static char *vserrornames[] = {
     N_("Bad Glyph Name")
 };
 
-char *VSErrorsFromMask(int mask) {
+static char *privateerrornames[] = {
+    N_("Odd number of elements in BlueValues/OtherBlues array."),
+    N_("Elements in BlueValues/OtherBlues array are disordered."),
+    N_("Too many elements in BlueValues/OtherBlues array."),
+    N_("Elements in BlueValues/OtherBlues array are too close (Change BlueFuzz)."),
+    N_("Elements in BlueValues/OtherBlues array are not integers."),
+    NULL,
+    NULL,
+    NULL,
+    N_("Odd number of elements in FamilyBlues/FamilyOtherBlues array."),
+    N_("Elements in FamilyBlues/FamilyOtherBlues array are disordered."),
+    N_("Too many elements in FamilyBlues/FamilyOtherBlues array."),
+    N_("Elements in FamilyBlues/FamilyOtherBlues array are too close (Change BlueFuzz)."),
+    N_("Elements in FamilyBlues/FamilyOtherBlues array are not integers."),
+    NULL,
+    NULL,
+    NULL,
+    N_("Missing BlueValues entry."),
+    N_("Bad BlueFuzz entry."),
+    N_("Bad BlueScale entry."),
+    N_("Bad StdHW entry."),
+    N_("Bad StdVW entry."),
+    N_("Bad StemSnapH entry."),
+    N_("Bad StemSnapV entry."),
+    N_("StemSnapH does not contain StdHW value."),
+    N_("StemSnapV does not contain StdVW value."),
+    N_("Bad BlueShift entry."),
+    NULL
+};
+
+char *VSErrorsFromMask(int mask, int private_mask) {
     int bit, m;
     int len;
     char *ret;
@@ -3557,6 +3789,8 @@ char *VSErrorsFromMask(int mask) {
     for ( m=0, bit=(vs_known<<1) ; bit<=vs_last; ++m, bit<<=1 )
 	if ( mask&bit )
 	    len += strlen( _(vserrornames[m]))+2;
+    if ( private_mask != 0 )
+	len += strlen( _("Bad Private Dictionary")) +2;
     ret = galloc(len+1);
     len = 0;
     for ( m=0, bit=(vs_known<<1) ; bit<=vs_last; ++m, bit<<=1 )
@@ -3566,6 +3800,12 @@ char *VSErrorsFromMask(int mask) {
 	    len += strlen( ret+len );
 	    ret[len++] ='\n';
 	}
+    if ( private_mask != 0 ) {
+	ret[len++] =' ';
+	strcpy(ret+len,_("Bad Private Dictionary"));
+	len += strlen( ret+len );
+	ret[len++] ='\n';
+    }
     ret[len] = '\0';
 return( ret );
 }
@@ -3611,6 +3851,21 @@ return( gid );
 	    sofar += tot;
 	}
     }
+
+    vs = ValidatePrivate(sf);
+    if ( !vw->needs_blue )
+	vs &= ~pds_missingblue;
+    if ( vs!=0 ) {
+	tot = 1;
+	for ( bit=1 ; bit!=0; bit<<=1 )
+	    if ( vs&bit )
+		++tot;
+	if ( sofar+tot>line ) {
+	    *skips = line-sofar;
+return( -2 );
+	}
+    }
+
     *skips = 0;
 return( -1 );
 }
@@ -3745,6 +4000,16 @@ static void VW_Remetric(struct val_data *vw) {
 			++tot;
 	    sofar += tot;
 	}
+    }
+    vs = ValidatePrivate(sf);
+    if ( !vw->needs_blue )
+	vs &= ~pds_missingblue;
+    if ( vs!=0 ) {
+	tot = 1;
+	for ( bit=1 ; bit!=0; bit<<=1 )
+	    if ( vs&bit )
+		++tot;
+	sofar += tot;
     }
     if ( vw->lcnt!=sofar ) {
 	vw->lcnt = sofar;
@@ -4265,7 +4530,11 @@ static void VWMouse(struct val_data *vw, GEvent *e) {
     int gid = VW_FindLine(vw,vw->loff_top + e->u.mouse.y/vw->fh, &skips);
     SplineChar *sc;
 
-    if ( gid==-1 || (sc = vw->sf->glyphs[gid])==NULL )
+    if ( gid==-2 && e->u.mouse.clicks==2 && e->type==et_mouseup ) {
+	FontInfo(vw->sf,3,false);	/* Bring up the Private Dict */
+return;
+    }
+    if ( gid<0 || (sc = vw->sf->glyphs[gid])==NULL )
 return;
     if ( e->u.mouse.clicks==2 && e->type==et_mouseup ) {
 	VWReuseCV(vw,sc);
@@ -4306,7 +4575,7 @@ return;
 }
 
 static void VWDrawWindow(GWindow pixmap,struct val_data *vw, GEvent *e) {
-   int gid,k, cidmax = vw->cidmax;
+    int gid,k, cidmax = vw->cidmax;
     SplineFont *sub, *sf=vw->sf;
     SplineChar *sc;
     int sofar;
@@ -4328,42 +4597,61 @@ return;
     y = vw->as - skips*vw->fh;
     sofar = -skips;
     r.width = r.height = vw->as;
-    for ( ; gid<cidmax && sofar<vw->vlcnt ; ++gid ) {
-	if ( sf->subfontcnt==0 )
-	    sc = sf->glyphs[gid];
-	else {
-	    for ( k=0; k<sf->subfontcnt; ++k ) {
-		sub = sf->subfonts[k];
-		if ( gid<sub->glyphcnt && (sc = sub->glyphs[gid])!=NULL )
-	    break;
+    if ( gid!=-2 ) {
+	for ( ; gid<cidmax && sofar<vw->vlcnt ; ++gid ) {
+	    if ( sf->subfontcnt==0 )
+		sc = sf->glyphs[gid];
+	    else {
+		for ( k=0; k<sf->subfontcnt; ++k ) {
+		    sub = sf->subfonts[k];
+		    if ( gid<sub->glyphcnt && (sc = sub->glyphs[gid])!=NULL )
+		break;
+		}
+	    }
+	    /* Ignore it if it has not been validated */
+	    /* Ignore it if it is good */
+	    vs = 0;
+	    if ( sc!=NULL ) {
+		vs = sc->validation_state;
+		if ( sc->unlink_rm_ovrlp_save_undo )
+		    vs &= ~vs_selfintersects;
+	    }
+	    if ((vs&vs_known) && (vs&vw->mask)!=0 ) {
+		r.x = 2;   r.y = y-vw->as+1;
+		GDrawDrawRect(pixmap,&r,0x000000);
+		GDrawDrawLine(pixmap,r.x+2,r.y+vw->as/2,r.x+vw->as-2,r.y+vw->as/2,
+			0x000000);
+		if ( !sc->vs_open )
+		    GDrawDrawLine(pixmap,r.x+vw->as/2,r.y+2,r.x+vw->as/2,r.y+vw->as-2,
+			    0x000000);
+		GDrawDrawText8(pixmap,r.x+r.width+2,y,sc->name,-1,NULL,0x000000 );
+		y += vw->fh;
+		++sofar;
+		if ( sc->vs_open ) {
+		    for ( m=0, bit=(vs_known<<1) ; bit<=vs_last; ++m, bit<<=1 )
+			if ( (bit&vw->mask) && (vs&bit) ) {
+			    GDrawDrawText8(pixmap,10+r.width+r.x,y,_(vserrornames[m]),-1,NULL,0xff0000 );
+			    y += vw->fh;
+			    ++sofar;
+			}
+		}
 	    }
 	}
-	/* Ignore it if it has not been validated */
-	/* Ignore it if it is good */
-	vs = 0;
-	if ( sc!=NULL ) {
-	    vs = sc->validation_state;
-	    if ( sc->unlink_rm_ovrlp_save_undo )
-		vs &= ~vs_selfintersects;
-	}
-	if ((vs&vs_known) && (vs&vw->mask)!=0 ) {
-	    r.x = 2;   r.y = y-vw->as+1;
-	    GDrawDrawRect(pixmap,&r,0x000000);
-	    GDrawDrawLine(pixmap,r.x+2,r.y+vw->as/2,r.x+vw->as-2,r.y+vw->as/2,
-		    0x000000);
-	    if ( !sc->vs_open )
-		GDrawDrawLine(pixmap,r.x+vw->as/2,r.y+2,r.x+vw->as/2,r.y+vw->as-2,
-			0x000000);
-	    GDrawDrawText8(pixmap,r.x+r.width+2,y,sc->name,-1,NULL,0x000000 );
+    }
+    if ( sofar<vw->vlcnt ) {
+	vs = ValidatePrivate(sf);
+	if ( !vw->needs_blue )
+	    vs &= ~pds_missingblue;
+	if ( vs!=0 ) {
+	    /* GT: "Private" is a keyword (sort of) in PostScript. Perhaps it */
+	    /* GT: should remain untranslated? */
+	    GDrawDrawText8(pixmap,r.x+r.width+2,y,_("Private Dictionary"),-1,NULL,0x000000 );
 	    y += vw->fh;
-	    ++sofar;
-	    if ( sc->vs_open ) {
-		for ( m=0, bit=(vs_known<<1) ; bit<=vs_last; ++m, bit<<=1 )
-		    if ( (bit&vw->mask) && (vs&bit) ) {
-			GDrawDrawText8(pixmap,10+r.width+r.x,y,_(vserrornames[m]),-1,NULL,0xff0000 );
-			y += vw->fh;
-			++sofar;
-		    }
+	    for ( m=0, bit=1 ; bit!=0; ++m, bit<<=1 ) {
+		if ( vs&bit ) {
+		    GDrawDrawText8(pixmap,10+r.width+r.x,y,_(privateerrornames[m]),-1,NULL,0xff0000 );
+		    y += vw->fh;
+		}
 	    }
 	}
     }
@@ -4514,11 +4802,12 @@ void SFValidationWindow(SplineFont *sf,enum fontformat format) {
     SplineChar *sc;
     FontRequest rq;
     int as, ds, ld;
-    int mask;
+    int mask, needs_blue;
 
     if ( sf->cidmaster )
 	sf = sf->cidmaster;
     mask = VSMaskFromFormat(sf,format);
+    needs_blue = (mask==vs_maskps || mask==vs_maskcid);
 
     if ( sf->valwin!=NULL ) {
 	/* Don't need to force a revalidation because if the window exists */
@@ -4527,6 +4816,7 @@ void SFValidationWindow(SplineFont *sf,enum fontformat format) {
 	    /* But if we go from postscript to truetype the types of errors */
 	    /*  change, so what we display might be different */
 	    sf->valwin->mask = mask;
+	    sf->valwin->needs_blue = needs_blue;
 	    VW_Remetric(sf->valwin);
 	}
 	GDrawSetVisible(sf->valwin->gw,true);
@@ -4562,6 +4852,7 @@ return;
     valwin = chunkalloc(sizeof(struct val_data));
     valwin->sf = sf;
     valwin->mask = mask;
+    valwin->needs_blue = needs_blue;
     valwin->cidmax = cidmax;
     valwin->lastgid = -1;
 

@@ -2572,7 +2572,8 @@ return;
 	else if ( (old_validate = GGadgetIsChecked(d->validate))) {
 	    int vs = SFValidate(d->sf,false);
 	    int mask = VSMaskFromFormat(d->sf,oldformatstate);
-	    if ( vs&mask ) {
+	    int blues = ValidatePrivate(d->sf)& ~pds_missingblue;
+	    if ( (vs&mask) || blues!=0 ) {
 		const char *rsb[3];
 		char *errs;
 		int ret;
@@ -2580,7 +2581,7 @@ return;
 		rsb[0] =  _("_Review");
 		rsb[1] =  _("_Save");
 		rsb[2]=NULL;
-		errs = VSErrorsFromMask(vs&mask);
+		errs = VSErrorsFromMask(vs&mask,blues);
 		ret = gwwv_ask(_("Errors detected"),rsb,0,0,_("The font contains errors.\n%sWould you like to review the errors or save the font anyway?"),errs);
 		free(errs);
 		if ( ret==0 ) {

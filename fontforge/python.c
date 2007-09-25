@@ -7642,6 +7642,10 @@ static PyObject *PyFF_Font_get_loadvalidation_state(PyFF_Font *self,void *closur
 return( Py_BuildValue("i", self->fv->sf->loadvalidation_state));
 }
 
+static PyObject *PyFF_Font_get_privatevalidation_state(PyFF_Font *self,void *closure) {
+return( Py_BuildValue("i", ValidatePrivate(self->fv->sf)));
+}
+
 static PyObject *PyFF_Font_get_path(PyFF_Font *self,void *closure) { \
     if ( self->fv->sf->origname==NULL )
 Py_RETURN_NONE;
@@ -8331,9 +8335,12 @@ static PyGetSetDef PyFF_Font_getset[] = {
     {"cidsupplement",
 	 (getter)PyFF_Font_get_supplement, (setter)PyFF_Font_set_supplement,
 	 "CID Supplement", NULL},
-    {"loadStyle",
+    {"loadState",
 	 (getter)PyFF_Font_get_loadvalidation_state, (setter)PyFF_cant_set,
 	 "A bitmask indicating non-fatal errors found when loading the font (readonly)", NULL},
+    {"privateState",
+	 (getter)PyFF_Font_get_privatevalidation_state, (setter)PyFF_cant_set,
+	 "A bitmask indicating errors in the (PostScript) Private dictionary", NULL},
     {"macstyle",
 	 (getter)PyFF_Font_get_macstyle, (setter)PyFF_Font_set_macstyle,
 	 "Mac Style Bits", NULL},
