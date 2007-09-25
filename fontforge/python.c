@@ -4160,8 +4160,11 @@ static int PyFF_Glyph_set_glyphname(PyFF_Glyph *self,PyObject *value,void *closu
     if ( str==NULL )
 return( -1 );
 
+    SFGlyphRenameFixup(self->sc->parent,self->sc->name,str);
+    self->sc->namechanged = self->sc->changed = true;
     free( self->sc->name );
     self->sc->name = copy(str);
+    GlyphHashFree(self->sc->parent);
 return( 0 );
 }
 

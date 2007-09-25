@@ -2948,6 +2948,223 @@ struct opentype_str *ApplyTickedFeatures(SplineFont *sf,uint32 *flist, uint32 sc
 return( data.str );
 }
 
+static void doreplace(char **haystack,char *start,char *search,char *rpl,int slen) {
+    int rlen;
+    char *pt = start+slen;
+
+    rlen = strlen(rpl);
+    if ( slen>=rlen ) {
+	memcpy(start,rpl,rlen);
+	if ( slen>rlen ) {
+	    int diff = slen-rlen;
+	    for ( ; *pt ; ++pt )
+		pt[-diff] = *pt;
+	    pt[-diff] = '\0';
+	}
+    } else {
+	char *base = *haystack;
+	char *new = galloc(pt-base+strlen(pt)+rlen-slen+1);
+	memcpy(new,base,start-base);
+	memcpy(new+(start-base),rpl,rlen);
+	strcpy(new+(start-base)+rlen,pt);
+	free( base );
+	*haystack = new;
+    }
+}
+
+static int rplstr(char **haystack,char *search, char *rpl,int multipleoccurances) {
+    char *start, *pt, *base = *haystack;
+    int ch, match, slen = strlen(search);
+    int any = 0;
+
+    if ( base==NULL )
+return( false );
+
+    for ( pt=base ; ; ) {
+	while ( *pt==' ' ) ++pt;
+	if ( *pt=='\0' )
+return( any );
+	start=pt;
+	while ( *pt!=' ' && *pt!='\0' ) ++pt;
+	if ( pt-start!=slen )
+	    match = -1;
+	else {
+	    ch = *pt; *pt='\0';
+	    match = strcmp(start,search);
+	    *pt = ch;
+	}
+	if ( match==0 ) {
+	    doreplace(haystack,start,search,rpl,slen);
+	    if ( !multipleoccurances )
+return( true );
+	    any = true;
+	    if ( base!=*haystack ) {
+		pt = *haystack + (start-base)+strlen(rpl);
+		base = *haystack;
+	    } else
+		pt = start+strlen(rpl);
+	}
+    }
+}
+
+static int rplglyphname(char **haystack,char *search, char *rpl) {
+    /* If we change "f" to "uni0066" then we should also change "f.sc" to */
+    /*  "uni0066.sc" and "f_f_l" to "uni0066_uni0066_l" */
+    char *start, *pt, *base = *haystack;
+    int ch, match, slen = strlen(search);
+    int any = 0;
+
+    if ( slen>=strlen( base ))
+return( false );
+
+    for ( pt=base ; ; ) {
+	while ( *pt=='_' ) ++pt;
+	if ( *pt=='\0' || *pt=='.' )
+return( any );
+	start=pt;
+	while ( *pt!='_' && *pt!='\0' && *pt!='.' ) ++pt;
+	if ( *pt=='\0' && start==base )	/* Don't change any unsegmented names */
+return( false );			/* In particular don't rename ourselves*/
+	if ( pt-start!=slen )
+	    match = -1;
+	else {
+	    ch = *pt; *pt='\0';
+	    match = strcmp(start,search);
+	    *pt = ch;
+	}
+	if ( match==0 ) {
+	    doreplace(haystack,start,search,rpl,slen);
+	    any = true;
+	    if ( base!=*haystack ) {
+		pt = *haystack + (start-base) + strlen(rpl);
+		base = *haystack;
+	    } else
+		pt = start+strlen(rpl);
+	}
+    }
+}
+
+static int glyphnameIsComponent(char *haystack,char *search) {
+    /* Check for a glyph name in ligature names and dotted names */
+    char *start, *pt;
+    int slen = strlen(search);
+
+    if ( slen>=strlen( haystack ))
+return( false );
+
+    for ( pt=haystack ; ; ) {
+	while ( *pt=='_' ) ++pt;
+	if ( *pt=='\0' || *pt=='.' )
+return( false );
+	start=pt;
+	while ( *pt!='_' && *pt!='\0' && *pt!='.' ) ++pt;
+	if ( *pt=='\0' && start==haystack )/* Don't change any unsegmented names */
+return( false );			/* In particular don't rename ourselves*/
+	if ( pt-start==slen && strncmp(start,search,slen)==0 )
+return( true );
+    }
+}
+
+void SFGlyphRenameFixup(SplineFont *sf, char *old, char *new) {
+    int k, gid, isv;
+    int i,r;
+    SplineFont *master = sf;
+    SplineChar *sc;
+    PST *pst;
+    FPST *fpst;
+    KernClass *kc;
+    ASM *sm;
+
+    if ( sf->cidmaster!=NULL )
+	master = sf->cidmaster;
+
+    /* Look through all substitutions (and pairwise psts) stored on the glyphs*/
+    /*  and change any occurances of the name */
+    /* (KernPairs have a reference to the SC rather than the name, and need no fixup) */
+    /* Also if the name is "f" then look for glyph names like "f.sc" or "f_f_l"*/
+    /*  and be ready to change them too */
+    k = 0;
+    do {
+	sf = k<master->subfontcnt ? master->subfonts[k] : master;
+	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
+	    if ( glyphnameIsComponent(sc->name,old)) {
+		char *newer = copy(sc->name);
+		rplglyphname(&newer,old,new);
+		SFGlyphRenameFixup(master,sc->name,newer);
+		free(sc->name);
+		sc->name = newer;
+		sc->namechanged = sc->changed = true;
+	    }
+	    for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
+		if ( pst->type==pst_substitution || pst->type==pst_alternate ||
+			pst->type==pst_multiple || pst->type==pst_pair ||
+			pst->type==pst_ligature ) {
+		    if ( rplstr(&pst->u.mult.components,old,new,pst->type==pst_ligature))
+			sc->changed = true;
+		}
+	    }
+	}
+	++k;
+    } while ( k<master->subfontcnt );
+
+    /* Now look for contextual fpsts which might use the name */
+    for ( fpst=master->possub; fpst!=NULL; fpst=fpst->next ) {
+	if ( fpst->format==pst_class ) {
+	    for ( i=0; i<fpst->nccnt; ++i ) if ( fpst->nclass[i]!=NULL ) {
+		if ( rplstr(&fpst->nclass[i],old,new,false))
+	    break;
+	    }
+	    for ( i=0; i<fpst->bccnt; ++i ) if ( fpst->bclass[i]!=NULL ) {
+		if ( rplstr(&fpst->bclass[i],old,new,false))
+	    break;
+	    }
+	    for ( i=0; i<fpst->fccnt; ++i ) if ( fpst->fclass[i]!=NULL ) {
+		if ( rplstr(&fpst->fclass[i],old,new,false))
+	    break;
+	    }
+	}
+	for ( r=0; r<fpst->rule_cnt; ++r ) {
+	    struct fpst_rule *rule = &fpst->rules[r];
+	    if ( fpst->type==pst_glyphs ) {
+		rplstr(&rule->u.glyph.names,old,new,true);
+		rplstr(&rule->u.glyph.back,old,new,true);
+		rplstr(&rule->u.glyph.fore,old,new,true);
+	    } else if ( fpst->type==pst_coverage ||
+		    fpst->type==pst_reversecoverage ) {
+		for ( i=0; i<rule->u.coverage.ncnt ; ++i )
+		    rplstr(&rule->u.coverage.ncovers[i],old,new,false);
+		for ( i=0; i<rule->u.coverage.bcnt ; ++i )
+		    rplstr(&rule->u.coverage.bcovers[i],old,new,false);
+		for ( i=0; i<rule->u.coverage.fcnt ; ++i )
+		    rplstr(&rule->u.coverage.fcovers[i],old,new,false);
+		if ( fpst->type==pst_reversecoverage )
+		    rplstr(&rule->u.rcoverage.replacements,old,new,true);
+	    }
+	}
+    }
+
+    /* Now look for contextual apple state machines which might use the name */
+    for ( sm = master->sm; sm!=NULL; sm=sm->next ) {
+	for ( i=0; i<sm->class_cnt; ++i ) if ( sm->classes[i]!=NULL ) {
+	    if ( rplstr(&sm->classes[i],old,new,false))
+	break;
+	}
+    }
+
+    /* Now look for contextual kerning classes which might use the name */
+    for ( isv=0; isv<2; ++isv ) {
+	for ( kc=isv ? master->vkerns : master->kerns; kc!=NULL; kc=kc->next ) {
+	    for ( i=0; i<kc->first_cnt; ++i ) if ( kc->firsts[i]!=NULL ) {
+		if ( rplstr(&kc->firsts[i],old,new,false))
+	    break;
+	    }
+	    for ( i=0; i<kc->second_cnt; ++i ) if ( kc->seconds[i]!=NULL ) {
+		if ( rplstr(&kc->seconds[i],old,new,false))
+	    break;
+	    }
+	}
+    }
+}
 /* ************************************************************************** */
 /* ******************************* UI routines ****************************** */
 /* ************************************************************************** */
