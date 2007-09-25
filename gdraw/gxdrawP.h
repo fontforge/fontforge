@@ -25,8 +25,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* There is one configurable option here that the configure script can't figure
-    out:
+/* There are two configurable option here that the configure script can't
+    figure out:
+
 	_WACOM_DRV_BROKEN
 on my system the XFree driver for the WACOM tablet sends no events. I don't
 understand the driver, so I'm not able to attempt fixing it. However thanks
@@ -39,6 +40,15 @@ change the protection on /dev/input/event0 so that it is world readable
 
 (there is now a working XFree driver for wacom, but you have to get it from
 John, it's not part of standard XFree yet).
+
+	_COMPOSITE_BROKEN
+on XFree with the composite extension active, scrolling windows with docket
+palletes may result in parts of the palettes duplicated outside their dock
+rectangles.
+
+Defining this macro forces redisplay of the entire window area, which is
+slightly slower, but should make no significant difference on a machine
+capable of using composite.
 */
 
 #ifndef _XDRAW_H
