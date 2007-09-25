@@ -1075,7 +1075,7 @@ enum privatedict_state {
     pds_toomany    = 0x4,	/* arrays are of limited sizes */
     pds_tooclose   = 0x8,	/* adjacent zones must not be within 2*bluefuzz+1 (or 3, if bluefuzz omitted) */
     pds_notintegral= 0x10,	/* Must be integers */
-    /*pds_toobig     = 0x20,*/	/* within pair difference have some relation to BlueScale but the docs make no sense to me */
+    pds_toobig     = 0x20,	/* within pair difference have some relation to BlueScale but the docs make no sense to me */
     pds_shift	   = 8,		/* BlueValues/OtherBlues, unshifted, FamilyBlues/FamilyOtherBlues shifted once */
 
     pds_missingblue  = 0x010000,

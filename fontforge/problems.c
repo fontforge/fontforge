@@ -32,9 +32,10 @@
 #include <math.h>
 #include <gkeysym.h>
 
-static int CheckBluePair(char *blues, char *others, int bluefuzz) {
+static int CheckBluePair(char *blues, char *others, int bluefuzz,
+	int magicpointsize) {
     int bound = 2*bluefuzz+1;
-    int bluevals[10+14], cnt, pos=0;
+    int bluevals[10+14], cnt, pos=0, maxzoneheight;
     int err = 0;
     char *end;
 
@@ -89,14 +90,21 @@ static int CheckBluePair(char *blues, char *others, int bluefuzz) {
     /* Now there is nothing which says that otherblues must all be less than */
     /*  blues. But the examples suggest it. And I shall assume it */
 
+    maxzoneheight = -1;
     for ( cnt=0; cnt<pos; cnt+=2 ) {
 	if ( cnt+1<pos && bluevals[cnt]>=bluevals[cnt+1] )
 	    err |= pds_outoforder;
+	else if ( cnt+1<pos && maxzoneheight<bluevals[cnt+1]-bluevals[cnt] )
+	    maxzoneheight = bluevals[cnt+1]-bluevals[cnt];
 	if ( cnt!=0 && bluevals[cnt-1]>=bluevals[cnt] )
 	    err |= pds_outoforder;
 	if ( cnt!=0 && bluevals[cnt-1]+bound>bluevals[cnt] )
 	    err |= pds_tooclose;
     }
+
+    if ( maxzoneheight>0 && (magicpointsize-.49)*maxzoneheight>=240 )
+	err |= pds_toobig;
+
 return( err );
 }
 
@@ -170,7 +178,8 @@ int ValidatePrivate(SplineFont *sf) {
     int errs = 0;
     char *blues, *bf, *test, *end;
     int fuzz = 1;
-    double val;
+    double bluescale = .039625;
+    int magicpointsize;
 
     if ( sf->private==NULL )
 return( pds_missingblue );
@@ -181,20 +190,22 @@ return( pds_missingblue );
 	    errs |= pds_badbluefuzz;
     }
 
+    if ( (test=PSDictHasEntry(sf->private,"BlueScale"))!=NULL ) {
+	bluescale = strtod(test,&end);
+	if ( *end!='\0' || end==test || bluescale<0 )
+	    errs |= pds_badbluescale;
+    }
+    magicpointsize = rint( bluescale*240 - 0.49 );
+
     if ( (blues = PSDictHasEntry(sf->private,"BlueValues"))==NULL )
 	errs |= pds_missingblue;
     else
-	errs |= CheckBluePair(blues,PSDictHasEntry(sf->private,"OtherBlues"),fuzz);
+	errs |= CheckBluePair(blues,PSDictHasEntry(sf->private,"OtherBlues"),fuzz,magicpointsize);
 
     if ( (blues = PSDictHasEntry(sf->private,"FamilyBlues"))!=NULL )
 	errs |= CheckBluePair(blues,PSDictHasEntry(sf->private,"FamilyOtherBlues"),
-		fuzz)<<pds_shift;
+		fuzz,magicpointsize)<<pds_shift;
 
-    if ( (test=PSDictHasEntry(sf->private,"BlueScale"))!=NULL ) {
-	val = strtod(test,&end);
-	if ( *end!='\0' || end==test || val<0 )
-	    errs |= pds_badbluescale;
-    }
 
     if ( (test=PSDictHasEntry(sf->private,"BlueShift"))!=NULL ) {
 	int val = strtol(test,&end,10);
@@ -3756,7 +3767,7 @@ static char *privateerrornames[] = {
     N_("Too many elements in BlueValues/OtherBlues array."),
     N_("Elements in BlueValues/OtherBlues array are too close (Change BlueFuzz)."),
     N_("Elements in BlueValues/OtherBlues array are not integers."),
-    NULL,
+    N_("Alignment zone height in BlueValues/OtherBlues array is too big for BlueScale."),
     NULL,
     NULL,
     N_("Odd number of elements in FamilyBlues/FamilyOtherBlues array."),
@@ -3764,7 +3775,7 @@ static char *privateerrornames[] = {
     N_("Too many elements in FamilyBlues/FamilyOtherBlues array."),
     N_("Elements in FamilyBlues/FamilyOtherBlues array are too close (Change BlueFuzz)."),
     N_("Elements in FamilyBlues/FamilyOtherBlues array are not integers."),
-    NULL,
+    N_("Alignment zone height in FamilyBlues/FamilyOtherBlues array is too big for BlueScale."),
     NULL,
     NULL,
     N_("Missing BlueValues entry."),

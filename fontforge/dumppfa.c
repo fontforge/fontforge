@@ -1177,7 +1177,7 @@ return( -1 );
 	    if ( p2-p1 >max_diff ) max_diff = p2-p1;
 	    pt = end;
 	}
-    } else {
+    } else if ( bluevalues!=NULL ) {
 	for ( i=0; i<14 && (bluevalues[i]!=0 || bluevalues[i+1])!=0; i+=2 ) {
 	    if ( bluevalues[i+1] - bluevalues[i]>=max_diff )
 		max_diff = bluevalues[i+1] - bluevalues[i];
@@ -1198,7 +1198,7 @@ return( -1 );
 	    if ( p2-p1 >max_diff ) max_diff = p2-p1;
 	    pt = end;
 	}
-    } else {
+    } else if ( otherblues!=NULL ) {
 	for ( i=0; i<10 && (otherblues[i]!=0 || otherblues[i+1]!=0); i+=2 ) {
 	    if ( otherblues[i+1] - otherblues[i]>=max_diff )
 		max_diff = otherblues[i+1] - otherblues[i];
