@@ -593,6 +593,7 @@ return( false );
 	alt->unienc = sc->unicodeenc;
     sc->unicodeenc = unienc;
     if ( sc->name==NULL || strcmp(name,sc->name)!=0 ) {
+	SFGlyphRenameFixup(sf,sc->name,name);
 	free(sc->name);
 	sc->name = copy(name);
 	sc->namechanged = true;
