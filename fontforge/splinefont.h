@@ -1069,6 +1069,28 @@ struct mathkern {
     struct mathkernvertex bottom_left;
 };
 
+enum privatedict_state {
+    pds_odd        = 0x1,	/* Odd number of entries */
+    pds_outoforder = 0x2,	/* Bluevalues should be listed in order */
+    pds_toomany    = 0x4,	/* arrays are of limited sizes */
+    pds_tooclose   = 0x8,	/* adjacent zones must not be within 2*bluefuzz+1 (or 3, if bluefuzz omitted) */
+    pds_notintegral= 0x10,	/* Must be integers */
+    /*pds_toobig     = 0x20,*/	/* within pair difference have some relation to BlueScale but the docs make no sense to me */
+    pds_shift	   = 8,		/* BlueValues/OtherBlues, unshifted, FamilyBlues/FamilyOtherBlues shifted once */
+
+    pds_missingblue  = 0x010000,
+    pds_badbluefuzz  = 0x020000,
+    pds_badbluescale = 0x040000,
+    pds_badstdhw     = 0x080000,
+    pds_badstdvw     = 0x100000,
+    pds_badstemsnaph = 0x200000,
+    pds_badstemsnapv = 0x400000,
+    pds_stemsnapnostdh = 0x0800000,
+    pds_stemsnapnostdv = 0x1000000,
+    pds_badblueshift   = 0x2000000
+    
+};
+
 enum validation_state { vs_unknown = 0,
 	vs_known=0x01,				/* It has been validated */
 	vs_opencontour=0x02,
@@ -1082,6 +1104,7 @@ enum validation_state { vs_unknown = 0,
 	vs_toomanyhints=0x100,
 	vs_badglyphname=0x200,
 	    /* Next few are only for fontlint */
+	    /* These are relative to maxp values which ff would fix on generating a font */
 	vs_maxp_toomanypoints=0x400,
 	vs_maxp_toomanypaths=0x800,
 	vs_maxp_toomanycomppoints=0x1000,
@@ -2645,8 +2668,9 @@ extern struct math_constants_descriptor {
     int new_page;
 } math_constants_descriptor[];
 
-extern char *VSErrorsFromMask(int mask);
+extern char *VSErrorsFromMask(int mask,int private_mask);
 extern int SCValidate(SplineChar *sc, int force);
+extern int ValidatePrivate(SplineFont *sf);
 extern int SFValidate(SplineFont *sf, int force);
 extern int VSMaskFromFormat(SplineFont *sf, enum fontformat format);
 #endif

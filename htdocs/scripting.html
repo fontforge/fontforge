@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 18-Jan-2002 -->
-  <!-- AP: Last modified: 2-Sep-2007 -->
+  <!-- AP: Last modified: 24-Sep-2007 -->
   <TITLE>Writing scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -350,6 +350,10 @@ endloop
     <LI>
       <CODE>$loadState</CODE> a bitmask of non-fatal errors encountered when loading
       the font.
+    <LI>
+      <CODE>$privateState </CODE>a bitmask of some errors in the PostScript Private
+      dictionary (see the <A HREF="python.html#Font_privateState">python entry</A>
+      for more info).
     <LI>
       <CODE>$curcid </CODE>returns the fontname of the current font
     <LI>
