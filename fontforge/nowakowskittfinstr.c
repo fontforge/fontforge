@@ -33,6 +33,8 @@
 #include "ttf.h"
 #include "splinefont.h"
 
+extern int autohint_before_generate;
+
 /* non-optimized instructions will be using a stack of depth 6, allowing
  * for easy testing whether the code leaves trash on the stack or not.
  */
@@ -60,586 +62,25 @@
 #define IUP_x                   (0x31)
 #define SHP_rp2                 (0x32)
 #define SHP_rp1                 (0x33)
-#define MSIRP                   (0x3a)
-#define MSIRP_rp0               (0x3b)
-#define MIAP                    (0x3e)
 #define MIAP_rnd                (0x3f)
 #define ADD                     (0x60)
 #define MUL                     (0x63)
 #define NEG                     (0x65)
 #define SROUND                  (0x76)
-#define RUTG                    (0x7c)
-#define RDTG                    (0x7d)
-#define MDRP_rnd_grey           (0xc4)
+#define MDRP_min_white          (0xca)
 #define MDRP_min_rnd_black      (0xcd)
-#define MDRP_min_rnd_white      (0xce)
 #define MDRP_rp0_rnd_white      (0xd6)
 #define MDRP_rp0_min_rnd_black  (0xdd)
 #define MDRP_rp0_min_rnd_white  (0xde)
-#define MIRP_rnd_grey           (0xe4)
 #define MIRP_min_black          (0xe9)
 #define MIRP_min_rnd_black      (0xed)
-#define MIRP_rp0_rnd_grey       (0xf4)
 #define MIRP_rp0_min_black      (0xf9)
 #define MIRP_rp0_min_rnd_black  (0xfd)
 
 
 /******************************************************************************
  *
- * Many functions here need large or similar sets of arguments. I decided to
- * define an 'instructing context' to have them in one place and keep functions'
- * argument counts reasonably short. I first need to define some internal
- * sub-structures for instructing alignment zones, diagonal stems and CVT.
- *
- ******************************************************************************/
-
-/* Structs for diagonal hinter start here */
-
-/* This structure is used to keep a point number together with
-   its coordinates */
-typedef struct numberedpoint {
-    int num;
-    struct basepoint *pt;
-} NumberedPoint;
-
-/* A line, described by two points */
-typedef struct pointvector {
-    struct numberedpoint *pt1, *pt2;
-    int done;
-} PointVector;
-
-/* In this structure we store information about diagonales,
-   relatively to which the given point should be positioned */
-typedef struct diagpointinfo {
-    struct pointvector *line[2];
-    int count;
-} DiagPointInfo;
-
-/* Diagonal stem hints. This structure is a bit similar to DStemInfo FF
-   uses in other cases, but additionally stores point numbers and hint width */
-typedef struct dstem {
-    struct dstem *next;
-    struct numberedpoint pts[4];
-    int done;
-    real width;
-} DStem;
-
-/* here the structs needed for diagonal hinting end. */
-
-typedef struct instrct {
-    /* Things that are global for font and should be
-       initialized before instructing particular glyph. */
-    GlobalInstrCt *gic;
-
-    SplineChar *sc;
-    SplineSet *ss;
-    int ptcnt;            /* number of points in this glyph */
-    int *contourends;     /* points ending their contours. null-terminated. */
-
-    /* instructions */
-    uint8 *instrs;        /* the beginning of the instructions */
-    uint8 *pt;            /* the current position in the instructions */
-
-    /* properties, indexed by ttf point index. Could perhaps be compressed. */
-    BasePoint *bp;        /* point coordinates */
-    uint8 *touched;       /* touchflags; points explicitly instructed */
-    uint8 *affected;      /* touchflags; almost touched, but optimized out */
-    uint8 *oncurve;       /* boolean; these points are on-curve */
-
-    /* stuff for hinting diagonals */
-    DStem *diagstems;
-    DiagPointInfo *diagpts; /* indexed by ttf point index */
-
-    /* stuff for hinting edges (for stems and blues): */
-    int xdir;             /* direction flag: x=true, y=false */
-    int cdir;             /* is current contour outer? - blues need this */
-    struct __edge {
-	real base;        /* where the edge is */
-	int refpt;        /* best ref. point for an edge, ttf index, -1 if none */
-	int refscore;     /* its quality, for searching better one, 0 if none */
-	int othercnt;     /* count of other points to instruct for this edge */
-	int *others;      /* their ttf indices, optimize_edge() is advised */
-    } edge;
-} InstrCt;
-
-extern int autohint_before_generate;
-
-#if 0		/* in getttfinstrs.c */
-struct ttf_table *SFFindTable(SplineFont *sf,uint32 tag) {
-    struct ttf_table *tab;
-
-    for ( tab=sf->ttf_tables; tab!=NULL && tab->tag!=tag; tab=tab->next );
-return( tab );
-}
-#endif
-
-/******************************************************************************
- *
- * We need to initialize gic before initializing 'prep', because we want
- * to do bluezone positioning and stem width normalisation there.
- *
- ******************************************************************************/
-
-/* 
- * Helper routines: read PS private entry and return its contents.
- */
-static real *ParsePSArray(const char *str, int *rescnt) {
-    char *end;
-    real d, *results=NULL;
-
-    if ((rescnt == NULL) || (str == NULL))
-return NULL;
-
-    *rescnt = 0;
-
-    while (*str)
-    {
-        while (!isdigit(*str) && *str!='-' && *str!='+' && *str!='.' && *str!='\0')
-	    ++str;
-
-	if ( *str=='\0' )
-    break;
-
-        d = strtod(str, &end);
-
-        if ( d>=-32768 && d<=32767 ) {
-            if (*rescnt) {
-                results = grealloc(results, sizeof(real)*(++(*rescnt)));
-	        results[*rescnt-1] = d;
-            }
-            else (results = gcalloc(*rescnt=1, sizeof(real)))[0] = d;
-	}
-
-        str = end;
-    }
-
-return results;
-}
-
-static real *GetNParsePSArray(SplineFont *sf, char *name, int *rescnt) {
-return ParsePSArray(PSDictHasEntry(sf->private, name), rescnt);
-}
-
-/*
- * To be used with qsort() - sorts BlueZone array by base in ascending order.
- */
-static int SortBlues(const void *a, const void *b) {
-    return ((BlueZone *)a)->base > ((BlueZone *)b)->base;
-}
-
-/*
- * Tell if the two blues or stems intersect.
- * Bs are bases, Os are overshoots/widths.
- */
-static int ZonesOverlap(real b1, real o1, real b2, real o2) {
-    real t;
-
-    if (b1 > o1) {
-        t = o1;
-	o1 = b1;
-	b1 = t;
-    }
-
-    if (b2 > o2) {
-        t = o2;
-	o2 = b2;
-	b2 = t;
-    }
-    
-return !((b2 > o1) || (o2 < b1));
-}
-
-/* Import blue data into gic. Include family blues too. We assume that blues
- * are needed for family blues to make sense. If there are only family blues,
- * we treat them as normal blues. Otherwise, if a family blue zone don't match
- * any normal blue zone, or if they match perfectly, it is ignored.
- */
-static void GICImportBlues(GlobalInstrCt *gic) {
-    int bluecnt = 0;
-    int i, j, cnt;
-    real *values;
-
-    int HasPSBlues =
-             (PSDictHasEntry(gic->sf->private, "BlueValues") != NULL) ||
-             (PSDictHasEntry(gic->sf->private, "OtherBlues") != NULL);
-
-    int HasPSFamilyBlues =
-             (PSDictHasEntry(gic->sf->private, "FamilyBlues") != NULL) ||
-             (PSDictHasEntry(gic->sf->private, "FamilyOtherBlues") != NULL);
-
-    char *PrimaryBlues = HasPSBlues ? "BlueValues" : "FamilyBlues";
-    char *OtherBlues = HasPSBlues ? "OtherBlues" : "FamilyOtherBlues";
-
-    if (HasPSBlues || HasPSFamilyBlues){
-        values = GetNParsePSArray(gic->sf, PrimaryBlues, &cnt);
-	cnt /= 2;
-	if (cnt > 7) cnt = 7;
-
-	if (values != NULL) {
-	    gic->bluecnt = bluecnt = cnt;
-
-	    /* First pair is a bottom zone (see Type1 specification). */
-	    gic->blues[0].base = values[1];
-	    gic->blues[0].overshoot = values[0];
-	    gic->blues[0].family_base = strtod("NAN", NULL);
-
-	    /* Next pairs are top zones (see Type1 specification). */
-	    for (i=1; i<bluecnt; i++) {
-	        gic->blues[i].family_base = strtod("NAN", NULL);
-		gic->blues[i].base = values[2*i];
-		gic->blues[i].overshoot = values[2*i+1];
-	    }
-
-	    free(values);
-	}
-
-        values = GetNParsePSArray(gic->sf, OtherBlues, &cnt);
-	cnt /= 2;
-	if (cnt > 5) cnt = 5;
-
-	if (values != NULL) {
-	    gic->bluecnt += cnt;
-
-	    /* All pairs are bottom zones (see Type1 specification). */
-	    for (i=0; i<cnt; i++) {
-	        gic->blues[i+bluecnt].family_base = strtod("NAN", NULL);
-		gic->blues[i+bluecnt].base = values[2*i+1];
-		gic->blues[i+bluecnt].overshoot = values[2*i];
-	    }
-
-	    free(values);
-	    bluecnt += cnt;
-	}
-
-	/* Add family data to blues */
-	if (HasPSBlues && HasPSFamilyBlues) {
-            values = GetNParsePSArray(gic->sf, "FamilyBlues", &cnt);
-	    cnt /= 2;
-	    if (cnt > 7) cnt = 7;
-
-	    if (values != NULL) {
-	        /* First pair is a bottom zone (see Type1 specification). */
-	        for (j=0; j<bluecnt; j++)
-		    if (finite(gic->blues[j].family_base))
-		        continue;
-		    else if (values[1] != gic->blues[j].base &&
-		             ZonesOverlap(gic->blues[j].base,
-		                       gic->blues[j].overshoot,
-				       values[0], values[1]))
-		        gic->blues[j].family_base = values[1];
-
-		/* Next pairs are top zones (see Type1 specification). */
-		for (i=1; i<cnt; i++) {
-		    for (j=0; j<bluecnt; j++)
-		        if (finite(gic->blues[j].family_base))
-			    continue;
-			else if (values[2*i] != gic->blues[j].base &&
-			         ZonesOverlap(gic->blues[j].base,
-				           gic->blues[j].overshoot,
-					   values[2*i], values[2*i+1]))
-			    gic->blues[j].family_base = values[2*i];
-		}
-
-		free(values);
-	    }
-
-            values = GetNParsePSArray(gic->sf, "FamilyOtherBlues", &cnt);
-	    cnt /= 2;
-	    if (cnt > 5) cnt = 5;
-
-	    if (values != NULL) {
-		/* All pairs are bottom zones (see Type1 specification). */
-		for (i=0; i<cnt; i++) {
-		    for (j=0; j<bluecnt; j++)
-		        if (finite(gic->blues[j].family_base))
-			    continue;
-			else if (values[2*i+1] != gic->blues[j].base &&
-			         ZonesOverlap(gic->blues[j].base,
-				           gic->blues[j].overshoot,
-					   values[2*i], values[2*i+1]))
-			    gic->blues[j].family_base = values[2*i+1];
-		}
-
-		free(values);
-	    }
-	}
-    }
-    else if (gic->bd->bluecnt) {
-        /* If there are no PS private entries, we have */
-	/* to use FF's quickly guessed fallback blues. */
-        gic->bluecnt = bluecnt = gic->bd->bluecnt;
-
-        for (i=0; i<bluecnt; i++) {
-	    gic->blues[i].family_base = strtod("NAN", NULL);
-	    gic->blues[i].family_cvtindex = -1;
-
-	    if (gic->bd->blues[i][1] <= 0) {
-	        gic->blues[i].base = gic->bd->blues[i][1];
-		gic->blues[i].overshoot = gic->bd->blues[i][0];
-	    }
-	    else {
-	        gic->blues[i].base = gic->bd->blues[i][0];
-		gic->blues[i].overshoot = gic->bd->blues[i][1];
-	    }
-        }
-    }
-
-    /* Highpoints and lowpoints are not set yet. */
-    for (i=0; i<gic->bluecnt; i++)
-        gic->blues[i].highest = gic->blues[i].lowest = -1;
-
-    /* I assume ascending order in snap_to_blues(). */    
-    qsort(gic->blues, gic->bluecnt, sizeof(BlueZone), SortBlues);
-}
-
-/*
- * To be used with qsort() - sorts StdStem array by width in ascending order.
- */
-static int SortStems(const void *a, const void *b) {
-    return ((StdStem *)a)->width > ((StdStem *)b)->width;
-}
-
-/*
- *
- * Import stem data into gic. We don't deal with diagonal stems here.
- *
- */
-static void GICImportStems(GlobalInstrCt *gic) {
-    int i, cnt, next;
-    real *values;
-
-    /* Import StdHW & StemSnapH */
-    if ((values = GetNParsePSArray(gic->sf, "StdHW", &cnt)) != NULL) {
-        gic->stdhw.width = *values;
-        free(values);
-    }
-
-    if ((values = GetNParsePSArray(gic->sf, "StemSnapH", &cnt)) != NULL) {
-        gic->stemsnaph = gcalloc(cnt, sizeof(StdStem));
-
-        for (next=i=0; i<cnt; i++)
-	    if (values[i] != gic->stdhw.width)
-	        gic->stemsnaph[next++].width = values[i];
-
-	if (!next) {
-	    free(gic->stemsnaph);
-	    gic->stemsnaph = NULL;
-	}
-
-	gic->stemsnaphcnt = next;
-        free(values);
-
-        /* I assume ascending order here and in normalize_stems(). */
-        qsort(gic->stemsnaph, gic->stemsnaphcnt, sizeof(StdStem), SortStems);
-    }
-
-    if (gic->stdhw.width == -1 && gic->stemsnaph != NULL) {
-        cnt = gic->stemsnaphcnt;
-	i = cnt/2;
-	gic->stdhw.width = gic->stemsnaph[i].width;
-	memmove(gic->stemsnaph+i, gic->stemsnaph+i+1, cnt-i-1);
-
-	if (--(gic->stemsnaphcnt) == 0) {
-	    free(gic->stemsnaph);
-	    gic->stemsnaph = NULL;
-	}
-    }
-
-    /* Import StdVW & StemSnapV */
-    if ((values = GetNParsePSArray(gic->sf, "StdVW", &cnt)) != NULL) {
-        gic->stdvw.width = *values;
-        free(values);
-    }
-
-    if ((values = GetNParsePSArray(gic->sf, "StemSnapV", &cnt)) != NULL) {
-        gic->stemsnapv = gcalloc(cnt, sizeof(StdStem));
-
-        for (next=i=0; i<cnt; i++)
-	    if (values[i] != gic->stdvw.width)
-	        gic->stemsnapv[next++].width = values[i];
-
-	if (!next) {
-	    free(gic->stemsnapv);
-	    gic->stemsnapv = NULL;
-	}
-
-	gic->stemsnapvcnt = next;
-        free(values);
-
-        /* I assume ascending order here and in normalize_stems(). */
-        qsort(gic->stemsnapv, gic->stemsnapvcnt, sizeof(StdStem), SortStems);
-    }
-
-    if (gic->stdvw.width == -1 && gic->stemsnapv != NULL) {
-        cnt = gic->stemsnapvcnt;
-	i = cnt/2;
-	gic->stdvw.width = gic->stemsnapv[i].width;
-	memmove(gic->stemsnapv+i, gic->stemsnapv+i+1, cnt-i-1);
-
-	if (--(gic->stemsnapvcnt) == 0) {
-	    free(gic->stemsnapv);
-	    gic->stemsnapv = NULL;
-	}
-    }
-}
-
-
-/* Set up Global Instructiing Context and build actual cvt table. If we can't
- * implant it, reassign cvt indices in fallback mode - that is, picking indexes
- * from existing cvt table (thus a cvt value can't be considered 'horizontal' or
- * 'vertical', and reliable stem normalization is thus impossible) and adding
- * some for new values.
- */
-static void init_cvt(GlobalInstrCt *gic) {
-    int i, cvtindex, cvtsize;
-    uint8 *cvt;
-
-    GICImportBlues(gic);
-    GICImportStems(gic);
-
-    cvtsize = 1;
-    if (gic->stdhw.width != -1) cvtsize++;
-    if (gic->stdvw.width != -1) cvtsize++;
-    cvtsize += gic->stemsnaphcnt;
-    cvtsize += gic->stemsnapvcnt;
-    cvtsize += gic->bluecnt * 2; /* possible family blues */
-
-    cvt = gcalloc(cvtsize, cvtsize * sizeof(int16));
-    cvtindex = 0;
-
-    /* Assign cvt indices */
-    for (i=0; i<gic->bluecnt; i++) {
-        gic->blues[i].cvtindex = cvtindex;
-        memputshort(cvt, 2*cvtindex++, rint(gic->blues[i].base));
-
-	if (finite(gic->blues[i].family_base)) {
-	    gic->blues[i].family_cvtindex = cvtindex;
-            memputshort(cvt, 2*cvtindex++, rint(gic->blues[i].family_base));
-	}
-    }
-
-    if (gic->stdhw.width != -1) {
-        gic->stdhw.cvtindex = cvtindex;
-	memputshort(cvt, 2*cvtindex++, rint(gic->stdhw.width));
-    }
-
-    for (i=0; i<gic->stemsnaphcnt; i++) {
-        gic->stemsnaph[i].cvtindex = cvtindex;
-	memputshort(cvt, 2*cvtindex++, rint(gic->stemsnaph[i].width));
-    }
-
-    if (gic->stdvw.width != -1) {
-        gic->stdvw.cvtindex = cvtindex;
-	memputshort(cvt, 2*cvtindex++, rint(gic->stdvw.width));
-    }
-
-    for (i=0; i<gic->stemsnapvcnt; i++) {
-        gic->stemsnapv[i].cvtindex = cvtindex;
-	memputshort(cvt, 2*cvtindex++, rint(gic->stemsnapv[i].width));
-    }
-
-    cvtsize = cvtindex;
-    cvt = grealloc(cvt, cvtsize * sizeof(int16));
-
-    /* Try to implant the new cvt table */
-    gic->cvt_done = 0;
-
-    struct ttf_table *tab = SFFindTable(gic->sf, CHR('c','v','t',' '));
-
-    if ( tab==NULL ) {
-	tab = chunkalloc(sizeof(struct ttf_table));
-	tab->next = gic->sf->ttf_tables;
-	gic->sf->ttf_tables = tab;
-	tab->tag = CHR('c','v','t',' ');
-
-	tab->len = tab->maxlen = cvtsize * sizeof(int16);
-	if (tab->maxlen >256) tab->maxlen = 256;
-        tab->data = cvt;
-
-        gic->cvt_done = 1;
-    }
-    else {
-        if (tab->len >= cvtsize * sizeof(int16) &&
-	    memcmp(cvt, tab->data, cvtsize * sizeof(int16)) == 0)
-	        gic->cvt_done = 1;
-
-        free(cvt);
-
-	if (!gic->cvt_done) {
-	    gwwv_post_error(_("Can't insert 'cvt'"),
-		_("There already exists a 'cvt' table, perhaps legacy. "
-		  "FontForge can use it, but can't make any assumptions on "
-		  "values stored there, so generated instructions will be of "
-		  "lower quality. If legacy hinting is to be scrapped, it is "
-		  "suggested to clear the `cvt` and repeat autoinstructing. "
-	    ));
-	}
-    }
-
-    if (gic->cvt_done)
-return;
-
-    /* Fallback mode starts here. */
-
-    for (i=0; i<gic->bluecnt; i++)
-        gic->blues[i].cvtindex =
-	    TTF_getcvtval(gic->sf, gic->blues[i].base);
-
-    if (gic->stdhw.width != -1)
-        gic->stdhw.cvtindex =
-	    TTF_getcvtval(gic->sf, gic->stdhw.width);
-
-    for (i=0; i<gic->stemsnaphcnt; i++)
-        gic->stemsnaph[i].cvtindex =
-	    TTF_getcvtval(gic->sf, gic->stemsnaph[i].width);
-
-    if (gic->stdvw.width != -1)
-        gic->stdvw.cvtindex =
-	    TTF_getcvtval(gic->sf, gic->stdvw.width);
-
-    for (i=0; i<gic->stemsnapvcnt; i++)
-        gic->stemsnapv[i].cvtindex =
-	    TTF_getcvtval(gic->sf, gic->stemsnapv[i].width);
-}
-
-/******************************************************************************
- *
- * Some routines to pick up particular data from PS Private.
- *
- ******************************************************************************/
-
-static int GetBlueFuzz(SplineFont *sf) {
-    char *str, *end;
-
-    if ( sf->private==NULL || (str=PSDictHasEntry(sf->private,"BlueFuzz"))==NULL || !isdigit(str[0]) )
-return 1;
-return strtod(str, &end);
-}
-
-/* Return BlueScale as PPEM at which we have to stop suppressing overshoots */
-static int GetBlueScale(SplineFont *sf) {
-    char *str, *end;
-    double bs;
-    int result;
-
-    if ( sf->private==NULL || (str=PSDictHasEntry(sf->private,"BlueScale"))==NULL )
-return 42;
-
-    bs = strtod(str, &end);
-    if (end==str || bs<=0.0) bs=0.039625;
-    bs*=240;
-    bs+=0.49;
-    bs*=300.0/72.0;
-
-    result = (int)rint(bs);
-    if (result>255) result = 255; /* Who would need such blue scale??? */
-
-return result;
-}
-
-/******************************************************************************
- *
- * Some low-lewel routines to add data to bytecode instruction stream.
+ * Low-lewel routines to add data to bytecode instruction stream.
  *
  ******************************************************************************/
 
@@ -765,17 +206,17 @@ return( instrs );
 
 /* An apparatus for instructing sets of points with given truetype command.
  * The command must pop exactly 1 element from the stack and mustn't push any.
- * If SHP, SHPIX, IP, FLIPPT or ALIGNRP used, I may try to use SLOOP in future.
- *
- * These points must be marked as 'touched' elsewhere! this punction only
+ * These points must be marked as 'touched' elsewhere! this function only
  * generates intructions.
  *
+ * TODO!
+ * If SHP, SHPIX, IP, FLIPPT or ALIGNRP used, try to use SLOOP.
+ *
  * Possible strategies:
- *   - do point by point (currently used, poor space efficiency)
- *   - push all the stock at once (better, but has
+ *   - do point by point (poor space efficiency)
+ *   - push all the stock at once (currently used, better, but has
  *     poor space efficiency in case of a word among several bytes).
  *   - push bytes and words separately
- *   - when the stuff is pushed, try to use SLOOP.
  */
 static uint8 *instructpoints(uint8 *instrs, int ptcnt, const int *pts, uint8 command) {
     int i;
@@ -787,15 +228,557 @@ static uint8 *instructpoints(uint8 *instrs, int ptcnt, const int *pts, uint8 com
 return( instrs );
 }
 
-
 /******************************************************************************
  *
- * We need to initialize some tables before autohinting: 'maxp', 'fpgm', 'cvt'
- * and 'prep'.
- *
- * TODO! We should do it once, not once every glyph.
+ * Low-level routines for getting a cvt index for a stem width, assuming there
+ * are any numbers in cvt. Includes legacy code for importing PS Private into
+ * CVT.
  *
  ******************************************************************************/
+
+#if 0		/* in getttfinstrs.c */
+struct ttf_table *SFFindTable(SplineFont *sf,uint32 tag) {
+    struct ttf_table *tab;
+
+    for ( tab=sf->ttf_tables; tab!=NULL && tab->tag!=tag; tab=tab->next );
+return( tab );
+}
+
+int TTF__getcvtval(SplineFont *sf,int val) {
+    int i;
+    struct ttf_table *cvt_tab = SFFindTable(sf,CHR('c','v','t',' '));
+
+    if ( cvt_tab==NULL ) {
+	cvt_tab = chunkalloc(sizeof(struct ttf_table));
+	cvt_tab->tag = CHR('c','v','t',' ');
+	cvt_tab->maxlen = 200;
+	cvt_tab->data = galloc(100*sizeof(short));
+	cvt_tab->next = sf->ttf_tables;
+	sf->ttf_tables = cvt_tab;
+    }
+    for ( i=0; sizeof(uint16)*i<cvt_tab->len; ++i ) {
+	int tval = (int16) memushort(cvt_tab->data,cvt_tab->len, sizeof(uint16)*i);
+	if ( val>=tval-1 && val<=tval+1 )
+return( i );
+    }
+    if ( sizeof(uint16)*i>=cvt_tab->maxlen ) {
+	if ( cvt_tab->maxlen==0 ) cvt_tab->maxlen = cvt_tab->len;
+	cvt_tab->maxlen += 200;
+	cvt_tab->data = grealloc(cvt_tab->data,cvt_tab->maxlen);
+    }
+    memputshort(cvt_tab->data,sizeof(uint16)*i,val);
+    cvt_tab->len += sizeof(uint16);
+return( i );
+}
+
+int TTF_getcvtval(SplineFont *sf,int val) {
+
+    /* by default sign is unimportant in the cvt */
+    /* For some instructions anyway, but not for MIAP so this routine has */
+    /*  been broken in two. */
+    if ( val<0 ) val = -val;
+return( TTF__getcvtval(sf,val));
+}
+
+static void _CVT_ImportPrivateString(SplineFont *sf,char *str) {
+    char *end;
+    double d;
+
+    if ( str==NULL )
+return;
+    while ( *str ) {
+	while ( !isdigit(*str) && *str!='-' && *str!='+' && *str!='.' && *str!='\0' )
+	    ++str;
+	if ( *str=='\0' )
+    break;
+	d = strtod(str,&end);
+	if ( d>=-32768 && d<=32767 ) {
+	    int v = rint(d);
+	    TTF__getcvtval(sf,v);
+	}
+	str = end;
+    }
+}
+
+void CVT_ImportPrivate(SplineFont *sf) {
+    if ( sf->private==NULL )
+return;
+    _CVT_ImportPrivateString(sf,PSDictHasEntry(sf->private,"StdHW"));
+    _CVT_ImportPrivateString(sf,PSDictHasEntry(sf->private,"StdVW"));
+    _CVT_ImportPrivateString(sf,PSDictHasEntry(sf->private,"StemSnapH"));
+    _CVT_ImportPrivateString(sf,PSDictHasEntry(sf->private,"StemSnapV"));
+    _CVT_ImportPrivateString(sf,PSDictHasEntry(sf->private,"BlueValues"));
+    _CVT_ImportPrivateString(sf,PSDictHasEntry(sf->private,"OtherBlues"));
+    _CVT_ImportPrivateString(sf,PSDictHasEntry(sf->private,"FamilyBlues"));
+    _CVT_ImportPrivateString(sf,PSDictHasEntry(sf->private,"FamilyOtherBlues"));
+}
+#endif
+
+/* We are given a stem weight and try to find matching one in CVT.
+ * If none found, we return -1.
+ */
+static StdStem *CVTSeekStem(int xdir, GlobalInstrCt *gic, double value, int can_fail) {
+    StdStem *mainstem = xdir?&(gic->stdvw):&(gic->stdhw);
+    StdStem *otherstems = xdir?gic->stemsnapv:gic->stemsnaph;
+    StdStem *closest = NULL;
+    int otherstemcnt = xdir?gic->stemsnapvcnt:gic->stemsnaphcnt;
+    int i;
+    double mindelta=1e20, delta, closestwidth=1e20;
+
+    if (mainstem->width == -1)
+return NULL;
+
+    value = fabs(value);
+    delta = fabs(mainstem->width - value);
+
+    if (delta < mindelta) {
+        mindelta = delta;
+	closestwidth = rint(mainstem->width);
+	closest = mainstem;
+    }
+
+    for (i=0; i<otherstemcnt; i++) {
+        delta = fabs(otherstems[i].width - value);
+	
+        if (delta < mindelta) {
+            mindelta = delta;
+	    closestwidth = otherstems[i].width;
+	    closest = otherstems+i;
+	}
+    }
+
+    if (mindelta <= gic->fudge)
+return closest;
+    if (value/closestwidth < 1.11 && value/closestwidth > 0.9)
+return closest;
+    if (can_fail)
+return NULL;
+return closest;
+}
+
+/******************************************************************************
+ ******************************************************************************
+ **
+ **  We need to initialize global instructing context before autoinstructing
+ **  a glyph, because we want to be core that global hinting tables (cvt, prep,
+ **  fpgm) were (or weren't) properly set up.
+ **
+ ******************************************************************************
+ ******************************************************************************/
+
+/* Helper routines: read PS private entry and return its contents.
+ */
+static int GetBlueFuzz(SplineFont *sf) {
+    char *str, *end;
+
+    if ( sf->private==NULL || (str=PSDictHasEntry(sf->private,"BlueFuzz"))==NULL || !isdigit(str[0]) )
+return 1;
+return strtod(str, &end);
+}
+
+/* Return BlueScale as PPEM at which we have to stop suppressing overshoots */
+static int GetBlueScale(SplineFont *sf) {
+    char *str, *end;
+    double bs;
+    int result;
+
+    if ( sf->private==NULL || (str=PSDictHasEntry(sf->private,"BlueScale"))==NULL )
+return 42;
+
+    bs = strtod(str, &end);
+    if (end==str || bs<=0.0) bs=0.039625;
+    bs*=240;
+    bs+=0.49;
+    bs*=300.0/72.0;
+
+    result = (int)rint(bs);
+    if (result>255) result = 255; /* Who would need such blue scale??? */
+
+return result;
+}
+
+static real *ParsePSArray(const char *str, int *rescnt) {
+    char *end;
+    real d, *results=NULL;
+
+    if ((rescnt == NULL) || (str == NULL))
+return NULL;
+
+    *rescnt = 0;
+
+    while (*str)
+    {
+        while (!isdigit(*str) && *str!='-' && *str!='+' && *str!='.' && *str!='\0')
+	    ++str;
+
+	if ( *str=='\0' )
+    break;
+
+        d = strtod(str, &end);
+
+        if ( d>=-32768 && d<=32767 ) {
+            if (*rescnt) {
+                results = grealloc(results, sizeof(real)*(++(*rescnt)));
+	        results[*rescnt-1] = d;
+            }
+            else (results = gcalloc(*rescnt=1, sizeof(real)))[0] = d;
+	}
+
+        str = end;
+    }
+
+return results;
+}
+
+static real *GetNParsePSArray(SplineFont *sf, char *name, int *rescnt) {
+return ParsePSArray(PSDictHasEntry(sf->private, name), rescnt);
+}
+
+/* Tell if the two segments, [b1,o1] and [b2,o2] intersect.
+ * This can be used to determine whether blues or stems overlap.
+ */
+static int SegmentsOverlap(real b1, real o1, real b2, real o2) {
+    real t;
+
+    if (b1 > o1) {
+        t = o1;
+	o1 = b1;
+	b1 = t;
+    }
+
+    if (b2 > o2) {
+        t = o2;
+	o2 = b2;
+	b2 = t;
+    }
+    
+return !((b2 > o1) || (o2 < b1));
+}
+
+/* To be used with qsort() - sorts BlueZone array by base in ascending order.
+ */
+static int SortBlues(const void *a, const void *b) {
+    return ((BlueZone *)a)->base > ((BlueZone *)b)->base;
+}
+
+/* Import blue data into global instructing context. Include family blues too.
+ * We assume that blues are needed for family blues to make sense. If there are
+ * only family blues, we treat them as normal blues. Otherwise, if a family blue
+ * zone doesn't match any normal blue zone, or if they match perfectly,
+ * it is ignored.
+ */
+static void GICImportBlues(GlobalInstrCt *gic) {
+    int bluecnt = 0;
+    int i, j, cnt;
+    real *values;
+
+    int HasPSBlues =
+             (PSDictHasEntry(gic->sf->private, "BlueValues") != NULL) ||
+             (PSDictHasEntry(gic->sf->private, "OtherBlues") != NULL);
+
+    int HasPSFamilyBlues =
+             (PSDictHasEntry(gic->sf->private, "FamilyBlues") != NULL) ||
+             (PSDictHasEntry(gic->sf->private, "FamilyOtherBlues") != NULL);
+
+    char *PrimaryBlues = HasPSBlues ? "BlueValues" : "FamilyBlues";
+    char *OtherBlues = HasPSBlues ? "OtherBlues" : "FamilyOtherBlues";
+
+    if (HasPSBlues || HasPSFamilyBlues){
+        values = GetNParsePSArray(gic->sf, PrimaryBlues, &cnt);
+	cnt /= 2;
+	if (cnt > 7) cnt = 7;
+
+	if (values != NULL) {
+	    gic->bluecnt = bluecnt = cnt;
+
+	    /* First pair is a bottom zone (see Type1 specification). */
+	    gic->blues[0].base = values[1];
+	    gic->blues[0].overshoot = values[0];
+	    gic->blues[0].family_base = strtod("NAN", NULL);
+
+	    /* Next pairs are top zones (see Type1 specification). */
+	    for (i=1; i<bluecnt; i++) {
+	        gic->blues[i].family_base = strtod("NAN", NULL);
+		gic->blues[i].base = values[2*i];
+		gic->blues[i].overshoot = values[2*i+1];
+	    }
+
+	    free(values);
+	}
+
+        values = GetNParsePSArray(gic->sf, OtherBlues, &cnt);
+	cnt /= 2;
+	if (cnt > 5) cnt = 5;
+
+	if (values != NULL) {
+	    gic->bluecnt += cnt;
+
+	    /* All pairs are bottom zones (see Type1 specification). */
+	    for (i=0; i<cnt; i++) {
+	        gic->blues[i+bluecnt].family_base = strtod("NAN", NULL);
+		gic->blues[i+bluecnt].base = values[2*i+1];
+		gic->blues[i+bluecnt].overshoot = values[2*i];
+	    }
+
+	    free(values);
+	    bluecnt += cnt;
+	}
+
+	/* Add family data to blues */
+	if (HasPSBlues && HasPSFamilyBlues) {
+            values = GetNParsePSArray(gic->sf, "FamilyBlues", &cnt);
+	    cnt /= 2;
+	    if (cnt > 7) cnt = 7;
+
+	    if (values != NULL) {
+	        /* First pair is a bottom zone (see Type1 specification). */
+	        for (j=0; j<bluecnt; j++)
+		    if (finite(gic->blues[j].family_base))
+		        continue;
+		    else if (values[1] != gic->blues[j].base &&
+		             SegmentsOverlap(gic->blues[j].base,
+		                       gic->blues[j].overshoot,
+				       values[0], values[1]))
+		        gic->blues[j].family_base = values[1];
+
+		/* Next pairs are top zones (see Type1 specification). */
+		for (i=1; i<cnt; i++) {
+		    for (j=0; j<bluecnt; j++)
+		        if (finite(gic->blues[j].family_base))
+			    continue;
+			else if (values[2*i] != gic->blues[j].base &&
+			         SegmentsOverlap(gic->blues[j].base,
+				           gic->blues[j].overshoot,
+					   values[2*i], values[2*i+1]))
+			    gic->blues[j].family_base = values[2*i];
+		}
+
+		free(values);
+	    }
+
+            values = GetNParsePSArray(gic->sf, "FamilyOtherBlues", &cnt);
+	    cnt /= 2;
+	    if (cnt > 5) cnt = 5;
+
+	    if (values != NULL) {
+		/* All pairs are bottom zones (see Type1 specification). */
+		for (i=0; i<cnt; i++) {
+		    for (j=0; j<bluecnt; j++)
+		        if (finite(gic->blues[j].family_base))
+			    continue;
+			else if (values[2*i+1] != gic->blues[j].base &&
+			         SegmentsOverlap(gic->blues[j].base,
+				           gic->blues[j].overshoot,
+					   values[2*i], values[2*i+1]))
+			    gic->blues[j].family_base = values[2*i+1];
+		}
+
+		free(values);
+	    }
+	}
+    }
+    else if (gic->bd->bluecnt) {
+        /* If there are no PS private entries, we have */
+	/* to use FF's quickly guessed fallback blues. */
+        gic->bluecnt = bluecnt = gic->bd->bluecnt;
+
+        for (i=0; i<bluecnt; i++) {
+	    gic->blues[i].family_base = strtod("NAN", NULL);
+	    gic->blues[i].family_cvtindex = -1;
+
+	    if (gic->bd->blues[i][1] <= 0) {
+	        gic->blues[i].base = gic->bd->blues[i][1];
+		gic->blues[i].overshoot = gic->bd->blues[i][0];
+	    }
+	    else {
+	        gic->blues[i].base = gic->bd->blues[i][0];
+		gic->blues[i].overshoot = gic->bd->blues[i][1];
+	    }
+        }
+    }
+
+    /* 'highest' and 'lowest' are not to be set yet. */
+    for (i=0; i<gic->bluecnt; i++)
+        gic->blues[i].highest = gic->blues[i].lowest = -1;
+
+    /* I assume ascending order in snap_to_blues(). */    
+    qsort(gic->blues, gic->bluecnt, sizeof(BlueZone), SortBlues);
+}
+
+/* To be used with qsort() - sorts StdStem array by width in ascending order.
+ */
+static int SortStems(const void *a, const void *b) {
+    return ((StdStem *)a)->width > ((StdStem *)b)->width;
+}
+
+/* Import stem data into global instructing context. We deal only with
+ * horizontal or vertical stems (xdir decides) here. If Std*V is not specified,
+ * but there exists StemSnap*, we'll make up a fake Std*V as a fallback.
+ * Subtle manipulations with Std*W's value can result in massive change of
+ * font appearance at some pixel sizes, because it's used as a base for
+ * normalization of all other stems.
+ */
+static void GICImportStems(int xdir, GlobalInstrCt *gic) {
+    int i, cnt, next;
+    real *values;
+    char *s_StdW = xdir?"StdVW":"StdHW";
+    char *s_StemSnap = xdir?"StemSnapV":"StemSnapH";
+    StdStem *stdw = xdir?&(gic->stdvw):&(gic->stdhw);
+    StdStem **stemsnap = xdir?&(gic->stemsnapv):&(gic->stemsnaph);
+    int *stemsnapcnt = xdir?&(gic->stemsnapvcnt):&(gic->stemsnaphcnt);
+
+    if ((values = GetNParsePSArray(gic->sf, s_StdW, &cnt)) != NULL) {
+        stdw->width = *values;
+        free(values);
+    }
+
+    if ((values = GetNParsePSArray(gic->sf, s_StemSnap, &cnt)) != NULL) {
+        *stemsnap = (StdStem *)gcalloc(cnt, sizeof(StdStem));
+
+        for (next=i=0; i<cnt; i++)
+	    if (values[i] != gic->stdhw.width)
+	        (*stemsnap)[next++].width = values[i];
+
+	if (!next) {
+	    free(*stemsnap);
+	    *stemsnap = NULL;
+	}
+
+	*stemsnapcnt = next;
+        free(values);
+
+        /* I assume ascending order here and in normalize_stems(). */
+        qsort(*stemsnap, *stemsnapcnt, sizeof(StdStem), SortStems);
+    }
+
+    /* No StdW, but StemSnap exists? */
+    if (stdw->width == -1 && *stemsnap != NULL) {
+        cnt = *stemsnapcnt;
+	i = cnt/2;
+	stdw->width = (*stemsnap)[i].width;
+	memmove((*stemsnap)+i, (*stemsnap)+i+1, cnt-i-1);
+
+	if (--(*stemsnapcnt) == 0) {
+	    free(*stemsnap);
+	    *stemsnap = NULL;
+	}
+    }
+}
+
+/* Assign CVT indices to blues and stems in global instructing context. In case
+ * we can't implant it because of already existent cvt table, reassign the cvt
+ * indices, picking them from existing cvt table (thus a cvt value can't be
+ * considered 'horizontal' or 'vertical', and reliable stem normalization is
+ * thus impossible) and adding some for new values.
+ */
+static void init_cvt(GlobalInstrCt *gic) {
+    int i, cvtindex, cvtsize;
+    uint8 *cvt;
+
+    cvtsize = 1;
+    if (gic->stdhw.width != -1) cvtsize++;
+    if (gic->stdvw.width != -1) cvtsize++;
+    cvtsize += gic->stemsnaphcnt;
+    cvtsize += gic->stemsnapvcnt;
+    cvtsize += gic->bluecnt * 2; /* possible family blues */
+
+    cvt = gcalloc(cvtsize, cvtsize * sizeof(int16));
+    cvtindex = 0;
+
+    /* Assign cvt indices */
+    for (i=0; i<gic->bluecnt; i++) {
+        gic->blues[i].cvtindex = cvtindex;
+        memputshort(cvt, 2*cvtindex++, rint(gic->blues[i].base));
+
+	if (finite(gic->blues[i].family_base)) {
+	    gic->blues[i].family_cvtindex = cvtindex;
+            memputshort(cvt, 2*cvtindex++, rint(gic->blues[i].family_base));
+	}
+    }
+
+    if (gic->stdhw.width != -1) {
+        gic->stdhw.cvtindex = cvtindex;
+	memputshort(cvt, 2*cvtindex++, rint(gic->stdhw.width));
+    }
+
+    for (i=0; i<gic->stemsnaphcnt; i++) {
+        gic->stemsnaph[i].cvtindex = cvtindex;
+	memputshort(cvt, 2*cvtindex++, rint(gic->stemsnaph[i].width));
+    }
+
+    if (gic->stdvw.width != -1) {
+        gic->stdvw.cvtindex = cvtindex;
+	memputshort(cvt, 2*cvtindex++, rint(gic->stdvw.width));
+    }
+
+    for (i=0; i<gic->stemsnapvcnt; i++) {
+        gic->stemsnapv[i].cvtindex = cvtindex;
+	memputshort(cvt, 2*cvtindex++, rint(gic->stemsnapv[i].width));
+    }
+
+    cvtsize = cvtindex;
+    cvt = grealloc(cvt, cvtsize * sizeof(int16));
+
+    /* Try to implant the new cvt table */
+    gic->cvt_done = 0;
+
+    struct ttf_table *tab = SFFindTable(gic->sf, CHR('c','v','t',' '));
+
+    if ( tab==NULL ) {
+	tab = chunkalloc(sizeof(struct ttf_table));
+	tab->next = gic->sf->ttf_tables;
+	gic->sf->ttf_tables = tab;
+	tab->tag = CHR('c','v','t',' ');
+
+	tab->len = tab->maxlen = cvtsize * sizeof(int16);
+	if (tab->maxlen >256) tab->maxlen = 256;
+        tab->data = cvt;
+
+        gic->cvt_done = 1;
+    }
+    else {
+        if (tab->len >= cvtsize * sizeof(int16) &&
+	    memcmp(cvt, tab->data, cvtsize * sizeof(int16)) == 0)
+	        gic->cvt_done = 1;
+
+        free(cvt);
+
+	if (!gic->cvt_done) {
+	    gwwv_post_error(_("Can't insert 'cvt'"),
+		_("There already exists a 'cvt' table, perhaps legacy. "
+		  "FontForge can use it, but can't make any assumptions on "
+		  "values stored there, so generated instructions will be of "
+		  "lower quality. If legacy hinting is to be scrapped, it is "
+		  "suggested to clear the `cvt` and repeat autoinstructing. "
+	    ));
+	}
+    }
+
+    if (gic->cvt_done)
+return;
+
+    /* Fallback mode starts here. */
+
+    for (i=0; i<gic->bluecnt; i++)
+        gic->blues[i].cvtindex =
+	    TTF_getcvtval(gic->sf, gic->blues[i].base);
+
+    if (gic->stdhw.width != -1)
+        gic->stdhw.cvtindex =
+	    TTF_getcvtval(gic->sf, gic->stdhw.width);
+
+    for (i=0; i<gic->stemsnaphcnt; i++)
+        gic->stemsnaph[i].cvtindex =
+	    TTF_getcvtval(gic->sf, gic->stemsnaph[i].width);
+
+    if (gic->stdvw.width != -1)
+        gic->stdvw.cvtindex =
+	    TTF_getcvtval(gic->sf, gic->stdvw.width);
+
+    for (i=0; i<gic->stemsnapvcnt; i++)
+        gic->stemsnapv[i].cvtindex =
+	    TTF_getcvtval(gic->sf, gic->stemsnapv[i].width);
+}
 
 /* We'll need at least STACK_DEPTH stack levels and a twilight point (and thus
  * also a twilight zone). We also currently define five functions in fpgm, and
@@ -908,7 +891,7 @@ static void init_fpgm(GlobalInstrCt *gic) {
 	0x2c, // FDEF
         0x20, //   DUP
         0x20, //   DUP
-	0xde, //   MDRP[rp0,min,rnd,white]
+	0xda, //   MDRP[rp0,min,white]
 	0x2f, //   MDAP[rnd], this is needed for grayscale mode
 	0xb0, //   PUSHB_1
 	0x07, //     7
@@ -1130,7 +1113,10 @@ static void init_fpgm(GlobalInstrCt *gic) {
     }
 }
 
-/* This stem normalizer is heavily based on simple concept from FreeType2.
+/* When initializing global instructing context, we want to set up the 'prep'
+ * table in order, for example, to normalize stem widths for monochrome display.
+ *
+ * This stem normalizer is heavily based on simple concept from FreeType2.
  *
  * First round the StdW. Then for each StemSnap (going outwards from StdW) check
  * if it's within 1px from its already rounded neighbor, and if so, snap it
@@ -1138,18 +1124,13 @@ static void init_fpgm(GlobalInstrCt *gic) {
  * subtracted before rounding. Similar method is used for non-cvt stems, they're
  * snapped to the closest standard width if possible.
  *
- * NOTE: because of tiny scaling errors, we have to compute ppem at which each
+ * NOTE: because of tiny scaling issues, we have to compute ppem at which each
  * stem stops being snapped to its already-rounded neighbor here instead of
- * relegating this to the truetype bytecide interpreter.
- *
- * TODO!
- * It's possible that in future there will be separate fpgm function to set
- * appropriate round state for horizontal/vertical stems for monochrome/
- * antialiased/cleartype rendering.
+ * relegating this to the truetype bytecide interpreter. We can't simply rely
+ * on cvt cut-in.
  */
 
-/*
- * Return width (in pixels) of given stem, taking snaps into account.
+/* Return width (in pixels) of given stem, taking snaps into account.
  */
 #define SNAP_THRESHOLD (64)
 static int compute_stem_width(int xdir, StdStem *stem, int EM, int ppem) {
@@ -1174,8 +1155,7 @@ static int compute_stem_width(int xdir, StdStem *stem, int EM, int ppem) {
 return (scaled_width + 32) / 64;
 }
 
-/*
- * Normalize a single stem. The code generated assumes there is a scaled stem
+/* Normalize a single stem. The code generated assumes there is a scaled stem
  * width on bytecode interpreter's stack, and leaves normalized width there.
  */
 static uint8 *normalize_stem(uint8 *prep_head, int xdir, StdStem *stem, GlobalInstrCt *gic) {
@@ -1226,8 +1206,7 @@ static uint8 *normalize_stem(uint8 *prep_head, int xdir, StdStem *stem, GlobalIn
 return prep_head;
 }
 
-/*
- * Normalize the standard stems in 'prep'.
+/* Append the code for normalizing standard stems' widths to 'prep'.
  */
 static uint8 *normalize_stems(uint8 *prep_head, int xdir, GlobalInstrCt *gic) {
     int i, t;
@@ -1276,6 +1255,10 @@ return prep_head;
  * without further hinting, especcialy for light typefaces. And turning hinting
  * off at veeery small pixel sizes is required, because hints tend to visually
  * tear outlines apart when not having enough workspace.
+ *
+ * We also normalize stem widths here, this usually massively improves overall
+ * consistency. We currently do this only for monochrome rendering (this
+ * includes WinXP's cleartype).
  *
  * TODO! We should take 'gasp' table into account and set up blues here.
  */
@@ -1385,118 +1368,153 @@ static void init_prep(GlobalInstrCt *gic) {
     free(new_prep);
 }
 
-/* We are given a stem weight and try to find matching one in CVT.
- * If none found, we return -1.
+/*
+ * Initialize Global Instructing Context
  */
-static StdStem *CVTSeekStem(int xdir, GlobalInstrCt *gic, double value, int can_fail) {
-    StdStem *mainstem = xdir?&(gic->stdvw):&(gic->stdhw);
-    StdStem *otherstems = xdir?gic->stemsnapv:gic->stemsnaph;
-    StdStem *closest = NULL;
-    int otherstemcnt = xdir?gic->stemsnapvcnt:gic->stemsnaphcnt;
-    int i;
-    double mindelta=1e20, delta, closestwidth=1e20;
+void InitGlobalInstrCt(GlobalInstrCt *gic, SplineFont *sf, BlueData *bd) {
+    BlueData _bd;
 
-    if (mainstem->width == -1)
-return NULL;
-
-    value = fabs(value);
-    delta = fabs(mainstem->width - value);
-
-    if (delta < mindelta) {
-        mindelta = delta;
-	closestwidth = rint(mainstem->width);
-	closest = mainstem;
+    if (bd == NULL) {
+	QuickBlues(sf,&_bd);
+	bd = &_bd;
     }
 
-    for (i=0; i<otherstemcnt; i++) {
-        delta = fabs(otherstems[i].width - value);
-	
-        if (delta < mindelta) {
-            mindelta = delta;
-	    closestwidth = otherstems[i].width;
-	    closest = otherstems+i;
-	}
-    }
+    gic->sf = sf;
+    gic->bd = bd;
+    gic->fudge = (sf->ascent+sf->descent)/500.0;
 
-    if (mindelta <= gic->fudge)
-return closest;
-    if (value/closestwidth < 1.11 && value/closestwidth > 0.9)
-return closest;
-    if (can_fail)
-return NULL;
-return closest;
+    gic->cvt_done = false;
+    gic->fpgm_done = false;
+    gic->prep_done = false;
+
+    gic->bluecnt = 0;
+    gic->stdhw.width = -1;
+    gic->stemsnaph = NULL;
+    gic->stemsnaphcnt = 0;
+    gic->stdvw.width = -1;
+    gic->stemsnapv = NULL;
+    gic->stemsnapvcnt = 0;
+
+    GICImportBlues(gic);
+    GICImportStems(0, gic); /* horizontal stems */
+    GICImportStems(1, gic); /* vertical stems */
+
+    init_cvt(gic);
+    init_fpgm(gic);
+    init_prep(gic);
+    init_maxp(gic);
 }
 
-#if 0		/* in getttfinstrs.c */
-int TTF__getcvtval(SplineFont *sf,int val) {
-    int i;
-    struct ttf_table *cvt_tab = SFFindTable(sf,CHR('c','v','t',' '));
+/*
+ * Finalize Global Instructing Context
+ */
+void FreeGlobalInstrCt(GlobalInstrCt *gic) {
+    gic->sf = NULL;
+    gic->bd = NULL;
+    gic->fudge = 0;
+    
+    gic->cvt_done = false;
+    gic->fpgm_done = false;
+    gic->prep_done = false;
 
-    if ( cvt_tab==NULL ) {
-	cvt_tab = chunkalloc(sizeof(struct ttf_table));
-	cvt_tab->tag = CHR('c','v','t',' ');
-	cvt_tab->maxlen = 200;
-	cvt_tab->data = galloc(100*sizeof(short));
-	cvt_tab->next = sf->ttf_tables;
-	sf->ttf_tables = cvt_tab;
-    }
-    for ( i=0; sizeof(uint16)*i<cvt_tab->len; ++i ) {
-	int tval = (int16) memushort(cvt_tab->data,cvt_tab->len, sizeof(uint16)*i);
-	if ( val>=tval-1 && val<=tval+1 )
-return( i );
-    }
-    if ( sizeof(uint16)*i>=cvt_tab->maxlen ) {
-	if ( cvt_tab->maxlen==0 ) cvt_tab->maxlen = cvt_tab->len;
-	cvt_tab->maxlen += 200;
-	cvt_tab->data = grealloc(cvt_tab->data,cvt_tab->maxlen);
-    }
-    memputshort(cvt_tab->data,sizeof(uint16)*i,val);
-    cvt_tab->len += sizeof(uint16);
-return( i );
+    gic->bluecnt = 0;
+    gic->stdhw.width = -1;
+    if (gic->stemsnaphcnt != 0) free(gic->stemsnaph);
+    gic->stemsnaphcnt = 0;
+    gic->stemsnaph = NULL;
+    gic->stdvw.width = -1;
+    if (gic->stemsnapvcnt != 0) free(gic->stemsnapv);
+    gic->stemsnapvcnt = 0;
+    gic->stemsnapv = NULL;
 }
 
-int TTF_getcvtval(SplineFont *sf,int val) {
+/******************************************************************************
+ ******************************************************************************
+ **
+ **  Stuff for managing global instructing context ends here. Now we'll deal
+ **  with single glyphs.
+ **
+ **  Many functions here need large or similar sets of arguments. I decided to
+ **  define an '(local) instructing context' to have them in one place and keep
+ **  functions' argument lists reasonably short. I first need to define some
+ **  internal sub-structures for instructing diagonal stems. Similar structures
+ **  for CVT management (based on PS Private) are defined in splinefont.h, and
+ **  were initialized handled above.
+ **
+ ******************************************************************************
+ ******************************************************************************/
 
-    /* by default sign is unimportant in the cvt */
-    /* For some instructions anyway, but not for MIAP so this routine has */
-    /*  been broken in two. */
-    if ( val<0 ) val = -val;
-return( TTF__getcvtval(sf,val));
-}
+/* This structure is used to keep a point number together with
+   its coordinates */
+typedef struct numberedpoint {
+    int num;
+    struct basepoint *pt;
+} NumberedPoint;
 
-static void _CVT_ImportPrivateString(SplineFont *sf,char *str) {
-    char *end;
-    double d;
+/* A line, described by two points */
+typedef struct pointvector {
+    struct numberedpoint *pt1, *pt2;
+    int done;
+} PointVector;
 
-    if ( str==NULL )
-return;
-    while ( *str ) {
-	while ( !isdigit(*str) && *str!='-' && *str!='+' && *str!='.' && *str!='\0' )
-	    ++str;
-	if ( *str=='\0' )
-    break;
-	d = strtod(str,&end);
-	if ( d>=-32768 && d<=32767 ) {
-	    int v = rint(d);
-	    TTF__getcvtval(sf,v);
-	}
-	str = end;
-    }
-}
+/* In this structure we store information about diagonales,
+   relatively to which the given point should be positioned */
+typedef struct diagpointinfo {
+    struct pointvector *line[2];
+    int count;
+} DiagPointInfo;
 
-void CVT_ImportPrivate(SplineFont *sf) {
-    if ( sf->private==NULL )
-return;
-    _CVT_ImportPrivateString(sf,PSDictHasEntry(sf->private,"StdHW"));
-    _CVT_ImportPrivateString(sf,PSDictHasEntry(sf->private,"StdVW"));
-    _CVT_ImportPrivateString(sf,PSDictHasEntry(sf->private,"StemSnapH"));
-    _CVT_ImportPrivateString(sf,PSDictHasEntry(sf->private,"StemSnapV"));
-    _CVT_ImportPrivateString(sf,PSDictHasEntry(sf->private,"BlueValues"));
-    _CVT_ImportPrivateString(sf,PSDictHasEntry(sf->private,"OtherBlues"));
-    _CVT_ImportPrivateString(sf,PSDictHasEntry(sf->private,"FamilyBlues"));
-    _CVT_ImportPrivateString(sf,PSDictHasEntry(sf->private,"FamilyOtherBlues"));
-}
-#endif
+/* Diagonal stem hints. This structure is a bit similar to DStemInfo FF
+   uses in other cases, but additionally stores point numbers and hint width */
+typedef struct dstem {
+    struct dstem *next;
+    struct numberedpoint pts[4];
+    int done;
+    real width;
+} DStem;
+
+typedef struct instrct {
+    /* Things that are global for font and should be
+       initialized before instructing particular glyph. */
+    GlobalInstrCt *gic;
+
+    SplineChar *sc;
+    SplineSet *ss;
+    int ptcnt;            /* number of points in this glyph */
+    int *contourends;     /* points ending their contours. null-terminated. */
+
+    /* instructions */
+    uint8 *instrs;        /* the beginning of the instructions */
+    uint8 *pt;            /* the current position in the instructions */
+
+    /* properties, indexed by ttf point index. Some could be compressed. */
+    BasePoint *bp;        /* point coordinates */
+    uint8 *touched;       /* touchflags; points explicitly instructed */
+    uint8 *affected;      /* touchflags; almost touched, but optimized out */
+    uint8 *oncurve;       /* boolean; these points are on-curve */
+
+    /* stuff for hinting diagonals */
+    DStem *diagstems;
+    DiagPointInfo *diagpts; /* indexed by ttf point index */
+
+    /* stuff for hinting edges (for stems and blues): */
+    int xdir;             /* direction flag: x=true, y=false */
+    int cdir;             /* is current contour outer? - blues need this */
+    struct __edge {
+	real base;        /* where the edge is */
+	int refpt;        /* best ref. point for an edge, ttf index, -1 if none */
+	int refscore;     /* its quality, for searching better one, 0 if none */
+	int othercnt;     /* count of other points to instruct for this edge */
+	int *others;      /* their ttf indices, optimize_edge() is advised */
+    } edge;
+} InstrCt;
+
+/******************************************************************************
+ *
+ * Low-level routines for manipulting and classifying splinepoints
+ *
+ ******************************************************************************/
+
 /* Find previous point index on the contour. */
 static int PrevOnContour(int *contourends, int p) {
     int i;
@@ -1528,7 +1546,7 @@ static int NextOnContour(int *contourends, int p) {
 }
 
 /* For hinting stems, I found it needed to check if candidate point for
- * instructing is pararell with a hint to avoid snapping wrong points.
+ * instructing is pararell to hint's direction to avoid snapping wrong points.
  * I splitted the routine into two, as sometimes it may be needed to check
  * the angle to be strictly almost the same, not just pararell.
  */
@@ -1651,7 +1669,8 @@ return ct->xdir?
  * here because edge optimizer cam be simpler and work more reliably then.
  *
  * The contour_direction option is for blues - snapping internal contour to a
- * blue zone is plain wrong.
+ * blue zone is plain wrong, unless there is a stem hint tat don't fit to any
+ * other blue zone.
  *
  ******************************************************************************/
 #define EXTERNAL_CONTOURS 0
@@ -1718,6 +1737,7 @@ static void RunOnPoints(InstrCt *ct, int contour_direction,
 static void find_control_pts(int p, SplinePoint *sp, InstrCt *ct) {
     if (p == sp->ttfindex) ct->oncurve[p] |= 1;
 }
+
 /******************************************************************************
  *
  * Hinting is mostly aligning 'edges' (in FreeType's sense). Each stem hint
@@ -1810,15 +1830,16 @@ static void init_edge(InstrCt *ct, real base, int contour_direction) {
         RunOnPoints(ct, contour_direction, &search_edge_desperately);
 }
 
-/* An apparatus to optimize edge hinting. For given 'others' in ct, it detects
- * 'segments' (in FreeType's sense) and leaves only one point per segment.
- * A segment to which refpt belong is completely removed (refpt is enough).
+/* Apparatus for edge hinting optimization. For given 'others' in ct,
+ * it detects 'segments' (in FreeType's sense) and leaves only one point per
+ * segment. A segment to which refpt belong is completely removed (refpt is
+ * enough).
  *
  * optimize_edge() is the right high-level function to call with instructing
  * context (an edge must be previously initialized with init_edge). It calls
  * optimize_segment() internally - a function that is otherwise unsafe.
  *
- * Optimizer doesn't optimize out points used by diagonal hinter.
+ * Optimizer keeps points used by diagonal hinter.
  */
 
 /* To be used with qsort() - sorts integer array in ascending order. */
@@ -1947,6 +1968,12 @@ return;
     ct->edge.othercnt = 0;
 }
 
+/******************************************************************************
+ *
+ * Routines for hinting single stems.
+ *
+ ******************************************************************************/
+
 /* Each stem hint has 'startdone' and 'enddone' flag, indicating whether 'start'
  * or 'end' edge is hinted or not. This functions marks as done all edges at
  * specified coordinate, starting from given hint (hints sometimes share edges).
@@ -2050,6 +2077,7 @@ return;
 }
 
 /******************************************************************************
+ *
  * I decided to do snapping to blues at the very beginning of the instructing.
  *
  * Blues are processed in certain (important) order: baseline, descenders
@@ -2095,14 +2123,18 @@ return;
  *
  ******************************************************************************/
 
+/* Each blue zone has two TTF point indices associated with it: 'highest' and
+ * 'lowest'. These have to be points with highest and lowest Y coordinates that
+ * are snapped to that blue zone (directly or by horizontal stem). Currently
+ * we register only edge.refpt. These points are later to be used for horizontal
+ * stems' positioning.
+ */
 static void update_blue_pts(int blueindex, InstrCt *ct) {
     if (ct->edge.refpt == -1)
 return;
 
     BasePoint *bp = ct->bp;
     BlueZone *blues = ct->gic->blues;
-    int *others = ct->edge.others;
-    int i;
     
     if (blues[blueindex].highest == -1 ||
         bp[ct->edge.refpt].y > bp[blues[blueindex].highest].y)
@@ -2111,6 +2143,9 @@ return;
     if (blues[blueindex].lowest == -1 ||
         bp[ct->edge.refpt].y < bp[blues[blueindex].lowest].y)
             blues[blueindex].lowest = ct->edge.refpt;
+#if 0
+    int *others = ct->edge.others;
+    int i;
 
     for (i=0; i<ct->edge.othercnt; i++) {
         if (bp[others[i]].y > bp[blues[blueindex].highest].y)
@@ -2119,14 +2154,60 @@ return;
         if (bp[others[i]].y < bp[blues[blueindex].lowest].y)
 	    blues[blueindex].lowest = others[i];
     }
+#endif
 }
 
+/* It is theoretically possible that 'highest' and 'lowest' points of neighbour
+ * blue zones overlap, and thus may spoil horizontal stems' positioning.
+ * Here we fix this up.
+ */
+static void fixup_blue_pts(BlueZone *b1, BlueZone *b2) {
+    if (b1->lowest > b2->lowest) b1->lowest = b2->lowest;
+    if (b1->highest < b2->highest) b1->highest = b2->highest;
+}
+
+static void check_blue_pts(BlueZone *blues, int bluecnt) {
+    int i, j, l;
+
+    for (i=0; i<bluecnt-1; i++) {
+        if (blues[i].lowest == -1) // this implies highest==-1, no pts attached
+    continue;
+        else if (SegmentsOverlap(blues[i].lowest, blues[i].highest,
+	                         blues[i+1].lowest, blues[i+1].highest))
+	{
+	    fixup_blue_pts(blues+i, blues+i+1);
+	    
+	    for (j=i+2; j<bluecnt; j++) {
+	        if (blues[j].lowest==-1)
+	    continue;
+	        else if (SegmentsOverlap(blues[i].lowest, blues[i].highest,
+	            blues[j].lowest, blues[j].highest))
+		        fixup_blue_pts(blues+i, blues+j);
+		else
+	    break;
+	    }
+
+            l=j;
+
+	    for(j=i+1; j<l; j++) {
+	        if (blues[j].lowest == -1)
+	    continue;
+	        blues[j].lowest = blues[i].lowest;
+		blues[j].highest = blues[i].highest;
+	    }
+	}
+    }
+}
+
+/* Snap stems and perhaps also some other points to given bluezone and set up
+ * its 'highest' and 'lowest' point indices.
+ */
 static void snap_to_blues(InstrCt *ct) {
     int i, cvt;
     int therewerestems;      /* were there any HStems snapped to this blue? */
     StemInfo *hint;          /* for HStems affected by blues */
     real base, advance, tmp; /* for the hint */
-    int callargs[4] = { 0/*pt*/, 0/*cvt*/, 0 };
+    int callargs[3] = { 0/*pt*/, 0/*cvt*/, 0 };
     real fudge;
     int bluecnt=ct->gic->bluecnt;
     int queue[12];           /* Blue zones' indices in processing order */
@@ -2170,14 +2251,14 @@ return;
 	     * this bluezone, and advance was. This seems a bit controversial.
 	     * For now, I keep this turned on.
 	     */
-	    if (!ZonesOverlap(base+fuzz, base-fuzz,
+	    if (!SegmentsOverlap(base+fuzz, base-fuzz,
 		blues[queue[i]].base, blues[queue[i]].overshoot))
 	    {
 		tmp = base;
 		base = advance;
 		advance = tmp;
 
-		if (!ZonesOverlap(base+fuzz, base-fuzz,
+		if (!SegmentsOverlap(base+fuzz, base-fuzz,
 		    blues[queue[i]].base, blues[queue[i]].overshoot)) continue;
 
 		/* ghost hints need the right edge to be snapped */
@@ -2264,35 +2345,36 @@ return;
 	    ct->gic->fudge = fudge;
 	}
     }
+
+    check_blue_pts(blues, bluecnt);
 }
 
 /******************************************************************************
-
- Find points that should be snapped to this hint's edges.
- The searching routine will return two types of points per edge:
- a 'chosen one' that should be used as a reference for this hint, and
- 'others' to position after him with SHP[rp2].
-
- If the hint's width is in the PS dictionary, or at least it is close within
- fudge margin to one of the values, place the value in the cvt and use MIRP.
- Otherwise don't pollute the cvt and use MDRP. In both cases, the distance
- should be black, rounded and kept not under reasonable minimum.
-
- If one of the edges is already positioned, set a RP0 there, then MIRP or
- MDRP a reference point at the second edge, setting it as rp0 if this is
- the end vertical edge, and do its others.
-
- If none of the edges is positioned:
-   If this hint is the first, previously overlapped, or simply horizontal,
-   position the reference point at the base where it is using MDAP; otherwise
-   position the hint's base rp0 relatively to the previous hint's end using
-   MDRP with white minimum distance. Then do its others; MIRP or MDRP rp0
-   at the hint's end and do its others.
-
- Mark startdones and enddones.
-
+ *
+ * High-level functions for instructing horizontal and vertical stems.
+ * Both will usse 'geninstrs' for positioning single stems.
+ *
  ******************************************************************************/
 
+/* Find points that should be snapped to this hint's edges with InitEdge().
+ * It will return two types of points per edge: a 'chosen one' that should be
+ * used as a reference for this hint, and 'others' to position after it with
+ * SHP[].
+ *
+ * In fact, it is enough to position the reference point for the first edge
+ * (if not already done) and then call finish_stem().
+ *
+ * If none of the edges is positioned:
+ *   If this hint is the first, previously overlapped, or simply horizontal,
+ *   position the reference point at the base where it is using MDAP; otherwise
+ *   position the hint's base rp0 relatively to the previous hint's end using
+ *   MDRP with white minimum distance (fpgm function 1).
+ *
+ * TODO!
+ * Horizontal stems will probably need different algorithm. It is not unlikely
+ * that HStemGeninst() will ultimately not use geninstrs(). If so, this routine
+ * may become greatly simplified and even merged with VStemGeninst().
+ */
 static void geninstrs(InstrCt *ct, StemInfo *hint) {
     real hbase, base, width, hend, stdwidth;
     StemInfo *firsthint, *lasthint=NULL, *testhint;
@@ -2304,7 +2386,7 @@ static void geninstrs(InstrCt *ct, StemInfo *hint) {
     if (ct->xdir) firsthint = ct->sc->vstem;
     else firsthint = ct->sc->hstem;
     for ( testhint = firsthint; testhint!=NULL && testhint!=hint; testhint = testhint->next ) {
-	if ( ZonesOverlap(hint->start, hint->start+testhint->width,
+	if ( SegmentsOverlap(hint->start, hint->start+testhint->width,
 	                  testhint->start, testhint->start+hint->width))
 	{
 	    lasthint = testhint;
@@ -2403,120 +2485,53 @@ static void geninstrs(InstrCt *ct, StemInfo *hint) {
     }
 }
 
-#if 0
-static int MapSP2Index(SplineSet *ttfss,SplinePoint *csp, int ptcnt) {
-    SplineSet *ss;
-    SplinePoint *sp;
-
-    if ( csp==NULL )
-return( ptcnt+1 );		/* ptcnt+1 is the phantom point for the width */
-    for ( ss=ttfss; ss!=NULL; ss=ss->next ) {
-	for ( sp=ss->first;; ) {
-	    if ( sp->me.x==csp->me.x && sp->me.y==csp->me.y )
-return( sp->ttfindex );
-	    if ( sp->next==NULL )
-	break;
-	    sp = sp->next->to;
-	    if ( sp==ss->first )
-	break;
-	}
-    }
-return( -1 );
-}
-
-/* Order of the md hints is important hence the double loop. */
-/* We only do a hint if one edge has been fixed (or if we have no choice) */
-static uint8 *gen_md_instrs(struct glyphinstrs *gi, uint8 *instrs,MinimumDistance *_md,
-	SplineSet *ttfss, BasePoint *bp, int ptcnt, int xdir, uint8 *touched) {
-    int mask = xdir ? 1 : 2;
-    int pt1, pt2;
-    int any, graspatstraws=false, undone;
-    MinimumDistance *md;
-
-    do {
-	any = false; undone = false;
-	for ( md=_md; md!=NULL; md=md->next ) {
-	    if ( md->x==xdir && !md->done ) {
-		pt1 = MapSP2Index(ttfss,md->sp1,ptcnt);
-		pt2 = MapSP2Index(ttfss,md->sp2,ptcnt);
-		if ( pt1==ptcnt+1 ) {
-		    pt1 = pt2;
-		    pt2 = ptcnt+1;
-		}
-		if ( pt1==0xffff || pt2==0xffff )
-		    fprintf(stderr, "Internal Error: Failed to find point in minimum distance check\n" );
-		else if ( pt1!=ptcnt+1 && (touched[pt1]&mask) &&
-			pt2!=ptcnt+1 && (touched[pt2]&mask) )
-		    md->done = true;	/* somebody else did it, might not be right for us, but... */
-		else if ( !graspatstraws &&
-			!(touched[pt1]&mask) &&
-			 (pt2==ptcnt+1 || !(touched[pt2]&mask)) )
-		     /* If neither edge has been touched, then don't process */
-		     /*  it now. hope that by filling in some other mds we will*/
-		     /*  establish one edge or the other, and then come back to*/
-		     /*  it */
-		    undone = true;
-		else if ( pt2==ptcnt+1 || !(touched[pt2]&mask)) {
-		    md->done = true;
-		    instrs = pushpointstem(instrs,pt2,pt1);	/* Misnomer, I'm pushing two points */
-		    if ( !(touched[pt1]&mask))
-			*instrs++ = 0x2f;			/* MDAP[rnd] */
-		    else
-			*instrs++ = 0x10;			/* SRP0 */
-		    *instrs++ = 0xcc;			/* MDRP[01100] min, rnd, grey */
-		    touched[pt1] |= mask;
-		    if ( pt2!=ptcnt+1 )
-			touched[pt2]|= mask;
-		    any = true;
-		} else {
-		    md->done = true;
-		    instrs = pushpointstem(instrs,pt1,pt2);	/* Misnomer, I'm pushing two points */
-		    *instrs++ = 0x10;			/* SRP0 */
-		    *instrs++ = 0xcc;			/* MDRP[01100] min, rnd, grey */
-		    touched[pt1] |= mask;
-		    any = true;
-		}
-	    }
-	}
-	graspatstraws = undone && !any;
-    } while ( undone );
-return(instrs);
-}
-
-/* Rounding extremae to grid is generally a good idea, so I do this by default.
- * Yet it is possible that rounding an extremum is wrong, and that some other
- * points might also be rounded. There once was a 'round to x/y grid' flag for
- * each point with an UI to set it. It's gone now, but could probably be helpful
- * in future. If an interpolated point is to be rounded, it's control points
- * are rounded instead.
+/* High-level function for instructing horizontal stems.
+ *
+ * TODO! It is assumed that blues (and hstems associated with them) are already
+ * done so that remaining stems can be interpolated between them.
+ *
+ * TODO! CJK hinting will probably need different function (HStemGeninstCJK?)
+ *
+ * TODO! Instruct top and bottom bearings for fonts which have them.
  */
+static void HStemGeninst(InstrCt *ct) {
+    StemInfo *hint;
 
-static void do_extrema(int ttfindex, SplinePoint *sp, InstrCt *ct) {
-    int touchflag = ct->xdir?tf_x:tf_y;
-
-    if (IsExtremum(ct->xdir, sp) &&
-	!(ct->touched[ttfindex] & touchflag) &&
-	!(ct->affected[ttfindex] & touchflag) &&
-	((sp->ttfindex != 0xffff) || (ttfindex != sp->nextcpindex)))
-    {
-	ct->pt = pushpoint(ct->pt,ttfindex);
-	*(ct->pt)++ = MDAP_rnd;
-	ct->touched[ttfindex] |= touchflag;
+    for ( hint=ct->sc->hstem; hint!=NULL; hint=hint->next ) {
+	if ( !hint->startdone || !hint->enddone )
+	    geninstrs(ct,hint);
     }
 }
 
-static void do_rounded(int ttfindex, SplinePoint *sp, InstrCt *ct) {
-    if (!(ct->touched[ttfindex] & (ct->xdir?tf_x:tf_y)) &&
-         ((sp->roundx && ct->xdir) || (sp->roundy && !ct->xdir)))
-    {
-	ct->pt = pushpoint(ct->pt,ttfindex);
+/*
+ * High-level function for instructing vertical stems.
+ *
+ * TODO! CJK hinting may need different function (VStemGeninstCJK?)
+ */
+static void VStemGeninst(InstrCt *ct) {
+    StemInfo *hint;
+
+    ct->pt = pushpoint(ct->pt, ct->ptcnt);
+    *(ct->pt)++ = SRP0;
+
+    for ( hint=ct->sc->vstem; hint!=NULL; hint=hint->next )
+	if ( !hint->startdone || !hint->enddone )
+	    geninstrs(ct,hint);
+
+    /* instruct right sidebearing */
+    if (ct->sc->width != 0) {
+	ct->pt = pushpoint(ct->pt, ct->ptcnt+1);
+	*(ct->pt)++ = DUP;
+	*(ct->pt)++ = MDRP_min_white;
 	*(ct->pt)++ = MDAP_rnd;
-	ct->touched[ttfindex] |= ct->xdir?tf_x:tf_y;
     }
 }
-#endif
 
-/* Everything related with diagonal hinting goes here */
+/******************************************************************************
+ *
+ * Everything related with diagonal hinting goes here
+ *
+ ******************************************************************************/
 
 #define DIAG_MIN_DISTANCE   (0.84375)
 
@@ -3115,16 +3130,16 @@ return;
     chunkfree( fv,sizeof(struct basepoint ));
 }
 
-/* End of the code related with diagonal stems */
+/******************************************************************************
+ *
+ * Generate instructions for a glyph.
+ *
+ ******************************************************************************/
 
 static uint8 *dogeninstructions(InstrCt *ct) {
     StemInfo *hint;
     int max;
     DStemInfo *dstem;
-
-
-    /* classify points prior to usage */
-    RunOnPoints(ct, ALL_CONTOURS, find_control_pts);
 
     /* Maximum instruction length is 6 bytes for each point in each dimension */
     /*  2 extra bytes to finish up. And one byte to switch from x to y axis */
@@ -3146,9 +3161,11 @@ static uint8 *dogeninstructions(InstrCt *ct) {
     for ( hint=ct->sc->hstem; hint!=NULL; hint=hint->next )
 	hint->enddone = hint->startdone = false;
 
-    /* We prepare some info about diagonal stems, so that we could respect */
-    /* diagonals during optimization of stem hint edges. These contents */
-    /* need to be explicitly freed after hinting diagonals. */
+    /* classify points prior to usage */
+    RunOnPoints(ct, ALL_CONTOURS, find_control_pts);
+
+    /* Prepare info about diagonal stems to be used during edge optimization. */
+    /* These contents need to be explicitly freed after hinting diagonals. */
     if (ct->sc->dstem) {
 	DStemInfosTest(&(ct->sc->dstem), ct->bp, ct->ptcnt);
 	ct->diagstems = DStemSort(ct->sc->dstem, ct->bp, ct->ptcnt);
@@ -3156,60 +3173,26 @@ static uint8 *dogeninstructions(InstrCt *ct) {
     }
 
     /* We start from instructing horizontal features (=> movement in y) */
-    /*  Do this first so that the diagonal hinter will have everything moved */
-    /*  properly when it sets the projection vector */
-    /*  Even if we aren't doing the diagonals, we do the blues. */
+    /* Do this first so that the diagonal hinter will have everything moved */
+    /* properly when it sets the projection vector */
+    /* Even if we aren't doing the diagonals, we do the blues. */
     ct->xdir = false;
     *(ct->pt)++ = SVTCA_y;
 
-    /* First of all, snap key points to the blue zones. This gives consistent */
-    /* glyph heights and usually improves the text look very much. The blues */
-    /* will be placed in CVT automagically, but the user may want to tweak'em */
-    /* in PREP on his own. */
     snap_to_blues(ct);
-
-    /* instruct horizontal stems (=> movement in y) */
-    ct->pt = pushpoint(ct->pt, ct->ptcnt);
-    *(ct->pt)++ = SRP0;
-    for ( hint=ct->sc->hstem; hint!=NULL; hint=hint->next )
-	if ( !hint->startdone || !hint->enddone )
-	    geninstrs(ct,hint);
-
-    /* TODO! Instruct top and bottom bearings for fonts which have them. */
-
-    /* Extremae and others should take shifts by stems into account. */
-    //RunOnPoints(ct, ALL_CONTOURS, &do_extrema);
-    //RunOnPoints(ct, ALL_CONTOURS, &do_rounded);
-    //ct->pt = gen_md_instrs(ct->gi,ct->pt,ct->sc->md,ct->ss,ct->bp,ct->ptcnt,false,ct->touched);
+    HStemGeninst(ct);
 
     /* next instruct vertical features (=> movement in x) */
     ct->xdir = true;
     if ( ct->pt != ct->instrs ) *(ct->pt)++ = SVTCA_x;
 
-    /* instruct vertical stems (=> movement in x) */
-    ct->pt = pushpoint(ct->pt, ct->ptcnt);
-    *(ct->pt)++ = SRP0;
-    for ( hint=ct->sc->vstem; hint!=NULL; hint=hint->next )
-	if ( !hint->startdone || !hint->enddone )
-	    geninstrs(ct,hint);
-
-    /* instruct right sidebearing */
-    if (ct->sc->width != 0) {
-	ct->pt = pushpoint(ct->pt, ct->ptcnt+1);
-	*(ct->pt)++ = MDRP_min_rnd_white;
-    }
-
-    /* Extremae and others should take shifts by stems into account. */
-    //RunOnPoints(ct, ALL_CONTOURS, &do_extrema);
-    //RunOnPoints(ct, ALL_CONTOURS, &do_rounded);
+    VStemGeninst(ct);
 
     /* finally instruct diagonal stems (=> movement in x) */
-    /*  This is done after vertical stems because it involves */
-    /*  moving some points out-of their vertical stems. */
-    DStemInfoGeninst(ct);
-    //ct->pt = gen_md_instrs(ct->gi,ct->pt,ct->sc->md,ct->ss,ct->bp,ct->ptcnt,true,ct->touched);
-
+    /* This is done after vertical stems because it involves */
+    /* moving some points out-of their vertical stems. */
     if (ct->sc->dstem) {
+        DStemInfoGeninst(ct);
 	DStemFree(ct->diagstems, ct->diagpts, ct->ptcnt);
 	free(ct->diagpts);
     }
@@ -3227,66 +3210,6 @@ static uint8 *dogeninstructions(InstrCt *ct) {
     ct->sc->ttf_instrs_len = (ct->pt)-(ct->instrs);
     ct->sc->instructions_out_of_date = false;
 return ct->sc->ttf_instrs = grealloc(ct->instrs,(ct->pt)-(ct->instrs));
-}
-
-/*
- *
- * Initialize Global Instructing Context
- *
- */
-void InitGlobalInstrCt(GlobalInstrCt *gic, SplineFont *sf, BlueData *bd) {
-    BlueData _bd;
-
-    if (bd == NULL) {
-	QuickBlues(sf,&_bd);
-	bd = &_bd;
-    }
-
-    gic->sf = sf;
-    gic->bd = bd;
-    gic->fudge = (sf->ascent+sf->descent)/500.0;
-
-    gic->cvt_done = false;
-    gic->fpgm_done = false;
-    gic->prep_done = false;
-
-    gic->bluecnt = 0;
-    gic->stdhw.width = -1;
-    gic->stemsnaph = NULL;
-    gic->stemsnaphcnt = 0;
-    gic->stdvw.width = -1;
-    gic->stemsnapv = NULL;
-    gic->stemsnapvcnt = 0;
-
-    init_cvt(gic);
-    init_fpgm(gic);
-    init_prep(gic);
-    init_maxp(gic);
-}
-
-/*
- *
- * Finalize Global Instructing Context
- *
- */
-void FreeGlobalInstrCt(GlobalInstrCt *gic) {
-    gic->sf = NULL;
-    gic->bd = NULL;
-    gic->fudge = 0;
-    
-    gic->cvt_done = false;
-    gic->fpgm_done = false;
-    gic->prep_done = false;
-
-    gic->bluecnt = 0;
-    gic->stdhw.width = -1;
-    if (gic->stemsnaphcnt != 0) free(gic->stemsnaph);
-    gic->stemsnaphcnt = 0;
-    gic->stemsnaph = NULL;
-    gic->stdvw.width = -1;
-    if (gic->stemsnapvcnt != 0) free(gic->stemsnapv);
-    gic->stemsnapvcnt = 0;
-    gic->stemsnapv = NULL;
 }
 
 void NowakowskiSCAutoInstr(GlobalInstrCt *gic, SplineChar *sc) {
