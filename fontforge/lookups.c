@@ -3065,6 +3065,23 @@ return( true );
     }
 }
 
+static int gvfixup(struct glyphvariants *gv,char *old, char *new) {
+    int i;
+    int ret=0;
+
+    if ( gv==NULL )
+return( false );
+    ret = rplstr(&gv->variants,old,new,false);
+    for ( i=0; i<gv->part_cnt; ++i ) {
+	if ( strcmp(gv->parts[i].component,old)==0 ) {
+	    free( gv->parts[i].component);
+	    gv->parts[i].component = copy(new);
+	    ret = true;
+	}
+    }
+return( ret );
+}
+
 void SFGlyphRenameFixup(SplineFont *sf, char *old, char *new) {
     int k, gid, isv;
     int i,r;
@@ -3103,6 +3120,11 @@ void SFGlyphRenameFixup(SplineFont *sf, char *old, char *new) {
 			sc->changed = true;
 		}
 	    }
+	    /* For once I don't want a short circuit eval of "or", so I use */
+	    /*  bitwise rather than boolean intentionally */
+	    if ( gvfixup(sc->vert_variants,old,new) |
+		    gvfixup(sc->horiz_variants,old,new))
+		sc->changed = true;
 	}
 	++k;
     } while ( k<master->subfontcnt );
