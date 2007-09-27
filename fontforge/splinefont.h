@@ -2152,6 +2152,7 @@ extern SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc);
 extern SplineSet *SSStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc);
 extern SplineSet *SplineSetRemoveOverlap(SplineChar *sc,SplineSet *base,enum overlap_type);
 
+extern double BlueScaleFigureForced(struct psdict *private,real bluevalues[], real otherblues[]);
 extern double BlueScaleFigure(struct psdict *private,real bluevalues[], real otherblues[]);
 extern void FindBlues( SplineFont *sf, real blues[14], real otherblues[10]);
 extern void QuickBlues(SplineFont *sf, BlueData *bd);
