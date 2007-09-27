@@ -246,6 +246,8 @@ return( 0 );
 	if ( cur>width ) width = cur;
     }
     GDrawSetFont(gme->g.base,old);
+    if ( width>0x7fff )
+	width = 0x7fff;
 return( width );
 }
 
@@ -2044,7 +2046,7 @@ void GMatrixEditScrollToRowCol(GGadget *g,int r, int c) {
     if ( needs_expose ) {
 	GScrollBarSetPos(gme->hsb,gme->off_left);
 	GScrollBarSetPos(gme->vsb,gme->off_top);
-	GGadgetRedraw(gme);
+	GGadgetRedraw(&gme->g);
 	/* GDrawRequestExpose(gme->nested,NULL,false);*/
     }
 }
