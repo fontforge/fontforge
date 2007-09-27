@@ -7655,7 +7655,7 @@ static void enlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	    mi->ti.disabled = !anyglyphs;
 	  break;
 	  case MID_RemoveUnused:
-	    gid = map->map[map->enccount-1];
+	    gid = map->enccount>0 ? map->map[map->enccount-1] : -1;
 	    mi->ti.disabled = gid!=-1 && SCWorthOutputting(sf->glyphs[gid]);
 	  break;
 	  case MID_MakeFromFont:
