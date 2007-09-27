@@ -9327,9 +9327,9 @@ return;
     clabel[i].text_is_1byte = true;
     cgcd[i].gd.label = &clabel[i];
     cgcd[i].gd.pos.width = 270;
-    cgcd[i].gd.flags = gg_visible | gg_enabled;
+    cgcd[i].gd.flags = /* gg_visible |*/ gg_enabled;
     if ( !sf->pfminfo.hasunicoderanges )
-	cgcd[i].gd.flags = gg_visible;
+	cgcd[i].gd.flags = /* gg_visible*/ 0;
     cgcd[i].gd.cid = CID_UnicodeRanges;
     cgcd[i].gd.handle_controlevent = OS2_UnicodeChange;
     cgcd[i++].creator = GTextFieldCreate;
@@ -9380,9 +9380,9 @@ return;
     clabel[i].text_is_1byte = true;
     cgcd[i].gd.label = &clabel[i];
     cgcd[i].gd.pos.width = 140;
-    cgcd[i].gd.flags = gg_visible | gg_enabled;
+    cgcd[i].gd.flags = /*gg_visible |*/ gg_enabled;
     if ( !sf->pfminfo.hascodepages )
-	cgcd[i].gd.flags = gg_visible;
+	cgcd[i].gd.flags = /*gg_visible*/ 0;
     cgcd[i].gd.cid = CID_CodePageRanges;
     cgcd[i].gd.handle_controlevent = OS2_CodePageChange;
     cgcd[i++].creator = GTextFieldCreate;
