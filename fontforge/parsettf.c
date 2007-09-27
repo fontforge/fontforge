@@ -4238,10 +4238,11 @@ static void readttfos2metrics(FILE *ttf,struct ttfinfo *info) {
 		      info->pfminfo.panose[0]==3 ? 0x41 :	/* Script */
 		      info->pfminfo.panose[0]==4 ? 0x51 :	/* Decorative */
 		      0x51;					/* And pictorial doesn't fit into pfm */
-    /* unicoderange[] */ getlong(ttf);
-    /* unicoderange[] */ getlong(ttf);
-    /* unicoderange[] */ getlong(ttf);
-    /* unicoderange[] */ getlong(ttf);
+    info->pfminfo.unicoderanges[0] = getlong(ttf);
+    info->pfminfo.unicoderanges[1] = getlong(ttf);
+    info->pfminfo.unicoderanges[2] = getlong(ttf);
+    info->pfminfo.unicoderanges[3] = getlong(ttf);
+    info->pfminfo.hasunicoderanges = true;
     info->pfminfo.os2_vendor[0] = getc(ttf);
     info->pfminfo.os2_vendor[1] = getc(ttf);
     info->pfminfo.os2_vendor[2] = getc(ttf);
@@ -4267,6 +4268,11 @@ static void readttfos2metrics(FILE *ttf,struct ttfinfo *info) {
     info->pfminfo.pfmset = true;
     info->pfminfo.panose_set = true;
     info->pfminfo.subsuper_set = true;
+    if ( info->os2_version>=1 ) {
+	info->pfminfo.codepages[0] = getlong(ttf);
+	info->pfminfo.codepages[1] = getlong(ttf);
+	info->pfminfo.hascodepages = true;
+    }
 }
 
 static int cmapEncFromName(struct ttfinfo *info,const char *nm, int glyphid) {

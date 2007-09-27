@@ -2985,89 +2985,130 @@ void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]) {
     int i;
     uint32 latin1[8];
     int has_ascii, has_latin1;
+    int k;
+    SplineChar *sc;
+    SplineFont *sub;
 
     memset(latin1,0,sizeof(latin1));
-    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
-	if ( sf->glyphs[i]->unicodeenc<256 && sf->glyphs[i]->unicodeenc>=0 )
-	    latin1[(sf->glyphs[i]->unicodeenc>>5)] |= 1<<(sf->glyphs[i]->unicodeenc&31);
-    }
+    k=0;
+    do {
+	sub = k<sf->subfontcnt? sf->subfonts[k] : sf;
+	for ( i=0; i<sub->glyphcnt; ++i ) if ( (sc = sub->glyphs[i])!=NULL ) {
+	    if ( sc->unicodeenc<256 && sc->unicodeenc>=0 )
+		latin1[(sc->unicodeenc>>5)] |= 1<<(sc->unicodeenc&31);
+	}
+	++k;
+    } while ( k<sf->subfontcnt );
 
     has_ascii = latin1[1]==0xffffffff && latin1[2]==0xffffffff &&
 	    (latin1[3]&0x7fffffff)==0x7fffffff;		/* DEL is not a char */
     has_latin1 = has_ascii && (latin1[5]&~1&~(1<<0xd))== (~1&~(1<<0xd))	&& /* Ignore nobreak space, softhyphen */
 	    latin1[6]==0xffffffff && latin1[7] == 0xffffffff;
     CodePage[0] = CodePage[1] = 0;
-    if ( has_ascii ) CodePage[1] |= 1U<<31;		/* US (Ascii I assume) */
-    if ( has_latin1 ) CodePage[0] |= 1U<<30;		/* WE/latin1 */
 
-    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
-	if ( sf->glyphs[i]->unicodeenc==0xde && has_ascii )
-	    CodePage[0] |= 1<<0;		/* (ANSI) Latin1 */
-	else if ( sf->glyphs[i]->unicodeenc==0x13d && has_ascii ) {
-	    CodePage[0] |= 1<<1;		/* latin2 */
-	    CodePage[1] |= 1<<26;		/* latin2 */
-	} else if ( sf->glyphs[i]->unicodeenc==0x411 ) {
-	    CodePage[0] |= 1<<2;		/* cyrillic */
-	    CodePage[1] |= 1<<17;		/* MS DOS Russian */
-	    CodePage[1] |= 1<<25;		/* IBM Cyrillic */
-	} else if ( sf->glyphs[i]->unicodeenc==0x386 ) {
-	    CodePage[0] |= 1<<3;		/* greek */
-	    CodePage[1] |= 1<<16;		/* IBM Greek */
-	    CodePage[1] |= 1<<28;		/* Greek, former 437 G */
-	} else if ( sf->glyphs[i]->unicodeenc==0x130 && has_ascii ) {
-	    CodePage[0] |= 1<<4;		/* turkish */
-	    CodePage[1] |= 1<<24;		/* IBM turkish */
-	} else if ( sf->glyphs[i]->unicodeenc==0x5d0 ) {
-	    CodePage[0] |= 1<<5;		/* hebrew */
-	    CodePage[1] |= 1<<21;		/* hebrew */
-	} else if ( sf->glyphs[i]->unicodeenc==0x631 ) {
-	    CodePage[0] |= 1<<6;		/* arabic */
-	    CodePage[1] |= 1<<19;		/* arabic */
-	    CodePage[1] |= 1<<29;		/* arabic; ASMO 708 */
-	} else if ( sf->glyphs[i]->unicodeenc==0x157 && has_ascii ) {
-	    CodePage[0] |= 1<<7;		/* baltic */
-	    CodePage[1] |= 1<<27;		/* baltic */
-	} else if ( sf->glyphs[i]->unicodeenc==0x20AB && has_ascii ) {
-	    CodePage[0] |= 1<<8;		/* vietnamese */
-	} else if ( sf->glyphs[i]->unicodeenc==0xe45 )
-	    CodePage[0] |= 1<<16;		/* thai */
-	else if ( sf->glyphs[i]->unicodeenc==0x30a8 )
-	    CodePage[0] |= 1<<17;		/* japanese */
-	else if ( sf->glyphs[i]->unicodeenc==0x3105 )
-	    CodePage[0] |= 1<<18;		/* simplified chinese */
-	else if ( sf->glyphs[i]->unicodeenc==0x3131 )
-	    CodePage[0] |= 1<<19;		/* korean wansung */
-	else if ( sf->glyphs[i]->unicodeenc==0x592E )
-	    CodePage[0] |= 1<<20;		/* traditional chinese */
-	else if ( sf->glyphs[i]->unicodeenc==0xacf4 )
-	    CodePage[0] |= 1<<21;		/* korean Johab */
-	else if ( sf->glyphs[i]->unicodeenc==0x2030 && has_ascii )
-	    CodePage[0] |= 1U<<29;		/* mac roman */
-	else if ( sf->glyphs[i]->unicodeenc==0x2665 && has_ascii )
-	    CodePage[0] |= 1U<<30;		/* OEM */
+    k=0;
+    do {
+	sub = k<sf->subfontcnt? sf->subfonts[k] : sf;
+	for ( i=0; i<sub->glyphcnt; ++i ) if ( (sc = sub->glyphs[i])!=NULL ) {
+	    int uni = sc->unicodeenc;
+	    if ( uni==0xde && has_ascii )
+		CodePage[0] |= 1<<0;		/* (ANSI) Latin1 */
+	    else if ( uni==0x255a && has_ascii ) {
+		CodePage[1] |= 1U<<30;		/* WE/latin1 */ /* Not latin1 at all */
+		CodePage[1] |= 1U<<31;		/* US */
+	    } else if ( uni==0x13d && has_ascii ) {
+		CodePage[0] |= 1<<1;		/* latin2 */
+		CodePage[1] |= 1<<26;		/* latin2 */
+	    } else if ( uni==0x411 ) {
+		CodePage[0] |= 1<<2;		/* cyrillic */
+		CodePage[1] |= 1<<17;		/* MS DOS Russian */
+		CodePage[1] |= 1<<25;		/* IBM Cyrillic */
+	    } else if ( uni==0x386 ) {
+		CodePage[0] |= 1<<3;		/* greek */
+		CodePage[1] |= 1<<16;		/* IBM Greek */
+		CodePage[1] |= 1<<28;		/* Greek, former 437 G */
+	    } else if ( uni==0x130 && has_ascii ) {
+		CodePage[0] |= 1<<4;		/* turkish */
+		CodePage[1] |= 1<<24;		/* IBM turkish */
+	    } else if ( uni==0x5d0 ) {
+		CodePage[0] |= 1<<5;		/* hebrew */
+		CodePage[1] |= 1<<21;		/* hebrew */
+	    } else if ( uni==0x631 ) {
+		CodePage[0] |= 1<<6;		/* arabic */
+		CodePage[1] |= 1<<19;		/* arabic */
+		CodePage[1] |= 1<<29;		/* arabic; ASMO 708 */
+	    } else if ( uni==0x157 && has_ascii ) {
+		CodePage[0] |= 1<<7;		/* baltic */
+		CodePage[1] |= 1<<27;		/* baltic */
+	    } else if ( uni==0x20AB && has_ascii ) {
+		CodePage[0] |= 1<<8;		/* vietnamese */
+	    } else if ( uni==0xe45 )
+		CodePage[0] |= 1<<16;		/* thai */
+	    else if ( uni==0x30a8 )
+		CodePage[0] |= 1<<17;		/* japanese */
+	    else if ( uni==0x3105 )
+		CodePage[0] |= 1<<18;		/* simplified chinese */
+	    else if ( uni==0x3131 )
+		CodePage[0] |= 1<<19;		/* korean wansung */
+	    else if ( uni==0x592E )
+		CodePage[0] |= 1<<20;		/* traditional chinese */
+	    else if ( uni==0xacf4 )
+		CodePage[0] |= 1<<21;		/* korean Johab */
+	    else if ( uni==0x2030 && has_ascii )
+		CodePage[0] |= 1U<<29;		/* mac roman */
+	    else if ( uni==0x2665 && has_ascii )
+		CodePage[0] |= 1U<<30;		/* OEM */
 #if 0	/* the symbol bit doesn't mean it contains the glyphs in symbol */
-	/* rather that one is using a symbol encoding. Or that there are */
-	/* glyphs with unicode encoding between 0xf000 and 0xf0ff, in which */
-	/* case those guys should be given a symbol encoding */
-	/* There's a bug in the way otf fonts handle this (but not ttf) and */
-	/*  they only seem to list the symbol glyphs */
-	else if ( sf->glyphs[i]->unicodeenc==0x21d4 )
-	    CodePage[0] |= 1U<<31;		/* symbol */
+	    /* rather that one is using a symbol encoding. Or that there are */
+	    /* glyphs with unicode encoding between 0xf000 and 0xf0ff, in which */
+	    /* case those guys should be given a symbol encoding */
+	    /* There's a bug in the way otf fonts handle this (but not ttf) and */
+	    /*  they only seem to list the symbol glyphs */
+	    else if ( uni==0x21d4 )
+		CodePage[0] |= 1U<<31;		/* symbol */
 #else
-	/* This doesn't work well either. In ttf fonts the bit is ignored */
-	/*  in otf fonts the bit means "ignore all other bits" */
-	else if ( sf->glyphs[i]->unicodeenc>=0xf000 && sf->glyphs[i]->unicodeenc<=0xf0ff )
-	    CodePage[0] |= 1U<<31;		/* symbol */
+	    /* This doesn't work well either. In ttf fonts the bit is ignored */
+	    /*  in otf fonts the bit means "ignore all other bits" */
+	    else if ( uni>=0xf000 && uni<=0xf0ff )
+		CodePage[0] |= 1U<<31;		/* symbol */
 #endif
-	else if ( sf->glyphs[i]->unicodeenc==0xc3 && has_ascii )
-	    CodePage[1] |= 1<<18;		/* MS-DOS Nordic */
-	else if ( sf->glyphs[i]->unicodeenc==0xe9 && has_ascii )
-	    CodePage[1] |= 1<<20;		/* MS-DOS Canadian French */
-	else if ( sf->glyphs[i]->unicodeenc==0xf5 && has_ascii )
-	    CodePage[1] |= 1<<23;		/* MS-DOS Portuguese */
-	else if ( sf->glyphs[i]->unicodeenc==0xfe && has_ascii )
-	    CodePage[1] |= 1<<22;		/* MS-DOS Icelandic */
-    }
+	    else if ( uni==0xc3 && has_ascii )
+		CodePage[1] |= 1<<18;		/* MS-DOS Nordic */
+	    else if ( uni==0xe9 && has_ascii )
+		CodePage[1] |= 1<<20;		/* MS-DOS Canadian French */
+	    else if ( uni==0xf5 && has_ascii )
+		CodePage[1] |= 1<<23;		/* MS-DOS Portuguese */
+	    else if ( uni==0xfe && has_ascii )
+		CodePage[1] |= 1<<22;		/* MS-DOS Icelandic */
+	}
+	++k;
+    } while ( k<sf->subfontcnt );
+}
+
+void OS2FigureUnicodeRanges(SplineFont *sf, uint32 Ranges[4]) {
+    int i, j, k;
+    SplineChar *sc;
+    SplineFont *sub;
+
+    memset(Ranges,0,4*sizeof(uint32));
+    k=0;
+    do {
+	sub = k<sf->subfontcnt? sf->subfonts[k] : sf;
+	for ( i=0; i<sub->glyphcnt; ++i ) if ( (sc = sub->glyphs[i])!=NULL ) {
+	    if ( SCWorthOutputting(sc) && sc->unicodeenc!=-1 ) {
+		if ( sc->unicodeenc > 0xffff )
+		    Ranges[57>>5] |= (1<<(57&31));
+		for ( j=0; j<sizeof(uniranges)/sizeof(uniranges[0]); ++j )
+		    if ( sc->unicodeenc>=uniranges[j][0] &&
+			    sc->unicodeenc<=uniranges[j][1] ) {
+			int bit = uniranges[j][2];
+			Ranges[bit>>5] |= (1<<(bit&31));
+		break;
+		    }
+	    }
+	}
+	++k;
+    } while ( k<sf->subfontcnt );
 }
 
 static void WinBB(SplineFont *sf,uint16 *winascent,uint16 *windescent,struct alltabs *at) {
@@ -3094,11 +3135,12 @@ static void WinBB(SplineFont *sf,uint16 *winascent,uint16 *windescent,struct all
 
 static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *sf,
 	enum fontformat format) {
-    int i,j,cnt1,cnt2,first,last,avg1,avg2,gid;
+    int i,cnt1,cnt2,first,last,avg1,avg2,gid;
     char *pt;
     static int const weightFactors[26] = { 64, 14, 27, 35, 100, 20, 14, 42, 63,
 	3, 6, 35, 20, 56, 56, 17, 4, 49, 56, 71, 31, 10, 18, 3, 18, 2 };
     EncMap *map;
+    SplineChar *sc;
 
     os2->version = 1;
     if ( format==ff_otf || format==ff_otfcid )
@@ -3165,41 +3207,35 @@ docs are wrong.
 
     avg1 = avg2 = last = 0; first = 0xffff;
     cnt1 = cnt2 = 0;
-    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
-	if ( SCWorthOutputting(sf->glyphs[i]) &&
-		sf->glyphs[i]->unicodeenc!=-1 ) {
-	    if ( sf->glyphs[i]->unicodeenc > 0xffff )
-		os2->unicoderange[57>>5] |= (1<<(57&31));
-	    for ( j=0; j<sizeof(uniranges)/sizeof(uniranges[0]); ++j )
-		if ( sf->glyphs[i]->unicodeenc>=uniranges[j][0] &&
-			sf->glyphs[i]->unicodeenc<=uniranges[j][1] ) {
-		    int bit = uniranges[j][2];
-		    os2->unicoderange[bit>>5] |= (1<<(bit&31));
-	    break;
-		}
+    for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc = sf->glyphs[i])!=NULL ) {
+	if ( SCWorthOutputting(sc) && sc->unicodeenc!=-1 ) {
 	    /* Don't include the dummy glyphs (.notdef, .null, etc.) they aren't */
 	    /*  really encoded. Don't include glyphs out of BMP, OS/2 uses shorts */
 	    /*  for the first/last char and can't represent them. */
 	    /* If no BMP glyphs, then first should be 0xffff. If any outside */
 	    /*  BMP then last is 0xffff */
-	    if ( sf->glyphs[i]->ttf_glyph>2 ) {
-		if ( sf->glyphs[i]->unicodeenc<=0xffff ) {
-		    if ( sf->glyphs[i]->unicodeenc<first ) first = sf->glyphs[i]->unicodeenc;
-		    if ( sf->glyphs[i]->unicodeenc>last ) last = sf->glyphs[i]->unicodeenc;
+	    if ( sc->ttf_glyph>2 ) {
+		if ( sc->unicodeenc<=0xffff ) {
+		    if ( sc->unicodeenc<first ) first = sc->unicodeenc;
+		    if ( sc->unicodeenc>last ) last = sc->unicodeenc;
 		} else {
 		    last = 0xffff;
 		}
 	    }
-	    if ( sf->glyphs[i]->width!=0 ) {
-		avg2 += sf->glyphs[i]->width; ++cnt2;
+	    if ( sc->width!=0 ) {
+		avg2 += sc->width; ++cnt2;
 	    }
-	    if ( sf->glyphs[i]->unicodeenc==' ') {
-		avg1 += sf->glyphs[i]->width * 166; ++cnt1;
-	    } else if (sf->glyphs[i]->unicodeenc>='a' && sf->glyphs[i]->unicodeenc<='z') {
-		avg1 += sf->glyphs[i]->width * weightFactors[sf->glyphs[i]->unicodeenc-'a']; ++cnt1;
+	    if ( sc->unicodeenc==' ') {
+		avg1 += sc->width * 166; ++cnt1;
+	    } else if (sc->unicodeenc>='a' && sc->unicodeenc<='z') {
+		avg1 += sc->width * weightFactors[sc->unicodeenc-'a']; ++cnt1;
 	    }
 	}
     }
+    if ( sf->pfminfo.hasunicoderanges )
+	memcpy(os2->unicoderange,sf->pfminfo.unicoderanges,sizeof(os2->unicoderange));
+    else
+	OS2FigureUnicodeRanges(sf,os2->unicoderange);
     if ( format==ff_ttfsym )	/* MS Symbol font has this set to zero. Does it matter? */
 	memset(os2->unicoderange,0,sizeof(os2->unicoderange));
 
@@ -3237,7 +3273,10 @@ docs are wrong.
     } else {
 	os2->firstcharindex = first;
 	os2->lastcharindex = last;
-	OS2FigureCodePages(sf, os2->ulCodePage);
+	if ( sf->pfminfo.hascodepages )
+	    memcpy(os2->ulCodePage,sf->pfminfo.codepages,sizeof(os2->ulCodePage));
+	else
+	    OS2FigureCodePages(sf, os2->ulCodePage);
 	/* Herbert Duerr: */
 	/* Some old versions of Windows do not provide access to all    */
 	/* glyphs in a font if the fonts contains non-PUA symbols       */
@@ -3453,8 +3492,8 @@ static void redoos2(struct alltabs *at) {
     putshort(at->os2f,at->os2.winascent);
     putshort(at->os2f,at->os2.windescent);
     if ( at->os2.version>=1 ) {
-    putlong(at->os2f,at->os2.ulCodePage[0]);
-    putlong(at->os2f,at->os2.ulCodePage[1]);
+	putlong(at->os2f,at->os2.ulCodePage[0]);
+	putlong(at->os2f,at->os2.ulCodePage[1]);
     }
 
     if ( at->os2.version>=2 ) {

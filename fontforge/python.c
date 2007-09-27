@@ -7641,6 +7641,46 @@ ff_gs_bit(weight_width_slope_only)
 ff_gs_bit(onlybitmaps)
 ff_gs_bit(hasvmetrics)
 
+static PyObject *PyFF_Font_get_os2codepages(PyFF_Font *self,void *closure) {
+    SplineFont *sf = self->fv->sf;
+
+    if ( !sf->pfminfo.hascodepages )
+	OS2FigureCodePages(sf,sf->pfminfo.codepages);
+	/* Don't mark it as having them though */
+return( Py_BuildValue("(ii)", sf->pfminfo.codepages[0],sf->pfminfo.codepages[1]));
+}
+
+static int PyFF_Font_set_os2codepages(PyFF_Font *self,PyObject *value,void *closure) {
+    SplineFont *sf = self->fv->sf;
+
+    if ( !PyArg_ParseTuple(value,"ii", &sf->pfminfo.codepages[0], &sf->pfminfo.codepages[1]))
+return(-1);
+    sf->pfminfo.hascodepages = true;
+return( 0 );
+}
+
+static PyObject *PyFF_Font_get_os2unicoderanges(PyFF_Font *self,void *closure) {
+    SplineFont *sf = self->fv->sf;
+
+    if ( !sf->pfminfo.hasunicoderanges )
+	OS2FigureUnicodeRanges(sf,sf->pfminfo.unicoderanges);
+	/* Don't mark it as having them though */
+return( Py_BuildValue("(iiii)",
+	sf->pfminfo.unicoderanges[0],sf->pfminfo.unicoderanges[1],
+	sf->pfminfo.unicoderanges[2], sf->pfminfo.unicoderanges[3]));
+}
+
+static int PyFF_Font_set_os2unicoderanges(PyFF_Font *self,PyObject *value,void *closure) {
+    SplineFont *sf = self->fv->sf;
+
+    if ( !PyArg_ParseTuple(value,"iiii",
+	    &sf->pfminfo.unicoderanges[0], &sf->pfminfo.unicoderanges[1],
+	    &sf->pfminfo.unicoderanges[2], &sf->pfminfo.unicoderanges[3]));
+return(-1);
+    sf->pfminfo.hasunicoderanges = true;
+return( 0 );
+}
+
 static PyObject *PyFF_Font_get_loadvalidation_state(PyFF_Font *self,void *closure) {
 return( Py_BuildValue("i", self->fv->sf->loadvalidation_state));
 }
@@ -8473,6 +8513,12 @@ static PyGetSetDef PyFF_Font_getset[] = {
     {"os2_weight_width_slope_only",
 	 (getter)PyFF_Font_get_weight_width_slope_only, (setter)PyFF_Font_set_weight_width_slope_only,
 	 "OS/2 Flag MS thinks is necessary", NULL},
+    {"os2_codepages",
+	 (getter)PyFF_Font_get_os2codepages, (setter)PyFF_Font_set_os2codepages,
+	 "The 2 element OS/2 codepage tuple", NULL},
+    {"os2_unicoderanges",
+	 (getter)PyFF_Font_get_os2unicoderanges, (setter)PyFF_Font_set_os2unicoderanges,
+	 "The 4 element OS/2 unicode ranges tuple", NULL},
     {"os2_panose",
 	 (getter)PyFF_Font_get_OS2_panose, (setter)PyFF_Font_set_OS2_panose,
 	 "The 10 element OS/2 Panose tuple", NULL},

@@ -1488,6 +1488,8 @@ typedef struct splinefont {
 	unsigned int panose_set: 1;
 	unsigned int hheadset: 1;
 	unsigned int vheadset: 1;
+	unsigned int hascodepages: 1;
+	unsigned int hasunicoderanges: 1;
 	unsigned char pfmfamily;
 	int16 weight;
 	int16 width;
@@ -1503,6 +1505,8 @@ typedef struct splinefont {
 	int16 os2_strikeysize, os2_strikeypos;
 	char os2_vendor[4];
 	int16 os2_family_class;
+	uint32 codepages[2];
+	uint32 unicoderanges[4];
     } pfminfo;
     struct ttflangname *names;
     char *cidregistry, *ordering;
@@ -1765,6 +1769,7 @@ extern void TTF_PSDupsDefault(SplineFont *sf);
 extern void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf);
 extern void TeXDefaultParams(SplineFont *sf);
 extern void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]);
+extern void OS2FigureUnicodeRanges(SplineFont *sf, uint32 Ranges[4]);
 extern void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontname);
 extern void SFDefaultOS2Simple(struct pfminfo *pfminfo,SplineFont *sf);
 extern void SFDefaultOS2SubSuper(struct pfminfo *pfminfo,int emsize,double italicangle);

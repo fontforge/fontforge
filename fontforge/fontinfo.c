@@ -838,6 +838,205 @@ static GTextInfo ttfnameids[] = {
     { (unichar_t *) N_("Sample Text"), NULL, 0, 0, (void *) 19, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("CID findfont Name"), NULL, 0, 0, (void *) 20, NULL, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
+static GTextInfo unicoderangenames[] = {
+    { (unichar_t *) N_("Basic Latin"),				NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 1, 0, 1},
+    { (unichar_t *) N_("Latin-1 Supplement"),			NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Latin Extended-A"),			NULL, 0, 0, (void *) 2, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Latin Extended-B"),			NULL, 0, 0, (void *) 3, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("IPA Extensions"),			NULL, 0, 0, (void *) 4, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Spacing Modifier Letters"),		NULL, 0, 0, (void *) 5, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Combining Diacritical Marks"),		NULL, 0, 0, (void *) 6, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Greek and Coptic"),			NULL, 0, 0, (void *) 7, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unasigned Bit 8"),			NULL, 0, 0, (void *) 8, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Cyrillic/Cyrillic Supplementary"),	NULL, 0, 0, (void *) 9, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Armenian"),				NULL, 0, 0, (void *) 10, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Hebrew"),				NULL, 0, 0, (void *) 11, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 12"),			NULL, 0, 0, (void *) 12, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Arabic"),				NULL, 0, 0, (void *) 13, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 14"),			NULL, 0, 0, (void *) 14, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Devanagari"),				NULL, 0, 0, (void *) 15, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Bengali"),				NULL, 0, 0, (void *) 16, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Gurmukhi"),				NULL, 0, 0, (void *) 17, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Gujarati"),				NULL, 0, 0, (void *) 18, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Oriya"),				NULL, 0, 0, (void *) 19, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Tamil"),				NULL, 0, 0, (void *) 20, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Telugu"),				NULL, 0, 0, (void *) 21, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Kannada"),				NULL, 0, 0, (void *) 22, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Malayalam"),				NULL, 0, 0, (void *) 23, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Thai"),					NULL, 0, 0, (void *) 24, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Lao"),					NULL, 0, 0, (void *) 25, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Georgian"),				NULL, 0, 0, (void *) 26, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 27"),			NULL, 0, 0, (void *) 27, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Hangul Jamo"),				NULL, 0, 0, (void *) 28, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Latin Extended Additional"),		NULL, 0, 0, (void *) 29, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Greek Extended"),			NULL, 0, 0, (void *) 30, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("General Punctuation"),			NULL, 0, 0, (void *) 31, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Subscripts and Superscripts"),		NULL, 0, 0, (void *) 32, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Currency Symbols"),			NULL, 0, 0, (void *) 33, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Combining Diacritical Marks for Symbols"), NULL, 0, 0, (void *) 34, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Letterlike Symbols"),			NULL, 0, 0, (void *) 35, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Numeric Forms"),			NULL, 0, 0, (void *) 36, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Arrows (& Supplements A&B)"),		NULL, 0, 0, (void *) 37, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Mathematical Operators (Supplementary & Misc."), NULL, 0, 0, (void *) 38, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Miscellaneous Technical"),		NULL, 0, 0, (void *) 39, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Control Pictures"),			NULL, 0, 0, (void *) 40, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Optical Character Recognition"),	NULL, 0, 0, (void *) 41, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Enclosed Alphanumerics"),		NULL, 0, 0, (void *) 42, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Box Drawing"),				NULL, 0, 0, (void *) 43, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Block Elements"),			NULL, 0, 0, (void *) 44, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Geometric Shapes"),			NULL, 0, 0, (void *) 45, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Miscellaneous Symbols"),		NULL, 0, 0, (void *) 46, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Dingbats"),				NULL, 0, 0, (void *) 47, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("CJK Symbols and Punctuation"),		NULL, 0, 0, (void *) 48, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Hiragana"),				NULL, 0, 0, (void *) 49, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Katakana & Phonetic Extensions"),	NULL, 0, 0, (void *) 50, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Bopomofo & Extended"),			NULL, 0, 0, (void *) 51, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Hangul Compatibility Jamo"),		NULL, 0, 0, (void *) 52, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 53"),			NULL, 0, 0, (void *) 53, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Enclosed CJK Leters and Months"),	NULL, 0, 0, (void *) 54, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("CJK Compatibility"),			NULL, 0, 0, (void *) 55, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Hangul Syllables"),			NULL, 0, 0, (void *) 56, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Non-Basic Multilingual Plane"),		NULL, 0, 0, (void *) 57, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 58"),			NULL, 0, 0, (void *) 58, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("CJK Unified Ideographs"),		NULL, 0, 0, (void *) 59, NULL, 0, 0, 0, 0, 0, 0, 1},
+		/* And too much other stuff to put in this string */
+    { (unichar_t *) N_("Private Use Area"),			NULL, 0, 0, (void *) 60, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("CJK Compatability Ideographs"),		NULL, 0, 0, (void *) 61, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Alphabetic Presentation Forms"),	NULL, 0, 0, (void *) 62, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Arabic Presentation Forms-A"),		NULL, 0, 0, (void *) 63, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Combining Half Marks"),			NULL, 0, 0, (void *) 64, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("CJK Compatability Forms"),		NULL, 0, 0, (void *) 65, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Small Form Variants"),			NULL, 0, 0, (void *) 66, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Arabic Presentation Forms-B"),		NULL, 0, 0, (void *) 67, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Halfwidth and Fullwidth Forms"),	NULL, 0, 0, (void *) 68, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Specials"),				NULL, 0, 0, (void *) 69, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Tibetan"),				NULL, 0, 0, (void *) 70, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Syriac"),				NULL, 0, 0, (void *) 71, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Thaana"),				NULL, 0, 0, (void *) 72, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Sinhala"),				NULL, 0, 0, (void *) 73, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Myanmar"),				NULL, 0, 0, (void *) 74, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Ethiopic"),				NULL, 0, 0, (void *) 75, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Cherokee"),				NULL, 0, 0, (void *) 76, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unified Canadian Aboriginal Syllabics"),NULL, 0, 0, (void *) 77, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Ogham"),				NULL, 0, 0, (void *) 78, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Runic"),				NULL, 0, 0, (void *) 79, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Khmer"),				NULL, 0, 0, (void *) 80, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Mongolian"),				NULL, 0, 0, (void *) 81, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Braille Patterns"),			NULL, 0, 0, (void *) 82, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Yi Syllables/Radicals"),		NULL, 0, 0, (void *) 83, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Tagalog/Hanunno/Buhid/Tagbanwa"),	NULL, 0, 0, (void *) 84, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Old Italic"),				NULL, 0, 0, (void *) 85, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Gothic"),				NULL, 0, 0, (void *) 86, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Deseret"),				NULL, 0, 0, (void *) 87, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Byzantine Musical Symbols/Musical Symbols"), NULL, 0, 0, (void *) 88, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Mathematical Alphanumeric Symbols"),	NULL, 0, 0, (void *) 89, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Private Use (planes 15&16)"),		NULL, 0, 0, (void *) 90, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Variation Selectors"),			NULL, 0, 0, (void *) 91, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Tags"),					NULL, 0, 0, (void *) 92, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 93"),			NULL, 0, 0, (void *) 93, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 94"),			NULL, 0, 0, (void *) 94, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 95"),			NULL, 0, 0, (void *) 95, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 96"),			NULL, 0, 0, (void *) 96, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 97"),			NULL, 0, 0, (void *) 97, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 98"),			NULL, 0, 0, (void *) 98, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 99"),			NULL, 0, 0, (void *) 99, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 100"),			NULL, 0, 0, (void *) 100, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 101"),			NULL, 0, 0, (void *) 101, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 102"),			NULL, 0, 0, (void *) 102, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 103"),			NULL, 0, 0, (void *) 103, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 104"),			NULL, 0, 0, (void *) 104, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 105"),			NULL, 0, 0, (void *) 105, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 106"),			NULL, 0, 0, (void *) 106, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 107"),			NULL, 0, 0, (void *) 107, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 108"),			NULL, 0, 0, (void *) 108, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 109"),			NULL, 0, 0, (void *) 109, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 110"),			NULL, 0, 0, (void *) 110, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 111"),			NULL, 0, 0, (void *) 111, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 112"),			NULL, 0, 0, (void *) 112, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 113"),			NULL, 0, 0, (void *) 113, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 114"),			NULL, 0, 0, (void *) 114, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 115"),			NULL, 0, 0, (void *) 115, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 116"),			NULL, 0, 0, (void *) 116, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 117"),			NULL, 0, 0, (void *) 117, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 118"),			NULL, 0, 0, (void *) 118, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 119"),			NULL, 0, 0, (void *) 119, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 120"),			NULL, 0, 0, (void *) 120, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 121"),			NULL, 0, 0, (void *) 121, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 122"),			NULL, 0, 0, (void *) 122, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 123"),			NULL, 0, 0, (void *) 123, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 124"),			NULL, 0, 0, (void *) 124, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 125"),			NULL, 0, 0, (void *) 125, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 126"),			NULL, 0, 0, (void *) 126, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Unassigned Bit 127"),			NULL, 0, 0, (void *) 127, NULL, 0, 0, 0, 0, 0, 0, 1},
+    NULL
+};
+static GTextInfo codepagenames[] = {
+    { (unichar_t *) N_("1252, Latin-1"),			NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 1, 0, 1},
+    { (unichar_t *) N_("1250, Latin-2 (Eastern Europe)"),	NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("1251, Cyrillic"),			NULL, 0, 0, (void *) 2, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("1253, Greek"),				NULL, 0, 0, (void *) 3, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("1254, Turkish"),			NULL, 0, 0, (void *) 4, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("1255, Hebrew"),				NULL, 0, 0, (void *) 5, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("1256, Arabic"),				NULL, 0, 0, (void *) 6, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("1257, Windows Baltic"),			NULL, 0, 0, (void *) 7, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("1258, Vietnamese"),			NULL, 0, 0, (void *) 8, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Reserved Bit 9"),			NULL, 0, 0, (void *) 9, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Reserved Bit 10"),			NULL, 0, 0, (void *) 10, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Reserved Bit 11"),			NULL, 0, 0, (void *) 11, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Reserved Bit 12"),			NULL, 0, 0, (void *) 12, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Reserved Bit 13"),			NULL, 0, 0, (void *) 13, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Reserved Bit 14"),			NULL, 0, 0, (void *) 14, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Reserved Bit 15"),			NULL, 0, 0, (void *) 15, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("874, Thai"),				NULL, 0, 0, (void *) 16, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("932, JIS/Japan"),			NULL, 0, 0, (void *) 17, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("936, Simplified Chinese"),		NULL, 0, 0, (void *) 18, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("949, Korean Wansung"),			NULL, 0, 0, (void *) 19, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("950, Traditional Chinese"),		NULL, 0, 0, (void *) 20, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("1361, Korean Johab"),			NULL, 0, 0, (void *) 21, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Reserved Bit 22"),			NULL, 0, 0, (void *) 22, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Reserved Bit 23"),			NULL, 0, 0, (void *) 23, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Reserved Bit 24"),			NULL, 0, 0, (void *) 24, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Reserved Bit 25"),			NULL, 0, 0, (void *) 25, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Reserved Bit 26"),			NULL, 0, 0, (void *) 26, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Reserved Bit 27"),			NULL, 0, 0, (void *) 27, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Reserved Bit 28"),			NULL, 0, 0, (void *) 28, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Mac Roman"),				NULL, 0, 0, (void *) 29, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("OEM Charset"),				NULL, 0, 0, (void *) 30, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Symbol Charset"),			NULL, 0, 0, (void *) 31, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Reserved Bit 32"),			NULL, 0, 0, (void *) 32, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Reserved Bit 33"),			NULL, 0, 0, (void *) 33, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Reserved Bit 34"), 			NULL, 0, 0, (void *) 34, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Reserved Bit 35"),			NULL, 0, 0, (void *) 35, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Reserved Bit 36"),			NULL, 0, 0, (void *) 36, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Reserved Bit 37"),			NULL, 0, 0, (void *) 37, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Reserved Bit 38"), 			NULL, 0, 0, (void *) 38, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Reserved Bit 39"),			NULL, 0, 0, (void *) 39, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Reserved Bit 40"),			NULL, 0, 0, (void *) 40, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Reserved Bit 41"),			NULL, 0, 0, (void *) 41, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Reserved Bit 42"),			NULL, 0, 0, (void *) 42, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Reserved Bit 43"),			NULL, 0, 0, (void *) 43, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Reserved Bit 44"),			NULL, 0, 0, (void *) 44, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Reserved Bit 45"),			NULL, 0, 0, (void *) 45, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Reserved Bit 46"),			NULL, 0, 0, (void *) 46, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Reserved Bit 47"),			NULL, 0, 0, (void *) 47, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("869, IBM Greek"),			NULL, 0, 0, (void *) 48, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("866, MS-DOS Russian"),			NULL, 0, 0, (void *) 49, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("865, MS_DOS Nordic"),			NULL, 0, 0, (void *) 50, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("864, Arabic"),				NULL, 0, 0, (void *) 51, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("863, MS-DOS Canadian French"),		NULL, 0, 0, (void *) 52, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("862, Hebrew"),				NULL, 0, 0, (void *) 53, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("861, MS-DOS Icelandic"),		NULL, 0, 0, (void *) 54, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("860, MS-DOS Portuguese"),		NULL, 0, 0, (void *) 55, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("857, IBM Turkish"),			NULL, 0, 0, (void *) 56, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("855, IBM Cyrillic; primarily Russian"),	NULL, 0, 0, (void *) 57, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("852, Latin 2"),				NULL, 0, 0, (void *) 58, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("775, MS-DOS Baltic"),			NULL, 0, 0, (void *) 59, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("737, Greek; former 437 G"),		NULL, 0, 0, (void *) 60, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("708, Arabic ASMO 708"),			NULL, 0, 0, (void *) 61, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("850, WE/Latin 1"),			NULL, 0, 0, (void *) 62, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("437, US"),				NULL, 0, 0, (void *) 63, NULL, 0, 0, 0, 0, 0, 0, 1},
+    NULL
+};
 static char *TN_DefaultName(GGadget *g, int r, int c);
 static void TN_StrIDEnable(GGadget *g,GMenuItem *mi, int r, int c);
 static void TN_LangEnable(GGadget *g,GMenuItem *mi, int r, int c);
@@ -1248,7 +1447,7 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_LookupBottom	11004
 #define CID_AddLookup		11005
 #define CID_AddSubtable		11006
-#define CID_EditMetadata		11007
+#define CID_EditMetadata	11007
 #define CID_EditSubtable	11008
 #define CID_DeleteLookup	11009
 #define CID_MergeLookup		11010
@@ -1269,6 +1468,13 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 
 #define CID_Unicode		16100
 #define CID_UnicodeEmpties	16101
+#define CID_UnicodeTab		16102
+#define CID_URangesDefault	16110
+#define CID_UnicodeRanges	16111
+#define CID_UnicodeList		16112
+#define CID_CPageDefault	16120
+#define CID_CodePageRanges	16121
+#define CID_CodePageList	16122
 
 const char *TTFNameIds(int id) {
     int i;
@@ -4326,6 +4532,32 @@ static void GFI_ApplyLookupChanges(struct gfi_data *gfi) {
     }
 }
 
+static void hexparse(GWindow gw, int cid, char *name, uint32 *data, int len, int *err) {
+    int i;
+    const unichar_t *ret;
+    unichar_t *end;
+
+    ret = _GGadgetGetTitle(GWidgetGetControl(gw,cid));
+    end = (unichar_t *) ret;
+    for ( i=0; i<len; ++i ) {
+	if ( i!=0 ) {
+	    if ( *end=='.' )
+		++end;
+	    else {
+		*err = true;
+		gwwv_post_error(_("Bad hex number"), _("Bad hex number in %s"), name);
+return;
+	    }
+	}
+	data[len-1-i] = u_strtoul(end,&end,16);
+    }
+    if ( *end!='\0' ) {
+	*err = true;
+	gwwv_post_error(_("Bad hex number"), _("Bad hex number in %s"), name);
+return;
+    }
+}
+
 static int GFI_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GWindow gw = GGadgetGetWindow(g);
@@ -4361,6 +4593,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	struct matrix_data *strings = GMatrixEditGet(GWidgetGetControl(d->gw,CID_TNames), &rows);
 	struct matrix_data *gasp    = GMatrixEditGet(GWidgetGetControl(d->gw,CID_Gasp), &gasprows);
 	int was_ml = sf->multilayer, was_stroke = sf->strokedfont;
+	uint32 codepages[2], uranges[4];
 
 	if ( strings==NULL || gasp==NULL )
 return( true );
@@ -4417,6 +4650,16 @@ return(true);
 	styleid = GetInt8(gw,CID_StyleID,_("Style _ID:"),&err);
 	if ( err )
 return(true);
+
+	memset(codepages,0,sizeof(codepages));
+	memset(uranges,0,sizeof(uranges));
+	if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_CPageDefault)) )
+	    hexparse(gw,CID_CodePageRanges,_("MS Code Pages"),codepages,2,&err );
+	if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_URangesDefault)) )
+	    hexparse(gw,CID_UnicodeRanges,_("Unicode Ranges"),uranges,4,&err );
+	if ( err )
+return( true );
+
 	if ( sf->subfontcnt!=0 ) {
 	    cidversion = GetReal8(gw,CID_Version,_("_Version"),&err);
 	    if ( err )
@@ -4631,6 +4874,16 @@ return(true);
 	sf->uwidth = uwid;
 	sf->uniqueid = uniqueid;
 	sf->texdata = d->texdata;
+	if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_CPageDefault)) ) {
+	    memcpy(sf->pfminfo.codepages,codepages,sizeof(codepages));
+	    sf->pfminfo.hascodepages = true;
+	} else
+	    sf->pfminfo.hascodepages = false;
+	if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_URangesDefault)) ) {
+	    memcpy(sf->pfminfo.unicoderanges,uranges,sizeof(uranges));
+	    sf->pfminfo.hasunicoderanges = true;
+	} else
+	    sf->pfminfo.hasunicoderanges = false;
 
 	interp = GGadgetGetFirstListSelectedItem(GWidgetGetControl(gw,CID_Interpretation));
 	if ( interp==-1 ) sf->uni_interp = ui_none;
@@ -5463,6 +5716,137 @@ static void GFI_InitMarkClasses(struct gfi_data *d) {
 	    d->mark_class_names[i] = copy(sf->mark_class_names[i]);
 	}
     }
+}
+
+static int OS2_UnicodeChange(GGadget *g, GEvent *e) {
+    int32 flags[4];
+    int len,i,bit,set;
+
+    if ( e==NULL || (e->type==et_controlevent && e->u.control.subtype == et_textchanged )) {
+	const unichar_t *ret;
+	unichar_t *end;
+	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	GWindow gw = d->gw;
+	GGadget *list;
+
+	ret = _GGadgetGetTitle(g);
+	flags[3] = u_strtoul(ret,&end,16);
+	while ( !ishexdigit(*end) && *end!='\0' ) ++end;
+	flags[2] = u_strtoul(end,&end,16);
+	while ( !ishexdigit(*end) && *end!='\0' ) ++end;
+	flags[1] = u_strtoul(end,&end,16);
+	while ( !ishexdigit(*end) && *end!='\0' ) ++end;
+	flags[0] = u_strtoul(end,&end,16);
+
+	list = GWidgetGetControl(gw,CID_UnicodeList);
+
+	for ( i=0; unicoderangenames[i].text!=NULL; ++i ) {
+	    bit = (intpt) (unicoderangenames[i].userdata);
+	    set = (flags[bit>>5]&(1<<(bit&31)))?1 : 0;
+	    GGadgetSelectListItem(list,i,set);
+	}
+    } else if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
+	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	GWindow gw = d->gw;
+	char ranges[40];
+	GTextInfo **list = GGadgetGetList(g,&len);
+	GGadget *field = GWidgetGetControl(gw,CID_UnicodeRanges);
+
+	flags[0] = flags[1] = flags[2] = flags[3] = 0;
+	for ( i=0; i<len; ++i )
+	    if ( list[i]->selected ) {
+		bit = ((int) (list[i]->userdata));
+		flags[bit>>5] |= (1<<(bit&31));
+	    }
+
+	sprintf( ranges, "%08x.%08x.%08x.%08x", flags[3], flags[2], flags[1], flags[0]);
+	GGadgetSetTitle8(field,ranges);
+    }
+return( true );
+}
+
+static int OS2_URangesDefault(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	struct gfi_data *gfi = GDrawGetUserData(GGadgetGetWindow(g));
+	int def = GGadgetIsChecked(g);
+	GGadgetSetEnabled(GWidgetGetControl(gfi->gw,CID_UnicodeRanges),!def);
+	GGadgetSetEnabled(GWidgetGetControl(gfi->gw,CID_UnicodeList),!def);
+	if ( def ) {
+	    SplineFont *sf = gfi->sf;
+	    char ranges[40];
+	    OS2FigureUnicodeRanges(sf,sf->pfminfo.unicoderanges);
+	    sprintf( ranges, "%08x.%08x.%08x.%08x",
+		    sf->pfminfo.unicoderanges[3], sf->pfminfo.unicoderanges[2],
+		    sf->pfminfo.unicoderanges[1], sf->pfminfo.unicoderanges[0]);
+	    GGadgetSetTitle8(GWidgetGetControl(gfi->gw,CID_UnicodeRanges),ranges);
+	    OS2_UnicodeChange(GWidgetGetControl(gfi->gw,CID_UnicodeRanges),NULL);
+	}
+    }
+return( true );
+}
+
+static int OS2_CodePageChange(GGadget *g, GEvent *e) {
+    int32 flags[2];
+    int len,i,bit,set;
+
+    if ( e==NULL || (e->type==et_controlevent && e->u.control.subtype == et_textchanged )) {
+	const unichar_t *ret;
+	unichar_t *end;
+	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	GWindow gw = d->gw;
+	GGadget *list;
+
+	ret = _GGadgetGetTitle(g);
+	flags[1] = u_strtoul(ret,&end,16);
+	while ( !ishexdigit(*end) && *end!='\0' ) ++end;
+	flags[0] = u_strtoul(end,&end,16);
+
+	list = GWidgetGetControl(gw,CID_CodePageList);
+
+	for ( i=0; codepagenames[i].text!=NULL; ++i ) {
+	    bit = (intpt) (codepagenames[i].userdata);
+	    set = (flags[bit>>5]&(1<<(bit&31)))?1 : 0;
+	    GGadgetSelectListItem(list,i,set);
+	}
+    } else if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
+	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	GWindow gw = d->gw;
+	char ranges[40];
+	GTextInfo **list = GGadgetGetList(g,&len);
+	GGadget *field = GWidgetGetControl(gw,CID_CodePageRanges);
+
+	flags[0] = flags[1] = 0;
+	for ( i=0; i<len; ++i )
+	    if ( list[i]->selected ) {
+		bit = ((int) (list[i]->userdata));
+		flags[bit>>5] |= (1<<(bit&31));
+	    }
+
+	sprintf( ranges, "%08x.%08x", flags[1], flags[0]);
+	GGadgetSetTitle8(field,ranges);
+    }
+return( true );
+}
+
+static int OS2_CPageDefault(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	struct gfi_data *gfi = GDrawGetUserData(GGadgetGetWindow(g));
+	int def = GGadgetIsChecked(g);
+	GGadgetSetEnabled(GWidgetGetControl(gfi->gw,CID_CodePageRanges),!def);
+	GGadgetSetEnabled(GWidgetGetControl(gfi->gw,CID_CodePageList),!def);
+	if ( def ) {
+	    SplineFont *sf = gfi->sf;
+	    char codepages[40];
+	    OS2FigureCodePages(sf,sf->pfminfo.codepages);
+	    sprintf( codepages, "%08x.%08x",
+		    sf->pfminfo.codepages[1], sf->pfminfo.codepages[0]);
+	    GGadgetSetTitle8(GWidgetGetControl(gfi->gw,CID_CodePageRanges),codepages);
+	    OS2_CodePageChange(GWidgetGetControl(gfi->gw,CID_CodePageRanges),NULL);
+	}
+    }
+return( true );
 }
 
 static void LookupSetup(struct lkdata *lk,OTLookup *lookups) {
@@ -7263,17 +7647,17 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GTabInfo aspects[22], vaspects[5], lkaspects[3];
+    GTabInfo aspects[22], vaspects[6], lkaspects[3], uaspects[3];
     GGadgetCreateData mgcd[10], ngcd[17], psgcd[30], tngcd[8],
 	pgcd[8], vgcd[19], pangcd[22], comgcd[3], txgcd[23],
 	mfgcd[8], mcgcd[8], szgcd[19], mkgcd[5], metgcd[29], vagcd[3], ssgcd[23],
 	xugcd[7], dgcd[6], ugcd[4], gaspgcd[5], gaspgcd_def[2], lksubgcd[2][4],
-	lkgcd[2], lkbuttonsgcd[15];
+	lkgcd[2], lkbuttonsgcd[15], cgcd[12];
     GGadgetCreateData mb[2], mb2, nb[2], nb2, nb3, xub[2], psb[2], psb2[3], ppbox[3],
 	    vbox[4], metbox[2], ssbox[2], panbox[2], combox[2], mkbox[3],
 	    txbox[5], ubox[2], dbox[2], 
 	    mcbox[3], mfbox[3], szbox[6], tnboxes[4], gaspboxes[3],
-	    lkbox[7];
+	    lkbox[7], cbox[6];
     GGadgetCreateData *marray[7], *marray2[9], *narray[26], *narray2[7], *narray3[3],
 	*xuarray[13], *psarray[10], *psarray2[21], *psarray3[3], *psarray4[10],
 	*ppbuttons[5], *pparray[4], *vradio[5], *varray[38], *metarray[46],
@@ -7283,17 +7667,19 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
 	*mcarray[13], *mcarray2[7],
 	*mfarray[14], *szarray[7], *szarray2[5], *szarray3[7],
 	*szarray4[4], *szarray5[6], *tnvarray[4], *tnharray[6], *tnharray2[5], *gaspharray[6],
-	*gaspvarray[3], *lkarray[2][7], *lkbuttonsarray[17], *lkharray[3];
+	*gaspvarray[3], *lkarray[2][7], *lkbuttonsarray[17], *lkharray[3],
+	*charray1[4], *charray2[4], *charray3[4], *cvarray[9], *cvarray2[4];
     GTextInfo mlabel[10], nlabel[16], pslabel[30], tnlabel[7],
 	plabel[8], vlabel[19], panlabel[22], comlabel[3], txlabel[23],
 	mflabel[8], mclabel[8], szlabel[17], mklabel[5], metlabel[28],
 	sslabel[23], xulabel[6], dlabel[5], ulabel[1], gasplabel[5],
-	lkbuttonslabel[14];
+	lkbuttonslabel[14], clabel[11];
     GTextInfo *namelistnames;
     struct gfi_data *d;
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20],
 	    vbuf[20], uibuf[12], vorig[20], embuf[20];
     char dszbuf[20], dsbbuf[20], dstbuf[21], sibuf[20], swbuf[20];
+    char ranges[40], codepages[40];
     int i,j,k,g, psrow;
     int mcs;
     char title[130];
@@ -8904,6 +9290,129 @@ return;
     panbox[0].gd.u.boxelements = panarray;
     panbox[0].creator = GHVBoxCreate;
 /******************************************************************************/
+    memset(cgcd,0,sizeof(cgcd));
+    memset(clabel,0,sizeof(clabel));
+    memset(cbox,0,sizeof(cbox));
+
+    i = j = 0;
+    clabel[i].text = (unichar_t *) _("Unicode Ranges:");
+    clabel[i].text_is_1byte = true;
+    cgcd[i].gd.label = &clabel[i];
+    cgcd[i].gd.flags = gg_visible | gg_enabled;
+    cgcd[i++].creator = GLabelCreate;
+    charray1[0] = &cgcd[i-1];
+
+    clabel[i].text = (unichar_t *) _("Default");
+    clabel[i].text_is_1byte = true;
+    cgcd[i].gd.label = &clabel[i];
+    cgcd[i].gd.flags = gg_visible | gg_enabled;
+    if ( !sf->pfminfo.hasunicoderanges ) {
+	cgcd[i].gd.flags = gg_visible | gg_enabled | gg_cb_on;
+	OS2FigureUnicodeRanges(sf,sf->pfminfo.unicoderanges);
+    }
+    cgcd[i].gd.cid = CID_URangesDefault;
+    cgcd[i].gd.handle_controlevent = OS2_URangesDefault;
+    cgcd[i++].creator = GCheckBoxCreate;
+    charray1[1] = &cgcd[i-1]; charray1[2] = GCD_Glue; charray1[3] = NULL;
+
+    cbox[2].gd.flags = gg_enabled|gg_visible;
+    cbox[2].gd.u.boxelements = charray1;
+    cbox[2].creator = GHBoxCreate;
+    cvarray[j++] = &cbox[2];
+
+    sprintf( ranges, "%08x.%08x.%08x.%08x",
+	    sf->pfminfo.unicoderanges[3], sf->pfminfo.unicoderanges[2],
+	    sf->pfminfo.unicoderanges[1], sf->pfminfo.unicoderanges[0]);
+    clabel[i].text = (unichar_t *) ranges;
+    clabel[i].text_is_1byte = true;
+    cgcd[i].gd.label = &clabel[i];
+    cgcd[i].gd.pos.width = 270;
+    cgcd[i].gd.flags = gg_visible | gg_enabled;
+    if ( !sf->pfminfo.hasunicoderanges )
+	cgcd[i].gd.flags = gg_visible;
+    cgcd[i].gd.cid = CID_UnicodeRanges;
+    cgcd[i].gd.handle_controlevent = OS2_UnicodeChange;
+    cgcd[i++].creator = GTextFieldCreate;
+    cvarray[j++] = &cgcd[i-1];
+
+    cgcd[i].gd.pos.width = 220; cgcd[i].gd.pos.height = 6*12+10;
+    cgcd[i].gd.flags = gg_visible | gg_enabled | gg_list_multiplesel;
+    if ( !sf->pfminfo.hasunicoderanges )
+	cgcd[i].gd.flags = gg_visible | gg_list_multiplesel;
+    cgcd[i].gd.cid = CID_UnicodeList;
+    cgcd[i].gd.u.list = unicoderangenames;
+    cgcd[i].gd.handle_controlevent = OS2_UnicodeChange;
+    cgcd[i++].creator = GListCreate;
+    cvarray[j++] = &cgcd[i-1];
+
+    cgcd[i].gd.flags = gg_visible | gg_enabled ;
+    cgcd[i++].creator = GLineCreate;
+    cvarray[j++] = &cgcd[i-1];
+
+    clabel[i].text = (unichar_t *) _("MS Code Pages:");
+    clabel[i].text_is_1byte = true;
+    cgcd[i].gd.label = &clabel[i];
+    cgcd[i].gd.flags = gg_visible | gg_enabled;
+    cgcd[i++].creator = GLabelCreate;
+    charray2[0] = &cgcd[i-1];
+
+    clabel[i].text = (unichar_t *) _("Default");
+    clabel[i].text_is_1byte = true;
+    cgcd[i].gd.label = &clabel[i];
+    cgcd[i].gd.flags = gg_visible | gg_enabled;
+    if ( !sf->pfminfo.hascodepages ) {
+	cgcd[i].gd.flags = gg_visible | gg_enabled | gg_cb_on;
+	OS2FigureCodePages(sf,sf->pfminfo.codepages);
+    }
+    cgcd[i].gd.cid = CID_CPageDefault;
+    cgcd[i].gd.handle_controlevent = OS2_CPageDefault;
+    cgcd[i++].creator = GCheckBoxCreate;
+    charray2[1] = &cgcd[i-1]; charray2[2] = GCD_Glue; charray2[3] = NULL;
+
+    cbox[3].gd.flags = gg_enabled|gg_visible;
+    cbox[3].gd.u.boxelements = charray2;
+    cbox[3].creator = GHBoxCreate;
+    cvarray[j++] = &cbox[3];
+
+    sprintf( codepages, "%08x.%08x",
+	    sf->pfminfo.codepages[1], sf->pfminfo.codepages[0]);
+    clabel[i].text = (unichar_t *) codepages;
+    clabel[i].text_is_1byte = true;
+    cgcd[i].gd.label = &clabel[i];
+    cgcd[i].gd.pos.width = 140;
+    cgcd[i].gd.flags = gg_visible | gg_enabled;
+    if ( !sf->pfminfo.hascodepages )
+	cgcd[i].gd.flags = gg_visible;
+    cgcd[i].gd.cid = CID_CodePageRanges;
+    cgcd[i].gd.handle_controlevent = OS2_CodePageChange;
+    cgcd[i++].creator = GTextFieldCreate;
+    cvarray2[0] = &cgcd[i-1]; cvarray2[1] = GCD_Glue; cvarray2[2] = NULL;
+
+    cbox[4].gd.flags = gg_enabled|gg_visible;
+    cbox[4].gd.u.boxelements = cvarray2;
+    cbox[4].creator = GVBoxCreate;
+    charray3[0] = &cbox[4];
+
+    cgcd[i].gd.pos.width = 200; cgcd[i].gd.pos.height = 6*12+10;
+    cgcd[i].gd.flags = gg_visible | gg_enabled | gg_list_multiplesel;
+    if ( !sf->pfminfo.hascodepages )
+	cgcd[i].gd.flags = gg_visible | gg_list_multiplesel;
+    cgcd[i].gd.cid = CID_CodePageList;
+    cgcd[i].gd.u.list = codepagenames;
+    cgcd[i].gd.handle_controlevent = OS2_CodePageChange;
+    cgcd[i++].creator = GListCreate;
+    charray3[1] = &cgcd[i-1]; charray3[2] = NULL;
+
+    cbox[5].gd.flags = gg_enabled|gg_visible;
+    cbox[5].gd.u.boxelements = charray3;
+    cbox[5].creator = GHBoxCreate;
+    cvarray[j++] = &cbox[5]; cvarray[j++] = GCD_Glue; cvarray[j++] = NULL;
+
+    cbox[0].gd.flags = gg_enabled|gg_visible;
+    cbox[0].gd.u.boxelements = cvarray;
+    cbox[0].creator = GVBoxCreate;
+    
+/******************************************************************************/
 
     memset(&vagcd,0,sizeof(vagcd));
     memset(&vaspects,'\0',sizeof(vaspects));
@@ -8925,11 +9434,15 @@ return;
     vaspects[i].text_is_1byte = true;
     vaspects[i++].gcd = panbox;
 
+    vaspects[i].text = (unichar_t *) _("Charsets");
+    vaspects[i].text_is_1byte = true;
+    vaspects[i++].gcd = cbox;
+
     vagcd[0].gd.pos.x = 4; vagcd[0].gd.pos.y = 6;
     vagcd[0].gd.pos.width = 252;
     vagcd[0].gd.pos.height = 300;
     vagcd[0].gd.u.tabs = vaspects;
-    vagcd[0].gd.flags = gg_visible | gg_enabled;
+    vagcd[0].gd.flags = gg_visible | gg_enabled | gg_tabset_scroll;
     /*vagcd[0].gd.handle_controlevent = GFI_TTFAspectChange;*/
     vagcd[0].gd.cid = CID_TTFTabs;
     vagcd[0].creator = GTabSetCreate;
@@ -9824,6 +10337,7 @@ return;
     dbox[0].creator = GHVBoxCreate;
 /******************************************************************************/
 
+    memset(&uaspects,'\0',sizeof(uaspects));
     memset(&ulabel,0,sizeof(ulabel));
     memset(&ugcd,0,sizeof(ugcd));
 
@@ -10052,6 +10566,11 @@ return;
     GHVBoxSetExpandableRow(panbox[0].ret,gb_expandglue);
     GHVBoxSetExpandableCol(panbox[0].ret,1);
 
+    GHVBoxSetExpandableRow(cbox[0].ret,2);
+    GHVBoxSetExpandableCol(cbox[2].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(cbox[3].ret,gb_expandglue);
+    GHVBoxSetExpandableRow(cbox[4].ret,gb_expandglue);
+
     GHVBoxSetExpandableRow(mkbox[0].ret,0);
     GHVBoxSetExpandableCol(mkbox[2].ret,gb_expandglue);
 
@@ -10096,6 +10615,9 @@ return;
 
     GFI_LookupEnableButtons(d,true);
     GFI_LookupEnableButtons(d,false);
+    
+    OS2_UnicodeChange(GWidgetGetControl(gw,CID_UnicodeRanges),NULL);
+    OS2_CodePageChange(GWidgetGetControl(gw,CID_CodePageRanges),NULL);
 
     memset(&rq,0,sizeof(rq));
     rq.family_name = sans;
@@ -10155,6 +10677,7 @@ void FontInfoInit(void) {
 	panfamily, panserifs, panweight, panprop, pancontrast, panstrokevar,
 	panarmstyle, panletterform, panmidline, panxheight, mslanguages,
 	ttfnameids, interpretations, gridfit, antialias, os2versions,
+	codepagenames, unicoderangenames,
 	NULL
     };
     static char **needswork2[] = { texparams, texpopups,
