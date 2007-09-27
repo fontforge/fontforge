@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 8-Jun-2007 -->
+  <!-- AP: Last modified: 26-Sep-2007 -->
   <TITLE>Font Info</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -111,6 +111,8 @@
 	  <A HREF="#SubSuper">OS/2 Sub/Superscripts</A>
 	<LI>
 	  <A HREF="fontinfo.html#Panose">OS/2 Panose</A>
+	<LI>
+	  <A HREF="#Charsets">OS/2 Charsets</A>
       </UL>
     <LI>
       <A HREF="fontinfo.html#TTF-Names">TTF Names</A>
@@ -469,6 +471,20 @@
   values when the font is output, otherwise you may set these values manually.
   <P>
   These entries are only meaningful for TrueType, OpenType and SVG
+  fonts.<BR Clear=All>
+  <H2>
+    <IMG SRC="fontinfo-charsets.png" ALIGN="Right" WIDTH="614" HEIGHT="546"><A
+	NAME="Charsets">Charsets</A>
+  </H2>
+  <P>
+  The OS/2 table contains two fields which give some information about the
+  characters in the font. Windows is very picky about using fonts if the proper
+  code page bits are not set. If you leave the [*] Default checkboxes set then
+  FontForge will generate reasonable values when the font is output. Sometimes
+  you need to override that behavior if you wish Windows to use a font with
+  an incomplete code page.
+  <P>
+  These entries are only meaningful for TrueType, and OpenType
   fonts.<BR Clear=All>
   <H2>
     <IMG SRC="fontinfo-ttfname.png" WIDTH="602" HEIGHT="534" ALIGN="Right"><A

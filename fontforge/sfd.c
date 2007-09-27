@@ -1646,6 +1646,12 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 		sf->pfminfo.os2_vendor[0], sf->pfminfo.os2_vendor[1],
 		sf->pfminfo.os2_vendor[2], sf->pfminfo.os2_vendor[3] );
     }
+    if ( sf->pfminfo.hascodepages )
+	fprintf(sfd, "OS2CodePages: %08x.%08x\n", sf->pfminfo.codepages[0], sf->pfminfo.codepages[1]);
+    if ( sf->pfminfo.hasunicoderanges )
+	fprintf(sfd, "OS2UnicodeRanges: %08x.%08x.%08x.%08x\n",
+		sf->pfminfo.unicoderanges[0], sf->pfminfo.unicoderanges[1],
+		sf->pfminfo.unicoderanges[2], sf->pfminfo.unicoderanges[3] );
     if ( sf->macstyle!=-1 )
 	fprintf(sfd, "MacStyle: %d\n", sf->macstyle );
     /* Must come before any kerning classes, anchor classes, conditional psts */
@@ -2480,6 +2486,18 @@ static int gethex(FILE *sfd, int *val) {
     ungetc(ch,sfd);
     *val = strtoul(tokbuf,NULL,16);
 return( pt!=tokbuf?1:ch==EOF?-1: 0 );
+}
+
+static void gethexints(FILE *sfd, int *val, int cnt) {
+    int i, ch;
+
+    for ( i=0; i<cnt; ++i ) {
+	if ( i!=0 ) {
+	    ch = getc(sfd);
+	    if ( ch!='.' ) ungetc(ch,sfd);
+	}
+	gethex(sfd,&val[i]);
+    }
 }
 
 static int getsint(FILE *sfd, int16 *val) {
@@ -5450,6 +5468,12 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
 	    sf->pfminfo.os2_vendor[2] = getc(sfd);
 	    sf->pfminfo.os2_vendor[3] = getc(sfd);
 	    (void) getc(sfd);
+	} else if ( strmatch(tok,"OS2CodePages:")==0 ) {
+	    gethexints(sfd,sf->pfminfo.codepages,2);
+	    sf->pfminfo.hascodepages = true;
+	} else if ( strmatch(tok,"OS2UnicodeRanges:")==0 ) {
+	    gethexints(sfd,sf->pfminfo.unicoderanges,4);
+	    sf->pfminfo.hasunicoderanges = true;
 	} else if ( strmatch(tok,"DisplaySize:")==0 ) {
 	    getint(sfd,&sf->display_size);
 	} else if ( strmatch(tok,"TopEncoding:")==0 ) {	/* Obsolete */
