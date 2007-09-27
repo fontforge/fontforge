@@ -1155,13 +1155,10 @@ return;
     dumpstr(dumpchar,data,"end\n");
 }
 
-double BlueScaleFigure(struct psdict *private,real bluevalues[], real otherblues[]) {
+double BlueScaleFigureForced(struct psdict *private,real bluevalues[], real otherblues[]) {
     double max_diff=0, p1, p2;
     char *pt, *end;
     int i;
-
-    if ( PSDictHasEntry(private,"BlueScale")!=NULL )
-return( -1 );
 
     pt = PSDictHasEntry(private,"BlueValues");
     if ( pt!=NULL ) {
@@ -1210,6 +1207,12 @@ return( -1 );
 return( -1 );
 
 return( .99/max_diff );
+}
+
+double BlueScaleFigure(struct psdict *private,real bluevalues[], real otherblues[]) {
+    if ( PSDictHasEntry(private,"BlueScale")!=NULL )
+return( -1 );
+    return BlueScaleFigureForced(private, bluevalues, otherblues);
 }
 
 static int dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data,

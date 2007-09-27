@@ -2059,7 +2059,7 @@ return( true );
 	} else if ( strcmp(private->keys[sel],"BlueScale")==0 &&
 		PSDictFindEntry(private,"BlueValues")!=-1 ) {
 	    /* Can guess BlueScale if we've got a BlueValues */
-	    double val = BlueScaleFigure(private,NULL,NULL);
+	    double val = BlueScaleFigureForced(private,NULL,NULL);
 	    if ( val==-1 ) val = .039625;
 	    sprintf(buffer,"%g", val );
 	    PIPrivateCheck(d);
