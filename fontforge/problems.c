@@ -92,7 +92,7 @@ static int CheckBluePair(char *blues, char *others, int bluefuzz,
 
     maxzoneheight = -1;
     for ( cnt=0; cnt<pos; cnt+=2 ) {
-	if ( cnt+1<pos && bluevals[cnt]>=bluevals[cnt+1] )
+	if ( cnt+1<pos && bluevals[cnt]>bluevals[cnt+1] )
 	    err |= pds_outoforder;
 	else if ( cnt+1<pos && maxzoneheight<bluevals[cnt+1]-bluevals[cnt] )
 	    maxzoneheight = bluevals[cnt+1]-bluevals[cnt];
