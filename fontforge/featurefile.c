@@ -44,9 +44,9 @@
 
 static void dump_glyphname(FILE *out, SplineChar *sc) {
     if ( sc->parent->cidmaster!=NULL )
-	fprintf( out, "\%d", sc->orig_pos /* That's the CID */ );
+	fprintf( out, "\\%d", sc->orig_pos /* That's the CID */ );
     else
-	fprintf( out, "\%s", sc->name );
+	fprintf( out, "\\%s", sc->name );
 }
 
 static void dump_glyphbyname(FILE *out, SplineFont *sf, char *name) {
@@ -55,9 +55,9 @@ static void dump_glyphbyname(FILE *out, SplineFont *sf, char *name) {
     if ( sc==NULL )
 	LogError( "No glyph named %s.", name );
     if ( sc->parent->cidmaster==NULL || sc==NULL )
-	fprintf( out, "\%s", name );
+	fprintf( out, "\\%s", name );
     else
-	fprintf( out, "\%s", sc->name );
+	fprintf( out, "\\%s", sc->name );
 }
 
 static void dump_glyphnamelist(FILE *out, SplineFont *sf, char *names) {
