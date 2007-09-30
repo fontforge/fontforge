@@ -9672,7 +9672,7 @@ static PyObject *PyFFFont_glyphs(PyObject *self, PyObject *args) {
     char *type = "GID";
     int index;
 
-    if ( !PyArg_ParseTuple(args,"|s", type ))
+    if ( !PyArg_ParseTuple(args,"|s", &type ))
 return( NULL );
 
     if ( strcasecmp(type,"GID")==0 )
