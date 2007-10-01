@@ -1188,7 +1188,13 @@ typedef struct splinechar {
     int16 ttf_instrs_len;
     int16 countermask_cnt;
     HintMask *countermasks;
-    struct altuni { struct altuni *next; int unienc; } *altuni;
+    struct altuni { struct altuni *next; int unienc, vs, fid; } *altuni;
+	/* vs is the "variation selector" a unicode codepoint which modifieds */
+	/*  the code point before it. If vs is -1 then unienc is just an */
+	/*  alternate encoding (greek Alpha and latin A), but if vs is one */
+	/*  of unicode's variation selectors then this glyph is somehow a */
+	/*  variant shape. The specifics depend on the selector and script */
+	/*  fid is currently unused, but may, someday, be used to do ttcs */
 /* for TeX */
     int16 tex_height, tex_depth;
 /* TeX also uses italic_correction and glyph variants below */

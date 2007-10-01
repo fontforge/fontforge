@@ -192,7 +192,8 @@ struct matrixinit {
 	enum me_type { me_int, me_enum, me_real, me_string, me_bigstr, me_func,
 		me_funcedit,
 		me_stringchoice, me_stringchoicetrans, me_stringchoicetag,
-		me_button } me_type;
+		me_button,
+		me_hex, me_uhex } me_type;
 	char *(*func)(GGadget *,int r,int c);
 	GTextInfo *enum_vals;
 	void (*enable_enum)(GGadget *,GMenuItem *, int r, int c);

@@ -3602,6 +3602,106 @@ static int SubtableIsntSupported(FILE *ttf,uint32 offset,struct cmap_encs *cmap_
 return( ret );
 }
 
+static int SubtableMustBe14(FILE *ttf,uint32 offset,struct ttfinfo *info) {
+    uint32 here = ftell(ttf);
+    int format, ret=true;
+
+    fseek(ttf,offset,SEEK_SET);
+
+    format = getushort(ttf);
+    if ( format!=14 ) {
+	LogError( _("Encoding subtable for platform=%d, specific=%d (which must be 14)\nhas an unsupported format %d.\n"),
+		0, 5, format );
+	info->bad_cmap = true;
+	ret = false;
+    }
+    fseek(ttf,here,SEEK_SET);
+return( ret );
+}
+
+static void ApplyVariationSequenceSubtable(FILE *ttf,uint32 vs_map,
+	struct ttfinfo *info,int justinuse) {
+    int sub_table_len, vs_cnt, i, j, rcnt, gid, cur_gid;
+    struct vs_data { int vs; uint32 def, non_def; } *vs_data;
+
+    fseek(ttf,vs_map,SEEK_SET);
+    /* We/ve already checked the format is 14 */ getushort(ttf);
+    sub_table_len = getlong(ttf);
+    vs_cnt = getlong(ttf);
+    vs_data = galloc(vs_cnt*sizeof(struct vs_data));
+    for ( i=0; i<vs_cnt; ++i ) {
+	vs_data[i].vs = get3byte(ttf);
+	vs_data[i].def = getlong(ttf);
+	vs_data[i].non_def = getlong(ttf);
+    }
+
+    for ( i=0; i<vs_cnt; ++i ) {
+	if ( vs_data[i].def!=0 && !justinuse ) {
+	    fseek(ttf,vs_map+vs_data[i].def,SEEK_SET);
+	    rcnt = getlong(ttf);
+	    for ( j=0; j<rcnt; ++j ) {
+		int start_uni = get3byte(ttf);
+		int cnt = getc(ttf);
+		int uni;
+		for ( uni=start_uni; uni<=start_uni+cnt; ++uni ) {
+		    SplineChar *sc;
+		    struct altuni *altuni;
+		    for ( gid = 0; gid<info->glyph_cnt; ++gid ) {
+			if ( (sc = info->chars[gid])!=NULL ) {
+			    if ( sc->unicodeenc==uni )
+		    break;
+			    for ( altuni = sc->altuni; altuni!=NULL; altuni=altuni->next )
+				if ( altuni->unienc==uni && altuni->vs == -1 && altuni->fid==0 )
+			    break;
+			    if ( altuni!=NULL )
+		    break;
+			}
+		    }
+		    if ( gid==info->glyph_cnt ) {
+			LogError( _("No glyph with unicode U+%05x in font\n"),
+				uni );
+			info->bad_cmap = true;
+		    } else {
+			altuni = chunkalloc(sizeof(struct altuni));
+			altuni->unienc = uni;
+			altuni->vs = vs_data[i].vs;
+			altuni->fid = 0;
+			altuni->next = sc->altuni;
+			sc->altuni = altuni;
+		    }
+		}
+	    }
+	}
+	if ( vs_data[i].non_def!=0 ) {
+	    fseek(ttf,vs_map+vs_data[i].non_def,SEEK_SET);
+	    rcnt = getlong(ttf);
+	    for ( j=0; j<rcnt; ++j ) {
+		int uni = get3byte(ttf);
+		int curgid = getushort(ttf);
+		if ( justinuse ) {
+		    if ( curgid<info->glyph_cnt && curgid>=0)
+			info->inuse[curgid] = 1;
+		} else {
+		    if ( curgid>=info->glyph_cnt || curgid<0 ||
+			    info->chars[curgid]==NULL ) {
+			LogError( _("GID out of range (%d) in format 14 'cmap' subtable\n"),
+				cur_gid );
+			info->bad_cmap = true;
+		    } else {
+			SplineChar *sc = info->chars[curgid];
+			struct altuni *altuni = chunkalloc(sizeof(struct altuni));
+			altuni->unienc = uni;
+			altuni->vs = vs_data[i].vs;
+			altuni->fid = 0;
+			altuni->next = sc->altuni;
+			sc->altuni = altuni;
+		    }
+		}
+	    }
+	}
+    }
+}
+
 static enum uni_interp amscheck(struct ttfinfo *info, EncMap *map) {
     int cnt = 0;
     /* Try to guess if the font uses the AMS math PUA assignments */
@@ -3674,7 +3774,7 @@ static int PickCMap(struct cmap_encs *cmap_encs,int enccnt,int def) {
 
 	sprintf(buffer,"%d (%s) %d %s %s  %s",
 		cmap_encs[i].platform,
-		    cmap_encs[i].platform==0 ? _("Apple Unicode") :
+		    cmap_encs[i].platform==0 ? _("Unicode") :
 		    cmap_encs[i].platform==1 ? _("Apple") :
 		    cmap_encs[i].platform==2 ? _("ISO (Deprecated)") :
 		    cmap_encs[i].platform==3 ? _("MicroSoft") :
@@ -3712,6 +3812,7 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
     int platform, specific;
     int offset, encoff=0;
     int format, len;
+    uint32 vs_map=0;
     uint16 table[256];
     int segCount;
     uint16 *endchars, *startchars, *delta, *rangeOffset, *glyphs;
@@ -3730,12 +3831,20 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
     version = getushort(ttf);
     nencs = getushort(ttf);
     if ( version!=0 && nencs==0 )
-	nencs = version;		/* Sometimes they are backwards */
+	nencs = version;		/* Sometimes they are backwards */ /* Or was I just confused early on? */
     cmap_encs = galloc(nencs*sizeof(struct cmap_encs));
     for ( i=usable_encs=0; i<nencs; ++i ) {
 	cmap_encs[usable_encs].platform =  getushort(ttf);
 	cmap_encs[usable_encs].specific = getushort(ttf);
 	cmap_encs[usable_encs].offset = getlong(ttf);
+	if ( cmap_encs[usable_encs].platform == 0 && cmap_encs[usable_encs].specific == 5 ) {
+	    /* This isn't a true encoding. */
+	    /* It's an optional set of encoding modifications (sort of) */
+	    /*  applied to a format 4/10 encoding (unicode BMP/Full) */
+	    if ( SubtableMustBe14(ttf,info->encoding_start+cmap_encs[usable_encs].offset,info) )
+		vs_map = info->encoding_start+cmap_encs[usable_encs].offset;
+    continue;
+	}
 	temp = enc_from_platspec(cmap_encs[usable_encs].platform,cmap_encs[usable_encs].specific);
 	if ( temp==NULL )	/* iconv doesn't support this. Some sun iconvs seem limited */
 	    temp = FindOrMakeEncoding("Custom");
@@ -4204,6 +4313,8 @@ return;
 	for ( i=0; i<info->glyph_cnt; ++i )
 	    if ( info->chars[i]!=NULL && info->chars[i]->unicodeenc==0xffff )
 		info->chars[i]->unicodeenc = -1;
+    if ( vs_map!=0 )
+	ApplyVariationSequenceSubtable(ttf,vs_map,info,justinuse);
     if ( !justinuse ) {
 	if ( interp==ui_none )
 	    info->uni_interp = amscheck(info,map);

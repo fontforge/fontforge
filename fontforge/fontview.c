@@ -640,15 +640,27 @@ return;
     FVDeselectAll(fv);
     if (( *ret=='0' && ( ret[1]=='x' || ret[1]=='X' )) ||
 	    ((*ret=='u' || *ret=='U') && ret[1]=='+' )) {
-	int uni = strtol(ret+2,&end,16);
+	int uni = (int) strtol(ret+2,&end,16);
+	int vs= -2;
+	if ( *end=='.' ) {
+	    ++end;
+	    if (( *end=='0' && ( end[1]=='x' || end[1]=='X' )) ||
+		    ((*end=='u' || *end=='U') && end[1]=='+' ))
+		end += 2;
+	    vs = (int) strtoul(end,&end,16);
+	}
 	if ( *end!='\0' || uni<0 || uni>=0x110000 ) {
 	    free(ret);
 	    gwwv_post_error( _("Bad Number"),_("Bad Number") );
 return;
 	}
 	for ( j=0; j<map->enccount; ++j ) if ( (gid=map->map[j])!=-1 && (sc=sf->glyphs[gid])!=NULL ) {
-	    for ( alt=sc->altuni; alt!=NULL && alt->unienc!=uni; alt=alt->next );
-	    if ( sc->unicodeenc == uni || alt!=NULL ) {
+	    if ( vs==-2 ) {
+		for ( alt=sc->altuni; alt!=NULL && (alt->unienc!=uni || alt->fid!=0); alt=alt->next );
+	    } else {
+		for ( alt=sc->altuni; alt!=NULL && (alt->unienc!=uni || alt->vs!=vs || alt->fid!=0); alt=alt->next );
+	    }
+	    if ( (sc->unicodeenc == uni && vs<0) || alt!=NULL ) {
 		fv->selected[j] = true;
 		FVToggleCharSelected(fv,j);
 	    }
@@ -2359,14 +2371,19 @@ void AltUniRemove(SplineChar *sc,int uni) {
     if ( sc==NULL || uni==-1 )
 return;
 
-    if ( sc->unicodeenc==uni && sc->altuni!=NULL ) {
-	sc->unicodeenc = sc->altuni->unienc;
-	sc->altuni->unienc = uni;
+    if ( sc->unicodeenc==uni ) {
+	for ( altuni = sc->altuni; altuni!=NULL; altuni=altuni->next )
+	    if ( altuni->fid==0 && altuni->vs==-1 )
+	break;
+	if ( altuni!=NULL ) {
+	    sc->unicodeenc = altuni->unienc;
+	    altuni->unienc = uni;
+	}
     }
 
     if ( sc->unicodeenc==uni )
 return;
-    for ( prev=NULL, altuni=sc->altuni; altuni!=NULL && altuni->unienc!=uni;
+    for ( prev=NULL, altuni=sc->altuni; altuni!=NULL && (altuni->unienc!=uni || altuni->vs==-1 || altuni->fid!=0);
 	    prev = altuni, altuni = altuni->next );
     if ( altuni ) {
 	if ( prev==NULL )
@@ -2382,12 +2399,16 @@ void AltUniAdd(SplineChar *sc,int uni) {
     struct altuni *altuni;
 
     if ( sc!=NULL && uni!=-1 && uni!=sc->unicodeenc ) {
-	for ( altuni = sc->altuni; altuni!=NULL && altuni->unienc!=uni; altuni=altuni->next );
+	for ( altuni = sc->altuni; altuni!=NULL && (altuni->unienc!=uni ||
+						    altuni->vs!=-1 ||
+			                            altuni->fid); altuni=altuni->next );
 	if ( altuni==NULL ) {
 	    altuni = chunkalloc(sizeof(struct altuni));
 	    altuni->next = sc->altuni;
 	    sc->altuni = altuni;
 	    altuni->unienc = uni;
+	    altuni->vs = -1;
+	    altuni->fid = 0;
 	}
     }
 }

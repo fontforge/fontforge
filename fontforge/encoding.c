@@ -2414,6 +2414,8 @@ return( NULL );
 	    for ( altuni=sc->altuni; altuni!=NULL; altuni=altuni->next ) {
 		if ( altuni->unienc!=-1 &&
 			 altuni->unienc<unicode4_size &&
+			 altuni->vs==-1 &&
+			 altuni->fid==0 &&
 			 (j = EncFromUni(altuni->unienc,enc))!= -1 )
 		    encoded[j] = i;
 		/* I used to have code here to add these unencoded duplicates */

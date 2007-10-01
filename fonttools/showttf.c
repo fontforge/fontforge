@@ -165,6 +165,15 @@ return( EOF );
 return( (ch1<<24)|(ch2<<16)|(ch3<<8)|ch4 );
 }
 
+static int32 get3byte(FILE *ttf) {
+    int ch1 = getc(ttf);
+    int ch2 = getc(ttf);
+    int ch3 = getc(ttf);
+    if ( ch3==EOF )
+return( EOF );
+return( (ch1<<16)|(ch2<<8)|ch3 );
+}
+
 static int32 getoffset(FILE *ttf, int offsize) {
     int ch1, ch2, ch3, ch4;
 
@@ -1794,6 +1803,7 @@ static void readttfencodings(FILE *ttf,FILE *util, struct ttfinfo *info) {
     unsigned short *endchars, *startchars, *delta, *rangeOffset, *glyphs;
     int index;
     struct dup *dup;
+    int vs_map = -1;
 
     fseek(ttf,info->encoding_start,SEEK_SET);
     printf( "\nEncoding (cmap) table (at %d)\n", info->encoding_start );
@@ -1814,7 +1824,7 @@ static void readttfencodings(FILE *ttf,FILE *util, struct ttfinfo *info) {
 	} else if ( platform==1 && specific==1 ) {
 	    enc = 1;
 	    encoff = offset;
-	} else if ( platform==0 ) {
+	} else if ( platform==0 && specific!=5 ) {
 	    enc = 1;
 	    encoff = offset;
 	}
@@ -1840,7 +1850,11 @@ static void readttfencodings(FILE *ttf,FILE *util, struct ttfinfo *info) {
 	    else if ( specific==1 ) printf( "Unicode 1.0\n" );
 	    else if ( specific==2 ) printf( "Unicode 1.1\n" );
 	    else if ( specific==3 ) printf( "Unicode 2.0+\n" );
+	    else if ( specific==4 ) printf( "Unicode UCS4\n" );
+	    else if ( specific==5 ) printf( "Unicode Variations\n" );
 	    else printf( "???\n" );
+	    if ( specific==5 )
+		vs_map = offset;
 	} else printf( "???\n" );
     }
     if ( enc!=0 ) {
@@ -2056,6 +2070,50 @@ return;
 	}
     } else
 	printf( "Could not understand encoding table\n" );
+    if ( vs_map!=-1 ) {
+	struct vs_data { int vs; uint32 defoff, nondefoff; } *vs_data;
+	int cnt, rcnt;
+
+	fseek(ttf,info->encoding_start+vs_map,SEEK_SET);
+	if ( getushort(ttf)!=14 ) {
+	    fprintf( stderr, "A unicode variation subtable (platform=0,specific=5) must have format=14\n" );
+return;
+	}
+	len = getlong(ttf);
+	cnt = getlong(ttf);
+	printf( " Format=14 len=%d\n numVarSelRec=%d\n", len, cnt );
+	vs_data = malloc( cnt*sizeof(struct vs_data));
+	for ( i=0; i<cnt; ++i ) {
+	    vs_data[i].vs = get3byte(ttf);
+	    vs_data[i].defoff = getlong(ttf);
+	    vs_data[i].nondefoff = getlong(ttf);
+	    printf( "  varSelector=%04x, defaultUVSOffset=%d nonDefaultOffset=%d\n",
+		    vs_data[i].vs, vs_data[i].defoff, vs_data[i].nondefoff);
+	}
+	for ( i=0; i<cnt; ++i ) {
+	    printf( " Variation Selector=%04x\n", vs_data[i].vs );
+	    if ( vs_data[i].defoff!=0 ) {
+		fseek(ttf,info->encoding_start+vs_map+vs_data[i].defoff,SEEK_SET);
+		rcnt = getlong(ttf);
+		printf( "  Default glyphs\n  %d ranges\n", rcnt );
+		for ( j=0; j<rcnt; ++j ) {
+		    int uni = get3byte(ttf);
+		    printf( "   U+%04x and %d code points following that\n",
+			    uni, getc(ttf));
+		}
+	    }
+	    if ( vs_data[i].nondefoff!=0 ) {
+		fseek(ttf,info->encoding_start+vs_map+vs_data[i].nondefoff,SEEK_SET);
+		rcnt = getlong(ttf);
+		printf( "  non Default glyphs\n  %d mappings\n", rcnt );
+		for ( j=0; j<rcnt; ++j ) {
+		    int uni = get3byte(ttf);
+		    printf( "   U+%04x.U+%04x -> GID %d\n",
+			    uni, vs_data[i].vs, getushort(ttf));
+		}
+	    }
+	}
+    }
 }
 
 static void readttfpost(FILE *ttf, FILE *util, struct ttfinfo *info) {

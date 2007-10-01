@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 16-Aug-2007 -->
+  <!-- AP: Last modified: 30-Sep-2007 -->
   <TITLE>Char Info</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -13,7 +13,7 @@
     Glyph Info
   </H1>
   <H2>
-    <IMG SRC="charinfo.png" WIDTH="462" HEIGHT="384" ALIGN="Right">
+    <IMG SRC="charinfo.png" WIDTH="545" HEIGHT="509" ALIGN="Right">
     <A NAME="Character">Glyph</A> Info
   </H2>
   <UL>
@@ -52,6 +52,25 @@
   <P>
   The name field contains a pull down list with (possibly) several synonyms
   for the name of this unicode code point.
+  <P>
+  It is possible to have one glyph assigned to two unicode code points (This
+  is not recommended, but it is possible). If you wish to do this you may enter
+  additional unicode values in the "<CODE>Alternate Unicode</CODE>" area (set
+  the variation selector to 0).
+  <P>
+  Adobe has proposed an extension to OpenType to support unicode variation
+  selectors in the 'cmap' table (traditionally they have been done as ligatures
+  in the 'GSUB' table). If you wish to take advantage of this mechanism you
+  can also use the "<CODE>Alternate Unicode/Variation</CODE>" section to add
+  'cmap' data. If you wish the current glyph to be the default variation for
+  this font (the one that appears in the unicode encoding subtable), then set
+  the <CODE>Unicode Value</CODE> field above to the desired code point and
+  add an entry with the same code point and the appropriate variation selector
+  (as in the example above).
+  <P>
+  However if this glyph is not going to be the default glyph for this code
+  point, then set the <CODE>Unicode Value </CODE>field to -1, while entering
+  the appropriate code point and variation selector below.
   <P>
   The Glyph class field is for the opentype 'GDEF' table. You can usually leave
   it set to automatic. FontForge will then figure out the class, and whether

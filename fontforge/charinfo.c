@@ -81,6 +81,7 @@ typedef struct charinfo {
 #define CID_LCCount	1040
 
 #define CID_UnlinkRmOverlap	1041
+#define CID_AltUni	1042
 
 /* Offsets for repeated fields. add 100*index (index<=6) */
 #define CID_List	1220
@@ -544,7 +545,7 @@ int SCSetMetaData(SplineChar *sc,char *name,int unienc,const char *comment) {
     int isnotdef, samename=false;
     struct altuni *alt;
 
-    for ( alt=sc->altuni; alt!=NULL && alt->unienc!=unienc; alt=alt->next );
+    for ( alt=sc->altuni; alt!=NULL && (alt->unienc!=unienc || alt->vs!=-1 || alt->fid!=0); alt=alt->next );
     if ( (sc->unicodeenc == unienc || alt!=NULL ) && strcmp(name,sc->name)==0 ) {
 	samename = true;	/* No change, it must be good */
     }
@@ -1218,7 +1219,97 @@ return( NULL );
     gv = GV_ParseConstruction(gv,stuff,rows,cols);
 return( gv );
 }
-    
+
+static int CI_ValidateAltUnis(CharInfo *ci) {
+    GGadget *au = GWidgetGetControl(ci->gw,CID_AltUni);
+    int rows, cols = GMatrixEditGetColCnt(au);
+    struct matrix_data *stuff = GMatrixEditGet(au,&rows);
+    int i, asked = false;
+
+    for ( i=0; i<rows; ++i ) {
+	int uni = stuff[i*cols+0].u.md_ival, vs = stuff[i*cols+1].u.md_ival;
+	if ( uni<0 || uni>=unicode4_size ||
+		vs<-1 || vs>=unicode4_size ) {
+	    gwwv_post_error(_("Unicode out of range"), _("Bad unicode value for an alternate unicode / variation selector"));
+return( false );
+	}
+	if ( (vs>=0x180B && vs<=0x180D) ||	/* Mongolian VS */
+		 (vs>=0xfe00 && vs<=0xfe0f) ||	/* First VS block */
+		 (vs>=0xE0100 && vs<=0xE01EF) ) {	/* Second VS block */
+	    /* ok, that's a reasonable value */;
+	} else if ( vs==0 || vs==-1 ) {
+	    /* That's ok too (means no selector, just an alternate encoding) */;
+	} else if ( !asked ) {
+	    char *buts[3];
+	    buts[0] = _("_OK"); buts[1] = _("_Cancel"); buts[2]=NULL;
+	    if ( gwwv_ask(_("Unexpected Variation Selector"),(const char **) buts,0,1,
+		    _("Variation selectors are normally between\n"
+		      "   U+180B and U+180D\n"
+		      "   U+FE00 and U+FE0F\n"
+		      "   U+E0100 and U+E01EF\n"
+		      "did you really intend to use U+%04X?"), vs)==1 )
+return( false );
+	    asked = true;
+	}
+    }
+return( true );
+}
+
+static void CI_ParseAltUnis(CharInfo *ci) {
+    GGadget *au = GWidgetGetControl(ci->gw,CID_AltUni);
+    int rows, cols = GMatrixEditGetColCnt(au);
+    struct matrix_data *stuff = GMatrixEditGet(au,&rows);
+    int i;
+    struct altuni *altuni, *last = NULL;
+    SplineChar *sc = ci->sc;
+    int deenc = false;
+    FontView *fvs;
+    int oldcnt, newcnt;
+
+    oldcnt = 0;
+    for ( altuni=sc->altuni ; altuni!=NULL; altuni = altuni->next )
+	if ( altuni->vs==-1 && altuni->fid==0 )
+	    ++oldcnt;
+
+    newcnt = 0;
+    for ( i=0; i<rows; ++i ) {
+	int uni = stuff[i*cols+0].u.md_ival, vs = stuff[i*cols+1].u.md_ival;
+	if ( vs!=0 )
+    continue;
+	++newcnt;
+	if ( uni==sc->unicodeenc )
+    continue;
+	for ( altuni=sc->altuni ; altuni!=NULL; altuni = altuni->next )
+	    if ( uni==altuni->unienc && altuni->vs==-1 && altuni->fid==0 )
+	break;
+	if ( altuni==NULL ) {
+	    deenc = true;
+    break;
+	}
+    }
+    if ( oldcnt!=newcnt || deenc ) {
+	for ( fvs=sc->parent->fv; fvs!=NULL; fvs=fvs->nextsame ) {
+	    fvs->map->enc = &custom;
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+	    FVSetTitle(fvs);
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+	}
+    }
+    AltUniFree(sc->altuni); sc->altuni = NULL;
+    for ( i=0; i<rows; ++i ) {
+	int uni = stuff[i*cols+0].u.md_ival, vs = stuff[i*cols+1].u.md_ival;
+	altuni = chunkalloc(sizeof(struct altuni));
+	altuni->unienc = uni;
+	altuni->vs = vs==0 ? -1 : vs;
+	altuni->fid = 0;
+	if ( last == NULL )
+	    sc->altuni = altuni;
+	else
+	    last->next = altuni;
+	last = altuni;
+    }
+}
+
 static int _CI_OK(CharInfo *ci) {
     int val;
     int ret, refresh_fvdi=0;
@@ -1233,6 +1324,9 @@ static int _CI_OK(CharInfo *ci) {
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
     int low,high;
 #endif
+
+    if ( !CI_ValidateAltUnis(ci))
+return( false );
 
     val = ParseUValue(ci->gw,CID_UValue,true,ci->sc->parent);
     if ( val==-2 )
@@ -1321,6 +1415,8 @@ return( false );
     free( accentdevtab );
     free( italicdevtab );
     free(hicdt); free(vicdt);
+
+    CI_ParseAltUnis(ci);
 
     if ( ret )
 	ci->sc->parent->changed = true;
@@ -3225,6 +3321,14 @@ static int CI_SubSuperPositionings(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static struct col_init altuniinfo[] = {
+    { me_uhex , NULL, NULL, NULL, N_("Unicode") },
+    { me_uhex, NULL, truefalse, NULL, N_("Variation Selector (or 0)") },
+    0
+    };
+static struct matrixinit mi_altuniinfo =
+    { sizeof(altuniinfo)/sizeof(struct col_init)-1, altuniinfo, 0, NULL, NULL, NULL, NULL };
+
 static void CI_NoteAspect(CharInfo *ci) {
     int new_aspect = GTabSetGetSel(GWidgetGetControl(ci->gw,CID_Tabs));
     PST *pst;
@@ -3289,6 +3393,23 @@ return;
 	mds[j*cols+4].u.md_ival = gv->parts[j].fullAdvance;
     }
     GMatrixEditSet(g, mds,gv->part_cnt,false);
+}
+
+static void GA_ToMD(GGadget *g, SplineChar *sc) {
+    struct altuni *alt;
+    int cols = GMatrixEditGetColCnt(g), cnt;
+    struct matrix_data *mds;
+    if ( sc->altuni==NULL ) {
+	GMatrixEditSet(g, NULL,0,false);
+return;
+    }
+    for ( cnt=0, alt=sc->altuni; alt!=NULL; ++cnt, alt=alt->next );
+    mds = gcalloc(cnt*cols,sizeof(struct matrix_data));
+    for ( cnt=0, alt=sc->altuni; alt!=NULL; ++cnt, alt=alt->next ) {
+	mds[cnt*cols+0].u.md_ival = alt->unienc;
+	mds[cnt*cols+1].u.md_ival = alt->vs==-1? 0 : alt->vs;
+    }
+    GMatrixEditSet(g, mds,cnt,false);
 }
 
 static void CIFillup(CharInfo *ci) {
@@ -3535,6 +3656,7 @@ static void CIFillup(CharInfo *ci) {
 	GGadget *g = GWidgetGetControl(ci->gw,CID_ExtensionList+i*100);
 	GV_ToMD(g, gv);
     }
+    GA_ToMD(GWidgetGetControl(ci->gw,CID_AltUni), sc);
 }
 
 static int CI_NextPrev(GGadget *g, GEvent *e) {
@@ -3609,12 +3731,12 @@ void SCCharInfo(SplineChar *sc,EncMap *map,int enc) {
     CharInfo *ci;
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData ugcd[12], cgcd[6], psgcd[7][7], cogcd[3], mgcd[9], tgcd[16];
+    GGadgetCreateData ugcd[14], cgcd[6], psgcd[7][7], cogcd[3], mgcd[9], tgcd[16];
     GGadgetCreateData lcgcd[3], vargcd[2][7];
-    GTextInfo ulabel[12], clabel[6], pslabel[7][6], colabel[3], mlabel[9], tlabel[16];
+    GTextInfo ulabel[14], clabel[6], pslabel[7][6], colabel[3], mlabel[9], tlabel[16];
     GTextInfo lclabel[3], varlabel[2][6];
     GGadgetCreateData mbox[4], *mvarray[7], *mharray1[7], *mharray2[8];
-    GGadgetCreateData ubox[3], *uhvarray[22], *uharray[6];
+    GGadgetCreateData ubox[3], *uhvarray[29], *uharray[6];
     GGadgetCreateData cbox[3], *cvarray[5], *charray[4];
     GGadgetCreateData pstbox[7][4], *pstvarray[7][5], *pstharray1[7][8];
     GGadgetCreateData cobox[2], *covarray[4];
@@ -3755,33 +3877,60 @@ return;
 	ubox[2].creator = GHBoxCreate;
 	uhvarray[9] = &ubox[2]; uhvarray[10] = GCD_ColSpan; uhvarray[11] = NULL;
 
-	ugcd[8].gd.pos.x = 5; ugcd[8].gd.pos.y = 83+4;
-	ugcd[8].gd.flags = gg_visible | gg_enabled;
-	ulabel[8].text = (unichar_t *) _("OT _Glyph Class:");
+	ugcd[8].gd.flags = gg_visible | gg_enabled|gg_utf8_popup;
+	ulabel[8].text = (unichar_t *) _("Alternate Unicode Encodings / Variation Selectors");
 	ulabel[8].text_is_1byte = true;
-	ulabel[8].text_in_resource = true;
 	ugcd[8].gd.label = &ulabel[8];
+	ugcd[8].gd.popup_msg = (unichar_t *) _(
+	    "Some glyphs may be used for more than one\n"
+	    "unicode code point -- I don't recommend\n"
+	    "doing this, better to use a reference --\n"
+	    "but it is possible.\n"
+	    "The latin \"A\", the greek \"Alpha\" and the\n"
+	    "cyrillic \"A\" look very much the same.\n\n"
+	    "On the other hand certain Mongolian and CJK\n"
+	    "characters have multiple glyphs depending\n"
+	    "on a unicode Variation Selector.\n\n"
+	    "In the first case use a variation selector\n"
+	    "of 0, in the second use the appropriate\n"
+	    "codepoint.");
 	ugcd[8].creator = GLabelCreate;
-	uhvarray[12] = &ugcd[8];
+	uhvarray[12] = &ugcd[8]; uhvarray[13] = GCD_ColSpan; uhvarray[14] = NULL;
 
-	ugcd[9].gd.pos.x = 85; ugcd[9].gd.pos.y = 83;
-	ugcd[9].gd.flags = gg_visible | gg_enabled;
-	ugcd[9].gd.cid = CID_GClass;
-	ugcd[9].gd.u.list = glyphclasses;
-	ugcd[9].creator = GListButtonCreate;
-	uhvarray[13] = &ugcd[9]; uhvarray[14] = NULL;
+	ugcd[9].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+	ugcd[9].gd.u.matrix = &mi_altuniinfo;
+	ugcd[9].gd.cid = CID_AltUni;
+	ugcd[9].gd.popup_msg = ugcd[8].gd.popup_msg;
+	ugcd[9].creator = GMatrixEditCreate;
+	uhvarray[15] = &ugcd[9]; uhvarray[16] = GCD_ColSpan; uhvarray[17] = NULL;
 
-	ugcd[10].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-	ulabel[10].text = (unichar_t *) _("Mark for Unlink, Remove Overlap Before Save");
+	ugcd[10].gd.pos.x = 5; ugcd[10].gd.pos.y = 83+4;
+	ugcd[10].gd.flags = gg_visible | gg_enabled;
+	ulabel[10].text = (unichar_t *) _("OT _Glyph Class:");
 	ulabel[10].text_is_1byte = true;
 	ulabel[10].text_in_resource = true;
 	ugcd[10].gd.label = &ulabel[10];
-	ugcd[10].gd.cid = CID_UnlinkRmOverlap;
-	ugcd[10].gd.popup_msg = (unichar_t *) _("A few glyphs, like Aring, Ccedilla, Eogonek\nare composed of two overlapping references.\nOften it is desireable to retain the references\n(so that changes made to the base glyph are\nreflected in the composed glyph), but that\nmeans you are stuck with overlapping contours.\nThis flag means that just before saving the\nfont, fontforge will unlink the references,\nand run remove overlap on them, then just\nafter saving it will undo the operation\nthereby retaining the references.");
-	ugcd[10].creator = GCheckBoxCreate;
-	uhvarray[15] = &ugcd[10]; uhvarray[16] = GCD_ColSpan; uhvarray[17] = NULL;
-	uhvarray[18] = GCD_Glue; uhvarray[19] = GCD_Glue; uhvarray[20] = NULL;
-	uhvarray[21] = NULL;
+	ugcd[10].creator = GLabelCreate;
+	uhvarray[18] = &ugcd[10];
+
+	ugcd[11].gd.pos.x = 85; ugcd[11].gd.pos.y = 83;
+	ugcd[11].gd.flags = gg_visible | gg_enabled;
+	ugcd[11].gd.cid = CID_GClass;
+	ugcd[11].gd.u.list = glyphclasses;
+	ugcd[11].creator = GListButtonCreate;
+	uhvarray[19] = &ugcd[11]; uhvarray[20] = NULL;
+
+	ugcd[12].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+	ulabel[12].text = (unichar_t *) _("Mark for Unlink, Remove Overlap Before Save");
+	ulabel[12].text_is_1byte = true;
+	ulabel[12].text_in_resource = true;
+	ugcd[12].gd.label = &ulabel[12];
+	ugcd[12].gd.cid = CID_UnlinkRmOverlap;
+	ugcd[12].gd.popup_msg = (unichar_t *) _("A few glyphs, like Aring, Ccedilla, Eogonek\nare composed of two overlapping references.\nOften it is desireable to retain the references\n(so that changes made to the base glyph are\nreflected in the composed glyph), but that\nmeans you are stuck with overlapping contours.\nThis flag means that just before saving the\nfont, fontforge will unlink the references,\nand run remove overlap on them, then just\nafter saving it will undo the operation\nthereby retaining the references.");
+	ugcd[12].creator = GCheckBoxCreate;
+	uhvarray[21] = &ugcd[12]; uhvarray[22] = GCD_ColSpan; uhvarray[23] = NULL;
+	uhvarray[24] = GCD_Glue; uhvarray[25] = GCD_Glue; uhvarray[26] = NULL;
+	uhvarray[27] = NULL;
 
 	ubox[0].gd.flags = gg_enabled|gg_visible;
 	ubox[0].gd.u.boxelements = uhvarray;

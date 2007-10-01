@@ -508,6 +508,12 @@ void putshort(FILE *file,int sval) {
     putc(sval&0xff,file);
 }
 
+static void putu24(FILE *file,int val) {
+    putc((val>>16)&0xff,file);
+    putc((val>>8)&0xff,file);
+    putc(val&0xff,file);
+}
+
 void putlong(FILE *file,int val) {
     putc((val>>24)&0xff,file);
     putc((val>>16)&0xff,file);
@@ -4286,7 +4292,7 @@ static FILE *NeedsUCS4Table(SplineFont *sf,int *ucs4len,EncMap *map) {
 	if ( map->map[i]!=-1 && SCWorthOutputting(sf->glyphs[map->map[i]]) ) {
 	    if ( sf->glyphs[map->map[i]]->unicodeenc>=0x10000 )
     break;
-	    for ( altuni=sf->glyphs[map->map[i]]->altuni; altuni!=NULL && altuni->unienc<0x10000;
+	    for ( altuni=sf->glyphs[map->map[i]]->altuni; altuni!=NULL && (altuni->unienc<0x10000 || altuni->vs!=-1 || altuni->fid!=0);
 		    altuni=altuni->next );
 	    if ( altuni!=NULL )
     break;
@@ -4360,7 +4366,8 @@ static FILE *NeedsUCS2Table(SplineFont *sf,int *ucs2len,EncMap *map) {
 		    ++cnt;
 		}
 		for ( altuni=sc->altuni; altuni!=NULL; altuni = altuni->next ) {
-		    if ( altuni->unienc>=0 && altuni->unienc<=0xffff ) {
+		    if ( altuni->unienc>=0 && altuni->unienc<=0xffff &&
+			    altuni->vs==-1 && altuni->fid==0 ) {
 			avail[altuni->unienc] = i;
 			++cnt;
 		    }
@@ -4445,6 +4452,149 @@ static FILE *NeedsUCS2Table(SplineFont *sf,int *ucs2len,EncMap *map) {
 return( format4 );
 }
 
+static FILE *NeedsVariationSequenceTable(SplineFont *sf,int *vslen,EncMap *map) {
+    /* Do we need a format 14 (unicode variation sequence) subtable? */
+    int gid, vs_cnt=0, vs_max=512, i, j, k, cnt, mingid, maxgid;
+    struct altuni *altuni, *au;
+    uint32 vsbuf[512], *vses = vsbuf;
+    FILE *format14;
+    uint32 *avail = galloc(65536*sizeof(uint32));
+    enum vs_type {vs_default=(1<<24), vs_nondefault=(2<<24) };
+    SplineChar *sc;
+    uint32 here;
+    int any;
+
+    mingid = maxgid = -1;
+    for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc = sf->glyphs[gid])!=NULL ) {
+	for ( altuni = sc->altuni; altuni!=NULL; altuni=altuni->next ) {
+	    if ( altuni->unienc!=-1 && altuni->unienc<unicode4_size &&
+		    altuni->vs!=-1 && altuni->fid==0 ) {
+		for ( i=0; i<vs_cnt; ++i )
+		    if ( vses[i]==altuni->vs )
+		break;
+		if ( i>=vs_cnt ) {
+		    if ( i>=vs_max ) {
+			if ( vses==vsbuf ) {
+			    vses = galloc((vs_max*=2)*sizeof(uint32));
+			    memcpy(vses,vsbuf,sizeof(vsbuf));
+			} else
+			    vses = grealloc(vses,(vs_max+=512)*sizeof(uint32));
+		    }
+		    vses[vs_cnt++] = altuni->vs;
+		}
+		if ( mingid==-1 )
+		    mingid = maxgid = gid;
+		else
+		    maxgid = gid;
+	    }
+	}
+    }
+    if ( vs_cnt==0 ) {
+	*vslen = 0;
+return( NULL );			/* No variation selectors */
+    }
+
+    /* Sort the variation selectors */
+    for ( i=0; i<vs_cnt; ++i ) for ( j=i+1; j<vs_cnt; ++j ) {
+	if ( vses[i]>vses[j] ) {
+	    int temp = vses[i];
+	    vses[i] = vses[j];
+	    vses[j] = temp;
+	}
+    }
+
+    avail = galloc(unicode4_size*sizeof(uint32));
+
+    format14 = tmpfile();
+    putshort(format14,14);
+    putlong(format14,0);		/* Length, fixup later */
+    putlong(format14,vs_cnt);		/* number of selectors */
+
+    /* Variation selector records */
+    for ( i=0; i<vs_cnt; ++i ) {
+	putu24(format14,vses[i]);
+	putlong(format14,0);
+	putlong(format14,0);
+    }
+
+    for ( i=0; i<vs_cnt; ++i ) {
+	memset(avail,0,unicode4_size);
+	any = 0;
+	for ( gid=mingid; gid<=maxgid; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
+	    for ( altuni = sc->altuni; altuni!=NULL; altuni=altuni->next ) {
+		if ( altuni->unienc!=-1 && altuni->unienc<unicode4_size &&
+			altuni->vs==vses[i] && altuni->fid==0 ) {
+		    for ( au=sc->altuni; au!=NULL; au=au->next )
+			if ( au->unienc==altuni->unienc && au->vs==-1 && au->fid==0 )
+		    break;
+		    if ( altuni->unienc==sc->unicodeenc || au!=NULL ) {
+			avail[altuni->unienc] = gid | vs_default;
+			any |= vs_default;
+		    } else {
+			avail[altuni->unienc] = gid | vs_nondefault;
+			any |= vs_nondefault;
+		    }
+		}
+	    }
+	}
+	if ( any&vs_default ) {
+	    here = ftell(format14);
+	    fseek(format14,10+ i*11 + 3, SEEK_SET);	/* Seek to defaultUVSOffset */
+	    putlong(format14,here);
+	    fseek(format14,0,SEEK_END);
+	    cnt = 0;
+	    for ( j=0; j<unicode4_size; ++j ) if ( avail[j]&vs_default ) {
+		for ( k=j+1; k<unicode4_size && (avail[k]&vs_default); ++k );
+		if ( k-j>256 ) k=j+256;	/* Each range is limited to 255 code points, as the count is a byte */
+		++cnt;
+		j = k-1;
+	    }
+	    putlong(format14,cnt);
+	    for ( j=0; j<unicode4_size; ++j ) if ( avail[j]&vs_default ) {
+		for ( k=j+1; k<unicode4_size && (avail[k]&vs_default); ++k );
+		if ( k-j>256 ) k=j+256;
+		putu24(format14,j);
+		putc(k-j-1,format14);
+		j = k-1;
+	    }
+	}
+	if ( any&vs_nondefault ) {
+	    here = ftell(format14);
+	    fseek(format14,10+ i*11 + 7, SEEK_SET);	/* Seek to nonDefaultUVSOffset */
+	    putlong(format14,here);
+	    fseek(format14,0,SEEK_END);
+	    cnt = 0;
+	    for ( j=0; j<unicode4_size; ++j ) if ( avail[j]&vs_nondefault )
+		++cnt;
+	    putlong(format14,cnt);
+	    for ( j=0; j<unicode4_size; ++j ) if ( avail[j]&vs_nondefault ) {
+		putu24(format14,j);
+		putshort(format14,sf->glyphs[avail[j]&0xffff]->ttf_glyph);
+	    }
+	}
+    }
+
+    here = ftell(format14);
+    fseek(format14,2,SEEK_SET);
+    putlong(format14,here);
+    fseek(format14,0,SEEK_END);
+    if ( here&1 ) {
+	putc('\0',format14);
+	++here;
+    }
+    if ( here&2 ) {
+	putshort(format14,0);
+	here += 2;
+    }
+    *vslen = here;
+
+    free(avail);
+    if ( vses!=vsbuf )
+	free(vses);
+
+return( format14 );
+}
+
 static void dumpcmap(struct alltabs *at, SplineFont *sf,enum fontformat format) {
     int i,enccnt, issmall, hasmac;
     uint16 table[256];
@@ -4453,9 +4603,9 @@ static void dumpcmap(struct alltabs *at, SplineFont *sf,enum fontformat format) 
     int anyglyphs = 0;
     int wasotf = format==ff_otf || format==ff_otfcid;
     EncMap *map = at->map;
-    int ucs4len=0, ucs2len=0, cjklen=0, applecjklen=0;
-    FILE *format12, *format4, *format2, *apple2;
-    int mspos, ucs4pos, cjkpos, applecjkpos;
+    int ucs4len=0, ucs2len=0, cjklen=0, applecjklen=0, vslen=0;
+    FILE *format12, *format4, *format2, *apple2, *format14;
+    int mspos, ucs4pos, cjkpos, applecjkpos, vspos, start_of_macroman;
 
     for ( i=at->gi.gcnt-1; i>0 ; --i ) if ( at->gi.bygid[i]!=-1 ) {
 	if ( SCWorthOutputting(sf->glyphs[at->gi.bygid[i]])) {
@@ -4558,12 +4708,15 @@ static void dumpcmap(struct alltabs *at, SplineFont *sf,enum fontformat format) 
     format4  = NeedsUCS2Table(sf,&ucs2len,map);
     format12 = NeedsUCS4Table(sf,&ucs4len,map);
     format2  = Needs816Enc(sf,&cjklen,map,&apple2,&applecjklen);
+    format14 = NeedsVariationSequenceTable(sf,&vslen,map);
 
     /* Two/Three/Four encoding table pointers, one for ms, one for mac */
     /*  usually one for mac big, just a copy of ms */
     /* plus we may have a format12 encoding for ucs4, mac doesn't support */
     /* plus we may have a format2 encoding for cjk, sometimes I know the codes for the mac... */
     /* sometimes the mac will have a slightly different cjk table */
+    /* Sometimes we want a variation sequence subtable (format=14) for */
+    /*  unicode platform */
     if ( format==ff_ttfsym ) {
 	enccnt = 2;
 	hasmac = 0;
@@ -4580,10 +4733,12 @@ static void dumpcmap(struct alltabs *at, SplineFont *sf,enum fontformat format) 
 		hasmac=3;
 	    }
 	}
+	if ( format14!=NULL )
+	    ++enccnt;
     }
 
     putshort(at->cmap,0);		/* version */
-    putshort(at->cmap,enccnt);	/* num tables */
+    putshort(at->cmap,enccnt);		/* num tables */
 
     mspos = 2*sizeof(uint16)+enccnt*(2*sizeof(uint16)+sizeof(uint32));
     ucs4pos = mspos+ucs2len;
@@ -4594,6 +4749,9 @@ static void dumpcmap(struct alltabs *at, SplineFont *sf,enum fontformat format) 
     } else
 	applecjkpos = cjkpos + cjklen;
 	/* applecjklen set above */
+    vspos = applecjkpos + applecjklen;
+    start_of_macroman = vspos + vslen;
+
     if ( hasmac&1 ) {
 	/* big mac table, just a copy of the ms table */
 	putshort(at->cmap,0);	/* mac unicode platform */
@@ -4606,12 +4764,18 @@ static void dumpcmap(struct alltabs *at, SplineFont *sf,enum fontformat format) 
 	putshort(at->cmap,4);	/* Unicode 2.0, full unicode */
 	putlong(at->cmap,ucs4pos);
     }
+    if ( format14!=NULL ) {
+	/* variation sequence subtable. Only for platform 0. */
+	putshort(at->cmap,0);	/* mac unicode platform */
+	putshort(at->cmap,5);	/* Variation sequence table */
+	putlong(at->cmap,vspos);
+    }
     putshort(at->cmap,1);		/* mac platform */
     putshort(at->cmap,0);		/* plat specific enc, script=roman */
 	/* Even the symbol font on the mac claims a mac roman encoding */
 	/* although it actually contains a symbol encoding. There is an*/
 	/* "RSymbol" language listed for Mac (specific=8) but it isn't used*/
-    putlong(at->cmap,applecjkpos+applecjklen);	/* offset from tab start to sub tab start */
+    putlong(at->cmap,start_of_macroman);	/* offset from tab start to sub tab start */
     if ( format2!=NULL && (hasmac&2) ) {
 	/* mac cjk table, often a copy of the ms table */
 	putshort(at->cmap,1);		/* mac platform */
@@ -4656,6 +4820,9 @@ static void dumpcmap(struct alltabs *at, SplineFont *sf,enum fontformat format) 
     }
     if ( apple2!=NULL ) {
 	if ( !ttfcopyfile(at->cmap,apple2,applecjkpos,"cmap-applecjk")) at->error = true;
+    }
+    if ( format14!=NULL ) {
+	if ( !ttfcopyfile(at->cmap,format14,vspos,"cmap-uniVariations")) at->error = true;
     }
 
     /* Mac table */

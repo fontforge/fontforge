@@ -225,7 +225,8 @@ return( false );
     if ( sc->unicodeenc!=-1 )
 	fprintf( glif, "  <unicode hex=\"%04x\"/>\n", sc->unicodeenc );
     for ( altuni = sc->altuni; altuni!=NULL; altuni = altuni->next )
-	fprintf( glif, "  <unicode hex=\"%04x\"/>\n", altuni->unienc );
+	if ( altuni->vs==-1 && altuni->fid==0 )
+	    fprintf( glif, "  <unicode hex=\"%04x\"/>\n", altuni->unienc );
 
     if ( sc->layers[ly_fore].refs!=NULL || sc->layers[ly_fore].splines!=NULL ) {
 	fprintf( glif, "  <outline>\n" );
