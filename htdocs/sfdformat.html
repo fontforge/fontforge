@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 26-Sep-2007 -->
+  <!-- AP: Last modified: 30-Sep-2007 -->
   <TITLE>Spline Font Database File Format</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -880,6 +880,19 @@ AnchorPoint: "top" 803 1487 basechar 0
   <P>
   Where the number is 1 more than the 'GDEF' glyph class it represents. (so
   the 2 above means a base glyph (class 1)).
+  <P>
+  If a glyph has multiple unicode encodings (the glyph for latin "A" might
+  be used for greek "Alpha"), or is specified by variation selector then
+  alternative unicode information will be provided:
+  <BLOCKQUOTE>
+    <PRE>AltUni2: 000061.00fe01.0
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  Where the first number in the dotted triple is the alternate unicode code
+  point (in hex), the next number is the variation selector (or ffffffff),
+  and the last number is reserved for future use (and must currently be 0).
+  There may be more than one triple on the line.
   <P>
   If the character is the first in any kern pairs (not a pair defined by a
   kern class, however)
