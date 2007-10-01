@@ -2471,7 +2471,7 @@ static void bMultipleEncodingsToReferences(Context *c) {
     SplineFont *sf = fv->sf;
     EncMap *map = fv->map;
     SplineChar *sc, *orig;
-    struct altuni *alt, *next;
+    struct altuni *alt, *next, *prev;
     int uni, enc;
 
     if ( c->a.argc!=1 )
@@ -2479,17 +2479,25 @@ static void bMultipleEncodingsToReferences(Context *c) {
     for ( i=0; i<map->enccount; ++i ) {
 	if ( (gid=map->map[i])!=-1 && fv->selected[i] &&
 		(orig = sf->glyphs[gid])!=NULL && orig->altuni!=NULL ) {
+	    prev = NULL;
 	    for ( alt = orig->altuni; alt!=NULL; alt=next ) {
-		next = alt->next;
-		uni = alt->unienc;
-		orig->altuni = next;
-		AltUniFree(alt);
-		enc = EncFromUni(uni,map->enc);
-		if ( enc!=-1 ) {
-		    map->map[enc] = -1;
-		    sc = SFMakeChar(sf,map,enc);
-		    SCAddRef(sc,orig,0,0);
-		}
+		if ( alt->vs==-1 ) {
+		    next = alt->next;
+		    uni = alt->unienc;
+		    orig->altuni = next;
+		    AltUniFree(alt);
+		    if ( prev==NULL )
+			orig->altuni = next;
+		    else
+			prev->next = next;
+		    enc = EncFromUni(uni,map->enc);
+		    if ( enc!=-1 ) {
+			map->map[enc] = -1;
+			sc = SFMakeChar(sf,map,enc);
+			SCAddRef(sc,orig,0,0);
+		    }
+		} else
+		    prev = alt;
 	    }
 	}
     }

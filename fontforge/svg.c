@@ -534,7 +534,7 @@ return( SFGetChar(sc->parent,-1,pst->u.subs.variant));
 return( NULL );
 }
 
-static void svg_scdump(FILE *file, SplineChar *sc,int defwid, int encuni) {
+static void svg_scdump(FILE *file, SplineChar *sc,int defwid, int encuni, int vs) {
     PST *best=NULL;
     const unichar_t *alt;
     int32 univals[50];
@@ -581,6 +581,8 @@ static void svg_scdump(FILE *file, SplineChar *sc,int defwid, int encuni) {
 	    fprintf( file, "unicode=\"&#x%x;\" ", alt[0]);
 	else
 	    fprintf( file, "unicode=\"&#x%x;\" ", encuni);
+	if ( vs!=-1 )
+	    fprintf( file, "unicode=\"&#x%x;\" ", vs);
     }
     if ( sc->width!=defwid )
 	fprintf( file, "horiz-adv-x=\"%d\" ", sc->width );
@@ -694,6 +696,7 @@ static int AnyArabicForm( SplineChar *sc ) {
 return( sc->unicodeenc );
     for ( altuni = sc->altuni; altuni!=NULL; altuni = altuni->next )
 	if ( altuni->unienc!=-1 && altuni->unienc<0x10000 &&
+		altuni->vs==-1 && altuni->fid==0 &&
 		(isarabinitial(altuni->unienc) ||
 		 isarabmedial(altuni->unienc) ||
 		 isarabfinal(altuni->unienc) ||
@@ -726,15 +729,21 @@ static void svg_sfdump(FILE *file,SplineFont *sf) {
 
     /* Ligatures must be output before their initial components */
     for ( i=0; i<sf->glyphcnt; ++i ) {
-	if ( SCWorthOutputting(sf->glyphs[i]) && HasLigature(sf->glyphs[i]))
-	    svg_scdump(file, sf->glyphs[i],defwid,sf->glyphs[i]->unicodeenc);
+	if ( SCWorthOutputting(sf->glyphs[i]) ) {
+	    if ( HasLigature(sf->glyphs[i]))
+		svg_scdump(file, sf->glyphs[i],defwid,sf->glyphs[i]->unicodeenc,-1);
+	    /* Variation selectors should probably be treated as ligatures */
+	    for ( altuni = sf->glyphs[i]->altuni; altuni!=NULL; altuni = altuni->next )
+		if ( altuni->vs!=-1 && altuni->fid==0 )
+		    svg_scdump(file, sf->glyphs[i],defwid,altuni->unienc,altuni->vs);
+	}
     }
     /* And formed arabic before unformed */
     for ( i=0; i<sf->glyphcnt; ++i ) {
 	SplineChar *sc = sf->glyphs[i];
 	if ( SCWorthOutputting(sc) && !sc->ticked ) {
 	    if ( (formeduni = AnyArabicForm(sc))!=-1 )
-		svg_scdump(file, sc,defwid,formeduni);
+		svg_scdump(file, sc,defwid,formeduni,-1);
 	    else if ( sc->unicodeenc>=0x0600 && sc->unicodeenc<=0x06ff ) {
 		/* The conventions now (as I understand them) suggest that */
 		/*  fonts not use the unicode encodings for formed arabic */
@@ -744,28 +753,29 @@ static void svg_sfdump(FILE *file,SplineFont *sf) {
 		formed = SCHasSubs(sc,CHR('i','n','i','t'));
 		if ( SCWorthOutputting(formed) && formed->unicodeenc==-1 &&
 			!formed->ticked && ArabicForms[arab_off].initial!=0 )
-		    svg_scdump(file,formed,defwid,ArabicForms[arab_off].initial);
+		    svg_scdump(file,formed,defwid,ArabicForms[arab_off].initial,-1);
 		formed = SCHasSubs(sc,CHR('m','e','d','i'));
 		if ( SCWorthOutputting(formed) && formed->unicodeenc==-1 &&
 			!formed->ticked && ArabicForms[arab_off].medial!=0 )
-		    svg_scdump(file,formed,defwid,ArabicForms[arab_off].medial);
+		    svg_scdump(file,formed,defwid,ArabicForms[arab_off].medial,-1);
 		formed = SCHasSubs(sc,CHR('f','i','n','a'));
 		if ( SCWorthOutputting(formed) && formed->unicodeenc==-1 &&
 			!formed->ticked && ArabicForms[arab_off].final!=0 )
-		    svg_scdump(file,formed,defwid,ArabicForms[arab_off].final);
+		    svg_scdump(file,formed,defwid,ArabicForms[arab_off].final,-1);
 		formed = SCHasSubs(sc,CHR('i','s','o','l'));
 		if ( SCWorthOutputting(formed) && formed->unicodeenc==-1 &&
 			!formed->ticked && ArabicForms[arab_off].isolated!=0 )
-		    svg_scdump(file,formed,defwid,ArabicForms[arab_off].isolated);
+		    svg_scdump(file,formed,defwid,ArabicForms[arab_off].isolated,-1);
 	    }
 	}
     }
     for ( i=0; i<sf->glyphcnt; ++i ) {
 	if ( SCWorthOutputting(sf->glyphs[i]) && !sf->glyphs[i]->ticked ) {
 	    if ( UnformedUni(sf->glyphs[i]->unicodeenc) )
-		svg_scdump(file, sf->glyphs[i],defwid,sf->glyphs[i]->unicodeenc);
+		svg_scdump(file, sf->glyphs[i],defwid,sf->glyphs[i]->unicodeenc,-1);
 	    for ( altuni = sf->glyphs[i]->altuni; altuni!=NULL; altuni = altuni->next )
-		svg_scdump(file, sf->glyphs[i],defwid,altuni->unienc);
+		if ( altuni->vs==-1 && altuni->fid==0 )
+		    svg_scdump(file, sf->glyphs[i],defwid,altuni->unienc,altuni->vs);
 	}
     }
     svg_dumpkerns(file,sf,false);
@@ -2425,7 +2435,21 @@ static void SVGLigatureFixupCheck(SplineChar *sc,xmlNodePtr glyph) {
 	u = utf82u_copy((char *) unicode);
 #endif
 	_xmlFree(unicode);
-	if ( u[1]!='\0' ) {
+	if ( u[1]!='\0' && u[2]=='\0' &&
+		((u[1]>=0x180B && u[1]<=0x180D) ||	/* Mongolian VS */
+		 (u[1]>=0xfe00 && u[1]<=0xfe0f) ||	/* First VS block */
+		 (u[1]>=0xE0100 && u[1]<=0xE01EF)) ) {	/* Second VS block */
+	    /* Problably a variant glyph marked with a variation selector */
+	    /* ... not a true ligature at all */
+	    /* http://babelstone.blogspot.com/2007/06/secret-life-of-variation-selectors.html */
+	    struct altuni *altuni = chunkalloc(sizeof(struct altuni));
+	    altuni->unienc = u[0];
+	    altuni->vs = u[1];
+	    altuni->fid = 0;
+	    altuni->next = sc->altuni;
+	    sc->altuni = altuni;
+	} else if ( u[1]!='\0' ) {
+	    /* Normal ligature */
 	    for ( len=0; u[len]!=0; ++len );
 	    chars = galloc(len*sizeof(SplineChar *));
 	    for ( len=len2=0; u[len]!=0; ++len ) {

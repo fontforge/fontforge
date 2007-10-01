@@ -1116,9 +1116,9 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
 	fprintf(sfd, "Encoding: %d %d %d\n", (int) map->backmap[sc->orig_pos], sc->unicodeenc,
 		newgids!=NULL?newgids[sc->orig_pos]:sc->orig_pos);
     if ( sc->altuni ) {
-	fprintf( sfd, "AltUni:" );
+	fprintf( sfd, "AltUni2:" );
 	for ( altuni = sc->altuni; altuni!=NULL; altuni=altuni->next )
-	    fprintf( sfd, " %d", altuni->unienc );
+	    fprintf( sfd, " %06x.%06x.%x", altuni->unienc, altuni->vs, altuni->fid );
 	putc( '\n', sfd);
     }
     fprintf(sfd, "Width: %d\n", sc->width );
@@ -2488,7 +2488,7 @@ static int gethex(FILE *sfd, int *val) {
 return( pt!=tokbuf?1:ch==EOF?-1: 0 );
 }
 
-static void gethexints(FILE *sfd, int *val, int cnt) {
+static int gethexints(FILE *sfd, int *val, int cnt) {
     int i, ch;
 
     for ( i=0; i<cnt; ++i ) {
@@ -2496,8 +2496,10 @@ static void gethexints(FILE *sfd, int *val, int cnt) {
 	    ch = getc(sfd);
 	    if ( ch!='.' ) ungetc(ch,sfd);
 	}
-	gethex(sfd,&val[i]);
+	if ( !gethex(sfd,&val[i]))
+return( false );
     }
+return( true );
 }
 
 static int getsint(FILE *sfd, int16 *val) {
@@ -3518,6 +3520,18 @@ return( NULL );
 	    while ( getint(sfd,&uni)==1 ) {
 		altuni = chunkalloc(sizeof(struct altuni));
 		altuni->unienc = uni;
+		altuni->vs = -1;
+		altuni->fid = 0;
+		altuni->next = sc->altuni;
+		sc->altuni = altuni;
+	    }
+	} else if ( strmatch(tok,"AltUni2:")==0 ) {
+	    int uni[3];
+	    while ( gethexints(sfd,uni,3) ) {
+		altuni = chunkalloc(sizeof(struct altuni));
+		altuni->unienc = uni[0];
+		altuni->vs = uni[1];
+		altuni->fid = uni[2];
 		altuni->next = sc->altuni;
 		sc->altuni = altuni;
 	    }
@@ -5120,9 +5134,11 @@ static void SFD_DoAltUnis(SplineFont *sf) {
 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc = sf->glyphs[i])!=NULL ) {
 	for ( alt = sc->altuni; alt!=NULL; alt = alt->next ) {
-	    int enc = EncFromUni(alt->unienc,sf->map->enc);
-	    if ( enc!=-1 )
-		SFDSetEncMap(sf,sc->orig_pos,enc);
+	    if ( alt->vs==-1 && alt->fid==0 ) {
+		int enc = EncFromUni(alt->unienc,sf->map->enc);
+		if ( enc!=-1 )
+		    SFDSetEncMap(sf,sc->orig_pos,enc);
+	    }
 	}
     }
 }

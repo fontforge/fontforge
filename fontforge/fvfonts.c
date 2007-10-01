@@ -466,6 +466,8 @@ static struct altuni *AltUniCopy(struct altuni *altuni,SplineFont *noconflicts) 
 	if ( noconflicts==NULL || SFGetChar(noconflicts,altuni->unienc,NULL)==NULL ) {
 	    cur = chunkalloc(sizeof(struct altuni));
 	    cur->unienc = altuni->unienc;
+	    cur->vs = altuni->vs;
+	    cur->fid = altuni->fid;
 	    if ( head==NULL )
 		head = cur;
 	    else
@@ -705,7 +707,7 @@ int SFFindGID(SplineFont *sf, int unienc, const char *name ) {
 	    if ( sf->glyphs[gid]->unicodeenc == unienc )
 return( gid );
 	    for ( altuni = sf->glyphs[gid]->altuni; altuni!=NULL; altuni=altuni->next ) {
-		if ( altuni->unienc == unienc )
+		if ( altuni->unienc == unienc && altuni->vs==-1 && altuni->fid==0 )
 return( gid );
 	    }
 	}
@@ -892,7 +894,8 @@ static int _SFFindExistingSlot(SplineFont *sf, int unienc, const char *name ) {
 	for ( gid=sf->glyphcnt-1; gid>=0; --gid ) if ( sf->glyphs[gid]!=NULL ) {
 	    if ( sf->glyphs[gid]->unicodeenc==unienc )
 	break;
-	    for ( altuni=sf->glyphs[gid]->altuni ; altuni!=NULL && altuni->unienc!=unienc ;
+	    for ( altuni=sf->glyphs[gid]->altuni ; altuni!=NULL &&
+		    (altuni->unienc!=unienc || altuni->vs!=-1 || altuni->fid!=0);
 		    altuni=altuni->next );
 	    if ( altuni!=NULL )
 	break;

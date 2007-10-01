@@ -177,6 +177,12 @@ return( 0 );
       case me_int:
 	width = GDrawGetText8Width(gme->g.base,"1234", -1, NULL );
       break;
+      case me_hex:
+	width = GDrawGetText8Width(gme->g.base,"0xFFFF", -1, NULL );
+      break;
+      case me_uhex:
+	width = GDrawGetText8Width(gme->g.base,"U+FFFF", -1, NULL );
+      break;
       case me_real:
 	width = GDrawGetText8Width(gme->g.base,"1.234567", -1, NULL );
       break;
@@ -666,7 +672,7 @@ static int GME_SetValue(GMatrixEdit *gme,GGadget *g ) {
     int ival;
     double dval;
     char *end="";
-    char *str = GGadgetGetTitle8(g);
+    char *str = GGadgetGetTitle8(g), *pt;
     int kludge;
 
     switch ( gme->col_data[c].me_type ) {
@@ -686,11 +692,21 @@ static int GME_SetValue(GMatrixEdit *gme,GGadget *g ) {
 	}
 	/* Didn't match any of the enums try as a direct integer */
 	/* Fall through */
-      case me_int:
+      case me_int: case me_hex: case me_uhex:
 	if ( gme->validatestr!=NULL )
 	    end = (gme->validatestr)(&gme->g,gme->active_row,gme->active_col,gme->wasnew,str);
-	if ( *end=='\0' )
-	    ival = strtol(str,&end,10);
+	if ( *end=='\0' ) {
+	    if ( gme->col_data[c].me_type==me_hex || gme->col_data[c].me_type==me_uhex ) {
+		pt = str;
+		while ( *pt==' ' ) ++pt;
+		if ( (*pt=='u' || *pt=='U') && pt[1]=='+' )
+		    pt += 2;
+		else if ( *pt=='0' && (pt[1]=='x' || pt[1]=='X'))
+		    pt += 2;
+		ival = strtol(pt,&end,16);
+	    } else
+		ival = strtol(str,&end,10);
+	}
 	if ( *end!='\0' ) {
 	    GTextFieldSelect(g,end-str,-1);
 	    free(str);
@@ -1103,6 +1119,14 @@ static char *MD_Text(GMatrixEdit *gme,int r, int c ) {
 	/* Fall through into next case */
       case me_int:
 	sprintf( buffer,"%d",(int) d->u.md_ival );
+	str = buffer;
+      break;
+      case me_hex:
+	sprintf( buffer,"0x%x",(int) d->u.md_ival );
+	str = buffer;
+      break;
+      case me_uhex:
+	sprintf( buffer,"U+%04X",(int) d->u.md_ival );
 	str = buffer;
       break;
       case me_real:
