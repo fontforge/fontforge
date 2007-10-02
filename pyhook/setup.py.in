@@ -1,0 +1,17 @@
+from distutils.core import setup
+from distutils.extension import Extension
+
+setup(name='fontforge',
+    version='1.0',
+    description='font manipulation module',
+    author='George Williams',
+    url='http://fontforge.sf.net/',
+    ext_modules=[Extension('fontforge',['fontforgepyhook.c'],
+	    include_dirs=[@PYINCLUDE@],
+	    define_macros=[@PYDEFINES@],
+	    libraries=[@PYLIBS@]),
+	Extension('psMat',['psMatpyhook.c'],
+	    include_dirs=[@PYINCLUDE@],
+	    define_macros=[@PYDEFINES@],
+	    libraries=[@PYLIBS@])]
+    )

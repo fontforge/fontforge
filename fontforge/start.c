@@ -1072,6 +1072,10 @@ return( 0 );
 
 #ifndef _NO_PYTHON
 void doinitFontForgeMain(void) {
+    static int inited = false;
+
+    if ( inited )
+return;
     SetDefaults();
     PrefDefaultEncoding();
     if ( default_encoding==NULL )
@@ -1082,5 +1086,6 @@ void doinitFontForgeMain(void) {
     initrand();
     initadobeenc();
     inituninameannot();
+    inited = true;
 }
 #endif		/* _NO_PYTHON */

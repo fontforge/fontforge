@@ -97,6 +97,8 @@ install: $(DESTDIR)$(sharedir) all install_libs install_po
 #explicit use of sh to make sure we don't invoke csh with different "if" syntax
 	sh -c "if test -d $(srcdir)/htdocs >/dev/null ; then $(MAKE) install_docs ; fi"
 	sh < systemspecific
+#we don't always create a setup.py
+	-(cd pyhook ; python setup.py install )
 
 uninstall:
 	-rm $(DESTDIR)$(bindir)/fontforge

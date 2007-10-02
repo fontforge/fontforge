@@ -2671,7 +2671,7 @@ extern void PyFF_CallDictFunc(struct _object *dict,char *key,char *argtypes, ...
 struct gtextinfo;
 extern void scriptingSaveEnglishNames(struct gtextinfo *ids,struct gtextinfo *langs);
 extern void doinitFontForgeMain(void);
-extern void initfontforge(void);
+extern void ff_init(void);
 #endif
 
 extern struct math_constants_descriptor {
