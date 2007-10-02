@@ -10884,7 +10884,7 @@ void PyFF_ErrorF3(const char *frmt, const char *str, int size, int depth) {
     PyErr_Format(PyExc_ValueError, frmt, str, size, depth );
 }
 
-static PyMODINIT_FUNC initPyFontForge(void) {
+static void initPyFontForge(void) {
     PyObject* m;
     int i;
     static PyTypeObject *types[] = { &PyFF_PointType, &PyFF_ContourType,
@@ -11137,5 +11137,10 @@ return;
 	PyFF_CallDictFunc(hook_dict,"newFontHook","f", fv );
     else
 	PyFF_CallDictFunc(hook_dict,"loadFontHook","f", fv );
+}
+
+PyMODINIT_FUNC initfontforge(void) {
+    doinitFontForgeMain();
+    initPyFontForge();
 }
 #endif		/* _NO_PYTHON */

@@ -89,6 +89,21 @@ AC_C_BIGENDIAN
 
 AC_PROG_LIBTOOL
 
+AC_SUBST(FINAL_TARGET)
+AC_SUBST(O_EXTENSION)
+FINAL_TARGET=fontforge
+O_EXTENSION=o
+AC_ARG_ENABLE(pyextension,
+  AC_HELP_STRING(--enable-pyextension, disable/enable building shared fontforge library (python plugin)),
+[
+  case $enableval in
+  yes)
+    FINAL_TARGET=../libfontforge.la
+    O_EXTENSION=lo
+    ;;
+  esac
+])
+
 AC_ARG_WITH(capslock-for-alt,
  [  --with-capslock-for-alt   Control whether to use capslock rather than alt/meta to alter behavior of tools in outline/bitmap windows],
  [

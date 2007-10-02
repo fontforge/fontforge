@@ -1069,3 +1069,18 @@ int FontForgeMain( int argc, char **argv ) {
 #endif
 return( 0 );
 }
+
+#ifndef _NO_PYTHON
+void doinitFontForgeMain(void) {
+    SetDefaults();
+    PrefDefaultEncoding();
+    if ( default_encoding==NULL )
+	default_encoding=FindOrMakeEncoding("ISO8859-1");
+    if ( default_encoding==NULL )
+	default_encoding=&custom;	/* In case iconv is broken */
+    initlibrarysearchpath();
+    initrand();
+    initadobeenc();
+    inituninameannot();
+}
+#endif		/* _NO_PYTHON */
