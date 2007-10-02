@@ -1610,7 +1610,7 @@ static uint8 *gen_extremum_instrs(struct glyphinstrs *gi, uint8 *instrs,
 return( instrs );
 }
 
-void initforinstrs(SplineChar *sc) {
+void SCinitforinstrs(SplineChar *sc) {
 }
 
 static uint8 *dogeninstructions(SplineChar *sc, struct glyphinstrs *gi,

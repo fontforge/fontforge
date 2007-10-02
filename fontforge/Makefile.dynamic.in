@@ -12,6 +12,7 @@ plugindir = $(sharedir)/plugins
 
 LIBTOOL = @LIBTOOL@
 CC = @CC@
+O = @O_EXTENSION@
 
 X_CFLAGS = @X_CFLAGS@
 X_LIBS = @X_LIBS@
@@ -20,29 +21,33 @@ X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
 STATIC_LIBS = @STATIC_LIBS@
 
-fontforge_LIBOBJECTS =  autohint.o autosave.o autowidth.o bitmapdlg.o \
- bitmapview.o bvedit.o charview.o cursors.o \
- cvaddpoints.o cvexport.o cvgetinfo.o cvhints.o cvimages.o cvknife.o \
- cvpalettes.o cvpointer.o cvruler.o cvshapes.o cvstroke.o cvtranstools.o \
- cvundoes.o dumpbdf.o dumppfa.o fontinfo.o fontview.o fvcomposit.o \
- fvfonts.o fvimportbdf.o fvmetrics.o images.o metricsview.o \
- parsepfa.o parsettf.o prefs.o psread.o namelist.o savefontdlg.o \
- sfd.o splashimage.o splinefill.o splineoverlap.o splinesave.o \
- splinesaveafm.o splinestroke.o splineutil.o splineutil2.o stamp.o \
- start.o tottf.o transform.o uiutil.o utils.o windowmenu.o  \
- zapfnomen.o othersubrs.o autotrace.o openfontdlg.o encoding.o \
- problems.o scstyles.o alignment.o parsettfbmf.o \
- macbinary.o crctab.o scripting.o freetype.o gotodlg.o search.o \
- combinations.o tilepath.o sftextfield.o displayfonts.o ikarus.o \
- cvhand.o cvfreehand.o simplifydlg.o winfonts.o tottfgpos.o tottfaat.o \
- charinfo.o splineorder2.o genttfinstrs.o ttfinstrs.o cvgridfit.o \
- cvdebug.o showatt.o kernclass.o nonlineartrans.o effects.o \
- histograms.o ttfspecial.o svg.o parsettfatt.o contextchain.o \
- macenc.o statemachine.o splinerefigure.o mm.o \
- parsettfvar.o tottfvar.o pua.o stemdb.o anchorsaway.o palmfonts.o \
- cvdgloss.o groups.o parsepdf.o plugins.o bdfinfo.o \
- glyphcomp.o unicoderange.o ufo.o ofl.o lookups.o sfd1.o @FF_EXTRA_FILES@ \
- python.o featurefile.o math.o nowakowskittfinstr.o http.o
+FF_VERSION=1
+FF_REVISION=0
+FF_AGE=0
+
+fontforge_LIBOBJECTS =  autohint.$O autosave.$O autowidth.$O bitmapdlg.$O \
+ bitmapview.$O bvedit.$O charview.$O cursors.$O \
+ cvaddpoints.$O cvexport.$O cvgetinfo.$O cvhints.$O cvimages.$O cvknife.$O \
+ cvpalettes.$O cvpointer.$O cvruler.$O cvshapes.$O cvstroke.$O cvtranstools.$O \
+ cvundoes.$O dumpbdf.$O dumppfa.$O fontinfo.$O fontview.$O fvcomposit.$O \
+ fvfonts.$O fvimportbdf.$O fvmetrics.$O images.$O metricsview.$O \
+ parsepfa.$O parsettf.$O prefs.$O psread.$O namelist.$O savefontdlg.$O \
+ sfd.$O splashimage.$O splinefill.$O splineoverlap.$O splinesave.$O \
+ splinesaveafm.$O splinestroke.$O splineutil.$O splineutil2.$O stamp.$O \
+ start.$O tottf.$O transform.$O uiutil.$O utils.$O windowmenu.$O  \
+ zapfnomen.$O othersubrs.$O autotrace.$O openfontdlg.$O encoding.$O \
+ problems.$O scstyles.$O alignment.$O parsettfbmf.$O \
+ macbinary.$O crctab.$O scripting.$O freetype.$O gotodlg.$O search.$O \
+ combinations.$O tilepath.$O sftextfield.$O displayfonts.$O ikarus.$O \
+ cvhand.$O cvfreehand.$O simplifydlg.$O winfonts.$O tottfgpos.$O tottfaat.$O \
+ charinfo.$O splineorder2.$O genttfinstrs.$O ttfinstrs.$O cvgridfit.$O \
+ cvdebug.$O showatt.$O kernclass.$O nonlineartrans.$O effects.$O \
+ histograms.$O ttfspecial.$O svg.$O parsettfatt.$O contextchain.$O \
+ macenc.$O statemachine.$O splinerefigure.$O mm.$O \
+ parsettfvar.$O tottfvar.$O pua.$O stemdb.$O anchorsaway.$O palmfonts.$O \
+ cvdgloss.$O groups.$O parsepdf.$O plugins.$O bdfinfo.$O \
+ glyphcomp.$O unicoderange.$O ufo.$O ofl.$O lookups.$O sfd1.$O @FF_EXTRA_FILES@ \
+ python.$O featurefile.$O math.$O nowakowskittfinstr.$O http.$O
 DIFFOBJS = sfddiff.o sfd.o diffstubs.o stamp.o namelist.o pua.o
 ACORNOBJS = acorn2sfd.o sfd.o diffstubs.o psunicodenames.o stamp.o
 
@@ -57,10 +62,18 @@ LIBS = -rpath $(libdir) $(X_LIBS) ../libgdraw.la ../libgunicode.la \
     $(X_PRE_LIBS) $(X_11LIB) $(X_EXTRA_LIBS) @LIBS@ $(STATIC_LIBS) -lm
 DLIBS = -rpath $(libdir) ../libgunicode.la @LIBS@ $(STATIC_LIBS) -lm
 
-all: fontforge sfddiff fontimage fontlint
+all: @FINAL_TARGET@ sfddiff fontimage fontlint
 
 fontforge: main.o $(fontforge_LIBOBJECTS)
-	$(LIBTOOL) --mode=link $(CC) -export-dynamic $(LDFLAGS) -o fontforge main.o $(fontforge_LIBOBJECTS) $(LIBS)
+	$(LIBTOOL) --mode=link $(CC) -export-dynamic $(LDFLAGS) -o fontforge \
+	    main.o $(fontforge_LIBOBJECTS) $(LIBS)
+
+../libfontforge.la: main.o $(fontforge_LIBOBJECTS)
+	$(LIBTOOL) --mode=link $(CC) -no-undefined $(CFLAGS) @LDFLAGS@ \
+	    -o ../libfontforge.la $(fontforge_LIBOBJECTS) $(LIBS) \
+	    -rpath $(libdir) -version-info $(FF_VERSION):$(FF_REVISION):$(FF_AGE)
+	$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o fontforge \
+	    main.o ../libfontforge.la $(LIBS)
 
 sfddiff: sfddiff.pe
 	echo "#!$(bindir)/fontforge -lang=ff" > $@
@@ -73,9 +86,9 @@ fontimage: fontimage.pe
 	chmod +x $@
 
 fontlint: fontlint.pe
-	echo "#!$(bindir)/fontforge -lang=ff" >fontlint
-	cat fontlint.pe >>fontlint
-	chmod +x fontlint
+	echo "#!$(bindir)/fontforge -lang=ff" >$@
+	cat $< >>$@
+	chmod +x $@
 
 sfddiff.old: $(DIFFOBJS)
 	$(LIBTOOL) --mode=link $(CC) -o sfddiff.old $(DIFFOBJS) $(DLIBS)
@@ -96,6 +109,11 @@ splinerefigure.lo: $(srcdir)/splinerefigure.c $(srcdir)/splinefont.h
 
 %.o: %.c $(srcdir)/splinefont.h $(srcdir)/views.h $(srcdir)/stemdb.h $(srcdir)/ttf.h $(srcdir)/unicoderange.h $(srcdir)/psfont.h $(srcdir)/groups.h $(srcdir)/edgelist.h $(srcdir)/edgelist2.h
 	$(CC) $(CFLAGS) -c $<
+
+%.lo: %.c
+
+%.lo: %.c $(srcdir)/splinefont.h $(srcdir)/views.h $(srcdir)/stemdb.h $(srcdir)/ttf.h $(srcdir)/unicoderange.h $(srcdir)/psfont.h $(srcdir)/groups.h $(srcdir)/edgelist.h $(srcdir)/edgelist2.h
+	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -c $<
 
 clean:
 	-rm -f *.o fontforge sfddiff fontimage

@@ -56,6 +56,8 @@ install_libs: libs
 	#-rm $(DESTDIR)$(libdir)/libgdraw.so* $(DESTDIR)$(libdir)/libgunicode.so.*
 	$(LIBTOOL) --mode=install $(INSTALL) -c libgunicode.la $(DESTDIR)$(libdir)/libgunicode.la
 	$(LIBTOOL) --mode=install $(INSTALL) -c libgdraw.la $(DESTDIR)$(libdir)/libgdraw.la
+#We don't always build libfontforge
+	-$(LIBTOOL) --mode=install $(INSTALL) -c libfontforge.la $(DESTDIR)$(libdir)/libfontforge.la
 	$(LIBTOOL) --mode=finish $(DESTDIR)$(libdir)
 	mkdir -p $(DESTDIR)$(libdir)/pkgconfig
 	$(INSTALL_DATA) fontforge.pc $(DESTDIR)$(libdir)/pkgconfig
