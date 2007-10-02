@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 9-Sep-2007 -->
+  <!-- AP: Last modified: 2-Oct-2007 -->
   <TITLE>The Edit Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -172,6 +172,8 @@
 	  <A HREF="#SelChanged">Changed Glyphs</A>
 	<LI>
 	  <A HREF="#SelHinting">Hinting Needed</A>
+	<LI>
+	  <A HREF="#SelAutohintable">Autohintable</A>
 	<LI>
 	  <A HREF="#SelectByATT">Select By Lookup Subtable</A>...
       </UL>
@@ -555,6 +557,13 @@
 	  <A NAME="SelHinting">Hinting Needed</A>
 	<DD>
 	  Selects all glyphs which FontForge thinks need to be hinted.
+	<DT>
+	  <A NAME="SelAutohintable">Autohintable</A>
+	<DD>
+	  Selects all glyphs which FontForge thinks can be autohinted -- ie. all glyphs
+	  not marked <A HREF="hintsmenu.html#DontAutoHint">Hints-&gt;Don't Autohint</A>
+	  (this does not check whether ff thinks the glyphs in question NEED to be
+	  autohinted)
 	<DT>
 	  <A NAME="SelectByATT">Select By Lookup Subtable...</A>
 	<DD>

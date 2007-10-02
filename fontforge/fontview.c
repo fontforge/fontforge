@@ -3017,6 +3017,27 @@ void FontViewMenu_SelectUnhintedGlyphs(GtkMenuItem *menuitem, gpointer user_data
 }
 
 # ifdef FONTFORGE_CONFIG_GDRAW
+static void FVMenuSelectAutohintable(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+# elif defined(FONTFORGE_CONFIG_GTK)
+void FontViewMenu_SelectAutohintable(GtkMenuItem *menuitem, gpointer user_data) {
+    FontView *fv = FV_From_MI(menuitem);
+# endif
+    int i, gid;
+    EncMap *map = fv->map;
+    SplineFont *sf = fv->sf;
+
+    for ( i=0; i< map->enccount; ++i )
+	fv->selected[i] = (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
+		!sf->glyphs[gid]->manualhints;
+# ifdef FONTFORGE_CONFIG_GDRAW
+    GDrawRequestExpose(fv->v,NULL,false);
+# elif defined(FONTFORGE_CONFIG_GTK)
+    gtk_widget_queue_draw(fv->v);
+#endif
+}
+
+# ifdef FONTFORGE_CONFIG_GDRAW
 static void FVMenuSelectColor(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     FVSelectColor(fv,(uint32) (intpt) (mi->ti.userdata),(e->u.chr.state&ksm_shift)?1:0);
@@ -6885,6 +6906,7 @@ static GMenuItem2 sllist[] = {
     { { (unichar_t *) N_("_Glyphs Worth Outputting"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Glyphs Worth Outputting|No Shortcut"), NULL,NULL, FVMenuSelectWorthOutputting },
     { { (unichar_t *) N_("_Changed Glyphs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Changed Glyphs|No Shortcut"), NULL,NULL, FVMenuSelectChanged },
     { { (unichar_t *) N_("_Hinting Needed"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Hinting Needed|No Shortcut"), NULL,NULL, FVMenuSelectHintingNeeded },
+    { { (unichar_t *) N_("Autohinta_ble"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Autohintable|No Shortcut"), NULL,NULL, FVMenuSelectAutohintable },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("Selec_t By Lookup Subtable..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Select By Lookup Subtable...|No Shortcut"), NULL, NULL, FVMenuSelectByPST },
     { NULL }
