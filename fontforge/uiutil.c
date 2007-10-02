@@ -236,7 +236,11 @@ static void findbrowser(void) {
 	"iexplore.exe",
 	/*"lynx.exe",*/
 #else
-    static char *stdbrowsers[] = { "firefox", "xdg-open", "htmlview", "mozilla", "opera", "galeon", "kfmclient",
+/* Both xdg-open and htmlview are not browsers per se, but browser dispatchers*/
+/*  which try to figure out what browser the user intents. It seems no one */
+/*  uses (understands?) environment variables any more, so BROWSER is a bit */
+/*  old-fashioned */
+    static char *stdbrowsers[] = { "xdg-open", "htmlview", "firefox", "mozilla", "opera", "galeon", "kfmclient",
 	"netscape", "mosaic", /*"grail",*/ "lynx",
 #endif
 	NULL };
