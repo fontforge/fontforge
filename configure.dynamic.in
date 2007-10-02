@@ -15,6 +15,7 @@ gww_define_caps_for_alt="dontknow"
 gww_nodynamic="no"
 gww_needsstatic="no"
 gww_ismac="no"
+gww_iscygwin="no"
 gww_needsstaticimages="no"
 gww_rpath=""
 AC_ARG_WITH(static-imagelibs,
@@ -60,6 +61,7 @@ powerpc-*-*linux*)
  AC_DEFINE(_BrokenBitmapImages)
  AC_DEFINE(_ModKeysAutoRepeat)
  AC_DEFINE(__CygWin,1)
+ gww_iscygwin="yes"
 
 dnl Although present on my cygwin system the Xi library does not load
 dnl and crashes gdb if we attempt to use it.
@@ -93,6 +95,7 @@ AC_SUBST(FINAL_TARGET)
 AC_SUBST(O_EXTENSION)
 FINAL_TARGET=fontforge
 O_EXTENSION=o
+gww_dopy=no
 AC_ARG_ENABLE(pyextension,
   AC_HELP_STRING(--enable-pyextension, disable/enable building shared fontforge library (python plugin)),
 [
@@ -100,6 +103,7 @@ AC_ARG_ENABLE(pyextension,
   yes)
     FINAL_TARGET=../libfontforge.la
     O_EXTENSION=lo
+    gww_dopy=yes
     ;;
   esac
 ])
@@ -192,6 +196,7 @@ fi
 
 if test "$python" = "no" ; then
   AC_DEFINE(_NO_PYTHON)
+  gww_dopy=no
 else
   AC_SUBST(PYTHON_LIB_NAME)
   PYTHON_LIB_NAME="python$PyVersion"
@@ -621,11 +626,37 @@ dnl end code for locale files.
 AC_SUBST(VERSION)
 VERSION=`cat $ac_confdir/VERSION`
 
+if test "x$prefix" != xNONE; then
+  real_prefix="$prefix"
+else
+  real_prefix="$ac_default_prefix"
+fi
+
+PY=
+if test "$gww_dopy" = "yes" >/dev/null 2>&1 ; then
+  AC_SUBST(PYINCLUDE)
+  AC_SUBST(PYDEFINES)
+  AC_SUBST(PYLIBS)
+  PYINCLUDE=
+  PYDEFINES="('PREFIX','\"$real_prefix\"')"
+  if test "$gww_ismac" = "yes" >/dev/null 2>&1 ; then
+    PYDEFINES="$PYDEFINES, ('__Mac','1')"
+  elif test "$gww_iscygwin" = "yes" >/dev/null 2>&1 ; then
+    PYDEFINES="$PYDEFINES, ('__CygWin','1')"
+  fi
+  if test "$ac_cv_lib_dl_dlopen" = "yes" >/dev/null 2>&1 ; then
+    PYLIBS="'dl'"
+  else
+    PYLIBS=""
+  fi
+  PY=pyhook/setup.py
+fi
+
 cp $ac_confdir/Makefile.dynamic.in $ac_confdir/Makefile.in
 cp $ac_confdir/Unicode/Makefile.dynamic.in $ac_confdir/Unicode/Makefile.in
 cp $ac_confdir/gdraw/Makefile.dynamic.in $ac_confdir/gdraw/Makefile.in
 cp $ac_confdir/fontforge/Makefile.dynamic.in $ac_confdir/fontforge/Makefile.in
-AC_OUTPUT(Makefile Unicode/Makefile gdraw/Makefile fontforge/Makefile po/Makefile plugins/Makefile systemspecific fontforge.pc )
+AC_OUTPUT(Makefile Unicode/Makefile gdraw/Makefile fontforge/Makefile po/Makefile plugins/Makefile systemspecific fontforge.pc $PY)
 if test -e umap >/dev/null 2>&1 ; then
   cp $ac_confdir/umap/Makefile.dynamic.in $ac_confdir/umap/Makefile.in
   AC_OUTPUT( umap/Makefile )
@@ -637,9 +668,9 @@ if test "$STATIC_LIBS" != ""; then
   echo Non DlOpenable or Static Libraries: $STATIC_LIBS
 fi
 
-if ! echo $PATH | tr : \\n | grep -x $prefix/bin >/dev/null ; then
+if ! echo $PATH | tr : \\n | grep -x $real_prefix/bin >/dev/null ; then
  echo " *******************************************************************"
- echo " * You do not have $prefix/bin in your PATH environment variable   *"
+ echo " * You do not have $real_prefix/bin in your PATH environment variable   *"
  echo " *******************************************************************"
  echo
 fi

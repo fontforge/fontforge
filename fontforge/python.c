@@ -10636,7 +10636,7 @@ static PyMethodDef FontForge_methods[] = {
 };
 
 static PyObject *PyPS_Identity(PyObject *noself, PyObject *args) {
-return( Py_BuildValue("(dddddd)",  1.0, 0.0, 0.0,  0.0, 1.0, 0.0));
+return( Py_BuildValue("(dddddd)",  1.0, 0.0, 0.0,  1.0, 0.0, 0.0));
 }
 
 static PyObject *PyPS_Translate(PyObject *noself, PyObject *args) {
@@ -11139,8 +11139,9 @@ return;
 	PyFF_CallDictFunc(hook_dict,"loadFontHook","f", fv );
 }
 
-PyMODINIT_FUNC initfontforge(void) {
+void ff_init(void) {
     doinitFontForgeMain();
+    no_windowing_ui = running_script = true;
     initPyFontForge();
 }
 #endif		/* _NO_PYTHON */
