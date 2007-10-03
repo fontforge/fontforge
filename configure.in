@@ -91,23 +91,6 @@ AC_C_BIGENDIAN
 
 AC_PROG_LIBTOOL
 
-AC_SUBST(FINAL_TARGET)
-AC_SUBST(O_EXTENSION)
-FINAL_TARGET=fontforge
-O_EXTENSION=o
-gww_dopy=no
-AC_ARG_ENABLE(pyextension,
-  AC_HELP_STRING(--enable-pyextension, disable/enable building shared fontforge library (python plugin)),
-[
-  case $enableval in
-  yes)
-    FINAL_TARGET=../libfontforge.la
-    O_EXTENSION=lo
-    gww_dopy=yes
-    ;;
-  esac
-])
-
 AC_ARG_WITH(capslock-for-alt,
  [  --with-capslock-for-alt   Control whether to use capslock rather than alt/meta to alter behavior of tools in outline/bitmap windows],
  [
@@ -194,12 +177,44 @@ if test "$python" = "yes" ; then
   echo $python
 fi
 
+gww_dopy=no
+gww_fflib=yes
+AC_ARG_ENABLE(libff,
+  AC_HELP_STRING(--enable-libff, disable/enable building shared fontforge library),
+[
+  case $enableval in
+   no)
+    gww_fflib=no
+   ;;
+  esac
+])
 if test "$python" = "no" ; then
   AC_DEFINE(_NO_PYTHON)
-  gww_dopy=no
 else
   AC_SUBST(PYTHON_LIB_NAME)
   PYTHON_LIB_NAME="python$PyVersion"
+
+  if test "$gww_fflib" = "yes" ; then
+    AC_ARG_ENABLE(pyextension,
+      AC_HELP_STRING(--enable-pyextension, disable/enable installing libfontforge as a python extension plugin),
+    [
+      case $enableval in
+       yes)
+	gww_dopy=yes
+       ;;
+      esac
+    ])
+  fi
+fi
+
+AC_SUBST(FINAL_TARGET)
+AC_SUBST(O_EXTENSION)
+if test "$gww_fflib" = "no" ; then
+  FINAL_TARGET=fontforge
+  O_EXTENSION=o
+else
+  FINAL_TARGET=../libfontforge.la
+  O_EXTENSION=lo
 fi
 
 ffscript="yes"
