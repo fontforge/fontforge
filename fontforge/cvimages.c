@@ -63,8 +63,10 @@ static unichar_t wildtemplate[] = { '{','u','n','i',',','u',',','c','i','d',',',
 static unichar_t wildepstemplate[] = { '{','u','n','i',',','u',',','c','i','d',',','e','n','c','}','[','0','-','9','a','-','f','A','-','F',']','*', '.', '{', 'p','s',',', 'e','p','s',',','a','r','t','}',  0 };
 static unichar_t wildsvgtemplate[] = { '{','u','n','i',',','u',',','c','i','d',',','e','n','c','}','[','0','-','9','a','-','f','A','-','F',']','*', '.', 's', 'v','g',  0 };
 static unichar_t wildgliftemplate[] = { '{','u','n','i',',','u',',','c','i','d',',','e','n','c','}','[','0','-','9','a','-','f','A','-','F',']','*', '.', 'g', 'l','i','f',  0 };
+static unichar_t wildplatetemplate[] = { '{','u','n','i',',','u',',','c','i','d',',','e','n','c','}','[','0','-','9','a','-','f','A','-','F',']','*', '.', 'p','l','a','t','e',  0 };
 static unichar_t wildps[] = { '*', '.', '{', 'p','s',',', 'e','p','s',',', 'a','r','t','}', '\0' };
 static unichar_t wildsvg[] = { '*', '.', 's','v','g',  '\0' };
+static unichar_t wildplate[] = { '*', '.', 'p','l','a','t','e',  '\0' };
 static unichar_t wildglif[] = { '*', '.', 'g','l','i','f',  '\0' };
 static unichar_t wildfig[] = { '*', '.', '{', 'f','i','g',',','x','f','i','g','}',  '\0' };
 static unichar_t wildbdf[] = { '*', '.', 'b', 'd','{', 'f', ',','f','.','g','z',',','f','.','Z',',','f','.','b','z','2','}',  '\0' };
@@ -79,14 +81,17 @@ static unichar_t *wildchr[] = { wildimg, wildps,
 wildsvg,
 wildglif,
 #endif
+wildplate,
 wildfig };
 static unichar_t *wildfnt[] = { wildbdf, wildttf, wildpk, wildpcf, wildmac,
 wildwin, wildpalm,
-wildimg, wildtemplate, wildps, wildepstemplate
+wildimg, wildtemplate, wildps, wildepstemplate,
+wildplate, wildplatetemplate
 #ifndef _NO_LIBXML
 , wildsvg, wildsvgtemplate
 , wildglif, wildgliftemplate
 #endif
+
 };
 
 #define PSSF_Width 220
@@ -369,6 +374,101 @@ void SCImportPS(SplineChar *sc,int layer,char *path,int doclear, int flags) {
 return;
     SCImportPSFile(sc,layer,ps,doclear,flags);
     fclose(ps);
+}
+
+void SCImportPlateFile(SplineChar *sc,int layer,FILE *plate,int doclear,int flags) {
+    SplineSet **ly_head, *head, *cur, *last;
+    spiro_cp *spiros=NULL;
+    int cnt=0, max=0, ch;
+    char buffer[80];
+
+    if ( plate==NULL )
+return;
+
+    head = last = NULL;
+    fgets(buffer,sizeof(buffer),plate);
+    if ( strncmp(buffer,"(plate",strlen("plate("))!=0 ) {
+	gwwv_post_error( _("Not a plate file"), _("This does not seem to be a plate file\nFirst line wrong"));
+return;
+    }
+    while ( !feof(plate)) {
+	while ( isspace( (ch=getc(plate)) ) );
+	if ( ch==')' || ch==EOF )
+    break;
+	if ( ch!='(' ) {
+	    gwwv_post_error( _("Not a plate file"), _("This does not seem to be a plate file\nExpected left paren"));
+return;
+	}
+	ch = getc(plate);
+	if ( ch!='v' && ch!='o' && ch!='c' && ch!='[' && ch!=']' && ch!='z' ) {
+	    gwwv_post_error( _("Not a plate file"), _("This does not seem to be a plate file\nExpected one of 'voc[]z'"));
+return;
+	}
+	if ( cnt>=max )
+	    spiros = grealloc(spiros,(max+=30)*sizeof(spiro_cp));
+	spiros[cnt].x = spiros[cnt].y = 0;
+	spiros[cnt].ty = ch;
+	if ( ch=='z' ) {
+	    cur = SpiroCP2SplineSet(spiros);
+	    if ( cur==NULL )
+		/* Do Nothing */;
+	    else if ( last!=NULL ) {
+		last->next = cur;
+		last = cur;
+	    } else
+		head = last = cur;
+	    cnt = 0;
+	    ch = getc(plate);		/* Must be ')' */
+	} else {
+	    if ( fscanf(plate,"%lg %lg )", &spiros[cnt].x, &spiros[cnt].y)!=2 ) {
+		gwwv_post_error( _("Not a plate file"), _("This does not seem to be a plate file\nExpected two real numbers"));
+return;
+	    }
+	    ++cnt;
+	}
+    }
+    if ( cnt!=0 ) {
+	if ( cnt>=max )
+	    spiros = grealloc(spiros,(max+=30)*sizeof(spiro_cp));
+	spiros[cnt].x = spiros[cnt].y = 0;
+	spiros[cnt].ty = ch;
+	cur = SpiroCP2SplineSet(spiros);
+	if ( cur==NULL )
+	    /* Do Nothing */;
+	else if ( last!=NULL ) {
+	    last->next = cur;
+	    last = cur;
+	} else
+	    head = last = cur;
+    }
+    free(spiros);
+
+    if ( sc->parent->order2 ) {
+	head = SplineSetsConvertOrder(head,true);
+	for ( last=head; last->next!=NULL; last = last->next );
+    }
+    if ( layer==ly_grid )
+	ly_head = &sc->parent->grid.splines;
+    else {
+	SCPreserveLayer(sc,layer,false);
+	ly_head = &sc->layers[layer].splines;
+    }
+    if ( doclear ) {
+	SplinePointListsFree(*ly_head);
+	*ly_head = NULL;
+    }
+    last->next = *ly_head;
+    *ly_head = head;
+    SCCharChangedUpdate(sc);
+}
+
+static void ImportPlate(CharView *cv,char *path) {
+    FILE *plate = fopen(path,"r");
+
+    if ( plate==NULL )
+return;
+    SCImportPlateFile(cv->sc,CVLayer(cv),plate,false,-1);
+    fclose(plate);
 }
 
 #ifndef _NO_LIBXML
@@ -1315,6 +1415,7 @@ static GTextInfo formats[] = {
     { (unichar_t *) N_("SVG"), NULL, 0, 0, (void *) fv_svg, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("Glif"), NULL, 0, 0, (void *) fv_glif, 0, 0, 0, 0, 0, 0, 0, 1 },
 #endif
+    { (unichar_t *) N_("Raph's plate files"), NULL, 0, 0, (void *) fv_plate, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("XFig"), NULL, 0, 0, (void *) fv_fig, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }};
 
@@ -1402,6 +1503,8 @@ return( true );
 		ImportImage(d->cv,temp);
 	    else if ( format==fv_eps )
 		ImportPS(d->cv,temp);
+	    else if ( format==fv_plate )
+		ImportPlate(d->cv,temp);
 #ifndef _NO_LIBXML
 	    else if ( format==fv_svg )
 		ImportSVG(d->cv,temp);
@@ -1545,6 +1648,12 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
 	}
     }
 #endif
+    if ( !hasspiro()) {
+	for ( i=0; cur_formats[i].text!=NULL; ++i )
+	    if ( ((intpt) cur_formats[i].userdata)==fv_plate ||
+		    ((intpt) cur_formats[i].userdata)==fv_platetemplate )
+		cur_formats[i].disabled = true;
+    }
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;

@@ -878,6 +878,12 @@ typedef struct spline {
     */
 } Spline;
 
+typedef struct {			/* Taken from spiro.h because I want */
+    double x;				/*  to be able to compile for spiro */
+    double y;				/*  even on a system without it */
+    char ty;
+} spiro_cp;
+
 typedef struct splinepointlist {
     SplinePoint *first, *last;
     struct splinepointlist *next;
@@ -2688,4 +2694,7 @@ extern int SCValidate(SplineChar *sc, int force);
 extern int ValidatePrivate(SplineFont *sf);
 extern int SFValidate(SplineFont *sf, int force);
 extern int VSMaskFromFormat(SplineFont *sf, enum fontformat format);
+
+extern int hasspiro(void);
+extern SplineSet *SpiroCP2SplineSet(spiro_cp *spiros);
 #endif
