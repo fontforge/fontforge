@@ -3695,6 +3695,7 @@ return( NULL );
 	sprintf( pt, "%g ", rint(val*scale));
 	pt += strlen(pt);
 	string = end;
+	while ( *string==' ' ) ++string;
     }
     if ( pt[-1] == ' ' ) pt[-1] = ']';
     else *pt++ = ']';
