@@ -1,0 +1,43 @@
+dnl Process this file with autoconf to produce a configure script.
+
+AC_INIT(spiro2ff.c)
+AC_PROG_CC
+AC_PROG_INSTALL
+AC_DISABLE_STATIC
+AC_ENABLE_SHARED
+AC_CANONICAL_HOST
+AC_SUBST(HOST)
+HOST="$host"
+
+AC_SUBST(WFLAGS)
+if test "$GCC" = yes; then
+  WFLAGS="-Wmissing-prototypes -Wunused -Wimplicit -Wreturn-type -Wparentheses -Wformat -Wchar-subscripts"
+else
+  WFLAGS=""
+fi
+
+spiro_dir=NONE
+AC_ARG_WITH(spiro-srcdir,
+ [  --with-spiro-srcdir   Specify the directory containing Raph Leviens spiro package source files],
+ [
+   if test "$withval" \!= "no" ; then
+     if test -e $withval/ppedit/spiro.c ; then
+       spiro_dir=$withval
+     fi
+   fi
+ ])
+
+if test "$spiro_dir" = "NONE" ; then
+ echo "To build this library you must first download and unpack Raph Levien's"
+ echo spiro/ppedit package. It is described at http://www.levien.com/spiro/
+ echo Grab the 0.01 tarball, download it and unpack it then reconfigure
+ echo "(this directory) with"
+ echo "  ./configure --with-spiro-srcdir=<wherever you put it>"
+ exit 1
+else
+ cp $spiro_dir/ppedit/{bezctx.c,bezctx.h,bezctx_intf.h,gpl.txt,spiro.c,spiro.h,zmisc.h} .
+ cp $spiro_dir/ppedit/README ./README-RaphLevien
+fi
+
+AC_PROG_LIBTOOL
+AC_OUTPUT(Makefile)
