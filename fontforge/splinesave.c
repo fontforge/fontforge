@@ -1862,6 +1862,8 @@ int CIDOneWidth(SplineFont *_sf) {
     do {
 	sf = _sf->subfonts==NULL? _sf : _sf->subfonts[k];
 	for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sf->glyphs[i]) &&
+		strcmp(sf->glyphs[i]->name,".null")!=0 &&
+		strcmp(sf->glyphs[i]->name,"nonmarkingreturn")!=0 &&
 		(strcmp(sf->glyphs[i]->name,".notdef")!=0 || sf->glyphs[i]->layers[ly_fore].splines!=NULL)) {
 	    /* Only trust the width of notdef if it's got some content */
 	    /* (at least as far as fixed pitch determination goes) */
