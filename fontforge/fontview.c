@@ -1236,6 +1236,8 @@ return(false);
     _FVCloseWindows(fv);
     if ( sf->filename!=NULL )
 	RecentFilesRemember(sf->filename);
+    else if ( sf->origname!=NULL )
+	RecentFilesRemember(sf->origname);
 #ifdef FONTFORGE_CONFIG_GDRAW
     GDrawDestroyWindow(fv->gw);
 #elif defined(FONTFORGE_CONFIG_GTK)

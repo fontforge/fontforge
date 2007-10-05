@@ -89,7 +89,6 @@ extern char *printcommand, *printlazyprinter;
 
 extern Encoding *enclist;
 
-#define RECENT_MAX	4
 extern char *RecentFiles[RECENT_MAX];
 
 #define SCRIPT_MENU_MAX	10
