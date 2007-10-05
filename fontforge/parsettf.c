@@ -4537,7 +4537,7 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	} else if ( info->chars[i]->name!=NULL &&
 		strcmp(info->chars[i]->name,".null")!=0 &&
 		strcmp(info->chars[i]->name,"nonmarkingreturn")!=0 &&
-		(uni = EncFromName(info->chars[i]->name,info->uni_interp,info->map==NULL ? &custom : info->map->enc))!= -1 &&
+		(uni = UniFromName(info->chars[i]->name,info->uni_interp,info->map==NULL ? &custom : info->map->enc))!= -1 &&
 		info->chars[i]->unicodeenc != uni ) {
 	    if ( asked!=-1 )
 		response = asked;
@@ -4545,7 +4545,7 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 		response = gwwv_ask_centered(_("Bad glyph name"),(const char **) buts,1,1,_("The glyph named %.30s is not mapped to any unicode code point. But its name indicates it should be mapped to U+%04X.\nWould you like to retain the name in spite of this?"),
 			info->chars[i]->name,uni);
 	    else
-		response = gwwv_ask_centered(_("Bad glyph name"),(const char **) buts,1,1,_("The glyph named %.30s is mapped to U+%04X.\nBut it's name indicates it should be mapped to U+%04X.\nWould you like to retain the name in spite of this?"),
+		response = gwwv_ask_centered(_("Bad glyph name"),(const char **) buts,1,1,_("The glyph named %.30s is mapped to U+%04X.\nBut its name indicates it should be mapped to U+%04X.\nWould you like to retain the name in spite of this?"),
 			info->chars[i]->name,info->chars[i]->unicodeenc, uni);
 	    if ( response==1 )
 		asked = response = 0;

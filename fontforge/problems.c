@@ -272,6 +272,7 @@ struct problems {
     unsigned int irrelevantcontrolpoints: 1;
     unsigned int multuni: 1;
     unsigned int multname: 1;
+    unsigned int uninamemismatch: 1;
     unsigned int badsubs: 1;
     unsigned int missingglyph: 1;
     unsigned int toomanypoints: 1;
@@ -319,7 +320,7 @@ static int hintwidth=0, direction=1, flippedrefs=1, bitmaps=0;
 static int cidblank=0, cidmultiple=1, advancewidth=0, vadvancewidth=0;
 static int irrelevantcp=1, missingglyph=0;
 static int badsubs=1, toomanypoints=1, pointsmax = 1500;
-static int multuni=1, multname=1;
+static int multuni=1, multname=1, uninamemismatch=1;
 static int toomanyhints=1, hintsmax=96, toodeeprefs=1, refdepthmax=9;
 static int ptmatchrefsoutofdate=1, refsbadtransformttf=0, refsbadtransformps=0;
 static int mixedcontoursrefs=0;
@@ -378,6 +379,7 @@ static double irrelevantfactor = .005;
 #define CID_RefBadTransformPS	1044
 #define CID_MixedContoursRefs	1045
 #define CID_MissingExtrema	1046
+#define CID_UniNameMisMatch	1047
 
 
 static void FixIt(struct problems *p) {
@@ -1143,6 +1145,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
     int needsupdate=false, changed=false;
     StemInfo *h;
     RefChar *r1, *r2;
+    int uni;
 
   restart:
     if ( cv!=NULL ) {
@@ -1937,6 +1940,23 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	}
     }
 
+    if ( p->uninamemismatch && !p->finish &&
+		strcmp(sc->name,".notdef")!=0 &&
+		strcmp(sc->name,".null")!=0 &&
+		strcmp(sc->name,"nonmarkingreturn")!=0 &&
+		(uni = UniFromName(sc->name,sc->parent->uni_interp,p->fv->map->enc))!= -1 &&
+		sc->unicodeenc != uni ) {
+	int i;
+	changed = true;
+	p->glyphenc = i;
+	if ( sc->unicodeenc==-1 )
+	    ExplainIt(p,sc,_("This glyph is not mapped to any unicode code point, but its name should be."),0,0);
+	else
+	    ExplainIt(p,sc,_("This glyph is mapped to a unicode code point which is different from its name."),0,0);
+	if ( p->ignorethis )
+	    p->uninamemismatch = false;
+    }
+
 
     if ( needsupdate || changed )
 	SCUpdateAll(sc);
@@ -2522,6 +2542,7 @@ static int Prob_DoAll(GGadget *g, GEvent *e) {
 	    CID_TooManyHints, CID_TooDeepRefs,
 	    CID_MultUni, CID_MultName, CID_PtMatchRefsOutOfDate,
 	    CID_RefBadTransformTTF, CID_RefBadTransformPS, CID_MixedContoursRefs,
+	    CID_UniNameMisMatch,
 	    0 };
 	int i;
 	if ( p->fv->cidmaster!=NULL ) {
@@ -2563,6 +2584,7 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	irrelevantcp = p->irrelevantcontrolpoints = GGadgetIsChecked(GWidgetGetControl(gw,CID_IrrelevantCP));
 	multuni = p->multuni = GGadgetIsChecked(GWidgetGetControl(gw,CID_MultUni));
 	multname = p->multname = GGadgetIsChecked(GWidgetGetControl(gw,CID_MultName));
+	uninamemismatch = p->uninamemismatch = GGadgetIsChecked(GWidgetGetControl(gw,CID_UniNameMisMatch));
 	badsubs = p->badsubs = GGadgetIsChecked(GWidgetGetControl(gw,CID_BadSubs));
 	missingglyph = p->missingglyph = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingGlyph));
 	toomanypoints = p->toomanypoints = GGadgetIsChecked(GWidgetGetControl(gw,CID_TooManyPoints));
@@ -2573,8 +2595,6 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	mixedcontoursrefs = p->mixedcontoursrefs = GGadgetIsChecked(GWidgetGetControl(gw,CID_MixedContoursRefs));
 	toodeeprefs = p->toodeeprefs = GGadgetIsChecked(GWidgetGetControl(gw,CID_TooDeepRefs));
 	stem3 = p->stem3 = GGadgetIsChecked(GWidgetGetControl(gw,CID_Stem3));
-	multuni = p->multuni = GGadgetIsChecked(GWidgetGetControl(gw,CID_MultUni));
-	multname = p->multname = GGadgetIsChecked(GWidgetGetControl(gw,CID_MultName));
 	if ( stem3 )
 	    showexactstem3 = p->showexactstem3 = GGadgetIsChecked(GWidgetGetControl(gw,CID_ShowExactStem3));
 	if ( p->fv->cidmaster!=NULL ) {
@@ -2617,7 +2637,7 @@ return( true );
 		p->bitmaps || p->advancewidth || p->vadvancewidth || p->stem3 ||
 		p->irrelevantcontrolpoints || p->badsubs || p->missingglyph ||
 		p->toomanypoints || p->toomanyhints || p->missingextrema ||
-		p->toodeeprefs || multuni || multname ||
+		p->toodeeprefs || multuni || multname || uninamemismatch ||
 		p->ptmatchrefsoutofdate || p->refsbadtransformttf ||
 		p->mixedcontoursrefs || p->refsbadtransformps ) {
 	    DoProbs(p);
@@ -2687,8 +2707,8 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData pgcd[13], pagcd[8], hgcd[9], rgcd[9], cgcd[5], mgcd[11], agcd[6], rfgcd[9];
-    GTextInfo plabel[13], palabel[8], hlabel[9], rlabel[9], clabel[5], mlabel[10], alabel[6], rflabel[9];
+    GGadgetCreateData pgcd[13], pagcd[8], hgcd[9], rgcd[10], cgcd[5], mgcd[11], agcd[6], rfgcd[9];
+    GTextInfo plabel[13], palabel[8], hlabel[9], rlabel[10], clabel[5], mlabel[10], alabel[6], rflabel[9];
     GTabInfo aspects[8];
     struct problems p;
     char xnbuf[20], ynbuf[20], widthbuf[20], nearbuf[20], awidthbuf[20],
@@ -3211,7 +3231,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rlabel[6].text = (unichar_t *) _("Check multiple Unicode");
     rlabel[6].text_is_1byte = true;
     rgcd[6].gd.label = &rlabel[6];
-    rgcd[6].gd.pos.x = 3; rgcd[6].gd.pos.y = rgcd[5].gd.pos.y+17; 
+    rgcd[6].gd.pos.x = 3; rgcd[6].gd.pos.y = rgcd[5].gd.pos.y+15; 
     rgcd[6].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( multuni ) rgcd[6].gd.flags |= gg_cb_on;
     rgcd[6].gd.popup_msg = (unichar_t *) _("Check multiple Unicode");
@@ -3221,12 +3241,22 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rlabel[7].text = (unichar_t *) _("Check multiple Names");
     rlabel[7].text_is_1byte = true;
     rgcd[7].gd.label = &rlabel[7];
-    rgcd[7].gd.pos.x = 3; rgcd[7].gd.pos.y = rgcd[6].gd.pos.y+17; 
+    rgcd[7].gd.pos.x = 3; rgcd[7].gd.pos.y = rgcd[6].gd.pos.y+15; 
     rgcd[7].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( multname ) rgcd[7].gd.flags |= gg_cb_on;
     rgcd[7].gd.popup_msg = (unichar_t *) _("Check for multiple characters with the same name");
     rgcd[7].gd.cid = CID_MultName;
     rgcd[7].creator = GCheckBoxCreate;
+
+    rlabel[8].text = (unichar_t *) _("Check Unicode/Name mismatch");
+    rlabel[8].text_is_1byte = true;
+    rgcd[8].gd.label = &rlabel[8];
+    rgcd[8].gd.pos.x = 3; rgcd[8].gd.pos.y = rgcd[7].gd.pos.y+15; 
+    rgcd[8].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    if ( uninamemismatch ) rgcd[8].gd.flags |= gg_cb_on;
+    rgcd[8].gd.popup_msg = (unichar_t *) _("Check for characters whose name maps to a unicode code point\nwhich does not map the character's assigned code point.");
+    rgcd[8].gd.cid = CID_UniNameMisMatch;
+    rgcd[8].creator = GCheckBoxCreate;
 
 /* ************************************************************************** */
 
