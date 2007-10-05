@@ -655,7 +655,7 @@ return( NULL );
 	    :lookups[1]!=NULL ? lookups[1]->lookup_flags
 	    :lookups[2]!=NULL ? lookups[2]->lookup_flags
 	    :                   lookups[3]->lookup_flags);
-    classglyphs = galloc((sf->glyphcnt+1)*sizeof(SplineChar *));
+    classglyphs = gcalloc((sf->glyphcnt+1),sizeof(SplineChar *));
     markglyphs = galloc((sf->glyphcnt+1)*sizeof(SplineChar *));
 
     mg = 0;
@@ -678,7 +678,8 @@ return( NULL );
 	    }
 	}
     }
-	markglyphs[mg] = NULL;
+    markglyphs[mg] = NULL;
+
     cg = 0;
     for ( i=0; i<sf->glyphcnt; ++i )
 	if ( classglyphs[i]!=NULL )
