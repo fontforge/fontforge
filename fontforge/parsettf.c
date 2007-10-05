@@ -4386,6 +4386,7 @@ static void readttfos2metrics(FILE *ttf,struct ttfinfo *info) {
     }
 }
 
+#if 0
 static int cmapEncFromName(struct ttfinfo *info,const char *nm, int glyphid) {
     int uni;
     int i;
@@ -4413,15 +4414,19 @@ return( -1 );
     }
 return( uni );
 }
+#endif
 
 static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
-    int i,j;
+    int i,j,uni;
     int format, len, gc, gcbig, val;
     const char *name;
     char buffer[30];
     uint16 *indexes;
     extern const char *ttfstandardnames[];
     int notdefwarned = false;
+    int response, asked=-1;
+    int anynames = false;
+    char *buts[5];
 
 #if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
     gwwv_progress_change_line2(_("Reading Names"));
@@ -4459,8 +4464,10 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	    /* if we are only loading bitmaps, we can get holes in our data */
 	    for ( i=0; i<258; ++i ) if ( indexes[i]!=0 || i==0 ) if ( indexes[i]<info->glyph_cnt && info->chars[indexes[i]]!=NULL ) {
 		info->chars[indexes[i]]->name = copy(ttfstandardnames[i]);
+#if 0			/* Too many fonts have badly named glyphs */
 		if ( info->chars[indexes[i]]->unicodeenc==-1 )
 		    info->chars[indexes[i]]->unicodeenc = cmapEncFromName(info,ttfstandardnames[i],indexes[i]);
+#endif
 	    }
 	    gcbig += 258;
 	    for ( i=258; i<gcbig; ++i ) {
@@ -4474,11 +4481,14 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 		nm[j] = '\0';
 		if ( indexes[i]<info->glyph_cnt && info->chars[indexes[i]]!=NULL ) {
 		    info->chars[indexes[i]]->name = nm;
+#if 0			/* Too many fonts have badly named glyphs */
 		    if ( info->chars[indexes[i]]->unicodeenc==-1 )
 			info->chars[indexes[i]]->unicodeenc = cmapEncFromName(info,nm,indexes[i]);
+#endif
 		}
 	    }
 	    free(indexes);
+	    anynames = true;
 	}
     }
 
@@ -4506,6 +4516,10 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 
     /* where no names are given, but we've got a unicode encoding use */
     /*  that to guess at them */
+    buts[0] = _("Yes"); buts[1] = _("Yes to all");
+    buts[2] = _("No to all"); buts[3] = _("No");
+    buts[4] = NULL;
+
     for ( i=0; i<info->glyph_cnt; ++i ) if ( info->chars[i]!=NULL ) {
 	/* info->chars[i] can be null in some TTC files */
 	if ( i!=0 && info->chars[i]->name!=NULL &&
@@ -4520,6 +4534,27 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	    }
 	    free(info->chars[i]->name);
 	    info->chars[i]->name = NULL;
+	} else if ( info->chars[i]->name!=NULL &&
+		strcmp(info->chars[i]->name,".null")!=0 &&
+		strcmp(info->chars[i]->name,"nonmarkingreturn")!=0 &&
+		(uni = EncFromName(info->chars[i]->name,info->uni_interp,info->map==NULL ? &custom : info->map->enc))!= -1 &&
+		info->chars[i]->unicodeenc != uni ) {
+	    if ( asked!=-1 )
+		response = asked;
+	    else if ( info->chars[i]->unicodeenc==-1 )
+		response = gwwv_ask_centered(_("Bad glyph name"),(const char **) buts,1,1,_("The glyph named %.30s is not mapped to any unicode code point. But its name indicates it should be mapped to U+%04X.\nWould you like to retain the name in spite of this?"),
+			info->chars[i]->name,uni);
+	    else
+		response = gwwv_ask_centered(_("Bad glyph name"),(const char **) buts,1,1,_("The glyph named %.30s is mapped to U+%04X.\nBut it's name indicates it should be mapped to U+%04X.\nWould you like to retain the name in spite of this?"),
+			info->chars[i]->name,info->chars[i]->unicodeenc, uni);
+	    if ( response==1 )
+		asked = response = 0;
+	    else if ( response==2 )
+		asked = response = 3;
+	    if ( response==3 ) {
+		free(info->chars[i]->name);
+		info->chars[i]->name = NULL;
+	    }
 	}
 	/* And some volt files actually assign nul strings to the name */
 	if ( (info->chars[i]->name!=NULL && *info->chars[i]->name!='\0' ))
@@ -4530,8 +4565,19 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	else if ( info->chars[i]->unicodeenc==-1 ) {
 	    /* Do this later */;
 	    name = NULL;
-	} else
+	} else {
 	    name = StdGlyphName(buffer,info->chars[i]->unicodeenc,info->uni_interp,NULL);
+	    if ( anynames ) {
+		for ( j=0; j<info->glyph_cnt; ++j ) {
+		    if ( info->chars[j]!=NULL && j!=i && info->chars[j]->name!=NULL ) {
+			if ( strcmp(info->chars[j]->name,name)==0 ) {
+			    name = NULL;
+		break;
+			}
+		    }
+		}
+	    }
+	}
 #if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 	gwwv_progress_next();
 #endif
