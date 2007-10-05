@@ -287,4 +287,8 @@
 /*  "x' = x, y' = y+sin(x)" would not produce anything useful when applied to */
 /*  a long line segment like [0,100]...[100,100], but if that were broken up  */
 /*  into sub-segments each pi long the results would be much better */
+
+/* The number of files displayed in the "File->Recent" menu */
+#define RECENT_MAX	10
+
 #endif
