@@ -551,8 +551,8 @@ return( last );
 LinearApprox *SplineApproximate(Spline *spline, real scale) {
     LinearApprox *test;
     LineList *cur, *last=NULL;
-    double poi[2], lastt;
-    int i;
+    extended poi[2], lastt;
+    int i,n;
 
     for ( test = spline->approx; test!=NULL && test->scale!=scale; test = test->next );
     if ( test!=NULL )
@@ -576,9 +576,9 @@ return( test );
     } else if ( spline->isquadratic ) {
 	last = SplineSegApprox(last,spline,0,1,scale);
     } else {
-	Spline2DFindPointsOfInflection(spline,poi);
+	n = Spline2DFindPointsOfInflection(spline,poi);
 	lastt=0;
-	for ( i=0; i<2 && poi[i]!=-1; ++i ) {
+	for ( i=0; i<n; ++i ) {
 	    last = SplineSegApprox(last,spline,lastt,poi[i],scale);
 	    lastt = poi[i];
 	}
@@ -3501,6 +3501,8 @@ return( 0 );
 	if ( t>=0 && t<=1.0 )
 	    poi[cnt++] = t;
     }
+    if ( cnt<2 )
+	poi[cnt] = -1;
 
 return( cnt );
 }
