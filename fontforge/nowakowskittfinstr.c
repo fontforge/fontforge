@@ -2011,8 +2011,10 @@ return;
     finish_edge(ct, shp_rp1?SHP_rp1:SHP_rp2);
     mark_startenddones(hint, coord, ct->gic->fudge);
 
-    if (!ct->xdir && hint->ghost && ((hint->width==20) || (hint->width==21)))
+    if (!ct->xdir && hint->ghost && ((hint->width==20) || (hint->width==21))) {
+        hint->startdone = hint->enddone = 1;
 return;
+    }
 
     if (fabs(hint->start - coord) < hint->width) {
         if (hint->ghost) coord = hint->start - hint->width;
@@ -2413,9 +2415,7 @@ static void geninstrs(InstrCt *ct, StemInfo *hint) {
     }
 
     if (hint->startdone || hint->enddone) {
-	/* Set a reference point on the base edge.
-	 * Ghost hints can get skipped, that's a bug.
-	 */
+	/* Set a reference point on the base edge. */
 	init_edge(ct, hbase, ALL_CONTOURS);
 	if (ct->edge.refpt == -1) return;
 	
