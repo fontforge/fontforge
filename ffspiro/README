@@ -6,6 +6,8 @@ Spiro may be obtained from
     http://www.levien.com/spiro/
 Download the source. Unpack it. Then come back to this directory and type:
     ./configure --with-spiro-srcdir=<wherever you put it>
+    make
+    make install
 (Note that you do not need to build ppedit nor anything else in the spiro
 package to build libffspiro)
 
