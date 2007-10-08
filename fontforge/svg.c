@@ -2004,7 +2004,7 @@ return( NULL );
 	}
     }
     rewind(tmp);
-#ifndef _NO_LIBJPEG
+#ifndef _NO_LIBPNG
     if ( strcmp(mimetype,"image/png")==0 )
 	img = GImageRead_Png(tmp);
     else
