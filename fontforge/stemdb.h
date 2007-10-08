@@ -69,6 +69,7 @@ struct pointdata {
     Spline *bothedge;
     double next_e_t, prev_e_t;			/* Location on other edge where our normal hits it */
     double both_e_t;
+    double next_dist, prev_dist;		/* Distance from the point to the matching edge */
     struct stemdata *nextstem, *prevstem;
     struct stemdata *bothstem;
     double nextlen, prevlen;
@@ -104,14 +105,17 @@ struct stemdata {
     BasePoint l_to_r;		/* Unit vector pointing from left to right (across stem) */
     BasePoint left;		/* a point on one side of the stem (not necissarily left, even for vertical stems) */
     BasePoint right;		/* and one on the other */
+    double lmin, lmax, rmin, rmax;
     double width;
     int chunk_cnt;		/* number of separate point-pairs on this stem */
     struct stem_chunk {
+	struct stemdata *parent;
 	struct pointdata *l;
 	struct pointdata *r;
-	struct pointdata *lpotential, *rpotential;
+	uint8 lpotential, rpotential;
 	uint8 lnext, rnext;	/* are we using the next/prev side of the left/right points */
 	uint8 ltick, rtick;
+	uint8 stub;
 	uint8 stemcheat;	/* It's not a real stem, but it's something we'd like PostScript to hint for us */
     } *chunks;
     int activecnt;

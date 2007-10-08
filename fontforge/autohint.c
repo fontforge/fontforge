@@ -2787,9 +2787,9 @@ return;
     potential = NULL; chunk = is_r = -1;
     for ( i=0; i<gd->stemcnt; ++i ) {
 	struct stemdata *stem = &gd->stems[i];
-	if ( !stem->toobig && UnitsParallel(dir,&stem->unit)) {
+	if ( !stem->toobig && UnitsParallel(dir,&stem->unit,false)) {
 	    for ( j=0; j<stem->chunk_cnt; ++j ) {
-		if ( stem->chunks[j].lpotential==pd ) {
+		if ( stem->chunks[j].lpotential && stem->chunks[j].l==pd) {
 		    if ( potential==stem )
 			/* Do Nothing */;
 		    else if ( potential!=NULL )
@@ -2797,7 +2797,7 @@ return;
 		    else {
 			potential = stem; chunk = j; is_r = false;
 		    }
-		} else if ( stem->chunks[j].rpotential==pd ) {
+		} else if ( stem->chunks[j].rpotential && stem->chunks[j].r==pd ) {
 		    if ( potential==stem )
 			/* Do Nothing */;
 		    else if ( potential!=NULL )
@@ -2811,11 +2811,11 @@ return;
     }
 
     if ( potential!=NULL ) {
-	if ( is_r && potential->chunks[chunk].r==NULL ) {
-	    potential->chunks[chunk].r = pd;
+	if ( is_r && potential->chunks[chunk].r!=NULL && stem->chunks[j].rpotential ) {
+	    potential->chunks[chunk].rpotential = false;
 	    *_pd = NULL;
-	} else if ( !is_r && potential->chunks[chunk].l==NULL ) {
-	    potential->chunks[chunk].l = pd;
+	} else if ( !is_r && potential->chunks[chunk].l==NULL && stem->chunks[j].lpotential ) {
+	    potential->chunks[chunk].lpotential = false;
 	    *_pd = NULL;
 	}
     }
@@ -2884,7 +2884,7 @@ static StemInfo *GhostAdd( StemInfo *ghosts, StemInfo *stems,
     double base, width;
     
     width = new->width;
-    base = new->left.y;
+    base = new->right.y;
 
     if ( inhints(stems,base,width))
 return(ghosts);		/* already recorded */
@@ -2912,33 +2912,6 @@ return(ghosts);
 return( ghosts );
 }
 
-/* Imagine a slightly slanted serif, like vertical serifs in "E", "F", "L"
-/* or "Z". In order to ensure such serifs are marked with a hint, we check
-/* the stem vector direction less strictly than in other cases. However, 
-/* for this approach to work, both the key points of the hint should immediately
-/* follow each other on the spline */
-static int IsPossibleSerifStem( struct stemdata *stem,int vertical ) {
-    int i;
-    SplinePoint *lpt,*rpt;
-    
-    if ( (( stem->unit.x>.99 || stem->unit.x<-.99) && vertical==0 ) ||
-	 (( stem->unit.y>.99 || stem->unit.y<-.99) && vertical==1 ) ) {
-         
-         if ( stem->chunk_cnt > 0 ) {
-            for ( i=0; i<stem->chunk_cnt; ++i ) {
-		if ( stem->chunks[i].l!=NULL && stem->chunks[i].r!=NULL ) {
-                    lpt = stem->chunks[i].l->sp;
-                    rpt = stem->chunks[i].r->sp;
-                    
-                    if ( lpt->next->to == rpt || lpt->prev->from == rpt )
-return( true );
-                }
-	    }
-         }
-    }
-return( false );
-}
-
 static StemInfo *GDFindStems(struct glyphdata *gd, int major) {
     int i;
     StemInfo *head = NULL, *cur, *p, *t;
@@ -2949,14 +2922,12 @@ static StemInfo *GDFindStems(struct glyphdata *gd, int major) {
 	stem = &gd->stems[i];
 	if ( stem->toobig )
     continue;
-	if ((( stem->unit.y<.05 && stem->unit.y>-.05 ) && major==0 ) ||
-		(( stem->unit.x<.05 && stem->unit.x>-.05 ) && major==1 ) ||
-                IsPossibleSerifStem( stem,major )) {
+	if (( stem->unit.y == 0 && major==0 ) || ( stem->unit.x == 0 && major==1 )) {
 	    double l = (&stem->left.x)[other], r = (&stem->right.x)[other];
 	    int j, hasl=false, hasr=false;
 	    for ( j=0; j<stem->chunk_cnt; ++j ) {
-		if ( stem->chunks[j].l!=NULL ) hasl = true;
-		if ( stem->chunks[j].r!=NULL ) hasr = true;
+		if ( stem->chunks[j].l!=NULL && !stem->chunks[j].lpotential ) hasl = true;
+		if ( stem->chunks[j].r!=NULL && !stem->chunks[j].rpotential ) hasr = true;
 	    }
 	    if ( !hasl || !hasr )
     continue;
