@@ -2867,7 +2867,7 @@ static FontData *RegenFontData(SFTextArea *st, FontData *ret) {
     BDFFont *bdf, *ok, *old;
     void *ftc;
     int pixelsize;
-    int freeold = ret->fonttype != sftf_bitmap;
+    int freeold = ret->fonttype != sftf_bitmap, depends_on = ret->depends_on!=NULL;
 
     pixelsize = rint((ret->pointsize * st->dpi)/72.0 );
     old = ret->bdf;
@@ -2930,8 +2930,11 @@ return( ret );
 	}
 	ret->bdf = SplineFontPieceMeal(ret->sf,pixelsize,ret->antialias,ftc);
     }
-    if ( freeold )
+    if ( freeold ) {
+	if ( depends_on )
+	    old->freetype_context = NULL;
 	BDFFontFree(old);
+    }
 
     if ( ret->bdf->clut ) {
 	ret->gi.u.image = &ret->base;
@@ -3296,6 +3299,8 @@ void SFTFRefreshFonts(GGadget *g) {
     /* Then free all old generated bitmaps */
     /* need to do this first because otherwise we might reuse a freetype context */
     for ( fd = st->generated; fd!=NULL; fd=fd->next ) {
+	if ( fd->depends_on )
+	    fd->bdf->freetype_context = NULL;
 	if ( fd->fonttype!=sftf_bitmap ) {
 	    BDFFontFree(fd->bdf);
 	    fd->bdf = NULL;
