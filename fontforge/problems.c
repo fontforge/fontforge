@@ -440,6 +440,22 @@ return;
 return;
     }
 
+    if ( p->explaining==_("This glyph is not mapped to any unicode code point, but its name should be.") ||
+	    p->explaining==_("This glyph is mapped to a unicode code point which is different from its name.") ) {
+	char buf[100]; const char *newname;
+	SplineChar *foundsc;
+	newname = StdGlyphName(buf,p->sc->unicodeenc,p->sc->parent->uni_interp,p->sc->parent->for_new_glyphs);
+	foundsc = SFHashName(p->sc->parent,newname);
+	if ( foundsc==NULL ) {
+	    free(p->sc->name);
+	    p->sc->name = copy(newname);
+	} else {
+	    gwwv_post_error(_("Can't fix"), _("The name FontForge would like to assign to this glyph, %.30s, is already used by a different glyph."),
+		    newname );
+	}
+return;
+    }
+
     sp = NULL;
     for ( spl=p->sc->layers[ly_fore].splines; spl!=NULL; spl=spl->next ) {
 	for ( sp = spl->first; ; ) {
@@ -736,7 +752,10 @@ return;
 	    explain==_("This path should have been drawn in a counter-clockwise direction") || explain==_("This path should have been drawn in a clockwise direction") ||
 	    explain==_("The selected spline attains its extrema somewhere other than its endpoints") ||
 	    explain==_("This glyph's advance width is different from the standard width") ||
-	    explain==_("This glyph's vertical advance is different from the standard width");
+	    explain==_("This glyph's vertical advance is different from the standard width") ||
+	    explain==_("This glyph is not mapped to any unicode code point, but its name should be.") ||
+	    explain==_("This glyph is mapped to a unicode code point which is different from its name.");
+	    
     GGadgetSetVisible(GWidgetGetControl(p->explainw,CID_Fix),fixable);
 
     if ( explain==_("This glyph contains a substitution or ligature entry which refers to an empty char") ) {
