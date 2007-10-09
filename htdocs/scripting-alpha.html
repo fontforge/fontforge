@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 9-Apr-2006 -->
-  <!-- AP: Last modified: 15-Aug-2007 -->
+  <!-- AP: Last modified: 9-Oct-2007 -->
   <TITLE>Scripting functions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -2003,7 +2003,8 @@ SetLBearing(lbearing)
 	    <P>
 	    When loading from a ttc file (mac suitcase, dfont, svg, etc), a particular
 	    font may be selected by placing the fontname in parens and appending it to
-	    the filename, as <CODE>Open("gulim.ttc(Dotum)")</CODE><BR>
+	    the filename, as <CODE>Open("gulim.ttc(Dotum)")</CODE>. If you know the font's
+	    index you may also say: <CODE>Open("gulim.ttc(0)")</CODE>.<BR>
 	    The optional flags argument current has only one flag in it:
 	    <UL>
 	      <LI>
