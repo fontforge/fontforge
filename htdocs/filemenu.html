@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-Dec-2000 -->
-  <!-- AP: Last modified: 22-Jul-2007 -->
+  <!-- AP: Last modified: 9-Oct-2007 -->
   <TITLE>The File Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -133,7 +133,7 @@
       Creates a new font with (by default) ISO 8859-1 (Latin1) encoding. The default
       encoding may be changed in the preference dlg.
     <DT>
-      <IMG SRC="openfont.png" WIDTH="414" HEIGHT="374" ALIGN="Right"><A NAME="Open">Open</A>
+      <IMG SRC="openfont.png" WIDTH="398" HEIGHT="412" ALIGN="Right"><A NAME="Open">Open</A>
     <DD>
       Brings up a file chooser and allows you to open a font in any of the formats
       FontForge understands.
@@ -143,10 +143,9 @@
       <P>
       By default this dialog will display all files with extensions of pfa, pfb,
       pt3, sfd, ttf, otf, otb, t42, cef, cff, gsf, ttc, svg, ik, mf and bdf (possibly
-      others as FontForge comes to support more formats). If you would also like
-      it to display .ps files then enter *.{pfa,pfb,ttf,otf,bdf,sfd,ps} and press
-      the Filter button. If you only want it to display sfd files enter *.sfd and
-      press Filter.<BR>
+      others as FontForge comes to support more formats). You can change this with
+      the Filter pull down list -- there are several standard filters, and you
+      may define your own.<BR>
       You may select multiple files (by holding down the shift or control keys
       when clicking on them), and all selected files will be opened.<BR>
       FontForge can open macbinary resource files containing postscript and truetype
@@ -159,6 +158,14 @@
       </I>installed on your machine FontForge will process metafont's mf files
       for you. But you might want to use <I>pktrace, mftrace</I> or some other
       standalone program to do the job.
+      <P>
+      When opening a TTC file, or a mac dfont -- files which potentially contain
+      several fonts -- you will be given a dlg showing a list of all fonts in the
+      file, you get to pick which you want to open. (FontForge does not provide
+      a way to open all fonts in a file at once). If you know the fontname you
+      are interested in you may append it to the filename in the open dlg as:
+      <CODE>Helvetica.dfont(Helvetica Bold)</CODE> or if you know the font index
+      <CODE>Helvetica.dfont(0)</CODE> (indeces start at 0, not 1).
       <P>
       When FontForge opens a pdb file (one that contains palm bitmap fonts) it
       will open the first font it finds. In most formats it will list the available
@@ -183,7 +190,7 @@
       does not list pdf files (because they aren't really designed as mechanisms
       for transporting fonts and most such fonts will be incomplete due to subsetting
       and other optimizations), but you can always type in the name of one directly
-      (or use the [Filter] button to display *.pdf).
+      (or use the [Filter] button to define a filter for pdf files).
       <P>
       You can also force fontforge to rename all the glyphs in the font being read
       in to fit some standard naming convention. See the section on
@@ -191,7 +198,8 @@
     <DT>
       <A NAME="Recent">Recent</A>
     <DD>
-      A submenu showing recently used sfd files.
+      A submenu showing recently opened font files (it does not show the current
+      font).
     <DT>
       <A NAME="Close">Close</A>
     <DD>
