@@ -682,7 +682,7 @@ return;		/* No hash table, nothing to update */
     sf->glyphnames->table[hash] = new;
 }
 
-static SplineChar *SFHashName(SplineFont *sf,const char *name) {
+SplineChar *SFHashName(SplineFont *sf,const char *name) {
     struct glyphnamebucket *test;
 
     if ( sf->glyphnames==NULL )

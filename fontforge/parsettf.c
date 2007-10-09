@@ -4430,9 +4430,11 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
     uint16 *indexes;
     extern const char *ttfstandardnames[];
     int notdefwarned = false;
-    int response, asked=-1;
     int anynames = false;
+#if 0
+    int response, asked=-1;
     char *buts[5];
+#endif
 
 #if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
     gwwv_progress_change_line2(_("Reading Names"));
@@ -4522,9 +4524,11 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 
     /* where no names are given, but we've got a unicode encoding use */
     /*  that to guess at them */
+#if 0
     buts[0] = _("Yes"); buts[1] = _("Yes to all");
     buts[2] = _("No to all"); buts[3] = _("No");
     buts[4] = NULL;
+#endif
 
     for ( i=0; i<info->glyph_cnt; ++i ) if ( info->chars[i]!=NULL ) {
 	/* info->chars[i] can be null in some TTC files */
@@ -4545,6 +4549,14 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 		strcmp(info->chars[i]->name,"nonmarkingreturn")!=0 &&
 		(uni = UniFromName(info->chars[i]->name,info->uni_interp,info->map==NULL ? &custom : info->map->enc))!= -1 &&
 		info->chars[i]->unicodeenc != uni ) {
+#if 1
+	    if ( info->chars[i]->unicodeenc==-1 )
+		LogError(_("The glyph named %.30s is not mapped to any unicode code point.\nBut its name indicates it should be mapped to U+%04X.\n"),
+			info->chars[i]->name,uni);
+	    else
+		LogError( _("The glyph named %.30s is mapped to U+%04X.\nBut its name indicates it should be mapped to U+%04X.\n"),
+			info->chars[i]->name,info->chars[i]->unicodeenc, uni);
+#else
 	    if ( asked!=-1 )
 		response = asked;
 	    else if ( info->chars[i]->unicodeenc==-1 )
@@ -4561,6 +4573,7 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 		free(info->chars[i]->name);
 		info->chars[i]->name = NULL;
 	    }
+#endif
 	}
 	/* And some volt files actually assign nul strings to the name */
 	if ( (info->chars[i]->name!=NULL && *info->chars[i]->name!='\0' ))

@@ -2369,6 +2369,7 @@ extern void MatMultiply(real m1[6], real m2[6], real to[6]);
 extern int NameToEncoding(SplineFont *sf,EncMap *map,const char *uname);
 extern void GlyphHashFree(SplineFont *sf);
 extern void SFHashGlyph(SplineFont *sf,SplineChar *sc);
+extern SplineChar *SFHashName(SplineFont *sf,const char *name);
 extern int SFFindGID(SplineFont *sf, int unienc, const char *name );
 extern int SFFindSlot(SplineFont *sf, EncMap *map, int unienc, const char *name );
 extern int SFCIDFindCID(SplineFont *sf, int unienc, const char *name );
