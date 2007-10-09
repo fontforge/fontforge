@@ -337,6 +337,12 @@ return( true );
 	    if ( strcmp(names[choice],find)==0 )
 	break;
 	if ( choice==-1 ) {
+	    char *end;
+	    choice = strtol(find,&end,10);
+	    if ( *end!='\0' )
+		choice = -1;
+	}
+	if ( choice==-1 ) {
 	    char *fn = copy(filename);
 	    fn[lparen-filename] = '\0';
 	    gwwv_post_error(_("Not in Collection"),

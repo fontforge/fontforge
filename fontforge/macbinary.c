@@ -2108,6 +2108,12 @@ return( (SplineFont *) names );
 		if ( strcmp(names[which],find)==0 )
 	    break;
 	    if ( which==-1 ) {
+		char *end;
+		which = strtol(find,&end,10);
+		if ( *end!='\0' )
+		    which = -1;
+	    }
+	    if ( which==-1 ) {
 		char *fn = copy(filename);
 		fn[lparen-filename] = '\0';
 #if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
