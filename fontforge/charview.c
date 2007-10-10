@@ -5411,7 +5411,7 @@ static void CVNextPrevPt(CharView *cv,struct gmenuitem *mi) {
     SplineSet *spl, *ss;
     int x, y;
 
-    if ( mi->mid != MID_FirstPt ) {
+    if ( mi->mid == MID_FirstPt ) {
 	if ( cv->layerheads[cv->drawmode]->splines==NULL )
 return;
 	other = (cv->layerheads[cv->drawmode]->splines)->first;
