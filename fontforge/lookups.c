@@ -2540,8 +2540,8 @@ static int ApplyLigatureSubsAtPos(struct lookup_subtable *sub,struct lookup_data
 	    lpos = skipglyphs(lookup_flags,data,npos);
 	    for ( ; npos<lpos; ++npos )
 		data->str[npos].lig_pos = k-2;
-	    /* Remove this glyph */
-	    for ( ++lpos; lpos<data->cnt; ++lpos )
+	    /* Remove this glyph (copy the final NUL too) */
+	    for ( ++lpos; lpos<=data->cnt; ++lpos )
 		data->str[lpos-1] = data->str[lpos];
 	    --data->cnt;
 	}
@@ -2691,70 +2691,86 @@ return( 0 );
 static int ApplyAnchorPosAtPos(struct lookup_subtable *sub,struct lookup_data *data,int pos) {
     AnchorPoint *ap1, *ap2;
     int npos;
+    int any = 0;
+
+    for ( ap1=data->str[pos].sc->anchor; ap1!=NULL ; ap1=ap1->next )
+	ap1->ticked = false;
 
     npos = skipglyphs(sub->lookup->lookup_flags,data,pos+1);
-    if ( npos>=data->cnt )
-return( 0 );
-    if ( sub->lookup->lookup_type == gpos_cursive ) {
-	for ( ap1=data->str[pos].sc->anchor; ap1!=NULL ; ap1=ap1->next ) {
-	    if ( ap1->anchor->subtable==sub && ap1->type==at_cexit ) {
-		for ( ap2 = data->str[npos].sc->anchor; ap2!=NULL; ap2=ap2->next ) {
-		    if ( ap2->anchor==ap1->anchor && ap2->type==at_centry )
-		break;
-		}
-		if ( ap2!=NULL )
-	break;
-	    }
-	}
-    } else if ( sub->lookup->lookup_type == gpos_mark2ligature ) {
-	for ( ap1=data->str[pos].sc->anchor; ap1!=NULL ; ap1=ap1->next ) {
-	    if ( ap1->anchor->subtable==sub && ap1->type==at_baselig &&
-		    ap1->lig_index == data->str[npos].lig_pos ) {
-		for ( ap2 = data->str[npos].sc->anchor; ap2!=NULL; ap2=ap2->next ) {
-		    if ( ap2->anchor==ap1->anchor && ap2->type==at_mark )
-		break;
-		}
-		if ( ap2!=NULL )
-	break;
-	    }
-	}
-    } else {
-	for ( ap1=data->str[pos].sc->anchor; ap1!=NULL ; ap1=ap1->next ) {
-	    if ( ap1->anchor->subtable==sub && (ap1->type==at_basechar || ap1->type==at_basemark)) {
-		for ( ap2 = data->str[npos].sc->anchor; ap2!=NULL; ap2=ap2->next ) {
-		    if ( ap2->anchor==ap1->anchor && ap2->type==at_mark )
-		break;
-		}
-		if ( ap2!=NULL )
-	break;
-	    }
-	}
-    }
-    if ( ap1==NULL )
-return( 0 );
+    /* there may be several marks which attach at different anchor classes */
+    /* in the same subtable. Ligatures may get several marks in the same */
+    /* class. Cursives have only a single match */
 
-    data->str[npos].vr.yoff = data->str[pos].vr.yoff +
-	    rint((ap1->me.y - ap2->me.y) * data->scale);
+    for ( ; npos<data->cnt && data->str[npos].lig_pos!=-1; ) {
+	if ( sub->lookup->lookup_type == gpos_cursive ) {
+	    for ( ap1=data->str[pos].sc->anchor; ap1!=NULL ; ap1=ap1->next ) {
+		if ( ap1->anchor->subtable==sub && ap1->type==at_cexit && !ap1->ticked ) {
+		    for ( ap2 = data->str[npos].sc->anchor; ap2!=NULL; ap2=ap2->next ) {
+			if ( ap2->anchor==ap1->anchor && ap2->type==at_centry )
+		    break;
+		    }
+		    if ( ap2!=NULL )
+	    break;
+		}
+	    }
+	} else if ( sub->lookup->lookup_type == gpos_mark2ligature ) {
+	    for ( ap1=data->str[pos].sc->anchor; ap1!=NULL ; ap1=ap1->next ) {
+		if ( ap1->anchor->subtable==sub && ap1->type==at_baselig &&
+			ap1->lig_index == data->str[npos].lig_pos && !ap1->ticked ) {
+		    for ( ap2 = data->str[npos].sc->anchor; ap2!=NULL; ap2=ap2->next ) {
+			if ( ap2->anchor==ap1->anchor && ap2->type==at_mark )
+		    break;
+		    }
+		    if ( ap2!=NULL )
+	    break;
+		}
+	    }
+	} else {
+	    for ( ap1=data->str[pos].sc->anchor; ap1!=NULL ; ap1=ap1->next ) {
+		if ( ap1->anchor->subtable==sub &&
+			(ap1->type==at_basechar || ap1->type==at_basemark) &&
+			!ap1->ticked ) {
+		    for ( ap2 = data->str[npos].sc->anchor; ap2!=NULL; ap2=ap2->next ) {
+			if ( ap2->anchor==ap1->anchor && ap2->type==at_mark )
+		    break;
+		    }
+		    if ( ap2!=NULL )
+	    break;
+		}
+	    }
+	}
+	if ( ap1==NULL )
+return( any ? pos+1 : 0 );
+	ap1->ticked = true;
+
+	data->str[npos].vr.yoff = data->str[pos].vr.yoff +
+		rint((ap1->me.y - ap2->me.y) * data->scale);
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
-    data->str[npos].vr.yoff += FigureDeviceTable(&ap1->yadjust,data->pixelsize)-
-		FigureDeviceTable(&ap2->yadjust,data->pixelsize);
+	data->str[npos].vr.yoff += FigureDeviceTable(&ap1->yadjust,data->pixelsize)-
+		    FigureDeviceTable(&ap2->yadjust,data->pixelsize);
 #endif
-    if ( sub->lookup->lookup_flags&pst_r2l ) {
-	data->str[npos].vr.xoff = data->str[pos].vr.xoff +
-		rint( -(ap1->me.x - ap2->me.x)*data->scale );
+	if ( sub->lookup->lookup_flags&pst_r2l ) {
+	    data->str[npos].vr.xoff = data->str[pos].vr.xoff +
+		    rint( -(ap1->me.x - ap2->me.x)*data->scale );
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
-	data->str[npos].vr.xoff -= FigureDeviceTable(&ap1->xadjust,data->pixelsize)-
-		    FigureDeviceTable(&ap2->xadjust,data->pixelsize);
+	    data->str[npos].vr.xoff -= FigureDeviceTable(&ap1->xadjust,data->pixelsize)-
+			FigureDeviceTable(&ap2->xadjust,data->pixelsize);
 #endif
-    } else {
-	data->str[npos].vr.xoff = data->str[pos].vr.xoff +
-		rint( (ap1->me.x - ap2->me.x - data->str[pos].sc->width)*data->scale );
+	} else {
+	    data->str[npos].vr.xoff = data->str[pos].vr.xoff +
+		    rint( (ap1->me.x - ap2->me.x - data->str[pos].sc->width)*data->scale );
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
-	data->str[npos].vr.xoff += FigureDeviceTable(&ap1->xadjust,data->pixelsize)-
-		    FigureDeviceTable(&ap2->xadjust,data->pixelsize);
+	    data->str[npos].vr.xoff += FigureDeviceTable(&ap1->xadjust,data->pixelsize)-
+			FigureDeviceTable(&ap2->xadjust,data->pixelsize);
 #endif
-    }
+	}
+
+	++any;
+	if ( sub->lookup->lookup_type == gpos_cursive )
 return( pos+1 );
+	npos = skipglyphs(sub->lookup->lookup_flags,data,npos+1);
+    }
+return( any ? pos+1 : 0 );
 }
 
 static int ConditionalTagOk(uint32 tag, OTLookup *otl,struct lookup_data *data,int pos) {
@@ -2916,6 +2932,7 @@ struct opentype_str *ApplyTickedFeatures(SplineFont *sf,uint32 *flist, uint32 sc
     for ( cnt=0; glyphs[cnt]!=NULL; ++cnt ) {
 	data.str[cnt].sc = glyphs[cnt];
 	data.str[cnt].orig_index = cnt;
+	data.str[cnt].lig_pos = data.str[cnt].context_pos = -1;
     }
     if ( sf->cidmaster!=NULL ) sf=sf->cidmaster;
     data.sf = sf;
