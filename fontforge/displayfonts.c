@@ -2724,8 +2724,11 @@ static char *_IAmACat[] = {
 
 /* Belorussian */
 static char *_belorussianjohn[] = {
+    "У пачатку было Слова, і Слова было ў Бога, і Богам было Слова. Яно было ў пачатку ў Бога",
+#if 0		/* told this is actually russian */
     "Вначале было Слово, и Слово было у Бога, и Слово было Бог.",
     "Оно было в начале у Бога.",
+#endif
     NULL
 };
 /* basque */
