@@ -3300,22 +3300,27 @@ return( sc->glyph_class-1 );
     if ( strcmp(sc->name,".notdef")==0 )
 return( 0 );
 
-    for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
-	if ( pst->type == pst_ligature )
-return( 2 );			/* Ligature */
-    }
-
+    /* It isn't clear to me what should be done if a glyph is both a ligature */
+    /*  and a mark (There are some greek accent ligatures, it is probably more*/
+    /*  important that they be indicated as marks). Here I chose mark rather  */
+    /*  than ligature as the mark class is far more likely to be used */
     ap=sc->anchor;
     while ( ap!=NULL && (ap->type==at_centry || ap->type==at_cexit) )
 	ap = ap->next;
     if ( ap!=NULL && (ap->type==at_mark || ap->type==at_basemark) )
 return( 3 );
+
+    for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
+	if ( pst->type == pst_ligature )
+return( 2 );			/* Ligature */
+    }
+
 	/* I not quite sure what a componant glyph is. Probably something */
 	/*  that is not in the cmap table and is referenced in other glyphs */
 	/* (I've never seen it used by others) */
 	/* (Note: No glyph in a CID font can be components as all CIDs mean */
 	/*  something) (I think) */
-    else if ( sc->unicodeenc==-1 && sc->dependents!=NULL &&
+    if ( sc->unicodeenc==-1 && sc->dependents!=NULL &&
 	    sc->parent->cidmaster!=NULL && !ReferencedByGSUB(sc))
 return( 4 );
     else
