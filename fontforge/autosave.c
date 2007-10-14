@@ -127,7 +127,6 @@ return;
 	sprintf( buffer, "%s/auto%06x-%d.asfd", autosavedir, getpid(), ++cnt );
 	if ( access(buffer,F_OK)==-1 ) {
 	    sf->autosavename = copy(buffer);
-	    free(autosavedir);
 return;
 	}
     }
