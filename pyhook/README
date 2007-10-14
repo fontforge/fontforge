@@ -1,0 +1,10 @@
+To install:
+  $ python setup.py install
+
+This is the source distribution for the fontforge python extension. It presumes
+that you already have libfontforge (configured for python scripting) installed
+on your system.
+
+If you do not have libfontforge, install that first. A fontforge distribution is
+available from:
+ http://sourceforge.net/project/showfiles.php?group_id=103338
