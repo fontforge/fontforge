@@ -72,16 +72,26 @@ return( NULL );
 #endif
 
 char *getPfaEditDir(char *buffer) {
-    char *editdir = NULL;
-    char *dir=gethomedir();
+    static char *editdir = NULL;
+    char *dir;
+    char olddir[1024];
 
     if ( editdir!=NULL )
 return( editdir );
 
+    dir=gethomedir();
     if ( dir==NULL )
 return( NULL );
-    sprintf(buffer,"%s/.PfaEdit", dir);
+    sprintf(buffer,"%s/.FontForge", dir);
+    /* We used to use .PfaEdit. So if we don't find a .FontForge look for that*/
+    /*  if there is a .PfaEdit, then rename it to .FontForge */
+    if ( access(buffer,F_OK)==-1 ) {
+	snprintf(olddir,sizeof(olddir),"%s/.PfaEdit", dir);
+	if ( access(olddir,F_OK)==0 )
+	    rename(olddir,buffer);
+    }
     free(dir);
+    /* If we still can't find it, create it */
     if ( access(buffer,F_OK)==-1 )
 	if ( mkdir(buffer,0700)==-1 )
 return( NULL );

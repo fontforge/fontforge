@@ -1101,7 +1101,7 @@ char *getPfaEditDir(char *buffer) {
 
     if ( dir==NULL )
 return( NULL );
-    sprintf(buffer,"%s/.PfaEdit", dir);
+    sprintf(buffer,"%s/.FontForge", dir);
     free(dir);
     if ( access(buffer,F_OK)==-1 )
 	if ( mkdir(buffer,0700)==-1 )
