@@ -18693,9 +18693,11 @@ if test "$python" = "yes" ; then
       PySubVersion=`echo $PyVersion |sed -e 's/2.//'`
       PyInc=`python -c "import distutils.sysconfig ; print '%s' % distutils.sysconfig.get_config_var('INCLUDEPY')"`
       PyLib=`python -c "import distutils.sysconfig ; print '%s/%s' % (distutils.sysconfig.get_config_var('LIBPL'),distutils.sysconfig.get_config_var('LDLIBRARY'))"`
-      if test "$PySubVersion" \!= "" -a "$PySubVersion" -le 2 ; then
+      if test "$PySubVersion" = "" ; then
         python="no"
-      elif test "$PySubVersion" \!= "" -a "$PySubVersion" -ge 3 -a -e $PyLib -a -e $PyInc; then
+      elif test "$PySubVersion" -le 2 ; then
+        python="no"
+      elif test "$PySubVersion" -ge 3 -a -e $PyLib -a -e $PyInc; then
 	PyIncs=`python -c "import distutils.sysconfig ; print '-I%s' % distutils.sysconfig.get_config_var('INCLUDEPY')"`
         PyLibs=`python -c "import distutils.sysconfig ; print '%s/%s %s' % (distutils.sysconfig.get_config_var('LIBPL'),distutils.sysconfig.get_config_var('LDLIBRARY'),distutils.sysconfig.get_config_var('LIBS'))"`
         LIBS="$LIBS $PyLibs"
@@ -18703,7 +18705,7 @@ if test "$python" = "yes" ; then
       else
 	# python gets it wrong on all my build systems, this seems to work instead
 	PyName="python$PyVersion"
-	if test -e $PyLib ; then
+	if test "$PyLib" != "" -a -e "$PyLib" ; then
           LIBS="$LIBS $PyLibs"
 	else
 	  echo "$as_me:$LINENO: checking for library containing Py_Main" >&5
@@ -18835,7 +18837,7 @@ else
 fi
 
 	fi
-	if test -e $PyIncs ; then
+	if test "$PyIncs" != "" -a -e "$PyIncs" ; then
 	  CPPFLAGS="$CPPFLAGS $PyIncs"
 	elif test -d /usr/include/$PyName ; then
 	  CPPFLAGS="$CPPFLAGS -I/usr/include/$PyName"
