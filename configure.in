@@ -161,8 +161,14 @@ if test "$python" = "yes" ; then
       else
 	# python gets it wrong on all my build systems, this seems to work instead
 	PyName="python$PyVersion"
-	AC_SEARCH_LIBS(Py_Main, $PyName python, : , python="no")
-	if test -d /usr/include/$PyName ; then
+	if test -e $PyLib ; then
+          LIBS="$LIBS $PyLibs"
+	else
+	  AC_SEARCH_LIBS(Py_Main, $PyName python, : , python="no")
+	fi
+	if test -e $PyIncs ; then
+	  CPPFLAGS="$CPPFLAGS $PyIncs"
+	elif test -d /usr/include/$PyName ; then
 	  CPPFLAGS="$CPPFLAGS -I/usr/include/$PyName"
 	else
 	  python="no"

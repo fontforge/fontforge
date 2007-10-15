@@ -18703,7 +18703,10 @@ if test "$python" = "yes" ; then
       else
 	# python gets it wrong on all my build systems, this seems to work instead
 	PyName="python$PyVersion"
-	echo "$as_me:$LINENO: checking for library containing Py_Main" >&5
+	if test -e $PyLib ; then
+          LIBS="$LIBS $PyLibs"
+	else
+	  echo "$as_me:$LINENO: checking for library containing Py_Main" >&5
 echo $ECHO_N "checking for library containing Py_Main... $ECHO_C" >&6
 if test "${ac_cv_search_Py_Main+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -18831,7 +18834,10 @@ else
   python="no"
 fi
 
-	if test -d /usr/include/$PyName ; then
+	fi
+	if test -e $PyIncs ; then
+	  CPPFLAGS="$CPPFLAGS $PyIncs"
+	elif test -d /usr/include/$PyName ; then
 	  CPPFLAGS="$CPPFLAGS -I/usr/include/$PyName"
 	else
 	  python="no"
