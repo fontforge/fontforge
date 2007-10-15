@@ -6632,7 +6632,8 @@ static int PSTKD_RemoveEmpty(GGadget *g, GEvent *e) {
 	    }
 	}
 	if ( rm_cnt!=0 ) {
-	    psts = grealloc(psts,(rows-rm_cnt)*cols*sizeof(struct matrix_data));
+	    /* Some reallocs explode if given a size of 0 */
+	    psts = grealloc(psts,(rows-rm_cnt+1)*cols*sizeof(struct matrix_data));
 	    GMatrixEditSet(pstk,psts,rows-rm_cnt,false);
 	}
     }
