@@ -211,12 +211,12 @@ return( true );
 	spline->from->nextcp = spline->from->me;
 	if ( spline->from->nonextcp && spline->from->noprevcp )
 	    spline->from->pointtype = pt_corner;
-	else if ( spline->from->pointtype == pt_curve )
+	else if ( spline->from->pointtype == pt_curve || spline->from->pointtype == pt_hvcurve )
 	    spline->from->pointtype = pt_tangent;
 	spline->to->prevcp = spline->to->me;
 	if ( spline->to->nonextcp && spline->to->noprevcp )
 	    spline->to->pointtype = pt_corner;
-	else if ( spline->to->pointtype == pt_curve )
+	else if ( spline->to->pointtype == pt_curve || spline->to->pointtype == pt_hvcurve )
 	    spline->to->pointtype = pt_tangent;
 	SplineRefigure(spline);
     }
@@ -654,7 +654,7 @@ static void ApproxBounds(DBounds *b,TPoint *mid, int cnt, struct dotbounds *db) 
 static int GoodCurve(SplinePoint *sp, int check_prev ) {
     double dx, dy, lenx, leny;
 
-    if ( sp->pointtype!=pt_curve )
+    if ( sp->pointtype!=pt_curve && sp->pointtype!=pt_hvcurve )
 return( false );
     if ( check_prev ) {
 	dx = sp->me.x - sp->prevcp.x;
@@ -787,7 +787,8 @@ return( SplineMake2(from,to));
 	}
     }
     if ( tlen==0 ) {
-	if ( to->pointtype==pt_curve && to->next && !to->nonextcp ) {
+	if ( (to->pointtype==pt_curve || to->pointtype==pt_hvcurve) &&
+		to->next && !to->nonextcp ) {
 	    tounit.x = to->me.x-to->nextcp.x; tounit.y = to->me.y-to->nextcp.y;
 /* Doesn't work
 	} else if ( to->pointtype==pt_tangent && to->next ) {
@@ -802,7 +803,8 @@ return( SplineMake2(from,to));
     tounit.x /= tlen; tounit.y /= tlen;
 
     if ( flen==0 ) {
-	if ( from->pointtype==pt_curve && from->prev && !from->noprevcp ) {
+	if ( (from->pointtype==pt_curve || from->pointtype==pt_hvcurve) &&
+		from->prev && !from->noprevcp ) {
 	    fromunit.x = from->me.x-from->prevcp.x; fromunit.y = from->me.y-from->prevcp.y;
 /*
 	} else if ( from->pointtype==pt_tangent && from->prev ) {
@@ -2030,7 +2032,7 @@ static int SPLSmoothControlPoints(SplineSet *ss,double tan_bounds,int vert_check
 
     for ( sp = ss->first; ; ) {
 	if (( !sp->nonextcp && !sp->noprevcp && sp->pointtype==pt_corner ) ||
-		((sp->pointtype==pt_corner || sp->pointtype==pt_curve) &&
+		((sp->pointtype==pt_corner || sp->pointtype==pt_curve || sp->pointtype==pt_hvcurve) &&
 		 (( !sp->nonextcp && sp->noprevcp && sp->prev!=NULL && sp->prev->knownlinear ) ||
 		  ( !sp->noprevcp && sp->nonextcp && sp->next!=NULL && sp->next->knownlinear )))) {
 	    BasePoint *next = sp->nonextcp ? &sp->next->to->me : &sp->nextcp;
@@ -3011,7 +3013,8 @@ void SPWeightedAverageCps(SplinePoint *sp) {
     double pangle, nangle, angle, plen, nlen, c, s;
     if ( sp->noprevcp || sp->nonextcp )
 	/*SPAverageCps(sp)*/;		/* Expand Stroke wants this case to hold still */
-    else if ( sp->pointtype==pt_curve && sp->prev && sp->next ) {
+    else if (( sp->pointtype==pt_curve || sp->pointtype==pt_hvcurve) &&
+	    sp->prev && sp->next ) {
 	pangle = atan2(sp->me.y-sp->prevcp.y,sp->me.x-sp->prevcp.x);
 	nangle = atan2(sp->nextcp.y-sp->me.y,sp->nextcp.x-sp->me.x);
 	if ( pangle<0 && nangle>0 && nangle-pangle>=3.1415926 )
@@ -3040,7 +3043,8 @@ void SPWeightedAverageCps(SplinePoint *sp) {
 
 void SPAverageCps(SplinePoint *sp) {
     double pangle, nangle, angle, plen, nlen, c, s;
-    if ( sp->pointtype==pt_curve && sp->prev && sp->next ) {
+    if (( sp->pointtype==pt_curve || sp->pointtype==pt_hvcurve) &&
+	    sp->prev && sp->next ) {
 	if ( sp->noprevcp )
 	    pangle = atan2(sp->me.y-sp->prev->from->me.y,sp->me.x-sp->prev->from->me.x);
 	else
@@ -3149,6 +3153,24 @@ return;
 	sp->prev->from->nextcp = sp->prevcp;
 }
 
+void BP_HVForce(BasePoint *vector) {
+    /* Force vector to be horizontal/vertical */
+    double dx, dy, len;
+
+    if ( (dx= vector->x)<0 ) dx = -dx;
+    if ( (dy= vector->y)<0 ) dy = -dy;
+    if ( dx==0 || dy==0 )
+return;
+    len = sqrt(dx*dx + dy*dy);
+    if ( dx>dy ) {
+	vector->x = vector->x<0 ? -len : len;
+	vector->y = 0;
+    } else {
+	vector->y = vector->y<0 ? -len : len;
+	vector->x = 0;
+    }
+}
+    
 #define NICE_PROPORTION	.39
 void SplineCharDefaultNextCP(SplinePoint *base) {
     SplinePoint *prev=NULL, *next;
@@ -3179,13 +3201,15 @@ return;
 	unit.x /= ulen, unit.y /= ulen;
     base->nonextcp = false;
 
-    if ( base->pointtype == pt_curve ) {
+    if ( base->pointtype == pt_curve || base->pointtype == pt_hvcurve ) {
 	if ( prev!=NULL && (base->prevcpdef || base->noprevcp)) {
 	    unit.x = next->me.x - prev->me.x;
 	    unit.y = next->me.y - prev->me.y;
 	    ulen = sqrt(unit.x*unit.x + unit.y*unit.y);
 	    if ( ulen!=0 )
 		unit.x /= ulen, unit.y /= ulen;
+	    if ( base->pointtype == pt_hvcurve )
+		BP_HVForce(&unit);
 	    plen = sqrt((base->prevcp.x-base->me.x)*(base->prevcp.x-base->me.x) +
 		    (base->prevcp.y-base->me.y)*(base->prevcp.y-base->me.y));
 	    base->prevcp.x = base->me.x - plen*unit.x;
@@ -3204,6 +3228,8 @@ return;
 	    base->noprevcp = true;
 	    base->prevcpdef = true;
 	}
+	if ( base->pointtype == pt_hvcurve )
+	    BP_HVForce(&unit);
     } else if ( base->pointtype == pt_corner ) {
 	if ( next->pointtype != pt_curve ) {
 	    base->nonextcp = true;
@@ -3269,13 +3295,15 @@ return;
 	unit.x /= ulen, unit.y /= ulen;
     base->noprevcp = false;
 
-    if ( base->pointtype == pt_curve ) {
+    if ( base->pointtype == pt_curve || base->pointtype == pt_hvcurve ) {
 	if ( next!=NULL && (base->nextcpdef || base->nonextcp)) {
 	    unit.x = prev->me.x - next->me.x;
 	    unit.y = prev->me.y - next->me.y;
 	    ulen = sqrt(unit.x*unit.x + unit.y*unit.y);
 	    if ( ulen!=0 ) 
 		unit.x /= ulen, unit.y /= ulen;
+	    if ( base->pointtype == pt_hvcurve )
+		BP_HVForce(&unit);
 	    nlen = sqrt((base->nextcp.x-base->me.x)*(base->nextcp.x-base->me.x) +
 		    (base->nextcp.y-base->me.y)*(base->nextcp.y-base->me.y));
 	    base->nextcp.x = base->me.x - nlen*unit.x;
@@ -3294,6 +3322,8 @@ return;
 	    base->nonextcp = true;
 	    base->nextcpdef = true;
 	}
+	if ( base->pointtype == pt_hvcurve )
+	    BP_HVForce(&unit);
     } else if ( base->pointtype == pt_corner ) {
 	if ( prev->pointtype != pt_curve ) {
 	    base->noprevcp = true;
@@ -3336,19 +3366,24 @@ void SPSmoothJoint(SplinePoint *sp) {
     if ( sp->prev==NULL || sp->next==NULL || sp->pointtype==pt_corner )
 return;
 
-    if ( sp->pointtype==pt_curve && !sp->nonextcp && !sp->noprevcp ) {
+    if ( (sp->pointtype==pt_curve || sp->pointtype==pt_hvcurve ) &&
+	    !sp->nonextcp && !sp->noprevcp ) {
 	unitn.x = sp->nextcp.x-sp->me.x;
 	unitn.y = sp->nextcp.y-sp->me.y;
 	len = sqrt(unitn.x*unitn.x + unitn.y*unitn.y);
 	if ( len==0 )
 return;
 	unitn.x /= len; unitn.y /= len;
+	if ( sp->pointtype == pt_hvcurve )
+	    BP_HVForce(&unitn);
 	unitp.x = sp->me.x - sp->prevcp.x;
 	unitp.y = sp->me.y - sp->prevcp.y;
 	len = sqrt(unitp.x*unitp.x + unitp.y*unitp.y);
 	if ( len==0 )
 return;
 	unitp.x /= len; unitp.y /= len;
+	if ( sp->pointtype == pt_hvcurve )
+	    BP_HVForce(&unitp);
 	dotn = unitp.y*(sp->nextcp.x-sp->me.x) - unitp.x*(sp->nextcp.y-sp->me.y);
 	dotp = unitn.y*(sp->me.x - sp->prevcp.x) - unitn.x*(sp->me.y - sp->prevcp.y);
 	sp->nextcp.x -= dotn*unitp.y/2;

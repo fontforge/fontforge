@@ -576,6 +576,17 @@ return;
 	    GDrawDrawRect(pixmap,&r,col);
 	else
 	    GDrawFillRect(pixmap,&r,col);
+    } else if ( sp->pointtype==pt_hvcurve ) {
+	GPoint gp[5];
+	gp[0].x = r.x-1; gp[0].y = r.y+2;
+	gp[1].x = r.x+2; gp[1].y = r.y+5;
+	gp[2].x = r.x+5; gp[2].y = r.y+2;
+	gp[3].x = r.x+2; gp[3].y = r.y-1;
+	gp[4] = gp[0];
+	if ( sp->selected || isfake )
+	    GDrawDrawPoly(pixmap,gp,5,col);
+	else
+	    GDrawFillPoly(pixmap,gp,5,col);
     } else {
 	GPoint gp[5];
 	int dir;
@@ -2628,7 +2639,7 @@ return( true );
 	    fs->p->nextcp = true;
 	    fs->p->anysel = true;
 	    fs->p->cp = sp->nextcp;
-	    if ( sp->nonextcp && sp->pointtype==pt_curve ) {
+	    if ( sp->nonextcp && (sp->pointtype==pt_curve || sp->pointtype==pt_hvcurve)) {
 		fs->p->cp.x = sp->me.x + (sp->me.x-sp->prevcp.x);
 		fs->p->cp.y = sp->me.y + (sp->me.y-sp->prevcp.y);
 	    }
@@ -2642,7 +2653,7 @@ return( true );
 	    fs->p->prevcp = true;
 	    fs->p->anysel = true;
 	    fs->p->cp = sp->prevcp;
-	    if ( sp->noprevcp && sp->pointtype==pt_curve ) {
+	    if ( sp->noprevcp && (sp->pointtype==pt_curve || sp->pointtype==pt_hvcurve)) {
 		fs->p->cp.x = sp->me.x + (sp->me.x-sp->nextcp.x);
 		fs->p->cp.y = sp->me.y + (sp->me.y-sp->nextcp.y);
 	    }
@@ -2956,7 +2967,8 @@ return;
 	_CVTestSelectFromEvent(cv,&fs);
 	fs.p = &cv->p;
     } else if ( cv->active_tool == cvt_curve || cv->active_tool == cvt_corner ||
-	    cv->active_tool == cvt_tangent || cv->active_tool == cvt_pen ) {
+	    cv->active_tool == cvt_tangent || cv->active_tool == cvt_hvcurve ||
+	    cv->active_tool == cvt_pen ) {
 	InSplineSet(&fs,cv->layerheads[cv->drawmode]->splines);
 	if ( fs.p->sp==NULL && fs.p->spline==NULL )
 	    CVDoSnaps(cv,&fs);
@@ -3000,6 +3012,7 @@ return;
 	CVMouseDownFreeHand(cv,event);
       break;
       case cvt_curve: case cvt_corner: case cvt_tangent: case cvt_pen:
+      case cvt_hvcurve:
 	CVMouseDownPoint(cv,event);
       break;
       case cvt_ruler:
@@ -3712,7 +3725,7 @@ return;
       case cvt_freehand:
 	CVMouseMoveFreeHand(cv,event);
       break;
-      case cvt_curve: case cvt_corner: case cvt_tangent: 
+      case cvt_curve: case cvt_corner: case cvt_tangent: case cvt_hvcurve:
 	CVMouseMovePoint(cv,&p);
       break;
       case cvt_pen:
@@ -3808,7 +3821,8 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
       case cvt_freehand:
 	CVMouseUpFreeHand(cv,event);
       break;
-      case cvt_curve: case cvt_corner: case cvt_tangent: case cvt_pen:
+      case cvt_curve: case cvt_corner: case cvt_tangent: case cvt_hvcurve:
+      case cvt_pen:
 	CVMouseUpPoint(cv,event);
       break;
       case cvt_magnify: case cvt_minify:
@@ -4584,6 +4598,7 @@ return( true );
 #define MID_NoImplicitPt	2308
 #define MID_InsertPtOnSplineAt	2309
 #define MID_AddAnchor	2310
+#define MID_HVCurve	2311
 #define MID_AutoHint	2400
 #define MID_ClearHStem	2401
 #define MID_ClearVStem	2402
@@ -6006,7 +6021,7 @@ void SPChangePointType(SplinePoint *sp, int pointtype) {
     /*int oldpointtype = sp->pointtype;*/
 
     if ( sp->pointtype==pointtype ) {
-	if ( pointtype==pt_curve ) {
+	if ( pointtype==pt_curve || pointtype == pt_hvcurve ) {
 	    if ( !sp->nextcpdef && sp->next!=NULL && !sp->next->order2 )
 		SplineCharDefaultNextCP(sp);
 	    if ( !sp->prevcpdef && sp->prev!=NULL && !sp->prev->order2 )
@@ -6059,6 +6074,10 @@ return;
 		makedflt = false;
 	    }
 	}
+	if ( pointtype==pt_hvcurve &&
+		((unitnext.x!=0 && unitnext.y!=0) ||
+		 (unitprev.x!=0 && unitprev.y!=0)) )
+	    makedflt = true;
 	if ( makedflt ) {
 	    sp->nextcpdef = sp->prevcpdef = true;
 	    if (( sp->prev!=NULL && sp->prev->order2 ) ||
@@ -6076,7 +6095,8 @@ return;
 }
 
 static void _CVMenuPointType(CharView *cv,struct gmenuitem *mi) {
-    int pointtype = mi->mid==MID_Corner?pt_corner:mi->mid==MID_Tangent?pt_tangent:pt_curve;
+    int pointtype = mi->mid==MID_Corner?pt_corner:mi->mid==MID_Tangent?pt_tangent:
+	    mi->mid==MID_Curve?pt_curve:pt_hvcurve;
     SplinePointList *spl;
     Spline *spline, *first;
 
@@ -6181,6 +6201,10 @@ static void cv_ptlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	  case MID_Curve:
 	    mi->ti.disabled = type==-2;
 	    mi->ti.checked = type==pt_curve;
+	  break;
+	  case MID_HVCurve:
+	    mi->ti.disabled = type==-2;
+	    mi->ti.checked = type==pt_hvcurve;
 	  break;
 	  case MID_MakeFirst:
 	    mi->ti.disabled = cnt!=1 || sel->first->prev==NULL || sel->first==selpt;
@@ -8282,6 +8306,7 @@ static GMenuItem2 edlist[] = {
 
 static GMenuItem2 ptlist[] = {
     { { (unichar_t *) N_("_Curve"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'C' }, H_("Curve|Ctl+2"), NULL, NULL, CVMenuPointType, MID_Curve },
+    { { (unichar_t *) N_("_HVCurve"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("HVCurve|No Shortcut"), NULL, NULL, CVMenuPointType, MID_HVCurve },
     { { (unichar_t *) N_("C_orner"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("Corner|Ctl+3"), NULL, NULL, CVMenuPointType, MID_Corner },
     { { (unichar_t *) N_("_Tangent"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Tangent|Ctl+4"), NULL, NULL, CVMenuPointType, MID_Tangent },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},

@@ -105,7 +105,6 @@ static char *getAutoDirName(char *buffer) {
     if ( dir==NULL )
 return( NULL );
     sprintf(buffer,"%s/autosave", dir);
-    free(dir);
     if ( access(buffer,F_OK)==-1 )
 	if ( mkdir(buffer,0700)==-1 )
 return( NULL );

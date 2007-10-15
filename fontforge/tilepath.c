@@ -152,6 +152,7 @@ return( false );
 	if (( pcnt<td->pcnt-1 || td->path->first==td->path->last ) &&
 		spline->to->next!=NULL &&
 		!((spline->to->pointtype==pt_curve && !spline->to->nonextcp && !spline->to->noprevcp) ||
+		  (spline->to->pointtype==pt_hvcurve && !spline->to->nonextcp && !spline->to->noprevcp) ||
 		  (spline->to->pointtype==pt_tangent && spline->to->nonextcp+spline->to->noprevcp==1 )) ) {
 	    /* We aren't interested in joins where the two splines are tangent */
 	    Spline *next = spline->to->next;

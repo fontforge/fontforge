@@ -1146,6 +1146,7 @@ void SplineRefigureFixup(Spline *spline) {
     SplinePoint *from, *to, *prev, *next;
     BasePoint foff, toff, unit, new;
     double len;
+    enum pointtype fpt, tpt;
 
     if ( !spline->order2 ) {
 	SplineRefigure3(spline);
@@ -1159,7 +1160,9 @@ return;
     if ( len!=0 )
 	unit.x /= len; unit.y /= len;
 
-    if ( from->nextcpdef && to->prevcpdef ) switch ( from->pointtype*3+to->pointtype ) {
+    if ( (fpt = from->pointtype)==pt_hvcurve ) fpt = pt_curve;
+    if ( (tpt =   to->pointtype)==pt_hvcurve ) tpt = pt_curve;
+    if ( from->nextcpdef && to->prevcpdef ) switch ( fpt*3+tpt ) {
       case pt_corner*3+pt_corner:
       case pt_corner*3+pt_tangent:
       case pt_tangent*3+pt_corner:
@@ -1202,14 +1205,16 @@ return;
 	if ( IntersectLinesClip(&from->nextcp,&foff,&from->me,&toff,&to->me)) {
 	    from->nonextcp = to->noprevcp = false;
 	    to->prevcp = from->nextcp;
-	    if ( from->pointtype==pt_curve && !from->noprevcp && from->prev!=NULL ) {
+	    if ( (from->pointtype==pt_curve || from->pointtype==pt_hvcurve ) &&
+		    !from->noprevcp && from->prev!=NULL ) {
 		prev = from->prev->from;
 		if ( IntersectLinesClip(&from->prevcp,&from->nextcp,&from->me,&prev->nextcp,&prev->me)) {
 		    prev->nextcp = from->prevcp;
 		    SplineRefigure2(from->prev);
 		}
 	    }
-	    if ( to->pointtype==pt_curve && !to->nonextcp && to->next!=NULL ) {
+	    if ( (to->pointtype==pt_curve || to->pointtype==pt_hvcurve) &&
+		    !to->nonextcp && to->next!=NULL ) {
 		next = to->next->to;
 		if ( IntersectLinesClip(&to->nextcp,&to->prevcp,&to->me,&next->prevcp,&next->me)) {
 		    next->prevcp = to->nextcp;
@@ -1220,7 +1225,8 @@ return;
       break;
     } else {
 	/* Can't set things arbetrarily here, but make sure they are consistant */
-	if ( from->pointtype==pt_curve && !from->noprevcp && !from->nonextcp ) {
+	if ( (from->pointtype==pt_curve || from->pointtype==pt_hvcurve ) &&
+		!from->noprevcp && !from->nonextcp ) {
 	    unit.x = from->nextcp.x-from->me.x;
 	    unit.y = from->nextcp.y-from->me.y;
 	    len = sqrt(unit.x*unit.x + unit.y*unit.y);
@@ -1255,7 +1261,8 @@ return;
 		    to->prevcp = from->nextcp;
 	    }
 	}
-	if ( to->pointtype==pt_curve && !to->noprevcp && !to->nonextcp ) {
+	if ( (to->pointtype==pt_curve || to->pointtype==pt_hvcurve ) &&
+		!to->noprevcp && !to->nonextcp ) {
 	    unit.x = to->prevcp.x-to->nextcp.x;
 	    unit.y = to->prevcp.y-to->nextcp.y;
 	    len = sqrt(unit.x*unit.x + unit.y*unit.y);
@@ -1414,7 +1421,8 @@ void SplinePointPrevCPChanged2(SplinePoint *sp) {
 		p->nonextcp = true;
 		p->nextcp = p->me;
 		SplineRefigure2(sp->prev);
-	    } else if ( p->pointtype==pt_curve && !p->noprevcp ) {
+	    } else if (( p->pointtype==pt_curve || p->pointtype==pt_hvcurve ) &&
+		    !p->noprevcp ) {
 		SplineRefigure2(sp->prev);
 		if ( p->prev==NULL ) {
 		    double len1, len2;
@@ -1463,7 +1471,8 @@ void SplinePointNextCPChanged2(SplinePoint *sp) {
 		n->noprevcp = true;
 		n->prevcp = n->me;
 		SplineRefigure2(sp->next);
-	    } else if ( n->pointtype==pt_curve && !n->nonextcp ) {
+	    } else if (( n->pointtype==pt_curve || n->pointtype==pt_hvcurve ) &&
+		    !n->nonextcp ) {
 		SplineRefigure2(sp->next);
 		if ( n->next==NULL ) {
 		    double len1, len2;
