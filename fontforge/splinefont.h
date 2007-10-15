@@ -797,7 +797,7 @@ typedef struct bdffont {
 #define HntMax	96		/* PS says at most 96 hints */
 typedef uint8 HintMask[HntMax/8];
 
-enum pointtype { pt_curve, pt_corner, pt_tangent };
+enum pointtype { pt_curve, pt_corner, pt_tangent, pt_hvcurve };
 typedef struct splinepoint {
     BasePoint me;
     BasePoint nextcp;		/* control point */
@@ -2119,6 +2119,7 @@ extern SplineSet *SplineSetsDetectDir(SplineSet **_base, int *lastscan);
 extern void SPAverageCps(SplinePoint *sp);
 extern void SPLAverageCps(SplinePointList *spl);
 extern void SPWeightedAverageCps(SplinePoint *sp);
+extern void BP_HVForce(BasePoint *vector);
 extern void SplineCharDefaultPrevCP(SplinePoint *base);
 extern void SplineCharDefaultNextCP(SplinePoint *base);
 extern void SplineCharTangentNextCP(SplinePoint *sp);

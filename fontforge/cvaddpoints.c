@@ -234,6 +234,7 @@ void CVMouseDownPoint(CharView *cv, GEvent *event) {
     SplinePoint *sp, *base = NULL;
     SplineChar *sc = cv->sc;
     enum pointtype ptype = (cv->active_tool==cvt_curve?pt_curve:
+			    cv->active_tool==cvt_hvcurve?pt_hvcurve:
 			    cv->active_tool==cvt_corner?pt_corner:
 			    cv->active_tool==cvt_tangent?pt_tangent:
 			    /*cv->active_tool==cvt_pen?*/pt_corner);
@@ -462,7 +463,7 @@ void CVMergeSplineSets(CharView *cv, SplinePoint *active, SplineSet *activess,
 	}
 	SplinePointListMDFree(cv->sc,mergess);
     }
-    if ( active->pointtype==pt_curve &&
+    if (( active->pointtype==pt_curve || active->pointtype==pt_hvcurve ) &&
 	    !active->nonextcp && !active->noprevcp &&
 	    !active->nextcpdef && !active->prevcpdef &&
 	    !BpColinear(&active->prev->from->me,&active->me,&active->nextcp))

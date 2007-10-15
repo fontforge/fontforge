@@ -532,7 +532,7 @@ return;
 	}
 	tofix->y = p->expected;
 	ncp_changed = pcp_changed = true;
-	if ( sp->pointtype==pt_curve )
+	if ( sp->pointtype==pt_curve || sp->pointtype==pt_hvcurve )
 	    other->y = p->expected;
 	else {
 	    sp->pointtype = pt_corner;
@@ -569,7 +569,7 @@ return;
 	}
 	tofix->x = p->expected;
 	ncp_changed = pcp_changed = true;
-	if ( sp->pointtype==pt_curve )
+	if ( sp->pointtype==pt_curve || sp->pointtype==pt_hvcurve )
 	    other->x = p->expected;
 	else {
 	    sp->pointtype = pt_corner;

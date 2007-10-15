@@ -1842,12 +1842,12 @@ static SplineSet *SSRemoveUTurns(SplineSet *base, StrokeInfo *si) {
 	    if ( offx+offy<1 || linear ) {
 		s->from->nextcp = s->from->me;
 		s->from->nonextcp = true;
-		if ( s->from->pointtype == pt_curve )
+		if ( s->from->pointtype == pt_curve || s->from->pointtype == pt_hvcurve )
 		    s->from->pointtype = pt_corner;
 		if ( s->order2 ) {
 		    s->to->prevcp = s->to->me;
 		    s->to->noprevcp = true;
-		    if ( s->to->pointtype==pt_curve )
+		    if ( s->to->pointtype==pt_curve || s->to->pointtype == pt_hvcurve )
 			s->to->pointtype = pt_corner;
 		}
 		SplineRefigure(s);
@@ -1863,12 +1863,12 @@ static SplineSet *SSRemoveUTurns(SplineSet *base, StrokeInfo *si) {
 	    if ( offx+offy<1 || linear ) {
 		s->to->prevcp = s->to->me;
 		s->to->noprevcp = true;
-		if ( s->to->pointtype==pt_curve )
+		if ( s->to->pointtype==pt_curve || s->to->pointtype == pt_hvcurve )
 		    s->to->pointtype = pt_corner;
 		if ( s->order2 ) {
 		    s->from->nextcp = s->from->me;
 		    s->from->nonextcp = true;
-		    if ( s->from->pointtype == pt_curve )
+		    if ( s->from->pointtype == pt_curve || s->from->pointtype == pt_hvcurve )
 			s->from->pointtype = pt_corner;
 		}
 		SplineRefigure(s);

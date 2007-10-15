@@ -63,9 +63,6 @@ typedef struct gidata {
 #define CID_PrevPos	2008
 #define CID_NextDef	2009
 #define CID_PrevDef	2010
-#define CID_Curve	2011
-#define CID_Corner	2012
-#define CID_Tangent	2013
 #define CID_NextR	2014
 #define CID_NextTheta	2015
 #define CID_PrevR	2016
@@ -86,6 +83,10 @@ typedef struct gidata {
 #define CID_PrevCurvature	2043
 #define CID_NextCurvature	2044
 #define CID_DeltaCurvature	2045
+#define CID_Curve	2050		/* Next four must be in order */
+#define CID_Corner	2051
+#define CID_Tangent	2052
+#define CID_HVCurve	2053
 #define CID_TabSet	2100
 
 #define CID_X		3001
@@ -1743,7 +1744,7 @@ static void PIFillup(GIData *ci, int except_cid);
 static void PI_FigureNext(GIData *ci) {
     if ( ci->prevchanged ) {
 	SplinePoint *cursp = ci->cursp;
-	if ( !ci->sc->parent->order2 && cursp->pointtype==pt_curve ) {
+	if ( !ci->sc->parent->order2 && (cursp->pointtype==pt_curve || cursp->pointtype==pt_hvcurve)) {
 	    double dx, dy, len, len2;
 	    dx = cursp->prevcp.x - cursp->me.x;
 	    dy = cursp->prevcp.y - cursp->me.y;
@@ -1766,7 +1767,7 @@ static void PI_FigureNext(GIData *ci) {
 static void PI_FigurePrev(GIData *ci) {
     if ( ci->nextchanged ) {
 	SplinePoint *cursp = ci->cursp;
-	if ( !ci->sc->parent->order2 && cursp->pointtype==pt_curve ) {
+	if ( !ci->sc->parent->order2 && (cursp->pointtype==pt_curve || cursp->pointtype==pt_hvcurve)) {
 	    double dx, dy, len, len2;
 	    dx = cursp->nextcp.x - cursp->me.x;
 	    dy = cursp->nextcp.y - cursp->me.y;
@@ -1952,6 +1953,7 @@ static void PIFillup(GIData *ci, int except_cid) {
     GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_PrevDef), ci->cursp->prevcpdef );
 
     GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_Curve), ci->cursp->pointtype==pt_curve );
+    GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_HVCurve), ci->cursp->pointtype==pt_hvcurve );
     GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_Corner), ci->cursp->pointtype==pt_corner );
     GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_Tangent), ci->cursp->pointtype==pt_tangent );
 
@@ -2227,6 +2229,14 @@ static int PI_NextChanged(GGadget *g, GEvent *e) {
 	}
 	if ( (dx==0 && dy==0) || err )
 return( true );
+	if ( cursp->pointtype==pt_hvcurve ) {
+	    BasePoint diff;
+	    diff.x = cursp->nextcp.x+dx - cursp->me.x;
+	    diff.y = cursp->nextcp.y+dy - cursp->me.y;
+	    BP_HVForce(&diff);
+	    dx = diff.x - (cursp->me.x + cursp->nextcp.x);
+	    dy = diff.y - (cursp->me.y + cursp->nextcp.y);
+	}
 	cursp->nextcp.x += dx;
 	cursp->nextcp.y += dy;
 	cursp->nonextcp = false;
@@ -2235,7 +2245,7 @@ return( true );
 	    cursp->nextcpdef = false;
 	    GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_NextDef), false );
 	}
-	if ( cursp->pointtype==pt_curve && cursp->prev!=NULL ) {
+	if (( cursp->pointtype==pt_curve || cursp->pointtype==pt_hvcurve) && cursp->prev!=NULL ) {
 	    double plen, ntheta;
 	    double ndx, ndy;
 	    ndx = ci->cursp->nextcp.x-ci->cursp->me.x;
@@ -2295,6 +2305,14 @@ static int PI_PrevChanged(GGadget *g, GEvent *e) {
 	}
 	if ( (dx==0 && dy==0) || err )
 return( true );
+	if ( cursp->pointtype==pt_hvcurve ) {
+	    BasePoint diff;
+	    diff.x = cursp->prevcp.x+dx - cursp->me.x;
+	    diff.y = cursp->prevcp.y+dy - cursp->me.y;
+	    BP_HVForce(&diff);
+	    dx = diff.x - (cursp->me.x + cursp->prevcp.x);
+	    dy = diff.y - (cursp->me.y + cursp->prevcp.y);
+	}
 	cursp->prevcp.x += dx;
 	cursp->prevcp.y += dy;
 	cursp->noprevcp = false;
@@ -2303,7 +2321,7 @@ return( true );
 	    cursp->prevcpdef = false;
 	    GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_PrevDef), false );
 	}
-	if ( cursp->pointtype==pt_curve && cursp->next!=NULL ) {
+	if (( cursp->pointtype==pt_curve || cursp->pointtype==pt_hvcurve) && cursp->next!=NULL ) {
 	    double nlen, ptheta;
 	    double pdx, pdy;
 	    pdx = ci->cursp->prevcp.x-ci->cursp->me.x;
@@ -3013,6 +3031,16 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].creator = GLabelCreate;
 	harray3[0] = &gcd[j]; harray3[1] = GCD_Glue; harray3[2] = GCD_Glue;
+	++j;
+
+	label[j].image = &GIcon_midcurve;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = 60; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y-2;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_Curve;
+	gcd[j].gd.handle_controlevent = PI_PTypeChanged;
+	gcd[j].creator = GRadioCreate;
+	harray3[3] = &gcd[j]; harray3[4] = GCD_Glue;
 	++j;
 
 	label[j].image = &GIcon_midcurve;

@@ -856,9 +856,17 @@ void CVAdjustControl(CharView *cv,BasePoint *cp, BasePoint *to) {
 	refig = true;
     } else if ( sp->pointtype==pt_corner ) {
 	*cp = *to;
-    } else if ( sp->pointtype==pt_curve ) {
-	cp->x = to->x;
-	cp->y = to->y;
+    } else if ( sp->pointtype==pt_curve || sp->pointtype==pt_hvcurve ) {
+	if ( sp->pointtype==pt_hvcurve ) {
+	    BasePoint diff;
+	    diff.x = to->x - sp->me.x;
+	    diff.y = to->y - sp->me.y;
+	    BP_HVForce(&diff);
+	    cp->x = sp->me.x + diff.x;
+	    cp->y = sp->me.y + diff.y;
+	} else {
+	    *cp = *to;
+	}
 	if (( cp->x!=sp->me.x || cp->y!=sp->me.y ) &&
 		(!cv->sc->parent->order2 ||
 		 (cp==&sp->nextcp && sp->next!=NULL && sp->next->to->ttfindex==0xffff) ||

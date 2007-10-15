@@ -1079,6 +1079,10 @@ void SplinePointCatagorize(SplinePoint *sp) {
 		(nclen==0 || ncdir.x*pdir.x+ncdir.y*pdir.y<slop ) &&
 		(pclen==0 || ndir.x*pcdir.x+ndir.y*pcdir.y<slop ))
 	    sp->pointtype = pt_tangent;
+	if ( sp->pointtype == pt_curve &&
+		((sp->nextcp.x==sp->me.x && sp->prevcp.x==sp->me.x && sp->nextcp.y!=sp->me.y) ||
+		 (sp->nextcp.y==sp->me.y && sp->prevcp.y==sp->me.y && sp->nextcp.x!=sp->me.x)))
+	    sp->pointtype = pt_hvcurve;
     }
 }
 

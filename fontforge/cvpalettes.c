@@ -56,7 +56,7 @@ static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c',
 static GFont *font;
 
 #define CV_TOOLS_WIDTH		53
-#define CV_TOOLS_HEIGHT		(242+4*12+2)
+#define CV_TOOLS_HEIGHT		(10*27+4*12+2)
 #define CV_LAYERS_WIDTH		104
 #define CV_LAYERS_HEIGHT	196
 #define CV_LAYERS2_WIDTH	120
@@ -171,8 +171,9 @@ return;
 /* Note: If you change this ordering, change enum cvtools */
 static char *popupsres[] = { N_("Pointer"), N_("Magnify (Minify with alt)"),
 				    N_("Draw a freehand curve"), N_("Scroll by hand"),
-				    N_("Add a curve point"), N_("Add a corner point"),
-			            N_("Add a tangent point"), N_("Add a point, then drag out its control points"),
+				    N_("Add a curve point"), N_("Add a curve point always either horizontal or vertical"),
+			            N_("Add a corner point"), N_("Add a tangent point"),
+			            N_("Add a point, then drag out its control points"), N_("Change whether spiro is active or not"),
 			            N_("Cut splines in two"), N_("Measure distance, angle between points"),
 			            N_("Scale the selection"), N_("Flip the selection"),
 			            N_("Rotate the selection"), N_("Skew the selection"),
@@ -631,8 +632,9 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
     /* Note: If you change this ordering, change enum cvtools */
     static GImage *buttons[][2] = { { &GIcon_pointer, &GIcon_magnify },
 				    { &GIcon_freehand, &GIcon_hand },
-				    { &GIcon_curve, &GIcon_corner },
-				    { &GIcon_tangent, &GIcon_pen },
+				    { &GIcon_curve, &GIcon_hvcurve },
+			            { &GIcon_corner, &GIcon_tangent},
+			            { &GIcon_pen, &GIcon_spirodisabled },
 			            { &GIcon_knife, &GIcon_ruler },
 			            { &GIcon_scale, &GIcon_flip },
 			            { &GIcon_rotate, &GIcon_skew },
@@ -641,8 +643,9 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
 			            { &GIcon_elipse, &GIcon_star}};
     static GImage *smalls[] = { &GIcon_smallpointer, &GIcon_smallmag,
 				    &GIcon_smallpencil, &GIcon_smallhand,
-				    &GIcon_smallcurve, &GIcon_smallcorner,
-				    &GIcon_smalltangent, &GIcon_smallpen,
+				    &GIcon_smallcurve, &GIcon_smallhvcurve,
+			            &GIcon_smallcorner, &GIcon_smalltangent,
+			            &GIcon_smallpen, NULL,
 			            &GIcon_smallknife, &GIcon_smallruler,
 			            &GIcon_smallscale, &GIcon_smallflip,
 			            &GIcon_smallrotate, &GIcon_smallskew,
@@ -740,6 +743,7 @@ void CVToolsSetCursor(CharView *cv, int state, char *device) {
 	tools[cvt_freehand] = ct_pencil;
 	tools[cvt_hand] = ct_myhand;
 	tools[cvt_curve] = ct_circle;
+	tools[cvt_hvcurve] = ct_hvcircle;
 	tools[cvt_corner] = ct_square;
 	tools[cvt_tangent] = ct_triangle;
 	tools[cvt_pen] = ct_pen;
@@ -870,7 +874,9 @@ return;			/* Not available in order2 spline mode */
     if ( event->type == et_mousedown ) {
 	if ( isstylus && event->u.mouse.button==2 )
 	    /* Not a real button press, only touch counts. This is a modifier */;
-	else {
+	else if ( pos==cvt_spiro ) {
+	    /* This is just a button that indicates a state */
+	} else {
 	    cv->pressed_tool = cv->pressed_display = pos;
 	    cv->had_control = ((event->u.mouse.state&ksm_control) || styluscntl)?1:0;
 	    event->u.mouse.state |= (1<<(7+event->u.mouse.button));

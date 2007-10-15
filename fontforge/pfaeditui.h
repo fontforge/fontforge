@@ -110,7 +110,7 @@ extern void Protest8(char *labelr);
 # include "views.h"
 
 extern GCursor ct_magplus, ct_magminus, ct_mypointer,
-	ct_circle, ct_square, ct_triangle, ct_pen,
+	ct_circle, ct_square, ct_triangle, ct_pen, ct_hvcircle,
 	ct_ruler, ct_knife, ct_rotate, ct_skew, ct_scale, ct_flip,
 	ct_3drotate, ct_perspective,
 	ct_updown, ct_leftright, ct_nesw, ct_nwse,
@@ -118,8 +118,8 @@ extern GCursor ct_magplus, ct_magminus, ct_mypointer,
 	ct_pencil, ct_shift, ct_line, ct_myhand, ct_setwidth,
 	ct_kerning, ct_rbearing, ct_lbearing, ct_eyedropper,
 	ct_prohibition, ct_ddcursor;
-extern GImage GIcon_midtangent, GIcon_midcurve, GIcon_midcorner;
-extern GImage GIcon_tangent, GIcon_curve, GIcon_corner, GIcon_ruler,
+extern GImage GIcon_midtangent, GIcon_midcurve, GIcon_midcorner, GIcon_midhvcurve;
+extern GImage GIcon_tangent, GIcon_curve, GIcon_hvcurve, GIcon_corner, GIcon_ruler,
 	GIcon_pointer, GIcon_magnify, GIcon_pen, GIcon_knife, GIcon_scale,
 	GIcon_flip, GIcon_rotate, GIcon_skew,
 	GIcon_3drotate, GIcon_perspective,
@@ -127,11 +127,13 @@ extern GImage GIcon_tangent, GIcon_curve, GIcon_corner, GIcon_ruler,
 	GIcon_miterjoin, GIcon_roundjoin, GIcon_beveljoin,
 	GIcon_rect, GIcon_elipse, GIcon_rrect, GIcon_poly, GIcon_star,
 	GIcon_pencil, GIcon_shift, GIcon_line, GIcon_hand,
-	GIcon_press2ptr, GIcon_freehand, GIcon_greyfree;
+	GIcon_press2ptr, GIcon_freehand, GIcon_greyfree,
+	GIcon_spirodisabled, GIcon_spiroup, GIcon_spirodown;
 extern GImage GIcon_smallskew, GIcon_smallscale, GIcon_smallrotate,
 	GIcon_small3drotate, GIcon_smallperspective,
 	GIcon_smallflip, GIcon_smalltangent, GIcon_smallcorner,
 	GIcon_smallcurve, GIcon_smallmag, GIcon_smallknife, GIcon_smallpen,
+	GIcon_smallhvcurve,
 	GIcon_smallpointer, GIcon_smallruler, GIcon_smallelipse,
 	GIcon_smallrect, GIcon_smallpoly, GIcon_smallstar,
 	GIcon_smallpencil, GIcon_smallhand,

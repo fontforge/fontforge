@@ -176,6 +176,7 @@ void CVMouseUpKnife(CharView *cv, GEvent *event) {
 			    /*  start all over again (we may need to alter the */
 			    /*  splineset structure so drastically that we just */
 			    /*  can't continue these loops) */
+			    mid->pointtype = pt_corner;
 			    mid2 = chunkalloc(sizeof(SplinePoint));
 			    *mid2 = *mid;
 			    mid2->hintmask = NULL;
