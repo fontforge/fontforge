@@ -130,7 +130,7 @@ return( NULL );
 	    memcpy(t->lookups,f->lookups,t->lookup_cnt*sizeof(struct seqlookup));
 	}
     }
-return( t );
+return( to );
 }
 
 FPST *FPSTCopy(FPST *fpst) {
