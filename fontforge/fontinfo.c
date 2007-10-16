@@ -5109,8 +5109,12 @@ static void _GFI_PanoseDefault(struct gfi_data *d) {
     if ( isdefault ) {
 	char *n = cu_copy(_GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Fontname)));
 	struct pfminfo info;
+	int old1, old2;
 	memset(&info,0,sizeof(info));
+	old1 = d->sf->pfminfo.pfmset; old2 = d->sf->pfminfo.panose_set;
+	d->sf->pfminfo.pfmset = false; d->sf->pfminfo.panose_set = false;
 	SFDefaultOS2Info(&info,d->sf,n);
+	d->sf->pfminfo.pfmset = old1; d->sf->pfminfo.panose_set = old2;
 	free(n);
 	for ( i=0; i<10; ++i )
 	    GGadgetSelectOneListItem(GWidgetGetControl(d->gw,CID_PanFamily+i),info.panose[i]);
