@@ -906,6 +906,10 @@ static int _SFFindExistingSlot(SplineFont *sf, int unienc, const char *name ) {
 	if ( sc==NULL )
 return( -1 );
 	gid = sc->orig_pos;
+	if ( gid<0 || gid>=sf->glyphcnt ) {
+	    IError("Invalid glyph location when searching for %s", name );
+return( -1 );
+	}
     }
 return( gid );
 }
@@ -1035,6 +1039,7 @@ static void _MergeFont(SplineFont *into,SplineFont *other,struct sfmergecontext 
 		    /*  char */
 		    SplineCharFree(into->glyphs[index]);
 		    into->glyphs[index] = SplineCharCopy(o_sf->glyphs[i],into,mc);
+		    into->glyphs[index]->orig_pos = index;
 		    if ( into->bitmaps!=NULL && other->bitmaps!=NULL )
 			BitmapsCopy(bitmap_into,other,index,i);
 		} else if ( !doit ) {
@@ -1160,6 +1165,7 @@ static void CIDMergeFont(SplineFont *into,SplineFont *other, int preserveCrossFo
 	    else if ( SFHasCID(into,i)==-1 ) {
 		SplineCharFree(i_sf->glyphs[i]);
 		i_sf->glyphs[i] = SplineCharCopy(o_sf->glyphs[i],i_sf,&mc);
+		i_sf->glyphs[i]->orig_pos = i;
 		if ( into->bitmaps!=NULL && other->bitmaps!=NULL )
 		    BitmapsCopy(into,other,i,i);
 	    }
