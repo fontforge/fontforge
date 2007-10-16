@@ -54,6 +54,16 @@
 # define P_(str1,str_non1,n)	gwwv_ngettext(str1,str_non1,n)
 # define U_(str)		gwwv_gettext(str)
 
+# ifdef bindtextdomain
+#  undef bindtextdomain
+# endif
+# ifdef bind_textdomain_codeset
+#  undef bind_textdomain_codeset
+# endif
+# ifdef textdomain
+#  undef textdomain
+# endif
+
 # define bindtextdomain(domain,dir)		gwwv_bindtextdomain(domain,dir)
 # define bind_textdomain_codeset(domain,enc)	gwwv_bind_textdomain_codeset(domain,enc)
 # define textdomain(domain)			gwwv_textdomain(domain)
