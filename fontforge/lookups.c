@@ -2701,7 +2701,9 @@ static int ApplyAnchorPosAtPos(struct lookup_subtable *sub,struct lookup_data *d
     /* in the same subtable. Ligatures may get several marks in the same */
     /* class. Cursives have only a single match */
 
-    for ( ; npos<data->cnt && data->str[npos].lig_pos!=-1; ) {
+    for ( ; npos<data->cnt &&
+		(sub->lookup->lookup_type != gpos_mark2ligature ||
+		 data->str[npos].lig_pos!=-1); ) {
 	if ( sub->lookup->lookup_type == gpos_cursive ) {
 	    for ( ap1=data->str[pos].sc->anchor; ap1!=NULL ; ap1=ap1->next ) {
 		if ( ap1->anchor->subtable==sub && ap1->type==at_cexit && !ap1->ticked ) {
