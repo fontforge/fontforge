@@ -11061,7 +11061,7 @@ return;
     if ( getPfaEditDir(buffer)!=NULL ) {
 	strcpy(buffer,getPfaEditDir(buffer));
 	strcat(buffer,"/python");
-	LoadPluginDir(buffer);
+	LoadFilesInPythonInitDir(buffer);
     }
 }
 
