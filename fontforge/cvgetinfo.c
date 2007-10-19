@@ -2574,7 +2574,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
     GGadgetCreateData mb[5], pb[9];
     GGadgetCreateData *marray[11], *marray2[5], *marray3[5], *marray4[7],
 	*varray[11], *harray1[4], *harray2[6], *hvarray1[25], *hvarray2[25],
-	*hvarray3[16], *harray3[11];
+	*hvarray3[16], *harray3[13];
     GTextInfo label[54], mlabel[11];
     GTabInfo aspects[4];
     static GBox cur, nextcp, prevcp;
@@ -3043,14 +3043,14 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	harray3[3] = &gcd[j]; harray3[4] = GCD_Glue;
 	++j;
 
-	label[j].image = &GIcon_midcurve;
+	label[j].image = &GIcon_midhvcurve;
 	gcd[j].gd.label = &label[j];
 	gcd[j].gd.pos.x = 60; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y-2;
 	gcd[j].gd.flags = gg_enabled|gg_visible;
-	gcd[j].gd.cid = CID_Curve;
+	gcd[j].gd.cid = CID_HVCurve;
 	gcd[j].gd.handle_controlevent = PI_PTypeChanged;
 	gcd[j].creator = GRadioCreate;
-	harray3[3] = &gcd[j]; harray3[4] = GCD_Glue;
+	harray3[5] = &gcd[j]; harray3[6] = GCD_Glue;
 	++j;
 
 	label[j].image = &GIcon_midcorner;
@@ -3060,7 +3060,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.cid = CID_Corner;
 	gcd[j].gd.handle_controlevent = PI_PTypeChanged;
 	gcd[j].creator = GRadioCreate;
-	harray3[5] = &gcd[j]; harray3[6] = GCD_Glue;
+	harray3[7] = &gcd[j]; harray3[8] = GCD_Glue;
 	++j;
 
 	label[j].image = &GIcon_midtangent;
@@ -3070,8 +3070,8 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	gcd[j].gd.cid = CID_Tangent;
 	gcd[j].gd.handle_controlevent = PI_PTypeChanged;
 	gcd[j].creator = GRadioCreate;
-	harray3[7] = &gcd[j]; harray3[8] = GCD_Glue; harray3[9] = GCD_Glue;
-	harray3[10] = NULL;
+	harray3[9] = &gcd[j]; harray3[10] = GCD_Glue; harray3[11] = GCD_Glue;
+	harray3[12] = NULL;
 	++j;
 
 	pb[7].gd.flags = gg_enabled|gg_visible;
@@ -3150,7 +3150,6 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 
 /* Why 3? */
 	mgcd[j].gd.pos.x = mgcd[j-2].gd.pos.x-50+3; mgcd[j].gd.pos.y = mgcd[j-1].gd.pos.y+26;
-	mgcd[j].gd.pos.width = 100; mgcd[j].gd.pos.height = 0;
 	mgcd[j].gd.flags = gg_visible | gg_enabled;
 	mlabel[j].text = (unichar_t *) _("Prev On Contour");
 	mlabel[j].text_is_1byte = true;
@@ -3161,7 +3160,6 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	++j;
 
 	mgcd[j].gd.pos.x = mgcd[j-2].gd.pos.x; mgcd[j].gd.pos.y = mgcd[j-1].gd.pos.y;
-	mgcd[j].gd.pos.width = 100; mgcd[j].gd.pos.height = 0;
 	mgcd[j].gd.flags = gg_visible | gg_enabled;
 	mlabel[j].text = (unichar_t *) _("Next On Contour");
 	mlabel[j].text_is_1byte = true;
