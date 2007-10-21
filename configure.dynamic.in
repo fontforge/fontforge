@@ -136,48 +136,72 @@ if test "$gww_uselessiconv" = "no" ; then
 fi
 
 python="yes"
+python_prog="python"
 AC_ARG_WITH(python,
  [  --without-python   Don't include a python interpreter],
  [
     if test "$withval" = "no" >/dev/null 2>&1 ; then
 	python="no"
+    elif test "$withval" != "yes" >/dev/null 2>&1 ; then
+        python_prog="$withval"
     fi
  ], : )
 if test "$python" = "yes" ; then
-  echo -n "Checking for python..."
-  if python -c "import distutils.sysconfig ; print '-I%s' % distutils.sysconfig.get_config_var('INCLUDEPY')" >/dev/null 2>&1 ; then
-    if python -c "import distutils.sysconfig ; print '%s/%s %s' % (distutils.sysconfig.get_config_var('LIBPL'),distutils.sysconfig.get_config_var('LDLIBRARY'),distutils.sysconfig.get_config_var('LIBS'))" >/dev/null 2>&1 ; then
-      PyVersion=`python -c "import distutils.sysconfig ; print '%s' % distutils.sysconfig.get_config_var('VERSION')"`
-      PySubVersion=`echo $PyVersion |sed -e 's/2.//'`
-      PyInc=`python -c "import distutils.sysconfig ; print '%s' % distutils.sysconfig.get_config_var('INCLUDEPY')"`
-      PyLib=`python -c "import distutils.sysconfig ; print '%s/%s' % (distutils.sysconfig.get_config_var('LIBPL'),distutils.sysconfig.get_config_var('LDLIBRARY'))"`
-      if test "$PySubVersion" = "" ; then
-        python="no"
-      elif test "$PySubVersion" -le 2 ; then
-        python="no"
-      elif test "$PySubVersion" -ge 3 -a -e $PyLib -a -e $PyInc; then
-	PyIncs=`python -c "import distutils.sysconfig ; print '-I%s' % distutils.sysconfig.get_config_var('INCLUDEPY')"`
-        PyLibs=`python -c "import distutils.sysconfig ; print '%s/%s %s' % (distutils.sysconfig.get_config_var('LIBPL'),distutils.sysconfig.get_config_var('LDLIBRARY'),distutils.sysconfig.get_config_var('LIBS'))"`
-        LIBS="$LIBS $PyLibs"
-	CPPFLAGS="$CPPFLAGS $PyIncs"
-      else
-	# python gets it wrong on all my build systems, this seems to work instead
-	PyName="python$PyVersion"
-	if test "$PyLib" != "" -a -e "$PyLib" ; then
-          LIBS="$LIBS $PyLibs"
-	else
-	  AC_SEARCH_LIBS(Py_Main, $PyName python, : , python="no")
-	fi
-	if test "$PyIncs" != "" -a -e "$PyIncs" ; then
-	  CPPFLAGS="$CPPFLAGS $PyIncs"
-	elif test -d /usr/include/$PyName ; then
-	  CPPFLAGS="$CPPFLAGS -I/usr/include/$PyName"
-	else
-	  python="no"
-	fi
+ # python thinks it knows where to find its headers and library.
+ # unfortunately on all my build systems that idea is incorrect.
+ # So we allow the user to specify the location manually. We
+ # ask python where it thinks things are, and we check some standard
+ # places.
+ py_headers=""
+ py_lib=""
+ AC_ARG_WITH(python-headers,
+  [  --with-python-headers   Specify the directory containing the python headers],
+  [
+     if test "$withval" != "no" >/dev/null 2>&1 ; then
+	  py_headers="$withval"
+	  if test "$py_headers" != "" -a \! -e "$py_headers" ; then
+	    py_headers=""
+	  fi
       fi
-    else
+   ], : )
+ AC_ARG_WITH(python-lib,
+  [  --with-python-lib   Specify the python shared libary],
+  [
+     if test "$withval" != "no" -a "$withval" != "yes" -a "$withval" != "" >/dev/null 2>&1 ; then
+	  py_lib="$withval"
+      fi
+   ], : )
+  echo -n "Checking for python..."
+  if $python_prog -c "import distutils.sysconfig ; print '%s' % distutils.sysconfig.get_config_var('VERSION')" ; then
+    PyVersion=`$python_prog -c "import distutils.sysconfig ; print '%s' % distutils.sysconfig.get_config_var('VERSION')"`
+    PySubVersion=`echo $PyVersion |sed -e 's/2.//'`
+    PyName="python$PyVersion"
+    if test "$PySubVersion" = "" ; then
       python="no"
+    elif test "$PySubVersion" -le 2 ; then
+      python="no"
+      echo $ECHO_N "(need at least python 2.3) $ECHO_C" >&6
+    else
+      PyInc=`$python_prog -c "import distutils.sysconfig ; print '%s' % distutils.sysconfig.get_config_var('INCLUDEPY')"`
+      if test "$py_headers" != "" -a -e "$py_headers" ; then
+	CPPFLAGS="$CPPFLAGS -I$py_headers"
+      elif test "$PyInc" != "" -a -e "$PyInc" ; then
+	CPPFLAGS="$CPPFLAGS -I$PyInc"
+      elif test -d /usr/include/$PyName ; then
+	CPPFLAGS="$CPPFLAGS -I/usr/include/$PyName"
+      elif test -d /usr/include/python ; then
+	CPPFLAGS="$CPPFLAGS -I/usr/include/python"
+      else
+	python="no"
+      fi
+      PyLib=`$python_prog -c "import distutils.sysconfig ; print '%s/%s' % (distutils.sysconfig.get_config_var('LIBPL'),distutils.sysconfig.get_config_var('LDLIBRARY'))"`
+      if test "$py_lib" != "" ; then
+        LIBS="$LIBS $py_lib"
+      elif test "$PyLib" != "" -a -e "$PyLib" ; then
+        LIBS="$LIBS $PyLib"
+      else
+	AC_SEARCH_LIBS(Py_Main, $PyName python, : , python="no")
+      fi
     fi
   else
     python="no"
