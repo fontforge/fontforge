@@ -7421,7 +7421,7 @@ return;
     } else {
 	memset(&dummy,0,sizeof(dummy));
 	dummy.type = et_controlevent;
-	dummy.u.control.subtype = et_buttonpress;
+	dummy.u.control.subtype = et_buttonactivate;
 	dummy.u.control.g = GWidgetGetControl(gfi->gw,mi->mid);
 	dummy.w = GGadgetGetWindow(dummy.u.control.g);
 	dummy.u.control.u.button.button = e->u.mouse.button;
@@ -7465,6 +7465,8 @@ static void LookupMenu(struct gfi_data *gfi,struct lkdata *lk,GEvent *event) {
             if ( lookuppopupmenu[i].ti.text!=NULL )
                 lookuppopupmenu[i].ti.text = (unichar_t *) _( (char *)lookuppopupmenu[i].ti.text);
     }
+
+    GGadgetEndPopup();
 
     LookupParseSelection(lk,&sel);
     for ( i=0; lookuppopupmenu[i].ti.text!=NULL || lookuppopupmenu[i].ti.line; ++i ) {
