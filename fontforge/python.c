@@ -5149,7 +5149,13 @@ return( NULL );
     else if ( strcasecmp(pt,".glif")==0 )
 	SCImportGlif(sc,ly_fore,locfilename,NULL,0,false);
 #endif
-    /* else if ( strcasecmp(pt,".fig")==0 )*/
+    else if ( strcasecmp(pt,".plate")==0 ) {
+	FILE *plate = fopen(locfilename,"r");
+	if ( plate!=NULL ) {
+	    SCImportPlateFile(sc,ly_fore,plate,false,0);
+	    fclose(plate);
+	}
+    } /* else if ( strcasecmp(pt,".fig")==0 )*/
     else {
 	GImage *image = GImageRead(locfilename);
 	if ( image==NULL ) {
