@@ -1050,6 +1050,8 @@ Optional Packages:
   --with-debug-raw-points   Add a raw mode to the points window of the debugger
   --without-iconv   Don't use the system's iconv(3) routines, use fontforge's instead
   --without-python   Don't include a python interpreter
+  --with-python-headers   Specify the directory containing the python headers
+  --with-python-lib   Specify the python shared libary
   --without-native-script   Don't include a legacy fontforge scripting interpreter
   --with-freetype-bytecode   Control whether we build with the bytecode interpreter
   --with-freetype-src=dir   Specify freetype source directory
@@ -3486,7 +3488,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 3489 "configure"' > conftest.$ac_ext
+  echo '#line 3491 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -4976,7 +4978,7 @@ fi
 
 
 # Provide some information about the compiler.
-echo "$as_me:4979:" \
+echo "$as_me:4981:" \
      "checking for Fortran 77 compiler version" >&5
 ac_compiler=`set X $ac_compile; echo $2`
 { (eval echo "$as_me:$LINENO: \"$ac_compiler --version </dev/null >&5\"") >&5
@@ -6043,11 +6045,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:6046: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:6048: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:6050: \$? = $ac_status" >&5
+   echo "$as_me:6052: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -6315,11 +6317,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:6318: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:6320: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:6322: \$? = $ac_status" >&5
+   echo "$as_me:6324: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -6419,11 +6421,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:6422: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:6424: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:6426: \$? = $ac_status" >&5
+   echo "$as_me:6428: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -8764,7 +8766,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 8767 "configure"
+#line 8769 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -8864,7 +8866,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 8867 "configure"
+#line 8869 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11210,11 +11212,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:11213: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:11215: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:11217: \$? = $ac_status" >&5
+   echo "$as_me:11219: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -11314,11 +11316,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:11317: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:11319: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:11321: \$? = $ac_status" >&5
+   echo "$as_me:11323: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -12888,11 +12890,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:12891: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:12893: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:12895: \$? = $ac_status" >&5
+   echo "$as_me:12897: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -12992,11 +12994,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:12995: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:12997: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:12999: \$? = $ac_status" >&5
+   echo "$as_me:13001: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -15199,11 +15201,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:15202: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:15204: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:15206: \$? = $ac_status" >&5
+   echo "$as_me:15208: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -15471,11 +15473,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:15474: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:15476: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:15478: \$? = $ac_status" >&5
+   echo "$as_me:15480: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -15575,11 +15577,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:15578: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:15580: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:15582: \$? = $ac_status" >&5
+   echo "$as_me:15584: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -18673,6 +18675,7 @@ fi
  fi
 
 python="yes"
+python_prog="python"
 
 # Check whether --with-python or --without-python was given.
 if test "${with_python+set}" = set; then
@@ -18680,33 +18683,78 @@ if test "${with_python+set}" = set; then
 
     if test "$withval" = "no" >/dev/null 2>&1 ; then
 	python="no"
+    elif test "$withval" != "yes" >/dev/null 2>&1 ; then
+        python_prog="$withval"
     fi
 
 else
   :
 fi;
 if test "$python" = "yes" ; then
+ # python thinks it knows where to find its headers and library.
+ # unfortunately on all my build systems that idea is incorrect.
+ # So we allow the user to specify the location manually. We
+ # ask python where it thinks things are, and we check some standard
+ # places.
+ py_headers=""
+ py_lib=""
+
+# Check whether --with-python-headers or --without-python-headers was given.
+if test "${with_python_headers+set}" = set; then
+  withval="$with_python_headers"
+
+     if test "$withval" != "no" >/dev/null 2>&1 ; then
+	  py_headers="$withval"
+	  if test "$py_headers" != "" -a \! -e "$py_headers" ; then
+	    py_headers=""
+	  fi
+      fi
+
+else
+  :
+fi;
+
+# Check whether --with-python-lib or --without-python-lib was given.
+if test "${with_python_lib+set}" = set; then
+  withval="$with_python_lib"
+
+     if test "$withval" != "no" -a "$withval" != "yes" -a "$withval" != "" >/dev/null 2>&1 ; then
+	  py_lib="$withval"
+      fi
+
+else
+  :
+fi;
   echo -n "Checking for python..."
-  if python -c "import distutils.sysconfig ; print '-I%s' % distutils.sysconfig.get_config_var('INCLUDEPY')" >/dev/null 2>&1 ; then
-    if python -c "import distutils.sysconfig ; print '%s/%s %s' % (distutils.sysconfig.get_config_var('LIBPL'),distutils.sysconfig.get_config_var('LDLIBRARY'),distutils.sysconfig.get_config_var('LIBS'))" >/dev/null 2>&1 ; then
-      PyVersion=`python -c "import distutils.sysconfig ; print '%s' % distutils.sysconfig.get_config_var('VERSION')"`
-      PySubVersion=`echo $PyVersion |sed -e 's/2.//'`
-      PyInc=`python -c "import distutils.sysconfig ; print '%s' % distutils.sysconfig.get_config_var('INCLUDEPY')"`
-      PyLib=`python -c "import distutils.sysconfig ; print '%s/%s' % (distutils.sysconfig.get_config_var('LIBPL'),distutils.sysconfig.get_config_var('LDLIBRARY'))"`
-      if test "$PySubVersion" \!= "" -a "$PySubVersion" -le 2 ; then
-        python="no"
-      elif test "$PySubVersion" \!= "" -a "$PySubVersion" -ge 3 -a -e $PyLib -a -e $PyInc; then
-	PyIncs=`python -c "import distutils.sysconfig ; print '-I%s' % distutils.sysconfig.get_config_var('INCLUDEPY')"`
-        PyLibs=`python -c "import distutils.sysconfig ; print '%s/%s %s' % (distutils.sysconfig.get_config_var('LIBPL'),distutils.sysconfig.get_config_var('LDLIBRARY'),distutils.sysconfig.get_config_var('LIBS'))"`
-        LIBS="$LIBS $PyLibs"
-	CPPFLAGS="$CPPFLAGS $PyIncs"
+  if $python_prog -c "import distutils.sysconfig ; print '%s' % distutils.sysconfig.get_config_var('VERSION')" ; then
+    PyVersion=`$python_prog -c "import distutils.sysconfig ; print '%s' % distutils.sysconfig.get_config_var('VERSION')"`
+    PySubVersion=`echo $PyVersion |sed -e 's/2.//'`
+    PyName="python$PyVersion"
+    if test "$PySubVersion" = "" ; then
+      python="no"
+    elif test "$PySubVersion" -le 2 ; then
+      python="no"
+      echo $ECHO_N "(need at least python 2.3) $ECHO_C" >&6
+    else
+      PyInc=`$python_prog -c "import distutils.sysconfig ; print '%s' % distutils.sysconfig.get_config_var('INCLUDEPY')"`
+      if test "$py_headers" != "" -a -e "$py_headers" ; then
+	CPPFLAGS="$CPPFLAGS -I$py_headers"
+      elif test "$PyInc" != "" -a -e "$PyInc" ; then
+	CPPFLAGS="$CPPFLAGS -I$PyInc"
+      elif test -d /usr/include/$PyName ; then
+	CPPFLAGS="$CPPFLAGS -I/usr/include/$PyName"
+      elif test -d /usr/include/python ; then
+	CPPFLAGS="$CPPFLAGS -I/usr/include/python"
       else
-	# python gets it wrong on all my build systems, this seems to work instead
-	PyName="python$PyVersion"
-	if test -e $PyLib ; then
-          LIBS="$LIBS $PyLibs"
-	else
-	  echo "$as_me:$LINENO: checking for library containing Py_Main" >&5
+	python="no"
+      fi
+      PyLib=`$python_prog -c "import distutils.sysconfig ; print '%s/%s' % (distutils.sysconfig.get_config_var('LIBPL'),distutils.sysconfig.get_config_var('LDLIBRARY'))"`
+      if test "$py_lib" != "" ; then
+        LIBS="$LIBS $py_lib"
+      elif test "$PyLib" != "" -a -e "$PyLib" ; then
+        LIBS="$LIBS $PyLib"
+      else
+	echo "$as_me:$LINENO: checking for library containing Py_Main" >&5
 echo $ECHO_N "checking for library containing Py_Main... $ECHO_C" >&6
 if test "${ac_cv_search_Py_Main+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -18834,17 +18882,7 @@ else
   python="no"
 fi
 
-	fi
-	if test -e $PyIncs ; then
-	  CPPFLAGS="$CPPFLAGS $PyIncs"
-	elif test -d /usr/include/$PyName ; then
-	  CPPFLAGS="$CPPFLAGS -I/usr/include/$PyName"
-	else
-	  python="no"
-	fi
       fi
-    else
-      python="no"
     fi
   else
     python="no"
