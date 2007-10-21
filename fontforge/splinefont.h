@@ -1234,7 +1234,7 @@ enum ttfnames { ttf_copyright=0, ttf_family, ttf_subfamily, ttf_uniqueid,
     ttf_manufacturer, ttf_designer, ttf_descriptor, ttf_venderurl,
     ttf_designerurl, ttf_license, ttf_licenseurl, ttf_idontknow/*reserved*/,
     ttf_preffamilyname, ttf_prefmodifiers, ttf_compatfull, ttf_sampletext,
-    ttf_cidfindfontname, ttf_namemax };
+    ttf_cidfindfontname, ttf_wwsfamily, ttf_wwssubfamily, ttf_namemax };
 struct ttflangname {
     int lang;
     char *names[ttf_namemax];			/* in utf8 */

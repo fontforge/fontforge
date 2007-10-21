@@ -7215,7 +7215,7 @@ Py_RETURN( self->private );
 return NULL;
     private->sf = self->fv->sf;
     self->private = private;
-return (PyObject *)private;
+Py_RETURN( self->private );
 }
 
 static PyObject *PyFF_Font_get_selection(PyFF_Font *self,void *closure) {

@@ -837,6 +837,8 @@ static GTextInfo ttfnameids[] = {
     { (unichar_t *) N_("Compatible Full"), NULL, 0, 0, (void *) 18, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Sample Text"), NULL, 0, 0, (void *) 19, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("CID findfont Name"), NULL, 0, 0, (void *) 20, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("WWS Family"), NULL, 0, 0, (void *) 21, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("WWS Subfamily"), NULL, 0, 0, (void *) 22, NULL, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
 static GTextInfo unicoderangenames[] = {
     { (unichar_t *) N_("Basic Latin"),				NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 1, 0, 1},
