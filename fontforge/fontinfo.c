@@ -3728,56 +3728,67 @@ return( false );
 }
 
 static int CheckActiveStyleTranslation(struct gfi_data *d,
-	struct matrix_data *strings,int r, int rows) {
+	struct matrix_data *strings,int r, int rows, int iswws ) {
     int i,j, eng_pos, other_pos;
     char *english, *new=NULL, *temp, *pt;
     int other_lang = strings[3*r].u.md_ival;
     int changed = false;
+    int search_sid = iswws ? ttf_wwssubfamily : ttf_subfamily;
 
     for ( i=rows-1; i>=0 ; --i )
-	if ( strings[3*i+1].u.md_ival==ttf_subfamily &&
+	if ( strings[3*i+1].u.md_ival==search_sid &&
 		strings[3*i].u.md_ival == 0x409 )
     break;
-    if ( i<0 || (english = strings[3*i+2].u.md_str)==NULL )
-	new = tn_recalculatedef(d,ttf_subfamily);
-    else
-	new = copy(english);
-    for ( i=0; stylelist[i]!=NULL; ++i ) {
-	eng_pos = other_pos = -1;
-	for ( j=0; stylelist[i][j].str!=NULL; ++j ) {
-	    if ( stylelist[i][j].lang == other_lang ) {
-		other_pos = j;
+    if ( i<0 && iswws ) {
+	for ( i=rows-1; i>=0; --i )
+	    if ( strings[3*i+1].u.md_ival==ttf_subfamily &&
+		    strings[3*i].u.md_ival == other_lang ) {
+		new = copy(strings[3*i+2].u.md_str);
+		changed = true;
 	break;
 	    }
-	}
-	if ( other_pos==-1 )
-    continue;
-	for ( j=0; stylelist[i][j].str!=NULL; ++j ) {
-	    if ( stylelist[i][j].lang == 0x409 &&
-		    (pt = strstrmatch(new,stylelist[i][j].str))!=NULL ) {
-		if ( pt==new && strlen(stylelist[i][j].str)==strlen(new) ) {
-		    free(new);
-		    free(strings[3*r+2].u.md_str);
-		    if ( other_lang==0x415 ) {
-			/* polish needs a word before the translation */
-			strings[3*r+2].u.md_str = galloc(strlen("odmiana ")+strlen(stylelist[i][other_pos].str)+1);
-			strcpy(strings[3*r+2].u.md_str,"odmiana ");
-			strcat(strings[3*r+2].u.md_str,stylelist[i][other_pos].str);
-		    } else
-			strings[3*r+2].u.md_str = copy(stylelist[i][other_pos].str);
-return( true );
+    } else {
+	if ( i<0 || (english = strings[3*i+2].u.md_str)==NULL )
+	    new = tn_recalculatedef(d,ttf_subfamily);
+	else
+	    new = copy(english);
+	for ( i=0; stylelist[i]!=NULL; ++i ) {
+	    eng_pos = other_pos = -1;
+	    for ( j=0; stylelist[i][j].str!=NULL; ++j ) {
+		if ( stylelist[i][j].lang == other_lang ) {
+		    other_pos = j;
+	    break;
 		}
-		temp = galloc((strlen(new)
-			+ strlen(stylelist[i][other_pos].str)
-			- strlen(stylelist[i][j].str)
-			+1));
-		strncpy(temp,new,pt-new);
-		strcpy(temp+(pt-new),stylelist[i][other_pos].str);
-		strcat(temp+(pt-new),pt+strlen(stylelist[i][j].str));
-		free(new);
-		new = temp;
-		changed = true;
+	    }
+	    if ( other_pos==-1 )
 	continue;
+	    for ( j=0; stylelist[i][j].str!=NULL; ++j ) {
+		if ( stylelist[i][j].lang == 0x409 &&
+			(pt = strstrmatch(new,stylelist[i][j].str))!=NULL ) {
+		    if ( pt==new && strlen(stylelist[i][j].str)==strlen(new) ) {
+			free(new);
+			free(strings[3*r+2].u.md_str);
+			if ( other_lang==0x415 ) {
+			    /* polish needs a word before the translation */
+			    strings[3*r+2].u.md_str = galloc(strlen("odmiana ")+strlen(stylelist[i][other_pos].str)+1);
+			    strcpy(strings[3*r+2].u.md_str,"odmiana ");
+			    strcat(strings[3*r+2].u.md_str,stylelist[i][other_pos].str);
+			} else
+			    strings[3*r+2].u.md_str = copy(stylelist[i][other_pos].str);
+    return( true );
+		    }
+		    temp = galloc((strlen(new)
+			    + strlen(stylelist[i][other_pos].str)
+			    - strlen(stylelist[i][j].str)
+			    +1));
+		    strncpy(temp,new,pt-new);
+		    strcpy(temp+(pt-new),stylelist[i][other_pos].str);
+		    strcat(temp+(pt-new),pt+strlen(stylelist[i][j].str));
+		    free(new);
+		    new = temp;
+		    changed = true;
+	    continue;
+		}
 	    }
 	}
     }
@@ -3916,10 +3927,31 @@ static void TN_FinishEdit(GGadget *g,int row,int col,int wasnew) {
 	    break;
 		}
 	    }
+	    if ( i==rows ) {
 	    /* If we didn't find anything above, and if we've got a style */
 	    /*  (subfamily) see if we can guess a translation from the english */
-	    if ( i==rows && strings[3*row+1].u.md_ival == ttf_subfamily )
-		ret |= CheckActiveStyleTranslation(d,strings,row,rows);
+		if ( strings[3*row+1].u.md_ival == ttf_subfamily )
+		    ret |= CheckActiveStyleTranslation(d,strings,row,rows,false);
+		else if ( strings[3*row+1].u.md_ival == ttf_wwssubfamily ) {
+		    /* First see if there is a wwssubfamily we can translate */
+		    /* then see if there is a subfamily we can copy */
+		    ret |= CheckActiveStyleTranslation(d,strings,row,rows,true);
+		} else if ( strings[3*row+1].u.md_ival == ttf_wwsfamily ) {
+		    /* Copy the normal family */
+		    for ( i=rows-1; i>=0; --i )
+			if ( strings[3*i+1].u.md_ival==ttf_family &&
+				strings[3*i].u.md_ival == strings[3*row].u.md_ival ) {
+			    strings[3*row+2].u.md_str = copy(strings[3*i+2].u.md_str);
+			    ret = true;
+		    break;
+			}
+		    if ( (i<0 || strings[3*i+2].u.md_str==NULL) &&
+			    strings[3*row].u.md_ival == 0x409 ) {
+			strings[3*row+2].u.md_str = tn_recalculatedef(d,ttf_family);
+			ret = true;
+		    }
+		}
+	    }
 	}
     }
     if ( ret )
