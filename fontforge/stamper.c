@@ -11,7 +11,7 @@ int main() {
     tm = gmtime(&now);
     printf( "#include <time.h>\n\n" );
     printf( "const time_t source_modtime = %ld;\n", now);
-    printf( "const char *source_modtime_str = \"%02d:%02d %d-%s-%d\";\n",
+    printf( "const char *source_modtime_str = \"%02d:%02d GMT %d-%s-%d\";\n",
 	    tm->tm_hour, tm->tm_min,
 	    tm->tm_mday, months[tm->tm_mon], tm->tm_year+1900 );
     printf( "const char *source_version_str = \"%04d%02d%02d\";\n",
