@@ -4093,10 +4093,9 @@ static int IsPointValid( BasePoint *bp, SplineChar *sc ) {
     for ( ss = sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
         sp=first=ss->first;
         
-	while ( sp!=NULL) {
-            if (bp->x == sp->me.x && bp->y == sp->me.y)
+	while ( sp!=NULL ) {
+            if (sp->ttfindex < 0xFFFE && bp->x == sp->me.x && bp->y == sp->me.y)
 return( true );
-
             
             if ( sp->next != NULL && sp->next->to != first )
                 sp = sp->next->to;
@@ -4130,7 +4129,7 @@ static int SearchDStemKeyPoint( SplineChar *sc,BasePoint **top,
         sp=first=ss->first;
         
 	while ( sp!=NULL ) {
-            if (PointOnLine( *top,*bottom,&(sp->me) ) &&
+            if ( sp->ttfindex < 0xFFFE && PointOnLine( *top,*bottom,&(sp->me) ) &&
                 sp->me.y > (*bottom)->y && sp->me.y < (*top)->y) {
                 if ( *test==NULL ||
                     ( searchtop && sp->me.y > (*test)->y) ||
