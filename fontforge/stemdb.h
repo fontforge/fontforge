@@ -55,7 +55,7 @@ struct glyphdata {
     DBounds size;
     struct pointdata **pspace;
     struct stembundle *bundles;
-    struct segment { double start, end, base; int curved, scurved, ecurved; } *lspace, *rspace, *bothspace, *activespace;
+    struct segment { double start, end, sbase, ebase; int curved, scurved, ecurved; } *lspace, *rspace, *bothspace, *activespace;
 
     int only_hv;
 };

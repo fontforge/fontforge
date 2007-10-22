@@ -2967,7 +2967,14 @@ static DStemInfo *GDFindDStems(struct glyphdata *gd) {
 
     for ( i=0; i<gd->stemcnt; ++i ) {
 	stem = &gd->stems[i];
-	if ( stem->toobig || stem->len==0 )
+        /* A real diagonal stem should consist of one or more continuous
+        /* ranges. Thus the number of active zones should be less then the
+        /* number of stem chunks (i. e. pairs of the opposite points). If
+        /* each chunk has its own active zone, then we probably have got
+        /* not a real stem, but rather two (or more) separate point pairs,
+        /* which occationally happened to have nearly the same vectors and 
+        /* to be positioned on the same lines */
+	if ( stem->toobig || stem->len==0 || stem->activecnt >= stem->chunk_cnt )
     continue;
 	
         if ( ( stem->unit.y > -.05 && stem->unit.y < .05 ) || 
