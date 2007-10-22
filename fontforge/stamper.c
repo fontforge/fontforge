@@ -8,7 +8,7 @@ int main() {
     struct tm *tm;
 
     time(&now);
-    tm = localtime(&now);
+    tm = gmtime(&now);
     printf( "#include <time.h>\n\n" );
     printf( "const time_t source_modtime = %ld;\n", now);
     printf( "const char *source_modtime_str = \"%02d:%02d %d-%s-%d\";\n",
