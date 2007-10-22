@@ -1760,6 +1760,7 @@ static void find_control_pts(int p, SplinePoint *sp, InstrCt *ct) {
 static void search_edge(int p, SplinePoint *sp, InstrCt *ct) {
     int tmp, score = 0;
     real coord = ct->xdir?ct->bp[p].x:ct->bp[p].y;
+    real refcoord = ct->xdir?ct->bp[ct->edge.refpt].x:ct->bp[ct->edge.refpt].y;
     real fudge = ct->gic->fudge;
     uint8 touchflag = ct->xdir?tf_x:tf_y;
 
@@ -1781,7 +1782,10 @@ return;
 	if (ct->diagstems && ct->diagpts[p].count) score+=8;
 	if (ct->touched[p] & touchflag) score+=24;
 
-	if (score > ct->edge.refscore) {
+	if ((score > ct->edge.refscore) ||
+	    (score == ct->edge.refscore &&
+	    fabs(coord - ct->edge.base) < fabs(refcoord - ct->edge.base)))
+	{
 	    tmp = ct->edge.refpt;
 	    ct->edge.refpt = p;
 	    ct->edge.refscore = score;
@@ -2358,7 +2362,7 @@ return;
  *
  ******************************************************************************/
 
-/* Find points that should be snapped to this hint's edges with InitEdge().
+/* Find points that should be snapped to this hint's edges with init_edge().
  * It will return two types of points per edge: a 'chosen one' that should be
  * used as a reference for this hint, and 'others' to position after it with
  * SHP[].
@@ -2559,42 +2563,6 @@ static BasePoint *GetVector ( BasePoint *top,BasePoint *bottom,int orth ) {
     return ret;
 }
 
-/* Checks if a point is positioned on a diagonal line described by
-   two other points. Note that this function will return (false) in case
-   the test point is exactly coincident with the line's start or end points. */
-static int IsPointOnLine( BasePoint *top, BasePoint *bottom, BasePoint *test ) {
-    real slope, testslope;
-
-    if (!(top->y > test->y) && (test->y > bottom->y))
-        return (false);
-    
-    if (!(((top->x > test->x) && (test->x > bottom->x)) || 
-        ((top->x < test->x) && (test->x < bottom->x))))
-        return (false);
-    
-    slope = (top->y-bottom->y)/(top->x-bottom->x);
-    testslope = (top->y-test->y)/(top->x-test->x);
-    
-return( RealApprox( slope, testslope ) );
-}
-
-/* find the orthogonal distance from the left stem edge to the right. 
-   Make it positive (just a dot product with the unit vector orthog to 
-   the left edge) */
-static int DStemWidth( BasePoint *tl, BasePoint *bl, 
-    BasePoint *tr, BasePoint *br ) {
-    
-    double tempx, tempy, len, stemwidth;
-
-    tempx = tl->x-bl->x;
-    tempy = tl->y-bl->y;
-    len = sqrt(tempx*tempx+tempy*tempy);
-    stemwidth = ((tr->x-tl->x)*tempy -
-	    (tr->y-tl->y)*tempx)/len;
-    if ( stemwidth<0 ) stemwidth = -stemwidth;
-return( rint( stemwidth ));
-}
-
 static int BpIndex(BasePoint *search,BasePoint *bp,int ptcnt) {
     int i;
 
@@ -2603,39 +2571,6 @@ static int BpIndex(BasePoint *search,BasePoint *bp,int ptcnt) {
 return( i );
 
 return( -1 );
-}
-
-/* Test if given diagonal stems are valid, i.e. there is a spline point
-   corresponding to each edge of each stem. Exclude invalid stems from
-   the list.*/
-static void DStemInfosTest( DStemInfo **d, BasePoint *bp, int ptcnt ) {
-    DStemInfo *cur,*prev=NULL,*temp;
-    
-    cur = *d;
-    while ( cur!=NULL ) { 
-        if (BpIndex( &cur->leftedgetop,bp,ptcnt )==-1 ||
-            BpIndex( &cur->leftedgebottom,bp,ptcnt )==-1 ||
-            BpIndex( &cur->rightedgetop,bp,ptcnt )==-1 ||
-            BpIndex( &cur->rightedgebottom,bp,ptcnt )==-1) {
-             
-            if ( prev!=NULL ) {
-                prev->next=cur->next;
-                DStemInfoFree( cur );
-                cur=prev->next;
-            } else {
-                temp=cur;
-                *d=cur=cur->next;
-                DStemInfoFree( temp );
-            }
-
-        } else {
-            temp=cur;
-            cur=cur->next;
-            prev=temp;
-        }
-    }
-
-return;
 }
 
 /* Order the given diagonal stems by the X coordinate of the left edge top,
@@ -2689,7 +2624,7 @@ static DStem  *DStemSort(DStemInfo *d, BasePoint *bp, int ptcnt) {
         newhead->pts[2].num = BpIndex( &di->rightedgetop,bp,ptcnt );
         newhead->pts[3].pt = &(di->rightedgebottom);
         newhead->pts[3].num = BpIndex( &di->rightedgebottom,bp,ptcnt );
-        newhead->width = DStemWidth( &di->leftedgetop,&di->leftedgebottom,
+        newhead->width = GetDStemWidth( &di->leftedgetop,&di->leftedgebottom,
             &di->rightedgetop,&di->rightedgebottom );
         newhead->done = false;
         newhead->next = head;
@@ -2722,7 +2657,7 @@ static DiagPointInfo *GetDiagPoints ( InstrCt *ct ) {
         for ( curds=ds; curds!=NULL; curds=curds->next ) {
             for ( j=0; j<3; j=j+2) {
                 if ((i == curds->pts[j].num || i == curds->pts[j+1].num) ||
-                    IsPointOnLine( curds->pts[j].pt, curds->pts[j+1].pt, &(ct->bp[i]) )) {
+                    PointOnLine( curds->pts[j].pt, curds->pts[j+1].pt, &(ct->bp[i]) )) {
                     
                     if ( diagpts[i].count < 2 ) {
                         num = diagpts[i].count;
@@ -2748,7 +2683,7 @@ static int FindDiagStartPoint( DStem *ds, uint8 *touched ) {
     int i;
     
     for (i=0; i<4; ++i) {
-        if (touched[ds->pts[i].num] & (tf_x | tf_y))
+        if ((touched[ds->pts[i].num] & tf_x) && (touched[ds->pts[i].num] & tf_y))
 return i;
     }
 
@@ -2862,6 +2797,7 @@ static uint8 *FixDstem( InstrCt *ct, DStem **ds, DiagPointInfo *diagpts, BasePoi
     real distance;
     uint8 *instrs, *touched;
     int pushpts[2];
+    int lfixed=false, rfixed=false;
     
     if ((*ds)->done)
 return (ct->pt);
@@ -2889,6 +2825,7 @@ return (ct->pt);
         instrs = pushpoint(instrs,a1);
         *instrs++ = MDAP;
         touched[a1] |= tf_d;
+        lfixed = true;
         
         /* Mark the point as already positioned relatively to the given
            diagonale. As the point may be associated either with the current 
@@ -2899,6 +2836,10 @@ return (ct->pt);
     }
     
     if ( SetFreedomVector( &instrs,a2,ptcnt,touched,diagpts,v1,v2,&fv )) {
+        if ( !lfixed ) {
+            instrs = pushpoint( instrs,a1 );
+            *instrs++ = 0x10;	    /* Set RP0, SRP0 */
+        }
         instrs = pushpoint(instrs,a2);
         *instrs++ = 0x3c;	    /* ALIGNRP */
         touched[a2] |= tf_d; 
@@ -2909,18 +2850,23 @@ return (ct->pt);
     /* Always put the calculated stem width into the CVT table, unless it is
        already there. This approach would be wrong for vertical or horizontal
        stems, but for diagonales it is just unlikely that we can find an 
-       acceptable predefined value in StemSnapH or StemSnapW */
+       acceptable predefined value in StemSnapH or StemSnapV */
     distance = TTF_getcvtval(ct->gic->sf, (*ds)->width);
 
     if ( SetFreedomVector( &instrs,b1,ptcnt,touched,diagpts,v1,v2,&fv )) {
         instrs = pushpointstem( instrs,b1,distance );
         *instrs++ = 0xe0+0x19;  /* MIRP, srp0, minimum, black */
-        touched[b1] |= tf_d; 
+        touched[b1] |= tf_d;
+        rfixed = true;
         if (!MarkLineFinished( b1,(*ds)->pts[0].num,(*ds)->pts[1].num,diagpts ))
             MarkLineFinished( b1,(*ds)->pts[2].num,(*ds)->pts[3].num,diagpts );
     }
     
     if ( SetFreedomVector( &instrs,b2,ptcnt,touched,diagpts,v1,v2,&fv )) {
+        if ( !rfixed ) {
+            instrs = pushpoint( instrs,b1 );
+            *instrs++ = 0x10;	    /* Set RP0, SRP0 */
+        }
         instrs = pushpoint(instrs,b2);
         *instrs++ = 0x3c;	    /* ALIGNRP */
         touched[b2] |= tf_d; 
@@ -3167,7 +3113,7 @@ static uint8 *dogeninstructions(InstrCt *ct) {
     /* Prepare info about diagonal stems to be used during edge optimization. */
     /* These contents need to be explicitly freed after hinting diagonals. */
     if (ct->sc->dstem) {
-	DStemInfosTest(&(ct->sc->dstem), ct->bp, ct->ptcnt);
+	DStemInfoTest( ct->sc );
 	ct->diagstems = DStemSort(ct->sc->dstem, ct->bp, ct->ptcnt);
 	ct->diagpts = GetDiagPoints(ct);
     }
