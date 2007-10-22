@@ -28,6 +28,7 @@
 #include "edgelist2.h"
 #include "stemdb.h"
 #include <math.h>
+#define GLYPH_DATA_MORE_DEBUG 0
 #define GLYPH_DATA_DEBUG 0
 
 /* A diagonal end is like the top or bottom of a slash. Should we add a vertical stem at the end? */
@@ -456,19 +457,21 @@ static int MonotonicFindStemBounds(Spline *line,struct st *stspace,int cnt,
 			/* instead. */
     double pos, npos;
     double width = stem->width;
+    double lmin = ( stem->lmin < -fudge ) ? stem->lmin : -fudge;
+    double lmax = ( stem->lmax > fudge ) ? stem->lmax : fudge;
+    double rmin = ( stem->rmin < -fudge ) ? stem->rmin : -fudge;
+    double rmax = ( stem->rmax > fudge ) ? stem->rmax : fudge;
 
     eo = 0;
     for ( i=0; i<cnt; ++i ) {
-	pos = (line->splines[0].c*stspace[i].lt + line->splines[0].d - stem->left.x)*stem->l_to_r.x +
-		(line->splines[1].c*stspace[i].lt + line->splines[1].d - stem->left.y)*stem->l_to_r.y;
-	npos = 99999999;
+	pos =   (line->splines[0].c*stspace[i].lt + line->splines[0].d - stem->left.x)*stem->l_to_r.x +
+	        (line->splines[1].c*stspace[i].lt + line->splines[1].d - stem->left.y)*stem->l_to_r.y;
+	npos = 1e4;
 	if ( i+1<cnt )
 	    npos = (line->splines[0].c*stspace[i+1].lt + line->splines[0].d - stem->left.x)*stem->l_to_r.x +
-		    (line->splines[1].c*stspace[i+1].lt + line->splines[1].d - stem->left.y)*stem->l_to_r.y;
+		   (line->splines[1].c*stspace[i+1].lt + line->splines[1].d - stem->left.y)*stem->l_to_r.y;
 
-	if ( fabs(npos)<fabs(pos) )
-	    /* Then npos is closer to the base of the stem and is what we want*/;
-	else if ( pos>-fudge && pos<fudge ) {
+	if ( pos>=lmin && pos<=lmax ) {
 	    if ( (eo&1) && i>0 )
 		j = i-1;
 	    else if ( !(eo&1) && i+1<cnt )
@@ -476,10 +479,11 @@ static int MonotonicFindStemBounds(Spline *line,struct st *stspace,int cnt,
 	    else
 return( false );
 	    pos = (line->splines[0].c*stspace[j].lt + line->splines[0].d - stem->left.x)*stem->l_to_r.x +
-		    (line->splines[1].c*stspace[j].lt + line->splines[1].d - stem->left.y)*stem->l_to_r.y;
-return( pos>=width-fudge && pos<=width+fudge );
+		  (line->splines[1].c*stspace[j].lt + line->splines[1].d - stem->left.y)*stem->l_to_r.y;
+            if ( pos>=width+rmin && pos<=width+rmax )
+return( true );
 	}
-	if ( i+1<cnt && npos>-fudge && npos<fudge )
+	if ( i+1<cnt && npos>=lmin && npos<=lmax )
 	    ++eo;
 	else switch ( LineType(stspace,i,cnt,line) ) {
 	  case 0:	/* Normal spline */
@@ -728,8 +732,7 @@ return( NULL );
 return( MonotonicFindAlong(&myline,gd->stspace,cnt,s,other_t));
 }
 
-static int StillStem(struct glyphdata *gd, double t, int isnext,
-	double fudge,BasePoint *pos, struct stemdata *stem ) {
+static int StillStem(struct glyphdata *gd,double fudge,BasePoint *pos,struct stemdata *stem ) {
     Spline myline;
     SplinePoint end1, end2;
     int cnt, ret;
@@ -1017,6 +1020,40 @@ return( true );
 return( false );
 }
 
+static int StemFitsHV( struct stemdata *stem,int hv ) {
+    int i,cnt,is_x;
+    double loff,roff;
+    double lmin=0,lmax=0,rmin=0,rmax=0;
+    
+    cnt = stem->chunk_cnt;
+    
+    if ( !stem->chunks[0].stub && !stem->chunks[cnt-1].stub )
+return( false );    
+    if ( stem->chunk_cnt == 1 )
+return( true );
+    
+    is_x = ( hv == 1 ) ? 1 : 0;
+    for ( i=0;i<cnt;i++ ) {
+        struct stem_chunk *chunk = &stem->chunks[i];
+        
+        if ( chunk->l != NULL ) {
+            loff = ( chunk->l->sp->me.y - stem->left.y ) * !is_x -
+                   ( chunk->l->sp->me.x - stem->left.x ) * is_x;
+            if ( loff < lmin ) lmin = loff;
+            else if ( loff > lmax ) lmax = loff;
+        }
+        if ( chunk->r != NULL ) {
+            roff = ( chunk->r->sp->me.y - stem->right.y ) * !is_x -
+                   ( chunk->r->sp->me.x - stem->right.x ) * is_x;
+            if ( roff < rmin ) rmin = roff;
+            else if ( roff > rmax ) rmax = roff;
+        }
+    }
+    if ((( lmax - lmin ) < 2*dist_error_hv ) && (( lmax - lmin ) < 2*dist_error_hv ))
+return( true );
+return( false );
+}
+
 static int BothOnStem( struct stemdata *stem,BasePoint *test1,BasePoint *test2,int force_hv ) {
     double dist_error, off1, off2;
     BasePoint dir = stem->unit;
@@ -1028,7 +1065,7 @@ static int BothOnStem( struct stemdata *stem,BasePoint *test1,BasePoint *test2,i
     if ( force_hv ) {
         if ( force_hv != hv )
 return( false );
-        if ( !hv_strict && ( stem->chunk_cnt != 1 || !stem->chunks[0].stub ))
+        if ( !hv_strict && !StemFitsHV( stem,hv ))
 return( false );
         if ( !hv_strict ) {
             dir.x = ( force_hv == 2 ) ? 0 : 1;
@@ -1974,7 +2011,7 @@ static int StemIsActiveAt(struct glyphdata *gd,struct stemdata *stem,double stem
     pos.x = stem->left.x + stempos*stem->unit.x;
     pos.y = stem->left.y + stempos*stem->unit.y;
 
-    if ( stem->unit.x==0 || stem->unit.y==0 ) {
+    if ( IsVectorHV( &stem->unit,0,true )) {
 	which = stem->unit.x==0;
 	MonotonicFindAt(gd->ms,which,((real *) &pos.x)[which],space = gd->space);
 	test = ((real *) &pos.x)[!which];
@@ -2020,12 +2057,7 @@ return( false );
 return( true );
 return( false );
     } else {
-	Spline myline;
-	SplinePoint end1, end2;
-	int cnt;
-	MakeVirtualLine(gd,&pos,&stem->unit,&myline,&end1,&end2);
-	cnt = MonotonicOrder(gd->sspace,&myline,gd->stspace);
-return( MonotonicFindStemBounds(&myline,gd->stspace,cnt,dist_error_diag,stem));
+return( StillStem( gd,dist_error_diag,&pos,stem ));
     }
 }
 
@@ -2077,7 +2109,7 @@ static int WalkSpline( struct glyphdata *gd, SplinePoint *sp,int gonext,
 	pos.y = ((s->splines[1].a*t+s->splines[1].b)*t+s->splines[1].c)*t+s->splines[1].d;
 	diff = (pos.x-sp->me.x)*stem->l_to_r.x +
                (pos.y-sp->me.y)*stem->l_to_r.y;
-	if ( diff>=-err && diff<err && StillStem( gd,t,gonext,fudge,&pos,stem )) {
+	if ( diff>=-err && diff<err && StillStem( gd,fudge,&pos,stem )) {
 	    good = pos;
 	    t += incr;
 	} else
@@ -2209,11 +2241,11 @@ return( cnt );
 	scurved = ecurved;
 	ecurved = c;
     }
-    space[cnt].start  = s;
-    space[cnt].end    = e;
-    space[cnt].base   = b;
-    space[cnt].scurved= scurved;
-    space[cnt].ecurved= ecurved;
+    space[cnt].start = s;
+    space[cnt].end = e;
+    space[cnt].sbase = space[cnt].ebase = b;
+    space[cnt].scurved = scurved;
+    space[cnt].ecurved = ecurved;
     
     if ( stem->unit.x == 0 || stem->unit.y == 0 ) {
         /* For vertical/horizontal stems we assign a special meaning to
@@ -2288,6 +2320,7 @@ static int MergeSegments(struct segment *space, int cnt) {
                 /* so that the overlap is removed */
                 if ( !space[j].ecurved && !space[i+1].scurved ) {
                     space[j].end = space[i+1].end;
+                    space[j].ebase = space[i+1].ebase;
 		    space[j].ecurved = space[i+1].ecurved;
 		    space[j].curved = false;
                 } else if ( !space[j].ecurved && space[i+1].scurved ) {
@@ -2328,31 +2361,36 @@ static void FigureStemActive(struct glyphdata *gd, struct stemdata *stem) {
     }
     bcnt = 0;
     if ( lcnt!=0 && rcnt!=0 ) {
-	if ( lcnt==1 && rcnt==1 && ( lspace[0].scurved || lspace[0].ecurved )
-            && ( rspace[0].scurved || rspace[0].ecurved ) ) {
+        /* For curved segments we can extend left and right active segments 
+        /* a bit to ensure that they do overlap and thus can be marked with an
+        /* active zone */
+	if ( rcnt == lcnt && stem->chunk_cnt == lcnt ) {
 	    double gap, lseg, rseg;
-            /* If it's a feature bend, then our tests should be more liberal */
-            int cove = (( rspace[0].curved + lspace[0].curved ) == 3 );
-	    if ( lspace[0].start>rspace[0].end )
-		gap = lspace[0].start-rspace[0].end;
-	    else if ( rspace[0].start>lspace[0].end )
-		gap = rspace[0].start-lspace[0].end;
-	    else
-		gap = 0;
-            
-            lseg = lspace[0].end - lspace[0].start;
-            rseg = rspace[0].end - rspace[0].start;
-	    if ( ( cove && gap < (lseg > rseg ? lseg : rseg )) ||
-                ( gap < ( lseg + rseg )/2 ) ) {
-		if ( lspace[0].base<rspace[0].start )
-		    rspace[0].start = lspace[0].base;
-		else if ( lspace[0].base>rspace[0].end )
-		    rspace[0].end = lspace[0].base;
-		if ( rspace[0].base<lspace[0].start )
-		    lspace[0].start = rspace[0].base;
-		else if ( rspace[0].base>lspace[0].end )
-		    lspace[0].end = rspace[0].base;
-	    }
+            int cove;
+            for ( i=0; i<lcnt; i++ ) {
+                /* If it's a feature bend, then our tests should be more liberal */
+                cove = (( rspace[i].curved + lspace[i].curved ) == 3 );
+	        if ( lspace[i].start>rspace[i].end && lspace[i].scurved && rspace[i].ecurved )
+		    gap = lspace[i].start-rspace[i].end;
+	        else if ( rspace[i].start>lspace[i].end && rspace[i].scurved && lspace[i].ecurved )
+		    gap = rspace[i].start-lspace[i].end;
+	        else
+	    continue;
+
+                lseg = lspace[i].end - lspace[i].start;
+                rseg = rspace[i].end - rspace[i].start;
+	        if (( cove && gap < (lseg > rseg ? lseg : rseg )) ||
+                    ( gap < ( lseg + rseg )/2 )) {
+		    if ( lspace[i].ebase<rspace[i].start )
+		        rspace[i].start = lspace[i].ebase;
+		    else if ( lspace[i].sbase>rspace[i].end )
+		        rspace[i].end = lspace[i].sbase;
+		    if ( rspace[i].ebase<lspace[i].start )
+		        lspace[i].start = rspace[i].ebase;
+		    else if ( rspace[i].sbase>lspace[i].end )
+		        lspace[i].end = rspace[i].sbase;
+	        }
+            }
 	}
 	qsort(lspace,lcnt,sizeof(struct segment),segment_cmp);
 	qsort(rspace,rcnt,sizeof(struct segment),segment_cmp);
@@ -2364,46 +2402,32 @@ static void FigureStemActive(struct glyphdata *gd, struct stemdata *stem) {
 	    while ( j<rcnt && rspace[j].start<=lspace[i].end ) {
                 int cove = (( rspace[j].curved + lspace[i].curved ) == 3 );
                 
+                double s = ( rspace[j].start > lspace[i].start ) ?
+                    rspace[j].start : lspace[i].start;
+                double e = ( rspace[j].end < lspace[i].end ) ?
+                    rspace[j].end : lspace[i].end;
+                double sbase = ( rspace[j].start > lspace[i].start ) ?
+                    lspace[i].sbase : rspace[j].sbase;
+                double ebase = ( rspace[j].end < lspace[i].end ) ?
+                    lspace[i].ebase : rspace[j].ebase;
+                
                 middle = ( lspace[i].start + rspace[j].start )/2;
-                if ( rspace[j].start>lspace[i].start ) {
-                    if ( cove ) {
-		        bothspace[bcnt].start = middle < rspace[j].start ?
-                            middle : rspace[j].start;
-		        bothspace[bcnt].scurved = true;
-                    } else {
-		        bothspace[bcnt].start = rspace[j].start;
-		        bothspace[bcnt].scurved = rspace[j].scurved;
-                    }
-                } else {
-                    if ( cove ) {
-		        bothspace[bcnt].start = middle < lspace[i].start ?
-                            middle : lspace[i].start;
-		        bothspace[bcnt].scurved = true;
-                    } else {
-		        bothspace[bcnt].start = lspace[i].start;
-		        bothspace[bcnt].scurved = lspace[i].scurved;
-                    }
-                }
+                bothspace[bcnt].start = ( cove && middle < s ) ? middle : s;
+                if ( rspace[j].start > lspace[i].start )
+		    bothspace[bcnt].scurved = ( rspace[j].scurved || sbase < s ) ?
+                        rspace[j].scurved : lspace[i].scurved;
+                else
+		    bothspace[bcnt].scurved = ( lspace[i].scurved || sbase < s ) ?
+                        lspace[i].scurved : rspace[j].scurved;
+                
                 middle = ( lspace[i].end + rspace[j].end )/2;
-                if ( rspace[j].end<lspace[i].end ) {
-                    if ( cove ) {
-		        bothspace[bcnt].end = middle > rspace[j].end ?
-                            middle : rspace[j].end;
-		        bothspace[bcnt].ecurved = true;
-                    } else {
-		        bothspace[bcnt].end = rspace[j].end;
-		        bothspace[bcnt].ecurved = rspace[j].ecurved;
-                    }
-                } else {
-                    if ( cove ) {
-		        bothspace[bcnt].end = middle > lspace[i].end ?
-                            middle : lspace[i].end;
-		        bothspace[bcnt].ecurved = true;
-                    } else {
-		        bothspace[bcnt].end = lspace[i].end;
-		        bothspace[bcnt].ecurved = lspace[i].ecurved;
-                    }
-                }
+                bothspace[bcnt].end = ( cove && middle > e ) ? middle : e;
+                if ( rspace[j].end < lspace[i].end )
+		    bothspace[bcnt].ecurved = ( rspace[j].ecurved || ebase > e ) ?
+                        rspace[j].ecurved : lspace[i].ecurved;
+                else
+		    bothspace[bcnt].ecurved = ( lspace[i].ecurved || ebase > e ) ?
+                        lspace[i].ecurved : rspace[j].ecurved;
 
 		bothspace[bcnt++].curved = rspace[j].curved || lspace[i].curved;
 
@@ -2413,6 +2437,19 @@ static void FigureStemActive(struct glyphdata *gd, struct stemdata *stem) {
 	    }
 	}
     }
+#if GLYPH_DATA_MORE_DEBUG
+    fprintf( stderr, "for stem l=%f,%f r=%f,%f dir=%f,%f\n",
+        stem->left.x,stem->left.y,stem->right.x,stem->right.y,stem->unit.x,stem->unit.y );
+    for ( i=0; i<lcnt; i++ )
+        fprintf( stderr, "have left start=%f,curved=%d,end=%f,curved=%d\n",
+            lspace[i].start,lspace[i].scurved,lspace[i].end,lspace[i].ecurved );
+    for ( i=0; i<rcnt; i++ )
+        fprintf( stderr, "have right start=%f,curved=%d,end=%f,curved=%d\n",
+            rspace[i].start,rspace[i].scurved,rspace[i].end,rspace[i].ecurved );
+    for ( i=0; i<lcnt; i++ )
+        fprintf( stderr, "have both start=%f,curved=%d,end=%f,curved=%d\n",
+            bothspace[i].start,bothspace[i].scurved,bothspace[i].end,bothspace[i].ecurved );
+#endif
 
     double err = ( stem->unit.x == 0 || stem->unit.y == 0 ) ?
         dist_error_hv : dist_error_diag;
@@ -2452,7 +2489,7 @@ static void FigureStemActive(struct glyphdata *gd, struct stemdata *stem) {
  		if ( bothspace[bpos].scurved || 
                     StemIsActiveAt( gd,stem,bothspace[bpos].start+0.0015 )) {
                     
-		    activespace[acnt].scurved = true;
+		    activespace[acnt].scurved = bothspace[bpos].scurved;
 		    activespace[acnt].start  = bothspace[bpos].start;
                     startset = true;
                 }
@@ -2557,7 +2594,8 @@ static void FigureStemActive(struct glyphdata *gd, struct stemdata *stem) {
             
 	    activespace[acnt  ].start = proj2;
 	    activespace[acnt  ].end = proj3;
-	    activespace[acnt++].base = proj;
+	    activespace[acnt++].sbase = proj;
+	    activespace[acnt++].ebase = proj;
 	    ++i;
 	} else if ( chunk->stemcheat==4 && chunk->l!=NULL && chunk->r!=NULL ) {
 	    SplinePoint *sp = chunk->l->sp;
@@ -2574,7 +2612,7 @@ static void FigureStemActive(struct glyphdata *gd, struct stemdata *stem) {
 		activespace[acnt  ].start = proj;
 		activespace[acnt  ].end = proj2;
 	    }
-	    activespace[acnt++].base = proj;
+	    activespace[acnt++].sbase = activespace[acnt++].ebase = proj;
 	    ++i;
 	} else if ( chunk->stemcheat && chunk->l!=NULL && chunk->r!=NULL ) {
 	    SplinePoint *sp = chunk->l->sp;
@@ -2590,7 +2628,7 @@ static void FigureStemActive(struct glyphdata *gd, struct stemdata *stem) {
 	    activespace[acnt  ].curved = true;
 	    activespace[acnt  ].start = proj;
 	    activespace[acnt  ].end = proj+width;
-	    activespace[acnt++].base = orig_proj;
+	    activespace[acnt++].sbase = activespace[acnt++].ebase = orig_proj;
 	}
     }
 
@@ -2908,7 +2946,7 @@ return( stem );
 }
 
 static int AddGhostSegment( struct pointdata *pd,int cnt,double base,struct segment *space ) {
-    double s, e, temp, pos;
+    double s, e, temp, pos, spos, epos;
     SplinePoint *sp, *nsp, *nsp2, *psp, *psp2;
     
     sp = nsp = psp = pd->sp;
@@ -2955,13 +2993,16 @@ static int AddGhostSegment( struct pointdata *pd,int cnt,double base,struct segm
         e = ( pd->sp->me.x + nsp->nextcp.x )/2;
     }
     
+    spos = psp->me.x; epos = nsp->me.x;
     if ( s>e ) {
         temp = s; s = e; e = temp;
+        temp = spos; spos = epos; epos = temp;
     }
     
     space[cnt].start = s - base;
     space[cnt].end = e - base;
-    space[cnt].base = pos - base;
+    space[cnt].sbase = spos - base;
+    space[cnt].ebase = epos - base;
     space[cnt].ecurved = space[cnt].scurved = space[cnt].curved = ( false );
     
     return( cnt+1 );
