@@ -3177,7 +3177,7 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *sf,
     if ( os2->fsSel==0 && sf->pfminfo.weight==400 )
 	os2->fsSel = 64;		/* Regular */
     if ( os2->version>=4 ) {
-	if ( strstrmatch(sf->fontname,"Obli")==0 ) {
+	if ( strstrmatch(sf->fontname,"Obli")!=NULL ) {
 	    os2->fsSel &= ~1;		/* Turn off Italic */
 	    os2->fsSel |= 512;		/* Turn on Oblique */
 	}
