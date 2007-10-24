@@ -198,7 +198,9 @@ uint32 SCScriptFromUnicode(SplineChar *sc) {
 return( DEFAULT_SCRIPT );
 
     sf = sc->parent;
-    if ( sc->unicodeenc!=-1 )
+    if ( sc->unicodeenc!=-1 &&
+	    !(sc->unicodeenc>=0xe000 && sc->unicodeenc<0xf8ff) &&
+	    !(sc->unicodeenc>=0xf0000 && sc->unicodeenc<0x10ffff))
 return( ScriptFromUnicode( sc->unicodeenc,sf ));
 
     pt = sc->name;
