@@ -9518,10 +9518,10 @@ return( NULL );
 	    larray = PyTuple_New(sl->lang_cnt);
 	    for ( l=0; l<sl->lang_cnt; ++l )
 		PyTuple_SetItem(larray,l,TagToPyString(l<MAX_LANG?sl->langs[l]:sl->morelangs[l-MAX_LANG],false));
-	    PyTuple_SetItem(sarray,scnt,Py_BuildValue("(sO)",
+	    PyTuple_SetItem(sarray,scnt,Py_BuildValue("(OO)",
 		    TagToPyString(sl->script,false),larray));
 	}
-	PyTuple_SetItem(farray,fcnt,Py_BuildValue("(sO)",
+	PyTuple_SetItem(farray,fcnt,Py_BuildValue("(OO)",
 		TagToPyString(fl->featuretag,fl->ismac),sarray));
     }
 return( Py_BuildValue("(sOO)",type,flags_tuple,farray) );
