@@ -2074,7 +2074,7 @@ static SplineFont *SearchTtfResources(FILE *f,long rlistpos,int subcnt,long rdat
     SplineFont *sf;
     int which = 0;
     char **names;
-    char *pt,*lparen;
+    char *pt,*lparen, *rparen;
     char *chosenname=NULL;
 
     fseek(f,rlistpos,SEEK_SET);
@@ -2100,7 +2100,12 @@ static SplineFont *SearchTtfResources(FILE *f,long rlistpos,int subcnt,long rdat
 return( (SplineFont *) names );
 	}
 	if ((pt = strrchr(filename,'/'))==NULL ) pt = filename;
-	if ( (lparen = strchr(pt,'('))!=NULL && strchr(lparen,')')!=NULL ) {
+	/* Someone gave me a font "Nafees Nastaleeq(Updated).ttf" and complained */
+	/*  that ff wouldn't open it */
+	/* Now someone will complain about "Nafees(Updated).ttc(fo(ob)ar)" */
+	if ( (lparen = strrchr(pt,'('))!=NULL &&
+		(rparen = strrchr(lparen,')'))!=NULL &&
+		rparen[1]=='\0' ) {
 	    char *find = copy(lparen+1);
 	    pt = strchr(find,')');
 	    if ( pt!=NULL ) *pt='\0';

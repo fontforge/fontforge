@@ -309,7 +309,7 @@ return( _readencstring(ttf,stringoffset+fullstr,fulllen,fullplat,fullspec,fullla
 static int PickTTFFont(FILE *ttf,char *filename,char **chosenname) {
     int32 *offsets, cnt, i, choice, j;
     char **names;
-    char *pt, *lparen;
+    char *pt, *lparen, *rparen;
 
     /* TTCF version = */ getlong(ttf);
     cnt = getlong(ttf);
@@ -329,7 +329,12 @@ return( true );
     }
     pt = strrchr(filename,'/');
     if ( pt==NULL ) pt = filename;
-    if ( (lparen = strchr(pt,'('))!=NULL && strchr(lparen,')')!=NULL ) {
+    /* Someone gave me a font "Nafees Nastaleeq(Updated).ttf" and complained */
+    /*  that ff wouldn't open it */
+    /* Now someone will complain about "Nafees(Updated).ttc(fo(ob)ar)" */
+    if ( (lparen = strrchr(pt,'('))!=NULL &&
+	    (rparen = strrchr(lparen,')'))!=NULL &&
+	    rparen[1]=='\0' ) {
 	char *find = copy(lparen+1);
 	pt = strchr(find,')');
 	if ( pt!=NULL ) *pt='\0';
@@ -5488,11 +5493,13 @@ return( SFFillFromTTF(&info));
 SplineFont *SFReadTTF(char *filename, int flags, enum openflags openflags) {
     FILE *ttf;
     SplineFont *sf;
-    char *temp=filename, *pt, *lparen;
+    char *temp=filename, *pt, *lparen, *rparen;
 
     pt = strrchr(filename,'/');
     if ( pt==NULL ) pt = filename;
-    if ( (lparen=strchr(pt,'('))!=NULL && strchr(lparen,')')!=NULL ) {
+    if ( (lparen = strrchr(pt,'('))!=NULL &&
+	    (rparen = strrchr(lparen,')'))!=NULL &&
+	    rparen[1]=='\0' ) {
 	temp = copy(filename);
 	pt = temp + (lparen-filename);
 	*pt = '\0';
