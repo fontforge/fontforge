@@ -1155,52 +1155,55 @@ return;
     dumpstr(dumpchar,data,"end\n");
 }
 
+static double FindMaxDiffOfBlues(char *pt, double max_diff) {
+    char *end;
+    double p1, p2;
+
+    while ( *pt==' ' || *pt=='[' ) ++pt;
+    forever {
+	p1 = strtod(pt,&end);
+	if ( end==pt )
+    break;
+	pt = end;
+	p2 = strtod(pt,&end);
+	if ( end==pt )
+    break;
+	if ( p2-p1 >max_diff ) max_diff = p2-p1;
+	pt = end;
+    }
+return( max_diff );
+}
+
 double BlueScaleFigureForced(struct psdict *private,real bluevalues[], real otherblues[]) {
-    double max_diff=0, p1, p2;
-    char *pt, *end;
+    double max_diff=0;
+    char *pt;
     int i;
 
     pt = PSDictHasEntry(private,"BlueValues");
     if ( pt!=NULL ) {
-	while ( *pt==' ' || *pt=='[' ) ++pt;
-	forever {
-	    p1 = strtod(pt,&end);
-	    if ( end==pt )
-	break;
-	    pt = end;
-	    p2 = strtod(pt,&end);
-	    if ( end==pt )
-	break;
-	    if ( p2-p1 >max_diff ) max_diff = p2-p1;
-	    pt = end;
-	}
+	max_diff = FindMaxDiffOfBlues(pt,max_diff);
     } else if ( bluevalues!=NULL ) {
 	for ( i=0; i<14 && (bluevalues[i]!=0 || bluevalues[i+1])!=0; i+=2 ) {
 	    if ( bluevalues[i+1] - bluevalues[i]>=max_diff )
 		max_diff = bluevalues[i+1] - bluevalues[i];
 	}
     }
+    pt = PSDictHasEntry(private,"FamilyBlues");
+    if ( pt!=NULL )
+	max_diff = FindMaxDiffOfBlues(pt,max_diff);
 
     pt = PSDictHasEntry(private,"OtherBlues");
-    if ( pt!=NULL ) {
-	while ( *pt==' ' || *pt=='[' ) ++pt;
-	forever {
-	    p1 = strtod(pt,&end);
-	    if ( end==pt )
-	break;
-	    pt = end;
-	    p2 = strtod(pt,&end);
-	    if ( end==pt )
-	break;
-	    if ( p2-p1 >max_diff ) max_diff = p2-p1;
-	    pt = end;
-	}
-    } else if ( otherblues!=NULL ) {
+    if ( pt!=NULL )
+	max_diff = FindMaxDiffOfBlues(pt,max_diff);
+    else if ( otherblues!=NULL ) {
 	for ( i=0; i<10 && (otherblues[i]!=0 || otherblues[i+1]!=0); i+=2 ) {
 	    if ( otherblues[i+1] - otherblues[i]>=max_diff )
 		max_diff = otherblues[i+1] - otherblues[i];
 	}
     }
+    pt = PSDictHasEntry(private,"FamilyOtherBlues");
+    if ( pt!=NULL )
+	max_diff = FindMaxDiffOfBlues(pt,max_diff);
     if ( max_diff<=0 )
 return( -1 );
     if ( 1/max_diff > .039625 )
