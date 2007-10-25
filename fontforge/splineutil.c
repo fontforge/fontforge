@@ -51,7 +51,7 @@ typedef struct quartic {
 /*  into splinefont.h after (or instead of) the definition of chunkalloc()*/
 
 #ifndef chunkalloc
-#define ALLOC_CHUNK	1		/* Number of small chunks to malloc at a time */
+#define ALLOC_CHUNK	100		/* Number of small chunks to malloc at a time */
 #if !defined(FONTFORGE_CONFIG_USE_LONGDOUBLE) && !defined(FONTFORGE_CONFIG_USE_DOUBLE)
 # define CHUNK_MAX	100		/* Maximum size (in chunk units) that we are prepared to allocate */
 					/* The size of our data structures */
