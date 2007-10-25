@@ -616,6 +616,15 @@ static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
 	    if ( sp->next==NULL )
 	break;
 	}
+	if ( spl->spiro_cnt!=0 ) {
+	    int i;
+	    fprintf( sfd, "  Spiro\n" );
+	    for ( i=0; i<spl->spiro_cnt; ++i ) {
+		fprintf( sfd, "    %g %g %c\n", spl->spiros[i].x, spl->spiros[i].y,
+			    spl->spiros[i].ty&0x7f);
+	    }
+	    fprintf( sfd, "  EndSpiro\n" );
+	}
     }
     fprintf( sfd, "EndSplineSet\n" );
 }
@@ -1128,6 +1137,8 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
 	fprintf(sfd, "GlyphClass: %d\n", sc->glyph_class );
     if ( sc->unlink_rm_ovrlp_save_undo )
 	fprintf(sfd, "UnlinkRmOvrlpSave: %d\n", sc->unlink_rm_ovrlp_save_undo );
+    if ( sc->inspiro )
+	fprintf(sfd, "InSpiro: %d\n", sc->inspiro );
     if ( sc->changedsincelasthinted|| sc->manualhints || sc->widthset )
 	fprintf(sfd, "Flags: %s%s%s%s%s\n",
 		sc->changedsincelasthinted?"H":"",
@@ -1710,6 +1721,7 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 		fprintf( sfd, "0 \n" );
 	}
     }
+    fprintf( sfd, "DEI: 0\n" );
     for ( isv=0; isv<2; ++isv ) {
 	for ( kc=isv ? sf->vkerns : sf->kerns; kc!=NULL; kc = kc->next ) {
 	    fprintf( sfd, "%s: %d%s %d ", isv ? "VKernClass2" : "KernClass2",
@@ -2803,6 +2815,39 @@ static void SFDGetHintMask(FILE *sfd,HintMask *hintmask) {
     }
 }
 
+static void SFDGetSpiros(FILE *sfd,SplineSet *cur) {
+    int ch;
+    spiro_cp cp;
+
+    ch = getc(sfd);		/* S */
+    ch = getc(sfd);		/* p */
+    ch = getc(sfd);		/* i */
+    ch = getc(sfd);		/* r */
+    ch = getc(sfd);		/* o */
+    while ( fscanf(sfd,"%lg %lg %c", &cp.x, &cp.y, &cp.ty )==3 ) {
+	if ( cur->spiro_cnt>=cur->spiro_max )
+	    cur->spiros = grealloc(cur->spiros,(cur->spiro_max+=10)*sizeof(spiro_cp));
+	cur->spiros[cur->spiro_cnt++] = cp;
+    }
+    if ( (cur->spiros[cur->spiro_cnt-1].ty&0x7f)!=SPIRO_END ) {
+	if ( cur->spiro_cnt>=cur->spiro_max )
+	    cur->spiros = grealloc(cur->spiros,(cur->spiro_max+=1)*sizeof(spiro_cp));
+	memset(&cur->spiros[cur->spiro_cnt],0,sizeof(spiro_cp));
+	cur->spiros[cur->spiro_cnt++].ty = SPIRO_END;
+    }
+    ch = getc(sfd);
+    if ( ch=='E' ) {
+	ch = getc(sfd);		/* n */
+	ch = getc(sfd);		/* d */
+	ch = getc(sfd);		/* S */
+	ch = getc(sfd);		/* p */
+	ch = getc(sfd);		/* i */
+	ch = getc(sfd);		/* r */
+	ch = getc(sfd);		/* o */
+    } else
+	ungetc(ch,sfd);
+}
+
 static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd) {
     SplinePointList *cur=NULL, *head=NULL;
     BasePoint current;
@@ -2821,6 +2866,10 @@ static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd) {
 	while ( isspace(ch=getc(sfd)));
 	if ( ch=='E' || ch=='e' || ch==EOF )
     break;
+	if ( ch=='S' ) {
+	    ungetc(ch,sfd);
+	    SFDGetSpiros(sfd,cur);
+	}
 	pt = NULL;
 	if ( ch=='l' || ch=='m' ) {
 	    if ( sp>=2 ) {
@@ -3559,6 +3608,9 @@ return( NULL );
 	} else if ( strmatch(tok,"UnlinkRmOvrlpSave:")==0 ) {
 	    getint(sfd,&temp);
 	    sc->unlink_rm_ovrlp_save_undo = temp;
+	} else if ( strmatch(tok,"InSpiro:")==0 ) {
+	    getint(sfd,&temp);
+	    sc->inspiro = temp;
 	} else if ( strmatch(tok,"Flags:")==0 ) {
 	    while ( isspace(ch=getc(sfd)) && ch!='\n' && ch!='\r');
 	    while ( ch!='\n' && ch!='\r' ) {

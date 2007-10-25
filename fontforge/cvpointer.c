@@ -165,13 +165,22 @@ int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi, int *anya) {
     RefChar *rf;
     ImageList *il;
     AnchorPoint *ap;
+    int i;
 
     for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL && !anypoints; spl = spl->next ) {
-	first = NULL;
-	if ( spl->first->selected ) anypoints = true;
-	for ( spline=spl->first->next; spline!=NULL && spline!=first && !anypoints; spline = spline->to->next ) {
-	    if ( spline->to->selected ) anypoints = true;
-	    if ( first == NULL ) first = spline;
+	if ( cv->sc->inspiro ) {
+	    for ( i=0; i<spl->spiro_cnt-1; ++i )
+		if ( SPIRO_SELECTED(&spl->spiros[i])) {
+		    anypoints = true;
+	    break;
+		}
+	} else {
+	    first = NULL;
+	    if ( spl->first->selected ) anypoints = true;
+	    for ( spline=spl->first->next; spline!=NULL && spline!=first && !anypoints; spline = spline->to->next ) {
+		if ( spline->to->selected ) anypoints = true;
+		if ( first == NULL ) first = spline;
+	    }
 	}
     }
     for ( rf=cv->layerheads[cv->drawmode]->refs; rf!=NULL && !anyrefs; rf=rf->next )
@@ -190,33 +199,41 @@ int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi, int *anya) {
 return( anypoints || anyrefs || anyimages || anyanchor );
 }
 
-SplinePoint *CVAnySelPoints(CharView *cv) {
+int CVAnySelPoints(CharView *cv) {
     /* if there are any points selected */
     SplinePointList *spl;
     Spline *spline, *first;
+    int i;
 
     for ( spl= cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl=spl->next ) {
-	if ( spl->first->selected );
-return( spl->first );
-	first = NULL;
-	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
-	    if ( spline->to->selected )
-return( spline->to );
-	    if ( first==NULL ) first = spline;
+	if ( cv->sc->inspiro ) {
+	    for ( i=0; i<spl->spiro_cnt-1; ++i )
+		if ( SPIRO_SELECTED(&spl->spiros[i]))
+return( true );
+	} else {
+	    if ( spl->first->selected );
+return( true );
+	    first = NULL;
+	    for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
+		if ( spline->to->selected )
+return( true );
+		if ( first==NULL ) first = spline;
+	    }
 	}
     }
-return( NULL );
+return( false );
 }
 
 int CVClearSel(CharView *cv) {
     SplinePointList *spl;
+    int i;
     Spline *spline, *first;
     RefChar *rf;
     ImageList *img;
     int needsupdate = 0;
     AnchorPoint *ap;
 
-    cv->lastselpt = NULL;
+    cv->lastselpt = NULL; cv->lastselcp = NULL;
     for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
 	if ( spl->first->selected ) { needsupdate = true; spl->first->selected = false; }
 	first = NULL;
@@ -225,6 +242,9 @@ int CVClearSel(CharView *cv) {
 		{ needsupdate = true; spline->to->selected = false; }
 	    if ( first==NULL ) first = spline;
 	}
+	for ( i=0 ; i<spl->spiro_cnt-1; ++i )
+	    if ( SPIRO_SELECTED(&spl->spiros[i]))
+		{ needsupdate = true; SPIRO_DESELECT(&spl->spiros[i]); }
     }
     for ( rf=cv->layerheads[cv->drawmode]->refs; rf!=NULL; rf = rf->next )
 	if ( rf->selected ) { needsupdate = true; rf->selected = false; }
@@ -249,20 +269,32 @@ int CVSetSel(CharView *cv,int mask) {
     int needsupdate = 0;
     AnchorPoint *ap;
     RefChar *usemymetrics = HasUseMyMetrics(cv->sc);
+    int i;
 
-    cv->lastselpt = NULL;
-    if ( mask&1 )
-    for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
-	if ( !spl->first->selected ) { needsupdate = true; spl->first->selected = true; }
-	first = NULL;
-	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
-	    if ( !spline->to->selected )
-		{ needsupdate = true; spline->to->selected = true; }
-	    cv->lastselpt = spline->to;
-	    if ( first==NULL ) first = spline;
-	}
-    }
+    cv->lastselpt = NULL; cv->lastselcp = NULL;
     if ( mask&1 ) {
+	if ( !cv->sc->inspiro ) {
+	    for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
+		if ( !spl->first->selected ) { needsupdate = true; spl->first->selected = true; }
+		first = NULL;
+		for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
+		    if ( !spline->to->selected )
+			{ needsupdate = true; spline->to->selected = true; }
+		    cv->lastselpt = spline->to;
+		    if ( first==NULL ) first = spline;
+		}
+	    }
+	} else {
+	    for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
+		for ( i=0; i<spl->spiro_cnt-1; ++i ) {
+		    if ( !SPIRO_SELECTED(&spl->spiros[i])) {
+			needsupdate = true;
+			SPIRO_SELECT(&spl->spiros[i]);
+		    }
+		    cv->lastselcp = &spl->spiros[i];
+		}
+	    }
+	}
 	for ( rf=cv->layerheads[cv->drawmode]->refs; rf!=NULL; rf = rf->next )
 	    if ( !rf->selected ) { needsupdate = true; rf->selected = true; }
 	for ( img=cv->layerheads[cv->drawmode]->images; img!=NULL; img = img->next )
@@ -291,22 +323,28 @@ void CVInvertSel(CharView *cv) {
     Spline *spline, *first;
     RefChar *rf;
     ImageList *img;
+    int i;
 
-    cv->lastselpt = NULL;
+    cv->lastselpt = NULL; cv->lastselcp = NULL;
 
     for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
-      	spl->first->selected = !spl->first->selected;
-	first = NULL;
-	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
-	    spline->to->selected = !spline->to->selected;
-	    cv->lastselpt = spline->to;
-	    if ( first==NULL ) first = spline;
-	}
-	/* in circular case, first point is toggled twice in above code	*/
-	/* so fix it here						*/
-	if ( spline==first && spline != NULL)
+	if ( cv->sc->inspiro ) {
+	    for ( i=0; i<spl->spiro_cnt-1; ++i )
+		spl->spiros[i].ty ^= 0x80;
+	} else {
 	    spl->first->selected = !spl->first->selected;
-
+	    first = NULL;
+	    for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
+		spline->to->selected = !spline->to->selected;
+		if ( spline->to->selected )
+		    cv->lastselpt = spline->to;
+		if ( first==NULL ) first = spline;
+	    }
+	    /* in circular case, first point is toggled twice in above code	*/
+	    /* so fix it here						*/
+	    if ( spline==first && spline != NULL)
+		spl->first->selected = !spl->first->selected;
+	}
     }
     for ( rf=cv->layerheads[cv->drawmode]->refs; rf!=NULL; rf = rf->next )
         rf->selected = !rf->selected;
@@ -320,15 +358,22 @@ int CVAllSelected(CharView *cv) {
     Spline *spline, *first;
     RefChar *rf;
     ImageList *img;
+    int i;
 
     for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
-	if ( !spl->first->selected )
+	if ( cv->sc->inspiro ) {
+	    for ( i=0; i<spl->spiro_cnt-1; ++i )
+		if ( !SPIRO_SELECTED(&spl->spiros[i]))
 return( false );
-	first = NULL;
-	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
-	    if ( !spline->to->selected )
+	} else {
+	    if ( !spl->first->selected )
 return( false );
-	    if ( first==NULL ) first = spline;
+	    first = NULL;
+	    for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
+		if ( !spline->to->selected )
+return( false );
+		if ( first==NULL ) first = spline;
+	    }
 	}
     }
     for ( rf=cv->layerheads[cv->drawmode]->refs; rf!=NULL; rf = rf->next )
@@ -341,26 +386,45 @@ return( true );
 }
 
 static void SplineSetFindSelBounds(SplinePointList *spl, DBounds *bounds,
-	int nosel) {
+	int nosel, int inspiro) {
     SplinePoint *sp, *first;
+    int i;
 
     for ( ; spl!=NULL; spl = spl->next ) {
-	first = NULL;
-	for ( sp = spl->first; sp!=first; sp = sp->next->to ) {
-	    if ( (nosel || sp->selected) &&
-		    bounds->minx==0 && bounds->maxx==0 &&
-		    bounds->miny==0 && bounds->maxy == 0 ) {
-		bounds->minx = bounds->maxx = sp->me.x;
-		bounds->miny = bounds->maxy = sp->me.y;
-	    } else if ( nosel || sp->selected ) {
-		if ( sp->me.x<bounds->minx ) bounds->minx = sp->me.x;
-		if ( sp->me.x>bounds->maxx ) bounds->maxx = sp->me.x;
-		if ( sp->me.y<bounds->miny ) bounds->miny = sp->me.y;
-		if ( sp->me.y>bounds->maxy ) bounds->maxy = sp->me.y;
+	if ( !inspiro ) {
+	    first = NULL;
+	    for ( sp = spl->first; sp!=first; sp = sp->next->to ) {
+		if ( nosel || sp->selected ) {
+		    if ( bounds->minx==0 && bounds->maxx==0 &&
+			 bounds->miny==0 && bounds->maxy == 0 ) {
+			bounds->minx = bounds->maxx = sp->me.x;
+			bounds->miny = bounds->maxy = sp->me.y;
+		    } else {
+			if ( sp->me.x<bounds->minx ) bounds->minx = sp->me.x;
+			if ( sp->me.x>bounds->maxx ) bounds->maxx = sp->me.x;
+			if ( sp->me.y<bounds->miny ) bounds->miny = sp->me.y;
+			if ( sp->me.y>bounds->maxy ) bounds->maxy = sp->me.y;
+		    }
+		}
+		if ( first==NULL ) first = sp;
+		if ( sp->next==NULL )
+	    break;
 	    }
-	    if ( first==NULL ) first = sp;
-	    if ( sp->next==NULL )
-	break;
+	} else {
+	    for ( i=0; i<spl->spiro_cnt-1; ++i ) {
+		if ( nosel || SPIRO_SELECTED(&spl->spiros[i])) {
+		    if ( bounds->minx==0 && bounds->maxx==0 &&
+			 bounds->miny==0 && bounds->maxy == 0 ) {
+			bounds->minx = bounds->maxx = spl->spiros[i].x;
+			bounds->miny = bounds->maxy = spl->spiros[i].y;
+		    } else {
+			if ( spl->spiros[i].x<bounds->minx ) bounds->minx = spl->spiros[i].x;
+			if ( spl->spiros[i].x>bounds->maxx ) bounds->maxx = spl->spiros[i].x;
+			if ( spl->spiros[i].y<bounds->miny ) bounds->miny = spl->spiros[i].y;
+			if ( spl->spiros[i].y>bounds->maxy ) bounds->maxy = spl->spiros[i].y;
+		    }
+		}
+	    }
 	}
     }
 }
@@ -370,7 +434,7 @@ void CVFindCenter(CharView *cv, BasePoint *bp, int nosel) {
     ImageList *img;
 
     b.minx = b.miny = b.maxx = b.maxy = 0;
-    SplineSetFindSelBounds(cv->layerheads[cv->drawmode]->splines,&b,nosel);
+    SplineSetFindSelBounds(cv->layerheads[cv->drawmode]->splines,&b,nosel,cv->sc->inspiro);
     if ( cv->drawmode==dm_fore ) {
 	RefChar *rf;
 	for ( rf=cv->layerheads[cv->drawmode]->refs; rf!=NULL; rf=rf->next ) {
@@ -546,6 +610,7 @@ void CVMouseDownPointer(CharView *cv, FindSel *fs, GEvent *event) {
     int needsupdate = false;
     int dowidth, dovwidth, doic, dotah, nearcaret;
     RefChar *usemymetrics = HasUseMyMetrics(cv->sc);
+    int i;
 
     if ( cv->pressed==NULL )
 	cv->pressed = GDrawRequestTimer(cv->v,200,100,NULL);
@@ -573,6 +638,7 @@ return;
     cv->nearcaret = nearcaret = -1;
     if ( cv->showhmetrics ) nearcaret = NearCaret(cv->sc,cv->p.cx,fs->fudge);
     if ( (fs->p->sp==NULL || !fs->p->sp->selected) &&
+	    (fs->p->spiro==NULL || !SPIRO_SELECTED(fs->p->spiro)) &&
 	    (fs->p->ref==NULL || !fs->p->ref->selected) &&
 	    (fs->p->img==NULL || !fs->p->img->selected) &&
 	    (fs->p->ap==NULL || !fs->p->ap->selected) &&
@@ -658,7 +724,10 @@ return;
 	else if ( fs->p->sp!=NULL ) {
 	    if ( !fs->p->sp->selected ) needsupdate = true;
 	    fs->p->sp->selected = true;
-	} else if ( fs->p->spline!=NULL ) {
+	} else if ( fs->p->spiro!=NULL ) {
+	    if ( !SPIRO_SELECTED(fs->p->spiro) ) needsupdate = true;
+	    SPIRO_SELECT( fs->p->spiro );
+	} else if ( fs->p->spline!=NULL && !cv->sc->inspiro ) {
 	    if ( !fs->p->spline->to->selected &&
 		    !fs->p->spline->from->selected ) needsupdate = true;
 	    fs->p->spline->to->selected = true;
@@ -679,7 +748,10 @@ return;
 	else if ( fs->p->sp!=NULL ) {
 	    needsupdate = true;
 	    fs->p->sp->selected = !fs->p->sp->selected;
-	} else if ( fs->p->spline!=NULL ) {
+	} else if ( fs->p->spiro!=NULL ) {
+	    needsupdate = true;
+	    fs->p->spiro->ty ^= 0x80;
+	} else if ( fs->p->spline!=NULL && !cv->sc->inspiro ) {
 	    needsupdate = true;
 	    fs->p->spline->to->selected = !fs->p->spline->to->selected;
 	    fs->p->spline->from->selected = !fs->p->spline->from->selected;
@@ -696,13 +768,22 @@ return;
     } else if ( event->u.mouse.clicks==2 ) {
 	CPEndInfo(cv);
 	if ( fs->p->spl!=NULL ) {
-	    Spline *spline, *first;
-	    if ( !fs->p->spl->first->selected ) { needsupdate = true; fs->p->spl->first->selected = true; }
-	    first = NULL;
-	    for ( spline = fs->p->spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
-		if ( !spline->to->selected )
-		    { needsupdate = true; spline->to->selected = true; }
-		if ( first==NULL ) first = spline;
+	    if ( cv->sc->inspiro ) {
+		for ( i=0; i<fs->p->spl->spiro_cnt-1; ++i ) {
+		    if ( !SPIRO_SELECTED(&fs->p->spl->spiros[i])) {
+			needsupdate = true;
+			SPIRO_SELECT(&fs->p->spl->spiros[i]);
+		    }
+		}
+	    } else {
+		Spline *spline, *first;
+		if ( !fs->p->spl->first->selected ) { needsupdate = true; fs->p->spl->first->selected = true; }
+		first = NULL;
+		for ( spline = fs->p->spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
+		    if ( !spline->to->selected )
+			{ needsupdate = true; spline->to->selected = true; }
+		    if ( first==NULL ) first = spline;
+		}
 	    }
 	} else if ( fs->p->ref!=NULL || fs->p->img!=NULL ) {
 	    /* Double clicking on a referenced character doesn't do much */
@@ -739,6 +820,7 @@ static int CVRectSelect(CharView *cv, real newx, real newy) {
     BasePoint *bp;
     AnchorPoint *ap;
     DBounds bb;
+    int i;
 
     if ( cv->p.cx<=cv->p.ex ) {
 	old.minx = cv->p.cx;
@@ -807,35 +889,49 @@ static int CVRectSelect(CharView *cv, real newx, real newy) {
     }
 
     for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
-	first = NULL;
-	if ( spl->first->prev==NULL ) {
-	    bp = &spl->first->me;
-	    if (( bp->x>=old.minx && bp->x<old.maxx &&
-			bp->y>=old.miny && bp->y<old.maxy ) !=
-		    ( bp->x>=new.minx && bp->x<new.maxx &&
-			bp->y>=new.miny && bp->y<new.maxy )) {
-		spl->first->selected = !spl->first->selected;
-		if ( spl->first->selected )
-		    cv->lastselpt = spl->first;
-		else if ( spl->first==cv->lastselpt )
-		    cv->lastselpt = NULL;
-		any = true;
+	if ( !cv->sc->inspiro ) {
+	    first = NULL;
+	    if ( spl->first->prev==NULL ) {
+		bp = &spl->first->me;
+		if (( bp->x>=old.minx && bp->x<old.maxx &&
+			    bp->y>=old.miny && bp->y<old.maxy ) !=
+			( bp->x>=new.minx && bp->x<new.maxx &&
+			    bp->y>=new.miny && bp->y<new.maxy )) {
+		    spl->first->selected = !spl->first->selected;
+		    if ( spl->first->selected )
+			cv->lastselpt = spl->first;
+		    else if ( spl->first==cv->lastselpt )
+			cv->lastselpt = NULL;
+		    any = true;
+		}
 	    }
-	}
-	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
-	    bp = &spline->to->me;
-	    if (( bp->x>=old.minx && bp->x<old.maxx &&
-			bp->y>=old.miny && bp->y<old.maxy ) !=
-		    ( bp->x>=new.minx && bp->x<new.maxx &&
-			bp->y>=new.miny && bp->y<new.maxy )) {
-		spline->to->selected = !spline->to->selected;
-		if ( spline->to->selected )
-		    cv->lastselpt = spline->to;
-		else if ( spline->to==cv->lastselpt )
-		    cv->lastselpt = NULL;
-		any = true;
+	    for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
+		bp = &spline->to->me;
+		if (( bp->x>=old.minx && bp->x<old.maxx &&
+			    bp->y>=old.miny && bp->y<old.maxy ) !=
+			( bp->x>=new.minx && bp->x<new.maxx &&
+			    bp->y>=new.miny && bp->y<new.maxy )) {
+		    spline->to->selected = !spline->to->selected;
+		    if ( spline->to->selected )
+			cv->lastselpt = spline->to;
+		    else if ( spline->to==cv->lastselpt )
+			cv->lastselpt = NULL;
+		    any = true;
+		}
+		if ( first==NULL ) first = spline;
 	    }
-	    if ( first==NULL ) first = spline;
+	} else {
+	    for ( i=0; i<spl->spiro_cnt-1; ++i ) {
+		if (( spl->spiros[i].x>=old.minx && spl->spiros[i].x<old.maxx &&
+			    spl->spiros[i].y>=old.miny && spl->spiros[i].y<old.maxy ) !=
+			( spl->spiros[i].x>=new.minx && spl->spiros[i].x<new.maxx &&
+			    spl->spiros[i].y>=new.miny && spl->spiros[i].y<new.maxy )) {
+		    spl->spiros[i].ty ^= 0x80;
+		    if ( SPIRO_SELECTED(&spl->spiros[i]))
+			cv->lastselcp = &spl->spiros[i];
+		    any = true;
+		}
+	    }
 	}
     }
 return( any );
@@ -1000,41 +1096,57 @@ return( a>-fudge && a<fudge );
 /*  happened (could be more than one) */
 /* However if two things merge we must start all over again because we will have */
 /*  freed one of the splinesets in the merger */
+/* This is very similar for spiros (because start and end points of open contours */
+/*  are the same in both representations). The only complication is checking */
+/*  that they are selected */
 static int CVCheckMerges(CharView *cv ) {
     SplineSet *activess, *mergess;
-    real fudge = 1/cv->scale;
+    real fudge = 2/cv->scale;
     int cnt= -1;
+    int firstsel, lastsel;
+    int mfirstsel, mlastsel;
+    int inspiro = cv->sc->inspiro;
 
   restart:
     ++cnt;
     for ( activess=cv->layerheads[cv->drawmode]->splines; activess!=NULL; activess=activess->next ) {
-	if ( activess->first->prev==NULL && (activess->first->selected ||
-		activess->last->selected)) {
+	if ( activess->first->prev!=NULL )
+    continue;		/* Closed contour, can't merge with anything */
+	firstsel = (inspiro && SPIRO_SELECTED(&activess->spiros[0])) ||
+		    (!inspiro && activess->first->selected);
+	lastsel = (inspiro && SPIRO_SELECTED(&activess->spiros[activess->spiro_cnt-2])) ||
+		    (!inspiro && activess->last->selected);
+	if ( firstsel || lastsel ) {
 	    for ( mergess = cv->layerheads[cv->drawmode]->splines; mergess!=NULL; mergess=mergess->next ) {
-		if ( mergess->first->prev==NULL && (!mergess->first->selected ||
-			!mergess->last->selected)) {
-		    if ( !mergess->first->selected && activess->first->selected &&
+		if ( mergess->first->prev!=NULL )
+	    continue;		/* Closed contour, can't merge with anything */
+		mfirstsel = (inspiro && SPIRO_SELECTED(&mergess->spiros[0])) ||
+			    (!inspiro && mergess->first->selected);
+		mlastsel = (inspiro && SPIRO_SELECTED(&mergess->spiros[mergess->spiro_cnt-2])) ||
+			    (!inspiro && mergess->last->selected);
+		if ( !mfirstsel || !mlastsel ) {
+		    if ( !mfirstsel && firstsel &&
 			    Nearish(mergess->first->me.x-activess->first->me.x,fudge) &&
 			    Nearish(mergess->first->me.y-activess->first->me.y,fudge)) {
 			CVMergeSplineSets(cv,activess->first,activess,
 				mergess->first,mergess);
   goto restart;
 		    }
-		    if ( !mergess->last->selected && activess->first->selected &&
+		    if ( !mlastsel && firstsel &&
 			    Nearish(mergess->last->me.x-activess->first->me.x,fudge) &&
 			    Nearish(mergess->last->me.y-activess->first->me.y,fudge)) {
 			CVMergeSplineSets(cv,activess->first,activess,
 				mergess->last,mergess);
   goto restart;
 		    }
-		    if ( !mergess->first->selected && activess->last->selected &&
+		    if ( !mfirstsel && lastsel &&
 			    Nearish(mergess->first->me.x-activess->last->me.x,fudge) &&
 			    Nearish(mergess->first->me.y-activess->last->me.y,fudge)) {
 			CVMergeSplineSets(cv,activess->last,activess,
 				mergess->first,mergess);
   goto restart;
 		    }
-		    if ( !mergess->last->selected && activess->last->selected &&
+		    if ( !mlastsel && lastsel &&
 			    Nearish(mergess->last->me.x-activess->last->me.x,fudge) &&
 			    Nearish(mergess->last->me.y-activess->last->me.y,fudge)) {
 			CVMergeSplineSets(cv,activess->last,activess,
@@ -1056,7 +1168,7 @@ int CVMoveSelection(CharView *cv, real dx, real dy, uint32 input_state) {
     AnchorPoint *ap;
     double fudge;
     extern float snapdistance;
-    int j;
+    int i,j;
     int changed = false, outlinechanged = false;
     SplinePointList *spl;
     SplinePoint *sp;
@@ -1067,20 +1179,31 @@ int CVMoveSelection(CharView *cv, real dx, real dy, uint32 input_state) {
     if ( transform[4]==0 && transform[5]==0 )
 return(false);
     for ( spl=cv->layerheads[cv->drawmode]->splines; spl!=NULL && !outlinechanged; spl=spl->next ) {
-	for ( sp=spl->first ;; ) {
-	    if ( sp->selected ) {
-		outlinechanged = true;
-	break;
+	if ( cv->sc->inspiro ) {
+	    for ( i=0; i<spl->spiro_cnt-1; --i )
+		if ( SPIRO_SELECTED(&spl->spiros[i])) {
+		    outlinechanged = true;
+	    break;
+		}
+	} else {
+	    for ( sp=spl->first ;; ) {
+		if ( sp->selected ) {
+		    outlinechanged = true;
+	    break;
+		}
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+		if ( sp==spl->first )
+	    break;
 	    }
-	    if ( sp->next==NULL )
-	break;
-	    sp = sp->next->to;
-	    if ( sp==spl->first )
-	break;
 	}
     }
 
-    SplinePointListTransform(cv->layerheads[cv->drawmode]->splines,transform,false);
+    if ( cv->sc->inspiro )
+	SplinePointListSpiroTransform(cv->layerheads[cv->drawmode]->splines,transform,false);
+    else
+	SplinePointListTransform(cv->layerheads[cv->drawmode]->splines,transform,false);
 
     for ( refs = cv->layerheads[cv->drawmode]->refs; refs!=NULL; refs=refs->next ) if ( refs->selected ) {
 	refs->transform[4] += transform[4];
@@ -1230,7 +1353,7 @@ return( false );
 	CVAdjustControl(cv,&cv->p.sp->prevcp,&cv->info);
 	CPUpdateInfo(cv,event);
 	needsupdate = true;
-    } else if ( cv->p.spline!=NULL ) {
+    } else if ( cv->p.spline!=NULL && !cv->sc->inspiro ) {
 	if ( !cv->recentchange ) CVPreserveState(cv);
 	CVAdjustSpline(cv);
 	CVSetCharChanged(cv,true);
@@ -1297,6 +1420,22 @@ void CVMouseUpPointer(CharView *cv ) {
 /*  ************************** Select Point Dialog *************************  */
 /* ************************************************************************** */
 
+static spiro_cp *SpiroClosest(BasePoint *base,spiro_cp *sp1, spiro_cp *sp2) {
+    double dx1, dy1, dx2, dy2;
+    if ( sp1==NULL )
+return( sp2 );
+    if ( sp2==NULL )
+return( sp1 );
+    if ( (dx1 = sp1->x-base->x)<0 ) dx1 = -dx1;
+    if ( (dy1 = sp1->y-base->y)<0 ) dy1 = -dy1;
+    if ( (dx2 = sp2->x-base->x)<0 ) dx2 = -dx2;
+    if ( (dy2 = sp2->y-base->y)<0 ) dy2 = -dy2;
+    if ( dx1+dy1 < dx2+dy2 )
+return( sp1 );
+    else
+return( sp2 );
+}
+
 static SplinePoint *Closest(BasePoint *base,SplinePoint *sp1, SplinePoint *sp2) {
     double dx1, dy1, dx2, dy2;
     if ( sp1==NULL )
@@ -1317,43 +1456,83 @@ static int SelectPointsWithin(CharView *cv, BasePoint *base, double fuzz, BasePo
     SplineSet *ss;
     SplinePoint *sp;
     SplinePoint *any = NULL;
+    int i;
+    spiro_cp *anycp = NULL;
 
     CVClearSel(cv);
-    for ( ss= cv->layerheads[cv->drawmode]->splines; ss!=NULL; ss=ss->next ) {
-	for ( sp=ss->first; ; ) {
-	    if ( bounds!=NULL ) {
-		if ( sp->me.x >= base->x && sp->me.x <= base->x+bounds->x &&
-			sp->me.y >= base->y && sp->me.y <= base->y+bounds->y ) {
-		    sp->selected = true;
-		    any = sp;
-		}
-	    } else if ( fuzz>0 ) {
-		if ( RealWithin(sp->me.x,base->x,fuzz) && RealWithin(sp->me.y,base->y,fuzz)) {
-		    sp->selected = true;
-		    any = Closest(base,any,sp);
-		}
-	    } else {
-		if ( RealNear(sp->me.x,base->x) && RealNear(sp->me.y,base->y)) {
-		    sp->selected = true;
-		    any = Closest(base,any,sp);
-  goto done;
+    if ( cv->sc->inspiro ) {
+	for ( ss= cv->layerheads[cv->drawmode]->splines; ss!=NULL; ss=ss->next ) {
+	    for ( i=0; i<ss->spiro_cnt-1; ++i ) {
+		spiro_cp *cp = &ss->spiros[i];
+		if ( bounds!=NULL ) {
+		    if ( cp->x >= base->x && cp->x <= base->x+bounds->x &&
+			    cp->y >= base->y && cp->y <= base->y+bounds->y ) {
+			SPIRO_SELECT(cp);
+			anycp = cp;
+		    }
+		} else if ( fuzz>0 ) {
+		    if ( RealWithin(cp->x,base->x,fuzz) && RealWithin(cp->y,base->y,fuzz)) {
+			SPIRO_SELECT(cp);
+			anycp = SpiroClosest(base,anycp,cp);
+		    }
+		} else {
+		    if ( RealNear(sp->me.x,base->x) && RealNear(sp->me.y,base->y)) {
+			SPIRO_SELECT(cp);
+			anycp = SpiroClosest(base,anycp,cp);
+      goto cpdone;
+		    }
 		}
 	    }
-	    if ( sp->next==NULL )
-	break;
-	    sp = sp->next->to;
-	    if ( sp==ss->first )
-	break;
 	}
-    }
-  done:
-    if ( any==NULL ) {
-	CVShowPoint(cv,base);
-	GDrawBeep(NULL);
-    } else
-	CVShowPoint(cv,&any->me);
-    SCUpdateAll(cv->sc);
+      cpdone:
+	if ( any==NULL ) {
+	    CVShowPoint(cv,base);
+	    GDrawBeep(NULL);
+	} else {
+	    BasePoint here;
+	    here.x = anycp->x;
+	    here.y = anycp->y;
+	    CVShowPoint(cv,&here);
+	}
+	SCUpdateAll(cv->sc);
+return( anycp!=NULL );
+    } else {
+	for ( ss= cv->layerheads[cv->drawmode]->splines; ss!=NULL; ss=ss->next ) {
+	    for ( sp=ss->first; ; ) {
+		if ( bounds!=NULL ) {
+		    if ( sp->me.x >= base->x && sp->me.x <= base->x+bounds->x &&
+			    sp->me.y >= base->y && sp->me.y <= base->y+bounds->y ) {
+			sp->selected = true;
+			any = sp;
+		    }
+		} else if ( fuzz>0 ) {
+		    if ( RealWithin(sp->me.x,base->x,fuzz) && RealWithin(sp->me.y,base->y,fuzz)) {
+			sp->selected = true;
+			any = Closest(base,any,sp);
+		    }
+		} else {
+		    if ( RealNear(sp->me.x,base->x) && RealNear(sp->me.y,base->y)) {
+			sp->selected = true;
+			any = Closest(base,any,sp);
+      goto done;
+		    }
+		}
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+		if ( sp==ss->first )
+	    break;
+	    }
+	}
+      done:
+	if ( any==NULL ) {
+	    CVShowPoint(cv,base);
+	    GDrawBeep(NULL);
+	} else
+	    CVShowPoint(cv,&any->me);
+	SCUpdateAll(cv->sc);
 return( any!=NULL );
+    }
 }
 
 #define CID_X	1001

@@ -50,7 +50,7 @@ static GWindow cvlayers, cvtools, bvlayers, bvtools, bvshades;
 static GWindow cvlayers2=NULL;
 static GPoint cvtoolsoff = { -9999 }, cvlayersoff = { -9999 }, bvlayersoff = { -9999 }, bvtoolsoff = { -9999 }, bvshadesoff = { -9999 };
 int palettes_fixed=1;
-static GCursor tools[cvt_max+1] = { ct_pointer };
+static GCursor tools[cvt_max+1] = { ct_pointer }, spirotools[cvt_max+1];
 
 static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
 static GFont *font;
@@ -248,8 +248,13 @@ static void FakeShapeEvents(CharView *cv) {
     real trans[6];
 
     cv->active_tool = rectelipse ? cvt_elipse : cvt_rect;
-    GDrawSetCursor(cv->v,tools[cv->active_tool]);
-    GDrawSetCursor(cvtools,tools[cv->active_tool]);
+    if ( cv->sc->inspiro ) {
+	GDrawSetCursor(cv->v,spirotools[cv->active_tool]);
+	GDrawSetCursor(cvtools,spirotools[cv->active_tool]);
+    } else {
+	GDrawSetCursor(cv->v,tools[cv->active_tool]);
+	GDrawSetCursor(cvtools,tools[cv->active_tool]);
+    }
     cv->showing_tool = cv->active_tool;
 
     memset(&event,0,sizeof(event));
@@ -630,11 +635,22 @@ static void CVPolyStar(CharView *cv) {
 static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
     GRect old;
     /* Note: If you change this ordering, change enum cvtools */
-    static GImage *buttons[][2] = { { &GIcon_pointer, &GIcon_magnify },
+    static GImage *normbuttons[][2] = { { &GIcon_pointer, &GIcon_magnify },
 				    { &GIcon_freehand, &GIcon_hand },
 				    { &GIcon_curve, &GIcon_hvcurve },
 			            { &GIcon_corner, &GIcon_tangent},
 			            { &GIcon_pen, &GIcon_spirodisabled },
+			            { &GIcon_knife, &GIcon_ruler },
+			            { &GIcon_scale, &GIcon_flip },
+			            { &GIcon_rotate, &GIcon_skew },
+			            { &GIcon_3drotate, &GIcon_perspective },
+			            { &GIcon_rect, &GIcon_poly},
+			            { &GIcon_elipse, &GIcon_star}};
+    static GImage *spirobuttons[][2] = { { &GIcon_pointer, &GIcon_magnify },
+				    { &GIcon_freehand, &GIcon_hand },
+				    { &GIcon_spirocurve, &GIcon_spirog2curve },
+			            { &GIcon_spirocorner, &GIcon_spiroleft },
+			            { &GIcon_spiroright, &GIcon_spirodown },
 			            { &GIcon_knife, &GIcon_ruler },
 			            { &GIcon_scale, &GIcon_flip },
 			            { &GIcon_rotate, &GIcon_skew },
@@ -661,11 +677,15 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
     int tool = cv->cntrldown?cv->cb1_tool:cv->b1_tool;
     int dither = GDrawSetDither(NULL,false);
     GRect temp;
+    int canspiro = hasspiro(), inspiro = canspiro && cv->sc->inspiro;
+    GImage *(*buttons)[2] = inspiro ? spirobuttons : normbuttons;
+
+    normbuttons[4][1] = canspiro ? &GIcon_spiroup : &GIcon_spirodisabled;
 
     GDrawPushClip(pixmap,r,&old);
     GDrawFillRect(pixmap,r,GDrawGetDefaultBackground(NULL));
     GDrawSetLineWidth(pixmap,0);
-    for ( i=0; i<sizeof(buttons)/sizeof(buttons[0])-1; ++i ) for ( j=0; j<2; ++j ) {
+    for ( i=0; i<sizeof(normbuttons)/sizeof(normbuttons[0])-1; ++i ) for ( j=0; j<2; ++j ) {
 	mi = i;
 	if ( i==(cvt_rect)/2 && ((j==0 && rectelipse) || (j==1 && polystar)) )
 	    ++mi;
@@ -760,6 +780,10 @@ void CVToolsSetCursor(CharView *cv, int state, char *device) {
 	tools[cvt_elipse] = ct_elipse;
 	tools[cvt_star] = ct_star;
 	tools[cvt_minify] = ct_magminus;
+	memcpy(spirotools,tools,sizeof(tools));
+	spirotools[cvt_spirog2] = ct_g2circle;
+	spirotools[cvt_spiroleft] = ct_spiroleft;
+	spirotools[cvt_spiroright] = ct_spiroright;
     }
 
     shouldshow = cvt_none;
@@ -792,9 +816,15 @@ void CVToolsSetCursor(CharView *cv, int state, char *device) {
 	shouldshow = cvt_minify;
     if ( shouldshow!=cv->showing_tool ) {
 	CPEndInfo(cv);
-	GDrawSetCursor(cv->v,tools[shouldshow]);
-	if ( cvtools!=NULL )	/* Might happen if window owning docked palette destroyed */
-	    GDrawSetCursor(cvtools,tools[shouldshow]);
+	if ( cv->sc->inspiro ) {
+	    GDrawSetCursor(cv->v,spirotools[shouldshow]);
+	    if ( cvtools!=NULL )	/* Might happen if window owning docked palette destroyed */
+		GDrawSetCursor(cvtools,spirotools[shouldshow]);
+	} else {
+	    GDrawSetCursor(cv->v,tools[shouldshow]);
+	    if ( cvtools!=NULL )	/* Might happen if window owning docked palette destroyed */
+		GDrawSetCursor(cvtools,tools[shouldshow]);
+	}
 	cv->showing_tool = shouldshow;
     }
 
@@ -828,6 +858,16 @@ return( cv->b2_tool );
 return( cv->cb1_tool );
     } else {
 return( cv->b1_tool );
+    }
+}
+
+static void CVChangeSpiroMode(CharView *cv) {
+    if ( hasspiro() ) {
+	cv->sc->inspiro = !cv->sc->inspiro;
+	cv->showing_tool = cvt_none;
+	CVClearSel(cv);
+	GDrawRequestExpose(cvtools,NULL,false);
+	SCUpdateAll(cv->sc);
     }
 }
 
@@ -875,6 +915,7 @@ return;			/* Not available in order2 spline mode */
 	if ( isstylus && event->u.mouse.button==2 )
 	    /* Not a real button press, only touch counts. This is a modifier */;
 	else if ( pos==cvt_spiro ) {
+	    CVChangeSpiroMode(cv);
 	    /* This is just a button that indicates a state */
 	} else {
 	    cv->pressed_tool = cv->pressed_display = pos;
@@ -885,10 +926,19 @@ return;			/* Not available in order2 spline mode */
 		(pos/2 == cvt_scale/2 || pos/2 == cvt_rotate/2 || pos == cvt_3d_rotate ))
 	    CVDoTransform(cv,pos);
     } else if ( event->type == et_mousemove ) {
-	if ( cv->pressed_tool==cvt_none && pos!=cvt_none )
+	if ( cv->pressed_tool==cvt_none && pos!=cvt_none ) {
 	    /* Not pressed */
-	    GGadgetPreparePopup8(cvtools,_(popupsres[pos]));
-	else if ( pos!=cv->pressed_tool || cv->had_control != (((event->u.mouse.state&ksm_control) || styluscntl)?1:0) )
+	    char *msg = _(popupsres[pos]);
+	    if ( cv->sc->inspiro ) {
+		if ( pos==cvt_spirog2 )
+		    msg = _("Add a g2 curve point");
+		else if ( pos==cvt_spiroleft )
+		    msg = _("Add a left \"tangent\" point");
+		else if ( pos==cvt_spiroright )
+		    msg = _("Add a right \"tangent\" point");
+	    }
+	    GGadgetPreparePopup8(cvtools,msg);
+	} else if ( pos!=cv->pressed_tool || cv->had_control != (((event->u.mouse.state&ksm_control) || styluscntl)?1:0) )
 	    cv->pressed_display = cvt_none;
 	else
 	    cv->pressed_display = cv->pressed_tool;
@@ -1983,9 +2033,13 @@ static void CVPopupInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
     int pos;
 
     pos = mi->mid;
+#if 0	/* No longer show rect/poly tool */
     if ( (pos==14 && rectelipse) || (pos==15 && polystar ))
 	pos += 2;
-    if ( cv->had_control ) {
+#endif
+    if ( pos==cvt_spiro ) {
+	CVChangeSpiroMode(cv);
+    } else if ( cv->had_control ) {
 	if ( cv->cb1_tool!=pos ) {
 	    cv->cb1_tool = pos;
 	    GDrawRequestExpose(cvtools,NULL,false);
@@ -2039,8 +2093,17 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
     static char *selectables[] = { N_("Get Info..."), N_("Open Reference"), N_("Add Anchor"), NULL };
 
     memset(mi,'\0',sizeof(mi));
-    for ( i=0;i<16; ++i ) {
-	mi[i].ti.text = (unichar_t *) _(popupsres[i]);
+    for ( i=0;i<=cvt_skew; ++i ) {
+	char *msg = _(popupsres[i]);
+	if ( cv->sc->inspiro ) {
+	    if ( i==cvt_spirog2 )
+		msg = _("Add a g2 curve point");
+	    else if ( i==cvt_spiroleft )
+		msg = _("Add a left \"tangent\" point");
+	    else if ( i==cvt_spiroright )
+		msg = _("Add a right \"tangent\" point");
+	}
+	mi[i].ti.text = (unichar_t *) msg;
 	mi[i].ti.text_is_1byte = true;
 	mi[i].ti.fg = COLOR_DEFAULT;
 	mi[i].ti.bg = COLOR_DEFAULT;

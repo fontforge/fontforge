@@ -41,6 +41,7 @@ typedef struct gidata {
     ImageList *img;
     AnchorPoint *ap;
     SplinePoint *cursp;
+    spiro_cp *curcp;
     SplinePointList *curspl;
     SplinePointList *oldstate;
     AnchorPoint *oldaps;
@@ -87,6 +88,8 @@ typedef struct gidata {
 #define CID_Corner	2051
 #define CID_Tangent	2052
 #define CID_HVCurve	2053
+#define CID_SpiroLeft	2054
+#define CID_SpiroRight	2055
 #define CID_TabSet	2100
 
 #define CID_X		3001
@@ -2136,6 +2139,7 @@ static int PI_InterpChanged(GGadget *g, GEvent *e) {
 		cursp->pointtype = pt_curve;
 		GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_Curve),true);
 	    }
+	    SplineSetSpirosClear(ci->curspl);
 	    PIFillup(ci,0);
 	}
 	PIShowHide(ci);
@@ -2185,6 +2189,7 @@ return( true );
 	    SplineRefigure(cursp->next);
 	if ( cursp->prev!=NULL )
 	    SplineRefigure(cursp->prev);
+	SplineSetSpirosClear(ci->curspl);
 	CVCharChangedUpdate(ci->cv);
 	PIFillup(ci,GGadgetGetCid(g));
     } else if ( e->type==et_controlevent &&
@@ -2240,6 +2245,7 @@ return( true );
 	cursp->nextcp.x += dx;
 	cursp->nextcp.y += dy;
 	cursp->nonextcp = false;
+	SplineSetSpirosClear(ci->curspl);
 	ci->nextchanged = true;
 	if (( dx>.1 || dx<-.1 || dy>.1 || dy<-.1 ) && cursp->nextcpdef ) {
 	    cursp->nextcpdef = false;
@@ -2317,6 +2323,7 @@ return( true );
 	cursp->prevcp.y += dy;
 	cursp->noprevcp = false;
 	ci->prevchanged = true;
+	SplineSetSpirosClear(ci->curspl);
 	if (( dx>.1 || dx<-.1 || dy>.1 || dy<-.1 ) && cursp->prevcpdef ) {
 	    cursp->prevcpdef = false;
 	    GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_PrevDef), false );
@@ -2364,6 +2371,7 @@ return( true );
 	cursp->nextcp.y = y;
 	cursp->me.x = (cursp->nextcp.x + cursp->prevcp.x)/2;
 	cursp->me.y = (cursp->nextcp.y + cursp->prevcp.y)/2;
+	SplineSetSpirosClear(ci->curspl);
 	if ( ci->sc->parent->order2 )
 	    SplinePointNextCPChanged2(cursp);
 	if ( cursp->next!=NULL )
@@ -2394,6 +2402,7 @@ return( true );
 	cursp->prevcp.y = y;
 	cursp->me.x = (cursp->nextcp.x + cursp->prevcp.x)/2;
 	cursp->me.y = (cursp->nextcp.y + cursp->prevcp.y)/2;
+	SplineSetSpirosClear(ci->curspl);
 	if ( ci->sc->parent->order2 )
 	    SplinePointPrevCPChanged2(cursp);
 	if ( cursp->prev!=NULL )
@@ -2420,8 +2429,10 @@ static int PI_NextDefChanged(GGadget *g, GEvent *e) {
 	if ( cursp->nextcpdef ) {
 	    BasePoint temp = cursp->prevcp;
 	    SplineCharDefaultNextCP(cursp);
-	    if ( !cursp->prevcpdef )
+	    if ( !cursp->prevcpdef ) {
 		cursp->prevcp = temp;
+		SplineSetSpirosClear(ci->curspl);
+	    }
 	    CVCharChangedUpdate(ci->cv);
 	    PIFillup(ci,GGadgetGetCid(g));
 	}
@@ -2440,8 +2451,10 @@ static int PI_PrevDefChanged(GGadget *g, GEvent *e) {
 	if ( cursp->prevcpdef ) {
 	    BasePoint temp = cursp->nextcp;
 	    SplineCharDefaultPrevCP(cursp);
-	    if ( !cursp->nextcpdef )
+	    if ( !cursp->nextcpdef ) {
 		cursp->nextcp = temp;
+		SplineSetSpirosClear(ci->curspl);
+	    }
 	    CVCharChangedUpdate(ci->cv);
 	    PIFillup(ci,GGadgetGetCid(g));
 	}
@@ -2462,6 +2475,7 @@ static int PI_PTypeChanged(GGadget *g, GEvent *e) {
 	    CVCharChangedUpdate(ci->cv);
 	} else {
 	    SPChangePointType(cursp,pt);
+	    SplineSetSpirosClear(ci->curspl);
 	    CVCharChangedUpdate(ci->cv);
 	    PIFillup(ci,GGadgetGetCid(g));
 	}
@@ -3261,14 +3275,423 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
     GDrawDestroyWindow(gi.gw);
 }
 
+/* ************************************************************************** */
+/* ****************************** Spiro Points ****************************** */
+/* ************************************************************************** */
+
+static void SpiroFillup(GIData *ci, int except_cid) {
+    char buffer[50];
+    int ty;
+
+    mysprintf(buffer, "%.2f", ci->curcp->x );
+    if ( except_cid!=CID_BaseX )
+	GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_BaseX),buffer);
+
+    mysprintf(buffer, "%.2f", ci->curcp->y );
+    if ( except_cid!=CID_BaseY )
+	GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_BaseY),buffer);
+
+    ty = ci->curcp->ty&0x7f;
+    if ( ty == SPIRO_OPEN_CONTOUR )
+	ty = SPIRO_G4;
+    GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_Curve), ty==SPIRO_G4 );
+    GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_Tangent), ty==SPIRO_G2 );
+    GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_Corner), ty==SPIRO_CORNER );
+    GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_SpiroLeft), ty==SPIRO_LEFT );
+    GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_SpiroRight), ty==SPIRO_RIGHT );
+}
+
+static void SpiroChangePoint(GIData *ci) {
+
+    SpiroFillup(ci,0);
+}
+
+static int PI_SpiroNextPrev(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	CharView *cv = ci->cv;
+	int cid = GGadgetGetCid(g);
+	SplinePointList *spl;
+	int index = ci->curcp - ci->curspl->spiros;
+	BasePoint here;
+	
+	SPIRO_DESELECT(ci->curcp);
+	if ( cid == CID_Next ) {
+	    if ( index < ci->curspl->spiro_cnt-2 )
+		ci->curcp = &ci->curspl->spiros[index+1];
+	    else {
+		if ( ci->curspl->next == NULL ) {
+		    ci->curspl = cv->layerheads[cv->drawmode]->splines;
+		    GDrawBeep(NULL);
+		} else
+		    ci->curspl = ci->curspl->next;
+		ci->curcp = &ci->curspl->spiros[0];
+	    }
+	} else if ( cid == CID_Prev ) {
+	    if ( index!=0 ) {
+		ci->curcp = &ci->curspl->spiros[index-1];
+	    } else {
+		if ( ci->curspl==cv->layerheads[cv->drawmode]->splines ) {
+		    for ( spl = cv->layerheads[cv->drawmode]->splines; spl->next!=NULL; spl=spl->next );
+		    GDrawBeep(NULL);
+		} else {
+		    for ( spl = cv->layerheads[cv->drawmode]->splines; spl->next!=ci->curspl; spl=spl->next );
+		}
+		ci->curspl = spl;
+		ci->curcp = &ci->curspl->spiros[ci->curspl->spiro_cnt-2];
+	    }
+	} else if ( cid==CID_NextC ) {
+	    if ( index < ci->curspl->spiro_cnt-2 )
+		ci->curcp = &ci->curspl->spiros[index+1];
+	    else {
+		ci->curcp = &ci->curspl->spiros[0];
+		GDrawBeep(NULL);
+	    }
+	} else /* CID_PrevC */ {
+	    if ( index!=0 )
+		ci->curcp = &ci->curspl->spiros[index-1];
+	    else {
+		ci->curcp = &ci->curspl->spiros[ci->curspl->spiro_cnt-2];
+		GDrawBeep(NULL);
+	    }
+	}
+	SPIRO_SELECT(ci->curcp);
+	SpiroChangePoint(ci);
+	here.x = ci->curcp->x; here.y = ci->curcp->y;
+	CVShowPoint(cv,&here);
+	SCUpdateAll(cv->sc);
+    }
+return( true );
+}
+
+static int PI_SpiroChanged(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent &&
+	    (e->u.control.subtype == et_textchanged ||
+	     e->u.control.subtype == et_radiochanged)) {
+	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	double x,y;
+	int ty;
+	int err=false;
+	spiro_cp *curcp = ci->curcp;
+
+	x = GetCalmReal8(ci->gw,CID_BaseX,_("X"),&err);
+	y = GetCalmReal8(ci->gw,CID_BaseY,_("Y"),&err);
+	ty = GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_Curve))? SPIRO_G4 :
+	     GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_Tangent))? SPIRO_G2 :
+	     GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_Corner))? SPIRO_CORNER :
+	     GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_SpiroLeft))? SPIRO_LEFT :
+		     SPIRO_RIGHT;
+	curcp->x = x;
+	curcp->y = y;
+	curcp->ty = ty;
+	SSRegenerateFromSpiros(ci->curspl);
+	CVCharChangedUpdate(ci->cv);
+    }
+return( true );
+}
+
+static int PI_SpiroOk(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+
+	ci->done = true;
+	/* All the work has been done as we've gone along */
+    }
+return( true );
+}
+
+static void SpiroPointGetInfo(CharView *cv, spiro_cp *scp, SplinePointList *spl) {
+    static GIData gi;
+    GRect pos;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[20];
+    GGadgetCreateData pb[9];
+    GGadgetCreateData *varray[20], *harray2[10], *harray3[15], *harray4[6],
+	    *harray5[6], *harray6[9];
+    GTextInfo label[20];
+    GWindow root;
+    GRect screensize;
+    GPoint pt;
+    int j,k;
+
+    gi.cv = cv;
+    gi.sc = cv->sc;
+    gi.curcp = scp;
+    gi.curspl = spl;
+    gi.oldstate = SplinePointListCopy(cv->layerheads[cv->drawmode]->splines);
+    gi.done = false;
+    CVPreserveState(cv);
+
+    root = GDrawGetRoot(NULL);
+    GDrawGetSize(root,&screensize);
+
+	memset(&wattrs,0,sizeof(wattrs));
+	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_positioned|wam_isdlg|wam_restrict;
+	wattrs.event_masks = ~(1<<et_charup);
+	wattrs.restrict_input_to_me = 1;
+	wattrs.positioned = 1;
+	wattrs.cursor = ct_pointer;
+	wattrs.utf8_window_title = _("Spiro Point Info");
+	wattrs.is_dlg = true;
+	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,PI_Width));
+	pos.height = GDrawPointsToPixels(NULL,PI_Height);
+	pt.x = cv->xoff + rint(scp->x*cv->scale);
+	pt.y = -cv->yoff + cv->height - rint(scp->y*cv->scale);
+	GDrawTranslateCoordinates(cv->v,root,&pt);
+	if ( pt.x+20+pos.width<=screensize.width )
+	    pos.x = pt.x+20;
+	else if ( (pos.x = pt.x-10-screensize.width)<0 )
+	    pos.x = 0;
+	pos.y = pt.y;
+	if ( pos.y+pos.height+20 > screensize.height )
+	    pos.y = screensize.height - pos.height - 20;
+	if ( pos.y<0 ) pos.y = 0;
+	gi.gw = GDrawCreateTopWindow(NULL,&pos,pi_e_h,&gi,&wattrs);
+
+	memset(&gcd,0,sizeof(gcd));
+	memset(&label,0,sizeof(label));
+	memset(&pb,0,sizeof(pb));
+
+	j=k=0;
+	gi.gcd = gcd;
+
+	label[j].text = (unichar_t *) _("_X:");
+	label[j].text_is_1byte = true;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].creator = GLabelCreate;
+	harray2[0] = &gcd[j]; harray2[1] = GCD_Glue;
+	++j;
+
+	gcd[j].gd.pos.x = 60; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y-6; gcd[j].gd.pos.width = 70;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_BaseX;
+	gcd[j].gd.handle_controlevent = PI_SpiroChanged;
+	gcd[j].creator = GNumericFieldCreate;
+	harray2[2] = &gcd[j]; harray2[3] = GCD_Glue; harray2[4] = GCD_Glue;
+	++j;
+
+	label[j].text = (unichar_t *) _("_Y:");
+	label[j].text_is_1byte = true;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].creator = GLabelCreate;
+	harray2[5] = &gcd[j]; harray2[6] = GCD_Glue;
+	++j;
+
+	gcd[j].gd.pos.x = 137; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y; gcd[j].gd.pos.width = 70;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_BaseY;
+	gcd[j].gd.handle_controlevent = PI_SpiroChanged;
+	gcd[j].creator = GNumericFieldCreate;
+	harray2[7] = &gcd[j]; harray2[8] = NULL;
+	++j;
+
+	pb[2].gd.flags = gg_enabled|gg_visible;
+	pb[2].gd.u.boxelements = harray2;
+	pb[2].creator = GHBoxCreate;
+	varray[k++] = &pb[2]; varray[k++] = NULL;
+
+	label[j].text = (unichar_t *) _("Type:");
+	label[j].text_is_1byte = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = gcd[0].gd.pos.x;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].creator = GLabelCreate;
+	harray3[0] = &gcd[j]; harray3[1] = GCD_Glue; harray3[2] = GCD_Glue;
+	++j;
+
+	label[j].image = &GIcon_smallspirocurve;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = 60; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y-2;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_Curve;
+	gcd[j].gd.handle_controlevent = PI_SpiroChanged;
+	gcd[j].creator = GRadioCreate;
+	harray3[3] = &gcd[j]; harray3[4] = GCD_Glue;
+	++j;
+
+	label[j].image = &GIcon_smallspirog2curve;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = 60; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y-2;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].gd.cid = CID_Tangent;
+	gcd[j].gd.handle_controlevent = PI_SpiroChanged;
+	gcd[j].creator = GRadioCreate;
+	harray3[5] = &gcd[j]; harray3[6] = GCD_Glue;
+	++j;
+
+	label[j].image = &GIcon_smallspirocorner;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = 100; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y;
+	gcd[j].gd.flags = gg_enabled|gg_visible | gg_rad_continueold;
+	gcd[j].gd.cid = CID_Corner;
+	gcd[j].gd.handle_controlevent = PI_SpiroChanged;
+	gcd[j].creator = GRadioCreate;
+	harray3[7] = &gcd[j]; harray3[8] = GCD_Glue;
+	++j;
+
+	label[j].image = &GIcon_smallspiroleft;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = 140; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y;
+	gcd[j].gd.flags = gg_enabled|gg_visible | gg_rad_continueold;
+	gcd[j].gd.cid = CID_SpiroLeft;
+	gcd[j].gd.handle_controlevent = PI_SpiroChanged;
+	gcd[j].creator = GRadioCreate;
+	harray3[9] = &gcd[j]; harray3[10] = GCD_Glue;
+	++j;
+
+	label[j].image = &GIcon_smallspiroright;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.pos.x = 140; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y;
+	gcd[j].gd.flags = gg_enabled|gg_visible | gg_rad_continueold;
+	gcd[j].gd.cid = CID_SpiroRight;
+	gcd[j].gd.handle_controlevent = PI_SpiroChanged;
+	gcd[j].creator = GRadioCreate;
+	harray3[11] = &gcd[j]; harray3[12] = GCD_Glue; harray3[13] = GCD_Glue;
+	harray3[14] = NULL;
+	++j;
+
+	pb[3].gd.flags = gg_enabled|gg_visible;
+	pb[3].gd.u.boxelements = harray3;
+	pb[3].creator = GHBoxCreate;
+	varray[k++] = &pb[3];
+	varray[k++] = NULL;
+	varray[k++] = GCD_Glue;
+	varray[k++] = NULL;
+
+	gcd[j].gd.flags = gg_visible | gg_enabled;
+	label[j].text = (unichar_t *) _("< _Prev");
+	label[j].text_is_1byte = true;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.cid = CID_Prev;
+	gcd[j].gd.handle_controlevent = PI_SpiroNextPrev;
+	gcd[j].creator = GButtonCreate;
+	harray4[0] = GCD_Glue; harray4[1] = &gcd[j];
+	++j;
+
+	gcd[j].gd.flags = gg_visible | gg_enabled;
+	label[j].text = (unichar_t *) _("_Next >");
+	label[j].text_is_1byte = true;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.cid = CID_Next;
+	gcd[j].gd.handle_controlevent = PI_SpiroNextPrev;
+	gcd[j].creator = GButtonCreate;
+	harray4[2] = &gcd[j]; harray4[3] = GCD_Glue; harray4[4] = NULL;
+	++j;
+
+	pb[4].gd.flags = gg_enabled|gg_visible;
+	pb[4].gd.u.boxelements = harray4;
+	pb[4].creator = GHBoxCreate;
+	varray[k++] = &pb[4];
+	varray[k++] = NULL;
+
+	gcd[j].gd.flags = gg_visible | gg_enabled;
+	label[j].text = (unichar_t *) _("Prev On Contour");
+	label[j].text_is_1byte = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.cid = CID_PrevC;
+	gcd[j].gd.handle_controlevent = PI_SpiroNextPrev;
+	gcd[j].creator = GButtonCreate;
+	harray5[0] = GCD_Glue; harray5[1] = &gcd[j];
+	++j;
+
+	gcd[j].gd.flags = gg_visible | gg_enabled;
+	label[j].text = (unichar_t *) _("Next On Contour");
+	label[j].text_is_1byte = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.cid = CID_NextC;
+	gcd[j].gd.handle_controlevent = PI_SpiroNextPrev;
+	gcd[j].creator = GButtonCreate;
+	harray5[2] = &gcd[j]; harray5[3] = GCD_Glue; harray5[4] = NULL;
+	++j;
+
+	pb[5].gd.flags = gg_enabled|gg_visible;
+	pb[5].gd.u.boxelements = harray5;
+	pb[5].creator = GHBoxCreate;
+	varray[k++] = &pb[5];
+	varray[k++] = NULL;
+
+	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+28;
+	gcd[j].gd.pos.width = PI_Width-10;
+	gcd[j].gd.flags = gg_enabled|gg_visible;
+	gcd[j].creator = GLineCreate;
+	++j;
+	varray[k++] = &gcd[j-1];
+	varray[k++] = NULL;
+	varray[k++] = GCD_Glue;
+	varray[k++] = NULL;
+
+	gcd[j].gd.pos.x = 20-3; gcd[j].gd.pos.y = PI_Height-33-3;
+	gcd[j].gd.flags = gg_visible | gg_enabled | gg_but_default;
+	label[j].text = (unichar_t *) _("_OK");
+	label[j].text_is_1byte = true;
+	label[j].text_in_resource = true;
+	gcd[j].gd.mnemonic = 'O';
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.handle_controlevent = PI_SpiroOk;
+	gcd[j].creator = GButtonCreate;
+	harray6[0] = GCD_Glue; harray6[1] = &gcd[j]; harray6[2] = GCD_Glue; harray6[3] = GCD_Glue;
+	++j;
+
+	gcd[j].gd.pos.x = -20; gcd[j].gd.pos.y = PI_Height-33;
+	gcd[j].gd.pos.width = -1; gcd[j].gd.pos.height = 0;
+	gcd[j].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+	label[j].text = (unichar_t *) _("_Cancel");
+	label[j].text_is_1byte = true;
+	label[j].text_in_resource = true;
+	gcd[j].gd.label = &label[j];
+	gcd[j].gd.mnemonic = 'C';
+	gcd[j].gd.handle_controlevent = PI_Cancel;
+	gcd[j].creator = GButtonCreate;
+	harray6[4] = GCD_Glue; harray6[5] = &gcd[j]; harray6[6] = GCD_Glue; harray6[7] = NULL;
+	++j;
+
+	pb[6].gd.flags = gg_enabled|gg_visible;
+	pb[6].gd.u.boxelements = harray6;
+	pb[6].creator = GHBoxCreate;
+	varray[k++] = &pb[6];
+	varray[k++] = NULL;
+	varray[k++] = NULL;
+
+	pb[0].gd.pos.x = pb[0].gd.pos.y = 2;
+	pb[0].gd.flags = gg_enabled|gg_visible;
+	pb[0].gd.u.boxelements = varray;
+	pb[0].creator = GHVGroupCreate;
+
+	GGadgetsCreate(gi.gw,pb);
+
+	GHVBoxSetExpandableRow(pb[0].ret,gb_expandglue);
+	GHVBoxSetExpandableCol(pb[2].ret,gb_expandglue);
+	GHVBoxSetExpandableCol(pb[3].ret,gb_expandglue);
+	GHVBoxSetExpandableCol(pb[4].ret,gb_expandglue);
+	GHVBoxSetExpandableCol(pb[5].ret,gb_expandglue);
+	GHVBoxSetExpandableCol(pb[6].ret,gb_expandgluesame);
+
+	SpiroChangePoint(&gi);
+
+	GHVBoxFitWindow(pb[0].ret);
+
+    GWidgetHidePalettes();
+    GDrawSetVisible(gi.gw,true);
+    while ( !gi.done )
+	GDrawProcessOneEvent(NULL);
+    GDrawDestroyWindow(gi.gw);
+}
+
 void CVGetInfo(CharView *cv) {
     SplinePoint *sp;
     SplinePointList *spl;
     RefChar *ref;
     ImageList *img;
     AnchorPoint *ap;
+    spiro_cp *scp;
 
-    if ( !CVOneThingSel(cv,&sp,&spl,&ref,&img,&ap)) {
+    if ( !CVOneThingSel(cv,&sp,&spl,&ref,&img,&ap,&scp)) {
 #if 0
 	if ( cv->fv->cidmaster==NULL )
 	    SCCharInfo(cv->sc,cv->fv->map,CVCurEnc(cv));
@@ -3279,6 +3702,8 @@ void CVGetInfo(CharView *cv) {
 	ImgGetInfo(cv,img);
     else if ( ap!=NULL )
 	ApGetInfo(cv,ap);
+    else if ( scp!=NULL )
+	SpiroPointGetInfo(cv,scp,spl);
     else
 	PointGetInfo(cv,sp,spl);
 }

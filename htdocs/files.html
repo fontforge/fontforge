@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 24-Nov-2002 -->
-  <!-- AP: Last modified: 10-Nov-2005 -->
+  <!-- AP: Last modified: 18-Oct-2007 -->
   <TITLE>Files used by FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -14,26 +14,26 @@
   </H1>
   <DL>
     <DT>
-      ~/.PfaEdit
+      ~/.FontForge
     <DD>
       FontForge creates this directory the first time it starts up. It contains
       various files FontForge uses to hold context across invocations. 
 	<HR>
       <DL>
 	<DT>
-	  ~/.PfaEdit/prefs
+	  ~/.FontForge/prefs
 	<DD>
 	  This file contains user preference settings.
 	<DT>
-	  ~/.PfaEdit/groups
+	  ~/.FontForge/groups
 	<DD>
 	  This file contains groups as defined by Encoding-&gt;Define Groups...
 	<DT>
-	  ~/.PfaEdit/Encodings.ps
+	  ~/.FontForge/Encodings.ps
 	<DD>
 	  If there are any user defined encodings they reside in this file.
 	<DT>
-	  ~/.PfaEdit/autosave
+	  ~/.FontForge/autosave
 	<DD>
 	  This directory contains the files used to drive the crash-recovery process.
 	  When FontForge is running there will be one file in this directory corresponding
@@ -43,15 +43,25 @@
 	  When FontForge exits normally, this directory will be cleaned up and there
 	  should be no files in it.
 	<DT>
-	  ~/.PfaEdit/plugins
+	  ~/.FontForge/plugins
 	<DD>
 	  This directory contains any <A HREF="plugins.html">plugins</A> you want available
 	  for your private use.
+	<DT>
+	  ~/.FontForge/python
+	<DD>
+	  This directory contains any python init scripts you want to run when FontForge
+	  starts
       </DL>
     <DT>
+      ~/.PfaEdit
+    <DD>
+      Before Oct 2007 the .PfaEdit subdirectory was used instead of .FontForge.
+      After Oct 2007 if FontForge finds a .PfaEdit directory (and no .FontForge
+      directory) it will rename .PfaEdit to be .FontForge.
+    <DT>
       /usr/local/share -- Assuming you installed FontForge on /usr/local, otherwise
-      substitute $PREFIX/share for "/usr/local/share" in the following. <BR>
-      &nbsp;
+      substitute $PREFIX/share for "/usr/local/share" in the following.
     <DT>
       /usr/local/share/fontforge/*.ui
     <DD>
@@ -72,6 +82,11 @@
     <DD>
       This directory contains any plugins you want available to everyone on your
       system.
+    <DT>
+      /usr/local/share/fontforge/python
+    <DD>
+      This directory contains any python init scripts you want available to everyone
+      on your system.
     <DT>
       /usr/local/share/doc/fontforge/*.html
     <DD>

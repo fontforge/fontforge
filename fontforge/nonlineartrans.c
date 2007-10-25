@@ -126,11 +126,7 @@ return( op_value );
 	    if ( strcmp(buffer,builtins[i].name)==0 )
 return( builtins[i].op );
 	}
-#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad Token"), _("Bad token \"%.30s\"\nnear ...%40s"), buffer, c->cur );
-#else
-	gwwv_post_error(_("Bad Token"), _("Bad token \"%.30s\"\nnear ...%40s"), buffer, c->cur );
-#endif
 	c->had_error = true;
 	while (( ch = *(c->cur++))==' ' );
 	if ( ch=='(' )
@@ -176,11 +172,7 @@ return( op_lt );
 	    ++c->cur;
 return( op_eq );
 	}
-#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\" got \"%.10s\"\nnear ...%40s"), "==", "=" , c->cur );
-#else
-	gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\" got \"%.10s\"\nnear ...%40s"), "==", "=" , c->cur );
-#endif
 	c->had_error = true;
 return( op_eq );
       case '|':
@@ -188,11 +180,7 @@ return( op_eq );
 	    ++c->cur;
 return( op_or );
 	}
-#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\" got \"%.10s\"\nnear ...%40s"), "||", "|" , c->cur );
-#else
-	gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\" got \"%.10s\"\nnear ...%40s"), "||", "|" , c->cur );
-#endif
 	c->had_error = true;
 return( op_or );
       case '&':
@@ -200,11 +188,7 @@ return( op_or );
 	    ++c->cur;
 return( op_and );
 	}
-#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\" got \"%.10s\"\nnear ...%40s"), "&&", "&" , c->cur );
-#else
-	gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\" got \"%.10s\"\nnear ...%40s"), "&&", "&" , c->cur );
-#endif
 	c->had_error = true;
 return( op_and );
       case '?':
@@ -212,11 +196,7 @@ return( op_if );
       case '(': case ')': case ':': case ',':
 return( ch );
       default:
-#if defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_error(_("Bad Token"), _("Bad token. got \"%c\"\nnear ...%40s"), ch , c->cur );
-#else
 	gwwv_post_error(_("Bad Token"), _("Bad token. got \"%1$c\"\nnear ...%2$40s"), ch , c->cur );
-#endif
 	c->had_error = true;
 	*val = 0;
 return( op_value );
@@ -250,11 +230,7 @@ return( ret );
 	ret = getexpr(c);
 	op = gettoken(c,&val);
 	if ( op!=')' ) {
-#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), ")" , c->cur );
-#else
-	    gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), ")" , c->cur );
-#endif
 	    c->had_error = true;
 	}
 return(ret );
@@ -267,32 +243,20 @@ return(ret );
 	ret->operator = op;
 	op = gettoken(c,&val);
 	if ( op!='(' ) {
-#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), "(" , c->cur );
-#else
-	    gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), "(" , c->cur );
-#endif
 	    c->had_error = true;
 	}
 	ret->op1 = getexpr(c);
 	op = gettoken(c,&val);
 	if ( ret->operator==op_atan2 ) {
 	    if ( op!=',' ) {
-#if defined(FONTFORGE_CONFIG_GTK)
 		gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), "," , c->cur );
-#else
-		gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), "," , c->cur );
-#endif
 	    }
 	    ret->op2 = getexpr(c);
 	    op = gettoken(c,&val);
 	}
 	if ( op!=')' ) {
-#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), ")" , c->cur );
-#else
-	    gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), ")" , c->cur );
-#endif
 	    c->had_error = true;
 	}
 return( ret );
@@ -305,11 +269,7 @@ return( gete0(c));
 	ret->op1 = gete0(c);
 return( ret );
       default:
-#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad Token"), _("Unexpected token.\nbefore ...%40s") , c->cur );
-#else
-	gwwv_post_error(_("Bad Token"), _("Unexpected token.\nbefore ...%40s") , c->cur );
-#endif
 	c->had_error = true;
 	ret = gcalloc(1,sizeof(struct expr));
 	ret->operator = op_value;
@@ -427,11 +387,7 @@ static struct expr *getexpr(struct context *c) {
 	ret->op2 = getexpr(c);
 	op = gettoken(c,&val);
 	if ( op!=':' ) {
-#if defined(FONTFORGE_CONFIG_GTK)
 	    gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), ":" , c->cur );
-#else
-	    gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), ":" , c->cur );
-#endif
 	    c->had_error = true;
 	}
 	ret->op3 = getexpr(c);
@@ -450,11 +406,7 @@ static struct expr *parseexpr(struct context *c,char *str) {
     ret = getexpr(c);
     if ( *c->cur!='\0' ) {
 	c->had_error = true;
-#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("Bad Token"), _("Unexpected token after expression end.\nbefore ...%40s") , c->cur );
-#else
-	gwwv_post_error(_("Bad Token"), _("Unexpected token after expression end.\nbefore ...%40s") , c->cur );
-#endif
     }
     if ( c->had_error ) {
 	exprfree(ret);
@@ -492,11 +444,7 @@ return( 0 );
 return( log(val1));
 	  case op_sqrt:
 	    if ( val1<0 ) {
-#if defined(FONTFORGE_CONFIG_GTK)
-		gwwv_post_error(_("Bad Value"),_("Attempt to take the square root of %g in %.30s"), val1, c->sc->name );
-#else
 		gwwv_post_error(_("Bad Value"),_("Attempt to take the square root of %1$g in %2$.30s"), val1, c->sc->name );
-#endif
 		c->had_error = true;
 return( 0 );
 	    }
@@ -682,7 +630,8 @@ static void SplineSetNLTrans(SplineSet *ss,struct context *c,
 	break;
 	}
     }
-    SplinePointsFree(ss);
+    SplineSetBeziersClear(ss);
+    SplineSetSpirosClear(ss);
     ss->first = first;
     ss->last = last;
 }

@@ -878,6 +878,17 @@ typedef struct spline {
     */
 } Spline;
 
+#define SPIRO_OPEN_CONTOUR	'{'
+#define SPIRO_CORNER		'v'
+#define SPIRO_G4		'o'
+#define SPIRO_G2		'c'
+#define SPIRO_LEFT		'['
+#define SPIRO_RIGHT		']'
+#define SPIRO_END		'z'
+#define SPIRO_SELECTED(cp)	((cp)->ty&0x80)
+#define SPIRO_DESELECT(cp)	((cp)->ty&=~0x80)
+#define SPIRO_SELECT(cp)	((cp)->ty|=0x80)
+#define SPIRO_SPL_OPEN(spl)	((spl)->spiro_cnt>1 && ((spl)->spiros[0].ty&0x7f)==SPIRO_OPEN_CONTOUR)
 typedef struct {			/* Taken from spiro.h because I want */
     double x;				/*  to be able to compile for spiro */
     double y;				/*  even on a system without it */
@@ -887,6 +898,9 @@ typedef struct {			/* Taken from spiro.h because I want */
 typedef struct splinepointlist {
     SplinePoint *first, *last;
     struct splinepointlist *next;
+    spiro_cp *spiros;
+    uint16 spiro_cnt, spiro_max;
+    uint8 ticked;
 } SplinePointList, SplineSet;
 
 typedef struct imagelist {
@@ -1173,7 +1187,8 @@ typedef struct splinechar {
     unsigned int complained_about_ptnums: 1;
     unsigned int vs_open: 1;
     unsigned int unlink_rm_ovrlp_save_undo: 1;
-    /* 8 bits left (one more if we ignore compositionunit below) */
+    unsigned int inspiro: 1;
+    /* 7 bits left (one more if we ignore compositionunit below) */
 #if HANYANG
     unsigned int compositionunit: 1;
     int16 jamo, varient;
@@ -1829,6 +1844,8 @@ extern void SplinePointListFree(SplinePointList *spl);
 extern void SplinePointListMDFree(SplineChar *sc,SplinePointList *spl);
 extern void SplinePointListsMDFree(SplineChar *sc,SplinePointList *spl);
 extern void SplinePointListsFree(SplinePointList *head);
+extern void SplineSetSpirosClear(SplineSet *spl);
+extern void SplineSetBeziersClear(SplineSet *spl);
 extern void RefCharFree(RefChar *ref);
 extern void RefCharsFree(RefChar *ref);
 extern void RefCharsFreeRef(RefChar *ref);
@@ -1959,10 +1976,12 @@ extern void SCCatagorizePoints(SplineChar *sc);
 extern SplinePointList *SplinePointListCopy1(const SplinePointList *spl);
 extern SplinePointList *SplinePointListCopy(const SplinePointList *base);
 extern SplinePointList *SplinePointListCopySelected(SplinePointList *base);
+extern SplinePointList *SplinePointListCopySpiroSelected(SplinePointList *base);
 extern ImageList *ImageListCopy(ImageList *cimg);
 extern ImageList *ImageListTransform(ImageList *cimg,real transform[6]);
 extern void ApTransform(AnchorPoint *ap, real transform[6]);
 extern SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[6], int allpoints );
+extern SplinePointList *SplinePointListSpiroTransform(SplinePointList *base, real transform[6], int allpoints );
 extern SplinePointList *SplinePointListShift(SplinePointList *base, real xoff, int allpoints );
 extern HintMask *HintMaskFromTransformedRef(RefChar *ref,BasePoint *trans,
 	SplineChar *basesc,HintMask *hm);
@@ -2069,6 +2088,7 @@ extern int SplineAtMinMax(Spline1D *sp, double t );
 extern void SplineRemoveExtremaTooClose(Spline1D *sp, extended *_t1, extended *_t2 );
 extern int NearSpline(struct findsel *fs, Spline *spline);
 extern real SplineNearPoint(Spline *spline, BasePoint *bp, real fudge);
+extern int SplineT2SpiroIndex(Spline *spline,double t,SplineSet *spl);
 extern void SCMakeDependent(SplineChar *dependent,SplineChar *base);
 extern SplinePoint *SplineBisect(Spline *spline, extended t);
 extern Spline *SplineSplit(Spline *spline, extended ts[3]);
@@ -2397,7 +2417,7 @@ extern char *PSDictHasEntry(struct psdict *dict, char *key);
 extern int PSDictRemoveEntry(struct psdict *dict, char *key);
 extern int PSDictChangeEntry(struct psdict *dict, char *key, char *newval);
 
-extern void SplineSetsRound2Int(SplineSet *spl,real factor);
+extern void SplineSetsRound2Int(SplineSet *spl,real factor,int inspiro);
 extern void SCRound2Int(SplineChar *sc,real factor);
 extern int SCRoundToCluster(SplineChar *sc,int layer,int sel,double within,double max);
 extern int SplineSetsRemoveAnnoyingExtrema(SplineSet *ss,double err);
@@ -2699,4 +2719,7 @@ extern int VSMaskFromFormat(SplineFont *sf, enum fontformat format);
 
 extern int hasspiro(void);
 extern SplineSet *SpiroCP2SplineSet(spiro_cp *spiros);
+extern spiro_cp *SplineSet2SpiroCP(SplineSet *ss,uint16 *_cnt);
+extern spiro_cp *SpiroCPCopy(spiro_cp *spiros,uint16 *_cnt);
+extern void SSRegenerateFromSpiros(SplineSet *spl);
 #endif

@@ -1547,7 +1547,10 @@ void CopySelected(CharView *cv) {
     copybuffer.was_order2 = cv->sc->parent->order2;
     copybuffer.u.state.width = cv->sc->width;
     copybuffer.u.state.vwidth = cv->sc->vwidth;
-    copybuffer.u.state.splines = SplinePointListCopySelected(cv->layerheads[cv->drawmode]->splines);
+    if ( cv->sc->inspiro )
+	copybuffer.u.state.splines = SplinePointListCopySpiroSelected(cv->layerheads[cv->drawmode]->splines);
+    else
+	copybuffer.u.state.splines = SplinePointListCopySelected(cv->layerheads[cv->drawmode]->splines);
     if ( cv->drawmode==dm_fore ) {
 	RefChar *refs, *new;
 	for ( refs = cv->layerheads[cv->drawmode]->refs; refs!=NULL; refs = refs->next ) if ( refs->selected ) {

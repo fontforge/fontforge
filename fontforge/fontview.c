@@ -10374,6 +10374,10 @@ return;
     if ( sc==NULL )
 	sc = SCBuildDummy(&dummy,fv->sf,fv->map,pos);
     if ( event->type == et_mouseup && event->u.mouse.clicks==2 ) {
+	if ( fv->pressed ) {
+	    GDrawCancelTimer(fv->pressed);
+	    fv->pressed = NULL;
+	}
 	if ( fv->cur_subtable!=NULL ) {
 	    sc = FVMakeChar(fv,pos);
 	    pos = fv->map->backmap[sc->orig_pos];
@@ -11117,7 +11121,7 @@ SplineFont *ReadSplineFont(char *filename,enum openflags openflags) {
     char ubuf[250], *temp;
     int fromsfd = false;
     int i;
-    char *pt, *strippedname, *oldstrippedname, *tmpfile=NULL, *paren=NULL, *fullname=filename;
+    char *pt, *strippedname, *oldstrippedname, *tmpfile=NULL, *paren=NULL, *fullname=filename, *rparen;
     int len;
     FILE *foo;
     int checked;
@@ -11129,7 +11133,12 @@ return( NULL );
     strippedname = filename;
     pt = strrchr(filename,'/');
     if ( pt==NULL ) pt = filename;
-    if ( (paren=strchr(pt,'('))!=NULL && strchr(paren,')')!=NULL ) {
+    /* Someone gave me a font "Nafees Nastaleeq(Updated).ttf" and complained */
+    /*  that ff wouldn't open it */
+    /* Now someone will complain about "Nafees(Updated).ttc(fo(ob)ar)" */
+    if ( (paren = strrchr(pt,'('))!=NULL &&
+	    (rparen = strrchr(paren,')'))!=NULL &&
+	    rparen[1]=='\0' ) {
 	strippedname = copy(filename);
 	strippedname[paren-filename] = '\0';
     }

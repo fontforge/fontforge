@@ -381,6 +381,7 @@ void SCImportPlateFile(SplineChar *sc,int layer,FILE *plate,int doclear,int flag
     spiro_cp *spiros=NULL;
     int cnt=0, max=0, ch;
     char buffer[80];
+    real transform[6];
 
     if ( plate==NULL )
 return;
@@ -410,6 +411,8 @@ return;
 	spiros[cnt].ty = ch;
 	if ( ch=='z' ) {
 	    cur = SpiroCP2SplineSet(spiros);
+	    cur->spiros = SpiroCPCopy(spiros,&cur->spiro_cnt);
+	    cur->spiro_max = cur->spiro_cnt;
 	    if ( cur==NULL )
 		/* Do Nothing */;
 	    else if ( last!=NULL ) {
@@ -428,11 +431,15 @@ return;
 	}
     }
     if ( cnt!=0 ) {
+	/* This happens when we've got an open contour */
 	if ( cnt>=max )
 	    spiros = grealloc(spiros,(max+=30)*sizeof(spiro_cp));
 	spiros[cnt].x = spiros[cnt].y = 0;
-	spiros[cnt].ty = ch;
+	spiros[cnt].ty = 'z';
+	spiros[0].ty = '{';		/* Open contour mark */
 	cur = SpiroCP2SplineSet(spiros);
+	cur->spiros = SpiroCPCopy(spiros,&cur->spiro_cnt);
+	cur->spiro_max = cur->spiro_cnt;
 	if ( cur==NULL )
 	    /* Do Nothing */;
 	else if ( last!=NULL ) {
@@ -442,6 +449,15 @@ return;
 	    head = last = cur;
     }
     free(spiros);
+
+    /* Raph's plate files seem to have the base line at 800, and glyphs grow */
+    /*  downwards */ /* At least for Inconsola */
+    memset(transform,0,sizeof(transform));
+    transform[0] = 1; transform[3] = -1;
+    transform[5] = 800;
+    head = SplinePointListTransform(head,transform,true);
+    /* After doing the above flip, the contours appear oriented acording to my*/
+    /*  conventions */
 
     if ( sc->parent->order2 ) {
 	head = SplineSetsConvertOrder(head,true);

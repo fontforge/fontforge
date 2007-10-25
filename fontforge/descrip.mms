@@ -37,7 +37,7 @@ fontforge_OBJECTS7=macenc.obj,statemachine.obj,splinerefigure.obj,mm.obj,\
 
 fontforge_OBJECTS8=bdfinfo.obj,glyphcomp.obj,unicoderange.obj,ufo.obj,\
 	ofl.obj,lookups.obj,sfd1.obj,python.obj,featurefile.obj,\
-	math.obj,nowakowskittfinstr.obj,http.obj,spiro.obj
+	math.obj,nowakowskittfinstr.obj,http.obj,spiro.obj,bezctx_ff.obj
 
 fontforge.exe : main.obj lff.opt xlib.opt [-.libs]libfontforge.exe
         link/exec=fontforge.exe main,lff/opt,[-.libs]LIBGDRAW/lib,\
@@ -199,3 +199,4 @@ math.obj : math.c
 nowakowskittfinstr.obj : nowakowskittfinstr.c
 http.obj : http.c
 spiro.obj : spiro.c
+bezctx_ff.obj: bezctx_ff.c

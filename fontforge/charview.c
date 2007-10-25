@@ -454,6 +454,52 @@ static GPointList *MakePoly(CharView *cv, SplinePointList *spl) {
 return( head );
 }
 
+static void DrawTangentPoint(GWindow pixmap, int x, int y,
+	BasePoint *unit, int outline, Color col) {
+    int dir;
+    GPoint gp[5];
+
+    dir = 0;
+    if ( unit->x!=0 || unit->y!=0 ) {
+	float dx = unit->x, dy = unit->y;
+	if ( dx<0 ) dx= -dx;
+	if ( dy<0 ) dy= -dy;
+	if ( dx>2*dy ) {
+	    if ( unit->x>0 ) dir = 0 /* right */;
+	    else dir = 1 /* left */;
+	} else if ( dy>2*dx ) {
+	    if ( unit->y>0 ) dir = 2 /* up */;
+	    else dir = 3 /* down */;
+	} else {
+	    if ( unit->y>0 && unit->x>0 ) dir=4;
+	    else if ( unit->x>0 ) dir=5;
+	    else if ( unit->y>0 ) dir=7;
+	    else dir = 6;
+	}
+    }
+
+    if ( dir==1 /* left */ || dir==0 /* right */) {
+	gp[0].y = y; gp[0].x = (dir==0)?x+4:x-4;
+	gp[1].y = y-4; gp[1].x = x;
+	gp[2].y = y+4; gp[2].x = x;
+    } else if ( dir==2 /* up */ || dir==3 /* down */ ) {
+	gp[0].x = x; gp[0].y = dir==2?y-4:y+4;	/* remember screen coordinates are backwards in y from character coords */
+	gp[1].x = x-4; gp[1].y = y;
+	gp[2].x = x+4; gp[2].y = y;
+    } else {
+	/* at a 45 angle, a value of 4 looks too small. I probably want 4*1.414 */
+	int xdiff= unit->x>0?5:-5, ydiff = unit->y>0?-5:5;
+	gp[0].x = x+xdiff/2; gp[0].y = y+ydiff/2;
+	gp[1].x = gp[0].x-xdiff; gp[1].y = gp[0].y;
+	gp[2].x = gp[0].x; gp[2].y = gp[0].y-ydiff;
+    }
+    gp[3] = gp[0];
+    if ( outline )
+	GDrawDrawPoly(pixmap,gp,4,col);
+    else
+	GDrawFillPoly(pixmap,gp,4,col);
+}
+
 static void DrawPoint(CharView *cv, GWindow pixmap, SplinePoint *sp,
 	SplineSet *spl, int onlynumber) {
     GRect r;
@@ -588,51 +634,18 @@ return;
 	else
 	    GDrawFillPoly(pixmap,gp,5,col);
     } else {
-	GPoint gp[5];
-	int dir;
 	BasePoint *cp=NULL;
+	BasePoint unit;
+
 	if ( !sp->nonextcp )
 	    cp = &sp->nextcp;
 	else if ( !sp->noprevcp )
 	    cp = &sp->prevcp;
-	dir = 0;
+	memset(&unit,0,sizeof(unit));
 	if ( cp!=NULL ) {
-	    float dx = cp->x-sp->me.x, dy = cp->y-sp->me.y;
-	    if ( dx<0 ) dx= -dx;
-	    if ( dy<0 ) dy= -dy;
-	    if ( dx>2*dy ) {
-		if ( cp->x>sp->me.x ) dir = 0 /* right */;
-		else dir = 1 /* left */;
-	    } else if ( dy>2*dx ) {
-		if ( cp->y>sp->me.y ) dir = 2 /* up */;
-		else dir = 3 /* down */;
-	    } else {
-		if ( cp->y>sp->me.y && cp->x>sp->me.x ) dir=4;
-		else if ( cp->x>sp->me.x ) dir=5;
-		else if ( cp->y>sp->me.y ) dir=7;
-		else dir = 6;
-	    }
+	    unit.x = cp->x-sp->me.x; unit.y = cp->y-sp->me.y;
 	}
-	if ( dir==1 /* left */ || dir==0 /* right */) {
-	    gp[0].y = y; gp[0].x = (dir==0)?x+4:x-4;
-	    gp[1].y = y-4; gp[1].x = x;
-	    gp[2].y = y+4; gp[2].x = x;
-	} else if ( dir==2 /* up */ || dir==3 /* down */ ) {
-	    gp[0].x = x; gp[0].y = dir==2?y-4:y+4;	/* remember screen coordinates are backwards in y from character coords */
-	    gp[1].x = x-4; gp[1].y = y;
-	    gp[2].x = x+4; gp[2].y = y;
-	} else {
-	    /* at a 45 angle, a value of 4 looks too small. I probably want 4*1.414 */
-	    int xdiff= cp->x>sp->me.x?5:-5, ydiff = cp->y>sp->me.y?-5:5;
-	    gp[0].x = x+xdiff/2; gp[0].y = y+ydiff/2;
-	    gp[1].x = gp[0].x-xdiff; gp[1].y = gp[0].y;
-	    gp[2].x = gp[0].x; gp[2].y = gp[0].y-ydiff;
-	}
-	gp[3] = gp[0];
-	if ( sp->selected || isfake )
-	    GDrawDrawPoly(pixmap,gp,4,col);
-	else
-	    GDrawFillPoly(pixmap,gp,4,col);
+	DrawTangentPoint(pixmap, x, y, &unit, sp->selected || isfake, col);
     }
     GDrawSetLineWidth(pixmap,0);
     if ( (cv->showpointnumbers || cv->show_ft_results|| cv->dv ) && sp->ttfindex!=0xffff ) {
@@ -657,6 +670,72 @@ return;
 	    GDrawDrawElipse(pixmap,&r,sp->flexx ? hflexhintcol : vflexhintcol );
 	}
     }
+}
+
+static void DrawSpiroPoint(CharView *cv, GWindow pixmap, spiro_cp *cp,
+	SplineSet *spl, int cp_i) {
+    GRect r;
+    int x, y;
+    Color col = cp==&spl->spiros[0] ? firstpointcol : pointcol;
+    char ty = cp->ty&0x7f;
+    int selected = SPIRO_SELECTED(cp);
+    BasePoint unit;
+    GPoint gp[5];
+
+    if ( selected )
+	 col = selectedpointcol;
+
+    x =  cv->xoff + rint(cp->x*cv->scale);
+    y = -cv->yoff + cv->height - rint(cp->y*cv->scale);
+    if ( x<-4 || y<-4 || x>cv->width+4 || y>=cv->height+4 )
+return;
+
+    r.x = x-2;
+    r.y = y-2;
+    r.width = r.height = 5;
+    if ( selected )
+	GDrawSetLineWidth(pixmap,selectedpointwidth);
+
+    if ( ty == SPIRO_LEFT ) {
+	GDrawSetLineWidth(pixmap,2);
+	gp[0].x = x-3; gp[0].y = y-3;
+	gp[1].x = x;   gp[1].y = y-3;
+	gp[2].x = x;   gp[2].y = y+3;
+	gp[3].x = x-3; gp[3].y = y+3;
+	GDrawDrawPoly(pixmap,gp,4,col);
+    } else if ( ty == SPIRO_RIGHT ) {
+	GDrawSetLineWidth(pixmap,2);
+	gp[0].x = x+3; gp[0].y = y-3;
+	gp[1].x = x;   gp[1].y = y-3;
+	gp[2].x = x;   gp[2].y = y+3;
+	gp[3].x = x+3; gp[3].y = y+3;
+	GDrawDrawPoly(pixmap,gp,4,col);
+    } else if ( ty == SPIRO_G2 ) {
+	memset(&unit,0,sizeof(unit));
+	if ( cp_i>=1 && cp_i<spl->spiro_cnt-1 ) {
+	    unit.x = spl->spiros[cp_i+1].x - spl->spiros[cp_i-1].x;
+	    unit.y = spl->spiros[cp_i+1].y - spl->spiros[cp_i-1].y;
+	} else if ( cp_i>=1 ) {
+	    unit.x = spl->spiros[cp_i].x - spl->spiros[cp_i-1].x;
+	    unit.y = spl->spiros[cp_i].y - spl->spiros[cp_i-1].y;
+	} else if ( cp_i<spl->spiro_cnt-1 ) {
+	    unit.x = spl->spiros[cp_i+1].x - spl->spiros[cp_i].x;
+	    unit.y = spl->spiros[cp_i+1].y - spl->spiros[cp_i].y;
+	}
+	DrawTangentPoint(pixmap, x, y, &unit, selected, col);
+    } else if ( ty==SPIRO_CORNER ) {
+	if ( selected )
+	    GDrawDrawRect(pixmap,&r,col);
+	else
+	    GDrawFillRect(pixmap,&r,col);
+    } else {
+	--r.x; --r.y; r.width +=2; r.height += 2;
+	if ( selected )
+	    GDrawDrawElipse(pixmap,&r,col);
+	else
+	    GDrawFillElipse(pixmap,&r,col);
+    }
+    GDrawSetLineWidth(pixmap,0);
 }
 
 static void DrawLine(CharView *cv, GWindow pixmap,
@@ -775,12 +854,24 @@ void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 	    first = NULL;
 	    if ( dopoints>0 )
 		DrawDirection(cv,pixmap,spl->first);
-	    for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
-		DrawPoint(cv,pixmap,spline->from,spl,dopoints<0);
-		if ( first==NULL ) first = spline;
+	    if ( cv->sc->inspiro ) {
+		if ( dopoints>=0 ) {
+		    int i;
+		    if ( spl->spiros==NULL ) {
+			spl->spiros = SplineSet2SpiroCP(spl,&spl->spiro_cnt);
+			spl->spiro_max = spl->spiro_cnt;
+		    }
+		    for ( i=0; i<spl->spiro_cnt-1; ++i )
+			DrawSpiroPoint(cv,pixmap,&spl->spiros[i],spl,i);
+		}
+	    } else {
+		for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
+		    DrawPoint(cv,pixmap,spline->from,spl,dopoints<0);
+		    if ( first==NULL ) first = spline;
+		}
+		if ( spline==NULL )
+		    DrawPoint(cv,pixmap,spl->last,spl,dopoints<0);
 	    }
-	    if ( spline==NULL )
-		DrawPoint(cv,pixmap,spl->last,spl,dopoints<0);
 	}
 	for ( cur=gpl; cur!=NULL; cur=cur->next )
 	    GDrawDrawPoly(pixmap,cur->gp,cur->cnt,fg);
@@ -2300,6 +2391,7 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
     cv->layerheads[dm_back] = &sc->layers[ly_back];
     cv->layerheads[dm_grid] = &sc->parent->grid;
     cv->p.sp = cv->lastselpt = NULL;
+    cv->p.spiro = cv->lastselcp = NULL;
     cv->apmine = cv->apmatch = NULL; cv->apsc = NULL;
     cv->template1 = cv->template2 = NULL;
 #if HANYANG
@@ -2316,7 +2408,6 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
     CharIcon(cv,cv->fv);
     title = CVMakeTitles(cv,buf);
     GDrawSetWindowTitles8(cv->gw,buf,title);
-    cv->lastselpt = NULL; cv->p.sp = NULL;
     CVInfoDraw(cv,cv->gw);
     free(title);
     _CVPaletteActivate(cv,true);
@@ -2369,8 +2460,10 @@ static void CVChangeChar(CharView *cv, int i ) {
     }
     if ( gid == -2 )
 return;
-    if ( gid==-1 || (sc = sf->glyphs[gid])==NULL )
+    if ( gid==-1 || (sc = sf->glyphs[gid])==NULL ) {
 	sc = SFMakeChar(sf,map,i);
+	sc->inspiro = cv->sc->inspiro;
+    }
 
     if ( sc==NULL || (cv->sc == sc && cv->enc==i ))
 return;
@@ -2488,6 +2581,7 @@ static void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
     int ybase = cv->mbh+(cv->infoh-cv->sfh)/2+cv->sas;
     real xdiff, ydiff;
     SplinePoint *sp, dummy;
+    spiro_cp *cp;
 
     GDrawSetFont(pixmap,cv->small);
     r.x = RPT_DATA; r.width = 60;
@@ -2536,20 +2630,29 @@ static void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
 		cv->coderange==cr_fpgm ? _("'fpgm'") :
 		cv->coderange==cr_prep ? _("'prep'") : _("Glyph"),
 	    -1,NULL,fg);
-    sp = cv->p.sp!=NULL ? cv->p.sp : cv->lastselpt;
-    if ( sp==NULL ) if ( cv->active_tool==cvt_rect || cv->active_tool==cvt_elipse ||
+    sp = NULL; cp = NULL;
+    if ( cv->sc->inspiro )
+	cp = cv->p.spiro!=NULL ? cv->p.spiro : cv->lastselcp;
+    else
+	sp = cv->p.sp!=NULL ? cv->p.sp : cv->lastselpt;
+    if ( sp==NULL && cp==NULL ) if ( cv->active_tool==cvt_rect || cv->active_tool==cvt_elipse ||
 	    cv->active_tool==cvt_poly || cv->active_tool==cvt_star ) {
 	dummy.me.x = cv->p.cx; dummy.me.y = cv->p.cy;
 	sp = &dummy;
     }
-    if ( sp ) {
+    if ( sp || cp ) {
 	real selx, sely;
-	if ( cv->pressed && sp==cv->p.sp ) {
-	    selx = cv->p.constrain.x;
-	    sely = cv->p.constrain.y;
+	if ( sp ) {
+	    if ( cv->pressed && sp==cv->p.sp ) {
+		selx = cv->p.constrain.x;
+		sely = cv->p.constrain.y;
+	    } else {
+		selx = sp->me.x;
+		sely = sp->me.y;
+	    }
 	} else {
-	    selx = sp->me.x;
-	    sely = sp->me.y;
+	    selx = cp->x;
+	    sely = cp->y;
 	}
 	xdiff=cv->info.x-selx;
 	ydiff = cv->info.y-sely;
@@ -2619,6 +2722,20 @@ static void CVCrossing(CharView *cv, GEvent *event ) {
     CPEndInfo(cv);
 }
 
+static int CheckSpiroPoint(FindSel *fs, spiro_cp *cp, SplineSet *spl,int index) {
+
+    if ( fs->xl<=cp->x && fs->xh>=cp->x &&
+	    fs->yl<=cp->y && fs->yh >= cp->y ) {
+	fs->p->spiro = cp;
+	fs->p->spline = NULL;
+	fs->p->anysel = true;
+	fs->p->spl = spl;
+	fs->p->spiro_index = index;
+return( true );
+    }
+return( false );
+}
+
 static int CheckPoint(FindSel *fs, SplinePoint *sp, SplineSet *spl) {
 
     if ( fs->xl<=sp->me.x && fs->xh>=sp->me.x &&
@@ -2674,6 +2791,7 @@ return( false );
 	fs->p->spline = spline;
 	fs->p->spl = spl;
 	fs->p->anysel = true;
+	fs->p->spiro_index = SplineT2SpiroIndex(spline,fs->p->t,spl);
 return( false /*true*/ );	/* Check if there's a point where we are first */
 	/* if there is use it, if not (because anysel is true) we'll fall back */
 	/* here */
@@ -2694,40 +2812,60 @@ return( false );
 return( true );
 }
 
-static int InSplineSet( FindSel *fs, SplinePointList *set) {
+static int InSplineSet( FindSel *fs, SplinePointList *set,int inspiro) {
     SplinePointList *spl;
     Spline *spline, *first;
+    int i;
 
     for ( spl = set; spl!=NULL; spl = spl->next ) {
-	if ( CheckPoint(fs,spl->first,spl) && ( !fs->seek_controls || fs->p->nextcp || fs->p->prevcp )) {
+	    if ( inspiro ) {
+	    for ( i=0; i<spl->spiro_cnt-1; ++i )
+		if ( CheckSpiroPoint(fs,&spl->spiros[i],spl,i))
 return( true );
-	}
-	first = NULL;
-	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
-	    if ( (CheckPoint(fs,spline->to,spl) && ( !fs->seek_controls || fs->p->nextcp || fs->p->prevcp )) ||
-		    ( CheckSpline(fs,spline,spl) && !fs->seek_controls )) {
+	    first = NULL;
+	    for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
+		if ( CheckSpline(fs,spline,spl), fs->p->anysel )
+return( true );
+		if ( first==NULL ) first = spline;
+	    }
+	} else {
+	    if ( CheckPoint(fs,spl->first,spl) && ( !fs->seek_controls || fs->p->nextcp || fs->p->prevcp )) {
 return( true );
 	    }
-	    if ( first==NULL ) first = spline;
+	    first = NULL;
+	    for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
+		if ( (CheckPoint(fs,spline->to,spl) && ( !fs->seek_controls || fs->p->nextcp || fs->p->prevcp )) ||
+			( CheckSpline(fs,spline,spl) && !fs->seek_controls )) {
+return( true );
+		}
+		if ( first==NULL ) first = spline;
+	    }
 	}
     }
 return( fs->p->anysel );
 }
 
-static int NearSplineSetPoints( FindSel *fs, SplinePointList *set) {
+static int NearSplineSetPoints( FindSel *fs, SplinePointList *set,int inspiro) {
     SplinePointList *spl;
     Spline *spline, *first;
+    int i;
 
     for ( spl = set; spl!=NULL; spl = spl->next ) {
-	if ( CheckPoint(fs,spl->first,spl)) {
+	if ( inspiro ) {
+	    for ( i=0; i<spl->spiro_cnt; ++i )
+		if ( CheckSpiroPoint(fs,&spl->spiros[i],spl,i))
 return( true );
-	}
-	first = NULL;
-	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
-	    if ( CheckPoint(fs,spline->to,spl) ) {
+	} else {
+	    if ( CheckPoint(fs,spl->first,spl)) {
 return( true );
 	    }
-	    if ( first==NULL ) first = spline;
+	    first = NULL;
+	    for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
+		if ( CheckPoint(fs,spline->to,spl) ) {
+return( true );
+		}
+		if ( first==NULL ) first = spline;
+	    }
 	}
     }
 return( fs->p->anysel );
@@ -2760,20 +2898,25 @@ int CVMouseAtSpline(CharView *cv,GEvent *event) {
 
     SetFS(&fs,&cv->p,cv,event);
     cv->p.pressed = pressed;
-return( InSplineSet(&fs,cv->layerheads[cv->drawmode]->splines));
+return( InSplineSet(&fs,cv->layerheads[cv->drawmode]->splines,cv->sc->inspiro));
 }
 
 static GEvent *CVConstrainedMouseDown(CharView *cv,GEvent *event, GEvent *fake) {
     SplinePoint *base;
+    spiro_cp *basecp;
     int basex, basey, dx, dy;
     int sign;
 
-    base = CVAnySelPoint(cv);
-    if ( base==NULL )
+    if ( !CVAnySelPoint(cv,&base,&basecp))
 return( event );
 
-    basex =  cv->xoff + rint(base->me.x*cv->scale);
-    basey = -cv->yoff + cv->height - rint(base->me.y*cv->scale);
+    if ( base!=NULL ) {
+	basex =  cv->xoff + rint(base->me.x*cv->scale);
+	basey = -cv->yoff + cv->height - rint(base->me.y*cv->scale);
+    } else {
+	basex =  cv->xoff + rint(basecp->x*cv->scale);
+	basey = -cv->yoff + cv->height - rint(basecp->y*cv->scale);
+    }
 
     dx= event->u.mouse.x-basex, dy = event->u.mouse.y-basey;
     sign = dx*dy<0?-1:1;
@@ -2831,7 +2974,7 @@ static void CVDoSnaps(CharView *cv, FindSel *fs) {
 	temp = *p;
 	fs->p = &temp;
 	fs->seek_controls = false;
-	if ( InSplineSet( fs, cv->layerheads[dm_grid]->splines)) {
+	if ( InSplineSet( fs, cv->layerheads[dm_grid]->splines,cv->sc->inspiro)) {
 	    if ( temp.spline!=NULL ) {
 		p->cx = ((temp.spline->splines[0].a*temp.t+
 			    temp.spline->splines[0].b)*temp.t+
@@ -2887,15 +3030,18 @@ static void CVDoSnaps(CharView *cv, FindSel *fs) {
 static int _CVTestSelectFromEvent(CharView *cv,FindSel *fs) {
     PressedOn temp;
     ImageList *img;
+    int found;
 
-    if ( !InSplineSet(fs,cv->layerheads[cv->drawmode]->splines)) {
+    found = InSplineSet(fs,cv->layerheads[cv->drawmode]->splines,cv->sc->inspiro);
+
+    if ( !found ) {
 	if ( cv->drawmode==dm_fore) {
 	    RefChar *rf;
 	    temp = cv->p;
 	    fs->p = &temp;
 	    fs->seek_controls = false;
 	    for ( rf=cv->sc->layers[ly_fore].refs; rf!=NULL; rf = rf->next ) {
-		if ( InSplineSet(fs,rf->layers[0].splines)) {
+		if ( InSplineSet(fs,rf->layers[0].splines,cv->sc->inspiro)) {
 		    cv->p.ref = rf;
 		    cv->p.anysel = true;
 	    break;
@@ -2964,16 +3110,17 @@ return;
 	if ( event->u.mouse.state&ksm_alt ) fs.seek_controls = true;
 	if ( cv->showpointnumbers && cv->fv->sf->order2 ) fs.all_controls = true;
 	cv->lastselpt = NULL;
+	cv->lastselcp = NULL;
 	_CVTestSelectFromEvent(cv,&fs);
 	fs.p = &cv->p;
     } else if ( cv->active_tool == cvt_curve || cv->active_tool == cvt_corner ||
 	    cv->active_tool == cvt_tangent || cv->active_tool == cvt_hvcurve ||
 	    cv->active_tool == cvt_pen ) {
-	InSplineSet(&fs,cv->layerheads[cv->drawmode]->splines);
+	InSplineSet(&fs,cv->layerheads[cv->drawmode]->splines,cv->sc->inspiro);
 	if ( fs.p->sp==NULL && fs.p->spline==NULL )
 	    CVDoSnaps(cv,&fs);
     } else {
-	NearSplineSetPoints(&fs,cv->layerheads[cv->drawmode]->splines);
+	NearSplineSetPoints(&fs,cv->layerheads[cv->drawmode]->splines,cv->sc->inspiro);
 	if ( fs.p->sp==NULL && fs.p->spline==NULL )
 	    CVDoSnaps(cv,&fs);
     }
@@ -3002,6 +3149,7 @@ return;
       case cvt_pointer:
 	CVMouseDownPointer(cv, &fs, event);
 	cv->lastselpt = fs.p->sp;
+	cv->lastselcp = fs.p->spiro;
       break;
       case cvt_magnify: case cvt_minify:
       break;
@@ -3444,6 +3592,7 @@ void SCClearSelPt(SplineChar *sc) {
 
     for ( cv=sc->views; cv!=NULL; cv=cv->next ) {
 	cv->lastselpt = cv->p.sp = NULL;
+	cv->p.spiro = cv->lastselcp = NULL;
     }
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
@@ -3669,7 +3818,9 @@ return;
     else if ( cv->active_tool == cvt_pointer &&
 	    ( cv->p.nextcp || cv->p.prevcp))
 	/* Don't snap to points when moving control points */;
-    else if ( !cv->joinvalid || !CheckPoint(&fs,&cv->joinpos,NULL)) {
+    else if ( !cv->joinvalid ||
+	    (!cv->sc->inspiro && !CheckPoint(&fs,&cv->joinpos,NULL)) ||
+	    ( cv->sc->inspiro && !CheckSpiroPoint(&fs,&cv->joincp,NULL,0))) {
 	SplinePointList *spl;
 	spl = cv->layerheads[cv->drawmode]->splines;
 	if ( cv->recentchange && cv->active_tool==cvt_pointer &&
@@ -3678,9 +3829,9 @@ return;
 		 cv->layerheads[cv->drawmode]->undoes->undotype==ut_tstate ))
 	    spl = cv->layerheads[cv->drawmode]->undoes->u.state.splines;
 	if ( cv->active_tool != cvt_knife )
-	    NearSplineSetPoints(&fs,spl);
+	    NearSplineSetPoints(&fs,spl,cv->sc->inspiro);
 	else 
-	    InSplineSet(&fs,spl);
+	    InSplineSet(&fs,spl,cv->sc->inspiro);
     }
     if ( p.sp!=NULL && p.sp!=cv->active_sp ) {		/* Snap to points */
 	p.cx = p.sp->me.x;
@@ -4588,6 +4739,8 @@ return( true );
 #define MID_CanonicalStart	2242
 #define MID_CanonicalContours	2243
 #define MID_RemoveBitmaps	2244
+#define MID_RoundToCluster	2245
+#define MID_Align		2246
 #define MID_Corner	2301
 #define MID_Tangent	2302
 #define MID_Curve	2303
@@ -4599,6 +4752,13 @@ return( true );
 #define MID_InsertPtOnSplineAt	2309
 #define MID_AddAnchor	2310
 #define MID_HVCurve	2311
+#define MID_SpiroG4	2312
+#define MID_SpiroG2	2313
+#define MID_SpiroCorner	2314
+#define MID_SpiroLeft	2315
+#define MID_SpiroRight	2316
+#define MID_SpiroMakeFirst 2317
+
 #define MID_AutoHint	2400
 #define MID_ClearHStem	2401
 #define MID_ClearVStem	2402
@@ -5382,28 +5542,42 @@ static void CVSelectContours(CharView *cv,struct gmenuitem *mi) {
     SplineSet *spl;
     SplinePoint *sp;
     int sel;
+    int i;
 
     for ( spl=cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl=spl->next ) {
 	sel = false;
-	for ( sp=spl->first ; ; ) {
-	    if ( sp->selected ) {
-		sel = true;
-	break;
+	if ( cv->sc->inspiro ) {
+	    for ( i=0; i<spl->spiro_cnt-1; ++i ) {
+		if ( SPIRO_SELECTED(&spl->spiros[i]) ) {
+		    sel = true;
+	    break;
+		}
 	    }
-	    if ( sp->next==NULL )
-	break;
-	    sp = sp->next->to;
-	    if ( sp==spl->first )
-	break;
-	}
-	if ( sel ) {
+	    if ( sel ) {
+		for ( i=0; i<spl->spiro_cnt-1; ++i )
+		    SPIRO_SELECT(&spl->spiros[i]);
+	    }
+	} else {
 	    for ( sp=spl->first ; ; ) {
-		sp->selected = true;
+		if ( sp->selected ) {
+		    sel = true;
+	    break;
+		}
 		if ( sp->next==NULL )
 	    break;
 		sp = sp->next->to;
 		if ( sp==spl->first )
 	    break;
+	    }
+	    if ( sel ) {
+		for ( sp=spl->first ; ; ) {
+		    sp->selected = true;
+		    if ( sp->next==NULL )
+		break;
+		    sp = sp->next->to;
+		    if ( sp==spl->first )
+		break;
+		}
 	    }
 	}
     }
@@ -5420,11 +5594,86 @@ static void CVMenuSelectPointAt(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CVSelectPointAt(cv);
 }
 
+static void CVNextPrevSpiroPt(CharView *cv,struct gmenuitem *mi) {
+    RefChar *r; ImageList *il;
+    SplineSet *spl, *ss;
+    SplinePoint *junk;
+    int x, y;
+    spiro_cp *selcp, *other;
+    int index;
+
+    if ( mi->mid == MID_FirstPt ) {
+	if ( cv->layerheads[cv->drawmode]->splines==NULL )
+return;
+	CVClearSel(cv);
+	other = &cv->layerheads[cv->drawmode]->splines->spiros[0];
+    } else {
+	if ( !CVOneThingSel(cv,&junk,&spl,&r,&il,NULL,&selcp) || spl==NULL )
+return;
+	other = selcp;
+	if ( spl==NULL )
+return;
+	index = selcp - spl->spiros;
+	if ( mi->mid == MID_NextPt ) {
+	    if ( index!=spl->spiro_cnt-2 )
+		other = &spl->spiros[index+1];
+	    else {
+		if ( spl->next == NULL )
+		    spl = cv->layerheads[cv->drawmode]->splines;
+		else
+		    spl = spl->next;
+		other = &spl->spiros[0];
+	    }
+	} else if ( mi->mid == MID_PrevPt ) {
+	    if ( index!=0 ) {
+		other = &spl->spiros[index-1];
+	    } else {
+		if ( spl==cv->layerheads[cv->drawmode]->splines ) {
+		    for ( ss = cv->layerheads[cv->drawmode]->splines; ss->next!=NULL; ss=ss->next );
+		} else {
+		    for ( ss = cv->layerheads[cv->drawmode]->splines; ss->next!=spl; ss=ss->next );
+		}
+		spl = ss;
+		other = &ss->spiros[ss->spiro_cnt-2];
+	    }
+	} else if ( mi->mid == MID_FirstPtNextCont ) {
+	    if ( spl->next!=NULL )
+		other = &spl->next->spiros[0];
+	    else
+		other = NULL;
+	}
+    }
+    if ( selcp!=NULL )
+	SPIRO_DESELECT(selcp);
+    if ( other!=NULL )
+	SPIRO_SELECT(other);
+    cv->p.sp = NULL;
+    cv->lastselpt = NULL;
+    cv->lastselcp = other;
+
+    /* Make sure the point is visible and has some context around it */
+    if ( other!=NULL ) {
+	x =  cv->xoff + rint(other->x*cv->scale);
+	y = -cv->yoff + cv->height - rint(other->y*cv->scale);
+	if ( x<40 || y<40 || x>cv->width-40 || y>cv->height-40 )
+	    CVMagnify(cv,other->x,other->y,0);
+    }
+
+    CVInfoDraw(cv,cv->gw);
+    SCUpdateAll(cv->sc);
+}
+
 static void CVNextPrevPt(CharView *cv,struct gmenuitem *mi) {
     SplinePoint *selpt=NULL, *other;
     RefChar *r; ImageList *il;
     SplineSet *spl, *ss;
     int x, y;
+    spiro_cp *junk;
+
+    if ( cv->sc->inspiro ) {
+	CVNextPrevSpiroPt(cv,mi);
+return;
+    }
 
     if ( mi->mid == MID_FirstPt ) {
 	if ( cv->layerheads[cv->drawmode]->splines==NULL )
@@ -5432,7 +5681,7 @@ return;
 	other = (cv->layerheads[cv->drawmode]->splines)->first;
 	CVClearSel(cv);
     } else {
-	if ( !CVOneThingSel(cv,&selpt,&spl,&r,&il,NULL) || spl==NULL )
+	if ( !CVOneThingSel(cv,&selpt,&spl,&r,&il,NULL,&junk) || spl==NULL )
 return;
 	other = selpt;
 	if ( spl==NULL )
@@ -5474,6 +5723,7 @@ return;
 	other->selected = true;
     cv->p.sp = NULL;
     cv->lastselpt = other;
+    cv->p.spiro = cv->lastselcp = NULL;
 
     /* Make sure the point is visible and has some context around it */
     if ( other!=NULL ) {
@@ -5496,8 +5746,9 @@ static void CVNextPrevCPt(CharView *cv,struct gmenuitem *mi) {
     SplinePoint *selpt=NULL;
     RefChar *r; ImageList *il;
     SplineSet *spl;
+    spiro_cp *junk;
 
-    if ( !CVOneThingSel(cv,&selpt,&spl,&r,&il,NULL))
+    if ( !CVOneThingSel(cv,&selpt,&spl,&r,&il,NULL,&junk))
 return;
     if ( selpt==NULL )
 return;
@@ -5577,6 +5828,7 @@ static void CVRedo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void _CVCopy(CharView *cv) {
     int desel = false, anya;
 
+    /* If nothing is selected, copy everything. Do that by temporarily selecting everything */
     if ( !CVAnySel(cv,NULL,NULL,NULL,&anya))
 	if ( !(desel = CVSetSel(cv,-1)))
 return;
@@ -5657,8 +5909,9 @@ static void CVDoClear(CharView *cv) {
 	    /* garbage collection of images????!!!! */
 	}
     }
-    if ( cv->lastselpt!=NULL || cv->p.sp!=NULL ) {
+    if ( cv->lastselpt!=NULL || cv->p.sp!=NULL || cv->p.spiro!=NULL || cv->lastselcp!=NULL ) {
 	cv->lastselpt = NULL; cv->p.sp = NULL;
+	cv->p.spiro = cv->lastselcp = NULL;
 	CVInfoDraw(cv,cv->gw);
     }
 }
@@ -5848,7 +6101,8 @@ return;
 static void CVSelectHM(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     SplinePoint *sp; SplineSet *spl; RefChar *r; ImageList *im;
-    int exactlyone = CVOneThingSel(cv,&sp,&spl,&r,&im,NULL);
+    spiro_cp *junk;
+    int exactlyone = CVOneThingSel(cv,&sp,&spl,&r,&im,NULL,&junk);
 
     if ( !exactlyone || sp==NULL || sp->hintmask == NULL || spl==NULL )
 return;
@@ -5933,6 +6187,7 @@ static void cv_edlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	  break;
 	  case MID_Clear: case MID_Cut: /*case MID_Copy:*/
 	    /* If nothing is selected, copy copies everything */
+	    /* In spiro mode copy will copy all contours with at least (spiro) one point selected */
 	    mi->ti.disabled = !anypoints && !anyrefs && !anyimages && !anyanchor;
 	  break;
 	  case MID_CopyLBearing: case MID_CopyRBearing:
@@ -6118,9 +6373,37 @@ static void _CVMenuPointType(CharView *cv,struct gmenuitem *mi) {
     CVCharChangedUpdate(cv);
 }
 
+static void _CVMenuSpiroPointType(CharView *cv,struct gmenuitem *mi) {
+    int pointtype = mi->mid==MID_SpiroCorner?SPIRO_CORNER:
+		    mi->mid==MID_SpiroG4?SPIRO_G4:
+		    mi->mid==MID_SpiroG2?SPIRO_G2:
+		    mi->mid==MID_SpiroLeft?SPIRO_LEFT:SPIRO_RIGHT;
+    SplinePointList *spl;
+    int i, changes;
+
+    CVPreserveState(cv);	/* We should only get here if there's a selection */
+    for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL ; spl = spl->next ) {
+	changes = false;
+	for ( i=0; i<spl->spiro_cnt-1; ++i ) {
+	    if ( SPIRO_SELECTED(&spl->spiros[i]) ) {
+		if ( (spl->spiros[i].ty&0x7f)!=SPIRO_OPEN_CONTOUR ) {
+		    spl->spiros[i].ty = pointtype|0x80;
+		    changes = true;
+		}
+	    }
+	}
+	if ( changes )
+	    SSRegenerateFromSpiros(spl);
+    }
+    CVCharChangedUpdate(cv);
+}
+
 static void CVMenuPointType(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    _CVMenuPointType(cv,mi);
+    if ( cv->sc->inspiro )
+	_CVMenuSpiroPointType(cv,mi);
+    else
+	_CVMenuPointType(cv,mi);
 }
 
 static void _CVMenuImplicit(CharView *cv,struct gmenuitem *mi) {
@@ -6152,13 +6435,24 @@ static void CVMenuImplicit(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     _CVMenuImplicit(cv,mi);
 }
 
+static GMenuItem2 spiroptlist[], ptlist[];
 static void cv_ptlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
     int type = -2, cnt=0, ccp_cnt=0, spline_selected=0;
+    int spirotype = -2, opencnt=0, spirocnt=0;
     SplinePointList *spl, *sel=NULL;
     Spline *spline, *first;
     SplinePoint *selpt=NULL;
     int notimplicit = -1;
+    uint16 junk;
+    int i;
+    extern void GMenuItemArrayFree(GMenuItem *mi);
+    extern GMenuItem *GMenuItem2ArrayCopy(GMenuItem2 *mi, uint16 *cnt);
 
+    if ( cv->showing_spiro_pt_menu != cv->sc->inspiro ) {
+	GMenuItemArrayFree(mi->sub);
+	mi->sub = GMenuItem2ArrayCopy(cv->sc->inspiro?spiroptlist:ptlist,&junk);
+	cv->showing_spiro_pt_menu = cv->sc->inspiro;
+    }
     for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
 	first = NULL;
 	if ( spl->first->selected ) {
@@ -6186,6 +6480,18 @@ static void cv_ptlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	    }
 	    if ( first == NULL ) first = spline;
 	}
+	for ( i=0; i<spl->spiro_cnt-1; ++i ) {
+	    if ( SPIRO_SELECTED(&spl->spiros[i])) {
+		int ty = spl->spiros[i].ty&0x7f;
+		++spirocnt;
+		if ( ty==SPIRO_OPEN_CONTOUR )
+		    ++opencnt;
+		else if ( spirotype==-2 )
+		    spirotype = ty;
+		else if ( spirotype!=ty )
+		    spirotype = -1;
+	    }
+	}
     }
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
@@ -6206,8 +6512,31 @@ static void cv_ptlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = type==-2;
 	    mi->ti.checked = type==pt_hvcurve;
 	  break;
+	  case MID_SpiroG4:
+	    mi->ti.disabled = spirotype==-2;
+	    mi->ti.checked = spirotype==SPIRO_G4;
+	  break;
+	  case MID_SpiroG2:
+	    mi->ti.disabled = spirotype==-2;
+	    mi->ti.checked = spirotype==SPIRO_G2;
+	  break;
+	  case MID_SpiroCorner:
+	    mi->ti.disabled = spirotype==-2;
+	    mi->ti.checked = spirotype==SPIRO_CORNER;
+	  break;
+	  case MID_SpiroLeft:
+	    mi->ti.disabled = spirotype==-2;
+	    mi->ti.checked = spirotype==SPIRO_LEFT;
+	  break;
+	  case MID_SpiroRight:
+	    mi->ti.disabled = spirotype==-2;
+	    mi->ti.checked = spirotype==SPIRO_RIGHT;
+	  break;
 	  case MID_MakeFirst:
 	    mi->ti.disabled = cnt!=1 || sel->first->prev==NULL || sel->first==selpt;
+	  break;
+	  case MID_SpiroMakeFirst:
+	    mi->ti.disabled = opencnt!=0 || spirocnt!=1;
 	  break;
 	  case MID_MakeLine:
 	    mi->ti.disabled = cnt==0;
@@ -6324,7 +6653,7 @@ void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
 
     SplinePointListTransform(cv->layerheads[cv->drawmode]->splines,transform,!anysel);
     if ( flags&fvt_round_to_int )
-	SplineSetsRound2Int(cv->layerheads[cv->drawmode]->splines,1.0);
+	SplineSetsRound2Int(cv->layerheads[cv->drawmode]->splines,1.0,cv->sc->inspiro);
     if ( cv->layerheads[cv->drawmode]->images!=NULL ) {
 	ImageListTransform(cv->layerheads[cv->drawmode]->images,transform);
 	SCOutOfDateBackground(cv->sc);
@@ -6460,65 +6789,100 @@ static void SplinePointRound(SplinePoint *sp,real factor) {
     }
 }
 
-void SplineSetsRound2Int(SplineSet *spl,real factor) {
+static void SpiroRound2Int(spiro_cp *cp,real factor) {
+    cp->x = rint(cp->x*factor)/factor;
+    cp->y = rint(cp->y*factor)/factor;
+}
+
+void SplineSetsRound2Int(SplineSet *spl,real factor, int inspiro) {
     SplinePoint *sp;
+    int i;
 
     for ( ; spl!=NULL; spl=spl->next ) {
-	for ( sp=spl->first; ; ) {
-	    SplinePointRound(sp,factor);
-	    if ( sp->prev!=NULL )
-		SplineRefigure(sp->prev);
-	    if ( sp->next==NULL )
-	break;
-	    sp = sp->next->to;
-	    if ( sp==spl->first )
-	break;
+	if ( inspiro ) {
+	    for ( i=0; i<spl->spiro_cnt-1; ++i )
+		SpiroRound2Int(&spl->spiros[i],factor);
+	    SSRegenerateFromSpiros(spl);
+	} else {
+	    SplineSetSpirosClear(spl);
+	    for ( sp=spl->first; ; ) {
+		SplinePointRound(sp,factor);
+		if ( sp->prev!=NULL )
+		    SplineRefigure(sp->prev);
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+		if ( sp==spl->first )
+	    break;
+	    }
+	    if ( spl->first->prev!=NULL )
+		SplineRefigure(spl->first->prev);
 	}
-	if ( spl->first->prev!=NULL )
-	    SplineRefigure(spl->first->prev);
     }
 }
 
-static void SplineSetsChangeCoord(SplineSet *spl,real old, real new,int isy) {
+static void SplineSetsChangeCoord(SplineSet *spl,real old, real new,int isy,
+	int inspiro) {
     SplinePoint *sp;
+    int changed;
+    int i;
 
     for ( ; spl!=NULL; spl=spl->next ) {
-	for ( sp=spl->first; ; ) {
-	    if ( isy ) {
-		if ( RealNear(sp->me.y,old) ) {
-		    if ( RealNear(sp->nextcp.y,old))
-			sp->nextcp.y = new;
-		    else
-			sp->nextcp.y += new-sp->me.y;
-		    if ( RealNear(sp->prevcp.y,old))
-			sp->prevcp.y = new;
-		    else
-			sp->prevcp.y += new-sp->me.y;
-		    sp->me.y = new;
-		    /* we expect to be called before SplineSetRound2Int and will */
-		    /*  allow it to do any SplineRefigures */
-		}
-	    } else {
-		if ( RealNear(sp->me.x,old) ) {
-		    if ( RealNear(sp->nextcp.x,old))
-			sp->nextcp.x = new;
-		    else
-			sp->nextcp.x += new-sp->me.x;
-		    if ( RealNear(sp->prevcp.x,old))
-			sp->prevcp.x = new;
-		    else
-			sp->prevcp.x += new-sp->me.x;
-		    sp->me.x = new;
+	changed = false;
+	if ( inspiro ) {
+	    for ( i=0; i<spl->spiro_cnt-1; ++i ) {
+		if ( isy && RealNear(spl->spiros[i].y,old)) {
+		    spl->spiros[i].y = new;
+		    changed = true;
+		} else if ( !isy && RealNear(spl->spiros[i].x,old)) {
+		    spl->spiros[i].x = new;
+		    changed = true;
 		}
 	    }
-	    if ( sp->next==NULL )
-	break;
-	    sp = sp->next->to;
-	    if ( sp==spl->first )
-	break;
+#if 0	/* will be done in Round2Int */
+	    if ( change )
+		SSRegenerateFromSpiros(spl);
+#endif
+	} else {
+	    for ( sp=spl->first; ; ) {
+		if ( isy ) {
+		    if ( RealNear(sp->me.y,old) ) {
+			if ( RealNear(sp->nextcp.y,old))
+			    sp->nextcp.y = new;
+			else
+			    sp->nextcp.y += new-sp->me.y;
+			if ( RealNear(sp->prevcp.y,old))
+			    sp->prevcp.y = new;
+			else
+			    sp->prevcp.y += new-sp->me.y;
+			sp->me.y = new;
+			changed = true;
+			/* we expect to be called before SplineSetRound2Int and will */
+			/*  allow it to do any SplineRefigures */
+		    }
+		} else {
+		    if ( RealNear(sp->me.x,old) ) {
+			if ( RealNear(sp->nextcp.x,old))
+			    sp->nextcp.x = new;
+			else
+			    sp->nextcp.x += new-sp->me.x;
+			if ( RealNear(sp->prevcp.x,old))
+			    sp->prevcp.x = new;
+			else
+			    sp->prevcp.x += new-sp->me.x;
+			sp->me.x = new;
+			changed = true;
+		    }
+		}
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+		if ( sp==spl->first )
+	    break;
+	    }
+	    if ( changed )
+		SplineSetSpirosClear(spl);
 	}
-	if ( spl->first->prev!=NULL )
-	    SplineRefigure(spl->first->prev);
     }
 }
 
@@ -6535,7 +6899,7 @@ void SCRound2Int(SplineChar *sc,real factor) {
 	stems->width = rint(stems->width*factor)/factor;
 	new = stems->start+stems->width;
 	if ( old!=new )
-	    SplineSetsChangeCoord(sc->layers[ly_fore].splines,old,new,true);
+	    SplineSetsChangeCoord(sc->layers[ly_fore].splines,old,new,true,sc->inspiro);
     }
     for ( stems = sc->vstem; stems!=NULL; stems=stems->next ) {
 	old = stems->start+stems->width;
@@ -6543,11 +6907,11 @@ void SCRound2Int(SplineChar *sc,real factor) {
 	stems->width = rint(stems->width*factor)/factor;
 	new = stems->start+stems->width;
 	if ( old!=new )
-	    SplineSetsChangeCoord(sc->layers[ly_fore].splines,old,new,false);
+	    SplineSetsChangeCoord(sc->layers[ly_fore].splines,old,new,false,sc->inspiro);
     }
 
     for ( layer = ly_fore; layer<sc->layer_cnt; ++layer ) {
-	SplineSetsRound2Int(sc->layers[layer].splines,factor);
+	SplineSetsRound2Int(sc->layers[layer].splines,factor,sc->inspiro);
 	for ( r=sc->layers[layer].refs; r!=NULL; r=r->next ) {
 	    r->transform[4] = rint(r->transform[4]*factor)/factor;
 	    r->transform[5] = rint(r->transform[5]*factor)/factor;
@@ -6581,22 +6945,31 @@ static void _CVMenuRound2Int(CharView *cv, double factor) {
     SplinePoint *sp;
     RefChar *r;
     AnchorPoint *ap;
+    int i;
 
     CVPreserveState(cv);
     for ( spl= cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl=spl->next ) {
-	for ( sp=spl->first; ; ) {
-	    if ( sp->selected || !anysel )
-		SplinePointRound(sp,factor);
-	    if ( sp->prev!=NULL )
-		SplineRefigure(sp->prev);
-	    if ( sp->next==NULL )
-	break;
-	    sp = sp->next->to;
-	    if ( sp==spl->first )
-	break;
+	if ( cv->sc->inspiro ) {
+	    for ( i=0; i<spl->spiro_cnt-1; ++i )
+		if ( SPIRO_SELECTED(&spl->spiros[i]) || !anysel )
+		    SpiroRound2Int(&spl->spiros[i],factor);
+	    SSRegenerateFromSpiros(spl);
+	} else {
+	    SplineSetSpirosClear(spl);
+	    for ( sp=spl->first; ; ) {
+		if ( sp->selected || !anysel )
+		    SplinePointRound(sp,factor);
+		if ( sp->prev!=NULL )
+		    SplineRefigure(sp->prev);
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+		if ( sp==spl->first )
+	    break;
+	    }
+	    if ( spl->first->prev!=NULL )
+		SplineRefigure(spl->first->prev);
 	}
-	if ( spl->first->prev!=NULL )
-	    SplineRefigure(spl->first->prev);
     }
     if ( cv->drawmode==dm_fore ) {
 	for ( r=cv->sc->layers[ly_fore].refs; r!=NULL; r=r->next ) {
@@ -6909,8 +7282,10 @@ static void CVCanonicalStart(CharView *cv) {
     int changed = 0;
 
     for ( ss = cv->layerheads[cv->drawmode]->splines; ss!=NULL; ss=ss->next )
-	if ( ss->first==ss->last && SPLSelected(ss))
+	if ( ss->first==ss->last && SPLSelected(ss)) {
 	    SPLStartToLeftmost(cv->sc,ss,&changed);
+	    /* The above clears the spiros if needed */
+	}
 }
 
 static void CVMenuCanonicalStart(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -6957,6 +7332,44 @@ return;
 static void CVMenuMakeFirst(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     _CVMenuMakeFirst(cv);
+}
+
+static void _CVMenuSpiroMakeFirst(CharView *cv) {
+    int anypoints = 0, which;
+    SplinePointList *spl, *sel;
+    int i;
+    spiro_cp *newspiros;
+
+    sel = NULL;
+    for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
+	for ( i=0; i<spl->spiro_cnt-1; ++i ) {
+	    if ( SPIRO_SELECTED(&spl->spiros[i])) {
+		if ( SPIRO_SPL_OPEN(spl))
+return;
+		++anypoints;
+		sel = spl;
+		which = i;
+	    }
+	}
+    }
+
+    if ( anypoints!=1 || sel==NULL )
+return;
+
+    CVPreserveState(cv);
+    newspiros = galloc((sel->spiro_max+1)*sizeof(spiro_cp));
+    memcpy(newspiros,sel->spiros+which,(sel->spiro_cnt-1-which)*sizeof(spiro_cp));
+    memcpy(newspiros+(sel->spiro_cnt-1-which),sel->spiros,which*sizeof(spiro_cp));
+    memcpy(newspiros+sel->spiro_cnt-1,sel->spiros+sel->spiro_cnt-1,sizeof(spiro_cp));
+    free(sel->spiros);
+    sel->spiros = newspiros;
+    SSRegenerateFromSpiros(sel);
+    CVCharChangedUpdate(cv);
+}
+
+static void CVMenuSpiroMakeFirst(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    _CVMenuSpiroMakeFirst(cv);
 }
 
 static void _CVMenuMakeLine(CharView *cv) {
@@ -7517,11 +7930,24 @@ static void delistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
+static void rndlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	switch ( mi->mid ) {
+	  case MID_RoundToCluster:
+	    mi->ti.disabled = cv->sc->inspiro;
+	  break;
+        }
+    }
+}
+
 static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv) {
     int anypoints = 0, splinepoints, dir = -2;
     SplinePointList *spl;
     Spline *spline, *first;
     AnchorPoint *ap;
+    spiro_cp *cp;
 
 #ifdef FONTFORGE_CONFIG_TILEPATH
     int badsel = false;
@@ -7569,7 +7995,7 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	  case MID_GetInfo:
 	    {
 		SplinePoint *sp; SplineSet *spl; RefChar *ref; ImageList *img;
-		mi->ti.disabled = !CVOneThingSel(cv,&sp,&spl,&ref,&img,&ap);
+		mi->ti.disabled = !CVOneThingSel(cv,&sp,&spl,&ref,&img,&ap,&cp);
 	    }
 	  break;
 	  case MID_Clockwise:
@@ -7614,6 +8040,9 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	  break;
 	  case MID_Autotrace:
 	    mi->ti.disabled = FindAutoTraceName()==NULL || cv->sc->layers[ly_back].images==NULL;
+	  break;
+	  case MID_Align:
+	    mi->ti.disabled = cv->sc->inspiro;
 	  break;
 	}
     }
@@ -7870,20 +8299,23 @@ static void mtlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void cv_sllistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
     SplinePoint *sp; SplineSet *spl; RefChar *r; ImageList *im;
-    int exactlyone = CVOneThingSel(cv,&sp,&spl,&r,&im,NULL);
+    spiro_cp *scp;
+    int exactlyone = CVOneThingSel(cv,&sp,&spl,&r,&im,NULL,&scp);
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
-	  case MID_NextPt: case MID_PrevPt:
 	  case MID_NextCP: case MID_PrevCP:
+	    mi->ti.disabled = !exactlyone || sp==NULL || cv->sc->inspiro;
+	  break;
+	  case MID_NextPt: case MID_PrevPt:
 	  case MID_FirstPtNextCont:
-	    mi->ti.disabled = !exactlyone || sp==NULL;
+	    mi->ti.disabled = !exactlyone || (sp==NULL && scp==NULL);
 	  break;
 	  case MID_FirstPt: case MID_SelPointAt:
 	    mi->ti.disabled = cv->layerheads[cv->drawmode]->splines==NULL;
 	  break;
 	  case MID_Contours:
-	    mi->ti.disabled = CVAnySelPoints(cv)==NULL;
+	    mi->ti.disabled = !CVAnySelPoints(cv);
 	  break;
 	  case MID_SelectWidth:
 	    mi->ti.disabled = !cv->showhmetrics;
@@ -8324,6 +8756,20 @@ static GMenuItem2 ptlist[] = {
     { NULL }
 };
 
+static GMenuItem2 spiroptlist[] = {
+    { { (unichar_t *) N_("G4 _Curve"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'C' }, H_("G4 Curve|Ctl+2"), NULL, NULL, CVMenuPointType, MID_SpiroG4 },
+    { { (unichar_t *) N_("_G2 Curve"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("G2 Curve|No Shortcut"), NULL, NULL, CVMenuPointType, MID_SpiroG2 },
+    { { (unichar_t *) N_("C_orner"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("Corner|Ctl+3"), NULL, NULL, CVMenuPointType, MID_SpiroCorner },
+    { { (unichar_t *) N_("_Left Tangent"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Left Tangent|Ctl+4"), NULL, NULL, CVMenuPointType, MID_SpiroLeft },
+    { { (unichar_t *) N_("_Right Tangent"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Right Tangent|No Shortcut"), NULL, NULL, CVMenuPointType, MID_SpiroRight },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+/* GT: Make this (selected) point the first point in the glyph */
+    { { (unichar_t *) N_("_Make First"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Make First|Ctl+1"), NULL, NULL, CVMenuSpiroMakeFirst, MID_SpiroMakeFirst },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) N_("_Add Anchor"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("Add Anchor|Ctl+0"), NULL, NULL, CVMenuAddAnchor, MID_AddAnchor },
+    { NULL }
+};
+
 static GMenuItem2 allist[] = {
 /* GT: Align these points to their average position */
     { { (unichar_t *) N_("_Average Points"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("Average Points|Ctl+Shft+@"), NULL, NULL, CVMenuConstrain, MID_Average },
@@ -8351,8 +8797,11 @@ static void smlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_Simplify:
 	  case MID_CleanupGlyph:
 	  case MID_SimplifyMore:
-	  case MID_CanonicalStart:
 	    mi->ti.disabled = cv->layerheads[cv->drawmode]->splines==NULL;
+	  break;
+	  case MID_CanonicalStart:
+	    mi->ti.disabled = cv->layerheads[cv->drawmode]->splines==NULL ||
+		    cv->sc->inspiro;
 	  break;
 	  case MID_CanonicalContours:
 	    mi->ti.disabled = cv->layerheads[cv->drawmode]->splines==NULL ||
@@ -8446,7 +8895,7 @@ static GMenuItem2 trlist[] = {
 static GMenuItem2 rndlist[] = {
     { { (unichar_t *) N_("To _Int"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("To Int|Ctl+Shft+_"), NULL, NULL, CVMenuRound2Int, MID_Round },
     { { (unichar_t *) N_("To _Hundredths"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("To Hundredths|No Shortcut"), NULL, NULL, CVMenuRound2Hundredths, 0 },
-    { { (unichar_t *) N_("_Cluster"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Cluster|No Shortcut"), NULL, NULL, CVMenuCluster },
+    { { (unichar_t *) N_("_Cluster"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Cluster|No Shortcut"), NULL, NULL, CVMenuCluster, MID_RoundToCluster },
     { NULL }
 };
 
@@ -8472,8 +8921,8 @@ static GMenuItem2 ellist[] = {
     { { (unichar_t *) N_("Add E_xtrema"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Add Extrema|Ctl+Shft+X"), NULL, NULL, CVMenuAddExtrema, MID_AddExtrema },
     { { (unichar_t *) N_("Autot_race"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'r' }, H_("Autotrace|Ctl+Shft+T"), NULL, NULL, CVMenuAutotrace, MID_Autotrace },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("A_lign"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, NULL, allist, allistcheck },
-    { { (unichar_t *) N_("Roun_d"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, NULL, rndlist, NULL, NULL, MID_Round },
+    { { (unichar_t *) N_("A_lign"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, NULL, allist, allistcheck, NULL, MID_Align },
+    { { (unichar_t *) N_("Roun_d"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, NULL, rndlist, rndlistcheck, NULL, MID_Round },
     { { (unichar_t *) N_("Order"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, NULL, orlist, orlistcheck },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("Cl_ockwise"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("Clockwise|No Shortcut"), NULL, NULL, CVMenuDir, MID_Clockwise },

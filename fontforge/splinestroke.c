@@ -2019,7 +2019,7 @@ SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
 	ret = temp;
     }
     /* We tend to get (small) rounding errors */
-    SplineSetsRound2Int(ret,1024.);
+    SplineSetsRound2Int(ret,1024.,false);
     /* If we use butt line caps or miter joins then we will likely have */
     /*  some spurious colinear points. If we do, remove them */
     SSesRemoveColinearPoints(ret);
