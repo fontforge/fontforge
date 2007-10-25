@@ -51,7 +51,7 @@ typedef struct quartic {
 /*  into splinefont.h after (or instead of) the definition of chunkalloc()*/
 
 #ifndef chunkalloc
-#define ALLOC_CHUNK	100		/* Number of small chunks to malloc at a time */
+#define ALLOC_CHUNK	1		/* Number of small chunks to malloc at a time */
 #if !defined(FONTFORGE_CONFIG_USE_LONGDOUBLE) && !defined(FONTFORGE_CONFIG_USE_DOUBLE)
 # define CHUNK_MAX	100		/* Maximum size (in chunk units) that we are prepared to allocate */
 					/* The size of our data structures */
@@ -283,6 +283,27 @@ return;
     }
 }
 
+void SplineSetBeziersClear(SplinePointList *spl) {
+    Spline *first, *spline, *next;
+    int nonext;
+
+    if ( spl==NULL )
+return;
+    if ( spl->first!=NULL ) {
+	nonext = spl->first->next==NULL;
+	first = NULL;
+	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline = next ) {
+	    next = spline->to->next;
+	    SplinePointFree(spline->to);
+	    SplineFree(spline);
+	    if ( first==NULL ) first = spline;
+	}
+	if ( spl->last!=spl->first || nonext )
+	    SplinePointFree(spl->first);
+    }
+    spl->first = spl->last = NULL;
+}
+
 void SplinePointListFree(SplinePointList *spl) {
     Spline *first, *spline, *next;
     int nonext;
@@ -301,6 +322,7 @@ return;
 	if ( spl->last!=spl->first || nonext )
 	    SplinePointFree(spl->first);
     }
+    free(spl->spiros);
     chunkfree(spl,sizeof(SplinePointList));
 }
 
@@ -322,6 +344,7 @@ return;
 	if ( freefirst )
 	    SplinePointMDFree(sc,spl->first);
     }
+    free(spl->spiros);
     chunkfree(spl,sizeof(SplinePointList));
 }
 
@@ -342,6 +365,12 @@ void SplinePointListsFree(SplinePointList *head) {
 	next = spl->next;
 	SplinePointListFree(spl);
     }
+}
+
+void SplineSetSpirosClear(SplineSet *spl) {
+    free(spl->spiros);
+    spl->spiros = NULL;
+    spl->spiro_cnt = spl->spiro_max = 0;
 }
 
 void ImageListsFree(ImageList *imgs) {
@@ -1204,6 +1233,11 @@ SplinePointList *SplinePointListCopy1(const SplinePointList *spl) {
 	spline->approx = NULL;
 	cur->last = cpt;
     }
+    if ( spl->spiro_cnt!=0 ) {
+	cur->spiro_cnt = cur->spiro_max = spl->spiro_cnt;
+	cur->spiros = galloc(cur->spiro_cnt*sizeof(spiro_cp));
+	memcpy(cur->spiros,spl->spiros,cur->spiro_cnt*sizeof(spiro_cp));
+    }
 return( cur );
 }
 
@@ -1218,10 +1252,10 @@ static SplinePointList *SplinePointListCopySelected1(SplinePointList *spl) {
 
     start = spl->first;
     if ( spl->first==spl->last ) {
-	/* If it's a circle and the start point is selected then we don't know*/
-	/*  where that selection began (and we have to keep it with the things*/
-	/*  that precede it when we make the new splinesets), so loop until we*/
-	/*  find something unselected */
+	/* If it's a closed contour and the start point is selected then we */
+	/*  don't know where that selection began (and we have to keep it with */
+	/*  the things that precede it when we make the new splinesets), so */
+	/*  loop until we find something unselected */
 	while ( start->selected )
 	    start = start->next->to;
     }
@@ -1272,6 +1306,53 @@ static SplinePointList *SplinePointListCopySelected1(SplinePointList *spl) {
 return( head );
 }
 
+/* If this routine is called we are guarenteed that:
+    at least one point on the splineset is selected
+    not all points on the splineset are selected
+*/
+static SplinePointList *SplinePointListCopySpiroSelected1(SplinePointList *spl) {
+    SplinePointList *head=NULL, *last=NULL, *cur;
+    int i,j;
+    spiro_cp *list = spl->spiros, *freeme = NULL, *temp;
+
+    if ( !SPIRO_SPL_OPEN(spl)) {
+	/* If it's a closed contour and the start point is selected then we */
+	/*  don't know where that selection began (and we have to keep it with */
+	/*  the things that precede it when we make the new splinesets), so */
+	/*  loop until we find something unselected */
+	for ( i=0 ; i<spl->spiro_cnt-1; ++i )
+	    if ( !(SPIRO_SELECTED(&list[i])) )
+	break;
+	if ( i!=0 ) {
+	    freeme = galloc(spl->spiro_cnt*sizeof(spiro_cp));
+	    memcpy(freeme,list+i,(spl->spiro_cnt-1-i)*sizeof(spiro_cp));
+	    memcpy(freeme+(spl->spiro_cnt-1-i),list,i*sizeof(spiro_cp));
+	    /* And copy the list terminator */
+	    memcpy(freeme+spl->spiro_cnt-1,list+spl->spiro_cnt-1,sizeof(spiro_cp));
+	    list = freeme;
+	}
+    }
+    for ( i=0 ; i<spl->spiro_cnt-1; ) {
+	/* Skip unselected things */
+	for ( ; i<spl->spiro_cnt-1 && !SPIRO_SELECTED(&list[i]); ++i );
+	if ( i==spl->spiro_cnt-1 )
+    break;
+	for ( j=i; j<spl->spiro_cnt-1 && SPIRO_SELECTED(&list[j]); ++j );
+	temp = galloc((j-i+2)*sizeof(spiro_cp));
+	memcpy(temp,list+i,(j-i+1)*sizeof(spiro_cp));
+	temp[0].ty = SPIRO_OPEN_CONTOUR;
+	memset(temp+(j-i+i),0,sizeof(spiro_cp));
+	temp[j-i+1].ty = SPIRO_END;
+	cur = SpiroCP2SplineSet( temp );
+	if ( head==NULL )
+	    head = cur;
+	else
+	    last->next = cur;
+	last = cur;
+    }
+return( head );
+}
+
 SplinePointList *SplinePointListCopy(const SplinePointList *base) {
     SplinePointList *head=NULL, *last=NULL, *cur;
 
@@ -1316,16 +1397,89 @@ SplinePointList *SplinePointListCopySelected(SplinePointList *base) {
 return( head );
 }
 
+SplinePointList *SplinePointListCopySpiroSelected(SplinePointList *base) {
+    SplinePointList *head=NULL, *last=NULL, *cur=NULL;
+    int anysel, allsel;
+    int i;
+
+    for ( ; base!=NULL; base = base->next ) {
+	anysel = false; allsel = true;
+	for ( i=0; i<base->spiro_cnt-1; ++i ) {
+	    if ( SPIRO_SELECTED(&base->spiros[i]) )
+		anysel = true;
+	    else
+		allsel = false;
+	}
+	if ( allsel )
+	    cur = SplinePointListCopy1(base);
+	else if ( anysel )
+	    cur = SplinePointListCopySpiroSelected1(base);
+	if ( anysel ) {
+	    if ( head==NULL )
+		head = cur;
+	    else
+		last->next = cur;
+	    for ( last = cur; last->next ; last = last->next );
+	}
+    }
+return( head );
+}
+
+static SplinePointList *SplinePointListSplitSpiros(SplineChar *sc,SplinePointList *spl) {
+    SplinePointList *head=NULL, *last=NULL, *cur;
+    int i;
+    spiro_cp *list = spl->spiros, *freeme = NULL, *temp;
+
+    if ( !SPIRO_SPL_OPEN(spl)) {
+	/* If it's a closed contour and the start point is selected then we */
+	/*  don't know where that selection began (and we have to keep it with */
+	/*  the things that precede it when we make the new splinesets), so */
+	/*  loop until we find something unselected */
+	for ( i=0 ; i<spl->spiro_cnt-1; ++i )
+	    if ( !(SPIRO_SELECTED(&list[i])) )
+	break;
+	if ( i!=0 ) {
+	    freeme = galloc(spl->spiro_cnt*sizeof(spiro_cp));
+	    memcpy(freeme,list+i,(spl->spiro_cnt-1-i)*sizeof(spiro_cp));
+	    memcpy(freeme+(spl->spiro_cnt-1-i),list,i*sizeof(spiro_cp));
+	    /* And copy the list terminator */
+	    memcpy(freeme+spl->spiro_cnt-1,list+spl->spiro_cnt-1,sizeof(spiro_cp));
+	    list = freeme;
+	}
+    }
+    for ( i=0 ; i<spl->spiro_cnt-1; ) {
+	int start = i;
+	/* Retain unselected things */
+	for ( ; i<spl->spiro_cnt-1 && !SPIRO_SELECTED(&list[i]); ++i );
+	if ( i!=start ) {
+	    temp = galloc((i-start+2)*sizeof(spiro_cp));
+	    memcpy(temp,list+start,(i-start)*sizeof(spiro_cp));
+	    temp[0].ty = SPIRO_OPEN_CONTOUR;
+	    memset(temp+(i-start),0,sizeof(spiro_cp));
+	    temp[i-start].ty = SPIRO_END;
+	    cur = SpiroCP2SplineSet( temp );
+	    if ( head==NULL )
+		head = cur;
+	    else
+		last->next = cur;
+	    last = cur;
+	}
+	for ( ; i<spl->spiro_cnt-1 && SPIRO_SELECTED(&list[i]); ++i );
+    }
+    SplinePointListFree(spl);
+return( head );
+}
+
 static SplinePointList *SplinePointListSplit(SplineChar *sc,SplinePointList *spl) {
     SplinePointList *head=NULL, *last=NULL, *cur;
     SplinePoint *first, *start, *next;
 
     start = spl->first;
     if ( spl->first==spl->last ) {
-	/* If it's a circle and the start point isnt selected then we don't know*/
-	/*  where that selection began (and we have to keep it with the things*/
-	/*  that precede it when we make the new splinesets), so loop until we*/
-	/*  find something selected */
+	/* If it's a closed contour and the start point is selected then we */
+	/*  don't know where that selection began (and we have to keep it with */
+	/*  the things that precede it when we make the new splinesets), so */
+	/*  loop until we find something unselected */
 	while ( !start->selected )
 	    start = start->next->to;
     }
@@ -1385,25 +1539,45 @@ SplinePointList *SplinePointListRemoveSelected(SplineChar *sc,SplinePointList *b
     for ( ; base!=NULL; base = next ) {
 	next = base->next;
 	anysel = false; allsel = true;
-	first = NULL;
-	for ( pt=base->first; pt!=NULL && pt!=first; pt = pt->next->to ) {
-	    if ( pt->selected ) anysel = true;
-	    else allsel = false;
-	    if ( first==NULL ) first = pt;
-	    if ( pt->next==NULL )
-	break;
+	if ( !sc->inspiro ) {
+	    first = NULL;
+	    for ( pt=base->first; pt!=NULL && pt!=first; pt = pt->next->to ) {
+		if ( pt->selected ) anysel = true;
+		else allsel = false;
+		if ( first==NULL ) first = pt;
+		if ( pt->next==NULL )
+	    break;
+	    }
+	} else {
+	    int i;
+	    for ( i=0; i<base->spiro_cnt; ++i ) {
+		if ( SPIRO_SELECTED(&base->spiros[i]) )
+		    anysel = true;
+		else
+		    allsel = false;
+	    }
 	}
 	if ( allsel ) {
 	    SplinePointListMDFree(sc,base);
     continue;
 	}
-	if ( head==NULL )
-	    head = base;
-	else
-	    last->next = base;
-	last = base;
-	if ( anysel )
-	    last = SplinePointListSplit(sc,base);
+	if ( !sc->inspiro || !anysel ) {
+	    if ( head==NULL )
+		head = base;
+	    else
+		last->next = base;
+	    last = base;
+	    if ( anysel )
+		last = SplinePointListSplit(sc,base);
+	} else {
+	    SplineSet *ret;
+	    ret = SplinePointListSplitSpiros(sc,base);
+	    if ( head==NULL )
+		head = ret;
+	    else
+		last->next = ret;
+	    for ( last=ret; last->next!=NULL; last=last->next );
+	}
     }
     if ( last!=NULL ) last->next = NULL;
 return( head );
@@ -1487,6 +1661,14 @@ static void TransformPoint(SplinePoint *sp, real transform[6]) {
 	sp->prevcp = sp->me;
 }
 
+static void TransformSpiro(spiro_cp *cp, real transform[6]) {
+    double x;
+
+    x = transform[0]*cp->x + transform[2]*cp->y + transform[4];
+    cp->y = transform[1]*cp->x + transform[3]*cp->y + transform[5];
+    cp->x = x;
+}
+
 SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[6], int allpoints ) {
     Spline *spline, *first;
     SplinePointList *spl;
@@ -1522,6 +1704,16 @@ SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[
 	}
 	if ( !anysel )		/* This splineset had no selected points it's unchanged */
     continue;
+
+	/* If we changed all the points, then transform the spiro version too */
+	/*  otherwise if we just changed some points, throw away the spiro */
+	if ( allsel ) {
+	    int i;
+	    for ( i=0; i<spl->spiro_cnt-1; ++i )
+		TransformSpiro(&spl->spiros[i], transform);
+	} else
+	    SplineSetSpirosClear(spl);
+
 	/* if we changed all the points then the control points are right */
 	/*  otherwise those near the edges may be wonky, fix 'em up */
 	/* Figuring out where the edges of the selection are is difficult */
@@ -1544,6 +1736,42 @@ SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[
 	    if ( !alldone ) SplineRefigureFixup(spline); else SplineRefigure(spline);
 	    if ( first==NULL ) first = spline;
 	}
+    }
+return( base );
+}
+
+SplinePointList *SplinePointListSpiroTransform(SplinePointList *base, real transform[6], int allpoints ) {
+    SplinePointList *spl;
+    int allsel, anysel;
+    int i;
+
+    if ( allpoints )
+return( SplinePointListTransform(base,transform,true));
+
+    for ( spl = base; spl!=NULL; spl = spl->next ) {
+	allsel = true; anysel=false;
+	for ( i=0; i<spl->spiro_cnt-1; ++i )
+	    if ( spl->spiros[i].ty & 0x80 )
+		anysel = true;
+	    else
+		allsel = false;
+	if ( !anysel )
+    continue;
+	if ( allsel ) {
+	    SplinePointList *next = spl->next;
+	    /* If we are transforming everything, then we can just transform */
+	    /*  the beziers too */
+	    spl->next = NULL;
+	    SplinePointListTransform(spl,transform,true);
+	    spl->next = next;
+    continue;
+	}
+	/* If we are transformings some things, then we need to transform the */
+	/*  selected spiros and then regenerate the beziers */
+	for ( i=0; i<spl->spiro_cnt-1; ++i )
+	    if ( spl->spiros[i].ty & 0x80 )
+		TransformSpiro(&spl->spiros[i], transform);
+	SSRegenerateFromSpiros(spl);
     }
 return( base );
 }
@@ -4442,6 +4670,49 @@ return( -1 );
 return( p.t );
 }
 
+int SplineT2SpiroIndex(Spline *spline,double t,SplineSet *spl) {
+    /* User clicked on a spline. Now, where in the spiro array was that? */
+    /* I shall assume that the first time we hit a spiro point that corresponds */
+    /*  to the point. In some really gnarly spiro tangles that might not be */
+    /*  true, but in a well behaved contour I think (hope) it will be ok */
+
+    /* It appears that each spiro cp has a corresponding splinepoint, but */
+    /*  I don't want to rely on that because it won't be true after a simplify*/
+    Spline *sp, *lastsp=spl->first->next;
+    double lastt = 0, test;
+    int i;
+    BasePoint bp;
+
+    for ( i=1; i<spl->spiro_cnt; ++i ) {	/* For once I do mean spiro count, that loops back to the start for close contours */
+	if ( i<spl->spiro_cnt-1 ) {
+	    bp.x = spl->spiros[i].x;
+	    bp.y = spl->spiros[i].y;
+	} else if ( SPIRO_SPL_OPEN(spl))
+return( -1 );
+	else {
+	    bp.x = spl->spiros[0].x;
+	    bp.y = spl->spiros[0].y;
+	}
+	for ( sp=lastsp; ; ) {
+	    test = SplineNearPoint(sp,&bp,.001);
+	    if ( test==-1 ) {
+		if ( sp==spline )
+return( i-1 );
+	    } else {
+		if ( sp==spline && t<test )
+return( i-1 );
+		lastsp = sp;
+		lastt = test;
+	break;
+	    }
+	    if ( sp->to->next==NULL || sp->to==spl->first )
+return( -1 );
+	    sp = sp->to->next;
+	}
+    }
+return( -1 );
+}
+
 static int SplinePrevMinMax(Spline *s,int up) {
     const double t = .9999;
     double y;
@@ -5671,6 +5942,7 @@ int SCRoundToCluster(SplineChar *sc,int layer,int sel,double within,double max) 
 			if ( sp==spl->first )
 		    break;
 		    }
+		    SplineSetSpirosClear(spl);
 		}
 	    }
 	} else {
@@ -5722,6 +5994,7 @@ return(false);				/* Can't be any clusters */
 	    for ( l=ly_fore; l<sc->layer_cnt; ++l ) {
 		for ( spl = sc->layers[l].splines; spl!=NULL; spl=spl->next ) {
 		    first = NULL;
+		    SplineSetSpirosClear(spl);
 		    for ( s=spl->first->next; s!=NULL && s!=first; s=s->to->next ) {
 			SplineRefigure(s);
 			if ( first==NULL ) first = s;

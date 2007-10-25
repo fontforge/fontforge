@@ -31,7 +31,7 @@
 #include "ustring.h"
 
 int CVOneThingSel(CharView *cv, SplinePoint **sp, SplinePointList **_spl,
-	RefChar **ref, ImageList **img, AnchorPoint **ap) {
+	RefChar **ref, ImageList **img, AnchorPoint **ap, spiro_cp **scp) {
     /* if there is exactly one thing selected return it */
     SplinePointList *spl, *found=NULL;
     Spline *spline;
@@ -39,26 +39,39 @@ int CVOneThingSel(CharView *cv, SplinePoint **sp, SplinePointList **_spl,
     RefChar *refs, *foundref=NULL;
     ImageList *imgs, *foundimg=NULL;
     AnchorPoint *aps, *foundap=NULL;
+    spiro_cp *foundcp = NULL;
+    int i;
 
-    *sp = NULL; *_spl=NULL; *ref=NULL; *img = NULL;
+    *sp = NULL; *_spl=NULL; *ref=NULL; *img = NULL; *scp = NULL;
     if ( ap ) *ap = NULL;
     for ( spl= cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl=spl->next ) {
-	if ( spl->first->selected ) {
-	    if ( found!=NULL )
-return( 0 );			/* At least two points */
-	    found = spl; foundsp = spl->first;
-	}
-	for ( spline = spl->first->next; spline!=NULL ; spline=spline->to->next ) {
-	    if ( spline->to==spl->first )
-	break;
-	    if ( spline->to->selected ) {
+	if ( !cv->sc->inspiro ) {
+	    if ( spl->first->selected ) {
 		if ( found!=NULL )
+return( 0 );			/* At least two points */
+		found = spl; foundsp = spl->first;
+	    }
+	    for ( spline = spl->first->next; spline!=NULL ; spline=spline->to->next ) {
+		if ( spline->to==spl->first )
+	    break;
+		if ( spline->to->selected ) {
+		    if ( found!=NULL )
 return( 0 );
-		found = spl; foundsp = spline->to;
+		    found = spl; foundsp = spline->to;
+		}
+	    }
+	} else {
+	    for ( i=0; i<spl->spiro_cnt-1; ++i ) {
+		if ( SPIRO_SELECTED(&spl->spiros[i])) {
+		    if ( found )
+return( 0 );
+		    found = spl;
+		    foundcp = &spl->spiros[i];
+		}
 	    }
 	}
     }
-    *sp = foundsp; *_spl = found;
+    *sp = foundsp; *scp = foundcp; *_spl = found;
 
     if ( cv->drawmode==dm_fore ) {
 	for ( refs=cv->layerheads[cv->drawmode]->refs; refs!=NULL; refs = refs->next ) {
@@ -105,21 +118,32 @@ int CVOneContourSel(CharView *cv, SplinePointList **_spl,
     Spline *spline;
     RefChar *refs, *foundref=NULL;
     ImageList *imgs, *foundimg=NULL;
+    int i;
 
     *_spl=NULL; *ref=NULL; *img = NULL;
     for ( spl= cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl=spl->next ) {
-	if ( spl->first->selected ) {
-	    if ( found!=NULL && found!=spl )
-return( 0 );			/* At least two contours */
-	    found = spl;
-	}
-	for ( spline = spl->first->next; spline!=NULL ; spline=spline->to->next ) {
-	    if ( spline->to==spl->first )
-	break;
-	    if ( spline->to->selected ) {
+	if ( !cv->sc->inspiro ) {
+	    if ( spl->first->selected ) {
 		if ( found!=NULL && found!=spl )
-return( 0 );
+return( 0 );			/* At least two contours */
 		found = spl;
+	    }
+	    for ( spline = spl->first->next; spline!=NULL ; spline=spline->to->next ) {
+		if ( spline->to==spl->first )
+	    break;
+		if ( spline->to->selected ) {
+		    if ( found!=NULL && found!=spl )
+return( 0 );
+		    found = spl;
+		}
+	    }
+	} else {
+	    for ( i=0; i<spl->spiro_cnt-1; ++i ) {
+		if ( SPIRO_SELECTED(&spl->spiros[i])) {
+		    if ( found!=NULL && found!=spl )
+return( 0 );
+		    found = spl;
+		}
 	    }
 	}
     }
@@ -159,52 +183,226 @@ SplinePointList *CVAnySelPointList(CharView *cv) {
     /*  splineset */
     SplinePointList *spl, *found=NULL;
     Spline *spline, *first;
+    int i;
 
     for ( spl= cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl=spl->next ) {
-	if ( spl->first->selected ) {
-	    if ( found!=NULL )
-return( NULL );			/* At least two points */
-	    if ( spl->first->prev!=NULL )
-return( NULL );			/* Not an open splineset */
-	    found = spl;
-	}
-	first = NULL;
-	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
-	    if ( spline->to->selected ) {
-		if ( found!=NULL )
+	if ( cv->sc->inspiro ) {
+	    for ( i = 0; i<spl->spiro_cnt-1; ++i ) {
+		if ( SPIRO_SELECTED(&spl->spiros[i])) {
+		    if ( found==spl )
+			;
+		    else if ( found==NULL )
+			found = spl;
+		    else
 return( NULL );
-		if ( spline->to->next!=NULL )
-return( NULL );			/* Selected point is not at end of a splineset */
+		}
+	    }
+	} else {
+	    if ( spl->first->selected ) {
+		if ( found!=NULL )
+return( NULL );			/* At least two points */
+		if ( spl->first->prev!=NULL )
+return( NULL );			/* Not an open splineset */
 		found = spl;
 	    }
-	    if ( first==NULL ) first = spline;
+	    first = NULL;
+	    for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
+		if ( spline->to->selected ) {
+		    if ( found!=NULL )
+return( NULL );
+		    if ( spline->to->next!=NULL )
+return( NULL );			/* Selected point is not at end of a splineset */
+		    found = spl;
+		}
+		if ( first==NULL ) first = spline;
+	    }
 	}
     }
 return( found );
 }
 
-SplinePoint *CVAnySelPoint(CharView *cv) {
+int CVAnySelPoint(CharView *cv,SplinePoint **sp, spiro_cp **cp) {
     /* if there is exactly one point selected */
     SplinePointList *spl;
     Spline *spline, *first; SplinePoint *found = NULL;
+    spiro_cp *foundcp = NULL;
+    int i;
 
-    for ( spl= cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl=spl->next ) {
-	if ( spl->first->selected ) {
-	    if ( found!=NULL )
-return( NULL );			/* At least two points */
-	    found = spl->first;
+    *sp = NULL; *cp = NULL;
+    if ( cv->sc->inspiro ) {
+	for ( spl= cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl=spl->next ) {
+	    for ( i=0; i<spl->spiro_cnt-1; ++i )
+		if ( SPIRO_SELECTED( &spl->spiros[i]) ) {
+		    if ( foundcp )
+return( false );
+		    foundcp = &spl->spiros[i];
+		}
 	}
-	first = NULL;
-	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
-	    if ( spline->to->selected ) {
+	*cp = foundcp;
+return( foundcp!=NULL );
+    } else {
+	for ( spl= cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl=spl->next ) {
+	    if ( spl->first->selected ) {
 		if ( found!=NULL )
-return( NULL );
-		found = spline->to;
+return( false );			/* At least two points */
+		found = spl->first;
 	    }
-	    if ( first==NULL ) first = spline;
+	    first = NULL;
+	    for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
+		if ( spline->to->selected ) {
+		    if ( found!=NULL )
+return( false );
+		    found = spline->to;
+		}
+		if ( first==NULL ) first = spline;
+	    }
 	}
+	*sp = found;
+return( found!=NULL );
     }
-return( found );
+}
+
+static void CVMergeSPLS(CharView *cv,SplineSet *ss, SplinePoint *base,SplinePoint *sp) {
+    int order2 = cv->sc->parent->order2;
+
+    cv->joinvalid = true;
+    cv->joinpos = *sp; cv->joinpos.selected = false;
+    if ( sp->prev!=NULL )
+	SplineSetReverse(cv->p.spl);
+    if ( sp->prev!=NULL )
+	IError("Base point not at start of splineset in CVMouseDownPoint");
+    /* remove the old spl entry from the chain */
+    if ( cv->p.spl==cv->layerheads[cv->drawmode]->splines )
+	cv->layerheads[cv->drawmode]->splines = cv->p.spl->next;
+    else { SplineSet *temp;
+	for ( temp = cv->layerheads[cv->drawmode]->splines; temp->next!=cv->p.spl; temp = temp->next );
+	temp->next = cv->p.spl->next;
+    }
+    if ( order2 && (!RealNear(base->nextcp.x,sp->prevcp.x) ||
+	    !RealNear(base->nextcp.y,sp->prevcp.y)) ) {
+	base->nonextcp = sp->noprevcp = true;
+	base->nextcp = base->me;
+	sp->prevcp = sp->me;
+    }
+    SplineMake(base,sp,order2);
+    SplineCharDefaultNextCP(base);
+    SplineCharDefaultPrevCP(sp);
+    if ( sp->pointtype==pt_tangent ) {
+	SplineCharTangentNextCP(sp);
+	if ( sp->next ) SplineRefigure(sp->next );
+    }
+    ss->last = cv->p.spl->last;
+    if ( ss->spiros && cv->p.spl->spiros ) {
+	if ( ss->spiro_cnt+cv->p.spl->spiro_cnt > ss->spiro_max )
+	    ss->spiros = grealloc(ss->spiros,
+		    (ss->spiro_max = ss->spiro_cnt+cv->p.spl->spiro_cnt)*sizeof(spiro_cp));
+	memcpy(ss->spiros+ss->spiro_cnt-1,
+		cv->p.spl->spiros+1, (cv->p.spl->spiro_cnt-1)*sizeof(spiro_cp));
+	ss->spiro_cnt += cv->p.spl->spiro_cnt-2;
+    } else
+	SplineSetSpirosClear(ss);
+    cv->p.spl->last = cv->p.spl->first = NULL;
+    SplinePointListFree(cv->p.spl);
+    cv->p.spl = NULL;
+}
+
+static void CVMouseDownSpiroPoint(CharView *cv, GEvent *event) {
+    SplineSet *sel, *ss;
+    SplineChar *sc = cv->sc;
+    spiro_cp *base, *cp;
+    int base_index, cp_index, i;
+    char ty = (cv->active_tool==cvt_curve?SPIRO_G4:
+			    cv->active_tool==cvt_hvcurve?SPIRO_G2:
+			    cv->active_tool==cvt_corner?SPIRO_CORNER:
+			    cv->active_tool==cvt_tangent?SPIRO_LEFT:
+			    /*cv->active_tool==cvt_pen?*/SPIRO_RIGHT);
+
+    cv->active_spl = NULL;
+    cv->active_sp = NULL;
+
+    sel = CVAnySelPointList(cv);
+    if ( sel!=NULL ) {
+	if ( SPIRO_SELECTED(&sel->spiros[0]) ) base_index = 0;
+	else base_index = sel->spiro_cnt-2;
+	base = &sel->spiros[base_index];
+	if ( base==cv->p.spiro )
+return;			/* We clicked on the active point, that's a no-op */
+    }
+    CVPreserveState(cv);
+    CVClearSel(cv);
+    if ( sel!=NULL ) {
+	if ( (cp = cv->p.spiro)!=NULL )
+	    cp_index = cp-cv->p.spl->spiros;
+	cv->lastselcp = base;
+	ss = sel;
+	if ( base_index!=sel->spiro_cnt-2 ) {
+	    SplineSetReverse(sel);
+	    base = &sel->spiros[sel->spiro_cnt-2];
+	    if ( cv->p.spl==sel ) {
+		cp_index = sel->spiro_cnt-2-cp_index;
+		cp = &sel->spiros[cp_index];
+	    }
+	}
+	if ( cp==NULL || (cp_index!=0 && cp_index!=cv->p.spl->spiro_cnt-2) ||
+		cp==base || !SPIRO_SPL_OPEN(cv->p.spl)) {
+	    /* Add a new point */
+	    if ( sel->spiro_cnt>=sel->spiro_max )
+		sel->spiros = grealloc(sel->spiros,(sel->spiro_max += 10)*sizeof(spiro_cp));
+	    cp = &sel->spiros[sel->spiro_cnt-1];
+	    cp[1] = cp[0];		/* Move the final 'z' */
+	    cp->x = cv->p.cx;
+	    cp->y = cv->p.cy;
+	    cp->ty = ty;
+	    SPIRO_DESELECT(cp-1);
+	    ++sel->spiro_cnt;
+	} else if ( cv->p.spl==sel ) {
+	    /* Close the current spline set */
+	    sel->spiros[0].ty = ty;
+	    cv->joinvalid = true;
+	    cv->joincp = *cp; SPIRO_DESELECT(&cv->joincp);
+	} else {
+	    /* Merge two spline sets */
+	    SplinePoint *sp = cp_index==0 ? cv->p.spl->first : cv->p.spl->last;
+	    SplinePoint *basesp = base_index==0 ? sel->first : sel->last;
+	    cv->joincp = *cp; SPIRO_DESELECT(&cv->joincp);
+	    CVMergeSPLS(cv,ss,basesp,sp);
+	}
+    } else if ( cv->p.spline!=NULL ) {
+	/* Add an intermediate point on an already existing spline */
+	ss = cv->p.spl;
+	if ( ss->spiro_cnt>=ss->spiro_max )
+	    ss->spiros = grealloc(ss->spiros,(ss->spiro_max += 10)*sizeof(spiro_cp));
+	for ( i=ss->spiro_cnt-1; i>cv->p.spiro_index; --i )
+	    ss->spiros[i+1] = ss->spiros[i];
+	cp = &ss->spiros[cv->p.spiro_index+1];
+	cp->x = cv->p.cx;
+	cp->y = cv->p.cy;
+	cp->ty = ty;
+	ss = cv->p.spl;
+	cv->joinvalid = true;
+	cv->joincp = *cp; SPIRO_DESELECT(&cv->joincp);
+    } else {
+	/* A new point on a new (open) contour */
+	ss = chunkalloc(sizeof(SplineSet));
+	ss->next = cv->layerheads[cv->drawmode]->splines;
+	cv->layerheads[cv->drawmode]->splines = ss;
+	ss->spiros = galloc((ss->spiro_max=10)*sizeof(spiro_cp));
+	cp = &ss->spiros[0];
+	cp->x = cv->p.cx;
+	cp->y = cv->p.cy;
+	cp->ty = SPIRO_OPEN_CONTOUR;
+	cp[1].x = cp[1].y = 0; cp[1].ty = 'z';
+	ss->spiro_cnt = 2;
+    }
+    SPIRO_SELECT(cp);
+
+    SSRegenerateFromSpiros(ss);
+
+    cv->active_spl = ss;
+    cv->active_cp = cp;
+    CVSetCharChanged(cv,true);
+    CVInfoDraw(cv,cv->gw);
+    SCUpdateAll(sc);
 }
 
 /* When the user tries to add a point (by doing a mouse down with a point tool
@@ -228,6 +426,9 @@ return( found );
 	endif
 
 	and, if the old point is a tangent, we may need to adjust its control pt
+
+    With the introduction of spiro mode (Raph Levien's clothoid splines)
+      we've got to worry about all the above cases for spiro points too.
 */
 void CVMouseDownPoint(CharView *cv, GEvent *event) {
     SplineSet *sel, *ss;
@@ -244,6 +445,11 @@ void CVMouseDownPoint(CharView *cv, GEvent *event) {
 
     cv->active_spl = NULL;
     cv->active_sp = NULL;
+
+    if ( cv->sc->inspiro ) {
+	CVMouseDownSpiroPoint(cv, event);
+return;
+    }
 
     sel = CVAnySelPointList(cv);
     if ( sel!=NULL ) {
@@ -264,6 +470,7 @@ return;			/* We clicked on the active point, that's a no-op */
 	    IError("Base point not at end of splineset in CVMouseDownPoint");
 	if ( sp==NULL || (sp->next!=NULL && sp->prev!=NULL) || sp==base ) {
 	    /* Add a new point */
+	    SplineSetSpirosClear(sel);
 	    sp = chunkalloc(sizeof(SplinePoint));
 	    sp->me.x = cv->p.cx;
 	    sp->me.y = cv->p.cy;
@@ -300,6 +507,7 @@ return;			/* We clicked on the active point, that's a no-op */
 	    ss->last = sp;
 	} else if ( cv->p.spl==sel ) {
 	    /* Close the current spline set */
+	    SplineSetSpirosClear(sel);
 	    cv->joinvalid = true;
 	    cv->joinpos = *sp; cv->joinpos.selected = false;
 	    if ( order2 ) {
@@ -324,35 +532,8 @@ return;			/* We clicked on the active point, that's a no-op */
 	    }
 	} else {
 	    /* Merge two spline sets */
-	    cv->joinvalid = true;
-	    cv->joinpos = *sp; cv->joinpos.selected = false;
-	    if ( sp->prev!=NULL )
-		SplineSetReverse(cv->p.spl);
-	    if ( sp->prev!=NULL )
-		IError("Base point not at start of splineset in CVMouseDownPoint");
-	    /* remove the old spl entry from the chain */
-	    if ( cv->p.spl==cv->layerheads[cv->drawmode]->splines )
-		cv->layerheads[cv->drawmode]->splines = cv->p.spl->next;
-	    else { SplineSet *temp;
-		for ( temp = cv->layerheads[cv->drawmode]->splines; temp->next!=cv->p.spl; temp = temp->next );
-		temp->next = cv->p.spl->next;
-	    }
-	    if ( order2 && (!RealNear(base->nextcp.x,sp->prevcp.x) ||
-		    !RealNear(base->nextcp.y,sp->prevcp.y)) ) {
-		base->nonextcp = sp->noprevcp = true;
-		base->nextcp = base->me;
-		sp->prevcp = sp->me;
-	    }
-	    SplineMake(base,sp,order2);
-	    if ( cv->active_tool!=cvt_pen )
-		SplineCharDefaultNextCP(base);
-	    SplineCharDefaultPrevCP(sp);
-	    if ( sp->pointtype==pt_tangent ) {
-		SplineCharTangentNextCP(sp);
-		if ( sp->next ) SplineRefigure(sp->next );
-	    }
-	    ss->last = cv->p.spl->last;
-	    chunkfree( cv->p.spl,sizeof(SplinePointList) );
+	    SplineSetSpirosClear(sel);
+	    CVMergeSPLS(cv,sel, base,sp);
 	}
 	sp->selected = true;
 	if ( base->pointtype==pt_tangent ) {
@@ -453,6 +634,11 @@ void CVMergeSplineSets(CharView *cv, SplinePoint *active, SplineSet *activess,
     if ( mergess==activess ) {
 	activess->first = activess->last = active;
 	SplinePointMDFree(cv->sc,merge);
+	if ( activess->spiro_cnt!=0 ) {
+	    activess->spiros[0].ty = activess->spiros[activess->spiro_cnt-2].ty;
+	    activess->spiros[activess->spiro_cnt-2] = activess->spiros[activess->spiro_cnt-1];
+	    --activess->spiro_cnt;
+	}
     } else {
 	mergess->last = merge;
 	if ( mergess==cv->layerheads[cv->drawmode]->splines )
@@ -461,6 +647,15 @@ void CVMergeSplineSets(CharView *cv, SplinePoint *active, SplineSet *activess,
 	    for ( spl = cv->layerheads[cv->drawmode]->splines; spl->next!=mergess; spl=spl->next );
 	    spl->next = mergess->next;
 	}
+	if ( activess->spiros && mergess->spiros ) {
+	    if ( activess->spiro_cnt+mergess->spiro_cnt > activess->spiro_max )
+		activess->spiros = grealloc(activess->spiros,
+			(activess->spiro_max = activess->spiro_cnt+mergess->spiro_cnt)*sizeof(spiro_cp));
+	    memcpy(activess->spiros+activess->spiro_cnt-1,
+		    mergess->spiros+1, (mergess->spiro_cnt-1)*sizeof(spiro_cp));
+	    activess->spiro_cnt += mergess->spiro_cnt-2;
+	} else
+	    SplineSetSpirosClear(activess);
 	SplinePointListMDFree(cv->sc,mergess);
     }
     if (( active->pointtype==pt_curve || active->pointtype==pt_hvcurve ) &&
@@ -469,6 +664,37 @@ void CVMergeSplineSets(CharView *cv, SplinePoint *active, SplineSet *activess,
 	    !BpColinear(&active->prev->from->me,&active->me,&active->nextcp))
 	active->nextcpdef = active->prevcpdef = true;
     AdjustControls(active);
+}
+
+static void CVMouseMoveSpiroPoint(CharView *cv, PressedOn *p) {
+    spiro_cp *active = cv->active_cp, *merge = p->spiro;
+    SplineSet *activess = cv->active_spl;
+    int active_index;
+
+    if ( active==NULL )
+return;
+    if ( cv->info.x==active->x && cv->info.y==active->y )
+return;
+
+    if ( !cv->recentchange ) CVPreserveState(cv);
+
+    active->x = cv->info.x;
+    active->y = cv->info.y;
+    CVSetCharChanged(cv,true);
+
+    active_index = active-activess->spiros;
+
+    if ( active!=merge && merge!=NULL && p->spl!=NULL &&
+	    SPIRO_SPL_OPEN(activess) &&
+	    SPIRO_SPL_OPEN(p->spl) &&
+	    (active_index==0 || active_index==activess->spiro_cnt-2) &&
+	    ((merge-p->spl->spiros)==0 || (merge-p->spl->spiros)==p->spl->spiro_cnt-2) ) {
+	SplinePoint *activesp = active_index==0 ? activess->first : activess->last;
+	SplinePoint *mergesp = (merge-p->spl->spiros)==0 ? p->spl->first : p->spl->last;
+	CVMergeSplineSets(cv,activesp,activess,mergesp,p->spl);
+    }
+    SSRegenerateFromSpiros(activess);
+    SCUpdateAll(cv->sc);
 }
 
 /* We move the active point around following the mouse. */
@@ -480,6 +706,11 @@ void CVMouseMovePoint(CharView *cv, PressedOn *p) {
     SplinePoint *active = cv->active_sp, *merge = p->sp;
     SplineSet *activess = cv->active_spl;
 
+    if ( cv->sc->inspiro ) {
+	CVMouseMoveSpiroPoint(cv,p);
+return;
+    }
+
     if ( active==NULL )
 return;
     if ( cv->info.x==active->me.x && cv->info.y==active->me.y )
@@ -488,6 +719,7 @@ return;
     if ( !cv->recentchange ) CVPreserveState(cv);
 
     CVAdjustPoint(cv,active);
+    SplineSetSpirosClear(activess);
     if (( active->next==NULL || active->prev==NULL ) && merge!=NULL && p->spl!=NULL &&
 	    merge!=active &&
 	    (merge->next==NULL || merge->prev==NULL )) {
@@ -502,6 +734,11 @@ void CVMouseMovePen(CharView *cv, PressedOn *p, GEvent *event) {
     int order2_style = (order2 && !(event->u.mouse.state&ksm_alt)) ||
 		    (!order2 && (event->u.mouse.state&ksm_alt));
 
+    if ( cv->sc->inspiro ) {
+	CVMouseMoveSpiroPoint(cv,p);
+return;
+    }
+
     if ( active==NULL )
 return;
     if ( cv->info.x==active->nextcp.x && cv->info.y==active->nextcp.y )
@@ -513,6 +750,7 @@ return;
     if ( cv->info.x==active->me.x && cv->info.y==active->me.y &&
 	    event->type==et_mouseup && cv->sc->parent->order2 )
 return;
+    SplineSetSpirosClear(cv->active_spl);
     cv->lastselpt = cv->active_sp;
 
     active->nextcp.x = cv->info.x;
@@ -576,6 +814,7 @@ void CVMouseUpPoint(CharView *cv,GEvent *event) {
     cv->lastselpt = active;
     cv->active_spl = NULL;
     cv->active_sp = NULL;
+    cv->active_cp = NULL;
     cv->joinvalid = false;
     CVInfoDraw(cv,cv->gw);
     CPEndInfo(cv);

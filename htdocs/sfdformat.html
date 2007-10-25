@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 30-Sep-2007 -->
+  <!-- AP: Last modified: 22-Oct-2007 -->
   <TITLE>Spline Font Database File Format</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -13,10 +13,10 @@
     Spline Font Database
   </H1>
   <P>
-  <FONT COLOR="Red"><STRONG>This page is often grievously out of date. It was
-  a fair approximation to reality on 26 Sept. 2007.</STRONG></FONT> Even if
-  out of date it should be helpful, but if you really need to know the current
-  format look at
+  <FONT COLOR="Red"><STRONG>This page is often grievously out of date. I thought
+  it was a correct on 22 Oct. 2007.</STRONG></FONT> Even if out of date it
+  should be helpful, but if you really need to know the current format look
+  at
   <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/fontforge/sfd.c">sfd.c</A>
   and see what it parses. Some descriptions of esoteric features are not complete,
   but I hope they give you enough hints that you can figure the format out
@@ -76,8 +76,7 @@
     <A NAME="Font-Header">Font Header</A>
   </H3>
   <P>
-  Here is an example of what the first few lines look like (except for the
-  first line, order is largely irrelevant within this section):
+  Here is an example of what the first few lines look like:
   <BLOCKQUOTE>
     <PRE>SplineFontDB: 2.0
 FontName: Ambrosia
@@ -106,14 +105,17 @@ TeXData: 1 10485760 0 269484 134742 89828 526385 1048576 89828
 CreationTime: 1151539072
 ModificationTime: 11516487392
 GaspTable 3 8 2 16 1 65535 3
+DEI: 0
 </PRE>
   </BLOCKQUOTE>
   <P>
-  The first line just identifies the file as an sfd file. The next few lines
-  give the various different names that postscript allows fonts to have. Then
-  some fairly self-explanatory items (if they don't make sense, look them up
-  in the <A HREF="fontinfo.html">font info</A> dlg). A few things need some
-  explanation:
+  The first line just identifies the file as an sfd file and provides a version
+  number. IT MUST BE FIRST. The rest of the file is basically a set of keyword
+  value pairs. Within a given section, order is largely irrelevant. The next
+  few lines give the various different names that postscript allows fonts to
+  have. Then some fairly self-explanatory items (if they don't make sense,
+  look them up in the <A HREF="fontinfo.html">font info</A> dlg). A few things
+  need some explanation:
   <DL>
     <DT>
       TeXData
@@ -174,6 +176,11 @@ CIDVersion: 1.2
     <DD>
       The first number following the keyword gives the number of ppem/flag pairs
       on the line. The next two numbers are the first ppem and first flag.
+    <DT>
+      DEI
+    <DD>
+      It's too hard to explain, see the minutes of the CalTech OddHack committee
+      from 15 Jan 1980. You can safely ignore it.
   </DL>
   <P>
   Some fonts will have some TrueType information in them too (look at the
@@ -198,8 +205,8 @@ OS2UnicodeRanges: 800002ef.50002049.00000000.00000000
 </PRE>
   </BLOCKQUOTE>
   <P>
-  These items also come from the OS/2 and hhea tables but are slightly more
-  complex. The keywords are paired, so <CODE>HheadAscent</CODE> and
+  The following items also come from the OS/2 and hhea tables but are slightly
+  more complex. The keywords are paired, so <CODE>HheadAscent</CODE> and
   <CODE>HheadAOffset</CODE> work together. If the offset keyword is 1 (true)
   then the other keyword is treated as a value relative to what FontForge thinks
   should be the correct value, FontForge will calculate what it thinks the
@@ -247,7 +254,9 @@ OS2StrikeYPos: 614
   condensed, extended, etc.
   <P>
   Some fonts will have Postscript specific information contained in the Private
-  dictionary
+  dictionary (the value is preceeded by an integer holding the number of characters
+  needed for the string representation. It makes reading the file slightly
+  faster, but is ugly. I should not have done that, but too late now).
   <BLOCKQUOTE>
     <PRE>BeginPrivate: 1
 BlueValues 23 [-19 0 502 517 750 768]
@@ -716,8 +725,124 @@ EndChar
   "xc0" means that the first two hints are active (0x80 &amp; 0x40) while "xa0"
   means that the first and third are (0x80 and 0x20).
   <P>
+  If you have been using <A href="http://www.levien.com/spiro/">Raph Levien's
+  Spiro package</A> you may also have a set of Spiro control points. These
+  appear inside the SplineSet list after each contour. It is quite possible
+  that some contours will have spiros and that others may not.
+  <P>
+  The following is the lower case 'a' glyph from Raph's Incolsola font, converted
+  into an sfd file.
+  <BLOCKQUOTE>
+    <PRE>Fore
+115 467 m 1
+ 134.212 486.845 157.062 503.125 182 515 c 0
+ 221.656 533.883 266.084 541.787 310 541 c 0
+ 338.088 540.496 366.236 536.384 392.804 527.254 c 0
+ 419.37 518.123 444.305 503.666 464.14 483.772 c 0
+ 483.975 463.879 498.253 438.648 505.793 411.587 c 0
+ 513.333 384.526 514 356.092 514 328 c 2
+ 514 0 l 1
+ 435 0 l 1
+ 435 58 l 1
+ 381.951 14.5264 314.586 -12.708 246 -13 c 0
+ 205.572 -13.1719 164.446 -3.24219 131.088 19.5986 c 0
+ 97.7295 42.4385 73.3516 78.9277 68 119 c 0
+ 64.5488 144.84 68.8574 171.584 79.7275 195.279 c 0
+ 90.5977 218.975 107.824 239.525 128.391 255.545 c 0
+ 169.524 287.585 222.188 301.168 274 307 c 0
+ 321.422 312.338 369.278 312 417 312 c 2
+ 434 312 l 1
+ 434 331 l 2
+ 434 346.261 434.018 361.578 431.955 376.699 c 0
+ 429.892 391.819 425.593 406.762 418 420 c 0
+ 407.035 439.119 389.166 453.909 368.792 462.316 c 0
+ 348.418 470.724 326.037 473.348 304 473 c 0
+ 272.076 472.496 240.025 466.302 211 453 c 0
+ 190.445 443.58 171.617 430.351 156 414 c 1
+ 115 467 l 1
+  Spiro
+    115 467 v
+    182 515 o
+    310 541 o
+    514 328 [
+    514 0 v
+    435 0 v
+    435 58 v
+    246 -13 o
+    68 119 o
+    274 307 o
+    417 312 [
+    434 312 v
+    434 331 ]
+    418 420 o
+    304 473 o
+    211 453 o
+    156 414 v
+    0 0 z
+  EndSpiro
+437 248 m 1
+ 418 248 l 2
+ 372.981 248 327.844 249.961 283 246 c 0
+ 248.938 242.992 213.941 235.036 187.152 213.785 c 0
+ 173.758 203.159 162.801 189.275 156.555 173.36 c 0
+ 150.308 157.445 148.943 139.609 153 123 c 0
+ 158.267 101.438 172.606 82.5566 191.107 70.2959 c 0
+ 209.608 58.0342 231.83 52.0508 254 51 c 0
+ 293.532 49.126 333.197 61.8564 366 84 c 0
+ 387.405 98.4502 407.011 116.318 420.258 138.489 c 0
+ 426.881 149.574 431.634 161.775 434.188 174.434 c 0
+ 436.742 187.092 437 200.087 437 213 c 2
+ 437 248 l 1
+  Spiro
+    437 248 v
+    418 248 ]
+    283 246 o
+    153 123 o
+    254 51 o
+    366 84 ]
+    437 213 [
+    0 0 z
+  EndSpiro
+EndSplineSet
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  The spiro data follows Raph's "Plate file" conventions. Each control point
+  has a location (x,y) and a point type. A point type is either:
+  <UL>
+    <LI>
+      <CODE>{</CODE> -- May only be on the first control point, indicates that
+      the contour is open
+    <LI>
+      <CODE>v</CODE> -- Indicates a corner point
+    <LI>
+      <CODE>o</CODE> -- Indicates a G4 curve point
+    <LI>
+      <CODE>c</CODE> -- Indicates a G2 curve point
+    <LI>
+      <CODE>[</CODE> -- Indicates a left point
+    <LI>
+      <CODE>]</CODE> -- Indicates a right point
+  </UL>
+  <P>
+  The last spiro should have a point type of <CODE>z</CODE>. It is not part
+  of the contour, it merely marks the end of the contour.
+  <P>
+  (Actually this doesn't quite follow Raph's conventions: His plate files have
+  a different coordinate system, and his final <CODE>z</CODE> doesn't have
+  any coordinates).
+  <P>
+  If the glyph should open in spiro mode (displaying spiro control points rather
+  than bezier controls) there will be an "InSpiro" entry
+  <BLOCKQUOTE>
+    <PRE>InSpiro: 1
+Flags: HO
+Fore
+</PRE>
+  </BLOCKQUOTE>
+  <P>
   A set of splines in the background is similar, it will be introduced by a
-  <CODE>Back</CODE> entry.
+  <CODE>Back</CODE> entry, it may also have spiros.
   <P>
   While a background image is stored in the following horrible format:
   <BLOCKQUOTE>
@@ -824,9 +949,7 @@ EndChar
   would have to be given as 0x3800 (because two bytes are needed to accommodate
   nine bits).
   <P>
-  If a font has been loaded from a truetype file it may containing hinting
-  information (FontForge does not attempt to understand truetype hints, just
-  to preserve them)
+  Glyphs in quadratic fonts (truetype) may containing truetype instructions
   <BLOCKQUOTE>
     <PRE>TtfInstrs: 107
 5Xtqo&amp;gTLA(_S)TQj!Kq"UP8&lt;!&lt;rr:&amp;$QcW!"K,K&amp;kWe?(^pl]#mUY&lt;!s\f7"U&gt;G:!%\s-3WRec
@@ -1251,7 +1374,7 @@ MacName: 0 1 9 "Tr\217s gras"
   </H2>
   <P>
   <A HREF="errrecovery.html">Error recovery</A> files are saved in
-  ~/.PfaEdit/autosave, they have quite random looking names and end in .asfd.
+  ~/.FontForge/autosave, they have quite random looking names and end in .asfd.
   They look very similar to .sfd files above.
   <P>
   If an asfd file starts with a line:

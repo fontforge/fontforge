@@ -23,11 +23,11 @@ _CFLAGS = -I$(srcdir)/../inc -I$(srcdir) -I. -I$(srcdir)/../fontforge \
 CFLAGS = @CFLAGS@ $(_CFLAGS)
 
 O=lo
-LIB_FF_SPIRO_OBJECTS = spiro.$O spiro2ff.$O bezctx_ff.$O bezctx.$O
+LIB_FF_SPIRO_OBJECTS = spiro.$O bezctx.$O
 
 LIBS = -lm
 
-all: libffspiro.la
+all: libspiro.la
 
 
 clean:
@@ -40,12 +40,12 @@ distclean: clean
 %.lo: %.c
 	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -c $<
 
-libffspiro.la: $(LIB_FF_SPIRO_OBJECTS)
-	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) -no-undefined @LDFLAGS@  -o libffspiro.la $(LIB_FF_SPIRO_OBJECTS) $(LIBS) \
+libspiro.la: $(LIB_FF_SPIRO_OBJECTS)
+	$(LIBTOOL) --mode=link $(CC) $(CFLAGS) -no-undefined @LDFLAGS@  -o libspiro.la $(LIB_FF_SPIRO_OBJECTS) $(LIBS) \
 	    @LIBS@ \
 	    -rpath $(libdir) -version-info $(FFSPIRO_VERSION):$(FFSPIRO_REVISION):$(FFSPIRO_AGE)
 
 install: all
 	mkdir -p $(DESTDIR)$(libdir)
-	$(LIBTOOL) --mode=install $(INSTALL) -c libffspiro.la $(DESTDIR)$(libdir)/libffspiro.la
+	$(LIBTOOL) --mode=install $(INSTALL) -c libspiro.la $(DESTDIR)$(libdir)/libspiro.la
 	$(LIBTOOL) --mode=finish $(DESTDIR)$(libdir)

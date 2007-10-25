@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 2-Oct-2007 -->
+  <!-- AP: Last modified: 18-Oct-2007 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -310,19 +310,19 @@
       <TH colspan=3>User Interface Methods</TH>
     </TR>
     <TR>
-      <TD colspan=3>Users may define scripts to be run when menu items are invoked.
-	Some of these scripts will want to ask users questions, so this section provides
-	routines to determine if fontforge has a user interface, a command to add
-	menu items, and various small standard dialogs to interact with the user.
-	I do not currently provide a mechanism for allowing people to define special
-	purpose dialogs (for example they might want to ask more than one question
-	in a dialog, and I don't support that).
+      <TD colspan=3><A NAME="python-init-scripts">Users</A> may define scripts
+	to be run when menu items are invoked. Some of these scripts will want to
+	ask users questions, so this section provides routines to determine if fontforge
+	has a user interface, a command to add menu items, and various small standard
+	dialogs to interact with the user. I do not currently provide a mechanism
+	for allowing people to define special purpose dialogs (for example they might
+	want to ask more than one question in a dialog, and I don't support that).
 	<P>
 	When FontForge starts (if it's a fontforge with python) it will look at the
 	directories <CODE>$(PREFIX)/share/fontforge/python</CODE> and
-	<CODE>~/.PfaEdit/python</CODE> and attempt to run all files in those directories
-	which end in ".py". Presumably these files will allow people to customize
-	the user interface to suit their needs.
+	<CODE>~/.FontForge/python</CODE> and attempt to run all files in those
+	directories which end in ".py". Presumably these files will allow people
+	to customize the user interface to suit their needs.
 	<P>
 	Currently it reads the files in directory order (which is generally somewhere
 	between creation order and totally random). It will read the system directory

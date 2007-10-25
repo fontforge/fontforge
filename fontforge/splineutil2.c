@@ -1408,13 +1408,14 @@ void SSOverlapClusterCpAngles(SplineSet *base,double within) {
 static SplinePointList *SplinePointListMerge(SplineChar *sc, SplinePointList *spl,int type) {
     Spline *spline, *first;
     SplinePoint *nextp, *curp, *selectme;
-    int all;
+    int all, any;
 
     /* If the entire splineset is selected, it should merge into oblivion */
     first = NULL;
-    all = spl->first->selected;
+    any = all = spl->first->selected;
     for ( spline = spl->first->next; spline!=NULL && spline!=first && all; spline=spline->to->next ) {
-	if ( !spline->to->selected ) all = false;
+	if ( spline->to->selected ) any = true;
+	else all = false;
 	if ( first==NULL ) first = spline;
     }
     if ( spl->first->next!=NULL && spl->first->next->to==spl->first &&
@@ -1471,6 +1472,8 @@ return( NULL );			/* Some one else should free it and reorder the spline set lis
 	selectme = nextp;
     }
     if ( selectme!=NULL ) selectme->selected = true;
+    if ( any )
+	SplineSetSpirosClear(spl);
 return( spl );
 }
 
@@ -2380,6 +2383,7 @@ void SPLStartToLeftmost(SplineChar *sc,SplinePointList *spl, int *changed) {
 		SCPreserveState(sc,false);
 		*changed = true;
 	    }
+	    SplineSetSpirosClear(spl);
 	    spl->first = spl->last = best;
 	}
     }
@@ -2499,6 +2503,11 @@ static int SplineSetMakeLoop(SplineSet *spl,real fudge) {
 	spl->first->prevcpdef = spl->last->prevcpdef;
 	SplinePointFree(spl->last);
 	spl->last = spl->first;
+	if ( spl->spiros!=NULL ) {
+	    spl->spiros[0].ty = spl->spiros[spl->spiro_cnt-2].ty;
+	    spl->spiros[spl->spiro_cnt-2] = spl->spiros[spl->spiro_cnt-1];
+	    --spl->spiro_cnt;
+	}
 return( true );
     }
 return( false );
@@ -2506,6 +2515,9 @@ return( false );
 
 SplineSet *SplineSetJoin(SplineSet *start,int doall,real fudge,int *changed) {
     SplineSet *spl, *spl2, *prev;
+    /* Few special cases for spiros here because the start and end points */
+    /*  will be the same for spiros and beziers. We just need to fixup spiros */
+    /*  at the end */
 
     *changed = false;
     for ( spl=start; spl!=NULL; spl=spl->next ) {
@@ -2551,7 +2563,17 @@ SplineSet *SplineSetJoin(SplineSet *start,int doall,real fudge,int *changed) {
 			    prev->next = spl2->next;
 			else
 			    start = spl2->next;
-			chunkfree(spl2,sizeof(SplineSet));
+			if ( spl->spiros && spl2->spiros ) {
+			    if ( spl->spiro_cnt+spl2->spiro_cnt > spl->spiro_max )
+				spl->spiros = grealloc(spl->spiros,
+					(spl->spiro_max = spl->spiro_cnt+spl2->spiro_cnt)*sizeof(spiro_cp));
+			    memcpy(spl->spiros+spl->spiro_cnt-1,
+				    spl2->spiros+1, (spl2->spiro_cnt-1)*sizeof(spiro_cp));
+			    spl->spiro_cnt += spl2->spiro_cnt-2;
+			} else
+			    SplineSetSpirosClear(spl);
+			spl2->last = spl2->first = NULL;
+			SplinePointListFree(spl2);
 			SplineSetMakeLoop(spl,fudge);
 			*changed = true;
 		break;
@@ -3450,12 +3472,18 @@ void SplinePointListSet(SplinePointList *tobase, SplinePointList *frombase) {
 int PointListIsSelected(SplinePointList *spl) {
     int anypoints = 0;
     Spline *spline, *first;
+    int i;
 
     first = NULL;
     if ( spl->first->selected ) anypoints = true;
     for ( spline=spl->first->next; spline!=NULL && spline!=first && !anypoints; spline = spline->to->next ) {
 	if ( spline->to->selected ) anypoints = true;
 	if ( first == NULL ) first = spline;
+    }
+    if ( !anypoints && spl->spiro_cnt!=0 ) {
+	for ( i=0; i<spl->spiro_cnt-1; ++i )
+	    if ( SPIRO_SELECTED(&spl->spiros[i]))
+return( true );
     }
 return( anypoints );
 }
@@ -3465,6 +3493,7 @@ SplineSet *SplineSetReverse(SplineSet *spl) {
     BasePoint tp;
     SplinePoint *temp;
     int bool;
+    int i;
     /* reverse the splineset so that what was the start point becomes the end */
     /*  and vice versa. This entails reversing every individual spline, and */
     /*  each point */
@@ -3514,6 +3543,18 @@ return( spl );			/* Only one point, reversal is meaningless */
 	spl->last = temp;
 	spl->first->prev = NULL;
 	spl->last->next = NULL;
+    }
+
+    if ( spl->spiro_cnt>2 ) {
+	for ( i=(spl->spiro_cnt-1)/2-1; i>=0; --i ) {
+	    spiro_cp temp_cp = spl->spiros[i];
+	    spl->spiros[i] = spl->spiros[spl->spiro_cnt-2-i];
+	    spl->spiros[spl->spiro_cnt-2-i] = temp_cp;
+	}
+	if ( (spl->spiros[spl->spiro_cnt-2].ty&0x7f)==SPIRO_OPEN_CONTOUR ) {
+	    spl->spiros[spl->spiro_cnt-2].ty = (spl->spiros[0].ty&0x7f) | (spl->spiros[spl->spiro_cnt-2].ty&0x80);
+	    spl->spiros[0].ty = SPIRO_OPEN_CONTOUR | (spl->spiros[0].ty&0x80);
+	}
     }
 return( spl );
 }

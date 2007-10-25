@@ -93,6 +93,10 @@ typedef struct pressedOn {
     float ex, ey;		/* end of last rubber band rectangle */
     BasePoint constrain;	/* Point to which we constrain movement */
     BasePoint cp;		/* Original control point position */
+    spiro_cp *spiro;		/* If they clicked on a spiro point */
+    int spiro_index;		/* index of a clicked spiro_cp, or */
+			/* if they clicked on the spline between spiros, */
+			/* this is the spiro indexof the preceding spiro */
 } PressedOn;
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -109,7 +113,10 @@ enum cvtools { cvt_pointer, cvt_magnify,
 	cvt_rect, cvt_poly,
 	cvt_elipse, cvt_star,
 	cvt_minify, cvt_max=cvt_minify,
-	cvt_none = -1};
+	cvt_none = -1,
+	cvt_spirog4=cvt_curve, cvt_spirog2=cvt_hvcurve,
+	cvt_spirocorner=cvt_corner, cvt_spiroleft=cvt_tangent,
+	cvt_spiroright=cvt_pen};
 #endif
 enum bvtools { bvt_pointer, bvt_magnify,
 	bvt_pencil, bvt_line,
@@ -266,6 +273,7 @@ typedef struct charview {
     unsigned int showcpinfo: 1;
     unsigned int showtabs: 1;
     unsigned int showsidebearings: 1;
+    unsigned int showing_spiro_pt_menu: 1;
     Layer *layerheads[dm_max];
     real scale;
 #if defined(FONTFORGE_CONFIG_GTK)
@@ -315,12 +323,14 @@ typedef struct charview {
     PressedOn p;
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     SplinePoint *lastselpt;
+    spiro_cp *lastselcp;
     /*GWindow tools, layers;*/
     int8 b1_tool, cb1_tool, b2_tool, cb2_tool;		/* Button 3 does a popup */
     int8 s1_tool, s2_tool, er_tool;			/* Bindings for wacom stylus and eraser */
     int8 showing_tool, pressed_tool, pressed_display, had_control, active_tool;
     SplinePointList *active_spl;
     SplinePoint *active_sp;
+    spiro_cp *active_cp;
     IPoint handscroll_base;
     uint16 rfh, ras;
     BasePoint lastknife;
@@ -336,6 +346,7 @@ typedef struct charview {
     real expandwidth, expandheight;
     SplinePointList *active_shape;
     SplinePoint joinpos;
+    spiro_cp joincp;
     SplineChar *template1, *template2;
 #if HANYANG
     struct jamodisplay *jamodisplay;
@@ -1268,7 +1279,7 @@ extern void CVSetCharChanged(CharView *cv,int changed);
 extern void _CVCharChangedUpdate(CharView *cv,int changed);
 extern void CVCharChangedUpdate(CharView *cv);
 extern int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi, int *anya);
-extern SplinePoint *CVAnySelPoints(CharView *cv);
+extern int CVAnySelPoints(CharView *cv);
 extern void CVSelectPointAt(CharView *cv);
 extern int CVTwoForePointsSelected(CharView *cv, SplinePoint **sp1, SplinePoint **sp2);
 extern int CVNumForePointsSelected(CharView *cv, BasePoint **sp);
@@ -1277,9 +1288,9 @@ extern int CVSetSel(CharView *cv,int mask);
 extern void CVInvertSel(CharView *cv);
 extern int CVAllSelected(CharView *cv);
 extern SplinePointList *CVAnySelPointList(CharView *cv);
-extern SplinePoint *CVAnySelPoint(CharView *cv);
+extern int CVAnySelPoint(CharView *cv, SplinePoint **selsp, spiro_cp **selcp);
 extern int CVOneThingSel(CharView *cv, SplinePoint **sp, SplinePointList **spl,
-	RefChar **ref, ImageList **img, AnchorPoint **ap);
+	RefChar **ref, ImageList **img, AnchorPoint **ap, spiro_cp **cp);
 extern int CVOneContourSel(CharView *cv, SplinePointList **_spl,
 	RefChar **ref, ImageList **img);
 extern void RevertedGlyphReferenceFixup(SplineChar *sc, SplineFont *sf);

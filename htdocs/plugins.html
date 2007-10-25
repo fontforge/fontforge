@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-Nov-2005 -->
-  <!-- AP: Last modified: 10-Nov-2005 -->
+  <!-- AP: Last modified: 18-Oct-2007 -->
   <TITLE>Plugins in FontForge</TITLE>
 </HEAD>
 <BODY>
@@ -21,8 +21,11 @@ directories:
     <CODE>/usr/local/share/fontforge/plugins</CODE><BR>
     (more precisely: <CODE>$(PREFIX)/share/fontforge/plugins</CODE>)
   <LI>
-    <CODE>~/.PfaEdit/plugins</CODE>
+    <CODE>~/.FontForge/plugins</CODE>
 </UL>
+<P>
+Most of what I once expected to do with plugins I now do with
+<A HREF="python.html#python-init-scripts">python scripts</A>.
 <H2>
   Installing a one of my example plugins
 </H2>
@@ -44,20 +47,20 @@ FontForge currently supports two types of plugins:
   <LI>
     plugins which add a 2byte encoding
   <LI>
-    plugins which add a scripting command
+    plugins which add a scripting command to the native scripting interface.
 </UL>
 <P>
 (Actually I suppose there is a third type. When it loads a plugin FF calls
 an initialization routine. I suppose the plugin could just start running
 and doing things without ever returning to fontforge).
 <P>
-I expect I will add
+I once expected to add
 <UL>
   <LI>
     plugins which add new menu items
 </UL>
 <P>
-(but I haven't yet).
+(but I did that in python instead).
 <P>
 When FontForge loads a plugin it calls a routine <CODE>int
 FontForgeInit(void)</CODE>. This routine is responsible for registering the

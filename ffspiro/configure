@@ -425,7 +425,7 @@ PACKAGE_VERSION=
 PACKAGE_STRING=
 PACKAGE_BUGREPORT=
 
-ac_unique_file="spiro2ff.c"
+ac_unique_file="Makefile.in"
 # Factoring default headers for most tests.
 ac_includes_default="\
 #include <stdio.h>

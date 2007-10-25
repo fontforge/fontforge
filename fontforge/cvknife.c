@@ -94,6 +94,83 @@ void CVMouseMoveKnife(CharView *cv, PressedOn *p) {
 #endif
 }
 
+#if !defined(KNIFE_CONTINUOUS)
+static void ReorderSpirosAndAddAndCut(SplineSet *spl,int spiro_index) {
+    /* We just cut a closed contour. It is now open. */
+    /* If spl->spiros[spiro_index] == spl->first->me then they cut on top of */
+    /*  a point which already existed */
+    /*   If so, move that point to the head of the list */
+    /*   copy it so that it's at the end of the list too */
+    /*   mark the start as SPIRO_OPEN */
+    /* Otherwise they cut between spiro_cps */
+    /*  Insert 2 copies of spl->first->me after spiro_index */
+    /*  rotate so that one of these is at the end of the list and the other at the start */
+    /*  mark start as SPIRO_OPEN */
+    spiro_cp *newspiros;
+
+    if ( spiro_index!=spl->spiro_cnt-1 &&
+	    spl->first->me.x == spl->spiros[spiro_index].x &&
+	    spl->first->me.y == spl->spiros[spiro_index].y ) {
+	newspiros = galloc((spl->spiro_cnt+1) * sizeof(spiro_cp));
+	memcpy(newspiros,spl->spiros+spiro_index,(spl->spiro_cnt-1-spiro_index)*sizeof(spiro_cp));
+	memcpy(newspiros+(spl->spiro_cnt-1-spiro_index),spl->spiros,spiro_index*sizeof(spiro_cp));
+	memcpy(newspiros+spl->spiro_cnt-1,newspiros,sizeof(spiro_cp));
+	memcpy(newspiros+spl->spiro_cnt,spl->spiros+spl->spiro_cnt-1,sizeof(spiro_cp));
+	newspiros[0].ty = SPIRO_OPEN_CONTOUR;
+	free(spl->spiros);
+	spl->spiros = newspiros;
+	++(spl->spiro_cnt);
+	spl->spiro_max = spl->spiro_cnt;
+    } else {
+	newspiros = galloc((spl->spiro_cnt+2) * sizeof(spiro_cp));
+	newspiros[0].x = spl->first->me.x;
+	newspiros[0].y = spl->first->me.y;
+	newspiros[0].ty = SPIRO_OPEN_CONTOUR;
+	memcpy(newspiros+1,spl->spiros+spiro_index+1,(spl->spiro_cnt-1-(spiro_index+1))*sizeof(spiro_cp));
+	memcpy(newspiros+1+(spl->spiro_cnt-1-(spiro_index+1)),spl->spiros,(spiro_index+1)*sizeof(spiro_cp));
+	memcpy(newspiros+spl->spiro_cnt,newspiros,sizeof(spiro_cp));
+	memcpy(newspiros+spl->spiro_cnt+1,spl->spiros+spl->spiro_cnt-1,sizeof(spiro_cp));
+	newspiros[spl->spiro_cnt].ty = SPIRO_G4;
+	free(spl->spiros);
+	spl->spiros = newspiros;
+	spl->spiro_cnt += 2;
+	spl->spiro_max = spl->spiro_cnt;
+    }
+}
+
+static void SplitSpirosAndAddAndCut(SplineSet *spl,SplineSet *spl2,int spiro_index) {
+    /* OK, spl was an open contour and we just cut it at spiro_index */
+    /* We don't need to rotate the spiros */
+    /* The first half of spl remains in it. (We'll leave all spiros up to and including spiro_index) */
+    /* If spl->spiros[spiro_index] != spl->first->me we must add spl->first here */
+    /* In the spl2 we either start out with spl->spiros[spiro_index] or with spl->first */
+    /* then add all spiros after spiro_index */
+
+    spl2->spiros = galloc((spl->spiro_cnt-spiro_index+2) * sizeof(spiro_cp));
+    spl2->spiro_max = spl->spiro_cnt-spiro_index+2;
+    if ( spl2->first->me.x == spl->spiros[spiro_index].x &&
+	    spl2->first->me.y == spl->spiros[spiro_index].y ) {
+	memcpy(spl2->spiros,spl->spiros+spiro_index,(spl->spiro_cnt-spiro_index)*sizeof(spiro_cp));
+	spl2->spiros[0].ty = SPIRO_OPEN_CONTOUR;
+	memcpy(spl->spiros+spiro_index+1,spl->spiros+spl->spiro_cnt-1,sizeof(spiro_cp));
+	spl2->spiro_cnt = spl->spiro_cnt-spiro_index;
+	spl->spiro_cnt = spiro_index+2;
+    } else {
+	spl2->spiros[0].x = spl2->first->me.x;
+	spl2->spiros[0].y = spl2->first->me.y;
+	spl2->spiros[0].ty = SPIRO_OPEN_CONTOUR;
+	memcpy(spl2->spiros+1,spl->spiros+spiro_index+1,(spl->spiro_cnt-(spiro_index+1))*sizeof(spiro_cp));
+	spl2->spiro_cnt = spl->spiro_cnt-spiro_index;
+	if ( spiro_index+3>spl->spiro_max )
+	    spl->spiros = grealloc(spl->spiros,(spl->spiro_max=spiro_index+3)*sizeof(spiro_cp));
+	memcpy(spl->spiros+spiro_index+1,spl2->spiros,sizeof(spiro_cp));
+	spl->spiros[spiro_index+1].ty = SPIRO_G4;
+	memcpy(spl->spiros+spiro_index+2,spl->spiros+spl->spiro_cnt-1,sizeof(spiro_cp));
+	spl->spiro_cnt = spiro_index+3;
+    }
+}
+#endif
+	
 void CVMouseUpKnife(CharView *cv, GEvent *event) {
 #if !defined(KNIFE_CONTINUOUS)
     /* draw a line from (cv->p.cx,cv->p.cy) to (cv->info.x,cv->info.y) */
@@ -106,6 +183,7 @@ void CVMouseUpKnife(CharView *cv, GEvent *event) {
     extended t1s[10], t2s[10];
     int foundsomething = true, ever = false;
     int i;
+    int spiro_index = 0;
 
     memset(&dummy,0,sizeof(dummy));
     memset(&dummyfrom,0,sizeof(dummyfrom));
@@ -120,6 +198,9 @@ void CVMouseUpKnife(CharView *cv, GEvent *event) {
     dummy.from = &dummyfrom; dummy.to = &dummyto;
     dummy.islinear = dummy.knownlinear = true;
     dummyfrom.next = dummyto.prev = &dummy;
+
+    for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL ; spl = spl->next )
+	spl->ticked = false;
 
     while ( foundsomething ) {
 	foundsomething = false;
@@ -152,6 +233,7 @@ void CVMouseUpKnife(CharView *cv, GEvent *event) {
 			    }
 			    s->to->prev = s->from->next = NULL;
 			    SplineFree(s);
+			    SplineSetSpirosClear(spl);
 			}
 		    } else {
 			for ( i=0; i<4 && t1s[i]!=-1 &&
@@ -164,6 +246,12 @@ void CVMouseUpKnife(CharView *cv, GEvent *event) {
 			    if ( !ever )
 				CVPreserveState(cv);
 			    ever = true;
+			    spiro_index = -1;
+			    if ( cv->sc->inspiro ) {
+				if ( spl->spiro_cnt!=0 )
+				    spiro_index = SplineT2SpiroIndex(s,t1s[i],spl);
+			    } else
+				SplineSetSpirosClear(spl);
 			    if ( t1s[i]<.001 ) {
 				mid = s->from;
 			    } else if ( t1s[i]>1-.001 ) {
@@ -183,9 +271,12 @@ void CVMouseUpKnife(CharView *cv, GEvent *event) {
 			    mid->next = NULL;
 			    mid2->prev = NULL;
 			    mid2->next->from = mid2;
+			    spl->ticked = true;
 			    if ( spl->first==spl->last ) {
 				spl->first = mid2;
 				spl->last = mid;
+			        if ( spiro_index!=-1 )
+				    ReorderSpirosAndAddAndCut(spl,spiro_index);
 			    } else {
 				spl2 = chunkalloc(sizeof(SplineSet));
 				spl2->next = spl->next;
@@ -193,6 +284,9 @@ void CVMouseUpKnife(CharView *cv, GEvent *event) {
 				spl2->first = mid2;
 				spl2->last = spl->last;
 				spl->last = mid;
+			        if ( spiro_index!=-1 )
+				    SplitSpirosAndAddAndCut(spl,spl2,spiro_index);
+				spl2->ticked = true;
 			    }
 			}
 		    }
@@ -201,8 +295,14 @@ void CVMouseUpKnife(CharView *cv, GEvent *event) {
 	    }
 	}
     }
-    if ( ever )
+    if ( ever ) {
+	for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL ; spl = spl->next ) {
+	    if ( spl->ticked )
+		SSRegenerateFromSpiros(spl);
+	    spl->ticked = false;
+	}
 	CVCharChangedUpdate(cv);
+    }
 #endif
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
