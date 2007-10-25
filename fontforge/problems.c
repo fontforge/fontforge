@@ -282,6 +282,10 @@ struct problems {
     unsigned int refsbadtransformttf: 1;
     unsigned int refsbadtransformps: 1;
     unsigned int mixedcontoursrefs: 1;
+    unsigned int bbymax: 1;
+    unsigned int bbymin: 1;
+    unsigned int bbxmax: 1;
+    unsigned int bbxmin: 1;
     unsigned int explain: 1;
     unsigned int done: 1;
     unsigned int doneexplain: 1;
@@ -293,6 +297,7 @@ struct problems {
     double xheight, caph, ascent, descent;
     double irrelevantfactor;
     int advancewidthval, vadvancewidthval;
+    int bbymax_val, bbymin_val, bbxmax_val, bbxmin_val;
     int pointsmax, hintsmax, refdepthmax;
     GWindow explainw;
     GGadget *explaintext, *explainvals, *ignoregadg;
@@ -313,20 +318,23 @@ struct problems {
     int glyphenc;
 };
 
-static int openpaths=1, pointstooclose=1/*, missing=0*/, doxnear=0, doynear=0;
-static int intersectingpaths=1, missingextrema=1;
-static int doynearstd=1, linestd=1, cpstd=1, cpodd=1, hintnopt=0, ptnearhint=0;
-static int hintwidth=0, direction=1, flippedrefs=1, bitmaps=0;
-static int cidblank=0, cidmultiple=1, advancewidth=0, vadvancewidth=0;
-static int irrelevantcp=1, missingglyph=0;
-static int badsubs=1, toomanypoints=1, pointsmax = 1500;
-static int multuni=1, multname=1, uninamemismatch=1;
-static int toomanyhints=1, hintsmax=96, toodeeprefs=1, refdepthmax=9;
-static int ptmatchrefsoutofdate=1, refsbadtransformttf=0, refsbadtransformps=0;
+static int openpaths=0, pointstooclose=0/*, missing=0*/, doxnear=0, doynear=0;
+static int intersectingpaths=0, missingextrema=0;
+static int doynearstd=0, linestd=0, cpstd=0, cpodd=0, hintnopt=0, ptnearhint=0;
+static int hintwidth=0, direction=0, flippedrefs=0, bitmaps=0;
+static int cidblank=0, cidmultiple=0, advancewidth=0, vadvancewidth=0;
+static int bbymax=0, bbymin=0, bbxmax=0, bbxmin=0;
+static int irrelevantcp=0, missingglyph=0;
+static int badsubs=0, toomanypoints=0, pointsmax = 1500;
+static int multuni=0, multname=0, uninamemismatch=0;
+static int toomanyhints=0, hintsmax=96, toodeeprefs=0, refdepthmax=9;
+static int ptmatchrefsoutofdate=0, refsbadtransformttf=0, refsbadtransformps=0;
 static int mixedcontoursrefs=0;
 static int stem3=0, showexactstem3=0;
 static double near=3, xval=0, yval=0, widthval=50, advancewidthval=0, vadvancewidthval=0;
+static double bbymax_val=0, bbymin_val=0, bbxmax_val=0, bbxmin_val=0;
 static double irrelevantfactor = .005;
+static SplineFont *lastsf=NULL;
 
 #define CID_Stop		2001
 #define CID_Next		2002
@@ -380,6 +388,14 @@ static double irrelevantfactor = .005;
 #define CID_MixedContoursRefs	1045
 #define CID_MissingExtrema	1046
 #define CID_UniNameMisMatch	1047
+#define CID_BBYMax		1048
+#define CID_BBYMin		1049
+#define CID_BBXMax		1050
+#define CID_BBXMin		1051
+#define CID_BBYMaxVal		1052
+#define CID_BBYMinVal		1053
+#define CID_BBXMaxVal		1054
+#define CID_BBXMinVal		1055
 
 
 static void FixIt(struct problems *p) {
@@ -1165,6 +1181,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
     StemInfo *h;
     RefChar *r1, *r2;
     int uni;
+    DBounds bb;
 
   restart:
     if ( cv!=NULL ) {
@@ -1897,6 +1914,35 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	}
     }
 
+    if ( (p->bbymax || p->bbxmax || p->bbymin || p->bbxmin) && !p->finish &&
+	    SCWorthOutputting(sc)) {
+	SplineCharFindBounds(sc,&bb);
+	if ( p->bbymax && bb.maxy > p->bbymax_val ) {
+	    changed = true;
+	    ExplainIt(p,sc,_("This glyph is taller than desired"),bb.maxy,p->bbymax_val);
+	    if ( p->ignorethis )
+		p->bbymax = false;
+	}
+	if ( p->bbymin && bb.miny < p->bbymin_val ) {
+	    changed = true;
+	    ExplainIt(p,sc,_("This glyph extends further below the baseline than desired"),bb.miny,p->bbymin_val);
+	    if ( p->ignorethis )
+		p->bbymin = false;
+	}
+	if ( p->bbxmax && bb.maxx > p->bbxmax_val ) {
+	    changed = true;
+	    ExplainIt(p,sc,_("This glyph is wider than desired"),bb.maxx,p->bbxmax_val);
+	    if ( p->ignorethis )
+		p->bbxmax = false;
+	}
+	if ( p->bbxmin && bb.minx < p->bbxmin_val ) {
+	    changed = true;
+	    ExplainIt(p,sc,_("This glyph extends left further than desired"),bb.minx,p->bbxmin_val);
+	    if ( p->ignorethis )
+		p->bbxmin = false;
+	}
+    }
+
     if ( p->badsubs && !p->finish ) {
 	PST *pst;
 	char *pt, *end; int ch;
@@ -2561,7 +2607,7 @@ static int Prob_DoAll(GGadget *g, GEvent *e) {
 	    CID_TooManyHints, CID_TooDeepRefs,
 	    CID_MultUni, CID_MultName, CID_PtMatchRefsOutOfDate,
 	    CID_RefBadTransformTTF, CID_RefBadTransformPS, CID_MixedContoursRefs,
-	    CID_UniNameMisMatch,
+	    CID_UniNameMisMatch, CID_BBYMax, CID_BBYMin, CID_BBXMax, CID_BBXMin,
 	    0 };
 	int i;
 	if ( p->fv->cidmaster!=NULL ) {
@@ -2600,6 +2646,10 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	flippedrefs = p->flippedrefs = GGadgetIsChecked(GWidgetGetControl(gw,CID_FlippedRefs));
 	bitmaps = p->bitmaps = GGadgetIsChecked(GWidgetGetControl(gw,CID_Bitmaps));
 	advancewidth = p->advancewidth = GGadgetIsChecked(GWidgetGetControl(gw,CID_AdvanceWidth));
+	bbymax = p->bbymax = GGadgetIsChecked(GWidgetGetControl(gw,CID_BBYMax));
+	bbymin = p->bbymin = GGadgetIsChecked(GWidgetGetControl(gw,CID_BBYMin));
+	bbxmax = p->bbxmax = GGadgetIsChecked(GWidgetGetControl(gw,CID_BBXMax));
+	bbxmin = p->bbxmin = GGadgetIsChecked(GWidgetGetControl(gw,CID_BBXMin));
 	irrelevantcp = p->irrelevantcontrolpoints = GGadgetIsChecked(GWidgetGetControl(gw,CID_IrrelevantCP));
 	multuni = p->multuni = GGadgetIsChecked(GWidgetGetControl(gw,CID_MultUni));
 	multname = p->multname = GGadgetIsChecked(GWidgetGetControl(gw,CID_MultName));
@@ -2632,9 +2682,17 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	if ( hintwidth )
 	    widthval = p->widthval = GetReal8(gw,CID_HintWidth,U_("Hint _Width Near¹"),&errs);
 	if ( p->advancewidth )
-	    advancewidthval = p->advancewidthval = GetInt8(gw,CID_AdvanceWidthVal,U_("Hint _Width Near¹"),&errs);
+	    advancewidthval = p->advancewidthval = GetInt8(gw,CID_AdvanceWidthVal,U_("Advance Width not"),&errs);
 	if ( p->vadvancewidth )
-	    vadvancewidthval = p->vadvancewidthval = GetInt8(gw,CID_VAdvanceWidthVal,U_("Hint _Width Near¹"),&errs);
+	    vadvancewidthval = p->vadvancewidthval = GetInt8(gw,CID_VAdvanceWidthVal,U_("Vertical Advance not"),&errs);
+	if ( p->bbymax )
+	    bbymax_val = p->bbymax_val = GetInt8(gw,CID_BBYMaxVal,U_("Bounding box above"),&errs);
+	if ( p->bbymin )
+	    bbymin_val = p->bbymin_val = GetInt8(gw,CID_BBYMinVal,U_("Bounding box below"),&errs);
+	if ( p->bbxmax )
+	    bbxmax_val = p->bbxmax_val = GetInt8(gw,CID_BBXMaxVal,U_("Bounding box right of"),&errs);
+	if ( p->bbxmin )
+	    bbxmin_val = p->bbxmin_val = GetInt8(gw,CID_BBXMinVal,U_("Bounding box left of"),&errs);
 	if ( toomanypoints )
 	    p->pointsmax = pointsmax = GetInt8(gw,CID_PointsMax,_("_More points than:"),&errs);
 	if ( toomanyhints )
@@ -2647,6 +2705,7 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	near = p->near = GetReal8(gw,CID_Near,_("Near"),&errs);
 	if ( errs )
 return( true );
+	lastsf = p->fv->sf;
 	if ( doynearstd )
 	    FigureStandardHeights(p);
 	GDrawSetVisible(gw,false);
@@ -2658,7 +2717,8 @@ return( true );
 		p->toomanypoints || p->toomanyhints || p->missingextrema ||
 		p->toodeeprefs || multuni || multname || uninamemismatch ||
 		p->ptmatchrefsoutofdate || p->refsbadtransformttf ||
-		p->mixedcontoursrefs || p->refsbadtransformps ) {
+		p->mixedcontoursrefs || p->refsbadtransformps ||
+		p->bbymax || p->bbxmax || p->bbymin || p->bbxmin ) {
 	    DoProbs(p);
 	}
 	p->done = true;
@@ -2727,11 +2787,14 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     GWindow gw;
     GWindowAttrs wattrs;
     GGadgetCreateData pgcd[13], pagcd[8], hgcd[9], rgcd[10], cgcd[5], mgcd[11], agcd[6], rfgcd[9];
+    GGadgetCreateData bbgcd[14];
     GTextInfo plabel[13], palabel[8], hlabel[9], rlabel[10], clabel[5], mlabel[10], alabel[6], rflabel[9];
-    GTabInfo aspects[8];
+    GTextInfo bblabel[14];
+    GTabInfo aspects[9];
     struct problems p;
     char xnbuf[20], ynbuf[20], widthbuf[20], nearbuf[20], awidthbuf[20],
-	    vawidthbuf[20], irrel[20], pmax[20], hmax[20], rmax[20];
+	    vawidthbuf[20], irrel[20], pmax[20], hmax[20], rmax[20],
+	    xxmaxbuf[20], xxminbuf[20], yymaxbuf[20], yyminbuf[20];
     SplineChar *ssc;
     int i;
     SplineFont *sf;
@@ -3185,97 +3248,195 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rgcd[0].gd.cid = CID_Bitmaps;
     rgcd[0].creator = GCheckBoxCreate;
 
-    rlabel[1].text = (unichar_t *) _("Check Advance:");
+    rlabel[1].text = (unichar_t *) _("Check subtitutions for empty chars");
     rlabel[1].text_is_1byte = true;
-    rlabel[1].text_in_resource = true;
     rgcd[1].gd.label = &rlabel[1];
-    rgcd[1].gd.mnemonic = 'W';
-    rgcd[1].gd.pos.x = 3; rgcd[1].gd.pos.y = rgcd[0].gd.pos.y+21;
+    rgcd[1].gd.pos.x = 3; rgcd[1].gd.pos.y = rgcd[0].gd.pos.y+15; 
     rgcd[1].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    if ( advancewidth ) rgcd[1].gd.flags |= gg_cb_on;
-    rgcd[1].gd.popup_msg = (unichar_t *) _("Check for characters whose advance width is not the displayed value.");
-    rgcd[1].gd.cid = CID_AdvanceWidth;
+    if ( badsubs ) rgcd[1].gd.flags |= gg_cb_on;
+    rgcd[1].gd.popup_msg = (unichar_t *) _("Check for characters which contain 'GSUB' entries which refer to empty characters");
+    rgcd[1].gd.cid = CID_BadSubs;
     rgcd[1].creator = GCheckBoxCreate;
 
+    rlabel[2].text = (unichar_t *) _("Check multiple Unicode");
+    rlabel[2].text_is_1byte = true;
+    rgcd[2].gd.label = &rlabel[2];
+    rgcd[2].gd.pos.x = 3; rgcd[2].gd.pos.y = rgcd[1].gd.pos.y+15; 
+    rgcd[2].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    if ( multuni ) rgcd[2].gd.flags |= gg_cb_on;
+    rgcd[2].gd.popup_msg = (unichar_t *) _("Check multiple Unicode");
+    rgcd[2].gd.cid = CID_MultUni;
+    rgcd[2].creator = GCheckBoxCreate;
+
+    rlabel[3].text = (unichar_t *) _("Check multiple Names");
+    rlabel[3].text_is_1byte = true;
+    rgcd[3].gd.label = &rlabel[3];
+    rgcd[3].gd.pos.x = 3; rgcd[3].gd.pos.y = rgcd[2].gd.pos.y+15; 
+    rgcd[3].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    if ( multname ) rgcd[3].gd.flags |= gg_cb_on;
+    rgcd[3].gd.popup_msg = (unichar_t *) _("Check for multiple characters with the same name");
+    rgcd[3].gd.cid = CID_MultName;
+    rgcd[3].creator = GCheckBoxCreate;
+
+    rlabel[4].text = (unichar_t *) _("Check Unicode/Name mismatch");
+    rlabel[4].text_is_1byte = true;
+    rgcd[4].gd.label = &rlabel[4];
+    rgcd[4].gd.pos.x = 3; rgcd[4].gd.pos.y = rgcd[3].gd.pos.y+15; 
+    rgcd[4].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    if ( uninamemismatch ) rgcd[4].gd.flags |= gg_cb_on;
+    rgcd[4].gd.popup_msg = (unichar_t *) _("Check for characters whose name maps to a unicode code point\nwhich does not map the character's assigned code point.");
+    rgcd[4].gd.cid = CID_UniNameMisMatch;
+    rgcd[4].creator = GCheckBoxCreate;
+
+/* ************************************************************************** */
+
+    memset(&bblabel,0,sizeof(bblabel));
+    memset(&bbgcd,0,sizeof(bbgcd));
+
+    bblabel[0].text = (unichar_t *) _("Glyph BB Above");
+    bblabel[0].text_is_1byte = true;
+    bblabel[0].text_in_resource = true;
+    bbgcd[0].gd.label = &bblabel[0];
+    bbgcd[0].gd.mnemonic = 'r';
+    bbgcd[0].gd.pos.x = 3; bbgcd[0].gd.pos.y = 6; 
+    bbgcd[0].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    if ( bbymax ) bbgcd[0].gd.flags |= gg_cb_on;
+    bbgcd[0].gd.popup_msg = (unichar_t *) _("Are there any glyph's whose bounding boxes extend above this number?");
+    bbgcd[0].gd.cid = CID_BBYMax;
+    bbgcd[0].creator = GCheckBoxCreate;
+
     sf = p.fv->sf;
+    if ( lastsf!=sf ) {
+	bbymax_val = bbymin_val = bbxmax_val /* = bbxmin_val */= vadvancewidth = advancewidth = 0;
+    }
+
+    sprintf(yymaxbuf,"%g", bbymax_val!=0 ? bbymax_val : sf->ascent);
+    bblabel[1].text = (unichar_t *) yymaxbuf;
+    bblabel[1].text_is_1byte = true;
+    bbgcd[1].gd.label = &bblabel[1];
+    bbgcd[1].gd.pos.x = 100+15; bbgcd[1].gd.pos.y = bbgcd[0].gd.pos.y-1; bbgcd[1].gd.pos.width = 40;
+    bbgcd[1].gd.flags = gg_visible | gg_enabled;
+    bbgcd[1].gd.cid = CID_BBYMaxVal;
+    bbgcd[1].gd.handle_controlevent = Prob_TextChanged;
+    bbgcd[1].data = (void *) CID_BBYMax;
+    bbgcd[1].creator = GTextFieldCreate;
+
+    bblabel[2].text = (unichar_t *) _("Glyph BB Below");
+    bblabel[2].text_is_1byte = true;
+    bblabel[2].text_in_resource = true;
+    bbgcd[2].gd.label = &bblabel[2];
+    bbgcd[2].gd.mnemonic = 'r';
+    bbgcd[2].gd.pos.x = 3; bbgcd[2].gd.pos.y = bbgcd[0].gd.pos.y+21; 
+    bbgcd[2].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    if ( bbymin ) bbgcd[2].gd.flags |= gg_cb_on;
+    bbgcd[2].gd.popup_msg = (unichar_t *) _("Are there any glyph's whose bounding boxes extend below this number?");
+    bbgcd[2].gd.cid = CID_BBYMin;
+    bbgcd[2].creator = GCheckBoxCreate;
+
+    sprintf(yyminbuf,"%g", bbymin_val!=0 ? bbymin_val : -sf->descent);
+    bblabel[3].text = (unichar_t *) yyminbuf;
+    bblabel[3].text_is_1byte = true;
+    bbgcd[3].gd.label = &bblabel[3];
+    bbgcd[3].gd.pos.x = 100+15; bbgcd[3].gd.pos.y = bbgcd[2].gd.pos.y-1; bbgcd[3].gd.pos.width = 40;
+    bbgcd[3].gd.flags = gg_visible | gg_enabled;
+    bbgcd[3].gd.cid = CID_BBYMinVal;
+    bbgcd[3].gd.handle_controlevent = Prob_TextChanged;
+    bbgcd[3].data = (void *) CID_BBYMin;
+    bbgcd[3].creator = GTextFieldCreate;
+
+    bblabel[4].text = (unichar_t *) _("Glyph BB Right Of");
+    bblabel[4].text_is_1byte = true;
+    bblabel[4].text_in_resource = true;
+    bbgcd[4].gd.label = &bblabel[4];
+    bbgcd[4].gd.pos.x = 3; bbgcd[4].gd.pos.y = bbgcd[2].gd.pos.y+21; 
+    bbgcd[4].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    if ( bbxmax ) bbgcd[4].gd.flags |= gg_cb_on;
+    bbgcd[4].gd.popup_msg = (unichar_t *) _("Are there any glyph's whose bounding boxes extend to the right of this number?");
+    bbgcd[4].gd.cid = CID_BBXMax;
+    bbgcd[4].creator = GCheckBoxCreate;
+
+    sprintf(xxmaxbuf,"%g", bbxmax_val!=0 ? bbxmax_val : (double) (sf->ascent+sf->descent));
+    bblabel[5].text = (unichar_t *) xxmaxbuf;
+    bblabel[5].text_is_1byte = true;
+    bbgcd[5].gd.label = &bblabel[5];
+    bbgcd[5].gd.pos.x = 100+15; bbgcd[5].gd.pos.y = bbgcd[4].gd.pos.y-1; bbgcd[5].gd.pos.width = 40;
+    bbgcd[5].gd.flags = gg_visible | gg_enabled;
+    bbgcd[5].gd.cid = CID_BBXMaxVal;
+    bbgcd[5].gd.handle_controlevent = Prob_TextChanged;
+    bbgcd[5].data = (void *) CID_BBXMax;
+    bbgcd[5].creator = GTextFieldCreate;
+
+    bblabel[6].text = (unichar_t *) _("Glyph BB Left Of");
+    bblabel[6].text_is_1byte = true;
+    bblabel[6].text_in_resource = true;
+    bbgcd[6].gd.label = &bblabel[6];
+    bbgcd[6].gd.pos.x = 3; bbgcd[6].gd.pos.y = bbgcd[4].gd.pos.y+21; 
+    bbgcd[6].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    if ( bbxmin ) bbgcd[6].gd.flags |= gg_cb_on;
+    bbgcd[6].gd.popup_msg = (unichar_t *) _("Are there any glyph's whose bounding boxes extend to the left of this number?");
+    bbgcd[6].gd.cid = CID_BBXMin;
+    bbgcd[6].creator = GCheckBoxCreate;
+
+    sprintf(xxminbuf,"%g",bbxmin_val);
+    bblabel[7].text = (unichar_t *) xxminbuf;
+    bblabel[7].text_is_1byte = true;
+    bbgcd[7].gd.label = &bblabel[7];
+    bbgcd[7].gd.pos.x = 100+15; bbgcd[7].gd.pos.y = bbgcd[6].gd.pos.y-1; bbgcd[7].gd.pos.width = 40;
+    bbgcd[7].gd.flags = gg_visible | gg_enabled;
+    bbgcd[7].gd.cid = CID_BBXMinVal;
+    bbgcd[7].gd.handle_controlevent = Prob_TextChanged;
+    bbgcd[7].data = (void *) CID_BBXMin;
+    bbgcd[7].creator = GTextFieldCreate;
+
+    bblabel[8].text = (unichar_t *) _("Check Advance:");
+    bblabel[8].text_is_1byte = true;
+    bblabel[8].text_in_resource = true;
+    bbgcd[8].gd.label = &bblabel[8];
+    bbgcd[8].gd.mnemonic = 'W';
+    bbgcd[8].gd.pos.x = 3; bbgcd[8].gd.pos.y = bbgcd[6].gd.pos.y+21;
+    bbgcd[8].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    if ( advancewidth ) bbgcd[8].gd.flags |= gg_cb_on;
+    bbgcd[8].gd.popup_msg = (unichar_t *) _("Check for characters whose advance width is not the displayed value.");
+    bbgcd[8].gd.cid = CID_AdvanceWidth;
+    bbgcd[8].creator = GCheckBoxCreate;
 
     if ( ( ssc = SFGetChar(sf,' ',NULL))!=NULL )
 	advancewidthval = ssc->width;
     sprintf(awidthbuf,"%g",advancewidthval);
-    rlabel[2].text = (unichar_t *) awidthbuf;
-    rlabel[2].text_is_1byte = true;
-    rgcd[2].gd.label = &rlabel[2];
-    rgcd[2].gd.pos.x = 100+15; rgcd[2].gd.pos.y = rgcd[1].gd.pos.y-1; rgcd[2].gd.pos.width = 40;
-    rgcd[2].gd.flags = gg_visible | gg_enabled;
-    rgcd[2].gd.cid = CID_AdvanceWidthVal;
-    rgcd[2].gd.handle_controlevent = Prob_TextChanged;
-    rgcd[2].data = (void *) CID_AdvanceWidth;
-    rgcd[2].creator = GTextFieldCreate;
+    bblabel[9].text = (unichar_t *) awidthbuf;
+    bblabel[9].text_is_1byte = true;
+    bbgcd[9].gd.label = &bblabel[9];
+    bbgcd[9].gd.pos.x = 100+15; bbgcd[9].gd.pos.y = bbgcd[8].gd.pos.y-1; bbgcd[9].gd.pos.width = 40;
+    bbgcd[9].gd.flags = gg_visible | gg_enabled;
+    bbgcd[9].gd.cid = CID_AdvanceWidthVal;
+    bbgcd[9].gd.handle_controlevent = Prob_TextChanged;
+    bbgcd[9].data = (void *) CID_AdvanceWidth;
+    bbgcd[9].creator = GTextFieldCreate;
 
-    rlabel[3].text = (unichar_t *) _("Check VAdvance:\n");
-    rlabel[3].text_is_1byte = true;
-    rgcd[3].gd.label = &rlabel[3];
-    rgcd[3].gd.mnemonic = 'W';
-    rgcd[3].gd.pos.x = 3; rgcd[3].gd.pos.y = rgcd[2].gd.pos.y+24;
-    rgcd[3].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    if ( !sf->hasvmetrics ) rgcd[3].gd.flags = gg_visible;
-    else if ( vadvancewidth ) rgcd[3].gd.flags |= gg_cb_on;
-    rgcd[3].gd.popup_msg = (unichar_t *) _("Check for characters whose vertical advance width is not the displayed value.");
-    rgcd[3].gd.cid = CID_VAdvanceWidth;
-    rgcd[3].creator = GCheckBoxCreate;
+    bblabel[10].text = (unichar_t *) _("Check VAdvance:\n");
+    bblabel[10].text_is_1byte = true;
+    bbgcd[10].gd.label = &bblabel[10];
+    bbgcd[10].gd.mnemonic = 'W';
+    bbgcd[10].gd.pos.x = 3; bbgcd[10].gd.pos.y = bbgcd[9].gd.pos.y+24;
+    bbgcd[10].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    if ( !sf->hasvmetrics ) bbgcd[10].gd.flags = gg_visible;
+    else if ( vadvancewidth ) bbgcd[10].gd.flags |= gg_cb_on;
+    bbgcd[10].gd.popup_msg = (unichar_t *) _("Check for characters whose vertical advance width is not the displayed value.");
+    bbgcd[10].gd.cid = CID_VAdvanceWidth;
+    bbgcd[10].creator = GCheckBoxCreate;
 
     if ( vadvancewidth==0 ) vadvancewidth = sf->ascent+sf->descent;
     sprintf(vawidthbuf,"%g",vadvancewidthval);
-    rlabel[4].text = (unichar_t *) vawidthbuf;
-    rlabel[4].text_is_1byte = true;
-    rgcd[4].gd.label = &rlabel[4];
-    rgcd[4].gd.pos.x = 100+15; rgcd[4].gd.pos.y = rgcd[3].gd.pos.y-1; rgcd[4].gd.pos.width = 40;
-    rgcd[4].gd.flags = gg_visible | gg_enabled;
-    if ( !sf->hasvmetrics ) rgcd[4].gd.flags = gg_visible;
-    rgcd[4].gd.cid = CID_VAdvanceWidthVal;
-    rgcd[4].gd.handle_controlevent = Prob_TextChanged;
-    rgcd[4].data = (void *) CID_VAdvanceWidth;
-    rgcd[4].creator = GTextFieldCreate;
-
-    rlabel[5].text = (unichar_t *) _("Check subtitutions for empty chars");
-    rlabel[5].text_is_1byte = true;
-    rgcd[5].gd.label = &rlabel[5];
-    rgcd[5].gd.pos.x = 3; rgcd[5].gd.pos.y = rgcd[4].gd.pos.y+24; 
-    rgcd[5].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    if ( badsubs ) rgcd[5].gd.flags |= gg_cb_on;
-    rgcd[5].gd.popup_msg = (unichar_t *) _("Check for characters which contain 'GSUB' entries which refer to empty characters");
-    rgcd[5].gd.cid = CID_BadSubs;
-    rgcd[5].creator = GCheckBoxCreate;
-
-    rlabel[6].text = (unichar_t *) _("Check multiple Unicode");
-    rlabel[6].text_is_1byte = true;
-    rgcd[6].gd.label = &rlabel[6];
-    rgcd[6].gd.pos.x = 3; rgcd[6].gd.pos.y = rgcd[5].gd.pos.y+15; 
-    rgcd[6].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    if ( multuni ) rgcd[6].gd.flags |= gg_cb_on;
-    rgcd[6].gd.popup_msg = (unichar_t *) _("Check multiple Unicode");
-    rgcd[6].gd.cid = CID_MultUni;
-    rgcd[6].creator = GCheckBoxCreate;
-
-    rlabel[7].text = (unichar_t *) _("Check multiple Names");
-    rlabel[7].text_is_1byte = true;
-    rgcd[7].gd.label = &rlabel[7];
-    rgcd[7].gd.pos.x = 3; rgcd[7].gd.pos.y = rgcd[6].gd.pos.y+15; 
-    rgcd[7].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    if ( multname ) rgcd[7].gd.flags |= gg_cb_on;
-    rgcd[7].gd.popup_msg = (unichar_t *) _("Check for multiple characters with the same name");
-    rgcd[7].gd.cid = CID_MultName;
-    rgcd[7].creator = GCheckBoxCreate;
-
-    rlabel[8].text = (unichar_t *) _("Check Unicode/Name mismatch");
-    rlabel[8].text_is_1byte = true;
-    rgcd[8].gd.label = &rlabel[8];
-    rgcd[8].gd.pos.x = 3; rgcd[8].gd.pos.y = rgcd[7].gd.pos.y+15; 
-    rgcd[8].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    if ( uninamemismatch ) rgcd[8].gd.flags |= gg_cb_on;
-    rgcd[8].gd.popup_msg = (unichar_t *) _("Check for characters whose name maps to a unicode code point\nwhich does not map the character's assigned code point.");
-    rgcd[8].gd.cid = CID_UniNameMisMatch;
-    rgcd[8].creator = GCheckBoxCreate;
+    bblabel[11].text = (unichar_t *) vawidthbuf;
+    bblabel[11].text_is_1byte = true;
+    bbgcd[11].gd.label = &bblabel[11];
+    bbgcd[11].gd.pos.x = 100+15; bbgcd[11].gd.pos.y = bbgcd[10].gd.pos.y-1; bbgcd[11].gd.pos.width = 40;
+    bbgcd[11].gd.flags = gg_visible | gg_enabled;
+    if ( !sf->hasvmetrics ) bbgcd[11].gd.flags = gg_visible;
+    bbgcd[11].gd.cid = CID_VAdvanceWidthVal;
+    bbgcd[11].gd.handle_controlevent = Prob_TextChanged;
+    bbgcd[11].data = (void *) CID_VAdvanceWidth;
+    bbgcd[11].creator = GTextFieldCreate;
 
 /* ************************************************************************** */
 
@@ -3355,6 +3516,10 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     aspects[i].disabled = fv->cidmaster==NULL;
     aspects[i].text_is_1byte = true;
     aspects[i++].gcd = cgcd;
+
+    aspects[i].text = (unichar_t *) _("BB");
+    aspects[i].text_is_1byte = true;
+    aspects[i++].gcd = bbgcd;
 
     aspects[i].text = (unichar_t *) _("Random");
     aspects[i].text_is_1byte = true;
