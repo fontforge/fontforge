@@ -3574,7 +3574,7 @@ return( NULL );
 	}
     }
     if ( c->closed ) {
-	SplineMake2(ss->last,ss->first);
+	SplineMake(ss->last,ss->first,c->is_quadratic);
 	ss->last = ss->first;
     }
     if ( tt_start!=NULL )
