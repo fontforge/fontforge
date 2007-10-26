@@ -657,11 +657,22 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
 			            { &GIcon_3drotate, &GIcon_perspective },
 			            { &GIcon_rect, &GIcon_poly},
 			            { &GIcon_elipse, &GIcon_star}};
-    static GImage *smalls[] = { &GIcon_smallpointer, &GIcon_smallmag,
+    static GImage *normsmalls[] = { &GIcon_smallpointer, &GIcon_smallmag,
 				    &GIcon_smallpencil, &GIcon_smallhand,
 				    &GIcon_smallcurve, &GIcon_smallhvcurve,
 			            &GIcon_smallcorner, &GIcon_smalltangent,
 			            &GIcon_smallpen, NULL,
+			            &GIcon_smallknife, &GIcon_smallruler,
+			            &GIcon_smallscale, &GIcon_smallflip,
+			            &GIcon_smallrotate, &GIcon_smallskew,
+			            &GIcon_small3drotate, &GIcon_smallperspective,
+			            &GIcon_smallrect, &GIcon_smallpoly,
+			            &GIcon_smallelipse, &GIcon_smallstar };
+    static GImage *spirosmalls[] = { &GIcon_smallpointer, &GIcon_smallmag,
+				    &GIcon_smallpencil, &GIcon_smallhand,
+				    &GIcon_smallspirocurve, &GIcon_smallspirog2curve,
+			            &GIcon_smallspirocorner, &GIcon_smallspiroleft,
+			            &GIcon_smallspiroright, NULL,
 			            &GIcon_smallknife, &GIcon_smallruler,
 			            &GIcon_smallscale, &GIcon_smallflip,
 			            &GIcon_smallrotate, &GIcon_smallskew,
@@ -679,6 +690,7 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
     GRect temp;
     int canspiro = hasspiro(), inspiro = canspiro && cv->sc->inspiro;
     GImage *(*buttons)[2] = inspiro ? spirobuttons : normbuttons;
+    GImage **smalls = inspiro ? spirosmalls : normsmalls;
 
     normbuttons[4][1] = canspiro ? &GIcon_spiroup : &GIcon_spirodisabled;
 
