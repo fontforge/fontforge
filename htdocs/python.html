@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 18-Oct-2007 -->
+  <!-- AP: Last modified: 25-Oct-2007 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -158,6 +158,12 @@
       <TD><CODE>setPrefs</CODE></TD>
       <TD><CODE>(pref-name,value)</CODE></TD>
       <TD>sets the value of the named preference item</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A NAME="ff-hasSpiro">hasSpiro</A></CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Returns a boolean, <CODE>True</CODE> if Raph Levien's spiro package is
+	available for use in FontForge.</TD>
     </TR>
     <TR>
       <TD><CODE>savePrefs</CODE></TD>
@@ -705,7 +711,14 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
 	<P>
 	A contour may be open in which case it is just a long wiggly line, or closed
 	when it is more like a circle with an inside and an outside. Unless you are
-	making stroked fonts all your contours should eventually be closed.</TD>
+	making stroked fonts all your contours should eventually be closed.
+	<P>
+	Contours may also be expressed in terms of Raph Levien's spiro points. This
+	is an alternate representation for the contour, and is not always available
+	(Only if <CODE><A HREF="python.html#ff-hasSpiro">fontforge.hasSpiro</A>()
+	</CODE>is<CODE> True</CODE>. If available the spiro member will return a
+	tuple of spiro control points, while assigning to this member will change
+	the shape of the contour to match the new spiros.</TD>
     </TR>
     <TR>
       <TH colspan=3>Members</TH>
@@ -723,6 +736,58 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
     <TR>
       <TD><CODE>closed</CODE></TD>
       <TD colspan=2>Whether the contour is open or closed</TD>
+    </TR>
+    <TR>
+      <TD><CODE>spiro</CODE></TD>
+      <TD colspan=2>This is an alternate representation of a curve. This member
+	is only available if <A HREF="#ff-hasSpiro">fontforge.hasSpiro()</A> is True.
+	Returns a tuple of spiro control points. Each of these is itself a tuple
+	of four elements, an x,y location, a type field, and a set of flags. The
+	type field takes on values (which are predefined constants in the fontforge
+	module):
+	<TABLE>
+	  <TR>
+	    <TD>fontforge.spiroG4</TD>
+	    <TD>1</TD>
+	    <TD>A Spiro G4 curve point</TD>
+	  </TR>
+	  <TR>
+	    <TD>fontforge.spiroG2</TD>
+	    <TD>2</TD>
+	    <TD>A Spiro G2 curve point</TD>
+	  </TR>
+	  <TR>
+	    <TD>fontforge.spiroCorner</TD>
+	    <TD>3</TD>
+	    <TD>A Spiro corner point</TD>
+	  </TR>
+	  <TR>
+	    <TD>fontforge.spiroLeft</TD>
+	    <TD>4</TD>
+	    <TD>A Spiro left "tangent" point</TD>
+	  </TR>
+	  <TR>
+	    <TD>fontforge.spiroRight</TD>
+	    <TD>5</TD>
+	    <TD>A Spiro right "tangent" point</TD>
+	  </TR>
+	  <TR>
+	    <TD>fontforge.spiroOpen</TD>
+	    <TD>6</TD>
+	    <TD>This may only be used on the first point in a spiro tuple. It indicates
+	      that the tuple describes an open contour.</TD>
+	  </TR>
+	</TABLE>
+	<P>
+	For more information on what these point types mean see
+	<A HREF="http://www.levien.com/spiro/">Raph Levien's work</A>.
+	<P>
+	The flags argument is treated as a bitmap of which currently on one bit (0x1)
+	is defined. This indicates that this point is selected in the UI.
+	<P>
+	When you assign a tuple of spiro control points to this member, the point
+	list for the Bezier interpretation of the contour will change. And when you
+	change the Bezier interpretation the set of spiro points will change.</TD>
     </TR>
     <TR>
       <TH colspan=3>Sequence Protocol</TH>

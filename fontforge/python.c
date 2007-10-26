@@ -83,6 +83,8 @@ typedef struct ff_contour {
     int pt_cnt, pt_max;
     struct ff_point **points;
     short is_quadratic, closed;		/* bit flags, but access to short is faster */
+    spiro_cp *spiros;
+    int spiro_cnt;
 } PyFF_Contour;
 static PyTypeObject PyFF_ContourType;
 
@@ -1021,6 +1023,13 @@ return( NULL );
 Py_RETURN_NONE;
 }
 
+static PyObject *PyFF_hasSpiro(PyObject *self, PyObject *args) {
+    PyObject *ret = hasspiro() ? Py_True : Py_False;
+
+    Py_INCREF(ret);
+return( ret );
+}
+
 static PyObject *PyFF_hasUserInterface(PyObject *self, PyObject *args) {
     PyObject *ret = no_windowing_ui ? Py_False : Py_True;
 
@@ -1466,7 +1475,16 @@ return 0;
 static void PyFFContour_dealloc(PyFF_Contour *self) {
     PyFFContour_clear(self);
     PyMem_Del(self->points);
+    if ( self->spiro_cnt!=0 )
+	PyMem_Del(self->spiros);
     self->ob_type->tp_free((PyObject*)self);
+}
+
+static void PyFFContour_ClearSpiros(PyFF_Contour *self) {
+    if ( self->spiro_cnt!=0 )
+	free(self->spiros);
+    self->spiros = NULL;
+    self->spiro_cnt = 0;
 }
 
 static PyObject *PyFFContour_new(PyTypeObject *type, PyObject *args, PyObject *kwds) {
@@ -1598,6 +1616,7 @@ return( -1 );
     val = (val!=0);
     if ( val == self->closed )
 return( 0 );
+    PyFFContour_ClearSpiros((PyFF_Contour *) self);
     if ( !val ) {
 	self->closed = false;
 	if ( self->pt_cnt>1 && self->points[0]->on_curve )
@@ -1615,6 +1634,98 @@ return( 0 );
 return( 0 );
 }
 
+static PyObject *PyFF_Contour_get_spiros(PyFF_Contour *self,void *closure) {
+    PyObject *spirotuple;
+    int i;
+
+    if ( !hasspiro()) {
+	PyErr_Format(PyExc_EnvironmentError, "Spiros not available. Please install libspiro before continuing" );
+return( NULL );
+    }
+    if ( self->spiro_cnt==0 ) {
+	SplineSet *ss;
+	uint16 cnt;
+	ss = SSFromContour(self,NULL);
+	self->spiros = SplineSet2SpiroCP(ss,&cnt);
+	self->spiro_cnt = cnt;
+    }
+    spirotuple = PyTuple_New(self->spiro_cnt-1);
+    for ( i=0; i<self->spiro_cnt-1; ++i ) {
+	int ty = self->spiros[i].ty & 0x7f;
+	PyTuple_SetItem(spirotuple,i,Py_BuildValue("ddii",
+		self->spiros[i].x, self->spiros[i].y,
+		ty==SPIRO_G4 ? 1 :
+		ty==SPIRO_G2 ? 2 :
+		ty==SPIRO_CORNER ? 3 :
+		ty==SPIRO_LEFT ? 4 :
+		ty==SPIRO_RIGHT ? 5 : 6,
+		(self->spiros[i].ty&0x80)>>7 ));
+    }
+return( spirotuple );
+}
+
+static int PyFF_Contour_set_spiros(PyFF_Contour *self,PyObject *value,void *closure) {
+    PyObject *spirotuple = value;
+    int i, cnt;
+    spiro_cp *spiros;
+    SplineSet *ss;
+
+    if ( !hasspiro()) {
+	PyErr_Format(PyExc_EnvironmentError, "Spiros not available. Please install libspiro before continuing" );
+return( -1 );
+    }
+    if ( !PySequence_Check(spirotuple)) {
+	PyErr_Format(PyExc_TypeError, "Please specify a tuple of spiro control points" );
+return( -1 );
+    }
+    cnt = PySequence_Size(spirotuple);
+    PyFFContour_ClearSpiros((PyFF_Contour *) self);
+    spiros = galloc((cnt+1)*sizeof(spiro_cp));
+    spiros[cnt].x = spiros[cnt].y = 0;
+    spiros[cnt].ty = SPIRO_END;
+    for ( i=0; i<cnt; ++i ) {
+	double x,y; int type,flags=0;
+	if ( !PyArg_ParseTuple(PySequence_GetItem(spirotuple,i),"ddi|i",&x,&y,&type,&flags)) {
+	    PyErr_Format(PyExc_TypeError, "Please specify a tuple of spiro control points" );
+	    free(spiros);
+return( -1 );
+	}
+	spiros[i].x = x;
+	spiros[i].y = y;
+	if ( type==1 )
+	    spiros[i].ty = SPIRO_G4;
+	else if ( type==2 )
+	    spiros[i].ty = SPIRO_G2;
+	else if ( type==3 )
+	    spiros[i].ty = SPIRO_CORNER;
+	else if ( type==4 )
+	    spiros[i].ty = SPIRO_LEFT;
+	else if ( type==5 )
+	    spiros[i].ty = SPIRO_RIGHT;
+	else if ( type==6 && i==0 )
+	    spiros[i].ty = SPIRO_OPEN_CONTOUR;
+	else {
+	    PyErr_Format(PyExc_TypeError, "Unknown spiro control point type: %d", type );
+	    free(spiros);
+return( -1 );
+	}
+	if ( flags==1 )
+	    SPIRO_SELECT(&spiros[i]);
+	else if ( flags!=0 ) {
+	    PyErr_Format(PyExc_TypeError, "Unexpected value for flags: %d", flags );
+	    free(spiros);
+return( -1 );
+	}
+    }
+    ss = SpiroCP2SplineSet(spiros);
+    ss->spiros = NULL; ss->spiro_cnt = ss->spiro_max = 0;
+    ContourFromSS(ss,self);
+    self->spiro_cnt = cnt+1;
+    self->spiros = spiros;
+    SplinePointListFree(ss);
+return( 0 );
+}
+
 static PyGetSetDef PyFFContour_getset[] = {
     {"is_quadratic",
 	 (getter)PyFF_Contour_get_is_quadratic, (setter)PyFF_Contour_set_is_quadratic,
@@ -1622,6 +1733,9 @@ static PyGetSetDef PyFFContour_getset[] = {
     {"closed",
 	 (getter)PyFF_Contour_get_closed, (setter)PyFF_Contour_set_closed,
 	 "Whether this is a closed contour", NULL},
+    {"spiros",
+	 (getter)PyFF_Contour_get_spiros, (setter)PyFF_Contour_set_spiros,
+	 "Alternate representation of the contour as a tuple of spiro control points", NULL},
     { NULL }
 };
 
@@ -1708,6 +1822,7 @@ return( NULL );
 	Py_INCREF(c2->points[i]);
 	self->points[old_cnt+i] = c2->points[i];
     }
+    PyFFContour_ClearSpiros((PyFF_Contour *) self);
 Py_RETURN( self );
 }
 
@@ -1744,6 +1859,7 @@ return( -1 );
 
     old = (PyObject *) cont->points[pos];
     cont->points[pos] = (PyFF_Point *) val;
+    PyFFContour_ClearSpiros((PyFF_Contour *) self);
     Py_DECREF( old );
 return( 0 );
 }
@@ -1818,6 +1934,7 @@ return( -1 );
 	self->points[i+start] = rpl->points[i];
 	Py_INCREF(rpl->points[i]);
     }
+    PyFFContour_ClearSpiros((PyFF_Contour *) self);
 return( 0 );
 }
 
@@ -1877,6 +1994,7 @@ return( NULL );
 	self->points = PyMem_Resize(self->points,PyFF_Point *,self->pt_max += 10);
     self->points[0] = PyFFPoint_CNew(x,y,true,false);
     self->pt_cnt = 1;
+    PyFFContour_ClearSpiros((PyFF_Contour *) self);
 
 Py_RETURN( self );
 }
@@ -1907,6 +2025,7 @@ return( NULL );
     for ( i=self->pt_cnt-1; i>pos; --i )
 	self->points[i+1] = self->points[i];
     self->points[pos+1] = PyFFPoint_CNew(x,y,true,false);
+    PyFFContour_ClearSpiros((PyFF_Contour *) self);
 
 Py_RETURN( self );
 }
@@ -1949,6 +2068,7 @@ return( NULL );
     self->points[pos+1] = np;
     self->points[pos+2] = pp;
     self->points[pos+3] = p;
+    PyFFContour_ClearSpiros((PyFF_Contour *) self);
 Py_RETURN( self );
 }
 
@@ -1988,6 +2108,7 @@ return( NULL );
 	self->points[i+2] = self->points[i];
     self->points[pos+1] = cp;
     self->points[pos+2] = p;
+    PyFFContour_ClearSpiros((PyFF_Contour *) self);
 Py_RETURN( self );
 }
 
@@ -2022,6 +2143,7 @@ return( NULL );
 	self->points[pos+1] = p;
 	Py_INCREF( (PyObject *) p);
     }
+    PyFFContour_ClearSpiros((PyFF_Contour *) self);
 
 Py_RETURN( self );
 }
@@ -2043,6 +2165,7 @@ return( NULL );
 	temp[i+off] = old[i];
     self->points = temp;
     PyMem_Del(old);
+    PyFFContour_ClearSpiros((PyFF_Contour *) self);
 
 Py_RETURN( self );
 }
@@ -2060,6 +2183,7 @@ static PyObject *PyFFContour_ReverseDirection(PyFF_Contour *self, PyObject *args
 	temp[j] = old[i];
     self->points = temp;
     PyMem_Del(old);
+    PyFFContour_ClearSpiros((PyFF_Contour *) self);
 
 Py_RETURN( self );
 }
@@ -2104,6 +2228,7 @@ return( NULL );
 	ContourFromSS(ss,self);
 	SplinePointListFree(ss);
     }
+    PyFFContour_ClearSpiros((PyFF_Contour *) self);
 Py_RETURN( self );
 }
 
@@ -2178,6 +2303,7 @@ static PyObject *PyFFContour_Transform(PyFF_Contour *self, PyObject *args) {
 return( NULL );
     for ( i=0; i<self->pt_cnt; ++i )
 	PyFF_TransformPoint(self->points[i],m);
+    PyFFContour_ClearSpiros((PyFF_Contour *) self);
 Py_RETURN( self );
 }
 
@@ -2211,6 +2337,7 @@ return( NULL );
 	self->points[i]->x = rint( factor*self->points[i]->x )/factor;
 	self->points[i]->y = rint( factor*self->points[i]->y )/factor;
     }
+    PyFFContour_ClearSpiros((PyFF_Contour *) self);
 Py_RETURN( self );
 }
 
@@ -2238,6 +2365,7 @@ Py_RETURN( self );		/* no points=> no clusters */
     SCRoundToCluster( &sc,ly_fore,false,within,max);
     ContourFromSS(sc.layers[ly_fore].splines,self);
     SplinePointListFree(sc.layers[ly_fore].splines);
+    PyFFContour_ClearSpiros((PyFF_Contour *) self);
 Py_RETURN( self );
 }
 
@@ -3439,6 +3567,10 @@ return( NULL );
     next = start;
 
     ss = chunkalloc(sizeof(SplineSet));
+    if ( c->spiro_cnt!=0 ) {
+	ss->spiro_cnt = ss->spiro_max = c->spiro_cnt;
+	ss->spiros = SpiroCPCopy(c->spiros,NULL);
+    }
 
     if ( c->is_quadratic ) {
 	if ( !c->points[0]->on_curve ) {
@@ -3590,6 +3722,10 @@ static PyFF_Contour *ContourFromSS(SplineSet *ss,PyFF_Contour *ret) {
 	ret = (PyFF_Contour *) PyFFContour_new(&PyFF_ContourType,NULL,NULL);
     else
 	PyFFContour_clear(ret);
+    if ( ss->spiro_cnt!=0 ) {
+	ret->spiro_cnt = ss->spiro_cnt;
+	ret->spiros = SpiroCPCopy(ss->spiros,NULL);
+    }
     ret->closed = ss->first->prev!=NULL;
     for ( k=0; k<2; ++k ) {
 	if ( ss->first->next == NULL ) {
@@ -10606,6 +10742,7 @@ static PyMethodDef FontForge_methods[] = {
     { "setPrefs", PyFF_SetPrefs, METH_VARARGS, "Set FontForge preference items" },
     { "savePrefs", PyFF_SavePrefs, METH_NOARGS, "Save FontForge preference items" },
     { "loadPrefs", PyFF_LoadPrefs, METH_NOARGS, "Load FontForge preference items" },
+    { "hasSpiro", PyFF_hasSpiro, METH_NOARGS, "Returns whether this fontforge has access to Raph Levien's spiro package"},
     { "defaultOtherSubrs", PyFF_DefaultOtherSubrs, METH_NOARGS, "Use FontForge's default \"othersubrs\" functions for Type1 fonts" },
     { "readOtherSubrsFile", PyFF_ReadOtherSubrsFile, METH_VARARGS, "Read from a file, \"othersubrs\" functions for Type1 fonts" },
     { "loadEncodingFile", PyFF_LoadEncodingFile, METH_VARARGS, "Load an encoding file into the list of encodings" },
@@ -10903,6 +11040,8 @@ static void initPyFontForge(void) {
 	    "cvt", "privateiter", "private", "fontiter", "selection", "font",
 	    "contouriter", "layeriter",
 	    NULL };
+    static char *spiro_names[] = { "spiroG4", "spiroG2", "spiroCorner",
+	    "spiroLeft", "spiroRight", "spiroOpen", NULL };
     static int initted = false;
 
     if ( initted )
@@ -10927,6 +11066,9 @@ return;
     hook_dict = PyDict_New();
     Py_INCREF(hook_dict);
     PyModule_AddObject(m, "hooks", hook_dict);
+    /* Add constant names for the spiro point types */
+    for ( i=0; spiro_names[i]!=NULL; ++i )
+	PyModule_AddObject(m, spiro_names[i], Py_BuildValue("i",i+1));
 
     m = Py_InitModule3("psMat", psMat_methods,
                        "PostScript Matrix manipulation");
