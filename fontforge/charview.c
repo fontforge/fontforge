@@ -8026,12 +8026,12 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	    mi->ti.disabled = cv->fv->sf->bitmaps==NULL;
 	  break;
 	  case MID_AddExtrema:
-	    mi->ti.disabled = cv->layerheads[cv->drawmode]->splines==NULL;
+	    mi->ti.disabled = cv->layerheads[cv->drawmode]->splines==NULL || cv->sc->inspiro;
 	  /* Like Simplify, always available, but may not do anything if */
 	  /*  all extrema have points. I'm not going to check for that, too hard */
 	  break;
 	  case MID_Simplify:
-	    mi->ti.disabled = cv->layerheads[cv->drawmode]->splines==NULL;
+	    mi->ti.disabled = cv->layerheads[cv->drawmode]->splines==NULL || cv->sc->inspiro;
 	  /* Simplify is always available (it may not do anything though) */
 	  /*  well, ok. Disable it if there is absolutely nothing to work on */
 	  break;
