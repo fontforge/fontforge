@@ -878,22 +878,26 @@ typedef struct spline {
     */
 } Spline;
 
-#define SPIRO_OPEN_CONTOUR	'{'
-#define SPIRO_CORNER		'v'
-#define SPIRO_G4		'o'
-#define SPIRO_G2		'c'
-#define SPIRO_LEFT		'['
-#define SPIRO_RIGHT		']'
-#define SPIRO_END		'z'
-#define SPIRO_SELECTED(cp)	((cp)->ty&0x80)
-#define SPIRO_DESELECT(cp)	((cp)->ty&=~0x80)
-#define SPIRO_SELECT(cp)	((cp)->ty|=0x80)
-#define SPIRO_SPL_OPEN(spl)	((spl)->spiro_cnt>1 && ((spl)->spiros[0].ty&0x7f)==SPIRO_OPEN_CONTOUR)
+#ifndef _NO_LIBSPIRO
+# include "spiroentrypoints.h"
+#else
+# define SPIRO_OPEN_CONTOUR	'{'
+# define SPIRO_CORNER		'v'
+# define SPIRO_G4		'o'
+# define SPIRO_G2		'c'
+# define SPIRO_LEFT		'['
+# define SPIRO_RIGHT		']'
+# define SPIRO_END		'z'
 typedef struct {			/* Taken from spiro.h because I want */
     double x;				/*  to be able to compile for spiro */
     double y;				/*  even on a system without it */
     char ty;
 } spiro_cp;
+#endif
+#define SPIRO_SELECTED(cp)	((cp)->ty&0x80)
+#define SPIRO_DESELECT(cp)	((cp)->ty&=~0x80)
+#define SPIRO_SELECT(cp)	((cp)->ty|=0x80)
+#define SPIRO_SPL_OPEN(spl)	((spl)->spiro_cnt>1 && ((spl)->spiros[0].ty&0x7f)==SPIRO_OPEN_CONTOUR)
 
 typedef struct splinepointlist {
     SplinePoint *first, *last;
@@ -1237,7 +1241,7 @@ typedef struct splinechar {
     void *python_sc_object;
     void *python_temporary;
 #endif
-    void *python_persistant;		/* If python this will hold a python object, if not python this will hold a string containing a pickled object. We do nothing with it (if not python) except save it back out unchanged */
+    void *python_persistent;		/* If python this will hold a python object, if not python this will hold a string containing a pickled object. We do nothing with it (if not python) except save it back out unchanged */
     uint16 validation_state;
     uint16 old_vs;
 } SplineChar;
@@ -1615,7 +1619,7 @@ typedef struct splinefont {
 #if !defined(_NO_PYTHON)
     void *python_temporary;
 #endif
-    void *python_persistant;		/* If python this will hold a python object, if not python this will hold a string containing a pickled object. We do nothing with it (if not python) except save it back out unchanged */
+    void *python_persistent;		/* If python this will hold a python object, if not python this will hold a string containing a pickled object. We do nothing with it (if not python) except save it back out unchanged */
     enum loadvalidation_state loadvalidation_state;
 } SplineFont;
 
