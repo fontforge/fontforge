@@ -2464,7 +2464,7 @@ static void gposPairSubTable(FILE *ttf, int which, int stoffset, struct ttfinfo 
 	free(ps_offsets);
     } else if ( subformat==2 ) {
 	printf( "\t   Class based kerning (not displayed)\n" );
-	PrintGlyphs( showCoverageTable(ttf,stoffset+coverage,cnt),info);
+	PrintGlyphs( showCoverageTable(ttf,stoffset+coverage,-1),info);
     } else {
 	printf( "\t   !!! unknown sub-table format !!!!\n" );
     }
@@ -2501,7 +2501,7 @@ static void gposMarkToBaseSubTable(FILE *ttf, int which, int stoffset, struct tt
     printf( "\t   Mark Offset=%d\n", markoff = getushort(ttf));
     printf( "\t   Base Offset=%d\n", baseoff = getushort(ttf));
     printf( "\t   Mark Glyphs\n" );
-    mglyphs = showCoverageTable(ttf,stoffset+mcoverage, classcnt);
+    mglyphs = showCoverageTable(ttf,stoffset+mcoverage, -1); /* Class cnt is not the count of marks */
     printf( "\t   Base Glyphs\n" );
     bglyphs = showCoverageTable(ttf,stoffset+bcoverage, -1);
     fseek(ttf,stoffset+baseoff,SEEK_SET);
