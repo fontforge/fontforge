@@ -39,6 +39,7 @@ clean:
 	( cd gdraw ; $(MAKE) clean )
 	( cd plugins ; $(MAKE) clean )
 	-( cd po ; rm *.mo )
+	-( cd pyhook ; rm -rf build dist )
 	-rm -rf .libs
 
 distclean cleaner:
@@ -47,6 +48,7 @@ distclean cleaner:
 	( cd gdraw ; $(MAKE) distclean )
 	( cd plugins ; $(MAKE) distclean )
 	-( cd po ; rm *.mo Makefile* )
+	-( cd pyhook ; rm -rf build dist setup.py )
 	-rm -rf .libs
 	-rm Makefile config.cache config.log config.status libtool fontforge.pc systemspecific
 
@@ -74,8 +76,7 @@ install_docs:
 install_po:
 	( cd po ; make install )
 
-install: $(DESTDIR)$(sharedir) all install_libs install_po
-# You may need to be root to do the install
+install_prog:
 	mkdir -p $(DESTDIR)$(bindir)
 	mkdir -p $(DESTDIR)$(mandir)/man1
 	mkdir -p $(DESTDIR)$(sharedir)
@@ -94,11 +95,21 @@ install: $(DESTDIR)$(sharedir) all install_libs install_po
 	$(INSTALL_DATA) $(srcdir)/fontforge/sfddiff.1 $(DESTDIR)$(mandir)/man1
 	$(INSTALL_DATA) $(srcdir)/fontforge/fontimage.1 $(DESTDIR)$(mandir)/man1
 	$(INSTALL_DATA) $(srcdir)/fontforge/fontlint.1 $(DESTDIR)$(mandir)/man1
+
+install: $(DESTDIR)$(sharedir) all install_libs install_po install_prog
+# You may need to be root to do the install
 #explicit use of sh to make sure we don't invoke csh with different "if" syntax
 	sh -c "if test -d $(srcdir)/htdocs >/dev/null ; then $(MAKE) install_docs ; fi"
 	sh < systemspecific
 #we don't always create a setup.py
 	-(cd pyhook ; python setup.py install )
+
+install_py: $(DESTDIR)$(sharedir) all install_libs install_po install_prog
+# You may need to be root to do the install
+#explicit use of sh to make sure we don't invoke csh with different "if" syntax
+	sh -c "if test -d $(srcdir)/htdocs >/dev/null ; then $(MAKE) install_docs ; fi"
+	sh < systemspecific
+	-(cd pyhook ; python setup.py bdist --formats=gztar ; cp dist/fontforge-*.tar.gz $(DESTDIR)/tmp )
 
 uninstall:
 	-rm $(DESTDIR)$(bindir)/fontforge

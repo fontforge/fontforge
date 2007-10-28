@@ -204,6 +204,8 @@ AC_CHECK_HEADER(jpeglib.h, : , AC_DEFINE(_NO_LIBJPEG))
 AC_CHECK_LIB(tiff, TIFFOpen, : , AC_DEFINE(_NO_LIBTIFF), -lm )
 AC_CHECK_HEADER(tiffio.h, : , AC_DEFINE(_NO_LIBTIFF))
 AC_CHECK_LIB(xml2, xmlParseFile, : , AC_DEFINE(_NO_LIBXML), -lz -lm)
+AC_CHECK_LIB(spiro, TaggedSpiroCPsToBezier, :  ,AC_DEFINE(_NO_LIBSPIRO)) 
+AC_CHECK_HEADER(spiroentrypoints.h, : , AC_DEFINE(_NO_LIBSPIRO))
 
 if test "$gww_uselessiconv" = "no" ; then
  AC_CHECK_HEADERS([iconv.h])
@@ -352,6 +354,10 @@ if test "$gww_nodynamic" = "yes"; then
  if test "$ac_cv_lib_tiff_TIFFOpen" = "yes" -a ! -e /usr/lib/libtiff.la; then
   STATIC_LIBS="$STATIC_LIBS -ltiff"
   AC_DEFINE(_STATIC_LIBTIFF)
+ fi
+ if test "$ac_cv_lib_spiro_TaggedSpiroCPsToBezier" = "yes" -a ! -e /usr/lib/libspiro.la; then
+  STATIC_LIBS="$STATIC_LIBS -lspiro"
+  AC_DEFINE(_STATIC_LIBSPIRO)
  fi
  if test "$ac_cv_lib_jpeg_jpeg_CreateDecompress" = "yes" -a ! -e /usr/lib/libjpeg.la; then
   STATIC_LIBS="$STATIC_LIBS -ljpeg"

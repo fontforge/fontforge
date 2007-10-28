@@ -30,7 +30,7 @@
 /* Access to Raph Levien's spiro splines */
 /* See http://www.levien.com/spiro/ */
 
-#ifdef NODYNAMIC
+#ifdef _NO_LIBSPIRO
 int hasspiro(void) {
 return(false);
 }
@@ -45,12 +45,16 @@ return( NULL );
 #else
 #  include <dynamic.h>
 #  include "bezctx_ff.h"
-#  include "spiro_exports.h"
 
+#  if defined(_STATIC_LIBSPIRO) || defined(NODYNAMIC)
+#    define _TaggedSpiroCPsToBezier TaggedSpiroCPsToBezier
+
+static void initSpiro(void) {
+return( true );
+}
+#  else
 static DL_CONST void *libspiro;
-static spiro_seg *(*_run_spiro)(const spiro_cp *src, int n);
-static void (*_free_spiro)(spiro_seg *s);
-static void (*_spiro_to_bpath)(const spiro_seg *s, int n, bezctx *bc);
+static void (*_TaggedSpiroCPsToBezier)(spiro_cp *spiros,bezctx *bc);
 static int inited = false, has_spiro = false;
 
 static void initSpiro(void) {
@@ -74,14 +78,13 @@ return;
 return;
     }
 
-    _run_spiro = (spiro_seg *(*)(const spiro_cp *src, int n)) dlsym(libspiro,"run_spiro");
-    _free_spiro = (void (*)(spiro_seg *s)) dlsym(libspiro,"free_spiro");
-    _spiro_to_bpath = (void (*)(const spiro_seg *s, int n, bezctx *bc)) dlsym(libspiro,"spiro_to_bpath");
-    if ( _run_spiro==NULL || _free_spiro==NULL || _spiro_to_bpath==NULL ) {
+    _TaggedSpiroCPsToBezier = (void (*)(spiro_cp *spiros,bezctx *bc)) dlsym(libspiro,"TaggedSpiroCPsToBezier");
+   if ( _TaggedSpiroCPsToBezier==NULL ) {
 	LogError("Hmm. This system has a libspiro, but it doesn't contain the entry points\nfontforge needs. Must be something else.\n");
     } else
 	has_spiro = true;
 }
+#endif
 
 int hasspiro(void) {
     initSpiro();
@@ -106,7 +109,6 @@ return( NULL );
 	ss = chunkalloc(sizeof(SplineSet));
 	ss->first = ss->last = SplinePointCreate(spiros[0].x,spiros[0].y);
     } else {
-	spiro_seg *s;
 	bezctx *bc = new_bezctx_ff();
 	if ( spiros[0].ty=='{' ) {
 	    lastty = spiros[n-1].ty;
@@ -114,17 +116,15 @@ return( NULL );
 	}
 
 	if ( !any )
-	    s = _run_spiro(spiros,n);
+	    _TaggedSpiroCPsToBezier(spiros,bc);
 	else {
 	    nspiros = galloc((n+1)*sizeof(spiro_cp));
 	    memcpy(nspiros,spiros,(n+1)*sizeof(spiro_cp));
 	    for ( n=0; nspiros[n].ty!=SPIRO_END; ++n )
 		nspiros[n].ty &= ~0x80;
-	    s = _run_spiro(nspiros,n);
+	    _TaggedSpiroCPsToBezier(nspiros,bc);
 	    free(nspiros);
 	}
-	_spiro_to_bpath(s,n,bc);
-	_free_spiro(s);
 	ss = bezctx_ff_close(bc);
 
 	if ( spiros[0].ty=='{' )
@@ -217,8 +217,6 @@ return( NULL );
     for ( n=0; spiros[n].ty!='z'; ++n );
     nspiros = galloc((n+1)*sizeof(spiro_cp));
     memcpy(nspiros,spiros,(n+1)*sizeof(spiro_cp));
-    for ( n=0; nspiros[n].ty!='z'; ++n )
-	nspiros[n].ty &= ~0x80;
     if ( _cnt != NULL ) *_cnt = n+1;
 return( nspiros );
 }

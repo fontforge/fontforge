@@ -316,6 +316,8 @@ AC_CHECK_LIB(jpeg, jpeg_CreateDecompress, :  ,AC_DEFINE(_NO_LIBJPEG))
 AC_CHECK_HEADER(jpeglib.h, : , AC_DEFINE(_NO_LIBJPEG))
 AC_CHECK_LIB(tiff, TIFFOpen, : , AC_DEFINE(_NO_LIBTIFF), -lm )
 AC_CHECK_HEADER(tiffio.h, : , AC_DEFINE(_NO_LIBTIFF))
+AC_CHECK_LIB(spiro, TaggedSpiroCPsToBezier, :  ,AC_DEFINE(_NO_LIBSPIRO)) 
+AC_CHECK_HEADER(spiroentrypoints.h, : , AC_DEFINE(_NO_LIBSPIRO))
 case "$host" in
 *-pc-cygwin*)
  AC_CHECK_LIB(xml2, xmlParseFile, : , AC_DEFINE(_NO_LIBXML), [-liconv -lz])
@@ -557,6 +559,9 @@ case "$host" in
  fi
  if test "$ac_cv_lib_tiff_TIFFOpen" = "yes"; then
   AC_CHECK_LIB_LA(tiff, :, [ STATIC_LIBS="$STATIC_LIBS -ltiff" ; AC_DEFINE(_STATIC_LIBTIFF)])
+ fi
+ if test "$ac_cv_lib_spiro_TaggedSpiroCPsToBezier" = "yes"; then
+  AC_CHECK_LIB_LA(spiro, :, [ STATIC_LIBS="$STATIC_LIBS -lspiro" ; AC_DEFINE(_STATIC_LIBSPIRO)])
  fi
  if test "$ac_cv_lib_jpeg_jpeg_CreateDecompress" = "yes"; then
   AC_CHECK_LIB_LA(jpeg, :, [ STATIC_LIBS="$STATIC_LIBS -ljpeg" ; AC_DEFINE(_STATIC_LIBJPEG)])
