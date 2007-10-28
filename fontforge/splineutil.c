@@ -1576,7 +1576,8 @@ SplinePointList *SplinePointListRemoveSelected(SplineChar *sc,SplinePointList *b
 		head = ret;
 	    else
 		last->next = ret;
-	    for ( last=ret; last->next!=NULL; last=last->next );
+	    if ( ret!=NULL )
+		for ( last=ret; last->next!=NULL; last=last->next );
 	}
     }
     if ( last!=NULL ) last->next = NULL;
