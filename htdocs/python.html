@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 25-Oct-2007 -->
+  <!-- AP: Last modified: 28-Oct-2007 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -132,14 +132,14 @@
 	  <TR>
 	    <TD>loadFontHook</TD>
 	    <TD>This function will be called when a font is loaded from disk.<BR>
-	      (if a font has an "initScriptString" entry in its persistant dictionary,
+	      (if a font has an "initScriptString" entry in its persistent dictionary,
 	      that script will be invoked before this function).</TD>
 	  </TR>
 	</TABLE>
 	<P>
 	Other hooks are defined in a font's own
 	<A HREF="#font-temporary">temporary</A> and
-	<A HREF="#font-persistant">persistant</A> dictionaries.</TD>
+	<A HREF="#font-persistent">persistent</A> dictionaries.</TD>
     </TR>
     <TR>
       <TH colspan=3>Methods</TH>
@@ -1495,7 +1495,7 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TD colspan=2>The GID of this glyph in the font it was read from. (readonly)</TD>
     </TR>
     <TR>
-      <TD><CODE><A NAME="glyph-persistant">persistant</A></CODE></TD>
+      <TD><CODE><A NAME="glyph-persistent">persistent</A></CODE></TD>
       <TD colspan=2>Whatever you want (these data will be saved as a pickled object
 	in the sfd file. It is your job to insure that whatever you put here can
 	be pickled). See also <A HREF="#glyph-temporary">the temporary</A> field.</TD>
@@ -1517,7 +1517,7 @@ pen = None;				# Finalize the pen. This tells FontForge
     <TR>
       <TD><CODE><A NAME="glyph-temporary">temporary</A></CODE></TD>
       <TD colspan=2>Whatever you want (these data will be lost once the font is
-	closed) See also <A HREF="#glyph-persistant">the persistant</A> field.</TD>
+	closed) See also <A HREF="#glyph-persistent">the persistent</A> field.</TD>
     </TR>
     <TR>
       <TD><CODE>texheight</CODE></TD>
@@ -2519,7 +2519,7 @@ pen = None;				# Finalize the pen. This tells FontForge
 	the file from which the font was originally read (in this session)</TD>
     </TR>
     <TR>
-      <TD><CODE><A NAME="font-persistant">persistant</A></CODE></TD>
+      <TD><CODE><A NAME="font-persistent">persistent</A></CODE></TD>
       <TD colspan=2>Whatever you want -- though I recommend you store a dict here
 	(these data will be saved as a pickled object in the sfd file. It is your
 	job to insure that whatever you put here can be pickled)

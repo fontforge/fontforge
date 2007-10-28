@@ -70,7 +70,7 @@ static int PyObjDumpable(PyObject *value);
 static void DumpPyObject( FILE *file, PyObject *value );
 #endif
 
-static void DumpPythonLib(FILE *file,void *python_persistant,SplineChar *sc) {
+static void DumpPythonLib(FILE *file,void *python_persistent,SplineChar *sc) {
     StemInfo *h;
     int has_hints = (sc!=NULL && (sc->hstem!=NULL || sc->vstem!=NULL ));
 	
@@ -80,7 +80,7 @@ static void DumpPythonLib(FILE *file,void *python_persistant,SplineChar *sc) {
 	fprintf( file, "  <lib>\n" );
 	fprintf( file, "    <dict>\n" );
 #else
-    PyObject *dict = python_persistant, *items, *key, *value;
+    PyObject *dict = python_persistent, *items, *key, *value;
     int i, len;
     char *str;
 
@@ -122,7 +122,7 @@ static void DumpPythonLib(FILE *file,void *python_persistant,SplineChar *sc) {
 	    fprintf( file, "      </dict>\n" );
 #ifndef _NO_PYTHON
 	}
-	/* Ok, look at the persistant data and output it (all except for a */
+	/* Ok, look at the persistent data and output it (all except for a */
 	/*  hint entry -- we've already handled that with the real hints, */
 	/*  no point in retaining out of date hints too */
 	if ( dict != NULL ) {
@@ -274,7 +274,7 @@ return( false );
 	}
 	fprintf( glif, "  </outline>\n" );
     }
-    DumpPythonLib(glif,sc->python_persistant,sc);
+    DumpPythonLib(glif,sc->python_persistent,sc);
     fprintf( glif, "</glyph>\n" );
     err = ferror(glif);
     if ( fclose(glif))
@@ -449,12 +449,12 @@ return( PListOutputTrailer(plist));
 
 static int UFOOutputLib(char *basedir,SplineFont *sf) {
 #ifndef _NO_PYTHON
-    if ( sf->python_persistant!=NULL && PyMapping_Check(sf->python_persistant) ) {
+    if ( sf->python_persistent!=NULL && PyMapping_Check(sf->python_persistent) ) {
 	FILE *plist = PListCreate( basedir, "lib.plist" );
 
 	if ( plist==NULL )
 return( false );
-	DumpPythonLib(plist,sf->python_persistant,NULL);
+	DumpPythonLib(plist,sf->python_persistent,NULL);
 return( PListOutputTrailer(plist));
     }
 #endif
@@ -1094,7 +1094,7 @@ return( NULL );
 		    }
 		}
 #ifndef _NO_PYTHON
-		sc->python_persistant = LibToPython(doc,dict);
+		sc->python_persistent = LibToPython(doc,dict);
 #endif
 	    }
 	}
@@ -1416,7 +1416,7 @@ return( NULL );
     if ( _xmlStrcmp(plist->name,(const xmlChar *) "plist")!=0 || dict==NULL ) {
 	LogError(_("Expected property list file"));
     } else {
-	sf->python_persistant = LibToPython(doc,dict);
+	sf->python_persistent = LibToPython(doc,dict);
     }
     _xmlFreeDoc(doc);
 #endif

@@ -4264,15 +4264,15 @@ static int PyFF_Glyph_set_temporary(PyFF_Glyph *self,PyObject *value,void *closu
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_persistant(PyFF_Glyph *self,void *closure) {
-    if ( self->sc->python_persistant==NULL )
+static PyObject *PyFF_Glyph_get_persistent(PyFF_Glyph *self,void *closure) {
+    if ( self->sc->python_persistent==NULL )
 Py_RETURN_NONE;
-    Py_INCREF( (PyObject *) (self->sc->python_persistant) );
-return( self->sc->python_persistant );
+    Py_INCREF( (PyObject *) (self->sc->python_persistent) );
+return( self->sc->python_persistent );
 }
 
-static int PyFF_Glyph_set_persistant(PyFF_Glyph *self,PyObject *value,void *closure) {
-    PyObject *old = self->sc->python_persistant;
+static int PyFF_Glyph_set_persistent(PyFF_Glyph *self,PyObject *value,void *closure) {
+    PyObject *old = self->sc->python_persistent;
 
     /* I'd rather not store None, because C routines don't understand it */
     /*  and they occasionally need to know whether there is something real */
@@ -4280,7 +4280,7 @@ static int PyFF_Glyph_set_persistant(PyFF_Glyph *self,PyObject *value,void *clos
     if ( value==Py_None )
 	value = NULL;
     Py_XINCREF(value);
-    self->sc->python_persistant = value;
+    self->sc->python_persistent = value;
     Py_XDECREF(old);
 return( 0 );
 }
@@ -4915,13 +4915,16 @@ return( Py_BuildValue("i", self->sc->validation_state ));
 static PyGetSetDef PyFF_Glyph_getset[] = {
     {"userdata",
 	 (getter)PyFF_Glyph_get_temporary, (setter)PyFF_Glyph_set_temporary,
-	 "arbetrary (non persistant) user data (deprecated name for temporary)", NULL},
+	 "arbetrary (non persistent) user data (deprecated name for temporary)", NULL},
     {"temporary",
 	 (getter)PyFF_Glyph_get_temporary, (setter)PyFF_Glyph_set_temporary,
-	 "arbetrary (non persistant) user data", NULL},
-    {"persistant",
-	 (getter)PyFF_Glyph_get_persistant, (setter)PyFF_Glyph_set_persistant,
-	 "arbetrary persistant user data", NULL},
+	 "arbetrary (non persistent) user data", NULL},
+    {"persistant",		/* I documented this member with the wrong spelling... so support it */
+	 (getter)PyFF_Glyph_get_persistent, (setter)PyFF_Glyph_set_persistent,
+	 "arbetrary persistent user data", NULL},
+    {"persistent",
+	 (getter)PyFF_Glyph_get_persistent, (setter)PyFF_Glyph_set_persistent,
+	 "arbetrary persistent user data", NULL},
     {"anchorPoints",
 	 (getter)PyFF_Glyph_get_anchorPoints, (setter)PyFF_Glyph_set_anchorPoints,
 	 "glyph name", NULL},
@@ -7471,17 +7474,17 @@ static int PyFF_Font_set_temporary(PyFF_Font *self,PyObject *value,void *closure
 return( 0 );
 }
 
-static PyObject *PyFF_Font_get_persistant(PyFF_Font *self,void *closure) {
+static PyObject *PyFF_Font_get_persistent(PyFF_Font *self,void *closure) {
     SplineFont *sf = self->fv->sf;
-    if ( sf->python_persistant==NULL )
+    if ( sf->python_persistent==NULL )
 Py_RETURN_NONE;
-    Py_INCREF( (PyObject *) (sf->python_persistant) );
-return( sf->python_persistant );
+    Py_INCREF( (PyObject *) (sf->python_persistent) );
+return( sf->python_persistent );
 }
 
-static int PyFF_Font_set_persistant(PyFF_Font *self,PyObject *value,void *closure) {
+static int PyFF_Font_set_persistent(PyFF_Font *self,PyObject *value,void *closure) {
     SplineFont *sf = self->fv->sf;
-    PyObject *old = sf->python_persistant;
+    PyObject *old = sf->python_persistent;
 
     /* I'd rather not store None, because C routines don't understand it */
     /*  and they occasionally need to know whether there is something real */
@@ -7489,7 +7492,7 @@ static int PyFF_Font_set_persistant(PyFF_Font *self,PyObject *value,void *closur
     if ( value==Py_None )
 	value = NULL;
     Py_XINCREF(value);
-    sf->python_persistant = value;
+    sf->python_persistent = value;
     Py_XDECREF(old);
 return( 0 );
 }
@@ -8417,13 +8420,16 @@ return( PyFF_Font_SetMaxpValue(self,value,"Zones"));
 static PyGetSetDef PyFF_Font_getset[] = {
     {"userdata",
 	 (getter)PyFF_Font_get_temporary, (setter)PyFF_Font_set_temporary,
-	 "arbetrary (non-persistant) user data (deprecated name for temporary)", NULL},
+	 "arbetrary (non-persistent) user data (deprecated name for temporary)", NULL},
     {"temporary",
 	 (getter)PyFF_Font_get_temporary, (setter)PyFF_Font_set_temporary,
-	 "arbetrary (non-persistant) user data", NULL},
-    {"persistant",
-	 (getter)PyFF_Font_get_persistant, (setter)PyFF_Font_set_persistant,
-	 "arbetrary persistant user data", NULL},
+	 "arbetrary (non-persistent) user data", NULL},
+    {"persistant",		/* I documented this member with the wrong spelling... so support it */
+	 (getter)PyFF_Font_get_persistent, (setter)PyFF_Font_set_persistent,
+	 "arbetrary persistent user data", NULL},
+    {"persistent",
+	 (getter)PyFF_Font_get_persistent, (setter)PyFF_Font_set_persistent,
+	 "arbetrary persistent user data", NULL},
     {"sfnt_names",
 	 (getter)PyFF_Font_get_sfntnames, (setter)PyFF_Font_set_sfntnames,
 	 "The sfnt 'name' table. A tuple of all ms names.\nEach name is itself a tuple of strings (language,strid,name)\nMac names will be automagically created from ms names", NULL},
@@ -11154,7 +11160,7 @@ void PyFF_FreeFV(FontView *fv) {
 }
 
 void PyFF_FreeSF(SplineFont *sf) {
-    Py_XDECREF( (PyObject *) (sf->python_persistant));
+    Py_XDECREF( (PyObject *) (sf->python_persistent));
     Py_XDECREF( (PyObject *) (sf->python_temporary));
 }
 
@@ -11163,7 +11169,7 @@ void PyFF_FreeSC(SplineChar *sc) {
 	((PyFF_Glyph *) (sc->python_sc_object))->sc = NULL;
 	Py_DECREF( (PyObject *) (sc->python_sc_object));
     }
-    Py_XDECREF( (PyObject *) (sc->python_persistant));
+    Py_XDECREF( (PyObject *) (sc->python_persistent));
     Py_XDECREF( (PyObject *) (sc->python_temporary));
 }
 
@@ -11270,11 +11276,11 @@ return;
 
     fv_active_in_ui = fv;		/* Make fv known to interpreter */
 
-    /* First check if it has a initScriptString in the persistant dictionary */
+    /* First check if it has a initScriptString in the persistent dictionary */
     /* (If we loaded from an sfd file) */
     obj = NULL;
-    if ( sf->python_persistant!=NULL && PyMapping_Check(sf->python_persistant) &&
-	    (obj = PyMapping_GetItemString(sf->python_persistant,"initScriptString"))!=NULL &&
+    if ( sf->python_persistent!=NULL && PyMapping_Check(sf->python_persistent) &&
+	    (obj = PyMapping_GetItemString(sf->python_persistent,"initScriptString"))!=NULL &&
 	    PyString_Check(obj)) {
 	char *str = PyString_AsString(obj);
 	PyRun_SimpleString(str);
