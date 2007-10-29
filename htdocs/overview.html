@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 25-Jul-2007 -->
+  <!-- AP: Last modified: 28-Oct-2007 -->
   <TITLE>FontForge -- An outline font editor for PostScript&reg;, TrueType
   and OpenType fonts</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
@@ -364,10 +364,10 @@
   glyph for every character and a single character for every glyph, but not
   always -- in renaissance printing there were two glyphs for a lower-case
   s, <IMG SRC="short-long-s.png" WIDTH="17" HEIGHT="12">the short and the long
-  s. A ligature is an example of a glyph that represents two (or more) characters.
-  In arabic most of the letters (characters) have at least four different glyphs,
-  the appropriate glyph being determined by the letters around it. Here are
-  four forms of the arabic character "seen"
+  s. Whereas a ligature is an example of a glyph that represents two (or more)
+  characters. In arabic most of the letters (characters) have at least four
+  different glyphs, the appropriate glyph being determined by the letters around
+  it. Here are four forms of the arabic character "seen"
   <IMG SRC="arabic-seen.png" WIDTH="108" HEIGHT="17" ALIGN="Middle">.
   <P>
   What is an outline font? What is a bitmap font?
@@ -402,9 +402,9 @@
   An outline is composed of a set of contours or paths. In the picture on the
   above left the letter A is described by three different paths. The main one
   is on the outside and the two smaller ones are internal. Each of these paths
-  is composed of a series of splines and line segments. FontForge can handle
-  cubic and quadratic splines. PostScript fonts use cubic splines, TrueType
-  fonts use quadratic (SVG fonts can be either).
+  is composed of a series of (B&eacute;zier) splines and line segments. FontForge
+  can handle cubic and quadratic splines. PostScript fonts use cubic splines,
+  TrueType fonts use quadratic (SVG fonts can be either).
   <P>
   Each cubic <A NAME="spline">spline</A> is defined by four points, two of
   which mark the end points of the spline and two more to describe the slope
@@ -445,13 +445,31 @@
   or quadratic splines with the
   <A HREF="fontinfo.html#PS-General">Element-&gt;Font Info </A>command.
   <P>
+  There are many different types of splines in the world. The ones described
+  above are B&eacute;ziers -- these are numerically simple and have a number
+  of nice properties -- which is why they are used internally in fonts. However,
+  there are some even nicer splines. It is easy to give B&eacute;zier splines
+  the same slope on either side of a point, but a curve will look much nicer
+  if it has the same curvature on either side of a point. Clothoid splines
+  have this property.
+  <P>
+  <A HREF="http://www.levien.com/">Raph Levien </A>has kindly donated to the
+  open source community a <A HREF="http://libspiro.sf.net/">library</A> for
+  converting clothoid splines into B&eacute;ziers.
+  <P>
+  Clothoid splines are much easier to work with than B&eacute;ziers -- there
+  are no control points, just a sequence of on-curve points, and magically
+  a beautiful curve will apear between them. FontForge can
+  <A HREF="charview.html#spiro-mode">either</A> edit a curve as a set of
+  B&eacute;ziers or as a set of clothoids.
+  <P>
   A path is closed when it comes back and joins its start. All paths in an
   outline font should be closed. Once a path is closed in may be said to have
   a direction, essentially this may be thought of as "Was the path created
   in a clockwise or a counter-clockwise fashion?" (this is actually a little
   simplistic, if a path intersects itself, as in a figure 8, then the direction
   cannot be described as either clockwise or counter-clockwise, but most paths
-  do not self-intersect (and paths in a font SHOULD not self-intersect) and
+  do not self-intersect (and paths in a font SHOULD NOT self-intersect) and
   we will simplify our life by pretending that we can call paths clockwise
   or counter).
   <P>
@@ -740,7 +758,7 @@
       <P>
       FontForge's hinting of True Type (properly called "instructing") is very
       primitive, and is based on the stem hints also used by PostScript. It uses
-      these hints to determine which points to move and where to move them. 
+      these hints to determine which points to move and where to move them.
       <P>
       I am not happy with the instructions I generate for TrueType.
       <P>

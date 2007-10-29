@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 14-Sep-2007 -->
+  <!-- AP: Last modified: 28-Oct-2007 -->
   <TITLE>Frequently Asked Questions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -56,6 +56,12 @@
 	<LI>
 	  <A HREF="#C-plus-plus">Why isn't FontForge written in C++? (or <I>Why C++
 	  is not my favorite language</I>)</A>
+	<LI>
+	  <A HREF="faq.html#bsd-license">Why do I release FontForge under the BSD license
+	  and not GPL?</A>
+	<LI>
+	  <A HREF="#libraries">Why does FontForge load libraries at run time rather
+	  than being linked with them?</A>
       </UL>
   </UL>
   <H2>
@@ -530,11 +536,68 @@
       </UL>
       <P>
       The above are my personal opinions based on my experience and explain why
-      <I>I</I> do not use C++. Your opinions may differ, few people have spent
+      <I>I</I> do not use C++. Your opinions probably differ, few people have spent
       5 years writing C++ compilers.
     <DT>
-      <A NAME="Pots">Does working on FontForge provide the same kind of pleasure
-      as working on pots or baking bread?</A>
+      <B><A NAME="bsd-license">Why do I release FontForge with the BSD license
+      and not GPL?</A></B>
+    <DD>
+      I don't like forcing restrictions on people.
+      <P>
+      I'm giving away fontforge, so I do.
+      <P>
+      The <A HREF="license.html" TARGET="_parent">BSD license </A>says "Don't sue
+      me" and that's all I care about.
+      <P>
+      Perhaps I am naif, but I don't believe that anyone is going to start selling
+      fontforge. Why would they? It makes no sense for someone to try to sell what
+      I give away freely. If they add functionality to fontforge, then that's a
+      different matter, but in a sense they aren't charging for fontforge, they
+      are charging for the code they have added to it. It would be annoying if
+      someone did that, a bit immoral in my eyes, but I'm not going to say "no".
+      <P>
+      Or someone might take a small piece of fontforge and use it in something
+      else. That doesn't bother me. I know that some of my OpenType code has been
+      snagged by some TeX packages. And I have snagged code for generating checksums
+      from some other packages.
+      <P>
+      I rather like helping other people. And people have helped me.
+    <DT>
+      <B><A NAME="libraries">Why does FontForge load libraries at run time rather
+      than being linked with them?</A></B>
+    <DD>
+      I dislike dependencies. The fewer the better.
+      <P>
+      I hate when I download a package and discover it won't work unless I download
+      half a dozen other packages (which, in their turn may demand that I down
+      yet more packages).
+      <P>
+      I want to download a package and just have it work.
+      <P>
+      So I try to write as much code myself as I can and release it all together
+      in a lump and not force people to wander all over the web looking for disparate
+      parts.
+      <P>
+      When I can't figure out how to do something myself I will use an external
+      library if I must. Even then I will try to insure that fontforge will run
+      if the library is not present on a system. When I release a binary package
+      I don't want to have to release 32 packages per host depending on the possible
+      presence or absence of 5 different libraries. But I also don't want to force
+      someone to install a library that s/he will never use just to get fontforge
+      to start.
+      <P>
+      If a user will never look at an svg glyph then they don't need to install
+      libxml2. If the user will never import a jpeg image (and there's really no
+      reason to want to do that) then they don't need to install libjpeg.
+      <P>
+      Instead, the binaries I release will try to load a library dynamically (dlopen)
+      <EM>when they need it</EM> and not before. This will also speed up starting
+      fontforge. If the library is on the system then all is happy and nice. If
+      the library is not, then that functionality is lost -- but the rest of fontforge
+      continues to work.
+    <DT>
+      <A NAME="Pots"><B>Does working on FontForge provide the same kind of pleasure
+      as working on pots or baking bread?</B></A>
     <DD>
       <IMG SRC="bowlweb.gif" WIDTH="150" HEIGHT="150" ALIGN="Right"><SMALL><B>From
       an interview with <A HREF="http://ospublish.constantvzw.org/?p=221">Open
