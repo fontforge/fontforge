@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 28-Oct-2007 -->
+  <!-- AP: Last modified: 29-Oct-2007 -->
   <TITLE>Frequently Asked Questions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -62,6 +62,8 @@
 	<LI>
 	  <A HREF="#libraries">Why does FontForge load libraries at run time rather
 	  than being linked with them?</A>
+	<LI>
+	  <A HREF="#roadmap">Why is there no future roadmap for FontForge?</A>
       </UL>
   </UL>
   <H2>
@@ -595,6 +597,35 @@
       fontforge. If the library is on the system then all is happy and nice. If
       the library is not, then that functionality is lost -- but the rest of fontforge
       continues to work.
+    <DT>
+      <B><A NAME="roadmap">Why is there no future roadmap for FontForge?</A></B>
+    <DD>
+      Mostly because I don't thnk that way. I don't plan things out, I have a vague
+      idea where I want to go and I explore in that direction.
+      <P>
+      Consider python scripting. I decided to add python to fontforge. I found
+      that meant it became easier to design a mechanism so users could create their
+      own scripts to add import/export file formats. And then startup scripts,
+      and scripts when certain standard "events" happened. And then I could allow
+      users to define their own menu items. And then I figured out how to add fontforge
+      to python (as opposed to the reverse). And now I realize that there is no
+      reason I couldn't define a set of c-bindings so that people could call fontforge
+      as a library from within C programs. And who knows where that will lead --
+      if anywhere.
+      <P>
+      Each stage means I can see a little further, and go a little further, and
+      then see a little more.
+      <P>
+      And often ideas will come from users, someone will ask for functionality
+      I had not though of.
+      <P>
+      I did maintain such a page for a while. I found that half the things I wrote
+      never happened, and most of the time I didn't bother to update the page.
+      I'd forget about it. It was dull. Far better to <I>do</I> that to simply
+      sepeculate on what I might do were I not speculating.
+      <P>
+      So don't ask me what will happen next, because I don't know either. It's
+      an adventure. We'll just have to wait and see.
     <DT>
       <A NAME="Pots"><B>Does working on FontForge provide the same kind of pleasure
       as working on pots or baking bread?</B></A>
