@@ -39,6 +39,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <time.h>
+#include <locale.h>
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif
@@ -754,6 +756,38 @@ static void bStrskipint(Context *c) {
     c->return_val.type = v_int;
     strtol(c->a.vals[1].u.sval,&end,base);
     c->return_val.u.ival = end-c->a.vals[1].u.sval;
+}
+
+static void bStrftime(Context *c) {
+    int isgmt=1;
+    char *oldloc = NULL;
+    char buffer[300];
+    struct tm *tm;
+    time_t now;
+
+    if ( c->a.argc!=2 && c->a.argc!=3 && c->a.argc!=4 )
+	ScriptError( c, "Wrong number of arguments" );
+    else if ( c->a.vals[1].type!=v_str ||
+	    (c->a.argc>=3 && c->a.vals[2].type!=v_int) ||
+	    (c->a.argc>=4 && c->a.vals[3].type!=v_str) )
+	ScriptError( c, "Bad type for argument" );
+    if ( c->a.argc>=3 )
+	isgmt = c->a.vals[2].u.ival;
+    if ( c->a.argc>=4 )
+	oldloc = setlocale(LC_TIME, c->a.vals[3].u.sval);
+
+    time(&now);
+    if ( isgmt )
+	tm = gmtime(&now);
+    else
+	tm = localtime(&now);
+    strftime(buffer,sizeof(buffer),c->a.vals[1].u.sval,tm);
+
+    if ( oldloc!=NULL )
+	(void) setlocale(LC_TIME, oldloc);
+
+    c->return_val.type = v_str;
+    c->return_val.u.sval = copy(buffer);
 }
 
 static void bisupper(Context *c) {
@@ -7651,6 +7685,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
     { "Strtol", bStrtol, 1 },
     { "Strtod", bStrtod, 1 },
     { "Strskipint", bStrskipint, 1 },
+    { "Strftime", bStrftime, 1 },
     { "IsUpper", bisupper, 1 },
     { "IsLower", bislower, 1 },
     { "IsDigit", bisdigit, 1 },
