@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 30-Apr-2007 -->
+  <!-- AP: Last modified: 28-Oct-2007 -->
   <TITLE>Outline Glyph View</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -24,7 +24,7 @@
 	      >Source</A>
       </UL>
     <LI>
-      <A href="overview.html#Overview">Introduction</A>
+      <A href="overview.html">Introduction</A>
     <LI>
       <A href="editexample.html">Tutorial</A>
     <LI class="menu">
@@ -219,27 +219,33 @@
     <A NAME="Tools">Tools</A>
   </H2>
   <P>
-  <IMG SRC="tools.png" WIDTH="55" HEIGHT="294" ALIGN="Left" ISMAP USEMAP="#im-tools"><MAP
+  <IMG SRC="tools.png" WIDTH="116" HEIGHT="321" ALIGN="Left" ISMAP USEMAP="#im-tools"><MAP
       NAME="im-tools">
-    <AREA SHAPE="RECT" HREF="#rectangle" COORDS="0,215,54,243">
-    <AREA SHAPE="RECT" HREF="#perspective" COORDS="27,189,54,216">
-    <AREA SHAPE="RECT" HREF="#rotate3d" COORDS="0,189,27,216">
-    <AREA SHAPE="RECT" HREF="#skew" COORDS="26,161,54,189">
-    <AREA SHAPE="RECT" HREF="#rotate" COORDS="0,162,27,189">
-    <AREA SHAPE="RECT" HREF="#flip" COORDS="27,134,54,161">
-    <AREA SHAPE="RECT" HREF="#scale" COORDS="0,135,27,162">
-    <AREA SHAPE="RECT" HREF="#ruler" COORDS="27,108,54,134">
-    <AREA SHAPE="RECT" HREF="#knife" COORDS="-1,108,27,135">
-    <AREA SHAPE="RECT" HREF="#pen" COORDS="27,80,54,108">
-    <AREA SHAPE="RECT" HREF="#add-point" COORDS="1,81,27,108">
+    <AREA SHAPE="RECT" HREF="#spiro-mode" COORDS="89,108,116,135">
+    <AREA SHAPE="RECT" HREF="#spiro-add-point" COORDS="63,108,89,135">
+    <AREA SHAPE="RECT" HREF="#spiro-add-point" COORDS="63,54,116,108">
+    <AREA SHAPE="RECT" HREF="#spiro-mode" COORDS="27,109,54,135">
+    <AREA SHAPE="RECT" HREF="#pen" COORDS="1,108,28,136">
+    <AREA SHAPE="RECT" HREF="#rectangle" COORDS="0,244,54,272">
+    <AREA SHAPE="RECT" HREF="#perspective" COORDS="27,216,54,243">
+    <AREA SHAPE="RECT" HREF="#rotate3d" COORDS="0,216,27,243">
+    <AREA SHAPE="RECT" HREF="#skew" COORDS="27,189,55,217">
+    <AREA SHAPE="RECT" HREF="#rotate" COORDS="0,189,27,216">
+    <AREA SHAPE="RECT" HREF="#flip" COORDS="27,162,54,189">
+    <AREA SHAPE="RECT" HREF="#scale" COORDS="0,163,27,190">
+    <AREA SHAPE="RECT" HREF="#ruler" COORDS="27,135,54,161">
+    <AREA SHAPE="RECT" HREF="#knife" COORDS="-1,135,27,162">
+    <AREA SHAPE="RECT" HREF="#add-point" COORDS="27,80,54,108">
+    <AREA SHAPE="RECT" HREF="#add-point" COORDS="1,82,27,109">
     <AREA SHAPE="RECT" HREF="#add-point" COORDS="1,53,54,80">
     <AREA SHAPE="RECT" HREF="#scroll" COORDS="27,27,53,53">
     <AREA SHAPE="RECT" HREF="#freehand" COORDS="1,27,26,54">
     <AREA SHAPE="RECT" HREF="#magnify" COORDS="28,0,53,27">
     <AREA SHAPE="RECT" HREF="#pointer" COORDS="1,0,28,28">
   </MAP>
-  There are 18 different editing tools of which two (rectangle/ellipse and
-  polygon/star) come in two forms.
+  There are 19 different editing tools, a mode button which alters the behavior
+  of 5 of them, and two others (rectangle/ellipse and polygon/star) which come
+  in two forms.
   <P>
   At the bottom of the palette is a list of the current bindings of the mouse
   buttons. Here mouse button 1 is bound to the pointer tool, mouse button 1
@@ -417,13 +423,14 @@
   Width)<BR CLEAR=ALL>
   <H3>
     <IMG SRC="cvcurveicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">
-    <IMG SRC="cvcornericon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">
+    <IMG SRC="cvhvcurveicon.png" WIDTH="25" HEIGHT="26" ALIGN="Middle"><IMG SRC="cvcornericon.png"
+	WIDTH="26" HEIGHT="26" ALIGN="Middle">
     <IMG SRC="cvtangenticon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">Tools
     for <A NAME="add-point">adding</A> curved, corner and tangent points.
   </H3>
   <P>
-  These three tools behave similarly, differing only in what kind of point
-  is added to the view.
+  These four tools behave similarly, differing only in what kind of point is
+  added to the view.
   <P>
   If a single point is selected, and if that point is at the end of a path
   then depressing the mouse button will create a new point where the mouse
@@ -445,6 +452,22 @@
   If you double click then a point will be added as above and a
   <A HREF="getinfo.html">Point Info</A> dlg will appear to give you fine control
   over the location of the point and its control points.
+  <P>
+  The four different point types are
+  <UL>
+    <LI>
+      curved points (where the incoming and outgoing splines have the same slope)
+    <LI>
+      horizontal/vertical curved points (similar to the above except the slope
+      is constrained to be either horizontal or vertical)
+    <LI>
+      corner points (where the incoming and outgoing splines may have different
+      slopes)
+    <LI>
+      tangent points (where one spline is a line segment and the other spline is
+      curved then the curved spline is constrained to start with the same slope
+      as the line).
+  </UL>
   <H3>
     <IMG SRC="cvpenicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">The
     <A NAME="pen">pen</A> tool
@@ -462,6 +485,41 @@
   <P>
   If you hold down the Alt (Meta, etc) key you change the behavior so that
   cubic editing looks like quadratic and vice versa.
+  <H3>
+    <IMG SRC="cvspiroG4icon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">
+    <IMG SRC="cvspiroG2icon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">
+    <IMG SRC="cvspirocornericon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">
+    <IMG SRC="cvspirolefticon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">
+    <IMG SRC="cvspirorighticon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle"> Tools
+    for <A NAME="spiro-add-points">adding</A> spiro control points
+  </H3>
+  <P>
+  These tools add spiro control points to the current contour, these are only
+  available in spiro mode, but the basic adding process is similar to the above.
+  <P>
+  The different point types are:
+  <UL>
+    <LI>
+      G4
+    <LI>
+      G2
+    <LI>
+      corner
+    <LI>
+      left (vaguely like a tangent)
+    <LI>
+      right (vaguely like a tangent)
+  </UL>
+  <P>
+  This is based on <A HREF="http://www.levien.com/spiro/">Raph Levien's work</A>
+  with clothoid splines which provide constant curvature across control points.
+  <H3>
+    <IMG SRC="cvspiromodeicon.png" WIDTH="25" HEIGHT="26" ALIGN="Middle"><A NAME="spiro-mode">Spiro
+    mode</A>
+  </H3>
+  <P>
+  This button toggles between editing contours using B&eacute;zier control
+  points, or between using spiro (clothoid) control points.
   <H3>
     <IMG SRC="cvknifeicon.png" WIDTH="26" HEIGHT="26" ALIGN="Middle">The
     <A NAME="knife">knife</A> tool
