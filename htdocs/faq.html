@@ -153,6 +153,8 @@
       <A HREF="#AAT2OT">Converting from Apple's Advanced Typography to OpenType</A>
     <LI>
       <A HREF="#OT2AAT">Converting from OT to AAT</A>
+    <LI>
+      <A HREF="#Inkscape">Importing glyphs from Inkscape</A>
   </UL>
   <H2>
     Questions about Hints and TrueType Instructions
@@ -242,6 +244,8 @@
     <LI>
       <A HREF="#complex-eps">Why does fontforge say "EPS file is too complex to
       be understood"?</A>
+    <LI>
+      <A HREF="#Inkscape">Importing glyphs from Inkscape</A>
   </UL>
   <H2>
     Random questions
@@ -1827,6 +1831,23 @@ Gdraw.ScreenWidthCentimeters: 37.3
       is limited in what it understands. Sometimes it will find a file it can't
       handle.
     <DT>
+      <B><A NAME="Inkscape">Importing glyphs from Inkscape</A></B>
+    <DD>
+      (Taken from the <A HREF="http://ospublish.constantvzw.org/?p=340">OSPublish blog</A> and rewritten by Dave Crossland)
+      <P>
+      How to design a glyph in Inkscape so it can readily be imported into fontforge.
+      <UL>
+      <LI>Open Inkscape
+      <LI>From the File menu, select Document Properties.
+      <LI>Set units to pixels (px) and document dimensions to 1000 x 1000, click OK<BR>
+      <small>Or if your font has a different number of units per em use that, but 1000 is fontforge's default)</small>
+      <LI>Set a horizontal guide at 200px
+      <LI>Draw a glyph - the hardest part! :-)
+      <LI>Save the drawing as an SVG file
+      <LI>Open FontForge
+      <LI>From the File menu, select Import, chose SVG, find your drawing, click OK
+      </UL>
+    <DT>
       <A NAME="default-char"><B>How do I set the default glyph of a font?</B></A>
     <DD>
       If the glyph at encoding 0 is named ".notdef" and if it contains some splines
@@ -1844,10 +1865,8 @@ Gdraw.ScreenWidthCentimeters: 37.3
       details of the outlines), so FontForge removes them when you make a change.
       The result is that changing a glyph with FontForge will degrade its appearance
       in most truetype fonts (not all, some have no hints).<BR>
-      FontForge can hint vertical and horizontal stems, but not diagonals. In many
-      glyphs FontForge's attempt at hinting makes things worse (because the diagonals
-      don't match the horizontals/verticals). So if you want this to happen you
-      must explicitly call the Hints-&gt;AutoInstr command.
+      FontForge can generate truetype instructions for you itself, but you must
+      ask it to do so -- use the Hints-&gt;AutoInstr command.
     <DT>
       <A NAME="otf-diffs"><B>I generated an opentype font and windows wouldn't
       install it. Why not?</B></A>
