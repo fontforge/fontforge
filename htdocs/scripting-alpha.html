@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 9-Apr-2006 -->
-  <!-- AP: Last modified: 18-Oct-2007 -->
+  <!-- AP: Last modified: 28-Oct-2007 -->
   <TITLE>Scripting functions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -2930,6 +2930,13 @@ SetGasp([8,2,16,1,65535,3])
 	    Returns the index of the first occurrence of the string needle within the
 	    string haystack ignoring case in the search (or -1 if not found). It can
 	    execute with no current font.
+	  <DT>
+	    <A NAME="Strftime">S</A>trftime(format[,isgmt[,locale]])
+	  <DD>
+	    Same as the c strftime routine. By default it formats the current time in
+	    gmt, but if that argument is 0 it will use the local timezone. By default
+	    it will format the argument acording to the current locale, but if a locale
+	    is specified it will be used.
 	  <DT>
 	    <A NAME="StrJoin">St</A>rJoin(string-array,delimiter)
 	  <DD>
