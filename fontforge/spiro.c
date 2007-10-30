@@ -232,4 +232,5 @@ void SSRegenerateFromSpiros(SplineSet *spl) {
     spl->first = temp->first;
     spl->last = temp->last;
     chunkfree(temp,sizeof(SplineSet));
+    spl->beziers_need_optimizer = true;
 }

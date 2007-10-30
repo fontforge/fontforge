@@ -873,11 +873,23 @@ return( cv->b1_tool );
     }
 }
 
+static void SCCheckForSSToOptimize(SplineChar *sc, SplineSet *ss) {
+
+    for ( ; ss!=NULL ; ss = ss->next ) {
+	if ( ss->beziers_need_optimizer ) {
+	    SplineSetAddExtrema(sc,ss,ae_only_good,sc->parent->ascent+sc->parent->descent);
+	    ss->beziers_need_optimizer = false;
+	}
+    }
+}
+
 static void CVChangeSpiroMode(CharView *cv) {
     if ( hasspiro() ) {
 	cv->sc->inspiro = !cv->sc->inspiro;
 	cv->showing_tool = cvt_none;
 	CVClearSel(cv);
+	if ( !cv->sc->inspiro )
+	    SCCheckForSSToOptimize(cv->sc,cv->layerheads[cv->drawmode]->splines);
 	GDrawRequestExpose(cvtools,NULL,false);
 	SCUpdateAll(cv->sc);
     }

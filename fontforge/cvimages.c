@@ -413,6 +413,7 @@ return;
 	    cur = SpiroCP2SplineSet(spiros);
 	    cur->spiros = SpiroCPCopy(spiros,&cur->spiro_cnt);
 	    cur->spiro_max = cur->spiro_cnt;
+	    SplineSetAddExtrema(sc,cur,ae_only_good,sc->parent->ascent+sc->parent->descent);
 	    if ( cur==NULL )
 		/* Do Nothing */;
 	    else if ( last!=NULL ) {
@@ -440,6 +441,7 @@ return;
 	cur = SpiroCP2SplineSet(spiros);
 	cur->spiros = SpiroCPCopy(spiros,&cur->spiro_cnt);
 	cur->spiro_max = cur->spiro_cnt;
+	SplineSetAddExtrema(sc,cur,ae_only_good,sc->parent->ascent+sc->parent->descent);
 	if ( cur==NULL )
 	    /* Do Nothing */;
 	else if ( last!=NULL ) {

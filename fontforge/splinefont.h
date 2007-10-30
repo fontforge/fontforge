@@ -905,6 +905,7 @@ typedef struct splinepointlist {
     spiro_cp *spiros;
     uint16 spiro_cnt, spiro_max;
     uint8 ticked;
+    uint8 beziers_need_optimizer;	/* If the spiros have changed in spiro mode, then reverting to bezier mode might, someday, run a simplifier */
 } SplinePointList, SplineSet;
 
 typedef struct imagelist {
