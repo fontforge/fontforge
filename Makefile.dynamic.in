@@ -102,7 +102,7 @@ install: $(DESTDIR)$(sharedir) all install_libs install_po install_prog
 	sh -c "if test -d $(srcdir)/htdocs >/dev/null ; then $(MAKE) install_docs ; fi"
 	sh < systemspecific
 #we don't always create a setup.py
-	-(cd pyhook ; python setup.py install )
+	-(cd pyhook ; if test -r setup.py ; then python setup.py install ; fi )
 
 install_py: $(DESTDIR)$(sharedir) all install_libs install_po install_prog
 # You may need to be root to do the install
