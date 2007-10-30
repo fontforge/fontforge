@@ -826,7 +826,7 @@ static void DoExport(struct gfc_data *d,unichar_t *path) {
 	good = ExportGlif(temp,d->sc);
     else if ( format==4 )
 	good = ExportPDF(temp,d->sc);
-    else if ( format==5 )
+    else if ( format<fv_pythonbase )
 	good = ExportXBM(temp,d->sc,format-5);
 #ifndef _NO_PYTHON
     else if ( format>=fv_pythonbase )
