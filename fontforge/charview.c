@@ -711,18 +711,16 @@ return;
 	gp[3].x = x+3; gp[3].y = y+3;
 	GDrawDrawPoly(pixmap,gp,4,col);
     } else if ( ty == SPIRO_G2 ) {
-	memset(&unit,0,sizeof(unit));
-	if ( cp_i>=1 && cp_i<spl->spiro_cnt-1 ) {
-	    unit.x = spl->spiros[cp_i+1].x - spl->spiros[cp_i-1].x;
-	    unit.y = spl->spiros[cp_i+1].y - spl->spiros[cp_i-1].y;
-	} else if ( cp_i>=1 ) {
-	    unit.x = spl->spiros[cp_i].x - spl->spiros[cp_i-1].x;
-	    unit.y = spl->spiros[cp_i].y - spl->spiros[cp_i-1].y;
-	} else if ( cp_i<spl->spiro_cnt-1 ) {
-	    unit.x = spl->spiros[cp_i+1].x - spl->spiros[cp_i].x;
-	    unit.y = spl->spiros[cp_i+1].y - spl->spiros[cp_i].y;
-	}
-	DrawTangentPoint(pixmap, x, y, &unit, selected, col);
+	GPoint gp[5];
+	gp[0].x = r.x-1; gp[0].y = r.y+2;
+	gp[1].x = r.x+2; gp[1].y = r.y+5;
+	gp[2].x = r.x+5; gp[2].y = r.y+2;
+	gp[3].x = r.x+2; gp[3].y = r.y-1;
+	gp[4] = gp[0];
+	if ( selected )
+	    GDrawDrawPoly(pixmap,gp,5,col);
+	else
+	    GDrawFillPoly(pixmap,gp,5,col);
     } else if ( ty==SPIRO_CORNER ) {
 	if ( selected )
 	    GDrawDrawRect(pixmap,&r,col);
