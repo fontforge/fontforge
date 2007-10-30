@@ -2,6 +2,7 @@
 /* it it a modification of Raph's bezctx_ps.c */
 #include <stdio.h>
 
+#ifndef _NO_LIBSPIRO
 #include "bezctx_ff.h"
 #include "pfaeditui.h"		/* For LogError, else splinefont.h */
 #ifdef HAVE_IEEEFP_H
@@ -148,3 +149,4 @@ bezctx_ff_close(bezctx *z)
     chunkfree(bc,sizeof(bezctx_ff));
 return( ss );
 }
+#endif
