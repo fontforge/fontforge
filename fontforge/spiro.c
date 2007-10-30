@@ -30,7 +30,7 @@
 /* Access to Raph Levien's spiro splines */
 /* See http://www.levien.com/spiro/ */
 
-#ifdef NODYNAMIC
+#ifdef _NO_LIBSPIRO
 int hasspiro(void) {
 return(false);
 }
@@ -43,8 +43,15 @@ spiro_cp *SplineSet2SpiroCP(SplineSet *ss,uint16 *cnt) {
 return( NULL );
 }
 #else
+# include "bezctx_ff.h"
+# if defined(_STATIC_LIBSPIRO) || defined(NODYNAMIC)
+#  define _TaggedSpiroCPsToBezier TaggedSpiroCPsToBezier
+
+int hasspiro(void) {
+return(true);
+}
+# else
 #  include <dynamic.h>
-#  include "bezctx_ff.h"
 
 static DL_CONST void *libspiro;
 static void (*_TaggedSpiroCPsToBezier)(spiro_cp *spiros,bezctx *bc);
@@ -82,6 +89,7 @@ int hasspiro(void) {
     initSpiro();
 return(has_spiro);
 }
+#endif
 
 SplineSet *SpiroCP2SplineSet(spiro_cp *spiros) {
     int n;
