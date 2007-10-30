@@ -162,15 +162,15 @@ spiro_cp *SplineSet2SpiroCP(SplineSet *ss,uint16 *_cnt) {
 	    else if ( sp->prev->knownlinear && !sp->nonextcp ) {
 		pdir.x = sp->me.x-sp->prev->from->me.x;
 		pdir.y = sp->me.y-sp->prev->from->me.y;
-		ndir.x = sp->nextcp.x - sp->me.x;
-		ndir.y = sp->nextcp.y - sp->me.y;
+		ndir.x = sp->next->to->me.x - sp->me.x;
+		ndir.y = sp->next->to->me.y - sp->me.y;
 		is_right = (-pdir.y*ndir.x + pdir.x*ndir.y)<0;
 		ret[cnt].ty = is_right ? SPIRO_RIGHT : SPIRO_LEFT;
 	    } else if ( sp->next->knownlinear && !sp->noprevcp ) {
 		pdir.x = sp->me.x-sp->next->to->me.x;
 		pdir.y = sp->me.y-sp->next->to->me.y;
-		ndir.x = sp->prevcp.x - sp->me.x;
-		ndir.y = sp->prevcp.y - sp->me.y;
+		ndir.x = sp->prev->from->me.x - sp->me.x;
+		ndir.y = sp->prev->from->me.y - sp->me.y;
 		is_right = (-pdir.y*ndir.x + pdir.x*ndir.y)<0;
 		ret[cnt].ty = is_right ? SPIRO_RIGHT : SPIRO_LEFT;
 	    }
@@ -179,7 +179,11 @@ spiro_cp *SplineSet2SpiroCP(SplineSet *ss,uint16 *_cnt) {
 	if ( sp->next==NULL )
     break;
 	s = sp->next;
-	if ( !s->knownlinear ) {
+	if ( s->isquadratic ) {
+	    ret[cnt].x = s->splines[0].d + .5*(s->splines[0].c+.5*(s->splines[0].b + .5*s->splines[0].a));
+	    ret[cnt].y = s->splines[1].d + .5*(s->splines[1].c+.5*(s->splines[1].b + .5*s->splines[1].a));
+	    ret[cnt++].ty = SPIRO_G4;
+	} else if ( !s->knownlinear ) {
 	    ret[cnt].x = s->splines[0].d + .333*(s->splines[0].c+.333*(s->splines[0].b + .333*s->splines[0].a));
 	    ret[cnt].y = s->splines[1].d + .333*(s->splines[1].c+.333*(s->splines[1].b + .333*s->splines[1].a));
 	    ret[cnt++].ty = SPIRO_G4;
@@ -194,8 +198,8 @@ spiro_cp *SplineSet2SpiroCP(SplineSet *ss,uint16 *_cnt) {
     ret[cnt].x = ret[cnt].y = 0;
     ret[cnt++].ty = SPIRO_END;
     if ( ss->first->prev==NULL )
-	ret[0].ty = SPIRO_OPEN_CONTOUR;		/* I'm guessing this means an open contour to raph */
-    if ( _cnt!=NULL ) *_cnt = cnt+1;
+	ret[0].ty = SPIRO_OPEN_CONTOUR;
+    if ( _cnt!=NULL ) *_cnt = cnt;
 return( ret );
 }
 #endif
