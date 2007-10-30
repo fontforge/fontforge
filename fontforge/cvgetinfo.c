@@ -3383,7 +3383,7 @@ static int PI_SpiroChanged(GGadget *g, GEvent *e) {
 		     SPIRO_RIGHT;
 	curcp->x = x;
 	curcp->y = y;
-	curcp->ty = ty;
+	curcp->ty = ty | 0x80;
 	SSRegenerateFromSpiros(ci->curspl);
 	CVCharChangedUpdate(ci->cv);
     }
