@@ -1724,6 +1724,12 @@ SplinePointList *SplinePointListTransform(SplinePointList *base, real transform[
 	    pfirst = NULL;
 	    for ( spt = spl->first ; spt!=pfirst; spt = spt->next->to ) {
 		if ( pfirst==NULL ) pfirst = spt;
+		if ( spt->selected && spt->prev!=NULL && !spt->prev->from->selected &&
+			spt->prev->from->pointtype == pt_tangent )
+		    SplineCharTangentPrevCP(spt->prev->from);
+		if ( spt->selected && spt->next!=NULL && !spt->next->to->selected &&
+			spt->next->to->pointtype == pt_tangent )
+		    SplineCharTangentNextCP(spt->next->to);
 		if ( spt->prev!=NULL && spt->prevcpdef )
 		    SplineCharDefaultPrevCP(spt);
 		if ( spt->next==NULL )
