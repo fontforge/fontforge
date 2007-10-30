@@ -6651,7 +6651,10 @@ void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
     PST *pst;
     int j;
 
-    SplinePointListTransform(cv->layerheads[cv->drawmode]->splines,transform,!anysel);
+    if ( cv->sc->inspiro )
+	SplinePointListSpiroTransform(cv->layerheads[cv->drawmode]->splines,transform,!anysel);
+    else
+	SplinePointListTransform(cv->layerheads[cv->drawmode]->splines,transform,!anysel);
     if ( flags&fvt_round_to_int )
 	SplineSetsRound2Int(cv->layerheads[cv->drawmode]->splines,1.0,cv->sc->inspiro);
     if ( cv->layerheads[cv->drawmode]->images!=NULL ) {
