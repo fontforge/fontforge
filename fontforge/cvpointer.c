@@ -1180,7 +1180,7 @@ int CVMoveSelection(CharView *cv, real dx, real dy, uint32 input_state) {
 return(false);
     for ( spl=cv->layerheads[cv->drawmode]->splines; spl!=NULL && !outlinechanged; spl=spl->next ) {
 	if ( cv->sc->inspiro ) {
-	    for ( i=0; i<spl->spiro_cnt-1; --i )
+	    for ( i=0; i<spl->spiro_cnt-1; ++i )
 		if ( SPIRO_SELECTED(&spl->spiros[i])) {
 		    outlinechanged = true;
 	    break;
