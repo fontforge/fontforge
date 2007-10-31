@@ -189,8 +189,11 @@ SplinePointList *CVAnySelPointList(CharView *cv) {
 	if ( cv->sc->inspiro ) {
 	    for ( i = 0; i<spl->spiro_cnt-1; ++i ) {
 		if ( SPIRO_SELECTED(&spl->spiros[i])) {
-		    if ( found==spl )
-			;
+		    /* Only interesting if the single selection is at the */
+		    /* start/end of an open contour */
+		    if (( i!=0 && i!=spl->spiro_cnt-2 ) ||
+			    !SPIRO_SPL_OPEN(spl))
+return( NULL );
 		    else if ( found==NULL )
 			found = spl;
 		    else
@@ -374,6 +377,7 @@ return;			/* We clicked on the active point, that's a no-op */
 	    ss->spiros = grealloc(ss->spiros,(ss->spiro_max += 10)*sizeof(spiro_cp));
 	for ( i=ss->spiro_cnt-1; i>cv->p.spiro_index; --i )
 	    ss->spiros[i+1] = ss->spiros[i];
+	++ss->spiro_cnt;
 	cp = &ss->spiros[cv->p.spiro_index+1];
 	cp->x = cv->p.cx;
 	cp->y = cv->p.cy;
