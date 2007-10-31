@@ -1410,8 +1410,30 @@ static SplinePointList *SplinePointListMerge(SplineChar *sc, SplinePointList *sp
     SplinePoint *nextp, *curp, *selectme;
     int all, any;
 
+
     /* If the entire splineset is selected, it should merge into oblivion */
     first = NULL;
+    if ( sc->inspiro ) {
+	int i,j;
+	any = false; all = true;
+	for ( i=0; i<spl->spiro_cnt-1; ++i )
+	    if ( SPIRO_SELECTED(&spl->spiros[i]))
+		any = true;
+	    else
+		all = false;
+	if ( all )
+return( NULL );
+	else if ( any ) {
+	    for ( i=0; i<spl->spiro_cnt-1; ++i )
+		if ( SPIRO_SELECTED(&spl->spiros[i])) {
+		    for ( j=i+1; j<spl->spiro_cnt ; ++j )
+			spl->spiros[j-1] = spl->spiros[j];
+		    --spl->spiro_cnt;
+		}
+	}
+return( spl );
+    }
+
     any = all = spl->first->selected;
     for ( spline = spl->first->next; spline!=NULL && spline!=first && all; spline=spline->to->next ) {
 	if ( spline->to->selected ) any = true;
