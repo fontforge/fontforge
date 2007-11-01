@@ -297,7 +297,7 @@ void CVMouseUpKnife(CharView *cv, GEvent *event) {
     }
     if ( ever ) {
 	for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL ; spl = spl->next ) {
-	    if ( spl->ticked )
+	    if ( spl->ticked && spl->spiros!=NULL && cv->sc->inspiro )
 		SSRegenerateFromSpiros(spl);
 	    spl->ticked = false;
 	}

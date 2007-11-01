@@ -110,7 +110,7 @@ return( NULL );
 	ss->first = ss->last = SplinePointCreate(spiros[0].x,spiros[0].y);
     } else {
 	bezctx *bc = new_bezctx_ff();
-	if ( spiros[0].ty=='{' ) {
+	if ( (spiros[0].ty&0x7f)=='{' ) {
 	    lastty = spiros[n-1].ty;
 	    spiros[n-1].ty = '}';
 	}
