@@ -245,6 +245,61 @@ return(0);
 return( ret );
 }
 
+
+int _ExportPlate(FILE *plate,SplineChar *sc) {
+    char *oldloc;
+    int do_open;
+    SplineSet *ss;
+    spiro_cp *spiros;
+    int i, ret;
+
+    oldloc = setlocale(LC_NUMERIC,"C");
+    /* Output closed contours first, then open. Plate files can only handle */
+    /*  one open contour (I think) and it must be at the end */
+    fprintf( plate, "(plate\n" );
+    for ( do_open=0; do_open<2; ++do_open ) {
+	for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
+	    if ( ss->first->prev==NULL ) {
+		if ( !do_open || ss->first->next==NULL )
+	continue;
+	    } else {
+		if ( do_open )
+	continue;
+	    }
+	    spiros = ss->spiros;
+	    if ( ss->spiro_cnt==0 )
+		spiros = SplineSet2SpiroCP(ss,NULL);
+	    for ( i=0; spiros[i].ty!='z'; ++i ) {
+		if ( spiros[i].ty==SPIRO_OPEN_CONTOUR )
+		    fprintf( plate, "  (o " );
+		else
+		    fprintf( plate, "  (%c ", spiros[i].ty );
+		fprintf( plate, "%g %g)\n", spiros[i].x, spiros[i].y );
+	    }
+	    if ( ss->first->prev!=NULL )
+		fprintf( plate, "  (z)\n" );
+	    if ( spiros!=ss->spiros )
+		free(spiros);
+	}
+    }
+    ret = !ferror(plate);
+    setlocale(LC_NUMERIC,oldloc);
+return( ret );
+}
+
+static int ExportPlate(char *filename,SplineChar *sc) {
+    FILE *plate;
+    int ret;
+
+    plate = fopen(filename,"w");
+    if ( plate==NULL ) {
+return(0);
+    }
+    ret = _ExportPlate(plate,sc);
+    fclose(plate);
+return( ret );
+}
+
 static int ExportSVG(char *filename,SplineChar *sc) {
     FILE *svg;
     int ret;
@@ -767,8 +822,10 @@ return;
 	good = ExportGlif(buffer,sc);
     else if ( format==4 )
 	good = ExportPDF(buffer,sc);
+    else if ( format==5 )
+	good = ExportPlate(buffer,sc);
     else if ( bc!=NULL )
-	good = BCExportXBM(buffer,bc,format-5);
+	good = BCExportXBM(buffer,bc,format-6);
     if ( !good )
 	gwwv_post_error(_("Save Failed"),_("Save Failed"));
 }
@@ -798,10 +855,11 @@ static GTextInfo formats[] = {
     { (unichar_t *) N_("SVG"), NULL, 0, 0, (void *) 2, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("Glif"), NULL, 0, 0, (void *) 3, 0, 0, 0, 0, 0, 0, 0, 1 },
     { (unichar_t *) N_("PDF"), NULL, 0, 0, (void *) 4, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("X Bitmap"), NULL, 0, 0, (void *) 5, 0, 0, 0, 0, 0, 0, 0, 1 },
-    { (unichar_t *) N_("BMP"), NULL, 0, 0, (void *) 6, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("Raph's plate"), NULL, 0, 0, (void *) 5, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("X Bitmap"), NULL, 0, 0, (void *) 6, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("BMP"), NULL, 0, 0, (void *) 7, 0, 0, 0, 0, 0, 0, 0, 1 },
 #ifndef _NO_LIBPNG
-    { (unichar_t *) N_("png"), NULL, 0, 0, (void *) 7, 0, 0, 0, 0, 0, 0, 0, 1 },
+    { (unichar_t *) N_("png"), NULL, 0, 0, (void *) 8, 0, 0, 0, 0, 0, 0, 0, 1 },
 #endif
     { NULL }};
 static int last_format = 0;
@@ -813,7 +871,7 @@ static void DoExport(struct gfc_data *d,unichar_t *path) {
     temp = cu_copy(path);
     last_format = format = (intpt) (GGadgetGetListItemSelected(d->format)->userdata);
     if ( d->bc )
-	last_format += 4;
+	last_format += 5;
     if ( d->bc!=NULL )
 	good = BCExportXBM(temp,d->bc,format);
     else if ( format==0 )
@@ -826,6 +884,8 @@ static void DoExport(struct gfc_data *d,unichar_t *path) {
 	good = ExportGlif(temp,d->sc);
     else if ( format==4 )
 	good = ExportPDF(temp,d->sc);
+    else if ( format==5 )
+	good = ExportPlate(temp,d->sc);
     else if ( format<fv_pythonbase )
 	good = ExportXBM(temp,d->sc,format-5);
 #ifndef _NO_PYTHON
@@ -912,8 +972,9 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 			 format==2?".svg":
 			 format==3?".glif":
 			 format==4?".pdf":
-			 format==5?".xbm":
-			 format==6?".bmp":
+			 format==5?".plate":
+			 format==6?".xbm":
+			 format==7?".bmp":
 				   ".png");
 	GGadgetSetTitle(d->gfc,f2);
 	free(f2);
@@ -986,6 +1047,27 @@ return( GGadgetDispatchEvent((GGadget *) (d->gfc),event));
 return( true );
 }
 
+static int CanBeAPlateFile(SplineChar *sc) {
+    int open_cnt;
+    SplineSet *ss;
+
+    if ( sc->parent->multilayer )
+return( false );
+    /* Plate files can't handle refs */
+    if ( sc->layers[ly_fore].refs!=NULL )
+return( false );
+
+    /* Plate files can only handle 1 open contour */
+    open_cnt = 0;
+    for ( ss= sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
+	if ( ss->first->prev==NULL ) {
+	    if ( ss->first->next!=NULL )
+		++open_cnt;
+	}
+    }
+return( open_cnt<=1 );
+}
+
 static int _Export(SplineChar *sc,BDFChar *bc) {
     GRect pos;
     GWindow gw;
@@ -1008,6 +1090,8 @@ static int _Export(SplineChar *sc,BDFChar *bc) {
 	    bcformats[i].text= (unichar_t *) _((char *) bcformats[i].text);
 	done = true;
     }
+    if ( bc==NULL )
+	formats[5].disabled = !CanBeAPlateFile(sc);
     cur_formats = bc==NULL ? formats : bcformats;
 #ifndef _NO_PYTHON
     if ( bc==NULL && py_ie!=NULL ) {
@@ -1132,7 +1216,8 @@ static int _Export(SplineChar *sc,BDFChar *bc) {
     else
 	ext = _format==0?"eps":_format==1?"fig":_format==2?"svg":
 		_format==3?"glif":
-		_format==4?"pdf":_format==5?"xbm":_format==6?"bmp":"png";
+		_format==4?"pdf":_format==5?"plate":
+		_format==6?"xbm":_format==7?"bmp":"png";
 #if defined( __CygWin ) || defined(__Mac)
     /* Windows file systems are not case conscious */
     { char *pt, *bpt, *end;

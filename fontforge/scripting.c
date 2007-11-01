@@ -2194,13 +2194,15 @@ static void bExport(Context *c) {
 	format = 3;
     else if ( strmatch(pt,"pdf")==0 )
 	format = 4;
-    else if ( strmatch(pt,"xbm")==0 )
+    else if ( strmatch(pt,"plate")==0 )
 	format = 5;
-    else if ( strmatch(pt,"bmp")==0 )
+    else if ( strmatch(pt,"xbm")==0 )
 	format = 6;
+    else if ( strmatch(pt,"bmp")==0 )
+	format = 7;
 #ifndef _NO_LIBPNG
     else if ( strmatch(pt,"png")==0 )
-	format = 7;
+	format = 8;
     else
 	ScriptError( c, "Bad format (first arg must be eps/fig/xbm/bmp/png)");
 #else

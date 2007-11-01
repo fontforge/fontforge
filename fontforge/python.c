@@ -5350,6 +5350,8 @@ return( NULL );
 	    _ExportSVG(file,sc);
 	else if ( strcasecmp(pt,".glif")==0 )
 	    _ExportGlif(file,sc);
+	else if ( strcasecmp(pt,".plate")==0 )
+	    _ExportPlate(file,sc);
 	/* else if ( strcasecmp(pt,".fig")==0 )*/
 	else {
 	    PyErr_Format(PyExc_TypeError, "Unknown extension to export: %s", pt );

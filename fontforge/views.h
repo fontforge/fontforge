@@ -886,6 +886,7 @@ extern void SCInsertImage(SplineChar *sc,GImage *image,real scale,real yoff, rea
 extern int FVImportImages(FontView *fv,char *path,int isimage,int toback,int flags);
 extern int FVImportImageTemplate(FontView *fv,char *path,int isimage,int toback,int flags);
 
+extern int _ExportPlate(FILE *pdf,SplineChar *sc);
 extern int _ExportPDF(FILE *pdf,SplineChar *sc);
 extern int _ExportEPS(FILE *eps,SplineChar *sc,int gen_preview);
 extern int _ExportSVG(FILE *svg,SplineChar *sc);
