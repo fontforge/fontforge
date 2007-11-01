@@ -679,7 +679,6 @@ static void DrawSpiroPoint(CharView *cv, GWindow pixmap, spiro_cp *cp,
     Color col = cp==&spl->spiros[0] ? firstpointcol : pointcol;
     char ty = cp->ty&0x7f;
     int selected = SPIRO_SELECTED(cp);
-    BasePoint unit;
     GPoint gp[5];
 
     if ( selected )
@@ -2903,18 +2902,21 @@ static GEvent *CVConstrainedMouseDown(CharView *cv,GEvent *event, GEvent *fake) 
     SplinePoint *base;
     spiro_cp *basecp;
     int basex, basey, dx, dy;
+    double basetruex, basetruey;
     int sign;
 
     if ( !CVAnySelPoint(cv,&base,&basecp))
 return( event );
 
     if ( base!=NULL ) {
-	basex =  cv->xoff + rint(base->me.x*cv->scale);
-	basey = -cv->yoff + cv->height - rint(base->me.y*cv->scale);
+	basetruex = base->me.x;
+	basetruey = base->me.y;
     } else {
-	basex =  cv->xoff + rint(basecp->x*cv->scale);
-	basey = -cv->yoff + cv->height - rint(basecp->y*cv->scale);
+	basetruex = basecp->x;
+	basetruey = basecp->y;
     }
+    basex =  cv->xoff + rint(basetruex*cv->scale);
+    basey = -cv->yoff + cv->height - rint(basetruey*cv->scale);
 
     dx= event->u.mouse.x-basex, dy = event->u.mouse.y-basey;
     sign = dx*dy<0?-1:1;
@@ -2923,11 +2925,11 @@ return( event );
     if ( dx<0 ) dx = -dx; if ( dy<0 ) dy = -dy;
     if ( dy >= 2*dx ) {
 	cv->p.x = fake->u.mouse.x = basex;
-	cv->p.cx = base->me.x;
+	cv->p.cx = basetruex ;
 	if ( !(event->u.mouse.state&ksm_alt) &&
 		ItalicConstrained && cv->sc->parent->italicangle!=0 ) {
 	    double off = tan(cv->sc->parent->italicangle*3.1415926535897932/180)*
-		    (cv->p.cy-base->me.y);
+		    (cv->p.cy-basetruey);
 	    double aoff = off<0 ? -off : off;
 	    if ( dx>=aoff*cv->scale/2 && (event->u.mouse.x-basex<0)!=(off<0) ) {
 		cv->p.cx -= off;
@@ -2936,13 +2938,13 @@ return( event );
 	}
     } else if ( dx >= 2*dy ) {
 	fake->u.mouse.y = basey;
-	cv->p.cy = base->me.y;
+	cv->p.cy = basetruey;
     } else if ( dx > dy ) {
 	fake->u.mouse.x = basex + sign * (event->u.mouse.y-cv->p.y);
-	cv->p.cx = base->me.x - sign * (cv->p.cy-base->me.y);
+	cv->p.cx = basetruex - sign * (cv->p.cy-basetruey);
     } else {
 	fake->u.mouse.y = basey + sign * (event->u.mouse.x-cv->p.x);
-	cv->p.cy = base->me.y - sign * (cv->p.cx-base->me.x);
+	cv->p.cy = basetruey - sign * (cv->p.cx-basetruex);
     }
 
 return( fake );

@@ -1339,16 +1339,17 @@ static SplinePointList *SplinePointListCopySpiroSelected1(SplinePointList *spl) 
     break;
 	for ( j=i; j<spl->spiro_cnt-1 && SPIRO_SELECTED(&list[j]); ++j );
 	temp = galloc((j-i+2)*sizeof(spiro_cp));
-	memcpy(temp,list+i,(j-i+1)*sizeof(spiro_cp));
+	memcpy(temp,list+i,(j-i)*sizeof(spiro_cp));
 	temp[0].ty = SPIRO_OPEN_CONTOUR;
-	memset(temp+(j-i+i),0,sizeof(spiro_cp));
-	temp[j-i+1].ty = SPIRO_END;
+	memset(temp+(j-i),0,sizeof(spiro_cp));
+	temp[j-i].ty = SPIRO_END;
 	cur = SpiroCP2SplineSet( temp );
 	if ( head==NULL )
 	    head = cur;
 	else
 	    last->next = cur;
 	last = cur;
+	i = j;
     }
 return( head );
 }
