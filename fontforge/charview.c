@@ -3137,6 +3137,10 @@ return;
 	cv->info.x = p->x;
 	cv->info.y = p->y;
 	cv->p.cx = p->x; cv->p.cy = p->y;
+    } else if ( cv->p.spiro!=NULL ) {
+	cv->info.x = cv->p.spiro->x;
+	cv->info.y = cv->p.spiro->y;
+	cv->p.cx = cv->p.spiro->x; cv->p.cy = cv->p.spiro->y;
     } else {
 	cv->info.x = cv->p.cx;
 	cv->info.y = cv->p.cy;
