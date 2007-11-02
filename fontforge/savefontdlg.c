@@ -3649,7 +3649,7 @@ return( 0 );
 	gcd[k++].creator = GLabelCreate;
 	oflarray[2][0] = &gcd[k-1];
 
-	label[k].text = (unichar_t *) sf->fullname;
+	label[k].text = (unichar_t *) (sf->fullname!=NULL ? sf->fullname : sf->fontname);
 	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.flags = (gg_enabled  | gg_utf8_popup);
