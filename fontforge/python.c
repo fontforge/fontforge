@@ -11044,7 +11044,7 @@ static void initPyFontForge(void) {
 	    &PyFF_FontIterType, &PyFF_SelectionType, &PyFF_FontType,
 	    &PyFF_ContourIterType, &PyFF_LayerIterType,
 	    NULL };
-    static char *names[] = { "point", "contour", "layer", "glyph", "glyphPen",
+    static char *names[] = { "point", "contour", "layer", "glyphPen", "glyph",
 	    "cvt", "privateiter", "private", "fontiter", "selection", "font",
 	    "contouriter", "layeriter",
 	    NULL };
