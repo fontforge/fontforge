@@ -852,6 +852,7 @@ static SplineChar *_UFOLoadGlyph(xmlDocPtr doc,char *glifname) {
     int uni;
     char *cpt;
     int wasquad = -1;	/* Unspecified */
+    SplineSet *last = NULL;
 
     glyph = _xmlDocGetRootElement(doc);
     format = _xmlGetProp(glyph,(xmlChar *) "format");
@@ -884,6 +885,7 @@ return( NULL );
 		sc->width = strtol((char *) width,NULL,10);
 	    if ( height!=NULL )
 		sc->vwidth = strtol((char *) height,NULL,10);
+	    sc->widthset = true;
 	    free(width); free(height);
 	} else if ( _xmlStrcmp(kids->name,(const xmlChar *) "unicode")==0 ) {
 	    u = _xmlGetProp(kids,(xmlChar *) "hex");
@@ -1066,8 +1068,11 @@ return( NULL );
 			SplineMake(ss->last,ss->first,wasquad);
 			ss->last = ss->first;
 		    }
-		    ss->next = sc->layers[ly_fore].splines;
-		    sc->layers[ly_fore].splines = ss;
+		    if ( last==NULL )
+			sc->layers[ly_fore].splines = ss;
+		    else
+			last->next = ss;
+		    last = ss;
 		}
 	    }
 	} else if ( _xmlStrcmp(kids->name,(const xmlChar *) "lib")==0 ) {
@@ -1350,7 +1355,7 @@ return( NULL );
 		as = strtol((char *) valname,&end,10);
 		if ( *end!='\0' ) as = -1;
 	    } else if ( _xmlStrcmp(keyname,(xmlChar *) "descender")==0 ) {
-		ds = strtol((char *) valname,&end,10);
+		ds = -strtol((char *) valname,&end,10);
 		if ( *end!='\0' ) ds = -1;
 	    } else if ( _xmlStrcmp(keyname,(xmlChar *) "italicAngle")==0 ) {
 		ia = strtod((char *) valname,&end);
