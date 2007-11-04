@@ -4550,6 +4550,53 @@ static void CVLogoExpose(CharView *cv,GWindow pixmap,GEvent *event) {
     LogoExpose(pixmap,event,&r,cv->drawmode);
 }
 
+static void CVDrawGuideLine(CharView *cv,int guide_pos) {
+    GWindow pixmap = cv->v;
+
+    if ( guide_pos<0 )
+return;
+    GDrawSetDashedLine(pixmap,2,2,0);
+    GDrawSetLineWidth(pixmap,0);
+    GDrawSetXORMode(pixmap);
+    GDrawSetXORBase(pixmap,GDrawGetDefaultBackground(NULL));
+    if ( cv->ruler_pressedv ) {
+	GDrawDrawLine(pixmap,guide_pos,0,guide_pos,cv->height,0x000000);
+    } else {
+	GDrawDrawLine(pixmap,0,guide_pos,cv->width,guide_pos,0x000000);
+    }
+    GDrawSetCopyMode(pixmap);
+    GDrawSetDashedLine(pixmap,0,0,0);
+}
+
+static void CVAddGuide(CharView *cv,int is_v,int guide_pos) {
+    SplinePoint *sp1, *sp2;
+    SplineSet *ss;
+    SplineFont *sf = cv->sc->parent;
+    int emsize = sf->ascent+sf->descent;
+
+    if ( is_v ) {
+	/* Create a vertical guide line */
+	double x = (guide_pos-cv->xoff)/cv->scale;
+	sp1 = SplinePointCreate(x,sf->ascent+emsize/2);
+	sp2 = SplinePointCreate(x,-sf->descent-emsize/2);
+    } else {
+	double y = (cv->height-guide_pos-cv->yoff)/cv->scale;
+	sp1 = SplinePointCreate(-emsize,y);
+	sp2 = SplinePointCreate(2*emsize,y);
+    }
+    SplineMake(sp1,sp2,sf->order2);
+    ss = chunkalloc(sizeof(SplineSet));
+    ss->first = sp1; ss->last = sp2;
+    ss->next = sf->grid.splines;
+    sf->grid.splines = ss;
+    FVRedrawAllCharViews(cv->fv);
+#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    if ( !sf->changed && sf->fv!=NULL )
+	FVSetTitle(sf->fv);
+#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+    sf->changed = true;
+}
+
 static int cv_e_h(GWindow gw, GEvent *event) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
@@ -4617,9 +4664,52 @@ return( GGadgetDispatchEvent(cv->vsb,event));
 	CVPaletteActivate(cv);
 	if ( cv->inactive )
 	    (cv->container->funcs->activateMe)(cv->container,cv);
+	if ( cv->showrulers ) {
+	    int is_h = event->u.mouse.y>cv->mbh+cv->infoh && event->u.mouse.y<cv->mbh+cv->infoh+cv->rulerh;
+	    int is_v = event->u.mouse.x<cv->rulerh;
+	    if ( event->type == et_mousedown ) {
+		if ( is_h && is_v )
+		    /* Ambiguous, ignore */;
+		else if ( is_h ) {
+		    cv->ruler_pressed = true;
+		    cv->ruler_pressedv = false;
+		    GDrawSetCursor(cv->v,ct_updown);
+		    GDrawSetCursor(cv->gw,ct_updown);
+		} else if ( is_v ) {
+		    cv->ruler_pressed = true;
+		    cv->ruler_pressedv = true;
+		    GDrawSetCursor(cv->v,ct_leftright);
+		    GDrawSetCursor(cv->gw,ct_leftright);
+		}
+		cv->guide_pos = -1;
+	    } else if ( event->type==et_mouseup && cv->ruler_pressed ) {
+		CVDrawGuideLine(cv,cv->guide_pos);
+		cv->guide_pos = -1;
+		cv->showing_tool = cvt_none;
+		CVToolsSetCursor(cv,event->u.mouse.state&~(1<<(7+event->u.mouse.button)),event->u.mouse.device);		/* X still has the buttons set in the state, even though we just released them. I don't want em */
+		GDrawSetCursor(cv->gw,ct_mypointer);
+		cv->ruler_pressed = false;
+		if ( is_h || is_v )
+		    /* Do Nothing */;
+		else if ( cv->ruler_pressedv )
+		    CVAddGuide(cv,true,event->u.mouse.x-cv->rulerh);
+		else
+		    CVAddGuide(cv,false,event->u.mouse.y-(cv->mbh+cv->infoh+cv->rulerh));
+	    }
+	}
       break;
       case et_mousemove:
-	if ( event->u.mouse.y>cv->mbh ) {
+	if ( cv->ruler_pressed ) {
+	    CVDrawGuideLine(cv,cv->guide_pos);
+	    cv->e.x = event->u.mouse.x - cv->rulerh;
+	    cv->e.y = event->u.mouse.y-(cv->mbh+cv->infoh+cv->rulerh);
+	    if ( cv->ruler_pressedv )
+		cv->guide_pos = cv->e.x;
+	    else
+		cv->guide_pos = cv->e.y;
+	    CVDrawGuideLine(cv,cv->guide_pos);
+	    CVInfoDrawRulers(cv,cv->gw);
+	} else if ( event->u.mouse.y>cv->mbh ) {
 	    int enc = CVCurEnc(cv);
 	    SCPreparePopup(cv->gw,cv->sc,cv->fv->map->remap,enc,
 		    UniFromEnc(enc,cv->fv->map->enc));

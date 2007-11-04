@@ -274,6 +274,8 @@ typedef struct charview {
     unsigned int showtabs: 1;
     unsigned int showsidebearings: 1;
     unsigned int showing_spiro_pt_menu: 1;
+    unsigned int ruler_pressed: 1;
+    unsigned int ruler_pressedv: 1;
     Layer *layerheads[dm_max];
     real scale;
 #if defined(FONTFORGE_CONFIG_GTK)
@@ -378,6 +380,7 @@ typedef struct charview {
     int former_cnt;
     AnchorPoint *apmine, *apmatch;
     SplineChar *apsc;
+    int guide_pos;
 } CharView;
 #endif
 
