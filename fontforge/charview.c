@@ -7959,6 +7959,7 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
     Spline *spline, *first;
     AnchorPoint *ap;
     spiro_cp *cp;
+    int i;
 
 #ifdef FONTFORGE_CONFIG_TILEPATH
     int badsel = false;
@@ -7976,11 +7977,20 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 
     for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
 	first = NULL;
-	splinepoints = 0;
-	if ( spl->first->selected ) { splinepoints = 1; }
-	for ( spline=spl->first->next; spline!=NULL && spline!=first && !splinepoints; spline = spline->to->next ) {
-	    if ( spline->to->selected ) { ++splinepoints; }
-	    if ( first == NULL ) first = spline;
+	if ( cv->sc->inspiro ) {
+	    for ( i=0; i<spl->spiro_cnt-1; ++i ) {
+		if ( SPIRO_SELECTED(&spl->spiros[i])) {
+		    splinepoints = 1;
+	    break;
+		}
+	    }
+	} else {
+	    splinepoints = 0;
+	    if ( spl->first->selected ) { splinepoints = 1; }
+	    for ( spline=spl->first->next; spline!=NULL && spline!=first && !splinepoints; spline = spline->to->next ) {
+		if ( spline->to->selected ) { ++splinepoints; }
+		if ( first == NULL ) first = spline;
+	    }
 	}
 	if ( splinepoints ) {
 	    anypoints += splinepoints;
