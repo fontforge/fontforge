@@ -1430,6 +1430,7 @@ return( NULL );
 			spl->spiros[j-1] = spl->spiros[j];
 		    --spl->spiro_cnt;
 		}
+	    SSRegenerateFromSpiros(spl);
 	}
 return( spl );
     }
