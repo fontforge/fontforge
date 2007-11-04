@@ -5411,6 +5411,9 @@ return;
 	     event->u.chr.keysym == GK_Alt_L || event->u.chr.keysym == GK_Alt_R ||
 	     event->u.chr.keysym == GK_Meta_L || event->u.chr.keysym == GK_Meta_R ) {
 	CVFakeMove(cv, event);
+    } else if (( event->u.chr.keysym == GK_Tab || event->u.chr.keysym == GK_BackTab) &&
+	    (event->u.chr.state&ksm_meta) && cv->showtabs && cv->former_cnt>1 ) {
+	GGadgetDispatchEvent(cv->tabs,event);
     } else if ( (event->u.chr.state&ksm_meta) &&
 	    !(event->u.chr.state&(ksm_control|ksm_shift)) &&
 	    event->u.chr.chars[0]!='\0' ) {

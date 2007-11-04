@@ -1169,8 +1169,14 @@ return( (g->funcs->handle_expose)(g->base,g,event) );
 return( (g->funcs->handle_mouse)(g,event) );
       break;
       case et_char: case et_charup:
-	  if ( g->funcs->handle_key )
-return( (g->funcs->handle_key)(g,event) );
+	if ( g->funcs->handle_key ) {
+	    int ret;
+	    int old = g->takes_keyboard;
+	    g->takes_keyboard = true;
+	    ret =(g->funcs->handle_key)(g,event);
+	    g->takes_keyboard = old;
+return( ret );
+	}
       break;
       case et_drag: case et_dragout: case et_drop: case et_selclear:
 	  if ( g->funcs->handle_sel )
