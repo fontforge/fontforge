@@ -1579,6 +1579,19 @@ return( true );
 return( false );
 }
 
+/* Does the second derivative change sign around this point? If so we should */
+/*  retain it for truetype */
+static int SPisD2Change( SplinePoint *sp ) {
+
+    if (( sp->next->splines[0].a>0 && sp->prev->splines[0].a<0 ) ||
+	    ( sp->next->splines[0].a<0 && sp->prev->splines[0].a>0 ) ||
+	    ( sp->next->splines[1].a>0 && sp->prev->splines[1].a<0 ) ||
+	    ( sp->next->splines[1].a<0 && sp->prev->splines[1].a>0 ) )
+return( true );
+
+return( false );
+}
+
 /* Almost exactly the same as SplinesRemoveBetween, but this one is conditional */
 /*  the intermediate points/splines are removed only if we have a good match */
 /*  used for simplify */
@@ -1712,6 +1725,11 @@ return( false );
     /*  things like serifs), and the extrema occur at horizontal/vertical points*/
     /* tt says something similar */
     if ( !(flags&sf_ignoreextremum) && SPisExtremum(mid) )
+return( false );
+
+    /* In truetype fonts we also want to retain points where the second */
+    /*  derivative changes sign */
+    if ( !(flags&sf_ignoreextremum) && mid->prev->order2 && SPisD2Change(mid) )
 return( false );
 
     if ( !(flags&sf_mergelines) && (mid->pointtype==pt_corner ||
