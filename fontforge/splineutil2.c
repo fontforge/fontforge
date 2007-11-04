@@ -3596,6 +3596,12 @@ return( spl );			/* Only one point, reversal is meaningless */
 	    spl->spiros[spl->spiro_cnt-2].ty = (spl->spiros[0].ty&0x7f) | (spl->spiros[spl->spiro_cnt-2].ty&0x80);
 	    spl->spiros[0].ty = SPIRO_OPEN_CONTOUR | (spl->spiros[0].ty&0x80);
 	}
+	for ( i=spl->spiro_cnt-2; i>=0; --i ) {
+	    if ( (spl->spiros[i].ty&0x7f) == SPIRO_LEFT )
+		spl->spiros[i].ty = SPIRO_RIGHT | (spl->spiros[i].ty&0x80);
+	    else if ( (spl->spiros[i].ty&0x7f) == SPIRO_RIGHT )
+		spl->spiros[i].ty = SPIRO_LEFT | (spl->spiros[i].ty&0x80);
+	}
     }
 return( spl );
 }
