@@ -483,11 +483,14 @@ return(false);
 return( true );
 
     if (event->u.chr.keysym == GK_Left || event->u.chr.keysym == GK_KP_Left ||
+	    (event->u.chr.keysym == GK_Tab && (event->u.chr.state&ksm_shift)) ||
+	    event->u.chr.keysym == GK_BackTab ||
 	    event->u.chr.keysym == GK_Up || event->u.chr.keysym == GK_KP_Up ) {
 	for ( i = gts->sel-1; i>0 && gts->tabs[i].disabled; --i );
 	GTabSetChangeSel(gts,i,true);
 return( true );
     } else if (event->u.chr.keysym == GK_Right || event->u.chr.keysym == GK_KP_Right ||
+	    event->u.chr.keysym == GK_Tab ||
 	    event->u.chr.keysym == GK_Down || event->u.chr.keysym == GK_KP_Down ) {
 	for ( i = gts->sel+1; i<gts->tabcnt-1 && gts->tabs[i].disabled; ++i );
 	GTabSetChangeSel(gts,i,true);
