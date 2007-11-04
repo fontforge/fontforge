@@ -654,6 +654,10 @@ static void FT_ClosePath(struct ft_context *context) {
 	    context->orig_cpl = context->orig_ref->layers[0].splines;
 	    context->orig_ref = context->orig_ref->next;
 	}
+	while ( !context->order2 && context->orig_cpl!=NULL &&
+		context->orig_cpl->first->next==NULL )
+	    context->orig_cpl = context->orig_cpl->next;
+	    /* free type skips open contours with a single point in pfbs */
 	context->orig_sp = NULL;
     }
 }
@@ -810,6 +814,10 @@ return( NULL );
 	outline_context.orig_cpl = outline_context.orig_ref->layers[0].splines;
 	outline_context.orig_ref = outline_context.orig_ref->next;
     }
+    while ( !ftc->isttf && outline_context.orig_cpl!=NULL &&
+	    outline_context.orig_cpl->first->next==NULL )
+	outline_context.orig_cpl = outline_context.orig_cpl->next;
+	/* free type skips open contours with a single point in pfbs */
     outline_context.orig_sp = NULL;
     outline_context.order2 = ftc->isttf;
     if ( !_FT_Outline_Decompose(&slot->outline,&outlinefuncs,&outline_context)) {
