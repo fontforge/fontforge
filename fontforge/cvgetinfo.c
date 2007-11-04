@@ -1812,6 +1812,24 @@ static void PI_FigureHintMask(GIData *ci) {
     }
 }
 
+static void PI_FixStuff(GIData *ci) {
+    SplinePoint *sp = ci->cursp;
+
+    PI_FigureHintMask(ci);
+    PI_FigureNext(ci);
+    PI_FigurePrev(ci);
+
+    if ( sp->pointtype == pt_hvcurve ) {
+	if ( 
+		((sp->nextcp.x==sp->me.x && sp->prevcp.x==sp->me.x && sp->nextcp.y!=sp->me.y) ||
+		 (sp->nextcp.y==sp->me.y && sp->prevcp.y==sp->me.y && sp->nextcp.x!=sp->me.x)))
+	    /* Do Nothing */;
+	else
+	    sp->pointtype = pt_curve;
+    } else if ( sp->pointtype == pt_tangent )
+	SplinePointCatagorize(sp);	/* Users can change cps so it isn't a tangent, so check */
+}
+
 static int PI_Cancel(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	PI_DoCancel( GDrawGetUserData(GGadgetGetWindow(g)));
@@ -1823,11 +1841,8 @@ static int PI_Ok(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
 
-	PI_FigureHintMask(ci);
+	PI_FixStuff(ci);
 	_PI_ShowHints(ci,false);
-
-	PI_FigureNext(ci);
-	PI_FigurePrev(ci);
 
 	ci->done = true;
 	/* All the work has been done as we've gone along */
@@ -2072,11 +2087,8 @@ static int PI_NextPrev(GGadget *g, GEvent *e) {
 	int cid = GGadgetGetCid(g);
 	SplinePointList *spl;
 
-	PI_FigureHintMask(ci);
+	PI_FixStuff(ci);
 
-	PI_FigureNext(ci);
-	PI_FigurePrev(ci);
-	
 	ci->cursp->selected = false;
 	if ( cid == CID_Next ) {
 	    if ( ci->cursp->next!=NULL && ci->cursp->next->to!=ci->curspl->first )
@@ -2239,8 +2251,8 @@ return( true );
 	    diff.x = cursp->nextcp.x+dx - cursp->me.x;
 	    diff.y = cursp->nextcp.y+dy - cursp->me.y;
 	    BP_HVForce(&diff);
-	    dx = diff.x - (cursp->me.x + cursp->nextcp.x);
-	    dy = diff.y - (cursp->me.y + cursp->nextcp.y);
+	    dx = diff.x - (cursp->me.x - cursp->nextcp.x);
+	    dy = diff.y - (cursp->me.y - cursp->nextcp.y);
 	}
 	cursp->nextcp.x += dx;
 	cursp->nextcp.y += dy;
@@ -2316,8 +2328,8 @@ return( true );
 	    diff.x = cursp->prevcp.x+dx - cursp->me.x;
 	    diff.y = cursp->prevcp.y+dy - cursp->me.y;
 	    BP_HVForce(&diff);
-	    dx = diff.x - (cursp->me.x + cursp->prevcp.x);
-	    dy = diff.y - (cursp->me.y + cursp->prevcp.y);
+	    dx = diff.x - (cursp->me.x - cursp->prevcp.x);
+	    dy = diff.y - (cursp->me.y - cursp->prevcp.y);
 	}
 	cursp->prevcp.x += dx;
 	cursp->prevcp.y += dy;

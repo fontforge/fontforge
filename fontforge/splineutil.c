@@ -1108,10 +1108,12 @@ void SplinePointCatagorize(SplinePoint *sp) {
 		(nclen==0 || ncdir.x*pdir.x+ncdir.y*pdir.y<slop ) &&
 		(pclen==0 || ndir.x*pcdir.x+ndir.y*pcdir.y<slop ))
 	    sp->pointtype = pt_tangent;
+#if 0
 	if ( sp->pointtype == pt_curve &&
 		((sp->nextcp.x==sp->me.x && sp->prevcp.x==sp->me.x && sp->nextcp.y!=sp->me.y) ||
 		 (sp->nextcp.y==sp->me.y && sp->prevcp.y==sp->me.y && sp->nextcp.x!=sp->me.x)))
 	    sp->pointtype = pt_hvcurve;
+#endif
     }
 }
 
@@ -1661,6 +1663,14 @@ static void TransformPoint(SplinePoint *sp, real transform[6]) {
 	sp->prevcp = p;
     } else
 	sp->prevcp = sp->me;
+    if ( sp->pointtype == pt_hvcurve ) {
+	if ( 
+		((sp->nextcp.x==sp->me.x && sp->prevcp.x==sp->me.x && sp->nextcp.y!=sp->me.y) ||
+		 (sp->nextcp.y==sp->me.y && sp->prevcp.y==sp->me.y && sp->nextcp.x!=sp->me.x)))
+	    /* Do Nothing */;
+	else
+	    sp->pointtype = pt_curve;
+    }
 }
 
 static void TransformSpiro(spiro_cp *cp, real transform[6]) {
