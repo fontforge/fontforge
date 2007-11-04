@@ -384,7 +384,7 @@ return( false );
     PListOutputString(plist,"copyright",sf->copyright);
     PListOutputInteger(plist,"unitsPerEm",sf->ascent+sf->descent);
     PListOutputInteger(plist,"ascender",sf->ascent);
-    PListOutputInteger(plist,"descender",sf->descent);
+    PListOutputInteger(plist,"descender",-sf->descent);
     PListOutputReal(plist,"italicAngle",sf->italicangle);
     PListOutputString(plist,"curveType",sf->order2 ? "Quadratic" : "Cubic");
 return( PListOutputTrailer(plist));
