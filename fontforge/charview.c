@@ -2503,7 +2503,7 @@ static void CVMouseMove(CharView *cv, GEvent *event );
 static void CVMouseUp(CharView *cv, GEvent *event );
 static void CVHScroll(CharView *cv,struct sbevent *sb);
 static void CVVScroll(CharView *cv,struct sbevent *sb);
-static void CVElide(GWindow gw,struct gmenuitem *mi,GEvent *e);
+/*static void CVElide(GWindow gw,struct gmenuitem *mi,GEvent *e);*/
 static void CVMerge(GWindow gw,struct gmenuitem *mi,GEvent *e);
 static void CVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e);
 static void CVMenuSimplifyMore(GWindow gw,struct gmenuitem *mi,GEvent *e);
@@ -4696,7 +4696,7 @@ return( true );
 #define MID_CopyVWidth	2126
 #define MID_Join	2127
 #define MID_CopyGridFit	2128
-#define MID_Elide	2129
+/*#define MID_Elide	2129*/
 #define MID_SelectAllPoints	2130
 #define MID_SelectAnchors	2131
 #define MID_FirstPtNextCont	2132
@@ -5970,10 +5970,12 @@ static void CVMerge(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     _CVMerge(cv,false);
 }
 
+#if 0
 static void CVElide(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     _CVMerge(cv,true);
 }
+#endif
 
 static void _CVJoin(CharView *cv) {
     int anyp = 0, changed;
@@ -6186,9 +6188,11 @@ static void cv_edlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	  case MID_Merge:
 	    mi->ti.disabled = !anypoints;
 	  break;
+#if 0
 	  case MID_Elide:
 	    mi->ti.disabled = !anypoints;
 	  break;
+#endif
 	  case MID_Clear: case MID_Cut: /*case MID_Copy:*/
 	    /* If nothing is selected, copy copies everything */
 	    /* In spiro mode copy will copy all contours with at least (spiro) one point selected */
@@ -8727,7 +8731,7 @@ static GMenuItem2 edlist[] = {
     { { (unichar_t *) N_("C_lear"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Clear|Delete"), NULL, NULL, CVClear, MID_Clear },
     { { (unichar_t *) N_("Clear _Background"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Clear Background|No Shortcut"), NULL, NULL, CVClearBackground },
     { { (unichar_t *) N_("points|_Merge"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Merge|Ctl+M"), NULL, NULL, CVMerge, MID_Merge },
-    { { (unichar_t *) N_("_Elide"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Elide|Alt+Ctl+M"), NULL, NULL, CVElide, MID_Elide },
+    /*{ { (unichar_t *) N_("_Elide"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Elide|Alt+Ctl+M"), NULL, NULL, CVElide, MID_Elide },*/
     { { (unichar_t *) N_("_Join"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'J' }, H_("Join|Ctl+Shft+J"), NULL, NULL, CVJoin, MID_Join },
     { { (unichar_t *) N_("Copy _Fg To Bg"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Copy Fg To Bg|Ctl+Shft+C"), NULL, NULL, CVCopyFgBg, MID_CopyFgToBg },
 #ifdef FONTFORGE_CONFIG_COPY_BG_TO_FG
