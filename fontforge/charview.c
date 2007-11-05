@@ -3840,6 +3840,9 @@ return;
     if ( p.sp!=NULL && p.sp!=cv->active_sp ) {		/* Snap to points */
 	p.cx = p.sp->me.x;
 	p.cy = p.sp->me.y;
+    } else if ( p.spiro!=NULL && p.spiro!=cv->active_cp ) {
+	p.cx = p.spiro->x;
+	p.cy = p.spiro->y;
     } else {
 	CVDoSnaps(cv,&fs);
     }
