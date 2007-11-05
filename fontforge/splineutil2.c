@@ -3509,6 +3509,7 @@ return;
 void SplinePointListSet(SplinePointList *tobase, SplinePointList *frombase) {
     SplinePoint *tsp, *first, *fsp;
     Spline *tspline, *firstsp, *fspline;
+    int i;
 
     for ( ; tobase!=NULL && frombase!=NULL; tobase = tobase->next , frombase=frombase->next ) {
 	first = NULL;
@@ -3531,6 +3532,10 @@ void SplinePointListSet(SplinePointList *tobase, SplinePointList *frombase) {
 	    LinearApproxFree(tspline->approx);
 	    tspline->approx = NULL;
 	    if ( firstsp==NULL ) firstsp = tspline;
+	}
+	if ( tobase->spiro_cnt==frombase->spiro_cnt ) {
+	    for ( i=0; i<tobase->spiro_cnt; ++i )
+		tobase->spiros[i] = frombase->spiros[i];
 	}
     }
 }
