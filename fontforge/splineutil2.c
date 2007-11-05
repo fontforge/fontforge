@@ -2324,6 +2324,7 @@ return;
 		    spl->first = next;
 		if ( spl->last==sp )
 		    spl->last = next;
+    continue;
 	    }
 	} else {
 	    while ( sp->me.x==next->me.x && sp->me.y==next->me.y &&
