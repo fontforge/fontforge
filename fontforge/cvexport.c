@@ -274,7 +274,8 @@ int _ExportPlate(FILE *plate,SplineChar *sc) {
 		    fprintf( plate, "  (o " );
 		else
 		    fprintf( plate, "  (%c ", spiros[i].ty );
-		fprintf( plate, "%g %g)\n", spiros[i].x, spiros[i].y );
+		/* Raph's plate files have the baseline way up in the air */
+		fprintf( plate, "%g %g)\n", spiros[i].x, 800.-spiros[i].y );
 	    }
 	    if ( ss->first->prev!=NULL )
 		fprintf( plate, "  (z)\n" );
