@@ -2679,6 +2679,8 @@ extern struct opentype_str *ApplyTickedFeatures(SplineFont *sf,uint32 *flist, ui
 extern int VerticalKernFeature(SplineFont *sf, OTLookup *otl, int ask);
 extern void SFGlyphRenameFixup(SplineFont *sf, char *old, char *new);
 
+extern void SplinePointRound(SplinePoint *,real);
+
 extern int KCFindIndex(KernClass *kc,char *name1, char *name2);
 extern KernClass *SFFindKernClass(SplineFont *sf,SplineChar *first,SplineChar *last,
 	int *index,int allow_zero);
