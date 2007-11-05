@@ -143,7 +143,6 @@ spiro_cp *SplineSet2SpiroCP(SplineSet *ss,uint16 *_cnt) {
     Spline *s;
     int cnt;
     spiro_cp *ret;
-    BasePoint pdir, ndir;
 
     for ( cnt=0, sp=ss->first; ; ) {
 	++cnt;
