@@ -2870,6 +2870,7 @@ return( fs->p->anysel );
 
 static void SetFS( FindSel *fs, PressedOn *p, CharView *cv, GEvent *event) {
     extern float snapdistance;
+    extern int snaptoint;
 
     memset(p,'\0',sizeof(PressedOn));
     p->pressed = true;
@@ -2881,6 +2882,10 @@ static void SetFS( FindSel *fs, PressedOn *p, CharView *cv, GEvent *event) {
     p->y = event->u.mouse.y;
     p->cx = (event->u.mouse.x-cv->xoff)/cv->scale;
     p->cy = (cv->height-event->u.mouse.y-cv->yoff)/cv->scale;
+    if ( snaptoint ) {
+	p->cx = rint(p->cx);
+	p->cy = rint(p->cy);
+    }
 
     fs->fudge = snapdistance/cv->scale;		/* 3.5 pixel fudge */
     fs->xl = p->cx - fs->fudge;
