@@ -207,7 +207,7 @@ static int Trans_OK(GGadget *g, GEvent *e) {
 	      break;
 	      case 6:		/* Skew */
 		angle = GetReal8(td->gw,CID_SkewAng+i*TBlock_CIDOffset,_("Skew Angle"),&err);
-		if ( GGadgetIsChecked( GWidgetGetControl(td->gw,CID_Clockwise+i*TBlock_CIDOffset)) )
+		if ( GGadgetIsChecked( GWidgetGetControl(td->gw,CID_CounterClockwise+i*TBlock_CIDOffset)) )
 		    angle = -angle;
 		angle *= 3.1415926535897932/180;
 		trans[2] = tan(angle);
