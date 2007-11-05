@@ -6890,7 +6890,7 @@ static void CVMenuNLTransform(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-static void SplinePointRound(SplinePoint *sp,real factor) {
+void SplinePointRound(SplinePoint *sp,real factor) {
 
     sp->nextcp.x = rint(sp->nextcp.x*factor)/factor;
     sp->nextcp.y = rint(sp->nextcp.y*factor)/factor;
