@@ -876,6 +876,7 @@ return( NULL );
 	name = copy("nameless");
     sc = SplineCharCreate();
     sc->name = name;
+    last = NULL;
 
     for ( kids = glyph->children; kids!=NULL; kids=kids->next ) {
 	if ( _xmlStrcmp(kids->name,(const xmlChar *) "advance")==0 ) {
