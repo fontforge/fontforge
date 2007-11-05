@@ -144,7 +144,6 @@ spiro_cp *SplineSet2SpiroCP(SplineSet *ss,uint16 *_cnt) {
     int cnt;
     spiro_cp *ret;
     BasePoint pdir, ndir;
-    int is_right;
 
     for ( cnt=0, sp=ss->first; ; ) {
 	++cnt;
@@ -167,22 +166,16 @@ spiro_cp *SplineSet2SpiroCP(SplineSet *ss,uint16 *_cnt) {
 	    if ( (sp->next->knownlinear && sp->prev->knownlinear) ||
 		    (!sp->next->knownlinear && !sp->prev->knownlinear ))
 		ret[cnt].ty = SPIRO_CORNER;
-	    else if ( sp->prev->knownlinear && !sp->nonextcp ) {
-		pdir.x = sp->me.x-sp->prev->from->me.x;
-		pdir.y = sp->me.y-sp->prev->from->me.y;
-		ndir.x = sp->next->to->me.x - sp->me.x;
-		ndir.y = sp->next->to->me.y - sp->me.y;
-		is_right = (-pdir.y*ndir.x + pdir.x*ndir.y)<0;
-		ret[cnt].ty = is_right ? SPIRO_RIGHT : SPIRO_LEFT;
-	    } else if ( sp->next->knownlinear && !sp->noprevcp ) {
-		pdir.x = sp->me.x-sp->next->to->me.x;
-		pdir.y = sp->me.y-sp->next->to->me.y;
-		ndir.x = sp->prev->from->me.x - sp->me.x;
-		ndir.y = sp->prev->from->me.y - sp->me.y;
-		is_right = (-pdir.y*ndir.x + pdir.x*ndir.y)<0;
-		ret[cnt].ty = is_right ? SPIRO_RIGHT : SPIRO_LEFT;
-	    }
-	}
+	    else if ( sp->prev->knownlinear && !sp->nonextcp )
+		ret[cnt].ty = SPIRO_RIGHT;
+	    else if ( sp->next->knownlinear && !sp->noprevcp )
+		ret[cnt].ty = SPIRO_LEFT;
+	} else if ( sp->pointtype==pt_curve && sp->prev!=NULL && sp->prev->knownlinear &&
+		!sp->nonextcp && sp->prev->from->pointtype == pt_corner )
+	    ret[cnt].ty = SPIRO_LEFT;
+	else if ( sp->pointtype==pt_curve && sp->next!=NULL && sp->next->knownlinear &&
+		!sp->noprevcp && sp->next->to->pointtype == pt_corner )
+	    ret[cnt].ty = SPIRO_RIGHT;
 	++cnt;
 	if ( sp->next==NULL )
     break;
