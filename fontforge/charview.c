@@ -6687,10 +6687,19 @@ static void _CVMenuDir(CharView *cv,struct gmenuitem *mi) {
     for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
 	first = NULL;
 	splinepoints = 0;
-	if ( spl->first->selected ) splinepoints = true;
-	for ( spline=spl->first->next; spline!=NULL && spline!=first && !splinepoints; spline = spline->to->next ) {
-	    if ( spline->to->selected ) splinepoints = true;
-	    if ( first == NULL ) first = spline;
+	if ( cv->sc->inspiro ) {
+	    int i;
+	    for ( i=0; i<spl->spiro_cnt-1; ++i )
+		if ( SPIRO_SELECTED(&spl->spiros[i])) {
+		    splinepoints = true;
+	    break;
+		}
+	} else {
+	    if ( spl->first->selected ) splinepoints = true;
+	    for ( spline=spl->first->next; spline!=NULL && spline!=first && !splinepoints; spline = spline->to->next ) {
+		if ( spline->to->selected ) splinepoints = true;
+		if ( first == NULL ) first = spline;
+	    }
 	}
 	if ( splinepoints && spl->first==spl->last && spl->first->next!=NULL ) {
 	    dir = SplinePointListIsClockwise(spl);
@@ -8078,6 +8087,7 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 
     for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
 	first = NULL;
+	splinepoints = 0;
 	if ( cv->sc->inspiro ) {
 	    for ( i=0; i<spl->spiro_cnt-1; ++i ) {
 		if ( SPIRO_SELECTED(&spl->spiros[i])) {
@@ -8086,7 +8096,6 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 		}
 	    }
 	} else {
-	    splinepoints = 0;
 	    if ( spl->first->selected ) { splinepoints = 1; }
 	    for ( spline=spl->first->next; spline!=NULL && spline!=first && !splinepoints; spline = spline->to->next ) {
 		if ( spline->to->selected ) { ++splinepoints; }
