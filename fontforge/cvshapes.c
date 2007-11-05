@@ -349,6 +349,11 @@ return;
 	    }
 	}
     }
+    if ( cv->sc->inspiro ) {
+	free(cv->active_shape->spiros);
+	cv->active_shape->spiros = SplineSet2SpiroCP(cv->active_shape,&cv->active_shape->spiro_cnt);
+	cv->active_shape->spiro_max = cv->active_shape->spiro_cnt;
+    }
     cv->active_shape = NULL;
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
