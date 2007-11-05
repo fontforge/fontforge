@@ -309,7 +309,8 @@ return;
 }
 
 void CVMouseUpShape(CharView *cv) {
-    SplinePoint *first, *second;
+    SplinePoint *first, *second, *sp;
+    extern int snaptoint;
 
     if ( cv->active_shape==NULL )
 return;
@@ -339,6 +340,14 @@ return;
     } else if ( cv->active_tool==cvt_rect || cv->active_tool==cvt_elipse ) {
 	if ( !SplinePointListIsClockwise(cv->active_shape))
 	    SplineSetReverse(cv->active_shape);
+	if ( snaptoint ) {
+	    for ( sp= cv->active_shape->first; ; ) {
+		SplinePointRound(sp,1.0);
+		sp = sp->next->to;
+		if ( sp==cv->active_shape->first )
+	    break;
+	    }
+	}
     }
     cv->active_shape = NULL;
 }

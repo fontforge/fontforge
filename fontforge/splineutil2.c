@@ -3174,6 +3174,7 @@ void SPLAverageCps(SplinePointList *spl) {
 void SplineCharTangentNextCP(SplinePoint *sp) {
     double len;
     BasePoint *bp, unit;
+    extern int snaptoint;
 
     if ( sp->prev==NULL )
 return;
@@ -3188,8 +3189,13 @@ return;
     len = sqrt((sp->nextcp.y-sp->me.y)*(sp->nextcp.y-sp->me.y) + (sp->nextcp.x-sp->me.x)*(sp->nextcp.x-sp->me.x));
     sp->nextcp.x = sp->me.x + len*unit.x;
     sp->nextcp.y = sp->me.y + len*unit.y;
-    sp->nextcp.x = rint(sp->nextcp.x*1024)/1024;
-    sp->nextcp.y = rint(sp->nextcp.y*1024)/1024;
+    if ( snaptoint ) {
+	sp->nextcp.x = rint(sp->nextcp.x);
+	sp->nextcp.y = rint(sp->nextcp.y);
+    } else {
+	sp->nextcp.x = rint(sp->nextcp.x*1024)/1024;
+	sp->nextcp.y = rint(sp->nextcp.y*1024)/1024;
+    }
     if ( sp->next!=NULL && sp->next->order2 )
 	sp->next->to->prevcp = sp->nextcp;
 }
@@ -3197,6 +3203,7 @@ return;
 void SplineCharTangentPrevCP(SplinePoint *sp) {
     double len;
     BasePoint *bp, unit;
+    extern int snaptoint;
 
     if ( sp->next==NULL )
 return;
@@ -3211,8 +3218,13 @@ return;
     len = sqrt((sp->prevcp.y-sp->me.y)*(sp->prevcp.y-sp->me.y) + (sp->prevcp.x-sp->me.x)*(sp->prevcp.x-sp->me.x));
     sp->prevcp.x = sp->me.x + len*unit.x;
     sp->prevcp.y = sp->me.y + len*unit.y;
-    sp->prevcp.x = rint(sp->prevcp.x*1024)/1024;
-    sp->prevcp.y = rint(sp->prevcp.y*1024)/1024;
+    if ( snaptoint ) {
+	sp->prevcp.x = rint(sp->prevcp.x);
+	sp->prevcp.y = rint(sp->prevcp.y);
+    } else {
+	sp->prevcp.x = rint(sp->prevcp.x*1024)/1024;
+	sp->prevcp.y = rint(sp->prevcp.y*1024)/1024;
+    }
     if ( sp->prev!=NULL && sp->prev->order2 )
 	sp->prev->from->nextcp = sp->prevcp;
 }
@@ -3240,6 +3252,7 @@ void SplineCharDefaultNextCP(SplinePoint *base) {
     SplinePoint *prev=NULL, *next;
     double len, plen, ulen;
     BasePoint unit;
+    extern int snaptoint;
 
     if ( base->next==NULL )
 return;
@@ -3323,8 +3336,13 @@ return;
     else {
 	base->nextcp.x = base->me.x + len*unit.x;
 	base->nextcp.y = base->me.y + len*unit.y;
-	base->nextcp.x = rint(base->nextcp.x*1024)/1024;
-	base->nextcp.y = rint(base->nextcp.y*1024)/1024;
+	if ( snaptoint ) {
+	    base->nextcp.x = rint(base->nextcp.x);
+	    base->nextcp.y = rint(base->nextcp.y);
+	} else {
+	    base->nextcp.x = rint(base->nextcp.x*1024)/1024;
+	    base->nextcp.y = rint(base->nextcp.y*1024)/1024;
+	}
 	if ( base->next != NULL )
 	    SplineRefigureFixup(base->next);
     }
@@ -3334,6 +3352,7 @@ void SplineCharDefaultPrevCP(SplinePoint *base) {
     SplinePoint *next=NULL, *prev;
     double len, nlen, ulen;
     BasePoint unit;
+    extern int snaptoint;
 
     if ( base->prev==NULL )
 return;
@@ -3417,8 +3436,13 @@ return;
     else {
 	base->prevcp.x = base->me.x + len*unit.x;
 	base->prevcp.y = base->me.y + len*unit.y;
-	base->prevcp.x = rint(base->prevcp.x*1024)/1024;
-	base->prevcp.y = rint(base->prevcp.y*1024)/1024;
+	if ( snaptoint ) {
+	    base->prevcp.x = rint(base->prevcp.x);
+	    base->prevcp.y = rint(base->prevcp.y);
+	} else {
+	    base->prevcp.x = rint(base->prevcp.x*1024)/1024;
+	    base->prevcp.y = rint(base->prevcp.y*1024)/1024;
+	}
 	if ( base->prev!=NULL )
 	    SplineRefigureFixup(base->prev);
     }
