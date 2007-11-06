@@ -899,6 +899,9 @@ typedef struct {			/* Taken from spiro.h because I want */
 #define SPIRO_SELECT(cp)	((cp)->ty|=0x80)
 #define SPIRO_SPL_OPEN(spl)	((spl)->spiro_cnt>1 && ((spl)->spiros[0].ty&0x7f)==SPIRO_OPEN_CONTOUR)
 
+#define SPIRO_NEXT_CONSTRAINT	SPIRO_RIGHT	/* The curve is on the next side of the constraint point */
+#define SPIRO_PREV_CONSTRAINT	SPIRO_LEFT	/* The curve is on the prev side of the constraint point */
+
 typedef struct splinepointlist {
     SplinePoint *first, *last;
     struct splinepointlist *next;
