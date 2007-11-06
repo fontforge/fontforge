@@ -3291,6 +3291,10 @@ return;
 		    (base->prevcp.y-base->me.y)*(base->prevcp.y-base->me.y));
 	    base->prevcp.x = base->me.x - plen*unit.x;
 	    base->prevcp.y = base->me.y - plen*unit.y;
+	    if ( snaptoint ) {
+		base->prevcp.x = rint(base->prevcp.x);
+		base->prevcp.y = rint(base->prevcp.y);
+	    }
 	    SplineRefigureFixup(base->prev);
 	} else if ( prev!=NULL ) {
 	    /* The prev control point is fixed. So we've got to use the same */
@@ -3391,6 +3395,10 @@ return;
 		    (base->nextcp.y-base->me.y)*(base->nextcp.y-base->me.y));
 	    base->nextcp.x = base->me.x - nlen*unit.x;
 	    base->nextcp.y = base->me.y - nlen*unit.y;
+	    if ( snaptoint ) {
+		base->nextcp.x = rint(base->nextcp.x);
+		base->nextcp.y = rint(base->nextcp.y);
+	    }
 	    SplineRefigureFixup(base->next);
 	} else if ( next!=NULL ) {
 	    /* The next control point is fixed. So we got to use the same */
