@@ -1,0 +1,217 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 31-Oct-2007 -->
+  <!-- AP: Last modified: 6-Nov-2007 -->
+  <TITLE>Creating a glyph using spiro points</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+  <H1 ALIGN=Center>
+    Spiro Tutorial
+  </H1>
+  <UL>
+    <LI>
+      <A HREF="editexample.html#FontCreate">Font Creation</A>
+    <LI>
+      <A HREF="editexample.html#CharCreate">Creating a glyph (tracing outlines)</A>
+    <LI>
+      <A HREF="editspiro.html">Create glyph outlines using spiro points</A>
+    <LI>
+      <A HREF="importexample.html">Importing a glyph from InkScape (or Illustrator,
+      or some other vector editor)</A>
+    <LI>
+      <A HREF="editexample2.html#Navigating">Navigating to other glyphs</A>
+    <LI>
+      <A HREF="editexample2.html#Creating-o">On to the next glyph (consistent
+      directions)</A>
+    <LI>
+      <A HREF="editexample3.html#consistent-stems">Consistent serifs and stem
+      widths</A>
+    <LI>
+      <A HREF="editexample4.html#accents">Building accented glyphs</A>
+    <LI>
+      <A HREF="editexample4.html#ligature">Building a ligature</A>
+    <LI>
+      <A HREF="editexample4.html#lookups">Lookups and features</A>
+    <LI>
+      <A HREF="editexample5.html#metrics">Examining metrics</A>
+    <LI>
+      <A HREF="editexample5.html#Kerning">Kerning</A>
+    <LI>
+      <A HREF="editexample6.html#Variants">Glyph variants</A>
+    <LI>
+      <A HREF="editexample6.html#Marks">Anchoring marks</A>
+    <LI>
+      <A HREF="editexample6-5.html#Conditional">Conditional features</A>
+    <LI>
+      <A HREF="editexample7.html#checking">Checking your font</A>
+    <LI>
+      <A HREF="editexample7.html#generating">Generating it</A>
+    <LI>
+      <A HREF="editexample7.html#Families">Font Families</A>
+    <LI>
+      <A HREF="editexample7.html#summary">Final Summary</A>
+    <LI>
+      <A HREF="editexample8.html">Bitmap strikes</A>
+    <LI>
+      <A HREF="scripting-tutorial.html">Scripting Tutorial</A>
+    <LI>
+      <A HREF="scriptnotes.html#Special">Notes on various scripts</A>
+  </UL>
+  <H2>
+    <A NAME="spiros">Creating a glyph using spiros</A>
+  </H2>
+  <P>
+  Spiro is the work of <A HREF="http://www.levien.com/">Raph Levien</A>, it
+  provides an alternate method of designing a glyph using a set of on-curve
+  points rather than the traditional mixture of on and off curve points used
+  for bezier splines.
+  <P>
+  There are 5 different types of spiro points
+  <UL>
+    <LI>
+      G4 Curve Points
+    <LI>
+      G2 Curve Points (I'm not sure what this distinction is)
+    <LI>
+      Corner Points
+    <LI>
+      Prev Constraint points (to be used when the contour changes from a curve
+      to a straight
+      line)<IMG SRC="spiroprevconstraint.png" WIDTH="97" HEIGHT="43" ALIGN="Middle">
+    <LI>
+      Next Constraint points (to be used when the contour changes from a straight
+      line to a curve)
+      <IMG SRC="spironextconstraint.png" WIDTH="106" HEIGHT="46" ALIGN="Middle">
+  </UL>
+  <P>
+  As before let us try to edit the "C" glyph from Ambrosia.
+  <TABLE BORDER CELLPADDING="2">
+    <TR>
+      <TD><IMG SRC="Cspiro0.png" WIDTH="290" HEIGHT="316"></TD>
+      <TD><IMG SRC="Cspiro1.png" WIDTH="290" HEIGHT="316"></TD>
+      <TD><IMG SRC="Cspiro2.png" WIDTH="290" HEIGHT="316"></TD>
+    </TR>
+    <TR VALIGN="Top">
+      <TD>Again we start with a blank glyph. Note that there is a button in the
+	shape of a spiral in the tool pane. If you press this button you go into
+	spiro mode, and the tools available to you change slightly.
+	<P>
+	(If you press the button again you go back to Bezier mode)
+	<P>
+	Again use File-&gt;Import to import a background image and then scale it
+	properly. (If you don't know how this is done, look at the
+	<A HREF="editexample.html#Import">previous page</A>)</TD>
+      <TD>Select the G4 curve point (the tool on the left side of the third row).
+	<P>
+	G4 curve points have the nice properties that the slope of the splines will
+	be the same on either side of them, and the curvature of the splines will
+	be too.
+	<P>
+	Then move the pointer over the image and click to place a point at a point
+	on the edge of the bitmap image.</TD>
+      <TD>Select the "next constraint" point which changes the contour nicely from
+	a curve to a straight line.
+	<P>
+	If you pick the wrong constraint (and I often do -- it will become obvious
+	later when the contour looks distorted here), then select the constraint
+	point and use <A HREF="getinfo.html#Spiro">Element-&gt;Get Info </A>to change
+	the point type -- or use the <A HREF="pointmenu.html">Point menu</A>.</TD>
+    </TR>
+    <TR>
+      <TD><IMG SRC="Cspiro3.png" WIDTH="290" HEIGHT="316"></TD>
+      <TD><IMG SRC="Cspiro4.png" WIDTH="290" HEIGHT="316"></TD>
+      <TD><IMG SRC="Cspiro5.png" WIDTH="290" HEIGHT="316"></TD>
+    </TR>
+    <TR VALIGN="Top">
+      <TD>Now select the corner point from the tool menu (the one that looks like
+	a square).
+	<P>
+	Place it at a location where the slope changes abruptly -- a corner.
+	<P>
+	We are now readly to talk about the "left tangent point". Pretend you are
+	standing on the corner point, facing toward the tangent point. Is the next
+	point after it (in this case the curved point) to your left or to your right?
+	If to your left, use a left tangen, if to your right, use a right tangent.</TD>
+      <TD>Now we want to do some fiddly work on the top of the "C". Here we have
+	a serif with a slight curve to it between two corners, two abrupt changes
+	of direction.
+	<P>
+	We need to get a close up view of the image in order to work more precisely,
+	so select the magnifying glass tool from the tool pane, move it to the middle
+	of the serif, and click it several times until the serif fills the screen.</TD>
+      <TD>Every corner point should have a constraint (or another corner) point
+	on either side of it, so we need to pick another constraint. In this case
+	the contour will change from a straight line to a curve, so that means a
+	"prev constraint" point.</TD>
+    </TR>
+    <TR>
+      <TD><IMG SRC="Cspiro6.png" WIDTH="290" HEIGHT="316"></TD>
+      <TD><IMG SRC="Cspiro6_5.png" WIDTH="290" HEIGHT="316"></TD>
+      <TD><IMG SRC="Cspiro7.png" WIDTH="290" HEIGHT="316"></TD>
+    </TR>
+    <TR VALIGN="Top">
+      <TD>Then proceeding to fill in the other points needed to make for a smooth
+	curve of the serif.</TD>
+      <TD>And another smooth curve of the other side of the serif.</TD>
+      <TD>Now it is no longer useful to have such a close view of the image, so
+	grab the magnifying glass tool again, and hold down the Alt (Meta, Option)
+	key. The cursor should change, and clicking it will zoom you out.
+	<P>
+	Then fill in the remainder of the points on this side.</TD>
+    </TR>
+    <TR>
+      <TD><IMG SRC="Cspiro8.png" WIDTH="290" HEIGHT="316"></TD>
+      <TD><IMG SRC="Cspiro9.png" WIDTH="290" HEIGHT="316"></TD>
+      <TD><IMG SRC="Cspirals.png" WIDTH="290" HEIGHT="316"></TD>
+    </TR>
+    <TR VALIGN="Top">
+      <TD>As we approach the lower tip of the C we again need to zoom in</TD>
+      <TD>And eventually we have completed a rough outline of the glyph. Clicking
+	on the start point will close the curve.
+	<P>
+	Unfortunately the result isn't quite what we'd hoped. There are some rather
+	erratic bulges.
+	<P>
+	We can fix that by
+	<OL>
+	  <LI>
+	    moving points around <BR>
+	    Use the pointer tool, click on a point (or hold down the shift key to select
+	    several points) and then drag them around.
+	  <LI>
+	    adding new points to the outline.<BR>
+	    Using the appropriate spiro tool, depress the mouse somewhere on the outline
+	    -- a new point appears there. You may now drag this point around.
+	</OL>
+      </TD>
+      <TD>In the process of fixing things we can move a point so far that the spiro
+	converter can't make sense of it. All of a sudden our (almost) nice outline
+	turns into an erratic spirals.
+	<P>
+	Don't worry about it, just move the point back and things return to normal.
+	If you move the point too far things can get even worse and the outline will
+	disappear altogether. Don't worry about that either, just put the point back.
+	Or use Edit-&gt;Undo.
+	<P>
+	And enjoy the curious beauty of the spirals you have unintentionally created.
+	<P>
+	(Raph is working on this, and at some point we may lose the spirals entirely,
+	but they have a certain charm -- I'll be sorry to see them go)</TD>
+    </TR>
+    <TR>
+      <TD></TD>
+      <TD><IMG SRC="Cspiro10.png" WIDTH="290" HEIGHT="314"></TD>
+      <TD></TD>
+    </TR>
+  </TABLE>
+  <P>
+  <P>
+  <P ALIGN=Center>
+  -- <A HREF="editexample.html">Prev</A> -- <A HREF="overview.html">TOC</A>
+  -- <A HREF="importexample.html">Next</A> --
+</DIV>
+</BODY></HTML>

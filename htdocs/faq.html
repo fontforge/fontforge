@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 29-Oct-2007 -->
+  <!-- AP: Last modified: 6-Nov-2007 -->
   <TITLE>Frequently Asked Questions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -548,21 +548,24 @@
       <B><A NAME="bsd-license">Why do I release FontForge with the BSD license
       and not GPL?</A></B>
     <DD>
+      I just don't like GPL. It's partly predjudice, partly real.
+      <P>
       I don't like forcing restrictions on people.
       <P>
       I'm giving away fontforge, so I do.
       <P>
       The <A HREF="license.html" TARGET="_parent">BSD license </A>says "Don't sue
-      me" and that's all I care about.
+      me, and include my copyright notice if you use my code" and that's all I
+      care about.
       <P>
       Perhaps I am naif, but I don't believe that anyone is going to start selling
       fontforge. Why would they? It makes no sense for someone to try to sell what
       I give away freely. If they add functionality to fontforge, then that's a
       different matter, but in a sense they aren't charging for fontforge, they
       are charging for the code they have added to it. It would be annoying if
-      someone did that, a bit immoral in my eyes, but I'm not going to say "no".
+      someone did that, a bit rude in my eyes, but I'm not going to say "no".
       <P>
-      Or someone might take a small piece of fontforge and use it in something
+      Now someone might take a small piece of fontforge and use it in something
       else. That doesn't bother me. I know that some of my OpenType code has been
       snagged by some TeX packages. And I have snagged code for generating checksums
       from some other packages.
@@ -1833,19 +1836,31 @@ Gdraw.ScreenWidthCentimeters: 37.3
     <DT>
       <B><A NAME="Inkscape">Importing glyphs from Inkscape</A></B>
     <DD>
-      (Taken from the <A HREF="http://ospublish.constantvzw.org/?p=340">OSPublish blog</A> and rewritten by Dave Crossland)
+      (Taken from the <A HREF="http://ospublish.constantvzw.org/?p=340">OSPublish
+      blog</A> and rewritten by Dave Crossland)
       <P>
       How to design a glyph in Inkscape so it can readily be imported into fontforge.
       <UL>
-      <LI>Open Inkscape
-      <LI>From the File menu, select Document Properties.
-      <LI>Set units to pixels (px) and document dimensions to 1000 x 1000, click OK<BR>
-      <small>Or if your font has a different number of units per em use that, but 1000 is fontforge's default)</small>
-      <LI>Set a horizontal guide at 200px
-      <LI>Draw a glyph - the hardest part! :-)
-      <LI>Save the drawing as an SVG file
-      <LI>Open FontForge
-      <LI>From the File menu, select Import, chose SVG, find your drawing, click OK
+	<LI>
+	  Open Inkscape
+	<LI>
+	  From the File menu, select Document Properties.
+	<LI>
+	  Set units to pixels (px) and document dimensions to 1000 x 1000, click OK<BR>
+	  <SMALL>Or if your font has a different number of units per em use that, but
+	  1000 is fontforge's default)</SMALL>
+	<LI>
+	  Set a horizontal guide at 200px
+	<LI>
+	  Draw a glyph - the hardest part! :-)
+	<LI>
+	  Save the drawing as an SVG file
+	<LI>
+	  Open FontForge
+	<LI>
+	  From the File menu, select Import, chose SVG, find your drawing, click OK
+	<LI>
+	  From the Element menu select Transform, set the Y value to -200, click OK
       </UL>
     <DT>
       <A NAME="default-char"><B>How do I set the default glyph of a font?</B></A>
