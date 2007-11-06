@@ -695,14 +695,14 @@ return;
     if ( selected )
 	GDrawSetLineWidth(pixmap,selectedpointwidth);
 
-    if ( ty == SPIRO_LEFT ) {
+    if ( ty == SPIRO_RIGHT ) {
 	GDrawSetLineWidth(pixmap,2);
 	gp[0].x = x-3; gp[0].y = y-3;
 	gp[1].x = x;   gp[1].y = y-3;
 	gp[2].x = x;   gp[2].y = y+3;
 	gp[3].x = x-3; gp[3].y = y+3;
 	GDrawDrawPoly(pixmap,gp,4,col);
-    } else if ( ty == SPIRO_RIGHT ) {
+    } else if ( ty == SPIRO_LEFT ) {
 	GDrawSetLineWidth(pixmap,2);
 	gp[0].x = x+3; gp[0].y = y-3;
 	gp[1].x = x;   gp[1].y = y-3;

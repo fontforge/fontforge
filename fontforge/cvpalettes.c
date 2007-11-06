@@ -957,9 +957,9 @@ return;			/* Not available in order2 spline mode */
 		if ( pos==cvt_spirog2 )
 		    msg = _("Add a g2 curve point");
 		else if ( pos==cvt_spiroleft )
-		    msg = _("Add a left \"tangent\" point");
+		    msg = _("Add a prev constraint point (sometimes like a tangent)");
 		else if ( pos==cvt_spiroright )
-		    msg = _("Add a right \"tangent\" point");
+		    msg = _("Add a next constraint point (sometimes like a tangent)");
 	    }
 	    GGadgetPreparePopup8(cvtools,msg);
 	} else if ( pos!=cv->pressed_tool || cv->had_control != (((event->u.mouse.state&ksm_control) || styluscntl)?1:0) )
