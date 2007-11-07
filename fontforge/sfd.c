@@ -1084,6 +1084,7 @@ return( NULL );
 		end = buf+max;
 	    }
 	    *pt++ = ch;
+	    quoted = false;
 	}
     }
     if ( pt==buf )
