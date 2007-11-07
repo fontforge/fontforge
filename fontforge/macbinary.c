@@ -2929,10 +2929,15 @@ static SplineFont *HasResourceFork(char *filename,int flags,enum openflags openf
 	tempfn = copy(filename);
 	tempfn[lparen-filename] = '\0';
     }
-    respath = galloc(strlen(tempfn)+strlen("/rsrc")+1);
+    respath = galloc(strlen(tempfn)+strlen("/..namedfork/rsrc")+1);
     strcpy(respath,tempfn);
-    strcat(respath,"/rsrc");
+    strcat(respath,"/..namedfork/rsrc");
     resfork = fopen(respath,"r");
+    if ( resfork==NULL ) {
+	strcpy(respath,tempfn);
+	strcat(respath,"/rsrc");
+	resfork = fopen(respath,"r");
+    }
     free(respath);
     if ( tempfn!=filename )
 	free(tempfn);
