@@ -2825,11 +2825,13 @@ static void SFDGetSpiros(FILE *sfd,SplineSet *cur) {
     ch = getc(sfd);		/* r */
     ch = getc(sfd);		/* o */
     while ( fscanf(sfd,"%lg %lg %c", &cp.x, &cp.y, &cp.ty )==3 ) {
-	if ( cur->spiro_cnt>=cur->spiro_max )
-	    cur->spiros = grealloc(cur->spiros,(cur->spiro_max+=10)*sizeof(spiro_cp));
-	cur->spiros[cur->spiro_cnt++] = cp;
+	if ( cur!=NULL ) {
+	    if ( cur->spiro_cnt>=cur->spiro_max )
+		cur->spiros = grealloc(cur->spiros,(cur->spiro_max+=10)*sizeof(spiro_cp));
+	    cur->spiros[cur->spiro_cnt++] = cp;
+	}
     }
-    if ( (cur->spiros[cur->spiro_cnt-1].ty&0x7f)!=SPIRO_END ) {
+    if ( cur!=NULL && (cur->spiros[cur->spiro_cnt-1].ty&0x7f)!=SPIRO_END ) {
 	if ( cur->spiro_cnt>=cur->spiro_max )
 	    cur->spiros = grealloc(cur->spiros,(cur->spiro_max+=1)*sizeof(spiro_cp));
 	memset(&cur->spiros[cur->spiro_cnt],0,sizeof(spiro_cp));
@@ -5741,19 +5743,6 @@ exit(1);
 exit(1);
 	    }
 	    kc = chunkalloc(old ? sizeof(KernClass1) : sizeof(KernClass));
-	    if ( !isv ) {
-		if ( lastkc==NULL )
-		    sf->kerns = kc;
-		else
-		    lastkc->next = kc;
-		lastkc = kc;
-	    } else {
-		if ( lastvkc==NULL )
-		    sf->vkerns = kc;
-		else
-		    lastvkc->next = kc;
-		lastvkc = kc;
-	    }
 	    getint(sfd,&kc->first_cnt);
 	    ch=getc(sfd);
 	    if ( ch=='+' )
@@ -5766,7 +5755,15 @@ exit(1);
 		getint(sfd,&temp); ((KernClass1 *) kc)->flags = temp;
 	    } else {
 		kc->subtable = SFFindLookupSubtableAndFreeName(sf,SFDReadUTF7Str(sfd));
-		kc->subtable->kc = kc;
+		if ( kc->subtable!=NULL && kc->subtable->kc==NULL )
+		    kc->subtable->kc = kc;
+		else {
+		    if ( kc->subtable==NULL )
+			LogError("Bad SFD file, missing subtable in kernclass defn.\n" );
+		    else
+			LogError("Bad SFD file, two kerning classes assigned to the same subtable: %s\n", kc->subtable->subtable_name );
+		    kc->subtable = NULL;
+		}
 	    }
 	    kc->firsts = galloc(kc->first_cnt*sizeof(char *));
 	    kc->seconds = galloc(kc->second_cnt*sizeof(char *));
@@ -5796,6 +5793,21 @@ exit(1);
 #else
 		SFDSkipDeviceTable(sfd);
 #endif
+	    }
+	    if ( !old && kc->subtable == NULL ) {
+		/* Error. Ignore it. Free it. Whatever */;
+	    } else if ( !isv ) {
+		if ( lastkc==NULL )
+		    sf->kerns = kc;
+		else
+		    lastkc->next = kc;
+		lastkc = kc;
+	    } else {
+		if ( lastvkc==NULL )
+		    sf->vkerns = kc;
+		else
+		    lastvkc->next = kc;
+		lastvkc = kc;
 	    }
 	} else if ( strmatch(tok,"ContextPos2:")==0 || strmatch(tok,"ContextSub2:")==0 ||
 		strmatch(tok,"ChainPos2:")==0 || strmatch(tok,"ChainSub2:")==0 ||
