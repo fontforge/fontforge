@@ -1580,17 +1580,46 @@ return( true );
 return( false );
 }
 
+static double SecondDerivative(Spline *s,double t) {
+    /* That is d2y/dx2, not d2y/dt2 */
+
+    /* dy/dx = (dy/dt) / (dx/dt) */
+    /* d2 y/dx2 = d(dy/dx)/dt / (dx/dt) */
+    /* d2 y/dx2 = ((d2y/dt2)*(dx/dt) - (dy/dt)*(d2x/dt2))/ (dx/dt)^2 */
+
+    /* dy/dt = 3 ay *t^2 + 2 by * t + cy */
+    /* dx/dt = 3 ax *t^2 + 2 bx * t + cx */
+    /* d2y/dt2 = 6 ay *t + 2 by */
+    /* d2x/dt2 = 6 ax *t + 2 bx */
+    double dydt = (3*s->splines[1].a*t + 2*s->splines[1].b)*t + s->splines[1].c;
+    double dxdt = (3*s->splines[0].a*t + 2*s->splines[0].b)*t + s->splines[0].c;
+    double d2ydt2 = 6*s->splines[1].a*t + 2*s->splines[1].b;
+    double d2xdt2 = 6*s->splines[0].a*t + 2*s->splines[0].b;
+    double top = (d2ydt2*dxdt - dydt*d2xdt2);
+
+    if ( dxdt==0 ) {
+	if ( top==0 )
+return( 0 );
+	if ( top>0 )
+return( 1e10 );
+return( -1e10 );
+    }
+
+return( top/(dxdt*dxdt) );
+}
+    
 /* Does the second derivative change sign around this point? If so we should */
 /*  retain it for truetype */
 static int SPisD2Change( SplinePoint *sp ) {
+    double d2next = SecondDerivative(sp->next,0);
+    double d2prev = SecondDerivative(sp->prev,1);
 
-    if (( sp->next->splines[0].a>0 && sp->prev->splines[0].a<0 ) ||
-	    ( sp->next->splines[0].a<0 && sp->prev->splines[0].a>0 ) ||
-	    ( sp->next->splines[1].a>0 && sp->prev->splines[1].a<0 ) ||
-	    ( sp->next->splines[1].a<0 && sp->prev->splines[1].a>0 ) )
-return( true );
-
+    if ( d2next>=0 && d2prev>=0 )
 return( false );
+    if ( d2next<=0 && d2prev<=0 )
+return( false );
+
+return( true );
 }
 
 /* Almost exactly the same as SplinesRemoveBetween, but this one is conditional */
