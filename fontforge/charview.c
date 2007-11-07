@@ -5464,7 +5464,7 @@ static void CVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 void CVChar(CharView *cv, GEvent *event ) {
-    extern float arrowAmount;
+    extern float arrowAmount, arrowAccelFactor;
 
 #if _ModKeysAutoRepeat
 	/* Under cygwin these keys auto repeat, they don't under normal X */
@@ -5568,7 +5568,7 @@ return;
 		CVHScroll(cv,&sb);
 	} else {
 	    if ( event->u.chr.state & ksm_meta ) {
-		dx *= 10; dy *= 10;
+		dx *= arrowAccelFactor; dy *= arrowAccelFactor;
 	    }
 	    if ( event->u.chr.state & (ksm_shift) )
 		dx -= dy*tan((cv->sc->parent->italicangle)*(3.1415926535897932/180) );
