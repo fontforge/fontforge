@@ -283,6 +283,7 @@ int _ExportPlate(FILE *plate,SplineChar *sc) {
 		free(spiros);
 	}
     }
+    fprintf(plate, ")\n");
     ret = !ferror(plate);
     setlocale(LC_NUMERIC,oldloc);
 return( ret );
