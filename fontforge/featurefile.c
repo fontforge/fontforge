@@ -4870,6 +4870,26 @@ static void fea_fillKernClass(KernClass *kc,struct feat_item *l) {
     }
 }
 
+static void SFKernClassRemoveFree(SplineFont *sf,KernClass *kc) {
+    KernClass *prev;
+
+    if ( sf->kerns==kc )
+	sf->kerns = kc->next;
+    else if ( sf->vkerns==kc )
+	sf->vkerns = kc->next;
+    else {
+	prev = NULL;
+	if ( sf->kerns!=NULL )
+	    for ( prev=sf->kerns; prev!=NULL && prev->next!=kc; prev=prev->next );
+	if ( prev==NULL && sf->vkerns!=NULL )
+	    for ( prev=sf->vkerns; prev!=NULL && prev->next!=kc; prev=prev->next );
+	if ( prev!=NULL )
+	    prev->next = kc->next;
+    }
+    kc->next = NULL;
+    KernClassListFree(kc);
+}
+
 static void fea_ApplyLookupListPair(struct parseState *tok,
 	struct feat_item *lookup_data,int kmax,OTLookup *otl) {
     /* kcnt is the number of left/right glyph-name-lists we must sort into classes */
@@ -4975,6 +4995,8 @@ static void fea_ApplyLookupListPair(struct parseState *tok,
 		lastsub->next = sub;
 	    lastsub = sub;
 
+	    if ( sub->kc!=NULL )
+		SFKernClassRemoveFree(tok->sf,sub->kc);
 	    sub->kc = kc = chunkalloc(sizeof(KernClass));
 	    kc->first_cnt = lefts.cnt+1; kc->second_cnt = rights.cnt+1;
 	    kc->firsts = galloc(kc->first_cnt*sizeof(char *));
@@ -5415,10 +5437,14 @@ static void fea_NameLookups(struct parseState *tok) {
     int gp_cnt=0, gs_cnt=0, acnt;
     AnchorClass *ac, *acnext, *an;
 
-    for ( gpos_last = sf->gpos_lookups; gpos_last!=NULL; gpos_last=gpos_last->next )
-	gpos_last->lookup_index = gp_cnt++;
-    for ( gsub_last = sf->gsub_lookups; gsub_last!=NULL; gsub_last=gsub_last->next )
-	gsub_last->lookup_index = gs_cnt++;
+    for ( otl = sf->gpos_lookups; otl!=NULL; otl=otl->next ) {
+	otl->lookup_index = gp_cnt++;
+	gpos_last = otl;
+    }
+    for ( otl = sf->gsub_lookups; otl!=NULL; otl=otl->next ) {
+	otl->lookup_index = gs_cnt++;
+	gsub_last = otl;
+    }
 
     for ( otl = tok->created; otl!=NULL; otl=otlnext ) {
 	otlnext = otl->next;

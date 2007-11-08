@@ -7632,7 +7632,7 @@ static void LookupMenu(struct gfi_data *gfi,struct lkdata *lk,GEvent *event) {
 	    lookuppopupmenu[i].ti.disabled = lk->cnt==0 || lk==&gfi->tables[1]/*Only applies to GSUB*/;
 	  break;
 	  case CID_SaveFeat:
-	    lookuppopupmenu[i].ti.disabled = lk->cnt<=1;
+	    lookuppopupmenu[i].ti.disabled = lk->cnt<=0;
 	  break;
 	}
     }
