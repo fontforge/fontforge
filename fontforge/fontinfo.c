@@ -1336,6 +1336,10 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_Guess		2004
 #define CID_Remove		2005
 #define CID_Hist		2006
+#define CID_Top			2007
+#define CID_Up			2008
+#define CID_Down		2009
+#define CID_Bottom		2010
 
 #define CID_TTFTabs		3000
 #define CID_WeightClass		3001
@@ -1911,6 +1915,11 @@ return;
 return;
     }
     private = d->private ? d->private : sf->private;
+    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Bottom),sel!=-1 && private!=NULL && sel<private->next-1 );
+    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Down),sel!=-1 && private!=NULL && sel<private->next-1 );
+    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Top),sel>0);
+    GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Up),sel>0);
+
     if ( sel==-1 ) {
 	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Remove),false);
 	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Guess),false);
@@ -2139,6 +2148,64 @@ static int PI_Delete(GGadget *g, GEvent *e) {
 	    ti[0]->selected = false;
 	    ti[sel]->selected = true;
 	}
+	GGadgetSetList(list,ti,false);
+	d->old_sel = -2;
+	ProcessListSel(d);
+    }
+return( true );
+}
+
+static int PI_Move(GGadget *g, GEvent *e) {
+    GWindow gw;
+    struct gfi_data *d;
+    GGadget *list;
+    int sel, cid, i, new_sel;
+    GTextInfo **ti;
+    char *key, *val;
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	gw = GGadgetGetWindow(g);
+	d = GDrawGetUserData(gw);
+	PIPrivateCheck(d);
+	list = GWidgetGetControl(d->gw,CID_PrivateEntries);
+	sel = GGadgetGetFirstListSelectedItem(list);
+	cid = GGadgetGetCid(g);
+	if ( d->private==NULL || sel==-1 )
+return( true );
+	key = d->private->keys[sel];
+	val = d->private->values[sel];
+	if ( cid==CID_Top && sel>0 ) {
+	    for ( i=sel; i>0; --i ) {
+		d->private->keys[i] = d->private->keys[i-1];
+		d->private->values[i] = d->private->values[i-1];
+	    }
+	    d->private->keys[0] = key;
+	    d->private->values[0] = val;
+	    new_sel = 0;
+	} else if ( cid==CID_Up && sel>0 ) {
+	    d->private->keys[sel] = d->private->keys[sel-1];
+	    d->private->values[sel] = d->private->values[sel-1];
+	    d->private->keys[sel-1] = key;
+	    d->private->values[sel-1] = val;
+	    new_sel = sel-1;
+	} else if ( cid==CID_Down && sel<d->private->next-1 ) {
+	    d->private->keys[sel] = d->private->keys[sel+1];
+	    d->private->values[sel] = d->private->values[sel+1];
+	    d->private->keys[sel+1] = key;
+	    d->private->values[sel+1] = val;
+	    new_sel = sel+1;
+	} else if ( cid==CID_Bottom && sel<d->private->next-1 ) {
+	    for ( i=sel; i<d->private->next-1; ++i ) {
+		d->private->keys[i] = d->private->keys[i+1];
+		d->private->values[i] = d->private->values[i+1];
+	    }
+	    d->private->keys[d->private->next-1] = key;
+	    d->private->values[d->private->next-1] = val;
+	    new_sel = d->private->next-1;
+	}
+	ti = PI_ListArray(d->private);
+	ti[0]->selected = false;
+	ti[new_sel]->selected = true;
 	GGadgetSetList(list,ti,false);
 	d->old_sel = -2;
 	ProcessListSel(d);
@@ -7692,19 +7759,19 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     GWindowAttrs wattrs;
     GTabInfo aspects[22], vaspects[6], lkaspects[3], uaspects[3];
     GGadgetCreateData mgcd[10], ngcd[17], psgcd[30], tngcd[8],
-	pgcd[8], vgcd[19], pangcd[22], comgcd[3], txgcd[23],
+	pgcd[12], vgcd[19], pangcd[22], comgcd[3], txgcd[23],
 	mfgcd[8], mcgcd[8], szgcd[19], mkgcd[5], metgcd[29], vagcd[3], ssgcd[23],
 	xugcd[7], dgcd[6], ugcd[4], gaspgcd[5], gaspgcd_def[2], lksubgcd[2][4],
 	lkgcd[2], lkbuttonsgcd[15], cgcd[12];
-    GGadgetCreateData mb[2], mb2, nb[2], nb2, nb3, xub[2], psb[2], psb2[3], ppbox[3],
+    GGadgetCreateData mb[2], mb2, nb[2], nb2, nb3, xub[2], psb[2], psb2[3], ppbox[4],
 	    vbox[4], metbox[2], ssbox[2], panbox[2], combox[2], mkbox[3],
 	    txbox[5], ubox[2], dbox[2], 
 	    mcbox[3], mfbox[3], szbox[6], tnboxes[4], gaspboxes[3],
 	    lkbox[7], cbox[6];
     GGadgetCreateData *marray[7], *marray2[9], *narray[26], *narray2[7], *narray3[3],
 	*xuarray[13], *psarray[10], *psarray2[21], *psarray3[3], *psarray4[10],
-	*ppbuttons[5], *pparray[4], *vradio[5], *varray[38], *metarray[46],
-	*ssarray[58], *panarray[38], *comarray[2],
+	*ppbuttons[5], *pparray[6], *vradio[5], *varray[38], *metarray[46],
+	*pp2buttons[7], *ssarray[58], *panarray[38], *comarray[2],
 	*mkarray[3], *mkarray2[4], *txarray[5], *txarray2[30],
 	*txarray3[6], *txarray4[6], *uarray[3], *darray[10],
 	*mcarray[13], *mcarray2[7],
@@ -7713,7 +7780,7 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
 	*gaspvarray[3], *lkarray[2][7], *lkbuttonsarray[17], *lkharray[3],
 	*charray1[4], *charray2[4], *charray3[4], *cvarray[9], *cvarray2[4];
     GTextInfo mlabel[10], nlabel[16], pslabel[30], tnlabel[7],
-	plabel[8], vlabel[19], panlabel[22], comlabel[3], txlabel[23],
+	plabel[12], vlabel[19], panlabel[22], comlabel[3], txlabel[23],
 	mflabel[8], mclabel[8], szlabel[17], mklabel[5], metlabel[28],
 	sslabel[23], xulabel[6], dlabel[5], ulabel[1], gasplabel[5],
 	lkbuttonslabel[14], clabel[11];
@@ -8439,8 +8506,26 @@ return;
     ppbuttons[0] = &pgcd[2]; ppbuttons[1] = &pgcd[3];
     ppbuttons[2] = &pgcd[4]; ppbuttons[3] = &pgcd[5]; ppbuttons[4] = NULL;
 
-    pparray[0] = &pgcd[0]; pparray[1] = &pgcd[1]; pparray[2] = &ppbox[2];
-    pparray[3] = NULL;
+    {
+	static int cids[] = { CID_Top, CID_Up, CID_Down, CID_Bottom, 0 };
+	static char *names[] = { N_("_Top"), N_("_Up"), N_("_Down"), N_("_Bottom") };
+	pp2buttons[0] = GCD_Glue;
+	for ( i=0 ; cids[i]!=0 ; ++i ) {
+	    pgcd[i+6].gd.flags = gg_visible | gg_enabled ;
+	    plabel[i+6].text = (unichar_t *) _(names[i]);
+	    plabel[i+6].text_is_1byte = true;
+	    plabel[i+6].text_in_resource = true;
+	    pgcd[i+6].gd.label = &plabel[i+6];
+	    pgcd[i+6].gd.handle_controlevent = PI_Move;
+	    pgcd[i+6].gd.cid = cids[i];
+	    pgcd[i+6].creator = GButtonCreate;
+	    pp2buttons[i+1] = &pgcd[i+6];
+	}
+	pp2buttons[5] = GCD_Glue; pp2buttons[6] = NULL;
+    }
+
+    pparray[0] = &pgcd[0]; pparray[1] = &ppbox[3]; pparray[2] = &pgcd[1];
+    pparray[3] = &ppbox[2]; pparray[4] = NULL;
 
     memset(ppbox,0,sizeof(ppbox));
     ppbox[0].gd.flags = gg_enabled|gg_visible;
@@ -8450,6 +8535,10 @@ return;
     ppbox[2].gd.flags = gg_enabled|gg_visible;
     ppbox[2].gd.u.boxelements = ppbuttons;
     ppbox[2].creator = GHBoxCreate;
+
+    ppbox[3].gd.flags = gg_enabled|gg_visible;
+    ppbox[3].gd.u.boxelements = pp2buttons;
+    ppbox[3].creator = GHBoxCreate;
 /******************************************************************************/
     memset(&vlabel,0,sizeof(vlabel));
     memset(&vgcd,0,sizeof(vgcd));
@@ -10595,6 +10684,7 @@ return;
 
     GHVBoxSetExpandableRow(ppbox[0].ret,0);
     GHVBoxSetExpandableCol(ppbox[2].ret,gb_samesize);
+    GHVBoxSetExpandableCol(ppbox[3].ret,gb_expandgluesame);
 
     GHVBoxSetExpandableRow(vbox[0].ret,gb_expandglue);
     GHVBoxSetExpandableCol(vbox[0].ret,1);
