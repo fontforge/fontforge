@@ -201,9 +201,6 @@ static struct library_descriptor {
     struct library_descriptor *depends_on;
 } libs[] = {
     {
-#ifdef dlsym
-# undef dlsym
-#endif
 #ifdef PYTHON_LIB_NAME
 	#PYTHON_LIB_NAME,
 #else

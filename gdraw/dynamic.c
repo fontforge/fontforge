@@ -135,6 +135,7 @@ return( dlopen(filename,flags) );	/* This will almost certainly fail, but it wil
     /* The mac now has normal dlopen routines */
 
 void *gwwv_dlopen(char *name,int flags) {
+#undef dlopen
     void *lib = dlopen(name,flags);
     char *temp;
 
