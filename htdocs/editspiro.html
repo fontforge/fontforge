@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 31-Oct-2007 -->
-  <!-- AP: Last modified: 6-Nov-2007 -->
+  <!-- AP: Last modified: 7-Nov-2007 -->
   <TITLE>Creating a glyph using spiro points</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -145,10 +145,10 @@
 	We need to get a close up view of the image in order to work more precisely,
 	so select the magnifying glass tool from the tool pane, move it to the middle
 	of the serif, and click it several times until the serif fills the screen.</TD>
-      <TD>Every corner point should have a constraint (or another corner) point
-	on either side of it, so we need to pick another constraint. In this case
-	the contour will change from a straight line to a curve, so that means a
-	"prev constraint" point.</TD>
+      <TD>Generally a corner point should have a constraint (or another corner)
+	point on either side of it, so we need to pick another constraint. In this
+	case the contour will change from a straight line to a curve, so that means
+	a "prev constraint" point.</TD>
     </TR>
     <TR>
       <TD><IMG SRC="Cspiro6.png" WIDTH="290" HEIGHT="316"></TD>
@@ -211,6 +211,10 @@
     </TR>
   </TABLE>
   <P>
+  This is probably not the best way to edit with spiros. Raph Levien uses an
+  approach where he puts points at the major features of the glyph, closes
+  the contour and then adds and moves points later to get a better fit to the
+  glyph. Experiment, find what works for you.
   <P>
   <P ALIGN=Center>
   -- <A HREF="editexample.html">Prev</A> -- <A HREF="overview.html">TOC</A>
