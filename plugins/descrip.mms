@@ -2,7 +2,7 @@ CFLAGS=/nowarn/incl=([-.inc],[-.fontforge])/name=(as_is,short)/define=(\
 	"_STATIC_LIBFREETYPE=1","_STATIC_LIBPNG=1","HAVE_LIBINTL_H=1",\
 	"_STATIC_LIBUNINAMESLIST=1","_STATIC_LIBXML=1","_NO_XINPUT=1",\
 	"_STATIC_LIBUNGIF=1","_STATIC_LIBJPEG=1","_STATIC_LIBTIFF=1",\
-        "FONTFORGE_CONFIG_DEVICETABLES=1")
+        "FONTFORGE_CONFIG_DEVICETABLES=1","_NO_LIBSPIRO=1")
 
 gb12345.exe : gb12345.obj [-.fontforge]lff.opt
 	@ WRITE_ SYS$OUTPUT "  generating gb12345.opt"
