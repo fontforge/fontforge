@@ -2970,11 +2970,83 @@ void SplineSetAddExtrema(SplineChar *sc, SplineSet *ss,enum ae_type between_sele
     }
 }
 
+void SplineSetAddSpiroExtrema(SplineChar *sc, SplineSet *ss,
+	enum ae_type between_selected, int emsize) {
+    int i, j, cnt, found, k;
+    Spline *s;
+    extended extrema[4];
+    BasePoint bp;
+    double test;
+
+    if ( ss->spiro_cnt==0 ) {
+	SplineSetAddExtrema(sc,ss,between_selected,emsize);
+return;
+    }
+    s = ss->first->next;
+    for ( i=1; i<ss->spiro_cnt; ) {	/* For once I do mean spiro count, that loops back to the start for close contours */
+	if ( i<ss->spiro_cnt-1 ) {
+	    bp.x = ss->spiros[i].x;
+	    bp.y = ss->spiros[i].y;
+	} else if ( SPIRO_SPL_OPEN(ss))
+return;
+	else {
+	    bp.x = ss->spiros[0].x;
+	    bp.y = ss->spiros[0].y;
+	}
+	for ( ; s!=NULL ; ) {
+	    test = SplineNearPoint(s,&bp,.001);
+	    found = test!=-1;
+	    cnt = Spline2DFindExtrema(s,extrema);
+	    for ( j=0; j<cnt; ++j ) {
+		if ( extrema[j]==0 ) {
+		    if ( RealNear(s->from->me.x,ss->spiros[i-1].x) &&
+			    RealNear(s->from->me.y,ss->spiros[i-1].y) )
+	    continue;	/* There's already a spiro point for this extremum */
+		} else if ( extrema[j]==1.0 ) {
+		    if ( RealNear(s->to->me.x,bp.x) &&
+			    RealNear(s->to->me.y,bp.y) ) {
+			++i;
+			test=-1;
+	    break;
+		    }
+		}
+		if ( test!=-1 && extrema[j]>test ) {
+		    ++i;
+		    test = -1;
+		}
+		if ( ss->spiro_cnt>=ss->spiro_max )
+		    ss->spiros = grealloc(ss->spiros,(ss->spiro_max+=10)*sizeof(spiro_cp));
+		for ( k=ss->spiro_cnt; k>i; --k )
+		    ss->spiros[k] = ss->spiros[k-1];
+		ss->spiros[i].x = ((s->splines[0].a*extrema[j]+s->splines[0].b)*extrema[j]+s->splines[0].c)*extrema[j] + s->splines[0].d;
+		ss->spiros[i].y = ((s->splines[1].a*extrema[j]+s->splines[1].b)*extrema[j]+s->splines[1].c)*extrema[j] + s->splines[1].d;
+		ss->spiros[i].ty = SPIRO_G4;
+		++ss->spiro_cnt;
+		++i;
+	    }
+	    if ( !found && RealNear(s->to->me.x,bp.x) &&
+		    RealNear(s->to->me.y,bp.y) ) {
+		test = 1.0; found = true;
+	    }
+	    if ( test!=-1 )
+		++i;
+	    s = s->to->next;
+	    if ( s==ss->first->next )
+return;
+	    if ( found )
+	break;
+	}
+    }
+}
+
 void SplineCharAddExtrema(SplineChar *sc, SplineSet *head,enum ae_type between_selected,int emsize) {
     SplineSet *ss;
 
     for ( ss=head; ss!=NULL; ss=ss->next ) {
-	SplineSetAddExtrema(sc,ss,between_selected,emsize);
+	if ( sc->inspiro )
+	    SplineSetAddSpiroExtrema(sc,ss,between_selected,emsize);
+	else
+	    SplineSetAddExtrema(sc,ss,between_selected,emsize);
     }
 }
 
