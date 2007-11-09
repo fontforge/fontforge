@@ -16,7 +16,7 @@ extern const void *gwwv_dlopen(char *name,int flags);
 #   define dlsym(image,symname) dlsym(image,"_" symname)
 #   define dlsymmod(symname) ("_" symname)
 #   define dlsymbare(image,symname) dlsym(image,symname)
-#  elif define(__Mac)
+#  elif defined(__Mac)
 #   include <mach-o/dyld.h>
 extern const void *gwwv_NSAddImage(char *name,uint32_t options);
 #   define SO_EXT	".dylib"
