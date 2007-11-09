@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 6-Nov-2007 -->
+  <!-- AP: Last modified: 8-Nov-2007 -->
   <TITLE>Frequently Asked Questions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -202,6 +202,9 @@
 	<LI>
 	  <A HREF="#mf-files">Why doesn't FontForge let me edit an '.mf' file?</A>
       </UL>
+    <LI>
+      <A HREF="#non-integral">Is it safe to use non-integral coordinates? Will
+      it screw up in Word or anything?</A>
     <LI>
       <A HREF="#Open-size">Why isn't my Open Type font much smaller than the .pfb
       file?</A>
@@ -1571,6 +1574,36 @@ Gdraw.ScreenWidthCentimeters: 37.3
 	  before Unicode did and assigned a slot in the private use area. Then in 4.1
 	  Unicode added the glyph to the standard.
       </DL>
+    <DT>
+      <B><A NAME="non-integral">Is it safe to use non-integral coordinates?</A></B>
+    <DD>
+      FontForge allows you to edit with non-integral coordinates. Many font editors
+      don't and some have wondered if the use of non-integral coordinates will
+      it distort their fonts when they are rasterized?
+      <P>
+      The answer depends on the font format and how you save the font.
+      <P>
+      TrueType fonts can only express integral coordinates. When FontForge creates
+      a TrueType font it will round all coordinates to integers. This rounding
+      will introduce a slight distortion in the curve.
+      <P>
+      PostScript (type1, PostScript OpenType, type2, etc.) fonts can express
+      non-integral coordinates in the font format -- but it takes a lot more space
+      in the font file. Type1 fonts tend to take more space to express this than
+      type2 (opentype) fonts. By default FontForge will round to int on these as
+      well, BUT you can change that in the Generate Options dialog. 
+      <P>
+      If your font is rounded then there will be some distortion. If it is not
+      rounded there should be no distortion. In PostScript fonts it should be safe
+      to use non-integral coordinates provided you turn off rounding when you generate
+      the font. The font file will be bigger, but more accurate.
+      <P>
+      If you feel you need more accuracy in TrueType you can change the em-size
+      to 8096. 
+      <P>
+      You can do this on PostScript Type1 fonts too, however, there are some
+      applications which assume that all OpenType postscript fonts have an em-size
+      of 1000, so it is best not to do this for OpenType output.
     <DT>
       <A NAME="Open-size"><B>Why isn't my Open Type font much smaller than the
       .pfb file?</B></A>
