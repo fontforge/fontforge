@@ -415,6 +415,7 @@ return( NULL );
 		/* If there's a .notdef use it so that we don't generate our own .notdef (which can add cvt entries) */
 	    sf->glyphs = new;
 	}
+	sf->internal_temp = true;
 	switch ( ff ) {
 	  case ff_pfb: case ff_pfa:
 	    if ( !_WritePSFont(ftc->file,sf,ff,0,map,NULL))
@@ -430,6 +431,7 @@ return( NULL );
 	  default:
  goto fail;
 	}
+	sf->internal_temp = false;
 
 	if ( sf->subfontcnt!=0 ) {
 	    /* can only be an otfcid */
@@ -486,6 +488,7 @@ return( NULL );
 return( ftc );
 
  fail:
+    sf->internal_temp = false;
     GlyphHashFree(sf);
     FreeTypeFreeContext(ftc);
     if ( sf->glyphs!=old ) {

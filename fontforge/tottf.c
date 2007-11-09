@@ -4614,10 +4614,10 @@ static void dumpcmap(struct alltabs *at, SplineFont *sf,enum fontformat format) 
     break;
 	}
     }
-    if ( sf->subfontcnt==0 && !anyglyphs ) {
+    if ( sf->subfontcnt==0 && !anyglyphs && !sf->internal_temp ) {
 	gwwv_post_error(_("No Encoded Glyphs"),_("Warning: Font contained no glyphs"));
     }
-    if ( sf->subfontcnt==0 && format!=ff_ttfsym) {
+    if ( sf->subfontcnt==0 && format!=ff_ttfsym && !sf->internal_temp ) {
 	if ( i==0 && anyglyphs ) {
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	    if ( map->enccount<=256 ) {

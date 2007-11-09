@@ -1494,7 +1494,8 @@ typedef struct splinefont {
     unsigned int save_to_dir: 1;		/* Loaded from an sfdir collection rather than a simple sfd file */
     unsigned int head_optimized_for_cleartype: 1;/* Bit in the 'head' flags field, if unset "East Asian fonts in the Windows Presentation Framework (Avalon) will not be hinted" */
     unsigned int ticked: 1;
-	/* 6 bits left */
+    unsigned int internal_temp: 1;		/* Internal temporary font to be passed to freetype for rasterizing. Don't complain about oddities */
+	/* 5 bits left */
     struct fontview *fv;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     struct metricsview *metrics;

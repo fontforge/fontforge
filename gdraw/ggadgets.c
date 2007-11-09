@@ -359,8 +359,13 @@ void GGadgetEndPopup() {
 	GDrawCancelTimer(popup_vanish_timer);
 	popup_vanish_timer = NULL;
     }
-    if ( popup_info.img!=NULL )
-	(popup_info.free_image)(popup_info.data,popup_info.img);
+    if ( popup_info.img!=NULL ) {
+	if ( popup_info.free_image!=NULL )
+	    (popup_info.free_image)(popup_info.data,popup_info.img);
+	else
+	    GImageDestroy(popup_info.img);
+    }
+	    
     memset(&popup_info,0,sizeof(popup_info));
 }
 
