@@ -134,8 +134,8 @@ return( dlopen(filename,flags) );	/* This will almost certainly fail, but it wil
 #  include <string.h>
     /* The mac now has normal dlopen routines */
 
-const void *gwwv_dlopen(char *name,int flags) {
-    const void *lib = dlopen(name,flags);
+void *gwwv_dlopen(char *name,int flags) {
+    void *lib = dlopen(name,flags);
     char *temp;
 
     if (( lib!=NULL && lib!=(void *) -1) || name==NULL || *name=='/' )

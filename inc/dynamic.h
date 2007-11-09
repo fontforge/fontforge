@@ -12,7 +12,7 @@
 #   define SO_EXT	".dylib"
 #   define DL_CONST	
 #   define dlopen(name,foo) gwwv_dlopen(name,foo)
-extern const void *gwwv_dlopen(char *name,int flags);
+extern void *gwwv_dlopen(char *name,int flags);
 #   define dlsym(image,symname) dlsym(image,"_" symname)
 #   define dlsymmod(symname) ("_" symname)
 #   define dlsymbare(image,symname) dlsym(image,symname)
