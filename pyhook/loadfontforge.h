@@ -1,9 +1,5 @@
 #include "Python.h"
 #include "../inc/dynamic.h"
-#ifdef __Mac
-# undef dlopen
-# define dlopen(name,foo) NSAddImage(name,NSADDIMAGE_OPTION_WITH_SEARCHING|NSADDIMAGE_OPTION_RETURN_ON_ERROR)
-#endif
 
 PyMODINIT_FUNC ENTRY_POINT(void) {
     DL_CONST void *lib;
@@ -12,7 +8,6 @@ PyMODINIT_FUNC ENTRY_POINT(void) {
     if ( (lib = dlopen("libgunicode" SO_EXT,RTLD_LAZY))==NULL ) {
 #ifdef PREFIX
 	lib = dlopen( PREFIX "/lib/" "libgunicode" SO_EXT,RTLD_LAZY);
-printf( "This: %s\n", PREFIX "/lib/" "libgunicode" SO_EXT );
 #endif
     }
     if ( lib==NULL ) {

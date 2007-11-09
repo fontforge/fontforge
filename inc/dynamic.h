@@ -6,7 +6,17 @@
 #ifndef __DYNAMIC_H
 # define __DYNAMIC_H
 
-#  ifdef __Mac
+#  if defined(__Mac)
+/* In 10.3 the mac got normal dlopen routines */
+#   include <dlfcn.h>
+#   define SO_EXT	".dylib"
+#   define DL_CONST	
+#   define dlopen(name,foo) gwwv_dlopen(name,foo)
+extern const void *gwwv_dlopen(char *name,int flags);
+#   define dlsym(image,symname) dlsym(image,"_" symname)
+#   define dlsymmod(symname) ("_" symname)
+#   define dlsymbare(image,symname) dlsym(image,symname)
+#  elif define(__Mac)
 #   include <mach-o/dyld.h>
 extern const void *gwwv_NSAddImage(char *name,uint32_t options);
 #   define SO_EXT	".dylib"
@@ -20,6 +30,7 @@ extern const void *gwwv_NSAddImage(char *name,uint32_t options);
 #   define DL_CONST	const
 #   define dlclose(image_ptr)	/* Don't know how to do this on mac */
 #   define dlerror()		"Error when loading dynamic library"
+#  elif defined(__Mac)
 #  else
 #   include <dlfcn.h>
 #   ifdef __CygWin
