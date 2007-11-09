@@ -2130,6 +2130,7 @@ enum ae_type { ae_all, ae_between_selected, ae_only_good, ae_only_good_rm_later 
 extern Spline *SplineAddExtrema(Spline *s,int always,real lenbound,
 	real offsetbound,DBounds *b);
 extern void SplineSetAddExtrema(SplineChar *sc,SplineSet *ss,enum ae_type between_selected, int emsize);
+extern void SplineSetAddSpiroExtrema(SplineChar *sc,SplineSet *ss,enum ae_type between_selected, int emsize);
 extern void SplineCharAddExtrema(SplineChar *sc,SplineSet *head,enum ae_type between_selected,int emsize);
 extern SplineSet *SplineCharRemoveTiny(SplineChar *sc,SplineSet *head);
 extern SplineFont *SplineFontNew(void);
