@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 16-Sep-2001 -->
-  <!-- AP: Last modified: 8-Aug-2007 -->
+  <!-- AP: Last modified: 9-Nov-2007 -->
   <TITLE>Older changes to FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -13,6 +13,485 @@
   <A HREF="pfaeditchangelog.html">Changes to PfaEdit (predecessor to
   FontForge)</A>
   <UL>
+    <LI>
+      07-June-2007
+      <UL>
+	<LI>
+	  Add support for Adobe's feature file syntax.<BR>
+	  Use Merge Kern (now Merge Feature) to read one<BR>
+	  Use Element-&gt;Font Info-&gt;Lookups-&gt;popup menu-&gt;Save to generate
+	  one
+	  <P>
+	  Sigh. Adobe documents a feature file syntax they don't fully support, and
+	  even their documented syntax is inadequate to represent all the complexities
+	  of OpenType.
+	  <P>
+	  FontForge supports anchors and device tables and will parse lookups which
+	  contain these. This is a syntax which Adobe documents but does not implement.
+	  Adobe also warns that this syntax may change when they get around to implementing
+	  it.
+	  <P>
+	  FontForge makes one extension to the syntax which allows me to specify complex
+	  contextual features.
+	  <P>
+	  Neither I nor Adobe support reverse contextual substitutions, nor GDEF mark
+	  classes.
+	<LI>
+	  Add a popup menu to the lookups pane of font info.
+	<LI>
+	  Change the name of <CODE>File-&gt;Merge Kern Info </CODE>to
+	  <CODE>File-&gt;Merge Feature Info</CODE>
+	<LI>
+	  Remove the code to produce the old, broken, 'size' feature.
+	<LI>
+	  An earlier patch, designed to make the tabset work in the charview even if
+	  the user changed the name, didn't work.
+	<LI>
+	  Bug in the selection iterator.<BR>
+	  Also Max Rabkin points out the docs say the iterator returns selected glyphs
+	  rather than encoding slots. Fix the docs, then add a member (.byGlyphs) which
+	  will make the iterator return glyphs.
+	<LI>
+	  Accept contour += (1,2) rather than forcing people to say contour +=
+	  fontforge.point(1,2)
+	<LI>
+	  Was using an error return from two setter functions (contour.set_closed,
+	  set_is_quadratic) when I should have returned success.
+	<LI>
+	  Crash when mistyping a glyph name in Glyph Info possub panes. Probably in
+	  the equivalent lookup dlgs too.
+	<LI>
+	  If a glyph contained two copies of another glyph, and one of those copies
+	  was off by enough that ff didn't recognize it, the depending on how the contours
+	  were ordered, ff might fail to recognize the first glyph too, even though
+	  it did match.
+	<LI>
+	  Add iterators to contours and layers. Python users seem to expect them even
+	  when they aren't documented to exist.
+	<LI>
+	  layer += contour didn't work in python. I was examining a bit through the
+	  wrong data type.
+	<LI>
+	  Provide a mechanism for copying lookup information from one glyph to another.
+	  (<CODE>Edit-&gt;Copy Lookup Data</CODE>)
+	<LI>
+	  Loading kerning info from a mac 'FOND' resource was broken by the lookup
+	  change.
+	<LI>
+	  Python scripting command font.createChar didn't. Partial patch from Max Rabkin.
+	<LI>
+	  Adding a kerning pair from the metrics view would often add two or three
+	  pairs with the same character combination and different values.
+	<LI>
+	  Another remove overlap bug. Introduced recently.
+	<LI>
+	  Reinstate Apply Substitutions scripting command.
+	<LI>
+	  Add some dutch styles.
+	<LI>
+	  Make yet another attempt to correct for rounding errors when loading a postscript
+	  font.
+	<LI>
+	  Add a way to get a font's filename to python.
+	<LI>
+	  Werner points out that in scripting I use "break" in an example. It isn't
+	  documented to work and I don't implement it but I do show it. Oops. Ok, make
+	  it work.
+	<LI>
+	  Display substitutions was broken.
+	<LI>
+	  When generating default names for subtables, it is confusing to name them
+	  the same as the lookup.
+	<LI>
+	  Change to using USC4 from UCS2 internally.
+	<LI>
+	  Provide default names for lookups once the user sets the feature.
+	<LI>
+	  Disambiguate some strings for the polish translation
+	<LI>
+	  Revert glyph should not work for old sfd files.
+      </UL>
+    <LI>
+      11-May-2007
+      <UL>
+	<LI>
+	  Loading some afm files would go into an infinite loop. (Introduced 9-May)
+	<LI>
+	  [Import] button on Font Info-&gt;Lookups crashed.
+	<LI>
+	  Fix a number of problems related to anchor classes.
+	<LI>
+	  After the user does an [Add Lookup] we should select the new lookup, to make
+	  it easier for him/her to do an [Add Subtable].
+      </UL>
+    <LI>
+      9-May-2007
+      <UL>
+	<LI>
+	  When ff parsed an afm file it only read the first ligature on a line.
+	<LI>
+	  The [Call...] button in the scripting dialog is meaningless for python scripts
+	  (or I don't know how to give it meaning) so disable it.
+	<LI>
+	  Vertical scrolling in the metrics view tried to scroll the list of features
+	  too.
+	<LI>
+	  Tab, and arrow keys didn't work in the matrixedit widget after I added hidden
+	  columns. Make Return do the expected thing (move to start of next line and
+	  create it if possible).
+	<LI>
+	  Patch by Pierre to fix uninitialized value when compacting encodings.
+	<LI>
+	  Typo in realloc of lookups meant that nothing happened (when it should have
+	  increased array size by 1).
+	<LI>
+	  Add the OFL icon to the fontinfo dlg.
+	<LI>
+	  Plugins were broken with regular link configure option.
+	<LI>
+	  Inkscape can start X on the mac before it tries to connect. Hmm. I can do
+	  that too. Inkscape manages to start X without an xterm. I don't know how
+	  to do that.
+	<LI>
+	  When reading PS and CharStrings, the closepath operator didn't allow for
+	  rounding errors.
+	<LI>
+	  Metrics View would crash if more than 20 glyphs entered.
+	<LI>
+	  Alexej Kryukov points out that it would be nice if moving an anchor point
+	  did not set "changed since last hinted.
+	<LI>
+	  Alexej Kryukov points out that the "changed since last hinted" flag gets
+	  set inappropriately.
+	<LI>
+	  Alexej Kryukov points out that the Anchor control menu item looked as though
+	  it had changed, but actually had not.
+      </UL>
+    <LI>
+      1-May-2007
+      <UL>
+	<LI>
+	  I've redone the way FontForge handles lookups so that it is more in keeping
+	  with OpenType.
+	  <BLOCKQUOTE>
+	    The major change is that fontforge now presents lookups to the user rather
+	    than features. I think this makes simple things more difficult (which is
+	    why I avoided this when I started), but it makes complex things possible.
+	    <P>
+	    Sadly the world is not simple.
+	    <P>
+	    So when a piece of typographic information is created (a ligature, a kern
+	    pair, a glyph substitution, etc.) it must be tagged with a lookup (actually
+	    a lookup sub-table) rather than a feature tag.
+	    <P>
+	    The lookup itself will be tagged with a feature tag (possibly several tags)
+	    and with scripts and languages in which that lookup should be active.<BR>
+	    <STRONG>NOTE:</STRONG> This reverses the way GPOS/GSUB think about things,
+	    but it contains the same information.
+	    <P>
+	    The <A href="fontinfo.html#Lookups">Font Info</A> dialog now contains a Lookup
+	    pane which allows you to create and edit lookups and their subtables. You
+	    can also reorder them. The order shown in the dialog is the order in which
+	    they will be applied.
+	    <P>
+	    A mac feature/setting subtable also gets converted into this format.
+	    <P>
+	    The Font Info dialog no longer has Anchor Classes, Contextual, or State Machine
+	    panes.
+	    <P>
+	    Instead you can edit a lookup subtable's data (for any subtable type). There
+	    are new dialogs which list all the information for each lookup type (ie.
+	    a dialog which lists all kern pairs in a subtable), and these provide access
+	    to the old anchor class, contextual or state machine dialogs.
+	    <P>
+	    The Glyph Info command has also changed. It looks simpler and more comprehensible
+	    (I think), but the act of creating a new substitution has become more complex
+	    because (potentially) one must create a new lookup and lookup subtable before
+	    doing the simple task of adding a new replacement glyph.
+	    <P>
+	    The kerning class, contextual and state machine dialogs have all changed
+	    in that they no longer request a feature tag, they now need a lookup subtable.
+	    <P>
+	    The metrics view also needs a subtable.<BR>
+	    The metrics view has changed considerably.<BR>
+	    It displays all the features in the font, and allows you to select which
+	    ones you want active in the view. It lets you set the script &amp; language.
+	    It will apply lookups that it couldn't handle previously like ligatures and
+	    contextuals.
+	    <P>
+	    It does not do Indic glyph reordering. I'm not sure how to and last I checked
+	    MS had not updated their docs to reflect their new procedures.
+	    <P>
+	    Many other dialogs now take a lookup subtable where appropriate.
+	    <P>
+	    Show ATT has changed, but it is still not editable. I hope that the Lookups
+	    pane will do that instead.
+	    <P>
+	    There used to be a scripting command which indicated what ligature features
+	    got stored in afm files. Now each ligature lookup has a flag set on it which
+	    conveys this information.
+	    <P>
+	    The Element-&gt;Typographic Features menu has been removed. It's functionality
+	    has moved into Font Info-&gt;Lookups (I hope I've got everything).
+	    <P>
+	    Some scripting commands have been removed, others have been changed and others
+	    have been added. I apologize for this, as it will break existing scripts,
+	    but some basic concepts no longer exist and others, very different, have
+	    replaced them. (and anyway people may switch to <A href="python.html">python
+	    scripting</A> now).
+	    <DL>
+	      <DT>
+		Removed:
+	      <DD>
+		<PRE>         DefaultATT
+         ControlAfmLigatureOutput
+         ApplySubstitutions
+         CopyGlyphFeatures
+         AddATT         Replaced with AddPosSub
+         RemoveATT
+         GlyphInfo(Position/Pair/Substitution/AltSubs/MultSubs/Ligature)
+         SelectByATT    Replaced with SelectByPosSub
+	 
+</PRE>
+	      <DT>
+		Changed
+	      <DD>
+		<PRE>         Set(V)Kern takes an optional third argument, a lookup subtable
+              name (if not specified it choses one)
+         AddAnchorClass(name,type,lookup-subtable-name)
+         GetPosSub(subtable-name)
+         AutoKern(spacing,threshold,subtable-name[,kernfile])
+	 
+</PRE>
+	      <DT>
+		Added
+		<PRE>        AddLookup(name,type,flags,feature-script-lang-array[,after-lookup-name])
+             n*[feature-tag,script-lang-array]
+             n*[script-tag,lang-array]
+             n*[lang]
+         GetLookupInfo(lookup-name) =&gt;
+        [type,flags,feature-script-lang-array]
+         AddLookupSubtable(lookup-name,subtable-name[,after-subtable-name])
+         GetLookupOfSubtable(subtable-name)
+         GetSubtableOfAnchorClass(anchor-class-name)
+         AddPosSub(subtable-name,variant(s))
+                  (subtable-name,dx,dy,dadv_x,dadv_y)
+                  (subtable-name,other-glyph-name,dx,dy...)
+         RemoveLookupSubtable(subtable-name)
+         RemoveLookup(lookup-name)
+         MergeLookupSubtables(subtable-name1,subtable-name2)
+         MergeLookups(lookup-name1,lookup-name2)
+         SelectByPosSub(subtable-name,search_type)
+         GetLookups("GPOS"/"GSUB")
+         GetLookupSubtables(lookup-name)
+         LookupStoreLigatureInAfm(lookup-name,store-it)
+         LookupSetFeatureList(lookup-name,feature-script-lang-array)
+</PRE>
+	    </DL>
+	    <P>
+	    The <A href="sfdformat.html">sfd format</A> has changed. New files are tagged
+	    as version 2. Old files will still work, but ff will no longer produce file
+	    in the old format.
+	  </BLOCKQUOTE>
+	<LI>
+	  New translations to match the new UI: Polish, Greek, German, French, simplified
+	  Chinese.
+	<LI>
+	  FontForge now supports <A href="python.html">python scripting</A> if it has
+	  been configured to do so.
+	<LI>
+	  Tell users they should add their email address to the License after pressing
+	  the [Add SIL Open Font License] button.
+	<LI>
+	  The metrics view had numerous problems. Most significant if a glyph changed
+	  elsewhere the metrics view would not be updated.
+	<LI>
+	  If the width of a glyph changed in the metrics view then that was not
+	  synchronized to dependent glyphs.
+	<LI>
+	  Enforce the "Use My Metrics" bit of a reference.<BR>
+	  In TrueType, if this bit is set on a reference then then width of the containing
+	  glyph will be the same as that of the reference.<BR>
+	  So don't let the user change the width of such glyphs. (and add a lock icon
+	  to the width line in the character view to show that it is fixed).
+	<LI>
+	  Fix a number of Remove Overlap bugs.
+	<LI>
+	  FF would destroy memory in the metrics view if the user attempted to display
+	  a character which was not in the font.
+	<LI>
+	  Was setting the last char index (of OS/2) incorrectly if the font contained
+	  non-BMP characters. Might also have set the first char index wrong two.
+	<LI>
+	  Bugs in 'PfEd' table, glyph comment subtable.
+	<LI>
+	  Couple of places where I actually say "FontForge 1.0". Let's bump that to
+	  2.0 now that I've done that for the sfd format.
+	<LI>
+	  Overlap problems with incorrect path orientations.
+	<LI>
+	  Arrow keys didn't work in the charview if the tabset were active.
+	<LI>
+	  I used to use "&gt;&lt;" on the font's window title to represent a compacted
+	  font. No one understood it. Use "Compacted" instead.
+	<LI>
+	  Philipp Poll wants to see the side bearings (I think) in the charview.
+	<LI>
+	  Nicolas Spalinger of SIL suggests a help button next to [Add OFL] to open
+	  a brow ser on the official OFL site.
+	<LI>
+	  Patch from Nicolas Spalinger of SIL regarding the verbiage surrounding the
+	  OFL i n the fontinfo. Also his suggestion to make the tooltip live longer.
+	<LI>
+	  Replace with Reference didn't check reference offsets correctly.
+	<LI>
+	  Find problems didn't find references which intersected.
+	<LI>
+	  Add some standard classes to the context chaining dlg.
+	<LI>
+	  Make sure we only generate a postscript name in the name table once.
+	<LI>
+	  The change length button of the cvt dlg didn't work.
+	<LI>
+	  Input/Output of Apple's 'lcar' table was inconsistent. I don't know if it
+	  is "right" now, but at least ff can read back what it wrote.
+	<LI>
+	  Werner points out that the debug windows show up at odd places if the window
+	  gets resized.
+      </UL>
+    <LI>
+      12-Mar-2007
+      <UL>
+	<LI>
+	  Add a button to insert the <A HREF="http://scripts.sil.org/ofl/">SIL Open
+	  Font License</A> into the 'name' table.
+	<LI>
+	  FF failed to store TeX heights and depths properly in a tfm file. FF failed
+	  to read or write TeX extension lists properly.
+	<LI>
+	  Patch from Reuben Thomas to turn off the splash screen from the preference
+	  dlg.
+	<LI>
+	  I had the dotlessj code point wrong. Again.
+	<LI>
+	  FF did not center the charview window well on an empty glyph.
+	<LI>
+	  The scripting command to add instructions to a glyph could immediately lose
+	  them if the glyph's points weren't numbered properly
+	<LI>
+	  We used to allow the syntax "&lt;number&gt;&lt;numbers&gt;* command" in ttf
+	  instructions (which automagically inserted an implied push). Someone noticed
+	  that
+	  <BLOCKQUOTE>
+	    <PRE>PUSHB_1
+1
+2
+</PRE>
+	  </BLOCKQUOTE>
+	  <P>
+	  would lose the second number and not complain. In fixing that, I broke the
+	  first. Now both should work (I hope).
+	<LI>
+	  Code which I hope will handle German keyboards and make them do what the
+	  menu says they (ignoring the shift key) should for certain hot keys (brackets,
+	  curly brackets, brokets all get different modifier sequences on a german
+	  keyboard than an english).
+	<LI>
+	  If a glyph had no hints then ff could add a hintmask operator (which didn't
+	  try to control any hints). Now I can't find anything in the docs which SAYS
+	  it's illegal to have a hintmask in a glyph with no fonts, it does seem bad
+	  practice, and a program called tx.exe complained about it.
+	<LI>
+	  Patch by Michal Nowakowski to allow a nicer notation for delta instructions
+	  in the instruction editing window: Example:<BR>
+	  <TT>PUSHB_3 6@12 8 1 DELTAP2 </TT><BR>
+	  This moves point 8 by six delta-steps (that's clear) at 37 ppem (that's not
+	  clear at first glance - assuming delta_base is 9, DELTAP2 works from 25 ppem
+	  to 25+15 ppem, in this example it's 25+12 ppem). So it's just a way of
+	  constructing an argument byte for DELTAP/C.
+	<LI>
+	  Allow FontForge's menu shortcuts (hot keys, whatever) to be user definable.
+	  We use a gettext based mechanism, type $ make FontForge-MenuShortCuts.pot
+	  to get a pot file for the process. It needs to be converted to an mo file
+	  and installed in $(prefix)/share/locale/$(LANG)/LC_MESSAGES, just like any
+	  other getext file.
+	<LI>
+	  The Export scripting command did not work as documented. It is documented
+	  to export all <EM>selected</EM> glyphs. Instead it exported <EM>all</EM>
+	  glyphs.
+	<LI>
+	  Redo the anchor control dlg.
+	<LI>
+	  Be a little more lenient about bitmap bounding boxes for empty glyphs when
+	  loading bdf fonts
+	<LI>
+	  Make the ClearHints scripting command take arguments: "Horizontal" or "Vertical"
+	  to allow users to choose to clear either horizontal or vertical hints (the
+	  old form with no args still works and clears both, of course).
+	<LI>
+	  Typo gives us an unititialized variable when saving ufo.
+	<LI>
+	  Various problems to various anchor dialogs.
+	<LI>
+	  If an anchor point contained an x devtab but not a y devtab then it produced
+	  a pointer to garbage for the y devtab instead of NUL.
+	  <P>
+	  Pairwise positioning lookups could also get their device table offsets screwed
+	  up.
+	<LI>
+	  Werner points out that if you have a series of the same glyph in a row in
+	  the encoding (generally .notdef) and you are in a char view, then pressing
+	  Next Glyph does nothing. You are stuck at the same code point. (same thing
+	  happens for Prev Glyph).
+	<LI>
+	  a chinese input method steals keystrokes I use for hot keys (I think). So
+	  if users don't want glyph navigation by typing characters in the charview
+	  (controled by a preference item) then don't turn on the input method when
+	  the window is created.
+	<LI>
+	  Add hot key for Select-&gt;Points on selected contours.
+	<LI>
+	  Assign "dotlessj" to map to 0x237, the unicode code point, rather than to
+	  0xf6be, the old Adobe private use area. !!!! THIS DOES NOT CONFORM TO THE
+	  AGL !!!!!
+	<LI>
+	  Oops. The gloss for the shift point/contour/zone was slightly off and gave
+	  the wrong information.
+	<LI>
+	  Add vietnamese font styles (bold, italic, regular, etc.)<BR>
+	  From Clytie Siddall.
+	<LI>
+	  Fixes for rounding errors in finding spline intersections.
+	<LI>
+	  Werner points out that removing a bitmap glyph from the bitmapview does not
+	  force a redisplay in the fontview.
+	<LI>
+	  Gleep. Werner points out that when generating bitmap strikes, ff would always
+	  generate a temporary postscript font to rasterize, so any truetype instructions
+	  would be ignored. And the generated strikes would be ugly.
+	<LI>
+	  Add a command to show anchor point attachments within the outline character
+	  view<BR>
+	  (View-&gt;Combinations-&gt;Anchor Glyph at Point)
+	<LI>
+	  Force point numbers to be correct when changing glyphs in the charview.
+	<LI>
+	  Add support for Apple/Adobe's obsolete 'typ1' sfnt. A way of stuffing a type1
+	  font into an sfnt wrapper.
+	<LI>
+	  Even though the viewbox/output width hieght ratios are different, people
+	  want the image scaled the same in svg input.
+	<LI>
+	  People would like to have only one charview and double clicking in the fontview
+	  just changes the contents of an existing window.<BR>
+	  Preference Item: OpenCharsInNewWindow
+	<LI>
+	  Add a tabs line to the outline char window. If users are going to have only
+	  one charview open then they probably want some history too.
+	<LI>
+	  Werner points out that what I call "Type42 CID" should actually be called
+	  either "Type11" or "CID Type 2".
+      </UL>
     <LI>
       20-Dec-2006
       <UL>
