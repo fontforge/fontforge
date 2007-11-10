@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 28-Jun-2001 -->
-  <!-- AP: Last modified: 15-Aug-2007 -->
+  <!-- AP: Last modified: 9-Nov-2007 -->
   <TITLE>Finding common font problems automagically</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -305,7 +305,7 @@
   spec says that an interpreter is only required to support a total of 96
   horizontal and vertical hints.
   <H3>
-    <IMG SRC="findprobs-random.png" WIDTH="307" HEIGHT="431" ALIGN="Right"><STRONG>Missing
+    <IMG SRC="findprobs-random.png" WIDTH="307" HEIGHT="338" ALIGN="Right"><STRONG>Missing
     Bitmaps</STRONG>
   </H3>
   <P>
@@ -313,16 +313,48 @@
   which is missing versions of glyphs present in the outline font. Conversely
   look for bitmap fonts with glyphs which are not present in the outline font.
   <P>
-  <STRONG><BIG>Multiple Unicode</BIG></STRONG>
+  <STRONG><BIG>Check substitutions for empty chars</BIG></STRONG>
+  <P>
+  Looks through all the 'GSUB' substitution, alternate substitution, multiple
+  substitution and ligature entries that are attached to the current glyph
+  and checks to make sure that all the named components are present in the
+  font (and contain something).
+  <P>
+  <STRONG><BIG>Check Multiple Unicode</BIG></STRONG>
   <P>
   Check that you do not have two glyphs assigned to the same unicode code point.
   (The unicode encoding is used to determine which glyph will appear in the
   truetype/opentype 'cmap' table. If you have two glyphs with the same code
   point, there is no guarantee which will be used.)
   <P>
-  <STRONG><BIG>Multiple Name</BIG></STRONG>
+  <STRONG><BIG>Check Multiple Name</BIG></STRONG>
   <P>
-  Check that you do not have two glyphs with the same name.
+  Check that you do not have two glyphs with the same name. 
+  <P>
+  <STRONG><BIG>Check Unicode/Name mismatch</BIG></STRONG>
+  <P>
+  Look for glyphs whose name indicates a unicode value different from the one
+  attached to a glyph. So if a glyph were named "A" but had Unicode code point
+  U+0020 (space) FontForge would complain about it.<BR Clear=ALL>
+  <P>
+  <IMG SRC="findprobs-bb.png" ALIGN="Right" WIDTH="307" HEIGHT="413"><BIG><STRONG>Glyph
+  BB Above</STRONG></BIG>
+  <P>
+  Find all glyphs whose bounding box extends above the indicated value
+  <P>
+  <BIG><STRONG>Glyph BB Below</STRONG></BIG>
+  <P>
+  Find all glyphs whose bounding box extends below the indicated value
+  <P>
+  <BIG><STRONG>Glyph BB Right Of</STRONG></BIG>
+  <P>
+  Find all glyphs whose bounding box extends to the right of the indicated
+  value
+  <P>
+  <BIG><STRONG>Glyph BB Left Of</STRONG></BIG>
+  <P>
+  Find all glyphs whose bounding box extends to the left of the indicated value
+  .
   <P>
   <STRONG><BIG><A NAME="Advance">Check Advance</A></BIG></STRONG>
   <P>
@@ -333,14 +365,7 @@
   <STRONG><BIG>Check Vertical Advance</BIG></STRONG>
   <P>
   Check for any glyphs whose vertical advance (for fonts with vertical metrics)
-  differs from the specified value.
-  <P>
-  <STRONG><BIG>Check substitutions for empty chars</BIG></STRONG>
-  <P>
-  Looks through all the 'GSUB' substitution, alternate substitution, multiple
-  substitution and ligature entries that are attached to the current glyph
-  and checks to make sure that all the named components are present in the
-  font (and contain something). <BR Clear=ALL>
+  differs from the specified value. <BR Clear=ALL>
   <P>
   <IMG SRC="findprobs-att.png" WIDTH="307" HEIGHT="431" ALIGN="Right"><BIG><STRONG>Missing
   Glyph Names</STRONG></BIG>
