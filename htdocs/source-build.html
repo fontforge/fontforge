@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 26-Oct-2005 -->
-  <!-- AP: Last modified: 7-Nov-2007 -->
+  <!-- AP: Last modified: 9-Nov-2007 -->
   <TITLE>Building FontForge from source</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -110,6 +110,20 @@
   You must then start up a Terminal window (the Terminal Application also lives
   in the Utilities sub-folder of the Applications folder) and be prepared to
   type commands in that window (I know, it's very un-mac-like).
+  <H3>
+    Special note for building prior to 10.3
+  </H3>
+  <P>
+  OS/X has evolved over time. Certain system calls have changed. The current
+  source distribution should work on any 10.3+ system.
+  <P>
+  If you wish to build on a 10.2 system you must say
+  <BLOCKQUOTE id="shell">
+    <PRE><FONT COLOR="Gray">$ </FONT>./configure --with-regular-link
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  (Rather than just saying <CODE>./configure</CODE>)
   <H2>
     Before you build (on <A NAME="src-MS">MS/Windows)</A>
   </H2>
@@ -234,6 +248,12 @@ CVS password:
 <FONT COLOR="Gray">password:</FONT> ******
 </PRE>
   </BLOCKQUOTE>
+  <P>
+  While on cygwin, where there is no root, you just say:
+  <BLOCKQUOTE id="shell">
+    <PRE><FONT COLOR="Gray">$ </FONT>make install
+</PRE>
+  </BLOCKQUOTE>
   <H3>
     More complicated <A NAME="src-installs">installs</A>
   </H3>
@@ -241,7 +261,7 @@ CVS password:
   The configure script allows you to turn off and on various features of fontforge
   that might not be appropriate for your system. Type
   <BLOCKQUOTE id="shell">
-    <PRE><FONT COLOR="Gray">$ </FONT>configure --help
+    <PRE><FONT COLOR="Gray">$ </FONT>./configure --help
 </PRE>
   </BLOCKQUOTE>
   <P>
@@ -255,7 +275,7 @@ CVS password:
   scripting language is described in detail <A HREF="scripting.html">in the
   section on scripting.</A>
   <BLOCKQUOTE id="shell">
-    <PRE><FONT COLOR="Gray">$ </FONT>configure --without-x
+    <PRE><FONT COLOR="Gray">$ </FONT>./configure --without-x
 </PRE>
   </BLOCKQUOTE>
   <H4>
@@ -266,7 +286,7 @@ CVS password:
   to give you access to more drawing modes than are generally available in
   fonts.
   <BLOCKQUOTE id="shell">
-    <PRE><FONT COLOR="Gray">$ </FONT>configure --with-multilayer
+    <PRE><FONT COLOR="Gray">$ </FONT>./configure --with-multilayer
 </PRE>
   </BLOCKQUOTE>
   <H4>
@@ -276,7 +296,7 @@ CVS password:
   If you do want to create device tables (which allow you to fix up kerning
   data at a specific pixel size) in OpenType fonts
   <BLOCKQUOTE id="shell">
-    <PRE><FONT COLOR="Gray">$ </FONT>configure --with-devicetables
+    <PRE><FONT COLOR="Gray">$ </FONT>./configure --with-devicetables
 </PRE>
   </BLOCKQUOTE>
   <H4>
@@ -286,7 +306,7 @@ CVS password:
   If you want to write python scripts in normal python (as opposed to within
   the python embedded in fontforge)
   <BLOCKQUOTE id="shell">
-    <PRE><FONT COLOR="Gray">$ </FONT>configure --enable-pyextension
+    <PRE><FONT COLOR="Gray">$ </FONT>./configure --enable-pyextension
 </PRE>
   </BLOCKQUOTE>
   <H4>
@@ -295,7 +315,7 @@ CVS password:
   <P>
   If you want to install fontforge in a different directory (say in /usr/bin)
   <BLOCKQUOTE id="shell">
-    <PRE><FONT COLOR="Gray">$ </FONT>configure --prefix=/usr
+    <PRE><FONT COLOR="Gray">$ </FONT>./configure --prefix=/usr
 </PRE>
   </BLOCKQUOTE>
   <H4>
