@@ -5433,7 +5433,7 @@ return( p );
 
 static void fea_NameLookups(struct parseState *tok) {
     SplineFont *sf = tok->sf;
-    OTLookup *gpos_last, *gsub_last, *otl, *otlnext;
+    OTLookup *gpos_last=NULL, *gsub_last=NULL, *otl, *otlnext;
     int gp_cnt=0, gs_cnt=0, acnt;
     AnchorClass *ac, *acnext, *an;
 
