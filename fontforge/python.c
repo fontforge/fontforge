@@ -10401,6 +10401,17 @@ static PyObject *PyFFFont_autoInstr(PyObject *self, PyObject *args) {
 Py_RETURN( self );
 }
 
+static PyObject *PyFFFont_autoWidth(PyObject *self, PyObject *args) {
+    FontView *fv = ((PyFF_Font *) self)->fv;
+    int space;
+
+    if ( !PyArg_ParseTuple(args,"i", &space ))
+return( NULL );
+    if ( !AutoWidthScript(fv,space))
+	;
+Py_RETURN( self );
+}
+
 static PyObject *PyFFFont_autoTrace(PyObject *self, PyObject *args) {
     FontView *fv = ((PyFF_Font *) self)->fv;
 
@@ -10642,7 +10653,8 @@ static PyMethodDef PyFF_Font_methods[] = {
 
     { "addExtrema", (PyCFunction) PyFFFont_AddExtrema, METH_NOARGS, "Add extrema to the contours of the glyph"},
     { "autoHint", PyFFFont_autoHint, METH_NOARGS, "Guess at postscript hints"},
-    { "autoInstr", PyFFFont_autoInstr, METH_NOARGS, "Guess (badly) at truetype instructions"},
+    { "autoInstr", PyFFFont_autoInstr, METH_NOARGS, "Guess at truetype instructions"},
+    { "autoWidth", PyFFFont_autoWidth, METH_VARARGS, "Guess horizontal advance widths for selected glyphs" },
     { "autoTrace", PyFFFont_autoTrace, METH_NOARGS, "Autotrace any background images"},
     { "build", PyFFFont_Build, METH_NOARGS, "If the current glyph is an accented character\nand all components are in the font\nthen build it out of references" },
     { "canonicalContours", (PyCFunction) PyFFFont_canonicalContours, METH_NOARGS, "Orders the contours in the current glyph by the x coordinate of their leftmost point. (This can reduce the size of the postscript charstring needed to describe the glyph(s)."},
