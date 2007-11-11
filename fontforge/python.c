@@ -2026,6 +2026,7 @@ return( NULL );
 	self->points[i+1] = self->points[i];
     self->points[pos+1] = PyFFPoint_CNew(x,y,true,false);
     PyFFContour_ClearSpiros((PyFF_Contour *) self);
+    ++self->pt_cnt;
 
 Py_RETURN( self );
 }
@@ -2069,6 +2070,7 @@ return( NULL );
     self->points[pos+2] = pp;
     self->points[pos+3] = p;
     PyFFContour_ClearSpiros((PyFF_Contour *) self);
+    self->pt_cnt += 3;
 Py_RETURN( self );
 }
 
@@ -2108,6 +2110,7 @@ return( NULL );
 	self->points[i+2] = self->points[i];
     self->points[pos+1] = cp;
     self->points[pos+2] = p;
+    self->pt_cnt += 2;
     PyFFContour_ClearSpiros((PyFF_Contour *) self);
 Py_RETURN( self );
 }
@@ -2144,6 +2147,7 @@ return( NULL );
 	Py_INCREF( (PyObject *) p);
     }
     PyFFContour_ClearSpiros((PyFF_Contour *) self);
+    ++self->pt_cnt;
 
 Py_RETURN( self );
 }
