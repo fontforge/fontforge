@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 28-Oct-2007 -->
+  <!-- AP: Last modified: 11-Nov-2007 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -3357,7 +3357,12 @@ pen = None;				# Finalize the pen. This tells FontForge
     <TR>
       <TD><CODE>autoInstr</CODE></TD>
       <TD><CODE>()</CODE></TD>
-      <TD>Generates (bad) TrueType instructions for all selected glyphs.</TD>
+      <TD>Generates TrueType instructions for all selected glyphs.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>autoWidth</CODE></TD>
+      <TD><CODE>(space)</CODE></TD>
+      <TD>Guesses at reasonable horizontal advance widths for the selected glyphs</TD>
     </TR>
     <TR>
       <TD><CODE>autoTrace</CODE></TD>
