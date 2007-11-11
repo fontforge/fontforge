@@ -2882,16 +2882,24 @@ static void SetFS( FindSel *fs, PressedOn *p, CharView *cv, GEvent *event) {
     p->y = event->u.mouse.y;
     p->cx = (event->u.mouse.x-cv->xoff)/cv->scale;
     p->cy = (cv->height-event->u.mouse.y-cv->yoff)/cv->scale;
-    if ( snaptoint ) {
-	p->cx = rint(p->cx);
-	p->cy = rint(p->cy);
-    }
 
     fs->fudge = snapdistance/cv->scale;		/* 3.5 pixel fudge */
     fs->xl = p->cx - fs->fudge;
     fs->xh = p->cx + fs->fudge;
     fs->yl = p->cy - fs->fudge;
     fs->yh = p->cy + fs->fudge;
+    if ( snaptoint ) {
+	p->cx = rint(p->cx);
+	p->cy = rint(p->cy);
+	if ( fs->xl>p->cx - fs->fudge )
+	    fs->xl = p->cx - fs->fudge;
+	if ( fs->xh < p->cx + fs->fudge )
+	    fs->xh = p->cx + fs->fudge;
+	if ( fs->yl>p->cy - fs->fudge )
+	    fs->yl = p->cy - fs->fudge;
+	if ( fs->yh < p->cy + fs->fudge )
+	    fs->yh = p->cy + fs->fudge;
+    }
 }
 
 int CVMouseAtSpline(CharView *cv,GEvent *event) {
