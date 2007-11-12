@@ -1353,7 +1353,7 @@ void FVMergeFonts(FontView *fv) {
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-	wattrs.utf8_window_title = _("Merge Fonts...");
+	wattrs.utf8_window_title = _("Merge Fonts");
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,150));
 	pos.height = GDrawPointsToPixels(NULL,88);
@@ -1887,7 +1887,7 @@ void FVInterpolateFonts(FontView *fv) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = _("Interpolate Fonts...");
+    wattrs.utf8_window_title = _("Interpolate Fonts");
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,200));
     pos.height = GDrawPointsToPixels(NULL,118);

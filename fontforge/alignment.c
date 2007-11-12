@@ -341,7 +341,7 @@ static void RegionControl(CharView *cv,DBounds *b,int cnt) {
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-	wattrs.utf8_window_title = _("Space Regions...");
+	wattrs.utf8_window_title = _("Space Regions");
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,225));

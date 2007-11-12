@@ -779,7 +779,7 @@ void NonLinearDlg(FontView *fv,CharView *cv) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = _("Non Linear Transform...");
+    wattrs.utf8_window_title = _("Non Linear Transform");
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,200));
     pos.height = GDrawPointsToPixels(NULL,97);
@@ -1007,7 +1007,7 @@ int PointOfViewDlg(struct pov_data *pov, SplineFont *sf, int flags) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = _("Point of View Projection...");
+    wattrs.utf8_window_title = _("Point of View Projection");
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,240));
     pos.height = GDrawPointsToPixels(NULL,216);

@@ -1631,7 +1631,7 @@ void DisplayGroups(FontView *fv) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = _("Display By Groups...");
+    wattrs.utf8_window_title = _("Display By Groups");
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,GGadgetScale(200));
     pos.height = h = GDrawPointsToPixels(NULL,317);

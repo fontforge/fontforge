@@ -1675,7 +1675,7 @@ static void AutoWKDlg(FontView *fv,int autokern) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = autokern?_("Auto Kern..."):_("Auto Width...");
+    wattrs.utf8_window_title = autokern?_("Auto Kern"):_("Auto Width");
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,200));
     pos.height = GDrawPointsToPixels(NULL,autokern?270:180);

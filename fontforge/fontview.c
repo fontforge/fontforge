@@ -4982,7 +4982,7 @@ static void FVMenuShowMetrics(GWindow fvgw,struct gmenuitem *mi,GEvent *e) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = d.ish?_("Show H. Metrics..."):_("Show V. Metrics...");
+    wattrs.utf8_window_title = d.ish?_("Show H. Metrics"):_("Show V. Metrics");
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,GGadgetScale(170));
     pos.height = GDrawPointsToPixels(NULL,130);

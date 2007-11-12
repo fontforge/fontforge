@@ -2812,7 +2812,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = _("Find Problems...");
+    wattrs.utf8_window_title = _("Find Problems");
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,218));
     pos.height = GDrawPointsToPixels(NULL,294);

@@ -1846,7 +1846,7 @@ return;
     wattrs.restrict_input_to_me = true;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = tonew ? _("Blend to New Font..."):_("MM Change Def Weights...");
+    wattrs.utf8_window_title = tonew ? _("Blend to New Font"):_("MM Change Def Weights");
     pos.x = pos.y = 0;
 
     if ( !mm->apple ) {
@@ -3764,7 +3764,7 @@ void MMWizard(MMSet *mm) {
     wattrs.restrict_input_to_me = true;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = mmw.isnew?_("Create MM..."):_("MM _Info...") ;
+    wattrs.utf8_window_title = mmw.isnew?_("Create MM"):_("MM _Info") ;
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,GGadgetScale(MMW_Width));
     pos.height = GDrawPointsToPixels(NULL,MMW_Height);

@@ -700,9 +700,9 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = isavail==1 ? _("Bitmap Strikes Available...") :
-				isavail==0 ? _("Regenerate Bitmap Glyphs...") :
-					    _("Remove Bitmap Glyphs...");
+    wattrs.utf8_window_title = isavail==1 ? _("Bitmap Strikes Available") :
+				isavail==0 ? _("Regenerate Bitmap Glyphs") :
+					    _("Remove Bitmap Glyphs");
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,190));

@@ -1679,7 +1679,7 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = _("Import...");
+    wattrs.utf8_window_title = _("Import");
     pos.x = pos.y = 0;
     totwid = 223;
     if ( fv!=NULL ) totwid += 60;

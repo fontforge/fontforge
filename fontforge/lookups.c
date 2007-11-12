@@ -4338,7 +4338,7 @@ static char *LK_ScriptsDlg(GGadget *g, int r, int c) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = _("Script(s)...");
+    wattrs.utf8_window_title = _("Script(s)");
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,GGadgetScale(268));
     pos.height = GDrawPointsToPixels(NULL,375);
@@ -4905,7 +4905,7 @@ int EditLookup(OTLookup *otl,int isgpos,SplineFont *sf) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = _("Lookup...");
+    wattrs.utf8_window_title = _("Lookup");
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,GGadgetScale(268));
     pos.height = GDrawPointsToPixels(NULL,375);

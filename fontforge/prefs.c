@@ -1699,7 +1699,7 @@ void DoPrefs(void) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = _("Preferences...");
+    wattrs.utf8_window_title = _("Preferences");
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,290));
     pos.height = GDrawPointsToPixels(NULL,line_max*26+69);

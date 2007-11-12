@@ -2778,7 +2778,7 @@ void FontCompareDlg(FontView *fv) {
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-	wattrs.utf8_window_title = _("Font Compare...");
+	wattrs.utf8_window_title = _("Font Compare");
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,180));
 	pos.height = GDrawPointsToPixels(NULL,88+15*14+2);
