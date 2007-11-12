@@ -2970,6 +2970,7 @@ void SplineSetAddExtrema(SplineChar *sc, SplineSet *ss,enum ae_type between_sele
     }
 }
 
+#if 0
 void SplineSetAddSpiroExtrema(SplineChar *sc, SplineSet *ss,
 	enum ae_type between_selected, int emsize) {
     int i, j, cnt, found, k;
@@ -3038,14 +3039,17 @@ return;
 	}
     }
 }
+#endif
 
 void SplineCharAddExtrema(SplineChar *sc, SplineSet *head,enum ae_type between_selected,int emsize) {
     SplineSet *ss;
 
     for ( ss=head; ss!=NULL; ss=ss->next ) {
+#if 0
 	if ( sc->inspiro )
 	    SplineSetAddSpiroExtrema(sc,ss,between_selected,emsize);
 	else
+#endif
 	    SplineSetAddExtrema(sc,ss,between_selected,emsize);
     }
 }
