@@ -509,7 +509,7 @@ static void DrawPoint(CharView *cv, GWindow pixmap, SplinePoint *sp,
     char buf[12]; unichar_t ubuf[12];
     int isfake;
 
-    if ( cv->markextrema && !sp->nonextcp && !sp->noprevcp &&
+    if ( cv->markextrema && !cv->sc->inspiro && !sp->nonextcp && !sp->noprevcp &&
 	    ((sp->nextcp.x==sp->me.x && sp->prevcp.x==sp->me.x) ||
 	     (sp->nextcp.y==sp->me.y && sp->prevcp.y==sp->me.y)) )
 	 col = extremepointcol;
@@ -873,7 +873,7 @@ void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 	for ( cur=gpl; cur!=NULL; cur=cur->next )
 	    GDrawDrawPoly(pixmap,cur->gp,cur->cnt,fg);
 	GPLFree(gpl);
-	if (( cv->markextrema || cv->markpoi ) && dopoints )
+	if (( cv->markextrema || cv->markpoi ) && dopoints && !cv->sc->inspiro )
 	    CVMarkInterestingLocations(cv,pixmap,spl);
     }
 }
@@ -8165,7 +8165,7 @@ static void cv_ellistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	    mi->ti.disabled = cv->fv->sf->bitmaps==NULL;
 	  break;
 	  case MID_AddExtrema:
-	    mi->ti.disabled = cv->layerheads[cv->drawmode]->splines==NULL;
+	    mi->ti.disabled = cv->layerheads[cv->drawmode]->splines==NULL || cv->sc->inspiro;
 	  /* Like Simplify, always available, but may not do anything if */
 	  /*  all extrema have points. I'm not going to check for that, too hard */
 	  break;
@@ -8608,9 +8608,11 @@ static void cv_vwlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_MarkExtrema:
 	    mi->ti.checked = cv->markextrema;
+	    mi->ti.disabled = cv->sc->inspiro;
 	  break;
 	  case MID_MarkPointsOfInflection:
 	    mi->ti.checked = cv->markpoi;
+	    mi->ti.disabled = cv->sc->inspiro;
 	  break;
 	  case MID_ShowCPInfo:
 	    mi->ti.checked = cv->showcpinfo;
