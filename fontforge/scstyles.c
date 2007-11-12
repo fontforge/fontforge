@@ -524,7 +524,7 @@ void CondenseExtendDlg(FontView *fv, CharView *cv) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = _("Condense/Extend...");
+    wattrs.utf8_window_title = _("Condense/Extend");
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width = 100;
@@ -1669,7 +1669,7 @@ void EmboldenDlg(FontView *fv, CharView *cv) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = _("Change Weight...");
+    wattrs.utf8_window_title = _("Change Weight");
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width = 100;

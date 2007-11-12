@@ -2073,7 +2073,7 @@ char *DevTab_Dlg(GGadget *g, int r, int c) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = _("Device Table Adjustments...");
+    wattrs.utf8_window_title = _("Device Table Adjustments");
     pos.x = pos.y = 0;
     pos.width =GDrawPointsToPixels(NULL,GGadgetScale(268));
     pos.height = GDrawPointsToPixels(NULL,375);
@@ -3782,7 +3782,7 @@ return;
 	wattrs.restrict_input_to_me = false;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-	wattrs.utf8_window_title =  _("Glyph Info...");
+	wattrs.utf8_window_title =  _("Glyph Info");
 	wattrs.is_dlg = false;
 	pos.x = pos.y = 0;
 #ifdef FONTFORGE_CONFIG_INFO_HORIZONTAL
@@ -4749,7 +4749,7 @@ return;
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-	wattrs.utf8_window_title =  _("Select By Lookup Subtable...");
+	wattrs.utf8_window_title =  _("Select By Lookup Subtable");
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,160));

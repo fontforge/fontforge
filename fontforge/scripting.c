@@ -10007,7 +10007,7 @@ void ScriptDlg(FontView *fv,CharView *cv) {
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-	wattrs.utf8_window_title = _("Execute Script...");
+	wattrs.utf8_window_title = _("Execute Script");
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GDrawPointsToPixels(NULL,GGadgetScale(SD_Width));

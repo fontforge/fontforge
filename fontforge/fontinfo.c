@@ -6919,7 +6919,7 @@ static int GFI_LookupImportLookup(GGadget *g, GEvent *e) {
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-	wattrs.utf8_window_title =  _("Import Lookup...");
+	wattrs.utf8_window_title =  _("Import Lookup");
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,150));

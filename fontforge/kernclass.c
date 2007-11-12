@@ -2735,7 +2735,7 @@ return;
     wattrs.restrict_input_to_me = false;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title =  isv?_("VKern By Classes..."):_("Kern By Classes...");
+    wattrs.utf8_window_title =  isv?_("VKern By Classes"):_("Kern By Classes");
     wattrs.is_dlg = false;
     pos.x = pos.y = 0;
     temp = 40 + 300*GIntGetResource(_NUM_Buttonsize)/GGadgetScale(100);
@@ -2896,7 +2896,7 @@ void KernPairD(SplineFont *sf,SplineChar *sc1,SplineChar *sc2,int isv) {
     wattrs.restrict_input_to_me = true;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = _("Kern Pair Closeup...");
+    wattrs.utf8_window_title = _("Kern Pair Closeup");
     wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,KC_Width));

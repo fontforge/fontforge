@@ -465,7 +465,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-	wattrs.utf8_window_title = strokeit!=NULL ? _("Expand Stroke...") :
+	wattrs.utf8_window_title = strokeit!=NULL ? _("Expand Stroke") :
 /* GT: This does not mean the program, but freehand drawing */
 		    _("Freehand");
 	wattrs.is_dlg = true;

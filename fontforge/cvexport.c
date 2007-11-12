@@ -1011,7 +1011,7 @@ static int GFD_NewDir(GGadget *g, GEvent *e) {
 	char *newdir;
 	unichar_t *utemp;
 
-	newdir = gwwv_ask_string(_("Create directory..."),NULL,_("Directory name?"));
+	newdir = gwwv_ask_string(_("Create directory"),NULL,_("Directory name?"));
 	if ( newdir==NULL )
 return( true );
 	if ( !GFileIsAbsolute(newdir)) {
@@ -1126,7 +1126,7 @@ static int _Export(SplineChar *sc,BDFChar *bc) {
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = _("Export...");
+    wattrs.utf8_window_title = _("Export");
     pos.x = pos.y = 0;
     totwid = GGadgetScale(223);
     bsbigger = 3*bs+4*14>totwid; totwid = bsbigger?3*bs+4*12:totwid;

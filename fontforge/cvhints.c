@@ -463,7 +463,7 @@ void CVReviewHints(CharView *cv) {
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-	wattrs.utf8_window_title = _("Review Hints...");
+	wattrs.utf8_window_title = _("Review Hints");
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,170));
@@ -750,7 +750,7 @@ void CVCreateHint(CharView *cv,int ishstem,int preservehints) {
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
-	wattrs.utf8_window_title = _("Create Hint...");
+	wattrs.utf8_window_title = _("Create Hint");
 	wattrs.is_dlg = true;
 	pos.x = pos.y = 0;
 	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,170));
