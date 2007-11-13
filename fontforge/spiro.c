@@ -219,6 +219,10 @@ return( nspiros );
 
 void SSRegenerateFromSpiros(SplineSet *spl) {
     SplineSet *temp;
+
+    if ( spl->spiro_cnt<=1 )
+return;
+
     SplineSetBeziersClear(spl);
     temp = SpiroCP2SplineSet(spl->spiros);
     spl->first = temp->first;
