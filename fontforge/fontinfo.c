@@ -5129,7 +5129,7 @@ return(true);
 return( true );
 }
 
-static void GFI_AsDsLab(struct gfi_data *d, int cid) {
+static void GFI_AsDsLab(struct gfi_data *d, int cid, int onlylabel) {
     int isoffset = GGadgetIsChecked(GWidgetGetControl(d->gw,cid));
     DBounds b;
     int ocid, labcid;
@@ -5173,6 +5173,9 @@ return;
 
     GGadgetSetTitle8(GWidgetGetControl(d->gw,labcid),
 	    isoffset?offt:baret);
+    if ( onlylabel )
+return;
+
     if ( cid == CID_TypoAscentIsOff ) {
 	const unichar_t *as = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Ascent));
 	double av=u_strtod(as,&end);
@@ -5197,7 +5200,7 @@ return;
 static int GFI_AsDesIsOff(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
 	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	GFI_AsDsLab(d,GGadgetGetCid(g));
+	GFI_AsDsLab(d,GGadgetGetCid(g),false);
     }
 return( true );
 }
@@ -5413,34 +5416,34 @@ static void TTFSetup(struct gfi_data *d) {
     GGadgetSetTitle(GWidgetGetControl(d->gw,CID_TypoLineGap),ubuf);
 
     GGadgetSetChecked(GWidgetGetControl(d->gw,CID_WinAscentIsOff),info.winascent_add);
-    GFI_AsDsLab(d,CID_WinAscentIsOff);
+    GFI_AsDsLab(d,CID_WinAscentIsOff,true);
     sprintf( buffer, "%d", info.os2_winascent );
     uc_strcpy(ubuf,buffer);
     GGadgetSetTitle(GWidgetGetControl(d->gw,CID_WinAscent),ubuf);
     GGadgetSetChecked(GWidgetGetControl(d->gw,CID_WinDescentIsOff),info.windescent_add);
-    GFI_AsDsLab(d,CID_WinDescentIsOff);
+    GFI_AsDsLab(d,CID_WinDescentIsOff,true);
     sprintf( buffer, "%d", info.os2_windescent );
     uc_strcpy(ubuf,buffer);
     GGadgetSetTitle(GWidgetGetControl(d->gw,CID_WinDescent),ubuf);
 
     GGadgetSetChecked(GWidgetGetControl(d->gw,CID_TypoAscentIsOff),info.typoascent_add);
-    GFI_AsDsLab(d,CID_TypoAscentIsOff);
+    GFI_AsDsLab(d,CID_TypoAscentIsOff,true);
     sprintf( buffer, "%d", info.os2_typoascent );
     uc_strcpy(ubuf,buffer);
     GGadgetSetTitle(GWidgetGetControl(d->gw,CID_TypoAscent),ubuf);
     GGadgetSetChecked(GWidgetGetControl(d->gw,CID_TypoDescentIsOff),info.typodescent_add);
-    GFI_AsDsLab(d,CID_TypoDescentIsOff);
+    GFI_AsDsLab(d,CID_TypoDescentIsOff,true);
     sprintf( buffer, "%d", info.os2_typodescent );
     uc_strcpy(ubuf,buffer);
     GGadgetSetTitle(GWidgetGetControl(d->gw,CID_TypoDescent),ubuf);
 
     GGadgetSetChecked(GWidgetGetControl(d->gw,CID_HHeadAscentIsOff),info.hheadascent_add);
-    GFI_AsDsLab(d,CID_HHeadAscentIsOff);
+    GFI_AsDsLab(d,CID_HHeadAscentIsOff,true);
     sprintf( buffer, "%d", info.hhead_ascent );
     uc_strcpy(ubuf,buffer);
     GGadgetSetTitle(GWidgetGetControl(d->gw,CID_HHeadAscent),ubuf);
     GGadgetSetChecked(GWidgetGetControl(d->gw,CID_HHeadDescentIsOff),info.hheaddescent_add);
-    GFI_AsDsLab(d,CID_HHeadDescentIsOff);
+    GFI_AsDsLab(d,CID_HHeadDescentIsOff,true);
     sprintf( buffer, "%d", info.hhead_descent );
     uc_strcpy(ubuf,buffer);
     GGadgetSetTitle(GWidgetGetControl(d->gw,CID_HHeadDescent),ubuf);
@@ -8726,7 +8729,7 @@ return;
     metlabel[i].text_in_resource = true;
     metgcd[i].gd.label = &metlabel[i];
     metgcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    metgcd[i].gd.popup_msg = (unichar_t *) _("Anything outside the OS/2 WinAscent &\nWinDescent fields will be clipped by windows.\nThis includes marks, etc. that have been repositioned by GPOS.\n(The descent field is usually positive.)\nIf the \"[] Is Offset\" checkbox is clear then\nany number you enter will be the value used in OS/2.\nIf set then any number you enter will be added to the\nfont's bounds. You should leave this\nfield 0 and check \"[*] Is Offset\" in most cases.");
+    metgcd[i].gd.popup_msg = (unichar_t *) _("Anything outside the OS/2 WinAscent &\nWinDescent fields will be clipped by windows.\nThis includes marks, etc. that have been repositioned by GPOS.\n(The descent field is usually positive.)\nIf the \"[] Is Offset\" checkbox is clear then\nany number you enter will be the value used in OS/2.\nIf set then any number you enter will be added to the\nfont's bounds. You should leave this\nfield 0 and check \"[*] Is Offset\" in most cases.\n\nNote: WinDescent is a POSITIVE number for\nthings below the baseline");
     metgcd[i].gd.cid = CID_WinAscentLab;
     metarray[j++] = &metgcd[i];
     metgcd[i++].creator = GLabelCreate;
@@ -8792,7 +8795,7 @@ return;
     metlabel[i].text_in_resource = true;
     metgcd[i].gd.label = &metlabel[i];
     metgcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    metgcd[i].gd.popup_msg = (unichar_t *) _("The type ascent&descent fields are>supposed<\nto specify the line spacing on windows.\nIn fact usually the win ascent/descent fields do.\n(The descent field is usually negative.)\nIf the \"[] Is Offset\" checkbox is clear then\nany number you enter will be the value used in OS/2.\nIf set then any number you enter will be added to the\nEm-size. You should leave this\nfield 0 and check \"[*] Is Offset\" in most cases.");
+    metgcd[i].gd.popup_msg = (unichar_t *) _("The typo ascent&descent fields are>supposed<\nto specify the line spacing on windows.\nIn fact usually the win ascent/descent fields do.\n(The descent field is usually negative.)\nIf the \"[] Is Offset\" checkbox is clear then\nany number you enter will be the value used in OS/2.\nIf set then any number you enter will be added to the\nEm-size. You should leave this\nfield 0 and check \"[*] Is Offset\" in most cases.\n\nNOTE: Typo Descent is a NEGATIVE number for\nthings below the baseline");
     metgcd[i].gd.cid = CID_TypoAscentLab;
     metarray[j++] = &metgcd[i];
     metgcd[i++].creator = GLabelCreate;
@@ -8891,7 +8894,7 @@ return;
     metlabel[i].text_in_resource = true;
     metgcd[i].gd.label = &metlabel[i];
     metgcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    metgcd[i].gd.popup_msg = (unichar_t *) _("This specifies the line spacing on the mac.\n(The descent field is usually negative.)\nIf the \"[] Is Offset\" checkbox is clear then\nany number you enter will be the value used in hhea.\nIf set then any number you enter will be added to the\nfont's bounds. You should leave this\nfield 0 and check \"[*] Is Offset\" in most cases.");
+    metgcd[i].gd.popup_msg = (unichar_t *) _("This specifies the line spacing on the mac.\n(The descent field is usually negative.)\nIf the \"[] Is Offset\" checkbox is clear then\nany number you enter will be the value used in hhea.\nIf set then any number you enter will be added to the\nfont's bounds. You should leave this\nfield 0 and check \"[*] Is Offset\" in most cases.\n\nNOTE: hhea Descent is a NEGATIVE value for things\nbelow the baseline");
     metgcd[i].gd.cid = CID_HHeadAscentLab;
     metarray[j++] = &metgcd[i];
     metgcd[i++].creator = GLabelCreate;
