@@ -2815,7 +2815,7 @@ static int InSplineSet( FindSel *fs, SplinePointList *set,int inspiro) {
     int i;
 
     for ( spl = set; spl!=NULL; spl = spl->next ) {
-	    if ( inspiro ) {
+	if ( inspiro ) {
 	    for ( i=0; i<spl->spiro_cnt-1; ++i )
 		if ( CheckSpiroPoint(fs,&spl->spiros[i],spl,i))
 return( true );
@@ -6928,7 +6928,7 @@ void SplineSetsRound2Int(SplineSet *spl,real factor, int inspiro) {
     int i;
 
     for ( ; spl!=NULL; spl=spl->next ) {
-	if ( inspiro ) {
+	if ( inspiro && spl->spiro_cnt!=0 ) {
 	    for ( i=0; i<spl->spiro_cnt-1; ++i )
 		SpiroRound2Int(&spl->spiros[i],factor);
 	    SSRegenerateFromSpiros(spl);
