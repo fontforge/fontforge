@@ -9089,8 +9089,13 @@ return( sc );
 	}
 
 	SCBuildDummy(&dummy,sf,map,enc);
-	if ((sc = SFGetChar(sf,dummy.unicodeenc,dummy.name))!=NULL ) {
-	    if ( map->enc->is_unicodebmp || map->enc->is_unicodefull ) 
+	/* Let's say a user has a postscript encoding where the glyph ".notdef" */
+	/*  is assigned to many slots. Once the user creates a .notdef glyph */
+	/*  all those slots should fill in. If they don't they damn well better*/
+	/*  when the user clicks on one to edit it */
+	/* Used to do that with all encodings. It just confused people */
+	if ( map->enc->psnames!=NULL &&
+		(sc = SFGetChar(sf,dummy.unicodeenc,dummy.name))!=NULL ) {
 	    map->map[enc] = sc->orig_pos;
 	    AltUniAdd(sc,dummy.unicodeenc);
 return( sc );
