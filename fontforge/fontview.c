@@ -9090,7 +9090,9 @@ return( sc );
 
 	SCBuildDummy(&dummy,sf,map,enc);
 	if ((sc = SFGetChar(sf,dummy.unicodeenc,dummy.name))!=NULL ) {
+	    if ( map->enc->is_unicodebmp || map->enc->is_unicodefull ) 
 	    map->map[enc] = sc->orig_pos;
+	    AltUniAdd(sc,dummy.unicodeenc);
 return( sc );
 	}
 	sc = SplineCharCreate();
