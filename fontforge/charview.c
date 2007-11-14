@@ -4719,12 +4719,14 @@ return( GGadgetDispatchEvent(cv->vsb,event));
 	    CVDrawGuideLine(cv,cv->guide_pos);
 	    cv->e.x = event->u.mouse.x - cv->rulerh;
 	    cv->e.y = event->u.mouse.y-(cv->mbh+cv->infoh+cv->rulerh);
+	    cv->info.x = (cv->e.x-cv->xoff)/cv->scale;
+	    cv->info.y = (cv->height-cv->e.y-cv->yoff)/cv->scale;
 	    if ( cv->ruler_pressedv )
 		cv->guide_pos = cv->e.x;
 	    else
 		cv->guide_pos = cv->e.y;
 	    CVDrawGuideLine(cv,cv->guide_pos);
-	    CVInfoDrawRulers(cv,cv->gw);
+	    CVInfoDraw(cv,cv->gw);
 	} else if ( event->u.mouse.y>cv->mbh ) {
 	    int enc = CVCurEnc(cv);
 	    SCPreparePopup(cv->gw,cv->sc,cv->fv->map->remap,enc,
