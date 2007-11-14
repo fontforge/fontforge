@@ -1,6 +1,10 @@
 #include "Python.h"
 #include "../inc/dynamic.h"
 
+#if defined(__Mac)
+# undef dlopen
+#endif
+
 PyMODINIT_FUNC ENTRY_POINT(void) {
     DL_CONST void *lib;
     void (*initer)(void);
