@@ -3516,7 +3516,7 @@ void SCHintsChanged(SplineChar *sc) {
     struct splinecharlist *dlist;
     int was = sc->changedsincelasthinted;
 
-    if ( sc->parent->onlybitmaps || sc->parent->multilayer || sc->parent->strokedfont || sc->parent->order2 )
+    if ( sc->parent->onlybitmaps || sc->parent->multilayer || sc->parent->strokedfont )
 return;
     sc->changedsincelasthinted = false;		/* We just applied a hinting change */
     if ( !sc->changed ) {
