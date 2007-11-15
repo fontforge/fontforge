@@ -323,6 +323,7 @@ return;
 	    SplinePointFree(spl->first);
     }
     free(spl->spiros);
+    free(spl->contour_name);
     chunkfree(spl,sizeof(SplinePointList));
 }
 
@@ -345,6 +346,7 @@ return;
 	    SplinePointMDFree(sc,spl->first);
     }
     free(spl->spiros);
+    free(spl->contour_name);
     chunkfree(spl,sizeof(SplinePointList));
 }
 

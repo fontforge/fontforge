@@ -836,6 +836,77 @@ static void CVMarkInterestingLocations(CharView *cv, GWindow pixmap,
     }
 }
 
+static void CVDrawContourName(CharView *cv, GWindow pixmap, SplinePointList *ss,
+	Color fg ) {
+    SplinePoint *sp, *topright;
+    GPoint tr;
+
+    /* Find the top right point of the contour. This is where we will put the */
+    /*  label */
+    for ( sp = topright = ss->first; ; ) {
+	if ( sp->me.y>topright->me.y || (sp->me.y==topright->me.y && sp->me.x>topright->me.x) )
+	    topright = sp;
+	if ( sp->next==NULL )
+    break;
+	sp = sp->next->to;
+	if ( sp==ss->first )
+    break;
+    }
+    tr.x = cv->xoff + rint(topright->me.x*cv->scale);
+    tr.y = cv->height-cv->yoff - rint(topright->me.y*cv->scale);
+
+    /* If the top edge of the contour is off the bottom of the screen */
+    /*  then the contour won't show */
+    if ( tr.y>cv->height )
+return;
+
+    GDrawSetFont(pixmap,cv->normal);
+
+    if ( ss->first->prev==NULL && ss->first->next!=NULL &&
+	    ss->first->next->to->next==NULL && ss->first->next->knownlinear &&
+	    (tr.y < cv->nfh || tr.x>cv->width-cv->nfh) ) {
+	/* It's a simple line */
+	/* A special case because: It's common, and it's important to get it */
+	/*  right and label lines even if the point to which we'd normally */
+	/*  attach a label is offscreen */
+	SplinePoint *sp1 = ss->first, *sp2 = ss->first->next->to;
+	double dx, dy, slope, off, yinter, xinter;
+
+	if ( (dx = sp1->me.x-sp2->me.x)<0 ) dx = -dx;
+	if ( (dy = sp1->me.y-sp2->me.y)<0 ) dy = -dy;
+	if ( dx==0 ) {
+	    /* Vertical line */
+	    tr.y = cv->nfh;
+	    tr.x += 2;
+	} else if ( dy==0 ) {
+	    /* Horizontal line */
+	    tr.x = cv->width - cv->nfh - GDrawGetText8Width(pixmap,ss->contour_name,-1,NULL);
+	} else {
+	    /* y = slope*x + off; */
+	    slope = (sp1->me.y-sp2->me.y)/(sp1->me.x-sp2->me.x);
+	    off = sp1->me.y - slope*sp1->me.x;
+	    /* Now translate to screen coords */
+	    off = (cv->height-cv->yoff)+slope*cv->xoff - cv->scale*off;
+	    slope = -slope;
+	    xinter = (0-off)/slope;
+	    yinter = slope*cv->width + off;
+	    if ( xinter>0 && xinter<cv->width ) {
+		tr.x = xinter+2;
+		tr.y = cv->nfh;
+	    } else if ( yinter>0 && yinter<cv->height ) {
+		tr.x = cv->width - cv->nfh - GDrawGetText8Width(pixmap,ss->contour_name,-1,NULL);
+		tr.y = yinter;
+	    }
+	}
+    } else {
+	tr.y -= cv->nfh/2;
+	tr.x -= GDrawGetText8Width(pixmap,ss->contour_name,-1,NULL)/2;
+    }
+
+    GDrawDrawText8(pixmap,tr.x,tr.y,ss->contour_name,-1,NULL,fg);
+    GDrawSetFont(pixmap,cv->small);	/* For point numbers */
+}
+
 void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 	Color fg, int dopoints, DRect *clip ) {
     Spline *spline, *first;
@@ -847,6 +918,8 @@ void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
     GDrawSetFont(pixmap,cv->small);		/* For point numbers */
     for ( spl = set; spl!=NULL; spl = spl->next ) {
 	GPointList *gpl = MakePoly(cv,spl), *cur;
+	if ( spl->contour_name!=NULL )
+	    CVDrawContourName(cv,pixmap,spl,fg);
 	if ( dopoints>0 || (dopoints==-1 && cv->showpointnumbers) ) {
 	    first = NULL;
 	    if ( dopoints>0 )
@@ -4605,6 +4678,13 @@ static void CVAddGuide(CharView *cv,int is_v,int guide_pos) {
     ss->first = sp1; ss->last = sp2;
     ss->next = sf->grid.splines;
     sf->grid.splines = ss;
+    ss->contour_name = gwwv_ask_string(_("Name this contour"),NULL,
+		_("You may attach a text label to this guideline if you wish to"));
+    if ( ss->contour_name!=NULL && *ss->contour_name=='\0' ) {
+	free(ss->contour_name);
+	ss->contour_name = NULL;
+    }
+
     FVRedrawAllCharViews(cv->fv);
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( !sf->changed && sf->fv!=NULL )
@@ -4870,6 +4950,7 @@ return( true );
 #define MID_SpiroLeft	2315
 #define MID_SpiroRight	2316
 #define MID_SpiroMakeFirst 2317
+#define MID_NameContour	2318
 
 #define MID_AutoHint	2400
 #define MID_ClearHStem	2401
@@ -6558,7 +6639,7 @@ static GMenuItem2 spiroptlist[], ptlist[];
 static void cv_ptlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
     int type = -2, cnt=0, ccp_cnt=0, spline_selected=0;
     int spirotype = -2, opencnt=0, spirocnt=0;
-    SplinePointList *spl, *sel=NULL;
+    SplinePointList *spl, *sel=NULL, *onlysel=NULL;
     Spline *spline, *first;
     SplinePoint *selpt=NULL;
     int notimplicit = -1;
@@ -6576,6 +6657,7 @@ static void cv_ptlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	first = NULL;
 	if ( spl->first->selected ) {
 	    sel = spl;
+	    if ( onlysel==NULL || onlysel==spl ) onlysel = spl; else onlysel = (SplineSet *) (-1);
 	    selpt = spl->first; ++cnt;
 	    if ( type==-2 ) type = spl->first->pointtype;
 	    else if ( type!=spl->first->pointtype ) type = -1;
@@ -6589,6 +6671,7 @@ static void cv_ptlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 		if ( type==-2 ) type = spline->to->pointtype;
 		else if ( type!=spline->to->pointtype ) type = -1;
 		selpt = spline->to;
+		if ( onlysel==NULL || onlysel==spl ) onlysel = spl; else onlysel = (SplineSet *) (-1);
 		sel = spl; ++cnt;
 		if ( !spline->to->nonextcp && !spline->to->noprevcp && spline->to->next!=NULL )
 		    ++ccp_cnt;
@@ -6609,6 +6692,7 @@ static void cv_ptlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 		    spirotype = ty;
 		else if ( spirotype!=ty )
 		    spirotype = -1;
+		if ( onlysel==NULL || onlysel==spl ) onlysel = spl; else onlysel = (SplineSet *) (-1);
 	    }
 	}
     }
@@ -6659,6 +6743,9 @@ static void cv_ptlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_MakeLine:
 	    mi->ti.disabled = cnt==0;
+	  break;
+	  case MID_NameContour:
+	    mi->ti.disabled = onlysel==NULL || onlysel == (SplineSet *) -1;
 	  break;
 	  case MID_InsertPtOnSplineAt:
 	    mi->ti.disabled = spline_selected!=1;
@@ -7556,6 +7643,60 @@ static void _CVMenuMakeLine(CharView *cv) {
 static void CVMenuMakeLine(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     _CVMenuMakeLine(cv);
+}
+
+static void _CVMenuNameContour(CharView *cv) {
+    SplinePointList *spl, *onlysel = NULL;
+    SplinePoint *sp;
+    char *ret;
+    int i;
+
+    for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
+	if ( !cv->sc->inspiro ) {
+	    for ( sp=spl->first; ; ) {
+		if ( sp->selected ) {
+		    if ( onlysel==NULL )
+			onlysel = spl;
+		    else if ( onlysel!=spl )
+return;
+		}
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+		if ( sp==spl->first )
+	    break;
+	    }
+	} else {
+	    for ( i=0; i<spl->spiro_cnt; ++i ) {
+		if ( SPIRO_SELECTED(&spl->spiros[i])) {
+		    if ( onlysel==NULL )
+			onlysel = spl;
+		    else if ( onlysel!=spl )
+return;
+		}
+	    }
+	}
+    }
+
+    if ( onlysel!=NULL ) {
+	ret = gwwv_ask_string(_("Name this contour"),onlysel->contour_name,
+		_("Please name this contour"));
+	if ( ret!=NULL ) {
+	    free(onlysel->contour_name);
+	    if ( *ret!='\0' )
+		onlysel->contour_name = ret;
+	    else {
+		onlysel->contour_name = NULL;
+		free(ret);
+	    }
+	    CVCharChangedUpdate(cv);
+	}
+    }
+}
+
+static void CVMenuNameContour(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    _CVMenuNameContour(cv);
 }
 
 struct insertonsplineat {
@@ -8890,12 +9031,13 @@ static GMenuItem2 ptlist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("Can Be _Interpolated"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Can Be Interpolated|No Shortcut"), NULL, NULL, CVMenuImplicit, MID_ImplicitPt },
     { { (unichar_t *) N_("Can't Be _Interpolated"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Can't Be Interpolated|No Shortcut"), NULL, NULL, CVMenuImplicit, MID_NoImplicitPt },
+    { { (unichar_t *) N_("Center _Between Control Points"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Center Between Control Points|No Shortcut"), NULL, NULL, CVMenuCenterCP, MID_CenterCP },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Add Anchor"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("Add Anchor|Ctl+0"), NULL, NULL, CVMenuAddAnchor, MID_AddAnchor },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("Make _Line"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Make Line|No Shortcut"), NULL, NULL, CVMenuMakeLine, MID_MakeLine },
     { { (unichar_t *) N_("Insert Point On _Spline At..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Insert Point On Spline At...|No Shortcut"), NULL, NULL, CVMenuInsertPt, MID_InsertPtOnSplineAt },
-    { { (unichar_t *) N_("Center _Between Control Points"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Center Between Control Points|No Shortcut"), NULL, NULL, CVMenuCenterCP, MID_CenterCP },
+    { { (unichar_t *) N_("_Name Contour"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Name Contour|No Shortcut"), NULL, NULL, CVMenuNameContour, MID_NameContour },
     { NULL }
 };
 
@@ -8910,6 +9052,8 @@ static GMenuItem2 spiroptlist[] = {
     { { (unichar_t *) N_("_Make First"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Make First|Ctl+1"), NULL, NULL, CVMenuSpiroMakeFirst, MID_SpiroMakeFirst },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Add Anchor"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("Add Anchor|Ctl+0"), NULL, NULL, CVMenuAddAnchor, MID_AddAnchor },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) N_("_Name Contour"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Name Contour|No Shortcut"), NULL, NULL, CVMenuNameContour, MID_NameContour },
     { NULL }
 };
 
