@@ -4894,6 +4894,7 @@ return( true );
 #define MID_CopyBgToFg	2137
 #define MID_SelPointAt	2138
 #define MID_CopyLookupData	2139
+#define MID_SelectOpenContours	2140
 #define MID_Clockwise	2201
 #define MID_Counter	2202
 #define MID_GetInfo	2203
@@ -6261,6 +6262,33 @@ static void CVSelectAll(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     else if ( mi->mid==MID_SelectAnchors )
 	mask = 2;
     if ( CVSetSel(cv,mask))
+	SCUpdateAll(cv->sc);
+}
+
+static void CVSelectOpenContours(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    SplineSet *ss;
+    int i;
+    SplinePoint *sp;
+    int changed = CVClearSel(cv);
+
+    for ( ss=cv->layerheads[cv->drawmode]->splines; ss!=NULL; ss=ss->next ) {
+	if ( ss->first->prev==NULL ) {
+	    changed = true;
+	    if ( cv->sc->inspiro ) {
+		for ( i=0; i<ss->spiro_cnt; ++i )
+		    SPIRO_SELECT(&ss->spiros[i]);
+	    } else {
+		for ( sp=ss->first ;; ) {
+		    sp->selected = true;
+		    if ( sp->next==NULL )
+		break;
+		    sp = sp->next->to;
+		}
+	    }
+	}
+    }
+    if ( changed )
 	SCUpdateAll(cv->sc);
 }
 
@@ -8582,6 +8610,7 @@ static void mtlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void cv_sllistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
     SplinePoint *sp; SplineSet *spl; RefChar *r; ImageList *im;
     spiro_cp *scp;
+    SplineSet *test;
     int exactlyone = CVOneThingSel(cv,&sp,&spl,&r,&im,NULL,&scp);
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
@@ -8598,6 +8627,15 @@ static void cv_sllistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_Contours:
 	    mi->ti.disabled = !CVAnySelPoints(cv);
+	  break;
+	  case MID_SelectOpenContours:
+	    mi->ti.disabled = true;
+	    for ( test=cv->layerheads[cv->drawmode]->splines; test!=NULL; test=test->next ) {
+		if ( test->first->prev==NULL ) {
+		    mi->ti.disabled = false;
+	    break;
+		}
+	    }
 	  break;
 	  case MID_SelectWidth:
 	    mi->ti.disabled = !cv->showhmetrics;
@@ -8981,7 +9019,8 @@ static GMenuItem2 sllist[] = {
     { { (unichar_t *) N_("Point A_t"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'r' }, H_("Point At|Ctl+,"), NULL, NULL, CVMenuSelectPointAt, MID_SelPointAt },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("Select All _Points & Refs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Select All Points & Refs|Alt+Ctl+A"), NULL, NULL, CVSelectAll, MID_SelectAllPoints },
-    { { (unichar_t *) N_("Sele_ct Anchors"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'c' }, H_("Select Anchors|No Shortcut"), NULL, NULL, CVSelectAll, MID_SelectAnchors },
+    { { (unichar_t *) N_("Select Open Contours"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Select Open Contours|No Shortcut"), NULL, NULL, CVSelectOpenContours, MID_SelectOpenContours },
+    { { (unichar_t *) N_("Select Anc_hors"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'c' }, H_("Select Anchors|No Shortcut"), NULL, NULL, CVSelectAll, MID_SelectAnchors },
     { { (unichar_t *) N_("_Width"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Width|No Shortcut"), NULL, NULL, CVSelectWidth, MID_SelectWidth },
     { { (unichar_t *) N_("_VWidth"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("VWidth|No Shortcut"), NULL, NULL, CVSelectVWidth, MID_SelectVWidth },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
