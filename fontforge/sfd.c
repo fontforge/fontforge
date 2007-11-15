@@ -625,6 +625,10 @@ static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
 	    }
 	    fprintf( sfd, "  EndSpiro\n" );
 	}
+	if ( spl->contour_name!=NULL ) {
+	    fprintf( sfd, "  Named: " );
+	    SFDDumpUTF7Str(sfd,spl->contour_name);
+	}
     }
     fprintf( sfd, "EndSplineSet\n" );
 }
@@ -2872,6 +2876,15 @@ static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd) {
 	if ( ch=='S' ) {
 	    ungetc(ch,sfd);
 	    SFDGetSpiros(sfd,cur);
+    continue;
+	} else if ( ch=='N' ) {
+	    getc(sfd);		/* a */
+	    getc(sfd);		/* m */
+	    getc(sfd);		/* e */
+	    getc(sfd);		/* d */
+	    getc(sfd);		/* : */
+	    cur->contour_name = SFDReadUTF7Str(sfd);
+    continue;
 	}
 	pt = NULL;
 	if ( ch=='l' || ch=='m' ) {
