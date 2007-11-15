@@ -2528,16 +2528,28 @@ static char *_simplecyrillchoices[] = {
     " Съешь ещё этих мягких французских булок, да выпей чаю!",
 /* "In the deep forests of South citrus lived... /answer/Yeah but falsificated one!" */
     " В чащах юга жил-был цитрус -- да, но фальшивый экземпляръ!",
+/* A kind lamplighter with grimy face wants to show me a stunt. */
+    "Љубазни фењерџија чађавог лица хоће да ми покаже штос.",
+/* More frequent filtering through the reticular bag improves
+fertilization of genetic hybrids. */
+    "Чешће цeђење мрeжастим џаком побољшава фертилизацију генских хибрида.",
     NULL
 };
 static uint32 _simplecyrilliclangs[] = {
+    CHR('R','U','S',' '),	/* Russian */
     CHR('R','U','S',' '),
-    CHR('R','U','S',' ')
+    CHR('S','R','B',' '),	/* Serbian */
+    CHR('S','R','B',' ')
 };
 /* Russian */
 static char *_annakarenena[] = {
     " Всѣ счастливыя семьи похожи другъ на друга, каждая несчастливая семья несчастлива по-своему.",
     " Все смѣшалось въ домѣ Облонскихъ. Жена узнала, что мужъ былъ связи съ бывшею въ ихъ домѣ француженкою-гувернанткой, и объявила мужу, что не можетъ жить съ нимъ въ одномъ домѣ.",
+    NULL
+};
+/* Serbian (Cyrillic) */
+static char *_serbcyriljohn[] = { 
+    "У почетку беше Реч Божија, и та Реч беше у Бога, и Бог беше Реч.",
     NULL
 };
 /* Spanish */
@@ -2846,6 +2858,7 @@ static struct langsamples {
     { _pheadra, "fr", sc_latin, CHR('l','a','t','n'), CHR('F','R','A',' ')},
     { _antigone, "el", sc_greek, CHR('g','r','e','k'), CHR('P','G','R',' ')},	/* Is this polytonic? */
     { _annakarenena, "ru", sc_cyrillic, CHR('c','y','r','l'), CHR('R','U','S',' ')},
+    { _serbcyriljohn, "sr", sc_cyrillic, CHR('c','y','r','l'), CHR('S','R','B',' ')},
     { _debello, "la", sc_latin, CHR('l','a','t','n'), CHR('L','A','T',' ')},
     { _hebrew, "he", sc_hebrew, CHR('h','e','b','r'), CHR('I','W','R',' ') },
     { _arabic, "ar", sc_arabic, CHR('a','r','a','b'), CHR('A','R','A',' ')},
