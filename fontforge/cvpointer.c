@@ -976,10 +976,13 @@ void CVAdjustControl(CharView *cv,BasePoint *cp, BasePoint *to) {
 	    othercp->x = len2 * (sp->me.x-cp->x) + sp->me.x;
 	    othercp->y = len2 * (sp->me.y-cp->y) + sp->me.y;
 	    otherchanged = true;
-	    if ( sp->next!=NULL && othercp==&sp->nextcp )
-		SplineRefigure3(sp->next);
-	    if ( sp->prev!=NULL && othercp==&sp->prevcp )
-		SplineRefigure3(sp->prev);
+	    if ( sp->next!=NULL && othercp==&sp->nextcp ) {
+		if ( sp->next->order2 ) sp->next->to->prevcp = *othercp;
+		SplineRefigure(sp->next);
+	    } else if ( sp->prev!=NULL && othercp==&sp->prevcp ) {
+		if ( sp->prev->order2 ) sp->prev->from->nextcp = *othercp;
+		SplineRefigure(sp->prev);
+	    }
 	}
 	if ( cp==&sp->nextcp ) sp->prevcpdef = false;
 	else sp->nextcpdef = false;
