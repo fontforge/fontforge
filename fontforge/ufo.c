@@ -1413,14 +1413,20 @@ return( NULL );
     if ( GFileExists(temp))
 	doc = _xmlParseFile(temp);
     free(temp);
-    plist = _xmlDocGetRootElement(doc);
-    dict = FindNode(plist->children,"dict");
-    if ( _xmlStrcmp(plist->name,(const xmlChar *) "plist")!=0 || dict==NULL ) {
-	LogError(_("Expected property list file"));
-    } else {
-	sf->python_persistent = LibToPython(doc,dict);
+    if ( doc!=NULL ) {
+	plist = _xmlDocGetRootElement(doc);
+	dict = NULL;
+	if ( plist!=NULL )
+	    dict = FindNode(plist->children,"dict");
+	if ( plist==NULL ||
+		_xmlStrcmp(plist->name,(const xmlChar *) "plist")!=0 ||
+		dict==NULL ) {
+	    LogError(_("Expected property list file"));
+	} else {
+	    sf->python_persistent = LibToPython(doc,dict);
+	}
+	_xmlFreeDoc(doc);
     }
-    _xmlFreeDoc(doc);
 #endif
     setlocale(LC_NUMERIC,oldloc);
 return( sf );
