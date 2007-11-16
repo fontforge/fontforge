@@ -2612,7 +2612,8 @@ static void FigureStemActive(struct glyphdata *gd, struct stemdata *stem) {
 		activespace[acnt  ].start = proj;
 		activespace[acnt  ].end = proj2;
 	    }
-	    activespace[acnt++].sbase = activespace[acnt++].ebase = proj;
+	    activespace[acnt].sbase = activespace[acnt].ebase = proj;
+	    ++acnt;
 	    ++i;
 	} else if ( chunk->stemcheat && chunk->l!=NULL && chunk->r!=NULL ) {
 	    SplinePoint *sp = chunk->l->sp;
