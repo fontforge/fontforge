@@ -514,6 +514,8 @@ static void MVSelectSubtableForScript(MetricsView *mv,uint32 script) {
 
 static void MVSelectChar(MetricsView *mv, int i) {
 
+    if ( i>=mv->glyphcnt || i<0 )
+return;
     mv->perchar[i].selected = true;
     if ( mv->perchar[i].name!=NULL )
 	GGadgetSetEnabled(mv->perchar[i].name,false);
@@ -855,6 +857,8 @@ static int MV_WidthChanged(GGadget *g, GEvent *e) {
 
     if ( e->type!=et_controlevent )
 return( true );
+    if ( which>=mv->glyphcnt )
+return( true );
     if ( e->u.control.subtype == et_textchanged ) {
 	unichar_t *end;
 	int val = u_strtol(_GGadgetGetTitle(g),&end,10);
@@ -886,6 +890,8 @@ static int MV_LBearingChanged(GGadget *g, GEvent *e) {
     int i;
 
     if ( e->type!=et_controlevent )
+return( true );
+    if ( which>=mv->glyphcnt )
 return( true );
     if ( e->u.control.subtype == et_textchanged ) {
 	unichar_t *end;
@@ -924,6 +930,8 @@ static int MV_RBearingChanged(GGadget *g, GEvent *e) {
     int i;
 
     if ( e->type!=et_controlevent )
+return( true );
+    if ( which>=mv->glyphcnt )
 return( true );
     if ( e->u.control.subtype == et_textchanged ) {
 	unichar_t *end;
@@ -1078,6 +1086,8 @@ static int MV_KernChanged(GGadget *g, GEvent *e) {
     int i;
 
     if ( e->type!=et_controlevent )
+return( true );
+    if ( which>=mv->glyphcnt-1 )
 return( true );
     if ( e->u.control.subtype == et_textchanged ) {
 	unichar_t *end;
