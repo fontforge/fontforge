@@ -573,7 +573,7 @@ void ParseEncodingFile(char *filename) {
     file = fopen(filename,"r");
     if ( file==NULL ) {
 	if ( orig!=NULL )
-	    gwwv_post_error(_("Couldn't open file"), _("Couldn't open file %.200s"), orig);
+	    ff_post_error(_("Couldn't open file"), _("Couldn't open file %.200s"), orig);
 return;
     }
     ch = getc(file);
@@ -588,7 +588,7 @@ return;
 	head = PSSlurpEncodings(file);
     fclose(file);
     if ( head==NULL ) {
-	gwwv_post_error(_("Bad encoding file format"),_("Bad encoding file format") );
+	ff_post_error(_("Bad encoding file format"),_("Bad encoding file format") );
 return;
     }
 
@@ -596,7 +596,7 @@ return;
 	next = item->next;
 	if ( item->enc_name==NULL ) {
 	    if ( no_windowing_ui ) {
-		gwwv_post_error(_("Bad encoding file format"),_("This file contains an unnamed encoding, which cannot be named in a script"));
+		ff_post_error(_("Bad encoding file format"),_("This file contains an unnamed encoding, which cannot be named in a script"));
 return;
 	    }
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -1195,18 +1195,18 @@ struct cidmap *LoadMapFromFile(char *file,char *registry,char *ordering,
     f = fopen( file,"r" );
     if ( f==NULL ) {
 #if defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_error(_("Missing cidmap file"),_("Couldn't open cidmap file: %s"), file );
+	ff_post_error(_("Missing cidmap file"),_("Couldn't open cidmap file: %s"), file );
 #else
-	gwwv_post_error(_("Couldn't open file"), _("Couldn't open file %.200s"), file);
+	ff_post_error(_("Couldn't open file"), _("Couldn't open file %.200s"), file);
 #endif
 	ret->cidmax = ret->namemax = 0;
 	ret->unicode = NULL; ret->name = NULL;
     } else if ( fscanf( f, "%d %d", &ret->cidmax, &ret->namemax )!=2 ) {
 #if defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_error(_("Bad cidmap file"),_("%s is not a cidmap file, please download\nhttp://fontforge.sourceforge.net/cidmaps.tgz"), file );
+	ff_post_error(_("Bad cidmap file"),_("%s is not a cidmap file, please download\nhttp://fontforge.sourceforge.net/cidmaps.tgz"), file );
 	fprintf( stderr, _("%s is not a cidmap file, please download\nhttp://fontforge.sourceforge.net/cidmaps.tgz"), file );
 #else
-	gwwv_post_error(_("Bad Cidmap File"), _("%s is not a cidmap file, please download\nhttp://fontforge.sourceforge.net/cidmaps.tgz"), file);
+	ff_post_error(_("Bad Cidmap File"), _("%s is not a cidmap file, please download\nhttp://fontforge.sourceforge.net/cidmaps.tgz"), file);
 	fprintf( stderr, "%s is not a cidmap file, please download\nhttp://fontforge.sourceforge.net/cidmaps.tgz", file );
 #endif
 	ret->cidmax = ret->namemax = 0;
@@ -1938,7 +1938,7 @@ int SFFlattenByCMap(SplineFont *sf,char *cmapname) {
     if ( sf->cidmaster!=NULL )
 	sf = sf->cidmaster;
     if ( sf->subfontcnt==0 ) {
-	gwwv_post_error(_("Not a CID-keyed font"),_("Not a CID-keyed font"));
+	ff_post_error(_("Not a CID-keyed font"),_("Not a CID-keyed font"));
 return( false );
     }
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -1957,11 +1957,7 @@ return( false );
 	if ( max<cmap->groups[cmt_cid].ranges[i].last )
 	    max = cmap->groups[cmt_cid].ranges[i].last;
 	if ( cmap->groups[cmt_cid].ranges[i].last>0x100000 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    gwwv_post_error(_("Encoding Too Large"),_("Encoding Too Large"));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_error(_("Encoding Too Large"),_("Encoding Too Large"));
-#endif
+	    ff_post_error(_("Encoding Too Large"),_("Encoding Too Large"));
 	    cmapfree(cmap);
 return( false );
 	}
@@ -3017,7 +3013,7 @@ Encoding *ParseEncodingNameFromList(GGadget *listfield) {
 	free(temp);
     }
     if ( enc==NULL )
-	gwwv_post_error(_("Bad Encoding"),_("Bad Encoding"));
+	ff_post_error(_("Bad Encoding"),_("Bad Encoding"));
 return( enc );
 }
 

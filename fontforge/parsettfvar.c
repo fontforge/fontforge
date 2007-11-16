@@ -760,14 +760,7 @@ void readttfvariations(struct ttfinfo *info, FILE *ttf) {
     if ( info->gvar_start==0 || info->gvar_len==0 || info->fvar_start==0 || info->fvar_len==0 )
 return;
 
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gwwv_progress_change_line2(_("Processing Variations"));
-    if ( !no_windowing_ui )
-	GDrawProcessPendingEvents(NULL);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gwwv_progress_change_line2(_("Processing Variations"));
-    /* !!! force an expose */
-#endif
+    ff_progress_change_line2(_("Processing Variations"));
     parsefvar(info,ttf);
     if ( info->variations!=NULL && info->avar_start!=0 )
 	parseavar(info,ttf);

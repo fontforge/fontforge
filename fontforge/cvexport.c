@@ -466,7 +466,7 @@ static int SB_OK(GGadget *g, GEvent *e) {
 	if ( err )
 return( true );
 	if ( *d->bits!=1 && *d->bits!=2 && *d->bits!=4 && *d->bits!=8 ) {
-	    gwwv_post_error(_("The only valid values for bits/pixel are 1, 2, 4 or 8"),_("The only valid values for bits/pixel are 1, 2, 4 or 8"));
+	    ff_post_error(_("The only valid values for bits/pixel are 1, 2, 4 or 8"),_("The only valid values for bits/pixel are 1, 2, 4 or 8"));
 return( true );
 	}
 	free( last ); free( last_bits );
@@ -829,7 +829,7 @@ return;
     else if ( bc!=NULL )
 	good = BCExportXBM(buffer,bc,format-6);
     if ( !good )
-	gwwv_post_error(_("Save Failed"),_("Save Failed"));
+	ff_post_error(_("Save Failed"),_("Save Failed"));
 }
 
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
@@ -895,7 +895,7 @@ static void DoExport(struct gfc_data *d,unichar_t *path) {
 	PyFF_SCExport(d->sc,format-fv_pythonbase,temp);
 #endif
     if ( !good )
-	gwwv_post_error(_("Save Failed"),_("Save Failed"));
+	ff_post_error(_("Save Failed"),_("Save Failed"));
     free(temp);
     d->done = good;
     d->ret = good;

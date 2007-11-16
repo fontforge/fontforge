@@ -1366,7 +1366,7 @@ static void SFTextAreaImport(SFTextArea *st) {
 return;
     str = _GGadgetFileToUString(cret,65536);
     if ( str==NULL ) {
-	gwwv_post_error(_("Could not open"),_("Could not open %.100s"),cret);
+	ff_post_error(_("Could not open"),_("Could not open %.100s"),cret);
 	free(cret);
 return;
     }
@@ -1384,7 +1384,7 @@ static void SFTextAreaSave(SFTextArea *st) {
 return;
     file = fopen(cret,"w");
     if ( file==NULL ) {
-	gwwv_post_error(_("Could not open"),_("Could not open %.100s"),cret);
+	ff_post_error(_("Could not open"),_("Could not open %.100s"),cret);
 	free(cret);
 return;
     }
@@ -1475,7 +1475,7 @@ return;
     if ( strstrmatch(cret,".bmp")!=NULL )
 	ret = GImageWriteBmp(image,cret);
     else
-	gwwv_post_error(_("Unsupported image format"),
+	ff_post_error(_("Unsupported image format"),
 #ifndef _NO_LIBPNG
 		_("Unsupported image format must be bmp or png")
 #else
@@ -1483,7 +1483,7 @@ return;
 #endif
 	    );
     if ( !ret )
-	gwwv_post_error(_("Could not write"),_("Could not write %.100s"),cret);
+	ff_post_error(_("Could not write"),_("Could not write %.100s"),cret);
     free( cret );
     GImageDestroy(image);
 }
@@ -3437,7 +3437,7 @@ void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height) {
     if ( strstrmatch(filename,".bmp")!=NULL )
 	ret = GImageWriteBmp(image,filename);
     else
-	gwwv_post_error(_("Unsupported image format"),
+	ff_post_error(_("Unsupported image format"),
 #ifndef _NO_LIBPNG
 		_("Unsupported image format must be bmp or png")
 #else
@@ -3445,7 +3445,7 @@ void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height) {
 #endif
 	    );
     if ( !ret )
-	gwwv_post_error(_("Could not write"),_("Could not write %.100s"),filename);
+	ff_post_error(_("Could not write"),_("Could not write %.100s"),filename);
     GImageDestroy(image);
 
     sftextarea_destroy(&st->g);

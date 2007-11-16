@@ -1198,13 +1198,13 @@ return( false );
 	    ret1 = _GGadgetGetTitle(sd->set_code);
 	    on = u_strtol(ret1,&end,10);
 	    if ( *end!='\0' ) {
-		gwwv_post_error(_("Bad Number"),_("Bad Number"));
+		ff_post_error(_("Bad Number"),_("Bad Number"));
 return( true );
 	    }
 	    ret1 = _GGadgetGetTitle(sd->feature);
 	    feat = u_strtol(ret1,&end,10);
 	    if ( *end!='\0' && *end!=' ' ) {
-		gwwv_post_error(_("Bad Number"),_("Bad Number"));
+		ff_post_error(_("Bad Number"),_("Bad Number"));
 return( true );
 	    }
 	    ti = GGadgetGetList(sd->list,&len);
@@ -1237,11 +1237,7 @@ return( true );
 		ubuf[3] = ' ';
 	    len = u_strlen(ret1);
 	    if ( len<2 || len>4 || ubuf[0]>=0x7f || ubuf[1]>=0x7f || ubuf[2]>=0x7f || ubuf[3]>=0x7f ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		gwwv_post_error(_("Tag too long"),_("Feature tags must be exactly 4 ASCII characters"));
-#elif defined(FONTFORGE_CONFIG_GTK)
-		gwwv_post_error(_("Tag too long"),_("Feature tags must be exactly 4 ASCII characters"));
-#endif
+		ff_post_error(_("Tag too long"),_("Feature tags must be exactly 4 ASCII characters"));
 return( true );
 	    }
 	    sprintf(buf,"%3d,%2d %c%c%c%c",
@@ -1482,10 +1478,10 @@ static int Prefs_Ok(GGadget *g, GEvent *e) {
 	    if ( *names[i]=='\0' ) names[i] = NULL;
 	    if ( *scripts[i]=='\0' ) scripts[i] = NULL;
 	    if ( scripts[i]==NULL && names[i]!=NULL ) {
-		gwwv_post_error(_("Menu name with no associated script"),_("Menu name with no associated script"));
+		ff_post_error(_("Menu name with no associated script"),_("Menu name with no associated script"));
 return( true );
 	    } else if ( scripts[i]!=NULL && names[i]==NULL ) {
-		gwwv_post_error(_("Script with no associated menu name"),_("Script with no associated menu name"));
+		ff_post_error(_("Script with no associated menu name"),_("Script with no associated menu name"));
 return( true );
 	    }
 	}
@@ -1541,7 +1537,7 @@ return( true );
 			nl = NameListByName(name);
 			free(name);
 			if ( nl!=NULL && nl->uses_unicode && !allow_utf8_glyphnames)
-			    gwwv_post_error(_("Namelist contains non-ASCII names"),_("Glyph names should be limited to characters in the ASCII character set, but there are names in this namelist which use characters outside that range."));
+			    ff_post_error(_("Namelist contains non-ASCII names"),_("Glyph names should be limited to characters in the ASCII character set, but there are names in this namelist which use characters outside that range."));
 			else if ( nl!=NULL )
 			    *((NameList **) (pl->val)) = nl;
 		    }

@@ -510,9 +510,7 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, Encoding **_enc,
 	if ( strcmp(tok,"CHARS")==0 ) {
 	    cnt=0;
 	    fscanf(bdf,"%d",&cnt);
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	    gwwv_progress_change_total(cnt);
-#endif
+	    ff_progress_change_total(cnt);
     break;
 	}
 	if ( strcmp(tok,"STARTPROPERTIES")==0 ) {
@@ -1677,9 +1675,7 @@ return( false );
 		IError("Bad PCF glyph bitmap size");
 	    memcpy(bc->bitmap,bitmap+offsets[i],
 		    bc->bytes_per_line * (bc->ymax-bc->ymin+1));
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	    gwwv_progress_next();
-#endif
+	    ff_progress_next();
 	}
     } else {
 	int pad = PCF_GLYPH_PAD(format);
@@ -1690,9 +1686,7 @@ return( false );
 		memcpy(bc->bitmap+(j-bc->ymin)*bc->bytes_per_line,
 			bitmap+offsets[i]+(j-bc->ymin)*bpl,
 			bc->bytes_per_line);
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	    gwwv_progress_next();
-#endif
+	    ff_progress_next();
 	}
     }
     free(bitmap);
@@ -1857,14 +1851,14 @@ static int askusersize(char *filename) {
     else
 	*def = '\0';
   retry:
-    ret = gwwv_ask_string(_("Pixel size:"),def,_("What is the pixel size of the font in this file?"));
+    ret = ff_ask_string(_("Pixel size:"),def,_("What is the pixel size of the font in this file?"));
     if ( ret==NULL )
 	guess = -1;
     else {
 	guess = strtol(ret,&end,10);
 	free(ret);
 	if ( guess<=0 || *end!='\0' ) {
-	    gwwv_post_error(_("Bad Number"),_("Bad Number"));
+	    ff_post_error(_("Bad Number"),_("Bad Number"));
   goto retry;
 	}
     }
@@ -1873,16 +1867,12 @@ return( guess );
 
 static int alreadyexists(int pixelsize) {
     int ret;
-#if defined(FONTFORGE_CONFIG_GDRAW)
     char *buts[3];
     buts[0] = _("_OK");
     buts[1] = _("_Cancel");
     buts[2] = NULL;
-#elif defined(FONTFORGE_CONFIG_GTK)
-    static char *buts[] = { GTK_STOCK_OK, GTK_STOCK_CANCEL, NULL };
-#endif
 
-    ret = gwwv_ask(_("Duplicate pixelsize"),(const char **) buts,0,1,
+    ret = ff_ask(_("Duplicate pixelsize"),(const char **) buts,0,1,
 	_("The font database already contains a bitmap\012font with this pixelsize (%d)\012Do you want to overwrite it?"),
 	pixelsize);
 
@@ -1956,39 +1946,39 @@ static BDFFont *SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback,
 	ispk = 3;
     bdf = fopen(filename,"rb");
     if ( bdf==NULL ) {
-	gwwv_post_error(_("Couldn't open file"), _("Couldn't open file %.200s"), filename );
+	ff_post_error(_("Couldn't open file"), _("Couldn't open file %.200s"), filename );
 return( NULL );
     }
     if ( ispk==1 ) {
 	pixelsize = pk_header(bdf,&ascent,&descent,&enc,family,mods,full, filename);
 	if ( pixelsize==-2 ) {
 	    fclose(bdf);
-	    gwwv_post_error(_("Not a pk file"), _("Not a (metafont) pk file %.200s"), filename );
+	    ff_post_error(_("Not a pk file"), _("Not a (metafont) pk file %.200s"), filename );
 return( NULL );
 	}
     } else if ( ispk==3 ) {		/* gf */
 	pixelsize = gf_postamble(bdf,&ascent,&descent,&enc,family,mods,full, filename);
 	if ( pixelsize==-2 ) {
 	    fclose(bdf);
-	    gwwv_post_error(_("Not a gf file"), _("Not a (metafont) gf file %.200s"), filename );
+	    ff_post_error(_("Not a gf file"), _("Not a (metafont) gf file %.200s"), filename );
 return( NULL );
 	}
     } else if ( ispk==2 ) {		/* pcf */
 	if (( toc = pcfReadTOC(bdf))== NULL ) {
 	    fclose(bdf);
-	    gwwv_post_error(_("Not a pcf file"), _("Not an X11 pcf file %.200s"), filename );
+	    ff_post_error(_("Not a pcf file"), _("Not an X11 pcf file %.200s"), filename );
 return( NULL );
 	}
 	pixelsize = pcf_properties(bdf,toc,&ascent,&descent,&enc,family,mods,full,&dummy, filename);
 	if ( pixelsize==-2 ) {
 	    fclose(bdf); free(toc);
-	    gwwv_post_error(_("Not a pcf file"), _("Not an X11 pcf file %.200s"), filename );
+	    ff_post_error(_("Not a pcf file"), _("Not an X11 pcf file %.200s"), filename );
 return( NULL );
 	}
     } else {
 	if ( gettoken(bdf,tok,sizeof(tok))==-1 || strcmp(tok,"STARTFONT")!=0 ) {
 	    fclose(bdf);
-	    gwwv_post_error(_("Not a bdf file"), _("Not a bdf file %.200s"), filename );
+	    ff_post_error(_("Not a bdf file"), _("Not a bdf file %.200s"), filename );
 return( NULL );
 	}
 	while ( (ch=getc(bdf))!='\n' && ch!='\r' && ch!=EOF );
@@ -2074,9 +2064,7 @@ return( (BDFFont *) -1 );
 	while ( gf_char(bdf,sf,b,map));
     } else if ( ispk==2 ) {
 	if ( !PcfParse(bdf,toc,sf,map,b,enc) ) {
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	    gwwv_post_error(_("Not a pcf file"), _("Not an X11 pcf file %.200s"), filename );
-#endif
+	    ff_post_error(_("Not a pcf file"), _("Not an X11 pcf file %.200s"), filename );
 	}
     } else {
 	while ( gettoken(bdf,tok,sizeof(tok))!=-1 ) {
@@ -2090,9 +2078,7 @@ return( (BDFFont *) -1 );
 		}
 	    } else if ( strcmp(tok,"STARTCHAR")==0 ) {
 		AddBDFChar(bdf,sf,b,map,depth,&defs,enc);
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-		gwwv_progress_next();
-#endif
+		ff_progress_next();
 	    }
 	}
     }
@@ -2140,7 +2126,7 @@ static BDFFont *_SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback
 		filename = temp;
 	    else {
 		free(temp);
-		gwwv_post_error(_("Decompress Failed!"),_("Decompress Failed!"));
+		ff_post_error(_("Decompress Failed!"),_("Decompress Failed!"));
 return( NULL );
 	    }
 	}
@@ -2233,8 +2219,8 @@ int FVImportBDF(FontView *fv, char *filename, int ispk, int toback) {
 	{ ++fcnt; fpt += 2; }
 
     sprintf(buf, _("Loading font from %.100s"), filename);
-    gwwv_progress_start_indicator(10,_("Loading..."),buf,_("Reading Glyphs"),0,fcnt);
-    gwwv_progress_enable_stop(false);
+    ff_progress_start_indicator(10,_("Loading..."),buf,_("Reading Glyphs"),0,fcnt);
+    ff_progress_enable_stop(false);
 
     file = eod+1;
     do {
@@ -2243,10 +2229,10 @@ int FVImportBDF(FontView *fv, char *filename, int ispk, int toback) {
 	full = galloc(strlen(filename)+1+strlen(file)+1);
 	strcpy(full,filename); strcat(full,"/"); strcat(full,file);
 	sprintf(buf, _("Loading font from %.100s"), filename);
-	gwwv_progress_change_line1(buf);
+	ff_progress_change_line1(buf);
 	b = _SFImportBDF(fv->sf,full,ispk,toback, fv->map);
 	free(full);
-	if ( fpt!=NULL ) gwwv_progress_next_stage();
+	if ( fpt!=NULL ) ff_progress_next_stage();
 	if ( b!=NULL ) {
 	    anyb = b;
 	    any = true;
@@ -2257,7 +2243,7 @@ int FVImportBDF(FontView *fv, char *filename, int ispk, int toback) {
 	}
 	file = fpt+2;
     } while ( fpt!=NULL );
-    gwwv_progress_end_indicator();
+    ff_progress_end_indicator();
     if ( oldenccnt != fv->map->enccount ) {
 	FontView *fvs;
 	for ( fvs=fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
@@ -2269,7 +2255,7 @@ int FVImportBDF(FontView *fv, char *filename, int ispk, int toback) {
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
     if ( anyb==NULL ) {
-	gwwv_post_error( _("No Bitmap Font"), _("Could not find a bitmap font in %s"), filename );
+	ff_post_error( _("No Bitmap Font"), _("Could not find a bitmap font in %s"), filename );
     } else if ( toback )
 	SFAddToBackground(fv->sf,anyb);
 return( any );
@@ -2326,8 +2312,8 @@ int FVImportMult(FontView *fv, char *filename, int toback, int bf) {
     char buf[300];
 
     snprintf(buf, sizeof(buf), _("Loading font from %.100s"), filename);
-    gwwv_progress_start_indicator(10,_("Loading..."),buf,_("Reading Glyphs"),0,2);
-    gwwv_progress_enable_stop(false);
+    ff_progress_start_indicator(10,_("Loading..."),buf,_("Reading Glyphs"),0,2);
+    ff_progress_enable_stop(false);
 
     if ( bf == bf_ttf )
 	strikeholder = SFReadTTF(filename,toback?ttf_onlyonestrike|ttf_onlystrikes:ttf_onlystrikes,0);
@@ -2340,9 +2326,7 @@ int FVImportMult(FontView *fv, char *filename, int toback, int bf) {
 
     if ( strikeholder==NULL || (strikes = strikeholder->bitmaps)==NULL ) {
 	SplineFontFree(strikeholder);
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	gwwv_progress_end_indicator();
-#endif
+	ff_progress_end_indicator();
 return( false );
     }
     SFMatchGlyphs(strikeholder,sf,false);
@@ -2353,9 +2337,7 @@ return( false );
 
     strikeholder->bitmaps =NULL;
     SplineFontFree(strikeholder);
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    gwwv_progress_end_indicator();
-#endif
+    ff_progress_end_indicator();
 return( true );
 }
 

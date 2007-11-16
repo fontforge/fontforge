@@ -2522,7 +2522,7 @@ return( false );
 	    if ( sel!=NULL )
 		language = (intpt) sel->userdata;
 	    else if ( nd->index==-1 ) {
-		gwwv_post_error(_("Bad Language"),_("Bad Language"));
+		ff_post_error(_("Bad Language"),_("Bad Language"));
 return( true );
 	    }	/* Otherwise use the original language, it might not be one we recognize */
 	    if ( language != nd->changing->lang )
@@ -2539,7 +2539,7 @@ return( true );
 		val2 = (((struct macname *) (ti[i]->userdata))->enc<<16) |
 			(((struct macname *) (ti[i]->userdata))->lang);
 		if ( val2==val1 ) {
-		    gwwv_post_error(_("This feature code is already used"),_("This feature code is already used"));
+		    ff_post_error(_("This feature code is already used"),_("This feature code is already used"));
 return( true );
 		}
 	    }
@@ -2880,22 +2880,14 @@ return( false );
 	    ret1 = _GGadgetGetTitle(GWidgetGetControl(sd->gw,CID_Id));
 	    val1 = u_strtol(ret1,&end,10);
 	    if ( *end!='\0' ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		gwwv_post_error(_("Bad Number"),_("Bad Number"));
-#elif defined(FONTFORGE_CONFIG_GTK)
-		gwwv_post_error(_("Bad Number"),_("Bad Number"));
-#endif
+		ff_post_error(_("Bad Number"),_("Bad Number"));
 return( true );
 	    }
 	    ti = GGadgetGetList(sd->settinglist,&len);
 	    for ( i=0; i<len; ++i ) if ( i!=sd->index ) {
 		val2 = ((struct macsetting *) (ti[i]->userdata))->setting;
 		if ( val2==val1 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		    gwwv_post_error(_("This setting is already used"),_("This setting is already used"));
-#elif defined(FONTFORGE_CONFIG_GTK)
-		    gwwv_post_error(_("This setting is already used"),_("This setting is already used"));
-#endif
+		    ff_post_error(_("This setting is already used"),_("This setting is already used"));
 return( true );
 		}
 	    }
@@ -3187,22 +3179,14 @@ return( false );
 	    ret1 = _GGadgetGetTitle(GWidgetGetControl(fd->gw,CID_Id));
 	    val1 = u_strtol(ret1,&end,10);
 	    if ( *end!='\0' ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		gwwv_post_error(_("Bad Number"),_("Bad Number"));
-#elif defined(FONTFORGE_CONFIG_GTK)
-		gwwv_post_error(_("Bad Number"),_("Bad Number"));
-#endif
+		ff_post_error(_("Bad Number"),_("Bad Number"));
 return( true );
 	    }
 	    ti = GGadgetGetList(fd->featurelist,&len);
 	    for ( i=0; i<len; ++i ) if ( i!=fd->index ) {
 		val2 = ((MacFeat *) (ti[i]->userdata))->feature;
 		if ( val2==val1 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		    gwwv_post_error(_("This feature code is already used"),_("This feature code is already used"));
-#elif defined(FONTFORGE_CONFIG_GTK)
-		    gwwv_post_error(_("This feature code is already used"),_("This feature code is already used"));
-#endif
+		    ff_post_error(_("This feature code is already used"),_("This feature code is already used"));
 return( true );
 		}
 	    }

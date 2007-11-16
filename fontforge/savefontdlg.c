@@ -1515,7 +1515,7 @@ static int32 *ParseWernerSFDFile(char *wernerfilename,SplineFont *sf,int *max,
 
     file = fopen(wernerfilename,"r");
     if ( file==NULL ) {
-	gwwv_post_error(_("No Sub Font Definition file"),_("No Sub Font Definition file"));
+	ff_post_error(_("No Sub Font Definition file"),_("No Sub Font Definition file"));
 return( NULL );
     }
 
@@ -1538,7 +1538,7 @@ return( NULL );
     subfilecnt = 0;
     while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
 	if ( strncmp(buffer,pfaeditflag,strlen(pfaeditflag))== 0 ) {
-	    gwwv_post_error(_("Wrong type of SFD file"),_("This looks like one of FontForge's SplineFont DataBase files.\nNot one of TeX's SubFont Definition files.\nAn unfortunate confusion of extensions."));
+	    ff_post_error(_("Wrong type of SFD file"),_("This looks like one of FontForge's SplineFont DataBase files.\nNot one of TeX's SubFont Definition files.\nAn unfortunate confusion of extensions."));
 	    free(mapping);
 return( NULL );
 	}
@@ -1771,20 +1771,20 @@ return( 0 );
 
     err = !WritePSFont(filename,&temp,subtype,old_ps_flags,&encmap,sf);
     if ( err )
-	gwwv_post_error(_("Save Failed"),_("Save Failed"));
+	ff_post_error(_("Save Failed"),_("Save Failed"));
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( !err && (old_ps_flags&ps_flag_afm) && gwwv_progress_next_stage()) {
 #else
     if ( !err && (old_ps_flags&ps_flag_afm)) {
 #endif
 	if ( !WriteAfmFile(filename,&temp,oldformatstate,&encmap,old_ps_flags,sf)) {
-	    gwwv_post_error(_("Afm Save Failed"),_("Afm Save Failed"));
+	    ff_post_error(_("Afm Save Failed"),_("Afm Save Failed"));
 	    err = true;
 	}
     }
     if ( !err && (old_ps_flags&ps_flag_tfm) ) {
 	if ( !WriteTfmFile(filename,&temp,oldformatstate,&encmap)) {
-	    gwwv_post_error(_("Tfm Save Failed"),_("Tfm Save Failed"));
+	    ff_post_error(_("Tfm Save Failed"),_("Tfm Save Failed"));
 	    err = true;
 	}
     }
@@ -1829,7 +1829,7 @@ static int WriteMultiplePSFont(SplineFont *sf,char *newname,int32 *sizes,
     pt = strrchr(newname,'.');
     if ( pt==NULL ||
 	    (strcmp(pt,".pfa")!=0 && strcmp(pt,".pfb")!=0 && strcmp(pt,".mult")!=0)) {
-	gwwv_post_error(_("Bad Extension"),_("You must specify a standard type1 extension (.pfb or .pfa)"));
+	ff_post_error(_("Bad Extension"),_("You must specify a standard type1 extension (.pfb or .pfa)"));
 return( 0 );
     }
 
@@ -1945,26 +1945,26 @@ return( true );
 	  break;
 	}
 	if ( oerr ) {
-	    gwwv_post_error(_("Save Failed"),_("Save Failed"));
+	    ff_post_error(_("Save Failed"),_("Save Failed"));
 	    err = true;
 	}
     }
     if ( !err && (flags&ps_flag_tfm) ) {
 	if ( !WriteTfmFile(newname,sf,oldformatstate,map)) {
-	    gwwv_post_error(_("Tfm Save Failed"),_("Tfm Save Failed"));
+	    ff_post_error(_("Tfm Save Failed"),_("Tfm Save Failed"));
 	    err = true;
 	}
     }
     if ( !err && (flags&ttf_flag_ofm) ) {
 	if ( !WriteOfmFile(newname,sf,oldformatstate,map)) {
-	    gwwv_post_error(_("Ofm Save Failed"),_("Ofm Save Failed"));
+	    ff_post_error(_("Ofm Save Failed"),_("Ofm Save Failed"));
 	    err = true;
 	}
     }
     if ( !err && (flags&ps_flag_afm) ) {
 	gwwv_progress_increment(-sf->glyphcnt);
 	if ( !WriteAfmFile(newname,sf,oldformatstate,map,flags,NULL)) {
-	    gwwv_post_error(_("Afm Save Failed"),_("Afm Save Failed"));
+	    ff_post_error(_("Afm Save Failed"),_("Afm Save Failed"));
 	    err = true;
 	}
     }
@@ -1972,7 +1972,7 @@ return( true );
 	gwwv_progress_change_line1(_("Saving PFM File"));
 	gwwv_progress_increment(-sf->glyphcnt);
 	if ( !WritePfmFile(newname,sf,oldformatstate==ff_ptype0,map)) {
-	    gwwv_post_error(_("Pfm Save Failed"),_("Pfm Save Failed"));
+	    ff_post_error(_("Pfm Save Failed"),_("Pfm Save Failed"));
 	    err = true;
 	}
     }
@@ -2436,7 +2436,7 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
     if ( rename_to!=NULL && rename_to->uses_unicode ) {
 	/* I'll let someone generate a font with utf8 names, but I won't let */
 	/*  them take a font and force it to unicode here. */
-	gwwv_post_error(_("Namelist contains non-ASCII names"),_("Glyph names should be limited to characters in the ASCII character set, but there are names in this namelist which use characters outside that range."));
+	ff_post_error(_("Namelist contains non-ASCII names"),_("Glyph names should be limited to characters in the ASCII character set, but there are names in this namelist which use characters outside that range."));
 return;
     }
     
@@ -2530,7 +2530,7 @@ return;
 	ff_post_notice(_("The 'NFNT' bitmap format is obsolete"),_("The 'NFNT' bitmap format is not used under OS/X (though you still need to create a (useless) bitmap font if you are saving a type1 PostScript resource)"));
     } else if ( oldformatstate==ff_pfbmacbin &&
 	    (oldbitmapstate!=bf_nfntmacbin || sizes[0]==0)) {
-	gwwv_post_error(_("Needs bitmap font"),_("When generating a Mac Type1 resource font, you MUST generate at least one NFNT bitmap font to go with it. If you have not created any bitmaps for this font, cancel this dlg and use the Element->Bitmaps Available command to create one"));
+	ff_post_error(_("Needs bitmap font"),_("When generating a Mac Type1 resource font, you MUST generate at least one NFNT bitmap font to go with it. If you have not created any bitmaps for this font, cancel this dlg and use the Element->Bitmaps Available command to create one"));
 return;
     } else if ( oldformatstate==ff_pfbmacbin && !post_warned) {
 	post_warned = true;
@@ -2689,7 +2689,7 @@ static void _GFD_SaveOk(struct gfc_data *d) {
 		/* Artists is definitely optional */
 		*_GGadgetGetTitle(GWidgetGetControl(d->gw,CID_OFLibUsername))=='\0' ||
 		*_GGadgetGetTitle(GWidgetGetControl(d->gw,CID_OFLibPassword))=='\0' ) {
-	    gwwv_post_error(_("Bad OFLib upload"),
+	    ff_post_error(_("Bad OFLib upload"),
 		    *_GGadgetGetTitle(GWidgetGetControl(d->gw,CID_OFLibPassword))=='\0' ?
 			    _("Missing OFLib password") :
 		    *_GGadgetGetTitle(GWidgetGetControl(d->gw,CID_OFLibUsername))=='\0' ?
@@ -3191,16 +3191,16 @@ int SFGenerateFont(SplineFont *sf,int family,EncMap *map) {
 	    }
 	}
 	if ( MacStyleCode(sf,NULL)!=0 || familycnt<=1 || sf->multilayer ) {
-	    gwwv_post_error(_("Bad Mac Family"),_("To generate a Mac family file, the current font must have plain (Normal, Regular, etc.) style, and there must be other open fonts with the same family name."));
+	    ff_post_error(_("Bad Mac Family"),_("To generate a Mac family file, the current font must have plain (Normal, Regular, etc.) style, and there must be other open fonts with the same family name."));
 return( 0 );
 	} else if ( dup ) {
 	    MacStyleCode(dup,&psstyle);
-	    gwwv_post_error(_("Bad Mac Family"),_("There are two open fonts with the current family name and the same style. %.30s and %.30s"),
+	    ff_post_error(_("Bad Mac Family"),_("There are two open fonts with the current family name and the same style. %.30s and %.30s"),
 		dup->fontname, familysfs[dupfc][dupstyle]->fontname);
 return( 0 );
 #if 0
 	} else if ( badenc ) {
-	    gwwv_post_error(_("Bad Mac Family"),_("The font %1$.30s has a different encoding than that of %2$.30s"),
+	    ff_post_error(_("Bad Mac Family"),_("The font %1$.30s has a different encoding than that of %2$.30s"),
 		badenc->fontname, sf->fontname );
 return( 0 );
 #endif

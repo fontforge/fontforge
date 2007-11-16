@@ -793,7 +793,7 @@ static int DV_WatchPnt(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	dv = GDrawGetUserData(GGadgetGetWindow(g));
 	if ( dv->cv->sc->layers[ly_fore].refs!=NULL ) {
-	    gwwv_post_error(_("No Watch Points"),_("Watch Points not supported in glyphs with references"));
+	    ff_post_error(_("No Watch Points"),_("Watch Points not supported in glyphs with references"));
 return( true );
 	}
 

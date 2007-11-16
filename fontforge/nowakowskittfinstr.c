@@ -744,7 +744,7 @@ static void init_cvt(GlobalInstrCt *gic) {
         free(cvt);
 
 	if (!gic->cvt_done) {
-	    gwwv_post_error(_("Can't insert 'cvt'"),
+	    ff_post_error(_("Can't insert 'cvt'"),
 		_("There already exists a 'cvt' table, perhaps legacy. "
 		  "FontForge can use it, but can't make any assumptions on "
 		  "values stored there, so generated instructions will be of "
@@ -1100,7 +1100,7 @@ static void init_fpgm(GlobalInstrCt *gic) {
 
 	/* Log warning message. */
 	if (!gic->fpgm_done)
-	    gwwv_post_error(_("Can't insert 'fpgm'"),
+	    ff_post_error(_("Can't insert 'fpgm'"),
 		_("There exists a 'fpgm' code that seems incompatible with "
 		  "FontForge's. Instructions generated will be of lower "
 		  "quality. If legacy hinting is to be scrapped, it is "
@@ -1357,7 +1357,7 @@ static void init_prep(GlobalInstrCt *gic) {
 
 	/* Log warning message. */
 	if (!gic->prep_done)
-	    gwwv_post_error(_("Can't insert 'prep'"),
+	    ff_post_error(_("Can't insert 'prep'"),
 		_("There exists a 'prep' code incompatible with FontForge's. "
 		  "It can't be guaranteed it will work well. It is suggested "
 		  "to allow FontForge to insert its code and then append user"
@@ -3174,7 +3174,7 @@ void NowakowskiSCAutoInstr(GlobalInstrCt *gic, SplineChar *sc) {
 return;
 
     if ( sc->layers[ly_fore].refs!=NULL && sc->layers[ly_fore].splines!=NULL ) {
-	gwwv_post_error(_("Can't instruct this glyph"),
+	ff_post_error(_("Can't instruct this glyph"),
 		_("TrueType does not support mixed references and contours.\nIf you want instructions for %.30s you should either:\n * Unlink the reference(s)\n * Copy the inline contours into their own (unencoded\n    glyph) and make a reference to that."),
 		sc->name );
 return;
@@ -3187,7 +3187,7 @@ return;
     break;
     }
     if ( ref!=NULL ) {
-	gwwv_post_error(_("Can't instruct this glyph"),
+	ff_post_error(_("Can't instruct this glyph"),
 		_("TrueType does not support references which\nare scaled by more than 200%%.  But %1$.30s\nhas been in %2$.30s. Any instructions\nadded would be meaningless."),
 		ref->sc->name, sc->name );
 return;

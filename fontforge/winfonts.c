@@ -836,8 +836,8 @@ int FONFontDump(char *filename,SplineFont *sf, int32 *sizes,int resol,
     if ( sf->cidmaster!=NULL ) sf = sf->cidmaster;
 
     for ( i=0; sizes[i]!=0; ++i );
-    gwwv_progress_change_line1(_("Saving Bitmap Font(s)"));
-    gwwv_progress_change_stages(i);
+    ff_progress_change_line1(_("Saving Bitmap Font(s)"));
+    ff_progress_change_stages(i);
     num_files = i;
     fntarray = galloc(num_files*sizeof(FILE **));
     file_lens = galloc(num_files*sizeof(int));
@@ -861,7 +861,7 @@ return( false );
 	    free(fntarray);
 return( false );
 	}
-	gwwv_progress_next_stage();
+	ff_progress_next_stage();
 
 	rewind(fntarray[i]);
 	lgetushort(fntarray[i]);
@@ -927,7 +927,7 @@ return( false );
 
     fon = fopen(filename, "wb");
     if ( fon==NULL ) {
-	gwwv_post_error(_("Couldn't open file"),_("Could not open output file: %s"),
+	ff_post_error(_("Couldn't open file"),_("Could not open output file: %s"),
 		filename );
 	for ( j=0; j<num_files; ++j )
 	    fclose(fntarray[j]);

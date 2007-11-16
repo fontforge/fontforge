@@ -1185,7 +1185,7 @@ static void CIDMergeFont(SplineFont *into,SplineFont *other, int preserveCrossFo
 void MergeFont(FontView *fv,SplineFont *other, int preserveCrossFontKerning) {
 
     if ( fv->sf==other ) {
-	gwwv_post_error(_("Merging Problem"),_("Merging a font with itself achieves nothing"));
+	ff_post_error(_("Merging Problem"),_("Merging a font with itself achieves nothing"));
 return;
     }
     if ( fv->sf->cidmaster!=NULL && other->subfonts!=NULL &&
@@ -1193,7 +1193,7 @@ return;
 	     strcmp(fv->sf->cidmaster->ordering,other->ordering)!=0 ||
 	     fv->sf->cidmaster->supplement<other->supplement ||
 	     fv->sf->cidmaster->subfontcnt<other->subfontcnt )) {
-	gwwv_post_error(_("Merging Problem"),_("When merging two CID keyed fonts, they must have the same Registry and Ordering, and the font being merged into (the mergee) must have a supplement which is at least as recent as the other's. Furthermore the mergee must have at least as many subfonts as the merger."));
+	ff_post_error(_("Merging Problem"),_("When merging two CID keyed fonts, they must have the same Registry and Ordering, and the font being merged into (the mergee) must have a supplement which is at least as recent as the other's. Furthermore the mergee must have at least as many subfonts as the merger."));
 return;
     }
     /* Ok. when merging CID fonts... */
@@ -1229,7 +1229,7 @@ return;
 	if ( sf==NULL )
 	    /* Do Nothing */;
 	else if ( sf->fv==fv )
-	    gwwv_post_error(_("Merging Problem"),_("Merging a font with itself achieves nothing"));
+	    ff_post_error(_("Merging Problem"),_("Merging a font with itself achieves nothing"));
 	else {
 	    if ( preserveCrossFontKerning==-1 ) {
 		char *buts[4];
@@ -1782,27 +1782,15 @@ SplineFont *InterpolateFont(SplineFont *base, SplineFont *other, real amount,
     int i, index;
 
     if ( base==other ) {
-#if defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_error(_("Interpolating Problem"),_("Interpolating a font with itself achieves nothing"));
-#else
-	gwwv_post_error(_("Interpolating Problem"),_("Interpolating a font with itself achieves nothing"));
-#endif
+	ff_post_error(_("Interpolating Problem"),_("Interpolating a font with itself achieves nothing"));
 return( NULL );
     } else if ( base->order2!=other->order2 ) {
-#if defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_error(_("Interpolating Problem"),_("Interpolating between fonts with different spline orders (i.e. between postscript and truetype)"));
-#else
-	gwwv_post_error(_("Interpolating Problem"),_("Interpolating between fonts with different spline orders (i.e. between postscript and truetype)"));
-#endif
+	ff_post_error(_("Interpolating Problem"),_("Interpolating between fonts with different spline orders (i.e. between postscript and truetype)"));
 return( NULL );
     }
 #ifdef FONTFORGE_CONFIG_TYPE3
     else if ( base->multilayer && other->multilayer ) {
-# if defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_error(_("Interpolating Problem"),_("Interpolating between fonts with different editing types (ie. between type3 and type1)"));
-# else
-	gwwv_post_error(_("Interpolating Problem"),_("Interpolating between fonts with different editing types (ie. between type3 and type1)"));
-# endif
+	ff_post_error(_("Interpolating Problem"),_("Interpolating between fonts with different editing types (ie. between type3 and type1)"));
 return( NULL );
     }
 #endif

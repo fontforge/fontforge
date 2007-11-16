@@ -1350,14 +1350,10 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
     int i;
     int fixed = gi->fixed_width;
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    gwwv_progress_change_stages(2+gi->strikecnt);
-#endif
+    ff_progress_change_stages(2+gi->strikecnt);
     QuickBlues(sf,&gi->bd);
     /*FindBlues(sf,gi->blues,NULL);*/
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    gwwv_progress_next_stage();
-#endif
+    ff_progress_next_stage();
 
     if ( !gi->onlybitmaps ) {
 	if ( sf->order2 )
@@ -1417,10 +1413,8 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
 	    if ( ftell(gi->glyphs)&2 )
 		putshort(gi->glyphs,0);
 	}
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	if ( !gwwv_progress_next())
+	if ( !ff_progress_next())
 return( false );
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
 
     /* extra location entry points to end of last glyph */
@@ -1924,25 +1918,17 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at,int subfont,
     hasblue = PSDictHasEntry(sf->private,"BlueValues")!=NULL;
     hash = PSDictHasEntry(sf->private,"StdHW")!=NULL;
     hasv = PSDictHasEntry(sf->private,"StdVW")!=NULL;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    gwwv_progress_change_stages(2+autohint_before_generate+!hasblue);
-#endif
+    ff_progress_change_stages(2+autohint_before_generate+!hasblue);
     if ( autohint_before_generate ) {
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	gwwv_progress_change_line1(_("Auto Hinting Font..."));
-#endif
+	ff_progress_change_line1(_("Auto Hinting Font..."));
 	SplineFontAutoHint(sf);
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	gwwv_progress_next_stage();
-#endif
+	ff_progress_next_stage();
     }
 
     otherblues[0] = otherblues[1] = bluevalues[0] = bluevalues[1] = 0;
     if ( !hasblue ) {
 	FindBlues(sf,bluevalues,otherblues);
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	gwwv_progress_next_stage();
-#endif
+	ff_progress_next_stage();
     }
 
     stdhw[0] = stdvw[0] = 0;
@@ -1963,9 +1949,7 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at,int subfont,
 	    else if ( snapcnt[i]>snapcnt[mi] ) mi = i;
 	if ( mi!=-1 ) stdvw[0] = stemsnapv[mi];
     }
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    gwwv_progress_change_line1(_("Saving OpenType Font"));
-#endif
+    ff_progress_change_line1(_("Saving OpenType Font"));
 
     if ( hasblue )
 	DumpStrArray(PSDictHasEntry(sf->private,"BlueValues"),private,6);
@@ -2516,9 +2500,7 @@ static int dumptype2glyphs(SplineFont *sf,struct alltabs *at) {
     dumpcffheader(sf,at->cfff);
     dumpcffnames(sf,at->cfff);
     dumpcffcharset(sf,at);
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    gwwv_progress_change_stages(2+at->gi.strikecnt);
-#endif
+    ff_progress_change_stages(2+at->gi.strikecnt);
 
     ATFigureDefWidth(sf,at,-1);
     if ((chrs =SplineFont2ChrsSubrs2(sf,at->nomwid,at->defwid,at->gi.bygid,at->gi.gcnt,at->gi.flags,&subrs))==NULL )
@@ -2526,9 +2508,7 @@ return( false );
     dumpcffprivate(sf,at,-1,subrs->next);
     if ( subrs->next!=0 )
 	_dumpcffstrings(at->private,subrs);
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    gwwv_progress_next_stage();
-#endif
+    ff_progress_next_stage();
     at->charstrings = dumpcffstrings(chrs);
     PSCharsFree(subrs);
     if ( at->charstrings == NULL )
@@ -4079,31 +4059,31 @@ return( NULL );		/* Doesn't have the single byte entries */
     if ( base2!=-1 ) {
 	for ( i=base; i<=basebound && i<map->enccount; ++i )
 	    if ( map->map[i]!=-1 && SCWorthOutputting(sf->glyphs[map->map[i]])) {
-		gwwv_post_error(_("Bad Encoding"),_("There is a single byte character (%d) using one of the slots needed for double byte characters"),i);
+		ff_post_error(_("Bad Encoding"),_("There is a single byte character (%d) using one of the slots needed for double byte characters"),i);
 	break;
 	    }
 	if ( i==basebound+1 )
 	    for ( i=base2; i<256 && i<map->enccount; ++i )
 		if ( map->map[i]!=-1 && SCWorthOutputting(sf->glyphs[map->map[i]])) {
-		    gwwv_post_error(_("Bad Encoding"),_("There is a single byte character (%d) using one of the slots needed for double byte characters"),i);
+		    ff_post_error(_("Bad Encoding"),_("There is a single byte character (%d) using one of the slots needed for double byte characters"),i);
 	    break;
 		}
     } else {
 	for ( i=base; i<=256 && i<map->enccount; ++i )
 	    if ( map->map[i]!=-1 && SCWorthOutputting(sf->glyphs[map->map[i]])) {
-		gwwv_post_error(_("Bad Encoding"),_("There is a single byte character (%d) using one of the slots needed for double byte characters"),i);
+		ff_post_error(_("Bad Encoding"),_("There is a single byte character (%d) using one of the slots needed for double byte characters"),i);
 	break;
 	    }
     }
     for ( i=256; i<(base<<8) && i<map->enccount; ++i )
 	if ( map->map[i]!=-1 && SCWorthOutputting(sf->glyphs[map->map[i]])) {
-	    gwwv_post_error(_("Bad Encoding"),_("There is a character (%d) which cannot be encoded"),i);
+	    ff_post_error(_("Bad Encoding"),_("There is a character (%d) which cannot be encoded"),i);
     break;
 	}
     if ( i==(base<<8) && base2==-1 )
 	for ( i=((basebound+1)<<8); i<0x10000 && i<map->enccount; ++i )
 	    if ( map->map[i]!=-1 && SCWorthOutputting(sf->glyphs[map->map[i]])) {
-		gwwv_post_error(_("Bad Encoding"),_("There is a character (%d) which cannot be encoded"),i);
+		ff_post_error(_("Bad Encoding"),_("There is a character (%d) which cannot be encoded"),i);
 	break;
 	    }
 
@@ -4134,7 +4114,7 @@ return( NULL );		/* Doesn't have the single byte entries */
 	for ( i=0; i<lbase; ++i )
 	    if ( !complained && map->map[i+j]!=-1 &&
 		    SCWorthOutputting(sf->glyphs[map->map[i+j]])) {
-		gwwv_post_error(_("Bad Encoding"),_("There is a character (%d) which is not normally in the encoding"),i+j);
+		ff_post_error(_("Bad Encoding"),_("There is a character (%d) which is not normally in the encoding"),i+j);
 		complained = true;
 	    }
 	if ( isbig5 ) {
@@ -4142,7 +4122,7 @@ return( NULL );		/* Doesn't have the single byte entries */
 	    for ( i=0x7f; i<0xa1; ++i )
 		if ( !complained && map->map[i+j]!=-1 &&
 			SCWorthOutputting(sf->glyphs[map->map[i+j]])) {
-		    gwwv_post_error(_("Bad Encoding"),_("There is a character (%d) which is not normally in the encoding"),i+j);
+		    ff_post_error(_("Bad Encoding"),_("There is a character (%d) which is not normally in the encoding"),i+j);
 		    complained = true;
 		}
 	}
@@ -4615,23 +4595,17 @@ static void dumpcmap(struct alltabs *at, SplineFont *sf,enum fontformat format) 
 	}
     }
     if ( sf->subfontcnt==0 && !anyglyphs && !sf->internal_temp ) {
-	gwwv_post_error(_("No Encoded Glyphs"),_("Warning: Font contained no glyphs"));
+	ff_post_error(_("No Encoded Glyphs"),_("Warning: Font contained no glyphs"));
     }
     if ( sf->subfontcnt==0 && format!=ff_ttfsym && !sf->internal_temp ) {
 	if ( i==0 && anyglyphs ) {
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	    if ( map->enccount<=256 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
 		char *buts[3];
 		buts[0] = _("_Yes"); buts[1] = _("_No"); buts[2] = NULL;
-#else
-		static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_NO, NULL };
-#endif
-		if ( gwwv_ask(_("No Encoded Glyphs"),(const char **) buts,0,1,_("This font contains no glyphs with unicode encodings.\nWould you like to use a \"Symbol\" encoding instead of Unicode?"))==0 )
+		if ( ff_ask(_("No Encoded Glyphs"),(const char **) buts,0,1,_("This font contains no glyphs with unicode encodings.\nWould you like to use a \"Symbol\" encoding instead of Unicode?"))==0 )
 		    format = ff_ttfsym;
 	    } else
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-		gwwv_post_error(_("No Encoded Glyphs"),_("This font contains no glyphs with unicode encodings.\nYou will probably not be able to use the output."));
+		ff_post_error(_("No Encoded Glyphs"),_("This font contains no glyphs with unicode encodings.\nYou will probably not be able to use the output."));
 	}
     }
 
@@ -5103,7 +5077,7 @@ static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
 	    if ( bdf!=NULL )
 		bsizes[j++] = bsizes[i];
 	    else
-		gwwv_post_error(_("Missing bitmap strike"), _("The font database does not contain a bitmap of size %d and depth %d"), bsizes[i]&0xffff, bsizes[i]>>16 );
+		ff_post_error(_("Missing bitmap strike"), _("The font database does not contain a bitmap of size %d and depth %d"), bsizes[i]&0xffff, bsizes[i]>>16 );
 	}
 	bsizes[j] = 0;
 	for ( i=0; bsizes[i]!=0; ++i );
@@ -5117,7 +5091,7 @@ static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
 	AssignTTFGlyph(&at->gi,sf,at->map,format==ff_otf);
     else {
 	if ( bsizes==NULL ) {
-	    gwwv_post_error(_("No bitmap strikes"), _("No bitmap strikes"));
+	    ff_post_error(_("No bitmap strikes"), _("No bitmap strikes"));
 	    AbortTTF(at,sf);
 return( false );
 	}

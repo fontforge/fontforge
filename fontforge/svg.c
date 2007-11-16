@@ -1041,19 +1041,14 @@ static xmlNodePtr SVGPickFont(xmlNodePtr *fonts,char *filename) {
 	if ( choice==-1 ) {
 	    char *fn = copy(filename);
 	    fn[lparen-filename] = '\0';
-	    gwwv_post_error(_("Not in Collection"),_("%s is not in %.100s"),find,fn);
+	    ff_post_error(_("Not in Collection"),_("%s is not in %.100s"),find,fn);
 	    free(fn);
 	}
 	free(find);
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
     } else if ( no_windowing_ui )
 	choice = 0;
     else
-	choice = gwwv_choose(_("Pick a font, any font..."),(const char **) names,cnt,0,_("There are multiple fonts in this file, pick one"));
-#else
-    } else
-	choice = 0;
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+	choice = ff_choose(_("Pick a font, any font..."),(const char **) names,cnt,0,_("There are multiple fonts in this file, pick one"));
     for ( cnt=0; names[cnt]!=NULL; ++cnt )
 	free(names[cnt]);
     free(names);
@@ -2844,9 +2839,7 @@ return( NULL );
 	sprintf(sf->xuid,"[%s %d]", xuid, (rand()&0xffffff));
     }
 
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
-    gwwv_progress_change_total(cnt);
-#endif
+    ff_progress_change_total(cnt);
     sf->glyphcnt = sf->glyphmax = cnt;
     sf->glyphs = galloc(cnt*sizeof(SplineChar *));
 
@@ -2858,18 +2851,14 @@ return( NULL );
 		sf->glyphs[cnt]->orig_pos = cnt;
 		cnt++;
 	    }
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
-	    gwwv_progress_next();
-#endif
+	    ff_progress_next();
 	} else if ( _xmlStrcmp(kids->name,(const xmlChar *) "glyph")==0 ) {
 	    sf->glyphs[cnt] = SVGParseGlyph(sf,kids,defh,defv,cnt,&flags);
 	    if ( sf->glyphs[cnt]!=NULL ) {
 		sf->glyphs[cnt]->orig_pos = cnt;
 		cnt++;
 	    }
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
-	    gwwv_progress_next();
-#endif
+	    ff_progress_next();
 	}
     }
     cnt = 0;

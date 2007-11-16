@@ -1452,12 +1452,8 @@ return( NULL );
 	if ( i<pc.fcnt )
 	    sf = pdf_loadfont(&pc,i);
 	else
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
-	    gwwv_post_error(_("Not in Collection"),_("%s is not in %.100s"),
+	    ff_post_error(_("Not in Collection"),_("%s is not in %.100s"),
 		    select_this_font, filename);
-#else
-	    ;
-#endif
     } else {
 	char **names;
 	int choice;
@@ -1465,14 +1461,10 @@ return( NULL );
 	for ( i=0; i<pc.fcnt; ++i )
 	    names[i] = copy(pc.fontnames[i]);
 	names[i] = NULL;
-#if defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
-	choice = 0;
-#else
 	if ( no_windowing_ui )
 	    choice = 0;
 	else
-	    choice = gwwv_choose(_("Pick a font, any font..."),(const char **) names,pc.fcnt,0,_("There are multiple fonts in this file, pick one"));
-#endif
+	    choice = ff_choose(_("Pick a font, any font..."),(const char **) names,pc.fcnt,0,_("There are multiple fonts in this file, pick one"));
 	for ( i=0; i<pc.fcnt; ++i )
 	    free(names[i]);
 	free(names);

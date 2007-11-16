@@ -1007,7 +1007,7 @@ return( true );
 		GGadget *tf2 = GWidgetGetControl(math->gw,2*i+2);
 		char *str = GGadgetGetTitle8(tf2);
 		if ( !DeviceTableOK(str,&low,&high)) {
-		    gwwv_post_error(_("Bad device table"), _("Bad device table for %s"),
+		    ff_post_error(_("Bad device table"), _("Bad device table for %s"),
 			    math_constants_descriptor[i].ui_name);
 		    free(str);
 return( true );
@@ -1023,7 +1023,7 @@ return( true );
 	    struct matrix_data *old = GMatrixEditGet(g,&rows);
 	    for ( i=0; i<rows; ++i ) {
 		if ( SFGetChar(sf,-1,old[i*cols+0].u.md_str)==NULL ) {
-		    gwwv_post_error(_("Missing Glyph"), _("There is no glyph named %s (used in %s)"),
+		    ff_post_error(_("Missing Glyph"), _("There is no glyph named %s (used in %s)"),
 			    old[i*cols+0].u.md_str, gi_aspectnames[cid-CID_Exten]);
 return( true );
 		}
@@ -1031,7 +1031,7 @@ return( true );
 		if ( cid==CID_Italic || cid==CID_TopAccent ||
 			cid == CID_VGlyphConst || cid == CID_HGlyphConst ) {
 		    if ( !DeviceTableOK(old[i*cols+2].u.md_str,&low,&high)) {
-			gwwv_post_error(_("Bad device table"), _("Bad device table for glyph %s in %s"),
+			ff_post_error(_("Bad device table"), _("Bad device table for glyph %s in %s"),
 				old[i*cols+0].u.md_str, gi_aspectnames[cid-CID_Exten]);
 return( true );
 		    }
@@ -1039,14 +1039,14 @@ return( true );
 #endif
 		if ( cid == CID_VGlyphConst || cid == CID_HGlyphConst ) {
 		    if ( GV_StringCheck(sf,old[i*cols+cols-1].u.md_str)==-1 ) {
-			gwwv_post_error(_("Bad Parts List"), _("Bad parts list for glyph %s in %s"),
+			ff_post_error(_("Bad Parts List"), _("Bad parts list for glyph %s in %s"),
 				old[i*cols+0].u.md_str, gi_aspectnames[cid-CID_Exten]);
 return( true );
 		    }
 		}
 		if ( cid == CID_VGlyphVar || cid == CID_HGlyphVar ) {
 		    if ( !SF_NameListCheck(sf,old[i*cols+1].u.md_str)) {
-			gwwv_post_error(_("Bad Variants List"), _("Bad Variants list for glyph %s in %s"),
+			ff_post_error(_("Bad Variants List"), _("Bad Variants list for glyph %s in %s"),
 				old[i*cols+0].u.md_str, gi_aspectnames[cid-CID_Exten]);
 return( true );
 		    }
@@ -1768,7 +1768,7 @@ static int MKD_Parse(MathKernDlg *mkd) {
 	    for ( j=0; j<rows; ++j ) {
 		if ( !DeviceTableOK(old[j*cols+2].u.md_str,&low,&high) ||
 			!DeviceTableOK(old[j*cols+3].u.md_str,&low,&high)) {
-		    gwwv_post_error(_("Bad device table"), _("Bad device table for in row %d of %s"),
+		    ff_post_error(_("Bad device table"), _("Bad device table for in row %d of %s"),
 			    j, cornernames[i]);
 return( false );
 		}

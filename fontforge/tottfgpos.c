@@ -1523,7 +1523,7 @@ static void dumpgposCursiveAttach(FILE *gpos, SplineFont *sf,
 	    if ( ac==NULL )
 		ac = testac;
 	    else {
-		gwwv_post_error(_("Two cursive anchor classes"),_("Two cursive anchor classes in the same subtable, %s"),
+		ff_post_error(_("Two cursive anchor classes"),_("Two cursive anchor classes in the same subtable, %s"),
 			sub->subtable_name);
     break;
 	    }

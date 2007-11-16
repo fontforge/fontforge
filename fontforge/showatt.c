@@ -2009,7 +2009,7 @@ return;
     file = fopen(cret,"w");
     free(cret);
     if ( file==NULL ) {
-	gwwv_post_error(_("Save Failed"),_("Save Failed"),ret);
+	ff_post_error(_("Save Failed"),_("Save Failed"),ret);
 	free(ret);
 return;
     }

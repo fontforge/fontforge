@@ -568,11 +568,11 @@ return( NULL );
 		if ( strcmp( nl2->title,pt )==0 )
 	    break;
 	    if ( nl2==NULL ) {
-		gwwv_post_error(_("NameList base missing"),_("NameList %s based on %s which could not be found"), nl->title, pt );
+		ff_post_error(_("NameList base missing"),_("NameList %s based on %s which could not be found"), nl->title, pt );
 		NameListFree(nl);
 return( NULL );
 	    } else if ( nl->basedon!=NULL ) {
-		gwwv_post_error(_("NameList based twice"),_("NameList %s based on two NameLists"), nl->title );
+		ff_post_error(_("NameList based twice"),_("NameList %s based on two NameLists"), nl->title );
 		NameListFree(nl);
 return( NULL );
 	    }
@@ -581,7 +581,7 @@ return( NULL );
 	    for ( pt=buffer+7; *pt==' ' || *pt=='\t'; ++pt);
 	    for ( test=pt; *test!=' ' && *test!='\t' && *test!='\0'; ++test );
 	    if ( *test=='\0' ) {
-		gwwv_post_error(_("NameList parsing error"),_("Missing rename \"to\" name %s\n%s"), nl->title, buffer );
+		ff_post_error(_("NameList parsing error"),_("Missing rename \"to\" name %s\n%s"), nl->title, buffer );
 		NameListFree(nl);
 return( NULL );
 	    }
@@ -590,7 +590,7 @@ return( NULL );
 	    if ( (test[0]=='-' || test[0]=='=') && test[1]=='>' )
 		for ( test+=2; *test==' ' || *test=='\t'; ++test);
 	    if ( *test=='\0' ) {
-		gwwv_post_error(_("NameList parsing error"),_("Missing rename \"to\" name %s\n%s"), nl->title, buffer );
+		ff_post_error(_("NameList parsing error"),_("Missing rename \"to\" name %s\n%s"), nl->title, buffer );
 		NameListFree(nl);
 return( NULL );
 	    }
@@ -607,14 +607,14 @@ return( NULL );
 		pt += 2;
 	    uni = strtol(pt,&end,16);
 	    if ( end==pt || uni<0 || uni>=unicode4_size ) {
-		gwwv_post_error(_("NameList parsing error"),_("Bad unicode value when parsing %s\n%s"), nl->title, buffer );
+		ff_post_error(_("NameList parsing error"),_("Bad unicode value when parsing %s\n%s"), nl->title, buffer );
 		NameListFree(nl);
 return( NULL );
 	    }
 	    pt = end;
 	    while ( *pt==' ' || *pt==';' || *pt=='\t' ) ++pt;
 	    if ( *pt=='\0' ) {
-		gwwv_post_error(_("NameList parsing error"),_("Missing name when parsing %s for unicode %x"), nl->title, uni );
+		ff_post_error(_("NameList parsing error"),_("Missing name when parsing %s for unicode %x"), nl->title, uni );
 		NameListFree(nl);
 return( NULL );
 	    }
@@ -623,7 +623,7 @@ return( NULL );
 		    *test=='(' || *test=='[' || *test=='{' || *test=='<' ||
 		    *test==')' || *test==']' || *test=='}' || *test=='>' ||
 		    *test=='%' || *test=='/' ) {
-		    gwwv_post_error(_("NameList parsing error"),_("Bad name when parsing %s for unicode %x"), nl->title, uni );
+		    ff_post_error(_("NameList parsing error"),_("Bad name when parsing %s for unicode %x"), nl->title, uni );
 		    NameListFree(nl);
 return( NULL );
 		}
@@ -643,7 +643,7 @@ return( NULL );
 	    if ( nl->unicode[up][ub][uc]==NULL )
 		nl->unicode[up][ub][uc]=copy(pt);
 	    else {
-		gwwv_post_error(_("NameList parsing error"),_("Multiple names when parsing %s for unicode %x"), nl->title, uni );
+		ff_post_error(_("NameList parsing error"),_("Multiple names when parsing %s for unicode %x"), nl->title, uni );
 		NameListFree(nl);
 return( NULL );
 	    }

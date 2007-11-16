@@ -643,14 +643,10 @@ return;
 	 edges[cnt++] = pts[3]->next;
 
     if ( cnt<2 ) {
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
-	gwwv_post_error(_("Not enough lines"),_("Not enough lines"));
-#endif
+	ff_post_error(_("Not enough lines"),_("Not enough lines"));
 return;
     } else if ( cnt==2 && CommonEndPoint(edges[0],edges[1]) ) {
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
-	gwwv_post_error(_("Can't Parallel"),_("These two lines share a common endpoint, I can't make them parallel"));
-#endif
+	ff_post_error(_("Can't Parallel"),_("These two lines share a common endpoint, I can't make them parallel"));
 return;
     }
 

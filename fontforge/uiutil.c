@@ -28,7 +28,6 @@
 #include <gfile.h>
 #include <stdarg.h>
 #include <unistd.h>
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <utype.h>
 #include <ustring.h>
 
@@ -110,7 +109,6 @@ int GetInt8(GWindow gw,int cid,char *name,int *err) {
     free(txt);
 return( val );
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 extern char *helpdir;
 
@@ -190,11 +188,7 @@ static void do_windows_browser(char *fullspec) {
     if ( format==NULL )
 	format = win_program_from_extension(".htm");
     if ( format==NULL ) {
-#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("No Browser"),_("Could not find a browser. Set the BROWSER environment variable to point to one"));
-#else
-	gwwv_post_error(_("No Browser"),_("Could not find a browser. Set the BROWSER environment variable to point to one"));
-#endif
 return;
     }
 
@@ -333,11 +327,7 @@ void help(char *file) {
 	findbrowser();
 #ifndef __CygWin
     if ( browser[0]=='\0' ) {
-#if defined(FONTFORGE_CONFIG_GTK)
 	gwwv_post_error(_("No Browser"),_("Could not find a browser. Set the BROWSER environment variable to point to one"));
-#else
-	gwwv_post_error(_("No Browser"),_("Could not find a browser. Set the BROWSER environment variable to point to one"));
-#endif
 return;
     }
 #endif
@@ -418,11 +408,7 @@ return;
 	sprintf( temp, "osascript -l AppleScript -e \"Tell application \"%s\" to getURL \"%s\"\"",
 	    pt, fullspec);
 	system(temp);
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	ff_post_notice(_("Leave X"),_("A browser is probably running in the native Mac windowing system. You must leave the X environment to view it. Try Cmd-Opt-A"));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	ff_post_notice(_("Leave X"),_("A browser is probably running in the native Mac windowing system. You must leave the X environment to view it. Try Cmd-Opt-A"));
-#endif
     } else {
 #elif __Mac
     /* This seems a bit easier... Thanks to riggle */
@@ -430,11 +416,7 @@ return;
 	temp = galloc(strlen(browser) + strlen(fullspec) + 20);
 	sprintf( temp, "open \"%s\" &", fullspec );
 	system(temp);
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	ff_post_notice(_("Leave X"),_("A browser is probably running in the native Mac windowing system. You must leave the X environment to view it. Try Cmd-Opt-A"));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	ff_post_notice(_("Leave X"),_("A browser is probably running in the native Mac windowing system. You must leave the X environment to view it. Try Cmd-Opt-A"));
-#endif
     } else {
 #elif __CygWin
     if ( browser[0]=='\0' ) {
@@ -451,29 +433,15 @@ return;
     free(temp);
 }
 
-void IError(const char *format,...) {
+static void UI_IError(const char *format,...) {
     va_list ap;
-#if defined( FONTFORGE_CONFIG_NO_WINDOWING_UI )
-    va_start(ap,format);
-    fprintf(stderr, "Internal Error: " );
-    vfprintf(stderr,format,ap);
-#elif defined( FONTFORGE_CONFIG_GDRAW )
     char buffer[300];
     va_start(ap,format);
     vsnprintf(buffer,sizeof(buffer),format,ap);
     GDrawIError("%s",buffer);
-#elif defined( FONTFORGE_CONFIG_GTK )
-    char buffer[340];
-    int len;
-    va_start(ap,format);
-    strcpy(buffer,_("Internal Error: "));
-    len = strlen(buffer);
-    vsnprintf(buffer+len,sizeof(buffer)-len,format,ap);
-#endif
     va_end(ap);
 }
 
-#if !defined( FONTFORGE_CONFIG_NO_WINDOWING_UI )
 #define MAX_ERR_LINES	200
 static struct errordata {
     char *errlines[MAX_ERR_LINES];
@@ -706,18 +674,10 @@ return;
 	GDrawRequestExpose(errdata.v,NULL,false);
     errdata.showing = true;
 }
-#endif
 
 static void _LogError(const char *format,va_list ap) {
     char buffer[400], *str;
     vsnprintf(buffer,sizeof(buffer),format,ap);
-#if defined( FONTFORGE_CONFIG_NO_WINDOWING_UI )
-    str = utf82def_copy(buffer);
-    fprintf(stderr,"%s",str);
-    if ( str[strlen(str)-1]!='\n' )
-	putc('\n',stderr);
-    free(str);
-#else
     if ( no_windowing_ui ) {
 	str = utf82def_copy(buffer);
 	fprintf(stderr,"%s",str);
@@ -730,10 +690,9 @@ static void _LogError(const char *format,va_list ap) {
 	AppendToErrorWindow(buffer);
 	ShowErrorWindow();
     }
-#endif
 }
 
-void LogError(const char *format,...) {
+static void UI_LogError(const char *format,...) {
     va_list ap;
 
     va_start(ap,format);
@@ -741,12 +700,9 @@ void LogError(const char *format,...) {
     va_end(ap);
 }
 
-void ff_post_notice(const char *title,const char *statement,...) {
+static void UI_post_notice(const char *title,const char *statement,...) {
     va_list ap;
     va_start(ap,statement);
-#if defined( FONTFORGE_CONFIG_NO_WINDOWING_UI )
-    _LogError(statement,ap);
-#else
     if ( no_windowing_ui ) {
 	_LogError(statement,ap);
     } else {
@@ -755,6 +711,41 @@ void ff_post_notice(const char *title,const char *statement,...) {
 	else
 	    _GWidgetPostNotice8(title,statement,ap);
     }
-#endif
     va_end(ap);
 }
+
+static char *UI_open_file(const char *title, const char *defaultfile,
+	const char *initial_filter) {
+return( gwwv_open_filename(title,defaultfile,initial_filter,NULL) );
+}
+
+static char *UI_saveas_file(const char *title, const char *defaultfile,
+	const char *initial_filter) {
+return( gwwv_save_filename(title,defaultfile,initial_filter) );
+}
+
+struct ui_interface gdraw_ui_interface = {
+    UI_IError,
+    gwwv_post_error,
+    UI_LogError,
+    UI_post_notice,
+    gwwv_ask_centered,
+    gwwv_choose,
+    gwwv_choose_multiple,
+    gwwv_ask_string,
+    UI_open_file,
+    UI_saveas_file,
+    gwwv_progress_start_indicator,
+    gwwv_progress_end_indicator,
+    gwwv_progress_show,
+    gwwv_progress_enable_stop,
+    gwwv_progress_next,
+    gwwv_progress_next_stage,
+    gwwv_progress_change_line1,
+    gwwv_progress_change_line2,
+    gwwv_progress_pause_timer,
+    gwwv_progress_resume_timer,
+    gwwv_progress_change_stages,
+    gwwv_progress_change_total
+};
+

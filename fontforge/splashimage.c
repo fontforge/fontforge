@@ -25,7 +25,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "gdraw.h"
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 
 static uint8 splashimage0_data[] = {
     0x5a, 0x97, 0x6f, 0x6f, 0xf8, 0x72, 0x66, 0xf8, 
@@ -18073,4 +18072,3 @@ static struct _GImage splashimage0_base = {
 };
 
 GImage splashimage = { 0, &splashimage0_base };
-#endif

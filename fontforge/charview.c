@@ -4173,7 +4173,7 @@ static void CVDrop(CharView *cv,GEvent *event) {
     RefChar *new;
 
     if ( cv->drawmode!=dm_fore ) {
-	gwwv_post_error(_("Not Foreground"),_("References may be dragged only to the foreground layer"));
+	ff_post_error(_("Not Foreground"),_("References may be dragged only to the foreground layer"));
 return;
     }
     if ( !GDrawSelectionHasType(cv->gw,sn_drag_and_drop,"STRING"))
@@ -5090,11 +5090,11 @@ static void CVMenuRevertGlyph(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     if ( cv->sc->parent->filename==NULL || cv->sc->namechanged || cv->sc->parent->mm!=NULL )
 return;
     if ( cv->sc->parent->sfd_version<2 )
-	gwwv_post_error(_("Old sfd file"),_("This font comes from an old format sfd file. Not all aspects of it can be reverted successfully."));
+	ff_post_error(_("Old sfd file"),_("This font comes from an old format sfd file. Not all aspects of it can be reverted successfully."));
 
     sc = SFDReadOneChar(cv->sc->parent,cv->sc->name);
     if ( sc==NULL ) {
-	gwwv_post_error(_("Can't Find Glyph"),_("The glyph, %.80s, can't be found in the sfd file"),cv->sc->name);
+	ff_post_error(_("Can't Find Glyph"),_("The glyph, %.80s, can't be found in the sfd file"),cv->sc->name);
 	cv->sc->namechanged = true;
     } else {
 	SCPreserveState(cv->sc,true);
@@ -7759,7 +7759,7 @@ static int IOSA_OK(GGadget *g, GEvent *e) {
 	if ( err )
 return(true);
 	if ( SplineSolveFull(&iosa->s->splines[which],val,ts)==0 ) {
-	    gwwv_post_error(_("Out of Range"),_("The spline does not reach %g"), (double) val );
+	    ff_post_error(_("Out of Range"),_("The spline does not reach %g"), (double) val );
 return( true );
 	}
 	iosa->done = true;
@@ -8411,7 +8411,7 @@ static void CVMenuNowakAutoInstr(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     if ( sc->layers[ly_fore].splines!=NULL && sc->hstem==NULL && sc->vstem==NULL
 	    && sc->dstem==NULL && !no_windowing_ui )
-	gwwv_post_notice(_("Things could be better..."), _("Glyph, %s, has no hints. FontForge will not produce many instructions."),
+	ff_post_notice(_("Things could be better..."), _("Glyph, %s, has no hints. FontForge will not produce many instructions."),
 		sc->name );
 
     InitGlobalInstrCt(&gic, sc->parent, NULL);
@@ -9549,7 +9549,7 @@ return;
 	_SCCharChangedUpdate(mm->normal->glyphs[cv->sc->orig_pos],-1);
     if ( err!=0 )
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	gwwv_post_error(_("Bad Multiple Master Font"),err);
+	ff_post_error(_("Bad Multiple Master Font"),err);
 #endif
 }
 

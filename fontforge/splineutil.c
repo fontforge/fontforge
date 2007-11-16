@@ -2385,11 +2385,7 @@ static void _SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext 
 	    sf->glyphs[i]->parent = sf;
 	    /* SCLigDefault(sf->glyphs[i]);*/		/* Also reads from AFM file, but it probably doesn't exist */
 	}
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	gwwv_progress_next();
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_progress_next();
-#endif
+	ff_progress_next();
     }
     SFInstanciateRefs(sf);
     if ( fd->metrics!=NULL ) {
@@ -2449,11 +2445,7 @@ static SplineFont *SplineFontFromMMType1(SplineFont *sf, FontDict *fd, struct ps
 
     if ( fd->weightvector==NULL || fd->fontinfo->blenddesignpositions==NULL ||
 	    fd->fontinfo->blenddesignmap==NULL || fd->fontinfo->blendaxistypes==NULL ) {
-#if defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_error(_("Bad Multiple Master Font"),_("Bad Multiple Master Font"));
-#else
-	gwwv_post_error(_("Bad Multiple Master Font"),_("Bad Multiple Master Font"));
-#endif
+	ff_post_error(_("Bad Multiple Master Font"),_("Bad Multiple Master Font"));
 	SplineFontFree(sf);
 return( NULL );
     }
@@ -2502,17 +2494,9 @@ return( NULL );
     }
 
     if ( mm->instance_count < (1<<mm->axis_count) )
-#if defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_error(_("Bad Multiple Master Font"),_("This multiple master font has %1$d instance fonts, but it needs at least %2$d master fonts for %3$d axes. FontForge will not be able to edit this correctly"),mm->instance_count,1<<mm->axis_count,mm->axis_count);
-#else
-	gwwv_post_error(_("Bad Multiple Master Font"),_("This multiple master font has %1$d instance fonts, but it needs at least %2$d master fonts for %3$d axes. FontForge will not be able to edit this correctly"),mm->instance_count,1<<mm->axis_count,mm->axis_count);
-#endif
+	ff_post_error(_("Bad Multiple Master Font"),_("This multiple master font has %1$d instance fonts, but it needs at least %2$d master fonts for %3$d axes. FontForge will not be able to edit this correctly"),mm->instance_count,1<<mm->axis_count,mm->axis_count);
     else if ( mm->instance_count > (1<<mm->axis_count) )
-#if defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_error(_("Bad Multiple Master Font"),_("This multiple master font has %1$d instance fonts, but FontForge can only handle %2$d master fonts for %3$d axes. FontForge will not be able to edit this correctly"),mm->instance_count,1<<mm->axis_count,mm->axis_count);
-#else
-	gwwv_post_error(_("Bad Multiple Master Font"),_("This multiple master font has %1$d instance fonts, but FontForge can only handle %2$d master fonts for %3$d axes. FontForge will not be able to edit this correctly"),mm->instance_count,1<<mm->axis_count,mm->axis_count);
-#endif
+	ff_post_error(_("Bad Multiple Master Font"),_("This multiple master font has %1$d instance fonts, but FontForge can only handle %2$d master fonts for %3$d axes. FontForge will not be able to edit this correctly"),mm->instance_count,1<<mm->axis_count,mm->axis_count);
     mm->positions = gcalloc(mm->axis_count*mm->instance_count,sizeof(real));
     pt = fd->fontinfo->blenddesignpositions;
     while ( *pt==' ' ) ++pt;
@@ -2743,11 +2727,7 @@ return( NULL );
 	if ( chars[i]->layers[ly_fore].refs!=NULL )
 	    IError( "Reference found in CID font. Can't fix it up");
 	sf->subfonts[j]->glyphcnt = sf->subfonts[j]->glyphmax = i+1;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	gwwv_progress_next();
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_progress_next();
-#endif
+	ff_progress_next();
     }
     for ( i=0; i<fd->fdcnt; ++i )
 	sf->subfonts[i]->glyphs = gcalloc(sf->subfonts[i]->glyphcnt,sizeof(SplineChar *));

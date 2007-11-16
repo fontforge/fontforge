@@ -28,81 +28,10 @@
 #define _PFAEDITUI_H_
 
 #include "pfaedit.h"
+#include <gprogress.h>
 
 extern void help(char *filename);
 extern int FontForgeMain( int argc, char **argv );
-
-#if defined(FONTFORGE_CONFIG_GTK)
-# include <gtk/gtk.h>
-# include "interface.h"
-# include "callbacks.h"
-# include "support.h"
-# include "views.h"
-extern GdkCursor *ct_magplus, *ct_magminus, *ct_mypointer,
-	*ct_circle, *ct_square, *ct_triangle, *ct_pen,
-	*ct_ruler, *ct_knife, *ct_rotate, *ct_skew, *ct_scale, *ct_flip,
-	*ct_3drotate, *ct_perspective,
-	*ct_updown, *ct_leftright, *ct_nesw, *ct_nwse,
-	*ct_rect, *ct_elipse, *ct_poly, *ct_star, *ct_filledrect, *ct_filledelipse,
-	*ct_pencil, *ct_shift, *ct_line, *ct_myhand, *ct_setwidth,
-	*ct_kerning, *ct_rbearing, *ct_lbearing, *ct_eyedropper,
-	*ct_prohibition, *ct_ddcursor, ct_spiroright, ct_spiroleft;
-
-/*
-extern GImage GIcon_midtangent, GIcon_midcurve, GIcon_midcorner;
-extern GImage GIcon_tangent, GIcon_curve, GIcon_corner, GIcon_ruler,
-	GIcon_pointer, GIcon_magnify, GIcon_pen, GIcon_knife, GIcon_scale,
-	GIcon_flip, GIcon_rotate, GIcon_skew,
-	GIcon_squarecap, GIcon_roundcap, GIcon_buttcap,
-	GIcon_miterjoin, GIcon_roundjoin, GIcon_beveljoin,
-	GIcon_rect, GIcon_elipse, GIcon_rrect, GIcon_poly, GIcon_star,
-	GIcon_pencil, GIcon_shift, GIcon_line, GIcon_hand,
-	GIcon_press2ptr, GIcon_freehand, GIcon_greyfree;
-extern GImage GIcon_smallskew, GIcon_smallscale, GIcon_smallrotate,
-	GIcon_smallflip, GIcon_smalltangent, GIcon_smallcorner,
-	GIcon_smallcurve, GIcon_smallmag, GIcon_smallknife, GIcon_smallpen,
-	GIcon_smallpointer, GIcon_smallruler, GIcon_smallelipse,
-	GIcon_smallrect, GIcon_smallpoly, GIcon_smallstar,
-	GIcon_smallpencil, GIcon_smallhand,
-	GIcon_FontForgeLogo, GIcon_FontForgeBack, GIcon_FontForgeGuide;
-extern GImage GIcon_sel2ptr, GIcon_rightpointer, GIcon_angle, GIcon_distance,
-	GIcon_selectedpoint, GIcon_mag;
-extern GImage GIcon_menumark;
-extern GImage GIcon_rmoverlap, GIcon_exclude, GIcon_intersection, GIcon_findinter;
-extern GImage GIcon_bold, GIcon_condense, GIcon_oblique;
-extern GImage GIcon_outline, GIcon_inline, GIcon_shadow, GIcon_wireframe;
-extern GImage def_image, red_image, blue_image, green_image, magenta_image,
-	yellow_image, cyan_image, white_image;
-extern GImage GIcon_continue, GIcon_stepout, GIcon_stepover, GIcon_stepinto,
-	GIcon_watchpnt, GIcon_menudelta, GIcon_exit;
-extern GImage GIcon_Stopped, GIcon_Stop;
-extern GWindow logo_icon;
-
-extern GTextInfo encodingtypes[];
-extern GTextInfo *EncodingTypesFindEnc(GTextInfo *encodingtypes, Encoding *enc);
-extern Encoding *ParseEncodingNameFromList(GGadget *listfield);
-extern GTextInfo *GetEncodingTypes(void);
-*/
-
-extern void InitCursors(void);
-
-/*
-extern real GetReal(GWindow gw,int cid,char *name,int *err);
-extern int GetInt(GWindow gw,int cid,char *name,int *err);
-extern void Protest(char *label);
-extern real GetCalmReal8(GWindow gw,int cid,char *namer,int *err);
-extern real GetReal8(GWindow gw,int cid,char *namer,int *err);
-extern int GetInt8(GWindow gw,int cid,char *namer,int *err);
-extern void Protest8(char *labelr);
-*/
-
-/* I would like these to be const ints, but gcc doesn't treat them as consts */
-/*
-#define et_sb_halfup et_sb_thumbrelease+1
-#define et_sb_halfdown  et_sb_thumbrelease+2
-*/
-
-#elif defined( FONTFORGE_CONFIG_GDRAW )
 
 # include "gdraw.h"
 # include "gwidget.h"
@@ -175,12 +104,13 @@ extern int GetCalmInt8(GWindow gw,int cid,char *name,int *err);
 extern int GetInt8(GWindow gw,int cid,char *namer,int *err);
 extern void Protest8(char *labelr);
 
+extern int ErrorWindowExists(void);
+extern void ShowErrorWindow(void);
+extern struct ui_interface gdraw_ui_interface;
+
 /* I would like these to be const ints, but gcc doesn't treat them as consts */
 #define et_sb_halfup et_sb_thumbrelease+1
 #define et_sb_halfdown  et_sb_thumbrelease+2
-#else
-# include "views.h"
-#endif
 
 extern FontView *fv_list;
 

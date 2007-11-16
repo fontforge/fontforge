@@ -1007,14 +1007,14 @@ static int BdfP_FinishTextField(struct bdf_dlg *bd) {
 
 	for ( pt=text; *pt; ++pt )
 	    if ( *pt&0x80 ) {
-		gwwv_post_error(_("Not ASCII"),_("All characters in the value must be in ASCII"));
+		ff_post_error(_("Not ASCII"),_("All characters in the value must be in ASCII"));
 		free(text);
 return( false );
 	    }
 	val = strtol(text,&end,10);
 	if ( NumericKey(bdf->props[cur->sel_prop].name) ) {
 	    if ( *end!='\0' ) {
-		gwwv_post_error(_("Bad Number"),_("Must be a number"));
+		ff_post_error(_("Bad Number"),_("Must be a number"));
 		free(text);
 return( false );
 	    }

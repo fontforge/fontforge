@@ -1812,31 +1812,22 @@ static void PasteNonExistantRefCheck(SplineChar *sc,Undoes *paster,RefChar *ref,
 		name = "<Unknown>";
 	    else
 		name = StdGlyphName(buf,ref->unicode_enc,ui_none,(NameList *) -1);
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	    buts[0] = _("Don't Warn Again"); buts[1] = _("_OK"); buts[2] = NULL;
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    buts[0] = _("Don't Warn Again"); buts[1] = GTK_STOCK_OK; buts[2] = NULL;
-#endif
-	    yes = gwwv_ask(_("Bad Reference"),(const char **) buts,1,1,_("You are attempting to paste a reference to %1$s into %2$s.\nBut %1$s does not exist in this font, nor can I find the original character referred to.\nIt will not be copied."),name,sc->name);
+	    yes = ff_ask(_("Bad Reference"),(const char **) buts,1,1,_("You are attempting to paste a reference to %1$s into %2$s.\nBut %1$s does not exist in this font, nor can I find the original character referred to.\nIt will not be copied."),name,sc->name);
 	    if ( yes==0 )
 		*refstate |= 0x4;
 	}
     } else {
 	if ( !(*refstate&0x3) ) {
 	    char *buts[5];
+	    buts[0] = _("_Yes");
 	    buts[1] = _("Yes to All");
 	    buts[2] = _("No to All");
-	    buts[4] = NULL;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    buts[0] = _("_Yes");
 	    buts[3] = _("_No");
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    buts[0] = GTK_STOCK_YES;
-	    buts[3] = GTK_STOCK_NO;
-#endif
-	    gwwv_progress_pause_timer();
-	    yes = gwwv_ask(_("Bad Reference"),(const char **) buts,0,3,_("You are attempting to paste a reference to %1$s into %2$s.\nBut %1$s does not exist in this font.\nWould you like to copy the original splines (or delete the reference)?"),fromsc->name,sc->name);
-	    gwwv_progress_resume_timer();
+	    buts[4] = NULL;
+	    ff_progress_pause_timer();
+	    yes = ff_ask(_("Bad Reference"),(const char **) buts,0,3,_("You are attempting to paste a reference to %1$s into %2$s.\nBut %1$s does not exist in this font.\nWould you like to copy the original splines (or delete the reference)?"),fromsc->name,sc->name);
+	    ff_progress_resume_timer();
 	    if ( yes==1 )
 		*refstate |= 1;
 	    else if ( yes==2 )
@@ -1961,7 +1952,7 @@ return;
 	    }
 	}
 	if ( anchor_lost_warning )
-	    gwwv_post_error(_("Anchor Lost"),_("At least one anchor point was lost when pasting from one font to another because no matching anchor class could be found in the new font."));
+	    ff_post_error(_("Anchor Lost"),_("At least one anchor point was lost when pasting from one font to another because no matching anchor class could be found in the new font."));
 	if ( anchor==NULL )
 return;
     }
@@ -1983,7 +1974,7 @@ return;
 	break;
 	    }
 	if ( test!=NULL ) {
-	    gwwv_post_error(_("Duplicate Anchor"),_("There is already an anchor point named %1$.40s in %2$.40s."),test->anchor->name,sc->name);
+	    ff_post_error(_("Duplicate Anchor"),_("There is already an anchor point named %1$.40s in %2$.40s."),test->anchor->name,sc->name);
 	    if ( prev==NULL )
 		anchor = next;
 	    else
@@ -2009,15 +2000,11 @@ static int InstrsSameParent( SplineChar *sc, SplineFont *copied_from) {
 return( true );
     if ( sc->parent == dontask_parent && copied_from==dontask_copied_from )
 return( dontask_ret );
-    buts[4] = NULL;
-#if defined(FONTFORGE_CONFIG_GDRAW)
     buts[0] = _("_Yes"); buts[3] = _("_No");
-#elif defined(FONTFORGE_CONFIG_GTK)
-    buts[0] = GTK_STOCK_YES; buts[3] = GTK_STOCK_NO;
-#endif
     buts[1] = _("Yes to all");
     buts[2] = _("No to all");
-    ret = gwwv_ask(_("Different Fonts"),(const char **) buts,0,3,_("You are attempting to paste glyph instructions from one font to another. Generally this will not work unless the 'prep', 'fpgm' and 'cvt ' tables are the same.\nDo you want to continue anyway?"));
+    buts[4] = NULL;
+    ret = ff_ask(_("Different Fonts"),(const char **) buts,0,3,_("You are attempting to paste glyph instructions from one font to another. Generally this will not work unless the 'prep', 'fpgm' and 'cvt ' tables are the same.\nDo you want to continue anyway?"));
     if ( ret==0 )
 return( true );
     if ( ret==3 )
@@ -2190,7 +2177,7 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
 		    if ( sc->views->container->funcs->type == cvc_searcher )
 			rsc = FindCharacter(((SearchView *) (sc->views->container))->fv->sf,paster->copied_from,refs,NULL);
 		    else {
-			gwwv_post_error(_("Please don't do that"),_("You may not paste a reference into this window"));
+			ff_post_error(_("Please don't do that"),_("You may not paste a reference into this window"));
 			rsc = (SplineChar *) -1;
 		    }
 		} else
@@ -2199,7 +2186,7 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
 		if ( rsc==(SplineChar *) -1 )
 		    /* Error above */;
 		else if ( rsc!=NULL && SCDependsOnSC(rsc,sc))
-		    gwwv_post_error(_("Self-referential glyph"),_("Attempt to make a glyph that refers to itself"));
+		    ff_post_error(_("Self-referential glyph"),_("Attempt to make a glyph that refers to itself"));
 		else if ( rsc!=NULL ) {
 		    new = RefCharCreate();
 		    *new = *refs;
@@ -2235,11 +2222,7 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
       break;
       case ut_vwidth:
 	if ( !sc->parent->hasvmetrics )
-#if defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled.\nUse Element->Font Info to enable them."));
-#else
-	    gwwv_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled.\nUse Element->Font Info to enable them."));
-#endif
+	    ff_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled.\nUse Element->Font Info to enable them."));
 	else {
 	    SCPreserveVWidth(sc);
 	    sc->vwidth = paster->u.width;
@@ -2547,7 +2530,7 @@ static void SCPasteLookupsMid(SplineChar *sc,Undoes *paster,int pasteinto,
     (void) FindCharacter(sc->parent,paster->copied_from,
 	    paster->u.state.refs,&fromsc);
     if ( fromsc==NULL ) {
-	gwwv_post_error(_("Missing glyph"),_("Could not find original glyph"));
+	ff_post_error(_("Missing glyph"),_("Could not find original glyph"));
 return;
     }
     SCPasteLookups(sc,fromsc,pasteinto,list,backpairlist,mc);
@@ -2566,14 +2549,10 @@ static OTLookup **GetLookupsToCopy(SplineFont *sf,OTLookup ***backpairlist, int 
     int cnt, bcnt, ftot=0, doit, isgpos, i, ret;
     char **choices = NULL, *sel;
     OTLookup *otl, **list1=NULL, **list2=NULL, **list, **blist;
-#if defined(FONTFORGE_CONFIG_GDRAW)
     char *buttons[3];
     buttons[0] = _("_OK");
     buttons[1] = _("_Cancel");
     buttons[2] = NULL;
-#elif defined(FONTFORGE_CONFIG_GTK)
-    static char *buttons[] = { GTK_STOCK_OK, GTK_STOCK_CANCEL, NULL };
-#endif
 
     *backpairlist = NULL;
 
@@ -2618,7 +2597,7 @@ static OTLookup **GetLookupsToCopy(SplineFont *sf,OTLookup ***backpairlist, int 
 	    }
 	}
 	if ( cnt==0 ) {	/* If cnt==0 then bcnt must be too */
-	    gwwv_post_error(_("No Lookups"),_("No lookups to copy"));
+	    ff_post_error(_("No Lookups"),_("No lookups to copy"));
 return( NULL );
 	}
 	if ( !doit ) {
@@ -2636,7 +2615,7 @@ return( NULL );
 	    }
 	}
     }
-    ret = gwwv_choose_multiple(_("Lookups"),(const char **) choices,sel,bcnt==0?cnt: cnt+bcnt+1,
+    ret = ff_choose_multiple(_("Lookups"),(const char **) choices,sel,bcnt==0?cnt: cnt+bcnt+1,
 	    buttons, _("Choose which lookups to copy"));
     list = NULL;
     if ( ret>=0 ) {
@@ -2692,7 +2671,7 @@ return;
     (void) FindCharacter(sc->parent,paster->copied_from,
 	    paster->u.state.refs,&fromsc);
     if ( fromsc==NULL ) {
-	gwwv_post_error(_("Missing glyph"),_("Could not find original glyph"));
+	ff_post_error(_("Missing glyph"),_("Could not find original glyph"));
 return;
     }
     list = GetLookupsToCopy(fromsc->parent,&backpairlist,fromsc->parent==sc->parent);
@@ -2798,7 +2777,7 @@ return;
 		if ( cv->container==NULL ) {
 		    sc = FindCharacter(cvsc->parent,paster->copied_from,refs,NULL);
 		    if ( sc!=NULL && SCDependsOnSC(sc,cvsc)) {
-			gwwv_post_error(_("Self-referential character"),_("Attempt to make a character that refers to itself"));
+			ff_post_error(_("Self-referential character"),_("Attempt to make a character that refers to itself"));
 			sc = (SplineChar *) -1;
 		    }
 		} else if ( cv->container->funcs->type == cvc_searcher )
@@ -2882,11 +2861,7 @@ return;
       break;
       case ut_vwidth:
 	if ( !cvsc->parent->hasvmetrics )
-#if defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled.\nUse Element->Font Info to enable them."));
-#else
-	    gwwv_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled.\nUse Element->Font Info to enable them."));
-#endif
+	    ff_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled.\nUse Element->Font Info to enable them."));
 	else
 	    cvsc->vwidth = paster->u.state.vwidth;
       break;
@@ -3250,17 +3225,12 @@ static BDFFont *BitmapCreateCheck(FontView *fv,int *yestoall, int first, int pix
 	    sprintf( buf, "%d@%d", pixelsize, depth );
 	else
 	    sprintf( buf, "%d", pixelsize );
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	buts[0] = _("_Yes");
-	buts[3] = _("_No");
-#elif defined(FONTFORGE_CONFIG_GTK)
-	buts[0] = GTK_STOCK_YES;
-	buts[3] = GTK_STOCK_NO;
-#endif
 	buts[1] = _("Yes to All");
 	buts[2] = _("No to All");
+	buts[3] = _("_No");
 	buts[4] = NULL;
-	yes = gwwv_ask(_("Bitmap Paste"),(const char **) buts,0,3,"The clipboard contains a bitmap character of size %s,\na size which is not in your database.\nWould you like to create a bitmap font of that size,\nor ignore this character?",buf);
+	yes = ff_ask(_("Bitmap Paste"),(const char **) buts,0,3,"The clipboard contains a bitmap character of size %s,\na size which is not in your database.\nWould you like to create a bitmap font of that size,\nor ignore this character?",buf);
 	if ( yes==1 )
 	    *yestoall = true;
 	else if ( yes==2 )
@@ -3350,9 +3320,7 @@ return;
     }
 
     anchor_lost_warning = false;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    gwwv_progress_start_indicator(10,_("Pasting..."),_("Pasting..."),0,cnt,1);
-#endif
+    ff_progress_start_indicator(10,_("Pasting..."),_("Pasting..."),0,cnt,1);
 
     if ( cur->undotype==ut_multiple )
 	cur = cur->u.multiple.mult;
@@ -3387,9 +3355,7 @@ return;
 	      case ut_statehint: case ut_statename:
 	      case ut_layers: case ut_anchors:
 		if ( !sf->hasvmetrics && cur->undotype==ut_vwidth) {
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-		    gwwv_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled.\nUse Element->Font Info to enable them."));
-#endif
+		    ff_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled.\nUse Element->Font Info to enable them."));
  goto err;
 		}
 		PasteToSC(SFMakeChar(sf,fv->map,i),cur,fv,pasteinto,trans,&mc);
@@ -3428,10 +3394,8 @@ return;
 	    sf = mm->instances[j];
 	}
 	cur = cur->next;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	if ( !gwwv_progress_next())
+	if ( !ff_progress_next())
     break;
-#endif
     }
     /* If we copy glyphs from one font to another, and if some of those glyphs*/
     /*  contain references, and the width of the original glyph is the same as*/
@@ -3452,9 +3416,7 @@ return;
 	}
     }
  err:
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    gwwv_progress_end_indicator();
-#endif
+    ff_progress_end_indicator();
     if ( oldsel!=fv->selected )
 	free(oldsel);
     SFFinishMergeContext(&mc);
@@ -3488,11 +3450,7 @@ return;
       case ut_lbearing: case ut_rbearing:
       case ut_statehint: case ut_statename:
 	if ( !mv->fv->sf->hasvmetrics && cur->undotype==ut_vwidth) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    gwwv_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled.\nUse Element->Font Info to enable them."));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled.\nUse Element->Font Info to enable them."));
-#endif
+	    ff_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled.\nUse Element->Font Info to enable them."));
 return;
 	}
 	PasteToSC(sc,cur,mv->fv,!doclear,NULL,&mc);

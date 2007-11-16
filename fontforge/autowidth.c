@@ -1445,7 +1445,7 @@ static int ReadKernPairFile(char *fn,WidthInfo *wi) {
     file = fopen(filename,"r");
     free( filename );
     if ( file==NULL ) {
-	gwwv_post_error(_("Couldn't open file"), _("Couldn't open file %.200s"), fn );
+	ff_post_error(_("Couldn't open file"), _("Couldn't open file %.200s"), fn );
 	free(fn);
 return( false );
     }
@@ -1468,7 +1468,7 @@ return( false );
 
     fclose(file);
     if ( !figurekernsets(wi,&ks)) {
-	gwwv_post_error(_("No Kern Pairs"), _("No kerning pairs found in %.200s"), fn );
+	ff_post_error(_("No Kern Pairs"), _("No kerning pairs found in %.200s"), fn );
 	free( filename );
 	kernsetsfree(&ks);
 return( false );
@@ -1520,7 +1520,7 @@ static int AW_OK(GGadget *g, GEvent *e) {
 	if ( err )
 return( true );
 	if ( wi->autokern && wi->subtable==NULL ) {
-	    gwwv_post_error(_("Select a subtable"),_("You must select a lookup subtable in which to store the kerning pairs"));
+	    ff_post_error(_("Select a subtable"),_("You must select a lookup subtable in which to store the kerning pairs"));
 return( true );
 	}
 
@@ -1538,7 +1538,7 @@ return( true );
 	    if ( wi->real_lcnt==0 || wi->real_rcnt==0 ) {
 		FreeCharList(wi->left);
 		FreeCharList(wi->right);
-		gwwv_post_error(_("No glyphs selected."),_("No glyphs selected."));
+		ff_post_error(_("No glyphs selected."),_("No glyphs selected."));
 return( true );
 	    }
 	    ScriptSerifChecker(wi);

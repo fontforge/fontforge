@@ -466,7 +466,7 @@ return;
 	    free(p->sc->name);
 	    p->sc->name = copy(newname);
 	} else {
-	    gwwv_post_error(_("Can't fix"), _("The name FontForge would like to assign to this glyph, %.30s, is already used by a different glyph."),
+	    ff_post_error(_("Can't fix"), _("The name FontForge would like to assign to this glyph, %.30s, is already used by a different glyph."),
 		    newname );
 	}
 return;
@@ -2579,7 +2579,7 @@ static void DoProbs(struct problems *p) {
 	    }
     }
     if ( !ret )
-	gwwv_post_error(_("No problems found"),_("No problems found"));
+	ff_post_error(_("No problems found"),_("No problems found"));
 }
 
 static void FigureStandardHeights(struct problems *p) {
@@ -4465,10 +4465,10 @@ static void VWMenuGotoGlyph(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 return;
     gid = fv->map->map[enc];
     if ( gid==-1 || (sc=vw->sf->glyphs[gid])==NULL ) {
-	gwwv_post_error(_("Glyph not in font"), _("Glyph not in font"));
+	ff_post_error(_("Glyph not in font"), _("Glyph not in font"));
 return;
     } else if ( (SCValidate(sc,false)&vw->mask)==0 ) {
-	gwwv_post_notice(_("Glyph Valid"), _("No problems detected in %s"),
+	ff_post_notice(_("Glyph Valid"), _("No problems detected in %s"),
 		sc->name );
 return;
     }

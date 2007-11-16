@@ -2121,21 +2121,14 @@ return( (SplineFont *) names );
 	    if ( which==-1 ) {
 		char *fn = copy(filename);
 		fn[lparen-filename] = '\0';
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
-		gwwv_post_error(_("Not in Collection"),_("%s is not in %.100s"),find,fn);
-#endif
+		ff_post_error(_("Not in Collection"),_("%s is not in %.100s"),find,fn);
 		free(fn);
 	    }
 	    free(find);
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 	} else if ( no_windowing_ui )
 	    which = 0;
 	else
-	    which = gwwv_choose(_("Pick a font, any font..."),(const char **) names,subcnt,0,_("There are multiple fonts in this file, pick one"));
-#else
-	} else
-	    which = 0;
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+	    which = ff_choose(_("Pick a font, any font..."),(const char **) names,subcnt,0,_("There are multiple fonts in this file, pick one"));
 	if ( lparen==NULL && which!=-1 )
 	    chosenname = copy(names[which]);
 	for ( i=0; i<subcnt; ++i )
@@ -2619,24 +2612,17 @@ return( test );
 	if ( which==-1 ) {
 	    char *fn = copy(filename);
 	    fn[lparen-filename] = '\0';
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
-	    gwwv_post_error(_("Not in Collection"),_("%s is not in %.100s"),find,fn);
-#endif
+	    ff_post_error(_("Not in Collection"),_("%s is not in %.100s"),find,fn);
 	    free(fn);
 	}
 	free(find);
     } else if ( cnt==1 )
 	which = 0;
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
     else if ( no_windowing_ui )
 	which = 0;
     else
-	which = gwwv_choose(_("Pick a font, any font..."),(const char **) names,cnt,0,
+	which = ff_choose(_("Pick a font, any font..."),(const char **) names,cnt,0,
 		_("There are multiple fonts in this file, pick one"));
-#elif defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
-    else
-	which = 0;
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
     if ( which!=-1 ) {
 	fond = fonds[which];

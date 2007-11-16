@@ -287,13 +287,13 @@ int OFLibUploadFont(OFLibData *oflib) {
 
     if ( !findHTTPhost(&addr, "openfontlibrary.org")) {
 	GProgressEndIndicator();
-	gwwv_post_error(_("Could not find host"),_("Could not find \"%s\"\nAre you connected to the internet?"), "openfontlibrary.org" );
+	ff_post_error(_("Could not find host"),_("Could not find \"%s\"\nAre you connected to the internet?"), "openfontlibrary.org" );
 return( false );
     }
     soc = makeConnection(&addr);
     if ( soc==-1 ) {
 	GProgressEndIndicator();
-	gwwv_post_error(_("Could not connect to host"),_("Could not connect to \"%s\"."), "openfontlibrary.org" );
+	ff_post_error(_("Could not connect to host"),_("Could not connect to \"%s\"."), "openfontlibrary.org" );
 return( false );
     }
 
@@ -321,7 +321,7 @@ return( false );
     if ( code!=302 ) {
 	free(databuf);
 	GProgressEndIndicator();
-	gwwv_post_error(_("Login failed"),_("Could not log in.") );
+	ff_post_error(_("Login failed"),_("Could not log in.") );
 return( false );
     }
 
@@ -330,7 +330,7 @@ return( false );
     if ( soc==-1 ) {
 	GProgressEndIndicator();
 	free(databuf);
-	gwwv_post_error(_("Could not connect to host"),_("Could not connect to \"%s\"."), "openfontlibrary.org" );
+	ff_post_error(_("Could not connect to host"),_("Could not connect to \"%s\"."), "openfontlibrary.org" );
 return( false );
     }
     sprintf( databuf,"GET /media/submit/font HTTP/1.1\r\n"
@@ -344,7 +344,7 @@ return( false );
     if ( siteinfo.user_id==-1 ) {
 	GProgressEndIndicator();
 	free(databuf);
-	gwwv_post_error(_("Could not read state"),_("Could not read state.") );
+	ff_post_error(_("Could not read state"),_("Could not read state.") );
 return( false );
     }
     ChangeLine2_8("Preparing to transmit...");
@@ -371,7 +371,7 @@ return( false );
 	fclose(formdata);
 	free(databuf);
 	GProgressEndIndicator();
-	gwwv_post_error(_("Font file vanished"),_("The font file we just created can no longer be opened.") );
+	ff_post_error(_("Font file vanished"),_("The font file we just created can no longer be opened.") );
 return( false );
     }
     while ( (ch=getc(font))!=EOF )
@@ -431,7 +431,7 @@ return( false );
 	GProgressEndIndicator();
 	free(databuf);
 	fclose(formdata);
-	gwwv_post_error(_("Could not connect to host"),_("Could not connect to \"%s\"."), "openfontlibrary.org" );
+	ff_post_error(_("Could not connect to host"),_("Could not connect to \"%s\"."), "openfontlibrary.org" );
 return( false );
     }
     sprintf( databuf,"POST /media/submit/font HTTP/1.1\r\n"
@@ -454,9 +454,9 @@ return( false );
     /* I think the expected return code here is 200, that's what I've seen the*/
     /*  two times I've done a successful upload */
     if ( code<200 || code > 399 ) {
-	gwwv_post_error(_("Error from openfontlibrary"),_("Server error code=%d"), code );
+	ff_post_error(_("Error from openfontlibrary"),_("Server error code=%d"), code );
 return( false );
     } else if ( code!=200 )
-	gwwv_post_notice(_("Unexpected server return"),_("Unexpected server return code=%d"), code );
+	ff_post_notice(_("Unexpected server return"),_("Unexpected server return code=%d"), code );
 return( true );
 }

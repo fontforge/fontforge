@@ -28,30 +28,16 @@
 #define _PFAEDIT_H_
 
 #include "configure-pfaedit.h"
-#if defined( FONTFORGE_CONFIG_GTK )
-# include "basics.h"
-# include "gimage.h"
-# include <gtk/gtk.h>
-# include <gwwv.h>
-#else /*if defined( FONTFORGE_CONFIG_GDRAW )*/
-# include <basics.h>
-# include <stdio.h>
-# include <string.h>
-# if defined( FONTFORGE_CONFIG_GDRAW )
-#  include <gprogress.h>
-# endif
-#endif
+#include <basics.h>
+#include <stdio.h>
+#include <string.h>
+#include <intl.h>
 #include "splinefont.h"
+#include "uiinterface.h"
 
 static const int unicode4_size = 17*65536;
     /* Unicode goes up to 0x10ffff */
 
-
-extern void IError(const char *fmt,...);
-extern int ErrorWindowExists(void);
-extern void ShowErrorWindow(void);
-extern void LogError(const char *format,...);
-extern void ff_post_notice(const char *title,const char *statement,...);
 
 extern void CheckIsScript(int argc, char *argv[]);
 

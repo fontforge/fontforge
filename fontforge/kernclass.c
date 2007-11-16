@@ -395,11 +395,7 @@ static int KCD_Next2(GGadget *g, GEvent *e) {
 	int val = u_strtol(ret,&end,10);
 
 	if ( val<-32768 || val>32767 || *end!='\0' ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    gwwv_post_error( _("Bad Number"), _("Bad Number") );
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_error( _("Bad Number"), _("Bad Number") );
-#endif
+	    ff_post_error( _("Bad Number"), _("Bad Number") );
 return( true );
 	}
 	kcd->offsets[kcd->st_pos] = val;
@@ -787,11 +783,7 @@ static int KCD_CorrectionChanged(GGadget *g, GEvent *e) {
 	if ( *end!='\0' )
 return( true );
 	if ( correction<-128 || correction>127 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    gwwv_post_error(_("Value out of range"),_("Value out of range"));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_error( _("Out of Range"), _("Corrections must be between -128 and 127 (and should be smaller)") );
-#endif
+	    ff_post_error(_("Value out of range"),_("Value out of range"));
 return( true );
 	}
 
@@ -824,7 +816,7 @@ return(true);
 return(true);
 #endif
 	if ( kcd->subtable==NULL ) {
-	    gwwv_post_error(_("No lookup selected"),_("You must select a lookup subtable to contain this kerning pair" ));
+	    ff_post_error(_("No lookup selected"),_("You must select a lookup subtable to contain this kerning pair" ));
 return(false);
 	}
 	if ( kp==NULL ) {
