@@ -3732,7 +3732,7 @@ void _SCCharChangedUpdate(SplineChar *sc,int changed) {
 	SFSetModTime(sf);
 	if ( (sc->changed==0) != (changed==0) ) {
 	    sc->changed = (changed!=0);
-	    if ( changed )
+	    if ( changed && (sc->layers[ly_fore].splines!=NULL || sc->layers[ly_fore].refs!=NULL))
 		sc->parent->onlybitmaps = false;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	    FVToggleCharChanged(sc);
