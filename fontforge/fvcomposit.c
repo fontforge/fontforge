@@ -1615,7 +1615,7 @@ static int SCMakeBaseReference(SplineChar *sc,SplineFont *sf,int ch, int copybmp
 /* GT: containing an "i" without a dot on top of it. The name "dotlessi" */
 /* GT: should be left untranslated, though you may wish to explain what it */
 /* GT: means */
-		gwwv_post_error( _("Missing Glyph..."),ch=='i'?_("Your font is missing the dotlessi glyph,\nplease add it and remake your accented glyphs"):
+		ff_post_error( _("Missing Glyph..."),ch=='i'?_("Your font is missing the dotlessi glyph,\nplease add it and remake your accented glyphs"):
 /* GT: Adobe decided that a dotless j glyph was needed, assigned a code */
 /* GT: point to it in the private use area, and named it "dotlessj". Then */
 /* GT: years later the Unicode people decided one was needed and assigned */

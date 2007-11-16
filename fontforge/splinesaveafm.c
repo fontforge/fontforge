@@ -109,7 +109,7 @@ int LoadKerningDataFromAfm(SplineFont *sf, char *filename,EncMap *map) {
 
     if ( file==NULL )
 return( 0 );
-    gwwv_progress_change_line2(_("Reading AFM file"));
+    ff_progress_change_line2(_("Reading AFM file"));
     while ( mygets(file,buffer,sizeof(buffer))!=NULL ) {
 	if ( strncmp(buffer,"KPX",3)==0 || strncmp(buffer,"KPY",3)==0 ) {
 	    int isv = strncmp(buffer,"KPY",3)==0;
@@ -202,11 +202,7 @@ int LoadKerningDataFromAmfm(SplineFont *sf, char *filename,EncMap *map) {
     if ( file==NULL )
 return( 0 );
 
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gwwv_progress_change_line2(_("Reading AFM file"));
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gwwv_progress_change_line2(_("Reading AFM file"));
-#endif
+    ff_progress_change_line2(_("Reading AFM file"));
     while ( fgets(buffer,sizeof(buffer),file)!=NULL ) {
 	if ( strstrmatch(buffer,"StartMaster")!=NULL )
     break;
@@ -772,9 +768,9 @@ return( 0 );
 	    nki + nwi + nkf + nwf + nkm + nwm + nkr + nwr + nkg + nwg + nkp + nwp;
 	/* Level 2 appears to have the same structure as level 1 */
 	if ( level1 || level==1 || level==2 )
-	    gwwv_post_error(_("Unlikely Ofm File"),_("This looks like a level1 (or level2) ofm. FontForge only supports level0 files, and can't read a real level1 file."));
+	    ff_post_error(_("Unlikely Ofm File"),_("This looks like a level1 (or level2) ofm. FontForge only supports level0 files, and can't read a real level1 file."));
 	else
-	    gwwv_post_error(_("Unlikely Ofm File"),_("This doesn't look like an ofm file, I don't know how to read it."));
+	    ff_post_error(_("Unlikely Ofm File"),_("This doesn't look like an ofm file, I don't know how to read it."));
 	fclose(file);
 return( 0 );
     }
@@ -925,11 +921,7 @@ static void AfmSplineCharX(FILE *afm, SplineChar *sc, int enc) {
     if (sc->ligofme!=NULL)
 	AfmLigOut(afm,sc);
     putc('\n',afm);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gwwv_progress_next();
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gwwv_progress_next();
-#endif
+    ff_progress_next();
 }
 
 static void AfmZapfCharX(FILE *afm, int zi) {
@@ -955,11 +947,7 @@ static void AfmSplineChar(FILE *afm, SplineChar *sc, int enc) {
     if (sc->ligofme!=NULL)
 	AfmLigOut(afm,sc);
     putc('\n',afm);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gwwv_progress_next();
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gwwv_progress_next();
-#endif
+    ff_progress_next();
 }
 
 static void AfmCIDChar(FILE *afm, SplineChar *sc, int enc) {
@@ -975,11 +963,7 @@ static void AfmCIDChar(FILE *afm, SplineChar *sc, int enc) {
 	    (int) floor(b.minx*1000/em), (int) floor(b.miny*1000/em),
 	    (int) ceil(b.maxx*1000/em), (int) ceil(b.maxy*1000/em) );
     putc('\n',afm);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gwwv_progress_next();
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gwwv_progress_next();
-#endif
+    ff_progress_next();
 }
 
 static int anykerns(SplineFont *sf,int isv) {
@@ -3083,7 +3067,7 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map
 	    if ( widths[i]>=(16<<20) || heights[i]>=(16<<20) ||
 		    depths[i]>=(16<<20) || italics[i]>=(16<<20) ) {
 		if ( !toobig_warn ) {
-		    gwwv_post_error(_("Value exceeds tfm limitations"),_("The width, height, depth or italic correction of %s is too big. Tfm files may not contain values bigger than 16 times the em-size of the font. Width=%g, height=%g, depth=%g, italic correction=%g"),
+		    ff_post_error(_("Value exceeds tfm limitations"),_("The width, height, depth or italic correction of %s is too big. Tfm files may not contain values bigger than 16 times the em-size of the font. Width=%g, height=%g, depth=%g, italic correction=%g"),
 			sc->name, widths[i]/(1<<20), heights[i]/(1<<20), depths[i]/(1<<20), italics[i]/(1<<20) );
 		    toobig_warn = true;
 		}

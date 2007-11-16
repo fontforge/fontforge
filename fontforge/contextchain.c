@@ -853,7 +853,7 @@ int CCD_NameListCheck(SplineFont *sf,const char *ret,int empty_bad,char *title) 
     int ans;
 
     if ( !CCD_ValidNameList(ret,empty_bad) ) {
-	gwwv_post_error(title,
+	ff_post_error(title,
 		strcmp(title,_("Bad Class"))==0? _("A class must contain at least one glyph name, glyph names must be valid postscript names, and no glyphs may appear in any other class") :
 		strcmp(title,_("Bad Coverage"))==0? _("A coverage table must contain at least one glyph name, and glyph names must be valid postscript names") :
 		    _("A glyph list must contain at least one glyph name, and glyph names must be valid postscript names") );
@@ -899,7 +899,7 @@ int CCD_InvalidClassList(char *ret,GGadget *list,int wasedit) {
 		/* have the same length for an ASCII string */
 		if ( tend-tpt==end-pt && uc_strncmp(tpt,pt,end-pt)==0 ) {
 		    char *dupname = copyn(pt,end-pt);
-		    gwwv_post_error(_("Bad Class"),_("No glyphs from another class may appear here, but %.30s does"), dupname);
+		    ff_post_error(_("Bad Class"),_("No glyphs from another class may appear here, but %.30s does"), dupname);
 		    free(dupname);
 return( true );
 		}
@@ -931,17 +931,17 @@ static int CCD_ReasonableClassNum(const unichar_t *match,GGadget *mlist,
 	if ( isdigit( *pt )) ++any;
 	val = u_strtol(pt,&end,10);
 	if ( *end!=' ' && *end!='\0' ) {
-	    gwwv_post_error(_("Bad Match Class Number"),_("The list of class numbers should only contain digits and spaces"));
+	    ff_post_error(_("Bad Match Class Number"),_("The list of class numbers should only contain digits and spaces"));
 return( false );
 	}
 	if ( val>=mlen || val<0) {
-	    gwwv_post_error(_("Bad Match Class Number"),_("There are only %d classes in this class set, yet you are trying to use %d."),mlen,val);
+	    ff_post_error(_("Bad Match Class Number"),_("There are only %d classes in this class set, yet you are trying to use %d."),mlen,val);
 return( false );
 	}
     }
     r->u.class.ncnt = any;
     if ( any==0 ) {
-	gwwv_post_error(_("Bad Match Class Number"),_("There are no class numbers listed to be matched. There must be at least one."));
+	ff_post_error(_("Bad Match Class Number"),_("There are no class numbers listed to be matched. There must be at least one."));
 return( false );
     }
 
@@ -953,11 +953,11 @@ return( false );
 	if ( isdigit( *pt )) ++any;
 	val = u_strtol(pt,&end,10);
 	if ( *end!=' ' && *end!='\0' ) {
-	    gwwv_post_error(_("Bad Backtrack Class Number"),_("The list of class numbers should only contain digits and spaces"));
+	    ff_post_error(_("Bad Backtrack Class Number"),_("The list of class numbers should only contain digits and spaces"));
 return( false );
 	}
 	if ( val>=blen || val<0) {
-	    gwwv_post_error(_("Bad Backtrack Class Number"),_("There are only %d classes in this class set, yet you are trying to use %d."),blen,val);
+	    ff_post_error(_("Bad Backtrack Class Number"),_("There are only %d classes in this class set, yet you are trying to use %d."),blen,val);
 return( false );
 	}
     }
@@ -971,11 +971,11 @@ return( false );
 	if ( isdigit( *pt )) ++any;
 	val = u_strtol(pt,&end,10);
 	if ( *end!=' ' && *end!='\0' ) {
-	    gwwv_post_error(_("Bad Lookahead Class Number"),_("The list of class numbers should only contain digits and spaces"));
+	    ff_post_error(_("Bad Lookahead Class Number"),_("The list of class numbers should only contain digits and spaces"));
 return( false );
 	}
 	if ( val>=flen || val<0) {
-	    gwwv_post_error(_("Bad Lookahead Class Number"),_("There are only %d classes in this class set, yet you are trying to use %d."),flen,val);
+	    ff_post_error(_("Bad Lookahead Class Number"),_("There are only %d classes in this class set, yet you are trying to use %d."),flen,val);
 return( false );
 	}
     }
@@ -1065,7 +1065,7 @@ return;
 	}
 	for ( i=0; i<dummy.lookup_cnt; ++i ) {
 	    if ( dummy.lookups[i].seq >= dummy.u.class.ncnt ) {
-		gwwv_post_error(_("Bad Sequence/Lookup List"),_("Sequence number out of bounds, must be less than %d (number of classes in list above)"), dummy.u.class.ncnt );
+		ff_post_error(_("Bad Sequence/Lookup List"),_("Sequence number out of bounds, must be less than %d (number of classes in list above)"), dummy.u.class.ncnt );
 return;
 	    }
 	}
@@ -1128,7 +1128,7 @@ return;
 	tot = CCD_GlyphNameCnt(_GGadgetGetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList)));
 	for ( i=0; i<dummy.lookup_cnt; ++i ) {
 	    if ( dummy.lookups[i].seq >= tot ) {
-		gwwv_post_error(_("Bad Sequence/Lookup List"),_("Sequence number out of bounds, must be less than %d (number of glyphs, classes or coverage tables)"),  tot );
+		ff_post_error(_("Bad Sequence/Lookup List"),_("Sequence number out of bounds, must be less than %d (number of glyphs, classes or coverage tables)"),  tot );
 return;
 	    }
 	}
@@ -1791,7 +1791,7 @@ static void _CCD_DoLEditNew(struct contextchaindlg *ccd,int off,int isedit) {
   goto retry;
 	pt = _GGadgetGetTitle(gcd[3].ret);
 	if ( pt==NULL || *pt=='\0' ) {
-	    gwwv_post_error("Please select a lookup", "Please select a lookup");
+	    ff_post_error("Please select a lookup", "Please select a lookup");
   goto retry;
 	}
 	sprintf(cbuf,"%d ",seq);
@@ -1893,7 +1893,7 @@ static void _CCD_Ok(struct contextchaindlg *ccd) {
       case aw_glist: {
 	old = GGadgetGetList(GWidgetGetControl(ccd->gw,CID_GList),&len);
 	if ( len==0 ) {
-	    gwwv_post_error(_("Missing rules"),_(" There must be at least one contextual rule"));
+	    ff_post_error(_("Missing rules"),_(" There must be at least one contextual rule"));
 return;
 	}
 	FPSTRulesFree(fpst->rules,fpst->format,fpst->rule_cnt);
@@ -1906,7 +1906,7 @@ return;
       case aw_class: {
 	old = GGadgetGetList(GWidgetGetControl(ccd->gw,CID_GList+200),&len);
 	if ( len==0 ) {
-	    gwwv_post_error(_("Missing rules"),_(" There must be at least one contextual rule"));
+	    ff_post_error(_("Missing rules"),_(" There must be at least one contextual rule"));
 return;
 	}
 	FPSTRulesFree(fpst->rules,fpst->format,fpst->rule_cnt);
@@ -1938,17 +1938,17 @@ return;
       case aw_coverage:
 	old = GGadgetGetList(GWidgetGetControl(ccd->gw,CID_GList+100),&len);
 	if ( len==0 ) {
-	    gwwv_post_error(_("Bad Coverage Table"),_("There must be at least one match coverage table"));
+	    ff_post_error(_("Bad Coverage Table"),_("There must be at least one match coverage table"));
 return;
 	}
 	if ( fpst->format==pst_reversecoverage ) {
 	    if ( len!=1 ) {
-		gwwv_post_error(_("Bad Coverage Table"),_("In a Reverse Chaining Substitution there must be exactly one coverage table to match"));
+		ff_post_error(_("Bad Coverage Table"),_("In a Reverse Chaining Substitution there must be exactly one coverage table to match"));
 return;
 	    }
 	    if ( CCD_GlyphNameCnt(old[0]->text)!=CCD_GlyphNameCnt(
 		    _GGadgetGetTitle(GWidgetGetControl(ccd->gw,CID_RplList+100))) ) {
-		gwwv_post_error(_("Replacement mismatch"),_("In a Reverse Chaining Substitution there must be exactly as many replacements as there are glyph names in the match coverage table"));
+		ff_post_error(_("Replacement mismatch"),_("In a Reverse Chaining Substitution there must be exactly as many replacements as there are glyph names in the match coverage table"));
 return;
 	    }
 	    dummy.u.rcoverage.replacements = ccd_cu_copy(
@@ -1978,7 +1978,7 @@ return;
 	    fpst->rules[0].lookups = dummy.lookups;
 	    for ( i=0; i<dummy.lookup_cnt; ++i ) {
 		if ( dummy.lookups[i].seq >= fpst->rules[0].u.coverage.ncnt ) {
-		    gwwv_post_error(_("Bad Sequence/Lookup List"),
+		    ff_post_error(_("Bad Sequence/Lookup List"),
 			    _("Sequence number out of bounds, must be less than %d (number of classes in list above)"),
 			    fpst->rules[0].u.coverage.ncnt );
 return;

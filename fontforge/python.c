@@ -1050,7 +1050,7 @@ static PyObject *PyFF_postError(PyObject *self, PyObject *args) {
     char *msg, *title;
     if ( !PyArg_ParseTuple(args,"eses","UTF-8", &title, "UTF-8", &msg) )
 return( NULL );
-    gwwv_post_error(title,msg);		/* Prints to stderr if no ui */
+    ff_post_error(title,msg);		/* Prints to stderr if no ui */
 Py_RETURN_NONE;
 }
 
@@ -1058,7 +1058,7 @@ static PyObject *PyFF_postNotice(PyObject *self, PyObject *args) {
     char *msg, *title;
     if ( !PyArg_ParseTuple(args,"eses","UTF-8", &title, "UTF-8", &msg) )
 return( NULL );
-    gwwv_post_notice(title,msg);		/* Prints to stderr if no ui */
+    ff_post_notice(title,msg);		/* Prints to stderr if no ui */
 Py_RETURN_NONE;
 }
 
@@ -1075,7 +1075,7 @@ return( NULL );
     if ( !PyArg_ParseTuple(args,"es|ess","UTF-8", &title, "UTF-8", &def, &filter) )
 return( NULL );
 
-    ret = gwwv_open_filename(title,def,filter,NULL);
+    ret = ff_open_filename(title,def,filter);
     free(title);
     free(def);
     if ( ret==NULL )
@@ -1098,7 +1098,7 @@ return( NULL );
     if ( !PyArg_ParseTuple(args,"es|ess","UTF-8", &title, "UTF-8", &def, &filter) )
 return( NULL );
 
-    ret = gwwv_save_filename(title,def,filter);
+    ret = ff_save_filename(title,def,filter);
     free(title);
     free(def);
     if ( ret==NULL )
@@ -1143,7 +1143,7 @@ return( NULL );
 	Py_DECREF(utf8_name);
     }
 
-    ret = gwwv_ask(title,(const char **) answers,def,cancel,quest);
+    ret = ff_ask(title,(const char **) answers,def,cancel,quest);
     free(title);
     free(quest);
     free(answers);
@@ -1183,7 +1183,7 @@ return( NULL );
 	Py_DECREF(utf8_name);
     }
 
-    ret = gwwv_choose(title,(const char **) answers,cnt,def,quest);
+    ret = ff_choose(title,(const char **) answers,cnt,def,quest);
     free(title);
     free(quest);
     free(answers);
@@ -1203,7 +1203,7 @@ return( NULL );
     if ( !PyArg_ParseTuple(args,"eses|es","UTF-8", &title, "UTF-8", &quest, "UTF-8", &def) )
 return( NULL );
 
-    ret = gwwv_ask_string(title,def,quest);
+    ret = ff_ask_string(title,def,quest);
     free(title);
     free(quest);
     free(def);

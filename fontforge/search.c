@@ -1062,11 +1062,7 @@ return( true );
 	sv->findall = sv->replaceall = false;
 	for ( rf=sv->sc_rpl.layers[ly_fore].refs; rf!=NULL; rf = rf->next ) {
 	    if ( SCDependsOnSC(rf->sc,sv->curchar)) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		gwwv_post_error(_("Self-referential glyph"),_("Attempt to make a glyph that refers to itself"));
-#elif defined(FONTFORGE_CONFIG_GTK)
-		gwwv_post_error(_("Self-referential character"),_("Attempt to make a character that refers to itself"));
-#endif
+		ff_post_error(_("Self-referential glyph"),_("Attempt to make a glyph that refers to itself"));
 return( true );
 	    }
 	}

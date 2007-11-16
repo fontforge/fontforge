@@ -28,7 +28,6 @@
 #include <math.h>
 #include "ustring.h"
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static int askfraction(int *xoff, int *yoff) {
     static int lastx=1, lasty = 3;
     char buffer[30];
@@ -36,13 +35,13 @@ static int askfraction(int *xoff, int *yoff) {
     int xv, yv;
 
     sprintf( buffer, "%d:%d", lastx, lasty );
-    ret = gwwv_ask_string(_("Skew"),buffer,_("Skew Ratio"));
+    ret = ff_ask_string(_("Skew"),buffer,_("Skew Ratio"));
     if ( ret==NULL )
 return( 0 );
     xv = strtol(ret,&end,10);
     yv = strtol(end+1,&end2,10);
     if ( xv==0 || xv>10 || xv<-10 || yv<=0 || yv>10 || *end!=':' || *end2!='\0' ) {
-	gwwv_post_error( _("Bad Number"),_("Bad Number") );
+	ff_post_error( _("Bad Number"),_("Bad Number") );
 	free(ret);
 return( 0 );
     }
@@ -50,7 +49,6 @@ return( 0 );
     *xoff = lastx = xv; *yoff = lasty = yv;
 return( 1 );
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static void BCTransFunc(BDFChar *bc,enum bvtools type,int xoff,int yoff) {
     int i, j;

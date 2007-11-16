@@ -2639,7 +2639,7 @@ return( true );
 
     if ( SFFindLookup(tok->sf,name)!=NULL ) {
 	if ( !tok->lookup_in_sf_warned ) {
-	    gwwv_post_notice(_("Refers to Font"),_("Reference to a lookup which is not in the feature file but which is in the font, %.50s"), name );
+	    ff_post_notice(_("Refers to Font"),_("Reference to a lookup which is not in the feature file but which is in the font, %.50s"), name );
 	    tok->lookup_in_sf_warned = true;
 	}
 return( true );
@@ -5517,7 +5517,7 @@ void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename) {
 	fea_ApplyFile(&tok, tok.sofar);
 	fea_NameLookups(&tok);
     } else
-	gwwv_post_error("Not applied","There were errors when parsing the feature file and the features have not been applied");
+	ff_post_error("Not applied","There were errors when parsing the feature file and the features have not been applied");
     fea_featitemFree(tok.sofar);
     ScriptLangListFree(tok.def_langsyses);
     for ( gc = tok.classes; gc!=NULL; gc=gcnext ) {
@@ -5531,7 +5531,7 @@ void SFApplyFeatureFilename(SplineFont *sf,char *filename) {
     FILE *in = fopen(filename,"r");
 
     if ( in==NULL ) {
-	gwwv_post_error(_("Cannot open file"),_("Cannot open feature file %.120s"), filename );
+	ff_post_error(_("Cannot open file"),_("Cannot open feature file %.120s"), filename );
 return;
     }
     SFApplyFeatureFile(sf,in,filename);

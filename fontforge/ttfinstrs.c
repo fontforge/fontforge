@@ -584,7 +584,7 @@ static void IVError(InstrDlg *iv,char *msg,int offset) {
 	GTextFieldShow(iv->text,offset);
 	GWidgetIndicateFocusGadget(iv->text);
     }
-    gwwv_post_error(_("Parse Error"),msg);
+    ff_post_error(_("Parse Error"),msg);
 }
 
 uint8 *_IVParse(InstrDlg *iv, char *text, int *len) {
@@ -1441,7 +1441,7 @@ return;
     }
 
     if ( sc->layers[ly_fore].refs!=NULL && sc->layers[ly_fore].splines!=NULL ) {
-	gwwv_post_error(_("Can't instruct this glyph"),
+	ff_post_error(_("Can't instruct this glyph"),
 		_("TrueType does not support mixed references and contours.\nIf you want instructions for %.30s you should either:\n * Unlink the reference(s)\n * Copy the inline contours into their own (unencoded\n    glyph) and make a reference to that."),
 		sc->name );
 return;
@@ -1454,7 +1454,7 @@ return;
     break;
     }
     if ( ref!=NULL ) {
-	gwwv_post_error(_("Can't instruct this glyph"),
+	ff_post_error(_("Can't instruct this glyph"),
 		_("TrueType does not support references which\nare scaled by more than 200%%.  But %1$.30s\nhas been in %2$.30s. Any instructions\nadded would be meaningless."),
 		ref->sc->name, sc->name );
 return;
@@ -1557,7 +1557,7 @@ return( true );
     val = u_strtol(ret,&end,10);
     if ( *ret=='\0' || *end!='\0' || val<-32768 || val>32767 ) {
 	if ( showerr )
-	    gwwv_post_error(_("Bad Number"),_("Bad Number"));
+	    ff_post_error(_("Bad Number"),_("Bad Number"));
 return( false );
     }
     oldval = sv->edits[sv->active];
@@ -1599,7 +1599,7 @@ return( true );		/* Cancelled */
 	val = strtol(ret,&e,10);
 	if ( *e || val<0 || val>65535 ) {
 	    free(ret);
-	    gwwv_post_error(_("Bad Number"),_("Bad Number"));
+	    ff_post_error(_("Bad Number"),_("Bad Number"));
 return( false );
 	}
 	free(ret);

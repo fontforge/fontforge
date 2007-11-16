@@ -343,14 +343,8 @@ static int dumpcharstrings(void (*dumpchar)(int ch,void *data), void *data,
 	dumpf(dumpchar,data,"/%s %d RD ", chars->keys[i], chars->lens[i]+leniv );
 	encodestrout(dumpchar,data,chars->values[i],chars->lens[i],leniv);
 	dumpstr(dumpchar,data," ND\n");
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	if ( !gwwv_progress_next())
-#elif defined(FONTFORGE_CONFIG_GTK)
-	if ( !gwwv_progress_next())
-#endif
+	if ( !ff_progress_next())
 return( false );
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
     dumpstr(dumpchar,data,"end end\nreadonly put\n");
 return( true );
@@ -961,14 +955,8 @@ static int dumpcharprocs(void (*dumpchar)(int ch,void *data), void *data, Spline
     for ( ; i<sf->glyphcnt; ++i ) if ( i!=notdefpos ) {
 	if ( SCWorthOutputting(sf->glyphs[i]) )
 	    dumpproc(dumpchar,data,sf->glyphs[i]);
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	if ( !gwwv_progress_next())
-#elif defined(FONTFORGE_CONFIG_GTK)
-	if ( !gwwv_progress_next())
-#endif
+	if ( !ff_progress_next())
 return( false );
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
     dumpstr(dumpchar,data,"end\ncurrentdict end\n" );
     dumpf(dumpchar, data, "/%s exch definefont\n", sf->fontname );
@@ -1258,40 +1246,20 @@ return( false );
 	     strstrmatch(sf->weight,"Black")!=NULL))
 	isbold = true;
 
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gwwv_progress_change_stages(2+2-hasblue);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gwwv_progress_change_stages(2+2-hasblue);
-#endif
+    ff_progress_change_stages(2+2-hasblue);
     if ( autohint_before_generate && SFNeedsAutoHint(sf) &&
 	    !(flags&ps_flag_nohints)) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	gwwv_progress_change_line1(_("Auto Hinting Font..."));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_progress_change_line1(_("Auto Hinting Font..."));
-#endif
+	ff_progress_change_line1(_("Auto Hinting Font..."));
 	SplineFontAutoHint(sf);
     }
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    if ( !gwwv_progress_next_stage())
-#elif defined(FONTFORGE_CONFIG_GTK)
-    if ( !gwwv_progress_next_stage())
-#endif
+    if ( !ff_progress_next_stage())
 return( false );
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
     otherblues[0] = otherblues[1] = bluevalues[0] = bluevalues[1] = 0;
     if ( !hasblue ) {
 	FindBlues(sf,bluevalues,otherblues);
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	if ( !gwwv_progress_next_stage())
-#elif defined(FONTFORGE_CONFIG_GTK)
-	if ( !gwwv_progress_next_stage())
-#endif
+	if ( !ff_progress_next_stage())
 return( false );
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
     bluescale = BlueScaleFigure(sf->private,bluevalues,otherblues);
 
@@ -1316,16 +1284,12 @@ return( false );
     }
 
     if ( incid==NULL ) {
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	gwwv_progress_next_stage();
-	gwwv_progress_change_line1(_("Converting Postscript"));
-#endif
+	ff_progress_next_stage();
+	ff_progress_change_line1(_("Converting Postscript"));
 	if ( (chars = SplineFont2ChrsSubrs(sf,iscjk,subrs,flags,format))==NULL )
 return( false );
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	gwwv_progress_next_stage();
-	gwwv_progress_change_line1(_("Saving Postscript Font"));
-#endif
+	ff_progress_next_stage();
+	ff_progress_change_line1(_("Saving Postscript Font"));
     }
 
     if ( incid==NULL ) dumpstr(dumpchar,data,"dup\n");
@@ -1434,11 +1398,7 @@ return( false );
 	PSCharsFree(subrs);
     }
 
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gwwv_progress_change_stages(1);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gwwv_progress_change_stages(1);
-#endif
+    ff_progress_change_stages(1);
 return( true );
 }
 
@@ -2244,31 +2204,21 @@ return( NULL );
 	else
 	    fd->leniv = 4;
     }
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    gwwv_progress_change_line1(_("Converting Postscript"));
-#endif
+    ff_progress_change_line1(_("Converting Postscript"));
     if ( (chars = CID2ChrsSubrs(cidmaster,cidbytes,flags))==NULL )
 return( NULL );
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    gwwv_progress_next_stage();
-    gwwv_progress_change_line1(_("Saving Postscript Font"));
-#endif
+    ff_progress_next_stage();
+    ff_progress_change_line1(_("Saving Postscript Font"));
 
     chrs = tmpfile();
     for ( i=0; i<chars->next; ++i ) {
 	if ( chars->lens[i]!=0 ) {
 	    leniv = cidbytes->fds[cidbytes->fdind[i]].leniv;
 	    dumpt1str(chrs,chars->values[i],chars->lens[i],leniv);
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    if ( !gwwv_progress_next()) {
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    if ( !gwwv_progress_next()) {
-#endif
+	    if ( !ff_progress_next()) {
 		fclose(chrs);
 return( NULL );
 	    }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	    if ( leniv>0 )
 		chars->lens[i] += leniv;
 	}

@@ -390,11 +390,7 @@ static FILE *MakeFewRecordPdb(char *filename,int cnt) {
     strcpy(pt2,".pdb");
     file = fopen(fn,"wb");
     if ( file==NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	gwwv_post_error(_("Couldn't open file"),_("Couldn't open file %.200s"),fn);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_error(_("Could not open file"),_("Could not open file %.200s"), fn);
-#endif
+	ff_post_error(_("Couldn't open file"),_("Couldn't open file %.200s"),fn);
 	free(fn);
 return( NULL );
     }
@@ -474,13 +470,8 @@ return( true );
 
     for ( i=0; i<map->enccount && i<256; ++i ) if ( (gid=map->map[i])!=-1 && (test->glyphs[gid]!=NULL || base->glyphs[gid]!=NULL )) {
 	if ( base->glyphs[gid]==NULL || test->glyphs[gid]==NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    gwwv_post_error(_("Bad Metrics"),_("One of the fonts %1$d,%2$d is missing glyph %3$d"),
+	    ff_post_error(_("Bad Metrics"),_("One of the fonts %1$d,%2$d is missing glyph %3$d"),
 		    test->pixelsize,base->pixelsize, i);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    ff_post_notice(_("Bad Metrics"),_("One of the fonts %d,%d is missing glyph %d"),
-		    temp->pixelsize,base->pixelsize,i);
-#endif
 return( false );
 	}
 	if ( !warned &&
@@ -488,33 +479,18 @@ return( false );
 		 test->glyphs[gid]->xmax>test->glyphs[gid]->width ||
 		 test->glyphs[gid]->ymax>=test->ascent ||
 		 test->glyphs[gid]->ymin<-test->descent)) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	    ff_post_notice(_("Bad Metrics"),_("In font %1$d the glyph %2$.30s either starts before 0, or extends after the advance width or is above the ascent or below the descent"),
 		    test->pixelsize,test->glyphs[gid]->sc->name);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_error(_("Bad Metrics"),_("In font %d the glyph %.30s either starts before 0, or extends after the advance width or is above the ascent or below the descent"),
-		    temp->pixelsize,test->glyphs[gid]->sc->name);
-#endif
 	    warned = true;
 	}
 	if ( !wwarned && test->glyphs[gid]->width!=den*base->glyphs[gid]->width ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	    ff_post_notice(_("Bad Metrics"),_("In font %1$d the advance width of glyph %2$.30s does not scale the base advance width properly, it shall be forced to the proper value"),
 		    test->pixelsize,test->glyphs[gid]->sc->name);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    ff_post_notice(_("Bad Metrics"),_("In font %d the advance width of glyph %.30s does not scale the base advance width properly, it shall be forced to the proper value"),
-		    temp->pixelsize,test->glyphs[gid]->sc->name);
-#endif
 	    wwarned = true;
 	}
 	if ( base->glyphs[gid]->width>127 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    gwwv_post_error(_("Bad Metrics"),_("Advance width of glyph %.30s must be less than 127"),
+	    ff_post_error(_("Bad Metrics"),_("Advance width of glyph %.30s must be less than 127"),
 		    test->pixelsize,test->glyphs[gid]->sc->name);
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_error(_("Bad Metrics"),_("Advance width of glyph %.30s must be less than 127"),
-		    temp->pixelsize,test->glyphs[gid]->sc->name);
-#endif
 return( false );
 	}
     }
@@ -635,7 +611,7 @@ return( false );
 	temp = getbdfsize(sf,sizes[i]);
 	den = temp->pixelsize/base->pixelsize;
 	if ( temp->pixelsize!=base->pixelsize*den || den>4 ) {
-	    gwwv_post_error(_("Unexpected density"),_("One of the bitmap fonts specified, %1$d, is not an integral scale up of the smallest font, %2$d (or is too large a factor)"),
+	    ff_post_error(_("Unexpected density"),_("One of the bitmap fonts specified, %1$d, is not an integral scale up of the smallest font, %2$d (or is too large a factor)"),
 		    temp->pixelsize,base->pixelsize);
 return( false );
 	}
@@ -654,14 +630,12 @@ return( false );
 	fonttype = 3;
     else if ( dencnt>1 ) {
 	char *choices[5];
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	choices[0] = _("Multiple-Density Font");
 	choices[1] = _("High-Density Font");
 	choices[2] = _("Single and Multi-Density Fonts");
 	choices[3] = _("Single and High-Density Fonts");
 	choices[4] = NULL;
-	fonttype = gwwv_choose(_("Choose a file format..."),(const char **) choices,4,3,_("What type(s) of palm font records do you want?"));
-#endif
+	fonttype = ff_choose(_("Choose a file format..."),(const char **) choices,4,3,_("What type(s) of palm font records do you want?"));
 	if ( fonttype==-1 )
 return( false );
 	if ( fonttype>=2 )

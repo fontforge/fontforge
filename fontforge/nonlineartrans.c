@@ -126,7 +126,7 @@ return( op_value );
 	    if ( strcmp(buffer,builtins[i].name)==0 )
 return( builtins[i].op );
 	}
-	gwwv_post_error(_("Bad Token"), _("Bad token \"%.30s\"\nnear ...%40s"), buffer, c->cur );
+	ff_post_error(_("Bad Token"), _("Bad token \"%.30s\"\nnear ...%40s"), buffer, c->cur );
 	c->had_error = true;
 	while (( ch = *(c->cur++))==' ' );
 	if ( ch=='(' )
@@ -172,7 +172,7 @@ return( op_lt );
 	    ++c->cur;
 return( op_eq );
 	}
-	gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\" got \"%.10s\"\nnear ...%40s"), "==", "=" , c->cur );
+	ff_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\" got \"%.10s\"\nnear ...%40s"), "==", "=" , c->cur );
 	c->had_error = true;
 return( op_eq );
       case '|':
@@ -180,7 +180,7 @@ return( op_eq );
 	    ++c->cur;
 return( op_or );
 	}
-	gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\" got \"%.10s\"\nnear ...%40s"), "||", "|" , c->cur );
+	ff_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\" got \"%.10s\"\nnear ...%40s"), "||", "|" , c->cur );
 	c->had_error = true;
 return( op_or );
       case '&':
@@ -188,7 +188,7 @@ return( op_or );
 	    ++c->cur;
 return( op_and );
 	}
-	gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\" got \"%.10s\"\nnear ...%40s"), "&&", "&" , c->cur );
+	ff_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\" got \"%.10s\"\nnear ...%40s"), "&&", "&" , c->cur );
 	c->had_error = true;
 return( op_and );
       case '?':
@@ -196,7 +196,7 @@ return( op_if );
       case '(': case ')': case ':': case ',':
 return( ch );
       default:
-	gwwv_post_error(_("Bad Token"), _("Bad token. got \"%1$c\"\nnear ...%2$40s"), ch , c->cur );
+	ff_post_error(_("Bad Token"), _("Bad token. got \"%1$c\"\nnear ...%2$40s"), ch , c->cur );
 	c->had_error = true;
 	*val = 0;
 return( op_value );
@@ -230,7 +230,7 @@ return( ret );
 	ret = getexpr(c);
 	op = gettoken(c,&val);
 	if ( op!=')' ) {
-	    gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), ")" , c->cur );
+	    ff_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), ")" , c->cur );
 	    c->had_error = true;
 	}
 return(ret );
@@ -243,20 +243,20 @@ return(ret );
 	ret->operator = op;
 	op = gettoken(c,&val);
 	if ( op!='(' ) {
-	    gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), "(" , c->cur );
+	    ff_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), "(" , c->cur );
 	    c->had_error = true;
 	}
 	ret->op1 = getexpr(c);
 	op = gettoken(c,&val);
 	if ( ret->operator==op_atan2 ) {
 	    if ( op!=',' ) {
-		gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), "," , c->cur );
+		ff_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), "," , c->cur );
 	    }
 	    ret->op2 = getexpr(c);
 	    op = gettoken(c,&val);
 	}
 	if ( op!=')' ) {
-	    gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), ")" , c->cur );
+	    ff_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), ")" , c->cur );
 	    c->had_error = true;
 	}
 return( ret );
@@ -269,7 +269,7 @@ return( gete0(c));
 	ret->op1 = gete0(c);
 return( ret );
       default:
-	gwwv_post_error(_("Bad Token"), _("Unexpected token.\nbefore ...%40s") , c->cur );
+	ff_post_error(_("Bad Token"), _("Unexpected token.\nbefore ...%40s") , c->cur );
 	c->had_error = true;
 	ret = gcalloc(1,sizeof(struct expr));
 	ret->operator = op_value;
@@ -387,7 +387,7 @@ static struct expr *getexpr(struct context *c) {
 	ret->op2 = getexpr(c);
 	op = gettoken(c,&val);
 	if ( op!=':' ) {
-	    gwwv_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), ":" , c->cur );
+	    ff_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), ":" , c->cur );
 	    c->had_error = true;
 	}
 	ret->op3 = getexpr(c);
@@ -406,7 +406,7 @@ static struct expr *parseexpr(struct context *c,char *str) {
     ret = getexpr(c);
     if ( *c->cur!='\0' ) {
 	c->had_error = true;
-	gwwv_post_error(_("Bad Token"), _("Unexpected token after expression end.\nbefore ...%40s") , c->cur );
+	ff_post_error(_("Bad Token"), _("Unexpected token after expression end.\nbefore ...%40s") , c->cur );
     }
     if ( c->had_error ) {
 	exprfree(ret);
@@ -437,14 +437,14 @@ return( !evaluate_expr(c,e->op1) );
 	switch ( e->operator ) {
 	  case op_log:
 	    if ( val1<=0 ) {
-		gwwv_post_error(_("Bad Value"),_("Attempt to take logarithm of %1$g in %2$.30s"), val1, c->sc->name );
+		ff_post_error(_("Bad Value"),_("Attempt to take logarithm of %1$g in %2$.30s"), val1, c->sc->name );
 		c->had_error = true;
 return( 0 );
 	    }
 return( log(val1));
 	  case op_sqrt:
 	    if ( val1<0 ) {
-		gwwv_post_error(_("Bad Value"),_("Attempt to take the square root of %1$g in %2$.30s"), val1, c->sc->name );
+		ff_post_error(_("Bad Value"),_("Attempt to take the square root of %1$g in %2$.30s"), val1, c->sc->name );
 		c->had_error = true;
 return( 0 );
 	    }
@@ -475,7 +475,7 @@ return( evaluate_expr(c,e->op1) * evaluate_expr(c,e->op2) );
       case op_div: case op_mod:
 	val2 = evaluate_expr(c,e->op2);
 	if ( val2==0 ) {
-	    gwwv_post_error(_("Bad Value"),_("Attempt to divide by 0 in %.30s"), c->sc->name );
+	    ff_post_error(_("Bad Value"),_("Attempt to divide by 0 in %.30s"), c->sc->name );
 	    c->had_error = true;
 return( 0 );
 	}

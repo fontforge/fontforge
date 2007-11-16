@@ -243,11 +243,7 @@ return;
 	    }
 	}
     }
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gwwv_progress_next();
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gwwv_progress_next();
-#endif
+    ff_progress_next();
 }
 
 static void BdfCRefFixup(BDFFont *bdf, int gid, int *warned, struct ttfinfo *info) {
@@ -443,14 +439,10 @@ void TTFLoadBitmaps(FILE *ttf,struct ttfinfo *info,int onlyone) {
     const char **choices;
     char *sel;
     char buf[300];
-#if defined(FONTFORGE_CONFIG_GDRAW)
     char *buttons[3];
     buttons[0] = _("_Yes");
     buttons[1] = _("_No");
     buttons[2] = NULL;
-#elif defined(FONTFORGE_CONFIG_GTK)
-    static char *buttons[] = { GTK_STOCK_YES, GTK_STOCK_NO, NULL };
-#endif
 
     fseek(ttf,info->bitmaploc_start,SEEK_SET);
     /* version = */ getlong(ttf);		/* Had better be 0x00020000, or 2.0 */
@@ -522,20 +514,18 @@ return;
 	    for ( i=0; i<cnt; ++i )
 		sel[i] = true;
 	}
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    } else if ( no_windowing_ui ) {
+	if ( onlyone ) {
+	    if ( biggest!=-1 ) sel[biggest] = true;
+	} else
+	    biggest = -2;
     } else if ( onlyone ) {
-	biggest=gwwv_choose_with_buttons(_("Load Bitmap Fonts"), choices,cnt,biggest,buttons,
+	biggest=ff_choose(_("Load Bitmap Fonts"), choices,cnt,biggest,
 		_("Do you want to load the bitmap fonts embedded in this true/open type file?\n(And if so, which)"));
 	if ( biggest!=-1 ) sel[biggest] = true;
     } else {
-	biggest = gwwv_choose_multiple(_("Load Bitmap Fonts"), choices,sel,cnt,buttons,
+	biggest = ff_choose_multiple(_("Load Bitmap Fonts"), choices,sel,cnt,buttons,
 		_("Do you want to load the bitmap fonts embedded in this true/open type file?\n(And if so, which)"));
-#else
-    } else if ( onlyone ) {
-	if ( biggest!=-1 ) sel[biggest] = true;
-    } else {
-	biggest = -2;
-#endif
     }
     for ( i=0; i<cnt; ++i ) free( (unichar_t *) (choices[i]));
     free(choices);
@@ -550,9 +540,7 @@ return;
     }
     cnt = j;
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    gwwv_progress_change_stages(3+cnt);
-#endif
+    ff_progress_change_stages(3+cnt);
     info->bitmaps = last = NULL;
     if ( info->subfonts==NULL )
 	glyphcnt = info->glyph_cnt;
@@ -584,14 +572,10 @@ return;
 	else
 	    last->next = bdf;
 	last = bdf;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	snprintf(buf,sizeof(buf),_("%d pixel bitmap"), sizes[i].ppem );
-	gwwv_progress_change_line2(buf);
-#endif
+	ff_progress_change_line2(buf);
 	readttfbitmapfont(ttf,info,&sizes[i],bdf);
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	gwwv_progress_next_stage();
-#endif
+	ff_progress_next_stage();
     }
     free(sizes); free(sel);
 
@@ -1215,9 +1199,9 @@ void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,int32 *sizes) {
 	dumpbitmapSizeTable(at->bloc,&space);
 
     /* Dump out the strikes... */
-    gwwv_progress_change_line1(_("Saving Bitmap Font(s)"));
+    ff_progress_change_line1(_("Saving Bitmap Font(s)"));
     for ( i=0; sizes[i]!=0; ++i ) {
-	gwwv_progress_next_stage();
+	ff_progress_next_stage();
 	for ( bdf=sf->bitmaps; bdf!=NULL && (bdf->pixelsize!=(sizes[i]&0xffff) || BDFDepth(bdf)!=(sizes[i]>>16)); bdf=bdf->next );
 	if ( bdf==NULL )
     continue;
@@ -1256,7 +1240,7 @@ void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,int32 *sizes) {
     if ( ftell(at->bloc)&2 )
 	putshort(at->bloc,0);
 
-    gwwv_progress_change_line1(_("Saving TrueType Font"));
+    ff_progress_change_line1(_("Saving TrueType Font"));
     ttf_bdf_dump(sf,at,sizes);
 }
 

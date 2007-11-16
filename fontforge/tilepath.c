@@ -913,9 +913,9 @@ static int TilePathD_OK(GGadget *g, GEvent *e) {
 		(td->tilescale!=ts_scale ||
 		 TPD_Useless(tpd->sc_isolated.layers[ly_fore].splines)) ) {
 	    if ( td->tilescale == ts_scale )
-		gwwv_post_error(_("Bad Tile"),_("You must specify an isolated (or medial) tile"));
+		ff_post_error(_("Bad Tile"),_("You must specify an isolated (or medial) tile"));
 	    else
-		gwwv_post_error(_("Bad Tile"),_("You must specify a medial tile"));
+		ff_post_error(_("Bad Tile"),_("You must specify a medial tile"));
 return( true );
 	}
 

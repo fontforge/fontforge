@@ -642,13 +642,13 @@ static int CI_NameCheck(const unichar_t *name) {
     if ( uc_strcmp(name,".notdef")==0 )		/* This name is a special case and doesn't follow conventions */
 return( true );
     if ( u_strlen(name)>31 ) {
-	gwwv_post_error(_("Bad Name"),_("Glyph names are limitted to 31 characters"));
+	ff_post_error(_("Bad Name"),_("Glyph names are limitted to 31 characters"));
 return( false );
     } else if ( *name=='\0' ) {
-	gwwv_post_error(_("Bad Name"),_("Bad Name"));
+	ff_post_error(_("Bad Name"),_("Bad Name"));
 return( false );
     } else if ( isdigit(*name) || *name=='.' ) {
-	gwwv_post_error(_("Bad Name"),_("A glyph name may not start with a digit nor a full stop (period)"));
+	ff_post_error(_("Bad Name"),_("A glyph name may not start with a digit nor a full stop (period)"));
 return( false );
     }
     bad = questionable = false;
@@ -663,7 +663,7 @@ return( false );
 	++name;
     }
     if ( bad ) {
-	gwwv_post_error(_("Bad Name"),_("A glyph name must be ASCII, without spaces and may not contain the characters \"([{<>}])/%%\", and should contain only alphanumerics, periods and underscores"));
+	ff_post_error(_("Bad Name"),_("A glyph name must be ASCII, without spaces and may not contain the characters \"([{<>}])/%%\", and should contain only alphanumerics, periods and underscores"));
 return( false );
     } else if ( questionable ) {
 	if ( gwwv_ask(_("Bad Name"),(const char **) buts,0,1,_("A glyph name should contain only alphanumerics, periods and underscores\nDo you want to use this name in spite of that?"))==1 )
@@ -977,7 +977,7 @@ static int CI_ProcessPosSubs(CharInfo *ci) {
 	for ( j=i+1; j<rows; ++j ) {
 	    if ( possub[cols*i+0].u.md_ival == possub[cols*j+0].u.md_ival &&
 		    strcmp(possub[cols*i+1].u.md_str,possub[cols*j+1].u.md_str)==0 ) {
-		gwwv_post_error( _("Duplicate Ligature"),_("There are two ligature entries with the same components (%.80s) in the same lookup subtable (%.30s)"),
+		ff_post_error( _("Duplicate Ligature"),_("There are two ligature entries with the same components (%.80s) in the same lookup subtable (%.30s)"),
 			possub[cols*j+1].u.md_str,
 			((struct lookup_subtable *) possub[cols*i+0].u.md_ival)->subtable_name );
 return( false );
@@ -990,7 +990,7 @@ return( false );
 	for ( j=i+1; j<rows; ++j ) {
 	    if ( possub[cols*i+0].u.md_ival == possub[cols*j+0].u.md_ival &&
 		    strcmp(possub[cols*i+1].u.md_str,possub[cols*j+1].u.md_str)==0 ) {
-		gwwv_post_error( _("Duplicate Kern data"),_("There are two kerning entries for the same glyph (%.80s) in the same lookup subtable (%.30s)"),
+		ff_post_error( _("Duplicate Kern data"),_("There are two kerning entries for the same glyph (%.80s) in the same lookup subtable (%.30s)"),
 			possub[cols*j+1].u.md_str,
 			((struct lookup_subtable *) possub[cols*i+0].u.md_ival)->subtable_name );
 return( false );
@@ -1008,7 +1008,7 @@ return( false );
 	for ( r=0; r<rows; ++r ) {
 	    for ( c=startc; c<cols; c+=2 ) {
 		if ( !DeviceTableOK(possub[r*cols+c].u.md_str,&low,&high) ) {
-		    gwwv_post_error( _("Bad Device Table Adjustment"),_("A device table adjustment specified for %.80s is invalid"),
+		    ff_post_error( _("Bad Device Table Adjustment"),_("A device table adjustment specified for %.80s is invalid"),
 			    possub[cols*r+0].u.md_str );
 return( true );
 		}
@@ -1024,7 +1024,7 @@ return( true );
 	    char *start = possub[cols*i+1].u.md_str;
 	    while ( *start== ' ' ) ++start;
 	    if ( *start=='\0' ) {
-		gwwv_post_error( _("Missing glyph name"),_("You must specify a glyph name for subtable %s"),
+		ff_post_error( _("Missing glyph name"),_("You must specify a glyph name for subtable %s"),
 			((struct lookup_subtable *) possub[cols*i+0].u.md_ival)->subtable_name );
 return( false );
 	    }
@@ -1231,7 +1231,7 @@ static int CI_ValidateAltUnis(CharInfo *ci) {
 	int uni = stuff[i*cols+0].u.md_ival, vs = stuff[i*cols+1].u.md_ival;
 	if ( uni<0 || uni>=unicode4_size ||
 		vs<-1 || vs>=unicode4_size ) {
-	    gwwv_post_error(_("Unicode out of range"), _("Bad unicode value for an alternate unicode / variation selector"));
+	    ff_post_error(_("Unicode out of range"), _("Bad unicode value for an alternate unicode / variation selector"));
 return( false );
 	}
 	if ( (vs>=0x180B && vs<=0x180D) ||	/* Mongolian VS */
@@ -1348,7 +1348,7 @@ return( false );
 	if ( err )
 return( false );
 	if ( lc_cnt<0 || lc_cnt>100 ) {
-	    gwwv_post_error(_("Bad Lig. Caret Count"),_("Unreasonable ligature caret count"));
+	    ff_post_error(_("Bad Lig. Caret Count"),_("Unreasonable ligature caret count"));
 return( false );
 	}
     }
@@ -1363,7 +1363,7 @@ return( false );
     vicdt = GGadgetGetTitle8(GWidgetGetControl(ci->gw,CID_ExtItalicDev+0*100));
     if ( !DeviceTableOK(italicdevtab,&low,&high) || !DeviceTableOK(accentdevtab,&low,&high) ||
 	    !DeviceTableOK(hicdt,&low,&high) || !DeviceTableOK(vicdt,&low,&high)) {
-	gwwv_post_error( _("Bad Device Table Adjustment"),_("A device table adjustment specified for the MATH table is invalid") );
+	ff_post_error( _("Bad Device Table Adjustment"),_("A device table adjustment specified for the MATH table is invalid") );
 	free( accentdevtab );
 	free( italicdevtab );
 	free(hicdt); free(vicdt);
@@ -1996,7 +1996,7 @@ static int DevTabDlg_OK(GGadget *g, GEvent *e) {
 	low = high = -1;
 	for ( i=0; i<rows; ++i ) {
 	    if ( corrections[2*i+1].u.md_ival<-128 || corrections[2*i+1].u.md_ival>127 ) {
-		gwwv_post_error(_("Bad correction"),_("The correction on line %d is too big.  It must be between -128 and 127"),
+		ff_post_error(_("Bad correction"),_("The correction on line %d is too big.  It must be between -128 and 127"),
 			i+1 );
 return(true);
 	    } else if ( corrections[2*i+0].u.md_ival<0 || corrections[2*i+0].u.md_ival>32767 ) {
@@ -4732,7 +4732,7 @@ void FVSelectByPST(FontView *fv) {
 	    }
 	}
 	if ( cnt==0 ) {
-	    gwwv_post_notice(_("No Lookups"), _("No applicable lookup subtables"));
+	    ff_post_notice(_("No Lookups"), _("No applicable lookup subtables"));
 return;
 	}
 	if ( ti==NULL )

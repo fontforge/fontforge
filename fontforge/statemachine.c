@@ -1242,7 +1242,7 @@ return( false );
 		Protest8(_("Kern Values:"));
 return( false );
 	    } else if ( kerns>=8 ) {
-		gwwv_post_error(_("Too Many Kerns"),_("At most 8 kerning values may be specified here"));
+		ff_post_error(_("Too Many Kerns"),_("At most 8 kerning values may be specified here"));
 return( false );
 	    } else if ( kbuf[kerns]&1 ) {
 		kbuf[kerns] &= ~1;
@@ -1268,11 +1268,11 @@ return( false );
 	if ( *ret8=='\0' )
 	    mlook = NULL; 		/* That's ok */
 	else if ( (mlook=SFFindLookup(smd->sf,ret8))==NULL ) {
-	    gwwv_post_error(_("Unknown lookup"),_("Lookup, %s, does not exist"), ret8 );
+	    ff_post_error(_("Unknown lookup"),_("Lookup, %s, does not exist"), ret8 );
 	    free(ret8);
 return( false );
 	} else if ( mlook->lookup_type!=gsub_single ) {
-	    gwwv_post_error(_("Bad lookup type"),_("Lookups in contextual state machines must be simple substitutions,\n, but %s is not"), ret8 );
+	    ff_post_error(_("Bad lookup type"),_("Lookups in contextual state machines must be simple substitutions,\n, but %s is not"), ret8 );
 	    free(ret8);
 return( false );
 	}
@@ -1281,11 +1281,11 @@ return( false );
 	if ( *ret8=='\0' )
 	    clook = NULL; 		/* That's ok */
 	else if ( (clook=SFFindLookup(smd->sf,ret8))==NULL ) {
-	    gwwv_post_error(_("Unknown lookup"),_("Lookup, %s, does not exist"), ret8 );
+	    ff_post_error(_("Unknown lookup"),_("Lookup, %s, does not exist"), ret8 );
 	    free(ret8);
 return( false );
 	} else if ( mlook->lookup_type!=gsub_single ) {
-	    gwwv_post_error(_("Bad lookup type"),_("Lookups in contextual state machines must be simple substitutions,\n, but %s is not"), ret8 );
+	    ff_post_error(_("Bad lookup type"),_("Lookups in contextual state machines must be simple substitutions,\n, but %s is not"), ret8 );
 	    free(ret8);
 return( false );
 	}
@@ -1310,7 +1310,7 @@ return( false );
 
 	mins = copy_count(smd->editgw,CID_InsMark,&cnt);
 	if ( cnt>31 ) {
-	    gwwv_post_error(_("Too Many Glyphs"),_("At most 31 glyphs may be specified in an insert list"));
+	    ff_post_error(_("Too Many Glyphs"),_("At most 31 glyphs may be specified in an insert list"));
 	    free(mins);
 return( false );
 	}
@@ -1324,7 +1324,7 @@ return( false );
 	free(foo);
 	cins = copy_count(smd->editgw,CID_InsCur,&cnt);
 	if ( cnt>31 ) {
-	    gwwv_post_error(_("Too Many Glyphs"),_("At most 31 glyphs may be specified in an insert list"));
+	    ff_post_error(_("Too Many Glyphs"),_("At most 31 glyphs may be specified in an insert list"));
 	    free(mins);
 	    free(cins);
 return( false );

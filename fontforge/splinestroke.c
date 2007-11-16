@@ -921,7 +921,7 @@ static int DoIntersect_Splines(struct strokedspline *before,
 	si->gottoobig = si->gottoobiglocal = true;
 	if ( !si->toobigwarn ) {
 	    si->toobigwarn = true;
-	    gwwv_post_error( _("Bad Stroke"), _("The stroke width is so big that the generated path\nmay intersect itself in %.100s"),
+	    ff_post_error( _("Bad Stroke"), _("The stroke width is so big that the generated path\nmay intersect itself in %.100s"),
 		    sc==NULL?"<nameless char>": sc->name );
 	}
     }
@@ -1409,7 +1409,7 @@ static struct strokedspline *_SplineSetApprox(SplineSet *spl,StrokeInfo *si,Spli
 		si->gottoobig = si->gottoobiglocal = true;
 		if ( !si->toobigwarn ) {
 		    si->toobigwarn = true;
-		    gwwv_post_error( _("Bad Stroke"), _("The stroke width is so big that the generated path\nmay intersect itself in %.100s"),
+		    ff_post_error( _("Bad Stroke"), _("The stroke width is so big that the generated path\nmay intersect itself in %.100s"),
 			    sc==NULL?"<nameless char>": sc->name );
 		}
 	    }

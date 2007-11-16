@@ -420,7 +420,7 @@ static int GFD_Ok(GGadget *g, GEvent *e) {
 	    free(nlname);
 	    if ( force_names_when_opening!=NULL && force_names_when_opening->uses_unicode &&
 		    !allow_utf8_glyphnames) {
-		gwwv_post_error(_("Namelist contains non-ASCII names"),_("Glyph names should be limited to characters in the ASCII character set, but there are names in this namelist which use characters outside that range."));
+		ff_post_error(_("Namelist contains non-ASCII names"),_("Glyph names should be limited to characters in the ASCII character set, but there are names in this namelist which use characters outside that range."));
 return(true);
 	    }
 	    d->done = true;

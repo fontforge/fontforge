@@ -25,7 +25,7 @@ libgdraw_OBJECTS =  choosericons.o divisors.o drawboxborder.o \
  giohosts.o giomime.o giothread.o giotrans.o gkeysym.o glist.o \
  gmenu.o gprogress.o gpsdraw.o gpstxtinit.o gradio.o gresource.o \
  gresourceimage.o gsavefiledlg.o gscrollbar.o gtabset.o \
- gtextfield.o gtextinfo.o gwidgets.o gxdraw.o dynamic.o \
+ gtextfield.o gtextinfo.o gwidgets.o gxdraw.o \
  ghvbox.o gmatrixedit.o gdrawable.o gspacer.o
 
 Incs = -I$(top_srcdir)/inc -I/usr/pkg/include -I/usr/pkg/include/giflib

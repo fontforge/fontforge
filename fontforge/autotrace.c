@@ -431,7 +431,7 @@ char **AutoTraceArgs(int ask) {
 	char *cdef = flatten(args);
 	char *cret;
 
-	cret = gwwv_ask_string(_("Additional arguments for autotrace program:"),
+	cret = ff_ask_string(_("Additional arguments for autotrace program:"),
 		cdef,_("Additional arguments for autotrace program:"));
 	free(cdef);
 	if ( cret==NULL )
@@ -452,7 +452,7 @@ void FVAutoTrace(FontView *fv,int ask) {
 #endif
 
     if ( FindAutoTraceName()==NULL ) {
-	gwwv_post_error(_("Can't find autotrace"),_("Can't find autotrace program (set AUTOTRACE environment variable) or download from:\n  http://sf.net/projects/autotrace/"));
+	ff_post_error(_("Can't find autotrace"),_("Can't find autotrace program (set AUTOTRACE environment variable) or download from:\n  http://sf.net/projects/autotrace/"));
 return;
     }
 
@@ -471,18 +471,9 @@ return;
 	GDrawSync(NULL);
 	GDrawProcessPendingEvents(NULL);
     }
-
-    gwwv_progress_start_indicator(10,_("Autotracing..."),_("Autotracing..."),0,cnt,1);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    if ( fv->v!=NULL ) {
-	/* !!!! */
-	ct = GDrawGetCursor(fv->v);
-	GDrawSetCursor(fv->v,ct_watch);
-	GDrawSync(NULL);
-	GDrawProcessPendingEvents(NULL);
-    }
-    gwwv_progress_start_indicator(10,_("Autotracing..."),_("Autotracing..."),0,cnt,1);
 #endif
+
+    ff_progress_start_indicator(10,_("Autotracing..."),_("Autotracing..."),0,cnt,1);
 
     SFUntickAll(fv->sf);
     for ( i=cnt=0; i<fv->map->enccount; ++i ) {
@@ -491,20 +482,14 @@ return;
 		fv->sf->glyphs[gid]->layers[ly_back].images &&
 		!fv->sf->glyphs[gid]->ticked ) {
 	    _SCAutoTrace(fv->sf->glyphs[gid], args);
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	    if ( !gwwv_progress_next())
+	    if ( !ff_progress_next())
     break;
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	}
     }
+    ff_progress_end_indicator();
 #if defined(FONTFORGE_CONFIG_GDRAW)
-    gwwv_progress_end_indicator();
     if ( fv->v!=NULL )
 	GDrawSetCursor(fv->v,ct);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gwwv_progress_end_indicator();
-    if ( fv->v!=NULL )
-	GDrawSetCursor(fv->v,ct);	/* !!!! */
 #endif
 }
 
@@ -515,13 +500,11 @@ void SCAutoTrace(SplineChar *sc,GWindow v,int ask) {
 
     if ( sc->layers[ly_back].images==NULL ) {
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	gwwv_post_error(_("Nothing to trace"),_("Nothing to trace"));
+	ff_post_error(_("Nothing to trace"),_("Nothing to trace"));
 #endif
 return;
     } else if ( FindAutoTraceName()==NULL ) {
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	gwwv_post_error(_("Can't find autotrace"),_("Can't find autotrace program (set AUTOTRACE environment variable) or download from:\n  http://sf.net/projects/autotrace/"));
-#endif
+	ff_post_error(_("Can't find autotrace"),_("Can't find autotrace program (set AUTOTRACE environment variable) or download from:\n  http://sf.net/projects/autotrace/"));
 return;
     }
 
@@ -675,18 +658,16 @@ void MfArgsInit(void) {
 static char *MfArgs(void) {
     MfArgsInit();
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    if ( mf_ask ) {
+    if ( mf_ask && !no_windowing_ui ) {
 	char *ret;
 
-	ret = gwwv_ask_string(_("Additional arguments for autotrace program:"),
+	ret = ff_ask_string(_("Additional arguments for autotrace program:"),
 		mf_args,_("Additional arguments for autotrace program:"));
 	if ( ret==NULL )
 return( (char *) -1 );
 	mf_args = ret;
 	SavePrefs();
     }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 return( mf_args );
 }
 
@@ -698,14 +679,10 @@ SplineFont *SFFromMF(char *filename) {
     SplineChar *sc;
 
     if ( FindMFName()==NULL ) {
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	gwwv_post_error(_("Can't find mf"),_("Can't find mf program -- metafont (set MF environment variable) or download from:\n  http://www.tug.org/\n  http://www.ctan.org/\nIt's part of the TeX distribution"));
-#endif
+	ff_post_error(_("Can't find mf"),_("Can't find mf program -- metafont (set MF environment variable) or download from:\n  http://www.tug.org/\n  http://www.ctan.org/\nIt's part of the TeX distribution"));
 return( NULL );
     } else if ( FindAutoTraceName()==NULL ) {
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	gwwv_post_error(_("Can't find autotrace"),_("Can't find autotrace program (set AUTOTRACE environment variable) or download from:\n  http://sf.net/projects/autotrace/"));
-#endif
+	ff_post_error(_("Can't find autotrace"),_("Can't find autotrace program (set AUTOTRACE environment variable) or download from:\n  http://sf.net/projects/autotrace/"));
 return( NULL );
     }
     if ( MfArgs()==(char *) -1 || AutoTraceArgs(false)==(char **) -1 )
@@ -716,9 +693,7 @@ return( NULL );
     /*  will put the files there. */
     tempdir = mytempdir();
     if ( tempdir==NULL ) {
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	gwwv_post_error(_("Can't create temporary directory"),_("Can't create temporary directory"));
-#endif
+	ff_post_error(_("Can't create temporary directory"),_("Can't create temporary directory"));
 return( NULL );
     }
 
@@ -745,24 +720,18 @@ return( NULL );
 	}
 	exit(execvp(arglist[0],arglist)==-1);	/* If exec fails, then die */
     } else if ( pid!=-1 ) {
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	gwwv_progress_show();
-#endif
+	ff_progress_show();
 	waitpid(pid,&status,0);
 	if ( WIFEXITED(status)) {
 	    char *gffile = FindGfFile(tempdir);
 	    if ( gffile==NULL )
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-		gwwv_post_error(_("Can't run mf"),_("Could not read (or perhaps find) mf output file"));
-#endif
+		ff_post_error(_("Can't run mf"),_("Could not read (or perhaps find) mf output file"));
 	    else {
 		sf = SFFromBDF(gffile,3,true);
 		free(gffile);
 		if ( sf!=NULL ) {
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-		    gwwv_progress_change_line1(_("Autotracing..."));
-		    gwwv_progress_change_total(sf->glyphcnt);
-#endif
+		    ff_progress_change_line1(_("Autotracing..."));
+		    ff_progress_change_total(sf->glyphcnt);
 		    for ( i=0; i<sf->glyphcnt; ++i ) {
 			if ( (sc = sf->glyphs[i])!=NULL && sc->layers[ly_back].images ) {
 			    _SCAutoTrace(sc, args);
@@ -772,24 +741,16 @@ return( NULL );
 			        sc->layers[ly_back].images = NULL;
 			    }
 			}
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-			if ( !gwwv_progress_next())
+			if ( !ff_progress_next())
 		    break;
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 		    }
 		} else 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-		    gwwv_post_error(_("Can't run mf"),_("Could not read (or perhaps find) mf output file"));
-#endif
+		    ff_post_error(_("Can't run mf"),_("Could not read (or perhaps find) mf output file"));
 	    }
 	} else
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	    gwwv_post_error(_("Can't run mf"),_("MetaFont exited with an error"));
-#endif
+	    ff_post_error(_("Can't run mf"),_("MetaFont exited with an error"));
     } else
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	gwwv_post_error(_("Can't run mf"),_("Can't run mf"));
-#endif
+	ff_post_error(_("Can't run mf"),_("Can't run mf"));
     free(arglist[1]);
     cleantempdir(tempdir);
 return( sf );

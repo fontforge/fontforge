@@ -246,12 +246,10 @@ static void expect(Context *c,enum token_type expected, enum token_type got) {
 	    fflush(stdout);
 	LogError( _("%s: %d Expected %s, got %s"),
 		c->filename, c->lineno, toknames[expected], toknames[got] );
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	if ( !no_windowing_ui ) {
-	    gwwv_post_error(NULL,_("%1$s: %2$d. Expected %3$s got %4$s"),
+	    ff_post_error(NULL,_("%1$s: %2$d. Expected %3$s got %4$s"),
 		    c->filename, c->lineno, toknames[expected], toknames[got] );
 	}
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	showtoken(c,got);
     }
 }
@@ -261,12 +259,10 @@ static void unexpected(Context *c,enum token_type got) {
 	fflush(stdout);
     LogError( _("%s: %d Unexpected %s found"),
 	    c->filename, c->lineno, toknames[got] );
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( !no_windowing_ui ) {
-	gwwv_post_error(NULL,"%1$s: %2$d Unexpected %3$",
+	ff_post_error(NULL,"%1$s: %2$d Unexpected %3$",
 		c->filename, c->lineno, toknames[got] );
     }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     showtoken(c,got);
 }
 
@@ -284,11 +280,9 @@ void ScriptError( Context *c, const char *msg ) {
 	LogError( _("%s line: %d %s\n"), ufile, c->lineno, t1 );
     else
 	LogError( "%s: %s\n", ufile, t1 );
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( !no_windowing_ui ) {
-	gwwv_post_error(NULL,"%s: %d  %s",ufile, c->lineno, t1 );
+	ff_post_error(NULL,"%s: %d  %s",ufile, c->lineno, t1 );
     }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     free(ufile); free(t1);
     traceback(c);
 }
@@ -304,11 +298,9 @@ void ScriptErrorString( Context *c, const char *msg, const char *name) {
 	LogError( _("%s line: %d %s: %s\n"), ufile, c->lineno, t1, t2 );
     else
 	LogError( "%s: %s: %s\n", ufile, t1, t2 );
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( !no_windowing_ui ) {
-	gwwv_post_error(NULL,"%s: %d %s: %s",ufile, c->lineno, t1, t2 );
+	ff_post_error(NULL,"%s: %d %s: %s",ufile, c->lineno, t1, t2 );
     }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     free(ufile); free(t1); free(t2);
     traceback(c);
 }
@@ -329,11 +321,9 @@ void ScriptErrorF( Context *c, const char *format, ... ) {
 	LogError( _("%s line: %d %s\n"), ufile, c->lineno, errbuf );
     else
 	LogError( "%s: %s\n", ufile, errbuf );
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( !no_windowing_ui ) {
-	gwwv_post_error(NULL,"%s: %d  %s",ufile, c->lineno, errbuf );
+	ff_post_error(NULL,"%s: %d  %s",ufile, c->lineno, errbuf );
     }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     free(ufile);
     traceback(c);
 }

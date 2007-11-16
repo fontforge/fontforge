@@ -605,11 +605,7 @@ BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int dep
 		    bdf->glyphs[i] = SplineCharRasterize(subsf->glyphs[i],pixelsize);
 		else
 		    bdf->glyphs[i] = SplineCharAntiAlias(subsf->glyphs[i],pixelsize,(1<<(depth/2)));
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		gwwv_progress_next();
-#elif defined(FONTFORGE_CONFIG_GTK)
-		gwwv_progress_next();
-#endif
+		ff_progress_next();
 	    } else
 		bdf->glyphs[i] = NULL;
 	if ( subftc!=NULL && subftc!=ftc )
@@ -617,11 +613,7 @@ BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int dep
 	subftc = NULL;
 	++k;
     } while ( k<sf->subfontcnt );
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gwwv_progress_end_indicator();
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gwwv_progress_end_indicator();
-#endif
+    ff_progress_end_indicator();
 return( bdf );
 }
 
@@ -1262,20 +1254,12 @@ BDFFont *SplineFontFreeTypeRasterizeNoHints(SplineFont *sf,int pixelsize,int dep
 		    bdf->glyphs[i] = SplineCharRasterize(subsf->glyphs[i],pixelsize);
 		else
 		    bdf->glyphs[i] = SplineCharAntiAlias(subsf->glyphs[i],pixelsize,(1<<(depth/2)));
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		gwwv_progress_next();
-#elif defined(FONTFORGE_CONFIG_GTK)
-		gwwv_progress_next();
-#endif
+		ff_progress_next();
 	    } else
 		bdf->glyphs[i] = NULL;
 	++k;
     } while ( k<sf->subfontcnt );
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gwwv_progress_end_indicator();
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gwwv_progress_end_indicator();
-#endif
+    ff_progress_end_indicator();
 return( bdf );
 }
 #endif
@@ -1743,7 +1727,7 @@ return;
     }
     /* Else add it */
     if ( dc->bcnt>=sizeof(dc->breaks)/sizeof(dc->breaks[0]) ) {
-	gwwv_post_error(_("Too Many Breakpoints"),_("Too Many Breakpoints"));
+	ff_post_error(_("Too Many Breakpoints"),_("Too Many Breakpoints"));
 return;
     }
     i = dc->bcnt++;

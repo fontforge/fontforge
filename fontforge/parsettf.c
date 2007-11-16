@@ -350,7 +350,7 @@ return( true );
 	if ( choice==-1 ) {
 	    char *fn = copy(filename);
 	    fn[lparen-filename] = '\0';
-	    gwwv_post_error(_("Not in Collection"),
+	    ff_post_error(_("Not in Collection"),
 /* GT: The user is trying to open a font file which contains multiple fonts and */
 /* GT: has asked for a font which is not in that file. */
 /* GT: The string will look like: <fontname> is not in <filename> */
@@ -358,15 +358,10 @@ return( true );
 	    free(fn);
 	}
 	free(find);
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
     } else if ( no_windowing_ui )
 	choice = 0;
     else
-	choice = gwwv_choose(_("Pick a font, any font..."),(const char **) names,j,0,_("There are multiple fonts in this file, pick one"));
-#else
-    } else
-	choice = 0;
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+	choice = ff_choose(_("Pick a font, any font..."),(const char **) names,j,0,_("There are multiple fonts in this file, pick one"));
     if ( choice!=-1 ) {
 	fseek(ttf,offsets[choice],SEEK_SET);
 	*chosenname = copy(names[choice]);
@@ -386,15 +381,11 @@ static int PickCFFFont(char **fontnames) {
     names = gcalloc(cnt+1,sizeof(unichar_t *));
     for ( i=0; i<cnt; ++i )
 	names[i] = uc_copy(fontnames[i]);
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
     if ( no_windowing_ui )
 	choice = 0;
     else
-	choice = gwwv_choose(_("Pick a font, any font..."),
+	choice = ff_choose(_("Pick a font, any font..."),
 	    (const char **) names,cnt,0,_("There are multiple fonts in this file, pick one"));
-#elif defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
-    choice = 0;
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     for ( i=0; i<cnt; ++i )
 	free(names[i]);
     free(names);
@@ -843,9 +834,7 @@ static void ValidatePostScriptFontName(struct ttfinfo *info, char *str) {
     strtod(str,&end);
     if ( (*end=='\0' || (isdigit(str[0]) && strchr(str,'#')!=NULL)) &&
 	    *str!='\0' ) {
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
-	gwwv_post_error(_("Bad Font Name"),_("A Postscript name may not be a number"));
-#endif
+	ff_post_error(_("Bad Font Name"),_("A Postscript name may not be a number"));
 	info->bad_ps_fontname = true;
 	*str = 'a';
 	complained = true;
@@ -856,9 +845,7 @@ static void ValidatePostScriptFontName(struct ttfinfo *info, char *str) {
 		*pt==')' || *pt==']' || *pt=='}' || *pt=='>' ||
 		*pt=='%' || *pt=='/' ) {
 	    if ( !complained ) {
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
-		gwwv_post_error(_("Bad Font Name"),_("The Postscript font name \"%.63s\" is invalid.\nIt should be printable ASCII,\nmust not contain (){}[]<>%%/ or space\nand must be shorter than 63 characters"),str);
-#endif
+		ff_post_error(_("Bad Font Name"),_("The Postscript font name \"%.63s\" is invalid.\nIt should be printable ASCII,\nmust not contain (){}[]<>%%/ or space\nand must be shorter than 63 characters"),str);
 		info->bad_ps_fontname = true;
 	    }
 	    complained = true;
@@ -869,9 +856,7 @@ static void ValidatePostScriptFontName(struct ttfinfo *info, char *str) {
 	}
     }
     if ( strlen(str)>63 ) {
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
-	gwwv_post_error(_("Bad Font Name"),_("The Postscript font name \"%.63s\" is invalid.\nIt should be printable ASCII,\nmust not contain (){}[]<>%%/ or space\nand must be shorter than 63 characters"),str);
-#endif
+	ff_post_error(_("Bad Font Name"),_("The Postscript font name \"%.63s\" is invalid.\nIt should be printable ASCII,\nmust not contain (){}[]<>%%/ or space\nand must be shorter than 63 characters"),str);
 	info->bad_ps_fontname = true;
 	str[63] = '\0';
     }
@@ -1017,14 +1002,10 @@ return;
 	    buts[2] = _("Second _to All");
 	    buts[3] = _("Use _Second");
 	    buts[4] = NULL;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	    ret = gwwv_ask(_("Multiple names for language"),(const char **)buts,0,3,
+	    ret = ff_ask(_("Multiple names for language"),(const char **)buts,0,3,
 		    _("The 'name' table contains (at least) two strings for the %s in language %s, the first '%.12s...' the second '%.12s...'.\nWhich do you prefer?"),
 		    TTFNameIds(id),MSLangString(language),
 		    cur->names[id],str);
-#else
-	    ret = 3;
-#endif
 	    if ( ret==1 || ret==2 )
 		info->dupnamestate = ret;
 	}
@@ -1668,9 +1649,7 @@ static void readttfglyphs(FILE *ttf,struct ttfinfo *info) {
 	/* read all the glyphs */
 	for ( i=0; i<info->glyph_cnt ; ++i ) {
 	    info->chars[i] = readttfglyph(ttf,info,goffsets[i],goffsets[i+1],i);
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
-	    gwwv_progress_next();
-#endif
+	    ff_progress_next();
 	}
     } else {
 	/* only read the glyphs we actually use in this font */
@@ -1690,9 +1669,7 @@ static void readttfglyphs(FILE *ttf,struct ttfinfo *info) {
 	    for ( i=0; i<info->glyph_cnt ; ++i ) {
 		if ( info->inuse[i] && info->chars[i]==NULL ) {
 		    info->chars[i] = readttfglyph(ttf,info,goffsets[i],goffsets[i+1],i);
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
-		    gwwv_progress_next();
-#endif
+		    ff_progress_next();
 		    anyread = info->chars[i]!=NULL;
 		}
 	    }
@@ -1703,9 +1680,7 @@ static void readttfglyphs(FILE *ttf,struct ttfinfo *info) {
     for ( i=0; i<info->glyph_cnt ; ++i )
 	if ( info->chars[i]!=NULL )
 	    info->chars[i]->orig_pos = i;
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
-    gwwv_progress_next_stage();
-#endif
+    ff_progress_next_stage();
 }
 
 /* Standard names for cff */
@@ -3255,9 +3230,7 @@ static void cidfigure(struct ttfinfo *info, struct topdicts *dict,
 	    else
 		sf->glyphs[cid]->width += subdicts[j]->nominalwidthx;
 	}
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
-	gwwv_progress_next();
-#endif
+	ff_progress_next();
     }
     /* No need to do a reference fixup here-- the chars aren't associated */
     /*  with any encoding as is required for seac */
@@ -3805,7 +3778,7 @@ static int PickCMap(struct cmap_encs *cmap_encs,int enccnt,int def) {
 		    "Unknown format" );
 	choices[i] = copy(buffer);
     }
-    ret = gwwv_choose(_("Pick a CMap subtable"),(const char **) choices,enccnt,def,
+    ret = ff_choose(_("Pick a CMap subtable"),(const char **) choices,enccnt,def,
 	    _("Pick a CMap subtable"));
     for ( i=0; i<enccnt; ++i )
 	free(choices[i]);
@@ -4441,9 +4414,7 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
     char *buts[5];
 #endif
 
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
-    gwwv_progress_change_line2(_("Reading Names"));
-#endif
+    ff_progress_change_line2(_("Reading Names"));
 
     /* Give ourselves an xuid, just in case they want to convert to PostScript*/
     /*  (even type42)							      */
@@ -4565,10 +4536,10 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	    if ( asked!=-1 )
 		response = asked;
 	    else if ( info->chars[i]->unicodeenc==-1 )
-		response = gwwv_ask_centered(_("Bad glyph name"),(const char **) buts,1,1,_("The glyph named %.30s is not mapped to any unicode code point. But its name indicates it should be mapped to U+%04X.\nWould you like to retain the name in spite of this?"),
+		response = ff_ask(_("Bad glyph name"),(const char **) buts,1,1,_("The glyph named %.30s is not mapped to any unicode code point. But its name indicates it should be mapped to U+%04X.\nWould you like to retain the name in spite of this?"),
 			info->chars[i]->name,uni);
 	    else
-		response = gwwv_ask_centered(_("Bad glyph name"),(const char **) buts,1,1,_("The glyph named %.30s is mapped to U+%04X.\nBut its name indicates it should be mapped to U+%04X.\nWould you like to retain the name in spite of this?"),
+		response = ff_ask(_("Bad glyph name"),(const char **) buts,1,1,_("The glyph named %.30s is mapped to U+%04X.\nBut its name indicates it should be mapped to U+%04X.\nWould you like to retain the name in spite of this?"),
 			info->chars[i]->name,info->chars[i]->unicodeenc, uni);
 	    if ( response==1 )
 		asked = response = 0;
@@ -4602,9 +4573,7 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 		}
 	    }
 	}
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
-	gwwv_progress_next();
-#endif
+	ff_progress_next();
 	info->chars[i]->name = copy(name);
     }
 
@@ -4634,13 +4603,9 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	else
 	    sprintf( buffer, "glyph%d", i );
 	info->chars[i]->name = copy(buffer);
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
-	gwwv_progress_next();
-#endif
+	ff_progress_next();
     }
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
-    gwwv_progress_next_stage();
-#endif
+    ff_progress_next_stage();
 }
 
 static void readttfgasp(FILE *ttf,struct ttfinfo *info) {
@@ -4771,18 +4736,12 @@ return( true );
 static void ttfFixupReferences(struct ttfinfo *info) {
     int i;
 
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
-    gwwv_progress_change_line2(_("Fixing up References"));
-#endif
+    ff_progress_change_line2(_("Fixing up References"));
     for ( i=0; i<info->glyph_cnt; ++i ) {
 	ttfFixupRef(info->chars,i);
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
-	gwwv_progress_next();
-#endif
+	ff_progress_next();
     }
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
-    gwwv_progress_next_stage();
-#endif
+    ff_progress_next_stage();
 }
 
 static void TtfCopyTableBlindly(struct ttfinfo *info,FILE *ttf,
@@ -4810,17 +4769,13 @@ static int readttf(FILE *ttf, struct ttfinfo *info, char *filename) {
     char *oldloc;
     int i;
 
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
-    gwwv_progress_change_stages(3);
-#endif
+    ff_progress_change_stages(3);
     if ( !readttfheader(ttf,info,filename,&info->chosenname)) {
 return( 0 );
     }
     oldloc = setlocale(LC_NUMERIC,"C");		/* TrueType doesn't need this but opentype dictionaries do */
     readttfpreglyph(ttf,info);
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
-    gwwv_progress_change_total(info->glyph_cnt);
-#endif
+    ff_progress_change_total(info->glyph_cnt);
 
     /* If font only contains bitmaps, then only read bitmaps */
     if ( (info->glyphlocations_start==0 || info->glyph_length==0) &&
@@ -4835,16 +4790,9 @@ return( 0 );
 	int choice;
 	buts[0] = _("TTF 'glyf'");
 	buts[1] = _("OTF 'CFF '");
-	buts[3] = NULL;
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	buts[2] = _("_Cancel");
-	choice = gwwv_ask(_("Pick a font, any font..."),(const char **) buts,0,2,_("This font contains both a TrueType 'glyf' table and an OpenType 'CFF ' table. FontForge can only deal with one at a time, please pick which one you want to use"));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	buts[2] = GTK_STOCK_CANCEL;
-	choice = gwwv_ask(_("Pick a font, any font..."),(const char **) buts,0,2,_("This font contains both a TrueType 'glyf' table and an OpenType 'CFF ' table. FontForge can only deal with one at a time, please pick which one you want to use"));
-#else
-	choice = 0;
-#endif
+	buts[3] = NULL;
+	choice = ff_ask(_("Pick a font, any font..."),(const char **) buts,0,2,_("This font contains both a TrueType 'glyf' table and an OpenType 'CFF ' table. FontForge can only deal with one at a time, please pick which one you want to use"));
 	if ( choice==2 ) {
 	    setlocale(LC_NUMERIC,oldloc);
 return( 0 );
@@ -4883,11 +4831,7 @@ return( 0 );
     if ( info->bitmapdata_start!=0 && info->bitmaploc_start!=0 )
 	TTFLoadBitmaps(ttf,info,info->onlyonestrike);
     else if ( info->onlystrikes )
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
-	gwwv_post_error( _("No Bitmap Strikes"), _("No (useable) bitmap strikes in this TTF font: %s"), filename==NULL ? "<unknown>" : filename );
-#else
-	;
-#endif
+	ff_post_error( _("No Bitmap Strikes"), _("No (useable) bitmap strikes in this TTF font: %s"), filename==NULL ? "<unknown>" : filename );
     if ( info->onlystrikes && info->bitmaps==NULL ) {
 	free(info->chars);
 	setlocale(LC_NUMERIC,oldloc);

@@ -1107,7 +1107,7 @@ static int PIDownloadFont(PI *pi, SplineFont *sf, EncMap *map) {
 
     sfbit->fontfile = tmpfile();
     if ( sfbit->fontfile==NULL ) {
-	gwwv_post_error(_("Failed to open temporary output file"),_("Failed to open temporary output file"));
+	ff_post_error(_("Failed to open temporary output file"),_("Failed to open temporary output file"));
 return(false);
     }
     if ( pi->sfid==0 )
@@ -1137,7 +1137,7 @@ return(false);
     gwwv_progress_end_indicator();
 
     if ( error ) {
-	gwwv_post_error(_("Failed to generate postscript font"),_("Failed to generate postscript font") );
+	ff_post_error(_("Failed to generate postscript font"),_("Failed to generate postscript font") );
 	fclose(sfbit->fontfile);
 return(false);
     }
@@ -1800,7 +1800,7 @@ return(true);
 
 	if ( GGadgetIsChecked(GWidgetGetControl(pi->setup,CID_Other)) &&
 		*_GGadgetGetTitle(GWidgetGetControl(pi->setup,CID_OtherCmd))=='\0' ) {
-	    gwwv_post_error(_("No Command Specified"),_("No Command Specified"));
+	    ff_post_error(_("No Command Specified"),_("No Command Specified"));
 return(true);
 	}
 
@@ -2321,12 +2321,12 @@ static void DoPrinting(PI *pi,char *filename) {
 	PIChars(pi);
     rewind(pi->out);
     if ( ferror(pi->out) )
-	gwwv_post_error(_("Print Failed"),_("Failed to generate postscript in file %s"),
+	ff_post_error(_("Print Failed"),_("Failed to generate postscript in file %s"),
 		filename==NULL?"temporary":filename );
     if ( pi->printtype!=pt_file && pi->printtype!=pt_pdf )
 	QueueIt(pi);
     if ( fclose(pi->out)!=0 )
-	gwwv_post_error(_("Print Failed"),_("Failed to generate postscript in file %s"),
+	ff_post_error(_("Print Failed"),_("Failed to generate postscript in file %s"),
 		filename==NULL?"temporary":filename );
     free(pi->sfbits);
 }
@@ -2386,7 +2386,7 @@ static int PRT_OK(GGadget *g, GEvent *e) {
 	    if ( err )
 return(true);
 	    if ( pi->pointsize<1 || pi->pointsize>200 ) {
-		gwwv_post_error(_("Invalid point size"),_("Invalid point size"));
+		ff_post_error(_("Invalid point size"),_("Invalid point size"));
 return(true);
 	    }
 	}
@@ -2405,7 +2405,7 @@ return(true);
 	    free(ret);
 	    pi->out = fopen(file,"wb");
 	    if ( pi->out==NULL ) {
-		gwwv_post_error(_("Print Failed"),_("Failed to open file %s for output"), file);
+		ff_post_error(_("Print Failed"),_("Failed to open file %s for output"), file);
 		free(file);
 return(true);
 	    }
@@ -2413,7 +2413,7 @@ return(true);
 	    file = NULL;
 	    pi->out = tmpfile();
 	    if ( pi->out==NULL ) {
-		gwwv_post_error(_("Failed to open temporary output file"),_("Failed to open temporary output file"));
+		ff_post_error(_("Failed to open temporary output file"),_("Failed to open temporary output file"));
 return(true);
 	    }
 	}
@@ -3242,7 +3242,7 @@ return;
 
     if ( !SFTFSetFontData(GWidgetGetControl(di->gw,CID_SampleText),doall?0:-1,-1,
 	    sf,type,size,aa))
-	gwwv_post_error(_("Bad Font"),_("Bad Font"));
+	ff_post_error(_("Bad Font"),_("Bad Font"));
 }
 
 static void DSP_ChangeFontCallback(void *context,SplineFont *sf,enum sftf_fonttype type,
@@ -3512,7 +3512,7 @@ return( true );
 		}
 		if ( pt!=buf )
 		    pt[-1] = '\0';
-		gwwv_post_error(_("Bad Size"),_("Requested bitmap size not available in font. Font supports %s"),buf);
+		ff_post_error(_("Bad Size"),_("Requested bitmap size not available in font. Font supports %s"),buf);
 		best = DSP_BestMatchDlg(di);
 		if ( best!=NULL ) {
 		    sprintf( buf, "%d", best->pixelsize);
@@ -4301,14 +4301,14 @@ void ScriptPrint(FontView *fv,int type,int32 *pointsizes,char *samplefile,
 	}
 	pi.out = fopen(outputfile,"wb");
 	if ( pi.out==NULL ) {
-	    gwwv_post_error(_("Print Failed"),_("Failed to open file %s for output"), outputfile);
+	    ff_post_error(_("Print Failed"),_("Failed to open file %s for output"), outputfile);
 return;
 	}
     } else {
 	outputfile = NULL;
 	pi.out = tmpfile();
 	if ( pi.out==NULL ) {
-	    gwwv_post_error(_("Failed to open temporary output file"),_("Failed to open temporary output file"));
+	    ff_post_error(_("Failed to open temporary output file"),_("Failed to open temporary output file"));
 return;
 	}
     }

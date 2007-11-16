@@ -1174,13 +1174,11 @@ return;
 	_xmlFreeDoc(doc);
 return;
     }
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
     for ( tot=0, keys=dict->children; keys!=NULL; keys=keys->next ) {
 	if ( _xmlStrcmp(keys->name,(const xmlChar *) "key")==0 )
 	    ++tot;
     }
-    gwwv_progress_change_total(tot);
-#endif
+    ff_progress_change_total(tot);
     for ( keys=dict->children; keys!=NULL; keys=keys->next ) {
 	for ( value = keys->next; value!=NULL && _xmlStrcmp(value->name,(const xmlChar *) "text")==0;
 		value = value->next );
@@ -1199,9 +1197,7 @@ return;
 		sf->glyphs[sf->glyphcnt++] = sc;
 	    }
 	    keys = value;
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
-	    gwwv_progress_next();
-#endif
+	    ff_progress_next();
 	}
     }
     _xmlFreeDoc(doc);

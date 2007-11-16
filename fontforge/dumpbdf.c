@@ -144,11 +144,7 @@ static void BDFDumpChar(FILE *file,BDFFont *font,BDFChar *bdfc,int enc,
 	putc('\n',file);
     }
     fprintf( file, "ENDCHAR\n" );
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gwwv_progress_next();
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gwwv_progress_next();
-#endif
+    ff_progress_next();
 }
 
 static void figureDefMetrics(BDFFont *font,struct metric_defaults *defs) {

@@ -379,11 +379,7 @@ return;
     if ( hist->which==hist_blues ) {
 	if ( hist->is_pending ) {
 	    if ( x<hist->pending_blue )
-#if defined(FONTFORGE_CONFIG_GDRAW)
-		gwwv_post_error(_("Bad Value"),_("The smaller number must be selected first in a pair of bluevalues"));
-#elif defined(FONTFORGE_CONFIG_GTK)
-		gwwv_post_error(_("Bad Value"),_("The smaller number must be selected first in a pair of bluevalues"));
-#endif
+		ff_post_error(_("Bad Value"),_("The smaller number must be selected first in a pair of bluevalues"));
 	    else if ( x<0 ) {	/* OtherBlues */
 		const unichar_t *old = _GGadgetGetTitle(GWidgetGetControl(hist->gw,CID_SecondaryVal));
 		unichar_t *new = ArrayOrder(old,2,hist->pending_blue,x);

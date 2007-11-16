@@ -824,9 +824,7 @@ static int AnchorD_CorrectionChanged(GGadget *g, GEvent *e) {
 	if ( *end!='\0' )
 return( true );
 	if ( correction<-128 || correction>127 ) {
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
-	    gwwv_post_error( _("Out of Range"), _("Corrections must be between -128 and 127 (and should be smaller)") );
-#endif
+	    ff_post_error( _("Out of Range"), _("Corrections must be between -128 and 127 (and should be smaller)") );
 return( true );
 	}
 
@@ -1001,7 +999,7 @@ return( NULL );
 	sc = SFGetChar(sf,-1,ret);
 	def = ret;
 	if ( sc==NULL )
-	    gwwv_post_error(_("Non-existant glyph"), _("The glyph, %.80s, is not in the font"), ret );
+	    ff_post_error(_("Non-existant glyph"), _("The glyph, %.80s, is not in the font"), ret );
 	else {
 	    isliga = ismrk = false;
 	    for ( ap=sc->anchor ; ap!=NULL; ap=ap->next ) {
@@ -1018,7 +1016,7 @@ return( NULL );
 			ismarklike = true;
 		    else if ( ap->type != at_baselig ||
 			      ( ap->type == at_baselig && ismarklike>0 ))
-			gwwv_post_error(_("Duplicate Anchor Class"), _("The glyph, %.80s, already contains an anchor in this class, %.80s."), ret, ac->name );
+			ff_post_error(_("Duplicate Anchor Class"), _("The glyph, %.80s, already contains an anchor in this class, %.80s."), ret, ac->name );
 		    else if ( maxlig<ap->lig_index )
 			maxlig = ap->lig_index;
 	    break;

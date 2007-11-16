@@ -214,11 +214,7 @@ static int Stroke_OK(GGadget *g, GEvent *e) {
 	si->removeexternal = GGadgetIsChecked( GWidgetGetControl(sw,CID_RmExternal));
 	si->removeoverlapifneeded = GGadgetIsChecked( GWidgetGetControl(sw,CID_CleanupSelfIntersect));
 	if ( si->removeinternal && si->removeexternal ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    gwwv_post_error(_("Bad Value"),_("Removing both the internal and the external contours makes no sense"));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_error(_("Bad Value"),_("Removing both the internal and the external contours makes no sense"));
-#endif
+	    ff_post_error(_("Bad Value"),_("Removing both the internal and the external contours makes no sense"));
 	    err = true;
 	}
 	si->radius = GetReal8(sw,CID_Width,_("Stroke _Width:"),&err)/2;
@@ -955,11 +951,7 @@ static uint32 getcol(GGadget *g,int *err) {
     col = u_strtol(ret,&end,16);
     if ( col<0 || col>0xffffff || *end!='\0' ) {
 	*err = true;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	gwwv_post_error(_("Bad Color"),_("Bad Color"));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_error(_("Bad Color"),_("Bad Color"));
-#endif
+	ff_post_error(_("Bad Color"),_("Bad Color"));
     }
 return( col );
 }
@@ -1010,11 +1002,7 @@ return( true );
 	temp.stroke_pen.trans[3] = u_strtod(end,&end2);
 	for ( ret = end2 ; *ret==' ' || *ret==']' ; ++ret );
 	if ( end2==end || *ret!='\0' || temp.stroke_pen.trans[0] ==0 || temp.stroke_pen.trans[3]==0 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    gwwv_post_error(_("Bad Transformation Matrix"),_("Bad Transformation Matrix"));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    gwwv_post_error(_("Bad Transformation Matrix"),_("Bad Transformation Matrix"));
-#endif
+	    ff_post_error(_("Bad Transformation Matrix"),_("Bad Transformation Matrix"));
 return( true );
 	}
 	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_DashesInherit)) ) {
@@ -1027,13 +1015,13 @@ return( true );
 		if ( *end=='\0' )
 	    break;
 		if ( val<0 || val>255 ) {
-		    gwwv_post_error(_("Bad dash list"),_("Value out of range"));
+		    ff_post_error(_("Bad dash list"),_("Value out of range"));
 return( true );
 		} else if ( *end!=' ' ) {
-		    gwwv_post_error(_("Bad dash list"),_("Bad Number"));
+		    ff_post_error(_("Bad dash list"),_("Bad Number"));
 return( true );
 		} else if ( i>=DASH_MAX ) {
-		    gwwv_post_error(_("Bad dash list"),_("Too many dashes (at most %d allowed)"), DASH_MAX);
+		    ff_post_error(_("Bad dash list"),_("Too many dashes (at most %d allowed)"), DASH_MAX);
 return( true );
 		}
 		temp.stroke_pen.dashes[i] = val;

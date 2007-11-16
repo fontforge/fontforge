@@ -4042,9 +4042,9 @@ static char *LK_LangsDlg(GGadget *g, int r, int c) {
     }
     if ( warn_cnt!=0 ) {
 	if ( warn_cnt==1 )
-	    gwwv_post_error(_("Unknown Language"),_("The language, '%s', is not in the list of known languages and will be omitted"), warnstr );
+	    ff_post_error(_("Unknown Language"),_("The language, '%s', is not in the list of known languages and will be omitted"), warnstr );
 	else
-	    gwwv_post_error(_("Unknown Language"),_("Several language tags, including '%s', are not in the list of known languages and will be omitted"), warnstr );
+	    ff_post_error(_("Unknown Language"),_("Several language tags, including '%s', are not in the list of known languages and will be omitted"), warnstr );
     }
 
 	memset(&wattrs,0,sizeof(wattrs));
@@ -4129,7 +4129,7 @@ static char *LK_LangsDlg(GGadget *g, int r, int c) {
 		++lcnt;
 	}
 	if ( lcnt==0 ) {
-	    gwwv_post_error(_("Language Missing"),_("You must select at least one language.\nUse the \"Default\" language if nothing else fits."));
+	    ff_post_error(_("Language Missing"),_("You must select at least one language.\nUse the \"Default\" language if nothing else fits."));
 	    done = 0;
  goto retry;
 	}
@@ -4216,39 +4216,39 @@ static int Script_OK(GGadget *g, GEvent *e) {
 	char foo[4];
 
 	if ( rows==0 ) {
-	    gwwv_post_error(_("No scripts"),_("You must select at least one script if you provide a feature tag."));
+	    ff_post_error(_("No scripts"),_("You must select at least one script if you provide a feature tag."));
 return(true);
 	}
 	script_cnt = rows;
 	lang_cnt = 0;
 	for ( i=0; i<rows; ++i ) {
 	    if ( strlen(strings[2*i+0].u.md_str)>4 ) {
-		gwwv_post_error(_("Bad script tag"),_("The script tag on line %d (%s) is too long.  It may be at most 4 letters"),
+		ff_post_error(_("Bad script tag"),_("The script tag on line %d (%s) is too long.  It may be at most 4 letters"),
 			i+1, strings[2*i+0].u.md_str);
 return(true);
 	    } else {
 		for ( pt=strings[2*i+0].u.md_str; *pt!='\0' ; ++pt )
 		    if ( *pt>0x7e ) {
-			gwwv_post_error(_("Bad script tag"),_("The script tag on line %d (%s) should be in ASCII.\n"),
+			ff_post_error(_("Bad script tag"),_("The script tag on line %d (%s) should be in ASCII.\n"),
 				i+1, strings[2*i+0].u.md_str);
 return( true );
 		    }
 	    }
 	    /* Now check the languages */
 	    if ( *strings[2*i+1].u.md_str=='\0' ) {
-		gwwv_post_error(_("No languages"),_("You must select at least one language for each script."));
+		ff_post_error(_("No languages"),_("You must select at least one language for each script."));
 return(true);
 	    }
 	    for ( start=strings[2*i+1].u.md_str; *start!='\0'; ) {
 		for ( pt=start; *pt!=',' && *pt!='\0'; ++pt ) {
 		    if ( *pt>0x7e ) {
-			gwwv_post_error(_("Bad language tag"),_("A language tag on line %d (%s) should be in ASCII.\n"),
+			ff_post_error(_("Bad language tag"),_("A language tag on line %d (%s) should be in ASCII.\n"),
 				i+1, strings[2*i+1].u.md_str);
 return( true );
 		    }
 		}
 		if ( pt-start>4 ) {
-		    gwwv_post_error(_("Bad language tag"),_("A language tag on line %d (%s) is too long.  It may be at most 4 letters"),
+		    ff_post_error(_("Bad language tag"),_("A language tag on line %d (%s) is too long.  It may be at most 4 letters"),
 			    i+1, strings[2*i+0].u.md_str);
 return(true);
 		}
@@ -4754,24 +4754,24 @@ static int Lookup_OK(GGadget *g, GEvent *e) {
 	FeatureScriptLangList *fhead;
 
 	if ( lookup_type==ot_undef ) {
-	    gwwv_post_error(_("No Lookup Type Selected"),_("You must select a Lookup Type."));
+	    ff_post_error(_("No Lookup Type Selected"),_("You must select a Lookup Type."));
 return(true);
 	}
 	if ( *_GGadgetGetTitle(GWidgetGetControl(ld->gw,CID_LookupName))=='\0' ) {
-	    gwwv_post_error(_("Unnamed lookup"),_("You must name the lookup."));
+	    ff_post_error(_("Unnamed lookup"),_("You must name the lookup."));
 return(true);
 	}
 	for ( i=0; i<rows; ++i ) {
 	    if ( sscanf(strings[2*i+0].u.md_str,"<%*d,%*d>" )== 2 )
 		/* It's a mac feature/setting */;
 	    else if ( strlen(strings[2*i+0].u.md_str)>4 ) {
-		gwwv_post_error(_("Bad feature tag"),_("The feature tag on line %d (%s) is too long.  It may be at most 4 letters (or it could be a mac feature setting, two numbers in brokets <3,4>)"),
+		ff_post_error(_("Bad feature tag"),_("The feature tag on line %d (%s) is too long.  It may be at most 4 letters (or it could be a mac feature setting, two numbers in brokets <3,4>)"),
 			i+1, strings[2*i+0].u.md_str);
 return(true);
 	    } else {
 		for ( pt=strings[2*i+0].u.md_str; *pt!='\0' ; ++pt )
 		    if ( *pt>0x7e ) {
-			gwwv_post_error(_("Bad feature tag"),_("The feature tag on line %d (%s) should be in ASCII.\n"),
+			ff_post_error(_("Bad feature tag"),_("The feature tag on line %d (%s) should be in ASCII.\n"),
 				i+1, strings[2*i+0].u.md_str);
 return( true );
 		    }
@@ -4780,13 +4780,13 @@ return( true );
 	    for ( start=strings[2*i+1].u.md_str; *start!='\0'; ) {
 		for ( pt=start; *pt!='{' && *pt!='\0'; ++pt ) {
 		    if ( *pt>0x7e ) {
-			gwwv_post_error(_("Bad script tag"),_("A script tag on line %d (%s) should be in ASCII.\n"),
+			ff_post_error(_("Bad script tag"),_("A script tag on line %d (%s) should be in ASCII.\n"),
 				i+1, strings[2*i+1].u.md_str);
 return( true );
 		    }
 		}
 		if ( pt-start>4 ) {
-		    gwwv_post_error(_("Bad script tag"),_("A script tag on line %d (%s) is too long.  It may be at most 4 letters"),
+		    ff_post_error(_("Bad script tag"),_("A script tag on line %d (%s) is too long.  It may be at most 4 letters"),
 			    i+1, strings[2*i+0].u.md_str);
 return(true);
 		}
@@ -4794,13 +4794,13 @@ return(true);
 		    for ( start=pt+1; *start!='}' && *start!='\0' ; ) {
 			for ( pt=start; *pt!='}' && *pt!=',' && *pt!='\0'; ++pt ) {
 			    if ( *pt>0x7e ) {
-				gwwv_post_error(_("Bad language tag"),_("A language tag on line %d (%s) should be in ASCII.\n"),
+				ff_post_error(_("Bad language tag"),_("A language tag on line %d (%s) should be in ASCII.\n"),
 					i+1, strings[2*i+1].u.md_str);
 return( true );
 			    }
 			}
 			if ( pt-start>4 ) {
-			    gwwv_post_error(_("Bad language tag"),_("A language tag on line %d (%s) is too long.  It may be at most 4 letters"),
+			    ff_post_error(_("Bad language tag"),_("A language tag on line %d (%s) is too long.  It may be at most 4 letters"),
 				    i+1, strings[2*i+0].u.md_str);
 return(true);
 			}
@@ -4816,7 +4816,7 @@ return(true);
 	for ( isgpos=0; isgpos<2; ++isgpos ) {
 	    for ( test = isgpos ? ld->sf->gpos_lookups : ld->sf->gsub_lookups; test!=NULL; test=test->next ) {
 		if ( test!=otl && strcmp(test->lookup_name,name)==0 ) {
-		    gwwv_post_error(_("Lookup name already used"),_("This name has already been used for another lookup.\nLookup names must be unique.") );
+		    ff_post_error(_("Lookup name already used"),_("This name has already been used for another lookup.\nLookup names must be unique.") );
 		    free(name);
 return(true);
 		}
@@ -5359,7 +5359,7 @@ return( true );
 	if ( ac==NULL ) {
 	    ac = SFAddAnchorClass(acd->sf,acd->sub,classes[row].u.md_str);
 	} else if ( ac->subtable!=acd->sub ) {
-	    gwwv_post_error(_("Name in use"),_("The name, %.80s, has already been used to identify an anchor class in a different lookup subtable (%.80s)"),
+	    ff_post_error(_("Name in use"),_("The name, %.80s, has already been used to identify an anchor class in a different lookup subtable (%.80s)"),
 		    ac->name, ac->subtable->subtable_name );
 return( true );
 	}
@@ -5400,11 +5400,11 @@ static int AC_OK(GGadget *g, GEvent *e) {
 			ac->processed = true;
 		    }
 		} else if ( ac->subtable!=acd->sub ) {
-		    gwwv_post_error(_("Name in use"),_("The name, %.80s, has already been used to identify an anchor class in a different lookup subtable (%.80s)"),
+		    ff_post_error(_("Name in use"),_("The name, %.80s, has already been used to identify an anchor class in a different lookup subtable (%.80s)"),
 			    ac->name, ac->subtable->subtable_name );
 return( true );
 		} else if ( ac->processed ) {
-		    gwwv_post_error(_("Name in use"),_("The name, %.80s, is used twice in this subtable"),
+		    ff_post_error(_("Name in use"),_("The name, %.80s, is used twice in this subtable"),
 			    ac->name );
 return( true );
 		} else
@@ -6669,7 +6669,7 @@ static int PSTKD_Ok(GGadget *g, GEvent *e) {
 	    /* Glyph names that aren't in the font */
 	for ( r=0; r<rows; ++r ) {
 	    if ( SFGetChar(pstkd->sf,-1,psts[r*cols+0].u.md_str)==NULL ) {
-		gwwv_post_error( _("Missing glyph"),_("There is no glyph named %s in the font"),
+		ff_post_error( _("Missing glyph"),_("There is no glyph named %s in the font"),
 			psts[cols*r+0].u.md_str );
 return( true );
 	    }
@@ -6681,7 +6681,7 @@ return( true );
 		if ( start==NULL ) start="";
 		while ( *start== ' ' ) ++start;
 		if ( *start=='\0' ) {
-		    gwwv_post_error( _("Missing glyph name"),_("You must specify a replacement glyph for %s"),
+		    ff_post_error( _("Missing glyph name"),_("You must specify a replacement glyph for %s"),
 			    psts[cols*r+0].u.md_str );
 return( true );
 		}
@@ -6712,12 +6712,12 @@ return( true );
 		if ( strcmp(psts[r*cols+0].u.md_str,psts[r1*cols+0].u.md_str)==0 ) {
 		    if ( lookup_type==gpos_pair || lookup_type==gsub_ligature ) {
 			if ( strcmp(psts[r*cols+1].u.md_str,psts[r1*cols+1].u.md_str)==0 ) {
-			    gwwv_post_error( _("Duplicate data"),_("There are two entries for the same glyph set (%.80s and %.80s)"),
+			    ff_post_error( _("Duplicate data"),_("There are two entries for the same glyph set (%.80s and %.80s)"),
 				    psts[cols*r+0].u.md_str, psts[cols*r+1].u.md_str );
 return( true );
 			}
 		    } else {
-			gwwv_post_error( _("Duplicate data"),_("There are two entries for the same glyph (%.80s)"),
+			ff_post_error( _("Duplicate data"),_("There are two entries for the same glyph (%.80s)"),
 				psts[cols*r+0].u.md_str );
 return( true );
 		    }
@@ -6733,7 +6733,7 @@ return( true );
 	    for ( r=0; r<rows; ++r ) {
 		for ( c=startc; c<cols; c+=2 ) {
 		    if ( !DeviceTableOK(psts[r*cols+c].u.md_str,&low,&high) ) {
-			gwwv_post_error( _("Bad Device Table Adjustment"),_("A device table adjustment specified for %.80s is invalid"),
+			ff_post_error( _("Bad Device Table Adjustment"),_("A device table adjustment specified for %.80s is invalid"),
 				psts[cols*r+0].u.md_str );
 return( true );
 		    }
@@ -7360,7 +7360,7 @@ int EditSubtable(struct lookup_subtable *sub,int isgpos,SplineFont *sf,
 return( false );
 	freeme = def;
 	if ( SubtableNameInUse(def,sf,sub) )
-	    gwwv_post_notice(_("Duplicate name"),_("There is already a subtable with that name, please pick another."));
+	    ff_post_notice(_("Duplicate name"),_("There is already a subtable with that name, please pick another."));
 	else
     break;
     }
@@ -7793,17 +7793,17 @@ static int MRD_OK(GGadget *g, GEvent *e) {
 	    start_name = GGadgetGetTitle8(GWidgetGetControl(mrd->gw,CID_StartName));
 	    enc_start = SFFindSlot(mrd->fv->sf,mrd->fv->map,-1,start_name);
 	    if ( enc_start==-1 ) {
-		gwwv_post_error(_("No Start Glyph"), _("The encoding does not contain something named %.40s"), start_name );
+		ff_post_error(_("No Start Glyph"), _("The encoding does not contain something named %.40s"), start_name );
 		free(start_name);
 return( true );
 	    }
 	    free( start_name );
 	    if ( enc_start+sel_cnt>=enc_max ) {
-		gwwv_post_error(_("Not enough glyphs"), _("There aren't enough glyphs in the encoding to name all the selected characters"));
+		ff_post_error(_("Not enough glyphs"), _("There aren't enough glyphs in the encoding to name all the selected characters"));
 return( true );
 	    }
 	    for ( enc=enc_start; enc<enc_start+sel_cnt; ++enc ) if ( mrd->fv->selected[enc]) {
-		gwwv_post_error(_("Bad selection"), _("You may not rename any of the base glyphs, but your selection overlaps the set of base glyphs."));
+		ff_post_error(_("Bad selection"), _("You may not rename any of the base glyphs, but your selection overlaps the set of base glyphs."));
 return( true );
 	    }
 	} else
@@ -7816,13 +7816,13 @@ return( true );
 	if ( sub==(struct lookup_subtable *)-1 )
 	    sub = NULL;
 	if ( sub!=NULL && themselves ) {
-	    gwwv_post_error(_("Can't specify a subtable here"), _("As the selected glyphs are also source glyphs, they will be renamed, so they can't act as source glyphs for a lookup."));
+	    ff_post_error(_("Can't specify a subtable here"), _("As the selected glyphs are also source glyphs, they will be renamed, so they can't act as source glyphs for a lookup."));
 return( true );
 	}
 
 	suffix = GGadgetGetTitle8(GWidgetGetControl(mrd->gw,CID_Suffix));
 	if ( *suffix=='\0' || (*suffix=='.' && suffix[1]=='\0')) {
-	    gwwv_post_error(_("Missing suffix"), _("If you don't specify a suffix, the glyphs don't get renamed."));
+	    ff_post_error(_("Missing suffix"), _("If you don't specify a suffix, the glyphs don't get renamed."));
 	    free(suffix);
 return( true );
 	}

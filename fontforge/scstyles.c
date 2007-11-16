@@ -2020,7 +2020,7 @@ return;
     temp = strtod(ret,&end);
     if ( *end || temp>90 || temp<-90 ) {
 	free(ret);
-	gwwv_post_error( _("Bad Number"),_("Bad Number") );
+	ff_post_error( _("Bad Number"),_("Bad Number") );
 return;
     }
 

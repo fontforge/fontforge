@@ -3332,11 +3332,7 @@ void PSFontInterpretPS(FILE *ps,struct charprocs *cp,char **encoding) {
 		cp->values[cp->next++] = sc;
 		sc->name = copy(tokbuf);
 		SCInterpretPS(ps,sc,&flags);
-#if defined(FONTFORGE_CONFIG_GDRAW)
-       		gwwv_progress_next();
-#elif defined(FONTFORGE_CONFIG_GTK)
-       		gwwv_progress_next();
-#endif
+       		ff_progress_next();
 	    } else {
 		memset(&dummy,0,sizeof(dummy));
 		dummy.fromtype3 = true;

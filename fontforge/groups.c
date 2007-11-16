@@ -892,7 +892,7 @@ static int GroupValidateGlyphs(Group *cur,char *g,const unichar_t *gu,int unique
 	    if ( *gu<' ' || *gu>=0x7f || *gu=='(' || *gu==')' ||
 		    *gu=='[' || *gu==']' || *gu=='{' || *gu=='}' ||
 		    *gu=='<' || *gu=='>' || *gu=='%' || *gu=='/' ) {
-		gwwv_post_error(_("Glyph names must be valid postscript names"),_("Glyph names must be valid postscript names"));
+		ff_post_error(_("Glyph names must be valid postscript names"),_("Glyph names must be valid postscript names"));
 return( false );
 	    }
 	}
@@ -916,19 +916,19 @@ return( false );
 		    val2 = strtol(end+1,NULL,16);
 		}
 		if ( val2<val ) {
-		    gwwv_post_error(_("Bad Range"),_("Bad Range, start (%1$04X) is greater than end (%2$04X)"), val, val2 );
+		    ff_post_error(_("Bad Range"),_("Bad Range, start (%1$04X) is greater than end (%2$04X)"), val, val2 );
 return( false );
 		}
 		for ( ; val<=val2; ++val )
 		    if ( (grp=FindDuplicateNumber(top,val,cur,gpt))!=NULL ) {
-			gwwv_post_error(_("Duplicate Name"),_("The code point U+%1$04X occurs in groups %2$.30s and %3$.30s"), val, cur->name, grp->name);
+			ff_post_error(_("Duplicate Name"),_("The code point U+%1$04X occurs in groups %2$.30s and %3$.30s"), val, cur->name, grp->name);
 return( false );
 		    }
 	    } else {
 		int ch = *gpt;
 		*gpt = '\0';
 		if ( (grp=FindDuplicateName(top,start,cur,ch!='\0'?gpt+1:NULL))!=NULL ) {
-		    gwwv_post_error(_("Duplicate Name"),_("The glyph name \"%1$.30s\" occurs in groups %2$.30s and %3$.30s"), start, cur->name, grp->name);
+		    ff_post_error(_("Duplicate Name"),_("The glyph name \"%1$.30s\" occurs in groups %2$.30s and %3$.30s"), start, cur->name, grp->name);
 		    *gpt = ch;
 return( false );
 		}
@@ -1591,10 +1591,10 @@ static void EncodeToGroups(FontView *fv,Group *group, int compacted) {
     }
 
     if ( MapAddSelectedGroups(map,sf,group,compacted)==0 ) {
-	gwwv_post_error(_("Nothing Selected"),_("Nothing Selected"));
+	ff_post_error(_("Nothing Selected"),_("Nothing Selected"));
 	EncMapFree(map);
     } else if ( map->enccount==0 ) {
-	gwwv_post_error(_("Nothing Selected"),_("None of the glyphs in the current font match any names or code points in the selected groups"));
+	ff_post_error(_("Nothing Selected"),_("None of the glyphs in the current font match any names or code points in the selected groups"));
 	EncMapFree(map);
     } else {
 	fv->selected = grealloc(fv->selected,map->enccount);

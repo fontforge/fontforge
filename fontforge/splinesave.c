@@ -2142,13 +2142,11 @@ struct pschars *SplineFont2ChrsSubrs(SplineFont *sf, int iscjk,
     continue;
 	gi.active = &gi.gb[i];
 	SplineChar2PS(sc,NULL, round,iscjk,subrs,flags,format,&gi);
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	if ( !gwwv_progress_next()) {
+	if ( !ff_progress_next()) {
 	    PSCharsFree(chrs);
 	    GIFree(&gi,&dummynotdef);
 return( NULL );
 	}
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
 
     SetupType1Subrs(subrs,&gi);
@@ -2246,14 +2244,11 @@ struct pschars *CID2ChrsSubrs(SplineFont *cidmaster,struct cidbytes *cidbytes,in
 	    gi.active = &gi.gb[cid];
 	    SplineChar2PS(sc,NULL, round,fd->iscjk|0x100,fd->subrs,
 		    flags,ff_cid,&gi);
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	    if ( !gwwv_progress_next()) {
+	    if ( !ff_progress_next()) {
 		PSCharsFree(chrs);
 		GIFree(&gi,&dummynotdef);
 return( NULL );
-	    }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-	
+	    }	
 	}
 
 	SetupType1Subrs(fd->subrs,&gi);
@@ -3255,9 +3250,7 @@ struct pschars *SplineFont2ChrsSubrs2(SplineFont *sf, int nomwid, int defwid,
     continue;
 	gi.active = &gi.gb[i];
 	SplineChar2PS2(sc,NULL,nomwid,defwid,NULL,flags,&gi);
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	gwwv_progress_next();
-#endif
+	ff_progress_next();
     }
 
     for ( i=scnt=0; i<gi.pcnt; ++i ) {
@@ -3489,9 +3482,7 @@ struct pschars *CID2ChrsSubrs2(SplineFont *cidmaster,struct fd2data *fds,
 	    sc->ttf_glyph = cnt++;
 	    SplineChar2PS2(sc,NULL,fds[i].nomwid,fds[i].defwid,NULL,flags,&gi);
 	}
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	gwwv_progress_next();
-#endif
+	ff_progress_next();
     }
 
     scnts = gcalloc( cidmaster->subfontcnt+1,sizeof(int));

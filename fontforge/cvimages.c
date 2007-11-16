@@ -332,7 +332,7 @@ return;
     {
 	spl = SplinePointListInterpretPS(ps,flags,sc->parent->strokedfont,&width);
 	if ( spl==NULL ) {
-	    gwwv_post_error( _("Too Complex or Bad"), _("I'm sorry this file is too complex for me to understand (or is erroneous, or is empty)") );
+	    ff_post_error( _("Too Complex or Bad"), _("I'm sorry this file is too complex for me to understand (or is erroneous, or is empty)") );
 return;
 	}
 	if ( sc->parent->order2 )
@@ -389,7 +389,7 @@ return;
     head = last = NULL;
     fgets(buffer,sizeof(buffer),plate);
     if ( strncmp(buffer,"(plate",strlen("plate("))!=0 ) {
-	gwwv_post_error( _("Not a plate file"), _("This does not seem to be a plate file\nFirst line wrong"));
+	ff_post_error( _("Not a plate file"), _("This does not seem to be a plate file\nFirst line wrong"));
 return;
     }
     while ( !feof(plate)) {
@@ -397,12 +397,12 @@ return;
 	if ( ch==')' || ch==EOF )
     break;
 	if ( ch!='(' ) {
-	    gwwv_post_error( _("Not a plate file"), _("This does not seem to be a plate file\nExpected left paren"));
+	    ff_post_error( _("Not a plate file"), _("This does not seem to be a plate file\nExpected left paren"));
 return;
 	}
 	ch = getc(plate);
 	if ( ch!='v' && ch!='o' && ch!='c' && ch!='[' && ch!=']' && ch!='z' ) {
-	    gwwv_post_error( _("Not a plate file"), _("This does not seem to be a plate file\nExpected one of 'voc[]z'"));
+	    ff_post_error( _("Not a plate file"), _("This does not seem to be a plate file\nExpected one of 'voc[]z'"));
 return;
 	}
 	if ( cnt>=max )
@@ -425,7 +425,7 @@ return;
 	    ch = getc(plate);		/* Must be ')' */
 	} else {
 	    if ( fscanf(plate,"%lg %lg )", &spiros[cnt].x, &spiros[cnt].y)!=2 ) {
-		gwwv_post_error( _("Not a plate file"), _("This does not seem to be a plate file\nExpected two real numbers"));
+		ff_post_error( _("Not a plate file"), _("This does not seem to be a plate file\nExpected two real numbers"));
 return;
 	    }
 	    ++cnt;
@@ -507,7 +507,7 @@ void SCImportSVG(SplineChar *sc,int layer,char *path,char *memory, int memlen, i
 	    if ( espl->first->next->order2!=sc->parent->order2 )
 		spl = SplineSetsConvertOrder(spl,sc->parent->order2);
 	if ( spl==NULL ) {
-	    gwwv_post_error(_("Too Complex or Bad"),_("I'm sorry this file is too complex for me to understand (or is erroneous)"));
+	    ff_post_error(_("Too Complex or Bad"),_("I'm sorry this file is too complex for me to understand (or is erroneous)"));
 return;
 	}
 	for ( espl=spl; espl->next!=NULL; espl = espl->next );
@@ -543,7 +543,7 @@ void SCImportGlif(SplineChar *sc,int layer,char *path,char *memory, int memlen, 
 	if ( espl->first->next->order2!=sc->parent->order2 )
 	    spl = SplineSetsConvertOrder(spl,sc->parent->order2);
     if ( spl==NULL ) {
-	gwwv_post_error(_("Too Complex or Bad"),_("I'm sorry this file is too complex for me to understand (or is erroneous)"));
+	ff_post_error(_("Too Complex or Bad"),_("I'm sorry this file is too complex for me to understand (or is erroneous)"));
 return;
     }
     for ( espl=spl; espl->next!=NULL; espl = espl->next );
@@ -1041,19 +1041,11 @@ static void ImportFig(CharView *cv,char *path) {
 
     fig = fopen(path,"r");
     if ( fig==NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	gwwv_post_error(_("Can't find the file"),_("Can't find the file"));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_error(_("Can't find the file"),_("Can't find the file"));
-#endif
+	ff_post_error(_("Can't find the file"),_("Can't find the file"));
 return;
     }
     if ( fgets(buffer,sizeof(buffer),fig)==NULL || strcmp(buffer,"#FIG 3.2\n")!=0 ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	gwwv_post_error(_("Bad xfig file"),_("Bad xfig file"));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_error(_("Bad xfig file"),_("Bad xfig file"));
-#endif
+	ff_post_error(_("Bad xfig file"),_("Bad xfig file"));
 	fclose(fig);
 return;
     }
@@ -1163,7 +1155,7 @@ static void ImportImage(CharView *cv,char *path) {
 
     image = GImageRead(path);
     if ( image==NULL ) {
-	gwwv_post_error(_("Bad image file"),_("Bad image file: %.100s"), path);
+	ff_post_error(_("Bad image file"),_("Bad image file: %.100s"), path);
 return;
     }
     layer = ly_back;
@@ -1182,7 +1174,7 @@ static int BVImportImage(BitmapView *bv,char *path) {
 
     image = GImageRead(path);
     if ( image==NULL ) {
-	gwwv_post_error(_("Bad image file"),_("Bad image file: %.100s"), path);
+	ff_post_error(_("Bad image file"),_("Bad image file: %.100s"), path);
 return(false);
     }
     base = image->list_len==0?image->u.image:image->u.images[0];
@@ -1270,7 +1262,7 @@ int FVImportImages(FontView *fv,char *path,int format,int toback, int flags) {
 	if ( format==fv_image ) {
 	    image = GImageRead(start);
 	    if ( image==NULL ) {
-		gwwv_post_error(_("Bad image file"),_("Bad image file: %.100s"),start);
+		ff_post_error(_("Bad image file"),_("Bad image file: %.100s"),start);
 return(false);
 	    }
 	    ++tot;
@@ -1301,9 +1293,9 @@ return(false);
 	start = endpath+1;
     }
     if ( tot==0 )
-	gwwv_post_error(_("Nothing Selected"),_("You must select a glyph before you can import an image into it"));
+	ff_post_error(_("Nothing Selected"),_("You must select a glyph before you can import an image into it"));
     else if ( endpath!=NULL )
-	gwwv_post_error(_("More Images Than Selected Glyphs"),_("More Images Than Selected Glyphs"));
+	ff_post_error(_("More Images Than Selected Glyphs"),_("More Images Than Selected Glyphs"));
 return( true );
 }
 
@@ -1322,7 +1314,7 @@ int FVImportImageTemplate(FontView *fv,char *path,int format,int toback, int fla
     ext = strrchr(path,'.');
     name = strrchr(path,'/');
     if ( ext==NULL ) {
-	gwwv_post_error(_("Bad Template"),_("Bad template, no extension"));
+	ff_post_error(_("Bad Template"),_("Bad template, no extension"));
 return( false );
     }
     if ( name==NULL ) name=path-1;
@@ -1330,7 +1322,7 @@ return( false );
     else if ( name[1]=='c' ) isc = true;
     else if ( name[1]=='e' ) ise = true;
     else {
-	gwwv_post_error(_("Bad Template"),_("Bad template, unrecognized format"));
+	ff_post_error(_("Bad Template"),_("Bad template, unrecognized format"));
 return( false );
     }
     if ( name<path )
@@ -1341,7 +1333,7 @@ return( false );
     }
 
     if ( (dir = opendir(dirname))==NULL ) {
-	    gwwv_post_error(_("Nothing Loaded"),_("Nothing Loaded"));
+	    ff_post_error(_("Nothing Loaded"),_("Nothing Loaded"));
 return( false );
     }
     
@@ -1362,7 +1354,7 @@ return( false );
 	if ( isu ) {
 	    i = SFFindSlot(fv->sf,fv->map,val,NULL);
 	    if ( i==-1 ) {
-		gwwv_post_error(_("Unicode value not in font"),_("Unicode value (%x) not in font, ignored"),val);
+		ff_post_error(_("Unicode value not in font"),_("Unicode value (%x) not in font, ignored"),val);
     continue;
 	    }
 	    sc = SFMakeChar(fv->sf,fv->map,i);
@@ -1370,7 +1362,7 @@ return( false );
 	    if ( val<fv->map->enccount ) {
 		/* It's there */;
 	    } else {
-		gwwv_post_error(_("Encoding value not in font"),_("Encoding value (%x) not in font, ignored"),val);
+		ff_post_error(_("Encoding value not in font"),_("Encoding value (%x) not in font, ignored"),val);
     continue;
 	    }
 	    sc = SFMakeChar(fv->sf,fv->map,val);
@@ -1378,12 +1370,12 @@ return( false );
 	if ( format==fv_imgtemplate ) {
 	    image = GImageRead(start);
 	    if ( image==NULL ) {
-		gwwv_post_error(_("Bad image file"),_("Bad image file: %.100s"),start);
+		ff_post_error(_("Bad image file"),_("Bad image file: %.100s"),start);
     continue;
 	    }
 	    base = image->list_len==0?image->u.image:image->u.images[0];
 	    if ( base->image_type!=it_mono ) {
-		gwwv_post_error(_("Bad image file"),_("Bad image file, not a bitmap: %.100s"),start);
+		ff_post_error(_("Bad image file"),_("Bad image file, not a bitmap: %.100s"),start);
 		GImageDestroy(image);
     continue;
 	    }
@@ -1407,7 +1399,7 @@ return( false );
 	}
     }
     if ( tot==0 )
-	gwwv_post_error(_("Nothing Loaded"),_("Nothing Loaded"));
+	ff_post_error(_("Nothing Loaded"),_("Nothing Loaded"));
 return( true );
 }
 
@@ -1478,7 +1470,7 @@ return( true );
 	if ( d->fv!=NULL ) {
 	    int toback = GGadgetIsChecked(d->background);
 	    if ( toback && strchr(temp,';')!=NULL && format<3 )
-		gwwv_post_error(_("Only One Font"),_("Only one font may be imported into the background"));
+		ff_post_error(_("Only One Font"),_("Only one font may be imported into the background"));
 	    else if ( format==fv_bdf )
 		d->done = FVImportBDF(d->fv,temp,false, toback);
 	    else if ( format==fv_ttf )

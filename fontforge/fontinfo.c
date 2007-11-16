@@ -2488,7 +2488,7 @@ static int MCD_InvalidClassList(const char *ret,char **classes, char **names,
 		if ( tend==NULL ) tend = tpt+strlen(tpt);
 		if ( tend-tpt==end-pt && strncmp(pt,tpt,end-pt)==0 ) {
 		    char *dupname = copyn(pt,end-pt);
-		    gwwv_post_error(_("Bad Class"),_("No glyphs from another class may appear here, but %.30s appears here and in class %.30s"), dupname, names[i]);
+		    ff_post_error(_("Bad Class"),_("No glyphs from another class may appear here, but %.30s appears here and in class %.30s"), dupname, names[i]);
 		    free(dupname);
 return( true );
 		}
@@ -3238,7 +3238,7 @@ return( gwwv_ask(_("Losing Undoes"),(const char **) buts,0,1,_("Changing the ord
 }
 
 static void BadFamily() {
-    gwwv_post_error(_("Bad Family Name"),_("Bad Family Name, must begin with an alphabetic character."));
+    ff_post_error(_("Bad Family Name"),_("Bad Family Name, must begin with an alphabetic character."));
 }
 #endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
@@ -3501,12 +3501,12 @@ static int CheckNames(struct gfi_data *d) {
 #endif
 
     if ( u_strlen(ufont)>63 ) {
-	gwwv_post_error(_("Bad Font Name"),_("A Postscript name should be ASCII\nand must not contain (){}[]<>%%/ or space\nand must be shorter than 63 characters"));
+	ff_post_error(_("Bad Font Name"),_("A Postscript name should be ASCII\nand must not contain (){}[]<>%%/ or space\nand must be shorter than 63 characters"));
 return( false );
     }
 
     if ( *ufamily=='\0' ) {
-	gwwv_post_error(_("A Font Family name is required"),_("A Font Family name is required"));
+	ff_post_error(_("A Font Family name is required"),_("A Font Family name is required"));
 return( false );
     }
     /* A postscript name cannot be a number. There are two ways it can be a */
@@ -3515,7 +3515,7 @@ return( false );
     /*  do a cursory test for that */
     u_strtod(ufamily,&end);
     if ( *end=='\0' || (isdigit(ufamily[0]) && u_strchr(ufamily,'#')!=NULL) ) {
-	gwwv_post_error(_("Bad Font Family Name"),_("A Postscript name may not be a number"));
+	ff_post_error(_("Bad Font Family Name"),_("A Postscript name may not be a number"));
 return( false );
     }
     if ( u_strlen(ufamily)>31 ) {
@@ -3532,7 +3532,7 @@ return( false );
     }
     while ( *ufamily ) {
 	if ( *ufamily<' ' || *ufamily>=0x7f ) {
-	    gwwv_post_error(_("Bad Font Family Name"),_("A Postscript name should be ASCII\nand must not contain (){}[]<>%%/ or space"));
+	    ff_post_error(_("Bad Font Family Name"),_("A Postscript name should be ASCII\nand must not contain (){}[]<>%%/ or space"));
 return( false );
 	}
 	++ufamily;
@@ -3541,7 +3541,7 @@ return( false );
     u_strtod(ufont,&end);
     if ( (*end=='\0' || (isdigit(ufont[0]) && u_strchr(ufont,'#')!=NULL)) &&
 	    *ufont!='\0' ) {
-	gwwv_post_error(_("Bad Font Name"),_("A Postscript name may not be a number"));
+	ff_post_error(_("Bad Font Name"),_("A Postscript name may not be a number"));
 return( false );
     }
     for ( pt=ufont; *pt; ++pt ) {
@@ -3549,7 +3549,7 @@ return( false );
 		*pt=='(' || *pt=='[' || *pt=='{' || *pt=='<' ||
 		*pt==')' || *pt==']' || *pt=='}' || *pt=='>' ||
 		*pt=='%' || *pt=='/' ) {
-	    gwwv_post_error(_("Bad Font Name"),_("A Postscript name should be ASCII\nand must not contain (){}[]<>%%/ or space"));
+	    ff_post_error(_("Bad Font Name"),_("A Postscript name should be ASCII\nand must not contain (){}[]<>%%/ or space"));
 return( false );
 	}
     }
@@ -4239,7 +4239,7 @@ static int GFI_AddOFL(GGadget *g, GEvent *e) {
 	    }
 	}
 	GMatrixEditSet(tng, newtns, rows+extras, false);
-	gwwv_post_notice(_("Please read the OFL"),_(
+	ff_post_notice(_("Please read the OFL"),_(
 	    "You should read the OFL and its FAQ \n"
 	    "at http://scripts.sil.org/OFL."
 	    "\n"
@@ -4649,7 +4649,7 @@ static void hexparse(GWindow gw, int cid, char *name, uint32 *data, int len, int
 		++end;
 	    else {
 		*err = true;
-		gwwv_post_error(_("Bad hex number"), _("Bad hex number in %s"), name);
+		ff_post_error(_("Bad hex number"), _("Bad hex number in %s"), name);
 return;
 	    }
 	}
@@ -4657,7 +4657,7 @@ return;
     }
     if ( *end!='\0' ) {
 	*err = true;
-	gwwv_post_error(_("Bad hex number"), _("Bad hex number in %s"), name);
+	ff_post_error(_("Bad hex number"), _("Bad hex number in %s"), name);
 return;
     }
 }
@@ -4702,7 +4702,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	if ( strings==NULL || gasp==NULL )
 return( true );
 	if ( gasprows>0 && gasp[5*gasprows-5].u.md_ival!=65535 ) {
-	    gwwv_post_error(_("Bad Grid Fitting table"),_("The 'gasp' (Grid Fit) table must end with a pixel entry of 65535"));
+	    ff_post_error(_("Bad Grid Fitting table"),_("The 'gasp' (Grid Fit) table must end with a pixel entry of 65535"));
 return( true );
 	}
 	if ( !CheckNames(d))
@@ -4816,9 +4816,9 @@ return(true);
 	    if ( u_strlen(txt)>4 || txt[0]>0x7e || (txt[0]!='\0' && (txt[1]>0x7e ||
 		    (txt[1]!='\0' && (txt[2]>0x7e || (txt[2]!='\0' && txt[3]>0x7e))))) ) {
 		if ( u_strlen(txt)>4 )
-		    gwwv_post_error(_("Bad IBM Family"),_("Tag must be 4 characters long"));
+		    ff_post_error(_("Bad IBM Family"),_("Tag must be 4 characters long"));
 		else
-		    gwwv_post_error(_("Bad IBM Family"),_("A tag must be 4 ASCII characters"));
+		    ff_post_error(_("Bad IBM Family"),_("A tag must be 4 ASCII characters"));
 return( true );
 	    }
 	    os2_vendor[0] = txt[0]==0 ? ' ' : txt[0];
@@ -4833,7 +4833,7 @@ return(true);
 return( true );
 	}
 	if ( as+des>16384 || des<0 || as<0 ) {
-	    gwwv_post_error(_("Bad Ascent/Descent"),_("Ascent and Descent must be positive and their sum less than 16384"));
+	    ff_post_error(_("Bad Ascent/Descent"),_("Ascent and Descent must be positive and their sum less than 16384"));
 return( true );
 	}
 	mcs = -1;
@@ -4844,7 +4844,7 @@ return( true );
 		if ( ti[i]->selected )
 		    mcs |= (int) (intpt) ti[i]->userdata;
 	    if ( (mcs&sf_condense) && (mcs&sf_extend)) {
-		gwwv_post_error(_("Bad Style"),_("A style may not have both condense and extend set (it makes no sense)"));
+		ff_post_error(_("Bad Style"),_("A style may not have both condense and extend set (it makes no sense)"));
 return( true );
 	    }
 	}
@@ -4862,7 +4862,7 @@ return( true );
 	    free(name);
 	}
 	if ( nl->uses_unicode && !allow_utf8_glyphnames ) {
-	    gwwv_post_error(_("Namelist contains non-ASCII names"),_("Glyph names should be limited to characters in the ASCII character set,\nbut there are names in this namelist which use characters outside\nthat range."));
+	    ff_post_error(_("Namelist contains non-ASCII names"),_("Glyph names should be limited to characters in the ASCII character set,\nbut there are names in this namelist which use characters outside\nthat range."));
 return(true);
 	}
 #ifdef FONTFORGE_CONFIG_TYPE3
@@ -7415,7 +7415,7 @@ return;
 	/* Convert to def encoding !!! */
 	out = fopen(filename,"w");
 	if ( out==NULL ) {
-	    gwwv_post_error(_("Cannot open file"),_("Cannot open %s"), filename );
+	    ff_post_error(_("Cannot open file"),_("Cannot open %s"), filename );
 	    free(filename);
 return;
 	}
@@ -7424,7 +7424,7 @@ return;
 	else
 	    FeatDumpFontLookups( out,gfi->sf );
 	if ( ferror(out)) {
-	    gwwv_post_error(_("Output error"),_("An error occurred writing %s"), filename );
+	    ff_post_error(_("Output error"),_("An error occurred writing %s"), filename );
 	    free(filename);
 	    fclose(out);
 return;

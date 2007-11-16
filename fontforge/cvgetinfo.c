@@ -183,7 +183,7 @@ static int GI_ROK_Do(GIData *ci) {
 	    /* Don't want the user to insert an enormous scale factor or */
 	    /*  it will move points outside the legal range. */
 	    GTextFieldSelect(GWidgetGetControl(ci->gw,1000+i),0,-1);
-	    gwwv_post_error(_("Value out of range"),_("Value out of range"));
+	    ff_post_error(_("Value out of range"),_("Value out of range"));
 	    errs = true;
 	}
 	if ( errs )
@@ -204,14 +204,14 @@ return( false );
 	if ( errs )
 return( false );
 	if ( (basept!=-1) ^ (refpt!=-1) ) {
-	    gwwv_post_error(_("Bad Point Match"),_("Both points must be specified, or neither"));
+	    ff_post_error(_("Bad Point Match"),_("Both points must be specified, or neither"));
 	}
 	if ( basept!=-1 ) {
 	    if ( ttfFindPointInSC(ci->cv->sc,basept,&inbase,ci->rf)!=-1 ) {
-		gwwv_post_error(_("Bad Point Match"),_("Couldn't find base point"));
+		ff_post_error(_("Bad Point Match"),_("Couldn't find base point"));
 return( false );
 	    } else if ( ttfFindPointInSC(ci->rf->sc,refpt,&inref,NULL)!=-1 ) {
-		gwwv_post_error(_("Bad Point Match"),_("Couldn't find point in reference"));
+		ff_post_error(_("Bad Point Match"),_("Couldn't find point in reference"));
 return( false );
 	    }
 	    /* Override user specified value */
@@ -1076,7 +1076,7 @@ static void AI_TestOrdering(GIData *ci,real x) {
 		( aps->lig_index>ap->lig_index &&
 		    (( isr2l && aps->me.x>x) ||
 		     (!isr2l && aps->me.x<x))) ) {
-		gwwv_post_error(_("Out Of Order"),_("Marks within a ligature should be ordered with the direction of writing.\nThis one and %d are out of order."),aps->lig_index);
+		ff_post_error(_("Out Of Order"),_("Marks within a ligature should be ordered with the direction of writing.\nThis one and %d are out of order."),aps->lig_index);
 return;
 	    }
 	}
@@ -1101,7 +1101,7 @@ return( true );
 	for ( aps=ci->sc->anchor; aps!=NULL; aps=aps->next ) {
 	    if ( aps->anchor==ap->anchor && aps!=ap ) {
 		if ( aps->lig_index==index ) {
-		    gwwv_post_error(_("Index in use"),_("This ligature index is already in use"));
+		    ff_post_error(_("Index in use"),_("This ligature index is already in use"));
 return( true );
 		} else if ( aps->lig_index>max )
 		    max = aps->lig_index;
@@ -1109,7 +1109,7 @@ return( true );
 	}
 	if ( index>max+10 ) {
 	    char buf[20];
-	    gwwv_post_error(_("Too Big"),_("This index is much larger than the closest neighbor"));
+	    ff_post_error(_("Too Big"),_("This index is much larger than the closest neighbor"));
 	    sprintf(buf,"%d", max+1);
 	    GGadgetSetTitle8(g,buf);
 	    index = max+1;
@@ -1176,7 +1176,7 @@ return( true );			/* No op */
 	}
 	if ( ap!=NULL || (sawentry && sawexit)) {
 	    AI_SelectList(ci,ci->ap);
-	    gwwv_post_error(_("Class already used"),_("This anchor class already is associated with a point in this character"));
+	    ff_post_error(_("Class already used"),_("This anchor class already is associated with a point in this character"));
 	} else {
 	    ci->ap->anchor = an;
 	    if ( an->type==act_curs ) {
@@ -2545,7 +2545,7 @@ static int PI_HintSel(GGadget *g, GEvent *e) {
 		}
 	    }
 	    if ( h2!=NULL )
-		gwwv_post_error(_("Overlapped Hints"),_("The hint you have just selected overlaps with <%.2f,%.2f>. You should deselect one of the two."),
+		ff_post_error(_("Overlapped Hints"),_("The hint you have just selected overlaps with <%.2f,%.2f>. You should deselect one of the two."),
 			h2->start,h2->width);
 	}
     }

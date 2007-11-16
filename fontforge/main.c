@@ -31,5 +31,6 @@
 /* But I need a stub routine to force the load of everything else */
 
 int main(int argc, char **argv) {
+    FF_SetUiInterface(&gdraw_ui_interface);
 return( FontForgeMain(argc,argv));
 }

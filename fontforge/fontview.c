@@ -583,10 +583,10 @@ static void FVSelectByScript(FontView *fv) {
 	if ( done==2 ) {
 	    ret = _GGadgetGetTitle(gcd[0].ret);
 	    if ( *ret=='\0' ) {
-		gwwv_post_error(_("No Script"),_("Please specify a script"));
+		ff_post_error(_("No Script"),_("Please specify a script"));
 		done = 0;
 	    } else if ( u_strlen(ret)>4 ) {
-		gwwv_post_error(_("Bad Script"),_("Scripts are 4 letter tags"));
+		ff_post_error(_("Bad Script"),_("Scripts are 4 letter tags"));
 		done = 0;
 	    }
 	}
@@ -651,7 +651,7 @@ return;
 	}
 	if ( *end!='\0' || uni<0 || uni>=0x110000 ) {
 	    free(ret);
-	    gwwv_post_error( _("Bad Number"),_("Bad Number") );
+	    ff_post_error( _("Bad Number"),_("Bad Number") );
 return;
 	}
 	for ( j=0; j<map->enccount; ++j ) if ( (gid=map->map[j])!=-1 && (sc=sf->glyphs[gid])!=NULL ) {
@@ -1064,9 +1064,7 @@ int _FVMenuSave(FontView *fv) {
     else {
 	FVFlattenAllBitmapSelections(fv);
 	if ( !SFDWriteBak(sf,fv->map,fv->normal) )
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	    gwwv_post_error(_("Save Failed"),_("Save Failed"));
-#endif
+	    ff_post_error(_("Save Failed"),_("Save Failed"));
 	else {
 	    SplineFontSetUnChanged(sf);
 	    ret = true;
@@ -1531,23 +1529,19 @@ void FontViewMenu_RevertGlyph(GtkMenuItem *menuitem, gpointer user_data) {
     CharView *cvs;
 
     if ( fv->sf->sfd_version<2 )
-	gwwv_post_error(_("Old sfd file"),_("This font comes from an old format sfd file. Not all aspects of it can be reverted successfully."));
+	ff_post_error(_("Old sfd file"),_("This font comes from an old format sfd file. Not all aspects of it can be reverted successfully."));
 
     for ( i=0; i<map->enccount; ++i ) if ( fv->selected[i] && (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL ) {
 	tsc = sf->glyphs[gid];
 	if ( tsc->namechanged ) {
 	    if ( nc_state==-1 ) {
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-		gwwv_post_error(_("Glyph Name Changed"),_("The name of glyph %.40s has changed. This is what I use to find the glyph in the file, so I cannot revert this glyph.\n(You will not be warned for subsequent glyphs.)"),tsc->name);
-#endif
+		ff_post_error(_("Glyph Name Changed"),_("The name of glyph %.40s has changed. This is what I use to find the glyph in the file, so I cannot revert this glyph.\n(You will not be warned for subsequent glyphs.)"),tsc->name);
 		nc_state = 0;
 	    }
 	} else {
 	    sc = SFDReadOneChar(sf,tsc->name);
 	    if ( sc==NULL ) {
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-		gwwv_post_error(_("Can't Find Glyph"),_("The glyph, %.80s, can't be found in the sfd file"),tsc->name);
-#endif
+		ff_post_error(_("Can't Find Glyph"),_("The glyph, %.80s, can't be found in the sfd file"),tsc->name);
 		tsc->namechanged = true;
 	    } else {
 		SCPreserveState(tsc,true);
@@ -1698,7 +1692,7 @@ void MergeKernInfo(SplineFont *sf,EncMap *map) {
 return;
 
     if ( !LoadKerningDataFromMetricsFile(sf,ret,map))
-	gwwv_post_error( _("Failed to load kern data from %s"), ret);
+	ff_post_error( _("Failed to load kern data from %s"), ret);
     free(ret);
 }
 # elif defined(FONTFORGE_CONFIG_GDRAW)
@@ -1751,7 +1745,7 @@ return;				/* Cancelled */
 #endif
 
     if ( !LoadKerningDataFromMetricsFile(sf,temp,map))
-	gwwv_post_error(_("Load of Kerning Metrics Failed"),_("Failed to load kern data from %s"), temp);
+	ff_post_error(_("Load of Kerning Metrics Failed"),_("Failed to load kern data from %s"), temp);
     free(ret); free(temp);
 }
 # endif
@@ -5194,7 +5188,7 @@ static void FVMenuMagnify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 return;
     val = strtol(ret,&end,10);
     if ( val<1 || val>5 || *end!='\0' )
-	gwwv_post_error( _("Bad Number"),_("Bad Number") );
+	ff_post_error( _("Bad Number"),_("Bad Number") );
     else {
 	fv->user_requested_magnify = val;
 	fv->show = fv->filled;
@@ -5706,9 +5700,9 @@ static void FVAutoInstr(FontView *fv,int usenowak) {
     if ( fv->sf->ttf_tables!=NULL && AllGlyphsSelected(fv))
 	ClearFpgmPrepCvt(fv->sf);
     if ( fv->sf->private==NULL && !no_windowing_ui )
-	gwwv_post_notice( _("Things could be better..."), _("You will get better instructions if you fill in the Private dictionary, Element->Font Info->Private, for the font"));
+	ff_post_notice( _("Things could be better..."), _("You will get better instructions if you fill in the Private dictionary, Element->Font Info->Private, for the font"));
     if ( !no_windowing_ui && !AnySelectedHints(fv))
-	gwwv_post_notice(_("Things could be better..."), _("The selected glyphs have no hints. FontForge will not produce many instructions."));
+	ff_post_notice(_("Things could be better..."), _("The selected glyphs have no hints. FontForge will not produce many instructions."));
 
     QuickBlues(fv->sf,&bd);
 
@@ -6128,9 +6122,7 @@ return;
     if ( new->fv != NULL ) {
 	if ( new->fv->gw!=NULL )
 	    GDrawRaise(new->fv->gw);
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	gwwv_post_error(_("Please close font"),_("Please close %s before inserting it into a CID font"),new->origname);
-#endif
+	ff_post_error(_("Please close font"),_("Please close %s before inserting it into a CID font"),new->origname);
 return;
     }
     EncMapFree(new->map);
@@ -6268,7 +6260,7 @@ return;
     supple = strtol(ret,&end,10);
     if ( *end!='\0' || supple<=0 ) {
 	free(ret);
-	gwwv_post_error( _("Bad Number"),_("Bad Number") );
+	ff_post_error( _("Bad Number"),_("Bad Number") );
 return;
     }
     free(ret);
@@ -7166,7 +7158,7 @@ return;
     cnt = strtol(ret,&end,10);
     if ( *end!='\0' || cnt<=0 ) {
 	free(ret);
-	gwwv_post_error( _("Bad Number"),_("Bad Number") );
+	ff_post_error( _("Bad Number"),_("Bad Number") );
 return;
     }
     free(ret);
@@ -7365,7 +7357,7 @@ void FontViewMenu_AddEncodingName(GtkMenuItem *menuitem, gpointer user_data) {
 return;
     enc = FindOrMakeEncoding(ret);
     if ( enc==NULL )
-	gwwv_post_error(_("Invalid Encoding"),_("Invalid Encoding"));
+	ff_post_error(_("Invalid Encoding"),_("Invalid Encoding"));
     free(ret);
 }
 
@@ -7453,7 +7445,7 @@ return;
     file = fopen(temp,"w");
     free(temp);
     if ( file==NULL ) {
-	gwwv_post_error(_("Namelist creation failed"),_("Could not write %s"), filename);
+	ff_post_error(_("Namelist creation failed"),_("Could not write %s"), filename);
 	free(filename);
 return;
     }
@@ -7515,12 +7507,12 @@ return;
 
     old = fopen( temp,"r");
     if ( old==NULL ) {
-	gwwv_post_error(_("No such file"),_("Could not read %s"), ret );
+	ff_post_error(_("No such file"),_("Could not read %s"), ret );
 	free(ret); free(temp);
 return;
     }
     if ( (nl = LoadNamelist(temp))==NULL ) {
-	gwwv_post_error(_("Bad namelist file"),_("Could not parse %s"), ret );
+	ff_post_error(_("Bad namelist file"),_("Could not parse %s"), ret );
 	free(ret); free(temp);
 return;
     }
@@ -7534,7 +7526,7 @@ return;
 
     new = fopen( buffer,"w");
     if ( new==NULL ) {
-	gwwv_post_error(_("Create failed"),_("Could not write %s"), buffer );
+	ff_post_error(_("Create failed"),_("Could not write %s"), buffer );
 return;
     }
 
@@ -7566,7 +7558,7 @@ return;
 	IError("Couldn't find namelist");
 return;
     } else if ( nl!=NULL && nl->uses_unicode && !allow_utf8_glyphnames) {
-	gwwv_post_error(_("Namelist contains non-ASCII names"),_("Glyph names should be limited to characters in the ASCII character set, but there are names in this namelist which use characters outside that range."));
+	ff_post_error(_("Namelist contains non-ASCII names"),_("Glyph names should be limited to characters in the ASCII character set, but there are names in this namelist which use characters outside that range."));
 return;
     }
     SFRenameGlyphsToNamelist(fv->sf,nl);
@@ -7605,7 +7597,7 @@ return;				/* Cancelled */
 
     file = fopen( temp,"r");
     if ( file==NULL ) {
-	gwwv_post_error(_("No such file"),_("Could not read %s"), ret );
+	ff_post_error(_("No such file"),_("Could not read %s"), ret );
 	free(ret); free(temp);
 return;
     }
@@ -11162,7 +11154,7 @@ return( NULL );
 	if ( tmpfile!=NULL ) {
 	    strippedname = tmpfile;
 	} else {
-	    gwwv_post_error(_("Decompress Failed!"),_("Decompress Failed!"));
+	    ff_post_error(_("Decompress Failed!"),_("Decompress Failed!"));
 return( NULL );
 	}
 	compression = i+1;
@@ -11374,23 +11366,11 @@ return( NULL );
 	    }
 	}
     } else if ( !GFileExists(filename) )
-#if defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_error(_("Couldn't open font"),_("The requested file, %.100s, does not exist"),GFileNameTail(filename));
-#else
-	gwwv_post_error(_("Couldn't open font"),_("The requested file, %.100s, does not exist"),GFileNameTail(filename));
-#endif
+	ff_post_error(_("Couldn't open font"),_("The requested file, %.100s, does not exist"),GFileNameTail(filename));
     else if ( !GFileReadable(filename) )
-#if defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_error(_("Couldn't open font"),_("You do not have permission to read %.100s"),GFileNameTail(filename));
-#else
-	gwwv_post_error(_("Couldn't open font"),_("You do not have permission to read %.100s"),GFileNameTail(filename));
-#endif
+	ff_post_error(_("Couldn't open font"),_("You do not have permission to read %.100s"),GFileNameTail(filename));
     else
-#if defined(FONTFORGE_CONFIG_GTK)
-	gwwv_post_error(_("Couldn't open font"),_("%.100s is not in a known format (or is so badly corrupted as to be unreadable)"),GFileNameTail(filename));
-#else
-	gwwv_post_error(_("Couldn't open font"),_("%.100s is not in a known format (or is so badly corrupted as to be unreadable)"),GFileNameTail(filename));
-#endif
+	ff_post_error(_("Couldn't open font"),_("%.100s is not in a known format (or is so badly corrupted as to be unreadable)"),GFileNameTail(filename));
 
     if ( oldstrippedname!=filename )
 	free(oldstrippedname);
