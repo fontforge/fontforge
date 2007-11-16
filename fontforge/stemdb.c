@@ -2629,7 +2629,8 @@ static void FigureStemActive(struct glyphdata *gd, struct stemdata *stem) {
 	    activespace[acnt  ].curved = true;
 	    activespace[acnt  ].start = proj;
 	    activespace[acnt  ].end = proj+width;
-	    activespace[acnt++].sbase = activespace[acnt++].ebase = orig_proj;
+	    activespace[acnt  ].sbase = activespace[acnt].ebase = orig_proj;
+	    ++acnt;
 	}
     }
 
