@@ -115,15 +115,19 @@ uninstall:
 	-rm $(DESTDIR)$(bindir)/fontforge
 	-rm $(DESTDIR)$(bindir)/sfddiff
 	-rm $(DESTDIR)$(bindir)/fontimage
+	-rm $(DESTDIR)$(bindir)/fontlint
 	-rm $(DESTDIR)$(sharedir)/pfaedit-*.ui
 	-rm $(DESTDIR)$(localedir)/*/LC_MESSAGES/FontForge.mo
 	-rm $(DESTDIR)$(mandir)/man1/fontimage.1
 	-rm $(DESTDIR)$(mandir)/man1/fontforge.1
 	-rm $(DESTDIR)$(mandir)/man1/sfddiff.1
+	-rm $(DESTDIR)$(mandir)/man1/fontlint.1
 	-rm $(DESTDIR)$(libdir)/libgdraw.*
 	-rm $(DESTDIR)$(libdir)/libgunicode.*
+	-rm $(DESTDIR)$(libdir)/libfontforge.*
 	-rm $(DESTDIR)$(sharedir)/*.cidmap
 	-rm -rf $(DESTDIR)$(docdir)/*
+	-rm $(DESTDIR)$(libdir)/pkgconfig/fontforge.pc
 
 $(DESTDIR)$(sharedir):
 	mkdir -p $(DESTDIR)$(sharedir)
