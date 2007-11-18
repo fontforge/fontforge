@@ -26,12 +26,10 @@
  */
 /*			   Yet another interpreter			      */
 
-#include "pfaeditui.h"
+#include "pfaedit.h"
 #include <gfile.h>
-#include <gresource.h>
 #include <utype.h>
 #include <ustring.h>
-#include <gkeysym.h>
 #include <chardata.h>
 #include <unistd.h>
 #include <math.h>
@@ -73,7 +71,7 @@ struct keywords { enum token_type tok; char *name; } keywords[] = {
 
 static const char *toknames[] = {
     "name", "string", "number", "unicode id", "real number", 
-    "lparen", "rparen", "comma", "end of statement",
+    "lparen", "rparen", "comma", "end of ff_statement",
     "lbracket", "rbracket",
     "minus", "plus", "logical not", "bitwise not", "colon",
     "multiply", "divide", "mod", "logical and", "logical or", "bitwise and", "bitwise or", "bitwise xor",
@@ -8013,7 +8011,6 @@ return( NULL );
 /* ******************************* Interpreter ****************************** */
 
 static void expr(Context*,Val *val);
-static void statement(Context*);
 
 static int _cgetc(Context *c) {
     int ch;
@@ -8072,7 +8069,7 @@ static void cseek(Context *c,long pos) {
     c->backedup = false;
 }
 
-static enum token_type NextToken(Context *c) {
+enum token_type ff_NextToken(Context *c) {
     int ch, nch;
     enum token_type tok = tt_error;
 
@@ -8370,7 +8367,7 @@ return( c->tok );
 return( tok );
 }
 
-static void backuptok(Context *c) {
+void ff_backuptok(Context *c) {
     if ( c->backedup )
 	IError( "%s:%d Internal Error: Attempt to back token twice\n",
 		c->filename, c->lineno );
@@ -8388,17 +8385,17 @@ static void docall(Context *c,char *name,Val *val) {
     Context sub;
     struct builtins *found;
 
-    tok = NextToken(c);
+    tok = ff_NextToken(c);
     dontfree[0] = NULL;
     if ( tok==tt_rparen )
 	i = 1;
     else {
-	backuptok(c);
+	ff_backuptok(c);
 	for ( i=1; tok!=tt_rparen; ++i ) {
 	    if ( i>=PE_ARG_MAX )
 		ScriptError(c,"Too many arguments");
 	    expr(c,&args[i]);
-	    tok = NextToken(c);
+	    tok = ff_NextToken(c);
 	    if ( tok!=tt_comma )
 		expect(c,tt_rparen,tok);
 	    dontfree[i]=NULL;
@@ -8484,9 +8481,9 @@ static void docall(Context *c,char *name,Val *val) {
 		}
 	    } else {
 		sub.lineno = 1;
-		while ( !sub.returned && !sub.broken && (tok = NextToken(&sub))!=tt_eof ) {
-		    backuptok(&sub);
-		    statement(&sub);
+		while ( !sub.returned && !sub.broken && (tok = ff_NextToken(&sub))!=tt_eof ) {
+		    ff_backuptok(&sub);
+		    ff_statement(&sub);
 		}
 		fclose(sub.script); sub.script = NULL;
 	    }
@@ -8508,12 +8505,12 @@ static void buildarray(Context *c,Val *val) {
     int cnt, max=0;
     int tok;
 
-    tok = NextToken(c);
+    tok = ff_NextToken(c);
     if ( tok==tt_rbracket )
 	/* ScriptError(c,"This array doesn't have any elements"); */
 	cnt = 0;
     else {
-	backuptok(c);
+	ff_backuptok(c);
 	max = 0;
 	body = NULL;
 	for ( cnt=0; tok!=tt_rbracket; ++cnt ) {
@@ -8521,7 +8518,7 @@ static void buildarray(Context *c,Val *val) {
 		body = grealloc(body,(max+=20)*sizeof(Val));
 	    expr(c,&body[cnt]);
 	    dereflvalif(&body[cnt]);
-	    tok = NextToken(c);
+	    tok = ff_NextToken(c);
 	    if ( tok!=tt_comma )
 		expect(c,tt_rbracket,tok);
 	}
@@ -8546,11 +8543,11 @@ static void handlename(Context *c,Val *val) {
 
     strcpy(name,c->tok_text);
     val->type = v_void;
-    tok = NextToken(c);
+    tok = ff_NextToken(c);
     if ( tok==tt_lparen ) {
 	docall(c,name,val);
     } else if ( c->donteval ) {
-	backuptok(c);
+	ff_backuptok(c);
     } else {
 	if ( *name=='$' ) {
 	    if ( isdigit(name[1])) {
@@ -8760,17 +8757,17 @@ static void handlename(Context *c,Val *val) {
 	}
 	if ( val->type==v_void )
 	    ScriptErrorString(c, "Undefined variable", name);
-	backuptok(c);
+	ff_backuptok(c);
     }
 }
 
 static void term(Context *c,Val *val) {
-    enum token_type tok = NextToken(c);
+    enum token_type tok = ff_NextToken(c);
     Val temp;
 
     if ( tok==tt_lparen ) {
 	expr(c,val);
-	tok = NextToken(c);
+	tok = ff_NextToken(c);
 	expect(c,tt_rparen,tok);
     } else if ( tok==tt_lbracket ) {
 	buildarray(c,val);
@@ -8822,11 +8819,11 @@ static void term(Context *c,Val *val) {
     } else
 	expect(c,tt_name,tok);
 
-    tok = NextToken(c);
+    tok = ff_NextToken(c);
     while ( tok==tt_incr || tok==tt_decr || tok==tt_colon || tok==tt_lparen || tok==tt_lbracket ) {
 	if ( tok==tt_colon ) {
 	    if ( c->donteval ) {
-		tok = NextToken(c);
+		tok = ff_NextToken(c);
 		expect(c,tt_name,tok);
 	    } else {
 		dereflvalif(val);
@@ -8834,7 +8831,7 @@ static void term(Context *c,Val *val) {
 		    ScriptError( c, "Invalid type in string expression" );
 		else {
 		    char *pt, *ept;
-		    tok = NextToken(c);
+		    tok = ff_NextToken(c);
 		    expect(c,tt_name,tok);
 		    if ( strcmp(c->tok_text,"h")==0 ) {
 			pt = strrchr(val->u.sval,'/');
@@ -8876,7 +8873,7 @@ static void term(Context *c,Val *val) {
 	    }
 	} else if ( tok==tt_lbracket ) {
 	    expr(c,&temp);
-	    tok = NextToken(c);
+	    tok = ff_NextToken(c);
 	    expect(c,tt_rbracket,tok);
 	    if ( !c->donteval ) {
 		dereflvalif(&temp);
@@ -8916,9 +8913,9 @@ static void term(Context *c,Val *val) {
 		ScriptError( c, "Invalid type in integer expression" );
 	    *val = temp;
 	}
-	tok = NextToken(c);
+	tok = ff_NextToken(c);
     }
-    backuptok(c);
+    ff_backuptok(c);
 }
 
 static void mul(Context *c,Val *val) {
@@ -8926,7 +8923,7 @@ static void mul(Context *c,Val *val) {
     enum token_type tok;
 
     term(c,val);
-    tok = NextToken(c);
+    tok = ff_NextToken(c);
     while ( tok==tt_mul || tok==tt_div || tok==tt_mod ) {
 	other.type = v_void;
 	term(c,&other);
@@ -8961,9 +8958,9 @@ static void mul(Context *c,Val *val) {
 	    } else
 		ScriptError( c, "Invalid type in integer expression" );
 	}
-	tok = NextToken(c);
+	tok = ff_NextToken(c);
     }
-    backuptok(c);
+    ff_backuptok(c);
 }
 
 static void add(Context *c,Val *val) {
@@ -8971,7 +8968,7 @@ static void add(Context *c,Val *val) {
     enum token_type tok;
 
     mul(c,val);
-    tok = NextToken(c);
+    tok = ff_NextToken(c);
     while ( tok==tt_plus || tok==tt_minus ) {
 	other.type = v_void;
 	mul(c,&other);
@@ -9035,9 +9032,9 @@ static void add(Context *c,Val *val) {
 	    } else
 		ScriptError( c, "Invalid type in integer expression" );
 	}
-	tok = NextToken(c);
+	tok = ff_NextToken(c);
     }
-    backuptok(c);
+    ff_backuptok(c);
 }
 
 static void comp(Context *c,Val *val) {
@@ -9046,7 +9043,7 @@ static void comp(Context *c,Val *val) {
     enum token_type tok;
 
     add(c,val);
-    tok = NextToken(c);
+    tok = ff_NextToken(c);
     while ( tok==tt_eq || tok==tt_ne || tok==tt_gt || tok==tt_lt || tok==tt_ge || tok==tt_le ) {
 	other.type = v_void;
 	add(c,&other);
@@ -9078,9 +9075,9 @@ static void comp(Context *c,Val *val) {
 	    else if ( tok==tt_ge ) val->u.ival = (cmp>=0);
 	    else if ( tok==tt_le ) val->u.ival = (cmp<=0);
 	}
-	tok = NextToken(c);
+	tok = ff_NextToken(c);
     }
-    backuptok(c);
+    ff_backuptok(c);
 }
 
 static void _and(Context *c,Val *val) {
@@ -9089,7 +9086,7 @@ static void _and(Context *c,Val *val) {
     enum token_type tok;
 
     comp(c,val);
-    tok = NextToken(c);
+    tok = ff_NextToken(c);
     while ( tok==tt_and || tok==tt_bitand ) {
 	other.type = v_void;
 	if ( !c->donteval )
@@ -9109,9 +9106,9 @@ static void _and(Context *c,Val *val) {
 	    else
 		val->u.ival &= other.u.ival;
 	}
-	tok = NextToken(c);
+	tok = ff_NextToken(c);
     }
-    backuptok(c);
+    ff_backuptok(c);
 }
 
 static void _or(Context *c,Val *val) {
@@ -9120,7 +9117,7 @@ static void _or(Context *c,Val *val) {
     enum token_type tok;
 
     _and(c,val);
-    tok = NextToken(c);
+    tok = ff_NextToken(c);
     while ( tok==tt_or || tok==tt_bitor || tok==tt_xor ) {
 	other.type = v_void;
 	if ( !c->donteval )
@@ -9142,9 +9139,9 @@ static void _or(Context *c,Val *val) {
 	    else
 		val->u.ival ^= other.u.ival;
 	}
-	tok = NextToken(c);
+	tok = ff_NextToken(c);
     }
-    backuptok(c);
+    ff_backuptok(c);
 }
 
 static void assign(Context *c,Val *val) {
@@ -9152,7 +9149,7 @@ static void assign(Context *c,Val *val) {
     enum token_type tok;
 
     _or(c,val);
-    tok = NextToken(c);
+    tok = ff_NextToken(c);
     if ( tok==tt_assign || tok==tt_pluseq || tok==tt_minuseq || tok==tt_muleq || tok==tt_diveq || tok==tt_modeq ) {
 	other.type = v_void;
 	assign(c,&other);		/* that's the evaluation order here */
@@ -9224,7 +9221,7 @@ static void assign(Context *c,Val *val) {
 		ScriptError( c, "Invalid types in assignment");
 	}
     } else
-	backuptok(c);
+	ff_backuptok(c);
 }
 
 static void expr(Context *c,Val *val) {
@@ -9257,9 +9254,9 @@ static void doforeach(Context *c) {
 	if ( i>=selsize || i>=c->curfv->map->enccount )
     break;
 	c->curfv->selected[i] = true;
-	while ( (tok=NextToken(c))!=tt_endloop && tok!=tt_eof && !c->returned && !c->broken ) {
-	    backuptok(c);
-	    statement(c);
+	while ( (tok=ff_NextToken(c))!=tt_endloop && tok!=tt_eof && !c->returned && !c->broken ) {
+	    ff_backuptok(c);
+	    ff_statement(c);
 	}
 	c->curfv->selected[i] = false;
 	if ( tok==tt_eof )
@@ -9273,7 +9270,7 @@ static void doforeach(Context *c) {
     c->broken = false;
 
     nest = 0;
-    while ( (tok=NextToken(c))!=tt_endloop || nest>0 ) {
+    while ( (tok=ff_NextToken(c))!=tt_endloop || nest>0 ) {
 	if ( tok==tt_eof )
 	    ScriptError(c,"End of file found in foreach loop" );
 	else if ( tok==tt_while ) ++nest;
@@ -9296,11 +9293,11 @@ static void dowhile(Context *c) {
     while ( 1 ) {
 	if ( c->returned || c->broken )
     break;
-	tok=NextToken(c);
+	tok=ff_NextToken(c);
 	expect(c,tt_lparen,tok);
 	val.type = v_void;
 	expr(c,&val);
-	tok=NextToken(c);
+	tok=ff_NextToken(c);
 	expect(c,tt_rparen,tok);
 	dereflvalif(&val);
 	if ( !c->donteval ) {		/* If we do a dry run, check the syntax of loop body once */
@@ -9309,9 +9306,9 @@ static void dowhile(Context *c) {
 	    if ( val.u.ival==0 )
     break;
 	}
-	while ( (tok=NextToken(c))!=tt_endloop && tok!=tt_eof && !c->returned && !c->broken) {
-	    backuptok(c);
-	    statement(c);
+	while ( (tok=ff_NextToken(c))!=tt_endloop && tok!=tt_eof && !c->returned && !c->broken) {
+	    ff_backuptok(c);
+	    ff_statement(c);
 	}
 	if ( tok==tt_eof )
 	    ScriptError(c,"End of file found in while loop" );
@@ -9323,7 +9320,7 @@ static void dowhile(Context *c) {
     c->broken = false;
 
     nest = 0;
-    while ( (tok=NextToken(c))!=tt_endloop || nest>0 ) {
+    while ( (tok=ff_NextToken(c))!=tt_endloop || nest>0 ) {
 	if ( tok==tt_eof )
 	    ScriptError(c,"End of file found in while loop" );
 	else if ( tok==tt_while ) ++nest;
@@ -9338,37 +9335,37 @@ static void doif(Context *c) {
     int nest;
 
     while ( 1 ) {
-	tok=NextToken(c);
+	tok=ff_NextToken(c);
 	expect(c,tt_lparen,tok);
 	val.type = v_void;
 	expr(c,&val);
-	tok=NextToken(c);
+	tok=ff_NextToken(c);
 	expect(c,tt_rparen,tok);
 	dereflvalif(&val);
 	if ( val.type!=v_int && !c->donteval )
 	    ScriptError( c, "Expected integer expression in if condition");
 	if ( c->donteval || val.u.ival!=0 ) {
-	    while ( (tok=NextToken(c))!=tt_endif && tok!=tt_eof && tok!=tt_else && tok!=tt_elseif && !c->returned && !c->broken ) {
-		backuptok(c);
-		statement(c);
+	    while ( (tok=ff_NextToken(c))!=tt_endif && tok!=tt_eof && tok!=tt_else && tok!=tt_elseif && !c->returned && !c->broken ) {
+		ff_backuptok(c);
+		ff_statement(c);
 	    }
 	    if ( tok==tt_eof )
-		ScriptError(c,"End of file found in if statement" );
+		ScriptError(c,"End of file found in if ff_statement" );
 	    if ( !c->donteval )
     break;
 	} else {
 	    nest = 0;
-	    while ( ((tok=NextToken(c))!=tt_endif && tok!=tt_else && tok!=tt_elseif ) || nest>0 ) {
+	    while ( ((tok=ff_NextToken(c))!=tt_endif && tok!=tt_else && tok!=tt_elseif ) || nest>0 ) {
 		if ( tok==tt_eof )
-		    ScriptError(c,"End of file found in if statement" );
+		    ScriptError(c,"End of file found in if ff_statement" );
 		else if ( tok==tt_if ) ++nest;
 		else if ( tok==tt_endif ) --nest;
 	    }
 	}
 	if ( tok==tt_else ) {
-	    while ( (tok=NextToken(c))!=tt_endif && tok!=tt_eof && !c->returned && !c->broken ) {
-		backuptok(c);
-		statement(c);
+	    while ( (tok=ff_NextToken(c))!=tt_endif && tok!=tt_eof && !c->returned && !c->broken ) {
+		ff_backuptok(c);
+		ff_statement(c);
 	    }
     break;
 	} else if ( tok==tt_endif )
@@ -9378,7 +9375,7 @@ static void doif(Context *c) {
 return;
     if ( tok!=tt_endif && tok!=tt_eof ) {
 	nest = 0;
-	while ( (tok=NextToken(c))!=tt_endif || nest>0 ) {
+	while ( (tok=ff_NextToken(c))!=tt_endif || nest>0 ) {
 	    if ( tok==tt_eof )
 return;
 	    else if ( tok==tt_if ) ++nest;
@@ -9405,8 +9402,8 @@ return;
     }
 }
 
-static void statement(Context *c) {
-    enum token_type tok = NextToken(c);
+void ff_statement(Context *c) {
+    enum token_type tok = ff_NextToken(c);
     Val val;
 
     if ( tok==tt_while )
@@ -9422,8 +9419,8 @@ static void statement(Context *c) {
     } else if ( tok==tt_break ) {
 	c->broken = true;
     } else if ( tok==tt_return ) {
-	tok = NextToken(c);
-	backuptok(c);
+	tok = ff_NextToken(c);
+	ff_backuptok(c);
 	c->returned = true;
 	c->return_val.type = v_void;
 	if ( tok!=tt_eos ) {
@@ -9435,16 +9432,16 @@ static void statement(Context *c) {
 	    }
 	}
     } else if ( tok==tt_eos ) {
-	backuptok(c);
+	ff_backuptok(c);
     } else {
-	backuptok(c);
+	ff_backuptok(c);
 	expr(c,&val);
 	if ( val.type == v_str )
 	    free( val.u.sval );
     }
-    tok = NextToken(c);
+    tok = ff_NextToken(c);
     if ( tok!=tt_eos && tok!=tt_eof && !c->returned && !c->broken )
-	ScriptError( c, "Unterminated statement" );
+	ScriptError( c, "Unterminated ff_statement" );
 }
 
 static FILE *CopyNonSeekableFile(FILE *former) {
@@ -9471,7 +9468,7 @@ return( former );
 return( temp );
 }
 
-static void VerboseCheck(void) {
+void ff_VerboseCheck(void) {
     if ( verbose==-1 )
 	verbose = getenv("FONTFORGE_VERBOSE")!=NULL;
 }
@@ -9486,7 +9483,7 @@ static void ProcessNativeScript(int argc, char *argv[], FILE *script) {
     no_windowing_ui = true;
     running_script = true;
 
-    VerboseCheck();
+    ff_VerboseCheck();
 
     i=1;
     if ( script!=NULL ) {
@@ -9544,9 +9541,9 @@ static void ProcessNativeScript(int argc, char *argv[], FILE *script) {
 	ScriptError(&c, "No such file");
     else {
 	c.lineno = 1;
-	while ( !c.returned && !c.broken && (tok = NextToken(&c))!=tt_eof ) {
-	    backuptok(&c);
-	    statement(&c);
+	while ( !c.returned && !c.broken && (tok = ff_NextToken(&c))!=tt_eof ) {
+	    ff_backuptok(&c);
+	    ff_statement(&c);
 	}
 	fclose(c.script);
     }
@@ -9735,7 +9732,7 @@ static void ExecuteNativeScriptFile(FontView *fv, char *filename) {
     Array *dontfree[1];
     jmp_buf env;
 
-    VerboseCheck();
+    ff_VerboseCheck();
 
     memset( &c,0,sizeof(c));
     c.a.argc = 1;
@@ -9755,9 +9752,9 @@ return;				/* Error return */
 	ScriptError(&c, "No such file");
     else {
 	c.lineno = 1;
-	while ( !c.returned && !c.broken && NextToken(&c)!=tt_eof ) {
-	    backuptok(&c);
-	    statement(&c);
+	while ( !c.returned && !c.broken && ff_NextToken(&c)!=tt_eof ) {
+	    ff_backuptok(&c);
+	    ff_statement(&c);
 	}
 	fclose(c.script);
     }
@@ -9778,334 +9775,4 @@ void ExecuteScriptFile(FontView *fv, SplineChar *sc, char *filename) {
     ExecuteNativeScriptFile(fv,filename);
 #endif
 }
-
-#ifdef FONTFORGE_CONFIG_GDRAW
-struct sd_data {
-    int done;
-    FontView *fv;
-    SplineChar *sc;
-    GWindow gw;
-    int oldh;
-};
-
-#define SD_Width	250
-#define SD_Height	270
-#define CID_Script	1001
-#define CID_Box		1002
-#define CID_OK		1003
-#define CID_Call	1004
-#define CID_Cancel	1005
-#define CID_Python	1006
-#define CID_FF		1007
-
-static int SD_Call(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	char *fn;
-	unichar_t *insert;
-    
-	fn = gwwv_open_filename(_("Call Script"), NULL, "*",NULL);
-	if ( fn==NULL )
-return(true);
-	insert = galloc((strlen(fn)+10)*sizeof(unichar_t));
-	*insert = '"';
-	utf82u_strcpy(insert+1,fn);
-	uc_strcat(insert,"\"()");
-	GTextFieldReplace(GWidgetGetControl(GGadgetGetWindow(g),CID_Script),insert);
-	free(insert);
-	free(fn);
-    }
-return( true );
-}
-
-#if !defined(_NO_FFSCRIPT)
-static void ExecNative(GGadget *g, GEvent *e) {
-    struct sd_data *sd = GDrawGetUserData(GGadgetGetWindow(g));
-    Context c;
-    Val args[1];
-    Array *dontfree[1];
-    jmp_buf env;
-
-    memset( &c,0,sizeof(c));
-    memset( args,0,sizeof(args));
-    memset( dontfree,0,sizeof(dontfree));
-    running_script = true;
-    c.a.argc = 1;
-    c.a.vals = args;
-    c.dontfree = dontfree;
-    c.filename = args[0].u.sval = "ScriptDlg";
-    args[0].type = v_str;
-    c.return_val.type = v_void;
-    c.err_env = &env;
-    c.curfv = sd->fv;
-    if ( setjmp(env)!=0 ) {
-	running_script = false;
-return;			/* Error return */
-    }
-
-    c.script = tmpfile();
-    if ( c.script==NULL )
-	ScriptError(&c, "Can't create temporary file");
-    else {
-	const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(sd->gw,CID_Script));
-	while ( *ret ) {
-	    /* There's a bug here. Filenames need to be converted to the local charset !!!! */
-	    putc(*ret,c.script);
-	    ++ret;
-	}
-	rewind(c.script);
-	VerboseCheck();
-	c.lineno = 1;
-	while ( !c.returned && !c.broken && NextToken(&c)!=tt_eof ) {
-	    backuptok(&c);
-	    statement(&c);
-	}
-	fclose(c.script);
-	sd->done = true;
-    }
-    running_script = false;
-}
-#endif
-
-#if !defined(_NO_PYTHON)
-static void ExecPython(GGadget *g, GEvent *e) {
-    struct sd_data *sd = GDrawGetUserData(GGadgetGetWindow(g));
-    char *str;
-
-    running_script = true;
-
-    str = GGadgetGetTitle8(GWidgetGetControl(sd->gw,CID_Script));
-    PyFF_ScriptString(sd->fv,sd->sc,str);
-    free(str);
-    running_script = false;
-}
-#endif
-
-#if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
-static void _SD_LangChanged(struct sd_data *sd) {
-    GGadgetSetEnabled(GWidgetGetControl(sd->gw,CID_Call),
-	    !GGadgetIsChecked(GWidgetGetControl(sd->gw,CID_Python)));
-}
-    
-static int SD_LangChanged(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
-	struct sd_data *sd = GDrawGetUserData(GGadgetGetWindow(g));
-	_SD_LangChanged(sd);
-    }
-return( true );
-}
-#endif
-
-static int SD_OK(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	struct sd_data *sd = GDrawGetUserData(GGadgetGetWindow(g));
-#if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
-	if ( GGadgetIsChecked(GWidgetGetControl(GGadgetGetWindow(g),CID_Python)) )
-	    ExecPython(g,e);
-	else
-	    ExecNative(g,e);
-#elif !defined(_NO_PYTHON)
-	ExecPython(g,e);
-#elif !defined(_NO_FFSCRIPT)
-	ExecNative(g,e);
-#endif
-	sd->done = true;
-    }
-return( true );
-}
-
-static void SD_DoCancel(struct sd_data *sd) {
-    sd->done = true;
-}
-
-static int SD_Cancel(GGadget *g, GEvent *e) {
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	SD_DoCancel( GDrawGetUserData(GGadgetGetWindow(g)));
-    }
-return( true );
-}
-
-static int sd_e_h(GWindow gw, GEvent *event) {
-    struct sd_data *sd = GDrawGetUserData(gw);
-
-    if ( sd==NULL )
-return( true );
-    
-    if ( event->type==et_close ) {
-	SD_DoCancel( sd );
-    } else if ( event->type==et_char ) {
-	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("scripting.html");
-return( true );
-	}
-return( false );
-    } else if ( event->type == et_map ) {
-	/* Above palettes */
-	GDrawRaise(gw);
-    } else if ( event->type == et_resize ) {
-	GRect newsize, gpos;
-	int space;
-	GDrawGetSize(gw,&newsize);
-	GGadgetGetSize(GWidgetGetControl(gw,CID_Script),&gpos);
-	space = sd->oldh - gpos.height;
-	GGadgetResize(GWidgetGetControl(gw,CID_Box),newsize.width-4,newsize.height-4);
-	GGadgetResize(GWidgetGetControl(gw,CID_Script),newsize.width-2*gpos.x,newsize.height-space);
-#if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
-	GGadgetGetSize(GWidgetGetControl(gw,CID_Python),&gpos);
-	space = sd->oldh - gpos.y;
-	GGadgetMove(GWidgetGetControl(gw,CID_Python),gpos.x,newsize.height-space);
-	GGadgetGetSize(GWidgetGetControl(gw,CID_FF),&gpos);
-	GGadgetMove(GWidgetGetControl(gw,CID_FF),gpos.x,newsize.height-space);
-#endif
-	GGadgetGetSize(GWidgetGetControl(gw,CID_Call),&gpos);
-	space = sd->oldh - gpos.y;
-	GGadgetMove(GWidgetGetControl(gw,CID_Call),gpos.x,newsize.height-space);
-	GGadgetGetSize(GWidgetGetControl(gw,CID_OK),&gpos);
-	space = sd->oldh - gpos.y;
-	GGadgetMove(GWidgetGetControl(gw,CID_OK),gpos.x,newsize.height-space);
-	GGadgetGetSize(GWidgetGetControl(gw,CID_Cancel),&gpos);
-	space = sd->oldh - gpos.y;
-	GGadgetMove(GWidgetGetControl(gw,CID_Cancel),gpos.x,newsize.height-space);
-	sd->oldh = newsize.height;
-	GDrawRequestExpose(gw,NULL,false);
-    }
-return( true );
-}
-#endif
-
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-void ScriptDlg(FontView *fv,CharView *cv) {
-# if defined(FONTFORGE_CONFIG_GTK)
-# elif defined( FONTFORGE_CONFIG_GDRAW )
-    GRect pos;
-    static GWindow gw;
-    GWindowAttrs wattrs;
-    GGadgetCreateData gcd[12];
-    GTextInfo label[12];
-    struct sd_data sd;
-    FontView *list;
-    int i;
-
-    memset(&sd,0,sizeof(sd));
-    sd.fv = fv;
-    sd.sc = cv==NULL ? NULL : cv->sc;
-    sd.oldh = pos.height = GDrawPointsToPixels(NULL,SD_Height);
-
-    if ( gw==NULL ) {
-	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict|wam_isdlg;
-	wattrs.event_masks = ~(1<<et_charup);
-	wattrs.restrict_input_to_me = 1;
-	wattrs.undercursor = 1;
-	wattrs.cursor = ct_pointer;
-	wattrs.utf8_window_title = _("Execute Script");
-	wattrs.is_dlg = true;
-	pos.x = pos.y = 0;
-	pos.width = GDrawPointsToPixels(NULL,GGadgetScale(SD_Width));
-	gw = GDrawCreateTopWindow(NULL,&pos,sd_e_h,&sd,&wattrs);
-
-	memset(&gcd,0,sizeof(gcd));
-	memset(&label,0,sizeof(label));
-
-	i = 0;
-	gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = 10;
-	gcd[i].gd.pos.width = SD_Width-20; gcd[i].gd.pos.height = SD_Height-54;
-	gcd[i].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;
-	gcd[i].gd.cid = CID_Script;
-	gcd[i++].creator = GTextAreaCreate;
-
-#if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
-	gcd[i-1].gd.pos.height -= 24;
-
-	gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+gcd[i-1].gd.pos.height+1;
-	gcd[i].gd.flags = gg_visible | gg_enabled | gg_cb_on;
-	gcd[i].gd.cid = CID_Python;
-	label[i].text = (unichar_t *) _("_Python");
-	label[i].text_is_1byte = true;
-	label[i].text_in_resource = true;
-	gcd[i].gd.label = &label[i];
-	gcd[i].gd.handle_controlevent = SD_LangChanged;
-	gcd[i++].creator = GRadioCreate;
-
-	gcd[i].gd.pos.x = 70; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y;
-	gcd[i].gd.flags = gg_visible | gg_enabled;	/* disabled if cv!=NULL later */
-	gcd[i].gd.cid = CID_FF;
-	label[i].text = (unichar_t *) _("_FF");
-	label[i].text_is_1byte = true;
-	label[i].text_in_resource = true;
-	gcd[i].gd.label = &label[i];
-	gcd[i].gd.handle_controlevent = SD_LangChanged;
-	gcd[i++].creator = GRadioCreate;
-#endif
-
-	gcd[i].gd.pos.x = 25-3; gcd[i].gd.pos.y = SD_Height-32-3;
-	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
-	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[i].text = (unichar_t *) _("_OK");
-	label[i].text_is_1byte = true;
-	label[i].text_in_resource = true;
-	gcd[i].gd.mnemonic = 'O';
-	gcd[i].gd.label = &label[i];
-	gcd[i].gd.handle_controlevent = SD_OK;
-	gcd[i].gd.cid = CID_OK;
-	gcd[i++].creator = GButtonCreate;
-
-	gcd[i].gd.pos.x = -25; gcd[i].gd.pos.y = SD_Height-32;
-	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
-#if defined(_NO_FFSCRIPT)
-	gcd[i].gd.flags = gg_enabled | gg_but_cancel;
-#else
-	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-#endif
-	label[i].text = (unichar_t *) _("_Cancel");
-	label[i].text_is_1byte = true;
-	label[i].text_in_resource = true;
-	gcd[i].gd.label = &label[i];
-	gcd[i].gd.mnemonic = 'C';
-	gcd[i].gd.handle_controlevent = SD_Cancel;
-	gcd[i].gd.cid = CID_Cancel;
-	gcd[i++].creator = GButtonCreate;
-
-	gcd[i].gd.pos.x = (SD_Width-GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor))/2; gcd[i].gd.pos.y = SD_Height-40;
-	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
-	gcd[i].gd.flags = gg_visible | gg_enabled;
-	label[i].text = (unichar_t *) _("C_all...");
-	label[i].text_is_1byte = true;
-	label[i].text_in_resource = true;
-	gcd[i].gd.label = &label[i];
-	gcd[i].gd.mnemonic = 'a';
-	gcd[i].gd.handle_controlevent = SD_Call;
-	gcd[i].gd.cid = CID_Call;
-	gcd[i++].creator = GButtonCreate;
-
-	gcd[i].gd.pos.x = 2; gcd[i].gd.pos.y = 2;
-	gcd[i].gd.pos.width = pos.width-4; gcd[i].gd.pos.height = pos.height-4;
-	gcd[i].gd.flags = gg_enabled | gg_visible | gg_pos_in_pixels;
-	gcd[i].gd.cid = CID_Box;
-	gcd[i++].creator = GGroupCreate;
-
-	GGadgetsCreate(gw,gcd);
-    }
-#if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
-    GGadgetSetEnabled(GWidgetGetControl(gw,CID_FF),cv==NULL);
-#endif
-    sd.gw = gw;
-    GDrawSetUserData(gw,&sd);
-    GWidgetIndicateFocusGadget(GWidgetGetControl(gw,CID_Script));
-#if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
-    _SD_LangChanged(&sd);
-#endif
-    GDrawSetVisible(gw,true);
-    while ( !sd.done )
-	GDrawProcessOneEvent(NULL);
-    GDrawSetVisible(gw,false);
-
-    /* Selection may be out of date, force a refresh */
-    for ( list = fv_list; list!=NULL; list=list->next )
-	GDrawRequestExpose(list->v,NULL,false);
-    GDrawSync(NULL);
-    GDrawProcessPendingEvents(NULL);
-    GDrawSetUserData(gw,NULL);
-#endif
-}
-#endif
 #endif	/* No scripting */

@@ -126,4 +126,13 @@ void ScriptErrorString( Context *c, const char *msg, const char *name);
 void ScriptErrorF( Context *c, const char *fmt, ... );
 	/* Standard printf-style spec. All string arguments assumed to be in */
 	/* utf8 */
+
+extern int running_script;
+
+/* Hooks so a scripting dlg can execute fontforge's legacy scripting language */
+extern void ff_VerboseCheck(void);
+extern enum token_type ff_NextToken(Context *c);
+extern void ff_backuptok(Context *c);
+extern void ff_statement(Context*);
+
 #endif	/* _SCRIPTING_H */
