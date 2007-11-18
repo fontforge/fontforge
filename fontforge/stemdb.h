@@ -129,6 +129,7 @@ struct stemdata {
     struct stembundle *bundle;
     double lpos, rpos;		/* When placed in a bundle, relative to the bundle's basepoint in l_to_r */
     double lnew, rnew;		/* New position of left, right edges relative to bp,l_to_r */
+    struct linedata *leftline, *rightline;
 };
 
 struct stembounds {
@@ -154,6 +155,7 @@ struct stembundle {
     
 
 extern struct glyphdata *GlyphDataBuild(SplineChar *sc, BlueData *bd, int only_hv);
+extern struct glyphdata *GlyphDataInit(SplineChar *sc, int only_hv);
 extern void GlyphDataFree(struct glyphdata *gd);
 
 #endif		/* _STEMDB_H_ */
