@@ -279,13 +279,6 @@ return;
 #endif
 }
 
-void SFUntickAll(SplineFont *sf) {
-    int i;
-
-    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
-	sf->glyphs[i]->ticked = false;
-}
-
 void FVDeselectAll(FontView *fv) {
     int i;
 
@@ -5930,6 +5923,7 @@ void FVSetTitle(FontView *fv) {
 return;
 
     enc = SFEncodingName(fv->sf,fv->normal?fv->normal:fv->map);
+    if ( fv->normal ) len += strlen(_("Compact"))+1;
     len = strlen(fv->sf->fontname)+1 + strlen(enc)+6;
     if ( fv->cidmaster!=NULL ) {
 	if ( (file = fv->cidmaster->filename)==NULL )
