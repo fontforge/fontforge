@@ -39,7 +39,8 @@ fontforge_OBJECTS8=bdfinfo.obj,glyphcomp.obj,unicoderange.obj,ufo.obj,\
 	ofl.obj,lookups.obj,sfd1.obj,python.obj,featurefile.obj,\
 	math.obj,nowakowskittfinstr.obj,http.obj,spiro.obj,bezctx_ff.obj
 
-fontforge_OBJECTS9=scriptingdlg.obj
+fontforge_OBJECTS9=scriptingdlg.obj,fvfontsdlg.obj,splinefont.obj,\
+	splinechar.obj
 
 fontforge.exe : main.obj lff.opt xlib.opt [-.libs]libfontforge.exe
         link/exec=fontforge.exe main,lff/opt,[-.libs]LIBGDRAW/lib,\
@@ -204,3 +205,6 @@ http.obj : http.c
 spiro.obj : spiro.c
 bezctx_ff.obj : bezctx_ff.c
 scriptingdlg.obj : scriptingdlg.c
+fvfontsdlg.obj : fvfontsdlg.c
+splinefont.obj : splinefont.c
+splinechar.obj : splinechar.c

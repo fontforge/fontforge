@@ -847,25 +847,7 @@ void CVCreateHint(CharView *cv,int ishstem,int preservehints) {
 	GDrawProcessOneEvent(NULL);
     GDrawSetVisible(gw,false);
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-void SCClearRounds(SplineChar *sc) {
-    SplineSet *ss;
-    SplinePoint *sp;
-
-    for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
-	for ( sp=ss->first; ; ) {
-	    sp->roundx = sp->roundy = false;
-	    if ( sp->next==NULL )
-	break;
-	    sp = sp->next->to;
-	    if ( sp==ss->first )
-	break;
-	}
-    }
-}
-
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 void SCRemoveSelectedMinimumDistances(SplineChar *sc,int inx) {
     /* Remove any minimum distance where at least one of the two points is */
     /*  selected */

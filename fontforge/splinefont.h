@@ -2693,6 +2693,9 @@ extern KernClass *SFFindKernClass(SplineFont *sf,SplineChar *first,SplineChar *l
 extern KernClass *SFFindVKernClass(SplineFont *sf,SplineChar *first,SplineChar *last,
 	int *index,int allow_zero);
 
+extern void SCClearRounds(SplineChar *sc);
+extern void MDReplace(MinimumDistance *md,SplineSet *old,SplineSet *rpl);
+
 #if !defined(_NO_PYTHON)
 extern void FontForge_PythonInit(void);
 extern void PyFF_ErrorString(const char *msg,const char *str);
