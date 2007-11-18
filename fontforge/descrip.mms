@@ -39,6 +39,8 @@ fontforge_OBJECTS8=bdfinfo.obj,glyphcomp.obj,unicoderange.obj,ufo.obj,\
 	ofl.obj,lookups.obj,sfd1.obj,python.obj,featurefile.obj,\
 	math.obj,nowakowskittfinstr.obj,http.obj,spiro.obj,bezctx_ff.obj
 
+fontforge_OBJECTS9=scriptingdlg.obj
+
 fontforge.exe : main.obj lff.opt xlib.opt [-.libs]libfontforge.exe
         link/exec=fontforge.exe main,lff/opt,[-.libs]LIBGDRAW/lib,\
         LIBGUNICODE/lib,[]xlib.opt/opt
@@ -46,7 +48,8 @@ fontforge.exe : main.obj lff.opt xlib.opt [-.libs]libfontforge.exe
 [-.libs]libfontforge.exe : $(fontforge_OBJECTS) $(fontforge_OBJECTS1)\
 	$(fontforge_OBJECTS2) $(fontforge_OBJECTS3) $(fontforge_OBJECTS4)\
 	$(fontforge_OBJECTS5) $(fontforge_OBJECTS6) $(fontforge_OBJECTS7)\
-	$(fontforge_OBJECTS8) [-.libs]LIBGDRAW.olb [-.libs]LIBGUNICODE.olb
+	$(fontforge_OBJECTS8) $(fontforge_OBJECTS9) [-.libs]LIBGDRAW.olb \
+	[-.libs]LIBGUNICODE.olb
 	@ WRITE_ SYS$OUTPUT "  generating lff1.opt"
 	@ OPEN_/WRITE FILE  lff1.opt
 	@ WRITE_ FILE "!"
@@ -200,3 +203,4 @@ nowakowskittfinstr.obj : nowakowskittfinstr.c
 http.obj : http.c
 spiro.obj : spiro.c
 bezctx_ff.obj : bezctx_ff.c
+scriptingdlg.obj : scriptingdlg.c

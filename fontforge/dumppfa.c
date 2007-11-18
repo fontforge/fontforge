@@ -308,6 +308,98 @@ static void dumpintmaxarray(void (*dumpchar)(int ch,void *data), void *data,
 }
 #endif
 
+struct psdict *PSDictCopy(struct psdict *dict) {
+    struct psdict *ret;
+    int i;
+
+    if ( dict==NULL )
+return( NULL );
+
+    ret = gcalloc(1,sizeof(struct psdict));
+    ret->cnt = dict->cnt; ret->next = dict->next;
+    ret->keys = gcalloc(ret->cnt,sizeof(char *));
+    ret->values = gcalloc(ret->cnt,sizeof(char *));
+    for ( i=0; i<dict->next; ++i ) {
+	ret->keys[i] = copy(dict->keys[i]);
+	ret->values[i] = copy(dict->values[i]);
+    }
+
+return( ret );
+}
+
+int PSDictFindEntry(struct psdict *dict, char *key) {
+    int i;
+
+    if ( dict==NULL )
+return( -1 );
+
+    for ( i=0; i<dict->next; ++i )
+	if ( strcmp(dict->keys[i],key)==0 )
+return( i );
+
+return( -1 );
+}
+
+char *PSDictHasEntry(struct psdict *dict, char *key) {
+    int i;
+
+    if ( dict==NULL )
+return( NULL );
+
+    for ( i=0; i<dict->next; ++i )
+	if ( strcmp(dict->keys[i],key)==0 )
+return( dict->values[i] );
+
+return( NULL );
+}
+
+int PSDictRemoveEntry(struct psdict *dict, char *key) {
+    int i;
+
+    if ( dict==NULL )
+return( false );
+
+    for ( i=0; i<dict->next; ++i )
+	if ( strcmp(dict->keys[i],key)==0 )
+    break;
+    if ( i==dict->next )
+return( false );
+    free( dict->keys[i]);
+    free( dict->values[i] );
+    --dict->next;
+    while ( i<dict->next ) {
+	dict->keys[i] = dict->keys[i+1];
+	dict->values[i] = dict->values[i+1];
+	++i;
+    }
+
+return( true );
+}
+
+int PSDictChangeEntry(struct psdict *dict, char *key, char *newval) {
+    int i;
+
+    if ( dict==NULL )
+return( -1 );
+
+    for ( i=0; i<dict->next; ++i )
+	if ( strcmp(dict->keys[i],key)==0 )
+    break;
+    if ( i==dict->next ) {
+	if ( dict->next>=dict->cnt ) {
+	    dict->cnt += 10;
+	    dict->keys = grealloc(dict->keys,dict->cnt*sizeof(char *));
+	    dict->values = grealloc(dict->values,dict->cnt*sizeof(char *));
+	}
+	dict->keys[dict->next] = copy(key);
+	dict->values[dict->next] = NULL;
+	++dict->next;
+    }
+    free(dict->values[i]);
+    dict->values[i] = copy(newval);
+return( i );
+}
+
 static void dumpsubrs(void (*dumpchar)(int ch,void *data), void *data,
 	SplineFont *sf, struct pschars *subrs ) {
     int leniv = 4;
