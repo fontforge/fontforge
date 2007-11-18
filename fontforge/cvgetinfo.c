@@ -1657,38 +1657,7 @@ return;
     GDrawDestroyWindow(gi.gw);
     AnchorPointsFree(gi.oldaps);
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-void MDReplace(MinimumDistance *md,SplineSet *old,SplineSet *rpl) {
-    /* Replace all the old points with the ones in rpl in the minimum distance hints */
-    SplinePoint *osp, *rsp;
-    MinimumDistance *test;
-
-    if ( md==NULL )
-return;
-
-    while ( old!=NULL && rpl!=NULL ) {
-	osp = old->first; rsp = rpl->first;
-	while ( 1 ) {
-	    for ( test=md; test!=NULL ; test=test->next ) {
-		if ( test->sp1==osp )
-		    test->sp1 = rsp;
-		if ( test->sp2==osp )
-		    test->sp2 = rsp;
-	    }
-	    if ( osp->next==NULL || rsp->next==NULL )
-	break;
-	    osp = osp->next->to;
-	    rsp = rsp->next->to;
-	    if ( osp==old->first )
-	break;
-	}
-	old = old->next;
-	rpl = rpl->next;
-    }
-}
-
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 void PI_ShowHints(SplineChar *sc, GGadget *list, int set) {
     StemInfo *h;
     int32 i, len;

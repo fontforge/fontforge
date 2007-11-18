@@ -933,7 +933,6 @@ extern void SCSynchronizeWidth(SplineChar *sc,real newwidth, real oldwidth,FontV
 extern RefChar *HasUseMyMetrics(SplineChar *sc);
 extern void SCSynchronizeLBearing(SplineChar *sc,real off);
 extern void BackgroundImageTransform(SplineChar *sc, ImageList *img,real transform[6]);
-extern void SCClearRounds(SplineChar *sc);
 extern void SCMoreLayers(SplineChar *,Layer *old);
 extern void SCLayersChange(SplineChar *sc);
 extern void SFLayerChange(SplineFont *sf);
@@ -955,8 +954,6 @@ extern void SCAppendPosSub(SplineChar *sc,enum possub_type type, char **d,Spline
 #if !defined( FONTFORGE_CONFIG_NO_WINDOWING_UI ) || defined(_DEFINE_SEARCHVIEW_)
 extern void PasteToCV(CharView *cv);
 #endif
-
-extern void MDReplace(MinimumDistance *md,SplineSet *old,SplineSet *rpl);
 
 extern void _SCAutoTrace(SplineChar *sc, char **args);
 extern char **AutoTraceArgs(int ask);
