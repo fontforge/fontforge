@@ -1520,6 +1520,7 @@ static void samplestartpage(PI *pi ) {
 		    pi->pointsize*sfbit->sf->ascent/(sfbit->sf->ascent+sfbit->sf->descent) );
 	}
 	pi->lastfont = -1;
+	pi->wasps = -1;
     } else {
 	fprintf(pi->out,"%%%%Page: %d %d\n", pi->page, pi->page );
 	fprintf(pi->out,"%%%%PageResources: font %s\n", sfbit->sf->fontname );
