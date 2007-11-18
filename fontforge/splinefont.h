@@ -2695,6 +2695,38 @@ extern KernClass *SFFindVKernClass(SplineFont *sf,SplineChar *first,SplineChar *
 
 extern void SCClearRounds(SplineChar *sc);
 extern void MDReplace(MinimumDistance *md,SplineSet *old,SplineSet *rpl);
+extern void SCSynchronizeWidth(SplineChar *sc,real newwidth, real oldwidth,struct fontview *fv);
+extern RefChar *HasUseMyMetrics(SplineChar *sc);
+extern void SCSynchronizeLBearing(SplineChar *sc,real off);
+
+extern void SFUntickAll(SplineFont *sf);
+
+extern int HasSVG(void);
+extern void SCImportSVG(SplineChar *sc,int layer,char *path,char  *memory, int memlen,int doclear);
+extern int HasUFO(void);
+extern void SCImportGlif(SplineChar *sc,int layer,char *path,char  *memory, int memlen,int doclear);
+extern void SCImportPS(SplineChar *sc,int layer,char *path,int doclear, int flags);
+extern void SCImportPSFile(SplineChar *sc,int layer,FILE *ps,int doclear,int flags);
+extern void SCImportPlateFile(SplineChar *sc,int layer,FILE *plate,int doclear,int flags);
+extern void SCAddScaleImage(SplineChar *sc,struct gimage *image,int doclear,int layer);
+extern void SCInsertImage(SplineChar *sc,struct gimage *image,real scale,real yoff, real xoff, int layer);
+extern void SCImportFig(SplineChar *sc,int layer,char *path,int doclear);
+
+extern int _ExportPlate(FILE *pdf,SplineChar *sc);
+extern int _ExportPDF(FILE *pdf,SplineChar *sc);
+extern int _ExportEPS(FILE *eps,SplineChar *sc,int gen_preview);
+extern int _ExportSVG(FILE *svg,SplineChar *sc);
+extern int _ExportGlif(FILE *glif,SplineChar *sc);
+extern int ExportEPS(char *filename,SplineChar *sc);
+extern int ExportPDF(char *filename,SplineChar *sc);
+extern int ExportPlate(char *filename,SplineChar *sc);
+extern int ExportSVG(char *filename,SplineChar *sc);
+extern int ExportGlif(char *filename,SplineChar *sc);
+extern int ExportFig(char *filename,SplineChar *sc);
+extern int BCExportXBM(char *filename,BDFChar *bdfc, int format);
+extern int ExportImage(char *filename,SplineChar *sc, int format, int pixelsize, int bitsperpixel);
+extern void ScriptExport(SplineFont *sf, BDFFont *bdf, int format, int gid,
+	char *format_spec, EncMap *map);
 
 #if !defined(_NO_PYTHON)
 extern void FontForge_PythonInit(void);

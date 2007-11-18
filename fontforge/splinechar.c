@@ -25,17 +25,13 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "pfaedit.h"
+#include "pfaeditui.h"
 #include <math.h>
 #include <locale.h>
 #ifndef FONTFORGE_CONFIG_GTK
 # include <ustring.h>
 # include <utype.h>
 # include <gresource.h>
-# ifdef FONTFORGE_CONFIG_GDRAW
-extern int _GScrollBar_Width;
-#  include <gkeysym.h>
-# endif
 #endif
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
@@ -83,5 +79,132 @@ return;
 	}
 	old = old->next;
 	rpl = rpl->next;
+    }
+}
+
+RefChar *HasUseMyMetrics(SplineChar *sc) {
+    RefChar *r;
+
+    for ( r=sc->layers[ly_fore].refs; r!=NULL; r=r->next )
+	if ( r->use_my_metrics )
+return( r );
+
+return( NULL );
+}
+
+/* if they changed the width, then change the width on all bitmap chars of */
+/*  ours, and if we are a letter, then change the width on all chars linked */
+/*  to us which had the same width that we used to have (so if we change the */
+/*  width of A, we'll also change that of À and Ä and ... */
+void SCSynchronizeWidth(SplineChar *sc,real newwidth, real oldwidth, FontView *flagfv) {
+    BDFFont *bdf;
+    struct splinecharlist *dlist;
+    FontView *fv = sc->parent->fv;
+    RefChar *r = HasUseMyMetrics(sc);
+    int isprobablybase;
+
+    sc->widthset = true;
+    if( r!=NULL ) {
+	if ( oldwidth==r->sc->width ) {
+	    sc->width = r->sc->width;
+return;
+	}
+	newwidth = r->sc->width;
+    }
+    if ( newwidth==oldwidth )
+return;
+    sc->width = newwidth;
+    for ( bdf=sc->parent->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+	BDFChar *bc = bdf->glyphs[sc->orig_pos];
+	if ( bc!=NULL ) {
+	    int width = rint(sc->width*bdf->pixelsize / (real) (sc->parent->ascent+sc->parent->descent));
+	    if ( bc->width!=width ) {
+		/*BCPreserveWidth(bc);*/ /* Bitmaps can't set width, so no undo for it */
+		bc->width = width;
+		BCCharChangedUpdate(bc);
+	    }
+	}
+    }
+
+    if ( !adjustwidth )
+return;
+
+    isprobablybase = true;
+    if ( sc->unicodeenc==-1 || sc->unicodeenc>=0x10000 ||
+	    !isalpha(sc->unicodeenc) || iscombining(sc->unicodeenc))
+	isprobablybase = false;
+
+    for ( dlist=sc->dependents; dlist!=NULL; dlist=dlist->next ) {
+	RefChar *metrics = HasUseMyMetrics(dlist->sc);
+	if ( metrics!=NULL && metrics->sc!=sc )
+    continue;
+	else if ( metrics==NULL && !isprobablybase )
+    continue;
+	if ( dlist->sc->width==oldwidth &&
+		(flagfv==NULL || !flagfv->selected[flagfv->map->backmap[dlist->sc->orig_pos]])) {
+	    SCSynchronizeWidth(dlist->sc,newwidth,oldwidth,fv);
+	    if ( !dlist->sc->changed ) {
+		dlist->sc->changed = true;
+		if ( fv!=NULL )
+		    FVToggleCharChanged(dlist->sc);
+	    }
+	    SCUpdateAll(dlist->sc);
+	}
+    }
+}
+
+/* If they change the left bearing of a character, then in all chars */
+/*  that depend on it should be adjusted too. */
+/* Also all vstem hints */
+/* I deliberately don't set undoes in the dependants. The change is not */
+/*  in them, after all */
+void SCSynchronizeLBearing(SplineChar *sc,real off) {
+    struct splinecharlist *dlist;
+    RefChar *ref;
+    DStemInfo *d;
+    StemInfo *h;
+    HintInstance *hi;
+    int isprobablybase;
+
+    for ( h=sc->vstem; h !=NULL; h=h->next )
+	h->start += off;
+    for ( h=sc->hstem; h !=NULL; h=h->next )
+	for ( hi = h->where; hi!=NULL; hi=hi->next ) {
+	    hi->begin += off;
+	    hi->end += off;
+	}
+    for ( d=sc->dstem; d !=NULL; d=d->next ) {
+	d->leftedgetop.x += off;
+	d->rightedgetop.x += off;
+	d->leftedgebottom.x += off;
+	d->rightedgebottom.x += off;
+    }
+
+    if ( !adjustlbearing )
+return;
+
+    isprobablybase = true;
+    if ( sc->unicodeenc==-1 || sc->unicodeenc>=0x10000 ||
+	    !isalpha(sc->unicodeenc) || iscombining(sc->unicodeenc))
+	isprobablybase = false;
+
+    for ( dlist=sc->dependents; dlist!=NULL; dlist=dlist->next ) {
+	RefChar *metrics = HasUseMyMetrics(dlist->sc);
+	if ( metrics!=NULL && metrics->sc!=sc )
+    continue;
+	else if ( metrics==NULL && !isprobablybase )
+    continue;
+	else if ( metrics==NULL && sc->width!=dlist->sc->width )
+    continue;
+	SCPreserveState(dlist->sc,false);
+	SplinePointListShift(dlist->sc->layers[ly_fore].splines,off,true);
+	for ( ref = dlist->sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
+		if ( ref->sc!=sc ) {
+	    SplinePointListShift(ref->layers[0].splines,off,true);
+	    ref->transform[4] += off;
+	    ref->bb.minx += off; ref->bb.maxx += off;
+	}
+	SCUpdateAll(dlist->sc);
+	SCSynchronizeLBearing(dlist->sc,off);
     }
 }

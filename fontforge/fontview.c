@@ -28,6 +28,7 @@
 #include "groups.h"
 #include "psfont.h"
 #include <gfile.h>
+#include <gio.h>
 #ifdef FONTFORGE_CONFIG_GTK
 #include <gtkutype.h>
 #else
@@ -6023,6 +6024,34 @@ return;
 }
 
 # ifdef FONTFORGE_CONFIG_GDRAW
+static enum fchooserret CMapFilter(GGadget *g,GDirEntry *ent,
+	const unichar_t *dir) {
+    enum fchooserret ret = GFileChooserDefFilter(g,ent,dir);
+    char buf2[256];
+    FILE *file;
+    static char *cmapflag = "%!PS-Adobe-3.0 Resource-CMap";
+
+    if ( ret==fc_show && !ent->isdir ) {
+	int len = 3*(u_strlen(dir)+u_strlen(ent->name)+5);
+	char *filename = galloc(len);
+	u2def_strncpy(filename,dir,len);
+	strcat(filename,"/");
+	u2def_strncpy(buf2,ent->name,sizeof(buf2));
+	strcat(filename,buf2);
+	file = fopen(filename,"r");
+	if ( file==NULL )
+	    ret = fc_hide;
+	else {
+	    if ( fgets(buf2,sizeof(buf2),file)==NULL ||
+		    strncmp(buf2,cmapflag,strlen(cmapflag))!=0 )
+		ret = fc_hide;
+	    fclose(file);
+	}
+	free(filename);
+    }
+return( ret );
+}
+
 static void FVMenuConvertByCMap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 # elif defined(FONTFORGE_CONFIG_GTK)
@@ -6030,10 +6059,15 @@ void FontViewMenu_ConvertByCMap(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     SplineFont *cidmaster = fv->cidmaster;
+    char *cmapfilename;
 
     if ( cidmaster!=NULL )
 return;
-    MakeCIDMaster(fv->sf,fv->map,true,NULL,NULL);
+    cmapfilename = gwwv_open_filename(_("Find an adobe CMap file..."),NULL,NULL,CMapFilter);
+    if ( cmapfilename==NULL )
+return;
+    MakeCIDMaster(fv->sf,fv->map,true,cmapfilename,NULL);
+    free(cmapfilename);
 }
 
 # ifdef FONTFORGE_CONFIG_GDRAW
@@ -6058,10 +6092,15 @@ void FontViewMenu_FlattenByCMap(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 # endif
     SplineFont *cidmaster = fv->cidmaster;
+    char *cmapname;
 
     if ( cidmaster==NULL )
 return;
-    SFFlattenByCMap(cidmaster,NULL);
+    cmapname = gwwv_open_filename(_("Find an adobe CMap file..."),NULL,NULL,CMapFilter);
+    if ( cmapname==NULL )
+return;
+    SFFlattenByCMap(cidmaster,cmapname);
+    free(cmapname);
 }
 #endif
 

@@ -877,26 +877,8 @@ enum fvformats { fv_bdf, fv_ttf, fv_pk, fv_pcf, fv_mac, fv_win, fv_palm,
 	fv_glif, fv_gliftemplate,
 	fv_fig,
 	fv_pythonbase = 0x100 };
-extern int HasSVG(void);
-extern void SCImportSVG(SplineChar *sc,int layer,char *path,char  *memory, int memlen,int doclear);
-extern int HasUFO(void);
-extern void SCImportGlif(SplineChar *sc,int layer,char *path,char  *memory, int memlen,int doclear);
-extern void SCImportPS(SplineChar *sc,int layer,char *path,int doclear, int flags);
-extern void SCImportPSFile(SplineChar *sc,int layer,FILE *ps,int doclear,int flags);
-extern void SCImportPlateFile(SplineChar *sc,int layer,FILE *plate,int doclear,int flags);
-extern void SCAddScaleImage(SplineChar *sc,GImage *image,int doclear,int layer);
-extern void SCInsertImage(SplineChar *sc,GImage *image,real scale,real yoff, real xoff, int layer);
 extern int FVImportImages(FontView *fv,char *path,int isimage,int toback,int flags);
 extern int FVImportImageTemplate(FontView *fv,char *path,int isimage,int toback,int flags);
-
-extern int _ExportPlate(FILE *pdf,SplineChar *sc);
-extern int _ExportPDF(FILE *pdf,SplineChar *sc);
-extern int _ExportEPS(FILE *eps,SplineChar *sc,int gen_preview);
-extern int _ExportSVG(FILE *svg,SplineChar *sc);
-extern int _ExportGlif(FILE *glif,SplineChar *sc);
-extern int ExportImage(char *filename,SplineChar *sc, int format, int pixelsize, int bitsperpixel);
-extern void ScriptExport(SplineFont *sf, BDFFont *bdf, int format, int gid,
-	char *format_spec, EncMap *map);
 
 extern void BCFlattenFloat(BDFChar *bc);
 extern void BCTrans(BDFFont *bdf,BDFChar *bc,BVTFunc *bvts,FontView *fv );
@@ -929,9 +911,6 @@ extern void SCClearSelPt(SplineChar *sc);
 extern void _SCCharChangedUpdate(SplineChar *sc,int changed);
 extern void SCCharChangedUpdate(SplineChar *sc);
 extern void SCHintsChanged(SplineChar *sc);
-extern void SCSynchronizeWidth(SplineChar *sc,real newwidth, real oldwidth,FontView *fv);
-extern RefChar *HasUseMyMetrics(SplineChar *sc);
-extern void SCSynchronizeLBearing(SplineChar *sc,real off);
 extern void BackgroundImageTransform(SplineChar *sc, ImageList *img,real transform[6]);
 extern void SCMoreLayers(SplineChar *,Layer *old);
 extern void SCLayersChange(SplineChar *sc);
@@ -1541,7 +1520,6 @@ extern void AnchorControl(SplineChar *sc,AnchorPoint *ap);
 extern void AnchorControlClass(SplineFont *_sf,AnchorClass *ac);
 
 extern void FVSelectByPST(FontView *fv);
-extern void SFUntickAll(SplineFont *sf);
 
 enum hist_type { hist_hstem, hist_vstem, hist_blues };
 struct psdict;
