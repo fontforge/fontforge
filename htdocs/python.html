@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 11-Nov-2007 -->
+  <!-- AP: Last modified: 19-Nov-2007 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -23,8 +23,8 @@
   to some useful transformations expressed as PostScript matrices.
   <P>
   In python terms fontforge <EM>embeds</EM> python. It is possible to build
-  fontforge so that it is also a python <EM>extension</EM> (<CODE>configure
-  --enable-pyextension</CODE>)
+  fontforge so that it is also a <A HREF="#Extension">python <EM>extension</EM>
+  </A>(<CODE>configure --enable-pyextension</CODE>)
   <P>
   The fontforge module also defines several types
   <UL>
@@ -324,9 +324,9 @@
 	for allowing people to define special purpose dialogs (for example they might
 	want to ask more than one question in a dialog, and I don't support that).
 	<P>
-	When FontForge starts (if it's a fontforge with python) it will look at the
-	directories <CODE>$(PREFIX)/share/fontforge/python</CODE> and
-	<CODE>~/.FontForge/python</CODE> and attempt to run all files in those
+	When FontForge <A NAME="starts">starts</A> (if it's a fontforge with python)
+	it will look at the directories <CODE>$(PREFIX)/share/fontforge/python</CODE>
+	and <CODE>~/.FontForge/python</CODE> and attempt to run all files in those
 	directories which end in ".py". Presumably these files will allow people
 	to customize the user interface to suit their needs.
 	<P>
@@ -393,7 +393,8 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
 	{submenu-names,}<BR>
 	menu-name-string)</CODE></TD>
       <TD>If fontforge has a user interface this will add this menu item to FontForge's
-	Tool menu, either in the font or the outline glyph view (or both).
+	<A HREF="toolsmenu.html#Tools">Tool</A> menu, either in the font or the outline
+	glyph view (or both).
 	<DL>
 	  <DT>
 	    menu-function
@@ -3628,5 +3629,26 @@ n.save("NewFont.sfd")                            #and save it.
       </TD>
     </TR>
   </TABLE>
+  <H2>
+    FontForge as a python <A NAME="extension">extension</A>
+  </H2>
+  <P>
+  If you have configured fontforge with the <CODE>--enable-pyextension</CODE>
+  argument, then when fontforge installs itself it will also set itself up
+  as something that can be used inside of python (up until now we have been
+  talking about using python inside of fontforge).
+  <BLOCKQUOTE id="shell">
+    <PRE><FONT COLOR="Gray">$ </FONT>./configure --enable-pyextension
+<FONT COLOR="Gray">$ </FONT>make
+<FONT COLOR="Gray">$ </FONT>sudo make install
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  once you do that you can invoke all of the above fontforge commands from
+  inside of python by saying:
+  <BLOCKQUOTE id="shell">
+    <PRE><FONT COLOR="Gray">&gt;&gt;&gt; </FONT>import fontforge
+</PRE>
+  </BLOCKQUOTE>
 </DIV>
 </BODY></HTML>

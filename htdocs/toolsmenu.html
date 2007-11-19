@@ -1,9 +1,9 @@
 <HTML>
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
-  <!-- AP: Created on: 15-Dec-2001 -->
+  <!-- AP: Created on: 19-Nov-2007 -->
   <!-- AP: Last modified: 19-Nov-2007 -->
-  <TITLE>Help menu</TITLE>
+  <TITLE>The Tools Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
 </HEAD>
@@ -81,56 +81,23 @@
 </DIV>
 <DIV id="in">
   <H1 ALIGN=Center>
-    Help Menu
+    The <A NAME="Tools">Tools</A> Menu
   </H1>
   <P>
-  The Help menu has only a few entries:
-  <UL>
-    <LI>
-      <A HREF="helpmenu.html#Help">Help</A>
-    <LI>
-      <A HREF="helpmenu.html#Overview">Overview</A>
-    <LI>
-      <A HREF="helpmenu.html#Index">Index</A>
-    <LI>
-      <A HREF="helpmenu.html#About">About</A>...
-    <LI>
-      <A HREF="helpmenu.html#License">License</A>...
-  </UL>
-  <DL>
-    <DT>
-      <A NAME="Help">Help</A>
-    <DD>
-      Invokes a browser and brings up contextual help on fontforge web site.
-      <P>
-      If you define the environment variable
-      <A HREF="cliargs.html#BROWSER">BROWSER</A> so that it contains the name of
-      the browser you like then FontForge will use that, otherwise it will try
-      to guess something appropriate by looking at your PATH. On CygWin systems
-      browsers that work in the windows world (as opposed to the cygwin sub-system)
-      must be specified by a full path spec.
-      <P>
-      FontForge will search for help in either /usr/share/doc/fontforge/ or on
-      http://fontforge.sf.net/.
-    <DT>
-      <A NAME="Overview">Overview</A>
-    <DD>
-      Invokes a browser to bring up a page describing basic concepts you should
-      understand before working on fonts.
-    <DT>
-      <A NAME="Index">Index</A>
-    <DD>
-      Invokes a browser and brings up <A HREF="IndexFS.html">the index of help
-      topics </A>on the web page.
-    <DT>
-      <A NAME="About">About</A>
-    <DD>
-      Will display the splash screen again.
-    <DT>
-      <A NAME="License">License</A>
-    <DD>
-      Invokes a browser to display FontForge's license.
-  </DL>
+  This menu is different from all the others: It is yours. The menu is initially
+  empty (and disabled). There are
+  <A HREF="python.html#python-init-scripts">python scripting commands which
+  will add menu elements</A> (and submenus). Presumably this will be done from
+  <A HREF="python.html#starts">python startup scripts </A>but it could be done
+  at any time.
+  <P>
+  If your build did not contain python then this menu will not be present.
+  In builds with python the menu will only exist in the font and outline glyph
+  views.
+  <P>
+  At some point there may be some standard python scripts that ship with fontforge,
+  and their behavior will then be documented here. Currently there are no such
+  scripts.
   <H2>
     Other menus
   </H2>
@@ -165,7 +132,8 @@
       <A HREF="HotKeys.html">Hot Keys</A>
   </UL>
   <P ALIGN=Center>
-  -- <A HREF="windowmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A>
-  -- <A HREF="HotKeys.html">Next</A> --
+  -- <A HREF="elementmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A>
+  -- <A HREF="hintsmenu.html">Next</A> --
+  <P>
 </DIV>
 </BODY></HTML>

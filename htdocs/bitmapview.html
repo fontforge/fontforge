@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 11-Aug-2005 -->
+  <!-- AP: Last modified: 19-Nov-2007 -->
   <TITLE>Bitmap Character View</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -24,7 +24,7 @@
 	      >Source</A>
       </UL>
     <LI>
-      <A href="overview.html#Overview">Introduction</A>
+      <A href="overview.html">Introduction</A>
     <LI>
       <A href="editexample.html">Tutorial</A>
     <LI class="menu">
@@ -53,6 +53,8 @@
 	<LI>
 	  <A href="elementmenu.html">Element</A>
 	<LI>
+	  <A href="toolsmenu.html">Tools</A>
+	<LI>
 	  <A href="hintsmenu.html" >Hints</A>
 	<LI>
 	  <A href="encodingmenu.html" >Encoding</A>
@@ -78,156 +80,156 @@
   </UL>
 </DIV>
 <DIV id="in">
-<H1 ALIGN=Center>
-  Bitmap Glyph View
-</H1>
-<P>
-<IMG SRC="BitmapView.png" WIDTH="254" HEIGHT="273">
-<P>
-The bitmap view is vaguely similar to the <A HREF="charview.html">outline
-view</A>. It is also designed for editing glyph shapes, but here bitmap glyph
-shapes.
-<P>
-At the top of the view is a small region showing an unmagnified view of the
-glyph, to the right of that are two information displays, the first shows
-the current location of the mouse pointer, and the second shows (if the mouse
-button has been depressed and not released yet) the offset from the place
-where the mouse was pressed to the current pointer location. The coordinate
-system here is in pixels with the origin at the glyph's origin. Next to this
-is a button (here truncated) that allows you to recalculate the bitmap (rasterize
-the outline and place the result in the window for editing).
-<P>
-Underneath is the main display, showing the bits in the image, the outline
-of the glyph and a grid.
-<P>
-As in the outline view you may choose to dock the palettes in the window
-with View-&gt;Palettes-&gt;Dock Palettes.
-<H2>
-  <A NAME="Layers">Layers</A>
-</H2>
-<P>
-<IMG SRC="bvlayers.png" WIDTH="77" HEIGHT="77">
-<P>
-There are three layers to the bitmap view, the bitmap itself, the outline
-glyph and the grid lines. You are always editing in the bitmap layer so there
-is no control over what layer is editable, just which ones are visible.
-<H2>
-  <A NAME="Tools">Tools</A>
-</H2>
-<P>
-<IMG SRC="bvtools.png" WIDTH="57" HEIGHT="83">
-<P>
-There are only six tools on the bitmap palette (there are some others available
-by right clicking in the view, this generates a popup menu.
-<P>
-The pointer tool allows you to select a region of the screen, and move it
-around or copy it (a copy when nothing is selected copies the entire bitmap).
-The arrow keys will also move the selection around. In a bitmap only font
-the pointer tool can change the advance width.
-<P>
-The if you click with the magnifying tool the view is magnified, centered
-around the point at which you clicked. If you hold down the
-<A HREF="charview.html#alt-meta-capslock">Meta (or Alt or CapsLock)</A> key
-during the click then the view will be minified.
-<P>
-The pencil tool allows you to set or clear bits. If you depress the mouse
-button then the pencil will toggle the bit under the cursor, if you then
-drag it over other bits they will be set if the first bit was set, and cleared
-if the first was cleared.
-<P>
-The line tool (the pencil with the line beside it) will draw straight lines.
-It behaves like the pencil tool on whether it sets or clears a line. The
-Shift key does not constrain this window.
-<P>
-The four-arrow tool moves the entire bitmap.
-<P>
-The hand scrolls the screen.
-<H3>
-  Additional tools from the popup menu.
-</H3>
-<UL>
-  <LI>
-    Draw an open rectangle
-  <LI>
-    Draw a filled rectangle
-  <LI>
-    Draw an open ellipse
-  <LI>
-    Draw a filled ellipse
-  <LI>
-    Rotate the bitmap 90&#176; Counter Clockwise.
-  <LI>
-    Rotate it 90&#176; Clockwise.
-  <LI>
-    Rotate it 180&#176;.
-  <LI>
-    Flip it horizontally
-  <LI>
-    Flip it vertically.
-  <LI>
-    Set Width<BR>
-    This is only available if there is no outline font (ie. if you opened a bdf
-    file directly).<BR>
-    It sets the width (glyph advance) of the bitmap.
-</UL>
-<H2>
-  <A NAME="AA">Anti-Aliased Glyphs</A>
-</H2>
-<P>
-<IMG SRC="greymapedit.png" WIDTH="274" HEIGHT="273" ALIGN="Right">This window
-may also be used to edit anti-aliased glyphs (glyphs which are represented
-by shades of grey rather than by black and white. In the information area
-there is a little rectangle which shows the current color that will be used
-by the pencil (line, rectangle, etc.) tool.
-<P>
-The behavior of the drawing tools is slightly different here. In a bitmap
-glyph the color used for drawing is the opposite of whatever color is currently
-under the cursor, but that doesn't work in an environment with more than
-two colors. So you must select what color you are going to draw with manually.
-<P>
-There are two ways to select the drawing color:
-<UL>
-  <LI>
-    With the pencil tool selected, hold down the Alt (Meta) key. The cursor changes
-    to an eyedropper. Position the cursor over a pixel with the right color and
-    click the mouse.
-  <LI>
-    Use the <A HREF="#Shades">Shades</A> palette.
-</UL>
-<P>
-<BR Clear=Right>
-<H2>
-  <A NAME="Shades">Shades</A>
-</H2>
-<TABLE CELLPADDING="2">
-  <TR>
-    <TD><P ALIGN=Center>
-      <IMG SRC="Shades.png" WIDTH="156" HEIGHT="175"><BR>
-      Shades of grey available<BR>
-      with 8 bits/pixel</TD>
-    <TD><P ALIGN=Center>
-      <IMG SRC="Shades4.png" WIDTH="156" HEIGHT="175"><BR>
-      Shades of grey available<BR>
-      with 4 bits/pixel</TD>
-    <TD><P ALIGN=Center>
-      <IMG SRC="Shades2.png" WIDTH="156" HEIGHT="175"><BR>
-      Shades of grey available<BR>
-      with 2 bits/pixel</TD>
-  </TR>
-</TABLE>
-<P>
-The shades palette is only visible in an anti-aliased glyph. The palette
-displays all the possible shades of grey available to this glyph. Glyphs
-with more bits per pixel will have more shades of grey.
-<P>
-The currently selected drawing color is outlined in green. To select a new
-color, move the cursor to the desired color and click the mouse.
-<P>
-As the cursor moves over the bitmap in the bitmap view, the color under the
-cursor will be outlined in white.
-<P>
-<P ALIGN=Center>
--- <A HREF="charview.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
-<A HREF="metricsview.html">Next</A> --
+  <H1 ALIGN=Center>
+    Bitmap Glyph View
+  </H1>
+  <P>
+  <IMG SRC="BitmapView.png" WIDTH="254" HEIGHT="273">
+  <P>
+  The bitmap view is vaguely similar to the <A HREF="charview.html">outline
+  view</A>. It is also designed for editing glyph shapes, but here bitmap glyph
+  shapes.
+  <P>
+  At the top of the view is a small region showing an unmagnified view of the
+  glyph, to the right of that are two information displays, the first shows
+  the current location of the mouse pointer, and the second shows (if the mouse
+  button has been depressed and not released yet) the offset from the place
+  where the mouse was pressed to the current pointer location. The coordinate
+  system here is in pixels with the origin at the glyph's origin. Next to this
+  is a button (here truncated) that allows you to recalculate the bitmap (rasterize
+  the outline and place the result in the window for editing).
+  <P>
+  Underneath is the main display, showing the bits in the image, the outline
+  of the glyph and a grid.
+  <P>
+  As in the outline view you may choose to dock the palettes in the window
+  with View-&gt;Palettes-&gt;Dock Palettes.
+  <H2>
+    <A NAME="Layers">Layers</A>
+  </H2>
+  <P>
+  <IMG SRC="bvlayers.png" WIDTH="77" HEIGHT="77">
+  <P>
+  There are three layers to the bitmap view, the bitmap itself, the outline
+  glyph and the grid lines. You are always editing in the bitmap layer so there
+  is no control over what layer is editable, just which ones are visible.
+  <H2>
+    <A NAME="Tools">Tools</A>
+  </H2>
+  <P>
+  <IMG SRC="bvtools.png" WIDTH="57" HEIGHT="83">
+  <P>
+  There are only six tools on the bitmap palette (there are some others available
+  by right clicking in the view, this generates a popup menu.
+  <P>
+  The pointer tool allows you to select a region of the screen, and move it
+  around or copy it (a copy when nothing is selected copies the entire bitmap).
+  The arrow keys will also move the selection around. In a bitmap only font
+  the pointer tool can change the advance width.
+  <P>
+  The if you click with the magnifying tool the view is magnified, centered
+  around the point at which you clicked. If you hold down the
+  <A HREF="charview.html#alt-meta-capslock">Meta (or Alt or CapsLock)</A> key
+  during the click then the view will be minified.
+  <P>
+  The pencil tool allows you to set or clear bits. If you depress the mouse
+  button then the pencil will toggle the bit under the cursor, if you then
+  drag it over other bits they will be set if the first bit was set, and cleared
+  if the first was cleared.
+  <P>
+  The line tool (the pencil with the line beside it) will draw straight lines.
+  It behaves like the pencil tool on whether it sets or clears a line. The
+  Shift key does not constrain this window.
+  <P>
+  The four-arrow tool moves the entire bitmap.
+  <P>
+  The hand scrolls the screen.
+  <H3>
+    Additional tools from the popup menu.
+  </H3>
+  <UL>
+    <LI>
+      Draw an open rectangle
+    <LI>
+      Draw a filled rectangle
+    <LI>
+      Draw an open ellipse
+    <LI>
+      Draw a filled ellipse
+    <LI>
+      Rotate the bitmap 90&#176; Counter Clockwise.
+    <LI>
+      Rotate it 90&#176; Clockwise.
+    <LI>
+      Rotate it 180&#176;.
+    <LI>
+      Flip it horizontally
+    <LI>
+      Flip it vertically.
+    <LI>
+      Set Width<BR>
+      This is only available if there is no outline font (ie. if you opened a bdf
+      file directly).<BR>
+      It sets the width (glyph advance) of the bitmap.
+  </UL>
+  <H2>
+    <A NAME="AA">Anti-Aliased Glyphs</A>
+  </H2>
+  <P>
+  <IMG SRC="greymapedit.png" WIDTH="274" HEIGHT="273" ALIGN="Right">This window
+  may also be used to edit anti-aliased glyphs (glyphs which are represented
+  by shades of grey rather than by black and white. In the information area
+  there is a little rectangle which shows the current color that will be used
+  by the pencil (line, rectangle, etc.) tool.
+  <P>
+  The behavior of the drawing tools is slightly different here. In a bitmap
+  glyph the color used for drawing is the opposite of whatever color is currently
+  under the cursor, but that doesn't work in an environment with more than
+  two colors. So you must select what color you are going to draw with manually.
+  <P>
+  There are two ways to select the drawing color:
+  <UL>
+    <LI>
+      With the pencil tool selected, hold down the Alt (Meta) key. The cursor changes
+      to an eyedropper. Position the cursor over a pixel with the right color and
+      click the mouse.
+    <LI>
+      Use the <A HREF="#Shades">Shades</A> palette.
+  </UL>
+  <P>
+  <BR Clear=Right>
+  <H2>
+    <A NAME="Shades">Shades</A>
+  </H2>
+  <TABLE CELLPADDING="2">
+    <TR>
+      <TD><P ALIGN=Center>
+	<IMG SRC="Shades.png" WIDTH="156" HEIGHT="175"><BR>
+	Shades of grey available<BR>
+	with 8 bits/pixel</TD>
+      <TD><P ALIGN=Center>
+	<IMG SRC="Shades4.png" WIDTH="156" HEIGHT="175"><BR>
+	Shades of grey available<BR>
+	with 4 bits/pixel</TD>
+      <TD><P ALIGN=Center>
+	<IMG SRC="Shades2.png" WIDTH="156" HEIGHT="175"><BR>
+	Shades of grey available<BR>
+	with 2 bits/pixel</TD>
+    </TR>
+  </TABLE>
+  <P>
+  The shades palette is only visible in an anti-aliased glyph. The palette
+  displays all the possible shades of grey available to this glyph. Glyphs
+  with more bits per pixel will have more shades of grey.
+  <P>
+  The currently selected drawing color is outlined in green. To select a new
+  color, move the cursor to the desired color and click the mouse.
+  <P>
+  As the cursor moves over the bitmap in the bitmap view, the color under the
+  cursor will be outlined in white.
+  <P>
+  <P ALIGN=Center>
+  -- <A HREF="charview.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
+  <A HREF="metricsview.html">Next</A> --
 </DIV>
 </BODY></HTML>
