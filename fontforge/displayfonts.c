@@ -400,7 +400,10 @@ return;			/* Nothing in this range */
     fprintf( pi->out, "    /LastChar %d\n", last );
     fprintf( pi->out, "    /Widths %d 0 R\n", pi->next_object );
     fprintf( pi->out, "    /FontDescriptor %d 0 R\n", font_d_ref );
-    if ( base!=0 )
+    /* Contrary to my reading of the PDF spec, Adobe Acrobat & Apple's Preview*/
+    /*  will reencode a font to AdobeStandard if an encoding is omitted */
+    /* Ghostview agrees with me, and does not reencode */
+    /*if ( base!=0 )*/
 	fprintf( pi->out, "    /Encoding %d 0 R\n", pi->next_object+1 );
     fprintf( pi->out, "  >>\n" );
     fprintf( pi->out, "endobj\n" );
@@ -413,7 +416,7 @@ return;			/* Nothing in this range */
 	fprintf( pi->out, "    0\n" );
     fprintf( pi->out, "  ]\n" );
     fprintf( pi->out, "endobj\n" );
-    if ( base!=0 ) {
+    /*if ( base!=0 )*/ {
 	pdf_addobject(pi);
 	fprintf( pi->out, "  <<\n" );
 	fprintf( pi->out, "    /Type /Encoding\n" );
