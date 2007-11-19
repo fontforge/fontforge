@@ -2046,6 +2046,8 @@ extern void SFReplaceEncodingBDFProps(SplineFont *sf,EncMap *map);
 extern void SFReplaceFontnameBDFProps(SplineFont *sf);
 extern int  IsUnsignedBDFKey(char *key);
 extern int  BdfPropHasInt(BDFFont *font,const char *key, int def );
+extern char *BdfPropHasString(BDFFont *font,const char *key, char *def );
+extern void def_Charset_Enc(EncMap *map,char *reg,char *enc);
 extern void BDFDefaultProps(BDFFont *bdf, EncMap *map, int res);
 struct xlfd_components {
     char foundry[80];
@@ -2727,6 +2729,11 @@ extern int BCExportXBM(char *filename,BDFChar *bdfc, int format);
 extern int ExportImage(char *filename,SplineChar *sc, int format, int pixelsize, int bitsperpixel);
 extern void ScriptExport(SplineFont *sf, BDFFont *bdf, int format, int gid,
 	char *format_spec, EncMap *map);
+
+extern EncMap *EncMapFromEncoding(SplineFont *sf,Encoding *enc);
+extern void SFRemoveGlyph(SplineFont *sf,SplineChar *sc, int *flags);
+extern void SFAddEncodingSlot(SplineFont *sf,int gid);
+extern void SFAddGlyphAndEncode(SplineFont *sf,SplineChar *sc,EncMap *basemap, int baseenc);
 
 #if !defined(_NO_PYTHON)
 extern void FontForge_PythonInit(void);

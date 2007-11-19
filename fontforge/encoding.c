@@ -2361,3 +2361,158 @@ return;
     if ( mm->normal!=NULL )
 	SFMatchGlyphs(mm->normal,base,true);
 }
+
+int32 UniFromEnc(int enc, Encoding *encname) {
+    char from[20];
+    unichar_t to[20];
+    ICONV_CONST char *fpt;
+    char *tpt;
+    size_t fromlen, tolen;
+
+    if ( encname->is_custom || encname->is_original )
+return( -1 );
+    if ( enc>=encname->char_cnt )
+return( -1 );
+    if ( encname->is_unicodebmp || encname->is_unicodefull )
+return( enc );
+    if ( encname->unicode!=NULL )
+return( encname->unicode[enc] );
+    else if ( encname->tounicode ) {
+	/* To my surprise, on RH9, doing a reset on conversion of CP1258->UCS2 */
+	/* causes subsequent calls to return garbage */
+	if ( encname->iso_2022_escape_len ) {
+	    tolen = sizeof(to); fromlen = 0;
+	    iconv(encname->tounicode,NULL,&fromlen,NULL,&tolen);	/* Reset state */
+	}
+	fpt = from; tpt = (char *) to; tolen = sizeof(to);
+	if ( encname->has_1byte && enc<256 ) {
+	    *(char *) fpt = enc;
+	    fromlen = 1;
+	} else if ( encname->has_2byte ) {
+	    if ( encname->iso_2022_escape_len )
+		strncpy(from,encname->iso_2022_escape,encname->iso_2022_escape_len );
+	    fromlen = encname->iso_2022_escape_len;
+	    from[fromlen++] = enc>>8;
+	    from[fromlen++] = enc&0xff;
+	}
+	if ( iconv(encname->tounicode,&fpt,&fromlen,&tpt,&tolen)==(size_t) -1 )
+return( -1 );
+	if ( tpt-(char *) to == 0 ) {
+	    /* This strange call appears to be what we need to make CP1258->UCS2 */
+	    /*  work.  It's supposed to reset the state and give us the shift */
+	    /*  out. As there is no state, and no shift out I have no idea why*/
+	    /*  this works, but it does. */
+	    if ( iconv(encname->tounicode,NULL,&fromlen,&tpt,&tolen)==(size_t) -1 )
+return( -1 );
+	}
+	if ( tpt-(char *) to == sizeof(unichar_t) )
+return( to[0] );
+#ifdef UNICHAR_16
+	else if ( tpt-(char *) to == 4 && to[0]>=0xd800 && to[0]<0xdc00 && to[1]>=0xdc00 )
+return( ((to[0]-0xd800)<<10) + (to[1]-0xdc00) + 0x10000 );
+#endif
+    } else if ( encname->tounicode_func!=NULL ) {
+return( (encname->tounicode_func)(enc) );
+    }
+return( -1 );
+}
+
+int32 EncFromUni(int32 uni, Encoding *enc) {
+    unichar_t from[20];
+    unsigned char to[20];
+    ICONV_CONST char *fpt;
+    char *tpt;
+    size_t fromlen, tolen;
+    int i;
+
+    if ( enc->is_custom || enc->is_original || enc->is_compact || uni==-1 )
+return( -1 );
+    if ( enc->is_unicodebmp || enc->is_unicodefull )
+return( uni<enc->char_cnt ? uni : -1 );
+
+    if ( enc->unicode!=NULL ) {
+	for ( i=0; i<enc->char_cnt; ++i ) {
+	    if ( enc->unicode[i]==uni )
+return( i );
+	}
+return( -1 );
+    } else if ( enc->fromunicode!=NULL ) {
+	/* I don't see how there can be any state to reset in this direction */
+	/*  So I don't reset it */
+#ifdef UNICHAR_16
+	if ( uni<0x10000 ) {
+	    from[0] = uni;
+	    fromlen = sizeof(unichar_t);
+	} else {
+	    uni -= 0x10000;
+	    from[0] = 0xd800 + (uni>>10);
+	    from[1] = 0xdc00 + (uni&0x3ff);
+	    fromlen = 2*sizeof(unichar_t);
+	}
+#else
+	from[0] = uni;
+	fromlen = sizeof(unichar_t);
+#endif
+	fpt = (char *) from; tpt = (char *) to; tolen = sizeof(to);
+	iconv(enc->fromunicode,NULL,NULL,NULL,NULL);	/* reset shift in/out, etc. */
+	if ( iconv(enc->fromunicode,&fpt,&fromlen,&tpt,&tolen)==(size_t) -1 )
+return( -1 );
+	if ( tpt-(char *) to == 1 )
+return( to[0] );
+	if ( enc->iso_2022_escape_len!=0 ) {
+	    if ( tpt-(char *) to == enc->iso_2022_escape_len+2 &&
+		    strncmp((char *) to,enc->iso_2022_escape,enc->iso_2022_escape_len)==0 )
+return( (to[enc->iso_2022_escape_len]<<8) | to[enc->iso_2022_escape_len+1] );
+	} else {
+	    if ( tpt-(char *) to == sizeof(unichar_t) )
+return( (to[0]<<8) | to[1] );
+	}
+    } else if ( enc->fromunicode_func!=NULL ) {
+return( (enc->fromunicode_func)(uni) );
+    }
+return( -1 );
+}
+
+int32 EncFromName(const char *name,enum uni_interp interp,Encoding *encname) {
+    int i;
+    if ( encname->psnames!=NULL ) {
+	for ( i=0; i<encname->char_cnt; ++i )
+	    if ( encname->psnames[i]!=NULL && strcmp(name,encname->psnames[i])==0 )
+return( i );
+    }
+    i = UniFromName(name,interp,encname);
+    if ( i==-1 && strlen(name)==4 ) {
+	/* MS says use this kind of name, Adobe says use the one above */
+	char *end;
+	i = strtol(name,&end,16);
+	if ( i<0 || i>0xffff || *end!='\0' )
+return( -1 );
+    }
+return( EncFromUni(i,encname));
+}
+
+void SFExpandGlyphCount(SplineFont *sf, int newcnt) {
+    int old = sf->glyphcnt;
+    FontView *fv;
+
+    if ( old>=newcnt )
+return;
+    if ( sf->glyphmax<newcnt ) {
+	sf->glyphs = grealloc(sf->glyphs,newcnt*sizeof(SplineChar *));
+	sf->glyphmax = newcnt;
+    }
+    memset(sf->glyphs+sf->glyphcnt,0,(newcnt-sf->glyphcnt)*sizeof(SplineChar *));
+    sf->glyphcnt = newcnt;
+
+    for ( fv=sf->fv; fv!=NULL; fv=fv->nextsame ) {
+	if ( fv->sf==sf ) {	/* Beware of cid keyed fonts which might look at a different subfont */
+	    if ( fv->normal!=NULL )
+    continue;			/* If compacted then we haven't added any glyphs so haven't changed anything */
+	    /* Don't display any of these guys, so not mapped. */
+	    /*  No change to selection, or to map->map, but change to backmap */
+	    if ( newcnt>fv->map->backmax )
+		fv->map->backmap = grealloc(fv->map->backmap,(fv->map->backmax = newcnt+5)*sizeof(int32));
+	    memset(fv->map->backmap+old,-1,(newcnt-old)*sizeof(int32));
+	}
+    }
+}
