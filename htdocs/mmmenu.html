@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 5-Feb-2004 -->
-  <!-- AP: Last modified: 27-Jun-2005 -->
+  <!-- AP: Last modified: 19-Nov-2007 -->
   <TITLE>Multiple Master menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -24,7 +24,7 @@
 	      >Source</A>
       </UL>
     <LI>
-      <A href="overview.html#Overview">Introduction</A>
+      <A href="overview.html">Introduction</A>
     <LI>
       <A href="editexample.html">Tutorial</A>
     <LI class="menu">
@@ -53,6 +53,8 @@
 	<LI>
 	  <A href="elementmenu.html">Element</A>
 	<LI>
+	  <A href="toolsmenu.html">Tools</A>
+	<LI>
 	  <A href="hintsmenu.html" >Hints</A>
 	<LI>
 	  <A href="encodingmenu.html" >Encoding</A>
@@ -78,177 +80,179 @@
   </UL>
 </DIV>
 <DIV id="in">
-<H1 ALIGN=Center>
-  The Multiple Master Menu
-</H1>
-<P>
-The MM Menu provides a few commands for manipulating
-<A HREF="multiplemaster.html#MM">Multiple Master or Apple distortable
-fonts</A>. If the current font is a MM itself font the menu also includes
-a list of all font instances that make up this one. This menu is available
-in the <A HREF="mmmenu.html#fontview">font view</A> and the
-<A HREF="mmmenu.html#outline-char">outline glyph view</A>.
-<H3>
-  The menu as it appears in the <A NAME="fontview">font view</A>
-</H3>
-<UL>
-  <LI>
-    <A HREF="mmmenu.html#Create">Create MM</A>...
-  <LI>
-    <A HREF="mmmenu.html#Valid">MM Valid</A>
-  <LI>
-    <A HREF="mmmenu.html#Info">MM Info</A>...
-  <LI>
-    <A HREF="#NewFont">Blend to New Font</A>...
-  <LI>
-    <A HREF="mmmenu.html#DefWeights">MM Change Default Weights</A>... 
-      <HR>
-  <LI>
-    &lt;sub font names&gt;
-</UL>
-<P>
-<DL>
-  <DT>
-    <A NAME="Create">Create MM</A>
-  <DD>
-    Brings up the <A HREF="multiplemaster.html">multiple master dialog</A> and
-    allows you to create your own multiple master font from scratch.
-  <DT>
-    <A NAME="Valid">MM Valid</A>
-  <DD>
-    Checks that the current multiple master font can be saved. So each master
-    design must match in:
-    <UL>
-      <LI>
-	Contours
-	<UL>
-	  <LI>
-	    There must be the same number of contours and
-	  <LI>
-	    each contour must have the same number of points and
-	  <LI>
-	    each spline on the contour must be the same type (ie it can't correspond
-	    to a straight line in one font and a curve in another)
-	</UL>
-      <LI>
-	References
-	<UL>
-	  <LI>
-	    There must be the same number of references and
-	  <LI>
-	    Each corresponding reference must refer to the same encoding
-	</UL>
-      <LI>
-	Hints
-	<UL>
-	  <LI>
-	    Same number of hints
-	</UL>
-      <LI>
-	HintMasks (Counter masks are not supported here)
-	<UL>
-	  <LI>
-	    HintMasks at corresponding points must specify a corresponding set of hints
-	</UL>
-      <LI>
-	Kerning
-	<UL>
-	  <LI>
-	    If a glyph kerns with another glyph in one font, then a corresponding kerning
-	    pair must exist in all designs
-	</UL>
-    </UL>
-  <DT>
-    <A NAME="Info">MM Info</A>
-  <DD>
-    Brings up the <A HREF="multiplemaster.html">multiple master dialog</A> and
-    allows you to modify the current multiple master font.
-  <DT>
-    <A NAME="NewFont">Blend to New Font</A>...
-  <DD>
-    Allows you to create a blended version of the current multiple master font
-    set as a stand alone font.
-  <DT>
-    <A NAME="DefWeights">MM Change Default Weights</A>
-  <DD>
-    Allows you to change the default weights assigned to each master design used
-    in blending the default instance of the font 
-      <HR>
-  <DT>
-    &lt;sub font name&gt;
-  <DD>
-    Clicking on a different sub font name in the menu will cause that sub-font
-    to be displayed instead of the current one. The subfonts are the master designs
-    and the default blended font.
-</DL>
-<H3>
-  The menu as it appears in the <A NAME="outline-char">outline glyph </A>view
-</H3>
-<UL>
-  <LI>
-    <A HREF="mmmenu.html#Reblend">MM Reblend </A> 
-      <HR>
-  <LI>
-    <A HREF="mmmenu.html#View">View </A> 
-      <HR>
-  <LI>
-    &lt;sub font names&gt;
-</UL>
-<P>
-<DL>
-  <DT>
-    MM <A NAME="Reblend">Reblend</A>
-  <DD>
-    Reblends the default version of the current glyph
-  <DT>
-    <A NAME="View">View</A>
-  <DD>
-    A submenu which allows you to choose which of the designs of this glyph you
-    want displayed in the background of the view 
-      <HR>
-  <DT>
-    &lt;sub font name&gt;
-  <DD>
-    Clicking on a different sub font name in the menu will cause the glyph from
-    that sub-font to be displayed instead of the current one. The subfonts are
-    the master designs and the default blended font.
-</DL>
-<P>
-<H2>
-  Other menus
-</H2>
-<UL>
-  <LI>
-    <A HREF="filemenu.html">File</A>
-  <LI>
-    <A HREF="editmenu.html">Edit</A>
-  <LI>
-    <A HREF="pointmenu.html">Point</A>
-  <LI>
-    <A HREF="elementmenu.html">Element</A>
-  <LI>
-    <A HREF="hintsmenu.html">Hints</A>
-  <LI>
-    <A HREF="encodingmenu.html">Encoding</A>
-  <LI>
-    <A HREF="viewmenu.html">View</A>
-  <LI>
-    <A HREF="metricsmenu.html">Metrics</A>
-  <LI>
-    <A HREF="cidmenu.html">CID</A>
-  <LI>
-    <A HREF="mmmenu.html">MM</A>
-  <LI>
-    <A HREF="windowmenu.html">Window</A>
-  <LI>
-    <A HREF="helpmenu.html">Help</A>
-  <LI>
-    <A HREF="HotKeys.html">Hot Keys</A>
-</UL>
-<P ALIGN=Center>
--- <A HREF="cidmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
-<A HREF="windowmenu.html">Next</A> --
-<P>
-<P>
+  <H1 ALIGN=Center>
+    The Multiple Master Menu
+  </H1>
+  <P>
+  The MM Menu provides a few commands for manipulating
+  <A HREF="multiplemaster.html#MM">Multiple Master or Apple distortable
+  fonts</A>. If the current font is a MM itself font the menu also includes
+  a list of all font instances that make up this one. This menu is available
+  in the <A HREF="mmmenu.html#fontview">font view</A> and the
+  <A HREF="mmmenu.html#outline-char">outline glyph view</A>.
+  <H3>
+    The menu as it appears in the <A NAME="fontview">font view</A>
+  </H3>
+  <UL>
+    <LI>
+      <A HREF="mmmenu.html#Create">Create MM</A>...
+    <LI>
+      <A HREF="mmmenu.html#Valid">MM Valid</A>
+    <LI>
+      <A HREF="mmmenu.html#Info">MM Info</A>...
+    <LI>
+      <A HREF="#NewFont">Blend to New Font</A>...
+    <LI>
+      <A HREF="mmmenu.html#DefWeights">MM Change Default Weights</A>... 
+	<HR>
+    <LI>
+      &lt;sub font names&gt;
+  </UL>
+  <P>
+  <DL>
+    <DT>
+      <A NAME="Create">Create MM</A>
+    <DD>
+      Brings up the <A HREF="multiplemaster.html">multiple master dialog</A> and
+      allows you to create your own multiple master font from scratch.
+    <DT>
+      <A NAME="Valid">MM Valid</A>
+    <DD>
+      Checks that the current multiple master font can be saved. So each master
+      design must match in:
+      <UL>
+	<LI>
+	  Contours
+	  <UL>
+	    <LI>
+	      There must be the same number of contours and
+	    <LI>
+	      each contour must have the same number of points and
+	    <LI>
+	      each spline on the contour must be the same type (ie it can't correspond
+	      to a straight line in one font and a curve in another)
+	  </UL>
+	<LI>
+	  References
+	  <UL>
+	    <LI>
+	      There must be the same number of references and
+	    <LI>
+	      Each corresponding reference must refer to the same encoding
+	  </UL>
+	<LI>
+	  Hints
+	  <UL>
+	    <LI>
+	      Same number of hints
+	  </UL>
+	<LI>
+	  HintMasks (Counter masks are not supported here)
+	  <UL>
+	    <LI>
+	      HintMasks at corresponding points must specify a corresponding set of hints
+	  </UL>
+	<LI>
+	  Kerning
+	  <UL>
+	    <LI>
+	      If a glyph kerns with another glyph in one font, then a corresponding kerning
+	      pair must exist in all designs
+	  </UL>
+      </UL>
+    <DT>
+      <A NAME="Info">MM Info</A>
+    <DD>
+      Brings up the <A HREF="multiplemaster.html">multiple master dialog</A> and
+      allows you to modify the current multiple master font.
+    <DT>
+      <A NAME="NewFont">Blend to New Font</A>...
+    <DD>
+      Allows you to create a blended version of the current multiple master font
+      set as a stand alone font.
+    <DT>
+      <A NAME="DefWeights">MM Change Default Weights</A>
+    <DD>
+      Allows you to change the default weights assigned to each master design used
+      in blending the default instance of the font 
+	<HR>
+    <DT>
+      &lt;sub font name&gt;
+    <DD>
+      Clicking on a different sub font name in the menu will cause that sub-font
+      to be displayed instead of the current one. The subfonts are the master designs
+      and the default blended font.
+  </DL>
+  <H3>
+    The menu as it appears in the <A NAME="outline-char">outline glyph </A>view
+  </H3>
+  <UL>
+    <LI>
+      <A HREF="mmmenu.html#Reblend">MM Reblend </A> 
+	<HR>
+    <LI>
+      <A HREF="mmmenu.html#View">View </A> 
+	<HR>
+    <LI>
+      &lt;sub font names&gt;
+  </UL>
+  <P>
+  <DL>
+    <DT>
+      MM <A NAME="Reblend">Reblend</A>
+    <DD>
+      Reblends the default version of the current glyph
+    <DT>
+      <A NAME="View">View</A>
+    <DD>
+      A submenu which allows you to choose which of the designs of this glyph you
+      want displayed in the background of the view 
+	<HR>
+    <DT>
+      &lt;sub font name&gt;
+    <DD>
+      Clicking on a different sub font name in the menu will cause the glyph from
+      that sub-font to be displayed instead of the current one. The subfonts are
+      the master designs and the default blended font.
+  </DL>
+  <P>
+  <H2>
+    Other menus
+  </H2>
+  <UL>
+    <LI>
+      <A HREF="filemenu.html">File</A>
+    <LI>
+      <A HREF="editmenu.html">Edit</A>
+    <LI>
+      <A HREF="pointmenu.html">Point</A>
+    <LI>
+      <A HREF="elementmenu.html">Element</A>
+    <LI>
+      <A href="toolsmenu.html">Tools</A>
+    <LI>
+      <A HREF="hintsmenu.html">Hints</A>
+    <LI>
+      <A HREF="encodingmenu.html">Encoding</A>
+    <LI>
+      <A HREF="viewmenu.html">View</A>
+    <LI>
+      <A HREF="metricsmenu.html">Metrics</A>
+    <LI>
+      <A HREF="cidmenu.html">CID</A>
+    <LI>
+      <A HREF="mmmenu.html">MM</A>
+    <LI>
+      <A HREF="windowmenu.html">Window</A>
+    <LI>
+      <A HREF="helpmenu.html">Help</A>
+    <LI>
+      <A HREF="HotKeys.html">Hot Keys</A>
+  </UL>
+  <P ALIGN=Center>
+  -- <A HREF="cidmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
+  <A HREF="windowmenu.html">Next</A> --
+  <P>
+  <P>
 </DIV>
 </BODY></HTML>

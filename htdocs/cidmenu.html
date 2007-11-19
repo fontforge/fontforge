@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 30-Jul-2001 -->
-  <!-- AP: Last modified: 27-Jun-2005 -->
+  <!-- AP: Last modified: 19-Nov-2007 -->
   <TITLE>The CID Menu and CID keyed fonts</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -24,7 +24,7 @@
 	      >Source</A>
       </UL>
     <LI>
-      <A href="overview.html#Overview">Introduction</A>
+      <A href="overview.html">Introduction</A>
     <LI>
       <A href="editexample.html">Tutorial</A>
     <LI class="menu">
@@ -53,6 +53,8 @@
 	<LI>
 	  <A href="elementmenu.html">Element</A>
 	<LI>
+	  <A href="toolsmenu.html">Tools</A>
+	<LI>
 	  <A href="hintsmenu.html" >Hints</A>
 	<LI>
 	  <A href="encodingmenu.html" >Encoding</A>
@@ -78,155 +80,157 @@
   </UL>
 </DIV>
 <DIV id="in">
-<H1 ALIGN=Center>
-  The CID Menu
-</H1>
-<P>
-The CID Menu provides a few commands for manipulating CID keyed fonts. If
-the current font is a CID keyed font the menu also includes a list of all
-subfonts that make up this one. This menu is only available in the font view.
-<P>
-<UL>
-  <LI>
-    <A HREF="#Convert">Convert to CID</A>
-  <LI>
-    <A HREF="#ConvertCMap">Convert By CMap</A>
-  <LI>
-    <A HREF="#Flatten">Flatten</A>
-  <LI>
-    <A HREF="#FlattenCMap">Flatten By CMap</A>
-  <LI>
-    <A HREF="#Insert">Insert Font</A>
-  <LI>
-    <A HREF="#Blank">Insert Blank</A>
-  <LI>
-    <A HREF="#Remove">Remove Font</A>
-  <LI>
-    <A HREF="#ChangeSup">Change Supplement...</A>
-  <LI>
-    <A HREF="#FontInfo">CID Font Info</A> 
-      <HR>
-  <LI>
-    &lt;sub font names&gt;
-</UL>
-<H2>
-  Er... What is a <A NAME="CID">CID</A> keyed Font?
-</H2>
-<P>
-A CID keyed font is a postscript (or opentype) font designed to hold Chinese,
-Japanese and Korean characters efficiently. More accurately a CID font is
-a collection of several sub-fonts each with certain common features (one
-might hold all the latin letters, another all the kana, a third all the kanji).
-This allows font-wide hinting to be crafted for subsets of glyphs to which
-have something in common.
-<P>
-CID keyed fonts do not have an encoding built into the font, and the glyphs
-do not have names. Instead the font is associated with a glyph set and on
-each glyph set there are several character mappings defined. These mappings
-are similar to encodings but allow for a wider range of behaviors.
-<P>
-A CID is a glyph index and is used to look up glyph descriptions instead
-of glyph names in other types of fonts. Using a glyph set FontForge will
-often be able to map a CID to a unicode character name (but not always),
-so FontForge will give glyphs names when it can.
-<P>
-For more information see the <A HREF="fontview.html#CID">section on CID keyed
-fonts on the font view page</A>.
-<P>
-<DL>
-  <DT>
-    <A NAME="Convert">Convert to CID</A>
-  <DD>
-    If the current font is not a CID font then this command will convert it into
-    one containing one subfont (with the glyphs in this font). You will be prompted
-    for a glyph set.
-  <DT>
-    <A NAME="ConvertCMap">Convert By CMap</A>
-  <DD>
-    If the current font is not a CID font then this command will convert it into
-    one containing a single subfont. You will be prompted for an Adobe CMap file.
-  <DT>
-    <A NAME="Flatten">Flatten</A>
-  <DD>
-    If the current font is a CID font then this command will convert it into
-    a normal (flat) font by taking all the glyphs from all the sub-fonts and
-    merging them into one normal font. The new font should be in the same order
-    as the CID font (ie. ordered by CID). After this operation you may re-encode
-    it into whatever encoding is appropriate.
-  <DT>
-    <A NAME="FlattenCMap">Flatten</A> By CMap
-  <DD>
-    If the current font is a CID font then this command will convert it into
-    a normal font. It prompts you for an Adobe CMap file and uses that to define
-    an encoding for the resultant font.
-  <DT>
-    <A NAME="Insert">Insert Font</A>
-  <DD>
-    Will allow you to browse for a normal font which will be added as another
-    sub font to the current CID font.
-  <DT>
-    <A NAME="Blank">Insert Blank</A>
-  <DD>
-    Inserts a blank sub-font into the current CID font.
-  <DT>
-    <A NAME="Remove">Remove</A> Font
-  <DD>
-    Removes the current font from the CID font. Anything in it will be lost.
-    (If you want to save it first then use Generate Font and save it as a pfb
-    file (or any other simple format).
-  <DT>
-    <A NAME="ChangeSup">Change Supplement...</A>
-  <DD>
-    Displays the Registry/Ordering information of the font and allows you to
-    change the Supplement level.
-  <DT>
-    CID <A NAME="FontInfo">Font</A> Info
-  <DD>
-    This allows you to provide information on the entire collection of subfonts
-    rather than just the current subfont. It provides access to the standard
-    <A HREF="fontinfo.html">font info dialog</A>. 
-      <HR>
-  <DT>
-    &lt;sub font name&gt;
-  <DD>
-    Clicking on a different sub font name in the menu will cause that sub-font
-    to be displayed instead of the current one.
-</DL>
-<P>
-<H2>
-  Other menus
-</H2>
-<UL>
-  <LI>
-    <A HREF="filemenu.html">File</A>
-  <LI>
-    <A HREF="editmenu.html">Edit</A>
-  <LI>
-    <A HREF="pointmenu.html">Point</A>
-  <LI>
-    <A HREF="elementmenu.html">Element</A>
-  <LI>
-    <A HREF="hintsmenu.html">Hints</A>
-  <LI>
-    <A HREF="encodingmenu.html">Encoding</A>
-  <LI>
-    <A HREF="viewmenu.html">View</A>
-  <LI>
-    <A HREF="metricsmenu.html">Metrics</A>
-  <LI>
-    <A HREF="cidmenu.html">CID</A>
-  <LI>
-    <A HREF="mmmenu.html">MM</A>
-  <LI>
-    <A HREF="windowmenu.html">Window</A>
-  <LI>
-    <A HREF="helpmenu.html">Help</A>
-  <LI>
-    <A HREF="HotKeys.html">Hot Keys</A>
-</UL>
-<P ALIGN=Center>
--- <A HREF="metricsmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A>
--- <A HREF="mmmenu.html">Next</A> --
-<P>
+  <H1 ALIGN=Center>
+    The CID Menu
+  </H1>
+  <P>
+  The CID Menu provides a few commands for manipulating CID keyed fonts. If
+  the current font is a CID keyed font the menu also includes a list of all
+  subfonts that make up this one. This menu is only available in the font view.
+  <P>
+  <UL>
+    <LI>
+      <A HREF="#Convert">Convert to CID</A>
+    <LI>
+      <A HREF="#ConvertCMap">Convert By CMap</A>
+    <LI>
+      <A HREF="#Flatten">Flatten</A>
+    <LI>
+      <A HREF="#FlattenCMap">Flatten By CMap</A>
+    <LI>
+      <A HREF="#Insert">Insert Font</A>
+    <LI>
+      <A HREF="#Blank">Insert Blank</A>
+    <LI>
+      <A HREF="#Remove">Remove Font</A>
+    <LI>
+      <A HREF="#ChangeSup">Change Supplement...</A>
+    <LI>
+      <A HREF="#FontInfo">CID Font Info</A> 
+	<HR>
+    <LI>
+      &lt;sub font names&gt;
+  </UL>
+  <H2>
+    Er... What is a <A NAME="CID">CID</A> keyed Font?
+  </H2>
+  <P>
+  A CID keyed font is a postscript (or opentype) font designed to hold Chinese,
+  Japanese and Korean characters efficiently. More accurately a CID font is
+  a collection of several sub-fonts each with certain common features (one
+  might hold all the latin letters, another all the kana, a third all the kanji).
+  This allows font-wide hinting to be crafted for subsets of glyphs to which
+  have something in common.
+  <P>
+  CID keyed fonts do not have an encoding built into the font, and the glyphs
+  do not have names. Instead the font is associated with a glyph set and on
+  each glyph set there are several character mappings defined. These mappings
+  are similar to encodings but allow for a wider range of behaviors.
+  <P>
+  A CID is a glyph index and is used to look up glyph descriptions instead
+  of glyph names in other types of fonts. Using a glyph set FontForge will
+  often be able to map a CID to a unicode character name (but not always),
+  so FontForge will give glyphs names when it can.
+  <P>
+  For more information see the <A HREF="fontview.html#CID">section on CID keyed
+  fonts on the font view page</A>.
+  <P>
+  <DL>
+    <DT>
+      <A NAME="Convert">Convert to CID</A>
+    <DD>
+      If the current font is not a CID font then this command will convert it into
+      one containing one subfont (with the glyphs in this font). You will be prompted
+      for a glyph set.
+    <DT>
+      <A NAME="ConvertCMap">Convert By CMap</A>
+    <DD>
+      If the current font is not a CID font then this command will convert it into
+      one containing a single subfont. You will be prompted for an Adobe CMap file.
+    <DT>
+      <A NAME="Flatten">Flatten</A>
+    <DD>
+      If the current font is a CID font then this command will convert it into
+      a normal (flat) font by taking all the glyphs from all the sub-fonts and
+      merging them into one normal font. The new font should be in the same order
+      as the CID font (ie. ordered by CID). After this operation you may re-encode
+      it into whatever encoding is appropriate.
+    <DT>
+      <A NAME="FlattenCMap">Flatten</A> By CMap
+    <DD>
+      If the current font is a CID font then this command will convert it into
+      a normal font. It prompts you for an Adobe CMap file and uses that to define
+      an encoding for the resultant font.
+    <DT>
+      <A NAME="Insert">Insert Font</A>
+    <DD>
+      Will allow you to browse for a normal font which will be added as another
+      sub font to the current CID font.
+    <DT>
+      <A NAME="Blank">Insert Blank</A>
+    <DD>
+      Inserts a blank sub-font into the current CID font.
+    <DT>
+      <A NAME="Remove">Remove</A> Font
+    <DD>
+      Removes the current font from the CID font. Anything in it will be lost.
+      (If you want to save it first then use Generate Font and save it as a pfb
+      file (or any other simple format).
+    <DT>
+      <A NAME="ChangeSup">Change Supplement...</A>
+    <DD>
+      Displays the Registry/Ordering information of the font and allows you to
+      change the Supplement level.
+    <DT>
+      CID <A NAME="FontInfo">Font</A> Info
+    <DD>
+      This allows you to provide information on the entire collection of subfonts
+      rather than just the current subfont. It provides access to the standard
+      <A HREF="fontinfo.html">font info dialog</A>. 
+	<HR>
+    <DT>
+      &lt;sub font name&gt;
+    <DD>
+      Clicking on a different sub font name in the menu will cause that sub-font
+      to be displayed instead of the current one.
+  </DL>
+  <P>
+  <H2>
+    Other menus
+  </H2>
+  <UL>
+    <LI>
+      <A HREF="filemenu.html">File</A>
+    <LI>
+      <A HREF="editmenu.html">Edit</A>
+    <LI>
+      <A HREF="pointmenu.html">Point</A>
+    <LI>
+      <A HREF="elementmenu.html">Element</A>
+    <LI>
+      <A href="toolsmenu.html">Tools</A>
+    <LI>
+      <A HREF="hintsmenu.html">Hints</A>
+    <LI>
+      <A HREF="encodingmenu.html">Encoding</A>
+    <LI>
+      <A HREF="viewmenu.html">View</A>
+    <LI>
+      <A HREF="metricsmenu.html">Metrics</A>
+    <LI>
+      <A HREF="cidmenu.html">CID</A>
+    <LI>
+      <A HREF="mmmenu.html">MM</A>
+    <LI>
+      <A HREF="windowmenu.html">Window</A>
+    <LI>
+      <A HREF="helpmenu.html">Help</A>
+    <LI>
+      <A HREF="HotKeys.html">Hot Keys</A>
+  </UL>
+  <P ALIGN=Center>
+  -- <A HREF="metricsmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A>
+  -- <A HREF="mmmenu.html">Next</A> --
+  <P>
 </DIV>
 </BODY></HTML>

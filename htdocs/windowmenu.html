@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 10-Dec-2000 -->
-  <!-- AP: Last modified: 27-Jun-2005 -->
+  <!-- AP: Last modified: 19-Nov-2007 -->
   <TITLE>The Window Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -24,7 +24,7 @@
 	      >Source</A>
       </UL>
     <LI>
-      <A href="overview.html#Overview">Introduction</A>
+      <A href="overview.html">Introduction</A>
     <LI>
       <A href="editexample.html">Tutorial</A>
     <LI class="menu">
@@ -53,6 +53,8 @@
 	<LI>
 	  <A href="elementmenu.html">Element</A>
 	<LI>
+	  <A href="toolsmenu.html">Tools</A>
+	<LI>
 	  <A href="hintsmenu.html" >Hints</A>
 	<LI>
 	  <A href="encodingmenu.html" >Encoding</A>
@@ -78,113 +80,115 @@
   </UL>
 </DIV>
 <DIV id="in">
-<H1 ALIGN=Center>
-  The Window Menu
-</H1>
-<UL>
-  <LI>
-    <A HREF="#Outline">Open Outline</A>
-  <LI>
-    <A HREF="#Bitmap">Open Bitmap</A>
-  <LI>
-    <A HREF="#Metrics">Open Metrics</A>
-  <LI>
-      <HR>
-  <LI>
-    <A HREF="#windows">window</A> titles...
-</UL>
-<DL>
-  <DT>
-    Open <A NAME="Outline">Outline</A>
-  <DD>
-    In the font view this will open outline views on all selected glyphs (if
-    there are more than 15 or so it will ask whether you really meant to do that).
-    <P>
-    In the bitmap view it will open an outline view on the current glyph.
-    <P>
-    In the metrics view it will open an outline view on whatever glyph is active.
-    <P>
-    This menu item is always grey in an outline view.
-    <P>
-    Note: It is possible to have more than one window displaying the same glyph.
-    Any editing that occurs in one should be reflected in all.
-  <DT>
-    Open <A NAME="Bitmap">Bitmap</A>
-  <DD>
-    In the font view this will open bitmap views on all selected glyphs (if there
-    are more than 15 or so it will ask whether you really meant to do that).
-    If the font view is displaying a bitmap then it will open a bitmap view showing
-    that pixelsize, otherwise it will pick a pixelsize.
-    <P>
-    In the outline view it will open a bitmap view on the current glyph. It will
-    pick a pointsize.
-    <P>
-    In the metrics view it will open an outline view on whatever glyph is active,
-    as with the font view, if it is displaying a bitmap it will use its pixelsize,
-    otherwise it will pick a pixelsize.
-    <P>
-    This menu item is always grey in an bitmap view.
-    <P>
-    Note: It is possible to have more than one window displaying the same glyph.
-    Any editing that occurs in one should be reflected in all.
-  <DT>
-    Open <A NAME="Metrics">Metrics</A>
-  <DD>
-    In the font view it will open a metrics view displaying all selected glyphs
-    (the order in which you selected those glyphs is important). The new metrics
-    view will display whatever the font view displays (outline or bitmap).
-    <P>
-    In the outline view it will open a metrics view displaying the current glyph.
-    The display will be an outline.
-    <P>
-    In the bitmap view it will open a metrics view displaying the current glyph.
-    The display will be a bitmap in the current size.
-    <P>
-    This menu item is always grey in the metrics view.
-    <P>
-    It is possible to have more than one metrics view open at a time.
-</DL>
-<P>
-After that the <A NAME="window">window</A> menu is just a list of all the
-open windows. If the window has been changed (and not saved since) then it
-has a white background. The names of font views are in red. Views connected
-to a given font will all be displayed together (with the font view on top).
-Clicking on an entry raises that window.
-<P>
-<H2>
-  Other menus
-</H2>
-<UL>
-  <LI>
-    <A HREF="filemenu.html">File</A>
-  <LI>
-    <A HREF="editmenu.html">Edit</A>
-  <LI>
-    <A HREF="pointmenu.html">Point</A>
-  <LI>
-    <A HREF="elementmenu.html">Element</A>
-  <LI>
-    <A HREF="hintsmenu.html">Hints</A>
-  <LI>
-    <A HREF="encodingmenu.html">Encoding</A>
-  <LI>
-    <A HREF="viewmenu.html">View</A>
-  <LI>
-    <A HREF="metricsmenu.html">Metrics</A>
-  <LI>
-    <A HREF="cidmenu.html">CID</A>
-  <LI>
-    <A HREF="mmmenu.html">MM</A>
-  <LI>
-    <A HREF="windowmenu.html">Window</A>
-  <LI>
-    <A HREF="helpmenu.html">Help</A>
-  <LI>
-    <A HREF="HotKeys.html">Hot Keys</A>
-</UL>
-<P ALIGN=Center>
--- <A HREF="mmmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
-<A HREF="helpmenu.html">Next</A> --
-<P>
+  <H1 ALIGN=Center>
+    The Window Menu
+  </H1>
+  <UL>
+    <LI>
+      <A HREF="#Outline">Open Outline</A>
+    <LI>
+      <A HREF="#Bitmap">Open Bitmap</A>
+    <LI>
+      <A HREF="#Metrics">Open Metrics</A>
+    <LI>
+	<HR>
+    <LI>
+      <A HREF="#windows">window</A> titles...
+  </UL>
+  <DL>
+    <DT>
+      Open <A NAME="Outline">Outline</A>
+    <DD>
+      In the font view this will open outline views on all selected glyphs (if
+      there are more than 15 or so it will ask whether you really meant to do that).
+      <P>
+      In the bitmap view it will open an outline view on the current glyph.
+      <P>
+      In the metrics view it will open an outline view on whatever glyph is active.
+      <P>
+      This menu item is always grey in an outline view.
+      <P>
+      Note: It is possible to have more than one window displaying the same glyph.
+      Any editing that occurs in one should be reflected in all.
+    <DT>
+      Open <A NAME="Bitmap">Bitmap</A>
+    <DD>
+      In the font view this will open bitmap views on all selected glyphs (if there
+      are more than 15 or so it will ask whether you really meant to do that).
+      If the font view is displaying a bitmap then it will open a bitmap view showing
+      that pixelsize, otherwise it will pick a pixelsize.
+      <P>
+      In the outline view it will open a bitmap view on the current glyph. It will
+      pick a pointsize.
+      <P>
+      In the metrics view it will open an outline view on whatever glyph is active,
+      as with the font view, if it is displaying a bitmap it will use its pixelsize,
+      otherwise it will pick a pixelsize.
+      <P>
+      This menu item is always grey in an bitmap view.
+      <P>
+      Note: It is possible to have more than one window displaying the same glyph.
+      Any editing that occurs in one should be reflected in all.
+    <DT>
+      Open <A NAME="Metrics">Metrics</A>
+    <DD>
+      In the font view it will open a metrics view displaying all selected glyphs
+      (the order in which you selected those glyphs is important). The new metrics
+      view will display whatever the font view displays (outline or bitmap).
+      <P>
+      In the outline view it will open a metrics view displaying the current glyph.
+      The display will be an outline.
+      <P>
+      In the bitmap view it will open a metrics view displaying the current glyph.
+      The display will be a bitmap in the current size.
+      <P>
+      This menu item is always grey in the metrics view.
+      <P>
+      It is possible to have more than one metrics view open at a time.
+  </DL>
+  <P>
+  After that the <A NAME="window">window</A> menu is just a list of all the
+  open windows. If the window has been changed (and not saved since) then it
+  has a white background. The names of font views are in red. Views connected
+  to a given font will all be displayed together (with the font view on top).
+  Clicking on an entry raises that window.
+  <P>
+  <H2>
+    Other menus
+  </H2>
+  <UL>
+    <LI>
+      <A HREF="filemenu.html">File</A>
+    <LI>
+      <A HREF="editmenu.html">Edit</A>
+    <LI>
+      <A HREF="pointmenu.html">Point</A>
+    <LI>
+      <A HREF="elementmenu.html">Element</A>
+    <LI>
+      <A href="toolsmenu.html">Tools</A>
+    <LI>
+      <A HREF="hintsmenu.html">Hints</A>
+    <LI>
+      <A HREF="encodingmenu.html">Encoding</A>
+    <LI>
+      <A HREF="viewmenu.html">View</A>
+    <LI>
+      <A HREF="metricsmenu.html">Metrics</A>
+    <LI>
+      <A HREF="cidmenu.html">CID</A>
+    <LI>
+      <A HREF="mmmenu.html">MM</A>
+    <LI>
+      <A HREF="windowmenu.html">Window</A>
+    <LI>
+      <A HREF="helpmenu.html">Help</A>
+    <LI>
+      <A HREF="HotKeys.html">Hot Keys</A>
+  </UL>
+  <P ALIGN=Center>
+  -- <A HREF="mmmenu.html">Prev</A> -- <A HREF="overview.html">TOC</A> --
+  <A HREF="helpmenu.html">Next</A> --
+  <P>
 </DIV>
 </BODY></HTML>
