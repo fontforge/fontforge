@@ -5924,8 +5924,8 @@ void FVSetTitle(FontView *fv) {
 return;
 
     enc = SFEncodingName(fv->sf,fv->normal?fv->normal:fv->map);
-    if ( fv->normal ) len += strlen(_("Compact"))+1;
     len = strlen(fv->sf->fontname)+1 + strlen(enc)+6;
+    if ( fv->normal ) len += strlen(_("Compact"))+1;
     if ( fv->cidmaster!=NULL ) {
 	if ( (file = fv->cidmaster->filename)==NULL )
 	    file = fv->cidmaster->origname;
