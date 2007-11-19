@@ -49,7 +49,8 @@ fontforge_LIBOBJECTS =  autohint.$O autosave.$O autowidth.$O bitmapdlg.$O \
  glyphcomp.$O unicoderange.$O ufo.$O ofl.$O lookups.$O sfd1.$O @FF_EXTRA_FILES@ \
  python.$O featurefile.$O math.$O nowakowskittfinstr.$O http.$O spiro.$O \
  bezctx_ff.$O nouiutil.$O scriptingdlg.$O fvfontsdlg.$O splinechar.$O \
- splinefont.$O cvexportdlg.$O cvimportdlg.$O encodingui.$O bitmapchar.$O
+ splinefont.$O cvexportdlg.$O cvimportdlg.$O encodingui.$O bitmapchar.$O \
+ lookupui.$O
 DIFFOBJS = sfddiff.o sfd.o diffstubs.o stamp.o namelist.o pua.o
 ACORNOBJS = acorn2sfd.o sfd.o diffstubs.o psunicodenames.o stamp.o
 

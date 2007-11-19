@@ -98,37 +98,6 @@ static BDFFont *BDFNew(SplineFont *sf,int pixel_size, int depth) {
 return( new );
 }
 
-void SFOrderBitmapList(SplineFont *sf) {
-    BDFFont *bdf, *prev, *next;
-    BDFFont *bdf2, *prev2;
-
-    for ( prev = NULL, bdf=sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
-	for ( prev2=NULL, bdf2=bdf->next; bdf2!=NULL; bdf2 = bdf2->next ) {
-	    if ( bdf->pixelsize>bdf2->pixelsize ||
-		    (bdf->pixelsize==bdf2->pixelsize && BDFDepth(bdf)>BDFDepth(bdf2)) ) {
-		if ( prev==NULL )
-		    sf->bitmaps = bdf2;
-		else
-		    prev->next = bdf2;
-		if ( prev2==NULL ) {
-		    bdf->next = bdf2->next;
-		    bdf2->next = bdf;
-		} else {
-		    next = bdf->next;
-		    bdf->next = bdf2->next;
-		    bdf2->next = next;
-		    prev2->next = bdf;
-		}
-		next = bdf;
-		bdf = bdf2;
-		bdf2 = next;
-	    }
-	    prev2 = bdf2;
-	}
-	prev = bdf;
-    }
-}
-
 static void SFRemoveUnwantedBitmaps(SplineFont *sf,int32 *sizes) {
     BDFFont *bdf, *prev, *next;
 #ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI

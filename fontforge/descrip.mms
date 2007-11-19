@@ -40,7 +40,8 @@ fontforge_OBJECTS8=bdfinfo.obj,glyphcomp.obj,unicoderange.obj,ufo.obj,\
 	math.obj,nowakowskittfinstr.obj,http.obj,spiro.obj,bezctx_ff.obj
 
 fontforge_OBJECTS9=scriptingdlg.obj,fvfontsdlg.obj,splinefont.obj,\
-	splinechar.obj
+	splinechar.obj,cvexportdlg.obj,cvimportdlg.obj,encodingui.obj,\
+	bitmapchar.obj,lookupui.obj
 
 fontforge.exe : main.obj lff.opt xlib.opt [-.libs]libfontforge.exe
         link/exec=fontforge.exe main,lff/opt,[-.libs]LIBGDRAW/lib,\
@@ -208,3 +209,8 @@ scriptingdlg.obj : scriptingdlg.c
 fvfontsdlg.obj : fvfontsdlg.c
 splinefont.obj : splinefont.c
 splinechar.obj : splinechar.c
+cvexportdlg.obj : cvexportdlg.c
+cvimportdlg.obj : cvimportdlg.c
+encodingui.obj : encodingui.c
+bitmapchar.obj : bitmapchar.c
+lookupui.obj : lookupui.c

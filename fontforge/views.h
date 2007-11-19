@@ -1556,11 +1556,7 @@ extern void CVYPerspective(CharView *cv,double x_vanish, double y_vanish);
 extern void DVCreateGloss(DebugView *dv);
 extern int CVXPos(DebugView *dv,int offset,int width);
 
-extern EncMap *EncMapFromEncoding(SplineFont *sf,Encoding *enc);
-extern void SFRemoveGlyph(SplineFont *sf,SplineChar *sc, int *flags);
 extern void FVAddEncodingSlot(FontView *fv,int gid);
-extern void SFAddEncodingSlot(SplineFont *sf,int gid);
-extern void SFAddGlyphAndEncode(SplineFont *sf,SplineChar *sc,EncMap *basemap, int baseenc);
 #if defined(FONTFORGE_CONFIG_GDRAW)
 extern GMenuItem *GetEncodingMenu(void (*func)(GWindow,GMenuItem *,GEvent *),
 	Encoding *current);

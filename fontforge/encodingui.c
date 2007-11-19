@@ -619,29 +619,3 @@ Encoding *ParseEncodingNameFromList(GGadget *listfield) {
 	ff_post_error(_("Bad Encoding"),_("Bad Encoding"));
 return( enc );
 }
-
-void SFExpandGlyphCount(SplineFont *sf, int newcnt) {
-    int old = sf->glyphcnt;
-    FontView *fv;
-
-    if ( old>=newcnt )
-return;
-    if ( sf->glyphmax<newcnt ) {
-	sf->glyphs = grealloc(sf->glyphs,newcnt*sizeof(SplineChar *));
-	sf->glyphmax = newcnt;
-    }
-    memset(sf->glyphs+sf->glyphcnt,0,(newcnt-sf->glyphcnt)*sizeof(SplineChar *));
-    sf->glyphcnt = newcnt;
-
-    for ( fv=sf->fv; fv!=NULL; fv=fv->nextsame ) {
-	if ( fv->sf==sf ) {	/* Beware of cid keyed fonts which might look at a different subfont */
-	    if ( fv->normal!=NULL )
-    continue;			/* If compacted then we haven't added any glyphs so haven't changed anything */
-	    /* Don't display any of these guys, so not mapped. */
-	    /*  No change to selection, or to map->map, but change to backmap */
-	    if ( newcnt>fv->map->backmax )
-		fv->map->backmap = grealloc(fv->map->backmap,(fv->map->backmax = newcnt+5)*sizeof(int32));
-	    memset(fv->map->backmap+old,-1,(newcnt-old)*sizeof(int32));
-	}
-    }
-}
