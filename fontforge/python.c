@@ -5633,10 +5633,10 @@ Py_RETURN( self );
 static PyObject *PyFFGlyph_addPosSub(PyObject *self, PyObject *args) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc, *osc;
     SplineFont *sf = sc->parent, *sf_sl = sf;
-    PST temp, *pst;
+    PST temp, *pst, *old=NULL, *prev=NULL;
     struct lookup_subtable *sub;
     char *subname, *other;
-    KernPair *kp;
+    KernPair *kp, *kpold=NULL, *kpprev=NULL;
     PyObject *others;
 
     memset(&temp,0,sizeof(temp));
@@ -5655,6 +5655,8 @@ return( NULL );
 
     temp.subtable = sub;
 
+    for ( old = sc->possub; old!=NULL && old->subtable!=sub; prev=old, old=old->next );
+
     if ( sub->lookup->lookup_type==gpos_single ) {
 	if ( !PyArg_ParseTuple(args,"shhhh", &subname,
 		&temp.u.pos.xoff, &temp.u.pos.yoff,
@@ -5662,32 +5664,47 @@ return( NULL );
 return( NULL );
 	temp.type = pst_position;
     } else if ( sub->lookup->lookup_type==gpos_pair ) {
+	int off =0x7fffffff;
 	temp.type = pst_pair;
 	temp.u.pair.vr = chunkalloc(sizeof(struct vr [2]));
-	if ( !PyArg_ParseTuple(args,"sshhhhhhhh", &subname, &other,
-		&temp.u.pair.vr[0].xoff, &temp.u.pair.vr[0].yoff,
-		&temp.u.pair.vr[0].h_adv_off, &temp.u.pair.vr[0].v_adv_off,
-		&temp.u.pair.vr[1].xoff, &temp.u.pair.vr[1].yoff,
-		&temp.u.pair.vr[1].h_adv_off, &temp.u.pair.vr[1].v_adv_off))
+	if ( PyArg_ParseTuple(args,"ssi", &subname, &other, &off ))
+	    /* Good */;
+	else {
+	    off = 0x7fffffff;
+	    PyErr_Clear();
+	    if ( !PyArg_ParseTuple(args,"sshhhhhhhh", &subname, &other,
+		    &temp.u.pair.vr[0].xoff, &temp.u.pair.vr[0].yoff,
+		    &temp.u.pair.vr[0].h_adv_off, &temp.u.pair.vr[0].v_adv_off,
+		    &temp.u.pair.vr[1].xoff, &temp.u.pair.vr[1].yoff,
+		    &temp.u.pair.vr[1].h_adv_off, &temp.u.pair.vr[1].v_adv_off))
 return( NULL );
-	if ( temp.u.pair.vr[0].xoff==0 && temp.u.pair.vr[0].yoff==0 &&
-		temp.u.pair.vr[1].xoff==0 && temp.u.pair.vr[1].yoff==0 &&
-		temp.u.pair.vr[1].v_adv_off==0 ) {
-	    int off =0x7fffffff;
-	    if ( temp.u.pair.vr[0].h_adv_off==0 && temp.u.pair.vr[1].h_adv_off==0 &&
-		    sub->vertical_kerning )
-		off = temp.u.pair.vr[0].v_adv_off;
-	    else if ( temp.u.pair.vr[0].h_adv_off==0 && temp.u.pair.vr[0].v_adv_off==0 &&
-		    SCRightToLeft(sc))
-		off = temp.u.pair.vr[1].h_adv_off;
-	    else if ( temp.u.pair.vr[0].v_adv_off==0 && temp.u.pair.vr[1].h_adv_off==0 )
-		off = temp.u.pair.vr[0].h_adv_off;
-	    if ( off!=0x7fffffff && (osc=SFGetChar(sf,-1,other))!=NULL ) {
+	    if ( temp.u.pair.vr[0].xoff==0 && temp.u.pair.vr[0].yoff==0 &&
+		    temp.u.pair.vr[1].xoff==0 && temp.u.pair.vr[1].yoff==0 &&
+		    temp.u.pair.vr[1].v_adv_off==0 ) {
+		if ( temp.u.pair.vr[0].h_adv_off==0 && temp.u.pair.vr[1].h_adv_off==0 &&
+			sub->vertical_kerning )
+		    off = temp.u.pair.vr[0].v_adv_off;
+		else if ( temp.u.pair.vr[0].h_adv_off==0 && temp.u.pair.vr[0].v_adv_off==0 &&
+			SCRightToLeft(sc))
+		    off = temp.u.pair.vr[1].h_adv_off;
+		else if ( temp.u.pair.vr[0].v_adv_off==0 && temp.u.pair.vr[1].h_adv_off==0 )
+		    off = temp.u.pair.vr[0].h_adv_off;
+	    }
+	}
+	osc = SFGetChar(sf,-1,other);
+	for ( old = sc->possub; old!=NULL &&
+		(old->subtable!=sub || strcmp(old->u.pair.paired,other)!=0);
+		prev=old, old=old->next );
+	kpprev = NULL;
+	for ( kpold = sub->vertical_kerning? sc->vkerns : sc->kerns;
+		kpold!=NULL && (kpold->subtable!=sub || kpold->sc!=osc);
+		kpprev = kpold, kpold = kpold->next );
+	if ( off!=0x7fffffff && osc!=NULL ) {
+	    if ( kpold!=NULL ) {
+		kp = kpold;
+	    } else {
 		chunkfree(temp.u.pair.vr,sizeof(struct vr [2]));
 		kp = chunkalloc(sizeof(KernPair));
-		kp->sc = osc;
-		kp->off = off;
-		kp->subtable = sub;
 		if ( sub->vertical_kerning ) {
 		    kp->next = sc->vkerns;
 		    sc->vkerns = kp;
@@ -5695,10 +5712,31 @@ return( NULL );
 		    kp->next = sc->kerns;
 		    sc->kerns = kp;
 		}
-Py_RETURN( self );
 	    }
+	    kp->sc = osc;
+	    kp->off = off;
+	    kp->subtable = sub;
+	    if ( old!=NULL ) {
+		if ( prev==NULL )
+		    sc->possub = old->next;
+		else
+		    prev->next = old->next;
+		old->next = NULL;
+		PSTFree(old);
+	    }
+Py_RETURN( self );
 	}
 	temp.u.pair.paired = copy(other);
+	if ( kpold!=NULL ) {
+	    if ( kpprev!=NULL )
+		kpprev->next = kpold->next;
+	    else if ( sub->vertical_kerning )
+		sc->vkerns = kpold->next;
+	    else
+		sc->kerns = kpold->next;
+	    kpold->next = NULL;
+	    KernPairsFree(kpold);
+	}
     } else if ( sub->lookup->lookup_type==gsub_single ) {
 	if ( !PyArg_ParseTuple(args,"ss", &subname, &other))
 return( NULL );
@@ -5714,18 +5752,36 @@ return( NULL );
 	    temp.type = pst_alternate;
 	else if ( sub->lookup->lookup_type>=gsub_multiple )
 	    temp.type = pst_multiple;
-	else if ( sub->lookup->lookup_type>=gsub_ligature )
+	else if ( sub->lookup->lookup_type>=gsub_ligature ) {
 	    temp.type = pst_ligature;
-	else {
+	    old = NULL;
+	} else {
 	    PyErr_Format(PyExc_KeyError, "Unexpected lookup type: %s",sub->lookup->lookup_name);
 return( NULL );
 	}
 	temp.u.subs.variant = other;
     }
-    pst = chunkalloc(sizeof(PST));
-    *pst = temp;
-    pst->next = sc->possub;
-    sc->possub = pst;
+    if ( old!=NULL ) {
+	switch ( sub->lookup->lookup_type ) {
+	  case gpos_single:
+	    old->u.pos = temp.u.pos;
+	  break;
+	  case gpos_pair:
+	    chunkfree(old->u.pair.vr,sizeof(struct vr [2]));
+	    free(old->u.pair.paired);
+	    old->u.pair = temp.u.pair;
+	  break;
+	  default:
+	    free(old->u.subs.variant);
+	    old->u.subs.variant = temp.u.subs.variant;
+	  break;
+	}
+    } else {
+	pst = chunkalloc(sizeof(PST));
+	*pst = temp;
+	pst->next = sc->possub;
+	sc->possub = pst;
+    }
 Py_RETURN( self );
 }
 

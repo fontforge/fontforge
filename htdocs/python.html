@@ -1700,6 +1700,7 @@ pen = None;				# Finalize the pen. This tells FontForge
 	(subtable-name,variants)<BR>
 	(subtable-name,ligature-components)<BR>
 	(subtable-name,xoff,yoff,xadv,yadv)<BR>
+	(subtable-name,other-glyph-name,kerning)<BR>
 	(subtable-name,other-glyph-name, &nbsp;xoff1,yoff1,xadv1,yadv1,<BR>
 	&nbsp;xoff2,yoff2,xadv2,yadv2)</CODE></TD>
       <TD>Adds position/substitution data to the glyph. The number and type of
@@ -1711,7 +1712,12 @@ pen = None;				# Finalize the pen. This tells FontForge
 	For single positionings the second through fifth arguments should be small
 	integers representing the adjustment along that axis. For pairwise positionings
 	(kerning) the second argument should be the name of the other glyph being
-	kerned with, and the third through tenth should be small integers.</TD>
+	kerned with, and the third through tenth should be small integers -- or,
+	if there are exactly three arguments then the third specifies traditional,
+	one-axis, kerning
+	<P>
+	If there is a previously existing entry, this will replace it (except for
+	ligatures).</TD>
     </TR>
     <TR>
       <TD><CODE>autoHint</CODE></TD>
