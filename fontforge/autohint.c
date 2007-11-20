@@ -1840,7 +1840,7 @@ static void AutoHintRefs(SplineChar *sc,BlueData *bd, int picky, int gen_undoes)
 }
 
 void SCClearHints(SplineChar *sc) {
-    int any = sc->hstem!=NULL || sc->vstem!=NULL | sc->dstem!=NULL;
+    int any = sc->hstem!=NULL || sc->vstem!=NULL || sc->dstem!=NULL;
     SCClearHintMasks(sc,true);
     StemInfosFree(sc->hstem);
     StemInfosFree(sc->vstem);
