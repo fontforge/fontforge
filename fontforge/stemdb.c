@@ -599,6 +599,27 @@ return( space[j]->s );
 return( NULL );
 }
 
+static BasePoint PerturbAlongSpline( Spline *s,BasePoint *bp,double t ) {
+    BasePoint perturbed;
+    
+    forever {
+	perturbed.x = ((s->splines[0].a*t+s->splines[0].b)*t+s->splines[0].c)*t+s->splines[0].d;
+	perturbed.y = ((s->splines[1].a*t+s->splines[1].b)*t+s->splines[1].c)*t+s->splines[1].d;
+	if ( !RealWithin( perturbed.x,bp->x,.01 ) || !RealWithin( perturbed.y,bp->y,.01 ))
+    break;
+	if ( t<.5 ) {
+	    t *= 2;
+	    if ( t>.5 )
+    break;
+	} else {
+	    t = 1- 2*(1-t);
+	    if ( t<.5 )
+    break;
+	}
+    }
+return( perturbed );
+}
+
 static void MakeVirtualLine(struct glyphdata *gd,BasePoint *perturbed,
 	BasePoint *dir,Spline *myline,SplinePoint *end1, SplinePoint *end2) {
     BasePoint norm, absnorm;
@@ -708,22 +729,7 @@ return( NULL );
     /* Don't base the line on the current point, we run into rounding errors */
     /*  where lines that should intersect it don't. Instead perturb it a tiny*/
     /*  bit in the direction along the spline */
-    forever {
-	perturbed.x = ((s->splines[0].a*t+s->splines[0].b)*t+s->splines[0].c)*t+s->splines[0].d;
-	perturbed.y = ((s->splines[1].a*t+s->splines[1].b)*t+s->splines[1].c)*t+s->splines[1].d;
-	if ( !RealWithin(perturbed.x,pd->sp->me.x,.01) ||
-		!RealWithin(perturbed.y,pd->sp->me.y,.01) )
-    break;
-	if ( t<.5 ) {
-	    t *= 2;
-	    if ( t>.5 )
-    break;
-	} else {
-	    t = 1- 2*(1-t);
-	    if ( t<.5 )
-    break;
-	}
-    }
+    perturbed = PerturbAlongSpline( s,&pd->sp->me,t );
 
     MakeVirtualLine(gd,&perturbed,dir,&myline,&end1,&end2);
     /* prev_e_t = next_e_t = both_e_t =. This is where these guys are set */
@@ -910,16 +916,21 @@ static struct stem_chunk *AddToStem( struct stemdata *stem,struct pointdata *pd1
     BasePoint *test = &pd1->sp->me;
     double off, dist_error;
     double loff=0, roff=0;
-    int j;
+    double min=0, max=0;
+    int i;
 
     if ( cheat ) is_potential2 = false;
     /* Diagonals are harder to align */
-    dist_error = IsVectorHV( dir,0,true ) ? 2*dist_error_hv : 2*dist_error_diag;
-
+    dist_error = IsVectorHV( dir,0,true ) ? dist_error_hv : dist_error_diag;
+    if ( !stem->positioned ) {
+        dist_error = dist_error * 2;
+        max = stem->lmax;
+        min = stem->lmin;
+    }
     /* The following swaps "left" and "right" points in case we have
     /* started checking relatively to a wrong edge */
     off = (test->x-stem->left.x)*dir->y - (test->y-stem->left.y)*dir->x;
-    if ( off < ( stem->lmax - dist_error ) || off > ( stem->lmin + dist_error ) ) {
+    if ( off < ( max - dist_error ) || off > ( min + dist_error )) {
 	struct pointdata *pd = pd1; pd1 = pd2; pd2 = pd;
 	int in = is_next1; is_next1 = is_next2; is_next2 = in;
 	int ip = is_potential1; is_potential1 = is_potential2; is_potential2 = ip;
@@ -927,16 +938,16 @@ static struct stem_chunk *AddToStem( struct stemdata *stem,struct pointdata *pd1
 
     /* Now run through existing stem chunks and see if the chunk we are
     /* going to add doesn't duplicate an existing one.*/
-    for ( j=stem->chunk_cnt-1; j>=0; --j ) {
-	chunk = &stem->chunks[j];
-        if ( chunk->l==pd1 && chunk->r==pd2 ) {
+    for ( i=stem->chunk_cnt-1; i>=0; --i ) {
+	chunk = &stem->chunks[i];
+        if (( chunk->l == pd1 || pd1 == NULL ) && ( chunk->r == pd2 || pd2 == NULL )) {
             if ( !is_potential1 ) chunk->lpotential = false;
             if ( !is_potential2 ) chunk->rpotential = false;
     break;
         }
     }
 
-    if ( j<0 ) {
+    if ( i<0 ) {
         stem->chunks = grealloc(stem->chunks,(stem->chunk_cnt+1)*sizeof(struct stem_chunk));
         chunk = &stem->chunks[stem->chunk_cnt++];
         chunk->parent = stem;
@@ -1017,7 +1028,11 @@ static int StemFitsHV( struct stemdata *stem,int hv ) {
     
     cnt = stem->chunk_cnt;
     
-    if ( !stem->chunks[0].stub && !stem->chunks[cnt-1].stub )
+    for ( i=0 ; i<stem->chunk_cnt; i++ ) {
+        if( stem->chunks[i].stub )
+    break;
+    }
+    if ( i == stem->chunk_cnt )
 return( false );    
     if ( stem->chunk_cnt == 1 )
 return( true );
@@ -1047,15 +1062,21 @@ return( false );
 static int OnStem( struct stemdata *stem,BasePoint *test,int left ) {
     double dist_error, off;
     BasePoint *dir = &stem->unit;
-    double max, min;
+    double max=0, min=0;
 
-    dist_error = IsVectorHV( dir,0,true ) ? 2*dist_error_hv : 2*dist_error_diag;	/* Diagonals are harder to align */
+    /* Diagonals are harder to align */
+    dist_error = IsVectorHV( dir,0,true ) ? dist_error_hv : dist_error_diag;
+    if ( ! stem->positioned ) dist_error = dist_error * 2;
     if ( left ) {
-        off = (test->x-stem->left.x)*dir->y - (test->y-stem->left.y)*dir->x;
-        max = stem->lmax; min = stem->lmin;
+        off = (test->x - stem->left.x)*dir->y - (test->y - stem->left.y)*dir->x;
+        if ( !stem->positioned ) {
+            max = stem->lmax; min = stem->lmin;
+        }
     } else {
-        off = (test->x-stem->right.x)*dir->y - (test->y-stem->right.y)*dir->x;
-        max = stem->rmax; min = stem->rmin;
+        off = (test->x - stem->right.x)*dir->y - (test->y - stem->right.y)*dir->x;
+        if ( !stem->positioned ) {
+            max = stem->rmax; min = stem->rmin;
+        }
     }
     
     if ( off > ( max - dist_error ) && off < ( min + dist_error ) )
@@ -1068,7 +1089,7 @@ static int BothOnStem( struct stemdata *stem,BasePoint *test1,BasePoint *test2,i
     double dist_error, off1, off2;
     BasePoint dir = stem->unit;
     int hv, hv_strict;
-    double lmax, lmin, rmax, rmin;
+    double lmax=0, lmin=0, rmax=0, rmin=0;
     
     hv = ( force_hv ) ? IsVectorHV( &dir,slope_error,false ) : IsVectorHV( &dir,0,true );
     hv_strict = ( force_hv ) ? IsVectorHV( &dir,0,true ) : hv;
@@ -1083,9 +1104,16 @@ return( false );
         }
     }
     /* Diagonals are harder to align */
-    dist_error = ( hv ) ? 2*dist_error_hv : 2*dist_error_diag;
-    lmax = stem->lmax; lmin = stem->lmin;
-    rmax = stem->rmax; rmin = stem->rmin;
+    dist_error = ( hv ) ? dist_error_hv : dist_error_diag;
+    /* If stem edge positions are given initially and cannot be changed 
+    /* (this is the case when we are generating stem data for a preexisting
+    /* hint layout), then offsets to left and right larger than normal
+    /* dist_error_* values are not allowed */
+    if ( !stem->positioned ) {
+        dist_error = dist_error * 2;
+        lmax = stem->lmax; lmin = stem->lmin;
+        rmax = stem->rmax; rmin = stem->rmin;
+    }
 
     off1 = (test1->x-stem->left.x)*dir.y - (test1->y-stem->left.y)*dir.x;
     off2 = (test2->x-stem->right.x)*dir.y - (test2->y-stem->right.y)*dir.x;
@@ -1100,38 +1128,6 @@ return( true );
 return( true );
 
 return( false );
-}
-
-static struct stemdata *FindStem( struct glyphdata *gd,struct pointdata *pd,
-	BasePoint *dir,struct pointdata *pd2, int is_next2, int is_stub ) {
-    int j, test_left, hv;
-    struct stemdata *stem;
-    SplinePoint *match;
-    double err;
-
-    match = pd2->sp;
-    test_left = is_next2 ? !pd2->next_is_l : !pd2->prev_is_l;
-    stem = is_next2 ? pd2->nextstem : pd2->prevstem;
-    if ( stem!=NULL && OnStem( stem,&pd->sp->me,test_left ))
-return( stem );
-
-    for ( j=0; j<gd->stemcnt; ++j ) {
-        stem = &gd->stems[j];
-	err = stem->unit.x*dir->y - stem->unit.y*dir->x;
-	if ( err<slope_error && err>-slope_error &&
-            BothOnStem( stem,&pd->sp->me,&pd2->sp->me,false )) {
-return( stem );
-        }
-        hv = IsVectorHV( dir,slope_error,false );
-        if ( hv && BothOnStem( stem,&pd->sp->me,&pd2->sp->me,hv )) {
-            stem->unit.x = ( hv == 2 ) ? 0 : 1;
-            stem->unit.y = ( hv == 2 ) ? 1 : 0;
-            stem->l_to_r.x = ( hv == 2 ) ? 1 : 0;
-            stem->l_to_r.y = ( hv == 2 ) ? 0 : -1;
-return( stem );
-	}
-    }
-return( NULL );
 }
 
 static void SetStemUnit( struct stemdata *stem,BasePoint dir ) {
@@ -1155,6 +1151,46 @@ static void SetStemUnit( struct stemdata *stem,BasePoint dir ) {
 	stem->l_to_r.x = -stem->l_to_r.x;
 	stem->l_to_r.y = -stem->l_to_r.y;
     }
+}
+
+static struct stemdata *FindStem( struct glyphdata *gd,struct pointdata *pd,
+    struct pointdata *pd2,BasePoint *dir,int is_next2,int de ) {
+    
+    int i, test_left, hv;
+    struct stemdata *stem;
+    SplinePoint *match;
+    double err;
+    BasePoint newdir;
+
+    match = pd2->sp;
+    test_left = is_next2 ? !pd2->next_is_l : !pd2->prev_is_l;
+    stem = is_next2 ? pd2->nextstem : pd2->prevstem;
+    if ( stem!=NULL && OnStem( stem,&pd->sp->me,test_left ))
+return( stem );
+
+    for ( i=0; i<gd->stemcnt; ++i ) {
+        stem = &gd->stems[i];
+	err = stem->unit.x*dir->y - stem->unit.y*dir->x;
+	if ( err<slope_error && err>-slope_error &&
+            BothOnStem( stem,&pd->sp->me,&pd2->sp->me,false )) {
+return( stem );
+        }
+    }
+    if ( de )
+return( NULL );
+    
+    for ( i=0; i<gd->stemcnt; ++i ) {
+        stem = &gd->stems[i];
+        hv = IsVectorHV( dir,slope_error,false );
+        if ( hv && BothOnStem( stem,&pd->sp->me,&pd2->sp->me,hv )) {
+            newdir.x = ( hv == 2 ) ? 0 : 1;
+            newdir.y = ( hv == 2 ) ? 1 : 0;
+            if ( stem->unit.x != newdir.x )
+                SetStemUnit( stem,newdir );
+return( stem );
+	}
+    }
+return( NULL );
 }
 
 static struct stemdata *NewStem(struct glyphdata *gd,BasePoint *dir,
@@ -1192,6 +1228,7 @@ static struct stemdata *NewStem(struct glyphdata *gd,BasePoint *dir,
     stem->chunks = NULL;
     stem->chunk_cnt = 0;
     stem->ghost = false;
+    stem->positioned = false;
     stem->blue = -1;
 return( stem );
 }
@@ -1219,19 +1256,6 @@ return( false );
 return( true );
 }
 
-static int LineParallel( BasePoint *dir,SplinePoint *fp,SplinePoint *tp ) {
-    BasePoint odir;
-    double olen;
-
-    odir.x = fp->me.x - tp->me.x;
-    odir.y = fp->me.y - tp->me.y;
-    olen = sqrt( pow( odir.x,2 ) + pow( odir.y,2 ));
-    if ( olen==0 )
-return( false );
-    odir.x /= olen; odir.y /= olen;
-return( UnitsParallel( dir,&odir,true ));
-}
-
 static int NearlyParallel(BasePoint *dir,Spline *other, double t) {
     BasePoint odir;
     double olen;
@@ -1251,20 +1275,109 @@ static double NormalDist(BasePoint *to, BasePoint *from, BasePoint *perp) {
 return( len );
 }
 
+static struct stemdata *FindOrMakeHVStem( struct glyphdata *gd,
+    struct pointdata *pd,struct pointdata *pd2,int is_h,int require_existing ) {
+    int i;
+    struct stemdata *stem;
+    BasePoint dir;
+
+    dir.x = ( is_h ) ? 1 : 0;
+    dir.y = ( is_h ) ? 0 : 1;
+    
+    for ( i=0; i<gd->stemcnt; ++i ) {
+	stem = &gd->stems[i];
+	if ( IsVectorHV( &stem->unit,slope_error,true ) &&
+            ( pd2 != NULL && BothOnStem( stem,&pd->sp->me,&pd2->sp->me,false )))
+    break;
+    }
+    if ( i==gd->stemcnt ) stem=NULL;
+
+    if ( stem == NULL && pd2 != NULL && !require_existing )
+	stem = NewStem( gd,&dir,&pd->sp->me,&pd2->sp->me );
+return( stem );
+}
+
+static int IsDiagonalEnd( struct glyphdata *gd,
+    struct pointdata *pd1,struct pointdata *pd2,int is_next,int require_existing ) {
+    /* suppose we have something like */
+    /*  *--*		*/
+    /*   \  \		*/
+    /*    \  \		*/
+    /* Then let's create a vertical stem between the two points */
+    /* (and a horizontal stem if the thing is rotated 90 degrees) */
+    double width, length1, length2, dist1, dist2;
+    BasePoint *pt1, *pt2, *dir1, *dir2, *prevdir1, *prevdir2;
+    SplinePoint *prevsp1, *prevsp2;
+    struct pointdata *prevpd1, *prevpd2;
+    int hv;
+
+    if ( pd1->colinear || pd2->colinear )
+return( false );
+    pt1 = &pd1->sp->me; pt2 = &pd2->sp->me;
+    /* Both key points of a diagonal end stem should have nearly the same
+    /* coordinate by x or y (otherwise we can't determine by which axis
+    /* it should be hinted) */
+    if ( pt1->x >= pt2->x - dist_error_hv &&  pt1->x <= pt2->x + dist_error_hv ) {
+	width = pd1->sp->me.y - pd2->sp->me.y;
+        hv = 1;
+    } else if ( pt1->y >= pt2->y - dist_error_hv &&  pt1->y <= pt2->y + dist_error_hv ) {
+	width = pd1->sp->me.x - pd2->sp->me.x;
+        hv = 2;
+    } else
+return( false );
+
+    dir1 = ( is_next ) ? &pd1->nextunit : &pd1->prevunit;
+    dir2 = ( is_next ) ? &pd2->prevunit : &pd2->nextunit;
+    if ( IsVectorHV( dir1,slope_error,true ))	/* Must be diagonal */
+return( false );
+    prevsp1 = ( is_next ) ? pd1->sp->next->to : pd1->sp->prev->from;
+    prevsp2 = ( is_next ) ? pd2->sp->prev->from : pd2->sp->next->to;
+    prevpd1 = &gd->points[prevsp1->ttfindex];
+    prevpd2 = &gd->points[prevsp2->ttfindex];
+    prevdir1 = ( is_next ) ? &prevpd1->prevunit : &prevpd1->nextunit;
+    prevdir2 = ( is_next ) ? &prevpd2->nextunit : &prevpd2->prevunit;
+    /* Ensure we have got a real diagonal, i. e. its sides are parallel */
+    if ( !UnitsParallel( dir1,dir2,true ) || !UnitsParallel( prevdir1,prevdir2,true ))
+return( false );
+
+    /* Diagonal width should be smaller than its length */
+    length1 = pow(( prevsp1->me.x - pt1->x ),2 ) + pow(( prevsp1->me.y - pt1->y ),2 );
+    length2 = pow(( prevsp2->me.x - pt2->x ),2 ) + pow(( prevsp2->me.y - pt2->y ),2 );
+    if ( length2 < length1 ) length1 = length2;
+    if ( pow( width,2 ) > length1 )
+return( false );
+
+    /* Finally exclude too short diagonals where distance between key
+    /* points of one edge at the direction orthogonal to the unit vector
+    /* of the stem we are about to add is smaller than normal HV stem
+    /* fudge. Such diagonals may be later turned into HV stems, and we will
+    /* result into getting two coincident hints */
+    dist1 = ( hv == 1 ) ? prevsp1->me.y - pt1->y : prevsp1->me.x - pt1->x;
+    dist2 = ( hv == 1 ) ? prevsp2->me.y - pt2->y : prevsp2->me.x - pt2->x;
+    if ( dist1 < 0 ) dist1 = -dist1;
+    if ( dist2 < 0 ) dist2 = -dist2;
+    if ( dist1 < 2*dist_error_hv && dist2 < 2*dist_error_hv )
+return( false );
+
+return( hv );
+}
+
 static struct stemdata *TestStem( struct glyphdata *gd,struct pointdata *pd,
     BasePoint *dir,SplinePoint *match,int is_next,int is_next2,int require_existing,int is_stub ) {
     struct pointdata *pd2;
-    struct stemdata *stem;
+    struct stemdata *stem, *destem;
     struct stem_chunk *chunk;
     double width, err;
     struct linedata *line, *line2;
     BasePoint *mdir;
+    int de=false;
     
-    width = (match->me.x-pd->sp->me.x)*dir->y - (match->me.y-pd->sp->me.y)*dir->x;
-    if ( width<0 ) width = -width;
-    if ( width<.5 )
+    width = ( match->me.x - pd->sp->me.x )*dir->y - 
+            ( match->me.y - pd->sp->me.y )*dir->x;
+    if ( width < 0 ) width = -width;
+    if ( width < .5 )
 return( NULL );		/* Zero width stems aren't interesting */
-    if ( (is_next && pd->sp->next->to==match) || (!is_next && pd->sp->prev->from==match) )
+    if (( is_next && pd->sp->next->to==match ) || ( !is_next && pd->sp->prev->from==match ))
 return( NULL );		/* Don't want a stem between two splines that intersect */
 
     if ( match->ttfindex==0xffff )
@@ -1286,29 +1399,37 @@ return( NULL );         /* Cannot make a stem if edges are not parallel (unless 
     /* For serifs we prefer the vector which is closer to horizontal/vertical */
     if ( is_stub && VectorCloserToHV( mdir,dir ) == 1 )
         dir = mdir;
+    if ( is_stub == 1 && !IsVectorHV( dir,slope_error,true ) && 
+        ( hint_diagonal_ends || require_existing )) 
+	de = IsDiagonalEnd( gd,pd,pd2,is_next,require_existing );
 
-    stem = FindStem( gd,pd,dir,pd2,is_next2,is_stub );
-    if ( stem == NULL && require_existing )
-return( NULL );
+    stem = FindStem( gd,pd,pd2,dir,is_next2,de );
+    destem = NULL;
+    if ( de )
+        destem = FindOrMakeHVStem( gd,pd,pd2,( de == 1 ),require_existing );
 
-    if ( stem == NULL )
+    if ( stem == NULL && !require_existing )
 	stem = NewStem( gd,dir,&pd->sp->me,&match->me );
+    if ( stem != NULL ) {
+        chunk = AddToStem( stem,pd,pd2,is_next,is_next2,false );
+        if ( chunk != NULL ) {
+            chunk->stub = is_stub;
 
-    chunk = AddToStem( stem,pd,pd2,is_next,is_next2,false );
-    if ( chunk != NULL ) {
-        chunk->stub = is_stub;
-    
-        if ( line != NULL && chunk->l == pd && stem->leftline == NULL ) {
-            stem->leftline = line;
-            SetStemUnit( stem,line->unitvector );
-        } else if ( line != NULL && chunk->r == pd && stem->rightline == NULL )
-            stem->rightline = line;
-        if ( line2 != NULL && chunk->l == pd2 && stem->leftline == NULL ) {
-            stem->leftline = line2;
-            SetStemUnit( stem,line2->unitvector );
-        } else if ( line2 != NULL && chunk->r == pd2 && stem->rightline == NULL )
-            stem->rightline = line2;
+            if ( line != NULL && chunk->l == pd && stem->leftline == NULL ) {
+                stem->leftline = line;
+                SetStemUnit( stem,line->unitvector );
+            } else if ( line != NULL && chunk->r == pd && stem->rightline == NULL )
+                stem->rightline = line;
+            if ( line2 != NULL && chunk->l == pd2 && stem->leftline == NULL ) {
+                stem->leftline = line2;
+                SetStemUnit( stem,line2->unitvector );
+            } else if ( line2 != NULL && chunk->r == pd2 && stem->rightline == NULL )
+                stem->rightline = line2;
+        }
     }
+
+    if ( destem != NULL )
+        AddToStem( destem,pd,pd2,is_next,!is_next,1 );
 return( stem );
 }
 
@@ -1342,8 +1463,90 @@ return( -1e4 );
 return( t1 );
 }
 
-static struct stemdata *HalfStem(struct glyphdata *gd,struct pointdata *pd,
-	BasePoint *dir,Spline *other,double other_t,int is_next) {
+static int IsCorrectSide( struct glyphdata *gd,SplinePoint *sp,int is_next,
+    int is_l,struct stemdata *stem ) {
+
+    Spline *s, myline;
+    BasePoint perturbed;
+    int i, ret=false;
+    double t;
+    
+    s = ( is_next ) ? sp->next : sp->prev;
+    t = ( is_next ) ? 0.001 : 0.999;
+    perturbed = PerturbAlongSpline( s,&sp->me,t );
+
+    if ( IsVectorHV( &stem->unit,0,true )) {
+        int is_x, winding=0;
+        double test;
+        struct monotonic **space, *m;
+        
+	is_x = ( stem->unit.x == 0 );
+	test = ( is_x ) ? perturbed.y : perturbed.x;
+	MonotonicFindAt( gd->ms,is_x,test,space = gd->space );
+        for ( i=0; space[i]!=NULL; ++i ) {
+            m = space[i];
+            Spline *s = m->s;
+	    winding = ((&m->xup)[is_x] ? 1 : -1 );
+            if ( s->from == sp || s->to == sp )
+        break;
+        }
+        ret = (( is_l && winding == 1 ) || ( !is_l && winding == -1 ));
+    } else {
+        SplinePoint end1, end2;
+        int cnt, len, eo;
+
+        MakeVirtualLine( gd,&perturbed,&stem->unit,&myline,&end1,&end2 );
+        len = ( end2.me.x - end1.me.x ) * stem->unit.y -
+              ( end2.me.y - end1.me.y ) * stem->unit.x;
+        cnt = MonotonicOrder( gd->sspace,&myline,gd->stspace );
+        eo = -1;
+        i = ( len > 0 ) ? 0 : cnt-1; 
+        while ( i >= 0 && i <= cnt-1 ) {
+            eo = ( eo != 1 ) ? 1 : 0;
+	    if ( s == gd->stspace[i].s )
+        break;
+            if ( len > 0 ) i++;
+            else i--;
+        }
+        ret = ( is_l == eo );
+    }
+return( ret );
+}
+
+/* This function is used when generating stem data for preexisting
+/* stem hints. If we already know the desired hint position, then we
+/* can safely assign to this hint any points which meet other conditions
+/* but have no corresponding position at the opposite edge. */
+static struct stemdata *HalfStemNoOpposite( struct glyphdata *gd,struct pointdata *pd,
+    BasePoint *dir,int is_next ) {
+    int i, is_l=false, is_r=false, allowleft, allowright;
+    double err;
+    struct stemdata *stem=NULL;
+
+    for ( i=0; i<gd->stemcnt; ++i ) {
+        struct stemdata *tstem = &gd->stems[i];
+        allowleft = ( !tstem->ghost || tstem->width == 20 );
+        allowright = ( !tstem->ghost || tstem->width == 21 );
+        
+        err = tstem->unit.x*dir->y - tstem->unit.y*dir->x;
+        if (( err<slope_error && err>-slope_error ) || tstem->ghost ) {
+            is_l = OnStem( tstem,&pd->sp->me,true );
+            is_r = OnStem( tstem,&pd->sp->me,false );
+            if (( is_l && allowleft ) || ( is_r && allowright )) {
+	        if ( IsCorrectSide( gd,pd->sp,is_next,is_l,tstem )) {
+                    stem = tstem;
+    break;
+                }
+            }
+	}
+    }
+    if ( stem != NULL )
+        AddToStem( stem,pd,NULL,is_next,false,false );
+return( stem );
+}
+
+static struct stemdata *HalfStem( struct glyphdata *gd,struct pointdata *pd,
+    BasePoint *dir,Spline *other,double other_t,int is_next ) {
     /* Find the spot on other where the slope is the same as dir */
     double t1;
     double width, err;
@@ -1352,7 +1555,7 @@ static struct stemdata *HalfStem(struct glyphdata *gd,struct pointdata *pd,
     struct pointdata *pd2 = NULL;
     int i;
 
-    t1 = FindSameSlope(other,dir,other_t);
+    t1 = FindSameSlope( other,dir,other_t );
     if ( t1==-1e4 )
 return( NULL );
     if ( t1<0 && other->from->prev!=NULL && gd->points[other->from->ttfindex].colinear ) {
@@ -1403,85 +1606,15 @@ return( NULL );		/* Zero width stems aren't interesting */
     for ( i=0; i<gd->stemcnt; ++i ) {
         struct stemdata *tstem = &gd->stems[i];
         err = tstem->unit.x*dir->y - tstem->unit.y*dir->x;
-        if (err<slope_error && err>-slope_error && BothOnStem( tstem,&pd->sp->me,&match,false )) {
+        if ( err<slope_error && err>-slope_error && BothOnStem( tstem,&pd->sp->me,&match,false )) {
 	    stem = tstem;
     break;
 	}
     }
-    if ( stem==NULL )
+    if ( stem == NULL )
 	stem = NewStem(gd,dir,&pd->sp->me,&match);
-    AddToStem( stem,pd,pd2,is_next,false,false );
-return( stem );
-}
-
-static struct stemdata *FindOrMakeHVStem( struct glyphdata *gd,
-	struct pointdata *pd, struct pointdata *pd2, int is_h ) {
-    int i;
-    struct stemdata *stem;
-    BasePoint dir;
-
-    dir.x = ( is_h ) ? 1 : 0;
-    dir.y = ( is_h ) ? 0 : 1;
     
-    for ( i=0; i<gd->stemcnt; ++i ) {
-	stem = &gd->stems[i];
-	if ( IsVectorHV( &stem->unit,slope_error,true ) &&
-            ((pd2 == NULL && 
-                ( OnStem( stem,&pd->sp->me,true ) || OnStem( stem,&pd->sp->me,false ))) ||
-            ( pd2 != NULL && BothOnStem( stem,&pd->sp->me,&pd2->sp->me,false ))))
-    break;
-    }
-    if ( i==gd->stemcnt ) stem=NULL;
-
-    if ( stem == NULL && pd2 != NULL )
-	stem = NewStem( gd,&dir,&pd->sp->me,&pd2->sp->me );
-return( stem );
-}
-
-static struct stemdata *EdgeStem(struct glyphdata *gd,struct pointdata *pd) {
-    struct pointdata *pd2;
-    /* suppose we have something like */
-    /*  *--*		*/
-    /*   \  \		*/
-    /*    \  \		*/
-    /* Then let's create a vertical stem between the two points */
-    /* (and a horizontal stem if the thing is rotated 90 degrees) */
-    struct stemdata *stem = NULL;
-    struct stem_chunk *chunk;
-    double width, length1, length2;
-
-    if ( !hint_diagonal_ends )
-return( NULL );
-
-    if ( pd->sp->next==NULL || pd->sp->next->to->next==NULL )
-return( NULL );
-    pd2 = &gd->points[pd->sp->next->to->ttfindex];
-    if ( (pd->sp->me.x!=pd2->sp->me.x && pd->sp->me.y!=pd2->sp->me.y ) ||
-	    pd->sp->prev==NULL || !pd->sp->prev->knownlinear ||
-	    pd2->sp->next==NULL || !pd2->sp->next->knownlinear )
-return( NULL );
-    if ( !UnitsParallel(&pd2->nextunit,&pd->prevunit,true ) )
-return( NULL );
-    if ( pd->prevunit.x==0 || pd->prevunit.y==0 )	/* Must be diagonal */
-return( NULL );
-
-    length1 = (pd->sp->prev->from->me.x-pd->sp->me.x)*(pd->sp->prev->from->me.x-pd->sp->me.x) +
-	    (pd->sp->prev->from->me.y-pd->sp->me.y)*(pd->sp->prev->from->me.y-pd->sp->me.y);
-    length2 = (pd2->sp->next->to->me.x-pd2->sp->me.x)*(pd2->sp->next->to->me.x-pd2->sp->me.x) +
-	    (pd2->sp->next->to->me.y-pd2->sp->me.y)*(pd2->sp->next->to->me.y-pd2->sp->me.y);
-    if ( length2<length1 )
-	length1 = length2;
-
-    if ( pd->sp->me.x==pd2->sp->me.x )
-	width = pd->sp->me.y-pd2->sp->me.y;
-    else
-	width = pd->sp->me.x-pd2->sp->me.x;
-
-    if ( width*width>length1 )
-return( NULL );
-
-    stem = FindOrMakeHVStem( gd,pd,pd2,pd->sp->me.x==pd2->sp->me.x );
-    chunk = AddToStem( stem,pd,pd2,1,0,1 );
+    AddToStem( stem,pd,pd2,is_next,false,false );
 return( stem );
 }
 
@@ -1546,17 +1679,17 @@ return( ret );
 }
 
 static void BuildStem( struct glyphdata *gd,struct pointdata *pd,int is_next,
-    int test_further ) {
+    int require_existing ) {
     BasePoint *dir;
     Spline *other, *cur;
     double t;
     double tod, fromd, dist;
     SplinePoint *testpt, *topt, *frompt;
-    struct stemdata *stem;
     struct linedata *line;
     struct pointdata *testpd, *topd, *frompd;
     int tp, fp, tstub, fstub, t_needs_recalc=false;
     BasePoint opposite;
+    struct stemdata *stem=NULL;
 
     if ( is_next ) {
 	dir = &pd->nextunit;
@@ -1574,8 +1707,6 @@ static void BuildStem( struct glyphdata *gd,struct pointdata *pd,int is_next,
     topt = other->to; frompt = other->from;
     topd = &gd->points[topt->ttfindex];
     frompd = &gd->points[frompt->ttfindex];
-    if ( test_further && frompd->nextstem != NULL && topd->prevstem != NULL )
-return;
     
     line = is_next ? pd->nextline : pd->prevline;
     if ( !IsVectorHV( dir,slope_error,true ) && line != NULL)
@@ -1626,53 +1757,68 @@ return;
     }
     if ( t_needs_recalc )
         t = RecalcT( other,frompt,topt,t );
-    stem = NULL;
-    if ( is_next && !test_further ) 
-	stem = EdgeStem( gd,pd );
-    if ( !tp && !fp )
+    if ( !tp && !fp ) {
+        if ( require_existing )
+            stem = HalfStemNoOpposite( gd,pd,dir,is_next );
 return;
+    }
 
     /* We have several conflicting metrics for getting the "better" stem */
     /* Generally we prefer the stem with the smaller width (but not always. See tilde) */
     /* Generally we prefer the stem formed by the point closer to the intersection */
     tod = (1-t)*NormalDist( &topt->me,&pd->sp->me,dir );
     fromd = t*NormalDist( &frompt->me,&pd->sp->me,dir );
-    stem = NULL;
-    
-    if ( !test_further ) {
-        if ( tp && (( tod<fromd ) ||
-            ( !fp && ( tod<2*fromd || dist < topd->prev_dist || 
-                ConnectsAcross( gd,frompt,true,cur ) || NearlyParallel( dir,other,t ))))) {
-	    stem = TestStem( gd,pd,dir,topt,is_next,false,false,tstub );
+
+    if ( tp && (( tod<fromd ) ||
+        ( !fp && ( tod<2*fromd || dist < topd->prev_dist || 
+            ConnectsAcross( gd,frompt,true,cur ) || NearlyParallel( dir,other,t ))))) {
+	stem = TestStem( gd,pd,dir,topt,is_next,false,require_existing,tstub );
+    }
+    if ( stem == NULL && fp && (( fromd<tod ) ||
+        ( !tp && ( fromd<2*tod || dist < frompd->next_dist || 
+            ConnectsAcross( gd,topt,false,cur ) || NearlyParallel( dir,other,t ))))) {
+	stem = TestStem( gd,pd,dir,frompt,is_next,true,require_existing,fstub );
+    }
+    if ( stem == NULL && !require_existing && cur!=NULL && !other->knownlinear && !cur->knownlinear )
+	stem = HalfStem( gd,pd,dir,other,t,is_next );
+    if ( stem == NULL && require_existing )
+        stem = HalfStemNoOpposite( gd,pd,dir,is_next );
+}
+
+static void AssignLinePointsToStems( struct glyphdata *gd ) {
+    struct pointdata *pd;
+    int i, j;
+
+    for ( i=0; i<gd->stemcnt; ++i ) if ( !gd->stems[i].toobig ) {
+	struct stemdata *stem = &gd->stems[i];
+        if ( stem->leftline != NULL ) {
+            struct linedata *line = stem->leftline;
+            for ( j=0; j<line->pcnt; j++ ) {
+                pd = line->points[j];
+                if (pd->prevline == line && pd->prevstem == NULL &&
+                    IsCorrectSide( gd,pd->sp,false,true,stem ))
+                    AddToStem( stem,pd,NULL,false,false,false );
+                if (pd->nextline == line && pd->nextstem == NULL &&
+                    IsCorrectSide( gd,pd->sp,true,true,stem ))
+                    AddToStem( stem,pd,NULL,true,false,false );
+            }
         }
-        if ( stem==NULL && fp && (( fromd<tod ) ||
-            ( !tp && ( fromd<2*tod || dist < frompd->next_dist || 
-                ConnectsAcross( gd,topt,false,cur ) || NearlyParallel( dir,other,t ))))) {
-	    stem = TestStem( gd,pd,dir,frompt,is_next,true,false,fstub );
+        if ( stem->rightline != NULL ) {
+            struct linedata *line = stem->rightline;
+            for ( j=0; j<line->pcnt; j++ ) {
+                pd = line->points[j];
+                if (pd->prevline == line && pd->prevstem == NULL &&
+                    IsCorrectSide( gd,pd->sp,false,false,stem ))
+                    AddToStem( stem,pd,NULL,false,false,false );
+                if (pd->nextline == line && pd->nextstem == NULL &&
+                    IsCorrectSide( gd,pd->sp,true,false,stem ))
+                    AddToStem( stem,pd,NULL,true,false,false );
+            }
         }
-        if ( stem==NULL && cur!=NULL && !other->knownlinear && !cur->knownlinear )
-	    stem = HalfStem(gd,pd,dir,other,t,is_next);
-    } else {
-        /* Usually we are attempting to establish a connection between the closest
-        /* points on the opposite stem edges. But things may be more complicated
-        /* for straight lines (especially diagonal lines). Imagine a narrow 
-        /* paralellogram where the points on the obtuse angles are closer to each
-        /* other than to those on the sharp angles. Thus with the above algorithm
-        /* those further points would never be assigned to the stem (which means the
-        /* stem itself may not be correctly detected). This means we actually have 
-        /* to check both sides of a linear segment parallel to the vector tested.
-        /* But we are cautious and accept such segments only if there is already
-        /* a stem they can be assigned to. */
-        if ( tp && fp && ( tod<fromd ) && LineParallel( dir,frompt,topt )
-            && frompd->nextstem==NULL )
-            TestStem( gd,frompd,dir,pd->sp,true,is_next,true,tstub );
-        else if ( tp && fp && ( fromd<tod ) && LineParallel( dir,frompt,topt ) 
-            && topd->prevstem==NULL )
-            TestStem( gd,topd,dir,pd->sp,false,is_next,true,fstub );
     }
 }
 
-static void DiagonalCornerStem(struct glyphdata *gd,struct pointdata *pd) {
+static void DiagonalCornerStem( struct glyphdata *gd,struct pointdata *pd,int require_existing ) {
     Spline *other = pd->bothedge;
     struct pointdata *pfrom = &gd->points[other->from->ttfindex],
 		     *pto = &gd->points[other->to->ttfindex],
@@ -1707,11 +1853,11 @@ return;
     if ( width*width>length )
 return;
 
-    stem = FindOrMakeHVStem(gd,pd,pd2,pd->symetrical_h);
+    stem = FindOrMakeHVStem(gd,pd,pd2,pd->symetrical_h,require_existing);
     
     if ( pd3 == NULL && stem != NULL )
         chunk = AddToStem( stem,pd,pd2,2,2,2 );
-    else {
+    else if ( stem != NULL ) {
 	chunk = AddToStem( stem,pd,pd2,2,2,3 );
 	chunk = AddToStem( stem,pd,pd3,2,2,3 );
     }
@@ -1921,6 +2067,15 @@ static int CompareStems( struct glyphdata *gd,SplinePoint *sp,
     int peak=0, peak1=0, peak2=0, val1=0, val2=0;
     struct pointdata *frompd, *topd;
     Spline *sbase, *s1, *s2;
+    
+    /* If a stem was already present before generating glyph data,
+    /* then it should always be preferred in case of a conflict */
+    if ( stem1->positioned && !stem2->positioned )
+return( 1 );
+    else if ( !stem1->positioned && stem2->positioned )
+return( -1 );
+    else if ( stem1->positioned && stem2->positioned )
+return( 2 );
     
     dist1 = pow( sp->me.x-sp1->me.x,2 ) + pow( sp->me.y-sp1->me.y,2 );
     dist2 = pow( sp->me.x-sp2->me.x,2 ) + pow( sp->me.y-sp2->me.y,2 );
@@ -2527,7 +2682,7 @@ static void FigureStemActive( struct glyphdata *gd, struct stemdata *stem ) {
     for ( i=0; i<rcnt; i++ )
         fprintf( stderr, "\tright space start=%f,curved=%d,end=%f,curved=%d\n",
             rspace[i].start,rspace[i].scurved,rspace[i].end,rspace[i].ecurved );
-    for ( i=0; i<lcnt; i++ )
+    for ( i=0; i<bcnt; i++ )
         fprintf( stderr, "\tboth space start=%f,curved=%d,end=%f,curved=%d\n",
             bothspace[i].start,bothspace[i].scurved,bothspace[i].end,bothspace[i].ecurved );
         fprintf( stderr, "\n" );
@@ -2714,7 +2869,7 @@ static void FigureStemActive( struct glyphdata *gd, struct stemdata *stem ) {
 	    double proj = (sp->me.x - stem->left.x) * stem->unit.x +
 			  (sp->me.y - stem->left.y) * stem->unit.y;
             double orig_proj = proj;
-	    SplinePoint *other = chunk->lnext ? sp->prev->from : sp->next->to;
+	    SplinePoint *other = chunk->lnext ? sp->next->to : sp->prev->from;
 	    double len = (other->me.x - sp->me.x) * stem->unit.x +
 			 (other->me.y - sp->me.y) * stem->unit.y;
             if ( chunk->stemcheat == 2 )
@@ -2826,7 +2981,6 @@ return( false );
 
 static void GDFindUnlikelyStems( struct glyphdata *gd ) {
     double width, minl;
-    double em = (gd->sc->parent->ascent+gd->sc->parent->descent);
     int i, j;
     struct pointdata *lpd, *rpd;
     Spline *ls, *rs;
@@ -2839,12 +2993,17 @@ static void GDFindUnlikelyStems( struct glyphdata *gd ) {
     /* If a stem has straight edges, and it is wider than tall */
     /*  then it is unlikely to be a real stem */
     for ( i=0; i<gd->stemcnt; ++i ) {
-	struct stemdata *stem = &gd->stems[i];
+	stem = &gd->stems[i];
+        /* If stem had been already present in the spline char before we
+        /* started generating glyph data, then it should never be 
+        /* considered "too big" */
+        if ( stem->positioned )
+    continue;
 
 	width = stem->width;
-	stem->toobig =  (               width<=em/8 && 2.0*stem->clen < width ) ||
-			( width>em/8 && width<=em/4 && 1.5*stem->clen < width ) ||
-			( width>em/4 &&                    stem->clen < width );
+	stem->toobig =  (                         width <= gd->emsize/8 && 2.0*stem->clen < width ) ||
+			( width > gd->emsize/8 && width <= gd->emsize/4 && 1.5*stem->clen < width ) ||
+			( width > gd->emsize/4 &&                              stem->clen < width );
     }
 
     /* One more check for curved stems. If a stem has just one active
@@ -2854,6 +3013,8 @@ static void GDFindUnlikelyStems( struct glyphdata *gd ) {
     /* the opposite sides of a circle are always accepted */
     for ( i=0; i<gd->stemcnt; ++i ) if ( gd->stems[i].toobig ) {
 	stem = &gd->stems[i];
+        if ( stem->positioned )
+    continue;
 	width = stem->width;
         if ( stem->activecnt == 1 && stem->active[0].curved && 
             width/2 > dist_error_curve ) {
@@ -2877,6 +3038,8 @@ static void GDFindUnlikelyStems( struct glyphdata *gd ) {
     /* is already a hint controlling the middle of the same feature */
     for ( i=0; i<gd->stemcnt; ++i ) {
 	stem = &gd->stems[i];
+        if ( stem->positioned )
+    continue;
         
         if ( stem->chunk_cnt == 1 && stem->chunks[0].stub && !IsVectorHV( &stem->unit,0,true )) {
             struct stem_chunk *chunk = &stem->chunks[0];
@@ -2955,8 +3118,8 @@ static void CheckForBoundingBoxHints(struct glyphdata *gd) {
     int hcnt=0, vcnt=0, i;
     struct stemdata *stem;
     SplinePoint *minx, *maxx, *miny, *maxy;
-    SplineFont *sf;
-    int hv, emsize;
+    BasePoint dir;
+    int hv;
     struct stem_chunk *chunk;
 
     for ( i=0; i<gd->stemcnt; ++i ) {
@@ -2992,23 +3155,24 @@ return;
     if ( minx==NULL )		/* No contours */
 return;
 
-    sf = gd->sc->parent;
-    emsize = sf->ascent+sf->descent;
-
-    if ( hcnt==0 && maxy->me.y!=miny->me.y && maxy->me.y-miny->me.y<emsize/2 ) {
+    if (hcnt == 0 && maxy->me.y != miny->me.y && 
+        maxy->me.y - miny->me.y < gd->emsize/2 ) {
 	struct pointdata *pd = &gd->points[maxy->ttfindex],
 			 *pd2 = &gd->points[miny->ttfindex];
-	stem = FindOrMakeHVStem( gd,pd,pd2,true );
+        dir.x = 1; dir.y = 0;
+	stem = NewStem( gd,&dir,&pd->sp->me,&pd2->sp->me );
 	chunk = AddToStem( stem,pd,pd2,false,true,4 );
 	FigureStemActive( gd,stem );
 	stem->toobig = false;
 	stem->clen += stem->width;
     }
 
-    if ( vcnt==0 && maxx->me.x!=minx->me.x && maxx->me.x-minx->me.x<emsize/2 ) {
+    if ( vcnt == 0 && maxx->me.x != minx->me.x && 
+        maxx->me.x - minx->me.x < gd->emsize/2 ) {
 	struct pointdata *pd = &gd->points[maxx->ttfindex],
 			 *pd2 = &gd->points[minx->ttfindex];
-	stem = FindOrMakeHVStem( gd,pd,pd2,false );
+        dir.x = 0; dir.y = 1;
+	stem = NewStem( gd,&dir,&pd->sp->me,&pd2->sp->me );
 	chunk = AddToStem( stem,pd,pd2,false,true,4 );
 	FigureStemActive( gd,stem );
 	stem->toobig = false;
@@ -3018,22 +3182,42 @@ return;
 
 static struct stemdata *FindOrMakeGhostStem( struct glyphdata *gd,
     SplinePoint *sp,int blue,double width ) {
-    int i;
+    int i, j, hasl, hasr;
     struct stemdata *stem=NULL, *tstem;
+    struct stem_chunk *chunk;
     BasePoint dir,left,right;
 
     dir.x = 1; dir.y = 0;
     for ( i=0; i<gd->stemcnt; ++i ) {
 	tstem = &gd->stems[i];
-	if ( tstem->blue == blue && !tstem->toobig &&
-            ((sp->me.y > 0 && sp->me.y <= tstem->left.y ) ||
-            ( sp->me.y <= 0 && sp->me.y >= tstem->right.y ))) {
+        if ( tstem->blue == blue && tstem->ghost ) {
             stem = tstem;
     break;
+        /* If the stem controlling this blue zone is not for a ghost hint,
+        /* then we check if it has both left and right points, to ensure that
+        /* we don't occasionally assign an additional point to a stem which
+        /* has already been rejected in favor of another stem */
+	} else if ( tstem->blue == blue && !tstem->toobig &&
+            ((sp->me.y > 0 && sp->me.y <= tstem->left.y ) ||
+            ( sp->me.y <= 0 && sp->me.y >= tstem->right.y ))) {
+            
+            hasl = false; hasr = false; j = 0;
+            while ( j < tstem->chunk_cnt && !hasl && !hasr ) {
+                chunk = &tstem->chunks[j];
+                if ( chunk->l != NULL && !chunk->lpotential )
+                    hasl = true;
+                if ( chunk->r != NULL && !chunk->rpotential )
+                    hasr = true;
+                j++;
+            }
+            if ( hasl && hasr ) {
+                stem = tstem;
+    break;
+            }
         }
     }
 
-    if ( stem==NULL ) {
+    if ( stem == NULL ) {
         left.x = right.x = sp->me.x;
         left.y = ( width == 21 ) ? sp->me.y + 21 : sp->me.y;
         right.y = ( width == 21 ) ? sp->me.y : sp->me.y - 20;
@@ -3109,6 +3293,35 @@ static int AddGhostSegment( struct pointdata *pd,int cnt,double base,struct segm
     return( cnt+1 );
 }
 
+static void FigureGhostActive( struct glyphdata *gd,struct stemdata *stem ) {
+    int acnt, i;
+    real len;
+    struct segment *activespace = gd->activespace;
+    struct pointdata *valid;
+    
+    if ( !stem->ghost )
+return;
+
+    acnt = 0;
+    for ( i=0; i<stem->chunk_cnt; ++i ) {
+        valid = ( stem->chunks[i].l != NULL) ? 
+            stem->chunks[i].l : stem->chunks[i].r;
+	acnt = AddGhostSegment( valid,acnt,stem->left.x,activespace );
+    }
+    qsort(activespace,acnt,sizeof(struct segment),segment_cmp);
+    acnt = MergeSegments( activespace,acnt );
+    stem->activecnt = acnt;
+    if ( acnt!=0 ) {
+	stem->active = galloc(acnt*sizeof(struct segment));
+	memcpy( stem->active,activespace,acnt*sizeof( struct segment ));
+    }
+
+    for ( i=0; i<acnt; ++i ) {
+	len += stem->active[i].end-stem->active[i].start;
+    }
+    stem->clen = stem->len = len;
+}
+
 static void CheckForGhostHints( struct glyphdata *gd, BlueData *bd ) {
     /* PostScript doesn't allow a hint to stretch from one alignment zone to */
     /*  another. (Alignment zones are the things in bluevalues).  */
@@ -3124,17 +3337,13 @@ static void CheckForGhostHints( struct glyphdata *gd, BlueData *bd ) {
     BlueData _bd;
     struct stemdata *stem;
     struct stem_chunk *chunk;
-    SplineFont *sf;
     SplinePoint *sp;
-    real base, width, len;
-    int i, j, leftfound, rightfound, acnt;
-    struct segment *activespace = gd->activespace;
-    struct pointdata *valid;
+    real base, width;
+    int i, j, leftfound, rightfound;
 
     /* Get the alignment zones */
-    sf = gd->sc->parent;
     if ( bd == NULL ) {
-	QuickBlues( sf,&_bd );
+	QuickBlues( gd->sf,&_bd );
 	bd = &_bd;
     }
 
@@ -3204,25 +3413,7 @@ static void CheckForGhostHints( struct glyphdata *gd, BlueData *bd ) {
 	stem = &gd->stems[i];
         if ( !stem->ghost )
     continue;
-        
-        acnt = 0;
-        for ( j=0; j<stem->chunk_cnt; ++j ) {
-            valid = ( stem->chunks[j].l != NULL) ? 
-                stem->chunks[j].l : stem->chunks[j].r;
-	    acnt = AddGhostSegment( valid,acnt,stem->left.x,activespace );
-        }
-	qsort(activespace,acnt,sizeof(struct segment),segment_cmp);
-        acnt = MergeSegments( activespace,acnt );
-        stem->activecnt = acnt;
-        if ( acnt!=0 ) {
-	    stem->active = galloc(acnt*sizeof(struct segment));
-	    memcpy( stem->active,activespace,acnt*sizeof( struct segment ));
-        }
-
-        for ( j=0; j<acnt; ++j ) {
-	    len += stem->active[j].end-stem->active[j].start;
-        }
-        stem->clen = stem->len = len;
+        FigureGhostActive( gd,stem );
     }
 }
 
@@ -3367,6 +3558,78 @@ static void DumpGlyphData( struct glyphdata *gd ) {
 }
 #endif
 
+static void AssignPointsToStems( struct glyphdata *gd ) {
+    int i;
+    struct pointdata *pd;
+    
+    for ( i=0; i<gd->pcnt; ++i ) if ( gd->points[i].sp!=NULL ) {
+        pd = &gd->points[i];
+	if ( pd->prevedge!=NULL )
+	    BuildStem( gd,pd,false,true );
+        else
+            HalfStemNoOpposite( gd,pd,&pd->prevunit,false );
+
+	if ( pd->nextedge!=NULL )
+	    BuildStem( gd,pd,true,true );
+        else
+            HalfStemNoOpposite( gd,pd,&pd->nextunit,true );
+
+	if ( pd->bothedge!=NULL )
+	    DiagonalCornerStem( gd,pd,true );
+    }
+    gd->lspace = galloc(gd->pcnt*sizeof(struct segment));
+    gd->rspace = galloc(gd->pcnt*sizeof(struct segment));
+    gd->bothspace = galloc(3*gd->pcnt*sizeof(struct segment));
+    gd->activespace = galloc(3*gd->pcnt*sizeof(struct segment));
+#if GLYPH_DATA_DEBUG
+    fprintf( stderr,"Going to calculate stem active zones for %s\n",gd->sc->name );
+#endif
+    for ( i=0; i<gd->stemcnt; ++i ) {
+        if ( gd->stems[i].ghost )
+	    FigureGhostActive( gd,&gd->stems[i] );
+        else
+	    FigureStemActive( gd,&gd->stems[i] );
+    }
+
+    NormalizeStems( gd );
+#if GLYPH_DATA_DEBUG
+    DumpGlyphData( gd );
+#endif
+
+    free(gd->lspace);		gd->lspace = NULL;
+    free(gd->rspace);		gd->rspace = NULL;
+    free(gd->bothspace);	gd->bothspace = NULL;
+    free(gd->activespace);	gd->activespace = NULL;
+}
+
+struct glyphdata *StemInfoToStemData( struct glyphdata *gd,StemInfo *si,int is_v ) {
+    struct stemdata *stem;
+    BasePoint dir,left,right;
+    
+    if ( si == NULL )
+return( gd );
+    
+    dir.x = !is_v; dir.y = is_v;
+    if ( gd->stems == NULL ) {
+        gd->stems = gcalloc( 2*gd->pcnt,sizeof( struct stemdata ));
+        gd->stemcnt = 0;
+    }
+
+    while ( si != NULL ) {
+        left.x = ( is_v ) ? si->start : 0;
+        left.y = ( is_v ) ? 0 : si->start + si->width;
+        right.x = ( is_v ) ? si->start + si->width : 0;
+        right.y = ( is_v ) ? 0 : si->start;
+        stem = NewStem( gd,&dir,&left,&right );
+        stem->ghost = si->ghost;
+        stem->positioned = true;
+        si = si->next;
+    }
+
+    AssignPointsToStems( gd );
+return( gd );
+}
+
 struct glyphdata *GlyphDataInit( SplineChar *sc,int only_hv ) {
     struct glyphdata *gd;
     int i;
@@ -3374,19 +3637,21 @@ struct glyphdata *GlyphDataInit( SplineChar *sc,int only_hv ) {
     SplinePoint *sp;
     Monotonic *m;
     int cnt;
-    int em = sc->parent!=NULL ? sc->parent->ascent+sc->parent->descent : 1000;
 
     /* We can't hint type3 fonts, so the only layer we care about is ly_fore */
     /* We shan't try to hint references yet */
     if ( sc->layers[ly_fore].splines==NULL )
 return( NULL );
 
-    dist_error_hv = .0035*em;
-    dist_error_diag = .008*em;
-    dist_error_curve = .022*em;
-
     gd = gcalloc(1,sizeof(struct glyphdata));
     
+    gd->sc = sc;
+    gd->sf = sc->parent;
+    gd->emsize = ( gd->sf != NULL ) ? gd->sf->ascent + gd->sf->descent : 1000;
+    dist_error_hv = .0035*gd->emsize;
+    dist_error_diag = .008*gd->emsize;
+    dist_error_curve = .022*gd->emsize;
+
     /* Normally we use the DetectDiagonalStems flag (set via the Preferences
     /* dialog) to determine if diagonal stems should be generated. However,
     /* it is possible to imagine a situation where we would like to get
@@ -3401,7 +3666,7 @@ return( NULL );
     /*  to something since freed */
     gd->ms = SSsToMContours(sc->layers[ly_fore].splines,over_remove);	/* second argument is meaningless here */
 
-    gd->realcnt = gd->pcnt = SCNumberPoints(sc);
+    gd->realcnt = gd->pcnt = SCNumberPoints( sc );
     for ( i=0, ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next, ++i );
     gd->ccnt = i;
     gd->contourends = galloc((i+1)*sizeof(int));
@@ -3417,9 +3682,6 @@ return( NULL );
 	    gd->contourends[i] = last->ttfindex;
     }
     gd->contourends[i] = -1;
-    gd->sc = sc;
-    gd->sf = sc->parent;
-    gd->fudge = (sc->parent->ascent+sc->parent->descent)/500;
 
     /* Create temporary point numbers for the implied points. We need this */
     /*  for metafont if nothing else */
@@ -3435,6 +3697,7 @@ return( NULL );
 	}
     }
     gd->norefpcnt = gd->pcnt;
+    gd->pspace = galloc( gd->pcnt*sizeof( struct pointdata *));
     /* And for 0xfffe points such as those used in glyphs with order2 glyphs */
     /*  with references. */
     for ( ss= sc->layers[ly_fore].splines; ss!=NULL; ss = ss->next ) {
@@ -3508,9 +3771,8 @@ struct glyphdata *GlyphDataBuild( SplineChar *sc,BlueData *bd,int only_hv ) {
 return( gd );
 
     /* There will never be more lines than there are points (counting next/prev as separate) */
-    gd->lines = galloc(2*gd->pcnt*sizeof(struct linedata));
+    gd->lines = galloc( 2*gd->pcnt*sizeof( struct linedata ));
     gd->linecnt = 0;
-    gd->pspace = galloc(gd->pcnt*sizeof(struct pointdata *));
     for ( i=0; i<gd->pcnt; ++i ) if ( gd->points[i].sp!=NULL ) {
 	struct pointdata *pd = &gd->points[i];
 	if (( !gd->only_hv || pd->next_hor || pd->next_ver ) && pd->nextline==NULL ) {
@@ -3526,7 +3788,7 @@ return( gd );
     }
 
     /* There will never be more stems than there are points (counting next/prev as separate) */
-    gd->stems = gcalloc(2*gd->pcnt,sizeof(struct stemdata));
+    gd->stems = gcalloc( 2*gd->pcnt,sizeof( struct stemdata ));
     gd->stemcnt = 0;			/* None used so far */
     for ( i=0; i<gd->pcnt; ++i ) if ( gd->points[i].sp!=NULL ) {
 	struct pointdata *pd = &gd->points[i];
@@ -3537,19 +3799,7 @@ return( gd );
 	    BuildStem( gd,pd,true,false );
         }
 	if ( pd->bothedge!=NULL ) {
-	    DiagonalCornerStem(gd,pd);
-        }
-    }
-
-    /* A second pass to include some points which have been neglected in
-    /* favor of other points lying on the same stem */
-    for ( i=0; i<gd->pcnt; ++i ) if ( gd->points[i].sp!=NULL ) {
-	struct pointdata *pd = &gd->points[i];
-	if ( pd->prevedge!=NULL && pd->prevstem!=NULL ) {
-	    BuildStem( gd,pd,false,true );
-        }
-	if ( pd->nextedge!=NULL && pd->nextstem!=NULL ) {
-	    BuildStem( gd,pd,true,true );
+	    DiagonalCornerStem( gd,pd,false );
         }
     }
 
@@ -3574,7 +3824,7 @@ return( gd );
 #if GLYPH_DATA_DEBUG
     fprintf( stderr,"Going to calculate stem active zones for %s\n",gd->sc->name );
 #endif
-    for ( i=j=0; i<gd->stemcnt; ++i )
+    for ( i=0; i<gd->stemcnt; ++i )
 	FigureStemActive( gd,&gd->stems[i] );
 
     /* Check this before resolving stem conflicts, as otherwise we can
@@ -3586,6 +3836,7 @@ return( gd );
     /*  if there are any low-quality matches which remain unassigned, and if */
     /*  so then assign them to the stem they almost fit on. */
     /* If there are multiple stems, find the one which is closest to this point */
+    AssignLinePointsToStems( gd );
     for ( i=0; i<gd->stemcnt; ++i ) {
         struct stemdata *stem = &gd->stems[i];
         for ( j=0; j<stem->chunk_cnt; ++j ) {
@@ -3614,11 +3865,6 @@ return( gd );
 #if GLYPH_DATA_DEBUG
     DumpGlyphData( gd );
 #endif
-    FreeMonotonics(gd->ms);	gd->ms = NULL;
-    free(gd->space);		gd->space = NULL;
-    free(gd->sspace);		gd->sspace = NULL;
-    free(gd->stspace);		gd->stspace = NULL;
-    free(gd->pspace);		gd->pspace = NULL;
     free(gd->lspace);		gd->lspace = NULL;
     free(gd->rspace);		gd->rspace = NULL;
     free(gd->bothspace);	gd->bothspace = NULL;
@@ -3629,6 +3875,12 @@ return( gd );
 
 void GlyphDataFree(struct glyphdata *gd) {
     int i;
+
+    FreeMonotonics(gd->ms);	gd->ms = NULL;
+    free(gd->space);		gd->space = NULL;
+    free(gd->sspace);		gd->sspace = NULL;
+    free(gd->stspace);		gd->stspace = NULL;
+    free(gd->pspace);		gd->pspace = NULL;
 
     /* Restore implicit points */
     for ( i=gd->realcnt; i<gd->norefpcnt; ++i )

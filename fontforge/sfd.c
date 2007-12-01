@@ -3715,11 +3715,9 @@ return( NULL );
 #endif
 	} else if ( strmatch(tok,"HStem:")==0 ) {
 	    sc->hstem = SFDReadHints(sfd);
-	    SCGuessHHintInstancesList(sc);		/* For reading in old .sfd files with no HintInstance data */
 	    sc->hconflicts = StemListAnyConflicts(sc->hstem);
 	} else if ( strmatch(tok,"VStem:")==0 ) {
 	    sc->vstem = SFDReadHints(sfd);
-	    SCGuessVHintInstancesList(sc);		/* For reading in old .sfd files */
 	    sc->vconflicts = StemListAnyConflicts(sc->vstem);
 	} else if ( strmatch(tok,"DStem:")==0 ) {
 	    sc->dstem = SFDReadDHints( sfd );
@@ -4108,6 +4106,11 @@ exit(1);
 		sc = NULL;
 	    }
 #endif
+            /* Recalculating hint active zones may be needed for old .sfd files.
+            /* Do this when we have finished with other glyph components,
+            /* so that splines are already available */
+	    if ( sf->sfd_version<2 )
+                SCGuessHintInstancesList( sc,sc->hstem,sc->vstem,sc->dstem );
 	    if ( sf->order2 )
 		SCDefaultInterpolation(sc);
 return( sc );
