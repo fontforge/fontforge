@@ -33,7 +33,7 @@ struct glyphdata {
     SplineFont *sf;
     BlueData bd;
     SplineChar *sc;
-    int fudge;
+    int emsize;
     int ccnt;
     int *contourends;
     int realcnt;			/* Includes control points, excludes implied points */
@@ -156,6 +156,7 @@ struct stembundle {
 
 extern struct glyphdata *GlyphDataBuild(SplineChar *sc, BlueData *bd, int only_hv);
 extern struct glyphdata *GlyphDataInit(SplineChar *sc, int only_hv);
+extern struct glyphdata *StemInfoToStemData( struct glyphdata *gd,StemInfo *si,int is_v );
 extern void GlyphDataFree(struct glyphdata *gd);
 
 #endif		/* _STEMDB_H_ */

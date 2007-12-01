@@ -3360,7 +3360,7 @@ int SCNumberPoints(SplineChar *sc) {
     SplinePoint *sp;
     RefChar *ref;
 
-    if ( sc->parent->order2 ) {		/* TrueType and its complexities. I ignore svg here */
+    if ( sc->parent != NULL && sc->parent->order2 ) {	/* TrueType and its complexities. I ignore svg here */
 	if ( sc->layers[ly_fore].refs!=NULL ) {
 	    /* if there are references there can't be splines. So if we've got*/
 	    /*  splines mark all point numbers on them as meaningless */
@@ -8541,7 +8541,7 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     for (i=0; i<4; i++) {bp[i]=NULL;}
     
-    num = CVNumForePointsSelected(cv,bp);
+    num = CVNumForePointsSelected( cv,bp );
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {

@@ -1364,7 +1364,50 @@ static HintInstance *SCGuessHintPoints(SplineChar *sc, StemInfo *stem,int major,
 return( head );
 }
 
-static void SCGuessHintInstances(SplineChar *sc, StemInfo *stem,int major) {
+static HintInstance *StemAddHIFromActive(struct stemdata *stem,int major) {
+    int i;
+    HintInstance *head = NULL, *cur, *t;
+    double mino, maxo;
+    double dir = ((real *) &stem->unit.x)[major]<0 ? -1 : 1;
+
+    for ( i=0; i<stem->activecnt; ++i ) {
+	mino = dir*stem->active[i].start + ((real *) &stem->left.x)[major];
+	maxo = dir*stem->active[i].end + ((real *) &stem->left.x)[major];
+	cur = chunkalloc(sizeof(HintInstance));
+	if ( dir>0 ) {
+	    cur->begin = mino;
+	    cur->end = maxo;
+	    if ( head==NULL )
+		head = cur;
+	    else
+		t->next = cur;
+	    t = cur;
+	} else {
+	    cur->begin = maxo;
+	    cur->end = mino;
+	    cur->next = head;
+	    head = cur;
+	}
+    }
+return( head );
+}
+
+static void SCGuessHVHintInstances( SplineChar *sc,StemInfo *si,int is_v ) {
+    struct glyphdata *gd;
+    struct stemdata *sd;
+    
+    gd = GlyphDataInit( sc,true );
+    if ( gd == NULL )
+return;
+    StemInfoToStemData( gd,si,is_v );
+    if ( gd->stemcnt > 0 ) {
+        sd = &gd->stems[0];
+        si->where = StemAddHIFromActive( sd,is_v );
+    }
+    GlyphDataFree( gd );
+}
+
+static void SCGuessHintInstancesLight(SplineChar *sc, StemInfo *stem,int major) {
     SplinePointList *spl;
     SplinePoint *sp, *np;
     int sm, wm, off;
@@ -1539,8 +1582,71 @@ static StemInfo *StemInfoAdd(StemInfo *list, StemInfo *new) {
 return( list );
 }
 
+void SCGuessHintInstancesList( SplineChar *sc,StemInfo *hstem,StemInfo *vstem,DStemInfo *dstem ) {
+    struct glyphdata *gd;
+    struct stemdata *sd;
+    int i, cnt=0, hneeds_gd=false, vneeds_gd=false;
+    StemInfo *test;
+    
+    if ( hstem == NULL && vstem == NULL && dstem == NULL )
+return;
+    /* If all stems already have active zones assigned (actual for .sfd
+    /* files), then there is no need to wast time generating glyph data for
+    /* this glyph */
+    test = hstem;
+    while ( test != NULL ) {
+        if ( test->where == NULL ) {
+            hneeds_gd = true;
+    break;
+        }
+        test = test->next;
+    }
+    test = vstem;
+    while ( test != NULL ) {
+        if ( test->where == NULL ) {
+            vneeds_gd = true;
+    break;
+        }
+        test = test->next;
+    }
+    if ( !hneeds_gd && !vneeds_gd )
+return;
+
+    gd = GlyphDataInit( sc,true );
+    if ( gd == NULL )
+return;
+
+    cnt = 0;
+    if ( hstem != NULL && hneeds_gd ) {
+        gd = StemInfoToStemData( gd,hstem,false );
+        for ( i=cnt; i<gd->stemcnt; i++ ) {
+            sd = &gd->stems[i];
+            if ( hstem == NULL )
+        break;
+            if ( hstem->where == NULL )
+                hstem->where = StemAddHIFromActive( sd,false );
+            hstem = hstem->next;
+        }
+    }
+    
+    cnt = gd->stemcnt;
+    if ( vstem != NULL && vneeds_gd ) {
+        gd = StemInfoToStemData( gd,vstem,true );
+        for ( i=cnt; i<gd->stemcnt; i++ ) {
+            sd = &gd->stems[i];
+            if ( vstem == NULL )
+        break;
+            if ( vstem->where == NULL )
+                vstem->where = StemAddHIFromActive( sd,true );
+            vstem = vstem->next;
+        }
+    }
+    GlyphDataFree( gd );
+return;
+}
+
 void SCGuessHHintInstancesAndAdd(SplineChar *sc, StemInfo *stem, real guess1, real guess2) {
-    SCGuessHintInstances(sc, stem, 0);
+    SCGuessHVHintInstances( sc,stem,0 );
     sc->hstem = StemInfoAdd(sc->hstem,stem);
     if ( stem->where==NULL && guess1!=0x80000000 ) {
 	if ( guess1>guess2 ) { real temp = guess1; guess1 = guess2; guess2 = temp; }
@@ -1557,7 +1663,7 @@ void SCGuessHHintInstancesAndAdd(SplineChar *sc, StemInfo *stem, real guess1, re
 }
 
 void SCGuessVHintInstancesAndAdd(SplineChar *sc, StemInfo *stem, real guess1, real guess2) {
-    SCGuessHintInstances(sc, stem, 1);
+    SCGuessHVHintInstances( sc,stem,1 );
     sc->vstem = StemInfoAdd(sc->vstem,stem);
     if ( stem->where==NULL && guess1!=0x80000000 ) {
 	if ( guess1>guess2 ) { real temp = guess1; guess1 = guess2; guess2 = temp; }
@@ -1575,34 +1681,20 @@ void SCGuessVHintInstancesAndAdd(SplineChar *sc, StemInfo *stem, real guess1, re
 
 void SCGuessHHintInstancesList(SplineChar *sc) {
     StemInfo *h;
-    int any = false;
-
-    for ( h= sc->hstem; h!=NULL; h=h->next )
+    for ( h= sc->hstem; h!=NULL; h=h->next ) {
 	if ( h->where==NULL ) {
-	    SCGuessHintInstances(sc,h,0);
-	    any |= h->where!=NULL;
+	    SCGuessHintInstancesLight( sc,h,false );
 	}
-/*
-    if ( any )
-	for ( h= sc->hstem; h!=NULL; h=h->next )
-	    StemInfoReduceOverlap(h->next,h);
-*/
+    }
 }
 
 void SCGuessVHintInstancesList(SplineChar *sc) {
     StemInfo *h;
-    int any = false;
-
-    for ( h= sc->vstem; h!=NULL; h=h->next )
+    for ( h= sc->vstem; h!=NULL; h=h->next ) {
 	if ( h->where==NULL ) {
-	    SCGuessHintInstances(sc,h,1);
-	    any |= h->where!=NULL;
+	    SCGuessHintInstancesLight( sc,h,true );
 	}
-/*
-    if ( any )
-	for ( h= sc->vstem; h!=NULL; h=h->next )
-	    StemInfoReduceOverlap(h->next,h);
-*/
+    }
 }
 
 static int IsLineCoIncident( BasePoint *top1,BasePoint *bottom1, 
@@ -2733,34 +2825,6 @@ return;						/* In an MM font we may still need to resolve things like different
     }
     if ( instance_count==1 )
 	SCFigureSimpleCounterMasks(sc);
-}
-
-static HintInstance *StemAddHIFromActive(struct stemdata *stem,int major) {
-    int i;
-    HintInstance *head = NULL, *cur, *t;
-    double mino, maxo;
-    double dir = ((real *) &stem->unit.x)[major]<0 ? -1 : 1;
-
-    for ( i=0; i<stem->activecnt; ++i ) {
-	mino = dir*stem->active[i].start + ((real *) &stem->left.x)[major];
-	maxo = dir*stem->active[i].end + ((real *) &stem->left.x)[major];
-	cur = chunkalloc(sizeof(HintInstance));
-	if ( dir>0 ) {
-	    cur->begin = mino;
-	    cur->end = maxo;
-	    if ( head==NULL )
-		head = cur;
-	    else
-		t->next = cur;
-	    t = cur;
-	} else {
-	    cur->begin = maxo;
-	    cur->end = mino;
-	    cur->next = head;
-	    head = cur;
-	}
-    }
-return( head );
 }
 
 static void GDReassignPoint(struct glyphdata *gd,struct stemdata *stem,struct pointdata **_pd) {
