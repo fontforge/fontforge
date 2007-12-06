@@ -3913,7 +3913,7 @@ return;
 	    ++dcnt;
 	}
     } else {
-	if ( i!=def ) {
+	if ( i!=def && def!=-1 ) {
 	    desired_cmaps[1] = cmap_encs[def];
 	    ++dcnt;
 	}

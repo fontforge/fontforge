@@ -4692,7 +4692,8 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 	    LogError(_("Invalid format (%d) for subtable of 'kern' table"), format );
 	    info->bad_gx = true;
 	    fseek(ttf,len-header_size,SEEK_CUR);
-	    OTLRemove(info,otl,true);
+	    if ( otl!=NULL )
+		OTLRemove(info,otl,true);
 	}
     }
 }
