@@ -24,7 +24,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "pfaeditui.h"
+#include "fontforgevw.h"
 #include "ttf.h"
 #include <stdio.h>
 #include <math.h>
@@ -5494,9 +5494,8 @@ static void fea_NameLookups(struct parseState *tok) {
     }
 
     sf->changed = true;
-    FVSetTitle(sf->fv);
-    if ( sf->fv->v!=NULL )
-	GDrawRequestExpose(sf->fv->v,NULL,false);
+    FVSetTitles(sf);
+    FVRefreshAll(sf);
 }
 	
 void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename) {

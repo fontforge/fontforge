@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2007 by George Williams */
+/* Copyright (C) 2007 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -24,28 +24,11 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _GROUPS_H
-#define _GROUPS_H
+#ifndef _FONTFORGEVW_H_
+#define _FONTFORGEVW_H_
 
-typedef struct group {
-    char *name;			/* The name of this group (utf8) */
-    struct group *parent;	/* parent of this group (NULL for group root) */
-    int kid_cnt;		/* Number of sub-groups */
-    struct group **kids;	/* The sub-groups */
-    char *glyphs;		/* Or, if a terminal node, a list of glyph names/Unicodes */
-    unsigned int unique: 1;	/* If set => set in all kids & a glyph name may only appear once in all terminal groups */
-/* Used by the dialog */
-    unsigned int open: 1;
-    unsigned int selected : 1;
-    int lpos;
-} Group;
+#include "pfaedit.h"
+#include "gimage.h"
+#include "baseviews.h"
 
-extern Group *group_root;
-
-struct fontview;
-
-void SaveGroupList(void);
-void LoadGroupList(void);
-void DefineGroups(struct fontview *fv);
-void DisplayGroups(struct fontview *fv);
 #endif

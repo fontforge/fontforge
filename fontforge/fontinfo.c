@@ -30,7 +30,6 @@
 #include <chardata.h>
 #include <utype.h>
 #include "unicoderange.h"
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 extern int _GScrollBar_Width;
 #include <gkeysym.h>
 #include <math.h>
@@ -587,6 +586,8 @@ static struct ms_2_locales { char *loc_name; int local_id; } ms_2_locals[] = {
     { "yo", 0x46a },
     { "zu", 0x435 },
     { NULL }};
+/* There is a similar list at the end of python.c, untranslated strings for */
+/*  scripting use */
 static GTextInfo mslanguages[] = {
     { (unichar_t *) N_("Afrikaans"), NULL, 0, 0, (void *) 0x436, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Albanian"), NULL, 0, 0, (void *) 0x41c, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -814,6 +815,8 @@ static GTextInfo mslanguages[] = {
     { (unichar_t *) N_("Yoruba"), NULL, 0, 0, (void *) 0x46a, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Zulu"), NULL, 0, 0, (void *) 0x435, NULL, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
+/* There is a similar list at the end of python.c, untranslated strings for */
+/*  scripting use */
 static GTextInfo ttfnameids[] = {
 /* Put styles (docs call it subfamily) first because it is most likely to change */
     { (unichar_t *) N_("Styles (SubFamily)"), NULL, 0, 0, (void *) 2, NULL, 0, 0, 0, 0, 1, 0, 1},
@@ -1485,7 +1488,7 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_CodePageRanges	16121
 #define CID_CodePageList	16122
 
-const char *TTFNameIds(int id) {
+const char *UI_TTFNameIds(int id) {
     int i;
 
     FontInfoInit();
@@ -1499,7 +1502,7 @@ return( "Postscript" );
 return( _("Unknown") );
 }
 
-const char *MSLangString(int language) {
+const char *UI_MSLangString(int language) {
     int i;
 
     FontInfoInit();
@@ -1514,9 +1517,7 @@ return( (char *) mslanguages[i].text );
 
 return( _("Unknown") );
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 /* These are Postscript names, and as such should not be translated */
 enum { pt_number, pt_boolean, pt_array, pt_code };
 static struct { const char *name; short type, arr_size, present; } KnownPrivates[] = {
@@ -1754,12 +1755,8 @@ static void PIPrivateCheck(struct gfi_data *d) {
 
 static int PIFinishFormer(struct gfi_data *d) {
     unichar_t *end;
-#if defined(FONTFORGE_CONFIG_GDRAW)
     char *buts[3];
     buts[0] = _("_OK"); buts[1] = _("_Cancel"); buts[2]=NULL;
-#elif defined(FONTFORGE_CONFIG_GTK)
-    static char *buts[] = { GTK_STOCK_OK, GTK_STOCK_CANCEL, NULL };
-#endif
 
     if ( d->old_sel < 0 )
 return( true );
@@ -1937,12 +1934,8 @@ static int PI_Guess(GGadget *g, GEvent *e) {
     char buffer[211];
     unichar_t *temp;
     struct psdict *private;
-#if defined(FONTFORGE_CONFIG_GDRAW)
     char *buts[3];
     buts[0] = _("_OK"); buts[1] = _("_Cancel"); buts[2]=NULL;
-#elif defined(FONTFORGE_CONFIG_GTK)
-    static char *buts[] = { GTK_STOCK_OK, GTK_STOCK_CANCEL, NULL };
-#endif
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	gw = GGadgetGetWindow(g);
@@ -2128,19 +2121,9 @@ static int PI_ListSel(GGadget *g, GEvent *e) {
     }
 return( true );
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-/* Use URW 4 letter abbreviations */
-static char *knownweights[] = { "Demi", "Bold", "Regu", "Medi", "Book", "Thin",
-	"Ligh", "Heav", "Blac", "Ultr", "Nord", "Norm", "Gras", "Stan", "Halb",
-	"Fett", "Mage", "Mitt", "Buch", NULL };
-static char *realweights[] = { "Demi", "Bold", "Regular", "Medium", "Book", "Thin",
-	"Light", "Heavy", "Black", "Ultra", "Nord", "Normal", "Gras", "Standard", "Halbfett",
-	"Fett", "Mager", "Mittel", "Buchschrift", NULL};
-static char *moreweights[] = { "ExtraLight", "VeryLight", NULL };
-static char **noticeweights[] = { moreweights, realweights, knownweights, NULL };
+extern char *knownweights[], *realweights[], **noticeweights[];
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static int GFI_NameChange(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
 	GWindow gw = GGadgetGetWindow(g);
@@ -2283,8 +2266,6 @@ return( true );
 static void MCD_Close(struct markclassdlg *mcd);
 
 static void GFI_Close(struct gfi_data *d) {
-    FontView *fvs;
-    SplineFont *sf = d->sf;
 
     if ( d->ccd )
 	CCD_Close(d->ccd);
@@ -2298,9 +2279,7 @@ static void GFI_Close(struct gfi_data *d) {
     GDrawDestroyWindow(d->gw);
     if ( d->sf->fontinfo == d )
 	d->sf->fontinfo = NULL;
-    for ( fvs = d->sf->fv; fvs!=NULL; fvs = fvs->nextsame ) {
-	GDrawRequestExpose(sf->fv->v,NULL,false);
-    }
+    FVRefreshAll(d->sf);
     d->done = true;
     /* d will be freed by destroy event */;
 }
@@ -2454,23 +2433,23 @@ static int MCD_ToSelection(GGadget *g, GEvent *e) {
 	MarkClassDlg *mcd = GDrawGetUserData(GGadgetGetWindow(g));
 	const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(mcd->gw,CID_MCD_GlyphList));
 	SplineFont *sf = mcd->d->sf;
-	FontView *fv = sf->fv;
+	FontView *fv = (FontView *) (sf->fv);
 	const unichar_t *end;
 	int pos, found=-1;
 	char *nm;
 
 	GDrawSetVisible(fv->gw,true);
 	GDrawRaise(fv->gw);
-	memset(fv->selected,0,fv->map->enccount);
+	memset(fv->b.selected,0,fv->b.map->enccount);
 	while ( *ret ) {
 	    end = u_strchr(ret,' ');
 	    if ( end==NULL ) end = ret+u_strlen(ret);
 	    nm = cu_copybetween(ret,end);
 	    for ( ret = end; isspace(*ret); ++ret);
-	    if (( pos = SFFindSlot(sf,fv->map,-1,nm))!=-1 ) {
+	    if (( pos = SFFindSlot(sf,fv->b.map,-1,nm))!=-1 ) {
 		if ( found==-1 ) found = pos;
 		if ( pos!=-1 )
-		    fv->selected[pos] = true;
+		    fv->b.selected[pos] = true;
 	    }
 	    free(nm);
 	}
@@ -2486,29 +2465,29 @@ static int MCD_FromSelection(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	MarkClassDlg *mcd = GDrawGetUserData(GGadgetGetWindow(g));
 	SplineFont *sf = mcd->d->sf;
-	FontView *fv = sf->fv;
+	FontView *fv = (FontView *) (sf->fv);
 	unichar_t *vals, *pt;
 	int i, len, max, gid;
 	SplineChar *sc, dummy;
     
-	for ( i=len=max=0; i<fv->map->enccount; ++i ) if ( fv->selected[i]) {
-	    gid = fv->map->map[i];
+	for ( i=len=max=0; i<fv->b.map->enccount; ++i ) if ( fv->b.selected[i]) {
+	    gid = fv->b.map->map[i];
 	    if ( gid!=-1 && sf->glyphs[gid]!=NULL )
 		sc = sf->glyphs[gid];
 	    else
-		sc = SCBuildDummy(&dummy,sf,fv->map,i);
+		sc = SCBuildDummy(&dummy,sf,fv->b.map,i);
 	    len += strlen(sc->name)+1;
-	    if ( fv->selected[i]>max ) max = fv->selected[i];
+	    if ( fv->b.selected[i]>max ) max = fv->b.selected[i];
 	}
 	pt = vals = galloc((len+1)*sizeof(unichar_t));
 	*pt = '\0';
 	/* in a class the order of selection is irrelevant */
-	for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i]) {
-	    gid = fv->map->map[i];
+	for ( i=0; i<fv->b.map->enccount; ++i ) if ( fv->b.selected[i]) {
+	    gid = fv->b.map->map[i];
 	    if ( gid!=-1 && sf->glyphs[gid]!=NULL )
 		sc = sf->glyphs[gid];
 	    else
-		sc = SCBuildDummy(&dummy,sf,fv->map,i);
+		sc = SCBuildDummy(&dummy,sf,fv->b.map,i);
 	    uc_strcpy(pt,sc->name);
 	    pt += u_strlen(pt);
 	    *pt++ = ' ';
@@ -3136,248 +3115,14 @@ return( true );
 }
 
 static int AskLoseUndoes() {
-#if defined(FONTFORGE_CONFIG_GDRAW)
     char *buts[3];
     buts[0] = _("_OK"); buts[1] = _("_Cancel"); buts[2]=NULL;
-#elif defined(FONTFORGE_CONFIG_GTK)
-    static char *buts[] = { GTK_STOCK_OK, GTK_STOCK_CANCEL, NULL };
-#endif
 return( gwwv_ask(_("Losing Undoes"),(const char **) buts,0,1,_("Changing the order of the splines in the font will lose all undoes.\nContinue anyway?")) );
 }
 
 static void BadFamily() {
     ff_post_error(_("Bad Family Name"),_("Bad Family Name, must begin with an alphabetic character."));
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-
-static char *modifierlist[] = { "Ital", "Obli", "Kursive", "Cursive", "Slanted",
-	"Expa", "Cond", NULL };
-static char *modifierlistfull[] = { "Italic", "Oblique", "Kursive", "Cursive", "Slanted",
-    "Expanded", "Condensed", NULL };
-static char **mods[] = { knownweights, modifierlist, NULL };
-static char **fullmods[] = { realweights, modifierlistfull, NULL };
-
-char *_GetModifiers(char *fontname, char *familyname,char *weight) {
-    char *pt, *fpt;
-    int i, j;
-
-    /* URW fontnames don't match the familyname */
-    /* "NimbusSanL-Regu" vs "Nimbus Sans L" (note "San" vs "Sans") */
-    /* so look for a '-' if there is one and use that as the break point... */
-
-    if ( (fpt=strchr(fontname,'-'))!=NULL ) {
-	++fpt;
-	if ( *fpt=='\0' )
-	    fpt = NULL;
-    } else if ( familyname!=NULL ) {
-	for ( pt = fontname, fpt=familyname; *fpt!='\0' && *pt!='\0'; ) {
-	    if ( *fpt == *pt ) {
-		++fpt; ++pt;
-	    } else if ( *fpt==' ' )
-		++fpt;
-	    else if ( *pt==' ' )
-		++pt;
-	    else if ( *fpt=='a' || *fpt=='e' || *fpt=='i' || *fpt=='o' || *fpt=='u' )
-		++fpt;	/* allow vowels to be omitted from family when in fontname */
-	    else
-	break;
-	}
-	if ( *fpt=='\0' && *pt!='\0' )
-	    fpt = pt;
-	else
-	    fpt = NULL;
-    }
-
-    if ( fpt == NULL ) {
-	for ( i=0; mods[i]!=NULL; ++i ) for ( j=0; mods[i][j]!=NULL; ++j ) {
-	    pt = strstr(fontname,mods[i][j]);
-	    if ( pt!=NULL && (fpt==NULL || pt<fpt))
-		fpt = pt;
-	}
-    }
-    if ( fpt!=NULL ) {
-	for ( i=0; mods[i]!=NULL; ++i ) for ( j=0; mods[i][j]!=NULL; ++j ) {
-	    if ( strcmp(fpt,mods[i][j])==0 )
-return( fullmods[i][j]);
-	}
-	if ( strcmp(fpt,"BoldItal")==0 )
-return( "BoldItalic" );
-	else if ( strcmp(fpt,"BoldObli")==0 )
-return( "BoldOblique" );
-
-return( fpt );
-    }
-
-return( weight==NULL || *weight=='\0' ? "Regular": weight );
-}
-
-char *SFGetModifiers(SplineFont *sf) {
-return( _GetModifiers(sf->fontname,sf->familyname,sf->weight));
-}
-
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-static const unichar_t *_uGetModifiers(const unichar_t *fontname, const unichar_t *familyname,
-	const unichar_t *weight) {
-    const unichar_t *pt, *fpt;
-    static unichar_t regular[] = { 'R','e','g','u','l','a','r', 0 };
-    static unichar_t space[20];
-    int i,j;
-
-    /* URW fontnames don't match the familyname */
-    /* "NimbusSanL-Regu" vs "Nimbus Sans L" (note "San" vs "Sans") */
-    /* so look for a '-' if there is one and use that as the break point... */
-
-    if ( (fpt=u_strchr(fontname,'-'))!=NULL ) {
-	++fpt;
-	if ( *fpt=='\0' )
-	    fpt = NULL;
-    } else if ( familyname!=NULL ) {
-	for ( pt = fontname, fpt=familyname; *fpt!='\0' && *pt!='\0'; ) {
-	    if ( *fpt == *pt ) {
-		++fpt; ++pt;
-	    } else if ( *fpt==' ' )
-		++fpt;
-	    else if ( *pt==' ' )
-		++pt;
-	    else if ( *fpt=='a' || *fpt=='e' || *fpt=='i' || *fpt=='o' || *fpt=='u' )
-		++fpt;	/* allow vowels to be omitted from family when in fontname */
-	    else
-	break;
-	}
-	if ( *fpt=='\0' && *pt!='\0' )
-	    fpt = pt;
-	else
-	    fpt = NULL;
-    }
-
-    if ( fpt==NULL ) {
-	for ( i=0; mods[i]!=NULL; ++i ) for ( j=0; mods[i][j]!=NULL; ++j ) {
-	    pt = uc_strstr(fontname,mods[i][j]);
-	    if ( pt!=NULL && (fpt==NULL || pt<fpt))
-		fpt = pt;
-	}
-    }
-
-    if ( fpt!=NULL ) {
-	for ( i=0; mods[i]!=NULL; ++i ) for ( j=0; mods[i][j]!=NULL; ++j ) {
-	    if ( uc_strcmp(fpt,mods[i][j])==0 ) {
-		uc_strcpy(space,fullmods[i][j]);
-return( space );
-	    }
-	}
-	if ( uc_strcmp(fpt,"BoldItal")==0 ) {
-	    uc_strcpy(space,"BoldItalic");
-return( space );
-	} else if ( uc_strcmp(fpt,"BoldObli")==0 ) {
-	    uc_strcpy(space,"BoldOblique");
-return( space );
-	}
-return( fpt );
-    }
-
-return( weight==NULL || *weight=='\0' ? regular: weight );
-}
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-
-void SFSetFontName(SplineFont *sf, char *family, char *mods,char *full) {
-    char *n;
-    char *pt, *tpt;
-
-    n = galloc(strlen(family)+strlen(mods)+2);
-    strcpy(n,family); strcat(n," "); strcat(n,mods);
-    if ( full==NULL || *full == '\0' )
-	full = copy(n);
-    for ( pt=tpt=n; *pt; ) {
-	if ( !isspace(*pt))
-	    *tpt++ = *pt++;
-	else
-	    ++pt;
-    }
-    *tpt = '\0';
-#if 0
-    for ( pt=tpt=family; *pt; ) {
-	if ( !isspace(*pt))
-	    *tpt++ = *pt++;
-	else
-	    ++pt;
-    }
-    *tpt = '\0';
-#endif
-
-    free(sf->fullname); sf->fullname = copy(full);
-
-    /* In the URW world fontnames aren't just a simple concatenation of */
-    /*  family name and modifiers, so neither the family name nor the modifiers */
-    /*  changed, then don't change the font name */
-    if ( strcmp(family,sf->familyname)==0 && strcmp(n,sf->fontname)==0 )
-	/* Don't change the fontname */;
-	/* or anything else */
-    else {
-	free(sf->fontname); sf->fontname = n;
-	free(sf->familyname); sf->familyname = copy(family);
-	free(sf->weight); sf->weight = NULL;
-	if ( strstrmatch(mods,"extralight")!=NULL || strstrmatch(mods,"extra-light")!=NULL )
-	    sf->weight = copy("ExtraLight");
-	else if ( strstrmatch(mods,"demilight")!=NULL || strstrmatch(mods,"demi-light")!=NULL )
-	    sf->weight = copy("DemiLight");
-	else if ( strstrmatch(mods,"demibold")!=NULL || strstrmatch(mods,"demi-bold")!=NULL )
-	    sf->weight = copy("DemiBold");
-	else if ( strstrmatch(mods,"semibold")!=NULL || strstrmatch(mods,"semi-bold")!=NULL )
-	    sf->weight = copy("SemiBold");
-	else if ( strstrmatch(mods,"demiblack")!=NULL || strstrmatch(mods,"demi-black")!=NULL )
-	    sf->weight = copy("DemiBlack");
-	else if ( strstrmatch(mods,"extrabold")!=NULL || strstrmatch(mods,"extra-bold")!=NULL )
-	    sf->weight = copy("ExtraBold");
-	else if ( strstrmatch(mods,"extrablack")!=NULL || strstrmatch(mods,"extra-black")!=NULL )
-	    sf->weight = copy("ExtraBlack");
-	else if ( strstrmatch(mods,"book")!=NULL )
-	    sf->weight = copy("Book");
-	else if ( strstrmatch(mods,"regular")!=NULL )
-	    sf->weight = copy("Regular");
-	else if ( strstrmatch(mods,"roman")!=NULL )
-	    sf->weight = copy("Roman");
-	else if ( strstrmatch(mods,"normal")!=NULL )
-	    sf->weight = copy("Normal");
-	else if ( strstrmatch(mods,"demi")!=NULL )
-	    sf->weight = copy("Demi");
-	else if ( strstrmatch(mods,"medium")!=NULL )
-	    sf->weight = copy("Medium");
-	else if ( strstrmatch(mods,"bold")!=NULL )
-	    sf->weight = copy("Bold");
-	else if ( strstrmatch(mods,"heavy")!=NULL )
-	    sf->weight = copy("Heavy");
-	else if ( strstrmatch(mods,"black")!=NULL )
-	    sf->weight = copy("Black");
-	else if ( strstrmatch(mods,"Nord")!=NULL )
-	    sf->weight = copy("Nord");
-/* Sigh. URW uses 4 letter abreviations... */
-	else if ( strstrmatch(mods,"Regu")!=NULL )
-	    sf->weight = copy("Regular");
-	else if ( strstrmatch(mods,"Medi")!=NULL )
-	    sf->weight = copy("Medium");
-	else if ( strstrmatch(mods,"blac")!=NULL )
-	    sf->weight = copy("Black");
-	else
-	    sf->weight = copy("Medium");
-    }
-
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    if ( sf->fv!=NULL && sf->fv->gw!=NULL ) {
-	unichar_t *temp;
-	int i;
-	GDrawSetWindowTitles(sf->fv->gw,temp = uc_copy(sf->fontname),NULL);
-	free(temp);
-	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL && sf->glyphs[i]->views!=NULL ) {
-	    char buffer[300]; unichar_t ubuf[300]; CharView *cv;
-	    sprintf( buffer, "%.90s from %.90s", sf->glyphs[i]->name, sf->fontname );
-	    uc_strcpy(ubuf,buffer);
-	    for ( cv = sf->glyphs[i]->views; cv!=NULL; cv=cv->next )
-		GDrawSetWindowTitles(cv->gw,ubuf,NULL);
-	}
-    }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-}
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 
 static int SetFontName(GWindow gw, SplineFont *sf) {
     const unichar_t *ufamily = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Family));
@@ -3401,12 +3146,8 @@ static int CheckNames(struct gfi_data *d) {
     const unichar_t *ufamily = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Family));
     const unichar_t *ufont = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_Fontname));
     unichar_t *end; const unichar_t *pt;
-#if defined(FONTFORGE_CONFIG_GDRAW)
     char *buts[3];
     buts[0] = _("_OK"); buts[1] = _("_Cancel"); buts[2]=NULL;
-#elif defined(FONTFORGE_CONFIG_GTK)
-    static char *buts[] = { GTK_STOCK_OK, GTK_STOCK_CANCEL, NULL };
-#endif
 
     if ( u_strlen(ufont)>63 ) {
 	ff_post_error(_("Bad Font Name"),_("A Postscript name should be ASCII\nand must not contain (){}[]<>%%/ or space\nand must be shorter than 63 characters"));
@@ -3463,59 +3204,7 @@ return( false );
     }
 return( true );
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-void TTF_PSDupsDefault(SplineFont *sf) {
-    struct ttflangname *english;
-    char versionbuf[40];
-
-    /* Ok, if we've just loaded a ttf file then we've got a bunch of langnames*/
-    /*  we copied some of them (copyright, family, fullname, etc) into equiv */
-    /*  postscript entries in the sf. If we then use FontInfo and change the */
-    /*  obvious postscript entries we are left with the old ttf entries. If */
-    /*  we generate a ttf file and then load it the old values pop up. */
-    /* Solution: Anything we can generate by default should be set to NULL */
-    for ( english=sf->names; english!=NULL && english->lang!=0x409; english=english->next );
-    if ( english==NULL )
-return;
-    if ( english->names[ttf_family]!=NULL &&
-	    strcmp(english->names[ttf_family],sf->familyname)==0 ) {
-	free(english->names[ttf_family]);
-	english->names[ttf_family]=NULL;
-    }
-    if ( english->names[ttf_copyright]!=NULL &&
-	    strcmp(english->names[ttf_copyright],sf->copyright)==0 ) {
-	free(english->names[ttf_copyright]);
-	english->names[ttf_copyright]=NULL;
-    }
-    if ( english->names[ttf_fullname]!=NULL &&
-	    strcmp(english->names[ttf_fullname],sf->fullname)==0 ) {
-	free(english->names[ttf_fullname]);
-	english->names[ttf_fullname]=NULL;
-    }
-    if ( sf->subfontcnt!=0 || sf->version!=NULL ) {
-	if ( sf->subfontcnt!=0 )
-	    sprintf( versionbuf, "Version %f", sf->cidversion );
-	else
-	    sprintf(versionbuf,"Version %.20s ", sf->version);
-	if ( english->names[ttf_version]!=NULL &&
-		strcmp(english->names[ttf_version],versionbuf)==0 ) {
-	    free(english->names[ttf_version]);
-	    english->names[ttf_version]=NULL;
-	}
-    }
-    if ( english->names[ttf_subfamily]!=NULL &&
-	    strcmp(english->names[ttf_subfamily],SFGetModifiers(sf))==0 ) {
-	free(english->names[ttf_subfamily]);
-	english->names[ttf_subfamily]=NULL;
-    }
-
-    /* User should not be allowed any access to this one, not ever */
-    free(english->names[ttf_postscriptname]);
-    english->names[ttf_postscriptname]=NULL;
-}
-
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static int ttfspecials[] = { ttf_copyright, ttf_family, ttf_fullname,
 	ttf_subfamily, ttf_version, -1 };
 
@@ -4451,46 +4140,6 @@ static void StoreTTFNames(struct gfi_data *d) {
     TTF_PSDupsDefault(sf);
 }
 
-/* If we change the ascent/descent of a sub font then consider changing the */
-/*  as/ds of the master font. I used to think this irrelevant, but as the */
-/*  typoAscent/Descent is based on the master's ascent/descent it actually */
-/*  is meaningful. Set the master to the subfont with the most glyphs */
-void CIDMasterAsDes(SplineFont *sf) {
-    SplineFont *cidmaster = sf->cidmaster;
-    SplineFont *best;
-    int i, cid, cnt, bcnt;
-
-    if ( cidmaster==NULL )
-return;
-    best = NULL; bcnt = 0;
-    for ( i=0; i<cidmaster->subfontcnt; ++i ) {
-	sf = cidmaster->subfonts[i];
-	for ( cid=cnt=0; cid<sf->glyphcnt; ++cid )
-	    if ( sf->glyphs[cid]!=NULL )
-		++cnt;
-	if ( cnt>bcnt ) {
-	    best = sf;
-	    bcnt = cnt;
-	}
-    }
-    if ( best==NULL && cidmaster->subfontcnt>0 )
-	best = cidmaster->subfonts[0];
-    if ( best!=NULL ) {
-	double ratio = 1000.0/(best->ascent+best->descent);
-	int ascent = rint(best->ascent*ratio);
-	if ( cidmaster->ascent!=ascent || cidmaster->descent!=1000-ascent ) {
-	    cidmaster->ascent = ascent;
-	    cidmaster->descent = 1000-ascent;
-	}
-    }
-}
-
-void SFSetModTime(SplineFont *sf) {
-    time_t now;
-    time(&now);
-    sf->modificationtime = now;
-}
-
 static void GFI_ApplyLookupChanges(struct gfi_data *gfi) {
     int i,j, isgpos;
     OTLookup *last;
@@ -4623,12 +4272,8 @@ return( true );
 	    SMD_Close(d->smd);
 
 	if ( ttfmultuniqueids(sf,d)) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	    char *buts[3];
 	    buts[0] = _("_OK"); buts[1] = _("_Cancel"); buts[2]=NULL;
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    static char *buts[] = { GTK_STOCK_OK, GTK_STOCK_CANCEL, NULL };
-#endif
 	    if ( gwwv_ask(_("Too many Unique Font IDs"),(const char **) buts,0,1,_("You should only specify the TrueType Unique Font Identification string in one language. This font has more. Do you want to continue anyway?"))==1 )
 return( true );
 	}
@@ -4808,11 +4453,7 @@ return(true);
 	    int ans;
 	    buts[0] = _("Change");
 	    buts[1] = _("Retain");
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	    buts[2] = _("_Cancel");
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    buts[2] = GTK_STOCK_CANCEL;
-#endif
 	    buts[3] = NULL;
 	    ans = gwwv_ask(_("Change UniqueID?"),(const char **) buts,0,2,_("You have changed this font's name without changing the UniqueID (or XUID).\nThis is probably not a good idea, would you like me to\ngenerate a random new value?"));
 	    if ( ans==2 ) {
@@ -5002,10 +4643,8 @@ return(true);
 		SFConvertToOrder3(sf);
 	}
 	GFI_ApplyLookupChanges(d);
-	if ( retitle_fv ) { FontView *fvs;
-	    for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame )
-		FVSetTitle(fvs);
-	}
+	if ( retitle_fv )
+	    FVSetTitles(sf);
 	if ( reformat_fv || was_ml!=sf->multilayer || was_stroke!=sf->strokedfont )
 	    FontViewReformatAll(sf);
 	sf->changed = true;
@@ -5016,7 +4655,7 @@ return(true);
 	/*  in outline views... */
 	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
 	    CharView *cv;
-	    for ( cv = sf->glyphs[i]->views; cv!=NULL; cv=cv->next ) {
+	    for ( cv = (CharView *) (sf->glyphs[i]->views); cv!=NULL; cv=(CharView *) (cv->b.next) ) {
 		cv->back_img_out_of_date = true;
 		GDrawRequestExpose(cv->v,NULL,false);
 	    }
@@ -5626,8 +5265,8 @@ static int GFI_UnicodeRangeChange(GGadget *g, GEvent *e) {
     struct unicoderange *r;
     int gid, first=-1;
     SplineFont *sf = d->sf;
-    FontView *fv = sf->fv;
-    EncMap *map = fv->map;
+    FontView *fv = (FontView *) (sf->fv);
+    EncMap *map = fv->b.map;
     int i, enc;
 
     if ( ti==NULL )
@@ -5639,7 +5278,7 @@ return( true );
     r = ti->userdata;
 
     for ( i=0; i<map->enccount; ++i )
-	fv->selected[i] = 0;
+	fv->b.selected[i] = 0;
 
     if ( e->u.control.subtype == et_listselected ) {
 	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( sf->glyphs[gid]!=NULL ) {
@@ -5647,7 +5286,7 @@ return( true );
 	    if ( sf->glyphs[gid]->unicodeenc>=r->first && sf->glyphs[gid]->unicodeenc<=r->last &&
 		    enc!=-1 ) {
 		if ( first==-1 || enc<first ) first = enc;
-		fv->selected[enc] = true;
+		fv->b.selected[enc] = true;
 	    }
 	}
     } else if ( e->u.control.subtype == et_listdoubleclick && !r->unassigned ) {
@@ -5663,7 +5302,7 @@ return( true );
 		enc = EncFromUni(i+r->first,map->enc);
 		if ( enc!=-1 ) {
 		    if ( first==-1 || enc<first ) first = enc;
-		    fv->selected[enc] = true;
+		    fv->b.selected[enc] = true;
 		}
 	    }
 	}
@@ -5994,8 +5633,8 @@ void GFI_LookupEnableButtons(struct gfi_data *gfi, int isgpos) {
     GGadgetSetEnabled(GWidgetGetControl(gfi->gw,CID_RevertLookups),true);
     GGadgetSetEnabled(GWidgetGetControl(gfi->gw,CID_LookupSort),lk->cnt>1 );
 
-    for ( ofv=fv_list; ofv!=NULL; ofv = ofv->next ) {
-	SplineFont *osf = ofv->sf;
+    for ( ofv=fv_list; ofv!=NULL; ofv = (FontView *) (ofv->b.next) ) {
+	SplineFont *osf = ofv->b.sf;
 	if ( osf->cidmaster ) osf = osf->cidmaster;
 	if ( osf==gfi->sf || gfi->sf->cidmaster==osf )
     continue;
@@ -6738,14 +6377,14 @@ static int GFI_LookupImportLookup(GGadget *g, GEvent *e) {
 	/* Figure out what lookups can be imported from which (open) fonts */
 	ti = NULL;
 	for ( j=0; j<2; ++j ) {
-	    for ( ofv=fv_list; ofv!=NULL; ofv=ofv->next ) {
-		osf = ofv->sf;
+	    for ( ofv=fv_list; ofv!=NULL; ofv=(FontView *) (ofv->b.next) ) {
+		osf = ofv->b.sf;
 		if ( osf->cidmaster ) osf = osf->cidmaster;
 		osf->ticked = false;
 	    }
 	    cnt = 0;
-	    for ( ofv=fv_list; ofv!=NULL; ofv=ofv->next ) {
-		osf = ofv->sf;
+	    for ( ofv=fv_list; ofv!=NULL; ofv=(FontView *) (ofv->b.next) ) {
+		osf = ofv->b.sf;
 		if ( osf->cidmaster ) osf = osf->cidmaster;
 		if ( osf->ticked || osf==gfi->sf || osf==gfi->sf->cidmaster ||
 			( isgpos && osf->gpos_lookups==NULL) ||
@@ -7362,11 +7001,7 @@ return;
 	    }
 	}
 	if ( has_aalt_only || has_aalt_mixed ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	    buts[0] = _("_OK"); buts[1] = _("_Cancel"); buts[2] = NULL;
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    buts[0] = GTK_STOCK_OK; buts[1] = GTK_STOCK_CANCEL; buts[2] = NULL;
-#endif
 	    ret = gwwv_ask(has_aalt_only?_("Lookups will be removed"):_("Feature tags will be removed"),
 		    (const char **) buts,0,1,
 		    !has_aalt_mixed ?
@@ -7405,19 +7040,11 @@ return;
 	struct lkdata *lk = &gfi->tables[isgpos];
 
 	LookupParseSelection(lk,&sel);
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	if ( sel.lookup_cnt==0 ) {
 	    buts[0] = _("_Apply to All"); buts[1] = _("_Cancel"); buts[2]=NULL;
 	} else {
 	    buts[0] = _("_Apply to All"); buts[1] = _("_Apply to Selection"); buts[2] = _("_Cancel"); buts[3]=NULL;
 	}
-#elif defined(FONTFORGE_CONFIG_GTK)
-	if ( sel.lookup_cnt==0 ) {
-	    buts[0] = _("_Apply to All"); buts[1] = GTK_STOCK_CANCEL; buts[2]=NULL;
-	} else {
-	    buts[0] = _("_Apply to All"); buts[1] = _("_Apply to Selection"); buts[2] = GTK_STOCK_CANCEL; buts[3]=NULL;
-	}
-#endif
 	ret = gwwv_ask(_("Apply to:"),(const char **) buts,0,sel.lookup_cnt==0?1:2,_("Apply change to which lookups?"));
 	toall = false;
 	if ( ret==0 )
@@ -10705,7 +10332,7 @@ return;
 }
 
 void FontMenuFontInfo(void *_fv) {
-    FontInfo( ((FontView *) _fv)->sf,-1,false);
+    FontInfo( ((FontView *) _fv)->b.sf,-1,false);
 }
 
 void FontInfoDestroy(SplineFont *sf) {
@@ -10731,9 +10358,6 @@ void FontInfoInit(void) {
     if ( done )
 return;
     done = true;
-#ifndef _NO_PYTHON
-    scriptingSaveEnglishNames(ttfnameids,mslanguages);
-#endif
     for ( j=0; needswork[j]!=NULL; ++j ) {
 	for ( i=0; needswork[j][i].text!=NULL; ++i )
 	    needswork[j][i].text = (unichar_t *) S_((char *) needswork[j][i].text);
@@ -10752,5 +10376,7 @@ return;
     gaspci[2].title = S_(gaspci[2].title);
     gaspci[3].title = S_(gaspci[3].title);
     gaspci[4].title = S_(gaspci[4].title);
+
+    LookupUIInit();
+    LookupInit();
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

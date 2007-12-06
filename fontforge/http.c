@@ -24,7 +24,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "pfaeditui.h"
+#include "fontforgevw.h"
 #include <ustring.h>
 #include <utype.h>
 
@@ -122,22 +122,9 @@ static char *UrlEncode(char *to,char *source) {
 return( to );
 }
 
-static void tinysleep(int microsecs) {
-    fd_set none;
-    struct timeval timeout;
-
-    FD_ZERO(&none);
-    memset(&timeout,0,sizeof(timeout));
-    timeout.tv_usec = microsecs;
-
-    select(1,&none,&none,&none,&timeout);
-}
-
 static void ChangeLine2_8(char *str) {
-    GProgressChangeLine2_8(str);
-    GDrawSync(NULL);
-    tinysleep(100);
-    GDrawProcessPendingEvents(NULL);
+    ff_progress_change_line2(str);
+    ff_progress_allow_events();
 }
 
 static int Converse(int soc, char *databuf, int databuflen, FILE *msg,
@@ -178,7 +165,7 @@ return( 404 );		/* Random error */
     }
     if ( msg!=NULL ) {
 	/* int tot = 0;*/
-	GProgressChangeTotal((int) ((ftell(msg)+databuflen-1)/databuflen) );
+	ff_progress_change_total((int) ((ftell(msg)+databuflen-1)/databuflen) );
 	rewind(msg);
 	while ( (len=fread(databuf,1,databuflen,msg))>0 ) {
 /*fprintf( stderr, "Total read=%d\n", tot += len );*/
@@ -187,13 +174,13 @@ return( 404 );		/* Random error */
 		close( soc );
 return( 404 );
 	    }
-	    if ( !GProgressNext() )
+	    if ( !ff_progress_next() )
 return( 404 );
 	    if ( verbose>=2 )
 		write(fileno(stdout),databuf,len);
 	}
 	fclose(msg);
-	if ( !GProgressNext() )
+	if ( !ff_progress_next() )
 return( 404 );
 	ChangeLine2_8(_("Awaiting response"));
     }
@@ -277,22 +264,19 @@ int OFLibUploadFont(OFLibData *oflib) {
     time_t now;
     struct tm *tm;
 
-    GProgressStartIndicator8(0,_("Font Upload..."),_("Uploading to Open Font Library"),
+    ff_progress_start_indicator(0,_("Font Upload..."),_("Uploading to Open Font Library"),
 	    _("Looking for openfontlibrary.org"),1,1);
-    GDrawSync(NULL);
-    tinysleep(100);
-    GDrawProcessPendingEvents(NULL);
-    GDrawSync(NULL);
-    GDrawProcessPendingEvents(NULL);
+    ff_progress_allow_events();
+    ff_progress_allow_events();
 
     if ( !findHTTPhost(&addr, "openfontlibrary.org")) {
-	GProgressEndIndicator();
+	ff_progress_end_indicator();
 	ff_post_error(_("Could not find host"),_("Could not find \"%s\"\nAre you connected to the internet?"), "openfontlibrary.org" );
 return( false );
     }
     soc = makeConnection(&addr);
     if ( soc==-1 ) {
-	GProgressEndIndicator();
+	ff_progress_end_indicator();
 	ff_post_error(_("Could not connect to host"),_("Could not connect to \"%s\"."), "openfontlibrary.org" );
 return( false );
     }
@@ -320,7 +304,7 @@ return( false );
     /* Amusingly a success return of 200 is actually an error */
     if ( code!=302 ) {
 	free(databuf);
-	GProgressEndIndicator();
+	ff_progress_end_indicator();
 	ff_post_error(_("Login failed"),_("Could not log in.") );
 return( false );
     }
@@ -328,7 +312,7 @@ return( false );
     ChangeLine2_8("Gathering state info...");
     soc = makeConnection(&addr);
     if ( soc==-1 ) {
-	GProgressEndIndicator();
+	ff_progress_end_indicator();
 	free(databuf);
 	ff_post_error(_("Could not connect to host"),_("Could not connect to \"%s\"."), "openfontlibrary.org" );
 return( false );
@@ -342,7 +326,7 @@ return( false );
     strcat(databuf,"\r\n");
     code = Converse( soc, databuf, datalen, NULL, ct_getuserid, &siteinfo );
     if ( siteinfo.user_id==-1 ) {
-	GProgressEndIndicator();
+	ff_progress_end_indicator();
 	free(databuf);
 	ff_post_error(_("Could not read state"),_("Could not read state.") );
 return( false );
@@ -370,7 +354,7 @@ return( false );
     if ( font==NULL ) {
 	fclose(formdata);
 	free(databuf);
-	GProgressEndIndicator();
+	ff_progress_end_indicator();
 	ff_post_error(_("Font file vanished"),_("The font file we just created can no longer be opened.") );
 return( false );
     }
@@ -428,7 +412,7 @@ return( false );
 #endif
     soc = makeConnection(&addr);
     if ( soc==-1 ) {
-	GProgressEndIndicator();
+	ff_progress_end_indicator();
 	free(databuf);
 	fclose(formdata);
 	ff_post_error(_("Could not connect to host"),_("Could not connect to \"%s\"."), "openfontlibrary.org" );
@@ -448,7 +432,7 @@ return( false );
     AttachCookies(databuf,&siteinfo);
     strcat(databuf,"\r\n");
     code = Converse( soc, databuf, datalen, formdata, ct_slurpdata, &siteinfo );
-    GProgressEndIndicator();
+    ff_progress_end_indicator();
     free( databuf );
 
     /* I think the expected return code here is 200, that's what I've seen the*/

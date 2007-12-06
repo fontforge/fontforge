@@ -1028,7 +1028,7 @@ static int Group_ToSelection(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct groupdlg *grp = GDrawGetUserData(GGadgetGetWindow(g));
 	const unichar_t *ret = _GGadgetGetTitle(grp->glyphs);
-	SplineFont *sf = grp->fv->sf;
+	SplineFont *sf = grp->fv->b.sf;
 	FontView *fv = grp->fv;
 	const unichar_t *end;
 	int pos, found=-1;
@@ -1036,7 +1036,7 @@ static int Group_ToSelection(GGadget *g, GEvent *e) {
 
 	GDrawSetVisible(fv->gw,true);
 	GDrawRaise(fv->gw);
-	memset(fv->selected,0,fv->map->enccount);
+	memset(fv->b.selected,0,fv->b.map->enccount);
 	while ( *ret ) {
 	    end = u_strchr(ret,' ');
 	    if ( end==NULL ) end = ret+u_strlen(ret);
@@ -1051,17 +1051,17 @@ static int Group_ToSelection(GGadget *g, GEvent *e) {
 		    val2 = strtol(end+1,NULL,16);
 		}
 		for ( ; val<=val2; ++val ) {
-		    if (( pos = SFFindSlot(sf,fv->map,val,NULL))!=-1 ) {
+		    if (( pos = SFFindSlot(sf,fv->b.map,val,NULL))!=-1 ) {
 			if ( found==-1 ) found = pos;
 			if ( pos!=-1 )
-			    fv->selected[pos] = true;
+			    fv->b.selected[pos] = true;
 		    }
 		}
 	    } else {
-		if (( pos = SFFindSlot(sf,fv->map,-1,nm))!=-1 ) {
+		if (( pos = SFFindSlot(sf,fv->b.map,-1,nm))!=-1 ) {
 		    if ( found==-1 ) found = pos;
 		    if ( pos!=-1 )
-			fv->selected[pos] = true;
+			fv->b.selected[pos] = true;
 		}
 	    }
 	    free(nm);
@@ -1077,7 +1077,7 @@ return( true );
 static int Group_FromSelection(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct groupdlg *grp = GDrawGetUserData(GGadgetGetWindow(g));
-	SplineFont *sf = grp->fv->sf;
+	SplineFont *sf = grp->fv->b.sf;
 	FontView *fv = grp->fv;
 	unichar_t *vals, *pt;
 	int i, len, max, gid, k;
@@ -1085,23 +1085,23 @@ static int Group_FromSelection(GGadget *g, GEvent *e) {
 	char buffer[20];
 
 	if ( GGadgetIsChecked(grp->idname) ) {
-	    for ( i=len=max=0; i<fv->map->enccount; ++i ) if ( fv->selected[i]) {
-		gid = fv->map->map[i];
+	    for ( i=len=max=0; i<fv->b.map->enccount; ++i ) if ( fv->b.selected[i]) {
+		gid = fv->b.map->map[i];
 		if ( gid!=-1 && sf->glyphs[gid]!=NULL )
 		    sc = sf->glyphs[gid];
 		else
-		    sc = SCBuildDummy(&dummy,sf,fv->map,i);
+		    sc = SCBuildDummy(&dummy,sf,fv->b.map,i);
 		len += strlen(sc->name)+1;
-		if ( fv->selected[i]>max ) max = fv->selected[i];
+		if ( fv->b.selected[i]>max ) max = fv->b.selected[i];
 	    }
 	    pt = vals = galloc((len+1)*sizeof(unichar_t));
 	    *pt = '\0';
-	    for ( i=len=max=0; i<fv->map->enccount; ++i ) if ( fv->selected[i]) {
-		gid = fv->map->map[i];
+	    for ( i=len=max=0; i<fv->b.map->enccount; ++i ) if ( fv->b.selected[i]) {
+		gid = fv->b.map->map[i];
 		if ( gid!=-1 && sf->glyphs[gid]!=NULL )
 		    sc = sf->glyphs[gid];
 		else
-		    sc = SCBuildDummy(&dummy,sf,fv->map,i);
+		    sc = SCBuildDummy(&dummy,sf,fv->b.map,i);
 		uc_strcpy(pt,sc->name);
 		pt += u_strlen(pt);
 		*pt++ = ' ';
@@ -1112,12 +1112,12 @@ static int Group_FromSelection(GGadget *g, GEvent *e) {
 	    for ( k=0; k<2; ++k ) {
 		int last=-2, start=-2;
 		len = 0;
-		for ( i=len=max=0; i<fv->map->enccount; ++i ) if ( fv->selected[i]) {
-		    gid = fv->map->map[i];
+		for ( i=len=max=0; i<fv->b.map->enccount; ++i ) if ( fv->b.selected[i]) {
+		    gid = fv->b.map->map[i];
 		    if ( gid!=-1 && sf->glyphs[gid]!=NULL )
 			sc = sf->glyphs[gid];
 		    else
-			sc = SCBuildDummy(&dummy,sf,fv->map,i);
+			sc = SCBuildDummy(&dummy,sf,fv->b.map,i);
 		    if ( sc->unicodeenc==-1 )
 		continue;
 		    if ( sc->unicodeenc==last+1 )
@@ -1576,7 +1576,7 @@ return( ret );
 }
 
 static void EncodeToGroups(FontView *fv,Group *group, int compacted) {
-    SplineFont *sf = fv->sf;
+    SplineFont *sf = fv->b.sf;
     EncMap *map;
     if ( compacted )
 	map = EncMapNew(0,sf->glyphcnt,&custom);
@@ -1597,12 +1597,12 @@ static void EncodeToGroups(FontView *fv,Group *group, int compacted) {
 	ff_post_error(_("Nothing Selected"),_("None of the glyphs in the current font match any names or code points in the selected groups"));
 	EncMapFree(map);
     } else {
-	fv->selected = grealloc(fv->selected,map->enccount);
-	memset(fv->selected,0,map->enccount);
-	EncMapFree(fv->map);
-	fv->map = map;
-	FVSetTitle(fv);
-	FontViewReformatOne(fv);
+	fv->b.selected = grealloc(fv->b.selected,map->enccount);
+	memset(fv->b.selected,0,map->enccount);
+	EncMapFree(fv->b.map);
+	fv->b.map = map;
+	FVSetTitle((FontViewBase *) fv);
+	FontViewReformatOne((FontViewBase *) fv);
     }
 }
 

@@ -25,15 +25,18 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "pfaeditui.h"
+#include "fontforgevw.h"
 #include <ustring.h>
 #include <utype.h>
+#include <math.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <dirent.h>
 #include <gfile.h>
 #include "plugins.h"
 #include "encoding.h"
+
+Encoding *default_encoding = NULL;
 
 static int32 tex_base_encoding[] = {
     0x0000, 0x02d9, 0xfb01, 0xfb02, 0x2044, 0x02dd, 0x0141, 0x0142,
@@ -506,13 +509,13 @@ static void EncodingFree(Encoding *item) {
 }
 
 void DeleteEncoding(Encoding *me) {
-    FontView *fv;
+    FontViewBase *fv;
     Encoding *prev;
 
     if ( me->builtin )
 return;
 
-    for ( fv = fv_list; fv!=NULL; fv = fv->next ) {
+    for ( fv = FontViewFirst(); fv!=NULL; fv = fv->next ) {
 	if ( fv->map->enc==me )
 	    fv->map->enc = &custom;
     }
@@ -621,7 +624,6 @@ return;
 		ff_post_error(_("Bad encoding file format"),_("This file contains an unnamed encoding, which cannot be named in a script"));
 return;
 	    }
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	    if ( item==head && item->next==NULL )
 		strcpy(buf,_("Please name this encoding"));
 	    else {
@@ -646,7 +648,7 @@ return;
 			    i );
 # endif
 	    }
-	    name = gwwv_ask_string(buf,NULL,buf);
+	    name = ff_ask_string(buf,NULL,buf);
 	    if ( name!=NULL ) {
 		item->enc_name = copy(name);
 		free(name);
@@ -657,7 +659,6 @@ return;
 		    prev->next = item->next;
 		EncodingFree(item);
 	    }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	}
     }
     for ( item=head; item!=NULL; item=item->next )
@@ -933,21 +934,12 @@ struct cidmap *LoadMapFromFile(char *file,char *registry,char *ordering,
 
     f = fopen( file,"r" );
     if ( f==NULL ) {
-#if defined(FONTFORGE_CONFIG_GTK)
 	ff_post_error(_("Missing cidmap file"),_("Couldn't open cidmap file: %s"), file );
-#else
-	ff_post_error(_("Couldn't open file"), _("Couldn't open file %.200s"), file);
-#endif
 	ret->cidmax = ret->namemax = 0;
 	ret->unicode = NULL; ret->name = NULL;
     } else if ( fscanf( f, "%d %d", &ret->cidmax, &ret->namemax )!=2 ) {
-#if defined(FONTFORGE_CONFIG_GTK)
 	ff_post_error(_("Bad cidmap file"),_("%s is not a cidmap file, please download\nhttp://fontforge.sourceforge.net/cidmaps.tgz"), file );
 	fprintf( stderr, _("%s is not a cidmap file, please download\nhttp://fontforge.sourceforge.net/cidmaps.tgz"), file );
-#else
-	ff_post_error(_("Bad Cidmap File"), _("%s is not a cidmap file, please download\nhttp://fontforge.sourceforge.net/cidmaps.tgz"), file);
-	fprintf( stderr, "%s is not a cidmap file, please download\nhttp://fontforge.sourceforge.net/cidmaps.tgz", file );
-#endif
 	ret->cidmax = ret->namemax = 0;
 	ret->unicode = NULL; ret->name = NULL;
     } else {
@@ -1000,25 +992,8 @@ return( map );
 return( maybe );	/* User has said it's ok to use maybe at this supplement level */
 
     file = SearchDirForCidMap(".",registry,ordering,supplement,&maybefile);
-#if 0
     if ( file==NULL )
-	file = SearchDirForCidMap(GResourceProgramDir,registry,ordering,supplement,&maybefile);
-    if ( file==NULL )
-	file = SearchNoLibsDirForCidMap(GResourceProgramDir,registry,ordering,supplement,&maybefile);
-#endif
-#ifdef SHAREDIR
-    if ( file==NULL )
-	file = SearchDirForCidMap(SHAREDIR,registry,ordering,supplement,&maybefile);
-#endif
-    if ( file==NULL )
-	file = SearchDirForCidMap(getPfaEditShareDir(),registry,ordering,supplement,&maybefile);
-#ifdef PREFIX
-    if ( file==NULL )
-	file = SearchDirForCidMap(PREFIX "/share/fontforge",registry,ordering,supplement,&maybefile);
-#else
-    if ( file==NULL )
-	file = SearchDirForCidMap("/usr/share/fontforge",registry,ordering,supplement,&maybefile);
-#endif
+	file = SearchDirForCidMap(getFontForgeShareDir(),registry,ordering,supplement,&maybefile);
 
     if ( file==NULL && (maybe!=NULL || maybefile!=NULL)) {
 	if ( maybefile!=NULL ) {
@@ -1036,7 +1011,7 @@ return( maybe );	/* User has said it's ok to use maybe at this supplement level 
 	    maybe_sup = maybe->supplement;
 	if ( sf!=NULL ) sf->loading_cid_map = true;
 	buts[0] = _("_Use It"); buts[1] = _("_Search"); buts[2] = NULL;
-	ret = gwwv_ask(_("Use CID Map"),(const char **) buts,0,1,_("This font is based on the charset %1$.20s-%2$.20s-%3$d, but the best I've been able to find is %1$.20s-%2$.20s-%4$d.\nShall I use that or let you search?"),
+	ret = ff_ask(_("Use CID Map"),(const char **) buts,0,1,_("This font is based on the charset %1$.20s-%2$.20s-%3$d, but the best I've been able to find is %1$.20s-%2$.20s-%4$d.\nShall I use that or let you search?"),
 		registry,ordering,supplement,maybe_sup);
 	if ( sf!=NULL ) sf->loading_cid_map = false;
 	if ( ret==0 ) {
@@ -1059,12 +1034,8 @@ return( maybe );
 #endif
 	if ( maybe==NULL && maybefile==NULL ) {
 	    buts3[0] = _("_Browse"); buts3[1] = _("_Give Up"); buts3[2] = NULL;
-	    ret = gwwv_ask(_("No cidmap file..."),(const char **)buts3,0,1,_("FontForge was unable to find a cidmap file for this font. It is not essential to have one, but some things will work better if you do. If you have not done so you might want to download the cidmaps from:\n   http://FontForge.sourceforge.net/cidmaps.tgz\nand then gunzip and untar them and move them to:\n  %.80s\n\nWould you like to search your local disk for an appropriate file?"),
-#ifdef SHAREDIR
-		    SHAREDIR
-#else
-		    getPfaEditShareDir()==NULL?"/usr/share/fontforge":getPfaEditShareDir()
-#endif
+	    ret = ff_ask(_("No cidmap file..."),(const char **)buts3,0,1,_("FontForge was unable to find a cidmap file for this font. It is not essential to have one, but some things will work better if you do. If you have not done so you might want to download the cidmaps from:\n   http://FontForge.sourceforge.net/cidmaps.tgz\nand then gunzip and untar them and move them to:\n  %.80s\n\nWould you like to search your local disk for an appropriate file?"),
+		    getFontForgeShareDir()==NULL?"/usr/share/fontforge":getFontForgeShareDir()
 		    );
 	    if ( ret==1 || no_windowing_ui )
 		buf[0] = '\0';
@@ -1072,7 +1043,7 @@ return( maybe );
 	uret = NULL;
 	if ( buf[0]!='\0' && !no_windowing_ui ) {
 	    if ( sf!=NULL ) sf->loading_cid_map = true;
-	    uret = gwwv_open_filename(_("Find a cidmap file..."),NULL,buf,NULL);
+	    uret = ff_open_filename(_("Find a cidmap file..."),NULL,buf);
 	    if ( sf!=NULL ) sf->loading_cid_map = false;
 	}
 	if ( uret==NULL ) {
@@ -1085,7 +1056,7 @@ return( maybe );
 	    } else if ( no_windowing_ui ) {
 		file = maybefile;
 		maybefile = NULL;
-	    } else if ( gwwv_ask(_("Use CID Map"),(const char **)buts2,0,1,_("Are you sure you don't want to use the cidmap I found?"))==0 ) {
+	    } else if ( ff_ask(_("Use CID Map"),(const char **)buts2,0,1,_("Are you sure you don't want to use the cidmap I found?"))==0 ) {
 		if ( maybe!=NULL ) {
 		    maybe->maxsupple = supplement;
 return( maybe );
@@ -1161,17 +1132,10 @@ void SFEncodeToMap(SplineFont *sf,struct cidmap *map) {
     } else if ( sc!=NULL )
 	sc->orig_pos = -1;
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( anyextras ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	char *buttons[3];
-	buttons[0] = _("_Delete");
-	buttons[1] = _("_Add");
-	buttons[2] = NULL;
-#elif defined(FONTFORGE_CONFIG_GTK)
-	static char *buttons[] = { GTK_STOCK_DELETE, GTK_STOCK_ADD, NULL };
-#endif
-	if ( gwwv_ask(_("Extraneous glyphs"),(const char **) buttons,0,1,_("The current encoding contains glyphs which I cannot map to CIDs.\nShould I delete them or add them to the end (where they may conflict with future ros definitions)?"))==1 ) {
+	buttons[0] = _("_Delete"); buttons[1] = _("_Add"); buttons[2] = NULL;
+	if ( ff_ask(_("Extraneous glyphs"),(const char **) buttons,0,1,_("The current encoding contains glyphs which I cannot map to CIDs.\nShould I delete them or add them to the end (where they may conflict with future ros definitions)?"))==1 ) {
 	    if ( map!=NULL && max<map->cidmax ) max = map->cidmax;
 	    anyextras = 0;
 	    for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sc = sf->glyphs[i]) ) {
@@ -1180,7 +1144,6 @@ void SFEncodeToMap(SplineFont *sf,struct cidmap *map) {
 	    max += anyextras;
 	}
     }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     SFApplyOrdering(sf, max+1);
 }
 
@@ -1353,7 +1316,7 @@ return;
 }
 
 SplineFont *CIDFlatten(SplineFont *cidmaster,SplineChar **glyphs,int charcnt) {
-    FontView *fvs;
+    FontViewBase *fvs;
     SplineFont *new;
     char buffer[20];
     BDFFont *bdf;
@@ -1421,13 +1384,9 @@ return(NULL);
 		fvs->map->map[j] = fvs->map->backmap[j] = j;
 	}
 	fvs->sf = new;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	FVSetTitle(fvs);
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     FontViewReformatAll(new);
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     SplineFontFree(cidmaster);
 return( new );
 }
@@ -1464,7 +1423,7 @@ int SFFlattenByCMap(SplineFont *sf,char *cmapname) {
     int i,j,k,l,m, extras, max, curmax, warned;
     int found[4];
     SplineChar **glyphs = NULL, *sc;
-    FontView *fvs;
+    FontViewBase *fvs;
 
     if ( sf->cidmaster!=NULL )
 	sf = sf->cidmaster;
@@ -1489,7 +1448,6 @@ return( false );
 	}
     }
 
-    SFFindNearTop(sf);
     curmax = 0;
     for ( k=0; k<sf->subfontcnt; ++k ) {
 	if ( curmax < sf->subfonts[k]->glyphcnt )
@@ -1524,17 +1482,10 @@ return( false );
 			    if ( m<sizeof(found)/sizeof(found[0]) )
 				found[m++] = l;
 			    else if ( !warned ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
 				ff_post_notice(_("MultipleEncodingIgnored"),
 					_("The glyph at CID %d is mapped to more than %d encodings. Only the first %d are handled."), i,
 					sizeof(found)/sizeof(found[0]),
 					sizeof(found)/sizeof(found[0]));
-#elif defined(FONTFORGE_CONFIG_GTK)
-				ff_post_notice(_("MultipleEncodingIgnored"),
-					_("The glyph at CID %d is mapped to more than %d encodings. Only the first %d are handled."), i,
-					sizeof(found)/sizeof(found[0]),
-					sizeof(found)/sizeof(found[0]));
-#endif
 				warned = true;
 			    }
 			}
@@ -1570,10 +1521,7 @@ return( false );
 	}
     }
     cmapfree(cmap);
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     FontViewReformatAll(sf);
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-    SFRestoreNearTop(sf);
 return( true );
 }
 
@@ -1610,17 +1558,12 @@ static void SFEncodeToCMap(SplineFont *cidmaster,SplineFont *sf,EncMap *oldmap, 
 	else if ( sc->orig_pos==-1 ) ++anyextras;
     }
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( anyextras ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	char *buttons[3];
 	buttons[0] = _("_Delete");
 	buttons[1] = _("_Add");
 	buttons[2] = NULL;
-#elif defined(FONTFORGE_CONFIG_GTK)
-	static char *buttons[] = { GTK_STOCK_DELETE, GTK_STOCK_ADD, NULL };
-#endif
-	if ( gwwv_ask(_("Extraneous glyphs"),(const char **) buttons,0,1,_("The current encoding contains glyphs which I cannot map to CIDs.\nShould I delete them or add them to the end (where they may conflict with future ros definitions)?"))==1 ) {
+	if ( ff_ask(_("Extraneous glyphs"),(const char **) buttons,0,1,_("The current encoding contains glyphs which I cannot map to CIDs.\nShould I delete them or add them to the end (where they may conflict with future ros definitions)?"))==1 ) {
 	    if ( cmap!=NULL && max<cmap->total ) max = cmap->total;
 	    anyextras = 0;
 	    for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc = sf->glyphs[i])!=NULL ) {
@@ -1629,19 +1572,51 @@ static void SFEncodeToCMap(SplineFont *cidmaster,SplineFont *sf,EncMap *oldmap, 
 	    max += anyextras;
 	}
     }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     SFApplyOrdering(sf, max);
+}
+
+/* If we change the ascent/descent of a sub font then consider changing the */
+/*  as/ds of the master font. I used to think this irrelevant, but as the */
+/*  typoAscent/Descent is based on the master's ascent/descent it actually */
+/*  is meaningful. Set the master to the subfont with the most glyphs */
+void CIDMasterAsDes(SplineFont *sf) {
+    SplineFont *cidmaster = sf->cidmaster;
+    SplineFont *best;
+    int i, cid, cnt, bcnt;
+
+    if ( cidmaster==NULL )
+return;
+    best = NULL; bcnt = 0;
+    for ( i=0; i<cidmaster->subfontcnt; ++i ) {
+	sf = cidmaster->subfonts[i];
+	for ( cid=cnt=0; cid<sf->glyphcnt; ++cid )
+	    if ( sf->glyphs[cid]!=NULL )
+		++cnt;
+	if ( cnt>bcnt ) {
+	    best = sf;
+	    bcnt = cnt;
+	}
+    }
+    if ( best==NULL && cidmaster->subfontcnt>0 )
+	best = cidmaster->subfonts[0];
+    if ( best!=NULL ) {
+	double ratio = 1000.0/(best->ascent+best->descent);
+	int ascent = rint(best->ascent*ratio);
+	if ( cidmaster->ascent!=ascent || cidmaster->descent!=1000-ascent ) {
+	    cidmaster->ascent = ascent;
+	    cidmaster->descent = 1000-ascent;
+	}
+    }
 }
 
 SplineFont *MakeCIDMaster(SplineFont *sf,EncMap *oldmap,int bycmap,char *cmapfilename, struct cidmap *cidmap) {
     SplineFont *cidmaster;
     struct cidmap *map;
     struct cmap *cmap;
-    FontView *fvs;
+    FontViewBase *fvs;
     int freeme;
 
     cidmaster = SplineFontEmpty();
-    SFFindNearTop(sf);
     if ( bycmap ) {
 	if ( cmapfilename==NULL ) {
 	    SplineFontFree(cidmaster);
@@ -1659,19 +1634,13 @@ return(NULL);
 	cmapfree(cmap);
     } else {
 	map = cidmap;
-	if (map == NULL) {
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	    map = AskUserForCIDMap(cidmaster);		/* Sets the ROS fields */
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-	} else {
-	    cidmaster->cidregistry = copy(map->registry);
-	    cidmaster->ordering = copy(map->ordering);
-	    cidmaster->supplement = map->supplement;
-	}
 	if ( map==NULL ) {
 	    SplineFontFree(cidmaster);
 return(NULL);
 	}
+	cidmaster->cidregistry = copy(map->registry);
+	cidmaster->ordering = copy(map->ordering);
+	cidmaster->supplement = map->supplement;
 	SFEncodeToMap(sf,map);
     }
     if ( sf->uni_interp!=ui_none && sf->uni_interp!=ui_unset )
@@ -1717,15 +1686,10 @@ return(NULL);
 	fvs->selected = gcalloc(fvs->sf->glyphcnt,sizeof(char));
 	EncMapFree(fvs->map);
 	fvs->map = EncMap1to1(fvs->sf->glyphcnt);
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	FVSetTitle(fvs);
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
-    SFRestoreNearTop(sf);
     CIDMasterAsDes(sf);
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     FontViewReformatAll(sf);
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 return( cidmaster );
 }
 
@@ -1747,7 +1711,7 @@ return( copy( map->enc->enc_name ));
 
 /* ************************** Reencoding  routines ************************** */
 
-static void BDFOrigFixup(BDFFont *bdf,int orig_cnt,SplineFont *sf) {
+void BDFOrigFixup(BDFFont *bdf,int orig_cnt,SplineFont *sf) {
     BDFChar **glyphs = gcalloc(orig_cnt,sizeof(BDFChar *));
     int i;
 
@@ -1765,7 +1729,7 @@ static void BDFOrigFixup(BDFFont *bdf,int orig_cnt,SplineFont *sf) {
 static int _SFForceEncoding(SplineFont *sf,EncMap *old, Encoding *new_enc) {
     int enc_cnt,i;
     BDFFont *bdf;
-    FontView *fvs;
+    FontViewBase *fvs;
 
     /* Normally we base our encoding process on unicode code points. */
     /*  but encodings like AdobeStandard are more interested in names than */
@@ -1800,7 +1764,7 @@ return(false);			/* Custom, it's whatever's there */
 	}
 	for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
 	    fvs->map->ticked = false;
-	    if ( fvs->filled!=NULL ) fvs->filled->ticked = false;
+	    /*if ( fvs->filled!=NULL ) fvs->filled->ticked = false;*/
 	}
 	for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) if ( !fvs->map->ticked ) {
 	    EncMap *map = fvs->map;
@@ -1821,10 +1785,8 @@ return(false);			/* Custom, it's whatever's there */
 	    IError( "Unticked encmap" );
 	for ( bdf=sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 	    BDFOrigFixup(bdf,enc_cnt,sf);
-	for ( fvs=sf->fv; fvs!=NULL ; fvs=fvs->nextsame ) {
-	    if ( fvs->filled!=NULL && !fvs->filled->ticked )
-		BDFOrigFixup(sf->fv->filled,enc_cnt,sf);
-	}
+	for ( fvs=sf->fv; fvs!=NULL ; fvs=fvs->nextsame )
+	    FVBiggerGlyphCache(fvs,enc_cnt);
 	glyphs = gcalloc(enc_cnt,sizeof(SplineChar *));
 	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
 	    glyphs[sf->glyphs[i]->orig_pos] = sf->glyphs[i];
@@ -2011,71 +1973,17 @@ return( map );
 
 void SFRemoveGlyph(SplineFont *sf,SplineChar *sc, int *flags) {
     struct splinecharlist *dep, *dnext;
-    BDFFont *bdf;
-    BDFChar *bfc;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    CharView *cv, *next;
-    BitmapView *bv, *bvnext;
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     RefChar *refs, *rnext;
-    FontView *fvs;
     KernPair *kp, *kprev;
     int i;
+    BDFFont *bdf;
+    BDFChar *bfc;
 
     if ( sc==NULL )
 return;
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     /* Close any open windows */
-    if ( sc->views ) {
-	for ( cv = sc->views; cv!=NULL; cv=next ) {
-	    next = cv->next;
-	    GDrawDestroyWindow(cv->gw);
-	}
-	GDrawSync(NULL);
-	GDrawProcessPendingEvents(NULL);
-	GDrawSync(NULL);
-	GDrawProcessPendingEvents(NULL);
-    }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-
-    for ( bdf=sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
-	if ( sc->orig_pos<bdf->glyphcnt && (bfc = bdf->glyphs[sc->orig_pos])!= NULL ) {
-	    bdf->glyphs[sc->orig_pos] = NULL;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	    if ( bfc->views!=NULL ) {
-		for ( bv= bfc->views; bv!=NULL; bv=bvnext ) {
-		    bvnext = bv->next;
-		    GDrawDestroyWindow(bv->gw);
-		}
-		GDrawSync(NULL);
-		GDrawProcessPendingEvents(NULL);
-		GDrawSync(NULL);
-		GDrawProcessPendingEvents(NULL);
-	    }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-	    BDFCharFree(bfc);
-	}
-    }
-
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    /* Turn any searcher references to this glyph into inline copies of it */
-    for ( fvs=sc->parent->fv; fvs!=NULL; fvs=fvs->nextsame ) {
-	if ( fvs->sv!=NULL ) {
-	    RefChar *rf, *rnext;
-	    for ( rf = fvs->sv->sc_srch.layers[ly_fore].refs; rf!=NULL; rf=rnext ) {
-		rnext = rf->next;
-		if ( rf->sc==sc )
-		    SCRefToSplines(&fvs->sv->sc_srch,rf);
-	    }
-	    for ( rf = fvs->sv->sc_rpl.layers[ly_fore].refs; rf!=NULL; rf=rnext ) {
-		rnext = rf->next;
-		if ( rf->sc==sc )
-		    SCRefToSplines(&fvs->sv->sc_rpl,rf);
-	    }
-	}
-    }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+    SCCloseAllViews(sc);
 
     /* Turn any references to this glyph into inline copies of it */
     for ( dep=sc->dependents; dep!=NULL; dep=dnext ) {
@@ -2113,10 +2021,18 @@ return;
 
     sf->glyphs[sc->orig_pos] = NULL;
     SplineCharFree(sc);
+
+    for ( bdf=sc->parent->bitmaps; bdf!=NULL; bdf = bdf->next ) {
+	if ( sc->orig_pos<bdf->glyphcnt && (bfc = bdf->glyphs[sc->orig_pos])!= NULL ) {
+	    bdf->glyphs[sc->orig_pos] = NULL;
+	    BDFCharFree(bfc);
+	}
+    }
+
     GlyphHashFree(sf);
 }
 
-void FVAddEncodingSlot(FontView *fv,int gid) {
+void FVAddEncodingSlot(FontViewBase *fv,int gid) {
     EncMap *map = fv->map;
     int enc;
 
@@ -2128,19 +2044,16 @@ void FVAddEncodingSlot(FontView *fv,int gid) {
 
     fv->selected = grealloc(fv->selected,map->enccount);
     fv->selected[enc] = 0;
-    if ( fv->colcnt!=0 ) {		/* Ie. scripting vs. UI */
-	fv->rowltot = (enc+1+fv->colcnt-1)/fv->colcnt;
-	GScrollBarSetBounds(fv->vsb,0,fv->rowltot,fv->rowcnt);
-    }
+    FVAdjustScrollBarRows(fv,enc);
 }
 
 void SFAddEncodingSlot(SplineFont *sf,int gid) {
-    FontView *fv;
+    FontViewBase *fv;
     for ( fv=sf->fv; fv!=NULL; fv = fv->nextsame )
 	FVAddEncodingSlot(fv,gid);
 }
 
-static int MapAddEnc(SplineFont *sf,SplineChar *sc,EncMap *basemap, EncMap *map,int baseenc, int gid, FontView *fv) {
+static int MapAddEnc(SplineFont *sf,SplineChar *sc,EncMap *basemap, EncMap *map,int baseenc, int gid, FontViewBase *fv) {
     int any = false, enc;
 
     if ( gid>=map->backmax ) {
@@ -2181,7 +2094,7 @@ return( any );
 
 void SFAddGlyphAndEncode(SplineFont *sf,SplineChar *sc,EncMap *basemap, int baseenc) {
     int gid, mapfound = false;
-    FontView *fv;
+    FontViewBase *fv;
     BDFFont *bdf;
 
     if ( sf->cidmaster==NULL ) {
@@ -2228,16 +2141,9 @@ void SFAddGlyphAndEncode(SplineFont *sf,SplineChar *sc,EncMap *basemap, int base
     sf->glyphs[gid] = NULL;
     for ( fv=sf->fv; fv!=NULL; fv = fv->nextsame ) {
 	EncMap *map = fv->map;
-	BDFFont *bdf = fv->filled;
 
-	if ( bdf!=NULL ) {
-	    if ( gid>=bdf->glyphmax )
-		bdf->glyphs = grealloc(bdf->glyphs,sf->glyphmax*sizeof(BDFChar *));
-	    if ( gid>=bdf->glyphcnt ) {
-		memset(bdf->glyphs+bdf->glyphcnt,0,(gid+1-bdf->glyphcnt)*sizeof(BDFChar *));
-		bdf->glyphcnt = gid+1;
-	    }
-	}
+	FVBiggerGlyphCache(fv,gid);
+
 	if ( !MapAddEnc(sf,sc,basemap,map,baseenc,gid,fv) )
 	    FVAddEncodingSlot(fv,gid);
 	if ( map==basemap ) mapfound = true;
@@ -2493,7 +2399,7 @@ return( EncFromUni(i,encname));
 
 void SFExpandGlyphCount(SplineFont *sf, int newcnt) {
     int old = sf->glyphcnt;
-    FontView *fv;
+    FontViewBase *fv;
 
     if ( old>=newcnt )
 return;

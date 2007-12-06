@@ -25,7 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "pfaeditui.h"
+#include "fontforgevw.h"
 #include "scriptfuncs.h"
 #include <math.h>
 #include <ustring.h>
@@ -835,7 +835,7 @@ return( ret );
 
 int CompareGlyphs(Context *c, real pt_err, real spline_err,
 	real pixel_off_frac, int bb_err, int comp_hints, int diffs_are_errors ) {
-    FontView *fv = c->curfv;
+    FontViewBase *fv = c->curfv;
     SplineFont *sf = fv->sf;
     int i, cnt=0;
     int ret=0;
