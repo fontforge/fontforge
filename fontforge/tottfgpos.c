@@ -24,11 +24,12 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "pfaeditui.h"
+#include "fontforgevw.h"
 #include <utype.h>
 #include <ustring.h>
 
 int coverageformatsallowed=3;
+int use_second_indic_scripts = false;
 
 #include "ttf.h"
 
@@ -155,7 +156,6 @@ uint32 ScriptFromUnicode(int u,SplineFont *sf) {
 	break;
 	}
 	if ( scripts[s][0]!=0 ) {
-	    extern int use_second_indic_scripts;
 	    uint32 script = scripts[s][0];
 	    if ( use_second_indic_scripts ) {
 		/* MS has a parallel set of script tags for their new */

@@ -27,10 +27,7 @@
 #include "pfaedit.h"
 #include "splinefont.h"
 #include <math.h>
-#if defined(FONTFORGE_CONFIG_GTK)
-#else
 #include <gwidget.h>
-#endif
 
 #define PI	3.1415926535897932
 
@@ -2019,7 +2016,7 @@ SplineSet *SplineSetStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
 	ret = temp;
     }
     /* We tend to get (small) rounding errors */
-    SplineSetsRound2Int(ret,1024.,false);
+    SplineSetsRound2Int(ret,1024.,false,false);
     /* If we use butt line caps or miter joins then we will likely have */
     /*  some spurious colinear points. If we do, remove them */
     SSesRemoveColinearPoints(ret);
@@ -2047,4 +2044,35 @@ SplineSet *SSStroke(SplineSet *spl,StrokeInfo *si,SplineChar *sc) {
 	last = cur;
     }
 return( head );
+}
+
+#include "baseviews.h"
+
+void FVStrokeItScript(void *_fv, StrokeInfo *si) {
+    FontViewBase *fv = _fv;
+    SplineSet *temp;
+    int i, cnt=0, layer, gid;
+    SplineChar *sc;
+
+    for ( i=0; i<fv->map->enccount; ++i ) if ( (gid=fv->map->map[i])!=-1 && fv->sf->glyphs[gid]!=NULL && fv->selected[i] )
+	++cnt;
+    ff_progress_start_indicator(10,_("Stroking..."),_("Stroking..."),0,cnt,1);
+
+    SFUntickAll(fv->sf);
+    for ( i=0; i<fv->map->enccount; ++i ) {
+	if ( (gid=fv->map->map[i])!=-1 && (sc = fv->sf->glyphs[gid])!=NULL &&
+		!sc->ticked && fv->selected[i] ) {
+	    sc->ticked = true;
+	    SCPreserveState(sc,false);
+	    for ( layer = ly_fore; layer<sc->layer_cnt; ++layer ) {
+		temp = SSStroke(sc->layers[layer].splines,si,sc);
+		SplinePointListsFree( sc->layers[layer].splines );
+		sc->layers[layer].splines = temp;
+	    }
+	    SCCharChangedUpdate(sc);
+	    if ( !ff_progress_next())
+    break;
+	}
+    }
+    ff_progress_end_indicator();
 }

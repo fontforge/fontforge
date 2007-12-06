@@ -28,22 +28,8 @@
 #ifndef _SFTEXTFIELDP_H
 # define _SFTEXTFIELDP_H
 
+#include "sflayoutP.h"
 #include "../gdraw/ggadgetP.h"
-
-typedef struct fontdata {
-    SplineFont *sf;
-    enum sftf_fonttype fonttype;
-    int pointsize;
-    int antialias;
-    BDFFont *bdf;
-    struct fontdata *next;
-    struct fontdata *depends_on;	/* We use much of the ftc allocated for depends_on */
-					/* Can't free depends_on until after we get freeed */
-    struct _GImage base;
-    GImage gi;
-    GClut clut;
-    struct sfmaps *sfmap;
-} FontData;
 
 typedef struct sftextarea {
     GGadget g;
@@ -57,7 +43,7 @@ typedef struct sftextarea {
     unsigned int multi_line: 1;
     unsigned int accepts_tabs: 1;
     unsigned int accepts_returns: 1;
-    unsigned int wrap: 1;
+    unsigned int tf_wrap: 1;
     unsigned int _dobitext: 1;	/* has at least one right to left character */
     unsigned int password: 1;
     unsigned int dontdraw: 1;	/* Used when the tf is part of a larger control, and the control determines when to draw the tf */
@@ -73,62 +59,40 @@ typedef struct sftextarea {
     int16 sel_start, sel_end, sel_base;
     int16 sel_oldstart, sel_oldend, sel_oldbase;
     int16 dd_cursor_pos;
-    unichar_t *text, *oldtext;	/* Input glyphs (in unicode) */
+    unichar_t *pointless_text, *pointless_oldtext;
     FontInstance *font;		/* pointless */
     GTimer *pressed;
     GTimer *cursor;
     GCursor old_cursor;
     GScrollBar *hsb, *vsb;
-    int16 lcnt, lmax;
-    struct opentype_str ***lines;	/* pointers into the paras array */
-    int16 xmax;
     GIC *gic;
     GTimer *numeric_scroll;
-    struct lineheights {
-	int32 y;
-	int16 as, fh;
-	uint16 p, linelen;
-	uint32 start_pos;
-    } *lineheights;
-    struct fontlist {
-	int start, end;		/* starting and ending characters [start,end) */
-				/*  always break at newline & will omit it between fontlists */
-	uint32 *feats;		/* Ends with a 0 entry */
-	uint32 script, lang;
-	FontData *fd;
-	SplineChar **sctext;
-	int scmax;
-	struct opentype_str *ottext;
-	struct fontlist *next;
-    } *fontlist, *oldfontlist;
-    struct sfmaps {
-	SplineFont *sf;
-	EncMap *map;
-	int16 sfbit_id;
-	int16 notdef_gid;
-	SplineChar *fake_notdef;
-	struct sfmaps *next;
-    } *sfmaps;
-    struct paras {
-	struct opentype_str **para;	/* An array of pointers to ottext entries */
-	int start_pos;
-    } *paras;
-    int pcnt, pmax;
-    int ps, pe, ls, le;
-    struct fontlist *oldstart, *oldend;
-    FontData *generated;
+    struct layoutinfo li;
     void *cbcontext;
     void (*changefontcallback)(void *,SplineFont *,enum sftf_fonttype,int size,int aa,
 	    uint32 script, uint32 lang, uint32 *features);
-    float dpi;
 } SFTextArea;
 
-extern SFTextArea *SFTFConvertToPrint(GGadget *g, int width, int height, int dpi);
-extern struct sfmaps *SFMapOfSF(SFTextArea *st,SplineFont *sf);
 extern void SFTFRefreshFonts(GGadget *g);
 extern void SFTextAreaShow(GGadget *g,int pos);
 extern void SFTextAreaSelect(GGadget *g,int start, int end);
 extern void SFTextAreaReplace(GGadget *g,const unichar_t *txt);
+extern int SFTFSetFontData(GGadget *g, int start, int end, SplineFont *sf,
+	enum sftf_fonttype, int size, int antialias);
+extern int SFTFSetFont(GGadget *g, int start, int end, SplineFont *sf);
+extern int SFTFSetFontType(GGadget *g, int start, int end, enum sftf_fonttype);
+extern int SFTFSetSize(GGadget *g, int start, int end, int size);
+extern int SFTFSetAntiAlias(GGadget *g, int start, int end, int antialias);
+extern int SFTFSetScriptLang(GGadget *g, int start, int end, uint32 script, uint32 lang);
+extern int SFTFSetFeatures(GGadget *g, int start, int end, uint32 *features);
+extern void SFTFRegisterCallback(GGadget *g, void *cbcontext,
+	void (*changefontcallback)(void *,SplineFont *,enum sftf_fonttype,int size,int aa,
+		uint32 script, uint32 lang, uint32 *features));
+extern void SFTFProvokeCallback(GGadget *g);
+extern void  SFTFSetDPI(GGadget *g, float dpi);
+extern float SFTFGetDPI(GGadget *g);
+extern void SFTFInitLangSys(GGadget *g, int end, uint32 script, uint32 lang);
+extern GGadget *SFTextAreaCreate(struct gwindow *base, GGadgetData *gd,void *data);
 
 extern struct gfuncs sftextarea_funcs;
 #endif

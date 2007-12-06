@@ -34,6 +34,8 @@
 #include <utype.h>
 #include <gwidget.h>
 
+int autohint_before_generate = 1;
+
 /* Let's talk about references. */
 /* If we are doing Type1 output, then the obvious way of doing them is seac */
 /*  but that's so limitting. It only works for exactly two characters both */

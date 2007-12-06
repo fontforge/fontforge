@@ -28,7 +28,7 @@
 #ifndef _SCRIPTING_H
 #define _SCRIPTING_H
 
-#include "pfaeditui.h"
+#include "fontforgevw.h"
 #include <setjmp.h>
 #include <stdarg.h>
 
@@ -89,7 +89,7 @@ typedef struct context {
     char *filename;			/* Irrelevant for user defined funcs */
     int lineno;				/* Irrelevant for user defined funcs */
     int ungotch;			/* Irrelevant for user defined funcs */
-    FontView *curfv;			/* Current fontview */
+    FontViewBase *curfv;		/* Current fontview */
     jmp_buf *err_env;			/* place to longjump to on an error */
 } Context;
 

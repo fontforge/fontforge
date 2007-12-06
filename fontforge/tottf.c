@@ -42,6 +42,8 @@
 
 #include "ttf.h"
 
+char *TTFFoundry=NULL;
+
 /* This file produces a ttf file given a splinefont. */
 
 /* ************************************************************************** */
@@ -1363,9 +1365,7 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
 		    if ( !SCPointsNumberedProperly(sc)) {
 			free(sc->ttf_instrs); sc->ttf_instrs = NULL;
 			sc->ttf_instrs_len = 0;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 			SCMarkInstrDlgAsChanged(sc);
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 			SCNumberPoints(sc);
 		    }
 	    }

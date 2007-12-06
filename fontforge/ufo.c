@@ -32,7 +32,7 @@
 # include <utype.h>
 #endif
 
-#include "pfaeditui.h"
+#include "fontforgevw.h"
 #include <unistd.h>
 #include <math.h>
 #include <time.h>
@@ -1157,9 +1157,7 @@ static void UFOLoadGlyphs(SplineFont *sf,char *glyphdir) {
     char *valname, *glyphfname;
     int i;
     SplineChar *sc;
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
     int tot;
-#endif
 
     doc = _xmlParseFile(glyphlist);
     free(glyphlist);

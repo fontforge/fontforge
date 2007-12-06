@@ -422,7 +422,6 @@ static void bPostNotice(Context *c) {
 	ScriptError( c, "Expected string argument" );
 
     loc = c->a.vals[1].u.sval;
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
     if ( !no_windowing_ui ) {
 	if ( !use_utf8_in_script ) {
 	    unichar_t *t1 = uc_copy(loc);
@@ -433,7 +432,6 @@ static void bPostNotice(Context *c) {
 	if ( loc != c->a.vals[1].u.sval )
 	    free(loc);
     } else
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     {
 	t1 = script2utf8_copy(loc);
 	loc = utf82def_copy(t1);
@@ -452,11 +450,7 @@ static void bAskUser(Context *c) {
     quest = c->a.vals[1].u.sval;
     if ( c->a.argc==3 )
 	def = c->a.vals[2].u.sval;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( no_windowing_ui ) {
-#else
-	{
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	char buffer[300];
 	char *t1 = script2utf8_copy(quest);
 	char *loc = utf82def_copy(t1);
@@ -474,14 +468,13 @@ static void bAskUser(Context *c) {
 	    c->return_val.u.sval = utf82script_copy(t1);
 	    free(t1);
 	}
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     } else {
 	char *t1, *t2, *ret;
 	if ( use_utf8_in_script ) {
-	    ret = gwwv_ask_string(quest,def,"%s", quest);
+	    ret = ff_ask_string(quest,def,"%s", quest);
 	} else {
 	    t1 = latin1_2_utf8_copy(quest);
-	    ret = gwwv_ask_string(t1,t2=latin1_2_utf8_copy(def),"%s", t1);
+	    ret = ff_ask_string(t1,t2=latin1_2_utf8_copy(def),"%s", t1);
 	    free(t1); free(t2);
 	}
 	c->return_val.type = v_str;
@@ -490,7 +483,6 @@ static void bAskUser(Context *c) {
 	    c->return_val.u.sval = copy("");
 	else
 	    free(ret);
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
 }
 
@@ -980,7 +972,7 @@ static void bSavePrefs(Context *c) {
 
     if ( c->a.argc!=1 )
 	ScriptError( c, "Wrong number of arguments" );
-    _SavePrefs();
+    SavePrefs(false);
     DumpPfaEditEncodings();
 }
 
@@ -1569,19 +1561,6 @@ exit(0);
 exit(c->a.vals[1].u.ival );
 exit(1);
 }
-
-static FontView *FVAppend(FontView *fv) {
-    /* Normally fontviews get added to the fv list when their windows are */
-    /*  created. but we don't create any windows here, so... */
-    FontView *test;
-
-    if ( fv_list==NULL ) fv_list = fv;
-    else {
-	for ( test = fv_list; test->next!=NULL; test=test->next );
-	test->next = fv;
-    }
-return( fv );
-}
 #endif /* _NO_FFSCRIPT */
 
 char **GetFontNames(char *filename) {
@@ -1689,10 +1668,8 @@ static void bOpen(Context *c) {
 	ScriptErrorString(c, "Failed to open", c->a.vals[1].u.sval);
     if ( sf->fv!=NULL )
 	/* All done */;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     else if ( !no_windowing_ui )
 	FontViewCreate(sf);
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     else
 	FVAppend(_FontViewCreate(sf));
     c->curfv = sf->fv;
@@ -1708,7 +1685,7 @@ static void bSelectBitmap(Context *c) {
 	ScriptError( c, "Bad type for argument" );
     size = c->a.vals[2].u.ival;
     if ( size==-1 )
-	c->curfv->show = NULL;
+	c->curfv->active_bitmap = NULL;
     else {
 	depth = size>>16;
 	if ( depth==0 ) depth = 1;
@@ -1717,7 +1694,7 @@ static void bSelectBitmap(Context *c) {
 	    if ( size==bdf->pixelsize && depth==BDFDepth(bdf))
 	break;
 	ScriptError(c,"No matching bitmap");
-	c->curfv->show = bdf;
+	c->curfv->active_bitmap = bdf;
     }
 }
 
@@ -1730,18 +1707,7 @@ static void bNew(Context *c) {
 static void bClose(Context *c) {
     if ( c->a.argc!=1 )
 	ScriptError( c, "Wrong number of arguments");
-    if ( c->curfv->gw!=NULL )
-	GDrawDestroyWindow(c->curfv->gw);
-    else {
-	if ( fv_list==c->curfv )
-	    fv_list = c->curfv->next;
-	else {
-	    FontView *n;
-	    for ( n=fv_list; n->next!=c->curfv; n=n->next );
-	    n->next = c->curfv->next;
-	}
-	FontViewFree(c->curfv);
-    }
+    FontViewClose(c->curfv);
     c->curfv = NULL;
 }
 
@@ -1851,7 +1817,7 @@ static void bGenerateFamily(Context *c) {
     int fmflags = -1;
     struct sflist *sfs, *cur, *lastsfs;
     Array *fonts;
-    FontView *fv;
+    FontViewBase *fv;
     int i, j, fc, added;
     uint16 psstyle;
     int fondcnt = 0, fondmax = 10;
@@ -1874,12 +1840,12 @@ static void bGenerateFamily(Context *c) {
     for ( i=0; i<fonts->argc; ++i ) {
 	if ( fonts->vals[i].type!=v_str )
 	    ScriptError(c,"Values in the fontname array must be strings");
-	for ( fv=fv_list; fv!=NULL; fv=fv->next ) if ( fv->sf!=sf )
+	for ( fv=FontViewFirst(); fv!=NULL; fv=fv->next ) if ( fv->sf!=sf )
 	    if ( strtailcmp(fonts->vals[i].u.sval,fv->sf->origname)==0 ||
 		    (fv->sf->filename!=NULL && strtailcmp(fonts->vals[i].u.sval,fv->sf->origname)==0 ))
 	break;
 	if ( fv==NULL )
-	    for ( fv=fv_list; fv!=NULL; fv=fv->next ) if ( fv->sf!=sf )
+	    for ( fv=FontViewFirst(); fv!=NULL; fv=fv->next ) if ( fv->sf!=sf )
 		if ( strcmp(fonts->vals[i].u.sval,fv->sf->fontname)==0 )
 	    break;
 	if ( fv==NULL ) {
@@ -2040,20 +2006,20 @@ static void bBitmapsAvail(Context *c) {
     int shows_bitmap = false;
     BDFFont *bdf;
 
-    if ( c->curfv->show!=NULL ) {
+    if ( c->curfv->active_bitmap!=NULL ) {
 	for ( bdf=c->curfv->sf->bitmaps; bdf!=NULL; bdf = bdf->next )
-	    if ( bdf==c->curfv->show )
+	    if ( bdf==c->curfv->active_bitmap )
 	break;
 	shows_bitmap = bdf!=NULL;
     }
     Bitmapper(c,true);
-    if ( shows_bitmap && c->curfv->show!=NULL ) {
+    if ( shows_bitmap && c->curfv->active_bitmap!=NULL ) {
 	BDFFont *bdf;
 	for ( bdf=c->curfv->sf->bitmaps; bdf!=NULL; bdf = bdf->next )
-	    if ( bdf==c->curfv->show )
+	    if ( bdf==c->curfv->active_bitmap )
 	break;
 	if ( bdf==NULL )
-	    c->curfv->show = c->curfv->sf->bitmaps;
+	    c->curfv->active_bitmap = c->curfv->sf->bitmaps;
     }
 }
 
@@ -2363,22 +2329,23 @@ static void bPrintFont(Context *c) {
 }
 
 /* **** Edit menu **** */
-static void doEdit(Context *c, int cmd) {
+static void bCut(Context *c) {
     if ( c->a.argc!=1 )
 	ScriptError( c, "Wrong number of arguments");
-    FVFakeMenus(c->curfv,cmd);
-}
-
-static void bCut(Context *c) {
-    doEdit(c,0);
+    FVCopy(c->curfv,ct_fullcopy);
+    FVClear(c->curfv);
 }
 
 static void bCopy(Context *c) {
-    doEdit(c,1);
+    if ( c->a.argc!=1 )
+	ScriptError( c, "Wrong number of arguments");
+    FVCopy(c->curfv,ct_fullcopy);
 }
 
 static void bCopyReference(Context *c) {
-    doEdit(c,2);
+    if ( c->a.argc!=1 )
+	ScriptError( c, "Wrong number of arguments");
+    FVCopy(c->curfv,ct_reference);
 }
 
 static void bCopyUnlinked(Context *c) {
@@ -2388,21 +2355,29 @@ static void bCopyUnlinked(Context *c) {
 }
 
 static void bCopyWidth(Context *c) {
-    doEdit(c,3);
+    if ( c->a.argc!=1 )
+	ScriptError( c, "Wrong number of arguments");
+    FVCopy(c->curfv,ut_width);
 }
 
 static void bCopyVWidth(Context *c) {
     if ( c->curfv!=NULL && !c->curfv->sf->hasvmetrics )
 	ScriptError(c,"Vertical metrics not enabled in this font");
-    doEdit(c,10);
+    if ( c->a.argc!=1 )
+	ScriptError( c, "Wrong number of arguments");
+    FVCopy(c->curfv,ut_vwidth);
 }
 
 static void bCopyLBearing(Context *c) {
-    doEdit(c,11);
+    if ( c->a.argc!=1 )
+	ScriptError( c, "Wrong number of arguments");
+    FVCopy(c->curfv,ut_lbearing);
 }
 
 static void bCopyRBearing(Context *c) {
-    doEdit(c,12);
+    if ( c->a.argc!=1 )
+	ScriptError( c, "Wrong number of arguments");
+    FVCopy(c->curfv,ut_rbearing);
 }
 
 static void bCopyAnchors(Context *c) {
@@ -2412,7 +2387,7 @@ static void bCopyAnchors(Context *c) {
 }
 
 static int GetOneSelCharIndex(Context *c) {
-    FontView *fv = c->curfv;
+    FontViewBase *fv = c->curfv;
     EncMap *map = fv->map;
     int i, found = -1;
 
@@ -2437,11 +2412,15 @@ static void bCopyGlyphFeatures(Context *c) {
 }
 
 static void bPaste(Context *c) {
-    doEdit(c,4);
+    if ( c->a.argc!=1 )
+	ScriptError( c, "Wrong number of arguments");
+    PasteIntoFV(c->curfv,false,NULL);
 }
 
 static void bPasteInto(Context *c) {
-    doEdit(c,9);
+    if ( c->a.argc!=1 )
+	ScriptError( c, "Wrong number of arguments");
+    PasteIntoFV(c->curfv,true,NULL);
 }
 
 static void bPasteWithOffset(Context *c) {
@@ -2466,32 +2445,44 @@ static void bPasteWithOffset(Context *c) {
 }
 
 static void bClear(Context *c) {
-    doEdit(c,5);
+    if ( c->a.argc!=1 )
+	ScriptError( c, "Wrong number of arguments");
+    FVClear( c->curfv );
 }
 
 static void bClearBackground(Context *c) {
-    doEdit(c,6);
+    if ( c->a.argc!=1 )
+	ScriptError( c, "Wrong number of arguments");
+    FVClearBackground( c->curfv );
 }
 
 static void bCopyFgToBg(Context *c) {
-    doEdit(c,7);
+    if ( c->a.argc!=1 )
+	ScriptError( c, "Wrong number of arguments");
+    FVCopyFgtoBg(c->curfv);
 }
 
 static void bUnlinkReference(Context *c) {
-    doEdit(c,8);
+    if ( c->a.argc!=1 )
+	ScriptError( c, "Wrong number of arguments");
+    FVUnlinkRef(c->curfv);
 }
 
 static void bJoin(Context *c) {
-    doEdit(c,13);
+    if ( c->a.argc!=1 )
+	ScriptError( c, "Wrong number of arguments");
+    FVJoin(c->curfv);
 }
 
 static void bSameGlyphAs(Context *c) {
-    doEdit(c,14);
+    if ( c->a.argc!=1 )
+	ScriptError( c, "Wrong number of arguments");
+    FVSameGlyphAs(c->curfv);
 }
 
 static void bMultipleEncodingsToReferences(Context *c) {
     int i, gid;
-    FontView *fv = c->curfv;
+    FontViewBase *fv = c->curfv;
     SplineFont *sf = fv->sf;
     EncMap *map = fv->map;
     SplineChar *sc, *orig;
@@ -2696,7 +2687,7 @@ static void bSelectSingletonsIf(Context *c) {
 static void bSelectAllInstancesOf(Context *c) {
     int i,j,gid;
     SplineChar *sc;
-    FontView *fv = c->curfv;
+    FontViewBase *fv = c->curfv;
     EncMap *map = fv->map;
     SplineFont *sf = fv->sf;
     struct altuni *alt;
@@ -2729,7 +2720,7 @@ static void bSelectIf(Context *c) {
 
 static void bSelectChanged(Context *c) {
     int i, gid;
-    FontView *fv = c->curfv;
+    FontViewBase *fv = c->curfv;
     EncMap *map = fv->map;
     SplineFont *sf = fv->sf;
     int add = 0;
@@ -2753,7 +2744,7 @@ static void bSelectChanged(Context *c) {
 
 static void bSelectHintingNeeded(Context *c) {
     int i, gid;
-    FontView *fv = c->curfv;
+    FontViewBase *fv = c->curfv;
     EncMap *map = fv->map;
     SplineFont *sf = fv->sf;
     int add = 0;
@@ -2784,7 +2775,7 @@ static void bSelectHintingNeeded(Context *c) {
 
 static void bSelectWorthOutputting(Context *c) {
     int i, gid;
-    FontView *fv = c->curfv;
+    FontViewBase *fv = c->curfv;
     EncMap *map = fv->map;
     SplineFont *sf = fv->sf;
     int add = 0;
@@ -2828,7 +2819,7 @@ static void bSelectByPosSub(Context *c) {
 	ScriptErrorString(c,"Unknown lookup subtable",c->a.vals[1].u.sval);
 
     c->return_val.type = v_int;
-    c->return_val.u.ival = FVParseSelectByPST(c->curfv,sub,c->a.vals[2].u.ival);
+    c->return_val.u.ival = FVBParseSelectByPST(c->curfv,sub,c->a.vals[2].u.ival);
 }
 
 static void bSelectByColor(Context *c) {
@@ -2875,7 +2866,7 @@ static void bSelectByColor(Context *c) {
 	    }
 	}
     }
-    c->curfv->sel_index = any;
+    /*c->curfv->sel_index = any;*/
 }
 
 /* **** Element Menu **** */
@@ -2904,10 +2895,8 @@ static void bReencode(Context *c) {
 	    EncMap *map = EncMapFromEncoding(c->curfv->sf,new_enc);
 	    EncMapFree(c->curfv->map);
 	    c->curfv->map = map;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	    if ( !no_windowing_ui )
-		FVSetTitle(c->curfv);
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+		FVSetTitles(c->curfv->sf);
 	}
 	if ( c->curfv->normal!=NULL ) {
 	    EncMapFree(c->curfv->normal);
@@ -2917,10 +2906,8 @@ static void bReencode(Context *c) {
     }
     free(c->curfv->selected);
     c->curfv->selected = gcalloc(c->curfv->map->enccount,sizeof(char));
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( !no_windowing_ui )
 	FontViewReformatAll(c->curfv->sf);
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 /*
     c->curfv->sf->changed = true;
     c->curfv->sf->changed_since_autosave = true;
@@ -2957,10 +2944,8 @@ static void bSetCharCnt(Context *c) {
 return;
     if ( newcnt<map->enc->char_cnt ) {
 	map->enc = &custom;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	if ( !no_windowing_ui )
-	    FVSetTitle(c->curfv);
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+	    FVSetTitles(c->curfv->sf);
     } else {
 	c->curfv->selected = grealloc(c->curfv->selected,newcnt);
 	if ( newcnt>map->encmax ) {
@@ -2970,17 +2955,15 @@ return;
 	}
     }
     map->enccount = newcnt;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( !no_windowing_ui )
 	FontViewReformatOne(c->curfv);
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     c->curfv->sf->changed = true;
     c->curfv->sf->changed_since_autosave = true;
     c->curfv->sf->changed_since_xuidchanged = true;
 }
 
 static void bDetachGlyphs(Context *c) {
-    FontView *fv = c->curfv;
+    FontViewBase *fv = c->curfv;
     SplineFont *sf = fv->sf;
     int i, j, gid;
     EncMap *map = fv->map;
@@ -2997,7 +2980,7 @@ static void bDetachGlyphs(Context *c) {
 }
 
 static void bDetachAndRemoveGlyphs(Context *c) {
-    FontView *fv = c->curfv;
+    FontViewBase *fv = c->curfv;
     int i, j, gid;
     EncMap *map = fv->map;
     SplineFont *sf = fv->sf;
@@ -3021,7 +3004,7 @@ static void bDetachAndRemoveGlyphs(Context *c) {
 }
 
 static void bRemoveDetachedGlyphs(Context *c) {
-    FontView *fv = c->curfv;
+    FontViewBase *fv = c->curfv;
     int i, gid;
     EncMap *map = fv->map;
     SplineFont *sf = fv->sf;
@@ -3215,9 +3198,7 @@ static void bSetFontOrder(Context *c) {
 	/* No Op */;
     else {
 	if ( c->a.vals[1].u.ival==2 ) {
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	    SFCloseAllInstrs(c->curfv->sf);
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	    SFConvertToOrder2(c->curfv->sf);
 	} else
 	    SFConvertToOrder3(c->curfv->sf);
@@ -3234,10 +3215,6 @@ static void bSetFontHasVerticalMetrics(Context *c) {
     c->return_val.type = v_int;
     c->return_val.u.ival = c->curfv->sf->hasvmetrics;
 
-#ifdef FONTFORGE_CONFIG_GDRAW
-    if ( c->curfv->sf->hasvmetrics!=(c->a.vals[1].u.ival!=0) && !no_windowing_ui )
-	CVPaletteDeactivate();
-#endif		/* FONTFORGE_CONFIG_GDRAW */
     c->curfv->sf->hasvmetrics = (c->a.vals[1].u.ival!=0);
 }
 
@@ -3943,7 +3920,7 @@ static void bSetCharComment(Context *c) {
 static void bSetGlyphChanged(Context *c) {
     int i, gid;
     int changed_or_not, changed_any = false;
-    FontView *fv = c->curfv;
+    FontViewBase *fv = c->curfv;
     EncMap *map = fv->map;
     SplineFont *sf = fv->sf;
 
@@ -4086,7 +4063,7 @@ return( true );
 return( false );
 }
 		
-static void FVApplySubstitution(FontView *fv,uint32 script, uint32 lang, uint32 feat_tag) {
+static void FVApplySubstitution(FontViewBase *fv,uint32 script, uint32 lang, uint32 feat_tag) {
     SplineFont *sf = fv->sf, *sf_sl=sf;
     SplineChar *sc, *replacement;
     PST *pst;
@@ -4452,7 +4429,7 @@ static void _bMoveReference(Context *c,int position) {
     real translate[2], t[6];
     char **refnames;
     int *refunis;
-    FontView *fv;
+    FontViewBase *fv;
     int i, j, gid, refcnt;
     EncMap *map;
     SplineFont *sf;
@@ -4682,23 +4659,23 @@ static void bWireframe(Context *c) {
 static void bRemoveOverlap(Context *c) {
     if ( c->a.argc!=1 )
 	ScriptError( c, "Wrong number of arguments");
-    FVFakeMenus(c->curfv,100);
+    FVOverlap(c->curfv,over_remove);
 }
 
 static void bOverlapIntersect(Context *c) {
     if ( c->a.argc!=1 )
 	ScriptError( c, "Wrong number of arguments");
-    FVFakeMenus(c->curfv,104);
+    FVOverlap(c->curfv,over_intersect);
 }
 
 static void bFindIntersections(Context *c) {
     if ( c->a.argc!=1 )
 	ScriptError( c, "Wrong number of arguments");
-    FVFakeMenus(c->curfv,105);
+    FVOverlap(c->curfv,over_findinter);
 }
 
 static void bCanonicalStart(Context *c) {
-    FontView *fv = c->curfv;
+    FontViewBase *fv = c->curfv;
     EncMap *map = fv->map;
     SplineFont *sf = fv->sf;
     int i,gid;
@@ -4710,7 +4687,7 @@ static void bCanonicalStart(Context *c) {
 }
 
 static void bCanonicalContours(Context *c) {
-    FontView *fv = c->curfv;
+    FontViewBase *fv = c->curfv;
     EncMap *map = fv->map;
     SplineFont *sf = fv->sf;
     int i,gid;
@@ -4770,7 +4747,7 @@ static void bSimplify(Context *c) {
 }
 
 static void bNearlyHvCps(Context *c) {
-    FontView *fv = c->curfv;
+    FontViewBase *fv = c->curfv;
     int i, layer;
     SplineSet *spl;
     SplineFont *sf = fv->sf;
@@ -4804,7 +4781,7 @@ static void bNearlyHvCps(Context *c) {
 }
 
 static void bNearlyHvLines(Context *c) {
-    FontView *fv = c->curfv;
+    FontViewBase *fv = c->curfv;
     int i, layer, gid;
     SplineSet *spl;
     SplineFont *sf = fv->sf;
@@ -4836,7 +4813,7 @@ static void bNearlyHvLines(Context *c) {
 }
 
 static void bNearlyLines(Context *c) {
-    FontView *fv = c->curfv;
+    FontViewBase *fv = c->curfv;
     int i, layer, gid;
     SplineSet *spl;
     SplineFont *sf = fv->sf;
@@ -4868,7 +4845,7 @@ static void bNearlyLines(Context *c) {
 static void bAddExtrema(Context *c) {
     if ( c->a.argc!=1 )
 	ScriptError( c, "Wrong number of arguments");
-    FVFakeMenus(c->curfv,102);
+    FVAddExtrema(c->curfv);
 }
 
 static void SCMakeLine(SplineChar *sc) {
@@ -4909,7 +4886,7 @@ static void SCMakeLine(SplineChar *sc) {
 
 static void bMakeLine(Context *c) {
     int i, gid;
-    FontView *fv = c->curfv;
+    FontViewBase *fv = c->curfv;
     SplineFont *sf = fv->sf;
     EncMap *map = fv->map;
 
@@ -4922,7 +4899,7 @@ static void bMakeLine(Context *c) {
 static void bRoundToInt(Context *c) {
     real factor = 1.0;
     int i, gid;
-    FontView *fv = c->curfv;
+    FontViewBase *fv = c->curfv;
     SplineFont *sf = fv->sf;
     EncMap *map = fv->map;
 
@@ -4945,7 +4922,7 @@ static void bRoundToInt(Context *c) {
 static void bRoundToCluster(Context *c) {
     real within = .1, max = .5;
     int i, gid;
-    FontView *fv = c->curfv;
+    FontViewBase *fv = c->curfv;
     SplineFont *sf = fv->sf;
     EncMap *map = fv->map;
 
@@ -4983,7 +4960,7 @@ static void bAutotrace(Context *c) {
 
 static void bCorrectDirection(Context *c) {
     int i, gid;
-    FontView *fv = c->curfv;
+    FontViewBase *fv = c->curfv;
     SplineFont *sf = fv->sf;
     EncMap *map = fv->map;
     int changed, refchanged;
@@ -5034,7 +5011,7 @@ static void bReplaceOutlineWithReference(Context *c) {
 	    ScriptError(c,"Bad argument type");
 	fudge = c->a.vals[1].u.ival/(double) c->a.vals[2].u.ival;
     }
-    FVReplaceOutlineWithReference(c->curfv,fudge);
+    FVBReplaceOutlineWithReference(c->curfv,fudge);
 }
 
 static void bBuildComposit(Context *c) {
@@ -5143,7 +5120,7 @@ static void bInterpolateFonts(Context *c) {
 
 static void bDefaultUseMyMetrics(Context *c) {
     int i,gid;
-    FontView *fv = c->curfv;
+    FontViewBase *fv = c->curfv;
     SplineFont *sf = fv->sf;
     EncMap *map = fv->map;
 
@@ -5185,7 +5162,7 @@ static void bDefaultUseMyMetrics(Context *c) {
 
 static void bDefaultRoundToGrid(Context *c) {
     int i,gid;
-    FontView *fv = c->curfv;
+    FontViewBase *fv = c->curfv;
     SplineFont *sf = fv->sf;
     EncMap *map = fv->map;
 
@@ -5212,31 +5189,31 @@ static void bDefaultRoundToGrid(Context *c) {
 static void bAutoHint(Context *c) {
     if ( c->a.argc!=1 )
 	ScriptError( c, "Wrong number of arguments");
-    FVFakeMenus(c->curfv,200);
+    FVAutoHint(c->curfv);
 }
 
 static void bSubstitutionPoints(Context *c) {
     if ( c->a.argc!=1 )
 	ScriptError( c, "Wrong number of arguments");
-    FVFakeMenus(c->curfv,203);
+    FVAutoHint(c->curfv);
 }
 
 static void bAutoCounter(Context *c) {
     if ( c->a.argc!=1 )
 	ScriptError( c, "Wrong number of arguments");
-    FVFakeMenus(c->curfv,204);
+    FVAutoHint(c->curfv);
 }
 
 static void bDontAutoHint(Context *c) {
     if ( c->a.argc!=1 )
 	ScriptError( c, "Wrong number of arguments");
-    FVFakeMenus(c->curfv,205);
+    FVAutoHint(c->curfv);
 }
 
 static void bAutoInstr(Context *c) {
     if ( c->a.argc!=1 )
 	ScriptError( c, "Wrong number of arguments");
-    FVFakeMenus(c->curfv,202);
+    FVAutoInstr(c->curfv,true);
 }
 
 static void TableAddInstrs(SplineFont *sf, uint32 tag,int replace,
@@ -5298,6 +5275,10 @@ return;
     }
 }
 
+static void prterror(void *foo, char *msg, int pos) {
+    fprintf( stderr, "%s\n", msg );
+}
+
 static void bAddInstrs(Context *c) {
     int replace;
     SplineChar *sc = NULL;
@@ -5323,7 +5304,7 @@ static void bAddInstrs(Context *c) {
 	    ScriptErrorString( c, "Character/Table not found", c->a.vals[1].u.sval );
     }
 
-    instrs = _IVParse(NULL,c->a.vals[3].u.sval,&icnt);
+    instrs = _IVParse(sf,c->a.vals[3].u.sval,&icnt,prterror,NULL);
     if ( instrs==NULL )
 	ScriptError( c, "Failed to parse instructions" );
     if ( tag!=0 )
@@ -5397,11 +5378,11 @@ static void bClearHints(Context *c) {
     if ( c->a.argc>2 )
 	ScriptError( c, "Wrong number of arguments");
     if ( c->a.argc==1 )
-	FVFakeMenus(c->curfv,201);
+	FVClearHints(c->curfv);
     else if ( c->a.vals[1].type==v_str ) {
 	int vert=false;
 	int i, gid;
-	FontView *fv = c->curfv;
+	FontViewBase *fv = c->curfv;
 	if ( strmatch(c->a.vals[1].u.sval,"vertical")==0 )
 	    vert=true;
 	else if ( strmatch(c->a.vals[1].u.sval,"horizontal")!=0 )
@@ -5430,7 +5411,7 @@ static void bClearHints(Context *c) {
 static void bClearInstrs(Context *c) {
     if ( c->a.argc!=1 )
 	ScriptError( c, "Wrong number of arguments");
-    FVFakeMenus(c->curfv,206);
+    FVClearInstrs(c->curfv);
 }
 
 static void bClearTable(Context *c) {
@@ -5491,7 +5472,7 @@ static void bClearTable(Context *c) {
 static void _AddHint(Context *c,int ish) {
     int i, any, gid;
     int start, width;
-    FontView *fv = c->curfv;
+    FontViewBase *fv = c->curfv;
     SplineFont *sf = fv->sf;
     EncMap *map = fv->map;
     SplineChar *sc;
@@ -5755,7 +5736,7 @@ static void bCenterInWidth(Context *c) {
 }
 
 static void _SetKern(Context *c,int isv) {
-    FontView *fv = c->curfv;
+    FontViewBase *fv = c->curfv;
     SplineFont *sf = fv->sf;
     EncMap *map = fv->map;
     SplineChar *sc1, *sc2;
@@ -6058,18 +6039,7 @@ static void bCIDChangeSubFont(Context *c) {
 	ScriptErrorString( c, "Not in the current cid font", c->a.vals[1].u.sval );
     new = sf->cidmaster->subfonts[i];
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    if ( !no_windowing_ui ) {
-	MetricsView *mv, *mvnext;
-	for ( mv=c->curfv->sf->metrics; mv!=NULL; mv = mvnext ) {
-	    /* Don't bother trying to fix up metrics views, just not worth it */
-	    mvnext = mv->next;
-	    GDrawDestroyWindow(mv->gw);
-	}
-	GDrawSync(NULL);
-	GDrawProcessPendingEvents(NULL);
-    }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+    MVDestroyAll(c->curfv->sf);
     if ( new->glyphcnt>sf->glyphcnt ) {
 	free(c->curfv->selected);
 	c->curfv->selected = gcalloc(new->glyphcnt,sizeof(char));
@@ -6082,12 +6052,10 @@ static void bCIDChangeSubFont(Context *c) {
 	map->enccount = new->glyphcnt;
     }
     c->curfv->sf = new;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( !no_windowing_ui ) {
 	FVSetTitle(c->curfv);
 	FontViewReformatOne(c->curfv);
     }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 }
 
 static void bCIDSetFontNames(Context *c) {
@@ -7601,7 +7569,6 @@ static void bCompareFonts(Context *c) {
     FILE *diffs;
     int flags;
     char *t, *locfilename;
-    FontView *fv;
 
     if ( c->a.argc!=4 )
 	ScriptError( c, "Wrong number of arguments");
@@ -7625,12 +7592,7 @@ static void bCompareFonts(Context *c) {
 	free(locfilename);
 	locfilename = t;
     }
-    for ( fv=fv_list; fv!=NULL && sf2==NULL; fv=fv->next ) {
-	if ( fv->sf->filename!=NULL && strcmp(fv->sf->filename,locfilename)==0 )
-	    sf2 = fv->sf;
-	else if ( fv->sf->origname!=NULL && strcmp(fv->sf->origname,locfilename)==0 )
-	    sf2 = fv->sf;
-    }
+    sf2 = FontWithThisFilename(locfilename);
     free( locfilename );
     if ( sf2==NULL )
 	ScriptErrorString( c, "Failed to find other font (it must be Open()ed first", c->a.vals[1].u.sval);
@@ -8568,8 +8530,8 @@ static void handlename(Context *c,Val *val) {
 		    strcmp(name,"$firstfont")==0 ) {
 		char *t;
 		if ( strcmp(name,"$firstfont")==0 ) {
-		    if ( fv_list==NULL ) sf=NULL;
-		    else sf = fv_list->sf;
+		    if ( FontViewFirst()==NULL ) sf=NULL;
+		    else sf = FontViewFirst()->sf;
 		} else {
 		    if ( c->curfv==NULL ) ScriptError(c,"No current font");
 		    if ( strcmp(name,"$curfont")==0 ) 
@@ -9665,68 +9627,16 @@ return;
 }
 #endif
 
-#if defined(FONTFORGE_CONFIG_NO_WINDOWING_UI) || defined(X_DISPLAY_MISSING)
-static void _doscriptusage(void) {
-    printf( "fontforge [options]\n" );
-    printf( "\t-usage\t\t\t (displays this message, and exits)\n" );
-    printf( "\t-help\t\t\t (displays this message, invokes a browser)\n\t\t\t\t  (Using the BROWSER environment variable)\n" );
-    printf( "\t-version\t\t (prints the version of fontforge and exits)\n" );
-    printf( "\t-lang=py\t\t use python to execute scripts\n" );
-    printf( "\t-lang=ff\t\t use fontforge's old language to execute scripts\n" );
-    printf( "\t-script scriptfile\t (executes scriptfile)\n" );
-    printf( "\t-c script-string\t (executes the argument as scripting cmds)\n" );
-    printf( "\n" );
-    printf( "If no scriptfile/string is given (or if it's \"-\") FontForge will read stdin\n" );
-    printf( "FontForge will read postscript (pfa, pfb, ps, cid), opentype (otf),\n" );
-    printf( "\ttruetype (ttf,ttc), macintosh resource fonts (dfont,bin,hqx),\n" );
-    printf( "\tand bdf and pcf fonts. It will also read it's own format --\n" );
-    printf( "\tsfd files.\n" );
-    printf( "Any arguments after the script file will be passed to it.\n");
-    printf( "If the first argument is an executable filename, and that file's first\n" );
-    printf( "\tline contains \"fontforge\" then it will be treated as a scriptfile.\n\n" );
-    printf( "For more information see:\n\thttp://fontforge.sourceforge.net/\n" );
-    printf( "Send bug reports to:\tfontforge-devel@lists.sourceforge.net\n" );
-}
-
-static void doscriptusage(void) {
-    _doscriptusage();
-exit(0);
-}
-
-static void doscripthelp(void) {
-    _doscriptusage();
-    help("overview.html");
-exit(0);
-}
-#endif
-
 void CheckIsScript(int argc, char *argv[]) {
 #if defined(_NO_FFSCRIPT) && defined(_NO_PYTHON)
 return;		/* No scripts of any sort */
 #else
     _CheckIsScript(argc, argv);
-# if defined( FONTFORGE_CONFIG_NO_WINDOWING_UI ) || defined( X_DISPLAY_MISSING )
-    if ( argc==2 ) {
-	char *pt = argv[1];
-	if ( *pt=='-' && pt[1]=='-' ) ++pt;
-	if ( strcmp(pt,"-usage")==0 )
-	    doscriptusage();
-	else if ( strcmp(pt,"-help")==0 )
-	    doscripthelp();
-	else if ( strcmp(pt,"-version")==0 )
-	    doversion();
-    }
-#  if defined(_NO_PYTHON)
-    ProcessNativeScript(argc, argv,stdin);
-#  else
-    PyFF_Stdin();
-#  endif
-# endif
 #endif
 }
 
 #if !defined(_NO_FFSCRIPT)
-static void ExecuteNativeScriptFile(FontView *fv, char *filename) {
+static void ExecuteNativeScriptFile(FontViewBase *fv, char *filename) {
     Context c;
     Val argv[1];
     Array *dontfree[1];
@@ -9763,7 +9673,7 @@ return;				/* Error return */
 
 #if !defined(_NO_FFSCRIPT) || !defined(_NO_PYTHON)
 
-void ExecuteScriptFile(FontView *fv, SplineChar *sc, char *filename) {
+void ExecuteScriptFile(FontViewBase *fv, SplineChar *sc, char *filename) {
 #if !defined(_NO_FFSCRIPT) && !defined(_NO_PYTHON)
     if ( sc!=NULL || PythonLangFromExt(filename))
 	PyFF_ScriptFile(fv,sc,filename);

@@ -91,7 +91,7 @@ static void ExecNative(GGadget *g, GEvent *e) {
     args[0].type = v_str;
     c.return_val.type = v_void;
     c.err_env = &env;
-    c.curfv = sd->fv;
+    c.curfv = (FontViewBase *) sd->fv;
     if ( setjmp(env)!=0 ) {
 	running_script = false;
 return;			/* Error return */
@@ -129,7 +129,7 @@ static void ExecPython(GGadget *g, GEvent *e) {
     running_script = true;
 
     str = GGadgetGetTitle8(GWidgetGetControl(sd->gw,CID_Script));
-    PyFF_ScriptString(sd->fv,sd->sc,str);
+    PyFF_ScriptString((FontViewBase *) sd->fv,sd->sc,str);
     free(str);
     running_script = false;
 }
@@ -225,12 +225,8 @@ return( false );
     }
 return( true );
 }
-#endif
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 void ScriptDlg(FontView *fv,CharView *cv) {
-# if defined(FONTFORGE_CONFIG_GTK)
-# elif defined( FONTFORGE_CONFIG_GDRAW )
     GRect pos;
     static GWindow gw;
     GWindowAttrs wattrs;
@@ -242,7 +238,7 @@ void ScriptDlg(FontView *fv,CharView *cv) {
 
     memset(&sd,0,sizeof(sd));
     sd.fv = fv;
-    sd.sc = cv==NULL ? NULL : cv->sc;
+    sd.sc = cv==NULL ? NULL : cv->b.sc;
     sd.oldh = pos.height = GDrawPointsToPixels(NULL,SD_Height);
 
     if ( gw==NULL ) {
@@ -355,11 +351,10 @@ void ScriptDlg(FontView *fv,CharView *cv) {
     GDrawSetVisible(gw,false);
 
     /* Selection may be out of date, force a refresh */
-    for ( list = fv_list; list!=NULL; list=list->next )
+    for ( list = fv_list; list!=NULL; list=(FontView *) list->b.next )
 	GDrawRequestExpose(list->v,NULL,false);
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);
     GDrawSetUserData(gw,NULL);
-#endif
 }
 #endif	/* No scripting */

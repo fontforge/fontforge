@@ -31,11 +31,7 @@
 /* they will be displayed to the user scaled by the units field of the design */
 
 #include "splinefont.h"
-#if defined(FONTFORGE_CONFIG_GTK)
-# include <gtk/gtk.h>
-#elif defined(FONTFORGE_CONFIG_GDRAW)
 # include "gdraw.h"
-#endif
 
 typedef struct entpen {
     Color col;
@@ -91,16 +87,8 @@ typedef struct entlayer {
 
 typedef struct tile {
     Entity *tile;
-#ifdef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    struct tileinstance { real scale;struct tileinstance *next; }
-	    *instances;
-#elif defined( FONTFORGE_CONFIG_GTK )
-    struct tileinstance { real scale; GdkWindow pixmap; struct tileinstance *next; }
-	    *instances;
-#elif defined( FONTFORGE_CONFIG_GDRAW )
     struct tileinstance { real scale; GWindow pixmap; struct tileinstance *next; }
 	    *instances;
-#endif
     char *name;
 } Tile;
 
