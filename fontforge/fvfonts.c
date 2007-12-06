@@ -24,7 +24,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "pfaeditui.h"
+#include "fontforgevw.h"
 #include "ustring.h"
 #include "utype.h"
 #include "gfile.h"
@@ -925,7 +925,6 @@ return( gid );
 
 static void MFixupSC(SplineFont *sf, SplineChar *sc,int i) {
     RefChar *ref, *prev;
-    FontView *fvs;
 
     sc->orig_pos = i;
     sc->parent = sf;
@@ -953,10 +952,12 @@ static void MFixupSC(SplineFont *sf, SplineChar *sc,int i) {
 	    SCMakeDependent(sc,ref->sc);
 	}
     }
+#if 0
     /* I shan't automagically generate bitmaps for any bdf fonts */
     /*  but I have copied over the ones which match */
     for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) if ( fvs->filled!=NULL )
 	fvs->filled->glyphs[i] = SplineCharRasterize(sc,fvs->filled->pixelsize);
+#endif
 }
 
 static void MergeFixupRefChars(SplineFont *sf) {
@@ -973,7 +974,7 @@ int SFHasChar(SplineFont *sf, int unienc, const char *name ) {
 return( SCWorthOutputting(sc) );
 }
 
-static void FVMergeRefigureMapSel(FontView *fv,SplineFont *into,SplineFont *o_sf,
+static void FVMergeRefigureMapSel(FontViewBase *fv,SplineFont *into,SplineFont *o_sf,
 	int *mapping, int emptypos, int cnt) {
     int extras, doit, i;
     EncMap *map = fv->map;
@@ -1019,7 +1020,7 @@ static void _MergeFont(SplineFont *into,SplineFont *other,struct sfmergecontext 
     int i,cnt, doit, emptypos, index, k;
     SplineFont *o_sf, *bitmap_into;
     BDFFont *bdf;
-    FontView *fvs;
+    FontViewBase *fvs;
     int *mapping;
 
     emptypos = into->glyphcnt;
@@ -1064,11 +1065,7 @@ static void _MergeFont(SplineFont *into,SplineFont *other,struct sfmergecontext 
 			    bdf->glyphmax = bdf->glyphcnt = emptypos+cnt;
 			}
 		    for ( fvs = into->fv; fvs!=NULL; fvs=fvs->nextsame )
-			if ( fvs->filled!=NULL ) {
-			    fvs->filled->glyphs = grealloc(fvs->filled->glyphs,(emptypos+cnt)*sizeof(BDFChar *));
-			    memset(fvs->filled->glyphs+emptypos,0,cnt*sizeof(BDFChar *));
-			    fvs->filled->glyphmax = fvs->filled->glyphcnt = emptypos+cnt;
-			}
+			FVBiggerGlyphCache(fvs,emptypos+cnt);
 		    for ( fvs = into->fv; fvs!=NULL; fvs=fvs->nextsame )
 			if ( fvs->sf == into )
 			    FVMergeRefigureMapSel(fvs,into,o_sf,mapping,emptypos,cnt);
@@ -1103,9 +1100,7 @@ static void _MergeFont(SplineFont *into,SplineFont *other,struct sfmergecontext 
     if ( other->fv==NULL )
 	SplineFontFree(other);
     into->changed = true;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     FontViewReformatAll(into);
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     GlyphHashFree(into);
 }
 
@@ -1129,7 +1124,7 @@ static void __MergeFont(SplineFont *into,SplineFont *other, int preserveCrossFon
 static void CIDMergeFont(SplineFont *into,SplineFont *other, int preserveCrossFontKerning) {
     int i,j,k;
     SplineFont *i_sf, *o_sf;
-    FontView *fvs;
+    FontViewBase *fvs;
     struct sfmergecontext mc;
 
     memset(&mc,0,sizeof(mc));
@@ -1173,16 +1168,14 @@ static void CIDMergeFont(SplineFont *into,SplineFont *other, int preserveCrossFo
 	MergeFixupRefChars(i_sf);
 	++k;
     } while ( k<other->subfontcnt );
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     FontViewReformatAll(into);
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     into->changed = true;
     GlyphHashFree(into);
 
     SFFinishMergeContext(&mc);
 }
 
-void MergeFont(FontView *fv,SplineFont *other, int preserveCrossFontKerning) {
+void MergeFont(FontViewBase *fv,SplineFont *other, int preserveCrossFontKerning) {
 
     if ( fv->sf==other ) {
 	ff_post_error(_("Merging Problem"),_("Merging a font with itself achieves nothing"));

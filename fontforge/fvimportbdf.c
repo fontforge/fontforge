@@ -24,7 +24,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "pfaeditui.h"
+#include "fontforgevw.h"
 #include <gfile.h>
 #include <math.h>
 #include "utype.h"
@@ -142,7 +142,7 @@ return( pt!=tokbuf?1:ch==EOF?-1: 0 );
 }
 
 static void ExtendSF(SplineFont *sf, EncMap *map, int enc, int set) {
-    FontView *fvs;
+    FontViewBase *fvs;
 
     if ( enc>=map->enccount ) {
 	int n = enc;
@@ -155,9 +155,7 @@ static void ExtendSF(SplineFont *sf, EncMap *map, int enc, int set) {
 		free(fvs->selected);
 		fvs->selected = gcalloc(map->enccount,1);
 	    }
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	    FontViewReformatAll(sf);
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	}
     }
 }
@@ -384,12 +382,13 @@ return;
 	break;
 	}
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+#if 0			/* This can't really happen, can it? */
+/* If we've just read the strike in, there will be no open views? */
 	{ BitmapView *bv;
 	for ( bv=bc->views; bv!=NULL; bv=bv->next )
 	    GDrawRequestExpose(bv->v,NULL,false);
 	}
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+#endif
     } else {
 	int cnt;
 	if ( depth==1 )
@@ -1837,7 +1836,6 @@ return( true );
 
 /* ************************* End Bitmap Formats ***************************** */
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static int askusersize(char *filename) {
     char *pt;
     int guess;
@@ -1878,7 +1876,6 @@ static int alreadyexists(int pixelsize) {
 
 return( ret==0 );
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static void BDFForceEnc(SplineFont *sf, EncMap *map) {
 /* jisx0208, jisx0212, ISO10646, ISO8859 */
@@ -1916,6 +1913,91 @@ return;
     }
     if ( enc!=NULL )
 	SFForceEncoding(sf,map,enc);
+}
+
+void SFSetFontName(SplineFont *sf, char *family, char *mods,char *full) {
+    char *n;
+    char *pt, *tpt;
+
+    n = galloc(strlen(family)+strlen(mods)+2);
+    strcpy(n,family); strcat(n," "); strcat(n,mods);
+    if ( full==NULL || *full == '\0' )
+	full = copy(n);
+    for ( pt=tpt=n; *pt; ) {
+	if ( !isspace(*pt))
+	    *tpt++ = *pt++;
+	else
+	    ++pt;
+    }
+    *tpt = '\0';
+#if 0
+    for ( pt=tpt=family; *pt; ) {
+	if ( !isspace(*pt))
+	    *tpt++ = *pt++;
+	else
+	    ++pt;
+    }
+    *tpt = '\0';
+#endif
+
+    free(sf->fullname); sf->fullname = copy(full);
+
+    /* In the URW world fontnames aren't just a simple concatenation of */
+    /*  family name and modifiers, so neither the family name nor the modifiers */
+    /*  changed, then don't change the font name */
+    if ( strcmp(family,sf->familyname)==0 && strcmp(n,sf->fontname)==0 )
+	/* Don't change the fontname */;
+	/* or anything else */
+    else {
+	free(sf->fontname); sf->fontname = n;
+	free(sf->familyname); sf->familyname = copy(family);
+	free(sf->weight); sf->weight = NULL;
+	if ( strstrmatch(mods,"extralight")!=NULL || strstrmatch(mods,"extra-light")!=NULL )
+	    sf->weight = copy("ExtraLight");
+	else if ( strstrmatch(mods,"demilight")!=NULL || strstrmatch(mods,"demi-light")!=NULL )
+	    sf->weight = copy("DemiLight");
+	else if ( strstrmatch(mods,"demibold")!=NULL || strstrmatch(mods,"demi-bold")!=NULL )
+	    sf->weight = copy("DemiBold");
+	else if ( strstrmatch(mods,"semibold")!=NULL || strstrmatch(mods,"semi-bold")!=NULL )
+	    sf->weight = copy("SemiBold");
+	else if ( strstrmatch(mods,"demiblack")!=NULL || strstrmatch(mods,"demi-black")!=NULL )
+	    sf->weight = copy("DemiBlack");
+	else if ( strstrmatch(mods,"extrabold")!=NULL || strstrmatch(mods,"extra-bold")!=NULL )
+	    sf->weight = copy("ExtraBold");
+	else if ( strstrmatch(mods,"extrablack")!=NULL || strstrmatch(mods,"extra-black")!=NULL )
+	    sf->weight = copy("ExtraBlack");
+	else if ( strstrmatch(mods,"book")!=NULL )
+	    sf->weight = copy("Book");
+	else if ( strstrmatch(mods,"regular")!=NULL )
+	    sf->weight = copy("Regular");
+	else if ( strstrmatch(mods,"roman")!=NULL )
+	    sf->weight = copy("Roman");
+	else if ( strstrmatch(mods,"normal")!=NULL )
+	    sf->weight = copy("Normal");
+	else if ( strstrmatch(mods,"demi")!=NULL )
+	    sf->weight = copy("Demi");
+	else if ( strstrmatch(mods,"medium")!=NULL )
+	    sf->weight = copy("Medium");
+	else if ( strstrmatch(mods,"bold")!=NULL )
+	    sf->weight = copy("Bold");
+	else if ( strstrmatch(mods,"heavy")!=NULL )
+	    sf->weight = copy("Heavy");
+	else if ( strstrmatch(mods,"black")!=NULL )
+	    sf->weight = copy("Black");
+	else if ( strstrmatch(mods,"Nord")!=NULL )
+	    sf->weight = copy("Nord");
+/* Sigh. URW uses 4 letter abreviations... */
+	else if ( strstrmatch(mods,"Regu")!=NULL )
+	    sf->weight = copy("Regular");
+	else if ( strstrmatch(mods,"Medi")!=NULL )
+	    sf->weight = copy("Medium");
+	else if ( strstrmatch(mods,"blac")!=NULL )
+	    sf->weight = copy("Black");
+	else
+	    sf->weight = copy("Medium");
+    }
+
+    FVSetTitles(sf);
 }
 
 static BDFFont *SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback,
@@ -1987,10 +2069,8 @@ return( NULL );
 	if ( defs.dwidth == 0 ) defs.dwidth = pixelsize;
 	if ( defs.dwidth1 == 0 ) defs.dwidth1 = pixelsize;
     }
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( pixelsize==-1 )
 	pixelsize = askusersize(filename);
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     if ( pixelsize==-1 ) {
 	fclose(bdf); free(toc);
 return( NULL );
@@ -2021,7 +2101,6 @@ return( NULL );
     b = NULL;
     if ( !toback )
 	for ( b=sf->bitmaps; b!=NULL && (b->pixelsize!=pixelsize || BDFDepth(b)!=depth); b=b->next );
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( b!=NULL ) {
 	if ( !alreadyexists(pixelsize)) {
 	    fclose(bdf); free(toc);
@@ -2029,7 +2108,6 @@ return( NULL );
 return( (BDFFont *) -1 );
 	}
     }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     if ( b==NULL ) {
 	if ( ascent==-1 && descent==-1 )
 	    ascent = rint(pixelsize*sf->ascent/(real) (sf->ascent+sf->descent));
@@ -2183,10 +2261,8 @@ static void SFMergeBitmaps(SplineFont *sf,BDFFont *strikes,EncMap *map) {
 	    strikes->next = sf->bitmaps;
 	    sf->bitmaps = strikes;
 	    SFSetupBitmap(sf,strikes,map);
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	} else if ( !alreadyexists(strikes->pixelsize)) {
 	    BDFFontFree(strikes);
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	} else {
 	    strikes->next = b->next;
 	    if ( prev==NULL )
@@ -2204,7 +2280,7 @@ static void SFMergeBitmaps(SplineFont *sf,BDFFont *strikes,EncMap *map) {
 
 static void SFAddToBackground(SplineFont *sf,BDFFont *bdf);
 
-int FVImportBDF(FontView *fv, char *filename, int ispk, int toback) {
+int FVImportBDF(FontViewBase *fv, char *filename, int ispk, int toback) {
     BDFFont *b, *anyb=NULL;
     char buf[300];
     char *eod, *fpt, *file, *full;
@@ -2236,23 +2312,18 @@ int FVImportBDF(FontView *fv, char *filename, int ispk, int toback) {
 	if ( b!=NULL ) {
 	    anyb = b;
 	    any = true;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	    if ( b==fv->show && fv->v!=NULL )
-		GDrawRequestExpose(fv->v,NULL,false);
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+	    FVRefreshAll(fv->sf);
 	}
 	file = fpt+2;
     } while ( fpt!=NULL );
     ff_progress_end_indicator();
     if ( oldenccnt != fv->map->enccount ) {
-	FontView *fvs;
+	FontViewBase *fvs;
 	for ( fvs=fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
 	    free(fvs->selected);
 	    fvs->selected = gcalloc(fvs->map->enccount,sizeof(char));
 	}
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	FontViewReformatAll(fv->sf);
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     }
     if ( anyb==NULL ) {
 	ff_post_error( _("No Bitmap Font"), _("Could not find a bitmap font in %s"), filename );
@@ -2306,7 +2377,7 @@ static void SFAddToBackground(SplineFont *sf,BDFFont *bdf) {
     BDFFontFree(bdf);
 }
 
-int FVImportMult(FontView *fv, char *filename, int toback, int bf) {
+int FVImportMult(FontViewBase *fv, char *filename, int toback, int bf) {
     SplineFont *strikeholder, *sf = fv->sf;
     BDFFont *strikes;
     char buf[300];

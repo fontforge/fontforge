@@ -51,7 +51,7 @@ return;
 	free(full);
 	if ( sf==NULL )
 	    /* Do Nothing */;
-	else if ( sf->fv==fv )
+	else if ( sf->fv==(FontViewBase *) fv )
 	    ff_post_error(_("Merging Problem"),_("Merging a font with itself achieves nothing"));
 	else {
 	    if ( preserveCrossFontKerning==-1 ) {
@@ -66,7 +66,7 @@ return;
 		}
 		preserveCrossFontKerning = ret==0;
 	    }
-	    MergeFont(fv,sf,preserveCrossFontKerning);
+	    MergeFont((FontViewBase *) fv,sf,preserveCrossFontKerning);
 	}
 	file = fpt+2;
     } while ( fpt!=NULL );
@@ -78,12 +78,12 @@ GTextInfo *BuildFontList(FontView *except) {
     int cnt=0;
     GTextInfo *tf;
 
-    for ( fv=fv_list; fv!=NULL; fv = fv->next )
+    for ( fv=fv_list; fv!=NULL; fv = (FontView *) (fv->b.next) )
 	++cnt;
     tf = gcalloc(cnt+3,sizeof(GTextInfo));
-    for ( fv=fv_list, cnt=0; fv!=NULL; fv = fv->next ) if ( fv!=except ) {
+    for ( fv=fv_list, cnt=0; fv!=NULL; fv = (FontView *) (fv->b.next) ) if ( fv!=except ) {
 	tf[cnt].fg = tf[cnt].bg = COLOR_DEFAULT;
-	tf[cnt].text = (unichar_t *) fv->sf->fontname;
+	tf[cnt].text = (unichar_t *) fv->b.sf->fontname;
 	tf[cnt].text_is_1byte = true;
 	++cnt;
     }
@@ -120,7 +120,7 @@ static int MF_OK(GGadget *g, GEvent *e) {
 	int i, index = GGadgetGetFirstListSelectedItem(d->other);
 	int preserve = GGadgetIsChecked(GWidgetGetControl(gw,CID_Preserve));
 	FontView *fv;
-	for ( i=0, fv=fv_list; fv!=NULL; fv=fv->next ) {
+	for ( i=0, fv=fv_list; fv!=NULL; fv=(FontView *) (fv->b.next) ) {
 	    if ( fv==d->fv )
 	continue;
 	    if ( i==index )
@@ -130,7 +130,7 @@ static int MF_OK(GGadget *g, GEvent *e) {
 	if ( fv==NULL )
 	    MergeAskFilename(d->fv,preserve);
 	else
-	    MergeFont(d->fv,fv->sf,preserve);
+	    MergeFont((FontViewBase *) d->fv,fv->b.sf,preserve);
 	d->done = true;
     }
 return( true );
@@ -167,7 +167,7 @@ void FVMergeFonts(FontView *fv) {
     /* If there's only one font loaded, then it's the current one, and there's*/
     /*  no point asking the user if s/he wants to merge any of the loaded */
     /*  fonts, go directly to searching the disk */
-    if ( fv_list==fv && fv_list->next==NULL )
+    if ( fv_list==fv && fv_list->b.next==NULL )
 	MergeAskFilename(fv,-1);
     else {
 	memset(&wattrs,0,sizeof(wattrs));
@@ -186,7 +186,7 @@ void FVMergeFonts(FontView *fv) {
 	memset(&gcd,0,sizeof(gcd));
 	memset(&boxes,0,sizeof(boxes));
 
-	sprintf( buffer, _("Font to merge into %.20s"), fv->sf->fontname );
+	sprintf( buffer, _("Font to merge into %.20s"), fv->b.sf->fontname );
 	label[0].text = (unichar_t *) buffer;
 	label[0].text_is_1byte = true;
 	gcd[0].gd.label = &label[0];
@@ -281,7 +281,7 @@ return;
     free(filename);
     if ( sf==NULL )
 return;
-    FontViewCreate(InterpolateFont(fv->sf,sf,amount,fv->map->enc));
+    FontViewCreate(InterpolateFont(fv->b.sf,sf,amount,fv->b.map->enc));
 }
 
 #define CID_Amount	1000
@@ -300,7 +300,7 @@ static int IF_OK(GGadget *g, GEvent *e) {
 	if ( err )
 return( true );
 	last_amount = amount;
-	for ( i=0, fv=fv_list; fv!=NULL; fv=fv->next ) {
+	for ( i=0, fv=fv_list; fv!=NULL; fv=(FontView *) (fv->b.next) ) {
 	    if ( fv==d->fv )
 	continue;
 	    if ( i==index )
@@ -310,7 +310,7 @@ return( true );
 	if ( fv==NULL )
 	    InterAskFilename(d->fv,last_amount/100.0);
 	else
-	    FontViewCreate(InterpolateFont(d->fv->sf,fv->sf,last_amount/100.0,d->fv->map->enc));
+	    FontViewCreate(InterpolateFont(d->fv->b.sf,fv->b.sf,last_amount/100.0,d->fv->b.map->enc));
 	d->done = true;
     }
 return( true );
@@ -340,7 +340,7 @@ void FVInterpolateFonts(FontView *fv) {
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
 
-    sprintf( buffer, _("Interpolating between %.20s and:"), fv->sf->fontname );
+    sprintf( buffer, _("Interpolating between %.20s and:"), fv->b.sf->fontname );
     label[0].text = (unichar_t *) buffer;
     label[0].text_is_1byte = true;
     gcd[0].gd.label = &label[0];

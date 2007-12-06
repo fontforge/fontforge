@@ -241,8 +241,8 @@ void SFFindNearTop(SplineFont *sf) {
     if ( sf->cidmaster!=NULL )
 	sf = sf->cidmaster;
     if ( sf->subfontcnt==0 ) {
-	for ( fv=sf->fv; fv!=NULL; fv=fv->nextsame ) {
-	    map = fv->map;
+	for ( fv=(FontView *) sf->fv; fv!=NULL; fv=(FontView *) (fv->b.nextsame) ) {
+	    map = fv->b.map;
 	    fv->sc_near_top = NULL;
 	    for ( i=fv->rowoff*fv->colcnt; i<map->enccount && i<(fv->rowoff+fv->rowcnt)*fv->colcnt; ++i )
 		if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL ) {
@@ -251,8 +251,8 @@ void SFFindNearTop(SplineFont *sf) {
 		}
 	}
     } else {
-	for ( fv=sf->fv; fv!=NULL; fv=fv->nextsame ) {
-	    map = fv->map;
+	for ( fv=(FontView *) sf->fv; fv!=NULL; fv=(FontView *) (fv->b.nextsame) ) {
+	    map = fv->b.map;
 	    fv->sc_near_top = NULL;
 	    for ( i=fv->rowoff*fv->colcnt; i<map->enccount && i<(fv->rowoff+fv->rowcnt)*fv->colcnt; ++i ) {
 		for ( k=0; k<sf->subfontcnt; ++k )
@@ -268,10 +268,10 @@ void SFFindNearTop(SplineFont *sf) {
 void SFRestoreNearTop(SplineFont *sf) {
     FontView *fv;
 
-    for ( fv=sf->fv; fv!=NULL; fv=fv->nextsame ) if ( fv->sc_near_top!=NULL ) {
-	/* Note: For CID keyed fonts, we don't care if sc is in the currenly */
+    for ( fv=(FontView *) sf->fv; fv!=NULL; fv=(FontView *) (fv->b.nextsame) ) if ( fv->sc_near_top!=NULL ) {
+	/* Note: For CID keyed fonts, we don't care if sc is in the currently */
 	/*  displayed font, all we care about is the CID */
-	int enc = fv->map->backmap[fv->sc_near_top->orig_pos];
+	int enc = fv->b.map->backmap[fv->sc_near_top->orig_pos];
 	if ( enc!=-1 ) {
 	    fv->rowoff = enc/fv->colcnt;
 	    GScrollBarSetPos(fv->vsb,fv->rowoff);
@@ -354,7 +354,7 @@ return;
     free(dir);
 }
 
-struct cidmap *AskUserForCIDMap(SplineFont *sf) {
+struct cidmap *AskUserForCIDMap(void) {
     struct block block;
     struct cidmap *map = NULL;
     char buffer[200];
@@ -372,10 +372,7 @@ struct cidmap *AskUserForCIDMap(SplineFont *sf) {
     FindMapsInDir(&block,".");
     FindMapsInDir(&block,GResourceProgramDir);
     FindMapsInNoLibsDir(&block,GResourceProgramDir);
-#ifdef SHAREDIR
-    FindMapsInDir(&block,SHAREDIR);
-#endif
-    FindMapsInDir(&block,getPfaEditShareDir());
+    FindMapsInDir(&block,getFontForgeShareDir());
     FindMapsInDir(&block,"/usr/share/fontforge");
 
     choices = gcalloc(block.cur+2,sizeof(unichar_t *));
@@ -427,7 +424,7 @@ struct cidmap *AskUserForCIDMap(SplineFont *sf) {
 	if ( ret == -1 )
 	    /* No map */;
 	else if ( filename==NULL )
-	    map = FindCidMap(reg,ord,supplement,sf);
+	    map = FindCidMap(reg,ord,supplement,NULL);
 	else
 	    map = LoadMapFromFile(filename,reg,ord,supplement);
 	if ( ret!=0 && reg!=block.maps[ret-1] )
@@ -438,11 +435,6 @@ struct cidmap *AskUserForCIDMap(SplineFont *sf) {
 	free( block.maps[i]);
     free(block.maps);
     free(block.dirs);
-    if ( map!=NULL ) {
-	sf->cidregistry = copy(map->registry);
-	sf->ordering = copy(map->ordering);
-	sf->supplement = map->supplement;
-    }
 return( map );
 }
 

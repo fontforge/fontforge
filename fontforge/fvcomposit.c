@@ -24,14 +24,16 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "pfaeditui.h"
+#include "fontforgevw.h"
 #include <chardata.h>
 #include <math.h>
 #include <utype.h>
 #include <ustring.h>
 
-extern int GraveAcuteCenterBottom, CharCenterHighest;
-extern int accent_offset;	/* in prefs.c */
+int accent_offset = 6;
+int GraveAcuteCenterBottom = 1;
+int PreferSpacingAccents = true;
+int CharCenterHighest = 1;
 
 #define BottomAccent	0x300
 #define TopAccent	0x345
@@ -1647,7 +1649,6 @@ static SplineChar *GetGoodAccentGlyph(SplineFont *sf, int uni, int basech,
     int ach= -1;
     const unichar_t *apt, *end;
     SplineChar *rsc;
-    extern int PreferSpacingAccents;
 
     *invert = false;
 
@@ -1765,6 +1766,65 @@ static void TurnOffUseMyMetrics(SplineChar *sc) {
 
     for ( refs = sc->layers[ly_fore].refs; refs!=NULL; refs = refs->next )
 	refs->use_my_metrics = false;
+}
+
+AnchorClass *AnchorClassMatch(SplineChar *sc1,SplineChar *sc2,AnchorClass *restrict_,
+	AnchorPoint **_ap1,AnchorPoint **_ap2 ) {
+    AnchorPoint *ap1, *ap2;
+
+    for ( ap1=sc1->anchor; ap1!=NULL ; ap1=ap1->next ) if ( restrict_==(AnchorClass *) -1 || ap1->anchor==restrict_ ) {
+	for ( ap2=sc2->anchor; ap2!=NULL; ap2=ap2->next ) if ( restrict_==(AnchorClass *) -1 || ap2->anchor==restrict_ ) {
+	    if ( ap1->anchor==ap2->anchor &&
+#if 1
+		    ((ap1->type>=at_basechar && ap1->type<=at_basemark && ap2->type==at_mark) ||
+		     (ap1->type==at_cexit && ap2->type==at_centry) )) {
+#else
+		    ((ap1->type==at_mark && ap2->type>=at_basechar && ap2->type<=at_basemark) ||
+		     (ap1->type>=at_basechar && ap1->type<=at_basemark && ap2->type==at_mark) ||
+		     (ap1->type==at_cexit && ap2->type==at_centry) ||
+		     (ap1->type==at_centry && ap2->type==at_cexit) )) {
+#endif
+		 *_ap1 = ap1;
+		 *_ap2 = ap2;
+return( ap1->anchor );
+	    }
+	}
+    }
+return( NULL );
+}
+
+AnchorClass *AnchorClassMkMkMatch(SplineChar *sc1,SplineChar *sc2,
+	AnchorPoint **_ap1,AnchorPoint **_ap2 ) {
+    AnchorPoint *ap1, *ap2;
+
+    for ( ap1=sc1->anchor; ap1!=NULL ; ap1=ap1->next ) {
+	for ( ap2=sc2->anchor; ap2!=NULL; ap2=ap2->next ) {
+	    if ( ap1->anchor==ap2->anchor &&
+		    ap1->type==at_basemark && ap2->type==at_mark)  {
+		 *_ap1 = ap1;
+		 *_ap2 = ap2;
+return( ap1->anchor );
+	    }
+	}
+    }
+return( NULL );
+}
+
+AnchorClass *AnchorClassCursMatch(SplineChar *sc1,SplineChar *sc2,
+	AnchorPoint **_ap1,AnchorPoint **_ap2 ) {
+    AnchorPoint *ap1, *ap2;
+
+    for ( ap1=sc1->anchor; ap1!=NULL ; ap1=ap1->next ) {
+	for ( ap2=sc2->anchor; ap2!=NULL; ap2=ap2->next ) {
+	    if ( ap1->anchor==ap2->anchor &&
+		    ap1->type==at_cexit && ap2->type==at_centry)  {
+		 *_ap1 = ap1;
+		 *_ap2 = ap2;
+return( ap1->anchor );
+	    }
+	}
+    }
+return( NULL );
 }
 
 static void _SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, SplineChar *rsc,
@@ -1993,7 +2053,7 @@ static void _SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, SplineChar *rs
     /*if ( invert ) transform[5] -= yoff; else */transform[5] += yoff;
     _SCAddRef(sc,rsc,transform);
     if ( pos!=-1 && (pos&____RIGHT) )
-	SCSynchronizeWidth(sc,sc->width + rbb.maxx-rbb.minx+spacing,sc->width,sf->fv);
+	SCSynchronizeWidth(sc,sc->width + rbb.maxx-rbb.minx+spacing,sc->width,NULL);
     if ( pos!=-1 && (pos&(____LEFT|____RIGHT|____CENTERLEFT|____LEFTEDGE|____CENTERRIGHT|____RIGHTEDGE)) )
 	TurnOffUseMyMetrics(sc);
 
@@ -2119,7 +2179,7 @@ static void SCPutRefAfter(SplineChar *sc,SplineFont *sf,int ch, int copybmp) {
     }
 }
 
-static void DoSpaces(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
+static void DoSpaces(SplineFont *sf,SplineChar *sc,int copybmp) {
     int width;
     int uni = sc->unicodeenc;
     int em = sf->ascent+sf->descent;
@@ -2212,7 +2272,7 @@ static SplinePoint *MakeSP(real x, real y, SplinePoint *last,int order2) {
 return( new );
 }
 
-static void DoRules(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
+static void DoRules(SplineFont *sf,SplineChar *sc,int copybmp) {
     int width;
     int uni = sc->unicodeenc;
     int em = sf->ascent+sf->descent;
@@ -2304,7 +2364,7 @@ static void DoRules(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
     }
 }
 
-static void DoRotation(SplineFont *sf,SplineChar *sc,int copybmp,FontView *fv) {
+static void DoRotation(SplineFont *sf,SplineChar *sc,int copybmp) {
     /* In when laying CJK characters vertically and intermixed latin (greek,etc) */
     /*  characters need to be rotated. Adobe's cid tables call for some */
     /*  pre-rotated characters, so we might as well be prepared to deal with */
@@ -2397,71 +2457,31 @@ return;
 static int SCMakeRightToLeftLig(SplineChar *sc,SplineFont *sf,
 	const unichar_t *start,int copybmp) {
     int cnt = u_strlen(start);
-    GBiText bd;
-    int ret, ch;
-    unichar_t *pt, *end, *freeme=NULL;
-    static unichar_t final_lamalef[] = { 0xFE8E, 0xfee0, 0 }, isolated_lamalef[] = { 0xFE8E ,0xfedf, 0 };
-    /* Bugs: Doesn't handle accents, and there are some in arabic ligs */
+    int ret, ch, alt_ch;
+    const unichar_t *pt;
 
-    /* Deal with arabic ligatures which are not isolated */
-    if ( isarabinitial(sc->unicodeenc) || isarabmedial(sc->unicodeenc) ||
-	    isarabfinal(sc->unicodeenc)) {
-	++cnt;
-	if ( isarabmedial(sc->unicodeenc)) ++cnt;
-	freeme = galloc((cnt+1)*sizeof(unichar_t));
-	if ( isarabinitial(sc->unicodeenc)) {
-	    u_strcpy(freeme,start);
-	    freeme[cnt-2] = 0x200d; freeme[cnt-1] = 0;
-	} else {
-	    *freeme = 0x200d;
-	    u_strcpy(freeme+1,start);
-	    if ( isarabmedial(sc->unicodeenc)) {
-		freeme[cnt-2] = 0x200d;
-		freeme[cnt-1] = 0;
-	    }
-	}
-	start = freeme;
+    pt = start+cnt-1;
+    ch = *pt;
+    if ( ch>=0x621 && ch<=0x6ff ) {
+	alt_ch = ArabicForms[ch-0x600].final;
+	if ( alt_ch!=0 && haschar(sf,alt_ch))
+	    ch = alt_ch;
     }
-
-    ++cnt;		/* for EOS */
-    bd.text = galloc(cnt*sizeof(unichar_t));
-    bd.level = galloc(cnt*sizeof(uint8));
-    bd.override = galloc(cnt*sizeof(uint8));
-    bd.type = galloc(cnt*sizeof(uint16));
-    bd.original = galloc(cnt*sizeof(unichar_t *));
-    --cnt;
-    bd.len = cnt;
-    bd.base_right_to_left = true;
-    GDrawBiText1(&bd,start,cnt);
-    GDrawBiText2(&bd,0,cnt);
-
-    ret = false;
-    pt = bd.text; end = pt+cnt;
-    if ( *pt==0x200d ) ++pt;
-	/* The arabic encoder knows about two ligs. So if we pass in either of*/
-	/*  those two we will get out itself. We want it decomposed so undo */
-	/*  the process */
-    if ( sc->unicodeenc==0xfedf )
-	pt = isolated_lamalef;
-    else if ( sc->unicodeenc==0xfee0 )
-	pt = final_lamalef;
-    if ( SCMakeBaseReference(sc,sf,*pt,copybmp) ) {
-	for ( ++pt; pt<end; ++pt ) if ( *pt!=0x200d ) {
+    if ( SCMakeBaseReference(sc,sf,ch,copybmp) ) {
+	for ( --pt; pt>=start; --pt ) {
 	    ch = *pt;
-	    /* Arabic characters may get transformed into initial/medial/final*/
-	    /*  and we don't know that those characters exist in the font. We */
-	    /*  do know that the "unformed" character exists (because we checked)*/
-	    /*  so go back to using it if we must */
-	    if ( !haschar(sf,ch) ) {
-		const unichar_t *temp = SFGetAlternate(sf,ch,NULL,false);
-		if ( temp!=NULL ) ch = *temp;
+	    if ( ch>=0x621 && ch<=0x6ff ) {
+		if ( pt==start )
+		    alt_ch = ArabicForms[ch-0x600].initial;
+		else
+		    alt_ch = ArabicForms[ch-0x600].medial;
+		if ( alt_ch!=0 && haschar(sf,alt_ch))
+		    ch = alt_ch;
 	    }
 	    SCPutRefAfter(sc,sf,ch,copybmp);
 	}
 	ret = true;
     }
-    free(bd.text); free(bd.level); free(bd.override); free(bd.type);
-    free(bd.original);
 return( ret );
 }
 
@@ -2572,10 +2592,10 @@ return;
 	ref->transform[4] += xoff;
 	SplinePointListTransform(ref->layers[0].splines,transform,true);
     }
-    SCSynchronizeWidth(sc,sc->width + xoff,sc->width,sc->parent->fv);
+    SCSynchronizeWidth(sc,sc->width + xoff,sc->width,NULL);
 }
 
-void SCBuildComposit(SplineFont *sf, SplineChar *sc, int copybmp,FontView *fv) {
+void SCBuildComposit(SplineFont *sf, SplineChar *sc, int copybmp) {
     const unichar_t *pt, *apt; unichar_t ch;
     BDFFont *bdf;
     real ia;
@@ -2591,13 +2611,13 @@ return;
     sc->width = 0;
 
     if ( iszerowidth(sc->unicodeenc) || (sc->unicodeenc>=0x2000 && sc->unicodeenc<=0x200f )) {
-	DoSpaces(sf,sc,copybmp,fv);
+	DoSpaces(sf,sc,copybmp);
 return;
     } else if ( sc->unicodeenc>=0x2010 && sc->unicodeenc<=0x2015 ) {
-	DoRules(sf,sc,copybmp,fv);
+	DoRules(sf,sc,copybmp);
 return;
     } else if ( SFIsRotatable(sf,sc) ) {
-	DoRotation(sf,sc,copybmp,fv);
+	DoRotation(sf,sc,copybmp);
 return;
     } else if ( sc->unicodeenc==0x131 || sc->unicodeenc==0x237 || sc->unicodeenc==0xf6be ) {
 	SCMakeDotless(sf, sc, copybmp, true);

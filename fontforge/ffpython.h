@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2007 by George Williams */
+/* Copyright (C) 2007 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -24,28 +24,24 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _GROUPS_H
-#define _GROUPS_H
 
-typedef struct group {
-    char *name;			/* The name of this group (utf8) */
-    struct group *parent;	/* parent of this group (NULL for group root) */
-    int kid_cnt;		/* Number of sub-groups */
-    struct group **kids;	/* The sub-groups */
-    char *glyphs;		/* Or, if a terminal node, a list of glyph names/Unicodes */
-    unsigned int unique: 1;	/* If set => set in all kids & a glyph name may only appear once in all terminal groups */
-/* Used by the dialog */
-    unsigned int open: 1;
-    unsigned int selected : 1;
-    int lpos;
-} Group;
 
-extern Group *group_root;
-
-struct fontview;
-
-void SaveGroupList(void);
-void LoadGroupList(void);
-void DefineGroups(struct fontview *fv);
-void DisplayGroups(struct fontview *fv);
+#if !defined( Py_RETURN_NONE )
+/* Not defined before 2.4 */
+# define Py_RETURN_NONE		return( Py_INCREF(Py_None), Py_None )
 #endif
+#define Py_RETURN(self)		return( Py_INCREF((PyObject *) (self)), (PyObject *) (self) )
+
+#ifndef PyMODINIT_FUNC	/* declarations for DLL import/export */
+#define PyMODINIT_FUNC void
+#endif
+
+struct flaglist { char *name; int flag; };
+
+extern SplineChar *sc_active_in_ui;
+extern FontViewBase *fv_active_in_ui;
+
+extern void FfPy_Replace_MenuItemStub(PyObject *(*func)(PyObject *,PyObject *));
+extern PyObject *PySC_From_SC(SplineChar *sc);
+extern PyObject *PyFV_From_FV(FontViewBase *fv);
+extern int FlagsFromTuple(PyObject *tuple,struct flaglist *flags);
