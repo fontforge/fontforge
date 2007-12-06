@@ -33,7 +33,6 @@ float rr_radius=0;
 int ps_pointcnt=6;
 float star_percent=1.7320508;	/* Regular 6 pointed star */
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <gkeysym.h>
 #include <math.h>
 #include "splinefont.h"
@@ -248,7 +247,7 @@ static void FakeShapeEvents(CharView *cv) {
     real trans[6];
 
     cv->active_tool = rectelipse ? cvt_elipse : cvt_rect;
-    if ( cv->sc->inspiro ) {
+    if ( cv->b.sc->inspiro ) {
 	GDrawSetCursor(cv->v,spirotools[cv->active_tool]);
 	GDrawSetCursor(cvtools,spirotools[cv->active_tool]);
     } else {
@@ -270,8 +269,8 @@ static void FakeShapeEvents(CharView *cv) {
 	trans[2] = -trans[1];
 	trans[4] = -cv->p.x*trans[0] - cv->p.y*trans[2] + cv->p.x;
 	trans[5] = -cv->p.x*trans[1] - cv->p.y*trans[3] + cv->p.y;
-	SplinePointListTransform(cv->layerheads[cv->drawmode]->splines,trans,false);
-	SCUpdateAll(cv->sc);
+	SplinePointListTransform(cv->b.layerheads[cv->b.drawmode]->splines,trans,false);
+	SCUpdateAll(cv->b.sc);
     }
     cv->active_tool = cvt_none;
 }
@@ -314,7 +313,7 @@ return( true );
 	d->done = true;
 	if ( !regular_star && d->ispolystar )
 	    star_percent = val2/100;
-	SavePrefs();
+	SavePrefs(true);
     }
 return( true );
 }
@@ -688,7 +687,7 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
     int tool = cv->cntrldown?cv->cb1_tool:cv->b1_tool;
     int dither = GDrawSetDither(NULL,false);
     GRect temp;
-    int canspiro = hasspiro(), inspiro = canspiro && cv->sc->inspiro;
+    int canspiro = hasspiro(), inspiro = canspiro && cv->b.sc->inspiro;
     GImage *(*buttons)[2] = inspiro ? spirobuttons : normbuttons;
     GImage **smalls = inspiro ? spirosmalls : normsmalls;
 
@@ -701,7 +700,7 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
 	mi = i;
 	if ( i==(cvt_rect)/2 && ((j==0 && rectelipse) || (j==1 && polystar)) )
 	    ++mi;
-/*	if ( cv->sc->parent->order2 && buttons[mi][j]==&GIcon_freehand ) */
+/*	if ( cv->b.sc->parent->order2 && buttons[mi][j]==&GIcon_freehand ) */
 /*	    GDrawDrawImage(pixmap,&GIcon_greyfree,NULL,j*27+1,i*27+1);	 */
 /*	else								 */
 	    GDrawDrawImage(pixmap,buttons[mi][j],NULL,j*27+1,i*27+1);
@@ -828,7 +827,7 @@ void CVToolsSetCursor(CharView *cv, int state, char *device) {
 	shouldshow = cvt_minify;
     if ( shouldshow!=cv->showing_tool ) {
 	CPEndInfo(cv);
-	if ( cv->sc->inspiro ) {
+	if ( cv->b.sc->inspiro ) {
 	    GDrawSetCursor(cv->v,spirotools[shouldshow]);
 	    if ( cvtools!=NULL )	/* Might happen if window owning docked palette destroyed */
 		GDrawSetCursor(cvtools,spirotools[shouldshow]);
@@ -885,13 +884,13 @@ static void SCCheckForSSToOptimize(SplineChar *sc, SplineSet *ss) {
 
 static void CVChangeSpiroMode(CharView *cv) {
     if ( hasspiro() ) {
-	cv->sc->inspiro = !cv->sc->inspiro;
+	cv->b.sc->inspiro = !cv->b.sc->inspiro;
 	cv->showing_tool = cvt_none;
 	CVClearSel(cv);
-	if ( !cv->sc->inspiro )
-	    SCCheckForSSToOptimize(cv->sc,cv->layerheads[cv->drawmode]->splines);
+	if ( !cv->b.sc->inspiro )
+	    SCCheckForSSToOptimize(cv->b.sc,cv->b.layerheads[cv->b.drawmode]->splines);
 	GDrawRequestExpose(cvtools,NULL,false);
-	SCUpdateAll(cv->sc);
+	SCUpdateAll(cv->b.sc);
     }
 }
 
@@ -919,7 +918,7 @@ static void ToolsMouse(CharView *cv, GEvent *event) {
 		changed = true;
 	    }
 	    if ( changed ) {
-		SavePrefs();
+		SavePrefs(true);
 		GDrawRequestExpose(cvtools,NULL,false);
 	    }
 	}
@@ -932,7 +931,7 @@ static void ToolsMouse(CharView *cv, GEvent *event) {
     if ( pos<0 || pos>=cvt_max )
 	pos = cvt_none;
 #if 0
-    if ( pos==cvt_freehand && cv->sc->parent->order2 )
+    if ( pos==cvt_freehand && cv->b.sc->parent->order2 )
 return;			/* Not available in order2 spline mode */
 #endif
     if ( event->type == et_mousedown ) {
@@ -953,7 +952,7 @@ return;			/* Not available in order2 spline mode */
 	if ( cv->pressed_tool==cvt_none && pos!=cvt_none ) {
 	    /* Not pressed */
 	    char *msg = _(popupsres[pos]);
-	    if ( cv->sc->inspiro ) {
+	    if ( cv->b.sc->inspiro ) {
 		if ( pos==cvt_spirog2 )
 		    msg = _("Add a g2 curve point");
 		else if ( pos==cvt_spiroleft )
@@ -1146,8 +1145,8 @@ static void CVLayers2Set(CharView *cv) {
 	BDFCharFree(layer2.layers[i]);
 	layer2.layers[i]=NULL;
     }
-    if ( cv->sc->layer_cnt+1>=layer2.max_layers ) {
-	top = cv->sc->layer_cnt+10;
+    if ( cv->b.sc->layer_cnt+1>=layer2.max_layers ) {
+	top = cv->b.sc->layer_cnt+10;
 	if ( layer2.layers==NULL )
 	    layer2.layers = gcalloc(top,sizeof(BDFChar *));
 	else {
@@ -1157,15 +1156,15 @@ static void CVLayers2Set(CharView *cv) {
 	}
 	layer2.max_layers = top;
     }
-    layer2.current_layers = cv->sc->layer_cnt+1;
-    for ( i=ly_fore; i<cv->sc->layer_cnt; ++i )
-	layer2.layers[i+1] = BDFCharFromLayer(cv->sc,i);
-    layer2.active = CVLayer(cv)+1;
+    layer2.current_layers = cv->b.sc->layer_cnt+1;
+    for ( i=ly_fore; i<cv->b.sc->layer_cnt; ++i )
+	layer2.layers[i+1] = BDFCharFromLayer(cv->b.sc,i);
+    layer2.active = CVLayer(&cv->b)+1;
 
-    GScrollBarSetBounds(GWidgetGetControl(cvlayers2,CID_SB),0,cv->sc->layer_cnt+1-2,
+    GScrollBarSetBounds(GWidgetGetControl(cvlayers2,CID_SB),0,cv->b.sc->layer_cnt+1-2,
 	    CV_LAYERS2_VISLAYERS);
-    if ( layer2.offtop>cv->sc->layer_cnt-1-CV_LAYERS2_VISLAYERS )
-	layer2.offtop = cv->sc->layer_cnt-1-CV_LAYERS2_VISLAYERS;
+    if ( layer2.offtop>cv->b.sc->layer_cnt-1-CV_LAYERS2_VISLAYERS )
+	layer2.offtop = cv->b.sc->layer_cnt-1-CV_LAYERS2_VISLAYERS;
     if ( layer2.offtop<0 ) layer2.offtop = 0;
     GScrollBarSetPos(GWidgetGetControl(cvlayers2,CID_SB),layer2.offtop);
 
@@ -1178,7 +1177,7 @@ static void Layers2Expose(CharView *cv,GWindow pixmap,GEvent *event) {
     GRect r;
     struct _GImage base;
     GImage gi;
-    int as = (24*cv->sc->parent->ascent)/(cv->sc->parent->ascent+cv->sc->parent->descent);
+    int as = (24*cv->b.sc->parent->ascent)/(cv->b.sc->parent->ascent+cv->b.sc->parent->descent);
 
     if ( event->u.expose.rect.y+event->u.expose.rect.height<CV_LAYERS2_HEADER_HEIGHT )
 return;
@@ -1241,19 +1240,15 @@ return;
 static void CVLayer2Invoked(GWindow v, GMenuItem *mi, GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(v);
     Layer temp;
-    int layer = CVLayer(cv);
-    SplineChar *sc = cv->sc;
+    int layer = CVLayer(&cv->b);
+    SplineChar *sc = cv->b.sc;
     int i;
-#if defined(FONTFORGE_CONFIG_GDRAW)
     char *buts[3];
     buts[0] = _("_Yes"); buts[1]=_("_No"); buts[2] = NULL;
-#elif defined(FONTFORGE_CONFIG_GTK)
-    static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_CANCEL, NULL };
-#endif
 
     switch ( mi->mid ) {
       case MID_LayerInfo:
-	if ( !LayerDialog(cv->layerheads[cv->drawmode]))
+	if ( !LayerDialog(cv->b.layerheads[cv->b.drawmode]))
 return;
       break;
       case MID_NewLayer:
@@ -1262,8 +1257,8 @@ return;
 return;
 	sc->layers = grealloc(sc->layers,(sc->layer_cnt+1)*sizeof(Layer));
 	sc->layers[sc->layer_cnt] = temp;
-	cv->layerheads[dm_fore] = &sc->layers[sc->layer_cnt];
-	cv->layerheads[dm_back] = &sc->layers[ly_back];
+	cv->b.layerheads[dm_fore] = &sc->layers[sc->layer_cnt];
+	cv->b.layerheads[dm_back] = &sc->layers[ly_back];
 	++sc->layer_cnt;
       break;
       case MID_DelLayer:
@@ -1280,7 +1275,7 @@ return;
 	    sc->layers[i-1] = sc->layers[i];
 	--sc->layer_cnt;
 	if ( layer==sc->layer_cnt )
-	    cv->layerheads[dm_fore] = &sc->layers[layer-1];
+	    cv->b.layerheads[dm_fore] = &sc->layers[layer-1];
       break;
       case MID_First:
 	if ( layer==ly_fore )
@@ -1289,7 +1284,7 @@ return;
 	for ( i=layer-1; i>=ly_fore; --i )
 	    sc->layers[i+1] = sc->layers[i];
 	sc->layers[i+1] = temp;
-	cv->layerheads[dm_fore] = &sc->layers[ly_fore];
+	cv->b.layerheads[dm_fore] = &sc->layers[ly_fore];
       break;
       case MID_Earlier:
 	if ( layer==ly_fore )
@@ -1297,7 +1292,7 @@ return;
 	temp = sc->layers[layer];
 	sc->layers[layer] = sc->layers[layer-1];
 	sc->layers[layer-1] = temp;
-	cv->layerheads[dm_fore] = &sc->layers[layer-1];
+	cv->b.layerheads[dm_fore] = &sc->layers[layer-1];
       break;
       case MID_Later:
 	if ( layer==sc->layer_cnt-1 )
@@ -1305,7 +1300,7 @@ return;
 	temp = sc->layers[layer];
 	sc->layers[layer] = sc->layers[layer+1];
 	sc->layers[layer+1] = temp;
-	cv->layerheads[dm_fore] = &sc->layers[layer+1];
+	cv->b.layerheads[dm_fore] = &sc->layers[layer+1];
       break;
       case MID_Last:
 	if ( layer==sc->layer_cnt-1 )
@@ -1314,11 +1309,11 @@ return;
 	for ( i=layer+1; i<sc->layer_cnt; ++i )
 	    sc->layers[i-1] = sc->layers[i];
 	sc->layers[i-1] = temp;
-	cv->layerheads[dm_fore] = &sc->layers[i-1];
+	cv->b.layerheads[dm_fore] = &sc->layers[i-1];
       break;
     }
     CVLayers2Set(cv);
-    CVCharChangedUpdate(cv);
+    CVCharChangedUpdate(&cv->b);
 }
 
 static void Layer2Menu(CharView *cv,GEvent *event, int nolayer) {
@@ -1328,7 +1323,7 @@ static void Layer2Menu(CharView *cv,GEvent *event, int nolayer) {
 	    N_("_First"), N_("_Earlier"), N_("L_ater"), N_("_Last"), NULL };
     static int mids[] = { MID_LayerInfo, MID_NewLayer, MID_DelLayer, -1,
 	    MID_First, MID_Earlier, MID_Later, MID_Last, 0 };
-    int layer = CVLayer(cv);
+    int layer = CVLayer(&cv->b);
 
     memset(mi,'\0',sizeof(mi));
     for ( i=0; names[i]!=0; ++i ) {
@@ -1345,9 +1340,9 @@ static void Layer2Menu(CharView *cv,GEvent *event, int nolayer) {
 	    mi[i].ti.disabled = true;
 	if (( mids[i]==MID_First || mids[i]==MID_Earlier ) && layer==ly_fore )
 	    mi[i].ti.disabled = true;
-	if (( mids[i]==MID_Last || mids[i]==MID_Later ) && layer==cv->sc->layer_cnt-1 )
+	if (( mids[i]==MID_Last || mids[i]==MID_Later ) && layer==cv->b.sc->layer_cnt-1 )
 	    mi[i].ti.disabled = true;
-	if ( mids[i]==MID_DelLayer && cv->sc->layer_cnt==2 )
+	if ( mids[i]==MID_DelLayer && cv->b.sc->layer_cnt==2 )
 	    mi[i].ti.disabled = true;
     }
     GMenuCreatePopupMenu(cvlayers2,event, mi);
@@ -1360,7 +1355,7 @@ static void Layer2Scroll(CharView *cv, GEvent *event) {
     if ( sbt==et_sb_top )
 	off = 0;
     else if ( sbt==et_sb_bottom )
-	off = cv->sc->layer_cnt-1-CV_LAYERS2_VISLAYERS;
+	off = cv->b.sc->layer_cnt-1-CV_LAYERS2_VISLAYERS;
     else if ( sbt==et_sb_up ) {
 	off = layer2.offtop-1;
     } else if ( sbt==et_sb_down ) {
@@ -1372,8 +1367,8 @@ static void Layer2Scroll(CharView *cv, GEvent *event) {
     } else /* if ( sbt==et_sb_thumb || sbt==et_sb_thumbrelease ) */ {
 	off = event->u.control.u.sb.pos;
     }
-    if ( off>cv->sc->layer_cnt-1-CV_LAYERS2_VISLAYERS )
-	off = cv->sc->layer_cnt-1-CV_LAYERS2_VISLAYERS;
+    if ( off>cv->b.sc->layer_cnt-1-CV_LAYERS2_VISLAYERS )
+	off = cv->b.sc->layer_cnt-1-CV_LAYERS2_VISLAYERS;
     if ( off<0 ) off=0;
     if ( off==layer2.offtop )
 return;
@@ -1407,9 +1402,9 @@ return( true );
 	int layer = (event->u.mouse.y-CV_LAYERS2_HEADER_HEIGHT)/CV_LAYERS2_LINE_HEIGHT;
 	if ( event->u.mouse.y>CV_LAYERS2_HEADER_HEIGHT ) {
 	    if ( layer<2 ) {
-		cv->drawmode = layer==0 ? dm_grid : dm_back;
+		cv->b.drawmode = layer==0 ? dm_grid : dm_back;
 		layer2.active = layer;
-	    } else if ( layer-1+layer2.offtop >= cv->sc->layer_cnt ) {
+	    } else if ( layer-1+layer2.offtop >= cv->b.sc->layer_cnt ) {
 		if ( event->u.mouse.button==3 )
 		    Layer2Menu(cv,event,true);
 		else
@@ -1417,23 +1412,23 @@ return( true );
 return(true);
 	    } else {
 		layer2.active = layer+layer2.offtop;
-		cv->drawmode = dm_fore;
-		cv->layerheads[dm_fore] = &cv->sc->layers[layer-1+layer2.offtop];
+		cv->b.drawmode = dm_fore;
+		cv->b.layerheads[dm_fore] = &cv->b.sc->layers[layer-1+layer2.offtop];
 	    }
 	    GDrawRequestExpose(cvlayers2,NULL,false);
 	    GDrawRequestExpose(cv->v,NULL,false);
 	    GDrawRequestExpose(cv->gw,NULL,false);	/* the logo (where the scrollbars join) shows what layer we are in */
 	    if ( event->u.mouse.button==3 )
-		Layer2Menu(cv,event,cv->drawmode!=dm_fore);
-	    else if ( event->u.mouse.clicks==2 && cv->drawmode==dm_fore ) {
-		if ( LayerDialog(cv->layerheads[cv->drawmode]))
-		    CVCharChangedUpdate(cv);
+		Layer2Menu(cv,event,cv->b.drawmode!=dm_fore);
+	    else if ( event->u.mouse.clicks==2 && cv->b.drawmode==dm_fore ) {
+		if ( LayerDialog(cv->b.layerheads[cv->b.drawmode]))
+		    CVCharChangedUpdate(&cv->b);
 	    }
 	}
       } break;
       case et_controlevent:
 	if ( event->u.control.subtype == et_radiochanged ) {
-	    enum drawmode dm = cv->drawmode;
+	    enum drawmode dm = cv->b.drawmode;
 	    switch(GGadgetGetCid(event->u.control.g)) {
 	      case CID_VFore:
 		CVShows.showfore = cv->showfore = GGadgetIsChecked(event->u.control.g);
@@ -1446,7 +1441,7 @@ return(true);
 	      break;
 	    }
 	    GDrawRequestExpose(cv->v,NULL,false);
-	    if ( dm!=cv->drawmode )
+	    if ( dm!=cv->b.drawmode )
 		GDrawRequestExpose(cv->gw,NULL,false);	/* the logo (where the scrollbars join) shows what layer we are in */
 	} else
 	    Layer2Scroll(cv,event);
@@ -1558,18 +1553,18 @@ return;
 static void LayersSwitch(CharView *cv) {
 }
 
-void SCMoreLayers(SplineChar *sc, Layer *old) { /* We've added more layers */
+void SC_MoreLayers(SplineChar *sc, Layer *old) { /* We've added more layers */
     CharView *curcv, *cv;
     if ( sc->parent==NULL || !sc->parent->multilayer )
 return;
-    for ( cv=sc->views; cv!=NULL ; cv=cv->next ) {
-	cv->layerheads[dm_fore] = &cv->sc->layers[cv->layerheads[dm_fore]-old];
-	cv->layerheads[dm_back] = &cv->sc->layers[ly_back];
+    for ( cv=(CharView *) (sc->views); cv!=NULL ; cv=(CharView *) (cv->b.next) ) {
+	cv->b.layerheads[dm_fore] = &cv->b.sc->layers[cv->b.layerheads[dm_fore]-old];
+	cv->b.layerheads[dm_back] = &cv->b.sc->layers[ly_back];
     }
     if ( cvtools==NULL )
 return;
     curcv = GDrawGetUserData(cvtools);
-    if ( curcv==NULL || curcv->sc!=sc )
+    if ( curcv==NULL || curcv->b.sc!=sc )
 return;
     CVLayers2Set(curcv);
 }
@@ -1579,7 +1574,7 @@ void SCLayersChange(SplineChar *sc) { /* many of the foreground layers need to b
     if ( cvtools==NULL || !sc->parent->multilayer )
 return;
     curcv = GDrawGetUserData(cvtools);
-    if ( curcv==NULL || curcv->sc!=sc )
+    if ( curcv==NULL || curcv->b.sc!=sc )
 return;
     CVLayers2Set(curcv);
 }
@@ -1588,24 +1583,27 @@ void CVLayerChange(CharView *cv) { /* Current layer needs to be redrawn */
     CharView *curcv;
     int layer;
 
-    if ( cvtools==NULL  || !cv->sc->parent->multilayer )
+    if ( cvtools==NULL  || !cv->b.sc->parent->multilayer )
 return;
     curcv = GDrawGetUserData(cvtools);
     if ( curcv!=cv )
 return;
-    if ( cv->drawmode==dm_grid || cv->drawmode==dm_back )
+    if ( cv->b.drawmode==dm_grid || cv->b.drawmode==dm_back )
 return;
-    layer = CVLayer(cv);
+    layer = CVLayer(&cv->b);
     BDFCharFree(layer2.layers[layer+1]);
-    layer2.layers[layer+1] = BDFCharFromLayer(cv->sc,layer);
+    layer2.layers[layer+1] = BDFCharFromLayer(cv->b.sc,layer);
     GDrawRequestExpose(cvlayers2,NULL,false);
+}
+#else
+void SC_MoreLayers(SplineChar *sc, Layer *old) {
 }
 #endif
 
 void CVLayersSet(CharView *cv) {
 
 #ifdef FONTFORGE_CONFIG_TYPE3
-    if ( cv->sc->parent->multilayer ) {
+    if ( cv->b.sc->parent->multilayer ) {
 	CVLayers2Set(cv);
 return;
     }
@@ -1620,12 +1618,12 @@ return;
     GGadgetSetChecked(GWidgetGetControl(cvlayers,CID_VHMetrics),cv->showhmetrics);
     GGadgetSetChecked(GWidgetGetControl(cvlayers,CID_VVMetrics),cv->showvmetrics);
     GGadgetSetChecked(GWidgetGetControl(cvlayers,
-		cv->drawmode==dm_fore?CID_EFore:
-		cv->drawmode==dm_back?CID_EBack:CID_EGrid ),true);
+		cv->b.drawmode==dm_fore?CID_EFore:
+		cv->b.drawmode==dm_back?CID_EBack:CID_EGrid ),true);
     GGadgetSetEnabled(GWidgetGetControl(cvlayers,CID_VVMetrics),
-	    cv->sc->parent->hasvmetrics);
+	    cv->b.sc->parent->hasvmetrics);
     GGadgetSetEnabled(GWidgetGetControl(cvlayers,CID_VVMetricsLab),
-	    cv->sc->parent->hasvmetrics);
+	    cv->b.sc->parent->hasvmetrics);
     GGadgetSetChecked(GWidgetGetControl(cvlayers,CID_VBlues),cv->showblues);
 
 #if 0	/* Use this to control visibility of grid fit layer */
@@ -1654,7 +1652,7 @@ return( true );
       break;
       case et_controlevent:
 	if ( event->u.control.subtype == et_radiochanged ) {
-	    enum drawmode dm = cv->drawmode;
+	    enum drawmode dm = cv->b.drawmode;
 	    switch(GGadgetGetCid(event->u.control.g)) {
 	      case CID_VFore:
 		CVShows.showfore = cv->showfore = GGadgetIsChecked(event->u.control.g);
@@ -1697,20 +1695,20 @@ return( true );
 		cv->back_img_out_of_date = true;	/* only this cv */
 	      break;
 	      case CID_EFore:
-		cv->drawmode = dm_fore;
+		cv->b.drawmode = dm_fore;
 		cv->lastselpt = NULL;
 	      break;
 	      case CID_EBack:
-		cv->drawmode = dm_back;
+		cv->b.drawmode = dm_back;
 		cv->lastselpt = NULL;
 	      break;
 	      case CID_EGrid:
-		cv->drawmode = dm_grid;
+		cv->b.drawmode = dm_grid;
 		cv->lastselpt = NULL;
 	      break;
 	    }
 	    GDrawRequestExpose(cv->v,NULL,false);
-	    if ( dm!=cv->drawmode )
+	    if ( dm!=cv->b.drawmode )
 		GDrawRequestExpose(cv->gw,NULL,false);	/* the logo (where the scrollbars join) shows what layer we are in */
 	}
       break;
@@ -1756,7 +1754,7 @@ return( false );
 	else if ( isupper(mn)) mnc = tolower(mn);
 	if ( event->u.chr.chars[0]==mn || event->u.chr.chars[0]==mnc ) {
 #ifdef FONTFORGE_CONFIG_TYPE3
-	    if ( cv->sc->parent->multilayer ) {
+	    if ( cv->b.sc->parent->multilayer ) {
 		fake.type = et_mousedown;
 		fake.w = cvlayers;
 		fake.u.mouse.x = 40;
@@ -1973,7 +1971,7 @@ return( cvlayers );
     gcd[base+2].gd.box = &radio_box;
     gcd[base+2].creator = GRadioCreate;
 
-    gcd[base+cv->drawmode].gd.flags |= gg_cb_on;
+    gcd[base+cv->b.drawmode].gd.flags |= gg_cb_on;
     base += 3;
 
     label[base].text = (unichar_t *) _("HHints");
@@ -2041,7 +2039,7 @@ return( cvlayers );
     if ( cv->showanchor ) gcd[10].gd.flags |= gg_cb_on;
     if ( cv->showhmetrics ) gcd[11].gd.flags |= gg_cb_on;
     if ( cv->showvmetrics ) gcd[12].gd.flags |= gg_cb_on;
-    if ( !cv->sc->parent->hasvmetrics ) {
+    if ( !cv->b.sc->parent->hasvmetrics ) {
 	gcd[12].gd.flags &= ~gg_enabled;
 	gcd[base-2].gd.flags &= ~gg_enabled;
     }
@@ -2103,7 +2101,7 @@ static void CVPopupSelectInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
       break;
       case 1:
 	if ( cv->p.ref!=NULL )
-	    CharViewCreate(cv->p.ref->sc,cv->fv,-1);
+	    CharViewCreate(cv->p.ref->sc,(FontView *) (cv->b.fv),-1);
       break;
       case 2:
 	CVAddAnchor(cv);
@@ -2119,7 +2117,7 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
     memset(mi,'\0',sizeof(mi));
     for ( i=0;i<=cvt_skew; ++i ) {
 	char *msg = _(popupsres[i]);
-	if ( cv->sc->inspiro ) {
+	if ( cv->b.sc->inspiro ) {
 	    if ( i==cvt_spirog2 )
 		msg = _("Add a g2 curve point");
 	    else if ( i==cvt_spiroleft )
@@ -2135,7 +2133,7 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
 	mi[i].invoke = CVPopupInvoked;
     }
 
-    if ( cvlayers!=NULL && !cv->sc->parent->multilayer ) {
+    if ( cvlayers!=NULL && !cv->b.sc->parent->multilayer ) {
 	mi[i].ti.line = true;
 	mi[i].ti.fg = COLOR_DEFAULT;
 	mi[i++].ti.bg = COLOR_DEFAULT;
@@ -2179,12 +2177,12 @@ static void CVPaletteCheck(CharView *cv) {
 	CVMakeTools(cv);
     }
 #ifdef FONTFORGE_CONFIG_TYPE3
-    if ( cv->sc->parent->multilayer && cvlayers2==NULL ) {
+    if ( cv->b.sc->parent->multilayer && cvlayers2==NULL ) {
 	if ( palettes_fixed ) {
 	    cvlayersoff.x = 0; cvlayersoff.y = CV_TOOLS_HEIGHT+45/*25*/;	/* 45 is right if there's decor, 25 when none. twm gives none, kde gives decor */
 	}
 	CVMakeLayers2(cv);
-    } else if ( !cv->sc->parent->multilayer && cvlayers==NULL ) {
+    } else if ( !cv->b.sc->parent->multilayer && cvlayers==NULL ) {
 #else
     if ( cvlayers==NULL ) {
 #endif
@@ -2201,7 +2199,7 @@ int CVPaletteIsVisible(CharView *cv,int which) {
 return( cvtools!=NULL && GDrawIsVisible(cvtools) );
 
 #ifdef FONTFORGE_CONFIG_TYPE3
-    if ( cv->sc->parent->multilayer )
+    if ( cv->b.sc->parent->multilayer )
 return( cvlayers2!=NULL && GDrawIsVisible(cvlayers2));
 #endif
 
@@ -2213,13 +2211,13 @@ void CVPaletteSetVisible(CharView *cv,int which,int visible) {
     if ( which==1 && cvtools!=NULL)
 	GDrawSetVisible(cvtools,visible );
 #ifdef FONTFORGE_CONFIG_TYPE3
-    else if ( which==0 && cv->sc->parent->multilayer && cvlayers2!=NULL )
+    else if ( which==0 && cv->b.sc->parent->multilayer && cvlayers2!=NULL )
 	GDrawSetVisible(cvlayers2,visible );
 #endif
     else if ( which==0 && cvlayers!=NULL )
 	GDrawSetVisible(cvlayers,visible );
     cvvisible[which] = visible;
-    SavePrefs();
+    SavePrefs(true);
 }
 
 void CVPalettesRaise(CharView *cv) {
@@ -2237,7 +2235,7 @@ void _CVPaletteActivate(CharView *cv,int force) {
 	if ( old!=NULL ) {
 	    SaveOffsets(old->gw,cvtools,&cvtoolsoff);
 #ifdef FONTFORGE_CONFIG_TYPE3
-	    if ( old->sc->parent->multilayer )
+	    if ( old->b.sc->parent->multilayer )
 		SaveOffsets(old->gw,cvlayers2,&cvlayersoff);
 	    else
 #endif
@@ -2245,7 +2243,7 @@ void _CVPaletteActivate(CharView *cv,int force) {
 	}
 	GDrawSetUserData(cvtools,cv);
 #ifdef FONTFORGE_CONFIG_TYPE3
-	if ( cv->sc->parent->multilayer ) {
+	if ( cv->b.sc->parent->multilayer ) {
 	    LayersSwitch(cv);
 	    GDrawSetUserData(cvlayers2,cv);
 	} else
@@ -2254,7 +2252,7 @@ void _CVPaletteActivate(CharView *cv,int force) {
 	if ( palettes_docked ) {
 	    ReparentFixup(cvtools,cv->v,0,0,CV_TOOLS_WIDTH,CV_TOOLS_HEIGHT);
 #ifdef FONTFORGE_CONFIG_TYPE3
-	    if ( cv->sc->parent->multilayer )
+	    if ( cv->b.sc->parent->multilayer )
 		ReparentFixup(cvlayers2,cv->v,0,CV_TOOLS_HEIGHT+2,0,0);
 	    else
 #endif
@@ -2262,7 +2260,7 @@ void _CVPaletteActivate(CharView *cv,int force) {
 	} else {
 	    if ( cvvisible[0]) {
 #ifdef FONTFORGE_CONFIG_TYPE3
-		if ( cv->sc->parent->multilayer )
+		if ( cv->b.sc->parent->multilayer )
 		    RestoreOffsets(cv->gw,cvlayers2,&cvlayersoff);
 		else
 #endif
@@ -2273,7 +2271,7 @@ void _CVPaletteActivate(CharView *cv,int force) {
 	}
 	GDrawSetVisible(cvtools,cvvisible[1]);
 #ifdef FONTFORGE_CONFIG_TYPE3
-	if ( cv->sc->parent->multilayer )
+	if ( cv->b.sc->parent->multilayer )
 	    GDrawSetVisible(cvlayers2,cvvisible[0]);
 	else
 #endif
@@ -2314,17 +2312,17 @@ void SFLayerChange(SplineFont *sf) {
 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
 	SplineChar *sc = sf->glyphs[i];
-	for ( cv=sc->views; cv!=NULL; cv=cv->next ) {
-	    cv->layerheads[dm_back] = &sc->layers[ly_back];
-	    cv->layerheads[dm_fore] = &sc->layers[ly_fore];
-	    cv->layerheads[dm_grid] = &sf->grid;
+	for ( cv=(CharView *) (sc->views); cv!=NULL; cv=(CharView *) (cv->b.next) ) {
+	    cv->b.layerheads[dm_back] = &sc->layers[ly_back];
+	    cv->b.layerheads[dm_fore] = &sc->layers[ly_fore];
+	    cv->b.layerheads[dm_grid] = &sf->grid;
 	}
     }
 
     if ( cvtools==NULL )
 return;					/* No charviews open */
     old = GDrawGetUserData(cvtools);
-    if ( old==NULL || old->sc->parent!=sf )	/* Irrelevant */
+    if ( old==NULL || old->b.sc->parent!=sf )	/* Irrelevant */
 return;
     _CVPaletteActivate(old,true);
 }
@@ -2338,7 +2336,7 @@ return;
 	GDrawSetVisible(cvtools,false);
 	GDrawSetUserData(cvtools,NULL);
 #ifdef FONTFORGE_CONFIG_TYPE3
-	if ( cv->sc->parent->multilayer && cvlayers2!=NULL ) {
+	if ( cv->b.sc->parent->multilayer && cvlayers2!=NULL ) {
 	    SaveOffsets(cv->gw,cvlayers2,&cvlayersoff);
 	    GDrawSetVisible(cvlayers2,false);
 	    GDrawSetUserData(cvlayers2,NULL);
@@ -2950,7 +2948,7 @@ void BVToolsPopup(BitmapView *bv, GEvent *event) {
 	mi[i].mid = j;
 	mi[i].invoke = BVMenuRotateInvoked;
     }
-    if ( bv->fv->sf->onlybitmaps ) {
+    if ( bv->fv->b.sf->onlybitmaps ) {
 	mi[i].ti.fg = COLOR_DEFAULT;
 	mi[i].ti.bg = COLOR_DEFAULT;
 	mi[i++].ti.line = true;
@@ -2993,7 +2991,7 @@ void BVPaletteSetVisible(BitmapView *bv,int which,int visible) {
     else if ( which==0 && bvlayers!=NULL )
 	GDrawSetVisible(bvlayers,visible );
     bvvisible[which] = visible;
-    SavePrefs();
+    SavePrefs(true);
 }
 
 void BVPaletteActivate(BitmapView *bv) {
@@ -3076,7 +3074,7 @@ void CVPaletteDeactivate(void) {
 	    SaveOffsets(cv->gw,cvtools,&cvtoolsoff);
 	    GDrawSetUserData(cvtools,NULL);
 #ifdef FONTFORGE_CONFIG_TYPE3
-	    if ( cv->sc->parent->multilayer && cvlayers2!=NULL ) {
+	    if ( cv->b.sc->parent->multilayer && cvlayers2!=NULL ) {
 		SaveOffsets(cv->gw,cvlayers2,&cvlayersoff);
 		GDrawSetUserData(cvlayers2,NULL);
 	    } else
@@ -3175,10 +3173,9 @@ void PalettesChangeDocking(void) {
 	    GDrawReparentWindow(bvshades,GDrawGetRoot(NULL),0,BV_TOOLS_HEIGHT+BV_LAYERS_HEIGHT+4+90);
 	}
     }
-    SavePrefs();
+    SavePrefs(true);
 }
 
 int BVPalettesWidth(void) {
 return( GGadgetScale(BV_LAYERS_WIDTH));
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

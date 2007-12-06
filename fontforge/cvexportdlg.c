@@ -627,7 +627,7 @@ return(d.ret);
 }
 
 int CVExport(CharView *cv) {
-return( _Export(cv->sc,NULL));
+return( _Export(cv->b.sc,NULL));
 }
 
 int BVExport(BitmapView *bv) {

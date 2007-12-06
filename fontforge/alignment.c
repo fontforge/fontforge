@@ -25,7 +25,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <math.h>
 #include "splinefont.h"
 #include "ustring.h"
@@ -66,10 +65,10 @@ return;
     new.x = (next->me.x + prev->me.x)/2 + off*v.y;
     new.y = (next->me.y + prev->me.y)/2 - off*v.x;
 
-    CVPreserveState(cv);
+    CVPreserveState((CharViewBase *) cv);
     SpAdjustTo(sp,new.x,new.y);
     SplineRefigure(sp->prev); SplineRefigure(sp->next);
-    CVCharChangedUpdate(cv);
+    CVCharChangedUpdate(&cv->b);
 }
 
 static void SpaceMany(CharView *cv,DBounds *b, int dir, int region_size, int cnt) {
@@ -88,7 +87,7 @@ static void SpaceMany(CharView *cv,DBounds *b, int dir, int region_size, int cnt
 
     regions = galloc(cnt*sizeof(struct region));
     rcnt = 0;
-    for ( spl= cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl=spl->next ) {
+    for ( spl= cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl=spl->next ) {
 	sp=spl->first;
 	while ( 1 ) {
 	    if ( sp->selected ) {
@@ -142,8 +141,8 @@ return;
     }
     regions[rcnt-1].offset = 0;
 
-    CVPreserveState(cv);
-    for ( spl= cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl=spl->next ) {
+    CVPreserveState((CharViewBase *) cv);
+    for ( spl= cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl=spl->next ) {
 	sp=spl->first;
 	while ( 1 ) {
 	    if ( sp->selected ) {
@@ -174,7 +173,7 @@ return;
 	break;
 	}
     }
-    CVCharChangedUpdate(cv);
+    CVCharChangedUpdate(&cv->b);
     free(regions);
 }
 
@@ -183,7 +182,7 @@ static void AverageTwo(CharView *cv,SplinePoint *sp1, SplinePoint *sp2) {
 
     xoff = sp1->me.x - sp2->me.x;
     yoff = sp1->me.y - sp2->me.y;
-    CVPreserveState(cv);
+    CVPreserveState((CharViewBase *) cv);
     if ( fabs(yoff)<fabs(xoff)/2 ) {
 	/* average y */
 	ypos = rint( (sp1->me.y+sp2->me.y)/2 );
@@ -219,7 +218,7 @@ static void AverageTwo(CharView *cv,SplinePoint *sp1, SplinePoint *sp2) {
     if ( sp1->next ) SplineRefigure(sp1->next);
     if ( sp2->prev ) SplineRefigure(sp2->prev);
     if ( sp2->next ) SplineRefigure(sp2->next);
-    CVCharChangedUpdate(cv);
+    CVCharChangedUpdate(&cv->b);
 }
 
 static void AverageMany(CharView *cv,DBounds *b) {
@@ -229,11 +228,11 @@ static void AverageMany(CharView *cv,DBounds *b) {
 
     xoff = b->maxx - b->minx;
     yoff = b->maxy - b->miny;
-    CVPreserveState(cv);
+    CVPreserveState((CharViewBase *) cv);
     if ( yoff<xoff ) {
 	/* average y */
 	ypos = rint( (b->maxy+b->miny)/2 );
-	for ( spl= cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl=spl->next ) {
+	for ( spl= cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl=spl->next ) {
 	    sp=spl->first;
 	    while ( 1 ) {
 		if ( sp->selected ) {
@@ -253,7 +252,7 @@ static void AverageMany(CharView *cv,DBounds *b) {
     } else if ( xoff<yoff/2 ) {
 	/* constrain x */
 	xpos = rint( (b->maxx+b->minx)/2 );
-	for ( spl= cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl=spl->next ) {
+	for ( spl= cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl=spl->next ) {
 	    sp=spl->first;
 	    while ( 1 ) {
 		if ( sp->selected ) {
@@ -272,7 +271,7 @@ static void AverageMany(CharView *cv,DBounds *b) {
 	}
     } else {
     }
-    CVCharChangedUpdate(cv);
+    CVCharChangedUpdate(&cv->b);
 }
 
 struct rcd {
@@ -441,7 +440,7 @@ void CVConstrainSelection(CharView *cv,int type) {
     SplineSet *spl;
     int cnt=0;
 
-    for ( spl= cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl=spl->next ) {
+    for ( spl= cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl=spl->next ) {
 	sp=spl->first;
 	while ( 1 ) {
 	    if ( sp->selected ) {
@@ -594,7 +593,7 @@ void CVMakeParallel(CharView *cv) {
     SplineSet *ss;
     SplinePoint *sp;
 
-    for ( ss = cv->layerheads[cv->drawmode]->splines; ss!=NULL; ss=ss->next ) {
+    for ( ss = cv->b.layerheads[cv->b.drawmode]->splines; ss!=NULL; ss=ss->next ) {
 	for ( sp=ss->first; ; ) {
 	    if ( sp->selected ) {
 		if ( cnt>=4 )
@@ -650,7 +649,7 @@ return;
 return;
     }
 
-    CVPreserveState(cv);
+    CVPreserveState((CharViewBase *) cv);
     if ( cnt==4 ) {
 	int second=3, third=1, fourth=2;
 	if ( !CommonEndPoint(edges[0],edges[1])) {
@@ -671,6 +670,5 @@ return;
     } else {
 	MakeParallel(edges[0],edges[1],pts[mobilis]);
     }
-    CVCharChangedUpdate(cv);
+    CVCharChangedUpdate(&cv->b);
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

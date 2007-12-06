@@ -1,4 +1,4 @@
-/* Copyright (C) 2000-2007 by George Williams */
+/* Copyright (C) 2007 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -24,23 +24,39 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "pfaeditui.h"
-#include <math.h>
 
+#include "pfaedit.h"
+#include "uiinterface.h"
 
-void CVMouseDownHand(CharView *cv) {
-    cv->handscroll_base.x = cv->p.x;
-    cv->handscroll_base.y = cv->p.y;
+static void NClipboard_Grab(void) {
 }
 
-void CVMouseMoveHand(CharView *cv, GEvent *event) {
-    cv->xoff += event->u.mouse.x-cv->handscroll_base.x; cv->handscroll_base.x = event->u.mouse.x;
-    cv->yoff -= event->u.mouse.y-cv->handscroll_base.y; cv->handscroll_base.y = event->u.mouse.y;
-    cv->back_img_out_of_date = true;
-    GScrollBarSetPos(cv->hsb,-cv->xoff);
-    GScrollBarSetPos(cv->vsb,cv->yoff-cv->height);
-    GDrawRequestExpose(cv->v,NULL,false);
+static void NClipboard_AddDataType(const char *type, void *data, int cnt, int size,
+	void *(*gendata)(void *,int32 *len), void (*freedata)(void *)) {
+    if ( freedata!=NULL && data !=NULL )
+	(freedata)(data);
 }
 
-void CVMouseUpHand(CharView *cv) {
+/* Asks for the clip and waits for the response. */
+static void *NClipboard_Request(const char *mimetype,int *len) {
+    *len = 0;
+return( NULL );
 }
+
+static int NClipboard_HasType(const char *mimetype) {
+return( 0 );
+}
+
+static struct clip_interface noui_clip_interface = {
+    NClipboard_Grab,
+    NClipboard_AddDataType,
+    NClipboard_HasType,
+    NClipboard_Request
+};
+
+struct clip_interface *clip_interface = &noui_clip_interface;
+
+void FF_SetClipInterface(struct clip_interface *clipi) {
+    clip_interface = clipi;
+}
+

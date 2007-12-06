@@ -25,7 +25,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <gkeysym.h>
 #include <string.h>
 #include <ustring.h>
@@ -221,8 +220,8 @@ static void AnchorD_FindComplements(AnchorDlg *a) {
     int i, k, j, cnt;
     SplineFont *_sf = a->sc->parent, *sf;
     uint8 *sel, *oldsel;
-    FontView *fv = _sf->fv;
-    EncMap *map = fv->map;
+    FontView *fv = (FontView *) _sf->fv;
+    EncMap *map = fv->b.map;
 
     switch ( a->ap->type ) {
       case at_mark:
@@ -286,10 +285,10 @@ static void AnchorD_FindComplements(AnchorDlg *a) {
 		    }
 		}
 	    }
-	    oldsel = fv->selected;
-	    fv->selected = sel;
-	    a->freetypecontext = FreeTypeFontContext(_sf,NULL,fv);
-	    fv->selected = oldsel;
+	    oldsel = fv->b.selected;
+	    fv->b.selected = sel;
+	    a->freetypecontext = FreeTypeFontContext(_sf,NULL,(FontViewBase *) fv);
+	    fv->b.selected = oldsel;
 	    free(sel);
 	}
     }
@@ -738,7 +737,6 @@ static void SetAnchor(SplineChar *sc,AnchorPoint *ap, BasePoint *pos) {
 
 static void AnchorD_DoCancel(AnchorDlg *a) {
     struct state *old;
-    FontView *fvs;
 
     for ( old = a->orig_vals; old!=NULL; old=old->next ) {
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
@@ -750,8 +748,7 @@ static void AnchorD_DoCancel(AnchorDlg *a) {
 	old->sc->changed = old->changed;	/* Must come after the charchangedupdate */
     }
     if ( a->orig_vals!=NULL ) {
-	for ( fvs=a->sc->parent->fv; fvs!=NULL; fvs=fvs->nextsame )
-	    GDrawRequestExpose(fvs->v,NULL,false);
+	FVRefreshAll(a->sc->parent);
     }
 	
     a->done = true;
@@ -1462,7 +1459,6 @@ void AnchorControl(SplineChar *sc,AnchorPoint *ap) {
     GDrawDestroyWindow(a.gw);
     AnchorD_FreeAll(&a);
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 void AnchorControlClass(SplineFont *_sf,AnchorClass *ac) {
     /* Pick a random glyph with an anchor point in the class. If no glyph, */

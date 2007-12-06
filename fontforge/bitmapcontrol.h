@@ -24,23 +24,19 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "pfaeditui.h"
-#include <math.h>
 
+typedef struct createbitmapdata {
+    FontViewBase *fv;
+    SplineFont *sf;
+    SplineChar *sc;
+    int isavail;
+    int which;
+    int rasterize;
+    unsigned int done: 1;
+} CreateBitmapData;
 
-void CVMouseDownHand(CharView *cv) {
-    cv->handscroll_base.x = cv->p.x;
-    cv->handscroll_base.y = cv->p.y;
-}
+enum { bd_all, bd_selected, bd_current };
 
-void CVMouseMoveHand(CharView *cv, GEvent *event) {
-    cv->xoff += event->u.mouse.x-cv->handscroll_base.x; cv->handscroll_base.x = event->u.mouse.x;
-    cv->yoff -= event->u.mouse.y-cv->handscroll_base.y; cv->handscroll_base.y = event->u.mouse.y;
-    cv->back_img_out_of_date = true;
-    GScrollBarSetPos(cv->hsb,-cv->xoff);
-    GScrollBarSetPos(cv->vsb,cv->yoff-cv->height);
-    GDrawRequestExpose(cv->v,NULL,false);
-}
+extern int bdfcontrol_lastwhich;
 
-void CVMouseUpHand(CharView *cv) {
-}
+void BitmapsDoIt(CreateBitmapData *bd,int32 *sizes,int usefreetype);

@@ -25,7 +25,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <ustring.h>
 #include <gkeysym.h>
 #include <math.h>
@@ -37,8 +36,8 @@ static int last_fpgm = false;
 void SCDeGridFit(SplineChar *sc) {
     CharView *cv;
 
-    for ( cv=sc->views; cv!=NULL; cv=cv->next ) if ( cv->show_ft_results ) {
-	SplinePointListsFree(cv->gridfit); cv->gridfit = NULL;
+    for ( cv=(CharView *) (sc->views); cv!=NULL; cv=(CharView *) (cv->b.next) ) if ( cv->show_ft_results ) {
+	SplinePointListsFree(cv->b.gridfit); cv->b.gridfit = NULL;
 	FreeType_FreeRaster(cv->raster); cv->raster = NULL;
 	cv->show_ft_results = false;
 	GDrawRequestExpose(cv->v,NULL,false);
@@ -47,30 +46,30 @@ void SCDeGridFit(SplineChar *sc) {
 
 void CVGridFitChar(CharView *cv) {
     void *single_glyph_context;
-    SplineFont *sf = cv->sc->parent;
+    SplineFont *sf = cv->b.sc->parent;
 
-    SplinePointListsFree(cv->gridfit); cv->gridfit = NULL;
+    SplinePointListsFree(cv->b.gridfit); cv->b.gridfit = NULL;
     FreeType_FreeRaster(cv->raster); cv->raster = NULL;
 
-    single_glyph_context = _FreeTypeFontContext(sf,cv->sc,NULL,
+    single_glyph_context = _FreeTypeFontContext(sf,cv->b.sc,NULL,
 	    sf->order2?ff_ttf:ff_otf,0,NULL);
     if ( single_glyph_context==NULL ) {
 	LogError(_("Freetype rasterization failed.\n") );
 return;
     }
 
-    if ( cv->sc->layers[ly_fore].refs!=NULL )
-	SCNumberPoints(cv->sc);
-    cv->raster = FreeType_GetRaster(single_glyph_context,cv->sc->orig_pos,
+    if ( cv->b.sc->layers[ly_fore].refs!=NULL )
+	SCNumberPoints(cv->b.sc);
+    cv->raster = FreeType_GetRaster(single_glyph_context,cv->b.sc->orig_pos,
 	    cv->ft_pointsize, cv->ft_dpi, cv->ft_depth );
-    cv->gridfit = FreeType_GridFitChar(single_glyph_context,cv->sc->orig_pos,
-	    cv->ft_pointsize, cv->ft_dpi, &cv->ft_gridfitwidth,
-	    cv->sc );
+    cv->b.gridfit = FreeType_GridFitChar(single_glyph_context,cv->b.sc->orig_pos,
+	    cv->ft_pointsize, cv->ft_dpi, &cv->b.ft_gridfitwidth,
+	    cv->b.sc );
 
 
     FreeTypeFreeContext(single_glyph_context);
     GDrawRequestExpose(cv->v,NULL,false);
-    if ( cv->sc->instructions_out_of_date && cv->sc->ttf_instrs_len!=0 )
+    if ( cv->b.sc->instructions_out_of_date && cv->b.sc->ttf_instrs_len!=0 )
 	ff_post_notice(_("Instructions out of date"),
 	    _("The points have been changed. This may mean that the truetype instructions now refer to the wrong points and they may cause unexpected results."));
 }
@@ -108,9 +107,9 @@ return(true);
 	cv->ft_ppem = rint(cv->ft_pointsize*cv->ft_dpi/72.0);
 
 	gridfit_dpi = _dpi; gridfit_pointsize = ptsize; gridfit_depth = _depth;
-	SavePrefs();
+	SavePrefs(true);
 
-	SplinePointListsFree(cv->gridfit); cv->gridfit = NULL;
+	SplinePointListsFree(cv->b.gridfit); cv->b.gridfit = NULL;
 	FreeType_FreeRaster(cv->raster); cv->raster = NULL;
 
 	if ( fsd->debug )
@@ -125,7 +124,7 @@ return(true);
 	}
 	CVLayersSet(cv);
 	fsd->done = true;
-	SCRefreshTitles(cv->sc);
+	SCRefreshTitles(cv->b.sc);
     }
 return( true );
 }
@@ -291,4 +290,3 @@ void CVFtPpemDlg(CharView *cv,int debug) {
 	GDrawProcessOneEvent(NULL);
     GDrawDestroyWindow(gw);
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

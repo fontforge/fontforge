@@ -1,4 +1,4 @@
-/* Copyright (C) 2000-2007 by George Williams */
+/* Copyright (C) 2007 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -24,23 +24,40 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #include "pfaeditui.h"
-#include <math.h>
+#include "uiinterface.h"
 
+/* I don't care what window "owns" the X (or other UI) clipboard */
+/*  as far as I am concerned they are all the same. I have an internal clip */
+/*  and I export IT when needed, I don't need to figure out what window */
+/*  currently has things. This makes my clipboard interface much simpler */
 
-void CVMouseDownHand(CharView *cv) {
-    cv->handscroll_base.x = cv->p.x;
-    cv->handscroll_base.y = cv->p.y;
+static void ClipBoard_Grab(void) {
+    GDrawGrabSelection(((FontView *) FontViewFirst())->gw,sn_clipboard);
 }
 
-void CVMouseMoveHand(CharView *cv, GEvent *event) {
-    cv->xoff += event->u.mouse.x-cv->handscroll_base.x; cv->handscroll_base.x = event->u.mouse.x;
-    cv->yoff -= event->u.mouse.y-cv->handscroll_base.y; cv->handscroll_base.y = event->u.mouse.y;
-    cv->back_img_out_of_date = true;
-    GScrollBarSetPos(cv->hsb,-cv->xoff);
-    GScrollBarSetPos(cv->vsb,cv->yoff-cv->height);
-    GDrawRequestExpose(cv->v,NULL,false);
+static void ClipBoard_AddDataType(const char *mimetype, void *data, int cnt, int size,
+	void *(*gendata)(void *,int32 *len), void (*freedata)(void *)) {
+    GDrawAddSelectionType(((FontView *) FontViewFirst())->gw,sn_clipboard,
+	    (char *) mimetype, data, cnt, size,
+	    gendata,freedata);
 }
 
-void CVMouseUpHand(CharView *cv) {
+/* Asks for the clip and waits for the response. */
+static void *ClipBoard_Request(const char *mimetype,int *len) {
+return( GDrawRequestSelection(((FontView *) FontViewFirst())->gw,sn_clipboard,
+	    (char *) mimetype,len));
 }
+
+static int ClipBoard_HasType(const char *mimetype) {
+return( GDrawSelectionHasType(((FontView *) FontViewFirst())->gw,sn_clipboard,
+	    (char *) mimetype));
+}
+
+struct clip_interface gdraw_clip_interface = {
+    ClipBoard_Grab,
+    ClipBoard_AddDataType,
+    ClipBoard_HasType,
+    ClipBoard_Request
+};

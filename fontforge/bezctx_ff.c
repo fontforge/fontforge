@@ -4,7 +4,7 @@
 
 #ifndef _NO_LIBSPIRO
 #include "bezctx_ff.h"
-#include "pfaeditui.h"		/* For LogError, else splinefont.h */
+#include "fontforgevw.h"		/* For LogError, else splinefont.h */
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #else

@@ -25,7 +25,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <math.h>
 #include <gkeysym.h>
 #include <ustring.h>
@@ -105,7 +104,7 @@ static void DVRasterExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
     GDrawFillRect(pixmap,&event->u.expose.rect,rasterbackcol);
     em = cv->ft_ppem;
     x = (r.width - em)/2;
-    y = (r.height - em)/2 + em*cv->sc->parent->ascent/(cv->sc->parent->ascent+cv->sc->parent->descent);
+    y = (r.height - em)/2 + em*cv->b.sc->parent->ascent/(cv->b.sc->parent->ascent+cv->b.sc->parent->descent);
 
     GDrawDrawLine(pixmap,0,y,r.width,y,0xa0a0a0);	/* Axes */
     GDrawDrawLine(pixmap,x,0,x,r.height,0xa0a0a0);
@@ -645,7 +644,7 @@ static void ChangeCode(DebugView *dv,TT_ExecContext exc) {
 	dv->initialbytes[i] = ((uint8 *) exc->code)[i];
 
     if ( dv->active_refs==NULL )
-	dv->active_refs = ARFindBase(dv->cv->sc,NULL);
+	dv->active_refs = ARFindBase(dv->cv->b.sc,NULL);
     else {
 	struct reflist *temp;
 	while ( dv->active_refs!=NULL ) {
@@ -655,9 +654,9 @@ static void ChangeCode(DebugView *dv,TT_ExecContext exc) {
 		dv->active_refs = temp->parent;
 		chunkfree(temp,sizeof(struct reflist));
 		if ( dv->active_refs==NULL ) {
-		    if ( dv->cv->sc->ttf_instrs_len!=0 )
+		    if ( dv->cv->b.sc->ttf_instrs_len!=0 )
 	break;
-		    dv->active_refs = ARFindBase(dv->cv->sc,NULL);
+		    dv->active_refs = ARFindBase(dv->cv->b.sc,NULL);
 	break;
 		} else if ( dv->active_refs->ref->sc->ttf_instrs_len!=0 )
 	break;
@@ -698,7 +697,7 @@ static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
     /* The exact size is: cv->ft_pointsize*cv->ft_dpi/72.0 */
     /* Rounded size is:   exc->size->root.metrics.x_ppem (or y_ppem) */
     if ( exc!=NULL )
-	dv->scale = (cv->sc->parent->ascent+cv->sc->parent->descent)/((double) PPEM(exc)) / (1<<6);
+	dv->scale = (cv->b.sc->parent->ascent+cv->b.sc->parent->descent)/((double) PPEM(exc)) / (1<<6);
     if ( cv!=NULL && cv->coderange!=range ) {
 	cv->coderange = range;
 	CVInfoDraw(cv,cv->gw);
@@ -708,16 +707,16 @@ static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
 	if ( cv->oldraster!=NULL )
 	    FreeType_FreeRaster(cv->oldraster);
 	cv->oldraster = cv->raster;
-	SplinePointListsFree(cv->gridfit);
-	cv->gridfit = SplineSetsFromPoints(&exc->pts,dv->scale,dv->active_refs);
+	SplinePointListsFree(cv->b.gridfit);
+	cv->b.gridfit = SplineSetsFromPoints(&exc->pts,dv->scale,dv->active_refs);
 	cv->raster = DebuggerCurrentRaster(exc,cv->ft_depth);
 	if ( exc->pts.n_points<=2 )
-	    cv->ft_gridfitwidth = 0;
+	    cv->b.ft_gridfitwidth = 0;
 	/* suport for vertical phantom pts */
 	else if ( FreeTypeAtLeast(2,1,8))
-	    cv->ft_gridfitwidth = exc->pts.cur[exc->pts.n_points-3].x * dv->scale;
+	    cv->b.ft_gridfitwidth = exc->pts.cur[exc->pts.n_points-3].x * dv->scale;
 	else
-	    cv->ft_gridfitwidth = exc->pts.cur[exc->pts.n_points-1].x * dv->scale;
+	    cv->b.ft_gridfitwidth = exc->pts.cur[exc->pts.n_points-1].x * dv->scale;
     }
 
     if ( cv!=NULL )
@@ -746,21 +745,21 @@ static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
 static void DVDefaultRaster(DebugView *dv) {
     CharView *cv = dv->cv;
     void *single_glyph_context;
-    SplineFont *sf = cv->sc->parent;
+    SplineFont *sf = cv->b.sc->parent;
 
     if ( cv->oldraster!=NULL )
 	FreeType_FreeRaster(cv->oldraster);
     cv->oldraster = cv->raster;
-    SplinePointListsFree(cv->gridfit);
-    cv->gridfit = NULL;
-    single_glyph_context = _FreeTypeFontContext(sf,cv->sc,NULL,
+    SplinePointListsFree(cv->b.gridfit);
+    cv->b.gridfit = NULL;
+    single_glyph_context = _FreeTypeFontContext(sf,cv->b.sc,NULL,
 	    sf->order2?ff_ttf:ff_otf,0,NULL);
     if ( single_glyph_context!=NULL ) {
-	cv->raster = FreeType_GetRaster(single_glyph_context,cv->sc->orig_pos,
+	cv->raster = FreeType_GetRaster(single_glyph_context,cv->b.sc->orig_pos,
 		cv->ft_pointsize, cv->ft_dpi, cv->ft_depth );
 	FreeTypeFreeContext(single_glyph_context);
     }
-    cv->ft_gridfitwidth = 0;
+    cv->b.ft_gridfitwidth = 0;
 
     if ( cv!=NULL )
 	GDrawRequestExpose(cv->v,NULL,false);
@@ -792,7 +791,7 @@ static int DV_WatchPnt(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	dv = GDrawGetUserData(GGadgetGetWindow(g));
-	if ( dv->cv->sc->layers[ly_fore].refs!=NULL ) {
+	if ( dv->cv->b.sc->layers[ly_fore].refs!=NULL ) {
 	    ff_post_error(_("No Watch Points"),_("Watch Points not supported in glyphs with references"));
 return( true );
 	}
@@ -800,7 +799,7 @@ return( true );
 	DebuggerGetWatches(dv->dc,&n);
 	watches = gcalloc(n,sizeof(uint8));
 
-	for ( ss = dv->cv->sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
+	for ( ss = dv->cv->b.sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
 	    for ( sp=ss->first; ; ) {
 		sp->watched = false;
 		if ( sp->ttfindex == 0xffff )
@@ -870,7 +869,7 @@ static void DVMenuCreate(GWindow v, GMenuItem *mi,GEvent *e) {
 	GDrawDestroyWindow((&dv->regs)[mi->mid-MID_Registers]);
 	debug_wins &= ~wcreat[mi->mid-MID_Registers].flag;
     }
-    SavePrefs();
+    SavePrefs(true);
 }
 
 static GMenuItem popupwindowlist[] = {
@@ -1372,7 +1371,7 @@ return( DVChar(dv,event));
 			SplineSet *ss;
 			SplinePoint *sp;
 			watches[j] = !watches[j];
-			for ( ss=dv->cv->sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
+			for ( ss=dv->cv->b.sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
 			    for ( sp=ss->first; sp->ttfindex<=j || sp->ttfindex==0xffff; ) {
 				if ( sp->ttfindex==j )
 				    sp->watched = watches[j];
@@ -1854,8 +1853,8 @@ static void DVCreatePoints(DebugView *dv) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[4].gd.pos.y+16;
     gcd[k].gd.flags = gg_visible | (show_transformed ? gg_cb_on : 0 );
-    if ( dv->cv->sc->layers[ly_fore].splines==NULL &&
-	    dv->cv->sc->layers[ly_fore].refs!=NULL )
+    if ( dv->cv->b.sc->layers[ly_fore].splines==NULL &&
+	    dv->cv->b.sc->layers[ly_fore].refs!=NULL )
 	gcd[k].gd.flags |= gg_enabled;
     gcd[k].gd.cid = CID_Transform;
     gcd[k++].creator = GCheckBoxCreate;
@@ -1991,7 +1990,7 @@ void CVDebugFree(DebugView *dv) {
 	    GDrawRequestExpose(cv->v,NULL,false);
 	}
 
-	for ( ss = cv->sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
+	for ( ss = cv->b.sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
 	    for ( sp=ss->first; ; ) {
 		sp->watched = false;
 		if ( sp->next==NULL )
@@ -2002,7 +2001,7 @@ void CVDebugFree(DebugView *dv) {
 	    }
 	}
 
-	SplinePointListsFree(cv->gridfit); cv->gridfit = NULL;
+	SplinePointListsFree(cv->b.gridfit); cv->b.gridfit = NULL;
 	FreeType_FreeRaster(cv->oldraster); cv->oldraster = NULL;
 	FreeType_FreeRaster(cv->raster); cv->raster = NULL;
 
@@ -2035,8 +2034,8 @@ void CVDebugReInit(CharView *cv,int restart_debug,int dbg_fpgm) {
     int i;
 
     if ( restart_debug ) {
-	scale = (cv->sc->parent->ascent+cv->sc->parent->descent)/(rint(cv->ft_pointsize*cv->ft_dpi/72.0)) / (1<<6);
-	if ( cv->sc->instructions_out_of_date && cv->sc->ttf_instrs_len!=0 )
+	scale = (cv->b.sc->parent->ascent+cv->b.sc->parent->descent)/(rint(cv->ft_pointsize*cv->ft_dpi/72.0)) / (1<<6);
+	if ( cv->b.sc->instructions_out_of_date && cv->b.sc->ttf_instrs_len!=0 )
 	    ff_post_notice(_("Instructions out of date"),
 		_("The points have been changed. This may mean that the truetype instructions now refer to the wrong points and they may cause unexpected results."));
     }
@@ -2049,7 +2048,7 @@ void CVDebugReInit(CharView *cv,int restart_debug,int dbg_fpgm) {
 	dv->dwidth = 260;
 	dv->scale = scale;
 	dv->cv = cv;
-	dv->dc = DebuggerCreate(cv->sc,cv->ft_pointsize,cv->ft_dpi,dbg_fpgm,cv->ft_depth==2);
+	dv->dc = DebuggerCreate(cv->b.sc,cv->ft_pointsize,cv->ft_dpi,dbg_fpgm,cv->ft_depth==2);
 	FreeType_FreeRaster(cv->raster); cv->raster = NULL;
 	if ( dv->dc==NULL ) {
 	    free(dv);
@@ -2315,4 +2314,3 @@ void CVDebugPointPopup(CharView *cv) {
     GGadgetPreparePopup8(cv->v,cspace);
 }
 #endif
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

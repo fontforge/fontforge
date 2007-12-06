@@ -24,7 +24,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "pfaeditui.h"
+#include "fontforgevw.h"
 /*#include "ustring.h"*/
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -35,17 +35,6 @@
 #include <dirent.h>
 #include <ustring.h>
 
-#ifdef FONTFORGE_CONFIG_GTK
-# include <gtk/gtk.h>
-
-static char *gethomedir(void) {
-    static char *dir=NULL;
-
-    if ( dir!=NULL )
-return( dir );
-return( dir = g_get_home_dir());
-}
-#else 
 # include <pwd.h>
 
 static char *gethomedir(void) {
@@ -69,7 +58,6 @@ return( dir );
 
 return( NULL );
 }
-#endif
 
 char *getPfaEditDir(char *buffer) {
     static char *editdir = NULL;
@@ -181,11 +169,11 @@ return;
     closedir(dir);
 }
 
-void DoAutoSaves(void) {
-    FontView *fv;
+void _DoAutoSaves(FontViewBase *fvs) {
+    FontViewBase *fv;
     SplineFont *sf;
 
-    for ( fv=fv_list; fv!=NULL; fv=fv->next ) {
+    for ( fv=fvs; fv!=NULL; fv=fv->next ) {
 	sf = fv->cidmaster?fv->cidmaster:fv->sf;
 	if ( sf->changed_since_autosave ) {
 	    if ( sf->autosavename==NULL )
@@ -194,4 +182,8 @@ void DoAutoSaves(void) {
 		SFAutoSave(sf,fv->map);
 	}
     }
+}
+
+void DoAutoSaves(void) {
+    _DoAutoSaves(FontViewFirst());
 }

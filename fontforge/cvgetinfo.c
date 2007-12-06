@@ -25,7 +25,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <ustring.h>
 #include <math.h>
 #include <utype.h>
@@ -152,7 +151,7 @@ static int GI_MatchPtChange(GGadget *g, GEvent *e) {
 	    int basept, refpt;
 	    basept = u_strtol(t1,NULL,10);
 	    refpt = u_strtol(t2,NULL,10);
-	    if ( ttfFindPointInSC(ci->cv->sc,basept,&inbase,ci->rf)==-1 &&
+	    if ( ttfFindPointInSC(ci->cv->b.sc,basept,&inbase,ci->rf)==-1 &&
 		    ttfFindPointInSC(ci->rf->sc,refpt,&inref,NULL)==-1 ) {
 		char buffer[40];
 		sprintf(buffer,"%g",(double) (inbase.x-inref.x));
@@ -189,7 +188,7 @@ static int GI_ROK_Do(GIData *ci) {
 	if ( errs )
 return( false );
     }
-    if ( !ci->cv->sc->parent->order2 )
+    if ( !ci->cv->b.sc->parent->order2 )
 	/* No point matching */;
     else {
 	const unichar_t *txt;
@@ -207,7 +206,7 @@ return( false );
 	    ff_post_error(_("Bad Point Match"),_("Both points must be specified, or neither"));
 	}
 	if ( basept!=-1 ) {
-	    if ( ttfFindPointInSC(ci->cv->sc,basept,&inbase,ci->rf)!=-1 ) {
+	    if ( ttfFindPointInSC(ci->cv->b.sc,basept,&inbase,ci->rf)!=-1 ) {
 		ff_post_error(_("Bad Point Match"),_("Couldn't find base point"));
 return( false );
 	    } else if ( ttfFindPointInSC(ci->rf->sc,refpt,&inref,NULL)!=-1 ) {
@@ -254,7 +253,7 @@ return( true );		/* Didn't really change */
     ref->point_match_out_of_date = false;
 
     SplineSetFindBounds(ref->layers[0].splines,&ref->bb);
-    CVCharChangedUpdate(ci->cv);
+    CVCharChangedUpdate(&ci->cv->b);
 return( true );
 }
 
@@ -275,11 +274,7 @@ static int GI_Show(GGadget *g, GEvent *e) {
 	    int ans;
 	    buts[0] = _("C_hange");
 	    buts[1] = _("_Retain");
-#if defined(FONTFORGE_CONFIG_GTK)
-	    buts[2] = GTK_STOCK_CANCEL;
-#else
 	    buts[2] = _("_Cancel");
-#endif
 	    buts[3] = NULL;
 	    ans = gwwv_ask(_("Transformation Matrix Changed"),(const char **)buts,0,2,_("You have changed the transformation matrix, do you wish to use the new version?"));
 	    if ( ans==2 )
@@ -290,7 +285,7 @@ return( true );
 	    }
 	}
 	ci->done = true;
-	CharViewCreate(ci->rf->sc,ci->cv->fv,-1);
+	CharViewCreate(ci->rf->sc,(FontView *) (ci->cv->b.fv),-1);
     }
 return( true );
 }
@@ -326,7 +321,7 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
     int i,j,l;
 
     gi.cv = cv;
-    gi.sc = cv->sc;
+    gi.sc = cv->b.sc;
     gi.rf = ref;
     gi.changed = false;
     gi.done = false;
@@ -351,7 +346,7 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 
 	snprintf( namebuf, sizeof(namebuf),
 		_("Reference to character %1$.20s at %2$d"),
-		ref->sc->name, (int) cv->fv->map->backmap[ref->sc->orig_pos]);
+		ref->sc->name, (int) cv->b.fv->map->backmap[ref->sc->orig_pos]);
 	label[0].text = (unichar_t *) namebuf;
 	label[0].text_is_1byte = true;
 	gcd[0].gd.label = &label[0];
@@ -435,7 +430,7 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	label[6+j].text_is_1byte = true;
 	gcd[6+j].gd.label = &label[6+j];
 	gcd[6+j].gd.pos.x = 5; gcd[6+j].gd.pos.y = gcd[6+j-1].gd.pos.y+17;
-	gcd[6+j].gd.flags = cv->sc->parent->order2 ? (gg_enabled|gg_visible|gg_utf8_popup) : (gg_visible|gg_utf8_popup);
+	gcd[6+j].gd.flags = cv->b.sc->parent->order2 ? (gg_enabled|gg_visible|gg_utf8_popup) : (gg_visible|gg_utf8_popup);
 	gcd[6+j].gd.popup_msg = (unichar_t *) _("Only relevant in a truetype font, this flag indicates that this\nreference should not be translated normally, but rather its position\nshould be determined by moving the reference so that the indicated\npoint in the reference falls on top of the indicated point in the base\ncharacter.");
 	varray[l++] = &gcd[6+j];
 	gcd[6+j++].creator = GLabelCreate;
@@ -445,7 +440,7 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	label[6+j].text_in_resource = true;
 	gcd[6+j].gd.label = &label[6+j];
 	gcd[6+j].gd.pos.x = 8; gcd[6+j].gd.pos.y = gcd[6+j-1].gd.pos.y+19;
-	gcd[6+j].gd.flags = cv->sc->parent->order2 ? (gg_enabled|gg_visible|gg_utf8_popup) : (gg_visible|gg_utf8_popup);
+	gcd[6+j].gd.flags = cv->b.sc->parent->order2 ? (gg_enabled|gg_visible|gg_utf8_popup) : (gg_visible|gg_utf8_popup);
 	gcd[6+j].gd.popup_msg = (unichar_t *) _("Only relevant in a truetype font, this flag indicates that this\nreference should not be translated normally, but rather its position\nshould be determined by moving the reference so that the indicated\npoint in the reference falls on top of the indicated point in the base\ncharacter.");
 	harray1[0] = &gcd[6+j];
 	gcd[6+j++].creator = GLabelCreate;
@@ -584,7 +579,7 @@ static void ImgGetInfo(CharView *cv, ImageList *img) {
 	    img->image->u.image:img->image->u.images[0];
 
     gi.cv = cv;
-    gi.sc = cv->sc;
+    gi.sc = cv->b.sc;
     gi.img = img;
     gi.done = false;
 
@@ -669,36 +664,6 @@ static void ImgGetInfo(CharView *cv, ImageList *img) {
     GDrawDestroyWindow(gi.gw);
 }
 
-int IsAnchorClassUsed(SplineChar *sc,AnchorClass *an) {
-    AnchorPoint *ap;
-    int waslig=0, sawentry=0, sawexit=0;
-
-    for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
-	if ( ap->anchor==an ) {
-	    if ( ap->type==at_centry )
-		sawentry = true;
-	    else if ( ap->type==at_cexit )
-		sawexit = true;
-	    else if ( an->type==act_mkmk ) {
-		if ( ap->type==at_basemark )
-		    sawexit = true;
-		else
-		    sawentry = true;
-	    } else if ( ap->type!=at_baselig )
-return( -1 );
-	    else if ( waslig<ap->lig_index+1 )
-		waslig = ap->lig_index+1;
-	}
-    }
-    if ( sawentry && sawexit )
-return( -1 );
-    else if ( sawentry )
-return( -2 );
-    else if ( sawexit )
-return( -3 );
-return( waslig );
-}
-
 static AnchorClass *_AnchorClassUnused(SplineChar *sc,int *waslig, int classmatch) {
     AnchorClass *an, *maybe;
     int val, maybelig;
@@ -746,7 +711,7 @@ static AnchorPoint *AnchorPointNew(CharView *cv) {
     AnchorClass *an;
     AnchorPoint *ap;
     int waslig;
-    SplineChar *sc = cv->sc;
+    SplineChar *sc = cv->b.sc;
     PST *pst;
 
     an = _AnchorClassUnused(sc,&waslig,true);
@@ -763,7 +728,7 @@ return(NULL);
 		an->type==act_mkmk ? at_basemark :
 		an->type==act_mklg ? at_baselig :
 		at_centry;
-    for ( pst = cv->sc->possub; pst!=NULL && pst->type!=pst_ligature; pst=pst->next );
+    for ( pst = cv->b.sc->possub; pst!=NULL && pst->type!=pst_ligature; pst=pst->next );
     if ( waslig<-1 && an->type==act_mkmk ) {
 	ap->type = waslig==-2 ? at_basemark : at_mark;
     } else if ( waslig==-2  && an->type==act_curs )
@@ -785,41 +750,7 @@ return(NULL);
     sc->anchor = ap;
 return( ap );
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-void SCOrderAP(SplineChar *sc) {
-    int lc=0, cnt=0, out=false, i,j;
-    AnchorPoint *ap, **array;
-    /* Order so that first ligature index comes first */
-
-    for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
-	if ( ap->lig_index<lc ) out = true;
-	if ( ap->lig_index>lc ) lc = ap->lig_index;
-	++cnt;
-    }
-    if ( !out )
-return;
-
-    array = galloc(cnt*sizeof(AnchorPoint *));
-    for ( i=0, ap=sc->anchor; ap!=NULL; ++i, ap=ap->next )
-	array[i] = ap;
-    for ( i=0; i<cnt-1; ++i ) {
-	for ( j=i+1; j<cnt; ++j ) {
-	    if ( array[i]->lig_index>array[j]->lig_index ) {
-		ap = array[i];
-		array[i] = array[j];
-		array[j] = ap;
-	    }
-	}
-    }
-    sc->anchor = array[0];
-    for ( i=0; i<cnt-1; ++i )
-	array[i]->next = array[i+1];
-    array[cnt-1]->next = NULL;
-    free( array );
-}
-
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void AI_SelectList(GIData *ci,AnchorPoint *ap) {
     int i;
     AnchorClass *an;
@@ -973,12 +904,8 @@ static int AI_Delete(GGadget *g, GEvent *e) {
 	for ( ap=ci->sc->anchor; ap!=ci->ap; ap=ap->next )
 	    prev = ap;
 	if ( prev==NULL && ci->ap->next==NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	    static char *buts[3];
 	    buts[0] = _("_Yes"); buts[1] = _("_No"); buts[2] = NULL;
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_NO, NULL };
-#endif
 	    if ( gwwv_ask(_("Last Anchor Point"),(const char **) buts,0,1, _("You are deleting the last anchor point in this character.\nDoing so will cause this dialog to close, is that what you want?"))==1 ) {
 		AI_Ok(g,e);
 return( true );
@@ -1199,7 +1126,7 @@ return( true );			/* No op */
 	    AI_DisplayClass(ci,ci->ap);
 	    AI_TestOrdering(ci,ci->ap->me.x);
 	}
-	_CVCharChangedUpdate(ci->cv,2);
+	_CVCharChangedUpdate(&ci->cv->b,2);
     }
 return( true );
 }
@@ -1220,7 +1147,7 @@ static int AI_PosChanged(GGadget *g, GEvent *e) {
 return( true );
 	ap->me.x += dx;
 	ap->me.y += dy;
-	_CVCharChangedUpdate(ci->cv,2);
+	_CVCharChangedUpdate(&ci->cv->b,2);
     }
 return( true );
 }
@@ -1239,7 +1166,7 @@ static int AI_MatchChanged(GGadget *g, GEvent *e) {
 	    BasePoint here;
 	    int pt;
 	    pt = u_strtol(t1,&end,10);
-	    if ( *end=='\0' && ttfFindPointInSC(ci->cv->sc,pt,&here,NULL)==-1 ) {
+	    if ( *end=='\0' && ttfFindPointInSC(ci->cv->b.sc,pt,&here,NULL)==-1 ) {
 		char buffer[40];
 		sprintf(buffer,"%g",(double) here.x);
 		GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_X),buffer);
@@ -1248,7 +1175,7 @@ static int AI_MatchChanged(GGadget *g, GEvent *e) {
 		ap->me = here;
 		ap->has_ttf_pt = true;
 		ap->ttf_pt_index = pt;
-		_CVCharChangedUpdate(ci->cv,2);
+		_CVCharChangedUpdate(&ci->cv->b,2);
 	    }
 	} else
 	    ap->has_ttf_pt = false;
@@ -1259,11 +1186,11 @@ return( true );
 static void AI_DoCancel(GIData *ci) {
     CharView *cv = ci->cv;
     ci->done = true;
-    AnchorPointsFree(cv->sc->anchor);
-    cv->sc->anchor = ci->oldaps;
+    AnchorPointsFree(cv->b.sc->anchor);
+    cv->b.sc->anchor = ci->oldaps;
     ci->oldaps = NULL;
-    CVRemoveTopUndo(cv);
-    SCUpdateAll(cv->sc);
+    CVRemoveTopUndo(&cv->b);
+    SCUpdateAll(cv->b.sc);
 }
 
 static int ai_e_h(GWindow gw, GEvent *event) {
@@ -1295,7 +1222,7 @@ static int AI_Ok(GGadget *g, GEvent *e) {
 	ci->done = true;
 	/* All the work has been done as we've gone along */
 	/* Well, we should reorder the list... */
-	SCOrderAP(ci->cv->sc);
+	SCOrderAP(ci->cv->b.sc);
     }
 return( true );
 }
@@ -1313,9 +1240,9 @@ void ApGetInfo(CharView *cv, AnchorPoint *ap) {
 
     memset(&gi,0,sizeof(gi));
     gi.cv = cv;
-    gi.sc = cv->sc;
-    gi.oldaps = AnchorPointsCopy(cv->sc->anchor);
-    CVPreserveState(cv);
+    gi.sc = cv->b.sc;
+    gi.oldaps = AnchorPointsCopy(cv->b.sc->anchor);
+    CVPreserveState(&cv->b);
     if ( ap==NULL ) {
 	ap = AnchorPointNew(cv);
 	if ( ap==NULL )
@@ -1351,7 +1278,7 @@ return;
 	gcd[j].gd.pos.width = AI_Width-10; 
 	gcd[j].gd.flags = gg_enabled|gg_visible;
 	gcd[j].gd.cid = CID_NameList;
-	sf = cv->sc->parent;
+	sf = cv->b.sc->parent;
 	if ( sf->cidmaster ) sf = sf->cidmaster;
 	gcd[j].gd.handle_controlevent = AI_ANameChanged;
 	gcd[j].creator = GListButtonCreate;
@@ -1405,7 +1332,7 @@ return;
 	label[j].text_is_1byte = true;
 	gcd[j].gd.label = &label[j];
 	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[j-2].gd.pos.y+24;
-	gcd[j].gd.flags = cv->sc->parent->order2 ? (gg_enabled|gg_visible) : gg_visible;
+	gcd[j].gd.flags = cv->b.sc->parent->order2 ? (gg_enabled|gg_visible) : gg_visible;
 	gcd[j].creator = GLabelCreate;
 	harray2[0] = &gcd[j];
 	++j;
@@ -1679,20 +1606,20 @@ void PI_ShowHints(SplineChar *sc, GGadget *list, int set) {
 }
 
 static void _PI_ShowHints(GIData *ci,int set) {
-    PI_ShowHints(ci->cv->sc,GWidgetGetControl(ci->gw,CID_HintMask),set);
+    PI_ShowHints(ci->cv->b.sc,GWidgetGetControl(ci->gw,CID_HintMask),set);
 }
 
 static void PI_DoCancel(GIData *ci) {
     CharView *cv = ci->cv;
     ci->done = true;
-    if ( cv->drawmode==dm_fore )
-	MDReplace(cv->sc->md,cv->sc->layers[ly_fore].splines,ci->oldstate);
-    SplinePointListsFree(cv->layerheads[cv->drawmode]->splines);
-    cv->layerheads[cv->drawmode]->splines = ci->oldstate;
-    CVRemoveTopUndo(cv);
-    SCClearSelPt(cv->sc);
+    if ( cv->b.drawmode==dm_fore )
+	MDReplace(cv->b.sc->md,cv->b.sc->layers[ly_fore].splines,ci->oldstate);
+    SplinePointListsFree(cv->b.layerheads[cv->b.drawmode]->splines);
+    cv->b.layerheads[cv->b.drawmode]->splines = ci->oldstate;
+    CVRemoveTopUndo(&cv->b);
+    SCClearSelPt(cv->b.sc);
     _PI_ShowHints(ci,false);
-    SCUpdateAll(cv->sc);
+    SCUpdateAll(cv->b.sc);
 }
 
 static int pi_e_h(GWindow gw, GEvent *event) {
@@ -1728,7 +1655,7 @@ static void PI_FigureNext(GIData *ci) {
 		cursp->nextcp.y=cursp->me.y-dy*len2/len;
 		if ( cursp->next!=NULL )
 		    SplineRefigure(cursp->next);
-		CVCharChangedUpdate(ci->cv);
+		CVCharChangedUpdate(&ci->cv->b);
 		PIFillup(ci,-1);
 	    }
 	}
@@ -1751,7 +1678,7 @@ static void PI_FigurePrev(GIData *ci) {
 		cursp->prevcp.y=cursp->me.y-dy*len2/len;
 		if ( cursp->prev!=NULL )
 		    SplineRefigure(cursp->prev);
-		CVCharChangedUpdate(ci->cv);
+		CVCharChangedUpdate(&ci->cv->b);
 		PIFillup(ci,-1);
 	    }
 	}
@@ -1953,7 +1880,7 @@ static void PIFillup(GIData *ci, int except_cid) {
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_NextCurvature), kappa!=CURVATURE_ERROR );
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_DeltaCurvature),
 	    kappa!=CURVATURE_ERROR && kappa2!=CURVATURE_ERROR );
-    emsize = ci->cv->sc->parent->ascent + ci->cv->sc->parent->descent;
+    emsize = ci->cv->b.sc->parent->ascent + ci->cv->b.sc->parent->descent;
     /* If we normalize by the em-size, the curvature is often more */
     /*  readable */
     if ( kappa!=CURVATURE_ERROR )
@@ -2064,7 +1991,7 @@ static int PI_NextPrev(GGadget *g, GEvent *e) {
 		ci->cursp = ci->cursp->next->to;
 	    else {
 		if ( ci->curspl->next == NULL ) {
-		    ci->curspl = cv->layerheads[cv->drawmode]->splines;
+		    ci->curspl = cv->b.layerheads[cv->b.drawmode]->splines;
 		    GDrawBeep(NULL);
 		} else
 		    ci->curspl = ci->curspl->next;
@@ -2074,11 +2001,11 @@ static int PI_NextPrev(GGadget *g, GEvent *e) {
 	    if ( ci->cursp!=ci->curspl->first ) {
 		ci->cursp = ci->cursp->prev->from;
 	    } else {
-		if ( ci->curspl==cv->layerheads[cv->drawmode]->splines ) {
-		    for ( spl = cv->layerheads[cv->drawmode]->splines; spl->next!=NULL; spl=spl->next );
+		if ( ci->curspl==cv->b.layerheads[cv->b.drawmode]->splines ) {
+		    for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl->next!=NULL; spl=spl->next );
 		    GDrawBeep(NULL);
 		} else {
-		    for ( spl = cv->layerheads[cv->drawmode]->splines; spl->next!=ci->curspl; spl=spl->next );
+		    for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl->next!=ci->curspl; spl=spl->next );
 		}
 		ci->curspl = spl;
 		ci->cursp = spl->last;
@@ -2103,7 +2030,7 @@ static int PI_NextPrev(GGadget *g, GEvent *e) {
 	ci->cursp->selected = true;
 	PIChangePoint(ci);
 	CVShowPoint(cv,&ci->cursp->me);
-	SCUpdateAll(cv->sc);
+	SCUpdateAll(cv->b.sc);
     }
 return( true );
 }
@@ -2171,7 +2098,7 @@ return( true );
 	if ( cursp->prev!=NULL )
 	    SplineRefigure(cursp->prev);
 	SplineSetSpirosClear(ci->curspl);
-	CVCharChangedUpdate(ci->cv);
+	CVCharChangedUpdate(&ci->cv->b);
 	PIFillup(ci,GGadgetGetCid(g));
     } else if ( e->type==et_controlevent &&
 	    e->u.control.subtype == et_textfocuschanged &&
@@ -2249,7 +2176,7 @@ return( true );
 	    SplinePointNextCPChanged2(cursp);
 	if ( cursp->next!=NULL )
 	    SplineRefigure(cursp->next);
-	CVCharChangedUpdate(ci->cv);
+	CVCharChangedUpdate(&ci->cv->b);
 	PIFillup(ci,GGadgetGetCid(g));
     } else if ( e->type==et_controlevent &&
 	    e->u.control.subtype == et_textfocuschanged &&
@@ -2326,7 +2253,7 @@ return( true );
 	    SplinePointPrevCPChanged2(cursp);
 	if ( cursp->prev!=NULL )
 	    SplineRefigure(cursp->prev);
-	CVCharChangedUpdate(ci->cv);
+	CVCharChangedUpdate(&ci->cv->b);
 	PIFillup(ci,GGadgetGetCid(g));
     } else if ( e->type==et_controlevent &&
 	    e->u.control.subtype == et_textfocuschanged &&
@@ -2357,7 +2284,7 @@ return( true );
 	    SplinePointNextCPChanged2(cursp);
 	if ( cursp->next!=NULL )
 	    SplineRefigure(cursp->next);
-	CVCharChangedUpdate(ci->cv);
+	CVCharChangedUpdate(&ci->cv->b);
 	PIFillup(ci,GGadgetGetCid(g));
     } else if ( e->type==et_controlevent &&
 	    e->u.control.subtype == et_textfocuschanged &&
@@ -2388,7 +2315,7 @@ return( true );
 	    SplinePointPrevCPChanged2(cursp);
 	if ( cursp->prev!=NULL )
 	    SplineRefigure(cursp->prev);
-	CVCharChangedUpdate(ci->cv);
+	CVCharChangedUpdate(&ci->cv->b);
 	PIFillup(ci,GGadgetGetCid(g));
     } else if ( e->type==et_controlevent &&
 	    e->u.control.subtype == et_textfocuschanged &&
@@ -2414,7 +2341,7 @@ static int PI_NextDefChanged(GGadget *g, GEvent *e) {
 		cursp->prevcp = temp;
 		SplineSetSpirosClear(ci->curspl);
 	    }
-	    CVCharChangedUpdate(ci->cv);
+	    CVCharChangedUpdate(&ci->cv->b);
 	    PIFillup(ci,GGadgetGetCid(g));
 	}
     }
@@ -2436,7 +2363,7 @@ static int PI_PrevDefChanged(GGadget *g, GEvent *e) {
 		cursp->nextcp = temp;
 		SplineSetSpirosClear(ci->curspl);
 	    }
-	    CVCharChangedUpdate(ci->cv);
+	    CVCharChangedUpdate(&ci->cv->b);
 	    PIFillup(ci,GGadgetGetCid(g));
 	}
     }
@@ -2453,11 +2380,11 @@ static int PI_PTypeChanged(GGadget *g, GEvent *e) {
 	    /* Can't happen */
 	} else if ( pt==pt_corner ) {
 	    cursp->pointtype = pt_corner;
-	    CVCharChangedUpdate(ci->cv);
+	    CVCharChangedUpdate(&ci->cv->b);
 	} else {
 	    SPChangePointType(cursp,pt);
 	    SplineSetSpirosClear(ci->curspl);
-	    CVCharChangedUpdate(ci->cv);
+	    CVCharChangedUpdate(&ci->cv->b);
 	    PIFillup(ci,GGadgetGetCid(g));
 	}
     }
@@ -2489,9 +2416,9 @@ static int PI_HintSel(GGadget *g, GEvent *e) {
 	    /* So just make it a warning */
 	    int i,j;
 	    StemInfo *h, *h2=NULL;
-	    for ( i=0, h=ci->cv->sc->hstem; h!=NULL && i!=e->u.control.u.list.changed_index; h=h->next, ++i );
+	    for ( i=0, h=ci->cv->b.sc->hstem; h!=NULL && i!=e->u.control.u.list.changed_index; h=h->next, ++i );
 	    if ( h!=NULL ) {
-		for ( h2 = ci->cv->sc->hstem, i=0 ; h2!=NULL; h2=h2->next, ++i ) {
+		for ( h2 = ci->cv->b.sc->hstem, i=0 ; h2!=NULL; h2=h2->next, ++i ) {
 		    if ( h2!=h && GGadgetIsListItemSelected(g,i)) {
 			if (( h2->start<h->start && h2->start+h2->width>h->start ) ||
 			    ( h2->start>=h->start && h->start+h->width>h2->start ))
@@ -2500,11 +2427,11 @@ static int PI_HintSel(GGadget *g, GEvent *e) {
 		}
 	    } else {
 		j = i;
-		for ( h=ci->cv->sc->vstem; h!=NULL && i!=e->u.control.u.list.changed_index; h=h->next, ++i );
+		for ( h=ci->cv->b.sc->vstem; h!=NULL && i!=e->u.control.u.list.changed_index; h=h->next, ++i );
 		if ( h==NULL )
 		    IError("Failed to find hint");
 		else {
-		    for ( h2 = ci->cv->sc->vstem, i=j ; h2!=NULL; h2=h2->next, ++i ) {
+		    for ( h2 = ci->cv->b.sc->vstem, i=j ; h2!=NULL; h2=h2->next, ++i ) {
 			if ( h2!=h && GGadgetIsListItemSelected(g,i)) {
 			    if (( h2->start<h->start && h2->start+h2->width>h->start ) ||
 				( h2->start>=h->start && h->start+h->width>h2->start ))
@@ -2584,12 +2511,12 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
     nextcp.main_foreground = nextcpcol;
     prevcp.main_foreground = prevcpcol;
     gi.cv = cv;
-    gi.sc = cv->sc;
+    gi.sc = cv->b.sc;
     gi.cursp = sp;
     gi.curspl = spl;
-    gi.oldstate = SplinePointListCopy(cv->layerheads[cv->drawmode]->splines);
+    gi.oldstate = SplinePointListCopy(cv->b.layerheads[cv->b.drawmode]->splines);
     gi.done = false;
-    CVPreserveState(cv);
+    CVPreserveState(&cv->b);
 
     root = GDrawGetRoot(NULL);
     GDrawGetSize(root,&screensize);
@@ -2663,7 +2590,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	label[j].text_in_resource = true;
 	gcd[j].gd.label = &label[j];
 	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+16;
-	gcd[j].gd.flags = cv->sc->parent->order2 ? (gg_enabled|gg_visible) : gg_visible;
+	gcd[j].gd.flags = cv->b.sc->parent->order2 ? (gg_enabled|gg_visible) : gg_visible;
 	gcd[j].gd.cid = CID_NeverInterpolate;
 	gcd[j].gd.handle_controlevent = PI_NeverInterpChanged;
 	gcd[j].creator = GCheckBoxCreate;
@@ -3083,7 +3010,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	hgcd[0].gd.pos.width = PI_Width-20; hgcd[0].gd.pos.height = gcd[j-1].gd.pos.y+10;
 	hgcd[0].gd.flags = gg_visible | gg_enabled | gg_list_multiplesel;
 	hgcd[0].gd.cid = CID_HintMask;
-	hgcd[0].gd.u.list = SCHintList(cv->sc,NULL);
+	hgcd[0].gd.u.list = SCHintList(cv->b.sc,NULL);
 	hgcd[0].gd.handle_controlevent = PI_HintSel;
 	hgcd[0].creator = GListCreate;
 
@@ -3091,7 +3018,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	h2gcd[0].gd.pos.width = PI_Width-20; h2gcd[0].gd.pos.height = gcd[j-1].gd.pos.y+10;
 	h2gcd[0].gd.flags = gg_visible | gg_list_multiplesel;
 	h2gcd[0].gd.cid = CID_ActiveHints;
-	h2gcd[0].gd.u.list = SCHintList(cv->sc,NULL);
+	h2gcd[0].gd.u.list = SCHintList(cv->b.sc,NULL);
 	h2gcd[0].creator = GListCreate;
 
 	j = 0;
@@ -3302,7 +3229,7 @@ static int PI_SpiroNextPrev(GGadget *g, GEvent *e) {
 		ci->curcp = &ci->curspl->spiros[index+1];
 	    else {
 		if ( ci->curspl->next == NULL ) {
-		    ci->curspl = cv->layerheads[cv->drawmode]->splines;
+		    ci->curspl = cv->b.layerheads[cv->b.drawmode]->splines;
 		    GDrawBeep(NULL);
 		} else
 		    ci->curspl = ci->curspl->next;
@@ -3312,11 +3239,11 @@ static int PI_SpiroNextPrev(GGadget *g, GEvent *e) {
 	    if ( index!=0 ) {
 		ci->curcp = &ci->curspl->spiros[index-1];
 	    } else {
-		if ( ci->curspl==cv->layerheads[cv->drawmode]->splines ) {
-		    for ( spl = cv->layerheads[cv->drawmode]->splines; spl->next!=NULL; spl=spl->next );
+		if ( ci->curspl==cv->b.layerheads[cv->b.drawmode]->splines ) {
+		    for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl->next!=NULL; spl=spl->next );
 		    GDrawBeep(NULL);
 		} else {
-		    for ( spl = cv->layerheads[cv->drawmode]->splines; spl->next!=ci->curspl; spl=spl->next );
+		    for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl->next!=ci->curspl; spl=spl->next );
 		}
 		ci->curspl = spl;
 		ci->curcp = &ci->curspl->spiros[ci->curspl->spiro_cnt-2];
@@ -3340,7 +3267,7 @@ static int PI_SpiroNextPrev(GGadget *g, GEvent *e) {
 	SpiroChangePoint(ci);
 	here.x = ci->curcp->x; here.y = ci->curcp->y;
 	CVShowPoint(cv,&here);
-	SCUpdateAll(cv->sc);
+	SCUpdateAll(cv->b.sc);
     }
 return( true );
 }
@@ -3366,7 +3293,7 @@ static int PI_SpiroChanged(GGadget *g, GEvent *e) {
 	curcp->y = y;
 	curcp->ty = ty | 0x80;
 	SSRegenerateFromSpiros(ci->curspl);
-	CVCharChangedUpdate(ci->cv);
+	CVCharChangedUpdate(&ci->cv->b);
     }
 return( true );
 }
@@ -3396,12 +3323,12 @@ static void SpiroPointGetInfo(CharView *cv, spiro_cp *scp, SplinePointList *spl)
     int j,k;
 
     gi.cv = cv;
-    gi.sc = cv->sc;
+    gi.sc = cv->b.sc;
     gi.curcp = scp;
     gi.curspl = spl;
-    gi.oldstate = SplinePointListCopy(cv->layerheads[cv->drawmode]->splines);
+    gi.oldstate = SplinePointListCopy(cv->b.layerheads[cv->b.drawmode]->splines);
     gi.done = false;
-    CVPreserveState(cv);
+    CVPreserveState(&cv->b);
 
     root = GDrawGetRoot(NULL);
     GDrawGetSize(root,&screensize);
@@ -3674,8 +3601,8 @@ void CVGetInfo(CharView *cv) {
 
     if ( !CVOneThingSel(cv,&sp,&spl,&ref,&img,&ap,&scp)) {
 #if 0
-	if ( cv->fv->cidmaster==NULL )
-	    SCCharInfo(cv->sc,cv->fv->map,CVCurEnc(cv));
+	if ( (FontView *) (cv->b.fv)->b.cidmaster==NULL )
+	    SCCharInfo(cv->b.sc,(FontView *) (cv->b.fv)->b.map,CVCurEnc(cv));
 #endif
     } else if ( ref!=NULL )
 	RefGetInfo(cv,ref);
@@ -3710,11 +3637,7 @@ void SCRefBy(SplineChar *sc) {
     char *buts[3];
 
     buts[0] = _("_Show");
-#if defined(FONTFORGE_CONFIG_GTK)
-    buts[1] = GTK_STOCK_CANCEL;
-#else
     buts[1] = _("_Cancel");
-#endif
     buts[2] = NULL;
 
     for ( i=0; i<2; ++i ) {
@@ -3735,7 +3658,7 @@ return;
     if ( i!=-1 ) {
 	i = tot-i;
 	for ( d = sc->dependents, cnt=0; d!=NULL && cnt<i; d=d->next, ++cnt );
-	CharViewCreate(d->sc,sc->parent->fv,-1);
+	CharViewCreate(d->sc,(FontView *) (sc->parent->fv),-1);
     }
     for ( i=0; i<=tot; ++i )
 	free( deps[i] );
@@ -3789,11 +3712,7 @@ void SCSubBy(SplineChar *sc) {
     char *buts[3];
 
     buts[0] = _("Show");
-#if defined(FONTFORGE_CONFIG_GTK)
-    buts[1] = GTK_STOCK_CANCEL;
-#else
     buts[1] = _("_Cancel");
-#endif
     buts[2] = NULL;
 
     if ( sc==NULL )
@@ -3835,11 +3754,10 @@ return;
 
     i = gwwv_choose_with_buttons(_("Dependent Substitutions"),(const char **) deps, tot, 0, buts, _("Dependent Substitutions") );
     if ( i>-1 ) {
-	CharViewCreate(depsc[i],sc->parent->fv,-1);
+	CharViewCreate(depsc[i],(FontView *) (sc->parent->fv),-1);
     }
     for ( i=0; i<=tot; ++i )
 	free( deps[i] );
     free(deps);
     free(depsc);
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

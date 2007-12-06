@@ -30,259 +30,9 @@
 #include <ustring.h>
 #include <gkeysym.h>
 
-static void FPSTRuleContentsFree(struct fpst_rule *r, enum fpossub_format format) {
-    int j;
-
-    switch ( format ) {
-      case pst_glyphs:
-	free(r->u.glyph.names);
-	free(r->u.glyph.back);
-	free(r->u.glyph.fore);
-      break;
-      case pst_class:
-	free(r->u.class.nclasses);
-	free(r->u.class.bclasses);
-	free(r->u.class.fclasses);
-      break;
-      case pst_reversecoverage:
-	free(r->u.rcoverage.replacements);
-      case pst_coverage:
-	for ( j=0 ; j<r->u.coverage.ncnt ; ++j )
-	    free(r->u.coverage.ncovers[j]);
-	free(r->u.coverage.ncovers);
-	for ( j=0 ; j<r->u.coverage.bcnt ; ++j )
-	    free(r->u.coverage.bcovers[j]);
-	free(r->u.coverage.bcovers);
-	for ( j=0 ; j<r->u.coverage.fcnt ; ++j )
-	    free(r->u.coverage.fcovers[j]);
-	free(r->u.coverage.fcovers);
-      break;
-    }
-    free(r->lookups);
-}
-
-static void FPSTRulesFree(struct fpst_rule *r, enum fpossub_format format, int rcnt) {
-    int i;
-    for ( i=0; i<rcnt; ++i )
-	FPSTRuleContentsFree(&r[i],format);
-    free(r);
-}
-
-static struct fpst_rule *RulesCopy(struct fpst_rule *from, int cnt,
-	enum fpossub_format format ) {
-    int i, j;
-    struct fpst_rule *to, *f, *t;
-
-    if ( cnt==0 )
-return( NULL );
-
-    to = gcalloc(cnt,sizeof(struct fpst_rule));
-    for ( i=0; i<cnt; ++i ) {
-	f = from+i; t = to+i;
-	switch ( format ) {
-	  case pst_glyphs:
-	    t->u.glyph.names = copy(f->u.glyph.names);
-	    t->u.glyph.back = copy(f->u.glyph.back);
-	    t->u.glyph.fore = copy(f->u.glyph.fore);
-	  break;
-	  case pst_class:
-	    t->u.class.ncnt = f->u.class.ncnt;
-	    t->u.class.bcnt = f->u.class.bcnt;
-	    t->u.class.fcnt = f->u.class.fcnt;
-	    t->u.class.nclasses = galloc( f->u.class.ncnt*sizeof(uint16));
-	    memcpy(t->u.class.nclasses,f->u.class.nclasses,
-		    f->u.class.ncnt*sizeof(uint16));
-	    if ( t->u.class.bcnt!=0 ) {
-		t->u.class.bclasses = galloc( f->u.class.bcnt*sizeof(uint16));
-		memcpy(t->u.class.bclasses,f->u.class.bclasses,
-			f->u.class.bcnt*sizeof(uint16));
-	    }
-	    if ( t->u.class.fcnt!=0 ) {
-		t->u.class.fclasses = galloc( f->u.class.fcnt*sizeof(uint16));
-		memcpy(t->u.class.fclasses,f->u.class.fclasses,
-			f->u.class.fcnt*sizeof(uint16));
-	    }
-	  break;
-	  case pst_reversecoverage:
-	    t->u.rcoverage.replacements = copy(f->u.rcoverage.replacements);
-	  case pst_coverage:
-	    t->u.coverage.ncnt = f->u.coverage.ncnt;
-	    t->u.coverage.bcnt = f->u.coverage.bcnt;
-	    t->u.coverage.fcnt = f->u.coverage.fcnt;
-	    t->u.coverage.ncovers = galloc( f->u.coverage.ncnt*sizeof(char *));
-	    for ( j=0; j<t->u.coverage.ncnt; ++j )
-		t->u.coverage.ncovers[j] = copy(f->u.coverage.ncovers[j]);
-	    if ( t->u.coverage.bcnt!=0 ) {
-		t->u.coverage.bcovers = galloc( f->u.coverage.bcnt*sizeof(char *));
-		for ( j=0; j<t->u.coverage.bcnt; ++j )
-		    t->u.coverage.bcovers[j] = copy(f->u.coverage.bcovers[j]);
-	    }
-	    if ( t->u.coverage.fcnt!=0 ) {
-		t->u.coverage.fcovers = galloc( f->u.coverage.fcnt*sizeof(char *));
-		for ( j=0; j<t->u.coverage.fcnt; ++j )
-		    t->u.coverage.fcovers[j] = copy(f->u.coverage.fcovers[j]);
-	    }
-	  break;
-	}
-	if ( f->lookup_cnt!=0 ) {
-	    t->lookup_cnt = f->lookup_cnt;
-	    t->lookups = galloc(t->lookup_cnt*sizeof(struct seqlookup));
-	    memcpy(t->lookups,f->lookups,t->lookup_cnt*sizeof(struct seqlookup));
-	}
-    }
-return( to );
-}
-
-FPST *FPSTCopy(FPST *fpst) {
-    FPST *nfpst;
-    int i;
-
-    nfpst = chunkalloc(sizeof(FPST));
-    *nfpst = *fpst;
-    nfpst->next = NULL;
-    if ( nfpst->nccnt!=0 ) {
-	nfpst->nclass = galloc(nfpst->nccnt*sizeof(char *));
-	for ( i=0; i<nfpst->nccnt; ++i )
-	    nfpst->nclass[i] = copy(fpst->nclass[i]);
-    }
-    if ( nfpst->bccnt!=0 ) {
-	nfpst->bclass = galloc(nfpst->bccnt*sizeof(char *));
-	for ( i=0; i<nfpst->bccnt; ++i )
-	    nfpst->bclass[i] = copy(fpst->bclass[i]);
-    }
-    if ( nfpst->fccnt!=0 ) {
-	nfpst->fclass = galloc(nfpst->fccnt*sizeof(char *));
-	for ( i=0; i<nfpst->fccnt; ++i )
-	    nfpst->fclass[i] = copy(fpst->fclass[i]);
-    }
-    nfpst->rules = RulesCopy(fpst->rules,fpst->rule_cnt,fpst->format);
-return( nfpst );
-}
-
-void FPSTFree(FPST *fpst) {
-    FPST *next;
-    int i;
-
-    while ( fpst!=NULL ) {
-	next = fpst->next;
-	for ( i=0; i<fpst->nccnt; ++i )
-	    free(fpst->nclass[i]);
-	for ( i=0; i<fpst->bccnt; ++i )
-	    free(fpst->bclass[i]);
-	for ( i=0; i<fpst->fccnt; ++i )
-	    free(fpst->fclass[i]);
-	free(fpst->nclass); free(fpst->bclass); free(fpst->fclass);
-	for ( i=0; i<fpst->rule_cnt; ++i ) {
-	    FPSTRuleContentsFree( &fpst->rules[i],fpst->format );
-	}
-	free(fpst->rules);
-	chunkfree(fpst,sizeof(FPST));
-	fpst = next;
-    }
-}
-
-int ClassesMatch(int cnt1,char **classes1,int cnt2,char **classes2) {
-    int i;
-
-    if ( cnt1!=cnt2 )
-return( false );
-    for ( i=1; i<cnt2; ++i )
-	if ( strcmp(classes1[i],classes2[i])!=0 )
-return( false );
-
-return( true );
-}
-
-static char **classcopy(char **names,int nextclass) {
-    char **ret;
-    int i;
-
-    if ( nextclass <= 1 )
-return( NULL );
-
-    ret = galloc(nextclass*sizeof(char *));
-    ret[0] = NULL;
-    for ( i=1; i<nextclass; ++i )
-	ret[i] = copy(names[i]);
-return( ret );
-}
-
-FPST *FPSTGlyphToClass(FPST *fpst) {
-    FPST *new;
-    int nextclass=0, i,j,k, max, cnt, ch;
-    char *pt, *end;
-    char **names;
-
-    if ( fpst->format!=pst_glyphs )
-return( NULL );
-
-    new = chunkalloc(sizeof(FPST));
-    new->type = fpst->type;
-    new->format = pst_class;
-    new->subtable = fpst->subtable;
-    new->rule_cnt = fpst->rule_cnt;
-    new->rules = gcalloc(fpst->rule_cnt,sizeof(struct fpst_rule));
-
-    max = 100; nextclass=1;
-    names = galloc(max*sizeof(char *));
-    names[0] = NULL;
-    for ( i=0; i<fpst->rule_cnt; ++i ) {
-	for ( j=0; j<3; ++j ) {
-	    cnt = 0;
-	    if ( (&fpst->rules[i].u.glyph.names)[j]!=NULL && *(&fpst->rules[i].u.glyph.names)[j]!='\0' ) {
-		cnt = 1;
-		for ( pt=(&fpst->rules[i].u.glyph.names)[j]; *pt; ++pt ) {
-		    if ( *pt==' ' ) {
-			++cnt;
-			while ( *pt==' ' ) ++pt;
-			--pt;
-		    }
-		}
-	    }
-	    (&new->rules[i].u.class.ncnt)[j] = cnt;
-	    if ( cnt!=0 ) {
-		(&new->rules[i].u.class.nclasses)[j] = galloc(cnt*sizeof(uint16));
-		cnt = 0;
-		for ( pt=(&fpst->rules[i].u.glyph.names)[j]; *pt; pt=end ) {
-		    while ( *pt==' ' ) ++pt;
-		    if ( *pt=='\0' )
-		break;
-		    for ( end=pt ; *end!=' ' && *end!='\0'; ++end );
-		    ch = *end; *end='\0';
-		    for ( k=1; k<nextclass; ++k )
-			if ( strcmp(pt,names[k])==0 )
-		    break;
-		    if ( k==nextclass ) {
-			if ( nextclass>=max )
-			    names = grealloc(names,(max+=100)*sizeof(char *));
-			names[nextclass++] = copy(pt);
-		    }
-		    *end = ch;
-		    (&new->rules[i].u.class.nclasses)[j][cnt++] = k;
-		}
-	    }
-	}
-	new->rules[i].lookup_cnt = fpst->rules[i].lookup_cnt;
-	new->rules[i].lookups = galloc(fpst->rules[i].lookup_cnt*sizeof(struct seqlookup));
-	memcpy(new->rules[i].lookups,fpst->rules[i].lookups,
-		fpst->rules[i].lookup_cnt*sizeof(struct seqlookup));
-    }
-    new->nccnt = nextclass;
-    new->nclass = names;
-    if ( fpst->type==pst_chainpos || fpst->type==pst_chainsub ) {
-	/* our class set has one "class" for each glyph used anywhere */
-	/*  all three class sets are the same */
-	new->bccnt = new->fccnt = nextclass;
-	new->bclass = classcopy(names,nextclass);
-	new->fclass = classcopy(names,nextclass);
-    }
-return( new );
-}
-
 /* ************************************************************************** */
 /* ************************ Context/Chaining Dialog ************************* */
 /* ************************************************************************** */
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 struct contextchaindlg {
     struct gfi_data *gfi;
     SplineFont *sf;
@@ -860,12 +610,8 @@ int CCD_NameListCheck(SplineFont *sf,const char *ret,int empty_bad,char *title) 
 return(false);
     }
     if ( (missingname=CCD_NonExistantName(sf,ret))!=NULL ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	char *buts[3];
 	buts[0] = _("_Yes"); buts[1] = _("_No"); buts[2] = NULL;
-#elif defined(FONTFORGE_CONFIG_GTK)
-	static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_NO, NULL };
-#endif
 	ans = gwwv_ask(title,(const char **) buts,0,1,
 		strcmp(title,_("Bad Class"))==0? _("The class member \"%.20s\" is not in this font.\nIs that what you want?") :
 		strcmp(title,_("Bad Coverage"))==0? _("The coverage table member \"%.20s\" is not in this font.\nIs that what you want?") :
@@ -1019,12 +765,8 @@ static void CCD_FinishEditNew(struct contextchaindlg *ccd) {
     struct fpst_rule dummy;
     GGadget *list = GWidgetGetControl(ccd->gw,CID_GList+ccd->wasoffset);
     int i,tot;
-#if defined(FONTFORGE_CONFIG_GDRAW)
     char *buts[3];
     buts[0] = _("_Yes"); buts[1] = _("_No"); buts[2] = NULL;
-#elif defined(FONTFORGE_CONFIG_GTK)
-    static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_NO, NULL };
-#endif
 
     if ( ccd->wasoffset>=300 ) {		/* It's a class */
 	char *ret = GGadgetGetTitle8(GWidgetGetControl(ccd->gw,CID_GlyphList+300));
@@ -1260,23 +1002,23 @@ return;
 static void _CCD_ToSelection(struct contextchaindlg *ccd,int cid,int order_matters ) {
     const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(ccd->gw,cid));
     SplineFont *sf = ccd->sf;
-    FontView *fv = sf->fv;
+    FontView *fv = (FontView *) sf->fv;
     const unichar_t *end;
     int i,pos, found=-1;
     char *nm;
 
     GDrawRaise(fv->gw);
     GDrawSetVisible(fv->gw,true);
-    memset(fv->selected,0,fv->map->enccount);
+    memset(fv->b.selected,0,fv->b.map->enccount);
     i=1;
     while ( *ret ) {
 	end = u_strchr(ret,' ');
 	if ( end==NULL ) end = ret+u_strlen(ret);
 	nm = cu_copybetween(ret,end);
 	for ( ret = end; isspace(*ret); ++ret);
-	if (( pos = SFFindSlot(sf,fv->map,-1,nm))!=-1 ) {
+	if (( pos = SFFindSlot(sf,fv->b.map,-1,nm))!=-1 ) {
 	    if ( found==-1 ) found = pos;
-	    fv->selected[pos] = i;
+	    fv->b.selected[pos] = i;
 	    if ( order_matters && i<255 ) ++i;
 	}
 	free(nm);
@@ -1414,15 +1156,15 @@ return( true );
 
 static void _CCD_FromSelection(struct contextchaindlg *ccd,int cid,int order_matters ) {
     SplineFont *sf = ccd->sf;
-    FontView *fv = sf->fv;
+    FontView *fv = (FontView *) sf->fv;
     unichar_t *vals, *pt;
     int i, j, len, max;
     SplineChar *sc;
 
-    for ( i=len=max=0; i<fv->map->enccount; ++i ) if ( fv->selected[i]) {
-	sc = SFMakeChar(sf,fv->map,i);
+    for ( i=len=max=0; i<fv->b.map->enccount; ++i ) if ( fv->b.selected[i]) {
+	sc = SFMakeChar(sf,fv->b.map,i);
 	len += strlen(sc->name)+1;
-	if ( fv->selected[i]>max ) max = fv->selected[i];
+	if ( fv->b.selected[i]>max ) max = fv->b.selected[i];
     }
     pt = vals = galloc((len+1)*sizeof(unichar_t));
     *pt = '\0';
@@ -1430,8 +1172,8 @@ static void _CCD_FromSelection(struct contextchaindlg *ccd,int cid,int order_mat
 	/* in a glyph string the order of selection is important */
 	/* also in replacement list */
 	for ( j=1; j<=max; ++j ) {
-	    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i]==j ) {
-		int gid = fv->map->map[i];
+	    for ( i=0; i<fv->b.map->enccount; ++i ) if ( fv->b.selected[i]==j ) {
+		int gid = fv->b.map->map[i];
 		if ( gid!=-1 && sf->glyphs[gid]!=NULL ) {
 		    uc_strcpy(pt,sf->glyphs[gid]->name);
 		    pt += u_strlen(pt);
@@ -1441,8 +1183,8 @@ static void _CCD_FromSelection(struct contextchaindlg *ccd,int cid,int order_mat
 	}
     } else {
 	/* in a coverage table (or class) the order of selection is irrelevant */
-	for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] ) {
-	    int gid = fv->map->map[i];
+	for ( i=0; i<fv->b.map->enccount; ++i ) if ( fv->b.selected[i] ) {
+	    int gid = fv->b.map->map[i];
 	    if ( gid!=-1 && sf->glyphs[gid]!=NULL ) {
 		uc_strcpy(pt,sf->glyphs[gid]->name);
 		pt += u_strlen(pt);
@@ -1882,12 +1624,8 @@ static void _CCD_Ok(struct contextchaindlg *ccd) {
     GTextInfo **old, **classes;
     struct fpst_rule dummy;
     int has[3];
-#if defined(FONTFORGE_CONFIG_GDRAW)
     char *buts[3];
     buts[0] = _("_Yes"); buts[1] = _("_No"); buts[2] = NULL;
-#elif defined(FONTFORGE_CONFIG_GTK)
-    static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_NO, NULL };
-#endif
 
     switch ( ccd->aw ) {
       case aw_glist: {
@@ -2994,4 +2732,3 @@ struct contextchaindlg *ContextChainEdit(SplineFont *sf,FPST *fpst,
 
 return( ccd );
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
