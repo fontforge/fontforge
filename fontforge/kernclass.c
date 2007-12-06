@@ -25,7 +25,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <gkeysym.h>
 #include <string.h>
 #include <ustring.h>
@@ -173,22 +172,22 @@ static int KCD_ToSelection(GGadget *g, GEvent *e) {
 	KernClassDlg *kcd = GDrawGetUserData(GGadgetGetWindow(g));
 	const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(kcd->gw,CID_GlyphList));
 	SplineFont *sf = kcd->sf;
-	FontView *fv = sf->fv;
+	FontView *fv = (FontView *) sf->fv;
 	const unichar_t *end;
 	int pos, found=-1;
 	char *nm;
 
 	GDrawSetVisible(fv->gw,true);
 	GDrawRaise(fv->gw);
-	memset(fv->selected,0,fv->map->enccount);
+	memset(fv->b.selected,0,fv->b.map->enccount);
 	while ( *ret ) {
 	    end = u_strchr(ret,' ');
 	    if ( end==NULL ) end = ret+u_strlen(ret);
 	    nm = cu_copybetween(ret,end);
 	    for ( ret = end; isspace(*ret); ++ret);
-	    if (( pos = SFFindSlot(sf,fv->map,-1,nm))!=-1 ) {
+	    if (( pos = SFFindSlot(sf,fv->b.map,-1,nm))!=-1 ) {
 		if ( found==-1 ) found = pos;
-		fv->selected[pos] = true;
+		fv->b.selected[pos] = true;
 	    }
 	    free(nm);
 	}
@@ -204,20 +203,20 @@ static int KCD_FromSelection(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	KernClassDlg *kcd = GDrawGetUserData(GGadgetGetWindow(g));
 	SplineFont *sf = kcd->sf;
-	FontView *fv = sf->fv;
+	FontView *fv = (FontView *) sf->fv;
 	unichar_t *vals, *pt;
 	int i, len, max, gid;
 	SplineChar *sc;
     
-	for ( i=len=max=0; i<fv->map->enccount; ++i ) if ( fv->selected[i]) {
-	    sc = SFMakeChar(sf,fv->map,i);
+	for ( i=len=max=0; i<fv->b.map->enccount; ++i ) if ( fv->b.selected[i]) {
+	    sc = SFMakeChar(sf,fv->b.map,i);
 	    len += strlen(sc->name)+1;
-	    if ( fv->selected[i]>max ) max = fv->selected[i];
+	    if ( fv->b.selected[i]>max ) max = fv->b.selected[i];
 	}
 	pt = vals = galloc((len+1)*sizeof(unichar_t));
 	*pt = '\0';
 	/* in a class the order of selection is irrelevant */
-	for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] && (gid=fv->map->map[i])!=-1) {
+	for ( i=0; i<fv->b.map->enccount; ++i ) if ( fv->b.selected[i] && (gid=fv->b.map->map[i])!=-1) {
 	    uc_strcpy(pt,sf->glyphs[gid]->name);
 	    pt += u_strlen(pt);
 	    *pt++ = ' ';
@@ -2845,30 +2844,30 @@ void KernPairD(SplineFont *sf,SplineChar *sc1,SplineChar *sc2,int isv) {
     int gid;
 
     if ( sc1==NULL ) {
-	FontView *fv = sf->fv;
+	FontView *fv = (FontView *) sf->fv;
 	int start = fv->rowoff*fv->colcnt, end = start+fv->rowcnt*fv->colcnt;
 	int i;
-	for ( i=start; i<end && i<fv->map->enccount; ++i )
-	    if ( (gid=fv->map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
+	for ( i=start; i<end && i<fv->b.map->enccount; ++i )
+	    if ( (gid=fv->b.map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
 		    (isv ? sf->glyphs[gid]->vkerns : sf->glyphs[gid]->kerns)!=NULL )
 	break;
-	if ( i==end || i==fv->map->enccount ) {
-	    for ( i=0; i<fv->map->enccount; ++i )
-		if ( (gid=fv->map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
+	if ( i==end || i==fv->b.map->enccount ) {
+	    for ( i=0; i<fv->b.map->enccount; ++i )
+		if ( (gid=fv->b.map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
 			(isv ? sf->glyphs[gid]->vkerns : sf->glyphs[gid]->kerns)!=NULL )
 	    break;
 	}
-	if ( i==fv->map->enccount ) {
-	    for ( i=start; i<end && i<fv->map->enccount; ++i )
-		if ( (gid=fv->map->map[i])!=-1 && sf->glyphs[gid]!=NULL )
+	if ( i==fv->b.map->enccount ) {
+	    for ( i=start; i<end && i<fv->b.map->enccount; ++i )
+		if ( (gid=fv->b.map->map[i])!=-1 && sf->glyphs[gid]!=NULL )
 	    break;
-	    if ( i==end || i==fv->map->enccount ) {
-		for ( i=0; i<fv->map->enccount; ++i )
-		    if ( (gid=fv->map->map[i])!=-1 && sf->glyphs[gid]!=NULL )
+	    if ( i==end || i==fv->b.map->enccount ) {
+		for ( i=0; i<fv->b.map->enccount; ++i )
+		    if ( (gid=fv->b.map->map[i])!=-1 && sf->glyphs[gid]!=NULL )
 		break;
 	    }
 	}
-	if ( i!=fv->map->enccount )
+	if ( i!=fv->b.map->enccount )
 	    sc1 = sf->glyphs[gid];
     }
     if ( sc2==NULL && sc1!=NULL && (isv ? sc1->vkerns : sc1->kerns)!=NULL )
@@ -2921,89 +2920,10 @@ void KernPairD(SplineFont *sf,SplineChar *sc1,SplineChar *sc2,int isv) {
     GDrawSetUserData(kcd.gw,NULL);
     GDrawDestroyWindow(kcd.gw);
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-
-int KernClassContains(KernClass *kc, char *name1, char *name2, int ordered ) {
-    int infirst=0, insecond=0, scpos1, kwpos1, scpos2, kwpos2;
-    int i;
-
-    for ( i=1; i<kc->first_cnt; ++i ) {
-	if ( PSTContains(kc->firsts[i],name1) ) {
-	    scpos1 = i;
-	    if ( ++infirst>=3 )		/* The name occurs twice??? */
-    break;
-	} else if ( PSTContains(kc->firsts[i],name2) ) {
-	    kwpos1 = i;
-	    if ( (infirst+=2)>=3 )
-    break;
-	}
-    }
-    if ( infirst==0 || infirst>3 )
-return( 0 );
-    for ( i=1; i<kc->second_cnt; ++i ) {
-	if ( PSTContains(kc->seconds[i],name1) ) {
-	    scpos2 = i;
-	    if ( ++insecond>=3 )
-    break;
-	} else if ( PSTContains(kc->seconds[i],name2) ) {
-	    kwpos2 = i;
-	    if ( (insecond+=2)>=3 )
-    break;
-	}
-    }
-    if ( insecond==0 || insecond>3 )
-return( 0 );
-    if ( (infirst&1) && (insecond&2) ) {
-	if ( kc->offsets[scpos1*kc->second_cnt+kwpos2]!=0 )
-return( kc->offsets[scpos1*kc->second_cnt+kwpos2] );
-    }
-    if ( !ordered ) {
-	if ( (infirst&2) && (insecond&1) ) {
-	    if ( kc->offsets[kwpos1*kc->second_cnt+scpos2]!=0 )
-return( kc->offsets[kwpos1*kc->second_cnt+scpos2] );
-	}
-    }
-return( 0 );
-}
 
 /* ************************************************************************** */
 /* *******************************   kerning   ****************************** */
 /* ************************************************************************** */
-
-static int KCFindName(char *name, char **classnames, int cnt ) {
-    int i;
-    char *pt, *end, ch;
-
-    for ( i=0; i<cnt; ++i ) {
-	if ( classnames[i]==NULL )
-    continue;
-	for ( pt = classnames[i]; *pt; pt=end+1 ) {
-	    end = strchr(pt,' ');
-	    if ( end==NULL ) end = pt+strlen(pt);
-	    ch = *end;
-	    *end = '\0';
-	    if ( strcmp(pt,name)==0 ) {
-		*end = ch;
-return( i );
-	    }
-	    *end = ch;
-	    if ( ch=='\0' )
-	break;
-	}
-    }
-return( 0 );
-}
-
-int KCFindIndex(KernClass *kc,char *name1, char *name2) {
-    int f,l;
-
-    f = KCFindName(name1,kc->firsts,kc->first_cnt);
-    l = KCFindName(name2,kc->seconds,kc->second_cnt);
-    if ( (f!=0 || kc->firsts[0]!=NULL) && l!=0 )
-return( f*kc->second_cnt+l );
-
-return( -1 );
-}
 
 KernClass *SFFindKernClass(SplineFont *sf,SplineChar *first,SplineChar *last,
 	int *index,int allow_zero) {

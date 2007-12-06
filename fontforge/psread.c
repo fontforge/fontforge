@@ -31,9 +31,7 @@
 #include <utype.h>
 #include "psfont.h"
 #include "sd.h"
-#if defined(FONTFORGE_CONFIG_TYPE3) && !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
-# include "views.h"		/* For CharView */
-#endif
+#include "views.h"		/* For CharViewBase */
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif
@@ -3001,9 +2999,7 @@ void SFSplinesFromLayers(SplineFont *sf,int tostroke) {
     int i, layer;
     int flags= -1;
     Layer *new;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    CharView *cv;
-#endif
+    CharViewBase *cv;
 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
 	SplineChar *sc = sf->glyphs[i];
@@ -3032,12 +3028,10 @@ void SFSplinesFromLayers(SplineFont *sf,int tostroke) {
 	free(sc->layers);
 	sc->layers = new;
 	sc->layer_cnt = 2;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	for ( cv=sc->views; cv!=NULL; cv=cv->next ) {
 	    cv->layerheads[dm_back] = &sc->layers[ly_back];
 	    cv->layerheads[dm_fore] = &sc->layers[ly_fore];
 	}
-#endif
     }
     SFReinstanciateRefs(sf);
 }

@@ -108,8 +108,12 @@ void LoadPluginDir(char *dir) {
 	/* First load system plug-ins */
 #if defined( PLUGINDIR )
 	LoadPluginDir( PLUGINDIR );
-#elif defined( PREFIX )
-	LoadPluginDir( PREFIX "/share/fontforge/plugins" );
+#else
+	char *pt = getFontForgeShareDir();
+	if ( pt!=NULL ) {
+	    snprintf(buffer, sizeof(buffer), "%s/plugins", pt );
+	    LoadPluginDir( buffer );
+	}
 #endif
 	/* Then load user defined ones */
 	if ( getPfaEditDir(buffer)!=NULL ) {

@@ -26,217 +26,10 @@
  */
 #include "pfaeditui.h"
 #include "ttf.h"
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <gwidget.h>
 #include <ustring.h>
 #include <math.h>
 #include <gkeysym.h>
-
-static int CheckBluePair(char *blues, char *others, int bluefuzz,
-	int magicpointsize) {
-    int bound = 2*bluefuzz+1;
-    int bluevals[10+14], cnt, pos=0, maxzoneheight;
-    int err = 0;
-    char *end;
-
-    if ( others!=NULL ) {
-	while ( *others==' ' ) ++others;
-	if ( *others=='[' || *others=='{' ) ++others;
-	for ( cnt=0; ; ++cnt ) {
-	    double temp;
-	    while ( *others==' ' ) ++others;
-	    if ( *others==']' || *others=='}' )
-	break;
-	    temp = strtod(others,&end);
-	    if ( temp!=rint(temp))
-		err |= pds_notintegral;
-	    else if ( end==others ) {
-		err |= pds_notintegral;
-	break;
-	    }
-	    others = end;
-	    if ( cnt>=10 )
-		err |= pds_toomany;
-	    else
-		bluevals[pos++] = temp;
-	}
-	if ( cnt&1 )
-	    err |= pds_odd;
-    }
-
-    while ( *blues==' ' ) ++blues;
-    if ( *blues=='{' || *blues=='[' ) ++blues;
-    for ( cnt=0; ; ++cnt ) {
-	double temp;
-	while ( *blues==' ' ) ++blues;
-	if ( *blues==']' || *blues=='}' )
-    break;
-	temp = strtod(blues,&end);
-	if ( temp!=rint(temp))
-	    err |= pds_notintegral;
-	else if ( end==blues ) {
-	    err |= pds_notintegral;
-    break;
-	}
-	blues = end;
-	if ( cnt>=14 )
-	    err |= pds_toomany;
-	else
-	    bluevals[pos++] = temp;
-    }
-    if ( cnt&1 )
-	err |= pds_odd;
-
-    /* Now there is nothing which says that otherblues must all be less than */
-    /*  blues. But the examples suggest it. And I shall assume it */
-
-    maxzoneheight = -1;
-    for ( cnt=0; cnt<pos; cnt+=2 ) {
-	if ( cnt+1<pos && bluevals[cnt]>bluevals[cnt+1] )
-	    err |= pds_outoforder;
-	else if ( cnt+1<pos && maxzoneheight<bluevals[cnt+1]-bluevals[cnt] )
-	    maxzoneheight = bluevals[cnt+1]-bluevals[cnt];
-	if ( cnt!=0 && bluevals[cnt-1]>=bluevals[cnt] )
-	    err |= pds_outoforder;
-	if ( cnt!=0 && bluevals[cnt-1]+bound>bluevals[cnt] )
-	    err |= pds_tooclose;
-    }
-
-    if ( maxzoneheight>0 && (magicpointsize-.49)*maxzoneheight>=240 )
-	err |= pds_toobig;
-
-return( err );
-}
-
-static int CheckStdW(struct psdict *dict,char *key ) {
-    char *str_val, *end;
-    double val;
-
-    if ( (str_val = PSDictHasEntry(dict,key))==NULL )
-return( true );
-    while ( *str_val==' ' ) ++str_val;
-    if ( *str_val!='[' && *str_val!='{' )
-return( false );
-    ++str_val;
-
-    val = strtod(str_val,&end);
-    while ( *end==' ' ) ++end;
-    if ( *end!=']' && *end!='}' )
-return( false );
-    ++end;
-    while ( *end==' ' ) ++end;
-    if ( *end!='\0' || end==str_val || val<=0 )
-return( false );
-
-return( true );
-}
-
-static int CheckStemSnap(struct psdict *dict,char *snapkey, char *stdkey ) {
-    char *str_val, *end;
-    double std_val = -1;
-    double stems[12], temp;
-    int cnt, found;
-    /* At most 12 double values, in order, must include Std?W value, array */
-
-    if ( (str_val = PSDictHasEntry(dict,stdkey))!=NULL ) {
-	while ( *str_val==' ' ) ++str_val;
-	if ( *str_val=='[' && *str_val!='{' ) ++str_val;
-	std_val = strtod(str_val,&end);
-    }
-
-    if ( (str_val = PSDictHasEntry(dict,snapkey))==NULL )
-return( false );
-    while ( *str_val==' ' ) ++str_val;
-    if ( *str_val!='[' && *str_val!='{' )
-return( false );
-    ++str_val;
-
-    found = false;
-    for ( cnt=0; ; ++cnt ) {
-	while ( *str_val==' ' ) ++str_val;
-	if ( *str_val==']' && *str_val!='}' )
-    break;
-	temp = strtod(str_val,&end);
-	if ( end==str_val )
-return( false );
-	str_val = end;
-	if ( cnt>=12 )
-return( false );
-	stems[cnt] = temp;
-	if ( cnt>0 && stems[cnt-1]>=stems[cnt] )
-return( false );
-	if ( stems[cnt] == std_val )
-	    found = true;
-    }
-    if ( !found && std_val>0 )
-return( -1 );
-
-return( true );
-}
-
-int ValidatePrivate(SplineFont *sf) {
-    int errs = 0;
-    char *blues, *bf, *test, *end;
-    int fuzz = 1;
-    double bluescale = .039625;
-    int magicpointsize;
-
-    if ( sf->private==NULL )
-return( pds_missingblue );
-
-    if ( (bf = PSDictHasEntry(sf->private,"BlueFuzz"))!=NULL ) {
-	fuzz = strtol(bf,&end,10);
-	if ( *end!='\0' || fuzz<0 )
-	    errs |= pds_badbluefuzz;
-    }
-
-    if ( (test=PSDictHasEntry(sf->private,"BlueScale"))!=NULL ) {
-	bluescale = strtod(test,&end);
-	if ( *end!='\0' || end==test || bluescale<0 )
-	    errs |= pds_badbluescale;
-    }
-    magicpointsize = rint( bluescale*240 - 0.49 );
-
-    if ( (blues = PSDictHasEntry(sf->private,"BlueValues"))==NULL )
-	errs |= pds_missingblue;
-    else
-	errs |= CheckBluePair(blues,PSDictHasEntry(sf->private,"OtherBlues"),fuzz,magicpointsize);
-
-    if ( (blues = PSDictHasEntry(sf->private,"FamilyBlues"))!=NULL )
-	errs |= CheckBluePair(blues,PSDictHasEntry(sf->private,"FamilyOtherBlues"),
-		fuzz,magicpointsize)<<pds_shift;
-
-
-    if ( (test=PSDictHasEntry(sf->private,"BlueShift"))!=NULL ) {
-	int val = strtol(test,&end,10);
-	if ( *end!='\0' || end==test || val<0 )
-	    errs |= pds_badblueshift;
-    }
-
-    if ( !CheckStdW(sf->private,"StdHW"))
-	errs |= pds_badstdhw;
-    if ( !CheckStdW(sf->private,"StdVW"))
-	errs |= pds_badstdvw;
-
-    switch ( CheckStemSnap(sf->private,"StemSnapH", "StdHW")) {
-      case false:
-	errs |= pds_badstemsnaph;
-      break;
-      case -1:
-	errs |= pds_stemsnapnostdh;
-      break;
-    }
-    switch ( CheckStemSnap(sf->private,"StemSnapV", "StdVW")) {
-      case false:
-	errs |= pds_badstemsnapv;
-      break;
-      case -1:
-	errs |= pds_stemsnapnostdv;
-      break;
-    }
-
-return( errs );
-}
 
 /* ************************************************************************** */
 /* ***************************** Problems Dialog **************************** */
@@ -794,12 +587,12 @@ return;
     p->doneexplain = false;
     p->ignorethis = false;
 
-    if ( sc!=p->lastcharopened || sc->views==NULL ) {
-	if ( p->cvopened!=NULL && CVValid(p->fv->sf,p->lastcharopened,p->cvopened) )
+    if ( sc!=p->lastcharopened || (CharView *) (sc->views)==NULL ) {
+	if ( p->cvopened!=NULL && CVValid(p->fv->b.sf,p->lastcharopened,p->cvopened) )
 	    GDrawDestroyWindow(p->cvopened->gw);
 	p->cvopened = NULL;
-	if ( sc->views!=NULL )
-	    GDrawRaise(sc->views->gw);
+	if ( (CharView *) (sc->views)!=NULL )
+	    GDrawRaise(((CharView *) (sc->views))->gw);
 	else
 	    p->cvopened = CharViewCreate(sc,p->fv,-1);
 	GDrawSync(NULL);
@@ -808,7 +601,7 @@ return;
 	p->lastcharopened = sc;
     }
     if ( explain==_("This glyph contains a substitution or ligature entry which refers to an empty char") ) {
-	SCCharInfo(sc,p->fv->map,-1);
+	SCCharInfo(sc,p->fv->b.map,-1);
 	GDrawSync(NULL);
 	GDrawProcessPendingEvents(NULL);
 	GDrawProcessPendingEvents(NULL);
@@ -839,7 +632,7 @@ return;
 
 static void _ExplainIt(struct problems *p, int enc, char *explain,
 	real found, real expected ) {
-    ExplainIt(p,p->sc=SFMakeChar(p->fv->sf,p->fv->map,enc),explain,found,expected);
+    ExplainIt(p,p->sc=SFMakeChar(p->fv->b.sf,p->fv->b.map,enc),explain,found,expected);
 }
 
 /* if they deleted a point or a splineset while we were explaining then we */
@@ -853,7 +646,7 @@ static int missing(struct problems *p,SplineSet *test, SplinePoint *sp) {
 return( false );
 
     if ( p->cv!=NULL )
-	spl = p->cv->layerheads[p->cv->drawmode]->splines;
+	spl = p->cv->b.layerheads[p->cv->b.drawmode]->splines;
     else
 	spl = p->sc->layers[ly_fore].splines;
     for ( check = spl; check!=test && check!=NULL; check = check->next );
@@ -880,7 +673,7 @@ static int missingspline(struct problems *p,SplineSet *test, Spline *spline) {
 return( false );
 
     if ( p->cv!=NULL )
-	spl = p->cv->layerheads[p->cv->drawmode]->splines;
+	spl = p->cv->b.layerheads[p->cv->b.drawmode]->splines;
     else
 	spl = p->sc->layers[ly_fore].splines;
     for ( check = spl; check!=test && check!=NULL; check = check->next );
@@ -1186,9 +979,9 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
   restart:
     if ( cv!=NULL ) {
 	needsupdate = CVClearSel(cv);
-	cur = cv->layerheads[cv->drawmode];
+	cur = cv->b.layerheads[cv->b.drawmode];
 	spl = cur->splines;
-	sc = cv->sc;
+	sc = cv->b.sc;
     } else {
 	for ( spl = sc->layers[ly_fore].splines; spl!=NULL; spl = spl->next ) {
 	    if ( spl->first->selected ) { needsupdate = true; spl->first->selected = false; }
@@ -1375,8 +1168,8 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
     }
 
     if ( p->linenearstd && !p->finish ) {
-	real ia = (90-p->fv->sf->italicangle)*(3.1415926535897932/180);
-	int hasia = p->fv->sf->italicangle!=0;
+	real ia = (90-p->fv->b.sf->italicangle)*(3.1415926535897932/180);
+	int hasia = p->fv->b.sf->italicangle!=0;
 	for ( test=spl; test!=NULL && !p->finish && p->linenearstd; test = test->next ) {
 	    first = NULL;
 	    for ( spline = test->first->next; spline!=NULL && spline!=first && !p->finish; spline=spline->to->next ) {
@@ -1400,8 +1193,8 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
     }
 
     if ( p->cpnearstd && !p->finish ) {
-	real ia = (90-p->fv->sf->italicangle)*(3.1415926535897932/180);
-	int hasia = p->fv->sf->italicangle!=0;
+	real ia = (90-p->fv->b.sf->italicangle)*(3.1415926535897932/180);
+	int hasia = p->fv->b.sf->italicangle!=0;
 	for ( test=spl; test!=NULL && !p->finish && p->linenearstd; test = test->next ) {
 	    first = NULL;
 	    for ( spline = test->first->next; spline!=NULL && spline!=first && !p->finish; spline=spline->to->next ) {
@@ -1675,7 +1468,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	SplineSet **base, *ret;
 	int lastscan= -1;
 	if ( cv!=NULL )
-	    base = &cv->layerheads[cv->drawmode]->splines;
+	    base = &cv->b.layerheads[cv->b.drawmode]->splines;
 	else
 	    base = &sc->layers[ly_fore].splines;
 	while ( !p->finish && (ret=SplineSetsDetectDir(base,&lastscan))!=NULL ) {
@@ -1740,7 +1533,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	}
     }
 
-    if ( p->flippedrefs && !p->finish && ( cv==NULL || cv->drawmode==dm_fore )) {
+    if ( p->flippedrefs && !p->finish && ( cv==NULL || cv->b.drawmode==dm_fore )) {
 	RefChar *ref;
 	for ( ref = sc->layers[ly_fore].refs; ref!=NULL ; ref = ref->next )
 	    ref->selected = false;
@@ -2009,7 +1802,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		strcmp(sc->name,".notdef")!=0 &&
 		strcmp(sc->name,".null")!=0 &&
 		strcmp(sc->name,"nonmarkingreturn")!=0 &&
-		(uni = UniFromName(sc->name,sc->parent->uni_interp,p->fv->map->enc))!= -1 &&
+		(uni = UniFromName(sc->name,sc->parent->uni_interp,p->fv->b.map->enc))!= -1 &&
 		sc->unicodeenc != uni ) {
 	int i;
 	changed = true;
@@ -2032,7 +1825,7 @@ static int CIDCheck(struct problems *p,int cid) {
     int found = false;
 
     if ( (p->cidmultiple || p->cidblank) && !p->finish ) {
-	SplineFont *csf = p->fv->cidmaster;
+	SplineFont *csf = p->fv->b.cidmaster;
 	int i, cnt;
 	for ( i=cnt=0; i<csf->subfontcnt; ++i )
 	    if ( cid<csf->subfonts[i]->glyphcnt &&
@@ -2374,7 +2167,7 @@ static int StrMissingGlyph(struct problems *p,char **_str,SplineChar *sc,int whi
     char *end, ch, *str = *_str, *new;
     int off;
     int found = false;
-    SplineFont *sf = p->fv!=NULL ? p->fv->sf : p->cv!=NULL ? p->cv->sc->parent : p->msc->parent;
+    SplineFont *sf = p->fv!=NULL ? p->fv->b.sf : p->cv!=NULL ? p->cv->b.sc->parent : p->msc->parent;
     SplineChar *ssc;
     int changed=false;
 
@@ -2498,21 +2291,17 @@ static int CheckForATT(struct problems *p) {
     ASM *sm;
     KernClass *kc;
     SplineFont *_sf, *sf;
-#if defined(FONTFORGE_CONFIG_GDRAW)
     static char *buts[3];
     buts[0] = _("_Yes");
     buts[1] = _("_No");
     buts[2] = NULL;
-#elif defined(FONTFORGE_CONFIG_GTK)
-    static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_NO, NULL };
-#endif
 
-    _sf = p->fv->sf;
+    _sf = p->fv->b.sf;
     if ( _sf->cidmaster ) _sf = _sf->cidmaster;
 
     if ( p->missingglyph && !p->finish ) {
 	if ( p->cv!=NULL )
-	    found = SCMissingGlyph(p,p->cv->sc);
+	    found = SCMissingGlyph(p,p->cv->b.sc);
 	else if ( p->msc!=NULL )
 	    found = SCMissingGlyph(p,p->msc);
 	else {
@@ -2547,19 +2336,19 @@ static void DoProbs(struct problems *p) {
 	ret = CheckForATT(p);
     if ( p->cv!=NULL ) {
 	ret |= SCProblems(p->cv,NULL,p);
-	ret |= CIDCheck(p,p->cv->sc->orig_pos);
+	ret |= CIDCheck(p,p->cv->b.sc->orig_pos);
     } else if ( p->msc!=NULL ) {
 	ret |= SCProblems(NULL,p->msc,p);
 	ret |= CIDCheck(p,p->msc->orig_pos);
     } else {
-	for ( i=0; i<p->fv->map->enccount && !p->finish; ++i )
-	    if ( p->fv->selected[i] ) {
+	for ( i=0; i<p->fv->b.map->enccount && !p->finish; ++i )
+	    if ( p->fv->b.selected[i] ) {
 		sc = NULL;
-		if ( (gid=p->fv->map->map[i])!=-1 && (sc = p->fv->sf->glyphs[gid])!=NULL ) {
+		if ( (gid=p->fv->b.map->map[i])!=-1 && (sc = p->fv->b.sf->glyphs[gid])!=NULL ) {
 		    if ( SCProblems(NULL,sc,p)) {
 			if ( sc!=p->lastcharopened ) {
-			    if ( sc->views!=NULL )
-				GDrawRaise(sc->views->gw);
+			    if ( (CharView *) (sc->views)!=NULL )
+				GDrawRaise(((CharView *) (sc->views))->gw);
 			    else
 				CharViewCreate(sc,p->fv,-1);
 			    p->lastcharopened = sc;
@@ -2568,9 +2357,9 @@ static void DoProbs(struct problems *p) {
 		    }
 		}
 		if ( !p->finish && p->bitmaps && !SCWorthOutputting(sc)) {
-		    for ( bdf=p->fv->sf->bitmaps; bdf!=NULL; bdf=bdf->next )
+		    for ( bdf=p->fv->b.sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 			if ( i<bdf->glyphcnt && bdf->glyphs[i]!=NULL ) {
-			    sc = SFMakeChar(p->fv->sf,p->fv->map,i);
+			    sc = SFMakeChar(p->fv->b.sf,p->fv->b.map,i);
 			    ExplainIt(p,sc,_("This blank outline glyph has an unexpected bitmap version"),0,0);
 			    ret = true;
 			}
@@ -2585,7 +2374,7 @@ static void DoProbs(struct problems *p) {
 static void FigureStandardHeights(struct problems *p) {
     BlueData bd;
 
-    QuickBlues(p->fv->sf,&bd);
+    QuickBlues(p->fv->b.sf,&bd);
     p->xheight = bd.xheight;
     p->caph = bd.caph;
     p->ascent = bd.ascent;
@@ -2610,11 +2399,11 @@ static int Prob_DoAll(GGadget *g, GEvent *e) {
 	    CID_UniNameMisMatch, CID_BBYMax, CID_BBYMin, CID_BBXMax, CID_BBXMin,
 	    0 };
 	int i;
-	if ( p->fv->cidmaster!=NULL ) {
+	if ( p->fv->b.cidmaster!=NULL ) {
 	    GGadgetSetChecked(GWidgetGetControl(gw,CID_CIDMultiple),set);
 	    GGadgetSetChecked(GWidgetGetControl(gw,CID_CIDBlank),set);
 	}
-	if ( p->fv->sf->hasvmetrics )
+	if ( p->fv->b.sf->hasvmetrics )
 	    GGadgetSetChecked(GWidgetGetControl(gw,CID_VAdvanceWidth),set);
 	for ( i=0; cbs[i]!=0; ++i )
 	    GGadgetSetChecked(GWidgetGetControl(gw,cbs[i]),set);
@@ -2666,11 +2455,11 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	stem3 = p->stem3 = GGadgetIsChecked(GWidgetGetControl(gw,CID_Stem3));
 	if ( stem3 )
 	    showexactstem3 = p->showexactstem3 = GGadgetIsChecked(GWidgetGetControl(gw,CID_ShowExactStem3));
-	if ( p->fv->cidmaster!=NULL ) {
+	if ( p->fv->b.cidmaster!=NULL ) {
 	    cidmultiple = p->cidmultiple = GGadgetIsChecked(GWidgetGetControl(gw,CID_CIDMultiple));
 	    cidblank = p->cidblank = GGadgetIsChecked(GWidgetGetControl(gw,CID_CIDBlank));
 	}
-	if ( p->fv->sf->hasvmetrics ) {
+	if ( p->fv->b.sf->hasvmetrics ) {
 	    vadvancewidth = p->vadvancewidth = GGadgetIsChecked(GWidgetGetControl(gw,CID_VAdvanceWidth));
 	} else
 	    p->vadvancewidth = false;
@@ -2705,7 +2494,7 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	near = p->near = GetReal8(gw,CID_Near,_("Near"),&errs);
 	if ( errs )
 return( true );
-	lastsf = p->fv->sf;
+	lastsf = p->fv->b.sf;
 	if ( doynearstd )
 	    FigureStandardHeights(p);
 	GDrawSetVisible(gw,false);
@@ -2730,8 +2519,8 @@ static void DummyFindProblems(CharView *cv) {
     struct problems p;
 
     memset(&p,0,sizeof(p));
-    p.fv = cv->fv; p.cv=cv;
-    p.lastcharopened = cv->sc;
+    p.fv = (FontView *) (cv->b.fv); p.cv=cv;
+    p.lastcharopened = cv->b.sc;
 
     p.openpaths = true;
     p.intersectingpaths = true;
@@ -2801,10 +2590,10 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     /*static GBox smallbox = { bt_raised, bs_rect, 2, 1, 0, 0, 0,0,0,0, COLOR_DEFAULT,COLOR_DEFAULT };*/
 
     memset(&p,0,sizeof(p));
-    if ( fv==NULL ) fv = cv->fv;
+    if ( fv==NULL ) fv = (FontView *) (cv->b.fv);
     p.fv = fv; p.cv=cv; p.msc = sc;
     if ( cv!=NULL )
-	p.lastcharopened = cv->sc;
+	p.lastcharopened = cv->b.sc;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;
@@ -2891,7 +2680,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pgcd[5].gd.cid = CID_YNearStd;
     pgcd[5].creator = GCheckBoxCreate;
 
-    plabel[6].text = (unichar_t *) (fv->sf->italicangle==0?_("_Control Points near horizontal/vertical"):_("Control Points near horizontal/vertical/italic"));
+    plabel[6].text = (unichar_t *) (fv->b.sf->italicangle==0?_("_Control Points near horizontal/vertical"):_("Control Points near horizontal/vertical/italic"));
     plabel[6].text_is_1byte = true;
     plabel[6].text_in_resource = true;
     pgcd[6].gd.label = &plabel[6];
@@ -2981,7 +2770,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pagcd[1].gd.cid = CID_IntersectingPaths;
     pagcd[1].creator = GCheckBoxCreate;
 
-    palabel[2].text = (unichar_t *) (fv->sf->italicangle==0?_("_Edges near horizontal/vertical"):_("Edges near horizontal/vertical/italic"));
+    palabel[2].text = (unichar_t *) (fv->b.sf->italicangle==0?_("_Edges near horizontal/vertical"):_("Edges near horizontal/vertical/italic"));
     palabel[2].text_is_1byte = true;
     palabel[2].text_in_resource = true;
     pagcd[2].gd.label = &palabel[2];
@@ -3305,7 +3094,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     bbgcd[0].gd.cid = CID_BBYMax;
     bbgcd[0].creator = GCheckBoxCreate;
 
-    sf = p.fv->sf;
+    sf = p.fv->b.sf;
     if ( lastsf!=sf ) {
 	bbymax_val = bbymin_val = bbxmax_val /* = bbxmin_val */= vadvancewidth = advancewidth = 0;
     }
@@ -3513,7 +3302,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     aspects[i++].gcd = agcd;
 
     aspects[i].text = (unichar_t *) _("CID");
-    aspects[i].disabled = fv->cidmaster==NULL;
+    aspects[i].disabled = fv->b.cidmaster==NULL;
     aspects[i].text_is_1byte = true;
     aspects[i++].gcd = cgcd;
 
@@ -3620,327 +3409,10 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     if ( p.explainw!=NULL )
 	GDrawDestroyWindow(p.explainw);
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 /* ************************************************************************** */
 /* ***************************** Validation code **************************** */
 /* ************************************************************************** */
-
-static int SFValidNameList(SplineFont *sf, char *list) {
-    char *start, *pt;
-    int ch;
-    SplineChar *sc;
-
-    for ( start = list ; ; ) {
-	while ( *start==' ' ) ++start;
-	if ( *start=='\0' )
-return( true );
-	for ( pt=start; *pt!=':' && *pt!=' ' && *pt!='\0' ; ++pt );
-	ch = *pt;
-	if ( ch==' ' || ch=='\0' )
-return( -1 );
-	if ( sf!=NULL ) {
-	    *pt = '\0';
-	    sc = SFGetChar(sf,-1,start);
-	    *pt = ch;
-	    if ( sc==NULL )
-return( -1 );
-	}
-	start = pt;
-    }
-}
-
-int SCValidate(SplineChar *sc, int force) {
-    SplineSet *ss;
-    Spline *s1, *s2, *s, *first;
-    SplinePoint *sp;
-    RefChar *ref;
-    int lastscan= -1;
-    int cnt, path_cnt, pt_cnt;
-    StemInfo *h;
-    SplineSet *base;
-    double len2, bound2, x, y;
-    extended extrema[4];
-    PST *pst;
-    struct ttf_table *tab;
-    extern int allow_utf8_glyphnames;
-    RefChar *r;
-
-    if ( (sc->validation_state&vs_known) && !force )
-  goto end;
-
-    sc->validation_state = 0;
-
-    base = LayerAllSplines(&sc->layers[ly_fore]);
-
-    if ( !allow_utf8_glyphnames ) {
-	if ( strlen(sc->name)>31 )
-	    sc->validation_state |= vs_badglyphname|vs_known;
-	else {
-	    char *pt;
-	    for ( pt = sc->name; *pt; ++pt ) {
-		if (( *pt>='A' && *pt<='Z' ) ||
-			(*pt>='a' && *pt<='z' ) ||
-			(*pt>='0' && *pt<='9' ) ||
-			*pt == '.' || *pt == '_' )
-		    /* That's ok */;
-		else {
-		    sc->validation_state |= vs_badglyphname|vs_known;
-	    break;
-		}
-	    }
-	}
-    }
-
-    for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
-	if ( pst->type==pst_substitution &&
-		!SCWorthOutputting(SFGetChar(sc->parent,-1,pst->u.subs.variant))) {
-	    sc->validation_state |= vs_badglyphname|vs_known;
-    break;
-	} else if ( pst->type==pst_pair &&
-		!SCWorthOutputting(SFGetChar(sc->parent,-1,pst->u.pair.paired))) {
-	    sc->validation_state |= vs_badglyphname|vs_known;
-    break;
-	} else if ( (pst->type==pst_alternate || pst->type==pst_multiple || pst->type==pst_ligature) &&
-		!SFValidNameList(sc->parent,pst->u.mult.components)) {
-	    sc->validation_state |= vs_badglyphname|vs_known;
-    break;
-	}
-    }
-    if ( sc->vert_variants!=NULL && sc->vert_variants->variants != NULL &&
-	    !SFValidNameList(sc->parent,sc->vert_variants->variants) )
-	sc->validation_state |= vs_badglyphname|vs_known;
-    else if ( sc->horiz_variants!=NULL && sc->horiz_variants->variants != NULL &&
-	    !SFValidNameList(sc->parent,sc->horiz_variants->variants) )
-	sc->validation_state |= vs_badglyphname|vs_known;
-    else {
-	int i;
-	if ( sc->vert_variants!=NULL ) {
-	    for ( i=0; i<sc->vert_variants->part_cnt; ++i ) {
-		if ( !SCWorthOutputting(SFGetChar(sc->parent,-1,sc->vert_variants->parts[i].component)))
-		    sc->validation_state |= vs_badglyphname|vs_known;
-	    break;
-	    }
-	}
-	if ( sc->horiz_variants!=NULL ) {
-	    for ( i=0; i<sc->horiz_variants->part_cnt; ++i ) {
-		if ( !SCWorthOutputting(SFGetChar(sc->parent,-1,sc->horiz_variants->parts[i].component)))
-		    sc->validation_state |= vs_badglyphname|vs_known;
-	    break;
-	    }
-	}
-    }
-
-    for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
-	/* TrueType uses single points to move things around so ignore them */
-	if ( ss->first->next==NULL )
-	    /* Do Nothing */;
-	else if ( ss->first->prev==NULL ) {
-	    sc->validation_state |= vs_opencontour|vs_known;
-    break;
-	}
-    }
-
-    /* If there's an open contour we can't really tell whether it self-intersects */
-    if ( sc->validation_state & vs_opencontour )
-	/* sc->validation_state |= vs_selfintersects*/;
-    else {
-	if ( SplineSetIntersect(base,&s1,&s2) )
-	    sc->validation_state |= vs_selfintersects|vs_known;
-    }
-
-    /* If there's a self-intersection we are guaranteed that both the self- */
-    /*  intersecting contours will be in the wrong direction at some point */
-    if ( sc->validation_state & vs_selfintersects )
-	/*sc->validation_state |= vs_wrongdirection*/;
-    else {
-	if ( SplineSetsDetectDir(&base,&lastscan)!=NULL )
-	    sc->validation_state |= vs_wrongdirection|vs_known;
-    }
-
-    /* Different kind of "wrong direction" */
-    for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
-	if ( ref->transform[0]*ref->transform[3]<0 ||
-		(ref->transform[0]==0 && ref->transform[1]*ref->transform[2]>0)) {
-	    sc->validation_state |= vs_flippedreferences|vs_known;
-    break;
-	}
-    }
-
-    for ( h=sc->hstem, cnt=0; h!=NULL; h=h->next, ++cnt );
-    for ( h=sc->vstem       ; h!=NULL; h=h->next, ++cnt );
-    if ( cnt>=96 )
-	sc->validation_state |= vs_toomanyhints|vs_known;
-
-    for ( ss=sc->layers[ly_fore].splines, pt_cnt=path_cnt=0; ss!=NULL; ss=ss->next, ++path_cnt ) {
-	for ( sp=ss->first; ; ) {
-	    ++pt_cnt;
-	    if ( sp->next==NULL )
-	break;
-	    sp = sp->next->to;
-	    if ( sp==ss->first )
-	break;
-	}
-    }
-    if ( pt_cnt>1500 )
-	sc->validation_state |= vs_toomanypoints|vs_known;
-
-    LayerUnAllSplines(&sc->layers[ly_fore]);
-
-    /* Only check the splines in the glyph, not those in refs */
-    bound2 = (sc->parent->ascent + sc->parent->descent)/100.0;
-    bound2 *= bound2;
-    for ( ss=sc->layers[ly_fore].splines, cnt=0; ss!=NULL; ss=ss->next ) {
-	first = NULL;
-	for ( s=ss->first->next ; s!=NULL && s!=first; s=s->to->next ) {
-	    if ( first==NULL )
-		first = s;
-	    /* rough appoximation to spline's length */
-	    x = (s->from->nextcp.x-s->from->me.x);
-	    y = (s->from->nextcp.y-s->from->me.y);
-	    len2 = x*x + y*y;
-	    x = (s->to->prevcp.x-s->from->nextcp.x);
-	    y = (s->to->prevcp.y-s->from->nextcp.y);
-	    len2 += x*x + y*y;
-	    x = (s->to->me.x-s->to->prevcp.x);
-	    y = (s->to->me.y-s->to->prevcp.y);
-	    len2 += x*x + y*y;
-	    /* short splines (serifs) are allowed not to have points at their extrema */
-	    if ( len2>bound2 && Spline2DFindExtrema(s,extrema)>0 ) {
-		sc->validation_state |= vs_missingextrema|vs_known;
-    goto break_2_loops;
-	    }
-	}
-    }
-    break_2_loops:;
-
-    if ( (tab = SFFindTable(sc->parent,CHR('m','a','x','p')))!=NULL && tab->len>=32 ) {
-	/* If we have a maxp table then do some truetype checks */
-	/* these are only errors for fontlint, we'll fix them up when we */
-	/*  generate the font -- but fontlint needs to know this stuff */
-	int pt_max = memushort(tab->data,tab->len,3*sizeof(uint16));
-	int path_max = memushort(tab->data,tab->len,4*sizeof(uint16));
-	int composit_pt_max = memushort(tab->data,tab->len,5*sizeof(uint16));
-	int composit_path_max = memushort(tab->data,tab->len,6*sizeof(uint16));
-	int instr_len_max = memushort(tab->data,tab->len,13*sizeof(uint16));
-	int num_comp_max = memushort(tab->data,tab->len,14*sizeof(uint16));
-	int comp_depth_max  = memushort(tab->data,tab->len,15*sizeof(uint16));
-	int rd, rdtest;
-
-	/* Already figured out two of these */
-	if ( sc->layers[ly_fore].splines==NULL ) {
-	    if ( pt_cnt>composit_pt_max )
-		sc->validation_state |= vs_maxp_toomanycomppoints|vs_known;
-	    if ( path_cnt>composit_path_max )
-		sc->validation_state |= vs_maxp_toomanycomppaths|vs_known;
-	}
-
-	for ( ss=sc->layers[ly_fore].splines, pt_cnt=path_cnt=0; ss!=NULL; ss=ss->next, ++path_cnt ) {
-	    for ( sp=ss->first; ; ) {
-		++pt_cnt;
-		if ( sp->next==NULL )
-	    break;
-		sp = sp->next->to;
-		if ( sp==ss->first )
-	    break;
-	    }
-	}
-	if ( pt_cnt>pt_max )
-	    sc->validation_state |= vs_maxp_toomanypoints|vs_known;
-	if ( path_cnt>path_max )
-	    sc->validation_state |= vs_maxp_toomanypaths|vs_known;
-
-	if ( sc->ttf_instrs_len>instr_len_max )
-	    sc->validation_state |= vs_maxp_instrtoolong|vs_known;
-
-	rd = 0;
-	for ( r=sc->layers[ly_fore].refs, cnt=0; r!=NULL; r=r->next, ++cnt ) {
-	    rdtest = RefDepth(r);
-	    if ( rdtest>rd )
-		rd = rdtest;
-	}
-	if ( cnt>num_comp_max )
-	    sc->validation_state |= vs_maxp_toomanyrefs|vs_known;
-	if ( rd>comp_depth_max )
-	    sc->validation_state |= vs_maxp_refstoodeep|vs_known;
-    }
-  end:;
-
-    sc->validation_state |= vs_known;
-    if ( sc->unlink_rm_ovrlp_save_undo )
-return( sc->validation_state&~(vs_known|vs_selfintersects) );
-
-return( sc->validation_state&~vs_known );
-}
-    
-int SFValidate(SplineFont *sf, int force) {
-    int k, gid;
-    SplineFont *sub;
-    int any = 0;
-    SplineChar *sc;
-    int cnt=0;
-    struct ttf_table *tab;
-
-    if ( sf->cidmaster )
-	sf = sf->cidmaster;
-
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    if ( !no_windowing_ui ) {
-	cnt = 0;
-	k = 0;
-	do {
-	    sub = sf->subfontcnt==0 ? sf : sf->subfonts[k];
-	    for ( gid=0; gid<sub->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
-		if ( force || !(sc->validation_state&vs_known) )
-		    ++cnt;
-	    }
-	    ++k;
-	} while ( k<sf->subfontcnt );
-	if ( cnt!=0 )
-	    gwwv_progress_start_indicator(10,_("Validating..."),_("Validating..."),0,cnt,1);
-    }
-#endif
-
-    k = 0;
-    do {
-	sub = sf->subfontcnt==0 ? sf : sf->subfonts[k];
-	for ( gid=0; gid<sub->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
-	    if ( force || !(sc->validation_state&vs_known) ) {
-		SCValidate(sc,true);
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-		if ( !gwwv_progress_next())
-return( -1 );
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-	    }
-	    if ( sc->unlink_rm_ovrlp_save_undo )
-		any |= sc->validation_state&~vs_selfintersects;
-	    else
-		any |= sc->validation_state;
-	}
-	++k;
-    } while ( k<sf->subfontcnt );
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    gwwv_progress_end_indicator();
-# endif
-
-    if ( (tab = SFFindTable(sf,CHR('m','a','x','p')))!=NULL && tab->len>=32 ) {
-	/* If we have a maxp table then do some truetype checks */
-	/* these are only errors for fontlint, we'll fix them up when we */
-	/*  generate the font -- but fontlint needs to know this stuff */
-	int instr_len_max = memushort(tab->data,tab->len,13*sizeof(uint16));
-	if ( (tab = SFFindTable(sf,CHR('p','r','e','p')))!=NULL ) {
-	    if ( tab->len > instr_len_max )
-		any |= vs_maxp_prepfpgmtoolong;
-	}
-	if ( (tab = SFFindTable(sf,CHR('f','p','g','m')))!=NULL ) {
-	    if ( tab->len > instr_len_max )
-		any |= vs_maxp_prepfpgmtoolong;
-	}
-    }
-    /* a lot of asian ttf files have a bad postscript fontname stored in the */
-    /*  name table */
-return( any&~vs_known );
-}
 
 struct val_data {
     GWindow gw;
@@ -4433,10 +3905,10 @@ static void VWReuseCV(struct val_data *vw, SplineChar *sc) {
 	    break;
 	}
 	if ( sctest!=NULL )
-	    for ( cv=sctest->views; cv!=NULL && cv!=vw->lastcv; cv=cv->next );
+	    for ( cv=(CharView *) (sctest->views); cv!=NULL && cv!=vw->lastcv; cv=(CharView *) (cv->b.next) );
     }
     if ( cv==NULL )
-	cv = CharViewCreate(sc,vw->sf->fv,vw->sf->fv->map->backmap[sc->orig_pos]);
+	cv = CharViewCreate(sc,(FontView *) (vw->sf->fv),vw->sf->fv->map->backmap[sc->orig_pos]);
     else {
 	CVChangeSC(cv,sc);
 	GDrawSetVisible(cv->gw,true);
@@ -4456,14 +3928,14 @@ static void VWMenuOpenGlyph(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void VWMenuGotoGlyph(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     struct val_data *vw = (struct val_data *) GDrawGetUserData(gw);
-    FontView *fv = vw->sf->fv;
-    int enc = GotoChar(vw->sf,fv->map);
+    FontView *fv = (FontView *) (vw->sf->fv);
+    int enc = GotoChar(vw->sf,fv->b.map);
     int gid, line;
     SplineChar *sc;
 
     if ( enc==-1 )
 return;
-    gid = fv->map->map[enc];
+    gid = fv->b.map->map[enc];
     if ( gid==-1 || (sc=vw->sf->glyphs[gid])==NULL ) {
 	ff_post_error(_("Glyph not in font"), _("Glyph not in font"));
 return;
@@ -4497,22 +3969,22 @@ return;
 
 static void VWMenuSelect(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     struct val_data *vw = (struct val_data *) GDrawGetUserData(gw);
-    FontView *fv = vw->sf->fv;
+    FontView *fv = (FontView *) (vw->sf->fv);
     int mask = mi->mid == MID_SelectErrors ? vw->mask :
 	    mi->mid == MID_SelectOpen ? vs_opencontour :
 	    mi->mid == MID_SelectRO ? vs_selfintersects :
 	    mi->mid == MID_SelectDir ? vs_wrongdirection :
 	    mi->mid == MID_SelectExtr ? vs_missingextrema : 0;
-    EncMap *map = fv->map;
+    EncMap *map = fv->b.map;
     int i, gid;
     SplineChar *sc;
 
     for ( i=0; i<map->enccount; ++i ) {
-	fv->selected[i] = false;
+	fv->b.selected[i] = false;
 	gid = map->map[i];
 	if ( gid!=-1 && (sc=vw->sf->glyphs[gid])!=NULL &&
 		(SCValidate(sc,false) & mask) )
-	    fv->selected[i] = true;
+	    fv->b.selected[i] = true;
     }
     GDrawSetVisible(fv->gw,true);
     GDrawRaise(fv->gw);

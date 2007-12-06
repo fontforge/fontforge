@@ -25,40 +25,16 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <gkeysym.h>
 #include <string.h>
 #include <ustring.h>
 #include <utype.h>
 #include <math.h>
 
-static uint32 simple_stdfeatures[] = { CHR('c','c','m','p'), CHR('l','o','c','a'), CHR('k','e','r','n'), CHR('l','i','g','a'), CHR('c','a','l','t'), CHR('m','a','r','k'), CHR('m','k','m','k'), REQUIRED_FEATURE, 0 };
-static uint32 arab_stdfeatures[] = { CHR('c','c','m','p'), CHR('l','o','c','a'), CHR('i','s','o','l'), CHR('i','n','i','t'), CHR('m','e','d','i'),CHR('f','i','n','a'), CHR('r','l','i','g'), CHR('l','i','g','a'), CHR('c','a','l','t'), CHR('k','e','r','n'), CHR('c','u','r','s'), CHR('m','a','r','k'), CHR('m','k','m','k'), REQUIRED_FEATURE, 0 };
-static uint32 hebrew_stdfeatures[] = { CHR('c','c','m','p'), CHR('l','o','c','a'), CHR('l','i','g','a'), CHR('c','a','l','t'), CHR('k','e','r','n'), CHR('m','a','r','k'), CHR('m','k','m','k'), REQUIRED_FEATURE, 0 };
-static struct { uint32 script, *stdfeatures; } script_2_std[] = {
-    { CHR('l','a','t','n'), simple_stdfeatures },
-    { CHR('D','F','L','T'), simple_stdfeatures },
-    { CHR('c','y','r','l'), simple_stdfeatures },
-    { CHR('g','r','e','k'), simple_stdfeatures },
-    { CHR('a','r','a','b'), arab_stdfeatures },
-    { CHR('h','e','b','r'), hebrew_stdfeatures },
-    { 0 }
-};
-
 static int mv_antialias = true;
 static double mv_scales[] = { 2.0, 1.5, 1.0, 2.0/3.0, .5, 1.0/3.0, .25, .2, 1.0/6.0, .125, .1 };
 
 static int MVSetVSb(MetricsView *mv);
-
-uint32 *StdFeaturesOfScript(uint32 script) {
-    int i;
-
-    for ( i=0; script_2_std[i].script!=0; ++i )
-	if ( script_2_std[i].script==script )
-return( script_2_std[i].stdfeatures );
-
-return( simple_stdfeatures );
-}
 
 #if 0
 static void MVDrawAnchorPoint(GWindow pixmap,MetricsView *mv,int i,struct aplist *apl) {
@@ -527,7 +503,7 @@ return;
 	MVSelectSubtableForScript(mv,SCScriptFromUnicode(mv->glyphs[i].sc));
     MVRedrawI(mv,i,0,0);
 }
-    
+
 static void MVDoSelect(MetricsView *mv, int i) {
     int j;
 
@@ -867,7 +843,7 @@ return( true );
 	    GDrawBeep(NULL);
 	else if ( !mv->vertical && val!=sc->width ) {
 	    SCPreserveWidth(sc);
-	    SCSynchronizeWidth(sc,val,sc->width,mv->fv);
+	    SCSynchronizeWidth(sc,val,sc->width,NULL);
 	    SCCharChangedUpdate(sc);
 	} else if ( mv->vertical && val!=sc->vwidth ) {
 	    SCPreserveVWidth(sc);
@@ -906,13 +882,13 @@ return( true );
 	    transform[0] = transform[3] = 1.0;
 	    transform[1] = transform[2] = transform[5] = 0;
 	    transform[4] = val-bb.minx;
-	    FVTrans(mv->fv,sc,transform,NULL,false);
+	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,false);
 	} else if ( mv->vertical && val!=sc->parent->ascent-bb.maxy ) {
 	    real transform[6];
 	    transform[0] = transform[3] = 1.0;
 	    transform[1] = transform[2] = transform[4] = 0;
 	    transform[5] = sc->parent->ascent-bb.maxy-val;
-	    FVTrans(mv->fv,sc,transform,NULL,false);
+	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,false);
 	}
     } else if ( e->u.control.subtype == et_textfocuschanged &&
 	    e->u.control.u.tf_focus.gained_focus ) {
@@ -951,7 +927,7 @@ return( true );
 		transform[0] = transform[3] = 1.0;
 		transform[1] = transform[2] = transform[5] = 0;
 		transform[4] = sc->width-val-bb.maxx;
-		FVTrans(mv->fv,sc,transform,NULL,false);
+		FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,false);
 	    }
 	    SCCharChangedUpdate(sc);
 	} else if ( mv->vertical && val!=sc->vwidth-(sc->parent->ascent-bb.miny) ) {
@@ -965,7 +941,7 @@ return( true );
 		transform[0] = transform[3] = 1.0;
 		transform[1] = transform[2] = transform[4] = 0;
 		transform[5] = vw-sc->vwidth;
-		FVTrans(mv->fv,sc,transform,NULL,false);
+		FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,false);
 	    }
 	    SCCharChangedUpdate(sc);
 	}
@@ -981,13 +957,8 @@ return( true );
 
 static int AskNewKernClassEntry(SplineChar *fsc,SplineChar *lsc) {
     char *yesno[3];
-#if defined(FONTFORGE_CONFIG_GDRAW)
     yesno[0] = _("_Yes");
     yesno[1] = _("_No");
-#elif defined(FONTFORGE_CONFIG_GTK)
-    yesno[0] = GTK_STOCK_YES;
-    yesno[1] = GTK_STOCK_NO;
-#endif
     yesno[2] = NULL;
 return( gwwv_ask(_("Use Kerning Class?"),(const char **) yesno,0,1,_("This kerning pair (%.20s and %.20s) is currently part of a kerning class with a 0 offset for this combination. Would you like to alter this kerning class entry (or create a kerning pair for just these two glyphs)?"),
 	fsc->name,lsc->name)==0 );
@@ -1398,7 +1369,7 @@ return;					/* Nothing changed */
 
     missing = 0;
     for ( tpt=pt; tpt<ept; ++tpt )
-	if ( SFFindSlot(mv->sf,mv->fv->map,*tpt,NULL)==-1 )
+	if ( SFFindSlot(mv->sf,mv->fv->b.map,*tpt,NULL)==-1 )
 	    ++missing;
 
     if ( ept-pt-missing > ei-i ) {
@@ -1416,7 +1387,7 @@ return;					/* Nothing changed */
 		mv->chars[j+diff] = mv->chars[j];
     }
     for ( j=i; pt<ept; ++pt ) {
-	SplineChar *sc = SCFromUnicode(mv->sf,mv->fv->map,*pt,mv->bdf);
+	SplineChar *sc = SCFromUnicode(mv->sf,mv->fv->b.map,*pt,mv->bdf);
 	if ( sc!=NULL )
 	    mv->chars[j++] = sc;
     }
@@ -1612,14 +1583,14 @@ return;
     for ( i=0; i<mv->glyphcnt; ++i )
 	if ( mv->perchar[i].selected )
     break;
-    map = mv->fv->map;
+    map = mv->fv->b.map;
     if ( i!=mv->glyphcnt )
 	BitmapViewCreatePick(map->backmap[mv->glyphs[i].sc->orig_pos],mv->fv);
 }
 
 static void MVMenuMergeKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
-    MergeKernInfo(mv->sf,mv->fv->map);
+    MergeKernInfo(mv->sf,mv->fv->b.map);
 }
 
 static void MVMenuOpenOutline(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -1712,13 +1683,8 @@ return;
 	    int yes;
 	    char *buts[4];
 	    buts[1] = _("_Unlink");
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	    buts[0] = _("_Yes");
 	    buts[2] = _("_Cancel");
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    buts[0] = GTK_STOCK_YES;
-	    buts[2] = GTK_STOCK_CANCEL;
-#endif
 	    buts[3] = NULL;
 	    yes = gwwv_ask(_("Bad Reference"),(const char **) buts,1,2,_("You are attempting to clear %.30s which is referred to by\nanother character. Are you sure you want to clear it?"),sc->name);
 	    if ( yes==2 )
@@ -1751,7 +1717,7 @@ static void MVCut(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	break;
 	if ( i==-1 )
 return;
-	MVCopyChar(mv,mv->glyphs[i].sc,ct_fullcopy);
+	MVCopyChar(&mv->fv->b,mv->bdf,mv->glyphs[i].sc,ct_fullcopy);
 	MVClear(gw,mi,e);
     }
 }
@@ -1768,7 +1734,7 @@ static void MVCopy(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	break;
 	if ( i==-1 )
 return;
-	MVCopyChar(mv,mv->glyphs[i].sc,ct_fullcopy);
+	MVCopyChar(&mv->fv->b,mv->bdf,mv->glyphs[i].sc,ct_fullcopy);
     }
 }
 
@@ -1783,7 +1749,7 @@ return;
     break;
     if ( i==-1 )
 return;
-    MVCopyChar(mv,mv->glyphs[i].sc,ct_reference);
+    MVCopyChar(&mv->fv->b,mv->bdf,mv->glyphs[i].sc,ct_reference);
 }
 
 static void MVMenuCopyWidth(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -1835,7 +1801,7 @@ static void MVPaste(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	break;
 	if ( i==-1 )
 return;
-	PasteIntoMV(mv,mv->glyphs[i].sc,true);
+	PasteIntoMV(&mv->fv->b,mv->bdf,mv->glyphs[i].sc,true);
     }
 }
 
@@ -1877,7 +1843,7 @@ static void MVMenuCharInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	if ( mv->perchar[i].selected )
     break;
     if ( i!=-1 )
-	SCCharInfo(mv->glyphs[i].sc,mv->fv->map,-1);
+	SCCharInfo(mv->glyphs[i].sc,mv->fv->b.map,-1);
 }
 
 static void MVMenuShowDependents(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -1942,7 +1908,7 @@ static void MVTransFunc(void *_sc,real transform[6],int otype, BVTFunc *bvts,
 	enum fvtrans_flags flags ) {
     SplineChar *sc = _sc;
 
-    FVTrans(sc->parent->fv,sc,transform, NULL,flags);
+    FVTrans( (FontViewBase *)sc->parent->fv,sc,transform, NULL,flags);
 }
 
 static void MVMenuTransform(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -2107,12 +2073,18 @@ static void MVMenuRound2Int(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void MVMenuAutotrace(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     int i;
+    GCursor ct;
 
     for ( i=mv->glyphcnt-1; i>=0; --i )
 	if ( mv->perchar[i].selected )
     break;
-    if ( i!=-1 )
-	SCAutoTrace(mv->glyphs[i].sc,mv->gw,e!=NULL && (e->u.mouse.state&ksm_shift));
+    if ( i!=-1 ) {
+	ct = GDrawGetCursor(mv->gw);
+	GDrawSetCursor(mv->gw,ct_watch);
+	ff_progress_allow_events();
+	SCAutoTrace(mv->glyphs[i].sc,e!=NULL && (e->u.mouse.state&ksm_shift));
+	GDrawSetCursor(mv->gw,ct);
+    }
 }
 
 static void MVMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -2134,13 +2106,8 @@ static void MVMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 		if ( asked==-1 ) {
 		    char *buts[4];
 		    buts[0] = _("_Unlink");
-#if defined(FONTFORGE_CONFIG_GDRAW)
 		    buts[1] = _("_No");
 		    buts[2] = _("_Cancel");
-#elif defined(FONTFORGE_CONFIG_GTK)
-		    buts[1] = GTK_RESPONSE_NO;
-		    buts[2] = GTK_RESPONSE_CANCEL;
-#endif
 		    buts[3] = NULL;
 		    asked = gwwv_ask(_("Flipped Reference"),(const char **) buts,0,2,_("%.50s contains a flipped reference. This cannot be corrected as is. Would you like me to unlink it and then correct it?"), sc->name );
 		    if ( asked==2 )
@@ -2176,7 +2143,7 @@ static void _MVMenuBuildAccent(MetricsView *mv,int onlyaccents) {
     if ( i!=-1 ) {
 	SplineChar *sc = mv->glyphs[i].sc;
 	if ( SFIsSomethingBuildable(mv->sf,sc,onlyaccents) )
-	    SCBuildComposit(mv->sf,sc,!onlycopydisplayed,mv->fv);
+	    SCBuildComposit(mv->sf,sc,!onlycopydisplayed);
     }
 }
 
@@ -2243,9 +2210,9 @@ static void MVMenuScale(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void MVMenuInsertChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     SplineFont *sf = mv->sf;
-    int i, j, pos = GotoChar(sf,mv->fv->map);
+    int i, j, pos = GotoChar(sf,mv->fv->b.map);
 
-    if ( pos==-1 || pos>=mv->fv->map->enccount )
+    if ( pos==-1 || pos>=mv->fv->b.map->enccount )
 return;
 
     for ( i=0; i<mv->glyphcnt; ++i )
@@ -2276,7 +2243,7 @@ return;
     }
     for ( j=mv->clen; j>i; --j )
 	mv->chars[j] = mv->chars[j-1]; 
-    mv->chars[i] = SFMakeChar(sf,mv->fv->map,pos);
+    mv->chars[i] = SFMakeChar(sf,mv->fv->b.map,pos);
     ++mv->clen;
     MVRemetric(mv);
     for ( j=0; j<mv->glyphcnt; ++j )
@@ -2292,7 +2259,7 @@ static void MVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     SplineFont *sf = mv->sf;
     SplineChar *sc;
-    EncMap *map = mv->fv->map;
+    EncMap *map = mv->fv->b.map;
     int i, pos, gid;
 
     for ( i=0; i<mv->glyphcnt; ++i )
@@ -2317,12 +2284,12 @@ return;
 	    if ( pos<0 )
 return;
 	} else if ( mi->mid==MID_ReplaceChar ) {
-	    pos = GotoChar(sf,mv->fv->map);
-	    if ( pos<0 || pos>=mv->fv->map->enccount)
+	    pos = GotoChar(sf,mv->fv->b.map);
+	    if ( pos<0 || pos>=mv->fv->b.map->enccount)
 return;
 	}
 	if ( pos>=0 && pos<map->enccount ) {
-	    mv->chars[i] = SFMakeChar(sf,mv->fv->map,pos);
+	    mv->chars[i] = SFMakeChar(sf,mv->fv->b.map,pos);
 	    MVRemetric(mv);
 	    MVResetText(mv);
 	    GDrawRequestExpose(mv->gw,NULL,false);
@@ -2336,7 +2303,7 @@ static void MVMenuFindInFontView(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     for ( i=0; i<mv->glyphcnt; ++i ) {
 	if ( mv->perchar[i].selected ) {
-	    FVChangeChar(mv->fv,mv->fv->map->backmap[mv->glyphs[i].sc->orig_pos]);
+	    FVChangeChar(mv->fv,mv->fv->b.map->backmap[mv->glyphs[i].sc->orig_pos]);
 	    GDrawSetVisible(mv->fv->gw,true);
 	    GDrawRaise(mv->fv->gw);
     break;
@@ -2399,7 +2366,7 @@ static void MVMenuCenter(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	else
 	    transform[4] = (sc->width-(bb.maxx-bb.minx))/3 - bb.minx;
 	if ( transform[4]!=0 )
-	    FVTrans(mv->fv,sc,transform,NULL,fvt_dontmovewidth);
+	    FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,fvt_dontmovewidth);
     }
 }
 
@@ -2417,7 +2384,7 @@ static void MVMenuVKernByClasses(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void MVMenuVKernFromHKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
-    FVVKernFromHKern(mv->fv);
+    FVVKernFromHKern((FontViewBase *) mv->fv);
 }
 
 static void MVMenuKPCloseup(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -2680,11 +2647,7 @@ static GMenuItem2 vwlist[] = {
     { NULL }
 };
 
-# ifdef FONTFORGE_CONFIG_GDRAW
 static void MVMenuContextualHelp(GWindow base,struct gmenuitem *mi,GEvent *e) {
-# elif defined(FONTFORGE_CONFIG_GTK)
-void MetricsViewMenu_ContextualHelp(GtkMenuItem *menuitem, gpointer user_data) {
-# endif
     help("metricsview.html");
 }
 
@@ -2776,7 +2739,7 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = mv->sf->bitmaps==NULL;
 	  break;
 	  case MID_CharInfo:
-	    mi->ti.disabled = sc==NULL /*|| mv->fv->cidmaster!=NULL*/;
+	    mi->ti.disabled = sc==NULL /*|| mv->fv->b.cidmaster!=NULL*/;
 	  break;
 	  case MID_ShowDependents:
 	    mi->ti.disabled = sc==NULL || sc->dependents == NULL;
@@ -3094,7 +3057,7 @@ static void _MVVMouse(MetricsView *mv,GEvent *event) {
 	if ( sc==NULL && within!=-1 )
 	    sc = mv->glyphs[within].sc;
 	if ( sc!=NULL ) 
-	    SCPreparePopup(mv->gw,sc,mv->fv->map->remap,mv->fv->map->backmap[sc->orig_pos],sc->unicodeenc);
+	    SCPreparePopup(mv->gw,sc,mv->fv->b.map->remap,mv->fv->b.map->backmap[sc->orig_pos],sc->unicodeenc);
 /* Don't allow any editing when displaying a bitmap font */
     } else if ( event->type == et_mousedown && mv->bdf==NULL ) {
 	CVPaletteDeactivate();
@@ -3202,7 +3165,7 @@ static void _MVVMouse(MetricsView *mv,GEvent *event) {
 	    transform[1] = transform[2] = transform[4] = 0;
 	    transform[5] = -diff/scale;
 	    if ( transform[5]!=0 )
-		FVTrans(mv->fv,sc,transform,NULL,false);
+		FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,false);
 	}
     } else if ( event->type == et_mouseup && mv->bdf!=NULL && within!=-1 ) {
 	for ( j=0; j<mv->glyphcnt; ++j )
@@ -3232,8 +3195,8 @@ static void MVMouse(MetricsView *mv,GEvent *event) {
 	    break;
 	    }
 	    if ( i<mv->glyphcnt )
-		SCPreparePopup(mv->gw,mv->glyphs[i].sc,mv->fv->map->remap,
-			mv->fv->map->backmap[mv->glyphs[i].sc->orig_pos],
+		SCPreparePopup(mv->gw,mv->glyphs[i].sc,mv->fv->b.map->remap,
+			mv->fv->b.map->backmap[mv->glyphs[i].sc->orig_pos],
 			mv->glyphs[i].sc->unicodeenc);
 	}
 	if ( mv->cursor!=ct_mypointer ) {
@@ -3360,7 +3323,7 @@ return;
 	if ( sc==NULL && within!=-1 )
 	    sc = mv->glyphs[within].sc;
 	if ( sc!=NULL ) 
-	    SCPreparePopup(mv->gw,sc,mv->fv->map->remap,mv->fv->map->backmap[sc->orig_pos],sc->unicodeenc);
+	    SCPreparePopup(mv->gw,sc,mv->fv->b.map->remap,mv->fv->b.map->backmap[sc->orig_pos],sc->unicodeenc);
 /* Don't allow any editing when displaying a bitmap font */
     } else if ( event->type == et_mousedown && mv->bdf==NULL ) {
 	CVPaletteDeactivate();
@@ -3480,7 +3443,7 @@ return;
 	    diff = diff*(mv->sf->ascent+mv->sf->descent)/mv->pixelsize;
 	    if ( diff!=0 ) {
 		SCPreserveWidth(sc);
-		SCSynchronizeWidth(sc,sc->width+diff,sc->width,mv->fv);
+		SCSynchronizeWidth(sc,sc->width+diff,sc->width,NULL);
 		SCCharChangedUpdate(sc);
 	    }
 	} else if ( mv->pressedkern ) {
@@ -3498,7 +3461,7 @@ return;
 	    transform[4] = diff*
 		    (mv->sf->ascent+mv->sf->descent)/mv->pixelsize;
 	    if ( transform[4]!=0 )
-		FVTrans(mv->fv,sc,transform,NULL,false);
+		FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,false);
 	}
     } else if ( event->type == et_mouseup && mv->bdf!=NULL && within!=-1 ) {
 	if ( mv->pressed_apl!=NULL ) {
@@ -3756,20 +3719,20 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
 	icon = GDrawCreateBitmap(NULL,metricsicon_width,metricsicon_height,metricsicon_bits);
 
     mv->fv = fv;
-    mv->sf = fv->sf;
+    mv->sf = fv->b.sf;
     mv->bdf = bdf;
     mv->showgrid = true;
     mv->antialias = mv_antialias;
     mv->scale_index = 2;
-    mv->next = fv->sf->metrics;
-    fv->sf->metrics = mv;
+    mv->next = fv->b.sf->metrics;
+    fv->b.sf->metrics = mv;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_icon;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.cursor = ct_mypointer;
     snprintf(buf,sizeof(buf)/sizeof(buf[0]),
-	    _("Metrics For %.50s"), fv->sf->fontname);
+	    _("Metrics For %.50s"), fv->b.sf->fontname);
     wattrs.utf8_window_title = buf;
     wattrs.icon = icon;
     pos.x = pos.y = 0;
@@ -3814,12 +3777,12 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     if ( sc!=NULL ) {
 	mv->chars[mv->clen++] = sc;
     } else {
-	EncMap *map = fv->map;
+	EncMap *map = fv->b.map;
 	for ( j=1; (j<=fv->sel_index || j<1) && mv->clen<15; ++j ) {
 	    for ( i=0; i<map->enccount && mv->clen<15; ++i ) {
 		int gid = map->map[i];
-		if ( gid!=-1 && fv->selected[i]==j && fv->sf->glyphs[gid]!=NULL ) {
-		    mv->chars[mv->clen++] = fv->sf->glyphs[gid];
+		if ( gid!=-1 && fv->b.selected[i]==j && fv->b.sf->glyphs[gid]!=NULL ) {
+		    mv->chars[mv->clen++] = fv->b.sf->glyphs[gid];
 		}
 	    }
 	}
@@ -3902,4 +3865,38 @@ void MVRefreshAll(MetricsView *mv) {
 	GDrawRequestExpose(mv->gw,NULL,false);
     }
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+
+/******************************************************************************/
+static int MV_GlyphCnt(struct metricsview *mv) {
+return( mv->glyphcnt );
+}
+
+static SplineChar *MV_Glyph(struct metricsview *mv,int i) {
+    if ( i<0 || i>=mv->glyphcnt )
+return( NULL );
+
+return( mv->glyphs[i].sc );
+}
+
+static void MV_ReKern(struct splinefont *sf) {
+    MetricsView *mv;
+    for ( mv=sf->metrics; mv!=NULL; mv=mv->next )
+	MVReKern(mv);
+}
+
+static void MV_CloseAll(struct splinefont *sf) {
+    MetricsView *mv, *mvnext;
+    for ( mv=sf->metrics; mv!=NULL; mv=mvnext ) {
+	mvnext = mv->next;
+	GDrawDestroyWindow(mv->gw);
+    }
+    GDrawSync(NULL);
+    GDrawProcessPendingEvents(NULL);
+}
+
+struct mv_interface gdraw_mv_interface = {
+    MV_GlyphCnt,
+    MV_Glyph,
+    MV_ReKern,
+    MV_CloseAll
+};

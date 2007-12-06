@@ -24,7 +24,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "pfaeditui.h"
+#include "fontforgevw.h"
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -861,9 +861,7 @@ static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,
     if ( strmatch(map->enc->enc_name,"mac")!=0 &&
 	    strmatch(map->enc->enc_name,"macintosh")!=0 &&
 	    strmatch(map->enc->enc_name,"macroman")!=0 ) {
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 	if ( !dottf ) ff_post_notice(_("The generated font won't work with ATM"),_("ATM requires that fonts be encoded with the Macintosh Latin encoding. This postscript font will print fine, but only the bitmap versions will be displayed on the screen"));
-#endif
 	glyphenc = ftell( res );
 	fseek(res,geoffset,SEEK_SET);
 	putlong(res,glyphenc-geoffset+2);
@@ -1215,9 +1213,7 @@ static uint32 SFsToFOND(FILE *res,struct sflist *sfs,uint32 id,int format,int bf
 	    strmatch(psfaces[0]->map->enc->enc_name,"macintosh")!=0 &&
 	    strmatch(psfaces[0]->map->enc->enc_name,"macroman")!=0 ) {
 	if ( format==ff_pfbmacbin )
-#if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 	    ff_post_notice(_("The generated font won't work with ATM"),_("ATM requires that fonts be encoded with the Macintosh Latin encoding. This postscript font will print fine, but only the bitmap versions will be displayed on the screen"));
-#endif
 	glyphenc = ftell( res );
 	fseek(res,geoffset,SEEK_SET);
 	putlong(res,glyphenc-geoffset+2);

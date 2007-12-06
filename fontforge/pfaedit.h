@@ -78,11 +78,7 @@ extern Encoding *enclist;
 extern char *RecentFiles[RECENT_MAX];
 
 #define SCRIPT_MENU_MAX	10
-#if defined( FONTFORGE_CONFIG_GTK )
-extern char *script_menu_names[SCRIPT_MENU_MAX];
-#else
 extern unichar_t *script_menu_names[SCRIPT_MENU_MAX];
-#endif
 extern char *script_filenames[SCRIPT_MENU_MAX];
 
 
