@@ -31,7 +31,6 @@
 #include <utype.h>
 #include <chardata.h>
 #include "ttf.h"		/* For MAC_DELETED_GLYPH_NAME */
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <gkeysym.h>
 extern int lookup_hideunused;
 
@@ -157,7 +156,6 @@ static unichar_t monospace[] = { 'c','o','u','r','i','e','r',',','m', 'o', 'n', 
 static char *newstrings[] = { N_("New Positioning"), N_("New Pair Position"),
 	N_("New Substitution Variant"),
 	N_("New Alternate List"), N_("New Multiple List"), N_("New Ligature"), NULL };
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static unichar_t *CounterMaskLine(SplineChar *sc, HintMask *hm) {
     unichar_t *textmask = NULL;
@@ -476,33 +474,6 @@ static int CI_CounterSelChanged(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static int MultipleValues(char *name, int local) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    char *buts[3];
-    buts[0] = _("_Yes"); buts[1]=_("_No"); buts[2] = NULL;
-#elif defined(FONTFORGE_CONFIG_GTK)
-    static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_CANCEL, NULL };
-#endif
-    if ( gwwv_ask(_("Multiple"),(const char **) buts,0,1,_("There is already a glyph with this Unicode encoding\n(named %1$.40s, at local encoding %2$d).\nIs that what you want?"),name,local)==0 )
-return( true );
-
-return( false );
-}
-
-static int MultipleNames(void) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    char *buts[3];
-    buts[0] = _("_Yes"); buts[1]=_("_Cancel"); buts[2] = NULL;
-#elif defined(FONTFORGE_CONFIG_GTK)
-    static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_CANCEL, NULL };
-#endif
-    if ( gwwv_ask(_("Multiple"),(const char **) buts,0,1,_("There is already a glyph with this name,\ndo you want to swap names?"))==0 )
-return( true );
-
-return( false );
-}
-
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static int ParseUValue(GWindow gw, int cid, int minusoneok, SplineFont *sf) {
     const unichar_t *ret = _GGadgetGetTitle(GWidgetGetControl(gw,cid));
     unichar_t *end;
@@ -532,112 +503,17 @@ static void SetNameFromUnicode(GWindow gw,int cid,int val) {
     GGadgetSetTitle(GWidgetGetControl(gw,cid),temp);
     free(temp);
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 void SCInsertPST(SplineChar *sc,PST *new) {
     new->next = sc->possub;
     sc->possub = new;
 }
-		
-int SCSetMetaData(SplineChar *sc,char *name,int unienc,const char *comment) {
-    SplineFont *sf = sc->parent;
-    int i, mv=0;
-    int isnotdef, samename=false;
-    struct altuni *alt;
-
-    for ( alt=sc->altuni; alt!=NULL && (alt->unienc!=unienc || alt->vs!=-1 || alt->fid!=0); alt=alt->next );
-    if ( (sc->unicodeenc == unienc || alt!=NULL ) && strcmp(name,sc->name)==0 ) {
-	samename = true;	/* No change, it must be good */
-    }
-    if ( alt!=NULL || !samename ) {
-	isnotdef = strcmp(name,".notdef")==0;
-	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL && sf->glyphs[i]!=sc ) {
-	    if ( unienc!=-1 && sf->glyphs[i]->unicodeenc==unienc ) {
-		if ( !mv && !MultipleValues(sf->glyphs[i]->name,i)) {
-return( false );
-		}
-		mv = 1;
-	    } else if ( !isnotdef && strcmp(name,sf->glyphs[i]->name)==0 ) {
-		if ( !MultipleNames()) {
-return( false );
-		}
-		free(sf->glyphs[i]->name);
-		sf->glyphs[i]->namechanged = true;
-		if ( strncmp(sc->name,"uni",3)==0 && sf->glyphs[i]->unicodeenc!=-1) {
-		    char buffer[12];
-		    if ( sf->glyphs[i]->unicodeenc<0x10000 )
-			sprintf( buffer,"uni%04X", sf->glyphs[i]->unicodeenc);
-		    else
-			sprintf( buffer,"u%04X", sf->glyphs[i]->unicodeenc);
-		    sf->glyphs[i]->name = copy(buffer);
-		} else {
-		    sf->glyphs[i]->name = sc->name;
-		    sc->name = NULL;
-		}
-	    break;
-	    }
-	}
-	if ( sc->unicodeenc!=unienc ) {
-	    struct splinecharlist *scl;
-	    int layer;
-	    RefChar *ref;
-
-	    for ( scl=sc->dependents; scl!=NULL; scl=scl->next ) {
-		for ( layer=ly_fore; layer<scl->sc->layer_cnt; ++layer )
-		    for ( ref = scl->sc->layers[layer].refs; ref!=NULL; ref=ref->next )
-			if ( ref->sc==sc )
-			    ref->unicode_enc = unienc;
-	    }
-	}
-    }
-    if ( alt!=NULL )
-	alt->unienc = sc->unicodeenc;
-    sc->unicodeenc = unienc;
-    if ( sc->name==NULL || strcmp(name,sc->name)!=0 ) {
-	if ( sc->name!=NULL )
-	    SFGlyphRenameFixup(sf,sc->name,name);
-	free(sc->name);
-	sc->name = copy(name);
-	sc->namechanged = true;
-	GlyphHashFree(sf);
-    }
-    sf->changed = true;
-    if ( unienc>=0xe000 && unienc<=0xf8ff )
-	/* Ok to name things in the private use area */;
-    else if ( samename )
-	/* Ok to name it itself */;
-    else {
-	FontView *fvs;
-	for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
-	    int enc = fvs->map->backmap[sc->orig_pos];
-	    if ( enc!=-1 && ((fvs->map->enc->only_1byte && enc<256) ||
-			(fvs->map->enc->has_2byte && enc<65535 ))) {
-		fvs->map->enc = &custom;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-		FVSetTitle(fvs);
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-	    }
-	}
-    }
-    free(sc->comment); sc->comment = NULL;
-    if ( comment!=NULL && *comment!='\0' )
-	sc->comment = copy(comment);
-
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    SCRefreshTitles(sc);
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-return( true );
-}
 
 static int CI_NameCheck(const unichar_t *name) {
     int bad, questionable;
     extern int allow_utf8_glyphnames;
-#if defined(FONTFORGE_CONFIG_GDRAW)
     char *buts[3];
     buts[0] = _("_Yes"); buts[1]=_("_No"); buts[2] = NULL;
-#elif defined(FONTFORGE_CONFIG_GTK)
-    static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_CANCEL, NULL };
-#endif
 
     if ( uc_strcmp(name,".notdef")==0 )		/* This name is a special case and doesn't follow conventions */
 return( true );
@@ -1289,11 +1165,9 @@ static void CI_ParseAltUnis(CharInfo *ci) {
 	}
     }
     if ( oldcnt!=newcnt || deenc ) {
-	for ( fvs=sc->parent->fv; fvs!=NULL; fvs=fvs->nextsame ) {
-	    fvs->map->enc = &custom;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	    FVSetTitle(fvs);
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+	for ( fvs=(FontView *) sc->parent->fv; fvs!=NULL; fvs=(FontView *) fvs->b.nextsame ) {
+	    fvs->b.map->enc = &custom;
+	    FVSetTitle((FontViewBase *) fvs);
 	}
     }
     AltUniFree(sc->altuni); sc->altuni = NULL;
@@ -1385,7 +1259,7 @@ return( false );
     free(name); free(comment);
     ci->sc->unlink_rm_ovrlp_save_undo = GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_UnlinkRmOverlap));
     if ( refresh_fvdi ) {
-	for ( fvs=ci->sc->parent->fv; fvs!=NULL; fvs=fvs->next ) {
+	for ( fvs=(FontView *) ci->sc->parent->fv; fvs!=NULL; fvs=(FontView *) fvs->b.next ) {
 	    GDrawRequestExpose(fvs->gw,NULL,false);	/* Redraw info area just in case this char is selected */
 	    GDrawRequestExpose(fvs->v,NULL,false);	/* Redraw character area in case this char is on screen */
 	}
@@ -1396,7 +1270,7 @@ return( false );
 	if ( val!=-1 ) {
 	    if ( ci->sc->color != (int) (intpt) (std_colors[val].userdata) ) {
 		ci->sc->color = (intpt) (std_colors[val].userdata);
-		for ( fvs=ci->sc->parent->fv; fvs!=NULL; fvs=fvs->next )
+		for ( fvs=(FontView *) ci->sc->parent->fv; fvs!=NULL; fvs=(FontView *) fvs->b.next )
 		    GDrawRequestExpose(fvs->v,NULL,false);	/* Redraw info area just in case this char is selected */
 	    }
 	}
@@ -1778,7 +1652,6 @@ return;
     carets->u.lcaret.cnt = lig_comp_max;
 }
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static int CI_SName(GGadget *g, GEvent *e) {	/* Set From Name */
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	CharInfo *ci = GDrawGetUserData(GGadgetGetWindow(g));
@@ -4595,72 +4468,21 @@ struct sel_dlg {
     FontView *fv;
 };
 
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-
-
-static int tester(SplineChar *sc, struct lookup_subtable *sub) {
-    PST *pst;
-    KernPair *kp;
-    int isv;
-    AnchorPoint *ap;
-
-    if ( sc==NULL )
-return( false );
-
-    for ( ap=sc->anchor; ap!=NULL; ap=ap->next )
-	if ( ap->anchor->subtable == sub )
-return( true );
-    for ( pst=sc->possub; pst!=NULL; pst=pst->next )
-	if ( pst->subtable==sub )
-return( true );
-    for ( isv=0; isv<2; ++isv )
-	for ( kp = isv ? sc->vkerns : sc->kerns; kp!=NULL; kp=kp->next )
-	    if ( kp->subtable == sub )
-return( true );
-
-return( false );
-}
-
 int FVParseSelectByPST(FontView *fv,struct lookup_subtable *sub,
 	int search_type) {
-    int i;
-    SplineFont *sf;
     int first;
-    int gid;
 
-    sf = fv->sf;
-    first = -1;
-    if ( search_type==1 ) {	/* Select results */
-	for ( i=0; i<fv->map->enccount; ++i ) {
-	    gid=fv->map->map[i];
-	    if ( (fv->selected[i] = tester(gid==-1?NULL:sf->glyphs[gid],sub)) && first==-1 )
-		first = i;
-	}
-    } else if ( search_type==2) {/* merge results */
-	for ( i=0; i<fv->map->enccount; ++i ) if ( !fv->selected[i] ) {
-	    gid=fv->map->map[i];
-	    if ( (fv->selected[i] = tester(gid==-1?NULL:sf->glyphs[gid],sub)) && first==-1 )
-		first = i;
-	}
-    } else {			/* restrict selection */
-	for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] ) {
-	    gid=fv->map->map[i];
-	    if ( (fv->selected[i] = tester(gid==-1?NULL:sf->glyphs[gid],sub)) && first==-1 )
-		first = i;
-	}
-    }
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+    first = FVBParseSelectByPST((FontViewBase *) fv,sub,search_type);
+
     if ( first!=-1 )
 	FVScrollToChar(fv,first);
     else if ( !no_windowing_ui )
 	ff_post_notice(_("Select By ATT..."),_("No glyphs matched"));
     if (  !no_windowing_ui )
 	GDrawRequestExpose(fv->v,NULL,false);
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 return( true );
 }
     
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static int SelectStuff(struct sel_dlg *sld,GWindow gw) {
     struct lookup_subtable *sub = GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_PST))->userdata;
     int search_type = GGadgetIsChecked(GWidgetGetControl(gw,CID_SelectResults)) ? 1 :
@@ -4701,7 +4523,7 @@ void FVSelectByPST(FontView *fv) {
     OTLookup *otl;
     struct lookup_subtable *sub;
     GTextInfo *ti;
-    SplineFont *sf = fv->sf;
+    SplineFont *sf = fv->b.sf;
 
     if ( sf->cidmaster ) sf = sf->cidmaster;
     ti = NULL;
@@ -4855,18 +4677,15 @@ return;
     }
     GDrawDestroyWindow(gw);
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 void CharInfoInit(void) {
     static GTextInfo *lists[] = { glyphclasses, std_colors, truefalse, NULL };
     static int done = 0;
     int i, j;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     static char **cnames[] = { newstrings, NULL };
     static struct col_init *col_inits[] = { extensionpart, devtabci,
 	simplesubsci, ligatureci, altsubsci, multsubsci, simpleposci,
 	pairposci, NULL };
-#endif
 
     if ( done )
 return;
@@ -4874,12 +4693,10 @@ return;
     for ( i=0; lists[i]!=NULL; ++i )
 	for ( j=0; lists[i][j].text!=NULL; ++j )
 	    lists[i][j].text = (unichar_t *) S_((char *) lists[i][j].text);
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     for ( i=0; cnames[i]!=NULL; ++i )
 	for ( j=0; cnames[i][j]!=NULL; ++j )
 	    cnames[i][j] = _(cnames[i][j]);
     for ( i=0; col_inits[i]!=NULL; ++i )
 	for ( j=0; col_inits[i][j].title!=NULL; ++j )
 	    col_inits[i][j].title=_(col_inits[i][j].title);
-#endif
 }    

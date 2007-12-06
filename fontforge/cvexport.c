@@ -24,19 +24,17 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "pfaeditui.h"
+#include "fontforgevw.h"
 #include <math.h>
 #include <locale.h>
 #include <string.h>
 #include "gfile.h"
 #include <time.h>
 #include <pwd.h>
-#if defined(FONTFORGE_CONFIG_GDRAW)
 #include "ustring.h"
 #include "gio.h"
 #include "gicons.h"
 #include <utype.h>
-#endif
 
 static void EpsGeneratePreview(FILE *eps,SplineChar *sc,DBounds *b) {
     double scale, temp;

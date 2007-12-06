@@ -27,26 +27,6 @@
 #ifndef _CONFIG_FONTFORGE_H_
 #define _CONFIG_FONTFORGE_H_
 
-/*  !!!!!!!!!!!!!!!!! Experimental. Don't try to use it yet !!!!!!!!!!!!!!!!! */
-/* FontForge can be configured with a windowing UI based on my widgets (gdraw)*/
-/*  the gtk widget set, or finally with no windowing UI.                      */
-/*  It is probably best to used gtk if it is available			      */
-/*									      */
-/* #define FONTFORGE_CONFIG_GTK						      */
-/* #define FONTFORGE_CONFIG_GDRAW					      */
-/* #define FONTFORGE_CONFIG_NO_WINDOWING_UI				      */
-/*									      */
-/* Can be set from configure --with-gtk, --with-gdraw, --with-noui	      */
-#ifdef FONTFORGE_CONFIG_NO_WINDOWING_UI
-# undef FONTFORGE_CONFIG_GDRAW
-# undef FONTFORGE_CONFIG_GTK
-#elif defined(FONTFORGE_CONFIG_GTK)
-# undef FONTFORGE_CONFIG_GDRAW
-#elif !defined(FONTFORGE_CONFIG_GDRAW)
-/* If nothing defined, default to traditional setting. At least for now       */
-# define FONTFORGE_CONFIG_GDRAW
-#endif
-
 
 /* Making FontForge handle more of the capabilities of type3 & svg fonts is not*/
 /*  something most people will want. It wastes space too. So I thought I'd    */
@@ -245,10 +225,6 @@
 /* If there are no freetype header files then define _NO_FREETYPE	      */
 /* If the freetype library has the bytecode debugger then define FREETYPE_HAS_DEBUGGER */
 /* If there is no mmap system call then define _NO_MMAP			      */
-#ifdef FONTFORGE_CONFIG_NO_WINDOWING_UI
-# undef FREETYPE_HAS_DEBUGGER
-/* Debugger is meaningless if we have no UI (and doesn't compile) */
-#endif
 
 /* If there is no ungif library (or if it is out of date) define _NO_LIBUNGIF */
 /* If there is no png (or z) library define _NO_LIBPNG			      */

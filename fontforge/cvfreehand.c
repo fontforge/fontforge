@@ -25,7 +25,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <math.h>
 
 const int min_line_cnt = 10;		/* line segments must be at least this many datapoints to be distinguished */
@@ -616,7 +615,7 @@ static SplineSet *TraceCurve(CharView *cv) {
     if ( si->stroke_type!=si_centerline ) {
 	si->factor = ( si->pressure1==si->pressure2 ) ? NULL : Trace_Factor;
 	si->data = cv;
-	spl->next = SplineSetStroke(spl,si,cv->sc);
+	spl->next = SplineSetStroke(spl,si,cv->b.sc);
     }
 return( spl );
 }
@@ -826,30 +825,30 @@ void CVMouseUpFreeHand(CharView *cv, GEvent *event) {
 	cv->freehand.current_trace = TraceCurve(cv);
     }
     if ( cv->freehand.current_trace!=NULL ) {
-	CVPreserveState(cv);
-	if ( cv->sc->parent->order2 )
+	CVPreserveState((CharViewBase *) cv);
+	if ( cv->b.sc->parent->order2 )
 	    cv->freehand.current_trace = SplineSetsTTFApprox(cv->freehand.current_trace);
 	if ( CVFreeHandInfo()->stroke_type==si_centerline ) {
-	    cv->freehand.current_trace->next = cv->layerheads[cv->drawmode]->splines;
-	    cv->layerheads[cv->drawmode]->splines = cv->freehand.current_trace;
+	    cv->freehand.current_trace->next = cv->b.layerheads[cv->b.drawmode]->splines;
+	    cv->b.layerheads[cv->b.drawmode]->splines = cv->freehand.current_trace;
 	} else {
 	    SplineSet *ss = cv->freehand.current_trace;
 	    while ( ss->next!=NULL )
 		ss = ss->next;
-	    ss->next = cv->layerheads[cv->drawmode]->splines;
+	    ss->next = cv->b.layerheads[cv->b.drawmode]->splines;
 #if 0		/* This branch is correct */
-	    cv->layerheads[cv->drawmode]->splines = cv->freehand.current_trace->next;
+	    cv->b.layerheads[cv->b.drawmode]->splines = cv->freehand.current_trace->next;
 	    cv->freehand.current_trace->next = NULL;
 	    SplinePointListsFree(cv->freehand.current_trace);
 #else		/* Debug!!!! */
-	    cv->layerheads[cv->drawmode]->splines = cv->freehand.current_trace;
+	    cv->b.layerheads[cv->b.drawmode]->splines = cv->freehand.current_trace;
 #endif
 	}
 	cv->freehand.current_trace = NULL;
     }
     TraceDataFree(cv->freehand.head);
     cv->freehand.head = cv->freehand.last = NULL;
-    CVCharChangedUpdate(cv);
+    CVCharChangedUpdate(&cv->b);
     fflush( stdout );
 }
 
@@ -882,4 +881,3 @@ return;
     fclose(foo);
 }
 #endif
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

@@ -25,12 +25,16 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define _DEFINE_SEARCHVIEW_
-#include "pfaeditui.h"
+#include "fontforgevw.h"
 #include <math.h>
 #include <ustring.h>
 #include <utype.h>
 
 extern char *coord_sep;
+
+int onlycopydisplayed = 0;
+int copymetadata = 0;
+int copyttfinstr = 0;
 
 /* ********************************* Undoes ********************************* */
 
@@ -42,7 +46,7 @@ static uint8 *bmpcopy(uint8 *bitmap,int bytes_per_line, int lines) {
 return( ret );
 }
 
-static RefChar *RefCharsCopyState(SplineChar *sc,int layer) {
+RefChar *RefCharsCopyState(SplineChar *sc,int layer) {
     RefChar *head=NULL, *last=NULL, *new, *crefs;
 
     if ( layer<0 || sc->layers[layer].refs==NULL )
@@ -463,20 +467,19 @@ static Undoes *AddUndo(Undoes *undo,Undoes **uhead,Undoes **rhead) {
 return( undo );
 }
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-static Undoes *CVAddUndo(CharView *cv,Undoes *undo) {
+static Undoes *CVAddUndo(CharViewBase *cv,Undoes *undo) {
 return( AddUndo(undo,&cv->layerheads[cv->drawmode]->undoes,
 	&cv->layerheads[cv->drawmode]->redoes));
 }
 
-int CVLayer(CharView *cv) {
+int CVLayer(CharViewBase *cv) {
     if ( cv->drawmode==dm_grid )
 return( ly_grid );
 
 return( cv->layerheads[cv->drawmode]-cv->sc->layers );
 }
 
-Undoes *CVPreserveState(CharView *cv) {
+Undoes *CVPreserveState(CharViewBase *cv) {
     Undoes *undo;
     int layer = CVLayer(cv);
 
@@ -507,7 +510,7 @@ return(NULL);
 return( CVAddUndo(cv,undo));
 }
 
-Undoes *CVPreserveStateHints(CharView *cv) {
+Undoes *CVPreserveStateHints(CharViewBase *cv) {
     Undoes *undo = CVPreserveState(cv);
     if ( CVLayer(cv)==ly_fore ) {
 	undo->undotype = ut_statehint;
@@ -517,7 +520,6 @@ Undoes *CVPreserveStateHints(CharView *cv) {
     }
 return( undo );
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 Undoes *SCPreserveHints(SplineChar *sc) {
     Undoes *undo;
@@ -626,15 +628,10 @@ return;
     undo->u.state.lbearingchange = lbc;
 }
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-Undoes *CVPreserveTState(CharView *cv) {
+Undoes *_CVPreserveTState(CharViewBase *cv,PressedOn *p) {
     Undoes *undo;
-    int anyrefs;
     RefChar *refs, *urefs;
     int was0 = false, j;
-
-    cv->p.transany = CVAnySel(cv,NULL,&anyrefs,NULL,NULL);
-    cv->p.transanyrefs = anyrefs;
 
     if ( maxundoes==0 ) {
 	was0 = true;
@@ -642,9 +639,9 @@ Undoes *CVPreserveTState(CharView *cv) {
     }
 
     undo = CVPreserveState(cv);
-    if ( !cv->p.transany || cv->p.transanyrefs ) {
+    if ( !p->transany || p->transanyrefs ) {
 	for ( refs = cv->layerheads[cv->drawmode]->refs, urefs=undo->u.state.refs; urefs!=NULL; refs=refs->next, urefs=urefs->next )
-	    if ( !cv->p.transany || refs->selected )
+	    if ( !p->transany || refs->selected )
 		for ( j=0; j<urefs->layer_cnt; ++j )
 		    urefs->layers[j].splines = SplinePointListCopy(refs->layers[j].splines);
     }
@@ -656,7 +653,7 @@ Undoes *CVPreserveTState(CharView *cv) {
 return( undo );
 }
 
-Undoes *CVPreserveWidth(CharView *cv,int width) {
+Undoes *CVPreserveWidth(CharViewBase *cv,int width) {
     Undoes *undo;
 
     if ( no_windowing_ui || maxundoes==0 )		/* No use for undoes in scripting */
@@ -671,7 +668,7 @@ return(NULL);
 return( CVAddUndo(cv,undo));
 }
 
-Undoes *CVPreserveVWidth(CharView *cv,int vwidth) {
+Undoes *CVPreserveVWidth(CharViewBase *cv,int vwidth) {
     Undoes *undo;
 
     if ( no_windowing_ui || maxundoes==0 )		/* No use for undoes in scripting */
@@ -685,7 +682,6 @@ return(NULL);
     undo->u.width = vwidth;
 return( CVAddUndo(cv,undo));
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 Undoes *SCPreserveWidth(SplineChar *sc) {
     Undoes *undo;
@@ -836,8 +832,7 @@ static void SCUndoAct(SplineChar *sc,int layer, Undoes *undo) {
     }
 }
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-void CVDoUndo(CharView *cv) {
+void CVDoUndo(CharViewBase *cv) {
     Undoes *undo = cv->layerheads[cv->drawmode]->undoes;
 
     if ( undo==NULL )		/* Shouldn't happen */
@@ -848,11 +843,10 @@ return;
     undo->next = cv->layerheads[cv->drawmode]->redoes;
     cv->layerheads[cv->drawmode]->redoes = undo;
     _CVCharChangedUpdate(cv,undo->was_modified);
-    cv->lastselpt = NULL;
 return;
 }
 
-void CVDoRedo(CharView *cv) {
+void CVDoRedo(CharViewBase *cv) {
     Undoes *undo = cv->layerheads[cv->drawmode]->redoes;
 
     if ( undo==NULL )		/* Shouldn't happen */
@@ -863,10 +857,8 @@ return;
     undo->next = cv->layerheads[cv->drawmode]->undoes;
     cv->layerheads[cv->drawmode]->undoes = undo;
     CVCharChangedUpdate(cv);
-    cv->lastselpt = NULL;
 return;
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 void SCDoUndo(SplineChar *sc,int layer) {
     Undoes *undo = sc->layers[layer].undoes;
@@ -896,18 +888,17 @@ return;
 return;
 }
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 /* Used when doing incremental transformations. If I just keep doing increments*/
 /*  then rounding errors will mount. Instead I go back to the original state */
 /*  each time */
-void CVRestoreTOriginalState(CharView *cv) {
+void _CVRestoreTOriginalState(CharViewBase *cv,PressedOn *p) {
     Undoes *undo = cv->layerheads[cv->drawmode]->undoes;
     RefChar *ref, *uref;
     ImageList *img, *uimg;
     int j;
 
     SplinePointListSet(cv->layerheads[cv->drawmode]->splines,undo->u.state.splines);
-    if ( cv->drawmode==dm_fore && (!cv->p.anysel || cv->p.transanyrefs)) {
+    if ( cv->drawmode==dm_fore && (!p->anysel || p->transanyrefs)) {
 	for ( ref=cv->layerheads[cv->drawmode]->refs, uref=undo->u.state.refs; uref!=NULL; ref=ref->next, uref=uref->next )
 	    for ( j=0; j<uref->layer_cnt; ++j )
 		if ( uref->layers[j].splines!=NULL ) {
@@ -924,11 +915,11 @@ void CVRestoreTOriginalState(CharView *cv) {
     }
 }
 
-void CVUndoCleanup(CharView *cv) {
+void _CVUndoCleanup(CharViewBase *cv,PressedOn *p) {
     Undoes * undo = cv->layerheads[cv->drawmode]->undoes;
     RefChar *uref;
 
-    if ( cv->drawmode==dm_fore && (!cv->p.anysel || cv->p.transanyrefs)) {
+    if ( cv->drawmode==dm_fore && (!p->anysel || p->transanyrefs)) {
 	for ( uref=undo->u.state.refs; uref!=NULL; uref=uref->next ) {
 #ifdef FONTFORGE_CONFIG_TYPE3
 	    int i;
@@ -946,14 +937,13 @@ void CVUndoCleanup(CharView *cv) {
     undo->undotype = ut_state;
 }
 
-void CVRemoveTopUndo(CharView *cv) {
+void CVRemoveTopUndo(CharViewBase *cv) {
     Undoes * undo = cv->layerheads[cv->drawmode]->undoes;
 
     cv->layerheads[cv->drawmode]->undoes = undo->next;
     undo->next = NULL;
     UndoesFree(undo);
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static void BCUndoAct(BDFChar *bc,Undoes *undo) {
 
@@ -977,7 +967,7 @@ static void BCUndoAct(BDFChar *bc,Undoes *undo) {
     }
 }
 
-void BCDoUndo(BDFChar *bc,FontView *fv) {
+void BCDoUndo(BDFChar *bc) {
     Undoes *undo = bc->undoes;
 
     if ( undo==NULL )		/* Shouldn't happen */
@@ -991,7 +981,7 @@ return;
 return;
 }
 
-void BCDoRedo(BDFChar *bc,FontView *fv) {
+void BCDoRedo(BDFChar *bc) {
     Undoes *undo = bc->redoes;
 
     if ( undo==NULL )		/* Shouldn't happen */
@@ -1041,13 +1031,10 @@ void CopyBufferFree(void) {
 
 static void CopyBufferFreeGrab(void) {
     CopyBufferFree();
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    if ( fv_list!=NULL && !no_windowing_ui )
-	GDrawGrabSelection(fv_list->gw,sn_clipboard);	/* Grab the selection to one of my windows, doesn't matter which, aren't going to export it, but just want to clear things out so no one else thinks they have the selection */
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+    if ( FontViewFirst()!=NULL && !no_windowing_ui )
+	ClipboardGrab();
 }
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void noop(void *_copybuffer) {
 }
 
@@ -1072,7 +1059,7 @@ static void *copybufferPt2str(void *_copybuffer,int32 *len) {
 	}
     }
     out:
-    if ( cur==NULL || fv_list==NULL ||
+    if ( cur==NULL || FontViewFirst()==NULL ||
 	    cur->u.state.splines==NULL || cur->u.state.refs!=NULL ||
 	    cur->u.state.splines->next!=NULL ||
 	    cur->u.state.splines->first->next!=NULL ) {
@@ -1105,7 +1092,7 @@ static void *copybufferName2str(void *_copybuffer,int32 *len) {
 	}
     }
     out:
-    if ( cur==NULL || fv_list==NULL || cur->u.state.charname==NULL ) {
+    if ( cur==NULL || FontViewFirst()==NULL || cur->u.state.charname==NULL ) {
 	*len=0;
 return( copy(""));
     }
@@ -1166,7 +1153,7 @@ static void *copybuffer2svg(void *_copybuffer,int32 *len) {
 	}
     }
     out:
-    if ( cur==NULL || fv_list==NULL ) {
+    if ( cur==NULL || FontViewFirst()==NULL ) {
 	*len=0;
 return( copy(""));
     }
@@ -1182,7 +1169,7 @@ return( copy(""));
     else if ( cur->u.multiple.mult!=NULL && cur->u.multiple.mult->undotype == ut_state )
 	dummy.parent = cur->u.multiple.mult->copied_from;
     if ( dummy.parent==NULL )
-	dummy.parent = fv_list->sf;		/* Might not be right, but we need something */
+	dummy.parent = FontViewFirst()->sf;		/* Might not be right, but we need something */
 #ifdef FONTFORGE_CONFIG_TYPE3
     if ( cur->undotype==ut_layers ) {
 	Undoes *ulayer;
@@ -1270,7 +1257,7 @@ static void *copybuffer2eps(void *_copybuffer,int32 *len) {
 	}
     }
     out:
-    if ( cur==NULL || fv_list==NULL ) {
+    if ( cur==NULL || FontViewFirst()==NULL ) {
 	*len=0;
 return( copy(""));
     }
@@ -1286,7 +1273,7 @@ return( copy(""));
     else if ( cur->u.multiple.mult!=NULL && cur->u.multiple.mult->undotype == ut_state )
 	dummy.parent = cur->u.multiple.mult->copied_from;
     if ( dummy.parent==NULL )
-	dummy.parent = fv_list->sf;		/* Might not be right, but we need something */
+	dummy.parent = FontViewFirst()->sf;		/* Might not be right, but we need something */
 #ifdef FONTFORGE_CONFIG_TYPE3
     if ( cur->undotype==ut_layers ) {
 	Undoes *ulayer;
@@ -1349,7 +1336,7 @@ return( ret );
 static void XClipCheckEps(void) {
     Undoes *cur = &copybuffer;
 
-    if ( fv_list==NULL )
+    if ( FontViewFirst()==NULL )
 return;
     if ( no_windowing_ui )
 return;
@@ -1363,20 +1350,20 @@ return;
 	    cur = cur->u.composit.state;
 	  break;
 	  case ut_state: case ut_statehint: case ut_statename: case ut_layers:
-	    GDrawAddSelectionType(fv_list->gw,sn_clipboard,"image/eps",&copybuffer,0,sizeof(char),
+	    ClipboardAddDataType("image/eps",&copybuffer,0,sizeof(char),
 		    copybuffer2eps,noop);
 #ifndef _NO_LIBXML
-	    GDrawAddSelectionType(fv_list->gw,sn_clipboard,"image/svg",&copybuffer,0,sizeof(char),
+	    ClipboardAddDataType("image/svg",&copybuffer,0,sizeof(char),
 		    copybuffer2svg,noop);
 #endif
 	    /* If the selection is one point, then export the coordinates as a string */
 	    if ( cur->u.state.splines!=NULL && cur->u.state.refs==NULL &&
 		    cur->u.state.splines->next==NULL &&
 		    cur->u.state.splines->first->next==NULL )
-		GDrawAddSelectionType(fv_list->gw,sn_clipboard,"STRING",&copybuffer,0,sizeof(char),
+		ClipboardAddDataType("STRING",&copybuffer,0,sizeof(char),
 			copybufferPt2str,noop);
 	    else if ( cur->undotype==ut_statename )
-		GDrawAddSelectionType(fv_list->gw,sn_clipboard,"STRING",&copybuffer,0,sizeof(char),
+		ClipboardAddDataType("STRING",&copybuffer,0,sizeof(char),
 			copybufferName2str,noop);
 	    cur = NULL;
 	  break;
@@ -1386,7 +1373,6 @@ return;
 	}
     }
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 void ClipboardClear(void) {
     CopyBufferFree();
@@ -1528,9 +1514,7 @@ void CopyReference(SplineChar *sc) {
     ref->adobe_enc = getAdobeEnc(sc->name);
     ref->transform[0] = ref->transform[3] = 1.0;
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     XClipCheckEps();
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 }
 
 void SCCopyLookupData(SplineChar *sc) {
@@ -1538,8 +1522,7 @@ void SCCopyLookupData(SplineChar *sc) {
     copybuffer.undotype = ut_statelookup;
 }
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-void CopySelected(CharView *cv) {
+void CopySelected(CharViewBase *cv,int doanchors) {
 
     CopyBufferFreeGrab();
 
@@ -1567,7 +1550,7 @@ void CopySelected(CharView *cv) {
 	    new->next = copybuffer.u.state.refs;
 	    copybuffer.u.state.refs = new;
 	}
-	if ( cv->showanchor ) {
+	if ( doanchors ) {
 	    AnchorPoint *ap, *new;
 	    for ( ap=cv->sc->anchor; ap!=NULL; ap=ap->next ) if ( ap->selected ) {
 		new = chunkalloc(sizeof(AnchorPoint));
@@ -1603,7 +1586,7 @@ void CopySelected(CharView *cv) {
     XClipCheckEps();
 }
 
-void CVCopyGridFit(CharView *cv) {
+void CVCopyGridFit(CharViewBase *cv) {
     SplineChar *sc = cv->sc;
 
     if ( cv->gridfit==NULL )
@@ -1620,7 +1603,6 @@ return;
 
     XClipCheckEps();
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 #ifdef FONTFORGE_CONFIG_TYPE3
 static Undoes *SCCopyAllLayer(SplineChar *sc,enum fvcopy_type full,int layer) {
@@ -1741,19 +1723,16 @@ void SCCopyWidth(SplineChar *sc,enum undotype ut) {
     }
 }
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-void CopyWidth(CharView *cv,enum undotype ut) {
+void CopyWidth(CharViewBase *cv,enum undotype ut) {
     SCCopyWidth(cv->sc,ut);
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static SplineChar *FindCharacter(SplineFont *into, SplineFont *from,RefChar *rf,
 	SplineChar **fromsc) {
-    FontView *fv;
     char *fromname = NULL;
 
-    for ( fv = fv_list; fv!=NULL && fv->sf!=from; fv=fv->next );
-    if ( fv==NULL ) from=NULL;
+    if ( !SFIsActive(from))
+	from = NULL;
     /* A subtler error: If we've closed the "from" font and subsequently */
     /*  opened the "into" font, there is a good chance they have the same */
     /*  address, and we just found ourselves. */
@@ -1845,8 +1824,7 @@ static void PasteNonExistantRefCheck(SplineChar *sc,Undoes *paster,RefChar *ref,
     }
 }
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-static void SCCheckXClipboard(GWindow awindow,SplineChar *sc,int layer,int doclear) {
+static void SCCheckXClipboard(SplineChar *sc,int layer,int doclear) {
     int type; int32 len;
     char *paste;
     FILE *temp;
@@ -1856,28 +1834,28 @@ static void SCCheckXClipboard(GWindow awindow,SplineChar *sc,int layer,int docle
 return;
     type = 0;
 #ifndef _NO_LIBPNG
-    if ( GDrawSelectionHasType(awindow,sn_clipboard,"image/png") )
+    if ( ClipboardHasType("image/png") )
 	type = 1;
     else
 #endif
 #ifndef _NO_LIBXML
     /* SVG is a better format (than eps) if we've got it because it doesn't */
     /*  force conversion of quadratic to cubic and back */
-    if ( HasSVG() && GDrawSelectionHasType(awindow,sn_clipboard,"image/svg") )
+    if ( HasSVG() && ClipboardHasType("image/svg") )
 	type = 2;
     else
 #endif
-    if ( GDrawSelectionHasType(awindow,sn_clipboard,"image/bmp") )
+    if ( ClipboardHasType("image/bmp") )
 	type = 3;
-    else if ( GDrawSelectionHasType(awindow,sn_clipboard,"image/eps") )
+    else if ( ClipboardHasType("image/eps") )
 	type = 4;
-    else if ( GDrawSelectionHasType(awindow,sn_clipboard,"image/ps") )
+    else if ( ClipboardHasType("image/ps") )
 	type = 5;
 
     if ( type==0 )
 return;
 
-    paste = GDrawRequestSelection(awindow,sn_clipboard,type==1?"image/png":
+    paste = ClipboardRequest(type==1?"image/png":
 		type==2?"image/svg":
 		type==3?"image/bmp":
 		type==4?"image/eps":"image/ps",&len);
@@ -1907,15 +1885,12 @@ return;
     }
     free(paste);
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static double PasteFigureScale(SplineFont *newsf,SplineFont *oldsf) {
-    FontView *fv;
 
     if ( newsf==oldsf )
 return( 1.0 );
-    for ( fv = fv_list; fv!=NULL && fv->sf!=oldsf; fv=fv->next );
-    if ( fv==NULL )		/* Font we copied from has been closed */
+    if ( !SFIsActive(oldsf))		/* Font we copied from has been closed */
 return( 1.0 );
 
 return( (newsf->ascent+newsf->descent) / (double) (oldsf->ascent+oldsf->descent) );
@@ -2017,17 +1992,17 @@ return( dontask_ret );
 
 /* when pasting from the fontview we do a clear first */
 #ifdef FONTFORGE_CONFIG_TYPE3
-static void _PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
-	int layer, real trans[6], struct sfmergecontext *mc) {
+static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pasteinto,
+	int layer, real trans[6], struct sfmergecontext *mc,int *refstate) {
 #else
-static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
-	real trans[6], struct sfmergecontext *mc) {
+static void PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pasteinto,
+	real trans[6], struct sfmergecontext *mc,int *refstate) {
     const int layer = ly_fore;
 #endif
     DBounds bb;
     real transform[6];
     int width, vwidth;
-    FontView *fvs;
+    FontViewBase *fvs;
     int xoff=0, yoff=0;
     int was_empty;
 #ifdef FONTFORGE_CONFIG_PASTEAFTER
@@ -2050,9 +2025,7 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
 	if (( pasteinto!=1 || paster->u.state.splines!=NULL ) && sc->ttf_instrs!=NULL ) {
 	    free(sc->ttf_instrs); sc->ttf_instrs = NULL;
 	    sc->ttf_instrs_len = 0;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	    SCMarkInstrDlgAsChanged(sc);
-#endif	/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	}
 	was_empty = sc->hstem==NULL && sc->vstem==NULL && sc->layers[ly_fore].splines==NULL && sc->layers[ly_fore].refs == NULL;
 	if ( !pasteinto ) {
@@ -2160,8 +2133,8 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
 	    SCSetMetaData(sc,paster->u.state.charname,
 		    paster->u.state.unicodeenc==0xffff?-1:paster->u.state.unicodeenc,
 		    paster->u.state.comment);
-	    for ( fvs = fv_list; fvs!=NULL && fvs->sf!=paster->copied_from; fvs=fvs->next );
-	    if ( fvs!=NULL ) {	/* If we can't translate the lookups, the PSTs are meaningless */
+	    if ( SFIsActive(paster->copied_from) ) {
+		/* Only copy PSTs if we can find and translate their lookups */
 		PSTFree(sc->possub);
 		mc->sf_from = fvs->sf; mc->sf_to = sc->parent;
 		sc->possub = PSTCopy(paster->u.state.possub,sc,mc);
@@ -2172,16 +2145,15 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
 	    SplineChar *rsc;
 	    double scale = PasteFigureScale(sc->parent,paster->copied_from);
 	    for ( refs = paster->u.state.refs; refs!=NULL; refs=refs->next ) {
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 		if ( sc->views!=NULL && sc->views->container!=NULL ) {
 		    if ( sc->views->container->funcs->type == cvc_searcher )
-			rsc = FindCharacter(((SearchView *) (sc->views->container))->fv->sf,paster->copied_from,refs,NULL);
+			rsc = FindCharacter((sc->views->container->funcs->sf_of_container)(sc->views->container),
+				paster->copied_from,refs,NULL);
 		    else {
 			ff_post_error(_("Please don't do that"),_("You may not paste a reference into this window"));
 			rsc = (SplineChar *) -1;
 		    }
 		} else
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 		    rsc = FindCharacter(sc->parent,paster->copied_from,refs,NULL);
 		if ( rsc==(SplineChar *) -1 )
 		    /* Error above */;
@@ -2204,9 +2176,7 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
 		    SCReinstanciateRefChar(sc,new);
 		    SCMakeDependent(sc,rsc);
 		} else {
-		    int refstate = fv->refstate;
-		    PasteNonExistantRefCheck(sc,paster,refs,&refstate);
-		    fv->refstate = refstate;
+		    PasteNonExistantRefCheck(sc,paster,refs,refstate);
 		}
 	    }
 	}
@@ -2248,14 +2218,12 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
 }
 
 #ifdef FONTFORGE_CONFIG_TYPE3
-static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
-	real trans[6], struct sfmergecontext *mc) {
+static void PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pasteinto,
+	real trans[6], struct sfmergecontext *mc,int *refstate) {
     if ( paster->undotype==ut_layers && sc->parent->multilayer ) {
 	int lc, start, layer;
 	Undoes *pl;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	Layer *old = sc->layers;
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	for ( lc=0, pl = paster->u.multiple.mult; pl!=NULL; pl=pl->next, ++lc );
 	if ( !pasteinto ) {
 	    start = ly_fore;
@@ -2275,22 +2243,19 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontView *fv,int pasteinto,
 	    sc->layer_cnt = start+lc;
 	}
 	for ( lc=0, pl = paster->u.multiple.mult; pl!=NULL; pl=pl->next, ++lc )
-	    _PasteToSC(sc,pl,fv,pasteinto,start+lc,trans,mc);
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
+	    _PasteToSC(sc,pl,fv,pasteinto,start+lc,trans,mc,refstate);
 	SCMoreLayers(sc,old);
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     } else if ( paster->undotype==ut_layers ) {
 	Undoes *pl;
 	for ( pl = paster->u.multiple.mult; pl!=NULL; pl=pl->next ) {
-	    _PasteToSC(sc,pl,fv,pasteinto,ly_fore,trans,mc);
+	    _PasteToSC(sc,pl,fv,pasteinto,ly_fore,trans,mc,refstate);
 	    pasteinto = true;		/* Merge other layers in */
 	}
     } else
-	_PasteToSC(sc,paster,fv,pasteinto,ly_fore,trans,mc);
+	_PasteToSC(sc,paster,fv,pasteinto,ly_fore,trans,mc,refstate);
 }
 #endif
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 static void DevTabInto(struct vr *vr) {
     ValDevTab *adjust;
@@ -2658,10 +2623,8 @@ return( NULL );
     free(list2);
 return( list );
 }
-#endif
 
 static void SCPasteLookupsTop(SplineChar *sc,Undoes *paster) {
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     OTLookup **list, **backpairlist;
     SplineChar *fromsc;
     struct sfmergecontext mc;
@@ -2683,13 +2646,9 @@ return;
     free(list);
     free(backpairlist);
     SFFinishMergeContext(&mc);
-#endif
 }
 
-/* I wish I could get rid of this if FONTFORGE_CONFIG_NO_WINDOWING_UI	*/
-/*  but FVReplaceOutlineWithReference depends on it, and I want that	*/
-/*  available even if no UI						*/
-static void _PasteToCV(CharView *cv,SplineChar *cvsc,Undoes *paster) {
+static void _PasteToCV(CharViewBase *cv,SplineChar *cvsc,Undoes *paster) {
     int refstate = 0;
     DBounds bb;
     real transform[6];
@@ -2698,15 +2657,12 @@ static void _PasteToCV(CharView *cv,SplineChar *cvsc,Undoes *paster) {
     if ( copybuffer.undotype == ut_none ) {
 	if ( cv->drawmode==dm_grid )
 return;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-	SCCheckXClipboard(cv->gw,cvsc,cv->layerheads[cv->drawmode]-cvsc->layers,false);
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+	SCCheckXClipboard(cvsc,cv->layerheads[cv->drawmode]-cvsc->layers,false);
 return;
     }
 
     anchor_lost_warning = false;
 
-    cv->lastselpt = NULL;
     switch ( paster->undotype ) {
       case ut_noop:
       break;
@@ -2781,7 +2737,7 @@ return;
 			sc = (SplineChar *) -1;
 		    }
 		} else if ( cv->container->funcs->type == cvc_searcher )
-		    sc = FindCharacter(((SearchView *) (cv->container))->fv->sf,paster->copied_from,refs,NULL);
+		    sc = FindCharacter((cv->container->funcs->sf_of_container)(cv->container),paster->copied_from,refs,NULL);
 		else
 		    sc = (SplineChar *) -1;
 		if ( sc==(SplineChar *) -1 )
@@ -2815,7 +2771,7 @@ return;
 		if ( cv->container==NULL )
 		    sc = FindCharacter(cvsc->parent,paster->copied_from,refs,NULL);
 		else if ( cv->container->funcs->type == cvc_searcher )
-		    sc = FindCharacter(((SearchView *) (cv->container))->fv->sf,paster->copied_from,refs,NULL);
+		    sc = FindCharacter((cv->container->funcs->sf_of_container)(cv->container),paster->copied_from,refs,NULL);
 		else
 		    sc = NULL;
 		if ( sc!=NULL ) {
@@ -2889,7 +2845,7 @@ return;
     }
 }
 
-void PasteToCV(CharView *cv) {
+void PasteToCV(CharViewBase *cv) {
     _PasteToCV(cv,cv->sc,&copybuffer);
     if ( cv->sc->blended && cv->drawmode==dm_fore ) {
 	int j, gid = cv->sc->orig_pos;
@@ -2898,8 +2854,6 @@ void PasteToCV(CharView *cv) {
 	    _PasteToCV(cv,mm->instances[j]->glyphs[gid],&copybuffer);
     }
 }
-/* See comment at _PasteToCV */
-/* #endif */		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 
 SplineSet *ClipBoardToSplineSet(void) {
@@ -2936,7 +2890,6 @@ return( NULL );
 return( NULL );
 }
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 void BCCopySelected(BDFChar *bc,int pixelsize,int depth) {
 
     CopyBufferFreeGrab();
@@ -2951,7 +2904,6 @@ void BCCopySelected(BDFChar *bc,int pixelsize,int depth) {
     copybuffer.u.bmpstate.pixelsize = pixelsize;
     copybuffer.u.bmpstate.depth = depth;
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static Undoes *BCCopyAll(BDFChar *bc,int pixelsize, int depth) {
     Undoes *cur;
@@ -2977,7 +2929,7 @@ static Undoes *BCCopyAll(BDFChar *bc,int pixelsize, int depth) {
 return( cur );
 }
 
-static void _PasteToBC(BDFChar *bc,int pixelsize, int depth, Undoes *paster, int clearfirst, FontView *fv) {
+static void _PasteToBC(BDFChar *bc,int pixelsize, int depth, Undoes *paster, int clearfirst) {
     BDFFloat temp;
 
     switch ( paster->undotype ) {
@@ -3014,27 +2966,27 @@ static void _PasteToBC(BDFChar *bc,int pixelsize, int depth, Undoes *paster, int
 	if ( paster->u.composit.bitmaps==NULL )
 	    /* Nothing to be done */;
 	else if ( paster->u.composit.state==NULL && paster->u.composit.bitmaps->next==NULL )
-	    _PasteToBC(bc,pixelsize,depth,paster->u.composit.bitmaps,clearfirst,fv);
+	    _PasteToBC(bc,pixelsize,depth,paster->u.composit.bitmaps,clearfirst);
 	else {
 	    Undoes *b;
 	    for ( b = paster->u.composit.bitmaps;
 		    b!=NULL && b->u.bmpstate.pixelsize!=pixelsize;
 		    b = b->next );
 	    if ( b!=NULL )
-		_PasteToBC(bc,pixelsize,depth,paster->u.composit.bitmaps,clearfirst,fv);
+		_PasteToBC(bc,pixelsize,depth,paster->u.composit.bitmaps,clearfirst);
 	}
       break;
       case ut_multiple:
-	_PasteToBC(bc,pixelsize,depth,paster->u.multiple.mult,clearfirst,fv);
+	_PasteToBC(bc,pixelsize,depth,paster->u.multiple.mult,clearfirst);
       break;
     }
 }
 
-void PasteToBC(BDFChar *bc,int pixelsize,int depth,FontView *fv) {
-    _PasteToBC(bc,pixelsize,depth,&copybuffer,false,fv);
+void PasteToBC(BDFChar *bc,int pixelsize,int depth) {
+    _PasteToBC(bc,pixelsize,depth,&copybuffer,false);
 }
 
-void FVCopyWidth(FontView *fv,enum undotype ut) {
+void FVCopyWidth(FontViewBase *fv,enum undotype ut) {
     Undoes *head=NULL, *last=NULL, *cur;
     int i, any=false, gid;
     SplineChar *sc;
@@ -3078,7 +3030,7 @@ void FVCopyWidth(FontView *fv,enum undotype ut) {
 	LogError( _("No selection\n") );
 }
 
-void FVCopyAnchors(FontView *fv) {
+void FVCopyAnchors(FontViewBase *fv) {
     Undoes *head=NULL, *last=NULL, *cur;
     int i, any=false, gid;
     SplineChar *sc;
@@ -3106,7 +3058,7 @@ void FVCopyAnchors(FontView *fv) {
 	LogError( _("No selection\n") );
 }
 
-void FVCopy(FontView *fv, enum fvcopy_type fullcopy) {
+void FVCopy(FontViewBase *fv, enum fvcopy_type fullcopy) {
     int i, any = false;
     BDFFont *bdf;
     Undoes *head=NULL, *last=NULL, *cur;
@@ -3124,10 +3076,10 @@ void FVCopy(FontView *fv, enum fvcopy_type fullcopy) {
     for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] ) {
 	any = true;
 	sc = (gid = fv->map->map[i])==-1 ? NULL : fv->sf->glyphs[gid];
-	if (( onlycopydisplayed && fv->filled==fv->show ) || fullcopy==ct_lookups ) {
+	if (( onlycopydisplayed && fv->active_bitmap==NULL ) || fullcopy==ct_lookups ) {
 	    cur = SCCopyAll(sc,fullcopy);
 	} else if ( onlycopydisplayed ) {
-	    cur = BCCopyAll(gid==-1?NULL:fv->show->glyphs[gid],fv->show->pixelsize,BDFDepth(fv->show));
+	    cur = BCCopyAll(gid==-1?NULL:fv->active_bitmap->glyphs[gid],fv->active_bitmap->pixelsize,BDFDepth(fv->active_bitmap));
 	} else {
 	    state = SCCopyAll(sc,fullcopy);
 	    bhead = NULL;
@@ -3167,27 +3119,24 @@ return;
     copybuffer.u.multiple.mult = head;
     copybuffer.copied_from = fv->sf;
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     XClipCheckEps();
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 }
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-void MVCopyChar(MetricsView *mv, SplineChar *sc, enum fvcopy_type fullcopy) {
+void MVCopyChar(FontViewBase *fv, BDFFont *mvbdf, SplineChar *sc, enum fvcopy_type fullcopy) {
     BDFFont *bdf;
     Undoes *cur=NULL;
     Undoes *bhead=NULL, *blast=NULL, *bcur;
     Undoes *state;
     extern int onlycopydisplayed;
 
-    if (( onlycopydisplayed && mv->bdf==NULL ) || fullcopy == ct_lookups ) {
+    if (( onlycopydisplayed && mvbdf==NULL ) || fullcopy == ct_lookups ) {
 	cur = SCCopyAll(sc,fullcopy);
     } else if ( onlycopydisplayed ) {
-	cur = BCCopyAll(BDFMakeGID(mv->bdf,sc->orig_pos),mv->bdf->pixelsize,BDFDepth(mv->bdf));
+	cur = BCCopyAll(BDFMakeGID(mvbdf,sc->orig_pos),mvbdf->pixelsize,BDFDepth(mvbdf));
     } else {
 	state = SCCopyAll(sc,fullcopy);
 	bhead = NULL;
-	for ( bdf=mv->fv->sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
+	for ( bdf=fv->sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
 	    bcur = BCCopyAll(BDFMakeGID(bdf,sc->orig_pos),bdf->pixelsize,BDFDepth(bdf));
 	    if ( bhead==NULL )
 		bhead = bcur;
@@ -3212,9 +3161,8 @@ return;
 
     XClipCheckEps();
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-static BDFFont *BitmapCreateCheck(FontView *fv,int *yestoall, int first, int pixelsize, int depth) {
+static BDFFont *BitmapCreateCheck(FontViewBase *fv,int *yestoall, int first, int pixelsize, int depth) {
     int yes = 0;
     BDFFont *bdf = NULL;
 
@@ -3258,7 +3206,7 @@ static int copybufferHasLookups(Undoes *cb) {
 return( cb->undotype==ut_statelookup );
 }
 
-void PasteIntoFV(FontView *fv,int pasteinto,real trans[6]) {
+void PasteIntoFV(FontViewBase *fv,int pasteinto,real trans[6]) {
     Undoes *cur=NULL, *bmp;
     BDFFont *bdf;
     int i, j, cnt=0, gid;
@@ -3269,8 +3217,8 @@ void PasteIntoFV(FontView *fv,int pasteinto,real trans[6]) {
     MMSet *mm = sf->mm;
     struct sfmergecontext mc;
     OTLookup **list = NULL, **backpairlist=NULL;
+    int refstate = 0;
 
-    fv->refstate = 0;
     memset(&mc,0,sizeof(mc));
     mc.sf_to = fv->sf; mc.sf_from = copybuffer.copied_from;
 
@@ -3290,17 +3238,15 @@ return;
     }
 
     if ( copybuffer.undotype == ut_none ) {
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	j = -1;
 	forever {
 	    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] )
-		SCCheckXClipboard(fv->gw,SFMakeChar(sf,fv->map,i),ly_fore,!pasteinto);
+		SCCheckXClipboard(SFMakeChar(sf,fv->map,i),ly_fore,!pasteinto);
 	    ++j;
 	    if ( mm==NULL || mm->normal!=origsf || j>=mm->instance_count )
 	break;
 	    sf = mm->instances[j];
 	}
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 return;
     }
 
@@ -3358,11 +3304,11 @@ return;
 		    ff_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled.\nUse Element->Font Info to enable them."));
  goto err;
 		}
-		PasteToSC(SFMakeChar(sf,fv->map,i),cur,fv,pasteinto,trans,&mc);
+		PasteToSC(SFMakeChar(sf,fv->map,i),cur,fv,pasteinto,trans,&mc,&refstate);
 	      break;
 	      case ut_bitmapsel: case ut_bitmap:
-		if ( onlycopydisplayed && fv->show!=fv->filled )
-		    _PasteToBC(BDFMakeChar(fv->show,fv->map,i),fv->show->pixelsize,BDFDepth(fv->show),cur,!pasteinto,fv);
+		if ( onlycopydisplayed && fv->active_bitmap!=NULL )
+		    _PasteToBC(BDFMakeChar(fv->active_bitmap,fv->map,i),fv->active_bitmap->pixelsize,BDFDepth(fv->active_bitmap),cur,!pasteinto);
 		else {
 		    for ( bdf=sf->bitmaps; bdf!=NULL && (bdf->pixelsize!=cur->u.bmpstate.pixelsize || BDFDepth(bdf)!=cur->u.bmpstate.depth); bdf=bdf->next );
 		    if ( bdf==NULL ) {
@@ -3370,12 +3316,12 @@ return;
 			first = false;
 		    }
 		    if ( bdf!=NULL )
-			_PasteToBC(BDFMakeChar(bdf,fv->map,i),bdf->pixelsize,BDFDepth(bdf),cur,!pasteinto,fv);
+			_PasteToBC(BDFMakeChar(bdf,fv->map,i),bdf->pixelsize,BDFDepth(bdf),cur,!pasteinto);
 		}
 	      break;
 	      case ut_composit:
 		if ( cur->u.composit.state!=NULL )
-		    PasteToSC(SFMakeChar(sf,fv->map,i),cur->u.composit.state,fv,pasteinto,trans,&mc);
+		    PasteToSC(SFMakeChar(sf,fv->map,i),cur->u.composit.state,fv,pasteinto,trans,&mc,&refstate);
 		for ( bmp=cur->u.composit.bitmaps; bmp!=NULL; bmp = bmp->next ) {
 		    for ( bdf=sf->bitmaps; bdf!=NULL &&
 			    (bdf->pixelsize!=bmp->u.bmpstate.pixelsize || BDFDepth(bdf)!=bmp->u.bmpstate.depth);
@@ -3383,7 +3329,7 @@ return;
 		    if ( bdf==NULL )
 			bdf = BitmapCreateCheck(fv,&yestoall,first,bmp->u.bmpstate.pixelsize,bmp->u.bmpstate.depth);
 		    if ( bdf!=NULL )
-			_PasteToBC(BDFMakeChar(bdf,fv->map,i),bdf->pixelsize,BDFDepth(bdf),bmp,!pasteinto,fv);
+			_PasteToBC(BDFMakeChar(bdf,fv->map,i),bdf->pixelsize,BDFDepth(bdf),bmp,!pasteinto);
 		}
 		first = false;
 	      break;
@@ -3423,21 +3369,21 @@ return;
     free(list); free(backpairlist);
 }
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-void PasteIntoMV(MetricsView *mv,SplineChar *sc, int doclear) {
+void PasteIntoMV(FontViewBase *fv, BDFFont *mvbdf,SplineChar *sc, int doclear) {
     Undoes *cur=NULL, *bmp;
     BDFFont *bdf;
     int yestoall=0, first=true;
     extern int onlycopydisplayed;
     struct sfmergecontext mc;
+    int refstate = 0;
 
     memset(&mc,0,sizeof(mc));
-    mc.sf_to = mv->fv->sf;
+    mc.sf_to = fv->sf;
 
     cur = &copybuffer;
 
     if ( copybuffer.undotype == ut_none ) {
-	SCCheckXClipboard(mv->gw,sc,dm_fore,doclear);
+	SCCheckXClipboard(sc,dm_fore,doclear);
 return;
     }
 
@@ -3449,45 +3395,44 @@ return;
       case ut_state: case ut_width: case ut_vwidth:
       case ut_lbearing: case ut_rbearing:
       case ut_statehint: case ut_statename:
-	if ( !mv->fv->sf->hasvmetrics && cur->undotype==ut_vwidth) {
+	if ( !fv->sf->hasvmetrics && cur->undotype==ut_vwidth) {
 	    ff_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled.\nUse Element->Font Info to enable them."));
 return;
 	}
-	PasteToSC(sc,cur,mv->fv,!doclear,NULL,&mc);
+	PasteToSC(sc,cur,fv,!doclear,NULL,&mc,&refstate);
       break;
       case ut_bitmapsel: case ut_bitmap:
-	if ( onlycopydisplayed && mv->bdf!=NULL )
-	    _PasteToBC(BDFMakeChar(mv->bdf,mv->fv->map,mv->fv->map->backmap[sc->orig_pos]),mv->bdf->pixelsize,BDFDepth(mv->bdf),cur,doclear,mv->fv);
+	if ( onlycopydisplayed && mvbdf!=NULL )
+	    _PasteToBC(BDFMakeChar(mvbdf,fv->map,fv->map->backmap[sc->orig_pos]),mvbdf->pixelsize,BDFDepth(mvbdf),cur,doclear);
 	else {
-	    for ( bdf=mv->fv->sf->bitmaps; bdf!=NULL &&
+	    for ( bdf=fv->sf->bitmaps; bdf!=NULL &&
 		    (bdf->pixelsize!=cur->u.bmpstate.pixelsize || BDFDepth(bdf)!=cur->u.bmpstate.depth);
 		    bdf=bdf->next );
 	    if ( bdf==NULL ) {
-		bdf = BitmapCreateCheck(mv->fv,&yestoall,first,cur->u.bmpstate.pixelsize,cur->u.bmpstate.depth);
+		bdf = BitmapCreateCheck(fv,&yestoall,first,cur->u.bmpstate.pixelsize,cur->u.bmpstate.depth);
 		first = false;
 	    }
 	    if ( bdf!=NULL )
-		_PasteToBC(BDFMakeChar(bdf,mv->fv->map,mv->fv->map->backmap[sc->orig_pos]),bdf->pixelsize,BDFDepth(bdf),cur,doclear,mv->fv);
+		_PasteToBC(BDFMakeChar(bdf,fv->map,fv->map->backmap[sc->orig_pos]),bdf->pixelsize,BDFDepth(bdf),cur,doclear);
 	}
       break;
       case ut_composit:
 	if ( cur->u.composit.state!=NULL )
-	    PasteToSC(sc,cur->u.composit.state,mv->fv,!doclear,NULL,&mc);
+	    PasteToSC(sc,cur->u.composit.state,fv,!doclear,NULL,&mc,&refstate);
 	for ( bmp=cur->u.composit.bitmaps; bmp!=NULL; bmp = bmp->next ) {
-	    for ( bdf=mv->fv->sf->bitmaps; bdf!=NULL &&
+	    for ( bdf=fv->sf->bitmaps; bdf!=NULL &&
 		    (bdf->pixelsize!=bmp->u.bmpstate.pixelsize || BDFDepth(bdf)!=bmp->u.bmpstate.depth);
 		    bdf=bdf->next );
 	    if ( bdf==NULL )
-		bdf = BitmapCreateCheck(mv->fv,&yestoall,first,bmp->u.bmpstate.pixelsize,bmp->u.bmpstate.depth);
+		bdf = BitmapCreateCheck(fv,&yestoall,first,bmp->u.bmpstate.pixelsize,bmp->u.bmpstate.depth);
 	    if ( bdf!=NULL )
-		_PasteToBC(BDFMakeChar(bdf,mv->fv->map,mv->fv->map->backmap[sc->orig_pos]),bdf->pixelsize,BDFDepth(bdf),bmp,doclear,mv->fv);
+		_PasteToBC(BDFMakeChar(bdf,fv->map,fv->map->backmap[sc->orig_pos]),bdf->pixelsize,BDFDepth(bdf),bmp,doclear);
 	}
 	first = false;
       break;
     }
     SFFinishMergeContext(&mc);
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 /* Look through the copy buffer. If it wasn't copied from the given font, then */
 /*  we can stop. Otherwise: */

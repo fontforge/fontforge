@@ -25,7 +25,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <math.h>
 
 static struct shapedescrip { BasePoint me, prevcp, nextcp; int nocp; }
@@ -80,11 +79,11 @@ return;
     }
 
     CVClearSel(cv);
-    CVPreserveState(cv);
+    CVPreserveState(&cv->b);
     CVSetCharChanged(cv,true);
     cv->active_shape = chunkalloc(sizeof(SplineSet));
-    cv->active_shape->next = cv->layerheads[cv->drawmode]->splines;
-    cv->layerheads[cv->drawmode]->splines = cv->active_shape;
+    cv->active_shape->next = cv->b.layerheads[cv->b.drawmode]->splines;
+    cv->b.layerheads[cv->b.drawmode]->splines = cv->active_shape;
     cv->active_shape->first = last = SPMake(&cv->info,pt_corner);
 
     /* always make a cubic shape. Then convert to order2 when done */
@@ -124,7 +123,7 @@ return;
     }
     SplineMake(last,cv->active_shape->first,false);
     cv->active_shape->last = cv->active_shape->first;
-    SCUpdateAll(cv->sc);
+    SCUpdateAll(cv->b.sc);
 }
 
 static void SetCorner(SplinePoint *sp,real x, real y) {
@@ -266,11 +265,11 @@ return;
 	    if (( xrad = (cv->p.cx-cv->info.x) )<0 ) xrad = -xrad;
 	    if (( yrad = (cv->p.cy-cv->info.y) )<0 ) yrad = -yrad;
 	}
-	if ( cv->sc->parent->order2 ) {
+	if ( cv->b.sc->parent->order2 ) {
 	    xrad = rint(xrad);
 	    yrad = rint(yrad);
 	}
-	ellipse = /*cv->sc->parent->order2 ? ellipse2 :*/ ellipse3;
+	ellipse = /*cv->b.sc->parent->order2 ? ellipse2 :*/ ellipse3;
 	for ( i=0, sp=cv->active_shape->first; ellipse[i].me.x!=0 || ellipse[i].me.y!=0 ; ++i, sp=sp->next->to )
 	    SetCurve(sp,&center,xrad,yrad,&ellipse[i]);
       break;
@@ -305,7 +304,7 @@ return;
       break;
     }
     RedoActiveSplineSet(cv->active_shape);
-    SCUpdateAll(cv->sc);
+    SCUpdateAll(cv->b.sc);
 }
 
 void CVMouseUpShape(CharView *cv) {
@@ -315,17 +314,17 @@ void CVMouseUpShape(CharView *cv) {
     if ( cv->active_shape==NULL )
 return;
 
-    if ( cv->sc->parent->order2 ) {
+    if ( cv->b.sc->parent->order2 ) {
 	SplineSet *prev, *new, *ss;
 	new = SplineSetsTTFApprox(cv->active_shape);
-	for ( ss=cv->layerheads[cv->drawmode]->splines, prev=NULL;
+	for ( ss=cv->b.layerheads[cv->b.drawmode]->splines, prev=NULL;
 		ss!=NULL && ss!=cv->active_shape;
 		prev = ss, ss=ss->next );
 	if ( ss==NULL )
 	    IError("Couldn't find shape");
 	else {
 	    if ( prev==NULL )
-		cv->layerheads[cv->drawmode]->splines = new;
+		cv->b.layerheads[cv->b.drawmode]->splines = new;
 	    else
 		prev->next = new;
 	    SplinePointListsFree(cv->active_shape);
@@ -335,8 +334,8 @@ return;
     first = cv->active_shape->first; second = first->next->to;
     if ( first->me.x == second->me.x && first->me.y == second->me.y ) {
 	/* Remove this shape, it will be selected */
-	cv->layerheads[cv->drawmode]->splines = SplinePointListRemoveSelected(cv->sc,
-		cv->layerheads[cv->drawmode]->splines);
+	cv->b.layerheads[cv->b.drawmode]->splines = SplinePointListRemoveSelected(cv->b.sc,
+		cv->b.layerheads[cv->b.drawmode]->splines);
     } else if ( cv->active_tool==cvt_rect || cv->active_tool==cvt_elipse ) {
 	if ( !SplinePointListIsClockwise(cv->active_shape))
 	    SplineSetReverse(cv->active_shape);
@@ -349,11 +348,10 @@ return;
 	    }
 	}
     }
-    if ( cv->sc->inspiro ) {
+    if ( cv->b.sc->inspiro ) {
 	free(cv->active_shape->spiros);
 	cv->active_shape->spiros = SplineSet2SpiroCP(cv->active_shape,&cv->active_shape->spiro_cnt);
 	cv->active_shape->spiro_max = cv->active_shape->spiro_cnt;
     }
     cv->active_shape = NULL;
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

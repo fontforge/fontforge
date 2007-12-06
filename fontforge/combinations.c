@@ -25,7 +25,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include "psfont.h"
 #include <ustring.h>
 #include <gkeysym.h>
@@ -49,20 +48,7 @@ GTextInfo sortby[] = {
     { (unichar_t *) N_("Kern Size"), NULL, 0, 0, (void *) sb_kern, NULL, 0, 0, 0, 0, 0, 0, 1},
     { NULL }
 };
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-int PSTContains(const char *components,const char *name) {
-    const char *pt;
-    int len = strlen(name);
-
-    for ( pt = strstr(components,name); pt!=NULL; pt = strstr(pt+len,name)) {
-	if (( pt==components || pt[-1]==' ') && (pt[len]==' ' || pt[len]=='\0'))
-return( true );
-    }
-return( false );
-}
-
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 void SFShowLigatures(SplineFont *sf,SplineChar *searchfor) {
     int i, cnt;
     char **choices=NULL;
@@ -129,7 +115,7 @@ void SFShowLigatures(SplineFont *sf,SplineChar *searchfor) {
     choices[cnt] = NULL;
     i = gwwv_choose(_("Ligatures"),(const char **) choices,cnt,0,_("Select a ligature to view"));
     if ( i!=-1 && where[i]!=-1 )
-	CharViewCreate(sf->glyphs[where[i]],sf->fv,-1);
+	CharViewCreate(sf->glyphs[where[i]],(FontView *) sf->fv,-1);
     free(where);
     for ( i=0; i<cnt; ++i )
 	free(choices[i]);
@@ -312,68 +298,7 @@ return;
     }
     KPSortEm(kpd,sb_first);
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-AnchorClass *AnchorClassMatch(SplineChar *sc1,SplineChar *sc2,AnchorClass *restrict_,
-	AnchorPoint **_ap1,AnchorPoint **_ap2 ) {
-    AnchorPoint *ap1, *ap2;
-
-    for ( ap1=sc1->anchor; ap1!=NULL ; ap1=ap1->next ) if ( restrict_==(AnchorClass *) -1 || ap1->anchor==restrict_ ) {
-	for ( ap2=sc2->anchor; ap2!=NULL; ap2=ap2->next ) if ( restrict_==(AnchorClass *) -1 || ap2->anchor==restrict_ ) {
-	    if ( ap1->anchor==ap2->anchor &&
-#if 1
-		    ((ap1->type>=at_basechar && ap1->type<=at_basemark && ap2->type==at_mark) ||
-		     (ap1->type==at_cexit && ap2->type==at_centry) )) {
-#else
-		    ((ap1->type==at_mark && ap2->type>=at_basechar && ap2->type<=at_basemark) ||
-		     (ap1->type>=at_basechar && ap1->type<=at_basemark && ap2->type==at_mark) ||
-		     (ap1->type==at_cexit && ap2->type==at_centry) ||
-		     (ap1->type==at_centry && ap2->type==at_cexit) )) {
-#endif
-		 *_ap1 = ap1;
-		 *_ap2 = ap2;
-return( ap1->anchor );
-	    }
-	}
-    }
-return( NULL );
-}
-
-AnchorClass *AnchorClassMkMkMatch(SplineChar *sc1,SplineChar *sc2,
-	AnchorPoint **_ap1,AnchorPoint **_ap2 ) {
-    AnchorPoint *ap1, *ap2;
-
-    for ( ap1=sc1->anchor; ap1!=NULL ; ap1=ap1->next ) {
-	for ( ap2=sc2->anchor; ap2!=NULL; ap2=ap2->next ) {
-	    if ( ap1->anchor==ap2->anchor &&
-		    ap1->type==at_basemark && ap2->type==at_mark)  {
-		 *_ap1 = ap1;
-		 *_ap2 = ap2;
-return( ap1->anchor );
-	    }
-	}
-    }
-return( NULL );
-}
-
-AnchorClass *AnchorClassCursMatch(SplineChar *sc1,SplineChar *sc2,
-	AnchorPoint **_ap1,AnchorPoint **_ap2 ) {
-    AnchorPoint *ap1, *ap2;
-
-    for ( ap1=sc1->anchor; ap1!=NULL ; ap1=ap1->next ) {
-	for ( ap2=sc2->anchor; ap2!=NULL; ap2=ap2->next ) {
-	    if ( ap1->anchor==ap2->anchor &&
-		    ap1->type==at_cexit && ap2->type==at_centry)  {
-		 *_ap1 = ap1;
-		 *_ap2 = ap2;
-return( ap1->anchor );
-	    }
-	}
-    }
-return( NULL );
-}
-
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void AnchorRefigure(KPData *kpd) {
     AnchorPoint *ap1, *ap2;
     DBounds bb;
@@ -926,8 +851,8 @@ static int KP_OK(GGadget *g, GEvent *e) {
 	    if ( kpd->kerns[i].newoff != kpd->kerns[i].kp->off ) {
 		kpd->kerns[i].kp->off = kpd->kerns[i].newoff;
 		kpd->sf->changed = true;
-		for ( fv=kpd->sf->fv; fv!=NULL; fv = fv->nextsame ) {
-		    for ( mv=fv->sf->metrics; mv!=NULL; mv=mv->next )
+		for ( fv=(FontView *) kpd->sf->fv; fv!=NULL; fv = (FontView *) (fv->b.nextsame) ) {
+		    for ( mv=fv->b.sf->metrics; mv!=NULL; mv=mv->next )
 			MVRefreshChar(mv,kpd->kerns[i].first);
 		}
 	    }
@@ -1309,4 +1234,3 @@ return;
     free( kpd.kerns );
     GDrawDestroyWindow(gw);
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

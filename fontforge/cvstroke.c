@@ -25,7 +25,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <ustring.h>
 #include <utype.h>
 #include <gkeysym.h>
@@ -85,28 +84,28 @@ static void CVStrokeIt(void *_cv, StrokeInfo *si) {
     int anypoints;
     SplineSet *spl, *prev, *head=NULL, *last=NULL, *cur, *snext;
 
-    CVPreserveState(cv);
+    CVPreserveState(&cv->b);
     if ( CVAnySel(cv,&anypoints,NULL,NULL,NULL) && anypoints ) {
 	prev = NULL;
-	for ( spl= cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = snext ) {
+	for ( spl= cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl = snext ) {
 	    snext = spl->next;
 	    if ( PointListIsSelected(spl)) {
-		cur = SplineSetStroke(spl,si,cv->sc);
+		cur = SplineSetStroke(spl,si,cv->b.sc);
 		if ( prev==NULL )
-		    cv->layerheads[cv->drawmode]->splines=cur;
+		    cv->b.layerheads[cv->b.drawmode]->splines=cur;
 		else
 		    prev->next = cur;
 		while ( cur->next ) cur=cur->next;
 		cur->next = snext;
 		spl->next = NULL;
-		SplinePointListMDFree(cv->sc,spl);
+		SplinePointListMDFree(cv->b.sc,spl);
 		prev = cur;
 	    } else
 		prev = spl;
 	}
     } else {
-	for ( spl= cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
-	    cur = SplineSetStroke(spl,si,cv->sc);
+	for ( spl= cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl = spl->next ) {
+	    cur = SplineSetStroke(spl,si,cv->b.sc);
 	    if ( head==NULL )
 		head = cur;
 	    else
@@ -114,10 +113,10 @@ static void CVStrokeIt(void *_cv, StrokeInfo *si) {
 	    while ( cur->next!=NULL ) cur = cur->next;
 	    last = cur;
 	}
-	SplinePointListsFree( cv->layerheads[cv->drawmode]->splines );
-	cv->layerheads[cv->drawmode]->splines = head;
+	SplinePointListsFree( cv->b.layerheads[cv->b.drawmode]->splines );
+	cv->b.layerheads[cv->b.drawmode]->splines = head;
     }
-    CVCharChangedUpdate(cv);
+    CVCharChangedUpdate(&cv->b);
 }
 
 static void SCStrokeIt(void *_sc, StrokeInfo *si) {
@@ -130,52 +129,7 @@ static void SCStrokeIt(void *_sc, StrokeInfo *si) {
     sc->layers[ly_fore].splines = temp;
     SCCharChangedUpdate(sc);
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-static void FVStrokeIt(void *_fv, StrokeInfo *si) {
-    FontView *fv = _fv;
-    SplineSet *temp;
-    int i, cnt=0, layer, gid;
-    SplineChar *sc;
-
-    for ( i=0; i<fv->map->enccount; ++i ) if ( (gid=fv->map->map[i])!=-1 && fv->sf->glyphs[gid]!=NULL && fv->selected[i] )
-	++cnt;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gwwv_progress_start_indicator(10,_("Stroking..."),_("Stroking..."),0,cnt,1);
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gwwv_progress_start_indicator(10,_("Stroking..."),_("Stroking..."),0,cnt,1);
-#endif
-
-    SFUntickAll(fv->sf);
-    for ( i=0; i<fv->map->enccount; ++i ) {
-	if ( (gid=fv->map->map[i])!=-1 && (sc = fv->sf->glyphs[gid])!=NULL &&
-		!sc->ticked && fv->selected[i] ) {
-	    sc->ticked = true;
-	    SCPreserveState(sc,false);
-	    for ( layer = ly_fore; layer<sc->layer_cnt; ++layer ) {
-		temp = SSStroke(sc->layers[layer].splines,si,sc);
-		SplinePointListsFree( sc->layers[layer].splines );
-		sc->layers[layer].splines = temp;
-	    }
-	    SCCharChangedUpdate(sc);
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-#if defined(FONTFORGE_CONFIG_GDRAW)
-	    if ( !gwwv_progress_next())
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    if ( !gwwv_progress_next())
-#endif
-    break;
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-	}
-    }
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    gwwv_progress_end_indicator();
-#elif defined(FONTFORGE_CONFIG_GTK)
-    gwwv_progress_end_indicator();
-#endif
-}
-
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static int Stroke_OK(GGadget *g, GEvent *e) {
     StrokeInfo *si, strokeinfo;
     int err;
@@ -886,7 +840,7 @@ static void MakeStrokeDlg(void *cv,void (*strokeit)(void *,StrokeInfo *),StrokeI
 
 void CVStroke(CharView *cv) {
 
-    if ( cv->layerheads[cv->drawmode]->splines==NULL )
+    if ( cv->b.layerheads[cv->b.drawmode]->splines==NULL )
 return;
 
     MakeStrokeDlg(cv,CVStrokeIt,NULL);
@@ -897,15 +851,9 @@ void SCStroke(SplineChar *sc) {
 }
 
 void FVStroke(FontView *fv) {
-    MakeStrokeDlg(fv,FVStrokeIt,NULL);
-}
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-
-void FVStrokeItScript(FontView *fv, StrokeInfo *si) {
-    FVStrokeIt(fv, si);
+    MakeStrokeDlg(fv,FVStrokeItScript,NULL);
 }
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 void FreeHandStrokeDlg(StrokeInfo *si) {
     MakeStrokeDlg(NULL,NULL,si);
 }
@@ -1508,4 +1456,3 @@ int LayerDialog(Layer *layer) {
 return( ld.ok );
 }
 #endif		/* TYPE3 */
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

@@ -25,7 +25,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <gkeysym.h>
 #include <utype.h>
 #include <ustring.h>
@@ -129,12 +128,8 @@ static void BCCharUpdate(BDFChar *bc) {
 	/*BVRefreshImage(bv);*/		/* Select All gives us a blank image if we do this */
     }
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-void BCCharChangedUpdate(BDFChar *bc) {
-#ifdef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    bc->changed = true;
-#else
+static void BC_CharChangedUpdate(BDFChar *bc) {
     BDFFont *bdf;
     BitmapView *bv;
     int waschanged = bc->changed;
@@ -146,20 +141,18 @@ void BCCharChangedUpdate(BDFChar *bc) {
 	BVRefreshImage(bv);
     }
 
-    fv = bc->sc->parent->fv;
-    fv->sf->changed = true;
+    fv = (FontView *) (bc->sc->parent->fv);
+    fv->b.sf->changed = true;
     if ( fv->show!=fv->filled ) {
-	for ( bdf=fv->sf->bitmaps; bdf!=NULL && bdf->glyphs[bc->orig_pos]!=bc; bdf=bdf->next );
+	for ( bdf=fv->b.sf->bitmaps; bdf!=NULL && bdf->glyphs[bc->orig_pos]!=bc; bdf=bdf->next );
 	if ( bdf!=NULL ) {
 	    FVRefreshChar(fv,bc->orig_pos);
-	    if ( fv->sf->onlybitmaps && !waschanged )
-		FVToggleCharChanged(fv->sf->glyphs[bc->orig_pos]);
+	    if ( fv->b.sf->onlybitmaps && !waschanged )
+		FVToggleCharChanged(fv->b.sf->glyphs[bc->orig_pos]);
 	}
     }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 }
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static char *BVMakeTitles(BitmapView *bv, BDFChar *bc,char *buf) {
     char *title;
     SplineChar *sc;
@@ -209,9 +202,9 @@ void BVChangeBC(BitmapView *bv, BDFChar *bc, int fitit ) {
 static void BVChangeChar(BitmapView *bv, int i, int fitit ) {
     BDFChar *bc;
     BDFFont *bdf = bv->bdf;
-    EncMap *map = bv->fv->map;
+    EncMap *map = bv->fv->b.map;
 
-    if ( bv->fv->cidmaster!=NULL && !map->enc->is_compact && i<bdf->glyphcnt &&
+    if ( bv->fv->b.cidmaster!=NULL && !map->enc->is_compact && i<bdf->glyphcnt &&
 	    (bc=bdf->glyphs[i])!=NULL ) {
 	/* The attached bitmap fonts don't have the complexities of subfonts-- they are flat */
     } else {
@@ -307,7 +300,7 @@ return;
 	    event->u.chr.chars[0]!='\0' && event->u.chr.chars[1]=='\0' ) {
 	SplineFont *sf = bv->bc->sc->parent;
 	int i;
-	EncMap *map = bv->fv->map;
+	EncMap *map = bv->fv->b.map;
 	extern int cv_auto_goto;
 	if ( cv_auto_goto ) {
 	    i = SFFindSlot(sf,map,event->u.chr.chars[0],NULL);
@@ -318,17 +311,17 @@ return;
 }
 
 static int BVCurEnc(BitmapView *bv) {
-    if ( bv->map_of_enc == bv->fv->map && bv->enc!=-1 )
+    if ( bv->map_of_enc == bv->fv->b.map && bv->enc!=-1 )
 return( bv->enc );
 
-return( bv->fv->map->backmap[bv->bc->orig_pos] );
+return( bv->fv->b.map->backmap[bv->bc->orig_pos] );
 }
 
 static void BVCharUp(BitmapView *bv, GEvent *event ) {
     if ( event->u.chr.keysym=='I' &&
 	    (event->u.chr.state&ksm_shift) &&
 	    (event->u.chr.state&ksm_meta) )
-	SCCharInfo(bv->bc->sc,bv->fv->map,BVCurEnc(bv));
+	SCCharInfo(bv->bc->sc,bv->fv->b.map,BVCurEnc(bv));
 #if _ModKeysAutoRepeat
     /* Under cygwin these keys auto repeat, they don't under normal X */
     else if ( event->u.chr.keysym == GK_Shift_L || event->u.chr.keysym == GK_Shift_R ||
@@ -397,6 +390,166 @@ static void BVDrawSelection(BitmapView *bv,void *pixmap) {
     rect.y = bv->height-bv->yoff-(sel->ymax+1)*bv->scale;
     GDrawFillRect(pixmap,&rect,0x909000);
     GDrawSetStippled(pixmap,0, 0,0);
+}
+
+static void BCBresenhamLine(BitmapView *bv,
+	void (*SetPoint)(BitmapView *,int x, int y, void *data),void *data) {
+    /* Draw a line from (pressed_x,pressed_y) to (info_x,info_y) */
+    /*  and call SetPoint for each point */
+    int dx,dy,incr1,incr2,d,x,y,xend;
+    int x1 = bv->pressed_x, y1 = bv->pressed_y;
+    int x2 = bv->info_x, y2 = bv->info_y;
+    int up;
+
+    if ( y2<y1 ) {
+	y2 ^= y1; y1 ^= y2; y2 ^= y1;
+	x2 ^= x1; x1 ^= x2; x2 ^= x1;
+    }
+    dy = y2-y1;
+    if (( dx = x2-x1)<0 ) dx=-dx;
+
+    if ( dy<=dx ) {
+	d = 2*dy-dx;
+	incr1 = 2*dy;
+	incr2 = 2*(dy-dx);
+	if ( x1>x2 ) {
+	    x = x2; y = y2;
+	    xend = x1;
+	    up = -1;
+	} else {
+	    x = x1; y = y1;
+	    xend = x2;
+	    up = 1;
+	}
+	(SetPoint)(bv,x,y,data);
+	while ( x<xend ) {
+	    ++x;
+	    if ( d<0 ) d+=incr1;
+	    else {
+		y += up;
+		d += incr2;
+	    }
+	    (SetPoint)(bv,x,y,data);
+	}
+    } else {
+	d = 2*dx-dy;
+	incr1 = 2*dx;
+	incr2 = 2*(dx-dy);
+	x = x1; y = y1;
+	if ( x1>x2 ) up = -1; else up = 1;
+	(SetPoint)(bv,x,y,data);
+	while ( y<y2 ) {
+	    ++y;
+	    if ( d<0 ) d+=incr1;
+	    else {
+		x += up;
+		d += incr2;
+	    }
+	    (SetPoint)(bv,x,y,data);
+	}
+    }
+}
+
+static void CirclePoints(BitmapView *bv,int x, int y, int ox, int oy, int xmod, int ymod,
+	void (*SetPoint)(BitmapView *,int x, int y, void *data),void *data) {
+    /* we draw the quadrant between Pi/2 and 0 */
+    if ( bv->active_tool == bvt_filledelipse ) {
+	int j;
+	for ( j=2*oy+ymod-y; j<=y; ++j ) {
+	    SetPoint(bv,x,j,data);
+	    SetPoint(bv,2*ox+xmod-x,j,data);
+	}
+    } else {
+	SetPoint(bv,x,y,data);
+	SetPoint(bv,x,2*oy+ymod-y,data);
+	SetPoint(bv,2*ox+xmod-x,y,data);
+	SetPoint(bv,2*ox+xmod-x,2*oy+ymod-y,data);
+    }
+}
+
+void BCGeneralFunction(BitmapView *bv,
+	void (*SetPoint)(BitmapView *,int x, int y, void *data),void *data) {
+    int i, j;
+    int xmin, xmax, ymin, ymax;
+    int ox, oy, modx, mody;
+    int dx, dy, c,d,dx2,dy2,xp,yp;
+    int x,y;
+
+    if ( bv->pressed_x<bv->info_x ) {
+	xmin = bv->pressed_x; xmax = bv->info_x;
+    } else {
+	xmin = bv->info_x; xmax = bv->pressed_x;
+    }
+    if ( bv->pressed_y<bv->info_y ) {
+	ymin = bv->pressed_y; ymax = bv->info_y;
+    } else {
+	ymin = bv->info_y; ymax = bv->pressed_y;
+    }
+
+    switch ( bv->active_tool ) {
+      case bvt_line:
+	BCBresenhamLine(bv,SetPoint,data);
+      break;
+      case bvt_rect:
+	for ( i=xmin; i<=xmax; ++i ) {
+	    SetPoint(bv,i,bv->pressed_y,data);
+	    SetPoint(bv,i,bv->info_y,data);
+	}
+	for ( i=ymin; i<=ymax; ++i ) {
+	    SetPoint(bv,bv->pressed_x,i,data);
+	    SetPoint(bv,bv->info_x,i,data);
+	}
+      break;
+      case bvt_filledrect:
+	for ( i=xmin; i<=xmax; ++i ) {
+	    for ( j=ymin; j<=ymax; ++j )
+		SetPoint(bv,i,j,data);
+	}
+      break;
+      case bvt_elipse: case bvt_filledelipse:
+	if ( xmax==xmin || ymax==ymin )		/* degenerate case */
+	    BCBresenhamLine(bv,SetPoint,data);
+	else {
+	    ox = floor( (xmin+xmax)/2.0 );
+	    oy = floor( (ymin+ymax)/2.0 );
+	    modx = (xmax+xmin)&1; mody = (ymax+ymin)&1;
+	    dx = ox-xmin;
+	    dy = oy-ymin;
+	    dx2 = dx*dx; dy2 = dy*dy;
+	    xp = 0; yp = 4*dy*dx2;
+	    c = dy2+(2-4*dy)*dx2; d = 2*dy2 + (1-2*dy)*dx2;
+	    x = ox+modx; y = ymax;
+	    CirclePoints(bv,x,y,ox,oy,modx,mody,SetPoint,data);
+	    while ( x!=xmax ) {
+#define move_right() (c += 4*dy2+xp, d += 6*dy2+xp, ++x, xp += 4*dy2 )
+#define move_down() (c += 6*dx2-yp, d += 4*dx2-yp, --y, yp -= 4*dx2 )
+		if ( d<0 || y==0 )
+		    move_right();
+		else if ( c > 0 )
+		    move_down();
+		else {
+		    move_right();
+		    move_down();
+		}
+#undef move_right
+#undef move_down
+		if ( y<oy )		/* degenerate cases */
+	    break;
+		CirclePoints(bv,x,y,ox,oy,modx,mody,SetPoint,data);
+	    }
+	    if ( bv->active_tool==bvt_elipse ) {
+		/* there may be quite a gap between the the two semi-circles */
+		/*  because the tangent is nearly vertical here. So just fill */
+		/*  it in */
+		int j;
+		for ( j=2*oy+mody-y; j<=y; ++j ) {
+		    SetPoint(bv,x,j,data);
+		    SetPoint(bv,2*ox+modx-x,j,data);
+		}
+	    }
+	}
+      break;
+    }
 }
 
 static void BVExpose(BitmapView *bv, GWindow pixmap, GEvent *event ) {
@@ -471,15 +624,15 @@ static void BVExpose(BitmapView *bv, GWindow pixmap, GEvent *event ) {
 	cvtemp.scale = bv->scscale*bv->scale;
 	cvtemp.xoff = bv->xoff/* *bv->scscale*/;
 	cvtemp.yoff = bv->yoff/* *bv->scscale*/;
-	cvtemp.sc = bv->bc->sc;
-	cvtemp.drawmode = dm_fore;
+	cvtemp.b.sc = bv->bc->sc;
+	cvtemp.b.drawmode = dm_fore;
 
 	clip.width = event->u.expose.rect.width/cvtemp.scale;
 	clip.height = event->u.expose.rect.height/cvtemp.scale;
 	clip.x = (event->u.expose.rect.x-cvtemp.xoff)/cvtemp.scale;
 	clip.y = (cvtemp.height-event->u.expose.rect.y-event->u.expose.rect.height-cvtemp.yoff)/cvtemp.scale;
-	CVDrawSplineSet(&cvtemp,pixmap,cvtemp.sc->layers[ly_fore].splines,col,false,&clip);
-	for ( refs = cvtemp.sc->layers[ly_fore].refs; refs!=NULL; refs = refs->next )
+	CVDrawSplineSet(&cvtemp,pixmap,cvtemp.b.sc->layers[ly_fore].splines,col,false,&clip);
+	for ( refs = cvtemp.b.sc->layers[ly_fore].refs; refs!=NULL; refs = refs->next )
 	    CVDrawSplineSet(&cvtemp,pixmap,refs->layers[0].splines,col,false,&clip);
     }
     if ( bv->active_tool==bvt_pointer ) {
@@ -1125,8 +1278,8 @@ return( GGadgetDispatchEvent(bv->vsb,event));
       break;
       case et_mousemove:
         enc = BVCurEnc(bv);
-	SCPreparePopup(bv->gw,bv->bc->sc,bv->fv->map->remap,enc,
-		UniFromEnc(enc,bv->fv->map->enc));
+	SCPreparePopup(bv->gw,bv->bc->sc,bv->fv->b.map->remap,enc,
+		UniFromEnc(enc,bv->fv->b.map->enc));
       break;
       case et_focus:
 #if 0
@@ -1176,7 +1329,7 @@ static void BVMenuClose(GWindow gw,struct gmenuitem *mi,GEvent *g) {
 static void BVMenuOpenOutline(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
 
-    CharViewCreate(bv->bc->sc,bv->fv,bv->map_of_enc==bv->fv->map?bv->enc:-1);
+    CharViewCreate(bv->bc->sc,bv->fv,bv->map_of_enc==bv->fv->b.map?bv->enc:-1);
 }
 
 static void BVMenuOpenMetrics(GWindow gw,struct gmenuitem *mi,GEvent *g) {
@@ -1216,7 +1369,8 @@ static void BVMenuImport(GWindow gw,struct gmenuitem *mi,GEvent *g) {
 
 static void BVMenuRevert(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
-    FVDelay(bv->fv,FVRevert);		/* The revert command can potentially */
+    FVDelay(bv->fv,(void (*)(FontView *)) FVRevert);
+			    /* The revert command can potentially */
 			    /* destroy our window (if the char weren't in the */
 			    /* old font). If that happens before the menu finishes */
 			    /* we get a crash. So delay till after the menu completes */
@@ -1276,7 +1430,7 @@ static void BVMenuScale(GWindow gw,struct gmenuitem *mi,GEvent *g) {
 static void BVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
     SplineFont *sf = bv->bc->sc->parent;
-    EncMap *map = bv->fv->map;
+    EncMap *map = bv->fv->b.map;
     int pos = -1, gid;
 
     if ( mi->mid == MID_Next ) {
@@ -1323,7 +1477,7 @@ static void BVMenuChangePixelSize(GWindow gw,struct gmenuitem *mi,GEvent *g) {
 
 static void BVMenuGotoChar(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
-    int pos = GotoChar(bv->fv->sf,bv->fv->map);
+    int pos = GotoChar(bv->fv->b.sf,bv->fv->b.map);
 
     if ( pos!=-1 )
 	BVChangeChar(bv,pos,false);
@@ -1351,7 +1505,7 @@ static void BVUndo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
     if ( bv->bc->undoes==NULL )
 return;
-    BCDoUndo(bv->bc,bv->fv);
+    BCDoUndo(bv->bc);
 }
 
 static SplineChar *SCofBV(BitmapView *bv) {
@@ -1413,7 +1567,7 @@ static void BVRedo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
     if ( bv->bc->redoes==NULL )
 return;
-    BCDoRedo(bv->bc,bv->fv);
+    BCDoRedo(bv->bc);
 }
 
 static void BVRemoveUndoes(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -1444,7 +1598,7 @@ static void BVClear(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void BVPaste(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
     if ( CopyContainsBitmap())
-	PasteToBC(bv->bc,bv->bdf->pixelsize,BDFDepth(bv->bdf),bv->fv);
+	PasteToBC(bv->bc,bv->bdf->pixelsize,BDFDepth(bv->bdf));
 }
 
 static void BVCut(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -1470,12 +1624,12 @@ static void BVMenuFontInfo(GWindow gw,struct gmenuitem *mi,GEvent *g) {
 
 static void BVMenuBDFInfo(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
-    SFBdfProperties(bv->bdf->sf,bv->fv->map,bv->bdf);
+    SFBdfProperties(bv->bdf->sf,bv->fv->b.map,bv->bdf);
 }
 
 static void BVMenuGetInfo(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
-    SCCharInfo(bv->bc->sc,bv->fv->map,BVCurEnc(bv));
+    SCCharInfo(bv->bc->sc,bv->fv->b.map,BVCurEnc(bv));
 }
 
 static void BVMenuBitmaps(GWindow gw,struct gmenuitem *mi,GEvent *g) {
@@ -1498,8 +1652,41 @@ static void BVMenuRmGlyph(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     /* Can't free the glyph yet, need to process all the destroy events */
     /*  which touch bc->views first */
     DelayEvent( (void (*)(void *))BDFCharFree,bc);
-    for ( fv = bdf->sf->fv; fv!=NULL; fv=fv->nextsame )
+    for ( fv = (FontView *) (bdf->sf->fv); fv!=NULL; fv=(FontView *) (fv->b.nextsame) )
 	GDrawRequestExpose(fv->v,NULL,false);
+}
+
+static int askfraction(int *xoff, int *yoff) {
+    static int lastx=1, lasty = 3;
+    char buffer[30];
+    char *ret, *end, *end2;
+    int xv, yv;
+
+    sprintf( buffer, "%d:%d", lastx, lasty );
+    ret = ff_ask_string(_("Skew"),buffer,_("Skew Ratio"));
+    if ( ret==NULL )
+return( 0 );
+    xv = strtol(ret,&end,10);
+    yv = strtol(end+1,&end2,10);
+    if ( xv==0 || xv>10 || xv<-10 || yv<=0 || yv>10 || *end!=':' || *end2!='\0' ) {
+	ff_post_error( _("Bad Number"),_("Bad Number") );
+	free(ret);
+return( 0 );
+    }
+    free(ret);
+    *xoff = lastx = xv; *yoff = lasty = yv;
+return( 1 );
+}
+
+void BVRotateBitmap(BitmapView *bv,enum bvtools type ) {
+    int xoff=0, yoff=0;
+
+    if ( type==bvt_skew )
+	if ( !askfraction(&xoff,&yoff))
+return;
+    BCPreserveState(bv->bc);
+    BCTransFunc(bv->bc,type,xoff,yoff);
+    BCCharChangedUpdate(bv->bc);
 }
 
 void BVMenuRotateInvoked(GWindow gw,struct gmenuitem *mi,GEvent *g) {
@@ -1628,11 +1815,7 @@ static void BVWindowMenuBuild(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
-# ifdef FONTFORGE_CONFIG_GDRAW
 static void BVMenuContextualHelp(GWindow base,struct gmenuitem *mi,GEvent *e) {
-# elif defined(FONTFORGE_CONFIG_GTK)
-void BitmapViewMenu_ContextualHelp(GtkMenuItem *menuitem, gpointer user_data) {
-# endif
     help("bitmapview.html");
 }
 
@@ -1799,7 +1982,7 @@ BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv, int enc) {
     bc->views = bv;
     bv->fv = fv;
     bv->enc = enc;
-    bv->map_of_enc = fv->map;
+    bv->map_of_enc = fv->b.map;
     bv->bdf = bdf;
     bv->color = 255;
     bv->shades_hidden = bdf->clut==NULL;
@@ -1860,7 +2043,7 @@ BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv, int enc) {
     ti.text = (unichar_t *) _("Recalculate Bitmaps");
     ti.text_is_1byte = true;
     gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels;
-    if ( fv->sf->onlybitmaps )
+    if ( fv->b.sf->onlybitmaps )
 	gd.flags = gg_pos_in_pixels;
     gd.handle_controlevent = BVRecalc;
     bv->recalc = GButtonCreate(gw,&gd,bv);
@@ -1910,8 +2093,8 @@ BitmapView *BitmapViewCreatePick(int enc, FontView *fv) {
     SplineFont *sf;
     EncMap *map;
 
-    sf = fv->cidmaster ? fv->cidmaster : fv->sf;
-    map = fv->map;
+    sf = fv->b.cidmaster ? fv->b.cidmaster : fv->b.sf;
+    map = fv->b.map;
 
     if ( fv->show!=fv->filled )
 	bdf = fv->show;
@@ -1927,4 +2110,24 @@ void BitmapViewFree(BitmapView *bv) {
     free(bv);
 }
 
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+static void BC_RefreshAll(BDFChar *bc) {
+    BitmapView *bv;
+
+    for ( bv = bc->views; bv!=NULL; bv = bv->next )
+	GDrawRequestExpose(bv->v,NULL,false);
+}
+
+static void BC_DestroyAll(BDFChar *bc) {
+    BitmapView *bv, *next;
+
+    for ( bv = bc->views; bv!=NULL; bv=next ) {
+	next = bv->next;
+	GDrawDestroyWindow(bv->gw);
+    }
+}
+
+struct bc_interface gdraw_bc_interface = {
+    BC_CharChangedUpdate,
+    BC_RefreshAll,
+    BC_DestroyAll
+};

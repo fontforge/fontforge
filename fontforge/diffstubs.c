@@ -305,7 +305,6 @@ return( NULL );
 return( enc );
 }
 
-#if defined(FONTFORGE_CONFIG_GDRAW)
 void gwwv_progress_start_indicator(int delay, const char *title, const char *line1,
 	const char *line2, int tot, int stages) {}
 void GProgressEnableStop(int enabled) {}
@@ -317,23 +316,6 @@ void gwwv_progress_change_total(int tot) { }
 void gwwv_progress_change_stages(int stages) { }
 int gwwv_ask(const char *title, const char **answers,
 	int def, int cancel,const char *question,...) { return cancel; }
-#elif defined(FONTFORGE_CONFIG_GTK)
-void gwwv_progress_start_indicator(
-    int delay,			/* in tenths of seconds */
-    const unichar_t *win_title,	/* for the window decoration */
-    const unichar_t *line1,	/* First line of description */
-    const unichar_t *line2,	/* Second line */
-    int tot,			/* Number of sub-entities in the operation */
-    int stages			/* Number of stages, each processing tot sub-entities */
-) {}
-void gwwv_progress_enable_stop(int enabled) {}
-void gwwv_progress_end_indicator(void) {}
-int gwwv_progress_next_stage(void) { return(1); }
-int gwwv_progress_next(void) { return( 1 ); }
-void gwwv_progress_change_line2(int line2r) {}
-void gwwv_progress_change_total(int tot) { }
-void gwwv_progress_change_stages(int stages) { }
-#endif
 
 SplineFont *LoadSplineFont(char *filename, enum openflags of) { return NULL; }
 void RefCharFree(RefChar *ref) {}
@@ -1060,17 +1042,6 @@ void GWidgetError8(const char *title,const char *statement, ...) {
     vfprintf(stderr, statement, ap);
 }
 
-#ifdef FONTFORGE_CONFIG_GTK
-# include <gtk/gtk.h>
-
-static char *gethomedir(void) {
-    static char *dir=NULL;
-
-    if ( dir!=NULL )
-return( dir );
-return( dir = g_get_home_dir());
-}
-#else 
 # include <pwd.h>
 
 static char *gethomedir(void) {
@@ -1094,7 +1065,6 @@ return( dir );
 
 return( NULL );
 }
-#endif
 
 char *getPfaEditDir(char *buffer) {
     char *dir=gethomedir();

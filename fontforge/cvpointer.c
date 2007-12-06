@@ -28,9 +28,8 @@
 #include <utype.h>
 #include <math.h>
 
-extern int stop_at_join;
+int stop_at_join = false;
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi, int *anya) {
     int anypoints = 0, anyrefs=0, anyimages=0, anyanchor=0;
     SplinePointList *spl;
@@ -40,8 +39,8 @@ int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi, int *anya) {
     AnchorPoint *ap;
     int i;
 
-    for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL && !anypoints; spl = spl->next ) {
-	if ( cv->sc->inspiro ) {
+    for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL && !anypoints; spl = spl->next ) {
+	if ( cv->b.sc->inspiro ) {
 	    for ( i=0; i<spl->spiro_cnt-1; ++i )
 		if ( SPIRO_SELECTED(&spl->spiros[i])) {
 		    anypoints = true;
@@ -56,14 +55,14 @@ int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi, int *anya) {
 	    }
 	}
     }
-    for ( rf=cv->layerheads[cv->drawmode]->refs; rf!=NULL && !anyrefs; rf=rf->next )
+    for ( rf=cv->b.layerheads[cv->b.drawmode]->refs; rf!=NULL && !anyrefs; rf=rf->next )
 	if ( rf->selected ) anyrefs = true;
-    if ( cv->drawmode==dm_fore ) {
+    if ( cv->b.drawmode==dm_fore ) {
 	if ( cv->showanchor && anya!=NULL )
-	    for ( ap=cv->sc->anchor; ap!=NULL && !anyanchor; ap=ap->next )
+	    for ( ap=cv->b.sc->anchor; ap!=NULL && !anyanchor; ap=ap->next )
 		if ( ap->selected ) anyanchor = true;
     }
-    for ( il=cv->layerheads[cv->drawmode]->images; il!=NULL && !anyimages; il=il->next )
+    for ( il=cv->b.layerheads[cv->b.drawmode]->images; il!=NULL && !anyimages; il=il->next )
 	if ( il->selected ) anyimages = true;
     if ( anyp!=NULL ) *anyp = anypoints;
     if ( anyr!=NULL ) *anyr = anyrefs;
@@ -78,8 +77,8 @@ int CVAnySelPoints(CharView *cv) {
     Spline *spline, *first;
     int i;
 
-    for ( spl= cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl=spl->next ) {
-	if ( cv->sc->inspiro ) {
+    for ( spl= cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl=spl->next ) {
+	if ( cv->b.sc->inspiro ) {
 	    for ( i=0; i<spl->spiro_cnt-1; ++i )
 		if ( SPIRO_SELECTED(&spl->spiros[i]))
 return( true );
@@ -107,7 +106,7 @@ int CVClearSel(CharView *cv) {
     AnchorPoint *ap;
 
     cv->lastselpt = NULL; cv->lastselcp = NULL;
-    for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
+    for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl = spl->next ) {
 	if ( spl->first->selected ) { needsupdate = true; spl->first->selected = false; }
 	first = NULL;
 	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
@@ -119,12 +118,12 @@ int CVClearSel(CharView *cv) {
 	    if ( SPIRO_SELECTED(&spl->spiros[i]))
 		{ needsupdate = true; SPIRO_DESELECT(&spl->spiros[i]); }
     }
-    for ( rf=cv->layerheads[cv->drawmode]->refs; rf!=NULL; rf = rf->next )
+    for ( rf=cv->b.layerheads[cv->b.drawmode]->refs; rf!=NULL; rf = rf->next )
 	if ( rf->selected ) { needsupdate = true; rf->selected = false; }
-    if ( cv->drawmode == dm_fore )
-	for ( ap=cv->sc->anchor; ap!=NULL; ap = ap->next )
+    if ( cv->b.drawmode == dm_fore )
+	for ( ap=cv->b.sc->anchor; ap!=NULL; ap = ap->next )
 	    if ( ap->selected ) { if ( cv->showanchor ) needsupdate = true; ap->selected = false; }
-    for ( img=cv->layerheads[cv->drawmode]->images; img!=NULL; img = img->next )
+    for ( img=cv->b.layerheads[cv->b.drawmode]->images; img!=NULL; img = img->next )
 	if ( img->selected ) { needsupdate = true; img->selected = false; }
     if ( cv->p.nextcp || cv->p.prevcp || cv->widthsel || cv->vwidthsel ||
 	    cv->icsel || cv->tah_sel )
@@ -141,13 +140,13 @@ int CVSetSel(CharView *cv,int mask) {
     ImageList *img;
     int needsupdate = 0;
     AnchorPoint *ap;
-    RefChar *usemymetrics = HasUseMyMetrics(cv->sc);
+    RefChar *usemymetrics = HasUseMyMetrics(cv->b.sc);
     int i;
 
     cv->lastselpt = NULL; cv->lastselcp = NULL;
     if ( mask&1 ) {
-	if ( !cv->sc->inspiro ) {
-	    for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
+	if ( !cv->b.sc->inspiro ) {
+	    for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl = spl->next ) {
 		if ( !spl->first->selected ) { needsupdate = true; spl->first->selected = true; }
 		first = NULL;
 		for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
@@ -158,7 +157,7 @@ int CVSetSel(CharView *cv,int mask) {
 		}
 	    }
 	} else {
-	    for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
+	    for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl = spl->next ) {
 		for ( i=0; i<spl->spiro_cnt-1; ++i ) {
 		    if ( !SPIRO_SELECTED(&spl->spiros[i])) {
 			needsupdate = true;
@@ -168,13 +167,13 @@ int CVSetSel(CharView *cv,int mask) {
 		}
 	    }
 	}
-	for ( rf=cv->layerheads[cv->drawmode]->refs; rf!=NULL; rf = rf->next )
+	for ( rf=cv->b.layerheads[cv->b.drawmode]->refs; rf!=NULL; rf = rf->next )
 	    if ( !rf->selected ) { needsupdate = true; rf->selected = true; }
-	for ( img=cv->layerheads[cv->drawmode]->images; img!=NULL; img = img->next )
+	for ( img=cv->b.layerheads[cv->b.drawmode]->images; img!=NULL; img = img->next )
 	    if ( !img->selected ) { needsupdate = true; img->selected = true; }
     }
     if ( (mask&2) && cv->showanchor ) {
-	for ( ap=cv->sc->anchor; ap!=NULL; ap=ap->next )
+	for ( ap=cv->b.sc->anchor; ap!=NULL; ap=ap->next )
 	    if ( !ap->selected ) { needsupdate = true; ap->selected = true; }
     }
     if ( cv->p.nextcp || cv->p.prevcp )
@@ -182,11 +181,11 @@ int CVSetSel(CharView *cv,int mask) {
     cv->p.nextcp = cv->p.prevcp = false;
     if ( cv->showhmetrics && !cv->widthsel && (mask&4) && usemymetrics==NULL ) {
 	cv->widthsel = needsupdate = true;
-	cv->oldwidth = cv->sc->width;
+	cv->oldwidth = cv->b.sc->width;
     }
-    if ( cv->showvmetrics && cv->sc->parent->hasvmetrics && !cv->vwidthsel && (mask&4) && usemymetrics==NULL ) {
+    if ( cv->showvmetrics && cv->b.sc->parent->hasvmetrics && !cv->vwidthsel && (mask&4) && usemymetrics==NULL ) {
 	cv->vwidthsel = needsupdate = true;
-	cv->oldvwidth = cv->sc->vwidth;
+	cv->oldvwidth = cv->b.sc->vwidth;
     }
 return( needsupdate );
 }
@@ -200,8 +199,8 @@ void CVInvertSel(CharView *cv) {
 
     cv->lastselpt = NULL; cv->lastselcp = NULL;
 
-    for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
-	if ( cv->sc->inspiro ) {
+    for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl = spl->next ) {
+	if ( cv->b.sc->inspiro ) {
 	    for ( i=0; i<spl->spiro_cnt-1; ++i )
 		spl->spiros[i].ty ^= 0x80;
 	} else {
@@ -219,9 +218,9 @@ void CVInvertSel(CharView *cv) {
 		spl->first->selected = !spl->first->selected;
 	}
     }
-    for ( rf=cv->layerheads[cv->drawmode]->refs; rf!=NULL; rf = rf->next )
+    for ( rf=cv->b.layerheads[cv->b.drawmode]->refs; rf!=NULL; rf = rf->next )
         rf->selected = !rf->selected;
-    for ( img=cv->layerheads[cv->drawmode]->images; img!=NULL; img = img->next )
+    for ( img=cv->b.layerheads[cv->b.drawmode]->images; img!=NULL; img = img->next )
         img->selected = !img->selected;
     cv->p.nextcp = cv->p.prevcp = false;
 }
@@ -233,8 +232,8 @@ int CVAllSelected(CharView *cv) {
     ImageList *img;
     int i;
 
-    for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
-	if ( cv->sc->inspiro ) {
+    for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl = spl->next ) {
+	if ( cv->b.sc->inspiro ) {
 	    for ( i=0; i<spl->spiro_cnt-1; ++i )
 		if ( !SPIRO_SELECTED(&spl->spiros[i]))
 return( false );
@@ -249,10 +248,10 @@ return( false );
 	    }
 	}
     }
-    for ( rf=cv->layerheads[cv->drawmode]->refs; rf!=NULL; rf = rf->next )
+    for ( rf=cv->b.layerheads[cv->b.drawmode]->refs; rf!=NULL; rf = rf->next )
 	if ( !rf->selected )
 return( false );
-    for ( img=cv->layerheads[cv->drawmode]->images; img!=NULL; img = img->next )
+    for ( img=cv->b.layerheads[cv->b.drawmode]->images; img!=NULL; img = img->next )
 	if ( !img->selected )
 return( false );
 return( true );
@@ -307,10 +306,10 @@ void CVFindCenter(CharView *cv, BasePoint *bp, int nosel) {
     ImageList *img;
 
     b.minx = b.miny = b.maxx = b.maxy = 0;
-    SplineSetFindSelBounds(cv->layerheads[cv->drawmode]->splines,&b,nosel,cv->sc->inspiro);
-    if ( cv->drawmode==dm_fore ) {
+    SplineSetFindSelBounds(cv->b.layerheads[cv->b.drawmode]->splines,&b,nosel,cv->b.sc->inspiro);
+    if ( cv->b.drawmode==dm_fore ) {
 	RefChar *rf;
-	for ( rf=cv->layerheads[cv->drawmode]->refs; rf!=NULL; rf=rf->next ) {
+	for ( rf=cv->b.layerheads[cv->b.drawmode]->refs; rf!=NULL; rf=rf->next ) {
 	    if ( nosel || rf->selected ) {
 		if ( b.minx==0 && b.maxx==0 )
 		    b = rf->bb;
@@ -323,7 +322,7 @@ void CVFindCenter(CharView *cv, BasePoint *bp, int nosel) {
 	    }
 	}
     }
-    for ( img=cv->layerheads[cv->drawmode]->images; img!=NULL; img=img->next ) {
+    for ( img=cv->b.layerheads[cv->b.drawmode]->images; img!=NULL; img=img->next ) {
 	if ( nosel || img->selected ) {
 	    if ( b.minx==0 && b.maxx==0 )
 		b = img->bb;
@@ -410,32 +409,49 @@ void CVCheckResizeCursors(CharView *cv) {
     real fudge = 3.5/cv->scale;
 
     cv->expandedge = ee_none;
-    if ( cv->drawmode==dm_fore ) {
-	for ( ref=cv->layerheads[cv->drawmode]->refs; ref!=NULL; ref=ref->next ) if ( ref->selected ) {
+    if ( cv->b.drawmode==dm_fore ) {
+	for ( ref=cv->b.layerheads[cv->b.drawmode]->refs; ref!=NULL; ref=ref->next ) if ( ref->selected ) {
 	    if (( cv->expandedge = OnBB(cv,&ref->bb,fudge))!=ee_none )
 	break;
 	}
 	if ( cv->expandedge == ee_none ) {
-	    RefChar *usemymetrics = HasUseMyMetrics(cv->sc);
-	    if ( cv->showhmetrics && cv->info.x > cv->sc->width-fudge &&
-		    cv->info.x<cv->sc->width+fudge && cv->container==NULL &&
+	    RefChar *usemymetrics = HasUseMyMetrics(cv->b.sc);
+	    if ( cv->showhmetrics && cv->info.x > cv->b.sc->width-fudge &&
+		    cv->info.x<cv->b.sc->width+fudge && cv->b.container==NULL &&
 		    usemymetrics==NULL )
 		cv->expandedge = ee_right;
-	    else if ( cv->showhmetrics && NearCaret(cv->sc,cv->info.x,fudge)!=-1 &&
+	    else if ( cv->showhmetrics && NearCaret(cv->b.sc,cv->info.x,fudge)!=-1 &&
 		    usemymetrics==NULL )
 		cv->expandedge = ee_right;
-	    if ( cv->showvmetrics && cv->sc->parent->hasvmetrics && cv->container==NULL &&
-		    cv->info.y > cv->sc->parent->vertical_origin-cv->sc->vwidth-fudge &&
-		    cv->info.y < cv->sc->parent->vertical_origin-cv->sc->vwidth+fudge )
+	    if ( cv->showvmetrics && cv->b.sc->parent->hasvmetrics && cv->b.container==NULL &&
+		    cv->info.y > cv->b.sc->parent->vertical_origin-cv->b.sc->vwidth-fudge &&
+		    cv->info.y < cv->b.sc->parent->vertical_origin-cv->b.sc->vwidth+fudge )
 		cv->expandedge = ee_down;
 	}
     }
-    for ( img=cv->layerheads[cv->drawmode]->images; img!=NULL; img=img->next ) if ( img->selected ) {
+    for ( img=cv->b.layerheads[cv->b.drawmode]->images; img!=NULL; img=img->next ) if ( img->selected ) {
 	if (( cv->expandedge = OnBB(cv,&img->bb,fudge))!=ee_none )
     break;
     }
     if ( cv->expandedge!=old_ee )
 	SetCur(cv);
+}
+
+Undoes *CVPreserveTState(CharView *cv) {
+    int anyrefs;
+
+    cv->p.transany = CVAnySel(cv,NULL,&anyrefs,NULL,NULL);
+    cv->p.transanyrefs = anyrefs;
+
+return( _CVPreserveTState(&cv->b,&cv->p));
+}
+
+void CVRestoreTOriginalState(CharView *cv) {
+    _CVRestoreTOriginalState(&cv->b,&cv->p);
+}
+
+void CVUndoCleanup(CharView *cv) {
+    _CVUndoCleanup(&cv->b,&cv->p);
 }
 
 static int ImgRefEdgeSelected(CharView *cv, FindSel *fs,GEvent *event) {
@@ -447,15 +463,15 @@ static int ImgRefEdgeSelected(CharView *cv, FindSel *fs,GEvent *event) {
     /* Check the bounding box of references if meta is up, or if they didn't */
     /*  click on a reference edge. Point being to allow people to select */
     /*  macron or other reference which fills the bounding box */
-    if ( cv->drawmode==dm_fore && (!(event->u.mouse.state&ksm_alt) ||
+    if ( cv->b.drawmode==dm_fore && (!(event->u.mouse.state&ksm_alt) ||
 	    (fs->p->ref!=NULL && !fs->p->ref->selected))) {
-	for ( ref=cv->layerheads[cv->drawmode]->refs; ref!=NULL; ref=ref->next ) if ( ref->selected ) {
+	for ( ref=cv->b.layerheads[cv->b.drawmode]->refs; ref!=NULL; ref=ref->next ) if ( ref->selected ) {
 	    if (( cv->expandedge = OnBB(cv,&ref->bb,fs->fudge))!=ee_none ) {
 		ref->selected = false;
 		update = CVClearSel(cv);
 		ref->selected = true;
 		if ( update )
-		    SCUpdateAll(cv->sc);
+		    SCUpdateAll(cv->b.sc);
 		CVPreserveTState(cv);
 		cv->p.ref = ref;
 		SetCur(cv);
@@ -463,13 +479,13 @@ return( true );
 	    }
 	}
     }
-    for ( img=cv->layerheads[cv->drawmode]->images; img!=NULL; img=img->next ) if ( img->selected ) {
+    for ( img=cv->b.layerheads[cv->b.drawmode]->images; img!=NULL; img=img->next ) if ( img->selected ) {
 	if (( cv->expandedge = OnBB(cv,&img->bb,fs->fudge))!=ee_none ) {
 	    img->selected = false;
 	    update = CVClearSel(cv);
 	    img->selected = true;
 	    if ( update )
-		SCUpdateAll(cv->sc);
+		SCUpdateAll(cv->b.sc);
 	    CVPreserveTState(cv);
 	    cv->p.img = img;
 	    SetCur(cv);
@@ -482,7 +498,7 @@ return( false );
 void CVMouseDownPointer(CharView *cv, FindSel *fs, GEvent *event) {
     int needsupdate = false;
     int dowidth, dovwidth, doic, dotah, nearcaret;
-    RefChar *usemymetrics = HasUseMyMetrics(cv->sc);
+    RefChar *usemymetrics = HasUseMyMetrics(cv->b.sc);
     int i;
 
     if ( cv->pressed==NULL )
@@ -492,24 +508,24 @@ void CVMouseDownPointer(CharView *cv, FindSel *fs, GEvent *event) {
     /*  selected, or if the user held the shift key down */
     if ( ImgRefEdgeSelected(cv,fs,event))
 return;
-    dowidth = ( cv->showhmetrics && cv->p.cx>cv->sc->width-fs->fudge &&
-		cv->p.cx<cv->sc->width+fs->fudge && cv->container==NULL &&
+    dowidth = ( cv->showhmetrics && cv->p.cx>cv->b.sc->width-fs->fudge &&
+		cv->p.cx<cv->b.sc->width+fs->fudge && cv->b.container==NULL &&
 		usemymetrics==NULL );
-    doic = ( cv->showhmetrics && cv->sc->italic_correction!=TEX_UNDEF &&
-		cv->sc->italic_correction!=0 &&
-		cv->p.cx>cv->sc->width+cv->sc->italic_correction-fs->fudge &&
-		cv->p.cx<cv->sc->width+cv->sc->italic_correction+fs->fudge &&
-		cv->container==NULL );
-    dotah = ( cv->showhmetrics && cv->sc->top_accent_horiz!=TEX_UNDEF &&
-		cv->p.cx>cv->sc->top_accent_horiz-fs->fudge &&
-		cv->p.cx<cv->sc->top_accent_horiz+fs->fudge &&
-		cv->container==NULL );
-    dovwidth = ( cv->showvmetrics && cv->sc->parent->hasvmetrics && cv->container == NULL &&
-		cv->p.cy>cv->sc->parent->vertical_origin-cv->sc->vwidth-fs->fudge &&
-		cv->p.cy<cv->sc->parent->vertical_origin-cv->sc->vwidth+fs->fudge &&
+    doic = ( cv->showhmetrics && cv->b.sc->italic_correction!=TEX_UNDEF &&
+		cv->b.sc->italic_correction!=0 &&
+		cv->p.cx>cv->b.sc->width+cv->b.sc->italic_correction-fs->fudge &&
+		cv->p.cx<cv->b.sc->width+cv->b.sc->italic_correction+fs->fudge &&
+		cv->b.container==NULL );
+    dotah = ( cv->showhmetrics && cv->b.sc->top_accent_horiz!=TEX_UNDEF &&
+		cv->p.cx>cv->b.sc->top_accent_horiz-fs->fudge &&
+		cv->p.cx<cv->b.sc->top_accent_horiz+fs->fudge &&
+		cv->b.container==NULL );
+    dovwidth = ( cv->showvmetrics && cv->b.sc->parent->hasvmetrics && cv->b.container == NULL &&
+		cv->p.cy>cv->b.sc->parent->vertical_origin-cv->b.sc->vwidth-fs->fudge &&
+		cv->p.cy<cv->b.sc->parent->vertical_origin-cv->b.sc->vwidth+fs->fudge &&
 		usemymetrics==NULL );
     cv->nearcaret = nearcaret = -1;
-    if ( cv->showhmetrics ) nearcaret = NearCaret(cv->sc,cv->p.cx,fs->fudge);
+    if ( cv->showhmetrics ) nearcaret = NearCaret(cv->b.sc,cv->p.cx,fs->fudge);
     if ( (fs->p->sp==NULL || !fs->p->sp->selected) &&
 	    (fs->p->spiro==NULL || !SPIRO_SELECTED(fs->p->spiro)) &&
 	    (fs->p->ref==NULL || !fs->p->ref->selected) &&
@@ -529,8 +545,8 @@ return;
 	    else
 		cv->widthsel = true;
 	    if ( cv->widthsel ) {
-		cv->oldwidth = cv->sc->width;
-		fs->p->cx = cv->sc->width;
+		cv->oldwidth = cv->b.sc->width;
+		fs->p->cx = cv->b.sc->width;
 		CVInfoDraw(cv,cv->gw);
 		fs->p->anysel = true;
 		cv->expandedge = ee_right;
@@ -544,8 +560,8 @@ return;
 	    else
 		cv->vwidthsel = true;
 	    if ( cv->vwidthsel ) {
-		cv->oldvwidth = cv->sc->vwidth;
-		fs->p->cy = cv->sc->parent->vertical_origin-cv->sc->vwidth;
+		cv->oldvwidth = cv->b.sc->vwidth;
+		fs->p->cy = cv->b.sc->parent->vertical_origin-cv->b.sc->vwidth;
 		CVInfoDraw(cv,cv->gw);
 		fs->p->anysel = true;
 		cv->expandedge = ee_down;
@@ -559,8 +575,8 @@ return;
 	    else
 		cv->icsel = true;
 	    if ( cv->icsel ) {
-		cv->oldic = cv->sc->italic_correction+cv->sc->width;
-		fs->p->cx = cv->sc->italic_correction+cv->sc->width;
+		cv->oldic = cv->b.sc->italic_correction+cv->b.sc->width;
+		fs->p->cx = cv->b.sc->italic_correction+cv->b.sc->width;
 		CVInfoDraw(cv,cv->gw);
 		fs->p->anysel = true;
 		cv->expandedge = ee_right;
@@ -574,8 +590,8 @@ return;
 	    else
 		cv->tah_sel = true;
 	    if ( cv->tah_sel ) {
-		cv->oldtah = cv->sc->top_accent_horiz;
-		fs->p->cx = cv->sc->top_accent_horiz;
+		cv->oldtah = cv->b.sc->top_accent_horiz;
+		fs->p->cx = cv->b.sc->top_accent_horiz;
 		CVInfoDraw(cv,cv->gw);
 		fs->p->anysel = true;
 		cv->expandedge = ee_right;
@@ -585,7 +601,7 @@ return;
 	    needsupdate = true;
 	} else if ( nearcaret!=-1 ) {
 	    PST *pst;
-	    for ( pst=cv->sc->possub; pst!=NULL && pst->type!=pst_lcaret; pst=pst->next );
+	    for ( pst=cv->b.sc->possub; pst!=NULL && pst->type!=pst_lcaret; pst=pst->next );
 	    cv->lcarets = pst;
 	    cv->nearcaret = nearcaret;
 	    cv->expandedge = ee_right;
@@ -600,7 +616,7 @@ return;
 	} else if ( fs->p->spiro!=NULL ) {
 	    if ( !SPIRO_SELECTED(fs->p->spiro) ) needsupdate = true;
 	    SPIRO_SELECT( fs->p->spiro );
-	} else if ( fs->p->spline!=NULL && !cv->sc->inspiro ) {
+	} else if ( fs->p->spline!=NULL && !cv->b.sc->inspiro ) {
 	    if ( !fs->p->spline->to->selected &&
 		    !fs->p->spline->from->selected ) needsupdate = true;
 	    fs->p->spline->to->selected = true;
@@ -624,7 +640,7 @@ return;
 	} else if ( fs->p->spiro!=NULL ) {
 	    needsupdate = true;
 	    fs->p->spiro->ty ^= 0x80;
-	} else if ( fs->p->spline!=NULL && !cv->sc->inspiro ) {
+	} else if ( fs->p->spline!=NULL && !cv->b.sc->inspiro ) {
 	    needsupdate = true;
 	    fs->p->spline->to->selected = !fs->p->spline->to->selected;
 	    fs->p->spline->from->selected = !fs->p->spline->from->selected;
@@ -641,7 +657,7 @@ return;
     } else if ( event->u.mouse.clicks==2 ) {
 	CPEndInfo(cv);
 	if ( fs->p->spl!=NULL ) {
-	    if ( cv->sc->inspiro ) {
+	    if ( cv->b.sc->inspiro ) {
 		for ( i=0; i<fs->p->spl->spiro_cnt-1; ++i ) {
 		    if ( !SPIRO_SELECTED(&fs->p->spl->spiros[i])) {
 			needsupdate = true;
@@ -663,7 +679,7 @@ return;
 	} else if ( fs->p->ap!=NULL ) {
 	    /* Select all Anchor Points at this location */
 	    AnchorPoint *ap;
-	    for ( ap=cv->sc->anchor; ap!=NULL; ap=ap->next )
+	    for ( ap=cv->b.sc->anchor; ap!=NULL; ap=ap->next )
 		if ( ap->me.x==fs->p->ap->me.x && ap->me.y==fs->p->ap->me.y )
 		    if ( !ap->selected ) {
 			ap->selected = true;
@@ -679,7 +695,7 @@ return;
 	if ( CVSetSel(cv,-1)) needsupdate = true;
     }
     if ( needsupdate )
-	SCUpdateAll(cv->sc);
+	SCUpdateAll(cv->b.sc);
     /* lastselpt is set by our caller */
 }
 
@@ -725,8 +741,8 @@ static int CVRectSelect(CharView *cv, real newx, real newy) {
 	new.maxy = cv->p.cy;
     }
 
-    if ( cv->drawmode==dm_fore ) {
-	for ( rf = cv->layerheads[cv->drawmode]->refs; rf!=NULL; rf=rf->next ) {
+    if ( cv->b.drawmode==dm_fore ) {
+	for ( rf = cv->b.layerheads[cv->b.drawmode]->refs; rf!=NULL; rf=rf->next ) {
 	    if (( rf->bb.minx>=old.minx && rf->bb.maxx<old.maxx &&
 			rf->bb.miny>=old.miny && rf->bb.maxy<old.maxy ) !=
 		    ( rf->bb.minx>=new.minx && rf->bb.maxx<new.maxx &&
@@ -735,7 +751,7 @@ static int CVRectSelect(CharView *cv, real newx, real newy) {
 		any = true;
 	    }
 	}
-	if ( cv->showanchor ) for ( ap=cv->sc->anchor ; ap!=NULL; ap=ap->next ) {
+	if ( cv->showanchor ) for ( ap=cv->b.sc->anchor ; ap!=NULL; ap=ap->next ) {
 	    bp = &ap->me;
 	    if (( bp->x>=old.minx && bp->x<old.maxx &&
 			bp->y>=old.miny && bp->y<old.maxy ) !=
@@ -747,7 +763,7 @@ static int CVRectSelect(CharView *cv, real newx, real newy) {
 	}
     }
 
-    for ( img = cv->layerheads[cv->drawmode]->images; img!=NULL; img=img->next ) {
+    for ( img = cv->b.layerheads[cv->b.drawmode]->images; img!=NULL; img=img->next ) {
 	bb.minx = img->xoff;
 	bb.miny = img->yoff;
 	bb.maxx = img->xoff+GImageGetWidth(img->image)*img->xscale;
@@ -761,8 +777,8 @@ static int CVRectSelect(CharView *cv, real newx, real newy) {
 	}
     }
 
-    for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
-	if ( !cv->sc->inspiro ) {
+    for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl = spl->next ) {
+	if ( !cv->b.sc->inspiro ) {
 	    first = NULL;
 	    if ( spl->first->prev==NULL ) {
 		bp = &spl->first->me;
@@ -815,7 +831,7 @@ void CVAdjustControl(CharView *cv,BasePoint *cp, BasePoint *to) {
     BasePoint *othercp = cp==&sp->nextcp?&sp->prevcp:&sp->nextcp;
     int refig = false, otherchanged = false;
 
-    if ( sp->ttfindex==0xffff && cv->fv->sf->order2 ) {
+    if ( sp->ttfindex==0xffff && cv->b.fv->sf->order2 ) {
 	/* If the point itself is implied, then it's the control points that */
 	/*  are fixed. Moving a CP should move the implied point so that it */
 	/*  continues to be in the right place */
@@ -837,7 +853,7 @@ void CVAdjustControl(CharView *cv,BasePoint *cp, BasePoint *to) {
 	    *cp = *to;
 	}
 	if (( cp->x!=sp->me.x || cp->y!=sp->me.y ) &&
-		(!cv->sc->parent->order2 ||
+		(!cv->b.sc->parent->order2 ||
 		 (cp==&sp->nextcp && sp->next!=NULL && sp->next->to->ttfindex==0xffff) ||
 		 (cp==&sp->prevcp && sp->prev!=NULL && sp->prev->from->ttfindex==0xffff)) ) {
 	    double len1, len2;
@@ -882,7 +898,7 @@ void CVAdjustControl(CharView *cv,BasePoint *cp, BasePoint *to) {
 	}
     }
 
-    if ( cv->fv->sf->order2 ) {
+    if ( cv->b.fv->sf->order2 ) {
 	if ( (cp==&sp->nextcp || otherchanged) && sp->next!=NULL ) {
 	    SplinePoint *osp = sp->next->to;
 	    if ( osp->ttfindex==0xffff ) {
@@ -940,7 +956,7 @@ static void CVAdjustSpline(CharView *cv) {
     real t;
     Spline1D *oldx = &old->splines[0], *oldy = &old->splines[1];
 
-    if ( cv->sc->parent->order2 )
+    if ( cv->b.sc->parent->order2 )
 return;
 
     tp[0].x = cv->info.x; tp[0].y = cv->info.y; tp[0].t = cv->p.t;
@@ -981,11 +997,11 @@ static int CVCheckMerges(CharView *cv ) {
     int cnt= -1;
     int firstsel, lastsel;
     int mfirstsel, mlastsel;
-    int inspiro = cv->sc->inspiro;
+    int inspiro = cv->b.sc->inspiro;
 
   restart:
     ++cnt;
-    for ( activess=cv->layerheads[cv->drawmode]->splines; activess!=NULL; activess=activess->next ) {
+    for ( activess=cv->b.layerheads[cv->b.drawmode]->splines; activess!=NULL; activess=activess->next ) {
 	if ( activess->first->prev!=NULL )
     continue;		/* Closed contour, can't merge with anything */
 	firstsel = (inspiro && SPIRO_SELECTED(&activess->spiros[0])) ||
@@ -993,7 +1009,7 @@ static int CVCheckMerges(CharView *cv ) {
 	lastsel = (inspiro && SPIRO_SELECTED(&activess->spiros[activess->spiro_cnt-2])) ||
 		    (!inspiro && activess->last->selected);
 	if ( firstsel || lastsel ) {
-	    for ( mergess = cv->layerheads[cv->drawmode]->splines; mergess!=NULL; mergess=mergess->next ) {
+	    for ( mergess = cv->b.layerheads[cv->b.drawmode]->splines; mergess!=NULL; mergess=mergess->next ) {
 		if ( mergess->first->prev!=NULL )
 	    continue;		/* Closed contour, can't merge with anything */
 		mfirstsel = (inspiro && SPIRO_SELECTED(&mergess->spiros[0])) ||
@@ -1054,8 +1070,8 @@ int CVMoveSelection(CharView *cv, real dx, real dy, uint32 input_state) {
     transform[4] = dx; transform[5] = dy;
     if ( transform[4]==0 && transform[5]==0 )
 return(false);
-    for ( spl=cv->layerheads[cv->drawmode]->splines; spl!=NULL && !outlinechanged; spl=spl->next ) {
-	if ( cv->sc->inspiro ) {
+    for ( spl=cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL && !outlinechanged; spl=spl->next ) {
+	if ( cv->b.sc->inspiro ) {
 	    for ( i=0; i<spl->spiro_cnt-1; ++i )
 		if ( SPIRO_SELECTED(&spl->spiros[i])) {
 		    outlinechanged = true;
@@ -1076,12 +1092,12 @@ return(false);
 	}
     }
 
-    if ( cv->sc->inspiro )
-	SplinePointListSpiroTransform(cv->layerheads[cv->drawmode]->splines,transform,false);
+    if ( cv->b.sc->inspiro )
+	SplinePointListSpiroTransform(cv->b.layerheads[cv->b.drawmode]->splines,transform,false);
     else
-	SplinePointListTransform(cv->layerheads[cv->drawmode]->splines,transform,false);
+	SplinePointListTransform(cv->b.layerheads[cv->b.drawmode]->splines,transform,false);
 
-    for ( refs = cv->layerheads[cv->drawmode]->refs; refs!=NULL; refs=refs->next ) if ( refs->selected ) {
+    for ( refs = cv->b.layerheads[cv->b.drawmode]->refs; refs!=NULL; refs=refs->next ) if ( refs->selected ) {
 	refs->transform[4] += transform[4];
 	refs->transform[5] += transform[5];
 	refs->bb.minx += transform[4]; refs->bb.maxx += transform[4];
@@ -1090,66 +1106,66 @@ return(false);
 	    SplinePointListTransform(refs->layers[j].splines,transform,true);
 	outlinechanged = true;
     }
-    if ( cv->drawmode==dm_fore ) {
+    if ( cv->b.drawmode==dm_fore ) {
 	if ( cv->showanchor ) {
-	    for ( ap=cv->sc->anchor; ap!=NULL; ap=ap->next ) if ( ap->selected ) {
+	    for ( ap=cv->b.sc->anchor; ap!=NULL; ap=ap->next ) if ( ap->selected ) {
 		ap->me.x += transform[4];
 		ap->me.y += transform[5];
 		changed = true;
 	    }
 	}
     }
-    for ( img = cv->layerheads[cv->drawmode]->images; img!=NULL; img=img->next ) if ( img->selected ) {
+    for ( img = cv->b.layerheads[cv->b.drawmode]->images; img!=NULL; img=img->next ) if ( img->selected ) {
 	img->xoff += transform[4];
 	img->yoff += transform[5];
 	img->bb.minx += transform[4]; img->bb.maxx += transform[4];
 	img->bb.miny += transform[5]; img->bb.maxy += transform[5];
-	SCOutOfDateBackground(cv->sc);
+	SCOutOfDateBackground(cv->b.sc);
 	changed = true;
     }
     fudge = snapdistance/cv->scale/2;
     if ( cv->widthsel ) {
-	if ( cv->sc->width+dx>0 && ((int16) (cv->sc->width+dx))<0 )
-	    cv->sc->width = 32767;
-	else if ( cv->sc->width+dx<0 && ((int16) (cv->sc->width+dx))>0 )
-	    cv->sc->width = -32768;
+	if ( cv->b.sc->width+dx>0 && ((int16) (cv->b.sc->width+dx))<0 )
+	    cv->b.sc->width = 32767;
+	else if ( cv->b.sc->width+dx<0 && ((int16) (cv->b.sc->width+dx))>0 )
+	    cv->b.sc->width = -32768;
 	else
-	    cv->sc->width += dx;
-	if ( cv->sc->width>=-fudge && cv->sc->width<fudge )
-	    cv->sc->width = 0;
+	    cv->b.sc->width += dx;
+	if ( cv->b.sc->width>=-fudge && cv->b.sc->width<fudge )
+	    cv->b.sc->width = 0;
 	changed = true;
     }
     if ( cv->vwidthsel ) {
-	if ( cv->sc->vwidth-dy>0 && ((int16) (cv->sc->vwidth-dy))<0 )
-	    cv->sc->vwidth = 32767;
-	else if ( cv->sc->vwidth-dy<0 && ((int16) (cv->sc->vwidth-dy))>0 )
-	    cv->sc->vwidth = -32768;
+	if ( cv->b.sc->vwidth-dy>0 && ((int16) (cv->b.sc->vwidth-dy))<0 )
+	    cv->b.sc->vwidth = 32767;
+	else if ( cv->b.sc->vwidth-dy<0 && ((int16) (cv->b.sc->vwidth-dy))>0 )
+	    cv->b.sc->vwidth = -32768;
 	else
-	    cv->sc->vwidth -= dy;
-	if ( cv->sc->vwidth>=-fudge && cv->sc->vwidth<fudge )
-	    cv->sc->vwidth = 0;
+	    cv->b.sc->vwidth -= dy;
+	if ( cv->b.sc->vwidth>=-fudge && cv->b.sc->vwidth<fudge )
+	    cv->b.sc->vwidth = 0;
 	changed = true;
     }
     if ( cv->icsel ) {
-	if ( cv->sc->italic_correction+dx>0 && ((int16) (cv->sc->italic_correction+dx))<0 )
-	    cv->sc->italic_correction = 32767-1;
-	else if ( cv->sc->italic_correction+dx<0 && ((int16) (cv->sc->italic_correction+dx))>0 )
-	    cv->sc->italic_correction = -32768;
+	if ( cv->b.sc->italic_correction+dx>0 && ((int16) (cv->b.sc->italic_correction+dx))<0 )
+	    cv->b.sc->italic_correction = 32767-1;
+	else if ( cv->b.sc->italic_correction+dx<0 && ((int16) (cv->b.sc->italic_correction+dx))>0 )
+	    cv->b.sc->italic_correction = -32768;
 	else
-	    cv->sc->italic_correction += dx;
-	if ( cv->sc->italic_correction>=-fudge && cv->sc->italic_correction<fudge )
-	    cv->sc->italic_correction = 0;
+	    cv->b.sc->italic_correction += dx;
+	if ( cv->b.sc->italic_correction>=-fudge && cv->b.sc->italic_correction<fudge )
+	    cv->b.sc->italic_correction = 0;
 	changed = true;
     }
     if ( cv->tah_sel ) {
-	if ( cv->sc->top_accent_horiz+dx>0 && ((int16) (cv->sc->top_accent_horiz+dx))<0 )
-	    cv->sc->top_accent_horiz = 32767-1;
-	else if ( cv->sc->top_accent_horiz+dx<0 && ((int16) (cv->sc->top_accent_horiz+dx))>0 )
-	    cv->sc->top_accent_horiz = -32768;
+	if ( cv->b.sc->top_accent_horiz+dx>0 && ((int16) (cv->b.sc->top_accent_horiz+dx))<0 )
+	    cv->b.sc->top_accent_horiz = 32767-1;
+	else if ( cv->b.sc->top_accent_horiz+dx<0 && ((int16) (cv->b.sc->top_accent_horiz+dx))>0 )
+	    cv->b.sc->top_accent_horiz = -32768;
 	else
-	    cv->sc->top_accent_horiz += dx;
-	if ( cv->sc->top_accent_horiz>=-fudge && cv->sc->top_accent_horiz<fudge )
-	    cv->sc->top_accent_horiz = 0;
+	    cv->b.sc->top_accent_horiz += dx;
+	if ( cv->b.sc->top_accent_horiz>=-fudge && cv->b.sc->top_accent_horiz<fudge )
+	    cv->b.sc->top_accent_horiz = 0;
 	changed = true;
     }
     if ( outlinechanged )
@@ -1201,7 +1217,7 @@ return( false );
 	needsupdate = CVExpandEdge(cv);
     else if ( cv->nearcaret!=-1 && cv->lcarets!=NULL ) {
 	if ( cv->info.x!=cv->last_c.x ) {
-	    if ( !cv->recentchange ) SCPreserveState(cv->sc,2);
+	    if ( !cv->recentchange ) SCPreserveState(cv->b.sc,2);
 	    cv->lcarets->u.lcaret.carets[cv->nearcaret] += cv->info.x-cv->last_c.x;
 	    needsupdate = true;
 	    CVSetCharChanged(cv,true);
@@ -1220,56 +1236,52 @@ return( false );
 	if ( !needsupdate )
 	    CVDrawRubberRect(cv->v,cv);
     } else if ( cv->p.nextcp ) {
-	if ( !cv->recentchange ) CVPreserveState(cv);
+	if ( !cv->recentchange ) CVPreserveState(&cv->b);
 	CVAdjustControl(cv,&cv->p.sp->nextcp,&cv->info);
 	CPUpdateInfo(cv,event);
 	needsupdate = true;
     } else if ( cv->p.prevcp ) {
-	if ( !cv->recentchange ) CVPreserveState(cv);
+	if ( !cv->recentchange ) CVPreserveState(&cv->b);
 	CVAdjustControl(cv,&cv->p.sp->prevcp,&cv->info);
 	CPUpdateInfo(cv,event);
 	needsupdate = true;
-    } else if ( cv->p.spline!=NULL && !cv->sc->inspiro ) {
-	if ( !cv->recentchange ) CVPreserveState(cv);
+    } else if ( cv->p.spline!=NULL && !cv->b.sc->inspiro ) {
+	if ( !cv->recentchange ) CVPreserveState(&cv->b);
 	CVAdjustSpline(cv);
 	CVSetCharChanged(cv,true);
 	needsupdate = true;
     } else {
-	if ( !cv->recentchange ) CVPreserveState(cv);
+	if ( !cv->recentchange ) CVPreserveState(&cv->b);
 	did_a_merge = CVMoveSelection(cv,
 		cv->info.x-cv->last_c.x,cv->info.y-cv->last_c.y,
 		event->u.mouse.state);
 	needsupdate = true;
     }
     if ( needsupdate )
-	SCUpdateAll(cv->sc);
+	SCUpdateAll(cv->b.sc);
     cv->last_c.x = cv->info.x; cv->last_c.y = cv->info.y;
 return( did_a_merge );
 }
 
 void CVMouseUpPointer(CharView *cv ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
     static char *buts[3];
     buts[0] = _("_Yes");
     buts[1] = _("_No");
     buts[2] = NULL;
-#elif defined(FONTFORGE_CONFIG_GTK)
-    static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_NO, NULL };
-#endif
 
     if ( cv->widthsel ) {
-	if ( cv->sc->width<0 && cv->oldwidth>=0 ) {
+	if ( cv->b.sc->width<0 && cv->oldwidth>=0 ) {
 	    if ( gwwv_ask(_("Negative Width"), (const char **) buts, 0, 1, _("Negative character widths are not allowed in TrueType.\nDo you really want a negative width?") )==1 )
-		cv->sc->width = cv->oldwidth;
+		cv->b.sc->width = cv->oldwidth;
 	}
-	SCSynchronizeWidth(cv->sc,cv->sc->width,cv->oldwidth,NULL);
+	SCSynchronizeWidth(cv->b.sc,cv->b.sc->width,cv->oldwidth,NULL);
 	cv->expandedge = ee_none;
 	GDrawSetCursor(cv->v,ct_mypointer);
     }
     if ( cv->vwidthsel ) {
-	if ( cv->sc->vwidth<0 && cv->oldvwidth>=0 ) {
+	if ( cv->b.sc->vwidth<0 && cv->oldvwidth>=0 ) {
 	    if ( gwwv_ask(_("Negative Width"), (const char **) buts, 0, 1, _("Negative character widths are not allowed in TrueType.\nDo you really want a negative width?") )==1 )
-		cv->sc->vwidth = cv->oldvwidth;
+		cv->b.sc->vwidth = cv->oldvwidth;
 	}
 	cv->expandedge = ee_none;
 	GDrawSetCursor(cv->v,ct_mypointer);
@@ -1284,10 +1296,10 @@ void CVMouseUpPointer(CharView *cv ) {
 	CVUndoCleanup(cv);
 	cv->expandedge = ee_none;
 	GDrawSetCursor(cv->v,ct_mypointer);
-    } else if ( CVAllSelected(cv) && cv->drawmode==dm_fore && cv->p.spline==NULL &&
+    } else if ( CVAllSelected(cv) && cv->b.drawmode==dm_fore && cv->p.spline==NULL &&
 	    !cv->p.prevcp && !cv->p.nextcp && cv->info.y==cv->p.cy ) {
-	SCUndoSetLBearingChange(cv->sc,(int) rint(cv->info.x-cv->p.cx));
-	SCSynchronizeLBearing(cv->sc,cv->info.x-cv->p.cx);
+	SCUndoSetLBearingChange(cv->b.sc,(int) rint(cv->info.x-cv->p.cx));
+	SCSynchronizeLBearing(cv->b.sc,cv->info.x-cv->p.cx);
     }
     CPEndInfo(cv);
 }
@@ -1336,8 +1348,8 @@ static int SelectPointsWithin(CharView *cv, BasePoint *base, double fuzz, BasePo
     spiro_cp *anycp = NULL;
 
     CVClearSel(cv);
-    if ( cv->sc->inspiro ) {
-	for ( ss= cv->layerheads[cv->drawmode]->splines; ss!=NULL; ss=ss->next ) {
+    if ( cv->b.sc->inspiro ) {
+	for ( ss= cv->b.layerheads[cv->b.drawmode]->splines; ss!=NULL; ss=ss->next ) {
 	    for ( i=0; i<ss->spiro_cnt-1; ++i ) {
 		spiro_cp *cp = &ss->spiros[i];
 		if ( bounds!=NULL ) {
@@ -1370,10 +1382,10 @@ static int SelectPointsWithin(CharView *cv, BasePoint *base, double fuzz, BasePo
 	    here.y = anycp->y;
 	    CVShowPoint(cv,&here);
 	}
-	SCUpdateAll(cv->sc);
+	SCUpdateAll(cv->b.sc);
 return( anycp!=NULL );
     } else {
-	for ( ss= cv->layerheads[cv->drawmode]->splines; ss!=NULL; ss=ss->next ) {
+	for ( ss= cv->b.layerheads[cv->b.drawmode]->splines; ss!=NULL; ss=ss->next ) {
 	    for ( sp=ss->first; ; ) {
 		if ( bounds!=NULL ) {
 		    if ( sp->me.x >= base->x && sp->me.x <= base->x+bounds->x &&
@@ -1406,7 +1418,7 @@ return( anycp!=NULL );
 	    GDrawBeep(NULL);
 	} else
 	    CVShowPoint(cv,&any->me);
-	SCUpdateAll(cv->sc);
+	SCUpdateAll(cv->b.sc);
 return( any!=NULL );
     }
 }
@@ -1679,4 +1691,3 @@ void CVSelectPointAt(CharView *cv) {
 	GDrawProcessOneEvent(NULL);
     GDrawSetVisible(pa.gw,false);
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

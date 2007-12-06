@@ -24,33 +24,29 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "pfaeditui.h"
+#include "fontforgevw.h"
 #include <math.h>
 #include "ustring.h"
 
-static int askfraction(int *xoff, int *yoff) {
-    static int lastx=1, lasty = 3;
-    char buffer[30];
-    char *ret, *end, *end2;
-    int xv, yv;
+void skewselect(BVTFunc *bvtf,real t) {
+    real off, bestoff;
+    int i, best;
 
-    sprintf( buffer, "%d:%d", lastx, lasty );
-    ret = ff_ask_string(_("Skew"),buffer,_("Skew Ratio"));
-    if ( ret==NULL )
-return( 0 );
-    xv = strtol(ret,&end,10);
-    yv = strtol(end+1,&end2,10);
-    if ( xv==0 || xv>10 || xv<-10 || yv<=0 || yv>10 || *end!=':' || *end2!='\0' ) {
-	ff_post_error( _("Bad Number"),_("Bad Number") );
-	free(ret);
-return( 0 );
+    bestoff = 10; best = 0;
+    for ( i=1; i<=10; ++i ) {
+	if (  (off = t*i-rint(t*i))<0 ) off = -off;
+	if ( off<bestoff ) {
+	    bestoff = off;
+	    best = i;
+	}
     }
-    free(ret);
-    *xoff = lastx = xv; *yoff = lasty = yv;
-return( 1 );
+
+    bvtf->func = bvt_skew;
+    bvtf->x = rint(t*best);
+    bvtf->y = best;
 }
 
-static void BCTransFunc(BDFChar *bc,enum bvtools type,int xoff,int yoff) {
+void BCTransFunc(BDFChar *bc,enum bvtools type,int xoff,int yoff) {
     int i, j;
     uint8 *pt, *end, *pt2, *bitmap;
     int bpl, temp;
@@ -226,7 +222,7 @@ static void BCTransFunc(BDFChar *bc,enum bvtools type,int xoff,int yoff) {
     BCCompressBitmap(bc);
 }
 
-void BCTrans(BDFFont *bdf,BDFChar *bc,BVTFunc *bvts,FontView *fv ) {
+void BCTrans(BDFFont *bdf,BDFChar *bc,BVTFunc *bvts,FontViewBase *fv ) {
     int xoff=0, yoff=0, i;
 
     if ( bvts[0].func==bvt_none )
@@ -265,19 +261,6 @@ void BCRotateCharForVert(BDFChar *bc,BDFChar *from, BDFFont *frombdf) {
     bc->ymin += ymax-bc->ymax-1; bc->ymax = ymax-1;
     bc->width = frombdf->pixelsize;
 }
-
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-void BVRotateBitmap(BitmapView *bv,enum bvtools type ) {
-    int xoff=0, yoff=0;
-
-    if ( type==bvt_skew )
-	if ( !askfraction(&xoff,&yoff))
-return;
-    BCPreserveState(bv->bc);
-    BCTransFunc(bv->bc,type,xoff,yoff);
-    BCCharChangedUpdate(bv->bc);
-}
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static void BCExpandBitmap(BDFChar *bc, int x, int y) {
     int xmin, xmax, bpl, ymin, ymax;
@@ -324,7 +307,6 @@ static void BCExpandBitmap(BDFChar *bc, int x, int y) {
     }
 }
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 void BCSetPoint(BDFChar *bc, int x, int y, int color ) {
 
     if ( x<bc->xmin || x>bc->xmax || y<bc->ymin || y>bc->ymax ) {
@@ -341,167 +323,6 @@ return;		/* Already clear */
     else
 	bc->bitmap[y*bc->bytes_per_line+(x>>3)] |= (1<<(7-(x&7)));
 }
-
-static void BCBresenhamLine(BitmapView *bv,
-	void (*SetPoint)(BitmapView *,int x, int y, void *data),void *data) {
-    /* Draw a line from (pressed_x,pressed_y) to (info_x,info_y) */
-    /*  and call SetPoint for each point */
-    int dx,dy,incr1,incr2,d,x,y,xend;
-    int x1 = bv->pressed_x, y1 = bv->pressed_y;
-    int x2 = bv->info_x, y2 = bv->info_y;
-    int up;
-
-    if ( y2<y1 ) {
-	y2 ^= y1; y1 ^= y2; y2 ^= y1;
-	x2 ^= x1; x1 ^= x2; x2 ^= x1;
-    }
-    dy = y2-y1;
-    if (( dx = x2-x1)<0 ) dx=-dx;
-
-    if ( dy<=dx ) {
-	d = 2*dy-dx;
-	incr1 = 2*dy;
-	incr2 = 2*(dy-dx);
-	if ( x1>x2 ) {
-	    x = x2; y = y2;
-	    xend = x1;
-	    up = -1;
-	} else {
-	    x = x1; y = y1;
-	    xend = x2;
-	    up = 1;
-	}
-	(SetPoint)(bv,x,y,data);
-	while ( x<xend ) {
-	    ++x;
-	    if ( d<0 ) d+=incr1;
-	    else {
-		y += up;
-		d += incr2;
-	    }
-	    (SetPoint)(bv,x,y,data);
-	}
-    } else {
-	d = 2*dx-dy;
-	incr1 = 2*dx;
-	incr2 = 2*(dx-dy);
-	x = x1; y = y1;
-	if ( x1>x2 ) up = -1; else up = 1;
-	(SetPoint)(bv,x,y,data);
-	while ( y<y2 ) {
-	    ++y;
-	    if ( d<0 ) d+=incr1;
-	    else {
-		x += up;
-		d += incr2;
-	    }
-	    (SetPoint)(bv,x,y,data);
-	}
-    }
-}
-
-static void CirclePoints(BitmapView *bv,int x, int y, int ox, int oy, int xmod, int ymod,
-	void (*SetPoint)(BitmapView *,int x, int y, void *data),void *data) {
-    /* we draw the quadrant between Pi/2 and 0 */
-    if ( bv->active_tool == bvt_filledelipse ) {
-	int j;
-	for ( j=2*oy+ymod-y; j<=y; ++j ) {
-	    SetPoint(bv,x,j,data);
-	    SetPoint(bv,2*ox+xmod-x,j,data);
-	}
-    } else {
-	SetPoint(bv,x,y,data);
-	SetPoint(bv,x,2*oy+ymod-y,data);
-	SetPoint(bv,2*ox+xmod-x,y,data);
-	SetPoint(bv,2*ox+xmod-x,2*oy+ymod-y,data);
-    }
-}
-
-void BCGeneralFunction(BitmapView *bv,
-	void (*SetPoint)(BitmapView *,int x, int y, void *data),void *data) {
-    int i, j;
-    int xmin, xmax, ymin, ymax;
-    int ox, oy, modx, mody;
-    int dx, dy, c,d,dx2,dy2,xp,yp;
-    int x,y;
-
-    if ( bv->pressed_x<bv->info_x ) {
-	xmin = bv->pressed_x; xmax = bv->info_x;
-    } else {
-	xmin = bv->info_x; xmax = bv->pressed_x;
-    }
-    if ( bv->pressed_y<bv->info_y ) {
-	ymin = bv->pressed_y; ymax = bv->info_y;
-    } else {
-	ymin = bv->info_y; ymax = bv->pressed_y;
-    }
-
-    switch ( bv->active_tool ) {
-      case bvt_line:
-	BCBresenhamLine(bv,SetPoint,data);
-      break;
-      case bvt_rect:
-	for ( i=xmin; i<=xmax; ++i ) {
-	    SetPoint(bv,i,bv->pressed_y,data);
-	    SetPoint(bv,i,bv->info_y,data);
-	}
-	for ( i=ymin; i<=ymax; ++i ) {
-	    SetPoint(bv,bv->pressed_x,i,data);
-	    SetPoint(bv,bv->info_x,i,data);
-	}
-      break;
-      case bvt_filledrect:
-	for ( i=xmin; i<=xmax; ++i ) {
-	    for ( j=ymin; j<=ymax; ++j )
-		SetPoint(bv,i,j,data);
-	}
-      break;
-      case bvt_elipse: case bvt_filledelipse:
-	if ( xmax==xmin || ymax==ymin )		/* degenerate case */
-	    BCBresenhamLine(bv,SetPoint,data);
-	else {
-	    ox = floor( (xmin+xmax)/2.0 );
-	    oy = floor( (ymin+ymax)/2.0 );
-	    modx = (xmax+xmin)&1; mody = (ymax+ymin)&1;
-	    dx = ox-xmin;
-	    dy = oy-ymin;
-	    dx2 = dx*dx; dy2 = dy*dy;
-	    xp = 0; yp = 4*dy*dx2;
-	    c = dy2+(2-4*dy)*dx2; d = 2*dy2 + (1-2*dy)*dx2;
-	    x = ox+modx; y = ymax;
-	    CirclePoints(bv,x,y,ox,oy,modx,mody,SetPoint,data);
-	    while ( x!=xmax ) {
-#define move_right() (c += 4*dy2+xp, d += 6*dy2+xp, ++x, xp += 4*dy2 )
-#define move_down() (c += 6*dx2-yp, d += 4*dx2-yp, --y, yp -= 4*dx2 )
-		if ( d<0 || y==0 )
-		    move_right();
-		else if ( c > 0 )
-		    move_down();
-		else {
-		    move_right();
-		    move_down();
-		}
-#undef move_right
-#undef move_down
-		if ( y<oy )		/* degenerate cases */
-	    break;
-		CirclePoints(bv,x,y,ox,oy,modx,mody,SetPoint,data);
-	    }
-	    if ( bv->active_tool==bvt_elipse ) {
-		/* there may be quite a gap between the the two semi-circles */
-		/*  because the tangent is nearly vertical here. So just fill */
-		/*  it in */
-		int j;
-		for ( j=2*oy+mody-y; j<=y; ++j ) {
-		    SetPoint(bv,x,j,data);
-		    SetPoint(bv,2*ox+modx-x,j,data);
-		}
-	    }
-	}
-      break;
-    }
-}
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 void BDFFloatFree(BDFFloat *sel) {
     if ( sel==NULL )

@@ -33,11 +33,7 @@
 #include <utype.h>
 #include <unistd.h>
 #include <locale.h>
-#ifdef FONTFORGE_CONFIG_GTK
-# include <gtk/gtk.h>
-#else
 # include <pwd.h>
-#endif
 #include <stdarg.h>
 #include <time.h>
 #include "psfont.h"
@@ -53,6 +49,7 @@
 #endif
 
 extern int autohint_before_generate;
+char *xuid=NULL;
 
 typedef void (*DumpChar)(int ch,void *data);
 struct fileencryptdata {
@@ -1601,13 +1598,6 @@ static void dumpfontinfo(void (*dumpchar)(int ch,void *data), void *data, Spline
 }
 
 const char *GetAuthor(void) {
-#if defined( FONTFORGE_CONFIG_GTK )
-    static char *author;
-
-    if ( author==NULL )
-	author = g_get_real_name();
-return( author );
-#else
     struct passwd *pwd;
     static char author[200] = { '\0' };
     const char *ret = NULL, *pt;
@@ -1637,7 +1627,6 @@ return( author );
     endpwent();
 /* End comment */
 return( ret );
-#endif
 }
 
 static void dumpfontcomments(void (*dumpchar)(int ch,void *data), void *data,

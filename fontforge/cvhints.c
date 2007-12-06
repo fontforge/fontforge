@@ -25,7 +25,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include "ustring.h"
 #include <math.h>
 
@@ -35,10 +34,10 @@ int CVTwoForePointsSelected(CharView *cv, SplinePoint **sp1, SplinePoint **sp2) 
     int cnt;
 
     if ( sp1!=NULL ) { *sp1 = NULL; *sp2 = NULL; }
-    if ( cv->drawmode!=dm_fore )
+    if ( cv->b.drawmode!=dm_fore )
 return( false ) ;
     cnt = 0;
-    for ( spl = cv->sc->layers[ly_fore].splines; spl!=NULL; spl = spl->next ) {
+    for ( spl = cv->b.sc->layers[ly_fore].splines; spl!=NULL; spl = spl->next ) {
 	first = NULL;
 	for ( test = spl->first; test!=first; test = test->next->to ) {
 	    if ( test->selected ) {
@@ -73,10 +72,10 @@ int CVNumForePointsSelected(CharView *cv, BasePoint **bp) {
     BasePoint *bps[4];
     int i, cnt;
 
-    if ( cv->drawmode!=dm_fore )
+    if ( cv->b.drawmode!=dm_fore )
 return( 0 ) ;
     cnt = 0;
-    for ( spl = cv->sc->layers[ly_fore].splines; spl!=NULL; spl = spl->next ) {
+    for ( spl = cv->b.sc->layers[ly_fore].splines; spl!=NULL; spl = spl->next ) {
 	first = NULL;
 	for ( test = spl->first; test!=first; test = test->next->to ) {
 	    if ( test->selected ) {
@@ -134,9 +133,9 @@ static void RH_SetNextPrev(ReviewHintData *hd) {
 	GGadgetSetEnabled(GWidgetGetControl(hd->gw,CID_Width),true);
 	GGadgetSetEnabled(GWidgetGetControl(hd->gw,CID_Next),hd->active->next!=NULL);
 	if ( hd->ishstem )
-	    GGadgetSetEnabled(GWidgetGetControl(hd->gw,CID_Prev),hd->active!=hd->cv->sc->hstem);
+	    GGadgetSetEnabled(GWidgetGetControl(hd->gw,CID_Prev),hd->active!=hd->cv->b.sc->hstem);
 	else
-	    GGadgetSetEnabled(GWidgetGetControl(hd->gw,CID_Prev),hd->active!=hd->cv->sc->vstem);
+	    GGadgetSetEnabled(GWidgetGetControl(hd->gw,CID_Prev),hd->active!=hd->cv->b.sc->vstem);
     }
     GDrawRequestExpose(hd->gw,NULL,false);
 }
@@ -151,14 +150,14 @@ static void RH_SetupHint(ReviewHintData *hd) {
 	hd->lastactive->active = false;
 
     pos = cnt = 0;
-    for ( h=hd->ishstem ? hd->cv->sc->hstem : hd->cv->sc->vstem; h!=NULL; h=h->next ) {
+    for ( h=hd->ishstem ? hd->cv->b.sc->hstem : hd->cv->b.sc->vstem; h!=NULL; h=h->next ) {
 	++cnt;
 	if ( h==hd->active ) pos=cnt;
     }
     sprintf( buffer,"%d/%d", pos, cnt );
     if ( cnt==3 ) {
 	StemInfo *h2, *h3;
-	h = hd->ishstem ? hd->cv->sc->hstem : hd->cv->sc->vstem;
+	h = hd->ishstem ? hd->cv->b.sc->hstem : hd->cv->b.sc->vstem;
 	h2 = h->next; h3 = h2->next;
 	if ( h->width == h2->width && h2->width==h3->width &&
 		h2->start-h->start == h3->start-h2->start )
@@ -185,8 +184,8 @@ static void RH_SetupHint(ReviewHintData *hd) {
     }
     if ( hd->lastactive!=hd->active ) {
 	hd->lastactive = hd->active;
-	SCOutOfDateBackground(hd->cv->sc);
-	SCUpdateAll(hd->cv->sc);	/* Changing the active Hint means we should redraw everything */
+	SCOutOfDateBackground(hd->cv->b.sc);
+	SCUpdateAll(hd->cv->b.sc);	/* Changing the active Hint means we should redraw everything */
     }
     RH_SetNextPrev(hd);
 }
@@ -212,7 +211,7 @@ return( 0 );
 }
 
 static void RH_MovePoints(ReviewHintData *hd,StemInfo *active,int start,int width) {
-    SplineChar *sc = hd->cv->sc;
+    SplineChar *sc = hd->cv->b.sc;
     SplineSet *spl;
     SplinePoint *sp;
     int which;
@@ -301,15 +300,15 @@ return( true );
 		hd->active->ghost = false;
 	    wasconflict = hd->active->hasconflicts;
 	    if ( hd->ishstem )
-		hd->cv->sc->hconflicts = StemListAnyConflicts(hd->cv->sc->hstem);
+		hd->cv->b.sc->hconflicts = StemListAnyConflicts(hd->cv->b.sc->hstem);
 	    else
-		hd->cv->sc->vconflicts = StemListAnyConflicts(hd->cv->sc->vstem);
-	    hd->cv->sc->manualhints = true;
+		hd->cv->b.sc->vconflicts = StemListAnyConflicts(hd->cv->b.sc->vstem);
+	    hd->cv->b.sc->manualhints = true;
 	    hd->changed = true;
 	    if ( wasconflict!=hd->active->hasconflicts )
 		GGadgetSetVisible(GWidgetGetControl(hd->gw,CID_Overlap),hd->active->hasconflicts);
-	    SCOutOfDateBackground(hd->cv->sc);
-	    SCUpdateAll(hd->cv->sc);
+	    SCOutOfDateBackground(hd->cv->b.sc);
+	    SCUpdateAll(hd->cv->b.sc);
 	}
     }
 return( true );
@@ -318,7 +317,7 @@ return( true );
 static int RH_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	ReviewHintData *hd = GDrawGetUserData(GGadgetGetWindow(g));
-	SplineChar *sc = hd->cv->sc;
+	SplineChar *sc = hd->cv->b.sc;
 	StemInfo *curh = sc->hstem, *curv = sc->vstem;
 	/* We go backwards here, but not for long. The point is to go back to */
 	/*  the original hint state so we can preserve it, now that we know we*/
@@ -332,28 +331,28 @@ static int RH_OK(GGadget *g, GEvent *e) {
 	if ( hd->lastactive!=NULL )
 	    hd->lastactive->active = false;
 	if ( hd->changed )
-	    SCClearHintMasks(hd->cv->sc,true);
+	    SCClearHintMasks(hd->cv->b.sc,true);
 	/* Everything else got done as we went along... */
-	SCOutOfDateBackground(hd->cv->sc);
-	SCUpdateAll(hd->cv->sc);
-	SCHintsChanged(hd->cv->sc);
+	SCOutOfDateBackground(hd->cv->b.sc);
+	SCUpdateAll(hd->cv->b.sc);
+	SCHintsChanged(hd->cv->b.sc);
 	hd->done = true;
     }
 return( true );
 }
 
 static void DoCancel(ReviewHintData *hd) {
-    StemInfosFree(hd->cv->sc->hstem);
-    StemInfosFree(hd->cv->sc->vstem);
-    hd->cv->sc->hstem = hd->oldh;
-    hd->cv->sc->vstem = hd->oldv;
-    hd->cv->sc->hconflicts = StemListAnyConflicts(hd->cv->sc->hstem);
-    hd->cv->sc->vconflicts = StemListAnyConflicts(hd->cv->sc->vstem);
-    hd->cv->sc->manualhints = hd->oldmanual;
+    StemInfosFree(hd->cv->b.sc->hstem);
+    StemInfosFree(hd->cv->b.sc->vstem);
+    hd->cv->b.sc->hstem = hd->oldh;
+    hd->cv->b.sc->vstem = hd->oldv;
+    hd->cv->b.sc->hconflicts = StemListAnyConflicts(hd->cv->b.sc->hstem);
+    hd->cv->b.sc->vconflicts = StemListAnyConflicts(hd->cv->b.sc->vstem);
+    hd->cv->b.sc->manualhints = hd->oldmanual;
     if ( hd->undocreated )
-	SCDoUndo(hd->cv->sc,ly_fore);
-    SCOutOfDateBackground(hd->cv->sc);
-    SCUpdateAll(hd->cv->sc);
+	SCDoUndo(hd->cv->b.sc,ly_fore);
+    SCOutOfDateBackground(hd->cv->b.sc);
+    SCUpdateAll(hd->cv->b.sc);
     hd->done = true;
 }
 
@@ -370,28 +369,28 @@ static int RH_Remove(GGadget *g, GEvent *e) {
 	StemInfo *prev;
 	if ( hd->active==NULL )
 return( true );			/* Eh? */
-	if ( hd->active==hd->cv->sc->hstem ) {
-	    hd->cv->sc->hstem = hd->active->next;
-	    prev = hd->cv->sc->hstem;
-	} else if ( hd->active==hd->cv->sc->vstem ) {
-	    hd->cv->sc->vstem = hd->active->next;
-	    prev = hd->cv->sc->vstem;
+	if ( hd->active==hd->cv->b.sc->hstem ) {
+	    hd->cv->b.sc->hstem = hd->active->next;
+	    prev = hd->cv->b.sc->hstem;
+	} else if ( hd->active==hd->cv->b.sc->vstem ) {
+	    hd->cv->b.sc->vstem = hd->active->next;
+	    prev = hd->cv->b.sc->vstem;
 	} else {
-	    prev = hd->ishstem ? hd->cv->sc->hstem : hd->cv->sc->vstem;
+	    prev = hd->ishstem ? hd->cv->b.sc->hstem : hd->cv->b.sc->vstem;
 	    for ( ; prev->next!=hd->active && prev->next!=NULL; prev = prev->next );
 	    prev->next = hd->active->next;
 	}
 	if ( hd->ishstem )
-	    hd->cv->sc->hconflicts = StemListAnyConflicts(hd->cv->sc->hstem);
+	    hd->cv->b.sc->hconflicts = StemListAnyConflicts(hd->cv->b.sc->hstem);
 	else
-	    hd->cv->sc->vconflicts = StemListAnyConflicts(hd->cv->sc->vstem);
-	hd->cv->sc->manualhints = true;
+	    hd->cv->b.sc->vconflicts = StemListAnyConflicts(hd->cv->b.sc->vstem);
+	hd->cv->b.sc->manualhints = true;
 	hd->changed = true;
 	StemInfoFree( hd->active );
 	hd->active = prev;
-	SCOutOfDateBackground(hd->cv->sc);
+	SCOutOfDateBackground(hd->cv->b.sc);
 	RH_SetupHint(hd);
-	/*SCUpdateAll(hd->cv->sc);*/	/* Done in RH_SetupHint now */
+	/*SCUpdateAll(hd->cv->b.sc);*/	/* Done in RH_SetupHint now */
     }
 return( true );
 }
@@ -400,7 +399,7 @@ static int RH_Add(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	ReviewHintData *hd = GDrawGetUserData(GGadgetGetWindow(g));
 	CVCreateHint(hd->cv,hd->ishstem,false);
-	hd->active = hd->ishstem ? hd->cv->sc->hstem : hd->cv->sc->vstem;
+	hd->active = hd->ishstem ? hd->cv->b.sc->hstem : hd->cv->b.sc->vstem;
 	RH_SetupHint(hd);
     }
 return( true );
@@ -414,7 +413,7 @@ static int RH_NextPrev(GGadget *g, GEvent *e) {
 	    if ( hd->active->next !=NULL )
 		hd->active = hd->active->next;
 	} else {
-	    prev = hd->ishstem ? hd->cv->sc->hstem : hd->cv->sc->vstem;
+	    prev = hd->ishstem ? hd->cv->b.sc->hstem : hd->cv->b.sc->vstem;
 	    for ( ; prev->next!=hd->active && prev->next!=NULL; prev = prev->next );
 	    hd->active = prev;
 	}
@@ -427,7 +426,7 @@ static int RH_HVStem(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
 	ReviewHintData *hd = GDrawGetUserData(GGadgetGetWindow(g));
 	hd->ishstem = GGadgetIsChecked(GWidgetGetControl(GGadgetGetWindow(g),CID_HStem));
-	hd->active =  hd->ishstem ? hd->cv->sc->hstem : hd->cv->sc->vstem;
+	hd->active =  hd->ishstem ? hd->cv->b.sc->hstem : hd->cv->b.sc->vstem;
 	RH_SetupHint(hd);
     }
 return( true );
@@ -626,24 +625,24 @@ void CVReviewHints(CharView *cv) {
 	GGadgetsCreate(gw,gcd);
     } else
 	gw = hd.gw;
-    if ( cv->sc->hstem==NULL && cv->sc->vstem==NULL )
+    if ( cv->b.sc->hstem==NULL && cv->b.sc->vstem==NULL )
 	hd.active = NULL;
-    else if ( cv->sc->hstem!=NULL && cv->sc->vstem!=NULL ) {
+    else if ( cv->b.sc->hstem!=NULL && cv->b.sc->vstem!=NULL ) {
 	if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_HStem)))
-	    hd.active = cv->sc->hstem;
+	    hd.active = cv->b.sc->hstem;
 	else
-	    hd.active = cv->sc->vstem;
-    } else if ( cv->sc->hstem!=NULL ) {
+	    hd.active = cv->b.sc->vstem;
+    } else if ( cv->b.sc->hstem!=NULL ) {
 	GGadgetSetChecked(GWidgetGetControl(gw,CID_HStem),true);
-	hd.active = cv->sc->hstem;
+	hd.active = cv->b.sc->hstem;
     } else {
 	GGadgetSetChecked(GWidgetGetControl(gw,CID_VStem),true);
-	hd.active = cv->sc->vstem;
+	hd.active = cv->b.sc->vstem;
     }
-    hd.ishstem = (hd.active==cv->sc->hstem);
-    hd.oldh = StemInfoCopy(cv->sc->hstem);
-    hd.oldv = StemInfoCopy(cv->sc->vstem);
-    hd.oldmanual = cv->sc->manualhints;
+    hd.ishstem = (hd.active==cv->b.sc->hstem);
+    hd.oldh = StemInfoCopy(cv->b.sc->hstem);
+    hd.oldv = StemInfoCopy(cv->b.sc->vstem);
+    hd.oldmanual = cv->b.sc->manualhints;
     hd.changed = false;
     RH_SetupHint(&hd);
     if ( hd.active!=NULL ) {
@@ -678,8 +677,8 @@ static int CH_OK(GGadget *g, GEvent *e) {
 	if ( err )
 return(true);
 	if ( hd->preservehints ) {
-	    SCPreserveHints(hd->cv->sc);
-	    SCHintsChanged(hd->cv->sc);
+	    SCPreserveHints(hd->cv->b.sc);
+	    SCHintsChanged(hd->cv->b.sc);
 	}
 	h = chunkalloc(sizeof(StemInfo));
 	if ( width==-21 || width==-20 ) {
@@ -690,19 +689,19 @@ return(true);
 	h->start = base;
 	h->width = width;
 	if ( hd->ishstem ) {
-	    SCGuessHHintInstancesAndAdd(hd->cv->sc,h,0x80000000,0x80000000);
-	    hd->cv->sc->hconflicts = StemListAnyConflicts(hd->cv->sc->hstem);
+	    SCGuessHHintInstancesAndAdd(hd->cv->b.sc,h,0x80000000,0x80000000);
+	    hd->cv->b.sc->hconflicts = StemListAnyConflicts(hd->cv->b.sc->hstem);
 	} else {
-	    SCGuessVHintInstancesAndAdd(hd->cv->sc,h,0x80000000,0x80000000);
-	    hd->cv->sc->vconflicts = StemListAnyConflicts(hd->cv->sc->vstem);
+	    SCGuessVHintInstancesAndAdd(hd->cv->b.sc,h,0x80000000,0x80000000);
+	    hd->cv->b.sc->vconflicts = StemListAnyConflicts(hd->cv->b.sc->vstem);
 	}
-	hd->cv->sc->manualhints = true;
-	if ( h!=NULL && hd->cv->sc->parent->mm==NULL )
-	    SCModifyHintMasksAdd(hd->cv->sc,h);
+	hd->cv->b.sc->manualhints = true;
+	if ( h!=NULL && hd->cv->b.sc->parent->mm==NULL )
+	    SCModifyHintMasksAdd(hd->cv->b.sc,h);
 	else
-	    SCClearHintMasks(hd->cv->sc,true);
-	SCOutOfDateBackground(hd->cv->sc);
-	SCUpdateAll(hd->cv->sc);
+	    SCClearHintMasks(hd->cv->b.sc,true);
+	SCOutOfDateBackground(hd->cv->b.sc);
+	SCUpdateAll(hd->cv->b.sc);
 	hd->done = true;
     }
 return( true );
@@ -885,4 +884,3 @@ void SCRemoveSelectedMinimumDistances(SplineChar *sc,int inx) {
 	}
     }
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

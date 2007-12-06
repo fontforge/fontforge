@@ -24,7 +24,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "pfaeditui.h"
+#include "fontforgevw.h"
 #include <math.h>
 #include <sys/types.h>
 #include <dirent.h>
@@ -36,9 +36,7 @@
 void SCAppendEntityLayers(SplineChar *sc, Entity *ent) {
     int cnt, pos;
     Entity *e, *enext;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     Layer *old = sc->layers;
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
     for ( e=ent, cnt=0; e!=NULL; e=e->next, ++cnt );
     pos = sc->layer_cnt;
@@ -88,9 +86,7 @@ return;
 	free(e);
     }
     sc->layer_cnt += cnt;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     SCMoreLayers(sc,old);
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 }
 #endif
 
@@ -900,4 +896,161 @@ void SCAddScaleImage(SplineChar *sc,GImage *image,int doclear, int layer) {
     if ( doclear )
 	ImageListsFree(sc->layers[layer].images); sc->layers[layer].images = NULL;
     SCInsertImage(sc,image,scale,sc->parent->ascent,0,layer);
+}
+
+int FVImportImages(FontViewBase *fv,char *path,int format,int toback, int flags) {
+    GImage *image;
+    /*struct _GImage *base;*/
+    int tot;
+    char *start = path, *endpath=path;
+    int i;
+    SplineChar *sc;
+
+    tot = 0;
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i]) {
+	sc = SFMakeChar(fv->sf,fv->map,i);
+	endpath = strchr(start,';');
+	if ( endpath!=NULL ) *endpath = '\0';
+	if ( format==fv_image ) {
+	    image = GImageRead(start);
+	    if ( image==NULL ) {
+		ff_post_error(_("Bad image file"),_("Bad image file: %.100s"),start);
+return(false);
+	    }
+	    ++tot;
+#ifdef FONTFORGE_CONFIG_TYPE3
+	    SCAddScaleImage(sc,image,true,toback?ly_back:ly_fore);
+#else
+	    SCAddScaleImage(sc,image,true,ly_back);
+#endif
+#ifndef _NO_LIBXML
+	} else if ( format==fv_svg ) {
+	    SCImportSVG(sc,toback?ly_back:ly_fore,start,NULL,0,flags&sf_clearbeforeinput);
+	    ++tot;
+	} else if ( format==fv_glif ) {
+	    SCImportGlif(sc,toback?ly_back:ly_fore,start,NULL,0,flags&sf_clearbeforeinput);
+	    ++tot;
+#endif
+	} else if ( format==fv_eps ) {
+	    SCImportPS(sc,toback?ly_back:ly_fore,start,flags&sf_clearbeforeinput,flags&~sf_clearbeforeinput);
+	    ++tot;
+#ifndef _NO_PYTHON
+	} else if ( format>=fv_pythonbase ) {
+	    PyFF_SCImport(sc,format-fv_pythonbase,start, toback,flags&sf_clearbeforeinput);
+	    ++tot;
+#endif
+	}
+	if ( endpath==NULL )
+    break;
+	start = endpath+1;
+    }
+    if ( tot==0 )
+	ff_post_error(_("Nothing Selected"),_("You must select a glyph before you can import an image into it"));
+    else if ( endpath!=NULL )
+	ff_post_error(_("More Images Than Selected Glyphs"),_("More Images Than Selected Glyphs"));
+return( true );
+}
+
+int FVImportImageTemplate(FontViewBase *fv,char *path,int format,int toback, int flags) {
+    GImage *image;
+    struct _GImage *base;
+    int tot;
+    char *ext, *name, *dirname, *pt, *end;
+    int i, val;
+    int isu=false, ise=false, isc=false;
+    DIR *dir;
+    struct dirent *entry;
+    SplineChar *sc;
+    char start [1025];
+
+    ext = strrchr(path,'.');
+    name = strrchr(path,'/');
+    if ( ext==NULL ) {
+	ff_post_error(_("Bad Template"),_("Bad template, no extension"));
+return( false );
+    }
+    if ( name==NULL ) name=path-1;
+    if ( name[1]=='u' ) isu = true;
+    else if ( name[1]=='c' ) isc = true;
+    else if ( name[1]=='e' ) ise = true;
+    else {
+	ff_post_error(_("Bad Template"),_("Bad template, unrecognized format"));
+return( false );
+    }
+    if ( name<path )
+	dirname = ".";
+    else {
+	dirname = path;
+	*name = '\0';
+    }
+
+    if ( (dir = opendir(dirname))==NULL ) {
+	    ff_post_error(_("Nothing Loaded"),_("Nothing Loaded"));
+return( false );
+    }
+    
+    tot = 0;
+    while ( (entry=readdir(dir))!=NULL ) {
+	pt = strrchr(entry->d_name,'.');
+	if ( pt==NULL )
+    continue;
+	if ( strmatch(pt,ext)!=0 )
+    continue;
+	if ( !(
+		(isu && entry->d_name[0]=='u' && entry->d_name[1]=='n' && entry->d_name[2]=='i' && (val=strtol(entry->d_name+3,&end,16), end==pt)) ||
+		(isu && entry->d_name[0]=='u' && (val=strtol(entry->d_name+1,&end,16), end==pt)) ||
+		(isc && entry->d_name[0]=='c' && entry->d_name[1]=='i' && entry->d_name[2]=='d' && (val=strtol(entry->d_name+3,&end,10), end==pt)) ||
+		(ise && entry->d_name[0]=='e' && entry->d_name[1]=='n' && entry->d_name[2]=='c' && (val=strtol(entry->d_name+3,&end,10), end==pt)) ))
+    continue;
+	sprintf (start, "%s/%s", dirname, entry->d_name);
+	if ( isu ) {
+	    i = SFFindSlot(fv->sf,fv->map,val,NULL);
+	    if ( i==-1 ) {
+		ff_post_error(_("Unicode value not in font"),_("Unicode value (%x) not in font, ignored"),val);
+    continue;
+	    }
+	    sc = SFMakeChar(fv->sf,fv->map,i);
+	} else {
+	    if ( val<fv->map->enccount ) {
+		/* It's there */;
+	    } else {
+		ff_post_error(_("Encoding value not in font"),_("Encoding value (%x) not in font, ignored"),val);
+    continue;
+	    }
+	    sc = SFMakeChar(fv->sf,fv->map,val);
+	}
+	if ( format==fv_imgtemplate ) {
+	    image = GImageRead(start);
+	    if ( image==NULL ) {
+		ff_post_error(_("Bad image file"),_("Bad image file: %.100s"),start);
+    continue;
+	    }
+	    base = image->list_len==0?image->u.image:image->u.images[0];
+	    if ( base->image_type!=it_mono ) {
+		ff_post_error(_("Bad image file"),_("Bad image file, not a bitmap: %.100s"),start);
+		GImageDestroy(image);
+    continue;
+	    }
+	    ++tot;
+#ifdef FONTFORGE_CONFIG_TYPE3
+	    SCAddScaleImage(sc,image,true,toback?ly_back:ly_fore);
+#else
+	    SCAddScaleImage(sc,image,true,ly_back);
+#endif
+#ifndef _NO_LIBXML
+	} else if ( format==fv_svgtemplate ) {
+	    SCImportSVG(sc,toback?ly_back:ly_fore,start,NULL,0,flags&sf_clearbeforeinput);
+	    ++tot;
+	} else if ( format==fv_gliftemplate ) {
+	    SCImportGlif(sc,toback?ly_back:ly_fore,start,NULL,0,flags&sf_clearbeforeinput);
+	    ++tot;
+#endif
+	} else {
+	    SCImportPS(sc,toback?ly_back:ly_fore,start,flags&sf_clearbeforeinput,flags&~sf_clearbeforeinput);
+	    ++tot;
+	}
+    }
+    if ( tot==0 )
+	ff_post_error(_("Nothing Loaded"),_("Nothing Loaded"));
+return( true );
 }

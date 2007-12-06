@@ -25,25 +25,11 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 
 #ifndef _CursorsMustBe16x16
 # define _CursorsMustBe16x16	0	/* X on Mac OSX can't handle anything bigger than 16x16 cursors (I think, it seems to manage smaller ones) */
 #endif
 
-#ifdef FONTFORGE_CONFIG_NO_WINDOWING_UI
- /* this file is pointless */
-#elif defined(FONTFORGE_CONFIG_GTK)
-GdkCursor *ct_magplus, *ct_magminus, *ct_mypointer,
-	*ct_circle, *ct_square, *ct_triangle, *ct_pen,
-	*ct_ruler, *ct_knife, *ct_rotate, *ct_skew, *ct_scale, *ct_flip,
-	*ct_3drotate, *ct_perspective,
-	*ct_updown, *ct_leftright, *ct_nesw, *ct_nwse,
-	*ct_rect, *ct_elipse, *ct_poly, *ct_star, *ct_filledrect, *ct_filledelipse,
-	*ct_pencil, *ct_shift, *ct_line, *ct_myhand, *ct_setwidth,
-	*ct_kerning, *ct_rbearing, *ct_lbearing, *ct_eyedropper,
-	*ct_prohibition, *ct_ddcursor;
-#else
 GCursor ct_magplus, ct_magminus, ct_mypointer, ct_circle, ct_square, ct_triangle,
 	ct_ruler, ct_pen, ct_knife, ct_rotate, ct_skew, ct_scale, ct_flip,
 	ct_3drotate, ct_perspective, ct_hvcircle, ct_g2circle;
@@ -54,7 +40,6 @@ GCursor ct_rbearing, ct_kerning, ct_lbearing;
 GCursor ct_prohibition, ct_ddcursor;
 GCursor ct_spiroleft, ct_spiroright;
 GWindow logo_icon;
-#endif
 
 #define magplus_width 16
 #define magplus_height 16
@@ -678,207 +663,6 @@ static unsigned char ddcursor_bits[] = {
 
 
 void InitCursors(void) {
-#ifdef FONTFORGE_CONFIG_NO_WINDOWING_UI
- /* this file is pointless */
-#elif defined(FONTFORGE_CONFIG_GTK)
-    GdkPixmap *image, *mask;
-    static GdkColor white = { 0xffffffff, 0xffff, 0xffff, 0xffff },
-		    black = { 0xffffffff, 0	, 0	, 0	 },
-		    red   = { 0xffffffff, 0xffff, 0	, 0	 },
-
-    image = gdk_pixmap_create_from_data(NULL,magplus_bits,magplus_width,magplus_height,
-	    24, &black, &white);
-    ct_magplus = gdk_cursor_new_from_pixmap( image,image,&back,&white,magplus_x_hot,
-	    magplus_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,magminus_bits,magminus_width,magminus_height,
-	    24, &black, &white);
-    ct_magminus = gdk_cursor_new_from_pixmap( image,image,&back,&white,magminus_x_hot,
-	    magminus_y_hot);
-
-    image = gdk_pixmap_create_from_data(NULL,pointercur_bits,pointercur_width,pointercur_height,
-	    24, &black, &white);
-    mask = gdk_pixmap_create_from_data(NULL,pointercurmask_bits,pointercurmask_width,pointercurmask_height,
-	    24, &black, &white);
-    ct_mypointer = gdk_cursor_new_from_pixmap( image,mask,&back,&white,pointercur_x_hot,
-	    pointercur_y_hot);
-
-    image = gdk_pixmap_create_from_data(NULL,pointercirc_bits,pointercirc_width,pointercirc_height,
-	    24, &black, &white);
-    mask = gdk_pixmap_create_from_data(NULL,pointercircmask_bits,pointercircmask_width,pointercircmask_height,
-	    24, &black, &white);
-    ct_circle = gdk_cursor_new_from_pixmap( image,mask,&back,&white,pointercirc_x_hot,
-	    pointercirc_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,pointertri_bits,pointertri_width,pointertri_height,
-	    24, &black, &white);
-    mask = gdk_pixmap_create_from_data(NULL,pointertrimask_bits,pointertrimask_width,pointertrimask_height,
-	    24, &black, &white);
-    ct_triangle = gdk_cursor_new_from_pixmap( image,mask,&back,&white,pointertri_x_hot,
-	    pointertri_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,pointersqr_bits,pointersqr_width,pointersqr_height,
-	    24, &black, &white);
-    mask = gdk_pixmap_create_from_data(NULL,pointersqrmask_bits,pointersqrmask_width,pointersqrmask_height,
-	    24, &black, &white);
-    ct_square = gdk_cursor_new_from_pixmap( image,mask,&back,&white,pointersqr_x_hot,
-	    pointersqr_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,pencur_bits,pencur_width,pencur_height,
-	    24, &black, &white);
-    mask = gdk_pixmap_create_from_data(NULL,pencurmask_bits,pencurmask_width,pencurmask_height,
-	    24, &black, &white);
-    ct_pen = gdk_cursor_new_from_pixmap( image,mask,&back,&white,pencur_x_hot,
-	    pencur_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,setwidthcur_bits,setwidthcur_width,setwidthcur_height,
-	    24, &black, &white);
-/*    mask = gdk_pixmap_create_from_data(NULL,setwidthcurmask_bits,setwidthcurmask_width,setwidthcurmask_height,
-	    24, &black, &white);*/
-    ct_setwidth = gdk_cursor_new_from_pixmap( image,image,&back,&white,setwidthcur_x_hot,
-	    setwidthcur_y_hot);
-
-    image = gdk_pixmap_create_from_data(NULL,rulercur_bits,rulercur_width,rulercur_height,
-	    24, &black, &white);
-    ct_ruler = gdk_cursor_new_from_pixmap( image,image,&back,&white,rulercur_x_hot,
-	    rulercur_y_hot);
-
-    image = gdk_pixmap_create_from_data(NULL,knifecur_bits,knifecur_width,knifecur_height,
-	    24, &black, &white);
-    mask = gdk_pixmap_create_from_data(NULL,knifecurmask_bits,knifecurmask_width,knifecurmask_height,
-	    24, &black, &white);
-    ct_knife = gdk_cursor_new_from_pixmap( image,mask,&back,&white,knifecur_x_hot,
-	    knifecur_y_hot);
-
-    image = gdk_pixmap_create_from_data(NULL,flipcur_bits,flipcur_width,flipcur_height,
-	    24, &black, &white);
-    mask = gdk_pixmap_create_from_data(NULL,flipcurmask_bits,flipcurmask_width,flipcurmask_height,
-	    24, &black, &white);
-    ct_flip = gdk_cursor_new_from_pixmap( image,mask,&red,&white,flipcur_x_hot,
-	    flipcur_y_hot);
-
-    image = gdk_pixmap_create_from_data(NULL,rotatecur_bits,rotatecur_width,rotatecur_height,
-	    24, &black, &white);
-    ct_rotate = gdk_cursor_new_from_pixmap( image,image,&red,&white,rotatecur_x_hot,
-	    rotatecur_y_hot);
-
-    image = gdk_pixmap_create_from_data(NULL,scalecur_bits,scalecur_width,scalecur_height,
-	    24, &black, &white);
-    ct_scale = gdk_cursor_new_from_pixmap( image,image,&red,&white,scalecur_x_hot,
-	    scalecur_y_hot);
-
-    image = gdk_pixmap_create_from_data(NULL,skewcur_bits,skewcur_width,skewcur_height,
-	    24, &black, &white);
-    ct_skew = gdk_cursor_new_from_pixmap( image,image,&red,&white,skewcur_x_hot,
-	    skewcur_y_hot);
-
-    image = gdk_pixmap_create_from_data(NULL,rotate3dcur_bits,rotate3dcur_width,rotate3dcur_height,
-	    24, &black, &white);
-    ct_3drotate = gdk_cursor_new_from_pixmap( image,image,&red,&white,rotate3dcur_x_hot,
-	    rotate3dcur_y_hot);
-
-    image = gdk_pixmap_create_from_data(NULL,perspectivecur_bits,perspectivecur_width,perspectivecur_height,
-	    24, &black, &white);
-    ct_perspective = gdk_cursor_new_from_pixmap( image,image,&red,&white,perspectivecur_x_hot,
-	    perspectivecur_y_hot);
-
-    image = gdk_pixmap_create_from_data(NULL,rectcur_bits,rectcur_width,rectcur_height,
-	    24, &black, &white);
-    ct_rect = gdk_cursor_new_from_pixmap( image,image,&red,&white,rectcur_x_hot,
-	    rectcur_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,elipsecur_bits,elipsecur_width,elipsecur_height,
-	    24, &black, &white);
-    ct_elipse = gdk_cursor_new_from_pixmap( image,image,&red,&white,elipsecur_x_hot,
-	    elipsecur_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,polycur_bits,polycur_width,polycur_height,
-	    24, &black, &white);
-    ct_poly = gdk_cursor_new_from_pixmap( image,image,&red,&white,polycur_x_hot,
-	    polycur_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,starcur_bits,starcur_width,starcur_height,
-	    24, &black, &white);
-    ct_star = gdk_cursor_new_from_pixmap( image,image,&red,&white,starcur_x_hot,
-	    starcur_y_hot);
-
-
-    image = gdk_pixmap_create_from_data(NULL,nwse_bits,nwse_width,nwse_height,
-	    24, &black, &white);
-    ct_nwse = gdk_cursor_new_from_pixmap( image,image,&red,&white,nwse_x_hot,
-	    nwse_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,nesw_bits,nesw_width,nesw_height,
-	    24, &black, &white);
-    ct_nesw = gdk_cursor_new_from_pixmap( image,image,&red,&white,nesw_x_hot,
-	    nesw_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,leftright_bits,leftright_width,leftright_height,
-	    24, &black, &white);
-    ct_leftright = gdk_cursor_new_from_pixmap( image,image,&red,&white,leftright_x_hot,
-	    leftright_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,updown_bits,updown_width,updown_height,
-	    24, &black, &white);
-    ct_updown = gdk_cursor_new_from_pixmap( image,image,&red,&white,updown_x_hot,
-	    updown_y_hot);
-
-    image = gdk_pixmap_create_from_data(NULL,pencil_bits,pencil_width,pencil_height,
-	    24, &black, &white);
-    mask = gdk_pixmap_create_from_data(NULL,pencilmask_bits,pencil_width,pencil_height,
-	    24, &black, &white);
-    ct_pencil = gdk_cursor_new_from_pixmap( image,mask,&red,&white,pencil_x_hot,
-	    pencil_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,eyedropper_bits,eyedropper_width,eyedropper_height,
-	    24, &black, &white);
-    mask = gdk_pixmap_create_from_data(NULL,eyedroppermask_bits,eyedropper_width,eyedropper_height,
-	    24, &black, &white);
-    ct_eyedropper = gdk_cursor_new_from_pixmap( image,mask,&red,&white,eyedropper_x_hot,
-	    eyedropper_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,shift_bits,shift_width,shift_height,
-	    24, &black, &white);
-    ct_shift = gdk_cursor_new_from_pixmap( image,image,&red,&white,shift_x_hot,
-	    shift_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,linecur_bits,linecur_width,linecur_height,
-	    24, &black, &white);
-    ct_linecur = gdk_cursor_new_from_pixmap( image,image,&red,&white,linecur_x_hot,
-	    linecur_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,hand_bits,hand_width,hand_height,
-	    24, &black, &white);
-    mask = gdk_pixmap_create_from_data(NULL,handmask_bits,hand_width,hand_height,
-	    24, &black, &white);
-    ct_myhand = gdk_cursor_new_from_pixmap( image,mask,&red,&white,hand_x_hot,
-	    hand_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,filledrectcur_bits,filledrectcur_width,filledrectcur_height,
-	    24, &black, &white);
-    ct_filledrect = gdk_cursor_new_from_pixmap( image,image,&red,&white,filledrectcur_x_hot,
-	    filledrectcur_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,filledelipsecur_bits,filledelipsecur_width,filledelipsecur_height,
-	    24, &black, &white);
-    ct_filledelipse = gdk_cursor_new_from_pixmap( image,image,&red,&white,filledelipsecur_x_hot,
-	    filledelipsecur_y_hot);
-
-    image = gdk_pixmap_create_from_data(NULL,kerncur_bits,kerncur_width,kerncur_height,
-	    24, &black, &white);
-    mask = gdk_pixmap_create_from_data(NULL,rbearmask_bits,kerncur_width,kerncur_height,
-	    24, &black, &white);
-    ct_kerning = gdk_cursor_new_from_pixmap( image,mask,&red,&white,kerncur_x_hot,
-	    kerncur_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,rbearcur_bits,rbearcur_width,rbearcur_height,
-	    24, &black, &white);
-    ct_rbearing = gdk_cursor_new_from_pixmap( image,mask,&red,&white,rbearcur_x_hot,
-	    rbearcur_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,lbearcur_bits,lbearcur_width,lbearcur_height,
-	    24, &black, &white);
-    mask = gdk_pixmap_create_from_data(NULL,lbearmask_bits,lbearcur_width,lbearcur_height,
-	    24, &black, &white);
-    ct_lbearing = gdk_cursor_new_from_pixmap( image,mask,&red,&white,lbearcur_x_hot,
-	    lbearcur_y_hot);
-/*
-    logo_icon = GDrawCreateBitmap(NULL,logo_width,logo_height,logo_bits);
-    GDrawSetDefaultIcon(logo_icon);
-*/
-
-    image = gdk_pixmap_create_from_data(NULL,prohibition_bits,prohibition_width,prohibition_height,
-	    24, &black, &white);
-    mask = gdk_pixmap_create_from_data(NULL,prohibitionmask_bits,prohibition_width,prohibition_height,
-	    24, &black, &white);
-    ct_prohibition = gdk_cursor_new_from_pixmap( image,mask,&red,&white,prohibition_x_hot,
-	    prohibition_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,ddcursor_bits,ddcursor_width,ddcursor_height,
-	    24, &black, &white);
-    ct_ddcursor = gdk_cursor_new_from_pixmap( image,image,&red,&white,ddcursor_x_hot,
-	    ddcursor_y_hot);
-#else
     GWindow mask, image;
     /* The XServer shipping with redhat 7.1 seems to suffer a protocol change */
     /*  with the red and blue members of XColor structure reversed */
@@ -1092,6 +876,4 @@ void InitCursors(void) {
     ct_ddcursor = GDrawCreateCursor(image,image,0xff0000,0xffffff,ddcursor_x_hot,
 	    ddcursor_y_hot);
     GDrawDestroyWindow(image);
-#endif
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

@@ -24,15 +24,11 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "pfaedit.h"
+#include "fontforgevw.h"
 #include <math.h>
 #include <ustring.h>
 #include <utype.h>
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-#include <gwidget.h>
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 #include "sd.h"
-#include "views.h"
 
 #include <sys/types.h>		/* for waitpid */
 #include <sys/wait.h>		/* for waitpid */
@@ -426,8 +422,7 @@ void SetAutoTraceArgs(void *a) {
 
 char **AutoTraceArgs(int ask) {
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    if ( ask || autotrace_ask ) {
+    if (( ask || autotrace_ask ) && !no_windowing_ui ) {
 	char *cdef = flatten(args);
 	char *cret;
 
@@ -438,18 +433,14 @@ char **AutoTraceArgs(int ask) {
 return( (char **) -1 );
 	args = makevector(cret);
 	free(cret);
-	SavePrefs();
+	SavePrefs(true);
     }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 return( args );
 }
 
-void FVAutoTrace(FontView *fv,int ask) {
+void FVAutoTrace(FontViewBase *fv,int ask) {
     char **args;
     int i,cnt,gid;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    GCursor ct=0;
-#endif
 
     if ( FindAutoTraceName()==NULL ) {
 	ff_post_error(_("Can't find autotrace"),_("Can't find autotrace program (set AUTOTRACE environment variable) or download from:\n  http://sf.net/projects/autotrace/"));
@@ -464,14 +455,6 @@ return;
 		fv->sf->glyphs[gid]!=NULL &&
 		fv->sf->glyphs[gid]->layers[ly_back].images )
 	    ++cnt;
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    if ( fv->v!=NULL ) {
-	ct = GDrawGetCursor(fv->v);
-	GDrawSetCursor(fv->v,ct_watch);
-	GDrawSync(NULL);
-	GDrawProcessPendingEvents(NULL);
-    }
-#endif
 
     ff_progress_start_indicator(10,_("Autotracing..."),_("Autotracing..."),0,cnt,1);
 
@@ -487,21 +470,13 @@ return;
 	}
     }
     ff_progress_end_indicator();
-#if defined(FONTFORGE_CONFIG_GDRAW)
-    if ( fv->v!=NULL )
-	GDrawSetCursor(fv->v,ct);
-#endif
 }
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-void SCAutoTrace(SplineChar *sc,GWindow v,int ask) {
+void SCAutoTrace(SplineChar *sc,int ask) {
     char **args;
-    GCursor ct;
 
     if ( sc->layers[ly_back].images==NULL ) {
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	ff_post_error(_("Nothing to trace"),_("Nothing to trace"));
-#endif
 return;
     } else if ( FindAutoTraceName()==NULL ) {
 	ff_post_error(_("Can't find autotrace"),_("Can't find autotrace program (set AUTOTRACE environment variable) or download from:\n  http://sf.net/projects/autotrace/"));
@@ -511,14 +486,8 @@ return;
     args = AutoTraceArgs(ask);
     if ( args==(char **) -1 )
 return;
-    ct = GDrawGetCursor(v);
-    GDrawSetCursor(v,ct_watch);
-    GDrawSync(NULL);
-    GDrawProcessPendingEvents(NULL);
     _SCAutoTrace(sc, args);
-    GDrawSetCursor(v,ct);
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 char *ProgramExists(char *prog,char *buffer) {
     char *path, *pt;
@@ -666,7 +635,7 @@ static char *MfArgs(void) {
 	if ( ret==NULL )
 return( (char *) -1 );
 	mf_args = ret;
-	SavePrefs();
+	SavePrefs(true);
     }
 return( mf_args );
 }

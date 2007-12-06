@@ -25,7 +25,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <math.h>
 #include <ustring.h>
 
@@ -48,7 +47,7 @@ static void CurveToBuf(char *buf,CharView *cv,Spline *s, double t) {
     if ( kappa==CURVATURE_ERROR )
 	strcpy(buf,_("No Curvature"));
     else {
-	emsize = cv->sc->parent->ascent + cv->sc->parent->descent;
+	emsize = cv->b.sc->parent->ascent + cv->b.sc->parent->descent;
 	if ( kappa==0 )
 	    sprintf(buf,_(" Curvature: %g"), kappa*emsize);
 	else
@@ -96,8 +95,8 @@ static int RulerText(CharView *cv, unichar_t *ubuf, int line) {
 		    sprintf( buf, "Spline Length=%g", len);
 	    } else
 return( false );
-	} else if ( cv->dv!=NULL || cv->gridfit!=NULL ) {
-	    double scale = scale = (cv->sc->parent->ascent+cv->sc->parent->descent)/(rint(cv->ft_pointsize*cv->ft_dpi/72.0));
+	} else if ( cv->dv!=NULL || cv->b.gridfit!=NULL ) {
+	    double scale = scale = (cv->b.sc->parent->ascent+cv->b.sc->parent->descent)/(rint(cv->ft_pointsize*cv->ft_dpi/72.0));
 	    sprintf( buf, "%.2f,%.2f", (double) (cv->info.x/scale), (double) (cv->info.y/scale));
 	} else if ( cv->p.spline!=NULL ) {
 	    s = cv->p.spline;
@@ -335,7 +334,7 @@ return( NULL );
 return( NULL );
 	kappa = SplineCurvature(sp->next,0);
 	kappa2 = SplineCurvature(sp->prev,1);
-	emsize = cv->sc->parent->ascent + cv->sc->parent->descent;
+	emsize = cv->b.sc->parent->ascent + cv->b.sc->parent->descent;
 	if ( kappa == CURVATURE_ERROR || kappa2 == CURVATURE_ERROR )
 	    strncpy(buffer,_("No curvature info"), blen);
 	else
@@ -385,7 +384,7 @@ return( NULL );
 	kappa = SplineCurvature(s,t);
 	if ( kappa==CURVATURE_ERROR )
 return( NULL );
-	emsize = cv->sc->parent->ascent + cv->sc->parent->descent;
+	emsize = cv->b.sc->parent->ascent + cv->b.sc->parent->descent;
 	/* If we normalize by the em-size, the curvature is often more */
 	/*  readable */
 	snprintf( buffer, blen, _("Curvature: %g"), kappa*emsize);
@@ -551,4 +550,3 @@ void CPEndInfo(CharView *cv) {
     }
 }
 
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

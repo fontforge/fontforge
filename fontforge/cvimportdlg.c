@@ -38,7 +38,7 @@ static void ImportPS(CharView *cv,char *path) {
 
     if ( ps==NULL )
 return;
-    SCImportPSFile(cv->sc,CVLayer(cv),ps,false,-1);
+    SCImportPSFile(cv->b.sc,CVLayer((CharViewBase *) cv),ps,false,-1);
     fclose(ps);
 }
 
@@ -47,20 +47,20 @@ static void ImportPlate(CharView *cv,char *path) {
 
     if ( plate==NULL )
 return;
-    SCImportPlateFile(cv->sc,CVLayer(cv),plate,false,-1);
+    SCImportPlateFile(cv->b.sc,CVLayer((CharViewBase *) cv),plate,false,-1);
     fclose(plate);
 }
 
 static void ImportSVG(CharView *cv,char *path) {
-    SCImportSVG(cv->sc,CVLayer(cv),path,NULL,0,false);
+    SCImportSVG(cv->b.sc,CVLayer((CharViewBase *) cv),path,NULL,0,false);
 }
 
 static void ImportGlif(CharView *cv,char *path) {
-    SCImportGlif(cv->sc,CVLayer(cv),path,NULL,0,false);
+    SCImportGlif(cv->b.sc,CVLayer((CharViewBase *) cv),path,NULL,0,false);
 }
 
 static void ImportFig(CharView *cv,char *path) {
-    SCImportFig(cv->sc,CVLayer(cv),path,false);
+    SCImportFig(cv->b.sc,CVLayer((CharViewBase *) cv),path,false);
 }
 
 static void ImportImage(CharView *cv,char *path) {
@@ -73,9 +73,9 @@ static void ImportImage(CharView *cv,char *path) {
 return;
     }
     layer = ly_back;
-    if ( cv->sc->parent->multilayer && cv->drawmode!=dm_grid )
-	layer = cv->drawmode-dm_back + ly_back;
-    SCAddScaleImage(cv->sc,image,false,layer);
+    if ( cv->b.sc->parent->multilayer && cv->b.drawmode!=dm_grid )
+	layer = cv->b.drawmode-dm_back + ly_back;
+    SCAddScaleImage(cv->b.sc,image,false,layer);
 }
 
 static int BVImportImage(BitmapView *bv,char *path) {
@@ -156,163 +156,6 @@ return(false);
     if ( bc->sc!=NULL )
 	bc->sc->widthset = true;
     BCCharChangedUpdate(bc);
-return( true );
-}
-
-int FVImportImages(FontView *fv,char *path,int format,int toback, int flags) {
-    GImage *image;
-    /*struct _GImage *base;*/
-    int tot;
-    char *start = path, *endpath=path;
-    int i;
-    SplineChar *sc;
-
-    tot = 0;
-    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i]) {
-	sc = SFMakeChar(fv->sf,fv->map,i);
-	endpath = strchr(start,';');
-	if ( endpath!=NULL ) *endpath = '\0';
-	if ( format==fv_image ) {
-	    image = GImageRead(start);
-	    if ( image==NULL ) {
-		ff_post_error(_("Bad image file"),_("Bad image file: %.100s"),start);
-return(false);
-	    }
-	    ++tot;
-#ifdef FONTFORGE_CONFIG_TYPE3
-	    SCAddScaleImage(sc,image,true,toback?ly_back:ly_fore);
-#else
-	    SCAddScaleImage(sc,image,true,ly_back);
-#endif
-#ifndef _NO_LIBXML
-	} else if ( format==fv_svg ) {
-	    SCImportSVG(sc,toback?ly_back:ly_fore,start,NULL,0,flags&sf_clearbeforeinput);
-	    ++tot;
-	} else if ( format==fv_glif ) {
-	    SCImportGlif(sc,toback?ly_back:ly_fore,start,NULL,0,flags&sf_clearbeforeinput);
-	    ++tot;
-#endif
-	} else if ( format==fv_eps ) {
-	    SCImportPS(sc,toback?ly_back:ly_fore,start,flags&sf_clearbeforeinput,flags&~sf_clearbeforeinput);
-	    ++tot;
-#ifndef _NO_PYTHON
-	} else if ( format>=fv_pythonbase ) {
-	    PyFF_SCImport(sc,format-fv_pythonbase,start, toback,flags&sf_clearbeforeinput);
-	    ++tot;
-#endif
-	}
-	if ( endpath==NULL )
-    break;
-	start = endpath+1;
-    }
-    if ( tot==0 )
-	ff_post_error(_("Nothing Selected"),_("You must select a glyph before you can import an image into it"));
-    else if ( endpath!=NULL )
-	ff_post_error(_("More Images Than Selected Glyphs"),_("More Images Than Selected Glyphs"));
-return( true );
-}
-
-int FVImportImageTemplate(FontView *fv,char *path,int format,int toback, int flags) {
-    GImage *image;
-    struct _GImage *base;
-    int tot;
-    char *ext, *name, *dirname, *pt, *end;
-    int i, val;
-    int isu=false, ise=false, isc=false;
-    DIR *dir;
-    struct dirent *entry;
-    SplineChar *sc;
-    char start [1025];
-
-    ext = strrchr(path,'.');
-    name = strrchr(path,'/');
-    if ( ext==NULL ) {
-	ff_post_error(_("Bad Template"),_("Bad template, no extension"));
-return( false );
-    }
-    if ( name==NULL ) name=path-1;
-    if ( name[1]=='u' ) isu = true;
-    else if ( name[1]=='c' ) isc = true;
-    else if ( name[1]=='e' ) ise = true;
-    else {
-	ff_post_error(_("Bad Template"),_("Bad template, unrecognized format"));
-return( false );
-    }
-    if ( name<path )
-	dirname = ".";
-    else {
-	dirname = path;
-	*name = '\0';
-    }
-
-    if ( (dir = opendir(dirname))==NULL ) {
-	    ff_post_error(_("Nothing Loaded"),_("Nothing Loaded"));
-return( false );
-    }
-    
-    tot = 0;
-    while ( (entry=readdir(dir))!=NULL ) {
-	pt = strrchr(entry->d_name,'.');
-	if ( pt==NULL )
-    continue;
-	if ( strmatch(pt,ext)!=0 )
-    continue;
-	if ( !(
-		(isu && entry->d_name[0]=='u' && entry->d_name[1]=='n' && entry->d_name[2]=='i' && (val=strtol(entry->d_name+3,&end,16), end==pt)) ||
-		(isu && entry->d_name[0]=='u' && (val=strtol(entry->d_name+1,&end,16), end==pt)) ||
-		(isc && entry->d_name[0]=='c' && entry->d_name[1]=='i' && entry->d_name[2]=='d' && (val=strtol(entry->d_name+3,&end,10), end==pt)) ||
-		(ise && entry->d_name[0]=='e' && entry->d_name[1]=='n' && entry->d_name[2]=='c' && (val=strtol(entry->d_name+3,&end,10), end==pt)) ))
-    continue;
-	sprintf (start, "%s/%s", dirname, entry->d_name);
-	if ( isu ) {
-	    i = SFFindSlot(fv->sf,fv->map,val,NULL);
-	    if ( i==-1 ) {
-		ff_post_error(_("Unicode value not in font"),_("Unicode value (%x) not in font, ignored"),val);
-    continue;
-	    }
-	    sc = SFMakeChar(fv->sf,fv->map,i);
-	} else {
-	    if ( val<fv->map->enccount ) {
-		/* It's there */;
-	    } else {
-		ff_post_error(_("Encoding value not in font"),_("Encoding value (%x) not in font, ignored"),val);
-    continue;
-	    }
-	    sc = SFMakeChar(fv->sf,fv->map,val);
-	}
-	if ( format==fv_imgtemplate ) {
-	    image = GImageRead(start);
-	    if ( image==NULL ) {
-		ff_post_error(_("Bad image file"),_("Bad image file: %.100s"),start);
-    continue;
-	    }
-	    base = image->list_len==0?image->u.image:image->u.images[0];
-	    if ( base->image_type!=it_mono ) {
-		ff_post_error(_("Bad image file"),_("Bad image file, not a bitmap: %.100s"),start);
-		GImageDestroy(image);
-    continue;
-	    }
-	    ++tot;
-#ifdef FONTFORGE_CONFIG_TYPE3
-	    SCAddScaleImage(sc,image,true,toback?ly_back:ly_fore);
-#else
-	    SCAddScaleImage(sc,image,true,ly_back);
-#endif
-#ifndef _NO_LIBXML
-	} else if ( format==fv_svgtemplate ) {
-	    SCImportSVG(sc,toback?ly_back:ly_fore,start,NULL,0,flags&sf_clearbeforeinput);
-	    ++tot;
-	} else if ( format==fv_gliftemplate ) {
-	    SCImportGlif(sc,toback?ly_back:ly_fore,start,NULL,0,flags&sf_clearbeforeinput);
-	    ++tot;
-#endif
-	} else {
-	    SCImportPS(sc,toback?ly_back:ly_fore,start,flags&sf_clearbeforeinput,flags&~sf_clearbeforeinput);
-	    ++tot;
-	}
-    }
-    if ( tot==0 )
-	ff_post_error(_("Nothing Loaded"),_("Nothing Loaded"));
 return( true );
 }
 
@@ -398,7 +241,7 @@ return( false );
 return( true );
 }
 
-enum psstrokeflags PsStrokeFlagsDlg(void) {
+enum psstrokeflags Ps_StrokeFlagsDlg(void) {
     static enum psstrokeflags oldflags = sf_correctdir|sf_removeoverlap/*|sf_handle_eraser*/;
     GRect pos;
     GWindow gw;
@@ -597,39 +440,39 @@ return( true );
 	    if ( toback && strchr(temp,';')!=NULL && format<3 )
 		ff_post_error(_("Only One Font"),_("Only one font may be imported into the background"));
 	    else if ( format==fv_bdf )
-		d->done = FVImportBDF(d->fv,temp,false, toback);
+		d->done = FVImportBDF((FontViewBase *) d->fv,temp,false, toback);
 	    else if ( format==fv_ttf )
-		d->done = FVImportMult(d->fv,temp,toback,bf_ttf);
+		d->done = FVImportMult((FontViewBase *) d->fv,temp,toback,bf_ttf);
 	    else if ( format==fv_pk )		/* pk */
-		d->done = FVImportBDF(d->fv,temp,true, toback);
+		d->done = FVImportBDF((FontViewBase *) d->fv,temp,true, toback);
 	    else if ( format==fv_pcf )		/* pcf */
-		d->done = FVImportBDF(d->fv,temp,2, toback);
+		d->done = FVImportBDF((FontViewBase *) d->fv,temp,2, toback);
 	    else if ( format==fv_mac )
-		d->done = FVImportMult(d->fv,temp,toback,bf_nfntmacbin);
+		d->done = FVImportMult((FontViewBase *) d->fv,temp,toback,bf_nfntmacbin);
 	    else if ( format==fv_win )
-		d->done = FVImportMult(d->fv,temp,toback,bf_fon);
+		d->done = FVImportMult((FontViewBase *) d->fv,temp,toback,bf_fon);
 	    else if ( format==fv_palm )
-		d->done = FVImportMult(d->fv,temp,toback,bf_palm);
+		d->done = FVImportMult((FontViewBase *) d->fv,temp,toback,bf_palm);
 	    else if ( format==fv_image )
-		d->done = FVImportImages(d->fv,temp,format,toback,-1);
+		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,-1);
 	    else if ( format==fv_imgtemplate )
-		d->done = FVImportImageTemplate(d->fv,temp,format,toback,-1);
+		d->done = FVImportImageTemplate((FontViewBase *) d->fv,temp,format,toback,-1);
 	    else if ( format==fv_eps )
-		d->done = FVImportImages(d->fv,temp,format,toback,-1);
+		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,-1);
 	    else if ( format==fv_epstemplate )
-		d->done = FVImportImageTemplate(d->fv,temp,format,toback,-1);
+		d->done = FVImportImageTemplate((FontViewBase *) d->fv,temp,format,toback,-1);
 	    else if ( format==fv_svg )
-		d->done = FVImportImages(d->fv,temp,format,toback,-1);
+		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,-1);
 	    else if ( format==fv_svgtemplate )
-		d->done = FVImportImageTemplate(d->fv,temp,format,toback,-1);
+		d->done = FVImportImageTemplate((FontViewBase *) d->fv,temp,format,toback,-1);
 	    else if ( format==fv_glif )
-		d->done = FVImportImages(d->fv,temp,format,toback,-1);
+		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,-1);
 	    else if ( format==fv_gliftemplate )
-		d->done = FVImportImageTemplate(d->fv,temp,format,toback,-1);
+		d->done = FVImportImageTemplate((FontViewBase *) d->fv,temp,format,toback,-1);
 	    else if ( format==fv_glif )
-		d->done = FVImportImages(d->fv,temp,format,toback,-1);
+		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,-1);
 	    else if ( format>=fv_pythonbase )
-		d->done = FVImportImages(d->fv,temp,format,toback,-1);
+		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,-1);
 	} else if ( d->bv!=NULL )
 	    d->done = BVImportImage(d->bv,temp);
 	else {
@@ -650,8 +493,8 @@ return( true );
 		ImportFig(d->cv,temp);
 #ifndef _NO_PYTHON
 	    else if ( format>=fv_pythonbase )
-		PyFF_SCImport(d->cv->sc,format-fv_pythonbase,temp,
-			d->cv->drawmode==dm_back, false);
+		PyFF_SCImport(d->cv->b.sc,format-fv_pythonbase,temp,
+			d->cv->b.drawmode==dm_back, false);
 #endif
 	}
 	free(temp);

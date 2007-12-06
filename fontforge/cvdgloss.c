@@ -25,7 +25,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <math.h>
 #include <gkeysym.h>
 #include <ustring.h>
@@ -871,7 +870,7 @@ return(1);
 	val1 = exc->stack[exc->top-2];
 	scrprintf(&scr,"Pops: %d (em-units=%.2fpixels)", val2,
 		val2*exc->size->metrics.x_ppem*64.0/
-		    (cv->sc->parent->ascent+cv->sc->parent->descent));
+		    (cv->b.sc->parent->ascent+cv->b.sc->parent->descent));
 	scrprintf(&scr,"Pops: %d (cvt index)", val1 );
       break;
       case 0x73: case 0x74: case 0x75:
@@ -1211,4 +1210,3 @@ void DVCreateGloss(DebugView *dv) {
 void DVCreateGloss(DebugView *dv) {
 }
 #endif /* Has Debugger */
-#endif /* Windowing UI */

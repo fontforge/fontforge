@@ -25,7 +25,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <math.h>
 
 #if defined(KNIFE_CONTINUOUS)	/* Use this code to do cuts as we move along. Probably a bad idea, let's wait till the end */
@@ -72,13 +71,13 @@ return;					/* Already cut here */
     cv->lastknife.x = cv->info.x;
     cv->lastknife.y = cv->info.y;
     CVSetCharChanged(cv,true);
-    SCUpdateAll(cv->sc);
+    SCUpdateAll(cv->b.sc);
 }
 #endif
 
 void CVMouseDownKnife(CharView *cv) {
 #if defined(KNIFE_CONTINUOUS)
-    CVPreserveState(cv);
+    CVPreserveState(&cv->b);
     cv->lastknife.x = cv->lastknife.y = -9999;
     ProcessKnife(cv,&cv->p);
 #else
@@ -199,12 +198,12 @@ void CVMouseUpKnife(CharView *cv, GEvent *event) {
     dummy.islinear = dummy.knownlinear = true;
     dummyfrom.next = dummyto.prev = &dummy;
 
-    for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL ; spl = spl->next )
+    for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL ; spl = spl->next )
 	spl->ticked = false;
 
     while ( foundsomething ) {
 	foundsomething = false;
-	for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL && !foundsomething; spl = spl->next ) {
+	for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL && !foundsomething; spl = spl->next ) {
 	    for ( s = spl->first->next; s!=NULL ; ) {
 		nexts = NULL;
 		if ( s->to!=spl->first )
@@ -218,7 +217,7 @@ void CVMouseUpKnife(CharView *cv, GEvent *event) {
 			    foundsomething = true;
 			    nexts = NULL;
 			    if ( !ever )
-				CVPreserveState(cv);
+				CVPreserveState(&cv->b);
 			    ever = true;
 			    if ( spl->first==spl->last ) {
 				spl->first = s->to;
@@ -244,10 +243,10 @@ void CVMouseUpKnife(CharView *cv, GEvent *event) {
 			    foundsomething = true;
 			    nexts = NULL;
 			    if ( !ever )
-				CVPreserveState(cv);
+				CVPreserveState(&cv->b);
 			    ever = true;
 			    spiro_index = -1;
-			    if ( cv->sc->inspiro ) {
+			    if ( cv->b.sc->inspiro ) {
 				if ( spl->spiro_cnt!=0 )
 				    spiro_index = SplineT2SpiroIndex(s,t1s[i],spl);
 			    } else
@@ -296,13 +295,13 @@ void CVMouseUpKnife(CharView *cv, GEvent *event) {
 	}
     }
     if ( ever ) {
-	for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL ; spl = spl->next ) {
-	    if ( spl->ticked && spl->spiros!=NULL && cv->sc->inspiro )
+	for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL ; spl = spl->next ) {
+	    if ( spl->ticked && spl->spiros!=NULL && cv->b.sc->inspiro )
 		SSRegenerateFromSpiros(spl);
 	    spl->ticked = false;
 	}
-	CVCharChangedUpdate(cv);
+	CVCharChangedUpdate(&cv->b);
     }
 #endif
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
+

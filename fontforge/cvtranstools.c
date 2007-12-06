@@ -25,7 +25,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <math.h>
 
 void CVMouseDownTransform(CharView *cv) {
@@ -94,7 +93,7 @@ void CVMouseMoveTransform(CharView *cv) {
 	    transform[2] = -(transform[1] = -s);
 	    transform[4] = transform[5] = 0;
 	    CVTransFunc(cv,transform,false);
-	    CVYPerspective(cv,
+	    CVYPerspective((CharViewBase *) cv,
 			     c*cv->info.x + s*cv->info.y,
 			    -s*cv->info.x + c*cv->info.y);
 	    transform[2] = -(transform[1] = s);
@@ -114,16 +113,15 @@ void CVMouseMoveTransform(CharView *cv) {
 	CVSetCharChanged(cv,true);
 	CVTransFunc(cv,transform,false);
     }
-    SCUpdateAll(cv->sc);
+    SCUpdateAll(cv->b.sc);
 }
 
 void CVMouseUpTransform(CharView *cv) {
     if ( cv->info.x == cv->p.cx && cv->info.y == cv->p.cy ) {
 	/* Nothing happened */
 	cv->needsrasterize = cv->recentchange = false;
-	CVRemoveTopUndo(cv);
-	SCUpdateAll(cv->sc);
+	CVRemoveTopUndo(&cv->b);
+	SCUpdateAll(cv->b.sc);
     } else
 	CVUndoCleanup(cv);
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
