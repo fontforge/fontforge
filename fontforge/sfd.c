@@ -42,6 +42,13 @@
 # define NAME_MAX _POSIX_NAME_MAX
 #endif
 
+struct compressors compressors[] = {
+    { ".gz", "gunzip", "gzip" },
+    { ".bz2", "bunzip2", "bzip2" },
+    { ".Z", "gunzip", "compress" },
+    NULL
+};
+
 /* I will retain this list in case there are still some really old sfd files */
 /*  including numeric encodings.  This table maps them to string encodings */
 static const char *charset_names[] = {
