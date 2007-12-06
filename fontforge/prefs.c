@@ -46,43 +46,43 @@
 # include <langinfo.h>
 #endif
 
-int splash = 1;
-int adjustwidth = true;
-int adjustlbearing = true;
-Encoding *default_encoding = NULL;
-int autohint_before_rasterize = 1;
-int autohint_before_generate = 1;
-int use_freetype_to_rasterize_fv = 1;
-int OpenCharsInNewWindow = 1;
-int ItalicConstrained=true;
-int accent_offset = 6;
-int GraveAcuteCenterBottom = 1;
-int PreferSpacingAccents = true;
-int CharCenterHighest = 1;
-int ask_user_for_resolution = true;
-int stop_at_join = false;
-int cv_auto_goto = true;
-int recognizePUA = true;
-float arrowAmount=1;
-float arrowAccelFactor=10.;
-float snapdistance=3.5;
-int snaptoint=0;
-float joinsnap=0;
-char *BDFFoundry=NULL;
-char *TTFFoundry=NULL;
-char *xuid=NULL;
-char *SaveTablesPref=NULL;
-char *RecentFiles[RECENT_MAX] = { NULL };
+extern int splash;
+extern int adjustwidth;
+extern int adjustlbearing;
+extern Encoding *default_encoding;
+extern int autohint_before_rasterize;
+extern int autohint_before_generate;
+extern int use_freetype_to_rasterize_fv;
+extern int OpenCharsInNewWindow;
+extern int ItalicConstrained;
+extern int accent_offset;
+extern int GraveAcuteCenterBottom;
+extern int PreferSpacingAccents;
+extern int CharCenterHighest;
+extern int ask_user_for_resolution;
+extern int stop_at_join;
+extern int cv_auto_goto;
+extern int recognizePUA;
+extern float arrowAmount;
+extern float arrowAccelFactor;
+extern float snapdistance;
+extern int snaptoint;
+extern float joinsnap;
+extern char *BDFFoundry;
+extern char *TTFFoundry;
+extern char *xuid;
+extern char *SaveTablesPref;
+extern char *RecentFiles[RECENT_MAX];
 /*struct cvshows CVShows = { 1, 1, 1, 1, 1, 0, 1 };*/ /* in charview */
 /* int default_fv_font_size = 24; */	/* in fontview */
 /* int default_fv_antialias = false */	/* in fontview */
 /* int default_fv_bbsized = false */	/* in fontview */
-int default_fv_row_count = 4;
-int default_fv_col_count = 16;
+extern int default_fv_row_count;	/* in fontview */
+extern int default_fv_col_count;	/* in fontview */
 extern int default_fv_showhmetrics;	/* in fontview */
 extern int default_fv_showvmetrics;	/* in fontview */
 extern int default_fv_glyphlabel;	/* in fontview */
-int save_to_dir = 0;			/* in fontview, use sfdir rather than sfd */
+extern int save_to_dir;			/* in fontview, use sfdir rather than sfd */
 extern int palettes_docked;		/* in cvpalettes */
 extern int cvvisible[2], bvvisible[3];	/* in cvpalettes.c */
 extern int maxundoes;			/* in cvundoes */
@@ -96,8 +96,8 @@ extern int old_ttf_flags;		/* in savefontdlg.c */
 extern int old_ps_flags;		/* in savefontdlg.c */
 extern int old_otf_flags;		/* in savefontdlg.c */
 extern int old_validate;		/* in savefontdlg.c */
-char *oflib_username = NULL;		/* in savefontdlg.c */
-char *oflib_password = NULL;		/* in savefontdlg.c */
+extern char *oflib_username;		/* in savefontdlg.c */
+extern char *oflib_password;		/* in savefontdlg.c */
 extern int oldsystem;			/* in bitmapdlg.c */
 extern int preferpotrace;		/* in autotrace.c */
 extern int autotrace_ask;		/* in autotrace.c */
@@ -114,21 +114,21 @@ extern int hint_diagonal_ends;		/* in stemdb.c */
 extern int hint_diagonal_intersections;	/* in stemdb.c */
 extern int hint_bounding_boxes;		/* in stemdb.c */
 extern int detect_diagonal_stems;	/* in stemdb.c */
-unichar_t *script_menu_names[SCRIPT_MENU_MAX];
-char *script_filenames[SCRIPT_MENU_MAX];
+extern unichar_t *script_menu_names[SCRIPT_MENU_MAX];
+extern char *script_filenames[SCRIPT_MENU_MAX];
 static char *xdefs_filename;
-int new_em_size = 1000;
-int new_fonts_are_order2 = false;
-int loaded_fonts_same_as_new = false;
-int use_second_indic_scripts = false;
-char *helpdir;
-char *othersubrsfile;
+extern int new_em_size;				/* in splineutil2.c */
+extern int new_fonts_are_order2;		/* in splineutil2.c */
+extern int loaded_fonts_same_as_new;		/* in splineutil2.c */
+extern int use_second_indic_scripts;		/* in tottfgpos.c */
+extern char *helpdir;				/* in uiutil.c */
+static char *othersubrsfile = NULL;
 extern MacFeat *default_mac_feature_map,	/* from macenc.c */
 		*user_mac_feature_map;
-int updateflex = false;
-int allow_utf8_glyphnames = false;
-int clear_tt_instructions_when_needed = true;
-int ask_user_for_cmap = false;
+extern int updateflex;				/* in charview.c */
+extern int allow_utf8_glyphnames;		/* in charinfo.c */
+extern int clear_tt_instructions_when_needed;	/* in charview.c */
+extern int ask_user_for_cmap;			/* in parsettf.c */
 
 extern int rectelipse, polystar, regular_star;	/* from cvpalettes.c */
 extern int center_out[2];			/* from cvpalettes.c */
@@ -136,12 +136,12 @@ extern float rr_radius;				/* from cvpalettes.c */
 extern int ps_pointcnt;				/* from cvpalettes.c */
 extern float star_percent;			/* from cvpalettes.c */
 
-NameList *force_names_when_opening=NULL;
-NameList *force_names_when_saving=NULL;
+extern NameList *force_names_when_opening;
+extern NameList *force_names_when_saving;
 extern NameList *namelist_for_new_fonts;
 
-int default_font_filter_index=0;
-struct openfilefilters *user_font_filters = NULL;
+extern int default_font_filter_index;
+extern struct openfilefilters *user_font_filters;
 static int alwaysgenapple=false, alwaysgenopentype=false;
 
 static int pointless;
@@ -167,64 +167,13 @@ static int pointless;
 /* *****************************    mac data    ***************************** */
 /* ************************************************************************** */
 
-struct macsettingname macfeat_otftag[] = {
-    { 1, 0, CHR('r','l','i','g') },	/* Required ligatures */
-    { 1, 2, CHR('l','i','g','a') },	/* Common ligatures */
-    { 1, 4, CHR('d','l','i','g') },	/* rare ligatures => discretionary */
-#if 0
-    { 1, 4, CHR('h','l','i','g') },	/* rare ligatures => historic */
-    { 1, 4, CHR('a','l','i','g') },	/* rare ligatures => ?ancient? */
-#endif
-    /* 2, 1, partially connected cursive */
-    { 2, 2, CHR('i','s','o','l') },	/* Arabic forms */
-    { 2, 2, CHR('c','a','l','t') },	/* ??? */
-    /* 3, 1, all caps */
-    /* 3, 2, all lower */
-    { 3, 3, CHR('s','m','c','p') },	/* small caps */
-    /* 3, 4, initial caps */
-    /* 3, 5, initial caps, small caps */
-    { 4, 0, CHR('v','r','t','2') },	/* vertical forms => vertical rotation */
-#if 0
-    { 4, 0, CHR('v','k','n','a') },	/* vertical forms => vertical kana */
-#endif
-    { 6, 0, CHR('t','n','u','m') },	/* monospace numbers => Tabular numbers */
-    { 10, 1, CHR('s','u','p','s') },	/* superior vertical position => superscript */
-    { 10, 2, CHR('s','u','b','s') },	/* inferior vertical position => subscript */
-#if 0
-    { 10, 3, CHR('s','u','p','s') },	/* ordinal vertical position => superscript */
-#endif
-    { 11, 1, CHR('a','f','r','c') },	/* vertical fraction => fraction ligature */
-    { 11, 2, CHR('f','r','a','c') },	/* diagonal fraction => fraction ligature */
-    { 16, 1, CHR('o','r','n','m') },	/* vertical fraction => fraction ligature */
-    { 20, 0, CHR('t','r','a','d') },	/* traditional characters => traditional forms */
-#if 0
-    { 20, 0, CHR('t','n','a','m') },	/* traditional characters => traditional names */
-#endif
-    { 20, 1, CHR('s','m','p','l') },	/* simplified characters */
-    { 20, 2, CHR('j','p','7','8') },	/* jis 1978 */
-    { 20, 3, CHR('j','p','8','3') },	/* jis 1983 */
-    { 20, 4, CHR('j','p','9','0') },	/* jis 1990 */
-    { 21, 0, CHR('o','n','u','m') },	/* lower case number => old style numbers */
-    { 22, 0, CHR('p','w','i','d') },	/* proportional text => proportional widths */
-    { 22, 2, CHR('h','w','i','d') },	/* half width text => half widths */
-    { 22, 3, CHR('f','w','i','d') },	/* full width text => full widths */
-    { 25, 0, CHR('f','w','i','d') },	/* full width kana => full widths */
-    { 25, 1, CHR('p','w','i','d') },	/* proportional kana => proportional widths */
-    { 26, 0, CHR('f','w','i','d') },	/* full width ideograph => full widths */
-    { 26, 1, CHR('p','w','i','d') },	/* proportional ideograph => proportional widths */
-    { 103, 0, CHR('h','w','i','d') },	/* half width cjk roman => half widths */
-    { 103, 1, CHR('p','w','i','d') },	/* proportional cjk roman => proportional widths */
-    { 103, 3, CHR('f','w','i','d') },	/* full width cjk roman => full widths */
-    { 0, 0, 0 }
-}, *user_macfeat_otftag;
+extern struct macsettingname macfeat_otftag[], *user_macfeat_otftag;
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static void UserSettingsFree(void) {
 
     free( user_macfeat_otftag );
     user_macfeat_otftag = NULL;
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 static int UserSettingsDiffer(void) {
     int i,j;
@@ -385,7 +334,6 @@ static struct prefs_list {
 	{ "BVVisible0", pr_bool, &bvvisible[0], NULL, NULL, '\0', NULL, 1 },
 	{ "BVVisible1", pr_bool, &bvvisible[1], NULL, NULL, '\0', NULL, 1 },
 	{ "BVVisible2", pr_bool, &bvvisible[2], NULL, NULL, '\0', NULL, 1 },
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	{ "MarkExtrema", pr_int, &CVShows.markextrema, NULL, NULL, '\0', NULL, 1 },
 	{ "MarkPointsOfInflect", pr_int, &CVShows.markpoi, NULL, NULL, '\0', NULL, 1 },
 	{ "ShowRulers", pr_bool, &CVShows.showrulers, NULL, NULL, '\0', NULL, 1, N_("Display rulers in the Outline Glyph View") },
@@ -395,7 +343,6 @@ static struct prefs_list {
 	{ "ShowPoints", pr_bool, &CVShows.showpoints, NULL, NULL, '\0', NULL, 1 },
 	{ "ShowFilled", pr_int, &CVShows.showfilled, NULL, NULL, '\0', NULL, 1 },
 	{ "ShowTabs", pr_int, &CVShows.showtabs, NULL, NULL, '\0', NULL, 1 },
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	{ "DefaultScreenDpiSystem", pr_int, &oldsystem, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultOutputFormat", pr_int, &oldformatstate, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultBitmapFormat", pr_int, &oldbitmapstate, NULL, NULL, '\0', NULL, 1 },
@@ -439,7 +386,6 @@ static struct prefs_list {
  *prefs_list[] = { general_list, new_list, open_list, navigation_list, sync_list, editing_list, accent_list, args_list, fontinfo_list, generate_list, tt_list, opentype_list, hints_list, hidden_list, NULL },
  *load_prefs_list[] = { general_list, new_list, open_list, navigation_list, sync_list, editing_list, accent_list, args_list, fontinfo_list, generate_list, tt_list, opentype_list, hints_list, hidden_list, oldnames, NULL };
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 struct visible_prefs_list { char *tab_name; int nest; struct prefs_list *pl; } visible_prefs_list[] = {
     { N_("Generic"), 0, general_list},
     { N_("New Font"), 0, new_list},
@@ -458,9 +404,8 @@ struct visible_prefs_list { char *tab_name; int nest; struct prefs_list *pl; } v
  };
 
 #define TOPICS	(sizeof(visible_prefs_list)/sizeof(visible_prefs_list[0])-1)
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
-int GetPrefs(char *name,Val *val) {
+static int PrefsUI_GetPrefs(char *name,Val *val) {
     int i,j;
 
     /* Support for obsolete preferences */
@@ -514,7 +459,7 @@ static void CheckObsoletePrefs(void) {
     }
 }
 
-int SetPrefs(char *name,Val *val1, Val *val2) {
+static int PrefsUI_SetPrefs(char *name,Val *val1, Val *val2) {
     int i,j;
 
     /* Support for obsolete preferences */
@@ -569,7 +514,7 @@ return( -1 );
 return( false );
 
 	    CheckObsoletePrefs();
-	    SavePrefs();
+	    SavePrefs(true);
 return( true );
 	}
     }
@@ -589,7 +534,7 @@ return( NULL );
 return( prefs );
 }
 
-char *getPfaEditShareDir(void) {
+static char *PrefsUI_getFontForgeShareDir(void) {
     static char *sharedir=NULL;
     static int set=false;
     char *pt;
@@ -600,8 +545,17 @@ return( sharedir );
 
     set = true;
     pt = strstr(GResourceProgramDir,"/bin");
-    if ( pt==NULL )
+    if ( pt==NULL ) {
+#if defined(SHAREDIR)
+	sharedir = copy(SHAREDIR "/fontforge" );
+return( sharedir );
+#elif defined(PREFIX)
+	sharedir = copy( PREFIX "/share/fontforge" );
+return( sharedir );
+#else
 return( NULL );
+#endif
+    }
     len = (pt-GResourceProgramDir)+strlen("/share/fontforge")+1;
     sharedir = galloc(len);
     strncpy(sharedir,GResourceProgramDir,pt-GResourceProgramDir);
@@ -609,7 +563,6 @@ return( NULL );
 return( sharedir );
 }
 
-#if !defined(FONTFORGE_CONFIG_GTK)
 #  include <charset.h>		/* we still need the charsets & encoding to set local_encoding */
 static int encmatch(const char *enc,int subok) {
     static struct { char *name; int enc; } encs[] = {
@@ -796,31 +749,6 @@ return( e_iso8859_1 );
 
 return( enc );
 }
-#endif
-
-static void ParseMacMapping(char *pt,struct macsettingname *ms) {
-    char *end;
-
-    ms->mac_feature_type = strtol(pt,&end,10);
-    if ( *end==',' ) ++end;
-    ms->mac_feature_setting = strtol(end,&end,10);
-    if ( *end==' ' ) ++end;
-    ms->otf_tag =
-	((end[0]&0xff)<<24) |
-	((end[1]&0xff)<<16) |
-	((end[2]&0xff)<<8) |
-	(end[3]&0xff);
-}
-
-static void ParseNewMacFeature(FILE *p,char *line) {
-    fseek(p,-(strlen(line)-strlen("MacFeat:")),SEEK_CUR);
-    line[strlen("MacFeat:")] ='\0';
-    default_mac_feature_map = SFDParseMacFeatures(p,line);
-    fseek(p,-strlen(line),SEEK_CUR);
-    if ( user_mac_feature_map!=NULL )
-	MacFeatListFree(user_mac_feature_map);
-    user_mac_feature_map = default_mac_feature_map;
-}
 
 static void DefaultXUID(void) {
     /* Adobe has assigned PfaEdit a base XUID of 1021. Each new user is going */
@@ -849,20 +777,45 @@ static void DefaultHelp(void) {
 #ifdef DOCDIR
 	helpdir = copy(DOCDIR "/");
 #elif defined(SHAREDIR)
-	helpdir = copy(SHAREDIR "/../doc/fontforge/");
+	helpdir = copy(SHAREDIR "/doc/fontforge/");
 #else
 	helpdir = copy("/usr/local/share/doc/fontforge/");
 #endif
     }
 }
 
-void SetDefaults(void) {
+static void PrefsUI_SetDefaults(void) {
 
     DefaultXUID();
     DefaultHelp();
+    local_encoding = DefaultEncoding();
 }
 
-void LoadPrefs(void) {
+static void ParseMacMapping(char *pt,struct macsettingname *ms) {
+    char *end;
+
+    ms->mac_feature_type = strtol(pt,&end,10);
+    if ( *end==',' ) ++end;
+    ms->mac_feature_setting = strtol(end,&end,10);
+    if ( *end==' ' ) ++end;
+    ms->otf_tag =
+	((end[0]&0xff)<<24) |
+	((end[1]&0xff)<<16) |
+	((end[2]&0xff)<<8) |
+	(end[3]&0xff);
+}
+
+static void ParseNewMacFeature(FILE *p,char *line) {
+    fseek(p,-(strlen(line)-strlen("MacFeat:")),SEEK_CUR);
+    line[strlen("MacFeat:")] ='\0';
+    default_mac_feature_map = SFDParseMacFeatures(p,line);
+    fseek(p,-strlen(line),SEEK_CUR);
+    if ( user_mac_feature_map!=NULL )
+	MacFeatListFree(user_mac_feature_map);
+    user_mac_feature_map = default_mac_feature_map;
+}
+
+static void PrefsUI_LoadPrefs(void) {
     char *prefs = getPfaEditPrefs();
     FILE *p;
     char line[1100];
@@ -961,15 +914,8 @@ void LoadPrefs(void) {
 	}
 	fclose(p);
     }
-#if defined(FONTFORGE_CONFIG_GTK)
-    /* Nothing */;
-#else
-    local_encoding = DefaultEncoding();
-#endif
-#if defined(FONTFORGE_CONFIG_GDRAW)
     if ( xdefs_filename!=NULL )
 	GResourceAddResourceFile(xdefs_filename,GResourceProgramName);
-#endif
     if ( othersubrsfile!=NULL && ReadOtherSubrsFile(othersubrsfile)<=0 )
 	fprintf( stderr, "Failed to read OtherSubrs from %s\n", othersubrsfile );
 	
@@ -980,19 +926,19 @@ void LoadPrefs(void) {
     LoadNamelistDir(NULL);
 }
 
-void PrefDefaultEncoding(void) {
-    local_encoding = DefaultEncoding();
-}
-
-void _SavePrefs(void) {
+static void PrefsUI_SavePrefs(int not_if_script) {
     char *prefs = getPfaEditPrefs();
     FILE *p;
     int i, j;
     char *temp;
     struct prefs_list *pl;
+    extern int running_script;
 
     if ( prefs==NULL )
 return;
+    if ( not_if_script && running_script )
+return;
+
     if ( (p=fopen(prefs,"w"))==NULL )
 return;
 
@@ -1058,14 +1004,6 @@ return;
     fclose(p);
 }
 
-void SavePrefs(void) {
-    extern int running_script;
-    if ( running_script )
-return;
-    _SavePrefs();
-}
-
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 struct pref_data {
     int done;
 };
@@ -1212,14 +1150,10 @@ return( true );
 		val1 = u_strtol(ti[i]->text,&end,10);
 		val2 = u_strtol(end+1,NULL,10);
 		if ( val1==feat && val2==on ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
 		    static char *buts[3];
 		    buts[0] = _("_Yes");
 		    buts[1] = _("_No");
 		    buts[2] = NULL;
-#elif defined(FONTFORGE_CONFIG_GTK)
-		    static char *buts[] = { GTK_STOCK_YES, GTK_STOCK_NO, NULL };
-#endif
 		    if ( gwwv_ask(_("This feature, setting combination is already used"),(const char **) buts,0,1,
 			    _("This feature, setting combination is already used\nDo you really wish to reuse it?"))==1 )
 return( true );
@@ -1598,10 +1532,10 @@ return( true );
 	}
 
 	p->done = true;
-	SavePrefs();
+	PrefsUI_SavePrefs(true);
 	if ( maxundoes==0 ) { FontView *fv;
-	    for ( fv=fv_list ; fv!=NULL; fv=fv->next )
-		SFRemoveUndoes(fv->sf,NULL,NULL);
+	    for ( fv=fv_list ; fv!=NULL; fv=(FontView *) (fv->b.next) )
+		SFRemoveUndoes(fv->b.sf,NULL,NULL);
 	}
 	if ( othersubrsfile!=NULL && ReadOtherSubrsFile(othersubrsfile)<=0 )
 	    fprintf( stderr, "Failed to read OtherSubrs from %s\n", othersubrsfile );
@@ -2201,7 +2135,6 @@ void DoPrefs(void) {
 	GDrawProcessOneEvent(NULL);
     GDrawDestroyWindow(gw);
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 
 void RecentFilesRemember(char *filename) {
     int i;
@@ -2223,5 +2156,14 @@ void RecentFilesRemember(char *filename) {
 	    RecentFiles[i] = RecentFiles[i-1];
 	RecentFiles[0] = copy(filename);
     }
-    SavePrefs();
+    PrefsUI_SavePrefs(true);
 }
+
+struct prefs_interface gdraw_prefs_interface = {
+    PrefsUI_SavePrefs,
+    PrefsUI_LoadPrefs,
+    PrefsUI_GetPrefs,
+    PrefsUI_SetPrefs,
+    PrefsUI_getFontForgeShareDir,
+    PrefsUI_SetDefaults
+};

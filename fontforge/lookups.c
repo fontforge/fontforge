@@ -24,7 +24,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "pfaeditui.h"
+#include "fontforgevw.h"
 #include <chardata.h>
 #include <utype.h>
 #include <ustring.h>
@@ -33,6 +33,143 @@
 #include <stdlib.h>
 #include "ttf.h"
 #include "lookups.h"
+
+struct opentype_feature_friendlynames friendlies[] = {
+#if 0		/* They get stuffed into the 'MATH' table now */
+/* I added these first three features to allow round-trip conversion of tfm files */
+    { CHR('I','T','L','C'),	"ITLC", N_("Italic Correction"),	gpos_single_mask },
+    { CHR('T','C','H','L'),	"TCHL", N_("TeX Glyphlist"),		gsub_alternate_mask },
+    { CHR('T','E','X','L'),	"TEXL", N_("TeX Extension List"),	gsub_multiple_mask },
+#endif
+/* Normal OpenType features follow */
+    { CHR('a','a','l','t'),	"aalt", N_("Access All Alternates"),	gsub_single_mask|gsub_alternate_mask },
+    { CHR('a','b','v','f'),	"abvf", N_("Above Base Forms"),		gsub_single_mask },
+    { CHR('a','b','v','m'),	"abvm", N_("Above Base Mark"),		gpos_mark2base_mask|gpos_mark2ligature_mask },
+    { CHR('a','b','v','s'),	"abvs", N_("Above Base Substitutions"),	gsub_ligature_mask },
+    { CHR('a','f','r','c'),	"afrc", N_("Vertical Fractions"),	gsub_ligature_mask },
+    { CHR('a','k','h','n'),	"akhn", N_("Akhand"),			gsub_ligature_mask },
+    { CHR('a','l','i','g'),	"alig", N_("Ancient Ligatures"),	gsub_ligature_mask },
+    { CHR('b','l','w','f'),	"blwf", N_("Below Base Forms"),		gsub_ligature_mask },
+    { CHR('b','l','w','m'),	"blwm", N_("Below Base Mark"),		gpos_mark2base_mask|gpos_mark2ligature_mask },
+    { CHR('b','l','w','s'),	"blws", N_("Below Base Substitutions"),	gsub_ligature_mask },
+    { CHR('c','2','p','c'),	"c2pc", N_("Capitals to Petite Capitals"),	gsub_single_mask },
+    { CHR('c','2','s','c'),	"c2sc", N_("Capitals to Small Capitals"),	gsub_single_mask },
+    { CHR('c','a','l','t'),	"calt", N_("Contextual Alternates"),	gsub_context_mask|gsub_contextchain_mask|morx_context_mask },
+    { CHR('c','a','s','e'),	"case", N_("Case-Sensitive Forms"),	gsub_single_mask|gpos_single_mask },
+    { CHR('c','c','m','p'),	"ccmp", N_("Glyph Composition/Decomposition"),	gsub_multiple_mask|gsub_ligature_mask },
+    { CHR('c','l','i','g'),	"clig", N_("Contextual Ligatures"),	gsub_reversecchain_mask },
+    { CHR('c','p','s','p'),	"cpsp", N_("Capital Spacing"),		gpos_single_mask },
+    { CHR('c','s','w','h'),	"cswh", N_("Contextual Swash"),		gsub_reversecchain_mask },
+    { CHR('c','u','r','s'),	"curs", N_("Cursive Attachment"),	gpos_cursive_mask },
+    { CHR('d','i','s','t'),	"dist", N_("Distance"),			gpos_pair_mask },
+    { CHR('d','l','i','g'),	"dlig", N_("Discretionary Ligatures"),	gsub_ligature_mask },
+    { CHR('d','n','o','m'),	"dnom", N_("Denominators"),		gsub_single_mask },
+    { CHR('e','x','p','t'),	"expt", N_("Expert Forms"),		gsub_single_mask },
+    { CHR('f','a','l','t'),	"falt", N_("Final Glyph On Line"),	gsub_alternate_mask },
+    { CHR('f','i','n','2'),	"fin2", N_("Terminal Forms #2"),	gsub_context_mask|gsub_contextchain_mask|morx_context_mask },
+    { CHR('f','i','n','3'),	"fin3", N_("Terminal Forms #3"),	gsub_context_mask|gsub_contextchain_mask|morx_context_mask },
+    { CHR('f','i','n','a'),	"fina", N_("Terminal Forms"),		gsub_single_mask },
+    { CHR('f','l','a','c'),	"flac", N_("Flattened Accents over Capitals"),	gsub_single_mask|gsub_ligature_mask },
+    { CHR('f','r','a','c'),	"frac", N_("Diagonal Fractions"),	gsub_single_mask|gsub_ligature_mask },
+    { CHR('f','w','i','d'),	"fwid", N_("Full Widths"),		gsub_single_mask|gpos_single_mask },
+    { CHR('h','a','l','f'),	"half", N_("Half Forms"),		gsub_ligature_mask },
+    { CHR('h','a','l','n'),	"haln", N_("Halant Forms"),		gsub_ligature_mask },
+    { CHR('h','a','l','t'),	"halt", N_("Alternative Half Widths"),	gpos_single_mask },
+    { CHR('h','i','s','t'),	"hist", N_("Historical Forms"),		gsub_single_mask },
+    { CHR('h','k','n','a'),	"hkna", N_("Horizontal Kana Alternatives"),	gsub_single_mask },
+    { CHR('h','l','i','g'),	"hlig", N_("Historic Ligatures"),	gsub_ligature_mask },
+    { CHR('h','n','g','l'),	"hngl", N_("Hanja to Hangul"),		gsub_single_mask|gsub_alternate_mask },
+    { CHR('h','w','i','d'),	"hwid", N_("Half Widths"),		gsub_single_mask|gpos_single_mask },
+    { CHR('i','n','i','t'),	"init", N_("Initial Forms"),		gsub_single_mask },
+    { CHR('i','s','o','l'),	"isol", N_("Isolated Forms"),		gsub_single_mask },
+    { CHR('i','t','a','l'),	"ital", N_("Italics"),			gsub_single_mask },
+    { CHR('j','a','l','t'),	"jalt", N_("Justification Alternatives"),	gsub_alternate_mask },
+    { CHR('j','p','7','8'),	"jp78", N_("JIS78 Forms"),		gsub_single_mask|gsub_alternate_mask },
+    { CHR('j','p','8','3'),	"jp83", N_("JIS83 Forms"),		gsub_single_mask },
+    { CHR('j','p','9','0'),	"jp90", N_("JIS90 Forms"),		gsub_single_mask },
+    { CHR('k','e','r','n'),	"kern", N_("Horizontal Kerning"),	gpos_pair_mask|gpos_context_mask|gpos_contextchain_mask|kern_statemachine_mask },
+    { CHR('l','f','b','d'),	"lfbd", N_("Left Bounds"),		gpos_single_mask },
+    { CHR('l','i','g','a'),	"liga", N_("Standard Ligatures"),	gsub_ligature_mask },
+    { CHR('l','j','m','o'),	"ljmo", N_("Leading Jamo Forms"),	gsub_ligature_mask },
+    { CHR('l','n','u','m'),	"lnum", N_("Lining Figures"),		gsub_single_mask },
+    { CHR('l','o','c','l'),	"locl", N_("Localized Forms"),		gsub_single_mask },
+    { CHR('m','a','r','k'),	"mark", N_("Mark Positioning"),		gpos_mark2base_mask|gpos_mark2ligature_mask },
+    { CHR('m','e','d','2'),	"med2", N_("Medial Forms 2"),		gsub_context_mask|gsub_contextchain_mask|morx_context_mask },
+    { CHR('m','e','d','i'),	"medi", N_("Medial Forms"),		gsub_single_mask },
+    { CHR('m','g','r','k'),	"mgrk", N_("Mathematical Greek"),	gsub_single_mask },
+    { CHR('m','k','m','k'),	"mkmk", N_("Mark to Mark"),		gpos_mark2mark_mask },
+    { CHR('m','s','e','t'),	"mset", N_("Mark Positioning via Substitution"),	gsub_context_mask|gsub_contextchain_mask|morx_context_mask },
+    { CHR('n','a','l','t'),	"nalt", N_("Alternate Annotation Forms"),	gsub_single_mask|gsub_alternate_mask },
+    { CHR('n','u','k','t'),	"nukt", N_("Nukta Forms"),		gsub_ligature_mask },
+    { CHR('n','u','m','r'),	"numr", N_("Numerators"),		gsub_single_mask },
+    { CHR('o','n','u','m'),	"onum", N_("Oldstyle Figures"),		gsub_single_mask },
+    { CHR('o','p','b','d'),	"opbd", N_("Optical Bounds"),		gpos_single_mask },
+    { CHR('o','r','d','n'),	"ordn", N_("Ordinals"),			gsub_ligature_mask|gsub_context_mask|gsub_contextchain_mask|morx_context_mask },
+    { CHR('o','r','n','m'),	"ornm", N_("Ornaments"),		gsub_single_mask|gsub_alternate_mask },
+    { CHR('p','a','l','t'),	"palt", N_("Proportional Alternate Metrics"),	gpos_single_mask },
+    { CHR('p','c','a','p'),	"pcap", N_("Lowercase to Petite Capitals"),	gsub_single_mask },
+    { CHR('p','n','u','m'),	"pnum", N_("Proportional Numbers"),	gsub_single_mask },
+    { CHR('p','r','e','f'),	"pref", N_("Pre Base Forms"),		gsub_ligature_mask },
+    { CHR('p','r','e','s'),	"pres", N_("Pre Base Substitutions"),	gsub_ligature_mask|gsub_context_mask|gsub_contextchain_mask|morx_context_mask },
+    { CHR('p','s','t','f'),	"pstf", N_("Post Base Forms"),		gsub_ligature_mask },
+    { CHR('p','s','t','s'),	"psts", N_("Post Base Substitutions"),	gsub_ligature_mask },
+    { CHR('p','w','i','d'),	"pwid", N_("Proportional Width"),	gsub_single_mask },
+    { CHR('q','w','i','d'),	"qwid", N_("Quarter Widths"),		gsub_single_mask|gpos_single_mask },
+    { CHR('r','a','n','d'),	"rand", N_("Randomize"),		gsub_alternate_mask },
+    { CHR('r','l','i','g'),	"rlig", N_("Required Ligatures"),	gsub_ligature_mask },
+    { CHR('r','p','h','f'),	"rphf", N_("Reph Form"),		gsub_ligature_mask },
+    { CHR('r','t','b','d'),	"rtbd", N_("Right Bounds"),		gpos_single_mask },
+    { CHR('r','t','l','a'),	"rtla", N_("Right to Left Alternates"),	gsub_single_mask },
+    { CHR('r','u','b','y'),	"ruby", N_("Ruby Notational Forms"),	gsub_single_mask },
+    { CHR('s','a','l','t'),	"salt", N_("Stylistic Alternatives"),	gsub_single_mask|gsub_alternate_mask },
+    { CHR('s','i','n','f'),	"sinf", N_("Scientific Inferiors"),	gsub_single_mask },
+    { CHR('s','m','c','p'),	"smcp", N_("Lowercase to Small Capitals"),	gsub_single_mask },
+    { CHR('s','m','p','l'),	"smpl", N_("Simplified Forms"),		gsub_single_mask },
+    { CHR('s','s','0','1'),	"ss01", N_("Style Set 1"),		gsub_single_mask },
+    { CHR('s','s','0','2'),	"ss02", N_("Style Set 2"),		gsub_single_mask },
+    { CHR('s','s','0','3'),	"ss03", N_("Style Set 3"),		gsub_single_mask },
+    { CHR('s','s','0','4'),	"ss04", N_("Style Set 4"),		gsub_single_mask },
+    { CHR('s','s','0','5'),	"ss05", N_("Style Set 5"),		gsub_single_mask },
+    { CHR('s','s','0','6'),	"ss06", N_("Style Set 6"),		gsub_single_mask },
+    { CHR('s','s','0','7'),	"ss07", N_("Style Set 7"),		gsub_single_mask },
+    { CHR('s','s','0','8'),	"ss08", N_("Style Set 8"),		gsub_single_mask },
+    { CHR('s','s','0','9'),	"ss09", N_("Style Set 9"),		gsub_single_mask },
+    { CHR('s','s','1','0'),	"ss10", N_("Style Set 10"),		gsub_single_mask },
+    { CHR('s','s','1','1'),	"ss11", N_("Style Set 11"),		gsub_single_mask },
+    { CHR('s','s','1','2'),	"ss12", N_("Style Set 12"),		gsub_single_mask },
+    { CHR('s','s','1','3'),	"ss13", N_("Style Set 13"),		gsub_single_mask },
+    { CHR('s','s','1','4'),	"ss14", N_("Style Set 14"),		gsub_single_mask },
+    { CHR('s','s','1','5'),	"ss15", N_("Style Set 15"),		gsub_single_mask },
+    { CHR('s','s','1','6'),	"ss16", N_("Style Set 16"),		gsub_single_mask },
+    { CHR('s','s','1','7'),	"ss17", N_("Style Set 17"),		gsub_single_mask },
+    { CHR('s','s','1','8'),	"ss18", N_("Style Set 18"),		gsub_single_mask },
+    { CHR('s','s','1','9'),	"ss19", N_("Style Set 19"),		gsub_single_mask },
+    { CHR('s','s','2','0'),	"ss20", N_("Style Set 20"),		gsub_single_mask },
+    { CHR('s','s','t','y'),	"ssty", N_("Script Style"),		gsub_single_mask },
+    { CHR('s','u','b','s'),	"subs", N_("Subscript"),		gsub_single_mask },
+    { CHR('s','u','p','s'),	"sups", N_("Superscript"),		gsub_single_mask },
+    { CHR('s','w','s','h'),	"swsh", N_("Swash"),			gsub_single_mask|gsub_alternate_mask },
+    { CHR('t','i','t','l'),	"titl", N_("Titling"),			gsub_single_mask },
+    { CHR('t','j','m','o'),	"tjmo", N_("Trailing Jamo Forms"),	gsub_ligature_mask },
+    { CHR('t','n','a','m'),	"tnam", N_("Traditional Name Forms"),	gsub_single_mask },
+    { CHR('t','n','u','m'),	"tnum", N_("Tabular Numbers"),		gsub_single_mask },
+    { CHR('t','r','a','d'),	"trad", N_("Traditional Forms"),	gsub_single_mask|gsub_alternate_mask },
+    { CHR('t','w','i','d'),	"twid", N_("Third Widths"),		gsub_single_mask|gpos_single_mask },
+    { CHR('u','n','i','c'),	"unic", N_("Unicase"),			gsub_single_mask },
+    { CHR('v','a','l','t'),	"valt", N_("Alternate Vertical Metrics"),	gpos_single_mask },
+    { CHR('v','a','t','u'),	"vatu", N_("Vattu Variants"),		gsub_ligature_mask },
+    { CHR('v','e','r','t'),	"vert", N_("Vertical Alternates (obs)"),	gsub_single_mask },
+    { CHR('v','h','a','l'),	"vhal", N_("Alternate Vertical Half Metrics"),	gpos_single_mask },
+    { CHR('v','j','m','o'),	"vjmo", N_("Vowel Jamo Forms"),		gsub_ligature_mask },
+    { CHR('v','k','n','a'),	"vkna", N_("Vertical Kana Alternates"),	gsub_single_mask },
+    { CHR('v','k','r','n'),	"vkrn", N_("Vertical Kerning"),		gpos_pair_mask|gpos_context_mask|gpos_contextchain_mask|kern_statemachine_mask },
+    { CHR('v','p','a','l'),	"vpal", N_("Proportional Alternate Vertical Metrics"),	gpos_single_mask },
+    { CHR('v','r','t','2'),	"vrt2", N_("Vertical Rotation & Alternates"),	gsub_single_mask },
+    { CHR('z','e','r','o'),	"zero", N_("Slashed Zero"),		gsub_single_mask },
+/* This is my hack for setting the "Required feature" field of a script */
+    { CHR(' ','R','Q','D'),	" RQD", N_("Required feature"),		gsub_single_mask|gsub_multiple_mask|gsub_alternate_mask|gsub_ligature_mask|gsub_context_mask|gsub_contextchain_mask|gsub_reversecchain_mask|morx_context_mask|gpos_single_mask|gpos_pair_mask|gpos_cursive_mask|gpos_mark2base_mask|gpos_mark2ligature_mask|gpos_mark2mark_mask|gpos_context_mask|gpos_contextchain_mask },
+    { 0, NULL, 0 }
+};
 
 static int uint32_cmp(const void *_ui1, const void *_ui2) {
     if ( *(uint32 *) _ui1 > *(uint32 *)_ui2 )
@@ -1014,14 +1151,201 @@ char *lookup_type_names[2][10] =
 		N_("Contextual Positioning"), N_("Contextual Chaining Positioning"),
 		N_("Extension") }};
 
+/* This is a non-ui based copy of a similar list in lookupui.c */
+static struct {
+    char *text;
+    uint32 tag;
+} localscripts[] = {
+/* GT: See the long comment at "Property|New" */
+/* GT: The msgstr should contain a translation of "Arabic", ignore "Script|" */
+    { N_("Script|Arabic"), CHR('a','r','a','b') },
+    { N_("Script|Aramaic"), CHR('a','r','a','m') },
+    { N_("Script|Armenian"), CHR('a','r','m','n') },
+    { N_("Script|Avestan"), CHR('a','v','e','s') },
+    { N_("Script|Balinese"), CHR('b','a','l','i') },
+    { N_("Script|Batak"), CHR('b','a','t','k') },
+    { N_("Script|Bengali"), CHR('b','e','n','g') },
+    { N_("Script|Bengali2"), CHR('b','n','g','2') },
+    { N_("Bliss Symbolics"), CHR('b','l','i','s') },
+    { N_("Bopomofo"), CHR('b','o','p','o') },
+    { NU_("Brāhmī"), CHR('b','r','a','h') },
+    { N_("Braille"), CHR('b','r','a','i') },
+    { N_("Script|Buginese"), CHR('b','u','g','i') },
+    { N_("Script|Buhid"), CHR('b','u','h','d') },
+    { N_("Byzantine Music"), CHR('b','y','z','m') },
+    { N_("Canadian Syllabics"), CHR('c','a','n','s') },
+    { N_("Script|Cham"), CHR('c','h','a','m') },
+    { N_("Script|Cherokee"), CHR('c','h','e','r') },
+    { N_("Cirth"), CHR('c','i','r','t') },
+    { N_("CJK Ideographic"), CHR('h','a','n','i') },
+    { N_("Script|Coptic"), CHR('c','o','p','t') },
+    { N_("Cypro-Minoan"), CHR('c','p','r','t') },
+    { N_("Cypriot syllabary"), CHR('c','p','m','n') },
+    { N_("Cyrillic"), CHR('c','y','r','l') },
+    { N_("Script|Default"), CHR('D','F','L','T') },
+    { N_("Deseret (Mormon)"), CHR('d','s','r','t') },
+    { N_("Devanagari"), CHR('d','e','v','a') },
+    { N_("Devanagari2"), CHR('d','e','v','2') },
+/*  { N_("Egyptian demotic"), CHR('e','g','y','d') }, */
+/*  { N_("Egyptian hieratic"), CHR('e','g','y','h') }, */
+/* GT: Someone asked if FontForge actually was prepared generate hieroglyph output */
+/* GT: because of this string. No. But OpenType and Unicode have placeholders for */
+/* GT: dealing with these scripts against the day someone wants to use them. So */
+/* GT: FontForge must be prepared to deal with those placeholders if nothing else. */
+/*  { N_("Egyptian hieroglyphs"), CHR('e','g','y','p') }, */
+    { N_("Script|Ethiopic"), CHR('e','t','h','i') },
+    { N_("Script|Georgian"), CHR('g','e','o','r') },
+    { N_("Glagolitic"), CHR('g','l','a','g') },
+    { N_("Gothic"), CHR('g','o','t','h') },
+    { N_("Script|Greek"), CHR('g','r','e','k') },
+    { N_("Script|Gujarati"), CHR('g','u','j','r') },
+    { N_("Script|Gujarati2"), CHR('g','j','r','2') },
+    { N_("Gurmukhi"), CHR('g','u','r','u') },
+    { N_("Gurmukhi2"), CHR('g','u','r','2') },
+    { N_("Hangul Jamo"), CHR('j','a','m','o') },
+    { N_("Hangul"), CHR('h','a','n','g') },
+    { NU_("Script|Hanunóo"), CHR('h','a','n','o') },
+    { N_("Script|Hebrew"), CHR('h','e','b','r') },
+/*  { N_("Pahawh Hmong"), CHR('h','m','n','g') },*/
+/*  { N_("Indus (Harappan)"), CHR('i','n','d','s') },*/
+    { N_("Script|Javanese"), CHR('j','a','v','a') },
+/*  { N_("Kayah Li"), CHR('k','a','l','i') },*/
+    { N_("Hiragana & Katakana"), CHR('k','a','n','a') },
+    { NU_("Kharoṣṭhī"), CHR('k','h','a','r') },
+    { N_("Script|Kannada"), CHR('k','n','d','a') },
+    { N_("Script|Kannada2"), CHR('k','n','d','2') },
+    { N_("Script|Khmer"), CHR('k','h','m','r') },
+    { N_("Script|Kharosthi"), CHR('k','h','a','r') },
+    { N_("Script|Lao") , CHR('l','a','o',' ') },
+    { N_("Script|Latin"), CHR('l','a','t','n') },
+    { NU_("Lepcha (Róng)"), CHR('l','e','p','c') },
+    { N_("Script|Limbu"), CHR('l','i','m','b') },	/* Not in ISO 15924 !!!!!, just guessing */
+    { N_("Linear A"), CHR('l','i','n','a') },
+    { N_("Linear B"), CHR('l','i','n','b') },
+    { N_("Script|Mandaean"), CHR('m','a','n','d') },
+/*  { N_("Mayan hieroglyphs"), CHR('m','a','y','a') },*/
+    { NU_("Script|Malayālam"), CHR('m','l','y','m') },
+    { NU_("Script|Malayālam2"), CHR('m','l','y','2') },
+    { NU_("Mathematical Alphanumeric Symbols"), CHR('m','a','t','h') },
+    { N_("Script|Mongolian"), CHR('m','o','n','g') },
+    { N_("Musical"), CHR('m','u','s','i') },
+    { N_("Script|Myanmar"), CHR('m','y','m','r') },
+    { N_("N'Ko"), CHR('n','k','o',' ') },
+    { N_("Ogham"), CHR('o','g','a','m') },
+    { N_("Old Italic (Etruscan, Oscan, etc.)"), CHR('i','t','a','l') },
+    { N_("Script|Old Permic"), CHR('p','e','r','m') },
+    { N_("Old Persian cuneiform"), CHR('x','p','e','o') },
+    { N_("Script|Oriya"), CHR('o','r','y','a') },
+    { N_("Script|Oriya2"), CHR('o','r','y','2') },
+    { N_("Osmanya"), CHR('o','s','m','a') },
+    { N_("Script|Pahlavi"), CHR('p','a','l','v') },
+    { N_("Script|Phags-pa"), CHR('p','h','a','g') },
+    { N_("Script|Phoenician"), CHR('p','h','n','x') },
+    { N_("Phaistos"), CHR('p','h','s','t') },
+    { N_("Pollard Phonetic"), CHR('p','l','r','d') },
+    { N_("Rongorongo"), CHR('r','o','r','o') },
+    { N_("Runic"), CHR('r','u','n','r') },
+    { N_("Shavian"), CHR('s','h','a','w') },
+    { N_("Script|Sinhala"), CHR('s','i','n','h') },
+    { N_("Script|Sumero-Akkadian Cuneiform"), CHR('x','s','u','x') },
+    { N_("Script|Syloti Nagri"), CHR('s','y','l','o') },
+    { N_("Script|Syriac"), CHR('s','y','r','c') },
+    { N_("Script|Tagalog"), CHR('t','g','l','g') },
+    { N_("Script|Tagbanwa"), CHR('t','a','g','b') },
+    { N_("Tai Le"), CHR('t','a','l','e') },	/* Not in ISO 15924 !!!!!, just guessing */
+    { N_("Tai Lu"), CHR('t','a','l','a') },	/* Not in ISO 15924 !!!!!, just guessing */
+    { N_("Script|Tamil"), CHR('t','a','m','l') },
+    { N_("Script|Tamil2"), CHR('t','m','l','2') },
+    { N_("Script|Telugu"), CHR('t','e','l','u') },
+    { N_("Script|Telugu2"), CHR('t','e','l','2') },
+    { N_("Tengwar"), CHR('t','e','n','g') },
+    { N_("Thaana"), CHR('t','h','a','a') },
+    { N_("Script|Thai"), CHR('t','h','a','i') },
+    { N_("Script|Tibetan"), CHR('t','i','b','t') },
+    { N_("Tifinagh (Berber)"), CHR('t','f','n','g') },
+    { N_("Script|Ugaritic"), CHR('u','g','r','t') },	/* Not in ISO 15924 !!!!!, just guessing */
+    { N_("Script|Vai"), CHR('v','a','i',' ') },
+/*  { N_("Visible Speech"), CHR('v','i','s','p') },*/
+    { N_("Cuneiform, Ugaritic"), CHR('x','u','g','a') },
+    { N_("Script|Yi")  , CHR('y','i',' ',' ') },
+/*  { N_("Private Use Script 1"), CHR('q','a','a','a') },*/
+/*  { N_("Private Use Script 2"), CHR('q','a','a','b') },*/
+/*  { N_("Undetermined Script"), CHR('z','y','y','y') },*/
+/*  { N_("Uncoded Script"), CHR('z','z','z','z') },*/
+    { NULL }
+};
+
+void LookupInit(void) {
+    static int done = false;
+    int i, j;
+
+    if ( done )
+return;
+    done = true;
+    for ( j=0; j<2; ++j ) {
+	for ( i=0; lookup_type_names[j][i]!=NULL; ++i )
+	    lookup_type_names[j][i] = S_((char *) lookup_type_names[j][i]);
+    }
+    for ( i=0; localscripts[i].text!=NULL; ++i )
+	localscripts[i].text = S_(localscripts[i].text);
+    for ( i=0; friendlies[i].friendlyname!=NULL; ++i )
+	friendlies[i].friendlyname = S_(friendlies[i].friendlyname);
+}
+
+char *TagFullName(SplineFont *sf,uint32 tag, int ismac, int onlyifknown) {
+    char ubuf[200], *end = ubuf+sizeof(ubuf), *setname;
+    int k;
+
+    if ( ismac==-1 )
+	/* Guess */
+	ismac = (tag>>24)<' ' || (tag>>24)>0x7e;
+
+    if ( ismac ) {
+	sprintf( ubuf, "<%d,%d> ", (int) (tag>>16),(int) (tag&0xffff) );
+	if ( (setname = PickNameFromMacName(FindMacSettingName(sf,tag>>16,tag&0xffff)))!=NULL ) {
+	    strcat( ubuf, setname );
+	    free( setname );
+	}
+    } else {
+	int stag = tag;
+	if ( tag==CHR('n','u','t','f') )	/* early name that was standardize later as... */
+	    stag = CHR('a','f','r','c');	/*  Stood for nut fractions. "nut" meaning "fits in an en" in old typography-speak => vertical fractions rather than diagonal ones */
+	if ( tag==REQUIRED_FEATURE ) {
+	    strcpy(ubuf,_("Required Feature"));
+	} else {
+	    LookupInit();
+	    for ( k=0; friendlies[k].tag!=0; ++k ) {
+		if ( friendlies[k].tag == stag )
+	    break;
+	    }
+	    ubuf[0] = '\'';
+	    ubuf[1] = tag>>24;
+	    ubuf[2] = (tag>>16)&0xff;
+	    ubuf[3] = (tag>>8)&0xff;
+	    ubuf[4] = tag&0xff;
+	    ubuf[5] = '\'';
+	    ubuf[6] = ' ';
+	    if ( friendlies[k].tag!=0 )
+		strncpy(ubuf+7, (char *) friendlies[k].friendlyname,end-ubuf-7);
+	    else if ( onlyifknown )
+return( NULL );
+	    else
+		ubuf[7]='\0';
+	}
+    }
+return( copy( ubuf ));
+}
+
+
 void NameOTLookup(OTLookup *otl,SplineFont *sf) {
     char *userfriendly = NULL, *script;
     FeatureScriptLangList *fl;
     char *lookuptype;
-    extern GTextInfo scripts[];
     char *format;
     struct lookup_subtable *subtable;
     int k;
+
+    LookupInit();
 
     if ( otl->lookup_name==NULL ) {
 	for ( k=0; k<2; ++k ) {
@@ -1082,9 +1406,9 @@ void NameOTLookup(OTLookup *otl,SplineFont *sf) {
 		found = found2;
 	    if ( found!=NULL ) {
 		script_tag = found->script;
-		for ( j=0; scripts[j].text!=NULL && script_tag!=(uint32) (intpt) scripts[j].userdata; ++j );
-		if ( scripts[j].text!=NULL )
-		    script = copy( S_((char *) scripts[j].text) );
+		for ( j=0; localscripts[j].text!=NULL && script_tag!=localscripts[j].tag; ++j );
+		if ( localscripts[j].text!=NULL )
+		    script = copy( S_((char *) localscripts[j].text) );
 		else {
 		    buf[0] = '\'';
 		    buf[1] = fl->scripts->script>>24;
@@ -1769,9 +2093,137 @@ static void SF_AddPSTKern(SplineFont *to_sf,struct lookup_subtable *from_sub, st
     } while ( k<from_sf->subfontcnt );
 }
 
+int _FeatureOrderId( int isgpos,uint32 tag ) {
+    /* This is the order in which features should be executed */
+    
+    if ( !isgpos ) switch ( tag ) {
+/* GSUB ordering */
+      case CHR('c','c','m','p'):	/* Must be first? */
+return( -2 );
+      case CHR('l','o','c','l'):	/* Language dependent letter forms (serbian uses some different glyphs than russian) */
+return( -1 );
+      case CHR('i','s','o','l'):
+return( 0 );
+      case CHR('j','a','l','t'):		/* must come after 'isol' */
+return( 1 );
+      case CHR('f','i','n','a'):
+return( 2 );
+      case CHR('f','i','n','2'):
+      case CHR('f','a','l','t'):		/* must come after 'fina' */
+return( 3 );
+      case CHR('f','i','n','3'):
+return( 4 );
+      case CHR('m','e','d','i'):
+return( 5 );
+      case CHR('m','e','d','2'):
+return( 6 );
+      case CHR('i','n','i','t'):
+return( 7 );
+
+      case CHR('r','t','l','a'):
+return( 100 );
+      case CHR('s','m','c','p'): case CHR('c','2','s','c'):
+return( 200 );
+
+      case CHR('r','l','i','g'):
+return( 300 );
+      case CHR('c','a','l','t'):
+return( 301 );
+      case CHR('l','i','g','a'):
+return( 302 );
+      case CHR('d','l','i','g'): case CHR('h','l','i','g'):
+return( 303 );
+      case CHR('c','s','w','h'):
+return( 304 );
+      case CHR('m','s','e','t'):
+return( 305 );
+
+      case CHR('f','r','a','c'):
+return( 306 );
+
+/* Indic processing */
+      case CHR('n','u','k','t'):
+      case CHR('p','r','e','f'):
+return( 301 );
+      case CHR('a','k','h','n'):
+return( 302 );
+      case CHR('r','p','h','f'):
+return( 303 );
+      case CHR('b','l','w','f'):
+return( 304 );
+      case CHR('h','a','l','f'):
+      case CHR('a','b','v','f'):
+return( 305 );
+      case CHR('p','s','t','f'):
+return( 306 );
+      case CHR('v','a','t','u'):
+return( 307 );
+
+      case CHR('p','r','e','s'):
+return( 310 );
+      case CHR('b','l','w','s'):
+return( 311 );
+      case CHR('a','b','v','s'):
+return( 312 );
+      case CHR('p','s','t','s'):
+return( 313 );
+      case CHR('c','l','i','g'):
+return( 314 );
+      
+      case CHR('h','a','l','n'):
+return( 320 );
+/* end indic ordering */
+
+      case CHR('a','f','r','c'):
+      case CHR('l','j','m','o'):
+      case CHR('v','j','m','o'):
+return( 350 );
+      case CHR('v','r','t','2'): case CHR('v','e','r','t'):
+return( 1010 );		/* Documented to come last */
+
+/* Unknown things come after everything but vert/vrt2 */
+      default:
+return( 1000 );
+
+    } else switch ( tag ) {
+/* GPOS ordering */
+      case CHR('c','u','r','s'):
+return( 0 );
+      case CHR('d','i','s','t'):
+return( 100 );
+      case CHR('b','l','w','m'):
+return( 201 );
+      case CHR('a','b','v','m'):
+return( 202 );
+      case CHR('k','e','r','n'):
+return( 300 );
+      case CHR('m','a','r','k'):
+return( 400 );
+      case CHR('m','k','m','k'):
+return( 500 );
+/* Unknown things come after everything  */
+      default:
+return( 1000 );
+    }
+}
+
+int FeatureOrderId( int isgpos,FeatureScriptLangList *fl ) {
+    int pos = 9999, temp;
+
+    if ( fl==NULL )
+return( 0 );
+
+    while ( fl!=NULL ) {
+	temp = _FeatureOrderId(isgpos,fl->featuretag );
+	if ( temp<pos ) pos = temp;
+	fl = fl->next;
+    }
+return( pos );
+}
+
 void SortInsertLookup(SplineFont *sf, OTLookup *newotl) {
     int isgpos = newotl->lookup_type>=gpos_start;
-    int pos, i, k;
+    int pos;
     OTLookup *prev, *otl;
 
     pos = FeatureOrderId(isgpos,newotl->features);
@@ -1786,19 +2238,8 @@ void SortInsertLookup(SplineFont *sf, OTLookup *newotl) {
     else
 	sf->gsub_lookups = newotl;
 
-    if ( sf->fontinfo ) {
-	struct lkdata *lk = &sf->fontinfo->tables[isgpos];
-	if ( lk->cnt>=lk->max )
-	    lk->all = grealloc(lk->all,(lk->max+=10)*sizeof(struct lkinfo));
-	for ( i=0; i<lk->cnt && FeatureOrderId(isgpos,lk->all[i].lookup->features)<pos; ++i );
-	for ( k=lk->cnt; k>i+1; --k )
-	    lk->all[k] = lk->all[k-1];
-	memset(&lk->all[k],0,sizeof(struct lkinfo));
-	lk->all[k].lookup = newotl;
-	++lk->cnt;
-	GFI_LookupScrollbars(sf->fontinfo,isgpos, true);
-	GFI_LookupEnableButtons(sf->fontinfo,isgpos);
-    }
+    if ( sf->fontinfo )
+	FISortInsertLookup(sf,newotl);
 }
 
 OTLookup *OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf, OTLookup *from_otl) {
@@ -1840,18 +2281,7 @@ OTLookup *OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf, OTLookup *fr
 	    SF_AddPSTKern(into_sf, from_sub, sub, from_sf, prefix);
 	++scnt;
     }
-    if ( into_sf->fontinfo ) {
-	int isgpos = otl->lookup_type>=gpos_start;
-	struct lkdata *lk = &into_sf->fontinfo->tables[isgpos];
-	int i;
-	for ( i=0; i<lk->cnt; ++i )
-	    if ( lk->all[i].lookup==otl )
-	break;
-	lk->all[i].subtable_cnt = lk->all[i].subtable_max = scnt;
-	lk->all[i].subtables = gcalloc(scnt,sizeof(struct lksubinfo));
-	for ( sub=otl->subtables, scnt=0; sub!=NULL; sub=sub->next, ++scnt )
-	    lk->all[i].subtables[scnt].subtable = sub;
-    }
+    FIOTLookupCopyInto(into_sf,from_sf, from_otl, scnt);
 return( otl );
 }
 
@@ -3205,4 +3635,263 @@ void SFGlyphRenameFixup(SplineFont *sf, char *old, char *new) {
 	    }
 	}
     }
+}
+
+struct lookup_subtable *SFSubTableFindOrMake(SplineFont *sf,uint32 tag,uint32 script,
+	int lookup_type ) {
+    OTLookup **base;
+    OTLookup *otl, *found=NULL;
+    int isgpos = lookup_type>=gpos_start;
+    struct lookup_subtable *sub;
+    int isnew = false;
+
+    if ( sf->cidmaster ) sf = sf->cidmaster;
+    base = isgpos ? &sf->gpos_lookups : &sf->gsub_lookups;
+    for ( otl= *base; otl!=NULL; otl=otl->next ) {
+	if ( otl->lookup_type==lookup_type &&
+		FeatureScriptTagInFeatureScriptList(tag,script,otl->features) ) {
+	    for ( sub = otl->subtables; sub!=NULL; sub=sub->next )
+		if ( sub->kc==NULL )
+return( sub );
+	    found = otl;
+	}
+    }
+
+    if ( found==NULL ) {
+	found = chunkalloc(sizeof(OTLookup));
+	found->lookup_type = lookup_type;
+	found->features = chunkalloc(sizeof(FeatureScriptLangList));
+	found->features->featuretag = tag;
+	found->features->scripts = chunkalloc(sizeof(struct scriptlanglist));
+	found->features->scripts->script = script;
+	found->features->scripts->langs[0] = DEFAULT_LANG;
+	found->features->scripts->lang_cnt = 1;
+
+	SortInsertLookup(sf, found);
+	isnew = true;
+    }
+
+    sub = chunkalloc(sizeof(struct lookup_subtable));
+    sub->next = found->subtables;
+    found->subtables = sub;
+    sub->lookup = found;
+    sub->per_glyph_pst_or_kern = true;
+
+    if ( isnew )
+	NameOTLookup(found,sf);
+return( sub );
+}
+
+struct lookup_subtable *SFSubTableMake(SplineFont *sf,uint32 tag,uint32 script,
+	int lookup_type ) {
+    OTLookup **base;
+    OTLookup *otl, *found=NULL;
+    int isgpos = lookup_type>=gpos_start;
+    struct lookup_subtable *sub;
+    int isnew = false;
+
+    if ( sf->cidmaster ) sf = sf->cidmaster;
+    base = isgpos ? &sf->gpos_lookups : &sf->gsub_lookups;
+    for ( otl= *base; otl!=NULL; otl=otl->next ) {
+	if ( otl->lookup_type==lookup_type &&
+		FeatureScriptTagInFeatureScriptList(tag,script,otl->features) ) {
+	    found = otl;
+	}
+    }
+
+    if ( found==NULL ) {
+	found = chunkalloc(sizeof(OTLookup));
+	found->lookup_type = lookup_type;
+	found->features = chunkalloc(sizeof(FeatureScriptLangList));
+	found->features->featuretag = tag;
+	found->features->scripts = chunkalloc(sizeof(struct scriptlanglist));
+	found->features->scripts->script = script;
+	found->features->scripts->langs[0] = DEFAULT_LANG;
+	found->features->scripts->lang_cnt = 1;
+
+	SortInsertLookup(sf, found);
+	isnew = true;
+    }
+
+    sub = chunkalloc(sizeof(struct lookup_subtable));
+    sub->next = found->subtables;
+    found->subtables = sub;
+    sub->lookup = found;
+
+    if ( isnew )
+	NameOTLookup(found,sf);
+return( sub );
+}
+
+int VerticalKernFeature(SplineFont *sf, OTLookup *otl, int ask) {
+    FeatureScriptLangList *fl;
+    struct lookup_subtable *sub;
+    KernClass *kc;
+    char *buts[3];
+
+    for ( fl=otl->features; fl!=NULL; fl=fl->next ) {
+	if ( fl->featuretag==CHR('k','e','r','n') )
+return( false );
+	else if ( fl->featuretag==CHR('v','k','r','n') )
+return( true );
+    }
+
+    for ( sub=otl->subtables; sub!=NULL; sub=sub->next ) {
+	if ( sub->kc!=NULL ) {
+	    for ( kc=sf->kerns; kc!=NULL; kc=kc->next )
+		if ( kc==sub->kc )
+return( false );
+	    for ( kc=sf->vkerns; kc!=NULL; kc=kc->next )
+		if ( kc==sub->kc )
+return( true );
+	}
+    }
+
+    if ( !ask )
+return( -1 );
+
+    buts[0] = _("_Horizontal"); buts[1] = _("_Vertical"); buts[2] = NULL;
+return( ff_ask(_("Kerning direction"),(const char **) buts,0,1,_("Is this horizontal or vertical kerning data?")) );
+}
+
+int IsAnchorClassUsed(SplineChar *sc,AnchorClass *an) {
+    AnchorPoint *ap;
+    int waslig=0, sawentry=0, sawexit=0;
+
+    for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
+	if ( ap->anchor==an ) {
+	    if ( ap->type==at_centry )
+		sawentry = true;
+	    else if ( ap->type==at_cexit )
+		sawexit = true;
+	    else if ( an->type==act_mkmk ) {
+		if ( ap->type==at_basemark )
+		    sawexit = true;
+		else
+		    sawentry = true;
+	    } else if ( ap->type!=at_baselig )
+return( -1 );
+	    else if ( waslig<ap->lig_index+1 )
+		waslig = ap->lig_index+1;
+	}
+    }
+    if ( sawentry && sawexit )
+return( -1 );
+    else if ( sawentry )
+return( -2 );
+    else if ( sawexit )
+return( -3 );
+return( waslig );
+}
+
+int PSTContains(const char *components,const char *name) {
+    const char *pt;
+    int len = strlen(name);
+
+    for ( pt = strstr(components,name); pt!=NULL; pt = strstr(pt+len,name)) {
+	if (( pt==components || pt[-1]==' ') && (pt[len]==' ' || pt[len]=='\0'))
+return( true );
+    }
+return( false );
+}
+
+int KernClassContains(KernClass *kc, char *name1, char *name2, int ordered ) {
+    int infirst=0, insecond=0, scpos1, kwpos1, scpos2, kwpos2;
+    int i;
+
+    for ( i=1; i<kc->first_cnt; ++i ) {
+	if ( PSTContains(kc->firsts[i],name1) ) {
+	    scpos1 = i;
+	    if ( ++infirst>=3 )		/* The name occurs twice??? */
+    break;
+	} else if ( PSTContains(kc->firsts[i],name2) ) {
+	    kwpos1 = i;
+	    if ( (infirst+=2)>=3 )
+    break;
+	}
+    }
+    if ( infirst==0 || infirst>3 )
+return( 0 );
+    for ( i=1; i<kc->second_cnt; ++i ) {
+	if ( PSTContains(kc->seconds[i],name1) ) {
+	    scpos2 = i;
+	    if ( ++insecond>=3 )
+    break;
+	} else if ( PSTContains(kc->seconds[i],name2) ) {
+	    kwpos2 = i;
+	    if ( (insecond+=2)>=3 )
+    break;
+	}
+    }
+    if ( insecond==0 || insecond>3 )
+return( 0 );
+    if ( (infirst&1) && (insecond&2) ) {
+	if ( kc->offsets[scpos1*kc->second_cnt+kwpos2]!=0 )
+return( kc->offsets[scpos1*kc->second_cnt+kwpos2] );
+    }
+    if ( !ordered ) {
+	if ( (infirst&2) && (insecond&1) ) {
+	    if ( kc->offsets[kwpos1*kc->second_cnt+scpos2]!=0 )
+return( kc->offsets[kwpos1*kc->second_cnt+scpos2] );
+	}
+    }
+return( 0 );
+}
+
+int KCFindName(char *name, char **classnames, int cnt ) {
+    int i;
+    char *pt, *end, ch;
+
+    for ( i=0; i<cnt; ++i ) {
+	if ( classnames[i]==NULL )
+    continue;
+	for ( pt = classnames[i]; *pt; pt=end+1 ) {
+	    end = strchr(pt,' ');
+	    if ( end==NULL ) end = pt+strlen(pt);
+	    ch = *end;
+	    *end = '\0';
+	    if ( strcmp(pt,name)==0 ) {
+		*end = ch;
+return( i );
+	    }
+	    *end = ch;
+	    if ( ch=='\0' )
+	break;
+	}
+    }
+return( 0 );
+}
+
+int KCFindIndex(KernClass *kc,char *name1, char *name2) {
+    int f,l;
+
+    f = KCFindName(name1,kc->firsts,kc->first_cnt);
+    l = KCFindName(name2,kc->seconds,kc->second_cnt);
+    if ( (f!=0 || kc->firsts[0]!=NULL) && l!=0 )
+return( f*kc->second_cnt+l );
+
+return( -1 );
+}
+
+
+static void NOFI_SortInsertLookup(SplineFont *sf, OTLookup *newotl) {
+}
+
+static void NOFI_OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf,
+	OTLookup *from_otl, int scnt) {
+}
+
+static void NOFI_Destroy(SplineFont *sf) {
+}
+
+struct fi_interface noui_fi = {
+    NOFI_SortInsertLookup,
+    NOFI_OTLookupCopyInto,
+    NOFI_Destroy
+};
+
+struct fi_interface *fi_interface = &noui_fi;
+
+void FF_SetFIInterface(struct fi_interface *fii) {
+    fi_interface = fii;
 }

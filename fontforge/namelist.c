@@ -25,11 +25,13 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "pfaeditui.h"
+#include "fontforgevw.h"
 #include "ustring.h"
 #include <utype.h>
 
-extern int recognizePUA;
+int recognizePUA = false;
+NameList *force_names_when_opening=NULL;
+NameList *force_names_when_saving=NULL;
 
 static struct psaltnames {
     char *name;
@@ -535,9 +537,6 @@ NameList *LoadNamelist(char *filename) {
     int up, ub, uc;
     int rn_cnt=0, rn_max = 0;
     int uses_unicode = false;
-# if defined(FONTFORGE_CONFIG_GTK)
-    gsize read, written;
-# endif
 
     if ( file==NULL )
 return( NULL );
@@ -548,11 +547,7 @@ return( NULL );
     nl = chunkalloc(sizeof(NameList));
     pt = strrchr(filename,'/');
     if ( pt==NULL ) pt = filename; else ++pt;
-# if defined(FONTFORGE_CONFIG_GTK)
-    nl->title = g_filename_to_utf8(pt,-1,&read,&written,NULL);
-# else
     nl->title = def2utf8_copy(pt);
-# endif
     pt = strrchr(nl->title,'.');
     if ( pt!=NULL ) *pt = '\0';
 

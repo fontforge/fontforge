@@ -27,11 +27,10 @@
 #ifndef _PFAEDITUI_H_
 #define _PFAEDITUI_H_
 
-#include "pfaedit.h"
+#include "fontforgevw.h"
 #include <gprogress.h>
 
 extern void help(char *filename);
-extern int FontForgeMain( int argc, char **argv );
 
 # include "gdraw.h"
 # include "gwidget.h"
@@ -107,6 +106,14 @@ extern void Protest8(char *labelr);
 extern int ErrorWindowExists(void);
 extern void ShowErrorWindow(void);
 extern struct ui_interface gdraw_ui_interface;
+extern struct prefs_interface gdraw_prefs_interface;
+extern struct sc_interface gdraw_sc_interface;
+extern struct cv_interface gdraw_cv_interface;
+extern struct bc_interface gdraw_bc_interface;
+extern struct mv_interface gdraw_mv_interface;
+extern struct fv_interface gdraw_fv_interface;
+extern struct fi_interface gdraw_fi_interface;
+extern struct clip_interface gdraw_clip_interface;
 
 /* I would like these to be const ints, but gcc doesn't treat them as consts */
 #define et_sb_halfup et_sb_thumbrelease+1

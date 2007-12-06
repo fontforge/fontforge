@@ -25,7 +25,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
-#ifdef FONTFORGE_CONFIG_GDRAW
 
 static GClut magnify0_clut = { 2, 0, 1,
     0x0, 0xb0b0b0 };
@@ -4979,4 +4978,3 @@ void InitToolIconClut(Color bg) {
 	rotate0_clut.clut[4] = 0x00ff00;
     }
 }
-#endif

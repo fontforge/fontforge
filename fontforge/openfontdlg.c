@@ -25,7 +25,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <stdlib.h>
 #include <string.h>
 #include <ustring.h>
@@ -34,6 +33,8 @@
 #include <ggadget.h>
 
 extern NameList *force_names_when_opening;
+int default_font_filter_index=0;
+struct openfilefilters *user_font_filters = NULL;
 
 struct openfilefilters def_font_filters[] = {
 	N_("All Fonts"), "*.{"
@@ -230,7 +231,7 @@ static int Filter_OK(GGadget *g, GEvent *e) {
 	    }
 	    user_font_filters[cnt].name = user_font_filters[cnt].filter = NULL;
 	}
-	SavePrefs();
+	SavePrefs(true);
 	d->done = true;
     }
 return( true );
@@ -465,7 +466,7 @@ static int GFD_FilterSelected(GGadget *g, GEvent *e) {
 	    GFileChooserSetDir(d->gfc,temp);
 	    free(temp);
 	    default_font_filter_index = GGadgetGetFirstListSelectedItem(g);
-	    SavePrefs();
+	    SavePrefs(true);
 	}
     }
 return( true );
@@ -556,12 +557,7 @@ return( GGadgetDispatchEvent((GGadget *) (d->gfc),event));
 return( event->type!=et_char );
 }
 
-# ifdef FONTFORGE_CONFIG_GTK
-char *FVOpenFont(char *title, const char *defaultfile,
-	const char *initial_filter, int mult) {
-#else
 unichar_t *FVOpenFont(char *title, const char *defaultfile, int mult) {
-#endif
     GRect pos;
     int i, filter, renamei;
     GWindow gw;
@@ -771,4 +767,3 @@ unichar_t *FVOpenFont(char *title, const char *defaultfile, int mult) {
     free( d.lastpopupfontname );
 return(d.ret);
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

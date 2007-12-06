@@ -24,7 +24,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "pfaeditui.h"
+#include "fontforgevw.h"
 #include <stdio.h>
 #include <math.h>
 #include "splinefont.h"
@@ -462,11 +462,7 @@ static int ValidMetrics(BDFFont *test,BDFFont *base,EncMap *map,int den) {
 return( true );
 
     if ( test==base && map->enc->char_cnt>=256 )
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	ff_post_notice(_("Bad Metrics"),_("Only the first 256 glyphs in the encoding will be used"));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	ff_post_notice(_("Bad Metrics"),_("Only the first 256 glyphs in the encoding will be used"));
-#endif
 
     for ( i=0; i<map->enccount && i<256; ++i ) if ( (gid=map->map[i])!=-1 && (test->glyphs[gid]!=NULL || base->glyphs[gid]!=NULL )) {
 	if ( base->glyphs[gid]==NULL || test->glyphs[gid]==NULL ) {

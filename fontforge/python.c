@@ -31,17 +31,7 @@
 #include "Python.h"
 #include "structmember.h"
 
-#if !defined( Py_RETURN_NONE )
-/* Not defined before 2.4 */
-# define Py_RETURN_NONE		return( Py_INCREF(Py_None), Py_None )
-#endif
-#define Py_RETURN(self)		return( Py_INCREF((PyObject *) (self)), (PyObject *) (self) )
-
-#ifndef PyMODINIT_FUNC	/* declarations for DLL import/export */
-#define PyMODINIT_FUNC void
-#endif
-
-#include "pfaeditui.h"
+#include "fontforgevw.h"
 #include "ttf.h"
 #include "plugins.h"
 #include "ustring.h"
@@ -52,9 +42,12 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include <stdarg.h>
+#include "ffpython.h"
 
-static FontView *fv_active_in_ui = NULL;
-static SplineChar *sc_active_in_ui = NULL;
+static struct flaglist sfnt_name_str_ids[], sfnt_name_mslangs[];
+
+FontViewBase *fv_active_in_ui = NULL;
+SplineChar *sc_active_in_ui = NULL;
 static PyObject *hook_dict;			/* Dictionary of python hook scripts (to be activated when certain fontforge events happen) */
 static PyObject *pickler, *unpickler;		/* cPickle.dumps, cPickle.loads */
 static PyObject *_new_point, *_new_contour, *_new_layer;	/* Python handles to c functions, needed for pickler */
@@ -124,7 +117,7 @@ static PyTypeObject PyFF_PrivateType;
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
-    FontView *fv;
+    FontViewBase *fv;
     int by_glyphs;
 } PyFF_Selection;
 static PyTypeObject PyFF_SelectionType;
@@ -140,7 +133,7 @@ static PyTypeObject PyFF_CvtType;
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
-    FontView *fv;
+    FontViewBase *fv;
     PyFF_Private *private;
     PyFF_Cvt *cvt;
     PyFF_Selection *selection;
@@ -158,7 +151,6 @@ static PyFF_Layer *LayerFromLayer(Layer *,PyFF_Layer *);
 /* Utilities */
 /* ************************************************************************** */
 
-struct flaglist { char *name; int flag; };
 static int FlagsFromString(char *str,struct flaglist *flags) {
     int i;
     for ( i=0; flags[i].name!=NULL; ++i )
@@ -169,7 +161,7 @@ return( flags[i].flag );
 return( 0x80000000 );
 }
 
-static int FlagsFromTuple(PyObject *tuple,struct flaglist *flags) {
+int FlagsFromTuple(PyObject *tuple,struct flaglist *flags) {
     int ret = 0,temp;
     int i;
     char *str = NULL;
@@ -217,7 +209,7 @@ return( Py_BuildValue("d", val->u.fval ));
 return( NULL );
 }
 
-static PyObject *PyFV_From_FV(FontView *fv) {
+PyObject *PyFV_From_FV(FontViewBase *fv) {
     if ( fv->python_fv_object==NULL ) {
 	fv->python_fv_object = PyFF_FontType.tp_alloc(&PyFF_FontType,0);
 	((PyFF_Font *) (fv->python_fv_object))->fv = fv;
@@ -226,13 +218,13 @@ static PyObject *PyFV_From_FV(FontView *fv) {
 return( fv->python_fv_object );
 }
 
-static PyObject *PyFV_From_FV_I(FontView *fv) {
+static PyObject *PyFV_From_FV_I(FontViewBase *fv) {
     PyObject *f = PyFV_From_FV(fv);
     Py_INCREF(f);
 return( f );
 }
 
-static PyObject *PySC_From_SC(SplineChar *sc) {
+PyObject *PySC_From_SC(SplineChar *sc) {
     if ( sc->python_sc_object==NULL ) {
 	sc->python_sc_object = PyFF_GlyphType.tp_alloc(&PyFF_GlyphType,0);
 	((PyFF_Glyph *) (sc->python_sc_object))->sc = sc;
@@ -353,7 +345,7 @@ Py_RETURN_NONE;
 
 static PyObject *PyFF_SavePrefs(PyObject *self, PyObject *args) {
 
-    SavePrefs();
+    SavePrefs(false);
 Py_RETURN_NONE;
 }
 
@@ -481,14 +473,13 @@ return( Py_BuildValue("s", source_version_str ));
 }
 
 static PyObject *PyFF_FontTuple(PyObject *self, PyObject *args) {
-    extern FontView *fv_list;
-    FontView *fv;
+    FontViewBase *fv;
     int cnt;
     PyObject *tuple;
 
-    for ( fv=fv_list, cnt=0; fv!=NULL; fv=fv->next, ++cnt );
+    for ( fv=FontViewFirst(), cnt=0; fv!=NULL; fv=fv->next, ++cnt );
     tuple = PyTuple_New(cnt);
-    for ( fv=fv_list, cnt=0; fv!=NULL; fv=fv->next, ++cnt )
+    for ( fv=FontViewFirst(), cnt=0; fv!=NULL; fv=fv->next, ++cnt )
 	PyTuple_SET_ITEM(tuple,cnt,PyFV_From_FV_I(fv));
 
 return( tuple );
@@ -510,26 +501,11 @@ Py_RETURN_NONE;
 return( PySC_From_SC_I( sc_active_in_ui ));
 }
 
-static FontView *FVAppend(FontView *fv) {
-    /* Normally fontviews get added to the fv list when their windows are */
-    /*  created. but we don't create any windows here, so... */
-    FontView *test;
-
-    if ( fv_list==NULL ) fv_list = fv;
-    else {
-	for ( test = fv_list; test->next!=NULL; test=test->next );
-	test->next = fv;
-    }
-return( fv );
-}
-
-static FontView *SFAdd(SplineFont *sf) {
+static FontViewBase *SFAdd(SplineFont *sf) {
     if ( sf->fv!=NULL )
 	/* All done */;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     else if ( !no_windowing_ui )
 	FontViewCreate(sf);
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     else
 	FVAppend(_FontViewCreate(sf));
 return( sf->fv );
@@ -574,6 +550,10 @@ return( NULL );
 return( tuple );
 }
 
+static void prterror(void *foo, char *msg, int pos) {
+    fprintf( stderr, "%s\n", msg );
+}
+
 static PyObject *PyFF_ParseTTFInstrs(PyObject *self, PyObject *args) {
     PyObject *binstr;
     char *instr_str;
@@ -582,7 +562,7 @@ static PyObject *PyFF_ParseTTFInstrs(PyObject *self, PyObject *args) {
 
     if ( !PyArg_ParseTuple(args,"s",&instr_str) )
 return( NULL );
-    instrs = _IVParse(NULL,instr_str,&icnt);
+    instrs = _IVParse(NULL,instr_str,&icnt,prterror,NULL);
     if ( instrs==NULL ) {
 	PyErr_Format(PyExc_TypeError, "Failed to parse instructions" );
 return( NULL );
@@ -754,280 +734,20 @@ return( NULL );
 Py_RETURN_NONE;
 }
 
-/* ************************************************************************** */
-/* ************************ User Interface routines ************************* */
-/* ************************************************************************** */
-
-static struct python_menu_info {
-    PyObject *func;
-    PyObject *check_enabled;		/* May be None (which I change to NULL) */
-    PyObject *data;			/* May be None (left as None) */
-} *cvpy_menu_data = NULL, *fvpy_menu_data = NULL;
-static int cvpy_menu_cnt=0, cvpy_menu_max = 0;
-static int fvpy_menu_cnt=0, fvpy_menu_max = 0;
-
-GMenuItem2 *cvpy_menu, *fvpy_menu;
-
-static void py_tllistcheck(struct gmenuitem *mi,PyObject *owner,
-	struct python_menu_info *menu_data, int menu_cnt) {
-    PyObject *arglist, *result;
-
-    if ( menu_data==NULL )
-return;
-
-    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
-	if ( mi->mid==-1 )		/* Submenu */
-    continue;
-	if ( mi->mid<0 || mi->mid>=menu_cnt ) {
-	    fprintf( stderr, "Bad Menu ID in python menu %d\n", mi->mid );
-	    mi->ti.disabled = true;
-    continue;
-	}
-	if ( menu_data[mi->mid].check_enabled==NULL ) {
-	    mi->ti.disabled = false;
-    continue;
-	}
-	arglist = PyTuple_New(2);
-	Py_XINCREF(menu_data[mi->mid].data);
-	Py_XINCREF(owner);
-	PyTuple_SetItem(arglist,0,menu_data[mi->mid].data);
-	PyTuple_SetItem(arglist,1,owner);
-	result = PyEval_CallObject(menu_data[mi->mid].check_enabled, arglist);
-	Py_DECREF(arglist);
-	if ( result==NULL )
-	    /* Oh. An error. How fun. See below */;
-	else if ( !PyInt_Check(result)) {
-	    char *menu_item_name = u2utf8_copy(mi->ti.text);
-	    LogError( "Return from enabling function for menu item %s must be boolean", menu_item_name );
-	    free( menu_item_name );
-	    mi->ti.disabled = true;
-	} else
-	    mi->ti.disabled = PyInt_AsLong(result)==0;
-	Py_XDECREF(result);
-	if ( PyErr_Occurred()!=NULL )
-	    PyErr_Print();
-    }
-}
-
-static void py_menuactivate(struct gmenuitem *mi,PyObject *owner,
-	struct python_menu_info *menu_data, int menu_cnt) {
-    PyObject *arglist, *result;
-
-    if ( mi->mid==-1 )		/* Submenu */
-return;
-    if ( mi->mid<0 || mi->mid>=menu_cnt ) {
-	fprintf( stderr, "Bad Menu ID in python menu %d\n", mi->mid );
-return;
-    }
-    if ( menu_data[mi->mid].func==NULL ) {
-return;
-    }
-    arglist = PyTuple_New(2);
-    Py_XINCREF(menu_data[mi->mid].data);
-    Py_XINCREF(owner);
-    PyTuple_SetItem(arglist,0,menu_data[mi->mid].data);
-    PyTuple_SetItem(arglist,1,owner);
-    result = PyEval_CallObject(menu_data[mi->mid].func, arglist);
-    Py_DECREF(arglist);
-    Py_XDECREF(result);
-    if ( PyErr_Occurred()!=NULL )
-	PyErr_Print();
-}
-
-void cvpy_tllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    CharView *cv = (CharView *) GDrawGetUserData(gw);
-    PyObject *pysc = PySC_From_SC(cv->sc);
-
-    if ( cvpy_menu_data==NULL )
-return;
-
-    sc_active_in_ui = cv->sc;
-    py_tllistcheck(mi,pysc,cvpy_menu_data,cvpy_menu_cnt);
-    sc_active_in_ui = NULL;
-}
-
-static void cvpy_menuactivate(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    CharView *cv = (CharView *) GDrawGetUserData(gw);
-    PyObject *pysc = PySC_From_SC(cv->sc);
-
-    if ( cvpy_menu_data==NULL )
-return;
-
-    sc_active_in_ui = cv->sc;
-    py_menuactivate(mi,pysc,cvpy_menu_data,cvpy_menu_cnt);
-    sc_active_in_ui = NULL;
-}
-
-void fvpy_tllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    PyObject *pyfv = PyFV_From_FV(fv);
-
-    if ( cvpy_menu_data==NULL )
-return;
-
-    fv_active_in_ui = fv;
-    py_tllistcheck(mi,pyfv,fvpy_menu_data,fvpy_menu_cnt);
-    fv_active_in_ui = NULL;
-}
-
-static void fvpy_menuactivate(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    PyObject *pyfv = PyFV_From_FV(fv);
-
-    if ( fvpy_menu_data==NULL )
-return;
-
-    fv_active_in_ui = fv;
-    py_menuactivate(mi,pyfv,fvpy_menu_data,fvpy_menu_cnt);
-    fv_active_in_ui = NULL;
-}
-
-enum { menu_fv=1, menu_cv=2 };
-static struct flaglist menuviews[] = {
-    { "Font", menu_fv },
-    { "Glyph", menu_cv },
-    { "Char", menu_cv },
-    NULL
-};
-
-static int MenuDataAdd(PyObject *func,PyObject *check,PyObject *data,int is_cv) {
-    Py_INCREF(func);
-    if ( check!=NULL )
-	Py_INCREF(check);
-    Py_INCREF(data);
-
-    if ( is_cv ) {
-	if ( cvpy_menu_cnt >= cvpy_menu_max )
-	    cvpy_menu_data = grealloc(cvpy_menu_data,(cvpy_menu_max+=10)*sizeof(struct python_menu_info));
-	cvpy_menu_data[cvpy_menu_cnt].func = func;
-	cvpy_menu_data[cvpy_menu_cnt].check_enabled = check;
-	cvpy_menu_data[cvpy_menu_cnt].data = data;
-return( cvpy_menu_cnt++ );
-    } else {
-	if ( fvpy_menu_cnt >= fvpy_menu_max )
-	    fvpy_menu_data = grealloc(fvpy_menu_data,(fvpy_menu_max+=10)*sizeof(struct python_menu_info));
-	fvpy_menu_data[fvpy_menu_cnt].func = func;
-	fvpy_menu_data[fvpy_menu_cnt].check_enabled = check;
-	fvpy_menu_data[fvpy_menu_cnt].data = data;
-return( fvpy_menu_cnt++ );
-    }
-}
-
-static void InsertSubMenus(PyObject *args,GMenuItem2 **mn, int is_cv) {
-    int i, j, cnt;
-    PyObject *func, *check, *data;
-    char *shortcut_str;
-    GMenuItem2 *mmn;
-
-    /* I've done type checking already */
-    cnt = PyTuple_Size(args);
-    func = PyTuple_GetItem(args,0);
-    if ( (check = PyTuple_GetItem(args,1))==Py_None )
-	check = NULL;
-    data = PyTuple_GetItem(args,2);
-    if ( PyTuple_GetItem(args,4)==Py_None )
-	shortcut_str = NULL;
-    else
-	shortcut_str = PyString_AsString(PyTuple_GetItem(args,4));
-
-    for ( i=5; i<cnt; ++i ) {
-	PyObject *submenu_utf8 = PyString_AsEncodedObject(PyTuple_GetItem(args,i),
-		"UTF-8",NULL);
-	unichar_t *submenuu = utf82u_copy( PyString_AsString(submenu_utf8) );
-	Py_DECREF(submenu_utf8);
-
-	j = 0;
-	if ( *mn != NULL ) {
-	    for ( j=0; (*mn)[j].ti.text!=NULL || (*mn)[j].ti.line; ++j ) {
-		if ( (*mn)[j].ti.text==NULL )
-	    continue;
-		if ( u_strcmp((*mn)[j].ti.text,submenuu)==0 )
-	    break;
-	    }
-	}
-	if ( *mn==NULL || (*mn)[j].ti.text==NULL ) {
-	    *mn = grealloc(*mn,(j+2)*sizeof(GMenuItem2));
-	    memset(*mn+j,0,2*sizeof(GMenuItem2));
-	}
-	mmn = *mn;
-	if ( mmn[j].ti.text==NULL ) {
-	    mmn[j].ti.text = submenuu;
-	    mmn[j].ti.fg = mmn[j].ti.bg = COLOR_DEFAULT;
-	    if ( i!=cnt-1 ) {
-		mmn[j].mid = -1;
-		mmn[j].moveto = is_cv ? cvpy_tllistcheck : fvpy_tllistcheck;
-		mn = &mmn[j].sub;
-	    } else {
-		mmn[j].shortcut = shortcut_str;
-		mmn[j].invoke = is_cv ? cvpy_menuactivate : fvpy_menuactivate;
-		mmn[j].mid = MenuDataAdd(func,check,data,is_cv);
-	    }
-	} else {
-	    if ( i!=cnt-1 )
-		mn = &mmn[j].sub;
-	    else {
-		mmn[j].shortcut = shortcut_str;
-		mmn[j].invoke = is_cv ? cvpy_menuactivate : fvpy_menuactivate;
-		mmn[j].mid = MenuDataAdd(func,check,data,is_cv);
-		fprintf( stderr, "Redefining menu item %s\n", u2utf8_copy(submenuu) );
-		free(submenuu);
-	    }
-	}
-    }
-}
-
-/* (function,check_enabled,data,(char/font),shortcut_str,{sub-menu,}menu-name) */
-static PyObject *PyFF_registerMenuItem(PyObject *self, PyObject *args) {
-    int i, cnt;
-    int flags;
-    PyObject *utf8_name;
-
-    if ( !no_windowing_ui ) {
-	cnt = PyTuple_Size(args);
-	if ( cnt<6 ) {
-	    PyErr_Format(PyExc_TypeError, "Too few arguments");
-return( NULL );
-	}
-	if (!PyCallable_Check(PyTuple_GetItem(args,0))) {
-	    PyErr_Format(PyExc_TypeError, "First argument is not callable" );
-return( NULL );
-	}
-	if (PyTuple_GetItem(args,1)!=Py_None &&
-		!PyCallable_Check(PyTuple_GetItem(args,1))) {
-	    PyErr_Format(PyExc_TypeError, "First argument is not callable" );
-return( NULL );
-	}
-	flags = FlagsFromTuple(PyTuple_GetItem(args,3), menuviews );
-	if ( flags==-1 ) {
-	    PyErr_Format(PyExc_ValueError, "Unknown window for menu" );
-return( NULL );
-	}
-	if ( PyTuple_GetItem(args,4)!=Py_None ) {
-	    char *shortcut_str = PyString_AsString(PyTuple_GetItem(args,4));
-	    if ( shortcut_str==NULL )
-return( NULL );
-	}
-	for ( i=5; i<cnt; ++i ) {
-	    utf8_name = PyString_AsEncodedObject(PyTuple_GetItem(args,i),
-			"UTF-8",NULL);
-	    if ( utf8_name==NULL )
-return( NULL );
-	    Py_DECREF(utf8_name);
-	}
-	if ( flags&menu_fv )
-	    InsertSubMenus(args,&fvpy_menu,false );
-	if ( flags&menu_cv )
-	    InsertSubMenus(args,&cvpy_menu,true );
-    }
-
-Py_RETURN_NONE;
-}
-
 static PyObject *PyFF_hasSpiro(PyObject *self, PyObject *args) {
     PyObject *ret = hasspiro() ? Py_True : Py_False;
 
     Py_INCREF(ret);
 return( ret );
+}
+
+/* ************************************************************************** */
+/* ************************ User Interface routines ************************* */
+/* ************************************************************************** */
+
+static PyObject *PyFF_registerMenuItemStub(PyObject *self, PyObject *args) {
+    /* This is a stub which will be replaced when we've got a UI */
+Py_RETURN_NONE;
 }
 
 static PyObject *PyFF_hasUserInterface(PyObject *self, PyObject *args) {
@@ -4305,6 +4025,7 @@ return( -1 );
     free( self->sc->name );
     self->sc->name = copy(str);
     GlyphHashFree(self->sc->parent);
+    SCRefreshTitles(self->sc);
 return( 0 );
 }
 
@@ -4327,6 +4048,7 @@ static int PyFF_Glyph_set_unicode(PyFF_Glyph *self,PyObject *value,void *closure
     if ( PyErr_Occurred()!=NULL )
 return( -1 );
     self->sc->unicodeenc = uenc;
+    SCRefreshTitles(self->sc);
 return( 0 );
 }
 
@@ -4406,7 +4128,7 @@ static int PyFF_Glyph_set_width(PyFF_Glyph *self,PyObject *value,void *closure) 
     val = PyInt_AsLong(value);
     if ( PyErr_Occurred()!=NULL )
 return( -1 );
-    SCSynchronizeWidth(self->sc,val,self->sc->width,self->sc->parent->fv);
+    SCSynchronizeWidth(self->sc,val,self->sc->width,NULL);
 return( 0 );
 }
 
@@ -4454,7 +4176,7 @@ static int PyFF_Glyph_set_rsb(PyFF_Glyph *self,PyObject *value,void *closure) {
 return( -1 );
 
     SplineCharFindBounds(self->sc,&b);
-    SCSynchronizeWidth(self->sc,rint( val+b.maxx ),self->sc->width,self->sc->parent->fv);
+    SCSynchronizeWidth(self->sc,rint( val+b.maxx ),self->sc->width,NULL);
 return( 0 );
 }
 
@@ -5015,7 +4737,7 @@ static PyObject *PyFFGlyph_Build(PyObject *self, PyObject *args) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc;
 
     if ( SFIsSomethingBuildable(sc->parent,sc,false) )
-	SCBuildComposit(sc->parent,sc,true,sc->parent->fv);
+	SCBuildComposit(sc->parent,sc,true);
 
 Py_RETURN( self );
 }
@@ -5241,10 +4963,7 @@ static PyObject *PyFFGlyph_autoHint(PyObject *self, PyObject *args) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc;
 
     SplineCharAutoHint(sc,NULL);
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
-    if ( !no_windowing_ui )
-	SCUpdateAll(sc);
-#endif
+    SCUpdateAll(sc);
 Py_RETURN( self );
 }
 
@@ -6389,7 +6108,7 @@ struct flaglist select_flags[] = {
     NULL };
 
 static PyObject *PyFFSelection_All(PyObject *self, PyObject *args) {
-    FontView *fv = ((PyFF_Selection *) self)->fv;
+    FontViewBase *fv = ((PyFF_Selection *) self)->fv;
     int i;
 
     for ( i=0; i<fv->map->enccount; ++i )
@@ -6398,7 +6117,7 @@ Py_RETURN(self);
 }
 
 static PyObject *PyFFSelection_None(PyObject *self, PyObject *args) {
-    FontView *fv = ((PyFF_Selection *) self)->fv;
+    FontViewBase *fv = ((PyFF_Selection *) self)->fv;
     int i;
 
     for ( i=0; i<fv->map->enccount; ++i )
@@ -6407,7 +6126,7 @@ Py_RETURN(self);
 }
 
 static PyObject *PyFFSelection_Changed(PyObject *self, PyObject *args) {
-    FontView *fv = ((PyFF_Selection *) self)->fv;
+    FontViewBase *fv = ((PyFF_Selection *) self)->fv;
     int i, gid;
 
     for ( i=0; i<fv->map->enccount; ++i ) {
@@ -6420,7 +6139,7 @@ Py_RETURN(self);
 }
 
 static PyObject *PyFFSelection_Invert(PyObject *self, PyObject *args) {
-    FontView *fv = ((PyFF_Selection *) self)->fv;
+    FontViewBase *fv = ((PyFF_Selection *) self)->fv;
     int i;
 
     for ( i=0; i<fv->map->enccount; ++i )
@@ -6428,7 +6147,7 @@ static PyObject *PyFFSelection_Invert(PyObject *self, PyObject *args) {
 Py_RETURN(self);
 }
 
-static int SelIndex(PyObject *arg, FontView *fv, int ints_as_unicode) {
+static int SelIndex(PyObject *arg, FontViewBase *fv, int ints_as_unicode) {
     int enc;
 
     if ( PyString_Check(arg)) {
@@ -6455,8 +6174,12 @@ return( -1 );
 return( enc );
 }
 
+static void FVBDeselectAll(FontViewBase *fv) {
+    memset( fv->selected,0,fv->map->enccount);
+}
+
 static PyObject *PyFFSelection_select(PyObject *self, PyObject *args) {
-    FontView *fv = ((PyFF_Selection *) self)->fv;
+    FontViewBase *fv = ((PyFF_Selection *) self)->fv;
     int flags = sel_encoding|sel_singletons;
     int i, j, cnt = PyTuple_Size(args);
     int range_started = false, range_first = -1;
@@ -6476,11 +6199,11 @@ return( NULL );
 		newflags |= (flags&(sel_singletons|sel_ranges));
 	    flags = newflags;
 	    if ( i==0 && (flags&(sel_more|sel_less)) == 0 )
-		FVDeselectAll(fv);
+		FVBDeselectAll(fv);
 	    range_started = false;
 	} else {
 	    if ( i==0 )
-		FVDeselectAll(fv);
+		FVBDeselectAll(fv);
 	    enc = SelIndex(arg,fv,flags&sel_unicode);
 	    if ( enc==-1 )
 return( NULL );
@@ -6508,7 +6231,7 @@ return( NULL );
 Py_RETURN(self);
 }
 
-static PyObject *fontiter_New(PyObject *font, int bysel, struct searchview *sv);
+static PyObject *fontiter_New(PyObject *font, int bysel, struct searchdata *sv);
 
 static PyObject *PySelection_iter(PyObject *self) {
 return( fontiter_New(self, 1+((PyFF_Selection *) self)->by_glyphs, NULL ));
@@ -6889,12 +6612,12 @@ typedef struct {
     SplineFont *sf;
     int pos;
     int byselection;
-    FontView *fv;
-    struct searchview *sv;
+    FontViewBase *fv;
+    struct searchdata *sv;
 } fontiterobject;
 static PyTypeObject PyFF_FontIterType;
 
-static PyObject *fontiter_New(PyObject *font, int bysel, struct searchview *sv) {
+static PyObject *fontiter_New(PyObject *font, int bysel, struct searchdata *sv) {
     fontiterobject *di;
     di = PyObject_New(fontiterobject, &PyFF_FontIterType);
     if (di == NULL)
@@ -6917,7 +6640,7 @@ static void fontiter_dealloc(fontiterobject *di) {
 
 static PyObject *fontiter_iternextkey(fontiterobject *di) {
     if ( di->sv!=NULL ) {
-	SplineChar *sc = SVFindNext(di->sv);
+	SplineChar *sc = SDFindNext(di->sv);
 	if ( sc!=NULL )
 return( PySC_From_SC_I( sc ) );
     } else if ( !di->byselection ) {
@@ -6935,7 +6658,7 @@ return( Py_BuildValue("s",sf->glyphs[di->pos++]->name) );
 	}
       break;}
       case 1: {		/* Encodings of selected glyphs (in encoding order) */
-	FontView *fv = di->fv;
+	FontViewBase *fv = di->fv;
 	int enccount = fv->map->enccount;
 	while ( di->pos < enccount ) {
 	    if ( fv->selected[di->pos] )
@@ -6945,7 +6668,7 @@ return( Py_BuildValue("i",di->pos++ ) );
       break;}
       case 2: {		/* Selected glyphs in encoding order */
 	int gid;
-	FontView *fv = di->fv;
+	FontViewBase *fv = di->fv;
 	int enccount = fv->map->enccount;
 	while ( di->pos < enccount ) {
 	    if ( fv->selected[di->pos] && (gid=fv->map->map[di->pos])!=-1 &&
@@ -6957,7 +6680,7 @@ return( PySC_From_SC_I( fv->sf->glyphs[gid] ) );
 	}
       break;}
       case 3: {		/* All glyphs in GID order */
-	FontView *fv = di->fv;
+	FontViewBase *fv = di->fv;
 	int glyphcount = fv->sf->glyphcnt;
 	while ( di->pos < glyphcount ) {
 	    if ( SCWorthOutputting(fv->sf->glyphs[di->pos]) ) {
@@ -6968,7 +6691,7 @@ return( PySC_From_SC_I( fv->sf->glyphs[di->pos++] ) );
       break;}
       case 4: {		/* All glyphs in encoding order */
 	int gid;
-	FontView *fv = di->fv;
+	FontViewBase *fv = di->fv;
 	int enccount = fv->map->enccount;
 	while ( di->pos < enccount ) {
 	    if ( (gid=fv->map->map[di->pos])!=-1 &&
@@ -7042,20 +6765,9 @@ return( (PyObject *) self );
 }
 
 static PyObject *PyFFFont_close(PyObject *self, PyObject *args) {
-    FontView *fv = ((PyFF_Font *) self)->fv;
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
 
-    if ( fv->gw!=NULL )
-	GDrawDestroyWindow(fv->gw);
-    else {
-	if ( fv_list==fv )
-	    fv_list = fv->next;
-	else {
-	    FontView *n;
-	    for ( n=fv_list; n->next!=fv; n=n->next );
-	    n->next = fv->next;
-	}
-	FontViewFree(fv);
-    }
+    FontViewClose(fv);
     ((PyFF_Font *) self)->fv = NULL;
 Py_RETURN_NONE;
 }
@@ -7068,45 +6780,6 @@ return( PyString_FromFormat( "<Font: %s>", self->fv->sf->fontname ));
 /* sfnt 'name' table stuff */
 /* ************************************************************************** */
 
-static struct flaglist *sfnt_name_str_ids, *sfnt_name_mslangs;
-
-/* I can't just use the names in the fontinfo file because they get translated*/
-/*  so I must save the untranslated names before that happens */
-void scriptingSaveEnglishNames(GTextInfo *ids,GTextInfo *langs) {
-    int lcnt,cnt,k;
-    char *pt, *ept;
-
-    for ( cnt=0; ids[cnt].text!=NULL; ++cnt );
-    sfnt_name_str_ids = gcalloc(cnt+4,sizeof(struct flaglist));
-    sfnt_name_str_ids[0].name = "Subfamily";
-    sfnt_name_str_ids[0].flag = 2;
-    for ( cnt=0; ids[cnt].text!=NULL; ++cnt ) {
-	sfnt_name_str_ids[cnt+1].name = (char *) ids[cnt].text;
-	sfnt_name_str_ids[cnt+1].flag = (intpt) ids[cnt].userdata;
-    }
-    ++cnt;
-    sfnt_name_str_ids[cnt].name = "Styles";
-    sfnt_name_str_ids[cnt++].flag = 2;
-    sfnt_name_str_ids[cnt].name = "PostScript";
-    sfnt_name_str_ids[cnt].flag = 2;
-
-    for ( cnt=lcnt=0; langs[cnt].text!=NULL; ++cnt )
-	if ( (((intpt) langs[cnt].userdata)&0xff00) == 0x400 )
-	    ++lcnt;
-    sfnt_name_mslangs = gcalloc(cnt+lcnt+4,sizeof(struct flaglist));
-    for ( cnt=k=0; langs[cnt].text!=NULL; ++cnt ) {
-	pt = strchr((char *) langs[cnt].text,'|');
-	pt = pt==NULL ? (char *) langs[cnt].text : pt+1;
-	sfnt_name_mslangs[k].name = pt;
-	sfnt_name_mslangs[k++].flag = (intpt) langs[cnt].userdata;
-	if ( (((intpt) langs[cnt].userdata)&0xff00) == 0x400 &&
-		strchr(pt,' ')!=NULL ) {
-	    ept = strrchr(pt,' ');
-	    sfnt_name_mslangs[k].name = copyn(pt,ept-pt);
-	    sfnt_name_mslangs[k++].flag = (intpt) langs[cnt].userdata;
-	}
-    }
-}
 
 static PyObject *sfntnametuple(int lang,int strid,char *name) {
     PyObject *tuple;
@@ -7116,7 +6789,6 @@ static PyObject *sfntnametuple(int lang,int strid,char *name) {
 
     PyTuple_SetItem(tuple,2,Py_BuildValue("s", name));
 
-    FontInfoInit();
     for ( i=0; sfnt_name_mslangs[i].name!=NULL ; ++i )
 	if ( sfnt_name_mslangs[i].flag == lang )
     break;
@@ -7433,7 +7105,7 @@ static int PyFF_Font_set_selection(PyFF_Font *self,PyObject *value,void *closure
     PyFF_Selection *sel = (PyFF_Selection *) value;
     int i, len2;
     int is_sel;
-    FontView *fv = self->fv;
+    FontViewBase *fv = self->fv;
 
     if ( PyType_IsSubtype(&PyFF_SelectionType,value->ob_type) ) {
 	len2 = PyFFSelection_Length(value);
@@ -8030,7 +7702,6 @@ Py_RETURN_NONE;
     if ( cnt==0 )
 return( Py_BuildValue("(d)", sf->design_size/10.0));
     tuple = PyTuple_New(cnt);
-    FontInfoInit();
     for ( names=sf->fontstyle_name, cnt=0; names!=NULL; names=names->next, ++cnt ) {
 	for ( i=0; sfnt_name_mslangs[i].name!=NULL ; ++i )
 	    if ( sfnt_name_mslangs[i].flag == names->lang )
@@ -8155,7 +7826,7 @@ return( Py_BuildValue("s", self->fv->map->enc->enc_name));
 }
 
 static int PyFF_Font_set_encoding(PyFF_Font *self,PyObject *value,void *closure) {
-    FontView *fv = self->fv;
+    FontViewBase *fv = self->fv;
     char *encname;
     Encoding *new_enc;
 
@@ -8181,10 +7852,8 @@ return -1;
 	    EncMap *map = EncMapFromEncoding(fv->sf,new_enc);
 	    EncMapFree(fv->map);
 	    fv->map = map;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	    if ( !no_windowing_ui )
 		FVSetTitle(fv);
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	}
 	if ( fv->normal!=NULL ) {
 	    EncMapFree(fv->normal);
@@ -8194,10 +7863,8 @@ return -1;
     }
     free(fv->selected);
     fv->selected = gcalloc(fv->map->enccount,sizeof(char));
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
     if ( !no_windowing_ui )
 	FontViewReformatAll(fv->sf);
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     
 return(0);
 }
@@ -8220,9 +7887,7 @@ return( -1 );
     if ( sf->order2==order2 )
 	/* Do Nothing */;
     else if ( order2 ) {
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	SFCloseAllInstrs(sf);
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	SFConvertToOrder2(sf);
     } else
 	SFConvertToOrder3(sf);
@@ -9826,7 +9491,7 @@ return( NULL );
 }
 
 static PyObject *PyFFFont_replaceAll(PyObject *self, PyObject *args) {
-    FontView *fv = ((PyFF_Font *) self)->fv;
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
     PyObject *srch, *rpl;
     SplineSet *srch_ss, *rpl_ss;
     double err = .01;
@@ -9857,7 +9522,7 @@ return( Py_BuildValue( "i", FVReplaceAll(fv,srch_ss,rpl_ss,err,sv_reverse|sv_fli
 }
 
 static PyObject *PyFFFont_find(PyObject *self, PyObject *args) {
-    FontView *fv = ((PyFF_Font *) self)->fv;
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
     PyObject *srch;
     SplineSet *srch_ss;
     double err = .01;
@@ -9875,7 +9540,7 @@ return( NULL );
     }
 
     /* srch_ss will be freed when the iterator dies */
-return( fontiter_New( self,false,SVFromContour(fv,srch_ss,err,sv_reverse|sv_flips)) );
+return( fontiter_New( self,false,SDFromContour(fv,srch_ss,err,sv_reverse|sv_flips)) );
 }
 
 static PyObject *PyFFFont_glyphs(PyObject *self, PyObject *args) {
@@ -9900,7 +9565,7 @@ return( fontiter_New( self,index,NULL) );
 static PyObject *PyFFFont_Save(PyObject *self, PyObject *args) {
     char *filename;
     char *locfilename = NULL, *pt;
-    FontView *fv = ((PyFF_Font *) self)->fv;
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
     int s2d=false;
 
     if ( PySequence_Size(args)==1 ) {
@@ -9958,7 +9623,7 @@ struct flaglist gen_flags[] = {
 static PyObject *PyFFFont_Generate(PyObject *self, PyObject *args, PyObject *keywds) {
     char *filename;
     char *locfilename = NULL;
-    FontView *fv = ((PyFF_Font *) self)->fv;
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
     PyObject *flags=NULL;
     int iflags = -1;
     int resolution = -1;
@@ -10008,7 +9673,7 @@ static PyObject *PyFFFont_GenerateFeature(PyObject *self, PyObject *args) {
     char *filename;
     char *locfilename = NULL;
     char *lookup_name = NULL;
-    FontView *fv = ((PyFF_Font *) self)->fv;
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
     FILE *out;
     OTLookup *otl = NULL;
     int err;
@@ -10046,7 +9711,7 @@ Py_RETURN( self );
 static PyObject *PyFFFont_MergeKern(PyObject *self, PyObject *args) {
     char *filename;
     char *locfilename = NULL;
-    FontView *fv = ((PyFF_Font *) self)->fv;
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
 
     if ( !PyArg_ParseTuple(args,"es","UTF-8",&filename) )
 return( NULL );
@@ -10063,7 +9728,7 @@ Py_RETURN( self );
 static PyObject *PyFFFont_MergeFonts(PyObject *self, PyObject *args) {
     char *filename;
     char *locfilename = NULL;
-    FontView *fv = ((PyFF_Font *) self)->fv;
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
     SplineFont *sf;
     int openflags=0;
     int preserveCrossFontKerning = 0;
@@ -10088,7 +9753,7 @@ Py_RETURN( self );
 static PyObject *PyFFFont_InterpolateFonts(PyObject *self, PyObject *args) {
     char *filename;
     char *locfilename = NULL;
-    FontView *fv = ((PyFF_Font *) self)->fv, *newfv;
+    FontViewBase *fv = ((PyFF_Font *) self)->fv, *newfv;
     SplineFont *sf;
     int openflags=0;
     double fraction;
@@ -10112,7 +9777,7 @@ return( PyFV_From_FV_I(newfv));
 static PyObject *PyFFFont_CreateMappedChar(PyObject *self, PyObject *args) {
     int enc;
     char *str;
-    FontView *fv = ((PyFF_Font *) self)->fv;
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
     SplineChar *sc;
 
     if ( !PyArg_ParseTuple(args,"s", &str ) ) {
@@ -10137,7 +9802,7 @@ return( PySC_From_SC_I( sc ));
 static PyObject *PyFFFont_CreateUnicodeChar(PyObject *self, PyObject *args) {
     int uni, enc;
     char *name=NULL;
-    FontView *fv = ((PyFF_Font *) self)->fv;
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
     SplineChar *sc;
 
     if ( !PyArg_ParseTuple(args,"i|s", &uni, &name ) )
@@ -10166,7 +9831,7 @@ return( PySC_From_SC_I( sc ));
 }
 
 static PyObject *PyFFFont_CreateInterpolatedGlyph(PyObject *self, PyObject *args) {
-    FontView *fv = ((PyFF_Font *) self)->fv;
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
     SplineFont *sf = fv->sf;
     PyObject *from, *to;
     double by;
@@ -10202,7 +9867,7 @@ return( PySC_From_SC_I( sc ));
 static PyObject *PyFFFont_findEncodingSlot(PyObject *self, PyObject *args) {
     int uni= -1;
     char *name=NULL;
-    FontView *fv = ((PyFF_Font *) self)->fv;
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
 
     if ( !PyArg_ParseTuple(args,"s", &name ) ) {
 	PyErr_Clear();
@@ -10220,7 +9885,7 @@ return( Py_BuildValue("i",SFFindSlot(fv->sf, fv->map, uni, name )) );
 static PyObject *PyFFFont_removeGlyph(PyObject *self, PyObject *args) {
     int uni, enc;
     char *name=NULL;
-    FontView *fv = ((PyFF_Font *) self)->fv;
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
     SplineChar *sc;
     int flags = 0;	/* Currently unused */
 
@@ -10334,50 +9999,51 @@ Py_RETURN(self);
 }
 
 static PyObject *PyFFFont_clear(PyObject *self, PyObject *args) {
-    FontView *fv = ((PyFF_Font *) self)->fv;
-    FVFakeMenus(fv,5);
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+    FVClear(fv);
 Py_RETURN(self);
 }
 
 static PyObject *PyFFFont_cut(PyObject *self, PyObject *args) {
-    FontView *fv = ((PyFF_Font *) self)->fv;
-    FVFakeMenus(fv,0);
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+    FVCopy(fv,ct_fullcopy);
+    FVClear(fv);
 Py_RETURN(self);
 }
 
 static PyObject *PyFFFont_copy(PyObject *self, PyObject *args) {
-    FontView *fv = ((PyFF_Font *) self)->fv;
-    FVFakeMenus(fv,1);
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+    FVCopy(fv,ct_fullcopy);
 Py_RETURN(self);
 }
 
 static PyObject *PyFFFont_copyReference(PyObject *self, PyObject *args) {
-    FontView *fv = ((PyFF_Font *) self)->fv;
-    FVFakeMenus(fv,2);
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+    FVCopy(fv,ct_reference);
 Py_RETURN(self);
 }
 
 static PyObject *PyFFFont_paste(PyObject *self, PyObject *args) {
-    FontView *fv = ((PyFF_Font *) self)->fv;
-    FVFakeMenus(fv,4);
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+    PasteIntoFV(fv,false,NULL);
 Py_RETURN(self);
 }
 
 static PyObject *PyFFFont_pasteInto(PyObject *self, PyObject *args) {
-    FontView *fv = ((PyFF_Font *) self)->fv;
-    FVFakeMenus(fv,9);
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+    PasteIntoFV(fv,true,NULL);
 Py_RETURN(self);
 }
 
 static PyObject *PyFFFont_unlinkReferences(PyObject *self, PyObject *args) {
-    FontView *fv = ((PyFF_Font *) self)->fv;
-    FVFakeMenus(fv,8);
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
+    FVUnlinkRef(fv);
 Py_RETURN(self);
 }
 
 
 static PyObject *PyFFFont_Build(PyObject *self, PyObject *args) {
-    FontView *fv = ((PyFF_Font *) self)->fv;
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
 
     FVBuildAccent(fv,false);
 
@@ -10385,7 +10051,7 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFFont_canonicalContours(PyObject *self, PyObject *args) {
-    FontView *fv = ((PyFF_Font *) self)->fv;
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
     EncMap *map = fv->map;
     SplineFont *sf = fv->sf;
     int i,gid;
@@ -10397,7 +10063,7 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFFont_canonicalStart(PyObject *self, PyObject *args) {
-    FontView *fv = ((PyFF_Font *) self)->fv;
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
     EncMap *map = fv->map;
     SplineFont *sf = fv->sf;
     int i,gid;
@@ -10409,7 +10075,7 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFFont_changeWeight(PyObject *self, PyObject *args) {
-    FontView *fv = ((PyFF_Font *) self)->fv;
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
     enum embolden_type type;
     struct lcg_zones zones;
 
@@ -10422,7 +10088,7 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFFont_condenseExtend(PyObject *self, PyObject *args) {
-    FontView *fv = ((PyFF_Font *) self)->fv;
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
     struct counterinfo ci;
 
     memset(&ci,0,sizeof(ci));
@@ -10444,21 +10110,21 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFFont_autoHint(PyObject *self, PyObject *args) {
-    FontView *fv = ((PyFF_Font *) self)->fv;
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
 
-    FVFakeMenus(fv,200);
+    FVAutoHint(fv);
 Py_RETURN( self );
 }
 
 static PyObject *PyFFFont_autoInstr(PyObject *self, PyObject *args) {
-    FontView *fv = ((PyFF_Font *) self)->fv;
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
 
-    FVFakeMenus(fv,202);
+    FVAutoInstr(fv,true);
 Py_RETURN( self );
 }
 
 static PyObject *PyFFFont_autoWidth(PyObject *self, PyObject *args) {
-    FontView *fv = ((PyFF_Font *) self)->fv;
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
     int space;
 
     if ( !PyArg_ParseTuple(args,"i", &space ))
@@ -10469,14 +10135,14 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFFont_autoTrace(PyObject *self, PyObject *args) {
-    FontView *fv = ((PyFF_Font *) self)->fv;
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
 
     FVAutoTrace(fv,false);
 Py_RETURN( self );
 }
 
 static PyObject *PyFFFont_Transform(PyFF_Layer *self, PyObject *args) {
-    FontView *fv = ((PyFF_Font *) self)->fv;
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
     int i;
     double m[6];
     real t[6];
@@ -10493,7 +10159,7 @@ Py_RETURN( self );
 
 static PyObject *PyFFFont_Simplify(PyFF_Font *self, PyObject *args) {
     static struct simplifyinfo smpl = { sf_normal,.75,.2,10 };
-    FontView *fv = self->fv;
+    FontViewBase *fv = self->fv;
 
     smpl.err = (fv->sf->ascent+fv->sf->descent)/1000.;
     smpl.linefixup = (fv->sf->ascent+fv->sf->descent)/500.;
@@ -10517,7 +10183,7 @@ Py_RETURN( self );
 
 static PyObject *PyFFFont_Round(PyFF_Font *self, PyObject *args) {
     double factor=1;
-    FontView *fv = self->fv;
+    FontViewBase *fv = self->fv;
     SplineFont *sf = fv->sf;
     EncMap *map = fv->map;
     int i, gid;
@@ -10534,7 +10200,7 @@ Py_RETURN( self );
 static PyObject *PyFFFont_Cluster(PyFF_Font *self, PyObject *args) {
     double within = .1, max = .5;
     int i, gid;
-    FontView *fv = self->fv;
+    FontViewBase *fv = self->fv;
     SplineFont *sf = fv->sf;
     EncMap *map = fv->map;
 
@@ -10549,9 +10215,9 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFFont_AddExtrema(PyFF_Font *self, PyObject *args) {
-    FontView *fv = self->fv;
+    FontViewBase *fv = self->fv;
 
-    FVFakeMenus(fv,102);
+    FVAddExtrema(fv);
 Py_RETURN( self );
 }
 
@@ -10567,7 +10233,7 @@ Py_RETURN( self );
 
 static PyObject *PyFFFont_Correct(PyFF_Font *self, PyObject *args) {
     int i, gid;
-    FontView *fv = self->fv;
+    FontViewBase *fv = self->fv;
     SplineFont *sf = fv->sf;
     EncMap *map = fv->map;
     int changed, refchanged;
@@ -10600,13 +10266,13 @@ Py_RETURN( self );
 
 static PyObject *PyFFFont_RemoveOverlap(PyFF_Font *self, PyObject *args) {
 
-    FVFakeMenus(self->fv,100);
+    FVOverlap(self->fv,over_remove);
 Py_RETURN( self );
 }
 
 static PyObject *PyFFFont_Intersect(PyFF_Font *self, PyObject *args) {
 
-    FVFakeMenus(self->fv,104);
+    FVOverlap(self->fv,over_intersect);
 Py_RETURN( self );
 }
 
@@ -10616,7 +10282,7 @@ static PyObject *PyFFFont_replaceWithReference(PyFF_Font *self, PyObject *args) 
     if ( !PyArg_ParseTuple(args,"|d",&fudge) )
 return( NULL );
 
-    FVReplaceOutlineWithReference(self->fv,fudge);
+    FVBReplaceOutlineWithReference(self->fv,fudge);
 Py_RETURN( self );
 }
 
@@ -10740,7 +10406,7 @@ return( ((PyFF_Font *) self)->fv->map->enccount );
 }
 
 static PyObject *PyFF_FontIndex( PyObject *self, PyObject *index ) {
-    FontView *fv = ((PyFF_Font *) self)->fv;
+    FontViewBase *fv = ((PyFF_Font *) self)->fv;
     SplineFont *sf = fv->sf;
     SplineChar *sc = NULL;
 
@@ -10846,7 +10512,7 @@ static PyMethodDef FontForge_methods[] = {
     /* Access to the User Interface ... if any */
     { "hasUserInterface", PyFF_hasUserInterface, METH_NOARGS, "Returns whether this fontforge session has a user interface (True if it has opened windows) or is just running a script (False)"},
     { "registerImportExport", PyFF_registerImportExport, METH_VARARGS, "Adds an import/export spline conversion module"},
-    { "registerMenuItem", PyFF_registerMenuItem, METH_VARARGS, "Adds a menu item (which runs a python script) to the font or glyph (or both) windows -- in the Tools menu"},
+    { "registerMenuItem", PyFF_registerMenuItemStub, METH_VARARGS, "Adds a menu item (which runs a python script) to the font or glyph (or both) windows -- in the Tools menu"},
     { "logWarning", PyFF_logError, METH_VARARGS, "Adds a non-fatal message to the Warnings window"},
     { "postError", PyFF_postError, METH_VARARGS, "Pops up an error dialog box with the given title and message" },
     { "postNotice", PyFF_postNotice, METH_VARARGS, "Pops up an notice window with the given title and message" },
@@ -10857,6 +10523,16 @@ static PyMethodDef FontForge_methods[] = {
     { "askString", PyFF_askString, METH_VARARGS, "Pops up a dialog asking the user a question and providing a textfield for the user to reply with" },
     {NULL}  /* Sentinel */
 };
+
+void FfPy_Replace_MenuItemStub(PyObject *(*func)(PyObject *,PyObject *)) {
+    int i;
+
+    for ( i=0; FontForge_methods[i].ml_name!=NULL; ++i )
+	if ( strcmp(FontForge_methods[i].ml_name,"registerMenuItem")==0 ) {
+	    FontForge_methods[i].ml_meth = func;
+return;
+	}
+}
 
 static PyObject *PyPS_Identity(PyObject *noself, PyObject *args) {
 return( Py_BuildValue("(dddddd)",  1.0, 0.0, 0.0,  1.0, 0.0, 0.0));
@@ -11206,7 +10882,7 @@ void PyFF_Main(int argc,char **argv,int start) {
     exit( Py_Main( i-start+1,newargv ));
 }
 
-void PyFF_ScriptFile(FontView *fv,SplineChar *sc, char *filename) {
+void PyFF_ScriptFile(FontViewBase *fv,SplineChar *sc, char *filename) {
     FILE *fp = fopen(filename,"r");
 
     fv_active_in_ui = fv;		/* Make fv known to interpreter */
@@ -11219,14 +10895,14 @@ void PyFF_ScriptFile(FontView *fv,SplineChar *sc, char *filename) {
     }
 }
 
-void PyFF_ScriptString(FontView *fv,SplineChar *sc, char *str) {
+void PyFF_ScriptString(FontViewBase *fv,SplineChar *sc, char *str) {
 
     fv_active_in_ui = fv;		/* Make fv known to interpreter */
     sc_active_in_ui = sc;		/* Make sc known to interpreter */
     PyRun_SimpleString(str);
 }
 
-void PyFF_FreeFV(FontView *fv) {
+void PyFF_FreeFV(FontViewBase *fv) {
     if ( fv->python_fv_object!=NULL ) {
 	((PyFF_Font *) (fv->python_fv_object))->fv = NULL;
 	Py_DECREF( (PyObject *) (fv->python_fv_object));
@@ -11275,16 +10951,18 @@ return;
 
 void PyFF_ProcessInitFiles(void) {
     static int done = false;
-    char buffer[1025];
+    char buffer[1025], *pt;
 
     if ( done )
 return;
     done = true;
 
-#if defined( PREFIX )
-    /* Load the system directory */
-    LoadFilesInPythonInitDir( PREFIX "/share/fontforge/python" );
-#endif
+    pt = getFontForgeShareDir();
+    if ( pt!=NULL ) {
+	snprintf(buffer,sizeof(buffer),"%s/python", pt );
+	/* Load the system directory */
+	LoadFilesInPythonInitDir( buffer );
+    }
     /* Load the user directory */
     if ( getPfaEditDir(buffer)!=NULL ) {
 	strcpy(buffer,getPfaEditDir(buffer));
@@ -11314,7 +10992,7 @@ return;
     for ( pt=argtypes, i=0; *pt; ++pt, ++i ) {
 	PyObject *arg;
 	if ( *pt=='f' )
-	    arg = PyFV_From_FV_I( va_arg(ap,FontView *));
+	    arg = PyFV_From_FV_I( va_arg(ap,FontViewBase *));
 	else if ( *pt=='g' )
 	    arg = PySC_From_SC_I( va_arg(ap,SplineChar *));
 	else if ( *pt=='s' )
@@ -11339,7 +11017,7 @@ return;
 	PyErr_Print();
 }
 
-void PyFF_InitFontHook(FontView *fv) {
+void PyFF_InitFontHook(FontViewBase *fv) {
     /* Ok we just created a new fontview, and attached it to a splinefont */
     /*  We have not added a window or menu to it yet */
     SplineFont *sf = fv->sf;
@@ -11372,4 +11050,286 @@ void ff_init(void) {
     no_windowing_ui = running_script = true;
     initPyFontForge();
 }
+#else
+#include "fontforgevw.h"
+struct flaglist { char *name; int flag; };
 #endif		/* _NO_PYTHON */
+
+/* These don't get translated. They are a copy of a similar list in fontinfo.c */
+static struct flaglist sfnt_name_str_ids[] = {
+    { "SubFamily", 2},
+    { "Copyright", 0},
+    { "Family", 1},
+    { "Fullname", 4},
+    { "UniqueID", 3},
+    { "Version", 5},
+    { "PostscriptName", 6},
+    { "Trademark", 7},
+    { "Manufacturer", 8},
+    { "Designer", 9},
+    { "Descriptor", 10},
+    { "Vendor URL", 11},
+    { "Designer URL", 12},
+    { "License", 13},
+    { "License URL", 14},
+/* slot 15 is reserved */
+    { "Preferred Family", 16},
+    { "Preferred Styles", 17},
+    { "Compatible Full", 18},
+    { "Sample Text", 19},
+    { "CID findfont Name", 20},
+    { "WWS Family", 21},
+    { "WWS Subfamily", 22},
+    NULL
+};
+/* These don't get translated. They are a copy of a similar list in fontinfo.c */
+static struct flaglist sfnt_name_mslangs[] = {
+    { "Afrikaans", 0x436},
+    { "Albanian", 0x41c},
+    { "Amharic", 0x45e},
+    { "Arabic (Saudi Arabia)", 0x401},
+    { "Arabic (Iraq)", 0x801},
+    { "Arabic (Egypt)", 0xc01},
+    { "Arabic (Libya)", 0x1001},
+    { "Arabic (Algeria)", 0x1401},
+    { "Arabic (Morocco)", 0x1801},
+    { "Arabic (Tunisia)", 0x1C01},
+    { "Arabic (Oman)", 0x2001},
+    { "Arabic (Yemen)", 0x2401},
+    { "Arabic (Syria)", 0x2801},
+    { "Arabic (Jordan)", 0x2c01},
+    { "Arabic (Lebanon)", 0x3001},
+    { "Arabic (Kuwait)", 0x3401},
+    { "Arabic (U.A.E.)", 0x3801},
+    { "Arabic (Bahrain)", 0x3c01},
+    { "Arabic (Qatar)", 0x4001},
+    { "Armenian", 0x42b},
+    { "Assamese", 0x44d},
+    { "Azeri (Latin)", 0x42c},
+    { "Azeri (Cyrillic)", 0x82c},
+    { "Basque", 0x42d},
+    { "Byelorussian", 0x423},
+    { "Bengali", 0x445},
+    { "Bengali Bangladesh", 0x845},
+    { "Bulgarian", 0x402},
+    { "Burmese", 0x455},
+    { "Catalan", 0x403},
+    { "Cambodian", 0x453},
+    { "Cherokee", 0x45c},
+    { "Chinese (Taiwan)", 0x404},
+    { "Chinese (PRC)", 0x804},
+    { "Chinese (Hong Kong)", 0xc04},
+    { "Chinese (Singapore)", 0x1004},
+    { "Chinese (Macau)", 0x1404},
+    { "Croatian", 0x41a},
+    { "Croatian Bosnia/Herzegovina", 0x101a},
+    { "Czech", 0x405},
+    { "Danish", 0x406},
+    { "Divehi", 0x465},
+    { "Dutch", 0x413},
+    { "Flemish (Belgian Dutch)", 0x813},
+    { "Edo", 0x466},
+    { "English (British)", 0x809},
+    { "English (US)", 0x409},
+    { "English (Canada)", 0x1009},
+    { "English (Australian)", 0xc09},
+    { "English (New Zealand)", 0x1409},
+    { "English (Irish)", 0x1809},
+    { "English (South Africa)", 0x1c09},
+    { "English (Jamaica)", 0x2009},
+    { "English (Caribbean)", 0x2409},
+    { "English (Belize)", 0x2809},
+    { "English (Trinidad)", 0x2c09},
+    { "English (Zimbabwe)", 0x3009},
+    { "English (Philippines)", 0x3409},
+    { "English (Indonesia)", 0x3809},
+    { "English (Hong Kong)", 0x3c09},
+    { "English (India)", 0x4009},
+    { "English (Malaysia)", 0x4409},
+    { "Estonian", 0x425},
+    { "Faeroese", 0x438},
+    { "Farsi", 0x429},
+    { "Filipino", 0x464},
+    { "Finnish", 0x40b},
+    { "French French", 0x40c},
+    { "French Belgium", 0x80c},
+    { "French Canadian", 0xc0c},
+    { "French Swiss", 0x100c},
+    { "French Luxembourg", 0x140c},
+    { "French Monaco", 0x180c},
+    { "French West Indies", 0x1c0c},
+    { "French Réunion", 0x200c},
+    { "French D.R. Congo", 0x240c},
+    { "French Senegal", 0x280c},
+    { "French Camaroon", 0x2c0c},
+    { "French Côte d'Ivoire", 0x300c},
+    { "French Mali", 0x340c},
+    { "French Morocco", 0x380c},
+    { "French Haiti", 0x3c0c},
+    { "French North Africa", 0xe40c},
+    { "Frisian", 0x462},
+    { "Fulfulde", 0x467},
+    { "Gaelic (Scottish)", 0x43c},
+    { "Gaelic (Irish)", 0x83c},
+    { "Galician", 0x467},
+    { "Georgian", 0x437},
+    { "German German", 0x407},
+    { "German Swiss", 0x807},
+    { "German Austrian", 0xc07},
+    { "German Luxembourg", 0x1007},
+    { "German Liechtenstein", 0x1407},
+    { "Greek", 0x408},
+    { "Guarani", 0x474},
+    { "Gujarati", 0x447},
+    { "Hausa", 0x468},
+    { "Hawaiian", 0x475},
+    { "Hebrew", 0x40d},
+    { "Hindi", 0x439},
+    { "Hungarian", 0x40e},
+    { "Ibibio", 0x469},
+    { "Icelandic", 0x40f},
+    { "Igbo", 0x470},
+    { "Indonesian", 0x421},
+    { "Inuktitut", 0x45d},
+    { "Italian", 0x410},
+    { "Italian Swiss", 0x810},
+    { "Japanese", 0x411},
+    { "Kannada", 0x44b},
+    { "Kanuri", 0x471},
+    { "Kashmiri (India)", 0x860},
+    { "Kazakh", 0x43f},
+    { "Khmer", 0x453},
+    { "Kirghiz", 0x440},
+    { "Konkani", 0x457},
+    { "Korean", 0x412},
+    { "Korean (Johab)", 0x812},
+    { "Lao", 0x454},
+    { "Latvian", 0x426},
+    { "Latin", 0x476},
+    { "Lithuanian", 0x427},
+    { "Lithuanian (Classic)", 0x827},
+    { "Macedonian", 0x42f},
+    { "Malay", 0x43e},
+    { "Malay (Brunei)", 0x83e},
+    { "Malayalam", 0x44c},
+    { "Maltese", 0x43a},
+    { "Manipuri", 0x458},
+    { "Maori", 0x481},
+    { "Marathi", 0x44e},
+    { "Mongolian (Cyrillic)", 0x450},
+    { "Mongolian (Mongolian)", 0x850},
+    { "Nepali", 0x461},
+    { "Nepali (India)", 0x861},
+    { "Norwegian (Bokmal)", 0x414},
+    { "Norwegian (Nynorsk)", 0x814},
+    { "Oriya", 0x448},
+    { "Oromo", 0x472},
+    { "Papiamentu", 0x479},
+    { "Pashto", 0x463},
+    { "Polish", 0x415},
+    { "Portugese (Portugal)", 0x416},
+    { "Portuguese (Brasil)", 0x816},
+    { "Punjabi (India)", 0x446},
+    { "Punjabi (Pakistan)", 0x846},
+    { "Quecha (Bolivia)", 0x46b},
+    { "Quecha (Ecuador)", 0x86b},
+    { "Quecha (Peru)", 0xc6b},
+    { "Rhaeto-Romanic", 0x417},
+    { "Romanian", 0x418},
+    { "Romanian (Moldova)", 0x818},
+    { "Russian", 0x419},
+    { "Russian (Moldova)", 0x819},
+    { "Sami (Lappish)", 0x43b},
+    { "Sanskrit", 0x43b},
+    { "Sepedi", 0x46c},
+    { "Serbian (Cyrillic)", 0xc1a},
+    { "Serbian (Latin)", 0x81a},
+    { "Sindhi India", 0x459},
+    { "Sindhi Pakistan", 0x859},
+    { "Sinhalese", 0x45b},
+    { "Slovak", 0x41b},
+    { "Slovenian", 0x424},
+    { "Sorbian", 0x42e},
+    { "Spanish (Traditional)", 0x40a},
+    { "Spanish Mexico", 0x80a},
+    { "Spanish (Modern)", 0xc0a},
+    { "Spanish (Guatemala)", 0x100a},
+    { "Spanish (Costa Rica)", 0x140a},
+    { "Spanish (Panama)", 0x180a},
+    { "Spanish (Dominican Republic)", 0x1c0a},
+    { "Spanish (Venezuela)", 0x200a},
+    { "Spanish (Colombia)", 0x240a},
+    { "Spanish (Peru)", 0x280a},
+    { "Spanish (Argentina)", 0x2c0a},
+    { "Spanish (Ecuador)", 0x300a},
+    { "Spanish (Chile)", 0x340a},
+    { "Spanish (Uruguay)", 0x380a},
+    { "Spanish (Paraguay)", 0x3c0a},
+    { "Spanish (Bolivia)", 0x400a},
+    { "Spanish (El Salvador)", 0x440a},
+    { "Spanish (Honduras)", 0x480a},
+    { "Spanish (Nicaragua)", 0x4c0a},
+    { "Spanish (Puerto Rico)", 0x500a},
+    { "Spanish (United States)", 0x540a},
+    { "Spanish (Latin America)", 0xe40a},
+    { "Sutu", 0x430},
+    { "Swahili (Kenyan)", 0x441},
+    { "Swedish (Sweden)", 0x41d},
+    { "Swedish (Finland)", 0x81d},
+    { "Syriac", 0x45a},
+    { "Tagalog", 0x464},
+    { "Tajik", 0x428},
+    { "Tamazight (Arabic)", 0x45f},
+    { "Tamazight (Latin)", 0x85f},
+    { "Tamil", 0x449},
+    { "Tatar (Tatarstan)", 0x444},
+    { "Telugu", 0x44a},
+    { "Thai", 0x41e},
+    { "Tibetan (PRC)", 0x451},
+    { "Tibetan Bhutan", 0x851},
+    { "Tigrinya Ethiopia", 0x473},
+    { "Tigrinyan Eritrea", 0x873},
+    { "Tsonga", 0x431},
+    { "Tswana", 0x432},
+    { "Turkish", 0x41f},
+    { "Turkmen", 0x442},
+    { "Uighur", 0x480},
+    { "Ukrainian", 0x422},
+    { "Urdu (Pakistan)", 0x420},
+    { "Urdu (India)", 0x820},
+    { "Uzbek (Latin)", 0x443},
+    { "Uzbek (Cyrillic)", 0x843},
+    { "Venda", 0x433},
+    { "Vietnamese", 0x42a},
+    { "Welsh", 0x452},
+    { "Xhosa", 0x434},
+    { "Yi", 0x478},
+    { "Yiddish", 0x43d},
+    { "Yoruba", 0x46a},
+    { "Zulu", 0x435},
+    { NULL }};
+
+const char *NOUI_TTFNameIds(int id) {
+    int i;
+
+    for ( i=0; sfnt_name_str_ids[i].name!=NULL; ++i )
+	if ( sfnt_name_str_ids[i].flag == id )
+return( (char *) sfnt_name_str_ids[i].name );
+
+return( _("Unknown") );
+}
+
+const char *NOUI_MSLangString(int language) {
+    int i;
+
+    for ( i=0; sfnt_name_mslangs[i].name!=NULL; ++i )
+	if ( sfnt_name_mslangs[i].flag == language )
+return( (char *) sfnt_name_mslangs[i].name );
+
+    language &= 0xff;
+    for ( i=0; sfnt_name_mslangs[i].name!=NULL; ++i )
+	if ( sfnt_name_mslangs[i].flag == language )
+return( (char *) sfnt_name_mslangs[i].name );
+
+return( _("Unknown") );
+}

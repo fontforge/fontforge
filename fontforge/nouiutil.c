@@ -25,6 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "uiinterface.h"
+#include "splinefont.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <basics.h>
@@ -110,6 +111,10 @@ static void NOUI_void_void_noop(void) {
 static void NOUI_void_int_noop(int useless) {
 }
 
+static int NOUI_int_int_noop(int useless) {
+return( true );
+}
+
 static void NOUI_void_str_noop(const char * useless) {
 }
 
@@ -117,6 +122,9 @@ static int NOUI_alwaystrue(void) {
 return( true );
 }
 
+static int NOUI_DefaultStrokeFlags(void) {
+return( sf_correctdir );
+}
 
 static struct ui_interface noui_interface = {
     NOUI_IError,
@@ -129,18 +137,28 @@ static struct ui_interface noui_interface = {
     NOUI_ask_string,
     NOUI_open_file,
     NOUI_saveas_file,
+
     NOUI_progress_start,
     NOUI_void_void_noop,
     NOUI_void_void_noop,
     NOUI_void_int_noop,
     NOUI_alwaystrue,
     NOUI_alwaystrue,
+    NOUI_int_int_noop,
     NOUI_void_str_noop,
     NOUI_void_str_noop,
     NOUI_void_void_noop,
     NOUI_void_void_noop,
     NOUI_void_int_noop,
-    NOUI_void_int_noop
+    NOUI_void_int_noop,
+    NOUI_alwaystrue,
+
+    NOUI_void_void_noop,
+
+    NOUI_TTFNameIds,
+    NOUI_MSLangString,
+
+    NOUI_DefaultStrokeFlags
 };
 struct ui_interface *ui_interface = &noui_interface;
 

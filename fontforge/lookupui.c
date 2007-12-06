@@ -101,6 +101,7 @@ static GTextInfo gpos_lookuptypes[] = {
 static GTextInfo *lookuptypes[2] = { gsub_lookuptypes, gpos_lookuptypes };
 
     /* see also list in tottfgpos.c mapping code points to scripts */
+    /* see also list in lookups.c for non-ui access to these data */
 GTextInfo scripts[] = {
 /* GT: See the long comment at "Property|New" */
 /* GT: The msgstr should contain a translation of "Arabic", ignore "Script|" */
@@ -604,143 +605,6 @@ GTextInfo languages[] = {
     { NULL }
 };
 
-struct opentype_feature_friendlynames friendlies[] = {
-#if 0		/* They get stuffed into the 'MATH' table now */
-/* I added these first three features to allow round-trip conversion of tfm files */
-    { CHR('I','T','L','C'),	"ITLC", N_("Italic Correction"),	gpos_single_mask },
-    { CHR('T','C','H','L'),	"TCHL", N_("TeX Glyphlist"),		gsub_alternate_mask },
-    { CHR('T','E','X','L'),	"TEXL", N_("TeX Extension List"),	gsub_multiple_mask },
-#endif
-/* Normal OpenType features follow */
-    { CHR('a','a','l','t'),	"aalt", N_("Access All Alternates"),	gsub_single_mask|gsub_alternate_mask },
-    { CHR('a','b','v','f'),	"abvf", N_("Above Base Forms"),		gsub_single_mask },
-    { CHR('a','b','v','m'),	"abvm", N_("Above Base Mark"),		gpos_mark2base_mask|gpos_mark2ligature_mask },
-    { CHR('a','b','v','s'),	"abvs", N_("Above Base Substitutions"),	gsub_ligature_mask },
-    { CHR('a','f','r','c'),	"afrc", N_("Vertical Fractions"),	gsub_ligature_mask },
-    { CHR('a','k','h','n'),	"akhn", N_("Akhand"),			gsub_ligature_mask },
-    { CHR('a','l','i','g'),	"alig", N_("Ancient Ligatures"),	gsub_ligature_mask },
-    { CHR('b','l','w','f'),	"blwf", N_("Below Base Forms"),		gsub_ligature_mask },
-    { CHR('b','l','w','m'),	"blwm", N_("Below Base Mark"),		gpos_mark2base_mask|gpos_mark2ligature_mask },
-    { CHR('b','l','w','s'),	"blws", N_("Below Base Substitutions"),	gsub_ligature_mask },
-    { CHR('c','2','p','c'),	"c2pc", N_("Capitals to Petite Capitals"),	gsub_single_mask },
-    { CHR('c','2','s','c'),	"c2sc", N_("Capitals to Small Capitals"),	gsub_single_mask },
-    { CHR('c','a','l','t'),	"calt", N_("Contextual Alternates"),	gsub_context_mask|gsub_contextchain_mask|morx_context_mask },
-    { CHR('c','a','s','e'),	"case", N_("Case-Sensitive Forms"),	gsub_single_mask|gpos_single_mask },
-    { CHR('c','c','m','p'),	"ccmp", N_("Glyph Composition/Decomposition"),	gsub_multiple_mask|gsub_ligature_mask },
-    { CHR('c','l','i','g'),	"clig", N_("Contextual Ligatures"),	gsub_reversecchain_mask },
-    { CHR('c','p','s','p'),	"cpsp", N_("Capital Spacing"),		gpos_single_mask },
-    { CHR('c','s','w','h'),	"cswh", N_("Contextual Swash"),		gsub_reversecchain_mask },
-    { CHR('c','u','r','s'),	"curs", N_("Cursive Attachment"),	gpos_cursive_mask },
-    { CHR('d','i','s','t'),	"dist", N_("Distance"),			gpos_pair_mask },
-    { CHR('d','l','i','g'),	"dlig", N_("Discretionary Ligatures"),	gsub_ligature_mask },
-    { CHR('d','n','o','m'),	"dnom", N_("Denominators"),		gsub_single_mask },
-    { CHR('e','x','p','t'),	"expt", N_("Expert Forms"),		gsub_single_mask },
-    { CHR('f','a','l','t'),	"falt", N_("Final Glyph On Line"),	gsub_alternate_mask },
-    { CHR('f','i','n','2'),	"fin2", N_("Terminal Forms #2"),	gsub_context_mask|gsub_contextchain_mask|morx_context_mask },
-    { CHR('f','i','n','3'),	"fin3", N_("Terminal Forms #3"),	gsub_context_mask|gsub_contextchain_mask|morx_context_mask },
-    { CHR('f','i','n','a'),	"fina", N_("Terminal Forms"),		gsub_single_mask },
-    { CHR('f','l','a','c'),	"flac", N_("Flattened Accents over Capitals"),	gsub_single_mask|gsub_ligature_mask },
-    { CHR('f','r','a','c'),	"frac", N_("Diagonal Fractions"),	gsub_single_mask|gsub_ligature_mask },
-    { CHR('f','w','i','d'),	"fwid", N_("Full Widths"),		gsub_single_mask|gpos_single_mask },
-    { CHR('h','a','l','f'),	"half", N_("Half Forms"),		gsub_ligature_mask },
-    { CHR('h','a','l','n'),	"haln", N_("Halant Forms"),		gsub_ligature_mask },
-    { CHR('h','a','l','t'),	"halt", N_("Alternative Half Widths"),	gpos_single_mask },
-    { CHR('h','i','s','t'),	"hist", N_("Historical Forms"),		gsub_single_mask },
-    { CHR('h','k','n','a'),	"hkna", N_("Horizontal Kana Alternatives"),	gsub_single_mask },
-    { CHR('h','l','i','g'),	"hlig", N_("Historic Ligatures"),	gsub_ligature_mask },
-    { CHR('h','n','g','l'),	"hngl", N_("Hanja to Hangul"),		gsub_single_mask|gsub_alternate_mask },
-    { CHR('h','w','i','d'),	"hwid", N_("Half Widths"),		gsub_single_mask|gpos_single_mask },
-    { CHR('i','n','i','t'),	"init", N_("Initial Forms"),		gsub_single_mask },
-    { CHR('i','s','o','l'),	"isol", N_("Isolated Forms"),		gsub_single_mask },
-    { CHR('i','t','a','l'),	"ital", N_("Italics"),			gsub_single_mask },
-    { CHR('j','a','l','t'),	"jalt", N_("Justification Alternatives"),	gsub_alternate_mask },
-    { CHR('j','p','7','8'),	"jp78", N_("JIS78 Forms"),		gsub_single_mask|gsub_alternate_mask },
-    { CHR('j','p','8','3'),	"jp83", N_("JIS83 Forms"),		gsub_single_mask },
-    { CHR('j','p','9','0'),	"jp90", N_("JIS90 Forms"),		gsub_single_mask },
-    { CHR('k','e','r','n'),	"kern", N_("Horizontal Kerning"),	gpos_pair_mask|gpos_context_mask|gpos_contextchain_mask|kern_statemachine_mask },
-    { CHR('l','f','b','d'),	"lfbd", N_("Left Bounds"),		gpos_single_mask },
-    { CHR('l','i','g','a'),	"liga", N_("Standard Ligatures"),	gsub_ligature_mask },
-    { CHR('l','j','m','o'),	"ljmo", N_("Leading Jamo Forms"),	gsub_ligature_mask },
-    { CHR('l','n','u','m'),	"lnum", N_("Lining Figures"),		gsub_single_mask },
-    { CHR('l','o','c','l'),	"locl", N_("Localized Forms"),		gsub_single_mask },
-    { CHR('m','a','r','k'),	"mark", N_("Mark Positioning"),		gpos_mark2base_mask|gpos_mark2ligature_mask },
-    { CHR('m','e','d','2'),	"med2", N_("Medial Forms 2"),		gsub_context_mask|gsub_contextchain_mask|morx_context_mask },
-    { CHR('m','e','d','i'),	"medi", N_("Medial Forms"),		gsub_single_mask },
-    { CHR('m','g','r','k'),	"mgrk", N_("Mathematical Greek"),	gsub_single_mask },
-    { CHR('m','k','m','k'),	"mkmk", N_("Mark to Mark"),		gpos_mark2mark_mask },
-    { CHR('m','s','e','t'),	"mset", N_("Mark Positioning via Substitution"),	gsub_context_mask|gsub_contextchain_mask|morx_context_mask },
-    { CHR('n','a','l','t'),	"nalt", N_("Alternate Annotation Forms"),	gsub_single_mask|gsub_alternate_mask },
-    { CHR('n','u','k','t'),	"nukt", N_("Nukta Forms"),		gsub_ligature_mask },
-    { CHR('n','u','m','r'),	"numr", N_("Numerators"),		gsub_single_mask },
-    { CHR('o','n','u','m'),	"onum", N_("Oldstyle Figures"),		gsub_single_mask },
-    { CHR('o','p','b','d'),	"opbd", N_("Optical Bounds"),		gpos_single_mask },
-    { CHR('o','r','d','n'),	"ordn", N_("Ordinals"),			gsub_ligature_mask|gsub_context_mask|gsub_contextchain_mask|morx_context_mask },
-    { CHR('o','r','n','m'),	"ornm", N_("Ornaments"),		gsub_single_mask|gsub_alternate_mask },
-    { CHR('p','a','l','t'),	"palt", N_("Proportional Alternate Metrics"),	gpos_single_mask },
-    { CHR('p','c','a','p'),	"pcap", N_("Lowercase to Petite Capitals"),	gsub_single_mask },
-    { CHR('p','n','u','m'),	"pnum", N_("Proportional Numbers"),	gsub_single_mask },
-    { CHR('p','r','e','f'),	"pref", N_("Pre Base Forms"),		gsub_ligature_mask },
-    { CHR('p','r','e','s'),	"pres", N_("Pre Base Substitutions"),	gsub_ligature_mask|gsub_context_mask|gsub_contextchain_mask|morx_context_mask },
-    { CHR('p','s','t','f'),	"pstf", N_("Post Base Forms"),		gsub_ligature_mask },
-    { CHR('p','s','t','s'),	"psts", N_("Post Base Substitutions"),	gsub_ligature_mask },
-    { CHR('p','w','i','d'),	"pwid", N_("Proportional Width"),	gsub_single_mask },
-    { CHR('q','w','i','d'),	"qwid", N_("Quarter Widths"),		gsub_single_mask|gpos_single_mask },
-    { CHR('r','a','n','d'),	"rand", N_("Randomize"),		gsub_alternate_mask },
-    { CHR('r','l','i','g'),	"rlig", N_("Required Ligatures"),	gsub_ligature_mask },
-    { CHR('r','p','h','f'),	"rphf", N_("Reph Form"),		gsub_ligature_mask },
-    { CHR('r','t','b','d'),	"rtbd", N_("Right Bounds"),		gpos_single_mask },
-    { CHR('r','t','l','a'),	"rtla", N_("Right to Left Alternates"),	gsub_single_mask },
-    { CHR('r','u','b','y'),	"ruby", N_("Ruby Notational Forms"),	gsub_single_mask },
-    { CHR('s','a','l','t'),	"salt", N_("Stylistic Alternatives"),	gsub_single_mask|gsub_alternate_mask },
-    { CHR('s','i','n','f'),	"sinf", N_("Scientific Inferiors"),	gsub_single_mask },
-    { CHR('s','m','c','p'),	"smcp", N_("Lowercase to Small Capitals"),	gsub_single_mask },
-    { CHR('s','m','p','l'),	"smpl", N_("Simplified Forms"),		gsub_single_mask },
-    { CHR('s','s','0','1'),	"ss01", N_("Style Set 1"),		gsub_single_mask },
-    { CHR('s','s','0','2'),	"ss02", N_("Style Set 2"),		gsub_single_mask },
-    { CHR('s','s','0','3'),	"ss03", N_("Style Set 3"),		gsub_single_mask },
-    { CHR('s','s','0','4'),	"ss04", N_("Style Set 4"),		gsub_single_mask },
-    { CHR('s','s','0','5'),	"ss05", N_("Style Set 5"),		gsub_single_mask },
-    { CHR('s','s','0','6'),	"ss06", N_("Style Set 6"),		gsub_single_mask },
-    { CHR('s','s','0','7'),	"ss07", N_("Style Set 7"),		gsub_single_mask },
-    { CHR('s','s','0','8'),	"ss08", N_("Style Set 8"),		gsub_single_mask },
-    { CHR('s','s','0','9'),	"ss09", N_("Style Set 9"),		gsub_single_mask },
-    { CHR('s','s','1','0'),	"ss10", N_("Style Set 10"),		gsub_single_mask },
-    { CHR('s','s','1','1'),	"ss11", N_("Style Set 11"),		gsub_single_mask },
-    { CHR('s','s','1','2'),	"ss12", N_("Style Set 12"),		gsub_single_mask },
-    { CHR('s','s','1','3'),	"ss13", N_("Style Set 13"),		gsub_single_mask },
-    { CHR('s','s','1','4'),	"ss14", N_("Style Set 14"),		gsub_single_mask },
-    { CHR('s','s','1','5'),	"ss15", N_("Style Set 15"),		gsub_single_mask },
-    { CHR('s','s','1','6'),	"ss16", N_("Style Set 16"),		gsub_single_mask },
-    { CHR('s','s','1','7'),	"ss17", N_("Style Set 17"),		gsub_single_mask },
-    { CHR('s','s','1','8'),	"ss18", N_("Style Set 18"),		gsub_single_mask },
-    { CHR('s','s','1','9'),	"ss19", N_("Style Set 19"),		gsub_single_mask },
-    { CHR('s','s','2','0'),	"ss20", N_("Style Set 20"),		gsub_single_mask },
-    { CHR('s','s','t','y'),	"ssty", N_("Script Style"),		gsub_single_mask },
-    { CHR('s','u','b','s'),	"subs", N_("Subscript"),		gsub_single_mask },
-    { CHR('s','u','p','s'),	"sups", N_("Superscript"),		gsub_single_mask },
-    { CHR('s','w','s','h'),	"swsh", N_("Swash"),			gsub_single_mask|gsub_alternate_mask },
-    { CHR('t','i','t','l'),	"titl", N_("Titling"),			gsub_single_mask },
-    { CHR('t','j','m','o'),	"tjmo", N_("Trailing Jamo Forms"),	gsub_ligature_mask },
-    { CHR('t','n','a','m'),	"tnam", N_("Traditional Name Forms"),	gsub_single_mask },
-    { CHR('t','n','u','m'),	"tnum", N_("Tabular Numbers"),		gsub_single_mask },
-    { CHR('t','r','a','d'),	"trad", N_("Traditional Forms"),	gsub_single_mask|gsub_alternate_mask },
-    { CHR('t','w','i','d'),	"twid", N_("Third Widths"),		gsub_single_mask|gpos_single_mask },
-    { CHR('u','n','i','c'),	"unic", N_("Unicase"),			gsub_single_mask },
-    { CHR('v','a','l','t'),	"valt", N_("Alternate Vertical Metrics"),	gpos_single_mask },
-    { CHR('v','a','t','u'),	"vatu", N_("Vattu Variants"),		gsub_ligature_mask },
-    { CHR('v','e','r','t'),	"vert", N_("Vertical Alternates (obs)"),	gsub_single_mask },
-    { CHR('v','h','a','l'),	"vhal", N_("Alternate Vertical Half Metrics"),	gpos_single_mask },
-    { CHR('v','j','m','o'),	"vjmo", N_("Vowel Jamo Forms"),		gsub_ligature_mask },
-    { CHR('v','k','n','a'),	"vkna", N_("Vertical Kana Alternates"),	gsub_single_mask },
-    { CHR('v','k','r','n'),	"vkrn", N_("Vertical Kerning"),		gpos_pair_mask|gpos_context_mask|gpos_contextchain_mask|kern_statemachine_mask },
-    { CHR('v','p','a','l'),	"vpal", N_("Proportional Alternate Vertical Metrics"),	gpos_single_mask },
-    { CHR('v','r','t','2'),	"vrt2", N_("Vertical Rotation & Alternates"),	gsub_single_mask },
-    { CHR('z','e','r','o'),	"zero", N_("Slashed Zero"),		gsub_single_mask },
-/* This is my hack for setting the "Required feature" field of a script */
-    { CHR(' ','R','Q','D'),	" RQD", N_("Required feature"),		gsub_single_mask|gsub_multiple_mask|gsub_alternate_mask|gsub_ligature_mask|gsub_context_mask|gsub_contextchain_mask|gsub_reversecchain_mask|morx_context_mask|gpos_single_mask|gpos_pair_mask|gpos_cursive_mask|gpos_mark2base_mask|gpos_mark2ligature_mask|gpos_mark2mark_mask|gpos_context_mask|gpos_contextchain_mask },
-    { 0, NULL, 0 }
-};
-
 static char *LK_LangsDlg(GGadget *, int r, int c);
 static char *LK_ScriptsDlg(GGadget *, int r, int c);
 static struct col_init scriptci[] = {
@@ -771,8 +635,7 @@ return;
 	for ( i=0; needswork[j][i].text!=NULL; ++i )
 	    needswork[j][i].text = (unichar_t *) S_((char *) needswork[j][i].text);
     }
-    for ( i=0; friendlies[i].friendlyname!=NULL; ++i )
-	friendlies[i].friendlyname = S_(friendlies[i].friendlyname);
+    LookupInit();
 
     featureci[0].title = S_(featureci[0].title);
     featureci[1].title = S_(featureci[1].title);
@@ -1973,134 +1836,6 @@ int EditLookup(OTLookup *otl,int isgpos,SplineFont *sf) {
     GDrawDestroyWindow(gw);
 
 return( ld.ok );
-}
-
-static int _FeatureOrderId( int isgpos,uint32 tag ) {
-    /* This is the order in which features should be executed */
-    
-    if ( !isgpos ) switch ( tag ) {
-/* GSUB ordering */
-      case CHR('c','c','m','p'):	/* Must be first? */
-return( -2 );
-      case CHR('l','o','c','l'):	/* Language dependent letter forms (serbian uses some different glyphs than russian) */
-return( -1 );
-      case CHR('i','s','o','l'):
-return( 0 );
-      case CHR('j','a','l','t'):		/* must come after 'isol' */
-return( 1 );
-      case CHR('f','i','n','a'):
-return( 2 );
-      case CHR('f','i','n','2'):
-      case CHR('f','a','l','t'):		/* must come after 'fina' */
-return( 3 );
-      case CHR('f','i','n','3'):
-return( 4 );
-      case CHR('m','e','d','i'):
-return( 5 );
-      case CHR('m','e','d','2'):
-return( 6 );
-      case CHR('i','n','i','t'):
-return( 7 );
-
-      case CHR('r','t','l','a'):
-return( 100 );
-      case CHR('s','m','c','p'): case CHR('c','2','s','c'):
-return( 200 );
-
-      case CHR('r','l','i','g'):
-return( 300 );
-      case CHR('c','a','l','t'):
-return( 301 );
-      case CHR('l','i','g','a'):
-return( 302 );
-      case CHR('d','l','i','g'): case CHR('h','l','i','g'):
-return( 303 );
-      case CHR('c','s','w','h'):
-return( 304 );
-      case CHR('m','s','e','t'):
-return( 305 );
-
-      case CHR('f','r','a','c'):
-return( 306 );
-
-/* Indic processing */
-      case CHR('n','u','k','t'):
-      case CHR('p','r','e','f'):
-return( 301 );
-      case CHR('a','k','h','n'):
-return( 302 );
-      case CHR('r','p','h','f'):
-return( 303 );
-      case CHR('b','l','w','f'):
-return( 304 );
-      case CHR('h','a','l','f'):
-      case CHR('a','b','v','f'):
-return( 305 );
-      case CHR('p','s','t','f'):
-return( 306 );
-      case CHR('v','a','t','u'):
-return( 307 );
-
-      case CHR('p','r','e','s'):
-return( 310 );
-      case CHR('b','l','w','s'):
-return( 311 );
-      case CHR('a','b','v','s'):
-return( 312 );
-      case CHR('p','s','t','s'):
-return( 313 );
-      case CHR('c','l','i','g'):
-return( 314 );
-      
-      case CHR('h','a','l','n'):
-return( 320 );
-/* end indic ordering */
-
-      case CHR('a','f','r','c'):
-      case CHR('l','j','m','o'):
-      case CHR('v','j','m','o'):
-return( 350 );
-      case CHR('v','r','t','2'): case CHR('v','e','r','t'):
-return( 1010 );		/* Documented to come last */
-
-/* Unknown things come after everything but vert/vrt2 */
-      default:
-return( 1000 );
-
-    } else switch ( tag ) {
-/* GPOS ordering */
-      case CHR('c','u','r','s'):
-return( 0 );
-      case CHR('d','i','s','t'):
-return( 100 );
-      case CHR('b','l','w','m'):
-return( 201 );
-      case CHR('a','b','v','m'):
-return( 202 );
-      case CHR('k','e','r','n'):
-return( 300 );
-      case CHR('m','a','r','k'):
-return( 400 );
-      case CHR('m','k','m','k'):
-return( 500 );
-/* Unknown things come after everything  */
-      default:
-return( 1000 );
-    }
-}
-
-int FeatureOrderId( int isgpos,FeatureScriptLangList *fl ) {
-    int pos = 9999, temp;
-
-    if ( fl==NULL )
-return( 0 );
-
-    while ( fl!=NULL ) {
-	temp = _FeatureOrderId(isgpos,fl->featuretag );
-	if ( temp<pos ) pos = temp;
-	fl = fl->next;
-    }
-return( pos );
 }
 
 static OTLookup *CreateAndSortNewLookupOfType(SplineFont *sf, int lookup_type) {
@@ -3307,8 +3042,8 @@ static void PSTKD_DoPopulate(PSTKernDlg *pstkd,char *suffix, enum pop_type pt) {
     SplineChar *sc, *alt;
     int enc;
     SplineFont *sf = pstkd->sf;
-    FontView *fv = sf->fv;
-    EncMap *map = fv->map;
+    FontView *fv = (FontView *) sf->fv;
+    EncMap *map = fv->b.map;
     GGadget *gallsame = GWidgetGetControl(pstkd->gw,CID_AllSame);
     int allsame = false;
 
@@ -3324,9 +3059,9 @@ static void PSTKD_DoPopulate(PSTKernDlg *pstkd,char *suffix, enum pop_type pt) {
 	    if ( SCReasonable(sc = sf->glyphs[gid]) &&
 		    (pt==pt_selected || ScriptInFeatureScriptList(SCScriptFromUnicode(sc),
 			    pstkd->sub->lookup->features)) &&
-		    (pt!=pt_selected || (gid<fv->sf->glyphcnt &&
+		    (pt!=pt_selected || (gid<fv->b.sf->glyphcnt &&
 			    (enc = map->backmap[gid])!=-1 &&
-			    fv->selected[enc])) &&
+			    fv->b.selected[enc])) &&
 		    (pos = SCNameUnused(sc->name,old,old_rows,cols))!=-1 &&
 		    (pstkd->sub->lookup->lookup_type!=gsub_ligature ||
 			    SCIsLigature(sc)) ) {
@@ -4379,37 +4114,6 @@ return( NULL );
 return( NewSubtable(found,isgpos,sf,sd));
 }
 
-int VerticalKernFeature(SplineFont *sf, OTLookup *otl, int ask) {
-    FeatureScriptLangList *fl;
-    struct lookup_subtable *sub;
-    KernClass *kc;
-    char *buts[3];
-
-    for ( fl=otl->features; fl!=NULL; fl=fl->next ) {
-	if ( fl->featuretag==CHR('k','e','r','n') )
-return( false );
-	else if ( fl->featuretag==CHR('v','k','r','n') )
-return( true );
-    }
-
-    for ( sub=otl->subtables; sub!=NULL; sub=sub->next ) {
-	if ( sub->kc!=NULL ) {
-	    for ( kc=sf->kerns; kc!=NULL; kc=kc->next )
-		if ( kc==sub->kc )
-return( false );
-	    for ( kc=sf->vkerns; kc!=NULL; kc=kc->next )
-		if ( kc==sub->kc )
-return( true );
-	}
-    }
-
-    if ( !ask )
-return( -1 );
-
-    buts[0] = _("_Horizontal"); buts[1] = _("_Vertical"); buts[2] = NULL;
-return( gwwv_ask(_("Kerning direction"),(const char **) buts,0,1,_("Is this horizontal or vertical kerning data?")) );
-}
-
 void _LookupSubtableContents(SplineFont *sf, struct lookup_subtable *sub,
 	struct subtable_data *sd) {
     int lookup_type = sub->lookup->lookup_type;
@@ -4500,92 +4204,6 @@ return;
 	PSTKernD(sf,sub);
 }
 
-struct lookup_subtable *SFSubTableMake(SplineFont *sf,uint32 tag,uint32 script,
-	int lookup_type ) {
-    OTLookup **base;
-    OTLookup *otl, *found=NULL;
-    int isgpos = lookup_type>=gpos_start;
-    struct lookup_subtable *sub;
-    int isnew = false;
-
-    if ( sf->cidmaster ) sf = sf->cidmaster;
-    base = isgpos ? &sf->gpos_lookups : &sf->gsub_lookups;
-    for ( otl= *base; otl!=NULL; otl=otl->next ) {
-	if ( otl->lookup_type==lookup_type &&
-		FeatureScriptTagInFeatureScriptList(tag,script,otl->features) ) {
-	    found = otl;
-	}
-    }
-
-    if ( found==NULL ) {
-	found = chunkalloc(sizeof(OTLookup));
-	found->lookup_type = lookup_type;
-	found->features = chunkalloc(sizeof(FeatureScriptLangList));
-	found->features->featuretag = tag;
-	found->features->scripts = chunkalloc(sizeof(struct scriptlanglist));
-	found->features->scripts->script = script;
-	found->features->scripts->langs[0] = DEFAULT_LANG;
-	found->features->scripts->lang_cnt = 1;
-
-	SortInsertLookup(sf, found);
-	isnew = true;
-    }
-
-    sub = chunkalloc(sizeof(struct lookup_subtable));
-    sub->next = found->subtables;
-    found->subtables = sub;
-    sub->lookup = found;
-
-    if ( isnew )
-	NameOTLookup(found,sf);
-return( sub );
-}
-
-struct lookup_subtable *SFSubTableFindOrMake(SplineFont *sf,uint32 tag,uint32 script,
-	int lookup_type ) {
-    OTLookup **base;
-    OTLookup *otl, *found=NULL;
-    int isgpos = lookup_type>=gpos_start;
-    struct lookup_subtable *sub;
-    int isnew = false;
-
-    if ( sf->cidmaster ) sf = sf->cidmaster;
-    base = isgpos ? &sf->gpos_lookups : &sf->gsub_lookups;
-    for ( otl= *base; otl!=NULL; otl=otl->next ) {
-	if ( otl->lookup_type==lookup_type &&
-		FeatureScriptTagInFeatureScriptList(tag,script,otl->features) ) {
-	    for ( sub = otl->subtables; sub!=NULL; sub=sub->next )
-		if ( sub->kc==NULL )
-return( sub );
-	    found = otl;
-	}
-    }
-
-    if ( found==NULL ) {
-	found = chunkalloc(sizeof(OTLookup));
-	found->lookup_type = lookup_type;
-	found->features = chunkalloc(sizeof(FeatureScriptLangList));
-	found->features->featuretag = tag;
-	found->features->scripts = chunkalloc(sizeof(struct scriptlanglist));
-	found->features->scripts->script = script;
-	found->features->scripts->langs[0] = DEFAULT_LANG;
-	found->features->scripts->lang_cnt = 1;
-
-	SortInsertLookup(sf, found);
-	isnew = true;
-    }
-
-    sub = chunkalloc(sizeof(struct lookup_subtable));
-    sub->next = found->subtables;
-    found->subtables = sub;
-    sub->lookup = found;
-    sub->per_glyph_pst_or_kern = true;
-
-    if ( isnew )
-	NameOTLookup(found,sf);
-return( sub );
-}
-
 /******************************************************************************/
 /****************************   Mass Glyph Rename   ***************************/
 /******************************************************************************/
@@ -4606,7 +4224,7 @@ static int MRD_OK(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	MassRenameDlg *mrd = GDrawGetUserData(GGadgetGetWindow(g));
-	int sel_cnt, enc, enc_max = mrd->fv->map->enccount;
+	int sel_cnt, enc, enc_max = mrd->fv->b.map->enccount;
 	char *start_name, *suffix, *pt;
 	int enc_start;
 	SplineChar *sc, *sourcesc;
@@ -4616,11 +4234,11 @@ static int MRD_OK(GGadget *g, GEvent *e) {
 	int themselves = GGadgetIsChecked(GWidgetGetControl(mrd->gw,CID_Themselves));
 	int rplsuffix = GGadgetIsChecked(GWidgetGetControl(mrd->gw,CID_ReplaceSuffix));
 
-	for ( enc=sel_cnt=0; enc<enc_max; ++enc ) if ( mrd->fv->selected[enc] )
+	for ( enc=sel_cnt=0; enc<enc_max; ++enc ) if ( mrd->fv->b.selected[enc] )
 	    ++sel_cnt;
 	if ( !themselves ) {
 	    start_name = GGadgetGetTitle8(GWidgetGetControl(mrd->gw,CID_StartName));
-	    enc_start = SFFindSlot(mrd->fv->sf,mrd->fv->map,-1,start_name);
+	    enc_start = SFFindSlot(mrd->fv->b.sf,mrd->fv->b.map,-1,start_name);
 	    if ( enc_start==-1 ) {
 		ff_post_error(_("No Start Glyph"), _("The encoding does not contain something named %.40s"), start_name );
 		free(start_name);
@@ -4631,7 +4249,7 @@ return( true );
 		ff_post_error(_("Not enough glyphs"), _("There aren't enough glyphs in the encoding to name all the selected characters"));
 return( true );
 	    }
-	    for ( enc=enc_start; enc<enc_start+sel_cnt; ++enc ) if ( mrd->fv->selected[enc]) {
+	    for ( enc=enc_start; enc<enc_start+sel_cnt; ++enc ) if ( mrd->fv->b.selected[enc]) {
 		ff_post_error(_("Bad selection"), _("You may not rename any of the base glyphs, but your selection overlaps the set of base glyphs."));
 return( true );
 	    }
@@ -4661,11 +4279,11 @@ return( true );
 	    free(old);
 	}
 
-	for ( enc=sel_cnt=0; enc<enc_max; ++enc ) if ( mrd->fv->selected[enc] ) {
+	for ( enc=sel_cnt=0; enc<enc_max; ++enc ) if ( mrd->fv->b.selected[enc] ) {
 	    char *oldname;
-	    sourcesc = sc = SFMakeChar(mrd->fv->sf,mrd->fv->map,enc);
+	    sourcesc = sc = SFMakeChar(mrd->fv->b.sf,mrd->fv->b.map,enc);
 	    if ( !themselves )
-		sourcesc = SFMakeChar(mrd->fv->sf,mrd->fv->map,enc_start+sel_cnt);
+		sourcesc = SFMakeChar(mrd->fv->b.sf,mrd->fv->b.map,enc_start+sel_cnt);
 	    oldname = sc->name;
 	    if ( rplsuffix && (pt=strchr(sourcesc->name,'.'))!=NULL ) {
 		char *name = galloc(pt-sourcesc->name+strlen(suffix)+2);
@@ -4758,9 +4376,9 @@ static int MRD_Subtable(GGadget *g, GEvent *e) {
 	ti = GGadgetGetListItemSelected(g);
 	if ( ti!=NULL ) {
 	    if ( ti->userdata==NULL ) {
-		sub = SFNewLookupSubtableOfType(mrd->fv->sf,gsub_single,NULL);
+		sub = SFNewLookupSubtableOfType(mrd->fv->b.sf,gsub_single,NULL);
 		if ( sub!=NULL )
-		    GGadgetSetList(g,SFSubtablesOfType(mrd->fv->sf,gsub_single,false,true),false);
+		    GGadgetSetList(g,SFSubtablesOfType(mrd->fv->b.sf,gsub_single,false,true),false);
 		MRD_SelectSubtable(mrd,sub);
 	    } else if ( (sub = ti->userdata) != (struct lookup_subtable *) -1 &&
 		    sub->suffix != NULL )
@@ -4772,7 +4390,7 @@ return( true );
 
 static unichar_t **MRD_GlyphNameCompletion(GGadget *t,int from_tab) {
     MassRenameDlg *mrd = GDrawGetUserData(GGadgetGetWindow(t));
-    SplineFont *sf = mrd->fv->sf;
+    SplineFont *sf = mrd->fv->b.sf;
 
 return( SFGlyphNameCompletion(sf,t,from_tab,false));
 }
@@ -4944,7 +4562,7 @@ void FVMassGlyphRename(FontView *fv) {
     GHVBoxSetExpandableRow(boxes[0].ret,gb_expandglue);
     GHVBoxSetExpandableCol(boxes[0].ret,1);
 
-    GGadgetSetList(gcd[subtablek].ret,SFSubtablesOfType(fv->sf,gsub_single,false,true),false);
+    GGadgetSetList(gcd[subtablek].ret,SFSubtablesOfType(fv->b.sf,gsub_single,false,true),false);
     GGadgetSelectOneListItem(gcd[subtablek].ret,0);
     GCompletionFieldSetCompletion(gcd[startnamek].ret,MRD_GlyphNameCompletion);
     GWidgetIndicateFocusGadget(GWidgetGetControl(gw,CID_Suffix));
@@ -4957,3 +4575,51 @@ void FVMassGlyphRename(FontView *fv) {
 
     GDrawDestroyWindow(gw);
 }
+
+/* ************************************************************************** */
+/* ******************** Interface to FontInfo Lookup list ******************* */
+/* ************************************************************************** */
+
+static void FI_SortInsertLookup(SplineFont *sf, OTLookup *newotl) {
+    int isgpos = newotl->lookup_type>=gpos_start;
+    int pos, i, k;
+
+    if ( sf->fontinfo ) {
+	struct lkdata *lk = &sf->fontinfo->tables[isgpos];
+	pos = FeatureOrderId(isgpos,newotl->features);
+	if ( lk->cnt>=lk->max )
+	    lk->all = grealloc(lk->all,(lk->max+=10)*sizeof(struct lkinfo));
+	for ( i=0; i<lk->cnt && FeatureOrderId(isgpos,lk->all[i].lookup->features)<pos; ++i );
+	for ( k=lk->cnt; k>i+1; --k )
+	    lk->all[k] = lk->all[k-1];
+	memset(&lk->all[k],0,sizeof(struct lkinfo));
+	lk->all[k].lookup = newotl;
+	++lk->cnt;
+	GFI_LookupScrollbars(sf->fontinfo,isgpos, true);
+	GFI_LookupEnableButtons(sf->fontinfo,isgpos);
+    }
+}
+
+static void FI_OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf,
+	OTLookup *from_otl, int scnt) {
+    if ( into_sf->fontinfo ) {
+	int isgpos = from_otl->lookup_type>=gpos_start;
+	struct lkdata *lk = &into_sf->fontinfo->tables[isgpos];
+	OTLookup *otl = from_otl->next;
+	struct lookup_subtable *sub;
+	int i;
+	for ( i=0; i<lk->cnt; ++i )
+	    if ( lk->all[i].lookup==otl )
+	break;
+	lk->all[i].subtable_cnt = lk->all[i].subtable_max = scnt;
+	lk->all[i].subtables = gcalloc(scnt,sizeof(struct lksubinfo));
+	for ( sub=otl->subtables, scnt=0; sub!=NULL; sub=sub->next, ++scnt )
+	    lk->all[i].subtables[scnt].subtable = sub;
+    }
+}
+
+struct fi_interface gdraw_fi_interface = {
+    FI_SortInsertLookup,
+    FI_OTLookupCopyInto,
+    FontInfoDestroy
+};
