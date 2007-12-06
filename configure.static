@@ -309,7 +309,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA RANLIB ac_ct_RANLIB build build_cpu build_vendor build_os host host_cpu host_vendor host_os HOST FF_EXTRA_FILES PYTHON_LIB_NAME CPP EGREP X_CFLAGS X_PRE_LIBS X_LIBS X_EXTRA_LIBS X_11LIB STATIC_LIBS VERSION WFLAGS LIBOBJS LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA RANLIB ac_ct_RANLIB build build_cpu build_vendor build_os host host_cpu host_vendor host_os HOST FF_EXTRA_FILES PYTHON_LIB_NAME CPP EGREP X_CFLAGS X_PRE_LIBS X_LIBS X_EXTRA_LIBS X_11LIB GDRAW_LIB exeOBJECTS LINK_WITH_GDRAW STATIC_LIBS VERSION WFLAGS LIBOBJS LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -8234,9 +8234,18 @@ fi
 fi
 
 
+
+
+
 X_11LIB=-lX11
+GDRAW_LIB=libgdraw
+exeOBJECTS=fontforge_UIOBJECTS
+LINK_WITH_GDRAW=../lib/libgdraw.a
 if test "$no_x" = "yes"; then
  X_11LIB=
+ GDRAW_LIB=
+ exeOBJECTS=fontforge_SCRIPTOBJ
+ LINK_WITH_GDRAW=
 else
 
  echo "$as_me:$LINENO: checking for XOpenDevice in -lXi" >&5
@@ -8987,8 +8996,9 @@ fi
 cp $ac_confdir/Makefile.static.in $ac_confdir/Makefile.in
 cp $ac_confdir/Unicode/Makefile.static.in $ac_confdir/Unicode/Makefile.in
 cp $ac_confdir/gdraw/Makefile.static.in $ac_confdir/gdraw/Makefile.in
+cp $ac_confdir/gutils/Makefile.static.in $ac_confdir/gutils/Makefile.in
 cp $ac_confdir/fontforge/Makefile.static.in $ac_confdir/fontforge/Makefile.in
-                                                                      ac_config_files="$ac_config_files Makefile Unicode/Makefile gdraw/Makefile fontforge/Makefile po/Makefile systemspecific fontforge.pc"
+                                                                                ac_config_files="$ac_config_files Makefile Unicode/Makefile gutils/Makefile gdraw/Makefile fontforge/Makefile po/Makefile systemspecific fontforge.pc"
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -9542,6 +9552,7 @@ do
   # Handling of arguments.
   "Makefile" ) CONFIG_FILES="$CONFIG_FILES Makefile" ;;
   "Unicode/Makefile" ) CONFIG_FILES="$CONFIG_FILES Unicode/Makefile" ;;
+  "gutils/Makefile" ) CONFIG_FILES="$CONFIG_FILES gutils/Makefile" ;;
   "gdraw/Makefile" ) CONFIG_FILES="$CONFIG_FILES gdraw/Makefile" ;;
   "fontforge/Makefile" ) CONFIG_FILES="$CONFIG_FILES fontforge/Makefile" ;;
   "po/Makefile" ) CONFIG_FILES="$CONFIG_FILES po/Makefile" ;;
@@ -9660,6 +9671,9 @@ s,@X_PRE_LIBS@,$X_PRE_LIBS,;t t
 s,@X_LIBS@,$X_LIBS,;t t
 s,@X_EXTRA_LIBS@,$X_EXTRA_LIBS,;t t
 s,@X_11LIB@,$X_11LIB,;t t
+s,@GDRAW_LIB@,$GDRAW_LIB,;t t
+s,@exeOBJECTS@,$exeOBJECTS,;t t
+s,@LINK_WITH_GDRAW@,$LINK_WITH_GDRAW,;t t
 s,@STATIC_LIBS@,$STATIC_LIBS,;t t
 s,@VERSION@,$VERSION,;t t
 s,@WFLAGS@,$WFLAGS,;t t
@@ -10489,6 +10503,7 @@ do
   # Handling of arguments.
   "Makefile" ) CONFIG_FILES="$CONFIG_FILES Makefile" ;;
   "Unicode/Makefile" ) CONFIG_FILES="$CONFIG_FILES Unicode/Makefile" ;;
+  "gutils/Makefile" ) CONFIG_FILES="$CONFIG_FILES gutils/Makefile" ;;
   "gdraw/Makefile" ) CONFIG_FILES="$CONFIG_FILES gdraw/Makefile" ;;
   "fontforge/Makefile" ) CONFIG_FILES="$CONFIG_FILES fontforge/Makefile" ;;
   "po/Makefile" ) CONFIG_FILES="$CONFIG_FILES po/Makefile" ;;
@@ -10608,6 +10623,9 @@ s,@X_PRE_LIBS@,$X_PRE_LIBS,;t t
 s,@X_LIBS@,$X_LIBS,;t t
 s,@X_EXTRA_LIBS@,$X_EXTRA_LIBS,;t t
 s,@X_11LIB@,$X_11LIB,;t t
+s,@GDRAW_LIB@,$GDRAW_LIB,;t t
+s,@exeOBJECTS@,$exeOBJECTS,;t t
+s,@LINK_WITH_GDRAW@,$LINK_WITH_GDRAW,;t t
 s,@STATIC_LIBS@,$STATIC_LIBS,;t t
 s,@VERSION@,$VERSION,;t t
 s,@WFLAGS@,$WFLAGS,;t t
