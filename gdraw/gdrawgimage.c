@@ -25,44 +25,17 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "gdraw.h"
-#include <string.h>
-#include <ustring.h>
+#include "gdrawP.h"
 
-GImage *GImageRead(char * filename) {
-    char *pt;
 
-    if ( filename==NULL )
-return( NULL );
+int GImageGetScaledWidth(GWindow gw, GImage *img) {
+    int width = GImageGetWidth(img);
+    width = (width*gw->display->res)/screen_display->res;
+return width;
+}
 
-    pt = strrchr(filename,'.');
-    if ( pt==NULL )
-	pt = "";
-    if ( strmatch(pt,".bmp")==0 )
-return( GImageReadBmp(filename));
-    else if ( strmatch(pt,".xbm")==0 )
-return( GImageReadXbm(filename));
-    else if ( strmatch(pt,".xpm")==0 )
-return( GImageReadXpm(filename));
-#ifndef _NO_LIBTIFF
-    else if ( strmatch(pt,".tiff")==0 || strmatch(pt,".tif")==0 )
-return( GImageReadTiff(filename));
-#endif
-#ifndef _NO_LIBJPEG
-    else if ( strmatch(pt,".jpeg")==0 || strmatch(pt,".jpg")==0 )
-return( GImageReadJpeg(filename));
-#endif
-#ifndef _NO_LIBPNG
-    else if ( strmatch(pt,".png")==0 )
-return( GImageReadPng(filename));
-#endif
-#ifndef _NO_LIBUNGIF
-    else if ( strmatch(pt,".gif")==0 )
-return( GImageReadGif(filename));
-#endif
-    else if ( strmatch(pt,".ras")==0 )
-return( GImageReadRas(filename));		/* Sun raster */
-    else if ( strmatch(pt,".rgb")==0 )
-return( GImageReadRgb(filename));		/* SGI format */
-
-return( NULL );
+int GImageGetScaledHeight(GWindow gw, GImage *img) {
+    int height = GImageGetHeight(img);
+    height = (height*gw->display->res)/screen_display->res;
+return height;
 }

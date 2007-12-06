@@ -12,16 +12,13 @@ RANLIB = @RANLIB@
 
 X_CFLAGS = @X_CFLAGS@
 
-libgdraw_OBJECTS =  choosericons.o divisors.o drawboxborder.o \
- fsys.o gaskdlg.o gbuttons.o gchardlg.o gcontainer.o gdraw.o \
+libgdraw_OBJECTS =  choosericons.o drawboxborder.o \
+ gaskdlg.o gbuttons.o gchardlg.o gcontainer.o gdraw.o \
  gdrawbuildchars.o gdrawerror.o gdrawtxt.o gdrawtxtinit.o \
  genkeysym.o gfilechooser.o gfiledlg.o ggadgets.o ggroupbox.o \
- gimage.o gimageclut.o gimagecvt.o gimagepsdraw.o gimageread.o \
- gimagereadbmp.o gimagereadgif.o gimagereadjpeg.o gimagereadpng.o \
- gimagereadras.o gimagereadrgb.o gimagereadtiff.o gimagereadxbm.o \
- gimagereadxpm.o gimagewritebmp.o gimagewriteeps.o \
- gimagewritegimage.o gimagewritejpeg.o gimagewritepng.o \
- gimagewritexbm.o gimagewritexpm.o gimagexdraw.o gio.o giofile.o \
+ gimageclut.o gimagecvt.o gimagepsdraw.o \
+ gimagewriteeps.o gdrawgimage.o \
+ gimagexdraw.o gio.o giofile.o \
  giohosts.o giomime.o giothread.o giotrans.o gkeysym.o glist.o \
  gmenu.o gprogress.o gpsdraw.o gpstxtinit.o gradio.o gresource.o \
  gresourceimage.o gsavefiledlg.o gscrollbar.o gtabset.o \
@@ -36,12 +33,6 @@ all: ../libs/libgdraw.a
 ../libs/libgdraw.a: $(libgdraw_OBJECTS)
 	ar cr ../libs/libgdraw.a $(libgdraw_OBJECTS)
 	$(RANLIB) ../libs/libgdraw.a
-
-#../libs/libgdraw.so.1.0: $(libgdraw_OBJECTS)
-#	rm -f ../libs/libgdraw.so*
-#	gcc -shared -Wl,-soname,libgdraw.so.1 -o ../libs/libgdraw.so.1.0 $(libgdraw_OBJECTS)
-#	ln -s libgdraw.so.1.0 ../libs/libgdraw.so.1
-#	ln -s libgdraw.so.1 ../libs/libgdraw.so
 
 clean:
 	-rm -f *.o ../libs/libgdraw.a
