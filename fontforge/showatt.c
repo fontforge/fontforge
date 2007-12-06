@@ -25,7 +25,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include <utype.h>
 #include <ustring.h>
 #include <gkeysym.h>
@@ -373,54 +372,6 @@ return( false );
     }
 return( true );
 }
-
-#if defined(FONTFORGE_CONFIG_GDRAW)
-char *TagFullName(SplineFont *sf,uint32 tag, int ismac, int onlyifknown) {
-    char ubuf[200], *end = ubuf+sizeof(ubuf), *setname;
-    int k;
-
-    if ( ismac==-1 )
-	/* Guess */
-	ismac = (tag>>24)<' ' || (tag>>24)>0x7e;
-
-    if ( ismac ) {
-	sprintf( ubuf, "<%d,%d> ", (int) (tag>>16),(int) (tag&0xffff) );
-	if ( (setname = PickNameFromMacName(FindMacSettingName(sf,tag>>16,tag&0xffff)))!=NULL ) {
-	    strcat( ubuf, setname );
-	    free( setname );
-	}
-    } else {
-	int stag = tag;
-	LookupUIInit();
-	if ( tag==CHR('n','u','t','f') )	/* early name that was standardize later as... */
-	    stag = CHR('a','f','r','c');	/*  Stood for nut fractions. "nut" meaning "fits in an en" in old typography-speak => vertical fractions rather than diagonal ones */
-	if ( tag==REQUIRED_FEATURE ) {
-	    strcpy(ubuf,_("Required Feature"));
-	} else {
-	    for ( k=0; friendlies[k].tag!=0; ++k ) {
-		if ( friendlies[k].tag == stag )
-	    break;
-	    }
-	    ubuf[0] = '\'';
-	    ubuf[1] = tag>>24;
-	    ubuf[2] = (tag>>16)&0xff;
-	    ubuf[3] = (tag>>8)&0xff;
-	    ubuf[4] = tag&0xff;
-	    ubuf[5] = '\'';
-	    ubuf[6] = ' ';
-	    if ( friendlies[k].tag!=0 )
-		strncpy(ubuf+7, (char *) friendlies[k].friendlyname,end-ubuf-7);
-	    else if ( onlyifknown )
-return( NULL );
-	    else
-		ubuf[7]='\0';
-	}
-    }
-return( copy( ubuf ));
-}
-#elif defined(FONTFORGE_CONFIG_GTK)
-#else
-#endif
 
 static void BuildFPSTRule(struct node *node,struct att_dlg *att) {
     FPST *fpst = node->parent->u.sub->fpst;
@@ -2055,7 +2006,7 @@ static GMenuItem att_popuplist[] = {
 static FontView *FVVerify(FontView *fv) {
     FontView *test;
 
-    for ( test= fv_list; test!=NULL && test!=fv; test=test->next );
+    for ( test= fv_list; test!=NULL && test!=fv; test=(FontView *) test->b.next );
 return( test );
 }
 
@@ -2077,9 +2028,9 @@ return;
     utf8_ildb((const char **) &pt);
     ch = *pt2; *pt2 = '\0';
     if ( att->fv1!=NULL )
-	sc1 = SFGetChar(att->fv1->sf,-1,pt);
+	sc1 = SFGetChar(att->fv1->b.sf,-1,pt);
     if ( att->fv2!=NULL )
-	sc2 = SFGetChar(att->fv2->sf,-1,pt);
+	sc2 = SFGetChar(att->fv2->b.sf,-1,pt);
     *pt2 = ch;
 
     pt = strchr(node->label,'@');
@@ -2089,23 +2040,23 @@ return;
 	depth = strtol(pt+1,NULL,10);
     }
     if ( size!=0 && depth!=0 ) {
-	for ( bdf1 = att->fv1->sf->bitmaps; bdf1!=NULL &&
+	for ( bdf1 = att->fv1->b.sf->bitmaps; bdf1!=NULL &&
 		(bdf1->pixelsize!=size || BDFDepth(bdf1)!=depth); bdf1=bdf1->next );
-	for ( bdf2 = att->fv2->sf->bitmaps; bdf2!=NULL &&
+	for ( bdf2 = att->fv2->b.sf->bitmaps; bdf2!=NULL &&
 		(bdf2->pixelsize!=size || BDFDepth(bdf2)!=depth); bdf2=bdf2->next );
 	if ( bdf1!=NULL && sc1!=NULL && sc1->orig_pos<bdf1->glyphcnt &&
 		bdf1->glyphs[sc1->orig_pos]!=NULL )
 	    BitmapViewCreate(bdf1->glyphs[sc1->orig_pos],bdf1,att->fv1,
-		    att->fv1->map->backmap[sc1->orig_pos]);
+		    att->fv1->b.map->backmap[sc1->orig_pos]);
 	if ( bdf2!=NULL && sc2!=NULL && sc2->orig_pos<bdf2->glyphcnt &&
 		bdf2->glyphs[sc2->orig_pos]!=NULL )
 	    BitmapViewCreate(bdf2->glyphs[sc2->orig_pos],bdf2,att->fv2,
-		    att->fv2->map->backmap[sc2->orig_pos]);
+		    att->fv2->b.map->backmap[sc2->orig_pos]);
     } else {
 	if ( sc1!=NULL )
-	    CharViewCreate(sc1,att->fv1,att->fv1->map->backmap[sc1->orig_pos]);
+	    CharViewCreate(sc1,att->fv1,att->fv1->b.map->backmap[sc1->orig_pos]);
 	if ( sc2!=NULL )
-	    CharViewCreate(sc2,att->fv2,att->fv2->map->backmap[sc2->orig_pos]);
+	    CharViewCreate(sc2,att->fv2,att->fv2->b.map->backmap[sc2->orig_pos]);
     }
 }
 
@@ -2607,7 +2558,7 @@ static void BuildFCmpNodes(struct att_dlg *att, SplineFont *sf1, SplineFont *sf2
 
     att->tables = tables = gcalloc(2,sizeof(struct node));
     att->current = tables;
-    if ( !CompareFonts(sf1,att->fv1->map,sf2,tmp,flags) && ftell(tmp)==0 ) {
+    if ( !CompareFonts(sf1,att->fv1->b.map,sf2,tmp,flags) && ftell(tmp)==0 ) {
 	tables[0].label = copy(_("No differences found"));
     } else {
 	tables[0].label = copy(_("Differences..."));
@@ -2624,7 +2575,7 @@ static void BuildFCmpNodes(struct att_dlg *att, SplineFont *sf1, SplineFont *sf2
 static void FontCmpDlg(FontView *fv1, FontView *fv2,int flags) {
     struct att_dlg *att;
     char buffer[300];
-    SplineFont *sf1 = fv1->sf, *sf2=fv2->sf;
+    SplineFont *sf1 = fv1->b.sf, *sf2=fv2->b.sf;
 
     if ( strcmp(sf1->fontname,sf2->fontname)!=0 )
 	snprintf( buffer, sizeof(buffer), _("Compare %s to %s"), sf1->fontname, sf2->fontname);
@@ -2657,7 +2608,7 @@ static void FCAskFilename(FontView *fv,int flags) {
 
     if ( filename==NULL )
 return;
-    otherfv = ViewPostscriptFont(filename);
+    otherfv = (FontView *) ViewPostscriptFont(filename);
     if ( otherfv==NULL )
 return;
     FontCmpDlg(fv,otherfv,flags);
@@ -2695,7 +2646,7 @@ static int FC_OK(GGadget *g, GEvent *e) {
 	int i, index = GGadgetGetFirstListSelectedItem(d->other);
 	FontView *fv;
 	int flags = 0;
-	for ( i=0, fv=fv_list; fv!=NULL; fv=fv->next ) {
+	for ( i=0, fv=fv_list; fv!=NULL; fv=(FontView *) (fv->b.next) ) {
 	    if ( fv==d->fv )
 	continue;
 	    if ( i==index )
@@ -2788,7 +2739,7 @@ void FontCompareDlg(FontView *fv) {
 	memset(&gcd,0,sizeof(gcd));
 
 	k=0;
-	sprintf( buffer, _("Font to compare with %.20s"), fv->sf->fontname );
+	sprintf( buffer, _("Font to compare with %.20s"), fv->b.sf->fontname );
 	label[k].text = (unichar_t *) buffer;
 	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
@@ -2805,7 +2756,7 @@ void FontCompareDlg(FontView *fv) {
 	gcd[k++].creator = GListButtonCreate;
 
 	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+24;
-	if ( fv->sf->onlybitmaps )
+	if ( fv->b.sf->onlybitmaps )
 	    gcd[k].gd.flags = gg_visible;
 	else
 	    gcd[k].gd.flags = gg_visible | gg_enabled | ((last_flags&fcf_outlines)?gg_cb_on:0);
@@ -2817,7 +2768,7 @@ void FontCompareDlg(FontView *fv) {
 	gcd[k++].creator = GCheckBoxCreate;
 
 	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
-	if ( fv->sf->onlybitmaps )
+	if ( fv->b.sf->onlybitmaps )
 	    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
 	else
 	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | ((last_flags&fcf_exact)?gg_cb_on:0);
@@ -2830,7 +2781,7 @@ void FontCompareDlg(FontView *fv) {
 	gcd[k++].creator = GRadioCreate;
 
 	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
-	if ( fv->sf->onlybitmaps )
+	if ( fv->b.sf->onlybitmaps )
 	    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
 	else
 	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | ((last_flags&fcf_exact)?0:gg_cb_on);
@@ -2843,7 +2794,7 @@ void FontCompareDlg(FontView *fv) {
 	gcd[k++].creator = GRadioCreate;
 
 	gcd[k].gd.pos.x = 15; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
-	if ( fv->sf->onlybitmaps )
+	if ( fv->b.sf->onlybitmaps )
 	    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
 	else
 	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | ((last_flags&fcf_warn_not_exact)?gg_cb_on:0);
@@ -2856,7 +2807,7 @@ void FontCompareDlg(FontView *fv) {
 	gcd[k++].creator = GCheckBoxCreate;
 
 	gcd[k].gd.pos.x = 15; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
-	if ( fv->sf->onlybitmaps )
+	if ( fv->b.sf->onlybitmaps )
 	    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
 	else
 	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | ((last_flags&fcf_warn_not_ref_exact)?gg_cb_on:0);
@@ -2869,7 +2820,7 @@ void FontCompareDlg(FontView *fv) {
 	gcd[k++].creator = GCheckBoxCreate;
 
 	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
-	if ( fv->sf->onlybitmaps )
+	if ( fv->b.sf->onlybitmaps )
 	    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
 	else
 	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | ((last_flags&fcf_hinting)?gg_cb_on:0);
@@ -2882,7 +2833,7 @@ void FontCompareDlg(FontView *fv) {
 	gcd[k++].creator = GCheckBoxCreate;
 
 	gcd[k].gd.pos.x = 15; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
-	if ( fv->sf->onlybitmaps )
+	if ( fv->b.sf->onlybitmaps )
 	    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
 	else
 	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | (((last_flags&fcf_hintmasks) && !(last_flags&fcf_hmonlywithconflicts))?gg_cb_on:0);
@@ -2895,7 +2846,7 @@ void FontCompareDlg(FontView *fv) {
 	gcd[k++].creator = GRadioCreate;
 
 	gcd[k].gd.pos.x = 15; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
-	if ( fv->sf->onlybitmaps )
+	if ( fv->b.sf->onlybitmaps )
 	    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
 	else
 	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | ((last_flags&fcf_hmonlywithconflicts)?gg_cb_on:0);
@@ -2908,7 +2859,7 @@ void FontCompareDlg(FontView *fv) {
 	gcd[k++].creator = GRadioCreate;
 
 	gcd[k].gd.pos.x = 15; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
-	if ( fv->sf->onlybitmaps )
+	if ( fv->b.sf->onlybitmaps )
 	    gcd[k].gd.flags = gg_visible ;
 	else
 	    gcd[k].gd.flags = gg_visible | gg_enabled | ((last_flags&fcf_hintmasks)?0:gg_cb_on);
@@ -2920,7 +2871,7 @@ void FontCompareDlg(FontView *fv) {
 	gcd[k++].creator = GRadioCreate;
 
 	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
-	if ( fv->sf->onlybitmaps )
+	if ( fv->b.sf->onlybitmaps )
 	    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
 	else
 	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | ((last_flags&fcf_adddiff2sf1)?gg_cb_on:0);
@@ -2933,7 +2884,7 @@ void FontCompareDlg(FontView *fv) {
 	gcd[k++].creator = GCheckBoxCreate;
 
 	gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
-	if ( fv->sf->onlybitmaps )
+	if ( fv->b.sf->onlybitmaps )
 	    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
 	else
 	    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup | ((last_flags&fcf_addmissing)?gg_cb_on:0);
@@ -2946,7 +2897,7 @@ void FontCompareDlg(FontView *fv) {
 	gcd[k++].creator = GCheckBoxCreate;
 
 	gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+16;
-	if ( fv->sf->bitmaps==NULL )
+	if ( fv->b.sf->bitmaps==NULL )
 	    gcd[k].gd.flags = gg_visible;
 	else
 	    gcd[k].gd.flags = gg_visible | gg_enabled | ((last_flags&fcf_bitmaps)?gg_cb_on:0);
@@ -3023,4 +2974,3 @@ void FontCompareDlg(FontView *fv) {
 	    GDrawProcessOneEvent(NULL);
 	TFFree(gcd[1].gd.u.list);
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

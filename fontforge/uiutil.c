@@ -37,6 +37,8 @@ extern void cygwin_conv_to_full_posix_path(const char *win,char *unx);
 extern void cygwin_conv_to_full_win32_path(const char *unx,char *win);
 #endif
 
+char *helpdir = NULL;
+
 void Protest8(char *label) {
     char buf[80];
 
@@ -109,8 +111,6 @@ int GetInt8(GWindow gw,int cid,char *name,int *err) {
     free(txt);
 return( val );
 }
-
-extern char *helpdir;
 
 #if __CygWin
 /* Try to find the default browser by looking it up in the windows registry */
@@ -339,7 +339,7 @@ return;
 #ifdef DOCDIR
 		strcpy(fullspec,DOCDIR "/");
 #elif defined(SHAREDIR)
-		strcpy(fullspec,SHAREDIR "/../doc/fontforge/");
+		strcpy(fullspec,SHAREDIR "/doc/fontforge/");
 #else
 		strcpy(fullspec,"/usr/local/share/doc/fontforge/");
 #endif
@@ -724,6 +724,24 @@ static char *UI_saveas_file(const char *title, const char *defaultfile,
 return( gwwv_save_filename(title,defaultfile,initial_filter) );
 }
 
+static void tinysleep(int microsecs) {
+    fd_set none;
+    struct timeval timeout;
+
+    FD_ZERO(&none);
+    memset(&timeout,0,sizeof(timeout));
+    timeout.tv_usec = microsecs;
+
+    select(1,&none,&none,&none,&timeout);
+}
+
+static void allow_events(void) {
+    GDrawSync(NULL);
+    tinysleep(100);
+    GDrawProcessPendingEvents(NULL);
+}
+    
+
 struct ui_interface gdraw_ui_interface = {
     UI_IError,
     gwwv_post_error,
@@ -741,11 +759,19 @@ struct ui_interface gdraw_ui_interface = {
     gwwv_progress_enable_stop,
     gwwv_progress_next,
     gwwv_progress_next_stage,
+    gwwv_progress_increment,
     gwwv_progress_change_line1,
     gwwv_progress_change_line2,
     gwwv_progress_pause_timer,
     gwwv_progress_resume_timer,
     gwwv_progress_change_stages,
-    gwwv_progress_change_total
+    gwwv_progress_change_total,
+    gwwv_progress_reset,
+
+    allow_events,
+
+    UI_TTFNameIds,
+    UI_MSLangString,
+    (int (*)(void)) Ps_StrokeFlagsDlg
 };
 

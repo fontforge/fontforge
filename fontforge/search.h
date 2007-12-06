@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2007 by George Williams */
+/* Copyright (C) 2007 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -25,12 +25,9 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "pfaeditui.h"
-
-/* Everything that is real in FontForge now lives in libfontforge */
-/* But I need a stub routine to force the load of everything else */
-
-int main(int argc, char **argv) {
-    FF_SetUiInterface(&gdraw_ui_interface);
-return( FontForgeMain(argc,argv));
-}
+extern void SDDestroy(SearchData *sd);
+extern SearchData *SDFillup(SearchData *sd, FontViewBase *fv);
+extern int SearchChar(SearchData *sv, int gid,int startafter);
+extern int _DoFindAll(SearchData *sv);
+extern int DoRpl(SearchData *sv);
+extern void SVResetPaths(SearchData *sv);

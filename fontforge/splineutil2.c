@@ -33,6 +33,16 @@
 #include <stdlib.h>
 #include "views.h"		/* For SCCharChangedUpdate */
 
+int new_em_size = 1000;
+int new_fonts_are_order2 = false;
+int loaded_fonts_same_as_new = false;
+int default_fv_row_count = 4;
+int default_fv_col_count = 16;
+int default_fv_font_size = 24;
+int default_fv_antialias=true;
+int default_fv_bbsized=true;
+int snaptoint=0;
+
 /*#define DEBUG	1*/
 
 int RealNear(real a,real b) {

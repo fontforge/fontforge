@@ -25,7 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "pfaeditui.h"
+#include "fontforgevw.h"
 
 /* Access to Raph Levien's spiro splines */
 /* See http://www.levien.com/spiro/ */

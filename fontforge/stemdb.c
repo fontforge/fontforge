@@ -984,36 +984,36 @@ static struct stem_chunk *AddToStem( struct stemdata *stem,struct pointdata *pd1
         else if ( roff > stem->rmax ) stem->rmax = roff;
     }
 
-    if ( pd1!=NULL ) {
+    if ( pd1!=NULL && !is_potential1 ) {
 	if ( is_next1==1 ) {
-	    if ( pd1->nextstem == NULL || !is_potential1 ) {
+	    if ( pd1->nextstem == NULL ) {
 		pd1->nextstem = stem;
 		pd1->next_is_l = true;
 	    }
 	} else if ( is_next1==0 ) {
-	    if ( pd1->prevstem == NULL || !is_potential1 ) {
+	    if ( pd1->prevstem == NULL ) {
 		pd1->prevstem = stem;
 		pd1->prev_is_l = true;
 	    }
 	} else if ( is_next1==2 ) {
-	    if ( pd1->bothstem == NULL || !is_potential1 ) {
+	    if ( pd1->bothstem == NULL ) {
 		pd1->bothstem = stem;
 	    }
 	}
     }
-    if ( pd2!=NULL ) {
+    if ( pd2!=NULL && !is_potential2 ) {
 	if ( is_next2==1 ) {
-	    if ( pd2->nextstem == NULL || !is_potential2 ) {
+	    if ( pd2->nextstem == NULL ) {
 		pd2->nextstem = stem;
 		pd2->next_is_l = false;		/* It's r */
 	    }
 	} else if ( is_next2==0 ) {
-	    if ( pd2->prevstem == NULL || !is_potential2 ) {
+	    if ( pd2->prevstem == NULL ) {
 		pd2->prevstem = stem;
 		pd2->prev_is_l = false;
 	    }
 	} else if ( is_next2==2 ) {
-	    if ( pd2->bothstem == NULL || !is_potential2 ) {
+	    if ( pd2->bothstem == NULL ) {
 		pd2->bothstem = stem;
 	    }
 	}

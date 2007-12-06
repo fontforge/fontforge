@@ -433,9 +433,18 @@ AC_CHECK_FUNC(snprintf, : , AC_DEFINE(_NO_SNPRINTF))
 AC_C_CONST
 AC_PATH_XTRA
 AC_SUBST(X_11LIB)
+AC_SUBST(GDRAW_LIB)
+AC_SUBST(exeOBJECTS)
+AC_SUBST(LINK_WITH_GDRAW)
 X_11LIB=-lX11
+GDRAW_LIB=libgdraw
+exeOBJECTS=fontforge_UIOBJECTS
+LINK_WITH_GDRAW=../libgdraw.la
 if test "$no_x" = "yes"; then
  X_11LIB=
+ GDRAW_LIB=
+ exeOBJECTS=fontforge_SCRIPTOBJ
+ LINK_WITH_GDRAW=
 dnl AC_DEFINE(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 
 else
@@ -592,32 +601,6 @@ AC_ARG_ENABLE(devicetables,
     fi
  ], AC_DEFINE(FONTFORGE_CONFIG_DEVICETABLES) )
 
-AC_ARG_WITH(gtk,
- [  --with-gtk   Control whether we build using the gtk toolkit (does not work yet)],
- [
-    if test "$withval" != "no" >/dev/null 2>&1 ; then
-	AC_DEFINE(FONTFORGE_CONFIG_GTK)
-	echo "Configuring with gtk does not work. Please don't use this option."
-    fi
- ], : )
-AC_ARG_WITH(gdraw,
- [  --with-gdraw   Control whether we build using fontforge's traditional toolkit (gdraw)],
- [
-    if test "$withval" != "no" >/dev/null 2>&1 ; then
-	AC_DEFINE(FONTFORGE_CONFIG_GDRAW)
-    fi
- ], : )
-AC_ARG_WITH(noui,
- [  --with-noui   Control whether we build without any ui, just the ability to run scripts],
- [
-    if test "$withval" != "no" >/dev/null 2>&1 ; then
-	AC_DEFINE(FONTFORGE_CONFIG_NO_WINDOWING_UI)
-	X_11LIB=
-	echo "This does not work. Use --without-x instead"
-	exit 1
-    fi
- ], : )
-
 test -d libs || mkdir libs
 
 AC_SUBST(WFLAGS)
@@ -706,9 +689,10 @@ fi
 
 cp $ac_confdir/Makefile.dynamic.in $ac_confdir/Makefile.in
 cp $ac_confdir/Unicode/Makefile.dynamic.in $ac_confdir/Unicode/Makefile.in
+cp $ac_confdir/gutils/Makefile.dynamic.in $ac_confdir/gutils/Makefile.in
 cp $ac_confdir/gdraw/Makefile.dynamic.in $ac_confdir/gdraw/Makefile.in
 cp $ac_confdir/fontforge/Makefile.dynamic.in $ac_confdir/fontforge/Makefile.in
-AC_OUTPUT(Makefile Unicode/Makefile gdraw/Makefile fontforge/Makefile po/Makefile plugins/Makefile systemspecific fontforge.pc $PY)
+AC_OUTPUT(Makefile Unicode/Makefile gutils/Makefile gdraw/Makefile fontforge/Makefile po/Makefile plugins/Makefile systemspecific fontforge.pc $PY)
 if test -e umap >/dev/null 2>&1 ; then
   cp $ac_confdir/umap/Makefile.dynamic.in $ac_confdir/umap/Makefile.in
   AC_OUTPUT( umap/Makefile )

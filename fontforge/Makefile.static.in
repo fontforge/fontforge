@@ -17,31 +17,36 @@ X_EXTRA_LIBS = @X_EXTRA_LIBS@
 X_PRE_LIBS = @X_PRE_LIBS@
 STATIC_LIBS = @STATIC_LIBS@
 
-fontforge_OBJECTS =  autohint.o autosave.o autowidth.o bitmapdlg.o \
- bitmapview.o bvedit.o charview.o cursors.o \
- cvaddpoints.o cvexport.o cvgetinfo.o cvhints.o cvimages.o cvknife.o \
- cvpalettes.o cvpointer.o cvruler.o cvshapes.o cvstroke.o cvtranstools.o \
- cvundoes.o dumpbdf.o dumppfa.o fontinfo.o fontview.o fvcomposit.o \
- fvfonts.o fvimportbdf.o fvmetrics.o images.o metricsview.o \
- parsepfa.o parsettf.o prefs.o psread.o namelist.o savefontdlg.o \
- sfd.o splashimage.o splinefill.o splineoverlap.o splinesave.o \
- splinesaveafm.o splinestroke.o splineutil.o splineutil2.o stamp.o \
- start.o tottf.o transform.o uiutil.o utils.o windowmenu.o  \
- zapfnomen.o othersubrs.o autotrace.o openfontdlg.o encoding.o \
- problems.o scstyles.o alignment.o parsettfbmf.o \
- macbinary.o crctab.o scripting.o freetype.o gotodlg.o search.o \
- combinations.o tilepath.o sftextfield.o displayfonts.o ikarus.o \
- cvhand.o cvfreehand.o simplifydlg.o winfonts.o tottfgpos.o tottfaat.o \
- charinfo.o splineorder2.o genttfinstrs.o ttfinstrs.o cvgridfit.o \
- cvdebug.o showatt.o kernclass.o nonlineartrans.o effects.o \
- histograms.o ttfspecial.o svg.o parsettfatt.o contextchain.o \
- macenc.o statemachine.o splinerefigure.o mm.o \
- parsettfvar.o tottfvar.o pua.o stemdb.o anchorsaway.o \
- palmfonts.o cvdgloss.o groups.o parsepdf.o @FF_EXTRA_FILES@ main.o plugins.o \
- bdfinfo.o glyphcomp.o unicoderange.o ufo.o ofl.o lookups.o sfd1.o \
- python.o featurefile.o math.o nowakowskittfinstr.o http.o spiro.o \
- bezctx_ff.o nouiutil.o scriptingdlg.o fvfontsdlg.o splinechar.o splinefont.o \
- cvexportdlg.o cvimportdlg.o encodingui.o bitmapchar.o lookupui.o
+fontforge_LIBOBJECTS = asmfpst.$O autohint.$O autosave.$O autotrace.$O autowidth.$O \
+ bezctx_ff.$O bitmapchar.$O bitmapcontrol.$O bvedit.$O clipnoui.$O crctab.$O \
+ cvexport.$O cvimages.$O cvundoes.$O dumpbdf.$O dumppfa.$O effects.$O encoding.$O \
+ featurefile.$O fontviewbase.$O freetype.$O fvcomposit.$O fvfonts.$O fvimportbdf.$O \
+ fvmetrics.$O genttfinstrs.$O glyphcomp.$O http.$O ikarus.$O lookups.$O macbinary.$O \
+ macenc.$O mathconstants.$O mm.$O namelist.$O nonlineartrans.$O noprefs.$O nouiutil.$O \
+ nowakowskittfinstr.$O ofl.$O othersubrs.$O palmfonts.$O parsepdf.$O parsepfa.$O \
+ parsettfatt.$O parsettfbmf.$O parsettf.$O parsettfvar.$O plugins.$O print.$O \
+ psread.$O pua.$O python.$O savefont.$O scripting.$O scstyles.$O search.$O \
+ sfd1.$O sfd.$O sflayout.$O spiro.$O splinechar.$O splinefill.$O \
+ splinefont.$O splineorder2.$O splineoverlap.$O splinerefigure.$O \
+ splinesaveafm.$O splinesave.$O splinestroke.$O splineutil2.$O splineutil.$O \
+ stamp.$O start.$O stemdb.$O svg.$O tottfaat.$O tottfgpos.$O tottf.$O \
+ tottfvar.$O ttfinstrs.$O ttfspecial.$O ufo.$O unicoderange.$O utils.$O \
+ winfonts.$O zapfnomen.$O
+fontforge_UIOBJECTS = alignment.o anchorsaway.o autowidthdlg.o bdfinfo.o \
+ bitmapdlg.o bitmapview.o charinfo.o charview.o clipui.o combinations.o \
+ contextchain.o cursors.o cvaddpoints.o cvdebug.o cvdgloss.o cvexportdlg.o \
+ cvfreehand.o cvgetinfo.o cvgridfit.o cvhand.o cvhints.o \
+ cvimportdlg.o cvknife.o cvpalettes.o cvpointer.o cvruler.o cvshapes.o \
+ cvstroke.o cvtranstools.o displayfonts.o effectsui.o encodingui.o \
+ fontinfo.o fontview.o freetypeui.o fvfontsdlg.o fvmetricsdlg.o gotodlg.o \
+ groups.o histograms.o images.o kernclass.o lookupui.o macencui.o \
+ math.o metricsview.o mmdlg.o nonlineartransui.o openfontdlg.o prefs.o \
+ problems.o pythonui.o savefontdlg.o scriptingdlg.o scstylesui.o \
+ searchview.o sftextfield.o showatt.o simplifydlg.o splashimage.o startui.o \
+ statemachine.o tilepath.o transform.o ttfinstrsui.o uiutil.o windowmenu.o
+fontforge_SCRIPTOBJ = startnoui.o
+fontforge_OBJECTS=$(fontforge_LIBOBJECTS) $(@exeOBJECTS@)
+
 DIFFOBJS = sfddiff.o sfd.o diffstubs.o stamp.o namelist.o pua.o
 ACORNOBJS = acorn2sfd.o sfd.o diffstubs.o psunicodenames.o stamp.o
 
@@ -51,7 +56,8 @@ _CFLAGS = -I$(top_srcdir)/inc -I$(srcdir) -I. @WFLAGS@ $(X_CFLAGS) \
 CFLAGS = @CFLAGS@ $(_CFLAGS)
 
 LDFLAGS = @LDFLAGS@
-LIBS = -L../libs $(X_LIBS) ../libs/libgdraw.a ../libs/libgunicode.a \
+LIBS = -L../libs $(X_LIBS) @LINK_WITH_GDRAW@ ../libs/libgutils.a \
+    ../libs/libgunicode.a \
     $(X_PRE_LIBS) $(X_11LIB) $(X_EXTRA_LIBS) @LIBS@ $(STATIC_LIBS) -lm
 DLIBS = ../libs/libgunicode.a @LIBS@ $(STATIC_LIBS) -lm
 

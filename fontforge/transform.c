@@ -26,7 +26,6 @@
  */
 #include "pfaeditui.h"
 #include <math.h>
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include "ustring.h"
 #include <gkeysym.h>
 
@@ -103,26 +102,6 @@ static GTextInfo transformtypes[] = {
     { (unichar_t *) N_("Skew by Ruler..."), NULL, 0, 0, (void *) 0x420, 0, 0, 0, 0, 0, 0, 0, 1 },
     { NULL }};
 
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
-void skewselect(BVTFunc *bvtf,real t) {
-    real off, bestoff;
-    int i, best;
-
-    bestoff = 10; best = 0;
-    for ( i=1; i<=10; ++i ) {
-	if (  (off = t*i-rint(t*i))<0 ) off = -off;
-	if ( off<bestoff ) {
-	    bestoff = off;
-	    best = i;
-	}
-    }
-
-    bvtf->func = bvt_skew;
-    bvtf->x = rint(t*best);
-    bvtf->y = best;
-}
-
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static int Trans_OK(GGadget *g, GEvent *e) {
     real transform[6], trans[6], t[6];
     double angle, angle2;
@@ -259,11 +238,7 @@ return(true);
 	transform[5] += base.y;
 
 	if (( transform[1]!=0 || transform[2]!=0 ) && !warned ) {
-#if defined(FONTFORGE_CONFIG_GDRAW)
 	    ff_post_notice(_("Warning"),_("After rotating or skewing a glyph you should probably apply Element->Add Extrema"));
-#elif defined(FONTFORGE_CONFIG_GTK)
-	    ff_post_notice(_("Warning"),_("After rotating or skewing a character you should probably apply Element->Add Extrema"));
-#endif
 	    warned = true;
 	}
 	(td->transfunc)(td->userdata,transform,origin,bvts,
@@ -822,4 +797,3 @@ void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *
 	GDrawProcessOneEvent(NULL);
     GDrawSetVisible(gw,false);
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

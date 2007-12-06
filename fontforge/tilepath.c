@@ -728,7 +728,6 @@ static void TileIt(SplineSet **head,struct tiledata *td,
     TileSplineSets(td,head,order2);
 }
 
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 static enum tilepos tilepos=tp_center;
 static enum tilescale tilescale=ts_tilescale;
 static int include_whitespace[4] = {0,0,0,0};
@@ -828,7 +827,7 @@ static void TPD_DoClose(struct cvcontainer *cvc) {
 }
 
 static int tpd_sub_e_h(GWindow gw, GEvent *event) {
-    TilePathDlg *tpd = (TilePathDlg *) ((CharView *) GDrawGetUserData(gw))->container;
+    TilePathDlg *tpd = (TilePathDlg *) ((CharViewBase *) GDrawGetUserData(gw))->container;
 
     switch ( event->type ) {
       case et_resize:
@@ -843,7 +842,7 @@ return( true );
 }
 
 static int tpd_e_h(GWindow gw, GEvent *event) {
-    TilePathDlg *tpd = (TilePathDlg *) ((CharView *) GDrawGetUserData(gw))->container;
+    TilePathDlg *tpd = (TilePathDlg *) ((CharViewBase *) GDrawGetUserData(gw))->container;
     int i;
 
     switch ( event->type ) {
@@ -877,7 +876,7 @@ return( true );
 
 static int TilePathD_Cancel(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	TilePathDlg *tpd = (TilePathDlg *) (((CharView *) GDrawGetUserData(GGadgetGetWindow(g)))->container);
+	TilePathDlg *tpd = (TilePathDlg *) (((CharViewBase *) GDrawGetUserData(GGadgetGetWindow(g)))->container);
 	TPD_DoClose(&tpd->base);
     }
 return( true );
@@ -894,7 +893,7 @@ return( bb.maxy==bb.miny );
 
 static int TilePathD_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	TilePathDlg *tpd = (TilePathDlg *) (((CharView *) GDrawGetUserData(GGadgetGetWindow(g)))->container);
+	TilePathDlg *tpd = (TilePathDlg *) (((CharViewBase *) GDrawGetUserData(GGadgetGetWindow(g)))->container);
 	struct tiledata *td = tpd->td;
 
 	if ( GGadgetIsChecked(GWidgetGetControl(tpd->gw,CID_Center)) )
@@ -949,14 +948,19 @@ static int TPD_Can_Open(struct cvcontainer *cvc) {
 return( false );
 }
 
+static SplineFont *SF_Of_TPD(struct cvcontainer *foo) {
+return( NULL );
+}
+
 struct cvcontainer_funcs tilepath_funcs = {
     cvc_tilepath,
-    (void (*) (struct cvcontainer *cvc,CharView *cv)) TPDMakeActive,
-    (void (*) (struct cvcontainer *cvc,GEvent *)) TPDChar,
+    (void (*) (struct cvcontainer *cvc,CharViewBase *cv)) TPDMakeActive,
+    (void (*) (struct cvcontainer *cvc,void *)) TPDChar,
     TPD_Can_Navigate,
     NULL,
     TPD_Can_Open,
-    TPD_DoClose
+    TPD_DoClose,
+    SF_Of_TPD
 };
 
 
@@ -984,13 +988,13 @@ static void TPDInit(TilePathDlg *tpd,SplineFont *sf) {
 #endif
 	tpd->chars[i] = msc;
 
-	mcv->sc = msc;
-	mcv->layerheads[dm_fore] = &msc->layers[ly_fore];
-	mcv->layerheads[dm_back] = &msc->layers[ly_back];
-	mcv->layerheads[dm_grid] = NULL;
+	mcv->b.sc = msc;
+	mcv->b.layerheads[dm_fore] = &msc->layers[ly_fore];
+	mcv->b.layerheads[dm_back] = &msc->layers[ly_back];
+	mcv->b.layerheads[dm_grid] = NULL;
 	msc->layers[ly_fore].splines = last_tiles[i];
-	mcv->drawmode = dm_fore;
-	mcv->container = (struct cvcontainer *) tpd;
+	mcv->b.drawmode = dm_fore;
+	mcv->b.container = (struct cvcontainer *) tpd;
 	mcv->inactive = i!=0;
     }
     tpd->dummy_sf.glyphs = tpd->chars;
@@ -1004,13 +1008,13 @@ static void TPDInit(TilePathDlg *tpd,SplineFont *sf) {
     tpd->dummy_sf.order2 = sf->order2;
     tpd->dummy_sf.anchor = NULL;
 
-    tpd->dummy_sf.fv = &tpd->dummy_fv;
-    tpd->dummy_fv.sf = &tpd->dummy_sf;
-    tpd->dummy_fv.selected = tpd->sel;
+    tpd->dummy_sf.fv = (FontViewBase *) &tpd->dummy_fv;
+    tpd->dummy_fv.b.sf = &tpd->dummy_sf;
+    tpd->dummy_fv.b.selected = tpd->sel;
     tpd->dummy_fv.cbw = tpd->dummy_fv.cbh = default_fv_font_size+1;
     tpd->dummy_fv.magnify = 1;
 
-    tpd->dummy_fv.map = &tpd->dummy_map;
+    tpd->dummy_fv.b.map = &tpd->dummy_map;
     tpd->dummy_map.map = tpd->map;
     tpd->dummy_map.backmap = tpd->backmap;
     tpd->dummy_map.enccount = tpd->dummy_map.encmax = tpd->dummy_map.backmax = 4;
@@ -1267,12 +1271,12 @@ void CVTile(CharView *cv) {
     if ( anyrefs || anyimages || anyattach )
 return;
 
-    if ( !TileAsk(&td,cv->sc->parent))
+    if ( !TileAsk(&td,cv->b.sc->parent))
 return;
 
-    CVPreserveState(cv);
-    TileIt(&cv->layerheads[cv->drawmode]->splines,&td, !anypoints,cv->sc->parent->order2);
-    CVCharChangedUpdate(cv);
+    CVPreserveState((CharViewBase *) cv);
+    TileIt(&cv->b.layerheads[cv->b.drawmode]->splines,&td, !anypoints,cv->b.sc->parent->order2);
+    CVCharChangedUpdate(&cv->b);
     TDFree(&td);
     cv->lastselpt = NULL;
 }
@@ -1297,28 +1301,27 @@ void FVTile(FontView *fv) {
     SplineChar *sc;
     int i, gid;
 
-    for ( i=0; i<fv->map->enccount; ++i )
-	if ( fv->selected[i] && (gid=fv->map->map[i])!=-1 &&
-		(sc=fv->sf->glyphs[gid])!=NULL && sc->layers[ly_fore].splines!=NULL )
+    for ( i=0; i<fv->b.map->enccount; ++i )
+	if ( fv->b.selected[i] && (gid=fv->b.map->map[i])!=-1 &&
+		(sc=fv->b.sf->glyphs[gid])!=NULL && sc->layers[ly_fore].splines!=NULL )
     break;
-    if ( i==fv->map->enccount )
+    if ( i==fv->b.map->enccount )
 return;
 
-    if ( !TileAsk(&td,fv->sf))
+    if ( !TileAsk(&td,fv->b.sf))
 return;
 
-    SFUntickAll(fv->sf);
-    for ( i=0; i<fv->map->enccount; ++i )
-	if ( fv->selected[i] && (gid=fv->map->map[i])!=-1 &&
-		(sc=fv->sf->glyphs[gid])!=NULL && !sc->ticked &&
+    SFUntickAll(fv->b.sf);
+    for ( i=0; i<fv->b.map->enccount; ++i )
+	if ( fv->b.selected[i] && (gid=fv->b.map->map[i])!=-1 &&
+		(sc=fv->b.sf->glyphs[gid])!=NULL && !sc->ticked &&
 		sc->layers[ly_fore].splines!=NULL ) {
 	    sc->ticked = true;
 	    SCPreserveState(sc,false);
-	    TileIt(&sc->layers[ly_fore].splines,&td, true, fv->sf->order2);
+	    TileIt(&sc->layers[ly_fore].splines,&td, true, fv->b.sf->order2);
 	    SCCharChangedUpdate(sc);
 	}
     TDFree(&td);
 }
 
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 #endif 		/* FONTFORGE_CONFIG_TILEPATH */

@@ -25,7 +25,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "pfaeditui.h"
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include "ustring.h"
 
 #define CID_Extrema	1000
@@ -412,4 +411,3 @@ return( false );
     set_as_default = sim.set_as_default;
 return( true );
 }
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */

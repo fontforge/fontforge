@@ -24,14 +24,12 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include "pfaeditui.h"
+#include "fontforgevw.h"
 #include <math.h>
 #include "psfont.h"
 #include "ustring.h"
 #include "utype.h"
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 #include "views.h"		/* for FindSel structure */
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif
@@ -3030,9 +3028,7 @@ void SCRefToSplines(SplineChar *sc,RefChar *rf) {
     int layer;
 
     if ( sc->parent->multilayer ) {
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	Layer *old = sc->layers;
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
 	sc->layers = grealloc(sc->layers,(sc->layer_cnt+rf->layer_cnt)*sizeof(Layer));
 	for ( layer = 0; layer<rf->layer_cnt; ++layer ) {
 	    LayerDefault(&sc->layers[sc->layer_cnt+layer]);
@@ -3050,9 +3046,7 @@ void SCRefToSplines(SplineChar *sc,RefChar *rf) {
 	    sc->layers[sc->layer_cnt+layer].fillfirst = rf->layers[layer].fillfirst;
 	}
 	sc->layer_cnt += rf->layer_cnt;
-#ifndef FONTFORGE_CONFIG_NO_WINDOWING_UI
 	SCMoreLayers(sc,old);
-#endif		/* FONTFORGE_CONFIG_NO_WINDOWING_UI */
     } else {
 #else
     {
@@ -5193,6 +5187,157 @@ void PSTFree(PST *pst) {
     }
 }
 
+void FPSTRuleContentsFree(struct fpst_rule *r, enum fpossub_format format) {
+    int j;
+
+    switch ( format ) {
+      case pst_glyphs:
+	free(r->u.glyph.names);
+	free(r->u.glyph.back);
+	free(r->u.glyph.fore);
+      break;
+      case pst_class:
+	free(r->u.class.nclasses);
+	free(r->u.class.bclasses);
+	free(r->u.class.fclasses);
+      break;
+      case pst_reversecoverage:
+	free(r->u.rcoverage.replacements);
+      case pst_coverage:
+	for ( j=0 ; j<r->u.coverage.ncnt ; ++j )
+	    free(r->u.coverage.ncovers[j]);
+	free(r->u.coverage.ncovers);
+	for ( j=0 ; j<r->u.coverage.bcnt ; ++j )
+	    free(r->u.coverage.bcovers[j]);
+	free(r->u.coverage.bcovers);
+	for ( j=0 ; j<r->u.coverage.fcnt ; ++j )
+	    free(r->u.coverage.fcovers[j]);
+	free(r->u.coverage.fcovers);
+      break;
+    }
+    free(r->lookups);
+}
+
+void FPSTRulesFree(struct fpst_rule *r, enum fpossub_format format, int rcnt) {
+    int i;
+    for ( i=0; i<rcnt; ++i )
+	FPSTRuleContentsFree(&r[i],format);
+    free(r);
+}
+
+static struct fpst_rule *RulesCopy(struct fpst_rule *from, int cnt,
+	enum fpossub_format format ) {
+    int i, j;
+    struct fpst_rule *to, *f, *t;
+
+    if ( cnt==0 )
+return( NULL );
+
+    to = gcalloc(cnt,sizeof(struct fpst_rule));
+    for ( i=0; i<cnt; ++i ) {
+	f = from+i; t = to+i;
+	switch ( format ) {
+	  case pst_glyphs:
+	    t->u.glyph.names = copy(f->u.glyph.names);
+	    t->u.glyph.back = copy(f->u.glyph.back);
+	    t->u.glyph.fore = copy(f->u.glyph.fore);
+	  break;
+	  case pst_class:
+	    t->u.class.ncnt = f->u.class.ncnt;
+	    t->u.class.bcnt = f->u.class.bcnt;
+	    t->u.class.fcnt = f->u.class.fcnt;
+	    t->u.class.nclasses = galloc( f->u.class.ncnt*sizeof(uint16));
+	    memcpy(t->u.class.nclasses,f->u.class.nclasses,
+		    f->u.class.ncnt*sizeof(uint16));
+	    if ( t->u.class.bcnt!=0 ) {
+		t->u.class.bclasses = galloc( f->u.class.bcnt*sizeof(uint16));
+		memcpy(t->u.class.bclasses,f->u.class.bclasses,
+			f->u.class.bcnt*sizeof(uint16));
+	    }
+	    if ( t->u.class.fcnt!=0 ) {
+		t->u.class.fclasses = galloc( f->u.class.fcnt*sizeof(uint16));
+		memcpy(t->u.class.fclasses,f->u.class.fclasses,
+			f->u.class.fcnt*sizeof(uint16));
+	    }
+	  break;
+	  case pst_reversecoverage:
+	    t->u.rcoverage.replacements = copy(f->u.rcoverage.replacements);
+	  case pst_coverage:
+	    t->u.coverage.ncnt = f->u.coverage.ncnt;
+	    t->u.coverage.bcnt = f->u.coverage.bcnt;
+	    t->u.coverage.fcnt = f->u.coverage.fcnt;
+	    t->u.coverage.ncovers = galloc( f->u.coverage.ncnt*sizeof(char *));
+	    for ( j=0; j<t->u.coverage.ncnt; ++j )
+		t->u.coverage.ncovers[j] = copy(f->u.coverage.ncovers[j]);
+	    if ( t->u.coverage.bcnt!=0 ) {
+		t->u.coverage.bcovers = galloc( f->u.coverage.bcnt*sizeof(char *));
+		for ( j=0; j<t->u.coverage.bcnt; ++j )
+		    t->u.coverage.bcovers[j] = copy(f->u.coverage.bcovers[j]);
+	    }
+	    if ( t->u.coverage.fcnt!=0 ) {
+		t->u.coverage.fcovers = galloc( f->u.coverage.fcnt*sizeof(char *));
+		for ( j=0; j<t->u.coverage.fcnt; ++j )
+		    t->u.coverage.fcovers[j] = copy(f->u.coverage.fcovers[j]);
+	    }
+	  break;
+	}
+	if ( f->lookup_cnt!=0 ) {
+	    t->lookup_cnt = f->lookup_cnt;
+	    t->lookups = galloc(t->lookup_cnt*sizeof(struct seqlookup));
+	    memcpy(t->lookups,f->lookups,t->lookup_cnt*sizeof(struct seqlookup));
+	}
+    }
+return( to );
+}
+
+FPST *FPSTCopy(FPST *fpst) {
+    FPST *nfpst;
+    int i;
+
+    nfpst = chunkalloc(sizeof(FPST));
+    *nfpst = *fpst;
+    nfpst->next = NULL;
+    if ( nfpst->nccnt!=0 ) {
+	nfpst->nclass = galloc(nfpst->nccnt*sizeof(char *));
+	for ( i=0; i<nfpst->nccnt; ++i )
+	    nfpst->nclass[i] = copy(fpst->nclass[i]);
+    }
+    if ( nfpst->bccnt!=0 ) {
+	nfpst->bclass = galloc(nfpst->bccnt*sizeof(char *));
+	for ( i=0; i<nfpst->bccnt; ++i )
+	    nfpst->bclass[i] = copy(fpst->bclass[i]);
+    }
+    if ( nfpst->fccnt!=0 ) {
+	nfpst->fclass = galloc(nfpst->fccnt*sizeof(char *));
+	for ( i=0; i<nfpst->fccnt; ++i )
+	    nfpst->fclass[i] = copy(fpst->fclass[i]);
+    }
+    nfpst->rules = RulesCopy(fpst->rules,fpst->rule_cnt,fpst->format);
+return( nfpst );
+}
+
+void FPSTFree(FPST *fpst) {
+    FPST *next;
+    int i;
+
+    while ( fpst!=NULL ) {
+	next = fpst->next;
+	for ( i=0; i<fpst->nccnt; ++i )
+	    free(fpst->nclass[i]);
+	for ( i=0; i<fpst->bccnt; ++i )
+	    free(fpst->bclass[i]);
+	for ( i=0; i<fpst->fccnt; ++i )
+	    free(fpst->fclass[i]);
+	free(fpst->nclass); free(fpst->bclass); free(fpst->fclass);
+	for ( i=0; i<fpst->rule_cnt; ++i ) {
+	    FPSTRuleContentsFree( &fpst->rules[i],fpst->format );
+	}
+	free(fpst->rules);
+	chunkfree(fpst,sizeof(FPST));
+	fpst = next;
+    }
+}
+
 void MinimumDistancesFree(MinimumDistance *md) {
     MinimumDistance *next;
 
@@ -5689,7 +5834,7 @@ return;
     free(sf->cidregistry);
     free(sf->ordering);
     MacFeatListFree(sf->features);
-    /* We don't free the EncMap. That field is only a temporary pointer. Let the FontView free it, that's where it really lives */
+    /* We don't free the EncMap. That field is only a temporary pointer. Let the FontViewBase free it, that's where it really lives */
     SplinePointListsFree(sf->grid.splines);
     AnchorClassesFree(sf->anchor);
     TtfTablesFree(sf->ttf_tables);

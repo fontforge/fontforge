@@ -18,13 +18,16 @@ INSTALL_DATA = @INSTALL_DATA@
 
 all: fontforge
 
-libs: libgunicode libgdraw
+libs: libgunicode libgutils @GDRAW_LIB@
 
-fontforge: libgunicode libgdraw pos
+fontforge: libgunicode libgutils @GDRAW_LIB@ pos
 	( cd fontforge ; $(MAKE) )
 
 libgunicode:
 	( cd Unicode ; $(MAKE) )
+
+libgutils:
+	( cd gutils ; $(MAKE) )
 
 libgdraw:
 	( cd gdraw ; $(MAKE) )
@@ -36,6 +39,7 @@ pos:
 clean:
 	( cd fontforge ; $(MAKE) clean )
 	( cd Unicode ; $(MAKE) clean )
+	( cd gutils ; $(MAKE) clean )
 	( cd gdraw ; $(MAKE) clean )
 	( cd plugins ; $(MAKE) clean )
 	-( cd po ; rm *.mo )
@@ -45,6 +49,7 @@ clean:
 distclean cleaner:
 	( cd fontforge ; $(MAKE) distclean )
 	( cd Unicode ; $(MAKE) distclean )
+	( cd gutils ; $(MAKE) distclean )
 	( cd gdraw ; $(MAKE) distclean )
 	( cd plugins ; $(MAKE) distclean )
 	-( cd po ; rm *.mo Makefile* )
@@ -57,9 +62,11 @@ install_libs: libs
 	mkdir -p $(DESTDIR)$(libdir)
 	#-rm $(DESTDIR)$(libdir)/libgdraw.so* $(DESTDIR)$(libdir)/libgunicode.so.*
 	$(LIBTOOL) --mode=install $(INSTALL) -c libgunicode.la $(DESTDIR)$(libdir)/libgunicode.la
-	$(LIBTOOL) --mode=install $(INSTALL) -c libgdraw.la $(DESTDIR)$(libdir)/libgdraw.la
+	$(LIBTOOL) --mode=install $(INSTALL) -c libgutils.la $(DESTDIR)$(libdir)/libgutils.la
+#We don't build gdraw if no X
+	if test -r libgdraw.la ; then $(LIBTOOL) --mode=install $(INSTALL) -c libgdraw.la $(DESTDIR)$(libdir)/libgdraw.la ; fi
 #We don't always build libfontforge
-	-$(LIBTOOL) --mode=install $(INSTALL) -c libfontforge.la $(DESTDIR)$(libdir)/libfontforge.la
+	if test -r libfontforge.la ; then $(LIBTOOL) --mode=install $(INSTALL) -c libfontforge.la $(DESTDIR)$(libdir)/libfontforge.la ; fi
 	$(LIBTOOL) --mode=finish $(DESTDIR)$(libdir)
 	mkdir -p $(DESTDIR)$(libdir)/pkgconfig
 	$(INSTALL_DATA) fontforge.pc $(DESTDIR)$(libdir)/pkgconfig
@@ -123,6 +130,7 @@ uninstall:
 	-rm $(DESTDIR)$(mandir)/man1/sfddiff.1
 	-rm $(DESTDIR)$(mandir)/man1/fontlint.1
 	-rm $(DESTDIR)$(libdir)/libgdraw.*
+	-rm $(DESTDIR)$(libdir)/libgutils.*
 	-rm $(DESTDIR)$(libdir)/libgunicode.*
 	-rm $(DESTDIR)$(libdir)/libfontforge.*
 	-rm $(DESTDIR)$(sharedir)/*.cidmap

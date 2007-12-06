@@ -16,13 +16,16 @@ INSTALL_DATA = @INSTALL_DATA@
 
 all: fontforge
 
-libs: libgunicode libgdraw
+libs: libgunicode @GDRAW_LIB@
 
-fontforge: libgunicode libgdraw pos
+fontforge: libgunicode libgutils @GDRAW_LIB@ pos
 	( cd fontforge ; $(MAKE) )
 
 libgunicode:
 	( cd Unicode ; $(MAKE) )
+
+libgutils:
+	( cd gutils ; $(MAKE) )
 
 libgdraw:
 	( cd gdraw ; $(MAKE) )
@@ -34,12 +37,14 @@ pos:
 clean:
 	( cd fontforge ; $(MAKE) clean )
 	( cd Unicode ; $(MAKE) clean )
+	( cd gutils ; $(MAKE) clean )
 	( cd gdraw ; $(MAKE) clean )
 	( cd plugins ; $(MAKE) clean )
 
 distclean cleaner:
 	( cd fontforge ; $(MAKE) distclean )
 	( cd Unicode ; $(MAKE) distclean )
+	( cd gutils ; $(MAKE) distclean )
 	( cd gdraw ; $(MAKE) distclean )
 	( cd plugins ; $(MAKE) clean )
 	-rm Makefile config.cache config.log config.status libtool fontforge.pc systemspecific

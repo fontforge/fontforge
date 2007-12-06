@@ -660,7 +660,7 @@ return( 0 );
 return( ret );
 }
 
-#include "pfaeditui.h"
+#include "fontforgevw.h"
 
 /* From wine tools fnt2fon.c by Huw Davies, modified with permission */
 typedef unsigned short	WORD;

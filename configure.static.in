@@ -305,9 +305,18 @@ AC_CHECK_FUNC(snprintf, : , AC_DEFINE(_NO_SNPRINTF))
 AC_C_CONST
 AC_PATH_XTRA
 AC_SUBST(X_11LIB)
+AC_SUBST(GDRAW_LIB)
+AC_SUBST(exeOBJECTS)
+AC_SUBST(LINK_WITH_GDRAW)
 X_11LIB=-lX11
+GDRAW_LIB=libgdraw
+exeOBJECTS=fontforge_UIOBJECTS
+LINK_WITH_GDRAW=../lib/libgdraw.a
 if test "$no_x" = "yes"; then
  X_11LIB=
+ GDRAW_LIB=
+ exeOBJECTS=fontforge_SCRIPTOBJ
+ LINK_WITH_GDRAW=
 else
  dnl AC_CHECK_HEADER("X11/extensions/XInput.h", : ,AC_DEFINE(_NO_XINPUT),)
  dnl AC_CHECK_HEADER("X11/extensions/XI.h", : ,AC_DEFINE(_NO_XINPUT),)
@@ -470,8 +479,9 @@ fi
 cp $ac_confdir/Makefile.static.in $ac_confdir/Makefile.in
 cp $ac_confdir/Unicode/Makefile.static.in $ac_confdir/Unicode/Makefile.in
 cp $ac_confdir/gdraw/Makefile.static.in $ac_confdir/gdraw/Makefile.in
+cp $ac_confdir/gutils/Makefile.static.in $ac_confdir/gutils/Makefile.in
 cp $ac_confdir/fontforge/Makefile.static.in $ac_confdir/fontforge/Makefile.in
-AC_OUTPUT(Makefile Unicode/Makefile gdraw/Makefile fontforge/Makefile po/Makefile systemspecific fontforge.pc )
+AC_OUTPUT(Makefile Unicode/Makefile gutils/Makefile gdraw/Makefile fontforge/Makefile po/Makefile systemspecific fontforge.pc )
 if test -e umap >/dev/null 2>&1 ; then
   cp $ac_confdir/umap/Makefile.static.in $ac_confdir/umap/Makefile.in
   AC_OUTPUT( umap/Makefile )

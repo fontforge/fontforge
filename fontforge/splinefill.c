@@ -33,7 +33,7 @@
 #include "splinefont.h"
 #include "edgelist.h"
 
-uint32 default_background = 0xffffff;		/* white */
+Color default_background = 0xffffff;		/* white */
 
 static void HintsFree(Hints *h) {
     Hints *hnext;
@@ -1196,10 +1196,6 @@ static void SetByteMapToGrey(uint8 *bytemap,EdgeList *es,Layer *layer,Layer *alt
     }
 }
 
-#ifdef FONTFORGE_CONFIG_GTK
-static void FillImages(uint8 *bytemap,EdgeList *es,ImageList *img,Layer *layer,Layer *alt) {
-}
-#else
 static void FillImages(uint8 *bytemap,EdgeList *es,ImageList *img,Layer *layer,Layer *alt) {
     uint32 fillcol, col;
     int grey,i,j,x1,x2,y1,y2,jj,ii;
@@ -1260,7 +1256,6 @@ static void FillImages(uint8 *bytemap,EdgeList *es,ImageList *img,Layer *layer,L
 	img = img->next;
     }
 }
-#endif
 
 static void ProcessLayer(uint8 *bytemap,EdgeList *es,Layer *layer,
 	Layer *alt) {
