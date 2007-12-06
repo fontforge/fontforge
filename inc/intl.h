@@ -32,6 +32,16 @@
 # define P_(str1,str_non1,n)	((n)==1?str1:str_non1)
 # define U_(str)		(str)
 
+# ifdef bindtextdomain
+#  undef bindtextdomain
+# endif
+# ifdef bind_textdomain_codeset
+#  undef bind_textdomain_codeset
+# endif
+# ifdef textdomain
+#  undef textdomain
+# endif
+
 # define bindtextdomain(domain,dir)
 # define bind_textdomain_codeset(domain,enc)
 # define textdomain(domain)
