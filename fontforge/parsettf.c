@@ -536,6 +536,7 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	  case CHR('O','S','/','2'):
 	    info->os2_start = offset;
 	  break;
+	  case CHR('C','I','D',' '):
 	  case CHR('T','Y','P','1'):
 	    info->typ1_start = offset;
 	    info->typ1_length = length;
@@ -3346,13 +3347,24 @@ static int readtyp1glyphs(FILE *ttf,struct ttfinfo *info) {
     if ( fd!=NULL ) {
 	SplineFont *sf = SplineFontFromPSFont(fd);
 	PSFontFree(fd);
-	info->chars = sf->glyphs;
-	info->glyph_cnt = sf->glyphcnt;
 	info->emsize = (sf->ascent+sf->descent);
 	info->ascent = sf->ascent;
 	info->descent = sf->descent;
-	sf->glyphs = NULL;
-	sf->glyphcnt = 0;
+	if ( sf->subfontcnt!=0 ) {
+	    info->subfontcnt = sf->subfontcnt;
+	    info->subfonts = sf->subfonts;
+	    info->cidregistry = copy(sf->cidregistry);
+	    info->ordering = copy(sf->ordering);
+	    info->supplement = sf->supplement;
+	    info->cidfontversion = sf->cidversion;
+	    sf->subfonts = NULL;
+	    sf->subfontcnt = 0;
+	} else {
+	    info->chars = sf->glyphs;
+	    info->glyph_cnt = sf->glyphcnt;
+	    sf->glyphs = NULL;
+	    sf->glyphcnt = 0;
+	}
 	SplineFontFree(sf);
 return( true );
     }
