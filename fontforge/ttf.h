@@ -797,6 +797,7 @@ extern int ttf_fftm_dump(SplineFont *sf,struct alltabs *at);
 extern void otf_dump_math(struct alltabs *at, SplineFont *sf);
 extern void otf_read_math(FILE *ttf,struct ttfinfo *info);
 extern void otf_read_math_used(FILE *ttf,struct ttfinfo *info);
+extern void GuessNamesFromMATH(FILE *ttf,struct ttfinfo *info);
 
     /* Parsing advanced typography */
 extern void readmacfeaturemap(FILE *ttf,struct ttfinfo *info);

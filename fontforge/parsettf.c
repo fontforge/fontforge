@@ -4601,6 +4601,8 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
     break;
     if ( i>=0 && info->gsub_start!=0 )
 	GuessNamesFromGSUB(ttf,info);
+    if ( i>=0 && info->math_start!=0 )
+	GuessNamesFromMATH(ttf,info);
 
     for ( i=0; i<info->glyph_cnt; ++i ) {
 	/* info->chars[i] can be null in some TTC files */
