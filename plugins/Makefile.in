@@ -27,7 +27,7 @@ PLUGINS = gb12345.la
 all: $(PLUGINS)
 
 clean:
-	-rm -rf .libs *.la
+	-rm -rf .libs *.la *.lo
 
 distclean: clean
 	-rm -rf Makefile
@@ -42,4 +42,5 @@ install: all
 	mkdir -p $(DESTDIR)$(plugindir)
 	-mv .libs/*.{so,dll,dylib,lai}* $(DESTDIR)$(plugindir)
 	mv *.la $(DESTDIR)$(plugindir)
+
 
