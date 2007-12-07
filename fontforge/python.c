@@ -6673,7 +6673,6 @@ static PyObject *fontiter_iternextkey(fontiterobject *di) {
 	SplineChar *sc = SDFindNext(di->sv);
 	if ( sc!=NULL )
 return( PySC_From_SC_I( sc ) );
-    } else if ( !di->byselection ) {
     } else switch ( di->byselection ) {
       case 0: {
 	SplineFont *sf = di->sf;
