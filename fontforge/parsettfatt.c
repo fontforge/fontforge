@@ -5007,7 +5007,8 @@ static struct glyphvariants *ttf_math_read_gvtable(FILE *ttf,struct ttfinfo *inf
 	    for ( i=0; i<vcnt; ++i ) {
 		int gid = getushort(ttf);
 		/* sizes[i] = */ getushort(ttf);
-		if ( basesc!=NULL && gid>=0 && gid<info->glyph_cnt &&
+		if ( basesc!=NULL && basesc->name!=NULL &&
+			gid>=0 && gid<info->glyph_cnt &&
 			(sc = info->chars[gid])!=NULL && sc->name==NULL ) {
 		    snprintf(buffer,sizeof(buffer),"%.30s.%csize%d",
 			    basesc->name, isv?'v':'h', i);
@@ -5056,7 +5057,8 @@ static struct glyphvariants *ttf_math_read_gvtable(FILE *ttf,struct ttfinfo *inf
 		if ( gid<info->glyph_cnt )
 		    info->inuse[gid] = true;
 	    } else if ( justinuse==git_findnames ) {
-		if ( basesc!=NULL && gid>=0 && gid<info->glyph_cnt &&
+		if ( basesc!=NULL && basesc->name!=NULL &&
+			gid>=0 && gid<info->glyph_cnt &&
 			(sc = info->chars[gid])!=NULL && sc->name==NULL ) {
 		    if ( pcnt==1 )
 			ext = "repeat";

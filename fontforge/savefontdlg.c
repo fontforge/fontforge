@@ -1411,7 +1411,7 @@ return;
 	    res = AskResolution(oldbitmapstate,d->sf->bitmaps);
 	    ff_progress_resume_timer();
 	}
-	if ( res==-2 )
+	if ( res!=-2 )
 	    err = _DoSave(d->sf,temp,sizes,res,d->map, wernersfdname );
 	free(wernersfdname);
     } else
@@ -1519,25 +1519,31 @@ static int GFD_Cancel(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static void GFD_FigureWhich(struct gfc_data *d) {
+    int fs = GGadgetGetFirstListSelectedItem(d->pstype);
+    int bf = GGadgetGetFirstListSelectedItem(d->bmptype);
+    int which;
+    if ( fs==ff_none )
+	which = 1;		/* Some bitmaps get stuffed int ttf files */
+    else if ( fs<=ff_cffcid )
+	which = 0;		/* Postscript options */
+    else if ( fs<=ff_ttfdfont )
+	which = 1;		/* truetype options */ /* type42 also */
+    else
+	which = 2;		/* opentype options */
+    if ( bf == bf_otb && which==0 )
+	which = 3;		/* postscript options with opentype bitmap options */
+    d->sod_which = which;
+}
+
 static int GFD_Options(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	int fs = GGadgetGetFirstListSelectedItem(d->pstype);
-	int bf = GGadgetGetFirstListSelectedItem(d->bmptype);
 	int iscid = fs==ff_cid || fs==ff_cffcid || fs==ff_otfcid ||
 		fs==ff_otfciddfont || fs==ff_type42cid;
-	int which;
-	if ( fs==ff_none )
-	    which = 1;		/* Some bitmaps get stuffed int ttf files */
-	else if ( fs<=ff_cffcid )
-	    which = 0;		/* Postscript options */
-	else if ( fs<=ff_ttfdfont )
-	    which = 1;		/* truetype options */ /* type42 also */
-	else
-	    which = 2;		/* opentype options */
-	if ( bf == bf_otb && which==0 )
-	    which = 3;		/* postscript options with opentype bitmap options */
-	SaveOptionsDlg(d,which,iscid);
+	GFD_FigureWhich(d);
+	SaveOptionsDlg(d,d->sod_which,iscid);
     }
 return( true );
 }
@@ -2681,6 +2687,8 @@ return( 0 );
     d.ttf_flags = old_ttf_flags;
     d.otf_flags = old_otf_flags;
     d.psotb_flags = old_ps_flags | (old_psotb_flags&~ps_flag_mask);
+
+    GFD_FigureWhich(&d);
 
     GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
