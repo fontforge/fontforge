@@ -78,6 +78,7 @@ typedef struct ff_contour {
     short is_quadratic, closed;		/* bit flags, but access to short is faster */
     spiro_cp *spiros;
     int spiro_cnt;
+    char *name;
 } PyFF_Contour;
 static PyTypeObject PyFF_ContourType;
 
@@ -1205,6 +1206,7 @@ static void PyFFContour_ClearSpiros(PyFF_Contour *self) {
 	free(self->spiros);
     self->spiros = NULL;
     self->spiro_cnt = 0;
+    free(self->name);
 }
 
 static PyObject *PyFFContour_new(PyTypeObject *type, PyObject *args, PyObject *kwds) {
@@ -1215,6 +1217,8 @@ static PyObject *PyFFContour_new(PyTypeObject *type, PyObject *args, PyObject *k
 	self->points = NULL;
 	self->pt_cnt = self->pt_max = 0;
 	self->is_quadratic = self->closed = 0;
+	self->spiro_cnt = 0;
+	self->name = NULL;
     }
 
 return (PyObject *)self;
@@ -1446,6 +1450,23 @@ return( -1 );
 return( 0 );
 }
 
+static PyObject *PyFF_Contour_get_name(PyFF_Contour *self,void *closure) {
+    if ( self->name==NULL )
+Py_RETURN_NONE;
+
+return( Py_BuildValue("s", self->name ));
+}
+
+static int PyFF_Contour_set_name(PyFF_Contour *self,PyObject *value,void *closure) {
+
+    free(self->name);
+    if ( value==Py_None )
+	self->name = NULL;
+    else
+	self->name = PyString_AsString(value);
+return( 0 );
+}
+
 static PyGetSetDef PyFFContour_getset[] = {
     {"is_quadratic",
 	 (getter)PyFF_Contour_get_is_quadratic, (setter)PyFF_Contour_set_is_quadratic,
@@ -1456,6 +1477,13 @@ static PyGetSetDef PyFFContour_getset[] = {
     {"spiros",
 	 (getter)PyFF_Contour_get_spiros, (setter)PyFF_Contour_set_spiros,
 	 "Alternate representation of the contour as a tuple of spiro control points", NULL},
+/* Sigh. I misdocumented the above entry and called it "spiro" so now support both names */
+    {"spiro",
+	 (getter)PyFF_Contour_get_spiros, (setter)PyFF_Contour_set_spiros,
+	 "Alternate representation of the contour as a tuple of spiro control points", NULL},
+    {"name",
+	 (getter)PyFF_Contour_get_name, (setter)PyFF_Contour_set_name,
+	 "Contours may be named"},
     { NULL }
 };
 
@@ -3295,6 +3323,7 @@ return( NULL );
 	ss->spiro_cnt = ss->spiro_max = c->spiro_cnt;
 	ss->spiros = SpiroCPCopy(c->spiros,NULL);
     }
+    ss->contour_name = copy(c->name);
 
     if ( c->is_quadratic ) {
 	if ( !c->points[0]->on_curve ) {
@@ -3450,6 +3479,7 @@ static PyFF_Contour *ContourFromSS(SplineSet *ss,PyFF_Contour *ret) {
 	ret->spiro_cnt = ss->spiro_cnt;
 	ret->spiros = SpiroCPCopy(ss->spiros,NULL);
     }
+    ret->name = copy(ss->contour_name);
     ret->closed = ss->first->prev!=NULL;
     for ( k=0; k<2; ++k ) {
 	if ( ss->first->next == NULL ) {

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 19-Nov-2007 -->
+  <!-- AP: Last modified: 7-Dec-2007 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -739,7 +739,11 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
       <TD colspan=2>Whether the contour is open or closed</TD>
     </TR>
     <TR>
-      <TD><CODE>spiro</CODE></TD>
+      <TD><CODE>name</CODE></TD>
+      <TD colspan=2>The contour name (generally there is no name)</TD>
+    </TR>
+    <TR>
+      <TD><CODE>spiros</CODE></TD>
       <TD colspan=2>This is an alternate representation of a curve. This member
 	is only available if <A HREF="#ff-hasSpiro">fontforge.hasSpiro()</A> is True.
 	Returns a tuple of spiro control points. Each of these is itself a tuple
