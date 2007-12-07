@@ -115,6 +115,11 @@ extern struct fv_interface gdraw_fv_interface;
 extern struct fi_interface gdraw_fi_interface;
 extern struct clip_interface gdraw_clip_interface;
 
+extern int ItalicConstrained;
+extern unichar_t *script_menu_names[SCRIPT_MENU_MAX];
+extern char *script_filenames[SCRIPT_MENU_MAX];
+extern char *RecentFiles[RECENT_MAX];
+
 /* I would like these to be const ints, but gcc doesn't treat them as consts */
 #define et_sb_halfup et_sb_thumbrelease+1
 #define et_sb_halfdown  et_sb_thumbrelease+2
