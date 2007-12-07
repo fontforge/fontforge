@@ -4539,10 +4539,11 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 		(uni = UniFromName(info->chars[i]->name,info->uni_interp,info->map==NULL ? &custom : info->map->enc))!= -1 &&
 		info->chars[i]->unicodeenc != uni ) {
 #if 1
-	    if ( info->chars[i]->unicodeenc==-1 )
-		LogError(_("The glyph named %.30s is not mapped to any unicode code point.\nBut its name indicates it should be mapped to U+%04X.\n"),
-			info->chars[i]->name,uni);
-	    else
+	    if ( info->chars[i]->unicodeenc==-1 ) {
+		if ( uni<0xe00 || uni>0xf8ff )	/* Don't complain about adobe's old PUA assignments for things like "eight.oldstyle" */
+		    LogError(_("The glyph named %.30s is not mapped to any unicode code point.\nBut its name indicates it should be mapped to U+%04X.\n"),
+			    info->chars[i]->name,uni);
+	    } else
 		LogError( _("The glyph named %.30s is mapped to U+%04X.\nBut its name indicates it should be mapped to U+%04X.\n"),
 			info->chars[i]->name,info->chars[i]->unicodeenc, uni);
 #else
