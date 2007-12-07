@@ -167,9 +167,10 @@ return( NULL );
 	/* Leave bitmaps packed */;
     else
 	_png_set_packing(png_ptr);
-    _png_set_strip_alpha(png_ptr);
+    if ( info_ptr->color_type==PNG_COLOR_TYPE_GRAY_ALPHA )
+	_png_set_strip_alpha(png_ptr);
     if (info_ptr->color_type == PNG_COLOR_TYPE_RGB)
-	_png_set_filler(png_ptr, '\0', PNG_FILLER_BEFORE);
+	_png_set_filler(png_ptr, 0xff, PNG_FILLER_AFTER);
 
     if ( info_ptr->color_type==PNG_COLOR_TYPE_GRAY && info_ptr->bit_depth == 1 ) {
 	ret = GImageCreate(it_mono,info_ptr->width,info_ptr->height);
@@ -221,17 +222,17 @@ return( NULL );
     _png_read_end(png_ptr, NULL);
 
     if ( info_ptr->color_type==PNG_COLOR_TYPE_RGB || info_ptr->color_type==PNG_COLOR_TYPE_RGB_ALPHA ) {
-	/* PNG orders its bytes as BBGGRRAA instead of 00RRGGBB */
+	/* PNG orders its bytes as AABBGGRR instead of 00RRGGBB */
 	uint32 *ipt, *iend;
 	for ( ipt = (uint32 *) (base->data), iend=ipt+base->width*base->height; ipt<iend; ++ipt ) {
 	    /* Minimal support for alpha channel. Assume default background of white */
-	    if ( (*ipt&0xff)==0xff )
-		*ipt = COLOR_CREATE( ((*ipt>>8)&0xff) , ((*ipt>>16)&0xff) , (*ipt>>24) );
+	    if ( (*ipt&0xff000000)==0xff000000 )
+		*ipt = COLOR_CREATE( ((*ipt)&0xff) , ((*ipt>>8)&0xff) , (*ipt>>16)&0xff );
 	    else {
-		int r, g, b, a = *ipt&0xff;
-		r = ( ((*ipt>>8 )&0xff) * a + (255-a)*0xff ) / 255;
-		g = ( ((*ipt>>16)&0xff) * a + (255-a)*0xff ) / 255;
-		b = ( ((*ipt>>24)&0xff) * a + (255-a)*0xff ) / 255;
+		int r, g, b, a = (*ipt>>24)&0xff;
+		r = ( ((*ipt    )&0xff) * a + (255-a)*0xff ) / 255;
+		g = ( ((*ipt>>8 )&0xff) * a + (255-a)*0xff ) / 255;
+		b = ( ((*ipt>>16)&0xff) * a + (255-a)*0xff ) / 255;
 		*ipt = COLOR_CREATE( r,g,b );
 	    }
 	}
