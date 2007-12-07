@@ -1284,7 +1284,8 @@ return;
     done = true;
     for ( j=0; j<2; ++j ) {
 	for ( i=0; i<10; ++i )
-	    lookup_type_names[j][i] = S_((char *) lookup_type_names[j][i]);
+	    if ( lookup_type_names[j][i]!=NULL )
+		lookup_type_names[j][i] = S_((char *) lookup_type_names[j][i]);
     }
     for ( i=0; localscripts[i].text!=NULL; ++i )
 	localscripts[i].text = S_(localscripts[i].text);
