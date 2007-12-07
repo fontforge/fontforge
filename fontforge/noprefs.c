@@ -70,7 +70,6 @@ extern int oldbitmapstate;		/* in savefontdlg.c */
 extern int old_ttf_flags;		/* in savefontdlg.c */
 extern int old_ps_flags;		/* in savefontdlg.c */
 extern int old_otf_flags;		/* in savefontdlg.c */
-extern int old_validate;		/* in savefontdlg.c */
 extern int preferpotrace;		/* in autotrace.c */
 extern int autotrace_ask;		/* in autotrace.c */
 extern int mf_ask;			/* in autotrace.c */
@@ -90,7 +89,6 @@ extern int use_second_indic_scripts;		/* in tottfgpos.c */
 extern MacFeat *default_mac_feature_map,	/* from macenc.c */
 		*user_mac_feature_map;
 extern int allow_utf8_glyphnames;		/* in charinfo.c */
-extern int clear_tt_instructions_when_needed;	/* in charview.c */
 extern int ask_user_for_cmap;			/* in parsettf.c */
 extern NameList *force_names_when_opening;
 extern NameList *force_names_when_saving;

@@ -58,7 +58,6 @@ extern int adjustlbearing;
 extern int autohint_before_rasterize;
 extern int autohint_before_generate;
 extern int seperate_hint_controls;
-extern int ItalicConstrained;
 extern int no_windowing_ui;
 extern uint32 default_background;
 extern int use_utf8_in_script;
@@ -75,11 +74,8 @@ extern char *printcommand, *printlazyprinter;
 
 extern Encoding *enclist;
 
-extern char *RecentFiles[RECENT_MAX];
 
 #define SCRIPT_MENU_MAX	10
-extern unichar_t *script_menu_names[SCRIPT_MENU_MAX];
-extern char *script_filenames[SCRIPT_MENU_MAX];
 
 
 extern MacFeat *default_mac_feature_map;
