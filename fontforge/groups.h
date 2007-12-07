@@ -46,6 +46,6 @@ struct fontview;
 
 void SaveGroupList(void);
 void LoadGroupList(void);
-void DefineGroups(struct fontview *fv);
-void DisplayGroups(struct fontview *fv);
+Group *GroupCopy(Group *g);
+void GroupFree(Group *g);
 #endif

@@ -1010,4 +1010,7 @@ extern void FontInfoInit(void);
 extern void LookupUIInit(void);
 extern enum psstrokeflags Ps_StrokeFlagsDlg(void);
 extern struct cidmap *AskUserForCIDMap(void);
+
+extern void DefineGroups(struct fontview *fv);
+extern void DisplayGroups(struct fontview *fv);
 #endif	/* _VIEWS_H */
