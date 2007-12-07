@@ -1131,7 +1131,7 @@ static void MMUsurpNew(SplineFont *sf) {
 
 	for ( fv=(FontView *) sf->fv; fv!=NULL; fv=nextfv ) {
 	    nextfv = (FontView *) (fv->b.nextsame);
-	    (FontView *) (fv->b.nextsame) = NULL;
+	    fv->b.nextsame = NULL;
 	    _FVCloseWindows(fv);
 	    fv->b.sf = NULL;
 	    GDrawDestroyWindow(fv->gw);
