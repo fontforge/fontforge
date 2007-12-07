@@ -4689,7 +4689,7 @@ void readttfkerns(FILE *ttf,struct ttfinfo *info) {
 	    kc->subtable = otl->subtables;
 	    InfoNameOTLookup(otl,info);
 	} else {
-	    LogError(_("Invalid format (%d) for subtable of 'kern' table"), format );
+	    LogError(_("Invalid or unsupported format (%d) for subtable of 'kern' table"), format );
 	    info->bad_gx = true;
 	    fseek(ttf,len-header_size,SEEK_CUR);
 	    if ( otl!=NULL )
