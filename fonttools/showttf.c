@@ -6237,7 +6237,7 @@ return;
 	    printf( " end=%d", getushort(ttf));
 	    printf( " full=%d", getushort(ttf));
 	    flags = getushort(ttf);
-	    printf( " flags=%04x(%s%s)", flags, (flags&1)?"Extender":"Required",
+	    printf( " flags=%04x(%s%s)\n", flags, (flags&1)?"Extender":"Required",
 		    (flags&0xfffe)?",Unknown flags!!!!":"");
 	}
     }
@@ -6301,7 +6301,7 @@ static int readttfmath(FILE *ttf,FILE *util, struct ttfinfo *info) {
 
     fseek(ttf,info->math_start,SEEK_SET);
     printf( "\nMATH table (at %d)\n", info->math_start);
-    printf( "\tVersion: 0x%08\n", version = getlong(ttf));
+    printf( "\tVersion: 0x%08x\n", version = getlong(ttf));
     if ( version!=0x00010000 )
 	fprintf( stderr, "!> Bad version number for math table.\n" );
     printf( "\tOffset to Constants: %d\n", constants = getushort(ttf));
