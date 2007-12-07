@@ -311,7 +311,7 @@ AC_SUBST(LINK_WITH_GDRAW)
 X_11LIB=-lX11
 GDRAW_LIB=libgdraw
 exeOBJECTS=fontforge_UIOBJECTS
-LINK_WITH_GDRAW=../lib/libgdraw.a
+LINK_WITH_GDRAW=../libs/libgdraw.a
 if test "$no_x" = "yes"; then
  X_11LIB=
  GDRAW_LIB=
