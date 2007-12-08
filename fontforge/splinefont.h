@@ -2446,8 +2446,8 @@ extern int SFHasCID(SplineFont *sf, int cid);
 extern char *getPfaEditDir(char *buffer);
 extern void _DoAutoSaves(struct fontviewbase *);
 extern void CleanAutoRecovery(void);
-extern int DoAutoRecovery(void);
-extern SplineFont *SFRecoverFile(char *autosavename);
+extern int DoAutoRecovery(int);
+extern SplineFont *SFRecoverFile(char *autosavename,int inquire, int *state);
 extern void SFAutoSave(SplineFont *sf,EncMap *map);
 extern void SFClearAutoSave(SplineFont *sf);
 

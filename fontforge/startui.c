@@ -46,7 +46,7 @@ static void _dousage(void) {
 #if HANYANG
     printf( "\t-newkorean\t\t (creates a new korean font)\n" );
 #endif
-    printf( "\t-recover none|auto|clean (control error recovery)\n" );
+    printf( "\t-recover none|auto|inquire|clean (control error recovery)\n" );
     printf( "\t-nosplash\t\t (no splash screen)\n" );
     printf( "\t-display display-name\t (sets the X display)\n" );
     printf( "\t-depth val\t\t (sets the display depth if possible)\n" );
@@ -496,7 +496,7 @@ int main( int argc, char **argv ) {
     extern const char *source_modtime_str;
     const char *load_prefs = getenv("FONTFORGE_LOADPREFS");
     int i;
-    int recover=1;
+    int recover=2;
     int any;
     int next_recent=0;
     GRect pos;
@@ -593,14 +593,20 @@ int main( int argc, char **argv ) {
 		recover= -1;
 	    else if ( strcmp(argv[i],"auto")==0 )
 		recover= 1;
+	    else if ( strcmp(argv[i],"inquire")==0 )
+		recover= 2;
 	    else {
-		fprintf( stderr, "Invalid argument to -recover, must be none, auto or clean\n" );
+		fprintf( stderr, "Invalid argument to -recover, must be none, auto, inquire or clean\n" );
 		dousage();
 	    }
 	} else if ( strcmp(pt,"-recover=none")==0 ) {
 	    recover = 0;
 	} else if ( strcmp(pt,"-recover=clean")==0 ) {
 	    recover = -1;
+	} else if ( strcmp(pt,"-recover=auto")==0 ) {
+	    recover = 1;
+	} else if ( strcmp(pt,"-recover=inquire")==0 ) {
+	    recover = 2;
 	}
 	else if ( strcmp(pt,"-help")==0 )
 	    dohelp();
@@ -664,7 +670,7 @@ int main( int argc, char **argv ) {
     if ( recover==-1 )
 	CleanAutoRecovery();
     else if ( recover )
-	any = DoAutoRecovery();
+	any = DoAutoRecovery(recover-1);
 
     for ( i=1; i<argc; ++i ) {
 	char buffer[1025];

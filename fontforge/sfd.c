@@ -6482,7 +6482,52 @@ return( NULL );
 return( sf );
 }
 
-SplineFont *SFRecoverFile(char *autosavename) {
+static int ask_about_file(FILE *asfd,int *state,char *filename) {
+    int ret;
+    char *buts[6];
+    char buffer[800], *pt;
+
+    if ( *state&1 )
+return( true );
+    else if ( *state&2 ) {
+	unlink(filename);
+return( false );
+    }
+
+    fgets(buffer,sizeof(buffer),asfd);
+    if ( strncmp(buffer,"Base: ",6)!=0 )
+	strcpy(buffer+6, "<New File>");
+    pt = buffer+6;
+    if ( strlen(buffer+6)>70 ) {
+	pt = strrchr(buffer+6,'/');
+	if ( pt==NULL )
+	    pt = buffer+6;
+    }
+
+    buts[0] = _("Yes"); buts[1] = _("Yes to _All");
+    buts[2] = _("_Skip for now");
+    buts[3] = _("Forget _to All"); buts[4] = _("_Forget about it");
+    buts[5] = NULL;
+    ret = ff_ask(_("Recover old edit"),(const char **) buts,0,3,"You appear to have an old editing session on %s.\nWould you like to recover it?", pt );
+    switch ( ret ) {
+      case 0:
+return( true );
+      case 1:
+	*state = 1;
+return( true );
+      case 2:
+return( false );
+      case 3:
+	*state = 2;
+	/* Fall through */
+      case 4:
+	unlink(filename);
+return( false );
+    }
+return( true );
+}
+
+SplineFont *SFRecoverFile(char *autosavename,int inquire,int *state) {
     FILE *asfd = fopen( autosavename,"r");
     SplineFont *ret;
     char *oldloc;
@@ -6490,6 +6535,10 @@ SplineFont *SFRecoverFile(char *autosavename) {
 
     if ( asfd==NULL )
 return(NULL);
+    if ( inquire && !ask_about_file(asfd,state,autosavename)) {
+	fclose( asfd );
+return( NULL );
+    }
     oldloc = setlocale(LC_NUMERIC,"C");
     ret = SlurpRecovery(asfd,tok,sizeof(tok));
     if ( ret==NULL ) {

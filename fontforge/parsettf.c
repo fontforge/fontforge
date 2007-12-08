@@ -4514,8 +4514,8 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
     /* where no names are given, but we've got a unicode encoding use */
     /*  that to guess at them */
 #if 0
-    buts[0] = _("Yes"); buts[1] = _("Yes to all");
-    buts[2] = _("No to all"); buts[3] = _("No");
+    buts[0] = _("Yes"); buts[1] = _("Yes to _All");
+    buts[2] = _("No _to All"); buts[3] = _("No");
     buts[4] = NULL;
 #endif
 

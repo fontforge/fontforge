@@ -1800,8 +1800,8 @@ static void PasteNonExistantRefCheck(SplineChar *sc,Undoes *paster,RefChar *ref,
 	if ( !(*refstate&0x3) ) {
 	    char *buts[5];
 	    buts[0] = _("_Yes");
-	    buts[1] = _("Yes to All");
-	    buts[2] = _("No to All");
+	    buts[1] = _("Yes to _All");
+	    buts[2] = _("No _to All");
 	    buts[3] = _("_No");
 	    buts[4] = NULL;
 	    ff_progress_pause_timer();
@@ -1976,8 +1976,8 @@ return( true );
     if ( sc->parent == dontask_parent && copied_from==dontask_copied_from )
 return( dontask_ret );
     buts[0] = _("_Yes"); buts[3] = _("_No");
-    buts[1] = _("Yes to all");
-    buts[2] = _("No to all");
+    buts[1] = _("Yes to _All");
+    buts[2] = _("No _to All");
     buts[4] = NULL;
     ret = ff_ask(_("Different Fonts"),(const char **) buts,0,3,_("You are attempting to paste glyph instructions from one font to another. Generally this will not work unless the 'prep', 'fpgm' and 'cvt ' tables are the same.\nDo you want to continue anyway?"));
     if ( ret==0 )
@@ -3174,8 +3174,8 @@ static BDFFont *BitmapCreateCheck(FontViewBase *fv,int *yestoall, int first, int
 	else
 	    sprintf( buf, "%d", pixelsize );
 	buts[0] = _("_Yes");
-	buts[1] = _("Yes to All");
-	buts[2] = _("No to All");
+	buts[1] = _("Yes to _All");
+	buts[2] = _("No _to All");
 	buts[3] = _("_No");
 	buts[4] = NULL;
 	yes = ff_ask(_("Bitmap Paste"),(const char **) buts,0,3,"The clipboard contains a bitmap character of size %s,\na size which is not in your database.\nWould you like to create a bitmap font of that size,\nor ignore this character?",buf);
