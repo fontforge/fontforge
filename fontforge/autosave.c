@@ -119,13 +119,14 @@ return;
     }
 }
 
-int DoAutoRecovery(void) {
+int DoAutoRecovery(int inquire) {
     char buffer[1025];
     char *recoverdir = getAutoDirName(buffer);
     DIR *dir;
     struct dirent *entry;
     int any = false;
     SplineFont *sf;
+    int inquire_state=0;
 
     if ( recoverdir==NULL )
 return( false );
@@ -136,7 +137,7 @@ return( false );
     continue;
 	sprintf(buffer,"%s/%s",recoverdir,entry->d_name);
 	fprintf( stderr, "Recovering from %s... ", buffer);
-	if ( (sf = SFRecoverFile(buffer)) ) {
+	if ( (sf = SFRecoverFile(buffer,inquire,&inquire_state)) ) {
 	    any=true;
 	    if ( sf->fv==NULL )		/* Doesn't work, cli arguments not parsed yet */
 		FontViewCreate(sf);
