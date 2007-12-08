@@ -327,6 +327,53 @@ return( -1 );
 return( 0 );
 }
 
+static int line_pt_cmp( const void *_p1, const void *_p2 ) {
+    struct pointdata * const *pd1 = _p1, * const *pd2 = _p2;
+    struct linedata *line;
+    double ppos1=0,ppos2=0;
+    
+    if ( (*pd1)->prevline != NULL && 
+        ( (*pd1)->prevline == (*pd2)->prevline || (*pd1)->prevline == (*pd2)->nextline ))
+        line = (*pd1)->prevline;
+    else if ( (*pd1)->nextline != NULL && 
+        ( (*pd1)->nextline == (*pd2)->prevline || (*pd1)->nextline == (*pd2)->nextline ))
+        line = (*pd1)->nextline;
+    else
+return( 0 );
+
+    ppos1 = ( (*pd1)->sp->me.x - line->online.x ) * line->unit.x +
+            ( (*pd1)->sp->me.y - line->online.y ) * line->unit.y;
+    ppos2 = ( (*pd2)->sp->me.x - line->online.x ) * line->unit.x +
+            ( (*pd2)->sp->me.y - line->online.y ) * line->unit.y;
+        
+    if ( ppos1>ppos2 )
+return( 1 );
+    else if ( ppos1<ppos2 )
+return( -1 );
+    else
+return( 0 );
+}
+
+static int segment_cmp(const void *_s1, const void *_s2) {
+    const struct segment *s1 = _s1, *s2 = _s2;
+    if ( s1->start<s2->start )
+return( -1 );
+    else if ( s1->start>s2->start )
+return( 1 );
+
+return( 0 );
+}
+
+static int proj_cmp(const void *_p1, const void *_p2) {
+    struct pointdata * const *p1 = _p1, * const *p2 = _p2;
+    if ( (*p1)->projection<(*p2)->projection )
+return( -1 );
+    else if ( (*p1)->projection>(*p2)->projection )
+return( 1 );
+
+return( 0 );
+}
+
 static int LineType(struct st *st,int i, int cnt,Spline *line) {
     SplinePoint *sp;
     BasePoint nextcp, prevcp, here;
@@ -748,6 +795,54 @@ static int StillStem(struct glyphdata *gd,double fudge,BasePoint *pos,struct ste
 return( ret );
 }
 
+static int IsCorrectSide( struct glyphdata *gd,SplinePoint *sp,int is_next,
+    int is_l,BasePoint *dir ) {
+    Spline *s, myline;
+    BasePoint perturbed;
+    int i, is_x, ret=false;
+    double t;
+    
+    s = ( is_next ) ? sp->next : sp->prev;
+    t = ( is_next ) ? 0.001 : 0.999;
+    perturbed = PerturbAlongSpline( s,&sp->me,t );
+    
+    if ( IsVectorHV( dir,0,true )) {
+        int winding=0;
+        double test;
+        struct monotonic **space, *m;
+        
+	is_x = ( dir->x == 0 );
+	test = ( is_x ) ? perturbed.y : perturbed.x;
+	MonotonicFindAt( gd->ms,is_x,test,space = gd->space );
+        for ( i=0; space[i]!=NULL; ++i ) {
+            m = space[i];
+            Spline *s = m->s;
+	    winding = ((&m->xup)[is_x] ? 1 : -1 );
+            if ( s->from == sp || s->to == sp )
+        break;
+        }
+        ret = (( is_l && winding == 1 ) || ( !is_l && winding == -1 ));
+    } else {
+        SplinePoint end1, end2;
+        int cnt, eo;
+        
+        MakeVirtualLine( gd,&perturbed,dir,&myline,&end1,&end2 );
+        cnt = MonotonicOrder( gd->sspace,&myline,gd->stspace );
+        eo = -1;
+        is_x = fabs( dir->y ) > fabs( dir->x );
+        i = ( is_x ) ? cnt-1 : 0; 
+        while ( i >= 0 && i <= cnt-1 ) {
+            eo = ( eo != 1 ) ? 1 : 0;
+	    if ( s == gd->stspace[i].s )
+        break;
+            if ( is_x ) i--;
+            else i++;
+        }
+        ret = ( is_l == eo );
+    }
+return( ret );
+}
+
 /* In TrueType I want to make sure that everything on a diagonal line remains */
 /*  on the same line. Hence we compute the line. Also we are interested in */
 /*  points that are on the intersection of two lines */
@@ -755,17 +850,18 @@ static struct linedata *BuildLine(struct glyphdata *gd,struct pointdata *pd,int 
     int i;
     BasePoint *dir, *base;
     struct pointdata **pspace = gd->pspace;
-    int pcnt=0;
+    int pcnt=0, is_l;
     double dist_error;
     struct linedata *line;
     double n_s_err, p_s_err, off, lmin=0, lmax=0;
-
+    
     dir = is_next ? &pd->nextunit : &pd->prevunit;
+    is_l = IsCorrectSide( gd,pd->sp,is_next,true,dir );
     dist_error = ( IsVectorHV( dir,0,true )) ? dist_error_hv : dist_error_diag ;	/* Diagonals are harder to align */
     if ( dir->x==0 && dir->y==0 )
 return( NULL );
     base = &pd->sp->me;
-
+    
     for ( i= (pd - gd->points)+1; i<gd->pcnt; ++i ) if ( gd->points[i].sp!=NULL ) {
 	struct pointdata *pd2 = &gd->points[i];
 	off = (pd2->sp->me.x-base->x)*dir->y - (pd2->sp->me.y-base->y)*dir->x;
@@ -775,11 +871,13 @@ return( NULL );
         else if ( off > 0 && off > lmax ) lmax = off;
 	n_s_err = dir->x*pd2->nextunit.y - dir->y*pd2->nextunit.x;
 	p_s_err = dir->x*pd2->prevunit.y - dir->y*pd2->prevunit.x;
-	if ( (n_s_err<slope_error && n_s_err>-slope_error && pd2->nextline==NULL ) ||
-		(p_s_err<slope_error && p_s_err>-slope_error && pd2->prevline==NULL ))
+	if (((n_s_err<slope_error && n_s_err>-slope_error && pd2->nextline==NULL ) &&
+            IsCorrectSide( gd,pd2->sp,true,is_l,dir )) ||
+            ((p_s_err<slope_error && p_s_err>-slope_error && pd2->prevline==NULL ) &&
+            IsCorrectSide( gd,pd2->sp,false,is_l,dir )))
 	    pspace[pcnt++] = pd2;
     }
-
+    
     if ( pcnt==0 )
 return( NULL );
     if ( pcnt==1 ) {
@@ -789,13 +887,25 @@ return( NULL );
 		( pd->sp->prev->from!=pspace[0]->sp || !pd->sp->prev->knownlinear ))
 return( NULL );
     }
-
+    
     line = &gd->lines[gd->linecnt++];
     line->pcnt = pcnt+1;
     line->points = galloc((pcnt+1)*sizeof(struct pointdata *));
     line->points[0] = pd;
-    line->unitvector = *dir;
+    line->unit = *dir;
+    line->is_left = is_l;
+    if ( dir->x+dir->y<0 ) {
+	line->unit.x = -line->unit.x;
+	line->unit.y = -line->unit.y;
+    }
     line->online = *base;
+    if ( is_next ) {
+        pd->nextline = line;
+        if ( pd->colinear ) pd->prevline = line;
+    } else {
+        pd->prevline = line;
+        if ( pd->colinear ) pd->nextline = line;
+    }
     for ( i=0; i<pcnt; ++i ) {
 	n_s_err = dir->x*pspace[i]->nextunit.y - dir->y*pspace[i]->nextunit.x;
 	p_s_err = dir->x*pspace[i]->prevunit.y - dir->y*pspace[i]->prevunit.x;
@@ -803,14 +913,15 @@ return( NULL );
 	    pspace[i]->nextline = line;
 	    if ( pspace[i]->colinear )
 		pspace[i]->prevline = line;
-	}
+        }
 	if ( p_s_err<slope_error && p_s_err>-slope_error && pspace[i]->prevline==NULL ) {
 	    pspace[i]->prevline = line;
 	    if ( pspace[i]->colinear )
 		pspace[i]->nextline = line;
-	}
+        }
 	line->points[i+1] = pspace[i];
     }
+    qsort( line->points,line->pcnt,sizeof( struct pointdata * ),line_pt_cmp );
 return( line );
 }
 
@@ -828,7 +939,7 @@ static int IsStubOrIntersection( struct glyphdata *gd, BasePoint *dir1,
     dir2 = ( is_next2 ) ? &pd2->nextunit : &pd2->prevunit;
     line = is_next2 ? pd2->nextline : pd2->prevline;
     if ( !IsVectorHV( dir2,slope_error,true ) && line != NULL )
-        dir2 = &line->unitvector;
+        dir2 = &line->unit;
 
     odir1 = ( is_next1 ) ? &pd1->prevunit : &pd1->nextunit;
     odir2 = ( is_next2 ) ? &pd2->prevunit : &pd2->nextunit;
@@ -984,36 +1095,36 @@ static struct stem_chunk *AddToStem( struct stemdata *stem,struct pointdata *pd1
         else if ( roff > stem->rmax ) stem->rmax = roff;
     }
 
-    if ( pd1!=NULL && !is_potential1 ) {
+    if ( pd1!=NULL ) {
 	if ( is_next1==1 ) {
-	    if ( pd1->nextstem == NULL ) {
+	    if ( pd1->nextstem == NULL || !is_potential1 ) {
 		pd1->nextstem = stem;
 		pd1->next_is_l = true;
 	    }
 	} else if ( is_next1==0 ) {
-	    if ( pd1->prevstem == NULL ) {
+	    if ( pd1->prevstem == NULL || !is_potential1 ) {
 		pd1->prevstem = stem;
 		pd1->prev_is_l = true;
 	    }
 	} else if ( is_next1==2 ) {
-	    if ( pd1->bothstem == NULL ) {
+	    if ( pd1->bothstem == NULL || !is_potential1 ) {
 		pd1->bothstem = stem;
 	    }
 	}
     }
-    if ( pd2!=NULL && !is_potential2 ) {
+    if ( pd2!=NULL ) {
 	if ( is_next2==1 ) {
-	    if ( pd2->nextstem == NULL ) {
+	    if ( pd2->nextstem == NULL || !is_potential2 ) {
 		pd2->nextstem = stem;
 		pd2->next_is_l = false;		/* It's r */
 	    }
 	} else if ( is_next2==0 ) {
-	    if ( pd2->prevstem == NULL ) {
+	    if ( pd2->prevstem == NULL || !is_potential2 ) {
 		pd2->prevstem = stem;
 		pd2->prev_is_l = false;
 	    }
 	} else if ( is_next2==2 ) {
-	    if ( pd2->bothstem == NULL ) {
+	    if ( pd2->bothstem == NULL || !is_potential2 ) {
 		pd2->bothstem = stem;
 	    }
 	}
@@ -1170,6 +1281,12 @@ return( stem );
 
     for ( i=0; i<gd->stemcnt; ++i ) {
         stem = &gd->stems[i];
+        /* Ghost hints and BBox hits are usually generated after all other
+        /* hint types, but we can get them here in case we are generating
+        /* glyph data for a predefined hint layout. In this case they should
+        /* be excluded from the following tests */
+        if ( stem->ghost || stem->bbox )
+    continue;
 	err = stem->unit.x*dir->y - stem->unit.y*dir->x;
 	if ( err<slope_error && err>-slope_error &&
             BothOnStem( stem,&pd->sp->me,&pd2->sp->me,false )) {
@@ -1181,6 +1298,8 @@ return( NULL );
     
     for ( i=0; i<gd->stemcnt; ++i ) {
         stem = &gd->stems[i];
+        if ( stem->ghost || stem->bbox )
+    continue;
         hv = IsVectorHV( dir,slope_error,false );
         if ( hv && BothOnStem( stem,&pd->sp->me,&pd2->sp->me,hv )) {
             newdir.x = ( hv == 2 ) ? 0 : 1;
@@ -1227,7 +1346,7 @@ static struct stemdata *NewStem(struct glyphdata *gd,BasePoint *dir,
     stem->rmin = stem->rmax = 0;
     stem->chunks = NULL;
     stem->chunk_cnt = 0;
-    stem->ghost = false;
+    stem->ghost = stem->bbox = false;
     stem->positioned = false;
     stem->blue = -1;
 return( stem );
@@ -1388,7 +1507,7 @@ return( NULL );         /* Not a real point */
     mdir = is_next2 ? &pd2->nextunit : &pd2->prevunit;
     line2 = is_next2 ? pd2->nextline : pd2->prevline;
     if ( !IsVectorHV( mdir,0,true ) && line2 != NULL )
-        mdir = &line2->unitvector;
+        mdir = &line2->unit;
     if ( mdir->x==0 && mdir->y==0 )
 return( NULL );         /* cannot determine the opposite point's direction */
 
@@ -1417,12 +1536,12 @@ return( NULL );         /* Cannot make a stem if edges are not parallel (unless 
 
             if ( line != NULL && chunk->l == pd && stem->leftline == NULL ) {
                 stem->leftline = line;
-                SetStemUnit( stem,line->unitvector );
+                SetStemUnit( stem,line->unit );
             } else if ( line != NULL && chunk->r == pd && stem->rightline == NULL )
                 stem->rightline = line;
             if ( line2 != NULL && chunk->l == pd2 && stem->leftline == NULL ) {
                 stem->leftline = line2;
-                SetStemUnit( stem,line2->unitvector );
+                SetStemUnit( stem,line2->unit );
             } else if ( line2 != NULL && chunk->r == pd2 && stem->rightline == NULL )
                 stem->rightline = line2;
         }
@@ -1463,56 +1582,6 @@ return( -1e4 );
 return( t1 );
 }
 
-static int IsCorrectSide( struct glyphdata *gd,SplinePoint *sp,int is_next,
-    int is_l,struct stemdata *stem ) {
-
-    Spline *s, myline;
-    BasePoint perturbed;
-    int i, ret=false;
-    double t;
-    
-    s = ( is_next ) ? sp->next : sp->prev;
-    t = ( is_next ) ? 0.001 : 0.999;
-    perturbed = PerturbAlongSpline( s,&sp->me,t );
-
-    if ( IsVectorHV( &stem->unit,0,true )) {
-        int is_x, winding=0;
-        double test;
-        struct monotonic **space, *m;
-        
-	is_x = ( stem->unit.x == 0 );
-	test = ( is_x ) ? perturbed.y : perturbed.x;
-	MonotonicFindAt( gd->ms,is_x,test,space = gd->space );
-        for ( i=0; space[i]!=NULL; ++i ) {
-            m = space[i];
-            Spline *s = m->s;
-	    winding = ((&m->xup)[is_x] ? 1 : -1 );
-            if ( s->from == sp || s->to == sp )
-        break;
-        }
-        ret = (( is_l && winding == 1 ) || ( !is_l && winding == -1 ));
-    } else {
-        SplinePoint end1, end2;
-        int cnt, len, eo;
-
-        MakeVirtualLine( gd,&perturbed,&stem->unit,&myline,&end1,&end2 );
-        len = ( end2.me.x - end1.me.x ) * stem->unit.y -
-              ( end2.me.y - end1.me.y ) * stem->unit.x;
-        cnt = MonotonicOrder( gd->sspace,&myline,gd->stspace );
-        eo = -1;
-        i = ( len > 0 ) ? 0 : cnt-1; 
-        while ( i >= 0 && i <= cnt-1 ) {
-            eo = ( eo != 1 ) ? 1 : 0;
-	    if ( s == gd->stspace[i].s )
-        break;
-            if ( len > 0 ) i++;
-            else i--;
-        }
-        ret = ( is_l == eo );
-    }
-return( ret );
-}
-
 /* This function is used when generating stem data for preexisting
 /* stem hints. If we already know the desired hint position, then we
 /* can safely assign to this hint any points which meet other conditions
@@ -1525,6 +1594,8 @@ static struct stemdata *HalfStemNoOpposite( struct glyphdata *gd,struct pointdat
 
     for ( i=0; i<gd->stemcnt; ++i ) {
         struct stemdata *tstem = &gd->stems[i];
+        if ( tstem->bbox )
+    continue;
         allowleft = ( !tstem->ghost || tstem->width == 20 );
         allowright = ( !tstem->ghost || tstem->width == 21 );
         
@@ -1533,7 +1604,7 @@ static struct stemdata *HalfStemNoOpposite( struct glyphdata *gd,struct pointdat
             is_l = OnStem( tstem,&pd->sp->me,true );
             is_r = OnStem( tstem,&pd->sp->me,false );
             if (( is_l && allowleft ) || ( is_r && allowright )) {
-	        if ( IsCorrectSide( gd,pd->sp,is_next,is_l,tstem )) {
+	        if ( IsCorrectSide( gd,pd->sp,is_next,is_l,&tstem->unit )) {
                     stem = tstem;
     break;
                 }
@@ -1710,7 +1781,7 @@ static void BuildStem( struct glyphdata *gd,struct pointdata *pd,int is_next,
     
     line = is_next ? pd->nextline : pd->prevline;
     if ( !IsVectorHV( dir,slope_error,true ) && line != NULL)
-        dir = &line->unitvector;
+        dir = &line->unit;
 
     if ( other==NULL )
 return;
@@ -1788,18 +1859,16 @@ return;
 static void AssignLinePointsToStems( struct glyphdata *gd ) {
     struct pointdata *pd;
     int i, j;
-
+    
     for ( i=0; i<gd->stemcnt; ++i ) if ( !gd->stems[i].toobig ) {
 	struct stemdata *stem = &gd->stems[i];
         if ( stem->leftline != NULL ) {
             struct linedata *line = stem->leftline;
             for ( j=0; j<line->pcnt; j++ ) {
                 pd = line->points[j];
-                if (pd->prevline == line && pd->prevstem == NULL &&
-                    IsCorrectSide( gd,pd->sp,false,true,stem ))
+                if ( pd->prevline == line && pd->prevstem == NULL )
                     AddToStem( stem,pd,NULL,false,false,false );
-                if (pd->nextline == line && pd->nextstem == NULL &&
-                    IsCorrectSide( gd,pd->sp,true,true,stem ))
+                if ( pd->nextline == line && pd->nextstem == NULL )
                     AddToStem( stem,pd,NULL,true,false,false );
             }
         }
@@ -1807,11 +1876,9 @@ static void AssignLinePointsToStems( struct glyphdata *gd ) {
             struct linedata *line = stem->rightline;
             for ( j=0; j<line->pcnt; j++ ) {
                 pd = line->points[j];
-                if (pd->prevline == line && pd->prevstem == NULL &&
-                    IsCorrectSide( gd,pd->sp,false,false,stem ))
+                if ( pd->prevline == line && pd->prevstem == NULL )
                     AddToStem( stem,pd,NULL,false,false,false );
-                if (pd->nextline == line && pd->nextstem == NULL &&
-                    IsCorrectSide( gd,pd->sp,true,false,stem ))
+                if ( pd->nextline == line && pd->nextstem == NULL )
                     AddToStem( stem,pd,NULL,true,false,false );
             }
         }
@@ -2508,26 +2575,6 @@ return( cnt );
 return( cnt+1 );
 }
 
-static int segment_cmp(const void *_s1, const void *_s2) {
-    const struct segment *s1 = _s1, *s2 = _s2;
-    if ( s1->start<s2->start )
-return( -1 );
-    else if ( s1->start>s2->start )
-return( 1 );
-
-return( 0 );
-}
-
-static int proj_cmp(const void *_p1, const void *_p2) {
-    struct pointdata * const *p1 = _p1, * const *p2 = _p2;
-    if ( (*p1)->projection<(*p2)->projection )
-return( -1 );
-    else if ( (*p1)->projection>(*p2)->projection )
-return( 1 );
-
-return( 0 );
-}
-
 static int InActive(double projection,struct segment *segments, int cnt) {
     int i;
 
@@ -3113,71 +3160,86 @@ static void GDFindUnlikelyStems( struct glyphdata *gd ) {
     }
 }
 
-static void CheckForBoundingBoxHints(struct glyphdata *gd) {
-    /* Adobe seems to add hints at the bounding boxes of glyphs with no hints */
-    int hcnt=0, vcnt=0, i;
-    struct stemdata *stem;
-    SplinePoint *minx, *maxx, *miny, *maxy;
+static void AssignPointsToBBoxHint( struct glyphdata *gd,DBounds *bounds,
+    struct stemdata *stem,int is_v ) {
+    
+    double min, max, test, left, right;
+    int i, j, lcnt=0, rcnt=0;
     BasePoint dir;
-    int hv;
-    struct stem_chunk *chunk;
+    SplinePoint **lpoints, **rpoints;
+    struct pointdata *pd1, *pd2;
+    lpoints = gcalloc( gd->pcnt,sizeof( SplinePoint *));
+    rpoints = gcalloc( gd->pcnt,sizeof( SplinePoint *));
+    for ( i=0; i<gd->pcnt; ++i ) if ( gd->points[i].sp!=NULL ) {
+	SplinePoint *sp = gd->points[i].sp;
+        min = ( is_v ) ? bounds->minx : bounds->miny;
+        max = ( is_v ) ? bounds->maxx : bounds->maxy;
+        test = ( is_v ) ? sp->me.x : sp->me.y;
+	if ( test >= min && test < min + dist_error_hv )
+            lpoints[lcnt++] = sp;
+        else if ( test > max - dist_error_hv && test <= max )
+            rpoints[rcnt++] = sp;
+    }
+    if ( lcnt > 0 && rcnt > 0 ) {
+        dir.x = !is_v; dir.y = is_v;
+        if ( stem == NULL ) {
+	    stem = NewStem( gd,&dir,&lpoints[0]->me,&rpoints[0]->me );
+            stem->bbox = true;
+            stem->len = stem->width;
+        }
+        for ( i=0; i<lcnt; ++i ) {
+            int closest = -1;
+            double dist, prevdist = 1e4;
+            for ( j=0; j<rcnt; ++j ) {
+                left = ( is_v ) ? lpoints[i]->me.y : lpoints[i]->me.x;
+                right = ( is_v ) ? rpoints[j]->me.y : rpoints[j]->me.x;
+                dist = fabs( left - right );
+                if ( dist < prevdist ) {
+                    closest = j;
+                    prevdist = dist;
+                }
+            }
+            pd1 = &gd->points[lpoints[i]->ttfindex];
+            pd2 = &gd->points[rpoints[closest]->ttfindex];
+            AddToStem( stem,pd1,pd2,false,true,4 );
+        }
+    }
+    free( lpoints );
+    free( rpoints );
+}
 
+static void CheckForBoundingBoxHints( struct glyphdata *gd ) {
+    /* Adobe seems to add hints at the bounding boxes of glyphs with no hints */
+    int i, hv;
+    int hcnt=0, vcnt=0; 
+    double cw, ch;
+    struct stemdata *hstem=NULL,*vstem=NULL;
+    DBounds bounds;
+    
     for ( i=0; i<gd->stemcnt; ++i ) {
-	stem = &gd->stems[i];
+	struct stemdata *stem = &gd->stems[i];
 	if ( stem->toobig )
     continue;
         hv = IsVectorHV( &stem->unit,slope_error,true );
-        if ( hv == 1 )
-	    ++hcnt;
-	else if ( hv == 2 )
-	    ++vcnt;
+        if ( hv == 1 ) {
+            if ( stem->bbox ) hstem = stem;
+            else ++hcnt;
+	} else if ( hv == 2 ) {
+            if ( stem->bbox ) vstem = stem;
+            else ++vcnt;
+        }
     }
     if ( hcnt!=0 && vcnt!=0 )
 return;
 
-    minx = maxx = miny = maxy = NULL;
-    for ( i=0; i<gd->pcnt; ++i ) if ( gd->points[i].sp!=NULL ) {
-	SplinePoint *sp = gd->points[i].sp;
-	if ( minx==NULL )
-	    minx = maxx = miny = maxy = sp;
-	else {
-	    if ( minx->me.x>sp->me.x )
-		minx = sp;
-	    else if ( maxx->me.x<sp->me.x )
-		maxx = sp;
-	    if ( miny->me.y>sp->me.y )
-		miny = sp;
-	    else if ( maxy->me.y<sp->me.y )
-		maxy = sp;
-	}
-    }
-
-    if ( minx==NULL )		/* No contours */
-return;
-
-    if (hcnt == 0 && maxy->me.y != miny->me.y && 
-        maxy->me.y - miny->me.y < gd->emsize/2 ) {
-	struct pointdata *pd = &gd->points[maxy->ttfindex],
-			 *pd2 = &gd->points[miny->ttfindex];
-        dir.x = 1; dir.y = 0;
-	stem = NewStem( gd,&dir,&pd->sp->me,&pd2->sp->me );
-	chunk = AddToStem( stem,pd,pd2,false,true,4 );
-	FigureStemActive( gd,stem );
-	stem->toobig = false;
-	stem->clen += stem->width;
-    }
-
-    if ( vcnt == 0 && maxx->me.x != minx->me.x && 
-        maxx->me.x - minx->me.x < gd->emsize/2 ) {
-	struct pointdata *pd = &gd->points[maxx->ttfindex],
-			 *pd2 = &gd->points[minx->ttfindex];
-        dir.x = 0; dir.y = 1;
-	stem = NewStem( gd,&dir,&pd->sp->me,&pd2->sp->me );
-	chunk = AddToStem( stem,pd,pd2,false,true,4 );
-	FigureStemActive( gd,stem );
-	stem->toobig = false;
-	stem->clen += stem->width;
-    }
+    SplineCharFindBounds( gd->sc,&bounds );
+    ch = bounds.maxy - bounds.miny;
+    cw = bounds.maxx - bounds.minx;
+    
+    if ( hcnt == 0 && ch > 0 && ch < gd->emsize/2 )
+        AssignPointsToBBoxHint( gd,&bounds,hstem,false );
+    if ( vcnt == 0 && cw > 0 && cw < gd->emsize/2 )
+        AssignPointsToBBoxHint( gd,&bounds,vstem,true );
 }
 
 static struct stemdata *FindOrMakeGhostStem( struct glyphdata *gd,
@@ -3522,7 +3584,7 @@ static void DumpGlyphData( struct glyphdata *gd ) {
     for ( i=0; i<gd->linecnt; ++i ) {
 	struct linedata *line = &gd->lines[i];
         fprintf( stderr, "line vector=%f,%f\n", 
-            line->unitvector.x,line->unitvector.y);
+            line->unit.x,line->unit.y);
         for( j=0; j<line->pcnt;++j) {
             fprintf( stderr, "\tpoint num=%d, x=%f, y=%f, prev=%d, next=%d\n",
                 line->points[j]->sp->ttfindex, line->points[j]->sp->me.x,
@@ -3558,7 +3620,7 @@ static void DumpGlyphData( struct glyphdata *gd ) {
 }
 #endif
 
-static void AssignPointsToStems( struct glyphdata *gd ) {
+static void AssignPointsToStems( struct glyphdata *gd,DBounds *bounds ) {
     int i;
     struct pointdata *pd;
     
@@ -3585,12 +3647,14 @@ static void AssignPointsToStems( struct glyphdata *gd ) {
     fprintf( stderr,"Going to calculate stem active zones for %s\n",gd->sc->name );
 #endif
     for ( i=0; i<gd->stemcnt; ++i ) {
+        struct stemdata *stem = &gd->stems[i];
         if ( gd->stems[i].ghost )
-	    FigureGhostActive( gd,&gd->stems[i] );
+	    FigureGhostActive( gd,stem );
+        else if ( gd->stems[i].bbox )
+            AssignPointsToBBoxHint( gd,bounds,stem,( stem->unit.y == 1 ));
         else
 	    FigureStemActive( gd,&gd->stems[i] );
     }
-
     NormalizeStems( gd );
 #if GLYPH_DATA_DEBUG
     DumpGlyphData( gd );
@@ -3605,11 +3669,13 @@ static void AssignPointsToStems( struct glyphdata *gd ) {
 struct glyphdata *StemInfoToStemData( struct glyphdata *gd,StemInfo *si,int is_v ) {
     struct stemdata *stem;
     BasePoint dir,left,right;
+    DBounds bounds;
     
     if ( si == NULL )
 return( gd );
     
     dir.x = !is_v; dir.y = is_v;
+    SplineCharFindBounds( gd->sc,&bounds );
     if ( gd->stems == NULL ) {
         gd->stems = gcalloc( 2*gd->pcnt,sizeof( struct stemdata ));
         gd->stemcnt = 0;
@@ -3622,11 +3688,18 @@ return( gd );
         right.y = ( is_v ) ? 0 : si->start;
         stem = NewStem( gd,&dir,&left,&right );
         stem->ghost = si->ghost;
+        if (( is_v && 
+                left.x >= bounds.minx && left.x < bounds.minx + dist_error_hv &&
+                right.x > bounds.maxx - dist_error_hv && right.x <= bounds.maxx ) ||
+            ( !is_v && 
+                right.y >= bounds.miny && right.y < bounds.miny + dist_error_hv &&
+                left.y > bounds.maxy - dist_error_hv && left.y <= bounds.maxy ))
+            stem->bbox = true;
         stem->positioned = true;
         si = si->next;
     }
 
-    AssignPointsToStems( gd );
+    AssignPointsToStems( gd,&bounds );
 return( gd );
 }
 
@@ -3854,13 +3927,12 @@ return( gd );
         }
     }
     GDFindMismatchedParallelStems( gd );
-    NormalizeStems( gd );
 
-    /* These types of stems cannot be considered "too big" and
-    /* don't require any normalization */
     if ( hint_bounding_boxes )
 	CheckForBoundingBoxHints(gd);
     CheckForGhostHints( gd,bd );
+    /* Normalization affects ghosts and BBox hints too */
+    NormalizeStems( gd );
 
 #if GLYPH_DATA_DEBUG
     DumpGlyphData( gd );
