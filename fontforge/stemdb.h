@@ -94,8 +94,9 @@ struct pointdata {
 };
 
 struct linedata {
-    BasePoint unitvector;
+    BasePoint unit;
     BasePoint online;
+    uint8 is_left;
     int pcnt;
     struct pointdata **points;
 };
@@ -124,6 +125,7 @@ struct stemdata {
     uint8 positioned;
     uint8 ticked;
     uint8 ghost;
+    uint8 bbox;
     int blue;			/* Blue zone a ghost hint is attached to */
     double len, clen;		/* Length of linear segments. clen adds "length" of curved bits */
     struct stembundle *bundle;
