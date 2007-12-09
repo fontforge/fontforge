@@ -2184,6 +2184,19 @@ static void readttfpost(FILE *ttf, FILE *util, struct ttfinfo *info) {
 	free(names);
 #endif
     }
+    if ( info->glyph_unicode!=NULL ) {
+	if ( info->glyph_names==NULL )
+	    info->glyph_names = calloc(info->glyph_cnt,sizeof(char *));
+	for ( i=0; i<info->glyph_cnt ; ++i ) {
+	    if ( info->glyph_names[i]!=NULL )
+		/* Keep it */;
+	    else if ( info->glyph_unicode[i]!=0 && info->glyph_unicode[i]!=0xffff ) {
+		char buffer[40];
+		sprintf(buffer,">U+%04X<", info->glyph_unicode[i]);
+		info->glyph_names[i] = strdup(buffer);
+	    }
+	}
+    }
 }
 
 static void showlangsys(FILE *ttf,int script_start, uint16 ls_off, uint32 ls_name ) {
