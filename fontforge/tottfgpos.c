@@ -3768,7 +3768,7 @@ return( 6+10*gv->part_cnt );
 }
 
 static uint32 ttf_math_dump_mathglyphconstructiontable(FILE *mathf,
-	struct glyphvariants *gv,SplineFont *sf, uint32 pos) {
+	struct glyphvariants *gv,SplineFont *sf, uint32 pos,int is_v) {
     char *pt, *start;
     int ch, cnt;
     SplineChar *sc;
@@ -3804,7 +3804,13 @@ static uint32 ttf_math_dump_mathglyphconstructiontable(FILE *mathf,
 	    if ( sc!=NULL ) {
 		putshort(mathf,sc->ttf_glyph);
 		SplineCharFindBounds(sc,&b);
-		putshort(mathf,b.maxy-b.miny);
+		/* Don't ask me why I have a plus one here. In the MS font */
+		/*  CambriaMath all of these values are one more than I would */
+		/*  expect */
+		if ( is_v )
+		    putshort(mathf,b.maxy-b.miny +1);
+		else
+		    putshort(mathf,b.maxx-b.minx +1);
 	    }
 	    start=pt;
 	}
@@ -3887,10 +3893,10 @@ static void ttf_math_dump_glyphvariant(FILE *mathf,struct alltabs *at, SplineFon
     pos = (coverage_pos-2)+offset;
     for ( i=0; i<vlen; ++i )
 	pos = ttf_math_dump_mathglyphconstructiontable(mathf,
-		vglyphs[i]->vert_variants,sf,pos);
+		vglyphs[i]->vert_variants,sf,pos,true);
     for ( i=0; i<hlen; ++i )
 	pos = ttf_math_dump_mathglyphconstructiontable(mathf,
-		hglyphs[i]->horiz_variants,sf,pos);
+		hglyphs[i]->horiz_variants,sf,pos,false);
 
     for ( i=0; i<vlen; ++i )
 	pos = ttf_math_dump_mathglyphassemblytable(mathf,
