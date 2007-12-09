@@ -203,8 +203,6 @@ struct lookup {
     OTLookup *otlookup;
 };
 
-enum gsub_inusetype { git_normal, git_justinuse, git_findnames };
-
 static uint16 *getCoverageTable(FILE *ttf, int coverage_offset, struct ttfinfo *info) {
     int format, cnt, i,j, rcnt;
     uint16 *glyphs=NULL;
