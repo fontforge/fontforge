@@ -24,6 +24,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <basics.h>
 
 #ifdef _NO_LIBJPEG
 static int a_file_must_define_something=0;	/* ANSI says so */

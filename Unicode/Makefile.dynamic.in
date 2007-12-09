@@ -16,7 +16,7 @@ CC = @CC@
 
 libgunicode_OBJECTS =  ArabicForms.lo alphabet.lo backtrns.lo char.lo \
  cjk.lo memory.lo ucharmap.lo unialt.lo ustring.lo utype.lo \
- usprintf.lo gwwiconv.lo gwwintl.lo dynamic.lo
+ usprintf.lo gwwiconv.lo
 
 Incs = -I$(top_srcdir)/inc -I/usr/pkg/include -I/usr/pkg/include/giflib
 CFLAGS = @CFLAGS@ @CPPFLAGS@ $(Incs) @WFLAGS@ @DEFS@

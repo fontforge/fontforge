@@ -24,6 +24,9 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
 
 #ifdef _NO_LIBJPEG
 static int a_file_must_define_something=0;	/* ANSI says so */
