@@ -25,6 +25,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <basics.h>
+
 /* Parse GNU .la "library" files. They give us the name to use with dlopen */
 /* Currently only important on _Cygwin */
 #if defined(__CygWin) && !defined(NODYNAMIC)
@@ -128,7 +130,6 @@ return( dlopen( ret,flags ));
 return( dlopen(filename,flags) );	/* This will almost certainly fail, but it will provide an error for dlerror() */
 }
 #elif defined( __Mac )
-#  include <basics.h>
 #  include <dynamic.h>
 #  include <stdio.h>
 #  include <string.h>

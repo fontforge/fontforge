@@ -24,6 +24,7 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#include <basics.h>
 
 /* There doesn't seem to be any difference between libgif and libungif (on my
  *  system they are symbolic linked together). Either libungif doesn't support

@@ -16,7 +16,8 @@ libgutils_OBJECTS = divisors.o fsys.o gimage.o gimagereadbmp.o \
  gimageread.o gimagereadgif.o gimagereadjpeg.o gimagereadpng.o \
  gimagereadras.o gimagereadrgb.o gimagereadtiff.o gimagereadxbm.o \
  gimagereadxpm.o gimagewritebmp.o gimagewritegimage.o \
- gimagewritejpeg.o gimagewritepng.o gimagewritexbm.o gimagewritexpm.o
+ gimagewritejpeg.o gimagewritepng.o gimagewritexbm.o gimagewritexpm.o \
+ gwwintl.o dynamic.o
 
 Incs = -I$(top_srcdir)/inc -I/usr/pkg/include -I/usr/pkg/include/giflib
 CFLAGS = @CFLAGS@ @CPPFLAGS@ $(Incs) @WFLAGS@ $(X_CFLAGS) -DNOTHREADS @DEFS@ -DLIBDIR='"$(libdir)"'
