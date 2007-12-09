@@ -26,12 +26,12 @@
  */
 #ifndef _SD_H
 #define _SD_H
+# include <gimage.h>
 
 /* All coordinates are in millimeters */
 /* they will be displayed to the user scaled by the units field of the design */
 
 #include "splinefont.h"
-# include "gdraw.h"
 
 typedef struct entpen {
     Color col;
@@ -87,7 +87,7 @@ typedef struct entlayer {
 
 typedef struct tile {
     Entity *tile;
-    struct tileinstance { real scale; GWindow pixmap; struct tileinstance *next; }
+    struct tileinstance { real scale; struct gwindow *pixmap; struct tileinstance *next; }
 	    *instances;
     char *name;
 } Tile;

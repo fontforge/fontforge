@@ -27,6 +27,10 @@
 /*			   Python Interface to FontForge		      */
 
 
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 #ifndef _NO_PYTHON
 #include "Python.h"
 #include "structmember.h"

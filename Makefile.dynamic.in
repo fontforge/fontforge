@@ -71,6 +71,12 @@ install_libs: libs
 	mkdir -p $(DESTDIR)$(libdir)/pkgconfig
 	$(INSTALL_DATA) fontforge.pc $(DESTDIR)$(libdir)/pkgconfig
 
+install_incs:
+	mkdir -p $(DESTDIR)$(includedir)/fontforge
+	$(INSTALL_DATA) $(srcdir)/inc/*.h $(DESTDIR)$(includedir)/fontforge
+#	$(INSTALL_DATA) `grep -L GGadget $(srcdir)/fontforge/*.h` $(DESTDIR)$(includedir)/fontforge
+	( for file in $(srcdir)/fontforge/*.h ; do if grep GGadget $$file >/dev/null 2>&1 ; then echo pointless >/dev/null ; else $(INSTALL_DATA) $$file $(DESTDIR)$(includedir)/fontforge ; fi ; done )
+
 install_docs:
 	mkdir -p $(DESTDIR)$(docdir)
 	mkdir -p $(DESTDIR)$(docdir)/flags $(DESTDIR)$(docdir)/ja
@@ -103,7 +109,7 @@ install_prog:
 	$(INSTALL_DATA) $(srcdir)/fontforge/fontimage.1 $(DESTDIR)$(mandir)/man1
 	$(INSTALL_DATA) $(srcdir)/fontforge/fontlint.1 $(DESTDIR)$(mandir)/man1
 
-install: $(DESTDIR)$(sharedir) all install_libs install_po install_prog
+install: $(DESTDIR)$(sharedir) all install_libs install_incs install_po install_prog
 # You may need to be root to do the install
 #explicit use of sh to make sure we don't invoke csh with different "if" syntax
 	sh -c "if test -d $(srcdir)/htdocs >/dev/null ; then $(MAKE) install_docs ; fi"
@@ -111,7 +117,7 @@ install: $(DESTDIR)$(sharedir) all install_libs install_po install_prog
 #we don't always create a setup.py
 	-(cd pyhook ; if test -r setup.py ; then python setup.py install ; fi )
 
-install_py: $(DESTDIR)$(sharedir) all install_libs install_po install_prog
+install_py: $(DESTDIR)$(sharedir) all install_libs install_incs install_po install_prog
 # You may need to be root to do the install
 #explicit use of sh to make sure we don't invoke csh with different "if" syntax
 	sh -c "if test -d $(srcdir)/htdocs >/dev/null ; then $(MAKE) install_docs ; fi"
@@ -134,6 +140,7 @@ uninstall:
 	-rm $(DESTDIR)$(libdir)/libgunicode.*
 	-rm $(DESTDIR)$(libdir)/libfontforge.*
 	-rm $(DESTDIR)$(sharedir)/*.cidmap
+	-rm $(DESTDIR)$(includedir)/fontforge/*.h
 	-rm -rf $(DESTDIR)$(docdir)/*
 	-rm $(DESTDIR)$(libdir)/pkgconfig/fontforge.pc
 
