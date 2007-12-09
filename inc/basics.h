@@ -30,6 +30,9 @@
 #ifdef VMS		/* these three lines from Jacob Jansen, Open VMS port */
 # include <vms_jackets.h>
 #endif
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
 
 #include <stdio.h>		/* for NULL */
 #ifdef HAVE_STDINT_H
