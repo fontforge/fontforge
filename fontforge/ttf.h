@@ -125,6 +125,7 @@ struct ttfinfo {
     uint32 cff_length;
     		/* cmap */
     uint32 encoding_start;	/* Offset from sof to start of encoding table */
+    uint32 vs_start;		/* Offset within 'cmap' to variant selector table */
 		/* gasp */
     uint32 gasp_start;
 		/* glyf */
@@ -286,6 +287,8 @@ struct ttfinfo {
     unsigned int bad_gx: 1;
     unsigned int bad_ot: 1;
 };
+
+enum gsub_inusetype { git_normal, git_justinuse, git_findnames };
 
 #define MAX_TAB	48
 struct tabdir {

@@ -1658,7 +1658,7 @@ static void readttfglyphs(FILE *ttf,struct ttfinfo *info) {
 	/* this is complicated by references (and substitutions), */
 	/* we can't just rely on the encoding to tell us what is used */
 	info->inuse = gcalloc(info->glyph_cnt,sizeof(char));
-	readttfencodings(ttf,info,true);
+	readttfencodings(ttf,info,git_justinuse);
 	if ( info->gsub_start!=0 )		/* Some glyphs may appear in substitutions and not in the encoding... */
 	    readttfgsubUsed(ttf,info);
 	if ( info->math_start!=0 )
@@ -3620,6 +3620,7 @@ static void ApplyVariationSequenceSubtable(FILE *ttf,uint32 vs_map,
 	struct ttfinfo *info,int justinuse) {
     int sub_table_len, vs_cnt, i, j, rcnt, gid, cur_gid;
     struct vs_data { int vs; uint32 def, non_def; } *vs_data;
+    SplineChar *sc;
 
     fseek(ttf,vs_map,SEEK_SET);
     /* We/ve already checked the format is 14 */ getushort(ttf);
@@ -3633,7 +3634,7 @@ static void ApplyVariationSequenceSubtable(FILE *ttf,uint32 vs_map,
     }
 
     for ( i=0; i<vs_cnt; ++i ) {
-	if ( vs_data[i].def!=0 && !justinuse ) {
+	if ( vs_data[i].def!=0 && justinuse==git_normal ) {
 	    fseek(ttf,vs_map+vs_data[i].def,SEEK_SET);
 	    rcnt = getlong(ttf);
 	    for ( j=0; j<rcnt; ++j ) {
@@ -3675,9 +3676,16 @@ static void ApplyVariationSequenceSubtable(FILE *ttf,uint32 vs_map,
 	    for ( j=0; j<rcnt; ++j ) {
 		int uni = get3byte(ttf);
 		int curgid = getushort(ttf);
-		if ( justinuse ) {
+		if ( justinuse==git_justinuse ) {
 		    if ( curgid<info->glyph_cnt && curgid>=0)
 			info->inuse[curgid] = 1;
+		} else if ( justinuse==git_justinuse ) {
+		    if ( curgid<info->glyph_cnt && curgid>=0 &&
+			    (sc=info->chars[curgid])!=NULL && sc->name==NULL ) {
+			char buffer[32];
+			sprintf(buffer, "u%04X.vs%04X", uni, vs_data[i].vs );
+			sc->name = copy(buffer);
+		    }
 		} else {
 		    if ( curgid>=info->glyph_cnt || curgid<0 ||
 			    info->chars[curgid]==NULL ) {
@@ -3908,7 +3916,7 @@ return;
 	    unicode_cmap = i;
     }
 
-    if ( justinuse || !ask_user_for_cmap || (i = PickCMap(cmap_encs,usable_encs,def))==-1 )
+    if ( justinuse==git_justinuse || !ask_user_for_cmap || (i = PickCMap(cmap_encs,usable_encs,def))==-1 )
 	i = def;
     info->platform = cmap_encs[i].platform;
     info->specific = cmap_encs[i].specific;
@@ -3932,7 +3940,7 @@ return;
     }
 
     map = NULL;
-    if ( justinuse ) {
+    if ( justinuse==git_justinuse ) {
 	dcmap_cnt = usable_encs;
 	dcmap = cmap_encs;
     } else {
@@ -3949,7 +3957,7 @@ return;
 	enc = dcmap[dc].enc;
 	encoff = dcmap[dc].offset;
 
-	if ( dc==0 && !justinuse ) {
+	if ( dc==0 && justinuse==git_normal ) {
 	    interp = interp_from_encoding(enc,ui_none);
 	    mod = 0;
 	    if ( dcmap[dc].platform==3 && (dcmap[dc].specific>=2 && dcmap[dc].specific<=6 ))
@@ -3974,7 +3982,7 @@ return;
 	    enc = FindOrMakeEncoding("UnicodeFull");
 
 	if ( format==0 ) {
-	    if ( !justinuse && map!=NULL && map->enccount<256 ) {
+	    if ( justinuse==git_normal && map!=NULL && map->enccount<256 ) {
 		map->map = grealloc(map->map,256*sizeof(int));
 		memset(map->map,-1,(256-map->enccount)*sizeof(int));
 		map->enccount = map->encmax = 256;
@@ -3985,7 +3993,7 @@ return;
 	    if ( trans==NULL && dcmap[dc].platform==1 )
 		trans = MacEncToUnicode(dcmap[dc].specific,dcmap[dc].lang-1);
 	    for ( i=0; i<256 && i<len-6; ++i )
-		if ( !justinuse ) {
+		if ( justinuse==git_normal ) {
 		    if ( table[i]<info->glyph_cnt && info->chars[table[i]]!=NULL ) {
 			if ( map!=NULL )
 			    map->map[i] = table[i];
@@ -4031,7 +4039,7 @@ return;
 		    /* Done */;
 		else if ( rangeOffset[i]==0 ) {
 		    for ( j=startchars[i]; j<=endchars[i]; ++j ) {
-			if ( justinuse && (uint16) (j+delta[i])<info->glyph_cnt )
+			if ( justinuse==git_justinuse && (uint16) (j+delta[i])<info->glyph_cnt )
 			    info->inuse[(uint16) (j+delta[i])] = true;
 			else if ( (uint16) (j+delta[i])>=info->glyph_cnt || info->chars[(uint16) (j+delta[i])]==NULL ) {
 			    LogError( _("Attempt to encode missing glyph %d to %d (0x%x)\n"),
@@ -4064,7 +4072,7 @@ return;
 			    index = glyphs[ temp ];
 			else {
 			    /* This happened in mingliu.ttc(PMingLiU) */
-			    if ( !justinuse ) {
+			    if ( justinuse==git_normal ) {
 				LogError( _("Glyph index out of bounds. Was %d, must be less than %d.\n In attempt to associate a glyph with encoding %x in segment %d\n with platform=%d, specific=%d (in 'cmap')\n"),
 					temp, glyph_tot, j, i, dcmap[dc].platform, dcmap[dc].specific );
 				info->bad_cmap = true;
@@ -4081,7 +4089,7 @@ return;
 				LogError( _("Attempt to encode missing glyph %d to %d (0x%x)\n"),
 					index, modenc(j,mod), modenc(j,mod));
 				info->bad_cmap = true;
-			    } else if ( justinuse )
+			    } else if ( justinuse==git_justinuse )
 				info->inuse[index] = 1;
 			    else if ( info->chars[index]==NULL ) {
 				LogError( _("Attempt to encode missing glyph %d to %d (0x%x)\n"),
@@ -4128,7 +4136,7 @@ return;
 	    trans = enc->unicode;
 	    if ( trans==NULL && dcmap[dc].platform==1 && first+count<=256 )
 		trans = MacEncToUnicode(dcmap[dc].specific,dcmap[dc].lang-1);
-	    if ( justinuse )
+	    if ( justinuse==git_justinuse )
 		for ( i=0; i<count; ++i )
 		    info->inuse[getushort(ttf)]= 1;
 	    else {
@@ -4183,7 +4191,7 @@ return;
 			index = (uint32) (index+subheads[0].delta);
 		    /* I assume the single byte codes are just ascii or latin1*/
 		    if ( index!=0 && index<info->glyph_cnt ) {
-			if ( justinuse )
+			if ( justinuse==git_justinuse )
 			    info->inuse[index] = 1;
 			else if ( info->chars[index]==NULL )
 			    /* Do Nothing */;
@@ -4206,7 +4214,7 @@ return;
 			if ( index!=0 && index<info->glyph_cnt ) {
 			    enc = (i<<8)|(j+subheads[k].first);
 			    lenc = modenc(enc,mod);
-			    if ( justinuse )
+			    if ( justinuse==git_justinuse )
 				info->inuse[index] = 1;
 			    else if ( info->chars[index]==NULL )
 				/* Do Nothing */;
@@ -4238,7 +4246,7 @@ return;
 		start = getlong(ttf);
 		end = getlong(ttf);
 		startglyph = getlong(ttf);
-		if ( justinuse )
+		if ( justinuse==git_justinuse )
 		    for ( i=start; i<=end; ++i )
 			info->inuse[startglyph+i-start]= 1;
 		else
@@ -4260,7 +4268,7 @@ return;
 	    }
 	    first = getlong(ttf);
 	    count = getlong(ttf);
-	    if ( justinuse )
+	    if ( justinuse==git_justinuse )
 		for ( i=0; i<count; ++i )
 		    info->inuse[getushort(ttf)]= 1;
 	    else
@@ -4282,7 +4290,7 @@ return;
 		start = getlong(ttf);
 		end = getlong(ttf);
 		startglyph = getlong(ttf);
-		if ( justinuse ) {
+		if ( justinuse==git_justinuse ) {
 		    for ( i=start; i<=end; ++i )
 			if ( startglyph+i-start < info->glyph_cnt )
 			    info->inuse[startglyph+i-start]= 1;
@@ -4310,9 +4318,10 @@ return;
 	for ( i=0; i<info->glyph_cnt; ++i )
 	    if ( info->chars[i]!=NULL && info->chars[i]->unicodeenc==0xffff )
 		info->chars[i]->unicodeenc = -1;
+    info->vs_start = vs_map;
     if ( vs_map!=0 )
 	ApplyVariationSequenceSubtable(ttf,vs_map,info,justinuse);
-    if ( !justinuse ) {
+    if ( justinuse==git_normal ) {
 	if ( interp==ui_none )
 	    info->uni_interp = amscheck(info,map);
 	map->enc = enc;		/* This can be changed from the initial value */
@@ -4600,6 +4609,8 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
     for ( i=info->glyph_cnt-1; i>=0 ; --i )
 	if ( info->chars[i]!=NULL && info->chars[i]->name==NULL )
     break;
+    if ( i>=0 && info->vs_start!=0 )
+	ApplyVariationSequenceSubtable(ttf,info->vs_start,info,git_findnames);
     if ( i>=0 && info->gsub_start!=0 )
 	GuessNamesFromGSUB(ttf,info);
     if ( i>=0 && info->math_start!=0 )
@@ -4862,7 +4873,7 @@ return( 0 );
     /* 'cmap' is not meaningful for cid keyed fonts, and not supplied for */
     /*  type42 fonts */
     if ( info->cidregistry==NULL && info->encoding_start!=0 )
-	readttfencodings(ttf,info,false);
+	readttfencodings(ttf,info,git_normal);
     if ( info->os2_start!=0 )
 	readttfos2metrics(ttf,info);
     readttfpostnames(ttf,info);		/* If no postscript table we'll guess at names */
