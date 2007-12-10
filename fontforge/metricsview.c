@@ -1405,9 +1405,85 @@ return;					/* Nothing changed */
     GDrawRequestExpose(mv->gw,NULL,false);
 }
 
+GTextInfo mv_text_init[] = {
+    { (unichar_t *) "", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 1, 0, 1},
+    { NULL, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Load Word List..."), NULL, 0, 0, (void *) -1, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { NULL }
+};
+
+static void MVLoadWordList(MetricsView *mv) {
+    GTextInfo **words;
+    int cnt;
+    char buffer[300], *pt;
+    int ch;
+    char *filename, *temp;
+    FILE *file;
+
+    filename = gwwv_open_filename("File of Kerning Words",NULL,"*.txt",NULL);
+    if ( filename==NULL ) {
+	GGadgetSetTitle8(mv->text,"");
+return;
+    }
+    temp = utf82def_copy(filename);
+    file = fopen( temp,"r" );
+    free(temp);
+    if ( file==NULL ) {
+	ff_post_error("Could not open", "Could not open %s", filename );
+	GGadgetSetTitle8(mv->text,"");
+return;
+    }
+    free(filename);
+
+    words = galloc(1002*sizeof(GTextInfo *));
+
+    ch = getc(file);
+    cnt = 0;
+    while ( ch!=EOF ) {
+	while ( isspace(ch)) ch=getc(file);
+	for ( pt = buffer; ch!=EOF && !isspace(ch) ; ch=getc(file))
+	    if ( pt<buffer+sizeof(buffer)-2)
+		*pt++=ch;
+	*pt = '\0';
+	if ( buffer[0]=='\0' )
+    break;
+	if ( cnt>1000-3 )
+    break;
+	words[cnt] = gcalloc(1,sizeof(GTextInfo));
+	words[cnt]->fg = words[cnt]->bg = COLOR_DEFAULT;
+	words[cnt]->text = (unichar_t *) utf82def_copy( buffer );
+	words[cnt++]->text_is_1byte = true;
+    }
+    fclose(file);
+    if ( cnt!=0 ) {
+	words[cnt] = gcalloc(1,sizeof(GTextInfo));
+	words[cnt]->fg = words[cnt]->bg = COLOR_DEFAULT;
+	words[cnt++]->line = true;
+	words[cnt] = gcalloc(1,sizeof(GTextInfo));
+	words[cnt]->fg = words[cnt]->bg = COLOR_DEFAULT;
+	words[cnt]->text = (unichar_t *) copy( _("Load Word List...") );
+	words[cnt]->text_is_1byte = true;
+	words[cnt++]->userdata = (void *) -1;
+	words[cnt] = gcalloc(1,sizeof(GTextInfo));
+	GGadgetSetList(mv->text,words,true);
+	GGadgetSetTitle8(mv->text,(char *) (words[0]->text));
+	GTextInfoArrayFree(words);
+	mv->word_index = 0;
+    } else {
+	GGadgetSetTitle8(mv->text,"");
+	free(words);
+    }
+}
+
 static int MV_TextChanged(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+	if ( e->u.control.u.tf_changed.from_pulldown!=-1 ) {
+	    int32 len;
+	    GTextInfo **ti = GGadgetGetList(g,&len);
+	    if ( ti[e->u.control.u.tf_changed.from_pulldown]->userdata == (void *) -1 )
+		MVLoadWordList(GGadgetGetUserData(g));
+	}
 	MVTextChanged(GGadgetGetUserData(g));
     }
 return( true );
@@ -2948,6 +3024,21 @@ static void MVChar(MetricsView *mv,GEvent *event) {
 	MVMenuCharInfo(mv->gw,NULL,NULL);
     else if ( event->u.chr.keysym == GK_Help ) {
 	MenuHelp(NULL,NULL,NULL);	/* Menu does F1 */
+    } else if ( event->u.chr.keysym == GK_Up || event->u.chr.keysym==GK_KP_Up ||
+	    event->u.chr.keysym == GK_Down || event->u.chr.keysym==GK_KP_Down ) {
+	int dir = ( event->u.chr.keysym == GK_Up || event->u.chr.keysym==GK_KP_Up ) ? -1 : 1;
+	if ( mv->word_index!=-1 ) {
+	    int32 len;
+	    GTextInfo **ti = GGadgetGetList(mv->text,&len);
+	    /* We subtract 2 because: There's one line saying "load word list" */
+	    /*  and then a line with a rule on it which we don't want access to */
+	    if ( mv->word_index+dir >=0 && mv->word_index+dir<len-2 ) {
+		mv->word_index += dir;
+		GGadgetSelectOneListItem(mv->text,mv->word_index);
+		MVTextChanged(mv);
+		ti = NULL;
+	    }
+	}
     }
 }
 
@@ -3694,6 +3785,7 @@ static unsigned char metricsicon_bits[] = {
    0x55, 0x55, 0x00, 0x00, 0x04, 0x10, 0x00, 0x00};
 
 static void MetricsViewInit(void ) {
+    mv_text_init[2].text = (unichar_t *) _((char *) mv_text_init[2].text);
     mb2DoGetText(mblist);
 }
 
@@ -3815,7 +3907,8 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     label.text = (unichar_t *) buf;
     gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_text_xim;
     gd.handle_controlevent = MV_TextChanged;
-    mv->text = GTextFieldCreate(gw,&gd,mv);
+    gd.u.list = mv_text_init;
+    mv->text = GListFieldCreate(gw,&gd,mv);
 
     gd.pos.x = gd.pos.x+gd.pos.width+10; --gd.pos.y;
     gd.pos.width += 30;
