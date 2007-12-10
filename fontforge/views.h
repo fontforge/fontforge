@@ -321,6 +321,7 @@ typedef struct metricsview {
     int scale_index;
     struct lookup_subtable *cur_subtable;
     GTextInfo *scriptlangs;
+    int word_index;
 } MetricsView;
 
 enum fv_metrics { fvm_baseline=1, fvm_origin=2, fvm_advanceat=4, fvm_advanceto=8 };
