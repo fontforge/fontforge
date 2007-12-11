@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 26-Oct-2005 -->
-  <!-- AP: Last modified: 9-Nov-2007 -->
+  <!-- AP: Last modified: 10-Dec-2007 -->
   <TITLE>Building FontForge from source</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -44,6 +44,8 @@
 	<LI>
 	  <A HREF="uitranslationnotes.html">Creating user interface translations</A>
       </UL>
+    <LI>
+      <A HREF="#patch">Applying a patch</A>
     <LI>
       <A HREF="#Dependencies">Dependencies (external libraries/helper programs)</A>
     <LI>
@@ -332,6 +334,35 @@ CVS password:
   <P>
   Again you will probably need to be root to do this install too. Use either
   "su" or "sudo" as appropriate for your system (<A HREF="#su">see above</A>).
+  <H2>
+    Applying a <A NAME="patch">patch</A>
+  </H2>
+  <P>
+  From time to time someone will report a bug or request a feature and I will
+  reply by sending a patch which purports to fix the bug or implement the feature.
+  But how do you use the patch file I sent?
+  <P>
+  patch is a standard unix utility (Try typing $ man patch, for more info)
+  which will make changes to text files. I use it to modify the source files
+  of FontForge.
+  <P>
+  So before you can apply the patch you must
+  <A HREF="source-build.html#src-distribution">have the source code </A>available
+  to you. If you choose to download from the cvs tree, then, in all probability,
+  the patch will already have been applied (so you don't need to do anything
+  with it). But if you download one of my tarballs then you will need to apply
+  the patch:
+  <BLOCKQUOTE id="shell">
+    <PRE><FONT COLOR="Gray">$ </FONT>bunzip2 fontforge*.tar.bz2
+<FONT COLOR="Gray">$ </FONT>tar xf fontforge*.tar
+<FONT COLOR="Gray">$ </FONT>cd fontforge-*/fontforge
+<FONT COLOR="Gray">$ </FONT>patch &lt;foobar.patch 
+<FONT COLOR="Gray">$ </FONT>cd ..
+<FONT COLOR="Gray">$ </FONT>./configure
+<FONT COLOR="Gray">$ </FONT>make
+<FONT COLOR="Gray">$ </FONT>make install
+</PRE>
+  </BLOCKQUOTE>
   <H2>
     <A NAME="Dependencies">Dependencies</A> (external libraries/helper programs)
   </H2>
