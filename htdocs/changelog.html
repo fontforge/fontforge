@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 9-Nov-2007 -->
+  <!-- AP: Last modified: 11-Dec-2007 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -46,6 +46,177 @@
     </TABLE>
   </BLOCKQUOTE>
   <UL>
+    <LI>
+      10-Dec-2007
+      <UL>
+	<LI>
+	  Redo the internals of fontforge to separate the core font engine from its
+	  dependance on gdraw, and stuff all of that into libfontforge. So libfontforge
+	  no longer needs gdraw, and can be used to build another user interface with
+	  a different widget set.
+	  <P>
+	  In theory.
+	<LI>
+	  Add the ability to insert a list of words into the metrics view.
+	<LI>
+	  If a font has a variant selector 'cmap' subtable, and has some unnamed glyphs
+	  then base names on the information found in the vs subtable as: (u0020.vsFE00)
+	<LI>
+	  If a font has a 'MATH' table and some unnamed glyphs then try to guess names
+	  for glyphs refered to in horizontal/vertical glyph construction tables.
+	<LI>
+	  When outputing horizontal glyph variants in the 'MATH' table I used their
+	  vertical size rather than their horizontal size.
+	<LI>
+	  Further refinements to the concept of lines: all points assigned to the same
+	  line now should have filled space at the same side. So what we used to call
+	  lines would be better called edges now. Also the handling of bounding box
+	  hints has been improved: all relevant points are now assigned to a BBox stem
+	  hint (not just one point from each side).
+	<LI>
+	  Add a user interface to control file recovery (used to be only a command
+	  line argument).
+	<LI>
+	  Patch by Barry who points out an extraneous line in the font iter by search.
+	<LI>
+	  Barry points out that there is a disconnect between the docs and the program
+	  about the "spiros" member of a Contour python object. So correct the docs
+	  to read "spiros", and change the program so it will accept "spiro" as well
+	  as "spiros".
+	<LI>
+	  Add the ability to name contours, primarily for guidelines.
+	  <P>
+	  Add python support for the contour_name.
+	<LI>
+	  Add support for reading Apple's old sfnt wrapped CID format (basically the
+	  same as the sfnt wrapped 'typ1' format.
+	<LI>
+	  FF crashed on Nastaliq Navees from SIL.
+	  <OL>
+	    <LI>
+	      It has no unicode cmap (which ff handled incorrectly)
+	    <LI>
+	      It has cross-kerning (which ff doesn't handle, but still died while explaining
+	      that it didn't handle it)
+	  </OL>
+	<LI>
+	  Use routines from stemdb.c to generate active zones (or stem instances) for
+	  manually added hints. The old algorithm is still used when reading Type 1/OTF
+	  font files.
+	<LI>
+	  FontView -&gt; Hints-&gt;Clear hints did not set the hints changed bit.
+	<LI>
+	  Erik van Blockland points out that python glyph.addPosSub doesn't check for
+	  duplicate entries and will blindly add something when it should be replacing
+	  it.
+	<LI>
+	  Also added a short cut so that it is posible to specify simple kerning by
+	  typing one number rather than requiring an additional 7 zeroes.
+	<LI>
+	  Prevent some redundant stem chunks from being generated.
+	<LI>
+	  Both Adobe Acrobat and Apple's Preview exhibit what I consider to be a bug.
+	  According to the PDF reference manual, if an Encoding dictionary is not specified
+	  for a font object then the built in encoding will be used. But both these
+	  programs reencode to AdobeStandard and do not use the font's built in encoding.
+	  GhostScript agrees with my interpretation and does not reencode.
+	  <P>
+	  However, they ain't gwana change, so I must. Always dump out an Encoding
+	  dictionary even when it shouldn't be needed.
+	<LI>
+	  <UL>
+	    <LI>
+	      Lines are more actively used: stems now have 'leftline' and 'rightline'
+	      properties, and for diagonal stems the stem unit vector is always set equal
+	      to the unit vector of the line corresponding to the left edge of the given
+	      stem;
+	    <LI>
+	      I no longer attempt to calculate "active" zones for bounding box hints (they
+	      usually don't correspond to any actual glyph features and thus look ugly).
+	      So now only edges of such hints (without any active zones) are displayed
+	      in the charview;
+	    <LI>
+	      diagonal stem detection improved (some checks were too strict and actually
+	      oriented to HV stems);
+	    <LI>
+	      the 'blue' property is now used not only for ghost hints, but also for regular
+	      horizontal stems. This may be useful if I ever implement an autoinstructor
+	      based directly on the stem detector;
+	    <LI>
+	      glyph data initialization has been separated from stem detection and put
+	      into a separate routine (a first step for unification of algorithms used
+	      to calculate stem active zones).
+	  </UL>
+	<LI>
+	  When doing a print sample to pdf, the second page came out in times bold
+	  rather than the user's font.
+	<LI>
+	  I think setting a compact encoding could overflow an allocated string array.
+	<LI>
+	  I was setting the Regular bit of OS2.fsSelection if the weight class was
+	  400. I probably should have used 500 instead. Or maybe both. Let's try both
+	  for now.
+	<LI>
+	  If a ufo font did not have a lib.plist file (and python was enabled) then
+	  ff would crash on loading it.
+	<LI>
+	  When importing an eps file, ff did not turn off the "Bitmap-only" flag. This
+	  means that new fonts composed entirely of eps files would be treated as bitmap
+	  fonts (sometimes).
+	<LI>
+	  Moving quadratic control points with the pointer is broken (again).
+	<LI>
+	  Metricsview would crash if you deleted a character and then clicked in one
+	  of it's textfields.
+	<LI>
+	  Fix typo in stemdb.c
+	<LI>
+	  Add a Select-&gt;Open Contours command.
+	<LI>
+	  Add some serbian text (to the built in print samples).
+	<LI>
+	  Update the location on the charview info line when dragging out a guideline.
+	<LI>
+	  If a glyph had a unicode encoding for one code point, and a name which mapped
+	  to another, then double clicking on the other code point would cause fontforge
+	  to provide a reference to the base glyphs from the new encoding slot. But
+	  only in the current encoding map. In other words I forgot to set the AltUni
+	  field.
+	<LI>
+	  Some people have though winDescent should be a negative value for things
+	  below the baseline. So make the sign of the various descent fields explicit
+	  in the corresponding popup messages.
+	  <UL>
+	    <LI>
+	      Typo Descent: Negative
+	    <LI>
+	      Win Descent: Positive
+	    <LI>
+	      Hhea Descent: Negative
+	  </UL>
+	<LI>
+	  If a user edited a glyph in spiro mode, and then did something in the fontview
+	  ehich caused the spiros to be removed (Lots of things: Overlap, Expand Stroke,
+	  Embolden, ...), and then did a Round to Int (and perhaps other things) from
+	  the font view, then FontForge would crash.
+	  <P>
+	  It expected to find spiros in a glyph marked as being edited in spiro mode,
+	  and was surprised when none were available.
+	<LI>
+	  Dave Crossland doesn't like having "..." at the end of window titles.
+	<LI>
+	  Back out the Add Extrema in spiro mode patch. Turn off display of extrema
+	  in spiro mode (and of Points of Inflection too).
+	<LI>
+	  Add an autowidth command to the python interface.
+	<LI>
+	  contour.lineTo and friends didn't work (didn't increment the contour's point
+	  count).
+	<LI>
+	  With SnapToInt preference on, and at high magnifications, a mouse click would
+	  often be snapped so that it was well outside the fudge region. This meant
+	  that clicking on something might not select it.
+      </UL>
     <LI>
       10-Nov-2007
       <UL>
