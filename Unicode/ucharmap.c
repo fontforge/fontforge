@@ -24,12 +24,19 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#ifdef VMS		/* these three lines from Jacob Jansen, Open VMS port */
+# include <vms_jackets.h>
+#endif
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
+#include <gwwiconv.h>
 #include <stddef.h>
 #include <ustring.h>
 #include <utype.h>
 #include <charset.h>
 #include <chardata.h>
-#include <gwwiconv.h>
 
 int local_encoding = e_iso8859_1;
 #if HAVE_ICONV_H
