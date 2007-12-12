@@ -2147,8 +2147,8 @@ return( true );
 	    diff.x = cursp->nextcp.x+dx - cursp->me.x;
 	    diff.y = cursp->nextcp.y+dy - cursp->me.y;
 	    BP_HVForce(&diff);
-	    dx = diff.x - (cursp->me.x - cursp->nextcp.x);
-	    dy = diff.y - (cursp->me.y - cursp->nextcp.y);
+	    dx = diff.x + (cursp->me.x - cursp->nextcp.x);
+	    dy = diff.y + (cursp->me.y - cursp->nextcp.y);
 	}
 	cursp->nextcp.x += dx;
 	cursp->nextcp.y += dy;
