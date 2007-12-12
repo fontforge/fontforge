@@ -24,10 +24,10 @@ fontforge: libgunicode libgutils @GDRAW_LIB@ pos
 libgunicode:
 	( cd Unicode ; $(MAKE) )
 
-libgutils:
+libgutils: libgunicode
 	( cd gutils ; $(MAKE) )
 
-libgdraw:
+libgdraw: libgutils libgunicode
 	( cd gdraw ; $(MAKE) )
 
 pos:
