@@ -230,7 +230,7 @@ return( ret );
 #include "gimage.h"
 
 static void user_error_fn(png_structp png_ptr, png_const_charp error_msg) {
-    fprintf(stderr, "%s\n" error_msg );
+    fprintf(stderr, "%s\n", error_msg );
     longjmp(png_ptr->jmpbuf,1);
 }
 
