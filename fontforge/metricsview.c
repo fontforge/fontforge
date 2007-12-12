@@ -1409,10 +1409,54 @@ GTextInfo mv_text_init[] = {
     { (unichar_t *) "", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 1, 0, 1},
     { NULL, NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) N_("Load Word List..."), NULL, 0, 0, (void *) -1, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("Load Glyph Name List..."), NULL, 0, 0, (void *) -2, NULL, 0, 0, 0, 0, 0, 0, 1},
     { NULL }
 };
 
-static void MVLoadWordList(MetricsView *mv) {
+static void MVFigureGlyphNames(MetricsView *mv,const unichar_t *names) {
+    char buffer[400], *pt, *start;
+    SplineChar *founds[40];
+    int i,cnt,ch;
+    unichar_t *newtext;
+
+    u2utf8_strcpy(buffer,names);
+    start = buffer;
+    for ( i=0; *start; ) {
+	while ( *start==' ' ) ++start;
+	if ( *start=='\0' )
+    break;
+	for ( pt=start; *pt && *pt!=' '; ++pt );
+	ch = *pt; *pt = '\0';
+	if ( i>=40 )
+    break;
+	if ( (founds[i]=SFGetChar(mv->sf,-1,start))!=NULL )
+	    ++i;
+	*pt = ch;
+	start = pt;
+    }
+    cnt = i;
+
+    if ( cnt>=mv->cmax ) {
+	mv->cmax = mv->clen+cnt+10;
+	mv->chars = grealloc(mv->chars,mv->cmax*sizeof(SplineChar *));
+    }
+    newtext = galloc((cnt+1)*sizeof(unichar_t));
+    for ( i=0; i<cnt; ++i ) {
+	newtext[i] = founds[i]->unicodeenc==-1 ? 0xfffd : founds[i]->unicodeenc;
+	mv->chars[i] = founds[i];
+    }
+    newtext[i] = 0;
+    mv->chars[i] = NULL;
+    mv->clen = cnt;
+    MVRemetric(mv);
+
+    GGadgetSetTitle(mv->text,newtext);
+    free(newtext);
+
+    GDrawRequestExpose(mv->gw,NULL,false);
+}
+
+static void MVLoadWordList(MetricsView *mv,int type) {
     GTextInfo **words;
     int cnt;
     char buffer[300], *pt;
@@ -1420,7 +1464,7 @@ static void MVLoadWordList(MetricsView *mv) {
     char *filename, *temp;
     FILE *file;
 
-    filename = gwwv_open_filename("File of Kerning Words",NULL,"*.txt",NULL);
+    filename = gwwv_open_filename(type==-1 ? "File of Kerning Words":"File of glyphname lists",NULL,"*.txt",NULL);
     if ( filename==NULL ) {
 	GGadgetSetTitle8(mv->text,"");
 return;
@@ -1437,22 +1481,38 @@ return;
 
     words = galloc(1002*sizeof(GTextInfo *));
 
-    ch = getc(file);
     cnt = 0;
-    while ( ch!=EOF ) {
-	while ( isspace(ch)) ch=getc(file);
-	for ( pt = buffer; ch!=EOF && !isspace(ch) ; ch=getc(file))
-	    if ( pt<buffer+sizeof(buffer)-2)
-		*pt++=ch;
-	*pt = '\0';
-	if ( buffer[0]=='\0' )
-    break;
-	if ( cnt>1000-3 )
-    break;
-	words[cnt] = gcalloc(1,sizeof(GTextInfo));
-	words[cnt]->fg = words[cnt]->bg = COLOR_DEFAULT;
-	words[cnt]->text = (unichar_t *) utf82def_copy( buffer );
-	words[cnt++]->text_is_1byte = true;
+    if ( type==-1 ) {
+	ch = getc(file);
+	while ( ch!=EOF ) {
+	    while ( isspace(ch)) ch=getc(file);
+	    for ( pt = buffer; ch!=EOF && !isspace(ch) ; ch=getc(file))
+		if ( pt<buffer+sizeof(buffer)-2)
+		    *pt++=ch;
+	    *pt = '\0';
+	    if ( buffer[0]=='\0' )
+	break;
+	    if ( cnt>1000-3 )
+	break;
+	    words[cnt] = gcalloc(1,sizeof(GTextInfo));
+	    words[cnt]->fg = words[cnt]->bg = COLOR_DEFAULT;
+	    words[cnt]->text = (unichar_t *) utf82def_copy( buffer );
+	    words[cnt++]->text_is_1byte = true;
+	}
+    } else {
+	strcpy(buffer,"​");		/* Zero width space: 0x200b, I use as a flag */
+	while ( fgets(buffer+3,sizeof(buffer)-3,file)!=NULL ) {
+	    if ( buffer[3]=='\n' || buffer[3]=='#' )
+	continue;
+	    if ( cnt>1000-3 )
+	break;
+	    if ( buffer[strlen(buffer)-1]=='\n' )
+		buffer[strlen(buffer)-1] = '\0';
+	    words[cnt] = gcalloc(1,sizeof(GTextInfo));
+	    words[cnt]->fg = words[cnt]->bg = COLOR_DEFAULT;
+	    words[cnt]->text = (unichar_t *) copy( buffer );
+	    words[cnt++]->text_is_1byte = true;
+	}
     }
     fclose(file);
     if ( cnt!=0 ) {
@@ -1465,8 +1525,15 @@ return;
 	words[cnt]->text_is_1byte = true;
 	words[cnt++]->userdata = (void *) -1;
 	words[cnt] = gcalloc(1,sizeof(GTextInfo));
+	words[cnt]->fg = words[cnt]->bg = COLOR_DEFAULT;
+	words[cnt]->text = (unichar_t *) copy( _("Load Glyph Name List...") );
+	words[cnt]->text_is_1byte = true;
+	words[cnt++]->userdata = (void *) -2;
+	words[cnt] = gcalloc(1,sizeof(GTextInfo));
 	GGadgetSetList(mv->text,words,true);
 	GGadgetSetTitle8(mv->text,(char *) (words[0]->text));
+	if ( type==-2 )
+	    MVFigureGlyphNames(mv,_GGadgetGetTitle(mv->text)+1);
 	GTextInfoArrayFree(words);
 	mv->word_index = 0;
     } else {
@@ -1478,13 +1545,18 @@ return;
 static int MV_TextChanged(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+	MetricsView *mv = GGadgetGetUserData(g);
 	if ( e->u.control.u.tf_changed.from_pulldown!=-1 ) {
 	    int32 len;
 	    GTextInfo **ti = GGadgetGetList(g,&len);
-	    if ( ti[e->u.control.u.tf_changed.from_pulldown]->userdata == (void *) -1 )
-		MVLoadWordList(GGadgetGetUserData(g));
+	    GTextInfo *cur = ti[e->u.control.u.tf_changed.from_pulldown];
+	    int type = (intpt) cur->userdata;
+	    if ( type < 0 )
+		MVLoadWordList(mv,type);
+	    else if ( cur->text!=NULL && cur->text[0]==0x200b ) 	/* Zero width space, flag for glyph names */
+		MVFigureGlyphNames(mv,cur->text+1);
 	}
-	MVTextChanged(GGadgetGetUserData(g));
+	MVTextChanged(mv);
     }
 return( true );
 }
@@ -3030,12 +3102,17 @@ static void MVChar(MetricsView *mv,GEvent *event) {
 	if ( mv->word_index!=-1 ) {
 	    int32 len;
 	    GTextInfo **ti = GGadgetGetList(mv->text,&len);
-	    /* We subtract 2 because: There's one line saying "load word list" */
+	    /* We subtract 3 because: There are two lines saying "load * list" */
 	    /*  and then a line with a rule on it which we don't want access to */
-	    if ( mv->word_index+dir >=0 && mv->word_index+dir<len-2 ) {
+	    if ( mv->word_index+dir >=0 && mv->word_index+dir<len-3 ) {
+		const unichar_t *tit;
 		mv->word_index += dir;
 		GGadgetSelectOneListItem(mv->text,mv->word_index);
-		MVTextChanged(mv);
+		tit = _GGadgetGetTitle(mv->text);
+		if ( tit!=NULL && tit[0]==0x200b )
+		    MVFigureGlyphNames(mv,tit+1);
+		else
+		    MVTextChanged(mv);
 		ti = NULL;
 	    }
 	}
@@ -3627,10 +3704,10 @@ return;
 
     if ( mv->clen+cnt>=mv->cmax ) {
 	mv->cmax = mv->clen+cnt+10;
-	mv->glyphs = grealloc(mv->glyphs,mv->cmax*sizeof(SplineChar *));
+	mv->chars = grealloc(mv->chars,mv->cmax*sizeof(SplineChar *));
     }
     oldtext = _GGadgetGetTitle(mv->text);
-    newtext = galloc((mv->glyphcnt+cnt+1)*sizeof(unichar_t));
+    newtext = galloc((mv->clen+cnt+1)*sizeof(unichar_t));
     u_strcpy(newtext,oldtext);
     newtext[mv->clen+cnt]='\0';
     for ( i=mv->clen+cnt-1; i>=within+cnt; --i ) {
@@ -3642,7 +3719,7 @@ return;
 	newtext[i] = (founds[i-within]->unicodeenc>=0 && founds[i-within]->unicodeenc<0x10000)?
 		founds[i-within]->unicodeenc : 0xfffd;
     }
-    mv->glyphcnt += cnt;
+    mv->clen += cnt;
     MVRemetric(mv);
     free(founds);
 
