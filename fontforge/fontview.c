@@ -7094,8 +7094,10 @@ static void FontView_Free(FontView *fv) {
 	    prev->b.nextsame = fv->b.nextsame;
 	}
     }
+#ifndef _NO_FFSCRIPT
     DictionaryFree(fv->b.fontvars);
     free(fv->b.fontvars);
+#endif
     free(fv->b.selected);
     free(fv->fontset);
 #ifndef _NO_PYTHON
