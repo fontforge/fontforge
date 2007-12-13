@@ -62,6 +62,7 @@ extern int autohint_before_generate;
 #define IUP_x                   (0x31)
 #define SHP_rp2                 (0x32)
 #define SHP_rp1                 (0x33)
+#define IP			(0x39)
 #define MIAP_rnd                (0x3f)
 #define ADD                     (0x60)
 #define MUL                     (0x63)
@@ -2013,7 +2014,7 @@ return;
 
     ct->touched[rp0] |= ct->xdir?tf_x:tf_y;
     finish_edge(ct, shp_rp1?SHP_rp1:SHP_rp2);
-    mark_startenddones(hint, coord, ct->gic->fudge);
+    mark_startenddones(ct->xdir?ct->sc->vstem:ct->sc->hstem, coord, ct->gic->fudge);
 
     if (!ct->xdir && hint->ghost && ((hint->width==20) || (hint->width==21))) {
         hint->startdone = hint->enddone = 1;
@@ -2079,7 +2080,7 @@ return;
 
     ct->touched[ct->edge.refpt] |= ct->xdir?tf_x:tf_y;
     finish_edge(ct, SHP_rp2);
-    mark_startenddones(hint, coord, ct->gic->fudge);
+    mark_startenddones(ct->xdir?ct->sc->vstem:ct->sc->hstem, coord, ct->gic->fudge);
 }
 
 /******************************************************************************
@@ -2307,7 +2308,10 @@ return;
 	    init_edge(ct, base, EXTERNAL_CONTOURS);
 	    optimize_edge(ct);
 
-	    if (ct->edge.refpt == -1) continue;
+	    if (ct->edge.refpt == -1) {
+		ct->gic->fudge = fudge;
+		continue;
+	    }
 
 	    if (!(ct->touched[ct->edge.refpt]&tf_y || ct->affected[ct->edge.refpt]&tf_y)) {
 		callargs[0] = ct->edge.refpt;
@@ -2358,7 +2362,7 @@ return;
 /******************************************************************************
  *
  * High-level functions for instructing horizontal and vertical stems.
- * Both will usse 'geninstrs' for positioning single stems.
+ * Both will use 'geninstrs' for positioning single stems.
  *
  ******************************************************************************/
 
@@ -2491,7 +2495,7 @@ static void geninstrs(InstrCt *ct, StemInfo *hint) {
 
 /* High-level function for instructing horizontal stems.
  *
- * TODO! It is assumed that blues (and hstems associated with them) are already
+ * It is assumed that blues (and hstems associated with them) are already
  * done so that remaining stems can be interpolated between them.
  *
  * TODO! CJK hinting will probably need different function (HStemGeninstCJK?)
@@ -2499,10 +2503,90 @@ static void geninstrs(InstrCt *ct, StemInfo *hint) {
  * TODO! Instruct top and bottom bearings for fonts which have them.
  */
 static void HStemGeninst(InstrCt *ct) {
+    BlueZone *blues = ct->gic->blues;
+    int bluecnt = ct->gic->bluecnt;
+    BasePoint *bp = ct->bp;
     StemInfo *hint;
+    int i, rp1, lastrp1=-1, rp2, lastrp2=-1;
+    double hbase, hend;
 
-    for ( hint=ct->sc->hstem; hint!=NULL; hint=hint->next ) {
-	if ( !hint->startdone || !hint->enddone )
+    for ( hint=ct->sc->hstem; hint!=NULL; hint=hint->next )
+    {
+	if (!hint->startdone && !hint->enddone)
+	{
+	    /* Set up upper edge (hend) and lower edge (hbase). */
+
+	    if (hint->ghost)
+	    {
+	        if (hint->width == 21 || hint->width == 20)
+		    continue; //should be in a blue zone & done earlier (?)
+
+		hend = hint->start;
+		hbase = hend - hint->width;
+	    }
+	    else {
+	        hbase = hint->start;
+		hend = hbase + hint->width;
+	    }
+
+	    /* Find two points to interpolate the HStem between.
+	       rp1 = lower, rp2 = upper. */
+
+	    rp1 = -1;
+	    rp2 = -1;
+
+	    for (i=0; i<bluecnt; i++) {
+	        if (blues[i].lowest == -1) // implies blues[i].highest==-1 too
+	            continue;
+
+		if (bp[blues[i].lowest].y < hbase)
+		    if (rp1==-1 || bp[rp1].y < bp[blues[i].lowest].y)
+		        rp1=blues[i].lowest;
+
+		if (bp[blues[i].highest].y > hend)
+		    if (rp2==-1 || bp[rp2].y > bp[blues[i].highest].y)
+		        rp2=blues[i].highest;
+	    }
+
+	    /* Reference points not found? Fall back to old method. */
+	    if (rp1==-1 || rp2==-1) {
+		geninstrs(ct,hint);
+		continue;
+	    }
+
+	    /* Set reference points appropriately */
+	    if (lastrp1 != rp1 && lastrp2 != rp1) {
+	        ct->pt = push2points(ct->pt, rp2, rp1);
+		*(ct->pt)++ = SRP1;
+		*(ct->pt)++ = SRP2;
+	    }
+	    else if (lastrp1 != rp1) {
+	        ct->pt = pushpoint(ct->pt, rp1);
+		*(ct->pt)++ = SRP1;
+	    }
+	    else if (lastrp2 != rp2) {
+	        ct->pt = pushpoint(ct->pt, rp2);
+		*(ct->pt)++ = SRP2;
+	    }
+
+	    lastrp1 = rp1;
+	    lastrp2 = rp2;
+
+	    /* Align the stem relatively to rp0 and rp1. */
+	    if (fabs(bp[rp1].y - hend) < fabs(bp[rp2].y - hbase))
+		init_edge(ct, hbase, ALL_CONTOURS);
+	    else init_edge(ct, hend, ALL_CONTOURS);
+
+	    if (ct->edge.refpt == -1) continue; /* non-instructable stem */
+
+	    ct->pt = pushpoint(ct->pt, ct->edge.refpt);
+	    *(ct->pt)++ = DUP;
+	    *(ct->pt)++ = IP;
+	    *(ct->pt)++ = MDAP_rnd;
+	    lastrp1 = ct->edge.refpt;
+	    finish_stem(hint, use_rp2, keep_old_rp0, ct);
+	}
+	else if (!hint->startdone || !hint->enddone)
 	    geninstrs(ct,hint);
     }
 }
