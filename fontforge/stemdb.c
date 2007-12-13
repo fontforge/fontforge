@@ -848,7 +848,7 @@ return( ret );
 /*  points that are on the intersection of two lines */
 static struct linedata *BuildLine(struct glyphdata *gd,struct pointdata *pd,int is_next ) {
     int i;
-    BasePoint *dir, *base;
+    BasePoint *dir, *base, *start, *end;
     struct pointdata **pspace = gd->pspace;
     int pcnt=0, is_l;
     double dist_error;
@@ -922,6 +922,10 @@ return( NULL );
 	line->points[i+1] = pspace[i];
     }
     qsort( line->points,line->pcnt,sizeof( struct pointdata * ),line_pt_cmp );
+    start = &line->points[0]->sp->me;
+    end = &line->points[pcnt]->sp->me;
+    line->length =  ( end->x - start->x ) * line->unit.x +
+                    ( end->y - start->y ) * line->unit.y;
 return( line );
 }
 
@@ -1516,7 +1520,7 @@ return( NULL );         /* cannot determine the opposite point's direction */
 return( NULL );         /* Cannot make a stem if edges are not parallel (unless it is a serif) */
     
     /* For serifs we prefer the vector which is closer to horizontal/vertical */
-    if ( is_stub && VectorCloserToHV( mdir,dir ) == 1 )
+    if ( is_stub == 1 && VectorCloserToHV( mdir,dir ) == 1 )
         dir = mdir;
     if ( is_stub == 1 && !IsVectorHV( dir,slope_error,true ) && 
         ( hint_diagonal_ends || require_existing )) 
@@ -1531,19 +1535,32 @@ return( NULL );         /* Cannot make a stem if edges are not parallel (unless 
 	stem = NewStem( gd,dir,&pd->sp->me,&match->me );
     if ( stem != NULL ) {
         chunk = AddToStem( stem,pd,pd2,is_next,is_next2,false );
-        if ( chunk != NULL ) {
+        if ( chunk != NULL )
             chunk->stub = is_stub;
-
-            if ( line != NULL && chunk->l == pd && stem->leftline == NULL ) {
-                stem->leftline = line;
-                SetStemUnit( stem,line->unit );
-            } else if ( line != NULL && chunk->r == pd && stem->rightline == NULL )
-                stem->rightline = line;
-            if ( line2 != NULL && chunk->l == pd2 && stem->leftline == NULL ) {
-                stem->leftline = line2;
-                SetStemUnit( stem,line2->unit );
-            } else if ( line2 != NULL && chunk->r == pd2 && stem->rightline == NULL )
-                stem->rightline = line2;
+            
+        if ( chunk != NULL && gd->linecnt > 0 ) {
+            if ( stem->leftline == NULL ) {
+                if ( line != NULL && chunk->l == pd )
+                    stem->leftline = line;
+                else if ( line2 != NULL && chunk->l == pd2 )
+                    stem->leftline = line2;
+                /* If lines are attached to both sides of a diagonal stem,
+                /* then prefer the longer line */
+                if (!IsVectorHV( &stem->unit,0,true ) &&
+                    stem->leftline != NULL && ( stem->rightline == NULL || 
+                    stem->rightline->length < stem->leftline->length ))
+                    SetStemUnit( stem,stem->leftline->unit );
+            }
+            if ( stem->rightline == NULL ) {
+                if ( line != NULL && chunk->r == pd )
+                    stem->rightline = line;
+                else if ( line2 != NULL && chunk->r == pd2 )
+                    stem->rightline = line2;
+                if (!IsVectorHV( &stem->unit,0,true ) &&
+                    stem->rightline != NULL && ( stem->leftline == NULL || 
+                    stem->leftline->length < stem->rightline->length ))
+                    SetStemUnit( stem,stem->rightline->unit );
+            }
         }
     }
 
@@ -3055,7 +3072,7 @@ static void GDFindUnlikelyStems( struct glyphdata *gd ) {
 
     /* One more check for curved stems. If a stem has just one active
     /* segment, this segment is curved and the stem has no conflicts,
-    /* then select the active segment length which allows as to consider
+    /* then select the active segment length which allows us to consider
     /* this stem suitable for PS output by such a way, that stems connecting
     /* the opposite sides of a circle are always accepted */
     for ( i=0; i<gd->stemcnt; ++i ) if ( gd->stems[i].toobig ) {
@@ -3088,7 +3105,9 @@ static void GDFindUnlikelyStems( struct glyphdata *gd ) {
         if ( stem->positioned )
     continue;
         
-        if ( stem->chunk_cnt == 1 && stem->chunks[0].stub && !IsVectorHV( &stem->unit,0,true )) {
+        if ( stem->chunk_cnt == 1 && 
+            stem->chunks[0].stub > 0 && stem->chunks[0].stub < 3 && 
+            !IsVectorHV( &stem->unit,0,true )) {
             struct stem_chunk *chunk = &stem->chunks[0];
             
             lsp = chunk->l->sp; lstem = tstem = NULL;
@@ -3583,13 +3602,13 @@ static void DumpGlyphData( struct glyphdata *gd ) {
         fprintf( stderr, "\nDumping line data for %s\n",gd->sc->name );
     for ( i=0; i<gd->linecnt; ++i ) {
 	struct linedata *line = &gd->lines[i];
-        fprintf( stderr, "line vector=%f,%f\n", 
-            line->unit.x,line->unit.y);
-        for( j=0; j<line->pcnt;++j) {
+        fprintf( stderr, "line vector=%f,%f base=%f,%f length=%f\n", 
+            line->unit.x,line->unit.y,line->online.x,line->online.y,line->length );
+        for( j=0; j<line->pcnt;++j ) {
             fprintf( stderr, "\tpoint num=%d, x=%f, y=%f, prev=%d, next=%d\n",
                 line->points[j]->sp->ttfindex, line->points[j]->sp->me.x,
                 line->points[j]->sp->me.y, 
-                line->points[j]->prevline==line, line->points[j]->nextline==line);
+                line->points[j]->prevline==line, line->points[j]->nextline==line );
         }
         fprintf( stderr, "\n" );
     }
