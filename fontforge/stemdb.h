@@ -98,6 +98,7 @@ struct linedata {
     BasePoint online;
     uint8 is_left;
     int pcnt;
+    double length;
     struct pointdata **points;
 };
 
