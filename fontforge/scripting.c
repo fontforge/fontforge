@@ -47,12 +47,12 @@
 #include "scripting.h"
 #include "scriptfuncs.h"
 
-static int verbose = -1;
 int no_windowing_ui = false;
 int running_script = false;
 int use_utf8_in_script = true;
 
 #ifndef _NO_FFSCRIPT
+static int verbose = -1;
 static struct dictionary globals;
 
 struct keywords { enum token_type tok; char *name; } keywords[] = {
