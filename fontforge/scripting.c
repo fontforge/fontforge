@@ -145,7 +145,6 @@ static void array_copy_into(Array *dest,int offset,Array *src) {
 	    dest->vals[i+offset].u.aval = arraycopy(src->vals[i].u.aval);
     }
 }
-#endif /* _NO_FFSCRIPT */
 
 void DictionaryFree(struct dictionary *dica) {
     int i;
@@ -163,7 +162,6 @@ return;
     free( dica->entries );
 }
 
-#ifndef _NO_FFSCRIPT
 static int DicaLookup(struct dictionary *dica,char *name,Val *val) {
     int i;
 
