@@ -299,7 +299,7 @@ return( false );
 	"Host: www.openfontlibrary.org\r\n"
 	"User-Agent: FontForge\r\n"
 	"Connection: close\r\n\r\n%s",
-	    strlen( msg ), msg );
+	    (int) strlen( msg ), msg );
     code = Converse( soc, databuf, datalen, NULL, ct_savecookies, &siteinfo );
     /* Amusingly a success return of 200 is actually an error */
     if ( code!=302 ) {

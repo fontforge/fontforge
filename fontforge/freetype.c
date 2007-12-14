@@ -74,7 +74,7 @@ return( NULL );
 }
 
 SplineSet *FreeType_GridFitChar(void *single_glyph_context,
-	int enc, real ptsize, int dpi, int16 *width, SplineChar *sc) {
+	int enc, real ptsize, int dpi, uint16 *width, SplineChar *sc) {
 return( NULL );
 }
 
@@ -720,7 +720,7 @@ static FT_Outline_Funcs outlinefuncs = {
 };
 
 SplineSet *FreeType_GridFitChar(void *single_glyph_context,
-	int enc, real ptsize, int dpi, int16 *width, SplineChar *sc) {
+	int enc, real ptsize, int dpi, uint16 *width, SplineChar *sc) {
     FT_GlyphSlot slot;
     FTC *ftc = (FTC *) single_glyph_context;
     struct ft_context outline_context;

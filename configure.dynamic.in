@@ -520,6 +520,9 @@ if test "$gww_nodynamic" = "yes" -o "$gww_regular_link" = "yes"; then
  if test "$ac_cv_lib_intl_bind_textdomain_codeset" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -lintl"
  fi
+ if test "$ac_cv_lib_spiro_TaggedSpiroCPsToBezier" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lspiro"
+ fi
  AC_CHECK_LIB(uninameslist, UnicodeNameAnnot, [
    STATIC_LIBS="$STATIC_LIBS -luninameslist"
    AC_DEFINE(_STATIC_LIBUNINAMESLIST) ] , AC_DEFINE(_NO_LIBUNINAMESLIST))
@@ -552,6 +555,10 @@ if test "$gww_needsstaticimages" = "yes" -a "$gww_regular_link" = "no"; then
  if test "$ac_cv_lib_jpeg_jpeg_CreateDecompress" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -ljpeg"
   AC_DEFINE(_STATIC_LIBJPEG)
+ fi
+ if test "$ac_cv_lib_spiro_TaggedSpiroCPsToBezier" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lspiro"
+  AC_DEFINE(_STATIC_LIBSPIRO)
  fi
 fi
 if test "$gww_nodynamic" != "yes" -a "$gww_regular_link" != "yes" -a \

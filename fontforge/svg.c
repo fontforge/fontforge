@@ -2026,35 +2026,35 @@ static Entity *SVGParseImage(xmlNodePtr svg) {
 
     val = _xmlGetProp(svg,(xmlChar *) "x");
     if ( val!=NULL ) {
-	x = strtod(val,NULL);
+	x = strtod((char *) val,NULL);
 	free(val);
     }
     val = _xmlGetProp(svg,(xmlChar *) "y");
     if ( val!=NULL ) {
-	y = strtod(val,NULL);
+	y = strtod((char *) val,NULL);
 	free(val);
     }
 
     val = _xmlGetProp(svg,(xmlChar *) "width");
     if ( val!=NULL ) {
-	width = strtod(val,NULL);
+	width = strtod((char *) val,NULL);
 	free(val);
     }
     val = _xmlGetProp(svg,(xmlChar *) "height");
     if ( val!=NULL ) {
-	height = strtod(val,NULL);
+	height = strtod((char *) val,NULL);
 	free(val);
     }
 
     val = _xmlGetProp(svg,(xmlChar *) /*"xlink:href"*/ "href");
     if ( val==NULL )
 return( NULL );
-    if ( strncmp(val,"data:",5)!=0 ) {
+    if ( strncmp((char *) val,"data:",5)!=0 ) {
 	LogError("FontForge only supports embedded images in data: URIs\n");
 	free(val);
 return( NULL );		/* I can only handle data URIs */
     }
-    img = GImageFromDataURI(val);
+    img = GImageFromDataURI((char *) val);
     free(val);
     if ( img==NULL )
 return( NULL );

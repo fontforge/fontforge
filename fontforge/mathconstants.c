@@ -26,6 +26,12 @@
  */
 
 #include "fontforgevw.h"
+#ifdef __need_size_t
+/* This is a bug on the mac, someone defines this and leaves it defined */
+/*  that means when I load stddef.h it only defines size_t and doesn't */
+/*  do offset_of, which is what I need */
+# undef __need_size_t
+#endif
 #include <stddef.h>
 
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
