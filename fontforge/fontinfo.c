@@ -5413,7 +5413,7 @@ static int OS2_UnicodeChange(GGadget *g, GEvent *e) {
 	flags[0] = flags[1] = flags[2] = flags[3] = 0;
 	for ( i=0; i<len; ++i )
 	    if ( list[i]->selected ) {
-		bit = ((int) (list[i]->userdata));
+		bit = ((intpt) (list[i]->userdata));
 		flags[bit>>5] |= (1<<(bit&31));
 	    }
 
@@ -5477,7 +5477,7 @@ static int OS2_CodePageChange(GGadget *g, GEvent *e) {
 	flags[0] = flags[1] = 0;
 	for ( i=0; i<len; ++i )
 	    if ( list[i]->selected ) {
-		bit = ((int) (list[i]->userdata));
+		bit = ((intpt) (list[i]->userdata));
 		flags[bit>>5] |= (1<<(bit&31));
 	    }
 
