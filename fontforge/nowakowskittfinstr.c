@@ -2584,7 +2584,7 @@ static void HStemGeninst(InstrCt *ct) {
 	    *(ct->pt)++ = IP;
 	    *(ct->pt)++ = MDAP_rnd;
 	    lastrp1 = ct->edge.refpt;
-	    finish_stem(hint, use_rp2, keep_old_rp0, ct);
+	    finish_stem(hint, use_rp1, keep_old_rp0, ct);
 	}
 	else if (!hint->startdone || !hint->enddone)
 	    geninstrs(ct,hint);
