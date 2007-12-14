@@ -39,6 +39,7 @@ static const int unicode4_size = 17*65536;
     /* Unicode goes up to 0x10ffff */
 
 
+extern void ProcessNativeScript(int argc, char *argv[], FILE *script);
 extern void CheckIsScript(int argc, char *argv[]);
 
 extern char *AdobeStandardEncoding[256];

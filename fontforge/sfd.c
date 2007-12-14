@@ -2485,7 +2485,7 @@ static int getlonglong(FILE *sfd, long *val) {
 return( pt!=tokbuf?1:ch==EOF?-1: 0 );
 }
 
-static int gethex(FILE *sfd, int *val) {
+static int gethex(FILE *sfd, uint32 *val) {
     char tokbuf[100]; int ch;
     char *pt=tokbuf, *end = tokbuf+100-2;
 
@@ -2506,7 +2506,7 @@ static int gethex(FILE *sfd, int *val) {
 return( pt!=tokbuf?1:ch==EOF?-1: 0 );
 }
 
-static int gethexints(FILE *sfd, int *val, int cnt) {
+static int gethexints(FILE *sfd, uint32 *val, int cnt) {
     int i, ch;
 
     for ( i=0; i<cnt; ++i ) {
@@ -2635,7 +2635,8 @@ static void rle2image(struct enc85 *dec,int rlelen,struct _GImage *base) {
 
 static ImageList *SFDGetImage(FILE *sfd) {
     /* We've read the image token */
-    int width, height, image_type, bpl, clutlen, trans, rlelen;
+    int width, height, image_type, bpl, clutlen, rlelen;
+    uint32 trans;
     struct _GImage *base;
     GImage *image;
     ImageList *img;
@@ -3592,7 +3593,7 @@ return( NULL );
 		sc->altuni = altuni;
 	    }
 	} else if ( strmatch(tok,"AltUni2:")==0 ) {
-	    int uni[3];
+	    uint32 uni[3];
 	    while ( gethexints(sfd,uni,3) ) {
 		altuni = chunkalloc(sizeof(struct altuni));
 		altuni->unienc = uni[0];
@@ -3745,7 +3746,7 @@ return( NULL );
 	} else if ( strmatch(tok,"MinimumDistance:")==0 ) {
 	    SFDGetMinimumDistances(sfd,sc);
 	} else if ( strmatch(tok,"Validated:")==0 ) {
-	    getsint(sfd,&sc->validation_state);
+	    getsint(sfd,(int16 *) &sc->validation_state);
 	} else if ( strmatch(tok,"PickledData:")==0 ) {
 	    sc->python_persistent = SFDUnPickle(sfd);
 	} else if ( strmatch(tok,"Back")==0 ) {
@@ -3764,7 +3765,8 @@ return( NULL );
 	    sc->layer_cnt = temp;
 	    current_layer = ly_fore;
 	} else if ( strmatch(tok,"Layer:")==0 ) {
-	    int layer, dofill, dostroke, fillfirst, fillcol, strokecol, linejoin, linecap;
+	    int layer, dofill, dostroke, fillfirst, linejoin, linecap;
+	    uint32 fillcol, strokecol;
 	    real fillopacity, strokeopacity, strokewidth, trans[4];
 	    DashType dashes[DASH_MAX];
 	    int i;
@@ -4099,7 +4101,7 @@ exit(1);
 		CvtOldMacFeature((PST1 *) pst);
 #endif
 	} else if ( strmatch(tok,"Colour:")==0 ) {
-	    int temp;
+	    uint32 temp;
 	    gethex(sfd,&temp);
 	    sc->color = temp;
 	} else if ( strmatch(tok,"Comment:")==0 ) {
@@ -5661,7 +5663,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
 	    mappos = 0;
 	    if ( sf->map!=NULL ) sf->map->remap = remap;
 	} else if ( strmatch(tok,"Remap:")==0 ) {
-	    int f, l, p;
+	    uint32 f, l; int p;
 	    gethex(sfd,&f);
 	    gethex(sfd,&l);
 	    getint(sfd,&p);

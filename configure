@@ -23994,6 +23994,9 @@ if test "$gww_nodynamic" = "yes" -o "$gww_regular_link" = "yes"; then
  if test "$ac_cv_lib_intl_bind_textdomain_codeset" = "yes"; then
   STATIC_LIBS="$STATIC_LIBS -lintl"
  fi
+ if test "$ac_cv_lib_spiro_TaggedSpiroCPsToBezier" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lspiro"
+ fi
  echo "$as_me:$LINENO: checking for UnicodeNameAnnot in -luninameslist" >&5
 echo $ECHO_N "checking for UnicodeNameAnnot in -luninameslist... $ECHO_C" >&6
 if test "${ac_cv_lib_uninameslist_UnicodeNameAnnot+set}" = set; then
@@ -24117,6 +24120,13 @@ _ACEOF
   STATIC_LIBS="$STATIC_LIBS -ljpeg"
   cat >>confdefs.h <<\_ACEOF
 #define _STATIC_LIBJPEG 1
+_ACEOF
+
+ fi
+ if test "$ac_cv_lib_spiro_TaggedSpiroCPsToBezier" = "yes"; then
+  STATIC_LIBS="$STATIC_LIBS -lspiro"
+  cat >>confdefs.h <<\_ACEOF
+#define _STATIC_LIBSPIRO 1
 _ACEOF
 
  fi

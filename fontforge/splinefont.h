@@ -2510,7 +2510,7 @@ extern BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int gid,
 	int pixelsize,int depth);
 extern void FreeTypeFreeContext(void *freetypecontext);
 extern SplineSet *FreeType_GridFitChar(void *single_glyph_context,
-	int enc, real ptsize, int dpi, int16 *width, SplineChar *sc);
+	int enc, real ptsize, int dpi, uint16 *width, SplineChar *sc);
 extern struct freetype_raster *FreeType_GetRaster(void *single_glyph_context,
 	int enc, real ptsize, int dpi,int depth);
 extern BDFChar *SplineCharFreeTypeRasterizeNoHints(SplineChar *sc,
@@ -2782,9 +2782,9 @@ extern char *PyFF_PickleMeToString(void *pydata);
 extern void *PyFF_UnPickleMeToObjects(char *str);
 struct _object;		/* Python Object */
 extern void PyFF_CallDictFunc(struct _object *dict,char *key,char *argtypes, ... );
-extern void doinitFontForgeMain(void);
 extern void ff_init(void);
 #endif
+extern void doinitFontForgeMain(void);
 
 extern void InitSimpleStuff(void);
 

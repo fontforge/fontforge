@@ -9435,7 +9435,7 @@ void ff_VerboseCheck(void) {
 	verbose = getenv("FONTFORGE_VERBOSE")!=NULL;
 }
 
-static void ProcessNativeScript(int argc, char *argv[], FILE *script) {
+void ProcessNativeScript(int argc, char *argv[], FILE *script) {
     int i,j;
     Context c;
     enum token_type tok;
