@@ -868,7 +868,7 @@ static int AnchorD_Apply(AnchorDlg *a) {
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
     SetAnchor(a->sc,a->ap,&a->xadjust,&a->yadjust,&a->apos);
 #else
-    SetAnchor(a->sc,a->ap,&a->pos);
+    SetAnchor(a->sc,a->ap,&a->apos);
 #endif
 return( true );
 }
