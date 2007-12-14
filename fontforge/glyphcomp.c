@@ -584,6 +584,7 @@ return( failed == 0 ? BC_Match : failed );
 /* **************** Code to selected glyphs against clipboard *************** */
 /* ************************************************************************** */
 
+#if !defined(_NO_PYTHON) || !defined(_NO_FFSCRIPT)
 static int RefCheck(const RefChar *ref1,const RefChar *ref2 ) {
     const RefChar *r1, *r2;
     int i;
@@ -619,7 +620,6 @@ return( false );
 return( true + ptmatchdiff );
 }
 
-#if !defined(_NO_PYTHON) || !defined(_NO_FFSCRIPT)
 int CompareLayer(Context *c, const SplineSet *ss1,const SplineSet *ss2,
 	const RefChar *refs1, const RefChar *refs2,
 	real pt_err, real spline_err, const char *name, int diffs_are_errors,
