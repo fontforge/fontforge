@@ -2442,7 +2442,7 @@ static void PSTMatrixInit(struct matrixinit *mi,SplineFont *_sf, struct lookup_s
 #define PAIR_DY2	7
 #define PAIR_DX_ADV2	8
 #define PAIR_DY_ADV2	9
-    static struct col_init simpleposci[5] = {
+    static struct col_init simpleposci[] = {
 	{ me_string , NULL, NULL, NULL, N_("Base Glyph Name") },
 	{ me_int, NULL, NULL, NULL, NU_("∆x") },	/* delta-x */
 	{ me_int, NULL, NULL, NULL, NU_("∆y") },	/* delta-y */
@@ -2450,7 +2450,7 @@ static void PSTMatrixInit(struct matrixinit *mi,SplineFont *_sf, struct lookup_s
 	{ me_int, NULL, NULL, NULL, NU_("∆y_adv") },	/* delta-y-adv */
 	0
 	};
-    static struct col_init pairposci[10] = {
+    static struct col_init pairposci[] = {
 	{ me_string , NULL, NULL, NULL, N_("First Glyph Name") },
 	{ me_string , NULL, NULL, NULL, N_("Second Glyph Name") },
 	{ me_int, NULL, NULL, NULL, NU_("∆x #1") },	/* delta-x */

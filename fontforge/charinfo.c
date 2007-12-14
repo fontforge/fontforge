@@ -693,7 +693,9 @@ void KpMDParse(SplineFont *sf,SplineChar *sc,struct lookup_subtable *sub,
     PST *pst;
     KernPair *kp;
     int isv, iskpable, offset, newv;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
     char *dvstr;
+#endif
     char *pt, *start;
     int ch;
 
@@ -4683,7 +4685,10 @@ void CharInfoInit(void) {
     static int done = 0;
     int i, j;
     static char **cnames[] = { newstrings, NULL };
-    static struct col_init *col_inits[] = { extensionpart, devtabci,
+    static struct col_init *col_inits[] = { extensionpart,
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	devtabci,
+#endif
 	simplesubsci, ligatureci, altsubsci, multsubsci, simpleposci,
 	pairposci, NULL };
 

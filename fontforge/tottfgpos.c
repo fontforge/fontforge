@@ -921,9 +921,7 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
     SplineChar *sc, **glyphs, *gtemp;
     int isr2l = -1;
     struct sckppst **seconds;
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     int devtablen;
-#endif
 
     /* Figure out all the data we need. First the glyphs with kerning info */
     /*  then the glyphs to which they kern, and by how much */
@@ -1482,9 +1480,9 @@ static void dumpgposkernclass(FILE *gpos,SplineFont *sf,
 }
 
 static void dumpanchor(FILE *gpos,AnchorPoint *ap, int is_ttf ) {
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
     int base = ftell(gpos);
 
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
     if ( ap->xadjust.corrections!=NULL || ap->yadjust.corrections!=NULL )
 	putshort(gpos,3);	/* format 3 w/ device tables */
     else
@@ -3605,7 +3603,9 @@ return( 2+8*mkv->cnt-4 );
 static int ttf_math_dump_mathkernvertex(FILE *mathf,struct mathkernvertex *mkv,
 	int devtab_pos) {
     int i;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
     uint32 here = ftell(mathf);
+#endif
 
     putshort(mathf,mkv->cnt-1);
 
@@ -3821,7 +3821,9 @@ return( pos + gvc_len(gv));
 static uint32 ttf_math_dump_mathglyphassemblytable(FILE *mathf,
 	struct glyphvariants *gv,SplineFont *sf, uint32 devtab_pos) {
     SplineChar *sc;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
     uint32 here = ftell(mathf);
+#endif
     int i;
 
     if ( gv->part_cnt==0 )

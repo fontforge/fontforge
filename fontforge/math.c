@@ -926,7 +926,10 @@ static int MATH_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	MathDlg *math = GDrawGetUserData(GGadgetGetWindow(g));
 	int err=false;
-	int cid,i,high,low;
+	int cid,i;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+	int high,low;
+#endif
 	SplineFont *sf = math->sf;
 	SplineChar *sc;
 
@@ -1690,9 +1693,9 @@ static int MKD_Parse(MathKernDlg *mkd) {
 		allzeroes = false;
 	}
     } else {
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	int low, high;
 	/* Parse the textual info */
-#ifdef FONTFORGE_CONFIG_DEVICETABLES
 	for ( i=0; i<4; ++i ) {
 	    GGadget *list = GWidgetGetControl(mkd->gw,CID_TopRight+i);
 	    int rows, cols = GMatrixEditGetColCnt(list);

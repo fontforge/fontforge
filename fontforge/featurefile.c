@@ -130,6 +130,7 @@ return( otl->tempname );
 return( space );
 }
 
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
 static void dumpdevice(FILE *out,DeviceTable *devtab) {
     int i, any = false;
 
@@ -148,6 +149,7 @@ static void dumpdevice(FILE *out,DeviceTable *devtab) {
     else
 	fprintf( out, "NULL>" );
 }
+#endif
 
 static void dump_valuerecord(FILE *out, struct vr *vr) {
     fprintf( out, "<%d %d %d %d", vr->xoff, vr->yoff, vr->h_adv_off, vr->v_adv_off );

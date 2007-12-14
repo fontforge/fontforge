@@ -4792,7 +4792,9 @@ return;
 static void ttf_math_read_constants(FILE *ttf,struct ttfinfo *info, uint32 start) {
     struct MATH *math;
     int i;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
     uint16 off;
+#endif
 
     fseek(ttf,start,SEEK_SET);
     info->math = math = gcalloc(1,sizeof(struct MATH));
