@@ -94,6 +94,7 @@ static void _SFTextAreaReplace(SFTextArea *st, const unichar_t *str) {
     st->sel_oldbase = st->sel_base;
     st->sel_start += LayoutInfoReplace(&st->li,str,st->sel_start,st->sel_end,
 	    st->g.inner.width);
+    st->sel_end = st->sel_start;
 }
 
 static void SFTextArea_Replace(SFTextArea *st, const unichar_t *str) {
