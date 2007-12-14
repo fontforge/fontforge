@@ -3008,6 +3008,7 @@ return( 0 );
 return( retpos );
 }
 
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
 static int FigureDeviceTable(DeviceTable *dt,int pixelsize) {
 
     if ( dt==NULL || dt->corrections==NULL || pixelsize<dt->first_pixel_size ||
@@ -3016,6 +3017,7 @@ return( 0 );
 
 return( dt->corrections[pixelsize - dt->last_pixel_size] );
 }
+#endif
 
 static int ApplySinglePosAtPos(struct lookup_subtable *sub,struct lookup_data *data,int pos) {
     PST *pst;

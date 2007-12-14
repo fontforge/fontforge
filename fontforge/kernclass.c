@@ -1219,7 +1219,7 @@ static void OffsetMoveClasses(KernClassDlg *kcd, int dir, GTextInfo **movethese,
 		else
 		    memcpy(new+(k-1)*kcd->second_cnt,kcd->offsets+(i-1)*kcd->second_cnt,
 			    kcd->second_cnt*sizeof(int16));
-#ifndef FONTFORGE_CONFIG_DEVICETABLES
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		memcpy(newd+(i+dir)*kcd->second_cnt,kcd->adjusts+i*kcd->second_cnt,
 			(k-i)*kcd->second_cnt*sizeof(DeviceTable));
 		if ( dir>0 )
@@ -1243,7 +1243,7 @@ static void OffsetMoveClasses(KernClassDlg *kcd, int dir, GTextInfo **movethese,
 			new[i*kcd->second_cnt+j] = kcd->offsets[i*kcd->second_cnt+k];
 		    else
 			new[i*kcd->second_cnt+k-1] = kcd->offsets[i*kcd->second_cnt+j-1];
-#ifndef FONTFORGE_CONFIG_DEVICETABLES
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
 		    memcpy(newd+i*kcd->second_cnt+(j+dir),kcd->offsets+i*kcd->second_cnt+j,
 			    (k-j)*sizeof(DeviceTable));
 		    if ( dir>0 )

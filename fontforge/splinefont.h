@@ -1384,7 +1384,7 @@ struct MATH {
 /* From the MATH Constants subtable (constants for positioning glyphs. Not PI)*/
     int16 ScriptPercentScaleDown;
     int16 ScriptScriptPercentScaleDown;
-    uint16 DeleimitedSubFormulaMinHeight;
+    uint16 DelimitedSubFormulaMinHeight;
     uint16 DisplayOperatorMinHeight;
     int16 MathLeading;
     int16 AxisHeight;
