@@ -657,7 +657,7 @@ int LayoutInfoReplace(LayoutInfo *li, const unichar_t *str,
 
     u_strncpy(new,li->text,sel_start);
     u_strcpy(new+sel_start,str);
-    u_strcpy(new+sel_start,li->text+sel_end);
+    u_strcpy(new+sel_start+rpllen,li->text+sel_end);
     li->text = new;
     free(old);
 
