@@ -514,10 +514,10 @@ static int encmatch(const char *enc,int subok) {
 #endif
 	{ NULL }};
     int i;
-    static char *last_complaint;
     char buffer[80];
-
 #if HAVE_ICONV_H
+    static char *last_complaint;
+
     iconv_t test;
     free(iconv_local_encoding_name);
     iconv_local_encoding_name= NULL;
