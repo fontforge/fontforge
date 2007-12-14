@@ -5159,11 +5159,10 @@ void FVRegenChar(FontView *fv,SplineChar *sc) {
 return;
 
     /* sc->changedsincelasthinted = true;*/	/* Why was this here? */
-    if ( sc->orig_pos>=fv->filled->glyphcnt )
-	IError("Character out of bounds in bitmap font %d>=%d", sc->orig_pos, fv->filled->glyphcnt );
-    else
+    if ( sc->orig_pos<fv->filled->glyphcnt ) {
 	BDFCharFree(fv->filled->glyphs[sc->orig_pos]);
-    fv->filled->glyphs[sc->orig_pos] = NULL;
+	fv->filled->glyphs[sc->orig_pos] = NULL;
+    }
 		/* FVRefreshChar does NOT do this for us */
     for ( mv=fv->b.sf->metrics; mv!=NULL; mv=mv->next )
 	MVRegenChar(mv,sc);
