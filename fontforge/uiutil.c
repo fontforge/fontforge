@@ -30,9 +30,9 @@
 #include <unistd.h>
 #include <utype.h>
 #include <ustring.h>
+#include <sys/time.h>
 
 #if __CygWin
-#include <unistd.h>
 extern void cygwin_conv_to_full_posix_path(const char *win,char *unx);
 extern void cygwin_conv_to_full_win32_path(const char *unx,char *win);
 #endif
