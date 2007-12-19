@@ -5837,7 +5837,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		laststyles = styles;
 	    }
 	    changed = sc->changed;
-	    if ( fv->b.sf->onlybitmaps )
+	    if ( fv->b.sf->onlybitmaps && gid<fv->show->glyphcnt )
 		changed = gid==-1 || fv->show->glyphs[gid]==NULL? false : fv->show->glyphs[gid]->changed;
 	    if ( changed ) {
 		GRect r;
