@@ -61,6 +61,27 @@ static struct letter_frequencies TRK_counts[] = {
     NULL
 };
 
+/* These data are bigram frequences for various scripts and languages. */
+/* Obviously there is no "perfect" bigram table because every text and writer */
+/*  will be slightly different. These should be representative, however. */
+/* They were derived by analyzing texts downloaded from Project Gutenberg */
+/*  In many cases I have no idea what these texts are... */
+
+/* Welsh -- Gwaith Mynyddog.  Cyfrol II  by  Mynyddog */
+/* Swedish -- Ada  by  Hasse Zetterström */
+/* Spanish -- La Niña de Luzmela  by  Concha Espina */
+/* Russian -- Duhovnye ody (Spiritual Odes)  by  Gavrila Romanovich Derzhavin */
+/* Polish -- Ironia Pozorow  by  Maciej hr. Lubienski */
+/* Italian -- Le rive della Bormida nel 1794  by  Giuseppe Cesare Abba */
+/* Hungarian -- Az arany szalamandra  by  Ferenc Donászy */
+/* Hebrew -- Hunger Book One  by  Knut Hamsun */
+/* Greek -- Autumn  by  Konstantinos Chatzopoulos */
+/* German -- Faust  Eine Tragödie  by  Johann Wolfgang von Goethe */
+/* French -- 20000 Lieues sous les mers  by  Jules Verne */
+/* English -- Life And Adventures Of Martin Chuzzlewit  by  Charles Dickens */
+/* Dutch -- Columbus De ontdekker van Amerika by J.S.C. Abbott */
+/* Czech -- R.U.R. by Karel Čapek */
+
 /******************************************************************************/
 static float CSY_afters_0[] = { 0.000747, 0.056510, 0.019417, 0.063978, 0.000498, 0.000996, 0.000996, 0.022405, 0, 0.030122, 0.119492, 0.218073, 0.048793, 0.104556, 0.000996, 0.019417, 0.047050, 0.040329, 0.064725, 0.007468, 0.049042, 0, 0, 0, 0.012447, 0.000498, 0, 0, 0, 0, 0, 0.012945, 0.001743, 0, 0.004481, 0.003236, 0.015932, 0.003236, 0, 0.019666, 0.010207, 0};
 static float CSY_afters_1[] = { 0.032907, 0, 0, 0.000609, 0.054845, 0, 0, 0, 0.029250, 0.005484, 0.003047, 0.023157, 0, 0.009141, 0.260817, 0, 0.124924, 0.000609, 0.002438, 0.146862, 0, 0, 0, 0.209628, 0.000609, 0.006703, 0.000609, 0.016453, 0, 0, 0.018891, 0, 0, 0.031079, 0, 0.009750, 0.000609, 0, 0.010360, 0, 0.001219, 0};
