@@ -1188,6 +1188,25 @@ return( true );
 return( true );
 }
 
+static int DSP_Menu(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonpress ) {
+	PD *di = GDrawGetUserData(GGadgetGetWindow(g));
+	GGadget *st = GWidgetGetControl(di->gw,CID_SampleText);
+	GEvent fudge;
+	GPoint p;
+	memset(&fudge,0,sizeof(fudge));
+	fudge.type = et_mousedown;
+	fudge.w = st->base;
+	p.x = g->inner.x+g->inner.width/2;
+	p.y = g->inner.y+g->inner.height;
+	GDrawTranslateCoordinates(g->base,st->base,&p);
+	fudge.u.mouse.x = p.x; fudge.u.mouse.y = p.y;
+	SFTFPopupMenu((SFTextArea *) st,&fudge);
+    }
+return( true );
+}
+
 static int DSP_FeaturesChanged(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
@@ -1257,12 +1276,12 @@ return( true );
 void PrintDlg(FontView *fv,SplineChar *sc,MetricsView *mv) {
     GRect pos;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[17], boxes[15], mgcd[5], pgcd[8],
+    GGadgetCreateData gcd[18], boxes[15], mgcd[5], pgcd[8], vbox,
 	    *harray[8], *farray[8], *barray[4],
-	    *barray2[8], *varray[9], *varray2[9], *harray2[4],
+	    *barray2[8], *varray[9], *varray2[9], *harray2[5],
 	    *varray3[4][4], *ptarray[4], *varray4[4], *varray5[4][2],
-	    *regenarray[6];
-    GTextInfo label[17], mlabel[5], plabel[8];
+	    *regenarray[6], *varray6[3];
+    GTextInfo label[18], mlabel[5], plabel[8];
     GTabInfo aspects[3];
     int dpi;
     char buf[12], dpibuf[12], sizebuf[12];
@@ -1302,6 +1321,7 @@ return;
     pos.height = GDrawPointsToPixels(NULL,330);
     printwindow->gw = GDrawCreateTopWindow(NULL,&pos,dsp_e_h,printwindow,&wattrs);
 
+    memset(&vbox,0,sizeof(vbox));
     memset(&label,0,sizeof(label));
     memset(&mlabel,0,sizeof(mlabel));
     memset(&plabel,0,sizeof(plabel));
@@ -1471,7 +1491,7 @@ return;
     boxes[4].gd.flags = gg_enabled|gg_visible;
     boxes[4].gd.u.boxelements = varray;
     boxes[4].creator = GHVBoxCreate;
-    harray2[1] = &boxes[4]; harray2[2] = GCD_Glue; harray2[3] = NULL;
+    harray2[1] = &boxes[4];
 
     gcd[11].gd.popup_msg = (unichar_t *) _("Select some text, then use this list to specify\nactive features.");
     gcd[11].gd.pos.width = 50;
@@ -1481,57 +1501,71 @@ return;
     gcd[11].creator = GListCreate;
     harray2[0] = &gcd[11];
 
+    label[12].image = &GIcon_menudelta;
+    gcd[12].gd.label = &label[12];
+    gcd[12].gd.popup_msg = (unichar_t *) _("Menu");
+    gcd[12].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[12].gd.handle_controlevent = DSP_Menu;
+    gcd[12].creator = GButtonCreate;
+
+    varray6[0] = GCD_Glue; varray6[1] = &gcd[12]; varray6[2] = NULL;
+    vbox.gd.flags = gg_enabled|gg_visible;
+    vbox.gd.u.boxelements = varray6;
+    vbox.creator = GVBoxCreate;
+
+    harray2[2] = &vbox; harray2[3] = GCD_Glue; harray2[4] = NULL;
+
     boxes[5].gd.flags = gg_enabled|gg_visible;
     boxes[5].gd.u.boxelements = harray2;
     boxes[5].creator = GHBoxCreate;
     varray2[0] = &boxes[5]; varray2[1] = NULL;
 
 
-    gcd[12].gd.pos.x = 5; gcd[12].gd.pos.y = 20+gcd[12].gd.pos.y; 
-    gcd[12].gd.pos.width = 400; gcd[12].gd.pos.height = 236; 
-    gcd[12].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap | gg_text_xim;
-    gcd[12].gd.handle_controlevent = DSP_TextChanged;
-    gcd[12].gd.cid = CID_SampleText;
-    gcd[12].creator = SFTextAreaCreate;
-    varray2[2] = &gcd[12]; varray2[3] = NULL;
+    gcd[13].gd.pos.x = 5; gcd[13].gd.pos.y = 20+gcd[13].gd.pos.y; 
+    gcd[13].gd.pos.width = 400; gcd[13].gd.pos.height = 236; 
+    gcd[13].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap | gg_text_xim;
+    gcd[13].gd.handle_controlevent = DSP_TextChanged;
+    gcd[13].gd.cid = CID_SampleText;
+    gcd[13].creator = SFTextAreaCreate;
+    varray2[2] = &gcd[13]; varray2[3] = NULL;
 
-    gcd[13].gd.flags = gg_visible | gg_enabled ;
-    gcd[13].creator = GLineCreate;
-    varray2[4] = &gcd[13]; varray2[5] = NULL;
+    gcd[14].gd.flags = gg_visible | gg_enabled ;
+    gcd[14].creator = GLineCreate;
+    varray2[4] = &gcd[14]; varray2[5] = NULL;
 
-    label[14].text = (unichar_t *) "DPI:";
-    label[14].text_is_1byte = true;
-    gcd[14].gd.label = &label[14];
-    gcd[14].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    gcd[14].gd.popup_msg = (unichar_t *) _("Specifies screen dots per inch");
-    gcd[14].creator = GLabelCreate;
+    label[15].text = (unichar_t *) "DPI:";
+    label[15].text_is_1byte = true;
+    gcd[15].gd.label = &label[15];
+    gcd[15].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[15].gd.popup_msg = (unichar_t *) _("Specifies screen dots per inch");
+    gcd[15].creator = GLabelCreate;
 
     if ( lastdpi==0 )
 	dpi = GDrawPointsToPixels(NULL,72);
     else
 	dpi = lastdpi;
     sprintf( dpibuf, "%d", dpi );
-    label[15].text = (unichar_t *) dpibuf;
-    label[15].text_is_1byte = true;
-    gcd[15].gd.label = &label[15];
-    gcd[15].gd.pos.width = 50;
-    gcd[15].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    gcd[15].gd.popup_msg = (unichar_t *) _("Specifies screen dots per inch");
-    gcd[15].gd.cid = CID_DPI;
-    gcd[15].gd.handle_controlevent = DSP_DpiChanged;
-    gcd[15].creator = GNumericFieldCreate;
-
-    gcd[16].gd.flags = gg_visible | gg_enabled | gg_utf8_popup ;
-    gcd[16].gd.popup_msg = (unichar_t *) _("FontForge does not update this window when a change is made to the font.\nIf a font has changed press the button to force an update");
-    label[16].text = (unichar_t *) _("_Refresh");
+    label[16].text = (unichar_t *) dpibuf;
     label[16].text_is_1byte = true;
-    label[16].text_in_resource = true;
     gcd[16].gd.label = &label[16];
-    gcd[16].gd.handle_controlevent = DSP_Refresh;
-    gcd[16].creator = GButtonCreate;
+    gcd[16].gd.pos.width = 50;
+    gcd[16].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    gcd[16].gd.popup_msg = (unichar_t *) _("Specifies screen dots per inch");
+    gcd[16].gd.cid = CID_DPI;
+    gcd[16].gd.handle_controlevent = DSP_DpiChanged;
+    gcd[16].creator = GNumericFieldCreate;
 
-    regenarray[0] = &gcd[14]; regenarray[1] = &gcd[15]; regenarray[2] = GCD_Glue;
-    regenarray[3] = &gcd[16]; regenarray[4] = NULL;
+    gcd[17].gd.flags = gg_visible | gg_enabled | gg_utf8_popup ;
+    gcd[17].gd.popup_msg = (unichar_t *) _("FontForge does not update this window when a change is made to the font.\nIf a font has changed press the button to force an update");
+    label[17].text = (unichar_t *) _("_Refresh");
+    label[17].text_is_1byte = true;
+    label[17].text_in_resource = true;
+    gcd[17].gd.label = &label[17];
+    gcd[17].gd.handle_controlevent = DSP_Refresh;
+    gcd[17].creator = GButtonCreate;
+
+    regenarray[0] = &gcd[15]; regenarray[1] = &gcd[16]; regenarray[2] = GCD_Glue;
+    regenarray[3] = &gcd[17]; regenarray[4] = NULL;
 
     boxes[12].gd.flags = gg_enabled|gg_visible;
     boxes[12].gd.u.boxelements = regenarray;
@@ -1694,12 +1728,12 @@ return;
 
     GTextInfoListFree(gcd[0].gd.u.list);
     DSP_SetFont(printwindow,true);
-    SFTFSetDPI(gcd[12].ret,dpi);
-    temp = PrtBuildDef(sf,&((SFTextArea *) gcd[12].ret)->li,
+    SFTFSetDPI(gcd[13].ret,dpi);
+    temp = PrtBuildDef(sf,&((SFTextArea *) gcd[13].ret)->li,
 	    (void (*)(void *, int, uint32, uint32))LayoutInfoInitLangSys);
-    GGadgetSetTitle(gcd[12].ret, temp);
+    GGadgetSetTitle(gcd[13].ret, temp);
     free(temp);
-    SFTFRegisterCallback(gcd[12].ret,printwindow,DSP_ChangeFontCallback);
+    SFTFRegisterCallback(gcd[13].ret,printwindow,DSP_ChangeFontCallback);
 
     GHVBoxSetExpandableRow(boxes[0].ret,0);
     GHVBoxSetExpandableCol(boxes[2].ret,gb_expandglue);
@@ -1713,11 +1747,12 @@ return;
     GHVBoxSetExpandableCol(boxes[14].ret,gb_expandglue);
     GHVBoxSetExpandableCol(boxes[11].ret,gb_expandglue);
     GHVBoxSetExpandableCol(boxes[12].ret,gb_expandglue);
+    GHVBoxSetExpandableRow(vbox.ret,gb_expandglue);
     GHVBoxFitWindow(boxes[0].ret);
 
-    SFTextAreaSelect(gcd[12].ret,0,0);
-    SFTextAreaShow(gcd[12].ret,0);
-    SFTFProvokeCallback(gcd[12].ret);
+    SFTextAreaSelect(gcd[13].ret,0,0);
+    SFTextAreaShow(gcd[13].ret,0);
+    SFTFProvokeCallback(gcd[13].ret);
 
     GDrawSetVisible(printwindow->gw,true);
 }

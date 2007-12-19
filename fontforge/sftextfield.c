@@ -960,7 +960,7 @@ static GMenuItem sftf_popuplist[] = {
     { NULL }
 };
 
-static void SFTFPopupMenu(SFTextArea *st, GEvent *event) {
+void SFTFPopupMenu(SFTextArea *st, GEvent *event) {
     int no_sel = st->sel_start==st->sel_end;
     static int done = false;
 
