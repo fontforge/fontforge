@@ -195,11 +195,8 @@ static void readin(void) {
 		flg |= _LOWER|_ALPHABETIC;
 	    else if ( strncmp(pt,"Lt",pt1-pt)==0 )
 		flg |= _TITLE|_ALPHABETIC;
-#if 0
-/* Not a good defn. of Alphabetic */
 	    else if ( strncmp(pt,"Lo",pt1-pt)==0 )
 		flg |= _ALPHABETIC;
-#endif
 	    else if ( strncmp(pt,"Nd",pt1-pt)==0 )
 		flg |= _DIGIT;
 	    pt = pt1;
@@ -631,6 +628,7 @@ static void dump() {
     fprintf( header, "#define isdigit(ch) (____utype[(ch)+1]&____D)\n" );
     fprintf( header, "#define isalnum(ch) (____utype[(ch)+1]&(____L|____U|____TITLE|____AL|____D))\n" );
     fprintf( header, "#define isideographic(ch) (____utype[(ch)+1]&____ID)\n" );
+    fprintf( header, "#define isideoalpha(ch) (____utype[(ch)+1]&(____ID|____L|____U|____TITLE|____AL))\n" );
     fprintf( header, "#define isspace(ch) (____utype[(ch)+1]&____S)\n" );
     fprintf( header, "#define ispunct(ch) (____utype[(ch)+1]&_____P)\n" );
     fprintf( header, "#define ishexdigit(ch) (____utype[(ch)+1]&____X)\n" );

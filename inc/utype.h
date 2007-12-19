@@ -70,6 +70,7 @@ extern const unsigned int  ____codepointassigned[];
 #define isdigit(ch) (____utype[(ch)+1]&____D)
 #define isalnum(ch) (____utype[(ch)+1]&(____L|____U|____TITLE|____AL|____D))
 #define isideographic(ch) (____utype[(ch)+1]&____ID)
+#define isideoalpha(ch) (____utype[(ch)+1]&(____ID|____L|____U|____TITLE|____AL))
 #define isspace(ch) (____utype[(ch)+1]&____S)
 #define ispunct(ch) (____utype[(ch)+1]&_____P)
 #define ishexdigit(ch) (____utype[(ch)+1]&____X)
