@@ -115,6 +115,7 @@ static void initrand(void) {
 
     gettimeofday(&tv,NULL);
     srand(tv.tv_usec);
+    srandom(tv.tv_usec);
 }
 
 static void initlibrarysearchpath(void) {

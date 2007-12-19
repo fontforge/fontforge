@@ -299,8 +299,6 @@ extern int FVImportImages(FontViewBase *fv,char *path,int isimage,int toback,int
 extern int FVImportImageTemplate(FontViewBase *fv,char *path,int isimage,int toback,int flags);
 extern void ScriptPrint(FontViewBase *fv,int type,int32 *pointsizes,char *samplefile,
 	unichar_t *sample, char *outputfile);
-extern unichar_t *PrtBuildDef( SplineFont *sf, void *tf,
-	void (*langsyscallback)(void *tf, int end, uint32 script, uint32 lang) );
 extern int FVBParseSelectByPST(FontViewBase *fv,struct lookup_subtable *sub,
 	int search_type);
 extern int SFScaleToEm(SplineFont *sf, int ascent, int descent);
