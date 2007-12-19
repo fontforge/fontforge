@@ -1835,6 +1835,21 @@ static char *_muchado[] = {
     " But till all graces be in one woman, one womã ſhal not com in my grace: rich ſhe ſhall be thats certain, wiſe, or ile none, vertuous, or ile neuer cheapen her.",
     NULL
 };
+/* Modern (well, Dickens) English */
+static char *_chuzzlewit[] = {
+    " As no lady or gentleman, with any claims to polite breeding, can"
+    " possibly sympathize with the Chuzzlewit Family without being first"
+    " assured of the extreme antiquity of the race, it is a great satisfaction"
+    " to know that it undoubtedly descended in a direct line from Adam and"
+    " Eve; and was, in the very earliest times, closely connected with the"
+    " agricultural interest. If it should ever be urged by grudging and"
+    " malicious persons, that a Chuzzlewit, in any period of the family"
+    " history, displayed an overweening amount of family pride, surely the"
+    " weakness will be considered not only pardonable but laudable, when the"
+    " immense superiority of the house to the rest of mankind, in respect of"
+    " this its ancient origin, is taken into account.",
+    NULL
+};
 /* Middle Welsh */
 static char *_mabinogion[] = {
     " Gan fod Argraffiad Rhydychen o'r Mabinogion yn rhoi'r testun yn union fel y digwydd yn y llawysgrifau, ac felly yn cyfarfod â gofyn yr ysgolhaig, bernais mai gwell mewn llawlyfr fel hwn oedd golygu peth arno er mwyn helpu'r ieuainc a'r dibrofiad yn yr hen orgraff.",
@@ -2040,7 +2055,7 @@ static char *_thaijohn[] = {
 
 /* I've omitted cornish. no interesting letters. no current speakers */
 
-#if 1 /* http://www.ethnologue.com/iso639/codes.asp */
+  /* http://www.ethnologue.com/iso639/codes.asp */
 enum scripts { sc_latin, sc_greek, sc_cyrillic, sc_georgian, sc_hebrew,
 	sc_arabic, sc_hangul, sc_chinesetrad, sc_chinesemod, sc_kanji,
 	sc_hiragana, sc_katakana
@@ -2073,6 +2088,7 @@ static struct langsamples {
     { _inferno, "it", sc_latin, CHR('l','a','t','n'), CHR('I','T','A',' ')},
     { _beorwulf, "enm", sc_latin, CHR('l','a','t','n'), CHR('E','N','G',' ')},		/* 639-2 name for middle english */
     { _muchado, "eng", sc_latin, CHR('l','a','t','n'), CHR('E','N','G',' ')},		/* 639-2 name for modern english */
+    { _chuzzlewit, "en", sc_latin, CHR('l','a','t','n'), CHR('E','N','G',' ')},		/* 639-2 name for modern english */
     { _PippiGarOmBord, "sv", sc_latin, CHR('l','a','t','n'), CHR('S','V','E',' ')},
     { _mabinogion, "cy", sc_latin, CHR('l','a','t','n'), CHR('W','E','L',' ')},
     { _goodsoldier, "cs", sc_latin, CHR('l','a','t','n'), CHR('C','S','Y',' ')},
@@ -2099,18 +2115,6 @@ static struct langsamples {
     { _swahilijohn, "sw", sc_latin, CHR('l','a','t','n'), CHR('S','W','K',' ')},
     { NULL }
 };
-#else
-static char **sample[] = { _simple, _simplecyrill, _faust, _pheadra, _antigone,
-	_annakarenena, debello, hebrew, arabic, hangulsijo, YihKing, LiiBair, Genji,
-	_IAmACat, donquixote, inferno, beorwulf, muchado, PippiGarOmBord,
-	_mabinogion, goodsoldier, macedonian, bulgarian, belorussianjohn,
-	_churchjohn,
-	_lithuanian, _polish, slovene, irishjohn, basquejohn, portjohn,
-	_icelandicjohn, _danishjohn, swedishjohn, norwegianjohn, nnorwegianjohn,
-	_dutchjohn, _finnishjohn,
-	_cherokeejohn, _thaijohn, georgianjohn, swahilijohn,
-	NULL };
-#endif
 
 static void OrderSampleByLang(void) {
     const char *lang = getenv("LANG");
@@ -2199,13 +2203,29 @@ return( false );
 return( true );
 }
 
+static int ScriptInList(uint32 script, uint32 *scripts, int scnt) {
+    int s;
+
+    for ( s=0; s<scnt; ++s )
+	if ( script == scripts[s] )
+return( true );
+
+return( false );
+}
+
 unichar_t *PrtBuildDef( SplineFont *sf, void *tf,
 	void (*langsyscallback)(void *tf, int end, uint32 script, uint32 lang) ) {
     int i, j, gotem, len, any=0;
     unichar_t *ret=NULL;
     char **cur;
+    uint32 scriptsdone[100], scriptsthere[100], langs[100];
+    char *randoms[100];
+    int scnt,s,therecnt, rcnt;
 
     OrderSampleByLang();
+    therecnt = SF2Scripts(sf,scriptsthere);
+
+    scnt = 0;
 
     while ( 1 ) {
 	len = any = 0;
@@ -2214,14 +2234,18 @@ unichar_t *PrtBuildDef( SplineFont *sf, void *tf,
 	    cur = sample[i].sample;
 	    for ( j=0; cur[j]!=NULL && gotem; ++j )
 		gotem = AllChars(sf,cur[j]);
-	    if ( !gotem && sample[i].sample==_simple ) {
-		gotem = true;
-		_simple[0] = _simplelatnchoices[1];
-	    } else if ( !gotem && sample[i].sample==_LiiBair ) {
+	    if ( !gotem && sample[i].sample==_LiiBair ) {
 		cur = _LiiBairShort;
 		gotem = true;
 		for ( j=0; cur[j]!=NULL && gotem; ++j )
 		    gotem = AllChars(sf,cur[j]);
+	    }
+	    if ( gotem ) {
+		for ( s=0; s<scnt; ++s )
+		    if ( scriptsdone[s]==sample[i].otf_script )
+		break;
+		if ( s==scnt )
+		    scriptsdone[scnt++] = sample[i].otf_script;
 	    }
 	    if ( gotem ) {
 		++any;
@@ -2241,8 +2265,10 @@ unichar_t *PrtBuildDef( SplineFont *sf, void *tf,
 	    }
 	}
 
+#if 0
 	/* If no matches then put in "the quick brown...", in russian too if the encoding suggests it... */
-	if ( !any ) {
+	if ( !ScriptInList(CHR('l','a','t','n'),scriptsdone,scnt) &&
+		ScriptInList(CHR('l','a','t','n'),scriptsthere,therecnt)) {
 	    for ( j=0; _simple[j]!=NULL; ++j ) {
 		if ( ret )
 		    utf82u_strcpy(ret+len,_simple[j]);
@@ -2250,24 +2276,46 @@ unichar_t *PrtBuildDef( SplineFont *sf, void *tf,
 		if ( ret )
 		    ret[len] = '\n';
 		++len;
-		if ( ret && langsyscallback!=NULL )
-		    (langsyscallback)(tf,len,CHR('l','a','t','n'),CHR('E','N','G',' '));
-	    }
-	    if ( SFGetChar(sf,0x411,NULL)!=NULL ) {
 		if ( ret )
 		    ret[len] = '\n';
 		++len;
-		for ( j=0; _simplecyrill[j]!=NULL; ++j ) {
-		    if ( ret )
-		    utf82u_strcpy(ret+len,_simplecyrill[j]);
-		    len += utf8_strlen(_simplecyrill[j]);
-		    if ( ret )
-			ret[len] = '\n';
-		    ++len;
-		    if ( ret && langsyscallback!=NULL )
-			(langsyscallback)(tf,len,CHR('c','y','r','l'),CHR('R','U','S',' '));
-		}
+		if ( ret && langsyscallback!=NULL )
+		    (langsyscallback)(tf,len,CHR('l','a','t','n'),CHR('E','N','G',' '));
 	    }
+	}
+	if ( !ScriptInList(CHR('c','y','r','l'),scriptsdone,scnt) &&
+		ScriptInList(CHR('c','y','r','l'),scriptsthere,therecnt)) {
+	    for ( j=0; _simplecyrill[j]!=NULL; ++j ) {
+		if ( ret )
+		    utf82u_strcpy(ret+len,_simplecyrill[j]);
+		len += utf8_strlen(_simplecyrill[j]);
+		if ( ret )
+		    ret[len] = '\n';
+		++len;
+		if ( ret )
+		    ret[len] = '\n';
+		++len;
+		if ( ret && langsyscallback!=NULL )
+		    (langsyscallback)(tf,len,CHR('c','y','r','l'),CHR('R','U','S',' '));
+	    }
+	}
+#endif
+
+	rcnt = 0;
+	for ( s=0; s<therecnt; ++s ) if ( !ScriptInList(scriptsthere[s],scriptsdone,scnt)) {
+	    if ( ret ) {
+		utf82u_strcpy(ret+len,randoms[rcnt]);
+		len += u_strlen(ret+len);
+		ret[len++] = '\n';
+		ret[len] = '\0';
+		if ( langsyscallback!=NULL )
+		    (langsyscallback)(tf,len,scriptsthere[s],langs[rcnt]);
+		free(randoms[rcnt]);
+	    } else {
+		randoms[rcnt] = RandomParaFromScript(scriptsthere[s],&langs[rcnt],sf);
+		len += utf8_strlen( randoms[rcnt])+1;
+	    }
+	    ++rcnt;
 	}
 
 	if ( ret ) {

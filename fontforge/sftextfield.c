@@ -730,6 +730,52 @@ return;
     free(str);
 }
 
+static void SFTextAreaInsertRandom(SFTextArea *st) {
+    LayoutInfo *li = &st->li;
+    struct fontlist *fl, *prev;
+    char **scriptlangs;
+    int i,cnt;
+    uint32 script, lang;
+    char *utf8_str;
+    unichar_t *str;
+    int start;
+
+    for ( fl=li->fontlist, prev = NULL; fl!=NULL && fl->start<=st->sel_start ; prev=fl, fl=fl->next );
+    if ( prev==NULL )
+return;
+    scriptlangs = SFScriptLangs(prev->fd->sf);
+    if ( scriptlangs==NULL || scriptlangs[0]==NULL ) {
+	ff_post_error(_("No letters in font"), _("No letters in font"));
+	free(scriptlangs);
+return;
+    }
+    for ( cnt=0; scriptlangs[cnt]!=NULL; ++cnt );
+    i = ff_choose(_("Text from script"),(const char **) scriptlangs,cnt,0,_("Insert random text in the specified script"));
+    if ( i==-1 )
+return;
+    script = (scriptlangs[i][0]<<24) |
+	     (scriptlangs[i][1]<<16) |
+	     (scriptlangs[i][2]<<8 ) |
+	     (scriptlangs[i][3]    );
+    lang = (scriptlangs[i][5]<<24) |
+	   (scriptlangs[i][6]<<16) |
+	   (scriptlangs[i][7]<<8 ) |
+	   (scriptlangs[i][8]    );
+
+    utf8_str = RandomParaFromScriptLang(script,lang,prev->fd->sf);
+    str = utf82u_copy(utf8_str);
+
+    start = st->sel_start;
+    SFTextArea_Replace(st,str);
+    SFTFSetScriptLang(&st->g,start,start+u_strlen(str),script,lang);
+
+    free(str);
+    free(utf8_str);
+    for ( i=0; scriptlangs[i]!=NULL; ++i )
+	free(scriptlangs[i]);
+    free(scriptlangs);
+}
+
 static void SFTextAreaSave(SFTextArea *st) {
     char *cret = gwwv_save_filename(_("Save"),NULL, "*.txt");
     FILE *file;
@@ -854,10 +900,11 @@ return;
 
 #define MID_Save	5
 #define MID_Import	6
+#define MID_Insert	7
 
-#define MID_Undo	7
+#define MID_Undo	8
 
-#define MID_SaveImage	8
+#define MID_SaveImage	9
 
 static SFTextArea *popup_kludge;
 
@@ -889,6 +936,9 @@ return;
       case MID_Import:
 	SFTextAreaImport(st);
       break;
+      case MID_Insert:
+	SFTextAreaInsertRandom(st);
+      break;
       case MID_SaveImage:
 	SFTextAreaSaveImage(st);
       break;
@@ -904,6 +954,7 @@ static GMenuItem sftf_popuplist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Save As..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, 'S', ksm_control, NULL, NULL, SFTFPopupInvoked, MID_Save },
     { { (unichar_t *) N_("_Import..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, 'I', ksm_control, NULL, NULL, SFTFPopupInvoked, MID_Import },
+    { { (unichar_t *) N_("_Insert Random Text..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, 'T', ksm_control, NULL, NULL, SFTFPopupInvoked, MID_Insert },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("Save As _Image..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, 'S', ksm_control|ksm_shift, NULL, NULL, SFTFPopupInvoked, MID_SaveImage },
     { NULL }
@@ -1410,7 +1461,7 @@ return;
     (st->changefontcallback)(st->cbcontext,fl->fd->sf,fl->fd->fonttype,
 	    fl->fd->pointsize,fl->fd->antialias,fl->script,fl->lang,fl->feats);
 }
-    
+
 static int sftextarea_mouse(GGadget *g, GEvent *event) {
     SFTextArea *st = (SFTextArea *) g;
     int end=-1;
