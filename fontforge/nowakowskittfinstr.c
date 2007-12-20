@@ -2366,6 +2366,24 @@ return;
  *
  ******************************************************************************/
 
+/* Is this the first stem in a group of overlapping stems? */
+static int first_in_group(StemInfo *firsthint, StemInfo *hint)
+{
+    StemInfo *lasthint, *testhint = firsthint;
+
+    for (; testhint!=NULL && testhint!=hint; testhint = testhint->next)
+    {
+	if (SegmentsOverlap(hint->start, hint->start+testhint->width,
+	                  testhint->start, testhint->start+hint->width))
+	{
+	    lasthint = testhint;
+	    break;
+	}
+    }
+
+    return !hint->hasconflicts && lasthint==NULL;
+}
+
 /* Find points that should be snapped to this hint's edges with init_edge().
  * It will return two types of points per edge: a 'chosen one' that should be
  * used as a reference for this hint, and 'others' to position after it with
@@ -2379,32 +2397,16 @@ return;
  *   position the reference point at the base where it is using MDAP; otherwise
  *   position the hint's base rp0 relatively to the previous hint's end using
  *   MDRP with white minimum distance (fpgm function 1).
- *
- * TODO!
- * Horizontal stems will probably need different algorithm. It is not unlikely
- * that HStemGeninst() will ultimately not use geninstrs(). If so, this routine
- * may become greatly simplified and even merged with VStemGeninst().
  */
 static void geninstrs(InstrCt *ct, StemInfo *hint) {
     real hbase, base, width, hend, stdwidth;
-    StemInfo *firsthint, *lasthint=NULL, *testhint;
-    int first; /* if it's the first stem of overlapping stems' cluster */
+    int first; /* is thiss the first stem of overlapping stems' cluster? */
     static int rp0;
 
     /* if this hint has conflicts don't try to establish a minimum distance */
     /* between it and the last stem, there might not be one */        
-    if (ct->xdir) firsthint = ct->sc->vstem;
-    else firsthint = ct->sc->hstem;
-    for ( testhint = firsthint; testhint!=NULL && testhint!=hint; testhint = testhint->next ) {
-	if ( SegmentsOverlap(hint->start, hint->start+testhint->width,
-	                  testhint->start, testhint->start+hint->width))
-	{
-	    lasthint = testhint;
-	    break;
-	}
-    }
-    first = lasthint==NULL;
-    if (!hint->hasconflicts) first = false;
+    StemInfo *firsthint = ct->xdir ? ct->sc->vstem : ct->sc->hstem;
+    first = first_in_group(firsthint, hint);
 
     /* We're tracking current rp0 */
     if (hint == firsthint) rp0 = ct->ptcnt;
@@ -2512,7 +2514,8 @@ static void HStemGeninst(InstrCt *ct) {
 
     for ( hint=ct->sc->hstem; hint!=NULL; hint=hint->next )
     {
-	if (!hint->startdone && !hint->enddone)
+	if (!hint->startdone && !hint->enddone &&
+	    (!hint->hasconflicts || first_in_group(ct->sc->hstem, hint)))
 	{
 	    /* Set up upper edge (hend) and lower edge (hbase). */
 
