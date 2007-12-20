@@ -738,31 +738,34 @@ static void SFTextAreaInsertRandom(SFTextArea *st) {
     uint32 script, lang;
     char *utf8_str;
     unichar_t *str;
-    int start;
+    int start, pos;
+    struct lang_frequencies **freq;
 
     for ( fl=li->fontlist, prev = NULL; fl!=NULL && fl->start<=st->sel_start ; prev=fl, fl=fl->next );
     if ( prev==NULL )
 return;
-    scriptlangs = SFScriptLangs(prev->fd->sf);
+    scriptlangs = SFScriptLangs(prev->fd->sf,&freq);
     if ( scriptlangs==NULL || scriptlangs[0]==NULL ) {
 	ff_post_error(_("No letters in font"), _("No letters in font"));
 	free(scriptlangs);
+	free(freq);
 return;
     }
     for ( cnt=0; scriptlangs[cnt]!=NULL; ++cnt );
     i = ff_choose(_("Text from script"),(const char **) scriptlangs,cnt,0,_("Insert random text in the specified script"));
     if ( i==-1 )
 return;
-    script = (scriptlangs[i][0]<<24) |
-	     (scriptlangs[i][1]<<16) |
-	     (scriptlangs[i][2]<<8 ) |
-	     (scriptlangs[i][3]    );
-    lang = (scriptlangs[i][5]<<24) |
-	   (scriptlangs[i][6]<<16) |
-	   (scriptlangs[i][7]<<8 ) |
-	   (scriptlangs[i][8]    );
+    pos = strlen(scriptlangs[i])-10;
+    script = (scriptlangs[i][pos+0]<<24) |
+	     (scriptlangs[i][pos+1]<<16) |
+	     (scriptlangs[i][pos+2]<<8 ) |
+	     (scriptlangs[i][pos+3]    );
+    lang = (scriptlangs[i][pos+5]<<24) |
+	   (scriptlangs[i][pos+6]<<16) |
+	   (scriptlangs[i][pos+7]<<8 ) |
+	   (scriptlangs[i][pos+8]    );
 
-    utf8_str = RandomParaFromScriptLang(script,lang,prev->fd->sf);
+    utf8_str = RandomParaFromScriptLang(script,lang,prev->fd->sf,freq[i]);
     str = utf82u_copy(utf8_str);
 
     start = st->sel_start;
@@ -774,6 +777,7 @@ return;
     for ( i=0; scriptlangs[i]!=NULL; ++i )
 	free(scriptlangs[i]);
     free(scriptlangs);
+    free(freq);
 }
 
 static void SFTextAreaSave(SFTextArea *st) {
