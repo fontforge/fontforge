@@ -45,6 +45,14 @@ extern int autohint_before_generate;
 #define STACK_DEPTH 6
 #endif
 
+/* Experimental feature: tries to maintain relative position of some important
+ * points between stems' edges, so that glyph's shape is mostly preserved
+ * when strongly gridfitted. This in terms of FreeType is called 'Strong Point
+ * Interpolation'. In FF it now does more or else what it should, but generates
+ * large code - it needs optimization.
+ */
+#define TESTIPSTRONG 0
+
 /* define some often used instructions */
 #define SVTCA_y                 (0x00)
 #define SVTCA_x                 (0x01)
@@ -1775,13 +1783,15 @@ static void search_edge(int p, SplinePoint *sp, InstrCt *ct) {
 	if (p == sp->ttfindex && 
 	    IsAnglePoint(ct->contourends, ct->bp, sp)) score++;
 
+	if (IsInflectionPoint(ct->contourends, ct->bp, sp)) score++;
+
 	if (score && ct->oncurve[p]) score+=2;
 
 	if (!score)
 return;
 
-	if (ct->diagstems && ct->diagpts[p].count) score+=8;
-	if (ct->touched[p] & touchflag) score+=24;
+	if (ct->diagstems && ct->diagpts[p].count) score+=9;
+	if (ct->touched[p] & touchflag) score+=26;
 
 	if ((score > ct->edge.refscore) ||
 	    (score == ct->edge.refscore &&
@@ -1805,6 +1815,7 @@ return;
 }
 
 /* If we failed to find good snappable points, then let's try to find any. */
+/* TODO! Perhaps we shouldn't? */
 static void search_edge_desperately(int p, SplinePoint *sp, InstrCt *ct) {
     uint8 touchflag = ct->xdir?tf_x:tf_y;
 
@@ -2576,7 +2587,7 @@ static void HStemGeninst(InstrCt *ct) {
 	    lastrp2 = rp2;
 
 	    /* Align the stem relatively to rp0 and rp1. */
-	    if (fabs(bp[rp1].y - hend) < fabs(bp[rp2].y - hbase))
+	    if (fabs(bp[rp2].y - hend) < fabs(bp[rp1].y - hbase))
 		init_edge(ct, hbase, ALL_CONTOURS);
 	    else init_edge(ct, hend, ALL_CONTOURS);
 
@@ -3163,6 +3174,94 @@ return;
     chunkfree( fv,sizeof(struct basepoint ));
 }
 
+#if TESTIPSTRONG
+/******************************************************************************
+ *
+ * Strong point interpolation
+ *
+ ******************************************************************************/
+
+/* To be used with qsort() - sorts real array in ascending order. */
+static int sortreals(const void *a, const void *b) {
+    return *(real *)a > *(real *)b;
+}
+
+static void InterpolateStrongPoints(InstrCt *ct) {
+    StemInfo *hint, *firsthint = ct->xdir?ct->sc->vstem:ct->sc->hstem;
+    real tmp, edgelist[192];
+    int edgecnt=0, i, skip;
+
+    /* List all stem edges. List only active edges for ghost hints. */
+    for(hint=firsthint; hint!=NULL; hint=hint->next) {
+        tmp = hint->start;
+
+	if (hint->ghost && (ct->xdir || hint->width != 20))
+	    tmp -= hint->width;
+
+	for (i=skip=0; i<edgecnt; i++)
+	    if (abs(tmp - edgelist[i]) <= ct->gic->fudge) {
+	        skip=1;
+		break;
+	    }
+
+	if (!skip) edgelist[edgecnt++] = tmp;
+
+	if (hint->ghost && !ct->xdir && (hint->width == 20 || hint->width == 21))
+    continue;
+
+	tmp+=hint->width;
+
+	for (i=skip=0; i<edgecnt; i++)
+	    if (abs(tmp - edgelist[i]) <= ct->gic->fudge) {
+	        skip=1;
+		break;
+	    }
+	
+	if (!skip) edgelist[edgecnt++] = tmp;
+    }
+
+    if (edgecnt == 0)
+return;
+
+    qsort(edgelist, edgecnt, sizeof(real), sortreals);
+
+    /* Interpolate important points between subsequent edges */
+    int lpoint = -1;
+    int rpoint = -1;
+    int nowrp1 = 0;
+
+    for (i=0; i<edgecnt; i++) {
+        if (rpoint != -1) lpoint = rpoint;
+        init_edge(ct, edgelist[i], ALL_CONTOURS);
+	rpoint = ct->edge.refpt;
+	if (rpoint == -1) continue; /* it's harmful when happens */
+	ct->pt = pushpoint(ct->pt, rpoint);
+	if (ct->edge.othercnt) free(ct->edge.others); /* must not happen! */
+
+	if (lpoint==-1) {
+	    *(ct->pt)++ = SRP1;
+	}
+	else {
+	    if (nowrp1) *(ct->pt)++ = SRP1;
+	    else *(ct->pt)++ = SRP2;
+	    nowrp1 = !nowrp1;
+
+	    real fudge = ct->gic->fudge;
+	    ct->gic->fudge = (edgelist[i]-edgelist[i-1])/2;
+	    init_edge(ct, (edgelist[i]+edgelist[i-1])/2, ALL_CONTOURS);
+	    
+	    if (ct->edge.refscore != 0) finish_edge(ct, 0x39); //IP
+	    else {
+	        if (ct->edge.othercnt) free(ct->edge.others);
+		rpoint = -1;
+	    }
+
+	    ct->gic->fudge = fudge;
+	}
+    }
+}
+#endif /* TESTIPSTRONG */
+
 /******************************************************************************
  *
  * Generate instructions for a glyph.
@@ -3229,6 +3328,15 @@ static uint8 *dogeninstructions(InstrCt *ct) {
 	DStemFree(ct->diagstems, ct->diagpts, ct->ptcnt);
 	free(ct->diagpts);
     }
+
+#if TESTIPSTRONG
+    /* Interpolate important points between edges of hints */
+    /* leaving them for IUP might badly distort outlines */
+    InterpolateStrongPoints(ct);
+    ct->xdir = false;
+    *(ct->pt)++ = SVTCA_y;
+    InterpolateStrongPoints(ct);
+#endif /* TESTIPSTRONG */
 
     /* Interpolate untouched points */
     *(ct->pt)++ = IUP_y;
