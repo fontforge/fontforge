@@ -1998,6 +1998,7 @@ struct flaglist simplifyflags[] = {
     { "nearlyhvlines", 32 },
     { "mergelines", 64 },
     { "setstarttoextremum", 128 },
+    { "setstarttoextrema", 128 },		/* Documentation error */
     { "removesingletonpoints", 256 },
     { NULL }
 };
