@@ -4230,6 +4230,21 @@ return( -1 );
 return( 0 );
 }
 
+static PyObject *PyFF_Glyph_get_manualhints(PyFF_Glyph *self,void *closure) {
+
+return( Py_BuildValue("i", self->sc->manualhints ));
+}
+
+static int PyFF_Glyph_set_manualhints(PyFF_Glyph *self,PyObject *value,void *closure) {
+    int val;
+
+    val = PyInt_AsLong(value);
+    if ( PyErr_Occurred()!=NULL )
+return( -1 );
+    self->sc->manualhints = (val!=0);
+return( 0 );
+}
+
 static PyObject *PyFF_Glyph_get_font(PyFF_Glyph *self,void *closure) {
 
 return( PyFV_From_FV_I(self->sc->parent->fv));
@@ -4758,6 +4773,9 @@ static PyGetSetDef PyFF_Glyph_getset[] = {
     {"vhints",
 	 (getter)PyFF_Glyph_get_vhints, (setter)PyFF_Glyph_set_vhints,
 	 "The vertical hints of the glyph as a tuple, one entry per hint. Each hint is itself a tuple containing the start location and width of the hint", NULL},
+    {"manualHints",
+	 (getter)PyFF_Glyph_get_manualhints, (setter)PyFF_Glyph_set_manualhints,
+	 "The hints have been set manually, and the glyph should not be autohinted by default" },
     {"validation_state",
 	 (getter)PyFF_Glyph_get_validation_state, (setter)PyFF_cant_set,
 	 "glyph's validation state (readonly)", NULL},
