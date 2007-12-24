@@ -2759,6 +2759,7 @@ extern void SCCopyWidth(SplineChar *sc,enum undotype);
 extern void SCAppendPosSub(SplineChar *sc,enum possub_type type, char **d,SplineFont *copied_from);
 extern void SCClearBackground(SplineChar *sc);
 extern void BackgroundImageTransform(SplineChar *sc, ImageList *img,real transform[6]);
+extern int SFIsDuplicatable(SplineFont *sf, SplineChar *sc);
 
 extern void DoAutoSaves(void);
 
