@@ -19,13 +19,13 @@ PyMODINIT_FUNC ENTRY_POINT(void) {
 return;
     }
 
-    if ( (lib = dlopen("libgdraw" SO_EXT,RTLD_LAZY))==NULL ) {
+    if ( (lib = dlopen("libgutils" SO_EXT,RTLD_LAZY))==NULL ) {
 #ifdef PREFIX
-	lib = dlopen( PREFIX "/lib/" "libgdraw" SO_EXT,RTLD_LAZY);
+	lib = dlopen( PREFIX "/lib/" "libgutils" SO_EXT,RTLD_LAZY);
 #endif
     }
     if ( lib==NULL ) {
-	PyErr_Format(PyExc_SystemError,"Missing library: %s", "libgdraw");
+	PyErr_Format(PyExc_SystemError,"Missing library: %s", "libgutils");
 return;
     }
 
