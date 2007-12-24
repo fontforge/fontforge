@@ -1107,3 +1107,20 @@ return( fpt );
 
 return( weight==NULL || *weight=='\0' ? regular: weight );
 }
+
+int SFIsDuplicatable(SplineFont *sf, SplineChar *sc) {
+    extern const int cns14pua[], amspua[];
+    const int *pua = sf->uni_interp==ui_trad_chinese ? cns14pua : sf->uni_interp==ui_ams ? amspua : NULL;
+    int baseuni = 0;
+    const unichar_t *pt;
+
+    if ( pua!=NULL && sc->unicodeenc>=0xe000 && sc->unicodeenc<=0xf8ff )
+	baseuni = pua[sc->unicodeenc-0xe000];
+    if ( baseuni==0 && ( pt = SFGetAlternate(sf,sc->unicodeenc,sc,false))!=NULL &&
+	    pt[0]!='\0' && pt[1]=='\0' )
+	baseuni = pt[0];
+    if ( baseuni!=0 && SFGetChar(sf,baseuni,NULL)!=NULL )
+return( true );
+
+return( false );
+}

@@ -1958,28 +1958,12 @@ static void FVMenuCleanup(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVSimplify( (FontView *) GDrawGetUserData(gw),-1 );
 }
 
-static void FVCanonicalStart(FontView *fv) {
-    int i, gid;
-
-    for ( i=0; i<fv->b.map->enccount; ++i )
-	if ( fv->b.selected[i] && (gid = fv->b.map->map[i])!=-1 )
-	    SPLsStartToLeftmost(fv->b.sf->glyphs[gid]);
-}
-
-static void FVCanonicalContours(FontView *fv) {
-    int i, gid;
-
-    for ( i=0; i<fv->b.map->enccount; ++i )
-	if ( fv->b.selected[i] && (gid = fv->b.map->map[i])!=-1 )
-	    CanonicalContours(fv->b.sf->glyphs[gid]);
-}
-
 static void FVMenuCanonicalStart(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FVCanonicalStart( (FontView *) GDrawGetUserData(gw) );
+    FVCanonicalStart( (FontViewBase *) GDrawGetUserData(gw) );
 }
 
 static void FVMenuCanonicalContours(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FVCanonicalContours( (FontView *) GDrawGetUserData(gw) );
+    FVCanonicalContours( (FontViewBase *) GDrawGetUserData(gw) );
 }
 
 static void FVMenuAddExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -1988,116 +1972,19 @@ static void FVMenuAddExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void FVMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    int i, cnt=0, changed, refchanged, preserved, layer, gid;
-    int askedall=-1, asked;
-    RefChar *ref, *next;
-    SplineChar *sc;
-
-    for ( i=0; i<fv->b.map->enccount; ++i )
-	if ( fv->b.selected[i] && (gid = fv->b.map->map[i])!=-1 &&
-		SCWorthOutputting(fv->b.sf->glyphs[gid]) )
-	    ++cnt;
-    gwwv_progress_start_indicator(10,_("Correcting Direction..."),_("Correcting Direction..."),0,cnt,1);
-
-    SFUntickAll(fv->b.sf);
-    for ( i=0; i<fv->b.map->enccount; ++i ) if ( fv->b.selected[i] &&
-	    (gid = fv->b.map->map[i])!=-1 && SCWorthOutputting((sc=fv->b.sf->glyphs[gid])) &&
-	    !sc->ticked ) {
-	sc->ticked = true;
-	changed = refchanged = preserved = false;
-	asked = askedall;
-	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
-	    for ( ref=sc->layers[layer].refs; ref!=NULL; ref=next ) {
-		next = ref->next;
-		if ( ref->transform[0]*ref->transform[3]<0 ||
-			(ref->transform[0]==0 && ref->transform[1]*ref->transform[2]>0)) {
-		    if ( asked==-1 ) {
-			char *buts[5];
-			buts[0] = _("Unlink All");
-			buts[1] = _("Unlink");
-			buts[2] = _("_Cancel");
-			buts[3] = NULL;
-			asked = gwwv_ask(_("Flipped Reference"),(const char **) buts,0,2,_("%.50s contains a flipped reference. This cannot be corrected as is. Would you like me to unlink it and then correct it?"), sc->name );
-			if ( asked==3 )
-return;
-			else if ( asked==2 )
-	    break;
-			else if ( asked==0 )
-			    askedall = 0;
-		    }
-		    if ( asked==0 || asked==1 ) {
-			if ( !preserved ) {
-			    preserved = refchanged = true;
-			    SCPreserveState(sc,false);
-			}
-			SCRefToSplines(sc,ref);
-		    }
-		}
-	    }
-
-	    if ( !preserved && sc->layers[layer].splines!=NULL ) {
-		SCPreserveState(sc,false);
-		preserved = true;
-	    }
-	    sc->layers[layer].splines = SplineSetsCorrect(sc->layers[layer].splines,&changed);
-	}
-	if ( changed || refchanged )
-	    SCCharChangedUpdate(sc);
-	if ( !gwwv_progress_next())
-    break;
-    }
-    gwwv_progress_end_indicator();
-}
-
-static void FVRound2Int(FontView *fv,real factor) {
-    int i, cnt=0, gid;
-
-    for ( i=0; i<fv->b.map->enccount; ++i )
-	if ( fv->b.selected[i] && (gid = fv->b.map->map[i])!=-1 &&
-		SCWorthOutputting(fv->b.sf->glyphs[gid]) )
-	    ++cnt;
-    gwwv_progress_start_indicator(10,_("Rounding to integer..."),_("Rounding to integer..."),0,cnt,1);
-
-    for ( i=0; i<fv->b.map->enccount; ++i ) if ( fv->b.selected[i] &&
-	    (gid = fv->b.map->map[i])!=-1 && SCWorthOutputting(fv->b.sf->glyphs[gid]) ) {
-	SplineChar *sc = fv->b.sf->glyphs[gid];
-
-	SCPreserveState(sc,false);
-	SCRound2Int( sc,factor);
-	if ( !gwwv_progress_next())
-    break;
-    }
-    gwwv_progress_end_indicator();
+    FVCorrectDir((FontViewBase *) fv);
 }
 
 static void FVMenuRound2Int(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FVRound2Int( (FontView *) GDrawGetUserData(gw), 1.0 );
+    FVRound2Int( (FontViewBase *) GDrawGetUserData(gw), 1.0 );
 }
 
 static void FVMenuRound2Hundredths(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FVRound2Int( (FontView *) GDrawGetUserData(gw),100.0 );
-}
-
-static void FVCluster(FontView *fv) {
-    int i, cnt=0, gid;
-
-    for ( i=0; i<fv->b.map->enccount; ++i )
-	if ( fv->b.selected[i] && (gid = fv->b.map->map[i])!=-1 &&
-		SCWorthOutputting(fv->b.sf->glyphs[gid]) )
-	    ++cnt;
-    gwwv_progress_start_indicator(10,_("Rounding to integer..."),_("Rounding to integer..."),0,cnt,1);
-
-    for ( i=0; i<fv->b.map->enccount; ++i ) if ( fv->b.selected[i] &&
-	    (gid = fv->b.map->map[i])!=-1 && SCWorthOutputting(fv->b.sf->glyphs[gid]) ) {
-	SCRoundToCluster(fv->b.sf->glyphs[gid],-2,false,.1,.5);
-	if ( !gwwv_progress_next())
-    break;
-    }
-    gwwv_progress_end_indicator();
+    FVRound2Int( (FontViewBase *) GDrawGetUserData(gw),100.0 );
 }
 
 static void FVMenuCluster(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FVCluster( (FontView *) GDrawGetUserData(gw));
+    FVCluster( (FontViewBase *) GDrawGetUserData(gw));
 }
 
 static void FVMenuAutotrace(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -2121,23 +2008,6 @@ static void FVMenuBuildAccent(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void FVMenuBuildComposite(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FVBuildAccent( (FontViewBase *) GDrawGetUserData(gw), false );
-}
-
-static int SFIsDuplicatable(SplineFont *sf, SplineChar *sc) {
-    extern const int cns14pua[], amspua[];
-    const int *pua = sf->uni_interp==ui_trad_chinese ? cns14pua : sf->uni_interp==ui_ams ? amspua : NULL;
-    int baseuni = 0;
-    const unichar_t *pt;
-
-    if ( pua!=NULL && sc->unicodeenc>=0xe000 && sc->unicodeenc<=0xf8ff )
-	baseuni = pua[sc->unicodeenc-0xe000];
-    if ( baseuni==0 && ( pt = SFGetAlternate(sf,sc->unicodeenc,sc,false))!=NULL &&
-	    pt[0]!='\0' && pt[1]=='\0' )
-	baseuni = pt[0];
-    if ( baseuni!=0 && SFGetChar(sf,baseuni,NULL)!=NULL )
-return( true );
-
-return( false );
 }
 
 static void FVMenuBuildDuplicate(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -2293,32 +2163,6 @@ static void FVMenuChangeChar(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     _FVMenuChangeChar(fv,mi->mid);
 }
 
-static void CIDSetEncMap(FontView *fv, SplineFont *new ) {
-    int gcnt = new->glyphcnt;
-
-    if ( fv->b.cidmaster!=NULL && gcnt!=fv->b.sf->glyphcnt ) {
-	int i;
-	if ( fv->b.map->encmax<gcnt ) {
-	    fv->b.map->map = grealloc(fv->b.map->map,gcnt*sizeof(int));
-	    fv->b.map->backmap = grealloc(fv->b.map->backmap,gcnt*sizeof(int));
-	    fv->b.map->backmax = fv->b.map->encmax = gcnt;
-	}
-	for ( i=0; i<gcnt; ++i )
-	    fv->b.map->map[i] = fv->b.map->backmap[i] = i;
-	if ( gcnt<fv->b.map->enccount )
-	    memset(fv->b.selected+gcnt,0,fv->b.map->enccount-gcnt);
-	else {
-	    free(fv->b.selected);
-	    fv->b.selected = gcalloc(gcnt,sizeof(char));
-	}
-	fv->b.map->enccount = gcnt;
-    }
-    fv->b.sf = new;
-    new->fv = &fv->b;
-    FVSetTitle(&fv->b);
-    FontViewReformatOne(&fv->b);
-}
-
 static void FVShowSubFont(FontView *fv,SplineFont *new) {
     MetricsView *mv, *mvnext;
     BDFFont *newbdf;
@@ -2337,7 +2181,7 @@ static void FVShowSubFont(FontView *fv,SplineFont *new) {
 	fv->b.selected = grealloc(fv->b.selected,fv->b.map->enccount);
 	memset(fv->b.selected,0,fv->b.map->enccount);
     }
-    CIDSetEncMap(fv,new);
+    CIDSetEncMap((FontViewBase *) fv,new);
     if ( wascompact ) {
 	fv->b.normal = EncMapCopy(fv->b.map);
 	CompactEncMap(fv->b.map,fv->b.sf);
@@ -2866,6 +2710,7 @@ static void FVMenuAutoHintSubs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     FVAutoHintSubs( &fv->b );
 }
+
 static void FVMenuAutoCounter(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     FVAutoCounter( &fv->b );
@@ -3096,28 +2941,6 @@ return;
     free(cmapname);
 }
 
-static void FVInsertInCID(FontView *fv,SplineFont *sf) {
-    SplineFont *cidmaster = fv->b.cidmaster;
-    SplineFont **subs;
-    int i;
-
-    subs = galloc((cidmaster->subfontcnt+1)*sizeof(SplineFont *));
-    for ( i=0; i<cidmaster->subfontcnt && cidmaster->subfonts[i]!=fv->b.sf; ++i )
-	subs[i] = cidmaster->subfonts[i];
-    subs[i] = sf;
-    if ( sf->uni_interp == ui_none || sf->uni_interp == ui_unset )
-	sf->uni_interp = cidmaster->uni_interp;
-    for ( ; i<cidmaster->subfontcnt ; ++i )
-	subs[i+1] = cidmaster->subfonts[i];
-    ++cidmaster->subfontcnt;
-    free(cidmaster->subfonts);
-    cidmaster->subfonts = subs;
-    cidmaster->changed = true;
-    sf->cidmaster = cidmaster;
-
-    CIDSetEncMap(fv,sf);
-}
-
 static void FVMenuInsertFont(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     SplineFont *cidmaster = fv->b.cidmaster;
@@ -3155,7 +2978,7 @@ return;
     new->display_antialias = fv->b.sf->display_antialias;
     new->display_bbsized = fv->b.sf->display_bbsized;
     new->display_size = fv->b.sf->display_size;
-    FVInsertInCID(fv,new);
+    FVInsertInCID((FontViewBase *) fv,new);
     CIDMasterAsDes(new);
 }
 
@@ -3175,7 +2998,7 @@ return;
     sf->display_size = fv->b.sf->display_size;
     sf->private = gcalloc(1,sizeof(struct psdict));
     PSDictChangeEntry(sf->private,"lenIV","1");		/* It's 4 by default, in CIDs the convention seems to be 1 */
-    FVInsertInCID(fv,sf);
+    FVInsertInCID((FontViewBase *) fv,sf);
 }
 
 static void FVMenuRemoveFontFromCID(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -3223,7 +3046,7 @@ return;
 
     for ( fvs=(FontView *) (fv->b.sf->fv); fvs!=NULL; fvs=(FontView *) (fvs->b.nextsame) ) {
 	if ( fvs->b.sf==sf )
-	    CIDSetEncMap(fvs,replace);
+	    CIDSetEncMap((FontViewBase *) fvs,replace);
     }
     FontViewReformatAll(fv->b.sf);
     SplineFontFree(sf);

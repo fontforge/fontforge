@@ -276,6 +276,14 @@ extern void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
 	enum fvtrans_flags );
 extern void FVOverlap(FontViewBase *fv,enum overlap_type ot);
 extern void FVAddExtrema(FontViewBase *fv);
+extern void FVCorrectDir(FontViewBase *fv);
+extern void FVRound2Int(FontViewBase *fv,real factor);
+extern void FVCanonicalStart(FontViewBase *fv);
+extern void FVCanonicalContours(FontViewBase *fv);
+extern void FVCluster(FontViewBase *fv);
+extern void CIDSetEncMap(FontViewBase *fv, SplineFont *new );
+extern void FVInsertInCID(FontViewBase *fv,SplineFont *sf);
+
 extern void FVAutoHint(FontViewBase *fv);
 extern void FVAutoHintSubs(FontViewBase *fv);
 extern void FVAutoCounter(FontViewBase *fv);
