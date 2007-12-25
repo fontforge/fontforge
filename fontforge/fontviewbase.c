@@ -1228,6 +1228,141 @@ void FVBuildAccent(FontViewBase *fv,int onlyaccents) {
     ff_progress_end_indicator();
 }
 
+void FVAddUnencoded(FontViewBase *fv, int cnt) {
+    int i;
+    EncMap *map = fv->map;
+
+    if ( fv->normal!=NULL ) {
+	/* If it's compacted, lose the base encoding and the fact that it's */
+	/*  compact and make it be custom. That's what Alexey Kryukov asked */
+	/*  for */
+	EncMapFree(fv->normal);
+	fv->normal = NULL;
+	fv->map->enc = &custom;
+	FVSetTitle(fv);
+    }
+    if ( fv->cidmaster ) {
+	SplineFont *sf = fv->sf;
+	FontViewBase *fvs;
+	if ( sf->glyphcnt+cnt<sf->glyphmax )
+	    sf->glyphs = grealloc(sf->glyphs,(sf->glyphmax = sf->glyphcnt+cnt+10)*sizeof(SplineChar *));
+	memset(sf->glyphs+sf->glyphcnt,0,cnt*sizeof(SplineChar *));
+	for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
+	    EncMap *map = fvs->map;
+	    if ( map->enccount+cnt>=map->encmax )
+		map->map = grealloc(map->map,(map->encmax += cnt+10)*sizeof(int));
+	    if ( sf->glyphcnt+cnt<map->backmax )
+		map->backmap = grealloc(map->map,(map->backmax += cnt+10)*sizeof(int));
+	    for ( i=map->enccount; i<map->enccount+cnt; ++i )
+		map->map[i] = map->backmap[i] = i;
+	    fvs->selected = grealloc(fvs->selected,(map->enccount+cnt));
+	    memset(fvs->selected+map->enccount,0,cnt);
+	    map->enccount += cnt;
+	}
+	sf->glyphcnt += cnt;
+	FontViewReformatAll(fv->sf);
+    } else {
+	if ( map->enccount+cnt>=map->encmax )
+	    map->map = grealloc(map->map,(map->encmax += cnt+10)*sizeof(int));
+	for ( i=map->enccount; i<map->enccount+cnt; ++i )
+	    map->map[i] = -1;
+	fv->selected = grealloc(fv->selected,(map->enccount+cnt));
+	memset(fv->selected+map->enccount,0,cnt);
+	map->enccount += cnt;
+	FontViewReformatOne(fv);
+	FVDisplayChar(fv,map->enccount-cnt);
+    }
+}
+
+void FVRemoveUnused(FontViewBase *fv) {
+    SplineFont *sf = fv->sf;
+    EncMap *map = fv->map;
+    int oldcount = map->enccount;
+    int gid, i;
+    int flags = -1;
+
+    for ( i=map->enccount-1; i>=0 && ((gid=map->map[i])==-1 || !SCWorthOutputting(sf->glyphs[gid]));
+	    --i ) {
+	if ( gid!=-1 )
+	    SFRemoveGlyph(sf,sf->glyphs[gid],&flags);
+	map->enccount = i;
+    }
+    /* We reduced the encoding, so don't really need to reallocate the selection */
+    /*  array. It's just bigger than it needs to be. */
+    if ( oldcount!=map->enccount )
+	FontViewReformatOne(fv);
+}
+
+void FVCompact(FontViewBase *fv) {
+    int oldcount = fv->map->enccount;
+
+    if ( fv->normal!=NULL ) {
+	EncMapFree(fv->map);
+	fv->map = fv->normal;
+	fv->normal = NULL;
+	fv->selected = grealloc(fv->selected,fv->map->enccount);
+	memset(fv->selected,0,fv->map->enccount);
+    } else {
+	/* We reduced the encoding, so don't really need to reallocate the selection */
+	/*  array. It's just bigger than it needs to be. */
+	fv->normal = EncMapCopy(fv->map);
+	CompactEncMap(fv->map,fv->sf);
+    }
+    if ( oldcount!=fv->map->enccount )
+	FontViewReformatOne(fv);
+    FVSetTitle(fv);
+}
+
+void FVDetachGlyphs(FontViewBase *fv) {
+    int i, j, gid;
+    EncMap *map = fv->map;
+    int altered = false;
+    SplineFont *sf = fv->sf;
+
+    for ( i=0; i<map->enccount; ++i ) if ( fv->selected[i] && (gid=map->map[i])!=-1 ) {
+	altered = true;
+	map->map[i] = -1;
+	if ( map->backmap[gid]==i ) {
+	    for ( j=map->enccount-1; j>=0 && map->map[j]!=gid; --j );
+	    map->backmap[gid] = j;
+	}
+	if ( sf->glyphs[gid]!=NULL && sf->glyphs[gid]->altuni != NULL && map->enc!=&custom )
+	    AltUniRemove(sf->glyphs[gid],UniFromEnc(i,map->enc));
+    }
+    if ( altered )
+	FVRefreshAll(sf);
+}
+
+void FVDetachAndRemoveGlyphs(FontViewBase *fv) {
+    int i, j, gid;
+    EncMap *map = fv->map;
+    SplineFont *sf = fv->sf;
+    int flags = -1;
+    int changed = false, altered = false;
+    FontViewBase *fvs;
+
+    for ( i=0; i<map->enccount; ++i ) if ( fv->selected[i] && (gid=map->map[i])!=-1 ) {
+	altered = true;
+	map->map[i] = -1;
+	if ( map->backmap[gid]==i ) {
+	    for ( j=map->enccount-1; j>=0 && map->map[j]!=gid; --j );
+	    map->backmap[gid] = j;
+	    if ( j==-1 ) {
+		SFRemoveGlyph(sf,sf->glyphs[gid],&flags);
+		changed = true;
+	    } else if ( sf->glyphs[gid]!=NULL && sf->glyphs[gid]->altuni != NULL && map->enc!=&custom )
+		AltUniRemove(sf->glyphs[gid],UniFromEnc(i,map->enc));
+	}
+    }
+    if ( changed && !fv->sf->changed ) {
+	fv->sf->changed = true;
+	for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame )
+	    FVSetTitle(fvs);
+    }
+    if ( altered )
+	FVRefreshAll(sf);
+}
+
 void FVMetricsCenter(FontViewBase *fv,int docenter) {
     int i, gid;
     SplineChar *sc;

@@ -2962,43 +2962,12 @@ return;
 
 static void bDetachGlyphs(Context *c) {
     FontViewBase *fv = c->curfv;
-    SplineFont *sf = fv->sf;
-    int i, j, gid;
-    EncMap *map = fv->map;
-
-    for ( i=0; i<map->enccount; ++i ) if ( fv->selected[i] && (gid=map->map[i])!=-1 ) {
-	map->map[i] = -1;
-	if ( map->backmap[gid]==i ) {
-	    for ( j=map->enccount-1; j>=0 && map->map[j]!=gid; --j );
-	    map->backmap[gid] = j;
-	}
-	if ( sf->glyphs[gid]!=NULL && sf->glyphs[gid]->altuni != NULL && map->enc!=&custom )
-	    AltUniRemove(sf->glyphs[gid],UniFromEnc(i,map->enc));
-    }
+    FVDetachGlyphs(fv);
 }
 
 static void bDetachAndRemoveGlyphs(Context *c) {
     FontViewBase *fv = c->curfv;
-    int i, j, gid;
-    EncMap *map = fv->map;
-    SplineFont *sf = fv->sf;
-    int flags = -1;
-    int changed = false;
-
-    for ( i=0; i<map->enccount; ++i ) if ( fv->selected[i] && (gid=map->map[i])!=-1 ) {
-	map->map[i] = -1;
-	if ( map->backmap[gid]==i ) {
-	    for ( j=map->enccount-1; j>=0 && map->map[j]!=gid; --j );
-	    map->backmap[gid] = j;
-	    if ( j==-1 ) {
-		SFRemoveGlyph(sf,sf->glyphs[gid],&flags);
-		changed = true;
-	    }
-	}
-    }
-    if ( changed && !fv->sf->changed ) {
-	fv->sf->changed = true;
-    }
+    FVDetachAndRemoveGlyphs( fv);
 }
 
 static void bRemoveDetachedGlyphs(Context *c) {

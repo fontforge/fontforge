@@ -448,6 +448,7 @@ extern struct fv_interface *fv_interface;
 #define FVChangeDisplayBitmap	(fv_interface->change_display_bitmap)
 #define FVShowFilled		(fv_interface->display_filled)
 #define FVReattachCVs		(fv_interface->reattach_cvs)
+#define FVDisplayChar		(fv_interface->display_char)
 #define FVChangeGID		(fv_interface->select_gid)
 #define SFCloseAllInstrs	(fv_interface->close_all_instrs)
 
