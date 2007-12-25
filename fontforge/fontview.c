@@ -3920,24 +3920,11 @@ static void FVEncodingMenuBuild(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     mi->sub = GetEncodingMenu(FVMenuReencode,fv->b.map->enc);
 }
 
-static void FVForceEncodingMenuBuild(GWindow gw,struct gmenuitem *mi, GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    extern void GMenuItemArrayFree(GMenuItem *mi);
-
-    if ( mi->sub!=NULL ) {
-	GMenuItemArrayFree(mi->sub);
-	mi->sub = NULL;
-    }
-    mi->sub = GetEncodingMenu(FVMenuForceEncode,fv->b.map->enc);
-}
-
 static void FVMenuAddUnencoded(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     char *ret, *end;
-    int cnt, i;
-    EncMap *map = fv->b.map;
+    int cnt;
 
-    /* Add unused unencoded slots in the map */
     ret = gwwv_ask_string(_("Add Encoding Slots..."),"1",fv->b.cidmaster?_("How many CID slots do you wish to add?"):_("How many unencoded glyph slots do you wish to add?"));
     if ( ret==NULL )
 return;
@@ -3948,95 +3935,20 @@ return;
 return;
     }
     free(ret);
-    if ( fv->b.normal!=NULL ) {
-	/* If it's compacted, lose the base encoding and the fact that it's */
-	/*  compact and make it be custom. That's what Alexey Kryukov asked */
-	/*  for */
-	EncMapFree(fv->b.normal);
-	fv->b.normal = NULL;
-	fv->b.map->enc = &custom;
-	FontViewSetTitle(fv);
-    }
-    if ( fv->b.cidmaster ) {
-	SplineFont *sf = fv->b.sf;
-	FontView *fvs;
-	if ( sf->glyphcnt+cnt<sf->glyphmax )
-	    sf->glyphs = grealloc(sf->glyphs,(sf->glyphmax = sf->glyphcnt+cnt+10)*sizeof(SplineChar *));
-	memset(sf->glyphs+sf->glyphcnt,0,cnt*sizeof(SplineChar *));
-	for ( fvs=(FontView *) (sf->fv); fvs!=NULL; fvs=(FontView *) (fvs->b.nextsame) ) {
-	    EncMap *map = fvs->b.map;
-	    if ( map->enccount+cnt>=map->encmax )
-		map->map = grealloc(map->map,(map->encmax += cnt+10)*sizeof(int));
-	    if ( sf->glyphcnt+cnt<map->backmax )
-		map->backmap = grealloc(map->map,(map->backmax += cnt+10)*sizeof(int));
-	    for ( i=map->enccount; i<map->enccount+cnt; ++i )
-		map->map[i] = map->backmap[i] = i;
-	    fvs->b.selected = grealloc(fvs->b.selected,(map->enccount+cnt));
-	    memset(fvs->b.selected+map->enccount,0,cnt);
-	    map->enccount += cnt;
-	    if ( fv->filled!=NULL ) {
-		if ( fv->filled->glyphmax<sf->glyphmax )
-		    fv->filled->glyphs = grealloc(fv->filled->glyphs,(sf->glyphmax = sf->glyphcnt+cnt+10)*sizeof(BDFChar *));
-		memset(fv->filled->glyphs+fv->filled->glyphcnt,0,cnt*sizeof(BDFChar *));
-		fv->filled->glyphcnt = fv->filled->glyphmax = sf->glyphcnt+cnt;
-	    }
-	}
-	sf->glyphcnt += cnt;
-	FontViewReformatAll(fv->b.sf);
-    } else {
-	if ( map->enccount+cnt>=map->encmax )
-	    map->map = grealloc(map->map,(map->encmax += cnt+10)*sizeof(int));
-	for ( i=map->enccount; i<map->enccount+cnt; ++i )
-	    map->map[i] = -1;
-	fv->b.selected = grealloc(fv->b.selected,(map->enccount+cnt));
-	memset(fv->b.selected+map->enccount,0,cnt);
-	map->enccount += cnt;
-	FontViewReformatOne(&fv->b);
-	FVScrollToChar(fv,map->enccount-cnt);
-    }
+    FVAddUnencoded((FontViewBase *) fv, cnt);
 }
 
 static void FVMenuRemoveUnused(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    SplineFont *sf = fv->b.sf;
-    EncMap *map = fv->b.map;
-    int oldcount = map->enccount;
-    int gid, i;
-    int flags = -1;
-
-    for ( i=map->enccount-1; i>=0 && ((gid=map->map[i])==-1 || !SCWorthOutputting(sf->glyphs[gid]));
-	    --i ) {
-	if ( gid!=-1 )
-	    SFRemoveGlyph(sf,sf->glyphs[gid],&flags);
-	map->enccount = i;
-    }
-    /* We reduced the encoding, so don't really need to reallocate the selection */
-    /*  array. It's just bigger than it needs to be. */
-    if ( oldcount!=map->enccount )
-	FontViewReformatOne(&fv->b);
+    FVRemoveUnused((FontViewBase *) fv);
 }
 
 static void FVMenuCompact(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    int oldcount = fv->b.map->enccount;
     SplineChar *sc;
 
     sc = FVFindACharInDisplay(fv);
-    if ( fv->b.normal!=NULL ) {
-	EncMapFree(fv->b.map);
-	fv->b.map = fv->b.normal;
-	fv->b.normal = NULL;
-	fv->b.selected = grealloc(fv->b.selected,fv->b.map->enccount);
-	memset(fv->b.selected,0,fv->b.map->enccount);
-    } else {
-	/* We reduced the encoding, so don't really need to reallocate the selection */
-	/*  array. It's just bigger than it needs to be. */
-	fv->b.normal = EncMapCopy(fv->b.map);
-	CompactEncMap(fv->b.map,fv->b.sf);
-    }
-    if ( oldcount!=fv->b.map->enccount )
-	FontViewReformatOne(&fv->b);
-    FontViewSetTitle(fv);
+    FVCompact((FontViewBase *) fv);
     if ( sc!=NULL ) {
 	int enc = fv->b.map->backmap[sc->orig_pos];
 	if ( enc!=-1 )
@@ -4046,36 +3958,12 @@ static void FVMenuCompact(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 
 static void FVMenuDetachGlyphs(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    int i, j, gid;
-    EncMap *map = fv->b.map;
-    int altered = false;
-    FontView *fvs;
-    SplineFont *sf = fv->b.sf;
-
-    for ( i=0; i<map->enccount; ++i ) if ( fv->b.selected[i] && (gid=map->map[i])!=-1 ) {
-	altered = true;
-	map->map[i] = -1;
-	if ( map->backmap[gid]==i ) {
-	    for ( j=map->enccount-1; j>=0 && map->map[j]!=gid; --j );
-	    map->backmap[gid] = j;
-	}
-	if ( sf->glyphs[gid]!=NULL && sf->glyphs[gid]->altuni != NULL && map->enc!=&custom )
-	    AltUniRemove(sf->glyphs[gid],UniFromEnc(i,map->enc));
-    }
-    if ( altered )
-	for ( fvs = (FontView *) (fv->b.sf->fv); fvs!=NULL; fvs=(FontView *) (fvs->b.nextsame) )
-	    GDrawRequestExpose(fvs->v,NULL,false);
+    FVDetachGlyphs((FontViewBase *) fv);
 }
 
 static void FVMenuDetachAndRemoveGlyphs(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     char *buts[3];
-    int i, j, gid;
-    EncMap *map = fv->b.map;
-    SplineFont *sf = fv->b.sf;
-    int flags = -1;
-    int changed = false, altered = false;
-    FontView *fvs;
 
     buts[0] = _("_Remove");
     buts[1] = _("_Cancel");
@@ -4084,27 +3972,18 @@ static void FVMenuDetachAndRemoveGlyphs(GWindow gw,struct gmenuitem *mi, GEvent 
     if ( gwwv_ask(_("Detach & Remo_ve Glyphs..."),(const char **) buts,0,1,_("Are you sure you wish to remove these glyphs? This operation cannot be undone."))==1 )
 return;
 
-    for ( i=0; i<map->enccount; ++i ) if ( fv->b.selected[i] && (gid=map->map[i])!=-1 ) {
-	altered = true;
-	map->map[i] = -1;
-	if ( map->backmap[gid]==i ) {
-	    for ( j=map->enccount-1; j>=0 && map->map[j]!=gid; --j );
-	    map->backmap[gid] = j;
-	    if ( j==-1 ) {
-		SFRemoveGlyph(sf,sf->glyphs[gid],&flags);
-		changed = true;
-	    } else if ( sf->glyphs[gid]!=NULL && sf->glyphs[gid]->altuni != NULL && map->enc!=&custom )
-		AltUniRemove(sf->glyphs[gid],UniFromEnc(i,map->enc));
-	}
+    FVDetachAndRemoveGlyphs((FontViewBase *) fv);
+}
+
+static void FVForceEncodingMenuBuild(GWindow gw,struct gmenuitem *mi, GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    extern void GMenuItemArrayFree(GMenuItem *mi);
+
+    if ( mi->sub!=NULL ) {
+	GMenuItemArrayFree(mi->sub);
+	mi->sub = NULL;
     }
-    if ( changed && !fv->b.sf->changed ) {
-	fv->b.sf->changed = true;
-	for ( fvs = (FontView *) (sf->fv); fvs!=NULL; fvs=(FontView *) (fvs->b.nextsame) )
-	    FontViewSetTitle(fvs);
-    }
-    if ( altered )
-	for ( fvs = (FontView *) (sf->fv); fvs!=NULL; fvs=(FontView *) (fvs->b.nextsame) )
-	    GDrawRequestExpose(fvs->v,NULL,false);
+    mi->sub = GetEncodingMenu(FVMenuForceEncode,fv->b.map->enc);
 }
 
 static void FVMenuAddEncodingName(GWindow gw,struct gmenuitem *mi, GEvent *e) {
