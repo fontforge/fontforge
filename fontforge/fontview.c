@@ -3969,7 +3969,7 @@ static void FVMenuDetachAndRemoveGlyphs(GWindow gw,struct gmenuitem *mi, GEvent 
     buts[1] = _("_Cancel");
     buts[2] = NULL;
     
-    if ( gwwv_ask(_("Detach & Remo_ve Glyphs..."),(const char **) buts,0,1,_("Are you sure you wish to remove these glyphs? This operation cannot be undone."))==1 )
+    if ( gwwv_ask(_("Detach & Remove Glyphs"),(const char **) buts,0,1,_("Are you sure you wish to remove these glyphs? This operation cannot be undone."))==1 )
 return;
 
     FVDetachAndRemoveGlyphs((FontViewBase *) fv);
@@ -5932,22 +5932,18 @@ static void FVChar(FontView *fv,GEvent *event) {
 	/* Do Nothing */;
     } else {
 	SplineFont *sf = fv->b.sf;
-	for ( i=0; i<sf->glyphcnt; ++i ) {
-	    if ( sf->glyphs[i]!=NULL )
-		if ( sf->glyphs[i]->unicodeenc==event->u.chr.chars[0] )
-	break;
-	}
-	if ( i==sf->glyphcnt ) {
-	    for ( i=0; i<fv->b.map->enccount; ++i ) if ( fv->b.map->map[i]==-1 ) {
-		SplineChar dummy;
-		SCBuildDummy(&dummy,sf,fv->b.map,i);
-		if ( dummy.unicodeenc==event->u.chr.chars[0] )
+	int enc = EncFromUni(event->u.chr.chars[0],fv->b.map->enc);
+	if ( enc==-1 ) {
+	    for ( i=0; i<sf->glyphcnt; ++i ) {
+		if ( sf->glyphs[i]!=NULL )
+		    if ( sf->glyphs[i]->unicodeenc==event->u.chr.chars[0] )
 	    break;
 	    }
-	} else
-	    i = fv->b.map->backmap[i];
-	if ( i!=fv->b.map->enccount && i!=-1 )
-	    FVChangeChar(fv,i);
+	    if ( i!=-1 )
+		enc = fv->b.map->backmap[i];
+	}
+	if ( enc<fv->b.map->enccount && enc!=-1 )
+	    FVChangeChar(fv,enc);
     }
 }
 
@@ -6187,9 +6183,10 @@ return;
 		fv->sel_index = 1;
 	    else if ( fv->sel_index<255 )
 		++fv->sel_index;
-	    if ( fv->pressed!=NULL )
+	    if ( fv->pressed!=NULL ) {
 		GDrawCancelTimer(fv->pressed);
-	    else if ( event->u.mouse.state&ksm_shift ) {
+		fv->pressed = NULL;
+	    } else if ( event->u.mouse.state&ksm_shift ) {
 		fv->b.selected[pos] = fv->b.selected[pos] ? 0 : fv->sel_index;
 		FVToggleCharSelected(fv,pos);
 	    } else if ( !fv->b.selected[pos] ) {
