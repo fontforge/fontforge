@@ -16,6 +16,17 @@ extern int gwwv_choose(const char *title,
 	const char **choices, int cnt, int def,
 	const char *msg, ... );
 extern int gwwv_wild_match(char *pattern, const char *name,int ignorecase);
-extern char *gwwv_open_filename(const char *title,char *initial_filter);
-extern char *gwwv_save_filename(const char *title,const char *def_name );
+
+struct gwwv_filter {
+    char *name;
+    char *wild;
+    GtkFileFilterFunc filtfunc;
+};
+
+extern char *gwwv_open_filename_mult(const char *title,const char *def_name,const struct gwwv_filter *filters, int mult);
+extern char *gwwv_save_filename_with_gadget(const char *tit,const char *def,const char *filter,GtkWidget *extra)
+extern char *gwwv_open_filename(const char *title, const char *def_name,
+	const char *filter);
+extern char *gwwv_saveas_filename(const char *title, const char *def_name,
+	const char *filter);
 #endif

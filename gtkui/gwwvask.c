@@ -1,4 +1,4 @@
-/* Copyright (C) 2004 by George Williams */
+/* Copyright (C) 2004-2007 by George Williams */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -25,10 +25,10 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#if defined( FONTFORGE_CONFIG_GTK ) || 1
 # include <gtk/gtk.h>
 # include <gdk/gdkkeysyms.h>
 # include "gwwvask.h"
+# include "support.h"
 # include <stdarg.h>
 # include <stdio.h>
 # include <string.h>
@@ -39,7 +39,6 @@
 # include <unistd.h>
 # include <errno.h>
 # include <libintl.h>
-#  define _ gettext
 
 /* A set of extremely simple dlgs.
 	Post a notice (which vanishes after a bit)
@@ -65,6 +64,7 @@ void gwwv_post_notice(const char *title, const char *msg, ... ) {
 #else
     vsnprintf( buffer, sizeof(buffer), msg, va);
 #endif
+    va_end(va);
 
     dlg = gtk_dialog_new_with_buttons(title,NULL,0,
 	    GTK_STOCK_OK,GTK_RESPONSE_ACCEPT,NULL);
@@ -84,7 +84,7 @@ void gwwv_post_notice(const char *title, const char *msg, ... ) {
     /* Don't wait for it */
 }
 
-void gwwv_error(const char *title, const char *msg, ... ) {
+void gwwv_post_error(const char *title, const char *msg, ... ) {
     char buffer[400];
     va_list va;
     GtkWidget *dlg, *lab;
@@ -95,8 +95,36 @@ void gwwv_error(const char *title, const char *msg, ... ) {
 #else
     vsnprintf( buffer, sizeof(buffer), msg, va);
 #endif
+    va_end(va);
 
     dlg = gtk_dialog_new_with_buttons(title,NULL,GTK_DIALOG_DESTROY_WITH_PARENT,
+	    GTK_STOCK_OK,GTK_RESPONSE_ACCEPT,NULL);
+    gtk_dialog_set_default_response(GTK_DIALOG(dlg),GTK_RESPONSE_ACCEPT);
+
+    lab = gtk_label_new_with_mnemonic(buffer);
+    gtk_widget_show(lab);
+    gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dlg)->vbox),lab);
+
+    (void) gtk_dialog_run(GTK_DIALOG(dlg));
+}
+
+void gwwv_ierror(const char *msg, ... ) {
+    char buffer[400];
+    int len;
+    va_list va;
+    GtkWidget *dlg, *lab;
+
+    va_start(va,msg);
+    sprintf(buffer, _("Internal Error: "));
+    len = strlen(buffer);
+#if defined( _NO_SNPRINTF ) || defined( __VMS )
+    vsprintf( buffer+len, msg, va);
+#else
+    vsnprintf( buffer+len, sizeof(buffer)-len, msg, va);
+#endif
+    va_end(va);
+
+    dlg = gtk_dialog_new_with_buttons(_("Internal Error"),NULL,GTK_DIALOG_DESTROY_WITH_PARENT,
 	    GTK_STOCK_OK,GTK_RESPONSE_ACCEPT,NULL);
     gtk_dialog_set_default_response(GTK_DIALOG(dlg),GTK_RESPONSE_ACCEPT);
 
@@ -138,6 +166,7 @@ int gwwv_ask(const char *title,const char **butnames, int def,int cancel,
 #else
     vsnprintf( buffer, sizeof(buffer), msg, va);
 #endif
+    va_end(va);
 
     ad.cancel = cancel;
     ad.def = def;
@@ -194,6 +223,7 @@ char *gwwv_ask_string(const char *title,const char *def,
 #else
     vsnprintf( buffer, sizeof(buffer), question, va);
 #endif
+    va_end(va);
 
     dlg = gtk_dialog_new_with_buttons(title,NULL,GTK_DIALOG_DESTROY_WITH_PARENT,
 	    GTK_STOCK_OK,GTK_RESPONSE_ACCEPT,
@@ -300,9 +330,12 @@ int gwwv_choose_with_buttons(const char *title,
 	const char **choices, int cnt, int def,
 	const char *butnames[2], const char *msg, ... ) {
     va_list va;
+    int ret;
 
     va_start(va,msg);
-return( _gwwv_choose_with_buttons(title,choices,cnt,def,butnames,msg,va));
+    ret = _gwwv_choose_with_buttons(title,choices,cnt,def,butnames,msg,va);
+    va_end(va);
+return( ret );
 }
 
 int gwwv_choose(const char *title,
@@ -310,9 +343,12 @@ int gwwv_choose(const char *title,
 	const char *msg, ... ) {
     static const char *buts[] = { GTK_STOCK_OK, GTK_STOCK_CANCEL, NULL };
     va_list va;
+    int ret;
 
     va_start(va,msg);
-return( _gwwv_choose_with_buttons(title,choices,cnt,def,buts,msg,va));
+    ret = _gwwv_choose_with_buttons(title,choices,cnt,def,buts,msg,va);
+    va_end(va);
+return( ret );
 }
 
 /* *********************** FILE CHOOSER ROUTINES **************************** */
@@ -425,48 +461,11 @@ static gboolean gwwv_file_pattern_matcher(const GtkFileFilterInfo *info,
 return( gwwv_wild_match(pattern, info->filename, TRUE));
 }
 
-char *gwwv_open_filename(const char *title, char *initial_filter) {
-    GtkWidget *dialog;
-    char *filename = NULL;
-    GtkFileFilter *filter;
+static void gwwv_file_def_filters(GtkWidget *dialog, const char *def_name,
+	const struct gwwv_filter filters ) {
+    GtkFileFilter *filter, *standard;
 
-    dialog = gtk_file_chooser_dialog_new (title,
-					  NULL,
-					  GTK_FILE_CHOOSER_ACTION_OPEN,
-					  GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
-					  GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-					  NULL);
-    if ( initial_filter!=NULL ) {
-	filter = gtk_file_filter_new();
-	gtk_file_filter_add_custom( filter,GTK_FILE_FILTER_FILENAME,
-		gwwv_file_pattern_matcher, initial_filter, NULL);
-	gtk_file_filter_set_name( filter,_("Initial Filter") );
-	gtk_file_chooser_add_filter( GTK_FILE_CHOOSER( dialog ), filter );
-	filter = gtk_file_filter_new();
-	gtk_file_filter_add_pattern( filter,"*" );
-	gtk_file_filter_set_name( filter,_("Everything") );
-	gtk_file_chooser_add_filter( GTK_FILE_CHOOSER( dialog ), filter );
-    }
-
-    if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT)
-	filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
-
-    gtk_widget_destroy (dialog);
-return( filename );
-}
-
-char *gwwv_save_filename(const char *title,const char *def_name) {
-    GtkWidget *dialog;
-    char *filename = NULL;
-    int response;
-
-    dialog = gtk_file_chooser_dialog_new (title,
-					  NULL,
-					  GTK_FILE_CHOOSER_ACTION_SAVE,
-					  GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
-					  GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-					  NULL);
-
+    g_object_set(G_OBJECT(dialog),"show-hidden",TRUE,NULL);
     if ( def_name!=NULL ) {
 	char *pt = strrchr( def_name,'/');
 	if ( pt!=NULL ) {
@@ -477,31 +476,105 @@ char *gwwv_save_filename(const char *title,const char *def_name) {
 	} else
 	    gtk_file_chooser_set_current_name( GTK_FILE_CHOOSER( dialog ), def_name );
     }
-
-    while ( gtk_dialog_run( GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT ) {
-	filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
-	if ( access( filename,F_OK )== -1 )
-    break;
-	else {
-	    const char *buts[3];
-	    buts[0] = _("_Replace");
-	    buts[1] = GTK_STOCK_CANCEL;
-	    buts[2] = NULL;
-	    if ( gwwv_ask(_("File Exists"), buts, 0, 1, _("File exists, do you want to replace it?" ))==0 )
-    break;
-	    free(filename);
+    if ( filters!=NULL ) {
+	standard = NULL;
+	for ( i=0; filters[i].name!=NULL; ++i ) {
+	    filter = gtk_file_filter_new();
+	    if ( filters[i].filtfunc!=NULL )
+		gtk_file_filter_add_custom( filter,GTK_FILE_FILTER_FILENAME,
+			filters[i].filtfunc, (gpointer) filters[i].wild, NULL);
+	    else
+		/* GTK's gtk_file_filter_add_pattern doesn't handled {} wildcards */
+		/*  and I depend on those. So I use my own patern matcher */
+		gtk_file_filter_add_custom( filter,GTK_FILE_FILTER_FILENAME,
+			gwwv_file_pattern_matcher, (gpointer) filters[i].wild, NULL);
+	    gtk_file_filter_set_name( filter,filters[i].name );
+	    gtk_file_chooser_add_filter( GTK_FILE_CHOOSER( dialog ), filter );
+	    if ( i==0 )
+		standard = filter;
 	}
+	if ( standard!=NULL )
+	    gtk_file_chooser_set_filter( GTK_FILE_CHOOSER( dialog ), standard );
     }
+}
+
+char *gwwv_open_filename_mult(const char *title, const char *def_name,
+	const struct gwwv_filter filters, int mult ) {
+    GtkWidget *dialog;
+    char *filename = NULL;
+
+    if ( mult )
+	dialog = gtk_file_chooser_dialog_new (title,
+					      NULL,
+					      GTK_FILE_CHOOSER_ACTION_OPEN,
+					      GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+					      GTK_STOCK_NEW, -100,
+					      GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+					      NULL);
+    else
+	dialog = gtk_file_chooser_dialog_new (title,
+					      NULL,
+					      GTK_FILE_CHOOSER_ACTION_OPEN,
+					      GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+					      GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+					      NULL);
+    gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER( dialog ), mult );
+    gwwv_file_def_filters(dialog,def_name,filters);
+
+    filename = NULL;
+    if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT)
+	filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
 
     gtk_widget_destroy (dialog);
 return( filename );
 }
-#endif
 
-int main( int argc, char **argv ) {
+char *gwwv_save_filename_with_gadget(const char *title, const char *def_name,
+	const struct gwwv_filter filters, GtkWidget *extra ) {
+    GtkWidget *dialog;
+    char *filename = NULL;
 
-    gtk_init (&argc, &argv);
+    dialog = gtk_file_chooser_dialog_new (title,
+					  NULL,
+					  GTK_FILE_CHOOSER_ACTION_SAVE,
+					  GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+					  GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+					  NULL);
+    gwwv_file_def_filters(dialog,def_name,filters);
+    if ( extra != NULL )
+	gtk_file_chooser_set_extra_widget( GTK_FILE_CHOOSER( dialog ), extra );
 
-    printf( "%s\n", gwwv_save_filename("Save","foo"));
-    return 0;
+    filename = NULL;
+    if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT)
+	filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
+
+    gtk_widget_destroy (dialog);
+return( filename );
+}
+
+char *gwwv_open_filename(const char *title, const char *def_name,
+	const char *filter) {
+    struct gwwv_filter filters[3];
+
+    if ( filter==NULL )
+return( gwwv_open_filename_mult(title,def_name,NULL,false));
+    memset(filters,0,sizeof(filters));
+    filters[0].name = _("Default");
+    filters[0].wild = filter;
+    filters[1].name = _("All");
+    filters[1].wild = "*";
+return( gwwv_open_filename_mult(title,def_name,filters,false));
+}
+    
+char *gwwv_saveas_filename(const char *title, const char *def_name,
+	const char *filter) {
+
+    if ( filter==NULL )
+return( gwwv_save_filename_mult(title,def_name,NULL,false));
+    memset(filters,0,sizeof(filters));
+    filters[0].name = _("Default");
+    filters[0].wild = filter;
+    filters[1].name = _("All");
+    filters[1].wild = "*";
+return( gwwv_save_filename_with_gadget(title,def_name,filters,false));
 }
