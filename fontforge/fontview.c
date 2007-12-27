@@ -4786,7 +4786,7 @@ return;
 	for ( mv=fv->b.sf->metrics; mv!=NULL; mv=mv->next )
 	    MVRefreshChar(mv,fv->b.sf->glyphs[gid]);
 	if ( fv->show==fv->filled )
-	    bdfc = BDFPieceMeal(fv->show,gid);
+	    bdfc = BDFPieceMealCheck(fv->show,gid);
 	else
 	    bdfc = fv->show->glyphs[gid];
 	/* A glyph may be encoded in several places, all need updating */
