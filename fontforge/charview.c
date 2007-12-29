@@ -4839,27 +4839,6 @@ static void CVMenuRevert(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 			    /* we get a crash. So delay till after the menu completes */
 }
 
-void RevertedGlyphReferenceFixup(SplineChar *sc, SplineFont *sf) {
-    RefChar *refs, *prev, *next;
-
-    for ( prev=NULL, refs = sc->layers[ly_fore].refs ; refs!=NULL; refs = next ) {
-	next = refs->next;
-	if ( refs->orig_pos<sf->glyphcnt && sf->glyphs[refs->orig_pos]!=NULL ) {
-	    prev = refs;
-	    refs->sc = sf->glyphs[refs->orig_pos];
-	    refs->unicode_enc = refs->sc->unicodeenc;
-	    SCReinstanciateRefChar(sc,refs);
-	    SCMakeDependent(sc,refs->sc);
-	} else {
-	    if ( prev==NULL )
-		sc->layers[ly_fore].refs = next;
-	    else
-		prev->next = next;
-	    RefCharFree(refs);
-	}
-    }
-}
-
 static void CVMenuRevertGlyph(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     SplineChar *sc, temp;

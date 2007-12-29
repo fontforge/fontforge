@@ -1050,75 +1050,7 @@ static void FVMenuRevertBackup(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void FVMenuRevertGlyph(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    int i, gid;
-    int nc_state = -1;
-    SplineFont *sf = fv->b.sf;
-    SplineChar *sc, *tsc;
-    SplineChar temp;
-#ifdef FONTFORGE_CONFIG_TYPE3
-    Undoes **undoes;
-    int layer, lc;
-#endif
-    EncMap *map = fv->b.map;
-    CharView *cvs;
-
-    if ( fv->b.sf->sfd_version<2 )
-	ff_post_error(_("Old sfd file"),_("This font comes from an old format sfd file. Not all aspects of it can be reverted successfully."));
-
-    for ( i=0; i<map->enccount; ++i ) if ( fv->b.selected[i] && (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL ) {
-	tsc = sf->glyphs[gid];
-	if ( tsc->namechanged ) {
-	    if ( nc_state==-1 ) {
-		ff_post_error(_("Glyph Name Changed"),_("The name of glyph %.40s has changed. This is what I use to find the glyph in the file, so I cannot revert this glyph.\n(You will not be warned for subsequent glyphs.)"),tsc->name);
-		nc_state = 0;
-	    }
-	} else {
-	    sc = SFDReadOneChar(sf,tsc->name);
-	    if ( sc==NULL ) {
-		ff_post_error(_("Can't Find Glyph"),_("The glyph, %.80s, can't be found in the sfd file"),tsc->name);
-		tsc->namechanged = true;
-	    } else {
-		SCPreserveState(tsc,true);
-		SCPreserveBackground(tsc);
-		temp = *tsc;
-		tsc->dependents = NULL;
-#ifdef FONTFORGE_CONFIG_TYPE3
-		lc = tsc->layer_cnt;
-		undoes = galloc(lc*sizeof(Undoes *));
-		for ( layer=0; layer<lc; ++layer ) {
-		    undoes[layer] = tsc->layers[layer].undoes;
-		    tsc->layers[layer].undoes = NULL;
-		}
-#else
-		tsc->layers[ly_back].undoes = tsc->layers[ly_fore].undoes = NULL;
-#endif
-		SplineCharFreeContents(tsc);
-		*tsc = *sc;
-		chunkfree(sc,sizeof(SplineChar));
-		tsc->parent = sf;
-		tsc->dependents = temp.dependents;
-		tsc->views = temp.views;
-#ifdef FONTFORGE_CONFIG_TYPE3
-		for ( layer = 0; layer<lc && layer<tsc->layer_cnt; ++layer )
-		    tsc->layers[layer].undoes = undoes[layer];
-		for ( ; layer<lc; ++layer )
-		    UndoesFree(undoes[layer]);
-		free(undoes);
-#else
-		tsc->layers[ly_fore].undoes = temp.layers[ly_fore].undoes;
-		tsc->layers[ly_back].undoes = temp.layers[ly_back].undoes;
-#endif
-		/* tsc->changed = temp.changed; */
-		/* tsc->orig_pos = temp.orig_pos; */
-		for ( cvs=(CharView *) (tsc->views); cvs!=NULL; cvs=(CharView *) cvs->b.next ) {
-		    cvs->b.layerheads[dm_back] = &tsc->layers[ly_back];
-		    cvs->b.layerheads[dm_fore] = &tsc->layers[ly_fore];
-		}
-		RevertedGlyphReferenceFixup(tsc, sf);
-		_SCCharChangedUpdate(tsc,false);
-	    }
-	}
-    }
+    FVRevertGlyph((FontViewBase *) fv);
 }
 
 void MenuPrefs(GWindow base,struct gmenuitem *mi,GEvent *e) {
@@ -2618,13 +2550,11 @@ static void FVMenuShowBitmap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 }
 
 static void FV_ShowFilled(FontView *fv) {
-    FontView *fvs;
 
     fv->magnify = 1;
     fv->user_requested_magnify = 1;
-    for ( fvs=(FontView *) (fv->b.sf->fv); fvs!=NULL; fvs=(FontView *) (fvs->b.nextsame) )
-	if ( fvs->show!=fvs->filled )
-	    FVChangeDisplayFont(fvs,fvs->filled);
+    if ( fv->show!=fv->filled )
+	FVChangeDisplayFont(fv,fv->filled);
     fv->b.sf->display_size = -fv->filled->pixelsize;
     fv->b.active_bitmap = NULL;
 }

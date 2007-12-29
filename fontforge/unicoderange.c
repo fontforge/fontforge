@@ -379,3 +379,29 @@ struct rangeinfo *SFUnicodeRanges(SplineFont *sf, enum ur_flags flags) {
 	qsort(ri,cnt,sizeof(struct rangeinfo),ncmp);
 return( ri );
 }
+
+const char *UnicodeRange(int unienc) {
+    char *ret;
+    struct unicoderange *best=NULL;
+    int i;
+
+    ret = "Unencoded Unicode";
+    if ( unienc<0 )
+return( ret );
+
+    for ( i=0; unicoderange[i].name!=NULL; ++i ) {
+	if ( unienc>=unicoderange[i].first && unienc<=unicoderange[i].last ) {
+	    if ( best==NULL )
+		best = &unicoderange[i];
+	    else if (( unicoderange[i].first>best->first &&
+			unicoderange[i].last<=best->last ) ||
+		     ( unicoderange[i].first>=best->first &&
+			unicoderange[i].last<best->last ))
+		best = &unicoderange[i];
+	}
+    }
+    if ( best!=NULL )
+return(best->name);
+
+return( ret );
+}

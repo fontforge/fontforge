@@ -472,6 +472,7 @@ extern void FVSetWidthScript(FontViewBase *fv,enum widthtype wtype,int val,int i
 extern void FVMetricsCenter(FontViewBase *fv,int docenter);
 extern void FVRevert(FontViewBase *fv);
 extern void FVRevertBackup(FontViewBase *fv);
+extern void FVRevertGlyph(FontViewBase *fv);
 extern int   MMReblend(FontViewBase *fv, MMSet *mm);
 extern FontViewBase *MMCreateBlendedFont(MMSet *mm,FontViewBase *fv,real blends[MmMax],int tonew );
 #endif
