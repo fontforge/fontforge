@@ -823,6 +823,7 @@ return;
 	BDFFontFree(mv->show);
 	mv->show = SplineFontPieceMeal(mv->sf,mv->pixelsize,mv->antialias?pf_antialias:0,NULL);
     }
+    mv->bdf = bdf;
     MVRemetric(mv);
 }
 
