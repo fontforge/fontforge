@@ -372,6 +372,7 @@ static int splash_e_h(GWindow gw, GEvent *event) {
 	    N_("Gaudeamus Ligature!"),
 	    N_("Gaudeamus Ligature!"),
 	    N_("In the beginning was the letter..."),
+	    N_("fontology recapitulates file-ogeny")
     };
 
     if ( event->type == et_expose ) {
@@ -607,8 +608,7 @@ int main( int argc, char **argv ) {
 	    recover = 1;
 	} else if ( strcmp(pt,"-recover=inquire")==0 ) {
 	    recover = 2;
-	}
-	else if ( strcmp(pt,"-help")==0 )
+	} else if ( strcmp(pt,"-help")==0 )
 	    dohelp();
 	else if ( strcmp(pt,"-usage")==0 )
 	    dousage();

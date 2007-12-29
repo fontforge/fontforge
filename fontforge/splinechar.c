@@ -970,6 +970,27 @@ return( false );
 return( true );
 }
 
+void RevertedGlyphReferenceFixup(SplineChar *sc, SplineFont *sf) {
+    RefChar *refs, *prev, *next;
+
+    for ( prev=NULL, refs = sc->layers[ly_fore].refs ; refs!=NULL; refs = next ) {
+	next = refs->next;
+	if ( refs->orig_pos<sf->glyphcnt && sf->glyphs[refs->orig_pos]!=NULL ) {
+	    prev = refs;
+	    refs->sc = sf->glyphs[refs->orig_pos];
+	    refs->unicode_enc = refs->sc->unicodeenc;
+	    SCReinstanciateRefChar(sc,refs);
+	    SCMakeDependent(sc,refs->sc);
+	} else {
+	    if ( prev==NULL )
+		sc->layers[ly_fore].refs = next;
+	    else
+		prev->next = next;
+	    RefCharFree(refs);
+	}
+    }
+}
+
 static int CheckBluePair(char *blues, char *others, int bluefuzz,
 	int magicpointsize) {
     int bound = 2*bluefuzz+1;

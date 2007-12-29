@@ -30,32 +30,6 @@
 #include <ustring.h>
 #include "unicoderange.h"
 
-const char *UnicodeRange(int unienc) {
-    char *ret;
-    struct unicoderange *best=NULL;
-    int i;
-
-    ret = "Unencoded Unicode";
-    if ( unienc<0 )
-return( ret );
-
-    for ( i=0; unicoderange[i].name!=NULL; ++i ) {
-	if ( unienc>=unicoderange[i].first && unienc<=unicoderange[i].last ) {
-	    if ( best==NULL )
-		best = &unicoderange[i];
-	    else if (( unicoderange[i].first>best->first &&
-			unicoderange[i].last<=best->last ) ||
-		     ( unicoderange[i].first>=best->first &&
-			unicoderange[i].last<best->last ))
-		best = &unicoderange[i];
-	}
-    }
-    if ( best!=NULL )
-return(best->name);
-
-return( ret );
-}
-
 static int alpha(const void *_t1, const void *_t2) {
     const GTextInfo *t1 = _t1, *t2 = _t2;
 

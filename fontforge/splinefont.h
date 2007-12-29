@@ -2717,6 +2717,7 @@ extern void MDReplace(MinimumDistance *md,SplineSet *old,SplineSet *rpl);
 extern void SCSynchronizeWidth(SplineChar *sc,real newwidth, real oldwidth,struct fontviewbase *fv);
 extern RefChar *HasUseMyMetrics(SplineChar *sc);
 extern void SCSynchronizeLBearing(SplineChar *sc,real off);
+extern void RevertedGlyphReferenceFixup(SplineChar *sc, SplineFont *sf);
 
 extern void SFUntickAll(SplineFont *sf);
 
