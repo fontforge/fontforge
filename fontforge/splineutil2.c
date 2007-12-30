@@ -4179,32 +4179,6 @@ return( false );
 return( true );
 }
 
-static int LinesParallel( BasePoint *top1,BasePoint *bottom1,BasePoint *top2, 
-    BasePoint *bottom2 ) {
-    double catx1,caty1,catx2,caty2;
-
-    catx1 = top1->x-bottom1->x; caty1 = top1->y-bottom1->y;
-    catx2 = top2->x-bottom2->x; caty2 = top2->y-bottom2->y;
-
-    if (!RealApprox( caty2/caty1,catx2/catx1 ) &&
-        !RealApprox( caty1/catx1,caty2/catx2 ))
-return( false );
-
-return( true );
-}
-
-int IsCoLinear( BasePoint *top1,BasePoint *bottom1,BasePoint *top2, 
-    BasePoint *bottom2 ) {
-    
-    if (!LinesParallel( top1,bottom1,top2,bottom2 ))
-return( false );
-
-    if (!PointOnLine( top2,bottom1,top1 ))
-return( false );
-
-return( true );
-}
-
 double GetDStemWidth( BasePoint *tl,BasePoint *bl, 
     BasePoint *tr,BasePoint *br ) {
     
@@ -4217,110 +4191,6 @@ double GetDStemWidth( BasePoint *tl,BasePoint *bl,
 	    (tr->y-tl->y)*tempx)/len;
     if ( stemwidth<0 ) stemwidth = -stemwidth;
 return( stemwidth );
-}
-
-static int DiagTooShort ( BasePoint **vec1, BasePoint **vec2 ) {
-    real catx1, caty1, hyp1, catx2, caty2, hyp2;
-    real width;
-    
-    catx1=vec1[0]->x-vec1[1]->x; 
-    caty1=vec1[0]->y-vec1[1]->y;
-    hyp1=sqrt(( catx1*catx1 )+( caty1*caty1 ));
-    if ( hyp1<0 ) hyp1 = -hyp1;
-    
-    catx2=vec2[0]->x-vec2[1]->x; 
-    caty2=vec2[0]->y-vec2[1]->y;
-    hyp2=sqrt(( catx2*catx2 )+( caty2*caty2 ));
-    if ( hyp2<0 ) hyp2 = -hyp2;
-    
-    width = GetDStemWidth (vec1[0], vec1[1], vec2[0], vec2[1]);
-    
-    if (width > ((hyp1+hyp2)/2))
-        return true;
-    return false;
-}
-
-static int DiagCheck( BasePoint **vec1, BasePoint **vec2 ) {
-
-    /* No horizontal,vertical edges */
-    if ( vec1[0]->x == vec1[1]->x || vec1[0]->y==vec1[1]->y ||
-	    vec2[0]->x == vec2[1]->x || vec2[0]->y==vec2[1]->y )
-return( false );
-    /* We are not checking the direction of vectors, as this test should 
-       have already been performed in CVIsDiagonalable */
-
-    /* Similar slopes */
-return( LinesParallel( vec1[0],vec1[1],vec2[0],vec2[1] ));
-}
-
-/* Since this function now deals with 4 arbitrarily selected points,
-   it has to try to combine them by different ways in order to see
-   if they actually can specify a diagonal stem. The reordered points 
-   are placed back to array passed to the function.*/
-int IsDiagonalable(BasePoint **sp ) {
-
-    BasePoint *vec1[2], *vec2[2], *temp;
-    int i, j, k = 0;
-
-    for (i=0; i<4; i++) {
-        if (sp[i] == NULL)
-return( false );
-    }
-    
-    /* Assume that the first point passed to the function is the starting
-       point of the first of two vectors. Then try all possible combinations
-       (there are 3), ensure the vectors are consistantly ordered, and
-       check if they are parallel.*/
-    vec1[0] = sp[0];
-    
-    for (i=1; i<4; i++) {
-        vec1[1] = sp[i];
-        
-        k=0;
-        for (j=1; j<4; j++) {
-            if (j != i)
-                vec2[k++] = sp[j];
-        }
-        
-        /* Ensure points are consistantly ordered */
-        if (( (vec1[0]->y>vec1[1]->y) && (vec2[0]->y<vec2[1]->y)) ||
-	    ( (vec1[0]->y<vec1[1]->y) && (vec2[0]->y>vec2[1]->y)) ) {
-            
-            temp = vec2[0]; vec2[0] = vec2[1]; vec2[1] = temp;
-        }
-        
-        if (DiagCheck (vec1, vec2)) {
-            /* Make sure this is a real line, rather than just two
-               short spline segments which occasionally have happened to be
-               parallel. This is necessary to correctly handle things which may
-               be "diagonalable" in 2 different directions (like slash in some 
-               designs). */
-            if (!DiagTooShort (vec1, vec2)) {
-            
-	        /* Make sure vec1[0]<->vec1[1] is further left than vec2[0]<->vec2[1] */
-	        if ( vec1[0]->x > vec2[0]->x + (vec1[0]->y-vec2[0]->y) 
-                    * (vec2[1]->x-vec2[0]->x)/(vec2[1]->y-vec2[0]->y) ) {
-
-	            temp=vec1[0]; vec1[0]=vec2[0]; vec2[0]=temp;
-	            temp=vec1[1]; vec1[1]=vec2[1]; vec2[1]=temp;
-	        }
-	        /* Make sure vec1[0],vec1[1] are at the top */
-	        if ( vec1[0]->y<vec1[1]->y ) {
-	            temp = vec1[0]; vec1[0]=vec1[1]; vec1[1]=temp;
-	            temp = vec2[0]; vec2[0]=vec2[1]; vec2[1]=temp;
-	        }
-
-                sp[0] = vec1[0];
-                sp[1] = vec2[0];
-                sp[2] = vec1[1];
-                sp[3] = vec2[1];
-
-return ( true );
-            }
-        }
-    }
-
-return( false );
 }
 
 /* Allows to determine if a point specified by x and y coordinates
@@ -4444,4 +4314,89 @@ void DStemInfoTest( SplineChar *sc ) {
     }
 
 return;
+}
+
+/* Since this function now deals with 4 arbitrarily selected points,
+/* it has to try to combine them by different ways in order to see
+/* if they actually can specify a diagonal stem. The reordered points 
+/* are placed back to array passed to the function.*/
+int PointsDiagonalable( SplineFont *sf,BasePoint **bp,BasePoint *unit ) {
+    BasePoint *line1[2], *line2[2], *temp, *base;
+    BasePoint unit1, unit2;
+    int i, j, k;
+    double dist_error_diag, len1, len2, width, dot;
+    double off1, off2;
+
+    for ( i=0; i<4; i++ ) {
+        if ( bp[i] == NULL )
+return( false );
+    }
+
+    dist_error_diag = 0.0065 * ( sf->ascent + sf->descent );
+    /* Assume that the first point passed to the function is the starting
+    /* point of the first of two vectors. Then try all possible combinations
+    /* (there are 3), ensure the vectors are consistantly ordered, and
+    /* check if they are parallel.*/
+    base = bp[0];
+    for ( i=1; i<4; i++ ) {
+        line1[0] = base; line1[1] = bp[i];
+        
+        k=0;
+        for ( j=1; j<4; j++ ) {
+            if ( j != i )
+                line2[k++] = bp[j];
+        }
+        unit1.x = line1[1]->x - line1[0]->x;
+        unit1.y = line1[1]->y - line1[0]->y;
+        unit2.x = line2[1]->x - line2[0]->x;
+        unit2.y = line2[1]->y - line2[0]->y;
+        /* No horizontal, vertical edges */
+        if ( unit1.x == 0 || unit1.y == 0 || unit2.x == 0 || unit2.y == 0 )
+    continue;
+        len1 = sqrt( pow( unit1.x,2 ) + pow( unit1.y,2 ));
+        len2 = sqrt( pow( unit2.x,2 ) + pow( unit2.y,2 ));
+        unit1.x /= len1; unit1.y /= len1;
+        unit2.x /= len2; unit2.y /= len2;
+        dot = unit1.x * unit2.y - unit1.y * unit2.x;
+        /* Units parallel */
+        if ( dot <= -.05 || dot >= .05 )
+    continue;
+        /* Ensure vectors point by such a way that the angle is between 90 and 270 degrees */
+        if ( unit1.x <  0 ) {
+            temp = line1[0]; line1[0] = line1[1]; line1[1] = temp;
+            unit1.x = -unit1.x; unit1.y = -unit1.y;
+        }
+        if ( unit2.x <  0 ) {
+            temp = line2[0]; line2[0] = line2[1]; line2[1] = temp;
+            unit2.x = -unit2.x; unit2.y = -unit2.y;
+        }
+        off1 =  ( line1[1]->x - line1[0]->x ) * unit2.y -
+                ( line1[1]->y - line1[0]->y ) * unit2.x;
+        off2 =  ( line2[1]->x - line2[0]->x ) * unit1.y -
+                ( line2[1]->y - line2[0]->y ) * unit1.x;
+        if ( len1 > len2 && fabs( off2 ) < 2*dist_error_diag ) *unit = unit1;
+        else if ( fabs( off1 ) < 2*dist_error_diag ) *unit = unit2;
+        else
+    continue;
+        width = ( line2[0]->x - line1[0]->x ) * unit->y -
+                ( line2[0]->y - line1[0]->y ) * unit->x;
+        /* Make sure this is a real line, rather than just two
+        /* short spline segments which occasionally have happened to be
+        /* parallel. This is necessary to correctly handle things which may
+        /* be "diagonalable" in 2 different directions (like slash in some 
+        /* designs). */
+        if ( fabs( width ) > len1 || fabs( width ) > len2 )
+    continue;
+	/* Make sure line2 is further right than line1 */
+        if ( width < 0 ) {
+	    temp = line1[0]; line1[0] = line2[0]; line2[0] = temp;
+	    temp = line1[1]; line1[1] = line2[1]; line2[1] = temp;
+        }
+        bp[0] = line1[0];
+        bp[1] = line2[0];
+        bp[2] = line1[1];
+        bp[3] = line2[1];
+return( true );
+    }
+return( false );
 }

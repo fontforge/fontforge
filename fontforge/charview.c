@@ -995,19 +995,19 @@ static void CVDrawTemplates(CharView *cv,GWindow pixmap,SplineChar *template,DRe
 	CVDrawSplineSet(cv,pixmap,r->layers[0].splines,templateoutlinecol,false,clip);
 }
 
-static void CVShowDHint(CharView *cv, GWindow pixmap, DStemInfo *dstem) {
+static void CVShowDHintInstance(CharView *cv, GWindow pixmap, BasePoint *bp) {
     IPoint ip[40], ip2[40];
     GPoint clipped[13];
     int i,j, tot,last;
 
-    ip[0].x = cv->xoff + rint(dstem->leftedgetop.x*cv->scale);
-    ip[0].y = -cv->yoff + cv->height - rint(dstem->leftedgetop.y*cv->scale);
-    ip[1].x = cv->xoff + rint(dstem->rightedgetop.x*cv->scale);
-    ip[1].y = -cv->yoff + cv->height - rint(dstem->rightedgetop.y*cv->scale);
-    ip[2].x = cv->xoff + rint(dstem->rightedgebottom.x*cv->scale);
-    ip[2].y = -cv->yoff + cv->height - rint(dstem->rightedgebottom.y*cv->scale);
-    ip[3].x = cv->xoff + rint(dstem->leftedgebottom.x*cv->scale);
-    ip[3].y = -cv->yoff + cv->height - rint(dstem->leftedgebottom.y*cv->scale);
+    ip[0].x = cv->xoff + rint( bp[0].x*cv->scale );
+    ip[0].y = -cv->yoff + cv->height - rint( bp[0].y*cv->scale );
+    ip[1].x = cv->xoff + rint(bp[1].x*cv->scale);
+    ip[1].y = -cv->yoff + cv->height - rint( bp[1].y*cv->scale );
+    ip[2].x = cv->xoff + rint( bp[2].x*cv->scale );
+    ip[2].y = -cv->yoff + cv->height - rint( bp[2].y*cv->scale );
+    ip[3].x = cv->xoff + rint( bp[3].x*cv->scale );
+    ip[3].y = -cv->yoff + cv->height - rint( bp[3].y*cv->scale );
 
     if (( ip[0].x<0 && ip[1].x<0 && ip[2].x<0 && ip[3].x<0 ) ||
 	    ( ip[0].x>=cv->width && ip[1].x>=cv->width && ip[2].x>=cv->width && ip[3].x>=cv->width ) ||
@@ -1109,6 +1109,27 @@ return;		/* Offscreen */
     }
     clipped[j++] = clipped[0];
     GDrawFillPoly(pixmap,clipped,j,dhintcol);
+}
+
+static void CVShowDHint ( CharView *cv, GWindow pixmap, DStemInfo *dstem ) {
+    BasePoint bp[4];
+    HintInstance *hi;
+    double roff;
+    
+    roff =  ( dstem->right.x - dstem->left.x ) * dstem->unit.x +
+            ( dstem->right.y - dstem->left.y ) * dstem->unit.y;
+
+    for ( hi=dstem->where; hi!=NULL; hi=hi->next ) {
+        bp[0].x = dstem->left.x + dstem->unit.x * hi->begin;
+        bp[0].y = dstem->left.y + dstem->unit.y * hi->begin;
+        bp[1].x = dstem->right.x + dstem->unit.x * ( hi->begin - roff );
+        bp[1].y = dstem->right.y + dstem->unit.y * ( hi->begin - roff );
+        bp[2].x = dstem->right.x + dstem->unit.x * ( hi->end - roff );
+        bp[2].y = dstem->right.y + dstem->unit.y * ( hi->end - roff );
+        bp[3].x = dstem->left.x + dstem->unit.x * hi->end;
+        bp[3].y = dstem->left.y + dstem->unit.y * hi->end;
+        CVShowDHintInstance( cv, pixmap, bp );
+    }
 }
 
 static void CVShowMinimumDistance(CharView *cv, GWindow pixmap,MinimumDistance *md) {
@@ -7876,7 +7897,7 @@ static void CVMenuClearHints(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void CVMenuAddHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    BasePoint *bp[4];
+    BasePoint *bp[4], unit;
     StemInfo *h=NULL;
     DStemInfo *d;
     int num;
@@ -7918,18 +7939,20 @@ return;
 	SCGuessVHintInstancesAndAdd(cv->b.sc,h,bp[0]->y,bp[1]->y);
 	cv->b.sc->vconflicts = StemListAnyConflicts(cv->b.sc->vstem);
     } else {
-	if ( !IsDiagonalable( bp ))
+	if ( !PointsDiagonalable( cv->b.sc->parent,bp,&unit ))
 return;
 	/* No additional tests, as the points should have already been
-           reordered by CVIsDiagonalable */
+        /* reordered by PointsDiagonalable */
         d = chunkalloc(sizeof(DStemInfo));
-	memcpy( &(d->leftedgetop),bp[0],sizeof( BasePoint ) );
-	memcpy( &(d->rightedgetop),bp[1],sizeof( BasePoint ) );
-	memcpy( &(d->leftedgebottom),bp[2],sizeof( BasePoint ) );
-	memcpy( &(d->rightedgebottom),bp[3],sizeof( BasePoint ) );
-
-        if (!MergeDStemInfo(&(cv->b.sc->dstem), d))
-            chunkfree( d,sizeof(DStemInfo) );
+        d->where = NULL;
+        d->left = *bp[0];
+        d->right = *bp[1];
+        d->unit = unit;
+        SCGuessDHintInstances( cv->b.sc,d );
+        if ( d->where == NULL )
+            DStemInfoFree( d );
+        else
+            MergeDStemInfo( cv->b.sc->parent,&cv->b.sc->dstem,d );
     }
     cv->b.sc->manualhints = true;
     
@@ -7961,7 +7984,7 @@ return;
 
 static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    BasePoint *bp[4];
+    BasePoint *bp[4], unit;
     int multilayer = cv->b.sc->parent->multilayer;
     int i=0, num = 0;
 
@@ -8001,7 +8024,7 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = num != 2 || bp[1]->x==bp[0]->x || multilayer;
 	  break;
 	  case MID_AddDHint:
-	    mi->ti.disabled = num != 4 || !IsDiagonalable( bp ) || multilayer;
+	    mi->ti.disabled = num != 4 || !PointsDiagonalable( cv->b.sc->parent,bp,&unit ) || multilayer;
 	  break;
 	  case MID_ReviewHints:
 	    mi->ti.disabled = (cv->b.sc->hstem==NULL && cv->b.sc->vstem==NULL ) || multilayer;

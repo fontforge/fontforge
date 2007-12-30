@@ -156,10 +156,10 @@ struct stembundle {
     struct stembundle *next;
 };
     
-
 extern struct glyphdata *GlyphDataBuild(SplineChar *sc, BlueData *bd, int only_hv);
 extern struct glyphdata *GlyphDataInit(SplineChar *sc, int only_hv);
 extern struct glyphdata *StemInfoToStemData( struct glyphdata *gd,StemInfo *si,int is_v );
+extern struct glyphdata *DStemInfoToStemData( struct glyphdata *gd,DStemInfo *dsi );
 extern void GlyphDataFree(struct glyphdata *gd);
 
 #endif		/* _STEMDB_H_ */

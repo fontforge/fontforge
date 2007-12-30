@@ -4826,14 +4826,24 @@ void StemInfosFree(StemInfo *h) {
 }
 
 void DStemInfoFree(DStemInfo *h) {
+    HintInstance *hi, *n;
 
+    for ( hi=h->where; hi!=NULL; hi=n ) {
+	n = hi->next;
+	chunkfree(hi,sizeof(HintInstance));
+    }
     chunkfree(h,sizeof(DStemInfo));
 }
 
 void DStemInfosFree(DStemInfo *h) {
     DStemInfo *hnext;
+    HintInstance *hi, *n;
 
     for ( ; h!=NULL; h = hnext ) {
+	for ( hi=h->where; hi!=NULL; hi=n ) {
+	    n = hi->next;
+	    chunkfree(hi,sizeof(HintInstance));
+	}
 	hnext = h->next;
 	chunkfree(h,sizeof(DStemInfo));
     }
@@ -4871,6 +4881,7 @@ return( head );
 
 DStemInfo *DStemInfoCopy(DStemInfo *h) {
     DStemInfo *head=NULL, *last=NULL, *cur;
+    HintInstance *hilast, *hicur, *hi;
 
     for ( ; h!=NULL; h = h->next ) {
 	cur = chunkalloc(sizeof(DStemInfo));
@@ -4881,6 +4892,18 @@ DStemInfo *DStemInfoCopy(DStemInfo *h) {
 	else {
 	    last->next = cur;
 	    last = cur;
+	}
+	cur->where = hilast = NULL;
+	for ( hi=h->where; hi!=NULL; hi=hi->next ) {
+	    hicur = chunkalloc(sizeof(StemInfo));
+	    *hicur = *hi;
+	    hicur->next = NULL;
+	    if ( hilast==NULL )
+		cur->where = hilast = hicur;
+	    else {
+		hilast->next = hicur;
+		hilast = hicur;
+	    }
 	}
     }
 return( head );
