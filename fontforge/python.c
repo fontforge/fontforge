@@ -472,9 +472,10 @@ return( ret );
 }
 
 static PyObject *PyFF_Version(PyObject *self, PyObject *args) {
-    extern const char *source_version_str;
+    char buffer[20];
 
-return( Py_BuildValue("s", source_version_str ));
+    sprintf( buffer, "%d", library_version_configuration.library_source_versiondate);
+return( Py_BuildValue("s", buffer ));
 }
 
 static PyObject *PyFF_FontTuple(PyObject *self, PyObject *args) {

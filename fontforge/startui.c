@@ -281,7 +281,7 @@ static GWindow splashw;
 static GTimer *autosave_timer, *splasht;
 static GFont *splash_font, *splash_italic;
 static int as,fh, linecnt;
-static unichar_t msg[350];
+static unichar_t msg[450];
 static unichar_t *lines[20], *is, *ie;
 
 void ShowAboutScreen(void) {
@@ -335,6 +335,10 @@ static void SplashLayout() {
     uc_strcat(pt,"-ML");
 #endif
     uc_strcat(pt,")");
+    pt += u_strlen(pt);
+    lines[linecnt++] = pt;
+    uc_strcpy(pt,"  Library Version: ");
+    uc_strcat(pt,library_version_configuration.library_source_modtime_string);
     lines[linecnt++] = pt+u_strlen(pt);
     lines[linecnt] = NULL;
     is = u_strchr(msg,'(');
@@ -495,6 +499,7 @@ return( sharedir );
 
 int main( int argc, char **argv ) {
     extern const char *source_modtime_str;
+    extern const char *source_version_str;
     const char *load_prefs = getenv("FONTFORGE_LOADPREFS");
     int i;
     int recover=2;
@@ -514,6 +519,7 @@ int main( int argc, char **argv ) {
     fprintf( stderr, "Copyright (c) 2000-2007 by George Williams.\n Executable based on sources from %s.\n",
 	    source_modtime_str );
 #endif
+    fprintf( stderr, " Library based on sources from %s.\n", library_version_configuration.library_source_modtime_string );
 
 #if defined(__Mac)
     /* Start X if they haven't already done so. Well... try anyway */
@@ -613,7 +619,7 @@ int main( int argc, char **argv ) {
 	else if ( strcmp(pt,"-usage")==0 )
 	    dousage();
 	else if ( strcmp(pt,"-version")==0 )
-	    doversion();
+	    doversion(source_version_str);
 	else if ( strcmp(pt,"-library-status")==0 )
 	    dolibrary();
     }
@@ -625,6 +631,12 @@ int main( int argc, char **argv ) {
 #ifndef _NO_PYTHON
     PyFF_ProcessInitFiles();
 #endif
+
+    /* Wait until the UI has started, otherwise people who don't have consoles*/
+    /*  open won't get our error messages, and it's an important one */
+    /* Scripting doesn't care about a mismatch, because scripting interpretation */
+    /*  all lives in the library */
+    check_library_version(&exe_library_version_configuration,true,false);
 
     /* the splash screen used not to have a title bar (wam_nodecor) */
     /*  but I found I needed to know how much the window manager moved */

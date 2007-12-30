@@ -105,6 +105,7 @@ exit(0);
 }
 
 int main( int argc, char **argv ) {
+    extern const char *source_version_str;
     extern const char *source_modtime_str;
 
 #ifdef FONTFORGE_CONFIG_TYPE3
@@ -114,6 +115,12 @@ int main( int argc, char **argv ) {
     fprintf( stderr, "Copyright (c) 2000-2007 by George Williams.\n Executable based on sources from %s.\n",
 	    source_modtime_str );
 #endif
+    fprintf( stderr, " Library based on sources from %s.\n", library_version_configuration.library_source_modtime_string );
+
+    /* I don't bother to check that the exe's exectations of the library are */
+    /*  valid. The exe only consists of this file, and so it doesn't care. */
+    /*  as long as the library is self consistant, all should be well */
+    /* check_library_version(&exe_library_version_configuration,true,false); */
 
     FindProgDir(argv[0]);
     InitSimpleStuff();
@@ -135,7 +142,7 @@ int main( int argc, char **argv ) {
 	else if ( strcmp(pt,"-help")==0 )
 	    doscripthelp();
 	else if ( strcmp(pt,"-version")==0 )
-	    doversion();
+	    doversion(source_version_str);
     }
 #  if defined(_NO_PYTHON)
     ProcessNativeScript(argc, argv,stdin);

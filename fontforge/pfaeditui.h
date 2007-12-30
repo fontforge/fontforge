@@ -137,4 +137,7 @@ extern int default_font_filter_index;
 # define ksm_alt	ksm_capslock
 #endif
 
+/* The version of the library that the exe was built against */
+extern Library_Version_Configuration exe_library_version_configuration;
+
 #endif

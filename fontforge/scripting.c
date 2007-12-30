@@ -8658,9 +8658,9 @@ static void handlename(Context *c,Val *val) {
 		val->type = v_lval;
 		val->u.lval = &c->trace;
 	    } else if ( strcmp(name,"$version")==0 ) {
-		extern const char *source_version_str;
 		val->type = v_str;
-		val->u.sval = copy(source_version_str);
+		sprintf(name,"%d", library_version_configuration.library_source_versiondate);
+		val->u.sval = copy(name);
 	    } else if ( GetPrefs(name+1,val)) {
 		/* Done */
 	    }
