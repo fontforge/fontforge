@@ -175,10 +175,8 @@ void SCSynchronizeLBearing(SplineChar *sc,real off) {
 	    hi->end += off;
 	}
     for ( d=sc->dstem; d !=NULL; d=d->next ) {
-	d->leftedgetop.x += off;
-	d->rightedgetop.x += off;
-	d->leftedgebottom.x += off;
-	d->rightedgebottom.x += off;
+	d->left.x += off;
+	d->right.x += off;
     }
 
     if ( !adjustlbearing )

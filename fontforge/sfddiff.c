@@ -86,14 +86,9 @@ return( false );
 
 static int DStemDiff(DStemInfo *h1, DStemInfo *h2) {
     while ( h1!=NULL && h2!=NULL ) {
-	if ( h1->leftedgetop.x!=h2->leftedgetop.x ||
-		h1->leftedgetop.y!=h2->leftedgetop.y ||
-		h1->leftedgebottom.x!=h2->leftedgebottom.x ||
-		h1->leftedgebottom.y!=h2->leftedgebottom.y ||
-		h1->rightedgetop.x!=h2->rightedgetop.x ||
-		h1->rightedgetop.y!=h2->rightedgetop.y ||
-		h1->rightedgebottom.x!=h2->rightedgebottom.x ||
-		h1->rightedgebottom.y!=h2->rightedgebottom.y )
+	if (h1->left.x != h2->left.x || h1->left.y != h2->left.y ||
+	    h1->right.x != h2->right.x || h1->right.y != h2->right.y ||
+	    h1->unit.x!=h2->unit.x || h1->unit.y!=h2->unit.y )
 return( false );
 	h1 = h1->next; h2 = h2->next;
     }

@@ -1392,6 +1392,23 @@ static HintInstance *StemAddHIFromActive(struct stemdata *stem,int major) {
 return( head );
 }
 
+static HintInstance *DStemAddHIFromActive( struct stemdata *stem ) {
+    int i;
+    HintInstance *head = NULL, *cur, *t;
+
+    for ( i=0; i<stem->activecnt; ++i ) {
+        cur = chunkalloc( sizeof( HintInstance ));
+	cur->begin = stem->active[i].start;
+	cur->end = stem->active[i].end;
+	if ( head == NULL )
+	    head = cur;
+	else
+	    t->next = cur;
+	t = cur;
+    }
+return( head );
+}
+
 static void SCGuessHVHintInstances( SplineChar *sc,StemInfo *si,int is_v ) {
     struct glyphdata *gd;
     struct stemdata *sd;
@@ -1582,11 +1599,14 @@ static StemInfo *StemInfoAdd(StemInfo *list, StemInfo *new) {
 return( list );
 }
 
-void SCGuessHintInstancesList( SplineChar *sc,StemInfo *hstem,StemInfo *vstem,DStemInfo *dstem ) {
+void SCGuessHintInstancesList( SplineChar *sc,StemInfo *hstem,StemInfo *vstem,DStemInfo *dstem,
+    int hvforce,int dforce ) {
+    
     struct glyphdata *gd;
     struct stemdata *sd;
-    int i, cnt=0, hneeds_gd=false, vneeds_gd=false;
+    int i, cnt=0, hneeds_gd=false, vneeds_gd=false, dneeds_gd=false;
     StemInfo *test;
+    DStemInfo *dtest;
     
     if ( hstem == NULL && vstem == NULL && dstem == NULL )
 return;
@@ -1594,25 +1614,24 @@ return;
     /* files), then there is no need to wast time generating glyph data for
     /* this glyph */
     test = hstem;
-    while ( test != NULL ) {
-        if ( test->where == NULL ) {
-            hneeds_gd = true;
-    break;
-        }
+    while ( !hneeds_gd && test != NULL ) {
+        if ( test->where == NULL || hvforce ) hneeds_gd = true;
         test = test->next;
     }
     test = vstem;
-    while ( test != NULL ) {
-        if ( test->where == NULL ) {
-            vneeds_gd = true;
-    break;
-        }
+    while ( !vneeds_gd && test != NULL ) {
+        if ( test->where == NULL || hvforce ) vneeds_gd = true;
         test = test->next;
     }
-    if ( !hneeds_gd && !vneeds_gd )
+    dtest = dstem;
+    while ( !dneeds_gd && dtest != NULL ) {
+        if ( dtest->where == NULL || dforce ) dneeds_gd = true;
+        dtest = dtest->next;
+    }
+    if ( !hneeds_gd && !vneeds_gd && !dneeds_gd )
 return;
 
-    gd = GlyphDataInit( sc,true );
+    gd = GlyphDataInit( sc,!dneeds_gd );
     if ( gd == NULL )
 return;
 
@@ -1623,12 +1642,11 @@ return;
             sd = &gd->stems[i];
             if ( hstem == NULL )
         break;
-            if ( hstem->where == NULL )
+            if ( hstem->where == NULL || hvforce )
                 hstem->where = StemAddHIFromActive( sd,false );
             hstem = hstem->next;
         }
     }
-    
     cnt = gd->stemcnt;
     if ( vstem != NULL && vneeds_gd ) {
         gd = StemInfoToStemData( gd,vstem,true );
@@ -1636,13 +1654,44 @@ return;
             sd = &gd->stems[i];
             if ( vstem == NULL )
         break;
-            if ( vstem->where == NULL )
+            if ( vstem->where == NULL || hvforce )
                 vstem->where = StemAddHIFromActive( sd,true );
             vstem = vstem->next;
         }
     }
+    cnt = gd->stemcnt;
+    if ( dstem != NULL && dneeds_gd ) {
+        gd = DStemInfoToStemData( gd,dstem );
+        for ( i=cnt; i<gd->stemcnt; i++ ) {
+            sd = &gd->stems[i];
+            if ( dstem == NULL )
+        break;
+            dstem->left = sd->left; dstem->right = sd->right;
+            if ( dstem->where == NULL || dforce )
+                dstem->where = DStemAddHIFromActive( sd );
+            dstem = dstem->next;
+        }
+    }
     GlyphDataFree( gd );
 return;
+}
+
+void SCGuessDHintInstances( SplineChar *sc, DStemInfo *ds ) {
+    struct glyphdata *gd;
+    struct stemdata *sd;
+    
+    gd = GlyphDataInit( sc,false );
+    if ( gd == NULL )
+return;
+    DStemInfoToStemData( gd,ds );
+    if ( gd->stemcnt > 0 ) {
+        sd = &gd->stems[0];
+        ds->left = sd->left; ds->right = sd->right;
+        ds->where = DStemAddHIFromActive( sd );
+	if ( ds->where==NULL )
+	    IError( "Couldn't figure out where this hint is active" );
+    }
+    GlyphDataFree( gd );
 }
 
 void SCGuessHHintInstancesAndAdd(SplineChar *sc, StemInfo *stem, real guess1, real guess2) {
@@ -1697,123 +1746,118 @@ void SCGuessVHintInstancesList(SplineChar *sc) {
     }
 }
 
-static int IsLineCoIncident( BasePoint *top1,BasePoint *bottom1, 
-    BasePoint *top2,BasePoint *bottom2 ) {
-    
-    if ( top1->x == top2->x && top1->y == top2->y &&
-        bottom1->x == bottom2->x && bottom1->y == bottom2->y )
-return true;
-
-return false;
-}
-
 /* We have got (either from a file or user specified) a diagonal stem, 
    described by 4 base points (pairs of x and y coordinates). Some additional 
    tests are required before we can add this stem to the given glyph. */
-int MergeDStemInfo( DStemInfo **ds, DStemInfo *test ) {
-    DStemInfo *dn, *last, *next, *temp;
-    int colleft=false, colright=false, merged=false;
+int MergeDStemInfo( SplineFont *sf,DStemInfo **ds,DStemInfo *test ) {
+    DStemInfo *dn, *cur, *prev, *next, *temp;
+    double dot, loff, roff, soff, dist_error_diag ;
+    double ibegin, iend;
+    int overlap;
+    BasePoint *base, *nbase, *pbase;
+    HintInstance *hi;
     
-    if ( *ds==NULL ) {
-        *ds=test;
+    if ( *ds == NULL ) {
+        *ds = test;
 return( true );
     }
+    dist_error_diag = ( sf->ascent + sf->descent ) * 0.0065;
     
+    cur = prev = NULL;
     for ( dn=*ds ; dn!=NULL ; dn=dn->next ) {
-        last = dn;
-        
+        prev = cur; cur = dn;
+
         /* Compare the given stem with each of the existing diagonal stem
-           hints. First ensure that it is not an exact duplicate of an already
-           added stem (however if just one edge is coincident, that's OK).
-           Then test if edges of both stems are colinear. In this case
-           we will just merge stem data together instead of adding a new
-           stem */
-        if (IsLineCoIncident( &(dn->leftedgetop),&(dn->leftedgebottom),
-            &(test->leftedgetop),&(test->leftedgebottom) ) ||
-            IsCoLinear( &(dn->leftedgetop),&(dn->leftedgebottom),
-            &(test->leftedgetop),&(test->leftedgebottom) ) ) {
-            
-            colleft=true;
-        } 
-        
-        if (IsLineCoIncident( &(dn->rightedgetop),&(dn->rightedgebottom),
-            &(test->rightedgetop),&(test->rightedgebottom) ) ||
-            IsCoLinear( &(dn->rightedgetop),&(dn->rightedgebottom),
-            &(test->rightedgetop),&(test->rightedgebottom) ) ) {
-            
-            colright=true;
+        /* hints. First ensure that it is not an exact duplicate of an already
+        /* added stem. Then test if unit vectors are parallel and edges colinear.
+        /* In this case we should either preserve the existing stem or replace
+        /* it with the new one, but not keep them both */
+        if (test->unit.x == dn->unit.x && test->unit.y == dn->unit.y &&
+            test->left.x == dn->left.x && test->left.y == dn->left.y &&
+            test->right.x == dn->right.x && test->right.y == dn->right.y ) {
+            DStemInfoFree( test );
+return( false );
         }
-        
-        /* We consider a stem colinear to another stem if either both 
-        /* edges are colinear to the corresponding edges of the second stem,
-        /* or at least one edge is colinear and at least one key point of
-        /* the second edge lies on the line described by the key points of
-        /* the corresponding edge of the second stem. */
-        if (( colleft && ( colright ||
-            PointOnLine( 
-            &(test->rightedgetop),&(dn->rightedgetop),&(dn->rightedgebottom) ) ||
-            PointOnLine( 
-            &(test->rightedgebottom),&(dn->rightedgetop),&(dn->rightedgebottom) ))) ||
-            ( colright && (
-            PointOnLine( 
-            &(test->leftedgetop),&(dn->leftedgetop),&(dn->leftedgebottom) ) ||
-            PointOnLine( 
-            &(test->leftedgebottom),&(dn->leftedgetop),&(dn->leftedgebottom) )))) {
-     
-            merged=true;
-            if (test->leftedgetop.y > dn->leftedgetop.y) {
-                dn->leftedgetop.y = test->leftedgetop.y;
-                dn->leftedgetop.x = test->leftedgetop.x;
+        dot = ( test->unit.x * dn->unit.y ) - 
+              ( test->unit.y * dn->unit.x );
+        if ( dot <= -0.5 || dot >= 0.5 )
+    continue;
+    
+        loff =  ( test->left.x - dn->left.x ) * dn->unit.y - 
+                ( test->left.y - dn->left.y ) * dn->unit.x;
+        roff =  ( test->right.x - dn->right.x ) * dn->unit.y - 
+                ( test->right.y - dn->right.y ) * dn->unit.x;
+        if (loff <= -dist_error_diag || loff >= dist_error_diag ||
+            roff <= -dist_error_diag || loff >= dist_error_diag )
+    continue;
+        soff =  ( test->left.x - dn->left.x ) * dn->unit.x + 
+                ( test->left.y - dn->left.y ) * dn->unit.y;
+        overlap = false;
+        if ( dn->where != NULL && test->where != NULL && test->where->next == NULL ) {
+            ibegin = test->where->begin + soff;
+            iend = test->where->end + soff;
+            for ( hi = dn->where; hi != NULL; hi = hi->next ) {
+                if (( hi->begin <= ibegin && ibegin <= hi->end ) ||
+                    ( hi->begin <= iend && iend <= hi->end ) ||
+                    ( ibegin <= hi->begin && hi->end <= iend )) {
+                    overlap = true;
+                    break;
+                }
             }
-            if (test->leftedgebottom.y < dn->leftedgebottom.y) {
-                dn->leftedgebottom.y = test->leftedgebottom.y;
-                dn->leftedgebottom.x = test->leftedgebottom.x;
-            }
-            if (test->rightedgetop.y > dn->rightedgetop.y) {
-                dn->rightedgetop.y = test->rightedgetop.y;
-                dn->rightedgetop.x = test->rightedgetop.x;
-            }
-            if (test->rightedgebottom.y < dn->rightedgebottom.y) {
-                dn->rightedgebottom.y = test->rightedgebottom.y;
-                dn->rightedgebottom.x = test->rightedgebottom.x;
-            }
-    break;
+        } else
+            overlap = true;
+        /* It's probably a colinear dstem, as in older SFD files. Treat
+        /* it as one more instance for the already added stem */
+        if ( !overlap ) {
+            for ( hi=dn->where; hi->next != NULL; hi = hi->next ) ;
+            hi->next = chunkalloc( sizeof( HintInstance ));
+            hi->next->begin = ibegin; hi->next->end = iend;
+            DStemInfoFree( test );
+return( false );
+        /* The found stem is close but not identical to the stem we
+        /* are going to add. So just replace the older stem with the
+        /* new one */
+        } else {
+            test->next = dn->next;
+            if ( prev == NULL )
+                *ds = test;
+            else
+                prev->next = test;
+            DStemInfoFree( dn );
+return( true );
         }
     }
     
-    /* Return (false) if the new stem has not been added, even if its data
-       have been merged with another stem */
-    if ( merged )
-return false;
+    /* Insert the given stem to the list by such a way that diagonal 
+    /* stems are ordered by the X coordinate of the left edge key point, and 
+    /* by Y if X is the same. The order is arbitrary, but may be essential for
+    /* things like "W". So we should be sure that the autoinstructor will 
+    /* process diagonals from left to right. */
+    base = ( test->unit.y < 0 ) ? &test->right : &test->left;
+    nbase = ( (*ds)->unit.y < 0 ) ? &(*ds)->right : &(*ds)->left;
 
-    /* Otherwise add the given stem to the list by such a way that diagonal 
-       stems are ordered by the X coordinate of the left edge top, and by Y 
-       if X is the same. The order is arbitrary, but may be essential for
-       things like "W". So we should be sure that the autoinstructor will 
-       process diagonals from left to right. */
-    if ( test->leftedgetop.x < (*ds)->leftedgetop.x ||
-        ( test->leftedgetop.x == (*ds)->leftedgetop.x &&
-        test->leftedgetop.y >= (*ds)->leftedgetop.y )) {
-        
+    if ( base->x < nbase->x || ( base->x == nbase->x && base->y >= nbase->y )) {
         temp = *ds; *ds = test;
         (*ds)->next = temp;
     } else {
         for ( dn=*ds ; dn!=NULL && dn!=test ; dn=dn->next ) {
             next = dn->next;
+            pbase = ( dn->unit.y < 0 ) ? &dn->right : &dn->left;
+            if ( next != NULL )
+                nbase = ( next->unit.y < 0 ) ? &next->right : &next->left;
             
-            if ( ( dn->leftedgetop.x < test->leftedgetop.x ||
-                ( dn->leftedgetop.x == test->leftedgetop.x &&
-                dn->leftedgetop.y >= test->leftedgetop.y )) &&
-                ( next == NULL || test->leftedgetop.x < next->leftedgetop.x ||
-                ( test->leftedgetop.x == next->leftedgetop.x &&
-                test->leftedgetop.y >= next->leftedgetop.y ))) {
+            if (( pbase->x < base->x ||
+                ( pbase->x == base->x && pbase->y >= base->y )) &&
+                ( next == NULL || base->x < nbase->x ||
+                ( base->x == nbase->x && base->y >= nbase->y ))) {
                 
                 test->next = next; dn->next = test;
+        break;
             }
-                
+        
         }
     }
-return true;
+return( true );
 }
 
 static StemInfo *RefHintsMerge(StemInfo *into, StemInfo *rh, real mul, real offset,
@@ -1843,48 +1887,29 @@ static StemInfo *RefHintsMerge(StemInfo *into, StemInfo *rh, real mul, real offs
 return( into );
 }
 
-static DStemInfo *RefDHintsMerge(DStemInfo *into, DStemInfo *rh, real xmul, real xoffset,
-	real ymul, real yoffset) {
+static DStemInfo *RefDHintsMerge( SplineFont *sf,DStemInfo *into,DStemInfo *rh,
+    real xmul,real xoffset,real ymul,real yoffset ) {
     DStemInfo *new;
-    BasePoint temp;
-    DStemInfo *prev, *n;
+    double dmul, doff;
 
     for ( ; rh!=NULL; rh=rh->next ) {
-	new = chunkalloc(sizeof(DStemInfo));
+	new = chunkalloc( sizeof( DStemInfo ));
 	*new = *rh;
-	new->leftedgetop.x = xmul*new->leftedgetop.x + xoffset;
-	new->rightedgetop.x = xmul*new->rightedgetop.x + xoffset;
-	new->leftedgebottom.x = xmul*new->leftedgebottom.x + xoffset;
-	new->rightedgebottom.x = xmul*new->rightedgebottom.x + xoffset;
-	new->leftedgetop.y = ymul*new->leftedgetop.y + yoffset;
-	new->rightedgetop.y = ymul*new->rightedgetop.y + yoffset;
-	new->leftedgebottom.y = ymul*new->leftedgebottom.y + yoffset;
-	new->rightedgebottom.y = ymul*new->rightedgebottom.y + yoffset;
-	if ( xmul<0 ) {
-	    temp = new->leftedgetop;
-	    new->leftedgetop = new->rightedgetop;
-	    new->rightedgetop = temp;
-	    temp = new->leftedgebottom;
-	    new->leftedgebottom = new->rightedgebottom;
-	    new->rightedgebottom = temp;
-	}
-	if ( ymul<0 ) {
-	    temp = new->leftedgetop;
-	    new->leftedgetop = new->leftedgebottom;
-	    new->leftedgebottom = temp;
-	    temp = new->rightedgetop;
-	    new->rightedgetop = new->rightedgebottom;
-	    new->rightedgebottom = temp;
-	}
-	if ( into==NULL || new->leftedgetop.x<into->leftedgetop.x ) {
-	    new->next = into;
-	    into = new;
-	} else {
-	    for ( prev=into, n=prev->next; n!=NULL && new->leftedgetop.x>n->leftedgetop.x;
-		    prev = n, n = n->next );
-	    new->next = n;
-	    prev->next = new;
-	}
+	new->left.x = xmul*new->left.x + xoffset;
+	new->right.x = xmul*new->right.x + xoffset;
+	new->left.y = ymul*new->left.y + yoffset;
+	new->right.y = ymul*new->right.y + yoffset;
+        new->next = NULL;
+	if (( xmul < 0 && ymul > 0 ) || ( xmul > 0 && ymul < 0 ))
+	    new->unit.y = -new->unit.y;
+        new->unit.x *= fabs( xmul ); new->unit.y *= fabs( ymul );
+        dmul = sqrt( pow( new->unit.x,2 ) + pow( new->unit.y,2 ));
+        new->unit.x /= dmul; new->unit.y /= dmul;
+        if ( xmul < 0 ) dmul = -dmul;
+        doff = xoffset * new->unit.x + yoffset * new->unit.y;
+        new->where = HICopyTrans( rh->where,dmul,doff );
+        
+	MergeDStemInfo( sf,&into,new );
     }
 return( into );
 }
@@ -1909,7 +1934,7 @@ static void AutoHintRefs(SplineChar *sc,BlueData *bd, int picky, int gen_undoes)
 		    isalnum(ref->sc->unicodeenc) ) {
 		sc->hstem = RefHintsMerge(sc->hstem,ref->sc->hstem,ref->transform[3], ref->transform[5], ref->transform[0], ref->transform[4]);
 		sc->vstem = RefHintsMerge(sc->vstem,ref->sc->vstem,ref->transform[0], ref->transform[4], ref->transform[3], ref->transform[5]);
-		sc->dstem = RefDHintsMerge(sc->dstem,ref->sc->dstem,ref->transform[0], ref->transform[4], ref->transform[3], ref->transform[5]);
+		sc->dstem = RefDHintsMerge(sc->parent,sc->dstem,ref->sc->dstem,ref->transform[0], ref->transform[4], ref->transform[3], ref->transform[5]);
 	    }
 	}
     }
@@ -1920,7 +1945,7 @@ static void AutoHintRefs(SplineChar *sc,BlueData *bd, int picky, int gen_undoes)
 			!isalnum(ref->sc->unicodeenc)) ) {
 	    sc->hstem = RefHintsMerge(sc->hstem,ref->sc->hstem,ref->transform[3], ref->transform[5], ref->transform[0], ref->transform[4]);
 	    sc->vstem = RefHintsMerge(sc->vstem,ref->sc->vstem,ref->transform[0], ref->transform[4], ref->transform[3], ref->transform[5]);
-	    sc->dstem = RefDHintsMerge(sc->dstem,ref->sc->dstem,ref->transform[0], ref->transform[4], ref->transform[3], ref->transform[5]);
+	    sc->dstem = RefDHintsMerge(sc->parent,sc->dstem,ref->sc->dstem,ref->transform[0], ref->transform[4], ref->transform[3], ref->transform[5]);
 	}
     }
 
@@ -3021,10 +3046,10 @@ return( head );
 }
 
 static DStemInfo *GDFindDStems(struct glyphdata *gd) {
-    int i, j ;
+    int i, j;
     DStemInfo *head = NULL, *cur ;
-    BasePoint *bp[4];
     struct stemdata *stem;
+    BasePoint *bp[4];
 
     for ( i=0; i<gd->stemcnt; ++i ) {
 	stem = &gd->stems[i];
@@ -3041,40 +3066,34 @@ static DStemInfo *GDFindDStems(struct glyphdata *gd) {
         if ( ( stem->unit.y > -.05 && stem->unit.y < .05 ) || 
              ( stem->unit.x > -.05 && stem->unit.x < .05 ) )
     continue;
-
+        
         for ( j=0; j<4; j++ ) bp[j]=NULL;
-    
-	for ( j=0; j<stem->chunk_cnt; ++j ) {
-            if ( stem->chunks[j].l!=NULL ) {
-                if ( ( bp[0]==NULL || bp[0]->y < stem->chunks[j].l->sp->me.y )
-                    && stem->chunks[j].l->sp->ttfindex < gd->realcnt )
-                    bp[0] = &stem->chunks[j].l->sp->me;
-                if ( ( bp[2]==NULL || bp[2]->y > stem->chunks[j].l->sp->me.y )
-                    && stem->chunks[j].l->sp->ttfindex < gd->realcnt )
-                    bp[2] = &stem->chunks[j].l->sp->me;
-            }
-
-            if ( stem->chunks[j].r!=NULL ) {
-                if ( ( bp[1]==NULL || bp[1]->y < stem->chunks[j].r->sp->me.y )
-                    && stem->chunks[j].r->sp->ttfindex < gd->realcnt )
-                    bp[1] = &stem->chunks[j].r->sp->me;
-                if ( ( bp[3]==NULL || bp[3]->y > stem->chunks[j].r->sp->me.y )
-                    && stem->chunks[j].r->sp->ttfindex < gd->realcnt )
-                    bp[3] = &stem->chunks[j].r->sp->me;
-            }
-	}
+        for ( j=0; j<stem->chunk_cnt; j++ ) {
+            struct stem_chunk *chunk = &stem->chunks[j];
+            if ( bp[0] == NULL && chunk->l != NULL && !chunk->lpotential )
+                bp[0] = &chunk->l->sp->me;
+            if ( bp[1] == NULL && chunk->r != NULL && !chunk->rpotential )
+                bp[1] = &chunk->l->sp->me;
+            if ( bp[0] != NULL && bp[1] != NULL )
+        break;
+        }
+        for ( j=stem->chunk_cnt-1; j>=0; j-- ) {
+            struct stem_chunk *chunk = &stem->chunks[j];
+            if ( bp[3] == NULL && chunk->l != NULL && !chunk->lpotential )
+                bp[3] = &chunk->l->sp->me;
+            if ( bp[2] == NULL && chunk->r != NULL && !chunk->rpotential )
+                bp[2] = &chunk->l->sp->me;
+            if ( bp[3] != NULL && bp[2] != NULL )
+        break;
+        }
         
         if ( bp[0]!=NULL && bp[1]!=NULL && bp[0]!=bp[2] && bp[1]!=bp[3] ) {
-            if ( IsDiagonalable( bp )) {
-	        cur = chunkalloc( sizeof(DStemInfo) );
-	        memcpy( &(cur->leftedgetop),bp[0],sizeof( BasePoint ) );
-	        memcpy( &(cur->rightedgetop),bp[1],sizeof( BasePoint ) );
-	        memcpy( &(cur->leftedgebottom),bp[2],sizeof( BasePoint ) );
-	        memcpy( &(cur->rightedgebottom),bp[3],sizeof( BasePoint ) );
-
-                if (!MergeDStemInfo( &head, cur ))
-                    chunkfree( cur,sizeof(DStemInfo) );
-            }
+	    cur = chunkalloc( sizeof(DStemInfo) );
+            cur->left = stem->left;
+            cur->right = stem->right;
+            cur->unit = stem->unit;
+            MergeDStemInfo( gd->sf,&head,cur );
+	    cur->where = DStemAddHIFromActive( stem );
         }
     }
 return( head );

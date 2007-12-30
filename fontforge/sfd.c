@@ -873,18 +873,23 @@ return;
     }
 }
 
-static void SFDDumpDHintList(FILE *sfd,char *key, DStemInfo *h) {
+static void SFDDumpDHintList( FILE *sfd,char *key, DStemInfo *d ) {
+    HintInstance *hi;
 
-    if ( h==NULL )
+    if ( d==NULL )
 return;
     fprintf(sfd, "%s", key );
-    for ( ; h!=NULL; h=h->next ) {
-	fprintf(sfd, "%g %g %g %g %g %g %g %g",
-		(double) h->leftedgetop.x, (double) h->leftedgetop.y,
-		(double) h->rightedgetop.x, (double) h->rightedgetop.y,
-		(double) h->leftedgebottom.x, (double) h->leftedgebottom.y,
-		(double) h->rightedgebottom.x, (double) h->rightedgebottom.y );
-	putc(h->next?' ':'\n',sfd);
+    for ( ; d!=NULL; d=d->next ) {
+	fprintf(sfd, "%g %g %g %g %g %g",
+		(double) d->left.x, (double) d->left.y,
+		(double) d->right.x, (double) d->right.y,
+		(double) d->unit.x, (double) d->unit.y );
+	if ( d->where!=NULL ) {
+	    putc('<',sfd);
+	    for ( hi=d->where; hi!=NULL; hi=hi->next )
+		fprintf(sfd, "%g %g%c", (double) hi->begin, (double) hi->end, hi->next?' ':'>');
+	}
+	putc(d->next?' ':'\n',sfd);
     }
 }
 
@@ -1174,7 +1179,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
 #endif
     SFDDumpHintList(sfd,"HStem: ", sc->hstem);
     SFDDumpHintList(sfd,"VStem: ", sc->vstem);
-    SFDDumpDHintList(sfd,"DStem: ", sc->dstem);
+    SFDDumpDHintList(sfd,"DStem2: ", sc->dstem);
     if ( sc->countermask_cnt!=0 ) {
 	fprintf( sfd, "CounterMasks: %d", sc->countermask_cnt );
 	for ( i=0; i<sc->countermask_cnt; ++i ) {
@@ -3068,7 +3073,7 @@ static HintInstance *SFDReadHintInstances(FILE *sfd, StemInfo *stem) {
     int ch;
 
     while ( (ch=getc(sfd))==' ' || ch=='\t' );
-    if ( ch=='G' ) {
+    if ( ch=='G' && stem != NULL ) {
 	stem->ghost = true;
 	while ( (ch=getc(sfd))==' ' || ch=='\t' );
     }
@@ -3110,34 +3115,58 @@ static StemInfo *SFDReadHints(FILE *sfd) {
 return( head );
 }
 
-static DStemInfo *SFDReadDHints(FILE *sfd) {
-    DStemInfo *head=NULL, *cur;
+static DStemInfo *SFDReadDHints( SplineFont *sf,FILE *sfd,int old ) {
+    DStemInfo *head=NULL, *last=NULL, *cur;
     int i;
-    BasePoint *bp[4];
+    BasePoint bp[4], *bpref[4], left, right, unit;
+    double rstartoff, rendoff, lendoff;
 
-    for ( i=0 ; i<4 ; i++ ) bp[i] = chunkalloc( sizeof( BasePoint ));
+    if ( old ) {
+        for ( i=0 ; i<4 ; i++ ) bpref[i] = &bp[i];
 
-    while ( getreal(sfd,&bp[0]->x) && getreal(sfd,&bp[0]->y) &&
-	    getreal(sfd,&bp[1]->x) && getreal(sfd,&bp[1]->y) &&
-	    getreal(sfd,&bp[2]->x) && getreal(sfd,&bp[2]->y) &&
-	    getreal(sfd,&bp[3]->x) && getreal(sfd,&bp[3]->y) ) {
-        
-        /* Ensure that point coordinates specified in the sfd file really
-          form a diagonal line */
-        if (IsDiagonalable( bp )) {
-	    cur = chunkalloc( sizeof(DStemInfo) );
-	    memcpy( &(cur->leftedgetop),bp[0],sizeof( BasePoint ) );
-	    memcpy( &(cur->rightedgetop),bp[1],sizeof( BasePoint ) );
-	    memcpy( &(cur->leftedgebottom),bp[2],sizeof( BasePoint ) );
-	    memcpy( &(cur->rightedgebottom),bp[3],sizeof( BasePoint ) );
-            
-            if (!MergeDStemInfo(&head, cur))
-                chunkfree( cur,sizeof(DStemInfo) );
+        while ( getreal( sfd,&bp[0].x ) && getreal( sfd,&bp[0].y ) &&
+	        getreal( sfd,&bp[1].x ) && getreal( sfd,&bp[1].y ) &&
+	        getreal( sfd,&bp[2].x ) && getreal( sfd,&bp[2].y ) &&
+	        getreal( sfd,&bp[3].x ) && getreal( sfd,&bp[3].y )) {
+
+            /* Ensure point coordinates specified in the sfd file do
+            /* form a diagonal line */
+            if ( PointsDiagonalable( sf,bpref,&unit )) {
+	        cur = chunkalloc( sizeof( DStemInfo ));
+	        cur->left = *bpref[0];
+	        cur->right = *bpref[1];
+                cur->unit = unit;
+                /* Generate a temporary hint instance, so that the hint can
+                /* be visible in charview even if subsequent rebuilding instances
+                /* fails (e. g. for composite characters) */
+                cur->where = chunkalloc( sizeof( HintInstance ));
+                rstartoff = ( cur->right.x - cur->left.x ) * cur->unit.x + 
+                            ( cur->right.y - cur->left.y ) * cur->unit.y;
+                rendoff =   ( bpref[2]->x - cur->left.x ) * cur->unit.x + 
+                            ( bpref[2]->y - cur->left.y ) * cur->unit.y;
+                lendoff =   ( bpref[3]->x - cur->left.x ) * cur->unit.x + 
+                            ( bpref[3]->y - cur->left.y ) * cur->unit.y;
+                cur->where->begin = ( rstartoff > 0 ) ? rstartoff : 0;
+                cur->where->end   = ( rendoff > lendoff ) ? lendoff : rendoff;
+                MergeDStemInfo( sf,&head,cur );
+            }
+        }
+    } else {
+        while ( getreal( sfd,&left.x ) && getreal( sfd,&left.y ) &&
+                getreal( sfd,&right.x ) && getreal( sfd,&right.y ) &&
+                getreal( sfd,&unit.x ) && getreal( sfd,&unit.y )) {
+	    cur = chunkalloc( sizeof( DStemInfo ));
+	    cur->left = left;
+	    cur->right = right;
+            cur->unit = unit;
+	    cur->where = SFDReadHintInstances( sfd,NULL );
+	    if ( head == NULL )
+	        head = cur;
+	    else
+	        last->next = cur;
+	    last = cur;
         }
     }
-
-    for ( i=0 ; i<4 ; i++ ) chunkfree( bp[i],sizeof( BasePoint ));
-
 return( head );
 }
 
@@ -3536,6 +3565,7 @@ static SplineChar *SFDGetChar(FILE *sfd,SplineFont *sf) {
     uint32 script = 0;
     int current_layer = ly_fore;
     int multilayer = sf->multilayer;
+    int had_old_dstems = false;
     SplineFont *sli_sf = sf->cidmaster ? sf->cidmaster : sf;
     struct altuni *altuni;
 
@@ -3728,7 +3758,10 @@ return( NULL );
 	    sc->vstem = SFDReadHints(sfd);
 	    sc->vconflicts = StemListAnyConflicts(sc->vstem);
 	} else if ( strmatch(tok,"DStem:")==0 ) {
-	    sc->dstem = SFDReadDHints( sfd );
+	    sc->dstem = SFDReadDHints( sc->parent,sfd,true );
+            had_old_dstems = true;
+	} else if ( strmatch(tok,"DStem2:")==0 ) {
+	    sc->dstem = SFDReadDHints( sc->parent,sfd,false );
 	} else if ( strmatch(tok,"CounterMasks:")==0 ) {
 	    getsint(sfd,&sc->countermask_cnt);
 	    sc->countermasks = gcalloc(sc->countermask_cnt,sizeof(HintMask));
@@ -4119,7 +4152,9 @@ exit(1);
             /* Do this when we have finished with other glyph components,
             /* so that splines are already available */
 	    if ( sf->sfd_version<2 )
-                SCGuessHintInstancesList( sc,sc->hstem,sc->vstem,sc->dstem );
+                SCGuessHintInstancesList( sc,sc->hstem,sc->vstem,sc->dstem,false,false );
+            else if ( had_old_dstems && sc->layers[ly_fore].splines != NULL )
+                SCGuessHintInstancesList( sc,NULL,NULL,sc->dstem,false,true );
 	    if ( sf->order2 )
 		SCDefaultInterpolation(sc);
 return( sc );

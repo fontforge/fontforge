@@ -1023,7 +1023,10 @@ typedef struct dsteminfo {
     unsigned int hinttype: 2;	/* Only used by undoes */
     unsigned int used: 1;	/* used only by tottf.c:gendinstrs, metafont.c to mark a hint that has been dealt with */
     unsigned int bigsteminfo: 1;/* See following structure */
-    BasePoint leftedgetop, leftedgebottom, rightedgetop, rightedgebottom;	/* this order is important in tottf.c: DStemInteresect */
+    BasePoint leftedgetop, leftedgebottom, 
+              rightedgetop, rightedgebottom;	/* Deprecated, should be removed as soon as the new model is fully implemented */
+    BasePoint left, right, unit;
+    HintInstance *where;	/* location(s) along the unit vector */
 } DStemInfo;
 
 typedef struct bigdsteminfo {
@@ -1833,13 +1836,11 @@ extern int RealApprox(real a,real b);
 extern int RealWithin(real a,real b,real fudge);
 extern int RealRatio(real a,real b,real fudge);
 
-extern int IsDiagonalable(BasePoint **bp);
+extern int PointsDiagonalable(SplineFont *sf,BasePoint **bp,BasePoint *unit);
 extern int PointOnLine(BasePoint *top,BasePoint *bottom,BasePoint *test);
-extern int IsCoLinear(BasePoint *top1, BasePoint *bottom1, BasePoint *top2, 
-    BasePoint *bottom2);
 extern double GetDStemWidth(BasePoint *tl,BasePoint *bl, 
     BasePoint *tr,BasePoint *br);
-extern int MergeDStemInfo(DStemInfo **ds, DStemInfo *test);
+extern int MergeDStemInfo(SplineFont *sf,DStemInfo **ds, DStemInfo *test);
 extern void DStemInfoTest(SplineChar *sc);
 
 extern void LineListFree(LineList *ll);
@@ -2236,7 +2237,8 @@ extern void FindHStems( SplineFont *sf, real snaps[12], real cnt[12]);
 extern void FindVStems( SplineFont *sf, real snaps[12], real cnt[12]);
 extern double SFStdVW(SplineFont *sf);
 extern int SplineCharIsFlexible(SplineChar *sc);
-extern void SCGuessHintInstancesList(SplineChar *sc,StemInfo *hstem,StemInfo *vstem,DStemInfo *dstem);
+extern void SCGuessHintInstancesList(SplineChar *sc,StemInfo *hstem,StemInfo *vstem,DStemInfo *dstem,int hvforce,int dforce);
+extern void SCGuessDHintInstances(SplineChar *sc, DStemInfo *ds );
 extern void SCGuessHHintInstancesAndAdd(SplineChar *sc, StemInfo *stem, real guess1, real guess2);
 extern void SCGuessVHintInstancesAndAdd(SplineChar *sc, StemInfo *stem, real guess1, real guess2);
 extern void SCGuessHHintInstancesList(SplineChar *sc);
