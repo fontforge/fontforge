@@ -37,7 +37,7 @@ fontforge_LIBOBJECTS = asmfpst.$O autohint.$O autosave.$O autotrace.$O autowidth
  sfd1.$O sfd.$O sflayout.$O spiro.$O splinechar.$O splinefill.$O \
  splinefont.$O splineorder2.$O splineoverlap.$O splinerefigure.$O \
  splinesaveafm.$O splinesave.$O splinestroke.$O splineutil2.$O splineutil.$O \
- stamp.$O start.$O stemdb.$O svg.$O tottfaat.$O tottfgpos.$O tottf.$O \
+ start.$O stemdb.$O svg.$O tottfaat.$O tottfgpos.$O tottf.$O \
  tottfvar.$O ttfinstrs.$O ttfspecial.$O ufo.$O unicoderange.$O utils.$O \
  winfonts.$O zapfnomen.$O groups.$O langfreq.$O
 fontforge_UIOBJECTS = alignment.o anchorsaway.o autowidthdlg.o bdfinfo.o \
@@ -50,8 +50,9 @@ fontforge_UIOBJECTS = alignment.o anchorsaway.o autowidthdlg.o bdfinfo.o \
  groupsdlg.o histograms.o images.o kernclass.o lookupui.o macencui.o \
  math.o metricsview.o mmdlg.o nonlineartransui.o openfontdlg.o prefs.o \
  problems.o pythonui.o savefontdlg.o scriptingdlg.o scstylesui.o \
- searchview.o sftextfield.o showatt.o simplifydlg.o splashimage.o startui.o \
- statemachine.o tilepath.o transform.o ttfinstrsui.o uiutil.o windowmenu.o
+ searchview.o sftextfield.o showatt.o simplifydlg.o splashimage.o stamp.o \
+ startui.o statemachine.o tilepath.o transform.o ttfinstrsui.o uiutil.o \
+ windowmenu.o
 fontforge_SCRIPTOBJ = startnoui.o
 
 DIFFOBJS = sfddiff.o sfd.o diffstubs.o stamp.o namelist.o pua.o
@@ -73,16 +74,23 @@ DLIBS = -rpath $(libdir) ../libgunicode.la @LIBS@ $(STATIC_LIBS) -lm
 
 all: @FINAL_TARGET@ sfddiff fontimage fontlint
 
-fontforge: $(@exeOBJECTS@) $(fontforge_LIBOBJECTS)
+fontforge: $(@exeOBJECTS@) $(fontforge_LIBOBJECTS) exelibstamp.pre
+	sed -e '1,$$ s/REPLACE_ME_WITH_MAJOR_VERSION/$(FF_VERSION)/' -e '1,$$ s/REPLACE_ME_WITH_MINOR_VERSION/$(FF_REVISION)/' < exelibstamp.pre > exelibstamp.c
+	$(CC) -c $(CFLAGS) exelibstamp.c
+	sed -e '1,$$ s/REPLACE_ME_WITH_MAJOR_VERSION/$(FF_VERSION)/' -e '1,$$ s/REPLACE_ME_WITH_MINOR_VERSION/$(FF_REVISION)/' < libstamp.pre > libstamp.c
 	$(LIBTOOL) --mode=link $(CC) -export-dynamic $(LDFLAGS) -o fontforge \
-	    $(@exeOBJECTS@) $(fontforge_LIBOBJECTS) $(LIBS)
+	    $(@exeOBJECTS@) $(fontforge_LIBOBJECTS) exelibstamp.o $(LIBS)
 
-../libfontforge.la: $(@exeOBJECTS@)  $(fontforge_LIBOBJECTS)
+../libfontforge.la: $(@exeOBJECTS@)  $(fontforge_LIBOBJECTS) exelibstamp.pre libstamp.pre
+	sed -e '1,$$ s/REPLACE_ME_WITH_MAJOR_VERSION/$(FF_VERSION)/' -e '1,$$ s/REPLACE_ME_WITH_MINOR_VERSION/$(FF_REVISION)/' < libstamp.pre > libstamp.c
+	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -c libstamp.c
 	$(LIBTOOL) --mode=link $(CC) -no-undefined $(CFLAGS) @LDFLAGS@ \
-	    -o ../libfontforge.la $(fontforge_LIBOBJECTS) $(LIBLIBS) \
+	    -o ../libfontforge.la $(fontforge_LIBOBJECTS) libstamp.lo $(LIBLIBS) \
 	    -rpath $(libdir) -version-info $(FF_VERSION):$(FF_REVISION):$(FF_AGE)
+	sed -e '1,$$ s/REPLACE_ME_WITH_MAJOR_VERSION/$(FF_VERSION)/' -e '1,$$ s/REPLACE_ME_WITH_MINOR_VERSION/$(FF_REVISION)/' < exelibstamp.pre > exelibstamp.c
+	$(LIBTOOL) --mode=compile $(CC) $(CFLAGS) -c exelibstamp.c
 	$(LIBTOOL) --mode=link $(CC) $(LDFLAGS) -o fontforge \
-	    $(@exeOBJECTS@) ../libfontforge.la $(LIBS)
+	    $(@exeOBJECTS@) exelibstamp.lo ../libfontforge.la $(LIBS)
 
 sfddiff: sfddiff.pe
 	echo "#!$(bindir)/fontforge -lang=ff" > $@

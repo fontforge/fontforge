@@ -64,7 +64,6 @@ static int svg_outfontheader(FILE *file, SplineFont *sf) {
     int minu, maxu, i;
     time_t now;
     const char *author = GetAuthor();
-    extern char *source_version_str;
 
     SFDefaultOS2Info(&info,sf,sf->fontname);
     SplineFontFindBounds(sf,&bb);
@@ -79,8 +78,8 @@ static int svg_outfontheader(FILE *file, SplineFont *sf) {
     }
     fprintf( file, "<svg>\n" );
     time(&now);
-    fprintf( file, "<metadata>\nCreated by FontForge %s at %s",
-	    source_version_str, ctime(&now) );
+    fprintf( file, "<metadata>\nCreated by FontForge %d at %s",
+	    library_version_configuration.library_source_versiondate, ctime(&now) );
     if ( author!=NULL )
 	fprintf(file," By %s\n", author);
     else

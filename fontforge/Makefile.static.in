@@ -29,7 +29,7 @@ fontforge_LIBOBJECTS = asmfpst.o autohint.o autosave.o autotrace.o autowidth.o \
  sfd1.o sfd.o sflayout.o spiro.o splinechar.o splinefill.o \
  splinefont.o splineorder2.o splineoverlap.o splinerefigure.o \
  splinesaveafm.o splinesave.o splinestroke.o splineutil2.o splineutil.o \
- stamp.o start.o stemdb.o svg.o tottfaat.o tottfgpos.o tottf.o \
+ stamp.o stemdb.o svg.o tottfaat.o tottfgpos.o tottf.o \
  tottfvar.o ttfinstrs.o ttfspecial.o ufo.o unicoderange.o utils.o \
  winfonts.o zapfnomen.o groups.o langfreq.o
 fontforge_UIOBJECTS = alignment.o anchorsaway.o autowidthdlg.o bdfinfo.o \
@@ -43,7 +43,8 @@ fontforge_UIOBJECTS = alignment.o anchorsaway.o autowidthdlg.o bdfinfo.o \
  math.o metricsview.o mmdlg.o nonlineartransui.o openfontdlg.o prefs.o \
  problems.o pythonui.o savefontdlg.o scriptingdlg.o scstylesui.o \
  searchview.o sftextfield.o showatt.o simplifydlg.o splashimage.o startui.o \
- statemachine.o tilepath.o transform.o ttfinstrsui.o uiutil.o windowmenu.o
+ start.o statemachine.o tilepath.o transform.o ttfinstrsui.o uiutil.o \
+ windowmenu.o
 fontforge_SCRIPTOBJ = startnoui.o
 fontforge_OBJECTS=$(fontforge_LIBOBJECTS) $(@exeOBJECTS@)
 
@@ -63,8 +64,14 @@ DLIBS = ../libs/libgunicode.a @LIBS@ $(STATIC_LIBS) -lm
 
 all: fontforge sfddiff fontimage fontlint
 
-fontforge: $(fontforge_OBJECTS)
-	$(CC) -o fontforge $(LDFLAGS) $(fontforge_OBJECTS) $(LIBS)
+fontforge: $(fontforge_OBJECTS) exelibstamp.pre libstamp.pre
+	sed -e '1,$$ s/REPLACE_ME_WITH_MAJOR_VERSION/1/' -e '1,$$ s/REPLACE_ME_WITH_MINOR_VERSION/0/' < exelibstamp.pre > exelibstamp.c
+	sed -e '1,$$ s/REPLACE_ME_WITH_MAJOR_VERSION/1/' -e '1,$$ s/REPLACE_ME_WITH_MINOR_VERSION/0/' < libstamp.pre > libstamp.c
+	$(CC) $(CFLAGS) -c libstamp.c
+	$(CC) $(CFLAGS) -c exelibstamp.c
+	$(CC) -o fontforge $(LDFLAGS) $(fontforge_OBJECTS) \
+	    exelibstamp.o libstamp.o \
+	    $(LIBS)
 
 sfddiff: sfddiff.pe
 	echo "#!$(bindir)/fontforge -lang=ff" >sfddiff

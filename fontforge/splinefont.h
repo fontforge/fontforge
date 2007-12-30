@@ -2533,7 +2533,7 @@ extern void SFRenameGlyphsToNamelist(SplineFont *sf,NameList *new);
 extern char **SFTemporaryRenameGlyphsToNamelist(SplineFont *sf,NameList *new);
 extern void SFTemporaryRestoreGlyphNames(SplineFont *sf,char **former);
 
-extern void doversion(void);
+extern void doversion(const char *);
 
 extern AnchorPos *AnchorPositioning(SplineChar *sc,unichar_t *ustr,SplineChar **sstr );
 extern void AnchorPosFree(AnchorPos *apos);

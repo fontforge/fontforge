@@ -158,12 +158,11 @@ return;
     inited = true;
 }
 
-void doversion(void) {
-    extern const char *source_version_str;
-#ifdef FONTFORGE_CONFIG_TYPE3
-    printf( "fontforge %s-ML\n", source_version_str );
-#else
-    printf( "fontforge %s\n", source_version_str );
-#endif
+void doversion(const char *source_version_str) {
+    if ( source_version_str!=NULL )
+	printf( "fontforge %s\n", source_version_str );
+    printf( "libfontforge %d%s\n",
+	    library_version_configuration.library_source_versiondate,
+	    library_version_configuration.config_had_multilayer?"-ML":"" );
 exit(0);
 }

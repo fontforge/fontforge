@@ -1,0 +1,36 @@
+#include "pfaedit.h"
+#include "baseviews.h"
+#include "libffstamp.h"
+
+struct library_version_configuration exe_library_version_configuration = {
+    REPLACE_ME_WITH_MAJOR_VERSION,
+    REPLACE_ME_WITH_MINOR_VERSION,
+    LibFF_ModTime,
+    LibFF_ModTime_Str,
+    LibFF_VersionDate,
+    sizeof(struct library_version_configuration),
+    sizeof(struct splinefont),
+    sizeof(struct splinechar),
+    sizeof(struct fontviewbase),
+    sizeof(struct charviewbase),
+    sizeof(struct cvcontainer),
+
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    1,
+#else
+    0,
+#endif
+
+#ifdef FONTFORGE_CONFIG_TYPE3
+    1,
+#else
+    0,
+#endif
+
+#ifdef _NO_PYTHON
+    0,
+#else
+    1,
+#endif
+    0xff		/* Not currently defined */
+};
