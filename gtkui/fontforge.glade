@@ -17,6 +17,8 @@
   <signal name="delete_event" handler="FontView_RequestClose" last_modification_time="Sun, 13 Jun 2004 03:33:55 GMT"/>
   <signal name="destroy_event" handler="FontView_DestroyWindow" last_modification_time="Tue, 25 Dec 2007 20:55:36 GMT"/>
   <signal name="configure_event" handler="FontView_Resize" last_modification_time="Wed, 26 Dec 2007 20:33:41 GMT"/>
+  <signal name="selection_clear_event" handler="FontView_ClearSelection" last_modification_time="Fri, 28 Dec 2007 05:23:04 GMT"/>
+  <signal name="realize" handler="FontView_Realize" last_modification_time="Sat, 29 Dec 2007 04:11:09 GMT"/>
 
   <child>
     <widget class="GtkVBox" id="vbox1">
@@ -50,7 +52,7 @@
 		      <accelerator key="N" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4319">
+			<widget class="GtkImage" id="image5931">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-new</property>
 			  <property name="icon_size">1</property>
@@ -72,7 +74,7 @@
 		      <accelerator key="O" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4320">
+			<widget class="GtkImage" id="image5932">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-open</property>
 			  <property name="icon_size">1</property>
@@ -114,7 +116,7 @@
 		      <accelerator key="Q" modifiers="GDK_CONTROL_MASK | GDK_SHIFT_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4321">
+			<widget class="GtkImage" id="image5933">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-close</property>
 			  <property name="icon_size">1</property>
@@ -142,7 +144,7 @@
 		      <accelerator key="S" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4322">
+			<widget class="GtkImage" id="image5934">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-save</property>
 			  <property name="icon_size">1</property>
@@ -164,7 +166,7 @@
 		      <accelerator key="S" modifiers="GDK_CONTROL_MASK | GDK_SHIFT_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4323">
+			<widget class="GtkImage" id="image5935">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-save-as</property>
 			  <property name="icon_size">1</property>
@@ -186,7 +188,7 @@
 		      <accelerator key="S" modifiers="GDK_CONTROL_MASK | GDK_MOD1_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4324">
+			<widget class="GtkImage" id="image5936">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-save</property>
 			  <property name="icon_size">1</property>
@@ -208,7 +210,7 @@
 		      <accelerator key="G" modifiers="GDK_CONTROL_MASK | GDK_SHIFT_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4325">
+			<widget class="GtkImage" id="image5937">
 			  <property name="visible">True</property>
 			  <property name="pixbuf">filegenerate.png</property>
 			  <property name="xalign">0.5</property>
@@ -229,7 +231,7 @@
 		      <accelerator key="G" modifiers="GDK_CONTROL_MASK | GDK_MOD1_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4326">
+			<widget class="GtkImage" id="image5938">
 			  <property name="visible">True</property>
 			  <property name="pixbuf">filegeneratefamily.png</property>
 			  <property name="xalign">0.5</property>
@@ -256,7 +258,7 @@
 		      <accelerator key="I" modifiers="GDK_CONTROL_MASK | GDK_SHIFT_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4327">
+			<widget class="GtkImage" id="image5939">
 			  <property name="visible">True</property>
 			  <property name="pixbuf">fileimport.png</property>
 			  <property name="xalign">0.5</property>
@@ -287,7 +289,7 @@
 		      <accelerator key="R" modifiers="GDK_CONTROL_MASK | GDK_SHIFT_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4328">
+			<widget class="GtkImage" id="image5940">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-revert-to-saved</property>
 			  <property name="icon_size">1</property>
@@ -308,7 +310,7 @@
 		      <signal name="activate" handler="FontViewMenu_RevertToBackup" last_modification_time="Sun, 23 Dec 2007 22:14:50 GMT"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4329">
+			<widget class="GtkImage" id="image5941">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-go-back</property>
 			  <property name="icon_size">1</property>
@@ -330,7 +332,7 @@
 		      <accelerator key="R" modifiers="GDK_CONTROL_MASK | GDK_MOD1_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4330">
+			<widget class="GtkImage" id="image5942">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-revert-to-saved</property>
 			  <property name="icon_size">1</property>
@@ -358,7 +360,7 @@
 		      <accelerator key="P" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4331">
+			<widget class="GtkImage" id="image5943">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-print</property>
 			  <property name="icon_size">1</property>
@@ -385,7 +387,7 @@
 		      <signal name="activate" handler="FontViewMenu_ExecScript" last_modification_time="Tue, 11 May 2004 18:00:24 GMT"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4332">
+			<widget class="GtkImage" id="image5944">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-execute</property>
 			  <property name="icon_size">1</property>
@@ -432,7 +434,7 @@
 		      <signal name="activate" handler="Menu_Preferences" last_modification_time="Tue, 11 May 2004 18:00:24 GMT"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4333">
+			<widget class="GtkImage" id="image5945">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-preferences</property>
 			  <property name="icon_size">1</property>
@@ -460,7 +462,7 @@
 		      <accelerator key="Q" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4334">
+			<widget class="GtkImage" id="image5946">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-quit</property>
 			  <property name="icon_size">1</property>
@@ -496,7 +498,7 @@
 		      <accelerator key="Z" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4335">
+			<widget class="GtkImage" id="image5947">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-undo</property>
 			  <property name="icon_size">1</property>
@@ -518,7 +520,7 @@
 		      <accelerator key="Y" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4336">
+			<widget class="GtkImage" id="image5948">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-redo</property>
 			  <property name="icon_size">1</property>
@@ -546,7 +548,7 @@
 		      <accelerator key="X" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4337">
+			<widget class="GtkImage" id="image5949">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-cut</property>
 			  <property name="icon_size">1</property>
@@ -568,7 +570,7 @@
 		      <accelerator key="C" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4338">
+			<widget class="GtkImage" id="image5950">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-copy</property>
 			  <property name="icon_size">1</property>
@@ -590,7 +592,7 @@
 		      <accelerator key="G" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4339">
+			<widget class="GtkImage" id="image5951">
 			  <property name="visible">True</property>
 			  <property name="pixbuf">editcopyref.png</property>
 			  <property name="xalign">0.5</property>
@@ -620,7 +622,7 @@
 		      <accelerator key="W" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4340">
+			<widget class="GtkImage" id="image5952">
 			  <property name="visible">True</property>
 			  <property name="pixbuf">editcopywidth.png</property>
 			  <property name="xalign">0.5</property>
@@ -640,7 +642,7 @@
 		      <signal name="activate" handler="FontViewMenu_CopyVWidth" last_modification_time="Tue, 11 May 2004 18:00:24 GMT"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4341">
+			<widget class="GtkImage" id="image5953">
 			  <property name="visible">True</property>
 			  <property name="pixbuf">editcopyvwidth.png</property>
 			  <property name="xalign">0.5</property>
@@ -660,7 +662,7 @@
 		      <signal name="activate" handler="FontViewMenu_CopyLBearing" last_modification_time="Tue, 11 May 2004 18:35:31 GMT"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4342">
+			<widget class="GtkImage" id="image5954">
 			  <property name="visible">True</property>
 			  <property name="pixbuf">editcopylbearing.png</property>
 			  <property name="xalign">0.5</property>
@@ -680,7 +682,7 @@
 		      <signal name="activate" handler="FontViewMenu_CopyRBearing" last_modification_time="Tue, 11 May 2004 18:35:31 GMT"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4343">
+			<widget class="GtkImage" id="image5955">
 			  <property name="visible">True</property>
 			  <property name="pixbuf">editcopyrbearing.png</property>
 			  <property name="xalign">0.5</property>
@@ -701,7 +703,7 @@
 		      <accelerator key="V" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4344">
+			<widget class="GtkImage" id="image5956">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-paste</property>
 			  <property name="icon_size">1</property>
@@ -723,7 +725,7 @@
 		      <accelerator key="V" modifiers="GDK_CONTROL_MASK | GDK_SHIFT_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4345">
+			<widget class="GtkImage" id="image5957">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-paste</property>
 			  <property name="icon_size">1</property>
@@ -745,7 +747,7 @@
 		      <accelerator key="V" modifiers="GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4346">
+			<widget class="GtkImage" id="image5958">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-paste</property>
 			  <property name="icon_size">1</property>
@@ -776,7 +778,7 @@
 		      <accelerator key="Delete" modifiers="0" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4347">
+			<widget class="GtkImage" id="image5959">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-clear</property>
 			  <property name="icon_size">1</property>
@@ -797,7 +799,7 @@
 		      <signal name="activate" handler="FontViewMenu_ClearBackground" last_modification_time="Tue, 11 May 2004 18:35:31 GMT"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4348">
+			<widget class="GtkImage" id="image5960">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-clear</property>
 			  <property name="icon_size">1</property>
@@ -818,7 +820,7 @@
 		      <signal name="activate" handler="FontViewMenu_CopyFg2Bg" last_modification_time="Tue, 11 May 2004 18:35:31 GMT"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4349">
+			<widget class="GtkImage" id="image5961">
 			  <property name="visible">True</property>
 			  <property name="pixbuf">editcopyfg2bg.png</property>
 			  <property name="xalign">0.5</property>
@@ -902,7 +904,7 @@
 				      <signal name="activate" handler="FontViewMenu_SelectDefault" last_modification_time="Tue, 11 May 2004 18:35:31 GMT"/>
 
 				      <child internal-child="image">
-					<widget class="GtkImage" id="image4350">
+					<widget class="GtkImage" id="image5962">
 					  <property name="visible">True</property>
 					  <property name="pixbuf">selectdefault.png</property>
 					  <property name="xalign">0.5</property>
@@ -922,7 +924,7 @@
 				      <signal name="activate" handler="FontViewMenu_SelectWhite" last_modification_time="Tue, 11 May 2004 18:39:43 GMT"/>
 
 				      <child internal-child="image">
-					<widget class="GtkImage" id="image4351">
+					<widget class="GtkImage" id="image5963">
 					  <property name="visible">True</property>
 					  <property name="pixbuf">selectwhite.png</property>
 					  <property name="xalign">0.5</property>
@@ -942,7 +944,7 @@
 				      <signal name="activate" handler="FontViewMenu_SelectRed" last_modification_time="Tue, 11 May 2004 18:35:31 GMT"/>
 
 				      <child internal-child="image">
-					<widget class="GtkImage" id="image4352">
+					<widget class="GtkImage" id="image5964">
 					  <property name="visible">True</property>
 					  <property name="pixbuf">selectred.png</property>
 					  <property name="xalign">0.5</property>
@@ -962,7 +964,7 @@
 				      <signal name="activate" handler="FontViewMenu_SelectGreen" last_modification_time="Tue, 11 May 2004 18:35:31 GMT"/>
 
 				      <child internal-child="image">
-					<widget class="GtkImage" id="image4353">
+					<widget class="GtkImage" id="image5965">
 					  <property name="visible">True</property>
 					  <property name="pixbuf">selectgreen.png</property>
 					  <property name="xalign">0.5</property>
@@ -982,7 +984,7 @@
 				      <signal name="activate" handler="FontViewMenu_SelectBlue" last_modification_time="Tue, 11 May 2004 18:35:31 GMT"/>
 
 				      <child internal-child="image">
-					<widget class="GtkImage" id="image4354">
+					<widget class="GtkImage" id="image5966">
 					  <property name="visible">True</property>
 					  <property name="pixbuf">selectblue.png</property>
 					  <property name="xalign">0.5</property>
@@ -1002,7 +1004,7 @@
 				      <signal name="activate" handler="FontViewMenu_SelectYellow" last_modification_time="Tue, 11 May 2004 18:39:43 GMT"/>
 
 				      <child internal-child="image">
-					<widget class="GtkImage" id="image4355">
+					<widget class="GtkImage" id="image5967">
 					  <property name="visible">True</property>
 					  <property name="pixbuf">selectyellow.png</property>
 					  <property name="xalign">0.5</property>
@@ -1022,7 +1024,7 @@
 				      <signal name="activate" handler="FontViewMenu_SelectCyan" last_modification_time="Tue, 11 May 2004 18:39:43 GMT"/>
 
 				      <child internal-child="image">
-					<widget class="GtkImage" id="image4356">
+					<widget class="GtkImage" id="image5968">
 					  <property name="visible">True</property>
 					  <property name="pixbuf">selectcyan.png</property>
 					  <property name="xalign">0.5</property>
@@ -1042,7 +1044,7 @@
 				      <signal name="activate" handler="FontViewMenu_SelectMagenta" last_modification_time="Tue, 11 May 2004 18:39:43 GMT"/>
 
 				      <child internal-child="image">
-					<widget class="GtkImage" id="image4357">
+					<widget class="GtkImage" id="image5969">
 					  <property name="visible">True</property>
 					  <property name="pixbuf">selectmagenta.png</property>
 					  <property name="xalign">0.5</property>
@@ -1062,7 +1064,7 @@
 				      <signal name="activate" handler="FontViewMenu_SelectColorPicker" last_modification_time="Tue, 11 May 2004 18:39:43 GMT"/>
 
 				      <child internal-child="image">
-					<widget class="GtkImage" id="image4358">
+					<widget class="GtkImage" id="image5970">
 					  <property name="visible">True</property>
 					  <property name="stock">gtk-select-color</property>
 					  <property name="icon_size">1</property>
@@ -1076,6 +1078,24 @@
 				  </child>
 				</widget>
 			      </child>
+			    </widget>
+			  </child>
+
+			  <child>
+			    <widget class="GtkMenuItem" id="select_by_wildcard1">
+			      <property name="visible">True</property>
+			      <property name="label" translatable="yes">Select by _Wildcard</property>
+			      <property name="use_underline">True</property>
+			      <signal name="activate" handler="FontViewMenu_SelectByName" last_modification_time="Fri, 28 Dec 2007 16:26:56 GMT"/>
+			    </widget>
+			  </child>
+
+			  <child>
+			    <widget class="GtkMenuItem" id="select_by_script1">
+			      <property name="visible">True</property>
+			      <property name="label" translatable="yes">Select by _Script</property>
+			      <property name="use_underline">True</property>
+			      <signal name="activate" handler="FontViewMenu_SelectByScript" last_modification_time="Fri, 28 Dec 2007 16:26:56 GMT"/>
 			    </widget>
 			  </child>
 
@@ -1149,7 +1169,7 @@
 		      <accelerator key="F" modifiers="GDK_CONTROL_MASK | GDK_MOD1_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4359">
+			<widget class="GtkImage" id="image5971">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-find-and-replace</property>
 			  <property name="icon_size">1</property>
@@ -1187,7 +1207,7 @@
 		      <accelerator key="U" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4360">
+			<widget class="GtkImage" id="image5972">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-refresh</property>
 			  <property name="icon_size">1</property>
@@ -1286,7 +1306,7 @@
 		      <signal name="activate" handler="FontViewMenu_RemoveUndoes" last_modification_time="Tue, 11 May 2004 18:35:31 GMT"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4361">
+			<widget class="GtkImage" id="image5973">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-delete</property>
 			  <property name="icon_size">1</property>
@@ -1322,7 +1342,7 @@
 		      <accelerator key="F" modifiers="GDK_CONTROL_MASK | GDK_SHIFT_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4362">
+			<widget class="GtkImage" id="image5974">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-select-font</property>
 			  <property name="icon_size">1</property>
@@ -1344,7 +1364,7 @@
 		      <accelerator key="I" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4363">
+			<widget class="GtkImage" id="image5975">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-dialog-info</property>
 			  <property name="icon_size">1</property>
@@ -1374,7 +1394,7 @@
 			      <signal name="activate" handler="FontViewMenu_MathInfo" last_modification_time="Sun, 23 Dec 2007 22:14:50 GMT"/>
 
 			      <child internal-child="image">
-				<widget class="GtkImage" id="image4364">
+				<widget class="GtkImage" id="image5976">
 				  <property name="visible">True</property>
 				  <property name="pixbuf">elementmathinfo.png</property>
 				  <property name="xalign">0.5</property>
@@ -1400,6 +1420,7 @@
 			      <property name="visible">True</property>
 			      <property name="label" translatable="yes">Show _Dependent</property>
 			      <property name="use_underline">True</property>
+			      <signal name="activate" handler="FontViewMenu_ActivateDependents" last_modification_time="Fri, 28 Dec 2007 18:13:13 GMT"/>
 
 			      <child>
 				<widget class="GtkMenu" id="show_dependent1_menu">
@@ -1409,7 +1430,7 @@
 				      <property name="visible">True</property>
 				      <property name="label" translatable="yes">_References...</property>
 				      <property name="use_underline">True</property>
-				      <signal name="activate" handler="FontViewMenu_References" last_modification_time="Sun, 23 Dec 2007 22:14:50 GMT"/>
+				      <signal name="activate" handler="FontViewMenu_ShowDependentRefs" last_modification_time="Fri, 28 Dec 2007 16:33:17 GMT"/>
 				    </widget>
 				  </child>
 
@@ -1418,7 +1439,7 @@
 				      <property name="visible">True</property>
 				      <property name="label" translatable="yes">_Substitutions</property>
 				      <property name="use_underline">True</property>
-				      <signal name="activate" handler="FontViewMenu_Substitutions" last_modification_time="Sun, 23 Dec 2007 22:14:50 GMT"/>
+				      <signal name="activate" handler="FontViewMenu_ShowDependentSubs" last_modification_time="Fri, 28 Dec 2007 16:33:17 GMT"/>
 				    </widget>
 				  </child>
 				</widget>
@@ -1448,7 +1469,7 @@
 		      <accelerator key="E" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4365">
+			<widget class="GtkImage" id="image5977">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-find</property>
 			  <property name="icon_size">1</property>
@@ -1469,7 +1490,7 @@
 		      <signal name="activate" handler="FontViewMenu_Validate" last_modification_time="Sun, 23 Dec 2007 22:14:50 GMT"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4366">
+			<widget class="GtkImage" id="image5978">
 			  <property name="visible">True</property>
 			  <property name="pixbuf">elementvalidate.png</property>
 			  <property name="xalign">0.5</property>
@@ -1496,7 +1517,7 @@
 		      <accelerator key="B" modifiers="GDK_CONTROL_MASK | GDK_SHIFT_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4367">
+			<widget class="GtkImage" id="image5979">
 			  <property name="visible">True</property>
 			  <property name="pixbuf">elementbitmapsavail.png</property>
 			  <property name="xalign">0.5</property>
@@ -1517,7 +1538,7 @@
 		      <accelerator key="B" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4368">
+			<widget class="GtkImage" id="image5980">
 			  <property name="visible">True</property>
 			  <property name="pixbuf">elementregenbitmaps.png</property>
 			  <property name="xalign">0.5</property>
@@ -1551,7 +1572,7 @@
 		      <property name="use_underline">True</property>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4369">
+			<widget class="GtkImage" id="image5981">
 			  <property name="visible">True</property>
 			  <property name="pixbuf">changeweight.png</property>
 			  <property name="xalign">0.5</property>
@@ -1572,7 +1593,7 @@
 			      <signal name="activate" handler="FontViewMenu_ChangeWeight" last_modification_time="Sun, 23 Dec 2007 22:14:50 GMT"/>
 
 			      <child internal-child="image">
-				<widget class="GtkImage" id="image4370">
+				<widget class="GtkImage" id="image5982">
 				  <property name="visible">True</property>
 				  <property name="pixbuf">changeweight.png</property>
 				  <property name="xalign">0.5</property>
@@ -1592,7 +1613,7 @@
 			      <signal name="activate" handler="FontViewMenu_Oblique" last_modification_time="Sun, 23 Dec 2007 22:14:50 GMT"/>
 
 			      <child internal-child="image">
-				<widget class="GtkImage" id="image4371">
+				<widget class="GtkImage" id="image5983">
 				  <property name="visible">True</property>
 				  <property name="pixbuf">oblique.png</property>
 				  <property name="xalign">0.5</property>
@@ -1612,7 +1633,7 @@
 			      <signal name="activate" handler="FontViewMenu_Condense" last_modification_time="Sun, 23 Dec 2007 22:14:50 GMT"/>
 
 			      <child internal-child="image">
-				<widget class="GtkImage" id="image4372">
+				<widget class="GtkImage" id="image5984">
 				  <property name="visible">True</property>
 				  <property name="pixbuf">extendcondense.png</property>
 				  <property name="xalign">0.5</property>
@@ -1632,7 +1653,7 @@
 			      <signal name="activate" handler="FontViewMenu_Inline" last_modification_time="Sun, 23 Dec 2007 22:14:50 GMT"/>
 
 			      <child internal-child="image">
-				<widget class="GtkImage" id="image4373">
+				<widget class="GtkImage" id="image5985">
 				  <property name="visible">True</property>
 				  <property name="pixbuf">inline.png</property>
 				  <property name="xalign">0.5</property>
@@ -1652,7 +1673,7 @@
 			      <signal name="activate" handler="FontViewMenu_Outline" last_modification_time="Sun, 23 Dec 2007 22:14:50 GMT"/>
 
 			      <child internal-child="image">
-				<widget class="GtkImage" id="image4374">
+				<widget class="GtkImage" id="image5986">
 				  <property name="visible">True</property>
 				  <property name="pixbuf">outline.png</property>
 				  <property name="xalign">0.5</property>
@@ -1672,7 +1693,7 @@
 			      <signal name="activate" handler="FontViewMenu_Shadow" last_modification_time="Sun, 23 Dec 2007 22:14:50 GMT"/>
 
 			      <child internal-child="image">
-				<widget class="GtkImage" id="image4375">
+				<widget class="GtkImage" id="image5987">
 				  <property name="visible">True</property>
 				  <property name="pixbuf">shadow.png</property>
 				  <property name="xalign">0.5</property>
@@ -1692,7 +1713,7 @@
 			      <signal name="activate" handler="FontViewMenu_WireFrame" last_modification_time="Sun, 23 Dec 2007 22:14:50 GMT"/>
 
 			      <child internal-child="image">
-				<widget class="GtkImage" id="image4376">
+				<widget class="GtkImage" id="image5988">
 				  <property name="visible">True</property>
 				  <property name="pixbuf">wireframe.png</property>
 				  <property name="xalign">0.5</property>
@@ -1716,7 +1737,7 @@
 		      <signal name="activate" handler="FontViewMenu_ActivateTransformations" last_modification_time="Sun, 22 Aug 2004 20:51:58 GMT"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4377">
+			<widget class="GtkImage" id="image5989">
 			  <property name="visible">True</property>
 			  <property name="pixbuf">elementtransform.png</property>
 			  <property name="xalign">0.5</property>
@@ -1737,7 +1758,7 @@
 			      <signal name="activate" handler="FontViewMenu_Transform" last_modification_time="Tue, 11 May 2004 22:04:15 GMT"/>
 
 			      <child internal-child="image">
-				<widget class="GtkImage" id="image4378">
+				<widget class="GtkImage" id="image5990">
 				  <property name="visible">True</property>
 				  <property name="pixbuf">elementtransform.png</property>
 				  <property name="xalign">0.5</property>
@@ -1780,7 +1801,7 @@
 		      <accelerator key="E" modifiers="GDK_CONTROL_MASK | GDK_SHIFT_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4379">
+			<widget class="GtkImage" id="image5991">
 			  <property name="visible">True</property>
 			  <property name="pixbuf">elementexpandstroke.png</property>
 			  <property name="xalign">0.5</property>
@@ -1806,10 +1827,9 @@
 		      <property name="visible">True</property>
 		      <property name="label" translatable="yes">O_verlap</property>
 		      <property name="use_underline">True</property>
-		      <signal name="activate" handler="FontViewMenu_ActivateOverlap" last_modification_time="Thu, 13 May 2004 23:26:35 GMT"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4380">
+			<widget class="GtkImage" id="image5992">
 			  <property name="visible">True</property>
 			  <property name="pixbuf">rmoverlap.png</property>
 			  <property name="xalign">0.5</property>
@@ -1831,7 +1851,7 @@
 			      <accelerator key="O" modifiers="GDK_CONTROL_MASK | GDK_SHIFT_MASK" signal="activate"/>
 
 			      <child internal-child="image">
-				<widget class="GtkImage" id="image4381">
+				<widget class="GtkImage" id="image5993">
 				  <property name="visible">True</property>
 				  <property name="pixbuf">rmoverlap.png</property>
 				  <property name="xalign">0.5</property>
@@ -1851,7 +1871,7 @@
 			      <signal name="activate" handler="FontViewMenu_Intersect" last_modification_time="Wed, 12 May 2004 00:31:52 GMT"/>
 
 			      <child internal-child="image">
-				<widget class="GtkImage" id="image4382">
+				<widget class="GtkImage" id="image5994">
 				  <property name="visible">True</property>
 				  <property name="pixbuf">intersection.png</property>
 				  <property name="xalign">0.5</property>
@@ -1871,7 +1891,7 @@
 			      <signal name="activate" handler="FontViewMenu_FindInter" last_modification_time="Wed, 12 May 2004 00:31:52 GMT"/>
 
 			      <child internal-child="image">
-				<widget class="GtkImage" id="image4383">
+				<widget class="GtkImage" id="image5995">
 				  <property name="visible">True</property>
 				  <property name="pixbuf">findinter.png</property>
 				  <property name="xalign">0.5</property>
@@ -1892,10 +1912,9 @@
 		      <property name="visible">True</property>
 		      <property name="label" translatable="yes">_Simplify</property>
 		      <property name="use_underline">True</property>
-		      <signal name="activate" handler="FontViewMenu_ActivateSimplify" last_modification_time="Thu, 13 May 2004 23:27:03 GMT"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4384">
+			<widget class="GtkImage" id="image5996">
 			  <property name="visible">True</property>
 			  <property name="pixbuf">elementsimplify.png</property>
 			  <property name="xalign">0.5</property>
@@ -1917,7 +1936,7 @@
 			      <accelerator key="M" modifiers="GDK_CONTROL_MASK | GDK_SHIFT_MASK" signal="activate"/>
 
 			      <child internal-child="image">
-				<widget class="GtkImage" id="image4385">
+				<widget class="GtkImage" id="image5997">
 				  <property name="visible">True</property>
 				  <property name="pixbuf">elementsimplify.png</property>
 				  <property name="xalign">0.5</property>
@@ -1947,6 +1966,24 @@
 			      <signal name="activate" handler="FontViewMenu_Cleanup" last_modification_time="Wed, 12 May 2004 00:31:52 GMT"/>
 			    </widget>
 			  </child>
+
+			  <child>
+			    <widget class="GtkMenuItem" id="canonical_start_point1">
+			      <property name="visible">True</property>
+			      <property name="label" translatable="yes">Canonical Start _Point</property>
+			      <property name="use_underline">True</property>
+			      <signal name="activate" handler="FontViewMenu_CanonicalStart" last_modification_time="Fri, 28 Dec 2007 16:40:36 GMT"/>
+			    </widget>
+			  </child>
+
+			  <child>
+			    <widget class="GtkMenuItem" id="canonical_contours1">
+			      <property name="visible">True</property>
+			      <property name="label" translatable="yes">Canonical Conto_urs</property>
+			      <property name="use_underline">True</property>
+			      <signal name="activate" handler="FontViewMenu_CanonicalContours" last_modification_time="Fri, 28 Dec 2007 16:40:36 GMT"/>
+			    </widget>
+			  </child>
 			</widget>
 		      </child>
 		    </widget>
@@ -1961,7 +1998,7 @@
 		      <accelerator key="X" modifiers="GDK_CONTROL_MASK | GDK_SHIFT_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4386">
+			<widget class="GtkImage" id="image5998">
 			  <property name="visible">True</property>
 			  <property name="pixbuf">elementaddextrema.png</property>
 			  <property name="xalign">0.5</property>
@@ -2036,7 +2073,7 @@
 		      <signal name="activate" handler="FontViewMenu_CorrectDir" last_modification_time="Thu, 13 May 2004 00:36:34 GMT"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4387">
+			<widget class="GtkImage" id="image5999">
 			  <property name="visible">True</property>
 			  <property name="pixbuf">elementcorrectdir.png</property>
 			  <property name="xalign">0.5</property>
@@ -2059,9 +2096,10 @@
 		      <property name="visible">True</property>
 		      <property name="label" translatable="yes">_Build</property>
 		      <property name="use_underline">True</property>
+		      <signal name="activate" handler="FontViewMenu_ActivateBuild" last_modification_time="Fri, 28 Dec 2007 18:13:13 GMT"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4388">
+			<widget class="GtkImage" id="image6000">
 			  <property name="visible">True</property>
 			  <property name="pixbuf">elementbuildaccent.png</property>
 			  <property name="xalign">0.5</property>
@@ -2083,7 +2121,7 @@
 			      <accelerator key="A" modifiers="GDK_CONTROL_MASK | GDK_SHIFT_MASK" signal="activate"/>
 
 			      <child internal-child="image">
-				<widget class="GtkImage" id="image4389">
+				<widget class="GtkImage" id="image6001">
 				  <property name="visible">True</property>
 				  <property name="pixbuf">elementbuildaccent.png</property>
 				  <property name="xalign">0.5</property>
@@ -2150,10 +2188,10 @@
 	      <property name="visible">True</property>
 	      <property name="label" translatable="yes">Tools</property>
 	      <property name="use_underline">True</property>
-	      <signal name="activate" handler="FontView_ToolsActivate" last_modification_time="Wed, 26 Dec 2007 19:35:29 GMT"/>
+	      <signal name="activate" handler="FontViewMenu_ToolsActivate" last_modification_time="Sat, 29 Dec 2007 01:24:04 GMT"/>
 
 	      <child internal-child="image">
-		<widget class="GtkImage" id="image4390">
+		<widget class="GtkImage" id="image6002">
 		  <property name="visible">True</property>
 		  <property name="pixbuf">python.png</property>
 		  <property name="xalign">0.5</property>
@@ -2190,7 +2228,7 @@
 		      <property name="visible">True</property>
 		      <property name="label" translatable="yes">Hint _Subsitution Pts</property>
 		      <property name="use_underline">True</property>
-		      <signal name="activate" handler="FontViewMenu_HintSubsPts" last_modification_time="Thu, 13 May 2004 00:52:04 GMT"/>
+		      <signal name="activate" handler="FontViewMenu_AutoHintSubsPts" last_modification_time="Fri, 28 Dec 2007 17:35:21 GMT"/>
 		    </widget>
 		  </child>
 
@@ -2371,7 +2409,7 @@
 		      <property name="visible">True</property>
 		      <property name="label" translatable="yes">_Reencode</property>
 		      <property name="use_underline">True</property>
-		      <signal name="activate" handler="ReencodeMenuBuild" last_modification_time="Sat, 26 Nov 2005 22:07:12 GMT"/>
+		      <signal name="activate" handler="FontViewMenu_BuildReencode" last_modification_time="Fri, 28 Dec 2007 17:43:34 GMT"/>
 
 		      <child>
 			<widget class="GtkMenu" id="reencode1_menu">
@@ -2401,7 +2439,7 @@
 		      <property name="visible">True</property>
 		      <property name="label" translatable="yes">_Force Encoding</property>
 		      <property name="use_underline">True</property>
-		      <signal name="activate" handler="BuildForceEncodingMenu" last_modification_time="Sat, 26 Nov 2005 22:07:12 GMT"/>
+		      <signal name="activate" handler="FontViewMenu_BuildForceEncoding" last_modification_time="Fri, 28 Dec 2007 17:43:34 GMT"/>
 
 		      <child>
 			<widget class="GtkMenu" id="force_encoding1_menu">
@@ -2454,10 +2492,10 @@
 		      <property name="visible">True</property>
 		      <property name="label" translatable="yes">Detatch &amp; Remo_ve Glyphs</property>
 		      <property name="use_underline">True</property>
-		      <signal name="activate" handler="FontViewMenu_DetachRemoveGlyphs" last_modification_time="Sat, 26 Nov 2005 22:07:12 GMT"/>
+		      <signal name="activate" handler="FontViewMenu_DetachAndRemoveGlyphs" last_modification_time="Fri, 28 Dec 2007 17:53:51 GMT"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4391">
+			<widget class="GtkImage" id="image6003">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-delete</property>
 			  <property name="icon_size">1</property>
@@ -2565,7 +2603,7 @@
 		      <property name="visible">True</property>
 		      <property name="label" translatable="yes">Rename Gl_yphs...</property>
 		      <property name="use_underline">True</property>
-		      <signal name="activate" handler="FontViewMenu_RenameGlyphs" last_modification_time="Wed, 05 Apr 2006 19:46:04 GMT"/>
+		      <signal name="activate" handler="FontViewMenu_RenameByNamelist" last_modification_time="Fri, 28 Dec 2007 17:53:51 GMT"/>
 		    </widget>
 		  </child>
 
@@ -2600,7 +2638,7 @@
 		      <signal name="activate" handler="FontViewMenu_ChangeChar" last_modification_time="Thu, 13 May 2004 01:07:55 GMT"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4392">
+			<widget class="GtkImage" id="image6004">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-go-forward</property>
 			  <property name="icon_size">1</property>
@@ -2621,7 +2659,7 @@
 		      <signal name="activate" handler="FontViewMenu_ChangeChar" last_modification_time="Thu, 13 May 2004 01:07:55 GMT"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4393">
+			<widget class="GtkImage" id="image6005">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-go-back</property>
 			  <property name="icon_size">1</property>
@@ -2642,7 +2680,7 @@
 		      <signal name="activate" handler="FontViewMenu_ChangeChar" last_modification_time="Thu, 13 May 2004 01:07:55 GMT"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4394">
+			<widget class="GtkImage" id="image6006">
 			  <property name="visible">True</property>
 			  <property name="pixbuf">viewnextdef.png</property>
 			  <property name="xalign">0.5</property>
@@ -2662,7 +2700,7 @@
 		      <signal name="activate" handler="FontViewMenu_ChangeChar" last_modification_time="Thu, 13 May 2004 01:07:55 GMT"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4395">
+			<widget class="GtkImage" id="image6007">
 			  <property name="visible">True</property>
 			  <property name="pixbuf">viewprevdef.png</property>
 			  <property name="xalign">0.5</property>
@@ -2682,7 +2720,7 @@
 		      <signal name="activate" handler="FontViewMenu_Goto" last_modification_time="Thu, 13 May 2004 01:07:55 GMT"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4396">
+			<widget class="GtkImage" id="image6008">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-jump-to</property>
 			  <property name="icon_size">1</property>
@@ -2741,20 +2779,20 @@
 			  </child>
 
 			  <child>
-			    <widget class="GtkMenuItem" id="anchored_pairs1">
+			    <widget class="GtkMenuItem" id="anchor_pairs1">
 			      <property name="visible">True</property>
-			      <property name="label" translatable="yes">_Anchored Pairs</property>
+			      <property name="label" translatable="yes">_Anchor Pairs</property>
 			      <property name="use_underline">True</property>
+			      <signal name="activate" handler="FontViewMenu_ActivateAnchoredPairs" last_modification_time="Fri, 28 Dec 2007 18:13:13 GMT"/>
 
 			      <child>
-				<widget class="GtkMenu" id="anchored_pairs1_menu">
+				<widget class="GtkMenu" id="anchor_pairs1_menu">
 
 				  <child>
 				    <widget class="GtkMenuItem" id="all2">
 				      <property name="visible">True</property>
 				      <property name="label" translatable="yes">_All</property>
 				      <property name="use_underline">True</property>
-				      <signal name="activate" handler="FontViewMenu_AllAnchoredPairs" last_modification_time="Thu, 13 May 2004 01:07:55 GMT"/>
 				    </widget>
 				  </child>
 				</widget>
@@ -2849,7 +2887,7 @@
 		      <property name="tooltip" translatable="yes">Show Horizontal Metrics lines</property>
 		      <property name="label" translatable="yes">Show H. Metrics...</property>
 		      <property name="use_underline">True</property>
-		      <signal name="activate" handler="FontViewMenu_ShowHMetrics" last_modification_time="Thu, 13 May 2004 01:07:55 GMT"/>
+		      <signal name="activate" handler="FontViewMenu_ShowMetrics" last_modification_time="Fri, 28 Dec 2007 17:15:39 GMT"/>
 		    </widget>
 		  </child>
 
@@ -2859,7 +2897,7 @@
 		      <property name="tooltip" translatable="yes">Show Vertical Metrics lines</property>
 		      <property name="label" translatable="yes">Show V. Metrics...</property>
 		      <property name="use_underline">True</property>
-		      <signal name="activate" handler="FontViewMenu_ShowVMetrics" last_modification_time="Thu, 13 May 2004 01:07:55 GMT"/>
+		      <signal name="activate" handler="FontViewMenu_ShowMetrics" last_modification_time="Fri, 28 Dec 2007 17:15:39 GMT"/>
 		    </widget>
 		  </child>
 
@@ -2906,50 +2944,55 @@
 		  </child>
 
 		  <child>
-		    <widget class="GtkMenuItem" id="24_pixel_outline1">
+		    <widget class="GtkCheckMenuItem" id="24_pixel_outline1">
 		      <property name="visible">True</property>
 		      <property name="label" translatable="yes">_24 pixel outline</property>
 		      <property name="use_underline">True</property>
+		      <property name="active">False</property>
 		      <signal name="activate" handler="FontViewMenu_PixelSize" last_modification_time="Thu, 13 May 2004 01:07:55 GMT"/>
 		      <accelerator key="2" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 		    </widget>
 		  </child>
 
 		  <child>
-		    <widget class="GtkMenuItem" id="36_pixel_outline1">
+		    <widget class="GtkCheckMenuItem" id="36_pixel_outline1">
 		      <property name="visible">True</property>
 		      <property name="label" translatable="yes">_36 pixel outline</property>
 		      <property name="use_underline">True</property>
+		      <property name="active">False</property>
 		      <signal name="activate" handler="FontViewMenu_PixelSize" last_modification_time="Thu, 13 May 2004 01:07:55 GMT"/>
 		      <accelerator key="3" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 		    </widget>
 		  </child>
 
 		  <child>
-		    <widget class="GtkMenuItem" id="48_pixel_outline1">
+		    <widget class="GtkCheckMenuItem" id="48_pixel_outline1">
 		      <property name="visible">True</property>
 		      <property name="label" translatable="yes">_48 pixel outline</property>
 		      <property name="use_underline">True</property>
+		      <property name="active">False</property>
 		      <signal name="activate" handler="FontViewMenu_PixelSize" last_modification_time="Thu, 13 May 2004 01:07:55 GMT"/>
 		      <accelerator key="4" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 		    </widget>
 		  </child>
 
 		  <child>
-		    <widget class="GtkMenuItem" id="72_pixel_outline1">
+		    <widget class="GtkCheckMenuItem" id="72_pixel_outline1">
 		      <property name="visible">True</property>
 		      <property name="label" translatable="yes">_72 pixel outline</property>
 		      <property name="use_underline">True</property>
+		      <property name="active">False</property>
 		      <signal name="activate" handler="FontViewMenu_PixelSize" last_modification_time="Thu, 13 May 2004 01:07:55 GMT"/>
 		      <accelerator key="7" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 		    </widget>
 		  </child>
 
 		  <child>
-		    <widget class="GtkMenuItem" id="96_pixel_outline1">
+		    <widget class="GtkCheckMenuItem" id="96_pixel_outline1">
 		      <property name="visible">True</property>
 		      <property name="label" translatable="yes">_96 pixel outline</property>
 		      <property name="use_underline">True</property>
+		      <property name="active">False</property>
 		      <signal name="activate" handler="FontViewMenu_PixelSize" last_modification_time="Thu, 13 May 2004 01:07:55 GMT"/>
 		      <accelerator key="9" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 		    </widget>
@@ -2967,7 +3010,7 @@
 		      <property name="label" translatable="yes">_Anti Alias</property>
 		      <property name="use_underline">True</property>
 		      <property name="active">True</property>
-		      <signal name="activate" handler="FontViewMenu_AntiAlias" last_modification_time="Thu, 13 May 2004 01:07:55 GMT"/>
+		      <signal name="activate" handler="FontViewMenu_PixelSize" last_modification_time="Sat, 29 Dec 2007 01:12:35 GMT"/>
 		      <accelerator key="5" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 		    </widget>
 		  </child>
@@ -2978,7 +3021,7 @@
 		      <property name="label" translatable="yes">_Fit to em</property>
 		      <property name="use_underline">True</property>
 		      <property name="active">False</property>
-		      <signal name="activate" handler="FontViewMenu_FitToEm" last_modification_time="Thu, 13 May 2004 01:07:55 GMT"/>
+		      <signal name="activate" handler="FontViewMenu_PixelSize" last_modification_time="Sat, 29 Dec 2007 01:12:35 GMT"/>
 		      <accelerator key="6" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 		    </widget>
 		  </child>
@@ -3026,7 +3069,7 @@
 		      <property name="visible">True</property>
 		      <property name="label" translatable="yes">_Thirds in Width</property>
 		      <property name="use_underline">True</property>
-		      <signal name="activate" handler="FontViewMenu_Thirds" last_modification_time="Thu, 13 May 2004 01:15:38 GMT"/>
+		      <signal name="activate" handler="FontViewMenu_ThirdsWidth" last_modification_time="Fri, 28 Dec 2007 17:35:21 GMT"/>
 		    </widget>
 		  </child>
 
@@ -3184,7 +3227,7 @@
 		      <property name="visible">True</property>
 		      <property name="label" translatable="yes">Convert by C_Map</property>
 		      <property name="use_underline">True</property>
-		      <signal name="activate" handler="FontViewMenu_CvtByCMap" last_modification_time="Thu, 13 May 2004 01:25:01 GMT"/>
+		      <signal name="activate" handler="FontViewMenu_ConvertByCMap" last_modification_time="Fri, 28 Dec 2007 17:35:21 GMT"/>
 		    </widget>
 		  </child>
 
@@ -3208,7 +3251,7 @@
 		      <property name="visible">True</property>
 		      <property name="label" translatable="yes">F_latten By CMap</property>
 		      <property name="use_underline">True</property>
-		      <signal name="activate" handler="FontViewMenu_FlattenCMap" last_modification_time="Thu, 13 May 2004 01:25:01 GMT"/>
+		      <signal name="activate" handler="FontViewMenu_FlattenByCMap" last_modification_time="Fri, 28 Dec 2007 17:35:21 GMT"/>
 		    </widget>
 		  </child>
 
@@ -3241,7 +3284,7 @@
 		      <property name="visible">True</property>
 		      <property name="label" translatable="yes">_Remove Font</property>
 		      <property name="use_underline">True</property>
-		      <signal name="activate" handler="FontViewMenu_RemoveFont" last_modification_time="Thu, 13 May 2004 01:25:01 GMT"/>
+		      <signal name="activate" handler="FontViewMenu_RemoveFontFromCID" last_modification_time="Fri, 28 Dec 2007 17:35:21 GMT"/>
 		    </widget>
 		  </child>
 
@@ -3265,10 +3308,10 @@
 		      <property name="visible">True</property>
 		      <property name="label" translatable="yes">C_ID Font Info...</property>
 		      <property name="use_underline">True</property>
-		      <signal name="activate" handler="FontViewMenu_CID_FontInfo" last_modification_time="Thu, 13 May 2004 01:25:01 GMT"/>
+		      <signal name="activate" handler="FontViewMenu_CIDFontInfo" last_modification_time="Fri, 28 Dec 2007 17:35:21 GMT"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4397">
+			<widget class="GtkImage" id="image6009">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-select-font</property>
 			  <property name="icon_size">1</property>
@@ -3304,7 +3347,7 @@
 		      <signal name="activate" handler="FontViewMenu_CreateMM" last_modification_time="Thu, 13 May 2004 01:25:01 GMT"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4398">
+			<widget class="GtkImage" id="image6010">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-new</property>
 			  <property name="icon_size">1</property>
@@ -3340,7 +3383,7 @@
 		      <signal name="activate" handler="FontViewMenu_MMInfo" last_modification_time="Thu, 13 May 2004 01:25:01 GMT"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4399">
+			<widget class="GtkImage" id="image6011">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-dialog-info</property>
 			  <property name="icon_size">1</property>
@@ -3429,7 +3472,7 @@
 		      <signal name="activate" handler="WindowMenu_Warnings" last_modification_time="Sun, 27 Nov 2005 13:16:03 GMT"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4400">
+			<widget class="GtkImage" id="image6012">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-dialog-warning</property>
 			  <property name="icon_size">1</property>
@@ -3466,11 +3509,11 @@
 		      <property name="visible">True</property>
 		      <property name="label" translatable="yes">_Help</property>
 		      <property name="use_underline">True</property>
-		      <signal name="activate" handler="MenuHelp_Help" last_modification_time="Tue, 11 May 2004 18:48:57 GMT"/>
+		      <signal name="activate" handler="FontViewMenu_ContextualHelp" last_modification_time="Fri, 28 Dec 2007 16:23:41 GMT"/>
 		      <accelerator key="F1" modifiers="0" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4401">
+			<widget class="GtkImage" id="image6013">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-help</property>
 			  <property name="icon_size">1</property>
@@ -3484,6 +3527,16 @@
 		  </child>
 
 		  <child>
+		    <widget class="GtkMenuItem" id="overview1">
+		      <property name="visible">True</property>
+		      <property name="label" translatable="yes">Overview</property>
+		      <property name="use_underline">True</property>
+		      <signal name="activate" handler="MenuHelp_Help" last_modification_time="Fri, 28 Dec 2007 16:23:41 GMT"/>
+		      <accelerator key="F1" modifiers="GDK_SHIFT_MASK" signal="activate"/>
+		    </widget>
+		  </child>
+
+		  <child>
 		    <widget class="GtkImageMenuItem" id="index1">
 		      <property name="visible">True</property>
 		      <property name="label" translatable="yes">_Index</property>
@@ -3492,7 +3545,7 @@
 		      <accelerator key="F1" modifiers="GDK_CONTROL_MASK" signal="activate"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4402">
+			<widget class="GtkImage" id="image6014">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-index</property>
 			  <property name="icon_size">1</property>
@@ -3513,7 +3566,7 @@
 		      <signal name="activate" handler="MenuHelp_About" last_modification_time="Tue, 11 May 2004 18:48:57 GMT"/>
 
 		      <child internal-child="image">
-			<widget class="GtkImage" id="image4403">
+			<widget class="GtkImage" id="image6015">
 			  <property name="visible">True</property>
 			  <property name="stock">gtk-dialog-info</property>
 			  <property name="icon_size">1</property>
@@ -3569,6 +3622,7 @@
 	  <child>
 	    <widget class="GtkDrawingArea" id="view">
 	      <property name="visible">True</property>
+	      <property name="events">GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK | GDK_FOCUS_CHANGE_MASK</property>
 	      <signal name="button_press_event" handler="FontViewView_Mouse" last_modification_time="Thu, 27 Dec 2007 00:34:56 GMT"/>
 	      <signal name="button_release_event" handler="FontViewView_Mouse" last_modification_time="Thu, 27 Dec 2007 00:35:14 GMT"/>
 	      <signal name="motion_notify_event" handler="FontViewView_Mouse" last_modification_time="Thu, 27 Dec 2007 00:35:43 GMT"/>
@@ -3627,13 +3681,58 @@
       <property name="spacing">0</property>
 
       <child>
-	<widget class="GtkImage" id="SplashImage">
+	<widget class="GtkVBox" id="vbox11">
 	  <property name="visible">True</property>
-	  <property name="pixbuf">splashff.png</property>
-	  <property name="xalign">0.5</property>
-	  <property name="yalign">0.5</property>
-	  <property name="xpad">0</property>
-	  <property name="ypad">0</property>
+	  <property name="homogeneous">False</property>
+	  <property name="spacing">0</property>
+
+	  <child>
+	    <widget class="GtkImage" id="ffsplash1">
+	      <property name="visible">True</property>
+	      <property name="pixbuf">ffsplash1.png</property>
+	      <property name="xalign">0.5</property>
+	      <property name="yalign">0.5</property>
+	      <property name="xpad">0</property>
+	      <property name="ypad">0</property>
+	    </widget>
+	    <packing>
+	      <property name="padding">0</property>
+	      <property name="expand">True</property>
+	      <property name="fill">True</property>
+	    </packing>
+	  </child>
+
+	  <child>
+	    <widget class="GtkImage" id="ffsplash2">
+	      <property name="visible">True</property>
+	      <property name="pixbuf">ffsplash2.png</property>
+	      <property name="xalign">0.5</property>
+	      <property name="yalign">0.5</property>
+	      <property name="xpad">0</property>
+	      <property name="ypad">0</property>
+	    </widget>
+	    <packing>
+	      <property name="padding">0</property>
+	      <property name="expand">True</property>
+	      <property name="fill">True</property>
+	    </packing>
+	  </child>
+
+	  <child>
+	    <widget class="GtkImage" id="ffsplash3">
+	      <property name="visible">True</property>
+	      <property name="pixbuf">ffsplash3.png</property>
+	      <property name="xalign">0.5</property>
+	      <property name="yalign">0.5</property>
+	      <property name="xpad">0</property>
+	      <property name="ypad">0</property>
+	    </widget>
+	    <packing>
+	      <property name="padding">0</property>
+	      <property name="expand">True</property>
+	      <property name="fill">True</property>
+	    </packing>
+	  </child>
 	</widget>
 	<packing>
 	  <property name="padding">0</property>
@@ -3691,6 +3790,27 @@
 	      <property name="justify">GTK_JUSTIFY_LEFT</property>
 	      <property name="wrap">False</property>
 	      <property name="selectable">True</property>
+	      <property name="xalign">0.5</property>
+	      <property name="yalign">0.5</property>
+	      <property name="xpad">0</property>
+	      <property name="ypad">0</property>
+	    </widget>
+	    <packing>
+	      <property name="padding">0</property>
+	      <property name="expand">False</property>
+	      <property name="fill">False</property>
+	    </packing>
+	  </child>
+
+	  <child>
+	    <widget class="GtkLabel" id="LibVersion">
+	      <property name="visible">True</property>
+	      <property name="label" translatable="yes">Library Version</property>
+	      <property name="use_underline">False</property>
+	      <property name="use_markup">False</property>
+	      <property name="justify">GTK_JUSTIFY_CENTER</property>
+	      <property name="wrap">False</property>
+	      <property name="selectable">False</property>
 	      <property name="xalign">0.5</property>
 	      <property name="yalign">0.5</property>
 	      <property name="xpad">0</property>
@@ -14458,6 +14578,255 @@
 	  <property name="pack_type">GTK_PACK_END</property>
 	</packing>
       </child>
+    </widget>
+  </child>
+</widget>
+
+<widget class="GtkMenu" id="FontViewPopupMenu">
+
+  <child>
+    <widget class="GtkImageMenuItem" id="cut3">
+      <property name="visible">True</property>
+      <property name="label">gtk-cut</property>
+      <property name="use_stock">True</property>
+      <signal name="activate" handler="FontViewMenu_Cut" last_modification_time="Sat, 29 Dec 2007 00:42:19 GMT"/>
+    </widget>
+  </child>
+
+  <child>
+    <widget class="GtkImageMenuItem" id="copy3">
+      <property name="visible">True</property>
+      <property name="label">gtk-copy</property>
+      <property name="use_stock">True</property>
+      <signal name="activate" handler="FontViewMenu_Copy" last_modification_time="Sat, 29 Dec 2007 00:42:19 GMT"/>
+    </widget>
+  </child>
+
+  <child>
+    <widget class="GtkImageMenuItem" id="copy_reference2">
+      <property name="visible">True</property>
+      <property name="label" translatable="yes">C_opy Reference</property>
+      <property name="use_underline">True</property>
+      <signal name="activate" handler="FontViewMenu_CopyRef" last_modification_time="Sat, 29 Dec 2007 01:06:51 GMT"/>
+
+      <child internal-child="image">
+	<widget class="GtkImage" id="image5419">
+	  <property name="visible">True</property>
+	  <property name="pixbuf">editcopyref.png</property>
+	  <property name="xalign">0.5</property>
+	  <property name="yalign">0.5</property>
+	  <property name="xpad">0</property>
+	  <property name="ypad">0</property>
+	</widget>
+      </child>
+    </widget>
+  </child>
+
+  <child>
+    <widget class="GtkImageMenuItem" id="copy_width2">
+      <property name="visible">True</property>
+      <property name="label" translatable="yes">Copy _Width</property>
+      <property name="use_underline">True</property>
+      <signal name="activate" handler="FontViewMenu_CopyWidth" last_modification_time="Sat, 29 Dec 2007 00:42:19 GMT"/>
+
+      <child internal-child="image">
+	<widget class="GtkImage" id="image5420">
+	  <property name="visible">True</property>
+	  <property name="pixbuf">editcopywidth.png</property>
+	  <property name="xalign">0.5</property>
+	  <property name="yalign">0.5</property>
+	  <property name="xpad">0</property>
+	  <property name="ypad">0</property>
+	</widget>
+      </child>
+    </widget>
+  </child>
+
+  <child>
+    <widget class="GtkImageMenuItem" id="paste3">
+      <property name="visible">True</property>
+      <property name="label">gtk-paste</property>
+      <property name="use_stock">True</property>
+      <signal name="activate" handler="FontViewMenu_Paste" last_modification_time="Sat, 29 Dec 2007 00:42:19 GMT"/>
+    </widget>
+  </child>
+
+  <child>
+    <widget class="GtkImageMenuItem" id="clear3">
+      <property name="visible">True</property>
+      <property name="label">gtk-clear</property>
+      <property name="use_stock">True</property>
+      <signal name="activate" handler="FontViewMenu_Clear" last_modification_time="Sat, 29 Dec 2007 00:42:19 GMT"/>
+    </widget>
+  </child>
+
+  <child>
+    <widget class="GtkImageMenuItem" id="copy_fg_to_bg2">
+      <property name="visible">True</property>
+      <property name="label" translatable="yes">Copy _Fg to Bg</property>
+      <property name="use_underline">True</property>
+      <signal name="activate" handler="FontViewMenu_CopyFg2Bg" last_modification_time="Sat, 29 Dec 2007 00:42:19 GMT"/>
+
+      <child internal-child="image">
+	<widget class="GtkImage" id="image5421">
+	  <property name="visible">True</property>
+	  <property name="pixbuf">editcopyfg2bg.png</property>
+	  <property name="xalign">0.5</property>
+	  <property name="yalign">0.5</property>
+	  <property name="xpad">0</property>
+	  <property name="ypad">0</property>
+	</widget>
+      </child>
+    </widget>
+  </child>
+
+  <child>
+    <widget class="GtkImageMenuItem" id="unlink_reference2">
+      <property name="visible">True</property>
+      <property name="label" translatable="yes">Unlin_k Reference</property>
+      <property name="use_underline">True</property>
+      <signal name="activate" handler="FontViewMenu_UnlinkRef" last_modification_time="Sat, 29 Dec 2007 00:42:19 GMT"/>
+
+      <child internal-child="image">
+	<widget class="GtkImage" id="image5422">
+	  <property name="visible">True</property>
+	  <property name="stock">gtk-refresh</property>
+	  <property name="icon_size">1</property>
+	  <property name="xalign">0.5</property>
+	  <property name="yalign">0.5</property>
+	  <property name="xpad">0</property>
+	  <property name="ypad">0</property>
+	</widget>
+      </child>
+    </widget>
+  </child>
+
+  <child>
+    <widget class="GtkMenuItem" id="separator90">
+      <property name="visible">True</property>
+    </widget>
+  </child>
+
+  <child>
+    <widget class="GtkImageMenuItem" id="char_info1">
+      <property name="visible">True</property>
+      <property name="label" translatable="yes">Glyph _Info...</property>
+      <property name="use_underline">True</property>
+      <signal name="activate" handler="FontViewMenu_CharInfo" last_modification_time="Sat, 29 Dec 2007 00:42:19 GMT"/>
+
+      <child internal-child="image">
+	<widget class="GtkImage" id="image5423">
+	  <property name="visible">True</property>
+	  <property name="stock">gtk-dialog-info</property>
+	  <property name="icon_size">1</property>
+	  <property name="xalign">0.5</property>
+	  <property name="yalign">0.5</property>
+	  <property name="xpad">0</property>
+	  <property name="ypad">0</property>
+	</widget>
+      </child>
+    </widget>
+  </child>
+
+  <child>
+    <widget class="GtkImageMenuItem" id="transform2">
+      <property name="visible">True</property>
+      <property name="label" translatable="yes">_Transform...</property>
+      <property name="use_underline">True</property>
+      <signal name="activate" handler="FontViewMenu_Transform" last_modification_time="Sat, 29 Dec 2007 00:42:19 GMT"/>
+
+      <child internal-child="image">
+	<widget class="GtkImage" id="image5424">
+	  <property name="visible">True</property>
+	  <property name="pixbuf">elementtransform.png</property>
+	  <property name="xalign">0.5</property>
+	  <property name="yalign">0.5</property>
+	  <property name="xpad">0</property>
+	  <property name="ypad">0</property>
+	</widget>
+      </child>
+    </widget>
+  </child>
+
+  <child>
+    <widget class="GtkImageMenuItem" id="expand_stroke2">
+      <property name="visible">True</property>
+      <property name="label" translatable="yes">_Expand Stroke...</property>
+      <property name="use_underline">True</property>
+      <signal name="activate" handler="FontViewMenu_ExpandStroke" last_modification_time="Sat, 29 Dec 2007 00:42:19 GMT"/>
+
+      <child internal-child="image">
+	<widget class="GtkImage" id="image5425">
+	  <property name="visible">True</property>
+	  <property name="pixbuf">elementexpandstroke.png</property>
+	  <property name="xalign">0.5</property>
+	  <property name="yalign">0.5</property>
+	  <property name="xpad">0</property>
+	  <property name="ypad">0</property>
+	</widget>
+      </child>
+    </widget>
+  </child>
+
+  <child>
+    <widget class="GtkMenuItem" id="round_to_int2">
+      <property name="visible">True</property>
+      <property name="label" translatable="yes">Round to _Int</property>
+      <property name="use_underline">True</property>
+      <signal name="activate" handler="FontViewMenu_RoundToInt" last_modification_time="Sat, 29 Dec 2007 00:42:19 GMT"/>
+    </widget>
+  </child>
+
+  <child>
+    <widget class="GtkImageMenuItem" id="correct_direction2">
+      <property name="visible">True</property>
+      <property name="label" translatable="yes">Correct _Direction</property>
+      <property name="use_underline">True</property>
+      <signal name="activate" handler="FontViewMenu_CorrectDir" last_modification_time="Sat, 29 Dec 2007 00:42:19 GMT"/>
+
+      <child internal-child="image">
+	<widget class="GtkImage" id="image5426">
+	  <property name="visible">True</property>
+	  <property name="pixbuf">elementcorrectdir.png</property>
+	  <property name="xalign">0.5</property>
+	  <property name="yalign">0.5</property>
+	  <property name="xpad">0</property>
+	  <property name="ypad">0</property>
+	</widget>
+      </child>
+    </widget>
+  </child>
+
+  <child>
+    <widget class="GtkMenuItem" id="separator91">
+      <property name="visible">True</property>
+    </widget>
+  </child>
+
+  <child>
+    <widget class="GtkMenuItem" id="auto_hint1">
+      <property name="visible">True</property>
+      <property name="label" translatable="yes">Auto _Hint</property>
+      <property name="use_underline">True</property>
+      <signal name="activate" handler="FontViewMenu_AutoHint" last_modification_time="Sat, 29 Dec 2007 00:42:19 GMT"/>
+    </widget>
+  </child>
+
+  <child>
+    <widget class="GtkMenuItem" id="center_in_width2">
+      <property name="visible">True</property>
+      <property name="label" translatable="yes">Center in Width</property>
+      <property name="use_underline">True</property>
+      <signal name="activate" handler="FontViewMenu_CenterWidth" last_modification_time="Sat, 29 Dec 2007 00:42:19 GMT"/>
+    </widget>
+  </child>
+
+  <child>
+    <widget class="GtkMenuItem" id="set_width2">
+      <property name="visible">True</property>
+      <property name="label" translatable="yes">Set _Width</property>
+      <property name="use_underline">True</property>
+      <signal name="activate" handler="FontViewMenu_SetWidth" last_modification_time="Sat, 29 Dec 2007 00:42:19 GMT"/>
     </widget>
   </child>
 </widget>

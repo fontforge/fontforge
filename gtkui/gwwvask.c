@@ -27,6 +27,7 @@
 
 # include <gtk/gtk.h>
 # include <gdk/gdkkeysyms.h>
+# include <glib.h>
 # include "gwwvask.h"
 # include "support.h"
 # include <stdarg.h>
@@ -39,6 +40,8 @@
 # include <unistd.h>
 # include <errno.h>
 # include <libintl.h>
+# include <stdint.h>
+# define _(str)	gettext(str)
 
 /* A set of extremely simple dlgs.
 	Post a notice (which vanishes after a bit)
@@ -48,7 +51,15 @@
 	Ask the user to chose between a list of choices
  */
 
-static int Finish( gpointer dlg ) {
+static void Finish( gpointer dlg ) {
+    int timer_id;
+    timer_id = (intptr_t) g_object_get_data(G_OBJECT(dlg),"timer");
+    g_source_destroy(g_main_context_find_source_by_id(g_main_context_default(),
+	    timer_id));
+    gtk_widget_destroy(dlg);
+}
+
+static int TimerFinish( gpointer dlg ) {
     gtk_widget_destroy(dlg);
 return( FALSE );			/* End timer */
 }
@@ -57,6 +68,7 @@ void gwwv_post_notice(const char *title, const char *msg, ... ) {
     char buffer[400];
     va_list va;
     GtkWidget *dlg, *lab;
+    int timer_id;
 
     va_start(va,msg);
 #if defined( _NO_SNPRINTF ) || defined( __VMS )
@@ -74,7 +86,8 @@ void gwwv_post_notice(const char *title, const char *msg, ... ) {
 	    G_CALLBACK(Finish), G_OBJECT(dlg));
     g_signal_connect_swapped(G_OBJECT(dlg),"response",
 	    G_CALLBACK(Finish), G_OBJECT(dlg));
-    gtk_timeout_add(30*1000,Finish,dlg);
+    timer_id = gtk_timeout_add(30*1000,TimerFinish,dlg);
+    g_object_set_data(G_OBJECT(dlg),"timer",(void *) timer_id);
 
     lab = gtk_label_new_with_mnemonic(buffer);
     gtk_widget_show(lab);
@@ -115,7 +128,7 @@ void gwwv_ierror(const char *msg, ... ) {
     GtkWidget *dlg, *lab;
 
     va_start(va,msg);
-    sprintf(buffer, _("Internal Error: "));
+    strcpy(buffer, _("Internal Error: "));
     len = strlen(buffer);
 #if defined( _NO_SNPRINTF ) || defined( __VMS )
     vsprintf( buffer+len, msg, va);
@@ -250,9 +263,14 @@ char *gwwv_ask_string(const char *title,const char *def,
     gtk_widget_destroy(dlg);
 return( ret );
 }
-    
+
+static void select_me(gpointer *data,gpointer *_sel) {
+    char *sel = (char *) _sel;
+    sel[gtk_tree_path_get_indices((GtkTreePath *) data)[0]] = TRUE;
+}
+
 static int _gwwv_choose_with_buttons(const char *title,
-	const char **choices, int cnt, int def,
+	const char **choices, char *sel, int cnt, int def,
 	const char *butnames[2], const char *msg, va_list va ) {
     char buffer[400];
     GtkWidget *dlg, *lab, *list;
@@ -296,14 +314,24 @@ static int _gwwv_choose_with_buttons(const char *title,
 		    NULL));
     gtk_tree_view_set_headers_visible( GTK_TREE_VIEW(list),FALSE );
     select = gtk_tree_view_get_selection( GTK_TREE_VIEW( list ));
-    gtk_tree_selection_set_mode( select, GTK_SELECTION_SINGLE);
-    if ( def>=0 ) {
-	GtkTreePath *path = gtk_tree_path_new_from_indices(def,-1);
-	/* I don't understand this. If I use selection_single, I can't select */
-	/*  anything. If I use multiple it does what I expect single to do */
-	gtk_tree_selection_select_path(select,path);
-	gtk_tree_view_set_cursor(GTK_TREE_VIEW(list),path,NULL,FALSE);
-	gtk_tree_path_free(path);
+    if ( sel==NULL ) {
+	gtk_tree_selection_set_mode( select, GTK_SELECTION_SINGLE);
+	if ( def>=0 ) {
+	    GtkTreePath *path = gtk_tree_path_new_from_indices(def,-1);
+	    /* I don't understand this. If I use selection_single, I can't select */
+	    /*  anything. If I use multiple it does what I expect single to do */
+	    gtk_tree_selection_select_path(select,path);
+	    gtk_tree_view_set_cursor(GTK_TREE_VIEW(list),path,NULL,FALSE);
+	    gtk_tree_path_free(path);
+	}
+    } else {
+	gtk_tree_selection_set_mode( select, GTK_SELECTION_MULTIPLE);
+	for ( i=0; i<cnt; ++i ) if ( sel[i] ) {
+	    GtkTreePath *path = gtk_tree_path_new_from_indices(i,-1);
+	    gtk_tree_selection_select_path(select,path);
+	    gtk_tree_view_set_cursor(GTK_TREE_VIEW(list),path,NULL,FALSE);
+	    gtk_tree_path_free(path);
+	}
     }
     gtk_widget_show(list);
     gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dlg)->vbox),list);
@@ -312,13 +340,19 @@ static int _gwwv_choose_with_buttons(const char *title,
     if ( result==GTK_RESPONSE_REJECT || result==GTK_RESPONSE_NONE || result==GTK_RESPONSE_DELETE_EVENT)
 	ret = -1;
     else {
-	GList *sel = gtk_tree_selection_get_selected_rows(select,NULL);
+	GList *endsel = gtk_tree_selection_get_selected_rows(select,NULL);
 	if ( sel==NULL )
 	    ret = -1;
 	else {
-	    ret = gtk_tree_path_get_indices(sel->data)[0];
-	    g_list_foreach( sel, (GFunc) gtk_tree_path_free, NULL);
-	    g_list_free( sel );
+	    if ( sel==NULL ) {
+		ret = gtk_tree_path_get_indices(endsel->data)[0];
+	    } else {
+		for ( i=0; i<cnt; ++i ) sel[i] = FALSE;
+		g_list_foreach( endsel, (GFunc) select_me, sel);
+		ret = 0;
+	    }
+	    g_list_foreach( endsel, (GFunc) gtk_tree_path_free, NULL);
+	    g_list_free( endsel );
 	}
     }
     gtk_widget_destroy(dlg);
@@ -333,7 +367,7 @@ int gwwv_choose_with_buttons(const char *title,
     int ret;
 
     va_start(va,msg);
-    ret = _gwwv_choose_with_buttons(title,choices,cnt,def,butnames,msg,va);
+    ret = _gwwv_choose_with_buttons(title,choices,NULL,cnt,def,butnames,msg,va);
     va_end(va);
 return( ret );
 }
@@ -346,7 +380,19 @@ int gwwv_choose(const char *title,
     int ret;
 
     va_start(va,msg);
-    ret = _gwwv_choose_with_buttons(title,choices,cnt,def,buts,msg,va);
+    ret = _gwwv_choose_with_buttons(title,choices,NULL,cnt,def,buts,msg,va);
+    va_end(va);
+return( ret );
+}
+
+int gwwv_choose_multiple(char *title,
+	const char **choices, char *sel, int cnt, char **buts,
+	const char *msg, ... ) {
+    va_list va;
+    int ret;
+
+    va_start(va,msg);
+    ret = _gwwv_choose_with_buttons(title,choices,sel,cnt,-1,(const char **) buts,msg,va);
     va_end(va);
 return( ret );
 }
@@ -462,19 +508,22 @@ return( gwwv_wild_match(pattern, info->filename, TRUE));
 }
 
 static void gwwv_file_def_filters(GtkWidget *dialog, const char *def_name,
-	const struct gwwv_filter filters ) {
+	const struct gwwv_filter *filters ) {
     GtkFileFilter *filter, *standard;
+    int i;
 
     g_object_set(G_OBJECT(dialog),"show-hidden",TRUE,NULL);
     if ( def_name!=NULL ) {
-	char *pt = strrchr( def_name,'/');
+	gsize read, written;
+	char *temp = g_filename_from_utf8(def_name,-1,&read,&written,NULL);
+	char *pt = strrchr( temp,'/');
 	if ( pt!=NULL ) {
-	    char *dir = strndup(def_name,pt-def_name);
-	    gtk_file_chooser_set_current_folder( GTK_FILE_CHOOSER( dialog ), dir );
+	    *pt = '\0';
+	    gtk_file_chooser_set_current_folder( GTK_FILE_CHOOSER( dialog ), temp );
 	    gtk_file_chooser_set_current_name( GTK_FILE_CHOOSER( dialog ), pt+1 );
-	    free(dir);
 	} else
-	    gtk_file_chooser_set_current_name( GTK_FILE_CHOOSER( dialog ), def_name );
+	    gtk_file_chooser_set_current_name( GTK_FILE_CHOOSER( dialog ), temp );
+	free(temp);
     }
     if ( filters!=NULL ) {
 	standard = NULL;
@@ -499,9 +548,10 @@ static void gwwv_file_def_filters(GtkWidget *dialog, const char *def_name,
 }
 
 char *gwwv_open_filename_mult(const char *title, const char *def_name,
-	const struct gwwv_filter filters, int mult ) {
+	const struct gwwv_filter *filters, int mult ) {
     GtkWidget *dialog;
     char *filename = NULL;
+    gsize read, written;
 
     if ( mult )
 	dialog = gtk_file_chooser_dialog_new (title,
@@ -522,17 +572,21 @@ char *gwwv_open_filename_mult(const char *title, const char *def_name,
     gwwv_file_def_filters(dialog,def_name,filters);
 
     filename = NULL;
-    if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT)
-	filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
+    if ( gtk_dialog_run(GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT ) {
+	char *temp = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
+	filename = g_filename_to_utf8(temp,-1,&read,&written,NULL);
+	free(temp);
+    }
 
     gtk_widget_destroy (dialog);
 return( filename );
 }
 
 char *gwwv_save_filename_with_gadget(const char *title, const char *def_name,
-	const struct gwwv_filter filters, GtkWidget *extra ) {
+	const struct gwwv_filter *filters, GtkWidget *extra ) {
     GtkWidget *dialog;
     char *filename = NULL;
+    gsize read, written;
 
     dialog = gtk_file_chooser_dialog_new (title,
 					  NULL,
@@ -545,8 +599,11 @@ char *gwwv_save_filename_with_gadget(const char *title, const char *def_name,
 	gtk_file_chooser_set_extra_widget( GTK_FILE_CHOOSER( dialog ), extra );
 
     filename = NULL;
-    if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT)
-	filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
+    if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT) {
+	char *temp = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
+	filename = g_filename_to_utf8(temp,-1,&read,&written,NULL);
+	free(temp);
+    }
 
     gtk_widget_destroy (dialog);
 return( filename );
@@ -557,24 +614,25 @@ char *gwwv_open_filename(const char *title, const char *def_name,
     struct gwwv_filter filters[3];
 
     if ( filter==NULL )
-return( gwwv_open_filename_mult(title,def_name,NULL,false));
+return( gwwv_open_filename_mult(title,def_name,NULL,FALSE));
     memset(filters,0,sizeof(filters));
     filters[0].name = _("Default");
-    filters[0].wild = filter;
+    filters[0].wild = (char *) filter;
     filters[1].name = _("All");
     filters[1].wild = "*";
-return( gwwv_open_filename_mult(title,def_name,filters,false));
+return( gwwv_open_filename_mult(title,def_name,filters,FALSE));
 }
     
 char *gwwv_saveas_filename(const char *title, const char *def_name,
 	const char *filter) {
+    struct gwwv_filter filters[3];
 
     if ( filter==NULL )
-return( gwwv_save_filename_mult(title,def_name,NULL,false));
+return( gwwv_save_filename_with_gadget(title,def_name,NULL,FALSE));
     memset(filters,0,sizeof(filters));
     filters[0].name = _("Default");
-    filters[0].wild = filter;
+    filters[0].wild = (char *) filter;
     filters[1].name = _("All");
     filters[1].wild = "*";
-return( gwwv_save_filename_with_gadget(title,def_name,filters,false));
+return( gwwv_save_filename_with_gadget(title,def_name,filters,FALSE));
 }

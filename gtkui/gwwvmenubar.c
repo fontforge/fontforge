@@ -97,7 +97,10 @@ static void gww_vmenu_bar_size_allocate (GtkWidget     *widget,
     width = 0;
     for ( i=0, children = vmenu_bar->children; children!=NULL ;
 	    ++i, children=children->next ) {
-	if ( width+arrow_requisition.width <= total_width )
+	if (!GTK_WIDGET_VISIBLE (children->data))
+    continue;
+	if ( width+arrow_requisition.width <= total_width ||
+		( children->next==NULL && width <= total_width ))
 	    goodi = i-1;
 	gtk_widget_size_request (children->data, &child_requisition);
 	if ( width + child_requisition.width > total_width )
