@@ -45,10 +45,10 @@ extern struct compressors compressors[];
 int display_has_alpha;
 
 enum glyphlable { gl_glyph, gl_name, gl_unicode, gl_encoding };
-int default_fv_font_size = 24, default_fv_antialias=true,
-	default_fv_bbsized=true,
-	default_fv_showhmetrics=false, default_fv_showvmetrics=false,
-	default_fv_glyphlabel = gl_glyph;
+extern int default_fv_font_size, default_fv_antialias,
+	default_fv_bbsized;
+int default_fv_showhmetrics=false, default_fv_showvmetrics=false;
+int default_fv_glyphlabel = gl_glyph;
 #define METRICS_BASELINE 0x0000c0
 #define METRICS_ORIGIN	 0xc00000
 #define METRICS_ADVANCE	 0x008000
@@ -96,7 +96,7 @@ static void FVBDFCToSlot(FontView *fv,BDFFont *bdf, BDFChar *bdfc, uint32 *clut)
     int width = gdk_pixbuf_get_width(fv->char_slot);
     int height = gdk_pixbuf_get_height(fv->char_slot);
     int bpl = gdk_pixbuf_get_rowstride(fv->char_slot);
-    gchar *pixel_data = gdk_pixbuf_get_pixels(fv->char_slot), *pt;
+    guchar *pixel_data = gdk_pixbuf_get_pixels(fv->char_slot), *pt;
 
     memset(pixel_data,0,(height-1)*bpl + width*4);	/* Last line is not guaranteed to be bpl long */
     for ( i=bdfc->ymin; i<=bdfc->ymax; ++i ) {
@@ -1241,15 +1241,15 @@ return;
     PasteIntoFV((FontViewBase *) fv,true,NULL);
 }
 
-#ifdef FONTFORGE_CONFIG_PASTEAFTER
 void FontViewMenu_PasteAfter(GtkMenuItem *menuitem, gpointer user_data) {
+#ifdef FONTFORGE_CONFIG_PASTEAFTER
     FontView *fv = FV_From_MI(menuitem);
     int pos = FVAnyCharSelected(fv);
     if ( pos<0 )
 return;
     PasteIntoFV((FontViewBase *) fv,2,NULL);
-}
 #endif
+}
 
 void FontViewMenu_SameGlyphAs(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
@@ -3759,145 +3759,6 @@ return;
 	FVRegenChar(fv,dlist->sc);
 }
 
-SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,EncMap *map,int i) {
-    static char namebuf[100];
-#ifdef FONTFORGE_CONFIG_TYPE3
-    static Layer layers[2];
-#endif
-
-    memset(dummy,'\0',sizeof(*dummy));
-    dummy->color = COLOR_DEFAULT;
-    dummy->layer_cnt = 2;
-#ifdef FONTFORGE_CONFIG_TYPE3
-    dummy->layers = layers;
-#endif
-    if ( sf->cidmaster!=NULL ) {
-	/* CID fonts don't have encodings, instead we must look up the cid */
-	if ( sf->cidmaster->loading_cid_map )
-	    dummy->unicodeenc = -1;
-	else
-	    dummy->unicodeenc = CID2NameUni(FindCidMap(sf->cidmaster->cidregistry,sf->cidmaster->ordering,sf->cidmaster->supplement,sf->cidmaster),
-		    i,namebuf,sizeof(namebuf));
-    } else
-	dummy->unicodeenc = UniFromEnc(i,map->enc);
-
-    if ( sf->cidmaster!=NULL )
-	dummy->name = namebuf;
-    else if ( map->enc->psnames!=NULL && i<map->enc->char_cnt &&
-	    map->enc->psnames[i]!=NULL )
-	dummy->name = map->enc->psnames[i];
-    else if ( dummy->unicodeenc==-1 )
-	dummy->name = NULL;
-    else
-	dummy->name = (char *) StdGlyphName(namebuf,dummy->unicodeenc,sf->uni_interp,sf->for_new_glyphs);
-    if ( dummy->name==NULL ) {
-	/*if ( dummy->unicodeenc!=-1 || i<256 )
-	    dummy->name = ".notdef";
-	else*/ {
-	    int j;
-	    sprintf( namebuf, "NameMe.%d", i);
-	    j=0;
-	    while ( SFFindExistingSlot(sf,-1,namebuf)!=-1 )
-		sprintf( namebuf, "NameMe.%d.%d", i, ++j);
-	    dummy->name = namebuf;
-	}
-    }
-    dummy->width = dummy->vwidth = sf->ascent+sf->descent;
-    if ( dummy->unicodeenc>0 && dummy->unicodeenc<0x10000 &&
-	    iscombining(dummy->unicodeenc)) {
-	/* Mark characters should be 0 width */
-	dummy->width = 0;
-	/* Except in monospaced fonts on windows, where they should be the */
-	/*  same width as everything else */
-    }
-    /* Actually, in a monospace font, all glyphs should be the same width */
-    /*  whether mark or not */
-    if ( sf->pfminfo.panose_set && sf->pfminfo.panose[3]==9 &&
-	    sf->glyphcnt>0 ) {
-	for ( i=sf->glyphcnt-1; i>=0; --i )
-	    if ( SCWorthOutputting(sf->glyphs[i])) {
-		dummy->width = sf->glyphs[i]->width;
-	break;
-	    }
-    }
-    dummy->parent = sf;
-    dummy->orig_pos = 0xffff;
-return( dummy );
-}
-
-static SplineChar *_SFMakeChar(SplineFont *sf,EncMap *map,int enc) {
-    SplineChar dummy, *sc;
-    SplineFont *ssf;
-    int j, real_uni, gid;
-    extern const int cns14pua[], amspua[];
-
-    if ( enc>=map->enccount )
-	gid = -1;
-    else
-	gid = map->map[enc];
-    if ( sf->subfontcnt!=0 && gid!=-1 ) {
-	ssf = NULL;
-	for ( j=0; j<sf->subfontcnt; ++j )
-	    if ( gid<sf->subfonts[j]->glyphcnt ) {
-		ssf = sf->subfonts[j];
-		if ( ssf->glyphs[gid]!=NULL ) {
-return( ssf->glyphs[gid] );
-		}
-	    }
-	sf = ssf;
-    }
-
-    if ( gid==-1 || (sc = sf->glyphs[gid])==NULL ) {
-	if (( map->enc->is_unicodebmp || map->enc->is_unicodefull ) &&
-		( enc>=0xe000 && enc<=0xf8ff ) &&
-		( sf->uni_interp==ui_ams || sf->uni_interp==ui_trad_chinese ) &&
-		( real_uni = (sf->uni_interp==ui_ams ? amspua : cns14pua)[enc-0xe000])!=0 ) {
-	    if ( real_uni<map->enccount ) {
-		SplineChar *sc;
-		/* if necessary, create the real unicode code point */
-		/*  and then make us be a duplicate of it */
-		sc = _SFMakeChar(sf,map,real_uni);
-		map->map[enc] = gid = sc->orig_pos;
-		SCCharChangedUpdate(sc);
-return( sc );
-	    }
-	}
-
-	SCBuildDummy(&dummy,sf,map,enc);
-	if ((sc = SFGetChar(sf,dummy.unicodeenc,dummy.name))!=NULL ) {
-	    map->map[enc] = sc->orig_pos;
-return( sc );
-	}
-	sc = SplineCharCreate();
-	sc->unicodeenc = dummy.unicodeenc;
-	sc->name = copy(dummy.name);
-	sc->width = dummy.width;
-	sc->parent = sf;
-	sc->orig_pos = 0xffff;
-	/*SCLigDefault(sc);*/
-	SFAddGlyphAndEncode(sf,sc,map,enc);
-    }
-return( sc );
-}
-
-SplineChar *SFMakeChar(SplineFont *sf,EncMap *map, int enc) {
-    int gid;
-
-    if ( enc==-1 )
-return( NULL );
-    if ( enc>=map->enccount )
-	gid = -1;
-    else
-	gid = map->map[enc];
-    if ( sf->mm!=NULL && (gid==-1 || sf->glyphs[gid]==NULL) ) {
-	int j;
-	_SFMakeChar(sf->mm->normal,map,enc);
-	for ( j=0; j<sf->mm->instance_count; ++j )
-	    _SFMakeChar(sf->mm->instances[j],map,enc);
-    }
-return( _SFMakeChar(sf,map,enc));
-}
-
 #if !defined(FONTFORGE_CONFIG_NO_WINDOWING_UI)
 static void AddSubPST(SplineChar *sc,struct lookup_subtable *sub,char *variant) {
     PST *pst;
@@ -3981,10 +3842,10 @@ static GdkPixbuf *gdk_pixbuf_rotate(GdkPixbuf *unrot) {
     int orig_width = gdk_pixbuf_get_width(unrot);
     int orig_height = gdk_pixbuf_get_height(unrot);
     int orig_rowstride = gdk_pixbuf_get_rowstride(unrot);
-    gchar *orig_pixels = gdk_pixbuf_get_pixels(unrot);
+    guchar *orig_pixels = gdk_pixbuf_get_pixels(unrot);
     GdkPixbuf *rot = gdk_pixbuf_new(GDK_COLORSPACE_RGB,false,8,orig_height,orig_width);
     int new_rowstride;
-    gchar *new_pixels;
+    guchar *new_pixels;
     int i,j;
     int n = gdk_pixbuf_get_n_channels(unrot);
 
@@ -3994,8 +3855,8 @@ return( NULL );
     new_rowstride = gdk_pixbuf_get_rowstride(rot);
     new_pixels = gdk_pixbuf_get_pixels(rot);
     for ( i=0; i<orig_height; ++i ) for ( j=0; j<orig_width; ++j ) {
-	gchar *orig_p = &orig_pixels[(i*orig_rowstride+j)*n];
-	gchar *new_p = &new_pixels[(j*new_rowstride+i)*3];
+	guchar *orig_p = &orig_pixels[(i*orig_rowstride+j)*n];
+	guchar *new_p = &new_pixels[(j*new_rowstride+i)*3];
 	new_p[0] = orig_p[0];
 	new_p[1] = orig_p[1];
 	new_p[2] = orig_p[2];

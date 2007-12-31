@@ -25041,12 +25041,18 @@ if test "$gww_dopy" = "yes" >/dev/null 2>&1 ; then
   PY=pyhook/setup.py
 fi
 
+GTFF=
+if test -e gtkui/Makefile.in -a \( -e /usr/include/gtk-2.0/gtk/gtk.h -o -e /sw/include/gtk-2.0/gtk/gtk.h \) ; then
+  GTFF=gtkui/Makefile
+fi
+
+
 cp $ac_confdir/Makefile.dynamic.in $ac_confdir/Makefile.in
 cp $ac_confdir/Unicode/Makefile.dynamic.in $ac_confdir/Unicode/Makefile.in
 cp $ac_confdir/gutils/Makefile.dynamic.in $ac_confdir/gutils/Makefile.in
 cp $ac_confdir/gdraw/Makefile.dynamic.in $ac_confdir/gdraw/Makefile.in
 cp $ac_confdir/fontforge/Makefile.dynamic.in $ac_confdir/fontforge/Makefile.in
-                                                                                                    ac_config_files="$ac_config_files Makefile Unicode/Makefile gutils/Makefile gdraw/Makefile fontforge/Makefile po/Makefile plugins/Makefile systemspecific fontforge.pc $PY"
+                                                                                                              ac_config_files="$ac_config_files Makefile Unicode/Makefile gutils/Makefile gdraw/Makefile fontforge/Makefile po/Makefile plugins/Makefile systemspecific fontforge.pc $PY $GTFF"
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -25582,6 +25588,7 @@ do
   "systemspecific" ) CONFIG_FILES="$CONFIG_FILES systemspecific" ;;
   "fontforge.pc" ) CONFIG_FILES="$CONFIG_FILES fontforge.pc" ;;
   "$PY" ) CONFIG_FILES="$CONFIG_FILES $PY" ;;
+  "$GTFF" ) CONFIG_FILES="$CONFIG_FILES $GTFF" ;;
   "inc/config.h" ) CONFIG_HEADERS="$CONFIG_HEADERS inc/config.h" ;;
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
 echo "$as_me: error: invalid argument: $ac_config_target" >&2;}
@@ -26753,6 +26760,7 @@ do
   "systemspecific" ) CONFIG_FILES="$CONFIG_FILES systemspecific" ;;
   "fontforge.pc" ) CONFIG_FILES="$CONFIG_FILES fontforge.pc" ;;
   "$PY" ) CONFIG_FILES="$CONFIG_FILES $PY" ;;
+  "$GTFF" ) CONFIG_FILES="$CONFIG_FILES $GTFF" ;;
   "umap/Makefile" ) CONFIG_FILES="$CONFIG_FILES umap/Makefile" ;;
   "inc/config.h" ) CONFIG_HEADERS="$CONFIG_HEADERS inc/config.h" ;;
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5

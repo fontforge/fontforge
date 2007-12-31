@@ -277,6 +277,9 @@ void SFFindNearTop(void) {
 void SFRestoreNearTop(void) {
 }
 
+void PythonUI_Init(void) {
+}
+
 int ItalicConstrained;
 float arrowAmount, arrowAccelFactor, snapdistance;
 int stop_at_join, updateflex;

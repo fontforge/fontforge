@@ -674,220 +674,224 @@ void InitCursors(void) {
 		    black = { 0xffffffff, 0	, 0	, 0	 },
 		    red   = { 0xffffffff, 0xffff, 0	, 0	 };
 
-    image = gdk_pixmap_create_from_data(NULL,magplus_bits,magplus_width,magplus_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)magplus_bits,magplus_width,magplus_height,
 	    1, &black, &white);
     ct_magplus = gdk_cursor_new_from_pixmap( image,image,&black,&white,magplus_x_hot,
 	    magplus_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,magminus_bits,magminus_width,magminus_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)magminus_bits,magminus_width,magminus_height,
 	    1, &black, &white);
     ct_magminus = gdk_cursor_new_from_pixmap( image,image,&black,&white,magminus_x_hot,
 	    magminus_y_hot);
 
-    image = gdk_pixmap_create_from_data(NULL,pointercur_bits,pointercur_width,pointercur_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)pointercur_bits,pointercur_width,pointercur_height,
 	    1, &black, &white);
-    mask = gdk_pixmap_create_from_data(NULL,pointercurmask_bits,pointercurmask_width,pointercurmask_height,
+    mask = gdk_pixmap_create_from_data(NULL,(guchar *)pointercurmask_bits,pointercurmask_width,pointercurmask_height,
 	    1, &black, &white);
     ct_mypointer = gdk_cursor_new_from_pixmap( image,mask,&black,&white,pointercur_x_hot,
 	    pointercur_y_hot);
 
-    image = gdk_pixmap_create_from_data(NULL,pointercirc_bits,pointercirc_width,pointercirc_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)pointercirc_bits,pointercirc_width,pointercirc_height,
 	    1, &black, &white);
-    mask = gdk_pixmap_create_from_data(NULL,pointercircmask_bits,pointercircmask_width,pointercircmask_height,
+    mask = gdk_pixmap_create_from_data(NULL,(guchar *)pointercircmask_bits,pointercircmask_width,pointercircmask_height,
 	    1, &black, &white);
     ct_circle = gdk_cursor_new_from_pixmap( image,mask,&black,&white,pointercirc_x_hot,
 	    pointercirc_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,pointertri_bits,pointertri_width,pointertri_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)pointertri_bits,pointertri_width,pointertri_height,
 	    1, &black, &white);
-    mask = gdk_pixmap_create_from_data(NULL,pointertrimask_bits,pointertrimask_width,pointertrimask_height,
+    mask = gdk_pixmap_create_from_data(NULL,(guchar *)pointertrimask_bits,pointertrimask_width,pointertrimask_height,
 	    1, &black, &white);
     ct_triangle = gdk_cursor_new_from_pixmap( image,mask,&black,&white,pointertri_x_hot,
 	    pointertri_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,pointersqr_bits,pointersqr_width,pointersqr_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)pointersqr_bits,pointersqr_width,pointersqr_height,
 	    1, &black, &white);
-    mask = gdk_pixmap_create_from_data(NULL,pointersqrmask_bits,pointersqrmask_width,pointersqrmask_height,
+    mask = gdk_pixmap_create_from_data(NULL,(guchar *)pointersqrmask_bits,pointersqrmask_width,pointersqrmask_height,
 	    1, &black, &white);
     ct_square = gdk_cursor_new_from_pixmap( image,mask,&black,&white,pointersqr_x_hot,
 	    pointersqr_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,pencur_bits,pencur_width,pencur_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)pencur_bits,pencur_width,pencur_height,
 	    1, &black, &white);
-    mask = gdk_pixmap_create_from_data(NULL,pencurmask_bits,pencurmask_width,pencurmask_height,
+    mask = gdk_pixmap_create_from_data(NULL,(guchar *)pencurmask_bits,pencurmask_width,pencurmask_height,
 	    1, &black, &white);
     ct_pen = gdk_cursor_new_from_pixmap( image,mask,&black,&white,pencur_x_hot,
 	    pencur_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,setwidthcur_bits,setwidthcur_width,setwidthcur_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)setwidthcur_bits,setwidthcur_width,setwidthcur_height,
 	    1, &black, &white);
-/*    mask = gdk_pixmap_create_from_data(NULL,setwidthcurmask_bits,setwidthcurmask_width,setwidthcurmask_height,
+/*    mask = gdk_pixmap_create_from_data(NULL,(guchar *)setwidthcurmask_bits,setwidthcurmask_width,setwidthcurmask_height,
 	    1, &black, &white);*/
     ct_setwidth = gdk_cursor_new_from_pixmap( image,image,&black,&white,setwidthcur_x_hot,
 	    setwidthcur_y_hot);
 
-    image = gdk_pixmap_create_from_data(NULL,pointerhvcirc_bits,pointerhvcirc_width,pointerhvcirc_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)pointerhvcirc_bits,pointerhvcirc_width,pointerhvcirc_height,
 	    1, &black, &white);
-    mask = gdk_pixmap_create_from_data(NULL,pointerhvcircmask_bits,pointerhvcircmask_width,pointerhvcircmask_height,
+    mask = gdk_pixmap_create_from_data(NULL,(guchar *)pointerhvcircmask_bits,pointerhvcircmask_width,pointerhvcircmask_height,
 	    1, &black, &white);
     ct_hvcircle = gdk_cursor_new_from_pixmap( image,mask,&black,&white,pointerhvcirc_x_hot,
 	    pointerhvcirc_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,pointerg2circ_bits,pointerg2circ_width,pointerg2circ_height,
+#if _CursorsMustBe16x16
+    ct_g2circle = ct_hvcircle;
+#else
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)pointerg2circ_bits,pointerg2circ_width,pointerg2circ_height,
 	    1, &black, &white);
-    mask = gdk_pixmap_create_from_data(NULL,pointerg2circmask_bits,pointerg2circmask_width,pointerg2circmask_height,
+    mask = gdk_pixmap_create_from_data(NULL,(guchar *)pointerg2circmask_bits,pointerg2circmask_width,pointerg2circmask_height,
 	    1, &black, &white);
     ct_g2circle = gdk_cursor_new_from_pixmap( image,mask,&black,&white,pointerg2circ_x_hot,
 	    pointerg2circ_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,pointerright_bits,pointerright_width,pointerright_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)pointerright_bits,pointerright_width,pointerright_height,
 	    1, &black, &white);
-    mask = gdk_pixmap_create_from_data(NULL,pointerrightmask_bits,pointerrightmask_width,pointerrightmask_height,
+#endif
+    mask = gdk_pixmap_create_from_data(NULL,(guchar *)pointerrightmask_bits,pointerrightmask_width,pointerrightmask_height,
 	    1, &black, &white);
     ct_spiroright = gdk_cursor_new_from_pixmap( image,mask,&black,&white,pointerright_x_hot,
 	    pointerright_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,pointerleft_bits,pointerleft_width,pointerleft_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)pointerleft_bits,pointerleft_width,pointerleft_height,
 	    1, &black, &white);
-    mask = gdk_pixmap_create_from_data(NULL,pointerleftmask_bits,pointerleftmask_width,pointerleftmask_height,
+    mask = gdk_pixmap_create_from_data(NULL,(guchar *)pointerleftmask_bits,pointerleftmask_width,pointerleftmask_height,
 	    1, &black, &white);
     ct_spiroleft = gdk_cursor_new_from_pixmap( image,mask,&black,&white,pointerleft_x_hot,
 	    pointerleft_y_hot);
 
-    image = gdk_pixmap_create_from_data(NULL,rulercur_bits,rulercur_width,rulercur_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)rulercur_bits,rulercur_width,rulercur_height,
 	    1, &black, &white);
     ct_ruler = gdk_cursor_new_from_pixmap( image,image,&black,&white,rulercur_x_hot,
 	    rulercur_y_hot);
 
-    image = gdk_pixmap_create_from_data(NULL,knifecur_bits,knifecur_width,knifecur_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)knifecur_bits,knifecur_width,knifecur_height,
 	    1, &black, &white);
-    mask = gdk_pixmap_create_from_data(NULL,knifecurmask_bits,knifecurmask_width,knifecurmask_height,
+    mask = gdk_pixmap_create_from_data(NULL,(guchar *)knifecurmask_bits,knifecurmask_width,knifecurmask_height,
 	    1, &black, &white);
     ct_knife = gdk_cursor_new_from_pixmap( image,mask,&black,&white,knifecur_x_hot,
 	    knifecur_y_hot);
 
-    image = gdk_pixmap_create_from_data(NULL,flipcur_bits,flipcur_width,flipcur_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)flipcur_bits,flipcur_width,flipcur_height,
 	    1, &black, &white);
-    mask = gdk_pixmap_create_from_data(NULL,flipcurmask_bits,flipcurmask_width,flipcurmask_height,
+    mask = gdk_pixmap_create_from_data(NULL,(guchar *)flipcurmask_bits,flipcurmask_width,flipcurmask_height,
 	    1, &black, &white);
     ct_flip = gdk_cursor_new_from_pixmap( image,mask,&red,&white,flipcur_x_hot,
 	    flipcur_y_hot);
 
-    image = gdk_pixmap_create_from_data(NULL,rotatecur_bits,rotatecur_width,rotatecur_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)rotatecur_bits,rotatecur_width,rotatecur_height,
 	    1, &black, &white);
     ct_rotate = gdk_cursor_new_from_pixmap( image,image,&red,&white,rotatecur_x_hot,
 	    rotatecur_y_hot);
 
-    image = gdk_pixmap_create_from_data(NULL,scalecur_bits,scalecur_width,scalecur_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)scalecur_bits,scalecur_width,scalecur_height,
 	    1, &black, &white);
-    mask = gdk_pixmap_create_from_data(NULL,scalecurmask_bits,scalecur_width,scalecur_height,
+    mask = gdk_pixmap_create_from_data(NULL,(guchar *)scalecurmask_bits,scalecur_width,scalecur_height,
 	    1, &black, &white);
     ct_scale = gdk_cursor_new_from_pixmap( image,mask,&red,&white,scalecur_x_hot,
 	    scalecur_y_hot);
 
-    image = gdk_pixmap_create_from_data(NULL,skewcur_bits,skewcur_width,skewcur_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)skewcur_bits,skewcur_width,skewcur_height,
 	    1, &black, &white);
-    mask = gdk_pixmap_create_from_data(NULL,skewcurmask_bits,skewcur_width,skewcur_height,
+    mask = gdk_pixmap_create_from_data(NULL,(guchar *)skewcurmask_bits,skewcur_width,skewcur_height,
 	    1, &black, &white);
     ct_skew = gdk_cursor_new_from_pixmap( image,mask,&red,&white,skewcur_x_hot,
 	    skewcur_y_hot);
 
-    image = gdk_pixmap_create_from_data(NULL,rotate3dcur_bits,rotate3dcur_width,rotate3dcur_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)rotate3dcur_bits,rotate3dcur_width,rotate3dcur_height,
 	    1, &black, &white);
     ct_3drotate = gdk_cursor_new_from_pixmap( image,image,&red,&white,rotate3dcur_x_hot,
 	    rotate3dcur_y_hot);
 
-    image = gdk_pixmap_create_from_data(NULL,perspectivecur_bits,perspectivecur_width,perspectivecur_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)perspectivecur_bits,perspectivecur_width,perspectivecur_height,
 	    1, &black, &white);
     ct_perspective = gdk_cursor_new_from_pixmap( image,image,&red,&white,perspectivecur_x_hot,
 	    perspectivecur_y_hot);
 
-    image = gdk_pixmap_create_from_data(NULL,rectcur_bits,rectcur_width,rectcur_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)rectcur_bits,rectcur_width,rectcur_height,
 	    1, &black, &white);
     ct_rect = gdk_cursor_new_from_pixmap( image,image,&red,&white,rectcur_x_hot,
 	    rectcur_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,elipsecur_bits,elipsecur_width,elipsecur_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)elipsecur_bits,elipsecur_width,elipsecur_height,
 	    1, &black, &white);
     ct_elipse = gdk_cursor_new_from_pixmap( image,image,&red,&white,elipsecur_x_hot,
 	    elipsecur_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,polycur_bits,polycur_width,polycur_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)polycur_bits,polycur_width,polycur_height,
 	    1, &black, &white);
     ct_poly = gdk_cursor_new_from_pixmap( image,image,&red,&white,polycur_x_hot,
 	    polycur_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,starcur_bits,starcur_width,starcur_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)starcur_bits,starcur_width,starcur_height,
 	    1, &black, &white);
     ct_star = gdk_cursor_new_from_pixmap( image,image,&red,&white,starcur_x_hot,
 	    starcur_y_hot);
 
 
-    image = gdk_pixmap_create_from_data(NULL,nwse_bits,nwse_width,nwse_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)nwse_bits,nwse_width,nwse_height,
 	    1, &black, &white);
     ct_nwse = gdk_cursor_new_from_pixmap( image,image,&red,&white,nwse_x_hot,
 	    nwse_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,nesw_bits,nesw_width,nesw_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)nesw_bits,nesw_width,nesw_height,
 	    1, &black, &white);
     ct_nesw = gdk_cursor_new_from_pixmap( image,image,&red,&white,nesw_x_hot,
 	    nesw_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,leftright_bits,leftright_width,leftright_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)leftright_bits,leftright_width,leftright_height,
 	    1, &black, &white);
     ct_leftright = gdk_cursor_new_from_pixmap( image,image,&red,&white,leftright_x_hot,
 	    leftright_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,updown_bits,updown_width,updown_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)updown_bits,updown_width,updown_height,
 	    1, &black, &white);
     ct_updown = gdk_cursor_new_from_pixmap( image,image,&red,&white,updown_x_hot,
 	    updown_y_hot);
 
-    image = gdk_pixmap_create_from_data(NULL,pencil_bits,pencil_width,pencil_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)pencil_bits,pencil_width,pencil_height,
 	    1, &black, &white);
-    mask = gdk_pixmap_create_from_data(NULL,pencilmask_bits,pencil_width,pencil_height,
+    mask = gdk_pixmap_create_from_data(NULL,(guchar *)pencilmask_bits,pencil_width,pencil_height,
 	    1, &black, &white);
     ct_pencil = gdk_cursor_new_from_pixmap( image,mask,&red,&white,pencil_x_hot,
 	    pencil_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,eyedropper_bits,eyedropper_width,eyedropper_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)eyedropper_bits,eyedropper_width,eyedropper_height,
 	    1, &black, &white);
-    mask = gdk_pixmap_create_from_data(NULL,eyedroppermask_bits,eyedropper_width,eyedropper_height,
+    mask = gdk_pixmap_create_from_data(NULL,(guchar *)eyedroppermask_bits,eyedropper_width,eyedropper_height,
 	    1, &black, &white);
     ct_eyedropper = gdk_cursor_new_from_pixmap( image,mask,&red,&white,eyedropper_x_hot,
 	    eyedropper_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,shift_bits,shift_width,shift_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)shift_bits,shift_width,shift_height,
 	    1, &black, &white);
     ct_shift = gdk_cursor_new_from_pixmap( image,image,&red,&white,shift_x_hot,
 	    shift_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,linecur_bits,linecur_width,linecur_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)linecur_bits,linecur_width,linecur_height,
 	    1, &black, &white);
     ct_line = gdk_cursor_new_from_pixmap( image,image,&red,&white,linecur_x_hot,
 	    linecur_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,hand_bits,hand_width,hand_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)hand_bits,hand_width,hand_height,
 	    1, &black, &white);
-    mask = gdk_pixmap_create_from_data(NULL,handmask_bits,hand_width,hand_height,
+    mask = gdk_pixmap_create_from_data(NULL,(guchar *)handmask_bits,hand_width,hand_height,
 	    1, &black, &white);
     ct_myhand = gdk_cursor_new_from_pixmap( image,mask,&red,&white,hand_x_hot,
 	    hand_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,filledrectcur_bits,filledrectcur_width,filledrectcur_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)filledrectcur_bits,filledrectcur_width,filledrectcur_height,
 	    1, &black, &white);
     ct_filledrect = gdk_cursor_new_from_pixmap( image,image,&red,&white,filledrectcur_x_hot,
 	    filledrectcur_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,filledelipsecur_bits,filledelipsecur_width,filledelipsecur_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)filledelipsecur_bits,filledelipsecur_width,filledelipsecur_height,
 	    1, &black, &white);
     ct_filledelipse = gdk_cursor_new_from_pixmap( image,image,&red,&white,filledelipsecur_x_hot,
 	    filledelipsecur_y_hot);
 
-    image = gdk_pixmap_create_from_data(NULL,kerncur_bits,kerncur_width,kerncur_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)kerncur_bits,kerncur_width,kerncur_height,
 	    1, &black, &white);
-    mask = gdk_pixmap_create_from_data(NULL,rbearmask_bits,kerncur_width,kerncur_height,
+    mask = gdk_pixmap_create_from_data(NULL,(guchar *)rbearmask_bits,kerncur_width,kerncur_height,
 	    1, &black, &white);
     ct_kerning = gdk_cursor_new_from_pixmap( image,mask,&red,&white,kerncur_x_hot,
 	    kerncur_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,rbearcur_bits,rbearcur_width,rbearcur_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)rbearcur_bits,rbearcur_width,rbearcur_height,
 	    1, &black, &white);
     ct_rbearing = gdk_cursor_new_from_pixmap( image,mask,&red,&white,rbearcur_x_hot,
 	    rbearcur_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,lbearcur_bits,lbearcur_width,lbearcur_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)lbearcur_bits,lbearcur_width,lbearcur_height,
 	    1, &black, &white);
-    mask = gdk_pixmap_create_from_data(NULL,lbearmask_bits,lbearcur_width,lbearcur_height,
+    mask = gdk_pixmap_create_from_data(NULL,(guchar *)lbearmask_bits,lbearcur_width,lbearcur_height,
 	    1, &black, &white);
     ct_lbearing = gdk_cursor_new_from_pixmap( image,mask,&red,&white,lbearcur_x_hot,
 	    lbearcur_y_hot);
 
-    image = gdk_pixmap_create_from_data(NULL,prohibition_bits,prohibition_width,prohibition_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)prohibition_bits,prohibition_width,prohibition_height,
 	    1, &black, &white);
-    mask = gdk_pixmap_create_from_data(NULL,prohibitionmask_bits,prohibition_width,prohibition_height,
+    mask = gdk_pixmap_create_from_data(NULL,(guchar *)prohibitionmask_bits,prohibition_width,prohibition_height,
 	    1, &black, &white);
     ct_prohibition = gdk_cursor_new_from_pixmap( image,mask,&red,&white,prohibition_x_hot,
 	    prohibition_y_hot);
-    image = gdk_pixmap_create_from_data(NULL,ddcursor_bits,ddcursor_width,ddcursor_height,
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)ddcursor_bits,ddcursor_width,ddcursor_height,
 	    1, &black, &white);
     ct_ddcursor = gdk_cursor_new_from_pixmap( image,image,&red,&white,ddcursor_x_hot,
 	    ddcursor_y_hot);
@@ -896,7 +900,7 @@ void InitCursors(void) {
     ct_4way = gdk_cursor_new(GDK_FLEUR);
     ct_watch = gdk_cursor_new(GDK_WATCH);
     ct_draganddrop = gdk_cursor_new(GDK_RIGHT_PTR);
-    image = gdk_pixmap_create_from_data(NULL,zeroes,16,16, 1, &black, &white);
+    image = gdk_pixmap_create_from_data(NULL,(guchar *)zeroes,16,16, 1, &black, &white);
     ct_invisible = gdk_cursor_new_from_pixmap( image,image,&red,&white,0,0);
     /*ct_backpointer = gdk_cursor_new(GDK_RIGHT_PTR);*/
     /*ct_hand = gdk_cursor_new(GDK_HAND2);*/
