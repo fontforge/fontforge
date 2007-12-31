@@ -543,7 +543,7 @@ int main( int argc, char **argv ) {
     gtk_init (&argc, &argv);
 
 #if defined(SHAREDIR)
-    add_pixmap_directory( SHAREDIR "/fontforge" "/pixmaps");
+    add_pixmap_directory( SHAREDIR "/pixmaps");
 #elif defined(PREFIX)
     add_pixmap_directory( PREFIX "/share/fontforge/pixmaps" );
 #else

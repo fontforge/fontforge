@@ -36,12 +36,16 @@ pos:
 	-ln -s $(srcdir)/po/*.po po
 	( cd po ; $(MAKE) )
 
+fontforgegtk: fontforge
+	( cd gtkui ; make )
+
 clean:
 	( cd fontforge ; $(MAKE) clean )
 	( cd Unicode ; $(MAKE) clean )
 	( cd gutils ; $(MAKE) clean )
 	( cd gdraw ; $(MAKE) clean )
 	( cd plugins ; $(MAKE) clean )
+	-( cd gtkui ; $(MAKE) clean )
 	-( cd po ; rm *.mo )
 	-( cd pyhook ; rm -rf build dist )
 	-rm -rf .libs
@@ -52,6 +56,7 @@ distclean cleaner:
 	( cd gutils ; $(MAKE) distclean )
 	( cd gdraw ; $(MAKE) distclean )
 	( cd plugins ; $(MAKE) distclean )
+	-( cd gtkui ; $(MAKE) distclean )
 	-( cd po ; rm *.mo Makefile* )
 	-( cd pyhook ; rm -rf build dist setup.py )
 	-rm -rf .libs
@@ -123,6 +128,9 @@ install_py: $(DESTDIR)$(sharedir) all install_libs install_incs install_po insta
 	sh -c "if test -d $(srcdir)/htdocs >/dev/null ; then $(MAKE) install_docs ; fi"
 	sh < systemspecific
 	-(cd pyhook ; python setup.py bdist --formats=gztar ; cp dist/fontforge-*.tar.gz $(DESTDIR)/tmp )
+
+install_gtk: fontforgegtk
+	(cd gtkui ; make install )
 
 uninstall:
 	-rm $(DESTDIR)$(bindir)/fontforge

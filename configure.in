@@ -695,12 +695,18 @@ if test "$gww_dopy" = "yes" >/dev/null 2>&1 ; then
   PY=pyhook/setup.py
 fi
 
+GTFF=
+if test -e gtkui/Makefile.in -a \( -e /usr/include/gtk-2.0/gtk/gtk.h -o -e /sw/include/gtk-2.0/gtk/gtk.h \) ; then
+  GTFF=gtkui/Makefile
+fi
+
+
 cp $ac_confdir/Makefile.dynamic.in $ac_confdir/Makefile.in
 cp $ac_confdir/Unicode/Makefile.dynamic.in $ac_confdir/Unicode/Makefile.in
 cp $ac_confdir/gutils/Makefile.dynamic.in $ac_confdir/gutils/Makefile.in
 cp $ac_confdir/gdraw/Makefile.dynamic.in $ac_confdir/gdraw/Makefile.in
 cp $ac_confdir/fontforge/Makefile.dynamic.in $ac_confdir/fontforge/Makefile.in
-AC_OUTPUT(Makefile Unicode/Makefile gutils/Makefile gdraw/Makefile fontforge/Makefile po/Makefile plugins/Makefile systemspecific fontforge.pc $PY)
+AC_OUTPUT(Makefile Unicode/Makefile gutils/Makefile gdraw/Makefile fontforge/Makefile po/Makefile plugins/Makefile systemspecific fontforge.pc $PY $GTFF )
 if test -e umap >/dev/null 2>&1 ; then
   cp $ac_confdir/umap/Makefile.dynamic.in $ac_confdir/umap/Makefile.in
   AC_OUTPUT( umap/Makefile )

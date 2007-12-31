@@ -26,6 +26,7 @@
  */
 #include "fontforgegtk.h"
 # include <fontforge/gfile.h>
+# include <fontforge/ustring.h>
 # include <gtk/gtk.h>
 # include <gdk/gdkkeysyms.h>
 # include "gwwvask.h"
@@ -261,7 +262,7 @@ char *FVOpenFont(const char *title, const char *def_name, int mult ) {
     if ( def_name!=NULL ) {
 	char *pt = strrchr( def_name,'/');
 	if ( pt!=NULL ) {
-	    char *dir = strndup(def_name,pt-def_name);
+	    char *dir = copyn(def_name,pt-def_name);
 	    gtk_file_chooser_set_current_folder( GTK_FILE_CHOOSER( dialog ), dir );
 	    gtk_file_chooser_set_current_name( GTK_FILE_CHOOSER( dialog ), pt+1 );
 	    free(dir);
