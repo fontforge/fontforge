@@ -1890,7 +1890,7 @@ return( into );
 static DStemInfo *RefDHintsMerge( SplineFont *sf,DStemInfo *into,DStemInfo *rh,
     real xmul,real xoffset,real ymul,real yoffset ) {
     DStemInfo *new;
-    double dmul, doff;
+    double dmul;
 
     for ( ; rh!=NULL; rh=rh->next ) {
 	new = chunkalloc( sizeof( DStemInfo ));
@@ -1906,8 +1906,7 @@ static DStemInfo *RefDHintsMerge( SplineFont *sf,DStemInfo *into,DStemInfo *rh,
         dmul = sqrt( pow( new->unit.x,2 ) + pow( new->unit.y,2 ));
         new->unit.x /= dmul; new->unit.y /= dmul;
         if ( xmul < 0 ) dmul = -dmul;
-        doff = xoffset * new->unit.x + yoffset * new->unit.y;
-        new->where = HICopyTrans( rh->where,dmul,doff );
+        new->where = HICopyTrans( rh->where,dmul,0 );
         
 	MergeDStemInfo( sf,&into,new );
     }
@@ -3046,10 +3045,9 @@ return( head );
 }
 
 static DStemInfo *GDFindDStems(struct glyphdata *gd) {
-    int i, j;
+    int i;
     DStemInfo *head = NULL, *cur ;
     struct stemdata *stem;
-    BasePoint *bp[4];
 
     for ( i=0; i<gd->stemcnt; ++i ) {
 	stem = &gd->stems[i];
