@@ -3021,9 +3021,6 @@ create_FontView (void)
   g_signal_connect ((gpointer) compare_fonts1, "activate",
                     G_CALLBACK (FontViewMenu_CompareFonts),
                     NULL);
-  g_signal_connect ((gpointer) tools3, "activate",
-                    G_CALLBACK (FontViewMenu_ToolsActivate),
-                    NULL);
   g_signal_connect ((gpointer) hints1, "activate",
                     G_CALLBACK (FontViewMenu_ActivateHints),
                     NULL);

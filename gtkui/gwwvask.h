@@ -1,8 +1,6 @@
 #ifndef _GWWVASK_H
 #define _GWWVASK_H
 
-extern char *strndup(const char *str, int n);
-
 extern void gwwv_post_notice(const char *title, const char *msg, ... );
 extern void gwwv_post_error(const char *title, const char *msg, ... );
 extern void gwwv_ierror(const char *msg, ... );

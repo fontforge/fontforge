@@ -518,7 +518,11 @@ extern void FVAutoWidth(FontView *fv);
 
 extern void SC_MarkInstrDlgAsChanged(SplineChar *sc);
 
+#ifndef _NO_PYTHON
+extern void PyFF_BuildFVToolsMenu(FontView *fv,GtkMenuItem *tools);
+extern void PyFF_BuildCVToolsMenu(CharView *cv,GtkMenuItem *tools);
 extern void PythonUI_Init(void);
+#endif
 
 extern void SCStroke(SplineChar *sc);
 
