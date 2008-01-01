@@ -23,7 +23,7 @@ X_PRE_LIBS = @X_PRE_LIBS@
 STATIC_LIBS = @STATIC_LIBS@
 
 ffgtk_OBJECTS = fontview.o startgtk.o uiutil.o cursors.o windowmenu.o prefs.o \
-    openfontdlg.o stamp.o
+    openfontdlg.o stamp.o pythonui.o
 gtk_widget_OBJECTS = gwwvmenubar.o gwwvask.o
 glade_OBJECTS = ff_interface.o support.o
 

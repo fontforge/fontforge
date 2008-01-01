@@ -1082,13 +1082,13 @@ void FontViewMenu_Print(GtkMenuItem *menuitem, gpointer user_data) {
     PrintDlg(fv,NULL,NULL);
 }
 
-#if !defined(_NO_FFSCRIPT) || !defined(_NO_PYTHON)
 void FontViewMenu_ExecScript(GtkMenuItem *menuitem, gpointer user_data) {
+#if !defined(_NO_FFSCRIPT) || !defined(_NO_PYTHON)
     FontView *fv = FV_From_MI(menuitem);
 
     ScriptDlg(fv,NULL);
-}
 #endif
+}
 
 void FontViewMenu_FontInfo(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
@@ -3125,10 +3125,6 @@ void FontViewMenu_ActivateTransformations(GtkMenuItem *menuitem, gpointer user_d
 
     w = lookup_widget( GTK_WIDGET(menuitem), "non_linear_transform1" );
     gtk_widget_set_sensitive(w,anychars && !sf->onlybitmaps);
-}
-
-void FontViewMenu_ToolsActivate(GtkMenuItem *menuitem, gpointer user_data) {
-    /* !!!!! Python menus */
 }
 
 struct fv_any {
@@ -5305,7 +5301,10 @@ static FontView *FontView_Create(SplineFont *sf) {
     g_object_set_data( G_OBJECT(fv->gw), "ffdata", fv );
     g_object_set_data( G_OBJECT(fv->v) , "ffdata", fv );
 
-/* Python menu!!!!! */
+#ifndef _NO_PYTHON
+    PyFF_BuildFVToolsMenu(fv,GTK_MENU_ITEM(lookup_widget(fv->gw,"tools3")));
+#endif
+
     fv->showhmetrics = default_fv_showhmetrics;
     fv->showvmetrics = default_fv_showvmetrics && sf->hasvmetrics;
     if ( fv->b.nextsame!=NULL ) {
