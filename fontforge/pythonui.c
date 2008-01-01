@@ -151,7 +151,7 @@ void fvpy_tllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontViewBase *fv = (FontViewBase *) GDrawGetUserData(gw);
     PyObject *pyfv = PyFV_From_FV(fv);
 
-    if ( cvpy_menu_data==NULL )
+    if ( fvpy_menu_data==NULL )
 return;
 
     fv_active_in_ui = fv;
