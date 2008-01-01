@@ -132,6 +132,7 @@ struct stemdata {
     struct stembundle *bundle;
     double lpos, rpos;		/* When placed in a bundle, relative to the bundle's basepoint in l_to_r */
     double lnew, rnew;		/* New position of left, right edges relative to bp,l_to_r */
+    int lpcnt, rpcnt;           /* Count of points assigned to left and right edges of this stem */
     struct linedata *leftline, *rightline;
 };
 

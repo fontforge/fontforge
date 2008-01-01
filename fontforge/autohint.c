@@ -3063,38 +3063,18 @@ static DStemInfo *GDFindDStems(struct glyphdata *gd) {
 	if ( stem->toobig || stem->len==0 || stem->activecnt >= stem->chunk_cnt )
     continue;
 	
-        if ( ( stem->unit.y > -.05 && stem->unit.y < .05 ) || 
-             ( stem->unit.x > -.05 && stem->unit.x < .05 ) )
+        if (( stem->unit.y > -.05 && stem->unit.y < .05 ) || 
+            ( stem->unit.x > -.05 && stem->unit.x < .05 ))
     continue;
         
-        for ( j=0; j<4; j++ ) bp[j]=NULL;
-        for ( j=0; j<stem->chunk_cnt; j++ ) {
-            struct stem_chunk *chunk = &stem->chunks[j];
-            if ( bp[0] == NULL && chunk->l != NULL && !chunk->lpotential )
-                bp[0] = &chunk->l->sp->me;
-            if ( bp[1] == NULL && chunk->r != NULL && !chunk->rpotential )
-                bp[1] = &chunk->l->sp->me;
-            if ( bp[0] != NULL && bp[1] != NULL )
-        break;
-        }
-        for ( j=stem->chunk_cnt-1; j>=0; j-- ) {
-            struct stem_chunk *chunk = &stem->chunks[j];
-            if ( bp[3] == NULL && chunk->l != NULL && !chunk->lpotential )
-                bp[3] = &chunk->l->sp->me;
-            if ( bp[2] == NULL && chunk->r != NULL && !chunk->rpotential )
-                bp[2] = &chunk->l->sp->me;
-            if ( bp[3] != NULL && bp[2] != NULL )
-        break;
-        }
-        
-        if ( bp[0]!=NULL && bp[1]!=NULL && bp[0]!=bp[2] && bp[1]!=bp[3] ) {
-	    cur = chunkalloc( sizeof(DStemInfo) );
-            cur->left = stem->left;
-            cur->right = stem->right;
-            cur->unit = stem->unit;
-            MergeDStemInfo( gd->sf,&head,cur );
-	    cur->where = DStemAddHIFromActive( stem );
-        }
+	if ( stem->lpcnt < 2 || stem->rpcnt < 2 )
+    continue;
+        cur = chunkalloc( sizeof(DStemInfo) );
+        cur->left = stem->left;
+        cur->right = stem->right;
+        cur->unit = stem->unit;
+        MergeDStemInfo( gd->sf,&head,cur );
+	cur->where = DStemAddHIFromActive( stem );
     }
 return( head );
 }

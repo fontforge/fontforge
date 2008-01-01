@@ -1041,7 +1041,7 @@ static struct stem_chunk *AddToStem( struct stemdata *stem,struct pointdata *pd1
     double min=0, max=0;
     int i;
 
-    if ( cheat ) is_potential2 = false;
+    if ( cheat || stem->positioned ) is_potential2 = false;
     /* Diagonals are harder to align */
     dist_error = IsVectorHV( dir,0,true ) ? dist_error_hv : dist_error_diag;
     max = stem->lmax;
@@ -1392,6 +1392,7 @@ static struct stemdata *NewStem(struct glyphdata *gd,BasePoint *dir,
     stem->leftline = stem->rightline = NULL;
     stem->lmin = stem->lmax = 0;
     stem->rmin = stem->rmax = 0;
+    stem->lpcnt = stem->rpcnt = 0;
     stem->chunks = NULL;
     stem->chunk_cnt = 0;
     stem->ghost = stem->bbox = false;
@@ -2483,8 +2484,7 @@ static int WalkSpline( struct glyphdata *gd, SplinePoint *sp,int gonext,
 	pos.y = ((s->splines[1].a*t+s->splines[1].b)*t+s->splines[1].c)*t+s->splines[1].d;
 	diff = (pos.x - base->x)*stem->l_to_r.x +
                (pos.y - base->y)*stem->l_to_r.y;
-	if ( diff > min && diff < max && 
-            ( check_curved || StillStem( gd,err,&pos,stem ))) {
+	if ( diff > min && diff < max && StillStem( gd,err,&pos,stem )) {
 	    good = pos;
 	    t += incr;
 	} else
@@ -3559,117 +3559,130 @@ static void UpdateActive( struct stemdata *stem,BasePoint lold ) {
     }
 }
 
-static void NormalizeStems( struct glyphdata *gd ) {
-    int i, j, k;
+static void NormalizeStem( struct glyphdata *gd,struct stemdata *stem ) {
+    int i, j;
     int *lposval, *rposval;
     int pos, testpos;
     double loff, roff;
     BasePoint lold, rold;
     
-    for ( i=0; i<gd->stemcnt; ++i ) {
-        struct stemdata *stem = &gd->stems[i];
-        /* First sort the stem chunks by their coordinates */
-        if ( IsVectorHV( &stem->unit,0,true )) {
-            qsort( stem->chunks,stem->chunk_cnt,sizeof( struct stem_chunk ),chunk_cmp );
-        
-            /* For HV stems we have to check all chunks once more in order
-            /* to figure out "left" and "right" positions most typical
-            /* for this stem. We perform this by assigning a value to
-            /* left and right side of this chunk. Each position which repeats 
-            /* more than once gets a plus 1 value bonus */
-            lposval = galloc( stem->chunk_cnt * sizeof( int ));
-            rposval = galloc( stem->chunk_cnt * sizeof( int ));
+    /* First sort the stem chunks by their coordinates */
+    if ( IsVectorHV( &stem->unit,0,true )) {
+        qsort( stem->chunks,stem->chunk_cnt,sizeof( struct stem_chunk ),chunk_cmp );
 
-            for ( j=0; j<stem->chunk_cnt; ++j ) {
-                struct stem_chunk *chunk = &stem->chunks[j];
-                int is_x = (int) rint( stem->unit.y );
-                
-                lposval[j] = 0;
-                if ( chunk->l != NULL && !chunk->lpotential  ) {
-                    pos = ((real *) &chunk->l->sp->me.x)[!is_x];
-                    int lval = 0;
-                    for ( k=0; k<j; k++ ) if ( stem->chunks[k].l != NULL ) {
-                        testpos = ((real *) &stem->chunks[k].l->sp->me.x)[!is_x];
-                        if ( pos == testpos ) {
-                            lval = lposval[k]; ++lposval[k];
-                        }
-                    }
-                    lposval[j] = lval+1;
-                }
+        /* For HV stems we have to check all chunks once more in order
+        /* to figure out "left" and "right" positions most typical
+        /* for this stem. We perform this by assigning a value to
+        /* left and right side of this chunk. Each position which repeats 
+        /* more than once gets a plus 1 value bonus */
+        lposval = galloc( stem->chunk_cnt * sizeof( int ));
+        rposval = galloc( stem->chunk_cnt * sizeof( int ));
 
-                rposval[j] = 0;
-                if ( chunk->r != NULL && !chunk->rpotential ) {
-                    pos = ((real *) &chunk->r->sp->me.x)[!is_x];
-                    int rval = 0;
-                    for ( k=0; k<j; k++ ) if ( stem->chunks[k].r != NULL ) {
-                        testpos = ((real *) &stem->chunks[k].r->sp->me.x)[!is_x];
-                        if ( pos == testpos ) {
-                            rval = rposval[k]; ++rposval[k];
-                        }
+        for ( i=0; i<stem->chunk_cnt; ++i ) {
+            struct stem_chunk *chunk = &stem->chunks[i];
+            int is_x = (int) rint( stem->unit.y );
+
+            lposval[i] = 0;
+            if ( chunk->l != NULL && !chunk->lpotential  ) {
+                pos = ((real *) &chunk->l->sp->me.x)[!is_x];
+                int lval = 0;
+                for ( j=0; j<i; j++ ) if ( stem->chunks[j].l != NULL ) {
+                    testpos = ((real *) &stem->chunks[j].l->sp->me.x)[!is_x];
+                    if ( pos == testpos ) {
+                        lval = lposval[j]; ++lposval[j];
                     }
-                    rposval[j] = rval+1;
                 }
+                lposval[i] = lval+1;
             }
-            
-            
-            int best = -1; int val = 0;
-            for ( j=0; j<stem->chunk_cnt; ++j ) {
-                if ( lposval[j] > 0 && rposval[j] > 0 &&
-                    ( lposval[j] + rposval[j] ) > val ) {
-                    best = j;
-                    val = lposval[j] + rposval[j];
+
+            rposval[j] = 0;
+            if ( chunk->r != NULL && !chunk->rpotential ) {
+                pos = ((real *) &chunk->r->sp->me.x)[!is_x];
+                int rval = 0;
+                for ( j=0; j<i; j++ ) if ( stem->chunks[j].r != NULL ) {
+                    testpos = ((real *) &stem->chunks[j].r->sp->me.x)[!is_x];
+                    if ( pos == testpos ) {
+                        rval = rposval[j]; ++rposval[j];
+                    }
                 }
+                rposval[i] = rval+1;
             }
-            if ( best > -1 ) {
-                lold = stem->left;
-                rold = stem->right;
-                stem->left = stem->chunks[best].l->sp->me;
-                stem->right = stem->chunks[best].r->sp->me;
-                /* Now assign "left" and "right" properties of the stem
-                /* to point coordinates taken from the most "typical" chunk
-                /* of this stem. We also have to recalculate stem width and
-                /* left/right offset values */
-                loff = ( stem->left.x - lold.x ) * stem->unit.y -
-                       ( stem->left.y - lold.y ) * stem->unit.x;
-                roff = ( stem->right.x - rold.x ) * stem->unit.y -
-                       ( stem->right.y - rold.y ) * stem->unit.x;
-                
-                stem->lmin -= loff; stem->lmax -= loff;
-                stem->rmin -= roff; stem->rmax -= roff;
-                stem->width = ( stem->right.x - stem->left.x ) * stem->unit.y -
-                              ( stem->right.y - stem->left.y ) * stem->unit.x;
-                /* Recalculate active zones relatively to the new left base point */
-                UpdateActive( stem,lold );
+        }
+
+
+        int best = -1; int val = 0;
+        for ( i=0; i<stem->chunk_cnt; ++i ) {
+            if ( lposval[i] > 0 && rposval[i] > 0 &&
+                ( lposval[i] + rposval[j] ) > val ) {
+                best = j;
+                val = lposval[i] + rposval[i];
             }
-            
-            free( lposval );
-            free( rposval );
-        } else {
-            /* When building stem data we used to allow unit vectors between 
-            /* 45 and 225 degrees. However for instructing diagonal stems the
-            /* range between 90 and 270 degrees is preferred, as using it
-            /* simplifies correct ordering of diagonal stem hints. So at this
-            /* final stage we swap the direction of all stems whose units point
-            /* between 45 and 90 degrees */
-            if ( stem->unit.x < 0 ) SwapEdges( stem );
-            qsort( stem->chunks,stem->chunk_cnt,sizeof( struct stem_chunk ),chunk_cmp );
-            int lset = false, rset = false;
-            BasePoint lold = stem->left;
-            for ( j=0; j<stem->chunk_cnt; ++j ) {
-                struct stem_chunk *chunk = &stem->chunks[j];
-                if ( !lset && chunk->l != NULL && !chunk->lpotential ) {
-                    stem->left = chunk->l->sp->me;
-                    lset = true;
-                }
-                if ( !rset && chunk->r != NULL && !chunk->rpotential ) {
-                    stem->right = chunk->r->sp->me;
-                    rset = true;
-                }
-                if ( lset && rset )
-            break;
-            }
+        }
+        if ( best > -1 ) {
+            lold = stem->left;
+            rold = stem->right;
+            stem->left = stem->chunks[best].l->sp->me;
+            stem->right = stem->chunks[best].r->sp->me;
+            /* Now assign "left" and "right" properties of the stem
+            /* to point coordinates taken from the most "typical" chunk
+            /* of this stem. We also have to recalculate stem width and
+            /* left/right offset values */
+            loff = ( stem->left.x - lold.x ) * stem->unit.y -
+                   ( stem->left.y - lold.y ) * stem->unit.x;
+            roff = ( stem->right.x - rold.x ) * stem->unit.y -
+                   ( stem->right.y - rold.y ) * stem->unit.x;
+
+            stem->lmin -= loff; stem->lmax -= loff;
+            stem->rmin -= roff; stem->rmax -= roff;
+            stem->width = ( stem->right.x - stem->left.x ) * stem->unit.y -
+                          ( stem->right.y - stem->left.y ) * stem->unit.x;
             /* Recalculate active zones relatively to the new left base point */
             UpdateActive( stem,lold );
+        }
+
+        free( lposval );
+        free( rposval );
+    } else {
+        /* When building stem data we used to allow unit vectors between 
+        /* 45 and 225 degrees. However for instructing diagonal stems the
+        /* range between 90 and 270 degrees is preferred, as using it
+        /* simplifies correct ordering of diagonal stem hints. So at this
+        /* final stage we swap the direction of all stems whose units point
+        /* between 45 and 90 degrees */
+        if ( stem->unit.x < 0 ) SwapEdges( stem );
+        qsort( stem->chunks,stem->chunk_cnt,sizeof( struct stem_chunk ),chunk_cmp );
+        int lset = false, rset = false;
+        BasePoint lold = stem->left;
+        for ( i=0; i<stem->chunk_cnt; ++i ) {
+            struct stem_chunk *chunk = &stem->chunks[i];
+            if ( !lset && chunk->l != NULL && !chunk->lpotential ) {
+                stem->left = chunk->l->sp->me;
+                lset = true;
+            }
+            if ( !rset && chunk->r != NULL && !chunk->rpotential ) {
+                stem->right = chunk->r->sp->me;
+                rset = true;
+            }
+            if ( lset && rset )
+        break;
+        }
+        /* Recalculate active zones relatively to the new left base point */
+        UpdateActive( stem,lold );
+    }
+
+    /* Finally count the number of points assigned to left and right
+    /* edges of this stem */
+    for ( i=0; i<gd->pcnt; ++i ) if ( gd->points[i].sp!=NULL )
+	gd->points[i].sp->ticked = false;
+    for ( i=0; i<stem->chunk_cnt; ++i ) {
+        struct stem_chunk *chunk = &stem->chunks[i];
+        if ( chunk->l != NULL && !chunk->lpotential && !chunk->l->sp->ticked ) {
+            stem->lpcnt++;
+            chunk->l->sp->ticked = true;
+        }
+        if ( chunk->r != NULL && !chunk->rpotential && !chunk->r->sp->ticked ) {
+            stem->rpcnt++;
+            chunk->r->sp->ticked = true;
         }
     }
 }
@@ -3753,8 +3766,8 @@ static void AssignPointsToStems( struct glyphdata *gd,DBounds *bounds ) {
             AssignPointsToBBoxHint( gd,bounds,stem,( stem->unit.y == 1 ));
         else
 	    FigureStemActive( gd,&gd->stems[i] );
+        NormalizeStem( gd,stem );
     }
-    NormalizeStems( gd );
 #if GLYPH_DATA_DEBUG
     DumpGlyphData( gd );
 #endif
@@ -3993,6 +4006,7 @@ return( gd );
 	    DiagonalCornerStem( gd,pd,false );
         }
     }
+    AssignLinePointsToStems( gd );
 
     for ( i=0; i<gd->pcnt; ++i ) if ( gd->points[i].sp!=NULL ) {
 	struct pointdata *pd = &gd->points[i];
@@ -4027,7 +4041,6 @@ return( gd );
     /*  if there are any low-quality matches which remain unassigned, and if */
     /*  so then assign them to the stem they almost fit on. */
     /* If there are multiple stems, find the one which is closest to this point */
-    AssignLinePointsToStems( gd );
     for ( i=0; i<gd->stemcnt; ++i ) {
         struct stemdata *stem = &gd->stems[i];
         for ( j=0; j<stem->chunk_cnt; ++j ) {
@@ -4050,7 +4063,10 @@ return( gd );
 	CheckForBoundingBoxHints(gd);
     CheckForGhostHints( gd,bd );
     /* Normalization affects ghosts and BBox hints too */
-    NormalizeStems( gd );
+    for ( i=0; i<gd->stemcnt; ++i ) {
+        struct stemdata *stem = &gd->stems[i];
+        NormalizeStem( gd,stem );
+    }
 
 #if GLYPH_DATA_DEBUG
     DumpGlyphData( gd );
