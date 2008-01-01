@@ -317,6 +317,42 @@ void TransHints(StemInfo *stem,real mul1, real off1, real mul2, real off2, int r
     }
 }
 
+/* added by akrioukov 01/01/2008 to enable resizing and flipping DStem hints */
+void TransDStemHints( DStemInfo *ds,real xmul,real xoff,real ymul,real yoff,int round_to_int ) {
+    HintInstance *hi;
+    double dmul;
+
+    for ( ; ds!=NULL; ds=ds->next ) {
+	ds->left.x = xmul*ds->left.x + xoff;
+	ds->left.y = ymul*ds->left.y + yoff;
+	ds->right.x = xmul*ds->right.x + xoff;
+	ds->right.y = ymul*ds->right.y + yoff;
+	if ( round_to_int ) {
+	    ds->left.x = rint( ds->left.x );
+            ds->left.y = rint( ds->left.y );
+	    ds->right.x = rint( ds->right.x );
+            ds->right.y = rint( ds->right.y );
+	}
+
+	if (( xmul < 0 && ymul > 0 ) || ( xmul > 0 && ymul < 0 ))
+	    ds->unit.y = -ds->unit.y;
+        ds->unit.x *= fabs( xmul ); ds->unit.y *= fabs( ymul );
+        dmul = sqrt( pow( ds->unit.x,2 ) + pow( ds->unit.y,2 ));
+        ds->unit.x /= dmul; ds->unit.y /= dmul;
+        if ( xmul < 0 ) dmul = -dmul;
+        
+	for ( hi=ds->where; hi!=NULL; hi=hi->next ) {
+	    if ( dmul > 0 ) {
+	        hi->begin = hi->begin * dmul;
+	        hi->end = hi->end * dmul;
+            } else {
+	        hi->begin = hi->end * dmul;
+	        hi->end = hi->begin * dmul;
+            }
+	}
+    }
+}
+
 void VrTrans(struct vr *vr,real transform[6]) {
     /* I'm interested in scaling and skewing. I think translation should */
     /*  not affect these guys (they are offsets, so offsets should be */
@@ -573,6 +609,7 @@ void FVTrans(FontViewBase *fv,SplineChar *sc,real transform[6], uint8 *sel,
 	} else {
 	    TransHints(sc->hstem,transform[3],transform[5],transform[0],transform[4],flags&fvt_round_to_int);
 	    TransHints(sc->vstem,transform[0],transform[4],transform[3],transform[5],flags&fvt_round_to_int);
+	    TransDStemHints(sc->dstem,transform[0],transform[4],transform[3],transform[5],flags&fvt_round_to_int);
 	}
     }
     if ( flags&fvt_round_to_int )

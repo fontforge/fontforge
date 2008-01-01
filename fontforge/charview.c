@@ -6582,6 +6582,7 @@ void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
 	if ( transform[1]==0 && transform[2]==0 ) {
 	    TransHints(cv->b.sc->hstem,transform[3],transform[5],transform[0],transform[4],flags&fvt_round_to_int);
 	    TransHints(cv->b.sc->vstem,transform[0],transform[4],transform[3],transform[5],flags&fvt_round_to_int);
+	    TransDStemHints(cv->b.sc->dstem,transform[0],transform[4],transform[3],transform[5],flags&fvt_round_to_int);
 	}
 	if ( transform[0]==1 && transform[3]==1 && transform[1]==0 &&
 		transform[2]==0 && transform[5]==0 &&
