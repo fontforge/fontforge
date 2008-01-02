@@ -1999,10 +1999,8 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	if (( cv->showfore || cv->b.drawmode==dm_fore ) && cv->showfilled ) {
 	    /* Wrong order, I know. But it is useful to have the background */
 	    /*  visible on top of the fill... */
-	    cv->gi.u.image->clut->clut[1] = fillcol;
 	    GDrawDrawImage(pixmap, &cv->gi, NULL, cv->xoff + cv->filled->xmin,
 		    -cv->yoff + cv->height-cv->filled->ymax);
-	    cv->gi.u.image->clut->clut[1] = backimagecol;
 	}
     } else {
 	/* Draw FreeType Results */
@@ -2129,13 +2127,55 @@ static void SC_OutOfDateBackground(SplineChar *sc) {
 }
 
 static void CVRegenFill(CharView *cv) {
+    BDFCharFree(cv->filled);
+    cv->filled = NULL;
     if ( cv->showfilled ) {
-	BDFCharFree(cv->filled);
-	cv->filled = SplineCharRasterize(cv->b.sc,cv->scale*(cv->b.fv->sf->ascent+cv->b.fv->sf->descent)+.1);
+	extern int use_freetype_to_rasterize_fv;
+	int size = cv->scale*(cv->b.fv->sf->ascent+cv->b.fv->sf->descent);
+#if 1
+	if ( use_freetype_to_rasterize_fv && hasFreeType()) {
+	    cv->filled = SplineCharFreeTypeRasterizeNoHints(cv->b.sc,
+		size, 1);
+	} else {
+	    cv->filled = SplineCharRasterize(cv->b.sc,size+.1);
+	}
 	cv->gi.u.image->data = cv->filled->bitmap;
 	cv->gi.u.image->bytes_per_line = cv->filled->bytes_per_line;
 	cv->gi.u.image->width = cv->filled->xmax-cv->filled->xmin+1;
 	cv->gi.u.image->height = cv->filled->ymax-cv->filled->ymin+1;
+#else /* I don't think there is any point to doing an anti-aliased fill image */
+	int cv_aa = ((FontView *) (cv->b.fv))->antialias;
+	int clut_len;
+	if ( use_freetype_to_rasterize_fv ) {
+	    cv->filled = SplineCharFreeTypeRasterizeNoHints(cv->b.sc,
+		size, cv_aa?4:1);
+	    clut_len = cv_aa?16:2;
+	} else if ( cv_aa && size<2000 ) {
+	    cv->filled = SplineCharAntiAlias(cv->b.sc,size,4);
+	    clut_len = 16;
+	} else {
+	    cv->filled = SplineCharRasterize(cv->b.sc,size+.1);
+	    clut_len = 2;
+	}
+	cv->gi.u.image->image_type = clut_len==2 ? it_mono : it_index;
+	cv->gi.u.image->data = cv->filled->bitmap;
+	cv->gi.u.image->bytes_per_line = cv->filled->bytes_per_line;
+	cv->gi.u.image->width = cv->filled->xmax-cv->filled->xmin+1;
+	cv->gi.u.image->height = cv->filled->ymax-cv->filled->ymin+1;
+	if ( clut_len!=cv->gi.u.image->clut->clut_len ) {
+	    GClut *clut = cv->gi.u.image->clut;
+	    int i;
+	    Color bg = GDrawGetDefaultBackground(NULL);
+	    for ( i=0; i<clut_len; ++i ) {
+		int r,g,b;
+		r = ((bg>>16)&0xff)*(clut_len-1-i) + ((fillcol>>16)&0xff)*i;
+		g = ((bg>>8 )&0xff)*(clut_len-1-i) + ((fillcol>>8 )&0xff)*i;
+		b = ((bg    )&0xff)*(clut_len-1-i) + ((fillcol    )&0xff)*i;
+		clut->clut[i] = COLOR_CREATE(r/(clut_len-1),g/(clut_len-1),b/(clut_len-1));
+	    }
+	    clut->clut_len = clut_len;
+	}
+#endif
 	GDrawRequestExpose(cv->v,NULL,false);
     }
 }
@@ -9209,8 +9249,8 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
     cv->gi.u.image->clut = gcalloc(1,sizeof(GClut));
     cv->gi.u.image->clut->trans_index = cv->gi.u.image->trans = 0;
     cv->gi.u.image->clut->clut_len = 2;
-    cv->gi.u.image->clut->clut[0] = 0xffffff;
-    cv->gi.u.image->clut->clut[1] = backimagecol;
+    cv->gi.u.image->clut->clut[0] = GDrawGetDefaultBackground(NULL);
+    cv->gi.u.image->clut->clut[1] = fillcol;
     cv->b1_tool = cvt_pointer; cv->cb1_tool = cvt_pointer;
     cv->b2_tool = cvt_magnify; cv->cb2_tool = cvt_ruler;
     cv->s1_tool = cvt_freehand; cv->s2_tool = cvt_pen;
