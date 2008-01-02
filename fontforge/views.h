@@ -172,8 +172,7 @@ typedef struct charview {
     GPoint olde;
     BasePoint last_c;
     BDFChar *filled;
-    GImage gi;
-    struct fontview *fv;
+    GImage gi;					/* used for fill bitmap only */
     int enc;
     EncMap *map_of_enc;				/* Only use for comparison against fontview's map to see if our enc be valid */
 						/*  Will not be updated when fontview is reencoded */

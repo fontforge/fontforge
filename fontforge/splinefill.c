@@ -1329,7 +1329,7 @@ return( NULL );
 	es.omin = b.minx*es.scale;
 	es.omax = b.maxx*es.scale;
 	es.cnt = (int) (es.mmax-es.mmin) + 1;
-	if ( es.cnt<4000 && es.omax-es.omin<4000 && es.cnt>1 ) {
+	if ( es.cnt<8000 && es.omax-es.omin<8000 && es.cnt>1 ) {
 	    es.edges = gcalloc(es.cnt,sizeof(Edge *));
 	    es.sc = sc;
 	    es.major = 1; es.other = 0;
