@@ -3595,7 +3595,7 @@ static void NormalizeStem( struct glyphdata *gd,struct stemdata *stem ) {
                 lposval[i] = lval+1;
             }
 
-            rposval[j] = 0;
+            rposval[i] = 0;
             if ( chunk->r != NULL && !chunk->rpotential ) {
                 pos = ((real *) &chunk->r->sp->me.x)[!is_x];
                 int rval = 0;
@@ -3613,8 +3613,8 @@ static void NormalizeStem( struct glyphdata *gd,struct stemdata *stem ) {
         int best = -1; int val = 0;
         for ( i=0; i<stem->chunk_cnt; ++i ) {
             if ( lposval[i] > 0 && rposval[i] > 0 &&
-                ( lposval[i] + rposval[j] ) > val ) {
-                best = j;
+                ( lposval[i] + rposval[i] ) > val ) {
+                best = i;
                 val = lposval[i] + rposval[i];
             }
         }
