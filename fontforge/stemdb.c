@@ -3834,7 +3834,7 @@ return( gd );
 return( gd );
 }
 
-struct glyphdata *GlyphDataInit( SplineChar *sc,int only_hv ) {
+struct glyphdata *GlyphDataInit( SplineChar *sc,double em_size,int only_hv ) {
     struct glyphdata *gd;
     int i;
     SplineSet *ss;
@@ -3847,22 +3847,15 @@ struct glyphdata *GlyphDataInit( SplineChar *sc,int only_hv ) {
     if ( sc->layers[ly_fore].splines==NULL )
 return( NULL );
 
-    gd = gcalloc(1,sizeof(struct glyphdata));
+    gd = gcalloc( 1,sizeof( struct glyphdata ));
+    gd->only_hv = only_hv;
     
     gd->sc = sc;
     gd->sf = sc->parent;
-    gd->emsize = ( gd->sf != NULL ) ? gd->sf->ascent + gd->sf->descent : 1000;
+    gd->emsize = em_size;
     dist_error_hv = .0035*gd->emsize;
     dist_error_diag = .0065*gd->emsize;
     dist_error_curve = .022*gd->emsize;
-
-    /* Normally we use the DetectDiagonalStems flag (set via the Preferences
-    /* dialog) to determine if diagonal stems should be generated. However,
-    /* it is possible to imagine a situation where we would like to get
-    /* (for some internal purposes) just information about vertical and
-    /* horizontal stems, deliberately turning the diagonal stem detection off.
-    /* For this case the only_hv argument still can be passed to this function. */
-    gd->only_hv = only_hv || !detect_diagonal_stems;
 
     /* SSToMContours can clean up the splinesets (remove 0 length splines) */
     /*  so it must be called BEFORE everything else (even though logically */
@@ -3969,8 +3962,18 @@ struct glyphdata *GlyphDataBuild( SplineChar *sc,BlueData *bd,int only_hv ) {
     struct glyphdata *gd;
     int i, j;
     int action;
+    double em_size;
     
-    gd = GlyphDataInit( sc,only_hv );
+    /* Normally we use the DetectDiagonalStems flag (set via the Preferences
+    /* dialog) to determine if diagonal stems should be generated. However,
+    /* it is possible to imagine a situation where we would like to get
+    /* (for some internal purposes) just information about vertical and
+    /* horizontal stems, deliberately turning the diagonal stem detection off.
+    /* For this case the only_hv argument still can be passed to this function. */
+    if ( !only_hv ) only_hv = !detect_diagonal_stems;
+    em_size = ( sc->parent != NULL ) ? sc->parent->ascent + sc->parent->descent : 1000;
+
+    gd = GlyphDataInit( sc,em_size,only_hv );
     if ( gd ==  NULL )
 return( gd );
 
