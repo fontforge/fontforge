@@ -1770,7 +1770,6 @@ static void find_control_pts(int p, SplinePoint *sp, InstrCt *ct) {
 static void search_edge(int p, SplinePoint *sp, InstrCt *ct) {
     int tmp, score = 0;
     real coord = ct->xdir?ct->bp[p].x:ct->bp[p].y;
-    real refcoord = ct->xdir?ct->bp[ct->edge.refpt].x:ct->bp[ct->edge.refpt].y;
     real fudge = ct->gic->fudge;
     uint8 touchflag = ct->xdir?tf_x:tf_y;
 
@@ -1793,6 +1792,14 @@ return;
 
 	if (ct->diagstems && ct->diagpts[p].count) score+=9;
 	if (ct->touched[p] & touchflag) score+=26;
+
+	if (ct->edge.refpt == -1) {
+	    ct->edge.refpt = p;
+	    ct->edge.refscore = score;
+return;
+	}
+
+	real refcoord = ct->xdir?ct->bp[ct->edge.refpt].x:ct->bp[ct->edge.refpt].y;
 
 	if ((score > ct->edge.refscore) ||
 	    (score == ct->edge.refscore &&
