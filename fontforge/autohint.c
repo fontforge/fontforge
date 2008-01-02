@@ -1412,8 +1412,10 @@ return( head );
 static void SCGuessHVHintInstances( SplineChar *sc,StemInfo *si,int is_v ) {
     struct glyphdata *gd;
     struct stemdata *sd;
+    double em_size = ( sc->parent != NULL ) ? 
+        sc->parent->ascent + sc->parent->descent : 1000;
     
-    gd = GlyphDataInit( sc,true );
+    gd = GlyphDataInit( sc,em_size,true );
     if ( gd == NULL )
 return;
     StemInfoToStemData( gd,si,is_v );
@@ -1607,6 +1609,8 @@ void SCGuessHintInstancesList( SplineChar *sc,StemInfo *hstem,StemInfo *vstem,DS
     int i, cnt=0, hneeds_gd=false, vneeds_gd=false, dneeds_gd=false;
     StemInfo *test;
     DStemInfo *dtest;
+    double em_size = ( sc->parent != NULL ) ? 
+        sc->parent->ascent + sc->parent->descent : 1000;
     
     if ( hstem == NULL && vstem == NULL && dstem == NULL )
 return;
@@ -1631,7 +1635,7 @@ return;
     if ( !hneeds_gd && !vneeds_gd && !dneeds_gd )
 return;
 
-    gd = GlyphDataInit( sc,!dneeds_gd );
+    gd = GlyphDataInit( sc,em_size,!dneeds_gd );
     if ( gd == NULL )
 return;
 
@@ -1679,8 +1683,10 @@ return;
 void SCGuessDHintInstances( SplineChar *sc, DStemInfo *ds ) {
     struct glyphdata *gd;
     struct stemdata *sd;
+    double em_size = ( sc->parent != NULL ) ? 
+        sc->parent->ascent + sc->parent->descent : 1000;
     
-    gd = GlyphDataInit( sc,false );
+    gd = GlyphDataInit( sc,em_size,false );
     if ( gd == NULL )
 return;
     DStemInfoToStemData( gd,ds );
