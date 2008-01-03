@@ -100,6 +100,7 @@ SplineSet *SpiroCP2SplineSet(spiro_cp *spiros) {
 
     if ( spiros==NULL )
 return( NULL );
+    initSpiro();
     for ( n=0; spiros[n].ty!=SPIRO_END; ++n )
 	if ( SPIRO_SELECTED(&spiros[n]) )
 	    ++any;
