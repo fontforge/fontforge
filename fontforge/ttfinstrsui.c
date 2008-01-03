@@ -190,54 +190,12 @@ typedef struct instrdlg /* : InstrBase */{
     GGadget *ok, *cancel, *edit, *parse, *text, *topbox;
 } InstrDlg;
 
-static void instr_typify(struct instrinfo *instrinfo) {
-    int i, len = instrinfo->instrdata->instr_cnt, cnt, j, lh;
-    uint8 *instrs = instrinfo->instrdata->instrs;
-    uint8 *bts;
+static void instr_info_init(struct instrinfo *instrinfo) {
 
-    if ( instrinfo->instrdata->bts==NULL )
-	instrinfo->instrdata->bts = galloc(len+1);
-    bts = instrinfo->instrdata->bts;
-    for ( i=lh=0; i<len; ++i ) {
-	bts[i] = bt_instr;
-	++lh;
-	if ( instrs[i]==ttf_npushb ) {
-	    /* NPUSHB */
-	    bts[++i] = bt_cnt;
-	    cnt = instrs[i];
-	    for ( j=0 ; j<cnt; ++j)
-		bts[++i] = bt_byte;
-	    lh += 1+cnt;
-	} else if ( instrs[i]==ttf_npushw ) {
-	    /* NPUSHW */
-	    bts[++i] = bt_cnt; ++lh;
-	    cnt = instrs[i];
-	    for ( j=0 ; j<cnt; ++j) {
-		bts[++i] = bt_wordhi;
-		bts[++i] = bt_wordlo;
-	    }
-	    lh += 1+cnt;
-	} else if ( (instrs[i]&0xf8) == 0xb0 ) {
-	    /* PUSHB[n] */
-	    cnt = (instrs[i]&7)+1;
-	    for ( j=0 ; j<cnt; ++j)
-		bts[++i] = bt_byte;
-	    lh += cnt;
-	} else if ( (instrs[i]&0xf8) == 0xb8 ) {
-	    /* PUSHW[n] */
-	    cnt = (instrs[i]&7)+1;
-	    for ( j=0 ; j<cnt; ++j) {
-		bts[++i] = bt_wordhi;
-		bts[++i] = bt_wordlo;
-	    }
-	    lh += cnt;
-	}
-    }
-    bts[i] = bt_impliedreturn;
-    instrinfo->lheight = lh;
+    instrinfo->lheight = instr_typify(instrinfo->instrdata);
     if ( instrinfo->fh!=0 ) {
-	if ( instrinfo->lpos > lh-instrinfo->vheight/instrinfo->fh )
-	    instrinfo->lpos = lh-instrinfo->vheight/instrinfo->fh;
+	if ( instrinfo->lpos > instrinfo->lheight-instrinfo->vheight/instrinfo->fh )
+	    instrinfo->lpos = instrinfo->lheight-instrinfo->vheight/instrinfo->fh;
 	if ( instrinfo->lpos<0 )
 	    instrinfo->lpos = 0;
     }
@@ -328,7 +286,7 @@ return( true );
     iv->instrdata->changed = true;
     free(iv->instrdata->bts );
     iv->instrdata->bts = NULL;
-    instr_typify(&iv->instrinfo);
+    instr_info_init(&iv->instrinfo);
     GScrollBarSetBounds(iv->instrinfo.vsb,0,iv->instrinfo.lheight+2,
 	    iv->instrinfo.vheight/iv->instrinfo.fh);
 return( true );
@@ -771,7 +729,7 @@ static void InstrDlgCreate(struct instrdata *id,char *title) {
     iv->instrinfo.instrdata = id;
     iv->instrinfo.showhex = iv->instrinfo.showaddr = true;
     iv->instrinfo.lstopped = -1;
-    instr_typify(&iv->instrinfo);
+    instr_info_init(&iv->instrinfo);
 
     if ( ttf_icon==NULL )
 	ttf_icon = GDrawCreateBitmap(NULL,ttf_width,ttf_height,ttf_bits);
@@ -1004,7 +962,7 @@ void IIReinit(struct instrinfo *ii,int ip) {
     instrhelpsetup();
     free(ii->instrdata->bts);
     ii->instrdata->bts = NULL;
-    instr_typify(ii);
+    instr_info_init(ii);
     GScrollBarSetBounds(ii->vsb,0,ii->lheight+2, ii->vheight/ii->fh);
     IIScrollTo(ii,ip,true);
 }

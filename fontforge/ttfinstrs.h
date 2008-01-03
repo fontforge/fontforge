@@ -65,3 +65,4 @@ typedef struct instrbase {
 } InstrBase;
 
 extern char *__IVUnParseInstrs(InstrBase *iv);
+extern int instr_typify(struct instrdata *);

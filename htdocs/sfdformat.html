@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 22-Oct-2007 -->
+  <!-- AP: Last modified: 3-Jan-2008 -->
   <TITLE>Spline Font Database File Format</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -14,9 +14,8 @@
   </H1>
   <P>
   <FONT COLOR="Red"><STRONG>This page is often grievously out of date. I thought
-  it was a correct on 22 Oct. 2007.</STRONG></FONT> Even if out of date it
-  should be helpful, but if you really need to know the current format look
-  at
+  it was a correct on 3 Jan 2008.</STRONG></FONT> Even if out of date it should
+  be helpful, but if you really need to know the current format look at
   <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/fontforge/sfd.c">sfd.c</A>
   and see what it parses. Some descriptions of esoteric features are not complete,
   but I hope they give you enough hints that you can figure the format out
@@ -343,21 +342,54 @@ Lookup: 258 0 0 "'kern' Horizontal Kerning in Latin lookup 0"  {"'kern' Horizont
 </PRE>
   </BLOCKQUOTE>
   <P>
-  If the font contains ttf hinting, then the file may contain unparsed truetype
-  tables (understanding ttf hinting is beyond FontForge's abilities, but it
-  can at least preserve the data):
+  If the font contains ttf hinting, then the file may contain truetype tables,
+  these may be stored in several formats depending on the table. For containting
+  truetype instructions (fpgm, prep):
   <BLOCKQUOTE>
-    <PRE>TtfTable: prep 4360
+    <PRE>TtTable: prep
+PUSHW_1
+ 640
+NPUSHB
+ 255
+ 251
+ 254
+ 3
+ ...
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  The first line says that this is the 'prep' table, subsequent lines provide
+  the instructions of that table. These are stored in the format used by fontforge,
+  there's a table giving the conversion between bytecode and instruction name
+  in the file ttfinstrs.c (I won't introduce it here because it is rather long).
+  <BLOCKQUOTE>
+    <PRE>ShortTable: cvt  255
+  309
+  184
+  203
+  203
+ ...
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  The next table format is used for the 'cvt ' and 'maxp' tables. It is simply
+  a list of short numbers. The first line identifies it as the cvt table and
+  indicates that there will be 255 numbers (note: NOT 255 bytes, but 2*255
+  bytes).
+  <BLOCKQUOTE>
+    <PRE>TtfTable: LILY 4360
 5S;o3()It?eJ8r@H[HSJH[H^@!b&amp;BQ*?Vcm@'XSh+1MACZ&gt;Up/\,o1+Ca't2!&lt;ocH+Wn2p"@,t&amp;
 +Wo+[()Is6G8:u7D/^7,*,KO/(E=N5!=s)LCMjn,:Mp3:DSL&amp;j05dG#cY`hLCN"!&lt;CBO$@s(_ZX
 ...
 </PRE>
   </BLOCKQUOTE>
   <P>
-  The first line says that the 'prep' table is 4360 bytes long. Subsequent
-  lines will provide 4360 bytes of data, packed in
-  <A HREF="#ASCII85Encode">ASCII85Encode<SUP>1</SUP></A> (which takes binary
-  data and packs it into ASCII without too much expansion. See the PostScript
+  FontForge will also store tables it doesn't understand, these will be stored
+  in uninterpreted binary which is packed using the
+  <A HREF="#ASCII85Encode">ASCII85Encode<SUP>1</SUP></A> encoding filter. The
+  first line says that the 'LILY' table is 4360 bytes long. Subsequent lines
+  will provide those 4360 bytes of data
+  <A HREF="#ASCII85Encode">ASCII85Encode<SUP>1</SUP></A>. See the PostScript
   Reference Manual (3rd edition, pages 131-132) for a description of this packing,
   or <CODE>$&nbsp;man&nbsp;btoa</CODE>).
   <P>
@@ -949,7 +981,30 @@ EndChar
   would have to be given as 0x3800 (because two bytes are needed to accommodate
   nine bits).
   <P>
-  Glyphs in quadratic fonts (truetype) may containing truetype instructions
+  Glyphs in quadratic fonts (truetype) may containing truetype instructions,
+  these may be output in two formats, either an text format or an old binary
+  format:
+  <BLOCKQUOTE>
+    <PRE>TtInstrs:
+NPUSHB
+ 4
+ 251
+ 0
+ 6
+ 251
+MDAP[rnd]
+MDRP[rnd,grey]
+MDRP[rp0,rnd,grey]
+...
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  As with the 'prep' table above this is simply a list of truetype instruction
+  names as used by FontForge (see ttfinstrs.c for a table of these).
+  <P>
+  An older format is simply a binary dump in ASCII85 encoding. (Note that these
+  are distinguished by the initial keyword <CODE>TtInstrs</CODE> vs.
+  <CODE>Tt<I>f</I>Instrs</CODE>)
   <BLOCKQUOTE>
     <PRE>TtfInstrs: 107
 5Xtqo&amp;gTLA(_S)TQj!Kq"UP8&lt;!&lt;rr:&amp;$QcW!"K,K&amp;kWe?(^pl]#mUY&lt;!s\f7"U&gt;G:!%\s-3WRec

@@ -26,8 +26,9 @@
  */
 #include "pfaedit.h"
 #include "splinefont.h"
-#include "gdraw.h"
-#include "ustring.h"
+#include "baseviews.h"
+#include <gdraw.h>
+#include <ustring.h>
 #include <math.h>
 #include <utype.h>
 #include <unistd.h>
@@ -893,7 +894,19 @@ return;
     }
 }
 
+static const char *end_tt_instrs = "EndTTInstrs";
 static void SFDDumpTtfInstrs(FILE *sfd,SplineChar *sc) {
+#if 1
+    char *instrs = _IVUnParseInstrs( sc->ttf_instrs,sc->ttf_instrs_len );
+    char *pt;
+    fprintf( sfd, "TtInstrs:\n" );
+    for ( pt=instrs; *pt!='\0'; ++pt )
+	putc(*pt,sfd);
+    if ( pt[-1]!='\n' )
+	putc('\n',sfd);
+    free(instrs);
+    fprintf( sfd, "%s\n", end_tt_instrs );
+#else
     struct enc85 enc;
     int i;
 
@@ -905,22 +918,53 @@ static void SFDDumpTtfInstrs(FILE *sfd,SplineChar *sc) {
 	SFDEnc85(&enc,sc->ttf_instrs[i]);
     SFDEnc85EndEnc(&enc);
     fprintf(sfd,"\nEndTtf\n" );
+#endif
 }
 
 static void SFDDumpTtfTable(FILE *sfd,struct ttf_table *tab) {
-    struct enc85 enc;
-    int i;
+    if ( tab->tag == CHR('p','r','e','p') || tab->tag == CHR('f','p','g','m') ) {
+	/* These are tables of instructions and should be dumped as such */
+	char *instrs;
+	char *pt;
+	fprintf( sfd, "TtTable: %c%c%c%c\n",
+		(int) (tab->tag>>24), (int) ((tab->tag>>16)&0xff), (int) ((tab->tag>>8)&0xff), (int) (tab->tag&0xff) );
+	instrs = _IVUnParseInstrs( tab->data,tab->len );
+	for ( pt=instrs; *pt!='\0'; ++pt )
+	    putc(*pt,sfd);
+	if ( pt[-1]!='\n' )
+	    putc('\n',sfd);
+	free(instrs);
+	fprintf( sfd, "%s\n", end_tt_instrs );
+    } else if ( (tab->tag == CHR('c','v','t',' ') || tab->tag == CHR('m','a','x','p')) &&
+	    (tab->len&1)==0 ) {
+	int i;
+	uint8 *pt;
+	fprintf( sfd, "ShortTable: %c%c%c%c %d\n",
+		(int) (tab->tag>>24), (int) ((tab->tag>>16)&0xff), (int) ((tab->tag>>8)&0xff), (int) (tab->tag&0xff),
+		(int) (tab->len>>1) );
+	pt = (uint8*) tab->data;
+	for ( i=0; i<(tab->len>>1); ++i ) {
+	    int num = (int16) ((pt[0]<<8) | pt[1]);
+	    fprintf( sfd, "  %d\n", num );
+	    pt += 2;
+	}
+	fprintf( sfd, "EndShort\n");
+    } else {
+	/* maxp, who knows what. Dump 'em as binary for now */
+	struct enc85 enc;
+	int i;
 
-    memset(&enc,'\0',sizeof(enc));
-    enc.sfd = sfd;
+	memset(&enc,'\0',sizeof(enc));
+	enc.sfd = sfd;
 
-    fprintf( sfd, "TtfTable: %c%c%c%c %d\n",
-	    (int) (tab->tag>>24), (int) ((tab->tag>>16)&0xff), (int) ((tab->tag>>8)&0xff), (int) (tab->tag&0xff),
-	    (int) tab->len );
-    for ( i=0; i<tab->len; ++i )
-	SFDEnc85(&enc,tab->data[i]);
-    SFDEnc85EndEnc(&enc);
-    fprintf(sfd,"\nEndTtf\n" );
+	fprintf( sfd, "TtfTable: %c%c%c%c %d\n",
+		(int) (tab->tag>>24), (int) ((tab->tag>>16)&0xff), (int) ((tab->tag>>8)&0xff), (int) (tab->tag&0xff),
+		(int) tab->len );
+	for ( i=0; i<tab->len; ++i )
+	    SFDEnc85(&enc,tab->data[i]);
+	SFDEnc85EndEnc(&enc);
+	fprintf(sfd,"\nEndTtf\n" );
+    }
 }
 
 static int SFDOmit(SplineChar *sc) {
@@ -1126,7 +1170,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
     int i, v;
     struct altuni *altuni;
 
-    fprintf(sfd, "StartChar: %s\n", sc->name );
+    fprintf(sfd, "\nStartChar: %s\n", sc->name );
     if ( map->backmap[sc->orig_pos]>=map->enccount ) {
 	IError("Bad reverse encoding");
 	map->backmap[sc->orig_pos] = -1;
@@ -2748,6 +2792,39 @@ static void SFDGetTtfInstrs(FILE *sfd, SplineChar *sc) {
 	sc->ttf_instrs[i] = Dec85(&dec);
 }
 
+static void tterr(void *rubbish, char *message, int pos) {
+    LogError( "When loading tt instrs from sfd: %s\n", message );
+}
+
+static void SFDGetTtInstrs(FILE *sfd, SplineChar *sc) {
+    /* We've read the TtInstr token, it is followed by text versions of */
+    /*  the instructions, slurp it all into a big buffer, and then parse that */
+    char *buf=NULL, *pt=buf, *end=buf;
+    int ch;
+    int backlen = strlen(end_tt_instrs);
+    int instr_len;
+
+    while ( (ch=getc(sfd))!=EOF ) {
+	if ( pt>=end ) {
+	    char *newbuf = grealloc(buf,(end-buf+200));
+	    pt = newbuf+(pt-buf);
+	    end = newbuf+(end+200-buf);
+	    buf = newbuf;
+	}
+	*pt++ = ch;
+	if ( pt-buf>backlen && strncmp(pt-backlen,end_tt_instrs,backlen)==0 ) {
+	    pt -= backlen;
+    break;
+	}
+    }
+    *pt = '\0';
+
+    sc->ttf_instrs = _IVParse(sc->parent,buf,&instr_len,tterr,NULL);
+    sc->ttf_instrs_len = instr_len;
+
+    free(buf);
+}
+
 static struct ttf_table *SFDGetTtfTable(FILE *sfd, SplineFont *sf,struct ttf_table *lasttab[2]) {
     /* We've read the TtfTable token, it is followed by a tag and a byte count */
     /* and then the instructions in enc85 format */
@@ -2775,6 +2852,92 @@ static struct ttf_table *SFDGetTtfTable(FILE *sfd, SplineFont *sf,struct ttf_tab
     tab->len = len;
     for ( i=0; i<len; ++i )
 	tab->data[i] = Dec85(&dec);
+
+    if ( lasttab[which]!=NULL )
+	lasttab[which]->next = tab;
+    else if ( which==0 )
+	sf->ttf_tables = tab;
+    else
+	sf->ttf_tab_saved = tab;
+    lasttab[which] = tab;
+return( tab );
+}
+
+static struct ttf_table *SFDGetShortTable(FILE *sfd, SplineFont *sf,struct ttf_table *lasttab[2]) {
+    /* We've read the ShortTable token, it is followed by a tag and a word count */
+    /* and then the (text) values of the words that make up the cvt table */
+    int i,len, ch;
+    uint8 *pt;
+    int which;
+    struct ttf_table *tab = chunkalloc(sizeof(struct ttf_table));
+
+    while ( (ch=getc(sfd))==' ' );
+    tab->tag = (ch<<24)|(getc(sfd)<<16);
+    tab->tag |= getc(sfd)<<8;
+    tab->tag |= getc(sfd);
+
+    if ( tab->tag==CHR('f','p','g','m') || tab->tag==CHR('p','r','e','p') ||
+	    tab->tag==CHR('c','v','t',' ') || tab->tag==CHR('m','a','x','p'))
+	which = 0;
+    else
+	which = 1;
+
+    getint(sfd,&len);
+    pt = tab->data = galloc(2*len);
+    tab->len = 2*len;
+    for ( i=0; i<len; ++i ) {
+	int num;
+	getint(sfd,&num);
+	*pt++ = num>>8;
+	*pt++ = num&0xff;
+    }
+
+    if ( lasttab[which]!=NULL )
+	lasttab[which]->next = tab;
+    else if ( which==0 )
+	sf->ttf_tables = tab;
+    else
+	sf->ttf_tab_saved = tab;
+    lasttab[which] = tab;
+return( tab );
+}
+
+static struct ttf_table *SFDGetTtTable(FILE *sfd, SplineFont *sf,struct ttf_table *lasttab[2]) {
+    /* We've read the TtTable token, it is followed by a tag */
+    /* and then the instructions in text format */
+    int ch;
+    int which;
+    struct ttf_table *tab = chunkalloc(sizeof(struct ttf_table));
+    char *buf=NULL, *pt=buf, *end=buf;
+    int backlen = strlen(end_tt_instrs);
+
+    while ( (ch=getc(sfd))==' ' );
+    tab->tag = (ch<<24)|(getc(sfd)<<16);
+    tab->tag |= getc(sfd)<<8;
+    tab->tag |= getc(sfd);
+
+    if ( tab->tag==CHR('f','p','g','m') || tab->tag==CHR('p','r','e','p') ||
+	    tab->tag==CHR('c','v','t',' ') || tab->tag==CHR('m','a','x','p'))
+	which = 0;
+    else
+	which = 1;
+
+    while ( (ch=getc(sfd))!=EOF ) {
+	if ( pt>=end ) {
+	    char *newbuf = grealloc(buf,(end-buf+200));
+	    pt = newbuf+(pt-buf);
+	    end = newbuf+(end+200-buf);
+	    buf = newbuf;
+	}
+	*pt++ = ch;
+	if ( pt-buf>backlen && strncmp(pt-backlen,end_tt_instrs,backlen)==0 ) {
+	    pt -= backlen;
+    break;
+	}
+    }
+    *pt = '\0';
+    tab->data = _IVParse(sf,buf,&tab->len,tterr,NULL);
+    free(buf);
 
     if ( lasttab[which]!=NULL )
 	lasttab[which]->next = tab;
@@ -3884,8 +4047,10 @@ return( NULL );
 	    lasti = img;
 	} else if ( strmatch(tok,"OrigType1:")==0 ) {	/* Accept, slurp, ignore contents */
 	    SFDGetType1(sfd,sc);
-	} else if ( strmatch(tok,"TtfInstrs:")==0 ) {
+	} else if ( strmatch(tok,"TtfInstrs:")==0 ) {	/* Binary format */
 	    SFDGetTtfInstrs(sfd,sc);
+	} else if ( strmatch(tok,"TtInstrs:")==0 ) {	/* ASCII format */
+	    SFDGetTtInstrs(sfd,sc);
 	} else if ( strmatch(tok,"Kerns2:")==0 ||
 		strmatch(tok,"VKerns2:")==0 ) {
 	    KernPair *kp, *last=NULL;
@@ -6007,8 +6172,12 @@ exit(1);
 		    lastan->next = an;
 		lastan = an;
 	    }
-	} else if ( strmatch(tok,"TtfTable:")==0 ) {
-	    SFDGetTtfTable(sfd,sf,lastttf);
+	} else if ( strmatch(tok,"TtfTable:")==0 ) {	/* Old, binary format */
+	    SFDGetTtfTable(sfd,sf,lastttf);		/* still used for maxp and unknown tables */
+	} else if ( strmatch(tok,"TtTable:")==0 ) {	/* text instruction format */
+	    SFDGetTtTable(sfd,sf,lastttf);
+	} else if ( strmatch(tok,"ShortTable:")==0 ) {	/* text number format */
+	    SFDGetShortTable(sfd,sf,lastttf);
 	} else if ( strncmp(tok,"MATH:",5)==0 ) {
 	    SFDParseMathItem(sfd,sf,tok);
 	} else if ( strmatch(tok,"TableOrder:")==0 ) {
