@@ -7936,6 +7936,41 @@ static void CVMenuClearHints(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SCUpdateAll(cv->b.sc);
 }
 
+/* This is an improved version of the older CVTwoForePointsSelected function.
+/* Unlike the former, it doesn't just check if there are exactly two points
+/* selected, but rather returns the number of selected points (whatever this
+/* number can be) and puts references to those points into an array. It is up
+/* to the calling code to see if the returned result is satisfiable (there
+/* should be exactly two points selected for specifying a vertical or
+/* horizontal stem and four points for a diagonal stem). */
+static int CVNumForePointsSelected(CharView *cv, BasePoint **bp) {
+    SplineSet *spl;
+    SplinePoint *test, *first;
+    BasePoint *bps[4];
+    int i, cnt;
+
+    if ( cv->b.drawmode!=dm_fore )
+return( 0 ) ;
+    cnt = 0;
+    for ( spl = cv->b.sc->layers[ly_fore].splines; spl!=NULL; spl = spl->next ) {
+	first = NULL;
+	for ( test = spl->first; test!=first; test = test->next->to ) {
+	    if ( test->selected ) {
+		bps[cnt++] = &(test->me);
+		if ( cnt>4 )
+return( 0 );
+	    }
+	    if ( first == NULL ) first = test;
+	    if ( test->next==NULL )
+	break;
+	}
+    }
+    for (i=0; i<cnt; i++) {
+        bp[i] = bps[i];
+    }
+return( cnt );
+}
+
 static void CVMenuAddHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     BasePoint *bp[4], unit;
@@ -7946,7 +7981,7 @@ static void CVMenuAddHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     num = CVNumForePointsSelected( cv,bp );
 
     /* We need exactly 2 points to specify a horizontal or vertical stem
-       and exactly 4 points to specify a diagonal stem */
+    /* and exactly 4 points to specify a diagonal stem */
     if ( !(num == 2 && mi->mid != MID_AddDHint) && 
          !(num == 4 && mi->mid == MID_AddDHint))
 return;
@@ -7998,7 +8033,7 @@ return;
     cv->b.sc->manualhints = true;
     
     /* Hint Masks are not relevant for diagonal stems, so modifying
-       diagonal stems should not affect them */
+    /* diagonal stems should not affect them */
     if ( (mi->mid==MID_AddVHint) || (mi->mid==MID_AddHHint) ) {
         if ( h!=NULL && cv->b.sc->parent->mm==NULL )
 	    SCModifyHintMasksAdd(cv->b.sc,h);

@@ -1837,11 +1837,7 @@ extern int RealWithin(real a,real b,real fudge);
 extern int RealRatio(real a,real b,real fudge);
 
 extern int PointsDiagonalable(SplineFont *sf,BasePoint **bp,BasePoint *unit);
-extern int PointOnLine(BasePoint *top,BasePoint *bottom,BasePoint *test);
-extern double GetDStemWidth(BasePoint *tl,BasePoint *bl, 
-    BasePoint *tr,BasePoint *br);
 extern int MergeDStemInfo(SplineFont *sf,DStemInfo **ds, DStemInfo *test);
-extern void DStemInfoTest(SplineChar *sc);
 
 extern void LineListFree(LineList *ll);
 extern void LinearApproxFree(LinearApprox *la);
