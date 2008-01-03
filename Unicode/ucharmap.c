@@ -399,8 +399,49 @@ return( to );
 static char *old_local_name=NULL;
 static iconv_t to_unicode=(iconv_t) (-1), from_unicode=(iconv_t) (-1);
 static iconv_t to_utf8=(iconv_t) (-1), from_utf8=(iconv_t) (-1);
+#ifdef UNICHAR_16
+static char *names[] = { "UCS-2-INTERNAL", "UCS-2", "UCS2", "ISO-10646/UCS2", "UNICODE", NULL };
+static char *namesle[] = { "UCS-2LE", "UNICODELITTLE", NULL };
+static char *namesbe[] = { "UCS-2BE", "UNICODEBIG", NULL };
+#else
+static char *names[] = { "UCS-4-INTERNAL", "UCS-4", "UCS4", "ISO-10646-UCS-4", "UTF-32", NULL };
+static char *namesle[] = { "UCS-4LE", "UTF-32LE", NULL };
+static char *namesbe[] = { "UCS-4BE", "UTF-32BE", NULL };
+#endif
+static char *unicode_name = NULL;
+static int byteswapped = false;
+
+static int BytesNormal(iconv_t latin1_2_unicode) {
+#ifdef UNICHAR_16
+    union {
+	short s;
+	char c[2];
+    } u[8];
+#else
+    union {
+	int s;
+	char c[4];
+    } u[8];
+#endif
+    char *from = "A", *to = &u[0].c[0];
+    int in_left = 1, out_left = sizeof(u);
+    memset(u,0,sizeof(u));
+    iconv( latin1_2_unicode, (iconv_arg2_t) &from, &in_left, &to, &out_left);
+    if ( u[0].s=='A' )
+return( true );
+
+return( false );
+}
 
 static int my_iconv_setup(void) {
+    char **testnames;
+    int i;
+    union {
+	short s;
+	char c[2];
+    } u;
+    iconv_t test;
+
     if ( iconv_local_encoding_name==NULL ) {
 	if ( to_unicode!=(iconv_t) (-1) ) {
 	    iconv_close(to_unicode);
@@ -411,31 +452,51 @@ return(false);
     }
     if ( old_local_name!=NULL && strcmp(old_local_name,iconv_local_encoding_name)==0 )
 return( to_unicode!=(iconv_t) (-1) );
+
     free(old_local_name);
     old_local_name = copy(iconv_local_encoding_name);
     to_utf8 = iconv_open("UTF-8",iconv_local_encoding_name);
     from_utf8 = iconv_open(iconv_local_encoding_name,"UTF-8");
-#ifdef UNICHAR_16
-    to_unicode = iconv_open("UCS-2",iconv_local_encoding_name);
-    if ( to_unicode!=(iconv_t) (-1) )
-	from_unicode = iconv_open(iconv_local_encoding_name,"UCS-2");
-    else {
-	/* libiconv uses a different name */
-	to_unicode = iconv_open("UCS-2-INTERNAL",iconv_local_encoding_name);
-	from_unicode = iconv_open(iconv_local_encoding_name,"UCS-2-INTERNAL");
+
+    if ( unicode_name==NULL ) {
+	u.c[0] = 0x1; u.c[1] = 0x2;
+	if ( u.s==0x201 ) {		/* Little endian */
+	    testnames = namesle;
+	} else {
+	    testnames = namesbe;
+	}
+	for ( i=0; testnames[i]!=NULL; ++i ) {
+	    test = iconv_open(testnames[i],"ISO-8859-1");
+	    if ( test!=(iconv_t) -1 && test!=NULL ) {
+		iconv_close(test);
+		unicode_name = testnames[i];
+	break;
+	    }
+	}
+	if ( unicode_name==NULL ) {
+	    for ( i=0; names[i]!=NULL; ++i ) {
+		test = iconv_open(names[i],"ISO-8859-1");
+		if ( test!=(iconv_t) -1 && test!=NULL ) {
+		    byteswapped = !BytesNormal(test);
+		    iconv_close(test);
+		    unicode_name = names[i];
+	    break;
+		}
+	    }
+	}
     }
-#else
-    to_unicode = iconv_open("UCS-4",iconv_local_encoding_name);
-    if ( to_unicode!=(iconv_t) (-1) )
-	from_unicode = iconv_open(iconv_local_encoding_name,"UCS-4");
-    else {
-	/* libiconv uses a different name */
-	to_unicode = iconv_open("UCS-4-INTERNAL",iconv_local_encoding_name);
-	from_unicode = iconv_open(iconv_local_encoding_name,"UCS-4-INTERNAL");
+    if ( unicode_name == NULL ) {
+	fprintf( stderr, "Could not find a name for Unicode which iconv could understand.\n" );
+return( false );
+    } else if ( byteswapped ) {
+	fprintf( stderr, "The only name for Unicode that iconv understood produced unexpected results.\nPerhaps %s was byte swapped.\n", unicode_name );
+return( false );
     }
-#endif
+	
+    to_unicode = iconv_open(unicode_name,iconv_local_encoding_name);
+    from_unicode = iconv_open(iconv_local_encoding_name,unicode_name);
     if ( to_unicode == (iconv_t) (-1) || to_utf8 == (iconv_t) (-1) ) {
-	fprintf( stderr, "iconv failed to understand encoding %s (or perhaps UCS2)\n",
+	fprintf( stderr, "iconv failed to understand encoding %s\n",
 		iconv_local_encoding_name);
 return( false );
     }
@@ -451,6 +512,10 @@ unichar_t *def2u_strncpy(unichar_t *uto, const char *from, int n) {
 	iconv(to_unicode, (iconv_arg2_t) &from, &in_left, &cto, &out_left);
 	if ( cto<((char *) uto)+2*n) *cto++ = '\0';
 	if ( cto<((char *) uto)+2*n) *cto++ = '\0';
+#ifndef UNICHAR_16
+	if ( cto<((char *) uto)+4*n) *cto++ = '\0';
+	if ( cto<((char *) uto)+4*n) *cto++ = '\0';
+#endif
 return( uto );
     }
 #endif
@@ -465,6 +530,10 @@ char *u2def_strncpy(char *to, const unichar_t *ufrom, int n) {
 	iconv(from_unicode, (iconv_arg2_t) &cfrom, &in_left, &cto, &out_left);
 	if ( cto<to+n ) *cto++ = '\0';
 	if ( cto<to+n ) *cto++ = '\0';
+#ifndef UNICHAR_16
+	if ( cto<to+n ) *cto++ = '\0';
+	if ( cto<to+n ) *cto++ = '\0';
+#endif
 return( to );
     }
 #endif
@@ -486,6 +555,10 @@ return( NULL );
 	iconv(to_unicode, (iconv_arg2_t) &from, &in_left, &cto, &out_left);
 	*cto++ = '\0';
 	*cto++ = '\0';
+#ifndef UNICHAR_16
+	*cto++ = '\0';
+	*cto++ = '\0';
+#endif
 return( uto );
     }
 #endif
@@ -512,6 +585,10 @@ return( NULL );
 	iconv(from_unicode, (iconv_arg2_t) &cfrom, &in_left, &cto, &out_left);
 	*cto++ = '\0';
 	*cto++ = '\0';
+#ifndef UNICHAR_16
+	*cto++ = '\0';
+	*cto++ = '\0';
+#endif
 return( to );
     }
 #endif
@@ -547,6 +624,10 @@ return( NULL );
 	iconv(to_utf8, (iconv_arg2_t) &from, &in_left, &cto, &out_left);
 	*cto++ = '\0';
 	*cto++ = '\0';
+#ifndef UNICHAR_16
+	*cto++ = '\0';
+	*cto++ = '\0';
+#endif
 return( cret );
     }
 #endif
@@ -578,6 +659,10 @@ return( NULL );
 	iconv(from_utf8, (iconv_arg2_t) &cfrom, &in_left, &cto, &out_left);
 	*cto++ = '\0';
 	*cto++ = '\0';
+#ifndef UNICHAR_16
+	*cto++ = '\0';
+	*cto++ = '\0';
+#endif
 return( to );
     }
 #endif
