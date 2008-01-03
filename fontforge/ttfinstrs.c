@@ -470,6 +470,53 @@ return( NULL );
 return( grealloc(instrs,icnt==0?1:icnt));	/* some versions of realloc abort on 0 */
 }
 
+int instr_typify(struct instrdata *id) {
+    int i, len = id->instr_cnt, cnt, j, lh;
+    uint8 *instrs = id->instrs;
+    uint8 *bts;
+
+    if ( id->bts==NULL )
+	id->bts = galloc(len+1);
+    bts = id->bts;
+    for ( i=lh=0; i<len; ++i ) {
+	bts[i] = bt_instr;
+	++lh;
+	if ( instrs[i]==ttf_npushb ) {
+	    /* NPUSHB */
+	    bts[++i] = bt_cnt;
+	    cnt = instrs[i];
+	    for ( j=0 ; j<cnt; ++j)
+		bts[++i] = bt_byte;
+	    lh += 1+cnt;
+	} else if ( instrs[i]==ttf_npushw ) {
+	    /* NPUSHW */
+	    bts[++i] = bt_cnt; ++lh;
+	    cnt = instrs[i];
+	    for ( j=0 ; j<cnt; ++j) {
+		bts[++i] = bt_wordhi;
+		bts[++i] = bt_wordlo;
+	    }
+	    lh += 1+cnt;
+	} else if ( (instrs[i]&0xf8) == 0xb0 ) {
+	    /* PUSHB[n] */
+	    cnt = (instrs[i]&7)+1;
+	    for ( j=0 ; j<cnt; ++j)
+		bts[++i] = bt_byte;
+	    lh += cnt;
+	} else if ( (instrs[i]&0xf8) == 0xb8 ) {
+	    /* PUSHW[n] */
+	    cnt = (instrs[i]&7)+1;
+	    for ( j=0 ; j<cnt; ++j) {
+		bts[++i] = bt_wordhi;
+		bts[++i] = bt_wordlo;
+	    }
+	    lh += cnt;
+	}
+    }
+    bts[i] = bt_impliedreturn;
+return( lh );
+}
+
 char *__IVUnParseInstrs(InstrBase *iv) {
     char *ubuf, *pt;
     int i,l;
@@ -506,6 +553,7 @@ char *_IVUnParseInstrs(uint8 *instrs,int instr_cnt) {
     iv.instrdata = &id;
     id.instr_cnt = instr_cnt;
     id.instrs = instrs;
+    instr_typify(&id);
     ret = __IVUnParseInstrs(&iv);
     free(id.bts);
 return( ret );
