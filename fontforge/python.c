@@ -6595,7 +6595,7 @@ return( -1 );
     if ( PyString_Check(index)) {
 	char *name = PyString_AsString(index);
 	if ( private==NULL )
-	    sf->private = private = galloc(sizeof(struct psdict));
+	    sf->private = private = gcalloc(1,sizeof(struct psdict));
 	PSDictChangeEntry(private,name,string);
     } else {
 	free(freeme);
