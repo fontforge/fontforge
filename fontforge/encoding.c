@@ -130,11 +130,11 @@ const char *FindUnicharName(void) {
     iconv_t test;
     static char *goodname = NULL;
 #ifdef UNICHAR_16
-    static char *names[] = { "UCS-2", "UCS-2-INTERNAL", "UCS2", "ISO-10646/UCS2", "UNICODE", NULL };
+    static char *names[] = { "UCS-2-INTERNAL", "UCS-2", "UCS2", "ISO-10646/UCS2", "UNICODE", NULL };
     static char *namesle[] = { "UCS-2LE", "UNICODELITTLE", NULL };
     static char *namesbe[] = { "UCS-2BE", "UNICODEBIG", NULL };
 #else
-    static char *names[] = { "UCS-4", "UCS-4-INTERNAL", "UCS4", "ISO-10646-UCS-4", "UTF-32", NULL };
+    static char *names[] = { "UCS-4-INTERNAL", "UCS-4", "UCS4", "ISO-10646-UCS-4", "UTF-32", NULL };
     static char *namesle[] = { "UCS-4LE", "UTF-32LE", NULL };
     static char *namesbe[] = { "UCS-4BE", "UTF-32BE", NULL };
 #endif
@@ -183,7 +183,7 @@ return( goodname );
 	exit( 1 );
     }
 
-    test = iconv_open(names[i],"Mac");
+    test = iconv_open(goodname,"Mac");
     if ( test==(iconv_t) -1 || test==NULL ) {
 	IError( "Your version of iconv does not support the \"Mac Roman\" encoding.\nIf this causes problems, reconfigure --without-iconv." );
     } else
