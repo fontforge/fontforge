@@ -52,7 +52,7 @@ extern int autohint_before_generate;
  * Interpolation'. In FF it now does more or else what it should, but generates
  * large code - it needs optimization.
  */
-#define TESTIPSTRONG 0
+#define TESTIPSTRONG 2
 
 /* define some often used instructions */
 #define SVTCA_y                 (0x00)
@@ -1773,6 +1773,7 @@ static void search_edge(int p, SplinePoint *sp, InstrCt *ct) {
     real fudge = ct->gic->fudge;
     uint8 touchflag = ct->xdir?tf_x:tf_y;
 
+
     if (fabs(coord - ct->edge.base) <= fudge) {
 	if (IsCornerExtremum(ct->xdir, ct->contourends, ct->bp, p) ||
 	    IsExtremum(ct->xdir, sp)) score+=4;
@@ -1782,6 +1783,7 @@ static void search_edge(int p, SplinePoint *sp, InstrCt *ct) {
 
 	if (p == sp->ttfindex && 
 	    IsAnglePoint(ct->contourends, ct->bp, sp)) score++;
+
 
 	if (IsInflectionPoint(ct->contourends, ct->bp, sp)) score++;
 
@@ -2000,7 +2002,7 @@ return;
     {
 	if (ct->diagpts && ct->diagpts[others[i]].count) continue;
 
-	// check path forward
+	/* check path forward */
 	curr=NextOnContour(contourends, others[i]); 
 	while(curr!=others[i]) {
 	    double coord = (ct->xdir) ? ct->bp[curr].x : ct->bp[curr].y;
@@ -2014,7 +2016,7 @@ return;
 	
 	if (affected[others[i]] & touchflag) continue;
 
-	// check path backward
+	/* check path backward */
 	curr=PrevOnContour(contourends, others[i]); 
 	while(curr!=others[i]) {
 	    double coord = (ct->xdir) ? ct->bp[curr].x : ct->bp[curr].y;
@@ -2031,6 +2033,7 @@ return;
 
     free(tosnap);
 
+    /* remove optimized-out points from list to be instructed. */
     for(i=0; i<ct->edge.othercnt; i++)
 	if (affected[others[i]]) {
 	    ct->edge.othercnt--;
@@ -2733,16 +2736,16 @@ return( ret );
 
 static void SetDStemKeyPoint( InstrCt *ct,struct glyphdata *gd,BasePoint *stemunit,
     DStem *ds,struct pointdata *pd,int aindex ) {
-    int ptindex, nextindex, prev, prevdot;
+    int ptindex, nextindex, prev, prevdot, is_start;
     
     ptindex = pd->sp->ttfindex;
     nextindex = pd->sp->nextcpindex;
     prev = false;
+    is_start = ( aindex == 0 || aindex == 2 );
     if ( ptindex >= gd->realcnt ) {
         prevdot =   ( pd->prevunit.x * stemunit->x ) + 
                     ( pd->prevunit.y * stemunit->y );
-        if (( aindex <= 1 && prevdot < 0 ) || ( aindex >= 2 && prevdot > 0 ))
-            prev = true;
+        prev = (( is_start && prevdot < 0 ) || ( !is_start && prevdot > 0 ));
         ptindex = ( prev ) ? nextindex - 1 : nextindex;
     }
     ds->pts[aindex].num = ptindex;
@@ -2800,8 +2803,11 @@ return( diagpts );
         newhead->done = false;
         for ( j=0; j<sd->chunk_cnt; j++ ) {
             chunk = &sd->chunks[j];
-            num1 = ( sd->unit.y > 0 ) ? 1 : 2;
-            num2 = ( sd->unit.y > 0 ) ? 3 : 0;
+            /* Swap "left" and "right" sides for vectors pointing north-east,
+            /* so that the "left" side is always determined along the x axis 
+            /* rather than relatively to the vector direction */
+            num1 = ( sd->unit.y > 0 ) ? 0 : 2;
+            num2 = ( sd->unit.y > 0 ) ? 2 : 0;
             if ( chunk->l != NULL && newhead->pts[num1].pt == NULL )
                 SetDStemKeyPoint( ct,gd,&sd->unit,newhead,chunk->l,num1 );
             if ( chunk->r != NULL && newhead->pts[num2].pt == NULL )
@@ -2811,8 +2817,8 @@ return( diagpts );
         }
         for ( j=sd->chunk_cnt-1; j>=0; j-- ) {
             chunk = &sd->chunks[j];
-            num1 = ( sd->unit.y > 0 ) ? 0 : 3;
-            num2 = ( sd->unit.y > 0 ) ? 2 : 1;
+            num1 = ( sd->unit.y > 0 ) ? 1 : 3;
+            num2 = ( sd->unit.y > 0 ) ? 3 : 1;
             if ( chunk->l != NULL && newhead->pts[num1].pt == NULL )
                 SetDStemKeyPoint( ct,gd,&sd->unit,newhead,chunk->l,num1 );
             if ( chunk->r != NULL && newhead->pts[num2].pt == NULL )
@@ -2832,10 +2838,11 @@ return( diagpts );
                     if ( diagpts[idx].count < 2 )
                         diagpts = AssignLineToPoint( diagpts,newhead,idx,is_l );
                 } else {
+                    idx = chunk->l->sp->nextcpindex;
                     if ( diagpts[idx-1].count < 2 )
                         diagpts = AssignLineToPoint( diagpts,newhead,idx-1,is_l );
                     if ( diagpts[idx+1].count < 2 )
-                        diagpts = AssignLineToPoint( diagpts,newhead,idx+1,is_l );
+                        diagpts = AssignLineToPoint( diagpts,newhead,idx,is_l );
                 }
                 chunk->l->sp->ticked = true;
             }
@@ -2969,8 +2976,7 @@ return( false );
 /* be moved. If a point has already been positioned relatively to another
 /* diagonal line, then we move it along that diagonale. Thus this algorithm
 /* can handle things like "V" where one line's ending point is another
-/* line's starting point without special exceptions.
-*/
+/* line's starting point without special exceptions. */
 static uint8 *FixDstem( InstrCt *ct, DStem *ds, DiagPointInfo *diagpts, BasePoint *fv) {
     int startnum, a1, a2, b1, b2, ptcnt;
     NumberedPoint *v1, *v2;
@@ -2988,7 +2994,7 @@ return( ct->pt );
     
     startnum = FindDiagStartPoint( ds,touched );
     a1 = ds->pts[startnum].num;
-    if ((startnum == 0) || (startnum == 1)) {
+    if (( startnum == 0 ) || ( startnum == 1 )) {
         v1 = &ds->pts[0]; v2 = &ds->pts[1];
         a2 = ( startnum == 1 ) ? ds->pts[0].num : ds->pts[1].num;
         b1 = ds->pts[2].num; b2 = ds->pts[3].num;
@@ -3001,7 +3007,7 @@ return( ct->pt );
     instrs = pushpoints( instrs,2,pushpts );
     *instrs++ = 0x87;       /*SDPVTL [orthogonal] */
     
-    if (SetFreedomVector( &instrs,a1,ptcnt,touched,diagpts,v1,v2,fv )) {
+    if ( SetFreedomVector( &instrs,a1,ptcnt,touched,diagpts,v1,v2,fv )) {
         instrs = pushpoint( instrs,a1 );
         *instrs++ = MDAP;
         touched[a1] |= tf_d;
