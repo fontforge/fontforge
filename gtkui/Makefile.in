@@ -24,7 +24,7 @@ STATIC_LIBS = @STATIC_LIBS@
 
 ffgtk_OBJECTS = fontview.o startgtk.o uiutil.o cursors.o windowmenu.o prefs.o \
     openfontdlg.o stamp.o pythonui.o
-gtk_widget_OBJECTS = gwwvmenubar.o gwwvask.o
+gtk_widget_OBJECTS = gwwvmenubar.o gwwvask.o gwwvprogress.o
 glade_OBJECTS = ff_interface.o support.o
 
 _CFLAGS = -I$(top_srcdir)/inc -I$(srcdir) -I$(top_srcdir) @WFLAGS@ $(X_CFLAGS) \

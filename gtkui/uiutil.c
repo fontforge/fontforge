@@ -576,27 +576,6 @@ static void allow_events(void) {
 }
 
 /* Stubs! */
-static void NOUI_progress_start(int delay, const char *title, const char *line1,
-	const char *line2, int tot, int stages) {
-}
-
-static void NOUI_void_void_noop(void) {
-}
-
-static void NOUI_void_int_noop(int useless) {
-}
-
-static int NOUI_int_int_noop(int useless) {
-return( true );
-}
-
-static void NOUI_void_str_noop(const char * useless) {
-}
-
-static int NOUI_alwaystrue(void) {
-return( true );
-}
-
 static int NOUI_DefaultStrokeFlags(void) {
 return( sf_correctdir );
 }    
@@ -613,20 +592,20 @@ struct ui_interface gtk_ui_interface = {
     gwwv_open_filename,
     gwwv_saveas_filename,
 
-    NOUI_progress_start,
-    NOUI_void_void_noop,
-    NOUI_void_void_noop,
-    NOUI_void_int_noop,
-    NOUI_alwaystrue,
-    NOUI_alwaystrue,
-    NOUI_int_int_noop,
-    NOUI_void_str_noop,
-    NOUI_void_str_noop,
-    NOUI_void_void_noop,
-    NOUI_void_void_noop,
-    NOUI_void_int_noop,
-    NOUI_void_int_noop,
-    NOUI_alwaystrue,
+    gwwv_progress_start_indicator,
+    gwwv_progress_end_indicator,
+    gwwv_progress_show,
+    gwwv_progress_enable_stop,
+    gwwv_progress_next,
+    gwwv_progress_next_stage,
+    gwwv_progress_increment,
+    gwwv_progress_change_line1,
+    gwwv_progress_change_line2,
+    gwwv_progress_pause_timer,
+    gwwv_progress_resume_timer,
+    gwwv_progress_change_stages,
+    gwwv_progress_change_total,
+    gwwv_progress_reset,
 
     allow_events,
 
