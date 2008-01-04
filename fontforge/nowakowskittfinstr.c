@@ -50,9 +50,9 @@ extern int autohint_before_generate;
  * points between stems' edges, so that glyph's shape is mostly preserved
  * when strongly gridfitted. This in terms of FreeType is called 'Strong Point
  * Interpolation'. In FF it now does more or else what it should, but generates
- * large code - it needs optimization.
+ * large and sometimes incomplete code - it needs optimization.
  */
-#define TESTIPSTRONG 2
+#define TESTIPSTRONG 0
 
 /* define some often used instructions */
 #define SVTCA_y                 (0x00)
