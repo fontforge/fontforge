@@ -4423,7 +4423,7 @@ return( uni );
 #endif
 
 static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
-    int i,j,uni;
+    int i,j;
     int format, len, gc, gcbig, val;
     const char *name;
     char buffer[30];
@@ -4431,10 +4431,6 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
     extern const char *ttfstandardnames[];
     int notdefwarned = false;
     int anynames = false;
-#if 0
-    int response, asked=-1;
-    char *buts[5];
-#endif
 
     ff_progress_change_line2(_("Reading Names"));
 
@@ -4520,14 +4516,6 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	}
     }
 
-    /* where no names are given, but we've got a unicode encoding use */
-    /*  that to guess at them */
-#if 0
-    buts[0] = _("Yes"); buts[1] = _("Yes to _All");
-    buts[2] = _("No _to All"); buts[3] = _("No");
-    buts[4] = NULL;
-#endif
-
     for ( i=0; i<info->glyph_cnt; ++i ) if ( info->chars[i]!=NULL ) {
 	/* info->chars[i] can be null in some TTC files */
 	if ( i!=0 && info->chars[i]->name!=NULL &&
@@ -4542,37 +4530,10 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	    }
 	    free(info->chars[i]->name);
 	    info->chars[i]->name = NULL;
-	} else if ( info->chars[i]->name!=NULL &&
-		strcmp(info->chars[i]->name,".null")!=0 &&
-		strcmp(info->chars[i]->name,"nonmarkingreturn")!=0 &&
-		(uni = UniFromName(info->chars[i]->name,info->uni_interp,info->map==NULL ? &custom : info->map->enc))!= -1 &&
-		info->chars[i]->unicodeenc != uni ) {
-#if 1
-	    if ( info->chars[i]->unicodeenc==-1 ) {
-		if ( uni<0xe00 || uni>0xf8ff )	/* Don't complain about adobe's old PUA assignments for things like "eight.oldstyle" */
-		    LogError(_("The glyph named %.30s is not mapped to any unicode code point.\nBut its name indicates it should be mapped to U+%04X.\n"),
-			    info->chars[i]->name,uni);
-	    } else
-		LogError( _("The glyph named %.30s is mapped to U+%04X.\nBut its name indicates it should be mapped to U+%04X.\n"),
-			info->chars[i]->name,info->chars[i]->unicodeenc, uni);
-#else
-	    if ( asked!=-1 )
-		response = asked;
-	    else if ( info->chars[i]->unicodeenc==-1 )
-		response = ff_ask(_("Bad glyph name"),(const char **) buts,1,1,_("The glyph named %.30s is not mapped to any unicode code point. But its name indicates it should be mapped to U+%04X.\nWould you like to retain the name in spite of this?"),
-			info->chars[i]->name,uni);
-	    else
-		response = ff_ask(_("Bad glyph name"),(const char **) buts,1,1,_("The glyph named %.30s is mapped to U+%04X.\nBut its name indicates it should be mapped to U+%04X.\nWould you like to retain the name in spite of this?"),
-			info->chars[i]->name,info->chars[i]->unicodeenc, uni);
-	    if ( response==1 )
-		asked = response = 0;
-	    else if ( response==2 )
-		asked = response = 3;
-	    if ( response==3 ) {
-		free(info->chars[i]->name);
-		info->chars[i]->name = NULL;
-	    }
-#endif
+	/* I used to check for glyphs with bad names (ie. names indicative of */
+	/*  another unicode code point than the one applied to the glyph) but */
+	/*  this proves too early for that check, as we don't have the altunis*/
+	/*  figured out yet. So I've moved that into its own routine later */
 	}
 	/* And some volt files actually assign nul strings to the name */
 	if ( (info->chars[i]->name!=NULL && *info->chars[i]->name!='\0' ))
@@ -4963,6 +4924,75 @@ void AltUniFigure(SplineFont *sf,EncMap *map) {
     }
 }
 
+static void NameConsistancyCheck(SplineFont *sf,EncMap *map) {
+    /* Many fonts seem to have glyph names which mean something other than */
+    /*  what the encoding says of the glyph */
+    /* I used to ask about fixing the names up, but people didn't like that */
+    /*  so now I just produce warnings */
+    int gid, uni;
+    SplineChar *sc;
+#if 0
+    char buffer[100];
+    int response, asked=-1;
+    char *buts[5];
+#endif
+
+#if 0
+    buts[0] = _("Yes"); buts[1] = _("Yes to _All");
+    buts[2] = _("No _to All"); buts[3] = _("No");
+    buts[4] = NULL;
+#endif
+
+    for ( gid = 0 ; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
+	if ( sc->name!=NULL &&
+		strcmp(sc->name,".null")!=0 &&
+		strcmp(sc->name,"nonmarkingreturn")!=0 &&
+		(uni = UniFromName(sc->name,sf->uni_interp,map==NULL ? &custom : map->enc))!= -1 &&
+		sc->unicodeenc != uni ) {
+#if 1
+	    if ( sc->unicodeenc==-1 ) {
+		if ( uni<0xe00 || uni>0xf8ff )	/* Don't complain about adobe's old PUA assignments for things like "eight.oldstyle" */
+		    LogError(_("The glyph named %.30s is not mapped to any unicode code point.\nBut its name indicates it should be mapped to U+%04X.\n"),
+			    sc->name,uni);
+	    } else {
+		/* Ah, but suppose there's an altuni? */
+		struct altuni *alt;
+		for ( alt = sc->altuni; alt!=NULL && alt->unienc!=uni; alt=alt->next );
+		if ( alt==NULL )
+		    LogError( _("The glyph named %.30s is mapped to U+%04X.\nBut its name indicates it should be mapped to U+%04X.\n"),
+			    sc->name,sc->unicodeenc, uni);
+		else if ( alt->vs==0 ) {
+		    alt->unienc = sc->unicodeenc;
+		    sc->unicodeenc = uni;
+		}
+	    }
+#else
+	    if ( asked!=-1 )
+		response = asked;
+	    else if ( sc->unicodeenc==-1 )
+		response = ff_ask(_("Bad glyph name"),(const char **) buts,1,1,_("The glyph named %.30s is not mapped to any unicode code point. But its name indicates it should be mapped to U+%04X.\nWould you like to retain the name in spite of this?"),
+			sc->name,uni);
+	    else
+		response = ff_ask(_("Bad glyph name"),(const char **) buts,1,1,_("The glyph named %.30s is mapped to U+%04X.\nBut its name indicates it should be mapped to U+%04X.\nWould you like to retain the name in spite of this?"),
+			sc->name,sc->unicodeenc, uni);
+	    if ( response==1 )
+		asked = response = 0;
+	    else if ( response==2 )
+		asked = response = 3;
+	    if ( response==3 ) {
+		free(sc->name);
+		if ( sc->unicodeenc==-1 )
+		    sc->name = StdGlyphName(buffer,sc->unicodeenc,sf->uni_interp,NULL);
+		else {
+		    sprintf( buffer, "glyph%d", gid );
+		    sc->name = copy( buffer );
+		}
+	    }
+#endif
+	}
+    }
+}
+
 static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
     int i;
     RefChar *rf, *prev, *next;
@@ -4995,6 +5025,7 @@ static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
     sf->map = info->map;
     sf->uni_interp = info->uni_interp;
     AltUniFigure(sf,sf->map);
+    NameConsistancyCheck(sf, sf->map);
 }
 
 static char *AxisNameConvert(uint32 tag) {
