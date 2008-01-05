@@ -609,6 +609,21 @@ AC_ARG_ENABLE(devicetables,
     fi
  ], AC_DEFINE(FONTFORGE_CONFIG_DEVICETABLES) )
 
+AC_ARG_ENABLE(double,
+ AS_HELP_STRING([--enable-double], [Control whether fontforge uses doubles internally (normally it uses floats)]),
+ [
+    if test "$withval" != "no" >/dev/null 2>&1 ; then
+	AC_DEFINE(FONTFORGE_CONFIG_USE_DOUBLE)
+    fi
+ ], : )
+AC_ARG_ENABLE(longdouble,
+ AS_HELP_STRING([--enable-longdouble], [Control whether fontforge uses long doubles internally (normally it uses floats)]),
+ [
+    if test "$withval" != "no" >/dev/null 2>&1 ; then
+	AC_DEFINE(FONTFORGE_CONFIG_USE_LONGDOUBLE)
+    fi
+ ], : )
+
 test -d libs || mkdir libs
 
 AC_SUBST(WFLAGS)

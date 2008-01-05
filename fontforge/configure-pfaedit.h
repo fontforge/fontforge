@@ -152,9 +152,9 @@
 
 /* In addition to placing snippets of charstrings into subrs, I tried adding  */
 /*  whole glyphs (when that was possible). To my surprise, it made things     */
-/*  in one of my test cases, and barely registered an improvement in another  */
-/*  So I think we're better off without it. But I don't understand why things */
-/*  are worse so I'm leaving the code in to play with                         */
+/*  worse in one of my test cases, and barely registered an improvement in    */
+/*  another.   So I think we're better off without it. But I don't understand */
+/*  why things are worse so I'm leaving the code in to play with              */
 /*									      */
 /* #define FONTFORGE_CONFIG_PS_REFS_GET_SUBRS				      */
 /*									      */

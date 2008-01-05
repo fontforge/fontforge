@@ -401,26 +401,18 @@ AC_ARG_ENABLE(devicetables,
     fi
  ], AC_DEFINE(FONTFORGE_CONFIG_DEVICETABLES) )
 
-AC_ARG_WITH(gtk,
- [  --with-gtk   Control whether we build using the gtk toolkit (does not work yet)],
+AC_ARG_ENABLE(double,
+ AS_HELP_STRING([--enable-double], [Control whether fontforge uses doubles internally (normally it uses floats)]),
  [
     if test "$withval" != "no" >/dev/null 2>&1 ; then
-	AC_DEFINE(FONTFORGE_CONFIG_GTK)
-	echo "Configuring with gtk does not work. Please don't use this option."
+	AC_DEFINE(FONTFORGE_CONFIG_USE_DOUBLE)
     fi
  ], : )
-AC_ARG_WITH(gdraw,
- [  --with-gdraw   Control whether we build using fontforge's traditional toolkit (gdraw)],
+AC_ARG_ENABLE(longdouble,
+ AS_HELP_STRING([--enable-longdouble], [Control whether fontforge uses long doubles internally (normally it uses floats)]),
  [
     if test "$withval" != "no" >/dev/null 2>&1 ; then
-	AC_DEFINE(FONTFORGE_CONFIG_GDRAW)
-    fi
- ], : )
-AC_ARG_WITH(noui,
- [  --with-noui   Control whether we build without any ui, just the ability to run scripts],
- [
-    if test "$withval" != "no" >/dev/null 2>&1 ; then
-	AC_DEFINE(FONTFORGE_CONFIG_NO_WINDOWING_UI)
+	AC_DEFINE(FONTFORGE_CONFIG_USE_LONGDOUBLE)
     fi
  ], : )
 
