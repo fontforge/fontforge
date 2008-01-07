@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 9-Apr-2006 -->
-  <!-- AP: Last modified: 28-Oct-2007 -->
+  <!-- AP: Last modified: 6-Jan-2008 -->
   <TITLE>Scripting functions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -1222,6 +1222,14 @@ a[4][0] = "Nested array";
 	      <LI>
 		fmflags&amp;0x400000 =&gt; add composite (mark to base) information to the
 		afm file
+	      <LI>
+		fmflags&amp;0x800000 =&gt; store lookup and lookup subtable names in the
+		'PfEd' table
+	      <LI>
+		fmflags&amp;0x1000000 =&gt; store guidelines in the 'PfEd' table
+	      <LI>
+		fmflags&amp;0x2000000 =&gt; store the background (and spiro) layers in the
+		'PfEd' table
 	    </UL>
 	    <P>
 	    res controls the resolution of generated bdf fonts. A value of -1 means fontforge

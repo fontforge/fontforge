@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Sep-2002 -->
-  <!-- AP: Last modified: 13-Sep-2007 -->
+  <!-- AP: Last modified: 6-Jan-2008 -->
   <TITLE>Generate Font Dialog</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -161,7 +161,7 @@
       None
   </UL>
   <P>
-  <IMG SRC="GenerateOptions.png" WIDTH="310" HEIGHT="338" ALIGN="Right">The
+  <IMG SRC="GenerateOptions.png" WIDTH="320" HEIGHT="357" ALIGN="Right">The
   <A NAME="Options">options</A> dialog provides the following check boxes.
   Not all are enabled at all times.
   <UL>
@@ -176,10 +176,9 @@
     <LI>
       [] AFM -- Generate an adobe font metrics file (controls generation of .amfm
       files for multiple master fonts too)<BR>
-      Note: Only 'liga' and 'rlig' ligatures will be output in the AFM file. If
-      this is not what you want, use the
-      <A HREF="scripting-alpha.html#ControlAfmLigatureOutput">ControlAfmLigatureOutput</A>
-      scripting command.
+      Note: Normally only 'liga' and 'rlig' ligatures will be output in the AFM
+      file. But you can control that in the lookup dialog off of
+      <A HREF="fontinfo.html">Font Info</A>.
     <LI>
       [] Composites in AFM -- the AFM format includes a mechanism for building
       composite glyphs out of components. It is roughly equivalent to the OpenType
@@ -194,11 +193,7 @@
       encoding file) 
 	<HR>
     <LI>
-      [] Hints -- Include truetype hints in a truetype font. NOTE: This used to
-      generate bad truetype instructions, now it merely inserts whatever truetype
-      instructions are stored with the glyph. If these have been read from another
-      truetype font they will probably be reasonable. If they have been generated
-      with FontForge's AutoInstr menu command they may make your font uglier.
+      [] Hints -- Include truetype hints in a truetype font. 
       <UL>
 	<LI>
 	  R C van Dalen's <A HREF="http://home.kabelfoon.nl/~slam/fonts/">truetype
@@ -233,10 +228,8 @@
       two sets of tables, Apple will look at one set, and everyone else will look
       at the other.
       (<FONT COLOR="Red"><STRONG><BIG>CAVEAT</BIG></STRONG></FONT>: The above statement
-      was true up to 10.4 ("Tiger") after 10.4, Apple will use OpenType tables
-      if they are present and may ignore AAT tables. Unfortunately Apple doesn't
-      implement all of OpenType so Apple's behavior may be
-      <FONT COLOR="Red"><STRONG>WRONG</STRONG></FONT>).
+      was true up to 10.4 ("Tiger") after 10.4, Apple can use a few OpenType
+      features.).
     <LI>
       [] Old style 'kern' -- If this is checked along with OpenType then both an
       OpenType 'GPOS' and an old style 'kern' table will be generated (assuming
@@ -245,16 +238,6 @@
       they say), but it may be helpful for applications which don't support 'GPOS'
       kerning.
     <LI>
-      [] Broken 'size' feature -- When Adobe first released fonts that included
-      design size information, they did not follow the opentype specification.
-      In August of 2006 they announced an incompatible change saying that fonts
-      released after that date would follow the specification.<BR>
-      There are some programs which use the 'size' information. Old versions of
-      these programs will not work with the corrected 'size' feature. New programs
-      should be able to work with either format.<BR>
-      Set this check box if you want to generate a font with and old (broken) 'size'
-      feature.
-    <LI>
       [] Save Comments -- I have added my own table
       ('<A HREF="non-standard.html#PfEd">PfEd</A>') in the truetype format in which
       I can store whatever data I want. Checking this box saves all the glyph comments
@@ -262,6 +245,14 @@
     <LI>
       [] Save Colors -- Save the glyph colors in the
       '<A HREF="non-standard.html#PfEd">PfEd</A>' table as well.
+    <LI>
+      [] Lookup Names -- Preserve lookup, lookup subtable and anchor class names
+      in the 'PfEd' table.
+    <LI>
+      [] Save Guides -- Save information about where the font's guidelines are
+      into the 'PfEd' table.
+    <LI>
+      [] Background -- Save the background (and spiro) layer into the 'PfEd' table.
     <LI>
       [] TeX -- Save TeX metrics in the '<A HREF="non-standard.html#TeX">TeX</A>
       ' table
