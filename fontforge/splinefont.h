@@ -1554,7 +1554,7 @@ typedef struct splinefont {
 #if HANYANG
     struct compositionrules *rules;
 #endif
-    char *comments;
+    char *comments;	/* Used to be restricted to ASCII, now utf8 */
     int tempuniqueid;
     int top_enc;
     uint16 desired_row_cnt, desired_col_cnt;
@@ -1694,7 +1694,10 @@ enum ttf_flags { ttf_flag_shortps = 1, ttf_flag_nohints = 2,
 		    ttf_flag_TeXtable=0x80,
 		    ttf_flag_ofm=0x100,
 		    ttf_flag_oldkern=0x200,	/* never set in conjunction with applemode */
-		    ttf_flag_brokensize=0x400	/* Adobe originally issued fonts with a bug in the size feature. They now claim (Aug 2006) that this has been fixed. Legacy programs will do the wrong thing with the fixed feature though */
+		    ttf_flag_brokensize=0x400,	/* Adobe originally issued fonts with a bug in the size feature. They now claim (Aug 2006) that this has been fixed. Legacy programs will do the wrong thing with the fixed feature though */
+		    ttf_flag_pfed_lookupnames=0x800,
+		    ttf_flag_pfed_guides=0x1000,
+		    ttf_flag_pfed_layers=0x2000
 		};
 enum openflags { of_fstypepermitted=1, of_askcmap=2 };
 enum ps_flags { ps_flag_nohintsubs = 0x10000, ps_flag_noflex=0x20000,
