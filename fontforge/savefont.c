@@ -1092,6 +1092,9 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 		if ( (fmflags&0x800) && !(old_ttf_flags&ttf_flag_applemode) )
 		    old_ttf_flags |= ttf_flag_oldkern;
 		if ( fmflags&0x1000 ) old_ttf_flags |= ttf_flag_brokensize;
+		if ( fmflags&0x800000 ) old_ttf_flags |= ttf_flag_pfed_lookupnames;
+		if ( fmflags&0x1000000 ) old_ttf_flags |= ttf_flag_pfed_guides;
+		if ( fmflags&0x2000000 ) old_ttf_flags |= ttf_flag_pfed_layers;
 	    }
 	} else if ( oldformatstate<=ff_ttfdfont || oldformatstate==ff_none ) {
 	    old_ttf_flags = 0;
@@ -1119,6 +1122,9 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	    if ( (fmflags&0x800) && !(old_ttf_flags&ttf_flag_applemode) )
 		old_ttf_flags |= ttf_flag_oldkern;
 	    if ( fmflags&0x1000 ) old_ttf_flags |= ttf_flag_brokensize;
+	    if ( fmflags&0x800000 ) old_ttf_flags |= ttf_flag_pfed_lookupnames;
+	    if ( fmflags&0x1000000 ) old_ttf_flags |= ttf_flag_pfed_guides;
+	    if ( fmflags&0x2000000 ) old_ttf_flags |= ttf_flag_pfed_layers;
 	} else {
 	    old_otf_flags = 0;
 		/* Applicable postscript flags */
@@ -1128,7 +1134,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	    if ( fmflags&0x40000 ) old_otf_flags |= ps_flag_noflex;
 	    if ( fmflags&0x80000 ) old_otf_flags |= ps_flag_nohints;
 	    if ( fmflags&0x200000 ) old_otf_flags |= ps_flag_round;
-	    if ( fmflags&0x400000 ) old_ps_flags |= ps_flag_afmwithmarks;
+	    if ( fmflags&0x400000 ) old_otf_flags |= ps_flag_afmwithmarks;
 		/* Applicable truetype flags */
 	    switch ( fmflags&0x90 ) {
 	      case 0x80:
@@ -1153,6 +1159,9 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	    if ( (fmflags&0x800) && !(old_otf_flags&ttf_flag_applemode) )
 		old_otf_flags |= ttf_flag_oldkern;
 	    if ( fmflags&0x1000 ) old_otf_flags |= ttf_flag_brokensize;
+	    if ( fmflags&0x800000 ) old_otf_flags |= ttf_flag_pfed_lookupnames;
+	    if ( fmflags&0x1000000 ) old_otf_flags |= ttf_flag_pfed_guides;
+	    if ( fmflags&0x2000000 ) old_otf_flags |= ttf_flag_pfed_layers;
 	}
     }
 
