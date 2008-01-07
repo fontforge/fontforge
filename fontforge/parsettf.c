@@ -5449,6 +5449,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->supplement = info->supplement;
     sf->cidversion = info->cidfontversion;
     sf->bitmaps = info->bitmaps;
+    sf->grid = info->guidelines;
     for ( bdf = info->bitmaps; bdf!=NULL; bdf = bdf->next ) {
 	bdf->sf = sf;
     }

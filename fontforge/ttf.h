@@ -286,6 +286,7 @@ struct ttfinfo {
     unsigned int bad_embedded_bitmap: 1;
     unsigned int bad_gx: 1;
     unsigned int bad_ot: 1;
+    Layer guidelines;
 };
 
 enum gsub_inusetype { git_normal, git_justinuse, git_findnames };

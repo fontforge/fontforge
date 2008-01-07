@@ -83,7 +83,10 @@ static int nfnt_warned = false, post_warned = false;
 #define CID_TTF_OldKern		1109
 #define CID_TTF_GlyphMap	1110
 #define CID_TTF_OFM		1111
-#define CID_TTF_BrokenSize	1112
+/*#define CID_TTF_BrokenSize	1112*/
+#define CID_TTF_PfEdLookups	1113
+#define CID_TTF_PfEdGuides	1114
+#define CID_TTF_PfEdLayers	1115
 
 #ifdef HAVE_PTHREAD_H
 #include <pthread.h>
@@ -313,12 +316,20 @@ return( false );
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_OldKern)) &&
 			!(d->ttf_flags&ttf_flag_applemode) )
 		    d->ttf_flags |= ttf_flag_oldkern;
+#if 0
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_BrokenSize)) )
 		    d->ttf_flags |= ttf_flag_brokensize;
+#endif
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdComments)) )
 		    d->ttf_flags |= ttf_flag_pfed_comments;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdColors)) )
 		    d->ttf_flags |= ttf_flag_pfed_colors;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdLookups)) )
+		    d->ttf_flags |= ttf_flag_pfed_lookupnames;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdGuides)) )
+		    d->ttf_flags |= ttf_flag_pfed_guides;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdGuides)) )
+		    d->ttf_flags |= ttf_flag_pfed_layers;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_TeXTable)) )
 		    d->ttf_flags |= ttf_flag_TeXtable;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_GlyphMap)) )
@@ -336,12 +347,20 @@ return( false );
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_OldKern)) &&
 			!(d->otf_flags&ttf_flag_applemode) )
 		    d->otf_flags |= ttf_flag_oldkern;
+#if 0
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_BrokenSize)) )
 		    d->otf_flags |= ttf_flag_brokensize;
+#endif
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdComments)) )
 		    d->otf_flags |= ttf_flag_pfed_comments;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdColors)) )
 		    d->otf_flags |= ttf_flag_pfed_colors;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdLookups)) )
+		    d->otf_flags |= ttf_flag_pfed_lookupnames;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdGuides)) )
+		    d->otf_flags |= ttf_flag_pfed_guides;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdGuides)) )
+		    d->otf_flags |= ttf_flag_pfed_layers;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_TeXTable)) )
 		    d->otf_flags |= ttf_flag_TeXtable;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_GlyphMap)) )
@@ -384,6 +403,12 @@ return( false );
 		    d->psotb_flags |= ttf_flag_pfed_comments;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdColors)) )
 		    d->psotb_flags |= ttf_flag_pfed_colors;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdLookups)) )
+		    d->otf_flags |= ttf_flag_pfed_lookupnames;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdGuides)) )
+		    d->otf_flags |= ttf_flag_pfed_guides;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdGuides)) )
+		    d->otf_flags |= ttf_flag_pfed_layers;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_TeXTable)) )
 		    d->psotb_flags |= ttf_flag_TeXtable;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_GlyphMap)) )
@@ -439,9 +464,14 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
 
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_PfEdComments),flags&ttf_flag_pfed_comments);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_PfEdColors),flags&ttf_flag_pfed_colors);
+    GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_PfEdLookups),flags&ttf_flag_pfed_lookupnames);
+    GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_PfEdGuides),flags&ttf_flag_pfed_guides);
+    GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_PfEdLayers),flags&ttf_flag_pfed_layers);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_TeXTable),flags&ttf_flag_TeXtable);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_GlyphMap),flags&ttf_flag_glyphmap);
+#if 0 
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_BrokenSize),flags&ttf_flag_brokensize);
+#endif
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_OldKern),
 	    (flags&ttf_flag_oldkern) && !GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_AppleMode)));
 
@@ -467,12 +497,17 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_AppleMode),which!=0 && which!=3);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_OpenTypeMode),which!=0 && which!=3);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_OldKern),which!=0 );
+#if 0
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_BrokenSize),which!=0 );
+#endif
 
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_PfEd),which!=0);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_PfEdComments),which!=0);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_PfEdColors),which!=0);
-    GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_TeXTable),which!=0);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_PfEdLookups),which!=0);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_PfEdGuides),which!=0);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_PfEdColors),which!=0);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_PfEdLayers),which!=0);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_GlyphMap),which!=0);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_OFM),which!=0);
 
@@ -486,10 +521,10 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     int k,group,group2;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[28];
-    GTextInfo label[28];
+    GGadgetCreateData gcd[30];
+    GTextInfo label[30];
     GRect pos;
-    GGadgetCreateData *hvarray1[21], *hvarray2[31], *harray[7], *varray[9];
+    GGadgetCreateData *hvarray1[21], *hvarray2[36], *harray[7], *varray[9];
     GGadgetCreateData boxes[5];
 
     d->sod_done = false;
@@ -628,7 +663,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     boxes[2].creator = GHVGroupCreate;
 
 
-    label[k].text = (unichar_t *) _("TrueType");
+    label[k].text = (unichar_t *) _("SFNT");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 8; gcd[k].gd.pos.y = gcd[group].gd.pos.y+gcd[group].gd.pos.height+6;
@@ -643,7 +678,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
 
     gcd[k].gd.pos.x = gcd[group+1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+8;
     gcd[k].gd.flags = gg_visible |gg_utf8_popup;
-    label[k].text = (unichar_t *) _("Hints");
+    label[k].text = (unichar_t *) _("TrueType Hints");
     label[k].text_is_1byte = true;
     gcd[k].gd.popup_msg = (unichar_t *) _("Do you want the font file to contain truetype hints? This will not\ngenerate new instructions, it will just make use of whatever is associated\nwith each character.");
     gcd[k].gd.label = &label[k];
@@ -693,15 +728,25 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k++].creator = GCheckBoxCreate;
     hvarray2[20] = GCD_HPad10; hvarray2[21] = &gcd[k-1];
 
-    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+4; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
     gcd[k].gd.flags = gg_visible | gg_utf8_popup;
-    label[k].text = (unichar_t *) _("Broken 'size'");
+    label[k].text = (unichar_t *) _("Output Glyph Map");
     label[k].text_is_1byte = true;
-    gcd[k].gd.popup_msg = (unichar_t *) _("When Adobe first released fonts with a 'size' feature they did\nnot follow the opentype specification. In August of 2006 they\nannounced an incompatible change to bring fonts produced after\nthat date in line with the specification. Unfortunately there\nare programs which depend on the old, broken format.\n  Legacy programs will not work when given a font in the correct\nformat. New programs should be able to handle either correct or\nbroken 'size' features." );
+    gcd[k].gd.popup_msg = (unichar_t *) _("When generating a truetype or opentype font it is occasionally\nuseful to know the mapping between truetype glyph ids and\nglyph names. Setting this option will cause FontForge to\nproduce a file (with extension .g2n) containing those data.");
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.cid = CID_TTF_BrokenSize;
+    gcd[k].gd.cid = CID_TTF_GlyphMap;
     gcd[k++].creator = GCheckBoxCreate;
     hvarray2[25] = &gcd[k-1]; hvarray2[26] = GCD_ColSpan;
+
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
+    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+    label[k].text = (unichar_t *) _("Output OFM & CFG");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.popup_msg = (unichar_t *) _("The ofm and cfg files contain information Omega needs to process a font.");
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_TTF_OFM;
+    gcd[k++].creator = GCheckBoxCreate;
+    hvarray2[30] = &gcd[k-1]; hvarray2[31] = GCD_ColSpan;
 
     gcd[k].gd.pos.x = gcd[group+6].gd.pos.x; gcd[k].gd.pos.y = gcd[k-5].gd.pos.y;
     gcd[k].gd.flags = gg_visible | gg_utf8_popup;
@@ -735,34 +780,44 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
 
     gcd[k].gd.pos.x = gcd[k-3].gd.pos.x; gcd[k].gd.pos.y = gcd[k-5].gd.pos.y;
     gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+    label[k].text = (unichar_t *) _("Lookup Names");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Preserve the names of the GPOS/GSUB lookups and subtables");
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_TTF_PfEdLookups;
+    gcd[k++].creator = GCheckBoxCreate;
+    hvarray2[17] = GCD_HPad10; hvarray2[18] = &gcd[k-1]; hvarray2[19] = NULL;
+
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
+    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+    label[k].text = (unichar_t *) _("Save Guides");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Save the guidelines in the Guide layer.");
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_TTF_PfEdGuides;
+    gcd[k++].creator = GCheckBoxCreate;
+    hvarray2[22] = GCD_HPad10; hvarray2[23] = &gcd[k-1]; hvarray2[24] = NULL;
+
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
+    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+    label[k].text = (unichar_t *) _("Background");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Preserve any background and spiro layers.");
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_TTF_PfEdLayers;
+    gcd[k++].creator = GCheckBoxCreate;
+    hvarray2[27] = GCD_HPad10; hvarray2[28] = &gcd[k-1]; hvarray2[29] = NULL;
+
+    gcd[k].gd.pos.x = gcd[k-3].gd.pos.x; gcd[k].gd.pos.y = gcd[k-5].gd.pos.y;
+    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
     label[k].text = (unichar_t *) _("TeX Table");
     label[k].text_is_1byte = true;
     gcd[k].gd.popup_msg = (unichar_t *) _("The TeX table is an extension to the TrueType format\nand the various data you would expect to find in\na tfm file (that isn't already stored elsewhere\nin the ttf file)\n");
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_TeXTable;
     gcd[k++].creator = GCheckBoxCreate;
-    hvarray2[17] = &gcd[k-1]; hvarray2[18] = GCD_ColSpan; hvarray2[19] = NULL;
-
-    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
-    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
-    label[k].text = (unichar_t *) _("Output Glyph Map");
-    label[k].text_is_1byte = true;
-    gcd[k].gd.popup_msg = (unichar_t *) _("When generating a truetype or opentype font it is occasionally\nuseful to know the mapping between truetype glyph ids and\nglyph names. Setting this option will cause FontForge to\nproduce a file (with extension .g2n) containing those data.");
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.cid = CID_TTF_GlyphMap;
-    gcd[k++].creator = GCheckBoxCreate;
-    hvarray2[22] = &gcd[k-1]; hvarray2[23] = GCD_ColSpan; hvarray2[24] = NULL;
-
-    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
-    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
-    label[k].text = (unichar_t *) _("Output OFM & CFG");
-    label[k].text_is_1byte = true;
-    gcd[k].gd.popup_msg = (unichar_t *) _("The ofm and cfg files contain information Omega needs to process a font.");
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.cid = CID_TTF_OFM;
-    gcd[k++].creator = GCheckBoxCreate;
-    hvarray2[27] = &gcd[k-1]; hvarray2[28] = GCD_ColSpan; hvarray2[29] = NULL;
-    hvarray2[30] = NULL;
+    hvarray2[32] = &gcd[k-1]; hvarray2[33] = GCD_ColSpan; hvarray2[34] = NULL;
+    hvarray2[35] = NULL;
 
     boxes[3].gd.flags = gg_enabled|gg_visible;
     boxes[3].gd.u.boxelements = hvarray2;
@@ -1920,6 +1975,11 @@ int SFGenerateFont(SplineFont *sf,int family,EncMap *map) {
 	old_otf_flags &=~ttf_flag_otmode;
 	old_ttf_flags &=~ttf_flag_otmode;
     }
+
+    /* Let's not support broken size any more */
+    old_otf_flags &= ~ttf_flag_brokensize;
+    old_ttf_flags &= ~ttf_flag_brokensize;
+    old_psotb_flags &= ~ttf_flag_brokensize;
 
     if ( family ) {
 	/* I could just disable the menu item, but I think it's a bit confusing*/

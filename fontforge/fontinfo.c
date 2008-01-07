@@ -4506,7 +4506,7 @@ return(true);
 	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Notice));
 	free(sf->copyright); sf->copyright = cu_copy(txt);
 	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Comment));
-	free(sf->comments); sf->comments = cu_copy(*txt?txt:NULL);
+	free(sf->comments); sf->comments = u2utf8_copy(*txt?txt:NULL);
 	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_DefBaseName));
 	if ( *txt=='\0' || GGadgetIsChecked(GWidgetGetControl(gw,CID_SameAsFontname)) )
 	    txt = NULL;
