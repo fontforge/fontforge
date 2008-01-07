@@ -84,7 +84,7 @@ static void dump_glyphnamelist(FILE *out, SplineFont *sf, char *names) {
 		fprintf( out, "\n\t" );
 		len = 8;
 	    }
-	    fprintf( out, "%s ", start );
+	    fprintf( out, "\\%s ", start );
 	    len += strlen(start)+1;
 	    *pt = ch;
 	}
@@ -110,6 +110,100 @@ static void dump_glyphnamelist(FILE *out, SplineFont *sf, char *names) {
 	    fprintf( out, "%s ", nm );
 	    len += strlen(nm)+1;
 	    *pt = ch;
+	}
+    }
+}
+
+static void dump_fpst_everythingelse(FILE *out, SplineFont *sf,char **classes,
+	int ccnt, OTLookup *otl) {
+    /* Every now and then we need to dump out class 0, the "Everything Else" */
+    /*  Opentype class. So... find all the glyphs which aren't listed in one */
+    /*  of the other classes, and dump 'em. Even less frequently we will be  */
+    /*  asked to apply a transformation to those elements, so we must dump   */
+    /*  out the transformed things in the same order */
+    int gid, i, k, ch;
+    char *pt, *start, *text;
+    SplineFont *sub;
+    SplineChar *sc;
+    PST *pst;
+    int len;
+
+    if ( sf->subfontcnt==0 ) {
+	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL)
+	    sc->ticked = false;
+    } else {
+	for ( k=0; k<sf->subfontcnt; ++k ) {
+	    sub = sf->subfonts[k];
+	    for ( gid=0; gid<sub->glyphcnt; ++gid ) if ( (sc=sub->glyphs[gid])!=NULL)
+		sc->ticked = false;
+	}
+    }
+
+    for ( i=1; i<ccnt; ++i ) {
+	for ( pt=classes[i] ; *pt ; ) {
+	    while ( *pt==' ' ) ++pt;
+	    start = pt;
+	    while ( *pt!=' ' && *pt!='\0' ) ++pt;
+	    if ( pt==start )
+	break;
+	    ch = *pt; *pt = '\0';
+	    sc = SFGetChar(sf,-1,start);
+	    if ( sc!=NULL )
+		sc->ticked = true;
+	    *pt = ch;
+	}
+    }
+
+    if ( sf->subfontcnt==0 ) {
+	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL && !sc->ticked ) {
+	    if ( otl!=NULL ) {
+		for ( pst=sc->possub; pst!=NULL; pst=pst->next )
+		    if ( pst->subtable!=NULL && pst->subtable->lookup == otl )
+		break;
+		if ( pst!=NULL )
+		    text = pst->u.subs.variant;
+		else
+		    text = NULL;
+	    } else
+		text = sc->name;
+	    if ( (text==NULL && len+6 > 72 ) ||
+		    ( text!=NULL && strlen(text)+len+2 > 72 )) {
+		fprintf( out, "\n\t" );
+		len = 8;
+	    }
+	    if ( text==NULL ) {
+		fprintf( out, "NULL " );
+		len += 5;
+	    } else {
+		fprintf( out, "\\%s ", text );
+		len += strlen(text)+2;
+	    }
+	}
+    } else {
+	for ( k=0; k<sf->subfontcnt; ++k ) {
+	    sub = sf->subfonts[k];
+	    for ( gid=0; gid<sub->glyphcnt; ++gid ) if ( (sc=sub->glyphs[gid])!=NULL && !sc->ticked ) {
+		if ( otl!=NULL ) {
+		    for ( pst=sc->possub; pst!=NULL; pst=pst->next )
+			if ( pst->subtable!=NULL && pst->subtable->lookup == otl )
+		    break;
+		    if ( pst!=NULL )
+			sc = SFGetChar(sf,-1,pst->u.subs.variant);
+		    else
+			sc = NULL;
+		}
+		if ( len+8> 76 ) {
+		    fprintf( out, "\n\t" );
+		    len = 8;
+		}
+		if ( sc!=NULL ) {
+		    fprintf( out, "\\%d ", sc->orig_pos );
+		    len += 8;
+		} else {
+		    fprintf( out, "NULL " );
+		    len += 5;
+		}
+	    }
 	}
     }
 }
@@ -583,6 +677,20 @@ static void dump_contextpstcoverage(FILE *out,SplineFont *sf,
     putc(';',out); putc('\n',out);
 }
 
+static int ClassUsed(FPST *fpst, int which, int class_num) {
+    int i,j;
+
+    for ( j=0; j<fpst->rule_cnt; ++j ) {
+	struct fpst_rule *r = &fpst->rules[j];
+	int cnt = which==0? r->u.class.ncnt : which==1 ? r->u.class.bcnt : r->u.class.fcnt;
+	uint16 *checkme = which==0? r->u.class.nclasses : which==1 ? r->u.class.bclasses : r->u.class.fclasses;
+	for ( i=0; i<cnt; ++i )
+	    if ( checkme[i] == class_num )
+return( true );
+    }
+return( false );
+}
+
 static void dump_contextpstclass(FILE *out,SplineFont *sf,
 	struct lookup_subtable *sub, struct fpst_rule *r, int in_ignore) {
     FPST *fpst = sub->fpst;
@@ -647,20 +755,23 @@ static void dump_contextpstclass(FILE *out,SplineFont *sf,
 		fprintf(out, "<lookup %s> ", lookupname(otl) );
 	    else if ( otl->lookup_type==gsub_single ) {
 		putc('[',out);
-		for ( pt=fpst->nclass[r->u.class.nclasses[r->lookups[i].seq]]; ; ) {
-		    while ( *pt==' ' ) ++pt;
-		    if ( *pt=='\0' )
-		break;
-		    for ( start=pt; *pt!=' ' && *pt!='\0'; ++pt );
-		    ch = *pt; *pt = '\0';
-		    pst = pst_from_single_lookup(sf,otl,start);
-		    if ( pst!=NULL )
-			dump_glyphbyname(out,sf,pst->u.subs.variant);
-		    else
-			fprintf( out, "NULL" );
-		    *pt = ch;
-		    putc(' ',out);
-		}
+		if ( fpst->nclass[r->u.class.nclasses[r->lookups[i].seq]]!=NULL ) {
+		    for ( pt=fpst->nclass[r->u.class.nclasses[r->lookups[i].seq]]; ; ) {
+			while ( *pt==' ' ) ++pt;
+			if ( *pt=='\0' )
+		    break;
+			for ( start=pt; *pt!=' ' && *pt!='\0'; ++pt );
+			ch = *pt; *pt = '\0';
+			pst = pst_from_single_lookup(sf,otl,start);
+			if ( pst!=NULL )
+			    dump_glyphbyname(out,sf,pst->u.subs.variant);
+			else
+			    fprintf( out, "NULL" );
+			*pt = ch;
+			putc(' ',out);
+		    }
+		} else
+		    dump_fpst_everythingelse(out,sf,fpst->nclass,fpst->nccnt,otl);
 		putc(']',out);
 	    } else if ( otl->lookup_type==gsub_ligature ) {
 		/* I don't think it is possible to do this correctly */
@@ -673,6 +784,7 @@ static void dump_contextpstclass(FILE *out,SplineFont *sf,
 	    putc( ' ',out );
 	}
     }
+    putc( '\n',out );
 }
 
 static void dump_contextpst(FILE *out,SplineFont *sf,struct lookup_subtable *sub) {
@@ -686,24 +798,39 @@ return;
     }
     if ( fpst->format==pst_class ) {
 	if ( fpst->nclass!=NULL ) {
-	    for ( i=0; i<fpst->nccnt; ++i ) if ( fpst->nclass[i]!=NULL ) {
-		fprintf( out, "    @cc%d_match_%d = [", sub->subtable_offset, i );
-		dump_glyphnamelist(out,sf,fpst->nclass[i] );
-		fprintf( out, "];\n" );
+	    for ( i=0; i<fpst->nccnt; ++i ) {
+		if ( fpst->nclass[i]!=NULL || (i==0 && ClassUsed(fpst,0,0))) {
+		    fprintf( out, "    @cc%d_match_%d = [", sub->subtable_offset, i );
+		    if ( fpst->nclass[i]!=NULL )
+			dump_glyphnamelist(out,sf,fpst->nclass[i] );
+		    else
+			dump_fpst_everythingelse(out,sf,fpst->nclass,fpst->nccnt,NULL);
+		    fprintf( out, "];\n" );
+		}
 	    }
 	}
 	if ( fpst->bclass!=NULL ) {
-	    for ( i=0; i<fpst->bccnt; ++i ) if ( fpst->bclass[i]!=NULL ) {
-		fprintf( out, "    @cc%d_back_%d = [", sub->subtable_offset, i );
-		dump_glyphnamelist(out,sf,fpst->bclass[i] );
-		fprintf( out, "];\n" );
+	    for ( i=0; i<fpst->bccnt; ++i ) {
+		if ( fpst->bclass[i]!=NULL || (i==0 && ClassUsed(fpst,1,0))) {
+		    fprintf( out, "    @cc%d_back_%d = [", sub->subtable_offset, i );
+		    if ( fpst->bclass[i]!=NULL )
+			dump_glyphnamelist(out,sf,fpst->bclass[i] );
+		    else
+			dump_fpst_everythingelse(out,sf,fpst->bclass,fpst->bccnt,NULL);
+		    fprintf( out, "];\n" );
+		}
 	    }
 	}
 	if ( fpst->fclass!=NULL ) {
-	    for ( i=0; i<fpst->fccnt; ++i ) if ( fpst->fclass[i]!=NULL ) {
-		fprintf( out, "    @cc%d_ahead_%d = [", sub->subtable_offset, i );
-		dump_glyphnamelist(out,sf,fpst->fclass[i] );
-		fprintf( out, "];\n" );
+	    for ( i=0; i<fpst->fccnt; ++i ) {
+		if ( fpst->fclass[i]!=NULL || (i==0 && ClassUsed(fpst,2,0))) {
+		    fprintf( out, "    @cc%d_ahead_%d = [", sub->subtable_offset, i );
+		    if ( fpst->fclass[i]!=NULL )
+			dump_glyphnamelist(out,sf,fpst->fclass[i] );
+		    else
+			dump_fpst_everythingelse(out,sf,fpst->fclass,fpst->fccnt,NULL);
+		    fprintf( out, "];\n" );
+		}
 	    }
 	}
     }
@@ -721,11 +848,11 @@ return;
 	}
 	fprintf( out, r->lookup_cnt==0 ? "    ignore sub " : "    sub " );
 	if ( fpst->format==pst_class ) {
-	    dump_contextpstclass(out,sf,sub,r,true);
+	    dump_contextpstclass(out,sf,sub,r,r->lookup_cnt==0);
 	} else if ( fpst->format==pst_glyphs ) {
-	    dump_contextpstglyphs(out,sf,sub,r,true);
+	    dump_contextpstglyphs(out,sf,sub,r,r->lookup_cnt==0);
 	} else {
-	    dump_contextpstcoverage(out,sf,sub,r,true);
+	    dump_contextpstcoverage(out,sf,sub,r,r->lookup_cnt==0);
 	}
     }
 }

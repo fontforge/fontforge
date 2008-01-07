@@ -1264,7 +1264,7 @@ static void g___ContextSubTable2(FILE *ttf, int stoffset,
     } *rules;
     FPST *fpst;
     struct fpst_rule *rule;
-    uint16 *class;
+    uint16 *glyphs, *class;
     int warned2 = false;
 
     coverage = getushort(ttf);
@@ -1338,7 +1338,11 @@ return;
 	class = getClassDefTable(ttf, stoffset+classoff, info);
 	fpst->nccnt = ClassFindCnt(class,info->glyph_cnt);
 	fpst->nclass = ClassToNames(info,fpst->nccnt,class,info->glyph_cnt);
-	free(class); class = NULL;
+
+	/* Just in case they used the coverage table to redefine class 0 */
+	glyphs = getCoverageTable(ttf,stoffset+coverage,info);
+	fpst->nclass[0] = CoverageMinusClasses(glyphs,class,info);
+	free(glyphs); free(class); class = NULL;
 
 	cnt = 0;
 	for ( i=0; i<rcnt; ++i ) for ( j=0; j<rules[i].scnt; ++j ) {
@@ -1384,7 +1388,7 @@ static void g___ChainingSubTable2(FILE *ttf, int stoffset,
     } *rules;
     FPST *fpst;
     struct fpst_rule *rule;
-    uint16 *class;
+    uint16 *glyphs, *class;
     int warned2 = false;
 
     coverage = getushort(ttf);
@@ -1483,7 +1487,12 @@ return;
 	class = getClassDefTable(ttf, stoffset+classoff, info);
 	fpst->nccnt = ClassFindCnt(class,info->glyph_cnt);
 	fpst->nclass = ClassToNames(info,fpst->nccnt,class,info->glyph_cnt);
-	free(class);
+
+	/* Just in case they used the coverage table to redefine class 0 */
+	glyphs = getCoverageTable(ttf,stoffset+coverage,info);
+	fpst->nclass[0] = CoverageMinusClasses(glyphs,class,info);
+	free(glyphs); free(class); class = NULL;
+
 	/* The docs don't mention this, but in mangal.ttf fclassoff==0 NULL */
 	if ( bclassoff!=0 )
 	    class = getClassDefTable(ttf, stoffset+bclassoff, info);
