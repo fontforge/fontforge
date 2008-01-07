@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 30-Jun-2003 -->
-  <!-- AP: Last modified: 13-Aug-2007 -->
+  <!-- AP: Last modified: 6-Jan-2008 -->
   <TITLE>Non standard extensions used by FontForge in True/Open Type</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -107,6 +107,16 @@
       <LI>
 	'<A HREF="non-standard.html#fcmt">fcmt</A>' -- the font comment sub-table
 	(stores the comment that appears in the Font Info dialog)
+      <LI>
+	'<A HREF="#GPOS">GPOS</A>' -- Save lookup, lookup subtable and anchor class
+	names of GPOS lookups
+      <LI>
+	'<A HREF="#GPOS">GSUB</A>' -- Save lookup and lookup subtable names of GSUB
+	lookups
+      <LI>
+	'<A HREF="non-standard.html#guid">guid</A>' -- Save guideline locations
+      <LI>
+	'<A HREF="#layr">layr</A>' -- Save background and spiro layers
     </UL>
   </BLOCKQUOTE>
   <H3>
@@ -155,7 +165,7 @@
       <TR>
 	<TD>uint16</TD>
 	<TD>version</TD>
-	<TD>0</TD>
+	<TD>0/1</TD>
       </TR>
       <TR>
 	<TD>uint16</TD>
@@ -200,12 +210,34 @@
       </TR>
     </TABLE>
     <P>
-    And each of these offsets points to a unicode (UCS2) string. The strings
-    are assumed to be consecutive, so the length of each may be calculated by
-    subtracting its offset from the offset to the next string.
+    And each of these offsets points to a unicode (UCS2 for version 0, UTF-8
+    for version 1) string. The strings are assumed to be consecutive, so the
+    length of each may be calculated by subtracting its offset from the offset
+    to the next string.
   </BLOCKQUOTE>
   <H3>
     '<A NAME="fcmt">fcmt</A>' -- the font comment sub-table
+  </H3>
+  <BLOCKQUOTE>
+    The sub-table header begins with a version number, and a count of ranges
+    <TABLE CELLPADDING="2" BGCOLOR="#8080ff">
+      <TR>
+	<TD>uint16</TD>
+	<TD>version</TD>
+	<TD>0/1</TD>
+      </TR>
+      <TR>
+	<TD>uint16</TD>
+	<TD>length</TD>
+	<TD>number of characters in the string</TD>
+      </TR>
+    </TABLE>
+    <P>
+    In version 0 this is followed by &lt;length&gt; Unicode (UCS2) characters.
+    In version 1 it is followed by &lt;length&gt; bytes in utf8 encoding.
+  </BLOCKQUOTE>
+  <H3>
+    '<A NAME="GPOS">GPOS/GSUB</A>' -- lookup names
   </H3>
   <BLOCKQUOTE>
     The sub-table header begins with a version number, and a count of ranges
@@ -217,14 +249,426 @@
       </TR>
       <TR>
 	<TD>uint16</TD>
-	<TD>length</TD>
-	<TD>number of characters in the string</TD>
+	<TD>count</TD>
+	<TD>of lookups in this table</TD>
       </TR>
     </TABLE>
     <P>
-    And this is followed by &lt;length&gt; Unicode (UCS2) characters. Currently
-    these unicode characters will always contain ASCII values, but that may change
-    some day.
+    Then there will be an array of count elements (one for each lookup, ordered
+    as the lookups are in the GPOS or GSUB table)
+    <TABLE CELLPADDING="2" BGCOLOR="#8080ff">
+      <TR>
+	<TD>uint16</TD>
+	<TD>offset</TD>
+	<TD>to lookup name</TD>
+      </TR>
+      <TR>
+	<TD>uint16</TD>
+	<TD>offset</TD>
+	<TD>to lookup subtable structure</TD>
+      </TR>
+    </TABLE>
+    <P>
+    These offsets are based on the start of the subtable. The name offset points
+    to a NUL terminated UTF-8 encoded string. The subtable offset points to the
+    following structure:
+    <TABLE CELLPADDING="2" BGCOLOR="#8080ff">
+      <TR>
+	<TD>uint16</TD>
+	<TD>count</TD>
+	<TD>of lookup subtables in this lookup</TD>
+      </TR>
+    </TABLE>
+    <P>
+    Then there will be an array of count elements (one for each subtable, ordered
+    as the subtables are in the lookup of the GPOS or GSUB table)
+    <TABLE CELLPADDING="2" BGCOLOR="#8080ff">
+      <TR>
+	<TD>uint16</TD>
+	<TD>offset</TD>
+	<TD>to lookup subtable name</TD>
+      </TR>
+      <TR>
+	<TD>uint16</TD>
+	<TD>offset</TD>
+	<TD>to anchor class structure</TD>
+      </TR>
+    </TABLE>
+    <P>
+    These offsets are also based on the start of the subtable. The name offset
+    points to a NUL terminated UTF-8 encoded string. The anchor offset may be
+    0 if this subtable doesn't have any anchor classes, otherwise it points to
+    the following structure:
+    <TABLE CELLPADDING="2" BGCOLOR="#8080ff">
+      <TR>
+	<TD>uint16</TD>
+	<TD>count</TD>
+	<TD>of anchor classes in this lookupsubtable</TD>
+      </TR>
+    </TABLE>
+    <P>
+    Then there will be an array of count elements (one for each anchor class)
+    <TABLE CELLPADDING="2" BGCOLOR="#8080ff">
+      <TR>
+	<TD>uint16</TD>
+	<TD>offset</TD>
+	<TD>to anchor class name</TD>
+      </TR>
+    </TABLE>
+  </BLOCKQUOTE>
+  <H3>
+    '<A NAME="guid">guid</A>' -- guidelines
+  </H3>
+  <BLOCKQUOTE>
+    The sub-table header begins with a version number, and a count of ranges
+    <TABLE CELLPADDING="2" BGCOLOR="#8080ff">
+      <TR>
+	<TD>uint16</TD>
+	<TD>version</TD>
+	<TD>0</TD>
+      </TR>
+      <TR>
+	<TD>uint16</TD>
+	<TD>vcount</TD>
+	<TD>number of vertical guidelines</TD>
+      </TR>
+      <TR>
+	<TD>uint16</TD>
+	<TD>hcount</TD>
+	<TD>number of horizontal guidelines</TD>
+      </TR>
+      <TR>
+	<TD>uint16</TD>
+	<TD>mbz</TD>
+	<TD>At some point this may contain info on diagonal guidelines. For now it
+	  is undefined</TD>
+      </TR>
+      <TR>
+	<TD>uint16</TD>
+	<TD>offset</TD>
+	<TD>To a full description of the guideline layer</TD>
+      </TR>
+    </TABLE>
+    <P>
+    I provide the guidelines in two formats. Either may be omitted. The first
+    format simply describes the horizontal and vertical lines used as guidelines.
+    The second format provides a full description of all contours (curved, straight,
+    horizontal or diagonal) which fontforge uses. I provide both since most apps
+    seem to have a simpler guideline layer than ff does.
+    <P>
+    This table is followed by two arrays, one for vertical guidelines, one for
+    horizontal guides. Both arrays have the same element type (except that the
+    position is for a different coordinate in the horizontal/vertical cases)
+    <TABLE CELLPADDING="2" BGCOLOR="#8080ff">
+      <TR>
+	<TD>int16</TD>
+	<TD>position</TD>
+	<TD>x location of vertical guides, y location of horizontal ones</TD>
+      </TR>
+      <TR>
+	<TD>uint16</TD>
+	<TD>offset</TD>
+	<TD>to name, a NUL terminated utf8 string. (offset may be 0 if guideline
+	  is unnamed).</TD>
+      </TR>
+    </TABLE>
+    <P>
+    The offset to the guideline layer points to a variable length structure which
+    is also used in the <A HREF="#layr">'layr' subtable</A>
+  </BLOCKQUOTE>
+  <H4>
+    '<A NAME="glyph-layer">glyph-layer</A>' -- Data structure representing all
+    the contours of a layer of a glyph
+  </H4>
+  <BLOCKQUOTE>
+    The sub-table header begins with a version number, and a count of ranges
+    <TABLE CELLPADDING="2" BGCOLOR="#8080ff">
+      <TR>
+	<TD>uint16</TD>
+	<TD>count</TD>
+	<TD>of contours</TD>
+      </TR>
+      <TR>
+	<TD>uint16</TD>
+	<TD>mbz</TD>
+	<TD>reserved for a count of images</TD>
+      </TR>
+    </TABLE>
+    <P>
+    This is followed by an array of structures describing each contour
+    <TABLE CELLPADDING="2" BGCOLOR="#8080ff">
+      <TR>
+	<TD>uint16</TD>
+	<TD>count</TD>
+	<TD>of contours</TD>
+      </TR>
+      <TR>
+	<TD>uint16</TD>
+	<TD>mbz</TD>
+	<TD>reserved for a count of images</TD>
+      </TR>
+    </TABLE>
+    <P>
+    The sub-table header begins with a version number, and a count of ranges
+    <TABLE CELLPADDING="2" BGCOLOR="#8080ff">
+      <TR>
+	<TD>uint16</TD>
+	<TD>offset</TD>
+	<TD>to start of contour data</TD>
+      </TR>
+      <TR>
+	<TD>uint16</TD>
+	<TD>offset</TD>
+	<TD>to a name for the contour, a utf8, NUL terminated string (or 0 if the
+	  contour is unnamed)</TD>
+      </TR>
+    </TABLE>
+    <P>
+    All offsets from the start of the glyph-layer structure.
+    <P>
+    Contour data lives in a variable length block. It's basic idea is that it
+    is a list of &lt;command&gt;, &lt;data&gt; pairs. Each command is a byte
+    which consists of two parts, a verb which specifies what happens (and how
+    many items of data are needed) and a modifier which specifies how each data
+    item is represented. The verbs are postscript-like drawing operations: moveto,
+    lineto, curveto, (and quadratic curveto), close path, etc. There are also
+    separate verbs for specifying spiro control points -- these are just the
+    standard spiro type bytes ('v', 'o', 'c', '[' and ']'), no modifier is applied
+    to the spiro commands, their data are always 2 coordinates in fixed notation.
+    <P>
+    The low order two bits of the command (except for the spiro and close commands)
+    specify the data format:
+    <TABLE>
+      <TR>
+	<TD>0</TD>
+	<TD>signed byte data for values -128 to 127</TD>
+      </TR>
+      <TR>
+	<TD>1</TD>
+	<TD>signed short data for values -32768 to 32767</TD>
+      </TR>
+      <TR>
+	<TD>2</TD>
+	<TD>A signed 4 byte integer which should be divided by 256.0 for non-integral
+	  coordinates (or for big ones)</TD>
+      </TR>
+      <TR>
+	<TD>3</TD>
+	<TD>Undefined and erroneous for now</TD>
+      </TR>
+    </TABLE>
+    <P>
+    Each command will start at the current point and draw to the point specified
+    by its data. The data are relative to the last point specified (except for
+    moveto, which is absolute, there being on previous point).
+    <P>
+    The verb may be one of the following:
+    <TABLE>
+      <TR>
+	<TD>0</TD>
+	<TD>MoveTo, takes 2 coordinates (x,y). This must begin each contour and may
+	  not appear elsewhere within it</TD>
+      </TR>
+      <TR>
+	<TD>4</TD>
+	<TD>LineTo, also takes 2 coordinates</TD>
+      </TR>
+      <TR>
+	<TD>8</TD>
+	<TD>HLineTo, draws a horizontal line, so only the new x coordinate need be
+	  specified.</TD>
+      </TR>
+      <TR>
+	<TD>12</TD>
+	<TD>VLineTo, draws a vertical line, so only the new y coordinate need be
+	  specified.</TD>
+      </TR>
+      <TR>
+	<TD>16</TD>
+	<TD>QCurveTo, takes one off-curve control point and one on-curve point, 4
+	  coordinates total, to draw a quadratic bezier spline</TD>
+      </TR>
+      <TR>
+	<TD>20</TD>
+	<TD>QImplicit, only specifies the control point. The on-curve point will
+	  be the average of the control point specified here, and the one specified
+	  in the next QCurveTo or Q*Implicit command.</TD>
+      </TR>
+      <TR>
+	<TD>24</TD>
+	<TD>QHImplicit, Same as above, except only the x coordinate of the new control
+	  point is specified</TD>
+      </TR>
+      <TR>
+	<TD>28</TD>
+	<TD>QVImplicit, Same as above except only the y coordinate of the new control
+	  point is specified.</TD>
+      </TR>
+      <TR>
+	<TD>32</TD>
+	<TD>CurveTo, takes two off-curve control point and one on-curve point, 6
+	  coordinates total, to draw a cubic bezier spline</TD>
+      </TR>
+      <TR>
+	<TD>36</TD>
+	<TD>VHCurveTo, The first control point is vertical from the current point,
+	  so only its y coordinate is specified. The final point is horizontal from
+	  the last control point so only its x coordinate is specified. 4 coordinates
+	  total y1, x2,y2, x3.</TD>
+      </TR>
+      <TR>
+	<TD>40</TD>
+	<TD>HVCurveTo, Reverse of the above x1, x2,y2, y3</TD>
+      </TR>
+      <TR>
+	<TD>44</TD>
+	<TD>Close, No data. Closes (and ends) the current contour. Will draw a line
+	  from the start point to the end point if needed.</TD>
+      </TR>
+      <TR>
+	<TD>45</TD>
+	<TD>End, No data. Ends the current contour, but leaves it open.</TD>
+      </TR>
+    </TABLE>
+    <P>
+    These are basically the drawing operators in the type1 charstrings. If my
+    terse descriptions make no sense look there for a more complete description.
+    <H5>
+      examples
+    </H5>
+    <P>
+    suppose we want to draw a box
+    (0,0)-&gt;(0,200)-&gt;(200,200)-&gt;(200,0)-&gt;(0,0). Then the glyph-layer
+    would look like:
+    <TABLE>
+      <TR>
+	<TD>Header</TD>
+	<TD>one contour</TD>
+	<TD>(ushort) 1</TD>
+      </TR>
+      <TR>
+	<TD>Header</TD>
+	<TD>no images</TD>
+	<TD>(ushort) 0</TD>
+      </TR>
+      <TR>
+	<TD>First Contour</TD>
+	<TD>offset to data</TD>
+	<TD>(ushort) 8</TD>
+	<TD>The number of bytes from the start of the glyph-layer to the Contour
+	  Data</TD>
+      </TR>
+      <TR>
+	<TD>First Contour</TD>
+	<TD>no name</TD>
+	<TD>(ushort) 0</TD>
+      </TR>
+      <TR>
+	<TD>Contour Data</TD>
+	<TD>Move To 0,0</TD>
+	<TD>(byte)0, (byte)0, (byte)0</TD>
+	<TD>Both coordinates are &lt;127 and can fit in a byte, so the modifier is
+	  0. The command is also 0, and the coordinates are each 0</TD>
+      </TR>
+      <TR>
+	<TD>Contour Data</TD>
+	<TD>VLine To [0,]200</TD>
+	<TD>(byte)(12+1) (short)200</TD>
+	<TD>Vertical motion =&gt; VLineTo. Only the new y value need be specified.
+	  Is relative to the last position, but that was 0</TD>
+      </TR>
+      <TR>
+	<TD>Contour Data</TD>
+	<TD>HLine To 200[,200]</TD>
+	<TD>(byte)(8+1) (short)200</TD>
+	<TD>Horizontal motion =&gt; HLineTo. Only the new x value need be specified.
+	  Is relative to the last position, but that was 0</TD>
+      </TR>
+      <TR>
+	<TD>Contour Data</TD>
+	<TD>VLine To [200,]0</TD>
+	<TD>(byte)(12+1) (short)-200</TD>
+	<TD>Vertical motion =&gt; HLineTo. Only the new y value need be specified.
+	  We move from 200 to 0, so the relative change is -200</TD>
+      </TR>
+      <TR>
+	<TD>Contour Data</TD>
+	<TD>Close</TD>
+	<TD>(byte)44</TD>
+	<TD>We can draw the final line by closing the path</TD>
+      </TR>
+    </TABLE>
+  </BLOCKQUOTE>
+  <H3>
+    '<A NAME="layr">layr</A>' -- Background layer data
+  </H3>
+  <BLOCKQUOTE>
+    <TABLE CELLPADDING="2" BGCOLOR="#8080ff">
+      <TR>
+	<TD>uint16</TD>
+	<TD>version</TD>
+	<TD>0</TD>
+      </TR>
+      <TR>
+	<TD>uint16</TD>
+	<TD>count</TD>
+	<TD>number of layers in this sub-table</TD>
+      </TR>
+    </TABLE>
+    <P>
+    This is followed by an array of structures describing each layer
+    <TABLE CELLPADDING="2" BGCOLOR="#8080ff">
+      <TR>
+	<TD>uint16</TD>
+	<TD>type</TD>
+	<TD>2=&gt;quadratic splines, 3=&gt;cubic splines, 1=&gt;spiros, other values
+	  not defined</TD>
+      </TR>
+      <TR>
+	<TD>uint16</TD>
+	<TD>offset</TD>
+	<TD>to the name of this layer, a utf8, NUL terminated string</TD>
+      </TR>
+      <TR>
+	<TD>uint32</TD>
+	<TD>offset</TD>
+	<TD>to the data for this layer</TD>
+      </TR>
+    </TABLE>
+    <P>
+    The layer data is a block of ranges specifying which glyphs (by GID) have
+    data for this layer. (the type field is present so that applications can
+    ignore layers which they do not support).
+    <TABLE CELLPADDING="2" BGCOLOR="#8080ff">
+      <TR>
+	<TD>uint16</TD>
+	<TD>count</TD>
+	<TD>of ranges</TD>
+      </TR>
+    </TABLE>
+    <P>
+    This is followed by an array of structures one for each range:
+    <TABLE CELLPADDING="2" BGCOLOR="#8080ff">
+      <TR>
+	<TD>uint16</TD>
+	<TD>start</TD>
+	<TD>first GID in the range</TD>
+      </TR>
+      <TR>
+	<TD>uint16</TD>
+	<TD>last</TD>
+	<TD>last GID in the range</TD>
+      </TR>
+      <TR>
+	<TD>uint32</TD>
+	<TD>offset</TD>
+	<TD>to an array of offsets, one for each GID in the range. The offsets in
+	  this array may be 0. These offsets in turn point to a
+	  <A HREF="glyph-layer">glyph-layer structure</A></TD>
+      </TR>
+    </TABLE>
+    <P>
+    All offsets are relative to the start of the 'layr' subtable.
   </BLOCKQUOTE>
   <H2>
     '<A NAME="TeX">TeX </A>' -- the TeX metrics table
