@@ -1620,7 +1620,7 @@ static void CoverageReverse(char **bcovers,int bcnt) {
 
 static void _CCD_Ok(struct contextchaindlg *ccd) {
     FPST *fpst = ccd->fpst;
-    int32 len, i, k;
+    int32 len, i, k, had_class0;
     GTextInfo **old, **classes;
     struct fpst_rule dummy;
     int has[3];
@@ -1647,6 +1647,7 @@ return;
 	    ff_post_error(_("Missing rules"),_(" There must be at least one contextual rule"));
 return;
 	}
+	had_class0 = fpst->nclass[0]!=NULL;
 	FPSTRulesFree(fpst->rules,fpst->format,fpst->rule_cnt);
 	fpst->format = pst_class;
 	fpst->rule_cnt = len;
@@ -1669,7 +1670,7 @@ return;
 	    (&fpst->nccnt)[i] = len;
 	    (&fpst->nclass)[i] = galloc(len*sizeof(char*));
 	    (&fpst->nclass)[i][0] = NULL;
-	    for ( k=1; k<len; ++k )
+	    for ( k=(i==0 && had_class0) ? 0 : 1 ; k<len; ++k )
 		(&fpst->nclass)[i][k] = cu_copy(classes[k]->text);
 	}
       } break;
@@ -2633,7 +2634,10 @@ struct contextchaindlg *ContextChainEdit(SplineFont *sf,FPST *fpst,
 	GGadgetSetList(GWidgetGetControl(ccd->class,CID_GList+200),clslistlist(tempfpst),false);
 	for ( i=0; i<3; ++i ) {
 	    GGadget *list = GWidgetGetControl(ccd->class,CID_GList+300+i*20);
-	    GListAppendLine8(list,_("{Everything Else}"),false);
+	    if ( i!=0 || tempfpst->nclass[0]==NULL )
+		GListAppendLine8(list,_("{Everything Else}"),false);
+	    else
+		GListAppendLine8(list,(&tempfpst->nclass)[i][0],false);
 	    for ( k=1; k<(&tempfpst->nccnt)[i]; ++k ) {
 		GListAppendLine8(list,(&tempfpst->nclass)[i][k],false);
 	    }
