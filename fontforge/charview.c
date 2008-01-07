@@ -2243,7 +2243,7 @@ static void CVNewScale(CharView *cv) {
     CVUpdateInfo(cv,&e);
 }
 
-static void _CVFit(CharView *cv,DBounds *b) {
+static void _CVFit(CharView *cv,DBounds *b, int integral) {
     real left, right, top, bottom, hsc, wsc;
     extern int palettes_docked;
     int offset = palettes_docked ? 90 : 0;
@@ -2268,10 +2268,18 @@ static void _CVFit(CharView *cv,DBounds *b) {
     if ( wsc<hsc ) { hsc = wsc; hsmall = false ; }
 
     cv->scale = hsc;
-    if ( cv->scale > 1.0 ) {
-	cv->scale = floor(2*cv->scale)/2;
+    if ( integral ) {
+	if ( cv->scale > 1.0 ) {
+	    cv->scale = floor(cv->scale);
+	} else {
+	    cv->scale = 1/ceil(1/cv->scale);
+	}
     } else {
-	cv->scale = 2/ceil(2/cv->scale);
+	if ( cv->scale > 1.0 ) {
+	    cv->scale = floor(2*cv->scale)/2;
+	} else {
+	    cv->scale = 2/ceil(2/cv->scale);
+	}
     }
 
     cv->xoff = -left *cv->scale + offset;
@@ -2305,7 +2313,7 @@ static void CVFit(CharView *cv) {
     b.miny = center - (center - b.miny)*1.2;
     b.maxy = center + (b.maxy - center)*1.2;
 
-    _CVFit(cv,&b);
+    _CVFit(cv,&b,true);
 }
 
 static void CVUnlinkView(CharView *cv ) {
@@ -3936,7 +3944,7 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
 		b.miny = cv->p.cy;
 		b.maxy = cv->info.y;
 	    }
-	    _CVFit(cv,&b);
+	    _CVFit(cv,&b,false);
 	    if ( oldscale==cv->scale ) {
 		cv->scale += .5;
 		CVNewScale(cv);
