@@ -1367,7 +1367,7 @@ return( NULL );
 return( ret );
 }
     
-static int Macable(SplineFont *sf, OTLookup *otl) {
+int Macable(SplineFont *sf, OTLookup *otl) {
     int ft, fs;
     FeatureScriptLangList *features;
 
@@ -1385,7 +1385,7 @@ return( false );
       case gsub_context:
       case gsub_contextchain: case gsub_reversecchain:
       case gpos_context: case gpos_contextchain:
-	if ( sf->sm!=NULL )
+	if ( sf==NULL || sf->sm!=NULL )
 return( false );
 	/* Else fall through into the test on the feature tag */;
     /* These two can be expressed in both, and might be either */
@@ -1573,7 +1573,7 @@ return;
 	    cnt=1;
 	    if ( k!=2 ) {
 		p = f;
-		for ( n=f->next; n!=NULL && n->featureType==f->featureType; n = n->next ) {
+		for ( n=f->nexttype; n!=NULL && n->featureType==f->featureType; n = n->nexttype ) {
 		    if ( p->featureSetting!=n->featureSetting ) {
 			++cnt;
 			p = n;
@@ -1581,7 +1581,7 @@ return;
 		}
 	    } else {
 		p = f;
-		for ( n=f; n!=NULL && n->featureType==f->featureType; n = n->next ) {
+		for ( n=f; n!=NULL && n->featureType==f->featureType; n = n->nexttype ) {
 		    if ( n==f || p->featureSetting!=n->featureSetting ) {
 			if (( n->ms!=NULL && n->ms->setname!=NULL ) ||
 				( n->sms!=NULL && n->sms->setname!=NULL)) {
