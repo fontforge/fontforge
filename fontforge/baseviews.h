@@ -288,7 +288,7 @@ extern void FVAutoHint(FontViewBase *fv);
 extern void FVAutoHintSubs(FontViewBase *fv);
 extern void FVAutoCounter(FontViewBase *fv);
 extern void FVDontAutoHint(FontViewBase *fv);
-extern void FVAutoInstr(FontViewBase *fv,int usenowak);
+extern void FVAutoInstr(FontViewBase *fv);
 extern void FVClearInstrs(FontViewBase *fv);
 extern void FVClearHints(FontViewBase *fv);
 extern void SCAutoTrace(SplineChar *sc,int ask);

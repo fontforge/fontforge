@@ -10242,7 +10242,7 @@ Py_RETURN( self );
 static PyObject *PyFFFont_autoInstr(PyObject *self, PyObject *args) {
     FontViewBase *fv = ((PyFF_Font *) self)->fv;
 
-    FVAutoInstr(fv,true);
+    FVAutoInstr(fv);
 Py_RETURN( self );
 }
 
