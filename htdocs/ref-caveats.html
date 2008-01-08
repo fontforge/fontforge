@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 13-Nov-2005 -->
-  <!-- AP: Last modified: 11-Dec-2005 -->
+  <!-- AP: Last modified: 8-Jan-2008 -->
   <TITLE>Caveats about References</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -76,6 +76,10 @@ Let us examine the most common font formats:
     FontForge will recognize 'seac' as defining references, but it does not recognize
     subroutine calls. Use <A HREF="editmenu.html#ReplaceRef">Edit-&gt;Replace
     With Reference</A> after loading a Type1 font.
+    <P>
+    FontForge can also break an outline into smaller segments and place those
+    in subroutines these may be shared more easily among glyphs. They are no
+    longer true references, but they will make the output font smaller.
   <DT>
     Type2 ("OpenType")
   <DD>
@@ -88,6 +92,10 @@ Let us examine the most common font formats:
     substitutions, or if it is not translated and none of the other components
     of the final composite contain any hints at all. Again this is not an all
     or nothing affair.
+    <P>
+    And again FontForge can break glyphs into smaller segements which can be
+    placed in subroutines and shared among glyphs. These are not true references
+    but do make the font smaller.
     <P>
     FontForge will not recognize any references when loading a Type2 (otf, cff,
     cef, gai) font. Use <A HREF="editmenu.html#ReplaceRef">Edit-&gt;Replace With

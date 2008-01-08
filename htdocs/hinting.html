@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 3-May-2001 -->
-  <!-- AP: Last modified: 25-Jul-2007 -->
+  <!-- AP: Last modified: 8-Jan-2008 -->
   <TITLE>Hinting</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -170,6 +170,20 @@
   Info dialog. When creating a new counter group you are presented with a dialog
   very similar to the one above in which you must select a set of hints that
   bound a set of counters.
+  <H3>
+    The Private dictionary
+  </H3>
+  <P>
+  This contains font-wide hinting infomation. Things like: The standard width
+  of a stem in the font (StdVW, StdHW), The standard height of capitals and
+  lower case letters (BlueValues, OtherBlues), and so forth. These live in
+  the PostScript Private dictionary. Once you have hinted your font fontforge
+  can generate reasonable values for these settings (But you must have hinted
+  the font first!) -- See the [Guess] button in the
+  <A HREF="fontinfo.html#Private">Element-&gt;Font Info-&gt;PS Private
+  </A>dialog. Then once you have generated BlueValues you should rehint the
+  font (the hints depend on the BlueValues, just as the BlueValues depend on
+  the hints:-).
   <H2>
     Hints and previously existing fonts.
   </H2>
@@ -188,65 +202,17 @@
     Hinting and TrueType
   </H2>
   <P>
-  FontForge does a really bad job of "hinting" (actually generating instructions
-  for) truetype. Generally you will get better results with unhinted glyphs
-  than with glyphs autoinstructed by fontforge.
-  <!--
+  FontForge can auto-instruct a truetype font (Hints-&gt;AutoInstr). FontForge
+  also allows you the somewhat arcane practice of editing glyph instruction
+  programs directly (Hints-&gt;Edit Instructions).
   <P>
-  Hinting TrueType fonts opens a far wider range of possibilities. I have added
-  several types of hints that are specific to truetype (and will be ignored
-  by the postscript generation routines). These by no means exhaust the
-  capabilities of TrueType.
-  <UL>
-  <LI>
-  Diagonal Stem Hints<BR>
-  These look similar to the horizontal and vertical stem hints that postscript
-  understands but they allow you to constrain the width of diagonal stems as
-  well.
-  <LI>
-  Minimum Distance Hints<BR>
-  TrueType allows you to say that the distance between two features should
-  never vanish. Every stem hint will automatically have one of these across
-  it, but there may be other places where they will be useful. In particular
-  you can insure that there is always white space after a glyph by putting
-  a minimum distance hint between a point on the right edge of that glyph and
-  the width line, also these hints can be used to solve the serif problems
-  mentioned above.
-  <LI>
-  Round to Grid<BR>
-  TrueType can move points to the rasterization grid before rasterizing glyphs.
-  Stem hints and minimum distance hints will automagically be rounded, but
-  there might be other cases where rounding is useful.
-  </UL>
-  <H2>
-  Examples of Minimum Distance Hinting
-  </H2>
+  FontForge's Auto Instructor bases its output on the PostScript Stem Hints,
+  the contents of the Private dictionary, and diagonal stems. You can create
+  diagonal stems manually (Hints-&gt;Add DHint), or you can let the autohinter
+  do this for you
+  (File-&gt;Preferences-&gt;PSHints-&gt;DetectDiagonalStems).
   <P>
-  <TABLE BORDER CELLPADDING="2">
-  <TR>
-  <TD><IMG SRC="Ehinted.png" WIDTH="189" HEIGHT="208"></TD>
-  <TD><IMG SRC="EhintedTtf.png" WIDTH="127" HEIGHT="145"><BR>
-  <SMALL>A fully hinted glyph is<BR>
-  completely grid fit, but<BR>
-  the difference between<BR>
-  stem lengths is lost.</SMALL></TD>
-  </TR>
-  <TR>
-  <TD><IMG SRC="Efore.png" WIDTH="188" HEIGHT="208"></TD>
-  <TD><IMG SRC="EforeTtf.png" WIDTH="127" HEIGHT="145"><SMALL><BR>
-  One attempt to solve the<BR>
-  above problem, compare<BR>
-  to below.</SMALL></TD>
-  </TR>
-  <TR>
-  <TD><IMG SRC="Eback.png" WIDTH="189" HEIGHT="208"></TD>
-  <TD><IMG SRC="EbackTtf.png" WIDTH="127" HEIGHT="145"><SMALL><BR>
-  Note how the different<BR>
-  directions in the md hint<BR>
-  change the rasterization</SMALL></TD>
-  </TR>
-  </TABLE>
-  -->
+  Please look at the <A HREF="ttfinstrs.html">page on instructing fonts</A>.
   <H2>
     Hint questions:
   </H2>

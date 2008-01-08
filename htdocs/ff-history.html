@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 13-Oct-2006 -->
-  <!-- AP: Last modified: 16-Oct-2006 -->
+  <!-- AP: Last modified: 8-Jan-2008 -->
   <TITLE>The history of the development of FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -180,6 +180,11 @@
       <TD>Michal Nowakowski</TD>
       <TD>October 2006</TD>
     </TR>
+    <TR>
+      <TH><SMALL>Traditional</SMALL> Chinese</TH>
+      <TD>Wei-Lun Chao</TD>
+      <TD>August 2007</TD>
+    </TR>
   </TABLE>
   <P>
   I started working on support for simple aspects of the OpenType GSUB and
@@ -303,12 +308,126 @@
   from gtk and implemented them in my widget set (in August of 2006), allowing
   a dialog to do its own layout to match the size of the things in it.
   <P>
-  The pace of change seems to have slowed recently as all of the large tasks
-  have either been done or proved insurmountable. As more people use the program
-  they find more bugs and I have less time to do development. In the last few
-  years there have also been large internal changes which (I hope) are practically
-  invisible to users and cosmetic changes which make the dialogs look nicer
-  and more comprehensible but which aren't functional. 
+  The pace of change seems to have slowed recently (Oct 2006) as all of the
+  large tasks have either been done or proved insurmountable. As more people
+  use the program they find more bugs and I have less time to do development.
+  In the last few years there have also been large internal changes which (I
+  hope) are practically invisible to users and cosmetic changes which make
+  the dialogs look nicer and more comprehensible but which aren't functional.
+    <HR>
+  <P>
+  My interface to GSUB/GPOS was not well thought out. I stored things in FontForge
+  at the feature level, while OpenType wants things done at the lookup level.
+  I thought lookups added an unnecessary level of complexity and ignored them.
+  But people complained (they always do) that once a font had been read in
+  to FontForge and saved out again it wouldn't work any more. And that was
+  because I had lost the ordering imposed by the lookups. So in early 2007
+  I had to redo much of the internals of fontforge as it related to OpenType.
+  I also changed the Metrics View so it would handle all OpenType lookup types
+  (rather than just kerning).
+  <P>
+  And people didn't like my scripting language. Why hadn't I used python? (Well
+  because I didn't know python and was lazy about learning more stuff that
+  I didn't think would be useful to me). Various people told me that they just
+  couldn't use FontForge because it didn't support python. So I added python
+  support. Then I discovered that my build machine has such an old version
+  of python that it doesn't provide libpython -- and I can't upgrade my machine
+  any more because all the distros require booting from CD now (and my machine
+  can't).
+  <P>
+  In May of 2007 I went to Libre Graphics in Montreal, and as I listened to
+  the InkScape talk on how they handled plugins, I realized that I could do
+  that too. So I extended the python interface to support python plugins and
+  menu items. Dave Crossland, as is his wont, had many requests, and had me
+  update the old Display dialog to support all the OpenType lookups (just as
+  I'd done for the Metrics View) and then merge that into the Print dialog
+  too. Dave also felt that FontForge should be able to store a font directly
+  on the Open Font Library website. Well, they had no API for this, so I had
+  to sit down and figure out http all over again and see what bits of the user
+  API I needed to walk through.
+  <P>
+  In June I started working on Adobe's feature files (I could support them
+  now that I was handling lookups properly), and found to my shock that
+  <OL>
+    <LI>
+      The syntax as presented by Adobe wasn't complete (could not represent all
+      of opentype)
+    <LI>
+      Some of the syntax that was presented hadn't been implemented by Adobe yet
+      and was marked "Subject to change"
+    <LI>
+      There was no easy way to represent the "Everything else" class (class 0)
+      of a class set without enumerating every glyph by hand (which could not be
+      translated into a class 0.
+    <LI>
+      There was no way to distinguish a contextual class based lookup from a contextual
+      coverage-table based lookup.
+    <LI>
+      ... on and on ...
+  </OL>
+  <P>
+  I had assumed that feature files were a stable useful format and found to
+  my distaste that they were not. I implemented the bits that Adobe hadn't
+  implemented, and extended them a bit so I could represent more of OpenType
+  (and told Adobe what my extensions were, but was told they didn't like them).
+  Grump. Well I wanted something to store as much of OpenType as I could, and
+  I wasn't going to wait for Adobe to come up with something (which they still
+  haven't).
+  <P>
+  Apostolos gave me the spec for the new 'MATH' table. But that spec had MicroSoft
+  Confidential printed all over it and I wasn't about to touch it. Apostolos
+  got annoyed at my ignoring it, so in July he had Sergey from MS send me a
+  copy of the spec that no longer said "Confidential" on every page. Then I
+  implemented the new 'MATH' table.
+  <P>
+  I'd never had a good Embolden function. I'd tried various approaches and
+  none worked well. This year I decided to try a very simple idea: Use expand
+  stroke and then squash the glyph together so it was the same height it had
+  been before. That basically worked. Still a few oddities, but basically
+  functional.
+  <P>
+  In July Michal Nowakowski gave me a patch which vastly improved the truetype
+  auto instructor. I told he I'd only accept it if he would support it. After
+  some initial grumbling he did so -- and then proceded to make it even better!
+  Then about a week later Alexej Kryukov said he wanted to make the autoinstructor
+  support diagonal stems, and the two of them started working together on this.
+  <P>
+  At Libre Graphics Dave demoed Raph Levien's spiro splines and encouraged
+  me to integrate them into fontforge. But Raph released under GPL and wasn't
+  willing to change, and I released under BSD and wasn't willing to change.
+  I got permision from Raph to repackage his spiro routines into a small shared
+  library (libspiro) which could be released seperately from FontForge but
+  to which FontForge could link. And we had Raph's spiros in FontForge.
+  <P>
+  I realized that no only could I stick python into fontforge, but if I did
+  a little more work, I could stick fontforge into python. So I wrapped up
+  most of fontforge into a shared library that python could load. Dave Crossland
+  had been complaining (again) about the FontForge widget set. When was I going
+  to move to gtk? (well, I'd tried gtk back in 2004, and found it hard to use,
+  and bits of it ugly -- and less functional than my own widget set in the
+  ways that mattered to me, so I had given up on it). Dave offered to fund
+  development of a gtk fontforge UI, but only if I'd switch to GPL. I dislike
+  GPL, it seems so restrictive to me, so I said I wouldn't. Then I realized
+  that I could rework my library until it was independant of widget set, and
+  allow Dave to write a UI to sit on top of it, not bound by the fontforge
+  license. So I reworked the internals of fontforge to make them extensible,
+  stripped the UI out of libfontforge. And started to work on a gtk based fontforge
+  of my own.
+  <P>
+  Dave Crossland was complaining on the Open Font Library mailing list about
+  how much information was lost when a font was released. Guidelines. Names
+  of lookups. Cubic splines used for generating the quadratics of TrueType.
+  And about the need for providing sources. Well, providing sources of fonts
+  can be difficult, and not always useful if the tools to generate the fonts
+  aren't also available. However there is no reason why much of that information
+  can't be stored in the font itself. I already had a table that FontForge
+  would create called ('PfEd', left over from PfaEdit days) which stored per-glyph
+  comments, and other things. I could simply extend that table to store guidelines
+  and other things. And document it so that others could use it, of course
+  -- but I'd already done that.
+  <P>
+  And that brings us up to Jan 2008, I guess the pace of change sped up a bit
+  this year as opposed to last.
     <HR>
   <P>
   I have received many suggestions from many people, too many to enumerate
@@ -322,6 +441,7 @@
   of the world <A HREF="faq.html#widget-set">I don't like the two choices of
   widget set available to me (gtk and qt)</A>. I will get started working on
   converting to one and then run into some problem I can't work around easily
-  and give up and go back to my own.
+  and give up and go back to my own. Well in 2008 I still don't like gtk, but
+  I have the fontview working in it. A start.
 </DIV>
 </BODY></HTML>
