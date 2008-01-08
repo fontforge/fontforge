@@ -663,6 +663,7 @@ Width: 258
 Flags: 
 HStem: 736 13&lt;39 155&gt;  -14 88&lt;162 180&gt;
 VStem: 71 84&lt;49 396&gt; 
+DStem2: 510 435 225 423 0.568682 -0.822558&lt;0 124.816&gt;
 Fore
 195 742 m 0
  195 738 193 736 189 736 c 0
@@ -699,6 +700,12 @@ EndChar
   number pairs, the first number in the pair is the location of the stem, the
   next number is the width of the stem, the numbers in brokets (&lt;&gt;) indicate
   where the hint is valid).
+  <P>
+  Diagonal stems (DStem2) are more complex. There are 6 numbers, in 3 pairs
+  of two. The first pair represents a point on the left side of the hint, the
+  second pair a point on the right and the third pair is a unit vector in the
+  hint direction. Again there are numbers in brokets indicating where the hint
+  is valid.
   <P>
   For fonts with vertical metrics there may also be a
   <BLOCKQUOTE>
