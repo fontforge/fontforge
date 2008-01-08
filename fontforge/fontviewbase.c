@@ -1082,7 +1082,7 @@ static void ClearFpgmPrepCvt(SplineFont *sf) {
     }
 }
 
-void FVAutoInstr(FontViewBase *fv,int usenowak) {
+void FVAutoInstr(FontViewBase *fv) {
     BlueData bd;
     int i, cnt=0, gid;
     GlobalInstrCt gic;
@@ -1099,8 +1099,7 @@ void FVAutoInstr(FontViewBase *fv,int usenowak) {
 
     QuickBlues(fv->sf,&bd);
 
-    if ( usenowak )
-        InitGlobalInstrCt(&gic,fv->sf,&bd);
+    InitGlobalInstrCt(&gic,fv->sf,&bd);
 
     for ( i=0; i<fv->map->enccount; ++i )
 	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
@@ -1111,16 +1110,12 @@ void FVAutoInstr(FontViewBase *fv,int usenowak) {
     for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
 	    (gid = fv->map->map[i])!=-1 && SCWorthOutputting(fv->sf->glyphs[gid]) ) {
 	SplineChar *sc = fv->sf->glyphs[gid];
-	if ( usenowak )
-	    NowakowskiSCAutoInstr(&gic,sc);
-	else
-	    SCAutoInstr(sc,&bd);
+	NowakowskiSCAutoInstr(&gic,sc);
 	if ( !ff_progress_next())
     break;
     }
     
-    if ( usenowak )
-        FreeGlobalInstrCt(&gic);
+    FreeGlobalInstrCt(&gic);
 
     ff_progress_end_indicator();
 }

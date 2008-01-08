@@ -5180,7 +5180,7 @@ static void bDontAutoHint(Context *c) {
 static void bAutoInstr(Context *c) {
     if ( c->a.argc!=1 )
 	ScriptError( c, "Wrong number of arguments");
-    FVAutoInstr(c->curfv,true);
+    FVAutoInstr(c->curfv);
 }
 
 static void TableAddInstrs(SplineFont *sf, uint32 tag,int replace,
