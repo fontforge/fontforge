@@ -4871,22 +4871,16 @@ return( 0 );
 	if ( info->opbd_start!=0 )
 	    readttfopbd(ttf,info);
     }
-    if ( info->gsub_start!=0 ) {
+    if ( info->gsub_start!=0 )
 	readttfgpossub(ttf,info,false);
-	if ( info->morx_start!=0 || info->mort_start!=0 )
-	    ff_post_notice(_("Both AAT and OpenType"),_(
-	    "This font contains both AAT (Apple) and OpenType tables.\n"
-	    "FontForge only reads the OpenType ones since usually the\n"
-	    "AAT information is redundant. But to regenerate it you\n"
-	    "must check both OpentType and Apple in the\n"
-	    "File->Generate Fonts->Options dialog."));
-    } else {
-	/* We will default the gsub table later... */;
-	if ( info->morx_start!=0 || info->mort_start!=0 ) {
-	    readttfmort(ttf,info);
+    if ( info->morx_start!=0 || info->mort_start!=0 ) {
+	readttfmort(ttf,info);
+	if ( info->gsub_start==0 )
 	    LogError(_("This font contains AAT tables, not OpenType ones."));
-	}
+	else
+	    LogError(_("This font contains AAT tables, as well as OpenType ones."));
     }
+
     if ( info->pfed_start!=0 )
 	pfed_read(ttf,info);
     if ( info->tex_start!=0 )

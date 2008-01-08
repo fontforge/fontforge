@@ -762,6 +762,7 @@ extern int TTF__getcvtval(SplineFont *sf,int val);
 extern int TTF_getcvtval(SplineFont *sf,int val);
 extern void SCinitforinstrs(SplineChar *sc);
 extern int SSAddPoints(SplineSet *ss,int ptcnt,BasePoint *bp, char *flags);
+extern int Macable(SplineFont *sf, OTLookup *otl);
 
     /* Used by both otf and apple */
 extern uint16 *ClassesFromNames(SplineFont *sf,char **classnames,int class_cnt,
