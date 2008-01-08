@@ -4324,6 +4324,28 @@ return(NULL);
 return( as );
 }
 
+static int InfoHasGSUBTag(struct ttfinfo *info, uint32 tag, int apple_lookup_type) {
+    OTLookup *otl;
+    FeatureScriptLangList *feat;
+
+    if ( apple_lookup_type==0 ||		/* Indic rearrangement */
+	    apple_lookup_type==1 ||		/* Contextual substitution */
+	    apple_lookup_type==5 )		/* Contextual insertion */
+return( false ); /* These types can either not be represented in OT */
+	/* or not converted to AAT -- so we'd better read them */
+    /* We can't really do contextual ligatures either, but we parse that table*/
+    /*  for the non-contextual ligs (which is most of them) */
+
+    for ( otl = info->gsub_lookups; otl!=NULL; otl=otl->next ) {
+	for ( feat = otl->features; feat!=NULL; feat=feat->next ) {
+	    if ( feat->featuretag == tag &&
+		    Macable(NULL,otl))
+return( true );
+	}
+    }
+return( false );
+}
+
 static void FeatMarkAsEnabled(struct ttfinfo *info,int featureType,
 	int featureSetting);
 
@@ -4404,7 +4426,16 @@ return( chain_len );
 	    info->mort_r2l = r2l;
 	    info->mort_tag_mac = tmf[j].ismac;
 	    info->mort_feat = tmf[j].feat; info->mort_setting = tmf[j].set;
-	    switch( coverage&0xff ) {
+	    /* If we've already read gsub. And this feature setting matches */
+	    /*  and opentype feature tag. And we've got an OpenType lookup  */
+	    /*  attached to that feature tag. And it's a lookup type we can */
+	    /*  convert... Then don't parse this sub-table, we shall assume */
+	    /*  it is simply a duplicate of the OT version */
+	    if ( info->gsub_start!=0 &&
+		    (tag = MacFeatureToOTTag(tmf[j].feat,tmf[j].set))!=0 &&
+		    InfoHasGSUBTag(info,tag,coverage&0xff))
+		/* Skip it */;
+	    else switch( coverage&0xff ) {
 	      case 0:	/* Indic rearangement */
 		readttf_mortx_asm(ttf,info,ismorx,length,asm_indic,0,
 			coverage,NULL);
