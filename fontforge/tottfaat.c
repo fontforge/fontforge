@@ -1470,29 +1470,23 @@ return( features );
 
 static struct feature *AddExclusiveNoops(SplineFont *sf, struct feature *features) {
     struct feature *f, *n, *def, *p, *t;
-    int offFlags;
     /* mutually exclusive features need to have a setting which does nothing */
 
     for ( f=features; f!=NULL; f=n ) {
 	n= f->nexttype;
 	if ( f->mf!=NULL && f->mf->ismutex ) {
 	    def = NULL;
-	    offFlags=0;
 	    for ( n=f; n!=NULL && n->featureType==f->featureType; n=n->nexttype ) {
 		if ( n->featureSetting==f->mf->default_setting )
 		    def = n;
-		offFlags |= n->flag;
 	    }
 	    if ( def==NULL ) {
-		if ( f==features )
-		    p = NULL;
-		else
-		    for ( p=features; p->nexttype!=f; p=p->nexttype );
 		t = chunkalloc(sizeof(struct feature));
 		*t = *f;
+		t->feature_start = 0; t->feature_len=0; t->next = NULL;
 		t->featureSetting = f->mf->default_setting;
 		t->ms = FindMacSetting(sf,t->featureType,f->mf->default_setting,&t->sms);
-		t->flag = 0; t->offFlags = offFlags;
+		t->flag = 0;
 		t->dummyOff = true;
 		if ( f==features )
 		    p = NULL;
@@ -1514,6 +1508,25 @@ static struct feature *AddExclusiveNoops(SplineFont *sf, struct feature *feature
 	}
     }
 return( features );
+}
+
+static void SetExclusiveOffs(struct feature *features) {
+    struct feature *f, *n;
+    int offFlags;
+    /* mutually exclusive features need to have a setting which does nothing */
+
+    for ( f=features; f!=NULL; f=n ) {
+	n= f->nexttype;
+	if ( f->mf!=NULL && f->mf->ismutex ) {
+	    offFlags=0;
+	    for ( n=f; n!=NULL && n->featureType==f->featureType; n=n->nexttype ) {
+		offFlags |= n->flag;
+	    }
+	    for ( n=f; n!=NULL && n->featureType==f->featureType; n=n->nexttype )
+		n->offFlags = ~(offFlags&~n->flag);
+	}
+    }
+return;
 }
 
 static void aat_dumpfeat(struct alltabs *at, SplineFont *sf, struct feature *feature) {
@@ -1702,7 +1715,7 @@ return( 0 );
 	    if ( n!=NULL )
 		f->offFlags = 1<<(mybit+n->setting_index);
 	    else
-		f->offFlags = 0;
+		f->offFlags = ~0;
 	}
 	f->chain = chain;
     }
@@ -1717,7 +1730,7 @@ static void morxDumpChain(struct alltabs *at,struct feature *features,
     char *buf;
     int len, tot, fs_cnt, sub_cnt;
     struct feature *all[32];
-    int i,offFlags;
+    int i,offFlags, last_ri=-1, last_f=-1, ri;
 
     memset(all,0,sizeof(all));
     for ( f=features, fs_cnt=sub_cnt=0; f!=NULL; f=f->next ) {
@@ -1751,12 +1764,24 @@ static void morxDumpChain(struct alltabs *at,struct feature *features,
     for ( i=0; i<32; ++i ) if ( all[i]!=NULL ) {
 	putshort(at->morx,all[i]->featureType);
 	putshort(at->morx,all[i]->featureSetting);
-	putlong(at->morx,1<<i);
+	if ( all[i]->dummyOff ) {
+	    putlong(at->morx,0);
+	    if ( last_f==all[i]->featureType )
+		ri = last_ri;
+	    else if ( i<31 && all[i+1]!=NULL && all[i+1]->featureType == all[i]->featureType )
+		ri = i+1 - all[i+1]->real_index;
+	    else
+		ri = 0;		/* This can't happen */
+	} else {
+	    putlong(at->morx,1<<i);
+	    ri = i-all[i]->real_index;
+	    last_ri = ri; last_f = all[i]->featureType;
+	}
 	offFlags = all[i]->offFlags;
-	if ( i>all[i]->real_index )
-	    offFlags<<=(i-all[i]->real_index);
-	else if ( i<all[i]->real_index )
-	    offFlags>>=(all[i]->real_index-i);
+	if ( ri>0 )
+	    offFlags<<=(ri);
+	else if ( ri<0 )
+	    offFlags>>=(-ri);
 	putlong(at->morx,offFlags);
 	++fs_cnt;
 
@@ -1766,7 +1791,7 @@ static void morxDumpChain(struct alltabs *at,struct feature *features,
 	    putshort(at->morx,all[i]->featureType);
 	    putshort(at->morx,all[i]->featureSetting+1);
 	    putlong(at->morx,0);
-	    putlong(at->morx,~all[i]->offFlags & ~all[i]->flag );
+	    putlong(at->morx,all[i]->offFlags & ~all[i]->flag );
 	    ++fs_cnt;
 	}
 	/* I used to have code to output the default setting of a mutex */
@@ -1878,6 +1903,7 @@ return;
     features_by_type = AddExclusiveNoops(sf,features_by_type);
     aat_dumpfeat(at, sf, features_by_type);
     nchains = featuresAssignFlagsChains(features,features_by_type);
+    SetExclusiveOffs(features_by_type);
 
     at->morx = tmpfile();
     putlong(at->morx,0x00020000);
