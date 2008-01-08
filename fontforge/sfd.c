@@ -1646,10 +1646,12 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
     if ( sf->comments!=NULL ) {
 	fprintf( sfd, "UComments: " );
 	SFDDumpUTF7Str(sfd,sf->comments);
+	putc('\n',sfd);
     }
     if ( sf->fontlog!=NULL ) {
 	fprintf( sfd, "FontLog: " );
 	SFDDumpUTF7Str(sfd,sf->fontlog);
+	putc('\n',sfd);
     }
     if ( sf->version!=NULL )
 	fprintf(sfd, "Version: %s\n", sf->version );
