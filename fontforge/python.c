@@ -4527,7 +4527,7 @@ static int PyFF_Glyph_set_dhints(PyFF_Glyph *self,PyObject *value,void *closure)
     SplineChar *sc = self->sc;
     DStemInfo *head=NULL, *cur;
     int i, cnt;
-    double len;
+    double len, width;
     double lx, ly, rx, ry, ux, uy;
     DStemInfo **_head = &sc->dstem;
 
@@ -4538,15 +4538,31 @@ return( -1 );
 	if ( !PyArg_ParseTuple(PySequence_GetItem(value,i),"(dd)(dd)(dd)", 
             &lx,&ly,&rx,&ry,&ux,&uy ))
 return( -1 );
+        if ( ux == 0 && uy == 0 ) {
+            LogError( "Invalid unit vector has been specified. The hint is ignored.\n" );
+    continue;
+        } else if ( ux == 0 ) {
+            LogError( "Use the \'vhint\' property to specify a vertical hint.\n" );
+    continue;
+        } else if ( uy == 0 ) {
+            LogError( "Use the \'hhint\' property to specify a horizontal hint.\n" );
+    continue;
+        }
 	cur = chunkalloc(sizeof(DStemInfo));
-	cur->left.x = lx; cur->left.y = ly;
-	cur->right.x = rx; cur->right.y = ry;
         len = sqrt( pow( ux,2 ) + pow( uy,2 ));
         ux /= len; uy /= len;
         if ( ux < 0 ) {
             cur->unit.x = -ux; cur->unit.y = -uy;
         } else {
             cur->unit.x = ux; cur->unit.y = uy;
+        }
+        width = ( rx - lx )*cur->unit.y - ( ry - ly )*cur->unit.x;
+        if ( width < 0 ) {
+	    cur->left.x = lx; cur->left.y = ly;
+	    cur->right.x = rx; cur->right.y = ry;
+        } else {
+	    cur->left.x = rx; cur->left.y = ry;
+	    cur->right.x = lx; cur->right.y = ly;
         }
         MergeDStemInfo( sc->parent,&head,cur );
     }
