@@ -138,6 +138,7 @@ static char *RecentFiles[RECENT_MAX];
 static int ItalicConstrained = true;
 static int clear_tt_instructions_when_needed = true;
 static int old_validate = true;
+static int old_fontlog = false;
 
 enum pref_types { pr_int, pr_real, pr_bool, pr_enum, pr_encoding, pr_string,
 	pr_file, pr_namelist };
@@ -206,6 +207,7 @@ static struct prefs_list {
 	{ "DefaultOutputFormat", pr_int, &oldformatstate, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultBitmapFormat", pr_int, &oldbitmapstate, NULL, NULL, '\0', NULL, 1 },
 	{ "SaveValidate", pr_int, &old_validate, NULL, NULL, '\0', NULL, 1 },
+	{ "SaveFontLogAsk", pr_int, &old_fontlog, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultTTFflags", pr_int, &old_ttf_flags, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultPSflags", pr_int, &old_ps_flags, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultOTFflags", pr_int, &old_otf_flags, NULL, NULL, '\0', NULL, 1 },

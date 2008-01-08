@@ -185,7 +185,7 @@ char *strconcat3(const char *str1,const char *str2, const char *str3) {
     char *ret = galloc(len1+len2+strlen(str3)+1);
     strcpy(ret,str1);
     strcpy(ret+len1,str2);
-    strcpy(ret+len1+len2,str2);
+    strcpy(ret+len1+len2,str3);
 return( ret );
 }
 
