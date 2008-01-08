@@ -105,7 +105,7 @@ struct ttfinfo {
     short gasp_version;
     int dupnamestate;
     struct ttflangname *names;
-    char *fontcomments;
+    char *fontcomments, *fontlog;
     SplineChar **chars;		/* from all over, glyf table for contours */
     				/* 		  cmap table for encodings */
 			        /*		  hmtx table for widths */

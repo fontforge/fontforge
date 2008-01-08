@@ -87,6 +87,7 @@ static int nfnt_warned = false, post_warned = false;
 #define CID_TTF_PfEdLookups	1113
 #define CID_TTF_PfEdGuides	1114
 #define CID_TTF_PfEdLayers	1115
+#define CID_FontLog		1116
 
 #ifdef HAVE_PTHREAD_H
 #include <pthread.h>
@@ -303,6 +304,8 @@ return( false );
 		    d->ps_flags |= ps_flag_round;
 		/*if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Restrict256)) )*/
 		    /*d->ps_flags |= ps_flag_restrict256;*/
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_FontLog)) )
+		    d->ps_flags |= ps_flag_outputfontlog;
 	    } else if ( d->sod_which==1 ) {	/* TrueType */
 		d->ttf_flags = 0;
 		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_Hints)) )
@@ -336,6 +339,8 @@ return( false );
 		    d->ttf_flags |= ttf_flag_glyphmap;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_OFM)) )
 		    d->ttf_flags |= ttf_flag_ofm;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_FontLog)) )
+		    d->ttf_flags |= ps_flag_outputfontlog;
 	    } else if ( d->sod_which==2 ) {				/* OpenType */
 		d->otf_flags = 0;
 		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_FullPS)) )
@@ -380,6 +385,8 @@ return( false );
 		    d->otf_flags |= ps_flag_nohints;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Round)) )
 		    d->otf_flags |= ps_flag_round;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_FontLog)) )
+		    d->otf_flags |= ps_flag_outputfontlog;
 	    } else {				/* PS + OpenType Bitmap */
 		d->ps_flags = d->psotb_flags = 0;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_AFMmarks)) )
@@ -474,6 +481,7 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
 #endif
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_OldKern),
 	    (flags&ttf_flag_oldkern) && !GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_AppleMode)));
+    GGadgetSetChecked(GWidgetGetControl(gw,CID_FontLog),flags&ps_flag_outputfontlog);
 
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Hints),which!=1);
     /*GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_HintSubs),which!=1);*/
@@ -518,13 +526,13 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
 #define OPT_Height	233
 
 static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
-    int k,group,group2;
+    int k,fontlog_k,group,group2;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[30];
-    GTextInfo label[30];
+    GGadgetCreateData gcd[31];
+    GTextInfo label[31];
     GRect pos;
-    GGadgetCreateData *hvarray1[21], *hvarray2[36], *harray[7], *varray[9];
+    GGadgetCreateData *hvarray1[21], *hvarray2[36], *harray[7], *varray[11];
     GGadgetCreateData boxes[5];
 
     d->sod_done = false;
@@ -824,6 +832,22 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     boxes[3].gd.label = (GTextInfo *) &gcd[group2-1];
     boxes[3].creator = GHVGroupCreate;
 
+    fontlog_k = k;
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    label[k].text = (unichar_t *) _("Output Font Log");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.popup_msg = (unichar_t *) _(
+	"The Font Log is a text file containing pertinent information\n"
+	"about the font including such things as its change history.\n"
+	"The SIL Open Font License highly recommends its use.\n\n"
+	"If your font contains a font log (see the Element->Font Info)\n"
+	"and you check this box, then the internal fontlog will be\n"
+	"written to the file \"fontlog.txt\" in the same directory\n"
+	"as the font itself.");
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_FontLog;
+    gcd[k++].creator = GCheckBoxCreate;
+
     gcd[k].gd.pos.x = 30-3; gcd[k].gd.pos.y = gcd[group2].gd.pos.y+gcd[group2].gd.pos.height+10-3;
     gcd[k].gd.pos.width = -1;
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
@@ -852,9 +876,10 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
 
     varray[0] = &boxes[2]; varray[1] = NULL;
     varray[2] = &boxes[3]; varray[3] = NULL;
-    varray[4] = GCD_Glue; varray[5] = NULL;
-    varray[6] = &boxes[4]; varray[7] = NULL;
-    varray[8] = NULL;
+    varray[4] = &gcd[fontlog_k];; varray[5] = NULL;
+    varray[6] = GCD_Glue; varray[7] = NULL;
+    varray[8] = &boxes[4]; varray[9] = NULL;
+    varray[10] = NULL;
 
     boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
     boxes[0].gd.flags = gg_enabled|gg_visible;

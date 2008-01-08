@@ -7510,6 +7510,8 @@ ff_gs_str(familyname)
 ff_gs_str(weight)
 ff_gs_str(version)
 
+ff_gs_strnull(comments)
+ff_gs_strnull(fontlog)
 ff_gs_strnull(copyright)
 ff_gs_strnull(xuid)
 ff_gs_strnull(fondname)
@@ -8255,6 +8257,12 @@ static PyGetSetDef PyFF_Font_getset[] = {
     {"version",
 	 (getter)PyFF_Font_get_version, (setter)PyFF_Font_set_version,
 	 "font version (PS)", NULL},
+    {"comment",
+	 (getter)PyFF_Font_get_comments, (setter)PyFF_Font_set_comments,
+	 "A comment associated with the font. Can be anything", NULL},
+    {"fontlog",
+	 (getter)PyFF_Font_get_fontlog, (setter)PyFF_Font_set_fontlog,
+	 "A comment associated with the font. Can be anything", NULL},
     {"xuid",
 	 (getter)PyFF_Font_get_xuid, (setter)PyFF_Font_set_xuid,
 	 "PostScript eXtended Unique ID", NULL},
