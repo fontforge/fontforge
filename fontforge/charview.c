@@ -7898,8 +7898,11 @@ static void CVMenuDontAutoHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void CVMenuAutoInstr(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
+    GlobalInstrCt gic;
 
-    SCAutoInstr(cv->b.sc,NULL);
+    InitGlobalInstrCt(&gic,cv->b.sc->parent,NULL);
+    NowakowskiSCAutoInstr(&gic,cv->b.sc);
+    FreeGlobalInstrCt(&gic);
 }
 
 static void CVMenuNowakAutoInstr(GWindow gw,struct gmenuitem *mi,GEvent *e) {

@@ -2294,7 +2294,6 @@ typedef struct globalinstrct {
 extern void InitGlobalInstrCt( GlobalInstrCt *gic,SplineFont *sf,BlueData *bd );
 extern void FreeGlobalInstrCt( GlobalInstrCt *gic );
 extern void NowakowskiSCAutoInstr( GlobalInstrCt *gic,SplineChar *sc );
-extern void SCAutoInstr( SplineChar *sc,BlueData *bd );
 extern void CVT_ImportPrivate(SplineFont *sf);
 
 extern void SCModifyHintMasksAdd(SplineChar *sc,StemInfo *new);
