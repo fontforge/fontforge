@@ -2343,7 +2343,7 @@ void FontViewMenu_DontAutoHint(GtkMenuItem *menuitem, gpointer user_data) {
 void FontViewMenu_AutoInstr(GtkMenuItem *menuitem, gpointer user_data) {
     FontView *fv = FV_From_MI(menuitem);
 
-    FVAutoInstr( (FontViewBase *) fv, true );
+    FVAutoInstr( (FontViewBase *) fv );
 }
 
 void FontViewMenu_EditInstrs(GtkMenuItem *menuitem, gpointer user_data) {
