@@ -1163,9 +1163,6 @@ return;
 
     gi->loca[gi->next_glyph] = ftell(gi->glyphs);
 
-    if ( isc->ttf_instrs!=NULL )
-	SCinitforinstrs(sc);
-
     ttfss = SCttfApprox(sc);
     ptcnt = SSTtfNumberPoints(ttfss);
     for ( ss=ttfss, contourcnt=0; ss!=NULL; ss=ss->next ) {
