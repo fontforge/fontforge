@@ -5347,32 +5347,39 @@ static void bClearHints(Context *c) {
     if ( c->a.argc==1 )
 	FVClearHints(c->curfv);
     else if ( c->a.vals[1].type==v_str ) {
-	int vert=false;
+	int x_dir = 0, y_dir = 0;
 	int i, gid;
 	FontViewBase *fv = c->curfv;
 	if ( strmatch(c->a.vals[1].u.sval,"vertical")==0 )
-	    vert=true;
-	else if ( strmatch(c->a.vals[1].u.sval,"horizontal")!=0 )
-	    ScriptError(c,"Argument must be a string and must be either \"Horizontal\" or \"Vertical\".");
+	    y_dir = 1;
+	else if ( strmatch(c->a.vals[1].u.sval,"horizontal")==0 )
+	    x_dir = 1;
+	else if ( strmatch(c->a.vals[1].u.sval,"diagonal")==0 ) {
+            x_dir = 1; y_dir = 1;
+        } else
+	    ScriptError(c,"Argument must be a string and must be \"Horizontal\", \"Vertical\" or \"Diagonal\".");
 
 	for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
 		(gid = fv->map->map[i])!=-1 && SCWorthOutputting(fv->sf->glyphs[gid]) ) {
 	    SplineChar *sc = fv->sf->glyphs[gid];
 	    sc->manualhints = true;
 	    SCPreserveHints(sc);
-	    if ( vert ) {
+	    if ( y_dir && !x_dir ) {
 		StemInfosFree(sc->vstem);
 		sc->vstem = NULL;
 		sc->vconflicts = false;
-	    } else {
+	    } else if ( !y_dir && x_dir ) {
 		StemInfosFree(sc->hstem);
 		sc->hstem = NULL;
 		sc->hconflicts = false;
-	    }
+	    } else if ( y_dir && x_dir ) {
+		DStemInfosFree(sc->dstem);
+		sc->dstem = NULL;
+            }
 	    SCUpdateAll(sc);
 	}
     } else
-	ScriptError(c,"Argument must be a string and must be either \"Horizontal\" or \"Vertical\".");
+	ScriptError(c,"Argument must be a string and must be \"Horizontal\", \"Vertical\" or \"Diagonal\".");
 }
 
 static void bClearInstrs(Context *c) {
@@ -5434,6 +5441,73 @@ static void bClearTable(Context *c) {
 	    chunkfree(table,sizeof(*table));
 	}
     }
+}
+
+static void bAddDHint( Context *c ) {
+    int i, any, gid;
+    BasePoint left, right, unit;
+    real args[6]; 
+    double len, width;
+    FontViewBase *fv = c->curfv;
+    SplineFont *sf = fv->sf;
+    EncMap *map = fv->map;
+    SplineChar *sc;
+    DStemInfo *d;
+
+    if ( c->a.argc!=7 )
+	ScriptError( c,"Wrong number of arguments" );
+    for ( i=1; i<7; i++ ) {
+        if ( c->a.vals[i].type==v_int )
+	    args[i-1] = c->a.vals[i].u.ival;
+        else if ( c->a.vals[1].type==v_real )
+	    args[i-1] = c->a.vals[i].u.fval;
+        else
+	    ScriptError( c,"Bad argument type" );
+    }
+    if ( args[4] == 0 && args[5] == 0 )
+        ScriptError( c, "Invalid unit vector for a diagonal hint" );
+    else if ( args[4] == 0 )
+        ScriptError( c, "Use AddVHint to add a vertical hint" );
+    else if ( args[5] == 0 )
+        ScriptError( c, "Use AddHHint to add a horizontal hint" );
+    len = sqrt( pow( args[4],2 ) + pow( args[5],2 ));
+    args[4] /= len; args[5] /= len;
+    if ( args[4] < 0 ) {
+        unit.x = -args[4]; unit.y = -args[5];
+    } else {
+        unit.x = args[4]; unit.y = args[5];
+    }
+    width = ( args[2] - args[0] )*unit.y - ( args[3] - args[1] )*unit.x;
+    if ( width < 0 ) {
+	left.x = args[0]; left.y = args[1];
+	right.x = args[2]; right.y = args[3];
+    } else {
+	left.x = args[2]; left.y = args[3];
+	right.x = args[0]; right.y = args[1];
+    }
+
+    any = false;
+    for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && (sc=sf->glyphs[gid])!=NULL && fv->selected[i] ) {
+        d = chunkalloc(sizeof(DStemInfo));
+        d->where = NULL;
+        d->left = left;
+        d->right = right;
+        d->unit = unit;
+        SCGuessDHintInstances( sc,d );
+        if ( d->where == NULL ) {
+            DStemInfoFree( d );
+            LogError( _("Warning: could not figure out where the hint (%d,%d %d,%d %d,%d) is valid\n"),
+                args[0],args[1],args[2],args[3],args[4],args[5] );
+        } else
+            MergeDStemInfo( sc->parent,&sc->dstem,d );
+	sc->manualhints = true;
+	SCOutOfDateBackground(sc);
+	SCUpdateAll(sc);
+	any = true;
+    }
+    if ( !any )
+        LogError( _("Warning: No characters selected in AddDHint(%d,%d %d,%d %d,%d)\n"),
+            args[0],args[1],args[2],args[3],args[4],args[5] );
 }
 
 static void _AddHint(Context *c,int ish) {
@@ -7839,6 +7913,7 @@ static struct builtins { char *name; void (*func)(Context *); int nofontok; } bu
   /* end blunder */
     { "AddHHint", bAddHHint },
     { "AddVHint", bAddVHint },
+    { "AddDHint", bAddDHint },
     { "ClearGlyphCounterMasks", bClearCharCounterMasks },
     { "SetGlyphCounterMask", bSetCharCounterMask },
     { "ReplaceGlyphCounterMasks", bReplaceCharCounterMasks },
