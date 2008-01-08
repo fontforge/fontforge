@@ -41,6 +41,7 @@
 int ask_user_for_resolution = true;
 char *oflib_username = NULL;
 char *oflib_password = NULL;
+int old_fontlog=false;
 
 static int nfnt_warned = false, post_warned = false;
 
@@ -60,6 +61,8 @@ static int nfnt_warned = false, post_warned = false;
 #define CID_OFLibLine1		312
 #define CID_OFLibLine2		313
 #define CID_OFLibLabOffset	20
+#define CID_AppendFontLog	314
+#define CID_FontLogBit		315
 
 #define CID_OK		1001
 #define CID_PS_AFM		1002
@@ -1482,6 +1485,7 @@ return;
 
     if ( !d->family ) {
 	char *wernersfdname = NULL;
+	char *old_fontlog_contents;
 	int res = -1;
 	if ( oldformatstate == ff_multiple )
 	    wernersfdname = GetWernerSFDFile(d->sf,d->map);	
@@ -1491,8 +1495,28 @@ return;
 	    res = AskResolution(oldbitmapstate,d->sf->bitmaps);
 	    ff_progress_resume_timer();
 	}
+	old_fontlog = GGadgetIsChecked(GWidgetGetControl(d->gw,CID_AppendFontLog));
+	old_fontlog_contents = NULL;
+	if ( old_fontlog ) {
+	    char *new = GGadgetGetTitle8(GWidgetGetControl(d->gw,CID_FontLogBit));
+	    if ( new!=NULL && *new!='\0' ) {
+		old_fontlog_contents=d->sf->fontlog;
+		if ( d->sf->fontlog==NULL )
+		    d->sf->fontlog = new;
+		else {
+		    d->sf->fontlog = strconcat3(d->sf->fontlog,"\n\n",new);
+		    free(new);
+		}
+		d->sf->changed = true;
+	    }
+	}
 	if ( res!=-2 )
 	    err = _DoSave(d->sf,temp,sizes,res,d->map, wernersfdname );
+	if ( err && old_fontlog ) {
+	    free(d->sf->fontlog);
+	    d->sf->fontlog = old_fontlog_contents;
+	} else
+	    free( old_fontlog_contents );
 	free(wernersfdname);
     } else
 	err = !WriteMacFamily(temp,sfs,oldformatstate,oldbitmapstate,flags,d->map);
@@ -1809,6 +1833,26 @@ static int GFD_BitmapFormat(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static int GFD_ToggleFontLog(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	static int cids[] = {
+	    CID_FontLogBit,
+	    0 };
+	int i, visible = GGadgetIsChecked(g);
+
+	for ( i=0; cids[i]!=0; ++i ) {
+	    GGadgetSetVisible(GWidgetGetControl(d->gw,cids[i]),visible);
+	    g = GWidgetGetControl(d->gw,cids[i]+CID_OFLibLabOffset);
+	    if ( g!=NULL )
+		GGadgetSetVisible(g,visible);
+	}
+	    
+	GWidgetToDesiredSize(d->gw);
+    }
+return( true );
+}
+
 static int GFD_ToggleOFLib(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
@@ -1954,9 +1998,9 @@ int SFGenerateFont(SplineFont *sf,int family,EncMap *map) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[19+2*48+2], *varray[13], *hvarray[34], *famarray[3*50+1],
+    GGadgetCreateData gcd[19+2*48+4], *varray[13], *hvarray[42], *famarray[3*50+1],
 	    *harray[10], boxes[7], *oflarray[8][5], *oflibinfo[8];
-    GTextInfo label[18+2*48+2];
+    GTextInfo label[18+2*48+4];
     struct gfc_data d;
     GGadget *pulldown, *files, *tf;
     int i, j, k, f, old, ofs, y, fc, dupfc, dupstyle;
@@ -2402,6 +2446,27 @@ return( 0 );
 	hvarray[12] = &gcd[k-1]; hvarray[13] = GCD_ColSpan; hvarray[14] = GCD_ColSpan;
 	hvarray[15] = NULL;
 
+	label[k].text = (unichar_t *) _("Append a fontlog entry");
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 8; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+24+6;
+	gcd[k].gd.flags = (gg_enabled | gg_visible | gg_utf8_popup);
+	if ( old_fontlog )
+	    gcd[k].gd.flags |= gg_cb_on;
+	gcd[k].gd.popup_msg = (unichar_t *) _("The fontlog allows you to keep a log of changes made to your font.");
+	gcd[k].gd.cid = CID_AppendFontLog;
+	gcd[k].gd.handle_controlevent = GFD_ToggleFontLog;
+	gcd[k++].creator = GCheckBoxCreate;
+	hvarray[16] = &gcd[k-1]; hvarray[17] = hvarray[18] = GCD_ColSpan;
+	hvarray[19] = NULL;
+
+	gcd[k].gd.flags = old_fontlog ? (gg_visible | gg_enabled | gg_textarea_wrap) : (gg_enabled|gg_textarea_wrap);
+	gcd[k].gd.cid = CID_FontLogBit;
+	gcd[k++].creator = GTextAreaCreate;
+	hvarray[20] = &gcd[k-1];
+	hvarray[21] = hvarray[22] = GCD_ColSpan; hvarray[23] = NULL;
+
+
 	/* And OFLib uploads of families won't work because they don't accept dfonts */
 	label[k].text = (unichar_t *) _("Upload to the");
 	label[k].text_is_1byte = true;
@@ -2453,14 +2518,14 @@ return( 0 );
 	boxes[6].gd.u.boxelements = oflibinfo;
 	boxes[6].creator = GHBoxCreate;
 
-	hvarray[16] = &boxes[6]; hvarray[17] = hvarray[18] = GCD_ColSpan;
-	hvarray[19] = NULL;
+	hvarray[24] = &boxes[6]; hvarray[25] = hvarray[26] = GCD_ColSpan;
+	hvarray[27] = NULL;
 
 	gcd[k].gd.flags = gg_enabled;
 	gcd[k].gd.cid = CID_OFLibLine1;
 	gcd[k++].creator = GLineCreate;
-	hvarray[20] = &gcd[k-1];
-	hvarray[21] = hvarray[22] = GCD_ColSpan; hvarray[23] = NULL;
+	hvarray[28] = &gcd[k-1];
+	hvarray[29] = hvarray[30] = GCD_ColSpan; hvarray[31] = NULL;
 
 	label[k].text = (unichar_t *) _("Username:");
 	label[k].text_is_1byte = true;
@@ -2630,14 +2695,14 @@ return( 0 );
 	boxes[5].gd.flags = gg_enabled|gg_visible;
 	boxes[5].gd.u.boxelements = oflarray[0];
 	boxes[5].creator = GHVBoxCreate;
-	hvarray[24] = &boxes[5]; hvarray[25] = hvarray[26] = GCD_ColSpan;
-	hvarray[27] = NULL;
+	hvarray[32] = &boxes[5]; hvarray[33] = hvarray[34] = GCD_ColSpan;
+	hvarray[35] = NULL;
 
 	gcd[k].gd.flags = gg_enabled;
 	gcd[k].gd.cid = CID_OFLibLine2;
 	gcd[k++].creator = GLineCreate;
-	hvarray[28] = &gcd[k-1];
-	hvarray[29] = hvarray[30] = GCD_ColSpan; hvarray[31] = hvarray[32] = NULL;
+	hvarray[36] = &gcd[k-1];
+	hvarray[37] = hvarray[38] = GCD_ColSpan; hvarray[39] = hvarray[40] = NULL;
     } else
 	hvarray[12] = NULL;
 
