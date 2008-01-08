@@ -126,6 +126,11 @@ Generate(filename[,bitmaptype[,fmflags[,res[,mult-sfd-file[,namelist-name]]]]])
 	  <DD>
 	    See <A HREF="#AddPosSub">AddPosSub</A>
 	  <DT>
+	    <A NAME="AddDHint">AddDHint</A>(x1,y1,x2,y2,unit.x,unit.y)
+	  <DD>
+	    Adds a diagonal hint. A diagonal hint requires two points on oposite sides
+	    of the stem and a unit vector in the direction of the stem.
+	  <DT>
 	    <A NAME="AddExtrema" HREF="elementmenu.html#Add-Extrema">AddExtrema</A>()
 	  <DD>
 	    If a spline in a glyph reaches a maximum or minimum x or y value within a
@@ -346,7 +351,7 @@ a[4][0] = "Nested array";
 	  <DT>
 	    <A NAME="AutoInstr" HREF="hintsmenu.html#AutoInstr">AutoInstr</A>()
 	  <DD>
-	    Generates (TrueType) instructions for selected glyphs. 
+	    Generates (TrueType) instructions for selected glyphs.
 	  <DT>
 	    <A NAME="AutoKern" HREF="metricsmenu.html#Kern">AutoKern</A>(spacing,threshold,subtable-name[,kernfile])<BR>
 	    <STRIKE>AutoKern(spacing,threshold[,kernfile])</STRIKE>
