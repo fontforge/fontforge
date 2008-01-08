@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 8-Nov-2007 -->
+  <!-- AP: Last modified: 8-Jan-2008 -->
   <TITLE>Frequently Asked Questions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -1591,7 +1591,7 @@ Gdraw.ScreenWidthCentimeters: 37.3
       non-integral coordinates in the font format -- but it takes a lot more space
       in the font file. Type1 fonts tend to take more space to express this than
       type2 (opentype) fonts. By default FontForge will round to int on these as
-      well, BUT you can change that in the Generate Options dialog. 
+      well, BUT you can change that in the Generate Options dialog.
       <P>
       If your font is rounded then there will be some distortion. If it is not
       rounded there should be no distortion. In PostScript fonts it should be safe
@@ -1599,7 +1599,7 @@ Gdraw.ScreenWidthCentimeters: 37.3
       the font. The font file will be bigger, but more accurate.
       <P>
       If you feel you need more accuracy in TrueType you can change the em-size
-      to 8096. 
+      to 8096.
       <P>
       You can do this on PostScript Type1 fonts too, however, there are some
       applications which assume that all OpenType postscript fonts have an em-size
@@ -1906,8 +1906,7 @@ Gdraw.ScreenWidthCentimeters: 37.3
       a new font. The changed glyphs don't look anywhere near as nice as the originals.
       Why?</B></A>
     <DD>
-      Unfortunately FontForge does not hint truetype fonts at all well. And when
-      FontForge reads in a truetype font it saves all the hinting (instructions)
+      When FontForge reads in a truetype font it saves all the hinting (instructions)
       that were present in the original. But if you change a glyph in any significant
       way those instructions are no longer valid (they depend intimately on the
       details of the outlines), so FontForge removes them when you make a change.

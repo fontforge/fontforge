@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 3-Jan-2008 -->
+  <!-- AP: Last modified: 8-Jan-2008 -->
   <TITLE>Spline Font Database File Format</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -85,6 +85,8 @@ DefaultBaseFilename: Ambrosia-1.0
 Weight: Medium
 Copyright: Copyright (C) 1995-2000 by George Williams
 Comments: This is a funny font.
+UComments: "This is a funny font."
+FontLog: "Create Jan 2008"
 Version: 001.000
 ItalicAngle: 0
 UnderlinePosition: -133
@@ -116,6 +118,18 @@ DEI: 0
   look them up in the <A HREF="fontinfo.html">font info</A> dlg). A few things
   need some explanation:
   <DL>
+    <DT>
+      Comments
+    <DD>
+      This is deprecated. A string of ASCII characters
+    <DT>
+      UComments
+    <DD>
+      New format for font comments. A string of utf7 characters.
+    <DT>
+      FontLog
+    <DD>
+      A string of utf7 characters.
     <DT>
       TeXData
     <DD>
