@@ -4469,7 +4469,7 @@ static int PyFF_Glyph_set_hints(PyFF_Glyph *self,int is_v,PyObject *value) {
     if ( cnt==-1 )
 return( -1 );
     for ( i=0; i<cnt; ++i ) {
-	if ( !PyArg_ParseTuple(PySequence_GetItem(value,i),"(dd)", &start, &width ))
+	if ( !PyArg_ParseTuple(PySequence_GetItem(value,i),"dd", &start, &width ))
 return( -1 );
 	cur = chunkalloc(sizeof(StemInfo));
 	if ( width==-20 || width==-21 )
@@ -4491,13 +4491,69 @@ return( -1 );
     SCClearHintMasks(sc,true);
     *_head = HintCleanup(head,true,1);
     if ( is_v ) {
-	SCGuessVHintInstancesList(sc);
+        sc->vstem = head;
+        SCGuessHintInstancesList( sc,NULL,sc->vstem,NULL,false,false );
 	sc->vconflicts = StemListAnyConflicts(sc->vstem);
     } else {
-	SCGuessHHintInstancesList(sc);
+        sc->hstem = head;
+        SCGuessHintInstancesList( sc,sc->hstem,NULL,NULL,false,false );
 	sc->hconflicts = StemListAnyConflicts(sc->hstem);
     }
 
+    SCCharChangedUpdate(sc);
+return( 0 );
+}
+
+static PyObject *PyFF_Glyph_get_dhints(PyFF_Glyph *self,void *closure) {
+    DStemInfo *ds, *dn;
+    int cnt;
+    PyObject *tuple;
+
+    ds = self->sc->dstem;
+    for ( dn=ds, cnt=0; dn!=NULL; dn=dn->next, ++cnt );
+    tuple = PyTuple_New(cnt);
+    for ( dn=ds, cnt=0; dn!=NULL; dn=dn->next, ++cnt ) {
+	BasePoint left, right, unit;
+	left = dn->left; right = dn->right;
+        unit = dn->unit;
+	PyTuple_SetItem(tuple,cnt,Py_BuildValue("((dd)(dd)(dd))",
+            left.x,left.y,right.x,right.y,unit.x,unit.y ));
+    }
+
+return( tuple );
+}
+
+static int PyFF_Glyph_set_dhints(PyFF_Glyph *self,PyObject *value,void *closure) {
+    SplineChar *sc = self->sc;
+    DStemInfo *head=NULL, *cur;
+    int i, cnt;
+    double len;
+    double lx, ly, rx, ry, ux, uy;
+    DStemInfo **_head = &sc->dstem;
+
+    cnt = PySequence_Size(value);
+    if ( cnt==-1 )
+return( -1 );
+    for ( i=0; i<cnt; ++i ) {
+	if ( !PyArg_ParseTuple(PySequence_GetItem(value,i),"(dd)(dd)(dd)", 
+            &lx,&ly,&rx,&ry,&ux,&uy ))
+return( -1 );
+	cur = chunkalloc(sizeof(DStemInfo));
+	cur->left.x = lx; cur->left.y = ly;
+	cur->right.x = rx; cur->right.y = ry;
+        len = sqrt( pow( ux,2 ) + pow( uy,2 ));
+        ux /= len; uy /= len;
+        if ( ux < 0 ) {
+            cur->unit.x = -ux; cur->unit.y = -uy;
+        } else {
+            cur->unit.x = ux; cur->unit.y = uy;
+        }
+        MergeDStemInfo( sc->parent,&head,cur );
+    }
+
+    DStemInfosFree(*_head);
+    sc->dstem = head;
+    SCGuessHintInstancesList( sc,NULL,NULL,sc->dstem,false,true );
     SCCharChangedUpdate(sc);
 return( 0 );
 }
@@ -4774,6 +4830,9 @@ static PyGetSetDef PyFF_Glyph_getset[] = {
     {"vhints",
 	 (getter)PyFF_Glyph_get_vhints, (setter)PyFF_Glyph_set_vhints,
 	 "The vertical hints of the glyph as a tuple, one entry per hint. Each hint is itself a tuple containing the start location and width of the hint", NULL},
+    {"dhints",
+	 (getter)PyFF_Glyph_get_dhints, (setter)PyFF_Glyph_set_dhints,
+	 "The diagonal hints of the glyph as a tuple, one entry per hint. Each hint is itself a tuple containing three pairs of coordinates, specifying a point on the left edge, a point on the right edge and a unit vector for this hint.", NULL},
     {"manualHints",
 	 (getter)PyFF_Glyph_get_manualhints, (setter)PyFF_Glyph_set_manualhints,
 	 "The hints have been set manually, and the glyph should not be autohinted by default" },
