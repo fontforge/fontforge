@@ -1426,6 +1426,7 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_HeadClearType	5102
 
 #define CID_Comment		6001
+#define CID_FontLog		6002
 
 #define CID_MarkClasses		7101
 #define CID_MarkNew		7102
@@ -4507,6 +4508,8 @@ return(true);
 	free(sf->copyright); sf->copyright = cu_copy(txt);
 	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_Comment));
 	free(sf->comments); sf->comments = u2utf8_copy(*txt?txt:NULL);
+	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_FontLog));
+	free(sf->fontlog); sf->fontlog = u2utf8_copy(*txt?txt:NULL);
 	txt = _GGadgetGetTitle(GWidgetGetControl(gw,CID_DefBaseName));
 	if ( *txt=='\0' || GGadgetIsChecked(GWidgetGetControl(gw,CID_SameAsFontname)) )
 	    txt = NULL;
@@ -7295,21 +7298,21 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GTabInfo aspects[22], vaspects[6], lkaspects[3], uaspects[3];
+    GTabInfo aspects[23], vaspects[6], lkaspects[3], uaspects[3];
     GGadgetCreateData mgcd[10], ngcd[17], psgcd[30], tngcd[8],
-	pgcd[12], vgcd[19], pangcd[22], comgcd[3], txgcd[23],
+	pgcd[12], vgcd[19], pangcd[22], comgcd[4], txgcd[23], floggcd[4],
 	mfgcd[8], mcgcd[8], szgcd[19], mkgcd[5], metgcd[29], vagcd[3], ssgcd[23],
 	xugcd[7], dgcd[6], ugcd[4], gaspgcd[5], gaspgcd_def[2], lksubgcd[2][4],
 	lkgcd[2], lkbuttonsgcd[15], cgcd[12];
     GGadgetCreateData mb[2], mb2, nb[2], nb2, nb3, xub[2], psb[2], psb2[3], ppbox[4],
 	    vbox[4], metbox[2], ssbox[2], panbox[2], combox[2], mkbox[3],
-	    txbox[5], ubox[2], dbox[2], 
+	    txbox[5], ubox[2], dbox[2], flogbox[2],
 	    mcbox[3], mfbox[3], szbox[6], tnboxes[4], gaspboxes[3],
 	    lkbox[7], cbox[6];
     GGadgetCreateData *marray[7], *marray2[9], *narray[26], *narray2[7], *narray3[3],
 	*xuarray[13], *psarray[10], *psarray2[21], *psarray3[3], *psarray4[10],
 	*ppbuttons[5], *pparray[6], *vradio[5], *varray[38], *metarray[46],
-	*pp2buttons[7], *ssarray[58], *panarray[38], *comarray[2],
+	*pp2buttons[7], *ssarray[58], *panarray[38], *comarray[3], *flogarray[3],
 	*mkarray[3], *mkarray2[4], *txarray[5], *txarray2[30],
 	*txarray3[6], *txarray4[6], *uarray[3], *darray[10],
 	*mcarray[13], *mcarray2[7],
@@ -7321,7 +7324,7 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
 	plabel[12], vlabel[19], panlabel[22], comlabel[3], txlabel[23],
 	mflabel[8], mclabel[8], szlabel[17], mklabel[5], metlabel[28],
 	sslabel[23], xulabel[6], dlabel[5], ulabel[1], gasplabel[5],
-	lkbuttonslabel[14], clabel[11];
+	lkbuttonslabel[14], clabel[11], floglabel[3];
     GTextInfo *namelistnames;
     struct gfi_data *d;
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20],
@@ -9316,21 +9319,51 @@ return;
     memset(&comlabel,0,sizeof(comlabel));
     memset(&comgcd,0,sizeof(comgcd));
 
-    comgcd[0].gd.pos.x = 10; comgcd[0].gd.pos.y = 10;
-    comgcd[0].gd.pos.width = ngcd[11].gd.pos.width; comgcd[0].gd.pos.height = 230;
-    comgcd[0].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;
-    comgcd[0].gd.cid = CID_Comment;
-    comlabel[0].text = (unichar_t *) sf->comments;
+    comgcd[0].gd.flags = gg_visible | gg_enabled;
+    comlabel[0].text = (unichar_t *) _("The font comment can contain whatever you feel it should");
     comlabel[0].text_is_1byte = true;
-    if ( comlabel[0].text==NULL ) comlabel[0].text = (unichar_t *) "";
     comgcd[0].gd.label = &comlabel[0];
-    comgcd[0].creator = GTextAreaCreate;
+    comgcd[0].creator = GLabelCreate;
 
-    comarray[0] = &comgcd[0]; comarray[1] = NULL;
+    comgcd[1].gd.pos.x = 10; comgcd[1].gd.pos.y = 10;
+    comgcd[1].gd.pos.width = ngcd[11].gd.pos.width; comgcd[1].gd.pos.height = 230;
+    comgcd[1].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;
+    comgcd[1].gd.cid = CID_Comment;
+    comlabel[1].text = (unichar_t *) sf->comments;
+    comlabel[1].text_is_1byte = true;
+    if ( comlabel[1].text==NULL ) comlabel[1].text = (unichar_t *) "";
+    comgcd[1].gd.label = &comlabel[1];
+    comgcd[1].creator = GTextAreaCreate;
+
+    comarray[0] = &comgcd[0]; comarray[1] = &comgcd[1]; comarray[2] = NULL;
     memset(combox,0,sizeof(combox));
     combox[0].gd.flags = gg_enabled|gg_visible;
     combox[0].gd.u.boxelements = comarray;
-    combox[0].creator = GHBoxCreate;
+    combox[0].creator = GVBoxCreate;
+
+/******************************************************************************/
+    memset(&floglabel,0,sizeof(floglabel));
+    memset(&floggcd,0,sizeof(floggcd));
+
+    floggcd[0].gd.flags = gg_visible | gg_enabled;
+    floglabel[0].text = (unichar_t *) _("The Font Log generally contains the history of the font");
+    floglabel[0].text_is_1byte = true;
+    floggcd[0].gd.label = &floglabel[0];
+    floggcd[0].creator = GLabelCreate;
+
+    floggcd[1].gd.flags = gg_visible | gg_enabled | gg_textarea_wrap;
+    floggcd[1].gd.cid = CID_FontLog;
+    floglabel[1].text = (unichar_t *) sf->fontlog;
+    floglabel[1].text_is_1byte = true;
+    if ( floglabel[1].text==NULL ) floglabel[1].text = (unichar_t *) "";
+    floggcd[1].gd.label = &floglabel[1];
+    floggcd[1].creator = GTextAreaCreate;
+
+    flogarray[0] = &floggcd[0]; flogarray[1] = &floggcd[1]; flogarray[2] = NULL;
+    memset(flogbox,0,sizeof(flogbox));
+    flogbox[0].gd.flags = gg_enabled|gg_visible;
+    flogbox[0].gd.u.boxelements = flogarray;
+    flogbox[0].creator = GVBoxCreate;
 
 /******************************************************************************/
     memset(&mklabel,0,sizeof(mklabel));
@@ -10095,6 +10128,10 @@ return;
     aspects[i].text_is_1byte = true;
     aspects[i++].gcd = combox;
 
+    aspects[i].text = (unichar_t *) _("Font Log");
+    aspects[i].text_is_1byte = true;
+    aspects[i++].gcd = flogbox;
+
     if ( sf->cidmaster!=NULL ) aspects[i].disabled = true;
     aspects[i].text = (unichar_t *) _("Mark Classes");
     aspects[i].text_is_1byte = true;
@@ -10203,6 +10240,9 @@ return;
     }
     GHVBoxSetExpandableCol(gaspboxes[2].ret,2);
     GHVBoxSetExpandableRow(gaspboxes[0].ret,1);
+
+    GHVBoxSetExpandableRow(combox[0].ret,1);
+    GHVBoxSetExpandableRow(flogbox[0].ret,1);
 
     GHVBoxSetExpandableRow(mb[0].ret,0);
     GHVBoxSetExpandableCol(mb2.ret,gb_expandgluesame);

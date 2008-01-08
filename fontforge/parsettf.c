@@ -5328,6 +5328,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->onlybitmaps = info->onlystrikes;
     sf->order2 = info->to_order2;
     sf->comments = info->fontcomments;
+    sf->fontlog = info->fontlog;
 
     sf->creationtime = info->creationtime;
     sf->modificationtime = info->modificationtime;

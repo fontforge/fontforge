@@ -1555,6 +1555,7 @@ typedef struct splinefont {
     struct compositionrules *rules;
 #endif
     char *comments;	/* Used to be restricted to ASCII, now utf8 */
+    char *fontlog;
     int tempuniqueid;
     int top_enc;
     uint16 desired_row_cnt, desired_col_cnt;
@@ -1712,6 +1713,7 @@ enum ps_flags { ps_flag_nohintsubs = 0x10000, ps_flag_noflex=0x20000,
 		    ps_flag_identitycidmap = 0x2000000,
 		    ps_flag_afmwithmarks = 0x4000000,
 		    ps_flag_noseac = 0x8000000,
+		    ps_flag_outputfontlog = 0x10000000,
 		    ps_flag_mask = (ps_flag_nohintsubs|ps_flag_noflex|
 			ps_flag_afm|ps_flag_pfm|ps_flag_tfm|ps_flag_round)
 		};

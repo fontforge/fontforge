@@ -287,6 +287,33 @@ return( 0 );
 return( ret );
 }
 
+static int WriteFontLog(char *filename,SplineFont *sf, int formattype,
+	EncMap *map, int flags, SplineFont *fullsf) {
+    char *buf = galloc(strlen(filename)+12), *pt;
+    FILE *flog;
+
+    if ( sf->fontlog==NULL || *sf->fontlog=='\0' )
+return( true );
+
+    strcpy(buf,filename);
+    pt = strrchr(buf,'/');
+    if ( pt==NULL )
+	strcat(buf,"FontLog.txt");
+    else
+	strcpy(pt+1,"FontLog.txt");
+    flog = fopen(buf,"w");
+    free(buf);
+    if ( flog==NULL )
+return( false );
+
+    for ( pt=sf->fontlog; *pt; ++pt )
+	putc(*pt,flog);
+    if ( fclose(flog)!=0 )
+return( false );
+
+return( true );
+}
+
 static int WriteBitmaps(char *filename,SplineFont *sf, int32 *sizes,int res,
 	int bf, EncMap *map) {
     char *buf = galloc(strlen(filename)+30), *pt, *pt2;
@@ -827,6 +854,13 @@ return( true );
 	ff_progress_increment(-sf->glyphcnt);
 	if ( !WriteAfmFile(newname,sf,oldformatstate,map,flags,NULL)) {
 	    ff_post_error(_("Afm Save Failed"),_("Afm Save Failed"));
+	    err = true;
+	}
+    }
+    if ( !err && (flags&ps_flag_outputfontlog) ) {
+	/*ff_progress_increment(-sf->glyphcnt);*/
+	if ( !WriteFontLog(newname,sf,oldformatstate,map,flags,NULL)) {
+	    ff_post_error(_("FontLog Save Failed"),_("FontLog Save Failed"));
 	    err = true;
 	}
     }

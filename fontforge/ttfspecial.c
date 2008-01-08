@@ -56,20 +56,22 @@ struct PfEd_subtabs {
     } subtabs[MAX_SUBTABLE_TYPES];
 };
 
-static void PfEd_FontComment(SplineFont *sf, struct PfEd_subtabs *pfed ) {
+static void PfEd_FontComment(SplineFont *sf, struct PfEd_subtabs *pfed, uint32 tag ) {
     FILE *fcmt;
     char *pt;
+    char *text = tag==fcmt_TAG ? sf->comments : sf->fontlog;
 
-    if ( sf->comments==NULL || *sf->comments=='\0' )
+    if ( text==NULL || *text=='\0' )
 return;
-    pfed->subtabs[pfed->next].tag = fcmt_TAG;
+    pfed->subtabs[pfed->next].tag = tag;
     pfed->subtabs[pfed->next++].data = fcmt = tmpfile();
 
     putshort(fcmt,1);			/* sub-table version number */
-    putshort(fcmt,strlen(sf->comments));
-    for ( pt = sf->comments; *pt; ++pt )
-	putshort(fcmt,*pt);
+    putshort(fcmt,strlen(text));
+    for ( pt = text; *pt; ++pt )
+	putc(*pt,fcmt);
     putshort(fcmt,0);
+    if ( ftell(fcmt)&1 ) putc(0,fcmt);
     if ( ftell(fcmt)&2 ) putshort(fcmt,0);
 }
 
@@ -764,7 +766,8 @@ void pfed_dump(struct alltabs *at, SplineFont *sf) {
 
     memset(&pfed,0,sizeof(pfed));
     if ( at->gi.flags & ttf_flag_pfed_comments ) {
-	PfEd_FontComment(sf, &pfed );
+	PfEd_FontComment(sf, &pfed, fcmt_TAG );
+	PfEd_FontComment(sf, &pfed, flog_TAG );
 	PfEd_GlyphComments(sf, &pfed, &at->gi );
     }
     if ( at->gi.flags & ttf_flag_pfed_colors )
@@ -804,9 +807,10 @@ return;		/* No subtables */
 /* *************************    The 'PfEd' table    ************************* */
 /* *************************          Input         ************************* */
 
-static void pfed_readfontcomment(FILE *ttf,struct ttfinfo *info,uint32 base) {
+static void pfed_readfontcomment(FILE *ttf,struct ttfinfo *info,uint32 base,
+	uint32 tag) {
     int len;
-    char *pt, *end;
+    char *start, *pt, *end;
     int use_utf8;
 
     fseek(ttf,base,SEEK_SET);
@@ -814,17 +818,26 @@ static void pfed_readfontcomment(FILE *ttf,struct ttfinfo *info,uint32 base) {
     if ( use_utf8!=0 && use_utf8!=1 )
 return;			/* Bad version number */
     len = getushort(ttf);
-    pt = galloc(len+1);		/* data are stored as UCS2, but currently are ASCII */
-    info->fontcomments = pt;
+    start = pt = galloc(len+1);
+
     end = pt+len;
-    while ( pt<end )
-	*pt++ = getushort(ttf);
+    if ( use_utf8 ) {
+	while ( pt<end )
+	    *pt++ = getc(ttf);
+    } else {
+	while ( pt<end )
+	    *pt++ = getushort(ttf);
+    }
     *pt = '\0';
     if ( !use_utf8 ) {
 	pt = latin1_2_utf8_copy(info->fontcomments);
-	free(info->fontcomments);
-	info->fontcomments = pt;
+	free(start);
+	start = pt;
     }
+    if ( tag==flog_TAG )
+	info->fontlog = start;
+    else
+	info->fontcomments = start;
 }
 
 static char *pfed_read_utf8(FILE *ttf, uint32 start) {
@@ -1298,7 +1311,7 @@ static void pfed_read_layer(FILE *ttf,struct ttfinfo *info,int type, uint32 base
 	for ( j=ranges[i].start; j<=ranges[i].last; ++j )
 	    loca[j] = getlong(ttf);
 	for ( j=ranges[i].start; j<=ranges[i].last; ++j ) {
-	    SplineChar *sc = info->chars[j];
+	    sc = info->chars[j];
 	    Layer *ly = type==1 ? &sc->layers[ly_fore] : &sc->layers[ly_back];
 	    pfed_read_glyph_layer(ttf,info,ly,base+loca[j],type);
 	}
@@ -1372,8 +1385,8 @@ return;
 	tagoff[i].offset = getlong(ttf);
     }
     for ( i=0; i<n; ++i ) switch ( tagoff[i].tag ) {
-      case fcmt_TAG:
-	pfed_readfontcomment(ttf,info,info->pfed_start+tagoff[i].offset);
+      case fcmt_TAG: case flog_TAG:
+	pfed_readfontcomment(ttf,info,info->pfed_start+tagoff[i].offset, tagoff[i].tag);
       break;
       case cmnt_TAG:
 	pfed_readglyphcomments(ttf,info,info->pfed_start+tagoff[i].offset);

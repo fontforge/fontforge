@@ -1647,6 +1647,10 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 	fprintf( sfd, "UComments: " );
 	SFDDumpUTF7Str(sfd,sf->comments);
     }
+    if ( sf->fontlog!=NULL ) {
+	fprintf( sfd, "FontLog: " );
+	SFDDumpUTF7Str(sfd,sf->fontlog);
+    }
     if ( sf->version!=NULL )
 	fprintf(sfd, "Version: %s\n", sf->version );
     if ( sf->fondname!=NULL )
@@ -5654,6 +5658,8 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
 	    free(temp);
 	} else if ( strmatch(tok,"UComments:")==0 ) {
 	    sf->comments = SFDReadUTF7Str(sfd);
+	} else if ( strmatch(tok,"FontLog:")==0 ) {
+	    sf->fontlog = SFDReadUTF7Str(sfd);
 	} else if ( strmatch(tok,"Version:")==0 ) {
 	    geteol(sfd,tok);
 	    sf->version = copy(tok);
