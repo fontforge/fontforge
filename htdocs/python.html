@@ -1460,6 +1460,13 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TD colspan=2>Any comment you wish to associate with the glyph. UTF-8</TD>
     </TR>
     <TR>
+      <TD><CODE>dhints</CODE></TD>
+      <TD colspan=2>A tuple with one entry for each diagonal stem hint. Each stem
+	hint is itself represented by a tuple of three coordinate pairs (themselves
+	tuples of two numbers), these three are: a point on one side of the stem,
+	a point on the other side, and a unit vector pointing in the stem's direction.</TD>
+    </TR>
+    <TR>
       <TD><CODE>encoding</CODE></TD>
       <TD colspan=2>Returns the glyph's encoding in the font's encoding. (readonly)
 	<P>
