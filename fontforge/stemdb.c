@@ -608,8 +608,8 @@ static Spline *FindMatchingHVEdge(struct glyphdata *gd, struct pointdata *pd,
 	t = .999;
 	dir = &pd->prevunit;
     }
-    if ( (d.x = dir->x)<0 ) d.x = -d.x;
-    if ( (d.y = dir->y)<0 ) d.y = -d.y;
+    if (( d.x = dir->x )<0 ) d.x = -d.x;
+    if (( d.y = dir->y )<0 ) d.y = -d.y;
     which = d.x<d.y;		/* closer to vertical */
 
     if ( s==NULL )		/* Somehow we got an open contour? */
@@ -1032,13 +1032,14 @@ return( 0 );
 static struct stem_chunk *AddToStem( struct stemdata *stem,struct pointdata *pd1,struct pointdata *pd2,
     int is_next1, int is_next2, int cheat ) {
     
-    int is_potential1=false, is_potential2=true;
+    int is_potential1 = false, is_potential2 = true;
     struct stem_chunk *chunk=NULL;
     BasePoint *dir = &stem->unit;
     BasePoint *test = &pd1->sp->me;
+    int lincr = 1, rincr = 1;
     double off, dist_error;
-    double loff=0, roff=0;
-    double min=0, max=0;
+    double loff = 0, roff = 0;
+    double min = 0, max = 0;
     int i;
 
     if ( cheat || stem->positioned ) is_potential2 = false;
@@ -1061,6 +1062,9 @@ static struct stem_chunk *AddToStem( struct stemdata *stem,struct pointdata *pd1
     /* going to add doesn't duplicate an existing one.*/
     for ( i=stem->chunk_cnt-1; i>=0; --i ) {
 	chunk = &stem->chunks[i];
+        if ( pd1 == NULL || chunk->l == pd1 ) lincr = 0;
+        if ( pd2 == NULL || chunk->r == pd2 ) rincr = 0;
+        
         if (( chunk->l == pd1 || pd1 == NULL ) && ( chunk->r == pd2 || pd2 == NULL )) {
             if ( !is_potential1 ) chunk->lpotential = false;
             if ( !is_potential2 ) chunk->rpotential = false;
@@ -1146,6 +1150,8 @@ static struct stem_chunk *AddToStem( struct stemdata *stem,struct pointdata *pd1
     else if ( loff > stem->lmax ) stem->lmax = loff;
     if ( roff < stem->rmin ) stem->rmin = roff;
     else if ( roff > stem->rmax ) stem->rmax = roff;
+    stem->lpcnt += lincr;
+    stem->rpcnt += rincr;
 return( chunk );
 }
 
@@ -1584,27 +1590,35 @@ return( NULL );         /* Cannot make a stem if edges are not parallel (unless 
             chunk->stub = is_stub;
             
         if ( chunk != NULL && gd->linecnt > 0 ) {
-            if ( stem->leftline == NULL ) {
-                if ( line != NULL && chunk->l == pd )
+            int hv = IsVectorHV( &stem->unit,0,true );
+            struct linedata *otherline = NULL;
+            /* For HV stems allow assigning a line to stem edge only
+            /* if that line also has an exactly HV vector */
+            if ( line != NULL && ( !hv || (
+                line->unit.x == stem->unit.x && line->unit.y == stem->unit.y ))) {
+                if ( stem->leftline == NULL && chunk->l == pd ) {
                     stem->leftline = line;
-                else if ( line2 != NULL && chunk->l == pd2 )
-                    stem->leftline = line2;
+                    otherline = stem->rightline;
+                } else if ( stem->rightline == NULL && chunk->r == pd ) {
+                    stem->rightline = line;
+                    otherline = stem->leftline;
+                }
                 /* If lines are attached to both sides of a diagonal stem,
                 /* then prefer the longer line */
-                if (!IsVectorHV( &stem->unit,0,true ) &&
-                    stem->leftline != NULL && ( stem->rightline == NULL || 
-                    stem->rightline->length < stem->leftline->length ))
-                    SetStemUnit( stem,stem->leftline->unit );
+                if ( !hv && ( otherline == NULL || ( otherline->length < line->length )))
+                    SetStemUnit( stem,line->unit );
             }
-            if ( stem->rightline == NULL ) {
-                if ( line != NULL && chunk->r == pd )
-                    stem->rightline = line;
-                else if ( line2 != NULL && chunk->r == pd2 )
+            if ( line2 != NULL && ( !hv || (
+                line2->unit.x == stem->unit.x && line2->unit.y == stem->unit.y ))) {
+                if ( stem->leftline == NULL && chunk->l == pd ) {
+                    stem->leftline = line2;
+                    otherline = stem->rightline;
+                } else if ( stem->rightline == NULL && chunk->r == pd ) {
                     stem->rightline = line2;
-                if (!IsVectorHV( &stem->unit,0,true ) &&
-                    stem->rightline != NULL && ( stem->leftline == NULL || 
-                    stem->leftline->length < stem->rightline->length ))
-                    SetStemUnit( stem,stem->rightline->unit );
+                    otherline = stem->leftline;
+                }
+                if ( !hv && ( otherline == NULL || ( otherline->length < line->length )))
+                    SetStemUnit( stem,line2->unit );
             }
         }
     }
@@ -1865,29 +1879,37 @@ return;
     /* fonts or fonts with quadratic splines).
     /* But do that only for colinear spline segments and ensure that there are
     /* no bends between two splines. */
-    if ( !tp && topd->colinear && &other->to->next != NULL ) {
+    if ( !tp && ( !fp || t > 0.5 ) &&
+        topd->colinear && &other->to->next != NULL ) {
         testpt = other->to->next->to; 
         testpd = &gd->points[testpt->ttfindex];
-        if (pd->sp != testpt &&
-            testpd->prevunit.x * topd->prevunit.x +
-            testpd->prevunit.y * topd->prevunit.y > 0 ) {
+        BasePoint *initdir = &topd->prevunit;
+        while ( !tp && topd->colinear && pd->sp != testpt && (
+            testpd->prevunit.x * initdir->x +
+            testpd->prevunit.y * initdir->y > 0 )) {
 
             topt = testpt; topd = testpd;
-            t_needs_recalc = true;
             tp = ParallelToDir( topd,false,dir,&opposite,pd->sp,false );
+            testpt = topt->next->to; 
+            testpd = &gd->points[testpt->ttfindex];
         }
+        if ( tp ) t_needs_recalc = true;
     }
-    if ( !fp && frompd->colinear && &other->from->prev != NULL ) {
+    if ( !fp && ( !fp || t < 0.5 ) &&
+        frompd->colinear && &other->from->prev != NULL ) {
         testpt = other->from->prev->from; 
         testpd = &gd->points[testpt->ttfindex];
-        if (pd->sp != testpt &&
-            testpd->nextunit.x * frompd->nextunit.x +
-            testpd->nextunit.y * frompd->nextunit.y > 0 ) {
+        BasePoint *initdir = &frompd->prevunit;
+        while ( !fp && frompd->colinear && pd->sp != testpt && (
+            testpd->prevunit.x * initdir->x +
+            testpd->prevunit.y * initdir->y > 0 )) {
 
             frompt = testpt; frompd = testpd;
-            t_needs_recalc = true;
             fp = ParallelToDir( frompd,true,dir,&opposite,pd->sp,false );
+            testpt = frompt->prev->from; 
+            testpd = &gd->points[testpt->ttfindex];
         }
+        if ( fp ) t_needs_recalc = true;
     }
     if ( t_needs_recalc )
         t = RecalcT( other,frompt,topt,t );
@@ -3101,16 +3123,17 @@ static void GDFindUnlikelyStems( struct glyphdata *gd ) {
 
     GDStemsFixupIntersects(gd);
     
-    /* If a stem has straight edges, and it is wider than tall */
-    /*  then it is unlikely to be a real stem */
     for ( i=0; i<gd->stemcnt; ++i ) {
 	stem = &gd->stems[i];
+
         /* If stem had been already present in the spline char before we
         /* started generating glyph data, then it should never be 
         /* considered "too big" */
         if ( stem->positioned )
     continue;
 
+        /* If a stem has straight edges, and it is wider than tall */
+        /*  then it is unlikely to be a real stem */
 	width = stem->width;
 	stem->toobig =  (                         width <= gd->emsize/8 && 2.0*stem->clen < width ) ||
 			( width > gd->emsize/8 && width <= gd->emsize/4 && 1.5*stem->clen < width ) ||
@@ -3124,11 +3147,10 @@ static void GDFindUnlikelyStems( struct glyphdata *gd ) {
     /* the opposite sides of a circle are always accepted */
     for ( i=0; i<gd->stemcnt; ++i ) if ( gd->stems[i].toobig ) {
 	stem = &gd->stems[i];
-        if ( stem->positioned )
-    continue;
 	width = stem->width;
-        if ( stem->activecnt == 1 && stem->active[0].curved && 
-            width/2 > dist_error_curve ) {
+
+        if ( IsVectorHV( &stem->unit,0,true ) && stem->activecnt == 1 && 
+            stem->active[0].curved && width/2 > dist_error_curve ) {
             
             for ( j=0; j<gd->stemcnt; ++j) {
 	        stem1 = &gd->stems[j];
@@ -3223,6 +3245,17 @@ static void GDFindUnlikelyStems( struct glyphdata *gd ) {
             if ( j < gd->stemcnt )
                 stem->toobig = true;
         }
+    }
+
+    for ( i=0; i<gd->stemcnt; ++i ) {
+	stem = &gd->stems[i];
+        if ( IsVectorHV( &stem->unit,0,true ))
+    continue;
+
+        /* If a diagonal stem doesn't have at least 2 points assigned to
+        /* each edge, then we can't do anything useful with it */
+        if ( stem->lpcnt < 2 || stem->rpcnt < 2 || stem->activecnt >= stem->chunk_cnt )
+            stem->toobig = 2;
     }
 }
 
@@ -3669,22 +3702,6 @@ static void NormalizeStem( struct glyphdata *gd,struct stemdata *stem ) {
         /* Recalculate active zones relatively to the new left base point */
         UpdateActive( stem,lold );
     }
-
-    /* Finally count the number of points assigned to left and right
-    /* edges of this stem */
-    for ( i=0; i<gd->pcnt; ++i ) if ( gd->points[i].sp!=NULL )
-	gd->points[i].sp->ticked = false;
-    for ( i=0; i<stem->chunk_cnt; ++i ) {
-        struct stem_chunk *chunk = &stem->chunks[i];
-        if ( chunk->l != NULL && !chunk->lpotential && !chunk->l->sp->ticked ) {
-            stem->lpcnt++;
-            chunk->l->sp->ticked = true;
-        }
-        if ( chunk->r != NULL && !chunk->rpotential && !chunk->r->sp->ticked ) {
-            stem->rpcnt++;
-            chunk->r->sp->ticked = true;
-        }
-    }
 }
 
 #if GLYPH_DATA_DEBUG
@@ -3897,7 +3914,7 @@ return( NULL );
     gd->pspace = galloc( gd->pcnt*sizeof( struct pointdata *));
     /* And for 0xfffe points such as those used in glyphs with order2 glyphs */
     /*  with references. */
-    for ( ss= sc->layers[ly_fore].splines; ss!=NULL; ss = ss->next ) {
+    for ( ss = sc->layers[ly_fore].splines; ss!=NULL; ss = ss->next ) {
 	for ( sp = ss->first; ; ) {
 	    if ( sp->ttfindex == 0xfffe )
 		sp->ttfindex = gd->pcnt++;
@@ -4092,9 +4109,9 @@ void GlyphDataFree(struct glyphdata *gd) {
     free(gd->pspace);		gd->pspace = NULL;
 
     /* Restore implicit points */
-    for ( i=gd->realcnt; i<gd->norefpcnt; ++i )
+    for ( i=gd->realcnt; i<gd->norefpcnt; ++i ) if ( gd->points[i].sp != NULL )
 	gd->points[i].sp->ttfindex = 0xffff;
-    for ( i=gd->norefpcnt; i<gd->pcnt; ++i )
+    for ( i=gd->norefpcnt; i<gd->pcnt; ++i ) if ( gd->points[i].sp != NULL )
 	gd->points[i].sp->ttfindex = 0xfffe;
 
     for ( i=0; i<gd->linecnt; ++i )
