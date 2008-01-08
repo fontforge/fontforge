@@ -13,7 +13,7 @@
     Generate Font Dialog
   </H1>
   <P>
-  <IMG SRC="generate.png" ALIGN="Right" WIDTH="398" HEIGHT="506">This generates
+  <IMG SRC="generate.png" ALIGN="Right" WIDTH="398" HEIGHT="525">This generates
   font files, both outline and bitmap. You may choose not to generate either,
   you may generate an afm file or a pfm file, you may select the type of postscript
   output, you may select which pixelsizes of bitmap to generate.
@@ -74,7 +74,7 @@
       PostScript CFF font, this is the format that lives inside the 'CFF ' table
       of an opentype font. It is a valid font format in its own right.
     <LI>
-      True Type. 
+      True Type.
     <LI>
       True Type Symbol. Same as True Type, except it uses the 1 byte encoding given
       in the font. This is important on windows as symbol and dingbat encodings
@@ -157,7 +157,7 @@
       None
   </UL>
   <P>
-  <IMG SRC="GenerateOptions.png" WIDTH="320" HEIGHT="357" ALIGN="Right">The
+  <IMG SRC="GenerateOptions.png" WIDTH="320" HEIGHT="376" ALIGN="Right">The
   <A NAME="Options">options</A> dialog provides the following check boxes.
   Not all are enabled at all times.
   <UL>
@@ -257,6 +257,10 @@
       (OpenType) glyph IDs to glyphnames (and possibly to unicode values)
     <LI>
       [] Output OFM &amp; CFG -- Output metrics files for Omega
+	<HR>
+    <LI>
+      [] Output Font Log -- if the font contains <A HREF="fontinfo.html#FontLog">font
+      log </A>information then write it out into a separate file "FontLog.txt".
   </UL>
   <P>
   TTF (and OpenType) fonts are usually generated in Unicode encoding, there
@@ -307,6 +311,12 @@
   you further, but if it fails FontForge will give you the option of reviewing
   errors and fixing them. It will pop up a <A HREF="validation.html">validation
   window</A>.
+  <P>
+  If you check [] Append a fontlog entry then a text area will open up in which
+  you can create a new fontlog entry to be appended to the end of the fontlog.
+  This will become part of the fontlog before it is saved (with [] Output Font
+  Log in the [Options] dialog) <BIG>BUT</BIG> you must save the font if you
+  wish to retain this entry in the sfd file itself.
   <P>
   If you generate a TrueType or OpenType font with the OpenType mode set (note:
   the term "OpenType" means two things, a truetype wrapper around a postscript
