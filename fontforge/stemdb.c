@@ -857,7 +857,7 @@ static struct linedata *BuildLine(struct glyphdata *gd,struct pointdata *pd,int 
     
     dir = is_next ? &pd->nextunit : &pd->prevunit;
     is_l = IsCorrectSide( gd,pd->sp,is_next,true,dir );
-    dist_error = ( IsVectorHV( dir,0,true )) ? dist_error_hv : dist_error_diag ;	/* Diagonals are harder to align */
+    dist_error = ( IsVectorHV( dir,slope_error,true )) ? dist_error_hv : dist_error_diag ;	/* Diagonals are harder to align */
     if ( dir->x==0 && dir->y==0 )
 return( NULL );
     base = &pd->sp->me;
@@ -925,14 +925,18 @@ return( NULL );
     qsort( line->points,line->pcnt,sizeof( struct pointdata * ),line_pt_cmp );
     start = &line->points[0]->sp->me;
     end = &line->points[pcnt]->sp->me;
-    line->length =  ( end->x - start->x ) * line->unit.x +
-                    ( end->y - start->y ) * line->unit.y;
     /* Now recalculate the line unit vector basing on its starting and
     /* terminal points */
     line->unit.x = ( end->x - start->x );
     line->unit.y = ( end->y - start->y );
+    line->length = sqrt( pow( line->unit.x,2 ) + pow( line->unit.y,2 ));
     line->unit.x /= line->length;
     line->unit.y /= line->length;
+    if ( line->unit.x < slope_error && line->unit.x > -slope_error ) {
+	line->unit.x = 0; line->unit.y = 1;
+    } else if ( line->unit.y < slope_error && line->unit.y > -slope_error ) {
+	line->unit.x = 1; line->unit.y = 0;
+    }
 return( line );
 }
 
@@ -1617,7 +1621,7 @@ return( NULL );         /* Cannot make a stem if edges are not parallel (unless 
                     stem->rightline = line2;
                     otherline = stem->leftline;
                 }
-                if ( !hv && ( otherline == NULL || ( otherline->length < line->length )))
+                if ( !hv && ( otherline == NULL || ( otherline->length < line2->length )))
                     SetStemUnit( stem,line2->unit );
             }
         }
