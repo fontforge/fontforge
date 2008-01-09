@@ -45,7 +45,7 @@ clean:
 	( cd gutils ; $(MAKE) clean )
 	( cd gdraw ; $(MAKE) clean )
 	( cd plugins ; $(MAKE) clean )
-	-( cd gtkui ; $(MAKE) clean )
+	if test -d gtkui; then cd gtkui ; $(MAKE) clean ; fi
 	-( cd po ; rm *.mo )
 	-( cd pyhook ; rm -rf build dist )
 	-rm -rf .libs
@@ -56,7 +56,7 @@ distclean cleaner:
 	( cd gutils ; $(MAKE) distclean )
 	( cd gdraw ; $(MAKE) distclean )
 	( cd plugins ; $(MAKE) distclean )
-	-( cd gtkui ; $(MAKE) distclean )
+	if test -d gtkui; then cd gtkui ; $(MAKE) distclean ; fi
 	-( cd po ; rm *.mo Makefile* )
 	-( cd pyhook ; rm -rf build dist setup.py )
 	-rm -rf .libs
