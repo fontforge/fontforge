@@ -50,6 +50,9 @@ return( NULL );
 int hasspiro(void) {
 return(true);
 }
+
+static void initSpiro(void) {
+}
 # else
 #  include <dynamic.h>
 
