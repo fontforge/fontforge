@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 11-Dec-2007 -->
+  <!-- AP: Last modified: 8-Jan-2008 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -46,6 +46,193 @@
     </TABLE>
   </BLOCKQUOTE>
   <UL>
+    <LI>
+      9-Jan-2008 
+      <UL>
+	<LI>
+	  Fix some problems with AAT. Mutually exclusive features in the chain didn't
+	  get the right OffFlags set. (and didn't work).
+	<LI>
+	  Add DHint support for native &amp; python scripts. Prevent users from specifying
+	  incorrect unit vectors for diagonal hints added via scripts. Also use stemdb.c
+	  to calculate active zones for normal (horizontal and vertical) hints added
+	  via scripts.
+	<LI>
+	  Remove my original (and not very good) auto instructor. Clean up the docs
+	  to remove references to how bad it was.
+	<LI>
+	  Add the ability to store a fontlog in the sfd file. Available to python
+	  scripting. A way to save it to FontLog.txt when generating a font. A way
+	  to modify it before generating. Normal access through Font Info.
+	<LI>
+	  Change the PfEd table so that the font comment is in utf8, and the glyph
+	  comment subtable too.
+	  <P>
+	  Add subtables to hold:
+	  <UL>
+	    <LI>
+	      Names of lookups and lookup subtables and anchor classes
+	    <LI>
+	      Guide lines
+	    <LI>
+	      Background and spiro layers
+	    <LI>
+	      Font Log
+	  </UL>
+	<LI>
+	  It used to be that when a font had both 'mor[tx]' and 'GSUB' we would only
+	  read 'GSUB'. But Michel Boyer wanted to read both. So... read 'morx' after
+	  'GSUB' and if we find a feature/setting that looks as though it corresponds
+	  to an existing OpenType lookup (which we can convert to a Mac format) then
+	  skip that feature/setting, presuming it to contain redundant data.
+	  <P>
+	  This is a finer grain approach, but similar to, the previous one. There we
+	  skipped the whole table, presuming it redundant. But in CharisSIL the morx
+	  table has a lot of functionality orthogonal to GSUB. So we must parse both.
+	<LI>
+	  The 'feat' table was being output in the wrong order. Features were linked
+	  together in several ways and 'feat' followed the wrong field.
+	<LI>
+	  Two related bugs that Charis SIL invokes:
+	  <OL>
+	    <LI>
+	      This font has a contextual substitution which uses class 0 and replaces it
+	      via a nested lookup. But my feature file output could not handle class 0
+	      (since it isn't really specified) and would crash.
+	    <LI>
+	      However, in this case class 0 was specified by the coverage table (we fixed
+	      that earlier but just for kerning classes). So now fix for contextuals.
+	  </OL>
+	<LI>
+	  Auto recovery was broken. Ever since I put in the code to ask the user what
+	  to do with a recovery file (It always recovered into a new file).
+	<LI>
+	  When FF opens a char window on my screen it has a bad habit of opening it
+	  at 40% magnification. Which means mouse clicks give things either at em or
+	  at half me positions. That's bad. Don't want the default behavior to create
+	  lots of .5 coordinate values.
+	  <P>
+	  Make the window open at 33% instead.
+	<LI>
+	  FontForge warns the user when a glyph's name does not match its unicode encoding.
+	  But in the past it would do this for glyphs with multiple encodings even
+	  if the name matched one of the encodings. Fix that.
+	<LI>
+	  When FF uses doubles internally, it still outputs float precision into the
+	  sfd file. Fix that.
+	<LI>
+	  Still said "Tangent" rather than "Constraint" in points menu when in Spiro
+	  mode.
+	<LI>
+	  Ben Laenen of Deja Vu says it would be nice if sfd files stored truetype
+	  instructions as recognizable text rather that squirrily ASCII85 encoded binary
+	  data. Sounds reasonable. Might as well store 'cvt ' and 'maxp' as numbers
+	  then.
+	<LI>
+	  Remove some deprecated DStem code. Also move CVNumForePointsSelected() to
+	  charview.c and make it static (not used anywhere else except that file).
+	<LI>
+	  Sometimes the pointers to libspiro didn't get initialized.
+	<LI>
+	  If a font had no private dica and one tried to put something in it from python,
+	  ff would crash.
+	<LI>
+	  Alexej points out that my use of iconv was broken on many systems where UCS-4
+	  is big endian on a little-endian machine.
+	<LI>
+	  Use freetype to rasterize the fill blit in the char view.
+	<LI>
+	  - In search_edge, an array subscript was sometimes -1?
+	  <P>
+	  - Previously I forgot to mention Alexey's changes in DStems hinting code.
+	<LI>
+	  Simple optimization for blue zone hinting - cupped serifs should benefit
+	  most.
+	<LI>
+	  Update copyright notices. (add 2008)
+	<LI>
+	  Oops, typo in python menu code.
+	<LI>
+	  There is now an incomplete fontforge which uses the gtk toolkit.
+	  <BLOCKQUOTE>
+	    <PRE>$ ./configure
+$ make
+$ make install
+$ make fontforgegtk
+$ make install_gtk
+</PRE>
+	  </BLOCKQUOTE>
+	  <P>
+	  About all it can do is open a font and display it. If a menu command does
+	  not require a dialog then it might work. There are probably scores of bugs
+	  even in the little bit that supposedly does work.
+	  <P>
+	  I think the open dialog is extremely ugly. That's not my fault, that's gtk's
+	  widget. The open dialog is far less functional than the one in the gdraw
+	  fontforge -- I can't figure out how to enhance it.
+	<LI>
+	  Switching to a new internal representation of diagonal stem hints.
+	<LI>
+	  Add a mechanism to check that the executable has been configured to match
+	  the library. And include a library date stamp as well as an executable stamp.
+	<LI>
+	  In the metrics view, if I switch from outline view to bitmap view (by selecting
+	  a strike by pixel size from the view menu) then ff would crash.
+	<LI>
+	  Cleanup the library executable interface a bit more.
+	<LI>
+	  Minor tweaks to fontview.
+	<LI>
+	  - Alexey suggested improvement for HStemGeninst().
+	<LI>
+	  - Added optional experimental code for interpolating strong points.
+	<LI>
+	  Barry Schwartz wants to be able to set the "don't autohint flag" from python.
+	  I'm calling it "manualHints" though.
+	<LI>
+	  Barry Schwartz points out that the simplify flag "setstarttoextremum" is
+	  incorrectly documented. Fix that.
+	<LI>
+	  - In HStemGeninst(), new positioning method gives bizarre results for overlapping
+	  stems. Added fallback to old method.
+	<LI>
+	  Make it obvious that the Print/Display dlg HAS a menu.
+	<LI>
+	  Crossland wants a way to insert random text into the Print/Display dialog.
+	  So add the ability to generate a bunch of random words that look vaguely
+	  reasonable. (Invoked by the popup menu in the dlg).
+	<LI>
+	  Exporting spiros to a plate file produced garbage if any spiros were selected.
+	<LI>
+	  The Print dlg tended to crash if you did much editing in it.
+	<LI>
+	  When switching to spiro mode on an empty glyph (or perhaps the first glyph
+	  in a new font), FF would complain: Internal Error: Character out of bounds
+	  in bitmap font 0&gt;=0
+	<LI>
+	  Oof. The math stuff doesn't work if device tables are disabled. fix it.
+	<LI>
+	  Fix some problems with configuration modes I don't use. Correct some pointer
+	  arguments which differ in signedness.
+	<LI>
+	  If lines are attached to both sides of a diagonal stem, then prefer the longer
+	  line's unit vector for this stem.
+	<LI>
+	  - Fixed snap_to_blues(): it used to mess global accuracy setting up.
+	<LI>
+	  - Fixed finish_stem(): it did not mark edges of previous hints as done.
+	<LI>
+	  - CHanged HStemGeninst(): it now tries to interpolate HStems within blues
+	  when possible.
+	<LI>
+	  Dave Crossland points out that ff didn't compile if --without-native-script
+	  were set.
+	<LI>
+	  Trying to change control points with the point info dlg on hv-curve points
+	  didn't work.
+	<LI>
+	  Add the ability to insert a list of words into the metrics view.
+      </UL>
     <LI>
       10-Dec-2007
       <UL>
