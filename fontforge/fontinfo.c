@@ -6579,9 +6579,10 @@ static void LookupDeselect(struct lkdata *lk) {
     }
 }
 
-static void LookupPopup(GWindow gw,OTLookup *otl,struct lookup_subtable *sub) {
+static void LookupPopup(GWindow gw,OTLookup *otl,struct lookup_subtable *sub,
+	struct lkdata *lk) {
     extern char *lookup_type_names[2][10];
-    static char popup_msg[300];
+    static char popup_msg[600];
     int pos;
     char *lookuptype;
     FeatureScriptLangList *fl;
@@ -6640,6 +6641,37 @@ static void LookupPopup(GWindow gw,OTLookup *otl,struct lookup_subtable *sub) {
 		popup_msg[pos++] = '\n';
 	}
     }
+
+    /* Find out if any other lookups invoke it (ie. a context lookup invokes */
+    /*  does it invoke ME?) */
+    for ( l=0; l<lk->cnt; ++l ) {
+	int j, r, used = false;
+	if ( lk->all[l].deleted )
+    continue;
+	for ( j=0; j<lk->all[l].subtable_cnt && !used; ++j ) {
+	    struct lookup_subtable *sub = lk->all[l].subtables[j].subtable;
+	    if ( lk->all[l].subtables[j].deleted )
+    continue;
+	    if ( sub->fpst!=NULL ) {
+		for ( r=0; r<sub->fpst->rule_cnt && !used; ++r ) {
+		    struct fpst_rule *rule = &sub->fpst->rules[r];
+		    int ls;
+		    for ( ls = 0; ls<rule->lookup_cnt; ++ls ) {
+			if ( rule->lookups[ls].lookup == otl ) {
+			    used = true;
+		    break;
+			}
+		    }
+		}
+	    }
+	}
+	if ( used ) {
+	    snprintf(popup_msg+pos,sizeof(popup_msg)-pos,_(" Used in %s\n"),
+		    lk->all[l].lookup->lookup_name );
+	    pos += strlen( popup_msg+pos );
+	}
+    }
+
     if ( pos>=sizeof(popup_msg) )
 	pos = sizeof(popup_msg)-1;
     popup_msg[pos]='\0';
@@ -7201,7 +7233,7 @@ return;
 	    if ( event->type==et_mouseup )
 return;
 	    else if ( event->type==et_mousemove ) {
-		LookupPopup(gw,lk->all[i].lookup,NULL);
+		LookupPopup(gw,lk->all[i].lookup,NULL,lk);
 return;
 	    } else {
 		if ( inbox || event->u.mouse.clicks>1 ) {
@@ -7230,7 +7262,7 @@ return;
 		    if ( event->type==et_mouseup )
 return;
 		    else if ( event->type==et_mousemove ) {
-			LookupPopup(gw,lk->all[i].lookup,lk->all[i].subtables[j].subtable);
+			LookupPopup(gw,lk->all[i].lookup,lk->all[i].subtables[j].subtable,lk);
 return;
 		    } else {
 			if ( inbox )
