@@ -74,12 +74,13 @@ DLIBS = -rpath $(libdir) ../libgunicode.la @LIBS@ $(STATIC_LIBS) -lm
 
 all: @FINAL_TARGET@ sfddiff fontimage fontlint
 
-fontforge: $(@exeOBJECTS@) $(fontforge_LIBOBJECTS) exelibstamp.pre
+fontforge: $(@exeOBJECTS@) $(fontforge_LIBOBJECTS) exelibstamp.pre libstamp.pre
 	sed -e '1,$$ s/REPLACE_ME_WITH_MAJOR_VERSION/$(FF_VERSION)/' -e '1,$$ s/REPLACE_ME_WITH_MINOR_VERSION/$(FF_REVISION)/' < exelibstamp.pre > exelibstamp.c
 	$(CC) -c $(CFLAGS) exelibstamp.c
 	sed -e '1,$$ s/REPLACE_ME_WITH_MAJOR_VERSION/$(FF_VERSION)/' -e '1,$$ s/REPLACE_ME_WITH_MINOR_VERSION/$(FF_REVISION)/' < libstamp.pre > libstamp.c
+	$(CC) -c $(CFLAGS) libstamp.c
 	$(LIBTOOL) --mode=link $(CC) -export-dynamic $(LDFLAGS) -o fontforge \
-	    $(@exeOBJECTS@) $(fontforge_LIBOBJECTS) exelibstamp.o $(LIBS)
+	    $(@exeOBJECTS@) $(fontforge_LIBOBJECTS) exelibstamp.o libstamp.o $(LIBS)
 
 ../libfontforge.la: $(@exeOBJECTS@)  $(fontforge_LIBOBJECTS) exelibstamp.pre libstamp.pre
 	sed -e '1,$$ s/REPLACE_ME_WITH_MAJOR_VERSION/$(FF_VERSION)/' -e '1,$$ s/REPLACE_ME_WITH_MINOR_VERSION/$(FF_REVISION)/' < libstamp.pre > libstamp.c

@@ -3541,6 +3541,7 @@ return;
     free(contourends);
 
     SCMarkInstrDlgAsChanged(sc);
+    SCCharChangedUpdate(sc);
 }
 
 struct ttf_table *SFFindTable(SplineFont *sf,uint32 tag) {
