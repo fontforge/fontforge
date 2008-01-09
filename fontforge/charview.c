@@ -7896,15 +7896,6 @@ static void CVMenuDontAutoHint(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     cv->b.sc->manualhints = !cv->b.sc->manualhints;
 }
 
-static void CVMenuAutoInstr(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    CharView *cv = (CharView *) GDrawGetUserData(gw);
-    GlobalInstrCt gic;
-
-    InitGlobalInstrCt(&gic,cv->b.sc->parent,NULL);
-    NowakowskiSCAutoInstr(&gic,cv->b.sc);
-    FreeGlobalInstrCt(&gic);
-}
-
 static void CVMenuNowakAutoInstr(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     SplineChar *sc = cv->b.sc;
@@ -8797,19 +8788,13 @@ static GMenuItem2 ellist[] = {
     { NULL }
 };
 
-static GMenuItem2 autoinstlist[] = {
-    { { (unichar_t *) N_("_Former"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("AutoInstrFormer|No Shortcut"), NULL, NULL, CVMenuAutoInstr },
-    { { (unichar_t *) N_("_Nowakowski"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("AutoInstrNowak|Ctl+T"), NULL, NULL, CVMenuNowakAutoInstr },
-    { NULL }
-};
-
 static GMenuItem2 htlist[] = {
     { { (unichar_t *) N_("Auto_Hint"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("AutoHint|Ctl+Shft+H"), NULL, NULL, CVMenuAutoHint, MID_AutoHint },
     { { (unichar_t *) N_("Hint _Substitution Pts"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("Hint Substitution Pts|No Shortcut"), NULL, NULL, CVMenuAutoHintSubs, MID_HintSubsPt },
     { { (unichar_t *) N_("Auto _Counter Hint"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("Auto Counter Hint|No Shortcut"), NULL, NULL, CVMenuAutoCounter, MID_AutoCounter },
     { { (unichar_t *) N_("_Don't AutoHint"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'H' }, H_("Don't AutoHint|No Shortcut"), NULL, NULL, CVMenuDontAutoHint, MID_DontAutoHint },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("Auto_Instr"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, NULL, autoinstlist, NULL, NULL, MID_AutoInstr },
+    { { (unichar_t *) N_("Auto_Instr"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, NULL, NULL, NULL, CVMenuNowakAutoInstr, MID_AutoInstr },
     { { (unichar_t *) N_("_Edit Instructions..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Edit Instructions...|No Shortcut"), NULL, NULL, CVMenuEditInstrs, MID_EditInstructions },
     { { (unichar_t *) N_("_Debug..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Debug...|No Shortcut"), NULL, NULL, CVMenuDebug, MID_Debug },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
