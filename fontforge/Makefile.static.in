@@ -45,7 +45,7 @@ fontforge_UIOBJECTS = alignment.o anchorsaway.o autowidthdlg.o bdfinfo.o \
  searchview.o sftextfield.o showatt.o simplifydlg.o splashimage.o startui.o \
  start.o statemachine.o tilepath.o transform.o ttfinstrsui.o uiutil.o \
  windowmenu.o
-fontforge_SCRIPTOBJ = startnoui.o
+fontforge_SCRIPTOBJ = startnoui.o stamp.o
 fontforge_OBJECTS=$(fontforge_LIBOBJECTS) $(@exeOBJECTS@)
 
 DIFFOBJS = sfddiff.o sfd.o diffstubs.o stamp.o namelist.o pua.o
