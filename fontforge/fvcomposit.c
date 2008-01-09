@@ -1476,7 +1476,7 @@ static int SCStemCheck(SplineFont *sf,int basech,DBounds *bb, DBounds *rbb,int p
     /*  stem */
     StemInfo *h, *best;
     SplineChar *sc;
-    DStemInfo *d, *dbest;
+    DStemInfo *d;
 
     sc = SFGetChar(sf,basech,NULL);
     if ( sc==NULL )
@@ -1490,7 +1490,7 @@ return( 0x70000000 );
 		    best = h;
 	    if ( best->start+best->width/2>(bb->maxx+bb->minx)/2 )
 		best = NULL;
-	} else if ( pos&____CENTERLEFT ) {
+	} else if ( pos&____CENTERRIGHT ) {
 	    while ( best->next!=NULL )
 		best = best->next;
 	    if ( best->start+best->width/2<(bb->maxx+bb->minx)/2 )
@@ -1503,22 +1503,46 @@ return( 0x70000000 );
 	if ( best!=NULL )
 return( best->start + best->width/2 - (rbb->maxx-rbb->minx)/2 - rbb->minx );
     }
-    if ( (dbest=sc->dstem)!=NULL ) {
-	if ( pos&____CENTERLEFT ) {
-	    for ( d=dbest->next; d!=NULL ; d=d->next )
-		if ( d->rightedgebottom.x<dbest->rightedgebottom.x )
-		    dbest = d;
-	    if ( (dbest->leftedgebottom.x+dbest->rightedgebottom.x)/2>(bb->maxx+bb->minx)/2 )
-		dbest = NULL;
-	} else {
-	    for ( d=dbest->next; d!=NULL ; d=d->next )
-		if ( d->leftedgebottom.x>dbest->leftedgebottom.x )
-		    dbest = d;
-	    if ( (dbest->leftedgebottom.x+dbest->rightedgebottom.x)/2<(bb->maxx+bb->minx)/2 )
-		dbest = NULL;
-	}
-	if ( dbest!=NULL )
-return( (dbest->leftedgebottom.x+dbest->rightedgebottom.x)/2 - (rbb->maxx-rbb->minx)/2 - rbb->minx );
+    if ( sc->dstem != NULL ) {
+        double himin, himax, hibase, roff, temp;
+        double lbx = 0, rbx = 0, lbxtest, rbxtest;
+        HintInstance *hi;
+	for ( d=sc->dstem; d!=NULL ; d=d->next ) {
+            if ( d->where == NULL )
+        continue;
+            if ( d->where->begin < d->where->end ) {
+                himin = d->where->begin;
+                himax = d->where->end;
+            } else {
+                himin = d->where->end;
+                himax = d->where->begin;
+            }
+            for ( hi=d->where->next; hi!=NULL; hi=hi->next ) {
+                if ( hi->begin < himin ) himin = hi->begin;
+                if ( hi->end < himin ) himin = hi->end;
+                if ( hi->end > himax ) himax = hi->end;
+                if ( hi->begin > himax ) himax = hi->begin;
+            }
+            hibase = ( d->unit.y > 0 ) ? himin : himax;
+            roff =  ( d->right.x - d->left.x ) * d->unit.x + 
+                    ( d->right.y - d->left.y ) * d->unit.y;
+            lbxtest = d->left.x + d->unit.x * hibase;
+            rbxtest = d->right.x + d->unit.x * ( hibase - roff );
+            if ( rbxtest < lbxtest ) {
+                temp = rbxtest; rbxtest = lbxtest; lbxtest = temp;
+            }
+            if ( d == sc->dstem ||
+                ( pos&____CENTERLEFT && rbxtest < rbx ) ||
+                ( pos&____CENTERRIGHT && lbxtest > lbx )) {
+                lbx = lbxtest; rbx = rbxtest;
+            }
+        }
+        if ( lbx < rbx && (
+            ( pos&____CENTERLEFT &&
+            ( lbx + rbx )/2 <= ( bb->maxx + bb->minx )/2 ) ||
+            ( pos&____CENTERRIGHT &&
+            ( lbx + rbx )/2 >= ( bb->maxx + bb->minx )/2 )))
+return(( lbx + rbx )/2 - ( rbb->maxx - rbb->minx )/2 - rbb->minx );
     }
 return( 0x70000000 );
 }

@@ -1023,8 +1023,6 @@ typedef struct dsteminfo {
     unsigned int hinttype: 2;	/* Only used by undoes */
     unsigned int used: 1;	/* used only by tottf.c:gendinstrs, metafont.c to mark a hint that has been dealt with */
     unsigned int bigsteminfo: 1;/* See following structure */
-    BasePoint leftedgetop, leftedgebottom, 
-              rightedgetop, rightedgebottom;	/* Deprecated, should be removed as soon as the new model is fully implemented */
     BasePoint left, right, unit;
     HintInstance *where;	/* location(s) along the unit vector */
 } DStemInfo;
