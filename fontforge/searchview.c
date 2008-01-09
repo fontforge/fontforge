@@ -144,7 +144,7 @@ static int DoFindOne(SearchView *sv,int startafter) {
 return( false );
     }
     SVSelectSC(sv);
-    if ( sv->lastcv!=NULL && sv->lastcv->b.sc==startcur && sv->lastcv->b.fv==(FontView *) sv->sd.fv ) {
+    if ( sv->lastcv!=NULL && sv->lastcv->b.sc==startcur && sv->lastcv->b.fv== sv->sd.fv ) {
 	CVChangeSC(sv->lastcv,sv->sd.curchar);
 	GDrawSetVisible(sv->lastcv->gw,true);
 	GDrawRaise(sv->lastcv->gw);
