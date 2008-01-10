@@ -8794,7 +8794,7 @@ static GMenuItem2 htlist[] = {
     { { (unichar_t *) N_("Auto _Counter Hint"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("Auto Counter Hint|No Shortcut"), NULL, NULL, CVMenuAutoCounter, MID_AutoCounter },
     { { (unichar_t *) N_("_Don't AutoHint"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'H' }, H_("Don't AutoHint|No Shortcut"), NULL, NULL, CVMenuDontAutoHint, MID_DontAutoHint },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("Auto_Instr"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'I' }, NULL, NULL, NULL, CVMenuNowakAutoInstr, MID_AutoInstr },
+    { { (unichar_t *) N_("Auto_Instr"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("AutoInstr|Ctl+T"), NULL, NULL, CVMenuNowakAutoInstr, MID_AutoInstr },
     { { (unichar_t *) N_("_Edit Instructions..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Edit Instructions...|No Shortcut"), NULL, NULL, CVMenuEditInstrs, MID_EditInstructions },
     { { (unichar_t *) N_("_Debug..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Debug...|No Shortcut"), NULL, NULL, CVMenuDebug, MID_Debug },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
