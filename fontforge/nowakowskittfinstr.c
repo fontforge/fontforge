@@ -246,6 +246,7 @@ return( instrs );
  *
  ******************************************************************************/
 
+#if 0		/* in getttfinstrs.c */
 struct ttf_table *SFFindTable(SplineFont *sf,uint32 tag) {
     struct ttf_table *tab;
 
@@ -321,6 +322,7 @@ return;
     _CVT_ImportPrivateString(sf,PSDictHasEntry(sf->private,"FamilyBlues"));
     _CVT_ImportPrivateString(sf,PSDictHasEntry(sf->private,"FamilyOtherBlues"));
 }
+#endif
 
 /* We are given a stem weight and try to find matching one in CVT.
  * If none found, we return -1.
@@ -2236,6 +2238,18 @@ return;
     if (blues[blueindex].lowest == -1 ||
         bp[ct->edge.refpt].y < bp[blues[blueindex].lowest].y)
             blues[blueindex].lowest = ct->edge.refpt;
+#if 0
+    int *others = ct->edge.others;
+    int i;
+
+    for (i=0; i<ct->edge.othercnt; i++) {
+        if (bp[others[i]].y > bp[blues[blueindex].highest].y)
+	    blues[blueindex].highest = others[i];
+
+        if (bp[others[i]].y < bp[blues[blueindex].lowest].y)
+	    blues[blueindex].lowest = others[i];
+    }
+#endif
 }
 
 /* It is theoretically possible that 'highest' and 'lowest' points of neighbour
@@ -3527,5 +3541,81 @@ return;
     free(contourends);
 
     SCMarkInstrDlgAsChanged(sc);
-    SCCharChangedUpdate(sc);
+    SCHintsChanged(sc);
+}
+
+struct ttf_table *SFFindTable(SplineFont *sf,uint32 tag) {
+    struct ttf_table *tab;
+
+    for ( tab=sf->ttf_tables; tab!=NULL && tab->tag!=tag; tab=tab->next );
+return( tab );
+}
+    
+int TTF__getcvtval(SplineFont *sf,int val) {
+    int i;
+    struct ttf_table *cvt_tab = SFFindTable(sf,CHR('c','v','t',' '));
+
+    if ( cvt_tab==NULL ) {
+	cvt_tab = chunkalloc(sizeof(struct ttf_table));
+	cvt_tab->tag = CHR('c','v','t',' ');
+	cvt_tab->maxlen = 200;
+	cvt_tab->data = galloc(100*sizeof(short));
+	cvt_tab->next = sf->ttf_tables;
+	sf->ttf_tables = cvt_tab;
+    }
+    for ( i=0; sizeof(uint16)*i<cvt_tab->len; ++i ) {
+	int tval = (int16) memushort(cvt_tab->data,cvt_tab->len, sizeof(uint16)*i);
+	if ( val>=tval-1 && val<=tval+1 )
+return( i );
+    }
+    if ( sizeof(uint16)*i>=cvt_tab->maxlen ) {
+	if ( cvt_tab->maxlen==0 ) cvt_tab->maxlen = cvt_tab->len;
+	cvt_tab->maxlen += 200;
+	cvt_tab->data = grealloc(cvt_tab->data,cvt_tab->maxlen);
+    }
+    memputshort(cvt_tab->data,sizeof(uint16)*i,val);
+    cvt_tab->len += sizeof(uint16);
+return( i );
+}
+
+int TTF_getcvtval(SplineFont *sf,int val) {
+
+    /* by default sign is unimportant in the cvt */
+    /* For some instructions anyway, but not for MIAP so this routine has */
+    /*  been broken in two. */
+    if ( val<0 ) val = -val;
+return( TTF__getcvtval(sf,val));
+}
+
+static void _CVT_ImportPrivateString(SplineFont *sf,char *str) {
+    char *end;
+    double d;
+
+    if ( str==NULL )
+return;
+    while ( *str ) {
+	while ( !isdigit(*str) && *str!='-' && *str!='+' && *str!='.' && *str!='\0' )
+	    ++str;
+	if ( *str=='\0' )
+    break;
+	d = strtod(str,&end);
+	if ( d>=-32768 && d<=32767 ) {
+	    int v = rint(d);
+	    TTF__getcvtval(sf,v);
+	}
+	str = end;
+    }
+}
+
+void CVT_ImportPrivate(SplineFont *sf) {
+    if ( sf->private==NULL )
+return;
+    _CVT_ImportPrivateString(sf,PSDictHasEntry(sf->private,"StdHW"));
+    _CVT_ImportPrivateString(sf,PSDictHasEntry(sf->private,"StdVW"));
+    _CVT_ImportPrivateString(sf,PSDictHasEntry(sf->private,"StemSnapH"));
+    _CVT_ImportPrivateString(sf,PSDictHasEntry(sf->private,"StemSnapV"));
+    _CVT_ImportPrivateString(sf,PSDictHasEntry(sf->private,"BlueValues"));
+    _CVT_ImportPrivateString(sf,PSDictHasEntry(sf->private,"OtherBlues"));
+    _CVT_ImportPrivateString(sf,PSDictHasEntry(sf->private,"FamilyBlues"));
+    _CVT_ImportPrivateString(sf,PSDictHasEntry(sf->private,"FamilyOtherBlues"));
 }
