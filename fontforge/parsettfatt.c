@@ -784,7 +784,10 @@ return( NULL );
 	at_offsets[i].offset = getushort(ttf);
 	if ( at_offsets[i].class>=classcnt ) {
 	    at_offsets[i].class = 0;
-	    LogError( _("Class out of bounds in GPOS mark sub-table\n") );
+	    if ( markglyphs[i]>=info->glyph_cnt )
+		LogError( _("Class out of bounds in GPOS mark sub-table\n") );
+	    else
+		LogError( _("Class out of bounds in GPOS mark sub-table for mark %.30s\n"), info->chars[markglyphs[i]]->name);
 	    info->bad_ot = true;
 	}
     }
