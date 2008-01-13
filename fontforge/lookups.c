@@ -3312,7 +3312,7 @@ static void ApplyLookup(uint32 tag, OTLookup *otl,struct lookup_data *data) {
 	/* OpenType */
 	for ( pos = 0; pos<data->cnt; ) {
 	    npos = ApplyLookupAtPos(tag,otl,data,pos);
-	    if ( npos==0 )
+	    if ( npos<=pos)		/* !!!!! */
 		npos = pos+1;
 	    pos = npos;
 	}

@@ -1837,10 +1837,12 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 	SFDDumpUTF7Str(sfd,fpst->subtable->subtable_name );
 	fprintf( sfd, " %d %d %d %d\n",
 		fpst->nccnt, fpst->bccnt, fpst->fccnt, fpst->rule_cnt );
-	if ( fpst->nccnt>0 )
-	    for ( i=(fpst->nclass[0]==NULL?1:0); i<fpst->nccnt; ++i )
-	      fprintf( sfd, "  Class: %d %s\n", (int)strlen(fpst->nclass[i]),
-		       fpst->nclass[i]);
+	if ( fpst->nccnt>0 && fpst->nclass[0]!=NULL )
+	  fprintf( sfd, "  Class0: %d %s\n", (int)strlen(fpst->nclass[0]),
+		   fpst->nclass[0]);
+	for ( i=1; i<fpst->nccnt; ++i )
+	  fprintf( sfd, "  Class: %d %s\n", (int)strlen(fpst->nclass[i]),
+		   fpst->nclass[i]);
 	for ( i=1; i<fpst->bccnt; ++i )
 	  fprintf( sfd, "  BClass: %d %s\n", (int)strlen(fpst->bclass[i]),
 		   fpst->bclass[i]);
@@ -4986,8 +4988,9 @@ static void SFDParseChainContext(FILE *sfd,SplineFont *sf,FPST *fpst, char *tok,
     for ( j=0; j<3; ++j ) {
 	for ( i=1; i<(&fpst->nccnt)[j]; ++i ) {
 	    getname(sfd,tok);
+	    if ( i==1 && j==0 && strcmp(tok,"Class0:")==0 )
+		i=0;
 	    getint(sfd,&temp);
-	    if ( j==0 && i==1 && temp==0 ) i=0;
 	    (&fpst->nclass)[j][i] = galloc(temp+1); (&fpst->nclass)[j][i][temp] = '\0';
 	    getc(sfd);	/* skip space */
 	    fread((&fpst->nclass)[j][i],1,temp,sfd);
