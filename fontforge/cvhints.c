@@ -212,8 +212,8 @@ static int RH_TextChanged(GGadget *g, GEvent *e) {
 	if ( hd->active!=NULL ) {
 	    int cid = GGadgetGetCid(g);
 	    int err=0;
-	    int start = GetCalmInt8(hd->gw,CID_Base,_("Base:"),&err);
-	    int width = GetCalmInt8(hd->gw,CID_Width,_("Size:"),&err);
+	    real start = GetCalmReal8(hd->gw,CID_Base,_("Base:"),&err);
+	    real width = GetCalmReal8(hd->gw,CID_Width,_("Size:"),&err);
 	    if ( err )
 return( true );
 	    if ( GGadgetIsChecked(GWidgetGetControl(GGadgetGetWindow(g),CID_MovePoints)) ) {
@@ -602,12 +602,12 @@ typedef struct createhintdata {
 static int CH_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	CreateHintData *hd = GDrawGetUserData(GGadgetGetWindow(g));
-	int base, width;
+	real base, width;
 	int err = 0;
 	StemInfo *h;
 
-	base = GetInt8(hd->gw,CID_Base,_("_Base:"),&err);
-	width = GetInt8(hd->gw,CID_Width,_("_Size:"),&err);
+	base = GetReal8(hd->gw,CID_Base,_("Base:"),&err);
+	width = GetReal8(hd->gw,CID_Width,_("Size:"),&err);
 	if ( err )
 return(true);
 	if ( hd->preservehints ) {
