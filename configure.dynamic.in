@@ -223,22 +223,24 @@ AC_ARG_ENABLE(libff,
 ])
 if test "$python" = "no" ; then
   AC_DEFINE(_NO_PYTHON)
-else
-  AC_SUBST(PYTHON_LIB_NAME)
-  PYTHON_LIB_NAME="python$PyVersion"
-
-  if test "$gww_fflib" = "yes" ; then
-    AC_ARG_ENABLE(pyextension,
-      AC_HELP_STRING(--enable-pyextension, disable/enable installing libfontforge as a python extension plugin),
-    [
-      case $enableval in
-       yes)
-	gww_dopy=yes
-       ;;
-      esac
-    ])
-  fi
 fi
+AC_SUBST(PYTHON_LIB_NAME)
+PYTHON_LIB_NAME="python$PyVersion"
+
+AC_ARG_ENABLE(pyextension,
+  AC_HELP_STRING(--enable-pyextension, disable/enable installing libfontforge as a python extension plugin),
+[
+  case $enableval in
+   yes)
+    if test "$gww_fflib" != "yes" -o "$python" = "no" ; then
+      echo FAILED --enable-pyextension requires that python be available and
+      echo "   " that libfontforge be built "(--enable-libff)"
+    else
+      gww_dopy=yes
+    fi
+   ;;
+  esac
+])
 
 AC_SUBST(FINAL_TARGET)
 AC_SUBST(O_EXTENSION)
