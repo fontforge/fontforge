@@ -1650,6 +1650,10 @@ static void dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
 	for ( l=0; l<3; ++l ) {
 	    for ( j=0; j<cnt; ++j ) {
 		for ( k=0, ac=_ac; k<classcnt; ++k, ac=ac->next ) {
+		    if ( !ac->has_mark || !ac->has_base ) {
+			--k;
+		continue;
+		    }
 		    for ( ap=base[j]->anchor; ap!=NULL && (ap->anchor!=ac || ap->type!=at);
 			    ap=ap->next );
 		    switch ( l ) {
