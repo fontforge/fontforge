@@ -612,8 +612,14 @@ void FVTrans(FontViewBase *fv,SplineChar *sc,real transform[6], uint8 *sel,
 	    TransDStemHints(sc->dstem,transform[0],transform[4],transform[3],transform[5],flags&fvt_round_to_int);
 	}
     }
-    if ( flags&fvt_round_to_int )
+    /*if ( flags&fvt_round_to_int )*/
+    if ( (flags&fvt_round_to_int) && !sc->inspiro ) {
+    	/* Rounding the spiros might be a bad idea. */
+	/* Not rounding the spiros is also a bad idea. */
+	/* Not sure which is worse */
+	/* Barry thinks rounding them is a bad idea. */
 	SCRound2Int(sc,1.0);
+    }
     if ( flags&fvt_dobackground ) {
 	ImageList *img;
 	SCPreserveBackground(sc);
