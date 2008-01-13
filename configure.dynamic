@@ -18911,24 +18911,26 @@ if test "$python" = "no" ; then
 #define _NO_PYTHON 1
 _ACEOF
 
-else
+fi
 
-  PYTHON_LIB_NAME="python$PyVersion"
+PYTHON_LIB_NAME="python$PyVersion"
 
-  if test "$gww_fflib" = "yes" ; then
-    # Check whether --enable-pyextension or --disable-pyextension was given.
+# Check whether --enable-pyextension or --disable-pyextension was given.
 if test "${enable_pyextension+set}" = set; then
   enableval="$enable_pyextension"
 
-      case $enableval in
-       yes)
-	gww_dopy=yes
-       ;;
-      esac
+  case $enableval in
+   yes)
+    if test "$gww_fflib" != "yes" -o "$python" = "no" ; then
+      echo FAILED --enable-pyextension requires that python be available and
+      echo "   " that libfontforge be built "(--enable-libff)"
+    else
+      gww_dopy=yes
+    fi
+   ;;
+  esac
 
 fi;
-  fi
-fi
 
 
 
