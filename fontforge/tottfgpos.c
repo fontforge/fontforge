@@ -46,7 +46,7 @@ int use_second_indic_scripts = false;
     /* see also list in lookups.c mapping script tags to friendly names */
 
 static uint32 scripts[][15] = {
-/* Arabic */	{ CHR('a','r','a','b'), 0x0600, 0x06ff, 0xfb50, 0xfdff, 0xfe70, 0xfeff },
+/* Arabic */	{ CHR('a','r','a','b'), 0x0600, 0x06ff, 0xfb50, 0xfdff, 0xfe70, 0xfefe },
 /* Aramaic */	{ CHR('a','r','a','m'), 0x820, 0x83f },
 /* Armenian */	{ CHR('a','r','m','n'), 0x0530, 0x058f, 0xfb13, 0xfb17 },
 /* Balinese */	{ CHR('b','a','l','i'), 0x1b00, 0x1b7f },

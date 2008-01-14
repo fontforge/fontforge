@@ -68,6 +68,7 @@ struct problems {
     unsigned int uninamemismatch: 1;
     unsigned int badsubs: 1;
     unsigned int missingglyph: 1;
+    unsigned int missingscriptinfeature: 1;
     unsigned int toomanypoints: 1;
     unsigned int toomanyhints: 1;
     unsigned int toodeeprefs: 1;
@@ -117,7 +118,7 @@ static int doynearstd=0, linestd=0, cpstd=0, cpodd=0, hintnopt=0, ptnearhint=0;
 static int hintwidth=0, direction=0, flippedrefs=0, bitmaps=0;
 static int cidblank=0, cidmultiple=0, advancewidth=0, vadvancewidth=0;
 static int bbymax=0, bbymin=0, bbxmax=0, bbxmin=0;
-static int irrelevantcp=0, missingglyph=0;
+static int irrelevantcp=0, missingglyph=0, missingscriptinfeature=0;
 static int badsubs=0, toomanypoints=0, pointsmax = 1500;
 static int multuni=0, multname=0, uninamemismatch=0;
 static int toomanyhints=0, hintsmax=96, toodeeprefs=0, refdepthmax=9;
@@ -167,6 +168,7 @@ static SplineFont *lastsf=NULL;
 #define CID_IrrelevantFactor	1029
 #define CID_BadSubs		1030
 #define CID_MissingGlyph	1031
+#define CID_MissingScriptInFeature 1032
 #define CID_TooManyPoints	1033
 #define CID_PointsMax		1034
 #define CID_TooManyHints	1035
@@ -2180,7 +2182,10 @@ return( false );
 	while ( *str==' ' ) ++str;
 	for ( end=str; *end!='\0' && *end!=' '; ++end );
 	ch = *end; *end='\0';
-	ssc = SFGetChar(sf,-1,str);
+	if ( strcmp(str,MAC_DELETED_GLYPH_NAME)==0 )
+	    ssc = (SplineChar *) 1;
+	else
+	    ssc = SFGetChar(sf,-1,str);
 	*end = ch;
 	if ( ssc==NULL ) {
 	    off = end-*_str;
@@ -2240,7 +2245,7 @@ static int KCMissingGlyph(struct problems *p,KernClass *kc,int isv) {
     int found = false;
     int which = isv ? mg_vkern : mg_kern;
 
-    for ( i=1; i<kc->first_cnt; ++i )
+    for ( i=0; i<kc->first_cnt; ++i ) if ( kc->firsts[i]!=NULL )
 	found |= StrMissingGlyph(p,&kc->firsts[i],NULL,which,kc);
     for ( i=1; i<kc->second_cnt; ++i )
 	found |= StrMissingGlyph(p,&kc->seconds[i],NULL,which,kc);
@@ -2284,6 +2289,178 @@ static int ASMMissingGlyph(struct problems *p,ASM *sm) {
 return( found );
 }
 
+static int LookupFeaturesMissScript(struct problems *p,OTLookup *otl,OTLookup *nested,
+	uint32 script, SplineFont *sf, char *glyph_name) {
+    OTLookup *invokers, *any;
+    struct lookup_subtable *subs;
+    int i,l, ret;
+    int found = false;
+    FeatureScriptLangList *fsl;
+    struct scriptlanglist *sl;
+    char buffer[400];
+    char *buts[4];
+
+    if ( script==DEFAULT_SCRIPT )
+return( false );
+
+    if ( otl->features == NULL ) {
+	/* No features invoke us, so presume that we are to be invoked by a */
+	/*  contextual lookup, and check its scripts rather than ours */
+	if ( nested!=NULL ) {
+	    /* There is no need to have a nested contextual lookup */
+	    /*  so we don't support them */
+return(false);
+	}
+	any = NULL;
+	for ( invokers=otl->lookup_type>=gpos_start?sf->gpos_lookups:sf->gsub_lookups;
+		invokers!=NULL ; invokers = invokers->next ) {
+	    for ( subs=invokers->subtables; subs!=NULL; subs=subs->next ) {
+		if ( subs->fpst!=NULL ) {
+		    FPST *fpst = subs->fpst;
+		    for ( i=0; i<fpst->rule_cnt; ++i ) {
+			struct fpst_rule *r = &fpst->rules[i];
+			for ( l=0; l<r->lookup_cnt; ++l )
+			    if ( r->lookups[l].lookup == otl ) {
+				found |= LookupFeaturesMissScript(p,invokers,otl,script,sf,glyph_name);
+			        any = invokers;
+			    }
+		    }
+		}
+	    }
+	}
+	if ( any==NULL ) {
+	    /* No opentype contextual lookup uses this lookup with no features*/
+	    /*  so it appears totally useless. But a mac feature might I guess*/
+	    /*  so don't complain */
+	}
+    } else {
+	for ( fsl = otl->features; fsl!=NULL; fsl=fsl->next ) {
+	    for ( sl=fsl->scripts; sl!=NULL; sl=sl->next ) {
+		if ( sl->script==script )
+	    break;
+	    }
+	    if ( sl!=NULL )
+	break;
+	}
+	if ( fsl==NULL ) {
+	    buffer[0]='\0';
+	    if ( nested!=NULL )
+		snprintf(buffer,sizeof(buffer),
+		  _("The lookup %.30s which invokes lookup %.30s is active "
+		    "for glyph %.30s which has script '%c%c%c%c', yet this script does not "
+		    "appear in any of the features which apply the lookup.\n"
+		    "Would you like to add this script to one of those lookups?"),
+			otl->lookup_name, nested->lookup_name,
+			glyph_name,
+			script>>24, script>>16, script>>8, script);
+	    else
+		snprintf(buffer,sizeof(buffer),
+		  _("The lookup %.30s is active for glyph %.30s which has script "
+		    "'%c%c%c%c', yet this script does not appear in any of the features which "
+		    "apply the lookup.\n\n"
+		    "Would you like to add this script to one of those lookups?"),
+			otl->lookup_name, glyph_name,
+			script>>24, script>>16, script>>8, script);
+	    buts[0] = _("_OK"); buts[1] = _("_Skip"); buts[2]="_Ignore"; buts[3] = NULL;
+	    ret = ff_ask(_("Missing Script"),(const char **) buts,0,1,buffer);
+	    if ( ret==0 ) {
+		sl = chunkalloc(sizeof(struct scriptlanglist));
+		sl->script = script;
+		sl->lang_cnt = 1;
+		sl->langs[0] = DEFAULT_LANG;
+		sl->next = otl->features->scripts;
+		otl->features->scripts = sl;
+		sf->changed = true;
+	    } else if ( ret==2 )
+		p->missingscriptinfeature = false;
+return( true );
+	}
+    }
+return( found );
+}
+    
+static int SCMissingScriptFeat(struct problems *p,SplineFont *sf,SplineChar *sc) {
+    PST *pst;
+    int found = false;
+    uint32 script;
+    AnchorPoint *ap;
+
+    if ( !p->missingscriptinfeature || p->finish || sc==NULL )
+return( false );
+    script = SCScriptFromUnicode(sc);
+
+    for ( pst=sc->possub; pst!=NULL; pst=pst->next ) if ( pst->subtable!=NULL )
+	found |= LookupFeaturesMissScript(p,pst->subtable->lookup,NULL,script,sf,sc->name);
+    for ( ap=sc->anchor; ap!=NULL; ap=ap->next )
+	found |= LookupFeaturesMissScript(p,ap->anchor->subtable->lookup,NULL,script,sf,sc->name);
+
+return( found );
+}
+
+static int StrMissingScript(struct problems *p,SplineFont *sf,OTLookup *otl,char *class) {
+    char *pt, *start;
+    int ch;
+    SplineChar *sc;
+    uint32 script;
+    int found = 0;
+
+    if ( class==NULL )
+return( false );
+
+    for ( pt=class; *pt && p->missingscriptinfeature; ) {
+	while ( *pt==' ' ) ++pt;
+	if ( *pt=='\0' )
+    break;
+	for ( start=pt; *pt && *pt!=' '; ++pt );
+	ch = *pt; *pt='\0';
+	sc = SFGetChar(sf,-1,start);
+	*pt = ch;
+	if ( sc!=NULL ) {
+	    script = SCScriptFromUnicode(sc);
+	    found |= LookupFeaturesMissScript(p,otl,NULL,script,sf,sc->name);
+	}
+    }
+return( found );
+}
+
+static int KCMissingScriptFeat(struct problems *p,SplineFont *sf, KernClass *kc,int isv) {
+    int i;
+    int found = false;
+    OTLookup *otl = kc->subtable->lookup;
+
+    for ( i=0; i<kc->first_cnt; ++i )
+	found |= StrMissingScript(p,sf,otl,kc->firsts[i]);
+return( found );
+}
+
+static int FPSTMissingScriptFeat(struct problems *p,SplineFont *sf,FPST *fpst) {
+    int i,j;
+    int found = false;
+    OTLookup *otl = fpst->subtable->lookup;
+
+    switch ( fpst->format ) {
+      case pst_glyphs:
+	for ( i=0; i<fpst->rule_cnt; ++i )
+	    for ( j=0; j<3; ++j )
+		found |= StrMissingScript(p,sf,otl,(&fpst->rules[i].u.glyph.names)[j]);
+      break;
+      case pst_class:
+	for ( i=1; i<3; ++i )
+	    for ( j=0; j<(&fpst->nccnt)[i]; ++j )
+		found |= StrMissingScript(p,sf,otl,(&fpst->nclass)[i][j]);
+      break;
+      case pst_reversecoverage:
+		found |= StrMissingScript(p,sf,otl,fpst->rules[0].u.rcoverage.replacements);
+	/* fall through */;
+      case pst_coverage:
+	for ( i=1; i<3; ++i )
+	    for ( j=0; j<(&fpst->rules[0].u.coverage.ncnt)[i]; ++j )
+		found |= StrMissingScript(p,sf,otl,(&fpst->rules[0].u.coverage.ncovers)[i][j]);
+      break;
+    }
+return( found );
+}
+
 static int CheckForATT(struct problems *p) {
     int found = false;
     int i,k;
@@ -2324,6 +2501,30 @@ static int CheckForATT(struct problems *p) {
 	ClearMissingState(p);
     }
 
+    if ( p->missingscriptinfeature && !p->finish ) {
+	if ( p->cv!=NULL )
+	    found = SCMissingScriptFeat(p,_sf,p->cv->b.sc);
+	else if ( p->msc!=NULL )
+	    found = SCMissingScriptFeat(p,_sf,p->msc);
+	else {
+	    k=0;
+	    do {
+		if ( _sf->subfonts==NULL ) sf = _sf;
+		else sf = _sf->subfonts[k++];
+		for ( i=0; i<sf->glyphcnt && !p->finish; ++i ) if ( sf->glyphs[i]!=NULL )
+		    found |= SCMissingScriptFeat(p,_sf,sf->glyphs[i]);
+	    } while ( k<_sf->subfontcnt && !p->finish );
+	    for ( kc=_sf->kerns; kc!=NULL && !p->finish; kc=kc->next )
+		found |= KCMissingScriptFeat(p,_sf,kc,false);
+	    for ( kc=_sf->vkerns; kc!=NULL && !p->finish; kc=kc->next )
+		found |= KCMissingScriptFeat(p,_sf,kc,true);
+	    for ( fpst=_sf->possub; fpst!=NULL && !p->finish && p->missingglyph; fpst=fpst->next )
+		found |= FPSTMissingScriptFeat(p,_sf,fpst);
+	    /* Apple's state machines don't have the concept of "script" */
+	    /*  for their feature/settings */
+	}
+    }
+
 return( found );
 }
 
@@ -2332,8 +2533,7 @@ static void DoProbs(struct problems *p) {
     SplineChar *sc;
     BDFFont *bdf;
 
-    if ( p->missingglyph )
-	ret = CheckForATT(p);
+    ret = CheckForATT(p);
     if ( p->cv!=NULL ) {
 	ret |= SCProblems(p->cv,NULL,p);
 	ret |= CIDCheck(p,p->cv->b.sc->orig_pos);
@@ -2391,7 +2591,7 @@ static int Prob_DoAll(GGadget *g, GEvent *e) {
 	    CID_YNear, CID_YNearStd, CID_HintNoPt, CID_PtNearHint,
 	    CID_HintWidthNear, CID_LineStd, CID_Direction, CID_CpStd,
 	    CID_CpOdd, CID_FlippedRefs, CID_Bitmaps, CID_AdvanceWidth,
-	    CID_BadSubs, CID_MissingGlyph,
+	    CID_BadSubs, CID_MissingGlyph, CID_MissingScriptInFeature,
 	    CID_Stem3, CID_IrrelevantCP, CID_TooManyPoints,
 	    CID_TooManyHints, CID_TooDeepRefs,
 	    CID_MultUni, CID_MultName, CID_PtMatchRefsOutOfDate,
@@ -2445,6 +2645,7 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	uninamemismatch = p->uninamemismatch = GGadgetIsChecked(GWidgetGetControl(gw,CID_UniNameMisMatch));
 	badsubs = p->badsubs = GGadgetIsChecked(GWidgetGetControl(gw,CID_BadSubs));
 	missingglyph = p->missingglyph = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingGlyph));
+	missingscriptinfeature = p->missingscriptinfeature = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingScriptInFeature));
 	toomanypoints = p->toomanypoints = GGadgetIsChecked(GWidgetGetControl(gw,CID_TooManyPoints));
 	toomanyhints = p->toomanyhints = GGadgetIsChecked(GWidgetGetControl(gw,CID_TooManyHints));
 	ptmatchrefsoutofdate = p->ptmatchrefsoutofdate = GGadgetIsChecked(GWidgetGetControl(gw,CID_PtMatchRefsOutOfDate));
@@ -2503,6 +2704,7 @@ return( true );
 		direction || p->cidmultiple || p->cidblank || p->flippedrefs ||
 		p->bitmaps || p->advancewidth || p->vadvancewidth || p->stem3 ||
 		p->irrelevantcontrolpoints || p->badsubs || p->missingglyph ||
+		p->missingscriptinfeature ||
 		p->toomanypoints || p->toomanyhints || p->missingextrema ||
 		p->toodeeprefs || multuni || multname || uninamemismatch ||
 		p->ptmatchrefsoutofdate || p->refsbadtransformttf ||
@@ -3261,7 +3463,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     memset(&alabel,0,sizeof(alabel));
     memset(&agcd,0,sizeof(agcd));
 
-    alabel[0].text = (unichar_t *) _("Check for _missing glyph names");
+    alabel[0].text = (unichar_t *) _("Check for missing _glyph names");
     alabel[0].text_is_1byte = true;
     alabel[0].text_in_resource = true;
     agcd[0].gd.label = &alabel[0];
@@ -3271,6 +3473,19 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     agcd[0].gd.popup_msg = (unichar_t *) _("Check whether a substitution, kerning class, etc. uses a glyph name which does not match any glyph in the font");
     agcd[0].gd.cid = CID_MissingGlyph;
     agcd[0].creator = GCheckBoxCreate;
+
+    alabel[1].text = (unichar_t *) _("Check for missing _scripts in features");
+    alabel[1].text_is_1byte = true;
+    alabel[1].text_in_resource = true;
+    agcd[1].gd.label = &alabel[1];
+    agcd[1].gd.pos.x = 3; agcd[1].gd.pos.y = agcd[0].gd.pos.y+14;
+    agcd[1].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    if ( missingscriptinfeature ) agcd[1].gd.flags |= gg_cb_on;
+    agcd[1].gd.popup_msg = (unichar_t *) _(
+	    "In every lookup that uses a glyph, check that at\n"
+	    "least one feature is active for the glyph's script.");
+    agcd[1].gd.cid = CID_MissingScriptInFeature;
+    agcd[1].creator = GCheckBoxCreate;
 
 /* ************************************************************************** */
 
