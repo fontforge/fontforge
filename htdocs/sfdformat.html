@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 8-Jan-2008 -->
+  <!-- AP: Last modified: 13-Jan-2008 -->
   <TITLE>Spline Font Database File Format</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -14,7 +14,7 @@
   </H1>
   <P>
   <FONT COLOR="Red"><STRONG>This page is often grievously out of date. I thought
-  it was a correct on 3 Jan 2008.</STRONG></FONT> Even if out of date it should
+  it was a correct on 13 Jan 2008.</STRONG></FONT> Even if out of date it should
   be helpful, but if you really need to know the current format look at
   <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/fontforge/sfd.c">sfd.c</A>
   and see what it parses. Some descriptions of esoteric features are not complete,
@@ -378,18 +378,23 @@ NPUSHB
   in the file ttfinstrs.c (I won't introduce it here because it is rather long).
   <BLOCKQUOTE>
     <PRE>ShortTable: cvt  255
-  309
-  184
-  203
+  309 "Big stem width, vertical"
+  184 "Small stem width, vertical"
+  203 "Stem width, horizontal"
   203
  ...
 </PRE>
   </BLOCKQUOTE>
   <P>
-  The next table format is used for the 'cvt ' and 'maxp' tables. It is simply
-  a list of short numbers. The first line identifies it as the cvt table and
-  indicates that there will be 255 numbers (note: NOT 255 bytes, but 2*255
-  bytes).
+  The next table format is used for the <CODE>'cvt '</CODE> and
+  <CODE>'maxp'</CODE> tables. It is simply a list of short numbers. The first
+  line identifies it as the cvt table and indicates that there will be 255
+  numbers (note: NOT 255 <EM>bytes</EM>, but 2*255 bytes).
+  <P>
+  In the <CODE>'cvt '</CODE> table (but not in <CODE>'maxp'</CODE>) there may
+  be additional comments, one for each number. These are simply descriptive
+  comments which remind people what each cvt entry is supposed to do. They
+  are totally optional.
   <BLOCKQUOTE>
     <PRE>TtfTable: LILY 4360
 5S;o3()It?eJ8r@H[HSJH[H^@!b&amp;BQ*?Vcm@'XSh+1MACZ&gt;Up/\,o1+Ca't2!&lt;ocH+Wn2p"@,t&amp;

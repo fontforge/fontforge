@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 30-Jun-2003 -->
-  <!-- AP: Last modified: 8-Jan-2008 -->
+  <!-- AP: Last modified: 13-Jan-2008 -->
   <TITLE>Non standard extensions used by FontForge in True/Open Type</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -110,6 +110,8 @@
       <LI>
 	'<A HREF="#fcmt">flog</A>' -- the font log sub-table (looks just like the
 	'fcmt' subtable)
+      <LI>
+	'<A HREF="#cvtc">cvtc</A>' -- the cvt comments subtable
       <LI>
 	'<A HREF="#GPOS">GPOS</A>' -- Save lookup, lookup subtable and anchor class
 	names of GPOS lookups
@@ -219,7 +221,7 @@
     to the next string.
   </BLOCKQUOTE>
   <H3>
-    '<A NAME="fcmt">fcmt</A>' -- the font comment sub-table
+    '<A NAME="fcmt">fcmt</A>' -- the font comment (and fontlog) sub-table
   </H3>
   <BLOCKQUOTE>
     The sub-table header begins with a version number, and a count of ranges
@@ -238,6 +240,33 @@
     <P>
     In version 0 this is followed by &lt;length&gt; Unicode (UCS2) characters.
     In version 1 it is followed by &lt;length&gt; bytes in utf8 encoding.
+  </BLOCKQUOTE>
+  <H3>
+    '<A NAME="cvtc">cvtc</A>' -- the cvt comments sub-table
+  </H3>
+  <BLOCKQUOTE>
+    The sub-table header begins with a version number, and a count of cvt entries
+    which might have comments
+    <TABLE CELLPADDING="2" BGCOLOR="#8080ff">
+      <TR>
+	<TD>uint16</TD>
+	<TD>version</TD>
+	<TD>0</TD>
+      </TR>
+      <TR>
+	<TD>uint16</TD>
+	<TD>count</TD>
+	<TD>number of entries in the cvt comments array<BR>
+	  which might be smaller than the number of entries in the cvt array itself
+	  if we want to save space</TD>
+      </TR>
+      <TR>
+	<TD>uint16</TD>
+	<TD>offset[count]</TD>
+	<TD>offsets to the start of utf8-encoded, NUL terminated strings. Or 0 if
+	  this cvt entry has no comment</TD>
+      </TR>
+    </TABLE>
   </BLOCKQUOTE>
   <H3>
     '<A NAME="GPOS">GPOS/GSUB</A>' -- lookup names
