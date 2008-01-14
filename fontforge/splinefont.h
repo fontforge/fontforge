@@ -1565,7 +1565,10 @@ typedef struct splinefont {
 	struct ttf_table *next;
 	FILE *temp;	/* Temporary storage used during generation */
     } *ttf_tables, *ttf_tab_saved;
-	/* We copy: fpgm, prep, cvt, maxp */
+	/* We copy: fpgm, prep, cvt, maxp (into ttf_tables) user can ask for others, into saved*/
+    char **cvt_names;
+    /* The end of this array is marked by a special entry: */
+#define END_CVT_NAMES ((char *) (~(intpt) 0))
     struct instrdata *instr_dlgs;	/* Pointer to all table and character instruction dlgs in this font */
     struct shortview *cvt_dlg;
     struct kernclasslistdlg *kcld, *vkcld;
