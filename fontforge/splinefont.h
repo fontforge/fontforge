@@ -869,6 +869,7 @@ typedef struct spline {
     unsigned int touched: 1;
     unsigned int leftedge: 1;
     unsigned int rightedge: 1;
+    unsigned int acceptableextrema: 1;	/* This spline has extrema, but we don't care */
     SplinePoint *from, *to;
     Spline1D splines[2];		/* splines[0] is the x spline, splines[1] is y */
     struct linearapprox *approx;
@@ -2792,6 +2793,10 @@ extern void ff_init(void);
 extern void doinitFontForgeMain(void);
 
 extern void InitSimpleStuff(void);
+
+extern int SSExistsInLayer(SplineSet *ss,SplineSet *lots );
+extern int SplineExistsInSS(Spline *s,SplineSet *ss);
+extern int SpExistsInSS(SplinePoint *sp,SplineSet *ss);
 
 extern struct math_constants_descriptor {
     char *ui_name;

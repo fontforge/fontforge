@@ -1503,11 +1503,15 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	extended extrema[4];
 
 	bound2 *= bound2;
+      ae_restart:
 	for ( ss = sc->layers[ly_fore].splines; ss!=NULL && !p->finish; ss=ss->next ) {
+	  ae2_restart:
 	    first = NULL;
 	    for ( s=ss->first->next ; s!=NULL && s!=first && !p->finish; s=s->to->next ) {
 		if ( first==NULL )
 		    first = s;
+		if ( s->acceptableextrema )
+	    continue;		/* If marked as good, don't check it */
 		/* rough appoximation to spline's length */
 		x = (s->from->nextcp.x-s->from->me.x);
 		y = (s->from->nextcp.y-s->from->me.y);
@@ -1524,6 +1528,12 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		    s->from->selected = true;
 		    s->to->selected = true;
 		    ExplainIt(p,sc,_("The selected spline attains its extrema somewhere other than its endpoints"),0,0);
+		    if ( !SSExistsInLayer(ss,sc->layers[ly_fore].splines) )
+      goto ae_restart;
+		    if ( !SplineExistsInSS(s,ss))
+	  goto ae2_restart;
+		    if ( !SplineExistsInSS(first,ss))
+			first = s;
 		    if ( p->ignorethis ) {
 			p->missingextrema = false;
 	    break;
