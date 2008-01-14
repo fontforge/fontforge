@@ -380,6 +380,18 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,EncMap *map,
 	fprintf( file, "CHARSET_ENCODING \"%s\"\n", components.cs_enc );
     }
     fprintf( file, "ENDPROPERTIES\n" );
+    { /* AllSame tells us how many glyphs in the font. Which is great for */
+      /* many things, but BDF files care about how many encoding slots are */
+      /* filled. Usually these are the same, but not if a glyph is used in */
+      /* two encodings */
+	int i, cnt = 0;
+	for ( i=0; i<map->enccount; ++i ) {
+	    int gid = map->map[i];
+	    if ( gid!=-1 && !IsntBDFChar(font->glyphs[gid]))
+		++cnt;
+	}
+	components.char_cnt = cnt;
+    }
     fprintf( file, "CHARS %d\n", components.char_cnt );
 
     if ( old_prop_cnt==0 ) {
