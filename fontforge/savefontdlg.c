@@ -519,6 +519,7 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_PfEdGuides),which!=0);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_PfEdColors),which!=0);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_PfEdLayers),which!=0);
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_TeXTable),which!=0);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_GlyphMap),which!=0);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_OFM),which!=0);
 
