@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 28-Jun-2001 -->
-  <!-- AP: Last modified: 9-Nov-2007 -->
+  <!-- AP: Last modified: 13-Jan-2008 -->
   <TITLE>Finding common font problems automagically</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -329,7 +329,7 @@
   <P>
   <STRONG><BIG>Check Multiple Name</BIG></STRONG>
   <P>
-  Check that you do not have two glyphs with the same name. 
+  Check that you do not have two glyphs with the same name.
   <P>
   <STRONG><BIG>Check Unicode/Name mismatch</BIG></STRONG>
   <P>
@@ -367,12 +367,23 @@
   Check for any glyphs whose vertical advance (for fonts with vertical metrics)
   differs from the specified value. <BR Clear=ALL>
   <P>
-  <IMG SRC="findprobs-att.png" WIDTH="307" HEIGHT="431" ALIGN="Right"><BIG><STRONG>Missing
+  <IMG SRC="findprobs-att.png" WIDTH="307" HEIGHT="439" ALIGN="Right"><BIG><STRONG>Missing
   Glyph Names</STRONG></BIG>
   <P>
   It is possible to create a substitution, ligature, etc. which refers to a
   glyph name that is not in the font. This option will check for the above
   error.
+  <P>
+  <BIG> <STRONG>Missing scripts in features</STRONG> </BIG>
+  <P>
+  In OpenType a lookup will only be applied to a glyph if it is attached to
+  a feature which is active for the glyph's script. So if you had a smallcaps
+  feature which was active for latin, and if this invoked a lookup which had
+  also had smallcaps data for the greek letters, then that lookup would not
+  be invoked for greek even though it could happily make the substitution.
+  <P>
+  This item will look for cases like the above, where a lookup applies to a
+  script which is not active for any of its features.
   <P>
     <HR Clear=all>
   <P>
