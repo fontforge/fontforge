@@ -933,7 +933,7 @@ static void SFDDumpTtfInstrs(FILE *sfd,SplineChar *sc) {
 #endif
 }
 
-static void SFDDumpTtfTable(FILE *sfd,struct ttf_table *tab) {
+static void SFDDumpTtfTable(FILE *sfd,struct ttf_table *tab,SplineFont *sf) {
     if ( tab->tag == CHR('p','r','e','p') || tab->tag == CHR('f','p','g','m') ) {
 	/* These are tables of instructions and should be dumped as such */
 	char *instrs;
@@ -949,15 +949,25 @@ static void SFDDumpTtfTable(FILE *sfd,struct ttf_table *tab) {
 	fprintf( sfd, "%s\n", end_tt_instrs );
     } else if ( (tab->tag == CHR('c','v','t',' ') || tab->tag == CHR('m','a','x','p')) &&
 	    (tab->len&1)==0 ) {
-	int i;
+	int i, ended;
 	uint8 *pt;
 	fprintf( sfd, "ShortTable: %c%c%c%c %d\n",
 		(int) (tab->tag>>24), (int) ((tab->tag>>16)&0xff), (int) ((tab->tag>>8)&0xff), (int) (tab->tag&0xff),
 		(int) (tab->len>>1) );
 	pt = (uint8*) tab->data;
+	ended = tab->tag!=CHR('c','v','t',' ') || sf->cvt_names==NULL;
 	for ( i=0; i<(tab->len>>1); ++i ) {
 	    int num = (int16) ((pt[0]<<8) | pt[1]);
-	    fprintf( sfd, "  %d\n", num );
+	    fprintf( sfd, "  %d", num );
+	    if ( !ended ) {
+		if ( sf->cvt_names[i]==END_CVT_NAMES )
+		    ended=true;
+		else if ( sf->cvt_names[i]!=NULL ) {
+		    putc(' ',sfd);
+		    SFDDumpUTF7Str(sfd,sf->cvt_names[i] );
+		}
+	    }
+	    putc('\n',sfd);
 	    pt += 2;
 	}
 	fprintf( sfd, "EndShort\n");
@@ -1966,9 +1976,9 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
     }
     SFDDumpMacFeat(sfd,sf->features);
     for ( tab = sf->ttf_tables; tab!=NULL ; tab = tab->next )
-	SFDDumpTtfTable(sfd,tab);
+	SFDDumpTtfTable(sfd,tab,sf);
     for ( tab = sf->ttf_tab_saved; tab!=NULL ; tab = tab->next )
-	SFDDumpTtfTable(sfd,tab);
+	SFDDumpTtfTable(sfd,tab,sf);
     for ( ln = sf->names; ln!=NULL; ln=ln->next )
 	SFDDumpLangName(sfd,ln);
     if ( sf->gasp_cnt!=0 )
@@ -2891,7 +2901,7 @@ static struct ttf_table *SFDGetShortTable(FILE *sfd, SplineFont *sf,struct ttf_t
     /* and then the (text) values of the words that make up the cvt table */
     int i,len, ch;
     uint8 *pt;
-    int which;
+    int which, iscvt, started;
     struct ttf_table *tab = chunkalloc(sizeof(struct ttf_table));
 
     while ( (ch=getc(sfd))==' ' );
@@ -2904,15 +2914,29 @@ static struct ttf_table *SFDGetShortTable(FILE *sfd, SplineFont *sf,struct ttf_t
 	which = 0;
     else
 	which = 1;
+    iscvt = tab->tag==CHR('c','v','t',' ');
 
     getint(sfd,&len);
     pt = tab->data = galloc(2*len);
     tab->len = 2*len;
+    started = false;
     for ( i=0; i<len; ++i ) {
 	int num;
 	getint(sfd,&num);
 	*pt++ = num>>8;
 	*pt++ = num&0xff;
+	if ( iscvt ) {
+	    ch = getc(sfd);
+	    if ( ch==' ' ) {
+		if ( !started ) {
+		    sf->cvt_names = gcalloc(len+1,sizeof(char *));
+		    sf->cvt_names[len] = END_CVT_NAMES;
+		    started = true;
+		}
+		sf->cvt_names[i] = SFDReadUTF7Str(sfd);
+	    } else
+		ungetc(ch,sfd);
+	}
     }
 
     if ( lasttab[which]!=NULL )

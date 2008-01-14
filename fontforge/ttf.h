@@ -106,6 +106,7 @@ struct ttfinfo {
     int dupnamestate;
     struct ttflangname *names;
     char *fontcomments, *fontlog;
+    char **cvt_names;
     SplineChar **chars;		/* from all over, glyf table for contours */
     				/* 		  cmap table for encodings */
 			        /*		  hmtx table for widths */

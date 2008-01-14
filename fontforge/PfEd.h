@@ -79,6 +79,14 @@
 /*  String table in utf8 (NUL terminated). All offsets from start*/
 /*   of subtable */
 
+/* 'PfEd' 'cvt ' cvt comment subtable format			 */
+/*  short  version number 0					 */
+/*  short  size of cvt comment array (might be less that cvt)	 */
+/*  ushort offset[size] to utf8 strings describing cvt entries	 */
+/*           (strings are NUL terminated)			 */
+/*  String table in utf8 (NUL terminated). All offsets from start*/
+/*   of subtable */
+
 /* 'PfEd' 'colr' glyph colour subtable				 */
 /*  short  version number 0					 */
 /*  short  count-of-ranges					 */
@@ -145,6 +153,7 @@
 # define fcmt_TAG	CHR('f','c','m','t')		/* Font Comment */
 # define flog_TAG	CHR('f','l','o','g')		/* Font Log */
 # define cmnt_TAG	CHR('c','m','n','t')		/* Glyph Comments */
+# define cvtc_TAG	CHR('c','v','t','c')		/* Comments for each cvt entry */
 # define colr_TAG	CHR('c','o','l','r')		/* Glyph color flags */
 # ifndef GPOS_TAG
 #  define GPOS_TAG	CHR('G','P','O','S')		/* Names for GPOS lookups */

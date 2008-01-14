@@ -45,7 +45,7 @@
 #include "PfEd.h"	/* This describes the format of the 'PfEd' table */
 			/*  and its many subtables. */
 
-#define MAX_SUBTABLE_TYPES	10
+#define MAX_SUBTABLE_TYPES	20
 
 struct PfEd_subtabs {
     int next;
@@ -155,6 +155,38 @@ return;
 	putc('\0',cmnt);
     if ( ftell(cmnt) & 2 )
 	putshort(cmnt,0);
+}
+
+static void PfEd_CvtComments(SplineFont *sf, struct PfEd_subtabs *pfed ) {
+    FILE *cvtcmt;
+    int i, offset;
+
+    if ( sf->cvt_names==NULL )
+return;
+    pfed->subtabs[pfed->next].tag = cvtc_TAG;
+    pfed->subtabs[pfed->next++].data = cvtcmt = tmpfile();
+
+    for ( i=0; sf->cvt_names[i]!=END_CVT_NAMES; ++i);
+
+    putshort(cvtcmt,0);			/* sub-table version number */
+    putshort(cvtcmt,i);
+    offset = 2*2 + i*2;
+    for ( i=0; sf->cvt_names[i]!=END_CVT_NAMES; ++i) {
+	if ( sf->cvt_names[i]==NULL )
+	    putshort(cvtcmt,0);
+	else {
+	    putshort(cvtcmt,offset);
+	    offset += strlen(sf->cvt_names[i])+1;
+	}
+    }
+    for ( i=0; sf->cvt_names[i]!=END_CVT_NAMES; ++i) {
+	if ( sf->cvt_names[i]!=NULL ) {
+	    fputs(sf->cvt_names[i],cvtcmt);
+	    putc('\0',cvtcmt);
+	}
+    }
+    if ( ftell(cvtcmt)&1 ) putc(0,cvtcmt);
+    if ( ftell(cvtcmt)&2 ) putshort(cvtcmt,0);
 }
 
 static void PfEd_Colours(SplineFont *sf, struct PfEd_subtabs *pfed, struct glyphinfo *gi ) {
@@ -769,6 +801,7 @@ void pfed_dump(struct alltabs *at, SplineFont *sf) {
 	PfEd_FontComment(sf, &pfed, fcmt_TAG );
 	PfEd_FontComment(sf, &pfed, flog_TAG );
 	PfEd_GlyphComments(sf, &pfed, &at->gi );
+	PfEd_CvtComments(sf, &pfed );
     }
     if ( at->gi.flags & ttf_flag_pfed_colors )
 	PfEd_Colours(sf, &pfed, &at->gi );
@@ -897,6 +930,28 @@ return( NULL );
 	*pt++ = getc(ttf);
     *pt = '\0';
 return( str );
+}
+
+static void pfed_readcvtcomments(FILE *ttf,struct ttfinfo *info,uint32 base ) {
+    int count, i;
+    uint16 *offsets;
+
+    fseek(ttf,base,SEEK_SET);
+    if ( getushort(ttf)!=0 )
+return;			/* Bad version number */
+    count = getushort(ttf);
+    
+    offsets = galloc(count*sizeof(uint16));
+    info->cvt_names = galloc((count+1)*sizeof(char *));
+    for ( i=0; i<count; ++i )
+	offsets[i] = getushort(ttf);
+    for ( i=0; i<count; ++i ) {
+	if ( offsets[i]==0 )
+	    info->cvt_names[i] = NULL;
+	else
+	    info->cvt_names[i] = pfed_read_utf8(ttf,base+offsets[i]);
+    }
+    free(offsets);
 }
 
 static void pfed_readglyphcomments(FILE *ttf,struct ttfinfo *info,uint32 base) {
@@ -1387,6 +1442,9 @@ return;
     for ( i=0; i<n; ++i ) switch ( tagoff[i].tag ) {
       case fcmt_TAG: case flog_TAG:
 	pfed_readfontcomment(ttf,info,info->pfed_start+tagoff[i].offset, tagoff[i].tag);
+      break;
+      case cvtc_TAG:
+	pfed_readcvtcomments(ttf,info,info->pfed_start+tagoff[i].offset);
       break;
       case cmnt_TAG:
 	pfed_readglyphcomments(ttf,info,info->pfed_start+tagoff[i].offset);

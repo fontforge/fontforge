@@ -987,9 +987,11 @@ typedef struct shortview /* : tableview */ {
     int16 vheight, vwidth;
     int16 sbw, bh;
     GFont *gfont;
-    int16 chrlen, addrend, hexend;
+    int16 chrlen, addrend, valend;
     int16 active;
+    int16 which;
     int16 *edits;
+    char **comments;
     uint8 *data;
     int32 len;
     uint32 tag;
@@ -1003,16 +1005,36 @@ static int sfinishup(ShortView *sv,int showerr) {
     if ( sv->active==-1 )
 return( true );
 
-    val = u_strtol(ret,&end,10);
-    if ( *ret=='\0' || *end!='\0' || val<-32768 || val>32767 ) {
-	if ( showerr )
-	    ff_post_error(_("Bad Number"),_("Bad Number"));
+    if ( sv->which ) {
+	if ( *ret=='\0' ) {
+	    if ( sv->comments[sv->active]!=NULL ) {
+		free(sv->comments[sv->active]);
+		sv->comments[sv->active] = NULL;
+		sv->changed = true;
+	    }
+	} else {
+	    char *new = GGadgetGetTitle8(sv->tf);
+	    if ( sv->comments[sv->active]==NULL ) {
+		sv->changed = true;
+	    } else {
+		if ( strcmp(sv->comments[sv->active],new)!=0 )
+		    sv->changed = true;
+		free(sv->comments[sv->active]);
+	    }
+	    sv->comments[sv->active] = new;
+	}
+    } else {
+	val = u_strtol(ret,&end,10);
+	if ( *ret=='\0' || *end!='\0' || val<-32768 || val>32767 ) {
+	    if ( showerr )
+		ff_post_error(_("Bad Number"),_("Bad Number"));
 return( false );
-    }
-    oldval = sv->edits[sv->active];
-    if ( val != oldval ) {
-	sv->changed = true;
-	sv->edits[sv->active] = val;
+	}
+	oldval = sv->edits[sv->active];
+	if ( val != oldval ) {
+	    sv->changed = true;
+	    sv->edits[sv->active] = val;
+	}
     }
     sv->active = -1;
     GGadgetMove(sv->tf,sv->addrend,-100);
@@ -1056,6 +1078,14 @@ return( false );
 	    sv->edits = grealloc(sv->edits,val*2);
 	    for ( i=sv->len/2; i<val; ++i )
 		sv->edits[i] = 0;
+	    sv->comments = grealloc(sv->comments,val);
+	    for ( i=sv->len/2; i<val; ++i )
+		sv->comments[i] = NULL;
+	} else {
+	    for ( i=val; i<sv->len/2; ++i ) {
+		free(sv->comments[i]);
+		sv->comments[i] = NULL;
+	    }
 	}
 	sv->len = 2*val;
 	SV_SetScrollBar(sv);
@@ -1084,39 +1114,50 @@ static int SV_OK(GGadget *g, GEvent *e) {
 	ShortView *sv = GDrawGetUserData(GGadgetGetWindow(g));
 	int i;
 	struct ttf_table *prev, *tab;
+	SplineFont *sf = sv->sf;
 
+	if ( !sfinishup(sv,true) )
+return( true );
+	if ( sf->cvt_names!=NULL ) {
+	    for ( i=0; sf->cvt_names[i]!=END_CVT_NAMES; ++i )
+		free(sf->cvt_names[i]);
+	    free(sf->cvt_names);
+	    sf->cvt_names = NULL;
+	}
 	if ( sv->len==0 ) {
 	    if ( sv->table!=NULL ) {
 		prev = NULL;
-		for ( tab=sv->sf->ttf_tables; tab!=NULL && tab!=sv->table; prev=tab, tab=tab->next );
+		for ( tab=sf->ttf_tables; tab!=NULL && tab!=sv->table; prev=tab, tab=tab->next );
 		if ( prev!=NULL )
 		    prev->next = tab->next;
 		else
-		    sv->sf->ttf_tables = tab->next;
+		    sf->ttf_tables = tab->next;
 		free(sv->table->data);
 		chunkfree(sv->table,sizeof(struct ttf_table));
 		sv->table = NULL;
 	    }
 	} else {
-	    if ( !sfinishup(sv,true) )
-return( true );
 	    if ( sv->table!=NULL )
 		free(sv->table->data);
 	    else {
 		tab = chunkalloc(sizeof(struct ttf_table));
-		tab->next = sv->sf->ttf_tables;
-		sv->sf->ttf_tables = tab;
+		tab->next = sf->ttf_tables;
+		sf->ttf_tables = tab;
 		tab->tag = sv->tag;
 		sv->table = tab;
 	    }
 	    sv->table->data = galloc(sv->len);
+	    sf->cvt_names = galloc(((sv->len>>1)+1)*sizeof(char *));
 	    for ( i=0; i<sv->len/2; ++i ) {
 		sv->table->data[i<<1] = (sv->edits[i]>>8)&0xff;
 		sv->table->data[(i<<1)+1] = sv->edits[i]&0xff;
+		sf->cvt_names[i] = sv->comments[i];
+		sv->comments[i] = NULL;
 	    }
+	    sf->cvt_names[i] = END_CVT_NAMES;
 	    sv->table->len = sv->len;
 	}
-	sv->sf->changed = true;
+	sf->changed = true;
 	_SV_DoClose(sv);
     }
 return( true );
@@ -1137,12 +1178,13 @@ return;
     }
 
     pos.width = GDrawPointsToPixels(sv->gw,_GScrollBar_Width);
-    pos.height = event->u.resize.size.height-sv->bh;
-    pos.x = event->u.resize.size.width-pos.width; pos.y = 0;
+    pos.height = event->u.resize.size.height-sv->bh-sv->fh;
+    pos.x = event->u.resize.size.width-pos.width; pos.y = sv->fh;
     GGadgetResize(sv->vsb,pos.width,pos.height+1);
     GGadgetMove(sv->vsb,pos.x,pos.y);
     pos.width = pos.x; pos.x = 0;
     GDrawResize(sv->v,pos.width,pos.height);
+    GDrawMove(sv->v,0,sv->fh);
 
     sv->vheight = pos.height; sv->vwidth = pos.width;
     SV_SetScrollBar(sv);
@@ -1159,13 +1201,12 @@ return;
 	    event->u.resize.size.height-GDrawPointsToPixels(sv->gw,60));
     
     GDrawRequestExpose(sv->gw,NULL,true);
-    GDrawRequestExpose(sv->v,NULL,true);
 }
 
 static void short_expose(ShortView *sv,GWindow pixmap,GRect *rect) {
     int low, high;
     int x,y;
-    char cval[8], caddr[8]; unichar_t uval[8], uaddr[8];
+    char cval[8], caddr[8];
     int index;
 
     GDrawSetFont(pixmap,sv->gfont);
@@ -1175,18 +1216,20 @@ static void short_expose(ShortView *sv,GWindow pixmap,GRect *rect) {
     if ( high>sv->vheight-EDGE_SPACER ) high = sv->vheight-EDGE_SPACER;
 
     GDrawDrawLine(pixmap,sv->addrend-ADDR_SPACER/2,rect->y,sv->addrend-ADDR_SPACER/2,rect->y+rect->height,0x000000);
+    GDrawDrawLine(pixmap,sv->valend-ADDR_SPACER/2,rect->y,sv->valend-ADDR_SPACER/2,rect->y+rect->height,0x000000);
 
     index = (sv->lpos+(low-EDGE_SPACER)/sv->fh);
     y = low;
     for ( ; y<=high && index<sv->len/2; ++index ) {
 	sprintf( caddr, "%d", index );
-	uc_strcpy(uaddr,caddr);
-	x = sv->addrend - ADDR_SPACER - GDrawGetTextWidth(pixmap,uaddr,-1,NULL);
-	GDrawDrawText(pixmap,x,y+sv->as,uaddr,-1,NULL,0x000000);
+	x = sv->addrend - ADDR_SPACER - GDrawGetText8Width(pixmap,caddr,-1,NULL);
+	GDrawDrawText8(pixmap,x,y+sv->as,caddr,-1,NULL,0x000000);
 
 	sprintf( cval, "%d", sv->edits[index] );
-	uc_strcpy(uval,cval);
-	GDrawDrawText(pixmap,sv->addrend,y+sv->as,uval,-1,NULL,0x000000);
+	GDrawDrawText8(pixmap,sv->addrend,y+sv->as,cval,-1,NULL,0x000000);
+
+	if ( sv->comments[index]!=NULL )
+	    GDrawDrawText8(pixmap,sv->valend,y+sv->as,sv->comments[index],-1,NULL,0x000000);
 	y += sv->fh;
     }
 }
@@ -1261,18 +1304,31 @@ static int sv_v_e_h(GWindow gw, GEvent *event) {
 	    short_mousemove(sv,event->u.mouse.y);
 	else if ( event->type == et_mousedown ) {
 	    int l = (event->u.mouse.y-EDGE_SPACER)/sv->fh + sv->lpos;
-	    unichar_t ubuf[20]; char buf[20];
+	    int which = event->u.mouse.x > sv->valend;
+	    char buf[20];
 	    if ( sfinishup(sv,true) && event->u.mouse.x>sv->addrend &&
 		    l<sv->len/2 && l!=sv->active ) {
 		sv->active = l;
-		GGadgetMove(sv->tf, sv->addrend,
-					(l-sv->lpos)*sv->fh+EDGE_SPACER+1);
-		sprintf( buf, "%d", sv->edits[sv->active] );
-		uc_strcpy(ubuf,buf);
-		GGadgetSetTitle(sv->tf,ubuf);
+		sv->which = which;
+		if ( !which ) {
+		    /* Change the value */
+		    GGadgetResize(sv->tf,sv->valend-sv->addrend-EDGE_SPACER,sv->fh);
+		    GGadgetMove(sv->tf, sv->addrend,
+					    (l-sv->lpos)*sv->fh+EDGE_SPACER+1);
+		    sprintf( buf, "%d", sv->edits[sv->active] );
+		    GGadgetSetTitle8(sv->tf,buf);
+		} else {
+		    GGadgetResize(sv->tf,sv->vwidth-sv->valend-EDGE_SPACER,sv->fh);
+		    GGadgetMove(sv->tf, sv->valend,
+					    (l-sv->lpos)*sv->fh+EDGE_SPACER+1);
+		    GGadgetSetTitle8(sv->tf,sv->comments[l]==NULL?"":sv->comments[l]);
+		}
 		GDrawPostEvent(event);	/* And we hope the tf catches it this time */
 	    }
 	}
+      break;
+      case et_resize:
+	GDrawRequestExpose(gw,NULL,true);
       break;
       case et_timer:
       break;
@@ -1284,10 +1340,20 @@ return( true );
 
 static int sv_e_h(GWindow gw, GEvent *event) {
     ShortView *sv = (ShortView *) GDrawGetUserData(gw);
+    GRect r;
+    int x;
 
     switch ( event->type ) {
       case et_expose:
-	GDrawDrawLine(gw,0,sv->vheight,sv->vwidth,sv->vheight,0x000000);
+	r.x = r.y = 0; r.width = sv->vwidth+40; r.height = sv->fh-1;
+	GDrawFillRect(gw,&r,0x808080);
+	x = sv->addrend - ADDR_SPACER - 2 - GDrawGetText8Width(gw,_("Index"),-1,NULL);
+	GDrawDrawText8(gw,x,sv->as,_("Index"),-1,NULL,0xffffff);
+	GDrawDrawText8(gw,sv->addrend,sv->as,_("Value"),-1,NULL,0xffffff);
+	GDrawDrawText8(gw,sv->valend,sv->as,_("Comment"),-1,NULL,0xffffff);
+	
+	GDrawDrawLine(gw,0,sv->fh-1,r.width,sv->fh-1,0x000000);
+	GDrawDrawLine(gw,0,sv->vheight+sv->fh,sv->vwidth,sv->vheight+sv->fh,0x000000);
       break;
       case et_resize:
 	short_resize(sv,event);
@@ -1341,11 +1407,16 @@ static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
     if ( tab!=NULL ) {
 	sv->len = tab->len;
 	sv->edits = galloc(tab->len+1);
+	sv->comments = gcalloc((tab->len/2+1),sizeof(char *));
 	for ( i=0; i<tab->len/2; ++i )
 	    sv->edits[i] = (tab->data[i<<1]<<8) | tab->data[(i<<1)+1];
+	if ( sf->cvt_names!=NULL )
+	    for ( i=0; i<tab->len/2 && sf->cvt_names[i]!=END_CVT_NAMES; ++i )
+		sv->comments[i] = copy(sf->cvt_names[i]);
     } else {
 	sv->edits = galloc(2);
 	sv->len = 0;
+	sv->comments = gcalloc(1,sizeof(char *));
     }
 
     title[0] = (tag>>24)&0xff;
@@ -1422,7 +1493,7 @@ static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
 
     sv->bh = GDrawPointsToPixels(gw,64);
 
-    gcd[5].gd.pos.y = 0; gcd[5].gd.pos.height = pos.height-sv->bh;
+    gcd[5].gd.pos.y = sv->fh; gcd[5].gd.pos.height = pos.height-sv->bh;
     gcd[5].gd.pos.width = GDrawPointsToPixels(gw,_GScrollBar_Width);
     gcd[5].gd.pos.x = pos.width-gcd[5].gd.pos.width;
     gcd[5].gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_sb_vert;
@@ -1459,8 +1530,8 @@ static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
     sv->sbw = gsize.width;
 
     wattrs.mask = wam_events|wam_cursor;
-    subpos.x = 0; subpos.y = 0;
-    subpos.width = gd.pos.x; subpos.height = pos.height - sv->bh;
+    subpos.x = 0; subpos.y = sv->fh;
+    subpos.width = gd.pos.x; subpos.height = pos.height - sv->bh - sv->fh;
     sv->v = GWidgetCreateSubWindow(gw,&subpos,sv_v_e_h,sv,&wattrs);
     GDrawSetVisible(sv->v,true);
 
@@ -1476,6 +1547,7 @@ static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
 
     sv->chrlen = numlen = GDrawGetTextWidth(sv->v,num,1,NULL);
     sv->addrend = 6*numlen + ADDR_SPACER + EDGE_SPACER;
+    sv->valend = sv->addrend + 7*numlen + ADDR_SPACER + EDGE_SPACER;
 
     tfbox.main_background = tfbox.main_foreground = COLOR_DEFAULT;
     memset(&gd,0,sizeof(gd));
@@ -1493,8 +1565,8 @@ static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
     lh = sv->len/2;
     if ( lh>40 ) lh = 40;
     if ( lh<4 ) lh = 4;
-    if ( pos.width<sv->addrend+6*numlen+EDGE_SPACER+sv->sbw )
-	pos.width = sv->addrend+6*numlen+EDGE_SPACER+sv->sbw;
+    if ( pos.width<sv->valend+6*numlen+EDGE_SPACER+sv->sbw )
+	pos.width = sv->valend+6*numlen+EDGE_SPACER+sv->sbw;
     GDrawResize(sv->gw,pos.width,lh*sv->fh+2*EDGE_SPACER);
 
     GDrawSetVisible(gw,true);
