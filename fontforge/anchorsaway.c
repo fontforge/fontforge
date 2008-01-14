@@ -215,7 +215,7 @@ static void AnchorD_SetTitle(AnchorDlg *a) {
     
 static void AnchorD_FindComplements(AnchorDlg *a) {
     AnchorClass *ac = a->ap->anchor;
-    enum anchor_type match, match2;
+    enum anchor_type match;
     AnchorPoint *ap;
     int i, k, j, cnt;
     SplineFont *_sf = a->sc->parent, *sf;
@@ -225,20 +225,32 @@ static void AnchorD_FindComplements(AnchorDlg *a) {
 
     switch ( a->ap->type ) {
       case at_mark:
-	match = at_basechar;
-	match2 = at_baselig;
+        switch ( a->ap->anchor->type ) {
+	  case act_mark:
+	    match = at_basechar;
+	  break;
+	  case act_mklg:
+	    match = at_baselig;
+	  break;
+	  case act_mkmk:
+	    match = at_basemark;
+	  break;
+	  default:
+	    IError( "Unexpected anchor class type" );
+	    match = at_basechar;
+	}
       break;
       case at_basechar: case at_baselig: case at_basemark:
-	match = match2 = at_mark;
+	match = at_mark;
       break;
       case at_centry:
-	match = match2 = at_cexit;
+	match = at_cexit;
       break;
       case at_cexit:
-	match = match2 = at_centry;
+	match = at_centry;
       break;
       default:
-	match = match2 = at_max;
+	match = at_max;
       break;
     }
 
@@ -250,7 +262,7 @@ static void AnchorD_FindComplements(AnchorDlg *a) {
 	    sf = _sf->subfontcnt==0 ? _sf : _sf->subfonts[k];
 	    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
 		for ( ap= sf->glyphs[i]->anchor; ap!=NULL; ap=ap->next ) {
-		    if ( ap->anchor == ac && ( ap->type==match || ap->type==match2 )) {
+		    if ( ap->anchor == ac && ap->type==match ) {
 			if ( j ) {
 			    a->apmatch[cnt].ap = ap;
 			    a->apmatch[cnt++].sc = sf->glyphs[i];
@@ -278,7 +290,7 @@ static void AnchorD_FindComplements(AnchorDlg *a) {
 		enc = map->backmap[i];
 		if ( enc!=-1 ) {
 		    for ( ap= sf->glyphs[i]->anchor; ap!=NULL; ap=ap->next ) {
-			if ( ap->anchor == ac && ( ap->type==match || ap->type==match2 )) {
+			if ( ap->anchor == ac && ap->type==match ) {
 			    sel[enc] = true;
 		    break;
 			}
@@ -610,9 +622,10 @@ return( false );
 	}
     } else if ( event->type == et_mouseup ) {
 	if ( on_combo!=-1 && on_combo+1==a->combo ) {
+	    AnchorPoint *ap = a->apmatch[on_combo].ap;
 	    a->combo = 0;
 	    AnchorD_ChangeGlyph(a,a->apmatch[on_combo].sc,a->apmatch[on_combo].ap);
-	    AnchorD_SelectGlyph(a,a->apmatch[on_combo].ap);
+	    AnchorD_SelectGlyph(a,ap);
 	} else if ( on_ap && a->on_ap ) {
 	    AnchorD_FigurePos(a,event);
 	    AnchorD_ClearCorrections(a);
