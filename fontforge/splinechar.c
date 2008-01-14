@@ -1364,6 +1364,8 @@ int SCValidate(SplineChar *sc, int force) {
 	for ( s=ss->first->next ; s!=NULL && s!=first; s=s->to->next ) {
 	    if ( first==NULL )
 		first = s;
+	    if ( s->acceptableextrema )
+	continue;		/* If marked as good, don't check it */
 	    /* rough appoximation to spline's length */
 	    x = (s->from->nextcp.x-s->from->me.x);
 	    y = (s->from->nextcp.y-s->from->me.y);

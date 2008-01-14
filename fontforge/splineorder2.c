@@ -1066,11 +1066,14 @@ void SFConvertToOrder3(SplineFont *_sf) {
 void SplineRefigure2(Spline *spline) {
     SplinePoint *from = spline->from, *to = spline->to;
     Spline1D *xsp = &spline->splines[0], *ysp = &spline->splines[1];
+    Spline old;
 
 #ifdef DEBUG
     if ( RealNear(from->me.x,to->me.x) && RealNear(from->me.y,to->me.y))
 	IError("Zero length spline created");
 #endif
+    if ( spline->acceptableextrema )
+	old = *spline;
 
     if ( from->nonextcp || to->noprevcp ||
 	    ( from->nextcp.x==from->me.x && from->nextcp.y == from->me.y ) ||
@@ -1131,6 +1134,17 @@ void SplineRefigure2(Spline *spline) {
     SplineIsLinear(spline);
     spline->isquadratic = !spline->knownlinear;
     spline->order2 = true;
+
+    if ( spline->acceptableextrema ) {
+	/* I don't check "d", because changes to that reflect simple */
+	/*  translations which will not affect the shape of the spline */
+	/* (I don't check "a" because it is always 0 in a quadratic spline) */
+	if ( !RealNear(old.splines[0].b,spline->splines[0].b) ||
+		!RealNear(old.splines[0].c,spline->splines[0].c) ||
+		!RealNear(old.splines[1].b,spline->splines[1].b) ||
+		!RealNear(old.splines[1].c,spline->splines[1].c) )
+	    spline->acceptableextrema = false;
+    }
 }
 
 void SplineRefigure(Spline *spline) {

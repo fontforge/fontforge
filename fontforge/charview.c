@@ -4802,6 +4802,7 @@ return( true );
 #define MID_SpiroRight	2316
 #define MID_SpiroMakeFirst 2317
 #define MID_NameContour	2318
+#define MID_AcceptableExtrema 2319
 
 #define MID_AutoHint	2400
 #define MID_ClearHStem	2401
@@ -6272,6 +6273,22 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     cv_edlistcheck(cv,mi,e,true);
 }
 
+static void CVMenuAcceptableExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    SplineSet *ss;
+    Spline *s, *first;
+
+    for ( ss = cv->b.layerheads[cv->b.drawmode]->splines; ss!=NULL ; ss = ss->next ) {
+	first = NULL;
+	for ( s=ss->first->next; s!=NULL && s!=first; s = s->to->next ) {
+	    if ( first == NULL )
+		first = s;
+	    if ( s->from->selected && s->to->selected )
+		s->acceptableextrema = !s->acceptableextrema;
+	}
+    }
+}
+    
 static void _CVMenuPointType(CharView *cv,struct gmenuitem *mi) {
     int pointtype = mi->mid==MID_Corner?pt_corner:mi->mid==MID_Tangent?pt_tangent:
 	    mi->mid==MID_Curve?pt_curve:pt_hvcurve;
@@ -6366,6 +6383,7 @@ static void cv_ptlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
     Spline *spline, *first;
     SplinePoint *selpt=NULL;
     int notimplicit = -1;
+    int acceptable = -1;
     uint16 junk;
     int i;
     extern void GMenuItemArrayFree(GMenuItem *mi);
@@ -6402,6 +6420,12 @@ static void cv_ptlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 		else if ( notimplicit!=spline->to->dontinterpolate ) notimplicit = -2;
 		if ( spline->from->selected )
 		    ++spline_selected;
+	    }
+	    if ( spline->to->selected && spline->from->selected ) {
+		if ( acceptable==-1 )
+		    acceptable = spline->acceptableextrema;
+		else if ( acceptable!=spline->acceptableextrema )
+		    acceptable = -2;
 	    }
 	    if ( first == NULL ) first = spline;
 	}
@@ -6466,6 +6490,10 @@ static void cv_ptlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_MakeLine:
 	    mi->ti.disabled = cnt==0;
+	  break;
+	  case MID_AcceptableExtrema:
+	    mi->ti.disabled = acceptable<0;
+	    mi->ti.checked = acceptable==1;
 	  break;
 	  case MID_NameContour:
 	    mi->ti.disabled = onlysel==NULL || onlysel == (SplineSet *) -1;
@@ -8602,6 +8630,8 @@ static GMenuItem2 ptlist[] = {
     { { (unichar_t *) N_("Center _Between Control Points"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Center Between Control Points|No Shortcut"), NULL, NULL, CVMenuCenterCP, MID_CenterCP },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Add Anchor"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("Add Anchor|Ctl+0"), NULL, NULL, CVMenuAddAnchor, MID_AddAnchor },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) N_("Acceptable _Extrema"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'C' }, H_("Acceptable Extrema|No Shortcut"), NULL, NULL, CVMenuAcceptableExtrema, MID_AcceptableExtrema },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("Make _Line"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Make Line|No Shortcut"), NULL, NULL, CVMenuMakeLine, MID_MakeLine },
     { { (unichar_t *) N_("Insert Point On _Spline At..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Insert Point On Spline At...|No Shortcut"), NULL, NULL, CVMenuInsertPt, MID_InsertPtOnSplineAt },

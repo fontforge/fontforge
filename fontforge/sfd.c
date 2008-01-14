@@ -610,7 +610,8 @@ static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
 			(sp->nextcpdef<<3)|(sp->prevcpdef<<4)|
 			(sp->roundx<<5)|(sp->roundy<<6)|
 			(sp->ttfindex==0xffff?(1<<7):0)|
-			(sp->dontinterpolate<<8) );
+			(sp->dontinterpolate<<8)|
+			((sp->prev && sp->prev->acceptableextrema)<<9) );
 	    if ( order2 ) {
 		if ( sp->ttfindex!=0xfffe && sp->nextcpindex!=0xfffe ) {
 		    putc(',',sfd);
@@ -3081,8 +3082,10 @@ static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd) {
     int ch;
     char tok[100];
     int ttfindex = 0;
+    int lastacceptable;
 
     current.x = current.y = 0;
+    lastacceptable = 0;
     while ( 1 ) {
 	while ( getreal(sfd,&stack[sp])==1 )
 	    if ( sp<99 )
@@ -3166,6 +3169,10 @@ static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd) {
 	    pt->roundx = val&0x20?1:0;
 	    pt->roundy = val&0x40?1:0;
 	    pt->dontinterpolate = val&0x100?1:0;
+	    if ( pt->prev!=NULL )
+		pt->prev->acceptableextrema = val&0x200?1:0;
+	    else
+		lastacceptable = val&0x200?1:0;
 	    if ( val&0x80 )
 		pt->ttfindex = 0xffff;
 	    else
@@ -3204,6 +3211,8 @@ static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd) {
     }
     if ( cur!=NULL )
 	SFDCloseCheck(cur,sf->order2);
+    if ( lastacceptable && cur->last->prev!=NULL )
+	cur->last->prev->acceptableextrema = true;
     getname(sfd,tok);
 return( head );
 }

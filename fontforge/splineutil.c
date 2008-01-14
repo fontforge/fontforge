@@ -6452,3 +6452,50 @@ return( spline );
     SplineFree(spline);
 return( new );
 }
+
+int SSExistsInLayer(SplineSet *ss,SplineSet *lots ) {
+    /* In Find Problems we hold some state while we allow the user to go off */
+    /*  and do stuff. It is perfectly possible for the user to delete the */
+    /*  state we hold pointers to. Do a rough check that the thing hasn't */
+    /*  been deleted */
+    while ( lots!=NULL ) {
+	if ( lots==ss )
+return( true );
+	lots = lots->next;
+    }
+return( false );
+}
+
+int SplineExistsInSS(Spline *s,SplineSet *ss) {
+    /* In Find Problems we hold some state while we allow the user to go off */
+    /*  and do stuff. It is perfectly possible for the user to delete the */
+    /*  state we hold pointers to. Do a rough check that the thing hasn't */
+    /*  been deleted */
+    Spline *spline, *first;
+
+    first = NULL;
+    for ( spline = ss->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
+	if ( first==NULL ) first = spline;
+	if ( spline==s )
+return( true );
+    }
+return( false );
+}
+
+int SpExistsInSS(SplinePoint *sp,SplineSet *ss) {
+    /* In Find Problems we hold some state while we allow the user to go off */
+    /*  and do stuff. It is perfectly possible for the user to delete the */
+    /*  state we hold pointers to. Do a rough check that the thing hasn't */
+    /*  been deleted */
+    SplinePoint *sp2;
+
+    for ( sp2 = ss->first; ; ) {
+	if ( sp==sp2 )
+return( true );
+	if ( sp2->next==NULL )
+return( false );
+	sp2 = sp2->next->to;
+	if ( sp2==ss->first )
+return( false );
+    }
+}
