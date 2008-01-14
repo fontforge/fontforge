@@ -5636,7 +5636,10 @@ return;
     else
 	sprintf( buffer, "%-5d (0x%04x) ", fv->end_pos, fv->end_pos );
     sc = (gid=fv->b.map->map[fv->end_pos])!=-1 ? sf->glyphs[gid] : NULL;
-    SCBuildDummy(&dummy,sf,fv->b.map,fv->end_pos);
+    if ( fv->b.cidmaster==NULL || fv->b.normal==NULL || sc==NULL )
+	SCBuildDummy(&dummy,sf,fv->b.map,fv->end_pos);
+    else
+	dummy = *sc;
     if ( sc==NULL ) sc = &dummy;
     uni = dummy.unicodeenc!=-1 ? dummy.unicodeenc : sc->unicodeenc;
     if ( uni!=-1 )
