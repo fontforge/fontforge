@@ -4753,6 +4753,18 @@ return;
     info->tabs = tab;
 }
 
+static int LookupListHasFeature(OTLookup *otl,uint32 tag) {
+    FeatureScriptLangList *feat;
+
+    while ( otl!=NULL ) {
+	for ( feat = otl->features; feat!=NULL; feat=feat->next )
+	    if ( feat->featuretag == tag )
+return( true );
+	otl = otl->next;
+    }
+return( false );
+}
+
 static int readttf(FILE *ttf, struct ttfinfo *info, char *filename) {
     char *oldloc;
     int i;
@@ -4865,12 +4877,12 @@ return( 0 );
 	readttfvariations(info,ttf);
     if ( info->gpos_start!=0 )		/* kerning info may live in the gpos table too */
 	readttfgpossub(ttf,info,true);
-    else {
-	if ( info->kern_start!=0 )
-	    readttfkerns(ttf,info);
-	if ( info->opbd_start!=0 )
-	    readttfopbd(ttf,info);
-    }
+    /* Load the 'kern' table if the GPOS table either didn't exist or didn't */
+    /*  contain any kerning info */
+    if ( info->kern_start!=0 && !LookupListHasFeature(info->gpos_lookups,CHR('k','e','r','n')))
+	readttfkerns(ttf,info);
+    if ( info->opbd_start!=0 && !LookupListHasFeature(info->gpos_lookups,CHR('l','f','b','d')))
+	readttfopbd(ttf,info);
     if ( info->gsub_start!=0 )
 	readttfgpossub(ttf,info,false);
     if ( info->morx_start!=0 || info->mort_start!=0 ) {
