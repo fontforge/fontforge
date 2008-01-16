@@ -4024,7 +4024,7 @@ return( NULL );
 	continue;
 	    }
 	    if ( !apt->up ) {
-		ret = SplineSetOfSpline(base,active->spline);
+		ret = SplineSetOfSpline(base,apt->spline);
 	break;
 	    }
 	    winding = apt->up?1:-1;
