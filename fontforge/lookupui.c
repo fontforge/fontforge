@@ -3207,10 +3207,9 @@ return( true );
 }
 
 static int PSTKD_Ok(GGadget *g, GEvent *e) {
-    PSTKernDlg *pstkd;
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	pstkd = GDrawGetUserData(GGadgetGetWindow(g));
+	PSTKernDlg *pstkd = GDrawGetUserData(GGadgetGetWindow(g));
 	GGadget *pstk = GWidgetGetControl(pstkd->gw,CID_PSTList);
 	int rows, cols = GMatrixEditGetColCnt(pstk);
 	struct matrix_data *psts = GMatrixEditGet(pstk,&rows);
