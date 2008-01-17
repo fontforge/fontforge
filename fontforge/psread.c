@@ -2227,7 +2227,9 @@ printf( "-%s-\n", toknames[tok]);
 		if ( RealNear(cur->first->me.x,cur->last->me.x) && RealNear(cur->first->me.y,cur->last->me.y) ) {
 		    SplinePoint *oldlast = cur->last;
 		    cur->first->prevcp = oldlast->prevcp;
-		    cur->first->noprevcp = false;
+		    cur->first->prevcp.x += (cur->first->me.x-oldlast->me.x);
+		    cur->first->prevcp.y += (cur->first->me.y-oldlast->me.y);
+		    cur->first->noprevcp = oldlast->noprevcp;
 		    oldlast->prev->from->next = NULL;
 		    cur->last = oldlast->prev->from;
 		    SplineFree(oldlast->prev);
@@ -3472,10 +3474,12 @@ static void closepath(SplinePointList *cur, int is_type2) {
 return;		/* The "path" is just a single point created by a moveto */
 		/* Probably we're just doing another moveto */
     if ( cur!=NULL && cur->first!=NULL && cur->first!=cur->last ) {
-	if ( RealNear(cur->first->me.x,cur->last->me.x) && RealNear(cur->first->me.y,cur->last->me.y) ) {
+	if ( RealWithin(cur->first->me.x,cur->last->me.x,.05) && RealWithin(cur->first->me.y,cur->last->me.y,.05) ) {
 	    SplinePoint *oldlast = cur->last;
 	    cur->first->prevcp = oldlast->prevcp;
-	    cur->first->noprevcp = false;
+	    cur->first->prevcp.x += (cur->first->me.x-oldlast->me.x);
+	    cur->first->prevcp.y += (cur->first->me.y-oldlast->me.y);
+	    cur->first->noprevcp = oldlast->noprevcp;
 	    oldlast->prev->from->next = NULL;
 	    cur->last = oldlast->prev->from;
 	    chunkfree(oldlast->prev,sizeof(*oldlast));
