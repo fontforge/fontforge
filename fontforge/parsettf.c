@@ -425,10 +425,82 @@ return;
     }
 }
 
+static struct tablenames { uint32 tag; char *name; } stdtables[] = {
+    { CHR('a','c','n','t'), N_("accent attachment table") },
+    { CHR('a','v','a','r'), N_("axis variation table") },
+    { CHR('B','A','S','E'), N_("Baseline table (OT version)") },
+    { CHR('b','d','a','t'), N_("bitmap data table (AAT version)") },
+    { CHR('B','D','F',' '), N_("BDF bitmap properties table") },
+    { CHR('b','h','e','d'), N_("bitmap font header table") },
+    { CHR('b','l','o','c'), N_("bitmap location table (AAT version)") },
+    { CHR('b','s','l','n'), N_("baseline table (AAT version)") },
+    { CHR('C','F','F',' '), N_("PostScript font program (Compact Font Format)") },
+    { CHR('C','I','D',' '), N_("Obsolete table for a type1 CID keyed font") },
+    { CHR('c','m','a','p'), N_("character code mapping table") },
+    { CHR('c','v','a','r'), N_("CVT variation table") },
+    { CHR('c','v','t',' '), N_("control value table") },
+    { CHR('D','S','I','G'), N_("digital signature table") },
+    { CHR('E','B','D','T'), N_("bitmap data table (OT version)") },
+    { CHR('E','B','L','C'), N_("bitmap location table (OT version)") },
+    { CHR('E','B','S','C'), N_("embedded bitmap scaling control table") },
+    { CHR('E','L','U','A'), N_("electronic end user license table") },
+    { CHR('f','d','s','c'), N_("font descriptor table") },
+    { CHR('f','e','a','t'), N_("layout feature table") },
+    { CHR('F','e','a','t'), N_("SIL Graphite layout feature table") },
+    { CHR('F','F','T','M'), N_("FontForge time stamp table") },
+    { CHR('f','m','t','x'), N_("font metrics table") },
+    { CHR('f','p','g','m'), N_("font program table") },
+    { CHR('f','v','a','r'), N_("font variation table") },
+    { CHR('g','a','s','p'), N_("grid-fitting and scan-conversion procedure table") },
+    { CHR('G','D','E','F'), N_("glyph definition table") },
+    { CHR('G','l','a','t'), N_("Graphite glyph attribute table") },
+    { CHR('G','l','o','c'), N_("Graphite glyph location in Glat table") },
+    { CHR('g','l','y','f'), N_("glyph outline table") },
+    { CHR('G','P','O','S'), N_("glyph positioning table") },
+    { CHR('g','v','a','r'), N_("glyph variation table") },
+    { CHR('G','S','U','B'), N_("glyph substitution table") },
+    { CHR('h','d','m','x'), N_("horizontal device metrics table") },
+    { CHR('h','e','a','d'), N_("font header table") },
+    { CHR('h','h','e','a'), N_("horizontal header table") },
+    { CHR('h','m','t','x'), N_("horizontal metrics table") },
+    { CHR('h','s','t','y'), N_("horizontal style table") },
+    { CHR('j','u','s','t'), N_("justification table (AAT version)") },
+    { CHR('J','S','T','F'), N_("justification table (OT version)") },
+    { CHR('k','e','r','n'), N_("kerning table") },
+    { CHR('l','c','a','r'), N_("ligature caret table") },
+    { CHR('l','o','c','a'), N_("glyph location table") },
+    { CHR('L','T','S','H'), N_("linear threshold table") },
+    { CHR('M','A','T','H'), N_("math table") },
+    { CHR('m','a','x','p'), N_("maximum profile table") },
+    { CHR('m','o','r','t'), N_("metamorphosis table") },
+    { CHR('m','o','r','x'), N_("extended metamorphosis table") },
+    { CHR('n','a','m','e'), N_("name table") },
+    { CHR('o','p','b','d'), N_("optical bounds table") },
+    { CHR('O','S','/','2'), N_("OS/2 and Windows specific metrics table") },
+    { CHR('P','C','L','T'), N_("PCL 5 data table") },
+    { CHR('P','f','E','d'), N_("FontForge font debugging table") },
+    { CHR('p','o','s','t'), N_("glyph name and PostScript compatibility table") },
+    { CHR('p','r','e','p'), N_("control value program table") },
+    { CHR('p','r','o','p'), N_("properties table") },
+    { CHR('S','i','l','f'), N_("SIL Graphite rule table") },
+    { CHR('S','i','l','l'), N_("(unspecified) SIL Graphite table") },
+    { CHR('S','i','l','t'), N_("unknown SIL table") },
+    { CHR('T','e','X',' '), N_("TeX table") },
+    { CHR('t','r','a','k'), N_("tracking table") },
+    { CHR('T','Y','P','1'), N_("Obsolete table for a type1 font") },
+    { CHR('V','D','M','X'), N_("vertical device metrics table") },
+    { CHR('v','h','e','a'), N_("vertical header table") },
+    { CHR('v','m','t','x'), N_("vertical metrics table") },
+    { CHR('V','O','R','G'), N_("vertical origin table") },
+    { CHR('Z','a','p','f'), N_("glyph reference table") },
+    0
+};
+
 static int readttfheader(FILE *ttf, struct ttfinfo *info,char *filename,
 	char **choosenname) {
-    int i, j;
+    int i, j, k;
     int tag, checksum, offset, length, version;
+    int first = true;
 
     version=getlong(ttf);
     if ( version==CHR('t','t','c','f')) {
@@ -550,19 +622,21 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	  case CHR('V','O','R','G'):
 	    info->vorg_start = offset;
 	  break;
+	  case CHR('M','A','T','H'):
+	    info->math_start = offset;
+	    info->math_length = length;
+	  break;
 	      /* Apple stuff */
+#if 0
 	  case CHR('a','c','n','t'):
 	    info->acnt_start = offset;
 	  break;
+#endif
 	  case CHR('f','e','a','t'):
 	    info->feat_start = offset;
 	  break;
 	  case CHR('l','c','a','r'):
 	    info->lcar_start = offset;
-	  break;
-	  case CHR('M','A','T','H'):
-	    info->math_start = offset;
-	    info->math_length = length;
 	  break;
 	  case CHR('m','o','r','t'):
 	    info->mort_start = offset;
@@ -628,8 +702,33 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 		info->savetab[j].len = length;
 	    break;
 	    }
+	    if ( j==info->savecnt ) {
+		if ( first ) {
+		    LogError( _("The following table(s) in the font have been ignored by FontForge\n") );
+		    first = false;
+		}
+		for ( k=0; stdtables[k].tag!=0; ++k )
+		    if ( stdtables[k].tag == tag )
+		break;
+		if ( stdtables[k].tag==0 ) {
+		    LogError( _("  Ignoring '%c%c%c%c'\n"), tag>>24, tag>>16, tag>>8, tag);
+		} else {
+		    LogError( _("  Ignoring '%c%c%c%c' %s\n"), tag>>24, tag>>16, tag>>8, tag,
+			    _(stdtables[k].name));
+		}
+	    }
 	}
     }
+    if ( info->glyphlocations_start!=0 && info->cff_start!=0 )
+	LogError( _("This font contains both truetype and PostScript glyph descriptions\n  only one will be used.\n"));
+    else if ( (info->glyphlocations_start!=0) +
+		(info->cff_start!=0) +
+		(info->typ1_start!=0)>1 )
+	LogError( _("This font contains multiple glyph descriptions\n  only one will be used.\n"));
+    if ( info->gpos_start!=0 && info->kern_start!=0 )
+	LogError( _("This font contains both a 'kern' table and a 'GPOS' table.\n  The 'kern' table will only be read if there is no 'kern' feature in 'GPOS'.\n"));
+    if ( (info->mort_start!=0 || info->morx_start!=0) && info->gsub_start!=0 )
+	LogError( _("This font contains both a 'mor[tx]' table and a 'GSUB' table.\n  FF will only read feature/settings in 'morx' which do not match features\n  found in 'GSUB'.\n"));
 return( true );
 }
 
@@ -4885,13 +4984,8 @@ return( 0 );
 	readttfopbd(ttf,info);
     if ( info->gsub_start!=0 )
 	readttfgpossub(ttf,info,false);
-    if ( info->morx_start!=0 || info->mort_start!=0 ) {
+    if ( info->morx_start!=0 || info->mort_start!=0 )
 	readttfmort(ttf,info);
-	if ( info->gsub_start==0 )
-	    LogError(_("This font contains AAT tables, not OpenType ones."));
-	else
-	    LogError(_("This font contains AAT tables, as well as OpenType ones."));
-    }
 
     if ( info->pfed_start!=0 )
 	pfed_read(ttf,info);
