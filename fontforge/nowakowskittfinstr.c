@@ -796,6 +796,7 @@ return;
  */
 static void init_maxp(GlobalInstrCt *gic) {
     struct ttf_table *tab = SFFindTable(gic->sf, CHR('m','a','x','p'));
+    uint16 zones, twpts, fdefs, stack;
 
     if ( tab==NULL ) {
 	tab = chunkalloc(sizeof(struct ttf_table));
@@ -810,10 +811,10 @@ static void init_maxp(GlobalInstrCt *gic) {
 	tab->len = tab->maxlen = 32;
     }
 
-    uint16 zones = memushort(tab->data, 32,  7*sizeof(uint16));
-    uint16 twpts = memushort(tab->data, 32,  8*sizeof(uint16));
-    uint16 fdefs = memushort(tab->data, 32, 10*sizeof(uint16));
-    uint16 stack = memushort(tab->data, 32, 12*sizeof(uint16));
+    zones = memushort(tab->data, 32,  7*sizeof(uint16));
+    twpts = memushort(tab->data, 32,  8*sizeof(uint16));
+    fdefs = memushort(tab->data, 32, 10*sizeof(uint16));
+    stack = memushort(tab->data, 32, 12*sizeof(uint16));
 
     if (gic->fpgm_done && zones<2) zones=2;
     if (gic->fpgm_done && twpts<1) twpts=1;
@@ -1316,6 +1317,7 @@ static void init_prep(GlobalInstrCt *gic) {
     int preplen = sizeof(new_prep_preamble);
     int prepmaxlen = preplen;
     uint8 *new_prep, *prep_head;
+    struct ttf_table *tab;
 
     if (gic->cvt_done)
         prepmaxlen += 48+38*(gic->stemsnaphcnt+gic->stemsnapvcnt);
@@ -1336,7 +1338,7 @@ static void init_prep(GlobalInstrCt *gic) {
         preplen = prep_head - new_prep;
     }
 
-    struct ttf_table *tab = SFFindTable(gic->sf, CHR('p','r','e','p'));
+    tab = SFFindTable(gic->sf, CHR('p','r','e','p'));
 
     if ( tab==NULL ) {
 	/* We have to create such table. */
@@ -1618,12 +1620,14 @@ return fabs(PrevTangent - NextTangent) > 0.261;
 
 static int IsInflectionPoint(int *contourends, BasePoint *bp, SplinePoint *sp) {
     double CURVATURE_THRESHOLD = 1e-9;
+    struct spline *prev, *next;
+    double in, out;
 
     if (IsAnglePoint(contourends, bp, sp))
 return 0;
 
-    struct spline *prev = sp->prev;
-    double in = 0;
+    prev = sp->prev;
+    in = 0;
     while (prev != NULL && fabs(in) < CURVATURE_THRESHOLD) {
         in = SplineCurvature(prev, 1);
 	if (fabs(in) < CURVATURE_THRESHOLD) in = SplineCurvature(prev, 0);
@@ -1632,8 +1636,8 @@ return 0;
     break;
     }
 
-    struct spline *next = sp->next;
-    double out = 0;
+    next = sp->next;
+    out = 0;
     while (next != NULL && fabs(out) < CURVATURE_THRESHOLD) {
         out = SplineCurvature(next, 0);
 	if (fabs(out) < CURVATURE_THRESHOLD) out = SplineCurvature(next, 1);
@@ -1767,25 +1771,27 @@ static void find_control_pts(int p, SplinePoint *sp, InstrCt *ct) {
 /* search for points to be snapped to an edge - to be used in RunOnPoints() */
 static void search_edge(int p, SplinePoint *sp, InstrCt *ct) {
     int tmp, score = 0;
-    real coord = ct->xdir?ct->bp[p].x:ct->bp[p].y;
+    real refcoord, coord = ct->xdir?ct->bp[p].x:ct->bp[p].y;
     real fudge = ct->gic->fudge;
     uint8 touchflag = ct->xdir?tf_x:tf_y;
 
-
-    if (fabs(coord - ct->edge.base) <= fudge) {
+    if (fabs(coord - ct->edge.base) <= fudge)
+    {
 	if (IsCornerExtremum(ct->xdir, ct->contourends, ct->bp, p) ||
-	    IsExtremum(ct->xdir, sp)) score+=4;
+	    IsExtremum(ct->xdir, sp))
+		score+=4;
 
 	if (same_angle(ct->contourends, ct->bp, p, ct->xdir?0.5*M_PI:0.0))
 	    score++;
 
-	if (p == sp->ttfindex && 
-	    IsAnglePoint(ct->contourends, ct->bp, sp)) score++;
+	if (p == sp->ttfindex && IsAnglePoint(ct->contourends, ct->bp, sp))
+	    score++;
 
+	if (IsInflectionPoint(ct->contourends, ct->bp, sp))
+	    score++;
 
-	if (IsInflectionPoint(ct->contourends, ct->bp, sp)) score++;
-
-	if (score && ct->oncurve[p]) score+=2;
+	if (score && ct->oncurve[p])
+	    score+=2;
 
 	if (!score)
 return;
@@ -1799,7 +1805,7 @@ return;
 return;
 	}
 
-	real refcoord = ct->xdir?ct->bp[ct->edge.refpt].x:ct->bp[ct->edge.refpt].y;
+	refcoord = ct->xdir?ct->bp[ct->edge.refpt].x:ct->bp[ct->edge.refpt].y;
 
 	if ((score > ct->edge.refscore) ||
 	    (score == ct->edge.refscore &&
@@ -2088,16 +2094,20 @@ static void mark_startenddones(StemInfo *hint, double value, double fudge) {
 #define use_rp2 (false)
 #define set_new_rp0 (true)
 #define keep_old_rp0 (false)
-static void finish_stem(StemInfo *hint, int shp_rp1, int chg_rp0, InstrCt *ct) {
-    if (hint == NULL)
-return;
-
+static void finish_stem(StemInfo *hint, int shp_rp1, int chg_rp0, InstrCt *ct)
+{
+    int i, callargs[5];
     int rp0 = ct->edge.refpt;
+    int EM = ct->gic->sf->ascent + ct->gic->sf->descent;
     real coord = ct->edge.base;
     StdStem *StdW = ct->xdir?&(ct->gic->stdvw):&(ct->gic->stdhw);
-    StdStem *ClosestStem =
-        CVTSeekStem(ct->xdir, ct->gic, hint->width, true);
+    StdStem *ClosestStem;
+    StdStem stem;
 
+    if (hint == NULL)
+return;
+    
+    ClosestStem = CVTSeekStem(ct->xdir, ct->gic, hint->width, true);
     ct->touched[rp0] |= ct->xdir?tf_x:tf_y;
     finish_edge(ct, shp_rp1?SHP_rp1:SHP_rp2);
     mark_startenddones(ct->xdir?ct->sc->vstem:ct->sc->hstem, coord, ct->gic->fudge);
@@ -2130,14 +2140,10 @@ return;
 	if (ct->gic->cvt_done && ct->gic->fpgm_done && ct->gic->prep_done &&
 	    StdW->width!=-1)
 	{
-	    StdStem stem;
-
 	    stem.width = (int)rint(fabs(hint->width));
 	    stem.stopat = 32767;
 	    stem.snapto = 
 	        CVTSeekStem(ct->xdir, ct->gic, hint->width, false);
-
-            int i, EM = ct->gic->sf->ascent + ct->gic->sf->descent;
 
             for (i=7; i<32768; i++) {
 	        int width_parent = compute_stem_width(ct->xdir, stem.snapto, EM, i);
@@ -2149,7 +2155,6 @@ return;
 		}
 	    }
 
-	    int callargs[5];
 	    callargs[0] = ct->edge.refpt;
 	    callargs[1] = stem.snapto->cvtindex;
 	    callargs[2] = chg_rp0?1:0;
@@ -2222,12 +2227,13 @@ return;
  * we register only edge.refpt. These points are later to be used for horizontal
  * stems' positioning.
  */
-static void update_blue_pts(int blueindex, InstrCt *ct) {
-    if (ct->edge.refpt == -1)
-return;
-
+static void update_blue_pts(int blueindex, InstrCt *ct)
+{
     BasePoint *bp = ct->bp;
     BlueZone *blues = ct->gic->blues;
+
+    if (ct->edge.refpt == -1)
+return;
     
     if (blues[blueindex].highest == -1 ||
         bp[ct->edge.refpt].y > bp[blues[blueindex].highest].y)
@@ -2284,7 +2290,7 @@ static void check_blue_pts(BlueZone *blues, int bluecnt) {
  * its 'highest' and 'lowest' point indices.
  */
 static void snap_to_blues(InstrCt *ct) {
-    int i, cvt;
+    int i, j, cvt;
     int therewerestems;      /* were there any HStems snapped to this blue? */
     StemInfo *hint;          /* for HStems affected by blues */
     real base, advance, tmp; /* for the hint */
@@ -2403,7 +2409,6 @@ return;
 		ct->touched[ct->edge.refpt] |= tf_y;
 	    }
 
-	    int j;
 	    for (j=0; j<ct->edge.othercnt; j++) {
 		callargs[0] = ct->edge.others[j];
 		
@@ -3260,6 +3265,9 @@ static void InterpolateStrongPoints(InstrCt *ct) {
     StemInfo *hint, *firsthint = ct->xdir?ct->sc->vstem:ct->sc->hstem;
     real tmp, edgelist[192];
     int edgecnt=0, i, skip;
+    int lpoint = -1;
+    int rpoint = -1;
+    int nowrp1 = 0;
 
     /* List all stem edges. List only active edges for ghost hints. */
     for(hint=firsthint; hint!=NULL; hint=hint->next) {
@@ -3296,10 +3304,6 @@ return;
     qsort(edgelist, edgecnt, sizeof(real), sortreals);
 
     /* Interpolate important points between subsequent edges */
-    int lpoint = -1;
-    int rpoint = -1;
-    int nowrp1 = 0;
-
     for (i=0; i<edgecnt; i++) {
         if (rpoint != -1) lpoint = rpoint;
         init_edge(ct, edgelist[i], ALL_CONTOURS);
