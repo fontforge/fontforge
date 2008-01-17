@@ -1102,7 +1102,7 @@ static int CheckStemSnap(struct psdict *dict,char *snapkey, char *stdkey ) {
     }
 
     if ( (str_val = PSDictHasEntry(dict,snapkey))==NULL )
-return( false );
+return( true );		/* This entry is not required */
     while ( *str_val==' ' ) ++str_val;
     if ( *str_val!='[' && *str_val!='{' )
 return( false );

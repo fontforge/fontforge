@@ -3474,6 +3474,9 @@ static void closepath(SplinePointList *cur, int is_type2) {
 return;		/* The "path" is just a single point created by a moveto */
 		/* Probably we're just doing another moveto */
     if ( cur!=NULL && cur->first!=NULL && cur->first!=cur->last ) {
+/* I allow for greater errors here than I do in the straight postscript code */
+/*  because: 1) the rel-rel operators will accumulate more rounding errors   */
+/*  2) I only output 2 decimal digits after the decimal in type1 output */
 	if ( RealWithin(cur->first->me.x,cur->last->me.x,.05) && RealWithin(cur->first->me.y,cur->last->me.y,.05) ) {
 	    SplinePoint *oldlast = cur->last;
 	    cur->first->prevcp = oldlast->prevcp;
