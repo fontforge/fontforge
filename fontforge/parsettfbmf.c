@@ -432,7 +432,7 @@ static void readttfbitmapfont(FILE *ttf,struct ttfinfo *info,
 }
 
 void TTFLoadBitmaps(FILE *ttf,struct ttfinfo *info,int onlyone) {
-    int i, cnt, j, k, good, glyphcnt;;
+    int i, cnt, j, k, good, glyphcnt;
     int bigval, biggest;
     struct ttfsizehead *sizes;
     BDFFont *bdf, *last;

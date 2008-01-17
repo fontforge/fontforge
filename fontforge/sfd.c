@@ -2362,7 +2362,7 @@ return;
 }
     
 int SFDWrite(char *filename,SplineFont *sf,EncMap *map,EncMap *normal,int todir) {
-    FILE *sfd;;
+    FILE *sfd;
     char *oldloc;
     int i, gc;
     char *tempfilename = filename;

@@ -922,6 +922,9 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
     int isr2l = -1;
     struct sckppst **seconds;
     int devtablen;
+#ifdef FONTFORGE_CONFIG_DEVICETABLES
+    int next_dev_tab;
+#endif
 
     /* Figure out all the data we need. First the glyphs with kerning info */
     /*  then the glyphs to which they kern, and by how much */
@@ -1140,7 +1143,7 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
 	continue;
 	    }
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
-	    int next_dev_tab = ftell(gpos)-start;
+	    next_dev_tab = ftell(gpos)-start;
 	    if ( (vf1&0xf0) || (vf2&0xf0) ) {
 		for ( tot=0 ; tot<seconds[i][0].tot; ++tot ) {
 		    if ( (pst=seconds[i][tot].pst)!=NULL ) {

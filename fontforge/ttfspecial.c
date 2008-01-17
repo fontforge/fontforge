@@ -1135,8 +1135,8 @@ return;
 		offy = pfed_get_coord(ttf,m);
 	    sp = SplinePointCreate(current->me.x+offx,current->me.y+offy);
 	} else if ( v>=V_QCurveTo && v<=V_QVImplicit ) {
-	    offx = offy = offx1 = offy1 = 0;
 	    int will_be_implicit = true;
+	    offx = offy = offx1 = offy1 = 0;
 	    if ( v==V_QCurveTo ) {
 		offx = pfed_get_coord(ttf,m);
 		offy = pfed_get_coord(ttf,m);
@@ -1366,14 +1366,15 @@ static void pfed_read_layer(FILE *ttf,struct ttfinfo *info,int type, uint32 base
 	for ( j=ranges[i].start; j<=ranges[i].last; ++j )
 	    loca[j] = getlong(ttf);
 	for ( j=ranges[i].start; j<=ranges[i].last; ++j ) {
+	    Layer *ly;
 	    sc = info->chars[j];
-	    Layer *ly = type==1 ? &sc->layers[ly_fore] : &sc->layers[ly_back];
+	    ly = type==1 ? &sc->layers[ly_fore] : &sc->layers[ly_back];
 	    pfed_read_glyph_layer(ttf,info,ly,base+loca[j],type);
 	}
     }
     free(ranges); free(loca);
 }
-    
+
 static void pfed_readotherlayers(FILE *ttf,struct ttfinfo *info,uint32 base) {
     int i, lcnt, spiro_index, back_index;
     int type_sought = info->to_order2 ? 2 : 3;
