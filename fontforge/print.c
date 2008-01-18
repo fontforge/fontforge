@@ -1684,7 +1684,7 @@ static char *_simplelatnchoices[] = {
 /* Polish (from http://shiar.net/misc/txt/pangram.en) */
 /* to push a hedgehog or eight bins of figs in this boat */
     " pchnąć w tę łódź jeża lub ośm skrzyń fig ",
-//* Slovaka (from http://shiar.net/misc/txt/pangram.en) */
+/* Slovaka (from http://shiar.net/misc/txt/pangram.en) */
     " starý kôň na hŕbe kníh žuje tíško povädnuté ruže, na stĺpe sa ďateľ učí kvákať novú ódu o živote ",
 /* Czech (from http://shiar.net/misc/txt/pangram.en) */
     " příliš žluťoučký kůň úpěl ďábelské kódy ",

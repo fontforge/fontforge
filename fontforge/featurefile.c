@@ -1428,7 +1428,7 @@ static void dump_gsubgpos(FILE *out, SplineFont *sf) {
 				if ( ch>=' ' && ch<=0x7f && ch!='"' && ch!='\\' )
 				    putc(ch,out);
 				else
-				    fprintf( out, "\%04x", ch );
+				    fprintf( out, "\\%04x", ch );
 			    }
 			    fprintf( out, "\";\n" );
 			}
