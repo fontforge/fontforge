@@ -55,10 +55,13 @@ struct glyphdata {
     DBounds size;
     struct pointdata **pspace;
     struct stembundle *bundles;
-    struct segment { double start, end, sbase, ebase; int curved, scurved, ecurved; } *lspace, *rspace, *bothspace, *activespace;
+    struct segment { 
+        double start, end, sbase, ebase; 
+        int curved, scurved, ecurved; 
+    } *lspace, *rspace, *bothspace, *activespace;
 
     int only_hv;
-};
+} GlyphData;
 
 struct pointdata {
     SplinePoint *sp;
@@ -73,6 +76,7 @@ struct pointdata {
     struct stemdata *nextstem, *prevstem;
     struct stemdata *bothstem;
     double nextlen, prevlen;
+    int value;                          /* Temporary value, used to compare points assigned to the same edge and determine if it can be used as a reference point*/
     unsigned int nextlinear: 1;
     unsigned int nextzero: 1;
     unsigned int prevlinear: 1;
@@ -87,11 +91,12 @@ struct pointdata {
     unsigned int newpos_set: 2;		/* Holds three values: 0 (not), 1 (positioned by 1 stem), 2 (2 stems) */
     unsigned int next_is_l: 1;
     unsigned int prev_is_l: 1;
+    uint8 x_extr, y_extr;
     BasePoint newpos;
     BasePoint newnext, newprev;
     BasePoint posdir;		/* If point has been positioned in 1 direction, this is that direction */
     double projection;		/* temporary value */
-};
+} PointData;
 
 struct linedata {
     BasePoint unit;
@@ -100,7 +105,7 @@ struct linedata {
     int pcnt;
     double length;
     struct pointdata **points;
-};
+} LineData;
 
 struct stemdata {
     BasePoint unit;		/* Unit vector pointing in direction of stem */
@@ -134,7 +139,7 @@ struct stemdata {
     double lnew, rnew;		/* New position of left, right edges relative to bp,l_to_r */
     int lpcnt, rpcnt;           /* Count of points assigned to left and right edges of this stem */
     struct linedata *leftline, *rightline;
-};
+} StemData;
 
 struct stembounds {
     struct stembounds *next;
