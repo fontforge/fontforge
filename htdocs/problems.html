@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 28-Jun-2001 -->
-  <!-- AP: Last modified: 13-Jan-2008 -->
+  <!-- AP: Last modified: 17-Jan-2008 -->
   <TITLE>Finding common font problems automagically</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -57,17 +57,19 @@
   (<A HREF="mailto:fontforge-users@lists.sourceforge.net">fontforge-users@lists.sourceforge.net</A>
   this is a public mailing list).
   <P>
-  <IMG SRC="findprobs.png" WIDTH="307" HEIGHT="431" ALIGN="Right">FontForge
+  <IMG SRC="findprobs.png" WIDTH="307" HEIGHT="439" ALIGN="Right">FontForge
   can detect the following potential problems:
   <P>
-  <STRONG><BIG>Points Too Close</BIG></STRONG>
+  <STRONG><BIG>Non-Integral Coordinates</BIG></STRONG>
   <P>
-  Some of FontForge's own commands get confused by tiny splines, on the order
-  of one unit or less, and anyway if you have several points very close together
-  it is unlikely that they will make a detectable difference when the font
-  is printed. Probably you should remove one of them... If FontForge detects
-  two points on the same path which it deems to be too close it will select
-  both, stop and let you fix things.
+  In TrueType fonts all coordinates must be on integral coordinates. When FontForge
+  generates your font it will round any non-integral coordinates -- sometimes
+  this is fine, but it can also introduce small uglinesses into your font that
+  you won't be aware of in fontforge. (Implied points are allowed to have
+  half-integral values (2.5 is ok, 2.25 is not)).
+  <P>
+  PostScript fonts can have non-integral coordinates, but it will make the
+  font bulkier, so even there it may be better to use integer values.
   <P>
   <STRONG><BIG>X near [val]</BIG></STRONG>
   <P>
@@ -124,7 +126,16 @@
   that they are unlikely to affect the shape of the curve. A control point
   is deemed too close if the distance between it and its modified point is
   less than the "Irrelevant Factor" times the distance between the two end
-  points of the spline controlled by this control point.<BR Clear=Right>
+  points of the spline controlled by this control point.
+  <P>
+  <STRONG><BIG>Points Too Close</BIG></STRONG>
+  <P>
+  Some of FontForge's own commands get confused by tiny splines, on the order
+  of one unit or less, and anyway if you have several points very close together
+  it is unlikely that they will make a detectable difference when the font
+  is printed. Probably you should remove one of them... If FontForge detects
+  two points on the same path which it deems to be too close it will select
+  both, stop and let you fix things.<BR Clear=Right>
   <P>
   <IMG SRC="findprobs-paths.png" WIDTH="307" HEIGHT="439" ALIGN="Right"><STRONG><BIG>Open
   Paths</BIG></STRONG>
@@ -205,6 +216,11 @@
   If you have a reference with an unexpressable transformation matrix, fontforge
   will expand the reference inline, so all the contours will be present they
   just won't be in a reference.
+  <P>
+  TrueType also requires that all references be translated by integral values.
+  If you have a reference with a non-integral translation vector, FontForge
+  will round it to an integer when it generates the font (this does not cause
+  the reference to be unlinked).
   <H3>
     <STRONG>Mixed contours and references</STRONG>
   </H3>
@@ -305,20 +321,13 @@
   spec says that an interpreter is only required to support a total of 96
   horizontal and vertical hints.
   <H3>
-    <IMG SRC="findprobs-random.png" WIDTH="307" HEIGHT="338" ALIGN="Right"><STRONG>Missing
+    <IMG SRC="findprobs-random.png" WIDTH="298" HEIGHT="319" ALIGN="Right"><STRONG>Missing
     Bitmaps</STRONG>
   </H3>
   <P>
   Look through the associated bitmap fonts, and find if there is a bitmap font
   which is missing versions of glyphs present in the outline font. Conversely
   look for bitmap fonts with glyphs which are not present in the outline font.
-  <P>
-  <STRONG><BIG>Check substitutions for empty chars</BIG></STRONG>
-  <P>
-  Looks through all the 'GSUB' substitution, alternate substitution, multiple
-  substitution and ligature entries that are attached to the current glyph
-  and checks to make sure that all the named components are present in the
-  font (and contain something).
   <P>
   <STRONG><BIG>Check Multiple Unicode</BIG></STRONG>
   <P>
@@ -367,7 +376,7 @@
   Check for any glyphs whose vertical advance (for fonts with vertical metrics)
   differs from the specified value. <BR Clear=ALL>
   <P>
-  <IMG SRC="findprobs-att.png" WIDTH="307" HEIGHT="439" ALIGN="Right"><BIG><STRONG>Missing
+  <IMG SRC="findprobs-att.png" WIDTH="307" HEIGHT="296" ALIGN="Right"><BIG><STRONG>Missing
   Glyph Names</STRONG></BIG>
   <P>
   It is possible to create a substitution, ligature, etc. which refers to a
@@ -384,6 +393,13 @@
   <P>
   This item will look for cases like the above, where a lookup applies to a
   script which is not active for any of its features.
+  <P>
+  <STRONG><BIG>Check substitutions for empty chars</BIG></STRONG>
+  <P>
+  Looks through all the 'GSUB' substitution, alternate substitution, multiple
+  substitution and ligature entries that are attached to the current glyph
+  and checks to make sure that all the named components are present in the
+  font (and contain something).
   <P>
     <HR Clear=all>
   <P>
