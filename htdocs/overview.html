@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 8-Jan-2008 -->
+  <!-- AP: Last modified: 18-Jan-2008 -->
   <TITLE>FontForge -- An outline font editor for PostScript&reg;, TrueType
   and OpenType fonts</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
@@ -497,7 +497,15 @@
   which has its origin on the glyph's base line (the line on which letters
   without descenders rest). Most font formats expect coordinates to be integers
   between -32768 and 32767, FontForge uses real numbers internally but (usually)
-  rounds to the nearest integer when generating a font file.
+  rounds to the nearest integer when generating a font file. 
+  <P>
+  Generally it is a good idea to restrict yourself to integral coordinates.
+  TrueType fonts can only contain integral coordinates so if you use a non-integral
+  value FontForge will be forced to round it to an integer and this will alter
+  the shape of the curve. PostScript fonts can contain non-integral values,
+  but the various formats are optimized for integers. So use integers when
+  you can. If you need more precision you can increase the "em-size" of the
+  font.
   <P>
   When displaying a font we use the word "<A NAME="em-unit">em</A>" to represent
   the size of the font. If a font is displayed at 12points then 1em will be
@@ -509,11 +517,12 @@
   When designing an outline font, you can no longer think in terms of points
   -- these fonts are scalable and can be any point-size. You must think in
   terms of the em and fractions of the em. When you create a font you choose
-  how many internal units (called "em-units") to use to represent 1 em. In
-  most PostScript fonts there are 1000 units to the em, TrueType fonts often
-  have either 1024 or 2048 units to the em (you can choose any number you like
-  (well, as long as it is less than 32767), the numbers above are conventions
-  not requirements).
+  how many internal units (called "em-units") to use to represent 1 em -- this
+  number is called the "em-size". In most PostScript fonts there are 1000 units
+  to the em, TrueType fonts often have either 1024 or 2048 units to the em
+  (TrueType recommends that you use a power of two). But you can choose any
+  number you like (well, as long as it is less than 32767), the numbers above
+  are conventions not requirements).
   <P>
   Suppose you have a dash in a PostScript font, and that dash is 500 units
   long, and the font has 1000 units to the em. Suppose a someone displays that
@@ -543,7 +552,7 @@
   heights: the height of a lower case letter (without an ascender) is called
   the x-height, the height of a capital letter is called the cap-height, the
   height of the ascenders is called the ascender height (some, but not all,
-  fonts have the ascenders and capitals at the same approximate height). Usually
+  fonts have the ascenders and capitals at the same approximate height). Often
   these will not be exactly the same for all glyphs, the letter "O" is usually
   slightly taller than the letter "I", but they both are within the range of
   the cap height for the font.
@@ -557,9 +566,7 @@
   and descent is the size of the font. The point size of a piece of metal type
   was determined by this value (essentially the height of the metal block holding
   the glyph). In a postscript font the local coordinate system is independent
-  of the final size at which the font will be drawn. By convention in postscript
-  the sum of the ascent and descent is 1000 units, while in TrueType it is
-  usually a power of two, often 2048.
+  of the final size at which the font will be drawn.
   <H3>
     <A NAME="PT">TrueType</A> vs. PostScript vs OpenType vs SVG fonts
   </H3>
@@ -571,9 +578,7 @@
   Cubic splines are generally easier to edit (more shapes are possible with
   them). Any quadratic spline can be converted to a cubic spline with essentially
   no loss. A cubic spline can be converted to a quadratic with arbitrary precision,
-  but there will be a slight loss of accuracy in most cases. This means it
-  is easy to convert TrueType outlines to PostScript outlines, harder to convert
-  PostScript to TrueType.
+  but there will be a slight loss of accuracy in most cases.
   <P>
   Within FontForge a font may contain either cubic or quadratic splines. These
   are converted to the appropriate format when a font is generated.
@@ -620,8 +625,7 @@
   both, but FontForge is limited and will force a font to be either all cubic
   or all quadratic). SVG allows for two different types of fonts, one corresponds
   roughly to PostScript Type1 fonts, and the other, roughly to PostScript Type3
-  fonts (except that images are not allowed in svg fonts -- or I haven't figured
-  them out if they are).
+  fonts.
   <H4>
     What are Type3 fonts?
   </H4>
@@ -637,13 +641,14 @@
     What are Type1 fonts?
   </H4>
   <P>
-  These are the standard PostScript fonts.
+  These were the standard stand-alone PostScript fonts of the '80s and '90s.
   <H4>
     What are Type2 fonts?
   </H4>
   <P>
-  These use a slightly different internal format to express the same information
-  as type1.
+  These use a slightly different internal format (a more compact one) to express
+  the same information as type1. This is the format that lives in side a CFF
+  font which lives inside an OpenType font.
   <H4>
     What are CFF fonts?
   </H4>
@@ -817,11 +822,11 @@
   <P>
   A script is a collection of letter shapes and rules for putting letters together.
   For instance latin is a script consisting for the letters A-Z, written left
-  to right, along with a transformation from upper to lower case (in writing
-  since the middle ages), a few ligatures and rules for generating accents.
-  Arabic is a script consisting of its own character set, written right to
-  left, along with transformations for initial, medial, final and isolated
-  forms, many ligatures and rules for placing vowel marks.
+  to right, along with a transformation from upper to lower case, a few ligatures
+  and rules for generating accents. Arabic is a script consisting of its own
+  character set, written right to left, along with transformations for initial,
+  medial, final and isolated forms, many ligatures and rules for placing vowel
+  marks.
   <H3>
     <A NAME="Glyph-names">Glyph names &amp; Namelists</A>
   </H3>
@@ -862,8 +867,8 @@
   A few caveats: Adobe's glyph name standard expects all glyph names to be
   in ASCII characters. Syntactically postscript permits a wider range of glyph
   names, but if you use non-ASCII characters some rasterizers might have problems.
-  Best to keep these within fontforge (and rename glyphs to adobe's standard
-  names before generating).
+  Best to keep non-ASCII names within fontforge (and rename glyphs to adobe's
+  standard names before generating).
   <H3>
     <A NAME="Lookups">Lookups,</A> Features, Scripts and Languages
   </H3>
@@ -879,7 +884,7 @@
   have one lookup for ff, fl and ffl -- ligatures that happen almost all the
   time, another for fi and ffi -- ligatures which don't happen in Turkish but
   do in other languages, and lookups for ct and st -- ligatures which rarely
-  happen in English but are more frequent in German.
+  happen in English but are more frequent in German (I think).
   <P>
   A Feature is a tagged collection of lookups. The tags are all 4 letter sequences
   (like 'liga') with standardized meanings. The 'liga' tag means standard
@@ -1096,7 +1101,7 @@
   anchor class consists of a name (in the above example the class was called
   "Top"), and the type of anchor. As with any lookup you will want to assign
   feature tags to these lookups and unless you are working with indic languages
-  should probably be set to 'mark' for mark to base or mark to ligature
+  the tags should probably be set to 'mark' for mark to base or mark to ligature
   connections. For cursive connections, use the tag 'curs', and for mark to
   mark connections use 'mkmk'.
   <P>
@@ -1152,7 +1157,7 @@
   top is a label, often small clear letters, underneath that, somewhat larger
   is a 24 pixel rasterization of the font you have designed. As you edit a
   glyph in an <A HREF="#CharView">outline glyph view</A> its small version
-  in the font view will change as you edit.
+  in the font view will change as you work.
   <P>
   Double-clicking on a glyph will bring up an outline glyph view of that glyph
   which will allow you to edit it.
