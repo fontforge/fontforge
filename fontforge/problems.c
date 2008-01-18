@@ -1062,12 +1062,16 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	for ( test=spl; test!=NULL && !p->finish && p->pointstooclose; test=test->next ) {
 	    sp = test->first;
 	    do {
-		if ( rint(sp->me.x)!=sp->me.x || rint(sp->me.y)!=sp->me.y ||
+		int interp = SPInterpolate(sp);
+		int badme = interp
+			? rint(2*sp->me.x)!=2*sp->me.x || 2*rint(sp->me.y)!=2*sp->me.y
+			: rint(sp->me.x)!=sp->me.x || rint(sp->me.y)!=sp->me.y;
+		if ( badme ||
 			rint(sp->nextcp.x)!=sp->nextcp.x || rint(sp->nextcp.y)!=sp->nextcp.y ||
 			rint(sp->prevcp.x)!=sp->prevcp.x || rint(sp->prevcp.y)!=sp->prevcp.y ) {
 		    changed = true;
 		    sp->selected = true;
-		    if ( rint(sp->me.x)!=sp->me.x || rint(sp->me.y)!=sp->me.y )
+		    if ( badme )
 			ExplainIt(p,sc,_("The selected point is not at integral coordinates"),0,0);
 		    else
 			ExplainIt(p,sc,_("The selected point does not have integral control points"),0,0);
