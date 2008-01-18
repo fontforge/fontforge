@@ -2849,12 +2849,22 @@ return;
 	    gw = redirect;
 	}
 	if ( gevent.type==et_char ) {
+	    int accelorator = (((XKeyEvent *) event)->state&(ControlMask|Mod1Mask))?1:0;
+	    if ( accelorator ) {
+		/* Ok, if I leave the Alt key down, then I shan't get any */
+		/*  characters. But I need the unicode. I can't call the */
+		/*  string conversion routines twice for one event because */
+		/*  they may change the state. So... Turn off alt for now */
+		/*  and later doctor up the event */
+		((XKeyEvent *) event)->state &=~ (ControlMask|Mod1Mask);
+		gevent.u.chr.chars[0] = 0;
+	    }
 	    if ( ((GXWindow) gw)->gic==NULL ) {
 		len = XLookupString((XKeyEvent *) event,charbuf,sizeof(charbuf),&keysym,&gdisp->buildingkeys);
 		charbuf[len] = '\0';
 		gevent.u.chr.keysym = keysym;
-		def2u_strncpy(gevent.u.chr.chars,charbuf,
-			sizeof(gevent.u.chr.chars)/sizeof(gevent.u.chr.chars[0]));
+		def2u_strncpy(gevent.u.chr.chars+accelorator,charbuf,
+			sizeof(gevent.u.chr.chars)/sizeof(gevent.u.chr.chars[0])-accelorator);
 	    } else {
 #ifdef X_HAVE_UTF8_STRING
 		len = Xutf8LookupString(((GXWindow) gw)->gic->ic,(XKeyPressedEvent*)event,
@@ -2871,8 +2881,8 @@ return;
 		    keysym = 0;
 		pt[len] = '\0';
 		gevent.u.chr.keysym = keysym;
-		utf82u_strncpy(gevent.u.chr.chars,pt,
-			sizeof(gevent.u.chr.chars)/sizeof(gevent.u.chr.chars[0]));
+		utf82u_strncpy(gevent.u.chr.chars+accelorator,pt,
+			sizeof(gevent.u.chr.chars)/sizeof(gevent.u.chr.chars[0])-accelorator);
 		if ( pt!=charbuf )
 		    free(pt);
 #else
