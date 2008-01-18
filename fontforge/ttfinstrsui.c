@@ -1531,7 +1531,7 @@ static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
 
     wattrs.mask = wam_events|wam_cursor;
     subpos.x = 0; subpos.y = sv->fh;
-    subpos.width = gd.pos.x; subpos.height = pos.height - sv->bh - sv->fh;
+    subpos.width = sv->addrend; subpos.height = pos.height - sv->bh - sv->fh;
     sv->v = GWidgetCreateSubWindow(gw,&subpos,sv_v_e_h,sv,&wattrs);
     GDrawSetVisible(sv->v,true);
 

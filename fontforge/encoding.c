@@ -1614,7 +1614,6 @@ SplineFont *MakeCIDMaster(SplineFont *sf,EncMap *oldmap,int bycmap,char *cmapfil
     struct cidmap *map;
     struct cmap *cmap;
     FontViewBase *fvs;
-    int freeme;
 
     cidmaster = SplineFontEmpty();
     if ( bycmap ) {
@@ -1623,8 +1622,6 @@ SplineFont *MakeCIDMaster(SplineFont *sf,EncMap *oldmap,int bycmap,char *cmapfil
 return(NULL);
 	}
 	cmap = ParseCMap(cmapfilename);
-	if ( freeme )
-	    free(cmapfilename);
 	if ( cmap==NULL ) {
 	    SplineFontFree(cidmaster);
 return(NULL);

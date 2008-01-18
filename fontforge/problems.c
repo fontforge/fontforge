@@ -111,6 +111,7 @@ struct problems {
     } *mlt;
     char *glyphname;
     int glyphenc;
+    EncMap *map;
 };
 
 static int openpaths=0, pointstooclose=0/*, missing=0*/, doxnear=0, doynear=0;
@@ -586,7 +587,7 @@ return;
     } else if ( explain==_("This glyph has the same unicode code point as the glyph named") ) {
 	snprintf(buf,sizeof(buf), _("%.40s"), p->glyphname );
     } else if ( explain==_("This glyph has the same name as the glyph at encoding") ) {
-	snprintf(buf,sizeof(buf),_("%d"), p->glyphenc );
+	snprintf(buf,sizeof(buf),_("%d"), p->map->backmap[p->glyphenc] );
     } else if ( found==expected )
 	buf[0]='\0';
     else {
@@ -1861,9 +1862,8 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		strcmp(sc->name,"nonmarkingreturn")!=0 &&
 		(uni = UniFromName(sc->name,sc->parent->uni_interp,p->fv->b.map->enc))!= -1 &&
 		sc->unicodeenc != uni ) {
-	int i;
 	changed = true;
-	p->glyphenc = i;
+	p->glyphenc = sc->orig_pos;
 	if ( sc->unicodeenc==-1 )
 	    ExplainIt(p,sc,_("This glyph is not mapped to any unicode code point, but its name should be."),0,0);
 	else
@@ -2779,6 +2779,7 @@ static void DummyFindProblems(CharView *cv) {
 
     memset(&p,0,sizeof(p));
     p.fv = (FontView *) (cv->b.fv); p.cv=cv;
+    p.map = cv->b.fv->map;
     p.lastcharopened = cv->b.sc;
 
     p.openpaths = true;
@@ -2853,6 +2854,12 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     p.fv = fv; p.cv=cv; p.msc = sc;
     if ( cv!=NULL )
 	p.lastcharopened = cv->b.sc;
+    if ( fv!=NULL )
+	p.map = fv->b.map;
+    else if ( cv!=NULL )
+	p.map = cv->b.fv->map;
+    else
+	p.map = sc->parent->fv->map;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;

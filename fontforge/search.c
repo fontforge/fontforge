@@ -1051,6 +1051,7 @@ SplineChar *SDFindNext(SearchData *sd) {
 
     if ( sd==NULL )
 return( NULL );
+    fv = sd->fv;
 
     for ( gid=sd->last_gid+1; gid<fv->sf->glyphcnt; ++gid ) {
 	if ( SearchChar(sd,gid,false) ) {

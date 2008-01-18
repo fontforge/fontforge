@@ -309,7 +309,7 @@ static void dump_kernclass(FILE *out,SplineFont *sf,struct lookup_subtable *sub)
 }
 
 static char *nameend_from_class(char *glyphclass) {
-    char *pt;
+    char *pt = glyphclass;
 
     while ( *pt==' ' ) ++pt;
     while ( *pt!=' ' && *pt!='\0' ) ++pt;

@@ -10022,7 +10022,7 @@ return( Py_BuildValue("i",SFFindSlot(fv->sf, fv->map, uni, name )) );
 }
 
 static PyObject *PyFFFont_removeGlyph(PyObject *self, PyObject *args) {
-    int uni, enc;
+    int uni;
     char *name=NULL;
     FontViewBase *fv = ((PyFF_Font *) self)->fv;
     SplineChar *sc;
@@ -10035,7 +10035,7 @@ static PyObject *PyFFFont_removeGlyph(PyObject *self, PyObject *args) {
 return( NULL );
 	}
     } else {
-	if ( !PyArg_ParseTuple(args,"i|s", &enc, &name ) )
+	if ( !PyArg_ParseTuple(args,"i|s", &uni, &name ) )
 return( NULL );
 	if ( uni<-1 || uni>=unicode4_size ) {
 	    PyErr_Format(PyExc_ValueError, "Unicode codepoint, %d, out of range, must be either -1 or between 0 and 0x10ffff", uni );

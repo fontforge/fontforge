@@ -2136,7 +2136,7 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastein
 	    if ( SFIsActive(paster->copied_from) ) {
 		/* Only copy PSTs if we can find and translate their lookups */
 		PSTFree(sc->possub);
-		mc->sf_from = fvs->sf; mc->sf_to = sc->parent;
+		mc->sf_from = paster->copied_from; mc->sf_to = sc->parent;
 		sc->possub = PSTCopy(paster->u.state.possub,sc,mc);
 	    }
 	}
