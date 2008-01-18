@@ -42,6 +42,7 @@ struct problems {
     SplineChar *msc;
     unsigned int openpaths: 1;
     unsigned int intersectingpaths: 1;
+    unsigned int nonintegral: 1;
     unsigned int pointstooclose: 1;
     unsigned int xnearval: 1;
     unsigned int ynearval: 1;
@@ -113,6 +114,7 @@ struct problems {
 };
 
 static int openpaths=0, pointstooclose=0/*, missing=0*/, doxnear=0, doynear=0;
+static int nonintegral=0;
 static int intersectingpaths=0, missingextrema=0;
 static int doynearstd=0, linestd=0, cpstd=0, cpodd=0, hintnopt=0, ptnearhint=0;
 static int hintwidth=0, direction=0, flippedrefs=0, bitmaps=0;
@@ -139,7 +141,6 @@ static SplineFont *lastsf=NULL;
 #define CID_OpenPaths		1001
 #define CID_IntersectingPaths	1002
 #define CID_PointsTooClose	1003
-/*#define CID_MissingExtrema	1003*/
 #define CID_XNear		1004
 #define CID_YNear		1005
 #define CID_YNearStd		1006
@@ -191,6 +192,7 @@ static SplineFont *lastsf=NULL;
 #define CID_BBYMinVal		1053
 #define CID_BBXMaxVal		1054
 #define CID_BBXMinVal		1055
+#define CID_NonIntegral		1056
 
 
 static void FixIt(struct problems *p) {
@@ -303,6 +305,12 @@ return;
 	sp->prevcp.x += p->expected-sp->me.x;
 	sp->nextcp.x += p->expected-sp->me.x;
 	sp->me.x = p->expected;
+	ncp_changed = pcp_changed = true;
+    } else if ( p->explaining==_("The selected point is not at integral coordinates") ||
+	    p->explaining==_("The selected point does not have integral control points")) {
+	sp->me.x = rint(sp->me.x); sp->me.y = rint(sp->me.y);
+	sp->nextcp.x = rint(sp->nextcp.x); sp->nextcp.y = rint(sp->nextcp.y);
+	sp->prevcp.x = rint(sp->prevcp.x); sp->prevcp.y = rint(sp->prevcp.y);
 	ncp_changed = pcp_changed = true;
     } else if ( p->explaining==_("The y coord of the selected point is near the specified value") || p->explaining==_("The selected point is near a horizontal stem hint") ||
 	    p->explaining==_("The y coord of the selected point is near the baseline") || p->explaining==_("The y coord of the selected point is near the xheight") ||
@@ -565,6 +573,8 @@ return;
 	    explain==_("This glyph's advance width is different from the standard width") ||
 	    explain==_("This glyph's vertical advance is different from the standard width") ||
 	    explain==_("This glyph is not mapped to any unicode code point, but its name should be.") ||
+	    explain==_("The selected point is not at integral coordinates") ||
+	    explain==_("The selected point does not have integral control points") ||
 	    explain==_("This glyph is mapped to a unicode code point which is different from its name.");
 	    
     GGadgetSetVisible(GWidgetGetControl(p->explainw,CID_Fix),fixable);
@@ -1045,6 +1055,35 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		p->intersectingpaths = false;
     /* break; */
 	    }
+	}
+    }
+
+    if ( p->nonintegral && !p->finish ) {
+	for ( test=spl; test!=NULL && !p->finish && p->pointstooclose; test=test->next ) {
+	    sp = test->first;
+	    do {
+		if ( rint(sp->me.x)!=sp->me.x || rint(sp->me.y)!=sp->me.y ||
+			rint(sp->nextcp.x)!=sp->nextcp.x || rint(sp->nextcp.y)!=sp->nextcp.y ||
+			rint(sp->prevcp.x)!=sp->prevcp.x || rint(sp->prevcp.y)!=sp->prevcp.y ) {
+		    changed = true;
+		    sp->selected = true;
+		    if ( rint(sp->me.x)!=sp->me.x || rint(sp->me.y)!=sp->me.y )
+			ExplainIt(p,sc,_("The selected point is not at integral coordinates"),0,0);
+		    else
+			ExplainIt(p,sc,_("The selected point does not have integral control points"),0,0);
+		    if ( p->ignorethis ) {
+			p->nonintegral = false;
+	    break;
+		    }
+		    if ( missing(p,test,nsp))
+  goto restart;
+		}
+		if ( sp->next==NULL )
+	    break;
+		sp = sp->next->to;
+	    } while ( sp!=test->first && !p->finish );
+	    if ( !p->nonintegral )
+	break;
 	}
     }
 
@@ -1572,10 +1611,12 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	    if ( ref->transform[0]>=2 || ref->transform[0]<-2 ||
 		    ref->transform[1]>=2 || ref->transform[1]<-2 ||
 		    ref->transform[2]>=2 || ref->transform[2]<-2 ||
-		    ref->transform[3]>=2 || ref->transform[3]<-2 ) {
+		    ref->transform[3]>=2 || ref->transform[3]<-2 ||
+		    rint(ref->transform[4])!=ref->transform[4] ||
+		    rint(ref->transform[5])!=ref->transform[5]) {
 		changed = true;
 		ref->selected = true;
-		ExplainIt(p,sc,_("This reference has a transformation matrix which cannot be expressed in truetype.\nAll entries (except translation) must be between [-2.0,2.0)."),0,0);
+		ExplainIt(p,sc,_("This reference has a transformation matrix which cannot be expressed in truetype.\nAll entries (except translation) must be between [-2.0,2.0).\nTranslation must be integral."),0,0);
 		ref->selected = false;
 		if ( p->ignorethis ) {
 		    p->refsbadtransformttf = false;
@@ -2598,6 +2639,7 @@ static int Prob_DoAll(GGadget *g, GEvent *e) {
 	GWindow gw = GGadgetGetWindow(g);
 	static int cbs[] = { CID_OpenPaths, CID_IntersectingPaths,
 	    CID_PointsTooClose, CID_XNear, CID_MissingExtrema,
+	    CID_NonIntegral,
 	    CID_YNear, CID_YNearStd, CID_HintNoPt, CID_PtNearHint,
 	    CID_HintWidthNear, CID_LineStd, CID_Direction, CID_CpStd,
 	    CID_CpOdd, CID_FlippedRefs, CID_Bitmaps, CID_AdvanceWidth,
@@ -2629,6 +2671,7 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 
 	openpaths = p->openpaths = GGadgetIsChecked(GWidgetGetControl(gw,CID_OpenPaths));
 	intersectingpaths = p->intersectingpaths = GGadgetIsChecked(GWidgetGetControl(gw,CID_IntersectingPaths));
+	nonintegral = p->nonintegral = GGadgetIsChecked(GWidgetGetControl(gw,CID_NonIntegral));
 	pointstooclose = p->pointstooclose = GGadgetIsChecked(GWidgetGetControl(gw,CID_PointsTooClose));
 	/*missing = p->missingextrema = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingExtrema))*/;
 	doxnear = p->xnearval = GGadgetIsChecked(GWidgetGetControl(gw,CID_XNear));
@@ -2714,7 +2757,7 @@ return( true );
 		direction || p->cidmultiple || p->cidblank || p->flippedrefs ||
 		p->bitmaps || p->advancewidth || p->vadvancewidth || p->stem3 ||
 		p->irrelevantcontrolpoints || p->badsubs || p->missingglyph ||
-		p->missingscriptinfeature ||
+		p->missingscriptinfeature || nonintegral ||
 		p->toomanypoints || p->toomanyhints || p->missingextrema ||
 		p->toodeeprefs || multuni || multname || uninamemismatch ||
 		p->ptmatchrefsoutofdate || p->refsbadtransformttf ||
@@ -2787,9 +2830,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData pgcd[13], pagcd[8], hgcd[9], rgcd[10], cgcd[5], mgcd[11], agcd[6], rfgcd[9];
+    GGadgetCreateData pgcd[14], pagcd[8], hgcd[9], rgcd[10], cgcd[5], mgcd[11], agcd[6], rfgcd[9];
     GGadgetCreateData bbgcd[14];
-    GTextInfo plabel[13], palabel[8], hlabel[9], rlabel[10], clabel[5], mlabel[10], alabel[6], rflabel[9];
+    GTextInfo plabel[14], palabel[8], hlabel[9], rlabel[10], clabel[5], mlabel[10], alabel[6], rflabel[9];
     GTextInfo bblabel[14];
     GTabInfo aspects[9];
     struct problems p;
@@ -2822,16 +2865,20 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     memset(&plabel,0,sizeof(plabel));
     memset(&pgcd,0,sizeof(pgcd));
 
-    plabel[0].text = (unichar_t *) _("Poin_ts too close");
+    plabel[0].text = (unichar_t *) _("Non-_Integral coordinates");
     plabel[0].text_is_1byte = true;
     plabel[0].text_in_resource = true;
     pgcd[0].gd.label = &plabel[0];
-    pgcd[0].gd.mnemonic = 't';
     pgcd[0].gd.pos.x = 3; pgcd[0].gd.pos.y = 5; 
     pgcd[0].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    if ( pointstooclose ) pgcd[0].gd.flags |= gg_cb_on;
-    pgcd[0].gd.popup_msg = (unichar_t *) _("If two adjacent points on the same path are less than a few\nemunits apart they will cause problems for some of FontForge's\ncommands. PostScript shouldn't care though.");
-    pgcd[0].gd.cid = CID_PointsTooClose;
+    if ( nonintegral ) pgcd[0].gd.flags |= gg_cb_on;
+    pgcd[0].gd.popup_msg = (unichar_t *) _(
+	    "The coordinates of all points and control points in truetype\n"
+	    "must be integers (if they are not integers then FontForge will\n"
+	    "round them when it outputs them, potentially causing havok).\n"
+	    "Even in PostScript fonts it is generally a good idea to use\n"
+	    "integral values.");
+    pgcd[0].gd.cid = CID_NonIntegral;
     pgcd[0].creator = GCheckBoxCreate;
 
     plabel[1].text = (unichar_t *) U_("_X near¹");
@@ -2839,7 +2886,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     plabel[1].text_in_resource = true;
     pgcd[1].gd.label = &plabel[1];
     pgcd[1].gd.mnemonic = 'X';
-    pgcd[1].gd.pos.x = 3; pgcd[1].gd.pos.y = pgcd[0].gd.pos.y+19; 
+    pgcd[1].gd.pos.x = 3; pgcd[1].gd.pos.y = pgcd[0].gd.pos.y+17; 
     pgcd[1].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( doxnear ) pgcd[1].gd.flags |= gg_cb_on;
     pgcd[1].gd.popup_msg = (unichar_t *) _("Allows you to check that vertical stems in several\ncharacters start at the same location.");
@@ -2850,7 +2897,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     plabel[2].text = (unichar_t *) xnbuf;
     plabel[2].text_is_1byte = true;
     pgcd[2].gd.label = &plabel[2];
-    pgcd[2].gd.pos.x = 60; pgcd[2].gd.pos.y = pgcd[1].gd.pos.y-1; pgcd[2].gd.pos.width = 40;
+    pgcd[2].gd.pos.x = 60; pgcd[2].gd.pos.y = pgcd[1].gd.pos.y-5; pgcd[2].gd.pos.width = 40;
     pgcd[2].gd.flags = gg_visible | gg_enabled;
     pgcd[2].gd.cid = CID_XNearVal;
     pgcd[2].gd.handle_controlevent = Prob_TextChanged;
@@ -2862,7 +2909,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     plabel[3].text_in_resource = true;
     pgcd[3].gd.label = &plabel[3];
     pgcd[3].gd.mnemonic = 'Y';
-    pgcd[3].gd.pos.x = 3; pgcd[3].gd.pos.y = pgcd[1].gd.pos.y+26; 
+    pgcd[3].gd.pos.x = 3; pgcd[3].gd.pos.y = pgcd[1].gd.pos.y+24; 
     pgcd[3].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( doynear ) pgcd[3].gd.flags |= gg_cb_on;
     pgcd[3].gd.popup_msg = (unichar_t *) _("Allows you to check that horizontal stems in several\ncharacters start at the same location.");
@@ -2873,7 +2920,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     plabel[4].text = (unichar_t *) ynbuf;
     plabel[4].text_is_1byte = true;
     pgcd[4].gd.label = &plabel[4];
-    pgcd[4].gd.pos.x = 60; pgcd[4].gd.pos.y = pgcd[3].gd.pos.y-1; pgcd[4].gd.pos.width = 40;
+    pgcd[4].gd.pos.x = 60; pgcd[4].gd.pos.y = pgcd[3].gd.pos.y-5; pgcd[4].gd.pos.width = 40;
     pgcd[4].gd.flags = gg_visible | gg_enabled;
     pgcd[4].gd.cid = CID_YNearVal;
     pgcd[4].gd.handle_controlevent = Prob_TextChanged;
@@ -2885,7 +2932,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     plabel[5].text_in_resource = true;
     pgcd[5].gd.label = &plabel[5];
     pgcd[5].gd.mnemonic = 'S';
-    pgcd[5].gd.pos.x = 3; pgcd[5].gd.pos.y = pgcd[3].gd.pos.y+20; 
+    pgcd[5].gd.pos.x = 3; pgcd[5].gd.pos.y = pgcd[3].gd.pos.y+18; 
     pgcd[5].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( doynearstd ) pgcd[5].gd.flags |= gg_cb_on;
     pgcd[5].gd.popup_msg = (unichar_t *) _("Allows you to find points which are slightly\noff from the baseline, xheight, cap height,\nascender, descender heights.");
@@ -2897,7 +2944,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     plabel[6].text_in_resource = true;
     pgcd[6].gd.label = &plabel[6];
     pgcd[6].gd.mnemonic = 'C';
-    pgcd[6].gd.pos.x = 3; pgcd[6].gd.pos.y = pgcd[5].gd.pos.y+15; 
+    pgcd[6].gd.pos.x = 3; pgcd[6].gd.pos.y = pgcd[5].gd.pos.y+14; 
     pgcd[6].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( cpstd ) pgcd[6].gd.flags |= gg_cb_on;
     pgcd[6].gd.popup_msg = (unichar_t *) _("Allows you to find control points which are almost,\nbut not quite horizontal or vertical\nfrom their base point\n(or at the italic angle).");
@@ -2909,7 +2956,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     plabel[7].text_in_resource = true;
     pgcd[7].gd.label = &plabel[7];
     pgcd[7].gd.mnemonic = 'b';
-    pgcd[7].gd.pos.x = 3; pgcd[7].gd.pos.y = pgcd[6].gd.pos.y+15; 
+    pgcd[7].gd.pos.x = 3; pgcd[7].gd.pos.y = pgcd[6].gd.pos.y+14; 
     pgcd[7].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( cpodd ) pgcd[7].gd.flags |= gg_cb_on;
     pgcd[7].gd.popup_msg = (unichar_t *) _("Allows you to find control points which when projected\nonto the line segment between the two end points lie\noutside of those end points");
@@ -2920,7 +2967,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     plabel[8].text_is_1byte = true;
     plabel[8].text_in_resource = true;
     pgcd[8].gd.label = &plabel[8];
-    pgcd[8].gd.pos.x = 3; pgcd[8].gd.pos.y = pgcd[7].gd.pos.y+15; 
+    pgcd[8].gd.pos.x = 3; pgcd[8].gd.pos.y = pgcd[7].gd.pos.y+14; 
     pgcd[8].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     if ( irrelevantcp ) pgcd[8].gd.flags |= gg_cb_on;
     pgcd[8].gd.popup_msg = (unichar_t *) _("Control points are irrelevant if they are too close to the main\npoint to make a significant difference in the shape of the curve.");
@@ -2930,7 +2977,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     plabel[9].text = (unichar_t *) _("Irrelevant _Factor:");
     plabel[9].text_is_1byte = true;
     pgcd[9].gd.label = &plabel[9];
-    pgcd[9].gd.pos.x = 20; pgcd[9].gd.pos.y = pgcd[8].gd.pos.y+20; 
+    pgcd[9].gd.pos.x = 20; pgcd[9].gd.pos.y = pgcd[8].gd.pos.y+17; 
     pgcd[9].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     pgcd[9].gd.popup_msg = (unichar_t *) _("A control point is deemed irrelevant if the distance between it and the main\n(end) point is less than this times the distance between the two end points");
     pgcd[9].creator = GLabelCreate;
@@ -2953,6 +3000,17 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pgcd[11].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
     pgcd[11].gd.popup_msg = (unichar_t *) _("A control point is deemed irrelevant if the distance between it and the main\n(end) point is less than this times the distance between the two end points");
     pgcd[11].creator = GLabelCreate;
+
+    plabel[12].text = (unichar_t *) _("Poin_ts too close");
+    plabel[12].text_is_1byte = true;
+    plabel[12].text_in_resource = true;
+    pgcd[12].gd.label = &plabel[12];
+    pgcd[12].gd.pos.x = 3; pgcd[12].gd.pos.y = pgcd[11].gd.pos.y+14; 
+    pgcd[12].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    if ( pointstooclose ) pgcd[12].gd.flags |= gg_cb_on;
+    pgcd[12].gd.popup_msg = (unichar_t *) _("If two adjacent points on the same path are less than a few\nemunits apart they will cause problems for some of FontForge's\ncommands. PostScript shouldn't care though.");
+    pgcd[12].gd.cid = CID_PointsTooClose;
+    pgcd[12].creator = GCheckBoxCreate;
 
 /* ************************************************************************** */
 
@@ -3249,45 +3307,35 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rgcd[0].gd.cid = CID_Bitmaps;
     rgcd[0].creator = GCheckBoxCreate;
 
-    rlabel[1].text = (unichar_t *) _("Check subtitutions for empty chars");
+    rlabel[1].text = (unichar_t *) _("Check multiple Unicode");
     rlabel[1].text_is_1byte = true;
     rgcd[1].gd.label = &rlabel[1];
     rgcd[1].gd.pos.x = 3; rgcd[1].gd.pos.y = rgcd[0].gd.pos.y+15; 
     rgcd[1].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    if ( badsubs ) rgcd[1].gd.flags |= gg_cb_on;
-    rgcd[1].gd.popup_msg = (unichar_t *) _("Check for characters which contain 'GSUB' entries which refer to empty characters");
-    rgcd[1].gd.cid = CID_BadSubs;
+    if ( multuni ) rgcd[1].gd.flags |= gg_cb_on;
+    rgcd[1].gd.popup_msg = (unichar_t *) _("Check multiple Unicode");
+    rgcd[1].gd.cid = CID_MultUni;
     rgcd[1].creator = GCheckBoxCreate;
 
-    rlabel[2].text = (unichar_t *) _("Check multiple Unicode");
+    rlabel[2].text = (unichar_t *) _("Check multiple Names");
     rlabel[2].text_is_1byte = true;
     rgcd[2].gd.label = &rlabel[2];
     rgcd[2].gd.pos.x = 3; rgcd[2].gd.pos.y = rgcd[1].gd.pos.y+15; 
     rgcd[2].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    if ( multuni ) rgcd[2].gd.flags |= gg_cb_on;
-    rgcd[2].gd.popup_msg = (unichar_t *) _("Check multiple Unicode");
-    rgcd[2].gd.cid = CID_MultUni;
+    if ( multname ) rgcd[2].gd.flags |= gg_cb_on;
+    rgcd[2].gd.popup_msg = (unichar_t *) _("Check for multiple characters with the same name");
+    rgcd[2].gd.cid = CID_MultName;
     rgcd[2].creator = GCheckBoxCreate;
 
-    rlabel[3].text = (unichar_t *) _("Check multiple Names");
+    rlabel[3].text = (unichar_t *) _("Check Unicode/Name mismatch");
     rlabel[3].text_is_1byte = true;
     rgcd[3].gd.label = &rlabel[3];
     rgcd[3].gd.pos.x = 3; rgcd[3].gd.pos.y = rgcd[2].gd.pos.y+15; 
     rgcd[3].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    if ( multname ) rgcd[3].gd.flags |= gg_cb_on;
-    rgcd[3].gd.popup_msg = (unichar_t *) _("Check for multiple characters with the same name");
-    rgcd[3].gd.cid = CID_MultName;
+    if ( uninamemismatch ) rgcd[3].gd.flags |= gg_cb_on;
+    rgcd[3].gd.popup_msg = (unichar_t *) _("Check for characters whose name maps to a unicode code point\nwhich does not map the character's assigned code point.");
+    rgcd[3].gd.cid = CID_UniNameMisMatch;
     rgcd[3].creator = GCheckBoxCreate;
-
-    rlabel[4].text = (unichar_t *) _("Check Unicode/Name mismatch");
-    rlabel[4].text_is_1byte = true;
-    rgcd[4].gd.label = &rlabel[4];
-    rgcd[4].gd.pos.x = 3; rgcd[4].gd.pos.y = rgcd[3].gd.pos.y+15; 
-    rgcd[4].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    if ( uninamemismatch ) rgcd[4].gd.flags |= gg_cb_on;
-    rgcd[4].gd.popup_msg = (unichar_t *) _("Check for characters whose name maps to a unicode code point\nwhich does not map the character's assigned code point.");
-    rgcd[4].gd.cid = CID_UniNameMisMatch;
-    rgcd[4].creator = GCheckBoxCreate;
 
 /* ************************************************************************** */
 
@@ -3496,6 +3544,16 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
 	    "least one feature is active for the glyph's script.");
     agcd[1].gd.cid = CID_MissingScriptInFeature;
     agcd[1].creator = GCheckBoxCreate;
+
+    alabel[2].text = (unichar_t *) _("Check subtitutions for empty chars");
+    alabel[2].text_is_1byte = true;
+    agcd[2].gd.label = &alabel[2];
+    agcd[2].gd.pos.x = 3; agcd[2].gd.pos.y = agcd[1].gd.pos.y+15; 
+    agcd[2].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    if ( badsubs ) agcd[2].gd.flags |= gg_cb_on;
+    agcd[2].gd.popup_msg = (unichar_t *) _("Check for characters which contain 'GSUB' entries which refer to empty characters");
+    agcd[2].gd.cid = CID_BadSubs;
+    agcd[2].creator = GCheckBoxCreate;
 
 /* ************************************************************************** */
 
