@@ -137,6 +137,8 @@ typedef struct gevent {
 	    int16 x,y;
 	    uint16 keysym;
 	    unichar_t chars[_GD_EVT_CHRLEN];
+	    /* If control/Alt are down then chars[0] will be NUL, and chars[1]*/
+	    /*  will contain the unicode char pressed */
 	} chr;
 	struct {
 	    char *device;		/* for wacom devices */

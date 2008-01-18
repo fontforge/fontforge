@@ -111,6 +111,7 @@ typedef struct gmenu {
     GTimer *scrollit;
     FontInstance *font;
     void (*donecallback)(GWindow owner);
+    GIC *gic;
 } GMenu;
 
 static void shorttext(GMenuItem *gi,unichar_t *buf) {
@@ -790,7 +791,14 @@ static int gmenu_key(struct gmenu *m, GEvent *event) {
     int i;
     GMenuItem *mi;
     GMenu *top;
-    unichar_t keysym = event->u.chr.keysym;
+    unichar_t keysym;
+
+    if ( event->u.chr.keysym>0xff00 )
+	keysym = event->u.chr.keysym;
+    else
+	keysym = event->u.chr.chars[1];	/* If Ctl/Alt is down, then chars[0]==NUL, but chars[1] contains the unicode for the keysym */
+	/* I used to think the keysym was in unicode, but that's only true for latin, not cyrillic */
+
 
     if ( islower(keysym)) keysym = toupper(keysym);
     if ( event->u.chr.state&ksm_meta && !(event->u.chr.state&ksm_control)) {
@@ -849,6 +857,12 @@ static int gmenu_eh(GWindow w,GEvent *ge) {
     GMenu *m = (GMenu *) GDrawGetUserData(w);
 
     switch ( ge->type ) {
+      case et_map:
+	/* I need to initialize the input context, but I can't do that until */
+	/*  the menu pops up */
+	if ( ge->u.map.is_visible && m->gic!=NULL )
+	    GDrawSetGIC(w,m->gic,0,20);
+return( true );
       case et_expose:
 return( gmenu_expose(m,ge));
       case et_char:
@@ -953,6 +967,7 @@ static GMenu *_GMenu_Create(GWindow owner,GMenuItem *mi, GPoint *where,
     pattrs.transient = GWidgetGetTopWidget(owner);
 
     m->w = GDrawCreateTopWindow(disp,&pos,gmenu_eh,m,&pattrs);
+    m->gic = GDrawCreateInputContext(m->w,gic_root|gic_orlesser);
     GDrawSetVisible(m->w,true);
     if ( menu_grabs )
 	GDrawPointerGrab(m->w);
@@ -1031,7 +1046,8 @@ int GMenuBarCheckKey(GGadget *g, GEvent *event) {
     int i;
     GMenuBar *mb = (GMenuBar *) g;
     GMenuItem *mi;
-    unichar_t keysym = event->u.chr.keysym;
+    unichar_t keysym = event->u.chr.chars[1];	/* If Ctl/Alt is down, then chars[0]==NUL, but chars[1] contains the unicode for the keysym */
+    /* I used to think the keysym was in unicode, but that's only true for latin, not cyrillic */
 
     if ( g==NULL )
 return( false );
