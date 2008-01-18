@@ -157,7 +157,7 @@ struct hintdb {
     unsigned int skiphm: 1;		/* Set when coming back to the start point of a contour. hintmask should be set the first time, not the second */
     unsigned int donefirsthm: 1;
     int cursub;				/* Current subr number */
-    BasePoint current;
+    DBasePoint current;
     GlyphInfo *gi;
 };
 
@@ -2405,7 +2405,8 @@ static void moveto2(GrowBuf *gb,struct hintdb *hdb,SplinePoint *to, int round) {
 	AddNumber2(gb,tom->y-hdb->current.y,round);
 	*(gb->pt)++ = 21;		/* r move to */
     }
-    hdb->current = *tom;
+    hdb->current.x = rint(32768*tom->x)/32768;
+    hdb->current.y = rint(32768*tom->y)/32768;
     StartNextSubroutine(gb,hdb);
 }
 
@@ -2485,7 +2486,8 @@ static Spline *lineto2(GrowBuf *gb,struct hintdb *hdb,Spline *spline, Spline *do
 		    AddNumber2(gb,tom->y-fromm->y,round);
 		else
 		    AddNumber2(gb,tom->x-fromm->x,round);
-		hdb->current = *tom;
+		hdb->current.x = rint(32768*tom->x)/32768;
+		hdb->current.y = rint(32768*tom->y)/32768;
 		if ( test==lasthvgood ) {
 		    test = test->to->next;
 	    break;
@@ -2516,7 +2518,8 @@ return( test );
 	}
 	AddNumber2(gb,tom->x-fromm->x,round);
 	AddNumber2(gb,tom->y-fromm->y,round);
-	hdb->current = *tom;
+	hdb->current.x = rint(32768*tom->x)/32768;
+	hdb->current.y = rint(32768*tom->y)/32768;
 	if ( test==lastgood ) {
 	    test = test->to->next;
     break;
@@ -2531,7 +2534,7 @@ return( test );
 static Spline *curveto2(GrowBuf *gb,struct hintdb *hdb,Spline *spline, Spline *done, int round) {
     int cnt=0, hv;
     Spline *first;
-    BasePoint start;
+    DBasePoint start;
     int donehm;
 
     HintSetup2(gb,hdb,spline->to,true);
@@ -2663,7 +2666,8 @@ static void flexto2(GrowBuf *gb,struct hintdb *hdb,Spline *pspline,int round) {
 	*gb->pt++ = 12; *gb->pt++ = 37;		/* flex1 */
     }
 
-    hdb->current = *end;
+    hdb->current.x = rint(32768*end->x)/32768;
+    hdb->current.y = rint(32768*end->y)/32768;
 }
 
 static void CvtPsSplineSet2(GrowBuf *gb, SplinePointList *spl,

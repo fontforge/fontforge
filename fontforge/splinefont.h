@@ -186,6 +186,11 @@ typedef struct basepoint {
     real y;
 } BasePoint;
 
+typedef struct dbasepoint {
+    bigreal x;
+    bigreal y;
+} DBasePoint;
+
 typedef struct tpoint {
     real x;
     real y;
