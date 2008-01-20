@@ -3571,6 +3571,31 @@ return;
     }
 }
 
+void SPHVCurveForce(SplinePoint *sp) {
+    BasePoint unit;
+    double len, dot;
+    if ( sp->prev==NULL || sp->next==NULL || sp->pointtype==pt_corner )
+return;
+
+    if ( sp->pointtype==pt_hvcurve &&
+	    !sp->nonextcp && !sp->noprevcp ) {
+	unit.x = sp->nextcp.x-sp->prevcp.x;
+	unit.y = sp->nextcp.y-sp->prevcp.y;
+	len = sqrt(unit.x*unit.x + unit.y*unit.y);
+	if ( len==0 )
+return;
+	unit.x /= len; unit.y /= len;
+	BP_HVForce(&unit);
+	dot = (sp->nextcp.x-sp->me.x)*unit.x + (sp->nextcp.y-sp->me.y)*unit.y;
+	sp->nextcp.x = dot * unit.x + sp->me.x;
+	sp->nextcp.y = dot * unit.y + sp->me.y;
+	dot = (sp->prevcp.x-sp->me.x)*unit.x + (sp->prevcp.y-sp->me.y)*unit.y;
+	sp->prevcp.x = dot * unit.x + sp->me.x;
+	sp->prevcp.y = dot * unit.y + sp->me.y;
+	SplineRefigure(sp->prev); SplineRefigure(sp->next);
+    }
+}
+
 void SPSmoothJoint(SplinePoint *sp) {
     BasePoint unitn, unitp;
     double len, dot, dotn, dotp;
@@ -3585,16 +3610,12 @@ return;
 	if ( len==0 )
 return;
 	unitn.x /= len; unitn.y /= len;
-	if ( sp->pointtype == pt_hvcurve )
-	    BP_HVForce(&unitn);
 	unitp.x = sp->me.x - sp->prevcp.x;
 	unitp.y = sp->me.y - sp->prevcp.y;
 	len = sqrt(unitp.x*unitp.x + unitp.y*unitp.y);
 	if ( len==0 )
 return;
 	unitp.x /= len; unitp.y /= len;
-	if ( sp->pointtype == pt_hvcurve )
-	    BP_HVForce(&unitp);
 	dotn = unitp.y*(sp->nextcp.x-sp->me.x) - unitp.x*(sp->nextcp.y-sp->me.y);
 	dotp = unitn.y*(sp->me.x - sp->prevcp.x) - unitn.x*(sp->me.y - sp->prevcp.y);
 	sp->nextcp.x -= dotn*unitp.y/2;

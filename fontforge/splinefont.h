@@ -2194,6 +2194,7 @@ extern void SplineCharDefaultPrevCP(SplinePoint *base);
 extern void SplineCharDefaultNextCP(SplinePoint *base);
 extern void SplineCharTangentNextCP(SplinePoint *sp);
 extern void SplineCharTangentPrevCP(SplinePoint *sp);
+extern void SPHVCurveForce(SplinePoint *sp);
 extern void SPSmoothJoint(SplinePoint *sp);
 extern int PointListIsSelected(SplinePointList *spl);
 extern void SplineSetsUntick(SplineSet *spl);
