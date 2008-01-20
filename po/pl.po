@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: FontForge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-01-18 16:33+0100\n"
+"POT-Creation-Date: 2008-01-20 12:04+0100\n"
 "PO-Revision-Date: 2006-09-16 10:22+0200\n"
 "Last-Translator: Michal Nowakowski\n"
 "Language-Team: Polish <pl@li.org>\n"
@@ -358,7 +358,7 @@ msgid ""
 "  http://www.ctan.org/\n"
 "It's part of the TeX distribution"
 msgstr ""
-"Nie udało się odnaleźć programu mf --- metafont (ustaw zmienną środowiskową MF) lub "
+"Nie udało się odnaleźć programu mf ― metafont (ustaw zmienną środowiskową MF) lub "
 "ściągnij program z:\n"
 "  http://www.tug.org/\n"
 "  http://www.ctan.org/\n"
@@ -2844,6 +2844,8 @@ msgid ""
 "A class must contain at least one glyph name, glyph names must be valid postscript "
 "names, and no glyphs may appear in any other class"
 msgstr ""
+"Klasa musi zawierać co najmniej jedną, poprawną, postscriptową nazwę glifu. Zaden z "
+"tych glifów nie może wystąpić w innej klasie."
 
 #: contextchain.c:608 contextchain.c:617 contextchain.c:826
 msgid "Bad Coverage"
@@ -2854,12 +2856,14 @@ msgid ""
 "A coverage table must contain at least one glyph name, and glyph names must be valid "
 "postscript names"
 msgstr ""
+"Tablica grupująca musi zawierać co najmniej jedną, poprawną, postscriptową nazwę glifu. "
 
 #: contextchain.c:609
 msgid ""
 "A glyph list must contain at least one glyph name, and glyph names must be valid "
 "postscript names"
 msgstr ""
+"Lista glifów musi zawierać co najmniej jedną, poprawną, postscriptową nazwę glifu."
 
 #: contextchain.c:616
 #, c-format
@@ -2891,7 +2895,7 @@ msgstr ""
 #: contextchain.c:648
 #, c-format
 msgid "No glyphs from another class may appear here, but %.30s does"
-msgstr ""
+msgstr "Tu nie mogą wystąpić glify z innych klas - a %.30s już należy do innej."
 
 #: contextchain.c:680 contextchain.c:684 contextchain.c:690
 msgid "Bad Match Class Number"
@@ -2904,7 +2908,7 @@ msgstr "Lista numerów klas powinna zawierać tylko spacje i cyfry"
 #: contextchain.c:684 contextchain.c:706 contextchain.c:724
 #, c-format
 msgid "There are only %d classes in this class set, yet you are trying to use %d."
-msgstr ""
+msgstr "W tym zbiorze mamy tylko %d klas - nie można użyć klasy %d."
 
 #: contextchain.c:690
 msgid "There are no class numbers listed to be matched. There must be at least one."
@@ -3838,7 +3842,7 @@ msgstr "Y"
 
 #: cvgetinfo.c:3342
 msgid "Spiro Point Info"
-msgstr ""
+msgstr "Właściwości punktu spiro"
 
 #: cvgetinfo.c:3657
 msgid "Dependents"
@@ -4032,19 +4036,19 @@ msgstr "Jest więcej obrazów niż wybrano glifów"
 
 #: cvimages.c:969 cvimages.c:977
 msgid "Bad Template"
-msgstr ""
+msgstr "Błędny szablon"
 
 #: cvimages.c:969
 msgid "Bad template, no extension"
-msgstr ""
+msgstr "Błędny szblon - brak rozszerzenia nazwy pliku"
 
 #: cvimages.c:977
 msgid "Bad template, unrecognized format"
-msgstr ""
+msgstr "Błędny szablon - nieznany format"
 
 #: cvimages.c:988 cvimages.c:1054
 msgid "Nothing Loaded"
-msgstr ""
+msgstr "Niczego nie wczytano"
 
 #: cvimages.c:1009
 msgid "Unicode value not in font"
@@ -5068,13 +5072,13 @@ msgid ""
 "    freetype's. Only as last resort"
 msgstr ""
 "Wybór trybu pracy rasteryzatora freetype:\n"
-"  pfb -- standardowy postscriptowy type1\n"
-"  ttf -- truetype\n"
-"  otf -- opentype\n"
-"  bez hintów -- freetype ma nie używać hintów z fontu.\n"
-"  bitmap -- wyświeltane samodzielnie przez FontForge,\n"
+"  pfb ― standardowy postscriptowy Type1\n"
+"  ttf ― truetype\n"
+"  otf ― opentype\n"
+"  bez hintów ― freetype ma nie używać hintów z fontu.\n"
+"  bitmap ― wyświeltane samodzielnie przez FontForge,\n"
 "    bitmapy muszą być utworzone wcześniej.\n"
-"  FontForge -- użycie własnego rasteryzatora FontForge\n"
+"  FontForge ― użycie własnego rasteryzatora FontForge\n"
 "    zamiast freetype. Ostateczność."
 
 #: displayfonts.c:1432
@@ -5315,7 +5319,7 @@ msgstr ""
 
 #: encoding.c:1037
 msgid "No cidmap file..."
-msgstr ""
+msgstr "Brak pliku cidmap..."
 
 #: encoding.c:1037
 #, c-format
@@ -6326,7 +6330,7 @@ msgstr "SBJ różne"
 
 #: fontinfo.c:147
 msgid "Freeform Serifs"
-msgstr "Dowolne Szeryfy"
+msgstr "Dowolne szeryfowe"
 
 #: fontinfo.c:148
 msgid "FS Modern"
@@ -9091,7 +9095,7 @@ msgstr "Wys: p_odstawowa:"
 
 #: fontinfo.c:4334 fontinfo.c:8241
 msgid "Weight, Width, Slope Only"
-msgstr ""
+msgstr "Różnice tylko w grubości, szerokości i pochyleniu kresek"
 
 #: fontinfo.c:4341 fontinfo.c:8120
 msgid "_Weight Class"
@@ -9256,60 +9260,74 @@ msgstr ""
 #. GT: TeX parameters for math fonts. "Num" means numerator, "Denom"
 #. GT: means denominator, "Sup" means superscript, "Sub" means subscript
 #: fontinfo.c:5005
+#, fuzzy
 msgid "Num1:"
-msgstr ""
+msgstr "Num1:"
 
 #: fontinfo.c:5006
+#, fuzzy
 msgid "Num2:"
-msgstr ""
+msgstr "Num2:"
 
 #: fontinfo.c:5006
+#, fuzzy
 msgid "Num3:"
-msgstr ""
+msgstr "Num3:"
 
 #: fontinfo.c:5006
+#, fuzzy
 msgid "Denom1:"
-msgstr ""
+msgstr "Denom1:"
 
 #: fontinfo.c:5007
+#, fuzzy
 msgid "Denom2:"
-msgstr ""
+msgstr "Denom2:"
 
 #: fontinfo.c:5007
+#, fuzzy
 msgid "Sup1:"
-msgstr ""
+msgstr "Sup1:"
 
 #: fontinfo.c:5007
+#, fuzzy
 msgid "Sup2:"
-msgstr ""
+msgstr "Sup2:"
 
 #: fontinfo.c:5007
+#, fuzzy
 msgid "Sup3:"
-msgstr ""
+msgstr "Sup3:"
 
 #: fontinfo.c:5007
+#, fuzzy
 msgid "Sub1:"
-msgstr ""
+msgstr "Sub1:"
 
 #: fontinfo.c:5007
+#, fuzzy
 msgid "Sub2:"
-msgstr ""
+msgstr "Sub2:"
 
 #: fontinfo.c:5008
+#, fuzzy
 msgid "SupDrop:"
-msgstr ""
+msgstr "SupDrop:"
 
 #: fontinfo.c:5008
+#, fuzzy
 msgid "SubDrop:"
-msgstr ""
+msgstr "SubDrop:"
 
 #: fontinfo.c:5008
+#, fuzzy
 msgid "Delim1:"
-msgstr ""
+msgstr "Delim1:"
 
 #: fontinfo.c:5008
+#, fuzzy
 msgid "Delim2:"
-msgstr ""
+msgstr "Delim2:"
 
 #: fontinfo.c:5008
 msgid "Axis Ht:"
@@ -9720,6 +9738,8 @@ msgid ""
 "Allow editing of multiple colors and shades, fills and strokes.\n"
 "Multi layered fonts can only be output as type3 or svg fonts."
 msgstr ""
+"Włącza możliwość używania wielu warstw, kolorów wypełnienia\n"
+"obrysów i kresek. Tylko fonty Type3 i SVG oferują te możliwości."
 
 #: fontinfo.c:7866 fontinfo.c:7878
 msgid "_Stroked Font"
@@ -9730,6 +9750,8 @@ msgid ""
 "Glyphs will be composed of stroked lines rather than filled outlines.\n"
 "All glyphs are stroked at the following width"
 msgstr ""
+"Glify mają być rysowane kreską, a nie na podstawie obrysów.\n"
+"Grubość kreski nalezy podać w polu obok."
 
 #: fontinfo.c:7909
 msgid "Interpretation:"
@@ -9742,7 +9764,7 @@ msgstr "Nazwy glifów:"
 #. GT: This is an abbreviation for Histogram
 #: fontinfo.c:8059
 msgid "_Hist."
-msgstr "_Hist."
+msgstr "_Histogramy"
 
 #: fontinfo.c:8065
 msgid "Histogram Dialog"
@@ -9816,6 +9838,9 @@ msgid ""
 "only in weight, width and slope (and not in other variables\n"
 "like optical size)."
 msgstr ""
+"MS wymaga informacji, czy fonty z jednej rodziny różnią się\n"
+" tylko grubością, szerokością i pochyleniem kresek, czy także\n"
+"innymi parametrami (np. wielkościa optyczną)."
 
 #: fontinfo.c:8251
 msgid "_OS/2 Version"
@@ -9827,6 +9852,8 @@ msgid ""
 "Generally fields have been added, but occasionally their\n"
 "meanings have been redefined."
 msgstr ""
+"Tablica „OS/2” ewoluowała. Zwykle dodawano nowe pola,\n"
+"ale czasem zmieniano znaczenie starych."
 
 #: fontinfo.c:8302
 msgid ""
@@ -9867,7 +9894,7 @@ msgstr ""
 
 #: fontinfo.c:8396
 msgid "Really use Typo metrics"
-msgstr ""
+msgstr "Naprawdę uzywaj metrycznych określonych tutaj"
 
 #: fontinfo.c:8402
 msgid ""
@@ -9876,6 +9903,10 @@ msgid ""
 "programs fail to follow the spec. that MS decided an additional\n"
 "bit was needed to remind them to do so."
 msgstr ""
+"Specyfikacja jasno określa, do okreslenia interlinii należy\n"
+"używać metrycznych typograficznych. Niestety, wiele programów\n"
+"i tak robi to po swojemu, toteż MS uznał za stosowne wprowadzenie\n"
+"dodatkowego bitu „przypominającego”."
 
 #: fontinfo.c:8446
 msgid "Sets the TypoLinegap field in the OS/2 table, used on MS Windows"
@@ -11339,7 +11370,7 @@ msgstr ""
 msgid ""
 "Interpolating between fonts with different editing types (ie. between type3 and type1)"
 msgstr ""
-"Próba interpolowania między fontami o różnych budowach (PostScriptowych Typ3 i Typ1)."
+"Próba interpolowania między fontami o różnych budowach (PostScriptowych Type3 i Type1)."
 
 #: fvfontsdlg.c:61 problems.c:2060
 msgid "Kerning"
@@ -15014,11 +15045,11 @@ msgstr ""
 
 #: lookupui.c:3675
 msgid "_Add Selected"
-msgstr ""
+msgstr "Dodaj _zaznaczone"
 
 #: lookupui.c:3681
 msgid "Add entries for all selected glyphs."
-msgstr ""
+msgstr "Dodaj wpisy dla każdego glifu zaznaczonego w widoku fontu."
 
 #: lookupui.c:3685
 msgid "_Remove Empty"
@@ -15026,19 +15057,20 @@ msgstr "_Usuń puste"
 
 #: lookupui.c:3692
 msgid "Remove all \"empty\" entries -- those where all fields are 0"
-msgstr ""
+msgstr "Usuń wszystkie „puste” wpisy ― takie, dla których wszystkie pola mają wartość 0."
 
 #: lookupui.c:3693
 msgid "Remove all \"empty\" entries -- entries with no second glyph"
-msgstr ""
+msgstr "Usuń wszystkie „puste” wpisy ― takie, dla których nie określono drugiego glifu"
 
 #: lookupui.c:3694
 msgid "Remove all \"empty\" entries -- those with no source glyphs"
-msgstr ""
+msgstr "Usuń wszystkie „puste” wpisy ― takie, dla których nie określono glifu źródłowego"
 
 #: lookupui.c:3695
 msgid "Remove all \"empty\" entries -- those with no replacement glyphs"
 msgstr ""
+"Usuń wszystkie „puste” wpisy ― takie, dla których nie określono glifu podstawianego"
 
 #: lookupui.c:3700
 msgid "_Default Using Suffix:"
@@ -17720,15 +17752,15 @@ msgstr "OpenType"
 
 #: openfontdlg.c:120
 msgid "Type1"
-msgstr "PS typ 1"
+msgstr "PS Type1"
 
 #: openfontdlg.c:121
 msgid "Type2"
-msgstr "PS typ 2"
+msgstr "PS Type2"
 
 #: openfontdlg.c:122
 msgid "Type3"
-msgstr "PS typ 3"
+msgstr "PS Type3"
 
 #: openfontdlg.c:126
 msgid "FontForge's SFD"
@@ -18287,7 +18319,7 @@ msgstr ""
 
 #: parsettf.c:521
 msgid "Nifty, you've got one of the old Apple/Adobe type1 sfnts here\n"
-msgstr "To najwidoczniej jakiś wiekowy „PS typ 1 w sfnt” od Apple/Adobe.\n"
+msgstr "To najwidoczniej jakiś wiekowy „PS Type1 w sfnt” od Apple/Adobe.\n"
 
 #: parsettf.c:707
 msgid "The following table(s) in the font have been ignored by FontForge\n"
@@ -20416,7 +20448,7 @@ msgid ""
 "The first four entries of the transformation matrix should be\n"
 "[1 0 0 1]."
 msgstr ""
-"Funty postscriptiowe typu 1 i 2 pozwalają tylko na przesunięcie\n"
+"Funty postscriptiowe Type1 i 2 pozwalają tylko na przesunięcie\n"
 "odwołań. Pierwsze cztery ekementy macierzy przekształcenia muszą\n"
 "być ustawione na [1 0 0 1]."
 
@@ -21117,7 +21149,7 @@ msgstr "„ifelse” wyczerpało stos w %s\n"
 
 #: psread.c:3897
 msgid "Type2 fonts do not support the Type1 callothersubrs operator"
-msgstr "Fonty Typ2 nie mogą korzystać z operatora „callothersubrs” Typu1"
+msgstr "Fonty Type2 nie mogą korzystać z operatora „callothersubrs” z Type1"
 
 #: psread.c:3899
 #, c-format
@@ -21374,7 +21406,7 @@ msgstr "Nieprawidłowe rozszerzenie pliku"
 
 #: savefont.c:702
 msgid "You must specify a standard type1 extension (.pfb or .pfa)"
-msgstr "Musisz podać standardowe rozszerzenie typu 1 (.pfb lub .pfa)"
+msgstr "Musisz podać standardowe rozszerzenie Type1 (.pfb lub .pfa)"
 
 #: savefont.c:723 savefont.c:789
 msgid "Saving font"
@@ -21491,11 +21523,11 @@ msgstr "CFF CID (goły)"
 
 #: savefontdlg.c:148
 msgid "Type42"
-msgstr "PS typ 42"
+msgstr "PS Type42"
 
 #: savefontdlg.c:149
 msgid "Type11 (CID 2)"
-msgstr "PS typ 11 (CID 2)"
+msgstr "PS Type11 (CID 2)"
 
 #: savefontdlg.c:151
 msgid "TrueType (Symbol)"
@@ -21503,7 +21535,7 @@ msgstr "TrueType (Symbol)"
 
 #: savefontdlg.c:153
 msgid "TrueType (Resource)"
-msgstr "True Type (zasób)"
+msgstr "TrueType (zasób)"
 
 #: savefontdlg.c:155
 msgid "TrueType (MacBin)"
@@ -21680,7 +21712,7 @@ msgstr "SFNT"
 
 #: savefontdlg.c:693
 msgid "TrueType Hints"
-msgstr "Czy wynikowy font ma zawierać hinting truetypowy?"
+msgstr "Hinting"
 
 #: savefontdlg.c:695
 msgid ""
@@ -21688,7 +21720,7 @@ msgid ""
 "generate new instructions, it will just make use of whatever is associated\n"
 "with each character."
 msgstr ""
-"Czy font ma zawierac hinting truetypowy? Włączenie tej opcji nie spowoduje\n"
+"Czy wynikowy font ma zawierac hinting truetypowy? Włączenie tej opcji nie spowoduje\n"
 "wygenerowania nowych instrukcji, zostaną użyte te które już są w foncie."
 
 #: savefontdlg.c:703
@@ -21983,7 +22015,7 @@ msgid ""
 "(useless) bitmap font if you are saving a type1 PostScript resource)"
 msgstr ""
 "Fonty bitmapowe w formacie NFNT nie są używane w OS/X, ale przy generowaniu fontów w "
-"formacie zasobu PostScript Typ 1 i tak konieczne jest utworzenie (bezużytecznego) fontu "
+"formacie zasobu PostScript Type1 i tak konieczne jest utworzenie (bezużytecznego) fontu "
 "bitmapowego."
 
 #: savefontdlg.c:1393
@@ -21996,20 +22028,20 @@ msgid ""
 "font to go with it. If you have not created any bitmaps for this font, cancel this dlg "
 "and use the Element->Bitmaps Available command to create one"
 msgstr ""
-"Przy generowaniu macowego zasobu PostScript Typ1 MUSI być stworzony również co najmniej "
-"jeden towarzyszący font bitmapowy w formacie NFNT. Jeśli ten font nie ma jeszcze "
-"bitmap, proszę anulować i stworzyć je w Element->Menedżer wersji bitmapowych"
+"Przy generowaniu macowego zasobu PostScript Type1 MUSI być stworzony również co "
+"najmniej jeden towarzyszący font bitmapowy w formacie NFNT. Jeśli ten font nie ma "
+"jeszcze bitmap, proszę anulować i stworzyć je w Element->Menedżer wersji bitmapowych"
 
 #: savefontdlg.c:1397
 msgid "The 'POST' type1 format is probably deprecated"
-msgstr "Format POST Typ1 jest prawdopodobnie przestarzały"
+msgstr "Format POST Type1 jest prawdopodobnie przestarzały"
 
 #: savefontdlg.c:1397
 msgid ""
 "The 'POST' type1 format is probably depreciated and may not work in future version of "
 "the mac."
 msgstr ""
-"Format POST Typ1 prawdopodobnie jako przestarzały nie zadziała na przyszłych wersjach "
+"Format POST Type1 prawdopodobnie jako przestarzały nie zadziała na przyszłych wersjach "
 "maców."
 
 #: savefontdlg.c:1441
@@ -23222,7 +23254,7 @@ msgstr "Porównaj _hinty"
 
 #: showatt.c:2832
 msgid "Compare postscript hints and hintmasks and truetype instructions"
-msgstr ""
+msgstr "Porównuj hinty i hintmaski postscriptowe, a także instrukcje truetypowe."
 
 #: showatt.c:2840
 msgid "Compare Hint_Masks"
@@ -23238,7 +23270,7 @@ msgstr ""
 
 #: showatt.c:2858
 msgid "Don't compare hintmasks if the glyph has no hint conflicts"
-msgstr ""
+msgstr "Nie porównuj hintmasek jesli hinty nie kolidują ze sobą."
 
 #: showatt.c:2866
 msgid "Don't Compare HintMasks"
@@ -23254,6 +23286,8 @@ msgid ""
 "to the background layer of the first (So when opening the first\n"
 "the differences will be visible)."
 msgstr ""
+"Jeśli glif jest różny w obu fontach, dodaj obrysy\n"
+"z drugiego fontu do warstwy tła w pierwszym."
 
 #: showatt.c:2891
 msgid "Add _Missing Glyphs"
@@ -23265,6 +23299,8 @@ msgid ""
 "add it to the first with the outlines of the second font in\n"
 "the background"
 msgstr ""
+"Jeśli w drugim foncie występuje glif nieobecny w pierwszym,\n"
+"dodaj go do warstw planu pierwszego i tła w pierwszym foncie."
 
 #: showatt.c:2904
 msgid "Compare _Bitmaps"
@@ -23481,6 +23517,9 @@ msgid ""
 "intersect. This will not be removed. In many cases doing Element->Correct Direction "
 "before Remove Overlap will improve matters."
 msgstr ""
+"W glif %.40s przecinają się przeciwnie skierowane kontury - przecięcie nie zostanie "
+"usunięte. Często da się to poprawić przed usuwaniem przecięć (Element->Skieruj "
+"poprawnie)."
 
 #: splinesave.c:2295
 #, c-format
@@ -23515,6 +23554,8 @@ msgid ""
 "The width of %s is too big to fit in a tfm fix_word, it shall be truncated to the "
 "largest size allowed."
 msgstr ""
+"Szerokość %s jest poza zakresem dopuszczalnych wartości tfm fix_word, zostanie obcięta "
+"do największej możliwej."
 
 #: splinesaveafm.c:3069
 msgid "Value exceeds tfm limitations"
@@ -23527,6 +23568,9 @@ msgid ""
 "contain values bigger than 16 times the em-size of the font. Width=%g, height=%g, depth="
 "%g, italic correction=%g"
 msgstr ""
+"Szerokość, wysokość, głębokość lub kompensata pochylenia dla %s jest zbyt duża. Pliki "
+"tfm nie mogą zawierać wartości większych niż 16 × wysokośc pola znaku.\n"
+"Szerokośc=%g, wysokość=%g, głebokość=%g, kompensata pochylenia=%g."
 
 #: splinestroke.c:921 splinestroke.c:1409
 msgid "Bad Stroke"
@@ -23583,7 +23627,7 @@ msgstr "Zbyt wiele współrzędnych na osiach w /BlendDesignPositions.\n"
 #: splineutil.c:2546
 #, c-format
 msgid "Too many mapping data points specified in /BlendDesignMap for axis %s.\n"
-msgstr ""
+msgstr "Zbyt wiele punktów danych mapowań w /BlendDesignMap dla osi %s.\n"
 
 #: splineutil.c:2555
 #, c-format
@@ -23604,7 +23648,7 @@ msgstr "Nie udało się wczytać fontu CIDowego, %sCIDFontType %d, %sfonttype %d
 msgid "CID format doesn't contain what we expected it to.\n"
 msgstr "CID nie zawiera tego, czego się spodziewano.\n"
 
-#: splineutil2.c:4001 splineutil2.c:4087
+#: splineutil2.c:4022 splineutil2.c:4108
 msgid "Warning: Unreasonably big splines. They will be ignored.\n"
 msgstr "Ostrzeżenie: Napotkano niewiarygodnie wielkie obrysy. Zostaną one pominięte.\n"
 
@@ -23732,6 +23776,9 @@ msgid ""
 "Lookups in contextual state machines must be simple substitutions,\n"
 ", but %s is not"
 msgstr ""
+"Funkcje zecerskie użyte w kontekstowej maszynie stanów muszą być prostymi "
+"podstawieniami,\n"
+"ale %s do takich nie należy."
 
 #: statemachine.c:424 statemachine.c:439
 msgid "Missing Glyph Name"
@@ -24007,7 +24054,7 @@ msgstr "Wzorzec powinien zostać tak przeskalowany aby pokrywał obrys na całej
 msgid ""
 "There is a single byte character (%d) using one of the slots needed for double byte "
 "characters"
-msgstr ""
+msgstr "Pewien znak jednobajtowy (%d) zajmuje jeden ze slotów znaków dwubajtowych."
 
 #: tottf.c:4077 tottf.c:4083
 #, c-format
@@ -24336,7 +24383,7 @@ msgstr "Maksymalna liczba punktów półcienia"
 
 #: ttfinstrsui.c:1667
 msgid "Max Stack Depth"
-msgstr "Maksymalna głegokość stosu argumentów"
+msgstr "Maksymalna głębokość stosu argumentów"
 
 #: ttfinstrsui.c:1668
 msgid "Max # Functions"
@@ -24424,6 +24471,8 @@ msgid ""
 "Failed to default value of exten \"%s\".\n"
 " Error=%ld"
 msgstr ""
+"Nie udało się określić wartości domyślnej dla rozszerzenia „%s”.\n"
+"Błąd=%ld"
 
 #: uiutil.c:150
 #, c-format
@@ -24443,7 +24492,7 @@ msgstr "Nie znaleziono „%s->shell->open”\n"
 #: uiutil.c:171
 #, c-format
 msgid "Failed to find default for \"%s->shell->open->command\"\n"
-msgstr ""
+msgstr "Nie udało się określić wartości domyślnej dla „%s->shell->open->command”\n"
 
 #: uiutil.c:191 uiutil.c:330
 msgid "No Browser"
@@ -25134,23 +25183,8 @@ msgstr "130"
 #~ "Błędny token. Napotkano „%c”\n"
 #~ "w okolicach ...%40s"
 
-#~ msgid "Subscript Pos:"
-#~ msgstr "Pozycja frakcji dolnej:"
-
-#~ msgid "Superscript Pos:"
-#~ msgstr "Pozycja frakcji górnej:"
-
-#~ msgid "Subscript Position:"
-#~ msgstr "Pozycja frakcji dolnej:"
-
 #~ msgid "Could not find substitution glyph: %.40s"
 #~ msgstr "Nie znaleziono glifu podstawiającego: %.40s"
-
-#~ msgid "to be adjusted."
-#~ msgstr "do dopasowania."
-
-#~ msgid "Itself"
-#~ msgstr "Samodzielna"
 
 #~ msgid "Edit anchor class"
 #~ msgstr "Edytuj klasę kotwic"
@@ -25160,9 +25194,6 @@ msgstr "130"
 
 #~ msgid "Mark To Mark"
 #~ msgstr "Wzajemne położenie diakrytyków"
-
-#~ msgid "Merge With:"
-#~ msgstr "Grupuj z:"
 
 #~ msgid ""
 #~ "FontForge will attempt to merge all anchor classes with the same value for \"Merge "
@@ -25209,50 +25240,17 @@ msgstr "130"
 #~ "A simple substitution takes exactly one component, but you have provided several"
 #~ msgstr "Podstawienie proste używa pojedynczego składnika, a wskazano ich kilka"
 
-#~ msgid "Bad GPOS/GSUB"
-#~ msgstr "Błąd w GPOS/GSUB"
-
 #~ msgid "A simple substitution must have exactly one component"
 #~ msgstr "Podstawienie proste musi mieć dokładnie jeden składnik"
 
-#~ msgid "Positioning|_New..."
-#~ msgstr "_Nowe..."
-
-#~ msgid "PairwisePositioning|_New..."
-#~ msgstr "_Nowe..."
-
-#~ msgid "Substitutions|_New..."
-#~ msgstr "_Nowe..."
-
-#~ msgid "AltSubstitutions|_New..."
-#~ msgstr "_Nowe..."
-
-#~ msgid "MultSubstitutions|_New..."
-#~ msgstr "_Nowe..."
-
-#~ msgid "Ligatures|_New..."
-#~ msgstr "_Nowa..."
-
-#~ msgid "_New..."
-#~ msgstr "_Nowa..."
-
-#~ msgid "VKerning"
-#~ msgstr "Kerning pionowy"
-
 #~ msgid "Unknown Anchor Class: %.70s"
 #~ msgstr "Nieznana klasa kotwic: %.70s"
-
-#~ msgid "Too many tags specified"
-#~ msgstr "Wybrano zbyt dużo tagów"
 
 #~ msgid "Containing:"
 #~ msgstr "Zawierające:"
 
 #~ msgid "Copy Which Features?"
 #~ msgstr "Które funkcje zecerskie skopiować?"
-
-#~ msgid "Copy Glyph Features..."
-#~ msgstr "Kopiuj _funkcje zecerskie..."
 
 #~ msgid "There are no marks associated with this anchor class"
 #~ msgstr "Nie ma więcej znaków diakrytycznych związanych z tą klasą kotwic"
@@ -25359,19 +25357,3 @@ msgstr "130"
 #~ msgstr ""
 #~ "Pozwala sprawdzić czy żadne podstawienie/pozycjonowanie kontekstowe nie używa tagu "
 #~ "nieistniejącego w foncie."
-
-#~ msgid "Feature/Setting for:"
-#~ msgstr "Funkcja/ustawienie dla:"
-
-#~ msgid ""
-#~ "Multiple lookups were generated for nested anchor tag '%s', only one will be used"
-#~ msgstr ""
-#~ "Dla tagu kotwicy „%s” wygenerowano więcej niż jedną pozycję  (ang. „lookup”), tylko "
-#~ "pierwsza będzie używana"
-
-#~ msgid ""
-#~ "A nested lookup with tag '%s' could not be found. The generated font will not be "
-#~ "useable. Try Element->Find Problems"
-#~ msgstr ""
-#~ "Nie znaleziono zagnieżdżonej pozycji  (ang. „lookup”) o tagu „%s”. Wygenerowany font "
-#~ "nie będzie nadawał się do użytku. Spróbuj użyć Element->Szukaj problemów"
