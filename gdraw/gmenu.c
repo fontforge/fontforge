@@ -1046,8 +1046,13 @@ int GMenuBarCheckKey(GGadget *g, GEvent *event) {
     int i;
     GMenuBar *mb = (GMenuBar *) g;
     GMenuItem *mi;
-    unichar_t keysym = event->u.chr.chars[1];	/* If Ctl/Alt is down, then chars[0]==NUL, but chars[1] contains the unicode for the keysym */
-    /* I used to think the keysym was in unicode, but that's only true for latin, not cyrillic */
+    unichar_t keysym;
+
+    if ( event->u.chr.keysym>0xff00 )
+	keysym = event->u.chr.keysym;
+    else
+	keysym = event->u.chr.chars[1];	/* If Ctl/Alt is down, then chars[0]==NUL, but chars[1] contains the unicode for the keysym */
+	/* I used to think the keysym was in unicode, but that's only true for latin, not cyrillic */
 
     if ( g==NULL )
 return( false );

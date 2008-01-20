@@ -415,8 +415,13 @@ static int GWidgetCheckMn(GContainerD *gd,GEvent *event) {
     int handled = false;
     GGadget *gadget, *last;
     struct gwidgetdata *widget;
-    unichar_t keysym = event->u.chr.chars[1];	/* If Ctl/Alt is down, then chars[0]==NUL, but chars[1] contains the unicode for the keysym */
-    /* I used to think the keysym was in unicode, but that's only true for latin, not cyrillic */
+    unichar_t keysym;
+
+    if ( event->u.chr.keysym>0xff00 )
+	keysym = event->u.chr.keysym;
+    else
+	keysym = event->u.chr.chars[1];	/* If Ctl/Alt is down, then chars[0]==NUL, but chars[1] contains the unicode for the keysym */
+	/* I used to think the keysym was in unicode, but that's only true for latin, not cyrillic */
 
     if ( islower(keysym)) keysym = toupper(keysym);
     for ( gadget = gd->gadgets; gadget!=NULL && !handled ; gadget=gadget->prev ) {
