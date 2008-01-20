@@ -551,6 +551,9 @@ return;			/* We clicked on the active point, that's a no-op */
 	if (  cv->active_tool==cvt_pen )
 	    ptype = pt_curve;
 	sp->pointtype = ptype;
+	if ( ptype==pt_hvcurve ) {
+	    SPHVCurveForce(sp);
+	}
 	sp->selected = true;
 	ss = cv->p.spl;
     } else {
