@@ -376,7 +376,7 @@ return( buffer );
       break;
       case 4:
 	dx = cp->x - sp->me.x; dy = cp->y - sp->me.y;
-	snprintf( buffer, blen, "� %g°", atan2(dy,dx)*180/3.1415926535897932 );
+	snprintf( buffer, blen, "∠ %g°", atan2(dy,dx)*180/3.1415926535897932 );
       break;
       case 5:
 	if ( s==NULL )
