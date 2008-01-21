@@ -3595,6 +3595,7 @@ static void fea_ParsePosition(struct parseState *tok, int enumer) {
 		mark_class = copy(tok->tokbuf);
 	    else
 		mark_class = fea_canonicalClassOrder(fea_ParseGlyphClass(tok));
+	    fea_ParseTok(tok);
 	    if ( glyphs->is_mark && glyphs->ap_cnt>1 ) {
 		LogError(_("Mark to base anchor statements may only have one anchor on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 		++tok->err_count;
@@ -4816,7 +4817,8 @@ static void fea_ApplyLookupListMark2(struct parseState *tok,
     classes = galloc(mcnt*sizeof(char *));
     acs = galloc(mcnt*sizeof(AnchorClass *));
     ac_cnt = 0;
-    while ( lookup_data != NULL ) {
+    while ( lookup_data != NULL && lookup_data->type!=ft_lookup_end ) {
+	struct feat_item *orig = lookup_data;
 	sub = NULL;
 	/* Skip any subtable marks */
 	while ( lookup_data!=NULL &&
@@ -4878,7 +4880,8 @@ static void fea_ApplyLookupListMark2(struct parseState *tok,
 
 	/* Now go back and assign the marks to the correct anchor classes */
 	for ( l=mark_start; l!=NULL &&
-		((l->type==ft_ap && l->u2.ap->type==at_mark) ||
+		/* The base aps will have been set to NULL above */
+		((l->type==ft_ap && l->u2.ap!=NULL && l->u2.ap->type==at_mark) ||
 		 l->type==ft_lookup_start ||
 		 l->type==ft_lookupflags ) ;
 		l = l->lookup_next ) {
@@ -4899,6 +4902,8 @@ static void fea_ApplyLookupListMark2(struct parseState *tok,
 		}
 	    }
 	}
+	if ( lookup_data==orig )
+    break;
     }
 }
 
