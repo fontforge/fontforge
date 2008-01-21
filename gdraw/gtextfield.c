@@ -857,7 +857,7 @@ static void GTextFieldImport(GTextField *gt) {
     unichar_t *str;
 
     if ( _ggadget_use_gettext ) {
-	char *temp = GWidgetOpenFile8(_("_Open"),NULL,"*.txt",NULL,NULL);
+	char *temp = GWidgetOpenFile8(_("Open"),NULL,"*.txt",NULL,NULL);
 	ret = utf82u_copy(temp);
 	free(temp);
     } else {
@@ -890,7 +890,7 @@ static void GTextFieldSave(GTextField *gt,int utf8) {
     unichar_t *pt;
 
     if ( _ggadget_use_gettext ) {
-	char *temp = GWidgetOpenFile8(_("_Save"),NULL,"*.txt",NULL,NULL);
+	char *temp = GWidgetOpenFile8(_("Save"),NULL,"*.txt",NULL,NULL);
 	ret = utf82u_copy(temp);
 	free(temp);
     } else
@@ -2724,7 +2724,7 @@ static void GListFieldSelected(GGadget *g, int i) {
 
     ge->popup = NULL;
     _GWidget_ClearGrabGadget(&ge->gt.g);
-    if ( i<0 || i>=ge->ltot )
+    if ( i<0 || i>=ge->ltot || ge->ti[i]->text==NULL )
 return;
     GTextFieldSetTitle(g,ge->ti[i]->text);
     _ggadget_redraw(g);
