@@ -1083,12 +1083,14 @@ static struct stem_chunk *AddToStem( struct stemdata *stem,struct pointdata *pd1
 	ip = is_potential1; is_potential1 = is_potential2; is_potential2 = ip;
     }
 
+    if ( pd1 == NULL ) lincr = 0;
+    if ( pd2 == NULL ) rincr = 0;
     /* Now run through existing stem chunks and see if the chunk we are
     /* going to add doesn't duplicate an existing one.*/
     for ( i=stem->chunk_cnt-1; i>=0; --i ) {
 	chunk = &stem->chunks[i];
-        if ( pd1 == NULL || chunk->l == pd1 ) lincr = 0;
-        if ( pd2 == NULL || chunk->r == pd2 ) rincr = 0;
+        if ( chunk->l == pd1 ) lincr = 0;
+        if ( chunk->r == pd2 ) rincr = 0;
         
         if (( chunk->l == pd1 || pd1 == NULL ) && ( chunk->r == pd2 || pd2 == NULL )) {
             if ( !is_potential1 ) chunk->lpotential = false;
@@ -1099,10 +1101,12 @@ static struct stem_chunk *AddToStem( struct stemdata *stem,struct pointdata *pd1
                 chunk->l = pd1;
                 chunk->lpotential = is_potential1;
                 chunk->lnext = is_next1;
+                chunk->ltick = lincr;
             } else if ( chunk->r == NULL ) {
                 chunk->r = pd2;
                 chunk->rpotential = is_potential2;
                 chunk->rnext = is_next2;
+                chunk->rtick = rincr;
             }
     break;
         }
@@ -1115,11 +1119,10 @@ static struct stem_chunk *AddToStem( struct stemdata *stem,struct pointdata *pd1
 
         chunk->l = pd1; chunk->lpotential = is_potential1;
         chunk->r = pd2; chunk->rpotential = is_potential2;
+        chunk->ltick = lincr; chunk->rtick = rincr;
 
         chunk->lnext = is_next1;
         chunk->rnext = is_next2;
-        chunk->ltick = false;
-        chunk->rtick = false;
         chunk->stemcheat = cheat;
         chunk->stub = false;
         /* Diagonal edge stems should be assigned to the 'bothstem'
@@ -1175,8 +1178,7 @@ static struct stem_chunk *AddToStem( struct stemdata *stem,struct pointdata *pd1
     else if ( loff > stem->lmax ) stem->lmax = loff;
     if ( roff < stem->rmin ) stem->rmin = roff;
     else if ( roff > stem->rmax ) stem->rmax = roff;
-    stem->lpcnt += lincr;
-    stem->rpcnt += rincr;
+    stem->lpcnt += lincr; stem->rpcnt += rincr;
 return( chunk );
 }
 
@@ -1428,9 +1430,11 @@ static struct stemdata *NewStem(struct glyphdata *gd,BasePoint *dir,
 	stem->l_to_r.x = -stem->l_to_r.x;
 	stem->l_to_r.y = -stem->l_to_r.y;
     }
+    stem->leftidx = stem->rightidx = -1;
     stem->leftline = stem->rightline = NULL;
     stem->lmin = stem->lmax = 0;
     stem->rmin = stem->rmax = 0;
+    stem->ldone = stem->rdone = false;
     stem->lpcnt = stem->rpcnt = 0;
     stem->chunks = NULL;
     stem->chunk_cnt = 0;
@@ -1631,16 +1635,21 @@ return( NULL );         /* Cannot make a stem if edges are not parallel (unless 
             
         if ( chunk != NULL && gd->linecnt > 0 ) {
             hv = IsVectorHV( &stem->unit,0,true );
-            otherline = NULL;
             /* For HV stems allow assigning a line to stem edge only
             /* if that line also has an exactly HV vector */
             if ( line != NULL && (
                 ( !hv && UnitsParallel( &stem->unit,&line->unit,true )) || 
                 ( hv && line->unit.x == stem->unit.x && line->unit.y == stem->unit.y ))) {
-                if ( stem->leftline == NULL && chunk->l == pd ) {
+                
+                otherline = NULL;
+                if (( stem->leftline == NULL || 
+                    stem->leftline->length < line->length ) && chunk->l == pd ) {
+                    
                     stem->leftline = line;
                     otherline = stem->rightline;
-                } else if ( stem->rightline == NULL && chunk->r == pd ) {
+                } else if (( stem->rightline == NULL ||
+                    stem->rightline->length < line->length ) && chunk->r == pd ) {
+                    
                     stem->rightline = line;
                     otherline = stem->leftline;
                 }
@@ -1652,10 +1661,16 @@ return( NULL );         /* Cannot make a stem if edges are not parallel (unless 
             if ( line2 != NULL && (
                 ( !hv && UnitsParallel( &stem->unit,&line2->unit,true )) || 
                 ( hv && line2->unit.x == stem->unit.x && line2->unit.y == stem->unit.y ))) {
-                if ( stem->leftline == NULL && chunk->l == pd ) {
+                
+                otherline = NULL;
+                if (( stem->leftline == NULL ||
+                    stem->leftline->length < line2->length ) && chunk->l == pd ) {
+                    
                     stem->leftline = line2;
                     otherline = stem->rightline;
-                } else if ( stem->rightline == NULL && chunk->r == pd ) {
+                } else if (( stem->rightline == NULL ||
+                    stem->rightline->length < line2->length ) && chunk->r == pd ) {
+                    
                     stem->rightline = line2;
                     otherline = stem->leftline;
                 }
@@ -3355,6 +3370,7 @@ static void NormalizeStem( struct glyphdata *gd,struct stemdata *stem ) {
     int lval, rval, val, lset, rset, best;
     double loff, roff;
     BasePoint lold, rold;
+    SplinePoint *lbest, *rbest;
     struct stem_chunk *chunk;
     uint8 *lextr, *rextr;
     
@@ -3370,25 +3386,26 @@ static void NormalizeStem( struct glyphdata *gd,struct stemdata *stem ) {
         lpos = ((real *) &stem->left.x)[!is_x];
         rpos = ((real *) &stem->right.x)[!is_x];
 
-        for ( i=0; i<gd->pcnt; ++i ) if ( gd->points[i].sp!=NULL ) {
-	    gd->points[i].sp->ticked = false;
-            gd->points[i].value = 0;
-        }
-
-        /* First pass to select chunks which should be tested (this
-        /* is necessary to ensure that points assigned to more than one
-        /* chunk are processed more than once */
+        /* First pass to determine some point properties necessary
+        /* for subsequent operations */
         for ( i=0; i<stem->chunk_cnt; ++i ) {
             chunk = &stem->chunks[i];
-            if ( chunk->l != NULL && !chunk->l->sp->ticked ) {
-                chunk->l->sp->ticked = true;
-                chunk->ltick = true;
+            if ( chunk->ltick ) {
+                /* reset the point's "value" to zero */
                 chunk->l->value = 0;
+                
+                /* Extrema points get an additional value bonus. This should
+                /* prevent us from preferring wrong points for stems controlling
+                /* curved segments */
+                lextr = ( is_x ) ? &chunk->l->x_extr : &chunk->l->y_extr;
+                if ( IsSplinePeak( gd,chunk->l->sp,false,is_x,1 )) *lextr = 1;
+                else if ( IsSplinePeak( gd,chunk->l->sp,true,is_x,1 )) *lextr = 2;
             }
-            if ( chunk->r != NULL && !chunk->r->sp->ticked ) {
-                chunk->r->sp->ticked = true;
-                chunk->rtick = true;
+            if ( chunk->rtick ) {
                 chunk->r->value = 0;
+                rextr = ( is_x ) ? &chunk->r->x_extr : &chunk->r->y_extr;
+                if ( IsSplinePeak( gd,chunk->r->sp,false,is_x,1 )) *rextr = 1;
+                else if ( IsSplinePeak( gd,chunk->r->sp,true,is_x,1 )) *rextr = 2;
             }
         }
 
@@ -3411,15 +3428,8 @@ static void NormalizeStem( struct glyphdata *gd,struct stemdata *stem ) {
                 }
                 chunk->l->value = lval+1;
                 
-                /* Extrema points get an additional value bonus. This should
-                /* prevent us from preferring wrong points for stems controlling
-                /* curved segments */
-                lextr = ( is_x ) ? &chunk->l->x_extr : &chunk->l->y_extr;
-                if ( IsSplinePeak( gd,chunk->l->sp,false,is_x,1 )) *lextr = 1;
-                else if ( IsSplinePeak( gd,chunk->l->sp,true,is_x,1 )) *lextr = 2;
-                if ( *lextr ) chunk->l->value++;
-                
-                if (( stem->lmin - ( pos - lpos ) > -dist_error_hv ) &&
+                if ( lval == 0 &&
+                    ( stem->lmin - ( pos - lpos ) > -dist_error_hv ) &&
                     ( stem->lmax - ( pos - lpos ) < dist_error_hv ))
                     chunk->l->value++;
             }
@@ -3436,25 +3446,30 @@ static void NormalizeStem( struct glyphdata *gd,struct stemdata *stem ) {
                 }
                 chunk->r->value = rval+1;
                 
-                rextr = ( is_x ) ? &chunk->r->x_extr : &chunk->r->y_extr;
-                if ( IsSplinePeak( gd,chunk->r->sp,false,is_x,1 )) *rextr = 1;
-                else if ( IsSplinePeak( gd,chunk->r->sp,true,is_x,1 )) *rextr = 2;
-                if ( *rextr ) chunk->r->value++;
-
-                if (( stem->rmin - ( pos - rpos ) > -dist_error_hv ) &&
+                if ( rval == 0 &&
+                    ( stem->rmin - ( pos - rpos ) > -dist_error_hv ) &&
                     ( stem->rmax - ( pos - rpos ) < dist_error_hv ))
                     chunk->r->value++;
             }
         }
 
-        /* Third pass to assign additional bonuses to extrema points which
-        /* are opposed to another extrema point */
+        /* Third pass to assign bonuses to extrema points (especially
+        /* to those extrema which are opposed to another extremum point) */
         for ( i=0; i<stem->chunk_cnt; ++i ) {
             chunk = &stem->chunks[i];
-            if ( chunk->l != NULL && chunk->r !=NULL ) {
+            if ( chunk->ltick ) {
+                lextr = ( is_x ) ? &chunk->l->x_extr : &chunk->l->y_extr;
+                if ( *lextr ) chunk->l->value++;
+            }
+            if ( chunk->rtick ) {
+                rextr = ( is_x ) ? &chunk->r->x_extr : &chunk->r->y_extr;
+                if ( *rextr ) chunk->r->value++;
+            }
+
+            if ( chunk->ltick && chunk->rtick ) {
                 lextr = ( is_x ) ? &chunk->l->x_extr : &chunk->l->y_extr;
                 rextr = ( is_x ) ? &chunk->r->x_extr : &chunk->r->y_extr;
-                if ( lextr && rextr ) {
+                if ( *lextr && *rextr ) {
                     chunk->l->value++;
                     chunk->r->value++;
                 }
@@ -3464,30 +3479,46 @@ static void NormalizeStem( struct glyphdata *gd,struct stemdata *stem ) {
         best = -1; val = 0;
         for ( i=0; i<stem->chunk_cnt; ++i ) {
             chunk = &stem->chunks[i];
-            if ( chunk->l != NULL && chunk->r !=NULL && chunk->l->value > 0 && 
-                chunk->r->value > 0 && chunk->l->value + chunk->r->value > val ) {
+            lval = ( chunk->l != NULL ) ? chunk->l->value : 0;
+            rval = ( chunk->r != NULL ) ? chunk->r->value : 0;
+            if ((( chunk->l != NULL && chunk->l->value > 0 ) ||
+                ( stem->ghost && stem->width == 21 )) && 
+                (( chunk->r != NULL && chunk->r->value > 0 ) ||
+                ( stem->ghost && stem->width == 20 )) && lval + rval > val ) {
+                
                 best = i;
-                val = chunk->l->value + chunk->r->value;
+                val = lval + rval;
             }
         }
         if ( best > -1 ) {
-            lold = stem->left;
-            rold = stem->right;
-            stem->left = stem->chunks[best].l->sp->me;
-            stem->right = stem->chunks[best].r->sp->me;
-            /* Now assign "left" and "right" properties of the stem
-            /* to point coordinates taken from the most "typical" chunk
-            /* of this stem. We also have to recalculate stem width and
-            /* left/right offset values */
-            loff = ( stem->left.x - lold.x ) * stem->unit.y -
-                   ( stem->left.y - lold.y ) * stem->unit.x;
-            roff = ( stem->right.x - rold.x ) * stem->unit.y -
-                   ( stem->right.y - rold.y ) * stem->unit.x;
+            if ( !stem->ghost || stem->width == 20 ) {
+                lold = stem->left;
+                lbest = stem->chunks[best].l->sp;
+                stem->left = lbest->me;
+                stem->leftidx = ( lbest->ttfindex < gd->realcnt ) ?
+                    lbest->ttfindex : lbest->nextcpindex;
 
-            stem->lmin -= loff; stem->lmax -= loff;
-            stem->rmin -= roff; stem->rmax -= roff;
-            stem->width = ( stem->right.x - stem->left.x ) * stem->unit.y -
-                          ( stem->right.y - stem->left.y ) * stem->unit.x;
+                /* Now assign "left" and "right" properties of the stem
+                /* to point coordinates taken from the most "typical" chunk
+                /* of this stem. We also have to recalculate stem width and
+                /* left/right offset values */
+                loff = ( stem->left.x - lold.x ) * stem->unit.y -
+                       ( stem->left.y - lold.y ) * stem->unit.x;
+                stem->lmin -= loff; stem->lmax -= loff;
+            }
+            if ( !stem->ghost || stem->width == 21 ) {
+                rold = stem->right;
+                rbest = stem->chunks[best].r->sp;
+                stem->right = rbest->me;
+                stem->rightidx = ( rbest->ttfindex < gd->realcnt ) ?
+                    rbest->ttfindex : rbest->nextcpindex;
+                roff = ( stem->right.x - rold.x ) * stem->unit.y -
+                       ( stem->right.y - rold.y ) * stem->unit.x;
+                stem->rmin -= roff; stem->rmax -= roff;
+            }
+            if ( !stem->ghost )
+                stem->width = ( stem->right.x - stem->left.x ) * stem->unit.y -
+                              ( stem->right.y - stem->left.y ) * stem->unit.x;
         }
     } else {
         qsort( stem->chunks,stem->chunk_cnt,sizeof( struct stem_chunk ),chunk_cmp );
@@ -3560,6 +3591,10 @@ static void AssignPointsToBBoxHint( struct glyphdata *gd,DBounds *bounds,
 	    stem = NewStem( gd,&dir,&lpoints[0]->me,&rpoints[0]->me );
             stem->bbox = true;
             stem->len = stem->width;
+            stem->leftidx = ( lpoints[0]->ttfindex < gd->realcnt ) ?
+                    lpoints[0]->ttfindex : lpoints[0]->nextcpindex;
+            stem->rightidx = ( rpoints[0]->ttfindex < gd->realcnt ) ?
+                    rpoints[0]->ttfindex : rpoints[0]->nextcpindex;
         }
         for ( i=0; i<lcnt; ++i ) {
             closest = -1;
@@ -3892,9 +3927,11 @@ static void DumpGlyphData( struct glyphdata *gd ) {
         fprintf( stderr, "\nDumping stem data for %s\n",gd->sc->name );
     for ( i=0; i<gd->stemcnt; ++i ) {
 	stem = &gd->stems[i];
-        fprintf( stderr, "stem l=%f,%f r=%f,%f vector=%f,%f\n\twidth=%f chunk_cnt=%d len=%f clen=%f toobig=%d\n\tlmin=%f,lmax=%f,rmin=%f,rmax=%f,lpcnt=%d,rpcnt=%d\n",
-            stem->left.x,stem->left.y,stem->right.x,stem->right.y,
-            stem->unit.x,stem->unit.y,stem->width,stem->chunk_cnt,stem->len,stem->clen,stem->toobig,
+        fprintf( stderr, "stem l=%f,%f idx=%d r=%f,%f idx=%d vector=%f,%f\n\twidth=%f chunk_cnt=%d len=%f clen=%f toobig=%d\n\tlmin=%f,lmax=%f,rmin=%f,rmax=%f,lpcnt=%d,rpcnt=%d\n",
+            stem->left.x,stem->left.y,stem->leftidx,
+            stem->right.x,stem->right.y,stem->rightidx,
+            stem->unit.x,stem->unit.y,stem->width,
+            stem->chunk_cnt,stem->len,stem->clen,stem->toobig,
             stem->lmin,stem->lmax,stem->rmin,stem->rmax,stem->lpcnt,stem->rpcnt );
         for ( j=0; j<stem->chunk_cnt; ++j ) {
 	    chunk = &stem->chunks[j];
@@ -3914,7 +3951,7 @@ static void DumpGlyphData( struct glyphdata *gd ) {
 }
 #endif
 
-static void AssignPointsToStems( struct glyphdata *gd,DBounds *bounds ) {
+static void AssignPointsToStems( struct glyphdata *gd,int startnum,DBounds *bounds ) {
     int i;
     struct pointdata *pd;
     struct stemdata *stem;
@@ -3941,7 +3978,7 @@ static void AssignPointsToStems( struct glyphdata *gd,DBounds *bounds ) {
 #if GLYPH_DATA_DEBUG
     fprintf( stderr,"Going to calculate stem active zones for %s\n",gd->sc->name );
 #endif
-    for ( i=0; i<gd->stemcnt; ++i ) {
+    for ( i=startnum; i<gd->stemcnt; ++i ) {
         stem = &gd->stems[i];
         NormalizeStem( gd,stem );
         if ( gd->stems[i].ghost )
@@ -3963,6 +4000,7 @@ static void AssignPointsToStems( struct glyphdata *gd,DBounds *bounds ) {
 
 struct glyphdata *DStemInfoToStemData( struct glyphdata *gd,DStemInfo *dsi ) {
     struct stemdata *stem;
+    int stemcnt;
     
     if ( dsi == NULL )
 return( gd );
@@ -3971,12 +4009,13 @@ return( gd );
         gd->stems = gcalloc( 2*gd->pcnt,sizeof( struct stemdata ));
         gd->stemcnt = 0;
     }
+    stemcnt = gd->stemcnt;
     while ( dsi != NULL ) {
         stem = NewStem( gd,&dsi->unit,&dsi->left,&dsi->right );
         stem->positioned = true;
         dsi = dsi->next;
     }
-    AssignPointsToStems( gd,NULL );
+    AssignPointsToStems( gd,stemcnt,NULL );
 return( gd );
 }
 
@@ -3984,6 +4023,7 @@ struct glyphdata *StemInfoToStemData( struct glyphdata *gd,StemInfo *si,int is_v
     struct stemdata *stem;
     BasePoint dir,left,right;
     DBounds bounds;
+    int stemcnt;
     
     if ( si == NULL )
 return( gd );
@@ -3994,6 +4034,7 @@ return( gd );
         gd->stems = gcalloc( 2*gd->pcnt,sizeof( struct stemdata ));
         gd->stemcnt = 0;
     }
+    stemcnt = gd->stemcnt;
 
     while ( si != NULL ) {
         left.x = ( is_v ) ? si->start : 0;
@@ -4013,7 +4054,7 @@ return( gd );
         si = si->next;
     }
 
-    AssignPointsToStems( gd,&bounds );
+    AssignPointsToStems( gd,stemcnt,&bounds );
 return( gd );
 }
 

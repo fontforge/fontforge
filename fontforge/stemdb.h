@@ -29,7 +29,7 @@
 
 # include "pfaedit.h"
 
-struct glyphdata {
+typedef struct glyphdata {
     SplineFont *sf;
     BlueData bd;
     SplineChar *sc;
@@ -63,7 +63,7 @@ struct glyphdata {
     int only_hv;
 } GlyphData;
 
-struct pointdata {
+typedef struct pointdata {
     SplinePoint *sp;
     SplineSet *ss;
     BasePoint nextunit, prevunit;		/* unit vectors pointing in the next/prev directions */
@@ -98,7 +98,7 @@ struct pointdata {
     double projection;		/* temporary value */
 } PointData;
 
-struct linedata {
+typedef struct linedata {
     BasePoint unit;
     BasePoint online;
     uint8 is_left;
@@ -107,11 +107,12 @@ struct linedata {
     struct pointdata **points;
 } LineData;
 
-struct stemdata {
+typedef struct stemdata {
     BasePoint unit;		/* Unit vector pointing in direction of stem */
     BasePoint l_to_r;		/* Unit vector pointing from left to right (across stem) */
     BasePoint left;		/* a point on one side of the stem (not necissarily left, even for vertical stems) */
     BasePoint right;		/* and one on the other */
+    int leftidx, rightidx;      /* TTF indices of the left and right key points */
     double lmin, lmax, rmin, rmax;
     double width;
     int chunk_cnt;		/* number of separate point-pairs on this stem */
@@ -132,6 +133,7 @@ struct stemdata {
     uint8 ticked;
     uint8 ghost;
     uint8 bbox;
+    uint8 ldone, rdone;
     int blue;			/* Blue zone a ghost hint is attached to */
     double len, clen;		/* Length of linear segments. clen adds "length" of curved bits */
     struct stembundle *bundle;
@@ -139,6 +141,7 @@ struct stemdata {
     double lnew, rnew;		/* New position of left, right edges relative to bp,l_to_r */
     int lpcnt, rpcnt;           /* Count of points assigned to left and right edges of this stem */
     struct linedata *leftline, *rightline;
+    struct stemdata *master;
 } StemData;
 
 struct stembounds {
