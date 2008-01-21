@@ -673,9 +673,13 @@ static int iv_e_h(GWindow gw, GEvent *event) {
 		GDrawDestroyWindow(iv->gw);
 	    } else if ( event->u.control.g==iv->edit || event->u.control.g==iv->parse ) {
 		int toedit = event->u.control.g==iv->edit;
-		if ( toedit )
+		GRect size;
+		if ( toedit ) {
 		    IVBuildEdit(iv);
-		else if ( !IVParse(iv))
+		    GGadgetGetSize(iv->instrinfo.vsb,&size);
+		    size.width = -1;
+		    GGadgetSetDesiredSize(iv->text,&size,NULL);
+		} else if ( !IVParse(iv))
       break;
 		GGadgetSetVisible(iv->parse,toedit);
 		/*GGadgetSetVisible(iv->text,toedit);*/
@@ -1531,7 +1535,7 @@ static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
 
     wattrs.mask = wam_events|wam_cursor;
     subpos.x = 0; subpos.y = sv->fh;
-    subpos.width = sv->addrend; subpos.height = pos.height - sv->bh - sv->fh;
+    subpos.width = 100; subpos.height = pos.height - sv->bh - sv->fh;
     sv->v = GWidgetCreateSubWindow(gw,&subpos,sv_v_e_h,sv,&wattrs);
     GDrawSetVisible(sv->v,true);
 
