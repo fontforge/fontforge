@@ -78,6 +78,32 @@ static void GButtonPressed(GButton *b) {
     }
 }
 
+static int gbutton_textsize(GImageButton *gb, int *_lcnt) {
+    int lcnt, maxtextwidth;
+    unichar_t *pt, *start;
+    GFont *old;
+
+    old = GDrawSetFont(gb->g.base,gb->font);
+
+    maxtextwidth = lcnt = 0;
+    if ( gb->label!=NULL ) {
+	for ( pt = gb->label; ; ) {
+	    for ( start=pt; *pt!='\0' && *pt!='\n'; ++pt );
+	    if ( pt!=start ) {
+		int w = GDrawGetTextWidth(gb->g.base,start,pt-start,NULL);
+		if ( w>maxtextwidth ) maxtextwidth=w;
+	    }
+	    ++lcnt;
+	    if ( *pt=='\0' )
+	break;
+	    ++pt;
+	}
+    }
+    (void) GDrawSetFont(gb->g.base,old);
+    *_lcnt = lcnt;
+return( maxtextwidth );
+}
+
 static int gbutton_expose(GWindow pixmap, GGadget *g, GEvent *event) {
     GImageButton *gb = (GImageButton *) g;
     int off = gb->within && gb->shiftonpress ? gb->pressed : 0;
@@ -87,9 +113,10 @@ static int gbutton_expose(GWindow pixmap, GGadget *g, GEvent *event) {
     int width;
     int marklen = GDrawPointsToPixels(pixmap,_GListMarkSize),
 	    spacing = GDrawPointsToPixels(pixmap,_GGadget_TextImageSkip);
-    int yoff = (g->inner.height-gb->fh)/2;
+    int yoff;
     GRect unpadded_inner;
-    int pad;
+    int pad, lcnt, maxtextwidth;
+    unichar_t *pt, *start;
 
     if ( g->state == gs_invisible )
 return( false );
@@ -119,6 +146,11 @@ return( false );
     if ( gb->font!=NULL )
 	GDrawSetFont(pixmap,gb->font);
 
+    maxtextwidth = gbutton_textsize(gb,&lcnt);
+    yoff = (g->inner.height-lcnt*gb->fh)/2;
+    if ( lcnt>1 && yoff<0 )
+	yoff = 0;
+
     if ( gb->g.takes_input ) {
 	width = 0;
 	if ( img!=NULL ) {
@@ -127,7 +159,7 @@ return( false );
 		width += spacing;
 	}
 	if ( gb->label!=NULL )
-	    width += GDrawGetTextWidth(pixmap,gb->label,-1,NULL);
+	    width += maxtextwidth;
 	if ( width<=g->inner.width )
 	    x += ( g->inner.width-width )/2;
 	else
@@ -141,10 +173,24 @@ return( false );
 	Color fg = g->state==gs_disabled?g->box->disabled_foreground:
 			g->box->main_foreground==COLOR_DEFAULT?GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap)):
 			g->box->main_foreground;
-	_ggadget_underlineMnemonic(pixmap,x,g->inner.y + gb->as + yoff + off,gb->label,
-		g->mnemonic,fg,g->inner.y+g->inner.height);
-	x += GDrawDrawBiText(pixmap,x,g->inner.y + gb->as + yoff + off,gb->label,-1,NULL,
-		fg );
+	if ( lcnt==1 ) {
+	    _ggadget_underlineMnemonic(pixmap,x,g->inner.y + gb->as + yoff + off,gb->label,
+		    g->mnemonic,fg,g->inner.y+g->inner.height);
+	    x += GDrawDrawBiText(pixmap,x,g->inner.y + gb->as + yoff + off,gb->label,-1,NULL,
+		    fg );
+	} else {
+	    int y = g->inner.y + gb->as + yoff + off;
+	    for ( pt = gb->label; ; ) {
+		for ( start=pt; *pt!='\0' && *pt!='\n'; ++pt );
+		if ( pt!=start )
+		    GDrawDrawBiText(pixmap,x,y,start,pt-start,NULL,fg);
+		if ( *pt=='\0' )
+	    break;
+		++pt;
+		y+=gb->fh;
+	    }
+	    x += maxtextwidth;
+	}
 	x += spacing;
     }
     if ( !gb->image_precedes && img!=NULL )
@@ -424,9 +470,8 @@ static int GButtonGetDesiredWidth(GLabel *gl) {
 	iwidth = GImageGetScaledWidth(gl->g.base,gl->image);
     }
     if ( gl->label!=NULL ) {
-	FontInstance *old = GDrawSetFont(gl->g.base,gl->font);
-	width = GDrawGetTextWidth(gl->g.base,gl->label, -1, NULL);
-	GDrawSetFont(gl->g.base,old);
+	int lcnt;
+	width = gbutton_textsize((GImageButton *) gl,&lcnt);
     }
 
     if ( width!=0 && iwidth!=0 )
@@ -441,7 +486,7 @@ static void GButtonGetDesiredSize(GGadget *g, GRect *outer, GRect *inner) {
     GTextBounds bounds;
     int as=0, ds, ld, fh=0, width=0;
     GRect needed;
-    int i;
+    int i, lcnt=0;
     int bp = GBoxBorderWidth(g->base,g->box);
 
     if ( gl->image!=NULL ) {
@@ -450,13 +495,18 @@ static void GButtonGetDesiredSize(GGadget *g, GRect *outer, GRect *inner) {
     }
     GDrawFontMetrics(gl->font,&as, &ds, &ld);
     if ( gl->label!=NULL ) {
-	FontInstance *old = GDrawSetFont(gl->g.base,gl->font);
-	width = GDrawGetTextBounds(gl->g.base,gl->label, -1, NULL, &bounds);
-	GDrawSetFont(gl->g.base,old);
-	if ( as<bounds.as ) as = bounds.as;
-	if ( ds<bounds.ds ) ds = bounds.ds;
+	int lcnt;
+	width = gbutton_textsize((GImageButton *) gl,&lcnt);
+	if ( lcnt==1 ) {
+	    FontInstance *old = GDrawSetFont(gl->g.base,gl->font);
+	    width = GDrawGetTextBounds(gl->g.base,gl->label, -1, NULL, &bounds);
+	    GDrawSetFont(gl->g.base,old);
+	    if ( as<bounds.as ) as = bounds.as;
+	    if ( ds<bounds.ds ) ds = bounds.ds;
+	    fh = as+ds;
+	} else
+	    fh = gl->fh*lcnt;
     }
-    fh = as+ds;
 
     if ( width!=0 && iwidth!=0 )
 	width += GDrawPointsToPixels(gl->g.base,_GGadget_TextImageSkip);
