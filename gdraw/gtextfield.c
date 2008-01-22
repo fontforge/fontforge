@@ -2588,8 +2588,11 @@ static void GTextFieldFit(GTextField *gt) {
 	for ( tries = 0; tries<2; ++tries ) {
 	    width = GDrawGetTextBounds(gt->g.base,gt->text, -1, NULL, &bounds);
 	    GDrawFontMetrics(gt->font,&as, &ds, &ld);
+#if 0 /* Alexej doesn't like this behavior, says textfields should be */
+/*  consistent no matter what's inside them. Hmm. */
 	    if ( as<bounds.as ) as = bounds.as;
 	    if ( ds<bounds.ds ) ds = bounds.ds;
+#endif
 	    if ( gt->g.r.height==0 || as+ds-3+2*bp<=gt->g.r.height || tries==1 )
 	break;
 	    /* Doesn't fit. Try a smaller size */
