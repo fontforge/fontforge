@@ -7571,7 +7571,7 @@ void CVAddAnchor(CharView *cv) {
 
     if ( AnchorClassUnused(cv->b.sc,&waslig)==NULL ) {
 	ff_post_notice(_("Make a new anchor class"),_("I cannot find an unused anchor class\nto assign a new point to. If you\nwish a new anchor point you must\ndefine a new anchor class with\nElement->Font Info"));
-	FontInfo(cv->b.sc->parent,11,true);		/* Lookups */
+	FontInfo(cv->b.sc->parent,12,true);		/* Lookups */
 	if ( AnchorClassUnused(cv->b.sc,&waslig)==NULL )
 return;
     }
