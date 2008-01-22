@@ -7333,7 +7333,7 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     GTabInfo aspects[23], vaspects[6], lkaspects[3], uaspects[3];
     GGadgetCreateData mgcd[10], ngcd[17], psgcd[30], tngcd[8],
 	pgcd[12], vgcd[19], pangcd[22], comgcd[4], txgcd[23], floggcd[4],
-	mfgcd[8], mcgcd[8], szgcd[19], mkgcd[5], metgcd[29], vagcd[3], ssgcd[23],
+	mfgcd[8], mcgcd[8], szgcd[19], mkgcd[7], metgcd[29], vagcd[3], ssgcd[23],
 	xugcd[7], dgcd[6], ugcd[4], gaspgcd[5], gaspgcd_def[2], lksubgcd[2][4],
 	lkgcd[2], lkbuttonsgcd[15], cgcd[12];
     GGadgetCreateData mb[2], mb2, nb[2], nb2, nb3, xub[2], psb[2], psb2[3], ppbox[4],
@@ -7345,7 +7345,7 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
 	*xuarray[13], *psarray[10], *psarray2[21], *psarray3[3], *psarray4[10],
 	*ppbuttons[5], *pparray[6], *vradio[5], *varray[38], *metarray[46],
 	*pp2buttons[7], *ssarray[58], *panarray[38], *comarray[3], *flogarray[3],
-	*mkarray[3], *mkarray2[4], *txarray[5], *txarray2[30],
+	*mkarray[6], *mkarray2[4], *txarray[5], *txarray2[30],
 	*txarray3[6], *txarray4[6], *uarray[3], *darray[10],
 	*mcarray[13], *mcarray2[7],
 	*mfarray[14], *szarray[7], *szarray2[5], *szarray3[7],
@@ -7354,7 +7354,7 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
 	*charray1[4], *charray2[4], *charray3[4], *cvarray[9], *cvarray2[4];
     GTextInfo mlabel[10], nlabel[16], pslabel[30], tnlabel[7],
 	plabel[12], vlabel[19], panlabel[22], comlabel[3], txlabel[23],
-	mflabel[8], mclabel[8], szlabel[17], mklabel[5], metlabel[28],
+	mflabel[8], mclabel[8], szlabel[17], mklabel[7], metlabel[28],
 	sslabel[23], xulabel[6], dlabel[5], ulabel[1], gasplabel[5],
 	lkbuttonslabel[14], clabel[11], floglabel[3];
     GTextInfo *namelistnames;
@@ -9401,40 +9401,59 @@ return;
     memset(&mklabel,0,sizeof(mklabel));
     memset(&mkgcd,0,sizeof(mkgcd));
 
-    mkgcd[0].gd.pos.x = 10; mkgcd[0].gd.pos.y = 10;
-    mkgcd[0].gd.pos.width = ngcd[15].gd.pos.width; mkgcd[0].gd.pos.height = 200;
+    mklabel[0].text = (unichar_t *) _("These are not Anchor Classes. For them see the \"Lookups\" pane.");
+    mklabel[0].text_is_1byte = true;
+    mkgcd[0].gd.label = &mklabel[0];
     mkgcd[0].gd.flags = gg_visible | gg_enabled;
-    mkgcd[0].gd.cid = CID_MarkClasses;
-    mkgcd[0].gd.u.list = MarkClassesList(sf);
-    mkgcd[0].gd.handle_controlevent = GFI_MarkSelChanged;
-    mkgcd[0].creator = GListCreate;
+    mkgcd[0].creator = GLabelCreate;
 
-    mkgcd[1].gd.pos.x = 10; mkgcd[1].gd.pos.y = mkgcd[0].gd.pos.y+mkgcd[0].gd.pos.height+4;
-    mkgcd[1].gd.pos.width = -1;
+    mklabel[1].text = (unichar_t *) _("(Mark Classes can control when lookups are active");
+    mklabel[1].text_is_1byte = true;
+    mkgcd[1].gd.label = &mklabel[1];
     mkgcd[1].gd.flags = gg_visible | gg_enabled;
+    mkgcd[1].creator = GLabelCreate;
+
+    mklabel[2].text = (unichar_t *) _(" they do NOT position glyphs.)");
+    mklabel[2].text_is_1byte = true;
+    mkgcd[2].gd.label = &mklabel[2];
+    mkgcd[2].gd.flags = gg_visible | gg_enabled;
+    mkgcd[2].creator = GLabelCreate;
+
+    mkgcd[3].gd.pos.x = 10; mkgcd[3].gd.pos.y = 10;
+    mkgcd[3].gd.pos.width = ngcd[15].gd.pos.width; mkgcd[3].gd.pos.height = 200;
+    mkgcd[3].gd.flags = gg_visible | gg_enabled;
+    mkgcd[3].gd.cid = CID_MarkClasses;
+    mkgcd[3].gd.u.list = MarkClassesList(sf);
+    mkgcd[3].gd.handle_controlevent = GFI_MarkSelChanged;
+    mkgcd[3].creator = GListCreate;
+
+    mkgcd[4].gd.pos.x = 10; mkgcd[4].gd.pos.y = mkgcd[3].gd.pos.y+mkgcd[3].gd.pos.height+4;
+    mkgcd[4].gd.pos.width = -1;
+    mkgcd[4].gd.flags = gg_visible | gg_enabled;
 /* GT: See the long comment at "Property|New" */
 /* GT: The msgstr should contain a translation of "_New...", ignore "Mark|" */
-    mklabel[1].text = (unichar_t *) S_("Mark|_New...");
-    mklabel[1].text_is_1byte = true;
-    mklabel[1].text_in_resource = true;
-    mkgcd[1].gd.label = &mklabel[1];
-    mkgcd[1].gd.cid = CID_MarkNew;
-    mkgcd[1].gd.handle_controlevent = GFI_MarkNew;
-    mkgcd[1].creator = GButtonCreate;
+    mklabel[4].text = (unichar_t *) S_("Mark|_New...");
+    mklabel[4].text_is_1byte = true;
+    mklabel[4].text_in_resource = true;
+    mkgcd[4].gd.label = &mklabel[4];
+    mkgcd[4].gd.cid = CID_MarkNew;
+    mkgcd[4].gd.handle_controlevent = GFI_MarkNew;
+    mkgcd[4].creator = GButtonCreate;
 
-    mkgcd[2].gd.pos.x = -10; mkgcd[2].gd.pos.y = mkgcd[1].gd.pos.y;
-    mkgcd[2].gd.pos.width = -1;
-    mkgcd[2].gd.flags = gg_visible;
-    mklabel[2].text = (unichar_t *) _("_Edit...");
-    mklabel[2].text_is_1byte = true;
-    mklabel[2].text_in_resource = true;
-    mkgcd[2].gd.label = &mklabel[2];
-    mkgcd[2].gd.cid = CID_MarkEdit;
-    mkgcd[2].gd.handle_controlevent = GFI_MarkEdit;
-    mkgcd[2].creator = GButtonCreate;
+    mkgcd[5].gd.pos.x = -10; mkgcd[5].gd.pos.y = mkgcd[4].gd.pos.y;
+    mkgcd[5].gd.pos.width = -1;
+    mkgcd[5].gd.flags = gg_visible;
+    mklabel[5].text = (unichar_t *) _("_Edit...");
+    mklabel[5].text_is_1byte = true;
+    mklabel[5].text_in_resource = true;
+    mkgcd[5].gd.label = &mklabel[5];
+    mkgcd[5].gd.cid = CID_MarkEdit;
+    mkgcd[5].gd.handle_controlevent = GFI_MarkEdit;
+    mkgcd[5].creator = GButtonCreate;
 
-    mkarray[0] = &mkgcd[0]; mkarray[1] = &mkbox[2]; mkarray[2] = NULL;
-    mkarray2[0] = &mkgcd[1]; mkarray2[1] = GCD_Glue; mkarray2[2] = &mkgcd[2];
+    mkarray[0] = &mkgcd[0]; mkarray[1] = &mkgcd[1]; mkarray[2] = &mkgcd[2];
+      mkarray[3] = &mkgcd[3]; mkarray[4] = &mkbox[2]; mkarray[5] = NULL;
+    mkarray2[0] = &mkgcd[4]; mkarray2[1] = GCD_Glue; mkarray2[2] = &mkgcd[5];
      mkarray2[3] = NULL;
     memset(mkbox,0,sizeof(mkbox));
     mkbox[0].gd.flags = gg_enabled|gg_visible;
@@ -10314,7 +10333,7 @@ return;
     GHVBoxSetExpandableCol(cbox[3].ret,gb_expandglue);
     GHVBoxSetExpandableRow(cbox[4].ret,gb_expandglue);
 
-    GHVBoxSetExpandableRow(mkbox[0].ret,0);
+    GHVBoxSetExpandableRow(mkbox[0].ret,3);
     GHVBoxSetExpandableCol(mkbox[2].ret,gb_expandglue);
 
     GHVBoxSetExpandableRow(txbox[0].ret,gb_expandglue);
