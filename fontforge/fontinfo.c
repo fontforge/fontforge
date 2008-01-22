@@ -38,6 +38,14 @@ extern int _GScrollBar_Width;
 
 static int last_aspect=0;
 
+typedef struct markclassdlg {
+    GWindow gw;
+    struct gfi_data *d;
+    GGadget *list;
+    int which;
+    struct markclassdlg *next;
+} MarkClassDlg;
+
 GTextInfo emsizes[] = {
     { (unichar_t *) "1000", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
     { (unichar_t *) "1024", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -2267,13 +2275,16 @@ return( true );
 static void MCD_Close(struct markclassdlg *mcd);
 
 static void GFI_Close(struct gfi_data *d) {
+    MarkClassDlg *mcd, *n;
 
     if ( d->ccd )
 	CCD_Close(d->ccd);
     if ( d->smd )
 	SMD_Close(d->smd);
-    if ( d->mcd )
-	MCD_Close(d->mcd );
+    for ( mcd = d->mcd; mcd!=NULL; mcd = n ) {
+	n = mcd->next;
+	MCD_Close(mcd);
+    }
 
     PSDictFree(d->private);
 
@@ -2330,15 +2341,17 @@ return( ti );
 #define MCD_Width	250
 #define MCD_Height	210
 
-typedef struct markclassdlg {
-    GWindow gw;
-    struct gfi_data *d;
-    GGadget *list;
-    int which;
-} MarkClassDlg;
-
 static void MCD_Close(MarkClassDlg *mcd) {
-    mcd->d->mcd = NULL;
+    MarkClassDlg *p, *t;
+    struct gfi_data *gfi = mcd->d;
+
+    for ( p=NULL, t=gfi->mcd; t!=NULL && t!=mcd; p=t, t=t->next );
+    if ( t==NULL )
+	/* Hunh? How'd that happen? */;
+    else if ( p==NULL )
+	gfi->mcd = mcd->next;
+    else
+	p->next = mcd->next;
     GDrawDestroyWindow(mcd->gw);
     free(mcd);
 }
@@ -2563,18 +2576,13 @@ static void CreateMarkClassDlg(struct gfi_data *d, GGadget *list, int which) {
     int k;
     unichar_t *freeme = NULL;
 
-    if ( d->mcd!=NULL ) {
-	GDrawSetVisible(d->mcd->gw,true);
-	GDrawRaise(d->mcd->gw);
-return;
-    }
-
     memset(&wattrs,0,sizeof(wattrs));
     memset(&gcd,0,sizeof(gcd));
     memset(&label,0,sizeof(label));
 
     mcd = gcalloc(1,sizeof(MarkClassDlg));
     mcd->d = d; mcd->list = list; mcd->which = which;
+    mcd->next = d->mcd; d->mcd = mcd;
 
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
     wattrs.event_masks = ~(1<<et_charup);
