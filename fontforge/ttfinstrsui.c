@@ -1310,8 +1310,9 @@ static int sv_v_e_h(GWindow gw, GEvent *event) {
 	    int l = (event->u.mouse.y-EDGE_SPACER)/sv->fh + sv->lpos;
 	    int which = event->u.mouse.x > sv->valend;
 	    char buf[20];
+	    int old = sv->active;
 	    if ( sfinishup(sv,true) && event->u.mouse.x>sv->addrend &&
-		    l<sv->len/2 && l!=sv->active ) {
+		    l<sv->len/2 && l!=old ) {
 		sv->active = l;
 		sv->which = which;
 		if ( !which ) {
@@ -1327,6 +1328,7 @@ static int sv_v_e_h(GWindow gw, GEvent *event) {
 					    (l-sv->lpos)*sv->fh+EDGE_SPACER+1);
 		    GGadgetSetTitle8(sv->tf,sv->comments[l]==NULL?"":sv->comments[l]);
 		}
+		GDrawRequestExpose(sv->v,NULL,true);
 		GDrawPostEvent(event);	/* And we hope the tf catches it this time */
 	    }
 	}
