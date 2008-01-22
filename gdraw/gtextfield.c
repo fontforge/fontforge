@@ -1447,6 +1447,8 @@ static int gtextfield_expose(GWindow pixmap, GGadget *g, GEvent *event) {
     Color fg,sel;
     int y,ll,i, last;
     unichar_t *bitext = gt->dobitext || gt->password?gt->bidata.text:gt->text;
+    GRect unpadded_inner;
+    int pad;
 
     if ( g->state == gs_invisible || gt->dontdraw )
 return( false );
@@ -1459,7 +1461,11 @@ return( false );
 	    g->state==gs_enabled? gs_pressedactive: g->state,false);
     GBoxDrawBorder(pixmap,r,g->box,g->state,false);
 
-    GDrawPushClip(pixmap,&g->inner,&old2);
+    unpadded_inner = g->inner;
+    pad = GDrawPointsToPixels(g->base,g->box->padding);
+    unpadded_inner.x -= pad; unpadded_inner.y -= pad;
+    unpadded_inner.width += 2*pad; unpadded_inner.height += 2*pad;
+    GDrawPushClip(pixmap,&unpadded_inner,&old2);
     GDrawSetFont(pixmap,gt->font);
 
     sel = fg = g->state==gs_disabled?g->box->disabled_foreground:
@@ -2577,10 +2583,20 @@ static void GTextFieldFit(GTextField *gt) {
 
     {
 	FontInstance *old = GDrawSetFont(gt->g.base,gt->font);
-	width = GDrawGetTextBounds(gt->g.base,gt->text, -1, NULL, &bounds);
-	GDrawFontMetrics(gt->font,&as, &ds, &ld);
-	if ( as<bounds.as ) as = bounds.as;
-	if ( ds<bounds.ds ) ds = bounds.ds;
+	FontRequest rq;
+	int tries;
+	for ( tries = 0; tries<2; ++tries ) {
+	    width = GDrawGetTextBounds(gt->g.base,gt->text, -1, NULL, &bounds);
+	    GDrawFontMetrics(gt->font,&as, &ds, &ld);
+	    if ( as<bounds.as ) as = bounds.as;
+	    if ( ds<bounds.ds ) ds = bounds.ds;
+	    if ( gt->g.r.height==0 || as+ds-3+2*bp<=gt->g.r.height || tries==1 )
+	break;
+	    /* Doesn't fit. Try a smaller size */
+	    GDrawDecomposeFont(gt->font,&rq);
+	    --rq.point_size;
+	    gt->font = GDrawInstanciateFont(GDrawGetDisplayOfWindow(gt->g.base),&rq);
+	}
 	gt->fh = as+ds;
 	gt->as = as;
 	gt->nw = GDrawGetTextWidth(gt->g.base,nstr, 1, NULL );

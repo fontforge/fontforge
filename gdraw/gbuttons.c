@@ -88,6 +88,8 @@ static int gbutton_expose(GWindow pixmap, GGadget *g, GEvent *event) {
     int marklen = GDrawPointsToPixels(pixmap,_GListMarkSize),
 	    spacing = GDrawPointsToPixels(pixmap,_GGadget_TextImageSkip);
     int yoff = (g->inner.height-gb->fh)/2;
+    GRect unpadded_inner;
+    int pad;
 
     if ( g->state == gs_invisible )
 return( false );
@@ -108,7 +110,11 @@ return( false );
 	    (g->box->flags&(box_foreground_border_inner|box_foreground_border_outer|box_active_border_inner))!=0 ) {
 	GBoxDrawBorder(pixmap,&g->r,g->box,g->state,gb->is_default);
 
-	GDrawPushClip(pixmap,&g->inner,&old2);
+	unpadded_inner = g->inner;
+	pad = GDrawPointsToPixels(g->base,g->box->padding);
+	unpadded_inner.x -= pad; unpadded_inner.y -= pad;
+	unpadded_inner.width += 2*pad; unpadded_inner.height += 2*pad;
+	GDrawPushClip(pixmap,&unpadded_inner,&old2);
     }
     if ( gb->font!=NULL )
 	GDrawSetFont(pixmap,gb->font);
