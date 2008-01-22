@@ -9409,59 +9409,50 @@ return;
     memset(&mklabel,0,sizeof(mklabel));
     memset(&mkgcd,0,sizeof(mkgcd));
 
-    mklabel[0].text = (unichar_t *) _("These are not Anchor Classes. For them see the \"Lookups\" pane.");
+    mklabel[0].text = (unichar_t *) _(
+	"These are not Anchor Classes. For them see the \"Lookups\" pane.\n"
+	"(Mark Classes can control when lookups are active, they do NOT\n"
+	" position glyphs.)");
     mklabel[0].text_is_1byte = true;
     mkgcd[0].gd.label = &mklabel[0];
     mkgcd[0].gd.flags = gg_visible | gg_enabled;
     mkgcd[0].creator = GLabelCreate;
 
-    mklabel[1].text = (unichar_t *) _("(Mark Classes can control when lookups are active");
-    mklabel[1].text_is_1byte = true;
-    mkgcd[1].gd.label = &mklabel[1];
+    mkgcd[1].gd.pos.x = 10; mkgcd[1].gd.pos.y = 10;
+    mkgcd[1].gd.pos.width = ngcd[15].gd.pos.width; mkgcd[1].gd.pos.height = 200;
     mkgcd[1].gd.flags = gg_visible | gg_enabled;
-    mkgcd[1].creator = GLabelCreate;
+    mkgcd[1].gd.cid = CID_MarkClasses;
+    mkgcd[1].gd.u.list = MarkClassesList(sf);
+    mkgcd[1].gd.handle_controlevent = GFI_MarkSelChanged;
+    mkgcd[1].creator = GListCreate;
 
-    mklabel[2].text = (unichar_t *) _(" they do NOT position glyphs.)");
-    mklabel[2].text_is_1byte = true;
-    mkgcd[2].gd.label = &mklabel[2];
+    mkgcd[2].gd.pos.x = 10; mkgcd[2].gd.pos.y = mkgcd[1].gd.pos.y+mkgcd[1].gd.pos.height+4;
+    mkgcd[2].gd.pos.width = -1;
     mkgcd[2].gd.flags = gg_visible | gg_enabled;
-    mkgcd[2].creator = GLabelCreate;
-
-    mkgcd[3].gd.pos.x = 10; mkgcd[3].gd.pos.y = 10;
-    mkgcd[3].gd.pos.width = ngcd[15].gd.pos.width; mkgcd[3].gd.pos.height = 200;
-    mkgcd[3].gd.flags = gg_visible | gg_enabled;
-    mkgcd[3].gd.cid = CID_MarkClasses;
-    mkgcd[3].gd.u.list = MarkClassesList(sf);
-    mkgcd[3].gd.handle_controlevent = GFI_MarkSelChanged;
-    mkgcd[3].creator = GListCreate;
-
-    mkgcd[4].gd.pos.x = 10; mkgcd[4].gd.pos.y = mkgcd[3].gd.pos.y+mkgcd[3].gd.pos.height+4;
-    mkgcd[4].gd.pos.width = -1;
-    mkgcd[4].gd.flags = gg_visible | gg_enabled;
 /* GT: See the long comment at "Property|New" */
 /* GT: The msgstr should contain a translation of "_New...", ignore "Mark|" */
-    mklabel[4].text = (unichar_t *) S_("Mark|_New...");
-    mklabel[4].text_is_1byte = true;
-    mklabel[4].text_in_resource = true;
-    mkgcd[4].gd.label = &mklabel[4];
-    mkgcd[4].gd.cid = CID_MarkNew;
-    mkgcd[4].gd.handle_controlevent = GFI_MarkNew;
-    mkgcd[4].creator = GButtonCreate;
+    mklabel[2].text = (unichar_t *) S_("Mark|_New...");
+    mklabel[2].text_is_1byte = true;
+    mklabel[2].text_in_resource = true;
+    mkgcd[2].gd.label = &mklabel[2];
+    mkgcd[2].gd.cid = CID_MarkNew;
+    mkgcd[2].gd.handle_controlevent = GFI_MarkNew;
+    mkgcd[2].creator = GButtonCreate;
 
-    mkgcd[5].gd.pos.x = -10; mkgcd[5].gd.pos.y = mkgcd[4].gd.pos.y;
-    mkgcd[5].gd.pos.width = -1;
-    mkgcd[5].gd.flags = gg_visible;
-    mklabel[5].text = (unichar_t *) _("_Edit...");
-    mklabel[5].text_is_1byte = true;
-    mklabel[5].text_in_resource = true;
-    mkgcd[5].gd.label = &mklabel[5];
-    mkgcd[5].gd.cid = CID_MarkEdit;
-    mkgcd[5].gd.handle_controlevent = GFI_MarkEdit;
-    mkgcd[5].creator = GButtonCreate;
+    mkgcd[3].gd.pos.x = -10; mkgcd[3].gd.pos.y = mkgcd[2].gd.pos.y;
+    mkgcd[3].gd.pos.width = -1;
+    mkgcd[3].gd.flags = gg_visible;
+    mklabel[3].text = (unichar_t *) _("_Edit...");
+    mklabel[3].text_is_1byte = true;
+    mklabel[3].text_in_resource = true;
+    mkgcd[3].gd.label = &mklabel[3];
+    mkgcd[3].gd.cid = CID_MarkEdit;
+    mkgcd[3].gd.handle_controlevent = GFI_MarkEdit;
+    mkgcd[3].creator = GButtonCreate;
 
-    mkarray[0] = &mkgcd[0]; mkarray[1] = &mkgcd[1]; mkarray[2] = &mkgcd[2];
-      mkarray[3] = &mkgcd[3]; mkarray[4] = &mkbox[2]; mkarray[5] = NULL;
-    mkarray2[0] = &mkgcd[4]; mkarray2[1] = GCD_Glue; mkarray2[2] = &mkgcd[5];
+    mkarray[0] = &mkgcd[0]; mkarray[1] = &mkgcd[1]; 
+      mkarray[2] = &mkbox[2]; mkarray[3] = NULL;
+    mkarray2[0] = &mkgcd[2]; mkarray2[1] = GCD_Glue; mkarray2[2] = &mkgcd[3];
      mkarray2[3] = NULL;
     memset(mkbox,0,sizeof(mkbox));
     mkbox[0].gd.flags = gg_enabled|gg_visible;
@@ -10341,7 +10332,7 @@ return;
     GHVBoxSetExpandableCol(cbox[3].ret,gb_expandglue);
     GHVBoxSetExpandableRow(cbox[4].ret,gb_expandglue);
 
-    GHVBoxSetExpandableRow(mkbox[0].ret,3);
+    GHVBoxSetExpandableRow(mkbox[0].ret,1);
     GHVBoxSetExpandableCol(mkbox[2].ret,gb_expandglue);
 
     GHVBoxSetExpandableRow(txbox[0].ret,gb_expandglue);
