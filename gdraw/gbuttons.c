@@ -486,7 +486,7 @@ static void GButtonGetDesiredSize(GGadget *g, GRect *outer, GRect *inner) {
     GTextBounds bounds;
     int as=0, ds, ld, fh=0, width=0;
     GRect needed;
-    int i, lcnt=0;
+    int i;
     int bp = GBoxBorderWidth(g->base,g->box);
 
     if ( gl->image!=NULL ) {
@@ -506,7 +506,8 @@ static void GButtonGetDesiredSize(GGadget *g, GRect *outer, GRect *inner) {
 	    fh = as+ds;
 	} else
 	    fh = gl->fh*lcnt;
-    }
+    } else
+	fh = as+ds;
 
     if ( width!=0 && iwidth!=0 )
 	width += GDrawPointsToPixels(gl->g.base,_GGadget_TextImageSkip);
