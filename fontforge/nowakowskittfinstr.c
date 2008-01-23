@@ -1054,7 +1054,7 @@ static void init_fpgm(GlobalInstrCt *gic) {
 	0x00, //       0
 	0x59, //   EIF
 	0x2d, // ENDF
-	
+
 	/* Function 7: check if we are hinting in cleartype.
 	 * CAUTION! Older FreeType versions lie if asked.
 	 * Syntax: PUSHB_1 7 CALL; leaves boolean on the stack.
@@ -2656,7 +2656,10 @@ static void HStemGeninst(InstrCt *ct) {
 	    lastrp2 = rp2;
 
 	    /* Align the stem relatively to rp0 and rp1. */
-	    if (fabs(bp[rp2].y - hend) < fabs(bp[rp1].y - hbase))
+	    if (fabs(bp[rp2].y - hbase) < 0.2*fabs(bp[rp2].y - bp[rp1].y))
+		init_edge(ct, hend, ALL_CONTOURS);
+	    else if ((fabs(bp[rp2].y - hend) < fabs(bp[rp1].y - hbase)) ||
+	       (fabs(bp[rp1].y - hend) < 0.2*fabs(bp[rp2].y - bp[rp1].y)))
 		init_edge(ct, hbase, ALL_CONTOURS);
 	    else init_edge(ct, hend, ALL_CONTOURS);
 
