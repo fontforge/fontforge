@@ -1069,6 +1069,33 @@ double SplineLength(Spline *spline) {
 return( len );
 }
 
+double SplineLengthRange(Spline *spline,real from_t, real to_t) {
+    /* I ignore the constant term. It's just an unneeded addition */
+    double len, t;
+    double lastx = 0, lasty = 0;
+    double curx, cury;
+
+    if ( from_t>to_t ) {
+	real fubble = to_t;
+	to_t = from_t;
+	from_t = fubble;
+    }
+
+    lastx = ((spline->splines[0].a*from_t+spline->splines[0].b)*from_t+spline->splines[0].c)*from_t;
+    lasty = ((spline->splines[1].a*from_t+spline->splines[1].b)*from_t+spline->splines[1].c)*from_t;
+    len = 0;
+    for ( t=from_t; t<to_t + 1.0/128 ; t+=1.0/128 ) {
+	if ( t>to_t ) t = to_t;
+	curx = ((spline->splines[0].a*t+spline->splines[0].b)*t+spline->splines[0].c)*t;
+	cury = ((spline->splines[1].a*t+spline->splines[1].b)*t+spline->splines[1].c)*t;
+	len += sqrt( (curx-lastx)*(curx-lastx) + (cury-lasty)*(cury-lasty) );
+	lastx = curx; lasty = cury;
+	if ( t==to_t )
+    break;
+    }
+return( len );
+}
+
 static TPoint *SplinesFigureTPsBetween(SplinePoint *from, SplinePoint *to,
 	int *tot) {
     int cnt, i, j, pcnt;

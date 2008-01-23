@@ -168,6 +168,8 @@ typedef struct charview {
     int16 sas, sfh, nas, nfh;
     BasePoint info;
     SplinePoint *info_sp;
+    Spline *info_spline;
+    real info_t;
     GPoint e;					/* mouse location */
     GPoint olde;
     BasePoint last_c;

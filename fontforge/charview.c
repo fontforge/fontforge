@@ -218,7 +218,7 @@ return;
     GDrawSetLineWidth(pixmap,0);
     GDrawSetXORMode(pixmap);
     GDrawSetXORBase(pixmap,GDrawGetDefaultBackground(NULL));
-    GDrawDrawRect(pixmap,&r,0x000000);
+    GDrawDrawRect(pixmap,&r,oldoutlinecol);
     GDrawSetCopyMode(pixmap);
     GDrawSetDashedLine(pixmap,0,0,0);
 }
@@ -234,7 +234,7 @@ return;
     GDrawSetXORMode(pixmap);
     GDrawSetLineWidth(pixmap,0);
     GDrawSetXORBase(pixmap,GDrawGetDefaultBackground(NULL));
-    GDrawDrawLine(pixmap,x,y,xend,yend,0x000000);
+    GDrawDrawLine(pixmap,x,y,xend,yend,oldoutlinecol);
     GDrawSetCopyMode(pixmap);
 }
 
@@ -3261,11 +3261,13 @@ return;
 	fs.p = &cv->p;
     } else if ( cv->active_tool == cvt_curve || cv->active_tool == cvt_corner ||
 	    cv->active_tool == cvt_tangent || cv->active_tool == cvt_hvcurve ||
-	    cv->active_tool == cvt_pen ) {
+	    cv->active_tool == cvt_pen || cv->active_tool == cvt_ruler ) {
+	/* Snap to points and splines */
 	InSplineSet(&fs,cv->b.layerheads[cv->b.drawmode]->splines,cv->b.sc->inspiro);
 	if ( fs.p->sp==NULL && fs.p->spline==NULL )
 	    CVDoSnaps(cv,&fs);
     } else {
+	/* Just snap to points */
 	NearSplineSetPoints(&fs,cv->b.layerheads[cv->b.drawmode]->splines,cv->b.sc->inspiro);
 	if ( fs.p->sp==NULL && fs.p->spline==NULL )
 	    CVDoSnaps(cv,&fs);
@@ -3769,7 +3771,7 @@ return;
 		(cv->b.layerheads[cv->b.drawmode]->undoes->undotype==ut_state ||
 		 cv->b.layerheads[cv->b.drawmode]->undoes->undotype==ut_tstate ))
 	    spl = cv->b.layerheads[cv->b.drawmode]->undoes->u.state.splines;
-	if ( cv->active_tool != cvt_knife )
+	if ( cv->active_tool != cvt_knife && cv->active_tool != cvt_ruler )
 	    NearSplineSetPoints(&fs,spl,cv->b.sc->inspiro);
 	else 
 	    InSplineSet(&fs,spl,cv->b.sc->inspiro);
@@ -3795,6 +3797,8 @@ return;
 
     cv->info.x = p.cx; cv->info.y = p.cy;
     cv->info_sp = p.sp;
+    cv->info_spline = p.spline;
+    cv->info_t = p.t;
     cv->e.x = event->u.mouse.x; cv->e.y = event->u.mouse.y;
     CVInfoDraw(cv,cv->gw);
 
