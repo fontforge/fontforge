@@ -1935,9 +1935,14 @@ static PyObject *PyFFContour_ReverseDirection(PyFF_Contour *self, PyObject *args
 
     temp = PyMem_New(PyFF_Point *,self->pt_max);
     old = self->points;
-    temp[0] = old[0];
-    for ( i=self->pt_cnt-1, j=1; i>0; --i, ++j )
-	temp[j] = old[i];
+    if ( self->closed ) {
+	temp[0] = old[0];
+	for ( i=self->pt_cnt-1, j=1; i>0; --i, ++j )
+	    temp[j] = old[i];
+    } else {
+	for ( i=self->pt_cnt-1, j=0; i>=0; --i, ++j )
+	    temp[j] = old[i];
+    }
     self->points = temp;
     PyMem_Del(old);
     PyFFContour_ClearSpiros((PyFF_Contour *) self);
