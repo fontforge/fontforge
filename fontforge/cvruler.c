@@ -61,10 +61,12 @@ static int RulerText(CharView *cv, unichar_t *ubuf, int line) {
     double dx, dy;
     Spline *s;
     double t;
+    BasePoint slope;
+    real xoff = cv->info.x-cv->p.cx, yoff = cv->info.y-cv->p.cy;
 
+    buf[0] = '\0';
     switch ( line ) {
       case 0: {
-	real xoff = cv->info.x-cv->p.cx, yoff = cv->info.y-cv->p.cy;
 	real len = sqrt(xoff*xoff+yoff*yoff);
 
 	if ( cv->autonomous_ruler_w ) {
@@ -82,19 +84,37 @@ static int RulerText(CharView *cv, unichar_t *ubuf, int line) {
       break; }
       case 1:
 	if ( cv->p.pressed ) {
-	    if ( cv->p.sp!=NULL && cv->info_sp!=NULL &&
-		    ((cv->p.sp->next!=NULL && cv->p.sp->next->to==cv->info_sp) ||
-		     (cv->p.sp->prev!=NULL && cv->p.sp->prev->from==cv->info_sp)) ) {
-		if ( cv->p.sp->next!=NULL && cv->p.sp->next->to==cv->info_sp )
-		    len = SplineLength(cv->p.sp->next);
-		else
-		    len = SplineLength(cv->p.sp->prev);
-		if ( len>1 )
-		    sprintf( buf, "Spline Length=%.1f", len);
-		else
-		    sprintf( buf, "Spline Length=%g", len);
-	    } else
-return( false );
+	    if ( cv->p.spline!=NULL ||
+		    (cv->p.sp!=NULL &&
+		     ((cv->p.sp->next==NULL && cv->p.sp->prev!=NULL) ||
+		      (cv->p.sp->prev==NULL && cv->p.sp->next!=NULL) ||
+		      (cv->p.sp->next!=NULL && cv->p.sp->prev!=NULL &&
+		        BpColinear(!cv->p.sp->noprevcp ? &cv->p.sp->prevcp : &cv->p.sp->prev->from->me,
+				&cv->p.sp->me,
+			        !cv->p.sp->nonextcp ? &cv->p.sp->nextcp : &cv->p.sp->next->to->me))) ) ) {
+		Spline *spline;
+		double t;
+
+		if ( cv->p.spline!=NULL ) {
+		    spline = cv->p.spline;
+		    t = cv->p.t;
+		} else if ( cv->p.sp->next == NULL ) {
+		    spline = cv->p.sp->prev;
+		    t = 1;
+		} else {
+		    spline = cv->p.sp->next;
+		    t = 0;
+		}
+		slope.x = (3*spline->splines[0].a*t + 2*spline->splines[0].b)*t + spline->splines[0].c;
+		slope.y = (3*spline->splines[1].a*t + 2*spline->splines[1].b)*t + spline->splines[1].c;
+		len = sqrt(slope.x*slope.x + slope.y*slope.y);
+		if ( len!=0 ) {
+		    slope.x /= len; slope.y /= len;
+		    sprintf( buf, _("Normal Distance: %.2f Along Spline: %.2f"),
+			    fabs(slope.y*xoff - slope.x*yoff),
+			    slope.x*xoff + slope.y*yoff );
+		}
+	    }
 	} else if ( cv->dv!=NULL || cv->b.gridfit!=NULL ) {
 	    double scale = scale = (cv->b.sc->parent->ascent+cv->b.sc->parent->descent)/(rint(cv->ft_pointsize*cv->ft_dpi/72.0));
 	    sprintf( buf, "%.2f,%.2f", (double) (cv->info.x/scale), (double) (cv->info.y/scale));
@@ -110,9 +130,35 @@ return( false );
 return( false );
       break;
       case 2:
-	if ( cv->p.pressed )
+	if ( cv->p.pressed ) {
+	    if ( cv->p.sp!=NULL && cv->info_sp!=NULL &&
+		    ((cv->p.sp->next!=NULL && cv->p.sp->next->to==cv->info_sp) ||
+		     (cv->p.sp->prev!=NULL && cv->p.sp->prev->from==cv->info_sp)) ) {
+		if ( cv->p.sp->next!=NULL && cv->p.sp->next->to==cv->info_sp )
+		    len = SplineLength(cv->p.sp->next);
+		else
+		    len = SplineLength(cv->p.sp->prev);
+	    } else if ( cv->p.spline == cv->info_spline && cv->info_spline!=NULL )
+		len = SplineLengthRange(cv->info_spline,cv->p.t,cv->info_t);
+	    else if ( cv->p.sp!=NULL && cv->info_spline!=NULL &&
+		    cv->p.sp->next == cv->info_spline )
+		len = SplineLengthRange(cv->info_spline,0,cv->info_t);
+	    else if ( cv->p.sp!=NULL && cv->info_spline!=NULL &&
+		    cv->p.sp->prev == cv->info_spline )
+		len = SplineLengthRange(cv->info_spline,cv->info_t,1);
+	    else if ( cv->info_sp!=NULL && cv->p.spline!=NULL &&
+		    cv->info_sp->next == cv->p.spline )
+		len = SplineLengthRange(cv->p.spline,0,cv->p.t);
+	    else if ( cv->info_sp!=NULL && cv->p.spline!=NULL &&
+		    cv->info_sp->prev == cv->p.spline )
+		len = SplineLengthRange(cv->p.spline,cv->p.t,1);
+	    else
 return( false );
-	else if ( cv->p.spline!=NULL ) {
+	    if ( len>1 )
+		sprintf( buf, "Spline Length=%.1f", len);
+	    else
+		sprintf( buf, "Spline Length=%g", len);
+	} else if ( cv->p.spline!=NULL ) {
 	    s = cv->p.spline;
 	    t = cv->p.t;
 	    dx = (3*s->splines[0].a*t+2*s->splines[0].b)*t+s->splines[0].c;
@@ -267,6 +313,7 @@ void CVMouseDownRuler(CharView *cv, GEvent *event) {
     cv->autonomous_ruler_w = false;
 
     RulerPlace(cv,event);
+    cv->p.rubberlining = true;
     GDrawSetVisible(cv->ruler_w,true);
 }
 
@@ -291,6 +338,7 @@ return;
     if ( !cv->p.pressed && (event->u.mouse.state&ksm_alt) ) /* but a mouse up might sneak in... */
 return;
     GDrawRequestExpose(cv->ruler_w,NULL,false);
+    GDrawRequestExpose(cv->v,NULL,false);
 }
 
 void CVMouseUpRuler(CharView *cv, GEvent *event) {

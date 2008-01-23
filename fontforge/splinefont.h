@@ -2146,6 +2146,7 @@ extern Spline *ApproximateSplineFromPoints(SplinePoint *from, SplinePoint *to,
 extern Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
 	TPoint *mid, int cnt,int order2);
 extern double SplineLength(Spline *spline);
+extern double SplineLengthRange(Spline *spline, real from_t, real to_t);
 extern int SplineIsLinear(Spline *spline);
 extern int SplineIsLinearMake(Spline *spline);
 extern int SplineInSplineSet(Spline *spline, SplineSet *spl);
