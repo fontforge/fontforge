@@ -678,7 +678,7 @@ return;
 static void _LogError(const char *format,va_list ap) {
     char buffer[400], *str;
     vsnprintf(buffer,sizeof(buffer),format,ap);
-    if ( no_windowing_ui ) {
+    if ( no_windowing_ui || screen_display==NULL ) {
 	str = utf82def_copy(buffer);
 	fprintf(stderr,"%s",str);
 	if ( str[strlen(str)-1]!='\n' )
