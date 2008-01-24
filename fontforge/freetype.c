@@ -778,7 +778,8 @@ return( NULL );
     if ( _FT_Set_Char_Size(ftc->face,0,(int) (ptsize*64), dpi, dpi))
 return( NULL );	/* Error Return */
 
-    if ( _FT_Load_Glyph(ftc->face,ftc->glyph_indeces[enc],FT_LOAD_NO_BITMAP))
+    if ( _FT_Load_Glyph(ftc->face,ftc->glyph_indeces[enc],
+	depth==2? (FT_LOAD_NO_BITMAP|FT_LOAD_TARGET_MONO) : FT_LOAD_NO_BITMAP))
 return( NULL );
 
     slot = ((FT_Face) (ftc->face))->glyph;
