@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 10-Dec-2007 -->
+  <!-- AP: Last modified: 21-Jan-2008 -->
   <TITLE>The Metrics View</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -109,8 +109,21 @@
   in alphabetic order -- this is not the order in which the lookups will be
   executed (or not usually the order)).
   <P>
-  If you wish to enter non-unicode characters you may drag them from the font
-  view and drop them into the metrics view where you want them to go.
+  If you wish to enter characters you cannot type:
+  <OL>
+    <LI>
+      Select the character (or glyph) in the fontview and then drag and drop it
+      into the metrics view at the appropriate place
+    <LI>
+      Use the View menu to change or insert a character or glyph (View-&gt;Insert
+      Glyph After)
+    <LI>
+      Select the characters individually and in order in the font view before you
+      open the metrics view, when you do open it the characters will appear in
+      the order you selected them
+    <LI>
+      FontForge has its own funky <A HREF="#Entering">input method</A>
+  </OL>
   <P>
   The mid portion of the view is taken up with the displayed glyphs. For outline
   glyphs these are sized so that the em-height of the font just fits in this
@@ -188,7 +201,7 @@
   Or at best some sub-set of ISO 8859-1 characters. How can the full range
   of unicode characters be entered?
   <P>
-  X supplies a sophisticated mechanism for entering CJK characters via stand-alone
+  X supplies a sophisticated mechanism for entering characters via stand-alone
   <A HREF="xim.html">input method servers</A>. FontForge supports this to some
   extent now.
   <P>

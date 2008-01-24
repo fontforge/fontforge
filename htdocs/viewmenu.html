@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 19-Nov-2007 -->
+  <!-- AP: Last modified: 24-Jan-2008 -->
   <TITLE>The View Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -173,7 +173,7 @@
     <LI>
       <A HREF="#bitmaps">&lt;list of bitmap pixel sizes, if any&gt;</A>
     <LI>
-      <A HREF="#grid">Show/Hide Grid</A>
+      <A HREF="#Grid">Show/Hide Grid</A>
     <LI>
       <A HREF="#Outline">Outline</A>
     <LI>
@@ -199,7 +199,19 @@
     <LI>
       <A HREF="#Fill">Fill</A>
     <LI>
-      <A HREF="#ShowGridFit">Show Grid Fit...</A>
+      Show Grid Fit
+      <UL>
+	<LI>
+	  <A HREF="#ShowGridFit">Show Grid Fit...</A>
+	<LI>
+	  <A HREF="#GFBigger">Bigger Point Size</A>
+	<LI>
+	  <A HREF="#GFSmaller">Smaller Point Size</A>
+	<LI>
+	  <A HREF="#GFAntiAlias">Anti-Alias</A>
+	<LI>
+	  <A HREF="#GFOff">Off</A>
+      </UL>
     <LI>
       <A HREF="#Bigger">Bigger Pixel Size</A>
     <LI>
@@ -569,11 +581,35 @@
       can be very slow. If the glyph is too big (too magnified) then filling will
       not be done).
     <DT>
-      <A NAME="ShowGridFit">Show Grid Fit</A>
+      Show Grid Fit
     <DD>
-      In the Outline view and only if the freetype library is available. Brings
-      up a <A HREF="charview.html#GridFit">dialog</A> which allows you to control
-      whether a grid fit version of the splines in the font is displayed.
+      <DL>
+	<DT>
+	  <A NAME="ShowGridFit">Show Grid Fit</A>
+	<DD>
+	  In the Outline view and only if the freetype library is available. Brings
+	  up a <A HREF="charview.html#GridFit">dialog</A> which allows you to control
+	  whether a grid fit version of the splines in the font is displayed.
+	<DT>
+	  <A NAME="GFBigger">Bigger</A> Point Size
+	<DD>
+	  In the Outline view, if grid fitting is turned on, this will increase the
+	  point size (note, this is slightly different from increasing the pixel size).
+	<DT>
+	  <A NAME="GFSmaller">Smaller</A> Point Size
+	<DD>
+	  In the Outline view, if grid fitting is turned on, this will decrease the
+	  point size.
+	<DT>
+	  <A NAME="GFAntiAlias">Anti-Alias</A>
+	<DD>
+	  In the Outline view, if grid fitting is turned on, this will toggle whethe
+	  the display is in anti alias mode.
+	<DT>
+	  <A NAME="GFOff">Off</A>
+	<DD>
+	  Turns off grid fitting.
+      </DL>
     <DT>
       <A NAME="Bigger">Bigger</A> Pixel Size
     <DD>
