@@ -2191,8 +2191,8 @@ int PfmSplineFont(FILE *pfm, SplineFont *sf, int type0,EncMap *map) {
 	    windows_encoding = 0xff;
     if ( windows_encoding!=0 ) {
 	memset(winmap,-1,sizeof(winmap));
-	for ( i=0; i<256 && i<map->enccount; ++i )
-	    if ( (ii=map->map[i])!=-1 )
+	for ( i=0; i<sf->glyphcnt; ++i )
+	    if ( (ii=map->backmap[i])!=-1 && ii<256 )
 		winmap[ii] = i;
     }
 
