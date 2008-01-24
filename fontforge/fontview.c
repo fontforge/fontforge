@@ -2674,10 +2674,12 @@ static void FVMenuEditTable(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 				  CHR('c','v','t',' '));
 }
 
+#if 0
 static void FVMenuPrivateToCvt(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     CVT_ImportPrivate(fv->b.sf);
 }
+#endif
 
 static void FVMenuClearInstrs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
@@ -3180,10 +3182,12 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_AutoInstr: case MID_EditInstructions:
 	    mi->ti.disabled = !fv->b.sf->order2 || anychars==-1 || multilayer;
 	  break;
+#if 0
 	  case MID_PrivateToCvt:
 	    mi->ti.disabled = !fv->b.sf->order2 || multilayer ||
 		    fv->b.sf->private==NULL || fv->b.sf->cvt_dlg!=NULL;
 	  break;
+#endif
 	  case MID_Editfpgm: case MID_Editprep: case MID_Editcvt: case MID_Editmaxp:
 	    mi->ti.disabled = !fv->b.sf->order2 || multilayer;
 	  break;
@@ -4395,7 +4399,9 @@ static GMenuItem2 htlist[] = {
     { { (unichar_t *) N_("Edit 'prep'..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Edit 'prep'...|No Shortcut"), NULL, NULL, FVMenuEditTable, MID_Editprep },
     { { (unichar_t *) N_("Edit 'maxp'..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Edit 'maxp'...|No Shortcut"), NULL, NULL, FVMenuEditTable, MID_Editmaxp },
     { { (unichar_t *) N_("Edit 'cvt '..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Edit 'cvt '...|No Shortcut"), NULL, NULL, FVMenuEditTable, MID_Editcvt },
+#if 0
     { { (unichar_t *) N_("Private to 'cvt'"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Private to 'cvt'|No Shortcut"), NULL, NULL, FVMenuPrivateToCvt, MID_PrivateToCvt },
+#endif
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Clear Hints"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Clear Hints|No Shortcut"), NULL, NULL, FVMenuClearHints, MID_ClearHints },
     { { (unichar_t *) N_("Clear _Width MD"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Clear Width MD|No Shortcut"), NULL, NULL, FVMenuClearWidthMD, MID_ClearWidthMD },
