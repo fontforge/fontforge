@@ -4712,6 +4712,10 @@ return( true );
 #define MID_AnchorGlyph	2030
 #define MID_AnchorControl 2031
 #define MID_ShowSideBearings	2032
+#define MID_Bigger	2033
+#define MID_Smaller	2034
+#define MID_GridFitAA	2035
+#define MID_GridFitOff	2036
 #define MID_Cut		2101
 #define MID_Copy	2102
 #define MID_Paste	2103
@@ -5198,6 +5202,31 @@ static void CVMenuShowGridFit(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     if ( !hasFreeType() || cv->b.drawmode!=dm_fore || cv->dv!=NULL )
 return;
     CVFtPpemDlg(cv,false);
+}
+
+static void CVMenuChangePointSize(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    if ( !hasFreeType() || cv->b.drawmode!=dm_fore || cv->dv!=NULL || !cv->show_ft_results )
+return;
+
+    if ( mi->mid==MID_GridFitOff ) {
+	cv->show_ft_results = false;
+	SplinePointListsFree(cv->b.gridfit); cv->b.gridfit = NULL;
+	FreeType_FreeRaster(cv->raster); cv->raster = NULL;
+	GDrawRequestExpose(cv->v,NULL,false);
+return;
+    }
+
+    if ( mi->mid==MID_Bigger )
+	++cv->ft_pointsize;
+    else if ( mi->mid==MID_Smaller && cv->ft_pointsize>0 )
+	--cv->ft_pointsize;
+
+    if ( mi->mid==MID_GridFitAA )
+	cv->ft_depth = cv->ft_depth==8 ? 2 : 8;
+    cv->ft_ppem = rint(cv->ft_pointsize*cv->ft_dpi/72.0);
+    CVGridFitChar(cv);
 }
 
 static void CVMenuEditInstrs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -8307,6 +8336,32 @@ static void cv_nplistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
+static void gflistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	switch ( mi->mid ) {
+	  case MID_ShowGridFit:
+	    mi->ti.disabled = !hasFreeType() || cv->b.drawmode!=dm_fore || cv->dv!=NULL;
+	    mi->ti.checked = cv->show_ft_results;
+	  break;
+	  case MID_Bigger:
+	    mi->ti.disabled = !cv->show_ft_results;
+	  break;
+	  case MID_Smaller:
+	    mi->ti.disabled = !cv->show_ft_results && cv->ft_pointsize>0;
+	  break;
+	  case MID_GridFitAA:
+	    mi->ti.disabled = !cv->show_ft_results;
+	    mi->ti.checked = cv->ft_depth==8;
+	  break;
+	  case MID_GridFitOff:
+	    mi->ti.disabled = !cv->show_ft_results;
+	  break;
+	}
+    }
+}
+
 static void cv_vwlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
     int pos, gid;
     SplineFont *sf = cv->b.sc->parent;
@@ -8376,7 +8431,6 @@ static void cv_vwlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_ShowGridFit:
 	    mi->ti.disabled = !hasFreeType() || cv->b.drawmode!=dm_fore || cv->dv!=NULL;
-	    mi->ti.checked = cv->show_ft_results;
 	  break;
 	  case MID_Fill:
 	    mi->ti.checked = cv->showfilled;
@@ -8990,6 +9044,15 @@ static GMenuItem2 nplist[] = {
     NULL
 };
 
+static GMenuItem2 gflist[] = {
+    { { (unichar_t *) N_("Show _Grid Fit..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'l' }, H_("Show Grid Fit...|No Shortcut"), NULL, NULL, CVMenuShowGridFit, MID_ShowGridFit },
+    { { (unichar_t *) N_("_Bigger Point Size"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Bigger Point Size|Ctl+Shft++"), NULL, NULL, CVMenuChangePointSize, MID_Bigger },
+    { { (unichar_t *) N_("_Smaller Point Size"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Smaller Point Size|Ctl+-"), NULL, NULL, CVMenuChangePointSize, MID_Smaller },
+    { { (unichar_t *) N_("_Anti Alias"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'L' }, H_("Grid Fit Anti Alias|Ctl+="), NULL, NULL, CVMenuChangePointSize, MID_GridFitAA },
+    { { (unichar_t *) N_("_Off"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Grid Fit Off|No Shortcut"), NULL, NULL, CVMenuChangePointSize, MID_GridFitOff },
+    NULL
+};
+
 static GMenuItem2 vwlist[] = {
     { { (unichar_t *) N_("_Fit"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Fit|Ctl+F"), NULL, NULL, CVMenuScale, MID_Fit },
     { { (unichar_t *) N_("Z_oom out"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, H_("Zoom out|Alt+Ctl+-"), NULL, NULL, CVMenuScale, MID_ZoomOut },
@@ -9014,7 +9077,11 @@ static GMenuItem2 vwlist[] = {
     { { (unichar_t *) N_("Show _Control Point Info"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("Show Control Point Info|No Shortcut"), NULL, NULL, CVMenuShowCPInfo, MID_ShowCPInfo },
     { { (unichar_t *) N_("Show Side B_earings"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("Show Side Bearings|No Shortcut"), NULL, NULL, CVMenuShowSideBearings, MID_ShowSideBearings },
     { { (unichar_t *) N_("Fi_ll"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'l' }, H_("Fill|No Shortcut"), NULL, NULL, CVMenuFill, MID_Fill },
-    { { (unichar_t *) N_("Sho_w Grid Fit..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'l' }, H_("Show Grid Fit...|No Shortcut"), NULL, NULL, CVMenuShowGridFit, MID_ShowGridFit },
+    { { (unichar_t *) N_("Sho_w Grid Fit"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'l' }, NULL,
+    gflist,
+    gflistcheck,
+    NULL,
+    MID_ShowGridFit },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
     { { (unichar_t *) N_("Com_binations"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'b' }, NULL, cblist, cblistcheck },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
