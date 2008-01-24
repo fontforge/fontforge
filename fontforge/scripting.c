@@ -5336,9 +5336,12 @@ static void bReplaceCvtAt(Context *c) {
 }
 
 static void bPrivateToCvt(Context *c) {
+    ScriptError( c, "This command has been removed.");
+#if 0
     if ( c->a.argc!=1 )
 	ScriptError( c, "Wrong number of arguments");
     CVT_ImportPrivate(c->curfv->sf);
+#endif
 }
 
 static void bClearHints(Context *c) {
