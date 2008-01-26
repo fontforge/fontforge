@@ -92,6 +92,7 @@ typedef struct pointdata {
     unsigned int next_is_l: 1;
     unsigned int prev_is_l: 1;
     uint8 x_extr, y_extr;
+    uint8 x_corner, y_corner;
     BasePoint newpos;
     BasePoint newnext, newprev;
     BasePoint posdir;		/* If point has been positioned in 1 direction, this is that direction */
