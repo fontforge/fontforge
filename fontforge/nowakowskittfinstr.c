@@ -289,39 +289,6 @@ int TTF_getcvtval(SplineFont *sf,int val) {
 return( TTF__getcvtval(sf,val));
 }
 
-static void _CVT_ImportPrivateString(SplineFont *sf,char *str) {
-    char *end;
-    double d;
-
-    if ( str==NULL )
-return;
-    while ( *str ) {
-	while ( !isdigit(*str) && *str!='-' && *str!='+' && *str!='.' && *str!='\0' )
-	    ++str;
-	if ( *str=='\0' )
-    break;
-	d = strtod(str,&end);
-	if ( d>=-32768 && d<=32767 ) {
-	    int v = rint(d);
-	    TTF__getcvtval(sf,v);
-	}
-	str = end;
-    }
-}
-
-void CVT_ImportPrivate(SplineFont *sf) {
-    if ( sf->private==NULL )
-return;
-    _CVT_ImportPrivateString(sf,PSDictHasEntry(sf->private,"StdHW"));
-    _CVT_ImportPrivateString(sf,PSDictHasEntry(sf->private,"StdVW"));
-    _CVT_ImportPrivateString(sf,PSDictHasEntry(sf->private,"StemSnapH"));
-    _CVT_ImportPrivateString(sf,PSDictHasEntry(sf->private,"StemSnapV"));
-    _CVT_ImportPrivateString(sf,PSDictHasEntry(sf->private,"BlueValues"));
-    _CVT_ImportPrivateString(sf,PSDictHasEntry(sf->private,"OtherBlues"));
-    _CVT_ImportPrivateString(sf,PSDictHasEntry(sf->private,"FamilyBlues"));
-    _CVT_ImportPrivateString(sf,PSDictHasEntry(sf->private,"FamilyOtherBlues"));
-}
-
 /* We are given a stem weight and try to find matching one in CVT.
  * If none found, we return -1.
  */
