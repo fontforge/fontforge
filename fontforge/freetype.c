@@ -719,8 +719,8 @@ static FT_Outline_Funcs outlinefuncs = {
     0,0		/* I don't understand shift and delta */
 };
 
-SplineSet *FreeType_GridFitChar(void *single_glyph_context,
-	int enc, real ptsize, int dpi, uint16 *width, SplineChar *sc) {
+SplineSet *FreeType_GridFitChar(void *single_glyph_context, int enc,
+	real ptsize, int dpi, uint16 *width, SplineChar *sc, int depth) {
     FT_GlyphSlot slot;
     FTC *ftc = (FTC *) single_glyph_context;
     struct ft_context outline_context;
@@ -738,7 +738,8 @@ return( NULL );
     if ( _FT_Set_Char_Size(ftc->face,0,(int) (ptsize*64), dpi, dpi))
 return( NULL );	/* Error Return */
 
-    if ( _FT_Load_Glyph(ftc->face,ftc->glyph_indeces[enc],FT_LOAD_NO_BITMAP))
+    if ( _FT_Load_Glyph(ftc->face,ftc->glyph_indeces[enc],
+	depth==2 ? (FT_LOAD_NO_BITMAP|FT_LOAD_TARGET_MONO) : FT_LOAD_NO_BITMAP))
 return( NULL );
 
     slot = ftc->face->glyph;
