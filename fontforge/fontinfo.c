@@ -7252,8 +7252,26 @@ return;
 		if ( !(event->u.mouse.state&(ksm_shift|ksm_control)) ) {
 		    LookupDeselect(lk);
 		    lk->all[i].selected = true;
-		} else
+		} else if ( event->u.mouse.state&ksm_control ) {
 		    lk->all[i].selected = !lk->all[i].selected;
+		} else if ( lk->all[i].selected ) {
+		    lk->all[i].selected = false;
+		} else {
+		    for ( j=0; j<lk->cnt; ++j )
+			if ( !lk->all[j].deleted  && lk->all[j].selected )
+		    break;
+		    if ( j==lk->cnt )
+			lk->all[i].selected = true;
+		    else if ( j<i ) {
+			for ( ; j<=i ; ++j )
+			    if ( !lk->all[j].deleted )
+				lk->all[j].selected = true;
+		    } else {
+			for ( ; j>=i ; --j )
+			    if ( !lk->all[j].deleted )
+				lk->all[j].selected = true;
+		    }
+		}
 		GFI_LookupEnableButtons(gfi,isgpos);
 		GDrawRequestExpose(gw,NULL,true);
 		if ( event->u.mouse.button==3 )
