@@ -5215,18 +5215,18 @@ return;
 	SplinePointListsFree(cv->b.gridfit); cv->b.gridfit = NULL;
 	FreeType_FreeRaster(cv->raster); cv->raster = NULL;
 	GDrawRequestExpose(cv->v,NULL,false);
-return;
+    } else {
+	if ( mi->mid==MID_Bigger )
+	    ++cv->ft_pointsize;
+	else if ( mi->mid==MID_Smaller && cv->ft_pointsize>0 )
+	    --cv->ft_pointsize;
+
+	if ( mi->mid==MID_GridFitAA )
+	    cv->ft_depth = cv->ft_depth==8 ? 2 : 8;
+	cv->ft_ppem = rint(cv->ft_pointsize*cv->ft_dpi/72.0);
+	CVGridFitChar(cv);
     }
-
-    if ( mi->mid==MID_Bigger )
-	++cv->ft_pointsize;
-    else if ( mi->mid==MID_Smaller && cv->ft_pointsize>0 )
-	--cv->ft_pointsize;
-
-    if ( mi->mid==MID_GridFitAA )
-	cv->ft_depth = cv->ft_depth==8 ? 2 : 8;
-    cv->ft_ppem = rint(cv->ft_pointsize*cv->ft_dpi/72.0);
-    CVGridFitChar(cv);
+    SCRefreshTitles(cv->b.sc);
 }
 
 static void CVMenuEditInstrs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
