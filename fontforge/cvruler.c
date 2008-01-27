@@ -155,9 +155,9 @@ return( false );
 	    else
 return( false );
 	    if ( len>1 )
-		sprintf( buf, "Spline Length=%.1f", len);
+		sprintf( buf, _("Spline Length=%.1f"), len);
 	    else
-		sprintf( buf, "Spline Length=%g", len);
+		sprintf( buf, _("Spline Length=%g"), len);
 	} else if ( cv->p.spline!=NULL ) {
 	    s = cv->p.spline;
 	    t = cv->p.t;
