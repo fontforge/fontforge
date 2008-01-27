@@ -1986,7 +1986,8 @@ static void featureheader(struct font_diff *fd) {
     if ( !fd->local_diff ) {
 	fputs("  ",fd->diffs);
 	fprintf( fd->diffs, _("Lookup subtable %s (matched with %s)\n"),
-		fd->cur_sub1->subtable_name, fd->cur_sub2->subtable_name );
+		fd->cur_sub1->subtable_name,
+		fd->cur_sub2==NULL ? _("<Nothing>") : fd->cur_sub2->subtable_name );
     }
     fd->top_diff = fd->middle_diff = fd->diff = fd->local_diff = true;
 }
