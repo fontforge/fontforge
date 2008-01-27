@@ -1271,6 +1271,7 @@ static int OnStem( struct stemdata *stem,BasePoint *test,int left ) {
     /* Diagonals are harder to align */
     dist_error = IsVectorHV( dir,0,true ) ? dist_error_hv : dist_error_diag;
     if ( ! stem->positioned ) dist_error = dist_error * 2;
+    if ( dist_error > stem->width/2 ) dist_error = stem->width/2;
     if ( left ) {
         off = (test->x - stem->left.x)*dir->y - (test->y - stem->left.y)*dir->x;
         if ( !stem->positioned ) {
@@ -1315,6 +1316,7 @@ return( false );
         lmax = stem->lmax; lmin = stem->lmin;
         rmax = stem->rmax; rmin = stem->rmin;
     }
+    if ( dist_error > stem->width/2 ) dist_error = stem->width/2;
 
     off1 = (test1->x-stem->left.x)*dir.y - (test1->y-stem->left.y)*dir.x;
     off2 = (test2->x-stem->right.x)*dir.y - (test2->y-stem->right.y)*dir.x;
@@ -1951,10 +1953,10 @@ return;
     /* no bends between two splines. */
     if ( !tp && ( !fp || t > 0.5 ) &&
         topd->colinear && &other->to->next != NULL ) {
-        testpt = other->to->next->to; 
+        testpt = topt->next->to; 
         testpd = &gd->points[testpt->ttfindex];
         BasePoint *initdir = &topd->prevunit;
-        while ( !tp && topd->colinear && pd->sp != testpt && (
+        while ( !tp && topd->colinear && pd->sp != testpt && other->from != testpt && (
             testpd->prevunit.x * initdir->x +
             testpd->prevunit.y * initdir->y > 0 )) {
 
@@ -1967,10 +1969,10 @@ return;
     }
     if ( !fp && ( !fp || t < 0.5 ) &&
         frompd->colinear && &other->from->prev != NULL ) {
-        testpt = other->from->prev->from; 
+        testpt = frompt->prev->from; 
         testpd = &gd->points[testpt->ttfindex];
         BasePoint *initdir = &frompd->prevunit;
-        while ( !fp && frompd->colinear && pd->sp != testpt && (
+        while ( !fp && frompd->colinear && pd->sp != testpt && other->to != testpt && (
             testpd->prevunit.x * initdir->x +
             testpd->prevunit.y * initdir->y > 0 )) {
 

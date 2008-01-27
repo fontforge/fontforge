@@ -1183,6 +1183,7 @@ return( NULL );
 	if ( s->start+BlueShift > sn->start && s->width>0 && sn->width>0 &&
 		s->start+s->width-BlueShift < sn->start+sn->width &&
 		s->start+s->width+BlueShift > sn->start+sn->width &&
+                s->where != NULL && sn->where != NULL &&
 		s->where->next!=NULL && sn->where->next==NULL ) {
 	    t = sn->next;
 	    sn->next = NULL;
