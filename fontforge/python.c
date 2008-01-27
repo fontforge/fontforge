@@ -5601,11 +5601,11 @@ return( NULL );
 	other = GlyphNamesFromTuple(others);
 	if ( other==NULL )
 return( NULL );
-	if ( sub->lookup->lookup_type>=gsub_alternate )
+	if ( sub->lookup->lookup_type==gsub_alternate )
 	    temp.type = pst_alternate;
-	else if ( sub->lookup->lookup_type>=gsub_multiple )
+	else if ( sub->lookup->lookup_type==gsub_multiple )
 	    temp.type = pst_multiple;
-	else if ( sub->lookup->lookup_type>=gsub_ligature ) {
+	else if ( sub->lookup->lookup_type==gsub_ligature ) {
 	    temp.type = pst_ligature;
 	    old = NULL;
 	} else {
