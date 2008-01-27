@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 8-Jan-2008 -->
+  <!-- AP: Last modified: 27-Jan-2008 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -1725,13 +1725,13 @@ pen = None;				# Finalize the pen. This tells FontForge
 	The first argument should always be a lookup subtable name. If the lookup
 	is for single substitutions then the second argument should be a string
 	containing a single glyph name. For multiple and alternated substitutions
-	multiple glyph names. For ligatures, a string of the ligature components.
-	For single positionings the second through fifth arguments should be small
-	integers representing the adjustment along that axis. For pairwise positionings
-	(kerning) the second argument should be the name of the other glyph being
-	kerned with, and the third through tenth should be small integers -- or,
-	if there are exactly three arguments then the third specifies traditional,
-	one-axis, kerning
+	a tuple of glyph names. For ligatures, a tuple of the ligature components
+	(glyph names). For single positionings the second through fifth arguments
+	should be small integers representing the adjustment along the appropriate
+	axis. For pairwise positionings (kerning) the second argument should be the
+	name of the other glyph being kerned with, and the third through tenth should
+	be small integers -- or, if there are exactly three arguments then the third
+	specifies traditional, one-axis, kerning
 	<P>
 	If there is a previously existing entry, this will replace it (except for
 	ligatures).</TD>
