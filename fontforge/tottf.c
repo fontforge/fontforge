@@ -1041,6 +1041,10 @@ static void dumpcomposite(SplineChar *sc, struct glyphinfo *gi) {
 	    SplineCharAutoHint(sc,NULL);
 #endif
 
+    if ( gi->next_glyph!=sc->ttf_glyph )
+	IError("Glyph count wrong in ttf output");
+    if ( gi->next_glyph>=gi->maxp->numGlyphs )
+	IError("max glyph count wrong in ttf output");
     gi->loca[gi->next_glyph] = ftell(gi->glyphs);
 
     SplineCharFindBounds(sc,&bb);
@@ -5094,6 +5098,13 @@ return( false );
 	}
 	AssignTTFBitGlyph(&at->gi,sf,at->map,bsizes);
     }
+    if ( at->gi.gcnt>=65536 ) {
+	ff_post_error(_("Too many glyphs"), _("The 'sfnt' format is currently limited to 65535 glyphs, and your font has %d of them."),
+		at->gi.gcnt );
+	AbortTTF(at,sf);
+return( false );
+    }
+	
 
     at->maxp.version = 0x00010000;
     if ( format==ff_otf || format==ff_otfcid || (format==ff_none && at->applemode) )
