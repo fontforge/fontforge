@@ -60,12 +60,12 @@ return;
 
     if ( cv->b.sc->layers[ly_fore].refs!=NULL )
 	SCNumberPoints(cv->b.sc);
+
     cv->raster = FreeType_GetRaster(single_glyph_context,cv->b.sc->orig_pos,
 	    cv->ft_pointsize, cv->ft_dpi, cv->ft_depth );
     cv->b.gridfit = FreeType_GridFitChar(single_glyph_context,cv->b.sc->orig_pos,
 	    cv->ft_pointsize, cv->ft_dpi, &cv->b.ft_gridfitwidth,
-	    cv->b.sc );
-
+	    cv->b.sc, cv->ft_depth );
 
     FreeTypeFreeContext(single_glyph_context);
     GDrawRequestExpose(cv->v,NULL,false);
