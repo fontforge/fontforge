@@ -3,7 +3,7 @@
 #include <basics.h>
 #include <ustring.h>
 #include <utype.h>
-#include <splinefont.h>
+#include "splinefont.h"
 #include <intl.h>
 
 #define ISOL	0
