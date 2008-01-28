@@ -1,3 +1,6 @@
+# Makefile for OpenVMS
+# Date : 4 January 2007
+
 CFLAGS=/nowarn/incl=([-.inc])/name=(as_is,short)/define=(\
 	"_STATIC_LIBFREETYPE=1","_STATIC_LIBPNG=1","HAVE_LIBINTL_H=1",\
 	"_STATIC_LIBUNINAMESLIST=1","_STATIC_LIBXML=1","_NO_XINPUT=1",\
@@ -27,7 +30,7 @@ fontforge_OBJECTS5=displayfonts.obj,combinations.obj,sftextfield.obj,ikarus.obj,
         cvfreehand.obj,cvhand.obj,simplifydlg.obj,winfonts.obj,freetype.obj,\
 	gotodlg.obj,search.obj,tottfgpos.obj,charinfo.obj,tottfaat.obj
 
-fontforge_OBJECTS6=splineorder2.obj,genttfinstrs.obj,ttfinstrs.obj,cvgridfit.obj,\
+fontforge_OBJECTS6=splineorder2.obj,ttfinstrs.obj,cvgridfit.obj,\
 	cvdebug.obj,showatt.obj,kernclass.obj,nonlineartrans.obj,effects.obj,\
 	histograms.obj,ttfspecial.obj,svg.obj,parsettfatt.obj,contextchain.obj
 
@@ -41,17 +44,30 @@ fontforge_OBJECTS8=bdfinfo.obj,glyphcomp.obj,unicoderange.obj,ufo.obj,\
 
 fontforge_OBJECTS9=scriptingdlg.obj,fvfontsdlg.obj,splinefont.obj,\
 	splinechar.obj,cvexportdlg.obj,cvimportdlg.obj,encodingui.obj,\
-	bitmapchar.obj,lookupui.obj
+	bitmapchar.obj,lookupui.obj,nouiutil.obj,noprefs.obj,\
+	bitmapcontrol.obj,fontviewbase.obj,mathconstants.obj,print.obj
 
-fontforge.exe : main.obj lff.opt xlib.opt [-.libs]libfontforge.exe
-        link/exec=fontforge.exe main,lff/opt,[-.libs]LIBGDRAW/lib,\
-        LIBGUNICODE/lib,[]xlib.opt/opt
+fontforge_OBJECTS10=asmfpst.obj,sflayout.obj,searchview.obj,\
+	nonlineartransui.obj,scstylesui.obj,groupsdlg.obj,\
+	fvmetricsdlg.obj,clipnoui.obj,autowidthdlg.obj,macencui.obj,\
+	savefont.obj,mmdlg.obj,effectsui.obj,langfreq.obj,ttfinstrsui.obj
+
+fontforge_OBJECTS11=libstamp.obj,exelibstamp.obj,clipui.obj
+
+#fontforge.exe : startui.obj lff.opt xlib.opt [-.libs]libfontforge.exe
+#        link/exec=fontforge.exe startui,lff/opt,[-.libs]LIBGDRAW/lib,\
+#        [-.libs]LIBGUTIL/lib,LIBGUNICODE/lib,[]xlib.opt/opt
+fontforge.exe : startui.obj [-.libs]libfontforge.exe xlib.opt
+        link/exec=fontforge.exe startui,[-.libs]libfontforge/lib,\
+	[-.libs]LIBGDRAW/lib,[-.libs]LIBGUTIL/lib,LIBGUNICODE/lib,\
+	[]xlib.opt/opt
 
 [-.libs]libfontforge.exe : $(fontforge_OBJECTS) $(fontforge_OBJECTS1)\
 	$(fontforge_OBJECTS2) $(fontforge_OBJECTS3) $(fontforge_OBJECTS4)\
 	$(fontforge_OBJECTS5) $(fontforge_OBJECTS6) $(fontforge_OBJECTS7)\
-	$(fontforge_OBJECTS8) $(fontforge_OBJECTS9) [-.libs]LIBGDRAW.olb \
-	[-.libs]LIBGUNICODE.olb
+	$(fontforge_OBJECTS8) $(fontforge_OBJECTS9) $(fontforge_OBJECTS10) \
+	$(fontforge_OBJECTS11) [-.libs]LIBGDRAW.olb [-.libs]LIBGUNICODE.olb \
+	[-.libs]LIBGUTIL.olb
 	@ WRITE_ SYS$OUTPUT "  generating lff1.opt"
 	@ OPEN_/WRITE FILE  lff1.opt
 	@ WRITE_ FILE "!"
@@ -68,12 +84,27 @@ fontforge.exe : main.obj lff.opt xlib.opt [-.libs]libfontforge.exe
 	@ WRITE_ FILE "$(fontforge_OBJECTS6)"
 	@ WRITE_ FILE "$(fontforge_OBJECTS7)"
 	@ WRITE_ FILE "$(fontforge_OBJECTS8)"
+	@ WRITE_ FILE "$(fontforge_OBJECTS9)"
+	@ WRITE_ FILE "$(fontforge_OBJECTS10)"
+	@ WRITE_ FILE "$(fontforge_OBJECTS11)"
 	@ CLOSE_ FILE
 	@ $(MMS)$(MMSQUALIFIERS)/ignore=warning lff_vms
 	@ WRITE_ SYS$OUTPUT "  linking libfontforge.exe ..."
-	@ LINK_/NODEB/SHARE=[-.libs]libfontforge.exe/MAP=lff.map/FULL lff1.opt/opt,\
-	lff_vms.opt/opt,[-.libs]LIBGDRAW/lib,LIBGUNICODE/lib,\
-	[-.fontforge]xlib.opt/opt
+	@ LINK_/NODEB/SHARE=[-.libs]libfontforge.exe/MAP=lff.map/FULL \
+	lff1.opt/opt,startui.obj,lff_vms.opt/opt,[-.libs]LIBGDRAW/lib,\
+	[-.libs]LIBGUTIL/lib,LIBGUNICODE/lib,[-.fontforge]xlib.opt/opt
+	library/create [-.libs]libfontforge.olb $(fontforge_OBJECTS)
+	library [-.libs]libfontforge.olb $(fontforge_OBJECTS1)
+	library [-.libs]libfontforge.olb $(fontforge_OBJECTS2)
+	library [-.libs]libfontforge.olb $(fontforge_OBJECTS3)
+	library [-.libs]libfontforge.olb $(fontforge_OBJECTS4)
+	library [-.libs]libfontforge.olb $(fontforge_OBJECTS5)
+	library [-.libs]libfontforge.olb $(fontforge_OBJECTS6)
+	library [-.libs]libfontforge.olb $(fontforge_OBJECTS7)
+	library [-.libs]libfontforge.olb $(fontforge_OBJECTS8)
+	library [-.libs]libfontforge.olb $(fontforge_OBJECTS9)
+	library [-.libs]libfontforge.olb $(fontforge_OBJECTS10)
+	library [-.libs]libfontforge.olb $(fontforge_OBJECTS11)
 
 lff_vms :
 	@ WRITE_ SYS$OUTPUT "  generating lff.map ..."
@@ -163,7 +194,6 @@ charinfo.obj : charinfo.c
 tottfaat.obj : tottfaat.c
           $(CC) $(CFLAGS)/noop tottfaat
 splineorder2.obj : splineorder2.c
-genttfinstrs.obj : genttfinstrs.c
 ttfinstrs.obj : ttfinstrs.c
 cvgridfit.obj : cvgridfit.c
 cvdebug.obj : cvdebug.c
@@ -190,7 +220,7 @@ cvdgloss.obj : cvdgloss.c
 groups.obj : groups.c
 parsepdf.obj : parsepdf.c
 plugins.obj : plugins.c
-main.obj : main.c
+startui.obj : startui.c
 bdfinfo.obj : bdfinfo.c
 glyphcomp.obj : glyphcomp.c
 unicoderange.obj : unicoderange.c
@@ -214,3 +244,35 @@ cvimportdlg.obj : cvimportdlg.c
 encodingui.obj : encodingui.c
 bitmapchar.obj : bitmapchar.c
 lookupui.obj : lookupui.c
+nouiutil.obj : nouiutil.c
+noprefs.obj : noprefs.c
+bitmapcontrol.obj : bitmapcontrol.c
+fontviewbase.obj : fontviewbase.c
+mathconstants.obj : mathconstants.c
+print.obj : print.c
+asmfpst.obj : asmfpst.c
+sflayout.obj : sflayout.c
+searchview.obj : searchview.c
+nonlineartransui.obj : nonlineartransui.c
+scstylesui.obj : scstylesui.c
+groupsdlg.obj : groupsdlg.c
+fvmetricsdlg.obj : fvmetricsdlg.c
+clipnoui.obj : clipnoui.c
+autowidthdlg.obj : autowidthdlg.c
+macencui.obj : macencui.c
+savefont.obj : savefont.c
+mmdlg.obj : mmdlg.c
+effectsui.obj : effectsui.c
+langfreq.obj :langfreq.c
+ttfinstrsui.obj : ttfinstrsui.c
+libstamp.obj : libstamp.pre
+	pipe gsed -e "s/REPLACE_ME_WITH_MAJOR_VERSION/1/"\
+	-e "s/REPLACE_ME_WITH_MINOR_VERSION/0/" libstamp.pre > libstamp.c
+	cc $(CFLAGS) libstamp.c
+	delete libstamp.c;*
+exelibstamp.obj : exelibstamp.pre
+	pipe gsed -e "s/REPLACE_ME_WITH_MAJOR_VERSION/1/"\
+	-e "s/REPLACE_ME_WITH_MINOR_VERSION/0/" exelibstamp.pre > exelibstamp.c
+	cc $(CFLAGS) exelibstamp.c
+	delete exelibstamp.c;*
+clipui.obj : clipui.c

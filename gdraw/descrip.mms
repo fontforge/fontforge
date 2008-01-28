@@ -1,13 +1,13 @@
-libgdraw_OBJECTS =  choosericons.obj,divisors.obj,drawboxborder.obj,\
- fsys.obj,gaskdlg.obj,gbuttons.obj,gchardlg.obj,gcontainer.obj,gdraw.obj,\
+# Makefile for OpenVMS
+# Date : 4 January 2008
+
+libgdraw_OBJECTS =  choosericons.obj,drawboxborder.obj,\
+ gaskdlg.obj,gbuttons.obj,gchardlg.obj,gcontainer.obj,gdraw.obj,\
  gdrawbuildchars.obj,gdrawerror.obj,gdrawtxt.obj,gdrawtxtinit.obj,\
  genkeysym.obj,gfilechooser.obj,gfiledlg.obj,ggadgets.obj,ggroupbox.obj,\
- gimage.obj,gimageclut.obj,gimagecvt.obj,gimagepsdraw.obj,gimageread.obj,\
- gimagereadbmp.obj,gimagereadgif.obj,gimagereadjpeg.obj,gimagereadpng.obj,\
- gimagereadras.obj,gimagereadrgb.obj,gimagereadtiff.obj,gimagereadxbm.obj,\
- gimagereadxpm.obj,gimagewritebmp.obj,gimagewriteeps.obj,\
- gimagewritegimage.obj,gimagewritejpeg.obj,gimagewritepng.obj,\
- gimagewritexbm.obj,gimagewritexpm.obj,gimagexdraw.obj,gio.obj,giofile.obj,\
+ gimageclut.obj,gimagecvt.obj,gimagepsdraw.obj,gdrawgimage.obj,\
+ gimagewriteeps.obj,\
+ gimagexdraw.obj,gio.obj,giofile.obj,\
  giohosts.obj,giomime.obj,giothread.obj,giotrans.obj,gkeysym.obj,glist.obj,\
  gmenu.obj,gprogress.obj,gpsdraw.obj,gpstxtinit.obj,gradio.obj,gresource.obj,\
  gresourceimage.obj,gsavefiledlg.obj,gscrollbar.obj,gtabset.obj,\
@@ -30,9 +30,7 @@ all : [-.libs]libgdraw.olb
 	library [-.libs]libgdraw.olb $(libgdraw_OBJECTS1)
 
 choosericons.obj : choosericons.c
-divisors.obj : divisors.c
 drawboxborder.obj : drawboxborder.c
-fsys.obj : fsys.c
 gaskdlg.obj : gaskdlg.c
 gbuttons.obj : gbuttons.c
 gchardlg.obj : gchardlg.c
@@ -47,27 +45,10 @@ gfilechooser.obj : gfilechooser.c
 gfiledlg.obj : gfiledlg.c
 ggadgets.obj : ggadgets.c
 ggroupbox.obj : ggroupbox.c
-gimage.obj : gimage.c
 gimageclut.obj : gimageclut.c
 gimagecvt.obj : gimagecvt.c
 gimagepsdraw.obj : gimagepsdraw.c
-gimageread.obj : gimageread.c
-gimagereadbmp.obj : gimagereadbmp.c
-gimagereadgif.obj : gimagereadgif.c
-gimagereadjpeg.obj : gimagereadjpeg.c
-gimagereadpng.obj : gimagereadpng.c
-gimagereadras.obj : gimagereadras.c
-gimagereadrgb.obj : gimagereadrgb.c
-gimagereadtiff.obj : gimagereadtiff.c
-gimagereadxbm.obj : gimagereadxbm.c
-gimagereadxpm.obj : gimagereadxpm.c
-gimagewritebmp.obj : gimagewritebmp.c
 gimagewriteeps.obj : gimagewriteeps.c
-gimagewritegimage.obj : gimagewritegimage.c
-gimagewritejpeg.obj : gimagewritejpeg.c
-gimagewritepng.obj : gimagewritepng.c
-gimagewritexbm.obj : gimagewritexbm.c
-gimagewritexpm.obj : gimagewritexpm.c
 gimagexdraw.obj : gimagexdraw.c
 gio.obj : gio.c
 giofile.obj : giofile.c
@@ -95,3 +76,4 @@ ghvbox.obj : ghvbox.c
 gmatrixedit.obj : gmatrixedit.c
 gspacer.obj : gspacer.c
 gdrawable.obj : gdrawable.c
+gdrawgimage.obj : gdrawgimage.c
