@@ -686,18 +686,18 @@ static void AdjustAll(SplinePoint *change,BasePoint *rel,
     change->noprevcp = (change->prevcp.x==change->me.x && change->prevcp.y==change->me.y);
 }
 
-static SplinePoint *RplInsertSP(SplinePoint *after,SplinePoint *rpl,SearchData *s, BasePoint *fudge) {
+static SplinePoint *RplInsertSP(SplinePoint *after,SplinePoint *nrpl,SplinePoint *rpl,SearchData *s, BasePoint *fudge) {
     SplinePoint *new = chunkalloc(sizeof(SplinePoint));
     real transform[6];
 
     SVBuildTrans(s,transform);
-    transform[4] += fudge->x; transform[5] += fudge->y;
-    new->me.x = transform[0]*rpl->me.x + transform[2]*rpl->me.y + transform[4];
-    new->me.y = transform[1]*rpl->me.x + transform[3]*rpl->me.y + transform[5];
-    new->prevcp.x = transform[0]*rpl->prevcp.x + transform[2]*rpl->prevcp.y + transform[4];
-    new->prevcp.y = transform[1]*rpl->prevcp.x + transform[3]*rpl->prevcp.y + transform[5];
-    new->nextcp.x = transform[0]*rpl->nextcp.x + transform[2]*rpl->nextcp.y + transform[4];
-    new->nextcp.y = transform[1]*rpl->nextcp.x + transform[3]*rpl->nextcp.y + transform[5];
+    /*transform[4] += fudge->x; transform[5] += fudge->y;*/
+    new->me.x = after->me.x + transform[0]*(nrpl->me.x-rpl->me.x) + transform[2]*(nrpl->me.y-rpl->me.y) + fudge->x;
+    new->me.y = after->me.y + transform[1]*(nrpl->me.x-rpl->me.x) + transform[3]*(nrpl->me.y-rpl->me.y) + fudge->y;
+    new->nextcp.x = after->me.x + transform[0]*(nrpl->nextcp.x-rpl->me.x) + transform[2]*(nrpl->nextcp.y-rpl->me.y) + fudge->x;
+    new->nextcp.y = after->me.y + transform[1]*(nrpl->nextcp.x-rpl->me.x) + transform[3]*(nrpl->nextcp.y-rpl->me.y) + fudge->y;
+    new->prevcp.x = after->me.x + transform[0]*(nrpl->prevcp.x-rpl->me.x) + transform[2]*(nrpl->prevcp.y-rpl->me.y) + fudge->x;
+    new->prevcp.y = after->me.y + transform[1]*(nrpl->prevcp.x-rpl->me.x) + transform[3]*(nrpl->prevcp.y-rpl->me.y) + fudge->y;
     new->nonextcp = (new->nextcp.x==new->me.x && new->nextcp.y==new->me.y);
     new->noprevcp = (new->prevcp.x==new->me.x && new->prevcp.y==new->me.y);
     new->pointtype = rpl->pointtype;
@@ -724,8 +724,11 @@ static void FudgeFigure(SplineChar *sc,SearchData *s,SplineSet *path,BasePoint *
 return;						/*  => no fudge */
 
     foundrel = s->matched_sp; searchrel = path->first;
+    if ( s->endpoints ) searchrel = searchrel->next->to;
     for ( found=foundrel, search=searchrel ; ; ) {
 	if ( found->next==NULL || search->next==NULL )
+    break;
+	if ( s->endpoints && search->next->to->next==NULL )
     break;
 	found = found->next->to;
 	search = search->next->to;
@@ -747,6 +750,7 @@ static void DoReplaceIncomplete(SplineChar *sc,SearchData *s) {
     SplinePoint *sc_p, *nsc_p, *p_p, *np_p, *r_p, *nr_p;
     BasePoint fudge;
     SplineSet *path, *rpath;
+    SplinePoint dummy; Spline dummysp;
 
     if ( s->wasreversed ) {
 	path = s->revpath;
@@ -761,16 +765,43 @@ static void DoReplaceIncomplete(SplineChar *sc,SearchData *s) {
     if ( s->pointcnt!=s->rpointcnt )
 	MinimumDistancesFree(sc->md); sc->md = NULL;
 
-    for ( sc_p = s->matched_sp, p_p = path->first, r_p = rpath->first; ; ) {
-	if ( p_p->next==NULL && r_p->next==NULL ) {
+    sc_p = s->matched_sp; p_p = path->first, r_p = rpath->first;
+    if ( s->endpoints ) {
+	real xoff, yoff;
+	memset(&dummy,0,sizeof(dummy));
+	memset(&dummysp,0,sizeof(dummysp));
+	dummysp.from = &dummy;
+	dummysp.to = sc_p;
+	dummysp.order2 = p_p->next->order2;
+	np_p = p_p->next->to;
+	xoff = (p_p->me.x-np_p->me.x);
+	yoff = (p_p->me.y-np_p->me.y);
+	if ( s->matched_flip&1 )
+	    xoff=-xoff;
+	if ( s->matched_flip&2 )
+	    yoff =-yoff;
+	xoff *= s->matched_scale;
+	yoff *= s->matched_scale;
+	dummy.me.x = sc_p->me.x + xoff*s->matched_co + yoff*s->matched_si;
+	dummy.me.y = sc_p->me.y + yoff*s->matched_co + xoff*s->matched_si;
+	dummy.nextcp = dummy.prevcp = dummy.me;
+	dummy.nonextcp = dummy.noprevcp = true;
+	dummy.next = &dummysp;
+	SplineRefigure(&dummysp);
+	sc_p = &dummy;
+    }
+    for ( ; ; ) {
+	if ( (p_p->next==NULL && r_p->next==NULL) ||
+		(s->endpoints && p_p->next->to->next==NULL && r_p->next->to->next == NULL )) {
 	    s->last_sp = s->last_sp==NULL ? NULL : sc_p;	/* If we crossed the contour start, move to next contour */
 return;		/* done */
-	} else if ( p_p->next==NULL ) {
+	} else if ( p_p->next==NULL || (s->endpoints && p_p->next->to->next==NULL)) {
 	    /* The search pattern is shorter that the replace pattern */
 	    /*  Need to add some extra points */
-	    r_p = r_p->next->to;
-	    sc_p = RplInsertSP(sc_p,r_p,s,&fudge);
-	} else if ( r_p->next==NULL ) {
+	    nr_p = r_p->next->to;
+	    sc_p = RplInsertSP(sc_p,nr_p,r_p,s,&fudge);
+	    r_p = nr_p;
+	} else if ( r_p->next==NULL || (s->endpoints && r_p->next->to->next==NULL)) {
 	    /* The replace pattern is shorter than the search pattern */
 	    /*  Need to remove some points */
 	    nsc_p = sc_p->next->to;
