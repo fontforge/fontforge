@@ -772,8 +772,10 @@ FontData *LI_RegenFontData(LayoutInfo *li, FontData *ret) {
 	break;
 	ret->depends_on = test;
 	ftc = NULL;
-	if ( test && test->bdf )
+	if ( test && test->bdf ) {
 	    ftc = test->bdf->freetype_context;
+	    depends_on = true;
+	}
 	if ( ftc==NULL ) {
 	    int flags = 0;
 	    int ff = ret->fonttype==sftf_pfb ? ff_pfb :
@@ -793,7 +795,7 @@ return( ret );
 	ret->bdf = SplineFontPieceMeal(ret->sf,pixelsize,ret->antialias,ftc);
     }
     if ( freeold ) {
-	if ( depends_on )
+	if ( depends_on && old!=NULL )
 	    old->freetype_context = NULL;
 	BDFFontFree(old);
     }
