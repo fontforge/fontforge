@@ -45,6 +45,7 @@ static SearchView *searcher=NULL;
 #define CID_Cancel	1009
 #define CID_TopBox	1010
 #define CID_Fuzzy	1011
+#define CID_Endpoints	1012
 
 static double old_fudge = .001;
 
@@ -73,7 +74,7 @@ static void SVSelectSC(SearchView *sv) {
 	spl = sv->sd.matched_spl;
 	for ( sp = sv->sd.matched_sp; ; ) {
 	    sp->selected = true;
-	    if ( sp->next == NULL || sp==sv->sd.last_sp )
+	    if ( sp->next == NULL || sv->sd.last_sp==NULL || sp==sv->sd.last_sp )
 	break;
 	    sp = sp->next->to;
 	    /* Ok to wrap back to first */
@@ -164,7 +165,21 @@ static void DoFindAll(SearchView *sv) {
 	ff_post_notice(_("Not Found"),_("The search pattern was not found in the font %.100s"),sv->sd.fv->sf->fontname);
 }
 
-static int SVParseDlg(SearchView *sv) {
+static int pathpointcnt(SplineSet *ss) {
+    SplinePoint *sp;
+    int cnt;
+
+    if ( ss==NULL )		/* No paths */
+return( 0 );
+    if ( ss->next!=NULL )	/* more than one path */
+return( -1 );
+    if ( ss->first->prev!=NULL )/* single path, but it is closed */
+return( -2 );
+    for ( sp=ss->first, cnt=1; sp->next!=NULL; sp=sp->next->to, ++cnt );
+return( cnt );
+}
+
+static int SVParseDlg(SearchView *sv, int check_replace ) {
     int err=false;
     double fudge;
 
@@ -177,9 +192,31 @@ return( false );
     sv->sd.tryflips = GGadgetIsChecked(GWidgetGetControl(sv->gw,CID_Flipping));
     sv->sd.tryscale = GGadgetIsChecked(GWidgetGetControl(sv->gw,CID_Scaling));
     sv->sd.tryrotate = GGadgetIsChecked(GWidgetGetControl(sv->gw,CID_Rotating));
+    sv->sd.endpoints = GGadgetIsChecked(GWidgetGetControl(sv->gw,CID_Endpoints));
     sv->sd.onlyselected = GGadgetIsChecked(GWidgetGetControl(sv->gw,CID_Selected));
 
     SVResetPaths(&sv->sd);
+    if ( pathpointcnt(sv->sd.path)==0 )
+	ff_post_error(_("Bad search pattern"),_("Nothing to match."));
+    else if ( sv->sd.endpoints ) {
+	if ( pathpointcnt(sv->sd.path)<3 ||
+		(check_replace && pathpointcnt(sv->sd.replacepath)<3 && pathpointcnt(sv->sd.replacepath)!=0 )) {
+	    if ( pathpointcnt(sv->sd.path)<0 )
+		ff_post_error(_("Bad search pattern"),_("When \"Use endpoints for direction only\" is checked, the search pattern must be a single open contour."));
+	    else if ( pathpointcnt(sv->sd.path)<3 )
+		ff_post_error(_("Bad search pattern"),_("When \"Use endpoints for direction only\" is checked, the search pattern must be a single open contour with at least 3 points on it (otherwise there is nothing to match)."));
+	    else
+		ff_post_error(_("Bad replace pattern"),_("When \"Use endpoints for direction only\" is checked, the replace pattern must be a single open contour with at least 3 points on it."));
+return( false );
+	}
+    } else if ( pathpointcnt(sv->sd.path)>0 ) {
+	/* It might make sense not to do a sub-pattern search if the */
+	/*  replace pattern is closed... but that's kind of weird */
+	if ( check_replace && pathpointcnt(sv->sd.replacepath)<0 ) {
+	    ff_post_error(_("Bad replace pattern"),_("When the search path is a single open contour, the replace pattern must also be."));
+return( false );
+	}
+    }
 
     sv->sd.fudge = fudge;
     sv->sd.fudge_percent = sv->sd.tryrotate ? .01 : .001;
@@ -189,7 +226,7 @@ return( true );
 static int SV_Find(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	SearchView *sv = (SearchView *) ((CharViewBase *) GDrawGetUserData(GGadgetGetWindow(g)))->container;
-	if ( !SVParseDlg(sv))
+	if ( !SVParseDlg(sv,false))
 return( true );
 	sv->sd.findall = sv->sd.replaceall = false;
 	DoFindOne(sv,false);
@@ -200,7 +237,7 @@ return( true );
 static int SV_FindAll(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	SearchView *sv = (SearchView *) ((CharViewBase *) GDrawGetUserData(GGadgetGetWindow(g)))->container;
-	if ( !SVParseDlg(sv))
+	if ( !SVParseDlg(sv,false))
 return( true );
 	sv->sd.findall = true;
 	sv->sd.replaceall = false;
@@ -213,7 +250,7 @@ static int SV_RplFind(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	SearchView *sv = (SearchView *) ((CharViewBase *) GDrawGetUserData(GGadgetGetWindow(g)))->container;
 	RefChar *rf;
-	if ( !SVParseDlg(sv))
+	if ( !SVParseDlg(sv,true))
 return( true );
 	sv->sd.findall = sv->sd.replaceall = false;
 	for ( rf=sv->sd.sc_rpl.layers[ly_fore].refs; rf!=NULL; rf = rf->next ) {
@@ -231,7 +268,7 @@ return( true );
 static int SV_RplAll(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	SearchView *sv = (SearchView *) ((CharViewBase *) GDrawGetUserData(GGadgetGetWindow(g)))->container;
-	if ( !SVParseDlg(sv))
+	if ( !SVParseDlg(sv,true))
 return( true );
 	sv->sd.findall = false;
 	sv->sd.replaceall = true;
@@ -604,12 +641,13 @@ SearchView *SVCreate(FontView *fv) {
     GWindow gw;
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[14], boxes[6], *butarray[14], *allowarray[6],
-	    *fudgearray[4], *halfarray[3], *varray[8];
+	    *fudgearray[4], *halfarray[3], *varray[14];
     GTextInfo label[14];
     FontRequest rq;
     int as, ds, ld;
     static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
     char fudgebuf[20];
+    int k, sel_pos, efdo_pos;
 
     if ( searcher!=NULL ) {
 	if ( SVAttachFV(fv,true)) {
@@ -652,124 +690,147 @@ return( NULL );
     memset(&gcd,0,sizeof(gcd));
     memset(&boxes,0,sizeof(boxes));
 
-    label[0].text = (unichar_t *) _("Allow:");
-    label[0].text_is_1byte = true;
-    gcd[0].gd.label = &label[0];
-    gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = GDrawPixelsToPoints(NULL,sv->cv_y+sv->cv_height+8);
-    gcd[0].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-    gcd[0].gd.cid = CID_Allow;
-    gcd[0].gd.popup_msg = (unichar_t *) _("Allow a match even if the search pattern has\nto be transformed by a combination of the\nfollowing transformations.");
-    gcd[0].creator = GLabelCreate;
-    allowarray[0] = &gcd[0];
+    k=0;
 
-    label[1].text = (unichar_t *) _("Flipping");
-    label[1].text_is_1byte = true;
-    gcd[1].gd.label = &label[1];
-    gcd[1].gd.pos.x = 35; gcd[1].gd.pos.y = gcd[0].gd.pos.y-3;
-    gcd[1].gd.flags = gg_enabled|gg_visible|gg_cb_on|gg_utf8_popup;
-    gcd[1].gd.cid = CID_Flipping;
-    gcd[1].gd.popup_msg = (unichar_t *) _("Allow a match even if the search pattern has\nto be transformed by a combination of the\nfollowing transformations.");
-    gcd[1].creator = GCheckBoxCreate;
-    allowarray[1] = &gcd[1];
+    label[k].text = (unichar_t *) _("Allow:");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = GDrawPixelsToPoints(NULL,sv->cv_y+sv->cv_height+8);
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[k].gd.cid = CID_Allow;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Allow a match even if the search pattern has\nto be transformed by a combination of the\nfollowing transformations.");
+    gcd[k].creator = GLabelCreate;
+    allowarray[k] = &gcd[k]; ++k;
 
-    label[2].text = (unichar_t *) _("Scaling");
-    label[2].text_is_1byte = true;
-    gcd[2].gd.label = &label[2];
-    gcd[2].gd.pos.x = 100; gcd[2].gd.pos.y = gcd[1].gd.pos.y; 
-    gcd[2].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-    gcd[2].gd.cid = CID_Scaling;
-    gcd[2].gd.popup_msg = (unichar_t *) _("Allow a match even if the search pattern has\nto be transformed by a combination of the\nfollowing transformations.");
-    gcd[2].creator = GCheckBoxCreate;
-    allowarray[2] = &gcd[2];
+    label[k].text = (unichar_t *) _("Flipping");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 35; gcd[k].gd.pos.y = gcd[0].gd.pos.y-3;
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_cb_on|gg_utf8_popup;
+    gcd[k].gd.cid = CID_Flipping;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Allow a match even if the search pattern has\nto be transformed by a combination of the\nfollowing transformations.");
+    gcd[k].creator = GCheckBoxCreate;
+    allowarray[k] = &gcd[k]; ++k;
 
-    label[3].text = (unichar_t *) _("Rotating");
-    label[3].text_is_1byte = true;
-    gcd[3].gd.label = &label[3];
-    gcd[3].gd.pos.x = 170; gcd[3].gd.pos.y = gcd[1].gd.pos.y;
-    gcd[3].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-    gcd[3].gd.cid = CID_Rotating;
-    gcd[3].gd.popup_msg = (unichar_t *) _("Allow a match even if the search pattern has\nto be transformed by a combination of the\nfollowing transformations.");
-    gcd[3].creator = GCheckBoxCreate;
-    allowarray[3] = &gcd[3]; allowarray[4] = GCD_Glue; allowarray[5] = NULL;
+    label[k].text = (unichar_t *) _("Scaling");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 100; gcd[k].gd.pos.y = gcd[1].gd.pos.y; 
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[k].gd.cid = CID_Scaling;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Allow a match even if the search pattern has\nto be transformed by a combination of the\nfollowing transformations.");
+    gcd[k].creator = GCheckBoxCreate;
+    allowarray[k] = &gcd[k]; ++k;
 
-    label[4].text = (unichar_t *) _("Search Selected Chars");
-    label[4].text_is_1byte = true;
-    gcd[4].gd.label = &label[4];
-    gcd[4].gd.pos.x = 5; gcd[4].gd.pos.y = gcd[1].gd.pos.y+18;
-    gcd[4].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-    gcd[4].gd.cid = CID_Selected;
-    gcd[4].gd.popup_msg = (unichar_t *) _("Only search selected characters in the fontview.\nNormally we search all characters in the font.");
-    gcd[4].creator = GCheckBoxCreate;
+    label[k].text = (unichar_t *) _("Rotating");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 170; gcd[k].gd.pos.y = gcd[1].gd.pos.y;
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[k].gd.cid = CID_Rotating;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Allow a match even if the search pattern has\nto be transformed by a combination of the\nfollowing transformations.");
+    gcd[k].creator = GCheckBoxCreate;
+    allowarray[k] = &gcd[k]; allowarray[++k] = GCD_Glue; allowarray[5] = NULL;
 
-    label[5].text = (unichar_t *) _("Find Next");	/* Start with this to allow sufficient space */
-    label[5].text_is_1byte = true;
-    gcd[5].gd.label = &label[5];
-    gcd[5].gd.pos.x = 5; gcd[5].gd.pos.y = gcd[4].gd.pos.y+24;
-    gcd[5].gd.flags = gg_visible|gg_but_default;
-    gcd[5].gd.cid = CID_Find;
-    gcd[5].gd.handle_controlevent = SV_Find;
-    gcd[5].creator = GButtonCreate;
-    butarray[0] = GCD_Glue; butarray[1] = GCD_Glue; butarray[2] = &gcd[5];
-
-    label[6].text = (unichar_t *) _("Find All");
-    label[6].text_is_1byte = true;
-    gcd[6].gd.label = &label[6];
-    gcd[6].gd.pos.x = 0; gcd[6].gd.pos.y = gcd[5].gd.pos.y+3;
-    gcd[6].gd.flags = gg_visible;
-    gcd[6].gd.cid = CID_FindAll;
-    gcd[6].gd.handle_controlevent = SV_FindAll;
-    gcd[6].creator = GButtonCreate;
-    butarray[3] = GCD_Glue; butarray[4] = &gcd[6];
-
-    label[7].text = (unichar_t *) _("Replace");
-    label[7].text_is_1byte = true;
-    gcd[7].gd.label = &label[7];
-    gcd[7].gd.pos.x = 0; gcd[7].gd.pos.y = gcd[6].gd.pos.y;
-    gcd[7].gd.flags = gg_visible;
-    gcd[7].gd.cid = CID_Replace;
-    gcd[7].gd.handle_controlevent = SV_RplFind;
-    gcd[7].creator = GButtonCreate;
-    butarray[5] = GCD_Glue; butarray[6] = &gcd[7];
-
-    label[8].text = (unichar_t *) _("Replace All");
-    label[8].text_is_1byte = true;
-    gcd[8].gd.label = &label[8];
-    gcd[8].gd.pos.x = 0; gcd[8].gd.pos.y = gcd[6].gd.pos.y;
-    gcd[8].gd.flags = gg_visible;
-    gcd[8].gd.cid = CID_ReplaceAll;
-    gcd[8].gd.handle_controlevent = SV_RplAll;
-    gcd[8].creator = GButtonCreate;
-    butarray[7] = GCD_Glue; butarray[8] = &gcd[8];
-
-    label[9].text = (unichar_t *) _("_Cancel");
-    label[9].text_is_1byte = true;
-    label[9].text_in_resource = true;
-    gcd[9].gd.label = &label[9];
-    gcd[9].gd.pos.x = 0; gcd[9].gd.pos.y = gcd[6].gd.pos.y;
-    gcd[9].gd.flags = gg_enabled|gg_visible|gg_but_cancel;
-    gcd[9].gd.cid = CID_Cancel;
-    gcd[9].gd.handle_controlevent = SV_Cancel;
-    gcd[9].creator = GButtonCreate;
-    butarray[9] = GCD_Glue; butarray[10] = &gcd[9];
-    butarray[11] = GCD_Glue; butarray[12] = GCD_Glue; butarray[13] = NULL;
-
-    label[10].text = (unichar_t *) _("_Match Fuzziness:");
-    label[10].text_is_1byte = true;
-    label[10].text_in_resource = true;
-    gcd[10].gd.label = &label[10];
-    gcd[10].gd.flags = gg_enabled|gg_visible;
-    gcd[10].creator = GLabelCreate;
-    fudgearray[0] = &gcd[10];
+    label[k].text = (unichar_t *) _("_Match Fuzziness:");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled|gg_visible;
+    gcd[k].creator = GLabelCreate;
+    fudgearray[0] = &gcd[k++];
 
     sprintf(fudgebuf,"%g",old_fudge);
-    label[11].text = (unichar_t *) fudgebuf;
-    label[11].text_is_1byte = true;
-    label[11].text_in_resource = true;
-    gcd[11].gd.label = &label[11];
-    gcd[11].gd.flags = gg_enabled|gg_visible;
-    gcd[11].gd.cid = CID_Fuzzy;
-    gcd[11].creator = GTextFieldCreate;
-    fudgearray[1] = &gcd[11]; fudgearray[2] = GCD_Glue; fudgearray[3] = NULL;
+    label[k].text = (unichar_t *) fudgebuf;
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled|gg_visible;
+    gcd[k].gd.cid = CID_Fuzzy;
+    gcd[k].creator = GTextFieldCreate;
+    fudgearray[1] = &gcd[k++]; fudgearray[2] = GCD_Glue; fudgearray[3] = NULL;
+
+    efdo_pos = k;
+    label[k].text = (unichar_t *) _("Use endpoints for direction only");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[1].gd.pos.y+18;
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[k].gd.cid = CID_Endpoints;
+    gcd[k].gd.popup_msg = (unichar_t *) _(
+	"If the search pattern is a single open contour\n"
+	"then do not match the end points. They merely\n"
+	"specify the direction from which the curve should\n"
+	"move toward the next point (which will be matched).\n"
+	"The endpoints of the replace contour will also only\n"
+	"be used for positioning.\n"
+	"\n"
+	"This allows you to match a right angle corner\n"
+	"without needed to specify exactly how long the edges\n"
+	"are which form the right angle.");
+    gcd[k++].creator = GCheckBoxCreate;
+
+    sel_pos = k;
+    label[k].text = (unichar_t *) _("Search Selected Chars Only");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[1].gd.pos.y+18;
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[k].gd.cid = CID_Selected;
+    gcd[k].gd.popup_msg = (unichar_t *) _("Only search characters selected in the fontview.\nNormally we search all characters in the font.");
+    gcd[k++].creator = GCheckBoxCreate;
+
+    label[k].text = (unichar_t *) _("Find Next");	/* Start with this to allow sufficient space */
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[sel_pos].gd.pos.y+24;
+    gcd[k].gd.flags = gg_visible|gg_but_default;
+    gcd[k].gd.cid = CID_Find;
+    gcd[k].gd.handle_controlevent = SV_Find;
+    gcd[k].creator = GButtonCreate;
+    butarray[0] = GCD_Glue; butarray[1] = GCD_Glue; butarray[2] = &gcd[k++];
+
+    label[k].text = (unichar_t *) _("Find All");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 0; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;
+    gcd[k].gd.flags = gg_visible;
+    gcd[k].gd.cid = CID_FindAll;
+    gcd[k].gd.handle_controlevent = SV_FindAll;
+    gcd[k].creator = GButtonCreate;
+    butarray[3] = GCD_Glue; butarray[4] = &gcd[k++];
+
+    label[k].text = (unichar_t *) _("Replace");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 0; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
+    gcd[k].gd.flags = gg_visible;
+    gcd[k].gd.cid = CID_Replace;
+    gcd[k].gd.handle_controlevent = SV_RplFind;
+    gcd[k].creator = GButtonCreate;
+    butarray[5] = GCD_Glue; butarray[6] = &gcd[k++];
+
+    label[k].text = (unichar_t *) _("Replace All");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 0; gcd[k].gd.pos.y = gcd[k-2].gd.pos.y;
+    gcd[k].gd.flags = gg_visible;
+    gcd[k].gd.cid = CID_ReplaceAll;
+    gcd[k].gd.handle_controlevent = SV_RplAll;
+    gcd[k].creator = GButtonCreate;
+    butarray[7] = GCD_Glue; butarray[8] = &gcd[k++];
+
+    label[k].text = (unichar_t *) _("_Cancel");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = 0; gcd[k].gd.pos.y = gcd[k-3].gd.pos.y;
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_but_cancel;
+    gcd[k].gd.cid = CID_Cancel;
+    gcd[k].gd.handle_controlevent = SV_Cancel;
+    gcd[k].creator = GButtonCreate;
+    butarray[9] = GCD_Glue; butarray[10] = &gcd[k++];
+    butarray[11] = GCD_Glue; butarray[12] = GCD_Glue; butarray[13] = NULL;
 
     boxes[2].gd.flags = gg_enabled|gg_visible;
     boxes[2].gd.u.boxelements = allowarray;
@@ -788,14 +849,19 @@ return( NULL );
     boxes[5].gd.u.boxelements = butarray;
     boxes[5].creator = GHBoxCreate;
 
-    varray[0] = GCD_Glue; varray[1] = &boxes[4];
-    varray[2] = &gcd[4]; varray[3] = GCD_Glue;
-    varray[4] = &boxes[5]; varray[5] = NULL;
+    varray[0] = GCD_Glue;       varray[1] = NULL;
+    varray[2] = &boxes[4];      varray[3] = NULL;
+    varray[4] = &gcd[efdo_pos]; varray[5] = NULL;
+    varray[6] = GCD_Glue;       varray[7] = NULL;
+    varray[8] = &gcd[sel_pos];  varray[9] = NULL;
+    varray[10] = &boxes[5];     varray[11]= NULL;
+    varray[12] = NULL;
 
+    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
     boxes[0].gd.flags = gg_enabled|gg_visible;
     boxes[0].gd.u.boxelements = varray;
     boxes[0].gd.cid = CID_TopBox;
-    boxes[0].creator = GVBoxCreate;
+    boxes[0].creator = GHVGroupCreate;
 
     GGadgetsCreate(gw,boxes);
 
@@ -809,7 +875,7 @@ return( NULL );
     GGadgetSetTitle8(GWidgetGetControl(gw,CID_Find),_("Find"));
     sv->showsfindnext = false;
     GDrawRequestTimer(gw,1000,1000,NULL);
-    sv->button_height = GDrawPointsToPixels(gw,74);
+    sv->button_height = GDrawPointsToPixels(gw,88);
     GDrawResize(gw,650,400);		/* Force a resize event */
 
     GDrawSetVisible(sv->gw,true);
