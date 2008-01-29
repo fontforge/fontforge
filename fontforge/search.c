@@ -67,10 +67,34 @@ static int SPMatchesF(SplinePoint *sp, SearchData *s, SplineSet *path,
     SplinePoint *sc_sp, *nsc_sp, *p_sp, *np_sp;
     int flip, flipmax;
     double rot, scale;
-    int saw_sc_first = false;
+    int saw_sc_first = false, first_of_path;
+    BasePoint p_unit, pend_unit, sc_unit;
+    double len;
 
     s->matched_sp = sp;
-    for (sc_sp=sp, p_sp=path->first; ; ) {
+    first_of_path = true;
+    p_sp = s->endpoints ? path->first->next->to : path->first;
+    if ( s->endpoints ) {
+	SplinePoint *p_prevsp = p_sp->prev->from;
+	p_unit.x = p_sp->me.x - p_prevsp->me.x; p_unit.y = p_sp->me.y - p_prevsp->me.y;
+	len = sqrt(p_unit.x*p_unit.x + p_unit.y*p_unit.y);
+	if ( len==0 )
+return( false );
+	p_unit.x /= len; p_unit.y /= len;
+    }
+    if ( s->endpoints ) {
+	SplinePoint *p_nextsp = path->last;
+	SplinePoint *p_end = p_nextsp->prev->from;
+	pend_unit.x = p_nextsp->me.x - p_end->me.x; pend_unit.y = p_nextsp->me.y - p_end->me.y;
+	len = sqrt(pend_unit.x*pend_unit.x + pend_unit.y*pend_unit.y);
+	if ( len==0 )
+return( false );
+	pend_unit.x /= len; pend_unit.y /= len;
+    }
+
+/* ******************* Match with no transformations applied **************** */
+    first_of_path = true;
+    for (sc_sp=sp; ; ) {
 	if ( p_sp->next==NULL ) {
 	    if ( substring || sc_sp->next==NULL ) {
 		s->last_sp = saw_sc_first ? NULL : sp;
@@ -82,6 +106,50 @@ return( true );
 	if ( sc_sp->next==NULL )
     break;
 	nsc_sp = sc_sp->next->to;
+
+	if ( first_of_path && s->endpoints ) {
+	    SplinePoint *sc_prevsp;
+	    if ( sc_sp->prev==NULL )
+return( false );
+	    sc_prevsp = sc_sp->prev->from;
+	    if ( !p_sp->noprevcp ) {
+		if ( !CoordMatches(sc_sp->prevcp.x-sc_sp->me.x,p_sp->prevcp.x-p_sp->me.x,s) ||
+		     !CoordMatches(sc_sp->prevcp.y-sc_sp->me.y,p_sp->prevcp.y-p_sp->me.y,s) )
+    break;	/* prev control points do not match, give up */
+	    } else {
+		sc_unit.x = sc_sp->me.x - sc_prevsp->me.x; sc_unit.y = sc_sp->me.y - sc_prevsp->me.y;
+		len = sqrt(sc_unit.x*sc_unit.x + sc_unit.y*sc_unit.y );
+		if ( len==0 )
+return( false );
+		sc_unit.x /= len; sc_unit.y /= len;
+		if ( !RealNear(sc_unit.x,p_unit.x) || !RealNear(sc_unit.y,p_unit.y))
+    break;
+	    }
+	    first_of_path = false;
+	}
+	if ( np_sp->next==NULL && s->endpoints ) {
+	    SplinePoint *sc_nextsp;
+	    if ( sc_sp->next==NULL )
+return( false );
+	    sc_nextsp = sc_sp->next->to;
+	    if ( !p_sp->nonextcp ) {
+		if ( !CoordMatches(sc_sp->nextcp.x-sc_sp->me.x,p_sp->nextcp.x-p_sp->me.x,s) ||
+		     !CoordMatches(sc_sp->nextcp.y-sc_sp->me.y,p_sp->nextcp.y-p_sp->me.y,s) )
+    break;	/* prev control points do not match, give up */
+	    } else {
+		sc_unit.x = sc_nextsp->me.x - sc_sp->me.x; sc_unit.y = sc_nextsp->me.y - sc_sp->me.y;
+		len = sqrt(sc_unit.x*sc_unit.x + sc_unit.y*sc_unit.y );
+		if ( len==0 )
+return( false );
+		sc_unit.x /= len; sc_unit.y /= len;
+		if ( RealNear(sc_unit.x,pend_unit.x) && RealNear(sc_unit.y,pend_unit.y)) {
+		    s->last_sp = saw_sc_first ? NULL : sp;
+return( true );
+		} else
+    break;
+	    }
+	}
+
 	if ( !CoordMatches(sc_sp->nextcp.x-sc_sp->me.x,p_sp->nextcp.x-p_sp->me.x,s) ||
 		!CoordMatches(sc_sp->nextcp.y-sc_sp->me.y,p_sp->nextcp.y-p_sp->me.y,s) ||
 		!CoordMatches(nsc_sp->me.x-sc_sp->me.x,np_sp->me.x-p_sp->me.x,s) ||
@@ -102,10 +170,13 @@ return( true );
 	p_sp = np_sp;
     }
 
+/* ************** Match with just flip transformations applied ************** */
     if ( s->tryflips ) for ( flip=flip_x ; flip<=flip_xy; ++flip ) {
 	int xsign = (flip&1) ? -1 : 1, ysign = (flip&2) ? -1 : 1;
 	saw_sc_first = false;
-	for (sc_sp=sp, p_sp=path->first; ; ) {
+	p_sp = s->endpoints ? path->first->next->to : path->first;
+	first_of_path = true;
+	for (sc_sp=sp; ; ) {
 	    if ( p_sp->next==NULL ) {
 		if ( substring || sc_sp->next==NULL ) {
 		    s->matched_flip = flip;
@@ -118,6 +189,48 @@ return( true );
 	    if ( sc_sp->next==NULL )
     break;
 	    nsc_sp = sc_sp->next->to;
+
+	    if ( first_of_path && s->endpoints ) {
+		SplinePoint *sc_prevsp;
+		/* if ( sc_sp->prev==NULL )*/	/* Already checked this above */
+		sc_prevsp = sc_sp->prev->from;
+		if ( !p_sp->noprevcp ) {
+		    if ( !CoordMatches(sc_sp->prevcp.x-sc_sp->me.x,xsign*(p_sp->prevcp.x-p_sp->me.x),s) ||
+			 !CoordMatches(sc_sp->prevcp.y-sc_sp->me.y,ysign*(p_sp->prevcp.y-p_sp->me.y),s) )
+	break;	/* prev control points do not match, give up */
+		} else {
+		    sc_unit.x = sc_sp->me.x - sc_prevsp->me.x; sc_unit.y = sc_sp->me.y - sc_prevsp->me.y;
+		    len = sqrt(sc_unit.x*sc_unit.x + sc_unit.y*sc_unit.y );
+		    sc_unit.x /= len; sc_unit.y /= len;
+		    if ( !RealNear(sc_unit.x,xsign * p_unit.x) || !RealNear(sc_unit.y,ysign*p_unit.y))
+	break;
+		}
+		first_of_path = false;
+	    }
+	    if ( np_sp->next==NULL && s->endpoints ) {
+		SplinePoint *sc_nextsp;
+		if ( sc_sp->next==NULL )
+return( false );
+		sc_nextsp = sc_sp->next->to;
+		if ( !p_sp->nonextcp ) {
+		    if ( !CoordMatches(sc_sp->nextcp.x-sc_sp->me.x,xsign*(p_sp->nextcp.x-p_sp->me.x),s) ||
+			 !CoordMatches(sc_sp->nextcp.y-sc_sp->me.y,ysign*(p_sp->nextcp.y-p_sp->me.y),s) )
+	break;	/* prev control points do not match, give up */
+		} else {
+		    sc_unit.x = sc_nextsp->me.x - sc_sp->me.x; sc_unit.y = sc_nextsp->me.y - sc_sp->me.y;
+		    len = sqrt(sc_unit.x*sc_unit.x + sc_unit.y*sc_unit.y );
+		    if ( len==0 )
+return( false );
+		    sc_unit.x /= len; sc_unit.y /= len;
+		    if ( RealNear(sc_unit.x,xsign*pend_unit.x) && RealNear(sc_unit.y,ysign*pend_unit.y)) {
+			s->matched_flip = flip;
+			s->last_sp = saw_sc_first ? NULL : sp;
+return( true );
+		    } else
+	break;
+		}
+	    }
+
 	    if ( !CoordMatches(sc_sp->nextcp.x-sc_sp->me.x,xsign*(p_sp->nextcp.x-p_sp->me.x),s) ||
 		    !CoordMatches(sc_sp->nextcp.y-sc_sp->me.y,ysign*(p_sp->nextcp.y-p_sp->me.y),s) ||
 		    !CoordMatches(nsc_sp->me.x-sc_sp->me.x,xsign*(np_sp->me.x-p_sp->me.x),s) ||
@@ -140,13 +253,14 @@ return( true );
 	}
     }
 
+/* ******* Match with rotate, scale and flip transformations applied ******** */
     if ( s->tryrotate || s->tryscale ) {
 	if ( s->tryflips )
 	    flipmax = flip_xy;
 	else
 	    flipmax = flip_none;
 	for ( flip=flip_none ; flip<=flipmax; ++flip ) {
-	    p_sp = path->first;
+	    p_sp = s->endpoints ? path->first->next->to : path->first;
 	    np_sp = p_sp->next->to;	/* if p_sp->next were NULL, we'd have returned by now */
 	    sc_sp = sp;
 	    if ( sc_sp->next==NULL )
@@ -156,7 +270,22 @@ return( false );
 return( false );
 	    if ( sc_sp->me.x==nsc_sp->me.x && sc_sp->me.y==nsc_sp->me.y )
 return( false );
-	    if ( !s->tryrotate ) {
+	    if ( s->tryrotate && s->endpoints && np_sp->next == NULL ) {
+		int xsign = (flip&1)?-1:1, ysign=(flip&2)?-1:1;
+		SplinePoint *sc_prevsp;
+		/* if ( sc_sp->prev==NULL )*/	/* Already checked this above */
+		sc_prevsp = sc_sp->prev->from;
+		if ( !p_sp->noprevcp ) {
+		    rot = atan2(xsign*(sc_sp->me.y-sc_sp->prevcp.y),ysign*(sc_sp->me.x-sc_sp->prevcp.x)) -
+			  atan2(        p_sp->me.y- p_sp->prevcp.y,         p_sp->me.x- p_sp->prevcp.x);
+		} else {
+		    rot = atan2(xsign*(sc_unit.y),ysign*(sc_unit.x)) -
+			  atan2(        p_unit.y,         p_unit.x);
+		}
+		scale = 1;
+	    } else if ( s->endpoints && np_sp->next == NULL ) {
+return( false );		/* Not enough info to make a guess */
+	    } else if ( !s->tryrotate ) {
 		if ( p_sp->me.x==np_sp->me.x )
 		    scale = (np_sp->me.y-p_sp->me.y) / (nsc_sp->me.y-sc_sp->me.y);
 		else if ( p_sp->me.y==np_sp->me.y )
@@ -195,7 +324,8 @@ return( false );
 	    else
 		s->matched_co = cos(rot), s->matched_si = sin(rot);
 	    saw_sc_first = false;
-	    for (sc_sp=sp, p_sp=path->first; ; ) {
+	    first_of_path = true;
+	    for (sc_sp=sp ; ; ) {
 		if ( p_sp->next==NULL ) {
 		    if ( substring || sc_sp->next==NULL ) {
 			s->matched_flip = flip;
@@ -210,6 +340,50 @@ return( false );
 		if ( sc_sp->next==NULL )
 return( false );
 		nsc_sp = sc_sp->next->to;
+
+		if ( first_of_path && s->endpoints ) {
+		    SplinePoint *sc_prevsp;
+		    /* if ( sc_sp->prev==NULL )*/	/* Already checked this above */
+		    sc_prevsp = sc_sp->prev->from;
+		    if ( !p_sp->noprevcp ) {
+			if ( !BPMatches(&sc_sp->prevcp,&sc_sp->me,&p_sp->prevcp,&p_sp->me,flip,rot,scale,s) )
+	    break;
+		    } else {
+			sc_unit.x = sc_sp->me.x - sc_prevsp->me.x; sc_unit.y = sc_sp->me.y - sc_prevsp->me.y;
+			len = sqrt(sc_unit.x*sc_unit.x + sc_unit.y*sc_unit.y );
+			sc_unit.x /= len; sc_unit.y /= len;
+			len = sc_unit.x*p_unit.x + sc_unit.y*p_unit.y;
+			if ( !RealNear(len,cos(rot)) )
+	    break;
+		    }
+		    first_of_path = false;
+		}
+		if ( np_sp->next==NULL && s->endpoints ) {
+		    SplinePoint *sc_nextsp;
+		    if ( sc_sp->next==NULL )
+return( false );
+		    sc_nextsp = sc_sp->next->to;
+		    if ( !p_sp->nonextcp ) {
+			if ( !BPMatches(&sc_sp->nextcp,&sc_sp->me,&p_sp->nextcp,&p_sp->me,flip,rot,scale,s) )
+	    break;
+		    } else {
+			sc_unit.x = sc_nextsp->me.x - sc_sp->me.x; sc_unit.y = sc_nextsp->me.y - sc_sp->me.y;
+			len = sqrt(sc_unit.x*sc_unit.x + sc_unit.y*sc_unit.y );
+			if ( len==0 )
+return( false );
+			sc_unit.x /= len; sc_unit.y /= len;
+			len = sc_unit.x*pend_unit.x + sc_unit.y*pend_unit.y;
+			if ( RealNear(len,cos(rot)) ) {
+			    s->matched_flip = flip;
+			    s->matched_rot = rot;
+			    s->matched_scale = scale;
+			    s->last_sp = saw_sc_first ? NULL : sp;
+return( true );
+			} else
+	    break;
+		    }
+		}
+		
 		if ( !BPMatches(&sc_sp->nextcp,&sc_sp->me,&p_sp->nextcp,&p_sp->me,flip,rot,scale,s) ||
 			!BPMatches(&nsc_sp->me,&sc_sp->me,&np_sp->me,&p_sp->me,flip,rot,scale,s) ||
 			!BPMatches(&nsc_sp->prevcp,&nsc_sp->me,&np_sp->prevcp,&np_sp->me,flip,rot,scale,s) )

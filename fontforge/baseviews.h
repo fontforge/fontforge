@@ -389,7 +389,8 @@ extern void ExecuteScriptFile(FontViewBase *fv, SplineChar *sc, char *filename);
 
 extern int OFLibUploadFont(OFLibData *);
 
-enum search_flags { sv_reverse = 0x1, sv_flips = 0x2, sv_rotate = 0x4, sv_scale = 0x8 };
+enum search_flags { sv_reverse = 0x1, sv_flips = 0x2, sv_rotate = 0x4,
+	sv_scale = 0x8, sv_endpoints=0x10 };
 typedef struct searchdata {
     SplineChar sc_srch, sc_rpl;
     SplineSet *path, *revpath, *replacepath, *revreplace;
@@ -400,6 +401,7 @@ typedef struct searchdata {
     unsigned int tryflips: 1;
     unsigned int tryrotate: 1;
     unsigned int tryscale: 1;
+    unsigned int endpoints: 1;		/* Don't match endpoints, use them for direction only */
     unsigned int onlyselected: 1;
     unsigned int subpatternsearch: 1;
     unsigned int doreplace: 1;
