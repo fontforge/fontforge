@@ -2198,6 +2198,7 @@ extern void SplineCharTangentPrevCP(SplinePoint *sp);
 extern void SPHVCurveForce(SplinePoint *sp);
 extern void SPSmoothJoint(SplinePoint *sp);
 extern int PointListIsSelected(SplinePointList *spl);
+extern void SCSplinePointsUntick(SplineChar *sc);
 extern void SplineSetsUntick(SplineSet *spl);
 extern void SFOrderBitmapList(SplineFont *sf);
 extern int KernThreshold(SplineFont *sf, int cnt);

@@ -78,28 +78,54 @@ static int SPMatchesF(SplinePoint *sp, SearchData *s, SplineSet *path,
     s->matched_co = 1; s->matched_si=0;
 
     first_of_path = true;
-    p_sp = s->endpoints ? path->first->next->to : path->first;
+    p_sp = path->first;
     if ( s->endpoints ) {
-	SplinePoint *p_prevsp = p_sp->prev->from;
+	SplinePoint *p_prevsp = p_sp;
+	SplinePoint *psc_sp;
+	p_sp = p_sp->next->to;
 	p_unit.x = p_sp->me.x - p_prevsp->me.x; p_unit.y = p_sp->me.y - p_prevsp->me.y;
 	len = sqrt(p_unit.x*p_unit.x + p_unit.y*p_unit.y);
 	if ( len==0 )
 return( false );
 	p_unit.x /= len; p_unit.y /= len;
+	if ( sp->prev==NULL )
+return( false );
+	psc_sp = sp->prev->from;
+	if ( (sp->me.x-psc_sp->me.x)*(sp->me.x-psc_sp->me.x) +
+		(sp->me.y-psc_sp->me.y)*(sp->me.y-psc_sp->me.y) < len*len )
+return( false );
     }
     if ( s->endpoints ) {
 	SplinePoint *p_nextsp = path->last;
 	SplinePoint *p_end = p_nextsp->prev->from;
+	if ( sp->next==NULL )
+return( false );
+	for ( p_end = p_sp, p_nextsp = p_end->next->to, sc_sp = sp, nsc_sp=sp->next->to ;; ) {
+	    if ( p_nextsp->next==NULL )
+	break;
+	    if ( nsc_sp->next==NULL )
+return( false );
+	    p_end = p_nextsp;
+	    sc_sp = nsc_sp;
+	    p_nextsp = p_nextsp->next->to;
+	    nsc_sp = nsc_sp->next->to;
+	}
 	pend_unit.x = p_nextsp->me.x - p_end->me.x; pend_unit.y = p_nextsp->me.y - p_end->me.y;
 	len = sqrt(pend_unit.x*pend_unit.x + pend_unit.y*pend_unit.y);
 	if ( len==0 )
 return( false );
 	pend_unit.x /= len; pend_unit.y /= len;
+	if ( (sp->me.x-nsc_sp->me.x)*(sp->me.x-nsc_sp->me.x) +
+		(sp->me.y-nsc_sp->me.y)*(sp->me.y-nsc_sp->me.y) < len*len )
+return( false );
     }
 
 /* ******************* Match with no transformations applied **************** */
     first_of_path = true;
     for (sc_sp=sp; ; ) {
+	if ( sc_sp->ticked )		/* Don't search within stuff we have just replaced */
+return( false );
+
 	if ( p_sp->next==NULL ) {
 	    if ( substring || sc_sp->next==NULL ) {
 		s->last_sp = saw_sc_first ? NULL : sp;
@@ -721,6 +747,7 @@ static SplinePoint *RplInsertSP(SplinePoint *after,SplinePoint *nrpl,SplinePoint
     new->noprevcp = (new->prevcp.x==new->me.x && new->prevcp.y==new->me.y);
     new->pointtype = rpl->pointtype;
     new->selected = true;
+    new->ticked = true;
     if ( after->next==NULL ) {
 	SplineMake(after,new,s->fv->sf->order2);
 	s->matched_spl->last = new;
@@ -852,6 +879,7 @@ return;
 		    sc_p->noprevcp = AdjustBP(&sc_p->prevcp,&sc_p->me,&r_p->prevcp,&r_p->me,&fudge,s);
 		if ( sc_p->prev!=NULL )
 		    SplineRefigure(sc_p->prev);
+		sc_p->ticked = true;
 	    }
 	    if ( np_p==path->first )
 return;
@@ -859,6 +887,7 @@ return;
 		nsc_p->nonextcp = AdjustBP(&nsc_p->nextcp,&nsc_p->me,&nr_p->nextcp,&nr_p->me,&fudge,s);
 	    nsc_p->noprevcp = AdjustBP(&nsc_p->prevcp,&nsc_p->me,&nr_p->prevcp,&nr_p->me,&fudge,s);
 	    AdjustAll(nsc_p,&sc_p->me,&nr_p->me,&r_p->me,&fudge,s);
+	    nsc_p->ticked = true;
 	    nsc_p->pointtype = nr_p->pointtype;
 	    if ( nsc_p->next!=NULL ) {
 		if ( nsc_p->next->order2 )
@@ -1028,6 +1057,26 @@ void SVResetPaths(SearchData *sv) {
     }
 }
 
+static void SplinePointsUntick(SplineSet *spl) {
+    SplinePoint *sp;
+
+    while ( spl!=NULL ) {
+	for ( sp = spl->first ; ; ) {
+	    sp->ticked = false;
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==spl->first )
+	break;
+	}
+	spl = spl->next;
+    }
+}
+
+void SCSplinePointsUntick(SplineChar *sc) {
+    SplinePointsUntick(sc->layers[ly_fore].splines);
+}
+
 int SearchChar(SearchData *sv, int gid,int startafter) {
 
     sv->curchar = sv->fv->sf->glyphs[gid];
@@ -1074,6 +1123,7 @@ int _DoFindAll(SearchData *sv) {
     for ( i=0; i<sv->fv->map->enccount; ++i ) {
 	if (( !sv->onlyselected || sv->fv->selected[i]) && (gid=sv->fv->map->map[i])!=-1 &&
 		sv->fv->sf->glyphs[gid]!=NULL ) {
+	    SCSplinePointsUntick(sv->fv->sf->glyphs[gid]);
 	    if ( (sv->fv->selected[i] = SearchChar(sv,gid,false)) ) {
 		any = true;
 		if ( sv->replaceall ) {
@@ -1278,6 +1328,7 @@ return( NULL );
     fv = sd->fv;
 
     for ( gid=sd->last_gid+1; gid<fv->sf->glyphcnt; ++gid ) {
+	SCSplinePointsUntick(fv->sf->glyphs[gid]);
 	if ( SearchChar(sd,gid,false) ) {
 	    sd->last_gid = gid;
 return( fv->sf->glyphs[gid]);
