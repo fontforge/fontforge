@@ -132,9 +132,11 @@ static int DoFindOne(SearchView *sv,int startafter) {
  
     for ( ; i<sv->sd.fv->map->enccount; ++i ) {
 	if (( !sv->sd.onlyselected || sv->sd.fv->selected[i]) && (gid=sv->sd.fv->map->map[i])!=-1 &&
-		sv->sd.fv->sf->glyphs[gid]!=NULL )
+		sv->sd.fv->sf->glyphs[gid]!=NULL ) {
+	    SCSplinePointsUntick(sv->sd.fv->sf->glyphs[gid]);
 	    if ( SearchChar(&sv->sd,gid,startafter) )
     break;
+	}
 	startafter = false;
     }
     if ( i>=sv->sd.fv->map->enccount ) {
@@ -507,7 +509,10 @@ return( true );
 	    for ( r = searcher->chars[i]->layers[ly_fore].refs; r!=NULL; r=rnext ) {
 		rnext = r->next;
 		pos = SFFindSlot(fv->b.sf,fv->b.map,r->sc->unicodeenc,r->sc->name);
-		if ( pos==-1 && !doit ) {
+		gid = -1;
+		if ( pos!=-1 )
+		    gid = fv->b.map->map[pos];
+		if ( (gid==-1 || fv->b.sf->glyphs[gid]!=NULL) && !doit ) {
 		    char *buttons[3];
 		    buttons[0] = _("Yes");
 		    buttons[1] = _("Cancel");
@@ -515,13 +520,13 @@ return( true );
 		    if ( ask_if_difficult==2 && !searcher->isvisible )
 return( false );
 		    if ( gwwv_ask(_("Bad Reference"),(const char **) buttons,1,1,
-			    _("The %1$s contains a reference to %2$.20hs which does not exist in the new font.\nShould I remove the reference?"),
-				i==0?_("Search Pattern:"):_("Replace Pattern:"),
+			    _("The %1$s in the search dialog contains a reference to %2$.20hs which does not exist in the new font.\nShould I remove the reference?"),
+				i==0?_("Search Pattern"):_("Replace Pattern"),
 			        r->sc->name)==1 )
 return( false );
 		} else if ( !doit )
 		    /* Do Nothing */;
-		else if ( pos==-1 ) {
+		else if ( gid==-1 || fv->b.sf->glyphs[gid]!=NULL ) {
 		    if ( rprev==NULL )
 			searcher->chars[i]->layers[ly_fore].refs = rnext;
 		    else
@@ -530,7 +535,6 @@ return( false );
 		    any = true;
 		} else {
 		    /*SplinePointListsFree(r->layers[0].splines); r->layers[0].splines = NULL;*/
-		    gid = fv->b.map->map[pos];
 		    r->sc = fv->b.sf->glyphs[gid];
 		    r->orig_pos = gid;
 		    SCReinstanciateRefChar(searcher->chars[i],r);
@@ -751,7 +755,7 @@ return( NULL );
     fudgearray[1] = &gcd[k++]; fudgearray[2] = GCD_Glue; fudgearray[3] = NULL;
 
     efdo_pos = k;
-    label[k].text = (unichar_t *) _("Use endpoints for direction only");
+    label[k].text = (unichar_t *) _("Endpoints specify minimum length and direction only");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[1].gd.pos.y+18;
@@ -761,9 +765,10 @@ return( NULL );
 	"If the search pattern is a single open contour\n"
 	"then do not match the end points. They merely\n"
 	"specify the direction from which the curve should\n"
-	"move toward the next point (which will be matched).\n"
-	"The endpoints of the replace contour will also only\n"
-	"be used for positioning.\n"
+	"move toward the next point (which will be matched),\n"
+	"and the minimum distance between the first matched\n"
+	"point and the one before it. The endpoints of the\n"
+	"replace contour will also only be used for positioning.\n"
 	"\n"
 	"This allows you to match a right angle corner\n"
 	"without needed to specify exactly how long the edges\n"
