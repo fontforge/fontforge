@@ -69,9 +69,14 @@ static int SPMatchesF(SplinePoint *sp, SearchData *s, SplineSet *path,
     double rot, scale;
     int saw_sc_first = false, first_of_path;
     BasePoint p_unit, pend_unit, sc_unit;
-    double len;
+    double len, temp;
 
     s->matched_sp = sp;
+    s->matched_rot = 0;
+    s->matched_scale = 1.0;
+    s->matched_flip = flip_none;
+    s->matched_co = 1; s->matched_si=0;
+
     first_of_path = true;
     p_sp = s->endpoints ? path->first->next->to : path->first;
     if ( s->endpoints ) {
@@ -113,10 +118,14 @@ return( true );
 return( false );
 	    sc_prevsp = sc_sp->prev->from;
 	    if ( !p_sp->noprevcp ) {
+		if ( sc_sp->noprevcp )
+return( false );
 		if ( !CoordMatches(sc_sp->prevcp.x-sc_sp->me.x,p_sp->prevcp.x-p_sp->me.x,s) ||
 		     !CoordMatches(sc_sp->prevcp.y-sc_sp->me.y,p_sp->prevcp.y-p_sp->me.y,s) )
     break;	/* prev control points do not match, give up */
 	    } else {
+		if ( !sc_sp->noprevcp )
+return( false );
 		sc_unit.x = sc_sp->me.x - sc_prevsp->me.x; sc_unit.y = sc_sp->me.y - sc_prevsp->me.y;
 		len = sqrt(sc_unit.x*sc_unit.x + sc_unit.y*sc_unit.y );
 		if ( len==0 )
@@ -137,6 +146,8 @@ return( false );
 		     !CoordMatches(sc_sp->nextcp.y-sc_sp->me.y,p_sp->nextcp.y-p_sp->me.y,s) )
     break;	/* prev control points do not match, give up */
 	    } else {
+		if ( !sc_sp->nonextcp )
+return( false );
 		sc_unit.x = sc_nextsp->me.x - sc_sp->me.x; sc_unit.y = sc_nextsp->me.y - sc_sp->me.y;
 		len = sqrt(sc_unit.x*sc_unit.x + sc_unit.y*sc_unit.y );
 		if ( len==0 )
@@ -217,6 +228,8 @@ return( false );
 			 !CoordMatches(sc_sp->nextcp.y-sc_sp->me.y,ysign*(p_sp->nextcp.y-p_sp->me.y),s) )
 	break;	/* prev control points do not match, give up */
 		} else {
+		    if ( !sc_sp->nonextcp )
+return( false );
 		    sc_unit.x = sc_nextsp->me.x - sc_sp->me.x; sc_unit.y = sc_nextsp->me.y - sc_sp->me.y;
 		    len = sqrt(sc_unit.x*sc_unit.x + sc_unit.y*sc_unit.y );
 		    if ( len==0 )
@@ -352,8 +365,10 @@ return( false );
 			sc_unit.x = sc_sp->me.x - sc_prevsp->me.x; sc_unit.y = sc_sp->me.y - sc_prevsp->me.y;
 			len = sqrt(sc_unit.x*sc_unit.x + sc_unit.y*sc_unit.y );
 			sc_unit.x /= len; sc_unit.y /= len;
-			len = sc_unit.x*p_unit.x + sc_unit.y*p_unit.y;
-			if ( !RealNear(len,cos(rot)) )
+			temp      =  sc_unit.x * s->matched_co + sc_unit.y * s->matched_si;
+			sc_unit.y = -sc_unit.x * s->matched_si + sc_unit.y * s->matched_co;
+			sc_unit.x = temp;
+			if ( !RealNear(sc_unit.x,p_unit.x) || !RealNear(sc_unit.y,p_unit.y))
 	    break;
 		    }
 		    first_of_path = false;
@@ -367,13 +382,17 @@ return( false );
 			if ( !BPMatches(&sc_sp->nextcp,&sc_sp->me,&p_sp->nextcp,&p_sp->me,flip,rot,scale,s) )
 	    break;
 		    } else {
+			if ( !sc_sp->nonextcp )
+return( false );
 			sc_unit.x = sc_nextsp->me.x - sc_sp->me.x; sc_unit.y = sc_nextsp->me.y - sc_sp->me.y;
 			len = sqrt(sc_unit.x*sc_unit.x + sc_unit.y*sc_unit.y );
 			if ( len==0 )
 return( false );
 			sc_unit.x /= len; sc_unit.y /= len;
-			len = sc_unit.x*pend_unit.x + sc_unit.y*pend_unit.y;
-			if ( RealNear(len,cos(rot)) ) {
+			temp      =  sc_unit.x * s->matched_co + sc_unit.y * s->matched_si;
+			sc_unit.y = -sc_unit.x * s->matched_si + sc_unit.y * s->matched_co;
+			sc_unit.x = temp;
+			if ( RealNear(sc_unit.x,pend_unit.x) && RealNear(sc_unit.y,pend_unit.y)) {
 			    s->matched_flip = flip;
 			    s->matched_rot = rot;
 			    s->matched_scale = scale;
@@ -692,12 +711,12 @@ static SplinePoint *RplInsertSP(SplinePoint *after,SplinePoint *nrpl,SplinePoint
 
     SVBuildTrans(s,transform);
     /*transform[4] += fudge->x; transform[5] += fudge->y;*/
-    new->me.x = after->me.x + transform[0]*(nrpl->me.x-rpl->me.x) + transform[2]*(nrpl->me.y-rpl->me.y) + fudge->x;
-    new->me.y = after->me.y + transform[1]*(nrpl->me.x-rpl->me.x) + transform[3]*(nrpl->me.y-rpl->me.y) + fudge->y;
-    new->nextcp.x = after->me.x + transform[0]*(nrpl->nextcp.x-rpl->me.x) + transform[2]*(nrpl->nextcp.y-rpl->me.y) + fudge->x;
-    new->nextcp.y = after->me.y + transform[1]*(nrpl->nextcp.x-rpl->me.x) + transform[3]*(nrpl->nextcp.y-rpl->me.y) + fudge->y;
-    new->prevcp.x = after->me.x + transform[0]*(nrpl->prevcp.x-rpl->me.x) + transform[2]*(nrpl->prevcp.y-rpl->me.y) + fudge->x;
-    new->prevcp.y = after->me.y + transform[1]*(nrpl->prevcp.x-rpl->me.x) + transform[3]*(nrpl->prevcp.y-rpl->me.y) + fudge->y;
+    new->me.x = after->me.x + transform[0]*(nrpl->me.x-rpl->me.x) + transform[1]*(nrpl->me.y-rpl->me.y) + fudge->x;
+    new->me.y = after->me.y + transform[2]*(nrpl->me.x-rpl->me.x) + transform[3]*(nrpl->me.y-rpl->me.y) + fudge->y;
+    new->nextcp.x = after->me.x + transform[0]*(nrpl->nextcp.x-rpl->me.x) + transform[1]*(nrpl->nextcp.y-rpl->me.y) + fudge->x;
+    new->nextcp.y = after->me.y + transform[2]*(nrpl->nextcp.x-rpl->me.x) + transform[3]*(nrpl->nextcp.y-rpl->me.y) + fudge->y;
+    new->prevcp.x = after->me.x + transform[0]*(nrpl->prevcp.x-rpl->me.x) + transform[1]*(nrpl->prevcp.y-rpl->me.y) + fudge->x;
+    new->prevcp.y = after->me.y + transform[2]*(nrpl->prevcp.x-rpl->me.x) + transform[3]*(nrpl->prevcp.y-rpl->me.y) + fudge->y;
     new->nonextcp = (new->nextcp.x==new->me.x && new->nextcp.y==new->me.y);
     new->noprevcp = (new->prevcp.x==new->me.x && new->prevcp.y==new->me.y);
     new->pointtype = rpl->pointtype;
@@ -782,7 +801,7 @@ static void DoReplaceIncomplete(SplineChar *sc,SearchData *s) {
 	    yoff =-yoff;
 	xoff *= s->matched_scale;
 	yoff *= s->matched_scale;
-	dummy.me.x = sc_p->me.x + xoff*s->matched_co + yoff*s->matched_si;
+	dummy.me.x = sc_p->me.x + xoff*s->matched_co - yoff*s->matched_si;
 	dummy.me.y = sc_p->me.y + yoff*s->matched_co + xoff*s->matched_si;
 	dummy.nextcp = dummy.prevcp = dummy.me;
 	dummy.nonextcp = dummy.noprevcp = true;
