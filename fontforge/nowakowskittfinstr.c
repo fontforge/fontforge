@@ -2970,7 +2970,10 @@ return( ct->pt );
     
     if ( SetFreedomVector( &instrs,a1,ptcnt,touched,diagpts,v1,v2,fv )) {
         instrs = pushpoint( instrs,a1 );
-        *instrs++ = MDAP;
+        if (( fv->x == 1 && touched[a1] & tf_x ) || ( fv->y == 1 && touched[a1] & tf_y ))
+            *instrs++ = SRP0;
+        else
+            *instrs++ = MDAP;
         touched[a1] |= tf_d;
         lfixed = true;
         
@@ -3139,8 +3142,8 @@ static uint8 *TouchDStemPoints( InstrCt *ct,DiagPointInfo *diagpts,
     instrs = ct->pt;
     ptcnt = ct->ptcnt;
 
-    tobefixedy = chunkalloc( ptcnt*sizeof( int ) );
-    tobefixedx = chunkalloc( ptcnt*sizeof( int ) );
+    tobefixedy = gcalloc( ptcnt,sizeof( int ) );
+    tobefixedx = gcalloc( ptcnt,sizeof( int ) );
 
     for ( i=0; i<ptcnt; i++ ) {
         if ( diagpts[i].count > 0 ) {
@@ -3162,12 +3165,12 @@ static uint8 *TouchDStemPoints( InstrCt *ct,DiagPointInfo *diagpts,
     }
 
     if ( numx>0 ) {
-        if ( !(fv->x == 1 && fv->y == 0) ) *instrs++ = SVTCA_x;
+        if ( !(fv->x == 1 && fv->y == 0) || numy > 0 ) *instrs++ = SVTCA_x;
         instrs = instructpoints ( instrs,numx,tobefixedx,MDAP );
     }
 
-    chunkfree( tobefixedy, ptcnt*sizeof( int ) );
-    chunkfree( tobefixedx, ptcnt*sizeof( int ) );
+    free( tobefixedy );
+    free( tobefixedx );
 return( instrs );
 }
 
