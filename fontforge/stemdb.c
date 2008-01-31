@@ -1074,7 +1074,7 @@ static struct stem_chunk *AddToStem( struct stemdata *stem,struct pointdata *pd1
     int is_potential1 = false, is_potential2 = true;
     struct stem_chunk *chunk=NULL;
     BasePoint *dir = &stem->unit;
-    BasePoint *test = &pd1->sp->me;
+    BasePoint *test;
     int lincr = 1, rincr = 1;
     double off, dist_error;
     double loff = 0, roff = 0;
@@ -1084,18 +1084,24 @@ static struct stem_chunk *AddToStem( struct stemdata *stem,struct pointdata *pd1
 
     if ( cheat || stem->positioned ) is_potential2 = false;
     /* Diagonals are harder to align */
-    dist_error = IsVectorHV( dir,0,true ) ? dist_error_hv : dist_error_diag;
+    dist_error = IsVectorHV( dir,0,true ) ? 2*dist_error_hv : 2*dist_error_diag;
+    if ( dist_error > stem->width/2 ) dist_error = stem->width/2;
     max = stem->lmax;
     min = stem->lmin;
 
     /* The following swaps "left" and "right" points in case we have
     /* started checking relatively to a wrong edge */
-    off =   ( test->x - stem->left.x )*dir->y - 
-            ( test->y - stem->left.y )*dir->x;
-    if ( off < ( max - 2*dist_error ) || off > ( min + 2*dist_error )) {
-	pd = pd1; pd1 = pd2; pd2 = pd;
-	in = is_next1; is_next1 = is_next2; is_next2 = in;
-	ip = is_potential1; is_potential1 = is_potential2; is_potential2 = ip;
+    if ( pd1 != NULL ) {
+        test = &pd1->sp->me;
+        off =   ( test->x - stem->left.x )*dir->y - 
+                ( test->y - stem->left.y )*dir->x;
+        if (( !stem->ghost &&
+            ( off < ( max - dist_error ) || off > ( min + dist_error ))) ||
+            ( stem->ghost && stem->width == 21 )) {
+	    pd = pd1; pd1 = pd2; pd2 = pd;
+	    in = is_next1; is_next1 = is_next2; is_next2 = in;
+	    ip = is_potential1; is_potential1 = is_potential2; is_potential2 = ip;
+        }
     }
 
     if ( pd1 == NULL ) lincr = 0;
@@ -1270,7 +1276,7 @@ static int OnStem( struct stemdata *stem,BasePoint *test,int left ) {
 
     /* Diagonals are harder to align */
     dist_error = IsVectorHV( dir,0,true ) ? dist_error_hv : dist_error_diag;
-    if ( ! stem->positioned ) dist_error = dist_error * 2;
+    if ( !stem->positioned ) dist_error = dist_error * 2;
     if ( dist_error > stem->width/2 ) dist_error = stem->width/2;
     if ( left ) {
         off = (test->x - stem->left.x)*dir->y - (test->y - stem->left.y)*dir->x;
@@ -1738,7 +1744,7 @@ return( t1 );
 /* but have no corresponding position at the opposite edge. */
 static int HalfStemNoOpposite( struct glyphdata *gd,struct pointdata *pd,
     struct stemdata *stem,BasePoint *dir,int is_next ) {
-    int i, ret=0, is_l=false, is_r=false, allowleft, allowright;
+    int i, ret=0, allowleft, allowright;
     double err;
     struct stemdata *tstem;
     
@@ -1751,11 +1757,14 @@ static int HalfStemNoOpposite( struct glyphdata *gd,struct pointdata *pd,
         
         err = tstem->unit.x*dir->y - tstem->unit.y*dir->x;
         if (( err<slope_error && err>-slope_error ) || tstem->ghost ) {
-            is_l = OnStem( tstem,&pd->sp->me,true );
-            is_r = OnStem( tstem,&pd->sp->me,false );
-            if (( is_l && allowleft ) || ( is_r && allowright )) {
-	        if ( IsCorrectSide( gd,pd->sp,is_next,is_l,&tstem->unit )) {
+            if ( OnStem( tstem,&pd->sp->me,true ) && allowleft ) {
+	        if ( IsCorrectSide( gd,pd->sp,is_next,true,&tstem->unit )) {
                     AddToStem( tstem,pd,NULL,is_next,false,false );
+                    ret++;
+                }
+            } else if ( OnStem( tstem,&pd->sp->me,false ) && allowright ) {
+	        if ( IsCorrectSide( gd,pd->sp,is_next,false,&tstem->unit )) {
+                    AddToStem( tstem,NULL,pd,false,is_next,false );
                     ret++;
                 }
             }
@@ -2036,9 +2045,9 @@ static void AssignLinePointsToStems( struct glyphdata *gd ) {
             for ( j=0; j<line->pcnt; j++ ) {
                 pd = line->points[j];
                 if ( pd->prevline == line && pd->prevstem == NULL )
-                    AddToStem( stem,pd,NULL,false,false,false );
+                    AddToStem( stem,NULL,pd,false,false,false );
                 if ( pd->nextline == line && pd->nextstem == NULL )
-                    AddToStem( stem,pd,NULL,true,false,false );
+                    AddToStem( stem,NULL,pd,false,true,false );
             }
         }
     }
@@ -3929,7 +3938,7 @@ static void CheckForGhostHints( struct glyphdata *gd, BlueData *bd ) {
     struct stemdata *stem;
     struct stem_chunk *chunk;
     struct pointdata *pd;
-    real base, width;
+    real base;
     int i, j, leftfound, rightfound, peak;
 
     /* Get the alignment zones */
@@ -3991,10 +4000,12 @@ static void CheckForGhostHints( struct glyphdata *gd, BlueData *bd ) {
 	for ( j=0; j<bd->bluecnt; ++j ) {
 	    if ( base>=bd->blues[j][0]-1 && base<=bd->blues[j][1]+1 ) {
                 peak = IsSplinePeak( gd,pd,false,false,7 );
-                if ( peak ) {
-                    width = ( peak>0 ) ? 20 : 21;
-                    stem = FindOrMakeGhostStem( gd,pd->sp,j,width );
+                if ( peak > 0 ) {
+                    stem = FindOrMakeGhostStem( gd,pd->sp,j,20 );
                     chunk = AddToStem( stem,pd,NULL,false,false,false );
+                } else if ( peak < 0 ) {
+                    stem = FindOrMakeGhostStem( gd,pd->sp,j,21 );
+                    chunk = AddToStem( stem,NULL,pd,false,false,false );
                 }
 	    }
         }
