@@ -50,9 +50,10 @@ extern int autohint_before_generate;
  * points between stems' edges, so that glyph's shape is mostly preserved
  * when strongly gridfitted. This in terms of FreeType is called 'Strong Point
  * Interpolation'. In FF it now does more or else what it should, but generates
- * large and sometimes incomplete code - it needs optimization.
+ * large and sometimes incomplete code - it needs optimization. Please note that
+ * it has also impact on diagonal hints' positioning - usually positive.
  */
-#define TESTIPSTRONG 0
+#define TESTIPSTRONG 1
 
 /* define some often used instructions */
 #define SVTCA_y                 (0x00)
@@ -3243,6 +3244,9 @@ return;
  *
  * Strong point interpolation
  *
+ * TODO! Optimization.
+ * TODO! It could be faster.
+ *
  ******************************************************************************/
 
 /* To be used with qsort() - sorts real array in ascending order. */
@@ -3251,12 +3255,18 @@ static int sortreals(const void *a, const void *b) {
 }
 
 static void InterpolateStrongPoints(InstrCt *ct) {
+    uint8 *isdstemend=NULL;
+    DStem *dhint;
     StemInfo *hint, *firsthint = ct->xdir?ct->sc->vstem:ct->sc->hstem;
+    int p, touchflag = ct->xdir?tf_x:tf_y;
     real tmp, edgelist[192];
-    int edgecnt=0, i, skip;
+    int edgecnt=0, i, j, k, skip;
     int lpoint = -1;
     int rpoint = -1;
     int nowrp1 = 0;
+
+    if (firsthint==NULL)
+return;
 
     /* List all stem edges. List only active edges for ghost hints. */
     for(hint=firsthint; hint!=NULL; hint=hint->next) {
@@ -3292,6 +3302,14 @@ return;
 
     qsort(edgelist, edgecnt, sizeof(real), sortreals);
 
+    /* If there are diagonal stems, list their endpoints */
+    if (ct->diagstems) {
+	isdstemend = gcalloc(ct->ptcnt, sizeof(uint8));
+
+	for (dhint=ct->diagstems; dhint!=NULL; dhint=dhint->next)
+	    for (k=0; k<4; k++) isdstemend[dhint->pts[k].num] = 1;
+    }
+
     /* Interpolate important points between subsequent edges */
     for (i=0; i<edgecnt; i++) {
         if (rpoint != -1) lpoint = rpoint;
@@ -3299,11 +3317,9 @@ return;
 	rpoint = ct->edge.refpt;
 	if (rpoint == -1) continue; /* it's harmful when happens */
 	ct->pt = pushpoint(ct->pt, rpoint);
-	if (ct->edge.othercnt) free(ct->edge.others); /* must not happen! */
+	if (ct->edge.othercnt) free(ct->edge.others); /* should not happen! */
 
-	if (lpoint==-1) {
-	    *(ct->pt)++ = SRP1;
-	}
+	if (lpoint==-1) *(ct->pt)++ = SRP1;
 	else {
 	    if (nowrp1) *(ct->pt)++ = SRP1;
 	    else *(ct->pt)++ = SRP2;
@@ -3312,16 +3328,46 @@ return;
 	    real fudge = ct->gic->fudge;
 	    ct->gic->fudge = (edgelist[i]-edgelist[i-1])/2;
 	    init_edge(ct, (edgelist[i]+edgelist[i-1])/2, ALL_CONTOURS);
-	    
-	    if (ct->edge.refscore != 0) finish_edge(ct, 0x39); //IP
-	    else {
-	        if (ct->edge.othercnt) free(ct->edge.others);
-		rpoint = -1;
+
+	    /* Optimize out all points on DStems, but not DStems' ends. */
+	    for (j=0; j<ct->edge.othercnt; j++) {
+		p = ct->edge.others[j];
+
+		if (ct->diagstems && ct->diagpts[p].count && !isdstemend[p])
+		{
+		    for (k=j+1; k<ct->edge.othercnt; k++)
+			ct->edge.others[k-1] = ct->edge.others[k];
+
+		    ct->edge.othercnt--;
+		    j--;
+		}
 	    }
 
+	    /* A correct method of optimization is needed here. */
+	    /* optimize_blue(ct); */
+	    /* optimize_edge(ct); */
+
+	    /* instruct points */
+	    if (ct->edge.refscore != 0) {
+		if (ct->edge.othercnt)
+		    ct->pt = instructpoints(ct->pt, ct->edge.othercnt,
+						    ct->edge.others, IP);
+
+		for (j=0; j<ct->edge.othercnt; j++) {
+		    p = ct->edge.others[j];
+
+		    if (!ct->diagstems || !ct->diagpts[p].count)
+			ct->touched[p] |= touchflag;
+		}
+	    }
+	    else rpoint = -1;
+	    
+	    if (ct->edge.othercnt) free(ct->edge.others);
 	    ct->gic->fudge = fudge;
 	}
     }
+
+    if (ct->diagstems) free(isdstemend);
 }
 #endif /* TESTIPSTRONG */
 
@@ -3373,12 +3419,18 @@ static uint8 *dogeninstructions(InstrCt *ct) {
 
     snap_to_blues(ct);
     HStemGeninst(ct);
+#if TESTIPSTRONG
+    InterpolateStrongPoints(ct);
+#endif
 
     /* next instruct vertical features (=> movement in x) */
     ct->xdir = true;
     if ( ct->pt != ct->instrs ) *(ct->pt)++ = SVTCA_x;
 
     VStemGeninst(ct);
+#if TESTIPSTRONG
+    InterpolateStrongPoints(ct);
+#endif
 
     /* finally instruct diagonal stems (=> movement in x) */
     /* This is done after vertical stems because it involves */
@@ -3388,15 +3440,6 @@ static uint8 *dogeninstructions(InstrCt *ct) {
 	DStemFree(ct->diagstems, ct->diagpts, ct->ptcnt);
 	free(ct->diagpts);
     }
-
-#if TESTIPSTRONG
-    /* Interpolate important points between edges of hints */
-    /* leaving them for IUP might badly distort outlines */
-    InterpolateStrongPoints(ct);
-    ct->xdir = false;
-    *(ct->pt)++ = SVTCA_y;
-    InterpolateStrongPoints(ct);
-#endif /* TESTIPSTRONG */
 
     /* Interpolate untouched points */
     *(ct->pt)++ = IUP_y;
