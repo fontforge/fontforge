@@ -77,6 +77,7 @@ extern int autohint_before_generate;
 #define MUL                     (0x63)
 #define NEG                     (0x65)
 #define SROUND                  (0x76)
+#define MDRP_grey               (0xc0)
 #define MDRP_min_white          (0xca)
 #define MDRP_min_rnd_black      (0xcd)
 #define MDRP_rp0_rnd_white      (0xd6)
@@ -785,7 +786,7 @@ static void init_maxp(GlobalInstrCt *gic) {
 
     if (gic->fpgm_done && zones<2) zones=2;
     if (gic->fpgm_done && twpts<1) twpts=1;
-    if (gic->fpgm_done && fdefs<8) fdefs=8;
+    if (gic->fpgm_done && fdefs<8) fdefs=9;
     if (stack<STACK_DEPTH) stack=STACK_DEPTH;
 
     memputshort(tab->data, 7*sizeof(uint16), zones);
@@ -1027,7 +1028,7 @@ static void init_fpgm(GlobalInstrCt *gic) {
 	 * Syntax: PUSHB_1 7 CALL; leaves boolean on the stack.
 	 */
 	0xb0, // PUSHB_1
-	0x07, //   6
+	0x07, //   7
 	0x2c, // FDEF
 	0xb1, //   PUSHB_2
 	0x24, //     36
@@ -1044,6 +1045,20 @@ static void init_fpgm(GlobalInstrCt *gic) {
 	0xb0, //     PUSHB_1
 	0x00, //       0
 	0x59, //   EIF
+	0x2d, // ENDF
+
+	/* Function 8: Interpolate a point between
+	 * two other points and snap it to the grid.
+	 * Syntax: PUSHX_4 pt_to_ip rp1 rp2 8 CALL;
+	 */
+	0xb0, // PUSHB_1
+	0x08, //   8
+	0x2c, // FDEF
+	0x12, //   SRP2
+	0x11, //   SRP1
+	0x20, //   DUP
+	0x39, //   IP
+	0x2f, //   MDAP[rnd]
 	0x2d  // ENDF
     };
 
@@ -2556,8 +2571,10 @@ static void HStemGeninst(InstrCt *ct) {
     int bluecnt = ct->gic->bluecnt;
     BasePoint *bp = ct->bp;
     StemInfo *hint;
-    int i, rp1, lastrp1=-1, rp2, lastrp2=-1;
+    int i, rp1, rp2;
     double hbase, hend;
+    int mdrp_end, mdrp_base, ip_base;
+    int callargs[4];
 
     for ( hint=ct->sc->hstem; hint!=NULL; hint=hint->next )
     {
@@ -2565,7 +2582,6 @@ static void HStemGeninst(InstrCt *ct) {
 	    (!hint->hasconflicts || first_in_group(ct->sc->hstem, hint)))
 	{
 	    /* Set up upper edge (hend) and lower edge (hbase). */
-
 	    if (hint->ghost)
 	    {
 	        if (hint->width == 21 || hint->width == 20)
@@ -2581,7 +2597,6 @@ static void HStemGeninst(InstrCt *ct) {
 
 	    /* Find two points to interpolate the HStem between.
 	       rp1 = lower, rp2 = upper. */
-
 	    rp1 = -1;
 	    rp2 = -1;
 
@@ -2604,39 +2619,40 @@ static void HStemGeninst(InstrCt *ct) {
 		continue;
 	    }
 
-	    /* Set reference points appropriately */
-	    if (lastrp1 != rp1 && lastrp2 != rp1) {
-	        ct->pt = push2points(ct->pt, rp2, rp1);
-		*(ct->pt)++ = SRP1;
-		*(ct->pt)++ = SRP2;
-	    }
-	    else if (lastrp1 != rp1) {
-	        ct->pt = pushpoint(ct->pt, rp1);
-		*(ct->pt)++ = SRP1;
-	    }
-	    else if (lastrp2 != rp2) {
-	        ct->pt = pushpoint(ct->pt, rp2);
-		*(ct->pt)++ = SRP2;
-	    }
-
-	    lastrp1 = rp1;
-	    lastrp2 = rp2;
-
 	    /* Align the stem relatively to rp0 and rp1. */
-	    if (fabs(bp[rp2].y - hbase) < 0.2*fabs(bp[rp2].y - bp[rp1].y))
-		init_edge(ct, hend, ALL_CONTOURS);
-	    else if ((fabs(bp[rp2].y - hend) < fabs(bp[rp1].y - hbase)) ||
-	       (fabs(bp[rp1].y - hend) < 0.2*fabs(bp[rp2].y - bp[rp1].y)))
-		init_edge(ct, hbase, ALL_CONTOURS);
-	    else init_edge(ct, hend, ALL_CONTOURS);
+	    mdrp_end = fabs(bp[rp2].y - hbase) < 0.2*fabs(bp[rp2].y - bp[rp1].y);
+	    mdrp_base = fabs(bp[rp1].y - hend) < 0.2*fabs(bp[rp2].y - bp[rp1].y);
 
-	    if (ct->edge.refpt == -1) continue; /* non-instructable stem */
+	    if (mdrp_end || mdrp_base) {
+		if (mdrp_end) init_edge(ct, hend, ALL_CONTOURS);
+		else init_edge(ct, hbase, ALL_CONTOURS);
 
-	    ct->pt = pushpoint(ct->pt, ct->edge.refpt);
-	    *(ct->pt)++ = DUP;
-	    *(ct->pt)++ = IP;
-	    *(ct->pt)++ = MDAP_rnd;
-	    lastrp1 = ct->edge.refpt;
+		if (ct->edge.refpt == -1) continue;
+
+		if (mdrp_end) ct->pt = push2points(ct->pt, ct->edge.refpt, rp2);
+		else ct->pt = push2points(ct->pt, ct->edge.refpt, rp1);
+
+		*(ct->pt)++ = SRP0;
+		*(ct->pt)++ = DUP;
+		*(ct->pt)++ = MDRP_grey;
+		*(ct->pt)++ = MDAP_rnd;
+	    }
+	    else {
+		ip_base = fabs(bp[rp2].y - hend) < fabs(bp[rp1].y - hbase);
+		
+		if (ip_base) init_edge(ct, hbase, ALL_CONTOURS);
+		else init_edge(ct, hend, ALL_CONTOURS);
+		
+		if (ct->edge.refpt == -1) continue;
+
+		callargs[0] = ct->edge.refpt;
+		callargs[1] = rp1;
+		callargs[2] = rp2;
+		callargs[3] = 8;
+		ct->pt = pushnums(ct->pt, 4, callargs);
+		*(ct->pt)++ = CALL;
+	    }
+
 	    finish_stem(hint, use_rp1, keep_old_rp0, ct);
 	}
 	else if (!hint->startdone || !hint->enddone)
