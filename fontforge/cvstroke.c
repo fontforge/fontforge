@@ -1221,7 +1221,8 @@ int LayerDialog(Layer *layer) {
 
     label[gcdoff].text = (unichar_t *) _("Stroke _Width:");
     label[gcdoff].text_is_1byte = true;
-    gcd[gcdoff].gd.mnemonic = 'W';
+    label[gcdoff].text_in_resource = true;
+    gcd[gcdoff].gd.label = &label[gcdoff];
     gcd[gcdoff].gd.label = &label[gcdoff];
     gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+26;
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
@@ -1297,7 +1298,6 @@ int LayerDialog(Layer *layer) {
     label[gcdoff].text = (unichar_t *) _("_Transform Pen:");
     label[gcdoff].text_in_resource = true;
     label[gcdoff].text_is_1byte = true;
-    gcd[gcdoff].gd.mnemonic = 'W';
     gcd[gcdoff].gd.label = &label[gcdoff];
     gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+25;
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible;

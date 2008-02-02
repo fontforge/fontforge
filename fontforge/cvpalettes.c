@@ -1211,7 +1211,7 @@ return;
 		r.x+r.width,CV_LAYERS2_HEADER_HEIGHT+i*CV_LAYERS2_LINE_HEIGHT,
 		0x808080);
 	if ( i==0 || i==1 ) {
-	    str = i==0?_("_Guide") : _("_Back");
+	    str = i==0?_("Guide") : _("Back");
 	    GDrawDrawText8(pixmap,r.x+2,CV_LAYERS2_HEADER_HEIGHT + i*CV_LAYERS2_LINE_HEIGHT + (CV_LAYERS2_LINE_HEIGHT-12)/2+12,
 		    str,-1,NULL,ll==layer2.active?0xffffff:GDrawGetDefaultForeground(NULL));
 	} else if ( layer2.offtop+i>=layer2.current_layers ) {
