@@ -555,10 +555,10 @@ return( ErrChar(event));
 	  GGadgetResize(errdata.vsb,sbsize.width,size.height);
 	  GDrawResize(errdata.v,size.width-sbsize.width,size.height);
 	  errdata.linecnt = size.height/errdata.fh;
+	  GScrollBarSetBounds(errdata.vsb,0,errdata.cnt,errdata.linecnt);
 	  if ( errdata.offtop + errdata.linecnt > errdata.cnt ) {
 	      errdata.offtop = errdata.cnt-errdata.linecnt;
 	      if ( errdata.offtop < 0 ) errdata.offtop = 0;
-	      GScrollBarSetBounds(errdata.vsb,0,errdata.cnt,errdata.linecnt);
 	      GScrollBarSetPos(errdata.vsb,errdata.offtop);
 	  }
 	  GDrawRequestExpose(errdata.v,NULL,false);
