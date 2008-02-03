@@ -545,8 +545,6 @@ return( GGadgetDispatchEvent(errdata.vsb,event));
       case et_char:
 return( ErrChar(event));
       break;
-      case et_selclear:
-      break;
       case et_expose:
       break;
       case et_resize: {
@@ -643,6 +641,38 @@ static void MouseToPos(GEvent *event,int *_l, int *_c) {
     *_c = c;
 }
 
+static void WarnMenuCopy(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    GDrawGrabSelection(gw,sn_clipboard);
+    GDrawAddSelectionType(gw,sn_clipboard,"UTF8_STRING",&errdata,1,
+	    sizeof(char),
+	    genutf8data,noop);
+    GDrawAddSelectionType(gw,sn_clipboard,"STRING",&errdata,1,
+	    sizeof(char),
+	    genutf8data,noop);
+}
+
+static void WarnMenuClear(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    int i;
+
+    for ( i=0; i<errdata.cnt; ++i ) {
+	free(errdata.errlines[i]);
+	errdata.errlines[i] = NULL;
+    }
+    errdata.cnt = 0;
+    GDrawRequestExpose(gw,NULL,false);
+}
+
+#define MID_Copy	1
+#define MID_Clear	2
+
+GMenuItem warnpopupmenu[] = {
+    { { (unichar_t *) N_("Cu_t"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 1, 0, 't' }, '\0', ksm_control, NULL, NULL },
+    { { (unichar_t *) N_("_Copy"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'C' }, '\0', ksm_control, NULL, NULL, WarnMenuCopy, MID_Copy },
+    { { (unichar_t *) N_("_Paste"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, '\0', ksm_control, NULL, NULL },
+    { { (unichar_t *) N_("C_lear"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'l' }, 0, 0, NULL, NULL, WarnMenuClear, MID_Clear },
+    { NULL }
+};
+
 static int warningsv_e_h(GWindow gw, GEvent *event) {
     int i;
 
@@ -681,10 +711,16 @@ return( GGadgetDispatchEvent(errdata.vsb,event));
 return( ErrChar(event));
       break;
       case et_mousedown:
-	if ( errdata.down )
+	if ( event->u.mouse.button==3 ) {
+	    warnpopupmenu[1].ti.disabled = errdata.start_l == -1;
+	    warnpopupmenu[3].ti.disabled = errdata.cnt == 0;
+	    GMenuCreatePopupMenu(gw,event, warnpopupmenu);
+	} else {
+	    if ( errdata.down )
 return( true );
-	MouseToPos(event,&errdata.start_l,&errdata.start_c);
-	errdata.down = true;
+	    MouseToPos(event,&errdata.start_l,&errdata.start_c);
+	    errdata.down = true;
+	}
       case et_mousemove:
       case et_mouseup:
         if ( !errdata.down )
@@ -705,6 +741,10 @@ return( true );
 			genutf8data,noop);
 	    }
 	}
+      break;
+      case et_selclear:
+	errdata.start_l = errdata.end_l = -1;
+	GDrawRequestExpose(gw,NULL,false);
       break;
       case et_timer:
       break;
@@ -782,6 +822,8 @@ static void AppendToErrorWindow(char *buffer) {
 	for ( ; i<MAX_ERR_LINES+off ; ++i )
 	    errdata.errlines[i-off] = NULL;
 	errdata.cnt -= off;
+	if (( errdata.start_l -= off)< 0 ) errdata.start_l = errdata.start_c = 0;
+	if (( errdata.end_l -= off)< 0 ) errdata.end_l = errdata.start_l = -1;
     }
     for ( i=errdata.cnt, pt=buffer; i<MAX_ERR_LINES; ++i ) {
 	end = strchr(pt,'\n');
