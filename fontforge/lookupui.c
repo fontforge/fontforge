@@ -1457,6 +1457,7 @@ static int Lookup_OK(GGadget *g, GEvent *e) {
 	OTLookup *otl = ld->orig, *test;
 	int flags, afm;
 	FeatureScriptLangList *fhead;
+	int feat, set;
 
 	if ( lookup_type==ot_undef ) {
 	    ff_post_error(_("No Lookup Type Selected"),_("You must select a Lookup Type."));
@@ -1467,7 +1468,7 @@ return(true);
 return(true);
 	}
 	for ( i=0; i<rows; ++i ) {
-	    if ( sscanf(strings[2*i+0].u.md_str,"<%*d,%*d>" )== 2 )
+	    if ( sscanf(strings[2*i+0].u.md_str,"<%d,%d>", &feat, &set )== 2 )
 		/* It's a mac feature/setting */;
 	    else if ( strlen(strings[2*i+0].u.md_str)>4 ) {
 		ff_post_error(_("Bad feature tag"),_("The feature tag on line %d (%s) is too long.  It may be at most 4 letters (or it could be a mac feature setting, two numbers in brokets <3,4>)"),
