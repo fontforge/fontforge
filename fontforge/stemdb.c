@@ -685,12 +685,12 @@ static void MakeVirtualLine(struct glyphdata *gd,BasePoint *perturbed,
     BasePoint *dir,Spline *myline,SplinePoint *end1, SplinePoint *end2) {
     
     BasePoint norm, absnorm;
+    SplineSet *spl;
+    Spline *s, *first;
     double t1, t2;
     int i, cnt;
 
     if ( gd->stspace==NULL ) {
-	SplineSet *spl;
-	Spline *s, *first;
 	for ( i=0; i<2; ++i ) {
 	    cnt = 0;
 	    for ( spl=gd->sc->layers[ly_fore].splines; spl!=NULL; spl=spl->next ) {
@@ -812,16 +812,16 @@ return( ret );
 
 static int IsCorrectSide( struct glyphdata *gd,SplinePoint *sp,int is_next,
     int is_l,BasePoint *dir ) {
-    Spline *s, myline;
+    Spline *sbase, *s, myline;
     SplinePoint end1, end2;
     BasePoint perturbed;
     int i, is_x, ret = false, winding = 0, cnt, eo;
     double t, test;
     struct monotonic **space, *m;
     
-    s = ( is_next ) ? sp->next : sp->prev;
+    sbase = ( is_next ) ? sp->next : sp->prev;
     t = ( is_next ) ? 0.001 : 0.999;
-    perturbed = PerturbAlongSpline( s,&sp->me,t );
+    perturbed = PerturbAlongSpline( sbase,&sp->me,t );
     
     if ( IsVectorHV( dir,0,true )) {
 	is_x = ( dir->x == 0 );
@@ -829,12 +829,13 @@ static int IsCorrectSide( struct glyphdata *gd,SplinePoint *sp,int is_next,
 	MonotonicFindAt( gd->ms,is_x,test,space = gd->space );
         for ( i=0; space[i]!=NULL; ++i ) {
             m = space[i];
-            Spline *s = m->s;
+            s = m->s;
 	    winding = ((&m->xup)[is_x] ? 1 : -1 );
-            if ( s->from == sp || s->to == sp )
+            if ( s == sbase )
         break;
         }
-        ret = (( is_l && winding == 1 ) || ( !is_l && winding == -1 ));
+        if ( space[i]!=NULL )
+            ret = (( is_l && winding == 1 ) || ( !is_l && winding == -1 ));
     } else {
         MakeVirtualLine( gd,&perturbed,dir,&myline,&end1,&end2 );
         cnt = MonotonicOrder( gd->sspace,&myline,gd->stspace );
@@ -1687,12 +1688,12 @@ return( NULL );         /* Cannot make a stem if edges are not parallel (unless 
                 
                 otherline = NULL;
                 if (( stem->leftline == NULL ||
-                    stem->leftline->length < line2->length ) && chunk->l == pd ) {
+                    stem->leftline->length < line2->length ) && chunk->l == pd2 ) {
                     
                     stem->leftline = line2;
                     otherline = stem->rightline;
                 } else if (( stem->rightline == NULL ||
-                    stem->rightline->length < line2->length ) && chunk->r == pd ) {
+                    stem->rightline->length < line2->length ) && chunk->r == pd2 ) {
                     
                     stem->rightline = line2;
                     otherline = stem->leftline;
@@ -2258,7 +2259,7 @@ static int IsSplinePeak( struct glyphdata *gd,struct pointdata *pd,
     int outer,int is_x,int flags ) {
     
     double base, next, prev, nextctl, prevctl;
-    Spline *snext, *sprev;
+    Spline *s, *snext, *sprev;
     struct monotonic **space, *m;
     int winding=0, i, desired;
     SplinePoint *sp = pd->sp;
@@ -2301,7 +2302,7 @@ return( false );
     MonotonicFindAt( gd->ms,is_x,((real *) &sp->me.x)[is_x],space = gd->space );
     for ( i=0; space[i]!=NULL; ++i ) {
         m = space[i];
-        Spline *s = m->s;
+        s = m->s;
 	winding = ((&m->xup)[is_x] ? 1 : -1 );
 
         if (( s->from == sp || s->to == sp ) && winding == desired )
@@ -2314,10 +2315,10 @@ static int CompareStems( struct glyphdata *gd,struct pointdata *pd,
     struct pointdata *pd1,struct pointdata *pd2,struct stemdata *stem1,struct stemdata *stem2,
     int is_next,int is_next1,int is_next2 ) {
     
-    double dist1, dist2, fromproj, toproj;
+    double dist1, dist2;
     int peak=0, peak1=0, peak2=0, val1=0, val2=0, is_x;
     struct pointdata *frompd, *topd;
-    Spline *sbase, *s1, *s2;
+    Spline *sbase, *s1, *s2, *other1, *other2;
     SplinePoint *sp = pd->sp, *sp1 = pd1->sp, *sp2 = pd2->sp;
     
     /* If a stem was already present before generating glyph data,
@@ -2335,6 +2336,8 @@ return( 2 );
     sbase = ( is_next ) ? sp->next : sp->prev;
     s1 = ( is_next1 ) ? sp1->next : sp1->prev;
     s2 = ( is_next2 ) ? sp2->next : sp2->prev;
+    other1 = ( is_next1 ) ? pd1->nextedge : pd1->prevedge;
+    other2 = ( is_next2 ) ? pd2->nextedge : pd2->prevedge;
     
     /* If there are 2 conflicting chunks belonging to different stems but
     /* based on the same point, then we have to decide which stem is "better"
@@ -2369,23 +2372,9 @@ return( 2 );
     
     if (( frompd->nextstem == stem1 || frompd->nextstem == stem2 ) &&
         ( topd->prevstem == stem1 || topd->prevstem == stem2 )) {
-        fromproj = ( sp1->me.x-frompd->sp->me.x ) * stem1->unit.x +
-            ( sp1->me.y-frompd->sp->me.y ) * stem1->unit.y;
-        toproj = ( sp1->me.x-topd->sp->me.x ) * stem1->unit.x +
-            ( sp1->me.y-topd->sp->me.y ) * stem1->unit.y;
         
-        if (( fromproj < 0 && toproj > 0 ) ||
-            ( toproj < 0 && fromproj > 0 ))
-            val1++;
-        
-        fromproj = ( sp2->me.x-frompd->sp->me.x ) * stem2->unit.x +
-            ( sp2->me.y-frompd->sp->me.y ) * stem2->unit.y;
-        toproj = ( sp2->me.x-topd->sp->me.x ) * stem2->unit.x +
-            ( sp2->me.y-topd->sp->me.y ) * stem2->unit.y;
-        
-        if (( fromproj < 0 && toproj > 0 ) ||
-            ( toproj < 0 && fromproj > 0 ))
-            val2++;
+        if ( other1 == sbase ) val1++;
+        if ( other2 == sbase ) val2++;
     }
 
     if ( dist1<0 ) dist1 = -dist1;
@@ -2843,17 +2832,18 @@ static void FigureStemActive( struct glyphdata *gd, struct stemdata *stem ) {
             for ( i=0; i<lcnt; i++ ) {
                 /* If it's a feature bend, then our tests should be more liberal */
                 cove = (( rspace[i].curved + lspace[i].curved ) == 3 );
+                gap = 0;
 	        if ( lspace[i].start>rspace[i].end && lspace[i].scurved && rspace[i].ecurved )
 		    gap = lspace[i].start-rspace[i].end;
 	        else if ( rspace[i].start>lspace[i].end && rspace[i].scurved && lspace[i].ecurved )
 		    gap = rspace[i].start-lspace[i].end;
-	        else
+	        else if ( !cove )
 	    continue;
 
                 lseg = lspace[i].end - lspace[i].start;
                 rseg = rspace[i].end - rspace[i].start;
 	        if (( cove && gap < (lseg > rseg ? lseg : rseg )) ||
-                    ( gap < ( lseg + rseg )/2 )) {
+                    ( gap < ( lseg + rseg )/2 && !stem->chunks[i].stub )) {
 		    if ( lspace[i].ebase<rspace[i].start )
 		        rspace[i].start = lspace[i].ebase;
 		    else if ( lspace[i].sbase>rspace[i].end )
@@ -3224,9 +3214,10 @@ return( false );
 
     loff = ( stem2->left.x - stem1->left.x ) * stem1->unit.y -
            ( stem2->left.y - stem1->left.y ) * stem1->unit.x;
-    roff = ( stem2->right.x - stem1->left.x ) * stem1->unit.y -
-           ( stem2->right.y - stem1->left.y ) * stem1->unit.x;
-    if (!( loff >= 0 && loff <= stem1->width ) && !( roff >= 0 && roff <= stem1->width ))
+    roff = ( stem2->right.x - stem1->right.x ) * stem1->unit.y -
+           ( stem2->right.y - stem1->right.y ) * stem1->unit.x;
+    loff = fabs( loff ); roff = fabs( roff );
+    if ( loff > stem1->width || roff > stem1->width )
 return( false );
 
     acnt1 = stem1->activecnt;
