@@ -3595,11 +3595,19 @@ static int modenc(int enc,int modtype) {
 return( enc );
 }
 
-static int umodenc(int enc,int modtype) {
+static int badencoding(struct ttfinfo *info) {
+    if ( !info->bad_cmap ) {
+	LogError("Bad encoding information in 'cmap' table.");
+	info->bad_cmap = true;
+    }
+return( -1 );
+}
+
+static int umodenc(int enc,int modtype, struct ttfinfo *info) {
     if ( modtype==-1 )
 return( -1 );
     if ( modtype<=1 /* Unicode */ ) {
-	/* No conversion */;
+	/* No conversion needed, already unicode */;
     } else if ( modtype==2 /* SJIS */ ) {
 	if ( enc<=127 ) {
 	    /* Latin */
@@ -3607,6 +3615,9 @@ return( -1 );
 	} else if ( enc>=161 && enc<=223 ) {
 	    /* Katakana */
 	    enc = unicode_from_jis201[enc];
+	} else if ( enc<255 ) {
+	    /* This is erroneous as I understand SJIS */
+	    enc = badencoding(info);
 	} else {
 	    int ch1 = enc>>8, ch2 = enc&0xff;
 	    if ( ch1 >= 129 && ch1<= 159 )
@@ -3623,7 +3634,10 @@ return( -1 );
 		--ch1;
 		ch2 -= 31;
 	    }
-	    enc = unicode_from_jis208[(ch1-0x21)*94+(ch2-0x21)];
+	    if ( ch1<0x21 || ch2<0x21 || ch1>0x7f || ch2>0x7f )
+		enc = badencoding(info);
+	    else
+		enc = unicode_from_jis208[(ch1-0x21)*94+(ch2-0x21)];
 	}
     } else if ( modtype==3 /* GB2312 offset by 0x8080, parse just like wansung */ ) {
 	if ( enc>0xa1a1 ) {
@@ -3632,12 +3646,12 @@ return( -1 );
 	    enc = unicode_from_gb2312[enc];
 	    if ( enc==0 ) enc = -1;
 	} else if ( enc>0x100 )
-	    enc = -1;
+	    enc = badencoding(info);
     } else if ( modtype==4 /* BIG5 */ ) {	/* old ms docs say big5 is modtype==3, but new ones say 4 */
 	if ( enc>0x8100 )
 	    enc = unicode_from_big5hkscs[enc-0x8100];
 	else if ( enc>0x100 )
-	    enc = -1;
+	    enc = badencoding(info);
     } else if ( modtype==5 /* Wansung == KSC 5601-1987, I hope */ ) {
 	if ( enc>0xa1a1 ) {
 	    enc -= 0xa1a1;
@@ -3645,12 +3659,12 @@ return( -1 );
 	    enc = unicode_from_ksc5601[enc];
 	    if ( enc==0 ) enc = -1;
 	} else if ( enc>0x100 )
-	    enc = -1;
+	    enc = badencoding(info);
     } else if ( modtype==6 /* Johab */ ) {
 	if ( enc>0x8400 )
 	    enc = unicode_from_johab[enc-0x8400];
 	else if ( enc>0x100 )
-	    enc = -1;
+	    enc = badencoding(info);
     }
     if ( enc==0 )
 	enc = -1;
@@ -4145,7 +4159,7 @@ return;
 				    (uint16) (j+delta[i]), modenc(j,mod), modenc(j,mod));
 			    info->bad_cmap = true;
 			} else {
-			    int uenc = umodenc(j,mod);
+			    int uenc = umodenc(j,mod,info);
 			    int lenc = modenc(j,mod);
 			    if ( uenc!=-1 && used[uenc] ) {
 				if ( !badencwarned ) {
@@ -4195,7 +4209,7 @@ return;
 					index, modenc(j,mod), modenc(j,mod));
 				info->bad_cmap = true;
 			    } else {
-				int uenc = umodenc(j,mod);
+				int uenc = umodenc(j,mod,info);
 				int lenc = modenc(j,mod);
 				if ( uenc!=-1 && used[uenc] ) {
 				    if ( !badencwarned ) {
@@ -4319,7 +4333,7 @@ return;
 				/* Do Nothing */;
 			    else {
 				if ( dounicode && info->chars[index]->unicodeenc==-1 )
-				    info->chars[index]->unicodeenc = umodenc(enc,mod);
+				    info->chars[index]->unicodeenc = umodenc(enc,mod,info);
 				if ( map!=NULL && lenc<map->enccount )
 				    map->map[lenc] = index;
 			    }
