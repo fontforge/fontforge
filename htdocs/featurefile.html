@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 8-Jun-2007 -->
-  <!-- AP: Last modified: 8-Jun-2007 -->
+  <!-- AP: Last modified: 2-Feb-2008 -->
   <TITLE>FontForge's implementation of Adobe's Feature File syntax.</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -121,9 +121,9 @@ subs ff' @hexdigits by &lt;lookup ff_decomp_nested&gt;
     Outputting a feature file
   </H2>
   <P>
-  Use <CODE><A HREF="fontinfo.html#Lookups">File-&gt;Font
-  Info-&gt;Lookups</A></CODE>, then right click on a lookup (to produce a popup
-  menu) and select <CODE>Save Feature File</CODE>
+  Use <CODE><A HREF="fontinfo.html#Lookups">Element-&gt;Font
+  Info-&gt;Lookups</A></CODE>, then right click on any lookup (to produce a
+  popup menu) and select <CODE>Save Feature File</CODE>
   <P>
   You can also generate a feature file containing a single lookup by selecting
   that lookup, producing the popup menu and selecting <CODE>Save Lookup</CODE>
@@ -271,7 +271,7 @@ lookup LatinMarks {
     mark dotbelowcomb &lt;anchor -164 -45&gt;;
     pos a &lt;anchor 207 -54&gt; mark [dotbelowcomb ];
     pos e &lt;anchor 222 -54&gt; mark [dotbelowcomb ];
-    pos i &lt;anchor 60 -54> mark [dotbelowcomb ];
+    pos i &lt;anchor 60 -54&gt; mark [dotbelowcomb ];
     pos o &lt;anchor 165 -54&gt; mark [dotbelowcomb ];
     pos u &lt;anchor 213 -54&gt; mark [dotbelowcomb ];
     pos dotlessi &lt;anchor 60 -54&gt; mark [dotbelowcomb ];
