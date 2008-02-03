@@ -31,6 +31,7 @@
 #include <utype.h>
 #include <ustring.h>
 #include <sys/time.h>
+#include <gkeysym.h>
 
 #if __CygWin
 extern void cygwin_conv_to_full_posix_path(const char *win,char *unx);
@@ -442,7 +443,7 @@ static void UI_IError(const char *format,...) {
     va_end(ap);
 }
 
-#define MAX_ERR_LINES	200
+#define MAX_ERR_LINES	400
 static struct errordata {
     char *errlines[MAX_ERR_LINES];
     GFont *font;
@@ -452,6 +453,8 @@ static struct errordata {
     int cnt, linecnt;
     int offtop;
     int showing;
+    int start_l, start_c, end_l, end_c;
+    int down;
 } errdata;
 
 static void ErrHide(void) {
@@ -490,12 +493,46 @@ static void ErrScroll(struct sbevent *sb) {
         newpos = errdata.cnt-errdata.linecnt;
     if ( newpos<0 ) newpos =0;
     if ( newpos!=errdata.offtop ) {
-	int diff = newpos-errdata.offtop;
 	errdata.offtop = newpos;
 	GScrollBarSetPos(errdata.vsb,errdata.offtop);
-	GDrawScroll(errdata.v,NULL,0,diff*errdata.fh);
+	GDrawRequestExpose(errdata.v,NULL,false);
     }
 }
+
+static int ErrChar(GEvent *e) {
+    int newpos = errdata.offtop;
+
+    switch( e->u.chr.keysym ) {
+      case GK_Home:
+	newpos = 0;
+      break;
+      case GK_End:
+	newpos = errdata.cnt-errdata.linecnt;
+      break;
+      case GK_Page_Up: case GK_KP_Page_Up:
+	newpos -= errdata.linecnt;
+      break;
+      case GK_Page_Down: case GK_KP_Page_Down:
+	newpos += errdata.linecnt;
+      break;
+      case GK_Up: case GK_KP_Up:
+	--newpos;
+      break;
+      case GK_Down: case GK_KP_Down:
+        ++newpos;
+      break;
+    }
+    if ( newpos>errdata.cnt-errdata.linecnt )
+        newpos = errdata.cnt-errdata.linecnt;
+    if ( newpos<0 ) newpos =0;
+    if ( newpos!=errdata.offtop ) {
+	errdata.offtop = newpos;
+	GScrollBarSetPos(errdata.vsb,errdata.offtop);
+	GDrawRequestExpose(errdata.v,NULL,false);
+return( true );
+    }
+return( false );
+}	
 
 static int warnings_e_h(GWindow gw, GEvent *event) {
 
@@ -505,6 +542,9 @@ return( GGadgetDispatchEvent(errdata.vsb,event));
     }
 
     switch ( event->type ) {
+      case et_char:
+return( ErrChar(event));
+      break;
       case et_selclear:
       break;
       case et_expose:
@@ -525,9 +565,6 @@ return( GGadgetDispatchEvent(errdata.vsb,event));
 	  }
 	  GDrawRequestExpose(errdata.v,NULL,false);
       } break;
-      case et_char:
-return( false );
-      break;
       case et_controlevent:
 	switch ( event->u.control.subtype ) {
 	  case et_scrollbarchange:
@@ -546,6 +583,66 @@ return( false );
 return( true );
 }
 
+static void noop(void *_ed) {
+}
+
+static void *genutf8data(void *_ed,int32 *len) {
+    int cnt, l;
+    int s_l = errdata.start_l, s_c = errdata.start_c, e_l = errdata.end_l, e_c = errdata.end_c;
+    char *ret, *pt;
+
+    if ( s_l>e_l ) {
+	s_l = e_l; s_c = e_c; e_l = errdata.start_l; e_c = errdata.start_c;
+    }
+
+    if ( s_l==-1 ) {
+	*len = 0;
+return( copy(""));
+    }
+
+    l = s_l;
+    if ( e_l == l ) {
+	*len = e_c-s_c;
+return( copyn( errdata.errlines[l]+s_c, e_c-s_c ));
+    }
+
+    cnt = strlen(errdata.errlines[l]+s_c)+1;
+    for ( ++l; l<e_l; ++l )
+	cnt += strlen(errdata.errlines[l])+1;
+    cnt += e_c;
+
+    ret = galloc(cnt+1);
+    strcpy( ret, errdata.errlines[s_l]+s_c );
+    pt = ret+strlen( ret );
+    *pt++ = '\n';
+    for ( l=s_l+1; l<e_l; ++l ) {
+	strcpy(pt,errdata.errlines[l]);
+	pt += strlen(pt);
+	*pt++ = '\n';
+    }
+    strncpy(pt,errdata.errlines[l],e_c);
+    *len = cnt;
+return( ret );
+}
+
+static void MouseToPos(GEvent *event,int *_l, int *_c) {
+    int l,c=0;
+    char *end;
+
+    GDrawSetFont(errdata.v,errdata.font);
+    l = event->u.mouse.y/errdata.fh + errdata.offtop;
+    if ( l>=errdata.cnt ) {
+	l = errdata.cnt-1;
+	if ( l>=0 )
+	    c = strlen(errdata.errlines[l]);
+    } else if ( l>=0 ) {
+	GDrawGetText8PtFromPos(errdata.v,errdata.errlines[l],-1,NULL,event->u.mouse.x-3,&end);
+	c = end - errdata.errlines[l];
+    }
+    *_l = l;
+    *_c = c;
+}
+
 static int warningsv_e_h(GWindow gw, GEvent *event) {
     int i;
 
@@ -558,13 +655,56 @@ return( GGadgetDispatchEvent(errdata.vsb,event));
       case et_expose:
 	  GDrawSetFont(gw,errdata.font);
 	  for ( i=0; i<errdata.linecnt && i+errdata.offtop<errdata.cnt; ++i ) {
+	      int xs, xe;
+	      int s_l = errdata.start_l, s_c = errdata.start_c, e_l = errdata.end_l, e_c = errdata.end_c;
+	      GRect r;
+	      if ( s_l>e_l ) {
+		  s_l = e_l; s_c = e_c; e_l = errdata.start_l; e_c = errdata.start_c;
+	      }
+	      if ( i+errdata.offtop >= s_l && i+errdata.offtop <= e_l ) {
+		  if ( i+errdata.offtop > s_l )
+		      xs = 0;
+		  else
+		      xs = GDrawGetText8Width(gw,errdata.errlines[i+errdata.offtop],s_c,NULL);
+		  if ( i+errdata.offtop < e_l )
+		      xe = 3000;
+		  else
+		      xe = GDrawGetText8Width(gw,errdata.errlines[i+errdata.offtop],e_c,NULL);
+		  r.x = xs+3; r.width = xe-xs;
+		  r.y = i*errdata.fh; r.height = errdata.fh;
+		  GDrawFillRect(gw,&r,0xffff00);
+	      }
 	      GDrawDrawText8(gw,3,i*errdata.fh+errdata.as,errdata.errlines[i+errdata.offtop],-1,NULL,0x000000);
 	  }
       break;
       case et_char:
-return(false);
+return( ErrChar(event));
       break;
-      case et_mousemove: case et_mousedown: case et_mouseup:
+      case et_mousedown:
+	if ( errdata.down )
+return( true );
+	MouseToPos(event,&errdata.start_l,&errdata.start_c);
+	errdata.down = true;
+      case et_mousemove:
+      case et_mouseup:
+        if ( !errdata.down )
+return( true );
+	MouseToPos(event,&errdata.end_l,&errdata.end_c);
+	GDrawRequestExpose(gw,NULL,false);
+	if ( event->type==et_mouseup ) {
+	    errdata.down = false;
+	    if ( errdata.start_l == errdata.end_l && errdata.start_c == errdata.end_c ) {
+		errdata.start_l = errdata.end_l = -1;
+	    } else {
+		GDrawGrabSelection(gw,sn_primary);
+		GDrawAddSelectionType(gw,sn_primary,"UTF8_STRING",&errdata,1,
+			sizeof(char),
+			genutf8data,noop);
+		GDrawAddSelectionType(gw,sn_primary,"STRING",&errdata,1,
+			sizeof(char),
+			genutf8data,noop);
+	    }
+	}
       break;
       case et_timer:
       break;
@@ -622,6 +762,7 @@ static void CreateErrorWindow(void) {
     GDrawSetVisible(errdata.v,true);
 
     errdata.linecnt = pos.height/errdata.fh;
+    errdata.start_l = errdata.end_l = -1;
 }
 
 static void AppendToErrorWindow(char *buffer) {
@@ -676,10 +817,26 @@ return;
 }
 
 static void _LogError(const char *format,va_list ap) {
-    char buffer[400], *str;
+    char buffer[500], nbuffer[600], *str, *pt, *npt;
     vsnprintf(buffer,sizeof(buffer),format,ap);
+    for ( pt=buffer, npt=nbuffer; *pt!='\0' && npt<nbuffer+sizeof(nbuffer)-2; ) {
+	*npt++ = *pt++;
+	if ( pt[-1]=='\n' && *pt!='\0' ) {
+	    /* Force an indent of at least two spaces on secondary lines of a warning */
+	    if ( npt<nbuffer+sizeof(nbuffer)-2 ) {
+		*npt++ = ' ';
+		if ( *pt==' ' ) ++pt;
+	    }
+	    if ( npt<nbuffer+sizeof(nbuffer)-2 ) {
+		*npt++ = ' ';
+		if ( *pt==' ' ) ++pt;
+	    }
+	}
+    }
+    *npt='\0';
+
     if ( no_windowing_ui || screen_display==NULL ) {
-	str = utf82def_copy(buffer);
+	str = utf82def_copy(nbuffer);
 	fprintf(stderr,"%s",str);
 	if ( str[strlen(str)-1]!='\n' )
 	    putc('\n',stderr);
@@ -687,7 +844,7 @@ static void _LogError(const char *format,va_list ap) {
     } else {
 	if ( !ErrorWindowExists())
 	    CreateErrorWindow();
-	AppendToErrorWindow(buffer);
+	AppendToErrorWindow(nbuffer);
 	ShowErrorWindow();
     }
 }

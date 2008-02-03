@@ -2133,13 +2133,14 @@ static int32 _GDraw_DoText8(GWindow gw, int32 x, int32 y,
 	enum text_funcs drawit, struct tf_arg *arg) {
     const char *end = text+(cnt<0?strlen(text):cnt);
     int32 dist = 0;
+    const char *start;
 #ifdef UNICHAR_16
-    const char *start, *last;
+    const char *last;
     struct font_data *fd;
     GDisplay *disp = gw->display;
     int enc;
-    int i;
 #endif
+    int i;
     struct font_instance *fi = gw->ggc->fi;
     unichar_t ubuffer[200], *upt;
     uint32 val;
@@ -2204,6 +2205,7 @@ return( dist );
     forever {
 	if ( text>=end )
     break;
+	start = text;
 	upt = ubuffer;
 	while ( text<end &&
 		upt<ubuffer+sizeof(ubuffer)/sizeof(ubuffer[0])) {
@@ -2213,6 +2215,15 @@ return( dist );
 	    *upt++ = val;
 	}
 	dist += _GDraw_DoText(gw,x+dist,y,ubuffer,upt-ubuffer,mods,col,drawit,arg);
+	if ( drawit>=tf_stopat && arg->width>=arg->maxwidth ) {
+	    if ( arg->last!=upt ) {
+		text = start;
+		for ( i = arg->last-ubuffer; i>0 ; --i )
+		    utf8_ildb(&text);
+	    }
+	    arg->utf8_last = (char *) text;
+return( dist );
+	}
     }
 #endif
 return( dist );
