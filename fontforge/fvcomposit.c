@@ -1557,7 +1557,7 @@ void _SCAddRef(SplineChar *sc,SplineChar *rsc,real transform[6]) {
     ref->next = sc->layers[ly_fore].refs;
     sc->layers[ly_fore].refs = ref;
     memcpy(ref->transform,transform,sizeof(real [6]));
-    SCReinstanciateRefChar(sc,ref);
+    SCReinstanciateRefChar(sc,ref,ly_fore);
     SCMakeDependent(sc,rsc);
 }
 
@@ -2349,11 +2349,11 @@ static void DoRules(SplineFont *sf,SplineChar *sc,int copybmp) {
 	lbearing = b.minx;
 	ypos = b.miny;
     }
-    first = sp = MakeSP(lbearing,ypos,NULL,sf->order2);
-    sp = MakeSP(lbearing,ypos+height,sp,sf->order2);
-    sp = MakeSP(width-rbearing,ypos+height,sp,sf->order2);
-    sp = MakeSP(width-rbearing,ypos,sp,sf->order2);
-    SplineMake(sp,first,sf->order2);
+    first = sp = MakeSP(lbearing,ypos,NULL,sc->layers[ly_fore].order2);
+    sp = MakeSP(lbearing,ypos+height,sp,sc->layers[ly_fore].order2);
+    sp = MakeSP(width-rbearing,ypos+height,sp,sc->layers[ly_fore].order2);
+    sp = MakeSP(width-rbearing,ypos,sp,sc->layers[ly_fore].order2);
+    SplineMake(sp,first,sc->layers[ly_fore].order2);
     sc->layers[ly_fore].splines = chunkalloc(sizeof(SplinePointList));
     sc->layers[ly_fore].splines->first = sc->layers[ly_fore].splines->last = first;
     sc->width = width;

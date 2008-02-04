@@ -2363,7 +2363,7 @@ return( sc );
 /* Don't encode it (not in current encoding), just add it, so we needn't */
 /*  mess with maps or selections */
     SFExpandGlyphCount(sf,sf->glyphcnt+1);
-    sc = SplineCharCreate();
+    sc = SplineCharCreate(sf);
     sc->name = copy(name);
     sc->unicodeenc = UniFromName(name,ui_none,&custom);
     sc->parent = sf;

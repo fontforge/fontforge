@@ -2345,7 +2345,7 @@ static void SFAddToBackground(SplineFont *sf,BDFFont *bdf) {
     for ( i=0; i<sf->glyphcnt && i<bdf->glyphcnt; ++i ) {
 	if ( bdf->glyphs[i]!=NULL ) {
 	    if ( (sc = sf->glyphs[i])==NULL ) {
-		sc = sf->glyphs[i] = SplineCharCreate();
+		sc = sf->glyphs[i] = SplineCharCreate(2);
 		sc->name = copy(bdf->glyphs[i]->sc->name);
 		sc->orig_pos = i;
 		sc->unicodeenc = bdf->glyphs[i]->sc->unicodeenc;

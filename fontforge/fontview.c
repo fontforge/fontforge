@@ -132,7 +132,7 @@ void FVMarkHintsOutOfDate(SplineChar *sc) {
     int pos;
     FontView *fv;
 
-    if ( sc->parent->onlybitmaps || sc->parent->multilayer || sc->parent->strokedfont || sc->parent->order2 )
+    if ( sc->parent->onlybitmaps || sc->parent->multilayer || sc->parent->strokedfont || sc->layers[ly_fore].order2 )
 return;
     for ( fv = (FontView *) (sc->parent->fv); fv!=NULL; fv=(FontView *) (fv->b.nextsame) ) {
 	if ( fv->b.sf!=sc->parent )		/* Can happen in CID fonts if char's parent is not currently active */
@@ -1654,7 +1654,7 @@ static void FVMenuSelectHintingNeeded(GWindow gw,struct gmenuitem *mi,GEvent *e)
     int i, gid;
     EncMap *map = fv->b.map;
     SplineFont *sf = fv->b.sf;
-    int order2 = sf->order2;
+    int order2 = sf->layers[ly_fore].order2;
 
     for ( i=0; i< map->enccount; ++i )
 	fv->b.selected[i] = ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
@@ -3172,24 +3172,24 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = anychars==-1 || multilayer;
 	  break;
 	  case MID_HintSubsPt:
-	    mi->ti.disabled = fv->b.sf->order2 || anychars==-1 || multilayer;
+	    mi->ti.disabled = fv->b.sf->layers[ly_fore].order2 || anychars==-1 || multilayer;
 	    if ( fv->b.sf->mm!=NULL && fv->b.sf->mm->apple )
 		mi->ti.disabled = true;
 	  break;
 	  case MID_AutoCounter: case MID_DontAutoHint:
-	    mi->ti.disabled = fv->b.sf->order2 || anychars==-1 || multilayer;
+	    mi->ti.disabled = fv->b.sf->layers[ly_fore].order2 || anychars==-1 || multilayer;
 	  break;
 	  case MID_AutoInstr: case MID_EditInstructions:
-	    mi->ti.disabled = !fv->b.sf->order2 || anychars==-1 || multilayer;
+	    mi->ti.disabled = !fv->b.sf->layers[ly_fore].order2 || anychars==-1 || multilayer;
 	  break;
 #if 0
 	  case MID_PrivateToCvt:
-	    mi->ti.disabled = !fv->b.sf->order2 || multilayer ||
+	    mi->ti.disabled = !fv->b.sf->layers[ly_fore].order2 || multilayer ||
 		    fv->b.sf->private==NULL || fv->b.sf->cvt_dlg!=NULL;
 	  break;
 #endif
 	  case MID_Editfpgm: case MID_Editprep: case MID_Editcvt: case MID_Editmaxp:
-	    mi->ti.disabled = !fv->b.sf->order2 || multilayer;
+	    mi->ti.disabled = !fv->b.sf->layers[ly_fore].order2 || multilayer;
 	  break;
 	  case MID_ClearHints: case MID_ClearWidthMD: case MID_ClearInstrs:
 	    mi->ti.disabled = anychars==-1;
@@ -4845,8 +4845,7 @@ return( base_sc );
 	    if ( feat_sc!=NULL )
 return( feat_sc );
 	}
-	feat_sc = SplineCharCreate();
-	feat_sc->parent = sf;
+	feat_sc = SFSplineCharCreate(sf);
 	feat_sc->unicodeenc = uni;
 	if ( uni!=-1 ) {
 	    feat_sc->name = galloc(8);
@@ -5412,12 +5411,12 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		bg = sc->color!=COLOR_DEFAULT?sc->color:0x808080;
 		GDrawFillRect(pixmap,&r,bg);
 	    }
-	    if ( (!fv->b.sf->order2 && sc->changedsincelasthinted ) ||
-		     ( fv->b.sf->order2 && sc->layers[ly_fore].splines!=NULL &&
+	    if ( (!fv->b.sf->layers[ly_fore].order2 && sc->changedsincelasthinted ) ||
+		     ( fv->b.sf->layers[ly_fore].order2 && sc->layers[ly_fore].splines!=NULL &&
 			sc->ttf_instrs_len<=0 ) ||
-		     ( fv->b.sf->order2 && sc->instructions_out_of_date ) ) {
+		     ( fv->b.sf->layers[ly_fore].order2 && sc->instructions_out_of_date ) ) {
 		Color hintcol = 0x0000ff;
-		if ( fv->b.sf->order2 && sc->instructions_out_of_date && sc->ttf_instrs_len>0 )
+		if ( fv->b.sf->layers[ly_fore].order2 && sc->instructions_out_of_date && sc->ttf_instrs_len>0 )
 		    hintcol = 0xff0000;
 		GDrawDrawLine(pixmap,r.x,r.y,r.x,r.y+r.height-1,hintcol);
 		GDrawDrawLine(pixmap,r.x+1,r.y,r.x+1,r.y+r.height-1,hintcol);

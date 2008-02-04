@@ -4410,9 +4410,9 @@ return( true );
 return( true );
 	    }
 	}
-	if ( order2!=sf->order2 && sf->changed && AskLoseUndoes())
+	if ( order2!=sf->layers[ly_fore].order2 && sf->changed && AskLoseUndoes())
 return( true );
-	if ( order2!=sf->order2 && !SFCloseAllInstrs(sf))
+	if ( order2!=sf->layers[ly_fore].order2 && !SFCloseAllInstrs(sf))
 return( true );
 
 	nlitem = GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_Namelist));
@@ -4647,7 +4647,7 @@ return(true);
 	    reformat_fv = true;
 	    CIDMasterAsDes(sf);
 	}
-	if ( order2!=sf->order2 ) {
+	if ( order2!=sf->layers[ly_fore].order2 ) {
 	    if ( order2 )
 		SFConvertToOrder2(sf);
 	    else
@@ -7863,7 +7863,7 @@ return;
     pslabel[17].text_is_1byte = true;
     pslabel[17].text_in_resource = true;
     psgcd[17].gd.label = &pslabel[17];
-    psgcd[17].gd.flags = sf->order2 ? (gg_visible | gg_enabled | gg_cb_on | gg_utf8_popup) : (gg_visible | gg_enabled | gg_utf8_popup);
+    psgcd[17].gd.flags = sf->layers[ly_fore].order2 ? (gg_visible | gg_enabled | gg_cb_on | gg_utf8_popup) : (gg_visible | gg_enabled | gg_utf8_popup);
     psgcd[17].gd.cid = CID_IsOrder2;
     psgcd[17].creator = GCheckBoxCreate;
     psgcd[17].gd.popup_msg = (unichar_t *) _("Use quadratic (that is truetype) splines to hold the outlines of this\nfont rather than cubic (postscript) splines. Set this option if you\nare editing truetype font. Unset it if you are editing an opentype\nor postscript font (FontForge will convert to the appropriate\nspline type when it generates fonts so this is not required).");
