@@ -749,14 +749,14 @@ static SplinePoint *RplInsertSP(SplinePoint *after,SplinePoint *nrpl,SplinePoint
     new->selected = true;
     new->ticked = true;
     if ( after->next==NULL ) {
-	SplineMake(after,new,s->fv->sf->order2);
+	SplineMake(after,new,after->prev->order2);
 	s->matched_spl->last = new;
     } else {
 	SplinePoint *nsp = after->next->to;
 	after->next->to = new;
 	new->prev = after->next;
 	SplineRefigure(after->next);
-	SplineMake(new,nsp,s->fv->sf->order2);
+	SplineMake(new,nsp,after->next->order2);
     }
 return( new );
 }
@@ -980,7 +980,7 @@ static void DoReplaceFull(SplineChar *sc,SearchData *s) {
 	new->next = sc->layers[ly_fore].refs;
 	new->selected = true;
 	sc->layers[ly_fore].refs = new;
-	SCReinstanciateRefChar(sc,new);
+	SCReinstanciateRefChar(sc,new,ly_fore);
 	SCMakeDependent(sc,new->sc);
     }
     temp = SplinePointListTransform(SplinePointListCopy(s->sc_rpl.layers[ly_fore].splines),transform,true);
@@ -1179,9 +1179,12 @@ return( sv );
 }
 
 static int IsASingleReferenceOrEmpty(SplineChar *sc) {
-    int i, empty = true;
+    int i, empty = true, last;
 
-    for ( i = ly_fore; i<sc->layer_cnt; ++i ) {
+    last = ly_fore;
+    if ( sc->parent->multilayer )
+	last = sc->layer_cnt-1;
+    for ( i = ly_fore; i<=last; ++i ) {
 	if ( sc->layers[i].splines!=NULL )
 return( false );
 	if ( sc->layers[i].images!=NULL )
@@ -1205,6 +1208,8 @@ static void SDCopyToSC(SplineChar *checksc,SplineChar *into,enum fvcopy_type ful
     for ( i=0; i<into->layer_cnt; ++i ) {
 	SplinePointListsFree(into->layers[i].splines);
 	RefCharsFree(into->layers[i].refs);
+	into->layers[i].splines = NULL;
+	into->layers[i].refs = NULL;
     }
     if ( full==ct_fullcopy ) {
 	into->layers[ly_fore].splines = SplinePointListCopy(checksc->layers[ly_fore].splines);

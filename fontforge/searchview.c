@@ -494,7 +494,7 @@ return( true );
 return( true );
     }
 
-    if ( searcher->dummy_sf.order2 != fv->b.sf->order2 ) {
+    if ( searcher->dummy_sf.layers[ly_fore].order2 != fv->b.sf->layers[ly_fore].order2 ) {
 	SCClearContents(&searcher->sd.sc_srch);
 	SCClearContents(&searcher->sd.sc_rpl);
 	for ( i=0; i<searcher->sd.sc_srch.layer_cnt; ++i )
@@ -537,7 +537,7 @@ return( false );
 		    /*SplinePointListsFree(r->layers[0].splines); r->layers[0].splines = NULL;*/
 		    r->sc = fv->b.sf->glyphs[gid];
 		    r->orig_pos = gid;
-		    SCReinstanciateRefChar(searcher->chars[i],r);
+		    SCReinstanciateRefChar(searcher->chars[i],r,ly_fore);
 		    any = true;
 		    rprev = r;
 		}
@@ -611,7 +611,13 @@ static SearchView *SVFillup(SearchView *sv, FontView *fv) {
     sv->dummy_sf.origname = "dummy";
     sv->dummy_sf.ascent = fv->b.sf->ascent;
     sv->dummy_sf.descent = fv->b.sf->descent;
-    sv->dummy_sf.order2 = fv->b.sf->order2;
+    sv->dummy_sf.layers = sv->layerinfo;
+    sv->dummy_sf.layer_cnt = 2;
+    sv->layerinfo[ly_back].order2 = fv->b.sf->layers[ly_back].order2;
+    sv->layerinfo[ly_back].name = _("Back");
+    sv->layerinfo[ly_fore].order2 = fv->b.sf->layers[ly_fore].order2;
+    sv->layerinfo[ly_fore].name = _("Fore");
+    sv->dummy_sf.grid.order2 = fv->b.sf->grid.order2;
     sv->dummy_sf.anchor = fv->b.sf->anchor;
     sv->sd.sc_srch.width = sv->sd.sc_srch.vwidth = sv->sd.sc_rpl.vwidth = sv->sd.sc_rpl.width =
 	    sv->dummy_sf.ascent + sv->dummy_sf.descent;

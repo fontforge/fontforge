@@ -2746,7 +2746,7 @@ static void bSelectHintingNeeded(Context *c) {
     EncMap *map = fv->map;
     SplineFont *sf = fv->sf;
     int add = 0;
-    int order2 = sf->order2;
+    int order2 = sf->layers[ly_fore].order2;
 
     if ( c->a.argc!=1 && c->a.argc!=2 )
 	ScriptError( c, "Too many arguments");
@@ -3159,9 +3159,9 @@ static void bSetFontOrder(Context *c) {
 	ScriptError(c,"Order must be 2 or 3");
 
     c->return_val.type = v_int;
-    c->return_val.u.ival = c->curfv->sf->order2?2:3;
+    c->return_val.u.ival = c->curfv->sf->layers[ly_fore].order2?2:3;
 
-    if ( c->a.vals[1].u.ival==(c->curfv->sf->order2?2:3))
+    if ( c->a.vals[1].u.ival==(c->curfv->sf->layers[ly_fore].order2?2:3))
 	/* No Op */;
     else {
 	if ( c->a.vals[1].u.ival==2 ) {
@@ -3921,7 +3921,7 @@ static void SCReplaceWith(SplineChar *dest, SplineChar *src) {
     Undoes *u[2], *r1;
     struct splinecharlist *scl = dest->dependents;
     RefChar *refs;
-    int layer;
+    int layer, last;
 #ifdef FONTFORGE_CONFIG_TYPE3
     int lc;
     Layer *layers;
@@ -3937,7 +3937,10 @@ return;
     u[0] = dest->layers[ly_fore].undoes; u[1] = dest->layers[ly_back].undoes; r1 = dest->layers[ly_back].redoes;
 
     free(dest->name);
-    for ( layer = ly_fore; layer<dest->layer_cnt; ++layer ) {
+    last = ly_fore;
+    if ( dest->parent->multilayer )
+	last = dest->layer_cnt-1;
+    for ( layer = ly_fore; layer<=last; ++layer ) {
 	SplinePointListsFree(dest->layers[layer].splines);
 	RefCharsFree(dest->layers[layer].refs);
 #ifdef FONTFORGE_CONFIG_TYPE3
@@ -4480,7 +4483,7 @@ static void bNonLinearTransform(Context *c) {
 	ScriptError( c, "Wrong number of arguments");
     else if ( c->a.vals[1].type!=v_str || c->a.vals[2].type!=v_str )
 	ScriptError(c,"Bad argument type");
-    if ( c->curfv->sf->order2 )
+    if ( c->curfv->sf->layers[ly_fore].order2 )
 	ScriptError(c,"Can only be applied to cubic (PostScript) fonts");
     if ( !SFNLTrans(c->curfv,c->a.vals[1].u.sval,c->a.vals[2].u.sval))
 	ScriptError(c,"Bad expression");
@@ -4715,7 +4718,7 @@ static void bSimplify(Context *c) {
 
 static void bNearlyHvCps(Context *c) {
     FontViewBase *fv = c->curfv;
-    int i, layer;
+    int i, layer, last;
     SplineSet *spl;
     SplineFont *sf = fv->sf;
     EncMap *map = fv->map;
@@ -4740,7 +4743,10 @@ static void bNearlyHvCps(Context *c) {
     for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = sf->glyphs[gid];
 	SCPreserveState(sc,false);
-	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+	last = ly_fore;
+	if ( sc->parent->multilayer )
+	    last = sc->layer_cnt-1;
+	for ( layer=ly_fore; layer<=last; ++layer ) {
 	    for ( spl = sc->layers[layer].splines; spl!=NULL; spl=spl->next )
 		SPLNearlyHvCps(sc,spl,err);
 	}
@@ -4749,7 +4755,7 @@ static void bNearlyHvCps(Context *c) {
 
 static void bNearlyHvLines(Context *c) {
     FontViewBase *fv = c->curfv;
-    int i, layer, gid;
+    int i, layer, last, gid;
     SplineSet *spl;
     SplineFont *sf = fv->sf;
     real err = .1;
@@ -4772,7 +4778,10 @@ static void bNearlyHvLines(Context *c) {
     for ( i=0; i<c->curfv->map->enccount; ++i ) if ( (gid=c->curfv->map->map[i])!=-1 && sf->glyphs[gid]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = sf->glyphs[gid];
 	SCPreserveState(sc,false);
-	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+	last = ly_fore;
+	if ( sc->parent->multilayer )
+	    last = sc->layer_cnt-1;
+	for ( layer=ly_fore; layer<=last; ++layer ) {
 	    for ( spl = sc->layers[layer].splines; spl!=NULL; spl=spl->next )
 		SPLNearlyHvLines(sc,spl,err);
 	}
@@ -4781,7 +4790,7 @@ static void bNearlyHvLines(Context *c) {
 
 static void bNearlyLines(Context *c) {
     FontViewBase *fv = c->curfv;
-    int i, layer, gid;
+    int i, layer, last, gid;
     SplineSet *spl;
     SplineFont *sf = fv->sf;
     real err = 1;
@@ -4800,7 +4809,10 @@ static void bNearlyLines(Context *c) {
 	SplineChar *sc = sf->glyphs[gid];
 	int changed = false;
 	SCPreserveState(sc,false);
-	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+	last = ly_fore;
+	if ( sc->parent->multilayer )
+	    last = sc->layer_cnt-1;
+	for ( layer=ly_fore; layer<=last; ++layer ) {
 	    for ( spl = sc->layers[layer].splines; spl!=NULL; spl=spl->next )
 		changed |= SPLNearlyLines(sc,spl,err);
 	}
@@ -4816,12 +4828,15 @@ static void bAddExtrema(Context *c) {
 }
 
 static void SCMakeLine(SplineChar *sc) {
-    int ly;
+    int ly, last;
     SplinePointList *spl;
     SplinePoint *sp;
     int changed = false;
 
-    for ( ly = ly_fore; ly<sc->layer_cnt; ly++ ) {
+    last = ly_fore;
+    if ( sc->parent->multilayer )
+	last = sc->layer_cnt-1;
+    for ( ly=ly_fore; ly<=last; ++ly ) {
 	for ( spl = sc->layers[ly].splines; spl!=NULL; spl = spl->next ) {
 	    for ( sp=spl->first; ; ) {
 		if (!sp->nonextcp || !sp->noprevcp ) {
@@ -4915,7 +4930,7 @@ static void bRoundToCluster(Context *c) {
     }
     for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = sf->glyphs[gid];
-	SCRoundToCluster( sc,-2,false,within,max);
+	SCRoundToCluster( sc,ly_all,false,within,max);
     }
 }
 
@@ -7113,11 +7128,14 @@ static void FigureExtrema(Context *c,SplineChar *sc,int pos,int xextrema) {
     /*  at that y value */
     /* If xextrama is false, then pos is an x value and we want min/max y */
     double minmax[2];
-    int layer, l;
+    int layer, l, last;
     RefChar *r;
 
     minmax[0] = 1e20; minmax[1] = -1e20;
-    for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+    last = ly_fore;
+    if ( sc->parent->multilayer )
+	last = sc->layer_cnt-1;
+    for ( layer=ly_fore; layer<=last; ++layer ) {
 	FigureSplExt(sc->layers[layer].splines,pos,xextrema,minmax);
 	for ( r = sc->layers[layer].refs; r!=NULL; r=r->next )
 	    for ( l=0; l<r->layer_cnt; ++l )
@@ -7235,34 +7253,34 @@ return;
 	else if ( strmatch( c->a.vals[1].u.sval,"ValidationState")==0 )
 	    c->return_val.u.ival = sc->validation_state;
 	else if ( strmatch( c->a.vals[1].u.sval,"RefCount")==0 ) {
-	    for ( i=0, layer=ly_fore; layer<sc->layer_cnt; ++layer )
+	    for ( i=0, layer=0; layer<sc->layer_cnt; ++layer )
 		for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next, ++i )
 		    ;
 	    c->return_val.u.ival = i;
 	} else if ( strmatch( c->a.vals[1].u.sval,"RefName")==0 ||
 		strmatch( c->a.vals[1].u.sval,"RefNames")==0 ) {
-	    for ( i=0, layer=ly_fore; layer<sc->layer_cnt; ++layer )
+	    for ( i=0, layer=0; layer<sc->layer_cnt; ++layer )
 		for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next, ++i )
 		    ;
 	    c->return_val.type = v_arrfree;
 	    c->return_val.u.aval = galloc(sizeof(Array));
 	    c->return_val.u.aval->argc = i;
 	    c->return_val.u.aval->vals = galloc(i*sizeof(Val));
-	    for ( i=0, layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+	    for ( i=0, layer=0; layer<sc->layer_cnt; ++layer ) {
 		for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next, ++i ) {
 		    c->return_val.u.aval->vals[i].u.sval = copy(ref->sc->name);
 		    c->return_val.u.aval->vals[i].type = v_str;
 		}
 	    }
 	} else if ( strmatch( c->a.vals[1].u.sval,"RefTransform")==0 ) {
-	    for ( i=0, layer=ly_fore; layer<sc->layer_cnt; ++layer )
+	    for ( i=0, layer=0; layer<sc->layer_cnt; ++layer )
 		for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next, ++i )
 		    ;
 	    c->return_val.type = v_arrfree;
 	    c->return_val.u.aval = galloc(sizeof(Array));
 	    c->return_val.u.aval->argc = i;
 	    c->return_val.u.aval->vals = galloc(i*sizeof(Val));
-	    for ( i=0, layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+	    for ( i=0, layer=0; layer<sc->layer_cnt; ++layer ) {
 		for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next, ++i ) {
 		    c->return_val.u.aval->vals[i].type = v_arr;
 		    c->return_val.u.aval->vals[i].u.aval = galloc(sizeof(Array));
@@ -8605,7 +8623,7 @@ static void handlename(Context *c,Val *val) {
 		if ( strcmp(name,"$macstyle")==0 )
 		    val->u.ival = c->curfv->sf->macstyle;
 		else if ( strcmp(name,"$order")==0 )
-		    val->u.ival = c->curfv->sf->order2 ? 2 : 3;
+		    val->u.ival = c->curfv->sf->layers[ly_fore].order2 ? 2 : 3;
 		else if ( strcmp(name,"$em")==0 )
 		    val->u.ival = c->curfv->sf->ascent+c->curfv->sf->descent;
 		else if ( strcmp(name,"$ascent")==0 )

@@ -327,7 +327,7 @@ void SCCondenseExtend(struct counterinfo *ci,SplineChar *sc, int layer,
     int width;
     double offset;
     real transform[6];
-    int order2 = sc->parent->order2;
+    int order2 = sc->layers[layer].order2;
 
     if ( do_undoes )
 	SCPreserveLayer(sc,layer,false);

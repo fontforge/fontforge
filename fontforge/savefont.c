@@ -942,7 +942,7 @@ void PrepareUnlinkRmOvrlp(SplineFont *sf,char *filename) {
 	    SCRefToSplines(sc,ref);
 	}
 	no_windowing_ui = true;			/* Clustering wants to create an undo that I don't need */
-	SCRoundToCluster(sc,-2,false,.03,.12);
+	SCRoundToCluster(sc,ly_all,false,.03,.12);
 	no_windowing_ui = false;
 	sc->layers[ly_fore].splines = SplineSetRemoveOverlap(sc,sc->layers[ly_fore].splines,over_remove);
     }
