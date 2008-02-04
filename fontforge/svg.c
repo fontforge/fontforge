@@ -305,9 +305,13 @@ static int svg_sc_any(SplineChar *sc) {
     int i,j;
     int any;
     RefChar *ref;
+    int first, last;
 
+    first = last = ly_fore;
+    if ( sc->parent->multilayer )
+	last = sc->layer_cnt-1;
     any = false;
-    for ( i=ly_fore; i<sc->layer_cnt && !any; ++i ) {
+    for ( i=first; i<=last && !any; ++i ) {
 	any = sc->layers[i].splines!=NULL || sc->layers[i].images!=NULL;
 	for ( ref=sc->layers[i].refs ; ref!=NULL && !any; ref = ref->next )
 	    for ( j=0; j<ref->layer_cnt && !any; ++j )
@@ -2318,8 +2322,9 @@ static void SVGParseGlyphBody(SplineChar *sc, xmlNodePtr glyph,int *flags) {
     }
 }
 
-static SplineChar *SVGParseGlyphArgs(xmlNodePtr glyph,int defh, int defv) {
-    SplineChar *sc = SplineCharCreate();
+static SplineChar *SVGParseGlyphArgs(xmlNodePtr glyph,int defh, int defv,
+	SplineFont *sf) {
+    SplineChar *sc = SFSplineCharCreate(sf);
     xmlChar *name, *form, *glyphname, *unicode, *orientation;
     uint32 *u;
     char buffer[100];
@@ -2391,7 +2396,7 @@ return( sc );
 }
 
 static SplineChar *SVGParseMissing(SplineFont *sf,xmlNodePtr notdef,int defh, int defv, int enc, int *flags) {
-    SplineChar *sc = SVGParseGlyphArgs(notdef,defh,defv);
+    SplineChar *sc = SVGParseGlyphArgs(notdef,defh,defv,sf);
     sc->parent = sf;
     sc->name = copy(".notdef");
     sc->unicodeenc = 0;
@@ -2401,7 +2406,7 @@ return( sc );
 
 static SplineChar *SVGParseGlyph(SplineFont *sf,xmlNodePtr glyph,int defh, int defv, int enc, int *flags) {
     char buffer[400];
-    SplineChar *sc = SVGParseGlyphArgs(glyph,defh,defv);
+    SplineChar *sc = SVGParseGlyphArgs(glyph,defh,defv,sf);
     sc->parent = sf;
     if ( sc->name==NULL ) {
 	if ( sc->unicodeenc==-1 ) {
@@ -2983,8 +2988,10 @@ void SFSetOrder(SplineFont *sf,int order2) {
     int i,j;
 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
-	for ( j=ly_fore; j<sf->glyphs[i]->layer_cnt; ++j )
+	for ( j=ly_fore; j<sf->glyphs[i]->layer_cnt; ++j ) {
 	    SPLSetOrder(sf->glyphs[i]->layers[j].splines,order2);
+	    sf->glyphs[i]->layers[j].order2 = order2;
+	}
     }
 }
 
@@ -3040,8 +3047,9 @@ return( NULL );
 
     if ( sf!=NULL ) {
 	struct stat b;
-	sf->order2 = SFFindOrder(sf);
-	SFSetOrder(sf,sf->order2);
+	sf->layers[ly_fore].order2 = sf->layers[ly_back].order2 = sf->grid.order2 =
+		SFFindOrder(sf);
+	SFSetOrder(sf,sf->layers[ly_fore].order2);
 	sf->chosenname = chosenname;
 	if ( stat(filename,&b)!=-1 ) {
 	    sf->modificationtime = b.st_mtime;

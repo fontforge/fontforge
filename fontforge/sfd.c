@@ -649,36 +649,10 @@ static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
 	if ( spl->contour_name!=NULL ) {
 	    fprintf( sfd, "  Named: " );
 	    SFDDumpUTF7Str(sfd,spl->contour_name);
+	    putc('\n',sfd);
 	}
     }
     fprintf( sfd, "EndSplineSet\n" );
-}
-
-static void SFDDumpMinimumDistances(FILE *sfd,SplineChar *sc) {
-    MinimumDistance *md = sc->md;
-    SplineSet *ss;
-    SplinePoint *sp;
-    int pt=0;
-
-    if ( md==NULL )
-return;
-    for ( ss = sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
-	for ( sp=ss->first; ; ) {
-	    sp->ptindex = pt++;
-	    if ( sp->next == NULL )
-	break;
-	    sp = sp->next->to;
-	    if ( sp==ss->first )
-	break;
-	}
-    }
-    fprintf( sfd, "MinimumDistance: " );
-    while ( md!=NULL ) {
-	fprintf( sfd, "%c%d,%d ", md->x?'x':'y', md->sp1?md->sp1->ptindex:-1,
-		md->sp2?md->sp2->ptindex:-1 );
-	md = md->next;
-    }
-    fprintf( sfd, "\n" );
 }
 
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
@@ -1258,17 +1232,10 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
     if ( sc->ttf_instrs_len!=0 )
 	SFDDumpTtfInstrs(sfd,sc);
     SFDDumpAnchorPoints(sfd,sc);
-    if ( sc->layers[ly_back].splines!=NULL ) {
-	fprintf(sfd, "Back\n" );
-	SFDDumpSplineSet(sfd,sc->layers[ly_back].splines);
-    } else if ( sc->layers[ly_back].images!=NULL )
-	fprintf(sfd, "Back\n" );
-    for ( img=sc->layers[ly_back].images; img!=NULL; img=img->next )
-	SFDDumpImage(sfd,img);
+    fprintf( sfd, "LayerCount: %d\n", sc->layer_cnt );
+    for ( i=0; i<sc->layer_cnt; ++i ) {
 #ifdef FONTFORGE_CONFIG_TYPE3
-    if ( sc->parent->multilayer ) {
-	fprintf( sfd, "LayerCount: %d\n", sc->layer_cnt );
-	for ( i=ly_fore; i<sc->layer_cnt; ++i ) {
+	if ( sc->parent->multilayer ) {
 	    fprintf(sfd, "Layer: %d  %d %d %d  #%06x %g  #%06x %g %g %s %s [%g %g %g %g] [",
 		    i, sc->layers[i].dofill, sc->layers[i].dostroke, sc->layers[i].fillfirst,
 		    sc->layers[i].fill_brush.col, sc->layers[i].fill_brush.opacity,
@@ -1283,23 +1250,26 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
 		    fprintf( sfd,"%d ", sc->layers[i].stroke_pen.dashes[j]);
 		fprintf(sfd,"]\n");
 	    }
-	    for ( img=sc->layers[i].images; img!=NULL; img=img->next )
-		SFDDumpImage(sfd,img);
-	    if ( sc->layers[i].splines!=NULL ) {
-		fprintf(sfd, "SplineSet\n" );
-		SFDDumpSplineSet(sfd,sc->layers[i].splines);
-	    }
-	    SFDDumpRefs(sfd,sc->layers[i].refs,sc->name,map,newgids);
-	}
-    } else
+	} else
 #endif
-    {
-	if ( sc->layers[ly_fore].splines!=NULL ) {
-	    fprintf(sfd, "Fore\n" );
-	    SFDDumpSplineSet(sfd,sc->layers[ly_fore].splines);
-	    SFDDumpMinimumDistances(sfd,sc);
+	{
+	    if ( sc->layers[i].images==NULL && sc->layers[i].splines==NULL &&
+		    sc->layers[i].refs==NULL )
+    continue;
+	    if ( i==ly_back )
+		fprintf( sfd, "Back\n" );
+	    else if ( i==ly_fore )
+		fprintf( sfd, "Fore\n" );
+	    else
+		fprintf(sfd, "Layer: %d\n", i );
 	}
-	SFDDumpRefs(sfd,sc->layers[ly_fore].refs,sc->name,map,newgids);
+	for ( img=sc->layers[i].images; img!=NULL; img=img->next )
+	    SFDDumpImage(sfd,img);
+	if ( sc->layers[i].splines!=NULL ) {
+	    fprintf(sfd, "SplineSet\n" );
+	    SFDDumpSplineSet(sfd,sc->layers[i].splines);
+	}
+	SFDDumpRefs(sfd,sc->layers[i].refs,sc->name,map,newgids);
     }
     for ( v=0; v<2; ++v ) {
 	kp = v ? sc->vkerns : sc->kerns;
@@ -1677,8 +1647,12 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
     fprintf(sfd, "UnderlineWidth: %g\n", (double) sf->uwidth );
     fprintf(sfd, "Ascent: %d\n", sf->ascent );
     fprintf(sfd, "Descent: %d\n", sf->descent );
-    if ( sf->order2 )
-	fprintf(sfd, "Order2: %d\n", sf->order2 );
+    fprintf(sfd, "LayerCount: %d\n", sf->layer_cnt );
+    for ( i=0; i<sf->layer_cnt; ++i ) {
+	fprintf( sfd, "Layer: %d %d ", i, sf->layers[i].order2 );
+	SFDDumpUTF7Str(sfd,sf->layers[i].name);
+	putc('\n',sfd);
+    }
     if ( sf->strokedfont )
 	fprintf(sfd, "StrokedFont: %d\n", sf->strokedfont );
     else if ( sf->multilayer )
@@ -2045,6 +2019,8 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 	SFDDumpCompositionRules(sfd,sf->rules);
 #endif
     if ( sf->grid.splines!=NULL ) {
+	if ( sf->grid.order2 )
+	    fprintf(sfd, "GridOrder2: %d\n", sf->grid.order2 );
 	fprintf(sfd, "Grid\n" );
 	SFDDumpSplineSet(sfd,sf->grid.splines);
     }
@@ -3073,7 +3049,7 @@ static void SFDGetSpiros(FILE *sfd,SplineSet *cur) {
 	ungetc(ch,sfd);
 }
 
-static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd) {
+static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd,int order2) {
     SplinePointList *cur=NULL, *head=NULL;
     BasePoint current;
     real stack[100];
@@ -3119,7 +3095,7 @@ static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd) {
 		    SplinePointList *spl = chunkalloc(sizeof(SplinePointList));
 		    spl->first = spl->last = pt;
 		    if ( cur!=NULL ) {
-			if ( SFDCloseCheck(cur,sf->order2))
+			if ( SFDCloseCheck(cur,order2))
 			    --ttfindex;
 			cur->next = spl;
 		    } else
@@ -3129,7 +3105,7 @@ static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd) {
 		    if ( cur!=NULL && cur->first!=NULL && (cur->first!=cur->last || cur->first->next==NULL) ) {
 			if ( cur->last->nextcpindex==0xfffe )
 			    cur->last->nextcpindex = 0xffff;
-			SplineMake(cur->last,pt,sf->order2);
+			SplineMake(cur->last,pt,order2);
 			cur->last = pt;
 		    }
 		}
@@ -3152,7 +3128,7 @@ static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd) {
 			cur->last->nextcpindex = ttfindex++;
 		    else if ( cur->last->nextcpindex!=0xffff )
 			ttfindex = cur->last->nextcpindex+1;
-		    SplineMake(cur->last,pt,sf->order2);
+		    SplineMake(cur->last,pt,order2);
 		    cur->last = pt;
 		}
 		sp -= 6;
@@ -3210,7 +3186,7 @@ static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd) {
 	}
     }
     if ( cur!=NULL )
-	SFDCloseCheck(cur,sf->order2);
+	SFDCloseCheck(cur,order2);
     if ( lastacceptable && cur->last->prev!=NULL )
 	cur->last->prev->acceptableextrema = true;
     getname(sfd,tok);
@@ -3787,6 +3763,7 @@ static SplineChar *SFDGetChar(FILE *sfd,SplineFont *sf) {
     int had_old_dstems = false;
     SplineFont *sli_sf = sf->cidmaster ? sf->cidmaster : sf;
     struct altuni *altuni;
+    int oldback = false;
 
     if ( getname(sfd,tok)!=1 )
 return( NULL );
@@ -3795,7 +3772,7 @@ return( NULL );
     if ( getname(sfd,tok)!=1 )
 return( NULL );
 
-    sc = SplineCharCreate();
+    sc = SFSplineCharCreate(sf);
     sc->name = copy(tok);
     sc->vwidth = sf->ascent+sf->descent;
     sc->parent = sf;
@@ -3888,7 +3865,7 @@ return( NULL );
 		else if ( ch=='I' ) sc->instructions_out_of_date = true;
 		ch = getc(sfd);
 	    }
-	    if ( sf->multilayer || sf->onlybitmaps || sf->strokedfont || sf->order2 )
+	    if ( sf->multilayer || sf->onlybitmaps || sf->strokedfont || sc->layers[ly_fore].order2 )
 		sc->changedsincelasthinted = false;
 	} else if ( strmatch(tok,"TeX:")==0 ) {
 	    getsint(sfd,&sc->tex_height);
@@ -3993,7 +3970,12 @@ return( NULL );
 	} else if ( strmatch(tok,"AnchorPoint:")==0 ) {
 	    lastap = SFDReadAnchorPoints(sfd,sc,lastap);
 	} else if ( strmatch(tok,"Fore")==0 ) {
-	    sc->layers[ly_fore].splines = SFDGetSplineSet(sf,sfd);
+	    while ( isspace(ch = getc(sfd)));
+	    ungetc(ch,sfd);
+	    if ( ch!='S' ) {
+		/* Old format, without a SplineSet token */
+		sc->layers[ly_fore].splines = SFDGetSplineSet(sf,sfd,sc->layers[ly_fore].order2);
+	    }
 	    current_layer = ly_fore;
 	} else if ( strmatch(tok,"MinimumDistance:")==0 ) {
 	    SFDGetMinimumDistances(sfd,sc);
@@ -4004,10 +3986,12 @@ return( NULL );
 	} else if ( strmatch(tok,"Back")==0 ) {
 	    while ( isspace(ch=getc(sfd)));
 	    ungetc(ch,sfd);
-	    if ( ch!='I' )
-		sc->layers[ly_back].splines = SFDGetSplineSet(sf,sfd);
+	    if ( ch!='I' && ch!='R' && ch!='S' ) {
+		/* Old format, without a SplineSet token */
+		sc->layers[ly_back].splines = SFDGetSplineSet(sf,sfd,sc->layers[ly_back].order2);
+		oldback = true;
+	    }
 	    current_layer = ly_back;
-#ifdef FONTFORGE_CONFIG_TYPE3
 	} else if ( strmatch(tok,"LayerCount:")==0 ) {
 	    getint(sfd,&temp);
 	    if ( temp>sc->layer_cnt ) {
@@ -4017,12 +4001,20 @@ return( NULL );
 	    sc->layer_cnt = temp;
 	    current_layer = ly_fore;
 	} else if ( strmatch(tok,"Layer:")==0 ) {
-	    int layer, dofill, dostroke, fillfirst, linejoin, linecap;
+	    int layer;
+#ifdef FONTFORGE_CONFIG_TYPE3
+	    int dofill, dostroke, fillfirst, linejoin, linecap;
 	    uint32 fillcol, strokecol;
 	    real fillopacity, strokeopacity, strokewidth, trans[4];
 	    DashType dashes[DASH_MAX];
 	    int i;
+#endif
 	    getint(sfd,&layer);
+	    if ( layer>=sc->layer_cnt ) {
+		sc->layers = grealloc(sc->layers,(layer+1)*sizeof(Layer));
+		memset(sc->layers+sc->layer_cnt,0,(layer+1-sc->layer_cnt)*sizeof(Layer));
+	    }
+#ifdef FONTFORGE_CONFIG_TYPE3
 	    getint(sfd,&dofill);
 	    getint(sfd,&dostroke);
 	    getint(sfd,&fillfirst);
@@ -4043,10 +4035,6 @@ return( NULL );
 	    break;
 	    if ( caps[i]==NULL ) --i;
 	    linecap = i;
-	    if ( layer>=sc->layer_cnt ) {
-		sc->layers = grealloc(sc->layers,(layer+1)*sizeof(Layer));
-		memset(sc->layers+sc->layer_cnt,0,(layer+1-sc->layer_cnt)*sizeof(Layer));
-	    }
 	    while ( (ch=getc(sfd))==' ' || ch=='[' );
 	    ungetc(ch,sfd);
 	    getreal(sfd,&trans[0]);
@@ -4067,26 +4055,26 @@ return( NULL );
 		ungetc(ch,sfd);
 		memset(dashes,0,sizeof(dashes));
 	    }
+	    sc->layers[layer].dofill = dofill;
+	    sc->layers[layer].dostroke = dostroke;
+	    sc->layers[layer].fillfirst = fillfirst;
+	    sc->layers[layer].fill_brush.col = fillcol;
+	    sc->layers[layer].fill_brush.opacity = fillopacity;
+	    sc->layers[layer].stroke_pen.brush.col = strokecol;
+	    sc->layers[layer].stroke_pen.brush.opacity = strokeopacity;
+	    sc->layers[layer].stroke_pen.width = strokewidth;
+	    sc->layers[layer].stroke_pen.linejoin = linejoin;
+	    sc->layers[layer].stroke_pen.linecap = linecap;
+	    memcpy(sc->layers[layer].stroke_pen.dashes,dashes,sizeof(dashes));
+	    memcpy(sc->layers[layer].stroke_pen.trans,trans,sizeof(trans));
+#endif
 	    current_layer = layer;
-	    sc->layers[current_layer].dofill = dofill;
-	    sc->layers[current_layer].dostroke = dostroke;
-	    sc->layers[current_layer].fillfirst = fillfirst;
-	    sc->layers[current_layer].fill_brush.col = fillcol;
-	    sc->layers[current_layer].fill_brush.opacity = fillopacity;
-	    sc->layers[current_layer].stroke_pen.brush.col = strokecol;
-	    sc->layers[current_layer].stroke_pen.brush.opacity = strokeopacity;
-	    sc->layers[current_layer].stroke_pen.width = strokewidth;
-	    sc->layers[current_layer].stroke_pen.linejoin = linejoin;
-	    sc->layers[current_layer].stroke_pen.linecap = linecap;
-	    memcpy(sc->layers[current_layer].stroke_pen.dashes,dashes,sizeof(dashes));
-	    memcpy(sc->layers[current_layer].stroke_pen.trans,trans,sizeof(trans));
 	    lasti = NULL;
 	    lastr = NULL;
 	} else if ( strmatch(tok,"SplineSet")==0 ) {
-	    sc->layers[current_layer].splines = SFDGetSplineSet(sf,sfd);
-#endif
+	    sc->layers[current_layer].splines = SFDGetSplineSet(sf,sfd,sc->layers[current_layer].order2);
 	} else if ( strmatch(tok,"Ref:")==0 || strmatch(tok,"Refer:")==0 ) {
-	    if ( !multilayer ) current_layer = ly_fore;
+	    if ( oldback ) current_layer = ly_fore;
 	    ref = SFDGetRef(sfd,strmatch(tok,"Ref:")==0);
 	    if ( sc->layers[current_layer].refs==NULL )
 		sc->layers[current_layer].refs = ref;
@@ -4376,7 +4364,7 @@ exit(1);
                 SCGuessHintInstancesList( sc,sc->hstem,sc->vstem,sc->dstem,false,false );
             else if ( had_old_dstems && sc->layers[ly_fore].splines != NULL )
                 SCGuessHintInstancesList( sc,NULL,NULL,sc->dstem,false,true );
-	    if ( sf->order2 )
+	    if ( sc->layers[ly_fore].order2 )
 		SCDefaultInterpolation(sc);
 return( sc );
 	} else {
@@ -4586,18 +4574,18 @@ return( 0 );
 return( 1 );
 }
 
-static void SFDFixupRef(SplineChar *sc,RefChar *ref) {
+static void SFDFixupRef(SplineChar *sc,RefChar *ref,int layer) {
     RefChar *rf;
 
-    for ( rf = ref->sc->layers[ly_fore].refs; rf!=NULL; rf=rf->next ) {
+    for ( rf = ref->sc->layers[layer].refs; rf!=NULL; rf=rf->next ) {
 	if ( rf->sc==sc ) {	/* Huh? */
-	    ref->sc->layers[ly_fore].refs = NULL;
+	    ref->sc->layers[layer].refs = NULL;
     break;
 	}
 	if ( rf->layers[0].splines==NULL )
-	    SFDFixupRef(ref->sc,rf);
+	    SFDFixupRef(ref->sc,rf,layer);
     }
-    SCReinstanciateRefChar(sc,ref);
+    SCReinstanciateRefChar(sc,ref,layer);
     SCMakeDependent(sc,ref->sc);
 }
 
@@ -4654,7 +4642,7 @@ static void SFDFixupRefs(SplineFont *sf) {
 	    /*  by another character then we need to fix up that other char too*/
 	    /*if ( isautorecovery && !sc->changed )*/
 	/*continue;*/
-	    for ( layer = ly_fore; layer<sc->layer_cnt; ++layer ) {
+	    for ( layer = 0; layer<sc->layer_cnt; ++layer ) {
 		rprev = NULL;
 		for ( refs = sc->layers[layer].refs; refs!=NULL; refs=rnext ) {
 		    rnext = refs->next;
@@ -4732,8 +4720,11 @@ static void SFDFixupRefs(SplineFont *sf) {
 	    }
 	}
 	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
-	    for ( refs = sf->glyphs[i]->layers[ly_fore].refs; refs!=NULL; refs=refs->next ) {
-		SFDFixupRef(sf->glyphs[i],refs);
+	    SplineChar *sc = sf->glyphs[i];
+	    for ( layer=0; layer<sc->layer_cnt; ++layer ) {
+		for ( refs = sf->glyphs[i]->layers[layer].refs; refs!=NULL; refs=refs->next ) {
+		    SFDFixupRef(sf->glyphs[i],refs,layer);
+		}
 	    }
 	    ff_progress_next();
 	}
@@ -5649,6 +5640,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
     struct remap *remap = NULL;
     int hadtimes=false, haddupenc;
     int old;
+    int old_style_order2 = false;
 
     orig_pos = 0;		/* Only used for compatibility with extremely old sfd files */
 
@@ -5858,9 +5850,31 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
 	} else if ( strmatch(tok,"Descent:")==0 ) {
 	    getint(sfd,&sf->descent);
 	} else if ( strmatch(tok,"Order2:")==0 ) {
-	    int temp;
-	    getint(sfd,&temp);
-	    sf->order2 = temp;
+	    getint(sfd,&old_style_order2);
+	    sf->grid.order2 = old_style_order2;
+	    sf->layers[ly_back].order2 = old_style_order2;
+	    sf->layers[ly_fore].order2 = old_style_order2;
+	} else if ( strmatch(tok,"GridOrder2:")==0 ) {
+	    int o2;
+	    getint(sfd,&o2);
+	    sf->grid.order2 = o2;
+	} else if ( strmatch(tok,"LayerCount:")==0 ) {
+	    getint(sfd,&sf->layer_cnt);
+	    if ( sf->layer_cnt>2 ) {
+		sf->layers = grealloc(sf->layers,sf->layer_cnt*sizeof(LayerInfo));
+		memset(sf->layers+2,0,(sf->layer_cnt-2)*sizeof(LayerInfo));
+	    }
+	} else if ( strmatch(tok,"Layer:")==0 ) {
+	    int layer, o2;
+	    getint(sfd,&layer);
+	    if ( layer>=sf->layer_cnt ) {
+		sf->layers = grealloc(sf->layers,(layer+1)*sizeof(LayerInfo));
+		memset(sf->layers+sf->layer_cnt,0,((layer+1)-sf->layer_cnt)*sizeof(LayerInfo));
+		sf->layer_cnt = layer+1;
+	    }
+	    getint(sfd,&o2);
+	    sf->layers[layer].order2 = o2;
+	    sf->layers[layer].name = SFDReadUTF7Str(sfd);
 	} else if ( strmatch(tok,"StrokedFont:")==0 ) {
 	    int temp;
 	    getint(sfd,&temp);
@@ -5941,7 +5955,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
 	    getreal(sfd,&temp);
 	    sf->cidversion = temp;
 	} else if ( strmatch(tok,"Grid")==0 ) {
-	    sf->grid.splines = SFDGetSplineSet(sf,sfd);
+	    sf->grid.splines = SFDGetSplineSet(sf,sfd,sf->grid.order2);
 	} else if ( strmatch(tok,"ScriptLang:")==0 ) {
 	    int i,j,k;
 	    int imax, jmax, kmax;
@@ -6562,6 +6576,7 @@ SplineChar *SFDReadOneChar(SplineFont *cur_sf,const char *name) {
     char tok[2000];
     uint32 pos;
     SplineFont sf;
+    LayerInfo layers[2];
     int version;
 
     if ( cur_sf->save_to_dir ) {
@@ -6574,6 +6589,9 @@ return( NULL );
     oldloc = setlocale(LC_NUMERIC,"C");
 
     memset(&sf,0,sizeof(sf));
+    memset(&layers,0,sizeof(layers));
+    sf.layer_cnt = 2;
+    sf.layers = layers;
     sf.ascent = 800; sf.descent = 200;
     if ( cur_sf->cidmaster ) cur_sf = cur_sf->cidmaster;
     if ( (version = SFDStartsCorrectly(sfd,tok))>=2 ) {
@@ -6592,7 +6610,21 @@ return( NULL );
 	    } else if ( strmatch(tok,"Order2:")==0 ) {
 		int order2;
 		getint(sfd,&order2);
-		sf.order2 = order2;
+		sf.grid.order2 = order2;
+		sf.layers[ly_back].order2 = order2;
+		sf.layers[ly_fore].order2 = order2;
+	    } else if ( strmatch(tok,"LayerCount:")==0 ) {
+		getint(sfd,&sf.layer_cnt);
+		if ( sf.layer_cnt>2 ) {
+		    sf.layers = gcalloc(sf.layer_cnt,sizeof(LayerInfo));
+		}
+	    } else if ( strmatch(tok,"Layer:")==0 ) {
+		int layer, o2;
+		getint(sfd,&layer);
+		getint(sfd,&o2);
+		if ( layer<sf.layer_cnt )
+		    sf.layers[layer].order2 = o2;
+		free( SFDReadUTF7Str(sfd));
 	    } else if ( strmatch(tok,"MultiLayer:")==0 ) {
 		int ml;
 		getint(sfd,&ml);
@@ -6621,13 +6653,15 @@ return( NULL );
 	}
     }
 
+    if ( sf.layers!=layers )
+	free(sf.layers);
     setlocale(LC_NUMERIC,oldloc);
 return( sc );
 }
 
 static int ModSF(FILE *asfd,SplineFont *sf) {
     Encoding *newmap;
-    int cnt, order2=0;
+    int cnt;
 #ifdef FONTFORGE_CONFIG_TYPE3
     int multilayer=0;
 #endif
@@ -6636,10 +6670,14 @@ static int ModSF(FILE *asfd,SplineFont *sf) {
     SplineChar *sc;
     SplineFont *ssf;
     SplineFont temp;
+    int layercnt;
 
     memset(&temp,0,sizeof(temp));
+    temp.layers = sf->layers;
+    temp.layer_cnt = sf->layer_cnt;
+    temp.layers[ly_back].order2 = sf->layers[ly_back].order2;
+    temp.layers[ly_fore].order2 = sf->layers[ly_fore].order2;
     temp.ascent = sf->ascent; temp.descent = sf->descent;
-    temp.order2 = sf->order2;
     temp.multilayer = sf->multilayer;
     temp.gpos_lookups = sf->gpos_lookups;
     temp.gsub_lookups = sf->gsub_lookups;
@@ -6662,16 +6700,27 @@ return( false );
 	sf->map = map;
     }
     temp.map = sf->map;
-    if ( strcmp(tok,"Order2:")==0 ) {
-	getint(asfd,&order2);
+    if ( strcmp(tok,"LayerCount:")==0 ) {
+	getint(asfd,&layercnt);
+	if ( layercnt>sf->layer_cnt ) {
+	    sf->layers = grealloc(sf->layers,layercnt*sizeof(LayerInfo));
+	    memset(sf->layers+sf->layer_cnt,0,(layercnt-sf->layer_cnt)*sizeof(LayerInfo));
+	}
+	sf->layer_cnt = layercnt;
 	if ( getname(asfd,tok)!=1 )
 return( false );
     }
-    if ( order2!=sf->order2 ) {
-	if ( order2 )
-	    SFConvertToOrder2(sf);
-	else
-	    SFConvertToOrder3(sf);
+    while ( strcmp(tok,"Layer:")==0 ) {
+	int layer, o2;
+	getint(asfd,&layer);
+	getint(asfd,&o2);
+	if ( layer<sf->layer_cnt ) {
+	    sf->layers[layer].order2 = o2;
+	    free(sf->layers[layer].name);
+	    sf->layers[layer].name = SFDReadUTF7Str(asfd);
+	}
+	if ( getname(asfd,tok)!=1 )
+return( false );
     }
 #ifdef FONTFORGE_CONFIG_TYPE3
     if ( strcmp(tok,"MultiLayer:")==0 ) {
@@ -6849,8 +6898,12 @@ return;
 		sf->compression==0?"":compressors[sf->compression-1].ext );
     fprintf( asfd, "Encoding: %s\n", map->enc->enc_name );
     fprintf( asfd, "UnicodeInterp: %s\n", unicode_interp_names[sf->uni_interp]);
-    if ( sf->order2 )
-	fprintf( asfd, "Order2: %d\n", sf->order2 );
+    fprintf( asfd, "LayerCount: %d\n", sf->layer_cnt );
+    for ( i=0; i<sf->layer_cnt; ++i ) {
+	fprintf( asfd, "Layer: %d %d ", i, sf->layers[i].order2 );
+	SFDDumpUTF7Str(asfd,sf->layers[i].name);
+	putc('\n',asfd);
+    }
     if ( sf->multilayer )
 	fprintf( asfd, "MultiLayer: %d\n", sf->multilayer );
     fprintf( asfd, "BeginChars: %d\n", max );

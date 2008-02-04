@@ -230,7 +230,7 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 8; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+4;
-    if ( sf->order2 )
+    if ( sf->layers[ly_fore].order2 )
 	gcd[k].gd.flags = gg_visible|gg_utf8_popup;
     else {
 	gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
@@ -247,7 +247,7 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 20; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+24;
     gcd[k].gd.flags = gg_enabled|gg_visible;
-    if ( sf->order2 ) gcd[k].gd.flags = gg_visible;
+    if ( sf->layers[ly_fore].order2 ) gcd[k].gd.flags = gg_visible;
     gcd[k++].creator = GLabelCreate;
 
     sprintf( buffer2, "%.3g", oldsmooth_tan );
@@ -257,7 +257,7 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
     gcd[k].gd.pos.x = 94; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-6;
     gcd[k].gd.pos.width = 40;
     gcd[k].gd.flags = gg_enabled|gg_visible;
-    if ( sf->order2 ) gcd[k].gd.flags = gg_visible;
+    if ( sf->layers[ly_fore].order2 ) gcd[k].gd.flags = gg_visible;
     gcd[k].gd.cid = CID_SmoothTan;
     gcd[k++].creator = GTextFieldCreate;
 
@@ -266,7 +266,7 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 17; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+24; 
-    if ( sf->order2 )
+    if ( sf->layers[ly_fore].order2 )
 	gcd[k].gd.flags = gg_visible;
     else {
 	gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
@@ -282,7 +282,7 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 8; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14; 
-    if ( sf->order2 )
+    if ( sf->layers[ly_fore].order2 )
 	gcd[k].gd.flags = gg_visible|gg_utf8_popup;
     else {
 	gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
@@ -298,7 +298,7 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 20; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+24;
     gcd[k].gd.flags = gg_enabled|gg_visible;
-    if ( sf->order2 ) gcd[k].gd.flags = gg_visible;
+    if ( sf->layers[ly_fore].order2 ) gcd[k].gd.flags = gg_visible;
     gcd[k++].creator = GLabelCreate;
 
     sprintf( buffer3, "%.3g", oldlinefixup_rat*sim.em_size );
@@ -308,14 +308,14 @@ int SimplifyDlg(SplineFont *sf, struct simplifyinfo *smpl) {
     gcd[k].gd.pos.x = 90; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-6;
     gcd[k].gd.pos.width = 40;
     gcd[k].gd.flags = gg_enabled|gg_visible;
-    if ( sf->order2 ) gcd[k].gd.flags = gg_visible;
+    if ( sf->layers[ly_fore].order2 ) gcd[k].gd.flags = gg_visible;
     gcd[k].gd.cid = CID_FlattenBound;
     gcd[k++].creator = GTextFieldCreate;
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+gcd[k-1].gd.pos.width+3;
     gcd[k].gd.pos.y = gcd[k-2].gd.pos.y;
     gcd[k].gd.flags = gg_visible | gg_enabled ;
-    if ( sf->order2 ) gcd[k].gd.flags = gg_visible;
+    if ( sf->layers[ly_fore].order2 ) gcd[k].gd.flags = gg_visible;
     label[k].text = (unichar_t *) _("em-units");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];

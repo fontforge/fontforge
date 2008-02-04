@@ -696,7 +696,7 @@ void SFMapFill(struct sfmaps *sfmaps,SplineFont *sf) {
     sfmaps->map = EncMapFromEncoding(sf,FindOrMakeEncoding("UnicodeFull"));
     sfmaps->notdef_gid = SFFindGID(sf,-1,".notdef");
     if ( sfmaps->notdef_gid==-1 ) {
-	SplineChar *notdef = SplineCharCreate();
+	SplineChar *notdef = SFSplineCharCreate(sf);
 	sfmaps->fake_notdef = notdef;
 	notdef->name = copy(".notdef");
 	notdef->parent = sf;
@@ -911,7 +911,7 @@ void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height) {
     LayoutInfo *li = gcalloc(1,sizeof(LayoutInfo));
     int cnt, len, i,j, ret, p, x;
     struct fontlist *last;
-    enum sftf_fonttype type = sf->order2 ? sftf_ttf : sftf_otf;
+    enum sftf_fonttype type = sf->layers[ly_fore].order2 ? sftf_ttf : sftf_otf;
     GImage *image;
     struct _GImage *base;
     unichar_t *upt;
