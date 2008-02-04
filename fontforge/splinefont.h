@@ -1049,12 +1049,13 @@ typedef struct minimumdistance {
 } MinimumDistance;
 
 typedef struct layer /* : reflayer */{
+    unsigned int order2: 1;
 #ifdef FONTFORGE_CONFIG_TYPE3
-    struct brush fill_brush;
-    struct pen stroke_pen;
     unsigned int dofill: 1;
     unsigned int dostroke: 1;
     unsigned int fillfirst: 1;
+    struct brush fill_brush;
+    struct pen stroke_pen;
 #endif
     SplinePointList *splines;
     ImageList *images;			/* Only in background or type3 layer(s) */
@@ -1063,7 +1064,7 @@ typedef struct layer /* : reflayer */{
     Undoes *redoes;
 } Layer;
 
-enum layer_type { ly_grid= -1, ly_back=0, ly_fore=1 /* Possibly other foreground layers for multi-layered things */ };
+enum layer_type { ly_all=-2, ly_grid= -1, ly_back=0, ly_fore=1 /* Possibly other foreground layers for multi-layered things */ };
 
 /* For the 'MATH' table (and for TeX) */
 struct glyphvariants {
@@ -1168,11 +1169,8 @@ typedef struct splinechar {
 			        /*  or when generating morx where it is the mask of tables in which the glyph occurs */
 				/* Always a temporary value */
     int ttf_glyph;		/* only used when writing out a ttf or otf font */
-#ifdef FONTFORGE_CONFIG_TYPE3
-    Layer *layers;		/* layer[0] is background, layer[1-n] foreground */
-#else
-    Layer layers[2];		/* layer[0] is background, layer[1] foreground */
-#endif
+    Layer *layers;		/* layer[0] is background, layer[1] foreground */
+	/* In type3 fonts 2-n are also foreground, otherwise also background */
     int layer_cnt;
     StemInfo *hstem;		/* hstem hints have a vertical offset but run horizontally */
     StemInfo *vstem;		/* vstem hints have a horizontal offset but run vertically */
@@ -1461,6 +1459,13 @@ enum loadvalidation_state {
 	lvs_bad_gx_table       = 0x40,
 	lvs_bad_ot_table       = 0x80
     };
+
+typedef struct layerinfo {
+    char *name;
+    unsigned int order2: 1;			/* Layer's data are order 2 bezier splines (truetype) rather than order 3 (postscript) */
+						/* In all glyphs in the font */
+} LayerInfo;
+
 typedef struct splinefont {
     char *fontname, *fullname, *familyname, *weight;
     char *copyright;
@@ -1487,7 +1492,6 @@ typedef struct splinefont {
     unsigned int loading_cid_map: 1;
     unsigned int dupnamewarn: 1;		/* Warn about duplicate names when loading bdf font */
     unsigned int encodingchanged: 1;		/* Font's encoding has changed since it was loaded */
-    unsigned int order2: 1;			/* Font's data are order 2 bezier splines (truetype) rather than order 3 (postscript) */
     unsigned int multilayer: 1;			/* only applies if TYPE3 is set, means this font can contain strokes & fills */
 						/*  I leave it in so as to avoid cluttering up code with #ifdefs */
     unsigned int strokedfont: 1;
@@ -1634,6 +1638,8 @@ typedef struct splinefont {
 #endif
     void *python_persistent;		/* If python this will hold a python object, if not python this will hold a string containing a pickled object. We do nothing with it (if not python) except save it back out unchanged */
     enum loadvalidation_state loadvalidation_state;
+    LayerInfo *layers;
+    int layer_cnt;
 } SplineFont;
 
 /* I am going to simplify my life and not encourage intermediate designs */
@@ -1934,7 +1940,8 @@ extern void AltUniRemove(SplineChar *sc,int uni);
 extern void AltUniAdd(SplineChar *sc,int uni);
 extern void MinimumDistancesFree(MinimumDistance *md);
 extern void LayerDefault(Layer *);
-extern SplineChar *SplineCharCreate(void);
+extern SplineChar *SplineCharCreate(int layer_cnt);
+extern SplineChar *SFSplineCharCreate(SplineFont *sf);
 extern RefChar *RefCharCreate(void);
 extern void SCAddRef(SplineChar *sc,SplineChar *rsc,real xoff, real yoff);
 extern void _SCAddRef(SplineChar *sc,SplineChar *rsc,real transform[6]);
@@ -2016,8 +2023,8 @@ extern void SplinePointListSet(SplinePointList *tobase, SplinePointList *frombas
 extern void SplinePointListSelect(SplinePointList *spl,int sel);
 extern void SCRefToSplines(SplineChar *sc,RefChar *rf);
 extern void RefCharFindBounds(RefChar *rf);
-extern void SCReinstanciateRefChar(SplineChar *sc,RefChar *rf);
-extern void SCReinstanciateRef(SplineChar *sc,SplineChar *rsc);
+extern void SCReinstanciateRefChar(SplineChar *sc,RefChar *rf,int layer);
+extern void SCReinstanciateRef(SplineChar *sc,SplineChar *rsc,int layer);
 extern void SFReinstanciateRefs(SplineFont *sf);
 extern void SFInstanciateRefs(SplineFont *sf);
 extern SplineChar *MakeDupRef(SplineChar *base, int local_enc, int uni_enc);
@@ -2220,6 +2227,10 @@ extern void SCConvertToOrder2(SplineChar *sc);
 extern void SFConvertToOrder2(SplineFont *sf);
 extern void SCConvertToOrder3(SplineChar *sc);
 extern void SFConvertToOrder3(SplineFont *sf);
+extern void SCConvertLayerToOrder2(SplineChar *sc,int layer);
+extern void SFConvertLayerToOrder2(SplineFont *sf,int layer);
+extern void SCConvertLayerToOrder3(SplineChar *sc,int layer);
+extern void SFConvertLayerToOrder3(SplineFont *sf,int layer);
 extern void SCConvertOrder(SplineChar *sc, int to_order2);
 extern void SplinePointPrevCPChanged2(SplinePoint *sp);
 extern void SplinePointNextCPChanged2(SplinePoint *sp);
@@ -2506,8 +2517,7 @@ void putlong(FILE *file,int val);
 void putfixed(FILE *file,real dval);
 int ttfcopyfile(FILE *ttf, FILE *other, int pos, char *table_name);
 
-extern void SCCopyFgToBg(SplineChar *sc,int show);
-extern void SCCopyBgToFg(SplineChar *sc,int show);
+extern void SCCopyLayerToLayer(SplineChar *sc, int from, int to);
 
 extern int hasFreeType(void);
 extern int hasFreeTypeDebugger(void);
@@ -2776,6 +2786,7 @@ extern int SFIsDuplicatable(SplineFont *sf, SplineChar *sc);
 
 extern void DoAutoSaves(void);
 
+extern void SCClearLayer(SplineChar *sc,int layer);
 extern void SCClearContents(SplineChar *sc);
 extern void SCClearAll(SplineChar *sc);
 extern void BCClearAll(BDFChar *bc);

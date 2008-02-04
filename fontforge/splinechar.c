@@ -298,7 +298,7 @@ int SCNumberPoints(SplineChar *sc) {
     SplinePoint *sp;
     RefChar *ref;
 
-    if ( sc->parent->order2 ) {		/* TrueType and its complexities. I ignore svg here */
+    if ( sc->layers[ly_fore].order2 ) {		/* TrueType and its complexities. I ignore svg here */
 	if ( sc->layers[ly_fore].refs!=NULL ) {
 	    /* if there are references there can't be splines. So if we've got*/
 	    /*  splines mark all point numbers on them as meaningless */
@@ -320,8 +320,11 @@ int SCNumberPoints(SplineChar *sc) {
 	    pnum = SSTtfNumberPoints(sc->layers[ly_fore].splines);
 	}
     } else {		/* cubic (PostScript/SVG) splines */
-	int layer;
-	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+	int layer, last;
+	last = ly_fore;
+	if ( sc->parent->multilayer )
+	    last = sc->layer_cnt-1;
+	for ( layer=ly_fore; layer<=last; ++layer ) {
 	    for ( ss = sc->layers[layer].splines; ss!=NULL; ss=ss->next ) {
 		for ( sp=ss->first; ; ) {
 		    sp->ttfindex = pnum++;
@@ -393,24 +396,33 @@ return( false );
 return( true );
 }
 
-void SCClearContents(SplineChar *sc) {
+void SCClearLayer(SplineChar *sc,int layer) {
     RefChar *refs, *next;
-    int layer;
+
+    SplinePointListsFree(sc->layers[layer].splines);
+    sc->layers[layer].splines = NULL;
+    for ( refs=sc->layers[layer].refs; refs!=NULL; refs = next ) {
+	next = refs->next;
+	SCRemoveDependent(sc,refs);
+    }
+    sc->layers[layer].refs = NULL;
+    ImageListsFree(sc->layers[layer].images);
+    sc->layers[layer].images = NULL;
+}
+
+void SCClearContents(SplineChar *sc) {
+    int layer, ly_last;
 
     if ( sc==NULL )
 return;
     sc->widthset = false;
     if ( sc->parent!=NULL && sc->width!=0 )
 	sc->width = sc->parent->ascent+sc->parent->descent;
-    for ( layer = ly_fore; layer<sc->layer_cnt; ++layer ) {
-	SplinePointListsFree(sc->layers[layer].splines);
-	sc->layers[layer].splines = NULL;
-	for ( refs=sc->layers[layer].refs; refs!=NULL; refs = next ) {
-	    next = refs->next;
-	    SCRemoveDependent(sc,refs);
-	}
-	sc->layers[layer].refs = NULL;
-    }
+    ly_last = ly_fore;
+    if ( sc->parent!=NULL && sc->parent->multilayer )
+	ly_last = sc->layer_cnt-1;
+    for ( layer = ly_fore; layer<=ly_last; ++layer )
+	SCClearLayer(sc,layer);
     AnchorPointsFree(sc->anchor);
     sc->anchor = NULL;
     StemInfosFree(sc->hstem); sc->hstem = NULL;
@@ -449,50 +461,41 @@ void SCClearBackground(SplineChar *sc) {
 
     if ( sc==NULL )
 return;
-    if ( sc->layers[0].splines==NULL && sc->layers[ly_back].images==NULL )
+    if ( sc->layers[0].splines==NULL && sc->layers[ly_back].images==NULL &&
+	    sc->layers[0].refs==NULL )
 return;
     SCPreserveBackground(sc);
-    SplinePointListsFree(sc->layers[0].splines);
-    sc->layers[0].splines = NULL;
-    ImageListsFree(sc->layers[ly_back].images);
-    sc->layers[ly_back].images = NULL;
+    SCClearLayer(sc,ly_back);
     SCOutOfDateBackground(sc);
     SCCharChangedUpdate(sc);
 }
 
-void SCCopyFgToBg(SplineChar *sc, int show) {
-    SplinePointList *fore, *end;
+void SCCopyLayerToLayer(SplineChar *sc, int from, int to) {
+    SplinePointList *fore, *temp;
+    RefChar *ref;
 
-    SCPreserveBackground(sc);
-    fore = SplinePointListCopy(sc->layers[ly_fore].splines);
-    if ( fore!=NULL ) {
-	SplinePointListsFree(sc->layers[ly_back].splines);
-	sc->layers[ly_back].splines = NULL;
-	for ( end = fore; end->next!=NULL; end = end->next );
-	end->next = sc->layers[ly_back].splines;
-	sc->layers[ly_back].splines = fore;
-	if ( show )
-	    SCCharChangedUpdate(sc);
+    SCPreserveLayer(sc,to,false);
+    SCClearLayer(sc,to);
+
+    fore = SplinePointListCopy(sc->layers[from].splines);
+    if ( !sc->layers[from].order2 && sc->layers[to].order2 ) {
+	temp = SplineSetsTTFApprox(fore);
+	SplinePointListsFree(fore);
+	fore = temp;
+    } else if ( sc->layers[from].order2 && !sc->layers[to].order2 ) {
+	temp = SplineSetsPSApprox(fore);
+	SplinePointListsFree(fore);
+	fore = temp;
     }
-}
+    sc->layers[to].splines = fore;
 
-#ifdef FONTFORGE_CONFIG_COPY_BG_TO_FG
-void SCCopyBgToFg(SplineChar *sc, int show) {
-    SplinePointList *back, *end;
-
-    SCPreserveState(sc, true);
-    back = SplinePointListCopy(sc->layers[ly_back].splines);
-    if ( back!=NULL ) {
-	SplinePointListsFree(sc->layers[ly_fore].splines);
-	sc->layers[ly_fore].splines = NULL;
-	for ( end = back; end->next!=NULL; end = end->next );
-	end->next = sc->layers[ly_fore].splines;
-	sc->layers[ly_fore].splines = back;
-	if ( show )
-	    SCCharChangedUpdate(sc);
+    sc->layers[to].refs = RefCharsCopyState(sc,from);
+    for ( ref = sc->layers[to].refs; ref!=NULL; ref=ref->next ) {
+	SCReinstanciateRefChar(sc,ref,to);
+	SCMakeDependent(sc,ref->sc);
     }
+    SCCharChangedUpdate(sc);
 }
-#endif /* FONTFORGE_CONFIG_COPY_BG_TO_FG */
 
 int BpColinear(BasePoint *first, BasePoint *mid, BasePoint *last) {
     BasePoint dist_f, unit_f, dist_l, unit_l;
@@ -722,7 +725,7 @@ void SCRound2Int(SplineChar *sc,real factor) {
     AnchorPoint *ap;
     StemInfo *stems;
     real old, new;
-    int layer;
+    int layer, last;
 
     for ( stems = sc->hstem; stems!=NULL; stems=stems->next ) {
 	old = stems->start+stems->width;
@@ -741,7 +744,10 @@ void SCRound2Int(SplineChar *sc,real factor) {
 	    SplineSetsChangeCoord(sc->layers[ly_fore].splines,old,new,false,sc->inspiro);
     }
 
-    for ( layer = ly_fore; layer<sc->layer_cnt; ++layer ) {
+    last = ly_fore;
+    if ( sc->parent->multilayer )
+	last = sc->layer_cnt-1;
+    for ( layer = ly_fore; layer<=last; ++layer ) {
 	SplineSetsRound2Int(sc->layers[layer].splines,factor,sc->inspiro,false);
 	for ( r=sc->layers[layer].refs; r!=NULL; r=r->next ) {
 	    r->transform[4] = rint(r->transform[4]*factor)/factor;
@@ -926,7 +932,7 @@ return( false );
 	    RefChar *ref;
 
 	    for ( scl=sc->dependents; scl!=NULL; scl=scl->next ) {
-		for ( layer=ly_fore; layer<scl->sc->layer_cnt; ++layer )
+		for ( layer=ly_back; layer<scl->sc->layer_cnt; ++layer )
 		    for ( ref = scl->sc->layers[layer].refs; ref!=NULL; ref=ref->next )
 			if ( ref->sc==sc )
 			    ref->unicode_enc = unienc;
@@ -970,21 +976,24 @@ return( true );
 
 void RevertedGlyphReferenceFixup(SplineChar *sc, SplineFont *sf) {
     RefChar *refs, *prev, *next;
+    int layer;
 
-    for ( prev=NULL, refs = sc->layers[ly_fore].refs ; refs!=NULL; refs = next ) {
-	next = refs->next;
-	if ( refs->orig_pos<sf->glyphcnt && sf->glyphs[refs->orig_pos]!=NULL ) {
-	    prev = refs;
-	    refs->sc = sf->glyphs[refs->orig_pos];
-	    refs->unicode_enc = refs->sc->unicodeenc;
-	    SCReinstanciateRefChar(sc,refs);
-	    SCMakeDependent(sc,refs->sc);
-	} else {
-	    if ( prev==NULL )
-		sc->layers[ly_fore].refs = next;
-	    else
-		prev->next = next;
-	    RefCharFree(refs);
+    for ( layer = 0; layer<sc->layer_cnt; ++layer ) {
+	for ( prev=NULL, refs = sc->layers[layer].refs ; refs!=NULL; refs = next ) {
+	    next = refs->next;
+	    if ( refs->orig_pos<sf->glyphcnt && sf->glyphs[refs->orig_pos]!=NULL ) {
+		prev = refs;
+		refs->sc = sf->glyphs[refs->orig_pos];
+		refs->unicode_enc = refs->sc->unicodeenc;
+		SCReinstanciateRefChar(sc,refs,layer);
+		SCMakeDependent(sc,refs->sc);
+	    } else {
+		if ( prev==NULL )
+		    sc->layers[layer].refs = next;
+		else
+		    prev->next = next;
+		RefCharFree(refs);
+	    }
 	}
     }
 }

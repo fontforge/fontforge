@@ -496,6 +496,9 @@ static SplinePoint *CvtDataToSplines(QPoint *data,int qfirst,int qlast,SplinePoi
 	end = SplinePointCreate(data[i].bp.x,data[i].bp.y);
 	start->nextcp = end->prevcp = data[i-1].cp;
 	start->nonextcp = end->noprevcp = false;
+	if (( data[i-1].cp.x == data[i].bp.x && data[i-1].cp.y == data[i].bp.y ) ||
+		( data[i-1].cp.x == start->me.x && data[i-1].cp.y == start->me.y ))
+	    start->nonextcp = end->noprevcp = true;
 	SplineMake2(start,end);
 	start = end;
     }
@@ -923,41 +926,48 @@ SplineSet *SplineSetsConvertOrder(SplineSet *ss, int to_order2) {
 return( new );
 }
 
-void SCConvertToOrder2(SplineChar *sc) {
+void SCConvertLayerToOrder2(SplineChar *sc,int layer) {
     SplineSet *new;
 
     if ( sc==NULL )
 return;
 
-    new = SplineSetsTTFApprox(sc->layers[ly_fore].splines);
-    SplinePointListsFree(sc->layers[ly_fore].splines);
-    sc->layers[ly_fore].splines = new;
+    new = SplineSetsTTFApprox(sc->layers[layer].splines);
+    SplinePointListsFree(sc->layers[layer].splines);
+    sc->layers[layer].splines = new;
 
-    new = SplineSetsTTFApprox(sc->layers[ly_back].splines);
-    SplinePointListsFree(sc->layers[ly_back].splines);
-    sc->layers[ly_back].splines = new;
-
-    UndoesFree(sc->layers[ly_fore].undoes); UndoesFree(sc->layers[ly_back].undoes);
-    UndoesFree(sc->layers[ly_fore].redoes); UndoesFree(sc->layers[ly_back].redoes);
-    sc->layers[ly_fore].undoes = sc->layers[ly_back].undoes = NULL;
-    sc->layers[ly_fore].redoes = sc->layers[ly_back].redoes = NULL;
+    UndoesFree(sc->layers[layer].undoes);
+    UndoesFree(sc->layers[layer].redoes);
+    sc->layers[layer].undoes = NULL;
+    sc->layers[layer].redoes = NULL;
+    sc->layers[layer].order2 = true;
 
     MinimumDistancesFree(sc->md); sc->md = NULL;
 }
 
-static void SCConvertRefs(SplineChar *sc) {
+void SCConvertToOrder2(SplineChar *sc) {
+    int layer;
+
+    if ( sc==NULL )
+return;
+
+    for ( layer=ly_back; layer<sc->layer_cnt; ++layer )
+	SCConvertLayerToOrder2(sc,layer);
+}
+
+static void SCConvertRefs(SplineChar *sc,int layer) {
     RefChar *rf;
 
     sc->ticked = true;
-    for ( rf=sc->layers[ly_fore].refs; rf!=NULL; rf=rf->next ) {
+    for ( rf=sc->layers[layer].refs; rf!=NULL; rf=rf->next ) {
 	if ( !rf->sc->ticked )
-	    SCConvertRefs(rf->sc);
-	SCReinstanciateRefChar(sc,rf);	/* Conversion is done by reinstanciating */
+	    SCConvertRefs(rf->sc,layer);
+	SCReinstanciateRefChar(sc,rf,layer);	/* Conversion is done by reinstanciating */
 		/* Since the base thing will have been converted, all we do is copy its data */
     }
 }
 
-void SFConvertToOrder2(SplineFont *_sf) {
+void SFConvertLayerToOrder2(SplineFont *_sf,int layer) {
     int i, k;
     SplineSet *new;
     SplineFont *sf;
@@ -967,15 +977,16 @@ void SFConvertToOrder2(SplineFont *_sf) {
     do {
 	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
 	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
-	    SCConvertToOrder2(sf->glyphs[i]);
+	    SCConvertLayerToOrder2(sf->glyphs[i],layer);
 	    sf->glyphs[i]->ticked = false;
 	    sf->glyphs[i]->changedsincelasthinted = false;
 	}
 	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL && !sf->glyphs[i]->ticked )
-	    SCConvertRefs(sf->glyphs[i]);
+	    SCConvertRefs(sf->glyphs[i],layer);
 
-	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
-	    SCNumberPoints(sf->glyphs[i]);
+	if ( layer==ly_fore )
+	    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
+		SCNumberPoints(sf->glyphs[i]);
 
 	new = SplineSetsTTFApprox(sf->grid.splines);
 	SplinePointListsFree(sf->grid.splines);
@@ -983,42 +994,72 @@ void SFConvertToOrder2(SplineFont *_sf) {
 
 	UndoesFree(sf->grid.undoes); UndoesFree(sf->grid.redoes);
 	sf->grid.undoes = sf->grid.redoes = NULL;
-	sf->order2 = true;
+	sf->layers[layer].order2 = true;
 	++k;
     } while ( k<_sf->subfontcnt );
-    _sf->order2 = true;
+    _sf->layers[layer].order2 = true;
 }
-    
-void SCConvertToOrder3(SplineChar *sc) {
+
+void SFConvertToOrder2(SplineFont *_sf) {
+    int k, layer;
+    SplineSet *new;
+    SplineFont *sf;
+
+    if ( _sf->cidmaster!=NULL ) _sf=_sf->cidmaster;
+    for ( layer=0; layer<_sf->layer_cnt; ++layer )
+	SFConvertLayerToOrder2(_sf,layer);
+    k = 0;
+    do {
+	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
+
+	new = SplineSetsTTFApprox(sf->grid.splines);
+	SplinePointListsFree(sf->grid.splines);
+	sf->grid.splines = new;
+
+	UndoesFree(sf->grid.undoes); UndoesFree(sf->grid.redoes);
+	sf->grid.undoes = sf->grid.redoes = NULL;
+	sf->grid.order2 = true;
+	++k;
+    } while ( k<_sf->subfontcnt );
+    _sf->grid.order2 = true;
+}
+
+void SCConvertLayerToOrder3(SplineChar *sc,int layer) {
     SplineSet *new;
     RefChar *ref;
     AnchorPoint *ap;
 
-    new = SplineSetsPSApprox(sc->layers[ly_fore].splines);
-    SplinePointListsFree(sc->layers[ly_fore].splines);
-    sc->layers[ly_fore].splines = new;
+    new = SplineSetsPSApprox(sc->layers[layer].splines);
+    SplinePointListsFree(sc->layers[layer].splines);
+    sc->layers[layer].splines = new;
 
-    new = SplineSetsPSApprox(sc->layers[ly_back].splines);
-    SplinePointListsFree(sc->layers[ly_back].splines);
-    sc->layers[ly_back].splines = new;
-
-    UndoesFree(sc->layers[ly_fore].undoes); UndoesFree(sc->layers[ly_back].undoes);
-    UndoesFree(sc->layers[ly_fore].redoes); UndoesFree(sc->layers[ly_back].redoes);
-    sc->layers[ly_fore].undoes = sc->layers[ly_back].undoes = NULL;
-    sc->layers[ly_fore].redoes = sc->layers[ly_back].redoes = NULL;
+    UndoesFree(sc->layers[layer].undoes);
+    UndoesFree(sc->layers[layer].redoes);
+    sc->layers[layer].undoes = NULL;
+    sc->layers[layer].redoes = NULL;
+    sc->layers[layer].order2 = false;
 
     MinimumDistancesFree(sc->md); sc->md = NULL;
 
     /* OpenType/PostScript fonts don't support point matching to position */
     /*  references or anchors */
-    for ( ref = sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
+    for ( ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next )
 	ref->point_match = false;
-    for ( ap = sc->anchor; ap!=NULL; ap=ap->next )
-	ap->has_ttf_pt = false;
+    if ( layer==ly_fore ) {
+	for ( ap = sc->anchor; ap!=NULL; ap=ap->next )
+	    ap->has_ttf_pt = false;
 
-    free(sc->ttf_instrs);
-    sc->ttf_instrs = NULL; sc->ttf_instrs_len = 0;
-    /* If this character has any cv's showing instructions then remove the instruction pane!!!!! */
+	free(sc->ttf_instrs);
+	sc->ttf_instrs = NULL; sc->ttf_instrs_len = 0;
+	/* If this character has any cv's showing instructions then remove the instruction pane!!!!! */
+    }
+}
+
+void SCConvertToOrder3(SplineChar *sc) {
+    int layer;
+
+    for ( layer=0; layer<sc->layer_cnt; ++layer )
+	SCConvertLayerToOrder3(sc,layer);
 }
 
 void SCConvertOrder(SplineChar *sc, int to_order2) {
@@ -1028,9 +1069,8 @@ void SCConvertOrder(SplineChar *sc, int to_order2) {
 	SCConvertToOrder3(sc);
 }
 
-void SFConvertToOrder3(SplineFont *_sf) {
+void SFConvertLayerToOrder3(SplineFont *_sf,int layer) {
     int i, k;
-    SplineSet *new;
     SplineFont *sf;
 
     if ( _sf->cidmaster!=NULL ) _sf=_sf->cidmaster;
@@ -1038,12 +1078,32 @@ void SFConvertToOrder3(SplineFont *_sf) {
     do {
 	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
 	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
-	    SCConvertToOrder3(sf->glyphs[i]);
+	    SCConvertLayerToOrder3(sf->glyphs[i],layer);
 	    sf->glyphs[i]->ticked = false;
 	    sf->glyphs[i]->changedsincelasthinted = true;
 	}
 	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL && !sf->glyphs[i]->ticked )
-	    SCConvertRefs(sf->glyphs[i]);
+	    SCConvertRefs(sf->glyphs[i],layer);
+
+	sf->layers[layer].order2 = false;
+	++k;
+    } while ( k<_sf->subfontcnt );
+    _sf->layers[layer].order2 = false;
+}
+
+void SFConvertToOrder3(SplineFont *_sf) {
+    int k;
+    SplineSet *new;
+    SplineFont *sf;
+    int layer;
+
+    if ( _sf->cidmaster!=NULL ) _sf=_sf->cidmaster;
+    for ( layer=0; layer<_sf->layer_cnt; ++layer )
+	SFConvertLayerToOrder2(_sf,layer);
+
+    k = 0;
+    do {
+	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
 
 	new = SplineSetsPSApprox(sf->grid.splines);
 	SplinePointListsFree(sf->grid.splines);
@@ -1051,14 +1111,10 @@ void SFConvertToOrder3(SplineFont *_sf) {
 
 	UndoesFree(sf->grid.undoes); UndoesFree(sf->grid.redoes);
 	sf->grid.undoes = sf->grid.redoes = NULL;
-
-	TtfTablesFree(sf->ttf_tables);
-	sf->ttf_tables = NULL;
-
-	sf->order2 = false;
+	sf->grid.order2 = false;
 	++k;
     } while ( k<_sf->subfontcnt );
-    _sf->order2 = false;
+    _sf->grid.order2 = false;
 }
 
 /* ************************************************************************** */

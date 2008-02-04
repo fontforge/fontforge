@@ -1046,10 +1046,14 @@ return( notdefpos );
 int SCDrawsSomething(SplineChar *sc) {
     int layer,l;
     RefChar *ref;
+    int first, last;
 
     if ( sc==NULL )
 return( false );
-    for ( layer = ly_fore; layer<sc->layer_cnt; ++layer ) {
+    first = last = ly_fore;
+    if ( sc->parent->multilayer )
+	last = sc->layer_cnt-1;
+    for ( layer = first; layer<=last; ++layer ) {
 	if ( sc->layers[layer].splines!=NULL || sc->layers[layer].images!=NULL )
 return( true );
 	for ( ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next )

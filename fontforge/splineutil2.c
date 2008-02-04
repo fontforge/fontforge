@@ -2509,8 +2509,13 @@ void SPLsStartToLeftmost(SplineChar *sc) {
     if ( sc==NULL )
 return;
 
-    for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
-	for ( ss = sc->layers[layer].splines; ss!=NULL; ss=ss->next )
+    if ( sc->parent->multilayer ) {
+	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+	    for ( ss = sc->layers[layer].splines; ss!=NULL; ss=ss->next )
+		SPLStartToLeftmost(sc,ss,&changed);
+	}
+    } else {
+	for ( ss = sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next )
 	    SPLStartToLeftmost(sc,ss,&changed);
     }
     if ( changed )
@@ -3126,6 +3131,12 @@ SplineFont *SplineFontEmpty(void) {
     sf->for_new_glyphs = DefaultNameListForNewFonts();
     time(&now);
     sf->creationtime = sf->modificationtime = now;
+
+    sf->layer_cnt = 2;
+    sf->layers = gcalloc(2,sizeof(LayerInfo));
+    sf->layers[0].name = copy("Back");
+    sf->layers[1].name = copy("Fore");
+    
 return( sf );
 }
 
@@ -3163,7 +3174,6 @@ SplineFont *SplineFontBlank(int charcnt) {
     sf->glyphmax = charcnt;
     sf->glyphs = gcalloc(charcnt,sizeof(SplineChar *));
     sf->pfminfo.fstype = -1;
-    sf->order2 = false;
     sf->use_typo_metrics = true;
 return( sf );
 }
@@ -3175,7 +3185,9 @@ SplineFont *SplineFontNew(void) {
     sf = SplineFontBlank(enclen);
     sf->onlybitmaps = true;
     sf->new = true;
-    sf->order2 = new_fonts_are_order2;
+    sf->layers[ly_back].order2 = new_fonts_are_order2;
+    sf->layers[ly_fore].order2 = new_fonts_are_order2;
+    sf->grid.order2 = new_fonts_are_order2;
 
     sf->map = EncMapNew(enclen,enclen,default_encoding);
 return( sf );

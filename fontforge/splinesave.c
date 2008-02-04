@@ -891,11 +891,7 @@ return( true );
 static int AnyRefs(SplineChar *sc) {
     int i;
 
-    for ( i=ly_fore; i<sc->layer_cnt; ++i )
-	if ( sc->layers[i].refs!=NULL )
-return( true );
-
-return( false );
+return( sc->layers[ly_fore].refs!=NULL );
 }
 
 static void refmoveto(GrowBuf *gb,BasePoint *current,BasePoint rpos[MmMax],
@@ -1470,7 +1466,7 @@ static void RSC2PS1(GrowBuf *gb, SplineChar *base[MmMax],SplineChar *rsc[MmMax],
 	    spls[i] = freeme[i] = SPLCopyTranslatedHintMasks(spls[i],base[i],rsc[i],&trans[i]);
     }
     _CvtPsSplineSet(gb,spls,instance_count,current,round,hdb,
-	    base[0]->parent->order2,base[0]->parent->strokedfont);
+	    base[0]->layers[ly_fore].order2,base[0]->parent->strokedfont);
     if ( base[0]!=rsc[0] )
 	for ( i=0; i<instance_count; ++i )
 	    SplinePointListsFree(freeme[i]);
@@ -1487,7 +1483,7 @@ static void RSC2PS1(GrowBuf *gb, SplineChar *base[MmMax],SplineChar *rsc[MmMax],
 		    refs[0]->transform[1]==0 && refs[0]->transform[2]==0 )
 		CallTransformedHintSubr(gb,hdb,base,refs,trans,instance_count,round);
 	    _CvtPsSplineSet(gb,spls,instance_count,current,round,hdb,
-		    base[0]->parent->order2,base[0]->parent->strokedfont);
+		    base[0]->layers[ly_fore].order2,base[0]->parent->strokedfont);
 	    for ( i=0; i<instance_count; ++i )
 		SplinePointListsFree(freeme[i]);
 	} else if ( refs[0]->sc->ttf_glyph!=0x7fff &&
@@ -2953,7 +2949,7 @@ static void RSC2PS2(GrowBuf *gb, SplineChar *base,SplineChar *rsc,
     freeme = NULL; temp = rsc->layers[ly_fore].splines;
     if ( base!=rsc )
 	temp = freeme = SPLCopyTranslatedHintMasks(temp,base,rsc,trans);
-    CvtPsSplineSet2(gb,temp,hdb,rsc->parent->order2,round);
+    CvtPsSplineSet2(gb,temp,hdb,rsc->layers[ly_fore].order2,round);
     SplinePointListsFree(freeme);
 
     for ( r = rsc->layers[ly_fore].refs; r!=NULL; r = r->next ) if ( r!=unsafe ) {
@@ -2965,7 +2961,7 @@ static void RSC2PS2(GrowBuf *gb, SplineChar *base,SplineChar *rsc,
 	    if ( !hdb->donefirsthm )
 		DummyHintmask(gb,hdb);
 	    temp = SPLCopyTransformedHintMasks(r,base,trans);
-	    CvtPsSplineSet2(gb,temp,hdb,rsc->parent->order2,round);
+	    CvtPsSplineSet2(gb,temp,hdb,rsc->layers[ly_fore].order2,round);
 	    SplinePointListsFree(temp);
 	} else if ( r->sc->lsidebearing!=0x7fff &&
 		((flags&ps_flag_nohints) ||

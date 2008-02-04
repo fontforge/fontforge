@@ -2064,10 +2064,16 @@ void FVStrokeItScript(void *_fv, StrokeInfo *si) {
 		!sc->ticked && fv->selected[i] ) {
 	    sc->ticked = true;
 	    SCPreserveState(sc,false);
-	    for ( layer = ly_fore; layer<sc->layer_cnt; ++layer ) {
-		temp = SSStroke(sc->layers[layer].splines,si,sc);
-		SplinePointListsFree( sc->layers[layer].splines );
-		sc->layers[layer].splines = temp;
+	    if ( sc->parent->multilayer ) {
+		for ( layer = ly_fore; layer<sc->layer_cnt; ++layer ) {
+		    temp = SSStroke(sc->layers[layer].splines,si,sc);
+		    SplinePointListsFree( sc->layers[layer].splines );
+		    sc->layers[layer].splines = temp;
+		}
+	    } else {
+		temp = SSStroke(sc->layers[ly_fore].splines,si,sc);
+		SplinePointListsFree( sc->layers[ly_fore].splines );
+		sc->layers[ly_fore].splines = temp;
 	    }
 	    SCCharChangedUpdate(sc);
 	    if ( !ff_progress_next())
