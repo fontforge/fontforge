@@ -425,7 +425,7 @@ return;
 	}
     } else
 	IError("Did not fix: %d", p->explaining );
-    if ( p->sc->parent->order2 ) {
+    if ( p->sc->layers[ly_fore].order2 ) {
 	if ( ncp_changed )
 	    SplinePointNextCPChanged2(sp);
 	if ( pcp_changed )
@@ -4022,7 +4022,7 @@ static void VWMenuConnect(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 		SCPreserveState(sc,false);
 		changed = true;
 	    }
-	    SplineMake(ss->last,ss->first,sc->parent->order2);
+	    SplineMake(ss->last,ss->first,sc->layers[ly_fore].order2);
 	    ss->last = ss->first;
 	}
     }
@@ -4062,7 +4062,7 @@ static void VWMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SplineChar *sc = vw->sc;
     int vs = sc->validation_state;
 
-    if ( !SCRoundToCluster(sc,-2,false,.03,.12))
+    if ( !SCRoundToCluster(sc,ly_all,false,.03,.12))
 	SCPreserveState(sc,false);
     sc->layers[ly_fore].splines = SplineSetRemoveOverlap(sc,sc->layers[ly_fore].splines,over_remove);
     SCCharChangedUpdate(sc);
@@ -4314,7 +4314,7 @@ static void VWMenuManyConnect(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 			SCPreserveState(sc,false);
 			changed = true;
 		    }
-		    SplineMake(ss->last,ss->first,sc->parent->order2);
+		    SplineMake(ss->last,ss->first,sc->layers[ly_fore].order2);
 		    ss->last = ss->first;
 		}
 	    }
@@ -4344,7 +4344,7 @@ static void VWMenuManyOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    /* If it's only got references, I could inline them, since the */
 	    /*  intersection would occur between two refs. But that seems */
 	    /*  to extreme to do to an unsuspecting user */
-	    if ( !SCRoundToCluster(sc,-2,false,.03,.12))
+	    if ( !SCRoundToCluster(sc,ly_all,false,.03,.12))
 		SCPreserveState(sc,false);
 	    sc->layers[ly_fore].splines = SplineSetRemoveOverlap(sc,sc->layers[ly_fore].splines,over_remove);
 	    SCCharChangedUpdate(sc);
@@ -4776,7 +4776,7 @@ return( vs_maskps );
 return( vs_maskttf );
     else
 return( sf->subfontcnt!=0 || sf->cidmaster!=NULL ? vs_maskcid :
-	sf->order2 ? vs_maskttf : vs_maskps );
+	sf->layers[ly_fore].order2 ? vs_maskttf : vs_maskps );
 }
 
 void SFValidationWindow(SplineFont *sf,enum fontformat format) {

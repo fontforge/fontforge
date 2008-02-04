@@ -1210,7 +1210,7 @@ return( NULL );
 
     memset(&ec,'\0',sizeof(ec));
     ec.fromtype3 = true;
-    ec.sc = sc = SplineCharCreate();
+    ec.sc = sc = SplineCharCreate(2);
     sc->name = copy(glyphname);
 
     _InterpretPdf(glyph_stream,pc,&ec);

@@ -1005,7 +1005,13 @@ static void TPDInit(TilePathDlg *tpd,SplineFont *sf) {
     tpd->dummy_sf.origname = "dummy";
     tpd->dummy_sf.ascent = sf->ascent;
     tpd->dummy_sf.descent = sf->descent;
-    tpd->dummy_sf.order2 = sf->order2;
+    tpd->dummy_sf.layers = tpd->layerinfo;
+    tpd->dummy_sf.layer_cnt = 2;
+    tpd->layerinfo[ly_back].order2 = sf->layers[ly_back].order2;
+    tpd->layerinfo[ly_back].name = _("Back");
+    tpd->layerinfo[ly_fore].order2 = sf->layers[ly_fore].order2;
+    tpd->layerinfo[ly_fore].name = _("Fore");
+    tpd->dummy_sf.grid.order2 = sf->grid.order2;
     tpd->dummy_sf.anchor = NULL;
 
     tpd->dummy_sf.fv = (FontViewBase *) &tpd->dummy_fv;
@@ -1275,7 +1281,7 @@ return;
 return;
 
     CVPreserveState((CharViewBase *) cv);
-    TileIt(&cv->b.layerheads[cv->b.drawmode]->splines,&td, !anypoints,cv->b.sc->parent->order2);
+    TileIt(&cv->b.layerheads[cv->b.drawmode]->splines,&td, !anypoints,cv->b.layerheads[cv->b.drawmode]->order2);
     CVCharChangedUpdate(&cv->b);
     TDFree(&td);
     cv->lastselpt = NULL;
@@ -1291,7 +1297,7 @@ return;
 return;
 
     SCPreserveState(sc,false);
-    TileIt(&sc->layers[ly_fore].splines,&td, true, sc->parent->order2);
+    TileIt(&sc->layers[ly_fore].splines,&td, true, sc->layers[ly_fore].order2);
     SCCharChangedUpdate(sc);
     TDFree(&td);
 }
@@ -1318,7 +1324,7 @@ return;
 		sc->layers[ly_fore].splines!=NULL ) {
 	    sc->ticked = true;
 	    SCPreserveState(sc,false);
-	    TileIt(&sc->layers[ly_fore].splines,&td, true, fv->b.sf->order2);
+	    TileIt(&sc->layers[ly_fore].splines,&td, true, fv->b.sf->layers[ly_fore].order2);
 	    SCCharChangedUpdate(sc);
 	}
     TDFree(&td);

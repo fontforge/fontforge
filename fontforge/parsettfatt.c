@@ -3296,7 +3296,7 @@ return( info->badgids[i] );
 
     if ( info->badgid_cnt>=info->badgid_max )
 	info->badgids = grealloc(info->badgids,(info->badgid_max += 20)*sizeof(SplineChar *));
-    fake = SplineCharCreate();
+    fake = SplineCharCreate(2);
     fake->orig_pos = badgid;
     sprintf( name, "Out-Of-Range-GID-%d", badgid );
     fake->name = copy(name);

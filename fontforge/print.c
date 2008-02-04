@@ -397,7 +397,7 @@ static int pdf_charproc(PI *pi, SplineChar *sc) {
     int ret = pi->next_object;
 #ifdef FONTFORGE_CONFIG_TYPE3
     long streamstart, streamlength;
-    int i;
+    int i,last;
 
     pdf_addobject(pi);
     fprintf( pi->out, "<< /Length %d 0 R >>\n", pi->next_object );
@@ -405,7 +405,10 @@ static int pdf_charproc(PI *pi, SplineChar *sc) {
     streamstart = ftell(pi->out);
 
     /* In addition to drawing the glyph, we must provide some metrics */
-    for ( i=ly_fore; i<sc->layer_cnt; ++i )
+    last = ly_fore;
+    if ( sc->parent->multilayer )
+	last = sc->layer_cnt-1;
+    for ( i=ly_fore; i<=last; ++i )
 	if ( (sc->layers[i].dofill && sc->layers[i].fill_brush.col!=COLOR_INHERITED) ||
 		(sc->layers[i].dostroke && sc->layers[i].stroke_pen.brush.col!=COLOR_INHERITED))
     break;
@@ -1018,7 +1021,7 @@ static int PIDownloadFont(PI *pi, SplineFont *sf, EncMap *map) {
     sfbit->wastwobyte = sfbit->twobyte;
     sfbit->isunicode = map->enc->is_unicodebmp;
     sfbit->isunicodefull = map->enc->is_unicodefull;
-    sfbit->istype42cid = sf->order2;
+    sfbit->istype42cid = sf->layers[ly_fore].order2;
     sfbit->iscid = sf->subfontcnt!=0 || sfbit->istype42cid;
     if ( pi->pointsize==0 )
 	pi->pointsize = sfbit->iscid && !sfbit->istype42cid?18:20;		/* 18 fits 20 across, 20 fits 16 */

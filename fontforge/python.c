@@ -3601,7 +3601,9 @@ return( layer );
 
 static PyFF_Layer *LayerFromLayer(Layer *inlayer,PyFF_Layer *ret) {
     /* May want to copy fills and pens someday!! */
-return( LayerFromSS(inlayer->splines,ret));
+    PyFF_Layer *layer = LayerFromSS(inlayer->splines,ret);
+    layer->is_quadratic = inlayer->order2;
+return( layer );
 }
 
 /* ************************************************************************** */
@@ -3673,7 +3675,7 @@ return( NULL );
     }
     ss = sc->layers[ly_fore].splines;
     sp = SplinePointCreate(x,y);
-    SplineMake(ss->last,sp,sc->parent->order2);
+    SplineMake(ss->last,sp,sc->layers[ly_fore].order2);
     ss->last = sp;
 
 Py_RETURN( self );
@@ -3689,7 +3691,7 @@ static PyObject *PyFFGlyphPen_curveTo(PyObject *self, PyObject *args) {
 	PyErr_Format(PyExc_EnvironmentError, "The curveTo operator must be preceded by a moveTo operator" );
 return( NULL );
     }
-    if ( sc->parent->order2 ) {
+    if ( sc->layers[ly_fore].order2 ) {
 	if ( !PyArg_ParseTuple( args, "(dd)(dd)", &x[1], &y[1], &x[2], &y[2] )) {
 	    PyErr_Clear();
 	    if ( !PyArg_ParseTuple( args, "dddd", &x[1], &y[1], &x[2], &y[2] ))
@@ -3709,7 +3711,7 @@ return( NULL );
     sp->noprevcp = false;
     ss->last->nextcp.x = x[0], ss->last->nextcp.y = y[0];
     ss->last->nonextcp = false;
-    SplineMake(ss->last,sp,sc->parent->order2);
+    SplineMake(ss->last,sp,sc->layers[ly_fore].order2);
     ss->last = sp;
 
 Py_RETURN( self );
@@ -3723,7 +3725,7 @@ static PyObject *PyFFGlyphPen_qCurveTo(PyObject *self, PyObject *args) {
     int len, i;
     PyObject *pt_tuple;
 
-    if ( !sc->parent->order2 ) {
+    if ( !sc->layers[ly_fore].order2 ) {
 	PyErr_Format(PyExc_EnvironmentError, "qCurveTo only applies to quadratic fonts" );
 return( NULL );
     }
@@ -3834,7 +3836,7 @@ return( NULL );
 	ss->first->prev = ss->last->prev;
 	SplinePointFree(ss->last);
     } else {
-	SplineMake(ss->last,ss->first,sc->parent->order2);
+	SplineMake(ss->last,ss->first,sc->layers[ly_fore].order2);
     }
     ss->last = ss->first;
 	
@@ -4384,8 +4386,6 @@ return( NULL );
     else
 	layer = &sc->layers[layeri];
     ly = LayerFromLayer(layer,NULL);
-    ly->is_quadratic = sc->parent->order2;	/* If the layer is empty we won't know */
-
 return( (PyObject * ) ly );
 }
 
@@ -4412,8 +4412,8 @@ return( -1 );
 	PyErr_Format(PyExc_TypeError, "Argument must be a layer or a contour" );
 return( -1 );
     }
-    if ( sc->parent->order2!=isquad ) {
-	if ( sc->parent->order2 )
+    if ( layer->order2!=isquad ) {
+	if ( layer->order2 )
 	    newss = SplineSetsTTFApprox(ss);
 	else
 	    newss = SplineSetsPSApprox(ss);
@@ -8004,8 +8004,9 @@ return -1;
 return(0);
 }
 
+/* Not really the right question now... but this is the closest we come */
 static PyObject *PyFF_Font_get_is_quadratic(PyFF_Font *self,void *closure) {
-return( Py_BuildValue("i", self->fv->sf->order2));
+return( Py_BuildValue("i", self->fv->sf->layers[ly_fore].order2));
 }
 
 static int PyFF_Font_set_is_quadratic(PyFF_Font *self,PyObject *value,void *closure) {
@@ -8019,7 +8020,7 @@ return( -1 );
     order2 = PyInt_AsLong(value);
     if ( PyErr_Occurred()!=NULL )
 return( -1 );
-    if ( sf->order2==order2 )
+    if ( sf->layers[ly_fore].order2==order2 )
 	/* Do Nothing */;
     else if ( order2 ) {
 	SFCloseAllInstrs(sf);
@@ -8056,8 +8057,8 @@ return( -1 );
     sf = self->fv->sf;
     guide = &sf->grid;
     SplinePointListsFree(guide->splines);
-    if ( sf->order2!=isquad ) {
-	if ( sf->order2 )
+    if ( sf->grid.order2!=isquad ) {
+	if ( sf->grid.order2 )
 	    newss = SplineSetsTTFApprox(ss);
 	else
 	    newss = SplineSetsPSApprox(ss);
@@ -10353,7 +10354,7 @@ return( NULL );
 
     for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = sf->glyphs[gid];
-	SCRoundToCluster( sc,-2,false,within,max);
+	SCRoundToCluster( sc,ly_all,false,within,max);
     }
 Py_RETURN( self );
 }

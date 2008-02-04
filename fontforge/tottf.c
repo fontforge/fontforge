@@ -649,14 +649,14 @@ static SplineSet *SCttfApprox(SplineChar *sc) {
     RefChar *ref;
 
     for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
-	tss = sc->parent->order2 ? SplinePointListCopy1(ss) : SSttfApprox(ss);
+	tss = sc->layers[ly_fore].order2 ? SplinePointListCopy1(ss) : SSttfApprox(ss);
 	if ( head==NULL ) head = tss;
 	else last->next = tss;
 	last = tss;
     }
     for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
 	for ( ss=ref->layers[0].splines; ss!=NULL; ss=ss->next ) {
-	    tss = sc->parent->order2 ? SplinePointListCopy1(ss) : SSttfApprox(ss);
+	    tss = sc->layers[ly_fore].order2 ? SplinePointListCopy1(ss) : SSttfApprox(ss);
 	    if ( head==NULL ) head = tss;
 	    else last->next = tss;
 	    last = tss;
@@ -1118,7 +1118,7 @@ static void dumpcomposite(SplineChar *sc, struct glyphinfo *gi) {
 	for ( ss=ref->layers[0].splines; ss!=NULL ; ss=ss->next ) {
 	    ++ctcnt;
 	}
-	if ( sc->parent->order2 )
+	if ( sc->layers[ly_fore].order2 )
 	    ptcnt += sptcnt;
 	else if ( ptcnt>=0 && gi->pointcounts[ref->sc->ttf_glyph==-1?0:ref->sc->ttf_glyph]>=0 )
 	    ptcnt += gi->pointcounts[ref->sc->ttf_glyph==-1?0:ref->sc->ttf_glyph];
@@ -1359,7 +1359,7 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
     ff_progress_next_stage();
 
     if ( !gi->onlybitmaps ) {
-	if ( sf->order2 )
+	if ( sf->layers[ly_fore].order2 )
 	    for ( i=0; i<sf->glyphcnt; ++i ) {
 		SplineChar *sc = sf->glyphs[i];
 		if ( SCWorthOutputting(sc) )
@@ -1438,7 +1438,7 @@ return( false );
 	gi->vmtxlen = ftell(gi->vmtx);
 	if ( gi->vmtxlen&2 ) putshort(gi->vmtx,0);
     }
-    if ( !sf->order2 )
+    if ( !sf->layers[ly_fore].order2 )
 	RefigureCompositeMaxPts(sf,gi);
     free(gi->pointcounts);
 
@@ -5098,7 +5098,9 @@ return( false );
 	}
 	AssignTTFBitGlyph(&at->gi,sf,at->map,bsizes);
     }
-    if ( at->gi.gcnt>=65536 ) {
+    if ( at->gi.gcnt>=65535 ) {
+	/* You might think we could use GID 65535, but it is used as a "No Glyph" */
+	/*  mark in many places (cmap tables, mac substitutions to delete a glyph */
 	ff_post_error(_("Too many glyphs"), _("The 'sfnt' format is currently limited to 65535 glyphs, and your font has %d of them."),
 		at->gi.gcnt );
 	AbortTTF(at,sf);

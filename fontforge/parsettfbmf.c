@@ -133,7 +133,7 @@ return;
     bdfc = chunkalloc(sizeof(BDFChar));
     if ( info->chars!=NULL && gid<info->glyph_cnt ) {
 	if ( info->chars[gid]==NULL ) {
-	    info->chars[gid] = SplineCharCreate();
+	    info->chars[gid] = SplineCharCreate(2);
 	    info->chars[gid]->orig_pos = gid;
 	    info->chars[gid]->unicodeenc = -1;
 	    info->chars[gid]->width = info->chars[gid]->vwidth = info->emsize;

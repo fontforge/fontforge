@@ -210,7 +210,7 @@ static void DumpPyObject( FILE *file, PyObject *value ) {
 /* ************************************************************************** */
 static int _GlifDump(FILE *glif,SplineChar *sc) {
     struct altuni *altuni;
-    int isquad = sc->parent->order2;
+    int isquad = sc->layers[ly_fore].order2;
     SplineSet *spl;
     SplinePoint *sp;
     RefChar *ref;
@@ -390,7 +390,7 @@ return( false );
     PListOutputInteger(plist,"ascender",sf->ascent);
     PListOutputInteger(plist,"descender",-sf->descent);
     PListOutputReal(plist,"italicAngle",sf->italicangle);
-    PListOutputString(plist,"curveType",sf->order2 ? "Quadratic" : "Cubic");
+    PListOutputString(plist,"curveType",sf->layers[ly_fore].order2 ? "Quadratic" : "Cubic");
 return( PListOutputTrailer(plist));
 }
 
@@ -878,7 +878,7 @@ return( NULL );
 	*pt = '\0';
     } else if ( name==NULL )
 	name = copy("nameless");
-    sc = SplineCharCreate();
+    sc = SplineCharCreate(2);
     sc->name = name;
     last = NULL;
 
@@ -1149,7 +1149,7 @@ return;
 	    free((char *) r->sc);
 	    r->sc = rsc;
 	    prev = r;
-	    SCReinstanciateRefChar(sc,r);
+	    SCReinstanciateRefChar(sc,r,ly_fore);
 	}
     }
 }    
@@ -1385,10 +1385,10 @@ return( NULL );
     sf->weight = weight;
     sf->copyright = copyright;
     sf->ascent = as; sf->descent = ds;
-    sf->order2 = false;
+    sf->layers[ly_fore].order2 = false;
     sf->italicangle = ia;
     if ( curve!=NULL && strmatch(curve,"Quadratic")==0 )
-	sf->order2 = true;
+	sf->layers[ly_fore].order2 = sf->layers[ly_back].order2 = sf->grid.order2 = true;
     if ( sf->fontname==NULL )
 	sf->fontname = "Untitled";
     if ( sf->familyname==NULL )
@@ -1404,8 +1404,9 @@ return( NULL );
     UFOHandleKern(sf,basedir,0);
     UFOHandleKern(sf,basedir,1);
 
-    sf->order2 = SFFindOrder(sf);
-    SFSetOrder(sf,sf->order2);
+    sf->layers[ly_fore].order2 = sf->layers[ly_back].order2 = sf->grid.order2 =
+	    SFFindOrder(sf);
+    SFSetOrder(sf,sf->layers[ly_fore].order2);
 
     sf->map = EncMapFromEncoding(sf,FindOrMakeEncoding("Unicode"));
 

@@ -1687,7 +1687,7 @@ return;
 
 static SplineChar *readttfglyph(FILE *ttf,struct ttfinfo *info,int start, int end,int gid) {
     int path_cnt;
-    SplineChar *sc = SplineCharCreate();
+    SplineChar *sc = SplineCharCreate(2);
 
     sc->unicodeenc = -1;
     sc->vwidth = info->emsize;
@@ -4825,7 +4825,7 @@ return( false );
 	    ref->adobe_enc = getAdobeEnc(ref->sc->name);
 	    if ( ref->point_match )
 		ttfPointMatch(chars[i],ref);
-	    SCReinstanciateRefChar(chars[i],ref);
+	    SCReinstanciateRefChar(chars[i],ref,ly_fore);
 	    SCMakeDependent(chars[i],ref->sc);
 	    prev = ref;
 	}
@@ -5119,12 +5119,15 @@ static void NameConsistancyCheck(SplineFont *sf,EncMap *map) {
 static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
     int i;
     RefChar *rf, *prev, *next;
+    SplineChar *sc;
 
     sf->glyphs = info->chars;
     sf->glyphcnt = sf->glyphmax = info->glyph_cnt;
     for ( i=0; i<sf->glyphcnt; ++i )
-	if ( sf->glyphs[i]!=NULL )
-	    sf->glyphs[i]->parent = sf;
+	if ( (sc = sf->glyphs[i])!=NULL ) {
+	    sc->layers[ly_fore].order2 = sc->layers[ly_back].order2 = info->to_order2;
+	    sc->parent = sf;
+	}
 
     /* A CFF font could contain type1 charstrings, or a type2 font could use */
     /*  the depreciated convention that endchar =~ seac */
@@ -5209,14 +5212,17 @@ static SplineFont *SFFromTuple(SplineFont *basesf,struct variations *v,int tuple
     sf->mm = mm;
     sf->glyphmax = sf->glyphcnt = basesf->glyphcnt;
     sf->glyphs = v->tuples[tuple].chars;
-    sf->order2 = true;
+    sf->layers[ly_fore].order2 = sf->layers[ly_back].order2 = true;
     for ( i=0; i<sf->glyphcnt; ++i ) if ( basesf->glyphs[i]!=NULL ) {
-	sf->glyphs[i]->orig_pos = i;
-	sf->glyphs[i]->parent = sf;
+	SplineChar *sc = sf->glyphs[i];
+	sc->orig_pos = i;
+	sc->parent = sf;
+	sc->layers[ly_fore].order2 = sc->layers[ly_back].order2 = true;
     }
+    sf->grid.order2 = true;
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
 	for ( r=sf->glyphs[i]->layers[ly_fore].refs; r!=NULL; r=r->next )
-	    SCReinstanciateRefChar(sf->glyphs[i],r);
+	    SCReinstanciateRefChar(sf->glyphs[i],r,ly_fore);
     }
 
     sf->ttf_tables = v->tuples[tuple].cvt;
@@ -5440,7 +5446,8 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->familyname = info->familyname;
     sf->chosenname = info->chosenname;
     sf->onlybitmaps = info->onlystrikes;
-    sf->order2 = info->to_order2;
+    sf->layers[ly_fore].order2 = info->to_order2;
+    sf->layers[ly_back].order2 = info->to_order2;
     sf->comments = info->fontcomments;
     sf->fontlog = info->fontlog;
     sf->cvt_names = info->cvt_names;
@@ -5623,7 +5630,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     if ( info->variations!=NULL )
 	MMFillFromVAR(sf,info);
 
-    if ( info->cff_length!=0 && !sf->order2 ) {
+    if ( info->cff_length!=0 && !sf->layers[ly_fore].order2 ) {
 	/* Clean up the hint masks, We create an initial hintmask whether we */
 	/*  need it or not */
 	k=0;
