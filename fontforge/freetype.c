@@ -1024,7 +1024,7 @@ BDFChar *SplineCharFreeTypeRasterizeNoHints(SplineChar *sc,
     FT_Outline outline;
     FT_Bitmap bitmap, temp;
 #ifdef FONTFORGE_CONFIG_TYPE3
-    int i;
+    int i, last;
 #endif
     int cmax, pmax;
     real scale = pixelsize*(1<<6)/(double) (sc->parent->ascent+sc->parent->descent);
@@ -1035,10 +1035,10 @@ BDFChar *SplineCharFreeTypeRasterizeNoHints(SplineChar *sc,
 
     if ( !hasFreeType())
 return( NULL );
-    if ( sc->parent->order2 && sc->parent->strokedfont )
+    if ( sc->layers[ly_fore].order2 && sc->parent->strokedfont )
 return( NULL );
 #ifdef FONTFORGE_CONFIG_TYPE3
-    if ( sc->parent->order2 && sc->parent->multilayer ) {
+    if ( sc->layers[ly_fore].order2 && sc->parent->multilayer ) {
 	/* I don't support stroking of order2 splines */
 	for ( i=ly_fore; i<sc->layer_cnt; ++i ) {
 	    if ( sc->layers[i].dostroke )
@@ -1098,7 +1098,7 @@ return( NULL );
 	SplineSet *stroked = StrokeOutline(&sc->layers[ly_fore],sc);
 	memset(temp.buffer,0,temp.pitch*temp.rows);
 	FillOutline(stroked,&outline,&pmax,&cmax,
-		scale,&b,sc->parent->order2);
+		scale,&b,sc->layers[ly_fore].order2);
 	err |= (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&bitmap);
 	SplinePointListsFree(stroked);
     } else 
@@ -1106,7 +1106,7 @@ return( NULL );
     {
 	all = LayerAllOutlines(&sc->layers[ly_fore]);
 	FillOutline(all,&outline,&pmax,&cmax,
-		scale,&b,sc->parent->order2);
+		scale,&b,sc->layers[ly_fore].order2);
 	err = (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&bitmap);
 	if ( sc->layers[ly_fore].splines!=all )
 	    SplinePointListsFree(all);
@@ -1115,18 +1115,21 @@ return( NULL );
     if ( temp.buffer==NULL ) {
 	all = LayerAllOutlines(&sc->layers[ly_fore]);
 	FillOutline(all,&outline,&pmax,&cmax,
-		scale,&b,sc->parent->order2);
+		scale,&b,sc->layers[ly_fore].order2);
 	err = (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&bitmap);
 	if ( sc->layers[ly_fore].splines!=all )
 	    SplinePointListsFree(all);
     } else {
 	int j; RefChar *r;
 	err = 0;
-	for ( i=ly_fore; i<sc->layer_cnt; ++i ) {
+	last = ly_fore;
+	if ( sc->parent->multilayer )
+	    last = sc->layer_cnt-1;
+	for ( i=ly_fore; i<=last; ++i ) {
 	    if ( sc->layers[i].dofill ) {
 		memset(temp.buffer,0,temp.pitch*temp.rows);
 		FillOutline(sc->layers[i].splines,&outline,&pmax,&cmax,
-			scale,&b,sc->parent->order2);
+			scale,&b,sc->layers[ly_fore].order2);
 		err |= (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&temp);
 		MergeBitmaps(&bitmap,&temp,sc->layers[i].fill_brush.col);
 	    }
@@ -1134,7 +1137,7 @@ return( NULL );
 		SplineSet *stroked = StrokeOutline(&sc->layers[i],sc);
 		memset(temp.buffer,0,temp.pitch*temp.rows);
 		FillOutline(stroked,&outline,&pmax,&cmax,
-			scale,&b,sc->parent->order2);
+			scale,&b,sc->layers[ly_fore].order2);
 		err |= (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&temp);
 		MergeBitmaps(&bitmap,&temp,sc->layers[i].stroke_pen.brush.col);
 		SplinePointListsFree(stroked);
@@ -1144,7 +1147,7 @@ return( NULL );
 		    if ( r->layers[j].dofill ) {
 			memset(temp.buffer,0,temp.pitch*temp.rows);
 			FillOutline(r->layers[j].splines,&outline,&pmax,&cmax,
-				scale,&b,sc->parent->order2);
+				scale,&b,sc->layers[ly_fore].order2);
 			err |= (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&temp);
 			MergeBitmaps(&bitmap,&temp,r->layers[j].fill_brush.col);
 		    }
@@ -1152,7 +1155,7 @@ return( NULL );
 			SplineSet *stroked = RStrokeOutline(&r->layers[j],sc);
 			memset(temp.buffer,0,temp.pitch*temp.rows);
 			FillOutline(stroked,&outline,&pmax,&cmax,
-				scale,&b,sc->parent->order2);
+				scale,&b,sc->layers[ly_fore].order2);
 			err |= (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&temp);
 			MergeBitmaps(&bitmap,&temp,r->layers[j].stroke_pen.brush.col);
 			SplinePointListsFree(stroked);
@@ -1210,7 +1213,8 @@ return( bdf );
 #endif
 
 void *FreeTypeFontContext(SplineFont *sf,SplineChar *sc,FontViewBase *fv) {
-return( _FreeTypeFontContext(sf,sc,fv,sf->subfontcnt!=0?ff_otfcid:sf->order2?ff_ttf:ff_pfb,0,NULL) );
+return( _FreeTypeFontContext(sf,sc,fv,sf->subfontcnt!=0?ff_otfcid:
+	sf->layers[ly_fore].order2?ff_ttf:ff_pfb,0,NULL) );
 }
 
 void FreeType_FreeRaster(struct freetype_raster *raster) {

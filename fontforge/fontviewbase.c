@@ -123,13 +123,12 @@ void FVCopyFgtoBg(FontViewBase *fv) {
 
     for ( i=0; i<fv->map->enccount; ++i )
 	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
-		fv->sf->glyphs[gid]!=NULL &&
-		fv->sf->glyphs[gid]->layers[1].splines!=NULL )
-	    SCCopyFgToBg(fv->sf->glyphs[gid],true);
+		fv->sf->glyphs[gid]!=NULL )
+	    SCCopyLayerToLayer(fv->sf->glyphs[gid],ly_fore,ly_back);
 }
 
 void FVUnlinkRef(FontViewBase *fv) {
-    int i,layer, gid;
+    int i,layer, last, gid;
     SplineChar *sc;
     RefChar *rf, *next;
 
@@ -137,7 +136,10 @@ void FVUnlinkRef(FontViewBase *fv) {
 	    (gid = fv->map->map[i])!=-1 && (sc = fv->sf->glyphs[gid])!=NULL &&
 	     sc->layers[ly_fore].refs!=NULL ) {
 	SCPreserveState(sc,false);
-	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+	last = ly_fore;
+	if ( sc->parent->multilayer )
+	    last = sc->layer_cnt-1;
+	for ( layer=ly_fore; layer<=last; ++layer ) {
 	    for ( rf=sc->layers[ly_fore].refs; rf!=NULL ; rf=next ) {
 		next = rf->next;
 		SCRefToSplines(sc,rf);
@@ -148,7 +150,7 @@ void FVUnlinkRef(FontViewBase *fv) {
 }
 
 void FVUndo(FontViewBase *fv) {
-    int i,j,layer, gid;
+    int i,j,layer,last, gid;
     MMSet *mm = fv->sf->mm;
     int was_blended = mm!=NULL && mm->normal==fv->sf;
 
@@ -157,7 +159,10 @@ void FVUndo(FontViewBase *fv) {
 	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
 		fv->sf->glyphs[gid]!=NULL && !fv->sf->glyphs[gid]->ticked) {
 	    SplineChar *sc = fv->sf->glyphs[gid];
-	    for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+	    last = ly_fore;
+	    if ( sc->parent->multilayer )
+		last = sc->layer_cnt-1;
+	    for ( layer=ly_fore; layer<=last; ++layer ) {
 		if ( sc->layers[layer].undoes!=NULL ) {
 		    SCDoUndo(sc,layer);
 		    if ( was_blended ) {
@@ -171,7 +176,7 @@ void FVUndo(FontViewBase *fv) {
 }
 
 void FVRedo(FontViewBase *fv) {
-    int i,j,layer, gid;
+    int i,j,layer,last, gid;
     MMSet *mm = fv->sf->mm;
     int was_blended = mm!=NULL && mm->normal==fv->sf;
 
@@ -180,7 +185,10 @@ void FVRedo(FontViewBase *fv) {
 	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
 		fv->sf->glyphs[gid]!=NULL && !fv->sf->glyphs[gid]->ticked) {
 	    SplineChar *sc = fv->sf->glyphs[gid];
-	    for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+	    last = ly_fore;
+	    if ( sc->parent->multilayer )
+		last = sc->layer_cnt-1;
+	    for ( layer=ly_fore; layer<=last; ++layer ) {
 		if ( sc->layers[layer].redoes!=NULL ) {
 		    SCDoRedo(sc,layer);
 		    if ( was_blended ) {
@@ -489,6 +497,60 @@ static void KCTrans(KernClass *kc,double scale) {
 	kc->offsets[i] = rint(scale*kc->offsets[i]);
 }
 
+static void SCTransLayer(FontViewBase *fv, SplineChar *sc, int flags, int i, real transform[6], uint8 *sel) {
+    int j;
+    RefChar *refs;
+    real t[6];
+    ImageList *img;
+
+    SplinePointListTransform(sc->layers[i].splines,transform,true);
+    for ( refs = sc->layers[i].refs; refs!=NULL; refs=refs->next ) {
+	if ( (sel!=NULL && sel[fv->map->backmap[refs->sc->orig_pos]]) ||
+		(flags&fvt_partialreftrans)) {
+	    /* if the character referred to is selected then it's going to */
+	    /*  be scaled too (or will have been) so we don't want to scale */
+	    /*  it twice */
+	    t[4] = refs->transform[4]*transform[0] +
+			refs->transform[5]*transform[2] +
+			/*transform[4]*/0;
+	    t[5] = refs->transform[4]*transform[1] +
+			refs->transform[5]*transform[3] +
+			/*transform[5]*/0;
+	    t[0] = refs->transform[4]; t[1] = refs->transform[5];
+	    refs->transform[4] = t[4];
+	    refs->transform[5] = t[5];
+	    /* Now update the splines to match */
+	    t[4] -= t[0]; t[5] -= t[1];
+	    if ( t[4]!=0 || t[5]!=0 ) {
+		t[0] = t[3] = 1; t[1] = t[2] = 0;
+		for ( j=0; j<refs->layer_cnt; ++j )
+		    SplinePointListTransform(refs->layers[j].splines,t,true);
+	    }
+	} else {
+	    for ( j=0; j<refs->layer_cnt; ++j )
+		SplinePointListTransform(refs->layers[j].splines,transform,true);
+	    t[0] = refs->transform[0]*transform[0] +
+			refs->transform[1]*transform[2];
+	    t[1] = refs->transform[0]*transform[1] +
+			refs->transform[1]*transform[3];
+	    t[2] = refs->transform[2]*transform[0] +
+			refs->transform[3]*transform[2];
+	    t[3] = refs->transform[2]*transform[1] +
+			refs->transform[3]*transform[3];
+	    t[4] = refs->transform[4]*transform[0] +
+			refs->transform[5]*transform[2] +
+			transform[4];
+	    t[5] = refs->transform[4]*transform[1] +
+			refs->transform[5]*transform[3] +
+			transform[5];
+	    memcpy(refs->transform,t,sizeof(t));
+	}
+	RefCharFindBounds(refs);
+    }
+    for ( img = sc->layers[ly_back].images; img!=NULL; img=img->next )
+	BackgroundImageTransform(sc, img, transform);
+}
+
 /* If sel is specified then we decide how to transform references based on */
 /*  whether the refered glyph is selected. (If we tranform a reference that */
 /*  is selected we are, in effect, transforming it twice -- since the glyph */
@@ -498,10 +560,8 @@ static void KCTrans(KernClass *kc,double scale) {
 /* if flags&fvt_partialreftrans then we always just transform the offsets */
 void FVTrans(FontViewBase *fv,SplineChar *sc,real transform[6], uint8 *sel,
 	enum fvtrans_flags flags) {
-    RefChar *refs;
-    real t[6];
     AnchorPoint *ap;
-    int i,j;
+    int i,last;
     KernPair *kp;
     PST *pst;
 
@@ -553,52 +613,11 @@ void FVTrans(FontViewBase *fv,SplineChar *sc,real transform[6], uint8 *sel,
 
     for ( ap=sc->anchor; ap!=NULL; ap=ap->next )
 	ApTransform(ap,transform);
-    for ( i=ly_fore; i<sc->layer_cnt; ++i ) {
-	SplinePointListTransform(sc->layers[i].splines,transform,true);
-	for ( refs = sc->layers[i].refs; refs!=NULL; refs=refs->next ) {
-	    if ( (sel!=NULL && sel[fv->map->backmap[refs->sc->orig_pos]]) ||
-		    (flags&fvt_partialreftrans)) {
-		/* if the character referred to is selected then it's going to */
-		/*  be scaled too (or will have been) so we don't want to scale */
-		/*  it twice */
-		t[4] = refs->transform[4]*transform[0] +
-			    refs->transform[5]*transform[2] +
-			    /*transform[4]*/0;
-		t[5] = refs->transform[4]*transform[1] +
-			    refs->transform[5]*transform[3] +
-			    /*transform[5]*/0;
-		t[0] = refs->transform[4]; t[1] = refs->transform[5];
-		refs->transform[4] = t[4];
-		refs->transform[5] = t[5];
-		/* Now update the splines to match */
-		t[4] -= t[0]; t[5] -= t[1];
-		if ( t[4]!=0 || t[5]!=0 ) {
-		    t[0] = t[3] = 1; t[1] = t[2] = 0;
-		    for ( j=0; j<refs->layer_cnt; ++j )
-			SplinePointListTransform(refs->layers[j].splines,t,true);
-		}
-	    } else {
-		for ( j=0; j<refs->layer_cnt; ++j )
-		    SplinePointListTransform(refs->layers[j].splines,transform,true);
-		t[0] = refs->transform[0]*transform[0] +
-			    refs->transform[1]*transform[2];
-		t[1] = refs->transform[0]*transform[1] +
-			    refs->transform[1]*transform[3];
-		t[2] = refs->transform[2]*transform[0] +
-			    refs->transform[3]*transform[2];
-		t[3] = refs->transform[2]*transform[1] +
-			    refs->transform[3]*transform[3];
-		t[4] = refs->transform[4]*transform[0] +
-			    refs->transform[5]*transform[2] +
-			    transform[4];
-		t[5] = refs->transform[4]*transform[1] +
-			    refs->transform[5]*transform[3] +
-			    transform[5];
-		memcpy(refs->transform,t,sizeof(t));
-	    }
-	    RefCharFindBounds(refs);
-	}
-    }
+    last = ly_fore;
+    if ( sc->parent->multilayer )
+	last = sc->layer_cnt-1;
+    for ( i=ly_fore; i<=last; ++i )
+	SCTransLayer(fv,sc,flags,i,transform,sel);
     if ( transform[1]==0 && transform[2]==0 ) {
 	if ( transform[0]==1 && transform[3]==1 &&
 		transform[5]==0 && transform[4]!=0 && 
@@ -621,11 +640,14 @@ void FVTrans(FontViewBase *fv,SplineChar *sc,real transform[6], uint8 *sel,
 	SCRound2Int(sc,1.0);
     }
     if ( flags&fvt_dobackground ) {
-	ImageList *img;
 	SCPreserveBackground(sc);
-	SplinePointListTransform(sc->layers[ly_back].splines,transform,true);
-	for ( img = sc->layers[ly_back].images; img!=NULL; img=img->next )
-	    BackgroundImageTransform(sc, img, transform);
+	SCTransLayer(fv,sc,flags,ly_back,transform,sel);
+	if ( !sc->parent->multilayer ) {
+	    for ( i=ly_fore+1; i<sc->layer_cnt; ++i ) {
+		SCPreserveLayer(sc,i,false);
+		SCTransLayer(fv,sc,flags,i,transform,sel);
+	    }
+	}
     }
     SCCharChangedUpdate(sc);
 }
@@ -697,7 +719,7 @@ void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
 }
 
 void FVOverlap(FontViewBase *fv,enum overlap_type ot) {
-    int i, cnt=0, layer, gid;
+    int i, cnt=0, layer, last, gid;
     SplineChar *sc;
 
     /* We know it's more likely that we'll find a problem in the overlap code */
@@ -717,11 +739,14 @@ void FVOverlap(FontViewBase *fv,enum overlap_type ot) {
 	    SCWorthOutputting((sc=fv->sf->glyphs[gid])) &&
 	    !sc->ticked ) {
 	sc->ticked = true;
-	if ( !SCRoundToCluster(sc,-2,false,.03,.12))
+	if ( !SCRoundToCluster(sc,ly_all,false,.03,.12))
 	    SCPreserveState(sc,false);
 	MinimumDistancesFree(sc->md);
 	sc->md = NULL;
-	for ( layer = ly_fore; layer<sc->layer_cnt; ++layer )
+	last = ly_fore;
+	if ( sc->parent->multilayer )
+	    last = sc->layer_cnt-1;
+	for ( layer = ly_fore; layer<=last; ++layer )
 	    sc->layers[layer].splines = SplineSetRemoveOverlap(sc,sc->layers[layer].splines,ot);
 	SCCharChangedUpdate(sc);
 	if ( !ff_progress_next())
@@ -731,7 +756,7 @@ void FVOverlap(FontViewBase *fv,enum overlap_type ot) {
 }
 
 void FVAddExtrema(FontViewBase *fv) {
-    int i, cnt=0, layer, gid;
+    int i, cnt=0, layer, last, gid;
     SplineChar *sc;
     SplineFont *sf = fv->sf;
     int emsize = sf->ascent+sf->descent;
@@ -749,7 +774,10 @@ void FVAddExtrema(FontViewBase *fv) {
 	    !sc->ticked) {
 	sc->ticked = true;
 	SCPreserveState(sc,false);
-	for ( layer = ly_fore; layer<sc->layer_cnt; ++layer )
+	last = ly_fore;
+	if ( sc->parent->multilayer )
+	    last = sc->layer_cnt-1;
+	for ( layer = ly_fore; layer<=last; ++layer )
 	    SplineCharAddExtrema(sc,sc->layers[layer].splines,ae_only_good,emsize);
 	SCCharChangedUpdate(sc);
 	if ( !ff_progress_next())
@@ -806,7 +834,7 @@ void FVCluster(FontViewBase *fv) {
 
     for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
 	    (gid = fv->map->map[i])!=-1 && SCWorthOutputting(fv->sf->glyphs[gid]) ) {
-	SCRoundToCluster(fv->sf->glyphs[gid],-2,false,.1,.5);
+	SCRoundToCluster(fv->sf->glyphs[gid],ly_all,false,.1,.5);
 	if ( !ff_progress_next())
     break;
     }
@@ -814,7 +842,7 @@ void FVCluster(FontViewBase *fv) {
 }
 
 void FVCorrectDir(FontViewBase *fv) {
-    int i, cnt=0, changed, refchanged, preserved, layer, gid;
+    int i, cnt=0, changed, refchanged, preserved, layer, last, gid;
     int askedall=-1, asked;
     RefChar *ref, *next;
     SplineChar *sc;
@@ -832,7 +860,10 @@ void FVCorrectDir(FontViewBase *fv) {
 	sc->ticked = true;
 	changed = refchanged = preserved = false;
 	asked = askedall;
-	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+	last = ly_fore;
+	if ( sc->parent->multilayer )
+	    last = sc->layer_cnt-1;
+	for ( layer = ly_fore; layer<=last; ++layer ) {
 	    for ( ref=sc->layers[layer].refs; ref!=NULL; ref=next ) {
 		next = ref->next;
 		if ( ref->transform[0]*ref->transform[3]<0 ||
@@ -876,7 +907,7 @@ return;
 }
 
 void _FVSimplify(FontViewBase *fv,struct simplifyinfo *smpl) {
-    int i, cnt=0, layer, gid;
+    int i, cnt=0, layer, last, gid;
     SplineChar *sc;
 
     for ( i=0; i<fv->map->enccount; ++i )
@@ -891,7 +922,10 @@ void _FVSimplify(FontViewBase *fv,struct simplifyinfo *smpl) {
 		fv->selected[i] && !sc->ticked ) {
 	    sc->ticked = true;
 	    SCPreserveState(sc,false);
-	    for ( layer = ly_fore; layer<sc->layer_cnt; ++layer )
+	    last = ly_fore;
+	    if ( sc->parent->multilayer )
+		last = sc->layer_cnt-1;
+	    for ( layer = ly_fore; layer<=last; ++layer )
 		sc->layers[layer].splines = SplineCharSimplify(sc,sc->layers[layer].splines,smpl);
 	    SCCharChangedUpdate(sc);
 	    if ( !ff_progress_next())
@@ -1595,10 +1629,8 @@ void FVRevertGlyph(FontViewBase *fv) {
     SplineFont *sf = fv->sf;
     SplineChar *sc, *tsc;
     SplineChar temp;
-#ifdef FONTFORGE_CONFIG_TYPE3
     Undoes **undoes;
     int layer, lc;
-#endif
     EncMap *map = fv->map;
     CharViewBase *cvs;
 
@@ -1622,32 +1654,23 @@ void FVRevertGlyph(FontViewBase *fv) {
 		SCPreserveBackground(tsc);
 		temp = *tsc;
 		tsc->dependents = NULL;
-#ifdef FONTFORGE_CONFIG_TYPE3
 		lc = tsc->layer_cnt;
 		undoes = galloc(lc*sizeof(Undoes *));
 		for ( layer=0; layer<lc; ++layer ) {
 		    undoes[layer] = tsc->layers[layer].undoes;
 		    tsc->layers[layer].undoes = NULL;
 		}
-#else
-		tsc->layers[ly_back].undoes = tsc->layers[ly_fore].undoes = NULL;
-#endif
 		SplineCharFreeContents(tsc);
 		*tsc = *sc;
 		chunkfree(sc,sizeof(SplineChar));
 		tsc->parent = sf;
 		tsc->dependents = temp.dependents;
 		tsc->views = temp.views;
-#ifdef FONTFORGE_CONFIG_TYPE3
 		for ( layer = 0; layer<lc && layer<tsc->layer_cnt; ++layer )
 		    tsc->layers[layer].undoes = undoes[layer];
 		for ( ; layer<lc; ++layer )
 		    UndoesFree(undoes[layer]);
 		free(undoes);
-#else
-		tsc->layers[ly_fore].undoes = temp.layers[ly_fore].undoes;
-		tsc->layers[ly_back].undoes = temp.layers[ly_back].undoes;
-#endif
 		/* tsc->changed = temp.changed; */
 		/* tsc->orig_pos = temp.orig_pos; */
 		for ( cvs=tsc->views; cvs!=NULL; cvs= cvs->next ) {

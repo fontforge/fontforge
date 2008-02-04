@@ -480,13 +480,13 @@ return( head );
 }
 
 SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into,struct sfmergecontext *mc) {
-    SplineChar *nsc = SplineCharCreate();
+    SplineChar *nsc = SFSplineCharCreate(into);
 #ifdef FONTFORGE_CONFIG_TYPE3
     Layer *layers = nsc->layers;
     int layer;
 
-    *nsc = *sc;
-    if ( sc->layer_cnt!=2 )
+    *nsc = *sc;		/* ???? Shouldn't we copy the layers? !!!! */
+    if ( sc->layer_cnt!=into->layer_cnt )
 	layers = grealloc(layers,sc->layer_cnt*sizeof(Layer));
     memcpy(layers,sc->layers,sc->layer_cnt*sizeof(Layer));
     nsc->layers = layers;
@@ -522,8 +522,8 @@ SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into,struct sfmergecontext
     nsc->kerns = NULL;
     nsc->possub = PSTCopy(nsc->possub,nsc,mc);
     nsc->altuni = AltUniCopy(nsc->altuni,into);
-    if ( sc->parent!=NULL && into->order2!=sc->parent->order2 )
-	SCConvertOrder(nsc,into->order2);
+    if ( into->layers[ly_fore].order2!=sc->layers[ly_fore].order2 )
+	SCConvertOrder(nsc,into->layers[ly_fore].order2);
 return(nsc);
 }
 
@@ -865,7 +865,7 @@ SplineChar *SFGetOrMakeChar(SplineFont *sf, int unienc, const char *name ) {
     } else
 	sc = SFGetChar(sf,unienc,name);
     if ( sc==NULL && (unienc!=-1 || name!=NULL)) {
-	sc = SplineCharCreate();
+	sc = SFSplineCharCreate(sf);
 #ifdef FONTFORGE_CONFIG_TYPE3
 	if ( sf->strokedfont ) {
 	    sc->layers[ly_fore].dostroke = true;
@@ -948,7 +948,7 @@ static void MFixupSC(SplineFont *sf, SplineChar *sc,int i) {
 	    ref->sc = sf->glyphs[ref->orig_pos];
 	    if ( ref->sc->orig_pos==-2 )
 		MFixupSC(sf,ref->sc,ref->orig_pos);
-	    SCReinstanciateRefChar(sc,ref);
+	    SCReinstanciateRefChar(sc,ref,ly_fore);
 	    SCMakeDependent(sc,ref->sc);
 	}
     }
@@ -1460,7 +1460,7 @@ SplineChar *SplineCharInterpolate(SplineChar *base, SplineChar *other, real amou
 
     if ( base==NULL || other==NULL )
 return( NULL );
-    sc = SplineCharCreate();
+    sc = SFSplineCharCreate(base->parent);
     sc->unicodeenc = base->unicodeenc;
     sc->changed = true;
     sc->views = NULL;
@@ -1523,7 +1523,7 @@ static void IFixupSC(SplineFont *sf, SplineChar *sc,int i) {
 	ref->orig_pos = SFFindExistingSlot(sf,ref->sc->unicodeenc,ref->sc->name);
 	ref->sc = sf->glyphs[ref->orig_pos];
 	IFixupSC(sf,ref->sc,ref->orig_pos);
-	SCReinstanciateRefChar(sc,ref);
+	SCReinstanciateRefChar(sc,ref,ly_fore);
 	SCMakeDependent(sc,ref->sc);
     }
 }
@@ -1544,7 +1544,7 @@ SplineFont *InterpolateFont(SplineFont *base, SplineFont *other, real amount,
     if ( base==other ) {
 	ff_post_error(_("Interpolating Problem"),_("Interpolating a font with itself achieves nothing"));
 return( NULL );
-    } else if ( base->order2!=other->order2 ) {
+    } else if ( base->layers[ly_fore].order2!=other->layers[ly_fore].order2 ) {
 	ff_post_error(_("Interpolating Problem"),_("Interpolating between fonts with different spline orders (i.e. between postscript and truetype)"));
 return( NULL );
     }
