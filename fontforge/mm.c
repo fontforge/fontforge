@@ -278,10 +278,9 @@ return;
 }
 
 static SplineChar *SFMakeGlyphLike(SplineFont *sf, int gid, SplineFont *base) {
-    SplineChar *sc = SplineCharCreate(), *bsc = base->glyphs[gid];
+    SplineChar *sc = SFSplineCharCreate(sf), *bsc = base->glyphs[gid];
     sc->orig_pos = gid;
     sf->glyphs[gid] = sc;
-    sc->parent = sf;
 
     sc->width = bsc->width; sc->widthset = true; sc->vwidth = bsc->vwidth;
     free(sc->name); sc->name = copy(bsc->name);
@@ -301,7 +300,7 @@ static char *_MMBlendChar(MMSet *mm, int gid) {
     real width;
 
     for ( i=0; i<mm->instance_count; ++i ) {
-	if ( mm->instances[i]->order2 )
+	if ( mm->instances[i]->layers[ly_fore].order2 )
 return( _("One of the multiple master instances contains quadratic splines. It must be converted to cubic splines before it can be used in a multiple master") );
 	if ( gid>=mm->instances[i]->glyphcnt )
 return( _("The different instances of this mm have a different number of glyphs") );
@@ -531,7 +530,7 @@ return( _("The different instances of this mm have a different number of glyphs"
     if ( mm->normal->glyphs[gid]!=NULL ) {
 	SplineChar *sc = mm->normal->glyphs[gid];
 	for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
-	    SCReinstanciateRefChar(sc,ref);
+	    SCReinstanciateRefChar(sc,ref,ly_fore);
 	    SCMakeDependent(sc,ref->sc);
 	}
     }
@@ -657,7 +656,7 @@ int MMReblend(FontViewBase *fv, MMSet *mm) {
     sf = mm->normal;
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
 	for ( ref=sf->glyphs[i]->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
-	    SCReinstanciateRefChar(sf->glyphs[i],ref);
+	    SCReinstanciateRefChar(sf->glyphs[i],ref,ly_fore);
 	    SCMakeDependent(sf->glyphs[i],ref->sc);
 	}
     }
@@ -706,7 +705,8 @@ SplineFont *_MMNewFont(MMSet *mm,int index,char *familyname,real *normalized) {
     int i;
 
     sf = SplineFontNew();
-    sf->order2 = mm->apple;
+    sf->layers[ly_fore].order2 = sf->layers[ly_back].order2 = sf->grid.order2 =
+	    mm->apple;
     free(sf->fontname); free(sf->familyname); free(sf->fullname); free(sf->weight);
     sf->familyname = copy(familyname);
     if ( index==-1 ) {
@@ -978,7 +978,7 @@ int MMValid(MMSet *mm,int complain) {
 return( false );
 
     for ( i=0; i<mm->instance_count; ++i )
-	if ( mm->instances[i]->order2 != mm->apple ) {
+	if ( mm->instances[i]->layers[ly_fore].order2 != mm->apple ) {
 	    if ( complain ) {
 		if ( mm->apple )
 		    ff_post_error(_("Bad Multiple Master Font"),_("The font %.30s contains cubic splines. It must be converted to quadratic splines before it can be used in an apple distortable font"),
@@ -1006,7 +1006,7 @@ return( false );
 		ff_post_error(_("Bad Multiple Master Font"),_("The fonts %1$.30s and %2$.30s have a different number of glyphs or different encodings"),
 			sf->fontname, mm->instances[j]->fontname);
 return( false );
-	} else if ( sf->order2!=mm->instances[j]->order2 ) {
+	} else if ( sf->layers[ly_fore].order2!=mm->instances[j]->layers[ly_fore].order2 ) {
 	    if ( complain )
 		ff_post_error(_("Bad Multiple Master Font"),_("The fonts %1$.30s and %2$.30s use different types of splines (one quadratic, one cubic)"),
 			sf->fontname, mm->instances[j]->fontname);

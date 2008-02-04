@@ -1922,7 +1922,13 @@ static void MKDInit(MathKernDlg *mkd,SplineChar *sc) {
     mkd->dummy_sf.origname = "dummy";
     mkd->dummy_sf.ascent = sc->parent->ascent;
     mkd->dummy_sf.descent = sc->parent->descent;
-    mkd->dummy_sf.order2 = sc->parent->order2;
+    mkd->dummy_sf.layers = mkd->layerinfo;
+    mkd->dummy_sf.layer_cnt = 2;
+    mkd->layerinfo[ly_back].order2 = sc->layers[ly_back].order2;
+    mkd->layerinfo[ly_back].name = _("Back");
+    mkd->layerinfo[ly_fore].order2 = sc->layers[ly_fore].order2;
+    mkd->layerinfo[ly_fore].name = _("Fore");
+    mkd->dummy_sf.grid.order2 = sc->layers[ly_back].order2;
     mkd->dummy_sf.anchor = NULL;
 
     mkd->dummy_sf.fv = (FontViewBase *) &mkd->dummy_fv;

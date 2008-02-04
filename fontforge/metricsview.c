@@ -2103,7 +2103,7 @@ static void _MVMenuOverlap(MetricsView *mv,enum overlap_type ot) {
     break;
     if ( i!=-1 ) {
 	SplineChar *sc = mv->glyphs[i].sc;
-	if ( !SCRoundToCluster(sc,-2,false,.03,.12))
+	if ( !SCRoundToCluster(sc,ly_all,false,.03,.12))
 	    SCPreserveState(sc,false);
 	MinimumDistancesFree(sc->md);
 	sc->md = NULL;
@@ -2875,7 +2875,7 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     int i, anybuildable;
     SplineChar *sc;
-    int order2 = mv->sf->order2;
+    int order2 = mv->sf->layers[ly_fore].order2;
 
     for ( i=mv->glyphcnt-1; i>=0; --i )
 	if ( mv->perchar[i].selected )

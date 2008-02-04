@@ -237,18 +237,21 @@ return( 1 );
 static int FindAllRefs(SplineChar *sc,SplineChar *rsc[RefMax], int *au) {
     RefChar *refs[RefMax], *alp[RefMax], *out[RefMax];
     RefChar *ref;
-    int layer, rcnt, acnt, ocnt, i,j;
+    int layer, last, rcnt, acnt, ocnt, i,j;
     int alluni;
     /* We also order the reference. The order stored in the splinechar doesn't*/
     /*  mean anything, so try and guess what is intended semantically. */
 
     if ( sc==NULL )
 return( 0 );
-    for ( layer=ly_fore; layer<sc->layer_cnt; ++layer )
+    last = ly_fore;
+    if ( sc->parent->multilayer )
+	last = sc->layer_cnt-1;
+    for ( layer=ly_fore; layer<=last; ++layer )
 	if ( sc->layers[layer].splines!=NULL || sc->layers[layer].images!=NULL )
 return( 0 );
     rcnt = 0;
-    for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+    for ( layer=ly_fore; layer<=last; ++layer ) {
 	for ( ref = sc->layers[layer].refs; ref!=NULL; ref = ref->next ) {
 	    if ( rcnt>=RefMax )
 return( 0 );
