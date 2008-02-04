@@ -3468,7 +3468,7 @@ void NowakowskiSCAutoInstr(GlobalInstrCt *gic, SplineChar *sc) {
     InstrCt ct;
     int i;
 
-    if ( !sc->parent->order2 )
+    if ( !sc->layers[ly_fore].order2 )
 return;
 
     if ( sc->layers[ly_fore].refs!=NULL && sc->layers[ly_fore].splines!=NULL ) {
