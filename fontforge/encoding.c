@@ -1754,7 +1754,7 @@ return(false);			/* Custom, it's whatever's there */
 	    RefChar *ref;
 
 	    for ( scl=sf->glyphs[i]->dependents; scl!=NULL; scl=scl->next ) {
-		for ( layer=ly_fore; layer<scl->sc->layer_cnt; ++layer )
+		for ( layer=0; layer<scl->sc->layer_cnt; ++layer )
 		    for ( ref = scl->sc->layers[layer].refs; ref!=NULL; ref=ref->next )
 			ref->orig_pos = ref->sc->orig_pos;
 	    }
@@ -1820,7 +1820,7 @@ return( true );
 	RefChar *ref;
 
 	for ( scl=sf->glyphs[i]->dependents; scl!=NULL; scl=scl->next ) {
-	    for ( layer=ly_fore; layer<scl->sc->layer_cnt; ++layer )
+	    for ( layer=0; layer<scl->sc->layer_cnt; ++layer )
 		for ( ref = scl->sc->layers[layer].refs; ref!=NULL; ref=ref->next )
 		    ref->unicode_enc = ref->sc->unicodeenc;
 	}
@@ -2154,7 +2154,7 @@ void SFAddGlyphAndEncode(SplineFont *sf,SplineChar *sc,EncMap *basemap, int base
 }
 
 static SplineChar *SplineCharMatch(SplineFont *parent,SplineChar *sc) {
-    SplineChar *scnew = SplineCharCreate();
+    SplineChar *scnew = SFSplineCharCreate(parent);
 
     scnew->parent = parent;
     scnew->orig_pos = sc->orig_pos;

@@ -1413,7 +1413,7 @@ return;
     gcd[5].gd.popup_msg = (unichar_t *) _("Specifies file format used to pass the font to freetype\n  pfb -- is the standard postscript type1\n  ttf -- is truetype\n  otf -- is opentype\n  nohints -- freetype rasterizes without hints\n  bitmap -- not passed to freetype for rendering\n    bitmap fonts must already be generated\n  FontForge -- uses FontForge's own rasterizer, not\n    freetype's. Only as last resort");
     gcd[5].creator = GRadioCreate;
     if ( sf->subfontcnt!=0 || !hasfreetype || sf->onlybitmaps || sf->strokedfont || sf->multilayer ) gcd[5].gd.flags = gg_visible| gg_utf8_popup;
-    else if ( sf->order2 ) gcd[5].gd.flags |= gg_cb_on;
+    else if ( sf->layers[ly_fore].order2 ) gcd[5].gd.flags |= gg_cb_on;
     farray[1] = &gcd[5];
 
     label[6].text = (unichar_t *) "otf";
@@ -1426,7 +1426,7 @@ return;
     gcd[6].gd.popup_msg = (unichar_t *) _("Specifies file format used to pass the font to freetype\n  pfb -- is the standard postscript type1\n  ttf -- is truetype\n  otf -- is opentype\n  nohints -- freetype rasterizes without hints\n  bitmap -- not passed to freetype for rendering\n    bitmap fonts must already be generated\n  FontForge -- uses FontForge's own rasterizer, not\n    freetype's. Only as last resort");
     gcd[6].creator = GRadioCreate;
     if ( !hasfreetype || sf->onlybitmaps || sf->strokedfont || sf->multilayer ) gcd[6].gd.flags = gg_visible| gg_utf8_popup;
-    else if ( sf->subfontcnt!=0 || !sf->order2 ) gcd[6].gd.flags |= gg_cb_on;
+    else if ( sf->subfontcnt!=0 || !sf->layers[ly_fore].order2 ) gcd[6].gd.flags |= gg_cb_on;
     farray[2] = &gcd[6];
 
     label[7].text = (unichar_t *) _("nohints");

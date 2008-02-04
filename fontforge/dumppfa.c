@@ -827,13 +827,16 @@ void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
 	SplineChar *sc, int refs_to_splines, int pdfopers ) {
     RefChar *ref;
     real inverse[6];
-    int i,j;
+    int i,j, last;
     SplineSet *temp;
 
-    for ( i=ly_fore; i<sc->layer_cnt; ++i ) {
+    last = ly_fore;
+    if ( sc->parent->multilayer )
+	last = sc->layer_cnt-1;
+    for ( i=ly_fore; i<=last; ++i ) {
 	if ( sc->layers[i].splines!=NULL ) {
 	    temp = sc->layers[i].splines;
-	    if ( sc->parent->order2 ) temp = SplineSetsPSApprox(temp);
+	    if ( sc->layers[ly_fore].order2 ) temp = SplineSetsPSApprox(temp);
 #ifdef FONTFORGE_CONFIG_TYPE3
 	    if ( sc->parent->multilayer ) {
 		dumpstr(dumpchar,data,pdfopers ? "q " : "gsave " );
@@ -868,7 +871,7 @@ void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
 	    } else
 #endif
 		dumpsplineset(dumpchar,data,temp,pdfopers,!sc->parent->strokedfont,false);
-	    if ( sc->parent->order2 ) SplinePointListsFree(temp);
+	    if ( sc->layers[ly_fore].order2 ) SplinePointListsFree(temp);
 	}
 	if ( sc->layers[i].refs!=NULL ) {
 #ifdef FONTFORGE_CONFIG_TYPE3
@@ -882,7 +885,7 @@ void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
 		for ( ref = sc->layers[i].refs; ref!=NULL; ref=ref->next ) {
 		    for ( j=0; j<ref->layer_cnt; ++j ) {
 			temp = ref->layers[j].splines;
-			if ( sc->parent->order2 ) temp = SplineSetsPSApprox(temp);
+			if ( sc->layers[ly_fore].order2 ) temp = SplineSetsPSApprox(temp);
 #ifdef FONTFORGE_CONFIG_TYPE3
 			if ( sc->parent->multilayer ) {
 			    dumpstr(dumpchar,data,pdfopers ? "q" : "gsave " );
@@ -917,7 +920,7 @@ void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
 			} else
 #endif
 			    dumpsplineset(dumpchar,data,temp,pdfopers,!sc->parent->strokedfont,false);
-			if ( sc->parent->order2 ) SplinePointListsFree(temp);
+			if ( sc->layers[ly_fore].order2 ) SplinePointListsFree(temp);
 		    }
 		}
 	    } else {

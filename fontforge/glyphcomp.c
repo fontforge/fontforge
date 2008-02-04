@@ -1080,23 +1080,26 @@ static void SCAddBackgrounds(SplineChar *sc1,SplineChar *sc2,struct font_diff *f
 		for ( last = sc1->layers[ly_back].splines; last->next!=NULL; last=last->next );
 	}
     }
-    if ( sc1->parent->order2!=sc2->parent->order2 )
+    if ( sc1->layers[ly_back].order2!=sc2->layers[ly_fore].order2 )
 	sc1->layers[ly_back].splines =
 		SplineSetsConvertOrder(sc1->layers[ly_back].splines,
-			sc1->parent->order2);
+			sc1->layers[ly_back].order2);
     SCCharChangedUpdate(sc1);
 }
 
 static void SCCompare(SplineChar *sc1,SplineChar *sc2,struct font_diff *fd) {
-    int layer;
+    int layer, last;
     int val;
     SplinePoint *hmfail;
 
-    if ( sc1->layer_cnt!=sc2->layer_cnt )
+    if ( sc1->parent->multilayer && sc1->layer_cnt!=sc2->layer_cnt )
 	GlyphDiffSCError(fd,sc1,U_("Glyph “%s” has a different number of layers\n"),
 		sc1->name );
     else {
-	for ( layer=ly_fore; layer<sc1->layer_cnt; ++layer ) {
+	last = ly_fore;
+	if ( sc1->parent->multilayer )
+	    last = sc1->layer_cnt-1;
+	for ( layer=ly_fore; layer<=last; ++layer ) {
 #ifdef FONTFORGE_CONFIG_TYPE3
 	    if ( sc1->layers[layer].dofill != sc2->layers[layer].dofill )
 		GlyphDiffSCError(fd,sc1,U_("Glyph “%s” has a different fill in layer %d\n"),
