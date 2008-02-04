@@ -605,7 +605,7 @@ static void SCNLTrans(SplineChar *sc,struct context *c) {
     SplineSet *ss;
     RefChar *ref;
 #ifdef FONTFORGE_CONFIG_TYPE3
-    int i;
+    int i, last;
 
     if ( sc->layer_cnt==ly_fore+1 &&
 	    sc->layers[ly_fore].splines==NULL && sc->layers[ly_fore].refs==NULL )
@@ -613,7 +613,10 @@ return;
 
     SCPreserveState(sc,false);
     c->sc = sc;
-    for ( i=ly_fore; i<sc->layer_cnt; ++i ) {
+    last = ly_fore;
+    if ( sc->parent->multilayer )
+	last = sc->layer_cnt-1;
+    for ( i=ly_fore; i<=last; ++i ) {
 	for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next )
 	    SplineSetNLTrans(ss,c,true);
 	for ( ref=sc->layers[i].refs; ref!=NULL; ref=ref->next ) {
@@ -661,7 +664,7 @@ void _SFNLTrans(FontViewBase *fv,struct context *c) {
 	    /* A reference doesn't really work after a non-linear transform */
 	    /*  but let's do the obvious thing */
 	    for ( ref = sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
-		SCReinstanciateRefChar(sc,ref);
+		SCReinstanciateRefChar(sc,ref,ly_fore);
 	    SCCharChangedUpdate(sc);
 	}
 }
@@ -687,6 +690,7 @@ return( true );
 void CVNLTrans(CharViewBase *cv,struct context *c) {
     SplineSet *ss;
     RefChar *ref;
+    int layer = CVLayer(cv);
 
     if ( cv->layerheads[cv->drawmode]->splines==NULL && (cv->drawmode!=dm_fore || cv->sc->layers[ly_fore].refs==NULL ))
 return;
@@ -695,13 +699,11 @@ return;
     c->sc = cv->sc;
     for ( ss=cv->layerheads[cv->drawmode]->splines; ss!=NULL; ss=ss->next )
 	SplineSetNLTrans(ss,c,false);
-    if ( cv->drawmode==dm_fore ) {
-	for ( ref=cv->layerheads[cv->drawmode]->refs; ref!=NULL; ref=ref->next ) {
-	    c->x = ref->transform[4]; c->y = ref->transform[5];
-	    ref->transform[4] = NL_expr(c,c->x_expr);
-	    ref->transform[5] = NL_expr(c,c->y_expr);
-	    SCReinstanciateRefChar(cv->sc,ref);
-	}
+    for ( ref=cv->layerheads[cv->drawmode]->refs; ref!=NULL; ref=ref->next ) {
+	c->x = ref->transform[4]; c->y = ref->transform[5];
+	ref->transform[4] = NL_expr(c,c->x_expr);
+	ref->transform[5] = NL_expr(c,c->y_expr);
+	SCReinstanciateRefChar(cv->sc,ref,layer);
     }
     CVCharChangedUpdate(cv);
 }
@@ -769,7 +771,7 @@ static void SCFindCenter(SplineChar *sc,BasePoint *center) {
 }
 
 void FVPointOfView(FontViewBase *fv,struct pov_data *pov) {
-    int i, cnt=0, layer, gid;
+    int i, cnt=0, layer, last, gid;
     BasePoint origin;
     SplineChar *sc;
 
@@ -795,7 +797,10 @@ void FVPointOfView(FontViewBase *fv,struct pov_data *pov) {
 		pov->y = origin.y;
 
 	    MinimumDistancesFree(sc->md); sc->md = NULL;
-	    for ( layer = ly_fore; layer<sc->layer_cnt; ++layer )
+	    last = ly_fore;
+	    if ( sc->parent->multilayer )
+		last = sc->layer_cnt-1;
+	    for ( layer = ly_fore; layer<=last; ++layer )
 		SPLPoV(sc->layers[layer].splines,pov,false);
 	    SCCharChangedUpdate(sc);
 	}

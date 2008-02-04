@@ -2686,8 +2686,7 @@ return( NULL );
 		sc->width = ((widths[j-fond->first]*1000L+(1<<11))>>12);
 		sc->widthset = true;
 	    }
-	    sc = SplineCharCreate();
-	    sc->parent = sf;
+	    sc = SFSplineCharCreate(sf);
 	    sc->orig_pos = sf->glyphcnt;
 	    sf->glyphs[sf->glyphcnt++] = sc;
 	    sc->name = copy(".notdef");
