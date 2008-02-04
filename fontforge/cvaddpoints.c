@@ -265,7 +265,7 @@ return( found!=NULL );
 }
 
 static void CVMergeSPLS(CharView *cv,SplineSet *ss, SplinePoint *base,SplinePoint *sp) {
-    int order2 = cv->b.sc->parent->order2;
+    int order2 = cv->b.layerheads[cv->b.drawmode]->order2;
 
     cv->joinvalid = true;
     cv->joinpos = *sp; cv->joinpos.selected = false;
@@ -442,7 +442,7 @@ void CVMouseDownPoint(CharView *cv, GEvent *event) {
 			    cv->active_tool==cvt_corner?pt_corner:
 			    cv->active_tool==cvt_tangent?pt_tangent:
 			    /*cv->active_tool==cvt_pen?*/pt_corner);
-    int order2 = cv->b.sc->parent->order2;
+    int order2 = cv->b.layerheads[cv->b.drawmode]->order2;
     int order2_style = (order2 && !(event->u.mouse.state&ksm_alt)) ||
 		    (!order2 && (event->u.mouse.state&ksm_alt));
 
@@ -736,7 +736,7 @@ return;
 
 void CVMouseMovePen(CharView *cv, PressedOn *p, GEvent *event) {
     SplinePoint *active = cv->active_sp;
-    int order2 = cv->b.sc->parent->order2;
+    int order2 = cv->b.layerheads[cv->b.drawmode]->order2;
     int order2_style = (order2 && !(event->u.mouse.state&ksm_alt)) ||
 		    (!order2 && (event->u.mouse.state&ksm_alt));
 
@@ -754,7 +754,7 @@ return;
     /*  implicit) rather than moving the cp to the base point and losing the */
     /*  curve */
     if ( cv->info.x==active->me.x && cv->info.y==active->me.y &&
-	    event->type==et_mouseup && cv->b.sc->parent->order2 )
+	    event->type==et_mouseup && cv->b.layerheads[cv->b.drawmode]->order2 )
 return;
     SplineSetSpirosClear(cv->active_spl);
     cv->lastselpt = cv->active_sp;
@@ -785,7 +785,7 @@ return;
 	active->nextcpdef = active->prevcpdef = false;
 	active->pointtype = pt_curve;
     }
-    if ( cv->b.sc->parent->order2 ) {
+    if ( cv->b.layerheads[cv->b.drawmode]->order2 ) {
 	if ( active->prev!=NULL ) {
 	    if ( active->noprevcp )
 		active->prev->from->nonextcp = true;

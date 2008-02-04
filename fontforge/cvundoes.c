@@ -217,7 +217,7 @@ static void FixupRefChars(SplineChar *sc,RefChar *urefs,int layer) {
 	    else
 		cprev->next = urefs;
 	    cprev = urefs;
-	    SCReinstanciateRefChar(sc,urefs);
+	    SCReinstanciateRefChar(sc,urefs,layer);
 	    SCMakeDependent(sc,urefs->sc);
 	    urefs = unext;
 	}
@@ -234,7 +234,7 @@ static void FixupRefChars(SplineChar *sc,RefChar *urefs,int layer) {
 	else
 	    cprev->next = urefs;
 	while ( urefs!=NULL ) {
-	    SCReinstanciateRefChar(sc,urefs);
+	    SCReinstanciateRefChar(sc,urefs,layer);
 	    SCMakeDependent(sc,urefs->sc);
 	    urefs = urefs->next;
 	}
@@ -490,7 +490,7 @@ return(NULL);
 
     undo->undotype = ut_state;
     undo->was_modified = cv->sc->changed;
-    undo->was_order2 = cv->sc->parent->order2;
+    undo->was_order2 = cv->layerheads[cv->drawmode]->order2;
     undo->u.state.width = cv->sc->width;
     undo->u.state.vwidth = cv->sc->vwidth;
     undo->u.state.splines = SplinePointListCopy(cv->layerheads[cv->drawmode]->splines);
@@ -548,7 +548,7 @@ return(NULL);
 
     undo->undotype = ut_state;
     undo->was_modified = sc->changed;
-    undo->was_order2 = sc->parent->order2;
+    undo->was_order2 = sc->layers[layer].order2;
     undo->u.state.width = sc->width;
     undo->u.state.vwidth = sc->vwidth;
     undo->u.state.splines = SplinePointListCopy(sc->layers[layer].splines);
@@ -586,8 +586,9 @@ Undoes *SCPreserveState(SplineChar *sc,int dohints) {
 #ifdef FONTFORGE_CONFIG_TYPE3
     int i;
 
-    for ( i=ly_fore+1; i<sc->layer_cnt; ++i )
-	SCPreserveLayer(sc,i,false);
+    if ( sc->parent->multilayer )
+	for ( i=ly_fore+1; i<sc->layer_cnt; ++i )
+	    SCPreserveLayer(sc,i,false);
 #endif
 return( SCPreserveLayer(sc,ly_fore,dohints));
 }
@@ -606,7 +607,7 @@ return(NULL);
 
     undo->undotype = ut_state;
     undo->was_modified = sf->changed;
-    undo->was_order2 = sf->order2;
+    undo->was_order2 = sf->grid.order2;
     undo->u.state.splines = SplinePointListCopy(sf->grid.splines);
     undo->u.state.images = ImageListCopy(sf->grid.images);
 #ifdef FONTFORGE_CONFIG_TYPE3
@@ -663,7 +664,7 @@ return(NULL);
 
     undo->undotype = ut_width;
     undo->was_modified = cv->sc->changed;
-    undo->was_order2 = cv->sc->parent->order2;
+    undo->was_order2 = cv->layerheads[cv->drawmode]->order2;
     undo->u.width = width;
 return( CVAddUndo(cv,undo));
 }
@@ -678,7 +679,7 @@ return(NULL);
 
     undo->undotype = ut_vwidth;
     undo->was_modified = cv->sc->changed;
-    undo->was_order2 = cv->sc->parent->order2;
+    undo->was_order2 = cv->layerheads[cv->drawmode]->order2;
     undo->u.width = vwidth;
 return( CVAddUndo(cv,undo));
 }
@@ -693,7 +694,7 @@ return(NULL);
 
     undo->undotype = ut_width;
     undo->was_modified = sc->changed;
-    undo->was_order2 = sc->parent->order2;
+    undo->was_order2 = sc->layers[ly_fore].order2;
     undo->u.state.width = sc->width;
 return( AddUndo(undo,&sc->layers[ly_fore].undoes,&sc->layers[ly_fore].redoes));
 }
@@ -708,7 +709,7 @@ return(NULL);
 
     undo->undotype = ut_vwidth;
     undo->was_modified = sc->changed;
-    undo->was_order2 = sc->parent->order2;
+    undo->was_order2 = sc->layers[ly_fore].order2;
     undo->u.state.width = sc->vwidth;
 return( AddUndo(undo,&sc->layers[ly_fore].undoes,&sc->layers[ly_fore].redoes));
 }
@@ -1100,7 +1101,7 @@ return( copy(""));
 return( copy( cur->u.state.charname ));
 }
 
-static RefChar *XCopyInstanciateRefs(RefChar *refs,SplineChar *container) {
+static RefChar *XCopyInstanciateRefs(RefChar *refs,SplineChar *container,int layer) {
     /* References in the copybuffer don't include the translated splines */
     RefChar *head=NULL, *last, *cur;
 
@@ -1114,7 +1115,7 @@ static RefChar *XCopyInstanciateRefs(RefChar *refs,SplineChar *container) {
 	cur->layers[0].splines = NULL;
 #endif
 	cur->next = NULL;
-	SCReinstanciateRefChar(container,cur);
+	SCReinstanciateRefChar(container,cur,layer);
 	if ( head==NULL )
 	    head = cur;
 	else
@@ -1129,9 +1130,7 @@ return( head );
 static void *copybuffer2svg(void *_copybuffer,int32 *len) {
     Undoes *cur = &copybuffer;
     SplineChar dummy;
-#ifdef FONTFORGE_CONFIG_TYPE3
     static Layer layers[2];
-#endif
     FILE *svg;
     char *ret;
     int old_order2;
@@ -1159,9 +1158,7 @@ return( copy(""));
     }
 
     memset(&dummy,0,sizeof(dummy));
-#ifdef FONTFORGE_CONFIG_TYPE3
     dummy.layers = layers;
-#endif
     dummy.layer_cnt = 2;
     dummy.name = "dummy";
     if ( cur->undotype!=ut_layers )
@@ -1184,7 +1181,7 @@ return( copy(""));
 		dummy.layers[lcnt].dofill = ulayer->u.state.dofill;
 		dummy.layers[lcnt].dostroke = ulayer->u.state.dostroke;
 		dummy.layers[lcnt].splines = ulayer->u.state.splines;
-		dummy.layers[lcnt].refs = XCopyInstanciateRefs(ulayer->u.state.refs,&dummy);
+		dummy.layers[lcnt].refs = XCopyInstanciateRefs(ulayer->u.state.refs,&dummy,ly_fore);
 	    }
 	}
     } else
@@ -1197,7 +1194,7 @@ return( copy(""));
 	dummy.layers[ly_fore].dostroke = cur->u.state.dostroke;
 #endif
 	dummy.layers[ly_fore].splines = cur->u.state.splines;
-	dummy.layers[ly_fore].refs = XCopyInstanciateRefs(cur->u.state.refs,&dummy);
+	dummy.layers[ly_fore].refs = XCopyInstanciateRefs(cur->u.state.refs,&dummy,ly_fore);
     }
 
     svg = tmpfile();
@@ -1206,19 +1203,18 @@ return( copy(""));
 return( copy(""));
     }
 
-    old_order2 = dummy.parent->order2;
-    dummy.parent->order2 = cur->was_order2;
+    old_order2 = dummy.parent->layers[ly_fore].order2;
+    dummy.parent->layers[ly_fore].order2 = cur->was_order2;
+    dummy.layers[ly_fore].order2 = cur->was_order2;
     /* Don't bother to generate a preview here, that can take too long and */
     /*  cause the paster to time out */
     _ExportSVG(svg,&dummy);
-    dummy.parent->order2 = old_order2;
+    dummy.parent->layers[ly_fore].order2 = old_order2;
 
     for ( lcnt = ly_fore; lcnt<dummy.layer_cnt; ++lcnt )
 	RefCharsFree(dummy.layers[lcnt].refs);
-#ifdef FONTFORGE_CONFIG_TYPE3
     if ( dummy.layer_cnt!=2 )
 	free( dummy.layers );
-#endif
 
     fseek(svg,0,SEEK_END);
     *len = ftell(svg);
@@ -1233,9 +1229,7 @@ return( ret );
 static void *copybuffer2eps(void *_copybuffer,int32 *len) {
     Undoes *cur = &copybuffer;
     SplineChar dummy;
-#ifdef FONTFORGE_CONFIG_TYPE3
     static Layer layers[2];
-#endif
     FILE *eps;
     char *ret;
     int old_order2;
@@ -1263,9 +1257,7 @@ return( copy(""));
     }
 
     memset(&dummy,0,sizeof(dummy));
-#ifdef FONTFORGE_CONFIG_TYPE3
     dummy.layers = layers;
-#endif
     dummy.layer_cnt = 2;
     dummy.name = "dummy";
     if ( cur->undotype!=ut_layers )
@@ -1288,7 +1280,7 @@ return( copy(""));
 		dummy.layers[lcnt].dofill = ulayer->u.state.dofill;
 		dummy.layers[lcnt].dostroke = ulayer->u.state.dostroke;
 		dummy.layers[lcnt].splines = ulayer->u.state.splines;
-		dummy.layers[lcnt].refs = XCopyInstanciateRefs(ulayer->u.state.refs,&dummy);
+		dummy.layers[lcnt].refs = XCopyInstanciateRefs(ulayer->u.state.refs,&dummy,ly_fore);
 	    }
 	}
     } else
@@ -1301,7 +1293,7 @@ return( copy(""));
 	dummy.layers[ly_fore].dostroke = cur->u.state.dostroke;
 #endif
 	dummy.layers[ly_fore].splines = cur->u.state.splines;
-	dummy.layers[ly_fore].refs = XCopyInstanciateRefs(cur->u.state.refs,&dummy);
+	dummy.layers[ly_fore].refs = XCopyInstanciateRefs(cur->u.state.refs,&dummy,ly_fore);
     }
 
     eps = tmpfile();
@@ -1310,19 +1302,18 @@ return( copy(""));
 return( copy(""));
     }
 
-    old_order2 = dummy.parent->order2;
-    dummy.parent->order2 = cur->was_order2;
+    old_order2 = dummy.parent->layers[ly_fore].order2;
+    dummy.parent->layers[ly_fore].order2 = cur->was_order2;
+    dummy.layers[ly_fore].order2 = cur->was_order2;
     /* Don't bother to generate a preview here, that can take too long and */
     /*  cause the paster to time out */
     _ExportEPS(eps,&dummy,false);
-    dummy.parent->order2 = old_order2;
+    dummy.parent->layers[ly_fore].order2 = old_order2;
 
     for ( lcnt = ly_fore; lcnt<dummy.layer_cnt; ++lcnt )
 	RefCharsFree(dummy.layers[lcnt].refs);
-#ifdef FONTFORGE_CONFIG_TYPE3
     if ( dummy.layer_cnt!=2 )
 	free( dummy.layers );
-#endif
 
     fseek(eps,0,SEEK_END);
     *len = ftell(eps);
@@ -1495,7 +1486,7 @@ void CopyReference(SplineChar *sc) {
     CopyBufferFreeGrab();
 
     copybuffer.undotype = ut_state;
-    copybuffer.was_order2 = sc->parent->order2;
+    copybuffer.was_order2 = sc->layers[ly_fore].order2;
     copybuffer.u.state.width = sc->width;
     copybuffer.u.state.vwidth = sc->vwidth;
     copybuffer.u.state.refs = ref = RefCharCreate();
@@ -1527,7 +1518,7 @@ void CopySelected(CharViewBase *cv,int doanchors) {
     CopyBufferFreeGrab();
 
     copybuffer.undotype = ut_state;
-    copybuffer.was_order2 = cv->sc->parent->order2;
+    copybuffer.was_order2 = cv->layerheads[cv->drawmode]->order2;
     copybuffer.u.state.width = cv->sc->width;
     copybuffer.u.state.vwidth = cv->sc->vwidth;
     if ( cv->sc->inspiro )
@@ -1560,10 +1551,7 @@ void CopySelected(CharViewBase *cv,int doanchors) {
 	    }
 	}
     }
-#ifndef FONTFORGE_CONFIG_TYPE3
-    if ( cv->drawmode==dm_back )
-#endif
-    {
+    if ( cv->drawmode!=dm_grid && CVLayer(cv)!=ly_fore ) {
 	ImageList *imgs, *new;
 	for ( imgs = cv->layerheads[cv->drawmode]->images; imgs!=NULL; imgs = imgs->next ) if ( imgs->selected ) {
 	    new = chunkalloc(sizeof(ImageList));
@@ -1595,7 +1583,7 @@ return;
     CopyBufferFreeGrab();
 
     copybuffer.undotype = ut_state;
-    copybuffer.was_order2 = sc->parent->order2;
+    copybuffer.was_order2 = cv->layerheads[cv->drawmode]->order2;
     copybuffer.u.state.width = cv->ft_gridfitwidth;
     copybuffer.u.state.vwidth = sc->vwidth;
     copybuffer.u.state.splines = SplinePointListCopy(cv->gridfit);
@@ -1622,7 +1610,7 @@ static Undoes *SCCopyAll(SplineChar *sc,enum fvcopy_type full) {
     if ( sc==NULL ) {
 	cur->undotype = ut_noop;
     } else {
-	cur->was_order2 = sc->parent->order2;
+	cur->was_order2 = sc->layers[ly_fore].order2;
 	cur->u.state.width = sc->width;
 	cur->u.state.vwidth = sc->vwidth;
 	if ( full==ct_fullcopy || full == ct_unlinkrefs ) {
@@ -2002,7 +1990,6 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastein
     DBounds bb;
     real transform[6];
     int width, vwidth;
-    FontViewBase *fvs;
     int xoff=0, yoff=0;
     int was_empty;
 #ifdef FONTFORGE_CONFIG_PASTEAFTER
@@ -2060,7 +2047,7 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastein
 			sc->layers[layer].splines,transform,true);
 		for ( ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next ) {
 		    ref->transform[4] += width;
-		    SCReinstanciateRefChar(sc,ref);
+		    SCReinstanciateRefChar(sc,ref,layer);
 		}
 	    } else {
 		xoff = sc->width;
@@ -2089,8 +2076,8 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastein
 		transform[4] = xoff; transform[5] = yoff;
 		temp = SplinePointListTransform(temp,transform,true);
 	    }
-	    if ( paster->was_order2 != sc->parent->order2 )
-		temp = SplineSetsConvertOrder(temp,sc->parent->order2);
+	    if ( paster->was_order2 != sc->layers[layer].order2 )
+		temp = SplineSetsConvertOrder(temp,sc->layers[layer].order2);
 	    if ( sc->layers[layer].splines!=NULL ) {
 		SplinePointList *e = sc->layers[layer].splines;
 		while ( e->next!=NULL ) e = e->next;
@@ -2120,7 +2107,7 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastein
 	    if ( !pasteinto ) {	/* Hints aren't meaningful unless we've cleared first */
 		ExtractHints(sc,paster->u.state.hints,true);
 		free(sc->ttf_instrs);
-		if ( paster->u.state.instrs_len!=0 && sc->parent->order2 &&
+		if ( paster->u.state.instrs_len!=0 && sc->layers[layer].order2 &&
 			InstrsSameParent(sc,paster->copied_from)) {
 		    sc->ttf_instrs = (uint8 *) copyn((char *) paster->u.state.instrs,paster->u.state.instrs_len);
 		    sc->ttf_instrs_len = paster->u.state.instrs_len;
@@ -2173,7 +2160,7 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastein
 		    new->sc = rsc;
 		    new->next = sc->layers[layer].refs;
 		    sc->layers[layer].refs = new;
-		    SCReinstanciateRefChar(sc,new);
+		    SCReinstanciateRefChar(sc,new,layer);
 		    SCMakeDependent(sc,rsc);
 		} else {
 		    PasteNonExistantRefCheck(sc,paster,refs,refstate);
@@ -2653,6 +2640,7 @@ static void _PasteToCV(CharViewBase *cv,SplineChar *cvsc,Undoes *paster) {
     DBounds bb;
     real transform[6];
     int wasempty = false;
+    int layer = CVLayer(cv);
 
     if ( copybuffer.undotype == ut_none ) {
 	if ( cv->drawmode==dm_grid )
@@ -2688,21 +2676,18 @@ return;
 #endif
 	if ( paster->u.state.splines!=NULL ) {
 	    SplinePointList *spl, *new = SplinePointListCopy(paster->u.state.splines);
-	    if ( paster->was_order2 != cvsc->parent->order2 )
-		new = SplineSetsConvertOrder(new,cvsc->parent->order2 );
+	    if ( paster->was_order2 != cv->layerheads[cv->drawmode]->order2 )
+		new = SplineSetsConvertOrder(new,cv->layerheads[cv->drawmode]->order2 );
 	    SplinePointListSelect(new,true);
 	    for ( spl = new; spl->next!=NULL; spl = spl->next );
 	    spl->next = cv->layerheads[cv->drawmode]->splines;
 	    cv->layerheads[cv->drawmode]->splines = new;
 	}
 	if ( paster->undotype==ut_state && paster->u.state.images!=NULL ) {
-#ifdef FONTFORGE_CONFIG_TYPE3
-	    int dm = cvsc->parent->multilayer ? cv->drawmode : dm_back;
-#else
-	    const int dm = dm_back;
-	    /* Images can only be pasted into background, so do that */
-	    /*  even if we aren't in background mode */
-#endif
+	    /* Can't paste images to foreground layer (unless type3 font) */
+	    int dm = cvsc->parent->multilayer || CVLayer(cv)!=ly_fore?
+		    cv->drawmode : dm_back;
+	    if ( dm==dm_grid ) dm = dm_back;
 	    ImageList *new, *cimg;
 	    for ( cimg = paster->u.state.images; cimg!=NULL; cimg=cimg->next ) {
 		new = galloc(sizeof(ImageList));
@@ -2715,7 +2700,7 @@ return;
 	} else if ( paster->undotype==ut_statehint && cv->container==NULL ) {
 	    ExtractHints(cvsc,paster->u.state.hints,true);
 	    free(cvsc->ttf_instrs);
-	    if ( paster->u.state.instrs_len!=0 && cvsc->parent->order2 &&
+	    if ( paster->u.state.instrs_len!=0 && cv->layerheads[cv->drawmode]->order2 &&
 		    InstrsSameParent(cvsc,paster->copied_from)) {
 		cvsc->ttf_instrs = (uint8 *) copyn((char *) paster->u.state.instrs,paster->u.state.instrs_len);
 		cvsc->ttf_instrs_len = paster->u.state.instrs_len;
@@ -2726,7 +2711,7 @@ return;
 	}
 	if ( paster->u.state.anchor!=NULL && cv->drawmode==dm_fore && !cvsc->searcherdummy )
 	    APMerge(cvsc,paster->u.state.anchor);
-	if ( paster->u.state.refs!=NULL && cv->drawmode==dm_fore ) {
+	if ( paster->u.state.refs!=NULL && cv->drawmode!=dm_grid ) {
 	    RefChar *new, *refs;
 	    SplineChar *sc;
 	    for ( refs = paster->u.state.refs; refs!=NULL; refs=refs->next ) {
@@ -2753,9 +2738,9 @@ return;
 #endif
 		    new->sc = sc;
 		    new->selected = true;
-		    new->next = cvsc->layers[ly_fore].refs;
-		    cvsc->layers[ly_fore].refs = new;
-		    SCReinstanciateRefChar(cvsc,new);
+		    new->next = cvsc->layers[layer].refs;
+		    cvsc->layers[layer].refs = new;
+		    SCReinstanciateRefChar(cvsc,new,layer);
 		    SCMakeDependent(cvsc,sc);
 		} else {
 		    PasteNonExistantRefCheck(cvsc,paster,refs,&refstate);

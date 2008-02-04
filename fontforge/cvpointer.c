@@ -409,7 +409,7 @@ void CVCheckResizeCursors(CharView *cv) {
     real fudge = 3.5/cv->scale;
 
     cv->expandedge = ee_none;
-    if ( cv->b.drawmode==dm_fore ) {
+    if ( cv->b.drawmode!=dm_grid ) {
 	for ( ref=cv->b.layerheads[cv->b.drawmode]->refs; ref!=NULL; ref=ref->next ) if ( ref->selected ) {
 	    if (( cv->expandedge = OnBB(cv,&ref->bb,fudge))!=ee_none )
 	break;
@@ -463,8 +463,8 @@ static int ImgRefEdgeSelected(CharView *cv, FindSel *fs,GEvent *event) {
     /* Check the bounding box of references if meta is up, or if they didn't */
     /*  click on a reference edge. Point being to allow people to select */
     /*  macron or other reference which fills the bounding box */
-    if ( cv->b.drawmode==dm_fore && (!(event->u.mouse.state&ksm_alt) ||
-	    (fs->p->ref!=NULL && !fs->p->ref->selected))) {
+    if ( !(event->u.mouse.state&ksm_alt) ||
+	    (fs->p->ref!=NULL && !fs->p->ref->selected)) {
 	for ( ref=cv->b.layerheads[cv->b.drawmode]->refs; ref!=NULL; ref=ref->next ) if ( ref->selected ) {
 	    if (( cv->expandedge = OnBB(cv,&ref->bb,fs->fudge))!=ee_none ) {
 		ref->selected = false;
@@ -741,16 +741,16 @@ static int CVRectSelect(CharView *cv, real newx, real newy) {
 	new.maxy = cv->p.cy;
     }
 
-    if ( cv->b.drawmode==dm_fore ) {
-	for ( rf = cv->b.layerheads[cv->b.drawmode]->refs; rf!=NULL; rf=rf->next ) {
-	    if (( rf->bb.minx>=old.minx && rf->bb.maxx<old.maxx &&
-			rf->bb.miny>=old.miny && rf->bb.maxy<old.maxy ) !=
-		    ( rf->bb.minx>=new.minx && rf->bb.maxx<new.maxx &&
-			rf->bb.miny>=new.miny && rf->bb.maxy<new.maxy )) {
-		rf->selected = !rf->selected;
-		any = true;
-	    }
+    for ( rf = cv->b.layerheads[cv->b.drawmode]->refs; rf!=NULL; rf=rf->next ) {
+	if (( rf->bb.minx>=old.minx && rf->bb.maxx<old.maxx &&
+		    rf->bb.miny>=old.miny && rf->bb.maxy<old.maxy ) !=
+		( rf->bb.minx>=new.minx && rf->bb.maxx<new.maxx &&
+		    rf->bb.miny>=new.miny && rf->bb.maxy<new.maxy )) {
+	    rf->selected = !rf->selected;
+	    any = true;
 	}
+    }
+    if ( cv->b.drawmode==dm_fore ) {
 	if ( cv->showanchor ) for ( ap=cv->b.sc->anchor ; ap!=NULL; ap=ap->next ) {
 	    bp = &ap->me;
 	    if (( bp->x>=old.minx && bp->x<old.maxx &&
@@ -831,7 +831,7 @@ void CVAdjustControl(CharView *cv,BasePoint *cp, BasePoint *to) {
     BasePoint *othercp = cp==&sp->nextcp?&sp->prevcp:&sp->nextcp;
     int refig = false, otherchanged = false;
 
-    if ( sp->ttfindex==0xffff && cv->b.fv->sf->order2 ) {
+    if ( sp->ttfindex==0xffff && cv->b.layerheads[cv->b.drawmode]->order2 ) {
 	/* If the point itself is implied, then it's the control points that */
 	/*  are fixed. Moving a CP should move the implied point so that it */
 	/*  continues to be in the right place */
@@ -853,7 +853,7 @@ void CVAdjustControl(CharView *cv,BasePoint *cp, BasePoint *to) {
 	    *cp = *to;
 	}
 	if (( cp->x!=sp->me.x || cp->y!=sp->me.y ) &&
-		(!cv->b.sc->parent->order2 ||
+		(!cv->b.layerheads[cv->b.drawmode]->order2 ||
 		 (cp==&sp->nextcp && sp->next!=NULL && sp->next->to->ttfindex==0xffff) ||
 		 (cp==&sp->prevcp && sp->prev!=NULL && sp->prev->from->ttfindex==0xffff)) ) {
 	    double len1, len2;
@@ -898,7 +898,7 @@ void CVAdjustControl(CharView *cv,BasePoint *cp, BasePoint *to) {
 	}
     }
 
-    if ( cv->b.fv->sf->order2 ) {
+    if ( cv->b.layerheads[cv->b.drawmode]->order2 ) {
 	if ( (cp==&sp->nextcp || otherchanged) && sp->next!=NULL ) {
 	    SplinePoint *osp = sp->next->to;
 	    if ( osp->ttfindex==0xffff ) {
@@ -956,7 +956,7 @@ static void CVAdjustSpline(CharView *cv) {
     real t;
     Spline1D *oldx = &old->splines[0], *oldy = &old->splines[1];
 
-    if ( cv->b.sc->parent->order2 )
+    if ( cv->b.layerheads[cv->b.drawmode]->order2 )
 return;
 
     tp[0].x = cv->info.x; tp[0].y = cv->info.y; tp[0].t = cv->p.t;

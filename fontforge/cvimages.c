@@ -110,7 +110,7 @@ return;
 	    ff_post_error( _("Too Complex or Bad"), _("I'm sorry this file is too complex for me to understand (or is erroneous, or is empty)") );
 return;
 	}
-	if ( sc->parent->order2 )
+	if ( sc->layers[ly_fore].order2 )
 	    spl = SplineSetsConvertOrder(spl,true);
 	for ( espl=spl; espl->next!=NULL; espl = espl->next );
 	if ( layer==ly_grid )
@@ -225,7 +225,7 @@ return;
     /* After doing the above flip, the contours appear oriented acording to my*/
     /*  conventions */
 
-    if ( sc->parent->order2 ) {
+    if ( sc->layers[ly_fore].order2 ) {
 	head = SplineSetsConvertOrder(head,true);
 	for ( last=head; last->next!=NULL; last = last->next );
     }
@@ -259,8 +259,8 @@ void SCImportSVG(SplineChar *sc,int layer,char *path,char *memory, int memlen, i
 		sc->parent->ascent,sc->parent->strokedfont);
 	for ( espl = spl; espl!=NULL && espl->first->next==NULL; espl=espl->next );
 	if ( espl!=NULL )
-	    if ( espl->first->next->order2!=sc->parent->order2 )
-		spl = SplineSetsConvertOrder(spl,sc->parent->order2);
+	    if ( espl->first->next->order2!=sc->layers[ly_fore].order2 )
+		spl = SplineSetsConvertOrder(spl,sc->layers[ly_fore].order2);
 	if ( spl==NULL ) {
 	    ff_post_error(_("Too Complex or Bad"),_("I'm sorry this file is too complex for me to understand (or is erroneous)"));
 return;
@@ -289,8 +289,8 @@ void SCImportGlif(SplineChar *sc,int layer,char *path,char *memory, int memlen, 
 	    sc->parent->ascent,sc->parent->strokedfont);
     for ( espl = spl; espl!=NULL && espl->first->next==NULL; espl=espl->next );
     if ( espl!=NULL )
-	if ( espl->first->next->order2!=sc->parent->order2 )
-	    spl = SplineSetsConvertOrder(spl,sc->parent->order2);
+	if ( espl->first->next->order2!=sc->layers[ly_fore].order2 )
+	    spl = SplineSetsConvertOrder(spl,sc->layers[ly_fore].order2);
     if ( spl==NULL ) {
 	ff_post_error(_("Too Complex or Bad"),_("I'm sorry this file is too complex for me to understand (or is erroneous)"));
 return;
@@ -729,7 +729,7 @@ static SplineSet * slurpspline(FILE *fig,SplineChar *sc, SplineSet *sofar) {
 	xs.cp[cnt-1] = xs.cp[0];
 	xs.s[cnt-1] = xs.s[0];
     }
-    spl = ApproximateXSpline(&xs,sc->parent->order2);
+    spl = ApproximateXSpline(&xs,sc->layers[ly_fore].order2);
 
     free(xs.cp);
     free(xs.s);
@@ -806,7 +806,7 @@ return;
 	    SplinePointListsFree(*head);
 	    *head = NULL;
 	}
-	if ( sc->parent->order2 )
+	if ( sc->layers[ly_fore].order2 )
 	    spl = SplineSetsConvertOrder(spl,true);
 	for ( espl=spl; espl->next!=NULL; espl=espl->next );
 	espl->next = *head;

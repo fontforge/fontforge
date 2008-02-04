@@ -265,7 +265,7 @@ return;
 	    if (( xrad = (cv->p.cx-cv->info.x) )<0 ) xrad = -xrad;
 	    if (( yrad = (cv->p.cy-cv->info.y) )<0 ) yrad = -yrad;
 	}
-	if ( cv->b.sc->parent->order2 ) {
+	if ( cv->b.layerheads[cv->b.drawmode]->order2 ) {
 	    xrad = rint(xrad);
 	    yrad = rint(yrad);
 	}
@@ -314,7 +314,7 @@ void CVMouseUpShape(CharView *cv) {
     if ( cv->active_shape==NULL )
 return;
 
-    if ( cv->b.sc->parent->order2 ) {
+    if ( cv->b.layerheads[cv->b.drawmode]->order2 ) {
 	SplineSet *prev, *new, *ss;
 	new = SplineSetsTTFApprox(cv->active_shape);
 	for ( ss=cv->b.layerheads[cv->b.drawmode]->splines, prev=NULL;
