@@ -722,6 +722,7 @@ static void _ImageFindBounds(ImageList *img,DBounds *bounds) {
 void SplineCharFindBounds(SplineChar *sc,DBounds *bounds) {
     RefChar *rf;
     int i;
+    int first,last;
 #ifdef FONTFORGE_CONFIG_TYPE3
     ImageList *img;
     real e;
@@ -732,7 +733,10 @@ void SplineCharFindBounds(SplineChar *sc,DBounds *bounds) {
     bounds->minx = bounds->maxx = 0;
     bounds->miny = bounds->maxy = 0;
 
-    for ( i=ly_fore; i<sc->layer_cnt; ++i ) {
+    first = last = ly_fore;
+    if ( sc->parent->multilayer )
+	last = sc->layer_cnt-1;
+    for ( i=first; i<=last; ++i ) {
 	for ( rf=sc->layers[i].refs; rf!=NULL; rf = rf->next ) {
 	    if ( bounds->minx==0 && bounds->maxx==0 && bounds->miny==0 && bounds->maxy == 0 )
 		*bounds = rf->bb;
@@ -778,7 +782,7 @@ void SplineCharFindBounds(SplineChar *sc,DBounds *bounds) {
 
 void SplineFontFindBounds(SplineFont *sf,DBounds *bounds) {
     RefChar *rf;
-    int i, k;
+    int i, k, first, last;
 #ifdef FONTFORGE_CONFIG_TYPE3
     real extra=0,e;
     ImageList *img;
@@ -790,7 +794,10 @@ void SplineFontFindBounds(SplineFont *sf,DBounds *bounds) {
     for ( i = 0; i<sf->glyphcnt; ++i ) {
 	SplineChar *sc = sf->glyphs[i];
 	if ( sc!=NULL ) {
-	    for ( k=ly_fore; k<sc->layer_cnt; ++k ) {
+	    first = last = ly_fore;
+	    if ( sc->parent->multilayer )
+		last = sc->layer_cnt-1;
+	    for ( k=first; k<=last; ++k ) {
 		for ( rf=sc->layers[k].refs; rf!=NULL; rf = rf->next ) {
 		    if ( bounds->minx==0 && bounds->maxx==0 && bounds->miny==0 && bounds->maxy == 0 )
 			*bounds = rf->bb;
@@ -902,7 +909,7 @@ void SplineSetQuickBounds(SplineSet *ss,DBounds *b) {
 
 void SplineCharQuickBounds(SplineChar *sc, DBounds *b) {
     RefChar *ref;
-    int i;
+    int i,first, last;
     DBounds temp;
 #ifdef FONTFORGE_CONFIG_TYPE3
     real e;
@@ -910,7 +917,10 @@ void SplineCharQuickBounds(SplineChar *sc, DBounds *b) {
 #endif
 
     memset(b,0,sizeof(*b));
-    for ( i=ly_fore; i<sc->layer_cnt; ++i ) {
+    first = last = ly_fore;
+    if ( sc->parent->multilayer )
+	last = sc->layer_cnt-1;
+    for ( i=first; i<=last; ++i ) {
 	SplineSetQuickBounds(sc->layers[i].splines,&temp);
 #ifdef FONTFORGE_CONFIG_TYPE3
 	for ( img=sc->layers[i].images; img!=NULL; img=img->next )
@@ -984,7 +994,7 @@ void SplineSetQuickConservativeBounds(SplineSet *ss,DBounds *b) {
 
 void SplineCharQuickConservativeBounds(SplineChar *sc, DBounds *b) {
     RefChar *ref;
-    int i;
+    int i, first,last;
     DBounds temp;
 #ifdef FONTFORGE_CONFIG_TYPE3
     real e;
@@ -992,7 +1002,10 @@ void SplineCharQuickConservativeBounds(SplineChar *sc, DBounds *b) {
 #endif
 
     memset(b,0,sizeof(*b));
-    for ( i=ly_fore; i<sc->layer_cnt; ++i ) {
+    first = last = ly_fore;
+    if ( sc->parent->multilayer )
+	last = sc->layer_cnt-1;
+    for ( i=first; i<=last; ++i ) {
 	SplineSetQuickConservativeBounds(sc->layers[i].splines,&temp);
 #ifdef FONTFORGE_CONFIG_TYPE3
 	for ( img=sc->layers[i].images; img!=NULL; img=img->next )
@@ -2010,7 +2023,7 @@ return;
 }
 
 static void InstanciateReference(SplineFont *sf, RefChar *topref, RefChar *refs,
-	real transform[6], SplineChar *dsc) {
+	real transform[6], SplineChar *dsc, int layer) {
     real trans[6];
     RefChar *rf;
     SplineChar *rsc;
@@ -2055,7 +2068,7 @@ return;
 	trans[5] = rf->transform[4]*transform[1] +
 		    rf->transform[5]*transform[3] +
 		    transform[5];
-	InstanciateReference(sf,topref,rf,trans,rsc);
+	InstanciateReference(sf,topref,rf,trans,rsc,layer);
     }
     rsc->ticked = false;
 
@@ -2087,7 +2100,7 @@ return;
 #else
     {
 #endif
-	new = SplinePointListTransform(SplinePointListCopy(rsc->layers[ly_fore].splines),transform,true);
+	new = SplinePointListTransform(SplinePointListCopy(rsc->layers[layer].splines),transform,true);
 	if ( new!=NULL ) {
 	    for ( spl = new; spl->next!=NULL; spl = spl->next );
 	    spl->next = topref->layers[0].splines;
@@ -2259,7 +2272,7 @@ return;		/* It's just the expected matrix */
     }
     for ( i=0; i<sf->glyphcnt; ++i ) if ( (sc=sf->glyphs[i])!=NULL ) {
 	for ( refs=sc->layers[ly_fore].refs; refs!=NULL; refs=refs->next )
-	    SCReinstanciateRefChar(sc,refs);
+	    SCReinstanciateRefChar(sc,refs,ly_fore);
     }
 }
 
@@ -2273,11 +2286,11 @@ void SFInstanciateRefs(SplineFont *sf) {
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
 	SplineChar *sc = sf->glyphs[i];
 
-	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+	for ( layer=ly_back; layer<sc->layer_cnt; ++layer ) {
 	    for ( pr=NULL, refs = sc->layers[layer].refs; refs!=NULL; refs=next ) {
 		next = refs->next;
 		sc->ticked = true;
-		InstanciateReference(sf, refs, refs, refs->transform,sc);
+		InstanciateReference(sf, refs, refs, refs->transform,sc,layer);
 		if ( refs->sc!=NULL ) {
 		    SplineSetFindBounds(refs->layers[0].splines,&refs->bb);
 		    sc->ticked = false;
@@ -2824,7 +2837,7 @@ void RefCharFindBounds(RefChar *rf) {
 #endif
 }
 
-void SCReinstanciateRefChar(SplineChar *sc,RefChar *rf) {
+void SCReinstanciateRefChar(SplineChar *sc,RefChar *rf,int layer) {
     SplinePointList *spl, *new;
     RefChar *refs;
 #ifdef FONTFORGE_CONFIG_TYPE3
@@ -2906,13 +2919,13 @@ return;
 return;
     {
 #endif
-	new = SplinePointListTransform(SplinePointListCopy(rf->sc->layers[ly_fore].splines),rf->transform,true);
+	new = SplinePointListTransform(SplinePointListCopy(rf->sc->layers[layer].splines),rf->transform,true);
 	if ( new!=NULL ) {
 	    for ( spl = new; spl->next!=NULL; spl = spl->next );
 	    spl->next = rf->layers[0].splines;
 	    rf->layers[0].splines = new;
 	}
-	for ( refs = rf->sc->layers[ly_fore].refs; refs!=NULL; refs = refs->next ) {
+	for ( refs = rf->sc->layers[layer].refs; refs!=NULL; refs = refs->next ) {
 	    new = SplinePointListTransform(SplinePointListCopy(refs->layers[0].splines),rf->transform,true);
 	    if ( new!=NULL ) {
 		for ( spl = new; spl->next!=NULL; spl = spl->next );
@@ -2948,7 +2961,7 @@ static void _SFReinstanciateRefs(SplineFont *sf) {
 	    else {
 		for ( j=0; j<sf->glyphs[i]->layer_cnt; ++j ) {
 		    for ( ref=sf->glyphs[i]->layers[j].refs; ref!=NULL; ref=ref->next )
-			SCReinstanciateRefChar(sf->glyphs[i],ref);
+			SCReinstanciateRefChar(sf->glyphs[i],ref,j);
 		}
 		sf->glyphs[i]->ticked = true;
 	    }
@@ -2968,11 +2981,11 @@ void SFReinstanciateRefs(SplineFont *sf) {
 	_SFReinstanciateRefs(sf);
 }
 
-void SCReinstanciateRef(SplineChar *sc,SplineChar *rsc) {
+void SCReinstanciateRef(SplineChar *sc,SplineChar *rsc,int layer) {
     RefChar *rf;
 
-    for ( rf=sc->layers[ly_fore].refs; rf!=NULL; rf=rf->next ) if ( rf->sc==rsc ) {
-	SCReinstanciateRefChar(sc,rf);
+    for ( rf=sc->layers[layer].refs; rf!=NULL; rf=rf->next ) if ( rf->sc==rsc ) {
+	SCReinstanciateRefChar(sc,rf,layer);
     }
 }
 
@@ -5410,7 +5423,7 @@ void LayerDefault(Layer *layer) {
 #endif
 }
 
-SplineChar *SplineCharCreate(void) {
+SplineChar *SplineCharCreate(int layer_cnt) {
     SplineChar *sc = chunkalloc(sizeof(SplineChar));
     sc->color = COLOR_DEFAULT;
     sc->orig_pos = 0xffff;
@@ -5423,6 +5436,16 @@ SplineChar *SplineCharCreate(void) {
 #endif
     sc->tex_height = sc->tex_depth = sc->italic_correction = sc->top_accent_horiz =
 	    TEX_UNDEF;
+return( sc );
+}
+
+SplineChar *SFSplineCharCreate(SplineFont *sf) {
+    SplineChar *sc = SplineCharCreate(sf->layer_cnt);
+    int i;
+
+    for ( i=0; i<sf->layer_cnt; ++i )
+	sc->layers[i].order2 = sf->layers[i].order2;
+    sc->parent = sf;
 return( sc );
 }
 
@@ -6095,7 +6118,7 @@ int SCRoundToCluster(SplineChar *sc,int layer,int sel,double within,double max) 
     /* First figure out what points we will need */
     for ( k=0; k<2; ++k ) {
 	ptcnt = selcnt = 0;
-	if ( layer==-2 ) {
+	if ( layer==ly_all ) {
 	    for ( l=ly_fore; l<sc->layer_cnt; ++l ) {
 		for ( spl = sc->layers[l].splines; spl!=NULL; spl=spl->next ) {
 		    for ( sp = spl->first; ; ) {

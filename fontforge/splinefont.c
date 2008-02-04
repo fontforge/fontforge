@@ -189,11 +189,10 @@ return( sc );
 	    AltUniAdd(sc,dummy.unicodeenc);
 return( sc );
 	}
-	sc = SplineCharCreate();
+	sc = SFSplineCharCreate(sf);
 	sc->unicodeenc = dummy.unicodeenc;
 	sc->name = copy(dummy.name);
 	sc->width = dummy.width;
-	sc->parent = sf;
 	sc->orig_pos = 0xffff;
 	/*SCLigDefault(sc);*/
 	SFAddGlyphAndEncode(sf,sc,map,enc);
