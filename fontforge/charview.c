@@ -603,7 +603,7 @@ return;
     if ( sp->selected )
 	GDrawSetLineWidth(pixmap,selectedpointwidth);
     isfake = false;
-    if ( cv->b.fv->sf->order2 && cv->b.drawmode==dm_fore &&
+    if ( cv->b.drawmode==dm_fore && cv->b.sc->layers[ly_fore].order2 &&
 	    cv->b.sc->layers[ly_fore].refs==NULL ) {
 	int mightbe_fake = SPInterpolate(sp);
         if ( !mightbe_fake && sp->ttfindex==0xffff )
@@ -1820,12 +1820,15 @@ static void CVSideBearings(GWindow pixmap, CharView *cv) {
     SplineChar *sc = cv->b.sc;
     RefChar *ref;
     BasePoint *bounds[4];
-    int layer,l;
+    int layer,last,l;
     int x,y, x2, y2;
     char buf[20];
 
     memset(bounds,0,sizeof(bounds));
-    for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+    last = ly_fore;
+    if ( sc->parent->multilayer )
+	last = sc->layer_cnt-1;
+    for ( layer=ly_fore; layer<=last; ++layer ) {
 	FindQuickBounds(sc->layers[layer].splines,bounds);
 	for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next )
 	    for ( l=0; l<ref->layer_cnt; ++l )
@@ -1869,7 +1872,7 @@ return;				/* no points. no side bearings */
 	    double t = tan(-cv->b.sc->parent->italicangle*3.1415926535897932/180.);
 	    if ( t!=0 ) {
 		SplinePoint *leftmost=NULL, *rightmost=NULL;
-		for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+		for ( layer=ly_fore; layer<=last; ++layer ) {
 		    SSFindItalicBounds(sc->layers[layer].splines,t,&leftmost,&rightmost);
 		    for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next )
 			for ( l=0; l<ref->layer_cnt; ++l )
@@ -1942,7 +1945,8 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     GRect old;
     DRect clip;
     char buf[20];
-    PST *pst; int i, layer, rlayer;
+    PST *pst;
+    int i, layer, rlayer, last;
 
     GDrawPushClip(pixmap,&event->u.expose.rect,&old);
 
@@ -2022,6 +2026,14 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		CVDrawTemplates(cv,pixmap,cv->template1,&clip);
 	    if ( cv->template2!=NULL )
 		CVDrawTemplates(cv,pixmap,cv->template2,&clip);
+	    for ( rf=cv->b.sc->layers[ly_back].refs; rf!=NULL; rf = rf->next ) {
+		if ( cv->b.drawmode==dm_back )
+		    CVDrawRefName(cv,pixmap,rf,0);
+		for ( rlayer=0; rlayer<rf->layer_cnt; ++rlayer )
+		    CVDrawSplineSet(cv,pixmap,rf->layers[rlayer].splines,backoutlinecol,-1,&clip);
+		if ( rf->selected && cv->b.layerheads[cv->b.drawmode]==&cv->b.sc->layers[layer])
+		    CVDrawBB(cv,pixmap,&rf->bb);
+	    }
 	}
 	if ( cv->mmvisible!=0 )
 	    DrawMMGhosts(cv,pixmap,&clip);
@@ -2031,7 +2043,8 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	CVDrawAnchorPoints(cv,pixmap);
 	for ( layer=ly_fore ; layer<cv->b.sc->layer_cnt; ++layer ) {
 	    for ( rf=cv->b.sc->layers[layer].refs; rf!=NULL; rf = rf->next ) {
-		CVDrawRefName(cv,pixmap,rf,0);
+		if ( CVLayer((CharViewBase *) cv)==layer )
+		    CVDrawRefName(cv,pixmap,rf,0);
 		for ( rlayer=0; rlayer<rf->layer_cnt; ++rlayer )
 		    CVDrawSplineSet(cv,pixmap,rf->layers[rlayer].splines,foreoutlinecol,-1,&clip);
 		if ( rf->selected && cv->b.layerheads[cv->b.drawmode]==&cv->b.sc->layers[layer])
@@ -2199,20 +2212,27 @@ static void SCRegenFills(SplineChar *sc) {
 	SCRegenFills(dlist->sc);
 }
 
-static void SCRegenDependents(SplineChar *sc) {
+static void SCRegenDependents(SplineChar *sc, int layer) {
     struct splinecharlist *dlist;
     FontView *fv;
+    int first, last;
 
-    for ( fv = (FontView *) (sc->parent->fv); fv!=NULL; fv=(FontView *) (fv->b.nextsame) ) {
-	if ( fv->sv!=NULL ) {
-	    SCReinstanciateRef(&fv->sv->sd.sc_srch,sc);
-	    SCReinstanciateRef(&fv->sv->sd.sc_rpl,sc);
-	}
+    first = last = layer;
+    if ( layer==ly_all ) {
+	first = 0; last = sc->layer_cnt-1;
     }
+    for ( layer = first; layer<=last; ++layer ) {
+	for ( fv = (FontView *) (sc->parent->fv); fv!=NULL; fv=(FontView *) (fv->b.nextsame) ) {
+	    if ( fv->sv!=NULL && layer<=ly_fore ) {
+		SCReinstanciateRef(&fv->sv->sd.sc_srch,sc,layer);
+		SCReinstanciateRef(&fv->sv->sd.sc_rpl,sc,layer);
+	    }
+	}
 
-    for ( dlist=sc->dependents; dlist!=NULL; dlist=dlist->next ) {
-	SCReinstanciateRef(dlist->sc,sc);
-	SCRegenDependents(dlist->sc);
+	for ( dlist=sc->dependents; dlist!=NULL; dlist=dlist->next ) {
+	    SCReinstanciateRef(dlist->sc,sc,layer);
+	    SCRegenDependents(dlist->sc,layer);
+	}
     }
 }
 
@@ -3181,33 +3201,31 @@ static int _CVTestSelectFromEvent(CharView *cv,FindSel *fs) {
     found = InSplineSet(fs,cv->b.layerheads[cv->b.drawmode]->splines,cv->b.sc->inspiro);
 
     if ( !found ) {
-	if ( cv->b.drawmode==dm_fore) {
-	    RefChar *rf;
-	    temp = cv->p;
-	    fs->p = &temp;
-	    fs->seek_controls = false;
-	    for ( rf=cv->b.sc->layers[ly_fore].refs; rf!=NULL; rf = rf->next ) {
-		if ( InSplineSet(fs,rf->layers[0].splines,cv->b.sc->inspiro)) {
-		    cv->p.ref = rf;
-		    cv->p.anysel = true;
-	    break;
-		}
+	RefChar *rf;
+	temp = cv->p;
+	fs->p = &temp;
+	fs->seek_controls = false;
+	for ( rf=cv->b.sc->layers[ly_fore].refs; rf!=NULL; rf = rf->next ) {
+	    if ( InSplineSet(fs,rf->layers[0].splines,cv->b.sc->inspiro)) {
+		cv->p.ref = rf;
+		cv->p.anysel = true;
+	break;
 	    }
-	    if ( cv->showanchor && !cv->p.anysel ) {
-		AnchorPoint *ap, *found=NULL;
-		/* I do this pecular search because: */
-		/*	1) I expect there to be lots of times we get multiple */
-		/*     anchors at the same location */
-		/*  2) The anchor points are drawn so that the bottommost */
-		/*	   is displayed */
-		for ( ap=cv->b.sc->anchor; ap!=NULL; ap=ap->next )
-		    if ( fs->xl<=ap->me.x && fs->xh>=ap->me.x &&
-			    fs->yl<=ap->me.y && fs->yh >= ap->me.y )
-			found = ap;
-		if ( found!=NULL ) {
-		    cv->p.ap = found;
-		    cv->p.anysel = true;
-		}
+	}
+	if ( cv->b.drawmode==dm_fore && ( cv->showanchor && !cv->p.anysel )) {
+	    AnchorPoint *ap, *found=NULL;
+	    /* I do this pecular search because: */
+	    /*	1) I expect there to be lots of times we get multiple */
+	    /*     anchors at the same location */
+	    /*  2) The anchor points are drawn so that the bottommost */
+	    /*	   is displayed */
+	    for ( ap=cv->b.sc->anchor; ap!=NULL; ap=ap->next )
+		if ( fs->xl<=ap->me.x && fs->xh>=ap->me.x &&
+			fs->yl<=ap->me.y && fs->yh >= ap->me.y )
+		    found = ap;
+	    if ( found!=NULL ) {
+		cv->p.ap = found;
+		cv->p.anysel = true;
 	    }
 	}
 	for ( img = cv->b.layerheads[cv->b.drawmode]->images; img!=NULL; img=img->next ) {
@@ -3254,7 +3272,8 @@ return;
     if ( cv->active_tool == cvt_pointer ) {
 	fs.select_controls = true;
 	if ( event->u.mouse.state&ksm_alt ) fs.seek_controls = true;
-	if ( cv->showpointnumbers && cv->b.fv->sf->order2 ) fs.all_controls = true;
+	if ( cv->showpointnumbers && cv->b.layerheads[cv->b.drawmode]->order2 )
+	    fs.all_controls = true;
 	cv->lastselpt = NULL;
 	cv->lastselcp = NULL;
 	_CVTestSelectFromEvent(cv,&fs);
@@ -3342,7 +3361,7 @@ static void instrcheck(SplineChar *sc) {
     AnchorPoint *ap;
     int had_ap, had_dep, had_instrs;
 
-    if ( !sc->parent->order2 )
+    if ( !sc->layers[ly_fore].order2 )
 return;
 
     for ( cv=(CharView *) (sc->views); cv!=NULL; cv=(CharView *) (cv->b.next) )
@@ -3514,7 +3533,7 @@ void CVSetCharChanged(CharView *cv,int changed) {
 	    SCDeGridFit(sc);
 	    if ( sc->parent->onlybitmaps )
 		/* Do nothing */;
-	    else if ( sc->parent->multilayer || sc->parent->strokedfont || sc->parent->order2 )
+	    else if ( sc->parent->multilayer || sc->parent->strokedfont || sc->layers[ly_fore].order2 )
 		sc->changed_since_search = true;
 	    else if ( cv->b.drawmode==dm_fore )
 		sc->changed_since_search = sc->changedsincelasthinted = true;
@@ -3551,7 +3570,7 @@ static void TTFPointMatches(SplineChar *sc,int top) {
     struct splinecharlist *deps;
     RefChar *ref;
 
-    if ( !sc->parent->order2 )
+    if ( !sc->layers[ly_fore].order2 )
 return;
     for ( ap=sc->anchor ; ap!=NULL; ap=ap->next ) {
 	if ( ap->has_ttf_pt )
@@ -3566,7 +3585,7 @@ return;
 			ref->transform[5]!=there.y-here.y ) {
 		    ref->transform[4] = there.x-here.x;
 		    ref->transform[5] = there.y-here.y;
-		    SCReinstanciateRefChar(sc,ref);
+		    SCReinstanciateRefChar(sc,ref,ly_fore);
 		    if ( !top )
 			_SCCharChangedUpdate(sc,true);
 		}
@@ -3604,7 +3623,7 @@ static void _SC_CharChangedUpdate(SplineChar *sc,int changed) {
 	    SCDeGridFit(sc);
 	}
 	if ( !sc->parent->onlybitmaps && !sc->parent->multilayer &&
-		changed==1 && !sc->parent->strokedfont && !sc->parent->order2 )
+		changed==1 && !sc->parent->strokedfont && !sc->layers[ly_fore].order2 )
 	    sc->changedsincelasthinted = true;
 	sc->changed_since_search = true;
 	sf->changed = true;
@@ -3616,7 +3635,7 @@ static void _SC_CharChangedUpdate(SplineChar *sc,int changed) {
     if ( sf->cidmaster!=NULL )
 	sf->cidmaster->changed = sf->cidmaster->changed_since_autosave =
 		sf->cidmaster->changed_since_xuidchanged = true;
-    SCRegenDependents(sc);		/* All chars linked to this one need to get the new splines */
+    SCRegenDependents(sc,ly_all);	/* All chars linked to this one need to get the new splines */
     if ( updateflex && (CharView *) (sc->views)!=NULL )
 	SplineCharIsFlexible(sc);
     SCUpdateAll(sc);
@@ -3640,7 +3659,7 @@ static void _CV_CharChangedUpdate(CharView *cv,int changed) {
 #endif
     if ( cv->needsrasterize ) {
 	TTFPointMatches(cv->b.sc,true);		/* Must precede regen dependents, as this can change references */
-	SCRegenDependents(cv->b.sc);		/* All chars linked to this one need to get the new splines */
+	SCRegenDependents(cv->b.sc,CVLayer((CharViewBase *) cv));	/* All chars linked to this one need to get the new splines */
 	if ( updateflex )
 	    SplineCharIsFlexible(cv->b.sc);
 	SCUpdateAll(cv->b.sc);
@@ -4026,9 +4045,10 @@ static void CVDrop(CharView *cv,GEvent *event) {
     char *start, *pt, *cnames;
     SplineChar *rsc;
     RefChar *new;
+    int layer = CVLayer((CharViewBase *) cv);
 
-    if ( cv->b.drawmode!=dm_fore ) {
-	ff_post_error(_("Not Foreground"),_("References may be dragged only to the foreground layer"));
+    if ( cv->b.drawmode==dm_grid ) {
+	ff_post_error(_("Not Guides"),_("References may not be dragged into the guidelines layer"));
 return;
     }
     if ( !GDrawSelectionHasType(cv->gw,sn_drag_and_drop,"STRING"))
@@ -4053,9 +4073,9 @@ return;
 	    new->transform[0] = new->transform[3] = 1.0;
 	    new->layers[0].splines = NULL;
 	    new->sc = rsc;
-	    new->next = cv->b.sc->layers[ly_fore].refs;
-	    cv->b.sc->layers[ly_fore].refs = new;
-	    SCReinstanciateRefChar(cv->b.sc,new);
+	    new->next = cv->b.sc->layers[layer].refs;
+	    cv->b.sc->layers[layer].refs = new;
+	    SCReinstanciateRefChar(cv->b.sc,new,layer);
 	    SCMakeDependent(cv->b.sc,rsc);
 	}
 	*pt = ch;
@@ -4528,7 +4548,7 @@ static void CVAddGuide(CharView *cv,int is_v,int guide_pos) {
 	sp1 = SplinePointCreate(-emsize,y);
 	sp2 = SplinePointCreate(2*emsize,y);
     }
-    SplineMake(sp1,sp2,sf->order2);
+    SplineMake(sp1,sp2,sf->grid.order2);
     ss = chunkalloc(sizeof(SplineSet));
     ss->first = sp1; ss->last = sp2;
     ss->next = sf->grid.splines;
@@ -6073,7 +6093,7 @@ static void CVCopyFgBg(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     if ( cv->b.sc->layers[ly_fore].splines==NULL )
 return;
-    SCCopyFgToBg(cv->b.sc,true);
+    SCCopyLayerToLayer(cv->b.sc,ly_fore,ly_back);
 }
 
 #ifdef FONTFORGE_CONFIG_COPY_BG_TO_FG
@@ -6082,7 +6102,7 @@ static void CVCopyBgFg(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     if ( cv->b.sc->layers[ly_back].splines==NULL )
 return;
-    SCCopyBgToFg(cv->b.sc,true);
+    SCCopyLayerToLayer(cv->b.sc,ly_back,ly_fore);
 }
 #endif
 
@@ -6384,7 +6404,7 @@ static void _CVMenuImplicit(CharView *cv,struct gmenuitem *mi) {
     Spline *spline, *first;
     int dontinterpolate = mi->mid==MID_NoImplicitPt;
 
-    if ( !cv->b.sc->parent->order2 )
+    if ( !cv->b.sc->layers[ly_fore].order2 )
 return;
     CVPreserveState(&cv->b);	/* We should only get here if there's a selection */
     for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL ; spl = spl->next ) {
@@ -6538,11 +6558,11 @@ static void cv_ptlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = ccp_cnt==0;
 	  break;
 	  case MID_ImplicitPt:
-	    mi->ti.disabled = !cv->b.sc->parent->order2;
+	    mi->ti.disabled = !cv->b.layerheads[cv->b.drawmode]->order2;
 	    mi->ti.checked = notimplicit==0;
 	  break;
 	  case MID_NoImplicitPt:
-	    mi->ti.disabled = !cv->b.sc->parent->order2;
+	    mi->ti.disabled = !cv->b.layerheads[cv->b.drawmode]->order2;
 	    mi->ti.checked = notimplicit==1;
 	  break;
 #if 0
@@ -8137,21 +8157,21 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = multilayer;
 	  break;
 	  case MID_HintSubsPt:
-	    mi->ti.disabled = cv->b.sc->parent->order2 || multilayer;
+	    mi->ti.disabled = cv->b.layerheads[cv->b.drawmode]->order2 || multilayer;
 	  break;
 	  case MID_AutoCounter:
 	    mi->ti.disabled = multilayer;
 	  break;
 	  case MID_DontAutoHint:
-	    mi->ti.disabled = cv->b.sc->parent->order2 || multilayer;
+	    mi->ti.disabled = cv->b.layerheads[cv->b.drawmode]->order2 || multilayer;
 	    mi->ti.checked = cv->b.sc->manualhints;
 	  break;
 	  case MID_AutoInstr:
 	  case MID_EditInstructions:
-	    mi->ti.disabled = !cv->b.fv->sf->order2 || multilayer;
+	    mi->ti.disabled = !cv->b.sc->layers[ly_fore].order2 || multilayer;
 	  break;
 	  case MID_Debug:
-	    mi->ti.disabled = !cv->b.fv->sf->order2 || multilayer || !hasFreeTypeDebugger();
+	    mi->ti.disabled = !cv->b.sc->layers[ly_fore].order2 || multilayer || !hasFreeTypeDebugger();
 	  break;
 	  case MID_ClearInstr:
 	    mi->ti.disabled = cv->b.sc->ttf_instrs_len==0;
@@ -8313,7 +8333,7 @@ static void cv_cblistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 
 static void cv_nplistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
     SplineChar *sc = cv->b.sc;
-    int order2 = sc->parent->order2;
+    int order2 = sc->layers[ly_fore].order2;
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
