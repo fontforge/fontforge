@@ -749,7 +749,7 @@ return;
 
     name_off = 4 + 8 * (has_back+has_spiro);
     if ( has_back ) {
-	putshort(layr,sf->order2?2:3);	/* Quadratic/cubic */
+	putshort(layr,sf->layers[ly_back].order2?2:3);	/* Quadratic/cubic */
 	putshort(layr,name_off);
 	name_off += strlen("Back")+1;
 	putlong(layr,0);		/* Fill in later */

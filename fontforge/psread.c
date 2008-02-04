@@ -3323,7 +3323,7 @@ void PSFontInterpretPS(FILE *ps,struct charprocs *cp,char **encoding) {
 		cp->values = grealloc(cp->values,cp->cnt*sizeof(char *));
 	    }
 	    if ( cp->next<cp->cnt ) {
-		sc = SplineCharCreate();
+		sc = SplineCharCreate(2);
 		cp->keys[cp->next] = copy(tokbuf);
 		cp->values[cp->next++] = sc;
 		sc->name = copy(tokbuf);
@@ -3645,7 +3645,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
     int is_type2 = context->is_type2;
     real stack[50]; int sp=0, v;		/* Type1 stack is about 25 long, Type2 stack is 48 */
     real transient[32];
-    SplineChar *ret = SplineCharCreate();
+    SplineChar *ret = SplineCharCreate(2);
     SplinePointList *cur=NULL, *oldcur=NULL;
     RefChar *r1, *r2, *rlast=NULL;
     DBasePoint current;

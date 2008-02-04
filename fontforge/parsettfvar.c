@@ -356,7 +356,7 @@ return;
     for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
 	ref->transform[4] += xd;
 	ref->transform[5] += yd;
-	SCReinstanciateRefChar(sc,ref);
+	SCReinstanciateRefChar(sc,ref,ly_fore);
     }
 }
 
@@ -375,7 +375,7 @@ static void VaryGlyph(SplineChar *sc,int *points, int *xdeltas, int *ydeltas,
 		if ( xdeltas[i]!=0 || ydeltas[i]!=0 ) {
 		    ref->transform[4] += xdeltas[i];
 		    ref->transform[5] += ydeltas[i];
-		    SCReinstanciateRefChar(sc,ref);
+		    SCReinstanciateRefChar(sc,ref,ly_fore);
 		}
 	    }
 	} else {
@@ -411,7 +411,7 @@ static void VaryGlyph(SplineChar *sc,int *points, int *xdeltas, int *ydeltas,
 		    if ( xdeltas[j]!=0 || ydeltas[j]!=0 ) {
 			ref->transform[4] += xdeltas[j];
 			ref->transform[5] += ydeltas[j];
-			SCReinstanciateRefChar(sc,ref);
+			SCReinstanciateRefChar(sc,ref,ly_fore);
 		    }
 		    ++j;
 		}

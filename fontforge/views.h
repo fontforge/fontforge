@@ -382,6 +382,7 @@ typedef struct searchview {
     struct cvcontainer base;
     FontView dummy_fv;
     SplineFont dummy_sf;
+    LayerInfo layerinfo[2];
     SplineChar *chars[2];
     EncMap dummy_map;
     int32 map[2], backmap[2];
@@ -410,6 +411,7 @@ typedef struct mathkernview {
     struct cvcontainer base;
     FontView dummy_fv;
     SplineFont dummy_sf;
+    LayerInfo layerinfo[2];
     SplineChar sc_topright, sc_topleft, sc_bottomright, sc_bottomleft;
     SplineChar *chars[4];
     EncMap dummy_map;
@@ -441,6 +443,7 @@ typedef struct tilepathdlg {
     struct cvcontainer base;
     FontView dummy_fv;
     SplineFont dummy_sf;
+    LayerInfo layerinfo[2];
     SplineChar sc_first, sc_medial, sc_final, sc_isolated;
     SplineChar *chars[4];
     EncMap dummy_map;
