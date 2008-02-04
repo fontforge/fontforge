@@ -52,7 +52,7 @@ void CVGridFitChar(CharView *cv) {
     FreeType_FreeRaster(cv->raster); cv->raster = NULL;
 
     single_glyph_context = _FreeTypeFontContext(sf,cv->b.sc,NULL,
-	    sf->order2?ff_ttf:ff_otf,0,NULL);
+	    sf->layers[ly_fore].order2?ff_ttf:ff_otf,0,NULL);
     if ( single_glyph_context==NULL ) {
 	LogError(_("Freetype rasterization failed.\n") );
 return;

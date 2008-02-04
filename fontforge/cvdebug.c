@@ -753,7 +753,7 @@ static void DVDefaultRaster(DebugView *dv) {
     SplinePointListsFree(cv->b.gridfit);
     cv->b.gridfit = NULL;
     single_glyph_context = _FreeTypeFontContext(sf,cv->b.sc,NULL,
-	    sf->order2?ff_ttf:ff_otf,0,NULL);
+	    cv->b.sc->layers[ly_fore].order2?ff_ttf:ff_otf,0,NULL);
     if ( single_glyph_context!=NULL ) {
 	cv->raster = FreeType_GetRaster(single_glyph_context,cv->b.sc->orig_pos,
 		cv->ft_pointsize, cv->ft_dpi, cv->ft_depth );

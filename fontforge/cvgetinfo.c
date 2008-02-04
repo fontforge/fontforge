@@ -188,7 +188,7 @@ static int GI_ROK_Do(GIData *ci) {
 	if ( errs )
 return( false );
     }
-    if ( !ci->cv->b.sc->parent->order2 )
+    if ( !ci->cv->b.sc->layers[ly_fore].order2 )
 	/* No point matching */;
     else {
 	const unichar_t *txt;
@@ -430,7 +430,7 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	label[6+j].text_is_1byte = true;
 	gcd[6+j].gd.label = &label[6+j];
 	gcd[6+j].gd.pos.x = 5; gcd[6+j].gd.pos.y = gcd[6+j-1].gd.pos.y+17;
-	gcd[6+j].gd.flags = cv->b.sc->parent->order2 ? (gg_enabled|gg_visible|gg_utf8_popup) : (gg_visible|gg_utf8_popup);
+	gcd[6+j].gd.flags = cv->b.sc->layers[ly_fore].order2 ? (gg_enabled|gg_visible|gg_utf8_popup) : (gg_visible|gg_utf8_popup);
 	gcd[6+j].gd.popup_msg = (unichar_t *) _("Only relevant in a truetype font, this flag indicates that this\nreference should not be translated normally, but rather its position\nshould be determined by moving the reference so that the indicated\npoint in the reference falls on top of the indicated point in the base\ncharacter.");
 	varray[l++] = &gcd[6+j];
 	gcd[6+j++].creator = GLabelCreate;
@@ -440,7 +440,7 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	label[6+j].text_in_resource = true;
 	gcd[6+j].gd.label = &label[6+j];
 	gcd[6+j].gd.pos.x = 8; gcd[6+j].gd.pos.y = gcd[6+j-1].gd.pos.y+19;
-	gcd[6+j].gd.flags = cv->b.sc->parent->order2 ? (gg_enabled|gg_visible|gg_utf8_popup) : (gg_visible|gg_utf8_popup);
+	gcd[6+j].gd.flags = cv->b.sc->layers[ly_fore].order2 ? (gg_enabled|gg_visible|gg_utf8_popup) : (gg_visible|gg_utf8_popup);
 	gcd[6+j].gd.popup_msg = (unichar_t *) _("Only relevant in a truetype font, this flag indicates that this\nreference should not be translated normally, but rather its position\nshould be determined by moving the reference so that the indicated\npoint in the reference falls on top of the indicated point in the base\ncharacter.");
 	harray1[0] = &gcd[6+j];
 	gcd[6+j++].creator = GLabelCreate;
@@ -1332,7 +1332,7 @@ return;
 	label[j].text_is_1byte = true;
 	gcd[j].gd.label = &label[j];
 	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[j-2].gd.pos.y+24;
-	gcd[j].gd.flags = cv->b.sc->parent->order2 ? (gg_enabled|gg_visible) : gg_visible;
+	gcd[j].gd.flags = cv->b.sc->layers[ly_fore].order2 ? (gg_enabled|gg_visible) : gg_visible;
 	gcd[j].creator = GLabelCreate;
 	harray2[0] = &gcd[j];
 	++j;
@@ -1643,7 +1643,7 @@ static void PIFillup(GIData *ci, int except_cid);
 static void PI_FigureNext(GIData *ci) {
     if ( ci->prevchanged ) {
 	SplinePoint *cursp = ci->cursp;
-	if ( !ci->sc->parent->order2 && (cursp->pointtype==pt_curve || cursp->pointtype==pt_hvcurve)) {
+	if ( !ci->cv->b.layerheads[ci->cv->b.drawmode]->order2 && (cursp->pointtype==pt_curve || cursp->pointtype==pt_hvcurve)) {
 	    double dx, dy, len, len2;
 	    dx = cursp->prevcp.x - cursp->me.x;
 	    dy = cursp->prevcp.y - cursp->me.y;
@@ -1666,7 +1666,7 @@ static void PI_FigureNext(GIData *ci) {
 static void PI_FigurePrev(GIData *ci) {
     if ( ci->nextchanged ) {
 	SplinePoint *cursp = ci->cursp;
-	if ( !ci->sc->parent->order2 && (cursp->pointtype==pt_curve || cursp->pointtype==pt_hvcurve)) {
+	if ( !ci->cv->b.layerheads[ci->cv->b.drawmode]->order2 && (cursp->pointtype==pt_curve || cursp->pointtype==pt_hvcurve)) {
 	    double dx, dy, len, len2;
 	    dx = cursp->nextcp.x - cursp->me.x;
 	    dy = cursp->nextcp.y - cursp->me.y;
@@ -1930,7 +1930,7 @@ static void PIChangePoint(GIData *ci) {
 
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_Interpolated),
 	    !ci->cursp->dontinterpolate );
-    interpolate = SPInterpolate(ci->cursp) && ci->sc->parent->order2;
+    interpolate = SPInterpolate(ci->cursp) && ci->cv->b.layerheads[ci->cv->b.drawmode]->order2;
     GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_Normal), !interpolate );
     GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_Interpolated), interpolate );
     GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_NeverInterpolate), ci->cursp->dontinterpolate );
@@ -2089,7 +2089,7 @@ return( true );
 	cursp->me.y += dy;
 	cursp->nextcp.y += dy;
 	cursp->prevcp.y += dy;
-	if ( ci->sc->parent->order2 ) {
+	if ( ci->cv->b.layerheads[ci->cv->b.drawmode]->order2 ) {
 	    SplinePointNextCPChanged2(cursp);
 	    SplinePointPrevCPChanged2(cursp);
 	}
@@ -2168,11 +2168,11 @@ return( true );
 	    plen = GetCalmReal8(ci->gw,CID_PrevR,_("Prev CP Dist"),&err);
 	    ci->cursp->prevcp.x = ci->cursp->me.x - plen*cos(ntheta);
 	    ci->cursp->prevcp.y = ci->cursp->me.y - plen*sin(ntheta);
-	    if ( ci->sc->parent->order2 )
+	    if ( ci->cv->b.layerheads[ci->cv->b.drawmode]->order2 )
 		SplinePointPrevCPChanged2(cursp);
 	    SplineRefigure(cursp->prev);
 	}
-	if ( ci->sc->parent->order2 )
+	if ( ci->cv->b.layerheads[ci->cv->b.drawmode]->order2 )
 	    SplinePointNextCPChanged2(cursp);
 	if ( cursp->next!=NULL )
 	    SplineRefigure(cursp->next);
@@ -2245,11 +2245,11 @@ return( true );
 	    nlen = GetCalmReal8(ci->gw,CID_NextR,_("Next CP Dist"),&err);
 	    ci->cursp->nextcp.x = ci->cursp->me.x - nlen*cos(ptheta);
 	    ci->cursp->nextcp.y = ci->cursp->me.y - nlen*sin(ptheta);
-	    if ( ci->sc->parent->order2 )
+	    if ( ci->cv->b.layerheads[ci->cv->b.drawmode]->order2 )
 		SplinePointNextCPChanged2(cursp);
 	    SplineRefigure(cursp->next);
 	}
-	if ( ci->sc->parent->order2 )
+	if ( ci->cv->b.layerheads[ci->cv->b.drawmode]->order2 )
 	    SplinePointPrevCPChanged2(cursp);
 	if ( cursp->prev!=NULL )
 	    SplineRefigure(cursp->prev);
@@ -2280,7 +2280,7 @@ return( true );
 	cursp->me.x = (cursp->nextcp.x + cursp->prevcp.x)/2;
 	cursp->me.y = (cursp->nextcp.y + cursp->prevcp.y)/2;
 	SplineSetSpirosClear(ci->curspl);
-	if ( ci->sc->parent->order2 )
+	if ( ci->cv->b.layerheads[ci->cv->b.drawmode]->order2 )
 	    SplinePointNextCPChanged2(cursp);
 	if ( cursp->next!=NULL )
 	    SplineRefigure(cursp->next);
@@ -2311,7 +2311,7 @@ return( true );
 	cursp->me.x = (cursp->nextcp.x + cursp->prevcp.x)/2;
 	cursp->me.y = (cursp->nextcp.y + cursp->prevcp.y)/2;
 	SplineSetSpirosClear(ci->curspl);
-	if ( ci->sc->parent->order2 )
+	if ( ci->cv->b.layerheads[ci->cv->b.drawmode]->order2 )
 	    SplinePointPrevCPChanged2(cursp);
 	if ( cursp->prev!=NULL )
 	    SplineRefigure(cursp->prev);
@@ -2590,7 +2590,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	label[j].text_in_resource = true;
 	gcd[j].gd.label = &label[j];
 	gcd[j].gd.pos.x = 5; gcd[j].gd.pos.y = gcd[j-1].gd.pos.y+16;
-	gcd[j].gd.flags = cv->b.sc->parent->order2 ? (gg_enabled|gg_visible) : gg_visible;
+	gcd[j].gd.flags = cv->b.layerheads[cv->b.drawmode]->order2 ? (gg_enabled|gg_visible) : gg_visible;
 	gcd[j].gd.cid = CID_NeverInterpolate;
 	gcd[j].gd.handle_controlevent = PI_NeverInterpChanged;
 	gcd[j].creator = GCheckBoxCreate;

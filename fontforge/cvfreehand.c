@@ -826,7 +826,7 @@ void CVMouseUpFreeHand(CharView *cv, GEvent *event) {
     }
     if ( cv->freehand.current_trace!=NULL ) {
 	CVPreserveState((CharViewBase *) cv);
-	if ( cv->b.sc->parent->order2 )
+	if ( cv->b.layerheads[cv->b.drawmode]->order2 )
 	    cv->freehand.current_trace = SplineSetsTTFApprox(cv->freehand.current_trace);
 	if ( CVFreeHandInfo()->stroke_type==si_centerline ) {
 	    cv->freehand.current_trace->next = cv->b.layerheads[cv->b.drawmode]->splines;
