@@ -320,7 +320,7 @@ return;
 		transform[4] = images->xoff;
 		transform[5] = images->yoff - images->yscale*ib->height;
 		new = SplinePointListTransform(new,transform,true);
-		if ( sc->parent->order2 ) {
+		if ( sc->layers[ly_fore].order2 ) {
 		    SplineSet *o2 = SplineSetsTTFApprox(new);
 		    SplinePointListsFree(new);
 		    new = o2;
