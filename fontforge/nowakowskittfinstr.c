@@ -1343,8 +1343,10 @@ static void init_prep(GlobalInstrCt *gic) {
     uint8 *new_prep, *prep_head;
     struct ttf_table *tab;
 
-    if (gic->cvt_done)
-        prepmaxlen += 48+38*(gic->stemsnaphcnt+gic->stemsnapvcnt);
+    if (gic->cvt_done) {
+        prepmaxlen += 48 + 38*(gic->stemsnaphcnt + gic->stemsnapvcnt);
+	prepmaxlen += 14*(gic->bluecnt);
+    }
 
     new_prep = gcalloc(prepmaxlen, sizeof(uint8));
     memmove(new_prep, new_prep_preamble, preplen*sizeof(uint8));
