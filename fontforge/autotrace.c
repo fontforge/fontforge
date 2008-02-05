@@ -59,9 +59,7 @@ static SplinePointList *localSplinesFromEntities(Entity *ent, Color bgcol, int i
     DBounds bb, sbb;
     int removed;
     real fudge;
-#ifdef FONTFORGE_CONFIG_TYPE3
     Layer layers[2];
-#endif
 
     /* We have a problem. The autotrace program includes contours for the */
     /*  background color (there's supposed to be a way to turn that off, but */
@@ -77,10 +75,8 @@ static SplinePointList *localSplinesFromEntities(Entity *ent, Color bgcol, int i
     int bgr = COLOR_RED(bgcol), bgg = COLOR_GREEN(bgcol), bgb = COLOR_BLUE(bgcol);
 
     memset(&sc,'\0',sizeof(sc));
-#ifdef FONTFORGE_CONFIG_TYPE3
     memset(layers,0,sizeof(layers));
     sc.layers = layers;
-#endif
     for ( ; ent!=NULL; ent = enext ) {
 	enext = ent->next;
 	if ( ent->type == et_splines ) {

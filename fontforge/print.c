@@ -519,9 +519,7 @@ static void pdf_gen_type3(PI *pi,int sfid) {
     int i, notdefproc;
     DBounds bb;
     SplineChar sc;
-#ifdef FONTFORGE_CONFIG_TYPE3
     Layer layers[2];
-#endif
     struct sfbits *sfbit = &pi->sfbits[sfid];
     SplineFont *sf = sfbit->sf;
     EncMap *map = sfbit->map;
@@ -535,10 +533,8 @@ static void pdf_gen_type3(PI *pi,int sfid) {
 	sc.parent = sf;
 	sc.width = sf->ascent+sf->descent;
 	sc.layer_cnt = 2;
-#ifdef FONTFORGE_CONFIG_TYPE3
 	memset(layers,0,sizeof(layers));
 	sc.layers = layers;
-#endif
 	notdefproc = pdf_charproc(pi, &sc);
     }
 

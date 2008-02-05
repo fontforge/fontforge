@@ -75,16 +75,12 @@ void SFOrderBitmapList(SplineFont *sf) {
 
 SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,EncMap *map,int i) {
     static char namebuf[100];
-#ifdef FONTFORGE_CONFIG_TYPE3
     static Layer layers[2];
-#endif
 
     memset(dummy,'\0',sizeof(*dummy));
     dummy->color = COLOR_DEFAULT;
     dummy->layer_cnt = 2;
-#ifdef FONTFORGE_CONFIG_TYPE3
     dummy->layers = layers;
-#endif
     if ( sf->cidmaster!=NULL ) {
 	/* CID fonts don't have encodings, instead we must look up the cid */
 	if ( sf->cidmaster->loading_cid_map )

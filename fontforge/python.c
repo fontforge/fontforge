@@ -2108,9 +2108,7 @@ static PyObject *PyFFContour_Cluster(PyFF_Contour *self, PyObject *args) {
     double within = .1, max = .5;
     SplineChar sc;
     SplineSet *ss;
-#ifdef FONTFORGE_CONFIG_TYPE3
     Layer layers[2];
-#endif
 
     if ( !PyArg_ParseTuple(args,"|dd", &within, &max ) )
 return( NULL );
@@ -2119,10 +2117,8 @@ return( NULL );
     if ( ss==NULL )
 Py_RETURN( self );		/* no points=> no clusters */
     memset(&sc,0,sizeof(sc));
-#ifdef FONTFORGE_CONFIG_TYPE3
     memset(layers,0,sizeof(layers));
     sc.layers = layers;
-#endif
     sc.layers[ly_fore].splines = ss;
     sc.name = "nameless";
     SCRoundToCluster( &sc,ly_fore,false,within,max);
@@ -2945,9 +2941,7 @@ Py_RETURN( self );
 static PyObject *PyFFLayer_Cluster(PyFF_Layer *self, PyObject *args) {
     double within = .1, max = .5;
     SplineChar sc;
-#ifdef FONTFORGE_CONFIG_TYPE3
     Layer layers[2];
-#endif
     SplineSet *ss;
 
     if ( !PyArg_ParseTuple(args,"|dd", &within, &max ) )
@@ -2957,10 +2951,8 @@ return( NULL );
     if ( ss==NULL )
 Py_RETURN( self );		/* no contours=> no clusters */
     memset(&sc,0,sizeof(sc));
-#ifdef FONTFORGE_CONFIG_TYPE3
     memset(layers,0,sizeof(layers));
     sc.layers = layers;
-#endif
     sc.layers[ly_fore].splines = ss;
     sc.name = "nameless";
     SCRoundToCluster( &sc,ly_fore,false,within,max);
