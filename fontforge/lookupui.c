@@ -1364,6 +1364,7 @@ static GTextInfo *SFMarkClassList(SplineFont *sf,int class) {
     ti[0].selected = class==0;
     for ( i=1; i<sf->mark_class_cnt; ++i ) {
 	ti[i].text = (unichar_t *) copy(sf->mark_class_names[i]);
+	ti[i].userdata = (void *) i;
 	ti[i].text_is_1byte = true;
 	if ( i==class ) ti[i].selected = true;
     }
