@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 10-Jan-2008 -->
+  <!-- AP: Last modified: 3-Feb-2008 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -46,6 +46,222 @@
     </TABLE>
   </BLOCKQUOTE>
   <UL>
+    <LI>
+      3-Feb-2008
+      <UL>
+	<LI>
+	  New Vietnamese translation from Clytie
+	<LI>
+	  New Russian translation from Alexandre Prokoudne.
+	<LI>
+	  New Polish translation from Michal N. .
+	<LI>
+	  FF could crash if a cmap subtable contained invalid encoding points.
+	<LI>
+	  Add various new features/scripts/language tags from OpenType draft 1.5.
+	<LI>
+	  Add two proposed features from the pre-draft of OT 1.6
+	  <UL>
+	    <LI>
+	      Drop Caps
+	    <LI>
+	      Character Variants 00-99
+	  </UL>
+	<LI>
+	  The warnings window didn't resize properly. It didn't let you copy text (ie.
+	  a warning) It didn't enough. It should have scrolled with keypad keys (arrows,
+	  page up/down, etc). There should be a way to clear the windows so you know
+	  that all the warnings are from a given operation. Added a popup menu.
+	<LI>
+	  Fixed a problem in the auto hinter.
+	<LI>
+	  Could not attach lookups to mac feature settings.
+	<LI>
+	  Clean up some display problems in the type3 layers palette and layer info
+	  dlg.
+	<LI>
+	  Autoinstructor: turned on strong point interpolation:
+	  <UL>
+	    <LI>
+	      Various important outline points are correctly placed between hints' edges.
+	    <LI>
+	      Potential benefits for DStem positioning.
+	    <LI>
+	      Drawbacks: 2x slower, code generated is now much bigger.
+	  </UL>
+	<LI>
+	  The merge (and simplify) command could produce odd results if the points
+	  surrounding the merge had no control points.
+	<LI>
+	  Extend find/replace to handle changing angles.
+	<LI>
+	  The Display/Print dlg would crash when the user pressed the reset button
+	  if there were at least two pointsizes of the font on display. Perhaps in
+	  other cases too.
+	<LI>
+	  Make shift click in the lookup dialog (but not the subtable part) select
+	  all lookups between current click and a previously selected point.
+	<LI>
+	  glyph.addPosSub doesn't work for ligatures or multiple substitutions. It
+	  treats both as alternate substitutions.
+	<LI>
+	  Michal Now. points out that there are some strings not marked for translation
+	  in cvruler.c.
+	<LI>
+	  FontForge never checked that fonts had fewer than 65536 glyphs. I just blythely
+	  assumed I wouldn't have to worry. Well someone handed me a font with 65731
+	  glyphs, and FF treated it as having 195 glyphs. Things got nasty after the
+	  196th.
+	<LI>
+	  Fix a crash in autohint.c and an infinite loop in stemdb.c.
+	<LI>
+	  Font Compare would crash if one font had a lookup subtable which was not
+	  in the other.
+	<LI>
+	  Improve the algorithm used to detect reference points for stem edges. Enable
+	  snapping "corner extrema" to predefined hints.
+	<LI>
+	  Remove the obsolete Private Dict to CVT table command.
+	<LI>
+	  Michal Now. wants short cuts to change grid fit attributes, so a new sub
+	  menu with things like increase point size, change AA, etc. (with shortcuts,
+	  of course).
+	<LI>
+	  Patch by Michal Nowakowski. In Show Grid fit not setting the mono bit correctly
+	  in freetype.
+	<LI>
+	  Bug in pfm file output.
+	<LI>
+	  If we failed to open a plugin library during init, it would call LogError
+	  before the display was initialized, leading to a crash.
+	<LI>
+	  Autoinstructor: If a horizontal stem interpolated between blue zones was
+	  very close to one of them, it often jumped beyond that zone in small ppems.
+	  This was especcially annoying for serif fonts.
+	<LI>
+	  Improvements (I hope) to the ruler tool
+	  <OL>
+	    <LI>
+	      Make it snap to splines (in addition to points)
+	    <LI>
+	      Have it draw a line from the start point to the mouse
+	    <LI>
+	      If they start on a spline, then include info on the offset in coordinates
+	      parallel to the spline and normal to it.
+	    <LI>
+	      Provide a "spline length" if the start and end points are on the same spline
+	      (instead of just if they were the end-points of the spline).
+	  </OL>
+	<LI>
+	  In python scripting contour.reverseDirection only worked on closed contours.
+	<LI>
+	  If you click wildly in the cvt editor it would eventually go into infinite
+	  recursion.
+	<LI>
+	  If there were no free anchor class then attempting to add an anchor point
+	  would pop up the Mark Classes pane of Font Info (rather than Lookups). This
+	  is sufficiently close to Anchor Class as to be very confusing.
+	<LI>
+	  Make label gadgets (and buttons which are also labels) handle multiline text.
+	<LI>
+	  If the user closes the font info dlg when there are mark class dialogs floating
+	  around then close them too (there was code which was supposed to do this,
+	  but it didn't work).
+	<LI>
+	  Try to make it clear in the Mark Classes pane of the Font Info that mark
+	  classes are not anchor classes. Someone got confused...
+	<LI>
+	  Fix some bugs in parsing mark anchors in feature files.
+	<LI>
+	  When adding an hvcurve point into an existing spline it behaved like a curved
+	  point and laid parallel to the spline rather than being either horiz or vert.
+	<LI>
+	  FontForge uses floats (which have ~24 bits of precision internally) to represent
+	  coordinates. Type2 fonts use a 16.16 fixed notation, which means that we
+	  only represent coordinates
+	  <256 accurately. This will cause slight errors during output and input of
+	  a font. Unfortunately, due to the rel-rel nature of postscript these slight
+	  errors accumulate. <p> So instead, when loading and saving a Type2 font use
+	  double precision temporaries. This should mean there will be no errors to
+	  accumulate. There will be slight errors when converted to SplinePoints, but
+	  these errors will not accumulate.
+	<LI>
+	  Check several adjacent splines when detecting active zones for curved segments
+	  and thus make the algorithm less dependent from the number of additional
+	  points on a contour and their exact positions.
+	<LI>
+	  Fix a number of problems that -pedantic complains about.
+	<LI>
+	  Some mnemonics in the Element menu are used for two items. Clean it up a
+	  bit.
+	<LI>
+	  Add a "Find Problems" for non integral coordinates.
+	  <P>
+	  Change the "Ref with bad ttf transformation" so that it checks for integral
+	  coordinates too.
+	<LI>
+	  the glyph.validate function in python was marked as taking NOARGS in the
+	  method table, but, in fact, does take arguments.
+	<LI>
+	  Oops. Validate used to complain if the StemSnap[HV] array were missing. But
+	  that's perfectly ok.
+	<LI>
+	  Be more lenient when closing a path (when reading in a type1/2 font)... we
+	  can get rounding errors.
+	<LI>
+	  Add a little LogError to let the user know if there are sfnt tables we ignore.
+	<LI>
+	  Deep in the heart of Find Problems check for bad contour direction, was a
+	  bug where it looked at the wrong spline.
+	<LI>
+	  Just as it is possible to have things in 'morx' that are not in 'GSUB', it
+	  is possible that a 'GPOS' table contains no kerning information but a 'kern'
+	  table does. We used not to read 'kern' if we had 'GPOS', be a little subtler
+	  and check for the presence of a 'kern' feature inside 'GPOS' before deciding
+	  whether to read the 'kern' table.
+	<LI>
+	  The anchor control dialog didn't work for mark to mark anchors when looking
+	  at a base mark.
+	<LI>
+	  When a font contained glyphs with multiple encodings, then ff would produce
+	  bdf files with a char count which matched the # glyphs, not the number of
+	  encoding slots used.
+	<LI>
+	  In a compacted cid font, the status line (containing unicode, unicode block/name,
+	  etc) was junk.
+	<LI>
+	  Barry wants to be able to mark that it's ok for a spline to have intermediate
+	  extrema.
+	<LI>
+	  The []TeX Table checkbox was always disabled in the save font dlg.
+	<LI>
+	  The DejaVu people want to be able to associate a comment with a cvt entry.
+	<LI>
+	  Find Problems-&gt;ATT-&gt;Missing glyph name complains about the special
+	  string <Delete> which I used in Apple lookups to represent the "Delete Glyph"
+	  action that apple supports and OT does not. Don't complain about this any
+	  more.
+	  <P>
+	  Add a problem which will look at the glyphs a lookup is active for, and then
+	  checks the script of each glyph against the scripts attached to the features
+	  which invoke this lookup. If the script doesn't match anything, then complain.
+	<LI>
+	  If a font contained an empty anchor class (having either no base glyphs or
+	  no mark glyphs) then when dumping out the font subsequent anchor classes
+	  got the wrong data associated with them.
+	<LI>
+	  Barry wants non-integral hints.
+	<LI>
+	  Barry points out that Scale To Em doesn't scale the guidelines.
+	  <P>
+	  Barry also complains that spiro points are rounded. This is more debatable.
+	  The bezier conversion will put bezier points where there were spiros, so
+	  if we don't round the spiros we get non-integral points. But if we do round
+	  the spiros we mess up the splines. Hmm.
+	<LI>
+	  When complaining about a bad class in a mark (GPOS) sub-table, specify the
+	  name of the offending mark if we can.
+      </UL>
     <LI>
       10-Jan-2008
       <UL>
