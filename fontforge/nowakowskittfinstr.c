@@ -1106,9 +1106,10 @@ static void init_fpgm(GlobalInstrCt *gic) {
 }
 
 /* When initializing global instructing context, we want to set up the 'prep'
- * table in order, for example, to normalize stem widths for monochrome display.
+ * table in order to apply family blues and normalize stem widths for monochrome
+ * display.
  *
- * This stem normalizer is heavily based on simple concept from FreeType2.
+ * The stem normalizer is heavily based on simple concept from FreeType2.
  *
  * First round the StdW. Then for each StemSnap (going outwards from StdW) check
  * if it's within 1px from its already rounded neighbor, and if so, snap it
@@ -1121,6 +1122,43 @@ static void init_fpgm(GlobalInstrCt *gic) {
  * relegating this to the truetype bytecide interpreter. We can't simply rely
  * on cvt cut-in.
  */
+
+static int compute_blue_height(real val, int EM, int bluescale, int ppem) {
+    int scaled_val = rint((rint(fabs(val)) * ppem * 64)/EM);
+    if (ppem < bluescale) scaled_val += 16;
+return (scaled_val + 32) / 64 * (val / fabs(val));
+}
+
+static uint8 *use_family_blues(uint8 *prep_head, GlobalInstrCt *gic) {
+    int i, h1, h2, stopat;
+    int bs = GetBlueScale(gic->sf);
+    int EM = gic->sf->ascent + gic->sf->descent;
+    int callargs[3];
+
+    for (i=0; i<gic->bluecnt; i++) {
+	if (finite(gic->blues[i].family_base))
+	{
+	    for (stopat=0; stopat<32768; stopat++) {
+		h1 = compute_blue_height(gic->blues[i].base, EM, bs, stopat);
+		h2 = compute_blue_height(gic->blues[i].family_base, EM, bs, stopat);
+		if (abs(h1 - h2) > 1) break;
+	    }
+
+	    callargs[0] = gic->blues[i].family_cvtindex;
+	    callargs[1] = stopat;
+	    callargs[2] = 2;
+	    
+	    prep_head = pushnum(prep_head, gic->blues[i].cvtindex);
+	    *prep_head++ = DUP;
+	    *prep_head++ = 0x45; //RCVT
+	    prep_head = pushnums(prep_head, 3, callargs);
+	    *prep_head++ = CALL;
+	    *prep_head++ = 0x44; //WCVTP
+	}
+    }
+
+    return prep_head;
+}
 
 /* Return width (in pixels) of given stem, taking snaps into account.
  */
@@ -1263,6 +1301,9 @@ static void init_prep(GlobalInstrCt *gic) {
 	0xff, //   ...still that 511
 	0x85, // SCANCTRL
 
+	/* Measurements are taken along Y axis */
+	0x00, // SVTCA[y-axis]
+
         /* Turn hinting off at very small pixel sizes */
 	0x4b, // MPPEM
 	0xb0, // PUSHB_1
@@ -1310,6 +1351,9 @@ static void init_prep(GlobalInstrCt *gic) {
     prep_head = new_prep + preplen;
 
     if (gic->cvt_done && gic->fpgm_done) {
+	/* Apply family blues. */
+	prep_head = use_family_blues(prep_head, gic);
+
         /* Normalize stems (only in monochrome mode) */
         prep_head = pushnum(prep_head, 6);
 	*prep_head++ = CALL;
