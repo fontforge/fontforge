@@ -1580,6 +1580,7 @@ return;
 	temp->origname = copy(old->origname);
     }
     temp->compression = old->compression;
+    temp->fv = old->fv;
     FVReattachCVs(old,temp);
     for ( i=0; i<old->subfontcnt; ++i )
 	FVReattachCVs(old->subfonts[i],temp);
@@ -1587,7 +1588,7 @@ return;
 	FontInfo_Destroy(fv->sf);
     for ( bdf=old->bitmaps; bdf!=NULL; bdf=bdf->next )
 	for ( i=0; i<bdf->glyphcnt; ++i ) if ( bdf->glyphs[i]!=NULL )
-	BCDestroyAll(bdf->glyphs[i]);
+	    BCDestroyAll(bdf->glyphs[i]);
     MVDestroyAll(old);
     for ( fvs=fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
 	if ( fvs==fv )
