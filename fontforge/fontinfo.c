@@ -89,15 +89,15 @@ static GTextInfo widthclass[] = {
     { (unichar_t *) N_("Ultra-Expanded (200%)"), NULL, 0, 0, (void *) 9, NULL, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
 static GTextInfo weightclass[] = {
-    { (unichar_t *) N_("100 Thin"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("200 Extra-Light"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("300 Light"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("400 Book"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("500 Medium"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("600 Demi-Bold"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("700 Bold"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("800 Heavy"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
-    { (unichar_t *) N_("900 Black"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("100 Thin"), NULL, 0, 0, (void *) 100, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("200 Extra-Light"), NULL, 0, 0, (void *) 200, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("300 Light"), NULL, 0, 0, (void *) 300, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("400 Book"), NULL, 0, 0, (void *) 400, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("500 Medium"), NULL, 0, 0, (void *) 500, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("600 Demi-Bold"), NULL, 0, 0, (void *) 600, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("700 Bold"), NULL, 0, 0, (void *) 700, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("800 Heavy"), NULL, 0, 0, (void *) 800, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { (unichar_t *) N_("900 Black"), NULL, 0, 0, (void *) 900, NULL, 0, 0, 0, 0, 0, 0, 1},
     { NULL }};
 static GTextInfo fstype[] = {
     { (unichar_t *) N_("Never Embed/No Editing"), NULL, 0, 0, (void *) 0x02, NULL, 0, 0, 0, 0, 0, 0, 1},
@@ -4345,6 +4345,17 @@ return(true);
 	    /*  "400 Book" is a reasonable setting, but would cause GetInt */
 	    /*  to complain */
 	    weight = u_strtol(_GGadgetGetTitle(GWidgetGetControl(gw,CID_WeightClass)),NULL,10);
+	    if ( weight == 0 ) {
+		int i;
+		char *wc = GGadgetGetTitle8(GWidgetGetControl(gw,CID_WeightClass));
+		for ( i=0; widthclass[i].text!=NULL; ++i ) {
+		    if ( strcmp(wc,(char *) widthclass[i].text)==0 ) {
+			weight = (intpt) widthclass[i].userdata;
+		break;
+		    }
+		}
+		free(wc);
+	    }
 	    if ( weight == 0 )
 		weight = GetInt8(gw,CID_WeightClass,_("_Weight Class"),&err);
 	    linegap = GetInt8(gw,CID_LineGap,_("HHead _Line Gap:"),&err);
@@ -8385,6 +8396,18 @@ return;
     metgcd[i++].creator = GCheckBoxCreate;
     metarray[j++] = NULL;
 
+    metgcd[i].gd.pos.x = 5; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y;
+    metlabel[i].text = (unichar_t *) _("Really use Typo metrics");
+    metlabel[i].text_is_1byte = true;
+    metgcd[i].gd.label = &metlabel[i];
+    metgcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+	/* value set later */
+    metgcd[i].gd.cid = CID_UseTypoMetrics;
+    metgcd[i].gd.popup_msg = (unichar_t *) _("The specification already says that the typo metrics should be\nused to determine line spacing. But so many\nprograms fail to follow the spec. that MS decided an additional\nbit was needed to remind them to do so.");
+    metarray[j++] = &metgcd[i]; metarray[j++] = GCD_ColSpan; metarray[j++] = GCD_Glue;
+    metgcd[i++].creator = GCheckBoxCreate;
+    metarray[j++] = NULL;
+
     metgcd[i].gd.pos.x = 10; metgcd[i].gd.pos.y = metgcd[i-2].gd.pos.y+26+4;
     metlabel[i].text = (unichar_t *) _("_Typo Ascent Offset:");
     metlabel[i].text_is_1byte = true;
@@ -8415,18 +8438,6 @@ return;
     metgcd[i].gd.popup_msg = metgcd[i-1].gd.popup_msg;
     metgcd[i].gd.handle_controlevent = GFI_AsDesIsOff;
     metarray[j++] = &metgcd[i];
-    metgcd[i++].creator = GCheckBoxCreate;
-    metarray[j++] = NULL;
-
-    metgcd[i].gd.pos.x = 5; metgcd[i].gd.pos.y = metgcd[i-1].gd.pos.y;
-    metlabel[i].text = (unichar_t *) _("Really use Typo metrics");
-    metlabel[i].text_is_1byte = true;
-    metgcd[i].gd.label = &metlabel[i];
-    metgcd[i].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-	/* value set later */
-    metgcd[i].gd.cid = CID_UseTypoMetrics;
-    metgcd[i].gd.popup_msg = (unichar_t *) _("The specification already says that the typo metrics should be\nused to determine line spacing. But so many\nprograms fail to follow the spec. that MS decided an additional\nbit was needed to remind them to do so.");
-    metarray[j++] = &metgcd[i]; metarray[j++] = GCD_ColSpan; metarray[j++] = GCD_Glue;
     metgcd[i++].creator = GCheckBoxCreate;
     metarray[j++] = NULL;
 
