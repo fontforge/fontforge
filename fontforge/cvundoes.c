@@ -206,7 +206,7 @@ static void FixupRefChars(SplineChar *sc,RefChar *urefs,int layer) {
 	    /*  char's list between the two */
 	    while ( crefs!=cend ) {
 		cnext = crefs->next;
-		SCRemoveDependent(sc,crefs);
+		SCRemoveDependent(sc,crefs,layer);
 		crefs = cnext;
 	    }
 	} else { /* urefs isn't on the list. Add it here */
@@ -225,7 +225,7 @@ static void FixupRefChars(SplineChar *sc,RefChar *urefs,int layer) {
     if ( crefs!=NULL ) {
 	while ( crefs!=NULL ) {
 	    cnext = crefs->next;
-	    SCRemoveDependent(sc,crefs);
+	    SCRemoveDependent(sc,crefs,layer);
 	    crefs = cnext;
 	}
     } else if ( urefs!=NULL ) {

@@ -1946,7 +1946,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     DRect clip;
     char buf[20];
     PST *pst;
-    int i, layer, rlayer, last;
+    int i, layer, rlayer;
 
     GDrawPushClip(pixmap,&event->u.expose.rect,&old);
 
@@ -5952,20 +5952,21 @@ return;
 
 static void CVDoClear(CharView *cv) {
     ImageList *prev, *imgs, *next;
+    RefChar *refs, *rnext;
+    int layer = CVLayer((CharViewBase *) cv);
 
     CVPreserveState(&cv->b);
     if ( cv->b.drawmode==dm_fore )
 	SCRemoveSelectedMinimumDistances(cv->b.sc,2);
     cv->b.layerheads[cv->b.drawmode]->splines = SplinePointListRemoveSelected(cv->b.sc,
 	    cv->b.layerheads[cv->b.drawmode]->splines);
+    for ( refs=cv->b.sc->layers[layer].refs; refs!=NULL; refs = rnext ) {
+	rnext = refs->next;
+	if ( refs->selected )
+	    SCRemoveDependent(cv->b.sc,refs,layer);
+    }
     if ( cv->b.drawmode==dm_fore ) {
-	RefChar *refs, *next;
 	AnchorPoint *ap, *aprev=NULL, *anext;
-	for ( refs=cv->b.sc->layers[ly_fore].refs; refs!=NULL; refs = next ) {
-	    next = refs->next;
-	    if ( refs->selected )
-		SCRemoveDependent(cv->b.sc,refs);
-	}
 	if ( cv->showanchor ) for ( ap=cv->b.sc->anchor; ap!=NULL; ap=anext ) {
 	    anext = ap->next;
 	    if ( ap->selected ) {
@@ -6222,7 +6223,7 @@ static void _CVUnlinkRef(CharView *cv) {
 	for ( rf=cv->b.layerheads[dm_fore]->refs; rf!=NULL ; rf=next ) {
 	    next = rf->next;
 	    if ( rf->selected || !anyrefs) {
-		SCRefToSplines(cv->b.sc,rf);
+		SCRefToSplines(cv->b.sc,rf,CVLayer((CharViewBase *) cv));
 	    }
 	}
 	CVSetCharChanged(cv,true);
@@ -7675,8 +7676,9 @@ static void CVMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     int changed=false, refchanged=false;
     RefChar *ref;
     int asked=-1;
+    int layer = CVLayer( (CharViewBase *) cv);
 
-    if ( cv->b.drawmode==dm_fore ) for ( ref=cv->b.sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
+    for ( ref=cv->b.sc->layers[layer].refs; ref!=NULL; ref=ref->next ) {
 	if ( ref->transform[0]*ref->transform[3]<0 ||
 		(ref->transform[0]==0 && ref->transform[1]*ref->transform[2]>0)) {
 	    if ( asked==-1 ) {
@@ -7696,7 +7698,7 @@ return;
 		    refchanged = true;
 		    CVPreserveState(&cv->b);
 		}
-		SCRefToSplines(cv->b.sc,ref);
+		SCRefToSplines(cv->b.sc,ref,layer);
 	    }
 	}
     }
@@ -9872,12 +9874,12 @@ static void SC_CloseAllWindows(SplineChar *sc) {
 	    for ( rf = fvs->sv->sd.sc_srch.layers[ly_fore].refs; rf!=NULL; rf=rnext ) {
 		rnext = rf->next;
 		if ( rf->sc==sc )
-		    SCRefToSplines(&fvs->sv->sd.sc_srch,rf);
+		    SCRefToSplines(&fvs->sv->sd.sc_srch,rf,ly_fore);
 	    }
 	    for ( rf = fvs->sv->sd.sc_rpl.layers[ly_fore].refs; rf!=NULL; rf=rnext ) {
 		rnext = rf->next;
 		if ( rf->sc==sc )
-		    SCRefToSplines(&fvs->sv->sd.sc_rpl,rf);
+		    SCRefToSplines(&fvs->sv->sd.sc_rpl,rf,ly_fore);
 	    }
 	}
     }

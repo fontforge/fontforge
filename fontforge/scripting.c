@@ -4035,10 +4035,10 @@ return( false );
 		
 static void FVApplySubstitution(FontViewBase *fv,uint32 script, uint32 lang, uint32 feat_tag) {
     SplineFont *sf = fv->sf, *sf_sl=sf;
-    SplineChar *sc, *replacement;
+    SplineChar *sc, *replacement, *sc2;
     PST *pst;
     EncMap *map = fv->map;
-    int i, gid;
+    int i, gid, gid2;
     SplineChar **replacements;
     uint8 *removes;
     int flags = -1;
@@ -4073,6 +4073,14 @@ static void FVApplySubstitution(FontViewBase *fv,uint32 script, uint32 lang, uin
 	} else if ( removes[gid] ) {
 	    /* This is deliberatly in the else. We don't want to remove a glyph*/
 	    /*  we are about to replace */
+	    for ( gid2=0; gid2<sf->glyphcnt; ++gid2 ) if ( (sc2=replacements[gid2])!=NULL ) {
+		RefChar *rf, *rnext;
+		for ( rf = sc2->layers[ly_fore].refs; rf!=NULL; rf=rnext ) {
+		    rnext = rf->next;
+		    if ( rf->sc==sc )
+			SCRefToSplines(sc2,rf,ly_fore);
+		}
+	    }
 	    SFRemoveGlyph(sf,sc,&flags);
 	}
     }
@@ -4966,7 +4974,7 @@ static void bCorrectDirection(Context *c) {
 			refchanged = true;
 			SCPreserveState(sc,false);
 		    }
-		    SCRefToSplines(sc,ref);
+		    SCRefToSplines(sc,ref,ly_fore);
 		}
 	    }
 	}

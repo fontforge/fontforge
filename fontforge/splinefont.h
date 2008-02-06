@@ -2021,14 +2021,14 @@ extern SplinePointList *SPLCopyTransformedHintMasks(RefChar *r,
 extern SplinePointList *SplinePointListRemoveSelected(SplineChar *sc,SplinePointList *base);
 extern void SplinePointListSet(SplinePointList *tobase, SplinePointList *frombase);
 extern void SplinePointListSelect(SplinePointList *spl,int sel);
-extern void SCRefToSplines(SplineChar *sc,RefChar *rf);
+extern void SCRefToSplines(SplineChar *sc,RefChar *rf,int layer);
 extern void RefCharFindBounds(RefChar *rf);
 extern void SCReinstanciateRefChar(SplineChar *sc,RefChar *rf,int layer);
 extern void SCReinstanciateRef(SplineChar *sc,SplineChar *rsc,int layer);
 extern void SFReinstanciateRefs(SplineFont *sf);
 extern void SFInstanciateRefs(SplineFont *sf);
 extern SplineChar *MakeDupRef(SplineChar *base, int local_enc, int uni_enc);
-extern void SCRemoveDependent(SplineChar *dependent,RefChar *rf);
+extern void SCRemoveDependent(SplineChar *dependent,RefChar *rf,int layer);
 extern void SCRemoveLayerDependents(SplineChar *dependent,int layer);
 extern void SCRemoveDependents(SplineChar *dependent);
 extern int SCDependsOnSC(SplineChar *parent, SplineChar *child);

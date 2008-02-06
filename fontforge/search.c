@@ -941,7 +941,7 @@ static void DoReplaceFull(SplineChar *sc,SearchData *s) {
     for ( r = sc->layers[ly_fore].refs, i=0; r!=NULL; r=rnext, ++i ) {
 	rnext = r->next;
 	if ( s->matched_refs&(1<<i))
-	    SCRemoveDependent(sc,r);
+	    SCRemoveDependent(sc,r,ly_fore);
     }
     sprev = NULL;
     for ( spl=sc->layers[ly_fore].splines, i=0; spl!=NULL; spl=snext, ++i ) {

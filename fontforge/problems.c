@@ -234,7 +234,7 @@ return;
 	    SCPreserveState(p->sc,false);
 	    ss = p->sc->layers[ly_fore].splines;
 	    p->sc->layers[ly_fore].splines = NULL;
-	    SCRefToSplines(p->sc,r);
+	    SCRefToSplines(p->sc,r,ly_fore);
 	    for ( spl = p->sc->layers[ly_fore].splines; spl!=NULL; spl=spl->next )
 		SplineSetReverse(spl);
 	    if ( p->sc->layers[ly_fore].splines!=NULL ) {
@@ -4046,7 +4046,7 @@ static void VWMenuInlineRefs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	if ( !changed )
 	    SCPreserveState(sc,false);
 	changed = true;
-	SCRefToSplines(sc,ref);
+	SCRefToSplines(sc,ref,ly_fore);
     }
     if ( changed ) {
 	SCCharChangedUpdate(sc);
@@ -4095,7 +4095,7 @@ static void VWMenuInlineFlippedRefs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    if ( !changed )
 		SCPreserveState(sc,false);
 	    changed = true;
-	    SCRefToSplines(sc,ref);
+	    SCRefToSplines(sc,ref,ly_fore);
 	}
     }
     if ( changed ) {
@@ -4399,7 +4399,7 @@ static void VWMenuManyCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 		refnext = ref->next;
 		if ( ref->transform[0]*ref->transform[3]<0 ||
 			(ref->transform[0]==0 && ref->transform[1]*ref->transform[2]>0)) {
-		    SCRefToSplines(sc,ref);
+		    SCRefToSplines(sc,ref,ly_fore);
 		}
 	    }
 	    sc->layers[ly_fore].splines = SplineSetsCorrect(sc->layers[ly_fore].splines,&changed);

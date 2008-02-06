@@ -403,7 +403,7 @@ void SCClearLayer(SplineChar *sc,int layer) {
     sc->layers[layer].splines = NULL;
     for ( refs=sc->layers[layer].refs; refs!=NULL; refs = next ) {
 	next = refs->next;
-	SCRemoveDependent(sc,refs);
+	SCRemoveDependent(sc,refs,layer);
     }
     sc->layers[layer].refs = NULL;
     ImageListsFree(sc->layers[layer].images);
@@ -862,7 +862,7 @@ void UnlinkThisReference(FontViewBase *fv,SplineChar *sc) {
 		if ( rf->sc == sc ) {
 		    /* Even if we were to preserve the state there would be no */
 		    /*  way to undo the operation until we undid the delete... */
-		    SCRefToSplines(dsc,rf);
+		    SCRefToSplines(dsc,rf,ly_fore);
 		    SCUpdateAll(dsc);
 		}
 	    }
