@@ -3972,7 +3972,7 @@ return( NULL );
 	} else if ( strmatch(tok,"Fore")==0 ) {
 	    while ( isspace(ch = getc(sfd)));
 	    ungetc(ch,sfd);
-	    if ( ch!='S' ) {
+	    if ( ch!='I' && ch!='R' && ch!='S' ) {
 		/* Old format, without a SplineSet token */
 		sc->layers[ly_fore].splines = SFDGetSplineSet(sf,sfd,sc->layers[ly_fore].order2);
 	    }
