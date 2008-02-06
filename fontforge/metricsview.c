@@ -1969,7 +1969,7 @@ return;
     SCPreserveState(sc,false);
     for ( rf=sc->layers[ly_fore].refs; rf!=NULL ; rf=next ) {
 	next = rf->next;
-	SCRefToSplines(sc,rf);
+	SCRefToSplines(sc,rf,ly_fore);
     }
     SCCharChangedUpdate(sc);
 }
@@ -2269,7 +2269,7 @@ return;
 			refchanged = true;
 			SCPreserveState(sc,false);
 		    }
-		    SCRefToSplines(sc,ref);
+		    SCRefToSplines(sc,ref,ly_fore);
 		}
 	    }
 	}

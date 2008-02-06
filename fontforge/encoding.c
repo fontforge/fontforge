@@ -1975,6 +1975,7 @@ void SFRemoveGlyph(SplineFont *sf,SplineChar *sc, int *flags) {
     int i;
     BDFFont *bdf;
     BDFChar *bfc;
+    int layer;
 
     if ( sc==NULL )
 return;
@@ -1989,16 +1990,20 @@ return;
 	dnext = dep->next;
 	/* May be more than one reference to us, colon has two refs to period */
 	/*  but only one dlist entry */
-	for ( rf = dsc->layers[ly_fore].refs; rf!=NULL; rf=rnext ) {
-	    rnext = rf->next;
-	    if ( rf->sc==sc )
-		SCRefToSplines(dsc,rf);
+	for ( layer=0; layer<dsc->layer_cnt; ++layer ) {
+	    for ( rf = dsc->layers[layer].refs; rf!=NULL; rf=rnext ) {
+		rnext = rf->next;
+		if ( rf->sc==sc )
+		    SCRefToSplines(dsc,rf,layer);
+	    }
 	}
     }
 
-    for ( refs=sc->layers[ly_fore].refs; refs!=NULL; refs = rnext ) {
-	rnext = refs->next;
-	SCRemoveDependent(sc,refs);
+    for ( layer=0; layer<sc->layer_cnt; ++layer ) {
+	for ( refs=sc->layers[layer].refs; refs!=NULL; refs = rnext ) {
+	    rnext = refs->next;
+	    SCRemoveDependent(sc,refs,layer);
+	}
     }
 
     /* Remove any kerning pairs that look at this character */

@@ -4281,7 +4281,7 @@ return( -1 );
     cnt = PySequence_Size(value);
     for ( refs=sc->layers[ly_fore].refs; refs!=NULL; refs = next ) {
 	next = refs->next;
-	SCRemoveDependent(sc,refs);
+	SCRemoveDependent(sc,refs,ly_fore);
     }
     sc->layers[ly_fore].refs = NULL;
     for ( i=0; i<cnt; ++i ) {
@@ -5223,7 +5223,7 @@ static PyObject *PyFFGlyph_unlinkRef(PyObject *self, PyObject *args) {
 return( NULL );
     for ( ref = sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
 	if ( refname==NULL || strcmp(ref->sc->name,refname)==0 ) {
-	    SCRefToSplines(sc,ref);
+	    SCRefToSplines(sc,ref,ly_fore);
 	    any = true;
 	}
     }
@@ -10388,7 +10388,7 @@ static PyObject *PyFFFont_Correct(PyFF_Font *self, PyObject *args) {
 			refchanged = true;
 			SCPreserveState(sc,false);
 		    }
-		    SCRefToSplines(sc,ref);
+		    SCRefToSplines(sc,ref,ly_fore);
 		}
 	    }
 	}

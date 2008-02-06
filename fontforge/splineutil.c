@@ -2419,7 +2419,7 @@ static void _SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext 
 	    /*  seac to that character and a space (since I can only make */
 	    /*  real char links), so if we find a space link, get rid of*/
 	    /*  it. It's an artifact */
-	    SCRefToSplines(sf->glyphs[i],refs);
+	    SCRefToSplines(sf->glyphs[i],refs,ly_fore);
 	}
     }
     /* sometimes (some apple oblique fonts) the fontmatrix is not just a */
@@ -2989,14 +2989,14 @@ void SCReinstanciateRef(SplineChar *sc,SplineChar *rsc,int layer) {
     }
 }
 
-void SCRemoveDependent(SplineChar *dependent,RefChar *rf) {
+void SCRemoveDependent(SplineChar *dependent,RefChar *rf,int layer) {
     struct splinecharlist *dlist, *pd;
     RefChar *prev;
 
-    if ( dependent->layers[ly_fore].refs==rf )
-	dependent->layers[ly_fore].refs = rf->next;
+    if ( dependent->layers[layer].refs==rf )
+	dependent->layers[layer].refs = rf->next;
     else {
-	for ( prev = dependent->layers[ly_fore].refs; prev->next!=rf; prev=prev->next );
+	for ( prev = dependent->layers[layer].refs; prev->next!=rf; prev=prev->next );
 	prev->next = rf->next;
     }
     /* Check for multiple dependencies (colon has two refs to period) */
@@ -3023,7 +3023,7 @@ void SCRemoveLayerDependents(SplineChar *dependent,int layer) {
 
     for ( rf=dependent->layers[layer].refs; rf!=NULL; rf=next ) {
 	next = rf->next;
-	SCRemoveDependent(dependent,rf);
+	SCRemoveDependent(dependent,rf,layer);
     }
     dependent->layers[layer].refs = NULL;
 }
@@ -3035,28 +3035,28 @@ void SCRemoveDependents(SplineChar *dependent) {
 	SCRemoveLayerDependents(dependent,layer);
 }
 
-void SCRefToSplines(SplineChar *sc,RefChar *rf) {
+void SCRefToSplines(SplineChar *sc,RefChar *rf,int layer) {
     SplineSet *spl;
 #ifdef FONTFORGE_CONFIG_TYPE3
-    int layer;
+    int rlayer;
 
     if ( sc->parent->multilayer ) {
 	Layer *old = sc->layers;
 	sc->layers = grealloc(sc->layers,(sc->layer_cnt+rf->layer_cnt)*sizeof(Layer));
-	for ( layer = 0; layer<rf->layer_cnt; ++layer ) {
-	    LayerDefault(&sc->layers[sc->layer_cnt+layer]);
-	    sc->layers[sc->layer_cnt+layer].splines = rf->layers[layer].splines;
-	    rf->layers[layer].splines = NULL;
-	    sc->layers[sc->layer_cnt+layer].images = rf->layers[layer].images;
-	    rf->layers[layer].images = NULL;
-	    sc->layers[sc->layer_cnt+layer].refs = NULL;
-	    sc->layers[sc->layer_cnt+layer].undoes = NULL;
-	    sc->layers[sc->layer_cnt+layer].redoes = NULL;
-	    sc->layers[sc->layer_cnt+layer].fill_brush = rf->layers[layer].fill_brush;
-	    sc->layers[sc->layer_cnt+layer].stroke_pen = rf->layers[layer].stroke_pen;
-	    sc->layers[sc->layer_cnt+layer].dofill = rf->layers[layer].dofill;
-	    sc->layers[sc->layer_cnt+layer].dostroke = rf->layers[layer].dostroke;
-	    sc->layers[sc->layer_cnt+layer].fillfirst = rf->layers[layer].fillfirst;
+	for ( rlayer = 0; rlayer<rf->layer_cnt; ++rlayer ) {
+	    LayerDefault(&sc->layers[sc->layer_cnt+rlayer]);
+	    sc->layers[sc->layer_cnt+rlayer].splines = rf->layers[rlayer].splines;
+	    rf->layers[rlayer].splines = NULL;
+	    sc->layers[sc->layer_cnt+rlayer].images = rf->layers[rlayer].images;
+	    rf->layers[rlayer].images = NULL;
+	    sc->layers[sc->layer_cnt+rlayer].refs = NULL;
+	    sc->layers[sc->layer_cnt+rlayer].undoes = NULL;
+	    sc->layers[sc->layer_cnt+rlayer].redoes = NULL;
+	    sc->layers[sc->layer_cnt+rlayer].fill_brush = rf->layers[rlayer].fill_brush;
+	    sc->layers[sc->layer_cnt+rlayer].stroke_pen = rf->layers[rlayer].stroke_pen;
+	    sc->layers[sc->layer_cnt+rlayer].dofill = rf->layers[rlayer].dofill;
+	    sc->layers[sc->layer_cnt+rlayer].dostroke = rf->layers[rlayer].dostroke;
+	    sc->layers[sc->layer_cnt+rlayer].fillfirst = rf->layers[rlayer].fillfirst;
 	}
 	sc->layer_cnt += rf->layer_cnt;
 	SCMoreLayers(sc,old);
@@ -3067,12 +3067,12 @@ void SCRefToSplines(SplineChar *sc,RefChar *rf) {
 	if ( (spl = rf->layers[0].splines)!=NULL ) {
 	    while ( spl->next!=NULL )
 		spl = spl->next;
-	    spl->next = sc->layers[ly_fore].splines;
-	    sc->layers[ly_fore].splines = rf->layers[0].splines;
+	    spl->next = sc->layers[layer].splines;
+	    sc->layers[layer].splines = rf->layers[0].splines;
 	    rf->layers[0].splines = NULL;
 	}
     }
-    SCRemoveDependent(sc,rf);
+    SCRemoveDependent(sc,rf,layer);
 }
 
 /* This returns all real solutions, even those out of bounds */
@@ -5429,11 +5429,9 @@ SplineChar *SplineCharCreate(int layer_cnt) {
     sc->orig_pos = 0xffff;
     sc->unicodeenc = -1;
     sc->layer_cnt = 2;
-#ifdef FONTFORGE_CONFIG_TYPE3
     sc->layers = gcalloc(2,sizeof(Layer));
     LayerDefault(&sc->layers[0]);
     LayerDefault(&sc->layers[1]);
-#endif
     sc->tex_height = sc->tex_depth = sc->italic_correction = sc->top_accent_horiz =
 	    TEX_UNDEF;
 return( sc );

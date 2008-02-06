@@ -939,7 +939,7 @@ void PrepareUnlinkRmOvrlp(SplineFont *sf,char *filename) {
 	SCPreserveState(sc,false);
 	for ( ref= sc->layers[ly_fore].refs; ref!=NULL; ref=refnext ) {
 	    refnext = ref->next;
-	    SCRefToSplines(sc,ref);
+	    SCRefToSplines(sc,ref,ly_fore);
 	}
 	no_windowing_ui = true;			/* Clustering wants to create an undo that I don't need */
 	SCRoundToCluster(sc,ly_all,false,.03,.12);

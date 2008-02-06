@@ -142,7 +142,7 @@ void FVUnlinkRef(FontViewBase *fv) {
 	for ( layer=ly_fore; layer<=last; ++layer ) {
 	    for ( rf=sc->layers[ly_fore].refs; rf!=NULL ; rf=next ) {
 		next = rf->next;
-		SCRefToSplines(sc,rf);
+		SCRefToSplines(sc,rf,layer);
 	    }
 	}
 	SCCharChangedUpdate(sc);
@@ -887,7 +887,7 @@ return;
 			    preserved = refchanged = true;
 			    SCPreserveState(sc,false);
 			}
-			SCRefToSplines(sc,ref);
+			SCRefToSplines(sc,ref,layer);
 		    }
 		}
 	    }
