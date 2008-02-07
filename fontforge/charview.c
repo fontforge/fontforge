@@ -2898,8 +2898,8 @@ static int CheckPoint(FindSel *fs, SplinePoint *sp, SplineSet *spl) {
 return( true );
     }
     if ( (sp->selected && fs->select_controls) || fs->all_controls ) {
-	if ( fs->xl<=sp->nextcp.x && fs->xh>=sp->nextcp.x &&
-		fs->yl<=sp->nextcp.y && fs->yh >= sp->nextcp.y ) {
+	if ( fs->c_xl<=sp->nextcp.x && fs->c_xh>=sp->nextcp.x &&
+		fs->c_yl<=sp->nextcp.y && fs->c_yh >= sp->nextcp.y ) {
 	    fs->p->sp = sp;
 	    fs->p->spline = NULL;
 	    fs->p->spl = spl;
@@ -2912,8 +2912,8 @@ return( true );
 	    }
 	    sp->selected = true;
 return( true );
-	} else if ( fs->xl<=sp->prevcp.x && fs->xh>=sp->prevcp.x &&
-		fs->yl<=sp->prevcp.y && fs->yh >= sp->prevcp.y ) {
+	} else if ( fs->c_xl<=sp->prevcp.x && fs->c_xh>=sp->prevcp.x &&
+		fs->c_yl<=sp->prevcp.y && fs->c_yh >= sp->prevcp.y ) {
 	    fs->p->sp = sp;
 	    fs->p->spline = NULL;
 	    fs->p->spl = spl;
@@ -3037,10 +3037,10 @@ static void SetFS( FindSel *fs, PressedOn *p, CharView *cv, GEvent *event) {
     p->cy = (cv->height-event->u.mouse.y-cv->yoff)/cv->scale;
 
     fs->fudge = snapdistance/cv->scale;		/* 3.5 pixel fudge */
-    fs->xl = p->cx - fs->fudge;
-    fs->xh = p->cx + fs->fudge;
-    fs->yl = p->cy - fs->fudge;
-    fs->yh = p->cy + fs->fudge;
+    fs->c_xl = fs->xl = p->cx - fs->fudge;
+    fs->c_xh = fs->xh = p->cx + fs->fudge;
+    fs->c_yl = fs->yl = p->cy - fs->fudge;
+    fs->c_yh = fs->yh = p->cy + fs->fudge;
     if ( snaptoint ) {
 	p->cx = rint(p->cx);
 	p->cy = rint(p->cy);
@@ -3271,7 +3271,12 @@ return;
 
     if ( cv->active_tool == cvt_pointer ) {
 	fs.select_controls = true;
-	if ( event->u.mouse.state&ksm_alt ) fs.seek_controls = true;
+	if ( event->u.mouse.state&ksm_alt ) {
+	    fs.seek_controls = true;
+	    /* Allow more slop looking for control points if they asked for them */
+	    fs.c_xl -= fs.fudge; fs.c_xh += fs.fudge;
+	    fs.c_yl -= fs.fudge; fs.c_yh += fs.fudge;
+	}
 	if ( cv->showpointnumbers && cv->b.layerheads[cv->b.drawmode]->order2 )
 	    fs.all_controls = true;
 	cv->lastselpt = NULL;
