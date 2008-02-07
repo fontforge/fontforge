@@ -415,6 +415,27 @@ AC_ARG_ENABLE(longdouble,
 	AC_DEFINE(FONTFORGE_CONFIG_USE_LONGDOUBLE)
     fi
  ], : )
+AC_ARG_ENABLE(pasteafter,
+ AS_HELP_STRING([--enable-pasteafter], [Control whether fontforge has a paste after command (Useful for making words?)]),
+ [
+    if test "$withval" != "no" >/dev/null 2>&1 ; then
+	AC_DEFINE(FONTFORGE_CONFIG_PASTEAFTER)
+    fi
+ ], : )
+AC_ARG_ENABLE(gb12345,
+ AS_HELP_STRING([--enable-gb12345], [Control whether fontforge understands the gb12345 encoding]),
+ [
+    if test "$withval" != "no" >/dev/null 2>&1 ; then
+	AC_DEFINE(FONTFORGE_CONFIG_GB12345)
+    fi
+ ], : )
+AC_ARG_ENABLE(tilepath,
+ AS_HELP_STRING([--enable-tilepath], [Control whether fontforge has a tile path command (a variant of expand stroke)]),
+ [
+    if test "$withval" != "no" >/dev/null 2>&1 ; then
+	AC_DEFINE(FONTFORGE_CONFIG_TILEPATH)
+    fi
+ ], : )
 
 test -d libs || mkdir libs
 
