@@ -53,5 +53,6 @@
 #undef FREETYPE_HAS_DEBUGGER
 #undef _NO_SNPRINTF
 #undef _NO_XKB
+#undef X_DISPLAY_MISSING
 
 #endif
