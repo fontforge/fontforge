@@ -1966,7 +1966,7 @@ static void MatchLookups(struct font_diff *fd) {
 		    fd->s2match1[sub->subtable_offset]=sub2;
 		    fd->s1match2[sub2->subtable_offset]=sub;
 		    sub=sub->next;
-		    sub2=sub->next;
+		    sub2=sub2->next;
 		} else {
 		    if ( fd->s2match1[sub->subtable_offset]!=NULL )
 			sub=sub->next;
