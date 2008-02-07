@@ -818,9 +818,7 @@ static void TPD_DoClose(struct cvcontainer *cvc) {
 	SplineChar *msc = &(&tpd->sc_first)[i];
 	SplinePointListsFree(msc->layers[0].splines);
 	SplinePointListsFree(msc->layers[1].splines);
-#ifdef FONTFORGE_CONFIG_TYPE3
 	free( msc->layers );
-#endif
     }
 
     tpd->done = true;
@@ -981,11 +979,9 @@ static void TPDInit(TilePathDlg *tpd,SplineFont *sf) {
 			    "Isolated";
 	msc->parent = &tpd->dummy_sf;
 	msc->layer_cnt = 2;
-#ifdef FONTFORGE_CONFIG_TYPE3
 	msc->layers = gcalloc(2,sizeof(Layer));
 	LayerDefault(&msc->layers[0]);
 	LayerDefault(&msc->layers[1]);
-#endif
 	tpd->chars[i] = msc;
 
 	mcv->b.sc = msc;

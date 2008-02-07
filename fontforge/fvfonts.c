@@ -481,7 +481,6 @@ return( head );
 
 SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into,struct sfmergecontext *mc) {
     SplineChar *nsc = SFSplineCharCreate(into);
-#ifdef FONTFORGE_CONFIG_TYPE3
     Layer *layers = nsc->layers;
     int layer;
 
@@ -497,13 +496,6 @@ SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into,struct sfmergecontext
 	layers[layer].undoes = NULL;
 	layers[layer].redoes = NULL;
     }
-#else
-    *nsc = *sc;
-    nsc->layers[ly_fore].splines = SplinePointListCopy(nsc->layers[ly_fore].splines);
-    nsc->layers[ly_fore].refs = RefCharsCopy(nsc->layers[ly_fore].refs);
-    nsc->layers[ly_back].splines = SplinePointListCopy(nsc->layers[ly_back].splines);
-    nsc->layers[ly_back].images = ImageListCopy(nsc->layers[ly_back].images);
-#endif
     nsc->parent = into;
     nsc->orig_pos = -2;
     nsc->name = copy(sc->name);

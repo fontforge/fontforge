@@ -5543,9 +5543,7 @@ return;
     PSTFree(sc->possub);
     free(sc->ttf_instrs);
     free(sc->countermasks);
-#ifdef FONTFORGE_CONFIG_TYPE3
     free(sc->layers);
-#endif
     AltUniFree(sc->altuni);
     GlyphVariantsFree(sc->horiz_variants);
     GlyphVariantsFree(sc->vert_variants);

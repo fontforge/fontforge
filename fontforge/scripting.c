@@ -3922,13 +3922,8 @@ static void SCReplaceWith(SplineChar *dest, SplineChar *src) {
     struct splinecharlist *scl = dest->dependents;
     RefChar *refs;
     int layer, last;
-#ifdef FONTFORGE_CONFIG_TYPE3
     int lc;
     Layer *layers;
-#else
-    SplineSet *back = dest->layers[ly_back].splines;
-    ImageList *images = dest->layers[ly_back].images;
-#endif
 
     if ( src==dest )
 return;
@@ -3943,9 +3938,7 @@ return;
     for ( layer = ly_fore; layer<=last; ++layer ) {
 	SplinePointListsFree(dest->layers[layer].splines);
 	RefCharsFree(dest->layers[layer].refs);
-#ifdef FONTFORGE_CONFIG_TYPE3
 	ImageListsFree(dest->layers[layer].images);
-#endif
     }
     StemInfosFree(dest->hstem);
     StemInfosFree(dest->vstem);
@@ -3957,7 +3950,6 @@ return;
     PSTFree(dest->possub);
     free(dest->ttf_instrs);
 
-#ifdef FONTFORGE_CONFIG_TYPE3
     layers = dest->layers;
     lc = dest->layer_cnt;
     *dest = *src;
@@ -3975,15 +3967,6 @@ return;
     for ( ; layer<lc; ++layer )
 	UndoesFree(layers[layer].undoes);
     free(layers);
-#else
-    *dest = *src;
-    dest->layers[ly_back].images = images;
-    dest->layers[ly_back].splines = back;
-    dest->layers[ly_fore].undoes = u[0]; dest->layers[ly_back].undoes = u[1]; dest->layers[ly_fore].redoes = NULL; dest->layers[ly_back].redoes = r1;
-
-    src->layers[ly_fore].splines = NULL;
-    src->layers[ly_fore].refs = NULL;
-#endif
     dest->orig_pos = opos; dest->unicodeenc = uenc;
     dest->dependents = scl;
     dest->namechanged = true;
