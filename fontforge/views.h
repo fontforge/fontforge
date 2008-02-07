@@ -371,6 +371,7 @@ typedef struct findsel {
     GEvent *e;
     real fudge;		/* One pixel fudge factor */
     real xl,xh, yl, yh;	/* One pixel fudge factor */
+    real c_xl,c_xh, c_yl, c_yh;		/* fudge rectangle for control points, larger than above if alt is depressed */
     unsigned int select_controls: 1;	/* notice control points */
     unsigned int seek_controls: 1;	/* notice control points before base points */
     unsigned int all_controls: 1;	/* notice control points even if the base points aren't selected (in truetype point numbering mode where all cps are visible) */
