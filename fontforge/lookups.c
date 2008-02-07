@@ -2307,7 +2307,7 @@ OTLookup *OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf, OTLookup *fr
 	    SF_AddPSTKern(into_sf, from_sub, sub, from_sf, prefix);
 	++scnt;
     }
-    FIOTLookupCopyInto(into_sf,from_sf, from_otl, scnt);
+    FIOTLookupCopyInto(into_sf,from_sf, from_otl, otl, scnt);
 return( otl );
 }
 
@@ -3906,7 +3906,7 @@ static void NOFI_SortInsertLookup(SplineFont *sf, OTLookup *newotl) {
 }
 
 static void NOFI_OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf,
-	OTLookup *from_otl, int scnt) {
+	OTLookup *from_otl, OTLookup *to_otl, int scnt) {
 }
 
 static void NOFI_Destroy(SplineFont *sf) {
