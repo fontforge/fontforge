@@ -1335,7 +1335,12 @@ return( false );
     haslg = PSDictHasEntry(sf->private,"LanguageGroup")!=NULL;
     if ( sf->weight!=NULL &&
 	    (strstrmatch(sf->weight,"Bold")!=NULL ||
-	     strstrmatch(sf->weight,"Black")!=NULL))
+	     strstrmatch(sf->weight,"Heavy")!=NULL ||
+	     strstrmatch(sf->weight,"Black")!=NULL ||
+	     strstrmatch(sf->weight,"Grass")!=NULL ||
+	     strstrmatch(sf->weight,"Fett")!=NULL))
+	isbold = true;
+    if ( sf->pfminfo.pfmset && sf->pfminfo.weight>=700 )
 	isbold = true;
 
     ff_progress_change_stages(2+2-hasblue);

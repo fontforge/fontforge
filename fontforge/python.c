@@ -959,7 +959,7 @@ static PyObject *PyFFPoint_Transform(PyFF_Point *self, PyObject *args) {
 return( NULL );
     PyFF_TransformPoint(self,m);
     Py_INCREF((PyObject *) self);
-return( (PyObject *) self );
+Py_RETURN( self );
 }
 
 static PyObject *PyFFPoint_pickleReducer(PyFF_Point *self, PyObject *args) {
@@ -5838,7 +5838,7 @@ static PyMethodDef PyFF_Glyph_methods[] = {
     { "addHint", PyFFGlyph_addHint, METH_VARARGS, "Add a postscript hint (is_vertical_hint,start_pos,width)"},
     { "addPosSub", PyFFGlyph_addPosSub, METH_VARARGS, "Adds position/substitution data to the glyph"},
     { "autoHint", PyFFGlyph_autoHint, METH_NOARGS, "Guess at postscript hints"},
-    { "autoInstr", PyFFGlyph_autoInstr, METH_NOARGS, "Guess (badly) at truetype instructions"},
+    { "autoInstr", PyFFGlyph_autoInstr, METH_NOARGS, "Guess at truetype instructions"},
     { "autoTrace", PyFFGlyph_autoTrace, METH_NOARGS, "Autotrace any background images"},
     { "boundingBox", (PyCFunction) PyFFGlyph_BoundingBox, METH_NOARGS, "Finds the minimum bounding box for the glyph (xmin,ymin,xmax,ymax)" },
     { "build", PyFFGlyph_Build, METH_NOARGS, "If the current glyph is an accented character\nand all components are in the font\nthen build it out of references" },
@@ -6683,6 +6683,25 @@ static PyMappingMethods PyFF_PrivateMapping = {
     PyFF_PrivateIndexAssign	/* subscript assign */
 };
 
+static PyObject *PyFFPrivate_Guess(PyFF_Private *self, PyObject *args) {
+    SplineFont *sf = self->sf;
+    char *name;
+
+    if ( !PyArg_ParseTuple(args,"s", &name) )
+return( NULL );
+    if ( sf->private==NULL )
+	sf->private = gcalloc(1,sizeof(struct psdict));
+
+    SFPrivateGuess(sf,sf->private,name,true);
+Py_RETURN( self );
+}
+
+static PyMethodDef FFPrivate_methods[] = {
+    {"guess", (PyCFunction)PyFFPrivate_Guess, METH_VARARGS,
+	     "Given the name of an entry, guesses a default value for it." },
+    NULL
+};
+
 /* ************************************************************************** */
 /* ************************* initializer routines *************************** */
 /* ************************************************************************** */
@@ -6716,7 +6735,7 @@ static PyTypeObject PyFF_PrivateType = {
     0,		               /* tp_weaklistoffset */
     privateiter_new,		/* tp_iter */
     0,		               /* tp_iternext */
-    0,			       /* tp_methods */
+    FFPrivate_methods,	       /* tp_methods */
     0,			       /* tp_members */
     0,		               /* tp_getset */
     0,                         /* tp_base */
