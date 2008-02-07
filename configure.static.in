@@ -55,10 +55,10 @@ if test "$gww_define_caps_for_alt" \!= "dontknow" ; then
   AC_DEFINE_UNQUOTED(FONTFORGE_CONFIG_CAPSLOCK_FOR_ALT,$gww_define_caps_for_alt)
 fi
 
-AC_ARG_WITH(debug-raw-points,
- [  --with-debug-raw-points   Add a raw mode to the points window of the debugger],
+AC_ARG_ENABLE(debug-raw-points,
+ [  --enable-debug-raw-points   Add a raw mode to the points window of the debugger],
  [
-   if test "$withval" \!= "no" ; then
+   if test "$enableval" \!= "no" ; then
      AC_DEFINE(FONTFORGE_CONFIG_SHOW_RAW_POINTS)
    fi
 
@@ -388,7 +388,7 @@ fi
 AC_ARG_ENABLE(multilayer,
  AS_HELP_STRING([--enable-multilayer], [Control whether we build with support for type3/svg fonts containing multilayered drawing with strokes, fills, images, etc.]),
  [
-    if test "$withval" != "no" >/dev/null 2>&1 ; then
+    if test "$enableval" != "no" >/dev/null 2>&1 ; then
 	AC_DEFINE(FONTFORGE_CONFIG_TYPE3)
     fi
  ], : )
@@ -396,7 +396,7 @@ AC_ARG_ENABLE(multilayer,
 AC_ARG_ENABLE(devicetables,
  AS_HELP_STRING([--enable-devicetables], [Control whether we build with support for device tables which allow fine control of kerning (etc.) at small point sizes]),
  [
-    if test "$withval" != "no" >/dev/null 2>&1 ; then
+    if test "$enableval" != "no" >/dev/null 2>&1 ; then
 	AC_DEFINE(FONTFORGE_CONFIG_DEVICETABLES)
     fi
  ], AC_DEFINE(FONTFORGE_CONFIG_DEVICETABLES) )
@@ -404,35 +404,35 @@ AC_ARG_ENABLE(devicetables,
 AC_ARG_ENABLE(double,
  AS_HELP_STRING([--enable-double], [Control whether fontforge uses doubles internally (normally it uses floats)]),
  [
-    if test "$withval" != "no" >/dev/null 2>&1 ; then
+    if test "$enableval" != "no" >/dev/null 2>&1 ; then
 	AC_DEFINE(FONTFORGE_CONFIG_USE_DOUBLE)
     fi
  ], : )
 AC_ARG_ENABLE(longdouble,
  AS_HELP_STRING([--enable-longdouble], [Control whether fontforge uses long doubles internally (normally it uses floats)]),
  [
-    if test "$withval" != "no" >/dev/null 2>&1 ; then
+    if test "$enableval" != "no" >/dev/null 2>&1 ; then
 	AC_DEFINE(FONTFORGE_CONFIG_USE_LONGDOUBLE)
     fi
  ], : )
 AC_ARG_ENABLE(pasteafter,
  AS_HELP_STRING([--enable-pasteafter], [Control whether fontforge has a paste after command (Useful for making words?)]),
  [
-    if test "$withval" != "no" >/dev/null 2>&1 ; then
+    if test "$enableval" != "no" >/dev/null 2>&1 ; then
 	AC_DEFINE(FONTFORGE_CONFIG_PASTEAFTER)
     fi
  ], : )
 AC_ARG_ENABLE(gb12345,
  AS_HELP_STRING([--enable-gb12345], [Control whether fontforge understands the gb12345 encoding]),
  [
-    if test "$withval" != "no" >/dev/null 2>&1 ; then
+    if test "$enableval" != "no" >/dev/null 2>&1 ; then
 	AC_DEFINE(FONTFORGE_CONFIG_GB12345)
     fi
  ], : )
 AC_ARG_ENABLE(tilepath,
  AS_HELP_STRING([--enable-tilepath], [Control whether fontforge has a tile path command (a variant of expand stroke)]),
  [
-    if test "$withval" != "no" >/dev/null 2>&1 ; then
+    if test "$enableval" != "no" >/dev/null 2>&1 ; then
 	AC_DEFINE(FONTFORGE_CONFIG_TILEPATH)
     fi
  ], : )
