@@ -2481,6 +2481,7 @@ extern int PSDictFindEntry(struct psdict *dict, char *key);
 extern char *PSDictHasEntry(struct psdict *dict, char *key);
 extern int PSDictRemoveEntry(struct psdict *dict, char *key);
 extern int PSDictChangeEntry(struct psdict *dict, char *key, char *newval);
+extern int SFPrivateGuess(SplineFont *sf,struct psdict *private,char *name, int onlyone);
 
 extern void SplineSetsRound2Int(SplineSet *spl,real factor,int inspiro,int onlysel);
 extern void SCRound2Int(SplineChar *sc,real factor);

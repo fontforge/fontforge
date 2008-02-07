@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 27-Jan-2008 -->
+  <!-- AP: Last modified: 6-Feb-2008 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -40,6 +40,8 @@
       <A href="#Glyph">glyph</A>
     <LI>
       <A href="#selection">selection</A>
+    <LI>
+      <A HREF="#private">private</A>
     <LI>
       <A href="#Font">font</A>
   </UL>
@@ -2201,6 +2203,41 @@ pen = None;				# Finalize the pen. This tells FontForge
   <P>
   <TABLE id="type" border=1>
     <CAPTION>
+      <A NAME="private">private</A>
+    </CAPTION>
+    <TR>
+      <TD colspan=3>This represents a font's postscript private dictionary. You
+	may index it with one of the standard names of things that live in the private
+	dictionary.
+	<P>
+	This type may not be pickled.</TD>
+    </TR>
+    <TR>
+      <TH colspan=3>Iterator Protocol</TH>
+    </TR>
+    <TR>
+      <TD><CODE>__iter__</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>Returns an iterator for the dictionary which will return all entres.</TD>
+    </TR>
+    <TR>
+      <TH colspan=3>Methods</TH>
+    </TR>
+    <TR>
+      <TH>method</TH>
+      <TH>args</TH>
+      <TH>comments</TH>
+    </TR>
+    <TR>
+      <TD><CODE>guess</CODE></TD>
+      <TD><CODE>(name)</CODE></TD>
+      <TD>Guess a value for this this entry in the private dictionary. If fontforge
+	can't make a guess it will simply ignore the request.</TD>
+    </TR>
+  </TABLE>
+  <P>
+  <TABLE id="type" border=1>
+    <CAPTION>
       <A name="Font">font</A>
     </CAPTION>
     <TR>
@@ -2569,9 +2606,9 @@ pen = None;				# Finalize the pen. This tells FontForge
     </TR>
     <TR>
       <TD><CODE>private</CODE></TD>
-      <TD colspan=2>Returns a dictionary like object representing the PostScript
-	private dictionary for the font. Changing entries in this object will change
-	them in the font. (It's a reference, not a copy).
+      <TD colspan=2>Returns a <A HREF="#private">dictionary like object representing
+	the PostScript private dictionary</A> for the font. Changing entries in this
+	object will change them in the font. (It's a reference, not a copy).
 	<P>
 	There is an iterator associated with this entry.</TD>
     </TR>

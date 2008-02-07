@@ -1119,3 +1119,99 @@ return( true );
 
 return( false );
 }
+
+static void arraystring(char *buffer,real *array,int cnt) {
+    int i, ei;
+
+    for ( ei=cnt; ei>1 && array[ei-1]==0; --ei );
+    *buffer++ = '[';
+    for ( i=0; i<ei; ++i ) {
+	sprintf(buffer, "%d ", (int) array[i]);
+	buffer += strlen(buffer);
+    }
+    if ( buffer[-1] ==' ' ) --buffer;
+    *buffer++ = ']'; *buffer='\0';
+}
+
+static void SnapSet(struct psdict *private,real stemsnap[12], real snapcnt[12],
+	char *name1, char *name2, int which ) {
+    int i, mi;
+    char buffer[211];
+
+    mi = -1;
+    for ( i=0; stemsnap[i]!=0 && i<12; ++i )
+	if ( mi==-1 ) mi = i;
+	else if ( snapcnt[i]>snapcnt[mi] ) mi = i;
+    if ( mi==-1 )
+return;
+    if ( which<2 ) {
+	sprintf( buffer, "[%d]", (int) stemsnap[mi]);
+	PSDictChangeEntry(private,name1,buffer);
+    }
+    if ( which==0 || which==2 ) {
+	arraystring(buffer,stemsnap,12);
+	PSDictChangeEntry(private,name2,buffer);
+    }
+}
+
+int SFPrivateGuess(SplineFont *sf,struct psdict *private,char *name, int onlyone) {
+    real bluevalues[14], otherblues[10];
+    real snapcnt[12];
+    real stemsnap[12];
+    char buffer[211];
+
+    if ( strcmp(name,"BlueValues")==0 || strcmp(name,"OtherBlues")==0 ) {
+	FindBlues(sf,bluevalues,otherblues);
+	if ( !onlyone || strcmp(name,"BlueValues")==0 ) {
+	    arraystring(buffer,bluevalues,14);
+	    PSDictChangeEntry(private,"BlueValues",buffer);
+	}
+	if ( !onlyone || strcmp(name,"OtherBlues")==0 ) {
+	    if ( otherblues[0]!=0 || otherblues[1]!=0 ) {
+		arraystring(buffer,otherblues,10);
+		PSDictChangeEntry(private,"OtherBlues",buffer);
+	    } else
+		PSDictRemoveEntry(private, "OtherBlues");
+	}
+    } else if ( strcmp(name,"StdHW")==0 || strcmp(name,"StemSnapH")==0 ) {
+	FindHStems(sf,stemsnap,snapcnt);
+	SnapSet(private,stemsnap,snapcnt,"StdHW","StemSnapH",
+		!onlyone ? 0 : strcmp(name,"StdHW")==0 ? 1 : 0 );
+    } else if ( strcmp(name,"StdVW")==0 || strcmp(name,"StemSnapV")==0 ) {
+	FindVStems(sf,stemsnap,snapcnt);
+	SnapSet(private,stemsnap,snapcnt,"StdVW","StemSnapV",
+		!onlyone ? 0 : strcmp(name,"StdVW")==0 ? 1 : 0);
+    } else if ( strcmp(name,"BlueScale")==0 ) {
+	double val = -1;
+	if ( PSDictFindEntry(private,"BlueValues")!=-1 ) {
+	    /* Can guess BlueScale if we've got a BlueValues */
+	    val = BlueScaleFigureForced(private,NULL,NULL);
+	}
+	if ( val==-1 ) val = .039625;
+	sprintf(buffer,"%g", val );
+	PSDictChangeEntry(private,"BlueScale",buffer);
+    } else if ( strcmp(name,"BlueShift")==0 ) {
+	PSDictChangeEntry(private,"BlueShift","7");
+    } else if ( strcmp(name,"BlueFuzz")==0 ) {
+	PSDictChangeEntry(private,"BlueFuzz","1");
+    } else if ( strcmp(name,"ForceBold")==0 ) {
+	int isbold = false;
+	if ( sf->weight!=NULL &&
+		(strstrmatch(sf->weight,"Bold")!=NULL ||
+		 strstrmatch(sf->weight,"Heavy")!=NULL ||
+		 strstrmatch(sf->weight,"Black")!=NULL ||
+		 strstrmatch(sf->weight,"Grass")!=NULL ||
+		 strstrmatch(sf->weight,"Fett")!=NULL))
+	    isbold = true;
+	if ( sf->pfminfo.pfmset && sf->pfminfo.weight>=700 )
+	    isbold = true;
+	PSDictChangeEntry(private,"ForceBold",isbold ? "true" : "false" );
+    } else if ( strcmp(name,"LanguageGroup")==0 ) {
+	PSDictChangeEntry(private,"LanguageGroup","0" );
+    } else if ( strcmp(name,"ExpansionFactor")==0 ) {
+	PSDictChangeEntry(private,"ExpansionFactor","0.06" );
+    } else
+return( 0 );
+
+return( true );
+}

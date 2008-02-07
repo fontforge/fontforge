@@ -1885,8 +1885,11 @@ return(true);
 	if ( newkey==NULL )
 return( true );
 	PIPrivateCheck(d);
-	if (( i = PSDictFindEntry(d->private,newkey))==-1 )
-	    i = PSDictChangeEntry(d->private,newkey,"");
+	if (( i = PSDictFindEntry(d->private,newkey))==-1 ) {
+	    SFPrivateGuess(d->sf,d->private,newkey,true);
+	    if (( i = PSDictFindEntry(d->private,newkey))==-1 )
+		i = PSDictChangeEntry(d->private,newkey,"");
+	}
 	list = GWidgetGetControl(d->gw,CID_PrivateEntries);
 	ti = PI_ListArray(d->private);
 	if ( i>0 ) {
@@ -1901,46 +1904,12 @@ return( true );
 return( true );
 }
 
-static void arraystring(char *buffer,real *array,int cnt) {
-    int i, ei;
-
-    for ( ei=cnt; ei>1 && array[ei-1]==0; --ei );
-    *buffer++ = '[';
-    for ( i=0; i<ei; ++i ) {
-	sprintf(buffer, "%d ", (int) array[i]);
-	buffer += strlen(buffer);
-    }
-    if ( buffer[-1] ==' ' ) --buffer;
-    *buffer++ = ']'; *buffer='\0';
-}
-
-static void SnapSet(struct psdict *private,real stemsnap[12], real snapcnt[12],
-	char *name1, char *name2 ) {
-    int i, mi;
-    char buffer[211];
-
-    mi = -1;
-    for ( i=0; stemsnap[i]!=0 && i<12; ++i )
-	if ( mi==-1 ) mi = i;
-	else if ( snapcnt[i]>snapcnt[mi] ) mi = i;
-    if ( mi==-1 )
-return;
-    sprintf( buffer, "[%d]", (int) stemsnap[mi]);
-    PSDictChangeEntry(private,name1,buffer);
-    arraystring(buffer,stemsnap,12);
-    PSDictChangeEntry(private,name2,buffer);
-}
-
 static int PI_Guess(GGadget *g, GEvent *e) {
     GWindow gw;
     struct gfi_data *d;
     GGadget *list;
     int sel;
     SplineFont *sf;
-    real bluevalues[14], otherblues[10];
-    real snapcnt[12];
-    real stemsnap[12];
-    char buffer[211];
     unichar_t *temp;
     struct psdict *private;
     char *buts[3];
@@ -1957,38 +1926,17 @@ static int PI_Guess(GGadget *g, GEvent *e) {
 		strcmp(private->keys[sel],"OtherBlues")==0 ) {
 	    if ( gwwv_ask(_("Guess"),(const char **) buts,0,1,_("This will change both BlueValues and OtherBlues.\nDo you want to continue?"))==1 )
 return( true );
-	    PIPrivateCheck(d);
-	    private = d->private;
-	    FindBlues(sf,bluevalues,otherblues);
-	    arraystring(buffer,bluevalues,14);
-	    PSDictChangeEntry(private,"BlueValues",buffer);
-	    if ( otherblues[0]!=0 || otherblues[1]!=0 ) {
-		arraystring(buffer,otherblues,10);
-		PSDictChangeEntry(private,"OtherBlues",buffer);
-	    }
 	} else if ( strcmp(private->keys[sel],"StdHW")==0 ||
 		strcmp(private->keys[sel],"StemSnapH")==0 ) {
 	    if ( gwwv_ask(_("Guess"),(const char **) buts,0,1,_("This will change both StdHW and StemSnapH.\nDo you want to continue?"))==1 )
 return( true );
-	    FindHStems(sf,stemsnap,snapcnt);
-	    PIPrivateCheck(d);
-	    SnapSet(d->private,stemsnap,snapcnt,"StdHW","StemSnapH");
 	} else if ( strcmp(private->keys[sel],"StdVW")==0 ||
 		strcmp(private->keys[sel],"StemSnapV")==0 ) {
 	    if ( gwwv_ask(_("Guess"),(const char **) buts,0,1,_("This will change both StdVW and StemSnapV.\nDo you want to continue?"))==1 )
 return( true );
-	    FindVStems(sf,stemsnap,snapcnt);
-	    PIPrivateCheck(d);
-	    SnapSet(d->private,stemsnap,snapcnt,"StdVW","StemSnapV");
-	} else if ( strcmp(private->keys[sel],"BlueScale")==0 &&
-		PSDictFindEntry(private,"BlueValues")!=-1 ) {
-	    /* Can guess BlueScale if we've got a BlueValues */
-	    double val = BlueScaleFigureForced(private,NULL,NULL);
-	    if ( val==-1 ) val = .039625;
-	    sprintf(buffer,"%g", val );
-	    PIPrivateCheck(d);
-	    PSDictChangeEntry(d->private,"BlueScale",buffer);
 	}
+	PIPrivateCheck(d);
+	SFPrivateGuess(sf,d->private,private->keys[sel],false);
 	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_PrivateValues),
 		temp = uc_copy( d->private->values[sel]));
 	free( temp );
