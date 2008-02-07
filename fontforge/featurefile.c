@@ -2343,7 +2343,7 @@ static SplineChar *fea_glyphname_get(struct parseState *tok,char *name) {
 return(sc);
     }
 
-    if ( sc!=NULL )
+    if ( sc!=NULL || strcmp(name,"NULL")==0 )
 return( sc );
     enc = SFFindSlot(sf,sf->fv->map,-1,name);
     if ( enc!=-1 ) {
@@ -2492,10 +2492,12 @@ return(NULL);
 	break;
 		}
 		last_val=-1; last_glyph[0] = '\0';
+	    } else if ( tok->type == tk_NULL ) {
+		contents = copy("NULL");
 	    } else {
 		LogError(_("Expected glyph name, cid, or class in glyph class definition on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 		++tok->err_count;
-return(NULL);
+	break;
 	    }
 	    if ( contents!=NULL )
 		cnt = fea_AddGlyphs(&glyphs,&max,cnt,contents);
