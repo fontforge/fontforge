@@ -2061,9 +2061,7 @@ struct pschars *SplineFont2ChrsSubrs(SplineFont *sf, int iscjk,
     int round = (flags&ps_flag_round)? true : false;
     GlyphInfo gi;
     SplineChar dummynotdef, *sc;
-#ifdef FONTFORGE_CONFIG_TYPE3
     Layer dummylayers[2];
-#endif
 
     if ( (format==ff_mma || format==ff_mmb) && mm!=NULL ) {
 	instance_count = mm->instance_count;
@@ -2111,10 +2109,8 @@ struct pschars *SplineFont2ChrsSubrs(SplineFont *sf, int iscjk,
 	dummynotdef.name = ".notdef";
 	dummynotdef.parent = sf;
 	dummynotdef.layer_cnt = 2;
-#ifdef FONTFORGE_CONFIG_TYPE3
 	dummynotdef.layers = dummylayers;
 	memset(dummylayers,0,sizeof(dummylayers));
-#endif
 	dummynotdef.width = SFOneWidth(sf);
 	if ( dummynotdef.width==-1 )
 	    dummynotdef.width = (sf->ascent+sf->descent)/2;
@@ -2174,9 +2170,7 @@ struct pschars *CID2ChrsSubrs(SplineFont *cidmaster,struct cidbytes *cidbytes,in
     GlyphInfo gi;
     int notdef_subfont;
     SplineChar dummynotdef, *sc;
-#ifdef FONTFORGE_CONFIG_TYPE3
     Layer dummylayers[2];
-#endif
 
     cnt = 0; notdef_subfont = -1;
     for ( i=0; i<cidmaster->subfontcnt; ++i ) {
@@ -2193,10 +2187,8 @@ struct pschars *CID2ChrsSubrs(SplineFont *cidmaster,struct cidbytes *cidbytes,in
 	dummynotdef.name = ".notdef";
 	dummynotdef.parent = cidmaster->subfonts[0];
 	dummynotdef.layer_cnt = 2;
-#ifdef FONTFORGE_CONFIG_TYPE3
 	dummynotdef.layers = dummylayers;
 	memset(dummylayers,0,sizeof(dummylayers));
-#endif
 	dummynotdef.width = SFOneWidth(dummynotdef.parent);
 	if ( dummynotdef.width==-1 )
 	    dummynotdef.width = (dummynotdef.parent->ascent+dummynotdef.parent->descent);
@@ -3201,9 +3193,7 @@ struct pschars *SplineFont2ChrsSubrs2(SplineFont *sf, int nomwid, int defwid,
     SplineChar *sc;
     GlyphInfo gi;
     SplineChar dummynotdef;
-#ifdef FONTFORGE_CONFIG_TYPE3
     Layer dummylayers[2];
-#endif
 
     if ( !autohint_before_generate && !(flags&ps_flag_nohints))
 	SplineFontAutoHintRefs(sf);
@@ -3225,10 +3215,8 @@ struct pschars *SplineFont2ChrsSubrs2(SplineFont *sf, int nomwid, int defwid,
 	    dummynotdef.name = ".notdef";
 	    dummynotdef.parent = sf;
 	    dummynotdef.layer_cnt = 2;
-#ifdef FONTFORGE_CONFIG_TYPE3
 	    dummynotdef.layers = dummylayers;
 	    memset(dummylayers,0,sizeof(dummylayers));
-#endif
 	    dummynotdef.width = SFOneWidth(sf);
 	    if ( dummynotdef.width==-1 )
 		dummynotdef.width = (sf->ascent+sf->descent)/2;
@@ -3409,9 +3397,7 @@ struct pschars *CID2ChrsSubrs2(SplineFont *cidmaster,struct fd2data *fds,
     /*  we add it. */
     GlyphInfo gi;
     SplineChar dummynotdef;
-#ifdef FONTFORGE_CONFIG_TYPE3
     Layer dummylayers[2];
-#endif
 
     max = 0;
     for ( i=0; i<cidmaster->subfontcnt; ++i ) {
@@ -3460,10 +3446,8 @@ struct pschars *CID2ChrsSubrs2(SplineFont *cidmaster,struct fd2data *fds,
 	    dummynotdef.name = ".notdef";
 	    dummynotdef.parent = sf;
 	    dummynotdef.layer_cnt = 2;
-#ifdef FONTFORGE_CONFIG_TYPE3
 	    dummynotdef.layers = dummylayers;
 	    memset(dummylayers,0,sizeof(dummylayers));
-#endif
 	    dummynotdef.width = SFOneWidth(sf);
 	    if ( dummynotdef.width==-1 )
 		dummynotdef.width = (sf->ascent+sf->descent);

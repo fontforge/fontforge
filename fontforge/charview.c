@@ -4965,31 +4965,22 @@ return;
 	SCPreserveBackground(cv->b.sc);
 	temp = *cv->b.sc;
 	cv->b.sc->dependents = NULL;
-#ifdef FONTFORGE_CONFIG_TYPE3
 	lc = cv->b.sc->layer_cnt;
 	undoes = galloc(lc*sizeof(Undoes *));
 	for ( layer=0; layer<lc; ++layer ) {
 	    undoes[layer] = cv->b.sc->layers[layer].undoes;
 	    cv->b.sc->layers[layer].undoes = NULL;
 	}
-#else
-	cv->b.sc->layers[ly_fore].undoes = cv->b.sc->layers[ly_back].undoes = NULL;
-#endif
 	SplineCharFreeContents(cv->b.sc);
 	*cv->b.sc = *sc;
 	chunkfree(sc,sizeof(SplineChar));
 	cv->b.sc->parent = temp.parent;
 	cv->b.sc->dependents = temp.dependents;
-#ifdef FONTFORGE_CONFIG_TYPE3
 	for ( layer = 0; layer<lc && layer<cv->b.sc->layer_cnt; ++layer )
 	    cv->b.sc->layers[layer].undoes = undoes[layer];
 	for ( ; layer<lc; ++layer )
 	    UndoesFree(undoes[layer]);
 	free(undoes);
-#else
-	cv->b.sc->layers[ly_fore].undoes = temp.layers[ly_fore].undoes;
-	cv->b.sc->layers[ly_back].undoes = temp.layers[ly_back].undoes;
-#endif
 	cv->b.sc->views = temp.views;
 	/* cv->b.sc->changed = temp.changed; */
 	for ( cvs=(CharView *) (cv->b.sc->views); cvs!=NULL; cvs=(CharView *) (cvs->b.next) ) {

@@ -1434,9 +1434,7 @@ void MKD_DoClose(struct cvcontainer *cvc) {
 	SplineChar *msc = &(&mkd->sc_topright)[i];
 	SplinePointListsFree(msc->layers[0].splines);
 	SplinePointListsFree(msc->layers[1].splines);
-#ifdef FONTFORGE_CONFIG_TYPE3
 	free( msc->layers );
-#endif
     }
 
     mkd->done = true;
@@ -1899,8 +1897,8 @@ static void MKDInit(MathKernDlg *mkd,SplineChar *sc) {
 			    "BottomLeft";
 	msc->parent = &mkd->dummy_sf;
 	msc->layer_cnt = 2;
-#ifdef FONTFORGE_CONFIG_TYPE3
 	msc->layers = gcalloc(2,sizeof(Layer));
+#ifdef FONTFORGE_CONFIG_TYPE3
 	LayerDefault(&msc->layers[0]);
 	LayerDefault(&msc->layers[1]);
 #endif

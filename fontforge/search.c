@@ -1153,10 +1153,8 @@ return;
 	UndoesFree(sv->sc_srch.layers[i].undoes);
     for ( i=0; i<sv->sc_rpl.layer_cnt; ++i )
 	UndoesFree(sv->sc_rpl.layers[i].undoes);
-#ifdef FONTFORGE_CONFIG_TYPE3
     free(sv->sc_srch.layers);
     free(sv->sc_rpl.layers);
-#endif
     SplinePointListsFree(sv->revpath);
 }
 
@@ -1165,9 +1163,9 @@ SearchData *SDFillup(SearchData *sv, FontViewBase *fv) {
     sv->sc_srch.orig_pos = 0; sv->sc_srch.unicodeenc = -1; sv->sc_srch.name = "Search";
     sv->sc_rpl.orig_pos = 1; sv->sc_rpl.unicodeenc = -1; sv->sc_rpl.name = "Replace";
     sv->sc_srch.layer_cnt = sv->sc_rpl.layer_cnt = 2;
-#ifdef FONTFORGE_CONFIG_TYPE3
     sv->sc_srch.layers = gcalloc(2,sizeof(Layer));
     sv->sc_rpl.layers = gcalloc(2,sizeof(Layer));
+#ifdef FONTFORGE_CONFIG_TYPE3
     LayerDefault(&sv->sc_srch.layers[0]);
     LayerDefault(&sv->sc_srch.layers[1]);
     LayerDefault(&sv->sc_rpl.layers[0]);
