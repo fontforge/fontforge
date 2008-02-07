@@ -75,13 +75,16 @@
 /* The paste after command pastes the contents of the clipboard into the      */
 /*  current glyph, translates that by the advance width of the current glyph  */
 /*  and increments the advance width by the advance width of the clipboard    */
+/*									      */
+/* Can be set from configure --enable-pasteafter			      */
+
 
 
 /* Someone asked for encoding GB12345. Neither libiconv nor iconv supports it.*/
 /*									      */
 /* #define FONTFORGE_CONFIG_GB12345					      */
 /*									      */
-/* Can be set from configure --with-gb12345				      */
+/* Can be set from configure --enable-gb12345				      */
 
 
 /* I doubt anyone but me will be interested in the tile path command, so I    */
@@ -90,11 +93,13 @@
 /*									      */
 /* #define FONTFORGE_CONFIG_TILEPATH					      */
 /*									      */
-/* The tile path command uses the contents of the clipboard as a tile which is*/
-/*  applied to any selected paths, replacing them. It could be used to make a */
-/*  font whose stems were filled with celtic knotwork, for example	      */
+/* The tile path command lets you specify a tile which will then be laid out  */
+/*  along a path. It could be used to make a font whose stems were filled with*/
+/*  celtic knotwork, or bamboo segments, for example.			      */
 /* It's sort of an extension to the Expand Stroke command, only it strokes    */
 /*  with a pattern */
+/*									      */
+/* Can be set from configure --enable-tilepath				      */
 
 
 /* There used to be a property _XFREE86_GLYPH_RANGES (in bdf/pcf) fonts which */
