@@ -1684,7 +1684,7 @@ return;
 	    (&fpst->nccnt)[i] = len;
 	    (&fpst->nclass)[i] = galloc(len*sizeof(char*));
 	    (&fpst->nclass)[i][0] = NULL;
-	    had_class0 = i==0 && isEverythingElse(classes[0]->text);
+	    had_class0 = i==0 && !isEverythingElse(classes[0]->text);
 	    for ( k=had_class0 ? 0 : 1 ; k<len; ++k )
 		(&fpst->nclass)[i][k] = cu_copy(classes[k]->text);
 	}
