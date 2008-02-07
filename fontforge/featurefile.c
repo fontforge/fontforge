@@ -552,6 +552,7 @@ static void dump_contextpstglyphs(FILE *out,SplineFont *sf,
 		fprintf(out, "<lookup %s> ", lookupname(otl) );
 	}
     }
+    putc(';',out); putc('\n',out);
 }
 
 static void dump_contextpstcoverage(FILE *out,SplineFont *sf,
@@ -784,7 +785,7 @@ static void dump_contextpstclass(FILE *out,SplineFont *sf,
 	    putc( ' ',out );
 	}
     }
-    putc( '\n',out );
+    putc( ';',out ); putc( '\n',out );
 }
 
 static void dump_contextpst(FILE *out,SplineFont *sf,struct lookup_subtable *sub) {
@@ -2363,7 +2364,7 @@ return( sc );
 /* Don't encode it (not in current encoding), just add it, so we needn't */
 /*  mess with maps or selections */
     SFExpandGlyphCount(sf,sf->glyphcnt+1);
-    sc = SplineCharCreate(sf);
+    sc = SFSplineCharCreate(sf);
     sc->name = copy(name);
     sc->unicodeenc = UniFromName(name,ui_none,&custom);
     sc->parent = sf;

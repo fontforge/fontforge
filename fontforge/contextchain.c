@@ -891,6 +891,16 @@ return;
     }
 }
 
+static int isEverythingElse(unichar_t *text) {
+    /* GT: The string "{Everything Else}" is used in the context of a list */
+    /* GT: of classes (a set of kerning classes) where class 0 designates the */
+    /* GT: default class containing all glyphs not specified in the other classes */
+    unichar_t *everything_else = utf82u_copy( _("{Everything Else}") );
+    int ret = u_strcmp(text,everything_else);
+    free(everything_else);
+return( ret==0 );
+}
+
 static void _CCD_DoEditNew(struct contextchaindlg *ccd,int off,int isedit) {
     static unichar_t nulstr[] = { 0 };
     int i;
@@ -946,7 +956,11 @@ return;
 	    i = GGadgetGetFirstListSelectedItem(list);
 	    if ( i==-1 )
 return;
-	    GGadgetSetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList+to_off),old[i]->text);
+	    if ( off==300 && i==0 && GTabSetGetSel(GWidgetGetControl(ccd->gw,CID_MatchType+300))==0 &&
+		    isEverythingElse(old[i]->text))
+		GGadgetSetTitle8(GWidgetGetControl(ccd->gw,CID_GlyphList+to_off),"");
+	    else
+		GGadgetSetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList+to_off),old[i]->text);
 	} else {
 	    GGadgetSetTitle(GWidgetGetControl(ccd->gw,CID_GlyphList+to_off),nulstr);
 	}
@@ -1297,7 +1311,8 @@ static int CCD_GlyphSelected(GGadget *g, GEvent *e) {
 	GGadgetSetEnabled(GWidgetGetControl(ccd->gw,CID_Delete+off),i!=-1 &&
 		(i!=0 || off<300));
 	GGadgetSetEnabled(GWidgetGetControl(ccd->gw,CID_Edit+off),i!=-1 &&
-		(i!=0 || off<300));
+		(i!=0 || off<300 ||
+		 (off>=300 && GTabSetGetSel(GWidgetGetControl(ccd->gw,CID_MatchType+300))==0 )));
     } else if ( e->type==et_controlevent && e->u.control.subtype == et_listdoubleclick ) {
 	struct contextchaindlg *ccd = GDrawGetUserData(GGadgetGetWindow(g));
 	int off = GGadgetGetCid(g)-CID_GList;
@@ -1647,7 +1662,6 @@ return;
 	    ff_post_error(_("Missing rules"),_(" There must be at least one contextual rule"));
 return;
 	}
-	had_class0 = fpst->nclass[0]!=NULL;
 	FPSTRulesFree(fpst->rules,fpst->format,fpst->rule_cnt);
 	fpst->format = pst_class;
 	fpst->rule_cnt = len;
@@ -1670,7 +1684,8 @@ return;
 	    (&fpst->nccnt)[i] = len;
 	    (&fpst->nclass)[i] = galloc(len*sizeof(char*));
 	    (&fpst->nclass)[i][0] = NULL;
-	    for ( k=(i==0 && had_class0) ? 0 : 1 ; k<len; ++k )
+	    had_class0 = i==0 && isEverythingElse(classes[0]->text);
+	    for ( k=had_class0 ? 0 : 1 ; k<len; ++k )
 		(&fpst->nclass)[i][k] = cu_copy(classes[k]->text);
 	}
       } break;

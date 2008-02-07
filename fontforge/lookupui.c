@@ -4615,19 +4615,24 @@ static void FI_SortInsertLookup(SplineFont *sf, OTLookup *newotl) {
 }
 
 static void FI_OTLookupCopyInto(SplineFont *into_sf,SplineFont *from_sf,
-	OTLookup *from_otl, int scnt) {
+	OTLookup *from_otl, OTLookup *to_otl, int scnt) {
     if ( into_sf->fontinfo ) {
 	int isgpos = from_otl->lookup_type>=gpos_start;
 	struct lkdata *lk = &into_sf->fontinfo->tables[isgpos];
-	OTLookup *otl = from_otl->next;
 	struct lookup_subtable *sub;
 	int i;
 	for ( i=0; i<lk->cnt; ++i )
-	    if ( lk->all[i].lookup==otl )
+	    if ( lk->all[i].lookup==to_otl )
 	break;
+	if ( i==lk->cnt ) {
+	    FI_SortInsertLookup(into_sf,to_otl);
+	    for ( i=0; i<lk->cnt; ++i )
+		if ( lk->all[i].lookup==to_otl )
+	    break;
+	}
 	lk->all[i].subtable_cnt = lk->all[i].subtable_max = scnt;
 	lk->all[i].subtables = gcalloc(scnt,sizeof(struct lksubinfo));
-	for ( sub=otl->subtables, scnt=0; sub!=NULL; sub=sub->next, ++scnt )
+	for ( sub=to_otl->subtables, scnt=0; sub!=NULL; sub=sub->next, ++scnt )
 	    lk->all[i].subtables[scnt].subtable = sub;
     }
 }
