@@ -4945,10 +4945,8 @@ static void CVMenuRevert(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void CVMenuRevertGlyph(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     SplineChar *sc, temp;
-#ifdef FONTFORGE_CONFIG_TYPE3
     Undoes **undoes;
     int layer, lc;
-#endif
     CharView *cvs;
 
     if ( cv->b.sc->parent->filename==NULL || cv->b.sc->namechanged || cv->b.sc->parent->mm!=NULL )
