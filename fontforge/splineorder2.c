@@ -1099,7 +1099,7 @@ void SFConvertToOrder3(SplineFont *_sf) {
 
     if ( _sf->cidmaster!=NULL ) _sf=_sf->cidmaster;
     for ( layer=0; layer<_sf->layer_cnt; ++layer )
-	SFConvertLayerToOrder2(_sf,layer);
+	SFConvertLayerToOrder3(_sf,layer);
 
     k = 0;
     do {
