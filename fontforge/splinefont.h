@@ -1464,6 +1464,7 @@ typedef struct layerinfo {
     char *name;
     unsigned int order2: 1;			/* Layer's data are order 2 bezier splines (truetype) rather than order 3 (postscript) */
 						/* In all glyphs in the font */
+    unsigned int ticked: 1;
 } LayerInfo;
 
 typedef struct splinefont {
@@ -1965,6 +1966,7 @@ extern void MathKernVContentsFree(struct mathkernvertex *mk);
 extern void MathKernFree(struct mathkern *mk);
 extern struct mathkern *MathKernCopy(struct mathkern *mk);
 extern void SplineCharListsFree(struct splinecharlist *dlist);
+extern void LayerFreeContents(SplineChar *sc, int layer);
 extern void SplineCharFreeContents(SplineChar *sc);
 extern void SplineCharFree(SplineChar *sc);
 extern void EncMapFree(EncMap *map);
@@ -2227,8 +2229,10 @@ extern void SCConvertToOrder2(SplineChar *sc);
 extern void SFConvertToOrder2(SplineFont *sf);
 extern void SCConvertToOrder3(SplineChar *sc);
 extern void SFConvertToOrder3(SplineFont *sf);
+extern void SFConvertGridToOrder2(SplineFont *_sf);
 extern void SCConvertLayerToOrder2(SplineChar *sc,int layer);
 extern void SFConvertLayerToOrder2(SplineFont *sf,int layer);
+extern void SFConvertGridToOrder3(SplineFont *_sf);
 extern void SCConvertLayerToOrder3(SplineChar *sc,int layer);
 extern void SFConvertLayerToOrder3(SplineFont *sf,int layer);
 extern void SCConvertOrder(SplineChar *sc, int to_order2);
@@ -2482,6 +2486,9 @@ extern char *PSDictHasEntry(struct psdict *dict, char *key);
 extern int PSDictRemoveEntry(struct psdict *dict, char *key);
 extern int PSDictChangeEntry(struct psdict *dict, char *key, char *newval);
 extern int SFPrivateGuess(SplineFont *sf,struct psdict *private,char *name, int onlyone);
+
+extern void SFRemoveLayer(SplineFont *sf,int l);
+extern void SFAddLayer(SplineFont *sf,char *name,int order2);
 
 extern void SplineSetsRound2Int(SplineSet *spl,real factor,int inspiro,int onlysel);
 extern void SCRound2Int(SplineChar *sc,real factor);

@@ -5517,6 +5517,15 @@ void SplineCharListsFree(struct splinecharlist *dlist) {
     }
 }
 
+void LayerFreeContents(SplineChar *sc,int layer) {
+    SplinePointListsFree(sc->layers[layer].splines);
+    RefCharsFree(sc->layers[layer].refs);
+    ImageListsFree(sc->layers[layer].images);
+    /* image garbage collection????!!!! */
+    UndoesFree(sc->layers[layer].undoes);
+    UndoesFree(sc->layers[layer].redoes);
+}
+
 void SplineCharFreeContents(SplineChar *sc) {
     int i;
 
@@ -5524,14 +5533,8 @@ void SplineCharFreeContents(SplineChar *sc) {
 return;
     free(sc->name);
     free(sc->comment);
-    for ( i=0; i<sc->layer_cnt; ++i ) {
-	SplinePointListsFree(sc->layers[i].splines);
-	RefCharsFree(sc->layers[i].refs);
-	ImageListsFree(sc->layers[i].images);
-	/* image garbage collection????!!!! */
-	UndoesFree(sc->layers[i].undoes);
-	UndoesFree(sc->layers[i].redoes);
-    }
+    for ( i=0; i<sc->layer_cnt; ++i )
+	LayerFreeContents(sc,i);
     StemInfosFree(sc->hstem);
     StemInfosFree(sc->vstem);
     DStemInfosFree(sc->dstem);

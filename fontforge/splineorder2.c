@@ -985,7 +985,6 @@ static void SCConvertRefs(SplineChar *sc,int layer) {
 
 void SFConvertLayerToOrder2(SplineFont *_sf,int layer) {
     int i, k;
-    SplineSet *new;
     SplineFont *sf;
 
     if ( _sf->cidmaster!=NULL ) _sf=_sf->cidmaster;
@@ -1003,27 +1002,17 @@ void SFConvertLayerToOrder2(SplineFont *_sf,int layer) {
 	if ( layer==ly_fore )
 	    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
 		SCNumberPoints(sf->glyphs[i]);
-
-	new = SplineSetsTTFApprox(sf->grid.splines);
-	SplinePointListsFree(sf->grid.splines);
-	sf->grid.splines = new;
-
-	UndoesFree(sf->grid.undoes); UndoesFree(sf->grid.redoes);
-	sf->grid.undoes = sf->grid.redoes = NULL;
-	sf->layers[layer].order2 = true;
 	++k;
     } while ( k<_sf->subfontcnt );
     _sf->layers[layer].order2 = true;
 }
 
-void SFConvertToOrder2(SplineFont *_sf) {
-    int k, layer;
+void SFConvertGridToOrder2(SplineFont *_sf) {
+    int k;
     SplineSet *new;
     SplineFont *sf;
 
     if ( _sf->cidmaster!=NULL ) _sf=_sf->cidmaster;
-    for ( layer=0; layer<_sf->layer_cnt; ++layer )
-	SFConvertLayerToOrder2(_sf,layer);
     k = 0;
     do {
 	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
@@ -1038,6 +1027,14 @@ void SFConvertToOrder2(SplineFont *_sf) {
 	++k;
     } while ( k<_sf->subfontcnt );
     _sf->grid.order2 = true;
+}
+
+void SFConvertToOrder2(SplineFont *_sf) {
+    int layer;
+
+    for ( layer=0; layer<_sf->layer_cnt; ++layer )
+	SFConvertLayerToOrder2(_sf,layer);
+    SFConvertGridToOrder2(_sf);
 }
 
 void SCConvertLayerToOrder3(SplineChar *sc,int layer) {
@@ -1107,16 +1104,12 @@ void SFConvertLayerToOrder3(SplineFont *_sf,int layer) {
     _sf->layers[layer].order2 = false;
 }
 
-void SFConvertToOrder3(SplineFont *_sf) {
+void SFConvertGridToOrder3(SplineFont *_sf) {
     int k;
     SplineSet *new;
     SplineFont *sf;
-    int layer;
 
     if ( _sf->cidmaster!=NULL ) _sf=_sf->cidmaster;
-    for ( layer=0; layer<_sf->layer_cnt; ++layer )
-	SFConvertLayerToOrder3(_sf,layer);
-
     k = 0;
     do {
 	sf = _sf->subfonts==NULL ? _sf : _sf->subfonts[k];
@@ -1131,6 +1124,14 @@ void SFConvertToOrder3(SplineFont *_sf) {
 	++k;
     } while ( k<_sf->subfontcnt );
     _sf->grid.order2 = false;
+}
+
+void SFConvertToOrder3(SplineFont *_sf) {
+    int layer;
+
+    for ( layer=0; layer<_sf->layer_cnt; ++layer )
+	SFConvertLayerToOrder3(_sf,layer);
+    SFConvertGridToOrder3(_sf);
 }
 
 /* ************************************************************************** */
