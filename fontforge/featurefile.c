@@ -3838,6 +3838,8 @@ return;
 	    else {
 		struct feat_item *f;
 		for ( f = tok->sofar->next; f!=NULL; f=f->next ) {
+		    if ( f->type==ft_lookup_start || f->type==ft_subtable )
+		break;
 		    if ( f->type!=ft_ap || f->mark_class==NULL )
 		continue;
 		    if ( strcmp(tok->sofar->mark_class,f->mark_class)==0 )
