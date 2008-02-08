@@ -1081,6 +1081,15 @@ static struct col_init gaspci[5] = {
     { me_enum, NULL, symsmooth, NULL, N_("Gasp|Symmetric Smoothing") },
     { me_enum, NULL, gfsymsmooth, NULL, N_("Gasp|Grid Fit w/ Sym Smooth") }
     };
+static GTextInfo splineorder[] = {
+    { (unichar_t *) N_("Cubic"), NULL, 0, 0, (void *) 0, NULL, 0, 0, 0, 0, 1, 0, 1},
+    { (unichar_t *) N_("Quadratic"), NULL, 0, 0, (void *) 1, NULL, 0, 0, 0, 0, 0, 0, 1},
+    { NULL }};
+static struct col_init layersci[5] = {
+    { me_string, NULL, NULL, NULL, N_("Layer Name") },
+    { me_enum  , NULL, splineorder, NULL, N_("Curve Type") },
+    { me_int   , NULL, NULL, NULL, N_("Orig layer") },
+    };
 
 struct langstyle { int lang; const char *str; };
 static const char regulareng[] = "Regular";
@@ -1329,17 +1338,24 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_Fontname	1016
 #define CID_Em		1017
 #define CID_Scale	1018
-#define CID_IsOrder2	1019
-#define CID_IsMultiLayer	1020
 #define CID_Interpretation	1021
-#define CID_IsStrokedFont	1022
-#define CID_StrokeWidth		1023
 #define CID_Namelist	1024
 #define CID_XUID	1113
 #define CID_Human	1114
 #define CID_SameAsFontname	1115
 #define CID_HasDefBase	1116
 #define CID_DefBaseName	1117
+
+#define CID_GuideOrder2		1200
+#define CID_IsMixed		1217
+#define CID_IsOrder3		1218
+#define CID_IsOrder2		1219
+#define CID_IsMultiLayer	1220
+#define CID_IsStrokedFont	1222
+#define CID_StrokeWidth		1223
+#define CID_ForeName		1224
+#define CID_ForeOrder2		1225
+#define CID_Backgrounds		1226
 
 #define CID_PrivateEntries	2001
 #define	CID_PrivateValues	2002
@@ -3706,6 +3722,15 @@ static void TNMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
     mi->bigedittitle = TN_BigEditTitle;
 }
 
+static int GFI_SortBy(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	struct gfi_data *d = (struct gfi_data *) GDrawGetUserData(GGadgetGetWindow(g));
+	TTFNames_Resort(d);
+	GGadgetRedraw(GWidgetGetControl(d->gw,CID_TNames));
+    }
+return( true );
+}
+
 static int GFI_HelpOFL(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	help("http://scripts.sil.org/OFL");
@@ -3915,11 +3940,88 @@ static int GFI_GaspVersion(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static int GFI_SortBy(GGadget *g, GEvent *e) {
+static int Layers_CanDelete(GGadget *g,int row) {
+return( row!=0 );
+}
+
+static void Layers_InitRow(GGadget *g,int row) {
+    int rows, cols = GMatrixEditGetColCnt(g);
+    struct matrix_data *layers = GMatrixEditGet(g, &rows);
+    int isquadratic = GGadgetIsChecked(GWidgetGetControl(GGadgetGetWindow(g),CID_IsOrder2));
+
+    layers[row*cols+1].u.md_ival = isquadratic;
+}
+
+static void LayersMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
+    SplineFont *sf = d->sf;
+    int i,j;
+    struct matrix_data *md;
+
+    memset(mi,0,sizeof(*mi));
+    mi->col_cnt = 3;
+    mi->col_init = layersci;
+
+    md = gcalloc(3*(sf->layer_cnt-1),sizeof(struct matrix_data));
+    for ( i=j=0; i<sf->layer_cnt; ++i ) if ( i!=ly_fore ) {
+	md[3*j  ].u.md_str  = copy(sf->layers[i].name);
+	md[3*j+1].u.md_ival = sf->layers[i].order2;
+	md[3*j+2].u.md_ival = i+1;
+	++j;
+    }
+    mi->initial_row_cnt = sf->layer_cnt-1;
+    mi->matrix_data = md;
+
+    mi->initrow   = Layers_InitRow;
+    mi->candelete = Layers_CanDelete;
+}
+
+#ifdef FONTFORGE_CONFIG_TYPE3
+static int GFI_Type3Change(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
-	struct gfi_data *d = (struct gfi_data *) GDrawGetUserData(GGadgetGetWindow(g));
-	TTFNames_Resort(d);
-	GGadgetRedraw(GWidgetGetControl(d->gw,CID_TNames));
+	GWindow gw = GGadgetGetWindow(g);
+	int type3 = GGadgetIsChecked(GWidgetGetControl(gw,CID_IsMultiLayer));
+	int mixed = GGadgetIsChecked(GWidgetGetControl(gw,CID_IsMixed));
+	GGadgetSetEnabled(GWidgetGetControl(gw,CID_IsMixed), !type3);
+	if ( type3 )
+	    GGadgetSetChecked(GWidgetGetControl(gw,CID_IsMixed), false );
+	GGadgetSetEnabled(GWidgetGetControl(gw,CID_IsOrder2), !type3);
+	if ( type3 )
+	    GGadgetSetChecked(GWidgetGetControl(gw,CID_IsOrder2), false );
+	GGadgetSetEnabled(GWidgetGetControl(gw,CID_IsOrder3), !type3);
+	if ( type3 )
+	    GGadgetSetChecked(GWidgetGetControl(gw,CID_IsOrder3), true );
+	GGadgetSetEnabled(GWidgetGetControl(gw,CID_ForeOrder2), !type3 && mixed);
+	GGadgetSetEnabled(GWidgetGetControl(gw,CID_GuideOrder2), !type3 && mixed);
+	GGadgetSetEnabled(GWidgetGetControl(gw,CID_Backgrounds), !type3);
+    }
+return( true );
+}
+#endif
+
+static int GFI_OrderChange(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
+	GWindow gw = GGadgetGetWindow(g);
+	GGadget *backs = GWidgetGetControl(gw,CID_Backgrounds);
+	int mixed = GGadgetIsChecked(GWidgetGetControl(gw,CID_IsMixed));
+	int cubic = GGadgetIsChecked(GWidgetGetControl(gw,CID_IsOrder3));
+#ifdef FONTFORGE_CONFIG_TYPE3
+	GGadgetSetEnabled(GWidgetGetControl(gw,CID_IsMultiLayer), cubic);
+#endif
+	GGadgetSetEnabled(GWidgetGetControl(gw,CID_ForeOrder2), mixed);
+	GGadgetSetEnabled(GWidgetGetControl(gw,CID_GuideOrder2), mixed);
+	if ( !mixed ) {
+	    GGadgetSetChecked(GWidgetGetControl(gw,CID_ForeOrder2), !cubic );
+	    GGadgetSetChecked(GWidgetGetControl(gw,CID_GuideOrder2), !cubic );
+	}
+	GGadgetSetEnabled(backs, true);
+	GMatrixEditEnableColumn(backs, 1, mixed);
+	if ( !mixed ) {
+	    int col = GMatrixEditGetColCnt(backs), rows, i;
+	    struct matrix_data *md = GMatrixEditGet(backs, &rows);
+	    for ( i=0; i<rows; ++i )
+		md[i*col+1].u.md_ival = !cubic;
+	}
+	GGadgetRedraw(backs);
     }
 return( true );
 }
@@ -4176,6 +4278,39 @@ return;
     }
 }
 
+static void GFI_SetLayers(struct gfi_data *d) {
+    GGadget *backs = GWidgetGetControl(d->gw,CID_Backgrounds);
+    int rows, cols = GMatrixEditGetColCnt(backs), r, origr, l;
+    struct matrix_data *layers = GMatrixEditGet(backs, &rows);
+    SplineFont *sf = d->sf;
+
+    for ( l=0; l<sf->layer_cnt; ++l )
+	sf->layers[l].ticked = false;
+
+    for ( r=0; r<rows; ++r ) if ( (origr = layers[r*cols+2].u.md_ival)!=0 ) {
+	/* It's an old layer. Do we need to change anything? */
+	--origr;
+	sf->layers[origr].ticked = true;
+	if ( sf->layers[origr].order2 != layers[r*cols+1].u.md_ival ) {
+	    if ( layers[r*cols+1].u.md_ival )
+		SFConvertLayerToOrder2(sf,origr);
+	    else
+		SFConvertLayerToOrder3(sf,origr);
+	}
+	if ( layers[r*cols+0].u.md_str!=NULL && *layers[r*cols+0].u.md_str!='\0' ) {
+	    free( sf->layers[origr].name );
+	    sf->layers[origr].name = copy( layers[r*cols+0].u.md_str );
+	}
+    }
+
+    for ( l=sf->layer_cnt-1; l>ly_fore; --l ) if ( !sf->layers[l].ticked )
+	SFRemoveLayer(sf,l);
+
+    l = 0;
+    for ( r=0; r<rows; ++r ) if ( layers[r*cols+2].u.md_ival==0 )
+	SFAddLayer(sf,layers[r*cols+0].u.md_str,layers[r*cols+1].u.md_ival);
+}
+
 static int GFI_OK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GWindow gw = GGadgetGetWindow(g);
@@ -4191,7 +4326,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	real ia, cidversion;
 	const unichar_t *txt, *fond; unichar_t *end;
 	int i,j, mcs;
-	int vmetrics, vorigin, namechange, order2;
+	int vmetrics, vorigin, namechange, foreorder2, guideorder2;
 	int xuidchanged = false;
 	GTextInfo *pfmfam, *ibmfam, *fstype, *nlitem;
 	int32 len;
@@ -4245,7 +4380,8 @@ return( true );
 	    Protest8(_("_Italic Angle:"));
 return(true);
 	}
-	order2 = GGadgetIsChecked(GWidgetGetControl(gw,CID_IsOrder2));
+	guideorder2 = GGadgetIsChecked(GWidgetGetControl(gw,CID_GuideOrder2));
+	foreorder2 = GGadgetIsChecked(GWidgetGetControl(gw,CID_ForeOrder2));
 	strokedfont = GGadgetIsChecked(GWidgetGetControl(gw,CID_IsStrokedFont));
 	strokewidth = GetReal8(gw,CID_StrokeWidth,_("Stroke _Width:"),&err);
 #ifdef FONTFORGE_CONFIG_TYPE3
@@ -4369,9 +4505,9 @@ return( true );
 return( true );
 	    }
 	}
-	if ( order2!=sf->layers[ly_fore].order2 && sf->changed && AskLoseUndoes())
+	if ( foreorder2!=sf->layers[ly_fore].order2 && sf->changed && AskLoseUndoes())
 return( true );
-	if ( order2!=sf->layers[ly_fore].order2 && !SFCloseAllInstrs(sf))
+	if ( foreorder2!=sf->layers[ly_fore].order2 && !SFCloseAllInstrs(sf))
 return( true );
 
 	nlitem = GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_Namelist));
@@ -4606,11 +4742,22 @@ return(true);
 	    reformat_fv = true;
 	    CIDMasterAsDes(sf);
 	}
-	if ( order2!=sf->layers[ly_fore].order2 ) {
-	    if ( order2 )
-		SFConvertToOrder2(sf);
+	if ( foreorder2!=sf->layers[ly_fore].order2 ) {
+	    if ( foreorder2 )
+		SFConvertLayerToOrder2(sf,ly_fore);
 	    else
-		SFConvertToOrder3(sf);
+		SFConvertLayerToOrder3(sf,ly_fore);
+	}
+	if ( *_GGadgetGetTitle(GWidgetGetControl(gw,CID_ForeName))!='\0' ) {
+	    free(sf->layers[ly_fore].name);
+	    sf->layers[ly_fore].name = GGadgetGetTitle8(GWidgetGetControl(gw,CID_ForeName));
+	}
+	GFI_SetLayers(d);
+	if ( guideorder2!=sf->grid.order2 ) {
+	    if ( guideorder2 )
+		SFConvertGridToOrder2(sf);
+	    else
+		SFConvertGridToOrder3(sf);
 	}
 	GFI_ApplyLookupChanges(d);
 	if ( retitle_fv )
@@ -7320,12 +7467,12 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
 	pgcd[12], vgcd[19], pangcd[22], comgcd[4], txgcd[23], floggcd[4],
 	mfgcd[8], mcgcd[8], szgcd[19], mkgcd[7], metgcd[29], vagcd[3], ssgcd[23],
 	xugcd[7], dgcd[6], ugcd[4], gaspgcd[5], gaspgcd_def[2], lksubgcd[2][4],
-	lkgcd[2], lkbuttonsgcd[15], cgcd[12];
+	lkgcd[2], lkbuttonsgcd[15], cgcd[12], lgcd[20];
     GGadgetCreateData mb[2], mb2, nb[2], nb2, nb3, xub[2], psb[2], psb2[3], ppbox[4],
 	    vbox[4], metbox[2], ssbox[2], panbox[2], combox[2], mkbox[3],
 	    txbox[5], ubox[2], dbox[2], flogbox[2],
 	    mcbox[3], mfbox[3], szbox[6], tnboxes[4], gaspboxes[3],
-	    lkbox[7], cbox[6];
+	    lkbox[7], cbox[6], lbox[8];
     GGadgetCreateData *marray[7], *marray2[9], *narray[26], *narray2[7], *narray3[3],
 	*xuarray[13], *psarray[10], *psarray2[21], *psarray3[3], *psarray4[10],
 	*ppbuttons[5], *pparray[6], *vradio[5], *varray[38], *metarray[46],
@@ -7336,12 +7483,13 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
 	*mfarray[14], *szarray[7], *szarray2[5], *szarray3[7],
 	*szarray4[4], *szarray5[6], *tnvarray[4], *tnharray[6], *tnharray2[5], *gaspharray[6],
 	*gaspvarray[3], *lkarray[2][7], *lkbuttonsarray[17], *lkharray[3],
-	*charray1[4], *charray2[4], *charray3[4], *cvarray[9], *cvarray2[4];
+	*charray1[4], *charray2[4], *charray3[4], *cvarray[9], *cvarray2[4],
+	*larray[16], *larray2[25], *larray3[6], *larray4[5], *larray5[5];
     GTextInfo mlabel[10], nlabel[16], pslabel[30], tnlabel[7],
 	plabel[12], vlabel[19], panlabel[22], comlabel[3], txlabel[23],
 	mflabel[8], mclabel[8], szlabel[17], mklabel[7], metlabel[28],
 	sslabel[23], xulabel[6], dlabel[5], ulabel[1], gasplabel[5],
-	lkbuttonslabel[14], clabel[11], floglabel[3];
+	lkbuttonslabel[14], clabel[11], floglabel[3], llabel[20];
     GTextInfo *namelistnames;
     struct gfi_data *d;
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20],
@@ -7360,7 +7508,8 @@ void FontInfo(SplineFont *sf,int defaspect,int sync) {
     unichar_t *tmpcreatetime, *tmpmodtime;
     time_t t;
     const struct tm *tm;
-    struct matrixinit mi, gaspmi;
+    struct matrixinit mi, gaspmi, layersmi;
+    int ltype;
 
     FontInfoInit();
 
@@ -7816,78 +7965,7 @@ return;
     psgcd[16].gd.label = &pslabel[16];
     psgcd[16].gd.cid = CID_VOrigin;
     psgcd[16].creator = GTextFieldCreate;
-
-    psgcd[17].gd.pos.x = 12; psgcd[17].gd.pos.y = psgcd[16].gd.pos.y+22;
-    pslabel[17].text = (unichar_t *) _("_Quadratic Splines");
-    pslabel[17].text_is_1byte = true;
-    pslabel[17].text_in_resource = true;
-    psgcd[17].gd.label = &pslabel[17];
-    psgcd[17].gd.flags = sf->layers[ly_fore].order2 ? (gg_visible | gg_enabled | gg_cb_on | gg_utf8_popup) : (gg_visible | gg_enabled | gg_utf8_popup);
-    psgcd[17].gd.cid = CID_IsOrder2;
-    psgcd[17].creator = GCheckBoxCreate;
-    psgcd[17].gd.popup_msg = (unichar_t *) _("Use quadratic (that is truetype) splines to hold the outlines of this\nfont rather than cubic (postscript) splines. Set this option if you\nare editing truetype font. Unset it if you are editing an opentype\nor postscript font (FontForge will convert to the appropriate\nspline type when it generates fonts so this is not required).");
-
-#ifdef FONTFORGE_CONFIG_TYPE3
-    psgcd[18].gd.pos.x = 12; psgcd[18].gd.pos.y = psgcd[17].gd.pos.y+18;
-    pslabel[18].text = (unichar_t *) _("_Outline Font");
-    pslabel[18].text_is_1byte = true;
-    pslabel[18].text_in_resource = true;
-    psgcd[18].gd.label = &pslabel[18];
-    psgcd[18].gd.flags = (!sf->strokedfont && !sf->multilayer)?
-	    (gg_visible | gg_enabled | gg_cb_on) : (gg_visible | gg_enabled);
-    psgcd[18].creator = GRadioCreate;
-
-    psgcd[19].gd.pos.x = 12; psgcd[19].gd.pos.y = psgcd[18].gd.pos.y+14;
-    pslabel[19].text = (unichar_t *) _("_Multi Layered Font");
-    pslabel[19].text_is_1byte = true;
-    pslabel[19].text_in_resource = true;
-    psgcd[19].gd.label = &pslabel[19];
-    psgcd[19].gd.flags = sf->multilayer ? (gg_visible | gg_enabled | gg_utf8_popup | gg_cb_on | gg_rad_continueold) : (gg_visible | gg_enabled | gg_utf8_popup | gg_rad_continueold);
-    psgcd[19].gd.cid = CID_IsMultiLayer;
-    psgcd[19].creator = GRadioCreate;
-    psgcd[19].gd.popup_msg = (unichar_t *) _("Allow editing of multiple colors and shades, fills and strokes.\nMulti layered fonts can only be output as type3 or svg fonts.");
-
-    psgcd[20].gd.pos.x = 12; psgcd[20].gd.pos.y = psgcd[19].gd.pos.y+14;
-    pslabel[20].text = (unichar_t *) _("_Stroked Font");
-    pslabel[20].text_is_1byte = true;
-    pslabel[20].text_in_resource = true;
-    psgcd[20].gd.label = &pslabel[20];
-    psgcd[20].gd.flags = sf->strokedfont ? (gg_visible | gg_enabled | gg_utf8_popup | gg_cb_on) : (gg_visible | gg_enabled | gg_utf8_popup);
-    psgcd[20].gd.cid = CID_IsStrokedFont;
-    psgcd[20].creator = GRadioCreate;
-    psgcd[20].gd.popup_msg = (unichar_t *) _("Glyphs will be composed of stroked lines rather than filled outlines.\nAll glyphs are stroked at the following width");
-
-    k=21;
-#else
-    psgcd[18].gd.pos.x = 12; psgcd[18].gd.pos.y = psgcd[17].gd.pos.y+16;
-    pslabel[18].text = (unichar_t *) _("_Stroked Font");
-    pslabel[18].text_is_1byte = true;
-    pslabel[18].text_in_resource = true;
-    psgcd[18].gd.label = &pslabel[18];
-    psgcd[18].gd.flags = sf->strokedfont ? (gg_visible | gg_enabled | gg_utf8_popup | gg_cb_on) : (gg_visible | gg_enabled | gg_utf8_popup);
-    psgcd[18].gd.cid = CID_IsStrokedFont;
-    psgcd[18].creator = GCheckBoxCreate;
-    psgcd[18].gd.popup_msg = (unichar_t *) _("Glyphs will be composed of stroked lines rather than filled outlines.\nAll glyphs are stroked at the following width");
-
-    k=19;
-#endif
-
-    psgcd[k].gd.pos.x = 12; psgcd[k].gd.pos.y = psgcd[k-1].gd.pos.y+20;
-    pslabel[k].text = (unichar_t *) _("Stroke _Width:");
-    pslabel[k].text_is_1byte = true;
-    pslabel[k].text_in_resource = true;
-    psgcd[k].gd.label = &pslabel[k];
-    psgcd[k].gd.flags = gg_visible | gg_enabled;
-    psgcd[k++].creator = GLabelCreate;
-
-    sprintf( swbuf,"%g", (double) sf->strokewidth );
-    psgcd[k].gd.pos.x = 115; psgcd[k].gd.pos.y = psgcd[k-1].gd.pos.y-6; psgcd[k].gd.pos.width = 137;
-    psgcd[k].gd.flags = gg_visible | gg_enabled;
-    pslabel[k].text = (unichar_t *) swbuf;
-    pslabel[k].text_is_1byte = true;
-    psgcd[k].gd.label = &pslabel[k];
-    psgcd[k].gd.cid = CID_StrokeWidth;
-    psgcd[k++].creator = GTextFieldCreate;
+    k = 17;
 
     psgcd[k].gd.pos.x = psgcd[k-2].gd.pos.x; psgcd[k].gd.pos.y = psgcd[k-1].gd.pos.y+32;
     psgcd[k].gd.flags = gg_visible | gg_enabled;
@@ -7950,15 +8028,7 @@ return;
     psarray[0] = &psb2[0];
     psarray[1] = &psgcd[14];
     psarray[2] = &psb2[1];
-    psarray[3] = &psgcd[17];
-    psarray[4] = &psgcd[18];
-#ifdef FONTFORGE_CONFIG_TYPE3
-    psarray[5] = &psgcd[19];
-    psarray[6] = &psgcd[20];
-    j=7;
-#else
-    j=5;
-#endif
+    j=3;
     psarray[j++] = &psb2[2];
     psrow = j;
     psarray[j++] = GCD_Glue;
@@ -7972,10 +8042,9 @@ return;
 
     psarray3[0] = &psgcd[15]; psarray3[1] = &psgcd[16]; psarray3[2] = NULL;
 
-    psarray4[0] = &psgcd[k-6]; psarray4[1] = &psgcd[k-5]; psarray4[2] = NULL;
-    psarray4[3] = &psgcd[k-4]; psarray4[4] = &psgcd[k-3]; psarray4[5] = NULL;
-    psarray4[6] = &psgcd[k-2]; psarray4[7] = &psgcd[k-1]; psarray4[8] = NULL;
-    psarray4[9] = NULL;
+    psarray4[0] = &psgcd[k-4]; psarray4[1] = &psgcd[k-3]; psarray4[2] = NULL;
+    psarray4[3] = &psgcd[k-2]; psarray4[4] = &psgcd[k-1]; psarray4[5] = NULL;
+    psarray4[6] = NULL;
 
     memset(psb,0,sizeof(psb));
     psb[0].gd.flags = gg_enabled|gg_visible;
@@ -7994,6 +8063,241 @@ return;
     psb2[2].gd.flags = gg_enabled|gg_visible;
     psb2[2].gd.u.boxelements = psarray4;
     psb2[2].creator = GHVBoxCreate;
+/******************************************************************************/
+
+    memset(&llabel,0,sizeof(llabel));
+    memset(&lgcd,0,sizeof(lgcd));
+    memset(&lbox,0,sizeof(lbox));
+
+    ltype = -1;
+    for ( j=0; j<sf->layer_cnt; ++j ) {
+	if ( ltype==-1 )
+	    ltype = sf->layers[j].order2;
+	else if ( ltype!=sf->layers[j].order2 )
+	    ltype = -2;
+    }
+
+    k = j = 0;
+
+    lgcd[k].gd.pos.x = 12; lgcd[k].gd.pos.y = 0;
+    llabel[k].text = (unichar_t *) _("Font Type:");
+    llabel[k].text_is_1byte = true;
+    llabel[k].text_in_resource = true;
+    lgcd[k].gd.label = &llabel[k];
+    lgcd[k].gd.flags = (gg_visible | gg_enabled);
+    lgcd[k++].creator = GLabelCreate;
+    larray2[j++] = &lgcd[k-1]; larray2[j++] = GCD_ColSpan; larray2[j++] = GCD_Glue; larray2[j++] = GCD_Glue; larray2[j++] = NULL;
+
+#ifdef FONTFORGE_CONFIG_TYPE3
+    lgcd[k].gd.pos.x = 12; lgcd[k].gd.pos.y = lgcd[k-1].gd.pos.y+k;
+    llabel[k].text = (unichar_t *) _("_Outline Font");
+    llabel[k].text_is_1byte = true;
+    llabel[k].text_in_resource = true;
+    lgcd[k].gd.label = &llabel[k];
+    lgcd[k].gd.flags = (!sf->strokedfont && !sf->multilayer)?
+	    (gg_visible | gg_enabled | gg_cb_on) : (gg_visible | gg_enabled);
+    lgcd[k].gd.handle_controlevent = GFI_Type3Change;
+    lgcd[k++].creator = GRadioCreate;
+    larray2[j++] = GCD_HPad10; larray2[j++] = &lgcd[k-1]; larray2[j++] = GCD_Glue; larray2[j++] = GCD_Glue; larray2[j++] = NULL;
+
+    lgcd[k].gd.pos.x = 12; lgcd[k].gd.pos.y = lgcd[k-1].gd.pos.y+14;
+    llabel[k].text = (unichar_t *) _("_Type3 Multi Layered Font");
+    llabel[k].text_is_1byte = true;
+    llabel[k].text_in_resource = true;
+    lgcd[k].gd.label = &llabel[k];
+    lgcd[k].gd.flags = ltype!=0 ? (gg_visible | gg_utf8_popup | gg_rad_continueold) :
+	sf->multilayer ? (gg_visible | gg_enabled | gg_utf8_popup | gg_cb_on | gg_rad_continueold) :
+	(gg_visible | gg_enabled | gg_utf8_popup | gg_rad_continueold);
+    lgcd[k].gd.cid = CID_IsMultiLayer;
+    lgcd[k].gd.handle_controlevent = GFI_Type3Change;
+    lgcd[k].creator = GRadioCreate;
+    lgcd[k++].gd.popup_msg = (unichar_t *) _("Allow editing of multiple colors and shades, fills and strokes.\nMulti layered fonts can only be output as type3 or svg fonts.");
+    larray2[j++] = GCD_HPad10; larray2[j++] = &lgcd[k-1]; larray2[j++] = GCD_ColSpan; larray2[j++] = GCD_Glue; larray2[j++] = NULL;
+
+    lgcd[k].gd.pos.x = 12; lgcd[k].gd.pos.y = lgcd[k-1].gd.pos.y+14;
+    llabel[k].text = (unichar_t *) _("_Stroked Font");
+    llabel[k].text_is_1byte = true;
+    llabel[k].text_in_resource = true;
+    lgcd[k].gd.label = &llabel[k];
+    lgcd[k].gd.flags = sf->strokedfont ? (gg_visible | gg_enabled | gg_utf8_popup | gg_cb_on) : (gg_visible | gg_enabled | gg_utf8_popup);
+    lgcd[k].gd.cid = CID_IsStrokedFont;
+    lgcd[k].gd.handle_controlevent = GFI_Type3Change;
+    lgcd[k].creator = GRadioCreate;
+    lgcd[k++].gd.popup_msg = (unichar_t *) _("Glyphs will be composed of stroked lines rather than filled outlines.\nAll glyphs are stroked at the following width");
+    larray2[j++] = GCD_HPad10; larray2[j++] = &lgcd[k-1];
+#else
+    lgcd[k].gd.pos.x = 12; lgcd[k].gd.pos.y = lgcd[k-1].gd.pos.y+16;
+    llabel[k].text = (unichar_t *) _("_Stroked Font");
+    llabel[k].text_is_1byte = true;
+    llabel[k].text_in_resource = true;
+    lgcd[k].gd.label = &llabel[k];
+    lgcd[k].gd.flags = sf->strokedfont ? (gg_visible | gg_enabled | gg_utf8_popup | gg_cb_on) : (gg_visible | gg_enabled | gg_utf8_popup);
+    lgcd[k].gd.cid = CID_IsStrokedFont;
+    lgcd[k].creator = GCheckBoxCreate;
+    lgcd[k++].gd.popup_msg = (unichar_t *) _("Glyphs will be composed of stroked lines rather than filled outlines.\nAll glyphs are stroked at the following width");
+    larray2[j++] = GCD_HPad10; larray2[j++] = &lgcd[k-1];
+#endif
+
+    lgcd[k].gd.pos.x = 12; lgcd[k].gd.pos.y = lgcd[k-1].gd.pos.y+20;
+    llabel[k].text = (unichar_t *) _("  Stroke _Width:");
+    llabel[k].text_is_1byte = true;
+    llabel[k].text_in_resource = true;
+    lgcd[k].gd.label = &llabel[k];
+    lgcd[k].gd.flags = gg_visible | gg_enabled;
+    lgcd[k++].creator = GLabelCreate;
+    larray2[j++] = &lgcd[k-1];
+
+    sprintf( swbuf,"%g", (double) sf->strokewidth );
+    lgcd[k].gd.pos.x = 115; lgcd[k].gd.pos.y = lgcd[k-1].gd.pos.y-6; lgcd[k].gd.pos.width = 137;
+    lgcd[k].gd.flags = gg_visible | gg_enabled;
+    llabel[k].text = (unichar_t *) swbuf;
+    llabel[k].text_is_1byte = true;
+    lgcd[k].gd.label = &llabel[k];
+    lgcd[k].gd.cid = CID_StrokeWidth;
+    lgcd[k++].creator = GTextFieldCreate;
+    larray2[j++] = &lgcd[k-1]; larray2[j++] = NULL; larray2[j++] = NULL;
+
+    lbox[2].gd.flags = gg_enabled|gg_visible;
+    lbox[2].gd.u.boxelements = larray2;
+    lbox[2].creator = GHVBoxCreate;
+    larray[0] = &lbox[2]; larray[1] = NULL;
+
+    llabel[k].text = (unichar_t *) _("All layers _cubic");
+    llabel[k].text_is_1byte = true;
+    llabel[k].text_in_resource = true;
+    lgcd[k].gd.label = &llabel[k];
+    lgcd[k].gd.flags = ltype==0 || sf->multilayer ?
+	(gg_visible | gg_enabled | gg_cb_on | gg_utf8_popup) :
+	(gg_visible | gg_enabled | gg_utf8_popup);
+    lgcd[k].gd.cid = CID_IsOrder3;
+    lgcd[k].gd.handle_controlevent = GFI_OrderChange;
+    lgcd[k].creator = GRadioCreate;
+    lgcd[k++].gd.popup_msg = (unichar_t *) _(
+	"Use cubic (that is postscript) splines to hold the outlines of all\n"
+	"layers of this font. Cubic splines are generally easier to edit\n"
+	"than quadratic (and you may still generate a truetype font from them).");
+
+    llabel[k].text = (unichar_t *) _("All layers _quadratic");
+    llabel[k].text_is_1byte = true;
+    llabel[k].text_in_resource = true;
+    lgcd[k].gd.label = &llabel[k];
+    lgcd[k].gd.flags = sf->multilayer ? (gg_visible | gg_utf8_popup) :
+	    ltype==1 ? (gg_visible | gg_enabled | gg_cb_on | gg_utf8_popup) :
+		(gg_visible | gg_enabled | gg_utf8_popup);
+    lgcd[k].gd.cid = CID_IsOrder2;
+    lgcd[k].gd.handle_controlevent = GFI_OrderChange;
+    lgcd[k].creator = GRadioCreate;
+    lgcd[k++].gd.popup_msg = (unichar_t *) _(
+	"Use quadratic (that is truetype) splines to hold the outlines of all\n"
+	"layers of this font rather than cubic (postscript) splines.");
+
+    llabel[k].text = (unichar_t *) _("_Mixed");
+    llabel[k].text_is_1byte = true;
+    llabel[k].text_in_resource = true;
+    lgcd[k].gd.label = &llabel[k];
+    lgcd[k].gd.flags = sf->multilayer ? (gg_visible | gg_utf8_popup) :
+	    ltype<0 ? (gg_visible | gg_enabled | gg_cb_on | gg_utf8_popup) :
+		(gg_visible | gg_enabled | gg_utf8_popup);
+    lgcd[k].gd.handle_controlevent = GFI_OrderChange;
+    lgcd[k].gd.cid = CID_IsMixed;
+    lgcd[k].creator = GRadioCreate;
+    lgcd[k++].gd.popup_msg = (unichar_t *) _(
+	"The order of each layer of the font can be controlled\n"
+	"individually. This might be useful if you wished to\n"
+	"retain both quadratic and cubic versions of a font.");
+    larray3[0] = &lgcd[k-3]; larray3[1] = &lgcd[k-2]; larray3[2] = &lgcd[k-1]; larray3[3] = GCD_Glue; larray3[4] = NULL;
+
+    lbox[3].gd.flags = gg_enabled|gg_visible;
+    lbox[3].gd.u.boxelements = larray3;
+    lbox[3].creator = GHBoxCreate;
+    larray[2] = GCD_HPad10; larray[3] = NULL;
+    larray[4] = &lbox[3]; larray[5] = NULL;
+
+    lgcd[k].gd.pos.x = 12; lgcd[k].gd.pos.y = 0;
+    llabel[k].text = (unichar_t *) _("Guidelines:");
+    llabel[k].text_is_1byte = true;
+    llabel[k].text_in_resource = true;
+    lgcd[k].gd.label = &llabel[k];
+    lgcd[k].gd.flags = (gg_visible | gg_enabled);
+    lgcd[k++].creator = GLabelCreate;
+    larray4[0] = &lgcd[k-1];
+
+    llabel[k].text = (unichar_t *) _("Quadratic");
+    llabel[k].text_is_1byte = true;
+    llabel[k].text_in_resource = true;
+    lgcd[k].gd.label = &llabel[k];
+    lgcd[k].gd.flags = sf->multilayer || ltype>=0 ? (gg_visible | gg_utf8_popup ) :
+	sf->grid.order2 ? (gg_visible | gg_enabled | gg_cb_on | gg_utf8_popup) :
+	    (gg_visible | gg_enabled | gg_utf8_popup);
+    lgcd[k].gd.cid = CID_GuideOrder2;
+    lgcd[k].creator = GCheckBoxCreate;
+    lgcd[k++].gd.popup_msg = (unichar_t *) _(
+	"Use quadratic splines for the guidelines layer of the font");
+    larray4[1] = &lgcd[k-1]; larray4[2] = GCD_Glue; larray4[3] = NULL;
+
+    lbox[4].gd.flags = gg_enabled|gg_visible;
+    lbox[4].gd.u.boxelements = larray4;
+    lbox[4].creator = GHBoxCreate;
+    larray[6] = &lbox[4]; larray[7] = NULL;
+
+    lgcd[k].gd.pos.x = 12; lgcd[k].gd.pos.y = 0;
+    llabel[k].text = (unichar_t *) _("\nBackground layer(s):");
+    llabel[k].text_is_1byte = true;
+    llabel[k].text_in_resource = true;
+    lgcd[k].gd.label = &llabel[k];
+    lgcd[k].gd.flags = (gg_visible | gg_enabled);
+    lgcd[k++].creator = GLabelCreate;
+    larray[8] = &lgcd[k-1]; larray[9] = NULL;
+
+    LayersMatrixInit(&layersmi,d);
+
+    lgcd[k].gd.pos.width = 300; lgcd[k].gd.pos.height = 200;
+    lgcd[k].gd.flags = sf->multilayer ? gg_visible : (gg_enabled | gg_visible);
+    lgcd[k].gd.cid = CID_Backgrounds;
+    lgcd[k].gd.u.matrix = &layersmi;
+    lgcd[k].data = d;
+    lgcd[k++].creator = GMatrixEditCreate;
+    larray[10] = &lgcd[k-1]; larray[11] = NULL;
+
+    lgcd[k].gd.pos.x = 12; lgcd[k].gd.pos.y = 0;
+    llabel[k].text = (unichar_t *) _("Foreground:");
+    llabel[k].text_is_1byte = true;
+    llabel[k].text_in_resource = true;
+    lgcd[k].gd.label = &llabel[k];
+    lgcd[k].gd.flags = (gg_visible | gg_enabled);
+    lgcd[k++].creator = GLabelCreate;
+    larray5[0] = &lgcd[k-1];
+
+    lgcd[k].gd.flags = gg_visible | gg_enabled;
+    llabel[k].text = (unichar_t *) sf->layers[ly_fore].name;
+    llabel[k].text_is_1byte = true;
+    lgcd[k].gd.label = &llabel[k];
+    lgcd[k].gd.cid = CID_ForeName;
+    lgcd[k++].creator = GTextFieldCreate;
+    larray5[1] = &lgcd[k-1];
+
+    llabel[k].text = (unichar_t *) _("Quadratic");
+    llabel[k].text_is_1byte = true;
+    llabel[k].text_in_resource = true;
+    lgcd[k].gd.label = &llabel[k];
+    lgcd[k].gd.flags = sf->multilayer || ltype>=0 ? (gg_visible | gg_utf8_popup ) :
+	sf->layers[ly_fore].order2 ? (gg_visible | gg_enabled | gg_cb_on | gg_utf8_popup) :
+	    (gg_visible | gg_enabled | gg_utf8_popup);
+    lgcd[k].gd.cid = CID_ForeOrder2;
+    lgcd[k].creator = GCheckBoxCreate;
+    lgcd[k++].gd.popup_msg = (unichar_t *) _(
+	"Use quadratic splines for the foreground layer of the font");
+    larray5[2] = &lgcd[k-1]; larray5[3] = GCD_Glue; larray5[4] = NULL;
+
+    lbox[5].gd.flags = gg_enabled|gg_visible;
+    lbox[5].gd.u.boxelements = larray5;
+    lbox[5].creator = GHBoxCreate;
+    larray[12] = &lbox[5]; larray[13] = NULL; larray[14] = NULL;
+
+    lbox[0].gd.flags = gg_enabled|gg_visible;
+    lbox[0].gd.u.boxelements = larray;
+    lbox[0].creator = GHVGroupCreate;
+
 /******************************************************************************/
 
     memset(&plabel,0,sizeof(plabel));
@@ -10114,6 +10418,10 @@ return;
     aspects[i].text_is_1byte = true;
     aspects[i++].gcd = psb;
 
+    aspects[i].text = (unichar_t *) _("Layers");
+    aspects[i].text_is_1byte = true;
+    aspects[i++].gcd = lbox;
+
     aspects[i].text = (unichar_t *) _("PS UID");
     aspects[i].text_is_1byte = true;
     aspects[i++].gcd = xub;
@@ -10267,6 +10575,16 @@ return;
     }
     GHVBoxSetExpandableCol(gaspboxes[2].ret,2);
     GHVBoxSetExpandableRow(gaspboxes[0].ret,1);
+
+    GHVBoxSetExpandableCol(lbox[2].ret,3);
+    GHVBoxSetExpandableCol(lbox[3].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(lbox[4].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(lbox[5].ret,gb_expandglue);
+    GHVBoxSetExpandableRow(lbox[0].ret,5);
+    GMatrixEditEnableColumn(GWidgetGetControl(gw,CID_Backgrounds),1,ltype<0);
+    GMatrixEditShowColumn(GWidgetGetControl(gw,CID_Backgrounds),2,false);
+	/* This column contains internal state information which the user */
+	/* should not see, ever */
 
     GHVBoxSetExpandableRow(combox[0].ret,1);
     GHVBoxSetExpandableRow(flogbox[0].ret,1);

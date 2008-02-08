@@ -1215,3 +1215,45 @@ return( 0 );
 
 return( true );
 }
+
+void SFRemoveLayer(SplineFont *sf,int l) {
+    int gid, i;
+    SplineChar *sc;
+
+    if ( sf->subfontcnt!=0 || l<=ly_fore || sf->multilayer )
+return;
+
+    for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc = sf->glyphs[gid])!=NULL ) {
+	LayerFreeContents(sc,l);
+	for ( i=l+1; i<sc->layer_cnt; ++i )
+	    sc->layers[i-1] = sc->layers[i];
+	-- sc->layer_cnt;
+    }
+
+    free(sf->layers[l].name);
+    for ( i=l+1; i<sf->layer_cnt; ++i )
+	sf->layers[i-1] = sf->layers[i];
+    -- sf->layer_cnt;
+}
+
+void SFAddLayer(SplineFont *sf,char *name,int order2) {
+    int gid, l;
+    SplineChar *sc;
+
+    if ( name==NULL || *name=='\0' )
+	name = _("Back");
+    
+    l = sf->layer_cnt;
+    ++sf->layer_cnt;
+    sf->layers = grealloc(sf->layers,(l+1)*sizeof(LayerInfo));
+    memset(&sf->layers[l],0,sizeof(LayerInfo));
+    sf->layers[l].name = copy(name);
+    sf->layers[l].order2 = order2;
+
+    for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc = sf->glyphs[gid])!=NULL ) {
+	sc->layers = grealloc(sc->layers,(l+1)*sizeof(Layer));
+	memset(&sc->layers[l],0,sizeof(Layer));
+	sc->layers[l].order2 = order2;
+	++ sc->layer_cnt;
+    }
+}

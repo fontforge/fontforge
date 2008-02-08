@@ -4522,7 +4522,7 @@ static void VWMouse(struct val_data *vw, GEvent *e) {
     SplineChar *sc;
 
     if ( gid==-2 && e->u.mouse.clicks==2 && e->type==et_mouseup ) {
-	FontInfo(vw->sf,3,false);	/* Bring up the Private Dict */
+	FontInfo(vw->sf,4,false);	/* Bring up the Private Dict */
 return;
     }
     if ( gid<0 || (sc = vw->sf->glyphs[gid])==NULL )
