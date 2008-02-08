@@ -5073,10 +5073,13 @@ static void NameConsistancyCheck(SplineFont *sf,EncMap *map) {
 		(uni = UniFromName(sc->name,sf->uni_interp,map==NULL ? &custom : map->enc))!= -1 &&
 		sc->unicodeenc != uni ) {
 #if 1
-	    if ( sc->unicodeenc==-1 ) {
-		if ( uni<0xe00 || uni>0xf8ff )	/* Don't complain about adobe's old PUA assignments for things like "eight.oldstyle" */
-		    LogError(_("The glyph named %.30s is not mapped to any unicode code point.\nBut its name indicates it should be mapped to U+%04X.\n"),
+	    if ( uni>=0xe000 && uni<=0xf8ff )
+		/* Don't complain about adobe's old PUA assignments for things like "eight.oldstyle" */;
+	    else if ( sc->unicodeenc==-1 ) {
+#if 0
+		LogError(_("The glyph named %.30s is not mapped to any unicode code point.\nBut its name indicates it should be mapped to U+%04X.\n"),
 			    sc->name,uni);
+#endif
 	    } else {
 		/* Ah, but suppose there's an altuni? */
 		struct altuni *alt;
