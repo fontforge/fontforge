@@ -4741,6 +4741,14 @@ return( true );
 #define MID_Smaller	2034
 #define MID_GridFitAA	2035
 #define MID_GridFitOff	2036
+#define MID_ShowHHints	2037
+#define MID_ShowVHints	2038
+#define MID_ShowDHints	2039
+#define MID_ShowBlueValues	2040
+#define MID_ShowFamilyBlues	2041
+#define MID_ShowAnchors		2042
+#define MID_ShowHMetrics	2043
+#define MID_ShowVMetrics	2044
 #define MID_Cut		2101
 #define MID_Copy	2102
 #define MID_Paste	2103
@@ -5172,6 +5180,49 @@ static void CVMenuShowSideBearings(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CVShows.showsidebearings = cv->showsidebearings = !cv->showsidebearings;
     SavePrefs(true);
     GDrawRequestExpose(cv->v,NULL,false);
+}
+
+static void CVMenuShowHints(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    switch ( mi->mid ) {
+      case MID_ShowHHints:
+	CVShows.showhhints = cv->showhhints = !cv->showhhints;
+	cv->back_img_out_of_date = true;	/* only this cv */
+      break;
+      case MID_ShowVHints:
+	CVShows.showvhints = cv->showvhints = !cv->showvhints;
+	cv->back_img_out_of_date = true;	/* only this cv */
+      break;
+      case MID_ShowDHints:
+	CVShows.showdhints = cv->showdhints = !cv->showdhints;
+	cv->back_img_out_of_date = true;	/* only this cv */
+      break;
+      case MID_ShowBlueValues:
+	CVShows.showblues = cv->showblues = !cv->showblues;
+	cv->back_img_out_of_date = true;	/* only this cv */
+      break;
+      case MID_ShowFamilyBlues:
+	CVShows.showfamilyblues = cv->showfamilyblues = !cv->showfamilyblues;
+	cv->back_img_out_of_date = true;	/* only this cv */
+      break;
+      case MID_ShowAnchors:
+	CVShows.showanchor = cv->showanchor = !cv->showanchor;
+      break;
+      case MID_ShowHMetrics:
+	CVShows.showhmetrics = cv->showhmetrics = !cv->showhmetrics;
+      break;
+      case MID_ShowVMetrics:
+	CVShows.showvmetrics = cv->showvmetrics = !cv->showvmetrics;
+      break;
+      default:
+        IError("Unexpected call to CVMenuShowHints");
+      break;
+    }
+    SavePrefs(true);
+    GDrawRequestExpose(cv->v,NULL,false);
+    /* !!!! In this interim version we should request an expose on cvlayers */
+    /*  but that's private to cvpalettes, and later we won't need to */
 }
 
 static void _CVMenuShowHideRulers(CharView *cv) {
@@ -8378,6 +8429,74 @@ static void gflistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
+static void swlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    SplineFont *sf = cv->b.sc->parent;
+
+    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
+	switch ( mi->mid ) {
+	  case MID_MarkExtrema:
+	    mi->ti.checked = cv->markextrema;
+	    mi->ti.disabled = cv->b.sc->inspiro;
+	  break;
+	  case MID_MarkPointsOfInflection:
+	    mi->ti.checked = cv->markpoi;
+	    mi->ti.disabled = cv->b.sc->inspiro;
+	  break;
+	  case MID_ShowCPInfo:
+	    mi->ti.checked = cv->showcpinfo;
+	  break;
+	  case MID_ShowSideBearings:
+	    mi->ti.checked = cv->showsidebearings;
+	  break;
+	  case MID_ShowTabs:
+	    mi->ti.checked = cv->showtabs;
+	    mi->ti.disabled = cv->former_cnt<=1;
+	  break;
+	  case MID_HidePoints:
+	    mi->ti.checked = cv->showpoints;
+	  break;
+	  case MID_HideRulers:
+	    mi->ti.checked = cv->showrulers;
+	  break;
+	  case MID_Fill:
+	    mi->ti.checked = cv->showfilled;
+	  break;
+	  case MID_ShowHHints:
+	    mi->ti.checked = cv->showhhints;
+	    mi->ti.disabled = sf->multilayer;
+	  break;
+	  case MID_ShowVHints:
+	    mi->ti.checked = cv->showvhints;
+	    mi->ti.disabled = sf->multilayer;
+	  break;
+	  case MID_ShowDHints:
+	    mi->ti.checked = cv->showdhints;
+	    mi->ti.disabled = sf->multilayer;
+	  break;
+	  case MID_ShowBlueValues:
+	    mi->ti.checked = cv->showblues;
+	    mi->ti.disabled = sf->multilayer;
+	  break;
+	  case MID_ShowFamilyBlues:
+	    mi->ti.checked = cv->showfamilyblues;
+	    mi->ti.disabled = sf->multilayer;
+	  break;
+	  case MID_ShowAnchors:
+	    mi->ti.checked = cv->showanchor;
+	    mi->ti.disabled = sf->multilayer;
+	  break;
+	  case MID_ShowHMetrics:
+	    mi->ti.checked = cv->showhmetrics;
+	  break;
+	  case MID_ShowVMetrics:
+	    mi->ti.checked = cv->showvmetrics;
+	    mi->ti.disabled = !sf->hasvmetrics;
+	  break;
+	}
+    }
+}
+
 static void cv_vwlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
     int pos, gid;
     SplineFont *sf = cv->b.sc->parent;
@@ -8418,38 +8537,6 @@ static void cv_vwlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_FindInFontView:
 	    mi->ti.disabled = cv->b.container!=NULL;
-	  break;
-	  case MID_MarkExtrema:
-	    mi->ti.checked = cv->markextrema;
-	    mi->ti.disabled = cv->b.sc->inspiro;
-	  break;
-	  case MID_MarkPointsOfInflection:
-	    mi->ti.checked = cv->markpoi;
-	    mi->ti.disabled = cv->b.sc->inspiro;
-	  break;
-	  case MID_ShowCPInfo:
-	    mi->ti.checked = cv->showcpinfo;
-	  break;
-	  case MID_ShowSideBearings:
-	    mi->ti.checked = cv->showsidebearings;
-	  break;
-	  case MID_ShowTabs:
-	    mi->ti.checked = cv->showtabs;
-	    mi->ti.disabled = cv->former_cnt<=1;
-	  break;
-	  case MID_HidePoints:
-	    free(mi->ti.text);
-	    mi->ti.text = utf82u_copy(cv->showpoints?_("Hide Points"):_("Show Points"));
-	  break;
-	  case MID_HideRulers:
-	    free(mi->ti.text);
-	    mi->ti.text = utf82u_copy(cv->showrulers?_("Hide Rulers"):_("Show Rulers"));
-	  break;
-	  case MID_ShowGridFit:
-	    mi->ti.disabled = !hasFreeType() || cv->b.drawmode!=dm_fore || cv->dv!=NULL;
-	  break;
-	  case MID_Fill:
-	    mi->ti.checked = cv->showfilled;
 	  break;
 #if HANYANG
 	  case MID_DisplayCompositions:
@@ -9069,6 +9156,31 @@ static GMenuItem2 gflist[] = {
     NULL
 };
 
+static GMenuItem2 swlist[] = {
+    { { (unichar_t *) N_("_Points"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'o' }, H_("Points|Ctl+D"), NULL, NULL, CVMenuShowHide, MID_HidePoints },
+    { { (unichar_t *) N_("_Control Point Info"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("Control Point Info|No Shortcut"), NULL, NULL, CVMenuShowCPInfo, MID_ShowCPInfo },
+    { { (unichar_t *) N_("_Extrema"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("Extrema|No Shortcut"), NULL, NULL, CVMenuMarkExtrema, MID_MarkExtrema },
+    { { (unichar_t *) N_("Points of _Inflection"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("Points of Inflection|No Shortcut"), NULL, NULL, CVMenuMarkPointsOfInflection, MID_MarkPointsOfInflection },
+    { { (unichar_t *) N_("_Side Bearings"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("Side Bearings|No Shortcut"), NULL, NULL, CVMenuShowSideBearings, MID_ShowSideBearings },
+    { { (unichar_t *) N_("_Fill"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'l' }, H_("Fill|No Shortcut"), NULL, NULL, CVMenuFill, MID_Fill },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
+    { { (unichar_t *) N_("Pale_ttes"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, NULL, pllist, pllistcheck },
+    { { (unichar_t *) N_("_Glyph Tabs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'R' }, H_("Glyph Tabs|No Shortcut"), NULL, NULL, CVMenuShowTabs, MID_ShowTabs },
+    { { (unichar_t *) N_("_Rulers"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'R' }, H_("Rulers|No Shortcut"), NULL, NULL, CVMenuShowHideRulers, MID_HideRulers },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
+    { { (unichar_t *) N_("_Horizontal Hints"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'R' }, H_("Horizontal Hints|No Shortcut"), NULL, NULL, CVMenuShowHints, MID_ShowHHints },
+    { { (unichar_t *) N_("_Vertical Hints"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'R' }, H_("Vertical Hints|No Shortcut"), NULL, NULL, CVMenuShowHints, MID_ShowVHints },
+    { { (unichar_t *) N_("_Diagonal Hints"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'R' }, H_("Diagonal Hints|No Shortcut"), NULL, NULL, CVMenuShowHints, MID_ShowDHints },
+    { { (unichar_t *) N_("_BlueValues"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'R' }, H_("BlueValues|No Shortcut"), NULL, NULL, CVMenuShowHints, MID_ShowBlueValues },
+    { { (unichar_t *) N_("Family Bl_ues"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'R' }, H_("Family Blues|No Shortcut"), NULL, NULL, CVMenuShowHints, MID_ShowFamilyBlues },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
+    { { (unichar_t *) N_("_Anchors"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'R' }, H_("Anchors|No Shortcut"), NULL, NULL, CVMenuShowHints, MID_ShowAnchors },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
+    { { (unichar_t *) N_("Hori_zontal Metric Lines"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'R' }, H_("Hori_zontal Metric Lines|No Shortcut"), NULL, NULL, CVMenuShowHints, MID_ShowHMetrics },
+    { { (unichar_t *) N_("Vertical _Metric Lines"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'R' }, H_("Vertical Metric Lines|No Shortcut"), NULL, NULL, CVMenuShowHints, MID_ShowVMetrics },
+    NULL
+};
+    
 static GMenuItem2 vwlist[] = {
     { { (unichar_t *) N_("_Fit"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Fit|Ctl+F"), NULL, NULL, CVMenuScale, MID_Fit },
     { { (unichar_t *) N_("Z_oom out"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, H_("Zoom out|Alt+Ctl+-"), NULL, NULL, CVMenuScale, MID_ZoomOut },
@@ -9086,24 +9198,11 @@ static GMenuItem2 vwlist[] = {
     { { (unichar_t *) N_("_Goto"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'G' }, H_("Goto|Ctl+Shft+>"), NULL, NULL, CVMenuGotoChar, MID_Goto },
     { { (unichar_t *) N_("Find In Font _View"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'V' }, H_("Find In Font View|Ctl+Shft+<"), NULL, NULL, CVMenuFindInFontView, MID_FindInFontView },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("Hide Poin_ts"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, H_("Hide Points|Ctl+D"), NULL, NULL, CVMenuShowHide, MID_HidePoints },
     { { (unichar_t *) N_("_Number Points"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, NULL, nplist, nplistcheck },
-    { { (unichar_t *) N_("_Mark Extrema"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("Mark Extrema|No Shortcut"), NULL, NULL, CVMenuMarkExtrema, MID_MarkExtrema },
-    { { (unichar_t *) N_("M_ark Points of Inflection"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("Mark Points of Inflection|No Shortcut"), NULL, NULL, CVMenuMarkPointsOfInflection, MID_MarkPointsOfInflection },
-    { { (unichar_t *) N_("Show _Control Point Info"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("Show Control Point Info|No Shortcut"), NULL, NULL, CVMenuShowCPInfo, MID_ShowCPInfo },
-    { { (unichar_t *) N_("Show Side B_earings"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'M' }, H_("Show Side Bearings|No Shortcut"), NULL, NULL, CVMenuShowSideBearings, MID_ShowSideBearings },
-    { { (unichar_t *) N_("Fi_ll"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'l' }, H_("Fill|No Shortcut"), NULL, NULL, CVMenuFill, MID_Fill },
-    { { (unichar_t *) N_("Sho_w Grid Fit"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'l' }, NULL,
-    gflist,
-    gflistcheck,
-    NULL,
-    MID_ShowGridFit },
+    { { (unichar_t *) N_("Grid Fi_t"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'l' }, NULL, gflist, gflistcheck, NULL, MID_ShowGridFit },
+    { { (unichar_t *) N_("Sho_w"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'l' }, NULL, swlist, swlistcheck },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
     { { (unichar_t *) N_("Com_binations"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'b' }, NULL, cblist, cblistcheck },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, }},
-    { { (unichar_t *) N_("Palette_s"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, NULL, pllist, pllistcheck },
-    { { (unichar_t *) N_("S_how Glyph Tabs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'R' }, H_("Show Glyph Tabs|No Shortcut"), NULL, NULL, CVMenuShowTabs, MID_ShowTabs },
-    { { (unichar_t *) N_("Hide _Rulers"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Hide Rulers|No Shortcut"), NULL, NULL, CVMenuShowHideRulers, MID_HideRulers },
     { NULL }
 };
 
