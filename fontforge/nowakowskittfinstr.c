@@ -787,7 +787,7 @@ static void init_maxp(GlobalInstrCt *gic) {
 
     if (gic->fpgm_done && zones<2) zones=2;
     if (gic->fpgm_done && twpts<1) twpts=1;
-    if (gic->fpgm_done && fdefs<8) fdefs=9;
+    if (gic->fpgm_done && fdefs<9) fdefs=9;
     if (stack<STACK_DEPTH) stack=STACK_DEPTH;
 
     memputshort(tab->data, 7*sizeof(uint16), zones);
