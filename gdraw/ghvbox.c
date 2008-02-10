@@ -501,12 +501,14 @@ struct gfuncs ghvbox_funcs = {
 
 void GHVBoxSetExpandableCol(GGadget *g,int col) {
     GHVBox *gb = (GHVBox *) g;
-    gb->grow_col = col;
+    if ( col<gb->cols )
+	gb->grow_col = col;
 }
 
 void GHVBoxSetExpandableRow(GGadget *g,int row) {
     GHVBox *gb = (GHVBox *) g;
-    gb->grow_row = row;
+    if ( row < gb->rows )
+	gb->grow_row = row;
 }
 
 void GHVBoxSetPadding(GGadget *g,int hpad, int vpad) {

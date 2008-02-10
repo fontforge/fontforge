@@ -1240,6 +1240,11 @@ void SFAddLayer(SplineFont *sf,char *name,int order2) {
     int gid, l;
     SplineChar *sc;
 
+    if ( sf->layer_cnt>=BACK_LAYER_MAX-1 ) {
+	ff_post_error(_("Too many layers"),_("Attempt to have a font with more than %d layers"),
+		BACK_LAYER_MAX );
+return;
+    }
     if ( name==NULL || *name=='\0' )
 	name = _("Back");
     
