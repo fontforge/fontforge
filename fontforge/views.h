@@ -108,11 +108,9 @@ typedef struct debugview {
 
 enum dv_coderange { cr_none=0, cr_fpgm, cr_prep, cr_glyph };	/* cleverly chosen to match ttobjs.h */
 
-#define FORMER_MAX	10
-
 typedef struct charview {
     CharViewBase b;
-    unsigned int showback:1;
+    uint32 showback[BACK_LAYER_MAX/32];
     unsigned int showfore:1;
     unsigned int showgrids:1;
     unsigned int showhhints:1;
@@ -152,6 +150,7 @@ typedef struct charview {
     unsigned int showing_spiro_pt_menu: 1;
     unsigned int ruler_pressed: 1;
     unsigned int ruler_pressedv: 1;
+    int layers_off_top;
     real scale;
     GWindow gw, v;
     GGadget *vsb, *hsb, *mb, *tabs;

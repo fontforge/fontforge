@@ -274,6 +274,7 @@ void GGadgetSetUserData(GGadget *g, void *d);
 void GGadgetSetPopupMsg(GGadget *g, const unichar_t *msg);
 GRect *GGadgetGetInnerSize(GGadget *g,GRect *rct);
 GRect *GGadgetGetSize(GGadget *g,GRect *rct);
+void GGadgetGetDesiredVisibleSize(GGadget *g,GRect *outer, GRect *inner);
 void GGadgetGetDesiredSize(GGadget *g,GRect *outer, GRect *inner);
 void GGadgetSetDesiredSize(GGadget *g,GRect *outer, GRect *inner);
 int GGadgetGetCid(GGadget *g);

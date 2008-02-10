@@ -1131,6 +1131,18 @@ void GGadgetGetDesiredSize(GGadget *g,GRect *outer, GRect *inner) {
     }
 }
 
+void GGadgetGetDesiredVisibleSize(GGadget *g,GRect *outer, GRect *inner) {
+    if ( ((char *) &g->funcs->get_desired_size) - ((char *) g->funcs) < g->funcs->size &&
+	    g->funcs->get_desired_size!=NULL )
+	(g->funcs->get_desired_size)(g,outer,inner);
+    else {
+	if ( outer!=NULL )
+	    *outer = g->r;
+	if ( inner!=NULL )
+	    *inner = g->inner;
+    }
+}
+
 void GGadgetSetDesiredSize(GGadget *g,GRect *outer, GRect *inner) {
     if ( ((char *) &g->funcs->set_desired_size) - ((char *) g->funcs) < g->funcs->size &&
 	    g->funcs->set_desired_size!=NULL )

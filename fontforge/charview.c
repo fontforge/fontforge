@@ -958,8 +958,9 @@ static void CVDrawLayerSplineSet(CharView *cv, GWindow pixmap, Layer *layer,
 	Color fg, int dopoints, DRect *clip ) {
 #ifdef FONTFORGE_CONFIG_TYPE3
     int active = cv->b.layerheads[cv->b.drawmode]==layer;
+    int ml = cv->b.sc->parent->multilayer;
 
-    if ( layer->dostroke ) {
+    if ( ml && layer->dostroke ) {
 	if ( layer->stroke_pen.brush.col!=COLOR_INHERITED &&
 		layer->stroke_pen.brush.col!=GDrawGetDefaultBackground(NULL))
 	    fg = layer->stroke_pen.brush.col;
@@ -968,15 +969,15 @@ static void CVDrawLayerSplineSet(CharView *cv, GWindow pixmap, Layer *layer,
 	    GDrawSetLineWidth(pixmap,rint(layer->stroke_pen.width*layer->stroke_pen.trans[0]*cv->scale));
 #endif
     }
-    if ( layer->dofill ) {
+    if ( ml && layer->dofill ) {
 	if ( layer->fill_brush.col!=COLOR_INHERITED &&
 		layer->fill_brush.col!=GDrawGetDefaultBackground(NULL))
 	    fg = layer->fill_brush.col;
     }
-    if ( !active && layer!=&cv->b.sc->layers[ly_back] )
+    if ( ml && !active && layer!=&cv->b.sc->layers[ly_back] )
 	GDrawSetDashedLine(pixmap,5,5,cv->xoff+cv->height-cv->yoff);
     CVDrawSplineSet(cv,pixmap,layer->splines,fg,dopoints && active,clip);
-    if ( !active && layer!=&cv->b.sc->layers[ly_back] )
+    if ( ml && !active && layer!=&cv->b.sc->layers[ly_back] )
 	GDrawSetDashedLine(pixmap,0,0,0);
 #if 0
     if ( layer->dostroke && layer->stroke_pen.width!=WIDTH_INHERITED )
@@ -1687,7 +1688,7 @@ static void CVDrawGridRaster(CharView *cv, GWindow pixmap, DRect *clip ) {
 		}
 	}
     }
-    if ( cv->showback ) {
+    if ( cv->showback[0]&1 ) {
 	CVDrawSplineSet(cv,pixmap,cv->b.gridfit,gridfitoutlinecol,
 		cv->showpoints,clip);
     }
@@ -1946,7 +1947,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     DRect clip;
     char buf[20];
     PST *pst;
-    int i, layer, rlayer;
+    int i, layer, rlayer, cvlayer = CVLayer((CharViewBase *) cv);
 
     GDrawPushClip(pixmap,&event->u.expose.rect,&old);
 
@@ -1961,12 +1962,14 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     if ( !cv->show_ft_results && cv->dv==NULL ) {
 	/* if we've got bg images (and we're showing them) then the hints live in */
 	/*  the bg image pixmap (else they get overwritten by the pixmap) */
-	if ( (cv->showhhints || cv->showvhints || cv->showdhints) && ( cv->b.sc->layers[ly_back].images==NULL || !cv->showback) )
+	if ( cv->showhhints || cv->showvhints || cv->showdhints )
 	    CVShowHints(cv,pixmap);
 
 	for ( layer = ly_back; layer<cv->b.sc->layer_cnt; ++layer ) if ( cv->b.sc->layers[layer].images!=NULL ) {
-	    if ( (( cv->showback || cv->b.drawmode==dm_back ) && layer==ly_back ) ||
-		    (( cv->showfore || cv->b.drawmode==dm_fore ) && layer>ly_back )) {
+	    if (( sf->multilayer && ((( cv->showback[0]&1 || cvlayer==layer) && layer==ly_back ) ||
+			((cv->showfore || cvlayer==layer) && layer>ly_back)) ) ||
+		( !sf->multilayer && (((cv->showfore && cvlayer==layer) && layer==ly_fore) ||
+			(((cv->showback[layer>>5]&(1<<(layer&31))) || cvlayer==layer) && layer!=ly_fore))) ) {
 		/* This really should be after the grids, but then it would completely*/
 		/*  hide them. */
 		GRect r;
@@ -2015,24 +2018,26 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	DrawOldState(cv,pixmap,cv->b.layerheads[cv->b.drawmode]->undoes, &clip);
 
     if ( !cv->show_ft_results && cv->dv==NULL ) {
-	if ( cv->showback || cv->b.drawmode==dm_back ) {
-	    /* Used to draw the image list here, but that's too slow. Optimization*/
-	    /*  is to draw to pixmap, dump pixmap a bit earlier */
-	    /* Then when we moved the fill image around, we had to deal with the */
-	    /*  images before the fill... */
-	    CVDrawLayerSplineSet(cv,pixmap,&cv->b.sc->layers[ly_back],backoutlinecol,
-		    cv->showpoints && cv->b.drawmode==dm_back,&clip);
-	    if ( cv->template1!=NULL )
-		CVDrawTemplates(cv,pixmap,cv->template1,&clip);
-	    if ( cv->template2!=NULL )
-		CVDrawTemplates(cv,pixmap,cv->template2,&clip);
-	    for ( rf=cv->b.sc->layers[ly_back].refs; rf!=NULL; rf = rf->next ) {
-		if ( cv->b.drawmode==dm_back )
-		    CVDrawRefName(cv,pixmap,rf,0);
-		for ( rlayer=0; rlayer<rf->layer_cnt; ++rlayer )
-		    CVDrawSplineSet(cv,pixmap,rf->layers[rlayer].splines,backoutlinecol,-1,&clip);
-		if ( rf->selected && cv->b.layerheads[cv->b.drawmode]==&cv->b.sc->layers[layer])
-		    CVDrawBB(cv,pixmap,&rf->bb);
+	for ( layer=ly_back; layer<cv->b.sc->layer_cnt; ++layer ) if ( layer!=ly_fore && (!sf->multilayer || layer==ly_back)) {
+	    if (( cv->showback[layer>>5]&(1<<(layer&31))) || layer==cvlayer ) {
+		/* Used to draw the image list here, but that's too slow. Optimization*/
+		/*  is to draw to pixmap, dump pixmap a bit earlier */
+		/* Then when we moved the fill image around, we had to deal with the */
+		/*  images before the fill... */
+		CVDrawLayerSplineSet(cv,pixmap,&cv->b.sc->layers[layer],backoutlinecol,
+			cv->showpoints && cvlayer==layer,&clip);
+		if ( cv->template1!=NULL )
+		    CVDrawTemplates(cv,pixmap,cv->template1,&clip);
+		if ( cv->template2!=NULL )
+		    CVDrawTemplates(cv,pixmap,cv->template2,&clip);
+		for ( rf=cv->b.sc->layers[ly_back].refs; rf!=NULL; rf = rf->next ) {
+		    if ( cv->b.drawmode==dm_back )
+			CVDrawRefName(cv,pixmap,rf,0);
+		    for ( rlayer=0; rlayer<rf->layer_cnt; ++rlayer )
+			CVDrawSplineSet(cv,pixmap,rf->layers[rlayer].splines,backoutlinecol,-1,&clip);
+		    if ( rf->selected && cv->b.layerheads[cv->b.drawmode]==&cv->b.sc->layers[layer])
+			CVDrawBB(cv,pixmap,&rf->bb);
+		}
 	    }
 	}
 	if ( cv->mmvisible!=0 )
@@ -2040,8 +2045,9 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     }
 
     if ( cv->showfore || (cv->b.drawmode==dm_fore && !cv->show_ft_results && cv->dv==NULL))  {
+	int layer_top = sf->multilayer ? cv->b.sc->layer_cnt : ly_fore+1;
 	CVDrawAnchorPoints(cv,pixmap);
-	for ( layer=ly_fore ; layer<cv->b.sc->layer_cnt; ++layer ) {
+	for ( layer=ly_fore ; layer<layer_top; ++layer ) {
 	    for ( rf=cv->b.sc->layers[layer].refs; rf!=NULL; rf = rf->next ) {
 		if ( CVLayer((CharViewBase *) cv)==layer )
 		    CVDrawRefName(cv,pixmap,rf,0);
@@ -2516,6 +2522,7 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
     char buf[300];
     extern int updateflex;
     int i;
+    int old_layer = CVLayer((CharViewBase *) cv);
 
     CVDebugFree(cv->dv);
 
@@ -2538,7 +2545,10 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
     cv->b.next = sc->views;
     sc->views = &cv->b;
     cv->b.layerheads[dm_fore] = &sc->layers[ly_fore];
-    cv->b.layerheads[dm_back] = &sc->layers[ly_back];
+    if ( old_layer==ly_grid || old_layer==ly_fore ||
+	    sc->parent->multilayer || old_layer>=sc->layer_cnt )
+	old_layer = ly_back;
+    cv->b.layerheads[dm_back] = &sc->layers[old_layer];
     cv->b.layerheads[dm_grid] = &sc->parent->grid;
     cv->p.sp = cv->lastselpt = NULL;
     cv->p.spiro = cv->lastselcp = NULL;
@@ -9414,7 +9424,9 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc) 
 
     cv->b.drawmode = dm_fore;
 
-    cv->showback = CVShows.showback;
+    memset(cv->showback,-1,sizeof(cv->showback));
+    if ( !CVShows.showback )
+	cv->showback[0] &= ~1;
     cv->showfore = CVShows.showfore;
     cv->showgrids = CVShows.showgrids;
     cv->showhhints = CVShows.showhhints;

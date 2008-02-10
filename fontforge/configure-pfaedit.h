@@ -272,4 +272,12 @@
 /* The number of files displayed in the "File->Recent" menu */
 #define RECENT_MAX	10
 
+/* The number of tabs allowed in the outline glyph view of former glyphs */
+#define FORMER_MAX	10
+
+/* The maximum number of layers allowed in a normal font (this includes the */
+/*  default foreground and background layers) -- this does not limit type3  */
+/*  fonts */
+#define BACK_LAYER_MAX	256
+
 #endif

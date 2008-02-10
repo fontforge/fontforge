@@ -4347,11 +4347,18 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	struct matrix_data *gasp    = GMatrixEditGet(GWidgetGetControl(d->gw,CID_Gasp), &gasprows);
 	int was_ml = sf->multilayer, was_stroke = sf->strokedfont;
 	uint32 codepages[2], uranges[4];
+	int layer_cnt;
+	struct matrix_data *layers = GMatrixEditGet(GWidgetGetControl(d->gw,CID_Backgrounds), &layer_cnt);
 
-	if ( strings==NULL || gasp==NULL )
+	if ( strings==NULL || gasp==NULL || layers==NULL )
 return( true );
 	if ( gasprows>0 && gasp[5*gasprows-5].u.md_ival!=65535 ) {
 	    ff_post_error(_("Bad Grid Fitting table"),_("The 'gasp' (Grid Fit) table must end with a pixel entry of 65535"));
+return( true );
+	}
+	if ( layer_cnt>=BACK_LAYER_MAX-2 ) {
+	    ff_post_error(_("Too many layers"),_("FontForge supports at most %d layers"),BACK_LAYER_MAX-2);
+	    /* This can be increased in configure-pfaedit.h */
 return( true );
 	}
 	if ( !CheckNames(d))

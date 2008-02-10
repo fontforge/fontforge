@@ -4015,58 +4015,60 @@ return( NULL );
 		memset(sc->layers+sc->layer_cnt,0,(layer+1-sc->layer_cnt)*sizeof(Layer));
 	    }
 #ifdef FONTFORGE_CONFIG_TYPE3
-	    getint(sfd,&dofill);
-	    getint(sfd,&dostroke);
-	    getint(sfd,&fillfirst);
-	    gethex(sfd,&fillcol);
-	    getreal(sfd,&fillopacity);
-	    gethex(sfd,&strokecol);
-	    getreal(sfd,&strokeopacity);
-	    getreal(sfd,&strokewidth);
-	    getname(sfd,tok);
-	    for ( i=0; joins[i]!=NULL; ++i )
-		if ( strmatch(joins[i],tok)==0 )
-	    break;
-	    if ( joins[i]==NULL ) --i;
-	    linejoin = i;
-	    getname(sfd,tok);
-	    for ( i=0; caps[i]!=NULL; ++i )
-		if ( strmatch(caps[i],tok)==0 )
-	    break;
-	    if ( caps[i]==NULL ) --i;
-	    linecap = i;
-	    while ( (ch=getc(sfd))==' ' || ch=='[' );
-	    ungetc(ch,sfd);
-	    getreal(sfd,&trans[0]);
-	    getreal(sfd,&trans[1]);
-	    getreal(sfd,&trans[2]);
-	    getreal(sfd,&trans[3]);
-	    while ( (ch=getc(sfd))==' ' || ch==']' );
-	    if ( ch=='[' ) {
-		for ( i=0;; ++i ) { int temp;
-		    if ( !getint(sfd,&temp) )
+	    if ( sc->parent->multilayer ) {
+		getint(sfd,&dofill);
+		getint(sfd,&dostroke);
+		getint(sfd,&fillfirst);
+		gethex(sfd,&fillcol);
+		getreal(sfd,&fillopacity);
+		gethex(sfd,&strokecol);
+		getreal(sfd,&strokeopacity);
+		getreal(sfd,&strokewidth);
+		getname(sfd,tok);
+		for ( i=0; joins[i]!=NULL; ++i )
+		    if ( strmatch(joins[i],tok)==0 )
 		break;
-		    else if ( i<DASH_MAX )
-			dashes[i] = temp;
-		}
-		if ( i<DASH_MAX )
-		    dashes[i] = 0;
-	    } else {
+		if ( joins[i]==NULL ) --i;
+		linejoin = i;
+		getname(sfd,tok);
+		for ( i=0; caps[i]!=NULL; ++i )
+		    if ( strmatch(caps[i],tok)==0 )
+		break;
+		if ( caps[i]==NULL ) --i;
+		linecap = i;
+		while ( (ch=getc(sfd))==' ' || ch=='[' );
 		ungetc(ch,sfd);
-		memset(dashes,0,sizeof(dashes));
+		getreal(sfd,&trans[0]);
+		getreal(sfd,&trans[1]);
+		getreal(sfd,&trans[2]);
+		getreal(sfd,&trans[3]);
+		while ( (ch=getc(sfd))==' ' || ch==']' );
+		if ( ch=='[' ) {
+		    for ( i=0;; ++i ) { int temp;
+			if ( !getint(sfd,&temp) )
+		    break;
+			else if ( i<DASH_MAX )
+			    dashes[i] = temp;
+		    }
+		    if ( i<DASH_MAX )
+			dashes[i] = 0;
+		} else {
+		    ungetc(ch,sfd);
+		    memset(dashes,0,sizeof(dashes));
+		}
+		sc->layers[layer].dofill = dofill;
+		sc->layers[layer].dostroke = dostroke;
+		sc->layers[layer].fillfirst = fillfirst;
+		sc->layers[layer].fill_brush.col = fillcol;
+		sc->layers[layer].fill_brush.opacity = fillopacity;
+		sc->layers[layer].stroke_pen.brush.col = strokecol;
+		sc->layers[layer].stroke_pen.brush.opacity = strokeopacity;
+		sc->layers[layer].stroke_pen.width = strokewidth;
+		sc->layers[layer].stroke_pen.linejoin = linejoin;
+		sc->layers[layer].stroke_pen.linecap = linecap;
+		memcpy(sc->layers[layer].stroke_pen.dashes,dashes,sizeof(dashes));
+		memcpy(sc->layers[layer].stroke_pen.trans,trans,sizeof(trans));
 	    }
-	    sc->layers[layer].dofill = dofill;
-	    sc->layers[layer].dostroke = dostroke;
-	    sc->layers[layer].fillfirst = fillfirst;
-	    sc->layers[layer].fill_brush.col = fillcol;
-	    sc->layers[layer].fill_brush.opacity = fillopacity;
-	    sc->layers[layer].stroke_pen.brush.col = strokecol;
-	    sc->layers[layer].stroke_pen.brush.opacity = strokeopacity;
-	    sc->layers[layer].stroke_pen.width = strokewidth;
-	    sc->layers[layer].stroke_pen.linejoin = linejoin;
-	    sc->layers[layer].stroke_pen.linecap = linecap;
-	    memcpy(sc->layers[layer].stroke_pen.dashes,dashes,sizeof(dashes));
-	    memcpy(sc->layers[layer].stroke_pen.trans,trans,sizeof(trans));
 #endif
 	    current_layer = layer;
 	    lasti = NULL;
