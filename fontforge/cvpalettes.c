@@ -47,6 +47,7 @@ extern const int input_em_cnt;
 int cvvisible[2] = { 1, 1}, bvvisible[3]= { 1,1,1 };
 static GWindow cvlayers, cvtools, bvlayers, bvtools, bvshades;
 static GWindow cvlayers2=NULL;
+static int layers2_active = -1;
 static GPoint cvtoolsoff = { -9999 }, cvlayersoff = { -9999 }, bvlayersoff = { -9999 }, bvtoolsoff = { -9999 }, bvshadesoff = { -9999 };
 int palettes_fixed=1;
 static GCursor tools[cvt_max+1] = { ct_pointer }, spirotools[cvt_max+1];
@@ -2067,6 +2068,18 @@ void _CVPaletteActivate(CharView *cv,int force) {
     CharView *old;
 
     CVPaletteCheck(cv);
+#ifdef FONTFORGE_CONFIG_TYPE3
+    if ( layers2_active!=-1 && layers2_active!=cv->b.sc->parent->multilayer ) {
+	if ( layers2_active && cvlayers!=NULL ) {
+	    GDrawSetVisible(cvlayers2,false);
+	    GDrawSetVisible(cvlayers,true);
+	} else if ( !layers2_active && cvlayers2!=NULL ) {
+	    GDrawSetVisible(cvlayers,false);
+	    GDrawSetVisible(cvlayers2,true);
+	}
+    }
+    layers2_active = cv->b.sc->parent->multilayer;
+#endif
     if ( (old = GDrawGetUserData(cvtools))!=cv || force) {
 	if ( old!=NULL ) {
 	    SaveOffsets(old->gw,cvtools,&cvtoolsoff);
