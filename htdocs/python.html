@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 6-Feb-2008 -->
+  <!-- AP: Last modified: 11-Feb-2008 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -281,14 +281,23 @@
       <TD><CODE>activeFont</CODE></TD>
       <TD><CODE>()</CODE></TD>
       <TD>If the script were invoked from the File-&gt;Execute Script... dialog,
-	this returns the font that was active at the time. Otherwise it returns None.</TD>
+	or invoked by a menu item in the font view, this returns the font that was
+	active at the time. Otherwise it returns None.</TD>
     </TR>
     <TR>
       <TD><CODE>activeGlyph</CODE></TD>
       <TD><CODE>()</CODE></TD>
       <TD>If the script were invoked from the File-&gt;Execute Script... dialog
-	from an outline glyph window this returns the glyph that was active at the
-	time. Otherwise it returns None.</TD>
+	or a menu item from an outline glyph window or a glyph import/export command
+	this returns the glyph that was active at the time. Otherwise it returns
+	None.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>activeLayer</CODE></TD>
+      <TD><CODE>()</CODE></TD>
+      <TD>This returns the currently active layer as an integer between 0 (inclusive)
+	and the font/glyph's layer count (exclusive). It may also be set to -1 if
+	the current glyph window is displaying the font's guidline layer.</TD>
     </TR>
     <TR>
       <TD><CODE>fontsInFile</CODE></TD>
@@ -721,7 +730,9 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
 	(Only if <CODE><A HREF="python.html#ff-hasSpiro">fontforge.hasSpiro</A>()
 	</CODE>is<CODE> True</CODE>. If available the spiro member will return a
 	tuple of spiro control points, while assigning to this member will change
-	the shape of the contour to match the new spiros.</TD>
+	the shape of the contour to match the new spiros.
+	<P>
+	Two contours may be compared to see if they describe similar paths.</TD>
     </TR>
     <TR>
       <TH colspan=3>Members</TH>
@@ -1057,7 +1068,9 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
     </TR>
     <TR>
       <TD colspan=3>A layer is a collection of contours. All the contours must
-	be the same order (all quadratic or all cubic).</TD>
+	be the same order (all quadratic or all cubic).
+	<P>
+	Layers may be compared to see if their contours are similar.</TD>
     </TR>
     <TR>
       <TH colspan=3>Members</TH>
@@ -1155,6 +1168,12 @@ fontforge.registerImportExport(importGlyph,exportGlyph,None,"foosball","foo","fo
       <TD>Orients all contours so that external ones are clockwise and internal
 	counter-clockwise. See also
 	<A href="#cnt-isClockwise">contour.isClockwise</A>.</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A name="l-export">export</A></CODE></TD>
+      <TD><CODE>(filename)</CODE></TD>
+      <TD>Exports the current layer (in outline format) to a file. The type of
+	file is determined by the extension.</TD>
     </TR>
     <TR>
       <TD><CODE><A name="l-exclude">exclude</A></CODE></TD>
@@ -1445,7 +1464,8 @@ pen = None;				# Finalize the pen. This tells FontForge
     <TR>
       <TD><CODE><A name="g-background">background</A></CODE></TD>
       <TD colspan=2>The glyph's background layer. This is a <EM>copy</EM> of the
-	glyph's data. See also <A href="#g-foreground">foreground</A>.</TD>
+	glyph's data. See also <A href="#g-foreground">foreground</A>, and
+	<A HREF="python.html#glyph-layers">layers</A>.</TD>
     </TR>
     <TR>
       <TD><CODE>changed</CODE></TD>
@@ -1483,7 +1503,8 @@ pen = None;				# Finalize the pen. This tells FontForge
     <TR>
       <TD><CODE><A name="g-foreground">foreground</A></CODE></TD>
       <TD colspan=2>The glyph's foreground layer. This is a <EM>copy</EM> of the
-	glyph's data. See also <A href="#g-background">background</A> and
+	glyph's data. See also <A href="#g-background">background</A>,
+	<A HREF="python.html#glyph-layers">layers</A> and
 	<A href="#g-references">references</A>.</TD>
     </TR>
     <TR>
@@ -1499,6 +1520,25 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TD><CODE>hhints</CODE></TD>
       <TD colspan=2>A tuple of all horizontal postscript hints. Each hint is itself
 	a tuple of starting locations and widths.</TD>
+    </TR>
+    <TR>
+      <TD><CODE>layer_cnt</CODE></TD>
+      <TD colspan=2>The number of layers in this glyph. (Cannot be set)</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A NAME="glyph-layers">layers</A></CODE></TD>
+      <TD colspan=2>A dictionary like object containing the layers of the glyph.
+	It may be indexed by either a layer name, or an integer between 0 and
+	<CODE>glyph.layer_cnt-1</CODE> to produce a <A href="#Layer">Layer</A> object.
+	Layer 0 is the background layer. Layer 1 is the foreground layer.</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A NAME="layerrefs">layerrefs</A></CODE></TD>
+      <TD colspan=2>A dictionary like object containing the references in the layers
+	of the glyph. It may be indexed by either a layer name, or an integer between
+	0 and <CODE>glyph.layer_cnt-1</CODE> to produce a
+	<A href="#g-references">reference tuple</A> object. Layer 0 is the background
+	layer. Layer 1 is the foreground layer.</TD>
     </TR>
     <TR>
       <TD><CODE>left_side_bearing</CODE></TD>
@@ -1523,7 +1563,9 @@ pen = None;				# Finalize the pen. This tells FontForge
     <TR>
       <TD><CODE><A name="g-references">references</A></CODE></TD>
       <TD colspan=2>A tuple of tuples containing glyph-name and a transformation
-	matrix for each reference. See also <A href="#g-foreground">foreground</A>.</TD>
+	matrix for each reference in the foreground. See also
+	<A href="#g-foreground">foreground</A> and
+	<A HREF="python.html#layerrefs">layerrefs</A>.</TD>
     </TR>
     <TR>
       <TD><CODE>right_side_bearing</CODE></TD>
@@ -1846,11 +1888,21 @@ pen = None;				# Finalize the pen. This tells FontForge
     </TR>
     <TR>
       <TD><CODE>export</CODE></TD>
-      <TD><CODE>(filename[,pixelsize,bitdepth])</CODE></TD>
+      <TD><TABLE>
+	  <TR>
+	    <TD><CODE>(filename[,pixelsize,bitdepth])</CODE></TD>
+	    <TD>bitmap images</TD>
+	  </TR>
+	  <TR>
+	    <TD><CODE> (filename[,layer])</CODE></TD>
+	    <TD>vector outlines</TD>
+	  </TR>
+	</TABLE>
+      </TD>
       <TD>Uses the file's extension to determine output file type. Exports outline
 	formats to the file. For bitmap formats it will rasterize the glyph and output
-	that. The optional arguments are only used for rasterizing. bitdepth must
-	be 1 or 8.</TD>
+	that. There are different optional arguments for rasterizing images and for
+	direct outline output. bitdepth must be 1 or 8.</TD>
     </TR>
     <TR>
       <TD><CODE>getPosSub</CODE></TD>
@@ -2396,9 +2448,12 @@ pen = None;				# Finalize the pen. This tells FontForge
     </TR>
     <TR>
       <TD><CODE>is_quadratic</CODE></TD>
-      <TD colspan=2>Whether the contours should be interpretted as a set of quadratic
-	or cubic splines. Setting this value has the side effect of converting the
-	entire font into the other format</TD>
+      <TD colspan=2>Deprecated. Whether the contours should be interpretted as
+	a set of quadratic or cubic splines. Setting this value has the side effect
+	of converting the entire font into the other format
+	<P>
+	Now each layer may have its own setting for this value, which should be set
+	on the font's <A HREF="python.html#f-layers">layers</A> object.</TD>
     </TR>
     <TR>
       <TD><CODE>isnew</CODE></TD>
@@ -2409,6 +2464,25 @@ pen = None;				# Finalize the pen. This tells FontForge
     </TR>
     <TR>
       <TD><CODE>macstyle</CODE></TD>
+    </TR>
+    <TR>
+      <TD><CODE>layer_cnt</CODE></TD>
+      <TD COLSPAN=2>The number of layers in the font.</TD>
+    </TR>
+    <TR>
+      <TD><CODE><A NAME="f-layers">layers</A></CODE></TD>
+      <TD COLSPAN=2>Returns a dictionary like object with information on the layers
+	of the font -- a name and a boolean indicating whether the layer is quadratic
+	or not.
+	<P>
+	You may remove a layer with <CODE>del font.layers["unneeded
+	layer"]</CODE><BR>
+	You may add a new layer with
+	<CODE>font.layers.add("layer-name",is_quadratic)</CODE><BR>
+	You may change a layer's name with <CODE>font.layers["layer"].name =
+	"new-name"</CODE><BR>
+	You may change the type of splines in a layer with
+	<CODE>font.layers["layer"].is_quadratic = TRUE</CODE></TD>
     </TR>
     <TR>
       <TD><CODE>loadState</CODE></TD>
@@ -3105,13 +3179,17 @@ pen = None;				# Finalize the pen. This tells FontForge
     </TR>
     <TR>
       <TD><CODE><A name="f-generate">generate</A></CODE></TD>
-      <TD><CODE>(filename,<BR>
-	&nbsp;[bitmap_type=,<BR>
+      <TD><CODE>(filename<BR>
+	&nbsp;[,bitmap_type=,<BR>
 	&nbsp;flags=,<BR>
 	&nbsp;bitmap_resolution=,<BR>
 	&nbsp;subfont_directory=,<BR>
-	&nbsp;namelist=])</CODE></TD>
-      <TD>Generates a font. The type is determined by the font's extension.
+	&nbsp;namelist=,<BR>
+	&nbsp;layer=])</CODE></TD>
+      <TD>Generates a font. The type is determined by the font's extension. The
+	bitmap type (if specified) is also an extension. If layer is specified, then
+	the splines and references in that layer will be used instead of the foreground
+	layer.
 	<P>
 	Flags is a tuple containing some of
 	<DL>

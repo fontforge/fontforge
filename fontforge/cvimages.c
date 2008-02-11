@@ -936,7 +936,7 @@ return(false);
 	    ++tot;
 #ifndef _NO_PYTHON
 	} else if ( format>=fv_pythonbase ) {
-	    PyFF_SCImport(sc,format-fv_pythonbase,start, toback,flags&sf_clearbeforeinput);
+	    PyFF_SCImport(sc,format-fv_pythonbase,start, toback?ly_back:ly_fore,flags&sf_clearbeforeinput);
 	    ++tot;
 #endif
 	}

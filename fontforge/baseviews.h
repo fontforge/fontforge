@@ -446,7 +446,7 @@ extern struct python_import_export {
 extern void PyFF_SCExport(SplineChar *sc,int ie_index,char *filename,
 	int layer);
 extern void PyFF_SCImport(SplineChar *sc,int ie_index,char *filename,
-	int toback, int clear);
+	int layer, int clear);
 extern void PyFF_InitFontHook(FontViewBase *fv);
 
 extern void LookupInit(void);
