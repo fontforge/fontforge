@@ -30,5 +30,5 @@ extern char *savefont_extensions[], *bitmapextensions[];
 void PrepareUnlinkRmOvrlp(SplineFont *sf,char *filename);
 void RestoreUnlinkRmOvrlp(SplineFont *sf,char *filename);
 int _DoSave(SplineFont *sf,char *newname,int32 *sizes,int res,
-	EncMap *map, char *subfontdefinition);
+	EncMap *map, char *subfontdefinition,int layer);
 int CheckIfTransparent(SplineFont *sf);

@@ -518,7 +518,7 @@ return( -1 );
     slopemin.x = (3*ps->splines[0].a*tmin+2*ps->splines[0].b)*tmin+ps->splines[0].c;
     slopemin.y = (3*ps->splines[1].a*tmin+2*ps->splines[1].b)*tmin+ps->splines[1].c;
     if ( slopemin.x==0 && slopemin.y==0 ) {
-	double t = tmin + (tmax-tmin)/100;
+	double t = tmin + (tmax-tmin)/256;
 	/* If there is no control point for this end point, then the slope is */
 	/*  0/0 at the end point. Which isn't useful, it leads to a quadratic */
 	/*  control point at the end point, but this one is real because it   */
@@ -533,7 +533,7 @@ return( -1 );
     slopeend.x = (3*ps->splines[0].a*tmax+2*ps->splines[0].b)*tmax+ps->splines[0].c;
     slopeend.y = (3*ps->splines[1].a*tmax+2*ps->splines[1].b)*tmax+ps->splines[1].c;
     if ( slopemin.x==0 && slopemin.y==0 ) {
-	double t = tmax - (tmax-tmin)/100;
+	double t = tmax - (tmax-tmin)/256;
 	/* Same problem as above, except at the other end */
 	slopeend.x = (3*ps->splines[0].a*t+2*ps->splines[0].b)*t+ps->splines[0].c;
 	slopeend.y = (3*ps->splines[1].a*t+2*ps->splines[1].b)*t+ps->splines[1].c;

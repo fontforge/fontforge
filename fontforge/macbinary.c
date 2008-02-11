@@ -1554,7 +1554,7 @@ static void MakeMacPSName(char buffer[63],SplineFont *sf) {
 }
 
 int WriteMacPSFont(char *filename,SplineFont *sf,enum fontformat format,
-	int flags,EncMap *map) {
+	int flags,EncMap *map,int layer) {
     FILE *res, *temppfb;
     int ret = 1;
     struct resourcetype resources[2];
@@ -1584,7 +1584,7 @@ return( 0 );
     if ( islower(*sf->familyname)) { *sf->familyname = toupper(*sf->familyname); lcfam = true; }
     MakeMacPSName(buffer,sf);
 
-    ret = _WritePSFont(temppfb,sf,ff_pfb,flags,map,NULL);
+    ret = _WritePSFont(temppfb,sf,ff_pfb,flags,map,NULL,layer);
     if ( lcfn ) *sf->fontname = tolower(*sf->fontname);
     if ( lcfam ) *sf->familyname = tolower(*sf->familyname);
     if ( ret==0 || ferror(temppfb) ) {
@@ -1636,7 +1636,7 @@ return( ret );
 }
 
 int WriteMacTTFFont(char *filename,SplineFont *sf,enum fontformat format,
-	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *map) {
+	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *map,int layer) {
     FILE *res, *tempttf;
     int ret = 1, r;
     struct resourcetype resources[4];
@@ -1649,7 +1649,7 @@ return( 0 );
 
     if ( _WriteTTFFont(tempttf,sf,format==ff_none?ff_none:
 				  format==ff_ttfmacbin?ff_ttf:
-			          format-1,bsizes,bf,flags,map)==0 || ferror(tempttf) ) {
+			          format-1,bsizes,bf,flags,map,layer)==0 || ferror(tempttf) ) {
 	fclose(tempttf);
 return( 0 );
     }
@@ -1781,7 +1781,7 @@ return( ret );
 */
 
 int WriteMacFamily(char *filename,struct sflist *sfs,enum fontformat format,
-	enum bitmapformat bf,int flags, EncMap *map) {
+	enum bitmapformat bf,int flags, EncMap *map,int layer) {
     FILE *res;
     int ret = 1, r, i;
     struct resourcetype resources[4];
@@ -1820,7 +1820,7 @@ int WriteMacFamily(char *filename,struct sflist *sfs,enum fontformat format,
 		strcpy(pt-1,".fam.bin");
 #endif
 	    }
-	    if ( WriteMacPSFont(tempname,sfi->sf,format,flags,sfi->map)==0 )
+	    if ( WriteMacPSFont(tempname,sfi->sf,format,flags,sfi->map,layer)==0 )
 return( 0 );
 	    free(tempname);
 	}
@@ -1830,7 +1830,7 @@ return( 0 );
 	    if ( sfi->tempttf==NULL ||
 		    _WriteTTFFont(sfi->tempttf,sfi->sf,format==ff_none?ff_none:
 					  format==ff_ttfmacbin?ff_ttf:
-					  format-1,sfi->sizes,bf,flags,sfi->map)==0 ||
+					  format-1,sfi->sizes,bf,flags,sfi->map,layer)==0 ||
 		    ferror(sfi->tempttf) ) {
 		for ( sfsub=sfs; sfsub!=sfi; sfsub=sfsub->next )
 		    fclose( sfsub->tempttf );

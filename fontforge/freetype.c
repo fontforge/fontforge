@@ -316,6 +316,7 @@ void *__FreeTypeFontContext(FT_Library context,
     uint8 *selected = fv!=NULL ? fv->selected : NULL;
     EncMap *map = fv!=NULL ? fv->map : sf->fv->map;
     int i,cnt, notdefpos;
+    int layer = ly_fore;
 
     if ( !hasFreeType())
 return( NULL );
@@ -365,14 +366,14 @@ return( NULL );
 	sf->internal_temp = true;
 	switch ( ff ) {
 	  case ff_pfb: case ff_pfa:
-	    if ( !_WritePSFont(ftc->file,sf,ff,0,map,NULL))
+	    if ( !_WritePSFont(ftc->file,sf,ff,0,map,NULL,layer))
  goto fail;
 	  break;
 	  case ff_ttf: case ff_ttfsym:
 	    ftc->isttf = true;
 	    /* Fall through.... */
 	  case ff_otf: case ff_otfcid:
-	    if ( !_WriteTTFFont(ftc->file,sf,ff,NULL,bf_none,flags,map))
+	    if ( !_WriteTTFFont(ftc->file,sf,ff,NULL,bf_none,flags,map,layer))
  goto fail;
 	  break;
 	  default:

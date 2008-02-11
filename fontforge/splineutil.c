@@ -719,47 +719,37 @@ static void _ImageFindBounds(ImageList *img,DBounds *bounds) {
 }
 #endif
 
-void SplineCharFindBounds(SplineChar *sc,DBounds *bounds) {
+static void _SplineCharLayerFindBounds(SplineChar *sc,int layer, DBounds *bounds) {
     RefChar *rf;
-    int i;
-    int first,last;
 #ifdef FONTFORGE_CONFIG_TYPE3
     ImageList *img;
     real e;
     DBounds b;
 #endif
 
-    /* a char with no splines (ie. a space) must have an lbearing of 0 */
-    bounds->minx = bounds->maxx = 0;
-    bounds->miny = bounds->maxy = 0;
-
-    first = last = ly_fore;
-    if ( sc->parent->multilayer )
-	last = sc->layer_cnt-1;
-    for ( i=first; i<=last; ++i ) {
-	for ( rf=sc->layers[i].refs; rf!=NULL; rf = rf->next ) {
-	    if ( bounds->minx==0 && bounds->maxx==0 && bounds->miny==0 && bounds->maxy == 0 )
-		*bounds = rf->bb;
-	    else if ( rf->bb.minx!=0 || rf->bb.maxx != 0 || rf->bb.maxy != 0 || rf->bb.miny!=0 ) {
-		if ( rf->bb.minx < bounds->minx ) bounds->minx = rf->bb.minx;
-		if ( rf->bb.miny < bounds->miny ) bounds->miny = rf->bb.miny;
-		if ( rf->bb.maxx > bounds->maxx ) bounds->maxx = rf->bb.maxx;
-		if ( rf->bb.maxy > bounds->maxy ) bounds->maxy = rf->bb.maxy;
-	    }
+    for ( rf=sc->layers[layer].refs; rf!=NULL; rf = rf->next ) {
+	if ( bounds->minx==0 && bounds->maxx==0 && bounds->miny==0 && bounds->maxy == 0 )
+	    *bounds = rf->bb;
+	else if ( rf->bb.minx!=0 || rf->bb.maxx != 0 || rf->bb.maxy != 0 || rf->bb.miny!=0 ) {
+	    if ( rf->bb.minx < bounds->minx ) bounds->minx = rf->bb.minx;
+	    if ( rf->bb.miny < bounds->miny ) bounds->miny = rf->bb.miny;
+	    if ( rf->bb.maxx > bounds->maxx ) bounds->maxx = rf->bb.maxx;
+	    if ( rf->bb.maxy > bounds->maxy ) bounds->maxy = rf->bb.maxy;
 	}
+    }
 #ifdef FONTFORGE_CONFIG_TYPE3
-	memset(&b,0,sizeof(b));
-	_SplineSetFindBounds(sc->layers[i].splines,&b);
-	for ( img=sc->layers[i].images; img!=NULL; img=img->next )
-	    _ImageFindBounds(img,bounds);
-	if ( sc->layers[i].dostroke ) {
-	    if ( sc->layers[i].stroke_pen.width!=WIDTH_INHERITED )
-		e = sc->layers[i].stroke_pen.width*sc->layers[i].stroke_pen.trans[0];
-	    else
-		e = sc->layers[i].stroke_pen.trans[0];
-	    b.minx -= e; b.maxx += e;
-	    b.miny -= e; b.maxy += e;
-	}
+    memset(&b,0,sizeof(b));
+    _SplineSetFindBounds(sc->layers[layer].splines,&b);
+    for ( img=sc->layers[layer].images; img!=NULL; img=img->next )
+	_ImageFindBounds(img,bounds);
+    if ( sc->layers[layer].dostroke ) {
+	if ( sc->layers[layer].stroke_pen.width!=WIDTH_INHERITED )
+	    e = sc->layers[layer].stroke_pen.width*sc->layers[layer].stroke_pen.trans[0];
+	else
+	    e = sc->layers[layer].stroke_pen.trans[0];
+	b.minx -= e; b.maxx += e;
+	b.miny -= e; b.maxy += e;
+    }
     if ( bounds->minx==0 && bounds->maxx==0 && bounds->miny==0 && bounds->maxy == 0 )
 	*bounds = b;
     else if ( b.minx!=0 || b.maxx != 0 || b.maxy != 0 || b.miny!=0 ) {
@@ -769,9 +759,9 @@ void SplineCharFindBounds(SplineChar *sc,DBounds *bounds) {
 	if ( b.maxy > bounds->maxy ) bounds->maxy = b.maxy;
     }
 #else
-	_SplineSetFindBounds(sc->layers[i].splines,bounds);
+    _SplineSetFindBounds(sc->layers[layer].splines,bounds);
 #endif
-    }
+
     if ( sc->parent!=NULL && sc->parent->strokedfont &&
 	    (bounds->minx!=bounds->maxx || bounds->miny!=bounds->maxy)) {
 	real sw = sc->parent->strokewidth;
@@ -780,13 +770,42 @@ void SplineCharFindBounds(SplineChar *sc,DBounds *bounds) {
     }
 }
 
-void SplineFontFindBounds(SplineFont *sf,DBounds *bounds) {
-    RefChar *rf;
+void SplineCharLayerFindBounds(SplineChar *sc,int layer,DBounds *bounds) {
+
+    if ( sc->parent->multilayer ) {
+	SplineCharFindBounds(sc,bounds);
+return;
+    }
+
+    /* a char with no splines (ie. a space) must have an lbearing of 0 */
+    bounds->minx = bounds->maxx = 0;
+    bounds->miny = bounds->maxy = 0;
+
+    _SplineCharLayerFindBounds(sc,layer,bounds);
+}
+
+void SplineCharFindBounds(SplineChar *sc,DBounds *bounds) {
+    int i;
+    int first,last;
+
+    /* a char with no splines (ie. a space) must have an lbearing of 0 */
+    bounds->minx = bounds->maxx = 0;
+    bounds->miny = bounds->maxy = 0;
+
+    first = last = ly_fore;
+    if ( sc->parent->multilayer )
+	last = sc->layer_cnt-1;
+    for ( i=first; i<=last; ++i )
+	_SplineCharLayerFindBounds(sc,i,bounds);
+}
+
+void SplineFontLayerFindBounds(SplineFont *sf,int layer,DBounds *bounds) {
     int i, k, first, last;
-#ifdef FONTFORGE_CONFIG_TYPE3
-    real extra=0,e;
-    ImageList *img;
-#endif
+
+    if ( sf->multilayer ) {
+	SplineFontFindBounds(sf,bounds);
+return;
+    }
 
     bounds->minx = bounds->maxx = 0;
     bounds->miny = bounds->maxy = 0;
@@ -797,37 +816,28 @@ void SplineFontFindBounds(SplineFont *sf,DBounds *bounds) {
 	    first = last = ly_fore;
 	    if ( sc->parent->multilayer )
 		last = sc->layer_cnt-1;
-	    for ( k=first; k<=last; ++k ) {
-		for ( rf=sc->layers[k].refs; rf!=NULL; rf = rf->next ) {
-		    if ( bounds->minx==0 && bounds->maxx==0 && bounds->miny==0 && bounds->maxy == 0 )
-			*bounds = rf->bb;
-		    else if ( rf->bb.minx!=0 || rf->bb.maxx != 0 || rf->bb.maxy != 0 || rf->bb.miny!=0 ) {
-			if ( rf->bb.minx < bounds->minx ) bounds->minx = rf->bb.minx;
-			if ( rf->bb.miny < bounds->miny ) bounds->miny = rf->bb.miny;
-			if ( rf->bb.maxx > bounds->maxx ) bounds->maxx = rf->bb.maxx;
-			if ( rf->bb.maxy > bounds->maxy ) bounds->maxy = rf->bb.maxy;
-		    }
-		}
-
-		_SplineSetFindBounds(sc->layers[k].splines,bounds);
-#ifdef FONTFORGE_CONFIG_TYPE3
-		for ( img=sc->layers[k].images; img!=NULL; img=img->next )
-		    _ImageFindBounds(img,bounds);
-		if ( sc->layers[k].dostroke ) {
-		    if ( sc->layers[k].stroke_pen.width!=WIDTH_INHERITED )
-			e = sc->layers[k].stroke_pen.width*sc->layers[k].stroke_pen.trans[0];
-		    else
-			e = sc->layers[k].stroke_pen.trans[0];
-		    if ( e>extra ) extra = e;
-		}
-#endif
-	    }
+	    for ( k=first; k<=last; ++k )
+		_SplineCharLayerFindBounds(sc,k,bounds);
 	}
     }
-#ifdef FONTFORGE_CONFIG_TYPE3
-    bounds->minx -= extra; bounds->miny -= extra;
-    bounds->maxx += extra; bounds->maxy += extra;
-#endif
+}
+
+void SplineFontFindBounds(SplineFont *sf,DBounds *bounds) {
+    int i, k, first, last;
+
+    bounds->minx = bounds->maxx = 0;
+    bounds->miny = bounds->maxy = 0;
+
+    for ( i = 0; i<sf->glyphcnt; ++i ) {
+	SplineChar *sc = sf->glyphs[i];
+	if ( sc!=NULL ) {
+	    first = last = ly_fore;
+	    if ( sc->parent->multilayer )
+		last = sc->layer_cnt-1;
+	    for ( k=first; k<=last; ++k )
+		_SplineCharLayerFindBounds(sc,k,bounds);
+	}
+    }
 }
 
 void CIDFindBounds(SplineFont *cidmaster,DBounds *bounds) {
@@ -1926,15 +1936,15 @@ SplinePointList *SPLCopyTranslatedHintMasks(SplinePointList *base,
 return( head );
 }
 
-static SplinePointList *_SPLCopyTransformedHintMasks(SplineChar *subsc,real transform[6],
-	SplineChar *basesc ) {
+static SplinePointList *_SPLCopyTransformedHintMasks(SplineChar *subsc,int layer,
+	real transform[6], SplineChar *basesc ) {
     SplinePointList *spl, *spl2, *head, *last=NULL, *cur, *base;
     SplinePoint *spt, *spt2, *pfirst;
     Spline *s, *first;
     real trans[6];
     RefChar *rf;
 
-    base = subsc->layers[ly_fore].splines;
+    base = subsc->layers[layer].splines;
     head = SplinePointListCopy(base);
     if ( head!=NULL )
 	for ( last = head; last->next!=NULL; last=last->next );
@@ -1957,7 +1967,7 @@ static SplinePointList *_SPLCopyTransformedHintMasks(SplineChar *subsc,real tran
 	    if ( first==NULL ) first = s;
 	}
     }
-    for ( rf=subsc->layers[ly_fore].refs; rf!=NULL; rf=rf->next ) {
+    for ( rf=subsc->layers[layer].refs; rf!=NULL; rf=rf->next ) {
 	trans[0] = rf->transform[0]*transform[0] +
 		    rf->transform[1]*transform[2];
 	trans[1] = rf->transform[0]*transform[1] +
@@ -1972,7 +1982,7 @@ static SplinePointList *_SPLCopyTransformedHintMasks(SplineChar *subsc,real tran
 	trans[5] = rf->transform[4]*transform[1] +
 		    rf->transform[5]*transform[3] +
 		    transform[5];
-	cur = _SPLCopyTransformedHintMasks(rf->sc,trans,basesc);
+	cur = _SPLCopyTransformedHintMasks(rf->sc,layer,trans,basesc);
 	if ( head==NULL )
 	    head = cur;
 	else
@@ -1986,12 +1996,12 @@ return( head );
 }
 
 SplinePointList *SPLCopyTransformedHintMasks(RefChar *r,
-	SplineChar *basesc, BasePoint *trans ) {
+	SplineChar *basesc, BasePoint *trans,int layer ) {
     real transform[6];
 
     memcpy(transform,r->transform,sizeof(transform));
     transform[4] += trans->x; transform[5] += trans->y;
-return( _SPLCopyTransformedHintMasks(r->sc,transform,basesc));
+return( _SPLCopyTransformedHintMasks(r->sc,layer,transform,basesc));
 }
 
 void SplinePointListSelect(SplinePointList *spl,int sel) {

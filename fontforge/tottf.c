@@ -644,19 +644,19 @@ static void ttfdumpmetrics(SplineChar *sc,struct glyphinfo *gi,DBounds *b) {
 	gi->vfullcnt = sc->ttf_glyph+1;
 }
 
-static SplineSet *SCttfApprox(SplineChar *sc) {
+static SplineSet *SCttfApprox(SplineChar *sc,int layer) {
     SplineSet *head=NULL, *last, *ss, *tss;
     RefChar *ref;
 
-    for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
-	tss = sc->layers[ly_fore].order2 ? SplinePointListCopy1(ss) : SSttfApprox(ss);
+    for ( ss=sc->layers[layer].splines; ss!=NULL; ss=ss->next ) {
+	tss = sc->layers[layer].order2 ? SplinePointListCopy1(ss) : SSttfApprox(ss);
 	if ( head==NULL ) head = tss;
 	else last->next = tss;
 	last = tss;
     }
-    for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
+    for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next ) {
 	for ( ss=ref->layers[0].splines; ss!=NULL; ss=ss->next ) {
-	    tss = sc->layers[ly_fore].order2 ? SplinePointListCopy1(ss) : SSttfApprox(ss);
+	    tss = sc->layers[layer].order2 ? SplinePointListCopy1(ss) : SSttfApprox(ss);
 	    if ( head==NULL ) head = tss;
 	    else last->next = tss;
 	    last = tss;
@@ -960,13 +960,13 @@ static void dumpspace(SplineChar *sc, struct glyphinfo *gi) {
     ttfdumpmetrics(sc,gi,&b);
 }
 
-static int IsTTFRefable(SplineChar *sc) {
+static int IsTTFRefable(SplineChar *sc,int layer) {
     RefChar *ref;
 
-    if ( sc->layers[ly_fore].refs==NULL || sc->layers[ly_fore].splines!=NULL )
+    if ( sc->layers[layer].refs==NULL || sc->layers[layer].splines!=NULL )
 return( false );
 
-    for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
+    for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next ) {
 	if ( ref->transform[0]<-2 || ref->transform[0]>1.999939 ||
 		ref->transform[1]<-2 || ref->transform[1]>1.999939 ||
 		ref->transform[2]<-2 || ref->transform[2]>1.999939 ||
@@ -976,19 +976,19 @@ return( false );
 return( true );
 }
 
-int RefDepth(RefChar *ref) {
+int RefDepth(RefChar *ref,int layer) {
     int rd, temp;
     SplineChar *sc = ref->sc;
 
-    if ( sc->layers[ly_fore].refs==NULL || sc->layers[ly_fore].splines!=NULL )
+    if ( sc->layers[layer].refs==NULL || sc->layers[layer].splines!=NULL )
 return( 1 );
     rd = 0;
-    for ( ref = sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
+    for ( ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next ) {
 	if ( ref->transform[0]>=-2 || ref->transform[0]<=1.999939 ||
 		ref->transform[1]>=-2 || ref->transform[1]<=1.999939 ||
 		ref->transform[2]>=-2 || ref->transform[2]<=1.999939 ||
 		ref->transform[3]>=-2 || ref->transform[3]<=1.999939 ) {
-	    temp = RefDepth(ref);
+	    temp = RefDepth(ref,layer);
 	    if ( temp>rd ) rd = temp;
 	}
     }
@@ -999,7 +999,7 @@ static void CountCompositeMaxPts(SplineChar *sc,struct glyphinfo *gi) {
     RefChar *ref;
     int ptcnt = 0, index;
 
-    for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
+    for ( ref=sc->layers[gi->layer].refs; ref!=NULL; ref=ref->next ) {
 	if ( ref->sc->ttf_glyph==-1 )
     continue;
 	index = ref->sc->ttf_glyph;
@@ -1017,8 +1017,8 @@ static void RefigureCompositeMaxPts(SplineFont *sf,struct glyphinfo *gi) {
     int i;
 
     for ( i=0; i<gi->gcnt; ++i ) if ( gi->bygid[i]!=-1 && sf->glyphs[gi->bygid[i]]->ttf_glyph!=-1 ) {
-	if ( sf->glyphs[gi->bygid[i]]->layers[ly_fore].splines==NULL &&
-		sf->glyphs[gi->bygid[i]]->layers[ly_fore].refs!=NULL &&
+	if ( sf->glyphs[gi->bygid[i]]->layers[gi->layer].splines==NULL &&
+		sf->glyphs[gi->bygid[i]]->layers[gi->layer].refs!=NULL &&
 		gi->pointcounts[i]== -1 )
 	    CountCompositeMaxPts(sf->glyphs[gi->bygid[i]],gi);
     }
@@ -1047,16 +1047,16 @@ static void dumpcomposite(SplineChar *sc, struct glyphinfo *gi) {
 	IError("max glyph count wrong in ttf output");
     gi->loca[gi->next_glyph] = ftell(gi->glyphs);
 
-    SplineCharFindBounds(sc,&bb);
+    SplineCharLayerFindBounds(sc,gi->layer,&bb);
     gh.numContours = -1;
     gh.xmin = floor(bb.minx); gh.ymin = floor(bb.miny);
     gh.xmax = ceil(bb.maxx); gh.ymax = ceil(bb.maxy);
     dumpghstruct(gi,&gh);
 
     i=ptcnt=ctcnt=0;
-    for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next, ++i ) {
+    for ( ref=sc->layers[gi->layer].refs; ref!=NULL; ref=ref->next, ++i ) {
 	if ( ref->sc->ttf_glyph==-1 ) {
-	    /*if ( sc->layers[ly_fore].refs->next==NULL || any )*/
+	    /*if ( sc->layers[gi->layer].refs->next==NULL || any )*/
     continue;
 	}
 	flags = 0;
@@ -1118,13 +1118,13 @@ static void dumpcomposite(SplineChar *sc, struct glyphinfo *gi) {
 	for ( ss=ref->layers[0].splines; ss!=NULL ; ss=ss->next ) {
 	    ++ctcnt;
 	}
-	if ( sc->layers[ly_fore].order2 )
+	if ( sc->layers[gi->layer].order2 )
 	    ptcnt += sptcnt;
 	else if ( ptcnt>=0 && gi->pointcounts[ref->sc->ttf_glyph==-1?0:ref->sc->ttf_glyph]>=0 )
 	    ptcnt += gi->pointcounts[ref->sc->ttf_glyph==-1?0:ref->sc->ttf_glyph];
 	else
 	    ptcnt = -1;
-	rd = RefDepth(ref);
+	rd = RefDepth(ref,gi->layer);
 	if ( rd>gi->maxp->maxcomponentdepth )
 	    gi->maxp->maxcomponentdepth = rd;
     }
@@ -1156,25 +1156,25 @@ static void dumpglyph(SplineChar *sc, struct glyphinfo *gi) {
 /*  glyph that consists of a single point. Glyphs containing two single points*/
 /*  are ok, glyphs with a single point and anything else are ok, glyphs with */
 /*  a line are ok. But a single point is not ok. Dunno why */
-    if (( sc->layers[ly_fore].splines==NULL && sc->layers[ly_fore].refs==NULL ) ||
-	    ( sc->layers[ly_fore].refs==NULL &&
-	     (sc->layers[ly_fore].splines->first->next==NULL ||
-	      sc->layers[ly_fore].splines->first->next->to == sc->layers[ly_fore].splines->first) &&
-	     sc->layers[ly_fore].splines->next==NULL) ) {
+    if (( sc->layers[gi->layer].splines==NULL && sc->layers[gi->layer].refs==NULL ) ||
+	    ( sc->layers[gi->layer].refs==NULL &&
+	     (sc->layers[gi->layer].splines->first->next==NULL ||
+	      sc->layers[gi->layer].splines->first->next->to == sc->layers[gi->layer].splines->first) &&
+	     sc->layers[gi->layer].splines->next==NULL) ) {
 	dumpspace(sc,gi);
 return;
     }
 
     gi->loca[gi->next_glyph] = ftell(gi->glyphs);
 
-    ttfss = SCttfApprox(sc);
+    ttfss = SCttfApprox(sc,gi->layer);
     ptcnt = SSTtfNumberPoints(ttfss);
     for ( ss=ttfss, contourcnt=0; ss!=NULL; ss=ss->next ) {
 	++contourcnt;
     }
     origptcnt = ptcnt;
 
-    SplineCharFindBounds(sc,&bb);
+    SplineCharLayerFindBounds(sc,gi->layer,&bb);
 	/* MicroSoft's font validator has a bug. It only looks at the points */
 	/*  when calculating the bounding box, and complains when I look at */
 	/*  the splines for internal extrema. I presume it does this because */
@@ -1359,7 +1359,7 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
     ff_progress_next_stage();
 
     if ( !gi->onlybitmaps ) {
-	if ( sf->layers[ly_fore].order2 )
+	if ( sf->layers[gi->layer].order2 )
 	    for ( i=0; i<sf->glyphcnt; ++i ) {
 		SplineChar *sc = sf->glyphs[i];
 		if ( SCWorthOutputting(sc) )
@@ -1400,7 +1400,7 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
 		dumpspace(sf->glyphs[gi->bygid[i]],gi);
 	} else {
 	    if ( gi->bygid[i]!=-1 && sf->glyphs[gi->bygid[i]]->ttf_glyph>0 ) {
-		if ( IsTTFRefable(sf->glyphs[gi->bygid[i]]) )
+		if ( IsTTFRefable(sf->glyphs[gi->bygid[i]],gi->layer) )
 		    dumpcomposite(sf->glyphs[gi->bygid[i]],gi);
 		else
 		    dumpglyph(sf->glyphs[gi->bygid[i]],gi);
@@ -1438,7 +1438,7 @@ return( false );
 	gi->vmtxlen = ftell(gi->vmtx);
 	if ( gi->vmtxlen&2 ) putshort(gi->vmtx,0);
     }
-    if ( !sf->layers[ly_fore].order2 )
+    if ( !sf->layers[gi->layer].order2 )
 	RefigureCompositeMaxPts(sf,gi);
     free(gi->pointcounts);
 
@@ -2058,7 +2058,7 @@ static void dumpcfftopdict(SplineFont *sf,struct alltabs *at) {
     }
     if ( sf->uniqueid!=-1 )
 	dumpintoper(cfff, sf->uniqueid?sf->uniqueid:4000000 + (rand()&0x3ffff), 13 );
-    SplineFontFindBounds(sf,&b);
+    SplineFontLayerFindBounds(sf,at->gi.layer,&b);
     at->gi.xmin = b.minx;
     at->gi.ymin = b.miny;
     at->gi.xmax = b.maxx;
@@ -2365,7 +2365,7 @@ static int dumpcffhmtx(struct alltabs *at,SplineFont *sf,int bitmaps) {
     FigureFullMetricsEnd(sf,&at->gi,bitmaps);	/* Bitmap fonts use ttf convention of 3 magic glyphs */
     if ( at->gi.bygid[0]!=-1 && (sf->glyphs[at->gi.bygid[0]]->width==width || width==-1 )) {
 	putshort(at->gi.hmtx,sf->glyphs[at->gi.bygid[0]]->width);
-	SplineCharFindBounds(sf->glyphs[at->gi.bygid[0]],&b);
+	SplineCharLayerFindBounds(sf->glyphs[at->gi.bygid[0]],at->gi.layer,&b);
 	putshort(at->gi.hmtx,b.minx);
 	if ( dovmetrics ) {
 	    putshort(at->gi.vmtx,sf->glyphs[at->gi.bygid[0]]->vwidth);
@@ -2402,7 +2402,7 @@ static int dumpcffhmtx(struct alltabs *at,SplineFont *sf,int bitmaps) {
 	if ( SCWorthOutputting(sc) ) {
 	    if ( i<=at->gi.lasthwidth )
 		putshort(at->gi.hmtx,sc->width);
-	    SplineCharFindBounds(sc,&b);
+	    SplineCharLayerFindBounds(sc,at->gi.layer,&b);
 	    putshort(at->gi.hmtx,b.minx);
 	    if ( dovmetrics ) {
 		if ( i<=at->gi.lastvwidth )
@@ -2453,7 +2453,7 @@ static void dumpcffcidhmtx(struct alltabs *at,SplineFont *_sf) {
 	    sc = sf->glyphs[cid];
 	    if ( sc->ttf_glyph<=at->gi.lasthwidth )
 		putshort(at->gi.hmtx,sc->width);
-	    SplineCharFindBounds(sc,&b);
+	    SplineCharLayerFindBounds(sc,at->gi.layer,&b);
 	    putshort(at->gi.hmtx,b.minx);
 	    if ( dovmetrics ) {
 		if ( sc->ttf_glyph<=at->gi.lastvwidth )
@@ -2504,7 +2504,7 @@ static int dumptype2glyphs(SplineFont *sf,struct alltabs *at) {
     ff_progress_change_stages(2+at->gi.strikecnt);
 
     ATFigureDefWidth(sf,at,-1);
-    if ((chrs =SplineFont2ChrsSubrs2(sf,at->nomwid,at->defwid,at->gi.bygid,at->gi.gcnt,at->gi.flags,&subrs))==NULL )
+    if ((chrs =SplineFont2ChrsSubrs2(sf,at->nomwid,at->defwid,at->gi.bygid,at->gi.gcnt,at->gi.flags,&subrs,at->gi.layer))==NULL )
 return( false );
     dumpcffprivate(sf,at,-1,subrs->next);
     if ( subrs->next!=0 )
@@ -2548,7 +2548,7 @@ static int dumpcidglyphs(SplineFont *sf,struct alltabs *at) {
 	at->fds[i].private = tmpfile();
 	ATFigureDefWidth(sf->subfonts[i],at,i);
     }
-    if ( (chrs = CID2ChrsSubrs2(sf,at->fds,at->gi.flags,&glbls))==NULL )
+    if ( (chrs = CID2ChrsSubrs2(sf,at->fds,at->gi.flags,&glbls,at->gi.layer))==NULL )
 return( false );
     for ( i=0; i<sf->subfontcnt; ++i ) {
 	dumpcffprivate(sf->subfonts[i],at,i,at->fds[i].subrs->next);
@@ -2736,7 +2736,7 @@ static void sethhead(struct hhead *hhead,struct hhead *vhead,struct alltabs *at,
     xmax = ymax = 0x80000000; xmin = ymin = 0x7fffffff;
     for ( i=0; i<at->gi.gcnt; ++i ) if ( at->gi.bygid[i]!=-1 ) {
 	SplineChar *sc = sf->glyphs[at->gi.bygid[i]];
-	SplineCharFindBounds(sc,&bb);
+	SplineCharLayerFindBounds(sc,at->gi.layer,&bb);
 	if ( sc->width>width ) width = sc->width;
 	if ( sc->vwidth>height ) height = sc->vwidth;
 	if ( sc->width-bb.maxx < rbearing ) rbearing = sc->width-bb.maxx;
@@ -5781,7 +5781,7 @@ return( !at->error );
 }
 
 int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
-	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *map) {
+	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *map, int layer) {
     struct alltabs at;
     char *oldloc;
     int i;
@@ -5798,6 +5798,7 @@ int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
 
     memset(&at,'\0',sizeof(struct alltabs));
     at.gi.flags = flags;
+    at.gi.layer = layer;
     at.gi.is_ttf = format == ff_ttf || format==ff_ttfsym || format==ff_ttfmacbin || format==ff_ttfdfont;
     at.applemode = (flags&ttf_flag_applemode)?1:0;
     at.opentypemode = (flags&ttf_flag_otmode)?1:0;
@@ -5852,13 +5853,13 @@ return( 1 );
 }
 
 int WriteTTFFont(char *fontname,SplineFont *sf,enum fontformat format,
-	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *map) {
+	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *map, int layer) {
     FILE *ttf;
     int ret;
 
     if (( ttf=fopen(fontname,"wb+"))==NULL )
 return( 0 );
-    ret = _WriteTTFFont(ttf,sf,format,bsizes,bf,flags,map);
+    ret = _WriteTTFFont(ttf,sf,format,bsizes,bf,flags,map,layer);
     if ( ret && (flags&ttf_flag_glyphmap) )
 	DumpGlyphToNameMap(fontname,sf);
     if ( fclose(ttf)==-1 )
@@ -5953,7 +5954,7 @@ static void dumptype42(FILE *type42,struct alltabs *at, enum fontformat format) 
 }
 
 int _WriteType42SFNTS(FILE *type42,SplineFont *sf,enum fontformat format,
-	int flags,EncMap *map) {
+	int flags,EncMap *map,int layer) {
     struct alltabs at;
     char *oldloc;
     int i;
@@ -5973,6 +5974,7 @@ int _WriteType42SFNTS(FILE *type42,SplineFont *sf,enum fontformat format,
     at.gi.onlybitmaps = false;
     at.gi.bsizes = NULL;
     at.gi.fixed_width = CIDOneWidth(sf);
+    at.gi.layer = layer;
     at.isotf = false;
     at.format = format;
     at.next_strid = 256;

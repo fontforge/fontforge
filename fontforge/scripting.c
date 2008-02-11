@@ -1790,7 +1790,8 @@ static void bGenerate(Context *c) {
     t = script2utf8_copy(c->a.vals[1].u.sval);
     locfilename = utf82def_copy(t);
     if ( !GenerateScript(sf,locfilename,bitmaptype,fmflags,res,subfontdirectory,
-	    NULL,c->curfv->normal==NULL?c->curfv->map:c->curfv->normal,rename_to) )
+	    NULL,c->curfv->normal==NULL?c->curfv->map:c->curfv->normal,rename_to,
+	    ly_fore) )
 	ScriptError(c,"Save failed");
     free(t); free(locfilename);
 }
@@ -1923,7 +1924,8 @@ static void bGenerateFamily(Context *c) {
     t = script2utf8_copy(c->a.vals[1].u.sval);
     locfilename = utf82def_copy(t);
     if ( !GenerateScript(sf,locfilename,bitmaptype,fmflags,-1,NULL,sfs,
-	    c->curfv->normal==NULL?c->curfv->map:c->curfv->normal,NULL) )
+	    c->curfv->normal==NULL?c->curfv->map:c->curfv->normal,NULL,
+	    ly_fore) )
 	ScriptError(c,"Save failed");
     free(t); free(locfilename);
     for ( cur=sfs; cur!=NULL; cur=sfs ) {

@@ -72,7 +72,7 @@ return;
     fprintf(eps,"%%%%EndPreview\n" );
 }
 
-int _ExportEPS(FILE *eps,SplineChar *sc, int preview) {
+int _ExportEPS(FILE *eps,SplineChar *sc, int layer, int preview) {
     DBounds b;
     time_t now;
     struct tm *tm;
@@ -83,7 +83,7 @@ int _ExportEPS(FILE *eps,SplineChar *sc, int preview) {
     oldloc = setlocale(LC_NUMERIC,"C");
 
     fprintf( eps, "%%!PS-Adobe-3.0 EPSF-3.0\n" );
-    SplineCharFindBounds(sc,&b);
+    SplineCharLayerFindBounds(sc,layer,&b);
     fprintf( eps, "%%%%BoundingBox: %g %g %g %g\n", (double) b.minx, (double) b.miny, (double) b.maxx, (double) b.maxy );
     fprintf( eps, "%%%%Pages: 0\n" );
     fprintf( eps, "%%%%Title: %s from %s\n", sc->name, sc->parent->fontname );
@@ -101,7 +101,7 @@ int _ExportEPS(FILE *eps,SplineChar *sc, int preview) {
     fprintf( eps, "%%%%Page \"%s\" 1\n", sc->name );
 
     fprintf( eps, "gsave newpath\n" );
-    SC_PSDump((void (*)(int,void *)) fputc,eps,sc,true,false);
+    SC_PSDump((void (*)(int,void *)) fputc,eps,sc,true,false,layer);
 #ifdef FONTFORGE_CONFIG_TYPE3
     if ( sc->parent->multilayer )
 	fprintf( eps, "grestore\n" );
@@ -117,7 +117,7 @@ int _ExportEPS(FILE *eps,SplineChar *sc, int preview) {
 return( ret );
 }
 
-int ExportEPS(char *filename,SplineChar *sc) {
+int ExportEPS(char *filename,SplineChar *sc,int layer) {
     FILE *eps;
     int ret;
 
@@ -125,12 +125,12 @@ int ExportEPS(char *filename,SplineChar *sc) {
     if ( eps==NULL ) {
 return(0);
     }
-    ret = _ExportEPS(eps,sc,true);
+    ret = _ExportEPS(eps,sc,layer,true);
     fclose(eps);
 return( ret );
 }
 
-int _ExportPDF(FILE *pdf,SplineChar *sc) {
+int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
     DBounds b;
     time_t now;
     struct tm *tm;
@@ -155,7 +155,7 @@ int _ExportPDF(FILE *pdf,SplineChar *sc) {
     fprintf( pdf, " << /Type /Page\n" );
     fprintf( pdf, "    /Parent 2 0 R\n" );
     fprintf( pdf, "    /Resources << >>\n" );
-    SplineCharFindBounds(sc,&b);
+    SplineCharLayerFindBounds(sc,layer,&b);
     fprintf( pdf, "    /MediaBox [%g %g %g %g]\n", (double) b.minx, (double) b.miny, (double) b.maxx, (double) b.maxy );
     fprintf( pdf, "    /Contents 4 0 R\n" );
     fprintf( pdf, " >>\n" );
@@ -166,7 +166,7 @@ int _ExportPDF(FILE *pdf,SplineChar *sc) {
     fprintf( pdf, " << /Length 5 0 R >> \n" );
     fprintf( pdf, " stream \n" );
     streamstart = ftell(pdf);
-    SC_PSDump((void (*)(int,void *)) fputc,pdf,sc,true,true);
+    SC_PSDump((void (*)(int,void *)) fputc,pdf,sc,true,true,layer);
 #ifdef FONTFORGE_CONFIG_TYPE3
     if ( sc->parent->multilayer )
 	/* Already filled or stroked */;
@@ -230,7 +230,7 @@ int _ExportPDF(FILE *pdf,SplineChar *sc) {
 return( ret );
 }
 
-int ExportPDF(char *filename,SplineChar *sc) {
+int ExportPDF(char *filename,SplineChar *sc,int layer) {
     FILE *eps;
     int ret;
 
@@ -238,13 +238,13 @@ int ExportPDF(char *filename,SplineChar *sc) {
     if ( eps==NULL ) {
 return(0);
     }
-    ret = _ExportPDF(eps,sc);
+    ret = _ExportPDF(eps,sc,layer);
     fclose(eps);
 return( ret );
 }
 
 
-int _ExportPlate(FILE *plate,SplineChar *sc) {
+int _ExportPlate(FILE *plate,SplineChar *sc,int layer) {
     char *oldloc;
     int do_open;
     SplineSet *ss;
@@ -256,7 +256,7 @@ int _ExportPlate(FILE *plate,SplineChar *sc) {
     /*  one open contour (I think) and it must be at the end */
     fprintf( plate, "(plate\n" );
     for ( do_open=0; do_open<2; ++do_open ) {
-	for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
+	for ( ss=sc->layers[layer].splines; ss!=NULL; ss=ss->next ) {
 	    if ( ss->first->prev==NULL ) {
 		if ( !do_open || ss->first->next==NULL )
 	continue;
@@ -287,7 +287,7 @@ int _ExportPlate(FILE *plate,SplineChar *sc) {
 return( ret );
 }
 
-int ExportPlate(char *filename,SplineChar *sc) {
+int ExportPlate(char *filename,SplineChar *sc,int layer) {
     FILE *plate;
     int ret;
 
@@ -295,12 +295,12 @@ int ExportPlate(char *filename,SplineChar *sc) {
     if ( plate==NULL ) {
 return(0);
     }
-    ret = _ExportPlate(plate,sc);
+    ret = _ExportPlate(plate,sc,layer);
     fclose(plate);
 return( ret );
 }
 
-int ExportSVG(char *filename,SplineChar *sc) {
+int ExportSVG(char *filename,SplineChar *sc,int layer) {
     FILE *svg;
     int ret;
 
@@ -308,12 +308,12 @@ int ExportSVG(char *filename,SplineChar *sc) {
     if ( svg==NULL ) {
 return(0);
     }
-    ret = _ExportSVG(svg,sc);
+    ret = _ExportSVG(svg,sc,layer);
     fclose(svg);
 return( ret );
 }
 
-int ExportGlif(char *filename,SplineChar *sc) {
+int ExportGlif(char *filename,SplineChar *sc,int layer) {
     FILE *glif;
     int ret;
 
@@ -321,7 +321,7 @@ int ExportGlif(char *filename,SplineChar *sc) {
     if ( glif==NULL ) {
 return(0);
     }
-    ret = _ExportGlif(glif,sc);
+    ret = _ExportGlif(glif,sc,layer);
 return( ret );
 }
 
@@ -412,7 +412,7 @@ static void FigSplineSet(FILE *fig,SplineSet *spl,int spmax, int asc) {
     }
 }
 
-int ExportFig(char *filename,SplineChar *sc) {
+int ExportFig(char *filename,SplineChar *sc,int layer) {
     FILE *fig;
     RefChar *rf;
     int ret;
@@ -433,8 +433,8 @@ return(0);
     fprintf( fig, "Single\n" );
     fprintf( fig, "-2\n" );
     fprintf( fig, "1200 2\n" );
-    FigSplineSet(fig,sc->layers[ly_fore].splines,spmax,sc->parent->ascent);
-    for ( rf=sc->layers[ly_fore].refs; rf!=NULL; rf=rf->next )
+    FigSplineSet(fig,sc->layers[layer].splines,spmax,sc->parent->ascent);
+    for ( rf=sc->layers[layer].refs; rf!=NULL; rf=rf->next )
 	FigSplineSet(fig,rf->layers[0].splines, spmax, sc->parent->ascent );
     ret = !ferror(fig);
     fclose(fig);
@@ -641,17 +641,17 @@ return;
     MakeExportName(buffer,sizeof(buffer),format_spec,sc,map);
 
     if ( format==0 )
-	good = ExportEPS(buffer,sc);
+	good = ExportEPS(buffer,sc,ly_fore);
     else if ( format==1 )
-	good = ExportFig(buffer,sc);
+	good = ExportFig(buffer,sc,ly_fore);
     else if ( format==2 )
-	good = ExportSVG(buffer,sc);
+	good = ExportSVG(buffer,sc,ly_fore);
     else if ( format==3 )
-	good = ExportGlif(buffer,sc);
+	good = ExportGlif(buffer,sc,ly_fore);
     else if ( format==4 )
-	good = ExportPDF(buffer,sc);
+	good = ExportPDF(buffer,sc,ly_fore);
     else if ( format==5 )
-	good = ExportPlate(buffer,sc);
+	good = ExportPlate(buffer,sc,ly_fore);
     else if ( bc!=NULL )
 	good = BCExportXBM(buffer,bc,format-6);
     if ( !good )
