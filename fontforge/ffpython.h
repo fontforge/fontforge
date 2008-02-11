@@ -40,6 +40,7 @@ struct flaglist { char *name; int flag; };
 
 extern SplineChar *sc_active_in_ui;
 extern FontViewBase *fv_active_in_ui;
+extern int layer_active_in_ui;
 
 extern void FfPy_Replace_MenuItemStub(PyObject *(*func)(PyObject *,PyObject *));
 extern PyObject *PySC_From_SC(SplineChar *sc);

@@ -1547,26 +1547,26 @@ return(( lbx + rbx )/2 - ( rbb->maxx - rbb->minx )/2 - rbb->minx );
 return( 0x70000000 );
 }
 
-void _SCAddRef(SplineChar *sc,SplineChar *rsc,real transform[6]) {
+void _SCAddRef(SplineChar *sc,SplineChar *rsc,int layer,real transform[6]) {
     RefChar *ref = RefCharCreate();
 
     ref->sc = rsc;
     ref->unicode_enc = rsc->unicodeenc;
     ref->orig_pos = rsc->orig_pos;
     ref->adobe_enc = getAdobeEnc(rsc->name);
-    ref->next = sc->layers[ly_fore].refs;
-    sc->layers[ly_fore].refs = ref;
+    ref->next = sc->layers[layer].refs;
+    sc->layers[layer].refs = ref;
     memcpy(ref->transform,transform,sizeof(real [6]));
-    SCReinstanciateRefChar(sc,ref,ly_fore);
+    SCReinstanciateRefChar(sc,ref,layer);
     SCMakeDependent(sc,rsc);
 }
 
-void SCAddRef(SplineChar *sc,SplineChar *rsc,real xoff, real yoff) {
+void SCAddRef(SplineChar *sc,SplineChar *rsc,int layer, real xoff, real yoff) {
     real transform[6];
     transform[0] = transform[3] = 1;
     transform[1] = transform[2] = 0;
     transform[4] = xoff; transform[5] = yoff;
-    _SCAddRef(sc,rsc,transform);
+    _SCAddRef(sc,rsc,layer,transform);
 }
 
 static void BCClearAndCopy(BDFFont *bdf,int togid,int fromgid) {
@@ -1664,7 +1664,7 @@ return( 0 );
 	}
     }
     if ( ch!=' ' )		/* Some accents are built by combining with space. Don't. The reference won't be displayed or selectable but will be there and might cause confusion... */
-	SCAddRef(sc,rsc,0,0);	/* should be after the call to MakeChar */
+	SCAddRef(sc,rsc,ly_fore,0,0);	/* should be after the call to MakeChar */
 return( 1 );
 }
 
@@ -2075,7 +2075,7 @@ static void _SCCenterAccent(SplineChar *sc,SplineFont *sf,int ch, SplineChar *rs
     }	/* Anchor points */
     transform[4] = xoff;
     /*if ( invert ) transform[5] -= yoff; else */transform[5] += yoff;
-    _SCAddRef(sc,rsc,transform);
+    _SCAddRef(sc,rsc,ly_fore,transform);
     if ( pos!=-1 && (pos&____RIGHT) )
 	SCSynchronizeWidth(sc,sc->width + rbb.maxx-rbb.minx+spacing,sc->width,NULL);
     if ( pos!=-1 && (pos&(____LEFT|____RIGHT|____CENTERLEFT|____LEFTEDGE|____CENTERRIGHT|____RIGHTEDGE)) )
@@ -2147,7 +2147,7 @@ static void SCPutRefAfter(SplineChar *sc,SplineFont *sf,int ch, int copybmp) {
     int ispacing;
 
     if ( full<0x1100 || full>0x11ff ) {
-	SCAddRef(sc,rsc,sc->width,0);
+	SCAddRef(sc,rsc,ly_fore,sc->width,0);
 	sc->width += rsc->width;
 	normal = true;
   /* these two jamo (same consonant really) ride underneath (except sometimes) */
@@ -2159,7 +2159,7 @@ static void SCPutRefAfter(SplineChar *sc,SplineFont *sf,int ch, int copybmp) {
 		full==0x119d || full==0x11a0 ) {
 	SplineCharQuickBounds(sc,&bb);
 	SplineCharQuickBounds(rsc,&rbb);
-	SCAddRef(sc,rsc,(bb.maxx+bb.minx)/2-(rbb.maxx+rbb.minx)/2,bb.miny-spacing-rbb.maxy);
+	SCAddRef(sc,rsc,ly_fore,(bb.maxx+bb.minx)/2-(rbb.maxx+rbb.minx)/2,bb.miny-spacing-rbb.maxy);
 	under = true;
 #if 0
   /* And in these jungsung there is no movement at all (the jamo don't interact) */
@@ -2168,13 +2168,13 @@ static void SCPutRefAfter(SplineChar *sc,SplineFont *sf,int ch, int copybmp) {
 	    (full>=0x1188 && full<=0x118c) || (full>=0x118e && full<=0x1192) ||
 	    full==0x1194 || (full>=0x119a && full<=0x119c) || full==0x119f ||
 	    full==0x11a1 ) {
-	SCAddRef(sc,rsc,0,0);
+	SCAddRef(sc,rsc,ly_fore,0,0);
 	stationary = true;
 #endif
     } else {	/* Jamo should snuggle right up to one another, and ignore the width */
 	SplineCharQuickBounds(sc,&bb);
 	SplineCharQuickBounds(rsc,&rbb);
-	SCAddRef(sc,rsc,bb.maxx+spacing-rbb.minx,0);
+	SCAddRef(sc,rsc,ly_fore,bb.maxx+spacing-rbb.minx,0);
     }
     if ( copybmp ) {
 	for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
@@ -2518,7 +2518,7 @@ static void SCBuildHangul(SplineFont *sf,SplineChar *sc, const unichar_t *pt, in
     while ( *pt ) {
 	rsc = SFGetChar(sf,*pt++,NULL);
 	if ( rsc!=NULL ) {
-	    SCAddRef(sc,rsc,0,0);
+	    SCAddRef(sc,rsc,ly_fore,0,0);
 	    if ( rsc->width>sc->width ) sc->width = rsc->width;
 	    if ( copybmp ) {
 		for ( bdf=sf->cidmaster?sf->cidmaster->bitmaps:sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {

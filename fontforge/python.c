@@ -52,6 +52,7 @@ static struct flaglist sfnt_name_str_ids[], sfnt_name_mslangs[];
 
 FontViewBase *fv_active_in_ui = NULL;
 SplineChar *sc_active_in_ui = NULL;
+int layer_active_in_ui = ly_fore;
 static PyObject *hook_dict;			/* Dictionary of python hook scripts (to be activated when certain fontforge events happen) */
 static PyObject *pickler, *unpickler;		/* cPickle.dumps, cPickle.loads */
 static PyObject *_new_point, *_new_contour, *_new_layer;	/* Python handles to c functions, needed for pickler */
@@ -109,8 +110,39 @@ typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
     SplineChar *sc;
+} PyFF_LayerArray;
+static PyTypeObject PyFF_LayerArrayType;
+
+typedef struct {
+    PyObject_HEAD
+    /* Type-specific fields go here. */
+    SplineChar *sc;
+} PyFF_RefArray;
+static PyTypeObject PyFF_RefArrayType;
+
+typedef struct {
+    PyObject_HEAD
+    /* Type-specific fields go here. */
+    SplineChar *sc;
+    PyFF_LayerArray *layers;
+    PyFF_RefArray *refs;
 } PyFF_Glyph;
 static PyTypeObject PyFF_GlyphType;
+
+typedef struct {
+    PyObject_HEAD
+    /* Type-specific fields go here. */
+    SplineFont *sf;
+    int layer;
+} PyFF_LayerInfo;
+static PyTypeObject PyFF_LayerInfoType;
+
+typedef struct {
+    PyObject_HEAD
+    /* Type-specific fields go here. */
+    SplineFont *sf;
+} PyFF_LayerInfoArray;
+static PyTypeObject PyFF_LayerInfoArrayType;
 
 typedef struct {
     PyObject_HEAD
@@ -139,6 +171,7 @@ typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
     FontViewBase *fv;
+    PyFF_LayerInfoArray *layers;
     PyFF_Private *private;
     PyFF_Cvt *cvt;
     PyFF_Selection *selection;
@@ -507,6 +540,11 @@ Py_RETURN_NONE;
 return( PySC_From_SC_I( sc_active_in_ui ));
 }
 
+static PyObject *PyFF_ActiveLayer(PyObject *self, PyObject *args) {
+
+return( Py_BuildValue("i", layer_active_in_ui ));
+}
+
 static FontViewBase *SFAdd(SplineFont *sf) {
     if ( sf->fv!=NULL )
 	/* All done */;
@@ -649,8 +687,8 @@ struct python_import_export *py_ie;
 static int ie_cnt, ie_max;
 
 void PyFF_SCImport(SplineChar *sc,int ie_index,char *filename,
-	int toback, int clear) {
-    int layer = toback?ly_back:ly_fore;
+	int layer, int clear) {
+    int toback = layer!=ly_fore;
     PyObject *arglist, *result, *glyph = PySC_From_SC(sc);
 
     if ( ie_index>=ie_cnt )
@@ -662,6 +700,7 @@ return;
     }
 
     sc_active_in_ui = sc;
+    layer_active_in_ui = layer;
 
     arglist = PyTuple_New(4);
     Py_XINCREF(py_ie[ie_index].data);
@@ -684,6 +723,7 @@ void PyFF_SCExport(SplineChar *sc,int ie_index,char *filename,int layer) {
 return;
 
     sc_active_in_ui = sc;
+    layer_active_in_ui = layer;
 
     arglist = PyTuple_New(3);
     Py_XINCREF(py_ie[ie_index].data);
@@ -697,6 +737,7 @@ return;
     if ( PyErr_Occurred()!=NULL )
 	PyErr_Print();
     sc_active_in_ui = NULL;
+    layer_active_in_ui = ly_fore;
 }
 
 static PyObject *PyFF_registerImportExport(PyObject *self, PyObject *args) {
@@ -3057,6 +3098,61 @@ return( -1 );
 return( 0 );
 }
 
+static PyObject *PyFFLayer_export(PyFF_Layer *self, PyObject *args) {
+    char *filename;
+    char *locfilename = NULL;
+    char *pt;
+    FILE *file;
+    SplineChar sc;
+    Layer dummylayers[2];
+
+    if ( !PyArg_ParseTuple(args,"es","UTF-8",&filename) )
+return( NULL );
+    locfilename = utf82def_copy(filename);
+    free(filename);
+
+    pt = strrchr(locfilename,'.');
+    if ( pt==NULL ) pt=locfilename;
+
+    file = fopen( locfilename,"w");
+    if ( file==NULL ) {
+	PyErr_Format(PyExc_EnvironmentError, "Could not create file %s", locfilename );
+return( NULL );
+    }
+
+    memset(&sc,0,sizeof(sc));
+    memset(dummylayers,0,sizeof(dummylayers));
+    sc.name = "<generic layer>";
+    sc.layers = dummylayers;
+    sc.layer_cnt = 2;
+    dummylayers[ly_fore].splines = SSFromLayer(self);
+    dummylayers[ly_fore].order2 = self->is_quadratic;
+
+    if ( strcasecmp(pt,".eps")==0 || strcasecmp(pt,".ps")==0 || strcasecmp(pt,".art")==0 )
+	_ExportEPS(file,&sc,ly_fore,true);
+    else if ( strcasecmp(pt,".pdf")==0 )
+	_ExportPDF(file,&sc,ly_fore);
+    else if ( strcasecmp(pt,".svg")==0 )
+	_ExportSVG(file,&sc,ly_fore);
+    else if ( strcasecmp(pt,".glif")==0 )
+	_ExportGlif(file,&sc,ly_fore);
+    else if ( strcasecmp(pt,".plate")==0 )
+	_ExportPlate(file,&sc,ly_fore);
+    /* else if ( strcasecmp(pt,".fig")==0 )*/
+    else {
+	PyErr_Format(PyExc_TypeError, "Unknown extension to export: %s", pt );
+	free( locfilename );
+	fclose(file);
+	SplinePointListsFree(dummylayers[ly_fore].splines);
+return( NULL );
+    }
+    fclose(file);
+
+    SplinePointListsFree(dummylayers[ly_fore].splines);
+    free( locfilename );
+Py_RETURN( self );
+}
+
 static PyObject *PyFFLayer_Stroke(PyFF_Layer *self, PyObject *args) {
     SplineSet *ss, *newss;
     StrokeInfo si;
@@ -3223,6 +3319,8 @@ static PyMethodDef PyFFLayer_methods[] = {
 	     "Finds a bounding box for the layer (xmin,ymin,xmax,ymax)" },
     {"correctDirection", (PyCFunction)PyFFLayer_Correct, METH_NOARGS,
 	     "Orient a layer so that external contours are clockwise and internal counter clockwise." },
+    {"export", (PyCFunction)PyFFLayer_export, METH_VARARGS,
+	     "Exports the layer to a file" },
     {"stroke", (PyCFunction)PyFFLayer_Stroke, METH_VARARGS,
 	     "Strokes the countours in a layer" },
     {"removeOverlap", (PyCFunction)PyFFLayer_RemoveOverlap, METH_NOARGS,
@@ -3874,7 +3972,7 @@ return( NULL );
     }
     for ( j=0; j<6; ++j )
 	transform[j] = m[j];
-    _SCAddRef(sc,rsc,transform);
+    _SCAddRef(sc,rsc,ly_fore,transform);
     
 Py_RETURN( self );
 }
@@ -3936,12 +4034,443 @@ static PyTypeObject PyFF_GlyphPenType = {
 };
 
 /* ************************************************************************** */
+/* Glyph Utilities */
+/* ************************************************************************** */
+
+static PyObject *PyFF_Glyph_get_layer_references(PyFF_Glyph *self,void *closure,
+	int layer) {
+    RefChar *ref;
+    int cnt;
+    SplineChar *sc = self->sc;
+    PyObject *tuple;
+
+    for ( ref=sc->layers[layer].refs, cnt=0; ref!=NULL; ++cnt, ref=ref->next );
+    tuple = PyTuple_New(cnt);
+    for ( ref=sc->layers[ly_fore].refs, cnt=0; ref!=NULL; ++cnt, ref=ref->next )
+	PyTuple_SET_ITEM(tuple,cnt,Py_BuildValue("(s(dddddd))", ref->sc->name,
+		ref->transform[0], ref->transform[1], ref->transform[2],
+		ref->transform[3], ref->transform[4], ref->transform[5]));
+return( tuple );
+}
+
+static int PyFF_Glyph_set_layer_references(PyFF_Glyph *self,PyObject *value,
+	void *closure, int layer) {
+    int i, j, cnt;
+    double m[6];
+    real transform[6];
+    char *str;
+    SplineChar *sc = self->sc, *rsc;
+    SplineFont *sf = sc->parent;
+    RefChar *refs, *next;
+
+    if ( !PySequence_Check(value)) {
+	PyErr_Format(PyExc_TypeError, "Value must be a tuple of references");
+return( -1 );
+    }
+    cnt = PySequence_Size(value);
+    for ( refs=sc->layers[layer].refs; refs!=NULL; refs = next ) {
+	next = refs->next;
+	SCRemoveDependent(sc,refs,layer);
+    }
+    sc->layers[layer].refs = NULL;
+    for ( i=0; i<cnt; ++i ) {
+	if ( !PyArg_ParseTuple(PySequence_GetItem(value,i),"s(dddddd)",&str,
+		&m[0], &m[1], &m[2], &m[3], &m[4], &m[5]) )
+return( -1 );
+	rsc = SFGetChar(sf,-1,str);
+	if ( rsc==NULL ) {
+	    PyErr_Format(PyExc_EnvironmentError, "No glyph named %s", str);
+return( -1 );
+	}
+	for ( j=0; j<6; ++j )
+	    transform[j] = m[j];
+	_SCAddRef(sc,rsc,layer,transform);
+    }
+return( 0 );
+}
+
+static PyObject *PyFF_Glyph_get_a_layer(PyFF_Glyph *self,int layeri) {
+    SplineChar *sc = self->sc;
+    Layer *layer;
+    PyFF_Layer *ly;
+
+    if ( layeri<-1 || layeri>=sc->layer_cnt ) {
+	PyErr_Format(PyExc_ValueError, "Bad layer" );
+return( NULL );
+    } else if ( layeri==-1 )
+	layer = &sc->parent->grid;
+    else
+	layer = &sc->layers[layeri];
+    ly = LayerFromLayer(layer,NULL);
+return( (PyObject * ) ly );
+}
+
+static int PyFF_Glyph_set_a_layer(PyFF_Glyph *self,PyObject *value,void *closure, int layeri) {
+    SplineChar *sc = self->sc;
+    Layer *layer;
+    SplineSet *ss, *newss;
+    int isquad;
+
+    if ( layeri<-1 || layeri>=sc->layer_cnt ) {
+	PyErr_Format(PyExc_ValueError, "Bad layer" );
+return( -1 );
+    } else if ( layeri==-1 )
+	layer = &sc->parent->grid;
+    else
+	layer = &sc->layers[layeri];
+    if ( PyType_IsSubtype(&PyFF_LayerType,value->ob_type) ) {
+	isquad = ((PyFF_Layer *) value)->is_quadratic;
+	ss = SSFromLayer( (PyFF_Layer *) value);
+    } else if ( PyType_IsSubtype(&PyFF_ContourType,value->ob_type) ) {
+	isquad = ((PyFF_Contour *) value)->is_quadratic;
+	ss = SSFromContour( (PyFF_Contour *) value,NULL);
+    } else {
+	PyErr_Format(PyExc_TypeError, "Argument must be a layer or a contour" );
+return( -1 );
+    }
+    if ( layer->order2!=isquad ) {
+	if ( layer->order2 )
+	    newss = SplineSetsTTFApprox(ss);
+	else
+	    newss = SplineSetsPSApprox(ss);
+	SplinePointListsFree(ss);
+	ss = newss;
+    }
+    SplinePointListsFree(layer->splines);
+    layer->splines = ss;
+
+    SCCharChangedUpdate(sc);
+return( 0 );
+}
+
+static int SFFindLayerIndexByName(SplineFont *sf,char *name) {
+    int l;
+
+    if ( name!=NULL ) {
+	for ( l=0; l<sf->layer_cnt; ++l ) {
+	    if ( strcmp(sf->layers[l].name,name)==0 )
+return( l );
+	}
+    }
+    PyErr_Format(PyExc_ValueError, "Bad layer name: %s", name );
+return( -1 );
+}
+
+/* ************************************************************************** */
+/* Glyph helper types */
+/* ************************************************************************** */
+
+/* ************************************************************************** */
+/* Layers dictionary iterator type */
+/* ************************************************************************** */
+
+typedef struct {
+	PyObject_HEAD
+	PyFF_LayerArray *layers;
+	int pos;
+} layersiterobject;
+static PyTypeObject PyFF_LayerArrayIterType;
+
+static PyObject *layersiter_new(PyObject *layers) {
+    layersiterobject *di;
+    di = PyObject_New(layersiterobject, &PyFF_LayerArrayIterType);
+    if (di == NULL)
+return NULL;
+    Py_INCREF(layers);
+    di->layers = (PyFF_LayerArray *) layers;
+    di->pos = 0;
+return (PyObject *)di;
+}
+
+static void layersiter_dealloc(layersiterobject *di) {
+    Py_XDECREF(di->layers);
+    PyObject_Del(di);
+}
+
+static PyObject *layersiter_iternextkey(layersiterobject *di) {
+    PyFF_LayerArray *d = di->layers;
+    SplineFont *sf = d->sc->parent;
+
+    if (d == NULL )
+return NULL;
+
+    if ( di->pos<sf->layer_cnt )
+return( Py_BuildValue("s",sf->layers[di->pos++].name) );
+
+return NULL;
+}
+
+static PyTypeObject PyFF_LayerArrayIterType = {
+	PyObject_HEAD_INIT(&PyType_Type)
+	0,					/* ob_size */
+	"dictionary-keyiterator",		/* tp_name */
+	sizeof(layersiterobject),		/* tp_basicsize */
+	0,					/* tp_itemsize */
+	/* methods */
+	(destructor)layersiter_dealloc, 	/* tp_dealloc */
+	0,					/* tp_print */
+	0,					/* tp_getattr */
+	0,					/* tp_setattr */
+	0,					/* tp_compare */
+	0,					/* tp_repr */
+	0,					/* tp_as_number */
+	0,					/* tp_as_sequence */
+	0,					/* tp_as_mapping */
+	0,					/* tp_hash */
+	0,					/* tp_call */
+	0,					/* tp_str */
+	0,					/* tp_getattro */
+	0,					/* tp_setattro */
+	0,					/* tp_as_buffer */
+	Py_TPFLAGS_DEFAULT,			/* tp_flags */
+ 	0,					/* tp_doc */
+ 	0,					/* tp_traverse */
+ 	0,					/* tp_clear */
+	0,					/* tp_richcompare */
+	0,					/* tp_weaklistoffset */
+	PyObject_SelfIter,			/* tp_iter */
+	(iternextfunc)layersiter_iternextkey,	/* tp_iternext */
+	0,					/* tp_methods */
+	0
+};
+
+/* ************************************************************************** */
+/* Layers Array Standard Methods */
+/* ************************************************************************** */
+
+static void PyFF_LayerArray_dealloc(PyFF_LayerArray *self) {
+    if ( self->sc!=NULL )
+	self->sc = NULL;
+    self->ob_type->tp_free((PyObject *) self);
+}
+
+static PyObject *PyFFLayerArray_Str(PyFF_LayerArray *self) {
+return( PyString_FromFormat( "<Layers Array for %s>", self->sc->name ));
+}
+
+/* ************************************************************************** */
+/* ****************************** Layers Array ****************************** */
+/* ************************************************************************** */
+
+static int PyFF_LayerArrayLength( PyObject *self ) {
+    SplineChar *sc = ((PyFF_LayerArray *) self)->sc;
+    if ( sc==NULL )
+return( 0 );
+    else
+return( sc->layer_cnt );
+}
+
+static PyObject *PyFF_LayerArrayIndex( PyObject *self, PyObject *index ) {
+    SplineChar *sc = ((PyFF_LayerArray *) self)->sc;
+    int layer;
+
+    if ( PyString_Check(index)) {
+	char *name = PyString_AsString(index);
+	layer = SFFindLayerIndexByName(sc->parent,name);
+	if ( layer<0 )
+return( NULL );
+    } else if ( PyInt_Check(index)) {
+	layer = PyInt_AsLong(index);
+    } else {
+	PyErr_Format(PyExc_TypeError, "Index must be a layer name or index" );
+return( NULL );
+    }
+return( PyFF_Glyph_get_a_layer((PyFF_Glyph *) PySC_From_SC(sc),layer));
+}
+
+static int PyFF_LayerArrayIndexAssign( PyObject *self, PyObject *index, PyObject *value ) {
+    SplineChar *sc = ((PyFF_LayerArray *) self)->sc;
+    int layer;
+
+    if ( PyString_Check(index)) {
+	char *name = PyString_AsString(index);
+	layer = SFFindLayerIndexByName(sc->parent,name);
+	if ( layer<0 )
+return( -1 );
+    } else if ( PyInt_Check(index)) {
+	layer = PyInt_AsLong(index);
+    } else {
+	PyErr_Format(PyExc_TypeError, "Index must be a layer name or index" );
+return( -1 );
+    }
+return( PyFF_Glyph_set_a_layer((PyFF_Glyph *) PySC_From_SC(sc),value,NULL,layer));
+}
+
+static PyMappingMethods PyFF_LayerArrayMapping = {
+    PyFF_LayerArrayLength,		/* length */
+    PyFF_LayerArrayIndex,		/* subscript */
+    PyFF_LayerArrayIndexAssign	/* subscript assign */
+};
+
+/* ************************************************************************** */
+/* ************************* initializer routines *************************** */
+/* ************************************************************************** */
+
+static PyTypeObject PyFF_LayerArrayType = {
+    PyObject_HEAD_INIT(NULL)
+    0,                         /*ob_size*/
+    "fontforge.glyphlayerarray",       /*tp_name*/
+    sizeof(PyFF_LayerArray), /*tp_basicsize*/
+    0,                         /*tp_itemsize*/
+    (destructor) PyFF_LayerArray_dealloc, /*tp_dealloc*/
+    0,                         /*tp_print*/
+    0,                         /*tp_getattr*/
+    0,                         /*tp_setattr*/
+    0,                         /*tp_compare*/
+    0,                         /*tp_repr*/
+    0,                         /*tp_as_number*/
+    0,                         /*tp_as_sequence*/
+    &PyFF_LayerArrayMapping,   /*tp_as_mapping*/
+    0,                         /*tp_hash */
+    0,                         /*tp_call*/
+    (reprfunc) PyFFLayerArray_Str,/*tp_str*/
+    0,                         /*tp_getattro*/
+    0,                         /*tp_setattro*/
+    0,                         /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT,        /*tp_flags*/
+    "FontForge layers array",  /* tp_doc */
+    0,		               /* tp_traverse */
+    0,		               /* tp_clear */
+    0,		               /* tp_richcompare */
+    0,		               /* tp_weaklistoffset */
+    layersiter_new,	       /* tp_iter */
+    0,		               /* tp_iternext */
+    0,			       /* tp_methods */
+    0,			       /* tp_members */
+    0,		               /* tp_getset */
+    0,                         /* tp_base */
+    0,                         /* tp_dict */
+    0,                         /* tp_descr_get */
+    0,                         /* tp_descr_set */
+    0,                         /* tp_dictoffset */
+    0,			       /* tp_init */
+    0,                         /* tp_alloc */
+    0			       /* tp_new */
+};
+
+/* ************************************************************************** */
+/* References Array Standard Methods */
+/* ************************************************************************** */
+
+static void PyFF_RefArray_dealloc(PyFF_RefArray *self) {
+    if ( self->sc!=NULL )
+	self->sc = NULL;
+    self->ob_type->tp_free((PyObject *) self);
+}
+
+static PyObject *PyFFReferences_Str(PyFF_RefArray *self) {
+return( PyString_FromFormat( "<Layer References Array for %s>", self->sc->name ));
+}
+
+/* ************************************************************************** */
+/* ****************************** References Array ****************************** */
+/* ************************************************************************** */
+
+static int PyFF_RefArrayLength( PyObject *self ) {
+    SplineChar *sc = ((PyFF_RefArray *) self)->sc;
+    if ( sc==NULL )
+return( 0 );
+    else
+return( sc->layer_cnt );
+}
+
+static PyObject *PyFF_RefArrayIndex( PyObject *self, PyObject *index ) {
+    SplineChar *sc = ((PyFF_RefArray *) self)->sc;
+    int layer;
+
+    if ( PyString_Check(index)) {
+	char *name = PyString_AsString(index);
+	layer = SFFindLayerIndexByName(sc->parent,name);
+	if ( layer<0 )
+return( NULL );
+    } else if ( PyInt_Check(index)) {
+	layer = PyInt_AsLong(index);
+    } else {
+	PyErr_Format(PyExc_TypeError, "Index must be a layer name or index" );
+return( NULL );
+    }
+return( PyFF_Glyph_get_layer_references((PyFF_Glyph *) PySC_From_SC(sc),NULL,layer));
+}
+
+static int PyFF_RefArrayIndexAssign( PyObject *self, PyObject *index, PyObject *value ) {
+    SplineChar *sc = ((PyFF_RefArray *) self)->sc;
+    int layer;
+
+    if ( PyString_Check(index)) {
+	char *name = PyString_AsString(index);
+	layer = SFFindLayerIndexByName(sc->parent,name);
+	if ( layer<0 )
+return( -1 );
+    } else if ( PyInt_Check(index)) {
+	layer = PyInt_AsLong(index);
+    } else {
+	PyErr_Format(PyExc_TypeError, "Index must be a layer name or index" );
+return( -1 );
+    }
+return( PyFF_Glyph_set_layer_references((PyFF_Glyph *) PySC_From_SC(sc),value,NULL,layer));
+}
+
+static PyMappingMethods PyFF_RefArrayMapping = {
+    PyFF_RefArrayLength,		/* length */
+    PyFF_RefArrayIndex,		/* subscript */
+    PyFF_RefArrayIndexAssign	/* subscript assign */
+};
+
+/* ************************************************************************** */
+/* ************************* initializer routines *************************** */
+/* ************************************************************************** */
+
+static PyTypeObject PyFF_RefArrayType = {
+    PyObject_HEAD_INIT(NULL)
+    0,                         /*ob_size*/
+    "fontforge.references",       /*tp_name*/
+    sizeof(PyFF_RefArray),     /*tp_basicsize*/
+    0,                         /*tp_itemsize*/
+    (destructor) PyFF_RefArray_dealloc, /*tp_dealloc*/
+    0,                         /*tp_print*/
+    0,                         /*tp_getattr*/
+    0,                         /*tp_setattr*/
+    0,                         /*tp_compare*/
+    0,                         /*tp_repr*/
+    0,                         /*tp_as_number*/
+    0,                         /*tp_as_sequence*/
+    &PyFF_RefArrayMapping,   /*tp_as_mapping*/
+    0,                         /*tp_hash */
+    0,                         /*tp_call*/
+    (reprfunc) PyFFReferences_Str,/*tp_str*/
+    0,                         /*tp_getattro*/
+    0,                         /*tp_setattro*/
+    0,                         /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT,        /*tp_flags*/
+    "FontForge layers references array",  /* tp_doc */
+    0,		               /* tp_traverse */
+    0,		               /* tp_clear */
+    0,		               /* tp_richcompare */
+    0,		               /* tp_weaklistoffset */
+    layersiter_new,	       /* tp_iter */
+    0,		               /* tp_iternext */
+    0,			       /* tp_methods */
+    0,			       /* tp_members */
+    0,		               /* tp_getset */
+    0,                         /* tp_base */
+    0,                         /* tp_dict */
+    0,                         /* tp_descr_get */
+    0,                         /* tp_descr_set */
+    0,                         /* tp_dictoffset */
+    0,			       /* tp_init */
+    0,                         /* tp_alloc */
+    0			       /* tp_new */
+};
+
+/* ************************************************************************** */
 /* Glyph Standard Methods */
 /* ************************************************************************** */
 
 static void PyFF_Glyph_dealloc(PyFF_Glyph *self) {
     if ( self->sc!=NULL )
 	self->sc = NULL;
+    Py_XDECREF(self->layers);
+    Py_XDECREF(self->refs);
     self->ob_type->tp_free((PyObject *) self);
 }
 
@@ -4251,53 +4780,24 @@ return( PyFV_From_FV_I(self->sc->parent->fv));
 }
 
 static PyObject *PyFF_Glyph_get_references(PyFF_Glyph *self,void *closure) {
-    RefChar *ref;
-    int cnt;
-    SplineChar *sc = self->sc;
-    PyObject *tuple;
-
-    for ( ref=sc->layers[ly_fore].refs, cnt=0; ref!=NULL; ++cnt, ref=ref->next );
-    tuple = PyTuple_New(cnt);
-    for ( ref=sc->layers[ly_fore].refs, cnt=0; ref!=NULL; ++cnt, ref=ref->next )
-	PyTuple_SET_ITEM(tuple,cnt,Py_BuildValue("(s(dddddd))", ref->sc->name,
-		ref->transform[0], ref->transform[1], ref->transform[2],
-		ref->transform[3], ref->transform[4], ref->transform[5]));
-return( tuple );
+return( PyFF_Glyph_get_layer_references(self,closure,ly_fore));
 }
 
 static int PyFF_Glyph_set_references(PyFF_Glyph *self,PyObject *value,void *closure) {
-    int i, j, cnt;
-    double m[6];
-    real transform[6];
-    char *str;
-    SplineChar *sc = self->sc, *rsc;
-    SplineFont *sf = sc->parent;
-    RefChar *refs, *next;
+return( PyFF_Glyph_set_layer_references(self,value,closure,ly_fore));
+}
 
-    if ( !PySequence_Check(value)) {
-	PyErr_Format(PyExc_TypeError, "Value must be a tuple of references");
-return( -1 );
-    }
-    cnt = PySequence_Size(value);
-    for ( refs=sc->layers[ly_fore].refs; refs!=NULL; refs = next ) {
-	next = refs->next;
-	SCRemoveDependent(sc,refs,ly_fore);
-    }
-    sc->layers[ly_fore].refs = NULL;
-    for ( i=0; i<cnt; ++i ) {
-	if ( !PyArg_ParseTuple(PySequence_GetItem(value,i),"s(dddddd)",&str,
-		&m[0], &m[1], &m[2], &m[3], &m[4], &m[5]) )
-return( -1 );
-	rsc = SFGetChar(sf,-1,str);
-	if ( rsc==NULL ) {
-	    PyErr_Format(PyExc_EnvironmentError, "No glyph named %s", str);
-return( -1 );
-	}
-	for ( j=0; j<6; ++j )
-	    transform[j] = m[j];
-	_SCAddRef(sc,rsc,transform);
-    }
-return( 0 );
+static PyObject *PyFF_Glyph_get_layerrefs(PyFF_Glyph *self,void *closure) {
+    PyFF_RefArray *layerrefs;
+
+    if ( self->refs!=NULL )
+Py_RETURN( self->refs );
+    layerrefs = (PyFF_RefArray *) PyObject_New(PyFF_RefArray, &PyFF_RefArrayType);
+    if (layerrefs == NULL)
+return NULL;
+    layerrefs->sc = self->sc;
+    self->refs = layerrefs;
+Py_RETURN( self->refs );
 }
 
 static PyObject *PyFF_Glyph_get_ttfinstrs(PyFF_Glyph *self,void *closure) {
@@ -4365,60 +4865,6 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_a_layer(PyFF_Glyph *self,int layeri) {
-    SplineChar *sc = self->sc;
-    Layer *layer;
-    PyFF_Layer *ly;
-
-    if ( layeri<-1 || layeri>=sc->layer_cnt ) {
-	PyErr_Format(PyExc_ValueError, "Bad layer" );
-return( NULL );
-    } else if ( layeri==-1 )
-	layer = &sc->parent->grid;
-    else
-	layer = &sc->layers[layeri];
-    ly = LayerFromLayer(layer,NULL);
-return( (PyObject * ) ly );
-}
-
-static int PyFF_Glyph_set_a_layer(PyFF_Glyph *self,PyObject *value,void *closure, int layeri) {
-    SplineChar *sc = self->sc;
-    Layer *layer;
-    SplineSet *ss, *newss;
-    int isquad;
-
-    if ( layeri<-1 || layeri>=sc->layer_cnt ) {
-	PyErr_Format(PyExc_ValueError, "Bad layer" );
-return( -1 );
-    } else if ( layeri==-1 )
-	layer = &sc->parent->grid;
-    else
-	layer = &sc->layers[layeri];
-    if ( PyType_IsSubtype(&PyFF_LayerType,value->ob_type) ) {
-	isquad = ((PyFF_Layer *) value)->is_quadratic;
-	ss = SSFromLayer( (PyFF_Layer *) value);
-    } else if ( PyType_IsSubtype(&PyFF_ContourType,value->ob_type) ) {
-	isquad = ((PyFF_Contour *) value)->is_quadratic;
-	ss = SSFromContour( (PyFF_Contour *) value,NULL);
-    } else {
-	PyErr_Format(PyExc_TypeError, "Argument must be a layer or a contour" );
-return( -1 );
-    }
-    if ( layer->order2!=isquad ) {
-	if ( layer->order2 )
-	    newss = SplineSetsTTFApprox(ss);
-	else
-	    newss = SplineSetsPSApprox(ss);
-	SplinePointListsFree(ss);
-	ss = newss;
-    }
-    SplinePointListsFree(layer->splines);
-    layer->splines = ss;
-
-    SCCharChangedUpdate(sc);
-return( 0 );
-}
-
 static PyObject *PyFF_Glyph_get_foreground(PyFF_Glyph *self,void *closure) {
 return( PyFF_Glyph_get_a_layer(self,ly_fore));
 }
@@ -4433,6 +4879,24 @@ return( PyFF_Glyph_get_a_layer(self,ly_back));
 
 static int PyFF_Glyph_set_background(PyFF_Glyph *self,PyObject *value,void *closure) {
 return( PyFF_Glyph_set_a_layer(self,value,closure,ly_back));
+}
+
+static PyObject *PyFF_Glyph_get_layers(PyFF_Glyph *self,void *closure) {
+    PyFF_LayerArray *layers;
+
+    if ( self->layers!=NULL )
+Py_RETURN( self->layers );
+    layers = (PyFF_LayerArray *) PyObject_New(PyFF_LayerArray, &PyFF_LayerArrayType);
+    if (layers == NULL)
+return NULL;
+    layers->sc = self->sc;
+    self->layers = layers;
+Py_RETURN( self->layers );
+}
+
+static PyObject *PyFF_Glyph_get_layer_cnt(PyFF_Glyph *self,void *closure) {
+
+return( Py_BuildValue("i", self->sc->layer_cnt ));
 }
 
 static PyObject *PyFF_Glyph_get_hints(StemInfo *head) {
@@ -4789,9 +5253,18 @@ static PyGetSetDef PyFF_Glyph_getset[] = {
     {"background",
 	 (getter)PyFF_Glyph_get_background, (setter)PyFF_Glyph_set_background,
 	 "Returns the background layer of the glyph", NULL},
+    {"layers",
+	 (getter)PyFF_Glyph_get_layers, (setter)PyFF_cant_set,
+	 "Returns an array of layers", NULL},
     {"references",
 	 (getter)PyFF_Glyph_get_references, (setter)PyFF_Glyph_set_references,
 	 "A tuple of all references in the glyph", NULL},
+    {"layerrefs",
+	 (getter)PyFF_Glyph_get_layerrefs, (setter)PyFF_cant_set,
+	 "Returns an array of layer references", NULL},
+    {"layer_cnt",
+	 (getter)PyFF_Glyph_get_layer_cnt, (setter)PyFF_cant_set,
+	 "Returns the number of layers in the glyph", NULL},
     {"color",
 	 (getter)PyFF_Glyph_get_color, (setter)PyFF_Glyph_set_color,
 	 "Glyph color", NULL},
@@ -4998,7 +5471,7 @@ return( NULL );
     }
     for ( j=0; j<6; ++j )
 	transform[j] = m[j];
-    _SCAddRef(sc,rsc,transform);
+    _SCAddRef(sc,rsc,ly_fore,transform);
 
 Py_RETURN( self );
 }
@@ -5165,8 +5638,10 @@ static PyObject *PyFFGlyph_export(PyObject *self, PyObject *args) {
     int format= -1;
     FILE *file;
     int layer = ly_fore;
+    PyObject *foo, *bar;
+    char *layer_str = NULL;
 
-    if ( !PyArg_ParseTuple(args,"es|ii","UTF-8",&filename,&pixels,&bits) )
+    if ( !PyArg_ParseTuple(args,"es|OO","UTF-8",&filename,&foo,&bar) )
 return( NULL );
     locfilename = utf82def_copy(filename);
     free(filename);
@@ -5181,6 +5656,8 @@ return( NULL );
 	format=2;
 
     if ( format!=-1 ) {
+	if ( !PyArg_ParseTuple(args,"O|ii",&foo,&pixels,&bits) )
+return( NULL );
 	if ( !ExportImage(locfilename,sc,format,pixels,bits)) {
 	    PyErr_Format(PyExc_EnvironmentError, "Could not create image file %s", locfilename );
 return( NULL );
@@ -5189,6 +5666,18 @@ return( NULL );
 	file = fopen( locfilename,"w");
 	if ( file==NULL ) {
 	    PyErr_Format(PyExc_EnvironmentError, "Could not create file %s", locfilename );
+return( NULL );
+	}
+	if ( !PyArg_ParseTuple(args,"O|i",&foo,&layer) ) {
+	    PyErr_Clear();
+	    if ( !PyArg_ParseTuple(args,"O|s",&foo,&layer_str) )
+return( NULL );
+	    layer = SFFindLayerIndexByName(sc->parent,layer_str);
+	    if ( layer<0 )
+return( NULL );
+	}
+	if ( layer<0 || layer>=sc->layer_cnt ) {
+	    PyErr_Format(PyExc_ValueError, "Layer is out of range" );
 return( NULL );
 	}
 
@@ -5206,6 +5695,7 @@ return( NULL );
 	else {
 	    PyErr_Format(PyExc_TypeError, "Unknown extension to export: %s", pt );
 	    free( locfilename );
+	    fclose(file);
 return( NULL );
 	}
 	fclose(file);
@@ -6482,6 +6972,344 @@ static PyTypeObject PyFF_SelectionType = {
     0,			       /* tp_new */
 };
 
+
+/* ************************************************************************** */
+/* Layers info array iterator type */
+/* ************************************************************************** */
+
+typedef struct {
+	PyObject_HEAD
+	PyFF_LayerInfoArray *layers;
+	int pos;
+} layerinfoiterobject;
+static PyTypeObject PyFF_LayerInfoArrayIterType;
+
+static PyObject *layerinfoiter_new(PyObject *layers) {
+    layerinfoiterobject *di;
+    di = PyObject_New(layerinfoiterobject, &PyFF_LayerInfoArrayIterType);
+    if (di == NULL)
+return NULL;
+    Py_INCREF(layers);
+    di->layers = (PyFF_LayerInfoArray *) layers;
+    di->pos = 0;
+return (PyObject *)di;
+}
+
+static void layerinfoiter_dealloc(layerinfoiterobject *di) {
+    Py_XDECREF(di->layers);
+    PyObject_Del(di);
+}
+
+static PyObject *layerinfoiter_iternextkey(layerinfoiterobject *di) {
+    PyFF_LayerInfoArray *d = di->layers;
+    SplineFont *sf = d->sf;
+
+    if (d == NULL )
+return NULL;
+
+    if ( di->pos<sf->layer_cnt )
+return( Py_BuildValue("s",sf->layers[di->pos++].name) );
+
+return NULL;
+}
+
+static PyTypeObject PyFF_LayerInfoArrayIterType = {
+	PyObject_HEAD_INIT(&PyType_Type)
+	0,					/* ob_size */
+	"fontforge.fontlayeriter",		/* tp_name */
+	sizeof(layerinfoiterobject),		/* tp_basicsize */
+	0,					/* tp_itemsize */
+	/* methods */
+	(destructor)layerinfoiter_dealloc, 	/* tp_dealloc */
+	0,					/* tp_print */
+	0,					/* tp_getattr */
+	0,					/* tp_setattr */
+	0,					/* tp_compare */
+	0,					/* tp_repr */
+	0,					/* tp_as_number */
+	0,					/* tp_as_sequence */
+	0,					/* tp_as_mapping */
+	0,					/* tp_hash */
+	0,					/* tp_call */
+	0,					/* tp_str */
+	0,					/* tp_getattro */
+	0,					/* tp_setattro */
+	0,					/* tp_as_buffer */
+	Py_TPFLAGS_DEFAULT,			/* tp_flags */
+ 	0,					/* tp_doc */
+ 	0,					/* tp_traverse */
+ 	0,					/* tp_clear */
+	0,					/* tp_richcompare */
+	0,					/* tp_weaklistoffset */
+	PyObject_SelfIter,			/* tp_iter */
+	(iternextfunc)layerinfoiter_iternextkey,/* tp_iternext */
+	0,					/* tp_methods */
+	0
+};
+
+/* ************************************************************************** */
+/* Layer Info Standard Methods */
+/* ************************************************************************** */
+
+static void PyFF_LayerInfo_dealloc(PyFF_LayerInfo *self) {
+    if ( self->sf!=NULL )
+	self->sf = NULL;
+    self->ob_type->tp_free((PyObject *) self);
+}
+
+static PyObject *PyFFLayerInfo_Str(PyFF_LayerInfo *self) {
+return( PyString_FromFormat( "<LayerInfo %s,%d>",
+	self->sf->layers[self->layer].name,
+	self->sf->layers[self->layer].order2));
+}
+
+static PyObject *PyFF_LayerInfo_get_name(PyFF_LayerInfo *self,void *closure) {
+return( Py_BuildValue("s",self->sf->layers[self->layer].name));
+}
+
+static int PyFF_LayerInfo_set_name(PyFF_LayerInfo *self,PyObject *value,void *closure) {
+    if ( PyString_Check(value)) {
+	free( self->sf->layers[self->layer].name );
+	self->sf->layers[self->layer].name = copy(PyString_AsString(value));
+return(0);
+    }
+    PyErr_Format(PyExc_TypeError,"Expected layer name");
+return( -1 );
+}
+
+static PyObject *PyFF_LayerInfo_get_order2(PyFF_LayerInfo *self,void *closure) {
+return( Py_BuildValue("i",self->sf->layers[self->layer].order2));
+}
+
+static int PyFF_LayerInfo_set_order2(PyFF_LayerInfo *self,PyObject *value,void *closure) {
+    if ( PyInt_Check(value)) {
+	int val = PyInt_AsLong(value)!=0;
+	SplineFont *sf = self->sf;
+	int layer = self->layer;
+	if ( sf->layers[layer].order2!=val ) {
+	    if ( val )
+		SFConvertLayerToOrder2(sf,layer);
+	    else
+		SFConvertLayerToOrder3(sf,layer);
+	}
+return(0);
+    }
+    PyErr_Format(PyExc_TypeError,"Expected boolean value");
+return( -1 );
+}
+
+static PyGetSetDef PyFF_LayerInfo_getset[] = {
+    {"name",
+	 (getter)PyFF_LayerInfo_get_name, (setter)PyFF_LayerInfo_set_name,
+	 "arbetrary (non-persistent) user data (deprecated name for temporary)", NULL},
+    {"is_quadratic",
+	 (getter)PyFF_LayerInfo_get_order2, (setter)PyFF_LayerInfo_set_order2,
+	 "arbetrary (non-persistent) user data", NULL},
+     NULL
+};
+
+static PyTypeObject PyFF_LayerInfoType = {
+    PyObject_HEAD_INIT(NULL)
+    0,                         /*ob_size*/
+    "fontforge.layerinfo",	/*tp_name*/
+    sizeof(PyFF_LayerInfo),	/*tp_basicsize*/
+    0,                         /*tp_itemsize*/
+    (destructor) PyFF_LayerInfo_dealloc, /*tp_dealloc*/
+    0,                         /*tp_print*/
+    0,                         /*tp_getattr*/
+    0,                         /*tp_setattr*/
+    0,                         /*tp_compare*/
+    0,                         /*tp_repr*/
+    0,                         /*tp_as_number*/
+    0,                         /*tp_as_sequence*/
+    0,			       /*tp_as_mapping*/
+    0,                         /*tp_hash */
+    0,                         /*tp_call*/
+    (reprfunc) PyFFLayerInfo_Str,/*tp_str*/
+    0,                         /*tp_getattro*/
+    0,                         /*tp_setattro*/
+    0,                         /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT,        /*tp_flags*/
+    "FontForge layer info",    /* tp_doc */
+    0,		               /* tp_traverse */
+    0,		               /* tp_clear */
+    0,		               /* tp_richcompare */
+    0,		               /* tp_weaklistoffset */
+    0,			       /* tp_iter */
+    0,		               /* tp_iternext */
+    0,			       /* tp_methods */
+    0,			       /* tp_members */
+    PyFF_LayerInfo_getset,     /* tp_getset */
+    0,                         /* tp_base */
+    0,                         /* tp_dict */
+    0,                         /* tp_descr_get */
+    0,                         /* tp_descr_set */
+    0,                         /* tp_dictoffset */
+    0,			       /* tp_init */
+    0,                         /* tp_alloc */
+    0			       /* tp_new */
+};
+
+/* ************************************************************************** */
+/* Layers Info Array Standard Methods */
+/* ************************************************************************** */
+
+static void PyFF_LayerInfoArray_dealloc(PyFF_LayerInfoArray *self) {
+    if ( self->sf!=NULL )
+	self->sf = NULL;
+    self->ob_type->tp_free((PyObject *) self);
+}
+
+static PyObject *PyFFLayerInfoArray_Str(PyFF_LayerInfoArray *self) {
+return( PyString_FromFormat( "<Layer Info Array for %s>", self->sf->fontname ));
+}
+
+/* ************************************************************************** */
+/* ****************************** Layers Array ****************************** */
+/* ************************************************************************** */
+
+static int PyFF_LayerInfoArrayLength( PyObject *self ) {
+    SplineFont *sf = ((PyFF_LayerInfoArray *) self)->sf;
+    if ( sf==NULL )
+return( 0 );
+    else
+return( sf->layer_cnt );
+}
+
+static PyObject *PyFF_LayerInfoArrayIndex( PyObject *self, PyObject *index ) {
+    SplineFont *sf = ((PyFF_LayerInfoArray *) self)->sf;
+    int layer;
+    PyFF_LayerInfo *li;
+
+    if ( PyString_Check(index)) {
+	char *name = PyString_AsString(index);
+	layer = SFFindLayerIndexByName(sf,name);
+	if ( layer<0 )
+return( NULL );
+    } else if ( PyInt_Check(index)) {
+	layer = PyInt_AsLong(index);
+    } else {
+	PyErr_Format(PyExc_TypeError, "Index must be a layer name or index" );
+return( NULL );
+    }
+    if ( layer<0 || layer>=sf->layer_cnt ) {
+	PyErr_Format(PyExc_ValueError, "Layer is out of range" );
+return( NULL );
+    }
+    li = PyObject_New(PyFF_LayerInfo, &PyFF_LayerInfoType);
+    li->sf = sf;
+    li->layer = layer;
+return( (PyObject *) li );
+}
+
+static int PyFF_LayerInfoArrayIndexAssign( PyObject *self, PyObject *index, PyObject *value ) {
+    SplineFont *sf = ((PyFF_LayerInfoArray *) self)->sf;
+    int layer, order2;
+    char *name;
+
+    if ( PyString_Check(index)) {
+	char *name = PyString_AsString(index);
+	layer = SFFindLayerIndexByName(sf,name);
+	if ( layer<0 )
+return( -1 );
+    } else if ( PyInt_Check(index)) {
+	layer = PyInt_AsLong(index);
+    } else {
+	PyErr_Format(PyExc_TypeError, "Index must be a layer name or index" );
+return( -1 );
+    }
+    if ( layer<0 || layer>=sf->layer_cnt ) {
+	PyErr_Format(PyExc_ValueError, "Layer is out of range" );
+return( -1 );
+    }
+    if ( value==NULL ) {
+	if ( layer>=2 )
+	    SFRemoveLayer(sf,layer);
+	else {
+	    PyErr_Format(PyExc_ValueError, "You may not delete the background or foreground layers" );
+return( -1 );
+	}
+return( 0 );
+    } else if ( !PyArg_ParseTuple(value,"si", &name, &order2 ) )
+return( -1 );
+    free(sf->layers[layer].name);
+    sf->layers[layer].name = copy(name);
+    order2 = order2!=0;
+    if ( sf->layers[layer].order2!=order2 ) {
+	if ( sf->layers[layer].order2!=order2 ) {
+	    if ( order2 )
+		SFConvertLayerToOrder2(sf,layer);
+	    else
+		SFConvertLayerToOrder3(sf,layer);
+	}
+    }
+return( 0 );
+}
+
+static PyMappingMethods PyFF_LayerInfoArrayMapping = {
+    PyFF_LayerInfoArrayLength,		/* length */
+    PyFF_LayerInfoArrayIndex,		/* subscript */
+    PyFF_LayerInfoArrayIndexAssign	/* subscript assign */
+};
+
+static PyObject *PyFF_LayerInfoArray_add(PyObject *self, PyObject *args) {
+    SplineFont *sf = ((PyFF_LayerInfoArray *) self)->sf;
+    int order2;
+    char *name;
+
+    if ( !PyArg_ParseTuple(args,"si", &name, &order2 ) )
+return( NULL );
+    SFAddLayer(sf,name,order2);
+Py_RETURN(self);
+}
+
+static PyMethodDef PyFF_LayerInfoArray_methods[] = {
+    { "add", PyFF_LayerInfoArray_add, METH_VARARGS, "Adds a new layer to the font" },
+    NULL
+};
+
+static PyTypeObject PyFF_LayerInfoArrayType = {
+    PyObject_HEAD_INIT(NULL)
+    0,                         /*ob_size*/
+    "fontforge.fontlayerarray",/*tp_name*/
+    sizeof(PyFF_LayerInfoArray), /*tp_basicsize*/
+    0,                         /*tp_itemsize*/
+    (destructor) PyFF_LayerInfoArray_dealloc, /*tp_dealloc*/
+    0,                         /*tp_print*/
+    0,                         /*tp_getattr*/
+    0,                         /*tp_setattr*/
+    0,                         /*tp_compare*/
+    0,                         /*tp_repr*/
+    0,                         /*tp_as_number*/
+    0,                         /*tp_as_sequence*/
+    &PyFF_LayerInfoArrayMapping,   /*tp_as_mapping*/
+    0,                         /*tp_hash */
+    0,                         /*tp_call*/
+    (reprfunc) PyFFLayerInfoArray_Str,/*tp_str*/
+    0,                         /*tp_getattro*/
+    0,                         /*tp_setattro*/
+    0,                         /*tp_as_buffer*/
+    Py_TPFLAGS_DEFAULT,        /*tp_flags*/
+    "FontForge layers array",  /* tp_doc */
+    0,		               /* tp_traverse */
+    0,		               /* tp_clear */
+    0,		               /* tp_richcompare */
+    0,		               /* tp_weaklistoffset */
+    layerinfoiter_new,	       /* tp_iter */
+    0,		               /* tp_iternext */
+    PyFF_LayerInfoArray_methods,/* tp_methods */
+    0,			       /* tp_members */
+    0,		               /* tp_getset */
+    0,                         /* tp_base */
+    0,                         /* tp_dict */
+    0,                         /* tp_descr_get */
+    0,                         /* tp_descr_set */
+    0,                         /* tp_dictoffset */
+    0,			       /* tp_init */
+    0,                         /* tp_alloc */
+    0			       /* tp_new */
+};
+
 /* ************************************************************************** */
 /* Private dictionary iterator type */
 /* ************************************************************************** */
@@ -7240,6 +8068,24 @@ return NULL;
     private->sf = self->fv->sf;
     self->private = private;
 Py_RETURN( self->private );
+}
+
+static PyObject *PyFF_Font_get_layers(PyFF_Font *self,void *closure) {
+    PyFF_LayerInfoArray *layers;
+
+    if ( self->layers!=NULL )
+Py_RETURN( self->layers );
+    layers = (PyFF_LayerInfoArray *) PyObject_New(PyFF_LayerInfoArray, &PyFF_LayerInfoArrayType);
+    if (layers == NULL)
+return NULL;
+    layers->sf = self->fv->sf;
+    self->layers = layers;
+Py_RETURN( self->layers );
+}
+
+static PyObject *PyFF_Font_get_layer_cnt(PyFF_Font *self,void *closure) {
+
+return( Py_BuildValue("i", self->fv->sf->layer_cnt ));
 }
 
 static PyObject *PyFF_Font_get_selection(PyFF_Font *self,void *closure) {
@@ -8407,6 +9253,12 @@ static PyGetSetDef PyFF_Font_getset[] = {
     {"cidsupplement",
 	 (getter)PyFF_Font_get_supplement, (setter)PyFF_Font_set_supplement,
 	 "CID Supplement", NULL},
+    {"layer_cnt",
+	 (getter)PyFF_Font_get_layer_cnt, (setter)PyFF_cant_set,
+	 "Returns the number of layers in the font (readonly)", NULL},
+    {"layers",
+	 (getter)PyFF_Font_get_layers, (setter)PyFF_cant_set,
+	 "Returns a dictionary like object with information on the layers of the font", NULL},
     {"loadState",
 	 (getter)PyFF_Font_get_loadvalidation_state, (setter)PyFF_cant_set,
 	 "A bitmask indicating non-fatal errors found when loading the font (readonly)", NULL},
@@ -9751,7 +10603,7 @@ Py_RETURN( self );
 
 /* filename, bitmaptype,flags,resolution,mult-sfd-file,namelist */
 static char *gen_keywords[] = { "filename", "bitmap_type", "flags", "bitmap_resolution",
-	"subfont_directory", "namelist", NULL };
+	"subfont_directory", "namelist", "layer", NULL };
 struct flaglist gen_flags[] = {
     { "afm", 0x0001 },
     { "pfm", 0x0002 },
@@ -9786,11 +10638,25 @@ static PyObject *PyFFFont_Generate(PyObject *self, PyObject *args, PyObject *key
     int resolution = -1;
     char *bitmaptype="", *subfontdirectory=NULL, *namelist=NULL;
     NameList *rename_to = NULL;
-    int layer = ly_fore;		/* !!!!! */
+    int layer = ly_fore;
+    char *layer_str=NULL;
 
-    if ( !PyArg_ParseTupleAndKeywords(args, keywds, "es|sOiss", gen_keywords,
-	    "UTF-8",&filename, &bitmaptype, &flags, &resolution, &subfontdirectory, &namelist) )
+    if ( !PyArg_ParseTupleAndKeywords(args, keywds, "es|sOissi", gen_keywords,
+	    "UTF-8",&filename, &bitmaptype, &flags, &resolution, &subfontdirectory,
+	    &namelist, &layer) ) {
+	PyErr_Clear();
+	if ( !PyArg_ParseTupleAndKeywords(args, keywds, "es|sOisss", gen_keywords,
+		"UTF-8",&filename, &bitmaptype, &flags, &resolution, &subfontdirectory,
+		&namelist, &layer_str) )
 return( NULL );
+	layer = SFFindLayerIndexByName(fv->sf,layer_str);
+	if ( layer<0 )
+return( NULL );
+    }
+    if ( layer<0 || layer>=fv->sf->layer_cnt ) {
+	PyErr_Format(PyExc_ValueError, "Layer is out of range" );
+return( NULL );
+    }
     if ( flags!=NULL ) {
 	iflags = FlagsFromTuple(flags,gen_flags);
 	if ( iflags==0x80000000 ) {
@@ -10667,6 +11533,7 @@ static PyMethodDef FontForge_methods[] = {
     /* Deprecated name for the above */
     { "activeFontInUI", PyFF_ActiveFont, METH_NOARGS, "If invoked from the UI, this returns the currently active font. When not in UI this returns None"},
     { "activeGlyph", PyFF_ActiveGlyph, METH_NOARGS, "If invoked from the UI, this returns the currently active glyph (or None)"},
+    { "activeLayer", PyFF_ActiveLayer, METH_NOARGS, "If invoked from the UI, this returns the currently active layer"},
     /* Access to the User Interface ... if any */
     { "hasUserInterface", PyFF_hasUserInterface, METH_NOARGS, "Returns whether this fontforge session has a user interface (True if it has opened windows) or is just running a script (False)"},
     { "registerImportExport", PyFF_registerImportExport, METH_VARARGS, "Adds an import/export spline conversion module"},
@@ -10949,10 +11816,14 @@ static void initPyFontForge(void) {
 	    &PyFF_CvtType, &PyFF_PrivateIterType, &PyFF_PrivateType,
 	    &PyFF_FontIterType, &PyFF_SelectionType, &PyFF_FontType,
 	    &PyFF_ContourIterType, &PyFF_LayerIterType,
+	    &PyFF_LayerArrayType, &PyFF_RefArrayType, &PyFF_LayerArrayIterType,
+	    &PyFF_LayerInfoType, &PyFF_LayerInfoArrayType, &PyFF_LayerInfoArrayIterType,
 	    NULL };
     static char *names[] = { "point", "contour", "layer", "glyphPen", "glyph",
 	    "cvt", "privateiter", "private", "fontiter", "selection", "font",
 	    "contouriter", "layeriter",
+	    "glyphlayerarray", "glyphlayerrefarray", "glyphlayeriter",
+	    "layerinfo", "fontlayerarray", "fontlayeriter",
 	    NULL };
     static char *spiro_names[] = { "spiroG4", "spiroG2", "spiroCorner",
 	    "spiroLeft", "spiroRight", "spiroOpen", NULL };
@@ -11045,6 +11916,7 @@ void PyFF_ScriptFile(FontViewBase *fv,SplineChar *sc, char *filename) {
 
     fv_active_in_ui = fv;		/* Make fv known to interpreter */
     sc_active_in_ui = sc;		/* Make sc known to interpreter */
+    layer_active_in_ui = ly_fore;
     if ( fp==NULL )
 	LogError( "Can't open %s", filename );
     else {
@@ -11053,10 +11925,11 @@ void PyFF_ScriptFile(FontViewBase *fv,SplineChar *sc, char *filename) {
     }
 }
 
-void PyFF_ScriptString(FontViewBase *fv,SplineChar *sc, char *str) {
+void PyFF_ScriptString(FontViewBase *fv,SplineChar *sc, int layer, char *str) {
 
     fv_active_in_ui = fv;		/* Make fv known to interpreter */
     sc_active_in_ui = sc;		/* Make sc known to interpreter */
+    layer_active_in_ui = layer;
     PyRun_SimpleString(str);
 }
 
@@ -11185,6 +12058,7 @@ void PyFF_InitFontHook(FontViewBase *fv) {
 return;
 
     fv_active_in_ui = fv;		/* Make fv known to interpreter */
+    layer_active_in_ui = ly_fore;
 
     /* First check if it has a initScriptString in the persistent dictionary */
     /* (If we loaded from an sfd file) */

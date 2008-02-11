@@ -494,7 +494,7 @@ return( true );
 #ifndef _NO_PYTHON
 	    else if ( format>=fv_pythonbase )
 		PyFF_SCImport(d->cv->b.sc,format-fv_pythonbase,temp,
-			d->cv->b.drawmode==dm_back, false);
+			CVLayer((CharViewBase *) d->cv), false);
 #endif
 	}
 	free(temp);
