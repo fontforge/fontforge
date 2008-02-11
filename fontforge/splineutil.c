@@ -772,7 +772,7 @@ static void _SplineCharLayerFindBounds(SplineChar *sc,int layer, DBounds *bounds
 
 void SplineCharLayerFindBounds(SplineChar *sc,int layer,DBounds *bounds) {
 
-    if ( sc->parent->multilayer ) {
+    if ( sc->parent!=NULL && sc->parent->multilayer ) {
 	SplineCharFindBounds(sc,bounds);
 return;
     }
@@ -793,7 +793,7 @@ void SplineCharFindBounds(SplineChar *sc,DBounds *bounds) {
     bounds->miny = bounds->maxy = 0;
 
     first = last = ly_fore;
-    if ( sc->parent->multilayer )
+    if ( sc->parent!=NULL && sc->parent->multilayer )
 	last = sc->layer_cnt-1;
     for ( i=first; i<=last; ++i )
 	_SplineCharLayerFindBounds(sc,i,bounds);
@@ -814,7 +814,7 @@ return;
 	SplineChar *sc = sf->glyphs[i];
 	if ( sc!=NULL ) {
 	    first = last = ly_fore;
-	    if ( sc->parent->multilayer )
+	    if ( sc->parent != NULL && sc->parent->multilayer )
 		last = sc->layer_cnt-1;
 	    for ( k=first; k<=last; ++k )
 		_SplineCharLayerFindBounds(sc,k,bounds);
@@ -832,7 +832,7 @@ void SplineFontFindBounds(SplineFont *sf,DBounds *bounds) {
 	SplineChar *sc = sf->glyphs[i];
 	if ( sc!=NULL ) {
 	    first = last = ly_fore;
-	    if ( sc->parent->multilayer )
+	    if ( sf->multilayer )
 		last = sc->layer_cnt-1;
 	    for ( k=first; k<=last; ++k )
 		_SplineCharLayerFindBounds(sc,k,bounds);
@@ -928,7 +928,7 @@ void SplineCharQuickBounds(SplineChar *sc, DBounds *b) {
 
     memset(b,0,sizeof(*b));
     first = last = ly_fore;
-    if ( sc->parent->multilayer )
+    if ( sc->parent!=NULL && sc->parent->multilayer )
 	last = sc->layer_cnt-1;
     for ( i=first; i<=last; ++i ) {
 	SplineSetQuickBounds(sc->layers[i].splines,&temp);
@@ -1013,7 +1013,7 @@ void SplineCharQuickConservativeBounds(SplineChar *sc, DBounds *b) {
 
     memset(b,0,sizeof(*b));
     first = last = ly_fore;
-    if ( sc->parent->multilayer )
+    if ( sc->parent!=NULL && sc->parent->multilayer )
 	last = sc->layer_cnt-1;
     for ( i=first; i<=last; ++i ) {
 	SplineSetQuickConservativeBounds(sc->layers[i].splines,&temp);
