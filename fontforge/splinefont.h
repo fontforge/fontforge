@@ -1774,7 +1774,7 @@ enum fontformat { ff_pfa, ff_pfb, ff_pfbmacbin, ff_multiple, ff_mma, ff_mmb,
 	ff_ttf, ff_ttfsym, ff_ttfmacbin, ff_ttfdfont, ff_otf, ff_otfdfont,
 	ff_otfcid, ff_otfciddfont, ff_svg, ff_ufo, ff_none };
 extern struct pschars *SplineFont2ChrsSubrs(SplineFont *sf, int iscjk,
-	struct pschars *subrs,int flags,enum fontformat format);
+	struct pschars *subrs,int flags,enum fontformat format,int layer);
 extern int CanonicalCombiner(int uni);
 struct cidbytes;
 struct fd2data;
@@ -1785,12 +1785,12 @@ struct glyphdata;
 extern int UnitsParallel(BasePoint *u1,BasePoint *u2,int strict);
 extern int CvtPsStem3(struct growbuf *gb, SplineChar *scs[MmMax], int instance_count,
 	int ishstem, int round);
-extern struct pschars *CID2ChrsSubrs(SplineFont *cidmaster,struct cidbytes *cidbytes,int flags);
+extern struct pschars *CID2ChrsSubrs(SplineFont *cidmaster,struct cidbytes *cidbytes,int flags,int layer);
 extern struct pschars *SplineFont2ChrsSubrs2(SplineFont *sf, int nomwid,
 	int defwid, const int *bygid, int cnt, int flags,
-	struct pschars **_subrs);
+	struct pschars **_subrs,int layer);
 extern struct pschars *CID2ChrsSubrs2(SplineFont *cidmaster,struct fd2data *fds,
-	int flags, struct pschars **_glbls);
+	int flags, struct pschars **_glbls,int layer);
 enum bitmapformat { bf_bdf, bf_ttf, bf_sfnt_dfont, bf_sfnt_ms, bf_otb,
 	bf_nfntmacbin, /*bf_nfntdfont, */bf_fon, bf_fnt, bf_palm,
 	bf_ptype3,
@@ -1798,27 +1798,27 @@ enum bitmapformat { bf_bdf, bf_ttf, bf_sfnt_dfont, bf_sfnt_ms, bf_otb,
 extern const char *GetAuthor(void);
 extern SplineChar *SFFindExistingCharMac(SplineFont *,EncMap *map, int unienc);
 extern void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
-	SplineChar *sc, int refs_to_splines, int pdfopers );
-extern int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flags,EncMap *enc,SplineFont *fullsf);
-extern int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format,int flags,EncMap *enc,SplineFont *fullsf);
+	SplineChar *sc, int refs_to_splines, int pdfopers,int layer );
+extern int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flags,EncMap *enc,SplineFont *fullsf,int layer);
+extern int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format,int flags,EncMap *enc,SplineFont *fullsf,int layer);
 extern int WriteMacPSFont(char *fontname,SplineFont *sf,enum fontformat format,
-	int flags,EncMap *enc);
+	int flags,EncMap *enc,int layer);
 extern int _WriteTTFFont(FILE *ttf,SplineFont *sf, enum fontformat format,
-	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *enc);
+	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *enc,int layer);
 extern int WriteTTFFont(char *fontname,SplineFont *sf, enum fontformat format,
-	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *enc);
+	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *enc,int layer);
 extern int _WriteType42SFNTS(FILE *type42,SplineFont *sf,enum fontformat format,
-	int flags,EncMap *enc);
+	int flags,EncMap *enc,int layer);
 extern int WriteMacTTFFont(char *fontname,SplineFont *sf, enum fontformat format,
-	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *enc);
+	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *enc,int layer);
 extern int WriteMacBitmaps(char *filename,SplineFont *sf, int32 *sizes,
 	int is_dfont,EncMap *enc);
 extern int WritePalmBitmaps(char *filename,SplineFont *sf, int32 *sizes,EncMap *enc);
 extern int WriteMacFamily(char *filename,struct sflist *sfs,enum fontformat format,
-	enum bitmapformat bf,int flags,EncMap *enc);
+	enum bitmapformat bf,int flags,EncMap *enc,int layer);
 extern long mactime(void);
-extern int WriteSVGFont(char *fontname,SplineFont *sf,enum fontformat format,int flags,EncMap *enc);
-extern int WriteUFOFont(char *fontname,SplineFont *sf,enum fontformat format,int flags,EncMap *enc);
+extern int WriteSVGFont(char *fontname,SplineFont *sf,enum fontformat format,int flags,EncMap *enc,int layer);
+extern int WriteUFOFont(char *fontname,SplineFont *sf,enum fontformat format,int flags,EncMap *enc,int layer);
 extern void SfListFree(struct sflist *sfs);
 extern void TTF_PSDupsDefault(SplineFont *sf);
 extern void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf);
@@ -1992,7 +1992,9 @@ extern Spline *SplineMake3(SplinePoint *from, SplinePoint *to);
 extern LinearApprox *SplineApproximate(Spline *spline, real scale);
 extern int SplinePointListIsClockwise(const SplineSet *spl);
 extern void SplineSetFindBounds(const SplinePointList *spl, DBounds *bounds);
+extern void SplineCharLayerFindBounds(SplineChar *sc,int layer,DBounds *bounds);
 extern void SplineCharFindBounds(SplineChar *sc,DBounds *bounds);
+extern void SplineFontLayerFindBounds(SplineFont *sf,int layer,DBounds *bounds);
 extern void SplineFontFindBounds(SplineFont *sf,DBounds *bounds);
 extern void CIDFindBounds(SplineFont *sf,DBounds *bounds);
 extern void SplineSetQuickBounds(SplineSet *ss,DBounds *b);
@@ -2019,7 +2021,7 @@ extern HintMask *HintMaskFromTransformedRef(RefChar *ref,BasePoint *trans,
 extern SplinePointList *SPLCopyTranslatedHintMasks(SplinePointList *base,
 	SplineChar *basesc, SplineChar *subsc, BasePoint *trans);
 extern SplinePointList *SPLCopyTransformedHintMasks(RefChar *r,
-	SplineChar *basesc, BasePoint *trans);
+	SplineChar *basesc, BasePoint *trans,int layer);
 extern SplinePointList *SplinePointListRemoveSelected(SplineChar *sc,SplinePointList *base);
 extern void SplinePointListSet(SplinePointList *tobase, SplinePointList *frombase);
 extern void SplinePointListSelect(SplinePointList *spl,int sel);
@@ -2125,7 +2127,7 @@ extern void LoadPfaEditEncodings(void);
 
 extern int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype,
 	int fmflags,int res, char *subfontdirectory,struct sflist *sfs,
-	EncMap *map,NameList *rename_to);
+	EncMap *map,NameList *rename_to,int layer);
 
 extern void _SCAutoTrace(SplineChar *sc, char **args);
 extern char **AutoTraceArgs(int ask);
@@ -2684,7 +2686,7 @@ extern void SFSetModTime(SplineFont *sf);
 extern void SFTimesFromFile(SplineFont *sf,FILE *);
 
 extern int SFHasInstructions(SplineFont *sf);
-extern int RefDepth(RefChar *ref);
+extern int RefDepth(RefChar *ref,int layer);
 
 extern SplineChar *SCHasSubs(SplineChar *sc,uint32 tag);
 
@@ -2764,17 +2766,17 @@ extern void SCAddScaleImage(SplineChar *sc,struct gimage *image,int doclear,int 
 extern void SCInsertImage(SplineChar *sc,struct gimage *image,real scale,real yoff, real xoff, int layer);
 extern void SCImportFig(SplineChar *sc,int layer,char *path,int doclear);
 
-extern int _ExportPlate(FILE *pdf,SplineChar *sc);
-extern int _ExportPDF(FILE *pdf,SplineChar *sc);
-extern int _ExportEPS(FILE *eps,SplineChar *sc,int gen_preview);
-extern int _ExportSVG(FILE *svg,SplineChar *sc);
-extern int _ExportGlif(FILE *glif,SplineChar *sc);
-extern int ExportEPS(char *filename,SplineChar *sc);
-extern int ExportPDF(char *filename,SplineChar *sc);
-extern int ExportPlate(char *filename,SplineChar *sc);
-extern int ExportSVG(char *filename,SplineChar *sc);
-extern int ExportGlif(char *filename,SplineChar *sc);
-extern int ExportFig(char *filename,SplineChar *sc);
+extern int _ExportPlate(FILE *pdf,SplineChar *sc,int layer);
+extern int _ExportPDF(FILE *pdf,SplineChar *sc,int layer);
+extern int _ExportEPS(FILE *eps,SplineChar *sc,int layer, int gen_preview);
+extern int _ExportSVG(FILE *svg,SplineChar *sc,int layer);
+extern int _ExportGlif(FILE *glif,SplineChar *sc,int layer);
+extern int ExportEPS(char *filename,SplineChar *sc,int layer);
+extern int ExportPDF(char *filename,SplineChar *sc,int layer);
+extern int ExportPlate(char *filename,SplineChar *sc,int layer);
+extern int ExportSVG(char *filename,SplineChar *sc,int layer);
+extern int ExportGlif(char *filename,SplineChar *sc,int layer);
+extern int ExportFig(char *filename,SplineChar *sc,int layer);
 extern int BCExportXBM(char *filename,BDFChar *bdfc, int format);
 extern int ExportImage(char *filename,SplineChar *sc, int format, int pixelsize, int bitsperpixel);
 extern void ScriptExport(SplineFont *sf, BDFFont *bdf, int format, int gid,
