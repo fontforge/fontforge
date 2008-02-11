@@ -677,7 +677,7 @@ return;
 	PyErr_Print();
 }
 
-void PyFF_SCExport(SplineChar *sc,int ie_index,char *filename) {
+void PyFF_SCExport(SplineChar *sc,int ie_index,char *filename,int layer) {
     PyObject *arglist, *result, *glyph = PySC_From_SC(sc);
 
     if ( ie_index>=ie_cnt )
@@ -5164,6 +5164,7 @@ static PyObject *PyFFGlyph_export(PyObject *self, PyObject *args) {
     int pixels=100, bits=8;
     int format= -1;
     FILE *file;
+    int layer = ly_fore;
 
     if ( !PyArg_ParseTuple(args,"es|ii","UTF-8",&filename,&pixels,&bits) )
 return( NULL );
@@ -5192,15 +5193,15 @@ return( NULL );
 	}
 
 	if ( strcasecmp(pt,".eps")==0 || strcasecmp(pt,".ps")==0 || strcasecmp(pt,".art")==0 )
-	    _ExportEPS(file,sc,true);
+	    _ExportEPS(file,sc,layer,true);
 	else if ( strcasecmp(pt,".pdf")==0 )
-	    _ExportPDF(file,sc);
+	    _ExportPDF(file,sc,layer);
 	else if ( strcasecmp(pt,".svg")==0 )
-	    _ExportSVG(file,sc);
+	    _ExportSVG(file,sc,layer);
 	else if ( strcasecmp(pt,".glif")==0 )
-	    _ExportGlif(file,sc);
+	    _ExportGlif(file,sc,layer);
 	else if ( strcasecmp(pt,".plate")==0 )
-	    _ExportPlate(file,sc);
+	    _ExportPlate(file,sc,layer);
 	/* else if ( strcasecmp(pt,".fig")==0 )*/
 	else {
 	    PyErr_Format(PyExc_TypeError, "Unknown extension to export: %s", pt );
@@ -9785,6 +9786,7 @@ static PyObject *PyFFFont_Generate(PyObject *self, PyObject *args, PyObject *key
     int resolution = -1;
     char *bitmaptype="", *subfontdirectory=NULL, *namelist=NULL;
     NameList *rename_to = NULL;
+    int layer = ly_fore;		/* !!!!! */
 
     if ( !PyArg_ParseTupleAndKeywords(args, keywds, "es|sOiss", gen_keywords,
 	    "UTF-8",&filename, &bitmaptype, &flags, &resolution, &subfontdirectory, &namelist) )
@@ -9817,7 +9819,7 @@ return( NULL );
     locfilename = utf82def_copy(filename);
     free(filename);
     if ( !GenerateScript(fv->sf,locfilename,bitmaptype,iflags,resolution,subfontdirectory,
-	    NULL,fv->normal==NULL?fv->map:fv->normal,rename_to) ) {
+	    NULL,fv->normal==NULL?fv->map:fv->normal,rename_to,layer) ) {
 	PyErr_Format(PyExc_EnvironmentError, "Font generation failed");
 return( NULL );
     }

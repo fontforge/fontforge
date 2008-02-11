@@ -63,6 +63,7 @@ static int nfnt_warned = false, post_warned = false;
 #define CID_OFLibLabOffset	20
 #define CID_AppendFontLog	314
 #define CID_FontLogBit		315
+#define CID_Layers		316
 
 #define CID_OK		1001
 #define CID_PS_AFM		1002
@@ -1290,6 +1291,7 @@ static void DoSave(struct gfc_data *d,unichar_t *path) {
     char *nlname = u2utf8_copy(ti->text);
     extern NameList *force_names_when_saving;
     int notdef_pos = SFFindNotdef(d->sf,-1);
+    int layer = ly_fore;
     char *buts[3];
     buts[0] = _("_Yes");
     buts[1] = _("_No");
@@ -1312,6 +1314,9 @@ return;
 	if ( gwwv_ask(_("Notdef name"),(const char **) buts,0,1,_("The glyph at encoding %d is named \".notdef\" but contains an outline. Because it is called \".notdef\" it will not be included in the generated font. You may give it a new name using Element->Glyph Info. Do you wish to continue font generation (and omit this character)?"),d->map->backmap[i])==1 )
 return;
     }
+
+    if ( !d->family )
+	layer = (intpt) GGadgetGetListItemSelected(GWidgetGetControl(d->gw,CID_Layers))->userdata;
 
     temp = u2def_copy(path);
     oldformatstate = GGadgetGetFirstListSelectedItem(d->pstype);
@@ -1512,7 +1517,7 @@ return;
 	    }
 	}
 	if ( res!=-2 )
-	    err = _DoSave(d->sf,temp,sizes,res,d->map, wernersfdname );
+	    err = _DoSave(d->sf,temp,sizes,res,d->map, wernersfdname, layer );
 	if ( err && old_fontlog ) {
 	    free(d->sf->fontlog);
 	    d->sf->fontlog = old_fontlog_contents;
@@ -1520,7 +1525,7 @@ return;
 	    free( old_fontlog_contents );
 	free(wernersfdname);
     } else
-	err = !WriteMacFamily(temp,sfs,oldformatstate,oldbitmapstate,flags,d->map);
+	err = !WriteMacFamily(temp,sfs,oldformatstate,oldbitmapstate,flags,d->map,layer);
 
     if ( d->family && sfs!=NULL ) {
 	for ( sfl=sfs; sfl!=NULL; sfl=sfl->next ) {
@@ -1993,18 +1998,59 @@ return( NULL );
 }
 #endif
 
+static GTextInfo *SFUsableLayerNames(SplineFont *sf) {
+    int gid, layer, cnt = 1, k, known;
+    SplineFont *_sf;
+    SplineChar *sc;
+    GTextInfo *ti;
+
+    for ( layer=0; layer<sf->layer_cnt; ++layer )
+	sf->layers[layer].ticked = false;
+    sf->layers[ly_fore].ticked = true;
+    for ( layer=0; layer<sf->layer_cnt; ++layer ) if ( layer!=ly_fore ) {
+	known = -1;
+	k = 0;
+	do {
+	    _sf = sf->subfontcnt==0 ? sf : sf->subfonts[k];
+	    for ( gid = 0; gid<_sf->glyphcnt; ++gid ) if ( (sc=_sf->glyphs[gid])!=NULL ) {
+		if ( sc->layers[layer].images!=NULL ) {
+		    known = 0;
+	    break;
+		}
+		if ( sc->layers[layer].splines!=NULL )
+		    known = 1;
+	    }
+	    ++k;
+	} while ( known!=0 && k<sf->subfontcnt );
+	if ( known == 1 ) {
+	    sf->layers[layer].ticked = true;
+	    ++cnt;
+	}
+    }
+
+    ti = gcalloc(cnt+1,sizeof(GTextInfo));
+    cnt=0;
+    for ( layer=0; layer<sf->layer_cnt; ++layer ) if ( sf->layers[layer].ticked ) {
+	ti[cnt].text = (unichar_t *) sf->layers[layer].name;
+	ti[cnt].text_is_1byte = true;
+	ti[cnt].selected = layer==ly_fore;
+	ti[cnt++].userdata = (void *) (intpt) layer;
+    }
+return( ti );
+}
+
 typedef SplineFont *SFArray[48];
 
 int SFGenerateFont(SplineFont *sf,int family,EncMap *map) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[19+2*48+4], *varray[13], *hvarray[42], *famarray[3*50+1],
+    GGadgetCreateData gcd[19+2*48+4], *varray[13], *hvarray[46], *famarray[3*50+1],
 	    *harray[10], boxes[7], *oflarray[8][5], *oflibinfo[8];
     GTextInfo label[18+2*48+4];
     struct gfc_data d;
     GGadget *pulldown, *files, *tf;
-    int i, j, k, f, old, ofs, y, fc, dupfc, dupstyle;
+    int hvi, i, j, k, f, old, ofs, y, fc, dupfc, dupstyle;
     int bs = GIntGetResource(_NUM_Buttonsize), bsbigger, totwid, spacing;
     SplineFont *temp;
     int familycnt=0;
@@ -2015,7 +2061,7 @@ int SFGenerateFont(SplineFont *sf,int family,EncMap *map) {
     extern NameList *force_names_when_saving;
     char **nlnames;
     int cnt, any;
-    GTextInfo *namelistnames;
+    GTextInfo *namelistnames, *lynames;
     GBox small_blue_box;
     extern GBox _GGadget_button_box;
     char *oflpwd;
@@ -2430,6 +2476,31 @@ return( 0 );
     hvarray[10] = &gcd[k-1]; hvarray[11] = NULL;
 
     if ( !family ) {
+	/* Too annoying to check if all fonts in a family have the same set of*/
+	/*  useful layers. So only do this if not family */
+	label[k].text = (unichar_t *) _("Layer:");
+	label[k].text_is_1byte = true;
+	gcd[k].gd.label = &label[k];
+	gcd[k].gd.pos.x = 8; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+24+6;
+	gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+	gcd[k].gd.popup_msg = (unichar_t *) _("In the saved font, force all glyph names to match those in the specified namelist");
+	gcd[k++].creator = GLabelCreate;
+
+	gcd[k].gd.pos.x = gcd[k-2].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-6;
+	gcd[k].gd.pos.width = gcd[k-2].gd.pos.width;
+	gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+	gcd[k].gd.popup_msg = (unichar_t *) _("Save a font based on the specified layer");
+	gcd[k].creator = GListButtonCreate;
+	gcd[k].gd.cid = CID_Layers;
+	gcd[k++].gd.u.list = lynames = SFUsableLayerNames(sf);
+	if ( lynames[1].text==NULL ) {
+	    gcd[k-2].gd.flags &= ~gg_visible;
+	    gcd[k-1].gd.flags &= ~gg_visible;
+	}
+	hvi=12;
+	hvarray[hvi++] = &gcd[k-2]; hvarray[hvi++] = GCD_ColSpan; hvarray[hvi++] = &gcd[k-1];
+	hvarray[hvi++] = NULL;
+
 	/* Too time consuming to validate lots of fonts, and what UI would I use? */
 	/*  so only do this if not family */
 	label[k].text = (unichar_t *) _("Validate Before Saving");
@@ -2444,8 +2515,8 @@ return( 0 );
 	    gcd[k].gd.flags = (gg_enabled | gg_visible | gg_utf8_popup);
 	gcd[k].gd.popup_msg = (unichar_t *) _("Check the glyph outlines for standard errors before saving\nThis can be slow.");
 	gcd[k++].creator = GCheckBoxCreate;
-	hvarray[12] = &gcd[k-1]; hvarray[13] = GCD_ColSpan; hvarray[14] = GCD_ColSpan;
-	hvarray[15] = NULL;
+	hvarray[hvi++] = &gcd[k-1]; hvarray[hvi++] = GCD_ColSpan; hvarray[hvi++] = GCD_ColSpan;
+	hvarray[hvi++] = NULL;
 
 	label[k].text = (unichar_t *) _("Append a fontlog entry");
 	label[k].text_is_1byte = true;
@@ -2458,14 +2529,14 @@ return( 0 );
 	gcd[k].gd.cid = CID_AppendFontLog;
 	gcd[k].gd.handle_controlevent = GFD_ToggleFontLog;
 	gcd[k++].creator = GCheckBoxCreate;
-	hvarray[16] = &gcd[k-1]; hvarray[17] = hvarray[18] = GCD_ColSpan;
-	hvarray[19] = NULL;
+	hvarray[hvi++] = &gcd[k-1]; hvarray[hvi++] = GCD_ColSpan; hvarray[hvi++] = GCD_ColSpan;
+	hvarray[hvi++] = NULL;
 
 	gcd[k].gd.flags = old_fontlog ? (gg_visible | gg_enabled | gg_textarea_wrap) : (gg_enabled|gg_textarea_wrap);
 	gcd[k].gd.cid = CID_FontLogBit;
 	gcd[k++].creator = GTextAreaCreate;
-	hvarray[20] = &gcd[k-1];
-	hvarray[21] = hvarray[22] = GCD_ColSpan; hvarray[23] = NULL;
+	hvarray[hvi++] = &gcd[k-1];
+	hvarray[hvi++] = GCD_ColSpan; hvarray[hvi++] = GCD_ColSpan; hvarray[hvi++] = NULL;
 
 
 	/* And OFLib uploads of families won't work because they don't accept dfonts */
@@ -2519,14 +2590,14 @@ return( 0 );
 	boxes[6].gd.u.boxelements = oflibinfo;
 	boxes[6].creator = GHBoxCreate;
 
-	hvarray[24] = &boxes[6]; hvarray[25] = hvarray[26] = GCD_ColSpan;
-	hvarray[27] = NULL;
+	hvarray[hvi++] = &boxes[6]; hvarray[hvi++] = GCD_ColSpan; hvarray[hvi++] = GCD_ColSpan;
+	hvarray[hvi++] = NULL;
 
 	gcd[k].gd.flags = gg_enabled;
 	gcd[k].gd.cid = CID_OFLibLine1;
 	gcd[k++].creator = GLineCreate;
-	hvarray[28] = &gcd[k-1];
-	hvarray[29] = hvarray[30] = GCD_ColSpan; hvarray[31] = NULL;
+	hvarray[hvi++] = &gcd[k-1];
+	hvarray[hvi++] = GCD_ColSpan; hvarray[hvi++] = GCD_ColSpan; hvarray[hvi++] = NULL;
 
 	label[k].text = (unichar_t *) _("Username:");
 	label[k].text_is_1byte = true;
@@ -2696,14 +2767,14 @@ return( 0 );
 	boxes[5].gd.flags = gg_enabled|gg_visible;
 	boxes[5].gd.u.boxelements = oflarray[0];
 	boxes[5].creator = GHVBoxCreate;
-	hvarray[32] = &boxes[5]; hvarray[33] = hvarray[34] = GCD_ColSpan;
-	hvarray[35] = NULL;
+	hvarray[hvi++] = &boxes[5]; hvarray[hvi++] = GCD_ColSpan; hvarray[hvi++] = GCD_ColSpan;
+	hvarray[hvi++] = NULL;
 
 	gcd[k].gd.flags = gg_enabled;
 	gcd[k].gd.cid = CID_OFLibLine2;
 	gcd[k++].creator = GLineCreate;
-	hvarray[36] = &gcd[k-1];
-	hvarray[37] = hvarray[38] = GCD_ColSpan; hvarray[39] = hvarray[40] = NULL;
+	hvarray[hvi++] = &gcd[k-1];
+	hvarray[hvi++] = GCD_ColSpan; hvarray[hvi++] = GCD_ColSpan; hvarray[hvi++] = NULL; hvarray[hvi++] = NULL;
     } else
 	hvarray[12] = NULL;
 
@@ -2792,6 +2863,7 @@ return( 0 );
     
     GGadgetSetUserData(gcd[2].ret,gcd[0].ret);
     free(namelistnames);
+    free(lynames);
     free(label[9].text);
     if ( family ) {
 	for ( i=13; i<k; ++i ) if ( gcd[i].gd.popup_msg!=NULL )

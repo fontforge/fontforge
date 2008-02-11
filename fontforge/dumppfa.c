@@ -824,19 +824,23 @@ return;
 #endif
 
 void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
-	SplineChar *sc, int refs_to_splines, int pdfopers ) {
+	SplineChar *sc, int refs_to_splines, int pdfopers, int layer ) {
     RefChar *ref;
     real inverse[6];
-    int i,j, last;
+    int i,j, last, first;
     SplineSet *temp;
 
-    last = ly_fore;
-    if ( sc->parent->multilayer )
+    last = first = layer;
+    if ( layer==ly_all )
+	first = last = ly_fore;
+    if ( sc->parent->multilayer ) {
+	first = ly_fore;
 	last = sc->layer_cnt-1;
-    for ( i=ly_fore; i<=last; ++i ) {
+    }
+    for ( i=first; i<=last; ++i ) {
 	if ( sc->layers[i].splines!=NULL ) {
 	    temp = sc->layers[i].splines;
-	    if ( sc->layers[ly_fore].order2 ) temp = SplineSetsPSApprox(temp);
+	    if ( sc->layers[i].order2 ) temp = SplineSetsPSApprox(temp);
 #ifdef FONTFORGE_CONFIG_TYPE3
 	    if ( sc->parent->multilayer ) {
 		dumpstr(dumpchar,data,pdfopers ? "q " : "gsave " );
@@ -871,7 +875,7 @@ void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
 	    } else
 #endif
 		dumpsplineset(dumpchar,data,temp,pdfopers,!sc->parent->strokedfont,false);
-	    if ( sc->layers[ly_fore].order2 ) SplinePointListsFree(temp);
+	    if ( sc->layers[i].order2 ) SplinePointListsFree(temp);
 	}
 	if ( sc->layers[i].refs!=NULL ) {
 #ifdef FONTFORGE_CONFIG_TYPE3
@@ -885,7 +889,7 @@ void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
 		for ( ref = sc->layers[i].refs; ref!=NULL; ref=ref->next ) {
 		    for ( j=0; j<ref->layer_cnt; ++j ) {
 			temp = ref->layers[j].splines;
-			if ( sc->layers[ly_fore].order2 ) temp = SplineSetsPSApprox(temp);
+			if ( sc->layers[i].order2 ) temp = SplineSetsPSApprox(temp);
 #ifdef FONTFORGE_CONFIG_TYPE3
 			if ( sc->parent->multilayer ) {
 			    dumpstr(dumpchar,data,pdfopers ? "q" : "gsave " );
@@ -920,7 +924,7 @@ void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
 			} else
 #endif
 			    dumpsplineset(dumpchar,data,temp,pdfopers,!sc->parent->strokedfont,false);
-			if ( sc->layers[ly_fore].order2 ) SplinePointListsFree(temp);
+			if ( sc->layers[layer].order2 ) SplinePointListsFree(temp);
 		    }
 		}
 	    } else {
@@ -1017,7 +1021,7 @@ static void dumpproc(void (*dumpchar)(int ch,void *data), void *data, SplineChar
 	dumpstr(dumpchar,data," } if\n");
     else
 	dumpstr(dumpchar,data,"\n");
-    SC_PSDump(dumpchar,data,sc,false,false);
+    SC_PSDump(dumpchar,data,sc,false,false,ly_all);
     dumpstr(dumpchar,data,"  } bind def\n" );
 }
 
@@ -1300,7 +1304,7 @@ return( -1 );
 
 static int dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data,
 	SplineFont *sf, struct fddata *incid, int flags, enum fontformat format,
-	EncMap *map ) {
+	EncMap *map, int layer ) {
     int cnt, mi;
     real bluevalues[14], otherblues[10];
     real snapcnt[12];
@@ -1383,7 +1387,7 @@ return( false );
     if ( incid==NULL ) {
 	ff_progress_next_stage();
 	ff_progress_change_line1(_("Converting Postscript"));
-	if ( (chars = SplineFont2ChrsSubrs(sf,iscjk,subrs,flags,format))==NULL )
+	if ( (chars = SplineFont2ChrsSubrs(sf,iscjk,subrs,flags,format,layer))==NULL )
 return( false );
 	ff_progress_next_stage();
 	ff_progress_change_line1(_("Saving Postscript Font"));
@@ -1690,7 +1694,7 @@ static void dumpfontcomments(void (*dumpchar)(int ch,void *data), void *data,
 }
 
 static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data,
-	SplineFont *sf, int format, EncMap *map, SplineFont *fullsf ) {
+	SplineFont *sf, int format, EncMap *map, SplineFont *fullsf, int layer ) {
     int cnt, i;
     double fm[6];
     char *encoding[256];
@@ -1748,7 +1752,7 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
     dumpdblarray(dumpchar,data,"FontMatrix",fm,6,"readonly ",false);
     if ( sf->fontname!=NULL )
 	dumpf(dumpchar,data,"/FontName /%s def\n", sf->fontname );
-    SplineFontFindBounds(fullsf==NULL?sf:fullsf,&b);
+    SplineFontLayerFindBounds(fullsf==NULL?sf:fullsf,layer,&b);
     fm[0] = floor( b.minx);
     fm[1] = floor( b.miny);
     fm[2] = ceil( b.maxx);
@@ -1790,7 +1794,7 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
 
 	dumpstr(dumpchar,data," /Blend 3 dict dup begin\n" );
 	for ( j=0; j<mm->instance_count; ++j )
-	    SplineFontFindBounds(mm->instances[j],&mb[j]);
+	    SplineFontLayerFindBounds(mm->instances[j],layer,&mb[j]);
 	dumpstr(dumpchar,data,"  /FontBBox{" );
 	for ( k=0; k<4; ++k ) {
 	    dumpstr(dumpchar,data,"{" );
@@ -1863,18 +1867,18 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
 }
 
 static void dumpinitialascii(void (*dumpchar)(int ch,void *data), void *data,
-	SplineFont *sf, int format, EncMap *map, SplineFont *fullsf ) {
-    dumprequiredfontinfo(dumpchar,data,sf,format,map,fullsf);
+	SplineFont *sf, int format, EncMap *map, SplineFont *fullsf, int layer ) {
+    dumprequiredfontinfo(dumpchar,data,sf,format,map,fullsf,layer);
     dumpstr(dumpchar,data,"currentdict end\ncurrentfile eexec\n" );
 }
 
 static void dumpencodedstuff(void (*dumpchar)(int ch,void *data), void *data,
-	SplineFont *sf, int format, int flags, EncMap *map ) {
+	SplineFont *sf, int format, int flags, EncMap *map, int layer ) {
     struct fileencryptdata fed;
     void (*func)(int ch,void *data);
 
     func = startfileencoding(dumpchar,data,&fed,format==ff_pfb || format==ff_mmb);
-    dumpprivatestuff(func,&fed,sf,NULL,flags,format,map);
+    dumpprivatestuff(func,&fed,sf,NULL,flags,format,map,layer);
     if ( format==ff_ptype0 ) {
 	dumpstr(func,&fed, "/" );
 	dumpstr(func,&fed, sf->fontname );
@@ -1917,7 +1921,7 @@ static void mkheadercopyfile(FILE *temp,FILE *out,int headertype) {
 }
 
 static void dumptype42(FILE *out, SplineFont *sf, int format, int flags,
-	EncMap *map) {
+	EncMap *map,int layer) {
     double fm[6];
     DBounds b;
     int uniqueid;
@@ -1973,7 +1977,7 @@ static void dumptype42(FILE *out, SplineFont *sf, int format, int flags,
 	fprintf( out, "  /FontType 42 def\n" );
     fprintf( out, "  /FontMatrix [1 0 0 1 0 0] def\n" );
     fprintf( out, "  /PaintType 0 def\n" );
-    SplineFontFindBounds(sf,&b);
+    SplineFontLayerFindBounds(sf,layer,&b);
 /* The Type42 spec says that the bounding box should be scaled by the */
 /*  1/emsize (to be numbers near 1.0). The example in the spec does not do */
 /*  this and gives numbers you'd expect to see in a type1 font */
@@ -2008,7 +2012,7 @@ static void dumptype42(FILE *out, SplineFont *sf, int format, int flags,
 	fprintf( out, "  readonly def\n" );
     }
     fprintf( out, "  /sfnts [\n" );
-    _WriteType42SFNTS(out,sf,format,flags,map);
+    _WriteType42SFNTS(out,sf,format,flags,map,layer);
     fprintf( out, "  ] def\n" );
     if ( format==ff_type42 ) {
 	hasnotdef = false;
@@ -2082,7 +2086,7 @@ static void dumptype42(FILE *out, SplineFont *sf, int format, int flags,
 }
 
 static void dumpfontdict(FILE *out, SplineFont *sf, int format, int flags,
-	EncMap *map, SplineFont *fullsf ) {
+	EncMap *map, SplineFont *fullsf, int layer ) {
 
 /* a pfb header consists of 6 bytes, the first is 0200, the second is a */
 /*  binary/ascii flag where 1=>ascii, 2=>binary, 3=>eof??, the next four */
@@ -2091,10 +2095,10 @@ static void dumpfontdict(FILE *out, SplineFont *sf, int format, int flags,
     if ( format==ff_pfb || format==ff_mmb ) {
 	FILE *temp;
 	temp = tmpfile();
-	dumpinitialascii((DumpChar) fputc,temp,sf,format,map,fullsf );
+	dumpinitialascii((DumpChar) fputc,temp,sf,format,map,fullsf,layer );
 	mkheadercopyfile(temp,out,1);
 	temp = tmpfile();
-	dumpencodedstuff((DumpChar) fputc,temp,sf,format,flags,map);
+	dumpencodedstuff((DumpChar) fputc,temp,sf,format,flags,map,layer);
 	mkheadercopyfile(temp,out,2);
 	temp = tmpfile();
 	dumpfinalascii((DumpChar) fputc,temp,sf,format);
@@ -2102,13 +2106,13 @@ static void dumpfontdict(FILE *out, SplineFont *sf, int format, int flags,
 /* final header, 3=>eof??? */
 	dumpstrn((DumpChar) fputc,out,"\200\003",2);
     } else if ( format==ff_ptype3 ) {
-	dumprequiredfontinfo((DumpChar) fputc,out,sf,ff_ptype3,map,NULL);
+	dumprequiredfontinfo((DumpChar) fputc,out,sf,ff_ptype3,map,NULL,layer);
 	dumpcharprocs((DumpChar) fputc,out,sf);
     } else if ( format==ff_type42 || format==ff_type42cid ) {
-	dumptype42(out,sf,format,flags,map);
+	dumptype42(out,sf,format,flags,map,layer);
     } else {
-	dumpinitialascii((DumpChar) (fputc),out,sf,format,map,fullsf );
-	dumpencodedstuff((DumpChar) (fputc),out,sf,format,flags,map);
+	dumpinitialascii((DumpChar) (fputc),out,sf,format,map,fullsf,layer );
+	dumpencodedstuff((DumpChar) (fputc),out,sf,format,flags,map,layer);
 	dumpfinalascii((DumpChar) (fputc),out,sf,format);
     }
 }
@@ -2259,7 +2263,7 @@ static void dump_index(FILE *binary,int size,int val) {
 }
 
 static FILE *gencidbinarydata(SplineFont *cidmaster,struct cidbytes *cidbytes,
-	int flags,EncMap *map) {
+	int flags,EncMap *map,int layer) {
     int i,j, leniv, subrtot;
     SplineFont *sf;
     struct fddata *fd;
@@ -2293,7 +2297,7 @@ return( NULL );
 	    fd->leniv = 4;
     }
     ff_progress_change_line1(_("Converting Postscript"));
-    if ( (chars = CID2ChrsSubrs(cidmaster,cidbytes,flags))==NULL )
+    if ( (chars = CID2ChrsSubrs(cidmaster,cidbytes,flags,layer))==NULL )
 return( NULL );
     ff_progress_next_stage();
     ff_progress_change_line1(_("Saving Postscript Font"));
@@ -2387,7 +2391,7 @@ return( NULL );
 return( binary );
 }
 
-static int dumpcidstuff(FILE *out,SplineFont *cidmaster,int flags,EncMap *map) {
+static int dumpcidstuff(FILE *out,SplineFont *cidmaster,int flags,EncMap *map,int layer) {
     int i;
     DBounds res;
     FILE *binary;
@@ -2431,7 +2435,7 @@ static int dumpcidstuff(FILE *out,SplineFont *cidmaster,int flags,EncMap *map) {
 
     dumpfontinfo((DumpChar) fputc,out,cidmaster,ff_cid);
 
-    if ((binary = gencidbinarydata(cidmaster,&cidbytes,flags,map))==NULL )
+    if ((binary = gencidbinarydata(cidmaster,&cidbytes,flags,map,layer))==NULL )
 return( 0 );
 
     fprintf( out, "\n/CIDMapOffset %d def\n", cidbytes.cidmapoffset );
@@ -2458,7 +2462,7 @@ return( 0 );
 	if ( sf->strokedfont )
 	    fprintf( out, "/StrokeWidth %g def\n", (double) sf->strokewidth );
 	fprintf( out, "\n  %%ADOBeginPrivateDict\n" );
-	dumpprivatestuff((DumpChar) fputc,out,sf,&cidbytes.fds[i],flags,ff_cid,map);
+	dumpprivatestuff((DumpChar) fputc,out,sf,&cidbytes.fds[i],flags,ff_cid,map,layer);
 	fprintf( out, "\n  %%ADOEndPrivateDict\n" );
 	fprintf( out, "  currentdict end\n%%ADOEndFontDict\n put\n\n" );
     }
@@ -2482,7 +2486,7 @@ return( !cidbytes.errors );
 }
 
 int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flags,
-	EncMap *map, SplineFont *fullsf) {
+	EncMap *map, SplineFont *fullsf,int layer) {
     char *oldloc;
     int err = false;
     extern const char **othersubrs[];
@@ -2497,9 +2501,9 @@ int _WritePSFont(FILE *out,SplineFont *sf,enum fontformat format,int flags,
     if ( (format==ff_mma || format==ff_mmb) && sf->mm!=NULL )
 	sf = sf->mm->normal;
     if ( format==ff_cid )
-	err = !dumpcidstuff(out,sf->subfontcnt>0?sf:sf->cidmaster,flags,map);
+	err = !dumpcidstuff(out,sf->subfontcnt>0?sf:sf->cidmaster,flags,map,layer);
     else {
-	dumpfontdict(out,sf,format,flags,map,fullsf);
+	dumpfontdict(out,sf,format,flags,map,fullsf,layer);
 	if ( format==ff_ptype0 )
 	    dumptype0stuff(out,sf,map);
     }
@@ -2525,13 +2529,13 @@ return( true );
 }
 
 int WritePSFont(char *fontname,SplineFont *sf,enum fontformat format,int flags,
-	EncMap *map,SplineFont *fullsf) {
+	EncMap *map,SplineFont *fullsf,int layer) {
     FILE *out;
     int ret;
 
     if (( out=fopen(fontname,"wb"))==NULL )
 return( 0 );
-    ret = _WritePSFont(out,sf,format,flags,map,fullsf);
+    ret = _WritePSFont(out,sf,format,flags,map,fullsf,layer);
     if ( fclose(out)==-1 )
 	ret = 0;
 return( ret );
@@ -2576,7 +2580,7 @@ int PSBitmapDump(char *filename,BDFFont *font, EncMap *map) {
     if ( file==NULL )
 	LogError( _("Can't open %s\n"), filename );
     else {
-	dumprequiredfontinfo((DumpChar) fputc, file, sf, ff_ptype3, map,NULL);
+	dumprequiredfontinfo((DumpChar) fputc, file, sf, ff_ptype3, map,NULL,ly_fore);
 
 	cnt = 0;
 	notdefpos = SFFindNotdef(sf,-2);

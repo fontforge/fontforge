@@ -1435,7 +1435,7 @@ int SCValidate(SplineChar *sc, int force) {
 
 	rd = 0;
 	for ( r=sc->layers[ly_fore].refs, cnt=0; r!=NULL; r=r->next, ++cnt ) {
-	    rdtest = RefDepth(r);
+	    rdtest = RefDepth(r,ly_fore);
 	    if ( rdtest>rd )
 		rd = rdtest;
 	}

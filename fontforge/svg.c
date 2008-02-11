@@ -52,7 +52,7 @@ static void latin1ToUtf8Out(FILE *file,char *str) {
     }
 }
 
-static int svg_outfontheader(FILE *file, SplineFont *sf) {
+static int svg_outfontheader(FILE *file, SplineFont *sf,int layer) {
     int defwid = SFFigureDefWidth(sf,NULL);
     struct pfminfo info;
     static const char *condexp[] = { "squinchy", "ultra-condensed", "extra-condensed",
@@ -66,7 +66,7 @@ static int svg_outfontheader(FILE *file, SplineFont *sf) {
     const char *author = GetAuthor();
 
     SFDefaultOS2Info(&info,sf,sf->fontname);
-    SplineFontFindBounds(sf,&bb);
+    SplineFontLayerFindBounds(sf,layer,&bb);
     QuickBlues(sf,&bd);
 
     fprintf( file, "<?xml version=\"1.0\" standalone=\"no\"?>\n" );
@@ -301,13 +301,13 @@ return( SplinePointListTransform(SplinePointListCopy(
 }
 #endif
 
-static int svg_sc_any(SplineChar *sc) {
+static int svg_sc_any(SplineChar *sc,int layer) {
     int i,j;
     int any;
     RefChar *ref;
     int first, last;
 
-    first = last = ly_fore;
+    first = last = layer;
     if ( sc->parent->multilayer )
 	last = sc->layer_cnt-1;
     any = false;
@@ -394,7 +394,7 @@ static void DataURI_ImageDump(FILE *file,struct gimage *img) {
 }
 #endif
 
-static void svg_scpathdump(FILE *file, SplineChar *sc,char *endpath) {
+static void svg_scpathdump(FILE *file, SplineChar *sc,char *endpath,int layer) {
     RefChar *ref;
     int lineout;
 #ifdef FONTFORGE_CONFIG_TYPE3
@@ -403,7 +403,7 @@ static void svg_scpathdump(FILE *file, SplineChar *sc,char *endpath) {
     ImageList *images;
 #endif
 
-    if ( !svg_sc_any(sc) ) {
+    if ( !svg_sc_any(sc,layer) ) {
 	/* I think a space is represented by leaving out the d (path) entirely*/
 	/*  rather than having d="" */
 	fputs(" />\n",file);
@@ -411,8 +411,8 @@ static void svg_scpathdump(FILE *file, SplineChar *sc,char *endpath) {
 	/* Can't be done with a path, requires nested elements (I think) */
 	fprintf(file,">\n  <g stroke=\"currentColor\" stroke-width=\"%g\" fill=\"none\">\n", (double) sc->parent->strokewidth );
 	fprintf( file,"    <path d=\"");
-	lineout = svg_pathdump(file,sc->layers[ly_fore].splines,3,false);
-	for ( ref= sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
+	lineout = svg_pathdump(file,sc->layers[layer].splines,3,false);
+	for ( ref= sc->layers[layer].refs; ref!=NULL; ref=ref->next )
 	    lineout = svg_pathdump(file,ref->layers[0].splines,lineout,false);
 	if ( lineout>=255-4 ) putc('\n',file );
 	putc('"',file);
@@ -420,8 +420,8 @@ static void svg_scpathdump(FILE *file, SplineChar *sc,char *endpath) {
 	fputs(endpath,file);
     } else if ( !sc->parent->multilayer ) {
 	fprintf( file,"d=\"");
-	lineout = svg_pathdump(file,sc->layers[ly_fore].splines,3,true);
-	for ( ref= sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
+	lineout = svg_pathdump(file,sc->layers[layer].splines,3,true);
+	for ( ref= sc->layers[layer].refs; ref!=NULL; ref=ref->next )
 	    lineout = svg_pathdump(file,ref->layers[0].splines,lineout,true);
 	if ( lineout>=255-4 ) putc('\n',file );
 	putc('"',file);
@@ -537,7 +537,7 @@ return( SFGetChar(sc->parent,-1,pst->u.subs.variant));
 return( NULL );
 }
 
-static void svg_scdump(FILE *file, SplineChar *sc,int defwid, int encuni, int vs) {
+static void svg_scdump(FILE *file, SplineChar *sc,int defwid, int encuni, int vs,int layer) {
     PST *best=NULL;
     const unichar_t *alt;
     int32 univals[50];
@@ -604,11 +604,11 @@ static void svg_scdump(FILE *file, SplineChar *sc,int defwid, int encuni, int vs
 	    fprintf( file,"arabic-form=\"isolated\" ");
     }
     putc('\n',file);
-    svg_scpathdump(file,sc," </glyph>\n");
+    svg_scpathdump(file,sc," </glyph>\n",layer);
     sc->ticked = true;
 }
 
-static void svg_notdefdump(FILE *file, SplineFont *sf,int defwid) {
+static void svg_notdefdump(FILE *file, SplineFont *sf,int defwid,int layer) {
     int notdefpos;
 
     notdefpos = SFFindNotdef(sf,-2);
@@ -622,7 +622,7 @@ static void svg_notdefdump(FILE *file, SplineFont *sf,int defwid) {
 	if ( sc->parent->hasvmetrics && sc->vwidth!=sc->parent->ascent+sc->parent->descent )
 	    fprintf( file, "vert-adv-y=\"%d\" ", sc->vwidth );
 	putc('\n',file);
-	svg_scpathdump(file,sc," </glyph>\n");
+	svg_scpathdump(file,sc," </glyph>\n",layer);
     } else {
 	/* We'll let both the horiz and vert advances default to the values */
 	/*  specified by the font, and I think a space is done by omitting */
@@ -717,7 +717,7 @@ return( uni==-1 || uni>=0x10000 ||
 		 isarabisolated(uni)));
 }
 
-static void svg_sfdump(FILE *file,SplineFont *sf) {
+static void svg_sfdump(FILE *file,SplineFont *sf,int layer) {
     int defwid, i, formeduni;
     char *oldloc;
     struct altuni *altuni;
@@ -727,18 +727,18 @@ static void svg_sfdump(FILE *file,SplineFont *sf) {
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
 	sf->glyphs[i]->ticked = false;
 
-    defwid = svg_outfontheader(file,sf);
-    svg_notdefdump(file,sf,defwid);
+    defwid = svg_outfontheader(file,sf,layer);
+    svg_notdefdump(file,sf,defwid,layer);
 
     /* Ligatures must be output before their initial components */
     for ( i=0; i<sf->glyphcnt; ++i ) {
 	if ( SCWorthOutputting(sf->glyphs[i]) ) {
 	    if ( HasLigature(sf->glyphs[i]))
-		svg_scdump(file, sf->glyphs[i],defwid,sf->glyphs[i]->unicodeenc,-1);
+		svg_scdump(file, sf->glyphs[i],defwid,sf->glyphs[i]->unicodeenc,-1,layer);
 	    /* Variation selectors should probably be treated as ligatures */
 	    for ( altuni = sf->glyphs[i]->altuni; altuni!=NULL; altuni = altuni->next )
 		if ( altuni->vs!=-1 && altuni->fid==0 )
-		    svg_scdump(file, sf->glyphs[i],defwid,altuni->unienc,altuni->vs);
+		    svg_scdump(file, sf->glyphs[i],defwid,altuni->unienc,altuni->vs,layer);
 	}
     }
     /* And formed arabic before unformed */
@@ -746,7 +746,7 @@ static void svg_sfdump(FILE *file,SplineFont *sf) {
 	SplineChar *sc = sf->glyphs[i];
 	if ( SCWorthOutputting(sc) && !sc->ticked ) {
 	    if ( (formeduni = AnyArabicForm(sc))!=-1 )
-		svg_scdump(file, sc,defwid,formeduni,-1);
+		svg_scdump(file, sc,defwid,formeduni,-1,layer);
 	    else if ( sc->unicodeenc>=0x0600 && sc->unicodeenc<=0x06ff ) {
 		/* The conventions now (as I understand them) suggest that */
 		/*  fonts not use the unicode encodings for formed arabic */
@@ -756,29 +756,29 @@ static void svg_sfdump(FILE *file,SplineFont *sf) {
 		formed = SCHasSubs(sc,CHR('i','n','i','t'));
 		if ( SCWorthOutputting(formed) && formed->unicodeenc==-1 &&
 			!formed->ticked && ArabicForms[arab_off].initial!=0 )
-		    svg_scdump(file,formed,defwid,ArabicForms[arab_off].initial,-1);
+		    svg_scdump(file,formed,defwid,ArabicForms[arab_off].initial,-1,layer);
 		formed = SCHasSubs(sc,CHR('m','e','d','i'));
 		if ( SCWorthOutputting(formed) && formed->unicodeenc==-1 &&
 			!formed->ticked && ArabicForms[arab_off].medial!=0 )
-		    svg_scdump(file,formed,defwid,ArabicForms[arab_off].medial,-1);
+		    svg_scdump(file,formed,defwid,ArabicForms[arab_off].medial,-1,layer);
 		formed = SCHasSubs(sc,CHR('f','i','n','a'));
 		if ( SCWorthOutputting(formed) && formed->unicodeenc==-1 &&
 			!formed->ticked && ArabicForms[arab_off].final!=0 )
-		    svg_scdump(file,formed,defwid,ArabicForms[arab_off].final,-1);
+		    svg_scdump(file,formed,defwid,ArabicForms[arab_off].final,-1,layer);
 		formed = SCHasSubs(sc,CHR('i','s','o','l'));
 		if ( SCWorthOutputting(formed) && formed->unicodeenc==-1 &&
 			!formed->ticked && ArabicForms[arab_off].isolated!=0 )
-		    svg_scdump(file,formed,defwid,ArabicForms[arab_off].isolated,-1);
+		    svg_scdump(file,formed,defwid,ArabicForms[arab_off].isolated,-1,layer);
 	    }
 	}
     }
     for ( i=0; i<sf->glyphcnt; ++i ) {
 	if ( SCWorthOutputting(sf->glyphs[i]) && !sf->glyphs[i]->ticked ) {
 	    if ( UnformedUni(sf->glyphs[i]->unicodeenc) )
-		svg_scdump(file, sf->glyphs[i],defwid,sf->glyphs[i]->unicodeenc,-1);
+		svg_scdump(file, sf->glyphs[i],defwid,sf->glyphs[i]->unicodeenc,-1,layer);
 	    for ( altuni = sf->glyphs[i]->altuni; altuni!=NULL; altuni = altuni->next )
 		if ( altuni->vs==-1 && altuni->fid==0 )
-		    svg_scdump(file, sf->glyphs[i],defwid,altuni->unienc,altuni->vs);
+		    svg_scdump(file, sf->glyphs[i],defwid,altuni->unienc,altuni->vs,layer);
 	}
     }
     svg_dumpkerns(file,sf,false);
@@ -788,13 +788,13 @@ static void svg_sfdump(FILE *file,SplineFont *sf) {
 }
 
 int WriteSVGFont(char *fontname,SplineFont *sf,enum fontformat format,int flags,
-	EncMap *map) {
+	EncMap *map,int layer) {
     FILE *file;
     int ret;
 
     if (( file=fopen(fontname,"w+"))==NULL )
 return( 0 );
-    svg_sfdump(file,sf);
+    svg_sfdump(file,sf,layer);
     ret = true;
     if ( ferror(file))
 	ret = false;
@@ -803,12 +803,12 @@ return( 0 );
 return( ret );
 }
 
-int _ExportSVG(FILE *svg,SplineChar *sc) {
+int _ExportSVG(FILE *svg,SplineChar *sc,int layer) {
     char *oldloc, *end;
     int em_size;
     DBounds b;
 
-    SplineCharFindBounds(sc,&b);
+    SplineCharLayerFindBounds(sc,layer,&b);
     em_size = sc->parent->ascent+sc->parent->descent;
     if ( b.minx>0 ) b.minx=0;
     if ( b.maxx<em_size ) b.maxx = em_size;
@@ -831,14 +831,14 @@ int _ExportSVG(FILE *svg,SplineChar *sc) {
 	    sc->width, sc->width );
     fprintf(svg, "   </g>\n\n" );
 #endif
-    if ( sc->parent->multilayer || sc->parent->strokedfont || !svg_sc_any(sc)) {
+    if ( sc->parent->multilayer || sc->parent->strokedfont || !svg_sc_any(sc,layer)) {
 	fprintf(svg, "   <g ");
 	end = "   </g>\n";
     } else {
 	fprintf(svg, "   <path fill=\"currentColor\"\n");
 	end = "   </path>\n";
     }
-    svg_scpathdump(svg,sc,end);
+    svg_scpathdump(svg,sc,end,layer);
     fprintf(svg, "  </g>\n\n" );
     fprintf(svg, "</svg>\n" );
 

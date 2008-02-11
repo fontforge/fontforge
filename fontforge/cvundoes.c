@@ -1208,7 +1208,7 @@ return( copy(""));
     dummy.layers[ly_fore].order2 = cur->was_order2;
     /* Don't bother to generate a preview here, that can take too long and */
     /*  cause the paster to time out */
-    _ExportSVG(svg,&dummy);
+    _ExportSVG(svg,&dummy,ly_fore);
     dummy.parent->layers[ly_fore].order2 = old_order2;
 
     for ( lcnt = ly_fore; lcnt<dummy.layer_cnt; ++lcnt )
@@ -1307,7 +1307,7 @@ return( copy(""));
     dummy.layers[ly_fore].order2 = cur->was_order2;
     /* Don't bother to generate a preview here, that can take too long and */
     /*  cause the paster to time out */
-    _ExportEPS(eps,&dummy,false);
+    _ExportEPS(eps,&dummy,false,ly_fore);
     dummy.parent->layers[ly_fore].order2 = old_order2;
 
     for ( lcnt = ly_fore; lcnt<dummy.layer_cnt; ++lcnt )

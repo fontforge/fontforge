@@ -533,6 +533,7 @@ struct glyphinfo {
     int32 *pointcounts;
     int *bygid;			/* glyph list */
     int gcnt;
+    int layer;
 };
 
 struct vorg {

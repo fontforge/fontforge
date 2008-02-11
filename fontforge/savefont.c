@@ -517,7 +517,7 @@ return( mapping );
 }
 
 static int SaveSubFont(SplineFont *sf,char *newname,int32 *sizes,int res,
-	int32 *mapping, int subfont, char **names,EncMap *map) {
+	int32 *mapping, int subfont, char **names,EncMap *map,int layer) {
     SplineFont temp;
     SplineChar *chars[256], **newchars;
     SplineFont *_sf;
@@ -645,7 +645,7 @@ return( 0 );
 	strcat(pt,"]");
     }
 
-    err = !WritePSFont(filename,&temp,subtype,old_ps_flags,&encmap,sf);
+    err = !WritePSFont(filename,&temp,subtype,old_ps_flags,&encmap,sf,layer);
     if ( err )
 	ff_post_error(_("Save Failed"),_("Save Failed"));
     if ( !err && (old_ps_flags&ps_flag_afm) && ff_progress_next_stage()) {
@@ -688,7 +688,7 @@ return( err );
 
 /* ttf2tfm supports multiple sfd files. I do not. */
 static int WriteMultiplePSFont(SplineFont *sf,char *newname,int32 *sizes,
-	int res, char *wernerfilename,EncMap *map) {
+	int res, char *wernerfilename,EncMap *map, int layer) {
     int err=0, tofree=false, max, filecnt;
     int32 *mapping;
     char *path;
@@ -727,7 +727,7 @@ return( 1 );
     free(path);
 
     for ( i=0; i<=max && !err; ++i )
-	err = SaveSubFont(sf,newname,sizes,res,mapping,i,names,map);
+	err = SaveSubFont(sf,newname,sizes,res,mapping,i,names,map,layer);
 
     free(mapping);
     for ( i=0; names[i]!=NULL; ++i ) free(names[i]);
@@ -764,7 +764,7 @@ return( false );
 #endif
 
 int _DoSave(SplineFont *sf,char *newname,int32 *sizes,int res,
-	EncMap *map, char *subfontdefinition) {
+	EncMap *map, char *subfontdefinition,int layer) {
     char *path;
     int err=false;
     int iscid = oldformatstate==ff_cid || oldformatstate==ff_cffcid ||
@@ -772,7 +772,7 @@ int _DoSave(SplineFont *sf,char *newname,int32 *sizes,int res,
     int flags = 0;
 
     if ( oldformatstate == ff_multiple )
-return( WriteMultiplePSFont(sf,newname,sizes,res,subfontdefinition,map));
+return( WriteMultiplePSFont(sf,newname,sizes,res,subfontdefinition,map,layer));
 
     if ( oldformatstate<=ff_cffcid )
 	flags = old_ps_flags;
@@ -812,25 +812,25 @@ return( WriteMultiplePSFont(sf,newname,sizes,res,subfontdefinition,map));
 	    if ( sf->multilayer && CheckIfTransparent(sf))
 return( true );
 #endif
-	    oerr = !WritePSFont(newname,sf,oldformatstate,flags,map,NULL);
+	    oerr = !WritePSFont(newname,sf,oldformatstate,flags,map,NULL,layer);
 	  break;
 	  case ff_ttf: case ff_ttfsym: case ff_otf: case ff_otfcid:
 	  case ff_cff: case ff_cffcid:
 	    oerr = !WriteTTFFont(newname,sf,oldformatstate,sizes,bmap,
-		flags,map);
+		flags,map,layer);
 	  break;
 	  case ff_pfbmacbin:
-	    oerr = !WriteMacPSFont(newname,sf,oldformatstate,flags,map);
+	    oerr = !WriteMacPSFont(newname,sf,oldformatstate,flags,map,layer);
 	  break;
 	  case ff_ttfmacbin: case ff_ttfdfont: case ff_otfdfont: case ff_otfciddfont:
 	    oerr = !WriteMacTTFFont(newname,sf,oldformatstate,sizes,
-		    bmap,flags,map);
+		    bmap,flags,map,layer);
 	  break;
 	  case ff_svg:
-	    oerr = !WriteSVGFont(newname,sf,oldformatstate,flags,map);
+	    oerr = !WriteSVGFont(newname,sf,oldformatstate,flags,map,layer);
 	  break;
 	  case ff_ufo:
-	    oerr = !WriteUFOFont(newname,sf,oldformatstate,flags,map);
+	    oerr = !WriteUFOFont(newname,sf,oldformatstate,flags,map,layer);
 	  break;
 	}
 	if ( oerr ) {
@@ -879,7 +879,7 @@ return( true );
 	    strcpy(temp,newname);
 	    strcat(temp,oldbitmapstate==bf_otb ? "otb" : "ttf" );
 	}
-	if ( !WriteTTFFont(temp,sf,ff_none,sizes,oldbitmapstate,flags,map) )
+	if ( !WriteTTFFont(temp,sf,ff_none,sizes,oldbitmapstate,flags,map,layer) )
 	    err = true;
 	if ( temp!=newname )
 	    free(temp);
@@ -890,7 +890,7 @@ return( true );
 	    strcpy(temp,newname);
 	    strcat(temp,"dfont");
 	}
-	if ( !WriteMacTTFFont(temp,sf,ff_none,sizes,oldbitmapstate,flags,map) )
+	if ( !WriteMacTTFFont(temp,sf,ff_none,sizes,oldbitmapstate,flags,map,layer) )
 	    err = true;
 	if ( temp!=newname )
 	    free(temp);
@@ -984,7 +984,7 @@ return( sizes );
 
 int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	int res, char *subfontdefinition, struct sflist *sfs,EncMap *map,
-	NameList *rename_to) {
+	NameList *rename_to,int layer) {
     int i;
     static char *bitmaps[] = {"bdf", "ttf", "dfont", "ttf", "otb", "bin", "fon", "fnt", "pdb", "pt3", NULL };
     int32 *sizes=NULL;
@@ -1228,9 +1228,9 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	    flags = old_ttf_flags;
 	else
 	    flags = old_otf_flags;
-	ret = WriteMacFamily(filename,sfs,oldformatstate,oldbitmapstate,flags,map);
+	ret = WriteMacFamily(filename,sfs,oldformatstate,oldbitmapstate,flags,map,layer);
     } else {
-	ret = !_DoSave(sf,filename,sizes,res,map,subfontdefinition);
+	ret = !_DoSave(sf,filename,sizes,res,map,subfontdefinition,layer);
     }
     free(freeme);
 

@@ -210,6 +210,7 @@ struct gfc_data {
     GGadget *format;
     SplineChar *sc;
     BDFChar *bc;
+    int layer;
 };
 
 
@@ -247,22 +248,22 @@ static void DoExport(struct gfc_data *d,unichar_t *path) {
     if ( d->bc!=NULL )
 	good = BCExportXBM(temp,d->bc,format);
     else if ( format==0 )
-	good = ExportEPS(temp,d->sc);
+	good = ExportEPS(temp,d->sc,d->layer);
     else if ( format==1 )
-	good = ExportFig(temp,d->sc);
+	good = ExportFig(temp,d->sc,d->layer);
     else if ( format==2 )
-	good = ExportSVG(temp,d->sc);
+	good = ExportSVG(temp,d->sc,d->layer);
     else if ( format==3 )
-	good = ExportGlif(temp,d->sc);
+	good = ExportGlif(temp,d->sc,d->layer);
     else if ( format==4 )
-	good = ExportPDF(temp,d->sc);
+	good = ExportPDF(temp,d->sc,d->layer);
     else if ( format==5 )
-	good = ExportPlate(temp,d->sc);
+	good = ExportPlate(temp,d->sc,d->layer);
     else if ( format<fv_pythonbase )
 	good = ExportXBM(temp,d->sc,format-5);
 #ifndef _NO_PYTHON
     else if ( format>=fv_pythonbase )
-	PyFF_SCExport(d->sc,format-fv_pythonbase,temp);
+	PyFF_SCExport(d->sc,format-fv_pythonbase,temp,d->layer);
 #endif
     if ( !good )
 	ff_post_error(_("Save Failed"),_("Save Failed"));
@@ -440,7 +441,7 @@ return( false );
 return( open_cnt<=1 );
 }
 
-static int _Export(SplineChar *sc,BDFChar *bc) {
+static int _Export(SplineChar *sc,BDFChar *bc,int layer) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
@@ -615,6 +616,7 @@ static int _Export(SplineChar *sc,BDFChar *bc) {
     memset(&d,'\0',sizeof(d));
     d.sc = sc;
     d.bc = bc;
+    d.layer = layer;
     d.gfc = gcd[0].ret;
     d.format = gcd[6].ret;
 
@@ -627,9 +629,9 @@ return(d.ret);
 }
 
 int CVExport(CharView *cv) {
-return( _Export(cv->b.sc,NULL));
+return( _Export(cv->b.sc,NULL,CVLayer((CharViewBase *)cv)));
 }
 
 int BVExport(BitmapView *bv) {
-return( _Export(bv->bc->sc,bv->bc));
+return( _Export(bv->bc->sc,bv->bc,ly_fore));
 }

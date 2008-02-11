@@ -208,9 +208,9 @@ static void DumpPyObject( FILE *file, PyObject *value ) {
 /* ************************************************************************** */
 /* ****************************   GLIF Output    **************************** */
 /* ************************************************************************** */
-static int _GlifDump(FILE *glif,SplineChar *sc) {
+static int _GlifDump(FILE *glif,SplineChar *sc,int layer) {
     struct altuni *altuni;
-    int isquad = sc->layers[ly_fore].order2;
+    int isquad = sc->layers[layer].order2;
     SplineSet *spl;
     SplinePoint *sp;
     RefChar *ref;
@@ -232,9 +232,9 @@ return( false );
 	if ( altuni->vs==-1 && altuni->fid==0 )
 	    fprintf( glif, "  <unicode hex=\"%04x\"/>\n", altuni->unienc );
 
-    if ( sc->layers[ly_fore].refs!=NULL || sc->layers[ly_fore].splines!=NULL ) {
+    if ( sc->layers[layer].refs!=NULL || sc->layers[layer].splines!=NULL ) {
 	fprintf( glif, "  <outline>\n" );
-	for ( ref = sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) if ( SCWorthOutputting(ref->sc)) {
+	for ( ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next ) if ( SCWorthOutputting(ref->sc)) {
 	    fprintf( glif, "    <component base=\"%s\"", ref->sc->name );
 	    if ( ref->transform[0]!=1 )
 		fprintf( glif, " xScale=\"%g\"", ref->transform[0] );
@@ -250,7 +250,7 @@ return( false );
 		fprintf( glif, " yOffset=\"%g\"", ref->transform[5] );
 	    fprintf( glif, "/>\n" );
 	}
-	for ( spl=sc->layers[ly_fore].splines; spl!=NULL; spl=spl->next ) {
+	for ( spl=sc->layers[layer].splines; spl!=NULL; spl=spl->next ) {
 	    fprintf( glif, "    <contour>\n" );
 	    for ( sp=spl->first; sp!=NULL; ) {
 		/* Undocumented fact: If a contour contains a series of off-curve points with no on-curve then treat as quadratic even if no qcurve */
@@ -286,16 +286,16 @@ return( false );
 return( !err );
 }
 
-static int GlifDump(char *glyphdir,char *gfname,SplineChar *sc) {
+static int GlifDump(char *glyphdir,char *gfname,SplineChar *sc,int layer) {
     char *gn = buildname(glyphdir,gfname);
     FILE *glif = fopen(gn,"w");
-    int ret = _GlifDump(glif,sc);
+    int ret = _GlifDump(glif,sc,layer);
     free(gn);
 return( ret );
 }
 
-int _ExportGlif(FILE *glif,SplineChar *sc) {
-return( _GlifDump(glif,sc));
+int _ExportGlif(FILE *glif,SplineChar *sc,int layer) {
+return( _GlifDump(glif,sc,layer));
 }
 
 /* ************************************************************************** */
@@ -374,7 +374,7 @@ return( false );
 return( PListOutputTrailer(plist));
 }
 
-static int UFOOutputFontInfo(char *basedir,SplineFont *sf) {
+static int UFOOutputFontInfo(char *basedir,SplineFont *sf, int layer) {
     FILE *plist = PListCreate( basedir, "fontinfo.plist" );
 
     if ( plist==NULL )
@@ -390,7 +390,7 @@ return( false );
     PListOutputInteger(plist,"ascender",sf->ascent);
     PListOutputInteger(plist,"descender",-sf->descent);
     PListOutputReal(plist,"italicAngle",sf->italicangle);
-    PListOutputString(plist,"curveType",sf->layers[ly_fore].order2 ? "Quadratic" : "Cubic");
+    PListOutputString(plist,"curveType",sf->layers[layer].order2 ? "Quadratic" : "Cubic");
 return( PListOutputTrailer(plist));
 }
 
@@ -466,7 +466,7 @@ return( true );
 }
 
 int WriteUFOFont(char *basedir,SplineFont *sf,enum fontformat ff,int flags,
-	EncMap *map) {
+	EncMap *map,int layer) {
     char *foo = galloc( strlen(basedir) +20 ), *glyphdir, *gfname;
     int err;
     FILE *plist;
@@ -482,7 +482,7 @@ int WriteUFOFont(char *basedir,SplineFont *sf,enum fontformat ff,int flags,
     mkdir( basedir, 0755 );
 
     err  = !UFOOutputMetaInfo(basedir,sf);
-    err |= !UFOOutputFontInfo(basedir,sf);
+    err |= !UFOOutputFontInfo(basedir,sf,layer);
     err |= !UFOOutputGroups(basedir,sf);
     err |= !UFOOutputKerning(basedir,sf);
     err |= !UFOOutputVKerning(basedir,sf);
@@ -517,7 +517,7 @@ return( false );
 	    strcpy(gfname,sc->name);
 	strcat(gfname,".glif");
 	PListOutputString(plist,sc->name,gfname);
-	err |= !GlifDump(glyphdir,gfname,sc);
+	err |= !GlifDump(glyphdir,gfname,sc,layer);
 	free(gfname);
     }
     free( glyphdir );

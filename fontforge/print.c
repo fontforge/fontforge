@@ -422,7 +422,7 @@ static int pdf_charproc(PI *pi, SplineChar *sc) {
     } else
 	fprintf( pi->out, "%d 0 d0\n", sc->width );
 
-    SC_PSDump((void (*)(int,void *)) fputc,pi->out,sc,true,true);
+    SC_PSDump((void (*)(int,void *)) fputc,pi->out,sc,true,true,ly_fore);
 
     streamlength = ftell(pi->out)-streamstart;
     fprintf( pi->out, "\nendstream\n" );
@@ -1039,7 +1039,7 @@ return(false);
     } else if ( pi->printtype==pt_pdf && sfbit->iscid ) {
 	if ( !_WriteTTFFont(sfbit->fontfile,sf,
 		sfbit->istype42cid?ff_type42cid:ff_cffcid,NULL,bf_none,
-		ps_flag_nocffsugar,map))
+		ps_flag_nocffsugar,map,ly_fore))
 	    error = true;
     } else if ( !_WritePSFont(sfbit->fontfile,sf,
 		pi->printtype==pt_pdf ? ff_pfb :
@@ -1048,7 +1048,7 @@ return(false);
 		sfbit->istype42cid?ff_type42cid:
 		sfbit->iscid?ff_cid:
 		sfbit->twobyte?ff_ptype0:
-		ff_pfa,ps_flag_identitycidmap,map,NULL))
+		ff_pfa,ps_flag_identitycidmap,map,NULL,ly_fore))
 	error = true;
 
     ff_progress_end_indicator();
@@ -1366,7 +1366,7 @@ static void SCPrintPage(PI *pi,SplineChar *sc) {
 	fprintf(pi->out,"grestore\n" );
 	fprintf(pi->out,"gsave\n %g %g translate\n", (double) pi->xoff, (double) pi->yoff );
 	fprintf(pi->out," %g %g scale\n", (double) pi->scale, (double) pi->scale );
-	SC_PSDump((void (*)(int,void *)) fputc,pi->out,sc,true,false);
+	SC_PSDump((void (*)(int,void *)) fputc,pi->out,sc,true,false,ly_fore);
 	if ( sc->parent->multilayer )
 	    /* All done */;
 	else if ( sc->parent->strokedfont )
@@ -1384,7 +1384,7 @@ static void SCPrintPage(PI *pi,SplineChar *sc) {
 	fprintf(pi->out,"Q\n" );
 	fprintf(pi->out,"q \n %g 0 0 %g %g %g cm\n", (double) pi->scale, (double) pi->scale,
 		(double) pi->xoff, (double) pi->yoff );
-	SC_PSDump((void (*)(int,void *)) fputc,pi->out,sc,true,true);
+	SC_PSDump((void (*)(int,void *)) fputc,pi->out,sc,true,true,ly_fore);
 	if ( sc->parent->multilayer )
 	    /* All done */;
 	else if ( sc->parent->strokedfont )
