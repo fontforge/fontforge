@@ -187,8 +187,12 @@ return;
     for ( j=0; chars[j]!=NULL; ++j )
 	for ( i=0; chars[j][i]!=NULL; ++i )
 	    chars[j][i] = _(chars[j][i]);
-    for ( i=0; math_constants_descriptor[i].ui_name!=NULL; ++i )
+    for ( i=0; math_constants_descriptor[i].ui_name!=NULL; ++i ) {
 	math_constants_descriptor[i].ui_name=_(math_constants_descriptor[i].ui_name);
+	if ( math_constants_descriptor[i].message != NULL )
+	    math_constants_descriptor[i].message=_(math_constants_descriptor[i].message);
+    }
+    
     for ( j=0; tis[j]!=NULL; ++j )
 	for ( i=0; tis[j][i].text!=NULL; ++i )
 	    tis[j][i].text = (unichar_t *) _((char *) tis[j][i].text);
