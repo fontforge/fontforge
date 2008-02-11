@@ -31,7 +31,6 @@ libgdraw: libgutils libgunicode
 	( cd gdraw ; $(MAKE) )
 
 pos:
-	-ln -s $(srcdir)/po/*.po po
 	( cd po ; $(MAKE) )
 
 clean:
@@ -50,37 +49,37 @@ distclean cleaner:
 install_libs: libs
 
 install_docs:
-	mkdir -p $(docdir)
-	mkdir -p $(docdir)/flags $(docdir)/ja
+	mkdir -p $(DESTDIR)$(docdir)
+	mkdir -p $(DESTDIR)$(docdir)/flags $(DESTDIR)$(docdir)/ja
 #explicit use of sh to make sure we don't invoke csh with different "if" syntax
-	-sh -c "if test -d $(srcdir)/htdocs/ja >/dev/null ; then mkdir -p $(docdir)/ja ; fi"
-	-$(INSTALL_DATA) $(srcdir)/htdocs/*.{html,png,gif,pdf} $(docdir)
-	-$(INSTALL_DATA) $(srcdir)/htdocs/flags/* $(docdir)/flags
-	-$(INSTALL_DATA) $(srcdir)/htdocs/ja/* $(docdir)/ja
+	-sh -c "if test -d $(srcdir)/htdocs/ja >/dev/null ; then mkdir -p $(DESTDIR)$(docdir)/ja ; fi"
+	-$(INSTALL_DATA) $(srcdir)/htdocs/*.{html,png,gif,pdf} $(DESTDIR)$(docdir)
+	-$(INSTALL_DATA) $(srcdir)/htdocs/flags/* $(DESTDIR)$(docdir)/flags
+	-$(INSTALL_DATA) $(srcdir)/htdocs/ja/* $(DESTDIR)$(docdir)/ja
 
 install_po:
 	( cd po ; make install )
 
 install: $(sharedir) all install_libs install_po
 # You may need to be root to do the install
-	mkdir -p $(bindir)
-	mkdir -p $(mandir)/man1
-	mkdir -p $(sharedir)
-	cp fontforge/fontforge $(bindir)
-	cp fontforge/sfddiff $(bindir)
-	cp fontforge/fontimage $(bindir)
-	cp fontforge/fontlint $(bindir)
+	mkdir -p $(DESTDIR)$(bindir)
+	mkdir -p $(DESTDIR)$(mandir)/man1
+	mkdir -p $(DESTDIR)$(sharedir)
+	cp fontforge/fontforge $(DESTDIR)$(bindir)
+	cp fontforge/sfddiff $(DESTDIR)$(bindir)
+	cp fontforge/fontimage $(DESTDIR)$(bindir)
+	cp fontforge/fontlint $(DESTDIR)$(bindir)
 #	$(INSTALL_DATA) fontforge/pfaedit-*.ui $(sharedir)
 #The next line will fail for most installs. If you have downloaded the cidmaps
 # this will install them. If you haven't it won't. You only need the cidmaps
 # if you are editing CID keyed files (and even then you can live without them
-	-$(INSTALL_DATA) $(srcdir)/cidmap/*.cidmap $(sharedir) >/dev/null 2>&1
-	$(INSTALL_DATA) $(srcdir)/fontforge/fontforge.1 $(mandir)/man1
-	$(INSTALL_DATA) $(srcdir)/fontforge/sfddiff.1 $(mandir)/man1
-	$(INSTALL_DATA) $(srcdir)/fontforge/fontimage.1 $(mandir)/man1
-	$(INSTALL_DATA) $(srcdir)/fontforge/fontlint.1 $(mandir)/man1
-	mkdir -p $(libdir)/pkgconfig
-	$(INSTALL_DATA) fontforge.pc $(libdir)/pkgconfig
+	-$(INSTALL_DATA) $(srcdir)/cidmap/*.cidmap $(DESTDIR)$(sharedir) >/dev/null 2>&1
+	$(INSTALL_DATA) $(srcdir)/fontforge/fontforge.1 $(DESTDIR)$(mandir)/man1
+	$(INSTALL_DATA) $(srcdir)/fontforge/sfddiff.1 $(DESTDIR)$(mandir)/man1
+	$(INSTALL_DATA) $(srcdir)/fontforge/fontimage.1 $(DESTDIR)$(mandir)/man1
+	$(INSTALL_DATA) $(srcdir)/fontforge/fontlint.1 $(DESTDIR)$(mandir)/man1
+	mkdir -p $(DESTDIR)$(libdir)/pkgconfig
+	$(INSTALL_DATA) fontforge.pc $(DESTDIR)$(libdir)/pkgconfig
 #explicit use of sh to make sure we don't invoke csh with different "if" syntax
 	sh -c "if test -d $(srcdir)/htdocs >/dev/null ; then $(MAKE) install_docs ; fi"
 	sh < systemspecific
@@ -100,5 +99,5 @@ uninstall:
 	-rm -rf $(DESTDIR)$(docdir)/*
 	-rm $(DESTDIR)$(libdir)/pkgconfig/fontforge.pc
 
-$(sharedir):
-	mkdir -p $(sharedir)
+$(DESTDIR)$(sharedir):
+	mkdir -p $(DESTDIR)$(sharedir)
