@@ -1091,6 +1091,8 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
     if ( fmflags==-1 ) {
 	/* Default to what we did last time */
     } else {
+	if ( oldformatstate==ff_ttf && (fmflags&0x2000))
+	    oldformatstate = ff_ttfsym;
 	if ( oldformatstate<=ff_cffcid ) {
 	    old_ps_flags = 0;
 	    if ( fmflags&1 ) old_ps_flags |= ps_flag_afm;
@@ -1126,6 +1128,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 		if ( (fmflags&0x800) && !(old_ttf_flags&ttf_flag_applemode) )
 		    old_ttf_flags |= ttf_flag_oldkern;
 		if ( fmflags&0x1000 ) old_ttf_flags |= ttf_flag_brokensize;
+		if ( fmflags&0x2000 ) old_ttf_flags |= ttf_flag_symbol;
 		if ( fmflags&0x800000 ) old_ttf_flags |= ttf_flag_pfed_lookupnames;
 		if ( fmflags&0x1000000 ) old_ttf_flags |= ttf_flag_pfed_guides;
 		if ( fmflags&0x2000000 ) old_ttf_flags |= ttf_flag_pfed_layers;
@@ -1156,6 +1159,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	    if ( (fmflags&0x800) && !(old_ttf_flags&ttf_flag_applemode) )
 		old_ttf_flags |= ttf_flag_oldkern;
 	    if ( fmflags&0x1000 ) old_ttf_flags |= ttf_flag_brokensize;
+	    if ( fmflags&0x2000 ) old_ttf_flags |= ttf_flag_symbol;
 	    if ( fmflags&0x800000 ) old_ttf_flags |= ttf_flag_pfed_lookupnames;
 	    if ( fmflags&0x1000000 ) old_ttf_flags |= ttf_flag_pfed_guides;
 	    if ( fmflags&0x2000000 ) old_ttf_flags |= ttf_flag_pfed_layers;
@@ -1193,6 +1197,7 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 	    if ( (fmflags&0x800) && !(old_otf_flags&ttf_flag_applemode) )
 		old_otf_flags |= ttf_flag_oldkern;
 	    if ( fmflags&0x1000 ) old_otf_flags |= ttf_flag_brokensize;
+	    if ( fmflags&0x2000 ) old_ttf_flags |= ttf_flag_symbol;
 	    if ( fmflags&0x800000 ) old_otf_flags |= ttf_flag_pfed_lookupnames;
 	    if ( fmflags&0x1000000 ) old_otf_flags |= ttf_flag_pfed_guides;
 	    if ( fmflags&0x2000000 ) old_otf_flags |= ttf_flag_pfed_layers;

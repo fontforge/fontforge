@@ -3144,12 +3144,15 @@ static void setos2(struct os2 *os2,struct alltabs *at, SplineFont *sf,
 	3, 6, 35, 20, 56, 56, 17, 4, 49, 56, 71, 31, 10, 18, 3, 18, 2 };
     EncMap *map;
     SplineChar *sc;
+    int modformat = format;
 
     os2->version = 1;
     if ( format==ff_otf || format==ff_otfcid )
 	os2->version = 3;
     if ( sf->os2_version!=0 )
 	os2->version = sf->os2_version;
+    if (( format>=ff_ttf && format<=ff_otfdfont) && (at->gi.flags&ttf_flag_symbol))
+	modformat = ff_ttfsym;
 
     os2->weightClass = sf->pfminfo.weight;
     os2->widthClass = sf->pfminfo.width;
@@ -3239,7 +3242,7 @@ docs are wrong.
 	memcpy(os2->unicoderange,sf->pfminfo.unicoderanges,sizeof(os2->unicoderange));
     else
 	OS2FigureUnicodeRanges(sf,os2->unicoderange);
-    if ( format==ff_ttfsym )	/* MS Symbol font has this set to zero. Does it matter? */
+    if ( modformat==ff_ttfsym )	/* MS Symbol font has this set to zero. Does it matter? */
 	memset(os2->unicoderange,0,sizeof(os2->unicoderange));
 
     if ( sf->pfminfo.pfmset )
@@ -3261,7 +3264,7 @@ docs are wrong.
 	os2->v3_avgCharWid = avg2/cnt2;
     memcpy(os2->panose,sf->pfminfo.panose,sizeof(os2->panose));
     map = at->map;
-    if ( format==ff_ttfsym ) {
+    if ( modformat==ff_ttfsym ) {
 	if ( sf->pfminfo.hascodepages )
 	    memcpy(os2->ulCodePage,sf->pfminfo.codepages,sizeof(os2->ulCodePage));
 	else {
@@ -3848,6 +3851,8 @@ static void dumpnames(struct alltabs *at, SplineFont *sf,enum fontformat format)
     nt.format	     = format;
     nt.applemode     = at->applemode;
     nt.strings	     = tmpfile();
+    if (( format>=ff_ttf && format<=ff_otfdfont) && (at->gi.flags&ttf_flag_symbol))
+	nt.format    = ff_ttfsym;
 
     memset(&dummy,0,sizeof(dummy));
     for ( cur=sf->names; cur!=NULL; cur=cur->next ) {
@@ -4355,8 +4360,9 @@ return( NULL );
 return( format12 );
 }
 
-static FILE *NeedsUCS2Table(SplineFont *sf,int *ucs2len,EncMap *map) {
+static FILE *NeedsUCS2Table(SplineFont *sf,int *ucs2len,EncMap *map,int issymbol) {
     /* We always want a format 4 2byte unicode encoding map */
+    /* But if it's symbol, only include encodings 0xff20 - 0xffff */
     uint32 *avail = galloc(65536*sizeof(uint32));
     int i,j,l;
     int segcnt, cnt=0, delta, rpos;
@@ -4388,6 +4394,11 @@ static FILE *NeedsUCS2Table(SplineFont *sf,int *ucs2len,EncMap *map) {
 		}
 	    }
 	}
+    }
+    if ( issymbol ) {
+	/* Clear out all entries we don't want */
+	memset(avail       ,0xff,0xf020*sizeof(uint32));
+	memset(avail+0xf100,0xff,0x0eff*sizeof(uint32));
     }
 
     j = -1;
@@ -4614,34 +4625,15 @@ static void dumpcmap(struct alltabs *at, SplineFont *sf,enum fontformat format) 
     uint16 table[256];
     SplineChar *sc;
     int alreadyprivate = false;
-    int anyglyphs = 0;
     int wasotf = format==ff_otf || format==ff_otfcid;
     EncMap *map = at->map;
     int ucs4len=0, ucs2len=0, cjklen=0, applecjklen=0, vslen=0;
     FILE *format12, *format4, *format2, *apple2, *format14;
     int mspos, ucs4pos, cjkpos, applecjkpos, vspos, start_of_macroman;
+    int modformat = format;
 
-    for ( i=at->gi.gcnt-1; i>0 ; --i ) if ( at->gi.bygid[i]!=-1 ) {
-	if ( SCWorthOutputting(sf->glyphs[at->gi.bygid[i]])) {
-	    anyglyphs = true;
-	    if ( sf->glyphs[at->gi.bygid[i]]->unicodeenc!=-1 )
-    break;
-	}
-    }
-    if ( sf->subfontcnt==0 && !anyglyphs && !sf->internal_temp ) {
-	ff_post_error(_("No Encoded Glyphs"),_("Warning: Font contained no glyphs"));
-    }
-    if ( sf->subfontcnt==0 && format!=ff_ttfsym && !sf->internal_temp ) {
-	if ( i==0 && anyglyphs ) {
-	    if ( map->enccount<=256 ) {
-		char *buts[3];
-		buts[0] = _("_Yes"); buts[1] = _("_No"); buts[2] = NULL;
-		if ( ff_ask(_("No Encoded Glyphs"),(const char **) buts,0,1,_("This font contains no glyphs with unicode encodings.\nWould you like to use a \"Symbol\" encoding instead of Unicode?"))==0 )
-		    format = ff_ttfsym;
-	    } else
-		ff_post_error(_("No Encoded Glyphs"),_("This font contains no glyphs with unicode encodings.\nYou will probably not be able to use the output."));
-	}
-    }
+    if (( format>=ff_ttf && format<=ff_otfdfont) && (at->gi.flags&ttf_flag_symbol))
+	modformat = ff_ttfsym;
 
     at->cmap = tmpfile();
 
@@ -4664,7 +4656,7 @@ static void dumpcmap(struct alltabs *at, SplineFont *sf,enum fontformat format) 
     }
     if ( table[0]==0 ) table[0] = 1;
 
-    if ( format==ff_ttfsym ) {
+    if ( modformat==ff_ttfsym ) {
 	alreadyprivate = AlreadyMSSymbolArea(sf,map);
 	memset(table,'\0',sizeof(table));
 	if ( !wasotf ) {
@@ -4703,10 +4695,13 @@ static void dumpcmap(struct alltabs *at, SplineFont *sf,enum fontformat format) 
 	}
     }
 
-    format4  = NeedsUCS2Table(sf,&ucs2len,map);
-    format12 = NeedsUCS4Table(sf,&ucs4len,map);
-    format2  = Needs816Enc(sf,&cjklen,map,&apple2,&applecjklen);
-    format14 = NeedsVariationSequenceTable(sf,&vslen,map);
+    format4  = NeedsUCS2Table(sf,&ucs2len,map,modformat==ff_ttfsym);
+    if ( modformat!=ff_ttfsym ) {
+	format12 = NeedsUCS4Table(sf,&ucs4len,map);
+	format2  = Needs816Enc(sf,&cjklen,map,&apple2,&applecjklen);
+	format14 = NeedsVariationSequenceTable(sf,&vslen,map);
+    } else
+	format12 = format2 = format14 = NULL;
 
     /* Two/Three/Four encoding table pointers, one for ms, one for mac */
     /*  usually one for mac big, just a copy of ms */
@@ -4715,7 +4710,7 @@ static void dumpcmap(struct alltabs *at, SplineFont *sf,enum fontformat format) 
     /* sometimes the mac will have a slightly different cjk table */
     /* Sometimes we want a variation sequence subtable (format=14) for */
     /*  unicode platform */
-    if ( format==ff_ttfsym ) {
+    if ( modformat==ff_ttfsym ) {
 	enccnt = 2;
 	hasmac = 0;
     } else {
@@ -4787,7 +4782,7 @@ static void dumpcmap(struct alltabs *at, SplineFont *sf,enum fontformat format) 
 
     putshort(at->cmap,3);	/* ms platform */
     putshort(at->cmap,		/* plat specific enc */
-	    format==ff_ttfsym ? 0 :	/* Symbol */
+	    modformat==ff_ttfsym ? 0 :	/* Symbol */
 	     1 );			/* Unicode */
     putlong(at->cmap,mspos);		/* offset from tab start to sub tab start */
 
@@ -4850,7 +4845,7 @@ static void dumpcmap(struct alltabs *at, SplineFont *sf,enum fontformat format) 
     if ( (at->cmaplen&2)!=0 )
 	putshort(at->cmap,0);
 
-    if ( format==ff_ttfsym ) {
+    if ( modformat==ff_ttfsym ) {
 	if ( !alreadyprivate ) {
 	    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
 		sf->glyphs[i]->unicodeenc = sf->glyphs[i]->orig_pos;
@@ -5807,13 +5802,38 @@ int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
 	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *map, int layer) {
     struct alltabs at;
     char *oldloc;
-    int i;
+    int i, anyglyphs;
 
     oldloc = setlocale(LC_NUMERIC,"C");		/* TrueType probably doesn't need this, but OpenType does for floats in dictionaries */
     if ( format==ff_otfcid || format== ff_cffcid ) {
 	if ( sf->cidmaster ) sf = sf->cidmaster;
     } else {
 	if ( sf->subfontcnt!=0 ) sf = sf->subfonts[0];
+    }
+
+    if ( sf->subfontcnt==0 ) {
+	anyglyphs = false;
+	for ( i=sf->glyphcnt-1; i>0 ; --i ) {
+	    if ( SCWorthOutputting(sf->glyphs[i])) {
+		anyglyphs = true;
+		if ( sf->glyphs[i]->unicodeenc!=-1 )
+	break;
+	    }
+	}
+	if ( !anyglyphs && !sf->internal_temp ) {
+	    ff_post_error(_("No Encoded Glyphs"),_("Warning: Font contained no glyphs"));
+	}
+	if ( format!=ff_ttfsym && !(flags&ttf_flag_symbol) && !sf->internal_temp ) {
+	    if ( i==0 && anyglyphs ) {
+		if ( map->enccount<=256 ) {
+		    char *buts[3];
+		    buts[0] = _("_Yes"); buts[1] = _("_No"); buts[2] = NULL;
+		    if ( ff_ask(_("No Encoded Glyphs"),(const char **) buts,0,1,_("This font contains no glyphs with unicode encodings.\nWould you like to use a \"Symbol\" encoding instead of Unicode?"))==0 )
+			flags |= ttf_flag_symbol;
+		} else
+		    ff_post_error(_("No Encoded Glyphs"),_("This font contains no glyphs with unicode encodings.\nYou will probably not be able to use the output."));
+	    }
+	}
     }
 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
