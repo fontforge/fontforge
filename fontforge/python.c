@@ -10621,6 +10621,7 @@ struct flaglist gen_flags[] = {
     { "ofm", 0x0400 },
     { "old-kern", 0x0800 },
     { "broken-size", 0x1000 },
+    { "symbol", 0x2000 },
     { "tfm", 0x10000 },
     { "no-flex", 0x40000 },
     { "no-hints", 0x80000 },

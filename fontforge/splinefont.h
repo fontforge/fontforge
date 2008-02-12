@@ -1712,7 +1712,8 @@ enum ttf_flags { ttf_flag_shortps = 1, ttf_flag_nohints = 2,
 		    ttf_flag_brokensize=0x400,	/* Adobe originally issued fonts with a bug in the size feature. They now claim (Aug 2006) that this has been fixed. Legacy programs will do the wrong thing with the fixed feature though */
 		    ttf_flag_pfed_lookupnames=0x800,
 		    ttf_flag_pfed_guides=0x1000,
-		    ttf_flag_pfed_layers=0x2000
+		    ttf_flag_pfed_layers=0x2000,
+		    ttf_flag_symbol=0x4000
 		};
 enum openflags { of_fstypepermitted=1, of_askcmap=2 };
 enum ps_flags { ps_flag_nohintsubs = 0x10000, ps_flag_noflex=0x20000,
