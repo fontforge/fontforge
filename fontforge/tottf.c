@@ -2968,6 +2968,22 @@ void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontname) {
 	SFDefaultOS2SubSuper(pfminfo,sf->ascent+sf->descent,sf->italicangle);
 }
 
+int AlreadyMSSymbolArea(SplineFont *sf,EncMap *map) {
+    int i;
+    int acnt=0, pcnt=0;
+
+    for ( i=0; i<map->enccount && i<0xffff; ++i ) {
+	if ( map->map[i]!=-1 && sf->glyphs[map->map[i]]!=NULL &&
+		sf->glyphs[map->map[i]]->ttf_glyph!=-1 ) {
+	    if ( i>=0xf000 && i<=0xf0ff )
+		++pcnt;
+	    else if ( i>=0x20 && i<=0xff )
+		++acnt;
+	}
+    }
+return( pcnt>acnt );
+}
+
 void OS2FigureCodePages(SplineFont *sf, uint32 CodePage[2]) {
     int i;
     uint32 latin1[8];
@@ -3246,17 +3262,34 @@ docs are wrong.
     memcpy(os2->panose,sf->pfminfo.panose,sizeof(os2->panose));
     map = at->map;
     if ( format==ff_ttfsym ) {
-	os2->ulCodePage[0] = 0x80000000;
-	os2->ulCodePage[1] = 0;
-	first = 255; last = 0;
-	for ( i=0; i<map->enccount && i<255; ++i )
-	    if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
-		    sf->glyphs[gid]->ttf_glyph!=-1 ) {
-		if ( i<first ) first = i;
-		if ( i>last ) last = i;
-	    }
-	os2->firstcharindex = 0xf000 + first;	/* This gets mapped to space */
-	os2->lastcharindex  = 0xf000 + last;
+	if ( sf->pfminfo.hascodepages )
+	    memcpy(os2->ulCodePage,sf->pfminfo.codepages,sizeof(os2->ulCodePage));
+	else {
+	    os2->ulCodePage[0] = 0x80000000;
+	    os2->ulCodePage[1] = 0;
+	}
+	if ( AlreadyMSSymbolArea(sf,map)) {
+	    first = 0xf0ff; last = 0;
+	    for ( i=0xf020; i<map->enccount && i<=0xf0ff; ++i )
+		if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
+			sf->glyphs[gid]->ttf_glyph!=-1 ) {
+		    if ( i<first ) first = i;
+		    if ( i>last ) last = i;
+		}
+	    os2->firstcharindex = first;	/* This gets mapped to space */
+	    os2->lastcharindex  = last;
+	} else {
+	    first = 255; last = 0;
+	    for ( i=0; i<map->enccount && i<=255; ++i )
+		if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
+			sf->glyphs[gid]->ttf_glyph!=-1 ) {
+		    if ( i<first ) first = i;
+		    if ( i>last ) last = i;
+		}
+	    if ( first<' ' ) first = ' ';
+	    os2->firstcharindex = 0xf000 + first;	/* This gets mapped to space */
+	    os2->lastcharindex  = 0xf000 + last;
+	}
     } else {
 	os2->firstcharindex = first;
 	os2->lastcharindex = last;
@@ -3278,7 +3311,7 @@ docs are wrong.
 	/* GWW: Things get worse. Windows no longer accepts a version 0 */
 	/*  for OS/2. FontLab simply lies and says we have a latin1     */
 	/*  code page when we don't.					*/
-	if( format!=ff_ttfsym && !sf->pfminfo.hascodepages )
+	if( !sf->pfminfo.hascodepages )
 	    if( (os2->ulCodePage[0]&~(1U<<31))==0 && os2->ulCodePage[1]==0 )
                 os2->ulCodePage[0] |= 1;
     }
@@ -4632,17 +4665,7 @@ static void dumpcmap(struct alltabs *at, SplineFont *sf,enum fontformat format) 
     if ( table[0]==0 ) table[0] = 1;
 
     if ( format==ff_ttfsym ) {
-	int acnt=0, pcnt=0;
-	for ( i=0; i<map->enccount && i<0xffff; ++i ) {
-	    if ( map->map[i]!=-1 && sf->glyphs[map->map[i]]!=NULL &&
-		    sf->glyphs[map->map[i]]->ttf_glyph!=-1 ) {
-		if ( i>=0xf000 && i<=0xf0ff )
-		    ++acnt;
-		else if ( i>=0x20 && i<=0xff )
-		    ++pcnt;
-	    }
-	}
-	alreadyprivate = acnt>pcnt;
+	alreadyprivate = AlreadyMSSymbolArea(sf,map);
 	memset(table,'\0',sizeof(table));
 	if ( !wasotf ) {
 	    table[29] = table[8] = table[0] = 1;
@@ -4655,7 +4678,7 @@ static void dumpcmap(struct alltabs *at, SplineFont *sf,enum fontformat format) 
 		    table[i] = sc->ttf_glyph;
 	    }
 	} else {
-	    for ( i=0xf000; i<=0xf0ff && i<sf->glyphcnt; ++i ) {
+	    for ( i=0xf020; i<=0xf0ff && i<sf->glyphcnt; ++i ) {
 		if ( map->map[i]!=-1 && (sc = sf->glyphs[map->map[i]])!=NULL &&
 			sc->ttf_glyph!=-1 )
 		    table[i-0xf000] = sc->ttf_glyph;
