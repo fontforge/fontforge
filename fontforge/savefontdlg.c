@@ -1374,7 +1374,9 @@ return;
 	}
     }
 
-    if ( ((oldformatstate<ff_ptype0 && oldformatstate!=ff_multiple) ||
+    if ( oldformatstate==ff_ttfsym && AlreadyMSSymbolArea(d->sf,d->map))
+	/* Don't complain */;
+    else if ( ((oldformatstate<ff_ptype0 && oldformatstate!=ff_multiple) ||
 		oldformatstate==ff_ttfsym || oldformatstate==ff_cff ) &&
 		d->map->enc->has_2byte ) {
 	char *buts[3];
