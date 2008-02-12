@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 9-Apr-2006 -->
-  <!-- AP: Last modified: 24-Jan-2008 -->
+  <!-- AP: Last modified: 12-Feb-2008 -->
   <TITLE>Scripting functions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -1214,8 +1214,11 @@ a[4][0] = "Nested array";
 		fmflags&amp;0x800 =&gt; generate an old style 'kern'ing table. Only meaningful
 		if set with OpenType (GPOS/GSUB) tables and without Apple tables.
 	      <LI>
-		fmflags&amp;0x1000 =&gt; generate an old, broken, 'size' feature (if size
-		data be present).
+		<STRIKE>fmflags&amp;0x1000 =&gt; generate an old, broken, 'size' feature
+		(if size data be present). Deprecated.</STRIKE>
+	      <LI>
+		fmflags&amp;0x2000 =&gt; use a symbol cmap entry (same as .sym.ttf, except
+		you can now specify a filename ending in .ttf)
 	      <LI>
 		fmflags&amp;0x10000 =&gt; generate a tfm file
 	      <LI>
