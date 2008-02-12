@@ -3278,7 +3278,7 @@ docs are wrong.
 	/* GWW: Things get worse. Windows no longer accepts a version 0 */
 	/*  for OS/2. FontLab simply lies and says we have a latin1     */
 	/*  code page when we don't.					*/
-	if( format!=ff_ttfsym )
+	if( format!=ff_ttfsym && !sf->pfminfo.hascodepages )
 	    if( (os2->ulCodePage[0]&~(1U<<31))==0 && os2->ulCodePage[1]==0 )
                 os2->ulCodePage[0] |= 1;
     }
