@@ -1895,10 +1895,10 @@ static void MKDInit(MathKernDlg *mkd,SplineChar *sc) {
 	CharView *mcv = &(&mkd->cv_topright)[i];
 	msc->orig_pos = i;
 	msc->unicodeenc = -1;
-	msc->name = i==0 ? "TopRight" :
-		    i==1 ? "TopLeft"  :
-		    i==2 ? "BottomRight":
-			    "BottomLeft";
+	msc->name = i==0 ? _("TopRight") :
+		    i==1 ? _("TopLeft")  :
+		    i==2 ? _("BottomRight"):
+			    _("BottomLeft");
 	msc->parent = &mkd->dummy_sf;
 	msc->layer_cnt = 2;
 	msc->layers = gcalloc(2,sizeof(Layer));
