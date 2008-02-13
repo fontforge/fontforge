@@ -5078,6 +5078,9 @@ static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
     BDFFont *bdf;
     struct ttf_table *tab;
 
+   if ( strmatch(at->map->enc->enc_name,"symbol")==0 && format==ff_ttf )
+  	format = ff_ttfsym;
+
     tab = SFFindTable(sf,CHR('c','v','t',' '));
     if ( tab!=NULL ) {
 	at->oldcvt = tab;
