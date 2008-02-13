@@ -1559,18 +1559,21 @@ static void DrawTransOrigin(CharView *cv, GWindow pixmap) {
     GDrawDrawLine(pixmap,x,y-4,x,y+4,transformorigincol);
 }
 
-static void DrawVLine(CharView *cv,GWindow pixmap,real pos,Color fg, int flags, GImage *lock) {
+static void DrawVLine(CharView *cv,GWindow pixmap,real pos,Color fg, int flags,
+	GImage *lock, char *name) {
     char buf[20];
     int x = cv->xoff + rint(pos*cv->scale);
     DrawLine(cv,pixmap,pos,-32768,pos,32767,fg);
-    if ( flags&1 ) {
-	if ( x>-400 && x<cv->width+400 ) {
+    if ( x>-400 && x<cv->width+400 ) {
+	if ( flags&1 ) {
 	    dtos( buf, pos);
 	    GDrawSetFont(pixmap,cv->small);
 	    GDrawDrawText8(pixmap,x+5,cv->sas+3,buf,-1,NULL,metricslabelcol);
 	    if ( lock!=NULL )
 		GDrawDrawImage(pixmap,lock,NULL,x+5,3+cv->sfh);
 	}
+	if ( name!=NULL )
+	    GDrawDrawText8(pixmap,x+5,cv->sas+cv->sfh*(1+lock!=NULL)+3,name,-1,NULL,metricslabelcol);
     }
     if ( ItalicConstrained && cv->b.sc->parent->italicangle!=0 ) {
 	double t = tan(-cv->b.sc->parent->italicangle*3.1415926535897932/180.);
@@ -1742,7 +1745,7 @@ return;
 	    false,clip);
     SplinePointListsFree(head);
     if ( cv->apmine->type==at_mark || cv->apmine->type==at_centry ) {
-	DrawVLine(cv,pixmap,trans[4],anchoredoutlinecol,false,NULL);
+	DrawVLine(cv,pixmap,trans[4],anchoredoutlinecol,false,NULL,NULL);
 	DrawLine(cv,pixmap,-8096,trans[5],8096,trans[5],anchoredoutlinecol);
     }
 }
@@ -1991,7 +1994,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		    cv->showpoints && cv->b.drawmode==dm_grid,&clip);
 	}
 	if ( cv->showhmetrics ) {
-	    DrawVLine(cv,pixmap,0,coordcol,false,NULL);
+	    DrawVLine(cv,pixmap,0,coordcol,false,NULL,NULL);
 	    DrawLine(cv,pixmap,-8096,0,8096,0,coordcol);
 	    DrawLine(cv,pixmap,-8096,sf->ascent,8096,sf->ascent,coordcol);
 	    DrawLine(cv,pixmap,-8096,-sf->descent,8096,-sf->descent,coordcol);
@@ -2070,11 +2073,12 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	RefChar *lock = HasUseMyMetrics(cv->b.sc);
 	if ( lock!=NULL ) cv->b.sc->width = lock->sc->width;
 	DrawVLine(cv,pixmap,cv->b.sc->width,(!cv->inactive && cv->widthsel)?widthselcol:widthcol,true,
-		lock!=NULL ? &GIcon_lock : NULL);
+		lock!=NULL ? &GIcon_lock : NULL, NULL);
 	if ( cv->b.sc->italic_correction!=TEX_UNDEF && cv->b.sc->italic_correction!=0 ) {
 	    GDrawSetDashedLine(pixmap,2,2,0);
 	    DrawVLine(cv,pixmap,cv->b.sc->width+cv->b.sc->italic_correction,(!cv->inactive && cv->icsel)?widthselcol:widthcol,
-		    false, NULL);
+/* GT: Italic Correction */
+		    false, NULL,_("ItalicCor."));
 	    GDrawSetDashedLine(pixmap,0,0,0);
 	}
     }
@@ -2082,13 +2086,13 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	for ( pst=cv->b.sc->possub; pst!=NULL && pst->type!=pst_lcaret; pst=pst->next );
 	if ( pst!=NULL ) {
 	    for ( i=0; i<pst->u.lcaret.cnt; ++i )
-		DrawVLine(cv,pixmap,pst->u.lcaret.carets[i],lcaretcol,true,NULL);
+		DrawVLine(cv,pixmap,pst->u.lcaret.carets[i],lcaretcol,true,NULL,_("Lig.Caret"));
 	}
 	if ( cv->show_ft_results || cv->dv!=NULL )
-	    DrawVLine(cv,pixmap,cv->b.ft_gridfitwidth,widthgridfitcol,true,NULL);
+	    DrawVLine(cv,pixmap,cv->b.ft_gridfitwidth,widthgridfitcol,true,NULL,NULL);
 	if ( cv->b.sc->top_accent_horiz!=TEX_UNDEF )
 	    DrawVLine(cv,pixmap,cv->b.sc->top_accent_horiz,(!cv->inactive && cv->tah_sel)?widthselcol:anchorcol,true,
-		    NULL);
+		    NULL,_("TopAccent"));
     }
     if ( cv->showvmetrics ) {
 	int len, y = -cv->yoff + cv->height - rint((sf->vertical_origin-cv->b.sc->vwidth)*cv->scale);
