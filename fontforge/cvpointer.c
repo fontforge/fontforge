@@ -1213,7 +1213,8 @@ return( false );
 
     /* I used to have special cases for moving width lines, but that's now */
     /*  done by move selection */
-    if ( cv->expandedge!=ee_none && !cv->widthsel && !cv->vwidthsel && cv->nearcaret==-1 )
+    if ( cv->expandedge!=ee_none && !cv->widthsel && !cv->vwidthsel &&
+	    cv->nearcaret==-1 && !cv->icsel && !cv->tah_sel )
 	needsupdate = CVExpandEdge(cv);
     else if ( cv->nearcaret!=-1 && cv->lcarets!=NULL ) {
 	if ( cv->info.x!=cv->last_c.x ) {
