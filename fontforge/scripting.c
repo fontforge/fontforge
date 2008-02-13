@@ -2509,7 +2509,7 @@ static void bMultipleEncodingsToReferences(Context *c) {
 		    if ( enc!=-1 ) {
 			map->map[enc] = -1;
 			sc = SFMakeChar(sf,map,enc);
-			SCAddRef(sc,orig,0,0);
+			SCAddRef(sc,orig,ly_fore,0,0);
 		    }
 		} else
 		    prev = alt;
@@ -2524,7 +2524,7 @@ static void bMultipleEncodingsToReferences(Context *c) {
 		    (fv->selected[i] || (map->backmap[gid]!=-1 && fv->selected[map->backmap[gid]]))) {
 		map->map[i] = -1;
 		sc = SFMakeChar(sf,map,i);
-		SCAddRef(sc,orig,0,0);
+		SCAddRef(sc,orig,ly_fore,0,0);
 		sc->width = orig->width;
 		sc->vwidth = orig->vwidth;
 	    }
