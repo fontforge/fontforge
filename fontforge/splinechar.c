@@ -470,12 +470,13 @@ return;
     SCCharChangedUpdate(sc);
 }
 
-void SCCopyLayerToLayer(SplineChar *sc, int from, int to) {
+void SCCopyLayerToLayer(SplineChar *sc, int from, int to,int doclear) {
     SplinePointList *fore, *temp;
-    RefChar *ref;
+    RefChar *ref, *oldref;
 
     SCPreserveLayer(sc,to,false);
-    SCClearLayer(sc,to);
+    if ( doclear )
+	SCClearLayer(sc,to);
 
     fore = SplinePointListCopy(sc->layers[from].splines);
     if ( !sc->layers[from].order2 && sc->layers[to].order2 ) {
@@ -487,10 +488,19 @@ void SCCopyLayerToLayer(SplineChar *sc, int from, int to) {
 	SplinePointListsFree(fore);
 	fore = temp;
     }
-    sc->layers[to].splines = fore;
+    if ( fore!=NULL ) {
+	for ( temp=fore; temp->next!=NULL; temp = temp->next );
+	temp->next = sc->layers[to].splines;
+	sc->layers[to].splines = fore;
+    }
 
-    sc->layers[to].refs = RefCharsCopyState(sc,from);
-    for ( ref = sc->layers[to].refs; ref!=NULL; ref=ref->next ) {
+    if ( sc->layers[to].refs==NULL )
+	sc->layers[to].refs = ref = RefCharsCopyState(sc,from);
+    else {
+	for ( oldref = sc->layers[to].refs; oldref->next!=NULL; oldref=oldref->next );
+	oldref->next = ref = RefCharsCopyState(sc,from);
+    }
+    for ( ; ref!=NULL; ref=ref->next ) {
 	SCReinstanciateRefChar(sc,ref,to);
 	SCMakeDependent(sc,ref->sc);
     }

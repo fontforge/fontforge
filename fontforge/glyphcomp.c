@@ -2359,3 +2359,16 @@ int CompareFonts(SplineFont *sf1, EncMap *map1, SplineFont *sf2, FILE *diffs,
 
 return( fd.diff );
 }
+
+int LayersSimilar(Layer *ly1, Layer *ly2, double spline_err) {
+    SplinePoint *hmfail;
+    int ret;
+
+    if ( !fdRefCheck(NULL,NULL,ly1->refs,ly2->refs,false) )
+return( false );
+    ret = SSsCompare(ly1->splines,ly2->splines,spline_err,spline_err,&hmfail);
+    if ( ret&SS_NoMatch )
+return( false );
+
+return( true );
+}
