@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 16-Jan-2008 -->
+  <!-- AP: Last modified: 14-Feb-2008 -->
   <TITLE>Spline Font Database File Format</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -14,7 +14,7 @@
   </H1>
   <P>
   <FONT COLOR="Red"><STRONG>This page is often grievously out of date. I thought
-  it was a correct on 13 Jan 2008.</STRONG></FONT> Even if out of date it should
+  it was a correct on 14 Feb 2008.</STRONG></FONT> Even if out of date it should
   be helpful, but if you really need to know the current format look at
   <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/fontforge/sfd.c">sfd.c</A>
   and see what it parses. Some descriptions of esoteric features are not complete,
@@ -93,6 +93,11 @@ UnderlinePosition: -133
 UnderlineWidth: 20
 Ascent: 800
 Descent: 200
+LayerCount:
+Layer: 0 0 "Back"
+Layer: 1 1 "Fore"
+Layer: 2 0 "Cubic_Fore"
+Layer: 3 0 "Test"
 DisplaySize: -24
 AntiAlias: 1
 WinInfo: 64 16 4
@@ -139,6 +144,17 @@ DEI: 0
       the font parameters. These values are usually in TeX fix_word format where
       there is a binary point after the first 20 binary digits (so to get the number
       divide by (1&lt;&lt;20)).
+    <DT>
+      LayerCount
+    <DD>
+      The number of layers in a font, must be at least 2.
+    <DT>
+      Layer
+    <DD>
+      One entry for each layer to name it and describe its splines &#171;Layer:
+      1 1 "Fore"&#187; means this is layer 1, it has quadratic splines and is named
+      "Fore", while &#171;Layer: 2 0 "Cubic_Fore"&#187; means this is layer 2,
+      it does not have quadratic splines (so it has cubic) and is named "Cubic_Fore".
     <DT>
       DisplaySize
     <DD>
@@ -670,6 +686,7 @@ HStem: 736 13&lt;39 155&gt;  -14 88&lt;162 180&gt;
 VStem: 71 84&lt;49 396&gt; 
 DStem2: 510 435 225 423 0.568682 -0.822558&lt;0 124.816&gt;
 Fore
+SplineSet
 195 742 m 0
  195 738 193 736 189 736 c 0
  175 736 155 743 155 682 c 0
@@ -744,7 +761,7 @@ EndChar
     </TR>
     <TR>
       <TD>0x10</TD>
-      <TD>pont has default prev control point</TD>
+      <TD>point has default prev control point</TD>
     </TR>
     <TR>
       <TD>0x20</TD>
@@ -796,6 +813,7 @@ EndChar
   into an sfd file.
   <BLOCKQUOTE>
     <PRE>Fore
+SplineSet
 115 467 m 1
  134.212 486.845 157.062 503.125 182 515 c 0
  221.656 533.883 266.084 541.787 310 541 c 0
@@ -903,13 +921,70 @@ Fore
 </PRE>
   </BLOCKQUOTE>
   <P>
+  <P>
+  A character need not contain any splines:
+  <BLOCKQUOTE>
+    <PRE>StartChar: semicolon
+Encoding: 59 59
+Width: 264
+Flags: 
+HStem: 
+VStem:
+Fore 
+Refer: 33 44 N 1 0 0 1 0 0 1
+Refer: 35 46 N 1 0 0 1 0 414 2
+EndChar
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  Above is one with just references to other characters (a semi-colon is drawn
+  here by drawing a comma and stacking a period on top of it). The first number
+  is the glyph index of the character being refered to (in the current font
+  of course), the next number is the unicode code point, the N says the reference
+  is not selected (An "S" indicates it is selected), the following 6 numbers
+  are a postscript transformation matrix, the one for comma (unicode 44) is
+  the identity matrix, while the one for period (unicode 46) just translates
+  it vertically 414 units. The final number is a set of truetype flags:
+  <UL>
+    <LI>
+      1 =&gt; Use My Metrics
+    <LI>
+      2 =&gt; Round to Grid
+    <LI>
+      4 =&gt; Position reference by point match (rather than by offset)<BR>
+      If this is set there will be two additional numbers, the first indicating
+      the point number in the base glyph, and the second the point number in the
+      current reference.
+    <LI>
+      <BLOCKQUOTE>
+	<PRE>Ref: 33 44 N 1 0 0 1 0 0 1
+Ref: 35 46 N 1 0 0 1 0 414 6 3 7 O
+</PRE>
+      </BLOCKQUOTE>
+    <LI>
+      The bottom line indicates that point 3 and point 7 will be positioned together.
+      The optional "O" is a flag which indicates that this information is out of
+      date.
+  </UL>
+  <P>
   A set of splines in the background is similar, it will be introduced by a
   <CODE>Back</CODE> entry, it may also have spiros.
+  <BLOCKQUOTE>
+    <PRE>Back
+SplineSet
+195 742 m 0
+ 195 738 193 736 189 736 c 0
+ 175 736 155 743 155 682 c 0
+...
+Refer 33 44 N 1 0 0 1 0 0 1
+</PRE>
+  </BLOCKQUOTE>
   <P>
   While a background image is stored in the following horrible format:
   <BLOCKQUOTE>
     <PRE>StartChar: A
 ...
+Back
 Image: 167 301 0 21 2 1 23 753 2.53892 2.53892
 J:N0SYd"0-qu?]szzz!!#7`s7cQozzz!!!!(s8Viozzzz"98E!zzzz!!3-"rVuouzzz!!!'"
 s8N'!zzz!!!!$s8W,7zzzz"98E$huE`WzJ+s!Dz!"],0s6p!g!!!!"s8W-!n,NFg!!!Q0s8Vio
@@ -940,48 +1015,14 @@ EndChar
   In multilayered fonts the foreground layers may contain images too. They
   are stored in the same way.
   <P>
-  A character need not contain any splines:
+  If a glyph has extra layers beyond foreground and background they are introduced
+  with
   <BLOCKQUOTE>
-    <PRE>StartChar: semicolon
-Encoding: 59 59
-Width: 264
-Flags: 
-HStem: 
-VStem: 
-Refer: 33 44 N 1 0 0 1 0 0 1
-Refer: 35 46 N 1 0 0 1 0 414 2
-EndChar
+    <PRE>Layer: 2
+SplineSet
+...
 </PRE>
   </BLOCKQUOTE>
-  <P>
-  Above is one with just references to other characters (a semi-colon is drawn
-  here by drawing a comma and stacking a period on top of it). The first number
-  is the glyph index of the character being refered to (in the current font
-  of course), the next number is the unicode code point, the N says the reference
-  is not selected (An "S" indicates it is selected), the following 6 numbers
-  are a postscript transformation matrix, the one for comma (unicode 44) is
-  the identity matrix, while the one for period (unicode 46) just translates
-  it vertically 414 units. The final number is a set of truetype flags:
-  <UL>
-    <LI>
-      1 =&gt; Use My Metrics
-    <LI>
-      2 =&gt; Round to Grid
-    <LI>
-      4 =&gt; Position reference by point match (rather than by offset)<BR>
-      If this is set there will be two additional numbers, the first indicating
-      the point number in the base glyph, and the second the point number in the
-      current reference.
-      <BLOCKQUOTE>
-	<PRE>Ref: 33 44 N 1 0 0 1 0 0 1
-Ref: 35 46 N 1 0 0 1 0 414 6 3 7 O
-</PRE>
-      </BLOCKQUOTE>
-      <P>
-      The bottom line indicates that point 3 and point 7 will be positioned together.
-      The optional "O" is a flag which indicates that this information is out of
-      date.
-  </UL>
   <P>
   A postscript glyph may also contain countermasks:
   <BLOCKQUOTE>

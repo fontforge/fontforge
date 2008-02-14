@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 24-Jan-2008 -->
+  <!-- AP: Last modified: 14-Feb-2008 -->
   <TITLE>The View Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -177,8 +177,6 @@
     <LI>
       <A HREF="#Outline">Outline</A>
     <LI>
-      <A HREF="#Points">Show/Hide Points</A>
-    <LI>
       <A HREF="#NumPts">Number Points</A>
       <UL>
 	<LI>
@@ -191,15 +189,7 @@
 	  SVG
       </UL>
     <LI>
-      <A HREF="#Extrema">Mark Extrema</A>
-    <LI>
-      <A HREF="#PoI">Mark Points of Inflection</A>
-    <LI>
-      <A HREF="#CpInfo">Show Control Point Info</A>
-    <LI>
-      <A HREF="#Fill">Fill</A>
-    <LI>
-      Show Grid Fit
+      Grid Fit
       <UL>
 	<LI>
 	  <A HREF="#ShowGridFit">Show Grid Fit...</A>
@@ -213,21 +203,57 @@
 	  <A HREF="#GFOff">Off</A>
       </UL>
     <LI>
+      Show
+      <UL>
+	<LI>
+	  <A HREF="#Points">Points</A>
+	<LI>
+	  <A HREF="#CpInfo">Control Point Info</A>
+	<LI>
+	  <A HREF="#Extrema">Extrema</A>
+	<LI>
+	  <A HREF="#PoI">Points of Inflection</A>
+	<LI>
+	  <A HREF="#Bearings">Side Bearings</A>
+	<LI>
+	  <A HREF="#Fill">Fill</A>
+	<LI>
+	  <A HREF="#Palettes">Palettes</A>
+	  <UL>
+	    <LI>
+	      <A HREF="#Tools">Tools</A>
+	    <LI>
+	      <A HREF="#Layers">Layers</A>
+	    <LI>
+	      <A HREF="viewmenu.html#Shades">Shades</A>
+	    <LI>
+	      <A HREF="#Dock">Dock</A>
+	  </UL>
+	<LI>
+	  <A HREF="#GTabs">Glyph Tabs</A>
+	<LI>
+	  <A HREF="viewmenu.html#Rulers">Rulers</A>
+	<LI>
+	  <A HREF="viewmenu.html#HHints">Horizontal Hints</A>
+	<LI>
+	  <A HREF="viewmenu.html#VHints">Vertical Hints</A>
+	<LI>
+	  <A HREF="viewmenu.html#DHints">Diagonal Hints</A>
+	<LI>
+	  <A HREF="viewmenu.html#BlueValues">BlueValues</A>
+	<LI>
+	  <A HREF="viewmenu.html#FamilyBlues">FamilyBlues</A>
+	<LI>
+	  <A HREF="viewmenu.html#Anchors">Anchors</A>
+	<LI>
+	  <A HREF="viewmenu.html#CV-HMetrics">Horizontal Metrics</A>
+	<LI>
+	  <A HREF="viewmenu.html#CV-VMetrics">Vertical Metrics</A>
+      </UL>
+    <LI>
       <A HREF="#Bigger">Bigger Pixel Size</A>
     <LI>
       <A HREF="#Smaller">Smaller Pixel Size</A>
-    <LI>
-      <A HREF="#Palettes">Palettes</A>
-      <UL>
-	<LI>
-	  <A HREF="#Tools">Tools</A>
-	<LI>
-	  <A HREF="#Layers">Layers</A>
-	<LI>
-	  <A HREF="viewmenu.html#Shades">Shades</A>
-	<LI>
-	  <A HREF="#Dock">Dock</A>
-      </UL>
     <LI>
       <A HREF="#Rulers">Show/Hide Rulers</A>
   </UL>
@@ -535,10 +561,6 @@
       displayed. Selecting it will display the outline font (rather than a bitmap
       font).
     <DT>
-      Show/Hide <A NAME="Points">Points</A>
-    <DD>
-      This hides or displays the points in the outline glyph view.
-    <DT>
       Number <A NAME="NumPts">Points</A>
     <DD>
       In the Outline view, this small sub-menu allows you to control whether point
@@ -547,39 +569,6 @@
       when they do grid-fitting. The numbering scheme is a little different depending
       on what the expected output (input) will be, so we have a sub-menu listing
       output types.
-    <DT>
-      Mark <A NAME="Extrema">Extrema</A>
-    <DD>
-      In the Outline view,
-      <IMG SRC="extrema-poi.png" WIDTH="204" HEIGHT="274" ALIGN="Right">in postscript
-      and truetype fonts (in almost all cases) should have their horizontal and
-      vertical extrema at the endpoints of splines. This setting will mark extremal
-      endpoints by coloring them a dull purple to remind you that you should not
-      delete them. If an extremum occurs somewhere other than an end point a crosshair
-      will be drawn around it. You might consider doing
-      <A HREF="elementmenu.html#Add-Extrema">Element-&gt;Add Extrema </A>in this
-      case (or you might not, this can be ok in some cases).
-    <DT>
-      Mark <A NAME="PoI">Points of Inflection</A>
-    <DD>
-      In the Outline view, points of inflection occur where the change in the slope
-      of the curve (second derivative) changes sign. Quadratic splines (truetype)
-      cannot represent points of inflection. If you have a postscript font which
-      you intend to convert to truetype it can be helpful to know where these difficult
-      points lie. (the cubic-&gt;quadratic approximation routines will often add
-      intermediate points at these points of inflection)
-    <DT>
-      <A NAME="CpInfo">Show Control Point Info</A>
-    <DD>
-      In the Outline view, when you move a <A HREF="charview.html#CpInfo">control
-      point </A>this mode pops up a little window showing various bits of information
-      about the control point you are editing.
-    <DT>
-      <A NAME="Fill">Fill</A>
-    <DD>
-      In the Outline view this fills in the glyph outline as you edit it. (this
-      can be very slow. If the glyph is too big (too magnified) then filling will
-      not be done).
     <DT>
       Show Grid Fit
     <DD>
@@ -611,6 +600,126 @@
 	  Turns off grid fitting.
       </DL>
     <DT>
+      Show
+    <DD>
+      This submenu is only in the outline glyph view.
+      <DL>
+	<DT>
+	  <A NAME="Points">Points</A>
+	<DD>
+	  This hides or displays the points in the outline glyph view.
+	<DT>
+	  <A NAME="CpInfo">Show Control Point Info</A>
+	<DD>
+	  In the Outline view, when you move a <A HREF="charview.html#CpInfo">control
+	  point </A>this mode pops up a little window showing various bits of information
+	  about the control point you are editing.
+	<DT>
+	  <A NAME="Extrema">Extrema</A>
+	<DD>
+	  In the Outline view,
+	  <IMG SRC="extrema-poi.png" WIDTH="204" HEIGHT="274" ALIGN="Right">in postscript
+	  and truetype fonts (in almost all cases) should have their horizontal and
+	  vertical extrema at the endpoints of splines. This setting will mark extremal
+	  endpoints by coloring them a dull purple to remind you that you should not
+	  delete them. If an extremum occurs somewhere other than an end point a crosshair
+	  will be drawn around it. You might consider doing
+	  <A HREF="elementmenu.html#Add-Extrema">Element-&gt;Add Extrema </A>in this
+	  case (or you might not, this can be ok in some cases).
+	<DT>
+	  <A NAME="PoI">Points of Inflection</A>
+	<DD>
+	  In the Outline view, points of inflection occur where the change in the slope
+	  of the curve (second derivative) changes sign. Quadratic splines (truetype)
+	  cannot represent points of inflection. If you have a postscript font which
+	  you intend to convert to truetype it can be helpful to know where these difficult
+	  points lie. (the cubic-&gt;quadratic approximation routines will often add
+	  intermediate points at these points of inflection)
+	<DT>
+	  Side <A NAME="Bearings">Bearings</A>
+	<DD>
+	  Draws little lines to mark the left and right side bearings of a glyph.
+	<DT>
+	  <A NAME="Fill">Fill</A>
+	<DD>
+	  In the Outline view this fills in the glyph outline as you edit it. (this
+	  can be very slow. If the glyph is too big (too magnified) then filling will
+	  not be done).
+	<DT>
+	  <A NAME="Palettes">Palettes</A>
+	<DD>
+	  <DL>
+	    <DT>
+	      <A NAME="Tools">Tools</A>
+	    <DD>
+	      If this item is checked then the tools palette (in the outline and bitmap
+	      views) is visible. Selecting it toggles whether the palette is visible or
+	      not.
+	    <DT>
+	      <A NAME="Layers">Layers</A>
+	    <DD>
+	      If this item is checked then the layers palette (in the outline and bitmap
+	      views) is visible. Selecting it toggles whether the palette is visible or
+	      not.
+	    <DT>
+	      <A NAME="Shades">Shades</A>
+	    <DD>
+	      Only in the bitmap view, and only if editing grey-scale (anti-aliased) fonts.
+	      Controls whether the shades of grey palette is visible or not.
+	    <DT>
+	      <A NAME="Dock">Dock</A> Palettes
+	    <DD>
+	      Allows you to control whether you want the palettes free standing or docked
+	      in the current view.<BR>
+	      The window manager under gnome does not handle this properly. If you want
+	      docked palettes under gnome: Open a window with palettes, select docked palettes
+	      (the palettes will not dock), close the window, reopen the window. The palettes
+	      are now docked and should be from here on.
+	  </DL>
+	<DT>
+	  Glyph <A NAME="GTabs">Tabs</A>
+	<DD>
+	  Controls whether the outline glyph view has a set of tabs of past glyphs
+	  viewed in that window.
+	<DT>
+	  <A NAME="Rulers">Rulers</A>
+	<DD>
+	  In the Glyph Outline View toggles whether rulers appear at the top and to
+	  the left of the editing area.
+	<DT>
+	  <A NAME="HHints">Horizontal Hints</A>
+	<DD>
+	  Controls whether horizontal hints are visible
+	<DT>
+	  <A NAME="VHints">Vertical Hints</A>
+	<DD>
+	  Controls whether vertical hints are visible
+	<DT>
+	  <A NAME="DHints">Diagonal Hints</A>
+	<DD>
+	  Controls whether diagonal hints are visible
+	<DT>
+	  <A NAME="BlueValues">BlueValues</A>
+	<DD>
+	  Controls whether the glyph's PostScript BlueValues are visible
+	<DT>
+	  <A NAME="FamilyBlues">FamilyBlues</A>
+	<DD>
+	  Controls whether the glyph's PostScript FamilyBlues are visible.
+	<DT>
+	  <A NAME="Anchors">Anchors</A>
+	<DD>
+	  Controls whether Anchor points are visible
+	<DT>
+	  <A NAME="CV-HMetrics">Horizontal Metrics</A>
+	<DD>
+	  Controls whether horizontal metrics lines (the width line) are visible.
+	<DT>
+	  <A NAME="CV-VMetrics">Vertical Metrics</A>
+	<DD>
+	  Controls whether vertical metrics lines (the vertical advance line) are visible.
+      </DL>
+    <DT>
       <A NAME="Bigger">Bigger</A> Pixel Size
     <DD>
       In the bitmap view this displays the current glyph in next larger bitmap
@@ -620,42 +729,6 @@
     <DD>
       In the bitmap view this displays the current glyph in next smaller bitmap
       font (if there is one)
-    <DT>
-      <A NAME="Palettes">Palettes</A>
-    <DD>
-      <DL>
-	<DT>
-	  <A NAME="Tools">Tools</A>
-	<DD>
-	  If this item is checked then the tools palette (in the outline and bitmap
-	  views) is visible. Selecting it toggles whether the palette is visible or
-	  not.
-	<DT>
-	  <A NAME="Layers">Layers</A>
-	<DD>
-	  If this item is checked then the layers palette (in the outline and bitmap
-	  views) is visible. Selecting it toggles whether the palette is visible or
-	  not.
-	<DT>
-	  <A NAME="Shades">Shades</A>
-	<DD>
-	  Only in the bitmap view, and only if editing grey-scale (anti-aliased) fonts.
-	  Controls whether the shades of grey palette is visible or not.
-	<DT>
-	  <A NAME="Dock">Dock</A> Palettes
-	<DD>
-	  Allows you to control whether you want the palettes free standing or docked
-	  in the current view.<BR>
-	  The window manager under gnome does not handle this properly. If you want
-	  docked palettes under gnome: Open a window with palettes, select docked palettes
-	  (the palettes will not dock), close the window, reopen the window. The palettes
-	  are now docked and should be from here on.
-      </DL>
-    <DT>
-      Show/Hide <A NAME="Rulers">Rulers</A>
-    <DD>
-      In the Glyph Outline View toggles whether rulers appear at the top and to
-      the left of the editing area.
   </DL>
   <P>
   <H2>

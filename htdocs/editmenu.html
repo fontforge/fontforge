@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 8-Jan-2008 -->
+  <!-- AP: Last modified: 14-Feb-2008 -->
   <TITLE>The Edit Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -128,7 +128,7 @@
     <LI>
       <A HREF="#CopyFg">Copy Fg To Bg</A>
     <LI>
-      [Copy Bg to Fg]
+      <A HREF="#CopyL2L">Copy Layer To Layer</A>
     <LI>
       <A HREF="#Select">Select</A>
       <UL>
@@ -443,7 +443,14 @@
       This command is only available in the Outline and Font Views. It cleans out
       all the splines in the background layer and replaces them with a copy of
       all the splines in the foreground layer. Note: Any background images remain.
-      No references are copied.
+    <DT>
+      <A NAME="CopyL2L">Copy Layer To Layer</A>
+    <DD>
+      This command is only available in the Outline and Font Views. It brings up
+      a dialog which lets you select a base layer to copy from and another layer
+      to copy to. You may also choose to clear the destination layer, or to append
+      to it. Then it copies the contents of the source layer (contours and references,
+      but not images) to the destination layer.
     <DT>
       <A NAME="Select">Select</A>
     <DD>
