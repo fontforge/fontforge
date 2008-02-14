@@ -6155,18 +6155,20 @@ static void CVCopyFgBg(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     if ( cv->b.sc->layers[ly_fore].splines==NULL )
 return;
-    SCCopyLayerToLayer(cv->b.sc,ly_fore,ly_back);
+    SCCopyLayerToLayer(cv->b.sc,ly_fore,ly_back,false);
 }
 
-#ifdef FONTFORGE_CONFIG_COPY_BG_TO_FG
-static void CVCopyBgFg(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+static void CVMenuCopyL2L(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
-    if ( cv->b.sc->layers[ly_back].splines==NULL )
-return;
-    SCCopyLayerToLayer(cv->b.sc,ly_back,ly_fore);
+    CVCopyLayerToLayer(cv);
 }
-#endif
+
+static void CVMenuCompareL2L(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    CVCompareLayerToLayer(cv);
+}
 
 static void CVSelectAll(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
@@ -6337,11 +6339,6 @@ static void cv_edlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e,int is_cv
 	    mi->ti.disabled = cv->b.drawmode!=dm_fore ||
 		    (cv->b.sc->layers[ly_fore].splines==NULL && cv->b.sc->layers[ly_fore].refs==NULL);
 	  break;
-#ifdef FONTFORGE_CONFIG_COPY_BG_TO_FG
-	  case MID_CopyBgToFg:
-	    mi->ti.disabled = cv->b.sc->layers[ly_back].splines==NULL;
-	  break;
-#endif
 	  case MID_CopyFgToBg:
 	    mi->ti.disabled = cv->b.sc->layers[ly_fore].splines==NULL;
 	  break;
@@ -8787,9 +8784,7 @@ static GMenuItem2 edlist[] = {
     /*{ { (unichar_t *) N_("_Elide"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Elide|Alt+Ctl+M"), NULL, NULL, CVElide, MID_Elide },*/
     { { (unichar_t *) N_("_Join"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'J' }, H_("Join|Ctl+Shft+J"), NULL, NULL, CVJoin, MID_Join },
     { { (unichar_t *) N_("Copy _Fg To Bg"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Copy Fg To Bg|Ctl+Shft+C"), NULL, NULL, CVCopyFgBg, MID_CopyFgToBg },
-#ifdef FONTFORGE_CONFIG_COPY_BG_TO_FG
-    { { (unichar_t *) N_("Cop_y Bg To Fg"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Copy Bg To Fg|No Shortcut"), NULL, NULL, CVCopyBgFg, MID_CopyBgToFg },
-#endif
+    { { (unichar_t *) N_("Cop_y Layer To Layer..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Copy Layer To Layer...|No Shortcut"), NULL, NULL, CVMenuCopyL2L, MID_CopyBgToFg },
     { { (unichar_t *) N_("Copy Gri_d Fit"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Copy Grid Fit|No Shortcut"), NULL, NULL, CVMenuCopyGridFit, MID_CopyGridFit },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Select"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, NULL, sllist, sllistcheck },
@@ -8999,6 +8994,8 @@ static GMenuItem2 ellist[] = {
     { { (unichar_t *) N_("_Correct Direction"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'D' }, H_("Correct Direction|Ctl+Shft+D"), NULL, NULL, CVMenuCorrectDir, MID_Correct },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("B_uild"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'u' }, NULL, balist, balistcheck, NULL, MID_BuildAccent },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) N_("Compare Layers..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'u' }, H_("Compare Layers...|No Shortcut"), NULL, NULL, CVMenuCompareL2L },
     { NULL }
 };
 

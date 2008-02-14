@@ -1194,7 +1194,7 @@ typedef struct splinechar {
     unsigned int wasopen: 1;
     unsigned int namechanged: 1;
     unsigned int blended: 1;	/* An MM blended character */
-    unsigned int unused_so_far: 1;
+    unsigned int ticked2: 1;
     unsigned int glyph_class: 3; /* 0=> fontforge determines class automagically, else one more than the class value in gdef so 2+1=>lig, 3+1=>mark */
     unsigned int numberpointsbackards: 1;
     unsigned int instructions_out_of_date: 1;
@@ -2529,7 +2529,7 @@ void putlong(FILE *file,int val);
 void putfixed(FILE *file,real dval);
 int ttfcopyfile(FILE *ttf, FILE *other, int pos, char *table_name);
 
-extern void SCCopyLayerToLayer(SplineChar *sc, int from, int to);
+extern void SCCopyLayerToLayer(SplineChar *sc, int from, int to,int doclear);
 
 extern int hasFreeType(void);
 extern int hasFreeTypeDebugger(void);
@@ -2669,6 +2669,7 @@ enum font_compare_flags { fcf_outlines=1, fcf_exact=2, fcf_warn_not_exact=4,
 	fcf_adddiff2sf1=0x800, fcf_addmissing=0x1000 };
 extern int CompareFonts(SplineFont *sf1, EncMap *map1, SplineFont *sf2,
 	FILE *diffs, int flags);
+extern int LayersSimilar(Layer *ly1, Layer *ly2, double spline_err);
 
 
 # if HANYANG

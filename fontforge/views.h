@@ -995,6 +995,10 @@ extern void SFBdfProperties(SplineFont *sf, EncMap *map, BDFFont *thisone);
 extern GMenuItem2 helplist[];
 extern BasePoint last_ruler_offset[];
 
+extern void CVCopyLayerToLayer(CharView *cv);
+extern void FVCopyLayerToLayer(FontView *fv);
+extern void CVCompareLayerToLayer(CharView *cv);
+extern void FVCompareLayerToLayer(FontView *fv);
 
 extern void MathInit(void);
 extern void SFMathDlg(SplineFont *sf);

@@ -124,7 +124,7 @@ void FVCopyFgtoBg(FontViewBase *fv) {
     for ( i=0; i<fv->map->enccount; ++i )
 	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
 		fv->sf->glyphs[gid]!=NULL )
-	    SCCopyLayerToLayer(fv->sf->glyphs[gid],ly_fore,ly_back);
+	    SCCopyLayerToLayer(fv->sf->glyphs[gid],ly_fore,ly_back,true);
 }
 
 void FVUnlinkRef(FontViewBase *fv) {
