@@ -335,7 +335,7 @@ return( false );
 		    d->ttf_flags |= ttf_flag_pfed_lookupnames;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdGuides)) )
 		    d->ttf_flags |= ttf_flag_pfed_guides;
-		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdGuides)) )
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdLayers)) )
 		    d->ttf_flags |= ttf_flag_pfed_layers;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_TeXTable)) )
 		    d->ttf_flags |= ttf_flag_TeXtable;
@@ -368,7 +368,7 @@ return( false );
 		    d->otf_flags |= ttf_flag_pfed_lookupnames;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdGuides)) )
 		    d->otf_flags |= ttf_flag_pfed_guides;
-		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdGuides)) )
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdLayers)) )
 		    d->otf_flags |= ttf_flag_pfed_layers;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_TeXTable)) )
 		    d->otf_flags |= ttf_flag_TeXtable;
@@ -418,7 +418,7 @@ return( false );
 		    d->otf_flags |= ttf_flag_pfed_lookupnames;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdGuides)) )
 		    d->otf_flags |= ttf_flag_pfed_guides;
-		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdGuides)) )
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_PfEdLayers)) )
 		    d->otf_flags |= ttf_flag_pfed_layers;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_TeXTable)) )
 		    d->psotb_flags |= ttf_flag_TeXtable;
@@ -813,9 +813,12 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
     gcd[k].gd.flags = gg_visible | gg_utf8_popup;
-    label[k].text = (unichar_t *) _("Background");
+    label[k].text = (unichar_t *) _("Save Layers");
     label[k].text_is_1byte = true;
-    gcd[k].gd.popup_msg = (unichar_t *) _("Preserve any background and spiro layers.");
+    gcd[k].gd.popup_msg = (unichar_t *) _(
+	    "Preserve any background and spiro layers.\n"
+	    "Also if we output a truetype font from a\n"
+	    "cubic database, save the cubic splines.");
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_PfEdLayers;
     gcd[k++].creator = GCheckBoxCreate;
