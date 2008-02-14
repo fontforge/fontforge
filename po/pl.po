@@ -19895,7 +19895,7 @@ msgstr "Błędny bądź nieobsługiwany format (%d) podtablicy tablicy „kern�
 
 #: parsettfatt.c:4754 parsettfatt.c:4778 parsettfatt.c:4799
 msgid "End of file in feat table.\n"
-msgstr "Nieoczekiwany koniec pliku w tablicy „feat”."
+msgstr "Nieoczekiwany koniec pliku w tablicy „feat”.\n"
 
 #: parsettfbmf.c:523 parsettfbmf.c:527
 msgid "Load Bitmap Fonts"
