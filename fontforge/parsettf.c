@@ -4838,6 +4838,8 @@ static void ttfFixupReferences(struct ttfinfo *info) {
     int i;
 
     ff_progress_change_line2(_("Fixing up References"));
+    for ( i=0; i<info->glyph_cnt; ++i ) if ( info->chars[i]!=NULL )
+	info->chars[i]->ticked = false;
     for ( i=0; i<info->glyph_cnt; ++i ) {
 	ttfFixupRef(info->chars,i);
 	ff_progress_next();
