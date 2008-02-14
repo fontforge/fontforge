@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 18-Jan-2008 -->
+  <!-- AP: Last modified: 14-Feb-2008 -->
   <TITLE>FontForge -- An outline font editor for PostScript&reg;, TrueType
   and OpenType fonts</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
@@ -107,6 +107,8 @@
 	  <A HREF="#Hints">Hints</A>
 	<LI>
 	  <A HREF="#References">References</A>
+	<LI>
+	  <A HREF="#Layers">Layers</A>
 	<LI>
 	  <A HREF="#Scripts">Scripts</A>
 	<LI>
@@ -497,7 +499,7 @@
   which has its origin on the glyph's base line (the line on which letters
   without descenders rest). Most font formats expect coordinates to be integers
   between -32768 and 32767, FontForge uses real numbers internally but (usually)
-  rounds to the nearest integer when generating a font file. 
+  rounds to the nearest integer when generating a font file.
   <P>
   Generally it is a good idea to restrict yourself to integral coordinates.
   TrueType fonts can only contain integral coordinates so if you use a non-integral
@@ -816,6 +818,67 @@
   but it has implications for instructing TrueType, and, to a lesser extent,
   hinting PostScript. Most people can ignore this, but if you are interested
   <A HREF="ref-caveats.html">follow this<B></B> link</A>.
+  <H3>
+    <A NAME="Layers">Layers</A>
+  </H3>
+  <P>
+  A font may have several layers. When FontForge creates a new font it will
+  have 2 real layers (the foreground and background layers) and a sort of
+  half-layer for guidelines which is shared by all glyphs. In normal fonts
+  all glyphs have the same number of layers (This is not true of Type3 fonts,
+  and <A HREF="#Type3">I'll talk about them later.</A>)
+  <P>
+  Both the foreground layer and the background layer have certain predefined
+  meanings: The fontview works on the foreground layer, and generally that
+  is what the font IS. The background layer can contain all sorts of stuff,
+  basically whatever you want it to, but any images in it may be autotraced
+  into the foreground layer.
+  <P>
+  You may add other layers with the
+  <CODE><A HREF="fontinfo.html#Layers">Element-&gt;Font Info-&gt;Layers
+  </A></CODE>pane. Each layer may have a name and a different kind of splines
+  (quadratic or cubic).
+  <P>
+  One potential use of addtional layers: Many people find it easier to edit
+  using cubic splines but like to produce truetype fonts with quadratic splines.
+  You can use one layer to hold the cubic splines and another to hold the
+  quadratics. There are commands for comparing layers
+  (<CODE><A HREF="elementmenu.html#CompareL2L">Element-&gt;Compare Layer To
+  Layer</A></CODE>) and others for copying one layer to another (and adjusting
+  the splines to fit the new layer:
+  <CODE><A HREF="editmenu.html#CopyL2L">Edit-&gt;Copy Layer To
+  Layer</A></CODE>).
+  <P>
+  It seems a shame to have both a valid cubic and a valid quadratic font in
+  a database and only be able to produce a font from one of them, so the
+  <CODE><A HREF="generate.html">File-&gt;Generate Fonts</A> </CODE>command
+  will allow you to output whatever layer you want into the font. (Note that
+  all layers will share the same hints, instructions, character set, bitmaps,
+  etc. It is only the outlines which differ.) Furthermore, you may select to
+  store all the layers of a font into an sfnt (TrueType / OpenType font) with
+  the <A HREF="generate.html#Options"><CODE>[]Layers</CODE> checkbox of the
+  PfaEdit table of the <CODE>[Options]</CODE></A><CODE> </CODE>dialog.
+  <H4>
+    <A NAME="Type3">Type3 Fonts</A>
+  </H4>
+  <P>
+  Most people aren't interested in editing <A HREF="multilayer.html">Type3
+  PostScript fonts </A>(nor the equivalent SVG font), but if you want to, FontForge
+  can (you must configure it to do so however, but default it won't). Here
+  each layer represents a different drawing operation, and may specify a different
+  color, stroke, fill, etc. Layers are not font-wide, each glyph has its own
+  set of layers (which are not named). You can
+  <A HREF="multilayer.html#Layer">create new layers with a popup menu </A>in
+  the layers pane of the outline view.
+  <H4>
+    Guidelines
+  </H4>
+  <P>
+  In FontForge guidelines live in their own mini-layer (it isn't a full layer
+  because all glyphs share the same set of guidelines rather than having an
+  individual layer for each glyph). It can be edited just like any other layer
+  and you may have guidelines of any shape you desire. You may also drag out
+  horizontal and vertical guidelines from the edges of the outline glyph view.
   <H3>
     <A NAME="Scripts">Scripts</A>
   </H3>

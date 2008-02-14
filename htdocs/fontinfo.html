@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 14-Dec-2000 -->
-  <!-- AP: Last modified: 5-Feb-2008 -->
+  <!-- AP: Last modified: 14-Feb-2008 -->
   <TITLE>Font Info</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -99,6 +99,8 @@
     <LI>
       <A HREF="fontinfo.html#PS-General">General</A>
     <LI>
+      <A HREF="#Layers">Layers</A>
+    <LI>
       <A HREF="#PSUID">PostScript Unique IDs</A>
     <LI>
       <A HREF="fontinfo.html#Private">PostScript Private Dictionary</A>
@@ -172,7 +174,8 @@
   in that section then the names specified here will be used by default in
   ttf files.
   <H2>
-    <IMG SRC="fontinfo-ps.png" WIDTH="376" HEIGHT="608" ALIGN="Right"><A NAME="PS-General">General</A>
+    <IMG SRC="fontinfo-general.png" WIDTH="614" HEIGHT="546" ALIGN="Right"><A
+	NAME="PS-General">General</A>
   </H2>
   <P>
   This sub dialog contains a rather random collection of settings.
@@ -209,24 +212,6 @@
   origin of the design coordinate system to the origin for the purposes of
   vertical metrics.
   <P>
-  If you check <CODE>[*] Quadratic Splines </CODE>then FontForge will use quadratic
-  <A HREF="overview.html#spline">B&eacute;zier</A> splines for this font rather
-  than cubic B&eacute;ziers, this means that FontForge will be using the native
-  spline format of truetype rather than postscript (or opentype). When FontForge
-  generates a font it will convert from whatever format is used internally
-  to whatever format is required for the font, so there will be no problem
-  if this is set incorrectly, but setting it correctly for your font means
-  you get a clearer idea of what the outlines will look like. I find quadratic
-  splines harder to edit with because each spline is less flexible (and a number
-  of FontForge's commands will not work on them), but the advantage of actually
-  seeing what your truetype font will look like may outweigh that.
-  <P>
-  If you have configured FontForge for <A HREF="multilayer.html">multi-layered
-  editing</A> there will also be a radio button here to turn that on.
-  <P>
-  You can also indicate that you are making a stroked font where every spline
-  is stroked with a circular pen of the given width.
-  <P>
   <A NAME="Interpretation">Sadly</A> the encoding is not always sufficient
   for understanding the font's behavior. For example a unicode font designed
   for a chinese system will look very different from a unicode font for a japanese
@@ -235,7 +220,34 @@
   <P>
   When you create a new glyph in a font, fontforge will assign it a name based
   on the current
-  <A HREF="encodingmenu.html#namelist">namelist</A>.<BR Clear=ALL>
+  <A HREF="encodingmenu.html#namelist">namelist</A>.<BR CLEAR=ALL>
+  <H2>
+    <IMG SRC="fontinfo-layers.png" WIDTH="614" HEIGHT="546" ALIGN="Right"><A
+	NAME="Layers">Layers</A>
+  </H2>
+  <P>
+  You may control how many and what types of layers are available in your font.
+  <P>
+  Fonts may be either outlined or stroked, or (if you configured FontForge
+  for <A HREF="multilayer.html">multi-layered editing</A>) type3. You may choose
+  which kind of font you want.
+  <P>
+  You may also decide what kind of splines you want in the font in general,
+  often all the layers will use the same type of splines (so there are radio
+  buttons to make that easy), but it isn't required each layer may be in its
+  own format.
+  <P>
+  If you check <CODE>[*] Quadratic </CODE>then FontForge will use quadratic
+  <A HREF="overview.html#spline">B&eacute;zier</A> splines for this font rather
+  than cubic B&eacute;ziers, this means that FontForge will be using the native
+  spline format of truetype rather than postscript (or opentype). When FontForge
+  generates a font it will convert from whatever format is used internally
+  to whatever format is required for the font, so there will be no problem
+  if this is set incorrectly, but setting it correctly for your font means
+  you get a clearer idea of what the outlines will look like. I find quadratic
+  splines harder to edit with because each spline is less flexible, but the
+  advantage of actually seeing what your truetype font will look like may outweigh
+  that.<BR Clear=ALL>
   <H2>
     <IMG SRC="fontinfo-psuid.png" WIDTH="376" HEIGHT="608" ALIGN="Right"><A NAME="PSUID">PostScript
     Unique ID</A>
