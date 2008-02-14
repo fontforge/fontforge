@@ -112,6 +112,8 @@ struct ttfinfo {
 			        /*		  hmtx table for widths */
 			        /*		  post table for names */
 			        /* Or from	  CFF  table for everything in opentype */
+    LayerInfo *layers;
+    int layer_cnt;
     BDFFont *bitmaps;
     char *cidregistry, *ordering;
     int supplement;

@@ -1664,16 +1664,19 @@ static void CVLCheckBackgroundCount(CharView *cv) {
     GGadgetMove(GWidgetGetControl(cvlayers,CID_VGrid),7,y);
     GGadgetMove(GWidgetGetControl(cvlayers,CID_EGrid),30,y);
     y += layer_height;
-    for ( i=j=0; i<sc->layer_cnt; ++i ) {
+    for ( i=j=0; i<layers_max; ++i ) {
 	GGadget *e = GWidgetGetControl(cvlayers,CID_EBase+i);
 	GGadget *v = GWidgetGetControl(cvlayers,CID_VBase+i);
-	GGadgetSetTitle8(e,sc->parent->layers[i].name);
-	GGadgetGetDesiredVisibleSize(e,&size,&inner);
-	GGadgetResize(e,size.width,size.height);
-	if ( size.width>maxwidth ) maxwidth = size.width;
+	if ( i<sc->layer_cnt ) {
+	    GGadgetSetTitle8(e,sc->parent->layers[i].name);
+	    GGadgetGetDesiredVisibleSize(e,&size,&inner);
+	    GGadgetResize(e,size.width,size.height);
+	    if ( size.width>maxwidth ) maxwidth = size.width;
+	}
 
 	if ( i!=ly_fore ) {
-	    if ( j<cv->layers_off_top || j>=cv->layers_off_top+CV_LAYERS_MAXCNT ) {
+	    if ( j<cv->layers_off_top || j>=cv->layers_off_top+CV_LAYERS_MAXCNT ||
+		    (sc->layer_cnt<=CV_LAYERS_MAXCNT && j>=sc->layer_cnt-1)) {
 		GGadgetSetVisible(v,false);
 		GGadgetSetVisible(e,false);
 	    } else {
