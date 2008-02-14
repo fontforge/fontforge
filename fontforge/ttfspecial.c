@@ -362,23 +362,28 @@ static void pfed_write_data(FILE *ttf, float val, int mod) {
 }
 
 static void pfed_glyph_layer(FILE *layr,Layer *layer, int do_spiro) {
-    int contour_cnt, image_cnt, name_off, i;
+    int contour_cnt, image_cnt, ref_cnt, name_off, i,j;
     SplineSet *ss;
     SplinePoint *sp;
     uint32 base;
     int mod, was_implicit;
+    RefChar *ref;
 
     contour_cnt = 0;
     for ( ss=layer->splines; ss!=NULL; ss=ss->next )
 	++contour_cnt;
     image_cnt = 0;
     /* I'm not doing images yet (if ever) but I leave space for them */
+    ref_cnt = 0;
+    for ( ref=layer->refs; ref!=NULL; ref=ref->next )
+	++ref_cnt;
 
     base = ftell(layr);
     putshort(layr,contour_cnt);
+    putshort(layr,ref_cnt);
     putshort(layr,image_cnt);
 
-    name_off = 2*2 + 4 * contour_cnt;
+    name_off = 2*3 + 4 * contour_cnt + (4*7+2)* ref_cnt;
     for ( ss=layer->splines; ss!=NULL; ss=ss->next ) {
 	putshort(layr,0);			/* fill in later */
 	if ( ss->contour_name!=NULL ) {
@@ -387,6 +392,11 @@ static void pfed_glyph_layer(FILE *layr,Layer *layer, int do_spiro) {
 	} else {
 	    putshort(layr,0);
 	}
+    }
+    for ( ref=layer->refs; ref!=NULL; ref=ref->next ) {
+	for ( j=0; j<6; ++j )
+	    putlong(layr, (int) rint(ref->transform[j]*32768));
+	putshort(layr,ref->sc->ttf_glyph);
     }
     for ( ss=layer->splines; ss!=NULL; ss=ss->next ) {
 	if ( ss->contour_name!=NULL ) {
@@ -398,7 +408,7 @@ static void pfed_glyph_layer(FILE *layr,Layer *layer, int do_spiro) {
     contour_cnt=0;
     for ( ss=layer->splines; ss!=NULL; ss=ss->next, ++contour_cnt ) {
 	uint32 pos = ftell(layr);
-	fseek( layr, base + 4 + 4*contour_cnt, SEEK_SET);
+	fseek( layr, base + 6 + 4*contour_cnt, SEEK_SET);
 	putshort( layr, pos-base);
 	fseek( layr, pos, SEEK_SET );
 
@@ -603,7 +613,7 @@ return;
     for ( i=0; i<h; ++i ) if ( hs[i].name!=NULL )
 	namelen += strlen( hs[i].name )+1;
 
-    putshort(guid,0);			/* sub-table version number */
+    putshort(guid,1);			/* sub-table version number */
     putshort(guid,v);
     putshort(guid,h);
     putshort(guid,0);			/* Diagonal lines someday? nothing for now */
@@ -650,7 +660,7 @@ static void PfEd_Layer(SplineFont *sf, struct glyphinfo *gi, int layer, int dosp
     for ( i=0; i<gi->gcnt; ++i ) if ( gi->bygid[i]!=-1 )
 	if ( (sc=sf->glyphs[gi->bygid[i]])!=NULL ) {
 	    sc->ticked = false;
-	    if ( (!dospiro && sc->layers[layer].splines!=NULL ) ||
+	    if ( (!dospiro && (sc->layers[layer].splines!=NULL || sc->layers[layer].refs!=NULL) ) ||
 		    (dospiro && pfed_has_spiros(&sc->layers[layer])) )
 		sc->ticked=true;
 	}
@@ -751,7 +761,7 @@ return;
     pfed->subtabs[pfed->next].tag = layr_TAG;
     pfed->subtabs[pfed->next++].data = layr = tmpfile();
 
-    putshort(layr,0);			/* sub-table version */
+    putshort(layr,1);			/* sub-table version */
     putshort(layr,cnt);			/* layer count */
 
     name_off = 4 + 8 * cnt;
@@ -1267,19 +1277,40 @@ static void pfed_read_spiro_contour(FILE *ttf,SplineSet *ss,
 }
 
 static void pfed_read_glyph_layer(FILE *ttf,struct ttfinfo *info,Layer *ly,
-	uint32 base, int type) {
-    int cc, ic, i;
+	uint32 base, int type, int version) {
+    int cc, ic, rc, i, j;
     SplineSet *ss;
     struct contours { int data_off, name_off; SplineSet *ss; } *contours;
+    int gid;
+    RefChar *last, *cur;
 
     fseek(ttf,base,SEEK_SET);
     cc = getushort(ttf);
+    rc = 0;
+    if ( version==1 )
+	rc = getushort(ttf);
     ic = getushort(ttf);
     contours = galloc(cc*sizeof(struct contours));
     for ( i=0; i<cc; ++i ) {
 	contours[i].data_off = getushort(ttf);
 	contours[i].name_off = getushort(ttf);
     }
+    last = NULL;
+    for ( i=0; i<rc; ++i ) {
+	cur = RefCharCreate();
+	for ( j=0; j<6; ++j )
+	    cur->transform[j] = getlong(ttf)/32768.0;
+	gid = getushort(ttf);
+	cur->sc = info->chars[gid];
+	cur->orig_pos = gid;
+	cur->unicode_enc = cur->sc->unicodeenc;
+	if ( last==NULL )
+	    ly->refs = cur;
+	else
+	    last->next = cur;
+	last = cur;
+    }
+    
     ss = ly->splines;			/* Only relevant for spiros where the live in someone else's layer */
     for ( i=0; i<cc; ++i ) {
 	if ( type!=1 ) {		/* Not spiros */
@@ -1305,11 +1336,13 @@ static void pfed_read_glyph_layer(FILE *ttf,struct ttfinfo *info,Layer *ly,
 
 static void pfed_readguidelines(FILE *ttf,struct ttfinfo *info,uint32 base) {
     int i,v,h,off;
+    int version;
     SplinePoint *sp, *nsp;
     SplineSet *ss;
 
     fseek(ttf,base,SEEK_SET);
-    if ( getushort(ttf)!=0 )
+    version = getushort(ttf);
+    if ( version>1 )
 return;			/* Bad version number */
     v = getushort(ttf);
     h = getushort(ttf);
@@ -1317,7 +1350,7 @@ return;			/* Bad version number */
     off = getushort(ttf);
 
     if ( off!=0 ) {
-	pfed_read_glyph_layer(ttf,info,&info->guidelines,base+off,info->to_order2?2:3);
+	pfed_read_glyph_layer(ttf,info,&info->guidelines,base+off,info->to_order2?2:3,version);
     } else {
 	struct npos { int pos; int offset; } *vs, *hs;
 	vs = galloc(v*sizeof(struct npos));
@@ -1357,8 +1390,19 @@ return;			/* Bad version number */
     }
 }
 
+static void pfed_redo_refs(SplineChar *sc,int layer) {
+    RefChar *refs;
+
+    sc->ticked = true;
+    for ( refs=sc->layers[layer].refs; refs!=NULL; refs=refs->next ) {
+	if ( !refs->sc->ticked )
+	    pfed_redo_refs(refs->sc,layer);
+	SCReinstanciateRefChar(sc,refs,layer);
+    }
+}
+
 static void pfed_read_layer(FILE *ttf,struct ttfinfo *info,int layer,int type, uint32 base,
-	uint32 start) {
+	uint32 start,int version) {
     uint32 *loca = gcalloc(info->glyph_cnt,sizeof(uint32));
     int i,j;
     SplineChar *sc;
@@ -1381,20 +1425,28 @@ static void pfed_read_layer(FILE *ttf,struct ttfinfo *info,int layer,int type, u
 	    Layer *ly;
 	    sc = info->chars[j];
 	    ly = &sc->layers[layer];
-	    pfed_read_glyph_layer(ttf,info,ly,base+loca[j],type);
+	    if ( loca[j]!=0 )
+		pfed_read_glyph_layer(ttf,info,ly,base+loca[j],type,version);
 	}
     }
     free(ranges); free(loca);
+
+    for ( i=0; i<info->glyph_cnt; ++i ) if ( info->chars[i]!=NULL )
+	info->chars[i]->ticked = false;
+    for ( i=0; i<info->glyph_cnt; ++i ) if ( info->chars[i]!=NULL )
+	pfed_redo_refs(info->chars[i],layer);
 }
 
 static void pfed_readotherlayers(FILE *ttf,struct ttfinfo *info,uint32 base) {
     int i, l, lcnt, spiro_index, gid;
+    int version;
     struct layer_info { int type, name_off, data_off; char *name; } *layers;
     int non_spiro_cnt=0;
     SplineChar *sc;
 
     fseek(ttf,base,SEEK_SET);
-    if ( getushort(ttf)!=0 )
+    version = getushort(ttf);
+    if ( version>1 )
 return;			/* Bad version number */
     lcnt = getushort(ttf);
     layers = galloc(lcnt*sizeof(struct layer_info));
@@ -1444,10 +1496,10 @@ return;			/* Bad version number */
 	}
     }
     if ( spiro_index!=-1 )
-	pfed_read_layer(ttf,info,ly_fore,layers[spiro_index].type,base,base+layers[spiro_index].data_off);
+	pfed_read_layer(ttf,info,ly_fore,layers[spiro_index].type,base,base+layers[spiro_index].data_off,version);
     l = 0;
     for ( i=0; i<lcnt; ++i ) if ( layers[i].type==2 || layers[i].type==3 ) {
-	pfed_read_layer(ttf,info,l,layers[i].type,base,base+layers[i].data_off);
+	pfed_read_layer(ttf,info,l,layers[i].type,base,base+layers[i].data_off,version);
 	if ( l==0 ) l=2; else ++l;
     }
     for ( i=0; i<lcnt; ++i )
