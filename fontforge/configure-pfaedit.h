@@ -119,13 +119,6 @@
 /*									      */
 
 
-/* Yoshiki Hayashi wants a copy background to foreground command in the       */
-/*  outline view. Setting this flag will enable his patch		      */
-/*									      */
-/* #define FONTFORGE_CONFIG_COPY_BG_TO_FG				      */
-/*									      */
-
-
 /* Harald Harders would like to be able to generate a PFM file without        */
 /*  creating a font along with it. I don't see the need for this, but he pro- */
 /*  vided a patch. Setting this flag will enable his patch		      */
@@ -268,6 +261,20 @@
 /*  "x' = x, y' = y+sin(x)" would not produce anything useful when applied to */
 /*  a long line segment like [0,100]...[100,100], but if that were broken up  */
 /*  into sub-segments each pi long the results would be much better */
+
+
+/******* Don't need this any longer as copy layer 2 layer is always available */
+/* Yoshiki Hayashi wants a copy background to foreground command in the       */
+/*  outline view. Setting this flag will enable his patch		      */
+/*									      */
+/* #define FONTFORGE_CONFIG_COPY_BG_TO_FG				      */
+/*									      */
+
+
+/* ************************************************************************** */
+/* **************************** Numeric Settings **************************** */
+/* ************************************************************************** */
+
 
 /* The number of files displayed in the "File->Recent" menu */
 #define RECENT_MAX	10

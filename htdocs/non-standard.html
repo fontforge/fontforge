@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 30-Jun-2003 -->
-  <!-- AP: Last modified: 13-Jan-2008 -->
+  <!-- AP: Last modified: 13-Feb-2008 -->
   <TITLE>Non standard extensions used by FontForge in True/Open Type</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -357,7 +357,7 @@
       <TR>
 	<TD>uint16</TD>
 	<TD>version</TD>
-	<TD>0</TD>
+	<TD>1</TD>
       </TR>
       <TR>
 	<TD>uint16</TD>
@@ -422,26 +422,17 @@
       </TR>
       <TR>
 	<TD>uint16</TD>
+	<TD>count</TD>
+	<TD>of references (not present in version 0 layers)</TD>
+      </TR>
+      <TR>
+	<TD>uint16</TD>
 	<TD>mbz</TD>
 	<TD>reserved for a count of images</TD>
       </TR>
     </TABLE>
     <P>
     This is followed by an array of structures describing each contour
-    <TABLE CELLPADDING="2" BGCOLOR="#8080ff">
-      <TR>
-	<TD>uint16</TD>
-	<TD>count</TD>
-	<TD>of contours</TD>
-      </TR>
-      <TR>
-	<TD>uint16</TD>
-	<TD>mbz</TD>
-	<TD>reserved for a count of images</TD>
-      </TR>
-    </TABLE>
-    <P>
-    The sub-table header begins with a version number, and a count of ranges
     <TABLE CELLPADDING="2" BGCOLOR="#8080ff">
       <TR>
 	<TD>uint16</TD>
@@ -458,7 +449,22 @@
     <P>
     All offsets from the start of the glyph-layer structure.
     <P>
-    Contour data lives in a variable length block. It's basic idea is that it
+    This is followed by an array of structures describing each reference
+    <TABLE CELLPADDING="2" BGCOLOR="#8080ff">
+      <TR>
+	<TD>fixed16.16</TD>
+	<TD>transform[6]</TD>
+	<TD>A PostScript transformaton matrix where each member is a signed 4 byte
+	  integers which should be divided by 32768.0 to allow for non-integral values</TD>
+      </TR>
+      <TR>
+	<TD>uint16</TD>
+	<TD>gid</TD>
+	<TD>The Glyph ID of the glyph being referred to</TD>
+      </TR>
+    </TABLE>
+    <P>
+    Contour data live in a variable length block. It's basic idea is that it
     is a list of &lt;command&gt;, &lt;data&gt; pairs. Each command is a byte
     which consists of two parts, a verb which specifies what happens (and how
     many items of data are needed) and a modifier which specifies how each data
@@ -639,7 +645,7 @@
       <TR>
 	<TD>uint16</TD>
 	<TD>version</TD>
-	<TD>0</TD>
+	<TD>1</TD>
       </TR>
       <TR>
 	<TD>uint16</TD>
@@ -696,7 +702,7 @@
 	<TD>offset</TD>
 	<TD>to an array of offsets, one for each GID in the range. The offsets in
 	  this array may be 0. These offsets in turn point to a
-	  <A HREF="glyph-layer">glyph-layer structure</A></TD>
+	  <A HREF="#glyph-layer">glyph-layer structure</A></TD>
       </TR>
     </TABLE>
     <P>
