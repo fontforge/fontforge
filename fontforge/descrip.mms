@@ -1,5 +1,5 @@
 # Makefile for OpenVMS
-# Date : 4 January 2007
+# Date : 14 February 2008
 
 CFLAGS=/nowarn/incl=([-.inc])/name=(as_is,short)/define=(\
 	"_STATIC_LIBFREETYPE=1","_STATIC_LIBPNG=1","HAVE_LIBINTL_H=1",\
@@ -52,15 +52,10 @@ fontforge_OBJECTS10=asmfpst.obj,sflayout.obj,searchview.obj,\
 	fvmetricsdlg.obj,clipnoui.obj,autowidthdlg.obj,macencui.obj,\
 	savefont.obj,mmdlg.obj,effectsui.obj,langfreq.obj,ttfinstrsui.obj
 
-fontforge_OBJECTS11=libstamp.obj,exelibstamp.obj,clipui.obj
+fontforge_OBJECTS11=libstamp.obj,exelibstamp.obj,clipui.obj,layer2layer.obj
 
-#fontforge.exe : startui.obj lff.opt xlib.opt [-.libs]libfontforge.exe
-#        link/exec=fontforge.exe startui,lff/opt,[-.libs]LIBGDRAW/lib,\
-#        [-.libs]LIBGUTIL/lib,LIBGUNICODE/lib,[]xlib.opt/opt
-fontforge.exe : startui.obj [-.libs]libfontforge.exe xlib.opt
-        link/exec=fontforge.exe startui,[-.libs]libfontforge/lib,\
-	[-.libs]LIBGDRAW/lib,[-.libs]LIBGUTIL/lib,LIBGUNICODE/lib,\
-	[]xlib.opt/opt
+fontforge.exe : startui.obj lff.opt xlib.opt [-.libs]libfontforge.exe
+        link/exec=fontforge.exe startui,lff/opt,xlib.opt/opt
 
 [-.libs]libfontforge.exe : $(fontforge_OBJECTS) $(fontforge_OBJECTS1)\
 	$(fontforge_OBJECTS2) $(fontforge_OBJECTS3) $(fontforge_OBJECTS4)\
@@ -87,12 +82,14 @@ fontforge.exe : startui.obj [-.libs]libfontforge.exe xlib.opt
 	@ WRITE_ FILE "$(fontforge_OBJECTS9)"
 	@ WRITE_ FILE "$(fontforge_OBJECTS10)"
 	@ WRITE_ FILE "$(fontforge_OBJECTS11)"
+	@ write_ file "[-.libs]LIBGDRAW/lib"
+	@ write_ file "[-.libs]LIBGUTIL/lib"
+	@ write_ file "[-.libs]LIBGUNICODE/lib"
 	@ CLOSE_ FILE
 	@ $(MMS)$(MMSQUALIFIERS)/ignore=warning lff_vms
 	@ WRITE_ SYS$OUTPUT "  linking libfontforge.exe ..."
 	@ LINK_/NODEB/SHARE=[-.libs]libfontforge.exe/MAP=lff.map/FULL \
-	lff1.opt/opt,startui.obj,lff_vms.opt/opt,[-.libs]LIBGDRAW/lib,\
-	[-.libs]LIBGUTIL/lib,LIBGUNICODE/lib,[-.fontforge]xlib.opt/opt
+	lff1.opt/opt,startui.obj,lff_vms.opt/opt,[-.fontforge]xlib.opt/opt
 	library/create [-.libs]libfontforge.olb $(fontforge_OBJECTS)
 	library [-.libs]libfontforge.olb $(fontforge_OBJECTS1)
 	library [-.libs]libfontforge.olb $(fontforge_OBJECTS2)
@@ -276,3 +273,4 @@ exelibstamp.obj : exelibstamp.pre
 	cc $(CFLAGS) exelibstamp.c
 	delete exelibstamp.c;*
 clipui.obj : clipui.c
+layer2layer.obj : layer2layer.c
