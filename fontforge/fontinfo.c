@@ -8234,8 +8234,9 @@ return;
     llabel[k].text_in_resource = true;
     lgcd[k].gd.label = &llabel[k];
     lgcd[k].gd.flags = sf->multilayer || ltype>=0 ? (gg_visible | gg_utf8_popup ) :
-	sf->grid.order2 ? (gg_visible | gg_enabled | gg_cb_on | gg_utf8_popup) :
 	    (gg_visible | gg_enabled | gg_utf8_popup);
+    if ( sf->grid.order2 )
+	lgcd[k].gd.flags |= gg_cb_on;
     lgcd[k].gd.cid = CID_GuideOrder2;
     lgcd[k].creator = GCheckBoxCreate;
     lgcd[k++].gd.popup_msg = (unichar_t *) _(
@@ -8288,8 +8289,9 @@ return;
     llabel[k].text_in_resource = true;
     lgcd[k].gd.label = &llabel[k];
     lgcd[k].gd.flags = sf->multilayer || ltype>=0 ? (gg_visible | gg_utf8_popup ) :
-	sf->layers[ly_fore].order2 ? (gg_visible | gg_enabled | gg_cb_on | gg_utf8_popup) :
 	    (gg_visible | gg_enabled | gg_utf8_popup);
+    if ( sf->layers[ly_fore].order2 )
+	lgcd[k].gd.flags |= gg_cb_on;
     lgcd[k].gd.cid = CID_ForeOrder2;
     lgcd[k].creator = GCheckBoxCreate;
     lgcd[k++].gd.popup_msg = (unichar_t *) _(
