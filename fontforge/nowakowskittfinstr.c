@@ -1569,6 +1569,9 @@ typedef struct instrct {
 	int othercnt;     /* count of other points to instruct for this edge */
 	int *others;      /* their ttf indices, optimize_edge() is advised */
     } edge;
+
+    /* Some variables for tracking graphics state */
+    int rp0;
 } InstrCt;
 
 /******************************************************************************
@@ -2154,7 +2157,6 @@ static void mark_startenddones(StemInfo *hint, double value, double fudge) {
 static void finish_stem(StemInfo *hint, int shp_rp1, int chg_rp0, InstrCt *ct)
 {
     int i, callargs[5];
-    int rp0 = ct->edge.refpt;
     int EM = ct->gic->sf->ascent + ct->gic->sf->descent;
     real coord = ct->edge.base;
     StdStem *StdW = ct->xdir?&(ct->gic->stdvw):&(ct->gic->stdhw);
@@ -2165,7 +2167,7 @@ static void finish_stem(StemInfo *hint, int shp_rp1, int chg_rp0, InstrCt *ct)
 return;
 
     ClosestStem = CVTSeekStem(ct->xdir, ct->gic, hint->width, true);
-    ct->touched[rp0] |= ct->xdir?tf_x:tf_y;
+    ct->touched[ct->edge.refpt] |= ct->xdir?tf_x:tf_y;
     finish_edge(ct, shp_rp1?SHP_rp1:SHP_rp2);
     mark_startenddones(ct->xdir?ct->sc->vstem:ct->sc->hstem, coord, ct->gic->fudge);
 
@@ -2181,10 +2183,8 @@ return;
     else coord = hint->start;
 
     init_edge(ct, coord, ALL_CONTOURS);
-    if (ct->edge.refpt == -1) {
-        ct->edge.refpt = rp0;
+    if (ct->edge.refpt == -1)
 return;
-    }
 
     if (ClosestStem != NULL) {
 	ct->pt = push2nums(ct->pt, ct->edge.refpt, ClosestStem->cvtindex);
@@ -2226,6 +2226,7 @@ return;
 	}
     }
 
+    if (chg_rp0) ct->rp0 = ct->edge.refpt;
     ct->touched[ct->edge.refpt] |= ct->xdir?tf_x:tf_y;
     finish_edge(ct, SHP_rp2);
     mark_startenddones(ct->xdir?ct->sc->vstem:ct->sc->hstem, coord, ct->gic->fudge);
@@ -2417,7 +2418,7 @@ return;
 	    init_edge(ct, base, ALL_CONTOURS); /* stems don't care */
 	    if (ct->edge.refpt == -1) continue;
 	    update_blue_pts(queue[i], ct);
-	    callargs[0] = ct->edge.refpt;
+	    callargs[0] = ct->rp0 = ct->edge.refpt;
 
 	    if (ct->gic->fpgm_done) {
 	        ct->pt = pushpoints(ct->pt, 3, callargs);
@@ -2452,7 +2453,7 @@ return;
 	    }
 
 	    if (!(ct->touched[ct->edge.refpt]&tf_y || ct->affected[ct->edge.refpt]&tf_y)) {
-		callargs[0] = ct->edge.refpt;
+		callargs[0] = ct->rp0 = ct->edge.refpt;
 
 		if (ct->gic->fpgm_done) {
 		  ct->pt = pushpoints(ct->pt, 3, callargs);
@@ -2467,7 +2468,7 @@ return;
 	    }
 
 	    for (j=0; j<ct->edge.othercnt; j++) {
-		callargs[0] = ct->edge.others[j];
+		callargs[0] = ct->rp0 = ct->edge.others[j];
 
 		if (ct->gic->fpgm_done) {
 		  ct->pt = pushpoints(ct->pt, 3, callargs);
@@ -2537,16 +2538,12 @@ static int first_in_group(StemInfo *firsthint, StemInfo *hint)
  */
 static void geninstrs(InstrCt *ct, StemInfo *hint) {
     real hbase, base, width, hend, stdwidth;
-    int first; /* is thiss the first stem of overlapping stems' cluster? */
-    static int rp0;
+    int first; /* is this the first stem of overlapping stems' cluster? */
 
     /* if this hint has conflicts don't try to establish a minimum distance */
     /* between it and the last stem, there might not be one */
     StemInfo *firsthint = ct->xdir ? ct->sc->vstem : ct->sc->hstem;
     first = first_in_group(firsthint, hint);
-
-    /* We're tracking current rp0 */
-    if (hint == firsthint) rp0 = ct->ptcnt;
 
     /* Check whether to use CVT value or shift the stuff directly */
     stdwidth = ct->xdir?ct->gic->stdvw.width:ct->gic->stdhw.width;
@@ -2566,19 +2563,18 @@ static void geninstrs(InstrCt *ct, StemInfo *hint) {
 	init_edge(ct, hbase, ALL_CONTOURS);
 	if (ct->edge.refpt == -1) return;
 
-	if (rp0 != ct->edge.refpt) {
-	    rp0 = ct->edge.refpt;
-	    ct->pt = pushpoint(ct->pt, rp0);
+	if (ct->rp0 != ct->edge.refpt) {
+	    ct->pt = pushpoint(ct->pt, ct->edge.refpt);
 	    *(ct->pt)++ = MDAP; /* sets rp0 and rp1 */
+	    ct->rp0 = ct->edge.refpt;
 	}
 
 	finish_stem(hint, use_rp1, !hint->hasconflicts, ct);
-	if (!hint->hasconflicts) rp0 = ct->edge.refpt;
 
 	if (hint->startdone) {
 	    ct->pt = pushpoint(ct->pt, ct->edge.refpt);
 	    *(ct->pt)++ = SRP0;
-	    rp0 = ct->edge.refpt;
+	    ct->rp0 = ct->edge.refpt;
 	}
     }
     else {
@@ -2598,37 +2594,35 @@ static void geninstrs(InstrCt *ct, StemInfo *hint) {
 
 	init_edge(ct, hbase, ALL_CONTOURS);
 	if (ct->edge.refpt == -1) return;
-	else rp0 = ct->edge.refpt;
+	else ct->rp0 = ct->edge.refpt; /* not yet rp0. */
 
 	if (!first && hint->hasconflicts) {
-	    ct->pt = pushpoint(ct->pt, rp0);
+	    ct->pt = pushpoint(ct->pt, ct->rp0);
 	    *(ct->pt)++ = MDRP_rp0_rnd_white;
 	    finish_stem(hint, use_rp2, !hint->hasconflicts, ct);
 	}
 	else if (!ct->xdir) {
-	    ct->pt = pushpoint(ct->pt, rp0);
+	    ct->pt = pushpoint(ct->pt, ct->rp0);
 	    *(ct->pt)++ = MDAP_rnd;
 	    finish_stem(hint, use_rp1, !hint->hasconflicts, ct);
 	}
 	else if (hint == firsthint) {
-	    ct->pt = pushpoint(ct->pt, rp0);
+	    ct->pt = pushpoint(ct->pt, ct->rp0);
 	    *(ct->pt)++ = MDRP_rp0_rnd_white;
 	    finish_stem(hint, use_rp2, !hint->hasconflicts, ct);
 	}
 	else {
             if (ct->gic->fpgm_done) {
-	        ct->pt = push2nums(ct->pt, rp0, 1);
+	        ct->pt = push2nums(ct->pt, ct->rp0, 1);
 	        *(ct->pt)++ = CALL;
 	    }
 	    else {
-	        ct->pt = pushpoint(ct->pt, rp0);
+	        ct->pt = pushpoint(ct->pt, ct->rp0);
 	        *(ct->pt)++ = MDRP_rp0_min_rnd_white;
 	    }
 
 	    finish_stem(hint, use_rp2, !hint->hasconflicts, ct);
 	}
-
-        if (!hint->hasconflicts) rp0 = ct->edge.refpt;
     }
 }
 
@@ -2728,6 +2722,7 @@ static void HStemGeninst(InstrCt *ct) {
 		*(ct->pt)++ = CALL;
 	    }
 
+	    ct->rp0 = ct->edge.refpt;
 	    finish_stem(hint, use_rp1, keep_old_rp0, ct);
 	}
 	else if (!hint->startdone || !hint->enddone)
@@ -2743,8 +2738,11 @@ static void HStemGeninst(InstrCt *ct) {
 static void VStemGeninst(InstrCt *ct) {
     StemInfo *hint;
 
-    ct->pt = pushpoint(ct->pt, ct->ptcnt);
-    *(ct->pt)++ = SRP0;
+    if (ct->rp0 != ct->ptcnt) {
+	ct->pt = pushpoint(ct->pt, ct->ptcnt);
+	*(ct->pt)++ = SRP0;
+	ct->rp0 = ct->ptcnt;
+    }
 
     for ( hint=ct->sc->vstem; hint!=NULL; hint=hint->next )
 	if ( !hint->startdone || !hint->enddone )
@@ -2756,6 +2754,7 @@ static void VStemGeninst(InstrCt *ct) {
 	*(ct->pt)++ = DUP;
 	*(ct->pt)++ = MDRP_min_white;
 	*(ct->pt)++ = MDAP_rnd;
+	ct->rp0 = ct->ptcnt+1;
     }
 }
 
@@ -3224,7 +3223,7 @@ return( ct->pt );
 }
 
 /* Finally explicitly touch all affected points by X and Y (unless they
-/* have already been), so that subsequent YUP's can't distort our
+/* have already been), so that subsequent IUP's can't distort our
 /* stems. */
 static uint8 *TouchDStemPoints( InstrCt *ct,DiagPointInfo *diagpts,
     BasePoint *fv ) {
@@ -3633,6 +3632,8 @@ return;
     ct.affected = affected;
     ct.diagstems = NULL;
     ct.diagpts = NULL;
+
+    ct.rp0 = 0;
 
     dogeninstructions(&ct);
 
