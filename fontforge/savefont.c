@@ -67,7 +67,7 @@ char *bitmapextensions[] = { "-*.bdf", ".ttf", ".dfont", ".ttf", ".otb", ".bmap.
 #endif
 
 static int WriteAfmFile(char *filename,SplineFont *sf, int formattype,
-	EncMap *map, int flags, SplineFont *fullsf) {
+	EncMap *map, int flags, SplineFont *fullsf, int layer) {
     char *buf = galloc(strlen(filename)+6), *pt, *pt2;
     FILE *afm;
     int ret;
@@ -92,7 +92,7 @@ static int WriteAfmFile(char *filename,SplineFont *sf, int formattype,
     free(buf);
     if ( afm==NULL )
 return( false );
-    ret = AfmSplineFont(afm,sf,subtype,map,flags&ps_flag_afmwithmarks,fullsf);
+    ret = AfmSplineFont(afm,sf,subtype,map,flags&ps_flag_afmwithmarks,fullsf,layer);
     if ( fclose(afm)==-1 )
 return( false );
     if ( !ret )
@@ -115,7 +115,7 @@ return( false );
 	    free(buf);
 	    if ( afm==NULL )
 return( false );
-	    ret = AfmSplineFont(afm,sf,subtype,map,flags&ps_flag_afmwithmarks,NULL);
+	    ret = AfmSplineFont(afm,sf,subtype,map,flags&ps_flag_afmwithmarks,NULL,layer);
 	    if ( fclose(afm)==-1 )
 return( false );
 	    if ( !ret )
@@ -136,14 +136,14 @@ return( false );
 	free(buf);
 	if ( afm==NULL )
 return( false );
-	ret = AmfmSplineFont(afm,mm,formattype,map);
+	ret = AmfmSplineFont(afm,mm,formattype,map,layer);
 	if ( fclose(afm)==-1 )
 return( false );
     }
 return( ret );
 }
 
-static int WriteTfmFile(char *filename,SplineFont *sf, int formattype, EncMap *map) {
+static int WriteTfmFile(char *filename,SplineFont *sf, int formattype, EncMap *map,int layer) {
     char *buf = galloc(strlen(filename)+6), *pt, *pt2;
     FILE *tfm, *enc;
     int ret;
@@ -164,7 +164,7 @@ static int WriteTfmFile(char *filename,SplineFont *sf, int formattype, EncMap *m
     tfm = fopen(buf,"wb");
     if ( tfm==NULL )
 return( false );
-    ret = TfmSplineFont(tfm,sf,formattype,map);
+    ret = TfmSplineFont(tfm,sf,formattype,map,layer);
     if ( fclose(tfm)==-1 )
 	ret = 0;
 
@@ -205,7 +205,7 @@ return( false );
 return( ret );
 }
 
-static int WriteOfmFile(char *filename,SplineFont *sf, int formattype, EncMap *map) {
+static int WriteOfmFile(char *filename,SplineFont *sf, int formattype, EncMap *map,int layer) {
     char *buf = galloc(strlen(filename)+6), *pt, *pt2;
     FILE *tfm, *enc;
     int ret;
@@ -227,7 +227,7 @@ static int WriteOfmFile(char *filename,SplineFont *sf, int formattype, EncMap *m
     tfm = fopen(buf,"wb");
     if ( tfm==NULL )
 return( false );
-    ret = OfmSplineFont(tfm,sf,formattype,map);
+    ret = OfmSplineFont(tfm,sf,formattype,map,layer);
     if ( fclose(tfm)==-1 )
 	ret = 0;
 
@@ -263,7 +263,7 @@ return( ret );
 #ifndef FONTFORGE_CONFIG_WRITE_PFM
 static
 #endif
-int WritePfmFile(char *filename,SplineFont *sf, int type0, EncMap *map) {
+int WritePfmFile(char *filename,SplineFont *sf, int type0, EncMap *map,int layer) {
     char *buf = galloc(strlen(filename)+6), *pt, *pt2;
     FILE *pfm;
     int ret;
@@ -281,7 +281,7 @@ int WritePfmFile(char *filename,SplineFont *sf, int type0, EncMap *map) {
     free(buf);
     if ( pfm==NULL )
 return( false );
-    ret = PfmSplineFont(pfm,sf,type0,map);
+    ret = PfmSplineFont(pfm,sf,type0,map,layer);
     if ( fclose(pfm)==-1 )
 return( 0 );
 return( ret );
@@ -649,13 +649,13 @@ return( 0 );
     if ( err )
 	ff_post_error(_("Save Failed"),_("Save Failed"));
     if ( !err && (old_ps_flags&ps_flag_afm) && ff_progress_next_stage()) {
-	if ( !WriteAfmFile(filename,&temp,oldformatstate,&encmap,old_ps_flags,sf)) {
+	if ( !WriteAfmFile(filename,&temp,oldformatstate,&encmap,old_ps_flags,sf,layer)) {
 	    ff_post_error(_("Afm Save Failed"),_("Afm Save Failed"));
 	    err = true;
 	}
     }
     if ( !err && (old_ps_flags&ps_flag_tfm) ) {
-	if ( !WriteTfmFile(filename,&temp,oldformatstate,&encmap)) {
+	if ( !WriteTfmFile(filename,&temp,oldformatstate,&encmap,layer)) {
 	    ff_post_error(_("Tfm Save Failed"),_("Tfm Save Failed"));
 	    err = true;
 	}
@@ -839,20 +839,20 @@ return( true );
 	}
     }
     if ( !err && (flags&ps_flag_tfm) ) {
-	if ( !WriteTfmFile(newname,sf,oldformatstate,map)) {
+	if ( !WriteTfmFile(newname,sf,oldformatstate,map,layer)) {
 	    ff_post_error(_("Tfm Save Failed"),_("Tfm Save Failed"));
 	    err = true;
 	}
     }
     if ( !err && (flags&ttf_flag_ofm) ) {
-	if ( !WriteOfmFile(newname,sf,oldformatstate,map)) {
+	if ( !WriteOfmFile(newname,sf,oldformatstate,map,layer)) {
 	    ff_post_error(_("Ofm Save Failed"),_("Ofm Save Failed"));
 	    err = true;
 	}
     }
     if ( !err && (flags&ps_flag_afm) ) {
 	ff_progress_increment(-sf->glyphcnt);
-	if ( !WriteAfmFile(newname,sf,oldformatstate,map,flags,NULL)) {
+	if ( !WriteAfmFile(newname,sf,oldformatstate,map,flags,NULL,layer)) {
 	    ff_post_error(_("Afm Save Failed"),_("Afm Save Failed"));
 	    err = true;
 	}
@@ -867,7 +867,7 @@ return( true );
     if ( !err && (flags&ps_flag_pfm) && !iscid ) {
 	ff_progress_change_line1(_("Saving PFM File"));
 	ff_progress_increment(-sf->glyphcnt);
-	if ( !WritePfmFile(newname,sf,oldformatstate==ff_ptype0,map)) {
+	if ( !WritePfmFile(newname,sf,oldformatstate==ff_ptype0,map,layer)) {
 	    ff_post_error(_("Pfm Save Failed"),_("Pfm Save Failed"));
 	    err = true;
 	}

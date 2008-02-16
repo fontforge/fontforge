@@ -905,11 +905,11 @@ static void AfmLigOut(FILE *afm, SplineChar *sc) {
     }
 }
 
-static void AfmSplineCharX(FILE *afm, SplineChar *sc, int enc) {
+static void AfmSplineCharX(FILE *afm, SplineChar *sc, int enc, int layer) {
     DBounds b;
     int em = (sc->parent->ascent+sc->parent->descent);
 
-    SplineCharFindBounds(sc,&b);
+    SplineCharLayerFindBounds(sc,layer,&b);
     /*fprintf( afm, "CX <%04x> ; WX %d ; N %s ; B %d %d %d %d ;",*/
     fprintf( afm, "C %d ; WX %d ; ", enc, sc->width*1000/em );
     if ( sc->parent->hasvmetrics )
@@ -932,11 +932,11 @@ static void AfmZapfCharX(FILE *afm, int zi) {
 	    zapfbb[zi][0], zapfbb[zi][1], zapfbb[zi][2], zapfbb[zi][3]);
 }
 
-static void AfmSplineChar(FILE *afm, SplineChar *sc, int enc) {
+static void AfmSplineChar(FILE *afm, SplineChar *sc, int enc,int layer) {
     DBounds b;
     int em = (sc->parent->ascent+sc->parent->descent);
 
-    SplineCharFindBounds(sc,&b);
+    SplineCharLayerFindBounds(sc,layer,&b);
     fprintf( afm, "C %d ; WX %d ; ", enc, sc->width*1000/em );
     if ( sc->parent->hasvmetrics )
 	fprintf( afm, "WY %d ; ", sc->vwidth*1000/em );
@@ -950,11 +950,11 @@ static void AfmSplineChar(FILE *afm, SplineChar *sc, int enc) {
     ff_progress_next();
 }
 
-static void AfmCIDChar(FILE *afm, SplineChar *sc, int enc) {
+static void AfmCIDChar(FILE *afm, SplineChar *sc, int enc,int layer) {
     DBounds b;
     int em = (sc->parent->ascent+sc->parent->descent);
 
-    SplineCharFindBounds(sc,&b);
+    SplineCharLayerFindBounds(sc,layer,&b);
     fprintf( afm, "C -1 ; WX %d ; ", sc->width*1000/em );
     if ( sc->parent->hasvmetrics )
 	fprintf( afm, "WY %d ; ", sc->vwidth*1000/em );
@@ -1092,7 +1092,7 @@ return( -1 );
 }
 
 static void AfmSplineFontHeader(FILE *afm, SplineFont *sf, int formattype,
-	EncMap *map, SplineFont *fullsf) {
+	EncMap *map, SplineFont *fullsf,int layer) {
     DBounds b;
     real width;
     int i, j, cnt, max;
@@ -1130,7 +1130,7 @@ static void AfmSplineFontHeader(FILE *afm, SplineFont *sf, int formattype,
 		    sc->unicodeenc==0x3c1 ||
 		    sc->unicodeenc==0x406 || sc->unicodeenc==0x445 ||
 		    sc->unicodeenc==0x440 ) {
-		SplineCharFindBounds(sc,&b);
+		SplineCharLayerFindBounds(sc,layer,&b);
 		if ( sc->unicodeenc=='I' )
 		    caph = b.maxy;
 		else if ( caph==0 && (sc->unicodeenc==0x399 || sc->unicodeenc==0x406))
@@ -1199,7 +1199,7 @@ static void AfmSplineFontHeader(FILE *afm, SplineFont *sf, int formattype,
 	if ( sf->version!=NULL ) fprintf( afm, "Version %s\n", sf->version );
 	fprintf( afm, "EncodingScheme %s\n", EncodingName(map->enc));
     }
-    if ( iscid ) CIDFindBounds(sf,&b); else SplineFontFindBounds(fullsf!=NULL?fullsf:sf,&b);
+    if ( iscid ) CIDLayerFindBounds(sf,layer,&b); else SplineFontLayerFindBounds(fullsf!=NULL?fullsf:sf,layer,&b);
     fprintf( afm, "FontBBox %d %d %d %d\n",
 	    (int) floor(b.minx*1000/em), (int) floor(b.miny*1000/em),
 	    (int) ceil(b.maxx*1000/em), (int) ceil(b.maxy*1000/em) );
@@ -1528,16 +1528,16 @@ static void AfmComposites(FILE *afm, SplineFont *sf, struct cc_data *cc, int cc_
     fprintf( afm, "EndComposites\n" );
 }
 
-static void AfmCompositeChar(FILE *afm,struct cc_data *cc) {
+static void AfmCompositeChar(FILE *afm,struct cc_data *cc,int layer) {
     DBounds b, b1;
     SplineChar *sc = cc->base;
     SplineFont *sf = sc->parent;
     int em = (sf->ascent+sf->descent);
     struct cc_accents *cca;
 
-    SplineCharFindBounds(sc,&b);
+    SplineCharLayerFindBounds(sc,layer,&b);
     for ( cca = cc->accents; cca!=NULL; cca = cca->next ) {
-	SplineCharFindBounds(cca->accent,&b1);
+	SplineCharLayerFindBounds(cca->accent,layer,&b1);
 	if ( b1.minx+cca->xoff<b.minx ) b.minx = b1.minx+cca->xoff;
 	if ( b1.maxx+cca->xoff>b.maxx ) b.maxx = b1.maxx+cca->xoff;
 	if ( b1.miny+cca->yoff<b.miny ) b.miny = b1.miny+cca->yoff;
@@ -1556,7 +1556,7 @@ static void AfmCompositeChar(FILE *afm,struct cc_data *cc) {
 static void LigatureClosure(SplineFont *sf);
 
 int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype,EncMap *map,
-	int docc, SplineFont *fullsf) {
+	int docc, SplineFont *fullsf, int layer) {
     int i, j, cnt, vcnt;
     int type0 = ( formattype==ff_ptype0 );
     int otf = (formattype==ff_otf);
@@ -1576,7 +1576,7 @@ int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype,EncMap *map,
 
     if ( iscid && sf->cidmaster!=NULL ) sf = sf->cidmaster;
 
-    AfmSplineFontHeader(afm,sf,formattype,map,fullsf);
+    AfmSplineFontHeader(afm,sf,formattype,map,fullsf,layer);
 
     cnt = 0;
     for ( i=0; i<map->enccount; ++i ) {
@@ -1623,14 +1623,14 @@ int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype,EncMap *map,
 	    break;
 		}
 	    if ( SCWorthOutputting(sc) || (i==0 && sc!=NULL) )
-		AfmCIDChar(afm, sc, i);
+		AfmCIDChar(afm, sc, i,layer);
 	}
     } else if ( type0 && (map->enc->is_unicodebmp ||
 	    map->enc->is_unicodefull)) {
 	for ( i=0; i<map->enccount && i<encmax && i<0x2700; ++i ) {
 	    int gid = map->map[i];
 	    if ( gid!=-1 && SCWorthOutputting(sf->glyphs[gid]) ) {
-		AfmSplineCharX(afm,sf->glyphs[gid],i);
+		AfmSplineCharX(afm,sf->glyphs[gid],i,layer);
 	    }
 	}
 	if ( !anyzapf ) {
@@ -1641,32 +1641,32 @@ int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype,EncMap *map,
 	for ( ; i<map->enccount && i<encmax; ++i ) {
 	    int gid = map->map[i];
 	    if ( gid!=-1 && SCWorthOutputting(sf->glyphs[gid]) ) {
-		AfmSplineCharX(afm,sf->glyphs[gid],i);
+		AfmSplineCharX(afm,sf->glyphs[gid],i,layer);
 	    }
 	}
     } else if ( type0 ) {
 	for ( i=0; i<map->enccount && i<encmax; ++i ) {
 	    int gid = map->map[i];
 	    if ( gid!=-1 && SCWorthOutputting(sf->glyphs[gid]) ) {
-		AfmSplineCharX(afm,sf->glyphs[gid],i);
+		AfmSplineCharX(afm,sf->glyphs[gid],i,layer);
 	    }
 	}
     } else {
 	for ( i=0; i<map->enccount && i<encmax; ++i ) {
 	    int gid = map->map[i];
 	    if ( gid!=-1 && SCWorthOutputting(sf->glyphs[gid]) ) {
-		AfmSplineChar(afm,sf->glyphs[gid],i);
+		AfmSplineChar(afm,sf->glyphs[gid],i,layer);
 	    }
 	}
     }
     for ( ; i<map->enccount ; ++i ) {
 	int gid = map->map[i];
 	if ( gid!=-1 && SCWorthOutputting(sf->glyphs[gid]) ) {
-	    AfmSplineChar(afm,sf->glyphs[gid],-1);
+	    AfmSplineChar(afm,sf->glyphs[gid],-1,layer);
 	}
     }
     for ( i=0; i<cc_cnt; ++i )
-	AfmCompositeChar(afm,&cc[i]);
+	AfmCompositeChar(afm,&cc[i],layer);
     fprintf( afm, "EndCharMetrics\n" );
     vcnt = anykerns(sf,true);
     if ( (cnt = anykerns(sf,false))>0 || vcnt>0 ) {
@@ -1705,10 +1705,10 @@ int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype,EncMap *map,
 return( !ferror(afm));
 }
 
-int AmfmSplineFont(FILE *amfm, MMSet *mm, int formattype,EncMap *map) {
+int AmfmSplineFont(FILE *amfm, MMSet *mm, int formattype,EncMap *map,int layer) {
     int i,j;
 
-    AfmSplineFontHeader(amfm,mm->normal,formattype,map,NULL);
+    AfmSplineFontHeader(amfm,mm->normal,formattype,map,NULL,layer);
     fprintf( amfm, "Masters %d\n", mm->instance_count );
     fprintf( amfm, "Axes %d\n", mm->axis_count );
 
@@ -2159,7 +2159,7 @@ static int revwinmap(int winmap[256], int gid) {
 return( i );
 }
 
-int PfmSplineFont(FILE *pfm, SplineFont *sf, int type0,EncMap *map) {
+int PfmSplineFont(FILE *pfm, SplineFont *sf, int type0,EncMap *map,int layer) {
     int caph=0, xh=0, ash=0, dsh=0, cnt=0, first=-1, samewid=-1, maxwid= -1, last=0, wid=0, ymax=0, ymin=0;
     int kerncnt=0, spacepos=0x20;
     int i, ii;
@@ -2209,7 +2209,7 @@ int PfmSplineFont(FILE *pfm, SplineFont *sf, int type0,EncMap *map) {
 	    if ( sf->glyphs[i]->unicodeenc=='I' || sf->glyphs[i]->unicodeenc=='x' ||
 		    sf->glyphs[i]->unicodeenc=='H' || sf->glyphs[i]->unicodeenc=='d' || 
 		    sf->glyphs[i]->unicodeenc=='p' || sf->glyphs[i]->unicodeenc=='l' ) {
-		SplineCharFindBounds(sf->glyphs[i],&b);
+		SplineCharLayerFindBounds(sf->glyphs[i],layer,&b);
 		if ( ymax<b.maxy ) ymax = b.maxy;
 		if ( ymin>b.miny ) ymin = b.miny;
 		if ( sf->glyphs[i]->unicodeenc=='I' || sf->glyphs[i]->unicodeenc=='H' )
@@ -2900,7 +2900,7 @@ return( 0 );	/* In omega this means Top, Left */
 }
 #endif
 
-static int _OTfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map,int maxc) {
+static int _OTfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map,int maxc,int layer) {
     struct tfm_header header;
     char *full=NULL, *encname;
     int i;
@@ -3043,7 +3043,7 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map
 	    SplineChar *sc = sf->glyphs[map->map[i]];
 	    if ( sc->tex_height==TEX_UNDEF || sc->tex_depth==TEX_UNDEF ||
 		    sc->italic_correction==TEX_UNDEF ) {
-		SplineCharFindBounds(sc,&b);
+		SplineCharLayerFindBounds(sc,layer,&b);
 		heights[i] = b.maxy*scale; depths[i] = -b.miny*scale;
 	    }
 	    if ( sc->tex_height!=TEX_UNDEF )
@@ -3416,15 +3416,15 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map
 return( !ferror(tfm));
 }
 
-int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map) {
-return( _OTfmSplineFont(tfm,sf,formattype,map,256));
+int TfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map,int layer) {
+return( _OTfmSplineFont(tfm,sf,formattype,map,256,layer));
 }
 /* ************************************************************************** */
 /* **************************** Writing OFM files *************************** */
 /* ************************************************************************** */
 
-int OfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map) {
-return( _OTfmSplineFont(tfm,sf,formattype,map,65536));
+int OfmSplineFont(FILE *tfm, SplineFont *sf, int formattype,EncMap *map,int layer) {
+return( _OTfmSplineFont(tfm,sf,formattype,map,65536,layer));
 }
 
 /* ************************************************************************** */

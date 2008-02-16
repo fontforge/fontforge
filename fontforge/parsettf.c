@@ -5300,7 +5300,7 @@ static void SFRelativeWinAsDs(SplineFont *sf) {
     if ( !sf->pfminfo.winascent_add || !sf->pfminfo.windescent_add ||
 	    !sf->pfminfo.hheadascent_add || !sf->pfminfo.hheaddescent_add ) {
 	DBounds b;
-	CIDFindBounds(sf,&b);
+	CIDLayerFindBounds(sf,ly_fore,&b);
 	if ( !sf->pfminfo.winascent_add ) {
 	    sf->pfminfo.winascent_add = true;
 	    if ( sf->pfminfo.os2_winascent < sf->ascent/8 ) {
