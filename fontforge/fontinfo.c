@@ -4856,7 +4856,7 @@ return;
 	double dv=u_strtod(ds,&end);
 	b.miny = *end=='\0' ? -dv : -d->sf->descent;
     } else {
-	CIDFindBounds(d->sf,&b);
+	CIDLayerFindBounds(d->sf,ly_fore,&b);
 	if ( cid == CID_WinDescentIsOff ) b.miny = -b.miny;
     }
 

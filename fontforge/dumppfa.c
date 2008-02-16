@@ -2422,7 +2422,7 @@ static int dumpcidstuff(FILE *out,SplineFont *cidmaster,int flags,EncMap *map,in
     fprintf( out, "  /Supplement %d def\n", cidmaster->supplement );
     fprintf( out, "end def\n\n" );
 
-    CIDFindBounds(cidmaster,&res);
+    CIDLayerFindBounds(cidmaster,layer,&res);
     fprintf( out, "/FontBBox [ %g %g %g %g ] def\n",
 	    floor(res.minx), floor(res.miny),
 	    ceil(res.maxx), ceil(res.maxy));

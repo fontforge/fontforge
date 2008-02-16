@@ -2169,7 +2169,7 @@ static void dumpcffcidtopdict(SplineFont *sf,struct alltabs *at) {
     dumpintoper(cfff,0,(12<<8)|7);
 #endif
 
-    CIDFindBounds(sf,&b);
+    CIDLayerFindBounds(sf,at->gi.layer,&b);
     at->gi.xmin = b.minx;
     at->gi.ymin = b.miny;
     at->gi.xmax = b.maxx;

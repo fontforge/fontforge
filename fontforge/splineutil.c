@@ -840,7 +840,7 @@ void SplineFontFindBounds(SplineFont *sf,DBounds *bounds) {
     }
 }
 
-void CIDFindBounds(SplineFont *cidmaster,DBounds *bounds) {
+void CIDLayerFindBounds(SplineFont *cidmaster,int layer,DBounds *bounds) {
     SplineFont *sf;
     int i;
     DBounds b;
@@ -849,17 +849,17 @@ void CIDFindBounds(SplineFont *cidmaster,DBounds *bounds) {
     if ( cidmaster->cidmaster )
 	cidmaster = cidmaster->cidmaster;
     if ( cidmaster->subfonts==NULL ) {
-	SplineFontFindBounds(cidmaster,bounds);
+	SplineFontLayerFindBounds(cidmaster,layer,bounds);
 return;
     }
 
     sf = cidmaster->subfonts[0];
-    SplineFontFindBounds(sf,bounds);
+    SplineFontLayerFindBounds(sf,layer,bounds);
     factor = 1000.0/(sf->ascent+sf->descent);
     bounds->maxx *= factor; bounds->minx *= factor; bounds->miny *= factor; bounds->maxy *= factor;
     for ( i=1; i<cidmaster->subfontcnt; ++i ) {
 	sf = cidmaster->subfonts[i];
-	SplineFontFindBounds(sf,&b);
+	SplineFontLayerFindBounds(sf,layer,&b);
 	factor = 1000.0/(sf->ascent+sf->descent);
 	b.maxx *= factor; b.minx *= factor; b.miny *= factor; b.maxy *= factor;
 	if ( b.maxx>bounds->maxx ) bounds->maxx = b.maxx;
