@@ -1681,6 +1681,10 @@ static int IsInflectionPoint(int *contourends, BasePoint *bp, SplinePoint *sp) {
     if (IsAnglePoint(contourends, bp, sp))
 return 0;
 
+    /* point of a single-point contour can't be an inflection point. */
+    if (sp->prev != NULL && sp->prev->from != NULL && sp->prev->from == sp)
+return 0;
+
     prev = sp->prev;
     in = 0;
     while (prev != NULL && fabs(in) < CURVATURE_THRESHOLD) {
