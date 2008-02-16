@@ -2250,8 +2250,9 @@ return;
  * is at most 8*ptcnt.
  *
  * For each blue, all yet unprocessed HStems affected are instructed. Ghost
- * hints are reckognised. Hinting other points is disabled here, as they should
- * be marked with ghost stems explicitly to be snapped to the bluezone.
+ * hints are reckognised. If there is at least one stem hint in given blue zone,
+ * autoinstructor will seek for other interesting features, so there is no need
+ * to hint them explicitly.
  *
  * TODO! We have to check whether we have to instruct hints that overlaps with
  * those affected by blues.
@@ -2636,8 +2637,8 @@ static void geninstrs(InstrCt *ct, StemInfo *hint) {
  * done so that remaining stems can be interpolated between them.
  *
  * TODO! CJK hinting will probably need different function (HStemGeninstCJK?)
- *
  * TODO! Instruct top and bottom bearings for fonts which have them.
+ * TODO! Support for ghost hints not tied to any alignment zone.
  */
 static void HStemGeninst(InstrCt *ct) {
     BlueZone *blues = ct->gic->blues;
@@ -2738,6 +2739,7 @@ static void HStemGeninst(InstrCt *ct) {
  * High-level function for instructing vertical stems.
  *
  * TODO! CJK hinting may need different function (VStemGeninstCJK?)
+ * TODO! Support for vertical ghost hints.
  */
 static void VStemGeninst(InstrCt *ct) {
     StemInfo *hint;
@@ -3344,19 +3346,20 @@ static void InterpolateStrongPoints(InstrCt *ct) {
     int p, touchflag = ct->xdir?tf_x:tf_y;
     real tmp, edgelist[192];
     int edgecnt=0, i, j, k, skip;
-    int lpoint = -1;
+    int lpoint = -1, ledge=0;
     int rpoint = -1;
-    int nowrp1 = 0;
+    int nowrp1 = 1;
+    int ldone = 0;
 
     if (firsthint==NULL)
 return;
 
     /* List all stem edges. List only active edges for ghost hints. */
-    for(hint=firsthint; hint!=NULL; hint=hint->next) {
+    for (hint=firsthint; hint!=NULL; hint=hint->next) {
         tmp = hint->start;
 
-	if (hint->ghost && (ct->xdir || hint->width != 20))
-	    tmp -= hint->width;
+	if (hint->ghost && hint->width == 20)
+	    tmp += hint->width;
 
 	for (i=skip=0; i<edgecnt; i++)
 	    if (abs(tmp - edgelist[i]) <= ct->gic->fudge) {
@@ -3366,7 +3369,7 @@ return;
 
 	if (!skip) edgelist[edgecnt++] = tmp;
 
-	if (hint->ghost && !ct->xdir && (hint->width == 20 || hint->width == 21))
+	if (hint->ghost)
     continue;
 
 	tmp+=hint->width;
@@ -3380,7 +3383,7 @@ return;
 	if (!skip) edgelist[edgecnt++] = tmp;
     }
 
-    if (edgecnt == 0)
+    if (edgecnt < 2)
 return;
 
     qsort(edgelist, edgecnt, sizeof(real), sortreals);
@@ -3395,22 +3398,21 @@ return;
 
     /* Interpolate important points between subsequent edges */
     for (i=0; i<edgecnt; i++) {
-        if (rpoint != -1) lpoint = rpoint;
         init_edge(ct, edgelist[i], ALL_CONTOURS);
 	rpoint = ct->edge.refpt;
-	if (rpoint == -1) continue; /* it's harmful when happens */
-	ct->pt = pushpoint(ct->pt, rpoint);
-	if (ct->edge.othercnt) free(ct->edge.others); /* should not happen! */
+	if (ct->edge.othercnt) free(ct->edge.others);
+	if (rpoint == -1 || !(ct->touched[rpoint] & touchflag)) continue;
 
-	if (lpoint==-1) *(ct->pt)++ = SRP1;
+	if (lpoint==-1) {
+	    /* first edge */
+	    lpoint = rpoint;
+	    ledge = i;
+	}
 	else {
-	    if (nowrp1) *(ct->pt)++ = SRP1;
-	    else *(ct->pt)++ = SRP2;
-	    nowrp1 = !nowrp1;
-
 	    real fudge = ct->gic->fudge;
-	    ct->gic->fudge = (edgelist[i]-edgelist[i-1])/2;
-	    init_edge(ct, (edgelist[i]+edgelist[i-1])/2, ALL_CONTOURS);
+	    ct->gic->fudge = (edgelist[i]-edgelist[ledge])/2;
+	    init_edge(ct, (edgelist[i]+edgelist[ledge])/2, ALL_CONTOURS);
+	    ct->gic->fudge = fudge;
 
 	    /* Optimize out all points on DStems, but not DStems' ends. */
 	    for (j=0; j<ct->edge.othercnt; j++) {
@@ -3430,10 +3432,31 @@ return;
 	    /* optimize_blue(ct); */
 	    /* optimize_edge(ct); */
 
-	    /* instruct points */
-	    if (ct->edge.refscore != 0) {
-		if (ct->edge.othercnt)
-		    ct->pt = instructpoints(ct->pt, ct->edge.othercnt,
+	    if (!ct->edge.othercnt) {
+		nowrp1 = 1;
+		lpoint = rpoint;
+		ledge = i;
+		ldone = 0;
+	    }
+	    else if (ct->edge.refscore) {
+		if (!ldone) {
+		    ct->pt = push2points(ct->pt, rpoint, lpoint);
+		    *ct->pt++ = SRP1;
+		    *ct->pt++ = SRP2;
+		}
+		else {
+		    ct->pt = pushpoint(ct->pt, rpoint);
+		    if (nowrp1) *ct->pt++ = SRP1;
+		    else *ct->pt++ = SRP2;
+		    nowrp1 = !nowrp1;
+		}
+
+		lpoint = rpoint;
+		ledge = i;
+		ldone = 1;
+
+		/* instruct points */
+		ct->pt = instructpoints(ct->pt, ct->edge.othercnt,
 						    ct->edge.others, IP);
 
 		for (j=0; j<ct->edge.othercnt; j++) {
@@ -3443,10 +3466,8 @@ return;
 			ct->touched[p] |= touchflag;
 		}
 	    }
-	    else rpoint = -1;
 
 	    if (ct->edge.othercnt) free(ct->edge.others);
-	    ct->gic->fudge = fudge;
 	}
     }
 
