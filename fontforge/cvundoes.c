@@ -1631,7 +1631,7 @@ return( cur );
 static Undoes *SCCopyAll(SplineChar *sc,int layer, enum fvcopy_type full) {
     Undoes *ret, *cur, *last=NULL;
 
-    if ( sc->parent!=NULL && sc->parent->multilayer ) {
+    if ( sc!=NULL && sc->parent!=NULL && sc->parent->multilayer ) {
 	ret = chunkalloc(sizeof(Undoes));
 	if ( sc==NULL ) {
 	    ret->undotype = ut_noop;
