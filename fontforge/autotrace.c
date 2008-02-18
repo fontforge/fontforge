@@ -225,7 +225,7 @@ return( NULL );
     }
 }
 
-void _SCAutoTrace(SplineChar *sc, char **args) {
+void _SCAutoTrace(SplineChar *sc, int layer, char **args) {
     ImageList *images;
     char *prog, *pt;
     SplineSet *new, *last;
@@ -316,7 +316,7 @@ return;
 		transform[4] = images->xoff;
 		transform[5] = images->yoff - images->yscale*ib->height;
 		new = SplinePointListTransform(new,transform,true);
-		if ( sc->layers[ly_fore].order2 ) {
+		if ( sc->layers[layer].order2 ) {
 		    SplineSet *o2 = SplineSetsTTFApprox(new);
 		    SplinePointListsFree(new);
 		    new = o2;
@@ -324,10 +324,10 @@ return;
 		if ( new!=NULL ) {
 		    sc->parent->onlybitmaps = false;
 		    if ( !changed )
-			SCPreserveState(sc,false);
+			SCPreserveLayer(sc,layer,false);
 		    for ( last=new; last->next!=NULL; last=last->next );
-		    last->next = sc->layers[ly_fore].splines;
-		    sc->layers[ly_fore].splines = new;
+		    last->next = sc->layers[layer].splines;
+		    sc->layers[layer].splines = new;
 		    changed = true;
 		}
 	    }
@@ -337,7 +337,7 @@ return;
 	unlink(tempname);		/* Might not be needed, but probably is*/
     }
     if ( changed )
-	SCCharChangedUpdate(sc);
+	SCCharChangedUpdate(sc,layer);
 }
 
 static char **makevector(const char *str) {
@@ -460,7 +460,7 @@ return;
 		fv->sf->glyphs[gid]!=NULL &&
 		fv->sf->glyphs[gid]->layers[ly_back].images &&
 		!fv->sf->glyphs[gid]->ticked ) {
-	    _SCAutoTrace(fv->sf->glyphs[gid], args);
+	    _SCAutoTrace(fv->sf->glyphs[gid], fv->active_layer, args);
 	    if ( !ff_progress_next())
     break;
 	}
@@ -468,7 +468,7 @@ return;
     ff_progress_end_indicator();
 }
 
-void SCAutoTrace(SplineChar *sc,int ask) {
+void SCAutoTrace(SplineChar *sc,int layer, int ask) {
     char **args;
 
     if ( sc->layers[ly_back].images==NULL ) {
@@ -482,7 +482,7 @@ return;
     args = AutoTraceArgs(ask);
     if ( args==(char **) -1 )
 return;
-    _SCAutoTrace(sc, args);
+    _SCAutoTrace(sc, layer, args);
 }
 
 char *ProgramExists(char *prog,char *buffer) {
@@ -699,7 +699,7 @@ return( NULL );
 		    ff_progress_change_total(sf->glyphcnt);
 		    for ( i=0; i<sf->glyphcnt; ++i ) {
 			if ( (sc = sf->glyphs[i])!=NULL && sc->layers[ly_back].images ) {
-			    _SCAutoTrace(sc, args);
+			    _SCAutoTrace(sc, ly_fore, args);
 			    if ( mf_clearbackgrounds ) {
 				GImageDestroy(sc->layers[ly_back].images->image);
 			        free(sc->layers[ly_back].images);

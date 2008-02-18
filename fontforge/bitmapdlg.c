@@ -271,6 +271,7 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
 
     bd.bd.fv = (FontViewBase *) fv;
     bd.bd.sc = sc;
+    bd.bd.layer = fv!=NULL ? fv->b.active_layer : ly_fore;
     bd.bd.sf = fv->b.cidmaster ? fv->b.cidmaster : fv->b.sf;
     bd.bd.isavail = isavail;
     bd.bd.done = false;

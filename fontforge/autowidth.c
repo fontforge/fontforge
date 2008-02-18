@@ -278,19 +278,19 @@ static void ApplyChanges(WidthInfo *wi) {
 	transform[4] = ch->newl-ch->lbearing;
 	if ( transform[4]!=0 ) {
 	    FVTrans(wi->fv,ch->sc,transform,rsel,false);
-	    SCCharChangedUpdate(ch->sc);
+	    SCCharChangedUpdate(ch->sc,ly_none);
 	}
     }
     free(rsel);
 
     for ( i=0; i<wi->real_lcnt; ++i ) {
 	ch = wi->left[i];
-	SplineCharFindBounds(ch->sc,&bb);
+	SplineCharLayerFindBounds(ch->sc,wi->layer,&bb);
 	width = rint(bb.maxx + ch->newr);
 	if ( width!=ch->sc->width ) {
 	    SCPreserveWidth(ch->sc);
 	    SCSynchronizeWidth(ch->sc,width,ch->sc->width,wi->fv);
-	    SCCharChangedUpdate(ch->sc);
+	    SCCharChangedUpdate(ch->sc,ly_none);
 	}
     }
 }
@@ -480,23 +480,23 @@ static void SSFindEdges(SplineSet *spl,struct charone *ch, WidthInfo *wi) {
     }
 }
 
-static real SCFindMinXAtY(SplineChar *sc,real y) {
+static real SCFindMinXAtY(SplineChar *sc,int layer, real y) {
     real min = NOTREACHED;
     RefChar *ref;
 
-    min = SSFindMinXAtY(sc->layers[ly_fore].splines,y,NOTREACHED);
-    for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
+    min = SSFindMinXAtY(sc->layers[layer].splines,y,NOTREACHED);
+    for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next )
 	min = SSFindMinXAtY(ref->layers[0].splines,y,min);
 return( min );
 }
 
-static int SCIsMinXAtYCurved(SplineChar *sc,real y) {
+static int SCIsMinXAtYCurved(SplineChar *sc,int layer,real y) {
     real min = NOTREACHED;
     int curved = false;
     RefChar *ref;
 
-    min = SSFindMinXAtY(sc->layers[ly_fore].splines,y,NOTREACHED);
-    for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
+    min = SSFindMinXAtY(sc->layers[layer].splines,y,NOTREACHED);
+    for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next )
 	min = SSIsMinXAtYCurved(ref->layers[0].splines,y,min,&curved);
 return( curved );
 }
@@ -514,8 +514,8 @@ static void SCFindEdges(struct charone *ch,WidthInfo *wi) {
     ch->redge = galloc((ch->top-ch->base+1)*sizeof(short));
     for ( i=0; i<=ch->top-ch->base; ++i )
 	ch->ledge[i] = ch->redge[i] = NOTREACHED;
-    SSFindEdges(ch->sc->layers[ly_fore].splines,ch,wi);
-    for ( ref=ch->sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
+    SSFindEdges(ch->sc->layers[wi->layer].splines,ch,wi);
+    for ( ref=ch->sc->layers[wi->layer].refs; ref!=NULL; ref=ref->next )
 	SSFindEdges(ref->layers[0].splines,ch,wi);
     ch->lbearing = ch->rmax = NOTREACHED;
     for ( i=0; i<=ch->top-ch->base; ++i ) {
@@ -530,8 +530,8 @@ static void SCFindEdges(struct charone *ch,WidthInfo *wi) {
     /* In accented characters find the base letter, compute its dimensions */
     /*  then figure out its serif zones */
     sc = ch->sc;
-    while ( sc->layers[ly_fore].refs!=NULL ) {
-	for ( ref=ch->sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
+    while ( sc->layers[wi->layer].refs!=NULL ) {
+	for ( ref=ch->sc->layers[wi->layer].refs; ref!=NULL; ref=ref->next )
 	    if ( ref->sc->unicodeenc!=-1 && isalpha(ref->sc->unicodeenc))
 	break;
 	if ( ref==NULL )
@@ -685,19 +685,19 @@ void AW_FindFontParameters(WidthInfo *wi) {
 	if ( (si=SFFindExistingSlot(sf,easyserif[i],NULL))!=-1 && sf->glyphs[si]!=NULL )
     break;
     if ( si!=-1 ) {
-	topx = SCFindMinXAtY(sf->glyphs[si],2*caph/3);
-	bottomx = SCFindMinXAtY(sf->glyphs[si],caph/3);
+	topx = SCFindMinXAtY(sf->glyphs[si],wi->layer,2*caph/3);
+	bottomx = SCFindMinXAtY(sf->glyphs[si],wi->layer,caph/3);
 	/* Some fonts don't sit on the baseline... */
 	SplineCharQuickBounds(sf->glyphs[si],&bb);
 	/* beware of slanted (italic, oblique) fonts */
 	ytop = caph/2; ybottom=bb.miny;
-	stemx = SCFindMinXAtY(sf->glyphs[si],ytop);
+	stemx = SCFindMinXAtY(sf->glyphs[si],wi->layer,ytop);
 	if ( topx==bottomx ) {
 	    ca = 0;
 	    yorig = 0;	/* Irrelevant because we will multiply it by 0, but makes gcc happy */
 	    while ( ytop-ybottom>=.5 ) {
 		y = (ytop+ybottom)/2;
-		testx = SCFindMinXAtY(sf->glyphs[si],y);
+		testx = SCFindMinXAtY(sf->glyphs[si],wi->layer,y);
 		if ( testx+1>=stemx )
 		    ytop = y;
 		else
@@ -709,7 +709,7 @@ void AW_FindFontParameters(WidthInfo *wi) {
 	    yorig = ytop;
 	    while ( ytop-ybottom>=.5 ) {
 		y = (ytop+ybottom)/2;
-		testx = SCFindMinXAtY(sf->glyphs[si],y)+
+		testx = SCFindMinXAtY(sf->glyphs[si],wi->layer,y)+
 		    (yorig-y)*ca;
 		if ( testx+4>=stemx )		/* the +4 is to counteract rounding */
 		    ytop = y;
@@ -719,7 +719,7 @@ void AW_FindFontParameters(WidthInfo *wi) {
 	}
 	/* If "I" has a curved stem then it's probably in a script style and */
 	/*  serifs don't really make sense (or not the simplistic ones I deal with) */
-	if ( ytop<=bb.miny+.5 || SCIsMinXAtYCurved(sf->glyphs[si],caph/2) )
+	if ( ytop<=bb.miny+.5 || SCIsMinXAtYCurved(sf->glyphs[si],wi->layer,caph/2) )
 	    serifsize = 0;
 	else if ( ytop>caph/4 )
 	    serifsize = /*.06*(sf->ascent+sf->descent)*/ 0;
@@ -728,7 +728,7 @@ void AW_FindFontParameters(WidthInfo *wi) {
 
 	if ( serifsize!=0 ) {
 	    y = serifsize/4 + bb.miny;
-	    testx = SCFindMinXAtY(sf->glyphs[si],y);
+	    testx = SCFindMinXAtY(sf->glyphs[si],wi->layer,y);
 	    if ( testx==NOTREACHED )
 		serifsize=0;
 	    else {
@@ -749,7 +749,7 @@ void AW_FindFontParameters(WidthInfo *wi) {
     if ( (si=SFFindExistingSlot(sf,'n',"n"))!=-1 && sf->glyphs[si]!=NULL ) {
 	SplineChar *sc = sf->glyphs[si];
 	if ( sc->changedsincelasthinted && !sc->manualhints )
-	    SplineCharAutoHint(sc,NULL);
+	    SplineCharAutoHint(sc,wi->layer,NULL);
 	SplineCharQuickBounds(sc,&bb);
 	if ( sc->vstem!=NULL && sc->vstem->next!=NULL ) {
 	    wi->n_stem_exterior_width = sc->vstem->next->start+sc->vstem->next->width-
@@ -824,8 +824,8 @@ return( 0 );
     SplineCharFindBounds(sf->glyphs[si],&bb);
     as = bb.maxy-bb.miny;
 
-    topx = SCFindMinXAtY(sf->glyphs[si],2*as/3+bb.miny);
-    bottomx = SCFindMinXAtY(sf->glyphs[si],as/3+bb.miny);
+    topx = SCFindMinXAtY(sf->glyphs[si],ly_fore,2*as/3+bb.miny);
+    bottomx = SCFindMinXAtY(sf->glyphs[si],ly_fore,as/3+bb.miny);
     if ( topx==bottomx )
 return( 0 );
 
@@ -834,7 +834,8 @@ return( 0 );
 return( angle );
 }
 
-void SFHasSerifs(SplineFont *sf) {
+#if 0
+void SFHasSerifs(SplineFont *sf,int layer) {
     static unichar_t easyserif[] = { 'I','B','D','E','F','H','I','K','L','N','P','R',
 	    0x399, 0x406, 0x392, 0x393, 0x395, 0x397, 0x39a,
 	    0x3a0, 0x3a1, 0x40a, 0x412, 0x413, 0x415, 0x41a, 0x41d, 0x41f,
@@ -851,13 +852,13 @@ return;
 
     sf->serifcheck = true;
 
-    SplineCharFindBounds(sf->glyphs[si],&bb);
+    SplineCharLayerFindBounds(sf->glyphs[si],layer,&bb);
     as = bb.maxy-bb.miny;
 
-    topx = SCFindMinXAtY(sf->glyphs[si],2*as/3+bb.miny);
-    bottomx = SCFindMinXAtY(sf->glyphs[si],as/3+bb.miny);
-    serifbottomx = SCFindMinXAtY(sf->glyphs[si],1+bb.miny);
-    seriftopx = SCFindMinXAtY(sf->glyphs[si],bb.maxy-1);
+    topx = SCFindMinXAtY(sf->glyphs[si],layer,2*as/3+bb.miny);
+    bottomx = SCFindMinXAtY(sf->glyphs[si],layer,as/3+bb.miny);
+    serifbottomx = SCFindMinXAtY(sf->glyphs[si],layer,1+bb.miny);
+    seriftopx = SCFindMinXAtY(sf->glyphs[si],layer,bb.maxy-1);
     if ( RealNear(topx,bottomx) ) {
 	if ( RealNear(serifbottomx,bottomx) && RealNear(seriftopx,topx))
 	    sf->issans = true;
@@ -867,6 +868,7 @@ return;
 	/* It's Italic. I'm just going to give up.... */
     }
 }
+#endif
 
 void AW_InitCharPairs(WidthInfo *wi) {
     int i, j;
@@ -1126,7 +1128,7 @@ return( false );
     for ( i=cnt=0; i<ks->cur; ++i ) {
 	j = SFFindExistingSlot(sf,ks->ch1[i],NULL);
 	if ( j!=-1 && sf->glyphs[j]!=NULL &&
-		(sf->glyphs[j]->layers[ly_fore].splines!=NULL || sf->glyphs[j]->layers[ly_fore].refs!=NULL ))
+		(sf->glyphs[j]->layers[wi->layer].splines!=NULL || sf->glyphs[j]->layers[wi->layer].refs!=NULL ))
 	    wi->left[cnt++] = AW_MakeCharOne(sf->glyphs[j]);
 	else
 	    ks->ch1[i] = '\0';
@@ -1159,7 +1161,7 @@ return( false );
     for ( cnt=0,cpt=ch2s; *cpt ; ++cpt ) {
 	j = SFFindExistingSlot(sf,*cpt,NULL);
 	if ( j!=-1 && sf->glyphs[j]!=NULL &&
-		(sf->glyphs[j]->layers[ly_fore].splines!=NULL || sf->glyphs[j]->layers[ly_fore].refs!=NULL ))
+		(sf->glyphs[j]->layers[wi->layer].splines!=NULL || sf->glyphs[j]->layers[wi->layer].refs!=NULL ))
 	    wi->right[cnt++] = AW_MakeCharOne(sf->glyphs[j]);
     }
     wi->rcnt = cnt;

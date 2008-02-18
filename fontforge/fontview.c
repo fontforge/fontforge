@@ -132,7 +132,7 @@ void FVMarkHintsOutOfDate(SplineChar *sc) {
     int pos;
     FontView *fv;
 
-    if ( sc->parent->onlybitmaps || sc->parent->multilayer || sc->parent->strokedfont || sc->layers[ly_fore].order2 )
+    if ( sc->parent->onlybitmaps || sc->parent->multilayer || sc->parent->strokedfont || sc->layers[fv->b.active_layer].order2 )
 return;
     for ( fv = (FontView *) (sc->parent->fv); fv!=NULL; fv=(FontView *) (fv->b.nextsame) ) {
 	if ( fv->b.sf!=sc->parent )		/* Can happen in CID fonts if char's parent is not currently active */
@@ -693,7 +693,7 @@ return( ret );
 
 int _FVMenuGenerate(FontView *fv,int family) {
     FVFlattenAllBitmapSelections(fv);
-return( SFGenerateFont(fv->b.sf,family,fv->b.normal==NULL?fv->b.map:fv->b.normal) );
+return( SFGenerateFont(fv->b.sf,fv->b.active_layer,family,fv->b.normal==NULL?fv->b.map:fv->b.normal) );
 }
 
 static void FVMenuGenerate(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -1276,7 +1276,7 @@ static void FVMenuFindProblems(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void FVMenuValidate(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    SFValidationWindow(fv->b.sf,ff_none);
+    SFValidationWindow(fv->b.sf,fv->b.active_layer,ff_none);
 }
 
 static void FVMenuEmbolden(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -1315,6 +1315,7 @@ static void FVMenuCondense(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 #define MID_16x4	2026
 #define MID_8x2		2027
 #define MID_BitmapMag	2028
+#define MID_Layers	2029
 #define MID_CharInfo	2201
 #define MID_FindProblems 2216
 #define MID_Embolden	2217
@@ -1665,12 +1666,12 @@ static void FVMenuSelectHintingNeeded(GWindow gw,struct gmenuitem *mi,GEvent *e)
     int i, gid;
     EncMap *map = fv->b.map;
     SplineFont *sf = fv->b.sf;
-    int order2 = sf->layers[ly_fore].order2;
+    int order2 = sf->layers[fv->b.active_layer].order2;
 
     for ( i=0; i< map->enccount; ++i )
 	fv->b.selected[i] = ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
 		((!order2 && sf->glyphs[gid]->changedsincelasthinted ) ||
-		 ( order2 && sf->glyphs[gid]->layers[ly_fore].splines!=NULL &&
+		 ( order2 && sf->glyphs[gid]->layers[fv->b.active_layer].splines!=NULL &&
 		     sf->glyphs[gid]->ttf_instrs_len<=0 ) ||
 		 ( order2 && sf->glyphs[gid]->instructions_out_of_date )) );
     GDrawRequestExpose(fv->v,NULL,false);
@@ -2130,7 +2131,7 @@ static void FVShowSubFont(FontView *fv,SplineFont *new) {
 	FontViewReformatOne(&fv->b);
 	FVSetTitle(&fv->b);
     }
-    newbdf = SplineFontPieceMeal(fv->b.sf,fv->filled->pixelsize,
+    newbdf = SplineFontPieceMeal(fv->b.sf,fv->b.active_layer,fv->filled->pixelsize,
 	    (fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0)|
 		(use_freetype_to_rasterize_fv && !fv->b.sf->strokedfont && !fv->b.sf->multilayer?pf_ft_nohints:0),
 	    NULL);
@@ -2473,7 +2474,7 @@ static void FVMenuSize(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    if ( fvs==NULL )
 	break;
 	    old = fvs->filled;
-	    new = SplineFontPieceMeal(fvs->b.sf,dspsize,
+	    new = SplineFontPieceMeal(fvs->b.sf,fv->b.active_layer,dspsize,
 		(fvs->antialias?pf_antialias:0)|(fvs->bbsized?pf_bbsized:0)|
 		    (use_freetype_to_rasterize_fv && !fvs->b.sf->strokedfont && !fvs->b.sf->multilayer?pf_ft_nohints:0),
 		NULL);
@@ -2496,6 +2497,26 @@ static void FVMenuSize(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 		fv->b.cidmaster->subfonts[i]->display_size = -dspsize;
 	}
     }
+}
+
+static void FVMenuChangeLayer(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    extern int use_freetype_to_rasterize_fv;
+    BDFFont *new, *old;
+
+    fv->b.active_layer = mi->mid;
+    fv->b.sf->display_layer = mi->mid;
+    fv->magnify = 1;
+    fv->user_requested_magnify = -1;
+
+    old = fv->filled;
+    new = SplineFontPieceMeal(fv->b.sf,fv->b.active_layer,fv->filled->pixelsize,
+	(fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0)|
+	    (use_freetype_to_rasterize_fv && !fv->b.sf->strokedfont && !fv->b.sf->multilayer?pf_ft_nohints:0),
+	NULL);
+    FVChangeDisplayFont(fv,new);
+    fv->filled = new;
+    BDFFontFree(old);
 }
 
 static void FVMenuMagnify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -2602,13 +2623,13 @@ static void FVMenuAutoKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void FVMenuKernByClasses(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
-    ShowKernClasses(fv->b.sf,NULL,false);
+    ShowKernClasses(fv->b.sf,NULL,fv->b.active_layer,false);
 }
 
 static void FVMenuVKernByClasses(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
-    ShowKernClasses(fv->b.sf,NULL,true);
+    ShowKernClasses(fv->b.sf,NULL,fv->b.active_layer,true);
 }
 
 static void FVMenuRemoveKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -2632,7 +2653,8 @@ static void FVMenuKPCloseup(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     break;
     KernPairD(fv->b.sf,i==fv->b.map->enccount?NULL:
 		    fv->b.map->map[i]==-1?NULL:
-		    fv->b.sf->glyphs[fv->b.map->map[i]],NULL,false);
+		    fv->b.sf->glyphs[fv->b.map->map[i]],NULL,fv->b.active_layer,
+		    false);
 }
 
 static void FVMenuVKernFromHKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -2733,7 +2755,8 @@ static void FVMenuClearWidthMD(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void FVMenuHistograms(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    SFHistogram(fv->b.sf, NULL, FVAnyCharSelected(fv)!=-1?fv->b.selected:NULL,
+    SFHistogram(fv->b.sf, fv->b.active_layer, NULL,
+			FVAnyCharSelected(fv)!=-1?fv->b.selected:NULL,
 			fv->b.map,
 			mi->mid==MID_HStemHist ? hist_hstem :
 			mi->mid==MID_VStemHist ? hist_vstem :
@@ -3183,24 +3206,24 @@ static void htlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = anychars==-1 || multilayer;
 	  break;
 	  case MID_HintSubsPt:
-	    mi->ti.disabled = fv->b.sf->layers[ly_fore].order2 || anychars==-1 || multilayer;
+	    mi->ti.disabled = fv->b.sf->layers[fv->b.active_layer].order2 || anychars==-1 || multilayer;
 	    if ( fv->b.sf->mm!=NULL && fv->b.sf->mm->apple )
 		mi->ti.disabled = true;
 	  break;
 	  case MID_AutoCounter: case MID_DontAutoHint:
-	    mi->ti.disabled = fv->b.sf->layers[ly_fore].order2 || anychars==-1 || multilayer;
+	    mi->ti.disabled = fv->b.sf->layers[fv->b.active_layer].order2 || anychars==-1 || multilayer;
 	  break;
 	  case MID_AutoInstr: case MID_EditInstructions:
-	    mi->ti.disabled = !fv->b.sf->layers[ly_fore].order2 || anychars==-1 || multilayer;
+	    mi->ti.disabled = !fv->b.sf->layers[fv->b.active_layer].order2 || anychars==-1 || multilayer;
 	  break;
 #if 0
 	  case MID_PrivateToCvt:
-	    mi->ti.disabled = !fv->b.sf->layers[ly_fore].order2 || multilayer ||
+	    mi->ti.disabled = !fv->b.sf->layers[fv->b.active_layer].order2 || multilayer ||
 		    fv->b.sf->private==NULL || fv->b.sf->cvt_dlg!=NULL;
 	  break;
 #endif
 	  case MID_Editfpgm: case MID_Editprep: case MID_Editcvt: case MID_Editmaxp:
-	    mi->ti.disabled = !fv->b.sf->layers[ly_fore].order2 || multilayer;
+	    mi->ti.disabled = !fv->b.sf->layers[fv->b.active_layer].order2 || multilayer;
 	  break;
 	  case MID_ClearHints: case MID_ClearWidthMD: case MID_ClearInstrs:
 	    mi->ti.disabled = anychars==-1;
@@ -3318,7 +3341,7 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    for ( i=0; i<fv->b.map->enccount; ++i )
 		if ( fv->b.selected[i] && (gid = fv->b.map->map[i])!=-1 &&
 			fv->b.sf->glyphs[gid]!=NULL )
-		    if ( fv->b.sf->glyphs[gid]->layers[ly_fore].undoes!=NULL )
+		    if ( fv->b.sf->glyphs[gid]->layers[fv->b.active_layer].undoes!=NULL )
 	    break;
 	    mi->ti.disabled = i==fv->b.map->enccount;
 	  break;
@@ -3326,7 +3349,7 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    for ( i=0; i<fv->b.map->enccount; ++i )
 		if ( fv->b.selected[i] && (gid = fv->b.map->map[i])!=-1 &&
 			fv->b.sf->glyphs[gid]!=NULL )
-		    if ( fv->b.sf->glyphs[gid]->layers[ly_fore].redoes!=NULL )
+		    if ( fv->b.sf->glyphs[gid]->layers[fv->b.active_layer].redoes!=NULL )
 	    break;
 	    mi->ti.disabled = i==fv->b.map->enccount;
 	  break;
@@ -3407,7 +3430,7 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 			sc = fv->b.sf->glyphs[gid];
 		    if ( sc==NULL )
 			sc = SCBuildDummy(&dummy,fv->b.sf,fv->b.map,i);
-		    if ( SFIsSomethingBuildable(fv->b.sf,sc,false) ||
+		    if ( SFIsSomethingBuildable(fv->b.sf,sc,fv->b.active_layer,false) ||
 			    SFIsDuplicatable(fv->b.sf,sc)) {
 			anybuildable = true;
 		break;
@@ -3498,7 +3521,7 @@ static void balistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 		    sc = fv->b.sf->glyphs[gid];
 		if ( sc==NULL )
 		    sc = SCBuildDummy(&dummy,fv->b.sf,fv->b.map,i);
-		if ( SFIsSomethingBuildable(fv->b.sf,sc,onlyaccents)) {
+		if ( SFIsSomethingBuildable(fv->b.sf,sc,fv->b.active_layer,onlyaccents)) {
 		    anybuildable = true;
 	    break;
 		}
@@ -4239,6 +4262,31 @@ static void enlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     }
 }
 
+static GMenuItem2 lylist[] = {
+    { { (unichar_t *) N_("Foreground"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 1, 1, 0, 0, 1, 1, 0, '\0' }, NULL, NULL, NULL, FVMenuChangeLayer, ly_fore },
+    NULL
+};
+
+static void lylistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    SplineFont *sf = fv->b.sf;
+    extern void GMenuItemArrayFree(GMenuItem *mi);
+    int ly;
+    GMenuItem *sub;
+
+    sub = gcalloc(sf->layer_cnt+1,sizeof(GMenuItem));
+    for ( ly=ly_fore; ly<sf->layer_cnt; ++ly ) {
+	sub[ly-1].ti.text = utf82u_copy(sf->layers[ly].name);
+	sub[ly-1].ti.checkable = true;
+	sub[ly-1].ti.checked = ly == fv->b.active_layer;
+	sub[ly-1].invoke = FVMenuChangeLayer;
+	sub[ly-1].mid = ly;
+	sub[ly-1].ti.fg = sub[ly-1].ti.bg = COLOR_DEFAULT;
+    }
+    GMenuItemArrayFree(mi->sub);
+    mi->sub = sub;
+}	
+
 static GMenuItem2 vwlist[] = {
     { { (unichar_t *) N_("_Next Glyph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'N' }, H_("Next Glyph|Ctl+]"), NULL, NULL, FVMenuChangeChar, MID_Next },
     { { (unichar_t *) N_("_Prev Glyph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Prev Glyph|Ctl+["), NULL, NULL, FVMenuChangeChar, MID_Prev },
@@ -4246,11 +4294,13 @@ static GMenuItem2 vwlist[] = {
     { { (unichar_t *) N_("Prev Defined Gl_yph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'a' }, H_("Prev Defined Glyph|Alt+Ctl+["), NULL, NULL, FVMenuChangeChar, MID_PrevDef },
     { { (unichar_t *) N_("_Goto"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'G' }, H_("Goto|Ctl+Shft+>"), NULL, NULL, FVMenuGotoChar },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) N_("_Layers"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, NULL, lylist, lylistcheck },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Show ATT"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Show ATT|No Shortcut"), NULL, NULL, FVMenuShowAtt },
     { { (unichar_t *) N_("Display S_ubstitutions..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'u' }, H_("Display Substitutions...|No Shortcut"), NULL, NULL, FVMenuDisplaySubs, MID_DisplaySubs },
     { { (unichar_t *) N_("Com_binations"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'b' }, NULL, cblist, cblistcheck },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("_Label Glyph By"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'b' }, NULL, gllist, gllistcheck },
+    { { (unichar_t *) N_("Label Gl_yph By"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'b' }, NULL, gllist, gllistcheck },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("S_how H. Metrics..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("Show H. Metrics...|No Shortcut"), NULL, NULL, FVMenuShowMetrics, MID_ShowHMetrics },
     { { (unichar_t *) N_("Show _V. Metrics..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'V' }, H_("Show V. Metrics...|No Shortcut"), NULL, NULL, FVMenuShowMetrics, MID_ShowVMetrics },
@@ -4388,6 +4438,9 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	  case MID_FitToEm:
 	    mi->ti.checked = (fv->show!=NULL && !fv->show->bbsized);
 	    mi->ti.disabled = sf->onlybitmaps && fv->show!=fv->filled;
+	  break;
+	  case MID_Layers:
+	    mi->ti.disabled = sf->layer_cnt<2;
 	  break;
 	}
     }
@@ -5424,12 +5477,12 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		bg = sc->color!=COLOR_DEFAULT?sc->color:0x808080;
 		GDrawFillRect(pixmap,&r,bg);
 	    }
-	    if ( (!fv->b.sf->layers[ly_fore].order2 && sc->changedsincelasthinted ) ||
-		     ( fv->b.sf->layers[ly_fore].order2 && sc->layers[ly_fore].splines!=NULL &&
+	    if ( (!fv->b.sf->layers[fv->b.active_layer].order2 && sc->changedsincelasthinted ) ||
+		     ( fv->b.sf->layers[fv->b.active_layer].order2 && sc->layers[fv->b.active_layer].splines!=NULL &&
 			sc->ttf_instrs_len<=0 ) ||
-		     ( fv->b.sf->layers[ly_fore].order2 && sc->instructions_out_of_date ) ) {
+		     ( fv->b.sf->layers[fv->b.active_layer].order2 && sc->instructions_out_of_date ) ) {
 		Color hintcol = 0x0000ff;
-		if ( fv->b.sf->layers[ly_fore].order2 && sc->instructions_out_of_date && sc->ttf_instrs_len>0 )
+		if ( fv->b.sf->layers[fv->b.active_layer].order2 && sc->instructions_out_of_date && sc->ttf_instrs_len>0 )
 		    hintcol = 0xff0000;
 		GDrawDrawLine(pixmap,r.x,r.y,r.x,r.y+r.height-1,hintcol);
 		GDrawDrawLine(pixmap,r.x+1,r.y,r.x+1,r.y+r.height-1,hintcol);
@@ -5533,7 +5586,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		box.y = i*fv->cbh+fv->lab_height+1; box.height = box.width+1;
 		GDrawPushClip(pixmap,&box,&old2);
 		if ( !fv->b.sf->onlybitmaps && fv->show!=fv->filled &&
-			sc->layers[ly_fore].splines==NULL && sc->layers[ly_fore].refs==NULL &&
+			sc->layers[fv->b.active_layer].splines==NULL && sc->layers[fv->b.active_layer].refs==NULL &&
 			!sc->widthset &&
 			!(bdfc->xmax<=0 && bdfc->xmin==0 && bdfc->ymax<=0 && bdfc->ymax==0) ) {
 		    /* If we have a bitmap but no outline character... */
@@ -6400,7 +6453,7 @@ return;
     break;
 	old = fv->filled;
 				/* In CID fonts fv->b.sf may not be same as sf */
-	new = SplineFontPieceMeal(fv->b.sf,fv->filled->pixelsize,
+	new = SplineFontPieceMeal(fv->b.sf,fv->b.active_layer,fv->filled->pixelsize,
 		(fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0)|
 		    (use_freetype_to_rasterize_fv && !sf->strokedfont && !sf->multilayer?pf_ft_nohints:0),
 		NULL);
@@ -6427,7 +6480,7 @@ return;
     }
     for ( mvs=sf->metrics; mvs!=NULL; mvs=mvs->next ) if ( mvs->bdf==NULL ) {
 	BDFFontFree(mvs->show);
-	mvs->show = SplineFontPieceMeal(sf,mvs->pixelsize,mvs->antialias?pf_antialias:0,NULL);
+	mvs->show = SplineFontPieceMeal(sf,mvs->layer,mvs->pixelsize,mvs->antialias?pf_antialias:0,NULL);
 	GDrawRequestExpose(mvs->gw,NULL,false);
     }
 }
@@ -6520,6 +6573,7 @@ static FontView *__FontViewCreate(SplineFont *sf) {
     if ( ps>200 ) ps = 128;
 
     fv->b.nextsame = sf->fv;
+    fv->b.active_layer = sf->display_layer;
     sf->fv = (FontViewBase *) fv;
     if ( sf->mm!=NULL ) {
 	sf->mm->normal->fv = (FontViewBase *) fv;
@@ -6666,7 +6720,7 @@ static FontView *FontView_Create(SplineFont *sf) {
     fv->lab_as = as;
     fv->showhmetrics = default_fv_showhmetrics;
     fv->showvmetrics = default_fv_showvmetrics && sf->hasvmetrics;
-    bdf = SplineFontPieceMeal(fv->b.sf,sf->display_size<0?-sf->display_size:default_fv_font_size,
+    bdf = SplineFontPieceMeal(fv->b.sf,fv->b.active_layer,sf->display_size<0?-sf->display_size:default_fv_font_size,
 	    (fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0)|
 		(use_freetype_to_rasterize_fv && !sf->strokedfont && !sf->multilayer?pf_ft_nohints:0),
 	    NULL);

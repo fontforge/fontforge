@@ -869,12 +869,12 @@ static int BVRecalc(GGadget *g, GEvent *e) {
 	bv = GDrawGetUserData(GGadgetGetWindow(g));
 	BCPreserveState(bv->bc);
 	BCFlattenFloat(bv->bc);
-	freetypecontext = FreeTypeFontContext(bv->bc->sc->parent,bv->bc->sc,false);
+	freetypecontext = FreeTypeFontContext(bv->bc->sc->parent,bv->bc->sc,NULL,ly_fore);
 	if ( freetypecontext!=NULL ) {
 	    bdfc = SplineCharFreeTypeRasterize(freetypecontext,bv->bc->sc->orig_pos,bv->bdf->pixelsize,BDFDepth(bv->bdf));
 	    FreeTypeFreeContext(freetypecontext);
 	} else
-	    bdfc = SplineCharAntiAlias(bv->bc->sc,bv->bdf->pixelsize,(1<<(BDFDepth(bv->bdf)/2)));
+	    bdfc = SplineCharAntiAlias(bv->bc->sc,ly_fore,bv->bdf->pixelsize,(1<<(BDFDepth(bv->bdf)/2)));
 	free(bv->bc->bitmap);
 	bv->bc->bitmap = bdfc->bitmap; bdfc->bitmap = NULL;
 	bv->bc->width = bdfc->width;
@@ -1559,7 +1559,7 @@ return;
 	    sc->width = val*(sc->parent->ascent+sc->parent->descent)/mysize;
 	else
 	    sc->vwidth = val*(sc->parent->ascent+sc->parent->descent)/mysize;
-	SCCharChangedUpdate(sc);
+	SCCharChangedUpdate(sc,ly_none);
     }
 }
 

@@ -94,11 +94,11 @@ void FVClear(FontViewBase *fv) {
 	}
 
 	if ( onlycopydisplayed && fv->active_bitmap==NULL ) {
-	    SCClearAll(fv->sf->glyphs[gid]);
+	    SCClearAll(fv->sf->glyphs[gid],fv->active_layer);
 	} else if ( onlycopydisplayed ) {
 	    BCClearAll(fv->active_bitmap->glyphs[gid]);
 	} else {
-	    SCClearAll(fv->sf->glyphs[gid]);
+	    SCClearAll(fv->sf->glyphs[gid],fv->active_layer);
 	    for ( bdf=fv->sf->bitmaps; bdf!=NULL; bdf = bdf->next )
 		BCClearAll(bdf->glyphs[gid]);
 	}
@@ -124,33 +124,35 @@ void FVCopyFgtoBg(FontViewBase *fv) {
     for ( i=0; i<fv->map->enccount; ++i )
 	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
 		fv->sf->glyphs[gid]!=NULL )
-	    SCCopyLayerToLayer(fv->sf->glyphs[gid],ly_fore,ly_back,true);
+	    SCCopyLayerToLayer(fv->sf->glyphs[gid],fv->active_layer,ly_back,true);
 }
 
 void FVUnlinkRef(FontViewBase *fv) {
-    int i,layer, last, gid;
+    int i,layer, first, last, gid;
     SplineChar *sc;
     RefChar *rf, *next;
 
     for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
 	    (gid = fv->map->map[i])!=-1 && (sc = fv->sf->glyphs[gid])!=NULL &&
-	     sc->layers[ly_fore].refs!=NULL ) {
-	SCPreserveState(sc,false);
-	last = ly_fore;
-	if ( sc->parent->multilayer )
+	     sc->layers[fv->active_layer].refs!=NULL ) {
+	SCPreserveLayer(sc,fv->active_layer,false);
+	if ( sc->parent->multilayer ) {
+	    first = ly_fore;
 	    last = sc->layer_cnt-1;
-	for ( layer=ly_fore; layer<=last; ++layer ) {
-	    for ( rf=sc->layers[ly_fore].refs; rf!=NULL ; rf=next ) {
+	} else
+	    first = last = fv->active_layer;
+	for ( layer=first; layer<=last; ++layer ) {
+	    for ( rf=sc->layers[layer].refs; rf!=NULL ; rf=next ) {
 		next = rf->next;
 		SCRefToSplines(sc,rf,layer);
 	    }
 	}
-	SCCharChangedUpdate(sc);
+	SCCharChangedUpdate(sc,fv->active_layer);
     }
 }
 
 void FVUndo(FontViewBase *fv) {
-    int i,j,layer,last, gid;
+    int i,j,layer,first,last, gid;
     MMSet *mm = fv->sf->mm;
     int was_blended = mm!=NULL && mm->normal==fv->sf;
 
@@ -159,10 +161,12 @@ void FVUndo(FontViewBase *fv) {
 	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
 		fv->sf->glyphs[gid]!=NULL && !fv->sf->glyphs[gid]->ticked) {
 	    SplineChar *sc = fv->sf->glyphs[gid];
-	    last = ly_fore;
-	    if ( sc->parent->multilayer )
+	    if ( sc->parent->multilayer ) {
+		first = ly_fore;
 		last = sc->layer_cnt-1;
-	    for ( layer=ly_fore; layer<=last; ++layer ) {
+	    } else
+		first = last = fv->active_layer;
+	    for ( layer=first; layer<=last; ++layer ) {
 		if ( sc->layers[layer].undoes!=NULL ) {
 		    SCDoUndo(sc,layer);
 		    if ( was_blended ) {
@@ -176,7 +180,7 @@ void FVUndo(FontViewBase *fv) {
 }
 
 void FVRedo(FontViewBase *fv) {
-    int i,j,layer,last, gid;
+    int i,j,layer,first,last, gid;
     MMSet *mm = fv->sf->mm;
     int was_blended = mm!=NULL && mm->normal==fv->sf;
 
@@ -185,10 +189,12 @@ void FVRedo(FontViewBase *fv) {
 	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
 		fv->sf->glyphs[gid]!=NULL && !fv->sf->glyphs[gid]->ticked) {
 	    SplineChar *sc = fv->sf->glyphs[gid];
-	    last = ly_fore;
-	    if ( sc->parent->multilayer )
+	    if ( sc->parent->multilayer ) {
+		first = ly_fore;
 		last = sc->layer_cnt-1;
-	    for ( layer=ly_fore; layer<=last; ++layer ) {
+	    } else
+		first = last = fv->active_layer;
+	    for ( layer=first; layer<=last; ++layer ) {
 		if ( sc->layers[layer].redoes!=NULL ) {
 		    SCDoRedo(sc,layer);
 		    if ( was_blended ) {
@@ -211,10 +217,10 @@ return;
 
     for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
 	    (gid = fv->map->map[i])!=-1 && sf->glyphs[gid]!=NULL ) {
-	SCPreserveState(sf->glyphs[gid],false);
-	sf->glyphs[gid]->layers[ly_fore].splines = SplineSetJoin(sf->glyphs[gid]->layers[ly_fore].splines,true,joinsnap,&changed);
+	SCPreserveLayer(sf->glyphs[gid],fv->active_layer,false);
+	sf->glyphs[gid]->layers[fv->active_layer].splines = SplineSetJoin(sf->glyphs[gid]->layers[fv->active_layer].splines,true,joinsnap,&changed);
 	if ( changed )
-	    SCCharChangedUpdate(sf->glyphs[gid]);
+	    SCCharChangedUpdate(sf->glyphs[gid],fv->active_layer);
     }
 }
 
@@ -561,7 +567,7 @@ static void SCTransLayer(FontViewBase *fv, SplineChar *sc, int flags, int i, rea
 void FVTrans(FontViewBase *fv,SplineChar *sc,real transform[6], uint8 *sel,
 	enum fvtrans_flags flags) {
     AnchorPoint *ap;
-    int i,last;
+    int i,first,last;
     KernPair *kp;
     PST *pst;
 
@@ -572,7 +578,10 @@ void FVTrans(FontViewBase *fv,SplineChar *sc,real transform[6], uint8 *sel,
 	    FVTrans(fv,mm->instances[j]->glyphs[sc->orig_pos],transform,sel,flags);
     }
 
-    SCPreserveState(sc,true);
+    if ( fv->sf->multilayer )
+	SCPreserveState(sc,true);
+    else
+	SCPreserveLayer(sc,fv->active_layer,true);
     if ( !(flags&fvt_dontmovewidth) )
 	if ( transform[0]>0 && transform[3]>0 && transform[1]==0 && transform[2]==0 ) {
 	    int widthset = sc->widthset;
@@ -613,10 +622,12 @@ void FVTrans(FontViewBase *fv,SplineChar *sc,real transform[6], uint8 *sel,
 
     for ( ap=sc->anchor; ap!=NULL; ap=ap->next )
 	ApTransform(ap,transform);
-    last = ly_fore;
-    if ( sc->parent->multilayer )
+    if ( sc->parent->multilayer ) {
+	first = ly_fore;
 	last = sc->layer_cnt-1;
-    for ( i=ly_fore; i<=last; ++i )
+    } else
+	first = last = fv->active_layer;
+    for ( i=first; i<=last; ++i )
 	SCTransLayer(fv,sc,flags,i,transform,sel);
     if ( transform[1]==0 && transform[2]==0 ) {
 	if ( transform[0]==1 && transform[3]==1 &&
@@ -624,7 +635,7 @@ void FVTrans(FontViewBase *fv,SplineChar *sc,real transform[6], uint8 *sel,
 		sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 &&
 		isalpha(sc->unicodeenc)) {
 	    SCUndoSetLBearingChange(sc,(int) rint(transform[4]));
-	    SCSynchronizeLBearing(sc,transform[4]);	/* this moves the hints */
+	    SCSynchronizeLBearing(sc,fv->active_layer,transform[4]);	/* this moves the hints */
 	} else {
 	    TransHints(sc->hstem,transform[3],transform[5],transform[0],transform[4],flags&fvt_round_to_int);
 	    TransHints(sc->vstem,transform[0],transform[4],transform[3],transform[5],flags&fvt_round_to_int);
@@ -637,19 +648,19 @@ void FVTrans(FontViewBase *fv,SplineChar *sc,real transform[6], uint8 *sel,
 	/* Not rounding the spiros is also a bad idea. */
 	/* Not sure which is worse */
 	/* Barry thinks rounding them is a bad idea. */
-	SCRound2Int(sc,1.0);
+	SCRound2Int(sc,fv->active_layer,1.0);
     }
     if ( flags&fvt_dobackground ) {
 	SCPreserveBackground(sc);
 	SCTransLayer(fv,sc,flags,ly_back,transform,sel);
 	if ( !sc->parent->multilayer ) {
-	    for ( i=ly_fore+1; i<sc->layer_cnt; ++i ) {
+	    for ( i=0; i<sc->layer_cnt; ++i ) if ( fv->active_layer!=i ) {
 		SCPreserveLayer(sc,i,false);
 		SCTransLayer(fv,sc,flags,i,transform,sel);
 	    }
 	}
     }
-    SCCharChangedUpdate(sc);
+    SCCharChangedUpdate(sc,fv->active_layer);
 }
 
 void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
@@ -719,7 +730,7 @@ void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
 }
 
 void FVOverlap(FontViewBase *fv,enum overlap_type ot) {
-    int i, cnt=0, layer, last, gid;
+    int i, cnt=0, layer, first, last, gid;
     SplineChar *sc;
 
     /* We know it's more likely that we'll find a problem in the overlap code */
@@ -740,15 +751,16 @@ void FVOverlap(FontViewBase *fv,enum overlap_type ot) {
 	    !sc->ticked ) {
 	sc->ticked = true;
 	if ( !SCRoundToCluster(sc,ly_all,false,.03,.12))
-	    SCPreserveState(sc,false);
+	    SCPreserveLayer(sc,fv->active_layer,false);
 	MinimumDistancesFree(sc->md);
-	sc->md = NULL;
-	last = ly_fore;
-	if ( sc->parent->multilayer )
+	if ( sc->parent->multilayer ) {
+	    first = ly_fore;
 	    last = sc->layer_cnt-1;
-	for ( layer = ly_fore; layer<=last; ++layer )
+	} else
+	    first = last = fv->active_layer;
+	for ( layer = first; layer<=last; ++layer )
 	    sc->layers[layer].splines = SplineSetRemoveOverlap(sc,sc->layers[layer].splines,ot);
-	SCCharChangedUpdate(sc);
+	SCCharChangedUpdate(sc,fv->active_layer);
 	if ( !ff_progress_next())
     break;
     }
@@ -756,7 +768,7 @@ void FVOverlap(FontViewBase *fv,enum overlap_type ot) {
 }
 
 void FVAddExtrema(FontViewBase *fv) {
-    int i, cnt=0, layer, last, gid;
+    int i, cnt=0, layer, first, last, gid;
     SplineChar *sc;
     SplineFont *sf = fv->sf;
     int emsize = sf->ascent+sf->descent;
@@ -773,13 +785,14 @@ void FVAddExtrema(FontViewBase *fv) {
 	    SCWorthOutputting((sc = fv->sf->glyphs[gid])) &&
 	    !sc->ticked) {
 	sc->ticked = true;
-	SCPreserveState(sc,false);
-	last = ly_fore;
-	if ( sc->parent->multilayer )
+	if ( sc->parent->multilayer ) {
+	    first = ly_fore;
 	    last = sc->layer_cnt-1;
-	for ( layer = ly_fore; layer<=last; ++layer )
+	} else
+	    first = last = fv->active_layer;
+	for ( layer = first; layer<=last; ++layer )
 	    SplineCharAddExtrema(sc,sc->layers[layer].splines,ae_only_good,emsize);
-	SCCharChangedUpdate(sc);
+	SCCharChangedUpdate(sc,fv->active_layer);
 	if ( !ff_progress_next())
     break;
     }
@@ -791,7 +804,7 @@ void FVCanonicalStart(FontViewBase *fv) {
 
     for ( i=0; i<fv->map->enccount; ++i )
 	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 )
-	    SPLsStartToLeftmost(fv->sf->glyphs[gid]);
+	    SPLsStartToLeftmost(fv->sf->glyphs[gid],fv->active_layer);
 }
 
 void FVCanonicalContours(FontViewBase *fv) {
@@ -799,7 +812,7 @@ void FVCanonicalContours(FontViewBase *fv) {
 
     for ( i=0; i<fv->map->enccount; ++i )
 	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 )
-	    CanonicalContours(fv->sf->glyphs[gid]);
+	    CanonicalContours(fv->sf->glyphs[gid],fv->active_layer);
 }
 
 void FVRound2Int(FontViewBase *fv,real factor) {
@@ -815,8 +828,8 @@ void FVRound2Int(FontViewBase *fv,real factor) {
 	    (gid = fv->map->map[i])!=-1 && SCWorthOutputting(fv->sf->glyphs[gid]) ) {
 	SplineChar *sc = fv->sf->glyphs[gid];
 
-	SCPreserveState(sc,false);
-	SCRound2Int( sc,factor);
+	SCPreserveLayer(sc,fv->active_layer,false);
+	SCRound2Int( sc,fv->active_layer,factor);
 	if ( !ff_progress_next())
     break;
     }
@@ -842,7 +855,7 @@ void FVCluster(FontViewBase *fv) {
 }
 
 void FVCorrectDir(FontViewBase *fv) {
-    int i, cnt=0, changed, refchanged, preserved, layer, last, gid;
+    int i, cnt=0, changed, refchanged, preserved, layer, first, last, gid;
     int askedall=-1, asked;
     RefChar *ref, *next;
     SplineChar *sc;
@@ -860,10 +873,12 @@ void FVCorrectDir(FontViewBase *fv) {
 	sc->ticked = true;
 	changed = refchanged = preserved = false;
 	asked = askedall;
-	last = ly_fore;
-	if ( sc->parent->multilayer )
+	if ( sc->parent->multilayer ) {
+	    first = ly_fore;
 	    last = sc->layer_cnt-1;
-	for ( layer = ly_fore; layer<=last; ++layer ) {
+	} else
+	    first = last = fv->active_layer;
+	for ( layer = first; layer<=last; ++layer ) {
 	    for ( ref=sc->layers[layer].refs; ref!=NULL; ref=next ) {
 		next = ref->next;
 		if ( ref->transform[0]*ref->transform[3]<0 ||
@@ -885,7 +900,7 @@ return;
 		    if ( asked==0 || asked==1 ) {
 			if ( !preserved ) {
 			    preserved = refchanged = true;
-			    SCPreserveState(sc,false);
+			    SCPreserveLayer(sc,layer,false);
 			}
 			SCRefToSplines(sc,ref,layer);
 		    }
@@ -893,13 +908,13 @@ return;
 	    }
 
 	    if ( !preserved && sc->layers[layer].splines!=NULL ) {
-		SCPreserveState(sc,false);
+		SCPreserveLayer(sc,layer,false);
 		preserved = true;
 	    }
 	    sc->layers[layer].splines = SplineSetsCorrect(sc->layers[layer].splines,&changed);
 	}
 	if ( changed || refchanged )
-	    SCCharChangedUpdate(sc);
+	    SCCharChangedUpdate(sc,layer);
 	if ( !ff_progress_next())
     break;
     }
@@ -907,7 +922,7 @@ return;
 }
 
 void _FVSimplify(FontViewBase *fv,struct simplifyinfo *smpl) {
-    int i, cnt=0, layer, last, gid;
+    int i, cnt=0, layer, first, last, gid;
     SplineChar *sc;
 
     for ( i=0; i<fv->map->enccount; ++i )
@@ -921,13 +936,15 @@ void _FVSimplify(FontViewBase *fv,struct simplifyinfo *smpl) {
 	if ( (gid=fv->map->map[i])!=-1 && SCWorthOutputting((sc=fv->sf->glyphs[gid])) &&
 		fv->selected[i] && !sc->ticked ) {
 	    sc->ticked = true;
-	    SCPreserveState(sc,false);
-	    last = ly_fore;
-	    if ( sc->parent->multilayer )
+	    SCPreserveLayer(sc,fv->active_layer,false);
+	    if ( sc->parent->multilayer ) {
+		first = ly_fore;
 		last = sc->layer_cnt-1;
-	    for ( layer = ly_fore; layer<=last; ++layer )
+	    } else
+		first = last = fv->active_layer;
+	    for ( layer = first; layer<=last; ++layer )
 		sc->layers[layer].splines = SplineCharSimplify(sc,sc->layers[layer].splines,smpl);
-	    SCCharChangedUpdate(sc);
+	    SCCharChangedUpdate(sc,fv->active_layer);
 	    if ( !ff_progress_next())
     break;
 	}
@@ -940,7 +957,7 @@ void FVAutoHint(FontViewBase *fv) {
     SplineChar *sc;
 
     if ( fv->sf->mm==NULL ) {
-	QuickBlues(fv->sf,&_bd);
+	QuickBlues(fv->sf,fv->active_layer,&_bd);
 	bd = &_bd;
     }
 
@@ -961,7 +978,7 @@ void FVAutoHint(FontViewBase *fv) {
 	sc = fv->sf->glyphs[gid];
 	sc->manualhints = false;
 	/* Hint undoes are done in _SplineCharAutoHint */
-	SFSCAutoHint(sc,bd);
+	SFSCAutoHint(sc,fv->active_layer,bd);
 	if ( !ff_progress_next())
     break;
     }
@@ -983,7 +1000,7 @@ return;
     for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
 	    (gid = fv->map->map[i])!=-1 && SCWorthOutputting(fv->sf->glyphs[gid]) ) {
 	SplineChar *sc = fv->sf->glyphs[gid];
-	SCFigureHintMasks(sc);
+	SCFigureHintMasks(sc,fv->active_layer);
 	SCUpdateAll(sc);
 	if ( !ff_progress_next())
     break;
@@ -1137,9 +1154,9 @@ void FVAutoInstr(FontViewBase *fv) {
     if ( !no_windowing_ui && !AnySelectedHints(fv))
 	ff_post_notice(_("Things could be better..."), _("The selected glyphs have no hints. FontForge will not produce many instructions."));
 
-    QuickBlues(fv->sf,&bd);
+    QuickBlues(fv->sf,fv->active_layer,&bd);
 
-    InitGlobalInstrCt(&gic,fv->sf,&bd);
+    InitGlobalInstrCt(&gic,fv->sf,fv->active_layer,&bd);
 
     for ( i=0; i<fv->map->enccount; ++i )
 	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
@@ -1174,7 +1191,7 @@ return;
 	    sc->ttf_instrs = NULL;
 	    sc->ttf_instrs_len = 0;
 	    sc->instructions_out_of_date = false;
-	    SCCharChangedUpdate(sc);
+	    SCCharChangedUpdate(sc,ly_none);
 	    sc->complained_about_ptnums = false;
 	}
     }
@@ -1187,7 +1204,7 @@ void FVClearHints(FontViewBase *fv) {
 	    (gid = fv->map->map[i])!=-1 && SCWorthOutputting(fv->sf->glyphs[gid]) ) {
 	SplineChar *sc = fv->sf->glyphs[gid];
 	sc->manualhints = true;
-	SCPreserveHints(sc);
+	SCPreserveHints(sc,fv->active_layer);
 	SCClearHints(sc);
 	SCUpdateAll(sc);
     }
@@ -1281,7 +1298,7 @@ void FVBuildAccent(FontViewBase *fv,int onlyaccents) {
 	if ( sc==NULL )
 	    sc = SCBuildDummy(&dummy,fv->sf,fv->map,i);
 	else if ( !no_windowing_ui && sc->unicodeenc == 0x00c5 /* Aring */ &&
-		sc->layers[ly_fore].splines!=NULL ) {
+		sc->layers[fv->active_layer].splines!=NULL ) {
 	    char *buts[3];
 	    buts[0] = _("_Yes");
 	    buts[1] = _("_No");
@@ -1289,10 +1306,10 @@ void FVBuildAccent(FontViewBase *fv,int onlyaccents) {
 	    if ( ff_ask(U_("Replace Å"),(const char **) buts,0,1,U_("Are you sure you want to replace Å?\nThe ring will not join to the A."))==1 )
     continue;
 	}
-	if ( SFIsSomethingBuildable(fv->sf,sc,onlyaccents) ) {
+	if ( SFIsSomethingBuildable(fv->sf,sc,fv->active_layer,onlyaccents) ) {
 	    sc = SFMakeChar(fv->sf,fv->map,i);
 	    sc->ticked = true;
-	    SCBuildComposit(fv->sf,sc,!onlycopydisplayed);
+	    SCBuildComposit(fv->sf,sc,fv->active_layer,!onlycopydisplayed);
 	}
 	if ( !ff_progress_next())
     break;
@@ -1459,9 +1476,9 @@ void FVMetricsCenter(FontViewBase *fv,int docenter) {
 		    SplineCharFindBounds(sc,&bb);
 		else {
 		    SplineSet *base, *temp;
-		    base = LayerAllSplines(&sc->layers[ly_fore]);
+		    base = LayerAllSplines(&sc->layers[fv->active_layer]);
 		    temp = SplinePointListTransform(SplinePointListCopy(base),itransform,true);
-		    LayerUnAllSplines(&sc->layers[ly_fore]);
+		    LayerUnAllSplines(&sc->layers[fv->active_layer]);
 		    SplineSetFindBounds(temp,&bb);
 		    SplinePointListsFree(temp);
 		}
@@ -1675,11 +1692,17 @@ void FVRevertGlyph(FontViewBase *fv) {
 		/* tsc->changed = temp.changed; */
 		/* tsc->orig_pos = temp.orig_pos; */
 		for ( cvs=tsc->views; cvs!=NULL; cvs= cvs->next ) {
-		    cvs->layerheads[dm_back] = &tsc->layers[ly_back];
-		    cvs->layerheads[dm_fore] = &tsc->layers[ly_fore];
+		    int layer = CVLayer(cvs);
+		    if ( fv->sf->multilayer ) {
+			cvs->layerheads[dm_back] = &tsc->layers[ly_back];
+			cvs->layerheads[dm_fore] = &tsc->layers[layer];
+		    } else {
+			cvs->layerheads[dm_back] = &tsc->layers[layer];
+			cvs->layerheads[dm_fore] = &tsc->layers[ly_fore];
+		    }
 		}
 		RevertedGlyphReferenceFixup(tsc, sf);
-		_SCCharChangedUpdate(tsc,false);
+		_SCCharChangedUpdate(tsc,layer,false);
 	    }
 	}
     }
@@ -1692,6 +1715,7 @@ static FontViewBase *_FontViewBaseCreate(SplineFont *sf) {
     int i;
 
     fv->nextsame = sf->fv;
+    fv->active_layer = ly_fore;
     sf->fv = fv;
     if ( sf->mm!=NULL ) {
 	sf->mm->normal->fv = fv;

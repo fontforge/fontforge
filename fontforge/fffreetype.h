@@ -80,6 +80,7 @@ extern FT_Error (*_TT_RunIns)( TT_ExecContext );
 
 typedef struct freetypecontext {
     SplineFont *sf;
+    int layer;
     FILE *file;
     void *mappedfile;
     long len;
@@ -95,5 +96,6 @@ typedef struct freetypecontext {
 
 extern void *__FreeTypeFontContext(FT_Library context,
 	SplineFont *sf,SplineChar *sc,FontViewBase *fv,
+	int layer,
 	enum fontformat ff,int flags,void *shared_ftc);
 #endif

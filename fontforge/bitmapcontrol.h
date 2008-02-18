@@ -29,6 +29,7 @@ typedef struct createbitmapdata {
     FontViewBase *fv;
     SplineFont *sf;
     SplineChar *sc;
+    int layer;
     int isavail;
     int which;
     int rasterize;

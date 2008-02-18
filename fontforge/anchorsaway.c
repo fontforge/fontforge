@@ -92,6 +92,7 @@ typedef struct anchord {
 	AnchorPoint ap_vals;
 	struct state *next;
     } *orig_vals;
+    int layer;
 } AnchorDlg;
 
 #define CID_X		1001
@@ -299,20 +300,20 @@ static void AnchorD_FindComplements(AnchorDlg *a) {
 	    }
 	    oldsel = fv->b.selected;
 	    fv->b.selected = sel;
-	    a->freetypecontext = FreeTypeFontContext(_sf,NULL,(FontViewBase *) fv);
+	    a->freetypecontext = FreeTypeFontContext(_sf,NULL,(FontViewBase *) fv,a->layer);
 	    fv->b.selected = oldsel;
 	    free(sel);
 	}
     }
 }
 
-static BDFChar *APRasterize(void *freetypecontext, SplineChar *sc,int *off,int *size,int pixelsize) {
+static BDFChar *APRasterize(void *freetypecontext, SplineChar *sc,int layer, int *off,int *size,int pixelsize) {
     BDFChar *bdfc;
 
     if ( freetypecontext ) {
 	bdfc = SplineCharFreeTypeRasterize(freetypecontext,sc->orig_pos,pixelsize,8);
     } else
-	bdfc = SplineCharAntiAlias(sc,pixelsize,4);
+	bdfc = SplineCharAntiAlias(sc,layer,pixelsize,4);
 
     if ( bdfc->xmin<=0 ) {
 	*off = 1-bdfc->xmin;
@@ -391,11 +392,11 @@ static void AnchorD_ChangeSize(AnchorDlg *a) {
     a->scale = a->pixelsize / (double) (a->sc->parent->ascent + a->sc->parent->descent);
 
     BDFCharFree(a->bdfc);
-    a->bdfc = APRasterize(a->freetypecontext,a->sc,&a->char_off,&a->char_size,a->pixelsize);
+    a->bdfc = APRasterize(a->freetypecontext,a->sc,a->layer,&a->char_off,&a->char_size,a->pixelsize);
     a->ymin = a->bdfc->ymin; a->ymax = a->bdfc->ymax;
     for ( i=0; i<a->cnt; ++i ) {
 	BDFCharFree(a->apmatch[i].bdfc);
-	a->apmatch[i].bdfc = APRasterize(a->freetypecontext,a->apmatch[i].sc,&a->apmatch[i].off,&a->apmatch[i].size,a->pixelsize);
+	a->apmatch[i].bdfc = APRasterize(a->freetypecontext,a->apmatch[i].sc,a->layer,&a->apmatch[i].off,&a->apmatch[i].size,a->pixelsize);
 	if ( a->ap->type==at_centry || a->ap->type==at_cexit )
 	    a->apmatch[i].size += a->char_size;
 	else if ( a->ap->type!=at_mark )
@@ -689,14 +690,14 @@ static void AnchorD_HScroll(AnchorDlg *a,struct sbevent *sb) {
     }
 }
 
-static SplinePoint *SCFindPoint(SplineChar *sc,int ptnum) {
+static SplinePoint *SCFindPoint(SplineChar *sc,int layer,int ptnum) {
     /* We're going to want to move this point, so a point in a reference */
     /*  is totally useless to us (we'd have to move the entire reference */
     /*  and it's probably better just to detach the anchor in that case. */
     SplineSet *ss;
     SplinePoint *sp;
 
-    for ( ss = sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
+    for ( ss = sc->layers[layer].splines; ss!=NULL; ss=ss->next ) {
 	for ( sp=ss->first; ; ) {
 	    if ( sp->ttfindex==ptnum )
 return( sp );
@@ -711,7 +712,9 @@ return( NULL );
 }
 
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
-static void SetAnchor(SplineChar *sc,AnchorPoint *ap,DeviceTable *xadjust, DeviceTable *yadjust, BasePoint *pos) {
+static void SetAnchor(SplineChar *sc,int layer, AnchorPoint *ap,DeviceTable *xadjust, DeviceTable *yadjust, BasePoint *pos) {
+    int ly;
+
     free(ap->xadjust.corrections);
     if ( xadjust->corrections==NULL ) {
 	memset(&ap->xadjust,0,sizeof(DeviceTable));
@@ -727,25 +730,33 @@ static void SetAnchor(SplineChar *sc,AnchorPoint *ap,DeviceTable *xadjust, Devic
 	yadjust->corrections = NULL;
     }
 #else
-static void SetAnchor(SplineChar *sc,AnchorPoint *ap, BasePoint *pos) {
+static void SetAnchor(SplineChar *sc,int layer,AnchorPoint *ap, BasePoint *pos) {
+    int ly;
 #endif
     ap->me = *pos;
     /* If the anchor is bound to a truetype point we must move the point too */
     /*  or the anchor will just snap back to the point */
+    ly = ly_none;
     if ( ap->has_ttf_pt && ap->ttf_pt_index!=0xffff ) {
-	SplinePoint *sp = SCFindPoint(sc,ap->ttf_pt_index);
-	if ( sp==NULL ) {
+	int any = false;
+	for ( ly=ly_fore; ly<sc->layer_cnt; ++ly ) if ( sc->layers[ly].order2 ) {
+	    SplinePoint *sp = SCFindPoint(sc,layer,ap->ttf_pt_index);
+	    if ( sp!=NULL ) {
+		sp->nextcp.x += pos->x - sp->me.x;
+		sp->prevcp.x += pos->x - sp->me.x;
+		sp->nextcp.y += pos->y - sp->me.y;
+		sp->prevcp.y += pos->y - sp->me.y;
+		sp->me = *pos;
+		any = true;
+	    }
+	}
+	if ( !any ) {
 	    ff_post_notice(_("Detaching Anchor Point"),_("This anchor was attached to point %d, but that's not a point I can move. I'm detaching the anchor from the point.") );
 	    ap->has_ttf_pt = false;
-	} else {
-	    sp->nextcp.x += pos->x - sp->me.x;
-	    sp->prevcp.x += pos->x - sp->me.x;
-	    sp->nextcp.y += pos->y - sp->me.y;
-	    sp->prevcp.y += pos->y - sp->me.y;
-	    sp->me = *pos;
+	    ly = ly_none;
 	}
     }
-    SCCharChangedUpdate(sc);
+    SCCharChangedUpdate(sc,ly);
 }
 
 static void AnchorD_DoCancel(AnchorDlg *a) {
@@ -753,9 +764,9 @@ static void AnchorD_DoCancel(AnchorDlg *a) {
 
     for ( old = a->orig_vals; old!=NULL; old=old->next ) {
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
-	SetAnchor(old->sc,old->ap_pt,&old->ap_vals.xadjust,&old->ap_vals.yadjust,&old->ap_vals.me);
+	SetAnchor(old->sc,a->layer,old->ap_pt,&old->ap_vals.xadjust,&old->ap_vals.yadjust,&old->ap_vals.me);
 #else
-	SetAnchor(old->sc,old->ap_pt,&old->ap_vals.me);
+	SetAnchor(old->sc,a->layer,old->ap_pt,&old->ap_vals.me);
 #endif
 	old->ap_pt->has_ttf_pt = old->ap_vals.has_ttf_pt;
 	old->sc->changed = old->changed;	/* Must come after the charchangedupdate */
@@ -879,9 +890,9 @@ return( true );
 
 static int AnchorD_Apply(AnchorDlg *a) {
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
-    SetAnchor(a->sc,a->ap,&a->xadjust,&a->yadjust,&a->apos);
+    SetAnchor(a->sc,a->layer,a->ap,&a->xadjust,&a->yadjust,&a->apos);
 #else
-    SetAnchor(a->sc,a->ap,&a->apos);
+    SetAnchor(a->sc,a->layer,a->ap,&a->apos);
 #endif
 return( true );
 }
@@ -1042,7 +1053,7 @@ return( NULL );
     ap->me.x = ap->me.y = 0;
     ap->next = sc->anchor;
     sc->anchor = ap;
-    SCCharChangedUpdate(sc);
+    SCCharChangedUpdate(sc,ly_none);
 
     if ( sc->width==0 ) ismrk = true;
     for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
@@ -1199,6 +1210,7 @@ void AnchorControl(SplineChar *sc,AnchorPoint *ap) {
     a.apos = ap->me;
     a.pixelsize = 150;
     a.magfactor = 1;
+    a.layer = ly_fore;
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
     if ( ap->xadjust.corrections!=NULL ) {
 	int len = ap->xadjust.last_pixel_size-ap->xadjust.first_pixel_size+1;

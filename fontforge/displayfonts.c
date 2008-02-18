@@ -44,6 +44,7 @@ typedef struct printdlg {
     GTimer *sizechanged;
     GTimer *dpichanged;
     GTextInfo *scriptlangs;
+    FontView *fv;
 } PD;
 
 static PD *printwindow;
@@ -744,6 +745,7 @@ static void DSP_SetFont(PD *di,int doall) {
     int aa = GGadgetIsChecked(GWidgetGetControl(di->gw,CID_AA));
     int type;
     SFTextArea *g;
+    int layer;
 
     if ( sel==NULL || *end )
 return;
@@ -752,8 +754,9 @@ return;
     type = DSP_FontType(di);
 
     g = (SFTextArea *) GWidgetGetControl(di->gw,CID_SampleText);
+    layer = di->fv!=NULL && di->fv->b.sf==sf ? di->fv->b.active_layer : ly_fore;
     if ( !LI_SetFontData( &g->li, doall?0:-1,-1,
-	    sf,type,size,aa,g->g.inner.width))
+	    sf,layer,type,size,aa,g->g.inner.width))
 	ff_post_error(_("Bad Font"),_("Bad Font"));
 }
 
@@ -1302,6 +1305,7 @@ return;
 	sf = sf->cidmaster;
 
     printwindow = gcalloc(1,sizeof(PD));
+    printwindow->fv = fv;
 
     if ( mv!=NULL ) {
 	PI_Init(&printwindow->pi,(FontViewBase *) mv->fv,sc);

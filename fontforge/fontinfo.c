@@ -1902,7 +1902,7 @@ return(true);
 return( true );
 	PIPrivateCheck(d);
 	if (( i = PSDictFindEntry(d->private,newkey))==-1 ) {
-	    SFPrivateGuess(d->sf,d->private,newkey,true);
+	    SFPrivateGuess(d->sf,ly_fore,d->private,newkey,true);
 	    if (( i = PSDictFindEntry(d->private,newkey))==-1 )
 		i = PSDictChangeEntry(d->private,newkey,"");
 	}
@@ -1952,7 +1952,7 @@ return( true );
 return( true );
 	}
 	PIPrivateCheck(d);
-	SFPrivateGuess(sf,d->private,private->keys[sel],false);
+	SFPrivateGuess(sf,ly_fore,d->private,private->keys[sel],false);
 	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_PrivateValues),
 		temp = uc_copy( d->private->values[sel]));
 	free( temp );
@@ -1989,7 +1989,7 @@ static int PI_Hist(GGadget *g, GEvent *e) {
 	    h = hist_vstem;
 	else
 return( true );		/* can't happen */
-	SFHistogram(sf,private,NULL,NULL,h);
+	SFHistogram(sf,ly_fore,private,NULL,NULL,h);
 	GGadgetSetTitle(GWidgetGetControl(d->gw,CID_PrivateValues),
 		temp = uc_copy( d->private->values[sel]));
 	free( temp );

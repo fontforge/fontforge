@@ -380,6 +380,7 @@ static void AutoWKDlg(FontView *fv,int autokern) {
 
     memset(&wi,'\0',sizeof(wi));
     wi.autokern = autokern;
+    wi.layer = fv->b.active_layer;
     wi.sf = sf;
     wi.fv = (FontViewBase *) fv;
     AW_FindFontParameters(&wi);
