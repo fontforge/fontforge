@@ -1672,6 +1672,7 @@ return( true );
 #define MID_ReplaceChar	2024
 #define MID_InsertCharB	2025
 #define MID_InsertCharA	2026
+#define MID_Layers	2027
 #define MID_CharInfo	2201
 #define MID_FindProblems 2216
 #define MID_Transform	2202
@@ -2495,6 +2496,16 @@ static void MVMenuShowBitmap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     }
 }
 
+static void MVMenuChangeLayer(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+
+    mv->layer = mi->mid;
+    BDFFontFree(mv->show);
+    mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->pixelsize,mv->antialias?pf_antialias:0,NULL);
+    MVRemetric(mv);
+    GDrawRequestExpose(mv->gw,NULL,false);
+}
+
 static void MVMenuCenter(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     int i;
@@ -2768,6 +2779,31 @@ static void cblistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
     }
 }
 
+static GMenuItem2 lylist[] = {
+    { { (unichar_t *) N_("Foreground"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 1, 1, 0, 0, 1, 1, 0, '\0' }, NULL, NULL, NULL, MVMenuChangeLayer, ly_fore },
+    NULL
+};
+
+static void lylistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    SplineFont *sf = mv->fv->b.sf;
+    extern void GMenuItemArrayFree(GMenuItem *mi);
+    int ly;
+    GMenuItem *sub;
+
+    sub = gcalloc(sf->layer_cnt+1,sizeof(GMenuItem));
+    for ( ly=ly_fore; ly<sf->layer_cnt; ++ly ) {
+	sub[ly-1].ti.text = utf82u_copy(sf->layers[ly].name);
+	sub[ly-1].ti.checkable = true;
+	sub[ly-1].ti.checked = ly == mv->layer;
+	sub[ly-1].invoke = MVMenuChangeLayer;
+	sub[ly-1].mid = ly;
+	sub[ly-1].ti.fg = sub[ly-1].ti.bg = COLOR_DEFAULT;
+    }
+    GMenuItemArrayFree(mi->sub);
+    mi->sub = sub;
+}	
+
 static GMenuItem2 vwlist[] = {
     { { (unichar_t *) N_("Z_oom out"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'o' }, H_("Zoom out|Alt+Ctl+-"), NULL, NULL, MVMenuScale, MID_ZoomOut },
     { { (unichar_t *) N_("Zoom _in"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'i' }, H_("Zoom in|Alt+Ctl+Shft++"), NULL, NULL, MVMenuScale, MID_ZoomIn },
@@ -2780,6 +2816,8 @@ static GMenuItem2 vwlist[] = {
     { { (unichar_t *) N_("Next _Defined Glyph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'D' }, H_("Next Defined Glyph|Alt+Ctl+]"), NULL, NULL, MVMenuChangeChar, MID_NextDef },
     { { (unichar_t *) N_("Prev Defined Gl_yph"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'a' }, H_("Prev Defined Glyph|Alt+Ctl+["), NULL, NULL, MVMenuChangeChar, MID_PrevDef },
     { { (unichar_t *) N_("Find In Font _View"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'V' }, H_("Find In Font View|Ctl+Shft+<"), NULL, NULL, MVMenuFindInFontView, MID_FindInFontView },
+    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
+    { { (unichar_t *) N_("_Layers"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, NULL, lylist, lylistcheck },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("Com_binations"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'b' }, NULL, cblist, cblistcheck },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
@@ -2970,6 +3008,9 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  case MID_Vertical:
 	    vwlist[i].ti.checked = mv->vertical;
 	    vwlist[i].ti.disabled = !mv->sf->hasvmetrics;
+	  break;
+	  case MID_Layers:
+	    vwlist[i].ti.disabled = mv->sf->layer_cnt<=2 || mv->sf->multilayer;
 	  break;
 	}
     base = i+1;
