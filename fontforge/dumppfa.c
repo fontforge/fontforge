@@ -1321,7 +1321,7 @@ static int dumpprivatestuff(void (*dumpchar)(int ch,void *data), void *data,
     double bluescale;
 
     if ( incid==NULL ) {
-	flex_max = SplineFontIsFlexible(sf,flags);
+	flex_max = SplineFontIsFlexible(sf,layer,flags);
 	if ( (subrs = initsubrs(flex_max>0,mm))==NULL )
 return( false );
 	iscjk = SFIsCJK(sf,map);
@@ -1348,17 +1348,17 @@ return( false );
 	isbold = true;
 
     ff_progress_change_stages(2+2-hasblue);
-    if ( autohint_before_generate && SFNeedsAutoHint(sf) &&
+    if ( autohint_before_generate && SFNeedsAutoHint(sf,layer) &&
 	    !(flags&ps_flag_nohints)) {
 	ff_progress_change_line1(_("Auto Hinting Font..."));
-	SplineFontAutoHint(sf);
+	SplineFontAutoHint(sf,layer);
     }
     if ( !ff_progress_next_stage())
 return( false );
 
     otherblues[0] = otherblues[1] = bluevalues[0] = bluevalues[1] = 0;
     if ( !hasblue ) {
-	FindBlues(sf,bluevalues,otherblues);
+	FindBlues(sf,layer,bluevalues,otherblues);
 	if ( !ff_progress_next_stage())
 return( false );
     }
@@ -2280,7 +2280,7 @@ static FILE *gencidbinarydata(SplineFont *cidmaster,struct cidbytes *cidbytes,
     for ( i=0; i<cidbytes->fdcnt; ++i ) {
 	sf = cidmaster->subfonts[i];
 	fd = &cidbytes->fds[i];
-	fd->flexmax = SplineFontIsFlexible(sf,flags);
+	fd->flexmax = SplineFontIsFlexible(sf,layer,flags);
 	fd->subrs = initsubrs(fd->flexmax>0,NULL);
 	if ( fd->subrs==NULL ) {
 	    int j;

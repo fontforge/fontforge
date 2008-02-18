@@ -116,7 +116,7 @@ return;
 	    sc->vwidth = width;
 	}
     }
-    SCCharChangedUpdate(sc);
+    SCCharChangedUpdate(sc,fv->active_layer);
 }
 
 void FVDoit(CreateWidthData *wd) {

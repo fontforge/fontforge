@@ -70,6 +70,7 @@ struct debugger_context {
     int dpi;
     TT_ExecContext exc;
     SplineChar *sc;
+    int layer;
     BpData temp;
     BpData breaks[32];
     int bcnt;
@@ -287,7 +288,7 @@ static void *StartChar(void *_dc) {
 
     massive_kludge = dc;
     if ( (dc->ftc = __FreeTypeFontContext(dc->context,dc->sc->parent,dc->sc,NULL,
-	    ff_ttf, 0, NULL))==NULL )
+	    dc->layer,ff_ttf, 0, NULL))==NULL )
  goto finish;
     if ( dc->storetouched!=NULL )
 	memset(dc->storetouched,0,dc->storeSize);
@@ -375,7 +376,7 @@ return;
     pthread_cond_wait(&dc->parent_cond,&dc->parent_mutex);
 }
 
-struct debugger_context *DebuggerCreate(SplineChar *sc,real ptsize,int dpi,int dbg_fpgm, int is_bitmap) {
+struct debugger_context *DebuggerCreate(SplineChar *sc,int layer, real ptsize,int dpi,int dbg_fpgm, int is_bitmap) {
     struct debugger_context *dc;
 
     if ( !hasFreeTypeDebugger())
@@ -383,6 +384,7 @@ return( NULL );
 
     dc = gcalloc(1,sizeof(struct debugger_context));
     dc->sc = sc;
+    dc->layer = layer;
     dc->debug_fpgm = dbg_fpgm;
     dc->ptsize = ptsize;
     dc->dpi = dpi;

@@ -146,6 +146,7 @@ typedef struct fontviewbase {
     EncMap *normal;			/* If this is not NULL then we have a compacted encoding in map, and this is the original */
     SplineFont *sf;			/* Current font */
     SplineFont *cidmaster;		/* If CID keyed, contains master font */
+    int active_layer;
     BDFFont *active_bitmap;		/* Set if the fontview displays a bitmap strike */
     uint8 *selected;			/* Current selection */
 #ifndef _NO_FFSCRIPT
@@ -291,7 +292,7 @@ extern void FVDontAutoHint(FontViewBase *fv);
 extern void FVAutoInstr(FontViewBase *fv);
 extern void FVClearInstrs(FontViewBase *fv);
 extern void FVClearHints(FontViewBase *fv);
-extern void SCAutoTrace(SplineChar *sc,int ask);
+extern void SCAutoTrace(SplineChar *sc,int layer, int ask);
 extern char *FindAutoTraceName(void);
 extern void *GetAutoTraceArgs(void);
 extern void SetAutoTraceArgs(void *a);
@@ -372,7 +373,7 @@ extern void CVCopyGridFit(CharViewBase *cv);
 extern void CopyWidth(CharViewBase *cv,enum undotype);
 extern void PasteToCV(CharViewBase *cv);
 extern void CVYPerspective(CharViewBase *cv,double x_vanish, double y_vanish);
-extern void ScriptSCEmbolden(SplineChar *sc,enum embolden_type type,struct lcg_zones *zones);
+extern void ScriptSCEmbolden(SplineChar *sc,int layer,enum embolden_type type,struct lcg_zones *zones);
 extern void CVEmbolden(CharViewBase *cv,enum embolden_type type,struct lcg_zones *zones);
 extern void SCCondenseExtend(struct counterinfo *ci,SplineChar *sc, int layer,
 	int do_undoes);
@@ -380,7 +381,7 @@ extern void SCClearSelPt(SplineChar *sc);
 extern void SC_MoreLayers(SplineChar *,Layer *old);
 extern void SCLayersChange(SplineChar *sc);
 extern void SFLayerChange(SplineFont *sf);
-extern void SCTile(SplineChar *sc);
+extern void SCTile(SplineChar *sc,int layer);
 
 extern void MVCopyChar(FontViewBase *fv, BDFFont *bdf, SplineChar *sc, enum fvcopy_type fullcopy);
 extern void PasteIntoMV(FontViewBase *fv, BDFFont *bdf,SplineChar *sc, int doclear);

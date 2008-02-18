@@ -36,10 +36,11 @@ void FVOutline(FontViewBase *fv, real width) {
     SplineSet *temp, *spl;
     int i, cnt=0, changed, gid;
     SplineChar *sc;
+    int layer = fv->active_layer;
 
     for ( i=0; i<fv->map->enccount; ++i )
 	if ( (gid=fv->map->map[i])!=-1 && (sc=fv->sf->glyphs[gid])!=NULL &&
-		fv->selected[i] && sc->layers[ly_fore].splines )
+		fv->selected[i] && sc->layers[layer].splines )
 	    ++cnt;
     ff_progress_start_indicator(10,_("Outlining glyphs"),_("Outlining glyphs"),0,cnt,1);
 
@@ -51,14 +52,14 @@ void FVOutline(FontViewBase *fv, real width) {
     SFUntickAll(fv->sf);
     for ( i=0; i<fv->map->enccount; ++i )
 	if ( (gid=fv->map->map[i])!=-1 && (sc=fv->sf->glyphs[gid])!=NULL && fv->selected[i] &&
-		sc->layers[ly_fore].splines && !sc->ticked ) {
+		sc->layers[layer].splines && !sc->ticked ) {
 	    sc->ticked = true;
-	    SCPreserveState(sc,false);
-	    temp = SSStroke(sc->layers[ly_fore].splines,&si,sc);
-	    for ( spl=sc->layers[ly_fore].splines; spl->next!=NULL; spl=spl->next );
+	    SCPreserveLayer(sc,layer,false);
+	    temp = SSStroke(sc->layers[layer].splines,&si,sc);
+	    for ( spl=sc->layers[layer].splines; spl->next!=NULL; spl=spl->next );
 	    spl->next = temp;
-	    SplineSetsCorrect(sc->layers[ly_fore].splines,&changed);
-	    SCCharChangedUpdate(sc);
+	    SplineSetsCorrect(sc->layers[layer].splines,&changed);
+	    SCCharChangedUpdate(sc,layer);
 	    if ( !ff_progress_next())
     break;
 	}
@@ -70,10 +71,11 @@ void FVInline(FontViewBase *fv, real width, real inset) {
     SplineSet *temp, *spl, *temp2;
     int i, cnt=0, changed, gid;
     SplineChar *sc;
+    int layer = fv->active_layer;
 
     for ( i=0; i<fv->map->enccount; ++i )
 	if ( (gid=fv->map->map[i])!=-1 && (sc=fv->sf->glyphs[gid])!=NULL && fv->selected[i] &&
-		sc->layers[ly_fore].splines )
+		sc->layers[layer].splines )
 	    ++cnt;
     ff_progress_start_indicator(10,_("Inlining glyphs"),_("Inlining glyphs"),0,cnt,1);
 
@@ -84,19 +86,19 @@ void FVInline(FontViewBase *fv, real width, real inset) {
     SFUntickAll(fv->sf);
     for ( i=0; i<fv->map->enccount; ++i )
 	if ( (gid=fv->map->map[i])!=-1 && (sc=fv->sf->glyphs[gid])!=NULL && fv->selected[i] &&
-		sc->layers[ly_fore].splines && !sc->ticked ) {
+		sc->layers[layer].splines && !sc->ticked ) {
 	    sc->ticked = true;
-	    SCPreserveState(sc,false);
+	    SCPreserveLayer(sc,layer,false);
 	    si.radius = width;
-	    temp = SSStroke(sc->layers[ly_fore].splines,&si,sc);
+	    temp = SSStroke(sc->layers[layer].splines,&si,sc);
 	    si.radius = width+inset;
-	    temp2 = SSStroke(sc->layers[ly_fore].splines,&si,sc);
-	    for ( spl=sc->layers[ly_fore].splines; spl->next!=NULL; spl=spl->next );
+	    temp2 = SSStroke(sc->layers[layer].splines,&si,sc);
+	    for ( spl=sc->layers[layer].splines; spl->next!=NULL; spl=spl->next );
 	    spl->next = temp;
 	    for ( ; spl->next!=NULL; spl=spl->next );
 	    spl->next = temp2;
-	    SplineSetsCorrect(sc->layers[ly_fore].splines,&changed);
-	    SCCharChangedUpdate(sc);
+	    SplineSetsCorrect(sc->layers[layer].splines,&changed);
+	    SCCharChangedUpdate(sc,layer);
 	    if ( !ff_progress_next())
     break;
 	}
@@ -164,6 +166,7 @@ static void OrientEdges(SplineSet *base,SplineChar *sc) {
     memset(&el,'\0',sizeof(el));
     memset(&dummy,'\0',sizeof(dummy));
     memset(layers,'\0',sizeof(layers));
+    el.layer = ly_fore;
     dummy.layers = layers;
     dummy.layers[ly_fore].splines = base;
     if ( sc!=NULL ) dummy.name = sc->name;
@@ -767,21 +770,22 @@ void FVShadow(FontViewBase *fv,real angle, real outline_width,
 	real shadow_length, int wireframe) {
     int i, cnt=0, gid;
     SplineChar *sc;
+    int layer = fv->active_layer;
 
     for ( i=0; i<fv->map->enccount; ++i )
 	if ( (gid=fv->map->map[i])!=-1 && (sc=fv->sf->glyphs[gid])!=NULL && fv->selected[i] &&
-		sc->layers[ly_fore].splines )
+		sc->layers[layer].splines )
 	    ++cnt;
     ff_progress_start_indicator(10,_("Shadowing glyphs"),_("Shadowing glyphs"),0,cnt,1);
 
     SFUntickAll(fv->sf);
     for ( i=0; i<fv->map->enccount; ++i )
 	if ( (gid=fv->map->map[i])!=-1 && (sc=fv->sf->glyphs[gid])!=NULL && fv->selected[i] &&
-		sc->layers[ly_fore].splines && !sc->ticked ) {
+		sc->layers[layer].splines && !sc->ticked ) {
 	    sc->ticked = true;
-	    SCPreserveState(sc,false);
-	    sc->layers[ly_fore].splines = SSShadow(sc->layers[ly_fore].splines,angle,outline_width,shadow_length,sc,wireframe);
-	    SCCharChangedUpdate(sc);
+	    SCPreserveLayer(sc,layer,false);
+	    sc->layers[layer].splines = SSShadow(sc->layers[layer].splines,angle,outline_width,shadow_length,sc,wireframe);
+	    SCCharChangedUpdate(sc,layer);
 	    if ( !ff_progress_next())
     break;
 	}

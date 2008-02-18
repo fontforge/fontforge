@@ -49,7 +49,7 @@ return( 0 );
 }
 
 void *_FreeTypeFontContext(SplineFont *sf,SplineChar *sc,FontViewBase *fv,
-	enum fontformat ff,int flags, void *share) {
+	int layer, enum fontformat ff,int flags, void *share) {
 return( NULL );
 }
 
@@ -57,7 +57,7 @@ BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int dep
 return( NULL );
 }
 
-BDFFont *SplineFontFreeTypeRasterizeNoHints(SplineFont *sf,int pixelsize,int depth) {
+BDFFont *SplineFontFreeTypeRasterizeNoHints(SplineFont *sf,int layer,int pixelsize,int depth) {
 return( NULL );
 }
 
@@ -267,22 +267,22 @@ return( 0 );		/* older than 2.1.4, but don't know how old */
 }
 # endif
 
-static void TransitiveClosureAdd(SplineChar **new,SplineChar **old,SplineChar *sc) {
+static void TransitiveClosureAdd(SplineChar **new,SplineChar **old,SplineChar *sc,int layer) {
     RefChar *ref;
 
     if ( new[sc->orig_pos]!=NULL )	/* already done */
 return;
     new[sc->orig_pos] = sc;
-    for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref = ref->next )
-	TransitiveClosureAdd(new,old,ref->sc);
+    for ( ref=sc->layers[layer].refs; ref!=NULL; ref = ref->next )
+	TransitiveClosureAdd(new,old,ref->sc,layer);
 }
 
-static void AddIf(SplineFont *sf,SplineChar **new,SplineChar **old,int unienc) {
+static void AddIf(SplineFont *sf,SplineChar **new,SplineChar **old,int unienc,int layer) {
     SplineChar *sc;
 
     sc = SFGetChar(sf,unienc,NULL);
     if ( sc!=NULL && SCWorthOutputting(sc))
-	TransitiveClosureAdd(new,old,sc);
+	TransitiveClosureAdd(new,old,sc,layer);
 }
 
 void FreeTypeFreeContext(void *freetypecontext) {
@@ -305,6 +305,7 @@ return;
     
 void *__FreeTypeFontContext(FT_Library context,
 	SplineFont *sf,SplineChar *sc,FontViewBase *fv,
+	int layer,
 	enum fontformat ff,int flags,void *shared_ftc) {
     /* build up a temporary font consisting of:
      *	sc!=NULL   => Just that character (and its references)
@@ -316,7 +317,6 @@ void *__FreeTypeFontContext(FT_Library context,
     uint8 *selected = fv!=NULL ? fv->selected : NULL;
     EncMap *map = fv!=NULL ? fv->map : sf->fv->map;
     int i,cnt, notdefpos;
-    int layer = ly_fore;
 
     if ( !hasFreeType())
 return( NULL );
@@ -329,10 +329,12 @@ return( NULL );
 	ftc->face = NULL;
 	ftc->shared_ftc = shared_ftc;
 	ftc->em = ((FTC *) shared_ftc)->em;
+	ftc->layer = layer;
     } else {
 	ftc->sf = sf;
 	ftc->em = sf->ascent+sf->descent;
 	ftc->file = NULL;
+	ftc->layer = layer;
 
 	ftc->file = tmpfile();
 	if ( ftc->file==NULL ) {
@@ -345,21 +347,21 @@ return( NULL );
 	    /* Build up a font consisting of those characters we actually use */
 	    new = gcalloc(sf->glyphcnt,sizeof(SplineChar *));
 	    if ( sc!=NULL )
-		TransitiveClosureAdd(new,old,sc);
+		TransitiveClosureAdd(new,old,sc,layer);
 	    else for ( i=0; i<map->enccount; ++i )
 		if ( selected[i] && map->map[i]!=-1 &&
 			SCWorthOutputting(old[map->map[i]]))
-		    TransitiveClosureAdd(new,old,old[map->map[i]]);
+		    TransitiveClosureAdd(new,old,old[map->map[i]],layer);
 	    /* Add these guys so we'll get reasonable blue values */
 	    /* we won't rasterize them */
 	    if ( PSDictHasEntry(sf->private,"BlueValues")==NULL ) {
-		AddIf(sf,new,old,'I');
-		AddIf(sf,new,old,'O');
-		AddIf(sf,new,old,'x');
-		AddIf(sf,new,old,'o');
+		AddIf(sf,new,old,'I',layer);
+		AddIf(sf,new,old,'O',layer);
+		AddIf(sf,new,old,'x',layer);
+		AddIf(sf,new,old,'o',layer);
 	    }
 	    if ((notdefpos = SFFindNotdef(sf,-2))!=-1 )
-		TransitiveClosureAdd(new,old,sf->glyphs[notdefpos]);
+		TransitiveClosureAdd(new,old,sf->glyphs[notdefpos],layer);
 		/* If there's a .notdef use it so that we don't generate our own .notdef (which can add cvt entries) */
 	    sf->glyphs = new;
 	}
@@ -447,9 +449,9 @@ return( NULL );
 }
 
 void *_FreeTypeFontContext(SplineFont *sf,SplineChar *sc,FontViewBase *fv,
-	enum fontformat ff,int flags,void *shared_ftc) {
+	int layer, enum fontformat ff,int flags,void *shared_ftc) {
 return( __FreeTypeFontContext(ff_ft_context,sf,sc,fv,
-	ff,flags,shared_ftc));
+	layer, ff,flags,shared_ftc));
 }
 
 static void BCTruncateToDepth(BDFChar *bdfc,int depth) {
@@ -520,9 +522,9 @@ return( bdfc );
 
  fail:
     if ( depth==1 )
-return( SplineCharRasterize(ftc->sf->glyphs[gid],pixelsize) );
+return( SplineCharRasterize(ftc->sf->glyphs[gid],ftc->layer,pixelsize) );
     else
-return( SplineCharAntiAlias(ftc->sf->glyphs[gid],pixelsize,4));
+return( SplineCharAntiAlias(ftc->sf->glyphs[gid],ftc->layer,pixelsize,4));
 }
 
 BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int depth) {
@@ -541,7 +543,7 @@ BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int dep
 	    subftc = ftc;
 	} else {
 	    subsf = sf->subfonts[k];
-	    subftc = FreeTypeFontContext(subsf,NULL,NULL);
+	    subftc = FreeTypeFontContext(subsf,NULL,NULL,ftc->layer);
 	}
 	for ( i=0; i<subsf->glyphcnt; ++i )
 	    if ( SCWorthOutputting(subsf->glyphs[i] ) ) {
@@ -550,9 +552,9 @@ BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int dep
 		if ( subftc!=NULL )
 		    bdf->glyphs[i] = SplineCharFreeTypeRasterize(subftc,i,pixelsize,depth);
 		else if ( depth==1 )
-		    bdf->glyphs[i] = SplineCharRasterize(subsf->glyphs[i],pixelsize);
+		    bdf->glyphs[i] = SplineCharRasterize(subsf->glyphs[i],ftc->layer,pixelsize);
 		else
-		    bdf->glyphs[i] = SplineCharAntiAlias(subsf->glyphs[i],pixelsize,(1<<(depth/2)));
+		    bdf->glyphs[i] = SplineCharAntiAlias(subsf->glyphs[i],ftc->layer,pixelsize,(1<<(depth/2)));
 		ff_progress_next();
 	    } else
 		bdf->glyphs[i] = NULL;
@@ -1020,12 +1022,12 @@ static void MergeBitmaps(FT_Bitmap *bitmap,FT_Bitmap *newstuff,uint32 col) {
 }
 #endif
 
-BDFChar *SplineCharFreeTypeRasterizeNoHints(SplineChar *sc,
+BDFChar *SplineCharFreeTypeRasterizeNoHints(SplineChar *sc,int layer,
 	int pixelsize,int depth) {
     FT_Outline outline;
     FT_Bitmap bitmap, temp;
 #ifdef FONTFORGE_CONFIG_TYPE3
-    int i, last;
+    int i, last, first;
 #endif
     int cmax, pmax;
     real scale = pixelsize*(1<<6)/(double) (sc->parent->ascent+sc->parent->descent);
@@ -1036,10 +1038,10 @@ BDFChar *SplineCharFreeTypeRasterizeNoHints(SplineChar *sc,
 
     if ( !hasFreeType())
 return( NULL );
-    if ( sc->layers[ly_fore].order2 && sc->parent->strokedfont )
+    if ( sc->layers[layer].order2 && sc->parent->strokedfont )
 return( NULL );
 #ifdef FONTFORGE_CONFIG_TYPE3
-    if ( sc->layers[ly_fore].order2 && sc->parent->multilayer ) {
+    if ( sc->layers[layer].order2 && sc->parent->multilayer ) {
 	/* I don't support stroking of order2 splines */
 	for ( i=ly_fore; i<sc->layer_cnt; ++i ) {
 	    if ( sc->layers[i].dostroke )
@@ -1055,7 +1057,7 @@ return( NULL );
     }
 #endif
 
-    SplineCharFindBounds(sc,&b);
+    SplineCharLayerFindBounds(sc,layer,&b);
     if ( b.maxx-b.minx > 32767 ) b.maxx = b.minx+32767;
     if ( b.maxy-b.miny > 32767 ) b.maxy = b.miny+32767;
     b.minx *= scale; b.maxx *= scale;
@@ -1096,41 +1098,43 @@ return( NULL );
     pmax = cmax = 0;
 
     if ( sc->parent->strokedfont ) {
-	SplineSet *stroked = StrokeOutline(&sc->layers[ly_fore],sc);
+	SplineSet *stroked = StrokeOutline(&sc->layers[layer],sc);
 	memset(temp.buffer,0,temp.pitch*temp.rows);
 	FillOutline(stroked,&outline,&pmax,&cmax,
-		scale,&b,sc->layers[ly_fore].order2);
+		scale,&b,sc->layers[layer].order2);
 	err |= (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&bitmap);
 	SplinePointListsFree(stroked);
     } else 
 #ifndef FONTFORGE_CONFIG_TYPE3
     {
-	all = LayerAllOutlines(&sc->layers[ly_fore]);
+	all = LayerAllOutlines(&sc->layers[layer]);
 	FillOutline(all,&outline,&pmax,&cmax,
-		scale,&b,sc->layers[ly_fore].order2);
+		scale,&b,sc->layers[layer].order2);
 	err = (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&bitmap);
-	if ( sc->layers[ly_fore].splines!=all )
+	if ( sc->layers[layer].splines!=all )
 	    SplinePointListsFree(all);
     }
 #else
     if ( temp.buffer==NULL ) {
-	all = LayerAllOutlines(&sc->layers[ly_fore]);
+	all = LayerAllOutlines(&sc->layers[layer]);
 	FillOutline(all,&outline,&pmax,&cmax,
-		scale,&b,sc->layers[ly_fore].order2);
+		scale,&b,sc->layers[layer].order2);
 	err = (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&bitmap);
-	if ( sc->layers[ly_fore].splines!=all )
+	if ( sc->layers[layer].splines!=all )
 	    SplinePointListsFree(all);
     } else {
 	int j; RefChar *r;
 	err = 0;
-	last = ly_fore;
-	if ( sc->parent->multilayer )
+	if ( sc->parent->multilayer ) {
+	    first = ly_fore;
 	    last = sc->layer_cnt-1;
+	} else
+	    first = last = layer;
 	for ( i=ly_fore; i<=last; ++i ) {
 	    if ( sc->layers[i].dofill ) {
 		memset(temp.buffer,0,temp.pitch*temp.rows);
 		FillOutline(sc->layers[i].splines,&outline,&pmax,&cmax,
-			scale,&b,sc->layers[ly_fore].order2);
+			scale,&b,sc->layers[i].order2);
 		err |= (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&temp);
 		MergeBitmaps(&bitmap,&temp,sc->layers[i].fill_brush.col);
 	    }
@@ -1138,7 +1142,7 @@ return( NULL );
 		SplineSet *stroked = StrokeOutline(&sc->layers[i],sc);
 		memset(temp.buffer,0,temp.pitch*temp.rows);
 		FillOutline(stroked,&outline,&pmax,&cmax,
-			scale,&b,sc->layers[ly_fore].order2);
+			scale,&b,sc->layers[i].order2);
 		err |= (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&temp);
 		MergeBitmaps(&bitmap,&temp,sc->layers[i].stroke_pen.brush.col);
 		SplinePointListsFree(stroked);
@@ -1148,7 +1152,7 @@ return( NULL );
 		    if ( r->layers[j].dofill ) {
 			memset(temp.buffer,0,temp.pitch*temp.rows);
 			FillOutline(r->layers[j].splines,&outline,&pmax,&cmax,
-				scale,&b,sc->layers[ly_fore].order2);
+				scale,&b,sc->layers[i].order2);
 			err |= (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&temp);
 			MergeBitmaps(&bitmap,&temp,r->layers[j].fill_brush.col);
 		    }
@@ -1156,7 +1160,7 @@ return( NULL );
 			SplineSet *stroked = RStrokeOutline(&r->layers[j],sc);
 			memset(temp.buffer,0,temp.pitch*temp.rows);
 			FillOutline(stroked,&outline,&pmax,&cmax,
-				scale,&b,sc->layers[ly_fore].order2);
+				scale,&b,sc->layers[i].order2);
 			err |= (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&temp);
 			MergeBitmaps(&bitmap,&temp,r->layers[j].stroke_pen.brush.col);
 			SplinePointListsFree(stroked);
@@ -1179,7 +1183,7 @@ return( NULL );
 return( bdfc );
 }
 
-BDFFont *SplineFontFreeTypeRasterizeNoHints(SplineFont *sf,int pixelsize,int depth) {
+BDFFont *SplineFontFreeTypeRasterizeNoHints(SplineFont *sf,int layer,int pixelsize,int depth) {
     SplineFont *subsf;
     int i,k;
     BDFFont *bdf = SplineFontToBDFHeader(sf,pixelsize,true);
@@ -1196,13 +1200,13 @@ BDFFont *SplineFontFreeTypeRasterizeNoHints(SplineFont *sf,int pixelsize,int dep
 	}
 	for ( i=0; i<subsf->glyphcnt; ++i )
 	    if ( SCWorthOutputting(subsf->glyphs[i] ) ) {
-		bdf->glyphs[i] = SplineCharFreeTypeRasterizeNoHints(subsf->glyphs[i],pixelsize,depth);
+		bdf->glyphs[i] = SplineCharFreeTypeRasterizeNoHints(subsf->glyphs[i],layer,pixelsize,depth);
 		if ( bdf->glyphs[i]!=NULL )
 		    /* Done */;
 		else if ( depth==1 )
-		    bdf->glyphs[i] = SplineCharRasterize(subsf->glyphs[i],pixelsize);
+		    bdf->glyphs[i] = SplineCharRasterize(subsf->glyphs[i],layer,pixelsize);
 		else
-		    bdf->glyphs[i] = SplineCharAntiAlias(subsf->glyphs[i],pixelsize,(1<<(depth/2)));
+		    bdf->glyphs[i] = SplineCharAntiAlias(subsf->glyphs[i],layer,pixelsize,(1<<(depth/2)));
 		ff_progress_next();
 	    } else
 		bdf->glyphs[i] = NULL;
@@ -1213,9 +1217,9 @@ return( bdf );
 }
 #endif
 
-void *FreeTypeFontContext(SplineFont *sf,SplineChar *sc,FontViewBase *fv) {
-return( _FreeTypeFontContext(sf,sc,fv,sf->subfontcnt!=0?ff_otfcid:
-	sf->layers[ly_fore].order2?ff_ttf:ff_pfb,0,NULL) );
+void *FreeTypeFontContext(SplineFont *sf,SplineChar *sc,FontViewBase *fv,int layer) {
+return( _FreeTypeFontContext(sf,sc,fv,layer,sf->subfontcnt!=0?ff_otfcid:
+	sf->layers[layer].order2?ff_ttf:ff_pfb,0,NULL) );
 }
 
 void FreeType_FreeRaster(struct freetype_raster *raster) {

@@ -64,12 +64,12 @@ static void MVOutline(MetricsView *mv, real width) {
     break;
     if ( i!=-1 ) {
 	SplineChar *sc = mv->glyphs[i].sc;
-	SCPreserveState(sc,false);
-	temp = SSStroke(sc->layers[ly_fore].splines,&si,sc);
-	for ( spl=sc->layers[ly_fore].splines; spl->next!=NULL; spl=spl->next );
+	SCPreserveLayer(sc,mv->layer,false);
+	temp = SSStroke(sc->layers[mv->layer].splines,&si,sc);
+	for ( spl=sc->layers[mv->layer].splines; spl->next!=NULL; spl=spl->next );
 	spl->next = temp;
-	SplineSetsCorrect(sc->layers[ly_fore].splines,&changed);
-	SCCharChangedUpdate(sc);
+	SplineSetsCorrect(sc->layers[mv->layer].splines,&changed);
+	SCCharChangedUpdate(sc,mv->layer);
     }
 }
 
@@ -109,17 +109,17 @@ static void MVInline(MetricsView *mv, real width, real inset) {
     break;
     if ( i!=-1 ) {
 	SplineChar *sc = mv->glyphs[i].sc;
-	SCPreserveState(sc,false);
+	SCPreserveLayer(sc,mv->layer,false);
 	si.radius = width;
-	temp = SSStroke(sc->layers[ly_fore].splines,&si,sc);
+	temp = SSStroke(sc->layers[mv->layer].splines,&si,sc);
 	si.radius = width+inset;
-	temp2 = SSStroke(sc->layers[ly_fore].splines,&si,sc);
-	for ( spl=sc->layers[ly_fore].splines; spl->next!=NULL; spl=spl->next );
+	temp2 = SSStroke(sc->layers[mv->layer].splines,&si,sc);
+	for ( spl=sc->layers[mv->layer].splines; spl->next!=NULL; spl=spl->next );
 	spl->next = temp;
 	for ( ; spl->next!=NULL; spl=spl->next );
 	spl->next = temp2;
-	SplineSetsCorrect(sc->layers[ly_fore].splines,&changed);
-	SCCharChangedUpdate(sc);
+	SplineSetsCorrect(sc->layers[mv->layer].splines,&changed);
+	SCCharChangedUpdate(sc,mv->layer);
     }
 }
 
@@ -347,9 +347,9 @@ static void MVShadow(MetricsView *mv,real angle, real outline_width,
     break;
     if ( i!=-1 ) {
 	SplineChar *sc = mv->glyphs[i].sc;
-	SCPreserveState(sc,false);
-	sc->layers[ly_fore].splines = SSShadow(sc->layers[ly_fore].splines,angle,outline_width,shadow_length,sc,wireframe);
-	SCCharChangedUpdate(sc);
+	SCPreserveLayer(sc,mv->layer,false);
+	sc->layers[mv->layer].splines = SSShadow(sc->layers[mv->layer].splines,angle,outline_width,shadow_length,sc,wireframe);
+	SCCharChangedUpdate(sc,mv->layer);
     }
 }
 

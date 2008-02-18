@@ -67,6 +67,7 @@ typedef struct edgelist {
     uint8 *bitmap;
     Edge *last, *splinesetfirst;
     SplineChar *sc;
+    int layer;
     char *interesting;
     int major, other;
     unsigned int genmajoredges: 1;	/* generate a list of edges parrallel to the major axis */
@@ -126,6 +127,7 @@ typedef struct eilist {
     EI **ordered;
     char *ends;			/* flag to say an edge ends on this line */
     SplineChar *sc;
+    int layer;
     int major;
     EI *splinelast, *splinefirst;
     EI **bottoms, **tops;	/* Used only be FindNeeded in RemoveOverlap */
