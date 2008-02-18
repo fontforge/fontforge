@@ -1046,14 +1046,10 @@ return( notdefpos );
 int SCDrawsSomething(SplineChar *sc) {
     int layer,l;
     RefChar *ref;
-    int first, last;
 
     if ( sc==NULL )
 return( false );
-    first = last = ly_fore;
-    if ( sc->parent->multilayer )
-	last = sc->layer_cnt-1;
-    for ( layer = first; layer<=last; ++layer ) {
+    for ( layer = ly_fore; layer<sc->layer_cnt; ++layer ) {
 	if ( sc->layers[layer].splines!=NULL || sc->layers[layer].images!=NULL )
 return( true );
 	for ( ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next )
@@ -2839,7 +2835,7 @@ return;
 	spacew = rint((sf->glyphs[i]->width<<20)/(sf->ascent+sf->descent));
     break;
     }
-    QuickBlues(sf,&bd);
+    QuickBlues(sf,ly_fore,&bd);
 
     memset(sf->texdata.params,0,sizeof(sf->texdata.params));
     sf->texdata.params[0] = rint( -sin(sf->italicangle)*(1<<20) );	/* slant */

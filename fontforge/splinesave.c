@@ -1414,7 +1414,7 @@ static void ExpandRef1(GrowBuf *gb, SplineChar *scs[MmMax], int instance_count,
 	}
     } else {
 	/* Hints for a real reference */
-	if ( !NeverConflicts(r,instance_count) || r[0]->sc->anyflexes || AnyRefs(r[0]->sc,layer) )
+	if ( !NeverConflicts(r,instance_count) || r[0]->sc->layers[layer].anyflexes || AnyRefs(r[0]->sc,layer) )
 	    /* Hints already done */;
 	else if ( hdb->noconflicts )
 	    /* Hints already done */;
@@ -1492,7 +1492,7 @@ static void RSC2PS1(GrowBuf *gb, SplineChar *base[MmMax],SplineChar *rsc[MmMax],
 		SplinePointListsFree(freeme[i]);
 	} else if ( refs[0]->sc->ttf_glyph!=0x7fff &&
 		((flags&ps_flag_nohints) ||
-		 !refs[0]->sc->anyflexes ||
+		 !refs[0]->sc->layers[layer].anyflexes ||
 		 (refs[0]->transform[4]+trans[0].x==0 && refs[0]->transform[5]+trans[0].y==0)) &&
 		((flags&ps_flag_nohints) ||
 		 NeverConflicts(refs,instance_count) ||
@@ -1537,7 +1537,7 @@ static unsigned char *SplineChar2PS(SplineChar *sc,int *len,int round,int iscjk,
     int fixuphm = false;
 
     if ( !(flags&ps_flag_nohints) && SCNeedsSubsPts(sc,format,gi->layer))
-	SCFigureHintMasks(sc);
+	SCFigureHintMasks(sc,gi->layer);
 
     if ( (format==ff_mma || format==ff_mmb) && mm!=NULL ) {
 	instance_count = mm->instance_count;
@@ -1782,7 +1782,7 @@ static void SplineFont2FullSubrs1(int flags,GlyphInfo *gi) {
 #endif	/* FONTFORGE_CONFIG_PS_REFS_GET_SUBRS */
 
     if ( !autohint_before_generate && !(flags&ps_flag_nohints))
-	SplineFontAutoHintRefs(gi->sf);
+	SplineFontAutoHintRefs(gi->sf,gi->layer);
     for ( i=0; i<gi->glyphcnt; ++i ) if ( (sc=gi->gb[i].sc)!=NULL )
 	sc->ttf_glyph = 0x7fff;
 
@@ -1809,7 +1809,7 @@ static void SplineFont2FullSubrs1(int flags,GlyphInfo *gi) {
 	    /* Put the */
 	    /*  character into a subr if it is referenced by other characters */
 	    if ( (sc->dependents!=NULL &&
-		     ((!sc->hconflicts && !sc->vconflicts && !sc->anyflexes) ||
+		     ((!sc->hconflicts && !sc->vconflicts && !sc->layers[gi->layer].anyflexes) ||
 			 SpecialCaseConflicts(sc)) &&
 		     !AlwaysSeacable(sc,flags))) {
 		RefChar *r;
@@ -2994,9 +2994,9 @@ static unsigned char *SplineChar2PS2(SplineChar *sc,int *len, int nomwid,
 
     if ( autohint_before_generate && sc->changedsincelasthinted &&
 	    !sc->manualhints && !(flags&ps_flag_nohints))
-	SplineCharAutoHint(sc,NULL);
+	SplineCharAutoHint(sc,gi->layer,NULL);
     if ( !(flags&ps_flag_nohints) && SCNeedsSubsPts(sc,ff_otf,gi->layer))
-	SCFigureHintMasks(sc);
+	SCFigureHintMasks(sc,gi->layer);
 
     if ( flags&ps_flag_nohints ) {
 	oldh = sc->hstem; oldv = sc->vstem;
@@ -3145,7 +3145,7 @@ static void SplineFont2FullSubrs2(int flags,GlyphInfo *gi) {
 #endif	/* FONTFORGE_CONFIG_PS_REFS_GET_SUBRS */
 
     if ( !autohint_before_generate && !(flags&ps_flag_nohints))
-	SplineFontAutoHintRefs(gi->sf);
+	SplineFontAutoHintRefs(gi->sf,gi->layer);
 
     for ( i=0; i<gi->glyphcnt; ++i ) if ( (sc=gi->gb[i].sc)!=NULL )
 	sc->lsidebearing = 0x7fff;
@@ -3197,7 +3197,7 @@ struct pschars *SplineFont2ChrsSubrs2(SplineFont *sf, int nomwid, int defwid,
     SplineChar dummynotdef;
 
     if ( !autohint_before_generate && !(flags&ps_flag_nohints))
-	SplineFontAutoHintRefs(sf);
+	SplineFontAutoHintRefs(sf,layer);
 
     memset(&gi,0,sizeof(gi));
     memset(&gi.hashed,-1,sizeof(gi.hashed));
@@ -3230,7 +3230,7 @@ struct pschars *SplineFont2ChrsSubrs2(SplineFont *sf, int nomwid, int defwid,
 	if ( autohint_before_generate && sc!=NULL &&
 		sc->changedsincelasthinted && !sc->manualhints &&
 		!(flags&ps_flag_nohints))
-	    SplineCharAutoHint(sc,NULL);
+	    SplineCharAutoHint(sc,layer,NULL);
 	sc->lsidebearing = 0x7fff;
     }
     MarkTranslationRefs(sf,layer);

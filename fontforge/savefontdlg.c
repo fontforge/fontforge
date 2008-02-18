@@ -1440,8 +1440,8 @@ return;
 	if ( oldformatstate == ff_ptype3 || oldformatstate == ff_none )
 	    /* No point in validating type3 fonts */;
 	else if ( (old_validate = GGadgetIsChecked(d->validate))) {
-	    int vs = SFValidate(d->sf,false);
-	    int mask = VSMaskFromFormat(d->sf,oldformatstate);
+	    int vs = SFValidate(d->sf,layer,false);
+	    int mask = VSMaskFromFormat(d->sf,layer,oldformatstate);
 	    int blues = ValidatePrivate(d->sf)& ~pds_missingblue;
 	    if ( (vs&mask) || blues!=0 ) {
 		const char *rsb[3];
@@ -1457,7 +1457,7 @@ return;
 		if ( ret==0 ) {
 		    d->done = true;
 		    d->ret = false;
-		    SFValidationWindow(d->sf,oldformatstate);
+		    SFValidationWindow(d->sf,layer,oldformatstate);
 return;
 		}
 		/* Ok... they want to proceed */
@@ -1484,12 +1484,12 @@ return;
     former = NULL;
     if ( d->family && sfs!=NULL ) {
 	for ( sfl=sfs; sfl!=NULL; sfl=sfl->next ) {
-	    PrepareUnlinkRmOvrlp(sfl->sf,temp);
+	    PrepareUnlinkRmOvrlp(sfl->sf,temp,layer);
 	    if ( rename_to!=NULL && !iscid )
 		sfl->former_names = SFTemporaryRenameGlyphsToNamelist(sfl->sf,rename_to);
 	}
     } else {
-	PrepareUnlinkRmOvrlp(d->sf,temp);
+	PrepareUnlinkRmOvrlp(d->sf,temp,layer);
 	if ( rename_to!=NULL && !iscid )
 	    former = SFTemporaryRenameGlyphsToNamelist(d->sf,rename_to);
     }
@@ -1534,12 +1534,12 @@ return;
 
     if ( d->family && sfs!=NULL ) {
 	for ( sfl=sfs; sfl!=NULL; sfl=sfl->next ) {
-	    RestoreUnlinkRmOvrlp(sfl->sf,temp);
+	    RestoreUnlinkRmOvrlp(sfl->sf,temp,layer);
 	    if ( rename_to!=NULL && !iscid )
 		SFTemporaryRestoreGlyphNames(sfl->sf,sfl->former_names);
 	}
     } else {
-	RestoreUnlinkRmOvrlp(d->sf,temp);
+	RestoreUnlinkRmOvrlp(d->sf,temp,layer);
 	if ( rename_to!=NULL && !iscid )
 	    SFTemporaryRestoreGlyphNames(d->sf,former);
     }
@@ -2003,7 +2003,7 @@ return( NULL );
 }
 #endif
 
-static GTextInfo *SFUsableLayerNames(SplineFont *sf) {
+static GTextInfo *SFUsableLayerNames(SplineFont *sf,int def_layer) {
     int gid, layer, cnt = 1, k, known;
     SplineFont *_sf;
     SplineChar *sc;
@@ -2012,7 +2012,7 @@ static GTextInfo *SFUsableLayerNames(SplineFont *sf) {
     for ( layer=0; layer<sf->layer_cnt; ++layer )
 	sf->layers[layer].ticked = false;
     sf->layers[ly_fore].ticked = true;
-    for ( layer=0; layer<sf->layer_cnt; ++layer ) if ( layer!=ly_fore ) {
+    for ( layer=0; layer<sf->layer_cnt; ++layer ) if ( layer!=ly_fore && layer!=ly_back ) {
 	known = -1;
 	k = 0;
 	do {
@@ -2030,7 +2030,8 @@ static GTextInfo *SFUsableLayerNames(SplineFont *sf) {
 	if ( known == 1 ) {
 	    sf->layers[layer].ticked = true;
 	    ++cnt;
-	}
+	} else if ( layer==def_layer )
+	    def_layer = ly_fore;
     }
 
     ti = gcalloc(cnt+1,sizeof(GTextInfo));
@@ -2038,7 +2039,7 @@ static GTextInfo *SFUsableLayerNames(SplineFont *sf) {
     for ( layer=0; layer<sf->layer_cnt; ++layer ) if ( sf->layers[layer].ticked ) {
 	ti[cnt].text = (unichar_t *) sf->layers[layer].name;
 	ti[cnt].text_is_1byte = true;
-	ti[cnt].selected = layer==ly_fore;
+	ti[cnt].selected = layer==def_layer;
 	ti[cnt++].userdata = (void *) (intpt) layer;
     }
 return( ti );
@@ -2046,7 +2047,7 @@ return( ti );
 
 typedef SplineFont *SFArray[48];
 
-int SFGenerateFont(SplineFont *sf,int family,EncMap *map) {
+int SFGenerateFont(SplineFont *sf,int layer,int family,EncMap *map) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
@@ -2497,7 +2498,7 @@ return( 0 );
 	gcd[k].gd.popup_msg = (unichar_t *) _("Save a font based on the specified layer");
 	gcd[k].creator = GListButtonCreate;
 	gcd[k].gd.cid = CID_Layers;
-	gcd[k++].gd.u.list = lynames = SFUsableLayerNames(sf);
+	gcd[k++].gd.u.list = lynames = SFUsableLayerNames(sf,layer);
 	if ( lynames[1].text==NULL ) {
 	    gcd[k-2].gd.flags &= ~gg_visible;
 	    gcd[k-1].gd.flags &= ~gg_visible;

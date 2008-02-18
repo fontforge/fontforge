@@ -67,7 +67,7 @@ static int svg_outfontheader(FILE *file, SplineFont *sf,int layer) {
 
     SFDefaultOS2Info(&info,sf,sf->fontname);
     SplineFontLayerFindBounds(sf,layer,&bb);
-    QuickBlues(sf,&bd);
+    QuickBlues(sf,layer,&bd);
 
     fprintf( file, "<?xml version=\"1.0\" standalone=\"no\"?>\n" );
     fprintf( file, "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\" >\n" );

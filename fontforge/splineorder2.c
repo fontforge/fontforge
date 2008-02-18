@@ -999,9 +999,9 @@ void SFConvertLayerToOrder2(SplineFont *_sf,int layer) {
 	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL && !sf->glyphs[i]->ticked )
 	    SCConvertRefs(sf->glyphs[i],layer);
 
-	if ( layer==ly_fore )
+	if ( layer!=ly_back )
 	    for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL )
-		SCNumberPoints(sf->glyphs[i]);
+		SCNumberPoints(sf->glyphs[i],layer);
 	++k;
     } while ( k<_sf->subfontcnt );
     _sf->layers[layer].order2 = true;

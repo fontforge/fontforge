@@ -918,7 +918,7 @@ return( true );
 return( err );
 }
 
-void PrepareUnlinkRmOvrlp(SplineFont *sf,char *filename) {
+void PrepareUnlinkRmOvrlp(SplineFont *sf,char *filename,int layer) {
     int gid;
     SplineChar *sc;
     RefChar *ref, *refnext;
@@ -934,28 +934,28 @@ void PrepareUnlinkRmOvrlp(SplineFont *sf,char *filename) {
     for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL && sc->unlink_rm_ovrlp_save_undo ) {
 	if ( autohint_before_generate && sc!=NULL &&
 		sc->changedsincelasthinted && !sc->manualhints )
-	    SplineCharAutoHint(sc,NULL);	/* Do this now, else we get an unwanted undo on the stack from hinting */
+	    SplineCharAutoHint(sc,layer,NULL);	/* Do this now, else we get an unwanted undo on the stack from hinting */
 	no_windowing_ui = false;
-	SCPreserveState(sc,false);
-	for ( ref= sc->layers[ly_fore].refs; ref!=NULL; ref=refnext ) {
+	SCPreserveLayer(sc,layer,false);
+	for ( ref= sc->layers[layer].refs; ref!=NULL; ref=refnext ) {
 	    refnext = ref->next;
-	    SCRefToSplines(sc,ref,ly_fore);
+	    SCRefToSplines(sc,ref,layer);
 	}
 	no_windowing_ui = true;			/* Clustering wants to create an undo that I don't need */
 	SCRoundToCluster(sc,ly_all,false,.03,.12);
 	no_windowing_ui = false;
-	sc->layers[ly_fore].splines = SplineSetRemoveOverlap(sc,sc->layers[ly_fore].splines,over_remove);
+	sc->layers[layer].splines = SplineSetRemoveOverlap(sc,sc->layers[layer].splines,over_remove);
     }
     no_windowing_ui = old_nwui;
     maxundoes = old_maxundoes;
 }
 
-void RestoreUnlinkRmOvrlp(SplineFont *sf,char *filename) {
+void RestoreUnlinkRmOvrlp(SplineFont *sf,char *filename,int layer) {
     int gid;
     SplineChar *sc;
 
     for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL && sc->unlink_rm_ovrlp_save_undo ) {
-	SCDoUndo(sc,ly_fore);
+	SCDoUndo(sc,layer);
     }
 #if !defined(_NO_PYTHON)
     PyFF_CallDictFunc(sf->python_temporary,"generateFontPostHook","fs",sf->fv,filename);
@@ -1215,12 +1215,12 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
     former = NULL;
     if ( sfs!=NULL ) {
 	for ( sfl=sfs; sfl!=NULL; sfl=sfl->next ) {
-	    PrepareUnlinkRmOvrlp(sfl->sf,filename);
+	    PrepareUnlinkRmOvrlp(sfl->sf,filename,layer);
 	    if ( rename_to!=NULL )
 		sfl->former_names = SFTemporaryRenameGlyphsToNamelist(sfl->sf,rename_to);
 	}
     } else {
-	PrepareUnlinkRmOvrlp(sf,filename);
+	PrepareUnlinkRmOvrlp(sf,filename,layer);
 	if ( rename_to!=NULL )
 	    former = SFTemporaryRenameGlyphsToNamelist(sf,rename_to);
     }
@@ -1241,12 +1241,12 @@ int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype, int fmflags,
 
     if ( sfs!=NULL ) {
 	for ( sfl=sfs; sfl!=NULL; sfl=sfl->next ) {
-	    RestoreUnlinkRmOvrlp(sfl->sf,filename);
+	    RestoreUnlinkRmOvrlp(sfl->sf,filename,layer);
 	    if ( rename_to!=NULL )
 		SFTemporaryRestoreGlyphNames(sfl->sf,sfl->former_names);
 	}
     } else {
-	RestoreUnlinkRmOvrlp(sf,filename);
+	RestoreUnlinkRmOvrlp(sf,filename,layer);
 	if ( rename_to!=NULL )
 	    SFTemporaryRestoreGlyphNames(sf,former);
     }

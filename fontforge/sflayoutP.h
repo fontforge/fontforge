@@ -35,6 +35,7 @@ typedef struct fontdata {
     enum sftf_fonttype fonttype;
     int pointsize;
     int antialias;
+    int layer;
     BDFFont *bdf;
     struct fontdata *next;
     struct fontdata *depends_on;	/* We use much of the ftc allocated for depends_on */
@@ -104,12 +105,12 @@ extern void LayoutInfo_Destroy(LayoutInfo *li);
 extern void SFMapFill(struct sfmaps *sfmaps,SplineFont *sf);
 extern struct sfmaps *SFMapOfSF(LayoutInfo *li,SplineFont *sf);
 extern FontData *LI_FindFontData(LayoutInfo *li, SplineFont *sf,
-	enum sftf_fonttype fonttype, int size, int antialias);
+	int layer, enum sftf_fonttype fonttype, int size, int antialias);
 extern FontData *LI_RegenFontData(LayoutInfo *li, FontData *ret);
 extern void LayoutInfoInitLangSys(LayoutInfo *li, int end, uint32 script, uint32 lang);
 extern LayoutInfo *LIConvertToPrint(LayoutInfo *li, int width, int height, int dpi);
 extern void LayoutInfoSetTitle(LayoutInfo *li,const unichar_t *tit,int width);
 extern struct fontlist *LI_BreakFontList(LayoutInfo *li,int start,int end);
 extern int LI_SetFontData(LayoutInfo *li, int start, int end, SplineFont *sf,
-	enum sftf_fonttype fonttype, int size, int antialias,int width);
+	int layer, enum sftf_fonttype fonttype, int size, int antialias,int width);
 #endif

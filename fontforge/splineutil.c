@@ -6050,7 +6050,7 @@ return( changed );
     continue;
 	}
 	if ( !changed ) {
-	    if ( layer==-2 )
+	    if ( layer==ly_all )
 		SCPreserveState(sc,dohints);
 	    else if ( layer!=-1 )
 		SCPreserveLayer(sc,layer,dohints);
@@ -6214,7 +6214,7 @@ return(false);				/* Can't be any clusters */
 		}
 	    }
 	}
-	SCCharChangedUpdate(sc);
+	SCCharChangedUpdate(sc,layer);
     }
 return( changed );
 }

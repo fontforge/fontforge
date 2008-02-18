@@ -40,11 +40,11 @@ int adjustwidth = true;
 int adjustlbearing = true;
 int allow_utf8_glyphnames = false;
 
-void SCClearRounds(SplineChar *sc) {
+void SCClearRounds(SplineChar *sc,int layer) {
     SplineSet *ss;
     SplinePoint *sp;
 
-    for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
+    for ( ss=sc->layers[layer].splines; ss!=NULL; ss=ss->next ) {
 	for ( sp=ss->first; ; ) {
 	    sp->roundx = sp->roundy = false;
 	    if ( sp->next==NULL )
@@ -85,10 +85,10 @@ return;
     }
 }
 
-RefChar *HasUseMyMetrics(SplineChar *sc) {
+RefChar *HasUseMyMetrics(SplineChar *sc,int layer) {
     RefChar *r;
 
-    for ( r=sc->layers[ly_fore].refs; r!=NULL; r=r->next )
+    for ( r=sc->layers[layer].refs; r!=NULL; r=r->next )
 	if ( r->use_my_metrics )
 return( r );
 
@@ -102,7 +102,7 @@ return( NULL );
 void SCSynchronizeWidth(SplineChar *sc,real newwidth, real oldwidth, FontViewBase *flagfv) {
     BDFFont *bdf;
     struct splinecharlist *dlist;
-    RefChar *r = HasUseMyMetrics(sc);
+    RefChar *r = HasUseMyMetrics(sc,ly_fore);
     int isprobablybase;
 
     sc->widthset = true;
@@ -137,7 +137,7 @@ return;
 	isprobablybase = false;
 
     for ( dlist=sc->dependents; dlist!=NULL; dlist=dlist->next ) {
-	RefChar *metrics = HasUseMyMetrics(dlist->sc);
+	RefChar *metrics = HasUseMyMetrics(dlist->sc,ly_fore);
 	if ( metrics!=NULL && metrics->sc!=sc )
     continue;
 	else if ( metrics==NULL && !isprobablybase )
@@ -159,7 +159,7 @@ return;
 /* Also all vstem hints */
 /* I deliberately don't set undoes in the dependants. The change is not */
 /*  in them, after all */
-void SCSynchronizeLBearing(SplineChar *sc,real off) {
+void SCSynchronizeLBearing(SplineChar *sc,real off,int layer) {
     struct splinecharlist *dlist;
     RefChar *ref;
     DStemInfo *d;
@@ -188,33 +188,33 @@ return;
 	isprobablybase = false;
 
     for ( dlist=sc->dependents; dlist!=NULL; dlist=dlist->next ) {
-	RefChar *metrics = HasUseMyMetrics(dlist->sc);
+	RefChar *metrics = HasUseMyMetrics(dlist->sc,layer);
 	if ( metrics!=NULL && metrics->sc!=sc )
     continue;
 	else if ( metrics==NULL && !isprobablybase )
     continue;
 	else if ( metrics==NULL && sc->width!=dlist->sc->width )
     continue;
-	SCPreserveState(dlist->sc,false);
-	SplinePointListShift(dlist->sc->layers[ly_fore].splines,off,true);
-	for ( ref = dlist->sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
+	SCPreserveLayer(dlist->sc,layer,false);
+	SplinePointListShift(dlist->sc->layers[layer].splines,off,true);
+	for ( ref = dlist->sc->layers[layer].refs; ref!=NULL; ref=ref->next )
 		if ( ref->sc!=sc ) {
 	    SplinePointListShift(ref->layers[0].splines,off,true);
 	    ref->transform[4] += off;
 	    ref->bb.minx += off; ref->bb.maxx += off;
 	}
 	SCUpdateAll(dlist->sc);
-	SCSynchronizeLBearing(dlist->sc,off);
+	SCSynchronizeLBearing(dlist->sc,off,layer);
     }
 }
 
-static int _SCRefNumberPoints2(SplineSet **_rss,SplineChar *sc,int pnum) {
+static int _SCRefNumberPoints2(SplineSet **_rss,SplineChar *sc,int pnum,int layer) {
     SplineSet *ss, *rss = *_rss;
     SplinePoint *sp, *rsp;
     RefChar *r;
     int starts_with_cp, startcnt;
 
-    for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next, rss=rss->next ) {
+    for ( ss=sc->layers[layer].splines; ss!=NULL; ss=ss->next, rss=rss->next ) {
 	if ( rss==NULL )		/* Can't happen */
     break;
 	starts_with_cp = !ss->first->noprevcp &&
@@ -249,16 +249,16 @@ static int _SCRefNumberPoints2(SplineSet **_rss,SplineChar *sc,int pnum) {
     }
 
     *_rss = rss;
-    for ( r = sc->layers[ly_fore].refs; r!=NULL; r=r->next )
-	pnum = _SCRefNumberPoints2(_rss,r->sc,pnum);
+    for ( r = sc->layers[layer].refs; r!=NULL; r=r->next )
+	pnum = _SCRefNumberPoints2(_rss,r->sc,pnum,layer);
 return( pnum );
 }
 
-static int SCRefNumberPoints2(RefChar *ref,int pnum) {
+static int SCRefNumberPoints2(RefChar *ref,int pnum,int layer) {
     SplineSet *rss;
 
     rss = ref->layers[0].splines;
-return( _SCRefNumberPoints2(&rss,ref->sc,pnum));
+return( _SCRefNumberPoints2(&rss,ref->sc,pnum,layer));
 }
 
 int SSTtfNumberPoints(SplineSet *ss) {
@@ -292,17 +292,17 @@ int SSTtfNumberPoints(SplineSet *ss) {
 return( pnum );
 }
 
-int SCNumberPoints(SplineChar *sc) {
+int SCNumberPoints(SplineChar *sc,int layer) {
     int pnum=0;
     SplineSet *ss;
     SplinePoint *sp;
     RefChar *ref;
 
-    if ( sc->layers[ly_fore].order2 ) {		/* TrueType and its complexities. I ignore svg here */
-	if ( sc->layers[ly_fore].refs!=NULL ) {
+    if ( sc->layers[layer].order2 ) {		/* TrueType and its complexities. I ignore svg here */
+	if ( sc->layers[layer].refs!=NULL ) {
 	    /* if there are references there can't be splines. So if we've got*/
 	    /*  splines mark all point numbers on them as meaningless */
-	    for ( ss = sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
+	    for ( ss = sc->layers[layer].splines; ss!=NULL; ss=ss->next ) {
 		for ( sp=ss->first; ; ) {
 		    sp->ttfindex = 0xfffe;
 		    if ( !sp->nonextcp )
@@ -314,17 +314,19 @@ int SCNumberPoints(SplineChar *sc) {
 		break;
 		}
 	    }
-	    for ( ref = sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next )
-		pnum = SCRefNumberPoints2(ref,pnum);
+	    for ( ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next )
+		pnum = SCRefNumberPoints2(ref,pnum,layer);
 	} else {
-	    pnum = SSTtfNumberPoints(sc->layers[ly_fore].splines);
+	    pnum = SSTtfNumberPoints(sc->layers[layer].splines);
 	}
     } else {		/* cubic (PostScript/SVG) splines */
-	int layer, last;
-	last = ly_fore;
-	if ( sc->parent->multilayer )
+	int first, last;
+	if ( sc->parent->multilayer ) {
+	    first = ly_fore;
 	    last = sc->layer_cnt-1;
-	for ( layer=ly_fore; layer<=last; ++layer ) {
+	} else
+	    first = last = layer;
+	for ( layer=first; layer<=last; ++layer ) {
 	    for ( ss = sc->layers[layer].splines; ss!=NULL; ss=ss->next ) {
 		for ( sp=ss->first; ; ) {
 		    sp->ttfindex = pnum++;
@@ -351,18 +353,18 @@ int SCNumberPoints(SplineChar *sc) {
 return( pnum );
 }
 
-int SCPointsNumberedProperly(SplineChar *sc) {
+int SCPointsNumberedProperly(SplineChar *sc,int layer) {
     int pnum=0, skipit;
     SplineSet *ss;
     SplinePoint *sp;
     int starts_with_cp;
     int start_pnum;
 
-    if ( sc->layers[ly_fore].splines!=NULL &&
-	    sc->layers[ly_fore].refs!=NULL )
+    if ( sc->layers[layer].splines!=NULL &&
+	    sc->layers[layer].refs!=NULL )
 return( false );	/* TrueType can't represent this, so always remove instructions. They can't be meaningful */
 
-    for ( ss = sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
+    for ( ss = sc->layers[layer].splines; ss!=NULL; ss=ss->next ) {
 	starts_with_cp = (ss->first->ttfindex == pnum+1 || ss->first->ttfindex==0xffff) &&
 		!ss->first->noprevcp;
 	start_pnum = pnum;
@@ -410,18 +412,20 @@ void SCClearLayer(SplineChar *sc,int layer) {
     sc->layers[layer].images = NULL;
 }
 
-void SCClearContents(SplineChar *sc) {
-    int layer, ly_last;
+void SCClearContents(SplineChar *sc,int layer) {
+    int ly_first, ly_last;
 
     if ( sc==NULL )
 return;
     sc->widthset = false;
     if ( sc->parent!=NULL && sc->width!=0 )
 	sc->width = sc->parent->ascent+sc->parent->descent;
-    ly_last = ly_fore;
-    if ( sc->parent!=NULL && sc->parent->multilayer )
+    if ( sc->parent!=NULL && sc->parent->multilayer ) {
+	ly_first = ly_fore;
 	ly_last = sc->layer_cnt-1;
-    for ( layer = ly_fore; layer<=ly_last; ++layer )
+    } else
+	ly_first = ly_last = layer;
+    for ( layer = ly_first; layer<=ly_last; ++layer )
 	SCClearLayer(sc,layer);
     AnchorPointsFree(sc->anchor);
     sc->anchor = NULL;
@@ -435,17 +439,18 @@ return;
     SCOutOfDateBackground(sc);
 }
 
-void SCClearAll(SplineChar *sc) {
+void SCClearAll(SplineChar *sc,int layer) {
     extern int copymetadata;
 
     if ( sc==NULL )
 return;
-    if ( sc->layers[1].splines==NULL && sc->layers[ly_fore].refs==NULL && !sc->widthset &&
+    if ( sc->layers[layer].splines==NULL && sc->layers[layer].refs==NULL && !sc->widthset &&
 	    sc->hstem==NULL && sc->vstem==NULL && sc->anchor==NULL &&
+	    !sc->parent->multilayer &&
 	    (!copymetadata ||
 		(sc->unicodeenc==-1 && strcmp(sc->name,".notdef")==0)))
 return;
-    SCPreserveState(sc,2);
+    SCPreserveLayer(sc,layer,2);
     if ( copymetadata ) {
 	sc->unicodeenc = -1;
 	free(sc->name);
@@ -453,8 +458,8 @@ return;
 	PSTFree(sc->possub);
 	sc->possub = NULL;
     }
-    SCClearContents(sc);
-    SCCharChangedUpdate(sc);
+    SCClearContents(sc,layer);
+    SCCharChangedUpdate(sc,layer);
 }
 
 void SCClearBackground(SplineChar *sc) {
@@ -467,7 +472,7 @@ return;
     SCPreserveBackground(sc);
     SCClearLayer(sc,ly_back);
     SCOutOfDateBackground(sc);
-    SCCharChangedUpdate(sc);
+    SCCharChangedUpdate(sc,ly_back);
 }
 
 void SCCopyLayerToLayer(SplineChar *sc, int from, int to,int doclear) {
@@ -504,7 +509,7 @@ void SCCopyLayerToLayer(SplineChar *sc, int from, int to,int doclear) {
 	SCReinstanciateRefChar(sc,ref,to);
 	SCMakeDependent(sc,ref->sc);
     }
-    SCCharChangedUpdate(sc);
+    SCCharChangedUpdate(sc,to);
 }
 
 int BpColinear(BasePoint *first, BasePoint *mid, BasePoint *last) {
@@ -730,12 +735,12 @@ static void SplineSetsChangeCoord(SplineSet *spl,real old, real new,int isy,
     }
 }
 
-void SCRound2Int(SplineChar *sc,real factor) {
+void SCRound2Int(SplineChar *sc,int layer, real factor) {
     RefChar *r;
     AnchorPoint *ap;
     StemInfo *stems;
     real old, new;
-    int layer, last;
+    int first, last;
 
     for ( stems = sc->hstem; stems!=NULL; stems=stems->next ) {
 	old = stems->start+stems->width;
@@ -754,10 +759,12 @@ void SCRound2Int(SplineChar *sc,real factor) {
 	    SplineSetsChangeCoord(sc->layers[ly_fore].splines,old,new,false,sc->inspiro);
     }
 
-    last = ly_fore;
-    if ( sc->parent->multilayer )
+    if ( sc->parent->multilayer ) {
+	first = ly_fore;
 	last = sc->layer_cnt-1;
-    for ( layer = ly_fore; layer<=last; ++layer ) {
+    } else
+	first = last = layer;
+    for ( layer = first; layer<=last; ++layer ) {
 	SplineSetsRound2Int(sc->layers[layer].splines,factor,sc->inspiro,false);
 	for ( r=sc->layers[layer].refs; r!=NULL; r=r->next ) {
 	    r->transform[4] = rint(r->transform[4]*factor)/factor;
@@ -770,7 +777,7 @@ void SCRound2Int(SplineChar *sc,real factor) {
 	ap->me.x = rint(ap->me.x*factor)/factor;
 	ap->me.y = rint(ap->me.y*factor)/factor;
     }
-    SCCharChangedUpdate(sc);
+    SCCharChangedUpdate(sc,layer);
 }
 
 void AltUniRemove(SplineChar *sc,int uni) {
@@ -867,12 +874,12 @@ void UnlinkThisReference(FontViewBase *fv,SplineChar *sc) {
 	    RefChar *rf, *rnext;
 	    /* May be more than one reference to us, colon has two refs to period */
 	    /*  but only one dlist entry */
-	    for ( rf = dsc->layers[ly_fore].refs; rf!=NULL; rf=rnext ) {
+	    for ( rf = dsc->layers[fv->active_layer].refs; rf!=NULL; rf=rnext ) {
 		rnext = rf->next;
 		if ( rf->sc == sc ) {
 		    /* Even if we were to preserve the state there would be no */
 		    /*  way to undo the operation until we undid the delete... */
-		    SCRefToSplines(dsc,rf,ly_fore);
+		    SCRefToSplines(dsc,rf,fv->active_layer);
 		    SCUpdateAll(dsc);
 		}
 	    }
@@ -1238,7 +1245,7 @@ return( -1 );
     }
 }
 
-int SCValidate(SplineChar *sc, int force) {
+int SCValidate(SplineChar *sc, int layer, int force) {
     SplineSet *ss;
     Spline *s1, *s2, *s, *first;
     SplinePoint *sp;
@@ -1254,16 +1261,16 @@ int SCValidate(SplineChar *sc, int force) {
     extern int allow_utf8_glyphnames;
     RefChar *r;
 
-    if ( (sc->validation_state&vs_known) && !force )
+    if ( (sc->layers[layer].validation_state&vs_known) && !force )
   goto end;
 
-    sc->validation_state = 0;
+    sc->layers[layer].validation_state = 0;
 
     base = LayerAllSplines(&sc->layers[ly_fore]);
 
     if ( !allow_utf8_glyphnames ) {
 	if ( strlen(sc->name)>31 )
-	    sc->validation_state |= vs_badglyphname|vs_known;
+	    sc->layers[layer].validation_state |= vs_badglyphname|vs_known;
 	else {
 	    char *pt;
 	    for ( pt = sc->name; *pt; ++pt ) {
@@ -1273,7 +1280,7 @@ int SCValidate(SplineChar *sc, int force) {
 			*pt == '.' || *pt == '_' )
 		    /* That's ok */;
 		else {
-		    sc->validation_state |= vs_badglyphname|vs_known;
+		    sc->layers[layer].validation_state |= vs_badglyphname|vs_known;
 	    break;
 		}
 	    }
@@ -1283,37 +1290,37 @@ int SCValidate(SplineChar *sc, int force) {
     for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
 	if ( pst->type==pst_substitution &&
 		!SCWorthOutputting(SFGetChar(sc->parent,-1,pst->u.subs.variant))) {
-	    sc->validation_state |= vs_badglyphname|vs_known;
+	    sc->layers[layer].validation_state |= vs_badglyphname|vs_known;
     break;
 	} else if ( pst->type==pst_pair &&
 		!SCWorthOutputting(SFGetChar(sc->parent,-1,pst->u.pair.paired))) {
-	    sc->validation_state |= vs_badglyphname|vs_known;
+	    sc->layers[layer].validation_state |= vs_badglyphname|vs_known;
     break;
 	} else if ( (pst->type==pst_alternate || pst->type==pst_multiple || pst->type==pst_ligature) &&
 		!SFValidNameList(sc->parent,pst->u.mult.components)) {
-	    sc->validation_state |= vs_badglyphname|vs_known;
+	    sc->layers[layer].validation_state |= vs_badglyphname|vs_known;
     break;
 	}
     }
     if ( sc->vert_variants!=NULL && sc->vert_variants->variants != NULL &&
 	    !SFValidNameList(sc->parent,sc->vert_variants->variants) )
-	sc->validation_state |= vs_badglyphname|vs_known;
+	sc->layers[layer].validation_state |= vs_badglyphname|vs_known;
     else if ( sc->horiz_variants!=NULL && sc->horiz_variants->variants != NULL &&
 	    !SFValidNameList(sc->parent,sc->horiz_variants->variants) )
-	sc->validation_state |= vs_badglyphname|vs_known;
+	sc->layers[layer].validation_state |= vs_badglyphname|vs_known;
     else {
 	int i;
 	if ( sc->vert_variants!=NULL ) {
 	    for ( i=0; i<sc->vert_variants->part_cnt; ++i ) {
 		if ( !SCWorthOutputting(SFGetChar(sc->parent,-1,sc->vert_variants->parts[i].component)))
-		    sc->validation_state |= vs_badglyphname|vs_known;
+		    sc->layers[layer].validation_state |= vs_badglyphname|vs_known;
 	    break;
 	    }
 	}
 	if ( sc->horiz_variants!=NULL ) {
 	    for ( i=0; i<sc->horiz_variants->part_cnt; ++i ) {
 		if ( !SCWorthOutputting(SFGetChar(sc->parent,-1,sc->horiz_variants->parts[i].component)))
-		    sc->validation_state |= vs_badglyphname|vs_known;
+		    sc->layers[layer].validation_state |= vs_badglyphname|vs_known;
 	    break;
 	    }
 	}
@@ -1324,33 +1331,33 @@ int SCValidate(SplineChar *sc, int force) {
 	if ( ss->first->next==NULL )
 	    /* Do Nothing */;
 	else if ( ss->first->prev==NULL ) {
-	    sc->validation_state |= vs_opencontour|vs_known;
+	    sc->layers[layer].validation_state |= vs_opencontour|vs_known;
     break;
 	}
     }
 
     /* If there's an open contour we can't really tell whether it self-intersects */
-    if ( sc->validation_state & vs_opencontour )
-	/* sc->validation_state |= vs_selfintersects*/;
+    if ( sc->layers[layer].validation_state & vs_opencontour )
+	/* sc->layers[layer].validation_state |= vs_selfintersects*/;
     else {
 	if ( SplineSetIntersect(base,&s1,&s2) )
-	    sc->validation_state |= vs_selfintersects|vs_known;
+	    sc->layers[layer].validation_state |= vs_selfintersects|vs_known;
     }
 
     /* If there's a self-intersection we are guaranteed that both the self- */
     /*  intersecting contours will be in the wrong direction at some point */
-    if ( sc->validation_state & vs_selfintersects )
-	/*sc->validation_state |= vs_wrongdirection*/;
+    if ( sc->layers[layer].validation_state & vs_selfintersects )
+	/*sc->layers[layer].validation_state |= vs_wrongdirection*/;
     else {
 	if ( SplineSetsDetectDir(&base,&lastscan)!=NULL )
-	    sc->validation_state |= vs_wrongdirection|vs_known;
+	    sc->layers[layer].validation_state |= vs_wrongdirection|vs_known;
     }
 
     /* Different kind of "wrong direction" */
     for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
 	if ( ref->transform[0]*ref->transform[3]<0 ||
 		(ref->transform[0]==0 && ref->transform[1]*ref->transform[2]>0)) {
-	    sc->validation_state |= vs_flippedreferences|vs_known;
+	    sc->layers[layer].validation_state |= vs_flippedreferences|vs_known;
     break;
 	}
     }
@@ -1358,7 +1365,7 @@ int SCValidate(SplineChar *sc, int force) {
     for ( h=sc->hstem, cnt=0; h!=NULL; h=h->next, ++cnt );
     for ( h=sc->vstem       ; h!=NULL; h=h->next, ++cnt );
     if ( cnt>=96 )
-	sc->validation_state |= vs_toomanyhints|vs_known;
+	sc->layers[layer].validation_state |= vs_toomanyhints|vs_known;
 
     for ( ss=sc->layers[ly_fore].splines, pt_cnt=path_cnt=0; ss!=NULL; ss=ss->next, ++path_cnt ) {
 	for ( sp=ss->first; ; ) {
@@ -1371,7 +1378,7 @@ int SCValidate(SplineChar *sc, int force) {
 	}
     }
     if ( pt_cnt>1500 )
-	sc->validation_state |= vs_toomanypoints|vs_known;
+	sc->layers[layer].validation_state |= vs_toomanypoints|vs_known;
 
     LayerUnAllSplines(&sc->layers[ly_fore]);
 
@@ -1397,7 +1404,7 @@ int SCValidate(SplineChar *sc, int force) {
 	    len2 += x*x + y*y;
 	    /* short splines (serifs) are allowed not to have points at their extrema */
 	    if ( len2>bound2 && Spline2DFindExtrema(s,extrema)>0 ) {
-		sc->validation_state |= vs_missingextrema|vs_known;
+		sc->layers[layer].validation_state |= vs_missingextrema|vs_known;
     goto break_2_loops;
 	    }
 	}
@@ -1420,9 +1427,9 @@ int SCValidate(SplineChar *sc, int force) {
 	/* Already figured out two of these */
 	if ( sc->layers[ly_fore].splines==NULL ) {
 	    if ( pt_cnt>composit_pt_max )
-		sc->validation_state |= vs_maxp_toomanycomppoints|vs_known;
+		sc->layers[layer].validation_state |= vs_maxp_toomanycomppoints|vs_known;
 	    if ( path_cnt>composit_path_max )
-		sc->validation_state |= vs_maxp_toomanycomppaths|vs_known;
+		sc->layers[layer].validation_state |= vs_maxp_toomanycomppaths|vs_known;
 	}
 
 	for ( ss=sc->layers[ly_fore].splines, pt_cnt=path_cnt=0; ss!=NULL; ss=ss->next, ++path_cnt ) {
@@ -1436,12 +1443,12 @@ int SCValidate(SplineChar *sc, int force) {
 	    }
 	}
 	if ( pt_cnt>pt_max )
-	    sc->validation_state |= vs_maxp_toomanypoints|vs_known;
+	    sc->layers[layer].validation_state |= vs_maxp_toomanypoints|vs_known;
 	if ( path_cnt>path_max )
-	    sc->validation_state |= vs_maxp_toomanypaths|vs_known;
+	    sc->layers[layer].validation_state |= vs_maxp_toomanypaths|vs_known;
 
 	if ( sc->ttf_instrs_len>instr_len_max )
-	    sc->validation_state |= vs_maxp_instrtoolong|vs_known;
+	    sc->layers[layer].validation_state |= vs_maxp_instrtoolong|vs_known;
 
 	rd = 0;
 	for ( r=sc->layers[ly_fore].refs, cnt=0; r!=NULL; r=r->next, ++cnt ) {
@@ -1450,20 +1457,20 @@ int SCValidate(SplineChar *sc, int force) {
 		rd = rdtest;
 	}
 	if ( cnt>num_comp_max )
-	    sc->validation_state |= vs_maxp_toomanyrefs|vs_known;
+	    sc->layers[layer].validation_state |= vs_maxp_toomanyrefs|vs_known;
 	if ( rd>comp_depth_max )
-	    sc->validation_state |= vs_maxp_refstoodeep|vs_known;
+	    sc->layers[layer].validation_state |= vs_maxp_refstoodeep|vs_known;
     }
   end:;
 
-    sc->validation_state |= vs_known;
+    sc->layers[layer].validation_state |= vs_known;
     if ( sc->unlink_rm_ovrlp_save_undo )
-return( sc->validation_state&~(vs_known|vs_selfintersects) );
+return( sc->layers[layer].validation_state&~(vs_known|vs_selfintersects) );
 
-return( sc->validation_state&~vs_known );
+return( sc->layers[layer].validation_state&~vs_known );
 }
     
-int SFValidate(SplineFont *sf, int force) {
+int SFValidate(SplineFont *sf, int layer, int force) {
     int k, gid;
     SplineFont *sub;
     int any = 0;
@@ -1480,7 +1487,7 @@ int SFValidate(SplineFont *sf, int force) {
 	do {
 	    sub = sf->subfontcnt==0 ? sf : sf->subfonts[k];
 	    for ( gid=0; gid<sub->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
-		if ( force || !(sc->validation_state&vs_known) )
+		if ( force || !(sc->layers[layer].validation_state&vs_known) )
 		    ++cnt;
 	    }
 	    ++k;
@@ -1493,15 +1500,15 @@ int SFValidate(SplineFont *sf, int force) {
     do {
 	sub = sf->subfontcnt==0 ? sf : sf->subfonts[k];
 	for ( gid=0; gid<sub->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
-	    if ( force || !(sc->validation_state&vs_known) ) {
-		SCValidate(sc,true);
+	    if ( force || !(sc->layers[layer].validation_state&vs_known) ) {
+		SCValidate(sc,layer,true);
 		if ( !ff_progress_next())
 return( -1 );
 	    }
 	    if ( sc->unlink_rm_ovrlp_save_undo )
-		any |= sc->validation_state&~vs_selfintersects;
+		any |= sc->layers[layer].validation_state&~vs_selfintersects;
 	    else
-		any |= sc->validation_state;
+		any |= sc->layers[layer].validation_state;
 	}
 	++k;
     } while ( k<sf->subfontcnt );
@@ -1526,6 +1533,30 @@ return( -1 );
 return( any&~vs_known );
 }
 
+void SCTickValidationState(SplineChar *sc,int layer) {
+    struct splinecharlist *dlist;
+
+    sc->layers[layer].validation_state = vs_unknown;
+    for ( dlist=sc->dependents; dlist!=NULL; dlist=dlist->next )
+	SCTickValidationState(dlist->sc,layer);
+}
+
+int VSMaskFromFormat(SplineFont *sf, int layer, enum fontformat format) {
+    if ( format==ff_cid || format==ff_cffcid || format==ff_otfcid || format==ff_otfciddfont )
+return( vs_maskcid );
+    else if ( format<=ff_cff )
+return( vs_maskps );
+    else if ( format<=ff_ttfdfont )
+return( vs_maskttf );
+    else if ( format<=ff_otfdfont )
+return( vs_maskps );
+    else if ( format==ff_svg )
+return( vs_maskttf );
+    else
+return( sf->subfontcnt!=0 || sf->cidmaster!=NULL ? vs_maskcid :
+	sf->layers[layer].order2 ? vs_maskttf : vs_maskps );
+}
+
 
 
 static void SCUpdateNothing(SplineChar *sc) {
@@ -1539,15 +1570,7 @@ static void SCHintsChng(SplineChar *sc) {
     }
 }
 
-void SCTickValidationState(SplineChar *sc) {
-    struct splinecharlist *dlist;
-
-    sc->validation_state = vs_unknown;
-    for ( dlist=sc->dependents; dlist!=NULL; dlist=dlist->next )
-	SCTickValidationState(dlist->sc);
-}
-
-static void _SCChngNoUpdate(SplineChar *sc,int changed) {
+static void _SCChngNoUpdate(SplineChar *sc,int layer,int changed) {
     SplineFont *sf = sc->parent;
 
     if ( changed!=-1 ) {
@@ -1563,12 +1586,12 @@ static void _SCChngNoUpdate(SplineChar *sc,int changed) {
 	sf->changed = true;
 	sf->changed_since_autosave = true;
 	sf->changed_since_xuidchanged = true;
-	SCTickValidationState(sc);
+	SCTickValidationState(sc,layer);
     }
 }
 
-static void SCChngNoUpdate(SplineChar *sc) {
-    _SCChngNoUpdate(sc,true);
+static void SCChngNoUpdate(SplineChar *sc,int layer) {
+    _SCChngNoUpdate(sc,layer,true);
 }
 
 static void SCB_MoreLayers(SplineChar *sc,Layer *old) {
@@ -1593,11 +1616,11 @@ void FF_SetSCInterface(struct sc_interface *sci) {
 }
 
 static void CVChngNoUpdate(CharViewBase *cv) {
-    _SCChngNoUpdate(cv->sc,true);
+    _SCChngNoUpdate(cv->sc,CVLayer(cv),true);
 }
 
 static void _CVChngNoUpdate(CharViewBase *cv,int changed) {
-    _SCChngNoUpdate(cv->sc,changed);
+    _SCChngNoUpdate(cv->sc,CVLayer(cv),changed);
 }
 
 static struct cv_interface noui_cv = {

@@ -313,7 +313,7 @@ static void BPAdjustCE(BasePoint *bp, struct counterinfo *ci) {
 
 void CI_Init(struct counterinfo *ci,SplineFont *sf) {
 
-    QuickBlues(sf, &ci->bd);
+    QuickBlues(sf, ci->layer, &ci->bd);
 
     ci->stdvw = SFStdVW(sf);
 }
@@ -340,7 +340,7 @@ void SCCondenseExtend(struct counterinfo *ci,SplineChar *sc, int layer,
 	StemInfosFree(sc->vstem); sc->vstem=NULL;
     }
     if ( sc->vstem==NULL )
-	_SplineCharAutoHint(sc,&ci->bd,NULL,false);
+	_SplineCharAutoHint(sc,ci->layer,&ci->bd,NULL,false);
 
     PerGlyphFindCounters(ci,sc, layer);
 
@@ -372,13 +372,13 @@ void SCCondenseExtend(struct counterinfo *ci,SplineChar *sc, int layer,
     transform[4] = ci->bb.minx*ci->sb_factor/100. + ci->sb_add - b.minx;
     if ( transform[4]!=0 )
 	SplinePointListTransform(sc->layers[layer].splines,transform,true);
-    if ( layer==ly_fore ) {
+    if ( layer!=ly_back ) {
 	width = b.maxx + (sc->width-ci->bb.maxx)*ci->sb_factor/100. + ci->sb_add;
 	SCSynchronizeWidth(sc,width,sc->width,NULL);
 	offset = (b.maxx-b.minx)/2 - (ci->bb.maxx-ci->bb.minx)/2;
 	/* We haven't really changed the left side bearing by offset, but */
 	/*  this is the amount (about) by which we need to adjust accents */
-	SCSynchronizeLBearing(sc,offset);
+	SCSynchronizeLBearing(sc,ci->layer,offset);
     }
 
     if ( ci->correct_italic && sc->parent->italicangle!=0 ) {
@@ -389,19 +389,19 @@ void SCCondenseExtend(struct counterinfo *ci,SplineChar *sc, int layer,
 	SplinePointListTransform(sc->layers[layer].splines,transform,true);
     }
     
-    if ( layer==ly_fore ) {
+    if ( layer!=ly_back ) {
 	/* Hints will be inccorrect (misleading) after these transformations */
 	StemInfosFree(sc->vstem); sc->vstem=NULL;
 	StemInfosFree(sc->hstem); sc->hstem=NULL;
 	DStemInfosFree(sc->dstem); sc->dstem=NULL;
 	SCOutOfDateBackground(sc);
     }
-    SCCharChangedUpdate(sc);
+    SCCharChangedUpdate(sc,layer);
 }
 
 void ScriptSCCondenseExtend(SplineChar *sc,struct counterinfo *ci) {
 
-    SCCondenseExtend(ci, sc, ly_fore,true);
+    SCCondenseExtend(ci, sc, ci->layer, true);
 
     free( ci->zones[0]);
     free( ci->zones[1]);
@@ -558,7 +558,7 @@ static void CorrectLeftSideBearing(SplineSet *ss_expanded,SplineChar *sc,int lay
     if ( transform[4]!=0 ) {
 	SplinePointListTransform(ss_expanded,transform,true);
 	if ( layer==ly_fore )
-	    SCSynchronizeLBearing(sc,transform[4]);
+	    SCSynchronizeLBearing(sc,layer,transform[4]);
     }
 }
 
@@ -987,9 +987,9 @@ static void SCEmbolden(SplineChar *sc, struct lcg_zones *zones, int layer) {
     si.removeoverlapifneeded = false;
     si.toobigwarn = true;
 
-    if ( (layer==-2 || layer==ly_fore) && zones->wants_hints &&
+    if ( layer!=ly_back && zones->wants_hints &&
 	    sc->hstem == NULL && sc->vstem==NULL && sc->dstem==NULL ) {
-	_SplineCharAutoHint(sc,&zones->bd,NULL,false);
+	_SplineCharAutoHint(sc,layer,&zones->bd,NULL,false);
     }
 
     adjust_counters = zones->counter_type==ct_retain ||
@@ -997,7 +997,7 @@ static void SCEmbolden(SplineChar *sc, struct lcg_zones *zones, int layer) {
 		zones->embolden_hook==LCG_HintedEmboldenHook &&
 		sc->width>0 );
 
-    if ( layer==-2 ) {
+    if ( layer==ly_all ) {
 	SCPreserveState(sc,false);
 	SplineCharFindBounds(sc,&old);
 	for ( layer = ly_fore; layer<sc->layer_cnt; ++layer ) {
@@ -1025,14 +1025,14 @@ static void SCEmbolden(SplineChar *sc, struct lcg_zones *zones, int layer) {
 	    AdjustCounters(sc,zones,&old,&new);
     }
 
-    if ( layer==-2 || layer==ly_fore ) {
+    if ( layer!=ly_back ) {
 	/* Hints will be inccorrect (misleading) after these transformations */
 	StemInfosFree(sc->vstem); sc->vstem=NULL;
 	StemInfosFree(sc->hstem); sc->hstem=NULL;
 	DStemInfosFree(sc->dstem); sc->dstem=NULL;
 	SCOutOfDateBackground(sc);
     }
-    SCCharChangedUpdate(sc);
+    SCCharChangedUpdate(sc,layer);
 }
 
 static struct {
@@ -1056,14 +1056,14 @@ static struct {
     0
 };
 
-static void LCG_ZoneInit(SplineFont *sf, struct lcg_zones *zones,enum embolden_type type) {
+static void LCG_ZoneInit(SplineFont *sf, int layer, struct lcg_zones *zones,enum embolden_type type) {
 
     if ( type == embolden_lcg || type == embolden_custom) {
 	zones->embolden_hook = LCG_HintedEmboldenHook;
     } else {
 	zones->embolden_hook = NULL;
     }
-    QuickBlues(sf, &zones->bd);
+    QuickBlues(sf, layer, &zones->bd);
     zones->stdvw = SFStdVW(sf);
 }
 
@@ -1245,7 +1245,7 @@ void FVEmbolden(FontViewBase *fv,enum embolden_type type,struct lcg_zones *zones
     int i, gid;
     SplineChar *sc;
 
-    LCG_ZoneInit(fv->sf,zones,type);
+    LCG_ZoneInit(fv->sf,fv->active_layer,zones,type);
 
     for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
 	    (gid = fv->map->map[i])!=-1 && (sc=fv->sf->glyphs[gid])!=NULL ) {
@@ -1260,16 +1260,16 @@ void CVEmbolden(CharViewBase *cv,enum embolden_type type,struct lcg_zones *zones
     if ( cv->drawmode == dm_grid )
 return;
 
-    LCG_ZoneInit(sc->parent,zones,type);
+    LCG_ZoneInit(sc->parent,CVLayer(cv),zones,type);
 
     PerGlyphInit(sc,zones,type);
     SCEmbolden(sc, zones, CVLayer(cv));
 }
 
-void ScriptSCEmbolden(SplineChar *sc,enum embolden_type type,struct lcg_zones *zones) {
+void ScriptSCEmbolden(SplineChar *sc,int layer,enum embolden_type type,struct lcg_zones *zones) {
 
-    LCG_ZoneInit(sc->parent,zones,type);
+    LCG_ZoneInit(sc->parent,layer,zones,type);
 
     PerGlyphInit(sc,zones,type);
-    SCEmbolden(sc, zones, ly_fore);
+    SCEmbolden(sc, zones, layer);
 }
