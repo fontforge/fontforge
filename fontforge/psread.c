@@ -4667,12 +4667,12 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
     }
     ret->hstem = HintCleanup(ret->hstem,true,context->instance_count);
     ret->vstem = HintCleanup(ret->vstem,true,context->instance_count);
-    SCGuessHHintInstancesList(ret);
-    SCGuessVHintInstancesList(ret);
+    SCGuessHHintInstancesList(ret,ly_fore);
+    SCGuessVHintInstancesList(ret,ly_fore);
     ret->hconflicts = StemListAnyConflicts(ret->hstem);
     ret->vconflicts = StemListAnyConflicts(ret->vstem);
     if ( context->instance_count==1 && !ret->hconflicts && !ret->vconflicts )
-	SCClearHintMasks(ret,false);
+	SCClearHintMasks(ret,ly_fore,false);
     HintsRenumber(ret);
     if ( name!=NULL && strcmp(name,".notdef")!=0 )
 	ret->widthset = true;

@@ -61,6 +61,7 @@ typedef struct kernclassdlg {
 /* For the kern pair dlg */
     int done;
     SplineFont *sf;
+    int layer;
     SplineChar *sc1, *sc2;
     int isv, iskernpair;
     SplineChar *scf, *scs;
@@ -69,6 +70,7 @@ typedef struct kernclassdlg {
 
 typedef struct kernclasslistdlg {
     SplineFont *sf;
+    int layer;
     GWindow gw;
     int isv;
 } KernClassListDlg;
@@ -709,12 +711,12 @@ return;
     if ( sc==NULL )
 return;
     if ( GGadgetIsChecked(GWidgetGetControl(kcd->gw,CID_FreeType)) )
-	freetypecontext = FreeTypeFontContext(sc->parent,sc,sc->parent->fv);
+	freetypecontext = FreeTypeFontContext(sc->parent,sc,sc->parent->fv,kcd->layer);
     if ( freetypecontext ) {
 	*scpos = SplineCharFreeTypeRasterize(freetypecontext,sc->orig_pos,kcd->pixelsize,8);
 	FreeTypeFreeContext(freetypecontext);
     } else
-	*scpos = SplineCharAntiAlias(sc,kcd->pixelsize,4);
+	*scpos = SplineCharAntiAlias(sc,kcd->layer,kcd->pixelsize,4);
 }
 
 static int KCD_DisplaySizeChanged(GGadget *g, GEvent *e) {
@@ -2241,7 +2243,7 @@ static void FillShowKerningWindow(KernClassDlg *kcd, int for_class, SplineFont *
     }
 }
 
-void KernClassD(KernClass *kc, SplineFont *sf, int isv) {
+void KernClassD(KernClass *kc, SplineFont *sf, int layer, int isv) {
     GRect pos, subpos;
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[46], classbox, hvbox, buttonbox, mainbox[2];
@@ -2268,6 +2270,7 @@ return;
     kcd->orig = kc;
     kcd->subtable = kc->subtable;
     kcd->sf = sf;
+    kcd->layer = layer;
     kcd->isv = isv;
     kcd->next = sf->kcd;
     sf->kcd = kcd;
@@ -2639,7 +2642,7 @@ static int KCL_Edit(GGadget *g, GEvent *e) {
 	if ( sel==-1 )
 return( true );
 	for ( kc=kcld->isv?kcld->sf->vkerns:kcld->sf->kerns, i=0; i<sel; kc=kc->next, ++i );
-	KernClassD(kc,kcld->sf,kcld->isv);
+	KernClassD(kc,kcld->sf,kcld->layer,kcld->isv);
     }
 return( true );
 }
@@ -2690,7 +2693,7 @@ return( false );
 return( true );
 }
 
-void ShowKernClasses(SplineFont *sf,MetricsView *mv,int isv) {
+void ShowKernClasses(SplineFont *sf,MetricsView *mv,int layer,int isv) {
     KernClassListDlg *kcld;
     GRect pos;
     GWindowAttrs wattrs;
@@ -2710,6 +2713,7 @@ return;
 
     kcld = gcalloc(1,sizeof(KernClassListDlg));
     kcld->sf = sf;
+    kcld->layer = layer;
     kcld->isv = isv;
     if ( isv )
 	sf->vkcld = kcld;
@@ -2836,7 +2840,7 @@ return;
 /* *************************** Kern Pair Dialog  **************************** */
 /* ************************************************************************** */
 
-void KernPairD(SplineFont *sf,SplineChar *sc1,SplineChar *sc2,int isv) {
+void KernPairD(SplineFont *sf,SplineChar *sc1,SplineChar *sc2,int layer,int isv) {
     GRect pos;
     GWindowAttrs wattrs;
     KernClassDlg kcd;
@@ -2875,6 +2879,7 @@ void KernPairD(SplineFont *sf,SplineChar *sc1,SplineChar *sc2,int isv) {
     
     memset(&kcd,0,sizeof(kcd));
     kcd.sf = sf;
+    kcd.layer = layer;
     kcd.scf = sc1;
     kcd.scs = sc2;
     kcd.isv = isv;

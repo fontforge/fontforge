@@ -4734,14 +4734,14 @@ static void UnfigureControls(Spline *spline,BasePoint *pos) {
     pos->y = rint( (spline->splines[1].c+2*spline->splines[1].d)/2 );
 }
 
-int ttfFindPointInSC(SplineChar *sc,int pnum,BasePoint *pos,
+int ttfFindPointInSC(SplineChar *sc,int layer,int pnum,BasePoint *pos,
 	RefChar *bound) {
     SplineSet *ss;
     SplinePoint *sp;
     int last=0, ret;
     RefChar *refs;
 
-    for ( ss = sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
+    for ( ss = sc->layers[layer].splines; ss!=NULL; ss=ss->next ) {
 	for ( sp=ss->first; ; ) {
 	    if ( sp->ttfindex==pnum ) {
 		*pos = sp->me;
@@ -4766,12 +4766,12 @@ return( -1 );
 	break;
 	}
     }
-    for ( refs=sc->layers[ly_fore].refs; refs!=NULL; refs=refs->next ) {
+    for ( refs=sc->layers[layer].refs; refs!=NULL; refs=refs->next ) {
 	if ( refs==bound ) {
 	    LogError( _("Invalid point match. Point would be after this reference.\n") );
 return( 0x800000 );
 	}
-	ret = ttfFindPointInSC(refs->sc,pnum-last,pos,NULL);
+	ret = ttfFindPointInSC(refs->sc,ly_fore,pnum-last,pos,NULL);
 	if ( ret==-1 ) {
 	    BasePoint p;
 	    p.x = refs->transform[0]*pos->x + refs->transform[2]*pos->y + refs->transform[4];
@@ -4791,8 +4791,8 @@ return( last );		/* Count of number of points in the character */
 static void ttfPointMatch(SplineChar *sc,RefChar *rf) {
     BasePoint sofar, inref;
 
-    if ( ttfFindPointInSC(sc,rf->match_pt_base,&sofar,rf)!=-1 ||
-	    ttfFindPointInSC(rf->sc,rf->match_pt_ref,&inref,NULL)!=-1 ) {
+    if ( ttfFindPointInSC(sc,ly_fore,rf->match_pt_base,&sofar,rf)!=-1 ||
+	    ttfFindPointInSC(rf->sc,ly_fore,rf->match_pt_ref,&inref,NULL)!=-1 ) {
 	LogError( _("Could not match points in composite glyph (%d to %d) when adding %s to %s\n"),
 		rf->match_pt_base, rf->match_pt_ref, rf->sc->name, sc->name);
 return;

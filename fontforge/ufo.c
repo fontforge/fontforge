@@ -1096,8 +1096,8 @@ return( NULL );
 			    if ( temp!=NULL ) {
 				sc->hstem = GlifParseHints(doc,temp,"hhints");
 				sc->vstem = GlifParseHints(doc,temp,"vhints");
-			        SCGuessHHintInstancesList(sc);
-			        SCGuessVHintInstancesList(sc);
+			        SCGuessHHintInstancesList(sc,ly_fore);
+			        SCGuessVHintInstancesList(sc,ly_fore);
 			    }
 		break;
 			}

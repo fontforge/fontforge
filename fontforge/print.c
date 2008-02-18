@@ -2565,7 +2565,7 @@ void ScriptPrint(FontViewBase *fv,int type,int32 *pointsizes,char *samplefile,
 	li->ps = -1;
 	li->text = u_copy(temp);
 	SFMapOfSF(li,fv->sf);
-	LI_SetFontData(li,0,-1, fv->sf,sftf_otf,pi.pointsize,true,width);
+	LI_SetFontData(li,0,-1, fv->sf, fv->active_layer,sftf_otf,pi.pointsize,true,width);
 
 	if ( samplefile!=NULL && *samplefile!='\0' )
 	    sample = FileToUString(samplefile,65536);

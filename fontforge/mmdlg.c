@@ -1918,7 +1918,7 @@ continue;
 	    BDFFont *bdf;
 	    int same = fv->filled == fv->show;
 	    fv->b.sf = sf;
-	    bdf = SplineFontPieceMeal(fv->b.sf,sf->display_size<0?-sf->display_size:default_fv_font_size,
+	    bdf = SplineFontPieceMeal(fv->b.sf,ly_fore,sf->display_size<0?-sf->display_size:default_fv_font_size,
 		    (fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0),
 		    NULL);
 	    BDFFontFree(fv->filled);

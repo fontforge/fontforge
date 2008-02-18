@@ -1354,7 +1354,7 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
     int fixed = gi->fixed_width;
 
     ff_progress_change_stages(2+gi->strikecnt);
-    QuickBlues(sf,&gi->bd);
+    QuickBlues(sf,gi->layer,&gi->bd);
     /*FindBlues(sf,gi->blues,NULL);*/
     ff_progress_next_stage();
 
@@ -1363,11 +1363,11 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
 	    for ( i=0; i<sf->glyphcnt; ++i ) {
 		SplineChar *sc = sf->glyphs[i];
 		if ( SCWorthOutputting(sc) )
-		    if ( !SCPointsNumberedProperly(sc)) {
+		    if ( !SCPointsNumberedProperly(sc,gi->layer)) {
 			free(sc->ttf_instrs); sc->ttf_instrs = NULL;
 			sc->ttf_instrs_len = 0;
 			SCMarkInstrDlgAsChanged(sc);
-			SCNumberPoints(sc);
+			SCNumberPoints(sc,gi->layer);
 		    }
 	    }
     }
@@ -1915,20 +1915,20 @@ static void dumpcffprivate(SplineFont *sf,struct alltabs *at,int subfont,
 	nomwid = at->fds[subfont].nomwid;
     dumpintoper(private,nomwid,21);		/* Nominative Width */
 
-    bs = SplineFontIsFlexible(sf,at->gi.flags);
+    bs = SplineFontIsFlexible(sf,at->gi.layer,at->gi.flags);
     hasblue = PSDictHasEntry(sf->private,"BlueValues")!=NULL;
     hash = PSDictHasEntry(sf->private,"StdHW")!=NULL;
     hasv = PSDictHasEntry(sf->private,"StdVW")!=NULL;
     ff_progress_change_stages(2+autohint_before_generate+!hasblue);
     if ( autohint_before_generate ) {
 	ff_progress_change_line1(_("Auto Hinting Font..."));
-	SplineFontAutoHint(sf);
+	SplineFontAutoHint(sf,at->gi.layer);
 	ff_progress_next_stage();
     }
 
     otherblues[0] = otherblues[1] = bluevalues[0] = bluevalues[1] = 0;
     if ( !hasblue ) {
-	FindBlues(sf,bluevalues,otherblues);
+	FindBlues(sf,at->gi.layer,bluevalues,otherblues);
 	ff_progress_next_stage();
     }
 
@@ -3322,7 +3322,7 @@ docs are wrong.
     if ( os2->version>=2 ) {
 	BlueData bd;
 
-	QuickBlues(sf,&bd);		/* This handles cid fonts properly */
+	QuickBlues(sf,at->gi.layer,&bd);	/* This handles cid fonts properly */
 	os2->xHeight = (bd.xheight >= 0.0 ? bd.xheight : 0);
 	os2->capHeight = (bd.caph >= 0.0 ? bd.caph : 0);
 	os2->defChar = 0;

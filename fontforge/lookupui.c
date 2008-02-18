@@ -2884,7 +2884,7 @@ return;		/* The names specified weren't in the font */
 return;		/* Couldn't parse the numeric kerning info */
 
     if ( pstkd->display==NULL )
-	pstkd->display = SplineFontPieceMeal(pstkd->sf,pstkd->pixelsize,pf_antialias,NULL);
+	pstkd->display = SplineFontPieceMeal(pstkd->sf,ly_fore,pstkd->pixelsize,pf_antialias,NULL);
     bc1 = BDFPieceMealCheck(pstkd->display,sc1->orig_pos);
     bc2 = BDFPieceMealCheck(pstkd->display,sc2->orig_pos);
 
@@ -4210,7 +4210,7 @@ return;
 return;
 	sf->fontinfo->smd = StateMachineEdit(sf,sub->sm,sf->fontinfo);
     } else if ( sub->kc!=NULL ) {
-	KernClassD(sub->kc,sf,sub->vertical_kerning);
+	KernClassD(sub->kc,sf,ly_fore,sub->vertical_kerning);
     } else if ( sub->lookup->lookup_type>=gpos_cursive &&
 	    sub->lookup->lookup_type<=gpos_mark2mark )
 	AnchorClassD(sf,sub);

@@ -54,7 +54,7 @@ static void HistDataFree(HistData *h) {
     free(h);
 }
 
-static HistData *HistFindBlues(SplineFont *sf,uint8 *selected, EncMap *map) {
+static HistData *HistFindBlues(SplineFont *sf,int layer, uint8 *selected, EncMap *map) {
     int i, gid, low,high, top,bottom;
     SplineChar *sc;
     DBounds b;
@@ -72,7 +72,7 @@ static HistData *HistFindBlues(SplineFont *sf,uint8 *selected, EncMap *map) {
 		sc->layers[ly_fore].splines!=NULL &&
 		sc->layers[ly_fore].refs==NULL &&
 		(selected==NULL || selected[i])) {
-	    SplineCharFindBounds(sc,&b);
+	    SplineCharLayerFindBounds(sc,layer,&b);
 	    bottom = rint(b.miny);
 	    top = rint(b.maxy);
 	    if ( top==bottom )
@@ -129,7 +129,7 @@ static HistData *HistFindBlues(SplineFont *sf,uint8 *selected, EncMap *map) {
 return( hist );
 }
 
-static HistData *HistFindStemWidths(SplineFont *sf,uint8 *selected,EncMap *map,int hor) {
+static HistData *HistFindStemWidths(SplineFont *sf,int layer, uint8 *selected,EncMap *map,int hor) {
     int i, gid, low,high, val;
     SplineChar *sc;
     HistData *hist;
@@ -148,7 +148,7 @@ static HistData *HistFindStemWidths(SplineFont *sf,uint8 *selected,EncMap *map,i
 		sc->layers[ly_fore].refs==NULL &&
 		(selected==NULL || selected[i])) {
 	    if ( autohint_before_generate && sc->changedsincelasthinted && !sc->manualhints )
-		SplineCharAutoHint(sc,NULL);
+		SplineCharAutoHint(sc,layer,NULL);
 	    for ( stem = hor ? sc->hstem : sc->vstem ; stem!=NULL; stem = stem->next ) {
 		if ( stem->ghost )
 	    continue;
@@ -193,12 +193,12 @@ static HistData *HistFindStemWidths(SplineFont *sf,uint8 *selected,EncMap *map,i
 return( hist );
 }
 
-static HistData *HistFindHStemWidths(SplineFont *sf,uint8 *selected,EncMap *map) {
-return( HistFindStemWidths(sf,selected,map,true) );
+static HistData *HistFindHStemWidths(SplineFont *sf,int layer, uint8 *selected,EncMap *map) {
+return( HistFindStemWidths(sf,layer,selected,map,true) );
 }
 
-static HistData *HistFindVStemWidths(SplineFont *sf,uint8 *selected,EncMap *map) {
-return( HistFindStemWidths(sf,selected,map,false) );
+static HistData *HistFindVStemWidths(SplineFont *sf,int layer, uint8 *selected,EncMap *map) {
+return( HistFindStemWidths(sf,layer,selected,map,false) );
 }
 
 static void HistFindMax(HistData *h, int sum_around) {
@@ -238,6 +238,7 @@ static void HistFindMax(HistData *h, int sum_around) {
 struct hist_dlg {
     enum hist_type which;
     SplineFont *sf;
+    int layer;
     struct psdict *private;
     uint8 *selected;
     HistData *h;
@@ -695,7 +696,7 @@ static void CheckSmallSelection(uint8 *selected,EncMap *map,SplineFont *sf) {
 	ff_post_notice(_("Tiny Selection"),_("There are so few glyphs selected that it seems unlikely to me that you will get a representative sample of this aspect of your font. If you deselect everything the command will apply to all glyphs in the font"));
 }
 
-void SFHistogram(SplineFont *sf,struct psdict *private, uint8 *selected,
+void SFHistogram(SplineFont *sf,int layer, struct psdict *private, uint8 *selected,
 	EncMap *map,enum hist_type which) {
     struct hist_dlg hist;
     GWindow gw;
@@ -712,6 +713,7 @@ void SFHistogram(SplineFont *sf,struct psdict *private, uint8 *selected,
 
     memset(&hist,0,sizeof(hist));
     hist.sf = sf;
+    hist.layer = layer;
     hist.private = private;
     if ( private==NULL ) private = sf->private;
     hist.selected = selected;
@@ -720,13 +722,13 @@ void SFHistogram(SplineFont *sf,struct psdict *private, uint8 *selected,
     hist.sum_around = 0;
     switch ( which ) {
       case hist_hstem:
-	hist.h = HistFindHStemWidths(sf,selected,map);
+	hist.h = HistFindHStemWidths(sf,layer,selected,map);
       break;
       case hist_vstem:
-	hist.h = HistFindVStemWidths(sf,selected,map);
+	hist.h = HistFindVStemWidths(sf,layer,selected,map);
       break;
       case hist_blues:
-	hist.h = HistFindBlues(sf,selected,map);
+	hist.h = HistFindBlues(sf,layer,selected,map);
       break;
     }
     HistFindMax(hist.h,hist.sum_around);

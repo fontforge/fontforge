@@ -1084,7 +1084,7 @@ static void SCAddBackgrounds(SplineChar *sc1,SplineChar *sc2,struct font_diff *f
 	sc1->layers[ly_back].splines =
 		SplineSetsConvertOrder(sc1->layers[ly_back].splines,
 			sc1->layers[ly_back].order2);
-    SCCharChangedUpdate(sc1);
+    SCCharChangedUpdate(sc1,ly_back);
 }
 
 static void SCCompare(SplineChar *sc1,SplineChar *sc2,struct font_diff *fd) {

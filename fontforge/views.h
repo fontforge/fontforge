@@ -322,6 +322,7 @@ typedef struct metricsview {
     struct lookup_subtable *cur_subtable;
     GTextInfo *scriptlangs;
     int word_index;
+    int layer;
 } MetricsView;
 
 enum fv_metrics { fvm_baseline=1, fvm_origin=2, fvm_advanceat=4, fvm_advanceto=8 };
@@ -527,7 +528,7 @@ extern void MergeKernInfo(SplineFont *sf,EncMap *map);
 #ifdef FONTFORGE_CONFIG_WRITE_PFM
 extern int WritePfmFile(char *filename,SplineFont *sf, int type0, EncMap *map);
 #endif
-extern int SFGenerateFont(SplineFont *sf,int family,EncMap *map);
+extern int SFGenerateFont(SplineFont *sf,int layer, int family,EncMap *map);
 
 extern void NonLinearDlg(FontView *fv,struct charview *cv);
 extern void FVChangeChar(FontView *fv,int encoding);
@@ -552,7 +553,7 @@ extern void RecentFilesRemember(char *filename);
 struct debugger_context;
 extern void DebuggerTerminate(struct debugger_context *dc);
 extern void DebuggerReset(struct debugger_context *dc,real pointsize,int dpi,int dbg_fpgm, int is_bitmap);
-extern struct debugger_context *DebuggerCreate(SplineChar *sc,real pointsize,int dpi,int dbg_fpgm, int is_bitmap);
+extern struct debugger_context *DebuggerCreate(SplineChar *sc,int layer,real pointsize,int dpi,int dbg_fpgm, int is_bitmap);
 enum debug_gotype { dgt_continue, dgt_step, dgt_next, dgt_stepout };
 extern void DebuggerGo(struct debugger_context *dc,enum debug_gotype,DebugView *dv);
 extern struct  TT_ExecContextRec_ *DebuggerGetEContext(struct debugger_context *dc);
@@ -910,11 +911,11 @@ extern void CVDebugReInit(CharView *cv,int restart_debug,int dbg_fpgm);
 extern void CVDebugFree(DebugView *dv);
 extern int DVChar(DebugView *dv, GEvent *e);
 
-extern void KernClassD(KernClass *kc, SplineFont *sf, int isv);
-extern void ShowKernClasses(SplineFont *sf,MetricsView *mv,int isv);
+extern void KernClassD(KernClass *kc, SplineFont *sf, int layer, int isv);
+extern void ShowKernClasses(SplineFont *sf,MetricsView *mv,int layer,int isv);
 extern void KCLD_End(struct kernclasslistdlg *kcld);
 extern void KCLD_MvDetach(struct kernclasslistdlg *kcld,MetricsView *mv);
-extern void KernPairD(SplineFont *sf,SplineChar *sc1,SplineChar *sc2,int isv);
+extern void KernPairD(SplineFont *sf,SplineChar *sc1,SplineChar *sc2,int layer, int isv);
 extern void KCD_DrawGlyph(GWindow pixmap,int x,int baseline,BDFChar *bdfc,int mag);
 extern GTextInfo *BuildFontList(FontView *except);
 extern void TFFree(GTextInfo *tf);
@@ -926,7 +927,7 @@ extern void FVSelectByPST(FontView *fv);
 
 enum hist_type { hist_hstem, hist_vstem, hist_blues };
 struct psdict;
-extern void SFHistogram(SplineFont *sf,struct psdict *private,uint8 *selected,
+extern void SFHistogram(SplineFont *sf,int layer, struct psdict *private,uint8 *selected,
 	EncMap *map, enum hist_type which);
 
 extern void CCD_Close(struct contextchaindlg *ccd);
@@ -1007,7 +1008,7 @@ extern GMenuItem2 *cvpy_menu, *fvpy_menu;
 extern void cvpy_tllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e);
 extern void fvpy_tllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e);
 
-extern void SFValidationWindow(SplineFont *sf,enum fontformat format);
+extern void SFValidationWindow(SplineFont *sf,int layer, enum fontformat format);
 extern void ValidationDestroy(SplineFont *sf);
 
 

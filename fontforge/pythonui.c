@@ -132,6 +132,7 @@ return;
 
     sc_active_in_ui = cv->b.sc;
     layer_active_in_ui = CVLayer((CharViewBase *) cv);
+    PyFF_Glyph_Set_Layer(sc_active_in_ui,layer_active_in_ui);
     py_tllistcheck(mi,pysc,cvpy_menu_data,cvpy_menu_cnt);
     sc_active_in_ui = NULL;
     layer_active_in_ui = ly_fore;
@@ -146,6 +147,7 @@ return;
 
     sc_active_in_ui = cv->b.sc;
     layer_active_in_ui = CVLayer((CharViewBase *) cv);
+    PyFF_Glyph_Set_Layer(sc_active_in_ui,layer_active_in_ui);
     py_menuactivate(mi,pysc,cvpy_menu_data,cvpy_menu_cnt);
     sc_active_in_ui = NULL;
     layer_active_in_ui = ly_fore;
@@ -159,7 +161,7 @@ void fvpy_tllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 return;
 
     fv_active_in_ui = fv;
-    layer_active_in_ui = ly_fore;
+    layer_active_in_ui = fv->active_layer;
     py_tllistcheck(mi,pyfv,fvpy_menu_data,fvpy_menu_cnt);
     fv_active_in_ui = NULL;
 }
@@ -172,7 +174,7 @@ static void fvpy_menuactivate(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 return;
 
     fv_active_in_ui = fv;
-    layer_active_in_ui = ly_fore;
+    layer_active_in_ui = fv->active_layer;
     py_menuactivate(mi,pyfv,fvpy_menu_data,fvpy_menu_cnt);
     fv_active_in_ui = NULL;
 }
