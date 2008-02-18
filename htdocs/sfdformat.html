@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 14-Feb-2008 -->
+  <!-- AP: Last modified: 17-Feb-2008 -->
   <TITLE>Spline Font Database File Format</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -14,7 +14,7 @@
   </H1>
   <P>
   <FONT COLOR="Red"><STRONG>This page is often grievously out of date. I thought
-  it was a correct on 14 Feb 2008.</STRONG></FONT> Even if out of date it should
+  it was a correct on 17 Feb 2008.</STRONG></FONT> Even if out of date it should
   be helpful, but if you really need to know the current format look at
   <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/fontforge/sfd.c">sfd.c</A>
   and see what it parses. Some descriptions of esoteric features are not complete,
@@ -99,6 +99,7 @@ Layer: 1 1 "Fore"
 Layer: 2 0 "Cubic_Fore"
 Layer: 3 0 "Test"
 DisplaySize: -24
+DisplayLayer: 1
 AntiAlias: 1
 WinInfo: 64 16 4
 FitToEm: 1
@@ -162,6 +163,10 @@ DEI: 0
       the font in fontviews (it may be changed of course). Negative numbers mean
       to rasterize the display from the outlines, positive numbers mean to use
       a prebuilt bitmap font of that size.
+    <DT>
+      DisplayLayer
+    <DD>
+      The layer that should be displayed by default on opening the font.
     <DT>
       AntiAlias
     <DD>
@@ -1203,9 +1208,9 @@ UnlinkRmOvrlpSave: 1
   <P>
   The first is an arbitrary comment, this will be output in UTF-7, the second
   a color (output as a 6 hex digit RGB value), the cached validation state
-  (a bitmask, see the python docs for the bits' meanings), and a flag that
-  the glyph should have its references unlinked and remove overlap run before
-  the font is saved.
+  (a bitmask, see the python docs for the bits' meanings, there can be one
+  of these for every layer), and a flag that the glyph should have its references
+  unlinked and remove overlap run before the font is saved.
   <H4>
     TeX &amp; MATH data
   </H4>
