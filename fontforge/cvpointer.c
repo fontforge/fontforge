@@ -140,7 +140,7 @@ int CVSetSel(CharView *cv,int mask) {
     ImageList *img;
     int needsupdate = 0;
     AnchorPoint *ap;
-    RefChar *usemymetrics = HasUseMyMetrics(cv->b.sc);
+    RefChar *usemymetrics = HasUseMyMetrics(cv->b.sc,CVLayer((CharViewBase *) cv));
     int i;
 
     cv->lastselpt = NULL; cv->lastselcp = NULL;
@@ -415,7 +415,7 @@ void CVCheckResizeCursors(CharView *cv) {
 	break;
 	}
 	if ( cv->expandedge == ee_none ) {
-	    RefChar *usemymetrics = HasUseMyMetrics(cv->b.sc);
+	    RefChar *usemymetrics = HasUseMyMetrics(cv->b.sc,CVLayer((CharViewBase *) cv));
 	    if ( cv->showhmetrics && cv->info.x > cv->b.sc->width-fudge &&
 		    cv->info.x<cv->b.sc->width+fudge && cv->b.container==NULL &&
 		    usemymetrics==NULL )
@@ -498,7 +498,7 @@ return( false );
 void CVMouseDownPointer(CharView *cv, FindSel *fs, GEvent *event) {
     int needsupdate = false;
     int dowidth, dovwidth, doic, dotah, nearcaret;
-    RefChar *usemymetrics = HasUseMyMetrics(cv->b.sc);
+    RefChar *usemymetrics = HasUseMyMetrics(cv->b.sc,CVLayer((CharViewBase *) cv));
     int i;
 
     if ( cv->pressed==NULL )
@@ -1300,7 +1300,7 @@ void CVMouseUpPointer(CharView *cv ) {
     } else if ( CVAllSelected(cv) && cv->b.drawmode==dm_fore && cv->p.spline==NULL &&
 	    !cv->p.prevcp && !cv->p.nextcp && cv->info.y==cv->p.cy ) {
 	SCUndoSetLBearingChange(cv->b.sc,(int) rint(cv->info.x-cv->p.cx));
-	SCSynchronizeLBearing(cv->b.sc,cv->info.x-cv->p.cx);
+	SCSynchronizeLBearing(cv->b.sc,CVLayer((CharViewBase *) cv),cv->info.x-cv->p.cx);
     }
     CPEndInfo(cv);
 }

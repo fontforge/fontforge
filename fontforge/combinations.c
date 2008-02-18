@@ -770,7 +770,7 @@ static int KP_ChangeSize(GGadget *g, GEvent *e) {
 	BDFFont *temp;
 	if ( newsize==kpd->bdf->pixelsize )
 return( true );
-	temp = SplineFontPieceMeal(kpd->sf,newsize,true,NULL);
+	temp = SplineFontPieceMeal(kpd->sf,ly_fore,newsize,true,NULL);
 	BDFFontFree(kpd->bdf);
 	kpd->bdf = temp;
 	KP_Resize(kpd);
@@ -879,7 +879,7 @@ static void KPKPCloseup(KPData *kpd) {
 	struct kerns *k = &kpd->kerns[kpd->selected];
 	int oldoff = k->kp->off;
 	k->kp->off = k->newoff;
-	KernPairD(k->first->parent,k->first,k->second,false);
+	KernPairD(k->first->parent,k->first,k->second,ly_fore,false);
 	k->newoff = k->kp->off;
 	k->kp->off = oldoff;
 	GDrawRequestExpose(kpd->v,NULL,false);
@@ -1215,7 +1215,7 @@ return;
     wattrs.cursor = ct_mypointer;
     kpd.v = GWidgetCreateSubWindow(gw,&pos,kpdv_e_h,&kpd,&wattrs);
 
-    kpd.bdf = SplineFontPieceMeal(kpd.sf,(intpt) (gcd[1].gd.label->userdata),true,NULL);
+    kpd.bdf = SplineFontPieceMeal(kpd.sf,ly_fore,(intpt) (gcd[1].gd.label->userdata),true,NULL);
 
     memset(&rq,'\0',sizeof(rq));
     rq.family_name = helv;

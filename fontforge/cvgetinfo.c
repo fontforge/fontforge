@@ -151,8 +151,8 @@ static int GI_MatchPtChange(GGadget *g, GEvent *e) {
 	    int basept, refpt;
 	    basept = u_strtol(t1,NULL,10);
 	    refpt = u_strtol(t2,NULL,10);
-	    if ( ttfFindPointInSC(ci->cv->b.sc,basept,&inbase,ci->rf)==-1 &&
-		    ttfFindPointInSC(ci->rf->sc,refpt,&inref,NULL)==-1 ) {
+	    if ( ttfFindPointInSC(ci->cv->b.sc,CVLayer((CharViewBase *) ci->cv),basept,&inbase,ci->rf)==-1 &&
+		    ttfFindPointInSC(ci->rf->sc,CVLayer((CharViewBase *) ci->cv),refpt,&inref,NULL)==-1 ) {
 		char buffer[40];
 		sprintf(buffer,"%g",(double) (inbase.x-inref.x));
 		GGadgetSetTitle8(GWidgetGetControl(ci->gw,1004),buffer);
@@ -206,10 +206,10 @@ return( false );
 	    ff_post_error(_("Bad Point Match"),_("Both points must be specified, or neither"));
 	}
 	if ( basept!=-1 ) {
-	    if ( ttfFindPointInSC(ci->cv->b.sc,basept,&inbase,ci->rf)!=-1 ) {
+	    if ( ttfFindPointInSC(ci->cv->b.sc,CVLayer((CharViewBase *) ci->cv),basept,&inbase,ci->rf)!=-1 ) {
 		ff_post_error(_("Bad Point Match"),_("Couldn't find base point"));
 return( false );
-	    } else if ( ttfFindPointInSC(ci->rf->sc,refpt,&inref,NULL)!=-1 ) {
+	    } else if ( ttfFindPointInSC(ci->rf->sc,CVLayer((CharViewBase *) ci->cv),refpt,&inref,NULL)!=-1 ) {
 		ff_post_error(_("Bad Point Match"),_("Couldn't find point in reference"));
 return( false );
 	    }
@@ -1166,7 +1166,7 @@ static int AI_MatchChanged(GGadget *g, GEvent *e) {
 	    BasePoint here;
 	    int pt;
 	    pt = u_strtol(t1,&end,10);
-	    if ( *end=='\0' && ttfFindPointInSC(ci->cv->b.sc,pt,&here,NULL)==-1 ) {
+	    if ( *end=='\0' && ttfFindPointInSC(ci->cv->b.sc,CVLayer((CharViewBase *) ci->cv),pt,&here,NULL)==-1 ) {
 		char buffer[40];
 		sprintf(buffer,"%g",(double) here.x);
 		GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_X),buffer);

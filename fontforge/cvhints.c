@@ -149,13 +149,14 @@ static void RH_MovePoints(ReviewHintData *hd,StemInfo *active,int start,int widt
     SplineSet *spl;
     SplinePoint *sp;
     int which;
+    int layer = CVLayer( (CharViewBase *) (hd->cv));
 
     if ( !hd->undocreated ) {
-	SCPreserveState(sc,true);
+	SCPreserveLayer(sc,layer,true);
 	hd->undocreated = true;
     }
 
-    for ( spl=sc->layers[ly_fore].splines; spl!=NULL; spl=spl->next ) {
+    for ( spl=sc->layers[layer].splines; spl!=NULL; spl=spl->next ) {
 	for ( sp = spl->first ; ; ) {
 	    if ( hd->ishstem ) {
 		switch ((which = OnHint(active,sp->me.y,sp->me.x)) ) {
@@ -257,7 +258,7 @@ static int RH_OK(GGadget *g, GEvent *e) {
 	/*  the original hint state so we can preserve it, now that we know we*/
 	/*  are going to modify it */
 	sc->hstem = hd->oldh; sc->vstem = hd->oldv;
-	SCPreserveHints(sc);
+	SCPreserveHints(sc,CVLayer((CharViewBase *) hd->cv));
 	sc->hstem = curh; sc->vstem = curv;
 
 	StemInfosFree(hd->oldh);
@@ -265,7 +266,7 @@ static int RH_OK(GGadget *g, GEvent *e) {
 	if ( hd->lastactive!=NULL )
 	    hd->lastactive->active = false;
 	if ( hd->changed )
-	    SCClearHintMasks(hd->cv->b.sc,true);
+	    SCClearHintMasks(hd->cv->b.sc,CVLayer((CharViewBase *) (hd->cv)),true);
 	/* Everything else got done as we went along... */
 	SCOutOfDateBackground(hd->cv->b.sc);
 	SCUpdateAll(hd->cv->b.sc);
@@ -605,13 +606,14 @@ static int CH_OK(GGadget *g, GEvent *e) {
 	real base, width;
 	int err = 0;
 	StemInfo *h;
+	int layer = CVLayer((CharViewBase *) hd->cv);
 
 	base = GetReal8(hd->gw,CID_Base,_("Base:"),&err);
 	width = GetReal8(hd->gw,CID_Width,_("Size:"),&err);
 	if ( err )
 return(true);
 	if ( hd->preservehints ) {
-	    SCPreserveHints(hd->cv->b.sc);
+	    SCPreserveHints(hd->cv->b.sc,layer);
 	    SCHintsChanged(hd->cv->b.sc);
 	}
 	h = chunkalloc(sizeof(StemInfo));
@@ -623,17 +625,17 @@ return(true);
 	h->start = base;
 	h->width = width;
 	if ( hd->ishstem ) {
-	    SCGuessHHintInstancesAndAdd(hd->cv->b.sc,h,0x80000000,0x80000000);
+	    SCGuessHHintInstancesAndAdd(hd->cv->b.sc,layer,h,0x80000000,0x80000000);
 	    hd->cv->b.sc->hconflicts = StemListAnyConflicts(hd->cv->b.sc->hstem);
 	} else {
-	    SCGuessVHintInstancesAndAdd(hd->cv->b.sc,h,0x80000000,0x80000000);
+	    SCGuessVHintInstancesAndAdd(hd->cv->b.sc,layer,h,0x80000000,0x80000000);
 	    hd->cv->b.sc->vconflicts = StemListAnyConflicts(hd->cv->b.sc->vstem);
 	}
 	hd->cv->b.sc->manualhints = true;
 	if ( h!=NULL && hd->cv->b.sc->parent->mm==NULL )
-	    SCModifyHintMasksAdd(hd->cv->b.sc,h);
+	    SCModifyHintMasksAdd(hd->cv->b.sc,layer,h);
 	else
-	    SCClearHintMasks(hd->cv->b.sc,true);
+	    SCClearHintMasks(hd->cv->b.sc,layer,true);
 	SCOutOfDateBackground(hd->cv->b.sc);
 	SCUpdateAll(hd->cv->b.sc);
 	hd->done = true;
