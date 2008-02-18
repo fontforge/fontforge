@@ -312,7 +312,7 @@ static void IVOk(InstrDlg *iv) {
 	    for ( cv=(CharView *) (sc->views); cv!=NULL; cv=(CharView *) (cv->b.next) )
 		cv->showpointnumbers = false;
 	    sc->instructions_out_of_date = true;
-	    SCCharChangedUpdate(sc);
+	    SCCharChangedUpdate(sc,ly_none);
 	    sc->instructions_out_of_date = false;
 	    FVRefreshAll(sc->parent);
 	} else {
@@ -916,7 +916,7 @@ return;
     for ( cv=(CharView *) (sc->views); cv!=NULL; cv=(CharView *) (cv->b.next) ) {
 	sc = cv->b.sc;
 	cv->showpointnumbers = true;
-	SCNumberPoints(sc);
+	SCNumberPoints(sc,CVLayer((CharViewBase *) cv));
 	GDrawRequestExpose(cv->v,NULL,false);
     }
     id = gcalloc(1,sizeof(*id));

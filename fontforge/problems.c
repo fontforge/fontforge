@@ -40,6 +40,7 @@ struct problems {
     CharView *cv;
     SplineChar *sc;
     SplineChar *msc;
+    int layer;
     unsigned int openpaths: 1;
     unsigned int intersectingpaths: 1;
     unsigned int nonintegral: 1;
@@ -228,21 +229,21 @@ return;
     }
 #endif
     if ( p->explaining==_("This reference has been flipped, so the paths in it are drawn backwards") ) {
-	for ( r=p->sc->layers[ly_fore].refs; r!=NULL && !r->selected; r = r->next );
+	for ( r=p->sc->layers[p->layer].refs; r!=NULL && !r->selected; r = r->next );
 	if ( r!=NULL ) {
 	    SplineSet *ss, *spl;
-	    SCPreserveState(p->sc,false);
-	    ss = p->sc->layers[ly_fore].splines;
-	    p->sc->layers[ly_fore].splines = NULL;
-	    SCRefToSplines(p->sc,r,ly_fore);
-	    for ( spl = p->sc->layers[ly_fore].splines; spl!=NULL; spl=spl->next )
+	    SCPreserveLayer(p->sc,p->layer,false);
+	    ss = p->sc->layers[p->layer].splines;
+	    p->sc->layers[p->layer].splines = NULL;
+	    SCRefToSplines(p->sc,r,p->layer);
+	    for ( spl = p->sc->layers[p->layer].splines; spl!=NULL; spl=spl->next )
 		SplineSetReverse(spl);
-	    if ( p->sc->layers[ly_fore].splines!=NULL ) {
-		for ( spl = p->sc->layers[ly_fore].splines; spl->next!=NULL; spl=spl->next );
+	    if ( p->sc->layers[p->layer].splines!=NULL ) {
+		for ( spl = p->sc->layers[p->layer].splines; spl->next!=NULL; spl=spl->next );
 		spl->next = ss;
 	    } else
-		p->sc->layers[ly_fore].splines = ss;
-	    SCCharChangedUpdate(p->sc);
+		p->sc->layers[p->layer].splines = ss;
+	    SCCharChangedUpdate(p->sc,p->layer);
 	} else
 	    IError("Could not find referenc");
 return;
@@ -271,7 +272,7 @@ return;
     }
 
     sp = NULL;
-    for ( spl=p->sc->layers[ly_fore].splines; spl!=NULL; spl=spl->next ) {
+    for ( spl=p->sc->layers[p->layer].splines; spl!=NULL; spl=spl->next ) {
 	for ( sp = spl->first; ; ) {
 	    if ( sp->selected )
 	break;
@@ -300,7 +301,7 @@ return;
     _STR_ProbMultUni, STR_ProbMultName
 */
 
-    SCPreserveState(p->sc,false);
+    SCPreserveLayer(p->sc,p->layer,false);
     ncp_changed = pcp_changed = false;
     if ( p->explaining==_("The x coord of the selected point is near the specified value") || p->explaining==_("The selected point is near a vertical stem hint")) {
 	sp->prevcp.x += p->expected-sp->me.x;
@@ -322,7 +323,7 @@ return;
 	sp->me.y = p->expected;
 	ncp_changed = pcp_changed = true;
     } else if ( p->explaining==_("The selected spline attains its extrema somewhere other than its endpoints") ) {
-	SplineCharAddExtrema(p->sc,p->sc->layers[ly_fore].splines,
+	SplineCharAddExtrema(p->sc,p->sc->layers[p->layer].splines,
 		ae_between_selected,p->sc->parent->ascent+p->sc->parent->descent);
     } else if ( p->explaining==_("The selected line segment is nearly horizontal") ) {
 	if ( sp->me.y!=p->found ) {
@@ -425,7 +426,7 @@ return;
 	}
     } else
 	IError("Did not fix: %d", p->explaining );
-    if ( p->sc->layers[ly_fore].order2 ) {
+    if ( p->sc->layers[p->layer].order2 ) {
 	if ( ncp_changed )
 	    SplinePointNextCPChanged2(sp);
 	if ( pcp_changed )
@@ -435,7 +436,7 @@ return;
 	SplineRefigure(sp->next);
     if ( sp->prev!=NULL )
 	SplineRefigure(sp->prev);
-    SCCharChangedUpdate(p->sc);
+    SCCharChangedUpdate(p->sc,p->layer);
 }
 
 static int explain_e_h(GWindow gw, GEvent *event) {
@@ -632,7 +633,7 @@ return;
     if ( p->cv!=NULL ) {
 	CVClearSel(p->cv);
     } else {
-	for ( spl = p->sc->layers[ly_fore].splines; spl!=NULL; spl = spl->next ) {
+	for ( spl = p->sc->layers[p->layer].splines; spl!=NULL; spl = spl->next ) {
 	    spl->first->selected = false;
 	    first = NULL;
 	    for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
@@ -661,7 +662,7 @@ return( false );
     if ( p->cv!=NULL )
 	spl = p->cv->b.layerheads[p->cv->b.drawmode]->splines;
     else
-	spl = p->sc->layers[ly_fore].splines;
+	spl = p->sc->layers[p->layer].splines;
     for ( check = spl; check!=test && check!=NULL; check = check->next );
     if ( check==NULL )
 return( true );		/* Deleted splineset */
@@ -688,7 +689,7 @@ return( false );
     if ( p->cv!=NULL )
 	spl = p->cv->b.layerheads[p->cv->b.drawmode]->splines;
     else
-	spl = p->sc->layers[ly_fore].splines;
+	spl = p->sc->layers[p->layer].splines;
     for ( check = spl; check!=test && check!=NULL; check = check->next );
     if ( check==NULL )
 return( true );		/* Deleted splineset */
@@ -915,23 +916,23 @@ return( false );
 return( false );
 }
 
-static int probRefDepth(RefChar *r) {
+static int probRefDepth(RefChar *r,int layer) {
     RefChar *ref;
     int cur, max=0;
 
-    for ( ref= r->sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
-	cur = probRefDepth(ref);
+    for ( ref= r->sc->layers[layer].refs; ref!=NULL; ref=ref->next ) {
+	cur = probRefDepth(ref,layer);
 	if ( cur>max ) max = cur;
     }
 return( max+1 );
 }
 
-static int SCRefDepth(SplineChar *sc) {
+static int SCRefDepth(SplineChar *sc,int layer) {
     RefChar *ref;
     int cur, max=0;
 
-    for ( ref= sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
-	cur = probRefDepth(ref);
+    for ( ref= sc->layers[layer].refs; ref!=NULL; ref=ref->next ) {
+	cur = probRefDepth(ref,layer);
 	if ( cur>max ) max = cur;
     }
 return( max );
@@ -996,7 +997,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	spl = cur->splines;
 	sc = cv->b.sc;
     } else {
-	for ( spl = sc->layers[ly_fore].splines; spl!=NULL; spl = spl->next ) {
+	for ( spl = sc->layers[p->layer].splines; spl!=NULL; spl = spl->next ) {
 	    if ( spl->first->selected ) { needsupdate = true; spl->first->selected = false; }
 	    first = NULL;
 	    for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
@@ -1005,13 +1006,13 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		if ( first==NULL ) first = spline;
 	    }
 	}
-	cur = &sc->layers[ly_fore];
+	cur = &sc->layers[p->layer];
 	spl = cur->splines;
     }
     p->sc = sc;
     if (( p->ptnearhint || p->hintwidthnearval || p->hintwithnopt ) &&
 	    sc->changedsincelasthinted && !sc->manualhints )
-	SplineCharAutoHint(sc,NULL);
+	SplineCharAutoHint(sc,p->layer,NULL);
 
     if ( p->openpaths ) {
 	for ( test=spl; test!=NULL && !p->finish; test=test->next ) {
@@ -1516,7 +1517,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	if ( cv!=NULL )
 	    base = &cv->b.layerheads[cv->b.drawmode]->splines;
 	else
-	    base = &sc->layers[ly_fore].splines;
+	    base = &sc->layers[p->layer].splines;
 	while ( !p->finish && (ret=SplineSetsDetectDir(base,&lastscan))!=NULL ) {
 	    sp = ret->first;
 	    changed = true;
@@ -1548,7 +1549,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 
 	bound2 *= bound2;
       ae_restart:
-	for ( ss = sc->layers[ly_fore].splines; ss!=NULL && !p->finish; ss=ss->next ) {
+	for ( ss = sc->layers[p->layer].splines; ss!=NULL && !p->finish; ss=ss->next ) {
 	  ae2_restart:
 	    first = NULL;
 	    for ( s=ss->first->next ; s!=NULL && s!=first && !p->finish; s=s->to->next ) {
@@ -1572,7 +1573,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		    s->from->selected = true;
 		    s->to->selected = true;
 		    ExplainIt(p,sc,_("The selected spline attains its extrema somewhere other than its endpoints"),0,0);
-		    if ( !SSExistsInLayer(ss,sc->layers[ly_fore].splines) )
+		    if ( !SSExistsInLayer(ss,sc->layers[p->layer].splines) )
       goto ae_restart;
 		    if ( !SplineExistsInSS(s,ss))
 	  goto ae2_restart;
@@ -1591,9 +1592,9 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 
     if ( p->flippedrefs && !p->finish && ( cv==NULL || cv->b.drawmode==dm_fore )) {
 	RefChar *ref;
-	for ( ref = sc->layers[ly_fore].refs; ref!=NULL ; ref = ref->next )
+	for ( ref = sc->layers[p->layer].refs; ref!=NULL ; ref = ref->next )
 	    ref->selected = false;
-	for ( ref = sc->layers[ly_fore].refs; !p->finish && ref!=NULL ; ref = ref->next ) {
+	for ( ref = sc->layers[p->layer].refs; !p->finish && ref!=NULL ; ref = ref->next ) {
 	    if ( ref->transform[0]*ref->transform[3]<0 ||
 		    (ref->transform[0]==0 && ref->transform[1]*ref->transform[2]>0)) {
 		changed = true;
@@ -1610,9 +1611,9 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 
     if ( p->refsbadtransformttf && !p->finish ) {
 	RefChar *ref;
-	for ( ref = sc->layers[ly_fore].refs; ref!=NULL ; ref = ref->next )
+	for ( ref = sc->layers[p->layer].refs; ref!=NULL ; ref = ref->next )
 	    ref->selected = false;
-	for ( ref = sc->layers[ly_fore].refs; !p->finish && ref!=NULL ; ref = ref->next ) {
+	for ( ref = sc->layers[p->layer].refs; !p->finish && ref!=NULL ; ref = ref->next ) {
 	    if ( ref->transform[0]>=2 || ref->transform[0]<-2 ||
 		    ref->transform[1]>=2 || ref->transform[1]<-2 ||
 		    ref->transform[2]>=2 || ref->transform[2]<-2 ||
@@ -1633,8 +1634,8 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 
     if ( p->mixedcontoursrefs && !p->finish ) {
 	RefChar *ref;
-	int hasref=0, hascontour = sc->layers[ly_fore].splines!=NULL;
-	for ( ref = sc->layers[ly_fore].refs; ref!=NULL ; ref = ref->next ) {
+	int hasref=0, hascontour = sc->layers[p->layer].splines!=NULL;
+	for ( ref = sc->layers[p->layer].refs; ref!=NULL ; ref = ref->next ) {
 	    ref->selected = false;
 	    if ( ref->transform[0]>=2 || ref->transform[0]<-2 ||
 		    ref->transform[1]>=2 || ref->transform[1]<-2 ||
@@ -1658,9 +1659,9 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 
     if ( p->refsbadtransformps && !p->finish ) {
 	RefChar *ref;
-	for ( ref = sc->layers[ly_fore].refs; ref!=NULL ; ref = ref->next )
+	for ( ref = sc->layers[p->layer].refs; ref!=NULL ; ref = ref->next )
 	    ref->selected = false;
-	for ( ref = sc->layers[ly_fore].refs; !p->finish && ref!=NULL ; ref = ref->next ) {
+	for ( ref = sc->layers[p->layer].refs; !p->finish && ref!=NULL ; ref = ref->next ) {
 	    if ( ref->transform[0]!=1.0 ||
 		    ref->transform[1]!=0 ||
 		    ref->transform[2]!=0 ||
@@ -1679,9 +1680,9 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 
     if ( p->ptmatchrefsoutofdate && !p->finish ) {
 	RefChar *ref;
-	for ( ref = sc->layers[ly_fore].refs; ref!=NULL ; ref = ref->next )
+	for ( ref = sc->layers[p->layer].refs; ref!=NULL ; ref = ref->next )
 	    ref->selected = false;
-	for ( ref = sc->layers[ly_fore].refs; !p->finish && ref!=NULL ; ref = ref->next ) {
+	for ( ref = sc->layers[p->layer].refs; !p->finish && ref!=NULL ; ref = ref->next ) {
 	    if ( ref->point_match_out_of_date ) {
 		changed = true;
 		ref->selected = true;
@@ -1696,7 +1697,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
     }
 
     if ( p->toodeeprefs && !p->finish ) {
-	int cnt=SCRefDepth(sc);
+	int cnt=SCRefDepth(sc,p->layer);
 	if ( cnt>p->refdepthmax ) {
 	    changed = true;
 	    ExplainIt(p,sc,_("References are nested more deeply in this glyph than the maximum allowed"),cnt,p->refdepthmax);
@@ -1708,8 +1709,8 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
     if ( p->toomanypoints && !p->finish ) {
 	int cnt=0;
 	RefChar *r;
-	cnt = SPLPointCnt(sc->layers[ly_fore].splines);
-	for ( r=sc->layers[ly_fore].refs; r!=NULL ; r=r->next )
+	cnt = SPLPointCnt(sc->layers[p->layer].splines);
+	for ( r=sc->layers[p->layer].refs; r!=NULL ; r=r->next )
 	    cnt += SPLPointCnt(r->layers[0].splines);
 	if ( cnt>p->pointsmax ) {
 	    changed = true;
@@ -2629,7 +2630,7 @@ static void DoProbs(struct problems *p) {
 static void FigureStandardHeights(struct problems *p) {
     BlueData bd;
 
-    QuickBlues(p->fv->b.sf,&bd);
+    QuickBlues(p->fv->b.sf,p->layer,&bd);
     p->xheight = bd.xheight;
     p->caph = bd.caph;
     p->ascent = bd.ascent;
@@ -2854,12 +2855,16 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     p.fv = fv; p.cv=cv; p.msc = sc;
     if ( cv!=NULL )
 	p.lastcharopened = cv->b.sc;
-    if ( fv!=NULL )
+    if ( fv!=NULL ) {
 	p.map = fv->b.map;
-    else if ( cv!=NULL )
+	p.layer = fv->b.active_layer;
+    } else if ( cv!=NULL ) {
 	p.map = cv->b.fv->map;
-    else
+	p.layer = CVLayer((CharViewBase *) cv);
+    } else {
 	p.map = sc->parent->fv->map;
+	p.layer = sc->parent->fv->active_layer;
+    }
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict;
@@ -3727,6 +3732,7 @@ struct val_data {
     SplineChar *sc;		/* used by popup menu */
     int lastgid;
     CharView *lastcv;
+    int layer;
 };
 
 static char *vserrornames[] = {
@@ -3801,6 +3807,24 @@ char *VSErrorsFromMask(int mask, int private_mask) {
 return( ret );
 }
 
+static int VSModMask(SplineChar *sc, struct val_data *vw) {
+    int vs = 0;
+    if ( sc!=NULL ) {
+	vs = sc->layers[vw->layer].validation_state;
+	if ( sc->unlink_rm_ovrlp_save_undo )
+	    vs &= ~vs_selfintersects;
+	/* if doing a truetype eval, then I'm told it's ok for references */
+	/*  to overlap. And if refs can overlap, then we can't figure out */
+	/*  direction properly */ /* I should really check that all the   */
+	/*  refs have legal ttf transform matrices */
+	if ( vw->mask==vs_maskttf &&
+		sc->layers[vw->layer].splines==NULL &&
+		sc->layers[vw->layer].refs!=NULL )
+	    vs &= ~(vs_selfintersects|vs_wrongdirection);
+    }
+return( vs );
+}
+
 static int VW_FindLine(struct val_data *vw,int line, int *skips) {
     int gid,k, cidmax = vw->cidmax;
     SplineFont *sf = vw->sf;
@@ -3823,12 +3847,7 @@ static int VW_FindLine(struct val_data *vw,int line, int *skips) {
 	}
 	/* Ignore it if it has not been validated */
 	/* Ignore it if it is good */
-	vs = 0;
-	if ( sc!=NULL ) {
-	    vs = sc->validation_state;
-	    if ( sc->unlink_rm_ovrlp_save_undo )
-		vs &= ~vs_selfintersects;
-	}
+	vs = VSModMask(sc,vw);
 	if ((vs&vs_known) && (vs&vw->mask)!=0 ) {
 	    tot = 1;
 	    if ( sc->vs_open )
@@ -3882,12 +3901,7 @@ static int VW_FindSC(struct val_data *vw,SplineChar *sought) {
 	}
 	/* Ignore it if it has not been validated */
 	/* Ignore it if it is good */
-	vs = 0;
-	if ( sc!=NULL ) {
-	    vs = sc->validation_state;
-	    if ( sc->unlink_rm_ovrlp_save_undo )
-		vs &= ~vs_selfintersects;
-	}
+	vs = VSModMask(sc,vw);
 	if ((vs&vs_known) && (vs&vw->mask)!=0 ) {
 	    if ( sc==sought )
 return( sofar );
@@ -3977,12 +3991,7 @@ static void VW_Remetric(struct val_data *vw) {
 	}
 	/* Ignore it if it has not been validated */
 	/* Ignore it if it is good */
-	vs = 0;
-	if ( sc!=NULL ) {
-	    vs = sc->validation_state;
-	    if ( sc->unlink_rm_ovrlp_save_undo )
-		vs &= ~vs_selfintersects;
-	}
+	vs = VSModMask(sc,vw);
 	if ((vs&vs_known) && (vs&vw->mask)!=0 ) {
 	    tot = 1;
 	    if ( sc->vs_open )
@@ -4012,24 +4021,24 @@ static void VW_Remetric(struct val_data *vw) {
 static void VWMenuConnect(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     struct val_data *vw = (struct val_data *) GDrawGetUserData(gw);
     SplineChar *sc = vw->sc;
-    int vs = sc->validation_state;
+    int vs = sc->layers[vw->layer].validation_state;
     int changed = false;
     SplineSet *ss;
 
-    for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
+    for ( ss=sc->layers[vw->layer].splines; ss!=NULL; ss=ss->next ) {
 	if ( ss->first->prev==NULL && ss->first->next!=NULL ) {
 	    if ( !changed ) {
-		SCPreserveState(sc,false);
+		SCPreserveLayer(sc,vw->layer,false);
 		changed = true;
 	    }
-	    SplineMake(ss->last,ss->first,sc->layers[ly_fore].order2);
+	    SplineMake(ss->last,ss->first,sc->layers[vw->layer].order2);
 	    ss->last = ss->first;
 	}
     }
     if ( changed ) {
-	SCCharChangedUpdate(sc);
-	SCValidate(vw->sc,true);
-	if ( vs != vw->sc->validation_state )
+	SCCharChangedUpdate(sc,vw->layer);
+	SCValidate(vw->sc,vw->layer,true);
+	if ( vs != vw->sc->layers[vw->layer].validation_state )
 	    VW_Remetric(vw);
     }
 }
@@ -4037,22 +4046,22 @@ static void VWMenuConnect(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void VWMenuInlineRefs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     struct val_data *vw = (struct val_data *) GDrawGetUserData(gw);
     SplineChar *sc = vw->sc;
-    int vs = sc->validation_state;
+    int vs = sc->layers[vw->layer].validation_state;
     int changed = false;
     RefChar *ref, *refnext;
 
-    for ( ref= sc->layers[ly_fore].refs; ref!=NULL; ref=refnext ) {
+    for ( ref= sc->layers[vw->layer].refs; ref!=NULL; ref=refnext ) {
 	refnext = ref->next;
 	if ( !changed )
-	    SCPreserveState(sc,false);
+	    SCPreserveLayer(sc,vw->layer,false);
 	changed = true;
-	SCRefToSplines(sc,ref,ly_fore);
+	SCRefToSplines(sc,ref,vw->layer);
     }
     if ( changed ) {
-	SCCharChangedUpdate(sc);
+	SCCharChangedUpdate(sc,vw->layer);
 
-	SCValidate(vw->sc,true);
-	if ( vs != vw->sc->validation_state )
+	SCValidate(vw->sc,vw->layer,true);
+	if ( vs != vw->sc->layers[vw->layer].validation_state )
 	    VW_Remetric(vw);
     }
 }
@@ -4060,15 +4069,15 @@ static void VWMenuInlineRefs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void VWMenuOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     struct val_data *vw = (struct val_data *) GDrawGetUserData(gw);
     SplineChar *sc = vw->sc;
-    int vs = sc->validation_state;
+    int vs = sc->layers[vw->layer].validation_state;
 
     if ( !SCRoundToCluster(sc,ly_all,false,.03,.12))
-	SCPreserveState(sc,false);
-    sc->layers[ly_fore].splines = SplineSetRemoveOverlap(sc,sc->layers[ly_fore].splines,over_remove);
-    SCCharChangedUpdate(sc);
+	SCPreserveLayer(sc,vw->layer,false);
+    sc->layers[vw->layer].splines = SplineSetRemoveOverlap(sc,sc->layers[vw->layer].splines,over_remove);
+    SCCharChangedUpdate(sc,vw->layer);
 
-    SCValidate(vw->sc,true);
-    if ( vs != vw->sc->validation_state )
+    SCValidate(vw->sc,vw->layer,true);
+    if ( vs != vw->sc->layers[vw->layer].validation_state )
 	VW_Remetric(vw);
 }
 
@@ -4084,25 +4093,25 @@ static void VWMenuMark(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void VWMenuInlineFlippedRefs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     struct val_data *vw = (struct val_data *) GDrawGetUserData(gw);
     SplineChar *sc = vw->sc;
-    int vs = sc->validation_state;
+    int vs = sc->layers[vw->layer].validation_state;
     int changed = false;
     RefChar *ref, *refnext;
 
-    for ( ref= sc->layers[ly_fore].refs; ref!=NULL; ref=refnext ) {
+    for ( ref= sc->layers[vw->layer].refs; ref!=NULL; ref=refnext ) {
 	refnext = ref->next;
 	if ( ref->transform[0]*ref->transform[3]<0 ||
 		(ref->transform[0]==0 && ref->transform[1]*ref->transform[2]>0)) {
 	    if ( !changed )
-		SCPreserveState(sc,false);
+		SCPreserveLayer(sc,vw->layer,false);
 	    changed = true;
-	    SCRefToSplines(sc,ref,ly_fore);
+	    SCRefToSplines(sc,ref,vw->layer);
 	}
     }
     if ( changed ) {
-	SCCharChangedUpdate(sc);
+	SCCharChangedUpdate(sc,vw->layer);
 
-	SCValidate(vw->sc,true);
-	if ( vs != vw->sc->validation_state )
+	SCValidate(vw->sc,vw->layer,true);
+	if ( vs != vw->sc->layers[vw->layer].validation_state )
 	    VW_Remetric(vw);
     }
 }
@@ -4110,15 +4119,15 @@ static void VWMenuInlineFlippedRefs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void VWMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     struct val_data *vw = (struct val_data *) GDrawGetUserData(gw);
     SplineChar *sc = vw->sc;
-    int vs = sc->validation_state;
+    int vs = sc->layers[vw->layer].validation_state;
     int changed = false;
 
-    SCPreserveState(sc,false);
-    sc->layers[ly_fore].splines = SplineSetsCorrect(sc->layers[ly_fore].splines,&changed);
-    SCCharChangedUpdate(sc);
+    SCPreserveLayer(sc,vw->layer,false);
+    sc->layers[vw->layer].splines = SplineSetsCorrect(sc->layers[vw->layer].splines,&changed);
+    SCCharChangedUpdate(sc,vw->layer);
 
-    SCValidate(vw->sc,true);
-    if ( vs != vw->sc->validation_state )
+    SCValidate(vw->sc,vw->layer,true);
+    if ( vs != vw->sc->layers[vw->layer].validation_state )
 	VW_Remetric(vw);
 }
 
@@ -4127,14 +4136,14 @@ static void VWMenuGoodExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SplineFont *sf = vw->sf;
     int emsize = sf->ascent+sf->descent;
     SplineChar *sc = vw->sc;
-    int vs = sc->validation_state;
+    int vs = sc->layers[vw->layer].validation_state;
 
-    SCPreserveState(sc,false);
-    SplineCharAddExtrema(sc,sc->layers[ly_fore].splines,ae_only_good,emsize);
-    SCCharChangedUpdate(sc);
+    SCPreserveLayer(sc,vw->layer,false);
+    SplineCharAddExtrema(sc,sc->layers[vw->layer].splines,ae_only_good,emsize);
+    SCCharChangedUpdate(sc,vw->layer);
 
-    SCValidate(vw->sc,true);
-    if ( vs != vw->sc->validation_state )
+    SCValidate(vw->sc,vw->layer,true);
+    if ( vs != vw->sc->layers[vw->layer].validation_state )
 	VW_Remetric(vw);
 }
 
@@ -4143,37 +4152,37 @@ static void VWMenuAllExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     SplineFont *sf = vw->sf;
     int emsize = sf->ascent+sf->descent;
     SplineChar *sc = vw->sc;
-    int vs = sc->validation_state;
+    int vs = sc->layers[vw->layer].validation_state;
 
-    SCPreserveState(sc,false);
-    SplineCharAddExtrema(sc,sc->layers[ly_fore].splines,ae_all,emsize);
-    SCCharChangedUpdate(sc);
+    SCPreserveLayer(sc,vw->layer,false);
+    SplineCharAddExtrema(sc,sc->layers[vw->layer].splines,ae_all,emsize);
+    SCCharChangedUpdate(sc,vw->layer);
 
-    SCValidate(vw->sc,true);
-    if ( vs != vw->sc->validation_state )
+    SCValidate(vw->sc,vw->layer,true);
+    if ( vs != vw->sc->layers[vw->layer].validation_state )
 	VW_Remetric(vw);
 }
 
 static void VWMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     struct val_data *vw = (struct val_data *) GDrawGetUserData(gw);
     SplineChar *sc = vw->sc;
-    int vs = sc->validation_state;
+    int vs = sc->layers[vw->layer].validation_state;
     static struct simplifyinfo smpl = { sf_normal,.75,.05,0,-1 };
 
-    SCPreserveState(sc,false);
-    sc->layers[ly_fore].splines = SplineCharSimplify(sc,sc->layers[ly_fore].splines,&smpl);
-    SCCharChangedUpdate(sc);
+    SCPreserveLayer(sc,vw->layer,false);
+    sc->layers[vw->layer].splines = SplineCharSimplify(sc,sc->layers[vw->layer].splines,&smpl);
+    SCCharChangedUpdate(sc,vw->layer);
 
-    SCValidate(vw->sc,true);
-    if ( vs != vw->sc->validation_state )
+    SCValidate(vw->sc,vw->layer,true);
+    if ( vs != vw->sc->layers[vw->layer].validation_state )
 	VW_Remetric(vw);
 }
 
 static void VWMenuRevalidate(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     struct val_data *vw = (struct val_data *) GDrawGetUserData(gw);
-    int vs = vw->sc->validation_state;
-    SCValidate(vw->sc,true);
-    if ( vs != vw->sc->validation_state )
+    int vs = vw->sc->layers[vw->layer].validation_state;
+    SCValidate(vw->sc,vw->layer,true);
+    if ( vs != vw->sc->layers[vw->layer].validation_state )
 	VW_Remetric(vw);
 }
 
@@ -4211,7 +4220,7 @@ static void VWReuseCV(struct val_data *vw, SplineChar *sc) {
     vw->lastgid = sc->orig_pos;
     vw->lastcv = cv;
 
-    if ( sc->validation_state & vs_maskfindproblems & vw->mask )
+    if ( sc->layers[vw->layer].validation_state & vs_maskfindproblems & vw->mask )
 	DummyFindProblems(cv);
 }
 
@@ -4233,7 +4242,7 @@ return;
     if ( gid==-1 || (sc=vw->sf->glyphs[gid])==NULL ) {
 	ff_post_error(_("Glyph not in font"), _("Glyph not in font"));
 return;
-    } else if ( (SCValidate(sc,false)&vw->mask)==0 ) {
+    } else if ( (SCValidate(sc,vw->layer,true)&vw->mask)==0 ) {
 	ff_post_notice(_("Glyph Valid"), _("No problems detected in %s"),
 		sc->name );
 return;
@@ -4277,7 +4286,7 @@ static void VWMenuSelect(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	fv->b.selected[i] = false;
 	gid = map->map[i];
 	if ( gid!=-1 && (sc=vw->sf->glyphs[gid])!=NULL &&
-		(SCValidate(sc,false) & mask) )
+		(SCValidate(sc,vw->layer,true) & mask) )
 	    fv->b.selected[i] = true;
     }
     GDrawSetVisible(fv->gw,true);
@@ -4303,25 +4312,25 @@ static void VWMenuManyConnect(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     k=0;
     do {
 	sf = k<vw->sf->subfontcnt ? vw->sf->subfonts[k] : vw->sf;
-	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL && (sc->validation_state&vs_opencontour) ) {
-	    int vs = sc->validation_state;
+	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL && (sc->layers[vw->layer].validation_state&vs_opencontour) ) {
+	    int vs = sc->layers[vw->layer].validation_state;
 	    int changed = false;
 	    SplineSet *ss;
 
-	    for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
+	    for ( ss=sc->layers[vw->layer].splines; ss!=NULL; ss=ss->next ) {
 		if ( ss->first->prev==NULL && ss->first->next!=NULL ) {
 		    if ( !changed ) {
-			SCPreserveState(sc,false);
+			SCPreserveLayer(sc,vw->layer,false);
 			changed = true;
 		    }
-		    SplineMake(ss->last,ss->first,sc->layers[ly_fore].order2);
+		    SplineMake(ss->last,ss->first,sc->layers[vw->layer].order2);
 		    ss->last = ss->first;
 		}
 	    }
 	    if ( changed ) {
-		SCCharChangedUpdate(sc);
-		SCValidate(vw->sc,true);
-		if ( vs != vw->sc->validation_state )
+		SCCharChangedUpdate(sc,vw->layer);
+		SCValidate(vw->sc,vw->layer,true);
+		if ( vs != vw->sc->layers[vw->layer].validation_state )
 		    VW_Remetric(vw);
 	    }
 	}
@@ -4338,18 +4347,18 @@ static void VWMenuManyOverlap(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     k=0;
     do {
 	sf = k<vw->sf->subfontcnt ? vw->sf->subfonts[k] : vw->sf;
-	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL && (sc->validation_state&vs_selfintersects) ) {
-	    int vs = sc->validation_state;
+	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL && (sc->layers[vw->layer].validation_state&vs_selfintersects) ) {
+	    int vs = sc->layers[vw->layer].validation_state;
 
 	    /* If it's only got references, I could inline them, since the */
 	    /*  intersection would occur between two refs. But that seems */
 	    /*  to extreme to do to an unsuspecting user */
 	    if ( !SCRoundToCluster(sc,ly_all,false,.03,.12))
-		SCPreserveState(sc,false);
-	    sc->layers[ly_fore].splines = SplineSetRemoveOverlap(sc,sc->layers[ly_fore].splines,over_remove);
-	    SCCharChangedUpdate(sc);
-	    SCValidate(vw->sc,true);
-	    if ( vs != vw->sc->validation_state )
+		SCPreserveLayer(sc,vw->layer,false);
+	    sc->layers[vw->layer].splines = SplineSetRemoveOverlap(sc,sc->layers[vw->layer].splines,over_remove);
+	    SCCharChangedUpdate(sc,vw->layer);
+	    SCValidate(vw->sc,vw->layer,true);
+	    if ( vs != vw->sc->layers[vw->layer].validation_state )
 		VW_Remetric(vw);
 	}
 	++k;
@@ -4366,10 +4375,10 @@ static void VWMenuManyMark(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     do {
 	sf = k<vw->sf->subfontcnt ? vw->sf->subfonts[k] : vw->sf;
 	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL &&
-		(sc->validation_state&vs_selfintersects) &&
-		sc->layers[ly_fore].refs!=NULL &&
-		sc->layers[ly_fore].refs->next!=NULL &&
-		sc->layers[ly_fore].splines==NULL ) {
+		(sc->layers[vw->layer].validation_state&vs_selfintersects) &&
+		sc->layers[vw->layer].refs!=NULL &&
+		sc->layers[vw->layer].refs->next!=NULL &&
+		sc->layers[vw->layer].splines==NULL ) {
 	    sc->unlink_rm_ovrlp_save_undo = true;
 	    VW_Remetric(vw);
 	}
@@ -4388,24 +4397,24 @@ static void VWMenuManyCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     k=0;
     do {
 	sf = k<vw->sf->subfontcnt ? vw->sf->subfonts[k] : vw->sf;
-	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL && (sc->validation_state&vs_wrongdirection) ) {
-	    int vs = sc->validation_state;
+	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL && (sc->layers[vw->layer].validation_state&vs_wrongdirection) ) {
+	    int vs = sc->layers[vw->layer].validation_state;
 
-	    SCPreserveState(sc,false);
+	    SCPreserveLayer(sc,vw->layer,false);
 	    /* But a flipped reference is just wrong so I have no compunctions*/
 	    /*  about inlining it and then correcting its direction */
 	    
-	    for ( ref= sc->layers[ly_fore].refs; ref!=NULL; ref=refnext ) {
+	    for ( ref= sc->layers[vw->layer].refs; ref!=NULL; ref=refnext ) {
 		refnext = ref->next;
 		if ( ref->transform[0]*ref->transform[3]<0 ||
 			(ref->transform[0]==0 && ref->transform[1]*ref->transform[2]>0)) {
-		    SCRefToSplines(sc,ref,ly_fore);
+		    SCRefToSplines(sc,ref,vw->layer);
 		}
 	    }
-	    sc->layers[ly_fore].splines = SplineSetsCorrect(sc->layers[ly_fore].splines,&changed);
-	    SCCharChangedUpdate(sc);
-	    SCValidate(vw->sc,true);
-	    if ( vs != vw->sc->validation_state )
+	    sc->layers[vw->layer].splines = SplineSetsCorrect(sc->layers[vw->layer].splines,&changed);
+	    SCCharChangedUpdate(sc,vw->layer);
+	    SCValidate(vw->sc,vw->layer,true);
+	    if ( vs != vw->sc->layers[vw->layer].validation_state )
 		VW_Remetric(vw);
 	}
 	++k;
@@ -4422,14 +4431,14 @@ static void VWMenuManyGoodExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     k=0;
     do {
 	sf = k<vw->sf->subfontcnt ? vw->sf->subfonts[k] : vw->sf;
-	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL && (sc->validation_state&vs_missingextrema) ) {
-	    int vs = sc->validation_state;
+	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL && (sc->layers[vw->layer].validation_state&vs_missingextrema) ) {
+	    int vs = sc->layers[vw->layer].validation_state;
 
-	    SCPreserveState(sc,false);
-	    SplineCharAddExtrema(sc,sc->layers[ly_fore].splines,ae_only_good,emsize);
-	    SCCharChangedUpdate(sc);
-	    SCValidate(vw->sc,true);
-	    if ( vs != vw->sc->validation_state )
+	    SCPreserveLayer(sc,vw->layer,false);
+	    SplineCharAddExtrema(sc,sc->layers[vw->layer].splines,ae_only_good,emsize);
+	    SCCharChangedUpdate(sc,vw->layer);
+	    SCValidate(vw->sc,vw->layer,true);
+	    if ( vs != vw->sc->layers[vw->layer].validation_state )
 		VW_Remetric(vw);
 	}
 	++k;
@@ -4446,14 +4455,14 @@ static void VWMenuManyAllExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     k=0;
     do {
 	sf = k<vw->sf->subfontcnt ? vw->sf->subfonts[k] : vw->sf;
-	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL && (sc->validation_state&vs_missingextrema) ) {
-	    int vs = sc->validation_state;
+	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL && (sc->layers[vw->layer].validation_state&vs_missingextrema) ) {
+	    int vs = sc->layers[vw->layer].validation_state;
 
-	    SCPreserveState(sc,false);
-	    SplineCharAddExtrema(sc,sc->layers[ly_fore].splines,ae_all,emsize);
-	    SCCharChangedUpdate(sc);
-	    SCValidate(vw->sc,true);
-	    if ( vs != vw->sc->validation_state )
+	    SCPreserveLayer(sc,vw->layer,false);
+	    SplineCharAddExtrema(sc,sc->layers[vw->layer].splines,ae_all,emsize);
+	    SCCharChangedUpdate(sc,vw->layer);
+	    SCValidate(vw->sc,vw->layer,true);
+	    if ( vs != vw->sc->layers[vw->layer].validation_state )
 		VW_Remetric(vw);
 	}
 	++k;
@@ -4470,14 +4479,14 @@ static void VWMenuManySimplify(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     k=0;
     do {
 	sf = k<vw->sf->subfontcnt ? vw->sf->subfonts[k] : vw->sf;
-	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL && (sc->validation_state&vs_toomanypoints) ) {
-	    int vs = sc->validation_state;
+	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL && (sc->layers[vw->layer].validation_state&vs_toomanypoints) ) {
+	    int vs = sc->layers[vw->layer].validation_state;
 
-	    SCPreserveState(sc,false);
-	    sc->layers[ly_fore].splines = SplineCharSimplify(sc,sc->layers[ly_fore].splines,&smpl);
-	    SCCharChangedUpdate(sc);
-	    SCValidate(vw->sc,true);
-	    if ( vs != vw->sc->validation_state )
+	    SCPreserveLayer(sc,vw->layer,false);
+	    sc->layers[vw->layer].splines = SplineCharSimplify(sc,sc->layers[vw->layer].splines,&smpl);
+	    SCCharChangedUpdate(sc,vw->layer);
+	    SCValidate(vw->sc,vw->layer,true);
+	    if ( vs != vw->sc->layers[vw->layer].validation_state )
 		VW_Remetric(vw);
 	}
 	++k;
@@ -4550,16 +4559,16 @@ return;
 		if ( vw_subselect[i].ti.text!=NULL )
 		    vw_subselect[i].ti.text = (unichar_t *) S_( (char *)vw_subselect[i].ti.text);
 	}
-	vw_popuplist[0].ti.disabled = (sc->validation_state&vs_opencontour)?0:1;
-	vw_popuplist[1].ti.disabled = (SCValidate(sc,false)&vs_selfintersects)?0:1;
-	vw_popuplist[2].ti.disabled = (SCValidate(sc,false)&vs_selfintersects)?0:1;
-	vw_popuplist[3].ti.disabled = (SCValidate(sc,false)&vs_selfintersects) &&
-		    sc->layers[ly_fore].refs!=NULL?0:1;
-	vw_popuplist[4].ti.disabled = (sc->validation_state&vs_flippedreferences)?0:1;
-	vw_popuplist[5].ti.disabled = (sc->validation_state&vs_wrongdirection)?0:1;
-	vw_popuplist[6].ti.disabled = (sc->validation_state&vs_missingextrema)?0:1;
-	vw_popuplist[7].ti.disabled = (sc->validation_state&vs_missingextrema)?0:1;
-	vw_popuplist[8].ti.disabled = (sc->validation_state&vs_toomanypoints)?0:1;
+	vw_popuplist[0].ti.disabled = (sc->layers[vw->layer].validation_state&vs_opencontour)?0:1;
+	vw_popuplist[1].ti.disabled = (SCValidate(sc,vw->layer,true)&vs_selfintersects)?0:1;
+	vw_popuplist[2].ti.disabled = (SCValidate(sc,vw->layer,true)&vs_selfintersects)?0:1;
+	vw_popuplist[3].ti.disabled = (SCValidate(sc,vw->layer,true)&vs_selfintersects) &&
+		    sc->layers[vw->layer].refs!=NULL?0:1;
+	vw_popuplist[4].ti.disabled = (sc->layers[vw->layer].validation_state&vs_flippedreferences)?0:1;
+	vw_popuplist[5].ti.disabled = (sc->layers[vw->layer].validation_state&vs_wrongdirection)?0:1;
+	vw_popuplist[6].ti.disabled = (sc->layers[vw->layer].validation_state&vs_missingextrema)?0:1;
+	vw_popuplist[7].ti.disabled = (sc->layers[vw->layer].validation_state&vs_missingextrema)?0:1;
+	vw_popuplist[8].ti.disabled = (sc->layers[vw->layer].validation_state&vs_toomanypoints)?0:1;
 	vw->sc = sc;
 	GMenuCreatePopupMenu(vw->v,e, vw_popuplist);
     }
@@ -4601,12 +4610,7 @@ return;
 	    }
 	    /* Ignore it if it has not been validated */
 	    /* Ignore it if it is good */
-	    vs = 0;
-	    if ( sc!=NULL ) {
-		vs = sc->validation_state;
-		if ( sc->unlink_rm_ovrlp_save_undo )
-		    vs &= ~vs_selfintersects;
-	    }
+	    vs = VSModMask(sc,vw);
 	    if ((vs&vs_known) && (vs&vw->mask)!=0 ) {
 		r.x = 2;   r.y = y-vw->as+1;
 		GDrawDrawRect(pixmap,&r,0x000000);
@@ -4675,18 +4679,18 @@ static int VWCheckup(struct val_data *vw) {
 	    break;
 	    }
 	}
-	if ( sc!=NULL && !(sc->validation_state&vs_known)) {
+	if ( sc!=NULL && !(sc->layers[vw->layer].validation_state&vs_known)) {
 	    if ( firstv ) {
 		GDrawSetCursor(vw->v,ct_watch);
 		GDrawSync(NULL);
 		firstv = false;
 	    }
-	    SCValidate(sc,true);
+	    SCValidate(sc,vw->layer,true);
 	    ++cnt;
 	}
-	if ( sc->validation_state!=sc->old_vs ) {
+	if ( sc->layers[vw->layer].validation_state!=sc->layers[vw->layer].old_vs ) {
 	    a_change = true;
-	    sc->old_vs = sc->validation_state;
+	    sc->layers[vw->layer].old_vs = sc->layers[vw->layer].validation_state;
 	}
     }
     if ( gid<max )
@@ -4763,23 +4767,7 @@ return( false );
 return( true );
 }
 
-int VSMaskFromFormat(SplineFont *sf, enum fontformat format) {
-    if ( format==ff_cid || format==ff_cffcid || format==ff_otfcid || format==ff_otfciddfont )
-return( vs_maskcid );
-    else if ( format<=ff_cff )
-return( vs_maskps );
-    else if ( format<=ff_ttfdfont )
-return( vs_maskttf );
-    else if ( format<=ff_otfdfont )
-return( vs_maskps );
-    else if ( format==ff_svg )
-return( vs_maskttf );
-    else
-return( sf->subfontcnt!=0 || sf->cidmaster!=NULL ? vs_maskcid :
-	sf->layers[ly_fore].order2 ? vs_maskttf : vs_maskps );
-}
-
-void SFValidationWindow(SplineFont *sf,enum fontformat format) {
+void SFValidationWindow(SplineFont *sf,int layer,enum fontformat format) {
     GWindowAttrs wattrs;
     GRect pos;
     GWindow gw;
@@ -4797,7 +4785,7 @@ void SFValidationWindow(SplineFont *sf,enum fontformat format) {
 
     if ( sf->cidmaster )
 	sf = sf->cidmaster;
-    mask = VSMaskFromFormat(sf,format);
+    mask = VSMaskFromFormat(sf,layer,format);
     needs_blue = (mask==vs_maskps || mask==vs_maskcid);
 
     if ( sf->valwin!=NULL ) {
@@ -4808,6 +4796,7 @@ void SFValidationWindow(SplineFont *sf,enum fontformat format) {
 	    /*  change, so what we display might be different */
 	    sf->valwin->mask = mask;
 	    sf->valwin->needs_blue = needs_blue;
+	    sf->valwin->layer = layer;
 	    VW_Remetric(sf->valwin);
 	}
 	GDrawSetVisible(sf->valwin->gw,true);
@@ -4835,7 +4824,7 @@ return;
 	    }
 	}
 	if ( sc!=NULL ) {
-	    sc->old_vs = 0;
+	    sc->layers[layer].old_vs = 0;
 	    sc->vs_open = true;		/* should this default to false? */
 	}
     }
@@ -4846,6 +4835,7 @@ return;
     valwin->needs_blue = needs_blue;
     valwin->cidmax = cidmax;
     valwin->lastgid = -1;
+    valwin->layer = layer;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg;

@@ -1283,18 +1283,18 @@ return;
     cv->lastselpt = NULL;
 }
 
-void SCTile(SplineChar *sc) {
+void SCTile(SplineChar *sc,int layer) {
     struct tiledata td;
 
-    if ( sc->layers[ly_fore].splines==NULL )
+    if ( sc->layers[layer].splines==NULL )
 return;
 
     if ( !TileAsk(&td,sc->parent))
 return;
 
-    SCPreserveState(sc,false);
-    TileIt(&sc->layers[ly_fore].splines,&td, true, sc->layers[ly_fore].order2);
-    SCCharChangedUpdate(sc);
+    SCPreserveLayer(sc,layer,false);
+    TileIt(&sc->layers[layer].splines,&td, true, sc->layers[layer].order2);
+    SCCharChangedUpdate(sc,layer);
     TDFree(&td);
 }
 
@@ -1302,6 +1302,7 @@ void FVTile(FontView *fv) {
     struct tiledata td;
     SplineChar *sc;
     int i, gid;
+    int layer = fv->b.active_layer;
 
     for ( i=0; i<fv->b.map->enccount; ++i )
 	if ( fv->b.selected[i] && (gid=fv->b.map->map[i])!=-1 &&
@@ -1317,11 +1318,11 @@ return;
     for ( i=0; i<fv->b.map->enccount; ++i )
 	if ( fv->b.selected[i] && (gid=fv->b.map->map[i])!=-1 &&
 		(sc=fv->b.sf->glyphs[gid])!=NULL && !sc->ticked &&
-		sc->layers[ly_fore].splines!=NULL ) {
+		sc->layers[layer].splines!=NULL ) {
 	    sc->ticked = true;
-	    SCPreserveState(sc,false);
-	    TileIt(&sc->layers[ly_fore].splines,&td, true, fv->b.sf->layers[ly_fore].order2);
-	    SCCharChangedUpdate(sc);
+	    SCPreserveLayer(sc,layer,false);
+	    TileIt(&sc->layers[layer].splines,&td, true, fv->b.sf->layers[layer].order2);
+	    SCCharChangedUpdate(sc,layer);
 	}
     TDFree(&td);
 }

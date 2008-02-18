@@ -533,6 +533,7 @@ static int pdf_zfilter(FILE *to,FILE *from) {
 
 	/* Initialize */
     rewind(from);
+    memset(&strm,0,sizeof(strm));
     strm.zalloc = Z_NULL;
     strm.zfree = Z_NULL;
     strm.opaque = Z_NULL;

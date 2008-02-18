@@ -205,11 +205,11 @@ struct sc_interface {
     void (*hints_changed)(struct splinechar *);
 
    /* Mark the glyph as changed, and force an update */
-    void (*glyph_changed_update)(struct splinechar *);
+    void (*glyph_changed_update)(struct splinechar *,int layer);
 
    /* As above, except this time the change might take the glyph back to */
    /*  an "unchanged" state (ie. an Undo) */
-    void (*glyph__changed_update)(struct splinechar *,int);
+    void (*glyph__changed_update)(struct splinechar *,int layer,int);
 
    /* The glyph's instructions have changed, so any dlgs looking at */
    /*  our instructions need to be updated */

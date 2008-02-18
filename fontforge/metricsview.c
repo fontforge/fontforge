@@ -821,7 +821,7 @@ return;
 	mv->show = NULL;
     } else if ( bdf==NULL ) {
 	BDFFontFree(mv->show);
-	mv->show = SplineFontPieceMeal(mv->sf,mv->pixelsize,mv->antialias?pf_antialias:0,NULL);
+	mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->pixelsize,mv->antialias?pf_antialias:0,NULL);
     }
     mv->bdf = bdf;
     MVRemetric(mv);
@@ -845,11 +845,11 @@ return( true );
 	else if ( !mv->vertical && val!=sc->width ) {
 	    SCPreserveWidth(sc);
 	    SCSynchronizeWidth(sc,val,sc->width,NULL);
-	    SCCharChangedUpdate(sc);
+	    SCCharChangedUpdate(sc,ly_none);
 	} else if ( mv->vertical && val!=sc->vwidth ) {
 	    SCPreserveVWidth(sc);
 	    sc->vwidth = val;
-	    SCCharChangedUpdate(sc);
+	    SCCharChangedUpdate(sc,ly_none);
 	}
     } else if ( e->u.control.subtype == et_textfocuschanged &&
 	    e->u.control.u.tf_focus.gained_focus ) {
@@ -930,7 +930,7 @@ return( true );
 		transform[4] = sc->width-val-bb.maxx;
 		FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,false);
 	    }
-	    SCCharChangedUpdate(sc);
+	    SCCharChangedUpdate(sc,ly_none);
 	} else if ( mv->vertical && val!=sc->vwidth-(sc->parent->ascent-bb.miny) ) {
 	    double vw = val+(sc->parent->ascent-bb.miny);
 	    SCPreserveWidth(sc);
@@ -944,7 +944,7 @@ return( true );
 		transform[5] = vw-sc->vwidth;
 		FVTrans( (FontViewBase *)mv->fv,sc,transform,NULL,false);
 	    }
-	    SCCharChangedUpdate(sc);
+	    SCCharChangedUpdate(sc,ly_none);
 	}
     } else if ( e->u.control.subtype == et_textfocuschanged &&
 	    e->u.control.u.tf_focus.gained_focus ) {
@@ -1101,7 +1101,7 @@ static void MVToggleVertical(MetricsView *mv) {
 	mv->pixelsize = size;
 	if ( mv->bdf==NULL ) {
 	    BDFFontFree(mv->show);
-	    mv->show = SplineFontPieceMeal(mv->sf,mv->pixelsize,mv->antialias?pf_antialias:0,NULL);
+	    mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->pixelsize,mv->antialias?pf_antialias:0,NULL);
 	}
 	MVRemetric(mv);
     }
@@ -1790,8 +1790,8 @@ static void MVUndo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	break;
 	if ( i==-1 )
 return;
-	if ( mv->glyphs[i].sc->layers[ly_fore].undoes!=NULL )
-	    SCDoUndo(mv->glyphs[i].sc,ly_fore);
+	if ( mv->glyphs[i].sc->layers[mv->layer].undoes!=NULL )
+	    SCDoUndo(mv->glyphs[i].sc,mv->layer);
     }
 }
 
@@ -1807,8 +1807,8 @@ static void MVRedo(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	break;
 	if ( i==-1 )
 return;
-	if ( mv->glyphs[i].sc->layers[ly_fore].redoes!=NULL )
-	    SCDoRedo(mv->glyphs[i].sc,ly_fore);
+	if ( mv->glyphs[i].sc->layers[mv->layer].redoes!=NULL )
+	    SCDoRedo(mv->glyphs[i].sc,mv->layer);
     }
 }
 
@@ -1843,11 +1843,11 @@ return;
 	}
 
 	if ( onlycopydisplayed && mv->bdf==NULL ) {
-	    SCClearAll(sc);
+	    SCClearAll(sc,mv->layer);
 	} else if ( onlycopydisplayed ) {
 	    BCClearAll(mv->bdf->glyphs[sc->orig_pos]);
 	} else {
-	    SCClearAll(sc);
+	    SCClearAll(sc,mv->layer);
 	    for ( bdf=mv->sf->bitmaps; bdf!=NULL; bdf = bdf->next )
 		BCClearAll(bdf->glyphs[sc->orig_pos]);
 	}
@@ -1931,11 +1931,11 @@ return;
     break;
     if ( i==-1 )
 return;
-    SCPreserveState(mv->glyphs[i].sc,false);
-    mv->glyphs[i].sc->layers[ly_fore].splines =
-	    SplineSetJoin(mv->glyphs[i].sc->layers[ly_fore].splines,true,joinsnap,&changed);
+    SCPreserveLayer(mv->glyphs[i].sc,mv->layer,false);
+    mv->glyphs[i].sc->layers[mv->layer].splines =
+	    SplineSetJoin(mv->glyphs[i].sc->layers[mv->layer].splines,true,joinsnap,&changed);
     if ( changed )
-	SCCharChangedUpdate(mv->glyphs[i].sc);
+	SCCharChangedUpdate(mv->glyphs[i].sc,mv->layer);
 }
 
 static void MVPaste(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -1966,12 +1966,12 @@ static void MVUnlinkRef(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     if ( i==-1 )
 return;
     sc = mv->glyphs[i].sc;
-    SCPreserveState(sc,false);
-    for ( rf=sc->layers[ly_fore].refs; rf!=NULL ; rf=next ) {
+    SCPreserveLayer(sc,mv->layer,false);
+    for ( rf=sc->layers[mv->layer].refs; rf!=NULL ; rf=next ) {
 	next = rf->next;
-	SCRefToSplines(sc,rf,ly_fore);
+	SCRefToSplines(sc,rf,mv->layer);
     }
-    SCCharChangedUpdate(sc);
+    SCCharChangedUpdate(sc,mv->layer);
 }
 
 static void MVSelectAll(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -2091,7 +2091,7 @@ static void MVMenuTilePath(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	if ( mv->perchar[i].selected )
     break;
     if ( i!=-1 )
-	SCTile(mv->glyphs[i].sc);
+	SCTile(mv->glyphs[i].sc,mv->layer);
 }
 #endif
 
@@ -2103,12 +2103,12 @@ static void _MVMenuOverlap(MetricsView *mv,enum overlap_type ot) {
     break;
     if ( i!=-1 ) {
 	SplineChar *sc = mv->glyphs[i].sc;
-	if ( !SCRoundToCluster(sc,ly_all,false,.03,.12))
-	    SCPreserveState(sc,false);
+	if ( !SCRoundToCluster(sc,mv->layer,false,.03,.12))
+	    SCPreserveLayer(sc,mv->layer,false);
 	MinimumDistancesFree(sc->md);
 	sc->md = NULL;
-	sc->layers[ly_fore].splines = SplineSetRemoveOverlap(sc,sc->layers[ly_fore].splines,ot);
-	SCCharChangedUpdate(sc);
+	sc->layers[mv->layer].splines = SplineSetRemoveOverlap(sc,sc->layers[mv->layer].splines,ot);
+	SCCharChangedUpdate(sc,mv->layer);
     }
 }
 
@@ -2168,9 +2168,9 @@ return;
     break;
     if ( i!=-1 ) {
 	SplineChar *sc = mv->glyphs[i].sc;
-	SCPreserveState(sc,false);
-	sc->layers[ly_fore].splines = SplineCharSimplify(sc,sc->layers[ly_fore].splines,smpl);
-	SCCharChangedUpdate(sc);
+	SCPreserveLayer(sc,mv->layer,false);
+	sc->layers[mv->layer].splines = SplineCharSimplify(sc,sc->layers[mv->layer].splines,smpl);
+	SCCharChangedUpdate(sc,mv->layer);
     }
 }
 
@@ -2200,9 +2200,9 @@ static void MVMenuAddExtrema(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     break;
     if ( i!=-1 ) {
 	SplineChar *sc = mv->glyphs[i].sc;
-	SCPreserveState(sc,false);
-	SplineCharAddExtrema(sc,sc->layers[ly_fore].splines,ae_only_good,emsize);
-	SCCharChangedUpdate(sc);
+	SCPreserveLayer(sc,mv->layer,false);
+	SplineCharAddExtrema(sc,sc->layers[mv->layer].splines,ae_only_good,emsize);
+	SCCharChangedUpdate(sc,mv->layer);
     }
 }
 
@@ -2214,8 +2214,8 @@ static void MVMenuRound2Int(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	if ( mv->perchar[i].selected )
     break;
     if ( i!=-1 ) {
-	SCPreserveState(mv->glyphs[i].sc,false);
-	SCRound2Int( mv->glyphs[i].sc,1.0);
+	SCPreserveLayer(mv->glyphs[i].sc,mv->layer,false);
+	SCRound2Int( mv->glyphs[i].sc,mv->layer,1.0);
     }
 }
 
@@ -2231,7 +2231,7 @@ static void MVMenuAutotrace(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	ct = GDrawGetCursor(mv->gw);
 	GDrawSetCursor(mv->gw,ct_watch);
 	ff_progress_allow_events();
-	SCAutoTrace(mv->glyphs[i].sc,e!=NULL && (e->u.mouse.state&ksm_shift));
+	SCAutoTrace(mv->glyphs[i].sc,mv->layer,e!=NULL && (e->u.mouse.state&ksm_shift));
 	GDrawSetCursor(mv->gw,ct);
     }
 }
@@ -2249,7 +2249,7 @@ static void MVMenuCorrectDir(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	RefChar *ref;
 	int asked=-1;
 
-	for ( ref=sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
+	for ( ref=sc->layers[mv->layer].refs; ref!=NULL; ref=ref->next ) {
 	    if ( ref->transform[0]*ref->transform[3]<0 ||
 		    (ref->transform[0]==0 && ref->transform[1]*ref->transform[2]>0)) {
 		if ( asked==-1 ) {
@@ -2267,18 +2267,18 @@ return;
 		if ( asked==0 ) {
 		    if ( !refchanged ) {
 			refchanged = true;
-			SCPreserveState(sc,false);
+			SCPreserveLayer(sc,mv->layer,false);
 		    }
-		    SCRefToSplines(sc,ref,ly_fore);
+		    SCRefToSplines(sc,ref,mv->layer);
 		}
 	    }
 	}
 
 	if ( !refchanged )
-	    SCPreserveState(sc,false);
-	sc->layers[ly_fore].splines = SplineSetsCorrect(sc->layers[ly_fore].splines,&changed);
+	    SCPreserveLayer(sc,mv->layer,false);
+	sc->layers[mv->layer].splines = SplineSetsCorrect(sc->layers[mv->layer].splines,&changed);
 	if ( changed || refchanged )
-	    SCCharChangedUpdate(sc);
+	    SCCharChangedUpdate(sc,mv->layer);
     }
 }
 
@@ -2291,8 +2291,8 @@ static void _MVMenuBuildAccent(MetricsView *mv,int onlyaccents) {
     break;
     if ( i!=-1 ) {
 	SplineChar *sc = mv->glyphs[i].sc;
-	if ( SFIsSomethingBuildable(mv->sf,sc,onlyaccents) )
-	    SCBuildComposit(mv->sf,sc,!onlycopydisplayed);
+	if ( SFIsSomethingBuildable(mv->sf,sc,mv->layer,onlyaccents) )
+	    SCBuildComposit(mv->sf,sc,mv->layer,!onlycopydisplayed);
     }
 }
 
@@ -2350,7 +2350,7 @@ static void MVMenuScale(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     mv->pixelsize = mv_scales[mv->scale_index]*(mv->displayend - mv->topend - 4);
     if ( mv->bdf==NULL ) {
 	BDFFontFree(mv->show);
-	mv->show = SplineFontPieceMeal(mv->sf,mv->pixelsize,mv->antialias?pf_antialias:0,NULL);
+	mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->pixelsize,mv->antialias?pf_antialias:0,NULL);
     }
     MVReKern(mv);
     MVSetVSb(mv);
@@ -2470,7 +2470,7 @@ static void MVMenuAA(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     mv_antialias = mv->antialias = !mv->antialias;
     BDFFontFree(mv->show);
-    mv->show = SplineFontPieceMeal(mv->sf,mv->pixelsize,mv->antialias?pf_antialias:0,NULL);
+    mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->pixelsize,mv->antialias?pf_antialias:0,NULL);
     GDrawRequestExpose(mv->gw,NULL,false);
 }
 
@@ -2522,13 +2522,13 @@ static void MVMenuCenter(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void MVMenuKernByClasses(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
 
-    ShowKernClasses(mv->sf,mv,false);
+    ShowKernClasses(mv->sf,mv,mv->layer,false);
 }
 
 static void MVMenuVKernByClasses(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
 
-    ShowKernClasses(mv->sf,mv,true);
+    ShowKernClasses(mv->sf,mv,mv->layer,true);
 }
 
 static void MVMenuVKernFromHKern(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -2548,7 +2548,7 @@ static void MVMenuKPCloseup(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 		sc2 = mv->glyphs[i+1].sc;
     break;
 	}
-    KernPairD(mv->sf,sc1,sc2,mv->vertical);
+    KernPairD(mv->sf,sc1,sc2,mv->layer,mv->vertical);
 }
 
 static GMenuItem2 wnmenu[] = {
@@ -2673,10 +2673,10 @@ static void balistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_BuildAccent:
-	    mi->ti.disabled = sc==NULL || !SFIsSomethingBuildable(sc->parent,sc,true);
+	    mi->ti.disabled = sc==NULL || !SFIsSomethingBuildable(sc->parent,sc,mv->layer,true);
 	  break;
 	  case MID_BuildComposite:
-	    mi->ti.disabled = sc==NULL || !SFIsSomethingBuildable(sc->parent,sc,false);
+	    mi->ti.disabled = sc==NULL || !SFIsSomethingBuildable(sc->parent,sc,mv->layer,false);
 	  break;
         }
     }
@@ -2846,13 +2846,13 @@ static void edlistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	    mi->ti.disabled = i==-1 || !mv->sf->hasvmetrics;
 	  break;
 	  case MID_Undo:
-	    mi->ti.disabled = i==-1 || mv->glyphs[i].sc->layers[ly_fore].undoes==NULL;
+	    mi->ti.disabled = i==-1 || mv->glyphs[i].sc->layers[mv->layer].undoes==NULL;
 	  break;
 	  case MID_Redo:
-	    mi->ti.disabled = i==-1 || mv->glyphs[i].sc->layers[ly_fore].redoes==NULL;
+	    mi->ti.disabled = i==-1 || mv->glyphs[i].sc->layers[mv->layer].redoes==NULL;
 	  break;
 	  case MID_UnlinkRef:
-	    mi->ti.disabled = i==-1 || mv->glyphs[i].sc->layers[ly_fore].refs==NULL;
+	    mi->ti.disabled = i==-1 || mv->glyphs[i].sc->layers[mv->layer].refs==NULL;
 	  break;
 	  case MID_Paste:
 	    mi->ti.disabled = i==-1 ||
@@ -2875,7 +2875,7 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     int i, anybuildable;
     SplineChar *sc;
-    int order2 = mv->sf->layers[ly_fore].order2;
+    int order2 = mv->sf->layers[mv->layer].order2;
 
     for ( i=mv->glyphcnt-1; i>=0; --i )
 	if ( mv->perchar[i].selected )
@@ -2917,7 +2917,7 @@ static void ellistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	  break;
 	  case MID_BuildAccent:
 	    anybuildable = false;
-	    if ( sc!=NULL && SFIsSomethingBuildable(mv->sf,sc,false) )
+	    if ( sc!=NULL && SFIsSomethingBuildable(mv->sf,sc,mv->layer,false) )
 		anybuildable = true;
 	    mi->ti.disabled = !anybuildable;
 	  break;
@@ -3065,7 +3065,7 @@ return;
     mv->pixelsize = mv_scales[mv->scale_index]*size;
     if ( mv->bdf==NULL ) {
 	BDFFontFree(mv->show);
-	mv->show = SplineFontPieceMeal(mv->sf,mv->pixelsize,mv->antialias?pf_antialias:0,NULL);
+	mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->pixelsize,mv->antialias?pf_antialias:0,NULL);
     }
 
     for ( i=0; i<mv->max; ++i ) if ( mv->perchar[i].width!=NULL ) {
@@ -3314,7 +3314,7 @@ static void _MVVMouse(MetricsView *mv,GEvent *event) {
 	    if ( diff!=0 ) {
 		SCPreserveWidth(sc);
 		sc->vwidth += diff;
-		SCCharChangedUpdate(sc);
+		SCCharChangedUpdate(sc,ly_none);
 		for ( ; i<mv->glyphcnt; ++i )
 		    mv->perchar[i].dy = mv->perchar[i-1].dy+mv->perchar[i-1].dheight +
 			    mv->perchar[i-1].kernafter ;
@@ -3605,7 +3605,7 @@ return;
 	    mv->pressed_apl->selected = false;
 	    mv->pressed_apl = NULL;
 	    MVRedrawI(mv,mv->ap_owner,0,0);
-	    SCCharChangedUpdate(mv->glyphs[mv->ap_owner].sc);
+	    SCCharChangedUpdate(mv->glyphs[mv->ap_owner].sc,ly_none);
 	} else if ( mv->pressedwidth ) {
 	    mv->pressedwidth = false;
 	    if ( mv->right_to_left ) diff = -diff;
@@ -3613,7 +3613,7 @@ return;
 	    if ( diff!=0 ) {
 		SCPreserveWidth(sc);
 		SCSynchronizeWidth(sc,sc->width+diff,sc->width,NULL);
-		SCCharChangedUpdate(sc);
+		SCCharChangedUpdate(sc,ly_none);
 	    }
 	} else if ( mv->pressedkern ) {
 	    mv->pressedkern = false;
@@ -3896,6 +3896,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     mv->scale_index = 2;
     mv->next = fv->b.sf->metrics;
     fv->b.sf->metrics = mv;
+    mv->layer = fv->b.active_layer;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_icon;

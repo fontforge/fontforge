@@ -317,7 +317,7 @@ return( _("This glyph is defined in one instance font but not in another") );
 
     sc = mm->normal->glyphs[gid];
     if ( sc!=NULL ) {
-	SCClearContents(sc);
+	SCClearContents(sc,ly_fore);
 	KernPairsFree(sc->kerns);
 	sc->kerns = NULL;
 	KernPairsFree(sc->vkerns);
@@ -634,7 +634,7 @@ int MMReblend(FontViewBase *fv, MMSet *mm) {
     break;
 	err = MMBlendChar(mm,i);
 	if ( mm->normal->glyphs[i]!=NULL )
-	    _SCCharChangedUpdate(mm->normal->glyphs[i],-1);
+	    _SCCharChangedUpdate(mm->normal->glyphs[i],fv->active_layer,-1);
 	if ( err==NULL )
     continue;
 	if ( olderr==NULL ) {
