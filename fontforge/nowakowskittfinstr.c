@@ -1433,16 +1433,18 @@ static void init_prep(GlobalInstrCt *gic) {
  * Initialize Global Instructing Context
  */
 #define EDGE_FUZZ (500.0)
-void InitGlobalInstrCt(GlobalInstrCt *gic, SplineFont *sf, BlueData *bd) {
+void InitGlobalInstrCt(GlobalInstrCt *gic, SplineFont *sf, int layer,
+	BlueData *bd) {
     BlueData _bd;
 
     if (bd == NULL) {
-	QuickBlues(sf,&_bd);
+	QuickBlues(sf,layer,&_bd);
 	bd = &_bd;
     }
 
     gic->sf = sf;
     gic->bd = bd;
+    gic->layer = layer;
     gic->fudge = (sf->ascent+sf->descent)/EDGE_FUZZ;
 
     gic->cvt_done = false;
@@ -2839,7 +2841,7 @@ static DiagPointInfo *InitDStemData( InstrCt *ct ) {
     double em_size = ct->sc->parent->ascent + ct->sc->parent->descent;
 
     diagpts = gcalloc( ct->ptcnt, sizeof( struct diagpointinfo ));
-    gd = GlyphDataInit( ct->sc,em_size,false );
+    gd = GlyphDataInit( ct->sc,ct->gic->layer,em_size,false );
     if ( ct->sc->dstem == NULL || gd == NULL )
 return( diagpts );
     DStemInfoToStemData( gd,ct->sc->dstem );
@@ -3572,16 +3574,16 @@ void NowakowskiSCAutoInstr(GlobalInstrCt *gic, SplineChar *sc) {
     InstrCt ct;
     int i;
 
-    if ( !sc->layers[ly_fore].order2 )
+    if ( !sc->layers[gic->layer].order2 )
 return;
 
-    if ( sc->layers[ly_fore].refs!=NULL && sc->layers[ly_fore].splines!=NULL ) {
+    if ( sc->layers[gic->layer].refs!=NULL && sc->layers[gic->layer].splines!=NULL ) {
 	ff_post_error(_("Can't instruct this glyph"),
 		_("TrueType does not support mixed references and contours.\nIf you want instructions for %.30s you should either:\n * Unlink the reference(s)\n * Copy the inline contours into their own (unencoded\n    glyph) and make a reference to that."),
 		sc->name );
 return;
     }
-    for ( ref = sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
+    for ( ref = sc->layers[gic->layer].refs; ref!=NULL; ref=ref->next ) {
 	if ( ref->transform[0]>=2 || ref->transform[0]<-2 ||
 		ref->transform[1]>=2 || ref->transform[1]<-2 ||
 		ref->transform[2]>=2 || ref->transform[2]<-2 ||
@@ -3600,10 +3602,10 @@ return;
 	sc->ttf_instrs = NULL;
 	sc->ttf_instrs_len = 0;
     }
-    SCNumberPoints(sc);
+    SCNumberPoints(sc,gic->layer);
     if ( autohint_before_generate && sc->changedsincelasthinted &&
 	    !sc->manualhints )
-	SplineCharAutoHint(sc,NULL);
+	SplineCharAutoHint(sc,gic->layer,NULL);
 
     if ( sc->vstem==NULL && sc->hstem==NULL && sc->dstem==NULL && sc->md==NULL)
 return;
@@ -3618,13 +3620,13 @@ return;
      * Perhaps we should advise turning 'use my metrics' off.
      */
 
-    if ( sc->layers[ly_fore].splines==NULL )
+    if ( sc->layers[gic->layer].splines==NULL )
 return;
 
     /* Start dealing with the glyph */
     contourcnt = 0;
-    for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next, ++contourcnt );
-    cnt = SSTtfNumberPoints(sc->layers[ly_fore].splines);
+    for ( ss=sc->layers[gic->layer].splines; ss!=NULL; ss=ss->next, ++contourcnt );
+    cnt = SSTtfNumberPoints(sc->layers[gic->layer].splines);
 
     contourends = galloc((contourcnt+1)*sizeof(int));
     bp = galloc(cnt*sizeof(BasePoint));
@@ -3632,7 +3634,7 @@ return;
     touched = gcalloc(cnt,1);
     affected = gcalloc(cnt,1);
     contourcnt = cnt = 0;
-    for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) {
+    for ( ss=sc->layers[gic->layer].splines; ss!=NULL; ss=ss->next ) {
 	touched[cnt] |= tf_startcontour;
 	cnt = SSAddPoints(ss,cnt,bp,NULL);
 	touched[cnt-1] |= tf_endcontour;
@@ -3646,7 +3648,7 @@ return;
     ct.gic = gic;
 
     ct.sc = sc;
-    ct.ss = sc->layers[ly_fore].splines;
+    ct.ss = sc->layers[gic->layer].splines;
     ct.instrs = NULL;
     ct.pt = NULL;
     ct.ptcnt = cnt;
