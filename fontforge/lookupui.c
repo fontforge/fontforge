@@ -1872,6 +1872,7 @@ return( newotl );
 /* ************************************************************************** */
 typedef struct anchorclassdlg {
     SplineFont *sf;
+    int def_layer;
     struct lookup_subtable *sub;
     GWindow gw;
     int mag, pixelsize;
@@ -1942,7 +1943,7 @@ return( true );
 		    ac->name, ac->subtable->subtable_name );
 return( true );
 	}
-	AnchorControlClass(acd->sf,ac);
+	AnchorControlClass(acd->sf,ac,acd->def_layer);
     }
 return( true );
 }
@@ -2084,7 +2085,7 @@ static void ACDMatrixInit(struct matrixinit *mi,SplineFont *sf, struct lookup_su
 
 /* Anchor list, [new], [delete], [edit], [show first mark/entry], [show first base/exit] */
 /*  [ok], [cancel] */
-static void AnchorClassD(SplineFont *sf, struct lookup_subtable *sub) {
+static void AnchorClassD(SplineFont *sf, struct lookup_subtable *sub, int def_layer) {
     GRect pos;
     GWindowAttrs wattrs;
     AnchorClassDlg acd;
@@ -2098,6 +2099,7 @@ static void AnchorClassD(SplineFont *sf, struct lookup_subtable *sub) {
 
     memset(&acd,0,sizeof(acd));
     acd.sf = sf;
+    acd.def_layer = def_layer;
     acd.sub = sub;
 
     memset(&wattrs,0,sizeof(wattrs));
@@ -2357,7 +2359,7 @@ static GImage *_PST_GetImage(const void *_pstkd) {
     struct matrix_data *old = GMatrixEditGet(pstk,&rows);
     SplineChar *sc = SFGetChar(pstkd->sf,-1, old[cols*pstkd->popup_r].u.md_str);
 
-return( PST_GetImage(pstk,pstkd->sf,pstkd->sub,pstkd->popup_r,sc) );
+return( PST_GetImage(pstk,pstkd->sf,pstkd->def_layer,pstkd->sub,pstkd->popup_r,sc) );
 }
 
 static void PST_PopupPrepare(GGadget *g, int r, int c) {
@@ -2884,7 +2886,7 @@ return;		/* The names specified weren't in the font */
 return;		/* Couldn't parse the numeric kerning info */
 
     if ( pstkd->display==NULL )
-	pstkd->display = SplineFontPieceMeal(pstkd->sf,ly_fore,pstkd->pixelsize,pf_antialias,NULL);
+	pstkd->display = SplineFontPieceMeal(pstkd->sf,pstkd->def_layer,pstkd->pixelsize,pf_antialias,NULL);
     bc1 = BDFPieceMealCheck(pstkd->display,sc1->orig_pos);
     bc2 = BDFPieceMealCheck(pstkd->display,sc2->orig_pos);
 
@@ -3558,7 +3560,7 @@ return( false );
 return( true );
 }
 
-static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub) {
+static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub, int def_layer) {
     PSTKernDlg pstkd;
     GRect pos;
     GWindowAttrs wattrs;
@@ -3571,6 +3573,7 @@ static void PSTKernD(SplineFont *sf, struct lookup_subtable *sub) {
 
     memset(&pstkd,0,sizeof(pstkd));
     pstkd.sf = sf;
+    pstkd.def_layer = def_layer;
     pstkd.sub = sub;
 
     memset(&wattrs,0,sizeof(wattrs));
@@ -3918,7 +3921,7 @@ return( false );
 }
 
 int EditSubtable(struct lookup_subtable *sub,int isgpos,SplineFont *sf,
-	struct subtable_data *sd) {
+	struct subtable_data *sd, int def_layer) {
     char *def = sub->subtable_name;
     int new = def==NULL;
     char *freeme = NULL;
@@ -3947,17 +3950,17 @@ return( false );
     if ( new && sub->lookup->lookup_type == gsub_single )
 	sub->suffix = SuffixFromTags(sub->lookup->features);
     if ( new && (sd==NULL || !(sd->flags&sdf_dontedit)) )
-	_LookupSubtableContents(sf, sub, sd);
+	_LookupSubtableContents(sf, sub, sd, def_layer);
 return( true );
 }
 
-static struct lookup_subtable *NewSubtable(OTLookup *otl,int isgpos,SplineFont *sf, struct subtable_data *sd) {
+static struct lookup_subtable *NewSubtable(OTLookup *otl,int isgpos,SplineFont *sf, struct subtable_data *sd,int def_layer) {
     struct lookup_subtable *sub, *last;
     int i,j;
 
     sub = chunkalloc(sizeof(struct lookup_subtable));
     sub->lookup = otl;
-    if ( !EditSubtable(sub,isgpos,sf,sd)) {
+    if ( !EditSubtable(sub,isgpos,sf,sd,def_layer)) {
 	chunkfree(sub,sizeof(struct lookup_subtable));
 return( NULL );
     }
@@ -4067,7 +4070,7 @@ return( NULL );
 return( ti );
 }
 
-struct lookup_subtable *SFNewLookupSubtableOfType(SplineFont *sf, int lookup_type, struct subtable_data *sd ) {
+struct lookup_subtable *SFNewLookupSubtableOfType(SplineFont *sf, int lookup_type, struct subtable_data *sd, int def_layer ) {
     int isgpos = (lookup_type>=gpos_start);
     OTLookup *otl, *found=NULL;
     int cnt, ans;
@@ -4087,7 +4090,7 @@ struct lookup_subtable *SFNewLookupSubtableOfType(SplineFont *sf, int lookup_typ
 	found = CreateAndSortNewLookupOfType(sf,lookup_type);
 	if ( found==NULL )
 return( NULL );
-	sub = NewSubtable(found,isgpos,sf,sd);
+	sub = NewSubtable(found,isgpos,sf,sd,def_layer);
 	/* even if they canceled the subtable creation they are now stuck */
 	/*  with the lookup */
 return( sub );
@@ -4125,11 +4128,11 @@ return( sub );
     if ( found==NULL )
 return( NULL );
 
-return( NewSubtable(found,isgpos,sf,sd));
+return( NewSubtable(found,isgpos,sf,sd,def_layer));
 }
 
 void _LookupSubtableContents(SplineFont *sf, struct lookup_subtable *sub,
-	struct subtable_data *sd) {
+	struct subtable_data *sd,int def_layer) {
     int lookup_type = sub->lookup->lookup_type;
 
     if ( (lookup_type == gsub_context || lookup_type == gsub_contextchain ||
@@ -4210,12 +4213,12 @@ return;
 return;
 	sf->fontinfo->smd = StateMachineEdit(sf,sub->sm,sf->fontinfo);
     } else if ( sub->kc!=NULL ) {
-	KernClassD(sub->kc,sf,ly_fore,sub->vertical_kerning);
+	KernClassD(sub->kc,sf,def_layer,sub->vertical_kerning);
     } else if ( sub->lookup->lookup_type>=gpos_cursive &&
 	    sub->lookup->lookup_type<=gpos_mark2mark )
-	AnchorClassD(sf,sub);
+	AnchorClassD(sf,sub,def_layer);
     else
-	PSTKernD(sf,sub);
+	PSTKernD(sf,sub,def_layer);
 }
 
 /******************************************************************************/
@@ -4390,7 +4393,7 @@ static int MRD_Subtable(GGadget *g, GEvent *e) {
 	ti = GGadgetGetListItemSelected(g);
 	if ( ti!=NULL ) {
 	    if ( ti->userdata==NULL ) {
-		sub = SFNewLookupSubtableOfType(mrd->fv->b.sf,gsub_single,NULL);
+		sub = SFNewLookupSubtableOfType(mrd->fv->b.sf,gsub_single,NULL,mrd->fv->b.active_layer);
 		if ( sub!=NULL )
 		    GGadgetSetList(g,SFSubtablesOfType(mrd->fv->b.sf,gsub_single,false,true),false);
 		MRD_SelectSubtable(mrd,sub);

@@ -6143,7 +6143,7 @@ static void LookupSubtableContents(struct gfi_data *gfi,int isgpos) {
 		if ( lk->all[i].subtables[j].deleted )
 	    continue;
 		if ( lk->all[i].subtables[j].selected ) {
-		    _LookupSubtableContents(gfi->sf,lk->all[i].subtables[j].subtable,NULL);
+		    _LookupSubtableContents(gfi->sf,lk->all[i].subtables[j].subtable,NULL,gfi->def_layer);
 return;
 		}
 	    }
@@ -6261,7 +6261,7 @@ return( true );
 
 	sub = chunkalloc(sizeof(struct lookup_subtable));
 	sub->lookup = lk->all[i].lookup;
-	if ( !EditSubtable(sub,isgpos,gfi->sf,NULL)) {
+	if ( !EditSubtable(sub,isgpos,gfi->sf,NULL,gfi->def_layer)) {
 	    chunkfree(sub,sizeof(struct lookup_subtable));
 return( true );
 	}
@@ -6305,7 +6305,7 @@ return( true );
 		    if ( lk->all[i].subtables[j].deleted )
 		continue;
 		    if ( lk->all[i].subtables[j].selected ) {
-			EditSubtable(lk->all[i].subtables[j].subtable,isgpos,gfi->sf,NULL);
+			EditSubtable(lk->all[i].subtables[j].subtable,isgpos,gfi->sf,NULL,gfi->def_layer);
 return( true );
 		    }
 		}
@@ -7465,7 +7465,7 @@ static int gsublookups_e_h(GWindow gw, GEvent *event) {
 return( lookups_e_h(gw,event,false));
 }
 
-void FontInfo(SplineFont *sf,int defaspect,int sync) {
+void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
@@ -7554,6 +7554,7 @@ return;
     gw = GDrawCreateTopWindow(NULL,&pos,e_h,d,&wattrs);
 
     d->sf = sf;
+    d->def_layer = deflayer;
     d->gw = gw;
     d->old_sel = -2;
     d->texdata = sf->texdata;
@@ -10726,7 +10727,7 @@ return;
 }
 
 void FontMenuFontInfo(void *_fv) {
-    FontInfo( ((FontView *) _fv)->b.sf,-1,false);
+    FontInfo( ((FontViewBase *) _fv)->sf,((FontViewBase *) _fv)->active_layer,-1,false);
 }
 
 void FontInfoDestroy(SplineFont *sf) {

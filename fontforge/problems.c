@@ -615,7 +615,7 @@ return;
 	p->lastcharopened = sc;
     }
     if ( explain==_("This glyph contains a substitution or ligature entry which refers to an empty char") ) {
-	SCCharInfo(sc,p->fv->b.map,-1);
+	SCCharInfo(sc,p->layer,p->fv->b.map,-1);
 	GDrawSync(NULL);
 	GDrawProcessPendingEvents(NULL);
 	GDrawProcessPendingEvents(NULL);
@@ -4531,7 +4531,7 @@ static void VWMouse(struct val_data *vw, GEvent *e) {
     SplineChar *sc;
 
     if ( gid==-2 && e->u.mouse.clicks==2 && e->type==et_mouseup ) {
-	FontInfo(vw->sf,4,false);	/* Bring up the Private Dict */
+	FontInfo(vw->sf,vw->layer,4,false);	/* Bring up the Private Dict */
 return;
     }
     if ( gid<0 || (sc = vw->sf->glyphs[gid])==NULL )

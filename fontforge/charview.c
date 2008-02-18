@@ -5072,7 +5072,7 @@ static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void CVMenuFontInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    DelayEvent(FontMenuFontInfo,(FontView *) (cv->b.fv));
+    FontInfo(cv->b.sc->parent,CVLayer((CharViewBase *) cv),-1,false);
 }
 
 static void CVMenuFindProblems(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -5351,7 +5351,7 @@ static void CVMenuClearInstrs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void CVMenuKernPairs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    SFShowKernPairs(cv->b.sc->parent,cv->b.sc,NULL);
+    SFShowKernPairs(cv->b.sc->parent,cv->b.sc,NULL,CVLayer((CharViewBase *) cv));
 }
 
 static void CVMenuLigatures(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -5361,7 +5361,7 @@ static void CVMenuLigatures(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void CVMenuAnchorPairs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    SFShowKernPairs(cv->b.sc->parent,cv->b.sc,(AnchorClass *) (-1));
+    SFShowKernPairs(cv->b.sc->parent,cv->b.sc,(AnchorClass *) (-1),CVLayer((CharViewBase *) cv));
 }
 
 static void CVMenuAPDetach(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -7695,7 +7695,7 @@ void CVAddAnchor(CharView *cv) {
 
     if ( AnchorClassUnused(cv->b.sc,&waslig)==NULL ) {
 	ff_post_notice(_("Make a new anchor class"),_("I cannot find an unused anchor class\nto assign a new point to. If you\nwish a new anchor point you must\ndefine a new anchor class with\nElement->Font Info"));
-	FontInfo(cv->b.sc->parent,13,true);		/* Lookups */
+	FontInfo(cv->b.sc->parent,CVLayer((CharViewBase *) cv),13,true);		/* Lookups */
 	if ( AnchorClassUnused(cv->b.sc,&waslig)==NULL )
 return;
     }
@@ -7790,7 +7790,7 @@ static void CVMenuGetInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void CVMenuCharInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    SCCharInfo(cv->b.sc,cv->b.fv->map,CVCurEnc(cv));
+    SCCharInfo(cv->b.sc,CVLayer((CharViewBase *) cv),cv->b.fv->map,CVCurEnc(cv));
 }
 
 static void CVMenuShowDependentRefs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -8690,7 +8690,7 @@ return;
     GDrawSetCursor(cv->v,ct_watch);
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);
-    AnchorControl(cv->b.sc,ap);
+    AnchorControl(cv->b.sc,ap,CVLayer((CharViewBase *) cv));
     GDrawSetCursor(cv->v,ct_pointer);
 }
 

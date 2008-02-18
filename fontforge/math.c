@@ -404,6 +404,7 @@ return( false );
 typedef struct mathdlg {
     GWindow gw;
     SplineFont *sf;
+    int def_layer;
     struct MATH *math;
     uint8 done;
     uint8 ok;
@@ -571,7 +572,7 @@ static GImage *_MATHVar_GetImage(const void *_math) {
     static OTLookup dummyl = { NULL, gsub_multiple };
     static struct lookup_subtable dummys = { NULL, NULL, &dummyl };
 
-return( PST_GetImage(varlist,math->sf,&dummys,math->popup_r,sc) );
+return( PST_GetImage(varlist,math->sf,math->def_layer,&dummys,math->popup_r,sc) );
 }
 
 static void MATHVar_PopupPrepare(GGadget *g, int r, int c) {
@@ -596,7 +597,7 @@ static GImage *_MATHConst_GetImage(const void *_math) {
     struct glyphvariants *gv = GV_FromString(NULL,old[cols*math->popup_r+cols-1].u.md_str);
     GImage *ret;
 
-    ret = GV_GetConstructedImage(sc,gv,GGadgetGetCid(varlist)==CID_HGlyphConst);
+    ret = GV_GetConstructedImage(sc,math->def_layer,gv,GGadgetGetCid(varlist)==CID_HGlyphConst);
     GlyphVariantsFree(gv);
 return( ret );
 }
@@ -621,7 +622,7 @@ static GImage *_MATHLine_GetImage(const void *_math) {
     struct matrix_data *old = GMatrixEditGet(varlist,&rows);
     SplineChar *sc = SFGetChar(math->sf,-1, old[cols*math->popup_r].u.md_str);
 
-return( SC_GetLinedImage(sc,old[cols*math->popup_r+1].u.md_ival,GGadgetGetCid(varlist)==CID_Italic));
+return( SC_GetLinedImage(sc,math->def_layer,old[cols*math->popup_r+1].u.md_ival,GGadgetGetCid(varlist)==CID_Italic));
 }
 
 static void MATHLine_PopupPrepare(GGadget *g, int r, int c) {
@@ -646,7 +647,7 @@ static GImage *_GVC_GetImage(const void *_math) {
     struct glyphvariants *gv;
 
     gv = GV_ParseConstruction(NULL,old,rows,cols);
-    ret = GV_GetConstructedImage(math->sc,gv,math->is_horiz);
+    ret = GV_GetConstructedImage(math->sc,math->def_layer,gv,math->is_horiz);
     GlyphVariantsFree(gv);
 return( ret );
 }
@@ -731,7 +732,7 @@ return;
     sc = SFGetChar(math->sf,-1,stuff[r*cols+0].u.md_str);
     if ( sc==NULL )
 return;
-    MathKernDialog(sc);
+    MathKernDialog(sc,math->def_layer);
 }
 
 static void extpart_finishedit(GGadget *g, int r, int c, int wasnew) {
@@ -922,7 +923,7 @@ return( NULL );
     if ( sc==NULL )
 return( NULL );
 
-    MathKernDialog(sc);
+    MathKernDialog(sc,math->def_layer);
 return( NULL );
 }
 
@@ -1100,7 +1101,7 @@ return( true );
 #define MAX_PAGE	9
 #define MAX_ROW		12
 
-void SFMathDlg(SplineFont *sf) {
+void SFMathDlg(SplineFont *sf,int def_layer) {
     MathDlg md;
     int i, j, page, row, h;
     GGadget *g;
@@ -1118,6 +1119,7 @@ void SFMathDlg(SplineFont *sf) {
     memset(&md,0,sizeof(md));
     if ( sf->cidmaster ) sf = sf->cidmaster;
     md.sf = sf;
+    md.def_layer = def_layer;
     md.math = sf->MATH;
     if ( md.math==NULL )
 	md.math = MathTableNew(sf);
@@ -1946,7 +1948,7 @@ static void MKDInit(MathKernDlg *mkd,SplineChar *sc) {
     mkd->dummy_map.enc = &custom;
 }
 
-void MathKernDialog(SplineChar *sc) {
+void MathKernDialog(SplineChar *sc,int def_layer) {
     MathKernDlg mkd;
     GRect pos;
     GWindow gw;
@@ -1961,6 +1963,7 @@ void MathKernDialog(SplineChar *sc) {
     int i,k;
 
     MKDInit( &mkd, sc );
+    mkd.def_layer = def_layer;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_isdlg|wam_restrict|wam_undercursor|wam_utf8_wtitle;

@@ -999,7 +999,7 @@ static int MV_ChangeKerning(MetricsView *mv, int which, int offset, int is_diff)
 	    memset(&sd,0,sizeof(sd));
 	    sd.flags = (mv->vertical ? sdf_verticalkern : sdf_horizontalkern ) |
 		    sdf_kernpair;
-	    sub = SFNewLookupSubtableOfType(psc->parent,gpos_pair,&sd);
+	    sub = SFNewLookupSubtableOfType(psc->parent,gpos_pair,&sd,mv->layer);
 	    if ( sub==NULL )
 return( false );
 	    mv->cur_subtable = sub;
@@ -1632,7 +1632,7 @@ static int MV_SubtableChanged(GGadget *g, GEvent *e) {
 	    memset(&sd,0,sizeof(sd));
 	    sd.flags = (mv->vertical ? sdf_verticalkern : sdf_horizontalkern ) |
 		    sdf_kernpair | sdf_dontedit;
-	    sub = SFNewLookupSubtableOfType(mv->sf,gpos_pair,&sd);
+	    sub = SFNewLookupSubtableOfType(mv->sf,gpos_pair,&sd,mv->layer);
 	    if ( sub==NULL )
 return( true );
 	    mv->cur_subtable = sub;
@@ -1992,7 +1992,7 @@ static void MVMenuCharInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 	if ( mv->perchar[i].selected )
     break;
     if ( i!=-1 )
-	SCCharInfo(mv->glyphs[i].sc,mv->fv->b.map,-1);
+	SCCharInfo(mv->glyphs[i].sc,mv->layer,mv->fv->b.map,-1);
 }
 
 static void MVMenuShowDependents(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -2329,12 +2329,12 @@ static void MVMenuLigatures(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void MVMenuKernPairs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
-    SFShowKernPairs(mv->sf,NULL,NULL);
+    SFShowKernPairs(mv->sf,NULL,NULL,mv->layer);
 }
 
 static void MVMenuAnchorPairs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
-    SFShowKernPairs(mv->sf,NULL,mi->ti.userdata);
+    SFShowKernPairs(mv->sf,NULL,mi->ti.userdata,mv->layer);
 }
 
 static void MVMenuScale(GWindow gw,struct gmenuitem *mi,GEvent *e) {

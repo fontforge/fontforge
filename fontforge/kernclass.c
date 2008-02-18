@@ -912,7 +912,7 @@ static int KP_Subtable(GGadget *g, GEvent *e) {
 		memset(&sd,0,sizeof(sd));
 		sd.flags = (kcd->isv ? sdf_verticalkern : sdf_horizontalkern ) |
 			sdf_kernpair;
-		sub = SFNewLookupSubtableOfType(kcd->sf,gpos_pair,&sd);
+		sub = SFNewLookupSubtableOfType(kcd->sf,gpos_pair,&sd,kcd->layer);
 		if ( sub!=NULL ) {
 		    kcd->subtable = sub;
 		    GGadgetSetList(g,SFSubtablesOfType(kcd->sf,gpos_pair,false,false),false);
@@ -2582,7 +2582,7 @@ static int KCL_New(GGadget *g, GEvent *e) {
 	memset(&sd,0,sizeof(sd));
 	sd.flags = (kcld->isv ? sdf_verticalkern : sdf_horizontalkern ) |
 		sdf_kernclass;
-	SFNewLookupSubtableOfType(kcld->sf,gpos_pair,&sd);
+	SFNewLookupSubtableOfType(kcld->sf,gpos_pair,&sd,kcld->layer);
     }
 return( true );
 }

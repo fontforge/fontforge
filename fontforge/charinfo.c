@@ -40,6 +40,7 @@ typedef struct charinfo {
     CharView *cv;
     EncMap *map;
     SplineChar *sc;
+    int def_layer;
     SplineChar *oldsc;		/* oldsc->charinfo will point to us. Used to keep track of that pointer */
     int enc;
     GWindow gw;
@@ -2282,7 +2283,7 @@ return;
 
     memset(&sd,0,sizeof(sd));
     sd.flags = sdf_dontedit;
-    sub = SFNewLookupSubtableOfType(ci->sc->parent,pst2lookuptype[sel+1],&sd);
+    sub = SFNewLookupSubtableOfType(ci->sc->parent,pst2lookuptype[sel+1],&sd,ci->def_layer);
     if ( sub!=NULL ) {
 	possub[r*cols+0].u.md_ival = (intpt) sub;
 	ti = SFSubtableListOfType(ci->sc->parent, pst2lookuptype[sel+1], false, false);
@@ -2422,16 +2423,16 @@ static void CI_FreeKernedImage(const void *_ci, GImage *img) {
 
 static const int kern_popup_size = 100;
 
-static BDFChar *Rasterize(SplineChar *sc) {
+static BDFChar *Rasterize(SplineChar *sc,int def_layer) {
     void *freetypecontext=NULL;
     BDFChar *ret;
 
-    freetypecontext = FreeTypeFontContext(sc->parent,sc,sc->parent->fv,ly_fore);
+    freetypecontext = FreeTypeFontContext(sc->parent,sc,sc->parent->fv,def_layer);
     if ( freetypecontext!=NULL ) {
 	ret = SplineCharFreeTypeRasterize(freetypecontext,sc->orig_pos,kern_popup_size,8);
 	FreeTypeFreeContext(freetypecontext);
     } else
-	ret = SplineCharAntiAlias(sc,ly_fore,kern_popup_size,4);
+	ret = SplineCharAntiAlias(sc,def_layer,kern_popup_size,4);
 return( ret );
 }
 
@@ -2454,8 +2455,8 @@ static GImage *CI_GetKernedImage(const void *_ci) {
 
     if ( othersc==NULL )
 return( NULL );
-    me = Rasterize(ci->sc);
-    other = Rasterize(othersc);
+    me = Rasterize(ci->sc,ci->def_layer);
+    other = Rasterize(othersc,ci->def_layer);
     if ( sub->vertical_kerning ) {
 	int vwidth = rint(ci->sc->vwidth*scale);
 	kern = rint( old[cols*ci->r+PAIR_DY_ADV1].u.md_ival*scale );
@@ -2556,7 +2557,7 @@ return( img );
 /* Draws an image of a glyph with a vertical bar down the middle. */
 /*  used to show italic correction position (we also dot in the width line) */
 /*  and top accent horizontal position for the MATH table */
-GImage *SC_GetLinedImage(SplineChar *sc, int pos, int is_italic_cor) {
+GImage *SC_GetLinedImage(SplineChar *sc, int def_layer, int pos, int is_italic_cor) {
     BDFChar *me;
     double scale = kern_popup_size/(double) (sc->parent->ascent+sc->parent->descent);
     int miny, maxy, minx, maxx;
@@ -2572,7 +2573,7 @@ GImage *SC_GetLinedImage(SplineChar *sc, int pos, int is_italic_cor) {
     pos = rint( pos*scale );
     if ( pos<-100 || pos>100 )
 return( NULL );
-    me = Rasterize(sc);
+    me = Rasterize(sc,def_layer);
     if ( pos<me->xmin-10 || pos>me->xmax+30 ) {
 	BDFCharFree(me);
 return( NULL );
@@ -2621,7 +2622,7 @@ return( img );
 
 #define ICON_WIDTH 15
 
-GImage *GV_GetConstructedImage(SplineChar *sc,struct glyphvariants *gv, int is_horiz) {
+GImage *GV_GetConstructedImage(SplineChar *sc,int def_layer,struct glyphvariants *gv, int is_horiz) {
     SplineFont *sf = sc->parent;
     BDFChar *me, **others;
     double scale = kern_popup_size/(double) (sf->ascent+sf->descent);
@@ -2634,7 +2635,7 @@ GImage *GV_GetConstructedImage(SplineChar *sc,struct glyphvariants *gv, int is_h
 
     if ( gv==NULL || gv->part_cnt==0 )
 return( NULL );
-    me = Rasterize(sc);
+    me = Rasterize(sc,def_layer);
     others = galloc(gv->part_cnt*sizeof(BDFChar *));
     for ( i=0; i<gv->part_cnt; ++i ) {
 	SplineChar *othersc = SFGetChar(sf,-1,gv->parts[i].component);
@@ -2644,7 +2645,7 @@ return( NULL );
 	    free(others);
 return( NULL );
 	}
-	others[i] = Rasterize(othersc);
+	others[i] = Rasterize(othersc,def_layer);
     }
     if ( is_horiz ) {
 	int ymin, ymax;
@@ -2834,13 +2835,13 @@ static GImage *CI_GetConstructedImage(const void *_ci) {
 
     gv = CI_ParseVariants(NULL,ci,is_horiz,NULL,0,true);
 
-    ret = GV_GetConstructedImage(ci->sc,gv,is_horiz);
+    ret = GV_GetConstructedImage(ci->sc,ci->def_layer,gv,is_horiz);
     GlyphVariantsFree(gv);
 return( ret );
 }
 
-GImage *NameList_GetImage(SplineFont *sf,SplineChar *sc,char *namelist,
-	int isliga ) {
+GImage *NameList_GetImage(SplineFont *sf,SplineChar *sc,int def_layer,
+	char *namelist, int isliga ) {
     BDFChar *me, **extras;
     int width, xmin, xmax, ymin, ymax;
     GImage *img;
@@ -2856,7 +2857,7 @@ GImage *NameList_GetImage(SplineFont *sf,SplineChar *sc,char *namelist,
 
     if ( sc==NULL || sf==NULL )
 return( NULL );
-    me = Rasterize(sc);
+    me = Rasterize(sc,def_layer);
     ymin = me->ymin; ymax = me->ymax;
     xmin = me->xmin; xmax = me->xmax; width = me->width;
     extracnt = 0; extras = NULL;
@@ -2876,7 +2877,7 @@ return( NULL );
 	*pt = ch;
 	if ( other!=NULL ) {
 	    if ( extracnt==0 ) width += ICON_WIDTH;
-	    extras[extracnt] = Rasterize(other);
+	    extras[extracnt] = Rasterize(other,def_layer);
 	    if ( width+extras[extracnt]->xmin < xmin ) xmin = width+extras[extracnt]->xmin;
 	    if ( width+extras[extracnt]->xmax > xmax ) xmax = width+extras[extracnt]->xmax;
 	    if ( extras[extracnt]->ymin < ymin ) ymin = extras[extracnt]->ymin;
@@ -2961,7 +2962,7 @@ return( NULL );
 return( img );
 }
 
-GImage *PST_GetImage(GGadget *pstk,SplineFont *sf,
+GImage *PST_GetImage(GGadget *pstk,SplineFont *sf,int def_layer,
 	struct lookup_subtable *sub,int popup_r, SplineChar *sc ) {
     int rows, cols = GMatrixEditGetColCnt(pstk);
     struct matrix_data *old = GMatrixEditGet(pstk,&rows);
@@ -2971,7 +2972,7 @@ return( NULL );
     if ( sub->lookup->lookup_type<gsub_single || sub->lookup->lookup_type>gsub_ligature )
 return( NULL );
 
-return( NameList_GetImage(sf,sc,old[cols*popup_r+1].u.md_str,
+return( NameList_GetImage(sf,sc,def_layer,old[cols*popup_r+1].u.md_str,
 	sub->lookup->lookup_type<=gsub_ligature));
 }
 
@@ -2986,7 +2987,7 @@ static GImage *_CI_GetImage(const void *_ci) {
     if ( ci->r>=rows )
 return( NULL );
 
-return( PST_GetImage(pstk,ci->sc->parent,sub,ci->r,ci->sc) );
+return( PST_GetImage(pstk,ci->sc->parent,ci->def_layer,sub,ci->r,ci->sc) );
 }
 
 static void CI_KerningPopupPrepare(GGadget *g, int r, int c) {
@@ -3192,7 +3193,7 @@ return( true );
 static int CI_SubSuperPositionings(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	CharInfo *ci = GDrawGetUserData(GGadgetGetWindow(g));
-	MathKernDialog(ci->sc);
+	MathKernDialog(ci->sc,ci->def_layer);
     }
 return( true );
 }
@@ -3603,7 +3604,7 @@ return( false );
 return( true );
 }
 
-void SCCharInfo(SplineChar *sc,EncMap *map,int enc) {
+void SCCharInfo(SplineChar *sc,int deflayer, EncMap *map,int enc) {
     CharInfo *ci;
     GRect pos;
     GWindowAttrs wattrs;
@@ -3636,6 +3637,7 @@ return;
 
     ci = gcalloc(1,sizeof(CharInfo));
     ci->sc = sc;
+    ci->def_layer = deflayer;
     ci->done = false;
     ci->map = map;
     if ( enc==-1 )
@@ -4704,4 +4706,4 @@ return;
     for ( i=0; col_inits[i]!=NULL; ++i )
 	for ( j=0; col_inits[i][j].title!=NULL; ++j )
 	    col_inits[i][j].title=_(col_inits[i][j].title);
-}    
+}

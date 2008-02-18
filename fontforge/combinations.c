@@ -60,7 +60,7 @@ void SFShowLigatures(SplineFont *sf,SplineChar *searchfor) {
 
     while ( 1 ) {
 	for ( i=cnt=0; i<sf->glyphcnt; ++i ) {
-	    if ( (sc=sf->glyphs[i])!=NULL && (sc->layers[ly_fore].splines!=NULL || sc->layers[ly_fore].refs!=NULL) ) {
+	    if ( (sc=sf->glyphs[i])!=NULL && SCDrawsSomething(sc) ) {
 		for ( pst=sc->possub; pst!=NULL; pst=pst->next )
 			if ( pst->type==pst_ligature &&
 				(searchfor==NULL || PSTContains(pst->u.lig.components,searchfor->name))) {
@@ -141,6 +141,7 @@ typedef struct kpdata {
 				/*  anchor combos with this class. If -1 */
 			        /*  then all anchor combos with any class */
     struct kerns *kerns;	/* All the kerns we care about */
+    int layer;
     int kcnt, firstcnt;
     BDFFont *bdf;
     int header_height;
@@ -770,7 +771,7 @@ static int KP_ChangeSize(GGadget *g, GEvent *e) {
 	BDFFont *temp;
 	if ( newsize==kpd->bdf->pixelsize )
 return( true );
-	temp = SplineFontPieceMeal(kpd->sf,ly_fore,newsize,true,NULL);
+	temp = SplineFontPieceMeal(kpd->sf,kpd->layer,newsize,true,NULL);
 	BDFFontFree(kpd->bdf);
 	kpd->bdf = temp;
 	KP_Resize(kpd);
@@ -879,7 +880,7 @@ static void KPKPCloseup(KPData *kpd) {
 	struct kerns *k = &kpd->kerns[kpd->selected];
 	int oldoff = k->kp->off;
 	k->kp->off = k->newoff;
-	KernPairD(k->first->parent,k->first,k->second,ly_fore,false);
+	KernPairD(k->first->parent,k->first,k->second,kpd->layer,false);
 	k->newoff = k->kp->off;
 	k->kp->off = oldoff;
 	GDrawRequestExpose(kpd->v,NULL,false);
@@ -896,7 +897,7 @@ static void KPAC(KPData *kpd, int base) {
 	    /* There is currently no way to modify anchors in this dlg */
 	    /* so the anchor will be right. On the other hand we might */
 	    /* need to reinit all other combinations which use this point */
-	    AnchorControl(sc,ap);
+	    AnchorControl(sc,ap,kpd->layer);
 	    AnchorRefigure(kpd);
 	    GDrawRequestExpose(kpd->v,NULL,false);
 	}
@@ -1091,7 +1092,7 @@ return( false );
 return( true );
 }
 
-void SFShowKernPairs(SplineFont *sf,SplineChar *sc,AnchorClass *ac) {
+void SFShowKernPairs(SplineFont *sf,SplineChar *sc,AnchorClass *ac,int layer) {
     KPData kpd;
     GRect pos;
     GWindow gw;
@@ -1107,6 +1108,7 @@ void SFShowKernPairs(SplineFont *sf,SplineChar *sc,AnchorClass *ac) {
     kpd.sf = sf;
     kpd.sc = sc;
     kpd.ac = ac;
+    kpd.layer = layer;
     kpd.first = true;
     kpd.last_index = kpd.selected = -1;
     if ( ac==NULL )
@@ -1215,7 +1217,7 @@ return;
     wattrs.cursor = ct_mypointer;
     kpd.v = GWidgetCreateSubWindow(gw,&pos,kpdv_e_h,&kpd,&wattrs);
 
-    kpd.bdf = SplineFontPieceMeal(kpd.sf,ly_fore,(intpt) (gcd[1].gd.label->userdata),true,NULL);
+    kpd.bdf = SplineFontPieceMeal(kpd.sf,kpd.layer,(intpt) (gcd[1].gd.label->userdata),true,NULL);
 
     memset(&rq,'\0',sizeof(rq));
     rq.family_name = helv;

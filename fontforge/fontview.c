@@ -1268,7 +1268,7 @@ static void FVMenuFontInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void FVMenuMATHInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    SFMathDlg(fv->b.sf);
+    SFMathDlg(fv->b.sf,fv->b.active_layer);
 }
 
 static void FVMenuFindProblems(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -1722,7 +1722,7 @@ return;
     if ( fv->b.cidmaster!=NULL &&
 	    (fv->b.map->map[pos]==-1 || fv->b.sf->glyphs[fv->b.map->map[pos]]==NULL ))
 return;
-    SCCharInfo(SFMakeChar(fv->b.sf,fv->b.map,pos),fv->b.map,pos);
+    SCCharInfo(SFMakeChar(fv->b.sf,fv->b.map,pos),fv->b.active_layer,fv->b.map,pos);
 }
 
 static void FVMenuBDFInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -2175,18 +2175,18 @@ static void FVMenuLigatures(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void FVMenuKernPairs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     SFKernClassTempDecompose(fv->b.sf,false);
-    SFShowKernPairs(fv->b.sf,NULL,NULL);
+    SFShowKernPairs(fv->b.sf,NULL,NULL,fv->b.active_layer);
     SFKernCleanup(fv->b.sf,false);
 }
 
 static void FVMenuAnchorPairs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    SFShowKernPairs(fv->b.sf,NULL,mi->ti.userdata);
+    SFShowKernPairs(fv->b.sf,NULL,mi->ti.userdata,fv->b.active_layer);
 }
 
 static void FVMenuShowAtt(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    ShowAtt(fv->b.sf);
+    ShowAtt(fv->b.sf,fv->b.active_layer);
 }
 
 static void FVMenuDisplaySubs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -2233,7 +2233,7 @@ static void FVMenuDisplaySubs(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 return;
 	}
 	if ( sub==NULL )
-	    sub = SFNewLookupSubtableOfType(sf,gsub_single,NULL);
+	    sub = SFNewLookupSubtableOfType(sf,gsub_single,NULL,fv->b.active_layer);
 	if ( sub!=NULL )
 	    fv->cur_subtable = sub;
     }
@@ -3020,7 +3020,7 @@ static void FVMenuCIDFontInfo(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
     if ( cidmaster==NULL )
 return;
-    FontInfo(cidmaster,-1,false);
+    FontInfo(cidmaster,fv->b.active_layer,-1,false);
 }
 
 static void FVMenuChangeSupplement(GWindow gw,struct gmenuitem *mi,GEvent *e) {
