@@ -4189,7 +4189,7 @@ struct glyphdata *GlyphDataInit( SplineChar *sc,int layer,double em_size,int onl
 
     /* We only hint one layer at a time */
     /* We shan't try to hint references yet */
-    if ( sc->layers[gd->layer].splines==NULL )
+    if ( sc->layers[layer].splines==NULL )
 return( NULL );
 
     gd = gcalloc( 1,sizeof( struct glyphdata ));
