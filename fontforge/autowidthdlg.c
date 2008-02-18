@@ -209,7 +209,7 @@ static int AW_Subtable(GGadget *g, GEvent *e) {
 	    else {
 		memset(&sd,0,sizeof(sd));
 		sd.flags = sdf_horizontalkern | sdf_kernpair;
-		sub = SFNewLookupSubtableOfType(wi->sf,gpos_pair,&sd);
+		sub = SFNewLookupSubtableOfType(wi->sf,gpos_pair,&sd,wi->layer);
 		if ( sub!=NULL ) {
 		    wi->subtable = sub;
 		    GGadgetSetList(g,SFSubtablesOfType(wi->sf,gpos_pair,false,false),false);

@@ -432,6 +432,7 @@ typedef struct mathkernview {
     short button_height, button_width;
 /* ****** */
     SplineChar *cursc;
+    int def_layer;
     struct mathkern *orig_mathkern;
     uint8 saved_mathkern;		/* Can't just check if orig is non-NULL, because NULL is a perfectly valid initial state */
     uint8 last_aspect;
@@ -489,6 +490,7 @@ struct lkdata {
 
 struct gfi_data {
     SplineFont *sf;
+    int def_layer;
     GWindow gw;
     int tn_active;
     int private_aspect, ttfv_aspect, tn_aspect, tx_aspect, unicode_aspect;
@@ -653,7 +655,7 @@ extern void KpMDParse(SplineFont *sf,SplineChar *sc,struct lookup_subtable *sub,
 	struct matrix_data *possub,int rows,int cols,int i);
 extern void GFI_LookupEnableButtons(struct gfi_data *gfi, int isgpos);
 extern void GFI_LookupScrollbars(struct gfi_data *gfi, int isgpos, int refresh);
-extern void FontInfo(SplineFont *sf,int aspect,int sync);
+extern void FontInfo(SplineFont *sf,int layer,int aspect,int sync);
 extern void FontInfoDestroy(SplineFont *sf);
 extern void FontMenuFontInfo(void *fv);
 extern void GFI_CCDEnd(struct gfi_data *d);
@@ -750,17 +752,17 @@ extern void OutlineDlg(FontView *fv, CharView *cv,MetricsView *mv,int isinline);
 extern void ShadowDlg(FontView *fv, CharView *cv,MetricsView *mv,int wireframe);
 extern void CVTile(CharView *cv);
 extern void FVTile(FontView *fv);
-extern void SCCharInfo(SplineChar *sc,EncMap *map,int enc);
+extern void SCCharInfo(SplineChar *sc,int deflayer,EncMap *map,int enc);
 extern void CharInfoDestroy(struct charinfo *ci);
 extern SplineChar *SuffixCheck(SplineChar *sc,char *suffix);
 extern void SCSubtableDefaultSubsCheck(SplineChar *sc, struct lookup_subtable *sub, struct matrix_data *possub, int col_cnt, int r);
-extern GImage *PST_GetImage(GGadget *pstk,SplineFont *sf,
+extern GImage *PST_GetImage(GGadget *pstk,SplineFont *sf,int def_layer,
 	struct lookup_subtable *sub,int popup_r, SplineChar *sc );
-extern GImage *NameList_GetImage(SplineFont *sf,SplineChar *sc,char *namelist,
-	int isliga );
-extern GImage *GV_GetConstructedImage(SplineChar *sc,struct glyphvariants *gv,
+extern GImage *NameList_GetImage(SplineFont *sf,SplineChar *sc,int def_layer,
+	char *namelist, int isliga );
+extern GImage *GV_GetConstructedImage(SplineChar *sc,int def_layer, struct glyphvariants *gv,
 	int is_horiz);
-extern GImage *SC_GetLinedImage(SplineChar *sc, int pos, int is_italic_cor);
+extern GImage *SC_GetLinedImage(SplineChar *sc, int def_layer, int pos, int is_italic_cor);
 extern struct glyphvariants *GV_ParseConstruction(struct glyphvariants *gv,
 	struct matrix_data *stuff, int rows, int cols);
 extern void GV_ToMD(GGadget *g, struct glyphvariants *gv);
@@ -889,11 +891,11 @@ extern void MKDMakeActive(MathKernDlg *mkd,CharView *cv);
 extern void MKDChar(MathKernDlg *mkd, GEvent *event);
 extern void MKD_DoClose(struct cvcontainer *cvc);
 extern void MKDCharViewInits(MathKernDlg *mkd);
-extern void MathKernDialog(SplineChar *sc);
+extern void MathKernDialog(SplineChar *sc,int def_layer);
 
-extern void ShowAtt(SplineFont *sf);
+extern void ShowAtt(SplineFont *sf,int def_layer);
 extern void FontCompareDlg(FontView *fv);
-extern void SFShowKernPairs(SplineFont *sf,SplineChar *sc,AnchorClass *ac);
+extern void SFShowKernPairs(SplineFont *sf,SplineChar *sc,AnchorClass *ac,int layer);
 extern void SFShowLigatures(SplineFont *sf,SplineChar *sc);
 
 extern void SCEditInstructions(SplineChar *sc);
@@ -920,8 +922,8 @@ extern void KCD_DrawGlyph(GWindow pixmap,int x,int baseline,BDFChar *bdfc,int ma
 extern GTextInfo *BuildFontList(FontView *except);
 extern void TFFree(GTextInfo *tf);
 
-extern void AnchorControl(SplineChar *sc,AnchorPoint *ap);
-extern void AnchorControlClass(SplineFont *_sf,AnchorClass *ac);
+extern void AnchorControl(SplineChar *sc,AnchorPoint *ap,int layer);
+extern void AnchorControlClass(SplineFont *_sf,AnchorClass *ac,int layer);
 
 extern void FVSelectByPST(FontView *fv);
 
@@ -979,12 +981,12 @@ struct subtable_data {
 extern GTextInfo **SFLookupListFromType(SplineFont *sf, int lookup_type );
 extern GTextInfo **SFSubtablesOfType(SplineFont *sf, int lookup_type, int kernclass, int add_none);
 extern GTextInfo *SFSubtableListOfType(SplineFont *sf, int lookup_type, int kernclass, int add_none);
-extern struct lookup_subtable *SFNewLookupSubtableOfType(SplineFont *sf, int lookup_type, struct subtable_data *sd );
+extern struct lookup_subtable *SFNewLookupSubtableOfType(SplineFont *sf, int lookup_type, struct subtable_data *sd, int def_layer );
 extern int EditLookup(OTLookup *otl,int isgpos,SplineFont *sf);
 extern int EditSubtable(struct lookup_subtable *sub,int isgpos,SplineFont *sf,
-	struct subtable_data *sd);
+	struct subtable_data *sd,int def_layer);
 extern void _LookupSubtableContents(SplineFont *sf, struct lookup_subtable *sub,
-	struct subtable_data *sd);
+	struct subtable_data *sd,int def_layer);
 extern unichar_t **SFGlyphNameCompletion(SplineFont *sf,GGadget *t,int from_tab,
 	int new_name_after_space);
 extern void FVMassGlyphRename(FontView *fv);
@@ -1002,7 +1004,7 @@ extern void CVCompareLayerToLayer(CharView *cv);
 extern void FVCompareLayerToLayer(FontView *fv);
 
 extern void MathInit(void);
-extern void SFMathDlg(SplineFont *sf);
+extern void SFMathDlg(SplineFont *sf,int def_layer);
 
 extern GMenuItem2 *cvpy_menu, *fvpy_menu;
 extern void cvpy_tllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e);

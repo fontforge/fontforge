@@ -321,7 +321,7 @@ static void BVCharUp(BitmapView *bv, GEvent *event ) {
     if ( event->u.chr.keysym=='I' &&
 	    (event->u.chr.state&ksm_shift) &&
 	    (event->u.chr.state&ksm_meta) )
-	SCCharInfo(bv->bc->sc,bv->fv->b.map,BVCurEnc(bv));
+	SCCharInfo(bv->bc->sc,bv->fv->b.active_layer,bv->fv->b.map,BVCurEnc(bv));
 #if _ModKeysAutoRepeat
     /* Under cygwin these keys auto repeat, they don't under normal X */
     else if ( event->u.chr.keysym == GK_Shift_L || event->u.chr.keysym == GK_Shift_R ||
@@ -1629,7 +1629,7 @@ static void BVMenuBDFInfo(GWindow gw,struct gmenuitem *mi,GEvent *g) {
 
 static void BVMenuGetInfo(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
-    SCCharInfo(bv->bc->sc,bv->fv->b.map,BVCurEnc(bv));
+    SCCharInfo(bv->bc->sc,bv->fv->b.active_layer,bv->fv->b.map,BVCurEnc(bv));
 }
 
 static void BVMenuBitmaps(GWindow gw,struct gmenuitem *mi,GEvent *g) {

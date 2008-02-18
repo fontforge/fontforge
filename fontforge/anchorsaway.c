@@ -1191,7 +1191,7 @@ static GTextInfo magnifications[] = {
     { NULL }
 };
     
-void AnchorControl(SplineChar *sc,AnchorPoint *ap) {
+void AnchorControl(SplineChar *sc,AnchorPoint *ap,int layer) {
     GRect pos;
     GWindowAttrs wattrs;
     AnchorDlg a;
@@ -1210,7 +1210,7 @@ void AnchorControl(SplineChar *sc,AnchorPoint *ap) {
     a.apos = ap->me;
     a.pixelsize = 150;
     a.magfactor = 1;
-    a.layer = ly_fore;
+    a.layer = layer;
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
     if ( ap->xadjust.corrections!=NULL ) {
 	int len = ap->xadjust.last_pixel_size-ap->xadjust.first_pixel_size+1;
@@ -1485,7 +1485,7 @@ void AnchorControl(SplineChar *sc,AnchorPoint *ap) {
     AnchorD_FreeAll(&a);
 }
 
-void AnchorControlClass(SplineFont *_sf,AnchorClass *ac) {
+void AnchorControlClass(SplineFont *_sf,AnchorClass *ac,int layer) {
     /* Pick a random glyph with an anchor point in the class. If no glyph, */
     /*  give user the chance to create one */
     SplineChar *sc, *scmark = NULL;
@@ -1533,5 +1533,5 @@ return;
 return;
     }
 	
-    AnchorControl(sc,ap);
+    AnchorControl(sc,ap,layer);
 }

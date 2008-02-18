@@ -63,6 +63,7 @@ struct att_dlg {
     int open_cnt, lines_page, off_top, off_left, page_width, bmargin;
     int maxl;
     SplineFont *sf;
+    int def_layer;
     GWindow gw,v;
     GGadget *vsb, *hsb, *cancel;
     int fh, as;
@@ -2088,7 +2089,7 @@ return( NULL );
     }
     if ( *pt=='\0' )
 return( NULL );
-return( NameList_GetImage(att->sf,sc,pt,isliga));
+return( NameList_GetImage(att->sf,sc,att->def_layer,pt,isliga));
 }
 
 static void ATTStartPopup(struct att_dlg *att,struct node *node) {
@@ -2467,10 +2468,11 @@ static void ShowAttCreateDlg(struct att_dlg *att, SplineFont *sf, int which,
     att->cancel = gcd[2].ret;
 }
 
-void ShowAtt(SplineFont *sf) {
+void ShowAtt(SplineFont *sf,int def_layer) {
     struct att_dlg att;
 
     ShowAttCreateDlg(&att, sf, 0, _("Show ATT"));
+    att.def_layer = def_layer;
 
     BuildTop(&att);
     att.open_cnt = SizeCnt(&att,att.tables,0);
