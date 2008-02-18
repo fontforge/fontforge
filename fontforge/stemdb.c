@@ -693,7 +693,7 @@ static void MakeVirtualLine(struct glyphdata *gd,BasePoint *perturbed,
     if ( gd->stspace==NULL ) {
 	for ( i=0; i<2; ++i ) {
 	    cnt = 0;
-	    for ( spl=gd->sc->layers[ly_fore].splines; spl!=NULL; spl=spl->next ) {
+	    for ( spl=gd->sc->layers[gd->layer].splines; spl!=NULL; spl=spl->next ) {
 		first = NULL;
 		if ( spl->first->prev!=NULL ) {
 		    for ( s=spl->first->next; s!=first; s=s->to->next ) {
@@ -3934,7 +3934,7 @@ static void CheckForGhostHints( struct glyphdata *gd, BlueData *bd ) {
 
     /* Get the alignment zones */
     if ( bd == NULL ) {
-	QuickBlues( gd->sf,&_bd );
+	QuickBlues( gd->sf,gd->layer,&_bd );
 	bd = &_bd;
     }
 
@@ -4178,7 +4178,7 @@ return( gd );
 return( gd );
 }
 
-struct glyphdata *GlyphDataInit( SplineChar *sc,double em_size,int only_hv ) {
+struct glyphdata *GlyphDataInit( SplineChar *sc,int layer,double em_size,int only_hv ) {
     struct glyphdata *gd;
     struct pointdata *pd;
     int i;
@@ -4187,13 +4187,14 @@ struct glyphdata *GlyphDataInit( SplineChar *sc,double em_size,int only_hv ) {
     Monotonic *m;
     int cnt;
 
-    /* We can't hint type3 fonts, so the only layer we care about is ly_fore */
+    /* We only hint one layer at a time */
     /* We shan't try to hint references yet */
-    if ( sc->layers[ly_fore].splines==NULL )
+    if ( sc->layers[gd->layer].splines==NULL )
 return( NULL );
 
     gd = gcalloc( 1,sizeof( struct glyphdata ));
     gd->only_hv = only_hv;
+    gd->layer = layer;
     
     gd->sc = sc;
     gd->sf = sc->parent;
@@ -4206,13 +4207,13 @@ return( NULL );
     /*  so it must be called BEFORE everything else (even though logically */
     /*  that doesn't make much sense). Otherwise we might have a pointer */
     /*  to something since freed */
-    gd->ms = SSsToMContours(sc->layers[ly_fore].splines,over_remove);	/* second argument is meaningless here */
+    gd->ms = SSsToMContours(sc->layers[layer].splines,over_remove);	/* second argument is meaningless here */
 
-    gd->realcnt = gd->pcnt = SCNumberPoints( sc );
-    for ( i=0, ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next, ++i );
+    gd->realcnt = gd->pcnt = SCNumberPoints( sc, layer );
+    for ( i=0, ss=sc->layers[layer].splines; ss!=NULL; ss=ss->next, ++i );
     gd->ccnt = i;
     gd->contourends = galloc((i+1)*sizeof(int));
-    for ( i=0, ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next, ++i ) {
+    for ( i=0, ss=sc->layers[layer].splines; ss!=NULL; ss=ss->next, ++i ) {
 	SplinePoint *last;
 	if ( ss->first->prev!=NULL )
 	    last = ss->first->prev->from;
@@ -4227,7 +4228,7 @@ return( NULL );
 
     /* Create temporary point numbers for the implied points. We need this */
     /*  for metafont if nothing else */
-    for ( ss= sc->layers[ly_fore].splines; ss!=NULL; ss = ss->next ) {
+    for ( ss= sc->layers[layer].splines; ss!=NULL; ss = ss->next ) {
 	for ( sp = ss->first; ; ) {
 	    if ( sp->ttfindex == 0xffff )
 		sp->ttfindex = gd->pcnt++;
@@ -4242,7 +4243,7 @@ return( NULL );
     gd->pspace = galloc( gd->pcnt*sizeof( struct pointdata *));
     /* And for 0xfffe points such as those used in glyphs with order2 glyphs */
     /*  with references. */
-    for ( ss = sc->layers[ly_fore].splines; ss!=NULL; ss = ss->next ) {
+    for ( ss = sc->layers[layer].splines; ss!=NULL; ss = ss->next ) {
 	for ( sp = ss->first; ; ) {
 	    if ( sp->ttfindex == 0xfffe )
 		sp->ttfindex = gd->pcnt++;
@@ -4254,13 +4255,13 @@ return( NULL );
 	}
     }
 
-    /*gd->ms = SSsToMContours(sc->layers[ly_fore].splines,over_remove);*/	/* second argument is meaningless here */
+    /*gd->ms = SSsToMContours(sc->layers[layer].splines,over_remove);*/	/* second argument is meaningless here */
     for ( m=gd->ms, cnt=0; m!=NULL; m=m->linked, ++cnt );
     gd->space = galloc((cnt+2)*sizeof(Monotonic*));
     gd->mcnt = cnt;
 
     gd->points = gcalloc(gd->pcnt,sizeof(struct pointdata));
-    for ( ss=sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next ) if ( ss->first->prev!=NULL ) {
+    for ( ss=sc->layers[layer].splines; ss!=NULL; ss=ss->next ) if ( ss->first->prev!=NULL ) {
 	for ( sp=ss->first; ; ) {
 	    PointInit(gd,sp,ss);
 	    if ( sp->next==NULL )
@@ -4303,7 +4304,7 @@ return( NULL );
 return( gd );
 }
 
-struct glyphdata *GlyphDataBuild( SplineChar *sc,BlueData *bd,int only_hv ) {
+struct glyphdata *GlyphDataBuild( SplineChar *sc,int layer, BlueData *bd,int only_hv ) {
     struct glyphdata *gd;
     struct pointdata *pd;
     struct stemdata *stem;
@@ -4321,7 +4322,7 @@ struct glyphdata *GlyphDataBuild( SplineChar *sc,BlueData *bd,int only_hv ) {
     if ( !only_hv ) only_hv = !detect_diagonal_stems;
     em_size = ( sc->parent != NULL ) ? sc->parent->ascent + sc->parent->descent : 1000;
 
-    gd = GlyphDataInit( sc,em_size,only_hv );
+    gd = GlyphDataInit( sc,layer,em_size,only_hv );
     if ( gd ==  NULL )
 return( gd );
 

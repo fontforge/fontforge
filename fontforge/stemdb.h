@@ -33,6 +33,7 @@ typedef struct glyphdata {
     SplineFont *sf;
     BlueData bd;
     SplineChar *sc;
+    int layer;
     int emsize;
     int ccnt;
     int *contourends;
@@ -166,8 +167,8 @@ struct stembundle {
     struct stembundle *next;
 };
     
-extern struct glyphdata *GlyphDataBuild(SplineChar *sc, BlueData *bd, int only_hv);
-extern struct glyphdata *GlyphDataInit(SplineChar *sc, double em_size, int only_hv);
+extern struct glyphdata *GlyphDataBuild(SplineChar *sc, int layer, BlueData *bd, int only_hv);
+extern struct glyphdata *GlyphDataInit(SplineChar *sc, int layer, double em_size, int only_hv);
 extern struct glyphdata *StemInfoToStemData( struct glyphdata *gd,StemInfo *si,int is_v );
 extern struct glyphdata *DStemInfoToStemData( struct glyphdata *gd,DStemInfo *dsi );
 extern void GlyphDataFree(struct glyphdata *gd);
