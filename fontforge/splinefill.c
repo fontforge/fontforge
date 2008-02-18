@@ -452,10 +452,10 @@ void FindEdgesSplineSet(SplinePointList *spl, EdgeList *es) {
 static void FindEdges(SplineChar *sc, EdgeList *es) {
     RefChar *rf;
 
-    for ( rf=sc->layers[ly_fore].refs; rf!=NULL; rf = rf->next )
+    for ( rf=sc->layers[es->layer].refs; rf!=NULL; rf = rf->next )
 	FindEdgesSplineSet(rf->layers[0].splines,es);
 
-    FindEdgesSplineSet(sc->layers[ly_fore].splines,es);
+    FindEdgesSplineSet(sc->layers[es->layer].splines,es);
 }
 
 Edge *ActiveEdgesInsertNew(EdgeList *es, Edge *active,int i) {
@@ -1307,7 +1307,7 @@ return( 0 );
 /*  integer value there are a few cases (fill pattern for charview) where */
 /*  I need more precision and the pixelsize itself is largely irrelevant */
 /*  (I care about the scale though) */
-static BDFChar *_SplineCharRasterize(SplineChar *sc, double pixelsize, int is_aa) {
+static BDFChar *_SplineCharRasterize(SplineChar *sc, int layer, double pixelsize, int is_aa) {
     EdgeList es;
     DBounds b;
     BDFChar *bdfc;
@@ -1329,6 +1329,7 @@ return( NULL );
 	es.omin = b.minx*es.scale;
 	es.omax = b.maxx*es.scale;
 	es.cnt = (int) (es.mmax-es.mmin) + 1;
+	es.layer = layer;
 	if ( es.cnt<8000 && es.omax-es.omin<8000 && es.cnt>1 ) {
 	    es.edges = gcalloc(es.cnt,sizeof(Edge *));
 	    es.sc = sc;
@@ -1396,8 +1397,8 @@ return( NULL );
 return( bdfc );
 }
 
-BDFChar *SplineCharRasterize(SplineChar *sc, double pixelsize) {
-return( _SplineCharRasterize(sc,pixelsize,false));
+BDFChar *SplineCharRasterize(SplineChar *sc, int layer, double pixelsize) {
+return( _SplineCharRasterize(sc,layer,pixelsize,false));
 }
 
 BDFFont *SplineFontToBDFHeader(SplineFont *_sf, int pixelsize, int indicate) {
@@ -1439,228 +1440,7 @@ BDFFont *SplineFontToBDFHeader(SplineFont *_sf, int pixelsize, int indicate) {
 return( bdf );
 }
 
-#if 0
-/* This code was an attempt to do better at rasterizing by making a big bitmap*/
-/*  and shrinking it down. It did make curved edges look better, but it made */
-/*  straight edges worse. So I don't think it's worth it. */
-static int countsquare(BDFChar *bc, int i, int j, int linear_scale) {
-    int ii,jj,jjj, cnt;
-    uint8 *bpt;
-
-    cnt = 0;
-    for ( ii=0; ii<linear_scale; ++ii ) {
-	if ( i*linear_scale+ii>bc->ymax-bc->ymin )
-    break;
-	bpt = bc->bitmap + (i*linear_scale+ii)*bc->bytes_per_line;
-	for ( jj=0; jj<linear_scale; ++jj ) {
-	    jjj = j*linear_scale+jj;
-	    if ( jjj>bc->xmax-bc->xmin )
-	break;
-	    if ( bpt[jjj>>3]& (1<<(7-(jjj&7))) )
-		++cnt;
-	}
-    }
-return( cnt );
-}
-
-static int makesleftedge(BDFChar *bc, int i, int j, int linear_scale) {
-    int ii,jjj;
-    uint8 *bpt;
-
-    for ( ii=0; ii<linear_scale; ++ii ) {
-	if ( i*linear_scale+ii>bc->ymax-bc->ymin )
-return( false );
-	bpt = bc->bitmap + (i*linear_scale+ii)*bc->bytes_per_line;
-	jjj = j*linear_scale;
-	if ( !( bpt[jjj>>3]& (1<<(7-(jjj&7))) ))
-return( false );
-    }
-return( true );
-}
-
-static int makesbottomedge(BDFChar *bc, int i, int j, int linear_scale) {
-    int jj,jjj;
-    uint8 *bpt;
-
-    for ( jj=0; jj<linear_scale; ++jj ) {
-	jjj = j*linear_scale+jj;
-	if ( jjj>bc->xmax-bc->xmin )
-return( false );
-	bpt = bc->bitmap + (i*linear_scale)*bc->bytes_per_line;
-	if ( !( bpt[jjj>>3]& (1<<(7-(jjj&7))) ))
-return( false );
-    }
-return( true );
-}
-
-static int makesline(BDFChar *bc, int i, int j, int linear_scale) {
-    int ii,jj,jjj;
-    int across, any, alltop, allbottom;	/* alltop is sometimes allleft, and allbottom allright */
-    uint8 *bpt;
-    /* If we have a line that goes all the way across a square then we want */
-    /*  to turn on the pixel that corresponds to that square. Exception: */
-    /*  if that line is on an edge of the square, and the square adjacent to */
-    /*  it has more pixels, then let the adjacent square get the pixel */
-    /* if two squares are essentially equal, choose the top one */
-
-    across = alltop = allbottom = true;
-    for ( ii=0; ii<linear_scale; ++ii ) {
-	if ( i*linear_scale+ii>bc->ymax-bc->ymin ) {
-	    across = alltop = allbottom = false;
-    break;
-	}
-	bpt = bc->bitmap + (i*linear_scale+ii)*bc->bytes_per_line;
-	jjj = j*linear_scale;
-	if ( !( bpt[jjj>>3]& (1<<(7-(jjj&7))) ))
-	    allbottom = 0;
-	jjj += linear_scale-1;
-	if ( jjj>bc->xmax-bc->xmin )
-	    alltop = false;
-	else if ( !( bpt[jjj>>3]& (1<<(7-(jjj&7))) ))
-	    alltop = 0;
-	any = false;
-	for ( jj=0; jj<linear_scale; ++jj ) {
-	    jjj = j*linear_scale+jj;
-	    if ( jjj>bc->xmax-bc->xmin )
-	break;
-	    if ( bpt[jjj>>3]& (1<<(7-(jjj&7))) )
-		any = true;
-	}
-	if ( !any )
-	    across = false;
-    }
-    if ( across ) {
-	if ( (!alltop && !allbottom ) || (alltop && allbottom))
-return( true );
-	if ( allbottom ) {
-	    if ( j==0 )
-return( true );
-	    if ( countsquare(bc,i,j-1,linear_scale)>=linear_scale*linear_scale/2 )
-return( false );
-return( true );
-	}
-	if ( alltop ) {
-	    if ( j==(bc->xmax-bc->xmin)/linear_scale )
-return( true );
-	    if ( countsquare(bc,i,j+1,linear_scale)>=linear_scale*linear_scale/2 )
-return( false );
-	    if ( makesleftedge(bc,i,j+1,linear_scale))
-return( false );
-return( true );
-	}
-    }
-
-    /* now the other dimension */
-    across = alltop = allbottom = true;
-    for ( jj=0; jj<linear_scale; ++jj ) {
-	jjj = j*linear_scale+jj;
-	if ( jjj>bc->xmax-bc->xmin ) {
-	    across = alltop = allbottom = false;
-    break;
-	}
-	bpt = bc->bitmap + (i*linear_scale)*bc->bytes_per_line;
-	if ( !( bpt[jjj>>3]& (1<<(7-(jjj&7))) ))
-	    allbottom = 0;
-	if ( i*linear_scale + linear_scale-1>bc->ymax-bc->ymin )
-	    alltop = 0;
-	else {
-	    bpt = bc->bitmap + (i*linear_scale+linear_scale-1)*bc->bytes_per_line;
-	    if ( !( bpt[jjj>>3]& (1<<(7-(jjj&7))) ))
-		alltop = 0;
-	}
-	any = false;
-	for ( ii=0; ii<linear_scale; ++ii ) {
-	    if ( (i*linear_scale+ii)>bc->xmax-bc->xmin )
-	break;
-	    bpt = bc->bitmap + (i*linear_scale+ii)*bc->bytes_per_line;
-	    if ( bpt[jjj>>3]& (1<<(7-(jjj&7))) )
-		any = true;
-	}
-	if ( !any )
-	    across = false;
-    }
-    if ( across ) {
-	if ( (!alltop && !allbottom ) || (alltop && allbottom))
-return( true );
-	if ( allbottom ) {
-	    if ( i==0 )
-return( true );
-	    if ( countsquare(bc,i-1,j,linear_scale)>=linear_scale*linear_scale/2 )
-return( false );
-return( true );
-	}
-	if ( alltop ) {
-	    if ( i==(bc->ymax-bc->ymin)/linear_scale )
-return( true );
-	    if ( countsquare(bc,i+1,j,linear_scale)>=linear_scale*linear_scale/2 )
-return( false );
-	    if ( makesbottomedge(bc,i+1,j,linear_scale))
-return( false );
-return( true );
-	}
-    }
-
-return( false );		/* No line */
-}
-
-/* Make a much larger bitmap than we need, and then shrink it */
-static void BDFCShrinkBitmap(BDFChar *bc, int linear_scale) {
-    BDFChar new;
-    int i,j, mid = linear_scale*linear_scale/2;
-    int cnt;
-    uint8 *pt;
-
-    if ( bc==NULL )
-return;
-
-    memset(&new,'\0',sizeof(new));
-    new.xmin = floor( ((real) bc->xmin)/linear_scale );
-    new.ymin = floor( ((real) bc->ymin)/linear_scale );
-    new.xmax = new.xmin + (bc->xmax-bc->xmin+linear_scale-1)/linear_scale;
-    new.ymax = new.ymin + (bc->ymax-bc->ymin+linear_scale-1)/linear_scale;
-    new.width = rint( ((real) bc->width)/linear_scale );
-
-    new.bytes_per_line = (new.xmax-new.xmin+1);
-    new.enc = bc->enc;
-    new.sc = bc->sc;
-    new.byte_data = true;
-    new.bitmap = gcalloc( (new.ymax-new.ymin+1) * new.bytes_per_line, sizeof(uint8));
-    for ( i=0; i<=new.ymax-new.ymin; ++i ) {
-	pt = new.bitmap + i*new.bytes_per_line;
-	for ( j=0; j<=new.xmax-new.xmin; ++j ) {
-	    cnt = countsquare(bc,i,j,linear_scale);
-	    if ( cnt>=mid )
-		pt[j>>3] |= (1<<(7-(j&7)));
-	    else if ( cnt>=linear_scale && makesline(bc,i,j,linear_scale))
-		pt[j>>3] |= (1<<(7-(j&7)));
-	}
-    }
-    free(bc->bitmap);
-    *bc = new;
-}
-
-BDFChar *SplineCharSlowerRasterize(SplineChar *sc, int pixelsize) {
-    BDFChar *bc;
-    int linear_scale = 1;
-
-    if ( pixelsize<=30 )
-	linear_scale = 4;
-    else if ( pixelsize<=40 )
-	linear_scale = 3;
-    else if ( pixelsize<=60 )
-	linear_scale = 2;
-
-    bc = SplineCharRasterize(sc,pixelsize*linear_scale);
-    if ( linear_scale==1 )
-return( bc );
-    BDFCShrinkBitmap(bc,linear_scale);
-return( bc );
-}
-
-BDFFont *SplineFontRasterize(SplineFont *_sf, int pixelsize, int indicate, int slower) {
-#else
-BDFFont *SplineFontRasterize(SplineFont *_sf, int pixelsize, int indicate) {
-#endif
+BDFFont *SplineFontRasterize(SplineFont *_sf, int layer, int pixelsize, int indicate) {
     BDFFont *bdf = SplineFontToBDFHeader(_sf,pixelsize,indicate);
     int i,k;
     SplineFont *sf=_sf;	/* The complexity here is to pick the appropriate subfont of a CID font */
@@ -1673,12 +1453,7 @@ BDFFont *SplineFontRasterize(SplineFont *_sf, int pixelsize, int indicate) {
 	    break;
 	    }
 	}
-#if 0
-	bdf->glyphs[i] = slower ? SplineCharSlowerRasterize(sf->glyphs[i],pixelsize):
-				SplineCharRasterize(sf->glyphs[i],pixelsize);
-#else
-	bdf->glyphs[i] = SplineCharRasterize(sf->glyphs[i],pixelsize);
-#endif
+	bdf->glyphs[i] = SplineCharRasterize(sf->glyphs[i],layer,pixelsize);
 	if ( indicate ) ff_progress_next();
     }
     if ( indicate ) ff_progress_end_indicator();
@@ -1771,17 +1546,17 @@ return( bdf->clut->clut_len==256 ? 8 :
 	bdf->clut->clut_len==16 ? 4 : 2);
 }
 
-BDFChar *SplineCharAntiAlias(SplineChar *sc, int pixelsize, int linear_scale) {
+BDFChar *SplineCharAntiAlias(SplineChar *sc, int layer, int pixelsize, int linear_scale) {
     BDFChar *bc;
 
-    bc = _SplineCharRasterize(sc,pixelsize*linear_scale,true);
+    bc = _SplineCharRasterize(sc,layer, pixelsize*linear_scale,true);
     if ( linear_scale!=1 )
 	BDFCAntiAlias(bc,linear_scale);
     BCCompressBitmap(bc);
 return( bc );
 }
 
-BDFFont *SplineFontAntiAlias(SplineFont *_sf, int pixelsize, int linear_scale) {
+BDFFont *SplineFontAntiAlias(SplineFont *_sf, int layer, int pixelsize, int linear_scale) {
     BDFFont *bdf;
     int i,k;
     real scale;
@@ -1791,7 +1566,7 @@ BDFFont *SplineFontAntiAlias(SplineFont *_sf, int pixelsize, int linear_scale) {
     SplineFont *sf;	/* The complexity here is to pick the appropriate subfont of a CID font */
 
     if ( linear_scale==1 )
-return( SplineFontRasterize(_sf,pixelsize,true));
+return( SplineFontRasterize(_sf,layer,pixelsize,true));
 
     bdf = gcalloc(1,sizeof(BDFFont));
     sf = _sf;
@@ -1831,7 +1606,7 @@ return( SplineFontRasterize(_sf,pixelsize,true));
 	    }
 	    scale = pixelsize / (real) (sf->ascent+sf->descent);
 	}
-	bdf->glyphs[i] = SplineCharRasterize(sf->glyphs[i],pixelsize*linear_scale);
+	bdf->glyphs[i] = SplineCharRasterize(sf->glyphs[i],layer,pixelsize*linear_scale);
 	BDFCAntiAlias(bdf->glyphs[i],linear_scale);
 	ff_progress_next();
     }
@@ -1862,14 +1637,14 @@ return(NULL);
 		sc->orig_pos,bdf->truesize,bdf->clut?8:1);
     else if ( bdf->unhinted_freetype )
 	bdf->glyphs[index] = SplineCharFreeTypeRasterizeNoHints(sc,
-		bdf->truesize,bdf->clut?4:1);
+		bdf->layer,bdf->truesize,bdf->clut?4:1);
     else
 	bdf->glyphs[index] = NULL;
     if ( bdf->glyphs[index]==NULL ) {
 	if ( bdf->clut )
-	    bdf->glyphs[index] = SplineCharAntiAlias(sc,bdf->truesize,4);
+	    bdf->glyphs[index] = SplineCharAntiAlias(sc,bdf->layer,bdf->truesize,4);
 	else
-	    bdf->glyphs[index] = SplineCharRasterize(sc,bdf->truesize);
+	    bdf->glyphs[index] = SplineCharRasterize(sc,bdf->layer,bdf->truesize);
     }
 return( bdf->glyphs[index] );
 }
@@ -1888,7 +1663,7 @@ return(BDFPieceMeal(bdf,index));
 
 /* Piecemeal fonts are only used as the display font in the fontview */
 /*  as such they are simple fonts (ie. we only display the current cid subfont) */
-BDFFont *SplineFontPieceMeal(SplineFont *sf,int pixelsize,int flags,void *ftc) {
+BDFFont *SplineFontPieceMeal(SplineFont *sf,int layer,int pixelsize,int flags,void *ftc) {
     BDFFont *bdf = gcalloc(1,sizeof(BDFFont));
     real scale;
     int truesize = pixelsize;
@@ -1914,6 +1689,7 @@ BDFFont *SplineFontPieceMeal(SplineFont *sf,int pixelsize,int flags,void *ftc) {
 	bdf->unhinted_freetype = true;
 
     bdf->sf = sf;
+    bdf->layer = layer;
     bdf->glyphcnt = bdf->glyphmax = sf->glyphcnt;
     bdf->pixelsize = pixelsize;
     bdf->glyphs = gcalloc(sf->glyphcnt,sizeof(BDFChar *));

@@ -2050,8 +2050,9 @@ return( head );
 
 void FVStrokeItScript(void *_fv, StrokeInfo *si) {
     FontViewBase *fv = _fv;
+    int layer = fv->active_layer;
     SplineSet *temp;
-    int i, cnt=0, layer, gid;
+    int i, cnt=0, gid;
     SplineChar *sc;
 
     for ( i=0; i<fv->map->enccount; ++i ) if ( (gid=fv->map->map[i])!=-1 && fv->sf->glyphs[gid]!=NULL && fv->selected[i] )
@@ -2063,19 +2064,21 @@ void FVStrokeItScript(void *_fv, StrokeInfo *si) {
 	if ( (gid=fv->map->map[i])!=-1 && (sc = fv->sf->glyphs[gid])!=NULL &&
 		!sc->ticked && fv->selected[i] ) {
 	    sc->ticked = true;
-	    SCPreserveState(sc,false);
 	    if ( sc->parent->multilayer ) {
+		SCPreserveState(sc,false);
 		for ( layer = ly_fore; layer<sc->layer_cnt; ++layer ) {
 		    temp = SSStroke(sc->layers[layer].splines,si,sc);
 		    SplinePointListsFree( sc->layers[layer].splines );
 		    sc->layers[layer].splines = temp;
 		}
+		SCCharChangedUpdate(sc,ly_all);
 	    } else {
-		temp = SSStroke(sc->layers[ly_fore].splines,si,sc);
-		SplinePointListsFree( sc->layers[ly_fore].splines );
-		sc->layers[ly_fore].splines = temp;
+		SCPreserveLayer(sc,layer,false);
+		temp = SSStroke(sc->layers[layer].splines,si,sc);
+		SplinePointListsFree( sc->layers[layer].splines );
+		sc->layers[layer].splines = temp;
+		SCCharChangedUpdate(sc,layer);
 	    }
-	    SCCharChangedUpdate(sc);
 	    if ( !ff_progress_next())
     break;
 	}

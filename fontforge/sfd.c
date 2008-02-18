@@ -1210,8 +1210,6 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
 	    sc->top_accent_horiz!=TEX_UNDEF || sc->vert_variants!=NULL ||
 	    sc->horiz_variants!=NULL || sc->mathkern!=NULL )
 	SFDDumpCharMath(sfd,sc);
-    if ( sc->validation_state&vs_known )
-	fprintf( sfd, "Validated: %d\n", sc->validation_state );
     if ( sc->python_persistent!=NULL )
 	SFDPickleMe(sfd,sc->python_persistent);
 #if HANYANG
@@ -1270,6 +1268,8 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
 	    SFDDumpSplineSet(sfd,sc->layers[i].splines);
 	}
 	SFDDumpRefs(sfd,sc->layers[i].refs,sc->name,map,newgids);
+	if ( sc->layers[i].validation_state&vs_known )
+	    fprintf( sfd, "Validated: %d\n", sc->layers[i].validation_state );
     }
     for ( v=0; v<2; ++v ) {
 	kp = v ? sc->vkerns : sc->kerns;
@@ -2000,6 +2000,8 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
     }
     if ( sf->display_size!=0 )
 	fprintf( sfd, "DisplaySize: %d\n", sf->display_size );
+    if ( sf->display_layer!=ly_fore )
+	fprintf( sfd, "DisplayLayer: %d\n", sf->display_layer );
     fprintf( sfd, "AntiAlias: %d\n", sf->display_antialias );
     fprintf( sfd, "FitToEm: %d\n", sf->display_bbsized );
     {
@@ -3972,7 +3974,7 @@ return( NULL );
 	} else if ( strmatch(tok,"Fore")==0 ) {
 	    while ( isspace(ch = getc(sfd)));
 	    ungetc(ch,sfd);
-	    if ( ch!='I' && ch!='R' && ch!='S' ) {
+	    if ( ch!='I' && ch!='R' && ch!='S' && ch!='V') {
 		/* Old format, without a SplineSet token */
 		sc->layers[ly_fore].splines = SFDGetSplineSet(sf,sfd,sc->layers[ly_fore].order2);
 	    }
@@ -3980,13 +3982,13 @@ return( NULL );
 	} else if ( strmatch(tok,"MinimumDistance:")==0 ) {
 	    SFDGetMinimumDistances(sfd,sc);
 	} else if ( strmatch(tok,"Validated:")==0 ) {
-	    getsint(sfd,(int16 *) &sc->validation_state);
+	    getsint(sfd,(int16 *) &sc->layers[current_layer].validation_state);
 	} else if ( strmatch(tok,"PickledData:")==0 ) {
 	    sc->python_persistent = SFDUnPickle(sfd);
 	} else if ( strmatch(tok,"Back")==0 ) {
 	    while ( isspace(ch=getc(sfd)));
 	    ungetc(ch,sfd);
-	    if ( ch!='I' && ch!='R' && ch!='S' ) {
+	    if ( ch!='I' && ch!='R' && ch!='S' && ch!='V') {
 		/* Old format, without a SplineSet token */
 		sc->layers[ly_back].splines = SFDGetSplineSet(sf,sfd,sc->layers[ly_back].order2);
 		oldback = true;
@@ -4363,9 +4365,9 @@ exit(1);
             /* Do this when we have finished with other glyph components,
             /* so that splines are already available */
 	    if ( sf->sfd_version<2 )
-                SCGuessHintInstancesList( sc,sc->hstem,sc->vstem,sc->dstem,false,false );
+                SCGuessHintInstancesList( sc,ly_fore,sc->hstem,sc->vstem,sc->dstem,false,false );
             else if ( had_old_dstems && sc->layers[ly_fore].splines != NULL )
-                SCGuessHintInstancesList( sc,NULL,NULL,sc->dstem,false,true );
+                SCGuessHintInstancesList( sc,ly_fore,NULL,NULL,sc->dstem,false,true );
 	    if ( sc->layers[ly_fore].order2 )
 		SCDefaultInterpolation(sc);
 return( sc );
@@ -5823,6 +5825,8 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
 	    sf->pfminfo.hasunicoderanges = true;
 	} else if ( strmatch(tok,"DisplaySize:")==0 ) {
 	    getint(sfd,&sf->display_size);
+	} else if ( strmatch(tok,"DisplayLayer:")==0 ) {
+	    getint(sfd,&sf->display_layer);
 	} else if ( strmatch(tok,"TopEncoding:")==0 ) {	/* Obsolete */
 	    getint(sfd,&sf->top_enc);
 	} else if ( strmatch(tok,"WinInfo:")==0 ) {

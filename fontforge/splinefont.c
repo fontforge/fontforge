@@ -168,7 +168,7 @@ return( ssf->glyphs[gid] );
 		/*  and then make us be a duplicate of it */
 		sc = _SFMakeChar(sf,map,real_uni);
 		map->map[enc] = gid = sc->orig_pos;
-		SCCharChangedUpdate(sc);
+		SCCharChangedUpdate(sc,ly_all);
 return( sc );
 	    }
 	}
@@ -1154,14 +1154,14 @@ return;
     }
 }
 
-int SFPrivateGuess(SplineFont *sf,struct psdict *private,char *name, int onlyone) {
+int SFPrivateGuess(SplineFont *sf,int layer, struct psdict *private,char *name, int onlyone) {
     real bluevalues[14], otherblues[10];
     real snapcnt[12];
     real stemsnap[12];
     char buffer[211];
 
     if ( strcmp(name,"BlueValues")==0 || strcmp(name,"OtherBlues")==0 ) {
-	FindBlues(sf,bluevalues,otherblues);
+	FindBlues(sf,layer,bluevalues,otherblues);
 	if ( !onlyone || strcmp(name,"BlueValues")==0 ) {
 	    arraystring(buffer,bluevalues,14);
 	    PSDictChangeEntry(private,"BlueValues",buffer);

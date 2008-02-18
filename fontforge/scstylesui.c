@@ -55,6 +55,7 @@ typedef struct styledlg {
     CharView *cv;
     FontView *fv;
     SplineFont *sf;
+    int layer;
 } StyleDlg;
 
 #define CID_C_Factor	1001
@@ -421,12 +422,13 @@ void EmboldenDlg(FontView *fv, CharView *cv) {
     int k;
     char topzone[40], botzone[40], emb_width[40], tophint[40], bothint[40], serifh[40];
 
-    QuickBlues(sf, &bd);
-
     memset(&ed,0,sizeof(ed));
     ed.fv = fv;
     ed.cv = cv;
     ed.sf = sf;
+    ed.layer = cv==NULL ? fv->b.active_layer : CVLayer((CharViewBase *) cv);
+
+    QuickBlues(sf, ed.layer, &bd);
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;

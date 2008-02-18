@@ -2501,9 +2501,8 @@ void SPLStartToLeftmost(SplineChar *sc,SplinePointList *spl, int *changed) {
     }
 }
 
-void SPLsStartToLeftmost(SplineChar *sc) {
+void SPLsStartToLeftmost(SplineChar *sc,int layer) {
     int changed = 0;
-    int layer;
     SplineSet *ss;
 
     if ( sc==NULL )
@@ -2514,12 +2513,14 @@ return;
 	    for ( ss = sc->layers[layer].splines; ss!=NULL; ss=ss->next )
 		SPLStartToLeftmost(sc,ss,&changed);
 	}
+	if ( changed )
+	    SCCharChangedUpdate(sc,ly_all);
     } else {
-	for ( ss = sc->layers[ly_fore].splines; ss!=NULL; ss=ss->next )
+	for ( ss = sc->layers[layer].splines; ss!=NULL; ss=ss->next )
 	    SPLStartToLeftmost(sc,ss,&changed);
+	if ( changed )
+	    SCCharChangedUpdate(sc,layer);
     }
-    if ( changed )
-	SCCharChangedUpdate(sc);
 }
 
 struct contourinfo {
@@ -2542,9 +2543,8 @@ return( 1 );
 return( 0 );
 }
 
-void CanonicalContours(SplineChar *sc) {
+void CanonicalContours(SplineChar *sc,int layer) {
     int changed;
-    int layer;
     SplineSet *ss;
     SplinePoint *sp, *best;
     int contour_cnt, contour_max=0, i, diff;
@@ -2604,7 +2604,7 @@ return;
     }
     free(ci);
     if ( changed )
-	SCCharChangedUpdate(sc);
+	SCCharChangedUpdate(sc,ly_all);
 }
 
 static int SplineSetMakeLoop(SplineSet *spl,real fudge) {
@@ -3121,6 +3121,7 @@ SplineFont *SplineFontEmpty(void) {
     sf->display_antialias = default_fv_antialias;
     sf->display_bbsized = default_fv_bbsized;
     sf->display_size = -default_fv_font_size;
+    sf->display_layer = ly_fore;
     sf->pfminfo.winascent_add = sf->pfminfo.windescent_add = true;
     sf->pfminfo.hheadascent_add = sf->pfminfo.hheaddescent_add = true;
     sf->pfminfo.typoascent_add = sf->pfminfo.typodescent_add = true;
@@ -3978,6 +3979,7 @@ SplineSet *SplineSetsCorrect(SplineSet *base,int *changed) {
     es.mmax = ceil(b.maxy*es.scale);
     es.omin = b.minx*es.scale;
     es.omax = b.maxx*es.scale;
+    es.layer = ly_fore;		/* Not meaningful */
 
 /* Give up if we are given unreasonable values (ie. if rounding errors might screw us up) */
     if ( es.mmin<1e5 && es.mmax>-1e5 && es.omin<1e5 && es.omax>-1e5 ) {
@@ -4053,6 +4055,7 @@ SplineSet *SplineSetsDetectDir(SplineSet **_base,int *_lastscan) {
     memset(&el,'\0',sizeof(el));
     memset(&dummy,'\0',sizeof(dummy));
     memset(layers,0,sizeof(layers));
+    el.layer = ly_fore;
     dummy.layers = layers;
     dummy.layer_cnt = 2;
     dummy.layers[ly_fore].splines = base;
@@ -4134,6 +4137,7 @@ return( -1 );		/* Open paths, (open paths with only one point are a special case
     memset(&el,'\0',sizeof(el));
     memset(&dummy,'\0',sizeof(dummy));
     memset(layers,0,sizeof(layers));
+    el.layer = ly_fore;
     dummy.layers = layers;
     dummy.layer_cnt = 2;
     dummy.layers[ly_fore].splines = (SplineSet *) spl;

@@ -580,8 +580,9 @@ static int SCMatchesIncomplete(SplineChar *sc,SearchData *s,int startafter) {
     /* don't look in refs because we can't do a replace there */
     SplineSet *spl;
     SplinePoint *sp;
+    int layer = s->fv->active_layer;
 
-    for ( spl=startafter?s->matched_spl:sc->layers[ly_fore].splines; spl!=NULL; spl=spl->next ) {
+    for ( spl=startafter?s->matched_spl:sc->layers[layer].splines; spl!=NULL; spl=spl->next ) {
 	s->matched_spl = spl;
 	for ( sp=startafter?s->last_sp:spl->first; sp!=NULL; ) {
 	    if ( SPMatchesF(sp,s,s->path,spl->first,true)) {
@@ -612,11 +613,12 @@ static int SCMatchesFull(SplineChar *sc,SearchData *s) {
     SplinePoint *sp;
     RefChar *r, *s_r;
     int i, first, ref_first;
+    int layer = s->fv->active_layer;
 
     s->matched_ss = s->matched_refs = s->matched_ss_start = 0;
     first = true;
     for ( s_r = s->sc_srch.layers[ly_fore].refs; s_r!=NULL; s_r = s_r->next ) {
-	for ( r = sc->layers[ly_fore].refs, i=0; r!=NULL; r=r->next, ++i ) if ( !(s->matched_refs&(1<<i)) ) {
+	for ( r = sc->layers[layer].refs, i=0; r!=NULL; r=r->next, ++i ) if ( !(s->matched_refs&(1<<i)) ) {
 	    if ( r->sc == s_r->sc ) {
 		/* I should check the transform to see if the tryflips (etc) flags would make this not a match */
 		if ( r->transform[0]==s_r->transform[0] && r->transform[1]==s_r->transform[1] &&
@@ -645,7 +647,7 @@ return( false );
     s->matched_ss = s->matched_ss_start;	/* Don't use any of these contours, they don't work */
     first = ref_first;
     for ( s_spl = s->path, s_r_spl=s->revpath; s_spl!=NULL; s_spl=s_spl->next, s_r_spl = s_r_spl->next ) {
-	for ( spl=sc->layers[ly_fore].splines, i=0; spl!=NULL; spl=spl->next, ++i ) if ( !(s->matched_ss&(1<<i)) ) {
+	for ( spl=sc->layers[layer].splines, i=0; spl!=NULL; spl=spl->next, ++i ) if ( !(s->matched_ss&(1<<i)) ) {
 	    s->matched_spl = spl;
 	    if ( spl->first->prev==NULL ) {	/* Open */
 		if ( s_spl->first!=s_spl->last ) {
@@ -914,9 +916,10 @@ static int HeuristiclyBadMatch(SplineChar *sc,SearchData *s) {
     /*  clockwise contour, don't accept the match */
     int contour_cnt, i;
     SplineSet *spl;
+    int layer = s->fv->active_layer;
 
     contour_cnt=0;
-    for ( spl=sc->layers[ly_fore].splines, i=0; spl!=NULL; spl=spl->next, ++i ) {
+    for ( spl=sc->layers[layer].splines, i=0; spl!=NULL; spl=spl->next, ++i ) {
 	if ( !(s->matched_ss&(1<<i))) {
 	    if ( SplinePointListIsClockwise(spl) )
 return( false );
@@ -936,19 +939,20 @@ static void DoReplaceFull(SplineChar *sc,SearchData *s) {
     SplinePointList *spl, *snext, *sprev, *temp;
     real transform[6], subtrans[6];
     SplinePoint *sp;
+    int layer = s->fv->active_layer;
 
     /* first remove those bits that matched */
-    for ( r = sc->layers[ly_fore].refs, i=0; r!=NULL; r=rnext, ++i ) {
+    for ( r = sc->layers[layer].refs, i=0; r!=NULL; r=rnext, ++i ) {
 	rnext = r->next;
 	if ( s->matched_refs&(1<<i))
-	    SCRemoveDependent(sc,r,ly_fore);
+	    SCRemoveDependent(sc,r,layer);
     }
     sprev = NULL;
-    for ( spl=sc->layers[ly_fore].splines, i=0; spl!=NULL; spl=snext, ++i ) {
+    for ( spl=sc->layers[layer].splines, i=0; spl!=NULL; spl=snext, ++i ) {
 	snext = spl->next;
 	if ( s->matched_ss&(1<<i)) {
 	    if ( sprev==NULL )
-		sc->layers[ly_fore].splines = snext;
+		sc->layers[layer].splines = snext;
 	    else
 		sprev->next = snext;
 	    spl->next = NULL;
@@ -977,17 +981,17 @@ static void DoReplaceFull(SplineChar *sc,SearchData *s) {
 #else
 	new->layers[0].splines = NULL;
 #endif
-	new->next = sc->layers[ly_fore].refs;
+	new->next = sc->layers[layer].refs;
 	new->selected = true;
-	sc->layers[ly_fore].refs = new;
-	SCReinstanciateRefChar(sc,new,ly_fore);
+	sc->layers[layer].refs = new;
+	SCReinstanciateRefChar(sc,new,layer);
 	SCMakeDependent(sc,new->sc);
     }
     temp = SplinePointListTransform(SplinePointListCopy(s->sc_rpl.layers[ly_fore].splines),transform,true);
-    if ( sc->layers[ly_fore].splines==NULL )
-	sc->layers[ly_fore].splines = temp;
+    if ( sc->layers[layer].splines==NULL )
+	sc->layers[layer].splines = temp;
     else {
-	for ( spl=sc->layers[ly_fore].splines; spl->next!=NULL; spl = spl->next );
+	for ( spl=sc->layers[layer].splines; spl->next!=NULL; spl = spl->next );
 	spl->next = temp;
 	for ( ; temp!=NULL; temp=temp->next ) {
 	    for ( sp=temp->first; ; ) {
@@ -1073,8 +1077,8 @@ static void SplinePointsUntick(SplineSet *spl) {
     }
 }
 
-void SCSplinePointsUntick(SplineChar *sc) {
-    SplinePointsUntick(sc->layers[ly_fore].splines);
+void SCSplinePointsUntick(SplineChar *sc,int layer) {
+    SplinePointsUntick(sc->layers[layer].splines);
 }
 
 int SearchChar(SearchData *sv, int gid,int startafter) {
@@ -1096,6 +1100,7 @@ return( SCMatchesFull(sv->curchar,sv));
 
 int DoRpl(SearchData *sv) {
     RefChar *r;
+    int layer = sv->fv->active_layer;
 
     /* Make sure we don't generate any self referential characters... */
     for ( r = sv->sc_rpl.layers[ly_fore].refs; r!=NULL; r=r->next ) {
@@ -1107,12 +1112,12 @@ return(false);
 	    HeuristiclyBadMatch(sv->curchar,sv))
 return(false);
 
-    SCPreserveState(sv->curchar,false);
+    SCPreserveLayer(sv->curchar,layer,false);
     if ( sv->subpatternsearch )
 	DoReplaceIncomplete(sv->curchar,sv);
     else
 	DoReplaceFull(sv->curchar,sv);
-    SCCharChangedUpdate(sv->curchar);
+    SCCharChangedUpdate(sv->curchar,layer);
 return( true );
 }
 
@@ -1123,7 +1128,7 @@ int _DoFindAll(SearchData *sv) {
     for ( i=0; i<sv->fv->map->enccount; ++i ) {
 	if (( !sv->onlyselected || sv->fv->selected[i]) && (gid=sv->fv->map->map[i])!=-1 &&
 		sv->fv->sf->glyphs[gid]!=NULL ) {
-	    SCSplinePointsUntick(sv->fv->sf->glyphs[gid]);
+	    SCSplinePointsUntick(sv->fv->sf->glyphs[gid],sv->fv->active_layer);
 	    if ( (sv->fv->selected[i] = SearchChar(sv,gid,false)) ) {
 		any = true;
 		if ( sv->replaceall ) {
@@ -1147,8 +1152,8 @@ void SDDestroy(SearchData *sv) {
     if ( sv==NULL )
 return;
 
-    SCClearContents(&sv->sc_srch);
-    SCClearContents(&sv->sc_rpl);
+    SCClearContents(&sv->sc_srch,ly_fore);
+    SCClearContents(&sv->sc_rpl,ly_fore);
     for ( i=0; i<sv->sc_srch.layer_cnt; ++i )
 	UndoesFree(sv->sc_srch.layers[i].undoes);
     for ( i=0; i<sv->sc_rpl.layer_cnt; ++i )
@@ -1176,13 +1181,15 @@ SearchData *SDFillup(SearchData *sv, FontViewBase *fv) {
 return( sv );
 }
 
-static int IsASingleReferenceOrEmpty(SplineChar *sc) {
-    int i, empty = true, last;
+static int IsASingleReferenceOrEmpty(SplineChar *sc,int layer) {
+    int i, empty = true, last, first;
 
-    last = ly_fore;
-    if ( sc->parent->multilayer )
+    if ( sc->parent->multilayer ) {
+	first = ly_fore;
 	last = sc->layer_cnt-1;
-    for ( i = ly_fore; i<=last; ++i ) {
+    } else
+	first = last = layer;
+    for ( i = first; i<=last; ++i ) {
 	if ( sc->layers[i].splines!=NULL )
 return( false );
 	if ( sc->layers[i].images!=NULL )
@@ -1248,7 +1255,7 @@ void FVBReplaceOutlineWithReference( FontViewBase *fv, double fudge ) {
 
     for ( i=0; i<fv->map->enccount; ++i ) if ( selected[i] && (gid=fv->map->map[i])!=-1 &&
 	    (checksc=sf->glyphs[gid])!=NULL ) {
-	if ( IsASingleReferenceOrEmpty(sf->glyphs[gid]))
+	if ( IsASingleReferenceOrEmpty(sf->glyphs[gid],fv->active_layer))
     continue;		/* No point in replacing something which is itself a ref with a ref to a ref */
 	memset(fv->selected,0,fv->map->enccount);
 	SDCopyToSC(checksc,&sv->sc_srch,ct_fullcopy);
@@ -1331,7 +1338,7 @@ return( NULL );
     fv = sd->fv;
 
     for ( gid=sd->last_gid+1; gid<fv->sf->glyphcnt; ++gid ) {
-	SCSplinePointsUntick(fv->sf->glyphs[gid]);
+	SCSplinePointsUntick(fv->sf->glyphs[gid],fv->active_layer);
 	if ( SearchChar(sd,gid,false) ) {
 	    sd->last_gid = gid;
 return( fv->sf->glyphs[gid]);

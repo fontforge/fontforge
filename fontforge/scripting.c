@@ -3930,7 +3930,7 @@ static void SCReplaceWith(SplineChar *dest, SplineChar *src) {
     if ( src==dest )
 return;
 
-    SCPreserveState(dest,2);
+    SCPreserveLayer(dest,ly_fore,2);
     u[0] = dest->layers[ly_fore].undoes; u[1] = dest->layers[ly_back].undoes; r1 = dest->layers[ly_back].redoes;
 
     free(dest->name);
@@ -3994,7 +3994,7 @@ return;
 		if ( scl->sc==src )
 		    scl->sc = dest;
 	}
-    SCCharChangedUpdate(dest);
+    SCCharChangedUpdate(dest,ly_fore);
 }
 
 static int FSLMatch(FeatureScriptLangList *fl,uint32 feat_tag,uint32 script,uint32 lang) {
@@ -4442,7 +4442,7 @@ static void _bMoveReference(Context *c,int position) {
 	    else
 		ScriptErrorString(c,"Failed to find a matching reference at encoding", buffer);
 	} else {
-	    SCPreserveState(sc,false);
+	    SCPreserveLayer(sc,ly_fore,false);
 	    for ( ref =sc->layers[ly_fore].refs; ref!=NULL; ref=ref->next ) {
 		if ( RefMatchesNamesUni(ref,refnames,refunis,refcnt)) {
 		    if ( position ) {
@@ -4457,7 +4457,7 @@ static void _bMoveReference(Context *c,int position) {
 		    ref->bb.maxx += t[4]; ref->bb.maxy += t[5];
 		}
 	    }
-	    SCCharChangedUpdate(sc);
+	    SCCharChangedUpdate(sc,ly_fore);
 	}
     }
 }
@@ -4646,7 +4646,7 @@ static void bCanonicalStart(Context *c) {
     if ( c->a.argc!=1 )
 	ScriptError( c, "Wrong number of arguments");
     for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && fv->selected[i] )
-	SPLsStartToLeftmost(sf->glyphs[gid]);
+	SPLsStartToLeftmost(sf->glyphs[gid],ly_fore);
 }
 
 static void bCanonicalContours(Context *c) {
@@ -4658,7 +4658,7 @@ static void bCanonicalContours(Context *c) {
     if ( c->a.argc!=1 )
 	ScriptError( c, "Wrong number of arguments");
     for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && fv->selected[i] )
-	CanonicalContours(sf->glyphs[gid]);
+	CanonicalContours(sf->glyphs[gid],ly_fore);
 }
 
 static void bSimplify(Context *c) {
@@ -4810,7 +4810,7 @@ static void bNearlyLines(Context *c) {
 		changed |= SPLNearlyLines(sc,spl,err);
 	}
 	if ( changed )
-	    SCCharChangedUpdate(sc);
+	    SCCharChangedUpdate(sc,ly_fore);
     }
 }
 
@@ -4856,7 +4856,7 @@ static void SCMakeLine(SplineChar *sc) {
 	}
     }
     if ( changed )
-	SCCharChangedUpdate(sc);
+	SCCharChangedUpdate(sc,ly_fore);
 }
 
 static void bMakeLine(Context *c) {
@@ -4890,7 +4890,7 @@ static void bRoundToInt(Context *c) {
     }
     for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && fv->selected[i] ) {
 	SplineChar *sc = sf->glyphs[gid];
-	SCRound2Int( sc,factor);
+	SCRound2Int( sc,ly_fore,factor);
     }
 }
 
@@ -4967,7 +4967,7 @@ static void bCorrectDirection(Context *c) {
 	    SCPreserveState(sc,false);
 	sc->layers[ly_fore].splines = SplineSetsCorrect(sc->layers[ly_fore].splines,&changed);
 	if ( changed || refchanged )
-	    SCCharChangedUpdate(sc);
+	    SCCharChangedUpdate(sc,ly_fore);
     }
 }
 
@@ -5023,7 +5023,7 @@ static void bAppendAccent(Context *c) {
 	pos = c->a.vals[2].u.ival;
 
     sc = GetOneSelChar(c);
-    ret = SCAppendAccent(sc,glyph_name,uni,pos);
+    ret = SCAppendAccent(sc,ly_fore,glyph_name,uni,pos);
     if ( ret==1 )
 	ScriptError(c,"No base character reference found");
     else if ( ret==2 )
@@ -5130,7 +5130,7 @@ static void bDefaultUseMyMetrics(Context *c) {
 	if ( sc->layer_cnt==2 && !already && goodmatch!=NULL ) {
 	    SCPreserveState(sc,false);
 	    goodmatch->use_my_metrics = true;
-	    SCCharChangedUpdate(sc);
+	    SCCharChangedUpdate(sc,ly_fore);
 	}
     }
 }
@@ -5157,7 +5157,7 @@ static void bDefaultRoundToGrid(Context *c) {
 	    }
 	}
 	if ( changed )
-	    SCCharChangedUpdate(sc);
+	    SCCharChangedUpdate(sc,ly_fore);
     }
 }
 
@@ -5236,7 +5236,7 @@ static void GlyphAddInstrs(SplineChar *sc,int replace,
     if ( icnt==0 )
 return;
     if ( sc->ttf_instrs==NULL ) {
-	SCNumberPoints(sc);		/* If the point numbering is wrong then we'll just throw away the instructions when we notice it */
+	SCNumberPoints(sc,ly_fore);	/* If the point numbering is wrong then we'll just throw away the instructions when we notice it */
 	sc->ttf_instrs = galloc(icnt);
 	memcpy(sc->ttf_instrs,instrs,icnt);
 	sc->ttf_instrs_len = icnt;
@@ -5374,7 +5374,7 @@ static void bClearHints(Context *c) {
 		(gid = fv->map->map[i])!=-1 && SCWorthOutputting(fv->sf->glyphs[gid]) ) {
 	    SplineChar *sc = fv->sf->glyphs[gid];
 	    sc->manualhints = true;
-	    SCPreserveHints(sc);
+	    SCPreserveHints(sc,fv->active_layer);
 	    if ( y_dir && !x_dir ) {
 		StemInfosFree(sc->vstem);
 		sc->vstem = NULL;
@@ -5504,7 +5504,7 @@ static void bAddDHint( Context *c ) {
         d->left = left;
         d->right = right;
         d->unit = unit;
-        SCGuessDHintInstances( sc,d );
+        SCGuessDHintInstances( sc,ly_fore,d );
         if ( d->where == NULL ) {
             DStemInfoFree( d );
             LogError( _("Warning: could not figure out where the hint (%d,%d %d,%d %d,%d) is valid\n"),
@@ -5552,14 +5552,14 @@ static void _AddHint(Context *c,int ish) {
 	h->start = start;
 	h->width = width;
 	if ( ish ) {
-	    SCGuessHHintInstancesAndAdd(sc,h,0x80000000,0x80000000);
+	    SCGuessHHintInstancesAndAdd(sc,ly_fore,h,0x80000000,0x80000000);
 	    sc->hconflicts = StemListAnyConflicts(sc->hstem);
 	} else {
-	    SCGuessVHintInstancesAndAdd(sc,h,0x80000000,0x80000000);
+	    SCGuessVHintInstancesAndAdd(sc,ly_fore,h,0x80000000,0x80000000);
 	    sc->vconflicts = StemListAnyConflicts(sc->vstem);
 	}
 	sc->manualhints = true;
-	SCClearHintMasks(sc,true);
+	SCClearHintMasks(sc,ly_fore,true);
 	SCOutOfDateBackground(sc);
 	SCUpdateAll(sc);
 	any = true;
@@ -7242,9 +7242,9 @@ return;
 	else if ( strmatch( c->a.vals[1].u.sval,"LayerCount")==0 )
 	    c->return_val.u.ival = sc->layer_cnt;
 	else if ( strmatch( c->a.vals[1].u.sval,"PointCount")==0 )
-	    c->return_val.u.ival = SCNumberPoints(sc);
+	    c->return_val.u.ival = SCNumberPoints(sc,ly_fore);
 	else if ( strmatch( c->a.vals[1].u.sval,"ValidationState")==0 )
-	    c->return_val.u.ival = sc->validation_state;
+	    c->return_val.u.ival = sc->layers[ly_fore].validation_state;
 	else if ( strmatch( c->a.vals[1].u.sval,"RefCount")==0 ) {
 	    for ( i=0, layer=0; layer<sc->layer_cnt; ++layer )
 		for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next, ++i )
@@ -7669,7 +7669,7 @@ static void bValidate(Context *c) {
     }
 
     c->return_val.type = v_int;
-    c->return_val.u.ival = SFValidate(c->curfv->sf, force );
+    c->return_val.u.ival = SFValidate(c->curfv->sf, ly_fore, force );
 }
 
 static struct builtins { char *name; void (*func)(Context *); int nofontok; } builtins[] = {

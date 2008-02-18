@@ -761,9 +761,9 @@ FontData *LI_RegenFontData(LayoutInfo *li, FontData *ret) {
     if ( ret->bdf!=NULL )
 	/* Already done */;
     else if ( ret->fonttype==sftf_pfaedit )
-	ret->bdf = SplineFontPieceMeal(ret->sf,pixelsize,ret->antialias?pf_antialias:0,NULL);
+	ret->bdf = SplineFontPieceMeal(ret->sf,ret->layer,pixelsize,ret->antialias?pf_antialias:0,NULL);
     else if ( ret->fonttype==sftf_nohints )
-	ret->bdf = SplineFontPieceMeal(ret->sf,pixelsize,
+	ret->bdf = SplineFontPieceMeal(ret->sf,ret->layer,pixelsize,
 		(ret->antialias?pf_antialias:0)|pf_ft_nohints,NULL);
     else {
 	for ( test=li->generated; test!=NULL; test=test->next )
@@ -781,7 +781,7 @@ FontData *LI_RegenFontData(LayoutInfo *li, FontData *ret) {
 	    int ff = ret->fonttype==sftf_pfb ? ff_pfb :
 		     ret->fonttype==sftf_ttf ? ff_ttf :
 		     ff_otf;
-	    ftc = _FreeTypeFontContext(ret->sf,NULL,NULL,ff,flags,NULL);
+	    ftc = _FreeTypeFontContext(ret->sf,NULL,NULL,ret->layer,ff,flags,NULL);
 	}
 	if ( ftc==NULL ) {
 	    if ( old!=NULL )
@@ -792,7 +792,7 @@ FontData *LI_RegenFontData(LayoutInfo *li, FontData *ret) {
 	    }
 return( ret );
 	}
-	ret->bdf = SplineFontPieceMeal(ret->sf,pixelsize,ret->antialias,ftc);
+	ret->bdf = SplineFontPieceMeal(ret->sf,ret->layer,pixelsize,ret->antialias,ftc);
     }
     if ( freeold ) {
 	if ( depends_on && old!=NULL )
@@ -818,12 +818,13 @@ return( ret );
 }
 
 FontData *LI_FindFontData(LayoutInfo *li, SplineFont *sf,
-	enum sftf_fonttype fonttype, int size, int antialias) {
+	int layer, enum sftf_fonttype fonttype, int size, int antialias) {
     FontData *test, *ret;
 
     for ( test=li->generated; test!=NULL; test=test->next )
 	if ( test->sf == sf && test->fonttype == fonttype &&
-		test->pointsize==size && test->antialias==antialias )
+		test->pointsize==size && test->antialias==antialias &&
+		test->layer==layer )
 return( test );
 
     ret = gcalloc(1,sizeof(FontData));
@@ -849,6 +850,7 @@ static FontData *FontDataCopyNoBDF(LayoutInfo *print_li, FontData *source) {
 	cur->sf = source->sf;
 	cur->fonttype = source->fonttype;
 	cur->pointsize = source->pointsize;
+	cur->layer = source->layer;
 
 	cur->sfmap = SFMapOfSF(print_li,source->sf);
 	if ( head==NULL )
@@ -943,7 +945,7 @@ void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height) {
 	    last->next = gcalloc(1,sizeof(struct fontlist));
 	    last = last->next;
 	}
-	last->fd = LI_FindFontData(li,sf,type,arr->vals[2*i].u.ival,true);
+	last->fd = LI_FindFontData(li,sf,ly_fore,type,arr->vals[2*i].u.ival,true);
 	last->start = len;
 
 	utf82u_strcpy(li->text+len,arr->vals[2*i+1].u.sval);
@@ -1100,7 +1102,7 @@ static void LI_MetaChangeCleanup(LayoutInfo *li,int start, int end,int width) {
 }
 
 int LI_SetFontData(LayoutInfo *li, int start, int end, SplineFont *sf,
-	enum sftf_fonttype fonttype, int size, int antialias,int width) {
+	int layer, enum sftf_fonttype fonttype, int size, int antialias,int width) {
     /* Sets the font for the region between start and end. If start==-1 it */
     /*  means use the current selection (and ignore end). If end==-1 it means */
     /*  strlen(g->text) */
@@ -1110,7 +1112,7 @@ int LI_SetFontData(LayoutInfo *li, int start, int end, SplineFont *sf,
     FontData *cur;
     struct fontlist *fl;
 
-    cur = LI_FindFontData(li, sf, fonttype, size, antialias);
+    cur = LI_FindFontData(li, sf, layer, fonttype, size, antialias);
     if ( cur==NULL )
 return( false );
 

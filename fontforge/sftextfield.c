@@ -2259,7 +2259,7 @@ int SFTFSetFont(GGadget *g, int start, int end, SplineFont *sf) {
     fl = LI_BreakFontList(&st->li,start,end);
     while ( fl!=NULL && fl->end<=end ) {
 	if ( fl->fd->sf!=sf ) {
-	    cur = LI_FindFontData(&st->li, sf, fl->fd->fonttype, fl->fd->pointsize, fl->fd->antialias);
+	    cur = LI_FindFontData(&st->li, sf, fl->fd->layer, fl->fd->fonttype, fl->fd->pointsize, fl->fd->antialias);
 	    if ( cur!=NULL )
 		fl->fd = cur;
 	}
@@ -2279,7 +2279,7 @@ int SFTFSetFontType(GGadget *g, int start, int end, enum sftf_fonttype fonttype)
     fl = LI_BreakFontList(&st->li,start,end);
     while ( fl!=NULL && fl->end<=end ) {
 	if ( fl->fd->fonttype!=fonttype ) {
-	    cur = LI_FindFontData(&st->li, fl->fd->sf, fonttype, fl->fd->pointsize, fl->fd->antialias);
+	    cur = LI_FindFontData(&st->li, fl->fd->sf, fl->fd->layer, fonttype, fl->fd->pointsize, fl->fd->antialias);
 	    if ( cur!=NULL )
 		fl->fd = cur;
 	}
@@ -2301,7 +2301,7 @@ return( false );
     fl = LI_BreakFontList(&st->li,start,end);
     while ( fl!=NULL && fl->end<=end ) {
 	if ( fl->fd->pointsize!=pointsize ) {
-	    cur = LI_FindFontData(&st->li, fl->fd->sf, fl->fd->fonttype, pointsize, fl->fd->antialias);
+	    cur = LI_FindFontData(&st->li, fl->fd->sf, fl->fd->layer, fl->fd->fonttype, pointsize, fl->fd->antialias);
 	    if ( cur!=NULL )
 		fl->fd = cur;
 	}
@@ -2321,7 +2321,7 @@ int SFTFSetAntiAlias(GGadget *g, int start, int end, int antialias) {
     fl = LI_BreakFontList(&st->li,start,end);
     while ( fl!=NULL && fl->end<=end ) {
 	if ( fl->fd->antialias!=antialias ) {
-	    cur = LI_FindFontData(&st->li, fl->fd->sf, fl->fd->fonttype, fl->fd->pointsize, antialias);
+	    cur = LI_FindFontData(&st->li, fl->fd->sf, fl->fd->layer, fl->fd->fonttype, fl->fd->pointsize, antialias);
 	    if ( cur!=NULL )
 		fl->fd = cur;
 	}

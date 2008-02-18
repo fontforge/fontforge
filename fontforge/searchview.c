@@ -55,9 +55,10 @@ static void SVSelectSC(SearchView *sv) {
     SplinePoint *sp;
     RefChar *rf;
     int i;
+    int layer = sv->sd.fv->active_layer;
 
     /* Deselect all */;
-    for ( spl = sc->layers[ly_fore].splines; spl!=NULL; spl = spl->next ) {
+    for ( spl = sc->layers[layer].splines; spl!=NULL; spl = spl->next ) {
 	for ( sp=spl->first ;; ) {
 	    sp->selected = false;
 	    if ( sp->next == NULL )
@@ -67,7 +68,7 @@ static void SVSelectSC(SearchView *sv) {
 	break;
 	}
     }
-    for ( rf=sc->layers[ly_fore].refs; rf!=NULL; rf = rf->next )
+    for ( rf=sc->layers[layer].refs; rf!=NULL; rf = rf->next )
 	if ( rf->selected ) rf->selected = false;
 
     if ( sv->sd.subpatternsearch ) {
@@ -80,10 +81,10 @@ static void SVSelectSC(SearchView *sv) {
 	    /* Ok to wrap back to first */
 	}
     } else {
-	for ( rf=sc->layers[ly_fore].refs, i=0; rf!=NULL; rf=rf->next, ++i )
+	for ( rf=sc->layers[layer].refs, i=0; rf!=NULL; rf=rf->next, ++i )
 	    if ( sv->sd.matched_refs&(1<<i) )
 		rf->selected = true;
-	for ( spl = sc->layers[ly_fore].splines,i=0; spl!=NULL; spl = spl->next, ++i ) {
+	for ( spl = sc->layers[layer].splines,i=0; spl!=NULL; spl = spl->next, ++i ) {
 	    if ( sv->sd.matched_ss&(1<<i) ) {
 		for ( sp=spl->first ;; ) {
 		    sp->selected = true;
@@ -133,7 +134,7 @@ static int DoFindOne(SearchView *sv,int startafter) {
     for ( ; i<sv->sd.fv->map->enccount; ++i ) {
 	if (( !sv->sd.onlyselected || sv->sd.fv->selected[i]) && (gid=sv->sd.fv->map->map[i])!=-1 &&
 		sv->sd.fv->sf->glyphs[gid]!=NULL ) {
-	    SCSplinePointsUntick(sv->sd.fv->sf->glyphs[gid]);
+	    SCSplinePointsUntick(sv->sd.fv->sf->glyphs[gid],sv->sd.fv->active_layer);
 	    if ( SearchChar(&sv->sd,gid,startafter) )
     break;
 	}
@@ -495,8 +496,8 @@ return( true );
     }
 
     if ( searcher->dummy_sf.layers[ly_fore].order2 != fv->b.sf->layers[ly_fore].order2 ) {
-	SCClearContents(&searcher->sd.sc_srch);
-	SCClearContents(&searcher->sd.sc_rpl);
+	SCClearContents(&searcher->sd.sc_srch,ly_fore);
+	SCClearContents(&searcher->sd.sc_rpl,ly_fore);
 	for ( i=0; i<searcher->sd.sc_srch.layer_cnt; ++i )
 	    UndoesFree(searcher->sd.sc_srch.layers[i].undoes);
 	for ( i=0; i<searcher->sd.sc_rpl.layer_cnt; ++i )
@@ -537,7 +538,7 @@ return( false );
 		    /*SplinePointListsFree(r->layers[0].splines); r->layers[0].splines = NULL;*/
 		    r->sc = fv->b.sf->glyphs[gid];
 		    r->orig_pos = gid;
-		    SCReinstanciateRefChar(searcher->chars[i],r,ly_fore);
+		    SCReinstanciateRefChar(searcher->chars[i],r,fv->b.active_layer);
 		    any = true;
 		    rprev = r;
 		}

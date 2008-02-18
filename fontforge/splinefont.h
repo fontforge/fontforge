@@ -639,7 +639,6 @@ typedef struct undoes {
 	    PST *possub;			/* only for ut_statename */
 	    struct splinepointlist *splines;
 	    struct refchar *refs;
-	    struct minimumdistance *md;
 	    
 	    struct imagelist *images;
 	    void *hints;			/* ut_statehint, ut_statename */
@@ -784,6 +783,7 @@ typedef struct bdffont {
     BDFChar **glyphs;		/* an array of charcnt entries */
     int16 pixelsize;
     int16 ascent, descent;
+    int16 layer;		/* for piecemeal fonts */
     unsigned int piecemeal: 1;
     unsigned int bbsized: 1;
     unsigned int ticked: 1;
@@ -1050,6 +1050,7 @@ typedef struct minimumdistance {
 
 typedef struct layer /* : reflayer */{
     unsigned int order2: 1;
+    unsigned int anyflexes: 1;
 #ifdef FONTFORGE_CONFIG_TYPE3
     unsigned int dofill: 1;
     unsigned int dostroke: 1;
@@ -1062,9 +1063,15 @@ typedef struct layer /* : reflayer */{
     RefChar *refs;			/* Only in foreground layer(s) */
     Undoes *undoes;
     Undoes *redoes;
+    uint16 validation_state;
+    uint16 old_vs;
 } Layer;
 
-enum layer_type { ly_all=-2, ly_grid= -1, ly_back=0, ly_fore=1 /* Possibly other foreground layers for multi-layered things */ };
+enum layer_type { ly_all=-2, ly_grid= -1, ly_back=0, ly_fore=1,
+    /* Possibly other foreground layers for type3 things */
+    /* Possibly other background layers for normal fonts */
+	ly_none = -3
+    };
 
 /* For the 'MATH' table (and for TeX) */
 struct glyphvariants {
@@ -1188,7 +1195,6 @@ typedef struct splinechar {
     unsigned int widthset: 1;	/* needed so an emspace char doesn't disappear */
     unsigned int vconflicts: 1;	/* Any hint overlaps in the vstem list? */
     unsigned int hconflicts: 1;	/* Any hint overlaps in the hstem list? */
-    unsigned int anyflexes: 1;
     unsigned int searcherdummy: 1;
     unsigned int changed_since_search: 1;
     unsigned int wasopen: 1;
@@ -1252,8 +1258,6 @@ typedef struct splinechar {
     void *python_temporary;
 #endif
     void *python_persistent;		/* If python this will hold a python object, if not python this will hold a string containing a pickled object. We do nothing with it (if not python) except save it back out unchanged */
-    uint16 validation_state;
-    uint16 old_vs;
 } SplineChar;
 
 #define TEX_UNDEF 0x7fff
@@ -1641,6 +1645,7 @@ typedef struct splinefont {
     enum loadvalidation_state loadvalidation_state;
     LayerInfo *layers;
     int layer_cnt;
+    int display_layer;
 } SplineFont;
 
 /* I am going to simplify my life and not encourage intermediate designs */
@@ -2043,19 +2048,19 @@ extern void BCRegularizeBitmap(BDFChar *bdfc);
 extern void BCRegularizeGreymap(BDFChar *bdfc);
 extern void BCPasteInto(BDFChar *bc,BDFChar *rbc,int ixoff,int iyoff, int invert, int cleartoo);
 extern void BCRotateCharForVert(BDFChar *bc,BDFChar *from, BDFFont *frombdf);
-extern BDFChar *SplineCharRasterize(SplineChar *sc, double pixelsize);
+extern BDFChar *SplineCharRasterize(SplineChar *sc, int layer, double pixelsize);
 extern BDFFont *SplineFontToBDFHeader(SplineFont *_sf, int pixelsize, int indicate);
-extern BDFFont *SplineFontRasterize(SplineFont *sf, int pixelsize, int indicate);
+extern BDFFont *SplineFontRasterize(SplineFont *sf, int layer, int pixelsize, int indicate);
 extern void BDFCAntiAlias(BDFChar *bc, int linear_scale);
-extern BDFChar *SplineCharAntiAlias(SplineChar *sc, int pixelsize,int linear_scale);
-extern BDFFont *SplineFontAntiAlias(SplineFont *sf, int pixelsize,int linear_scale);
+extern BDFChar *SplineCharAntiAlias(SplineChar *sc, int layer, int pixelsize,int linear_scale);
+extern BDFFont *SplineFontAntiAlias(SplineFont *sf, int layer, int pixelsize,int linear_scale);
 extern struct clut *_BDFClut(int linear_scale);
 extern void BDFClut(BDFFont *bdf, int linear_scale);
 extern int BDFDepth(BDFFont *bdf);
 extern BDFChar *BDFPieceMeal(BDFFont *bdf, int index);
 extern BDFChar *BDFPieceMealCheck(BDFFont *bdf, int index);
 enum piecemeal_flags { pf_antialias=1, pf_bbsized=2, pf_ft_nohints=4 };
-extern BDFFont *SplineFontPieceMeal(SplineFont *sf,int pixelsize,int flags,void *freetype_context);
+extern BDFFont *SplineFontPieceMeal(SplineFont *sf,int layer,int pixelsize,int flags,void *freetype_context);
 extern void BDFCharFindBounds(BDFChar *bc,IBounds *bb);
 extern BDFFont *BitmapFontScaleTo(BDFFont *old, int to);
 extern void BDFCharFree(BDFChar *bdfc);
@@ -2131,7 +2136,7 @@ extern int GenerateScript(SplineFont *sf,char *filename,char *bitmaptype,
 	int fmflags,int res, char *subfontdirectory,struct sflist *sfs,
 	EncMap *map,NameList *rename_to,int layer);
 
-extern void _SCAutoTrace(SplineChar *sc, char **args);
+extern void _SCAutoTrace(SplineChar *sc, int layer, char **args);
 extern char **AutoTraceArgs(int ask);
 
 #define CURVATURE_ERROR	-1e9
@@ -2178,8 +2183,8 @@ extern void SplinePointListSimplify(SplineChar *sc,SplinePointList *spl,
 extern SplineSet *SplineCharSimplify(SplineChar *sc,SplineSet *head,
 	struct simplifyinfo *smpl);
 extern void SPLStartToLeftmost(SplineChar *sc,SplinePointList *spl, int *changed);
-extern void SPLsStartToLeftmost(SplineChar *sc);
-extern void CanonicalContours(SplineChar *sc);
+extern void SPLsStartToLeftmost(SplineChar *sc,int layer);
+extern void CanonicalContours(SplineChar *sc,int layer);
 extern SplineSet *SplineSetJoin(SplineSet *start,int doall,real fudge,int *changed);
 enum ae_type { ae_all, ae_between_selected, ae_only_good, ae_only_good_rm_later };
 extern Spline *SplineAddExtrema(Spline *s,int always,real lenbound,
@@ -2211,12 +2216,11 @@ extern void SplineCharTangentPrevCP(SplinePoint *sp);
 extern void SPHVCurveForce(SplinePoint *sp);
 extern void SPSmoothJoint(SplinePoint *sp);
 extern int PointListIsSelected(SplinePointList *spl);
-extern void SCSplinePointsUntick(SplineChar *sc);
+extern void SCSplinePointsUntick(SplineChar *sc,int layer);
 extern void SplineSetsUntick(SplineSet *spl);
 extern void SFOrderBitmapList(SplineFont *sf);
 extern int KernThreshold(SplineFont *sf, int cnt);
 extern real SFGuessItalicAngle(SplineFont *sf);
-extern void SFHasSerifs(SplineFont *sf);
 
 extern SplinePoint *SplineTtfApprox(Spline *ps);
 extern SplineSet *SSttfApprox(SplineSet *ss);
@@ -2261,25 +2265,25 @@ extern SplineSet *SSShadow(SplineSet *spl,real angle, real outline_width,
 
 extern double BlueScaleFigureForced(struct psdict *private,real bluevalues[], real otherblues[]);
 extern double BlueScaleFigure(struct psdict *private,real bluevalues[], real otherblues[]);
-extern void FindBlues( SplineFont *sf, real blues[14], real otherblues[10]);
-extern void QuickBlues(SplineFont *sf, BlueData *bd);
+extern void FindBlues( SplineFont *sf, int layer, real blues[14], real otherblues[10]);
+extern void QuickBlues(SplineFont *sf, int layer, BlueData *bd);
 extern void FindHStems( SplineFont *sf, real snaps[12], real cnt[12]);
 extern void FindVStems( SplineFont *sf, real snaps[12], real cnt[12]);
 extern double SFStdVW(SplineFont *sf);
-extern int SplineCharIsFlexible(SplineChar *sc);
-extern void SCGuessHintInstancesList(SplineChar *sc,StemInfo *hstem,StemInfo *vstem,DStemInfo *dstem,int hvforce,int dforce);
-extern void SCGuessDHintInstances(SplineChar *sc, DStemInfo *ds );
-extern void SCGuessHHintInstancesAndAdd(SplineChar *sc, StemInfo *stem, real guess1, real guess2);
-extern void SCGuessVHintInstancesAndAdd(SplineChar *sc, StemInfo *stem, real guess1, real guess2);
-extern void SCGuessHHintInstancesList(SplineChar *sc);
-extern void SCGuessVHintInstancesList(SplineChar *sc);
+extern int SplineCharIsFlexible(SplineChar *sc,int layer);
+extern void SCGuessHintInstancesList(SplineChar *sc,int layer,StemInfo *hstem,StemInfo *vstem,DStemInfo *dstem,int hvforce,int dforce);
+extern void SCGuessDHintInstances(SplineChar *sc, int layer,DStemInfo *ds );
+extern void SCGuessHHintInstancesAndAdd(SplineChar *sc, int layer,StemInfo *stem, real guess1, real guess2);
+extern void SCGuessVHintInstancesAndAdd(SplineChar *sc, int layer,StemInfo *stem, real guess1, real guess2);
+extern void SCGuessHHintInstancesList(SplineChar *sc, int layer);
+extern void SCGuessVHintInstancesList(SplineChar *sc, int layer);
 extern real HIlen( StemInfo *stems);
 extern real HIoverlap( HintInstance *mhi, HintInstance *thi);
 extern int StemInfoAnyOverlaps(StemInfo *stems);
 extern int StemListAnyConflicts(StemInfo *stems);
 extern HintInstance *HICopyTrans(HintInstance *hi, real mul, real offset);
 extern void MDAdd(SplineChar *sc, int x, SplinePoint *sp1, SplinePoint *sp2);
-extern int SFNeedsAutoHint( SplineFont *_sf);
+extern int SFNeedsAutoHint( SplineFont *_sf,int layer);
 
 typedef struct bluezone {
     real base;
@@ -2300,6 +2304,7 @@ typedef struct stdstem {
 
 typedef struct globalinstrct {
     SplineFont *sf;
+    int layer;
     BlueData *bd;
     double fudge;
 
@@ -2320,24 +2325,25 @@ typedef struct globalinstrct {
     int      stemsnapvcnt;
 } GlobalInstrCt;
 
-extern void InitGlobalInstrCt( GlobalInstrCt *gic,SplineFont *sf,BlueData *bd );
+extern void InitGlobalInstrCt( GlobalInstrCt *gic,SplineFont *sf,int layer,
+	BlueData *bd );
 extern void FreeGlobalInstrCt( GlobalInstrCt *gic );
 extern void NowakowskiSCAutoInstr( GlobalInstrCt *gic,SplineChar *sc );
 extern void CVT_ImportPrivate(SplineFont *sf);
 
-extern void SCModifyHintMasksAdd(SplineChar *sc,StemInfo *new);
+extern void SCModifyHintMasksAdd(SplineChar *sc,int layer,StemInfo *new);
 extern void SCClearHints(SplineChar *sc);
-extern void SCClearHintMasks(SplineChar *sc,int counterstoo);
+extern void SCClearHintMasks(SplineChar *sc,int layer,int counterstoo);
 extern void SCFigureVerticalCounterMasks(SplineChar *sc);
 extern void SCFigureCounterMasks(SplineChar *sc);
-extern void SCFigureHintMasks(SplineChar *sc);
-extern void _SplineCharAutoHint( SplineChar *sc, BlueData *bd, struct glyphdata *gd2, int gen_undoes );
-extern void SplineCharAutoHint( SplineChar *sc,BlueData *bd);
-extern void SFSCAutoHint( SplineChar *sc,BlueData *bd);
-extern void SplineFontAutoHint( SplineFont *sf);
-extern void SplineFontAutoHintRefs( SplineFont *sf);
+extern void SCFigureHintMasks(SplineChar *sc,int layer);
+extern void _SplineCharAutoHint( SplineChar *sc, int layer, BlueData *bd, struct glyphdata *gd2, int gen_undoes );
+extern void SplineCharAutoHint( SplineChar *sc,int layer, BlueData *bd);
+extern void SFSCAutoHint( SplineChar *sc,int layer,BlueData *bd);
+extern void SplineFontAutoHint( SplineFont *sf, int layer);
+extern void SplineFontAutoHintRefs( SplineFont *sf, int layer);
 extern StemInfo *HintCleanup(StemInfo *stem,int dosort,int instance_count);
-extern int SplineFontIsFlexible(SplineFont *sf,int flags);
+extern int SplineFontIsFlexible(SplineFont *sf,int layer, int flags);
 extern int SCDrawsSomething(SplineChar *sc);
 extern int SCWorthOutputting(SplineChar *sc);
 extern int SFFindNotdef(SplineFont *sf, int fixed);
@@ -2418,7 +2424,7 @@ extern BDFChar *BDFMakeChar(BDFFont *bdf,EncMap *map,int enc);
 
 extern RefChar *RefCharsCopyState(SplineChar *sc,int layer);
 extern void SCUndoSetLBearingChange(SplineChar *sc,int lb);
-extern Undoes *SCPreserveHints(SplineChar *sc);
+extern Undoes *SCPreserveHints(SplineChar *sc,int layer);
 extern Undoes *SCPreserveLayer(SplineChar *sc,int layer,int dohints);
 extern Undoes *SCPreserveState(SplineChar *sc,int dohints);
 extern Undoes *SCPreserveBackground(SplineChar *sc);
@@ -2429,12 +2435,12 @@ extern Undoes *BCPreserveState(BDFChar *bc);
 extern void BCDoRedo(BDFChar *bc);
 extern void BCDoUndo(BDFChar *bc);
 
-extern int SFIsCompositBuildable(SplineFont *sf,int unicodeenc,SplineChar *sc);
-extern int SFIsSomethingBuildable(SplineFont *sf,SplineChar *sc,int onlyaccents);
-extern int SFIsRotatable(SplineFont *sf,SplineChar *sc);
-extern int SCMakeDotless(SplineFont *sf, SplineChar *dotless, int copybmp, int doit);
-extern void SCBuildComposit(SplineFont *sf, SplineChar *sc, int copybmp);
-extern int SCAppendAccent(SplineChar *sc,char *glyph_name,int uni,int pos);
+extern int SFIsCompositBuildable(SplineFont *sf,int unicodeenc,SplineChar *sc, int layer);
+extern int SFIsSomethingBuildable(SplineFont *sf,SplineChar *sc, int layer,int onlyaccents);
+extern int SFIsRotatable(SplineFont *sf,SplineChar *sc, int layer);
+extern int SCMakeDotless(SplineFont *sf, SplineChar *dotless, int layer, int copybmp, int doit);
+extern void SCBuildComposit(SplineFont *sf, SplineChar *sc, int layer, int copybmp);
+extern int SCAppendAccent(SplineChar *sc,int layer, char *glyph_name,int uni,int pos);
 extern const unichar_t *SFGetAlternate(SplineFont *sf, int base,SplineChar *sc,int nocheck);
 
 extern int getAdobeEnc(char *name);
@@ -2489,13 +2495,14 @@ extern int PSDictFindEntry(struct psdict *dict, char *key);
 extern char *PSDictHasEntry(struct psdict *dict, char *key);
 extern int PSDictRemoveEntry(struct psdict *dict, char *key);
 extern int PSDictChangeEntry(struct psdict *dict, char *key, char *newval);
-extern int SFPrivateGuess(SplineFont *sf,struct psdict *private,char *name, int onlyone);
+extern int SFPrivateGuess(SplineFont *sf,int layer, struct psdict *private,
+	char *name, int onlyone);
 
 extern void SFRemoveLayer(SplineFont *sf,int l);
 extern void SFAddLayer(SplineFont *sf,char *name,int order2);
 
 extern void SplineSetsRound2Int(SplineSet *spl,real factor,int inspiro,int onlysel);
-extern void SCRound2Int(SplineChar *sc,real factor);
+extern void SCRound2Int(SplineChar *sc,int layer, real factor);
 extern int SCRoundToCluster(SplineChar *sc,int layer,int sel,double within,double max);
 extern int SplineSetsRemoveAnnoyingExtrema(SplineSet *ss,double err);
 extern int hascomposing(SplineFont *sf,int u,SplineChar *sc);
@@ -2537,8 +2544,8 @@ extern int hasFreeTypeByteCode(void);
 extern int FreeTypeAtLeast(int major, int minor, int patch);
 extern void doneFreeType(void);
 extern void *_FreeTypeFontContext(SplineFont *sf,SplineChar *sc,struct fontviewbase *fv,
-	enum fontformat ff,int flags,void *shared_ftc);
-extern void *FreeTypeFontContext(SplineFont *sf,SplineChar *sc,struct fontviewbase *fv);
+	int layer, enum fontformat ff,int flags,void *shared_ftc);
+extern void *FreeTypeFontContext(SplineFont *sf,SplineChar *sc,struct fontviewbase *fv,int layer);
 extern BDFFont *SplineFontFreeTypeRasterize(void *freetypecontext,int pixelsize,int depth);
 extern BDFChar *SplineCharFreeTypeRasterize(void *freetypecontext,int gid,
 	int pixelsize,int depth);
@@ -2547,9 +2554,10 @@ extern SplineSet *FreeType_GridFitChar(void *single_glyph_context,
 	int enc, real ptsize, int dpi, uint16 *width, SplineChar *sc, int depth);
 extern struct freetype_raster *FreeType_GetRaster(void *single_glyph_context,
 	int enc, real ptsize, int dpi,int depth);
-extern BDFChar *SplineCharFreeTypeRasterizeNoHints(SplineChar *sc,
+extern BDFChar *SplineCharFreeTypeRasterizeNoHints(SplineChar *sc,int layer,
 	int pixelsize,int depth);
-extern BDFFont *SplineFontFreeTypeRasterizeNoHints(SplineFont *sf,int pixelsize,int depth);
+extern BDFFont *SplineFontFreeTypeRasterizeNoHints(SplineFont *sf,int layer,
+	int pixelsize,int depth);
 extern void FreeType_FreeRaster(struct freetype_raster *raster);
 struct TT_ExecContextRec_;
 extern struct freetype_raster *DebuggerCurrentRaster(struct  TT_ExecContextRec_ *exc,int depth);
@@ -2574,9 +2582,9 @@ extern void AnchorPosFree(AnchorPos *apos);
 
 extern int  SF_CloseAllInstrs(SplineFont *sf);
 extern int  SSTtfNumberPoints(SplineSet *ss);
-extern int  SCNumberPoints(SplineChar *sc);
-extern int  SCPointsNumberedProperly(SplineChar *sc);
-extern int  ttfFindPointInSC(SplineChar *sc,int pnum,BasePoint *pos,
+extern int  SCNumberPoints(SplineChar *sc,int layer);
+extern int  SCPointsNumberedProperly(SplineChar *sc,int layer);
+extern int  ttfFindPointInSC(SplineChar *sc,int layer,int pnum,BasePoint *pos,
 	RefChar *bound);
 
 int SFFigureDefWidth(SplineFont *sf, int *_nomwid);
@@ -2747,11 +2755,11 @@ extern KernClass *SFFindKernClass(SplineFont *sf,SplineChar *first,SplineChar *l
 extern KernClass *SFFindVKernClass(SplineFont *sf,SplineChar *first,SplineChar *last,
 	int *index,int allow_zero);
 
-extern void SCClearRounds(SplineChar *sc);
+extern void SCClearRounds(SplineChar *sc,int layer);
 extern void MDReplace(MinimumDistance *md,SplineSet *old,SplineSet *rpl);
 extern void SCSynchronizeWidth(SplineChar *sc,real newwidth, real oldwidth,struct fontviewbase *fv);
-extern RefChar *HasUseMyMetrics(SplineChar *sc);
-extern void SCSynchronizeLBearing(SplineChar *sc,real off);
+extern RefChar *HasUseMyMetrics(SplineChar *sc,int layer);
+extern void SCSynchronizeLBearing(SplineChar *sc,real off,int layer);
 extern void RevertedGlyphReferenceFixup(SplineChar *sc, SplineFont *sf);
 
 extern void SFUntickAll(SplineFont *sf);
@@ -2781,7 +2789,7 @@ extern int ExportSVG(char *filename,SplineChar *sc,int layer);
 extern int ExportGlif(char *filename,SplineChar *sc,int layer);
 extern int ExportFig(char *filename,SplineChar *sc,int layer);
 extern int BCExportXBM(char *filename,BDFChar *bdfc, int format);
-extern int ExportImage(char *filename,SplineChar *sc, int format, int pixelsize, int bitsperpixel);
+extern int ExportImage(char *filename,SplineChar *sc, int layer, int format, int pixelsize, int bitsperpixel);
 extern void ScriptExport(SplineFont *sf, BDFFont *bdf, int format, int gid,
 	char *format_spec, EncMap *map);
 
@@ -2800,8 +2808,8 @@ extern int SFIsDuplicatable(SplineFont *sf, SplineChar *sc);
 extern void DoAutoSaves(void);
 
 extern void SCClearLayer(SplineChar *sc,int layer);
-extern void SCClearContents(SplineChar *sc);
-extern void SCClearAll(SplineChar *sc);
+extern void SCClearContents(SplineChar *sc,int layer);
+extern void SCClearAll(SplineChar *sc,int layer);
 extern void BCClearAll(BDFChar *bc);
 
 #if !defined(_NO_PYTHON)
@@ -2840,11 +2848,11 @@ extern struct math_constants_descriptor {
 } math_constants_descriptor[];
 
 extern char *VSErrorsFromMask(int mask,int private_mask);
-extern int SCValidate(SplineChar *sc, int force);
-extern void SCTickValidationState(SplineChar *sc);
+extern int SCValidate(SplineChar *sc, int layer, int force);
+extern void SCTickValidationState(SplineChar *sc,int layer);
 extern int ValidatePrivate(SplineFont *sf);
-extern int SFValidate(SplineFont *sf, int force);
-extern int VSMaskFromFormat(SplineFont *sf, enum fontformat format);
+extern int SFValidate(SplineFont *sf, int layer, int force);
+extern int VSMaskFromFormat(SplineFont *sf, int layer, enum fontformat format);
 
 extern int hasspiro(void);
 extern SplineSet *SpiroCP2SplineSet(spiro_cp *spiros);
