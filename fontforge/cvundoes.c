@@ -95,27 +95,6 @@ return( sofar );
 return( sofar );
 }
 
-static MinimumDistance *MDsCopyState(SplineChar *sc,SplineSet *rpl) {
-    MinimumDistance *head=NULL, *last, *md, *cur;
-
-    if ( sc->md==NULL )
-return( NULL );
-
-    for ( md = sc->md; md!=NULL; md=md->next ) {
-	cur = chunkalloc(sizeof(MinimumDistance));
-	*cur = *md;
-	if ( head==NULL )
-	    head = cur;
-	else
-	    last->next = cur;
-	last = cur;
-    }
-    cur->next = NULL;
-
-    MDReplace(head,sc->layers[ly_fore].splines,rpl);
-return( head );
-}
-
 static int RefCharsMatch(RefChar *urefs,RefChar *crefs) {
     /* I assume they are in the same order */
     while ( urefs!=NULL && crefs!=NULL ) {
@@ -408,7 +387,6 @@ void UndoesFree(Undoes *undo) {
 	  case ut_hints: case ut_anchors: case ut_statelookup:
 	    SplinePointListsFree(undo->u.state.splines);
 	    RefCharsFree(undo->u.state.refs);
-	    MinimumDistancesFree(undo->u.state.md);
 	    UHintListFree(undo->u.state.hints);
 	    free(undo->u.state.instrs);
 	    ImageListsFree(undo->u.state.images);
@@ -496,7 +474,6 @@ return(NULL);
     undo->u.state.splines = SplinePointListCopy(cv->layerheads[cv->drawmode]->splines);
     undo->u.state.refs = RefCharsCopyState(cv->sc,layer);
     if ( layer==ly_fore ) {
-	undo->u.state.md = MDsCopyState(cv->sc,undo->u.state.splines);
 	undo->u.state.anchor = AnchorPointsCopy(cv->sc->anchor);
     }
     undo->u.state.images = ImageListCopy(cv->layerheads[cv->drawmode]->images);
@@ -521,7 +498,7 @@ Undoes *CVPreserveStateHints(CharViewBase *cv) {
 return( undo );
 }
 
-Undoes *SCPreserveHints(SplineChar *sc) {
+Undoes *SCPreserveHints(SplineChar *sc,int layer) {
     Undoes *undo;
 
     if ( no_windowing_ui || maxundoes==0 )		/* No use for undoes in scripting */
@@ -535,7 +512,7 @@ return(NULL);
     undo->u.state.instrs = (uint8*) copyn((char *) sc->ttf_instrs, sc->ttf_instrs_len);
     undo->u.state.instrs_len = sc->ttf_instrs_len;
     undo->copied_from = sc->parent;
-return( AddUndo(undo,&sc->layers[ly_fore].undoes,&sc->layers[ly_fore].redoes));
+return( AddUndo(undo,&sc->layers[layer].undoes,&sc->layers[layer].redoes));
 }
 
 Undoes *SCPreserveLayer(SplineChar *sc,int layer, int dohints) {
@@ -554,7 +531,6 @@ return(NULL);
     undo->u.state.splines = SplinePointListCopy(sc->layers[layer].splines);
     undo->u.state.refs = RefCharsCopyState(sc,layer);
     if ( layer==ly_fore ) {
-	undo->u.state.md = MDsCopyState(sc,undo->u.state.splines);
 	undo->u.state.anchor = AnchorPointsCopy(sc->anchor);
     }
     if ( dohints ) {
@@ -778,18 +754,16 @@ static void SCUndoAct(SplineChar *sc,int layer, Undoes *undo) {
 	}
 	head->splines = undo->u.state.splines;
 	if ( layer==ly_fore ) {
-	    MinimumDistance *md = sc->md;
 	    AnchorPoint *ap = sc->anchor;
-	    sc->md = undo->u.state.md;
-	    undo->u.state.md = md;
 	    sc->anchor = undo->u.state.anchor;
 	    undo->u.state.anchor = ap;
 	}
-	if ( layer>=ly_fore && !RefCharsMatch(undo->u.state.refs,sc->layers[layer].refs)) {
+	if ( !RefCharsMatch(undo->u.state.refs,sc->layers[layer].refs)) {
 	    RefChar *refs = RefCharsCopyState(sc,layer);
 	    FixupRefChars(sc,undo->u.state.refs,layer);
 	    undo->u.state.refs = refs;
-	} else if ( layer==ly_fore &&
+	}
+	if ( layer==ly_fore &&
 		(undo->undotype==ut_statehint || undo->undotype==ut_statename)) {
 	    void *hints = UHintCopy(sc,false);
 	    uint8 *instrs = sc->ttf_instrs;
@@ -810,7 +784,7 @@ static void SCUndoAct(SplineChar *sc,int layer, Undoes *undo) {
 	undo->u.state.splines = spl;
 	if ( undo->u.state.lbearingchange ) {
 	    undo->u.state.lbearingchange = -undo->u.state.lbearingchange;
-	    SCSynchronizeLBearing(sc,undo->u.state.lbearingchange);
+	    SCSynchronizeLBearing(sc,layer,undo->u.state.lbearingchange);
 	}
 	if ( layer==ly_fore && undo->undotype==ut_statename ) {
 	    char *temp = sc->name;
@@ -871,7 +845,7 @@ return;
     SCUndoAct(sc,layer,undo);
     undo->next = sc->layers[layer].redoes;
     sc->layers[layer].redoes = undo;
-    _SCCharChangedUpdate(sc,undo->was_modified);
+    _SCCharChangedUpdate(sc,layer,undo->was_modified);
 return;
 }
 
@@ -885,7 +859,7 @@ return;
     SCUndoAct(sc,layer,undo);
     undo->next = sc->layers[layer].undoes;
     sc->layers[layer].undoes = undo;
-    SCCharChangedUpdate(sc);
+    SCCharChangedUpdate(sc,layer);
 return;
 }
 
@@ -1486,7 +1460,7 @@ void CopyReference(SplineChar *sc) {
     CopyBufferFreeGrab();
 
     copybuffer.undotype = ut_state;
-    copybuffer.was_order2 = sc->layers[ly_fore].order2;
+    copybuffer.was_order2 = sc->layers[ly_fore].order2;	/* Largely irrelevant */
     copybuffer.u.state.width = sc->width;
     copybuffer.u.state.vwidth = sc->vwidth;
     copybuffer.u.state.refs = ref = RefCharCreate();
@@ -1592,12 +1566,7 @@ return;
     XClipCheckEps();
 }
 
-#ifdef FONTFORGE_CONFIG_TYPE3
 static Undoes *SCCopyAllLayer(SplineChar *sc,enum fvcopy_type full,int layer) {
-#else
-static Undoes *SCCopyAll(SplineChar *sc,enum fvcopy_type full) {
-    const int layer = ly_fore;
-#endif
     Undoes *cur;
     RefChar *ref;
     extern int copymetadata, copyttfinstr;
@@ -1659,32 +1628,32 @@ static Undoes *SCCopyAll(SplineChar *sc,enum fvcopy_type full) {
 return( cur );
 }
 
-#ifdef FONTFORGE_CONFIG_TYPE3
-static Undoes *SCCopyAll(SplineChar *sc,enum fvcopy_type full) {
-    int layer;
+static Undoes *SCCopyAll(SplineChar *sc,int layer, enum fvcopy_type full) {
     Undoes *ret, *cur, *last=NULL;
 
-    ret = chunkalloc(sizeof(Undoes));
-    if ( sc==NULL ) {
-	ret->undotype = ut_noop;
-    } else if ( full==ct_reference || full==ct_lookups || !sc->parent->multilayer ) {	/* Make a reference */
-	chunkfree(ret,sizeof(Undoes));
-	ret = SCCopyAllLayer(sc,full,ly_fore );
-    } else {
-	ret->undotype = ut_layers;
-	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
-	    cur = SCCopyAllLayer(sc,full,layer);
-	    if ( ret->u.multiple.mult==NULL )
-		ret->u.multiple.mult = cur;
-	    else
-		last->next = cur;
-	    last = cur;
-	    /* full = ct_reference; 	Hunh? What was I thinking? */
+    if ( sc->parent!=NULL && sc->parent->multilayer ) {
+	ret = chunkalloc(sizeof(Undoes));
+	if ( sc==NULL ) {
+	    ret->undotype = ut_noop;
+	} else if ( full==ct_reference || full==ct_lookups || !sc->parent->multilayer ) {	/* Make a reference */
+	    chunkfree(ret,sizeof(Undoes));
+	    ret = SCCopyAllLayer(sc,full,ly_fore );
+	} else {
+	    ret->undotype = ut_layers;
+	    for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+		cur = SCCopyAllLayer(sc,full,layer);
+		if ( ret->u.multiple.mult==NULL )
+		    ret->u.multiple.mult = cur;
+		else
+		    last->next = cur;
+		last = cur;
+		/* full = ct_reference; 	Hunh? What was I thinking? */
+	    }
 	}
-    }
 return( ret );
+    } else
+return( SCCopyAllLayer(sc,full,layer));
 }
-#endif
 
 void SCCopyWidth(SplineChar *sc,enum undotype ut) {
     DBounds bb;
@@ -1979,14 +1948,8 @@ return( dontask_ret );
 }
 
 /* when pasting from the fontview we do a clear first */
-#ifdef FONTFORGE_CONFIG_TYPE3
 static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pasteinto,
 	int layer, real trans[6], struct sfmergecontext *mc,int *refstate) {
-#else
-static void PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pasteinto,
-	real trans[6], struct sfmergecontext *mc,int *refstate) {
-    const int layer = ly_fore;
-#endif
     DBounds bb;
     real transform[6];
     int width, vwidth;
@@ -2167,7 +2130,7 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastein
 		}
 	    }
 	}
-	SCCharChangedUpdate(sc);
+	SCCharChangedUpdate(sc,layer);
 	/* Bug here. we are assuming that the pasted hints are up to date */
 	if ( was_empty && (sc->hstem!=NULL || sc->vstem!=NULL))
 	    sc->changedsincelasthinted = false;
@@ -2175,7 +2138,7 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastein
       case ut_width:
 	SCPreserveWidth(sc);
 	SCSynchronizeWidth(sc,paster->u.width,sc->width,fv);
-	SCCharChangedUpdate(sc);
+	SCCharChangedUpdate(sc,layer);
       break;
       case ut_vwidth:
 	if ( !sc->parent->hasvmetrics )
@@ -2183,14 +2146,14 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastein
 	else {
 	    SCPreserveVWidth(sc);
 	    sc->vwidth = paster->u.width;
-	    SCCharChangedUpdate(sc);
+	    SCCharChangedUpdate(sc,layer);
 	}
       break;
       case ut_rbearing:
 	SCPreserveWidth(sc);
 	SplineCharFindBounds(sc,&bb);
 	SCSynchronizeWidth(sc,bb.maxx + paster->u.rbearing,sc->width,fv);
-	SCCharChangedUpdate(sc);
+	SCCharChangedUpdate(sc,layer);
       break;
       case ut_lbearing:
 	SplineCharFindBounds(sc,&bb);
@@ -2204,9 +2167,8 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastein
     }
 }
 
-#ifdef FONTFORGE_CONFIG_TYPE3
-static void PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pasteinto,
-	real trans[6], struct sfmergecontext *mc,int *refstate) {
+static void PasteToSC(SplineChar *sc,int layer,Undoes *paster,FontViewBase *fv,
+	int pasteinto, real trans[6], struct sfmergecontext *mc,int *refstate) {
     if ( paster->undotype==ut_layers && sc->parent->multilayer ) {
 	int lc, start, layer;
 	Undoes *pl;
@@ -2239,9 +2201,8 @@ static void PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastein
 	    pasteinto = true;		/* Merge other layers in */
 	}
     } else
-	_PasteToSC(sc,paster,fv,pasteinto,ly_fore,trans,mc,refstate);
+	_PasteToSC(sc,paster,fv,pasteinto,layer,trans,mc,refstate);
 }
-#endif
 
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 static void DevTabInto(struct vr *vr) {
@@ -2467,12 +2428,12 @@ static void SCPasteLookups(SplineChar *sc,SplineChar *fromsc,int pasteinto,
 		break;
 		}
 		KPInto(test2,kp,fromkp,isv,sc,sub);
-		_SCCharChangedUpdate(test2,2);
+		_SCCharChangedUpdate(test2,ly_none,2);
 	    }
 	}
     }
     if ( changed )
-	_SCCharChangedUpdate(sc,2);
+	_SCCharChangedUpdate(sc,ly_none,2);
 }
 
 static void SCPasteLookupsMid(SplineChar *sc,Undoes *paster,int pasteinto,
@@ -3062,11 +3023,11 @@ void FVCopy(FontViewBase *fv, enum fvcopy_type fullcopy) {
 	any = true;
 	sc = (gid = fv->map->map[i])==-1 ? NULL : fv->sf->glyphs[gid];
 	if (( onlycopydisplayed && fv->active_bitmap==NULL ) || fullcopy==ct_lookups ) {
-	    cur = SCCopyAll(sc,fullcopy);
+	    cur = SCCopyAll(sc,fv->active_layer,fullcopy);
 	} else if ( onlycopydisplayed ) {
 	    cur = BCCopyAll(gid==-1?NULL:fv->active_bitmap->glyphs[gid],fv->active_bitmap->pixelsize,BDFDepth(fv->active_bitmap));
 	} else {
-	    state = SCCopyAll(sc,fullcopy);
+	    state = SCCopyAll(sc,fv->active_layer,fullcopy);
 	    bhead = NULL;
 	    for ( bdf=fv->sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
 		BDFChar *bdfc = gid==-1 || gid>=bdf->glyphcnt? NULL : bdf->glyphs[gid];
@@ -3115,11 +3076,11 @@ void MVCopyChar(FontViewBase *fv, BDFFont *mvbdf, SplineChar *sc, enum fvcopy_ty
     extern int onlycopydisplayed;
 
     if (( onlycopydisplayed && mvbdf==NULL ) || fullcopy == ct_lookups ) {
-	cur = SCCopyAll(sc,fullcopy);
+	cur = SCCopyAll(sc,fv->active_layer,fullcopy);
     } else if ( onlycopydisplayed ) {
 	cur = BCCopyAll(BDFMakeGID(mvbdf,sc->orig_pos),mvbdf->pixelsize,BDFDepth(mvbdf));
     } else {
-	state = SCCopyAll(sc,fullcopy);
+	state = SCCopyAll(sc,fv->active_layer,fullcopy);
 	bhead = NULL;
 	for ( bdf=fv->sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
 	    bcur = BCCopyAll(BDFMakeGID(bdf,sc->orig_pos),bdf->pixelsize,BDFDepth(bdf));
@@ -3172,11 +3133,11 @@ static BDFFont *BitmapCreateCheck(FontViewBase *fv,int *yestoall, int first, int
 	    yes= yes!=3;
     }
     if ( yes==1 || *yestoall ) {
-	void *freetypecontext = FreeTypeFontContext(fv->sf,NULL,NULL);
+	void *freetypecontext = FreeTypeFontContext(fv->sf,NULL,NULL,fv->active_layer);
 	if ( freetypecontext )
 	    bdf = SplineFontFreeTypeRasterize(freetypecontext,pixelsize,depth);
 	else
-	    bdf = SplineFontAntiAlias(fv->sf,pixelsize,1<<(depth/2));
+	    bdf = SplineFontAntiAlias(fv->sf,fv->active_layer,pixelsize,1<<(depth/2));
 	bdf->next = fv->sf->bitmaps;
 	fv->sf->bitmaps = bdf;
 	fv->sf->changed = true;
@@ -3289,7 +3250,7 @@ return;
 		    ff_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled.\nUse Element->Font Info to enable them."));
  goto err;
 		}
-		PasteToSC(SFMakeChar(sf,fv->map,i),cur,fv,pasteinto,trans,&mc,&refstate);
+		PasteToSC(SFMakeChar(sf,fv->map,i),fv->active_layer,cur,fv,pasteinto,trans,&mc,&refstate);
 	      break;
 	      case ut_bitmapsel: case ut_bitmap:
 		if ( onlycopydisplayed && fv->active_bitmap!=NULL )
@@ -3306,7 +3267,7 @@ return;
 	      break;
 	      case ut_composit:
 		if ( cur->u.composit.state!=NULL )
-		    PasteToSC(SFMakeChar(sf,fv->map,i),cur->u.composit.state,fv,pasteinto,trans,&mc,&refstate);
+		    PasteToSC(SFMakeChar(sf,fv->map,i),fv->active_layer,cur->u.composit.state,fv,pasteinto,trans,&mc,&refstate);
 		for ( bmp=cur->u.composit.bitmaps; bmp!=NULL; bmp = bmp->next ) {
 		    for ( bdf=sf->bitmaps; bdf!=NULL &&
 			    (bdf->pixelsize!=bmp->u.bmpstate.pixelsize || BDFDepth(bdf)!=bmp->u.bmpstate.depth);
@@ -3384,7 +3345,7 @@ return;
 	    ff_post_error(_("No Vertical Metrics"),_("This font does not have vertical metrics enabled.\nUse Element->Font Info to enable them."));
 return;
 	}
-	PasteToSC(sc,cur,fv,!doclear,NULL,&mc,&refstate);
+	PasteToSC(sc,fv->active_layer,cur,fv,!doclear,NULL,&mc,&refstate);
       break;
       case ut_bitmapsel: case ut_bitmap:
 	if ( onlycopydisplayed && mvbdf!=NULL )
@@ -3403,7 +3364,7 @@ return;
       break;
       case ut_composit:
 	if ( cur->u.composit.state!=NULL )
-	    PasteToSC(sc,cur->u.composit.state,fv,!doclear,NULL,&mc,&refstate);
+	    PasteToSC(sc,fv->active_layer,cur->u.composit.state,fv,!doclear,NULL,&mc,&refstate);
 	for ( bmp=cur->u.composit.bitmaps; bmp!=NULL; bmp = bmp->next ) {
 	    for ( bdf=fv->sf->bitmaps; bdf!=NULL &&
 		    (bdf->pixelsize!=bmp->u.bmpstate.pixelsize || BDFDepth(bdf)!=bmp->u.bmpstate.depth);

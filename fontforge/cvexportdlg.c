@@ -182,7 +182,7 @@ static int AskSizeBits(int *pixelsize,int *bitsperpixel) {
 return( sb.good );
 }
 
-static int ExportXBM(char *filename,SplineChar *sc, int format) {
+static int ExportXBM(char *filename,SplineChar *sc, int layer, int format) {
     char *ans;
     int pixelsize, bitsperpixel;
 
@@ -200,8 +200,8 @@ return( 0 );
 return( 0 );
     }
     if ( autohint_before_rasterize && sc->changedsincelasthinted && !sc->manualhints )
-	SplineCharAutoHint(sc,NULL);
-return( ExportImage(filename,sc, format, pixelsize, bitsperpixel));
+	SplineCharAutoHint(sc,layer,NULL);
+return( ExportImage(filename,sc, layer, format, pixelsize, bitsperpixel));
 }
 struct gfc_data {
     int done;
@@ -260,7 +260,7 @@ static void DoExport(struct gfc_data *d,unichar_t *path) {
     else if ( format==5 )
 	good = ExportPlate(temp,d->sc,d->layer);
     else if ( format<fv_pythonbase )
-	good = ExportXBM(temp,d->sc,format-5);
+	good = ExportXBM(temp,d->sc,d->layer,format-5);
 #ifndef _NO_PYTHON
     else if ( format>=fv_pythonbase )
 	PyFF_SCExport(d->sc,format-fv_pythonbase,temp,d->layer);

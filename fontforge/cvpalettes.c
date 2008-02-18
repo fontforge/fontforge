@@ -1132,7 +1132,7 @@ static BDFChar *BDFCharFromLayer(SplineChar *sc,int layer) {
     dummy.layer_cnt = 2;
     dummy.layers = sc->layers+layer-1;
     dummy.parent = sc->parent;
-return( SplineCharAntiAlias(&dummy,24,4));
+return( SplineCharAntiAlias(&dummy,ly_fore,24,4));
 }
 
 static void CVLayers2Set(CharView *cv) {

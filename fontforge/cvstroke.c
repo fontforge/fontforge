@@ -127,7 +127,7 @@ static void SCStrokeIt(void *_sc, StrokeInfo *si) {
     temp = SSStroke(sc->layers[ly_fore].splines,si,sc);
     SplinePointListsFree( sc->layers[ly_fore].splines );
     sc->layers[ly_fore].splines = temp;
-    SCCharChangedUpdate(sc);
+    SCCharChangedUpdate(sc,ly_fore);
 }
 
 static int Stroke_OK(GGadget *g, GEvent *e) {

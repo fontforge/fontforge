@@ -128,7 +128,7 @@ return;
     }
     if ( (empty || doclear) && width!=UNDEFINED_WIDTH )
 	SCSynchronizeWidth(sc,width,sc->width,NULL);
-    SCCharChangedUpdate(sc);
+    SCCharChangedUpdate(sc,layer);
 }
 
 void SCImportPS(SplineChar *sc,int layer,char *path,int doclear, int flags) {
@@ -241,7 +241,7 @@ return;
     }
     last->next = *ly_head;
     *ly_head = head;
-    SCCharChangedUpdate(sc);
+    SCCharChangedUpdate(sc,layer);
 }
 
 #ifndef _NO_LIBXML
@@ -279,7 +279,7 @@ return;
 	espl->next = *head;
 	*head = spl;
     }
-    SCCharChangedUpdate(sc);
+    SCCharChangedUpdate(sc,layer);
 }
 
 void SCImportGlif(SplineChar *sc,int layer,char *path,char *memory, int memlen, int doclear) {
@@ -309,7 +309,7 @@ return;
     espl->next = *head;
     *head = spl;
 
-    SCCharChangedUpdate(sc);
+    SCCharChangedUpdate(sc,layer);
 }
 #endif
 
@@ -811,7 +811,7 @@ return;
 	for ( espl=spl; espl->next!=NULL; espl=espl->next );
 	espl->next = *head;
 	*head = spl;
-	SCCharChangedUpdate(sc);
+	SCCharChangedUpdate(sc,layer);
     }
     fclose(fig);
 }
@@ -885,7 +885,7 @@ void SCInsertImage(SplineChar *sc,GImage *image,real scale,real yoff,real xoff,
     sc->layers[layer].images = im;
     sc->parent->onlybitmaps = false;
     SCOutOfDateBackground(sc);
-    SCCharChangedUpdate(sc);
+    SCCharChangedUpdate(sc,layer);
 }
 
 void SCAddScaleImage(SplineChar *sc,GImage *image,int doclear, int layer) {

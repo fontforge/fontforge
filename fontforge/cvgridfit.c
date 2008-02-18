@@ -47,19 +47,20 @@ void SCDeGridFit(SplineChar *sc) {
 void CVGridFitChar(CharView *cv) {
     void *single_glyph_context;
     SplineFont *sf = cv->b.sc->parent;
+    int layer = CVLayer((CharViewBase *) cv);
 
     SplinePointListsFree(cv->b.gridfit); cv->b.gridfit = NULL;
     FreeType_FreeRaster(cv->raster); cv->raster = NULL;
 
-    single_glyph_context = _FreeTypeFontContext(sf,cv->b.sc,NULL,
-	    sf->layers[ly_fore].order2?ff_ttf:ff_otf,0,NULL);
+    single_glyph_context = _FreeTypeFontContext(sf,cv->b.sc,NULL,layer,
+	    sf->layers[layer].order2?ff_ttf:ff_otf,0,NULL);
     if ( single_glyph_context==NULL ) {
 	LogError(_("Freetype rasterization failed.\n") );
 return;
     }
 
     if ( cv->b.sc->layers[ly_fore].refs!=NULL )
-	SCNumberPoints(cv->b.sc);
+	SCNumberPoints(cv->b.sc,layer);
 
     cv->raster = FreeType_GetRaster(single_glyph_context,cv->b.sc->orig_pos,
 	    cv->ft_pointsize, cv->ft_dpi, cv->ft_depth );

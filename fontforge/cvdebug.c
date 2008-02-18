@@ -746,14 +746,15 @@ static void DVDefaultRaster(DebugView *dv) {
     CharView *cv = dv->cv;
     void *single_glyph_context;
     SplineFont *sf = cv->b.sc->parent;
+    int layer = CVLayer((CharViewBase *) cv);
 
     if ( cv->oldraster!=NULL )
 	FreeType_FreeRaster(cv->oldraster);
     cv->oldraster = cv->raster;
     SplinePointListsFree(cv->b.gridfit);
     cv->b.gridfit = NULL;
-    single_glyph_context = _FreeTypeFontContext(sf,cv->b.sc,NULL,
-	    cv->b.sc->layers[ly_fore].order2?ff_ttf:ff_otf,0,NULL);
+    single_glyph_context = _FreeTypeFontContext(sf,cv->b.sc,NULL,layer,
+	    cv->b.sc->layers[layer].order2?ff_ttf:ff_otf,0,NULL);
     if ( single_glyph_context!=NULL ) {
 	cv->raster = FreeType_GetRaster(single_glyph_context,cv->b.sc->orig_pos,
 		cv->ft_pointsize, cv->ft_dpi, cv->ft_depth );
@@ -2048,7 +2049,7 @@ void CVDebugReInit(CharView *cv,int restart_debug,int dbg_fpgm) {
 	dv->dwidth = 260;
 	dv->scale = scale;
 	dv->cv = cv;
-	dv->dc = DebuggerCreate(cv->b.sc,cv->ft_pointsize,cv->ft_dpi,dbg_fpgm,cv->ft_depth==2);
+	dv->dc = DebuggerCreate(cv->b.sc,CVLayer((CharViewBase*) cv),cv->ft_pointsize,cv->ft_dpi,dbg_fpgm,cv->ft_depth==2);
 	FreeType_FreeRaster(cv->raster); cv->raster = NULL;
 	if ( dv->dc==NULL ) {
 	    free(dv);

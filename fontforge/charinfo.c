@@ -2426,12 +2426,12 @@ static BDFChar *Rasterize(SplineChar *sc) {
     void *freetypecontext=NULL;
     BDFChar *ret;
 
-    freetypecontext = FreeTypeFontContext(sc->parent,sc,sc->parent->fv);
+    freetypecontext = FreeTypeFontContext(sc->parent,sc,sc->parent->fv,ly_fore);
     if ( freetypecontext!=NULL ) {
 	ret = SplineCharFreeTypeRasterize(freetypecontext,sc->orig_pos,kern_popup_size,8);
 	FreeTypeFreeContext(freetypecontext);
     } else
-	ret = SplineCharAntiAlias(sc,kern_popup_size,4);
+	ret = SplineCharAntiAlias(sc,ly_fore,kern_popup_size,4);
 return( ret );
 }
 

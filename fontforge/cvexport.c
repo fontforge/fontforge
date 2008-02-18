@@ -36,7 +36,7 @@
 #include "gicons.h"
 #include <utype.h>
 
-static void EpsGeneratePreview(FILE *eps,SplineChar *sc,DBounds *b) {
+static void EpsGeneratePreview(FILE *eps,SplineChar *sc,int layer,DBounds *b) {
     double scale, temp;
     int pixelsize, depth;
     BDFChar *bdfc;
@@ -52,9 +52,9 @@ return;
     scale = pixelsize/(double) (sc->parent->ascent+sc->parent->descent);
 
     depth = 4;
-    bdfc = SplineCharFreeTypeRasterizeNoHints(sc,pixelsize,4);
+    bdfc = SplineCharFreeTypeRasterizeNoHints(sc,layer,pixelsize,4);
     if ( bdfc==NULL )
-	bdfc = SplineCharAntiAlias(sc,pixelsize,4);
+	bdfc = SplineCharAntiAlias(sc,pixelsize,layer,4);
     if ( bdfc==NULL )
 return;
 
@@ -96,7 +96,7 @@ int _ExportEPS(FILE *eps,SplineChar *sc, int layer, int preview) {
 	    tm->tm_mday, tm->tm_mon+1, 1900+tm->tm_year );
     fprintf( eps, "%%%%EndComments\n" );
     if ( preview )
-	EpsGeneratePreview(eps,sc,&b);
+	EpsGeneratePreview(eps,sc,layer,&b);
     fprintf( eps, "%%%%EndProlog\n" );
     fprintf( eps, "%%%%Page \"%s\" 1\n", sc->name );
 
@@ -441,7 +441,7 @@ return(0);
 return( ret );
 }
 
-int ExportImage(char *filename,SplineChar *sc, int format, int pixelsize, int bitsperpixel) {
+int ExportImage(char *filename,SplineChar *sc, int layer, int format, int pixelsize, int bitsperpixel) {
     struct _GImage base;
     GImage gi;
     GClut clut;
@@ -453,7 +453,7 @@ int ExportImage(char *filename,SplineChar *sc, int format, int pixelsize, int bi
     void *freetypecontext;
 
     if ( autohint_before_rasterize && sc->changedsincelasthinted && !sc->manualhints )
-	SplineCharAutoHint(sc,NULL);
+	SplineCharAutoHint(sc,layer,NULL);
 
     memset(&gi,'\0', sizeof(gi));
     memset(&base,'\0', sizeof(base));
@@ -461,8 +461,8 @@ int ExportImage(char *filename,SplineChar *sc, int format, int pixelsize, int bi
     gi.u.image = &base;
 
     if ( bitsperpixel==1 ) {
-	if ( (freetypecontext = FreeTypeFontContext(sc->parent,sc,NULL))==NULL )
-	    bdfc = SplineCharRasterize(sc,pixelsize);
+	if ( (freetypecontext = FreeTypeFontContext(sc->parent,sc,NULL,layer))==NULL )
+	    bdfc = SplineCharRasterize(sc,layer,pixelsize);
 	else {
 	    bdfc = SplineCharFreeTypeRasterize(freetypecontext,sc->orig_pos,pixelsize,1);
 	    FreeTypeFreeContext(freetypecontext);
@@ -488,8 +488,8 @@ int ExportImage(char *filename,SplineChar *sc, int format, int pixelsize, int bi
 	    ret = GImageWriteBmp(&gi,filename);
 	BDFCharFree(bdfc);
     } else {
-	if ( (freetypecontext = FreeTypeFontContext(sc->parent,sc,NULL))==NULL )
-	    bdfc = SplineCharAntiAlias(sc,pixelsize,(1<<(bitsperpixel/2)));
+	if ( (freetypecontext = FreeTypeFontContext(sc->parent,sc,NULL,layer))==NULL )
+	    bdfc = SplineCharAntiAlias(sc,pixelsize,layer,(1<<(bitsperpixel/2)));
 	else {
 	    bdfc = SplineCharFreeTypeRasterize(freetypecontext,sc->orig_pos,pixelsize,bitsperpixel);
 	    FreeTypeFreeContext(freetypecontext);
