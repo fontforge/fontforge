@@ -2913,8 +2913,19 @@ static int CheckPoint(FindSel *fs, SplinePoint *sp, SplineSet *spl) {
 return( true );
     }
     if ( (sp->selected && fs->select_controls) || fs->all_controls ) {
+	int seln=false, selp=false;
 	if ( fs->c_xl<=sp->nextcp.x && fs->c_xh>=sp->nextcp.x &&
-		fs->c_yl<=sp->nextcp.y && fs->c_yh >= sp->nextcp.y ) {
+		fs->c_yl<=sp->nextcp.y && fs->c_yh >= sp->nextcp.y )
+	    seln = true;
+	if ( fs->c_xl<=sp->prevcp.x && fs->c_xh>=sp->prevcp.x &&
+		fs->c_yl<=sp->prevcp.y && fs->c_yh >= sp->prevcp.y )
+	    selp = true;
+	if ( seln && selp ) {
+	    /* Select the one with a spline attached. */
+	    if ( sp->prev!=NULL && sp->next==NULL )
+		seln = false;
+	}
+	if ( seln ) {
 	    fs->p->sp = sp;
 	    fs->p->spline = NULL;
 	    fs->p->spl = spl;
@@ -2927,8 +2938,7 @@ return( true );
 	    }
 	    sp->selected = true;
 return( true );
-	} else if ( fs->c_xl<=sp->prevcp.x && fs->c_xh>=sp->prevcp.x &&
-		fs->c_yl<=sp->prevcp.y && fs->c_yh >= sp->prevcp.y ) {
+	} else if ( selp ) {
 	    fs->p->sp = sp;
 	    fs->p->spline = NULL;
 	    fs->p->spl = spl;
