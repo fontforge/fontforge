@@ -5435,13 +5435,15 @@ void LayerDefault(Layer *layer) {
 
 SplineChar *SplineCharCreate(int layer_cnt) {
     SplineChar *sc = chunkalloc(sizeof(SplineChar));
+    int i;
+
     sc->color = COLOR_DEFAULT;
     sc->orig_pos = 0xffff;
     sc->unicodeenc = -1;
-    sc->layer_cnt = 2;
-    sc->layers = gcalloc(2,sizeof(Layer));
-    LayerDefault(&sc->layers[0]);
-    LayerDefault(&sc->layers[1]);
+    sc->layer_cnt = layer_cnt;
+    sc->layers = gcalloc(layer_cnt,sizeof(Layer));
+    for ( i=0; i<layer_cnt; ++i )
+	LayerDefault(&sc->layers[i]);
     sc->tex_height = sc->tex_depth = sc->italic_correction = sc->top_accent_horiz =
 	    TEX_UNDEF;
 return( sc );

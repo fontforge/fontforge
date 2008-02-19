@@ -690,6 +690,7 @@ extern void CVPalettesRaise(CharView *cv);
 extern void CVLayersSet(CharView *cv);
 extern void _CVPaletteActivate(CharView *cv,int force);
 extern void CVPaletteActivate(CharView *cv);
+extern void CVLayerPaletteCheck(SplineFont *sf);
 extern void CVPalettesHideIfMine(CharView *cv);
 extern int BVPaletteIsVisible(BitmapView *bv,int which);
 extern void BVPaletteSetVisible(BitmapView *bv,int which,int visible);
