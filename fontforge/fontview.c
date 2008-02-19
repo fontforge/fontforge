@@ -4442,7 +4442,7 @@ static void vwlistcheck(GWindow gw,struct gmenuitem *mi, GEvent *e) {
 	    mi->ti.disabled = sf->onlybitmaps && fv->show!=fv->filled;
 	  break;
 	  case MID_Layers:
-	    mi->ti.disabled = sf->layer_cnt<2;
+	    mi->ti.disabled = sf->layer_cnt<=2 || sf->multilayer;
 	  break;
 	}
     }
