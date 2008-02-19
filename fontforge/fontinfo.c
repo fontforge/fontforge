@@ -1353,8 +1353,6 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_IsMultiLayer	1220
 #define CID_IsStrokedFont	1222
 #define CID_StrokeWidth		1223
-#define CID_ForeName		1224
-#define CID_ForeOrder2		1225
 #define CID_Backgrounds		1226
 
 #define CID_PrivateEntries	2001
@@ -3087,12 +3085,6 @@ static int GFI_Cancel(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static int AskLoseUndoes() {
-    char *buts[3];
-    buts[0] = _("_OK"); buts[1] = _("_Cancel"); buts[2]=NULL;
-return( gwwv_ask(_("Losing Undoes"),(const char **) buts,0,1,_("Changing the order of the splines in the font will lose all undoes.\nContinue anyway?")) );
-}
-
 static void BadFamily() {
     ff_post_error(_("Bad Family Name"),_("Bad Family Name, must begin with an alphabetic character."));
 }
@@ -3941,7 +3933,7 @@ return( true );
 }
 
 static int Layers_CanDelete(GGadget *g,int row) {
-return( row!=0 );
+return( row>ly_fore );
 }
 
 static void Layers_InitRow(GGadget *g,int row) {
@@ -3961,14 +3953,14 @@ static void LayersMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
     mi->col_cnt = 3;
     mi->col_init = layersci;
 
-    md = gcalloc(3*(sf->layer_cnt-1),sizeof(struct matrix_data));
-    for ( i=j=0; i<sf->layer_cnt; ++i ) if ( i!=ly_fore ) {
+    md = gcalloc(3*(sf->layer_cnt+1),sizeof(struct matrix_data));
+    for ( i=j=0; i<sf->layer_cnt; ++i ) {
 	md[3*j  ].u.md_str  = copy(sf->layers[i].name);
 	md[3*j+1].u.md_ival = sf->layers[i].order2;
 	md[3*j+2].u.md_ival = i+1;
 	++j;
     }
-    mi->initial_row_cnt = sf->layer_cnt-1;
+    mi->initial_row_cnt = sf->layer_cnt;
     mi->matrix_data = md;
 
     mi->initrow   = Layers_InitRow;
@@ -3990,7 +3982,6 @@ static int GFI_Type3Change(GGadget *g, GEvent *e) {
 	GGadgetSetEnabled(GWidgetGetControl(gw,CID_IsOrder3), !type3);
 	if ( type3 )
 	    GGadgetSetChecked(GWidgetGetControl(gw,CID_IsOrder3), true );
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_ForeOrder2), !type3 && mixed);
 	GGadgetSetEnabled(GWidgetGetControl(gw,CID_GuideOrder2), !type3 && mixed);
 	GGadgetSetEnabled(GWidgetGetControl(gw,CID_Backgrounds), !type3);
     }
@@ -4007,10 +3998,8 @@ static int GFI_OrderChange(GGadget *g, GEvent *e) {
 #ifdef FONTFORGE_CONFIG_TYPE3
 	GGadgetSetEnabled(GWidgetGetControl(gw,CID_IsMultiLayer), cubic);
 #endif
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_ForeOrder2), mixed);
 	GGadgetSetEnabled(GWidgetGetControl(gw,CID_GuideOrder2), mixed);
 	if ( !mixed ) {
-	    GGadgetSetChecked(GWidgetGetControl(gw,CID_ForeOrder2), !cubic );
 	    GGadgetSetChecked(GWidgetGetControl(gw,CID_GuideOrder2), !cubic );
 	}
 	GGadgetSetEnabled(backs, true);
@@ -4278,11 +4267,12 @@ return;
     }
 }
 
-static void GFI_SetLayers(struct gfi_data *d) {
+static int GFI_SetLayers(struct gfi_data *d) {
     GGadget *backs = GWidgetGetControl(d->gw,CID_Backgrounds);
     int rows, cols = GMatrixEditGetColCnt(backs), r, origr, l;
     struct matrix_data *layers = GMatrixEditGet(backs, &rows);
     SplineFont *sf = d->sf;
+    int changed = false;
 
     for ( l=0; l<sf->layer_cnt; ++l )
 	sf->layers[l].ticked = false;
@@ -4296,19 +4286,29 @@ static void GFI_SetLayers(struct gfi_data *d) {
 		SFConvertLayerToOrder2(sf,origr);
 	    else
 		SFConvertLayerToOrder3(sf,origr);
+	    changed = true;
 	}
-	if ( layers[r*cols+0].u.md_str!=NULL && *layers[r*cols+0].u.md_str!='\0' ) {
+	if ( layers[r*cols+0].u.md_str!=NULL && *layers[r*cols+0].u.md_str!='\0' &&
+		strcmp( sf->layers[origr].name, layers[r*cols+0].u.md_str)!=0 ) {
 	    free( sf->layers[origr].name );
 	    sf->layers[origr].name = copy( layers[r*cols+0].u.md_str );
+	    changed = true;
 	}
     }
 
-    for ( l=sf->layer_cnt-1; l>ly_fore; --l ) if ( !sf->layers[l].ticked )
+    for ( l=sf->layer_cnt-1; l>ly_fore; --l ) if ( !sf->layers[l].ticked ) {
 	SFRemoveLayer(sf,l);
+	changed = true;
+    }
 
     l = 0;
-    for ( r=0; r<rows; ++r ) if ( layers[r*cols+2].u.md_ival==0 )
+    for ( r=0; r<rows; ++r ) if ( layers[r*cols+2].u.md_ival==0 ) {
 	SFAddLayer(sf,layers[r*cols+0].u.md_str,layers[r*cols+1].u.md_ival);
+	changed = true;
+    }
+    if ( changed )
+	CVLayerPaletteCheck(sf);
+return( changed );
 }
 
 static int GFI_OK(GGadget *g, GEvent *e) {
@@ -4326,7 +4326,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	real ia, cidversion;
 	const unichar_t *txt, *fond; unichar_t *end;
 	int i,j, mcs;
-	int vmetrics, vorigin, namechange, foreorder2, guideorder2;
+	int vmetrics, vorigin, namechange, guideorder2;
 	int xuidchanged = false;
 	GTextInfo *pfmfam, *ibmfam, *fstype, *nlitem;
 	int32 len;
@@ -4388,7 +4388,6 @@ return( true );
 return(true);
 	}
 	guideorder2 = GGadgetIsChecked(GWidgetGetControl(gw,CID_GuideOrder2));
-	foreorder2 = GGadgetIsChecked(GWidgetGetControl(gw,CID_ForeOrder2));
 	strokedfont = GGadgetIsChecked(GWidgetGetControl(gw,CID_IsStrokedFont));
 	strokewidth = GetReal8(gw,CID_StrokeWidth,_("Stroke _Width:"),&err);
 #ifdef FONTFORGE_CONFIG_TYPE3
@@ -4512,10 +4511,6 @@ return( true );
 return( true );
 	    }
 	}
-	if ( foreorder2!=sf->layers[ly_fore].order2 && sf->changed && AskLoseUndoes())
-return( true );
-	if ( foreorder2!=sf->layers[ly_fore].order2 && !SFCloseAllInstrs(sf))
-return( true );
 
 	nlitem = GGadgetGetListItemSelected(GWidgetGetControl(gw,CID_Namelist));
 	if ( nlitem==NULL )
@@ -4748,16 +4743,6 @@ return(true);
 	    BDFsSetAsDs(sf);
 	    reformat_fv = true;
 	    CIDMasterAsDes(sf);
-	}
-	if ( foreorder2!=sf->layers[ly_fore].order2 ) {
-	    if ( foreorder2 )
-		SFConvertLayerToOrder2(sf,ly_fore);
-	    else
-		SFConvertLayerToOrder3(sf,ly_fore);
-	}
-	if ( *_GGadgetGetTitle(GWidgetGetControl(gw,CID_ForeName))!='\0' ) {
-	    free(sf->layers[ly_fore].name);
-	    sf->layers[ly_fore].name = GGadgetGetTitle8(GWidgetGetControl(gw,CID_ForeName));
 	}
 	GFI_SetLayers(d);
 	if ( guideorder2!=sf->grid.order2 ) {
@@ -7491,7 +7476,7 @@ void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
 	*szarray4[4], *szarray5[6], *tnvarray[4], *tnharray[6], *tnharray2[5], *gaspharray[6],
 	*gaspvarray[3], *lkarray[2][7], *lkbuttonsarray[17], *lkharray[3],
 	*charray1[4], *charray2[4], *charray3[4], *cvarray[9], *cvarray2[4],
-	*larray[16], *larray2[25], *larray3[6], *larray4[5], *larray5[5];
+	*larray[16], *larray2[25], *larray3[6], *larray4[5];
     GTextInfo mlabel[10], nlabel[16], pslabel[30], tnlabel[7],
 	plabel[12], vlabel[19], panlabel[22], comlabel[3], txlabel[23],
 	mflabel[8], mclabel[8], szlabel[17], mklabel[7], metlabel[28],
@@ -8250,7 +8235,7 @@ return;
     larray[6] = &lbox[4]; larray[7] = NULL;
 
     lgcd[k].gd.pos.x = 12; lgcd[k].gd.pos.y = 0;
-    llabel[k].text = (unichar_t *) _("\nBackground layer(s):");
+    llabel[k].text = (unichar_t *) _("\nLayers:");
     llabel[k].text_is_1byte = true;
     llabel[k].text_in_resource = true;
     lgcd[k].gd.label = &llabel[k];
@@ -8266,43 +8251,7 @@ return;
     lgcd[k].gd.u.matrix = &layersmi;
     lgcd[k].data = d;
     lgcd[k++].creator = GMatrixEditCreate;
-    larray[10] = &lgcd[k-1]; larray[11] = NULL;
-
-    lgcd[k].gd.pos.x = 12; lgcd[k].gd.pos.y = 0;
-    llabel[k].text = (unichar_t *) _("Foreground:");
-    llabel[k].text_is_1byte = true;
-    llabel[k].text_in_resource = true;
-    lgcd[k].gd.label = &llabel[k];
-    lgcd[k].gd.flags = (gg_visible | gg_enabled);
-    lgcd[k++].creator = GLabelCreate;
-    larray5[0] = &lgcd[k-1];
-
-    lgcd[k].gd.flags = gg_visible | gg_enabled;
-    llabel[k].text = (unichar_t *) sf->layers[ly_fore].name;
-    llabel[k].text_is_1byte = true;
-    lgcd[k].gd.label = &llabel[k];
-    lgcd[k].gd.cid = CID_ForeName;
-    lgcd[k++].creator = GTextFieldCreate;
-    larray5[1] = &lgcd[k-1];
-
-    llabel[k].text = (unichar_t *) _("Quadratic");
-    llabel[k].text_is_1byte = true;
-    llabel[k].text_in_resource = true;
-    lgcd[k].gd.label = &llabel[k];
-    lgcd[k].gd.flags = sf->multilayer || ltype>=0 ? (gg_visible | gg_utf8_popup ) :
-	    (gg_visible | gg_enabled | gg_utf8_popup);
-    if ( sf->layers[ly_fore].order2 )
-	lgcd[k].gd.flags |= gg_cb_on;
-    lgcd[k].gd.cid = CID_ForeOrder2;
-    lgcd[k].creator = GCheckBoxCreate;
-    lgcd[k++].gd.popup_msg = (unichar_t *) _(
-	"Use quadratic splines for the foreground layer of the font");
-    larray5[2] = &lgcd[k-1]; larray5[3] = GCD_Glue; larray5[4] = NULL;
-
-    lbox[5].gd.flags = gg_enabled|gg_visible;
-    lbox[5].gd.u.boxelements = larray5;
-    lbox[5].creator = GHBoxCreate;
-    larray[12] = &lbox[5]; larray[13] = NULL; larray[14] = NULL;
+    larray[10] = &lgcd[k-1]; larray[11] = NULL; larray[12] = NULL;
 
     lbox[0].gd.flags = gg_enabled|gg_visible;
     lbox[0].gd.u.boxelements = larray;
@@ -10589,7 +10538,6 @@ return;
     GHVBoxSetExpandableCol(lbox[2].ret,3);
     GHVBoxSetExpandableCol(lbox[3].ret,gb_expandglue);
     GHVBoxSetExpandableCol(lbox[4].ret,gb_expandglue);
-    GHVBoxSetExpandableCol(lbox[5].ret,gb_expandglue);
     GHVBoxSetExpandableRow(lbox[0].ret,5);
     GMatrixEditEnableColumn(GWidgetGetControl(gw,CID_Backgrounds),1,ltype<0);
     GMatrixEditShowColumn(GWidgetGetControl(gw,CID_Backgrounds),2,false);

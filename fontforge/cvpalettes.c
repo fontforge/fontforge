@@ -1623,11 +1623,11 @@ return;
     GGadgetSetChecked(GWidgetGetControl(cvlayers,CID_EBase+layers),true);
 }
 
-static void CVLCheckBackgroundCount(CharView *cv) {
-    /* Make sure we've got the layers palette orgronized properly for the */
-    /*  number of background layers in use in this font */
+static void CVLCheckLayerCount(CharView *cv) {
+    /* Make sure we've got the layers palette orginized properly for the */
+    /*  number of layers in use in this font */
     SplineChar *sc = cv->b.sc;
-    int i,j;
+    int i;
     GGadgetCreateData gcd[3];
     GTextInfo label[3];
     GRect size, inner;
@@ -1664,7 +1664,7 @@ static void CVLCheckBackgroundCount(CharView *cv) {
     GGadgetMove(GWidgetGetControl(cvlayers,CID_VGrid),7,y);
     GGadgetMove(GWidgetGetControl(cvlayers,CID_EGrid),30,y);
     y += layer_height;
-    for ( i=j=0; i<layers_max; ++i ) {
+    for ( i=0; i<layers_max; ++i ) {
 	GGadget *e = GWidgetGetControl(cvlayers,CID_EBase+i);
 	GGadget *v = GWidgetGetControl(cvlayers,CID_VBase+i);
 	if ( i<sc->layer_cnt ) {
@@ -1674,23 +1674,16 @@ static void CVLCheckBackgroundCount(CharView *cv) {
 	    if ( size.width>maxwidth ) maxwidth = size.width;
 	}
 
-	if ( i!=ly_fore ) {
-	    if ( j<cv->layers_off_top || j>=cv->layers_off_top+CV_LAYERS_MAXCNT ||
-		    (sc->layer_cnt<=CV_LAYERS_MAXCNT && j>=sc->layer_cnt-1)) {
-		GGadgetSetVisible(v,false);
-		GGadgetSetVisible(e,false);
-	    } else {
-		GGadgetMove(v,7 ,y);
-		GGadgetMove(e,30,y);
-		GGadgetSetVisible(v,true);
-		GGadgetSetVisible(e,true);
-		y += layer_height;
-	    }
-	    ++j;
+	if ( i<cv->layers_off_top || i>=cv->layers_off_top+CV_LAYERS_MAXCNT ||
+		(sc->layer_cnt<=CV_LAYERS_MAXCNT && i>=sc->layer_cnt)) {
+	    GGadgetSetVisible(v,false);
+	    GGadgetSetVisible(e,false);
 	} else {
-	    int bcnt = sc->layer_cnt>CV_LAYERS_MAXCNT ? CV_LAYERS_MAXCNT+1 : sc->layer_cnt;
-	    GGadgetMove(v,7 ,5+(bcnt+1)*layer_height);
-	    GGadgetMove(e,30,5+(bcnt+1)*layer_height);
+	    GGadgetMove(v,7 ,y);
+	    GGadgetMove(e,30,y);
+	    GGadgetSetVisible(v,true);
+	    GGadgetSetVisible(e,true);
+	    y += layer_height;
 	}
     }
     if ( sc->layer_cnt<=CV_LAYERS_MAXCNT ) {
@@ -1701,12 +1694,11 @@ static void CVLCheckBackgroundCount(CharView *cv) {
 	GGadgetResize(sb,size.width,CV_LAYERS_MAXCNT*layer_height);
 	GGadgetMove(sb,maxwidth+GDrawPointsToPixels(NULL,30)+2,5+2*layer_height);
 	maxwidth += 2 + size.width;
-	GScrollBarSetBounds(sb,0,sc->layer_cnt-1,CV_LAYERS_MAXCNT);
+	GScrollBarSetBounds(sb,0,sc->layer_cnt,CV_LAYERS_MAXCNT);
 	GScrollBarSetPos(sb,cv->layers_off_top);
 	GGadgetSetVisible(sb,true);
     }
     maxwidth += GDrawPointsToPixels(NULL,30);
-    y += layer_height+5;
     GDrawGetSize(cvlayers,&size);    
     if ( size.width != maxwidth || y!=size.height )
 	GDrawResize(cvlayers,maxwidth,y);
@@ -1719,7 +1711,7 @@ static void LayerScroll(CharView *cv, GEvent *event) {
     if ( sbt==et_sb_top )
 	off = 0;
     else if ( sbt==et_sb_bottom )
-	off = cv->b.sc->layer_cnt-1-CV_LAYERS_MAXCNT;
+	off = cv->b.sc->layer_cnt-CV_LAYERS_MAXCNT;
     else if ( sbt==et_sb_up ) {
 	off = cv->layers_off_top-1;
     } else if ( sbt==et_sb_down ) {
@@ -1731,13 +1723,13 @@ static void LayerScroll(CharView *cv, GEvent *event) {
     } else /* if ( sbt==et_sb_thumb || sbt==et_sb_thumbrelease ) */ {
 	off = event->u.control.u.sb.pos;
     }
-    if ( off>cv->b.sc->layer_cnt-1-CV_LAYERS_MAXCNT )
-	off = cv->b.sc->layer_cnt-1-CV_LAYERS_MAXCNT;
+    if ( off>cv->b.sc->layer_cnt-CV_LAYERS_MAXCNT )
+	off = cv->b.sc->layer_cnt-CV_LAYERS_MAXCNT;
     if ( off<0 ) off=0;
     if ( off==cv->layers_off_top )
 return;
     cv->layers_off_top = off;
-    CVLCheckBackgroundCount(cv);
+    CVLCheckLayerCount(cv);
     GScrollBarSetPos(GWidgetGetControl(cvlayers,CID_SB),off);
     GDrawRequestExpose(cvlayers,NULL,false);
 }
@@ -2234,7 +2226,7 @@ void _CVPaletteActivate(CharView *cv,int force) {
 	{
 	    GDrawSetUserData(cvlayers,cv);
 	    if ( layers_cur!=cv->b.sc->layer_cnt || layers_sf!=cv->b.sc->parent )
-		CVLCheckBackgroundCount(cv);
+		CVLCheckLayerCount(cv);
 	}
 	if ( palettes_docked ) {
 	    ReparentFixup(cvtools,cv->v,0,0,CV_TOOLS_WIDTH,CV_TOOLS_HEIGHT);
@@ -2290,6 +2282,17 @@ void _CVPaletteActivate(CharView *cv,int force) {
 
 void CVPaletteActivate(CharView *cv) {
     _CVPaletteActivate(cv,false);
+}
+
+void CVLayerPaletteCheck(SplineFont *sf) {
+    CharView *old;
+
+    if ( cvlayers!=NULL ) {
+	if ( (old = GDrawGetUserData(cvlayers))!=NULL ) {
+	    if ( old->b.sc->parent==sf )
+		_CVPaletteActivate(old,true);
+	}
+    }
 }
 
 #ifdef FONTFORGE_CONFIG_TYPE3

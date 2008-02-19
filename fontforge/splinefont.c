@@ -1219,6 +1219,7 @@ return( true );
 void SFRemoveLayer(SplineFont *sf,int l) {
     int gid, i;
     SplineChar *sc;
+    CharViewBase *cvs;
 
     if ( sf->subfontcnt!=0 || l<=ly_fore || sf->multilayer )
 return;
@@ -1228,6 +1229,12 @@ return;
 	for ( i=l+1; i<sc->layer_cnt; ++i )
 	    sc->layers[i-1] = sc->layers[i];
 	-- sc->layer_cnt;
+	for ( cvs = sc->views; cvs!=NULL; cvs=cvs->next ) {
+	    if ( cvs->layerheads[dm_back] - sc->layers >= sc->layer_cnt )
+		cvs->layerheads[dm_back] = &sc->layers[ly_back];
+	    if ( cvs->layerheads[dm_fore] - sc->layers >= sc->layer_cnt )
+		cvs->layerheads[dm_fore] = &sc->layers[ly_fore];
+	}
     }
 
     free(sf->layers[l].name);
@@ -1239,6 +1246,7 @@ return;
 void SFAddLayer(SplineFont *sf,char *name,int order2) {
     int gid, l;
     SplineChar *sc;
+    CharViewBase *cvs;
 
     if ( sf->layer_cnt>=BACK_LAYER_MAX-1 ) {
 	ff_post_error(_("Too many layers"),_("Attempt to have a font with more than %d layers"),
@@ -1256,9 +1264,15 @@ return;
     sf->layers[l].order2 = order2;
 
     for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc = sf->glyphs[gid])!=NULL ) {
+	Layer *old = sc->layers;
 	sc->layers = grealloc(sc->layers,(l+1)*sizeof(Layer));
 	memset(&sc->layers[l],0,sizeof(Layer));
+	LayerDefault(&sc->layers[l]);
 	sc->layers[l].order2 = order2;
 	++ sc->layer_cnt;
+	for ( cvs = sc->views; cvs!=NULL; cvs=cvs->next ) {
+	    cvs->layerheads[dm_back] = sc->layers + (cvs->layerheads[dm_back]-old);
+	    cvs->layerheads[dm_fore] = sc->layers + (cvs->layerheads[dm_fore]-old);
+	}
     }
 }
