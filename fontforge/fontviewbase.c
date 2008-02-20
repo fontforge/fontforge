@@ -651,8 +651,6 @@ void FVTrans(FontViewBase *fv,SplineChar *sc,real transform[6], uint8 *sel,
 	SCRound2Int(sc,fv->active_layer,1.0);
     }
     if ( flags&fvt_dobackground ) {
-	SCPreserveBackground(sc);
-	SCTransLayer(fv,sc,flags,ly_back,transform,sel);
 	if ( !sc->parent->multilayer ) {
 	    for ( i=0; i<sc->layer_cnt; ++i ) if ( fv->active_layer!=i ) {
 		SCPreserveLayer(sc,i,false);
