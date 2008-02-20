@@ -2056,7 +2056,7 @@ int SFGenerateFont(SplineFont *sf,int layer,int family,EncMap *map) {
     GTextInfo label[18+2*48+4];
     struct gfc_data d;
     GGadget *pulldown, *files, *tf;
-    int hvi, i, j, k, f, old, ofs, y, fc, dupfc, dupstyle;
+    int hvi, i, j, k, f, old, ofs, y, fc, dupfc, dupstyle, rk, vk;
     int bs = GIntGetResource(_NUM_Buttonsize), bsbigger, totwid, spacing;
     SplineFont *temp;
     int familycnt=0;
@@ -2453,6 +2453,7 @@ return( 0 );
     gcd[k++].creator = GLabelCreate;
     hvarray[8] = &gcd[k-1]; hvarray[9] = GCD_ColSpan;
 
+    rk = k;
     gcd[k].gd.pos.x = gcd[k-2].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y-6;
     gcd[k].gd.pos.width = gcd[k-2].gd.pos.width;
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
@@ -2509,6 +2510,7 @@ return( 0 );
 
 	/* Too time consuming to validate lots of fonts, and what UI would I use? */
 	/*  so only do this if not family */
+	vk = k;
 	label[k].text = (unichar_t *) _("Validate Before Saving");
 	label[k].text_is_1byte = true;
 	gcd[k].gd.label = &label[k];
@@ -2908,8 +2910,8 @@ return( 0 );
     d.pstype = gcd[6].ret;
     d.bmptype = gcd[8].ret;
     d.bmpsizes = gcd[9].ret;
-    d.rename = gcd[11].ret;
-    d.validate = gcd[12].ret;
+    d.rename = gcd[rk].ret;
+    d.validate = gcd[vk].ret;
     d.gw = gw;
 
     d.ps_flags = old_ps_flags;

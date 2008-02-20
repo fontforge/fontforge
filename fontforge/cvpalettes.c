@@ -1434,6 +1434,10 @@ return(true);
 	    switch(GGadgetGetCid(event->u.control.g)) {
 	      case CID_VFore:
 		CVShows.showfore = cv->showfore = GGadgetIsChecked(event->u.control.g);
+		if ( CVShows.showback )
+		    cv->showback[0] |= 2;
+		else
+		    cv->showback[0] &= ~2;
 	      break;
 	      case CID_VBack:
 		CVShows.showback = GGadgetIsChecked(event->u.control.g);
@@ -1698,6 +1702,7 @@ static void CVLCheckLayerCount(CharView *cv) {
 	GScrollBarSetPos(sb,cv->layers_off_top);
 	GGadgetSetVisible(sb,true);
     }
+    y += GDrawPointsToPixels(NULL,3);
     maxwidth += GDrawPointsToPixels(NULL,30);
     GDrawGetSize(cvlayers,&size);    
     if ( size.width != maxwidth || y!=size.height )
