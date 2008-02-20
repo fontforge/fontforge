@@ -625,6 +625,7 @@ static SearchView *SVFillup(SearchView *sv, FontView *fv) {
     sv->sd.sc_srch.parent = sv->sd.sc_rpl.parent = &sv->dummy_sf;
 
     sv->dummy_sf.fv = (FontViewBase *) &sv->dummy_fv;
+    sv->dummy_fv.b.active_layer = ly_fore;
     sv->dummy_fv.b.sf = &sv->dummy_sf;
     sv->dummy_fv.b.selected = sv->sel;
     sv->dummy_fv.cbw = sv->dummy_fv.cbh = default_fv_font_size+1;

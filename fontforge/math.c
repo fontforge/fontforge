@@ -171,7 +171,6 @@ static char *cornernames[] = {
     NULL
 };
 
-
 void MathInit(void) {
     int i, j;
     static int inited = false;
@@ -1913,7 +1912,7 @@ static void MKDInit(MathKernDlg *mkd,SplineChar *sc) {
 	mcv->b.sc = msc;
 	mcv->b.layerheads[dm_fore] = &msc->layers[ly_fore];
 	mcv->b.layerheads[dm_back] = &msc->layers[ly_back];
-	mcv->b.layerheads[dm_grid] = NULL;
+	mcv->b.layerheads[dm_grid] = &mkd->dummy_sf.grid;
 	mcv->b.drawmode = dm_fore;
 	mcv->b.container = (struct cvcontainer *) mkd;
 	mcv->inactive = i!=0;
@@ -1936,6 +1935,7 @@ static void MKDInit(MathKernDlg *mkd,SplineChar *sc) {
     mkd->dummy_sf.anchor = NULL;
 
     mkd->dummy_sf.fv = (FontViewBase *) &mkd->dummy_fv;
+    mkd->dummy_fv.b.active_layer = ly_fore;
     mkd->dummy_fv.b.sf = &mkd->dummy_sf;
     mkd->dummy_fv.b.selected = mkd->sel;
     mkd->dummy_fv.cbw = mkd->dummy_fv.cbh = default_fv_font_size+1;
@@ -1962,6 +1962,7 @@ void MathKernDialog(SplineChar *sc,int def_layer) {
     static unichar_t helv[] = { 'h', 'e', 'l', 'v', 'e', 't', 'i', 'c', 'a',',','c','a','l','i','b','a','n',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
     int i,k;
 
+    MathInit();
     MKDInit( &mkd, sc );
     mkd.def_layer = def_layer;
 
