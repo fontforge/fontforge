@@ -1011,6 +1011,7 @@ static void TPDInit(TilePathDlg *tpd,SplineFont *sf) {
     tpd->dummy_sf.anchor = NULL;
 
     tpd->dummy_sf.fv = (FontViewBase *) &tpd->dummy_fv;
+    tpd->dummy_fv.b.active_layer = ly_fore;
     tpd->dummy_fv.b.sf = &tpd->dummy_sf;
     tpd->dummy_fv.b.selected = tpd->sel;
     tpd->dummy_fv.cbw = tpd->dummy_fv.cbh = default_fv_font_size+1;
