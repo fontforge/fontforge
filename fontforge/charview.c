@@ -2020,50 +2020,47 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     if ( cv->b.layerheads[cv->b.drawmode]->undoes!=NULL && cv->b.layerheads[cv->b.drawmode]->undoes->undotype==ut_tstate )
 	DrawOldState(cv,pixmap,cv->b.layerheads[cv->b.drawmode]->undoes, &clip);
 
-    if ( !cv->show_ft_results && cv->dv==NULL ) {
-	for ( layer=ly_back; layer<cv->b.sc->layer_cnt; ++layer ) if ( layer!=ly_fore && (!sf->multilayer || layer==ly_back)) {
+    for ( layer=ly_back; layer<cv->b.sc->layer_cnt; ++layer ) if ( layer!=cvlayer ) {
+	if ( layer!=ly_back || (!cv->show_ft_results && cv->dv==NULL )) {
 	    if (( cv->showback[layer>>5]&(1<<(layer&31))) || layer==cvlayer ) {
 		/* Used to draw the image list here, but that's too slow. Optimization*/
 		/*  is to draw to pixmap, dump pixmap a bit earlier */
 		/* Then when we moved the fill image around, we had to deal with the */
 		/*  images before the fill... */
 		CVDrawLayerSplineSet(cv,pixmap,&cv->b.sc->layers[layer],backoutlinecol,
-			cv->showpoints && cvlayer==layer,&clip);
-		if ( cv->template1!=NULL )
-		    CVDrawTemplates(cv,pixmap,cv->template1,&clip);
-		if ( cv->template2!=NULL )
-		    CVDrawTemplates(cv,pixmap,cv->template2,&clip);
+			false,&clip);
 		for ( rf=cv->b.sc->layers[ly_back].refs; rf!=NULL; rf = rf->next ) {
 		    if ( cv->b.drawmode==dm_back )
 			CVDrawRefName(cv,pixmap,rf,0);
 		    for ( rlayer=0; rlayer<rf->layer_cnt; ++rlayer )
-			CVDrawSplineSet(cv,pixmap,rf->layers[rlayer].splines,backoutlinecol,-1,&clip);
+			CVDrawSplineSet(cv,pixmap,rf->layers[rlayer].splines, backoutlinecol,-1,&clip);
 		    if ( rf->selected && cv->b.layerheads[cv->b.drawmode]==&cv->b.sc->layers[layer])
 			CVDrawBB(cv,pixmap,&rf->bb);
 		}
 	    }
 	}
-	if ( cv->mmvisible!=0 )
-	    DrawMMGhosts(cv,pixmap,&clip);
+    }
+    if ( cv->mmvisible!=0 )
+	DrawMMGhosts(cv,pixmap,&clip);
+    if ( cv->template1!=NULL )
+	CVDrawTemplates(cv,pixmap,cv->template1,&clip);
+    if ( cv->template2!=NULL )
+	CVDrawTemplates(cv,pixmap,cv->template2,&clip);
+
+    CVDrawAnchorPoints(cv,pixmap);
+    /* Draw the active layer last so its splines are on top. */
+    layer = cvlayer;
+    for ( rf=cv->b.sc->layers[layer].refs; rf!=NULL; rf = rf->next ) {
+	if ( CVLayer((CharViewBase *) cv)==layer )
+	    CVDrawRefName(cv,pixmap,rf,0);
+	for ( rlayer=0; rlayer<rf->layer_cnt; ++rlayer )
+	    CVDrawSplineSet(cv,pixmap,rf->layers[rlayer].splines,foreoutlinecol,-1,&clip);
+	if ( rf->selected && cv->b.layerheads[cv->b.drawmode]==&cv->b.sc->layers[layer])
+	    CVDrawBB(cv,pixmap,&rf->bb);
     }
 
-    if ( cv->showfore || (cv->b.drawmode==dm_fore && !cv->show_ft_results && cv->dv==NULL))  {
-	int layer_top = sf->multilayer ? cv->b.sc->layer_cnt : ly_fore+1;
-	CVDrawAnchorPoints(cv,pixmap);
-	for ( layer=ly_fore ; layer<layer_top; ++layer ) {
-	    for ( rf=cv->b.sc->layers[layer].refs; rf!=NULL; rf = rf->next ) {
-		if ( CVLayer((CharViewBase *) cv)==layer )
-		    CVDrawRefName(cv,pixmap,rf,0);
-		for ( rlayer=0; rlayer<rf->layer_cnt; ++rlayer )
-		    CVDrawSplineSet(cv,pixmap,rf->layers[rlayer].splines,foreoutlinecol,-1,&clip);
-		if ( rf->selected && cv->b.layerheads[cv->b.drawmode]==&cv->b.sc->layers[layer])
-		    CVDrawBB(cv,pixmap,&rf->bb);
-	    }
-
-	    CVDrawLayerSplineSet(cv,pixmap,&cv->b.sc->layers[layer],foreoutlinecol,
-		    cv->showpoints && cv->b.drawmode==dm_fore,&clip);
-	}
-    }
+    CVDrawLayerSplineSet(cv,pixmap,&cv->b.sc->layers[layer],foreoutlinecol,
+	    cv->showpoints ,&clip);
 
     if ( cv->freehand.current_trace!=NULL )
 	CVDrawSplineSet(cv,pixmap,cv->freehand.current_trace,tracecol,
@@ -7341,8 +7338,8 @@ static int MakeShape(CharView *cv,SplinePoint *sp1,SplinePoint *sp2,int order2,
 	    SplineRefigure(sp1->next);
     } else {
 	BasePoint center;
-	double r1,r2, len, dot, theta, diff_angle, c, s;
-	BasePoint slope1, slope2, temp;
+	double r1,r2, len, dot, theta, diff_angle, c, s, factor;
+	BasePoint slope1, slope2, temp, offset;
 	PrevSlope(sp1,&slope1);
 	NextSlope(sp2,&slope2);
 	if ( slope1.x==0 && slope1.y==0 ) {
@@ -7377,16 +7374,37 @@ return( false );
 	    len = sqrt(temp.x*temp.x + temp.y*temp.y);
 	    r1 = len/2;
 	} else {
-	    /* Draw a line normal to its slope though sp1, and another normal */
-	    /*  to sp2 through it. The intersection of those lines is the */
-	    /*  center */
-	    center.x = (slope1.y*slope2.y*(sp1->me.y-sp2->me.y) +
-			    slope1.x*slope2.y*sp1->me.x -
-			    slope2.x*slope1.y*sp2->me.x) / dot;
-	    center.y = (slope1.y*slope2.y*(sp2->me.x-sp1->me.x) +
-			    slope1.x*slope2.y*sp1->me.y -
-			    slope2.x*slope1.y*sp2->me.y) / -dot;
-	    r1 = sqrt((sp1->me.x-center.x)*(sp1->me.x-center.x) + (sp1->me.y-center.y)*(sp1->me.y-center.y));
+	    /* The data we have been given do not specify an unique elipse */
+	    /*  in fact there are an infinite number of them, (I think)    */
+	    /*  but once we fix the orientation of the axes then there is  */
+	    /*  only one. So let's say that one axis is normal to sp1,     */
+	    /*  figure out the difference in angle between the slopes,     */
+	    /*  then, based on a circle we know the offset from one point  */
+	    /*  to the other. But our offset will be different, so that    */
+	    /*  gives us the amount of eliptical deformation, from which we*/
+	    /*  can calculate the radii and the center */
+	    theta = atan2(slope1.y,slope1.x);
+	    c = cos(theta); s = sin(theta);
+	    temp.x = slope2.x*c + slope2.y*s;
+	    temp.y = slope2.x*s + slope2.y*c;
+	    diff_angle = atan2(temp.y,temp.x);
+	    if ( RealNear( diff_angle,0 ))
+return( false );
+
+	    theta = atan2(-slope1.x,slope1.y);
+	    c = cos(theta); s = sin(theta);
+	    offset.x = sp2->me.x - sp1->me.x;
+	    offset.y = sp2->me.y - sp1->me.y;
+	    temp.x = offset.x*c + offset.y*s;
+	    temp.y = offset.x*s + offset.y*c;
+	    if ( RealNear(temp.x,0) || RealNear(temp.y,0))
+return( false );
+	    factor = temp.y * tan(diff_angle)/temp.x;
+	    r1 = temp.x + factor*factor*temp.y*temp.y/temp.x;
+	    r2 = r1/factor;
+	    /* And the center is normal to sp1 and r1 away */
+	    center.x = sp1->me.x - slope1.y*r1;
+	    center.y = sp1->me.y + slope1.x*r1;
 	}
 	/* The data we have been given do not specify an unique elipse */
 	/*  in fact there are an infinite number of them, but once we  */
@@ -9010,7 +9028,9 @@ static GMenuItem2 ptlist[] = {
     { { (unichar_t *) N_("Acceptable _Extrema"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'C' }, H_("Acceptable Extrema|No Shortcut"), NULL, NULL, CVMenuAcceptableExtrema, MID_AcceptableExtrema },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("Make _Line"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Make Line|No Shortcut"), NULL, NULL, CVMenuMakeLine, MID_MakeLine },
+#ifdef GWW_TEST
     { { (unichar_t *) N_("Make A_rc"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Make Arc|No Shortcut"), NULL, NULL, CVMenuMakeLine, MID_MakeArc },
+#endif
     { { (unichar_t *) N_("Insert Point On _Spline At..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Insert Point On Spline At...|No Shortcut"), NULL, NULL, CVMenuInsertPt, MID_InsertPtOnSplineAt },
     { { (unichar_t *) N_("_Name Contour"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Name Contour|No Shortcut"), NULL, NULL, CVMenuNameContour, MID_NameContour },
     { NULL }
