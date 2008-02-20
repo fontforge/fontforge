@@ -3630,13 +3630,14 @@ static void _SC_CharChangedUpdate(SplineChar *sc,int layer,int changed) {
     extern int updateflex;
     /* layer might be ly_none or ly_all */
 
-    TTFPointMatches(sc,layer,true);
+    if ( layer>=0 )
+	TTFPointMatches(sc,layer,true);
     if ( changed != -1 ) {
 	sc->changed_since_autosave = true;
 	SFSetModTime(sf);
 	if ( (sc->changed==0) != (changed==0) ) {
 	    sc->changed = (changed!=0);
-	    if ( changed && (sc->layers[layer].splines!=NULL || sc->layers[layer].refs!=NULL))
+	    if ( changed && layer>=ly_fore && (sc->layers[layer].splines!=NULL || sc->layers[layer].refs!=NULL))
 		sc->parent->onlybitmaps = false;
 	    FVToggleCharChanged(sc);
 	    SCRefreshTitles(sc);
@@ -3647,18 +3648,19 @@ static void _SC_CharChangedUpdate(SplineChar *sc,int layer,int changed) {
 		sf->cidmaster->changed = true;
 	    FVSetTitles(sf);
 	}
-	if ( changed ) {
+	if ( changed && layer>=ly_fore ) {
 	    instrcheck(sc,layer);
 	    SCDeGridFit(sc);
 	}
 	if ( !sc->parent->onlybitmaps && !sc->parent->multilayer &&
-		changed==1 && !sc->parent->strokedfont && !sc->layers[layer].order2 )
+		changed==1 && !sc->parent->strokedfont &&
+		layer>=ly_fore && !sc->layers[layer].order2 )
 	    sc->changedsincelasthinted = true;
 	sc->changed_since_search = true;
 	sf->changed = true;
 	sf->changed_since_autosave = true;
 	sf->changed_since_xuidchanged = true;
-	if ( layer!=ly_none && layer!=ly_all )
+	if ( layer>=0 )
 	    SCTickValidationState(sc,layer);
 	_SCHintsChanged(sc);
     }
@@ -3666,7 +3668,7 @@ static void _SC_CharChangedUpdate(SplineChar *sc,int layer,int changed) {
 	sf->cidmaster->changed = sf->cidmaster->changed_since_autosave =
 		sf->cidmaster->changed_since_xuidchanged = true;
     SCRegenDependents(sc,ly_all);	/* All chars linked to this one need to get the new splines */
-    if ( updateflex && (CharView *) (sc->views)!=NULL && layer!=ly_none )
+    if ( updateflex && (CharView *) (sc->views)!=NULL && layer>=ly_fore )
 	SplineCharIsFlexible(sc,layer);
     SCUpdateAll(sc);
 # ifdef FONTFORGE_CONFIG_TYPE3
