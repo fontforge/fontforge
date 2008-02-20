@@ -685,7 +685,7 @@ void DebuggerTerminate(struct debugger_context *dc) {
 void DebuggerReset(struct debugger_context *dc,real ptsize,int dpi,int dbg_fpgm, int is_bitmap) {
 }
 
-struct debugger_context *DebuggerCreate(SplineChar *sc,real pointsize,int dpi, int dbg_fpgm, int is_bitmap) {
+struct debugger_context *DebuggerCreate(SplineChar *sc,int layer,real pointsize,int dpi, int dbg_fpgm, int is_bitmap) {
 return( NULL );
 }
 
