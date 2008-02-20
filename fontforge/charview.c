@@ -4875,6 +4875,7 @@ return( true );
 #define MID_SpiroMakeFirst 2317
 #define MID_NameContour	2318
 #define MID_AcceptableExtrema 2319
+#define MID_MakeArc	2320
 
 #define MID_AutoHint	2400
 #define MID_ClearHStem	2401
@@ -6621,8 +6622,8 @@ static void cv_ptlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	  case MID_SpiroMakeFirst:
 	    mi->ti.disabled = opencnt!=0 || spirocnt!=1;
 	  break;
-	  case MID_MakeLine:
-	    mi->ti.disabled = cnt==0;
+	  case MID_MakeLine: case MID_MakeArc:
+	    mi->ti.disabled = cnt<2;
 	  break;
 	  case MID_AcceptableExtrema:
 	    mi->ti.disabled = acceptable<0;
@@ -7277,43 +7278,213 @@ static void CVMenuSpiroMakeFirst(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     _CVMenuSpiroMakeFirst(cv);
 }
 
-static void _CVMenuMakeLine(CharView *cv) {
-    SplinePointList *spl;
-    SplinePoint *sp;
+static void PrevSlope(SplinePoint *sp,BasePoint *slope) {
+    double len;
+
+    if ( sp->prev==NULL )
+	slope->x = slope->y = 0;
+    else if ( sp->prev->knownlinear ) {
+	slope->x = sp->me.x - sp->prev->from->me.x;
+	slope->y = sp->me.y - sp->prev->from->me.y;
+    } else if ( !sp->noprevcp ) {
+	slope->x = sp->me.x - sp->prevcp.x;
+	slope->y = sp->me.x - sp->prevcp.y;
+    } else {
+	double t = 1.0-1/256.0;
+	slope->x = (3*sp->prev->splines[0].a*t+2*sp->prev->splines[0].b)*t+sp->prev->splines[0].c;
+	slope->y = (3*sp->prev->splines[1].a*t+2*sp->prev->splines[1].b)*t+sp->prev->splines[1].c;
+    }
+    len = sqrt(slope->x*slope->x + slope->y*slope->y);
+    if ( len==0 )
+return;
+    slope->x /= len;
+    slope->y /= len;
+return;
+}
+
+static void NextSlope(SplinePoint *sp,BasePoint *slope) {
+    double len;
+
+    if ( sp->next==NULL )
+	slope->x = slope->y = 0;
+    else if ( sp->next->knownlinear ) {
+	slope->x = sp->next->to->me.x - sp->me.x;
+	slope->y = sp->next->to->me.y - sp->me.y;
+    } else if ( !sp->nonextcp ) {
+	slope->x = sp->nextcp.x - sp->me.x;
+	slope->y = sp->nextcp.y - sp->me.y;
+    } else {
+	double t = 1/256.0;
+	slope->x = (3*sp->next->splines[0].a*t+2*sp->next->splines[0].b)*t+sp->next->splines[0].c;
+	slope->y = (3*sp->next->splines[1].a*t+2*sp->next->splines[1].b)*t+sp->next->splines[1].c;
+    }
+    len = sqrt(slope->x*slope->x + slope->y*slope->y);
+    if ( len==0 )
+return;
+    slope->x /= len;
+    slope->y /= len;
+return;
+}
+
+static int MakeShape(CharView *cv,SplinePoint *sp1,SplinePoint *sp2,int order2,
+	int changed, int do_arc ) {
+    if ( !do_arc || ( sp1->me.x==sp2->me.x && sp1->me.y==sp2->me.y )) {
+	if ( !changed )
+	    CVPreserveState(&cv->b);
+	sp1->nonextcp = true;
+	sp1->nextcp = sp1->me;
+	sp2->noprevcp = true;
+	sp2->prevcp = sp2->me;
+	if ( sp1->next==NULL )
+	    SplineMake(sp1,sp2,order2);
+	else
+	    SplineRefigure(sp1->next);
+    } else {
+	BasePoint center;
+	double r1,r2, len, dot, theta, diff_angle, c, s;
+	BasePoint slope1, slope2, temp;
+	PrevSlope(sp1,&slope1);
+	NextSlope(sp2,&slope2);
+	if ( slope1.x==0 && slope1.y==0 ) {
+	    if ( slope2.x==0 && slope2.y==0 ) {
+		/* No direction info. Draw a semicircle with center halfway between*/
+		slope1.y =   sp2->me.x - sp1->me.x ;
+		slope1.x = -(sp2->me.y - sp1->me.y);
+		len = sqrt(slope1.x*slope1.x + slope1.y*slope1.y);
+		slope1.x /= len; slope1.y /= len;
+		slope2.x = -slope1.x;
+		slope2.y = -slope1.y;
+	    } else {
+		slope1.x = -slope2.y;
+		slope1.y =  slope2.x;
+	    }
+	} else if ( slope2.x==0 && slope2.y==0 ) {
+	    slope2.x =  slope1.y;
+	    slope2.y = -slope1.x;
+	}
+	dot = slope1.y*slope2.x - slope1.x*slope2.y;
+	if ( RealNear(dot,0) ) {
+	    /* The slopes are parallel. Most cases have no solution, but */
+	    /*  one case gives us a semicircle centered between the two points*/
+	    if ( slope1.x*slope2.x + slope1.y*slope2.y > 0 )
+return( false );		/* Point in different directions */
+	    temp.x = sp2->me.x - sp1->me.x;
+	    temp.y = sp2->me.y - sp2->me.y;
+	    if ( !RealNear(slope1.x*temp.x - slope1.y*temp.y,0) )
+return( false );
+	    center.x = sp1->me.x + temp.x/2;
+	    center.y = sp1->me.y + temp.y/2;
+	    len = sqrt(temp.x*temp.x + temp.y*temp.y);
+	    r1 = len/2;
+	} else {
+	    /* Draw a line normal to its slope though sp1, and another normal */
+	    /*  to sp2 through it. The intersection of those lines is the */
+	    /*  center */
+	    center.x = (slope1.y*slope2.y*(sp1->me.y-sp2->me.y) +
+			    slope1.x*slope2.y*sp1->me.x -
+			    slope2.x*slope1.y*sp2->me.x) / dot;
+	    center.y = (slope1.y*slope2.y*(sp2->me.x-sp1->me.x) +
+			    slope1.x*slope2.y*sp1->me.y -
+			    slope2.x*slope1.y*sp2->me.y) / -dot;
+	    r1 = sqrt((sp1->me.x-center.x)*(sp1->me.x-center.x) + (sp1->me.y-center.y)*(sp1->me.y-center.y));
+	}
+	/* The data we have been given do not specify an unique elipse */
+	/*  in fact there are an infinite number of them, but once we  */
+	/*  fix the orientation of the axes then there is only one. So */
+	/*  let's say that one axis is center-sp1, and the other axis  */
+	/*  is normal to that. Now one radius is r1, the other we must */
+	/*  figure out */
+	theta = atan2(slope1.y,slope1.x);
+	c = cos(theta); s = sin(theta);
+	temp.x = slope2.x*c + slope2.y*s;
+	temp.y = slope2.x*s + slope2.y*c;
+	diff_angle = atan2(temp.y,temp.x);
+	len = sqrt((sp2->me.x-center.x)*(sp2->me.x-center.x) + (sp2->me.y-center.y)*(sp2->me.y-center.y));
+	if ( !RealNear(r1,len)) {
+	    double ds = sin(diff_angle);
+	    if ( ds<.001 )
+return( false );
+	    r2 = len * r1/ds;
+	} else
+	    r2 = r1;
+	    
+	if ( !changed )
+	    CVPreserveState(&cv->b);
+    }
+return( true );
+}
+
+static void _CVMenuMakeLine(CharView *cv,int do_arc) {
+    SplinePointList *spl, *spl1=NULL, *spl2=NULL;
+    SplinePoint *sp, *sp1=NULL, *sp2=NULL;
     int changed = false;
+    int layer;
 
     for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl = spl->next ) {
 	for ( sp=spl->first; ; ) {
-	    if ( sp->selected ) {
-		int any = false;
-		if ( !changed ) {
-		    CVPreserveState(&cv->b);
+	    if  ( sp->selected ) {
+		if ( sp1==NULL ) { sp1 = sp; spl1 = spl; }
+		else if ( sp2==NULL ) { sp2 = sp; spl2 = spl; }
+		else {
+		    sp1 = (SplinePoint *) -1;
+	break;
+		}
+	    }
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==spl->first )
+	break;
+	}
+	if ( sp1 == (SplinePoint *) -1 )
+    break;
+    }
+    if ( sp1!=(SplinePoint *) -1 && sp2!=NULL ) {
+	if (( sp1->prev==NULL || sp1->next==NULL ) && ( sp2->prev==NULL || sp2->next==NULL ) &&
+		!(sp1->next!=NULL && sp1->next->to==sp2) &&
+		!(sp1->prev!=NULL && sp1->prev->from==sp2) ) {
+	    layer = CVLayer((CharViewBase *) cv);
+	    CVPreserveState(&cv->b);
+	    if ( spl1==spl2 ) {
+		if ( MakeShape(cv,spl1->first,spl1->last,cv->b.sc->layers[layer].order2,changed,do_arc))
+		    changed = true;
+	    } else {
+		if ( sp1->next!=NULL ) {
+		    sp = sp1; sp1 = sp2; sp2 = sp;
+		    spl = spl1; spl1 = spl2; spl2 = spl;
+		}
+		if ( sp1->next!=NULL )
+		    SplineSetReverse(spl1);
+		if ( sp2->prev!=NULL )
+		    SplineSetReverse(spl2);
+		if ( MakeShape(cv,sp1,sp2,cv->b.sc->layers[layer].order2,changed,do_arc) ) {
+		    spl1->last = spl2->last;
+		    for ( spl=cv->b.layerheads[cv->b.drawmode]->splines;
+			    spl!=NULL && spl->next!=spl2; spl = spl->next );
+		    if ( spl!=NULL )
+			spl->next = spl2->next;
+		    chunkfree(spl2,sizeof(*spl2));
 		    changed = true;
 		}
-		if ( sp->prev!=NULL && sp->prev->from->selected ) {
-		    any = true;
-		    sp->prevcp = sp->me;
-		    sp->noprevcp = true;
-		    sp->prev->from->nextcp = sp->prev->from->me;
-		    sp->prev->from->nonextcp = true;
-		    SplineRefigure(sp->prev);
-		}
+	    }
+	}
+	changed = true;
+    } else for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl = spl->next ) {
+	for ( sp=spl->first; ; ) {
+	    if ( sp->selected ) {
 		if ( sp->next!=NULL && sp->next->to->selected ) {
-		    any = true;
+		    if ( MakeShape(cv,sp,sp->next->to,sp->next->order2,changed,do_arc))
+			changed = true;
+		    if ( !changed ) {
+			CVPreserveState(&cv->b);
+			changed = true;
+		    }
 		    sp->nextcp = sp->me;
 		    sp->nonextcp = true;
 		    sp->next->to->prevcp = sp->next->to->me;
 		    sp->next->to->noprevcp = true;
 		    SplineRefigure(sp->next);
 		}
-		if ( !any ) {
-		    sp->nextcp = sp->me;
-		    sp->prevcp = sp->me;
-		    sp->nonextcp = sp->noprevcp = true;
-		    if ( sp->prev!=NULL ) SplineRefigure(sp->prev);
-		    if ( sp->next!=NULL ) SplineRefigure(sp->next);
-		}
-		changed = true;
 	    }
 	    if ( sp->next==NULL )
 	break;
@@ -7329,7 +7500,7 @@ static void _CVMenuMakeLine(CharView *cv) {
 
 static void CVMenuMakeLine(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    _CVMenuMakeLine(cv);
+    _CVMenuMakeLine(cv,mi->mid==MID_MakeArc);
 }
 
 static void _CVMenuNameContour(CharView *cv) {
@@ -8831,7 +9002,7 @@ static GMenuItem2 ptlist[] = {
     { { (unichar_t *) N_("_Make First"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Make First|Ctl+1"), NULL, NULL, CVMenuMakeFirst, MID_MakeFirst },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("Can Be _Interpolated"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Can Be Interpolated|No Shortcut"), NULL, NULL, CVMenuImplicit, MID_ImplicitPt },
-    { { (unichar_t *) N_("Can't Be _Interpolated"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Can't Be Interpolated|No Shortcut"), NULL, NULL, CVMenuImplicit, MID_NoImplicitPt },
+    { { (unichar_t *) N_("Can't _Be Interpolated"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Can't Be Interpolated|No Shortcut"), NULL, NULL, CVMenuImplicit, MID_NoImplicitPt },
     { { (unichar_t *) N_("Center _Between Control Points"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Center Between Control Points|No Shortcut"), NULL, NULL, CVMenuCenterCP, MID_CenterCP },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Add Anchor"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("Add Anchor|Ctl+0"), NULL, NULL, CVMenuAddAnchor, MID_AddAnchor },
@@ -8839,6 +9010,7 @@ static GMenuItem2 ptlist[] = {
     { { (unichar_t *) N_("Acceptable _Extrema"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'C' }, H_("Acceptable Extrema|No Shortcut"), NULL, NULL, CVMenuAcceptableExtrema, MID_AcceptableExtrema },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("Make _Line"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Make Line|No Shortcut"), NULL, NULL, CVMenuMakeLine, MID_MakeLine },
+    { { (unichar_t *) N_("Make A_rc"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Make Arc|No Shortcut"), NULL, NULL, CVMenuMakeLine, MID_MakeArc },
     { { (unichar_t *) N_("Insert Point On _Spline At..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Insert Point On Spline At...|No Shortcut"), NULL, NULL, CVMenuInsertPt, MID_InsertPtOnSplineAt },
     { { (unichar_t *) N_("_Name Contour"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Name Contour|No Shortcut"), NULL, NULL, CVMenuNameContour, MID_NameContour },
     { NULL }
@@ -8976,7 +9148,7 @@ static GMenuItem2 delist[] = {
 };
 
 static GMenuItem2 trlist[] = {
-    { { (unichar_t *) N_("_Transform..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Transform...|No Shortcut"), NULL, NULL, CVMenuTransform },
+    { { (unichar_t *) N_("_Transform..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Transform...|Ctl+\\"), NULL, NULL, CVMenuTransform },
     { { (unichar_t *) N_("_Point of View Projection..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Point of View Projection...|Ctl+Shft+<"), NULL, NULL, CVMenuPOV },
     { { (unichar_t *) N_("_Non Linear Transform..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Non Linear Transform...|Ctl+Shft+|"), NULL, NULL, CVMenuNLTransform },
     { NULL }
