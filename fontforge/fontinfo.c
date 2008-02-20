@@ -3843,8 +3843,8 @@ static int Gasp_Default(GGadget *g, GEvent *e) {
 	    gasp[0].u.md_ival = 65535;
 	    gasp[1].u.md_ival = 0;	/* no grid fit (we have no instructions, we can't grid fit) */
 	    gasp[2].u.md_ival = 1;	/* do anti-alias */
-	    gasp[2].u.md_ival = 0;	/* do symmetric smoothing */
-	    gasp[2].u.md_ival = 0;	/* do no grid fit w/ sym smooth */
+	    gasp[3].u.md_ival = 0;	/* do symmetric smoothing */
+	    gasp[4].u.md_ival = 0;	/* do no grid fit w/ sym smooth */
 	} else {
 	    rows = 3;
 	    gasp = gcalloc(5,sizeof(struct matrix_data));
