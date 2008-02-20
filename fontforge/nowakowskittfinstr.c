@@ -1664,7 +1664,7 @@ static int IsAnglePoint(int *contourends, BasePoint *bp, SplinePoint *sp) {
     int PrevPoint, NextPoint, p=sp->ttfindex;
     double PrevTangent, NextTangent;
 
-    if ((sp->pointtype != pt_corner) || (p == 0x80000000))
+    if ((sp->pointtype != pt_corner) || (p == 0xffff))
 return 0;
 
     PrevPoint = PrevOnContour(contourends, p);
