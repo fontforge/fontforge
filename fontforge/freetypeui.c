@@ -186,7 +186,7 @@ static FT_Error PauseIns( TT_ExecContext exc ) {
     if ( dc->terminate )
 return( TT_Err_Execution_Too_Long );		/* Some random error code, says we're probably in a infinite loop */
     dc->exc = exc;
-#if ( FREETYPE_MAJOR>=2 && FREETYPE_MINOR>=1 && FREETYPE_PATCH>=10 )
+#if FREETYPE_MAJOR>2 || (FREETYPE_MAJOR==2 && (FREETYPE_MINOR>1 || (FREETYPE_MINOR==1 && FREETYPE_PATCH>=10 )))
     exc->grayscale = !dc->is_bitmap;		/* if we are in 'prep' or 'fpgm' freetype doesn't know this yet */
 #endif
 
