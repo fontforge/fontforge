@@ -3342,12 +3342,10 @@ static int sortreals(const void *a, const void *b) {
 }
 
 static void InterpolateStrongPoints(InstrCt *ct) {
-    uint8 *isdstemend=NULL;
-    DStem *dhint;
     StemInfo *hint, *firsthint = ct->xdir?ct->sc->vstem:ct->sc->hstem;
-    int p, touchflag = ct->xdir?tf_x:tf_y;
+    int touchflag = ct->xdir?tf_x:tf_y;
     real tmp, edgelist[192];
-    int edgecnt=0, i, j, k, skip;
+    int edgecnt=0, i, j, skip;
     int lpoint = -1, ledge=0;
     int rpoint = -1;
     int nowrp1 = 1;
@@ -3390,14 +3388,6 @@ return;
 
     qsort(edgelist, edgecnt, sizeof(real), sortreals);
 
-    /* If there are diagonal stems, list their endpoints */
-    if (ct->diagstems) {
-	isdstemend = gcalloc(ct->ptcnt, sizeof(uint8));
-
-	for (dhint=ct->diagstems; dhint!=NULL; dhint=dhint->next)
-	    for (k=0; k<4; k++) isdstemend[dhint->pts[k].num] = 1;
-    }
-
     /* Interpolate important points between subsequent edges */
     for (i=0; i<edgecnt; i++) {
         init_edge(ct, edgelist[i], ALL_CONTOURS);
@@ -3415,20 +3405,6 @@ return;
 	    ct->gic->fudge = (edgelist[i]-edgelist[ledge])/2;
 	    init_edge(ct, (edgelist[i]+edgelist[ledge])/2, ALL_CONTOURS);
 	    ct->gic->fudge = fudge;
-
-	    /* Optimize out all points on DStems, but not DStems' ends. */
-	    for (j=0; j<ct->edge.othercnt; j++) {
-		p = ct->edge.others[j];
-
-		if (ct->diagstems && ct->diagpts[p].count && !isdstemend[p])
-		{
-		    for (k=j+1; k<ct->edge.othercnt; k++)
-			ct->edge.others[k-1] = ct->edge.others[k];
-
-		    ct->edge.othercnt--;
-		    j--;
-		}
-	    }
 
 	    /* A correct method of optimization is needed here. */
 	    /* optimize_blue(ct); */
@@ -3459,21 +3435,14 @@ return;
 
 		/* instruct points */
 		ct->pt = instructpoints(ct->pt, ct->edge.othercnt,
-						    ct->edge.others, IP);
-
-		for (j=0; j<ct->edge.othercnt; j++) {
-		    p = ct->edge.others[j];
-
-		    if (!ct->diagstems || !ct->diagpts[p].count)
-			ct->touched[p] |= touchflag;
-		}
+							  ct->edge.others, IP);
+		for (j=0; j<ct->edge.othercnt; j++)
+		    ct->touched[ct->edge.others[j]] |= touchflag;
 	    }
 
 	    if (ct->edge.othercnt) free(ct->edge.others);
 	}
     }
-
-    if (ct->diagstems) free(isdstemend);
 }
 #endif /* TESTIPSTRONG */
 
@@ -3522,23 +3491,15 @@ static uint8 *dogeninstructions(InstrCt *ct) {
     /* Even if we aren't doing the diagonals, we do the blues. */
     ct->xdir = false;
     *(ct->pt)++ = SVTCA_y;
-
     snap_to_blues(ct);
     HStemGeninst(ct);
-#if TESTIPSTRONG
-    InterpolateStrongPoints(ct);
-#endif
 
-    /* next instruct vertical features (=> movement in x) */
+    /* Next instruct vertical features (=> movement in x). */
     ct->xdir = true;
-    if ( ct->pt != ct->instrs ) *(ct->pt)++ = SVTCA_x;
-
+    *(ct->pt)++ = SVTCA_x;
     VStemGeninst(ct);
-#if TESTIPSTRONG
-    InterpolateStrongPoints(ct);
-#endif
 
-    /* finally instruct diagonal stems (=> movement in x) */
+    /* Then instruct diagonal stems (=> movement in x) */
     /* This is done after vertical stems because it involves */
     /* moving some points out-of their vertical stems. */
     if ( ct->diagstems ) {
@@ -3546,6 +3507,14 @@ static uint8 *dogeninstructions(InstrCt *ct) {
 	DStemFree(ct->diagstems, ct->diagpts, ct->ptcnt);
 	free(ct->diagpts);
     }
+
+#if TESTIPSTRONG
+    /* Adjust important points between hint edges. */
+    InterpolateStrongPoints(ct);
+    ct->xdir = false;
+    *(ct->pt)++ = SVTCA_y;
+    InterpolateStrongPoints(ct);
+#endif
 
     /* Interpolate untouched points */
     *(ct->pt)++ = IUP_y;
