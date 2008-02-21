@@ -382,6 +382,7 @@ extern void SC_MoreLayers(SplineChar *,Layer *old);
 extern void SCLayersChange(SplineChar *sc);
 extern void SFLayerChange(SplineFont *sf);
 extern void SCTile(SplineChar *sc,int layer);
+extern void _CVMenuMakeLine(CharViewBase *cv,int do_arc);
 
 extern void MVCopyChar(FontViewBase *fv, BDFFont *bdf, SplineChar *sc, enum fvcopy_type fullcopy);
 extern void PasteIntoMV(FontViewBase *fv, BDFFont *bdf,SplineChar *sc, int doclear);
