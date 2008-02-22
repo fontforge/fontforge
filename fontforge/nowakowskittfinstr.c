@@ -2177,15 +2177,12 @@ return;
     finish_edge(ct, shp_rp1?SHP_rp1:SHP_rp2);
     mark_startenddones(ct->xdir?ct->sc->vstem:ct->sc->hstem, coord, ct->gic->fudge);
 
-    if (!ct->xdir && hint->ghost && ((hint->width==20) || (hint->width==21))) {
+    if (hint->ghost && ((hint->width==20) || (hint->width==21))) {
         hint->startdone = hint->enddone = 1;
 return;
     }
 
-    if (fabs(hint->start - coord) < hint->width) {
-        if (hint->ghost) coord = hint->start - hint->width;
-	else coord = hint->start + hint->width;
-    }
+    if (fabs(hint->start - coord) < hint->width) coord = hint->start + hint->width;
     else coord = hint->start;
 
     init_edge(ct, coord, ALL_CONTOURS);
@@ -2318,37 +2315,18 @@ static void fixup_blue_pts(BlueZone *b1, BlueZone *b2) {
     if (b1->highest < b2->highest) b1->highest = b2->highest;
 }
 
-static void check_blue_pts(BlueZone *blues, int bluecnt) {
-    int i, j, l;
+static void check_blue_pts(InstrCt *ct) {
+    BasePoint *bp = ct->bp;
+    BlueZone *blues = ct->gic->blues;
+    int i, j, bluecnt = ct->gic->bluecnt;
 
-    for (i=0; i<bluecnt-1; i++) {
-        if (blues[i].lowest == -1) // this implies highest==-1, no pts attached
-    continue;
-        else if (SegmentsOverlap(blues[i].lowest, blues[i].highest,
-	                         blues[i+1].lowest, blues[i+1].highest))
-	{
-	    fixup_blue_pts(blues+i, blues+i+1);
-
-	    for (j=i+2; j<bluecnt; j++) {
-	        if (blues[j].lowest==-1)
-	    continue;
-	        else if (SegmentsOverlap(blues[i].lowest, blues[i].highest,
-	            blues[j].lowest, blues[j].highest))
-		        fixup_blue_pts(blues+i, blues+j);
-		else
-	    break;
-	    }
-
-            l=j;
-
-	    for(j=i+1; j<l; j++) {
-	        if (blues[j].lowest == -1)
-	    continue;
-	        blues[j].lowest = blues[i].lowest;
-		blues[j].highest = blues[i].highest;
-	    }
-	}
-    }
+    for (i=0; i<bluecnt; i++)
+        if (blues[i].lowest != -1)
+	    for (j=0; j<bluecnt; j++)
+		if (i != j && blues[j].lowest != -1 && SegmentsOverlap(
+			bp[blues[i].lowest].y, bp[blues[i].highest].y,
+			bp[blues[j].lowest].y, bp[blues[j].highest].y))
+		    fixup_blue_pts(blues+i, blues+j);
 }
 
 /* Snap stems and perhaps also some other points to given bluezone and set up
@@ -2387,8 +2365,9 @@ return;
 	    if (hint->startdone || hint->enddone) continue;
 
 	    /* Which edge to start at? */
-	    /*Starting at the other would usually be wrong. */
-	    if (blues[queue[i]].overshoot < blues[queue[i]].base ||
+	    /* Starting at the other would usually be wrong. */
+	    if ((blues[queue[i]].overshoot < blues[queue[i]].base &&
+		!(hint->ghost && hint->width == 20)) ||
 	        (hint->ghost && hint->width == 21))
 	    {
 		base = hint->start;
@@ -2400,8 +2379,8 @@ return;
 	    }
 
 	    /* This is intended as a fallback if the base edge wasn't within
-	     * this bluezone, and advance was. This seems a bit controversial.
-	     * For now, I keep this turned on.
+	     * this bluezone, and advance edge was. This allows single-edge
+	     * hints to tie features to remote blue zones.
 	     */
 	    if (!SegmentsOverlap(base+fuzz, base-fuzz,
 		blues[queue[i]].base, blues[queue[i]].overshoot))
@@ -2413,7 +2392,7 @@ return;
 		if (!SegmentsOverlap(base+fuzz, base-fuzz,
 		    blues[queue[i]].base, blues[queue[i]].overshoot)) continue;
 
-		/* ghost hints need the right edge to be snapped */
+		/* single-edge hints need the right edge to be snapped */
 		if (hint->ghost && ((hint->width == 20) || (hint->width == 21))) {
 		    tmp = base;
 		    base = advance;
@@ -2501,7 +2480,7 @@ return;
 	}
     }
 
-    check_blue_pts(blues, bluecnt);
+    check_blue_pts(ct);
 }
 
 /******************************************************************************
@@ -2658,18 +2637,10 @@ static void HStemGeninst(InstrCt *ct) {
 	    (!hint->hasconflicts || first_in_group(ct->sc->hstem, hint)))
 	{
 	    /* Set up upper edge (hend) and lower edge (hbase). */
-	    if (hint->ghost)
-	    {
-	        if (hint->width == 21 || hint->width == 20)
-		    continue; //should be in a blue zone & done earlier (?)
-
-		hend = hint->start;
-		hbase = hend - hint->width;
-	    }
-	    else {
-	        hbase = hint->start;
-		hend = hbase + hint->width;
-	    }
+	    if (hint->ghost && (hint->width == 21 || hint->width == 20))
+		continue; //not supported yet
+	    hbase = hint->start;
+	    hend = hbase + hint->width;
 
 	    /* Find two points to interpolate the HStem between.
 	       rp1 = lower, rp2 = upper. */
@@ -3369,7 +3340,7 @@ return;
 
 	if (!skip) edgelist[edgecnt++] = tmp;
 
-	if (hint->ghost)
+	if (hint->ghost && (hint->width == 20 || hint->width == 21))
     continue;
 
 	tmp+=hint->width;
