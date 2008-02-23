@@ -1563,7 +1563,7 @@ static SplinePoint *CirclePoint(int which) {
 	elipse3[] = {
 	    { { 1, 0}, { 1, -.552 }, { 1, .552 }, false},
 	    { { 0, 1}, {.552, 1 }, { -.552, 1 }, false},
-	    { {-1, 0}, { 1, .552 }, { 1, -.552 }, false},
+	    { {-1, 0}, { -1, .552 }, { -1, -.552 }, false},
 	    { { 0,-1}, {-.552, -1 }, {.552, -1 }, false},
 	    { {0,0}}};
 
@@ -1595,31 +1595,32 @@ static void CutCircle(SplineSet *spl,double diff_angle,BasePoint *me) {
     SplinePoint *end;
     extended ts[3];
     int i;
+    double best_t = -1;
+    Spline *best_s = NULL;
+    double best_off = 9e50;
 
-    if ( diff_angle<0 )
-	diff_angle += 2*PI;
-    if ( diff_angle>=2*PI )
-	diff_angle -= 2*PI;
-    if ( diff_angle< PI/2 )
-	s = spl->first->next;
-    else if ( diff_angle < PI )
-	s = spl->first->next->to->next;
-    else if ( diff_angle < 3*PI/2 )
-	s = spl->last->prev->from->prev;
-    else
-	s = spl->last->prev;
-    SplineSolveFull(&s->splines[0],me->x,ts);
-    for ( i=0; i<3 && ts[i]!=-1; ++i ) {
-	double y = ((s->splines[1].a*ts[i]+s->splines[1].b)*ts[i]+s->splines[1].c)*ts[i]+s->splines[1].d;
-	if ( RealWithin(y,me->y,1))
-    break;
+    for ( s = spl->first->next ; s!=NULL ; s = s->to->next ) {
+	SplineSolveFull(&s->splines[0],me->x,ts);
+	for ( i=0; i<3 && ts[i]!=-1; ++i ) {
+	    double y = ((s->splines[1].a*ts[i]+s->splines[1].b)*ts[i]+s->splines[1].c)*ts[i]+s->splines[1].d;
+	    double off = me->y-y;
+	    if ( off<0 ) off = -off;
+	    if ( off < best_off ) {
+		best_s = s;
+		best_t = ts[i];
+		best_off = off;
+	    }
+	}
     }
-    if ( ts[i]<.0001 )
-	end = s->from;
-    else if ( ts[i]>.999 )
-	end = s->to;
+    if ( best_s==NULL )
+return;
+
+    if ( best_t<.0001 )
+	end = best_s->from;
+    else if ( best_t>.999 )
+	end = best_s->to;
     else
-	end = SplineBisect(s,ts[i]);
+	end = SplineBisect(best_s,best_t);
     spl->last = end;
     s = end->next;
     end->next = NULL;

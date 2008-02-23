@@ -2797,8 +2797,11 @@ static void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
 	cp = cv->p.spiro!=NULL ? cv->p.spiro : cv->lastselcp;
     else
 	sp = cv->p.sp!=NULL ? cv->p.sp : cv->lastselpt;
-    if ( sp==NULL && cp==NULL ) if ( cv->active_tool==cvt_rect || cv->active_tool==cvt_elipse ||
-	    cv->active_tool==cvt_poly || cv->active_tool==cvt_star ) {
+    if ( sp==NULL && cp==NULL )
+	    if ( cv->active_tool==cvt_rect || cv->active_tool==cvt_elipse ||
+		    cv->active_tool==cvt_poly || cv->active_tool==cvt_star ||
+		    cv->active_tool==cvt_scale || cv->active_tool==cvt_skew ||
+		    cv->active_tool==cvt_rotate || cv->active_tool==cvt_flip ) {
 	dummy.me.x = cv->p.cx; dummy.me.y = cv->p.cy;
 	sp = &dummy;
     }
