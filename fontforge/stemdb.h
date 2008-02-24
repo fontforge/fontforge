@@ -35,6 +35,8 @@ typedef struct glyphdata {
     SplineChar *sc;
     int layer;
     int emsize;
+    int has_slant;
+    BasePoint slant_unit;
     int ccnt;
     int *contourends;
     int realcnt;			/* Includes control points, excludes implied points */
@@ -167,7 +169,7 @@ struct stembundle {
     struct stembundle *next;
 };
     
-extern struct glyphdata *GlyphDataBuild(SplineChar *sc, int layer, BlueData *bd, int only_hv);
+extern struct glyphdata *GlyphDataBuild(SplineChar *sc, int layer, BlueData *bd, int use_existing);
 extern struct glyphdata *GlyphDataInit(SplineChar *sc, int layer, double em_size, int only_hv);
 extern struct glyphdata *StemInfoToStemData( struct glyphdata *gd,StemInfo *si,int is_v );
 extern struct glyphdata *DStemInfoToStemData( struct glyphdata *gd,DStemInfo *dsi );
