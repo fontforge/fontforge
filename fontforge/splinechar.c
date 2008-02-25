@@ -1724,7 +1724,7 @@ return( ret );
 static int BuildEllipse(int clockwise,double r1,double r2, double theta,
 	BasePoint *center,SplinePoint *sp1,SplinePoint *sp2,CharViewBase *cv,
 	int changed, int order2, int ellipse_to_back) {
-    SplineSet *spl;
+    SplineSet *spl, *ss=NULL;
     real trans[6];
     double c,s;
 
@@ -1737,18 +1737,22 @@ static int BuildEllipse(int clockwise,double r1,double r2, double theta,
     trans[1] = s; trans[2] = -s;
     trans[4] = center->x; trans[5] = center->y;
     SplinePointListTransform(spl,trans,true);
-    if ( ellipse_to_back && CVLayer(cv)!=ly_back ) {
+    if ( ellipse_to_back && CVLayer(cv)!=ly_back )
 	/* Originally this was debugging code... but hey, it's kind of neat */
 	/*  and may prove useful if we need to do more debugging. Invoked by */
 	/*  holding down the <Alt> modifier when selecting the menu item */
-	SplineSet *ss = SplinePointListCopy(spl);
-	SCPreserveBackground(cv->sc);
-	ss->next = cv->sc->layers[ly_back].splines;
-	cv->sc->layers[ly_back].splines = ss;
-    }
+	ss = SplinePointListCopy(spl);
     if ( !CutCircle(spl,&sp1->me,true) || !CutCircle(spl,&sp2->me,false) ) {
 	SplinePointListFree(spl);
+	SplinePointListFree(ss);
 return( false );
+    }
+    if ( ellipse_to_back && ss!=NULL ) {
+	SCPreserveBackground(cv->sc);
+	if ( cv->sc->layers[ly_back].order2 )
+	    ss = SplineSetsConvertOrder(ss,true);
+	ss->next = cv->sc->layers[ly_back].splines;
+	cv->sc->layers[ly_back].splines = ss;
     }
     if ( order2 )
 	spl = SplineSetsConvertOrder(spl,true);
