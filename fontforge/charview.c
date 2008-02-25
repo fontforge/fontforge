@@ -2027,7 +2027,8 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		/*  is to draw to pixmap, dump pixmap a bit earlier */
 		/* Then when we moved the fill image around, we had to deal with the */
 		/*  images before the fill... */
-		CVDrawLayerSplineSet(cv,pixmap,&cv->b.sc->layers[layer],backoutlinecol,
+		CVDrawLayerSplineSet(cv,pixmap,&cv->b.sc->layers[layer],
+			!sf->multilayer || layer==ly_back ? backoutlinecol : foreoutlinecol,
 			false,&clip);
 		for ( rf=cv->b.sc->layers[ly_back].refs; rf!=NULL; rf = rf->next ) {
 		    if ( cv->b.drawmode==dm_back )
