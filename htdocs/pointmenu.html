@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 19-Nov-2007 -->
+  <!-- AP: Last modified: 24-Feb-2008 -->
   <TITLE>The Point Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -102,7 +102,11 @@
     <LI>
       <A HREF="#AddAnchor">Add Anchor Point...</A>
     <LI>
+      <A HREF="#Acceptable">Acceptable Extrema</A>
+    <LI>
       <A HREF="#MkLine">Make Line</A>
+    <LI>
+      <A HREF="#MakeArc">Make Arc</A>
     <LI>
       <A HREF="#Insert">Insert Point on Spline at...</A>
     <LI>
@@ -154,11 +158,41 @@
       <A HREF="getinfo.html#Anchors">Element-&gt;Get Info command</A> for more
       info.
     <DT>
+      <A NAME="Acceptable">Acceptable</A> Extrema
+    <DD>
+      Tells the validator that it is OK for this spline to have extrema. You select
+      a spline by selecting its two end-points.
+    <DT>
       <A NAME="MkLine">Make Line</A>
     <DD>
       If two adjacent points are selected then make the spline between them into
-      a straight line. If a point is selected and has no adjacent selected points
-      then make its control points be on top of the point
+      a straight line. If two points are selected and they are the endpoints of
+      their respective (open) contours, then join them with a line. If a point
+      is selected and has no adjacent selected points then make its control points
+      be on top of the point
+    <DT>
+      <A NAME="MakeArc">Make Arc</A>
+    <DD>
+      If two adjacent points are selected then make the spline between them into
+      an elliptical arc. If two points are selected and they are the endpoints
+      of their respective (open) contours, then join them with an elliptical arc.
+      <P>
+      FontForge chooses an ellipse which runs through the two points and is tangent
+      to the slope at those points. This is not enough information to determine
+      an ellipse (three points and two tangents are needed) so in general there
+      will be an infinite number of solutions, thus FontForge may not pick the
+      one you had your heart set on.
+      <P>
+      It is also possible to specify a set of input constraints which cannot be
+      met by any ellipse.
+      <P>
+      FontForge will first search for ellipses so that one of the selected points
+      lies one of the axes of the ellipse. If it can't find one like that it will
+      perform a more general search.
+      <P>
+      (If you hold down the &lt;Alt&gt; key when you select the menu item, then
+      FontForge will place a copy of the full ellipse into the background layer
+      -- this was for debugging, but I thought it kind of cool so I left it in).
     <DT>
       <A NAME="Insert">Insert Point on Spline at...</A>
     <DD>
