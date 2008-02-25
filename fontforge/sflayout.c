@@ -832,6 +832,7 @@ return( test );
     ret->fonttype = fonttype;
     ret->pointsize = size;
     ret->antialias = antialias;
+    ret->layer = layer;
     ret = LI_RegenFontData(li,ret);
     if ( ret==NULL )
 return( NULL );
