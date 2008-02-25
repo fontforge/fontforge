@@ -3439,9 +3439,10 @@ return;
 #if 0
 		ref->point_match = false;
 #endif
-		if ( ref->point_match )
+		if ( ref->point_match ) {
 		    ref->point_match_out_of_date = true;
-		had_dep = true;
+		    had_dep = true;
+		}
 	    }
 	}
 	SCNumberPoints(sc,layer);
