@@ -382,7 +382,10 @@ extern void SC_MoreLayers(SplineChar *,Layer *old);
 extern void SCLayersChange(SplineChar *sc);
 extern void SFLayerChange(SplineFont *sf);
 extern void SCTile(SplineChar *sc,int layer);
-extern void _CVMenuMakeLine(CharViewBase *cv,int do_arc);
+extern void _CVMenuMakeLine(CharViewBase *cv,int do_arc,int ellipse_to_back);
+    /* Ellipse to back is a debugging flag and adds the generated ellipse to */
+    /*  the background layer so we can look at it. I thought it might actually*/
+    /*  be useful, so I left it in. Activated with the Alt key in the menu */
 
 extern void MVCopyChar(FontViewBase *fv, BDFFont *bdf, SplineChar *sc, enum fvcopy_type fullcopy);
 extern void PasteIntoMV(FontViewBase *fv, BDFFont *bdf,SplineChar *sc, int doclear);
