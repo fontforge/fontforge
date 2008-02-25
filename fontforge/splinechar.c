@@ -1560,46 +1560,51 @@ return( sf->subfontcnt!=0 || sf->cidmaster!=NULL ? vs_maskcid :
 static SplinePoint *CirclePoint(int which) {
     SplinePoint *sp;
     static struct shapedescrip { BasePoint me, prevcp, nextcp; int nocp; }
-	elipse3[] = {
-	    { { 1, 0}, { 1, -.552 }, { 1, .552 }, false},
-	    { { 0, 1}, {.552, 1 }, { -.552, 1 }, false},
-	    { {-1, 0}, { -1, .552 }, { -1, -.552 }, false},
-	    { { 0,-1}, {-.552, -1 }, {.552, -1 }, false},
+	ellipse3[] = {
+	    { {1,0}, { 1, .552 }, { 1, -.552 }, false},
+	    { {0,-1}, {.552, -1 }, {-.552, -1 }, false},
+	    { {-1,0}, { -1, -.552 }, { -1, .552 }, false},
+	    { {0,1}, { -.552, 1 }, { .552, 1 }, false},
 	    { {0,0}}};
 
-    sp = SplinePointCreate(elipse3[which].me.x,elipse3[which].me.y);
+    sp = SplinePointCreate(ellipse3[which].me.x,ellipse3[which].me.y);
     sp->nonextcp = sp->noprevcp = false;
-    sp->nextcp = elipse3[which].nextcp;
-    sp->prevcp = elipse3[which].prevcp;
+    sp->nextcp = ellipse3[which].nextcp;
+    sp->prevcp = ellipse3[which].prevcp;
 return( sp );
 }
 
-static SplineSet *UnitCircle(void) {
+static SplineSet *UnitCircle(int clockwise) {
     SplineSet *spl;
     SplinePoint *sps[5];
     int i;
 
     spl = chunkalloc(sizeof(SplineSet));
-    for ( i=0; i<=4; ++i )
+    for ( i=0; i<4; ++i )
 	sps[i] = CirclePoint(i&3);
+    sps[4] = sps[0];
     for ( i=0; i<4; ++i )
 	SplineMake3(sps[i], sps[i+1]);
-    spl->first = sps[0]; spl->last = sps[4];	/* Leave it open, makes life easier later */
+    spl->first = sps[0]; spl->last = sps[4];
+    if ( !clockwise )
+	SplineSetReverse(spl);
 return( spl );
 }
 
 #define PI	3.1415926535897932
 
-static void CutCircle(SplineSet *spl,double diff_angle,BasePoint *me) {
-    Spline *s;
+static int CutCircle(SplineSet *spl,BasePoint *me,int first) {
+    Spline *s, *firsts;
     SplinePoint *end;
     extended ts[3];
     int i;
     double best_t = -1;
     Spline *best_s = NULL;
-    double best_off = 9e50;
+    double best_off = 2;
 
-    for ( s = spl->first->next ; s!=NULL ; s = s->to->next ) {
+    firsts = NULL;
+    for ( s = spl->first->next ; s!=NULL && s!=firsts; s = s->to->next ) {
+	if ( firsts==NULL ) firsts = s;
 	SplineSolveFull(&s->splines[0],me->x,ts);
 	for ( i=0; i<3 && ts[i]!=-1; ++i ) {
 	    double y = ((s->splines[1].a*ts[i]+s->splines[1].b)*ts[i]+s->splines[1].c)*ts[i]+s->splines[1].d;
@@ -1612,8 +1617,9 @@ static void CutCircle(SplineSet *spl,double diff_angle,BasePoint *me) {
 	    }
 	}
     }
-    if ( best_s==NULL )
-return;
+    if ( best_s==NULL ) {
+return(false);
+    }
 
     if ( best_t<.0001 )
 	end = best_s->from;
@@ -1621,15 +1627,23 @@ return;
 	end = best_s->to;
     else
 	end = SplineBisect(best_s,best_t);
-    spl->last = end;
-    s = end->next;
-    end->next = NULL;
-    while ( s!=NULL ) {
-	end = s->to;
-	SplineFree(s);
+    if ( first ) {
+	spl->first = end;
+	spl->last = end;
+    } else {
+	spl->last = end;
 	s = end->next;
-	SplinePointFree(end);
+	end->next = NULL;
+	while ( s!=NULL ) {
+	    end = s->to;
+	    SplineFree(s);
+	    if ( end==spl->first )
+	break;
+	    s = end->next;
+	    SplinePointFree(end);
+	}
     }
+return( true );
 }
 
 static void PrevSlope(SplinePoint *sp,BasePoint *slope) {
@@ -1680,8 +1694,308 @@ return;
 return;
 }
 
-static int MakeShape(CharViewBase *cv,SplinePoint *sp1,SplinePoint *sp2,int order2,
-	int changed, int do_arc ) {
+static int EllipseClockwise(SplinePoint *sp1,SplinePoint *sp2,BasePoint *slope1,
+	BasePoint *slope2) {
+    /* Build up a temporary shape to see whether the ellipse will be clockwise*/
+    /*  or counter */
+    SplinePoint *e1, *e2;
+    SplineSet *ss;
+    int ret;
+    double len;
+
+    e1 = SplinePointCreate(sp1->me.x,sp1->me.y);
+    e2 = SplinePointCreate(sp2->me.x,sp2->me.y);
+    SplineMake3(e2,e1);
+    e1->nonextcp = false; e2->noprevcp = false;
+    len = sqrt((sp1->me.x-sp2->me.x) * (sp1->me.x-sp2->me.x)  +
+	  (sp1->me.y-sp2->me.y) * (sp1->me.y-sp2->me.y));
+    e1->nextcp.x = e1->me.x + len*slope1->x;
+    e1->nextcp.y = e1->me.y + len*slope1->y;
+    e2->prevcp.x = e2->me.x - len*slope2->x;
+    e2->prevcp.y = e2->me.y - len*slope2->y;
+    SplineMake3(e1,e2);
+    ss = chunkalloc(sizeof(SplineSet));
+    ss->first = ss->last = e1;
+    ret = SplinePointListIsClockwise(ss);
+    SplinePointListFree(ss);
+return( ret );
+}
+
+static int BuildEllipse(int clockwise,double r1,double r2, double theta,
+	BasePoint *center,SplinePoint *sp1,SplinePoint *sp2,CharViewBase *cv,
+	int changed, int order2, int ellipse_to_back) {
+    SplineSet *spl;
+    real trans[6];
+    double c,s;
+
+    spl = UnitCircle(clockwise);
+    memset(trans,0,sizeof(trans));
+    trans[0] = r1; trans[3] = r2;
+    SplinePointListTransform(spl,trans,true);
+    c = cos(theta); s = sin(theta);
+    trans[0] = trans[3] = c;
+    trans[1] = s; trans[2] = -s;
+    trans[4] = center->x; trans[5] = center->y;
+    SplinePointListTransform(spl,trans,true);
+    if ( ellipse_to_back && CVLayer(cv)!=ly_back ) {
+	/* Originally this was debugging code... but hey, it's kind of neat */
+	/*  and may prove useful if we need to do more debugging. Invoked by */
+	/*  holding down the <Alt> modifier when selecting the menu item */
+	SplineSet *ss = SplinePointListCopy(spl);
+	SCPreserveBackground(cv->sc);
+	ss->next = cv->sc->layers[ly_back].splines;
+	cv->sc->layers[ly_back].splines = ss;
+    }
+    if ( !CutCircle(spl,&sp1->me,true) || !CutCircle(spl,&sp2->me,false) ) {
+	SplinePointListFree(spl);
+return( false );
+    }
+    if ( order2 )
+	spl = SplineSetsConvertOrder(spl,true);
+    if ( !changed )
+	CVPreserveState(cv);
+    if ( sp1->next!=NULL ) {
+	chunkfree(sp1->next,sizeof(Spline));
+	sp1->next = sp2->prev = NULL;
+    }
+    sp1->nextcp = spl->first->nextcp;
+    sp1->nonextcp = spl->first->nonextcp;
+    sp1->next = spl->first->next;
+    sp1->next->from = sp1;
+    sp2->prevcp.x = sp2->me.x + (spl->last->prevcp.x-spl->last->me.x);
+    sp2->prevcp.y = sp2->me.y + (spl->last->prevcp.y-spl->last->me.y);
+    sp2->noprevcp = spl->last->noprevcp;
+    sp2->prev = spl->last->prev;
+    sp2->prev->to = sp2;
+    SplineRefigure(sp1->next); SplineRefigure(sp2->prev);
+    SplinePointFree(spl->first);
+    SplinePointFree(spl->last);
+    spl->first = spl->last = NULL;
+    SplinePointListFree(spl);
+return( true );
+}
+
+static int MakeEllipseWithAxis(CharViewBase *cv,SplinePoint *sp1,SplinePoint *sp2,int order2,
+	int changed, int ellipse_to_back ) {
+    BasePoint center;
+    double r1,r2, len, dot, theta, c, s, factor, denom;
+    BasePoint slope1, slope2, offset, roffset, rslope, temp;
+    int clockwise;
+
+    PrevSlope(sp1,&slope1);
+    NextSlope(sp2,&slope2);
+    if ( slope1.x==0 && slope1.y==0 ) {
+	if ( slope2.x==0 && slope2.y==0 ) {
+	    /* No direction info. Draw a semicircle with center halfway between*/
+	    slope1.y =   sp2->me.x - sp1->me.x ;
+	    slope1.x = -(sp2->me.y - sp1->me.y);
+	    len = sqrt(slope1.x*slope1.x + slope1.y*slope1.y);
+	    slope1.x /= len; slope1.y /= len;
+	    slope2.x = -slope1.x;
+	    slope2.y = -slope1.y;
+	} else {
+	    slope1.x = -slope2.y;
+	    slope1.y =  slope2.x;
+	}
+    } else if ( slope2.x==0 && slope2.y==0 ) {
+	slope2.x =  slope1.y;
+	slope2.y = -slope1.x;
+    }
+    clockwise = EllipseClockwise(sp1,sp2,&slope1,&slope2);
+    dot = slope1.y*slope2.x - slope1.x*slope2.y;
+    theta = atan2(-slope1.x,slope1.y);
+    if ( !finite(theta))
+return( false );
+    c = cos(theta); s = sin(theta);
+    if ( RealNear(dot,0) ) {
+	/* The slopes are parallel. Most cases have no solution, but */
+	/*  one case gives us a semicircle centered between the two points*/
+	if ( slope1.x*slope2.x + slope1.y*slope2.y > 0 )
+return( false );		/* Point in different directions */
+	temp.x = sp2->me.x - sp1->me.x;
+	temp.y = sp2->me.y - sp2->me.y;
+	if ( !RealNear(slope1.x*temp.x - slope1.y*temp.y,0) )
+return( false );
+	center.x = sp1->me.x + temp.x/2;
+	center.y = sp1->me.y + temp.y/2;
+	len = sqrt(temp.x*temp.x + temp.y*temp.y);
+	r1 = r2 = len/2;
+	factor = 1;
+    } else {
+	/* The data we have been given do not specify an unique ellipse*/
+	/*  in fact there are an infinite number of them, (I think)    */
+	/*  but once we fix the orientation of the axes then there is  */
+	/*  only one. So let's say that one axis is normal to sp1,     */
+	/* Now in a circle... if we draw a line through the center to  */
+	/*  the edge, and we represent the slope of the circle at that */
+	/*  point as slope2.y/slope2.x, and the height of the point as */
+	/*  offset.y and the difference between the x coord of the pt  */
+	/*  and the radius of the circle, then we have two identities  */
+	/*    (radius-offset.x)^2 + offset.y^2 = radius^2              */
+	/*    => radius = (offset.x^2+offset.y^2)/(2*offset.x)         */
+	/*    slope.y/slope.x = (radius-offset.x)/offset.y             */
+	/*  Now in an ellipse we must multiply each y value by a factor*/
+	/*  Solving for both equations for radius, this gives us an    */
+	/*  equation for factor:                                       */
+	/*  f = sqrt( dx^2*sx / (sx*dy^2 - 2*sy*dy*dx ))               */
+	offset.x = sp2->me.x - sp1->me.x;
+	offset.y = sp2->me.y - sp1->me.y;
+	roffset.x =  offset.x*c + offset.y*s;
+	roffset.y = -offset.x*s + offset.y*c;
+	if ( RealNear(roffset.x,0) || RealNear(roffset.y,0))
+return( false );
+	rslope.x =  slope2.x*c + slope2.y*s;
+	rslope.y = -slope2.x*s + slope2.y*c;
+	if ( roffset.x<0 ) roffset.x = -roffset.x;
+	if ( roffset.y<0 ) roffset.y = -roffset.y;
+	if ( rslope.x<0 ) rslope.x = -rslope.x;
+	if ( rslope.y<0 ) rslope.y = -rslope.y;
+	denom = roffset.y*(rslope.x*roffset.y - 2*roffset.x*rslope.y);
+	if ( RealNear(denom,0))
+return( false );
+	factor = rslope.x*roffset.x*roffset.x/denom;
+	if ( factor<0 )
+return( false );
+	factor = sqrt( factor );
+	r1 = (roffset.x*roffset.x+roffset.y*roffset.y*factor*factor)/(2*roffset.x);
+	r2 = r1/factor;
+	/* And the center is normal to sp1 and r1 away from it */
+	if ( clockwise ) {
+	    center.x = sp1->me.x + slope1.y*r1;
+	    center.y = sp1->me.y - slope1.x*r1;
+	} else {
+	    center.x = sp1->me.x - slope1.y*r1;
+	    center.y = sp1->me.y + slope1.x*r1;
+	}
+    }
+return( BuildEllipse(clockwise,r1,r1/factor,theta,&center,sp1,sp2,cv,changed,
+	order2, ellipse_to_back));
+}
+
+#define ITER	3
+static int EllipseSomewhere(CharViewBase *cv,SplinePoint *sp1,SplinePoint *sp2,
+	int order2, int changed, int ellipse_to_back ) {
+    BasePoint center;
+    double len, dot, rc, rs;
+    BasePoint slope1, slope2, temp;
+    struct transstate {
+	BasePoint me1, me2;
+	BasePoint slope1, slope2;
+    } centered, rot;
+    double bestrot=9999, bestrtest = 1e50, e1sq, e2sq, r1, r2, rtest;
+    double low, high, offset=PI/128., rotation;
+    int i;
+    int clockwise;
+    /* First figure out a center. There will be one: */
+    /*  Take a line through sp1 but parallel to slope2 */
+    /*  Take a line through sp2 but parallel to slope1 */
+    /* The intersection of these two lines gives us a center
+    /* First rotate everything by the rotation angle (around the origin -- it */
+    /*  will do to cancel out the rotation */
+
+    PrevSlope(sp1,&slope1);
+    NextSlope(sp2,&slope2);
+    if ( slope1.x==0 && slope1.y==0 ) {
+	if ( slope2.x==0 && slope2.y==0 ) {
+	    /* No direction info. Draw a semicircle with center halfway between*/
+	    slope1.y =   sp2->me.x - sp1->me.x ;
+	    slope1.x = -(sp2->me.y - sp1->me.y);
+	    len = sqrt(slope1.x*slope1.x + slope1.y*slope1.y);
+	    slope1.x /= len; slope1.y /= len;
+	    slope2.x = -slope1.x;
+	    slope2.y = -slope1.y;
+	} else {
+	    slope1.x = -slope2.y;
+	    slope1.y =  slope2.x;
+	}
+    } else if ( slope2.x==0 && slope2.y==0 ) {
+	slope2.x =  slope1.y;
+	slope2.y = -slope1.x;
+    }
+    clockwise = EllipseClockwise(sp1,sp2,&slope1,&slope2);
+    dot = slope1.y*slope2.x - slope1.x*slope2.y;
+    if ( RealNear(dot,0)) {
+	/* Essentially parallel lines, already handled the only case we can */
+return( false );
+    }
+    center.x = (slope1.x*slope2.x*(sp1->me.y-sp2->me.y) + slope2.x*slope1.y*sp2->me.x - slope1.x*slope2.y*sp1->me.x)/dot;
+    if ( slope2.x!=0 )
+	center.y = sp1->me.y + slope2.y*(center.x-sp1->me.x)/slope2.x;
+    else	/* Can't both be 0, else lines would be parallel */
+	center.y = sp2->me.y + slope1.y*(center.x-sp2->me.x)/slope1.x;
+    centered.me1.x = sp1->me.x - center.x; centered.me1.y = sp1->me.y - center.y;
+    centered.me2.x = sp2->me.x - center.x; centered.me2.y = sp2->me.y - center.y;
+
+    /* now guess the angle of rotation and find one which works */
+    /* doubtless there is a better way to do this, but I get lost in
+    /*  algebraic grunge */
+    r1 = r2 = 1;
+    for ( i=0; i<ITER; ++i ) {
+	if ( i==0 ) {
+	    low = 0; high = PI; offset = PI/1024;
+	} else {
+	    low = bestrot-offset; high = bestrot+offset; offset /= 64.;
+	}
+	bestrot = 9999; bestrtest = 1e50;
+	for ( rotation = low; rotation<=high; rotation += offset ) {
+	    rc = cos(rotation); rs = sin(rotation);
+	    temp.x =  slope1.x*rc + slope1.y*rs;
+	    temp.y = -slope1.x*rs + slope1.y*rc;
+	    rot.slope1 = temp;
+	    temp.x =  slope2.x*rc + slope2.y*rs;
+	    temp.y = -slope2.x*rs + slope2.y*rc;
+	    rot.slope2 = temp;
+	    rot.me1.x =  centered.me1.x*rc + centered.me1.y*rs;
+	    rot.me1.y = -centered.me1.x*rs + centered.me1.y*rc;
+	    rot.me2.x =  centered.me2.x*rc + centered.me2.y*rs;
+	    rot.me2.y = -centered.me2.x*rs + centered.me2.y*rc;
+
+	    /* Now we know that in a circle: */
+	    /* (x-cx)/(y-cy) = -sy/sx,  or  sx*(x-cx) = -sy*(y-cy)     */
+	    /* on an ellipse that becomes  sx*(x-cx) = -e^2*sy*(y-cy)  */
+	    /*  e^2 = -sx*(x-cx)/(sy*(y-cy))                           */
+	    if ( rot.slope1.y==0 || rot.slope2.y==0 || rot.me1.y==0 || rot.me2.y==0 ||
+		    rot.slope1.x==0 || rot.slope2.x==0 || rot.me1.x==0 || rot.me2.x==0 )
+	continue;
+	    e1sq = -rot.slope1.x*rot.me1.x/(rot.slope1.y*rot.me1.y);
+	    e2sq = -rot.slope2.x*rot.me2.x/(rot.slope2.y*rot.me2.y);
+	    if ( e1sq<=0 || e2sq<=0 )
+	continue;
+	    e1sq = (e1sq+e2sq)/2;
+	    r1 = sqrt(rot.me1.x*rot.me1.x + e1sq*rot.me1.y*rot.me1.y);
+	    rtest = sqrt(rot.me2.x*rot.me2.x + e1sq*rot.me2.y*rot.me2.y);
+	    if ( (rtest -= r1)<0 ) rtest = -rtest;
+	    if ( rtest<bestrtest ) {
+		bestrtest = rtest;
+		bestrot = rotation;
+		r2 = r1/sqrt(e1sq);
+		/* Since we've got two points with tangents we know:       */
+		/* -s1x*(x1-cx)/(s1y*(y1-cy)) = -s2x*(x2-cx)/(s2y*(y2-cy)) */
+		/* s1x*(x1-cx)*s2y*(y2-cy) = s2x*(x2-cx)*s1y*(y1-cy)       */
+		/* s1x*s2y*(x1-cx)*y2 - s2x*s1y*(x2-cx)*y1 = (s1x*s2y*(x1-cx)-s2x*s1y*(x2-cx))*cy */
+		/*      s1x*s2y*(x1-cx)*y2 - s2x*s1y*(x2-cx)*y1            */
+		/* cy = ---------------------------------------            */
+		/*          s1x*s2y*(x1-cx)-s2x*s1y*(x2-cx)                */
+		/* Since the points lie on the curve we know               */
+		/*  (x-cx)^2 + e^2*(y-cy)^2 = r^2                          */
+		/* Removing r^2....                                        */
+		/*  (x1-cx)^2 + e^2*(y1-cy)^2 = (x2-cx)^2 + e^2*(y2-cy)^2  */
+		/*  e^2 * [(y1-cy)^2-(y2-cy)^2] = (x2-cx)^2 - (x1-cx)^2    */
+		/*        (x2-cx)^2 - (x1-cx)^2                            */
+		/*  e^2 = ---------------------                            */
+		/*        (y1-cy)^2 - (y2-cy)^2                            */
+	    }
+	}
+	if ( bestrot>9990 )
+return( false );
+    }
+return( BuildEllipse(clockwise,r1,r2,bestrot,&center,sp1,sp2,cv,changed,
+	order2, ellipse_to_back));
+}
+
+static int MakeShape(CharViewBase *cv,SplinePointList *spl1,SplinePointList *spl2,
+	SplinePoint *sp1,SplinePoint *sp2,int order2, int changed, int do_arc,
+	int ellipse_to_back ) {
     if ( !do_arc || ( sp1->me.x==sp2->me.x && sp1->me.y==sp2->me.y )) {
 	if ( !changed )
 	    CVPreserveState(cv);
@@ -1693,136 +2007,34 @@ static int MakeShape(CharViewBase *cv,SplinePoint *sp1,SplinePoint *sp2,int orde
 	    SplineMake(sp1,sp2,order2);
 	else
 	    SplineRefigure(sp1->next);
-    } else {
-	BasePoint center;
-	double r1,r2, len, dot, theta, diff_angle, c, s, factor, denom;
-	BasePoint slope1, slope2, offset, roffset, rslope, temp;
-	SplineSet *spl;
-	real trans[6];
-
-	PrevSlope(sp1,&slope1);
-	NextSlope(sp2,&slope2);
-	if ( slope1.x==0 && slope1.y==0 ) {
-	    if ( slope2.x==0 && slope2.y==0 ) {
-		/* No direction info. Draw a semicircle with center halfway between*/
-		slope1.y =   sp2->me.x - sp1->me.x ;
-		slope1.x = -(sp2->me.y - sp1->me.y);
-		len = sqrt(slope1.x*slope1.x + slope1.y*slope1.y);
-		slope1.x /= len; slope1.y /= len;
-		slope2.x = -slope1.x;
-		slope2.y = -slope1.y;
-	    } else {
-		slope1.x = -slope2.y;
-		slope1.y =  slope2.x;
-	    }
-	} else if ( slope2.x==0 && slope2.y==0 ) {
-	    slope2.x =  slope1.y;
-	    slope2.y = -slope1.x;
-	}
-	dot = slope1.y*slope2.x - slope1.x*slope2.y;
-	theta = atan2(-slope1.x,slope1.y);
-	if ( !finite(theta))
-return( false );
-	c = cos(theta); s = sin(theta);
-	if ( RealNear(dot,0) ) {
-	    /* The slopes are parallel. Most cases have no solution, but */
-	    /*  one case gives us a semicircle centered between the two points*/
-	    if ( slope1.x*slope2.x + slope1.y*slope2.y > 0 )
-return( false );		/* Point in different directions */
-	    temp.x = sp2->me.x - sp1->me.x;
-	    temp.y = sp2->me.y - sp2->me.y;
-	    if ( !RealNear(slope1.x*temp.x - slope1.y*temp.y,0) )
-return( false );
-	    center.x = sp1->me.x + temp.x/2;
-	    center.y = sp1->me.y + temp.y/2;
-	    len = sqrt(temp.x*temp.x + temp.y*temp.y);
-	    r1 = r2 = len/2;
-	    factor = 1;
-	} else {
-	    /* The data we have been given do not specify an unique elipse */
-	    /*  in fact there are an infinite number of them, (I think)    */
-	    /*  but once we fix the orientation of the axes then there is  */
-	    /*  only one. So let's say that one axis is normal to sp1,     */
-	    /* Now in a circle... if we draw a line through the center to  */
-	    /*  the edge, and we represent the slope of the circle at that */
-	    /*  point as slope2.y/slope2.x, and the height of the point as */
-	    /*  offset.y and the difference between the x coord of the pt  */
-	    /*  and the radius of the circle, then we have two identities  */
-	    /*    (radius-offset.x)^2 + offset.y^2 = radius^2              */
-	    /*    => radius = (offset.x^2+offset.y^2)/(2*offset.x)         */
-	    /*    slope.y/slope.x = (radius-offset.x)/offset.y             */
-	    /*  Now in an elipse we must multiply each y value by a factor */
-	    /*  Solving for both equations for radius, this gives us an    */
-	    /*  equation for factor:                                       */
-	    /*  f = sqrt( dx^2*sx / (sx*dy^2 - 2*sy*dy*dx ))               */
-	    offset.x = sp2->me.x - sp1->me.x;
-	    offset.y = sp2->me.y - sp1->me.y;
-	    roffset.x =  offset.x*c + offset.y*s;
-	    roffset.y = -offset.x*s + offset.y*c;
-	    if ( RealNear(roffset.x,0) || RealNear(roffset.y,0))
-return( false );
-	    rslope.x =  slope2.x*c + slope2.y*s;
-	    rslope.y = -slope2.x*s + slope2.y*c;
-	    if ( roffset.x<0 ) roffset.x = -roffset.x;
-	    if ( roffset.y<0 ) roffset.y = -roffset.y;
-	    if ( rslope.x<0 ) rslope.x = -rslope.x;
-	    if ( rslope.y<0 ) rslope.y = -rslope.y;
-	    denom = roffset.y*(rslope.x*roffset.y - 2*roffset.x*rslope.y);
-	    if ( RealNear(denom,0))
-return( false );
-	    factor = rslope.x*roffset.x*roffset.x/denom;
-	    if ( factor<0 )
-return( false );
-	    factor = sqrt( factor );
-	    r1 = (roffset.x*roffset.x+roffset.y*roffset.y*factor*factor)/(2*roffset.x);
-	    r2 = r1/factor;
-	    /* And the center is normal to sp1 and r1 away from it */
-	    center.x = sp1->me.x - slope1.y*r1;
-	    center.y = sp1->me.y + slope1.x*r1;
-	}
-	spl = UnitCircle();
-	memset(trans,0,sizeof(trans));
-	trans[0] = r1; trans[3] = r1/factor;
-	SplinePointListTransform(spl,trans,true);
-	trans[0] = trans[3] = c;
-	trans[1] = s; trans[2] = -s;
-	SplinePointListTransform(spl,trans,true);
-	trans[0] = trans[3] = 1;
-	trans[1] = trans[2] = 0;
-	trans[4] = center.x; trans[5] = center.y;
-	SplinePointListTransform(spl,trans,true);
-	temp.x =  slope2.x*c + slope2.y*s;
-	temp.y = -slope2.x*s + slope2.y*c;
-	temp.y *= factor;
-	diff_angle = PI-atan2(temp.y,temp.x);
-	CutCircle(spl,diff_angle,&sp2->me);
-	if ( order2 )
-	    spl = SplineSetsConvertOrder(spl,true);
-	if ( !changed )
-	    CVPreserveState(cv);
-	if ( sp1->next!=NULL ) {
-	    chunkfree(sp1->next,sizeof(Spline));
-	    sp1->next = sp2->prev = NULL;
-	}
-	sp1->nextcp = spl->first->nextcp;
-	sp1->nonextcp = spl->first->nonextcp;
-	sp1->next = spl->first->next;
-	sp1->next->from = sp1;
-	sp2->prevcp.x = sp2->me.x + (spl->last->prevcp.x-spl->last->me.x);
-	sp2->prevcp.y = sp2->me.y + (spl->last->prevcp.y-spl->last->me.y);
-	sp2->noprevcp = spl->last->noprevcp;
-	sp2->prev = spl->last->prev;
-	sp2->prev->to = sp2;
-	SplineRefigure(sp1->next); SplineRefigure(sp2->prev);
-	SplinePointFree(spl->first);
-	SplinePointFree(spl->last);
-	spl->first = spl->last = NULL;
-	SplinePointListFree(spl);
-    }
 return( true );
+    } else {
+	/* There are either an infinite number of elliptical solutions or none*/
+	/* First search for a solution where one of the points lies on one of */
+	/*  the axes of the ellipse. (If there is a circular solution this    */
+	/*  will find it as the above statement is true of all points on a    */
+	/*  circle). If that fails then try a more general search which will  */
+	/*  find something, but may not find an intuitively expected soln.    */
+	if ( MakeEllipseWithAxis(cv,sp1,sp2,order2,changed,ellipse_to_back))
+return( true );
+	/* OK, sp1 wasn't on an axis. How about sp2? */
+	SplineSetReverse(spl1);
+	if ( spl1!=spl2 )
+	    SplineSetReverse(spl2);
+	if ( MakeEllipseWithAxis(cv,sp2,sp1,order2,changed,ellipse_to_back))
+return( -1 );
+	SplineSetReverse(spl1);
+	if ( spl1!=spl2 )
+	    SplineSetReverse(spl2);
+	/* OK, neither was on an axis. Ellipse is rotated by some odd amount */
+	if ( EllipseSomewhere(cv,sp1,sp2,order2,changed,ellipse_to_back) )
+return( true );
+
+return( false );
+    }
 }
 
-void _CVMenuMakeLine(CharViewBase *cv,int do_arc) {
+void _CVMenuMakeLine(CharViewBase *cv,int do_arc,int ellipse_to_back) {
     SplinePointList *spl, *spl1=NULL, *spl2=NULL;
     SplinePoint *sp, *sp1=NULL, *sp2=NULL;
     int changed = false;
@@ -1853,19 +2065,24 @@ void _CVMenuMakeLine(CharViewBase *cv,int do_arc) {
 		!(sp1->prev!=NULL && sp1->prev->from==sp2) ) {
 	    layer = CVLayer(cv);
 	    CVPreserveState(cv);
+	    if ( sp1->next!=NULL ) {
+		sp = sp1; sp1 = sp2; sp2 = sp;
+		spl = spl1; spl1 = spl2; spl2 = spl;
+	    }
 	    if ( spl1==spl2 ) {
-		if ( MakeShape(cv,spl1->first,spl1->last,cv->sc->layers[layer].order2,changed,do_arc))
+		/* case of two connected points is handled below */
+		/* This case joins the endpoints of an open-contour */
+		if ( MakeShape(cv,spl1,spl2,sp1,sp2,cv->sc->layers[layer].order2,changed,do_arc,ellipse_to_back)) {
 		    changed = true;
-	    } else {
-		if ( sp1->next!=NULL ) {
-		    sp = sp1; sp1 = sp2; sp2 = sp;
-		    spl = spl1; spl1 = spl2; spl2 = spl;
+		    spl1->last = spl1->first;
 		}
+	    } else {
 		if ( sp1->next!=NULL )
 		    SplineSetReverse(spl1);
 		if ( sp2->prev!=NULL )
 		    SplineSetReverse(spl2);
-		if ( MakeShape(cv,sp1,sp2,cv->sc->layers[layer].order2,changed,do_arc) ) {
+		switch ( MakeShape(cv,spl1,spl2,sp1,sp2,cv->sc->layers[layer].order2,changed,do_arc,ellipse_to_back) ) {
+		  case 1:
 		    spl1->last = spl2->last;
 		    for ( spl=cv->layerheads[cv->drawmode]->splines;
 			    spl!=NULL && spl->next!=spl2; spl = spl->next );
@@ -1875,6 +2092,20 @@ void _CVMenuMakeLine(CharViewBase *cv,int do_arc) {
 			cv->layerheads[cv->drawmode]->splines = spl2->next;
 		    chunkfree(spl2,sizeof(*spl2));
 		    changed = true;
+		  break;
+		  case -1:
+		    /* we reversed spl1 and spl2 to get a good match */
+		    spl2->last = spl1->last;
+		    SplineSetReverse(spl2);
+		    for ( spl=cv->layerheads[cv->drawmode]->splines;
+			    spl!=NULL && spl->next!=spl1; spl = spl->next );
+		    if ( spl!=NULL )
+			spl->next = spl1->next;
+		    else
+			cv->layerheads[cv->drawmode]->splines = spl1->next;
+		    chunkfree(spl1,sizeof(*spl1));
+		    changed = true;
+		  break;
 		}
 	    }
 	}
@@ -1883,7 +2114,7 @@ void _CVMenuMakeLine(CharViewBase *cv,int do_arc) {
 	for ( sp=spl->first; ; ) {
 	    if ( sp->selected ) {
 		if ( sp->next!=NULL && sp->next->to->selected ) {
-		    if ( MakeShape(cv,sp,sp->next->to,sp->next->order2,changed,do_arc))
+		    if ( MakeShape(cv,spl,spl,sp,sp->next->to,sp->next->order2,changed,do_arc,ellipse_to_back))
 			changed = true;
 		    if ( !changed ) {
 			CVPreserveState(cv);
