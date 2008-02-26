@@ -378,7 +378,7 @@ void SCCondenseExtend(struct counterinfo *ci,SplineChar *sc, int layer,
 	offset = (b.maxx-b.minx)/2 - (ci->bb.maxx-ci->bb.minx)/2;
 	/* We haven't really changed the left side bearing by offset, but */
 	/*  this is the amount (about) by which we need to adjust accents */
-	SCSynchronizeLBearing(sc,ci->layer,offset);
+	SCSynchronizeLBearing(sc,offset,ci->layer);
     }
 
     if ( ci->correct_italic && sc->parent->italicangle!=0 ) {
@@ -558,7 +558,7 @@ static void CorrectLeftSideBearing(SplineSet *ss_expanded,SplineChar *sc,int lay
     if ( transform[4]!=0 ) {
 	SplinePointListTransform(ss_expanded,transform,true);
 	if ( layer==ly_fore )
-	    SCSynchronizeLBearing(sc,layer,transform[4]);
+	    SCSynchronizeLBearing(sc,transform[4],layer);
     }
 }
 
