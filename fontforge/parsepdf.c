@@ -50,6 +50,7 @@ struct pdfcontext {
     int fcnt;
     enum openflags openflags;
     int encrypted;
+    int enc_dict;
 };
 
 static long FindXRef(FILE *pdf) {
@@ -121,8 +122,8 @@ static int seektrailer(FILE *pdf, int *start, int *num, struct pdfcontext *pc) {
 return( false );
     pos = ftell(pdf);
     if ( findkeyword(pdf,"/Encrypt",">>") ) {
-	int foo, bar;
-	if ( fscanf( pdf, "%d %d", &foo, &bar )==2 )
+	int bar;
+	if ( fscanf( pdf, "%d %d", &pc->enc_dict, &bar )==2 )
 	    pc->encrypted = true;
     }
     fseek(pdf,pos,SEEK_SET);
@@ -609,7 +610,7 @@ static FILE *pdf_defilterstream(struct pdfcontext *pc) {
     /*  to another */
     FILE *res, *old, *pdf = pc->pdf;
     int i,length,ch;
-    char *pt;
+    char *pt, *end;
 
     if ( (pt=PSDictHasEntry(&pc->pdfdict,"Length"))==NULL ) {
 	LogError( _("A pdf stream object is missing a Length attribute"));
@@ -631,6 +632,8 @@ return( NULL );
 return( res );
     while ( *pt==' ' || *pt=='[' || *pt==']' || *pt=='/' ) ++pt;	/* Yes, I saw a null array once */
     while ( *pt!='\0' ) {
+	for ( end=pt; isalnum(*end); ++end );
+	ch = *end; *end = '\0';
 	old = res;
 	res = tmpfile();
 	if ( strmatch("ASCIIHexDecode",pt)==0 ) {
@@ -650,6 +653,8 @@ return( res );
 	    fclose(old); fclose(res);
 return( NULL );
 	}
+	*end = ch;
+	pt = end;
 	while ( *pt==' ' || *pt==']' || *pt=='/' ) ++pt;
 	fclose(old);
     }
