@@ -1993,6 +1993,7 @@ return( false );
 	gt->sel_start = gt->sel_end = gt->sel_base = end-gt->text;
 	GTextFieldPaste(gt,sn_drag_and_drop);
 	GTextField_Show(gt,gt->sel_start);
+	GTextFieldChanged(gt,-1);
 	_ggadget_redraw(&gt->g);
     } else
 return( false );
