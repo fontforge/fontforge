@@ -511,6 +511,7 @@ static void DrawPoint(CharView *cv, GWindow pixmap, SplinePoint *sp,
     int pnum;
     char buf[12]; unichar_t ubuf[12];
     int isfake;
+    int cvlayer = CVLayer((CharViewBase *) cv);
 
     if ( cv->markextrema && !cv->b.sc->inspiro && !sp->nonextcp && !sp->noprevcp &&
 	    ((sp->nextcp.x==sp->me.x && sp->prevcp.x==sp->me.x) ||
@@ -603,8 +604,8 @@ return;
     if ( sp->selected )
 	GDrawSetLineWidth(pixmap,selectedpointwidth);
     isfake = false;
-    if ( cv->b.drawmode==dm_fore && cv->b.sc->layers[ly_fore].order2 &&
-	    cv->b.sc->layers[ly_fore].refs==NULL ) {
+    if ( cv->b.sc->layers[cvlayer].order2 &&
+	    cv->b.sc->layers[cvlayer].refs==NULL ) {
 	int mightbe_fake = SPInterpolate(sp);
         if ( !mightbe_fake && sp->ttfindex==0xffff )
 	    sp->ttfindex = 0xfffe;	/* if we have no instructions we won't call instrcheck and won't notice when a point stops being fake */
@@ -5306,7 +5307,7 @@ static void CVMenuFill(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 static void CVMenuShowGridFit(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
-    if ( !hasFreeType() || cv->b.drawmode!=dm_fore || cv->dv!=NULL )
+    if ( !hasFreeType() || cv->dv!=NULL )
 return;
     CVFtPpemDlg(cv,false);
 }
@@ -5314,7 +5315,7 @@ return;
 static void CVMenuChangePointSize(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
 
-    if ( !hasFreeType() || cv->b.drawmode!=dm_fore || cv->dv!=NULL || !cv->show_ft_results )
+    if ( !hasFreeType() || cv->dv!=NULL || !cv->show_ft_results )
 return;
 
     if ( mi->mid==MID_GridFitOff ) {
@@ -8410,7 +8411,7 @@ static void gflistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_ShowGridFit:
-	    mi->ti.disabled = !hasFreeType() || cv->b.drawmode!=dm_fore || cv->dv!=NULL;
+	    mi->ti.disabled = !hasFreeType() || cv->dv!=NULL;
 	    mi->ti.checked = cv->show_ft_results;
 	  break;
 	  case MID_Bigger:
