@@ -2369,6 +2369,12 @@ return;
 		    SplineFree(sp->prev);
 		    SplinePointFree(isp);
 		    SplinePointFree(sp);
+		    if ( psp->next->order2 ) {
+			psp->nextcp.x = nsp->prevcp.x = (psp->nextcp.x+nsp->prevcp.x)/2;
+			psp->nextcp.y = nsp->prevcp.y = (psp->nextcp.y+nsp->prevcp.y)/2;
+			if ( psp->nonextcp || nsp->noprevcp )
+			    psp->nonextcp = nsp->noprevcp = true;
+		    }
 		    SplineRefigure(psp->next);
 		    if ( ss->first==sp )
 			ss->first = psp;
@@ -2386,6 +2392,12 @@ return;
 		    SplineFree(sp->next);
 		    SplinePointFree(isp);
 		    SplinePointFree(sp);
+		    if ( psp->next->order2 ) {
+			psp->nextcp.x = nsp->prevcp.x = (psp->nextcp.x+nsp->prevcp.x)/2;
+			psp->nextcp.y = nsp->prevcp.y = (psp->nextcp.y+nsp->prevcp.y)/2;
+			if ( psp->nonextcp || nsp->noprevcp )
+			    psp->nonextcp = nsp->noprevcp = true;
+		    }
 		    SplineRefigure(nsp->prev);
 		    if ( ss->first==sp )
 			ss->first = psp;
