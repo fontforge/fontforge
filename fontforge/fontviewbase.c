@@ -912,7 +912,7 @@ return;
 	    sc->layers[layer].splines = SplineSetsCorrect(sc->layers[layer].splines,&changed);
 	}
 	if ( changed || refchanged )
-	    SCCharChangedUpdate(sc,layer);
+	    SCCharChangedUpdate(sc,fv->active_layer);
 	if ( !ff_progress_next())
     break;
     }
