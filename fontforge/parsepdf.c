@@ -49,6 +49,7 @@ struct pdfcontext {
     char **fontnames;		/* theoretically in utf-8 */
     int fcnt;
     enum openflags openflags;
+    int encrypted;
 };
 
 static long FindXRef(FILE *pdf) {
@@ -88,9 +89,10 @@ return( xrefpos );
     }
 }
 
-static int findkeyword(FILE *pdf, char *keyword) {
+static int findkeyword(FILE *pdf, char *keyword, char *end) {
     char buffer[60];
     int len = strlen( keyword );
+    int end_len = end==NULL ? 0 : strlen(end);
     int ch, i;
 
     for ( i=0; i<len; ++i )
@@ -101,6 +103,8 @@ return( false );
     forever {
 	if ( strcmp(buffer,keyword)==0 )
 return( true );
+	if ( strncmp(buffer,end,end_len)==0 )
+return( false );
 	for ( i=1; i<len; ++i )
 	    buffer[i-1] = buffer[i];
 	buffer[len-1] = ch = getc(pdf);
@@ -109,12 +113,20 @@ return( false );
     }
 }
 
-static int seektrailer(FILE *pdf, int *start, int *num) {
+static int seektrailer(FILE *pdf, int *start, int *num, struct pdfcontext *pc) {
     int prev_xref;
+    int pos;
 
-    if ( !findkeyword(pdf,"trailer"))
+    if ( !findkeyword(pdf,"trailer",NULL))
 return( false );
-    if ( !findkeyword(pdf,"/Prev"))
+    pos = ftell(pdf);
+    if ( findkeyword(pdf,"/Encrypt",">>") ) {
+	int foo, bar;
+	if ( fscanf( pdf, "%d %d", &foo, &bar )==2 )
+	    pc->encrypted = true;
+    }
+    fseek(pdf,pos,SEEK_SET);
+    if ( !findkeyword(pdf,"/Prev",">>"))
 return( false );
     if ( fscanf( pdf, "%d", &prev_xref )!=1 )
 return( false );
@@ -166,7 +178,7 @@ return( ret );
 return( ret );
 	}
 	if ( fscanf(pdf, "%d %d", &start, &num )!=2 )
-	    if ( !seektrailer(pdf, &start, &num))
+	    if ( !seektrailer(pdf, &start, &num, pc))
 return( ret );
     }
 }
@@ -1433,6 +1445,12 @@ SplineFont *_SFReadPdfFont(FILE *pdf,char *filename,char *select_this_font,
     pc.openflags = openflags;
     if ( (pc.objs = FindObjects(&pc))==NULL ) {
 	LogError( _("Doesn't look like a valid pdf file, couldn't find xref section") );
+	pcFree(&pc);
+	setlocale(LC_NUMERIC,oldloc);
+return( NULL );
+    }
+    if ( pc.encrypted ) {
+	LogError( _("This pdf file contains an /Encrypt dictionary, and FontForge does not currently\nsupport pdf encryption" ));
 	pcFree(&pc);
 	setlocale(LC_NUMERIC,oldloc);
 return( NULL );
