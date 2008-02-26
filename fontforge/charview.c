@@ -2052,14 +2052,15 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     CVDrawAnchorPoints(cv,pixmap);
     /* Draw the active layer last so its splines are on top. */
     layer = cvlayer;
-    for ( rf=cv->b.sc->layers[layer].refs; rf!=NULL; rf = rf->next ) {
-	if ( CVLayer((CharViewBase *) cv)==layer )
-	    CVDrawRefName(cv,pixmap,rf,0);
-	for ( rlayer=0; rlayer<rf->layer_cnt; ++rlayer )
-	    CVDrawSplineSet(cv,pixmap,rf->layers[rlayer].splines,foreoutlinecol,-1,&clip);
-	if ( rf->selected && cv->b.layerheads[cv->b.drawmode]==&cv->b.sc->layers[layer])
-	    CVDrawBB(cv,pixmap,&rf->bb);
-    }
+    if ( layer>=0 )	/* Not the guidelines "layer" */
+	for ( rf=cv->b.sc->layers[layer].refs; rf!=NULL; rf = rf->next ) {
+	    if ( CVLayer((CharViewBase *) cv)==layer )
+		CVDrawRefName(cv,pixmap,rf,0);
+	    for ( rlayer=0; rlayer<rf->layer_cnt; ++rlayer )
+		CVDrawSplineSet(cv,pixmap,rf->layers[rlayer].splines,foreoutlinecol,-1,&clip);
+	    if ( rf->selected && cv->b.layerheads[cv->b.drawmode]==&cv->b.sc->layers[layer])
+		CVDrawBB(cv,pixmap,&rf->bb);
+	}
 
     CVDrawLayerSplineSet(cv,pixmap,&cv->b.sc->layers[layer],foreoutlinecol,
 	    cv->showpoints ,&clip);
