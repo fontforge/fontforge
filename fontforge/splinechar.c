@@ -2063,57 +2063,55 @@ void _CVMenuMakeLine(CharViewBase *cv,int do_arc,int ellipse_to_back) {
 	if ( sp1 == (SplinePoint *) -1 )
     break;
     }
-    if ( sp1!=(SplinePoint *) -1 && sp2!=NULL ) {
-	if (( sp1->prev==NULL || sp1->next==NULL ) && ( sp2->prev==NULL || sp2->next==NULL ) &&
+    if ( sp1!=(SplinePoint *) -1 && sp2!=NULL &&
+	    (( sp1->prev==NULL || sp1->next==NULL ) && ( sp2->prev==NULL || sp2->next==NULL ) &&
 		!(sp1->next!=NULL && sp1->next->to==sp2) &&
-		!(sp1->prev!=NULL && sp1->prev->from==sp2) ) {
-	    layer = CVLayer(cv);
-	    CVPreserveState(cv);
-	    if ( sp1->next!=NULL ) {
-		sp = sp1; sp1 = sp2; sp2 = sp;
-		spl = spl1; spl1 = spl2; spl2 = spl;
+		!(sp1->prev!=NULL && sp1->prev->from==sp2) )) {
+	layer = CVLayer(cv);
+	CVPreserveState(cv);
+	if ( sp1->next!=NULL ) {
+	    sp = sp1; sp1 = sp2; sp2 = sp;
+	    spl = spl1; spl1 = spl2; spl2 = spl;
+	}
+	if ( spl1==spl2 ) {
+	    /* case of two connected points is handled below */
+	    /* This case joins the endpoints of an open-contour */
+	    if ( MakeShape(cv,spl1,spl2,sp1,sp2,cv->sc->layers[layer].order2,changed,do_arc,ellipse_to_back)) {
+		changed = true;
+		spl1->last = spl1->first;
 	    }
-	    if ( spl1==spl2 ) {
-		/* case of two connected points is handled below */
-		/* This case joins the endpoints of an open-contour */
-		if ( MakeShape(cv,spl1,spl2,sp1,sp2,cv->sc->layers[layer].order2,changed,do_arc,ellipse_to_back)) {
-		    changed = true;
-		    spl1->last = spl1->first;
-		}
-	    } else {
-		if ( sp1->next!=NULL )
-		    SplineSetReverse(spl1);
-		if ( sp2->prev!=NULL )
-		    SplineSetReverse(spl2);
-		switch ( MakeShape(cv,spl1,spl2,sp1,sp2,cv->sc->layers[layer].order2,changed,do_arc,ellipse_to_back) ) {
-		  case 1:
-		    spl1->last = spl2->last;
-		    for ( spl=cv->layerheads[cv->drawmode]->splines;
-			    spl!=NULL && spl->next!=spl2; spl = spl->next );
-		    if ( spl!=NULL )
-			spl->next = spl2->next;
-		    else
-			cv->layerheads[cv->drawmode]->splines = spl2->next;
-		    chunkfree(spl2,sizeof(*spl2));
-		    changed = true;
-		  break;
-		  case -1:
-		    /* we reversed spl1 and spl2 to get a good match */
-		    spl2->last = spl1->last;
-		    SplineSetReverse(spl2);
-		    for ( spl=cv->layerheads[cv->drawmode]->splines;
-			    spl!=NULL && spl->next!=spl1; spl = spl->next );
-		    if ( spl!=NULL )
-			spl->next = spl1->next;
-		    else
-			cv->layerheads[cv->drawmode]->splines = spl1->next;
-		    chunkfree(spl1,sizeof(*spl1));
-		    changed = true;
-		  break;
-		}
+	} else {
+	    if ( sp1->next!=NULL )
+		SplineSetReverse(spl1);
+	    if ( sp2->prev!=NULL )
+		SplineSetReverse(spl2);
+	    switch ( MakeShape(cv,spl1,spl2,sp1,sp2,cv->sc->layers[layer].order2,changed,do_arc,ellipse_to_back) ) {
+	      case 1:
+		spl1->last = spl2->last;
+		for ( spl=cv->layerheads[cv->drawmode]->splines;
+			spl!=NULL && spl->next!=spl2; spl = spl->next );
+		if ( spl!=NULL )
+		    spl->next = spl2->next;
+		else
+		    cv->layerheads[cv->drawmode]->splines = spl2->next;
+		chunkfree(spl2,sizeof(*spl2));
+		changed = true;
+	      break;
+	      case -1:
+		/* we reversed spl1 and spl2 to get a good match */
+		spl2->last = spl1->last;
+		SplineSetReverse(spl2);
+		for ( spl=cv->layerheads[cv->drawmode]->splines;
+			spl!=NULL && spl->next!=spl1; spl = spl->next );
+		if ( spl!=NULL )
+		    spl->next = spl1->next;
+		else
+		    cv->layerheads[cv->drawmode]->splines = spl1->next;
+		chunkfree(spl1,sizeof(*spl1));
+		changed = true;
+	      break;
 	    }
 	}
-	changed = true;
     } else for ( spl = cv->layerheads[cv->drawmode]->splines; spl!=NULL; spl = spl->next ) {
 	for ( sp=spl->first; ; ) {
 	    if ( sp->selected ) {
