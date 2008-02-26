@@ -88,6 +88,8 @@ return;
 RefChar *HasUseMyMetrics(SplineChar *sc,int layer) {
     RefChar *r;
 
+    if ( layer==ly_grid ) layer = ly_fore;
+
     for ( r=sc->layers[layer].refs; r!=NULL; r=r->next )
 	if ( r->use_my_metrics )
 return( r );
