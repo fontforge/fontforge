@@ -635,7 +635,7 @@ void FVTrans(FontViewBase *fv,SplineChar *sc,real transform[6], uint8 *sel,
 		sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 &&
 		isalpha(sc->unicodeenc)) {
 	    SCUndoSetLBearingChange(sc,(int) rint(transform[4]));
-	    SCSynchronizeLBearing(sc,fv->active_layer,transform[4]);	/* this moves the hints */
+	    SCSynchronizeLBearing(sc,transform[4],fv->active_layer);	/* this moves the hints */
 	} else {
 	    TransHints(sc->hstem,transform[3],transform[5],transform[0],transform[4],flags&fvt_round_to_int);
 	    TransHints(sc->vstem,transform[0],transform[4],transform[3],transform[5],flags&fvt_round_to_int);

@@ -6806,7 +6806,7 @@ void CVTransFunc(CharView *cv,real transform[6], enum fvtrans_flags flags) {
 		transform[4]!=0 && CVAllSelected(cv) &&
 		cv->b.sc->unicodeenc!=-1 && isalpha(cv->b.sc->unicodeenc)) {
 	    SCUndoSetLBearingChange(cv->b.sc,(int) rint(transform[4]));
-	    SCSynchronizeLBearing(cv->b.sc,CVLayer((CharViewBase *) cv),transform[4]);
+	    SCSynchronizeLBearing(cv->b.sc,transform[4],CVLayer((CharViewBase *) cv));
 	}
 	if ( !(flags&fvt_dontmovewidth) && (cv->widthsel || !anysel))
 	    if ( transform[0]>0 && transform[3]>0 && transform[1]==0 &&

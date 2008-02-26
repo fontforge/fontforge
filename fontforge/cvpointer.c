@@ -1300,7 +1300,7 @@ void CVMouseUpPointer(CharView *cv ) {
     } else if ( CVAllSelected(cv) && cv->b.drawmode==dm_fore && cv->p.spline==NULL &&
 	    !cv->p.prevcp && !cv->p.nextcp && cv->info.y==cv->p.cy ) {
 	SCUndoSetLBearingChange(cv->b.sc,(int) rint(cv->info.x-cv->p.cx));
-	SCSynchronizeLBearing(cv->b.sc,CVLayer((CharViewBase *) cv),cv->info.x-cv->p.cx);
+	SCSynchronizeLBearing(cv->b.sc,cv->info.x-cv->p.cx,CVLayer((CharViewBase *) cv));
     }
     CPEndInfo(cv);
 }
