@@ -491,7 +491,7 @@ return( true );
 static int GMatrixEdit_Expose(GWindow pixmap, GGadget *g, GEvent *event) {
     GMatrixEdit *gme = (GMatrixEdit *) g;
     GRect r, old, older;
-    int c, y;
+    int c, y, lastc;
 
     if ( gme->has_titles ) {
 	r = gme->g.inner;
@@ -501,9 +501,9 @@ static int GMatrixEdit_Expose(GWindow pixmap, GGadget *g, GEvent *event) {
 	GDrawFillRect(pixmap,&r,0x808080);
 	y = r.y + gme->as;
 	GDrawSetFont(pixmap,gme->titfont);
+	for ( lastc = gme->cols-1; lastc>0 && gme->col_data[lastc].hidden; --lastc );
 	for ( c=0; c<gme->cols; ++c ) {
 	    if ( gme->col_data[c].title!=NULL &&
-		    !gme->col_data[c].disabled &&
 		    !gme->col_data[c].hidden ) {
 		r.x = gme->col_data[c].x + gme->g.inner.x - gme->off_left;
 		r.width = gme->col_data[c].width;
@@ -511,7 +511,7 @@ static int GMatrixEdit_Expose(GWindow pixmap, GGadget *g, GEvent *event) {
 		GDrawDrawText8(pixmap,r.x,y,gme->col_data[c].title,-1,NULL,0x000000);
 		GDrawPopClip(pixmap,&old);
 	    }
-	    if ( c!=gme->cols-1 && !gme->col_data[c].hidden)
+	    if ( c!=lastc && !gme->col_data[c].hidden)
 		GDrawDrawLine(pixmap,r.x+gme->col_data[c].width+gme->hpad/2,r.y,
 				     r.x+gme->col_data[c].width+gme->hpad/2,r.y+r.height,
 				     0xffffff);
@@ -1299,7 +1299,7 @@ return;
 }
 
 static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event) {
-    int k, r,c, kludge;
+    int k, r,c, lastc, kludge;
     char buf[20];
     char *str, *pt;
     GRect size;
@@ -1311,6 +1311,13 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
     GDrawGetSize(gme->nested,&size);
 
     GDrawDrawLine(pixmap,0,0,0,size.height,0x000000);
+    /* Make sure the last visible column ends at (or after) the edge */
+    for ( lastc = gme->cols-1; lastc>0 && gme->col_data[lastc].hidden; --lastc );
+    if ( lastc>=0 && gme->col_data[lastc].x+gme->col_data[lastc].width < size.width ) {
+	gme->col_data[lastc].width = size.width - gme->col_data[lastc].x;
+	for ( c=lastc+1; c<gme->cols; ++c )
+	    gme->col_data[c].x = size.width;
+    }
     for ( c=0; c<gme->cols-1; ++c ) if ( !gme->col_data[c].hidden )
 	GDrawDrawLine(pixmap,
 		gme->col_data[c].x+gme->col_data[c].width+gme->hpad/2-gme->off_left,0,
@@ -1337,9 +1344,9 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 	continue;
 	    if ( gme->col_data[c].x + gme->col_data[c].width < gme->off_left )
 	continue;
-	    if ( gme->col_data[c].disabled )
-	continue;
 	    clip.x = gme->col_data[c].x-gme->off_left; clip.width = gme->col_data[c].width;
+	    if ( gme->col_data[c].disabled && gme->g.box->disabled_background!=COLOR_TRANSPARENT )
+		GDrawFillRect(pixmap,&clip,gme->g.box->disabled_background);
 	    if ( gme->col_data[c].me_type == me_stringchoice ||
 		    gme->col_data[c].me_type == me_stringchoicetrans ||
 		    gme->col_data[c].me_type == me_stringchoicetag ||
@@ -1362,7 +1369,8 @@ static void GMatrixEdit_SubExpose(GMatrixEdit *gme,GWindow pixmap,GEvent *event)
 			buf,-1,NULL,0x0000ff);
 	    } else {
 		data = &gme->data[(r+gme->off_top)*gme->cols+c];
-		fg = data->frozen ? 0xff0000 : 0x000000;
+		fg = gme->col_data[c].disabled ? 0x666666 :
+			data->frozen ? 0xff0000 : 0x000000;
 		switch ( gme->col_data[c].me_type ) {
 		  case me_enum:
 		    mi = FindMi(gme->col_data[c].enum_vals,data->u.md_ival);

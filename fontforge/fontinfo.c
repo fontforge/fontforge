@@ -3921,11 +3921,11 @@ static int GFI_GaspVersion(GGadget *g, GEvent *e) {
 	int version = GGadgetGetFirstListSelectedItem(g);
 	GGadget *gasp = GWidgetGetControl(GGadgetGetWindow(g),CID_Gasp);
 	if ( version == 0 ) {
-	    GMatrixEditEnableColumn(gasp,3,false);
-	    GMatrixEditEnableColumn(gasp,4,false);
+	    GMatrixEditShowColumn(gasp,3,false);
+	    GMatrixEditShowColumn(gasp,4,false);
 	} else {
-	    GMatrixEditEnableColumn(gasp,3,true);
-	    GMatrixEditEnableColumn(gasp,4,true);
+	    GMatrixEditShowColumn(gasp,3,true);
+	    GMatrixEditShowColumn(gasp,4,true);
 	}
 	GGadgetRedraw(gasp);
     }
@@ -10529,8 +10529,8 @@ return;
     GMatrixEditSetNewText(gaspgcd[3].ret,S_("gaspTableEntry|New"));
     GMatrixEditAddButtons(gaspgcd[3].ret,gaspgcd_def);
     if ( sf->gasp_version==0 ) {
-	GMatrixEditEnableColumn(gaspgcd[3].ret,3,false);
-	GMatrixEditEnableColumn(gaspgcd[3].ret,4,false);
+	GMatrixEditShowColumn(gaspgcd[3].ret,3,false);
+	GMatrixEditShowColumn(gaspgcd[3].ret,4,false);
     }
     GHVBoxSetExpandableCol(gaspboxes[2].ret,2);
     GHVBoxSetExpandableRow(gaspboxes[0].ret,1);
