@@ -5456,6 +5456,16 @@ static int GFI_AspectChange(GGadget *g, GEvent *e) {
 return( true );
 }
 
+static int GFI_URangeAspectChange(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	GTabSetSetSel(GWidgetGetControl(d->gw,CID_Tabs),d->ttfv_aspect);
+	GFI_AspectChange(GWidgetGetControl(d->gw,CID_Tabs),NULL);
+	GTabSetSetSel(GWidgetGetControl(d->gw,CID_TTFTabs),4);
+    }
+return( true );
+}
+
 static int e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
 	struct gfi_data *d = GDrawGetUserData(gw);
@@ -7454,15 +7464,15 @@ void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GTabInfo aspects[23], vaspects[6], lkaspects[3], uaspects[3];
+    GTabInfo aspects[23], vaspects[6], lkaspects[3];
     GGadgetCreateData mgcd[10], ngcd[17], psgcd[30], tngcd[8],
 	pgcd[12], vgcd[19], pangcd[22], comgcd[4], txgcd[23], floggcd[4],
 	mfgcd[8], mcgcd[8], szgcd[19], mkgcd[7], metgcd[29], vagcd[3], ssgcd[23],
-	xugcd[7], dgcd[6], ugcd[4], gaspgcd[5], gaspgcd_def[2], lksubgcd[2][4],
+	xugcd[7], dgcd[6], ugcd[6], gaspgcd[5], gaspgcd_def[2], lksubgcd[2][4],
 	lkgcd[2], lkbuttonsgcd[15], cgcd[12], lgcd[20];
     GGadgetCreateData mb[2], mb2, nb[2], nb2, nb3, xub[2], psb[2], psb2[3], ppbox[4],
 	    vbox[4], metbox[2], ssbox[2], panbox[2], combox[2], mkbox[3],
-	    txbox[5], ubox[2], dbox[2], flogbox[2],
+	    txbox[5], ubox[3], dbox[2], flogbox[2],
 	    mcbox[3], mfbox[3], szbox[6], tnboxes[4], gaspboxes[3],
 	    lkbox[7], cbox[6], lbox[8];
     GGadgetCreateData *marray[7], *marray2[9], *narray[26], *narray2[7], *narray3[3],
@@ -7470,17 +7480,17 @@ void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
 	*ppbuttons[5], *pparray[6], *vradio[5], *varray[38], *metarray[46],
 	*pp2buttons[7], *ssarray[58], *panarray[38], *comarray[3], *flogarray[3],
 	*mkarray[6], *mkarray2[4], *txarray[5], *txarray2[30],
-	*txarray3[6], *txarray4[6], *uarray[3], *darray[10],
+	*txarray3[6], *txarray4[6], *uarray[5], *darray[10],
 	*mcarray[13], *mcarray2[7],
 	*mfarray[14], *szarray[7], *szarray2[5], *szarray3[7],
 	*szarray4[4], *szarray5[6], *tnvarray[4], *tnharray[6], *tnharray2[5], *gaspharray[6],
 	*gaspvarray[3], *lkarray[2][7], *lkbuttonsarray[17], *lkharray[3],
 	*charray1[4], *charray2[4], *charray3[4], *cvarray[9], *cvarray2[4],
-	*larray[16], *larray2[25], *larray3[6], *larray4[5];
+	*larray[16], *larray2[25], *larray3[6], *larray4[5], *uharray[4];
     GTextInfo mlabel[10], nlabel[16], pslabel[30], tnlabel[7],
 	plabel[12], vlabel[19], panlabel[22], comlabel[3], txlabel[23],
 	mflabel[8], mclabel[8], szlabel[17], mklabel[7], metlabel[28],
-	sslabel[23], xulabel[6], dlabel[5], ulabel[1], gasplabel[5],
+	sslabel[23], xulabel[6], dlabel[5], ulabel[3], gasplabel[5],
 	lkbuttonslabel[14], clabel[11], floglabel[3], llabel[20];
     GTextInfo *namelistnames;
     struct gfi_data *d;
@@ -7502,6 +7512,8 @@ void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
     const struct tm *tm;
     struct matrixinit mi, gaspmi, layersmi;
     int ltype;
+    GBox small_blue_box;
+    extern GBox _GGadget_button_box;
 
     FontInfoInit();
 
@@ -10330,32 +10342,67 @@ return;
     dbox[0].creator = GHVBoxCreate;
 /******************************************************************************/
 
-    memset(&uaspects,'\0',sizeof(uaspects));
     memset(&ulabel,0,sizeof(ulabel));
     memset(&ugcd,0,sizeof(ugcd));
+    memset(ubox,0,sizeof(ubox));
 
-    ulabel[0].text = (unichar_t *) _("Include Empty Blocks");
+    small_blue_box = _GGadget_button_box;
+    small_blue_box.border_type = bt_box;
+    small_blue_box.border_width = 0;
+    small_blue_box.flags = box_foreground_shadow_outer;
+    small_blue_box.padding = 0;
+    small_blue_box.main_foreground = 0x0000ff;
+    small_blue_box.border_darker = small_blue_box.main_foreground;
+    small_blue_box.border_darkest = small_blue_box.border_brighter = small_blue_box.border_brightest =
+	    small_blue_box.main_background == COLOR_DEFAULT ?
+		    GDrawGetDefaultBackground(NULL) :
+		    small_blue_box.main_background;
+
+    ulabel[0].text = (unichar_t *) _(
+	    "This pane is informatative only and shows the characters\n"
+	    "actually in the font. If you wish to set the OS/2 Unicode\n"
+	    "Range field, change the pane to");
     ulabel[0].text_is_1byte = true;
-    ulabel[0].text_in_resource = true;
     ugcd[0].gd.label = &ulabel[0];
     ugcd[0].gd.pos.x = 12; ugcd[0].gd.pos.y = 10; 
     ugcd[0].gd.flags = gg_visible | gg_enabled;
-    ugcd[0].gd.handle_controlevent = GFI_UnicodeEmptiesChange;
-    ugcd[0].gd.cid = CID_UnicodeEmpties;
-    ugcd[0].creator = GCheckBoxCreate;
+    ugcd[0].creator = GLabelCreate;
 
-    ugcd[1].gd.pos.x = 12; ugcd[1].gd.pos.y = 30;
-    ugcd[1].gd.pos.width = ngcd[15].gd.pos.width;
-    ugcd[1].gd.pos.height = 200;
-    ugcd[1].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
-    ugcd[1].gd.cid = CID_Unicode;
-    ugcd[1].gd.handle_controlevent = GFI_UnicodeRangeChange;
-    ugcd[1].gd.popup_msg = (unichar_t *) _("Click on a range to select characters in that range.\nDouble click on a range to see characters that should be\nin the range but aren't.");
-    ugcd[1].creator = GListCreate;
+    ulabel[1].text = (unichar_t *) _( "OS/2 -> Charsets");
+    ulabel[1].text_is_1byte = true;
+    ugcd[1].gd.label = &ulabel[1];
+    ugcd[1].gd.pos.x = 12; ugcd[1].gd.pos.y = 10; 
+    ugcd[1].gd.flags = gg_visible | gg_enabled | gg_dontcopybox;
+    ugcd[1].gd.box = &small_blue_box;
+    ugcd[1].gd.handle_controlevent = GFI_URangeAspectChange;
+    ugcd[1].creator = GButtonCreate;
+    uharray[0] = GCD_Glue; uharray[1] = &ugcd[1]; uharray[2] = GCD_Glue; uharray[3] = NULL;
 
-    uarray[0] = &ugcd[0]; uarray[1] = &ugcd[1]; uarray[2] = NULL;
+    ubox[2].gd.flags = gg_enabled|gg_visible;
+    ubox[2].gd.u.boxelements = uharray;
+    ubox[2].creator = GHBoxCreate;
 
-    memset(ubox,0,sizeof(ubox));
+    ulabel[2].text = (unichar_t *) _("Include Empty Blocks");
+    ulabel[2].text_is_1byte = true;
+    ulabel[2].text_in_resource = true;
+    ugcd[2].gd.label = &ulabel[2];
+    ugcd[2].gd.pos.x = 12; ugcd[2].gd.pos.y = 10; 
+    ugcd[2].gd.flags = gg_visible | gg_enabled;
+    ugcd[2].gd.handle_controlevent = GFI_UnicodeEmptiesChange;
+    ugcd[2].gd.cid = CID_UnicodeEmpties;
+    ugcd[2].creator = GCheckBoxCreate;
+
+    ugcd[3].gd.pos.x = 12; ugcd[3].gd.pos.y = 30;
+    ugcd[3].gd.pos.width = ngcd[15].gd.pos.width;
+    ugcd[3].gd.pos.height = 200;
+    ugcd[3].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    ugcd[3].gd.cid = CID_Unicode;
+    ugcd[3].gd.handle_controlevent = GFI_UnicodeRangeChange;
+    ugcd[3].gd.popup_msg = (unichar_t *) _("Click on a range to select characters in that range.\nDouble click on a range to see characters that should be\nin the range but aren't.");
+    ugcd[3].creator = GListCreate;
+
+    uarray[0] = &ugcd[0]; uarray[1] = &ubox[2]; uarray[2] = &ugcd[2]; uarray[3] = &ugcd[3]; uarray[4] = NULL;
+
     ubox[0].gd.flags = gg_enabled|gg_visible;
     ubox[0].gd.u.boxelements = uarray;
     ubox[0].creator = GVBoxCreate;
@@ -10616,7 +10663,8 @@ return;
     GHVBoxSetExpandableRow(dbox[0].ret,gb_expandglue);
     GHVBoxSetExpandableCol(dbox[0].ret,1);
 
-    GHVBoxSetExpandableRow(ubox[0].ret,1);
+    GHVBoxSetExpandableRow(ubox[0].ret,3);
+    GHVBoxSetExpandableCol(ubox[2].ret,gb_expandglue);
 
     GHVBoxSetExpandableCol(lkbox[0].ret,0);
     GHVBoxSetExpandableRow(lkbox[0].ret,0);
