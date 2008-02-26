@@ -2545,7 +2545,7 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
     CVUnlinkView(cv);
     cv->p.nextcp = cv->p.prevcp = cv->widthsel = cv->vwidthsel = false;
     if ( (CharView *) (sc->views)==NULL && updateflex )
-	SplineCharIsFlexible(sc,old_layer);
+	SplineCharIsFlexible(sc,old_layer!=ly_grid ? old_layer : ly_fore );
     cv->b.sc = sc;
     cv->b.next = sc->views;
     sc->views = &cv->b;
