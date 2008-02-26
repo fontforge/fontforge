@@ -2686,8 +2686,10 @@ return;
 	while ( iscombining(*pt) || (ch!='l' && *pt==0xb7) ||	/* b7, centered dot is used as a combining accent for Ldot but as a lig for ldot */
 		*pt==0x384 || *pt==0x385 || (*pt>=0x1fbd && *pt<=0x1fff ))	/* Special greek accents */
 	    SCCenterAccent(sc,sf,layer,*pt++,copybmp,ia, ch);
-	while ( *pt )
+	while ( *pt ) {
+	    if ( base!=NULL ) base->use_my_metrics = false;
 	    SCPutRefAfter(sc,sf,layer,*pt++,copybmp);
+	}
 	/* All along we assumed the base glyph didn't move. This makes       */
 	/* positioning easier. But if we add accents to the left we now want */
 	/* to move the glyph so we don't have a negative lbearing */
