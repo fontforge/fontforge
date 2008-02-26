@@ -7920,14 +7920,14 @@ static PyObject *PyFF_Font_get_sfntnames(PyFF_Font *self,void *closure) {
     DefaultTTFEnglishNames(&dummy, sf);
 
     cnt = 0;
-    for ( english = sf->names; english!=NULL; ++english )
+    for ( english = sf->names; english!=NULL; english=english->next )
 	if ( english->lang==0x409 )
     break;
     for ( i=0; i<ttf_namemax; ++i ) {
 	if ( (english!=NULL && english->names[i]!=NULL ) || dummy.names[i]!=NULL )
 	    ++cnt;
     }
-    for ( names = sf->names; names!=NULL; ++names ) if ( names!=english ) {
+    for ( names = sf->names; names!=NULL; names=names->next ) if ( names!=english ) {
 	for ( i=0; i<ttf_namemax; ++i ) {
 	    if ( names->names[i]!=NULL )
 		++cnt;
@@ -7940,7 +7940,7 @@ static PyObject *PyFF_Font_get_sfntnames(PyFF_Font *self,void *closure) {
 	if ( nm!=NULL )
 	    PyTuple_SetItem(tuple,cnt++,sfntnametuple(0x409,i,nm));
     }
-    for ( names = sf->names; names!=NULL; ++names ) if ( names!=english ) {
+    for ( names = sf->names; names!=NULL; names=names->next ) if ( names!=english ) {
 	if ( names->names[i]!=NULL )
 	    PyTuple_SetItem(tuple,cnt++,sfntnametuple(names->lang,i,names->names[i]));
     }
