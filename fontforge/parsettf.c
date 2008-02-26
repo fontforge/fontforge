@@ -782,6 +782,7 @@ static void readttfhead(FILE *ttf,struct ttfinfo *info) {
     fseek(ttf,info->head_start+4*4,SEEK_SET);		/* skip over the version number and a bunch of junk */
     flags = getushort(ttf);
     info->optimized_for_cleartype = (flags&(1<<13))?1:0;
+    info->apply_lsb = !(flags&(1<<1));
     info->emsize = getushort(ttf);
 
     info->ascent = .8*info->emsize;
@@ -3472,15 +3473,23 @@ return( false );
     
 static void readttfwidths(FILE *ttf,struct ttfinfo *info) {
     int i,j;
-    int lastwidth = info->emsize;
+    int lastwidth = info->emsize, lsb;
     /* I'm not interested in the lsb, I'm not sure what it means if it differs*/
     /*  from that is specified in the outline. Do we move the outline? */
+    /* Ah... I am interested in it if bit 1 of 'head'.flags is set, then we */
+    /*  do move the outline */
     int check_width_consistency = info->cff_start!=0 && info->glyph_start==0;
     SplineChar *sc;
+    DBounds b;
+    real trans[6];
+
+    memset(trans,0,sizeof(trans));
+    trans[0] = trans[3] = 1;
 
     fseek(ttf,info->hmetrics_start,SEEK_SET);
     for ( i=0; i<info->width_cnt && i<info->glyph_cnt; ++i ) {
 	lastwidth = getushort(ttf);
+	lsb = getushort(ttf);
 	if ( (sc = info->chars[i])!=NULL ) {	/* can happen in ttc files */
 	    if ( check_width_consistency && sc->width!=lastwidth ) {
 		if ( info->fontname!=NULL && sc->name!=NULL )
@@ -3494,8 +3503,14 @@ static void readttfwidths(FILE *ttf,struct ttfinfo *info) {
 	    }
 	    sc->width = lastwidth;
 	    sc->widthset = true;
+	    if ( info->apply_lsb ) {
+		SplineCharFindBounds(sc,&b);
+		if ( b.minx!=lsb ) {
+		    trans[4] = lsb-b.minx;
+		    SplinePointListTransform(sc->layers[ly_fore].splines,trans,true);
+		}
+	    }
 	}
-	/* lsb = */ getushort(ttf);
     }
     if ( i==0 ) {
 	LogError( _("Invalid ttf hmtx table (or hhea), numOfLongMetrics is 0\n") );
@@ -3503,9 +3518,17 @@ static void readttfwidths(FILE *ttf,struct ttfinfo *info) {
     }
 	
     for ( j=i; j<info->glyph_cnt; ++j ) {
-	if ( info->chars[j]!=NULL ) {		/* In a ttc file we may skip some */
-	    info->chars[j]->width = lastwidth;
-	    info->chars[j]->widthset = true;
+	if ( (sc = info->chars[j])!=NULL ) {	/* In a ttc file we may skip some */
+	    sc->width = lastwidth;
+	    sc->widthset = true;
+	    if ( info->apply_lsb ) {
+		lsb = getushort(ttf);
+		SplineCharFindBounds(sc,&b);
+		if ( b.minx!=lsb ) {
+		    trans[4] = lsb-b.minx;
+		    SplinePointListTransform(sc->layers[ly_fore].splines,trans,true);
+		}
+	    }
 	}
     }
 }
