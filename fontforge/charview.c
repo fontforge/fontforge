@@ -8383,7 +8383,7 @@ static void cv_cblistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 
 static void cv_nplistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
     SplineChar *sc = cv->b.sc;
-    int order2 = sc->layers[ly_fore].order2;
+    int order2 = cv->b.layerheads[cv->b.drawmode]->order2;
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
