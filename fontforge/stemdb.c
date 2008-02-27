@@ -4158,31 +4158,33 @@ static void AssignPointsToStems( struct glyphdata *gd,int startnum,DBounds *boun
     free(gd->activespace);	gd->activespace = NULL;
 }
 
-static void _DStemInfoToStemData( struct glyphdata *gd,DStemInfo *dsi ) {
+static void _DStemInfoToStemData( struct glyphdata *gd,DStemInfo *dsi,int *startcnt ) {
     struct stemdata *stem;
     
     if ( gd->stems == NULL ) {
         gd->stems = gcalloc( 2*gd->pcnt,sizeof( struct stemdata ));
         gd->stemcnt = 0;
     }
+    *startcnt = gd->stemcnt;
     while ( dsi != NULL ) {
         stem = NewStem( gd,&dsi->unit,&dsi->left,&dsi->right );
         stem->positioned = true;
         dsi = dsi->next;
     }
-return;
 }
 
 struct glyphdata *DStemInfoToStemData( struct glyphdata *gd,DStemInfo *dsi ) {
+    int startcnt;
+    
     if ( dsi == NULL )
 return( gd );
     
-    _DStemInfoToStemData( gd,dsi );
-    AssignPointsToStems( gd,gd->stemcnt,NULL );
+    _DStemInfoToStemData( gd,dsi,&startcnt );
+    AssignPointsToStems( gd,startcnt,NULL );
 return( gd );
 }
 
-static void _StemInfoToStemData( struct glyphdata *gd,StemInfo *si,DBounds *bounds,int is_v ) {
+static void _StemInfoToStemData( struct glyphdata *gd,StemInfo *si,DBounds *bounds,int is_v,int *startcnt ) {
     struct stemdata *stem;
     BasePoint dir,left,right;
     
@@ -4191,6 +4193,7 @@ static void _StemInfoToStemData( struct glyphdata *gd,StemInfo *si,DBounds *boun
         gd->stems = gcalloc( 2*gd->pcnt,sizeof( struct stemdata ));
         gd->stemcnt = 0;
     }
+    *startcnt = gd->stemcnt;
 
     while ( si != NULL ) {
         left.x = ( is_v ) ? si->start : 0;
@@ -4209,19 +4212,19 @@ static void _StemInfoToStemData( struct glyphdata *gd,StemInfo *si,DBounds *boun
         stem->positioned = true;
         si = si->next;
     }
-return;
 }
 
 struct glyphdata *StemInfoToStemData( struct glyphdata *gd,StemInfo *si,int is_v ) {
     DBounds bounds;
+    int startcnt;
     
     if ( si == NULL )
 return( gd );
     
     SplineCharFindBounds( gd->sc,&bounds );
-    _StemInfoToStemData( gd,si,&bounds,is_v );
+    _StemInfoToStemData( gd,si,&bounds,is_v,&startcnt );
 
-    AssignPointsToStems( gd,gd->stemcnt,&bounds );
+    AssignPointsToStems( gd,startcnt,&bounds );
 return( gd );
 }
 
@@ -4374,6 +4377,7 @@ struct glyphdata *GlyphDataBuild( SplineChar *sc,int layer, BlueData *bd,int use
     struct stem_chunk *chunk;
     int i, j;
     int action, only_hv;
+    int startcnt;
     double em_size;
     DBounds bounds;
     
@@ -4408,11 +4412,11 @@ return( gd );
     if ( use_existing ) {
         SplineCharFindBounds( gd->sc,&bounds );
         if ( sc->vstem != NULL )
-            _StemInfoToStemData( gd,sc->vstem,&bounds,true );
+            _StemInfoToStemData( gd,sc->vstem,&bounds,true,&startcnt );
         if ( sc->hstem != NULL )
-            _StemInfoToStemData( gd,sc->vstem,&bounds,false );
+            _StemInfoToStemData( gd,sc->vstem,&bounds,false,&startcnt );
         if ( sc->dstem != NULL )
-            _DStemInfoToStemData( gd,sc->dstem );
+            _DStemInfoToStemData( gd,sc->dstem,&startcnt );
     }
 
     for ( i=0; i<gd->pcnt; ++i ) if ( gd->points[i].sp!=NULL ) {
