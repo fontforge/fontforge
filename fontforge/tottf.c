@@ -3279,6 +3279,12 @@ docs are wrong.
 		    if ( i<first ) first = i;
 		    if ( i>last ) last = i;
 		}
+	    for ( i=0; i<map->enccount && i<=255; ++i )
+		if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
+			sf->glyphs[gid]->ttf_glyph!=-1 ) {
+		    if ( i+0xf000<first ) first = i+0xf000;
+		    if ( i+0xf000>last ) last = i+0xf000;
+		}
 	    os2->firstcharindex = first;	/* This gets mapped to space */
 	    os2->lastcharindex  = last;
 	} else {
@@ -3288,6 +3294,12 @@ docs are wrong.
 			sf->glyphs[gid]->ttf_glyph!=-1 ) {
 		    if ( i<first ) first = i;
 		    if ( i>last ) last = i;
+		}
+	    for ( i=0xf020; i<map->enccount && i<=0xf0ff; ++i )
+		if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL &&
+			sf->glyphs[gid]->ttf_glyph!=-1 ) {
+		    if ( i-0xf000<first ) first = i-0xf000;
+		    if ( i-0xf000>last ) last = i-0xf000;
 		}
 	    if ( first<' ' ) first = ' ';
 	    os2->firstcharindex = 0xf000 + first;	/* This gets mapped to space */
@@ -4669,11 +4681,21 @@ static void dumpcmap(struct alltabs *at, SplineFont *sf,enum fontformat format) 
 			sc->ttf_glyph!=-1 )
 		    table[i] = sc->ttf_glyph;
 	    }
+	    for ( i=0xf020; i<=0xf0ff && i<sf->glyphcnt; ++i ) {
+		if ( map->map[i]!=-1 && (sc = sf->glyphs[map->map[i]])!=NULL &&
+			sc->ttf_glyph!=-1 && table[i-0xf000]==0 )
+		    table[i-0xf000] = sc->ttf_glyph;
+	    }
 	} else {
 	    for ( i=0xf020; i<=0xf0ff && i<sf->glyphcnt; ++i ) {
 		if ( map->map[i]!=-1 && (sc = sf->glyphs[map->map[i]])!=NULL &&
 			sc->ttf_glyph!=-1 )
 		    table[i-0xf000] = sc->ttf_glyph;
+	    }
+	    for ( i=0; i<map->enccount && i<256; ++i ) {
+		if ( map->map[i]!=-1 && (sc = sf->glyphs[map->map[i]])!=NULL &&
+			sc->ttf_glyph!=-1 && table[i]==0 )
+		    table[i] = sc->ttf_glyph;
 	    }
 	}
 	/* if the user has read in a ttf symbol file then it will already have */
