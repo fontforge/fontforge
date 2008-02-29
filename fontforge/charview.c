@@ -2052,7 +2052,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     CVDrawAnchorPoints(cv,pixmap);
     /* Draw the active layer last so its splines are on top. */
     layer = cvlayer;
-    if ( layer>=0 )	/* Not the guidelines "layer" */
+    if ( layer>=0 ) {	/* Not the guidelines "layer" */
 	for ( rf=cv->b.sc->layers[layer].refs; rf!=NULL; rf = rf->next ) {
 	    if ( CVLayer((CharViewBase *) cv)==layer )
 		CVDrawRefName(cv,pixmap,rf,0);
@@ -2062,8 +2062,9 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		CVDrawBB(cv,pixmap,&rf->bb);
 	}
 
-    CVDrawLayerSplineSet(cv,pixmap,&cv->b.sc->layers[layer],foreoutlinecol,
-	    cv->showpoints ,&clip);
+	CVDrawLayerSplineSet(cv,pixmap,&cv->b.sc->layers[layer],foreoutlinecol,
+		cv->showpoints ,&clip);
+    }
 
     if ( cv->freehand.current_trace!=NULL )
 	CVDrawSplineSet(cv,pixmap,cv->freehand.current_trace,tracecol,
