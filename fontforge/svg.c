@@ -65,6 +65,7 @@ static int svg_outfontheader(FILE *file, SplineFont *sf,int layer) {
     time_t now;
     const char *author = GetAuthor();
 
+    memset(&info,0,sizeof(info));
     SFDefaultOS2Info(&info,sf,sf->fontname);
     SplineFontLayerFindBounds(sf,layer,&bb);
     QuickBlues(sf,layer,&bd);
