@@ -991,6 +991,7 @@ static void init_fpgm(GlobalInstrCt *gic) {
 	0xed, //         MIRP[min,rnd,black]
 	0x59, //       EIF
 	0x1b, //     ELSE
+	0x23, //       SWAP
 	0x21, //       POP
 	0xb0, //       PUSHB_1
 	0x05, //         5

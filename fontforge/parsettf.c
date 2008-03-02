@@ -5100,6 +5100,8 @@ static void NameConsistancyCheck(SplineFont *sf,EncMap *map) {
 #if 1
 	    if ( uni>=0xe000 && uni<=0xf8ff )
 		/* Don't complain about adobe's old PUA assignments for things like "eight.oldstyle" */;
+	    else if ( uni<0x20 )
+		/* Nor about control characters */;
 	    else if ( sc->unicodeenc==-1 ) {
 #if 0
 		LogError(_("The glyph named %.30s is not mapped to any unicode code point.\nBut its name indicates it should be mapped to U+%04X.\n"),
