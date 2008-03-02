@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 9-Apr-2006 -->
-  <!-- AP: Last modified: 12-Feb-2008 -->
+  <!-- AP: Last modified: 1-Mar-2008 -->
   <TITLE>Scripting functions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -2021,11 +2021,14 @@ SetLBearing(lbearing)
 	    font may be selected by placing the fontname in parens and appending it to
 	    the filename, as <CODE>Open("gulim.ttc(Dotum)")</CODE>. If you know the font's
 	    index you may also say: <CODE>Open("gulim.ttc(0)")</CODE>.<BR>
-	    The optional flags argument current has only one flag in it:
+	    The optional flags argument current has only two flags in it:
 	    <UL>
 	      <LI>
 		1 =&gt; the user does have the appropriate license to examine the font no
 		matter what the fstype setting is.
+	      <LI>
+		4 =&gt; load all glyphs from the 'glyf' table of a ttc font (rather than
+		only the glyphs used in the font picked).
 	    </UL>
 	  <DT>
 	    <A NAME="Ord">O</A>rd(string[,pos])
