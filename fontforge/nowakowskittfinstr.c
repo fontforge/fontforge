@@ -1850,7 +1850,7 @@ static void search_edge(int p, SplinePoint *sp, InstrCt *ct) {
 	if (p == sp->ttfindex && IsAnglePoint(ct->contourends, ct->bp, sp))
 	    score++;
 
-	/* a crude way to distinguisg stem edge from zone */
+	/* a crude way to distinguish stem edge from zone */
 	if (fudge > (EM/EDGE_FUZZ+0.0001) && IsExtremum(!ct->xdir, sp))
 	    score++;
 
@@ -1863,7 +1863,7 @@ static void search_edge(int p, SplinePoint *sp, InstrCt *ct) {
 	if (!score)
 return;
 
-	if (ct->diagstems && ct->diagpts[p].count) score+=9;
+	if (ct->diagstems != NULL && ct->diagpts[p].count) score+=9;
 	if (ct->touched[p] & touchflag) score+=26;
 
 	if (ct->edge.refpt == -1) {
@@ -2067,7 +2067,7 @@ static void optimize_blue(InstrCt *ct) {
     if (othercnt == 0)
 return;
 
-    tosnap = (uint8 *)calloc(ct->ptcnt, sizeof(uint8));
+    tosnap = (uint8 *)gcalloc(ct->ptcnt, sizeof(uint8));
 
     for(i=0; i<ct->edge.othercnt; i++)
     {
@@ -2471,7 +2471,7 @@ return;
 
 	    update_blue_pts(queue[i], ct);
 
-	    if (ct->edge.othercnt > 0) {
+	    if (ct->edge.others != NULL) {
 		free(ct->edge.others);
 		ct->edge.others = NULL;
 		ct->edge.othercnt = 0;
@@ -3474,7 +3474,7 @@ static uint8 *dogeninstructions(InstrCt *ct) {
     /* Then instruct diagonal stems (=> movement in x) */
     /* This is done after vertical stems because it involves */
     /* moving some points out-of their vertical stems. */
-    if ( ct->diagstems ) DStemInfoGeninst(ct);
+    if (ct->diagstems != NULL) DStemInfoGeninst(ct);
 
 #if TESTIPSTRONG
     /* Adjust important points between hint edges. */
@@ -3494,7 +3494,7 @@ static uint8 *dogeninstructions(InstrCt *ct) {
 	"When processing TTF instructions (hinting) of %s", ct->sc->name
     );
 
-    if ( ct->diagstems ) {
+    if (ct->diagstems != NULL) {
 	DStemFree(ct->diagstems, ct->diagpts, ct->ptcnt);
 	free(ct->diagpts);
     }
