@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 12-Feb-2008 -->
+  <!-- AP: Last modified: 1-Mar-2008 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -307,8 +307,12 @@
     </TR>
     <TR>
       <TD><CODE>open</CODE></TD>
-      <TD><CODE>(filename)</CODE></TD>
-      <TD>Opens a filename and returns the font it contains. If it does.</TD>
+      <TD><CODE>(filename[,flags])</CODE></TD>
+      <TD>Opens a filename and returns the font it contains. If it does.
+	<P>
+	If the flags argument is 4, then ff will load all glyphs in the 'glyf' table
+	of a ttc file (rather than just the glyphs used in the font picked). This
+	will not load all 'glyf' tables though.</TD>
     </TR>
     <TR>
       <TD><CODE>parseTTInstrs</CODE></TD>
