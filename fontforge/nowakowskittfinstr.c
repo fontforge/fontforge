@@ -3474,11 +3474,7 @@ static uint8 *dogeninstructions(InstrCt *ct) {
     /* Then instruct diagonal stems (=> movement in x) */
     /* This is done after vertical stems because it involves */
     /* moving some points out-of their vertical stems. */
-    if ( ct->diagstems ) {
-        DStemInfoGeninst(ct);
-	DStemFree(ct->diagstems, ct->diagpts, ct->ptcnt);
-	free(ct->diagpts);
-    }
+    if ( ct->diagstems ) DStemInfoGeninst(ct);
 
 #if TESTIPSTRONG
     /* Adjust important points between hint edges. */
@@ -3497,6 +3493,11 @@ static uint8 *dogeninstructions(InstrCt *ct) {
 	"We miscalculated the glyph's instruction set length\n"
 	"When processing TTF instructions (hinting) of %s", ct->sc->name
     );
+
+    if ( ct->diagstems ) {
+	DStemFree(ct->diagstems, ct->diagpts, ct->ptcnt);
+	free(ct->diagpts);
+    }
 
     ct->sc->ttf_instrs_len = (ct->pt)-(ct->instrs);
     ct->sc->instructions_out_of_date = false;
