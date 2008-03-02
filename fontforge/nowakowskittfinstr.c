@@ -246,18 +246,18 @@ static uint8 *instructpoints(uint8 *instrs, int ptcnt, const int *pts, uint8 com
     use_sloop |= (command == ALIGNRP);
     use_sloop = use_sloop && (ptcnt > 3);
 
-    instrs = pushpoints(instrs, ptcnt<=STACK_DEPTH?ptcnt:STACK_DEPTH, pts);
+    instrs = pushpoints(instrs, ptcnt<STACK_DEPTH?ptcnt:STACK_DEPTH-1, pts);
 
     if (use_sloop) {
 	*instrs++ = DEPTH;
 	*instrs++ = SLOOP;
 	*instrs++ = command;
     }
-    else for (i=0; i<(ptcnt<=STACK_DEPTH?ptcnt:STACK_DEPTH); i++)
+    else for (i=0; i<(ptcnt<STACK_DEPTH?ptcnt:STACK_DEPTH-1); i++)
 	*instrs++ = command;
 
-    if (ptcnt>STACK_DEPTH)
-	instrs=instructpoints(instrs, ptcnt-STACK_DEPTH, pts+STACK_DEPTH, command);
+    if (ptcnt>=STACK_DEPTH)
+	instrs=instructpoints(instrs, ptcnt-(STACK_DEPTH-1), pts+(STACK_DEPTH-1), command);
 
 return( instrs );
 }
