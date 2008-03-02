@@ -2494,7 +2494,7 @@ return;
 /* Is this the first stem in a group of overlapping stems? */
 static int first_in_group(StemInfo *firsthint, StemInfo *hint)
 {
-    StemInfo *lasthint, *testhint = firsthint;
+    StemInfo *lasthint = NULL, *testhint = firsthint;
 
     for (; testhint!=NULL && testhint!=hint; testhint = testhint->next)
     {
