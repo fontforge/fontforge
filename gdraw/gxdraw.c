@@ -2849,7 +2849,9 @@ return;
 	    gw = redirect;
 	}
 	if ( gevent.type==et_char ) {
-	    int accelorator = (((XKeyEvent *) event)->state&(ControlMask|Mod1Mask))?1:0;
+	    /* The state may be modified in the gevent where a mac command key*/
+	    /*  entry gets converted to control, etc. */
+	    int accelorator = (gevent.u.chr.state&(ksm_control|ksm_meta))?1:0;
 	    if ( accelorator ) {
 		/* Ok, if I leave the Alt key down, then I shan't get any */
 		/*  characters. But I need the unicode. I can't call the */
