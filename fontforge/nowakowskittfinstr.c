@@ -2142,10 +2142,8 @@ return;
  * or 'end' edge is hinted or not. This functions marks as done all edges at
  * specified coordinate, starting from given hint (hints sometimes share edges).
  */
-static void mark_startenddones(StemInfo *hint, double value, double fudge) {
-    StemInfo *h;
-
-    for (h=hint; h!=NULL; h=h->next) {
+static void mark_startenddones(StemInfo *h, double value, double fudge) {
+    for (; h!=NULL; h=h->next) {
         if (fabs(h->start - value) <= fudge) h->startdone = true;
         if (fabs(h->start+h->width - value) <= fudge) h->enddone = true;
     }
@@ -2556,13 +2554,7 @@ static void geninstrs(InstrCt *ct, StemInfo *hint) {
 	    ct->rp0 = ct->edge.refpt;
 	}
 
-	finish_stem(hint, use_rp1, !hint->hasconflicts, ct);
-
-	if (hint->startdone) {
-	    ct->pt = pushpoint(ct->pt, ct->edge.refpt);
-	    *(ct->pt)++ = SRP0;
-	    ct->rp0 = ct->edge.refpt;
-	}
+	finish_stem(hint, use_rp1, !hint->hasconflicts || hint->startdone, ct);
     }
     else {
 	if (!ct->xdir) { /* will be simply put in place, just rounded */
