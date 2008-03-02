@@ -2610,7 +2610,7 @@ static void FCAskFilename(FontView *fv,int flags) {
 
     if ( filename==NULL )
 return;
-    otherfv = (FontView *) ViewPostscriptFont(filename);
+    otherfv = (FontView *) ViewPostscriptFont(filename,0);
     if ( otherfv==NULL )
 return;
     FontCmpDlg(fv,otherfv,flags);

@@ -47,6 +47,7 @@ static void _dousage(void) {
     printf( "\t-newkorean\t\t (creates a new korean font)\n" );
 #endif
     printf( "\t-recover none|auto|inquire|clean (control error recovery)\n" );
+    printf( "\t-allglyphs\t\t (load all glyphs in the 'glyf'\n\t\t\t table of ttc)\n" );
     printf( "\t-nosplash\t\t (no splash screen)\n" );
     printf( "\t-display display-name\t (sets the X display)\n" );
     printf( "\t-depth val\t\t (sets the display depth if possible)\n" );
@@ -511,6 +512,7 @@ int main( int argc, char **argv ) {
     FontRequest rq;
     static unichar_t times[] = { 't', 'i', 'm', 'e', 's',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t', '\0' };
     int ds, ld;
+    int openflags=0;
 
 #ifdef FONTFORGE_CONFIG_TYPE3
     fprintf( stderr, "Copyright (c) 2000-2008 by George Williams.\n Executable based on sources from %s-ML.\n",
@@ -684,6 +686,7 @@ int main( int argc, char **argv ) {
     else if ( recover )
 	any = DoAutoRecovery(recover-1);
 
+    openflags = 0;
     for ( i=1; i<argc; ++i ) {
 	char buffer[1025];
 	char *pt = argv[i];
@@ -701,7 +704,7 @@ int main( int argc, char **argv ) {
 #  endif
 	} else if ( strcmp(pt,"-last")==0 ) {
 	    if ( next_recent<RECENT_MAX && RecentFiles[next_recent]!=NULL )
-		if ( ViewPostscriptFont(RecentFiles[next_recent++]))
+		if ( ViewPostscriptFont(RecentFiles[next_recent++],openflags))
 		    any = 1;
 	} else if ( strcmp(pt,"-sync")==0 || strcmp(pt,"-memory")==0 ||
 		strcmp(pt,"-nosplash")==0 || strcmp(pt,"-recover=none")==0 ||
@@ -714,6 +717,8 @@ int main( int argc, char **argv ) {
 		    strcmp(pt,"-display")==0 || strcmp(pt,"-recover")==0 ) &&
 		i<argc-1 )
 	    ++i; /* Already done, needed to be before display opened */
+	else if ( strcmp(pt,"-allglyphs")==0 )
+	    openflags |= of_all_glyphs_in_ttc;
 	else {
 	    GFileGetAbsoluteName(argv[i],buffer,sizeof(buffer));
 	    if ( GFileIsDir(buffer)) {
@@ -723,14 +728,14 @@ int main( int argc, char **argv ) {
 		if ( GFileExists(fname)) {
 		    /* It's probably a Unified Font Object directory */
 		    free(fname);
-		    if ( ViewPostscriptFont(buffer) )
+		    if ( ViewPostscriptFont(buffer,openflags) )
 			any = 1;
 		} else {
 		    strcpy(fname,buffer); strcat(fname,"/font.props");
 		    if ( GFileExists(fname)) {
 			/* It's probably a sf dir collection */
 			free(fname);
-			if ( ViewPostscriptFont(buffer) )
+			if ( ViewPostscriptFont(buffer,openflags) )
 			    any = 1;
 		    } else {
 			free(fname);
@@ -741,12 +746,12 @@ int main( int argc, char **argv ) {
 			}
 			fname = GetPostscriptFontName(buffer,false);
 			if ( fname!=NULL )
-			    ViewPostscriptFont(fname);
+			    ViewPostscriptFont(fname,openflags);
 			any = 1;	/* Even if we didn't get a font, don't bring up dlg again */
 			free(fname);
 		    }
 		}
-	    } else if ( ViewPostscriptFont(buffer)!=0 )
+	    } else if ( ViewPostscriptFont(buffer,openflags)!=0 )
 		any = 1;
 	}
     }

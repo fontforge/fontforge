@@ -1720,7 +1720,7 @@ enum ttf_flags { ttf_flag_shortps = 1, ttf_flag_nohints = 2,
 		    ttf_flag_pfed_layers=0x2000,
 		    ttf_flag_symbol=0x4000
 		};
-enum openflags { of_fstypepermitted=1, of_askcmap=2 };
+enum openflags { of_fstypepermitted=1, of_askcmap=2, of_all_glyphs_in_ttc=4 };
 enum ps_flags { ps_flag_nohintsubs = 0x10000, ps_flag_noflex=0x20000,
 		    ps_flag_nohints = 0x40000, ps_flag_restrict256=0x80000,
 		    ps_flag_afm = 0x100000, ps_flag_pfm = 0x200000,

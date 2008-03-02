@@ -1208,8 +1208,8 @@ void FVClearHints(FontViewBase *fv) {
     }
 }
 
-FontViewBase *ViewPostscriptFont(char *filename) {
-    SplineFont *sf = LoadSplineFont(filename,0);
+FontViewBase *ViewPostscriptFont(char *filename,int openflags) {
+    SplineFont *sf = LoadSplineFont(filename,openflags);
     extern NameList *force_names_when_opening;
     if ( sf==NULL )
 return( NULL );
