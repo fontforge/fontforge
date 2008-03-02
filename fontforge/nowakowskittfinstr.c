@@ -2879,7 +2879,7 @@ return( diagpts );
                     idx = chunk->r->sp->nextcpindex;
                     if ( idx > 0 && diagpts[idx-1].count < 2 )
                         diagpts = AssignLineToPoint( diagpts,newhead,idx-1,is_l );
-                    if ( idx < gd->realcnt-1 && diagpts[idx].count < 2 )
+                    if ( diagpts[idx].count < 2 )
                         diagpts = AssignLineToPoint( diagpts,newhead,idx,is_l );
                 }
                 chunk->r->sp->ticked = true;
@@ -3489,7 +3489,6 @@ static uint8 *dogeninstructions(InstrCt *ct) {
     if (ct->sc->dstem != NULL) {
 	DStemFree(ct->diagstems, ct->diagpts, ct->ptcnt);
 	free(ct->diagpts);
-	ct->diagpts = NULL;
     }
 
     ct->sc->ttf_instrs_len = (ct->pt)-(ct->instrs);
