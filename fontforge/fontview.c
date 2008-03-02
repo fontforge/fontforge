@@ -1151,7 +1151,7 @@ return;
 	    if ( fpt!=NULL ) *fpt = '\0';
 	    full = galloc(strlen(temp)+1+strlen(file)+1);
 	    strcpy(full,temp); strcat(full,"/"); strcat(full,file);
-	    ViewPostscriptFont(full);
+	    ViewPostscriptFont(full,0);
 	    file = fpt+2;
 	    free(full);
 	} while ( fpt!=NULL );

@@ -1747,7 +1747,7 @@ static void readttfglyphs(FILE *ttf,struct ttfinfo *info) {
     }
 
     info->chars = gcalloc(info->glyph_cnt,sizeof(SplineChar *));
-    if ( !info->is_ttc ) {
+    if ( !info->is_ttc || (info->openflags&of_all_glyphs_in_ttc)) {
 	/* read all the glyphs */
 	for ( i=0; i<info->glyph_cnt ; ++i ) {
 	    info->chars[i] = readttfglyph(ttf,info,goffsets[i],goffsets[i+1],i);
@@ -5707,6 +5707,7 @@ SplineFont *_SFReadTTF(FILE *ttf, int flags,enum openflags openflags, char *file
     info.onlystrikes = (flags&ttf_onlystrikes)?1:0;
     info.onlyonestrike = (flags&ttf_onlyonestrike)?1:0;
     info.use_typo_metrics = true;
+    info.openflags = openflags;
     info.fd = fd;
     ret = readttf(ttf,&info,filename);
     if ( !ret )

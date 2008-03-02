@@ -117,7 +117,7 @@ return;
 }
 
 static void RecentSelect(GWindow base,struct gmenuitem *mi,GEvent *e) {
-    ViewPostscriptFont((char *) (mi->ti.userdata));
+    ViewPostscriptFont((char *) (mi->ti.userdata),0);
 }
 
 /* Builds up a menu containing the titles of all the unused recent files */
