@@ -685,7 +685,7 @@ return( NULL );
 	printcommand = copy(pcmd);
     else if ( pcmd!=NULL && (iptype==0 || iptype==1) )
 	printlazyprinter = copy(pcmd);
-Py_RETURN(self);
+Py_RETURN_NONE;
 }
 
 /* ************************************************************************** */
