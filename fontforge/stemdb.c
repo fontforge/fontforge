@@ -30,7 +30,7 @@
 #include <math.h>
 #define GLYPH_DATA_DEBUG 0
 #define PI 3.14159265358979323846264338327
- 
+
 /* A diagonal end is like the top or bottom of a slash. Should we add a vertical stem at the end? */
 /* A diagonal corner is like the bottom of circumflex. Should we add a horizontal stem? */
 int hint_diagonal_ends = 0,
@@ -813,7 +813,7 @@ return( ret );
 
 static int IsCorrectSide( struct glyphdata *gd,SplinePoint *sp,int is_next,
     int is_l,BasePoint *dir ) {
-    Spline *sbase, *s, myline;
+    Spline *sbase, myline;
     SplinePoint end1, end2;
     BasePoint perturbed;
     int i, is_x, ret = false, winding = 0, cnt, eo;
@@ -830,9 +830,8 @@ static int IsCorrectSide( struct glyphdata *gd,SplinePoint *sp,int is_next,
 	MonotonicFindAt( gd->ms,is_x,test,space = gd->space );
         for ( i=0; space[i]!=NULL; ++i ) {
             m = space[i];
-            s = m->s;
 	    winding = ((&m->xup)[is_x] ? 1 : -1 );
-            if ( s == sbase )
+            if ( m->s == sbase )
         break;
         }
         if ( space[i]!=NULL )
@@ -845,7 +844,7 @@ static int IsCorrectSide( struct glyphdata *gd,SplinePoint *sp,int is_next,
         i = ( is_x ) ? cnt-1 : 0; 
         while ( i >= 0 && i <= cnt-1 ) {
             eo = ( eo != 1 ) ? 1 : 0;
-	    if ( s == gd->stspace[i].s )
+	    if ( gd->stspace[i].s == sbase )
         break;
             if ( is_x ) i--;
             else i++;
@@ -3276,13 +3275,41 @@ return( true );
 return( false );
 }
 
+/* Convert diagonal stems generated for stubs and intersections to horizontal
+/* or vertical, if they have just one chunk. This should be done before calculating
+/* active zones, as they are calculated against each stem's unit vector */
+static void GDNormalizeStubs( struct glyphdata *gd ) {
+    int i;
+    struct stemdata *stem;
+    
+    for ( i=0; i<gd->stemcnt; ++i ) {
+	stem = &gd->stems[i];
+        if ( stem->positioned )
+    continue;
+        
+        if ( stem->chunk_cnt == 1 && stem->chunks[0].stub > 0 && stem->chunks[0].stub < 3 && 
+            !IsVectorHV( &stem->unit,0,true ) && IsVectorHV( &stem->unit,slope_error,false )) {
+
+            stem->unit.x = rint( stem->unit.x );
+            stem->unit.y = rint( stem->unit.y );
+            stem->l_to_r.y = stem->unit.x;
+            stem->l_to_r.x = stem->unit.y;
+            /* recalculate the stem width so that it matches the new vector */
+            /* we don't care about left/right offsets: as the stem has just
+            /* one chunk, they should be zero anyway */
+            stem->width = ( stem->right.x - stem->left.x ) * stem->unit.y -
+                          ( stem->right.y - stem->left.y ) * stem->unit.x;
+        }
+    }
+}
+
 static void GDFindUnlikelyStems( struct glyphdata *gd ) {
     double width, minl, ratio;
     int i, j;
     struct pointdata *lpd, *rpd;
     Spline *ls, *rs;
     SplinePoint *lsp, *rsp;
-    BasePoint *lunit, *runit;
+    BasePoint *lunit, *runit, *slunit, *srunit;
     struct stemdata *stem, *stem1, *lstem, *rstem, *tstem;
     struct stem_chunk *chunk;
 
@@ -3338,10 +3365,17 @@ static void GDFindUnlikelyStems( struct glyphdata *gd ) {
         if ( stem->positioned )
     continue;
         
-        if ( stem->chunk_cnt == 1 && 
-            stem->chunks[0].stub > 0 && stem->chunks[0].stub < 3 && 
-            !IsVectorHV( &stem->unit,0,true )) {
+        if ( stem->chunk_cnt == 1 && stem->chunks[0].stub > 0 && stem->chunks[0].stub < 3 ) {
             chunk = &stem->chunks[0];
+            slunit = chunk->lnext ? &chunk->l->nextunit : &chunk->l->prevunit;
+            srunit = chunk->rnext ? &chunk->r->nextunit : &chunk->r->prevunit;
+            
+            /* This test is valid only for features which are not exactly horizontal/
+            /* vertical. But we can't check this using the stem unit, as it may have
+            /* already beeen reset to HV. So we use the units of this stem's base points
+            /* instead. */
+            if ( IsVectorHV( slunit,0,true ) || IsVectorHV( srunit,0,true ))
+    continue;
             
             lsp = chunk->l->sp; lstem = tstem = NULL;
             do {
@@ -3357,7 +3391,7 @@ static void GDFindUnlikelyStems( struct glyphdata *gd ) {
                 tstem = ( chunk->lnext ) ? lpd->prevstem : lpd->nextstem;
                 lunit = ( chunk->lnext ) ? &lpd->prevunit : &lpd->nextunit;
             } while ( lsp != chunk->l->sp && lsp != chunk->r->sp &&
-                UnitsParallel( lunit,&stem->unit,false ));
+                UnitsParallel( lunit,slunit,false ));
 
             rsp = chunk->r->sp; rstem = tstem = NULL;
             do {
@@ -3373,22 +3407,13 @@ static void GDFindUnlikelyStems( struct glyphdata *gd ) {
                 tstem = ( chunk->rnext ) ? rpd->prevstem : rpd->nextstem;
                 runit = ( chunk->rnext ) ? &rpd->prevunit : &rpd->nextunit;
             } while ( rsp != chunk->r->sp && rsp != chunk->l->sp &&
-                UnitsParallel( runit,&stem->unit,false ));
+                UnitsParallel( runit,srunit,false ));
             
             if ( lstem != NULL && rstem !=NULL && lstem == rstem &&
-                !lstem->toobig && IsVectorHV( &lstem->unit,0,true )) {
+                !lstem->toobig && IsVectorHV( &lstem->unit,0,true ))
                 stem->toobig = true;
-            } else if ( IsVectorHV( &stem->unit,slope_error,false )) {
-                stem->unit.x = rint( stem->unit.x );
-                stem->unit.y = rint( stem->unit.y );
-                stem->l_to_r.y = stem->unit.x;
-                stem->l_to_r.x = stem->unit.y;
-                /* recalculate the stem width so that it matches the new vector */
-                /* we don't care about left/right offsets: as the stem has just
-                /* one chunk, they should be zero anyway */
-                stem->width = ( stem->right.x - stem->left.x ) * stem->unit.y -
-                              ( stem->right.y - stem->left.y ) * stem->unit.x;
-            }
+        }
+
         /* One more check for intersections between a curved segment and a
         /* straight feature. Imagine a curve intersected by two bars, like in a Euro 
         /* glyph. Very probably we will get two chunks, one controlling the uppest
@@ -3397,7 +3422,7 @@ static void GDFindUnlikelyStems( struct glyphdata *gd ) {
         /* even get an exactly vertical vector). Yet we don't need this stem because
         /* there is already a stem controlling the middle of the curve (between two
         /* bars).*/
-        } else if ( stem->chunk_cnt == 2 && 
+        else if ( stem->chunk_cnt == 2 && 
             (( stem->chunks[0].stub > 0 && stem->chunks[1].stub > 1 ) ||
              ( stem->chunks[0].stub > 1 && stem->chunks[1].stub > 0 ))) {
             for ( j=0; j<gd->stemcnt; ++j) {
@@ -3485,6 +3510,8 @@ static void FindRefPointsNew( struct glyphdata *gd,struct stemdata *stem ) {
     uint8 *lextr, *rextr;
 
     is_x = (int) rint( stem->unit.y );
+    lpos = ((real *) &stem->left.x)[!is_x];
+    rpos = ((real *) &stem->right.x)[!is_x];
 
     lmost1 = rmost1 = lmost2 = rmost2 = NULL;
     llen = prevllen = rlen = prevrlen = 0;
@@ -3588,8 +3615,7 @@ static void FindRefPointsNew( struct glyphdata *gd,struct stemdata *stem ) {
 
 static void NormalizeStem( struct glyphdata *gd,struct stemdata *stem ) {
     int i;
-    int lpos, rpos, is_x;
-    int lval, rval, val, lset, rset, best;
+    int is_x, lval, rval, val, lset, rset, best;
     double loff, roff;
     BasePoint lold, rold;
     SplinePoint *lbest, *rbest;
@@ -3604,8 +3630,6 @@ static void NormalizeStem( struct glyphdata *gd,struct stemdata *stem ) {
         /* to figure out "left" and "right" positions most typical
         /* for this stem. We perform this by assigning a value to
         /* left and right side of this chunk. */
-        lpos = ((real *) &stem->left.x)[!is_x];
-        rpos = ((real *) &stem->right.x)[!is_x];
 
         /* First pass to determine some point properties necessary
         /* for subsequent operations */
@@ -3926,7 +3950,7 @@ static int AddGhostSegment( struct pointdata *pd,int cnt,double base,struct segm
 
 static void FigureGhostActive( struct glyphdata *gd,struct stemdata *stem ) {
     int acnt, i;
-    real len;
+    real len = 0;
     struct segment *activespace = gd->activespace;
     struct pointdata *valid;
     
@@ -4449,6 +4473,7 @@ return( gd );
         stem = &gd->stems[i];
         NormalizeStem( gd,stem );
     }
+    GDNormalizeStubs( gd );
 
     /* Figure out active zones at the first order (as they are needed to
     /* determine which stems are undesired and they don't depend from

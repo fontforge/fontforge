@@ -2862,107 +2862,6 @@ return;						/* In an MM font we may still need to resolve things like different
 	SCFigureSimpleCounterMasks(sc);
 }
 
-static void GDReassignPoint(struct glyphdata *gd,struct stemdata *stem,struct pointdata **_pd) {
-    struct pointdata *pd = *_pd;
-    BasePoint *dir;
-    int i,j;
-    struct stemdata *potential;
-    int chunk, is_r;
-
-    if ( pd==NULL )
-return;
-    if ( pd->nextstem==stem )
-	dir = &pd->nextunit;
-    else if ( pd->prevstem==stem )
-	dir = &pd->prevunit;
-    else {
-	*_pd = NULL;
-return;
-    }
-
-    potential = NULL; chunk = is_r = -1;
-    for ( i=0; i<gd->stemcnt; ++i ) {
-	struct stemdata *stem = &gd->stems[i];
-	if ( !stem->toobig && UnitsParallel(dir,&stem->unit,false)) {
-	    for ( j=0; j<stem->chunk_cnt; ++j ) {
-		if ( stem->chunks[j].lpotential && stem->chunks[j].l==pd) {
-		    if ( potential==stem )
-			/* Do Nothing */;
-		    else if ( potential!=NULL )
-return;
-		    else {
-			potential = stem; chunk = j; is_r = false;
-		    }
-		} else if ( stem->chunks[j].rpotential && stem->chunks[j].r==pd ) {
-		    if ( potential==stem )
-			/* Do Nothing */;
-		    else if ( potential!=NULL )
-return;
-		    else {
-			potential = stem; chunk = j; is_r = true;
-		    }
-		}
-	    }
-	}
-    }
-
-    if ( potential!=NULL ) {
-	if ( is_r && potential->chunks[chunk].r!=NULL && stem->chunks[j].rpotential ) {
-	    potential->chunks[chunk].rpotential = false;
-	    *_pd = NULL;
-	} else if ( !is_r && potential->chunks[chunk].l==NULL && stem->chunks[j].lpotential ) {
-	    potential->chunks[chunk].lpotential = false;
-	    *_pd = NULL;
-	}
-    }
-}
-
-static void GDPreprocess(struct glyphdata *gd) {
-    int i,j;
-
-    /* Remove points from unusable stem and see if we can use 'em elsewhere */
-    for ( i=0; i<gd->stemcnt; ++i ) {
-	struct stemdata *stem = &gd->stems[i];
-	if ( stem->toobig ) {
-	    for ( j=0; j<stem->chunk_cnt; ++j ) {
-		GDReassignPoint(gd,stem,&stem->chunks[j].l);
-		GDReassignPoint(gd,stem,&stem->chunks[j].r);
-	    }
-	}
-    }
-
-    for ( i=0; i<gd->pcnt; ++i ) {
-	struct pointdata *pd = &gd->points[i];
-	if ( pd->colinear ) {
-	    if ( pd->nextstem==NULL )
-		pd->nextstem = pd->prevstem;
-	    else if ( pd->prevstem==NULL )
-		pd->prevstem = pd->nextstem;
-	}
-	if ( pd->colinear && pd->nextstem!=NULL && pd->nextstem!=pd->prevstem ) {
-	    double width1, width2;
-	    if ( pd->nextunit.x==0 ) {
-		if ( (width1 = pd->nextstem->left.x-pd->nextstem->right.x )<0 )
-		    width1 = -width1;
-		if ( (width2 = pd->prevstem->left.x-pd->prevstem->right.x )<0 )
-		    width2 = -width2;
-	    } else {
-		if ( (width1 = pd->nextstem->left.y-pd->nextstem->right.y )<0 )
-		    width1 = -width1;
-		if ( (width2 = pd->prevstem->left.y-pd->prevstem->right.y )<0 )
-		    width2 = -width2;
-	    }
-	    if ( width1>width2 && pd->nextstem->chunk_cnt<=1 ) {
-		if ( pd->nextstem->chunk_cnt==1 )
-		    pd->nextstem->chunks[0].l = pd->nextstem->chunks[0].r = NULL;
-	    } else if ( width1<width2 && pd->prevstem->chunk_cnt<=1 ) {
-		if ( pd->prevstem->chunk_cnt==1 )
-		    pd->prevstem->chunks[0].l = pd->prevstem->chunks[0].r = NULL;
-	    }
-	}
-    }
-}
-
 static int inhints(StemInfo *stems,real base, real width) {
 
     while ( stems!=NULL ) {
@@ -3137,7 +3036,6 @@ void _SplineCharAutoHint( SplineChar *sc, int layer, BlueData *bd, struct glyphd
     if ( (gd=gd2)==NULL )
 	gd = GlyphDataBuild( sc,layer,bd,false );
     if ( gd!=NULL ) {
-	GDPreprocess(gd);
 	sc->vstem = GDFindStems(gd,1);
 	sc->hstem = GDFindStems(gd,0);
 	sc->hstem = GDFindGhostHints( gd,sc->hstem );
