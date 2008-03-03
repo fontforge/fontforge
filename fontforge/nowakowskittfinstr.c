@@ -2862,9 +2862,9 @@ return( diagpts );
                         diagpts = AssignLineToPoint( diagpts,newhead,idx,is_l );
                 } else {
                     idx = chunk->l->sp->nextcpindex;
-                    if ( idx > 0 && diagpts[idx-1].count < 2 )
+                    if ( diagpts[idx-1].count < 2 )
                         diagpts = AssignLineToPoint( diagpts,newhead,idx-1,is_l );
-                    if ( idx < gd->realcnt-1 && diagpts[idx+1].count < 2 )
+                    if ( diagpts[idx].count < 2 )
                         diagpts = AssignLineToPoint( diagpts,newhead,idx,is_l );
                 }
                 chunk->l->sp->ticked = true;
@@ -2877,7 +2877,7 @@ return( diagpts );
                         diagpts = AssignLineToPoint( diagpts,newhead,idx,is_l );
                 } else {
                     idx = chunk->r->sp->nextcpindex;
-                    if ( idx > 0 && diagpts[idx-1].count < 2 )
+                    if ( diagpts[idx-1].count < 2 )
                         diagpts = AssignLineToPoint( diagpts,newhead,idx-1,is_l );
                     if ( diagpts[idx].count < 2 )
                         diagpts = AssignLineToPoint( diagpts,newhead,idx,is_l );
@@ -3466,7 +3466,7 @@ static uint8 *dogeninstructions(InstrCt *ct) {
     /* Then instruct diagonal stems (=> movement in x) */
     /* This is done after vertical stems because it involves */
     /* moving some points out-of their vertical stems. */
-    if (ct->sc->dstem != NULL) DStemInfoGeninst(ct);
+    if (ct->diagpts != NULL) DStemInfoGeninst(ct);
 
 #if TESTIPSTRONG
     /* Adjust important points between hint edges. */
@@ -3486,7 +3486,7 @@ static uint8 *dogeninstructions(InstrCt *ct) {
 	"When processing TTF instructions (hinting) of %s", ct->sc->name
     );
 
-    if (ct->sc->dstem != NULL) {
+    if (ct->diagpts != NULL) {
 	DStemFree(ct->diagstems, ct->diagpts, ct->ptcnt);
 	free(ct->diagpts);
     }
