@@ -68,7 +68,7 @@ BUILDING
     libraries you should substitute "configure.static" for configure.
 
 If you want access to FontForge's type3 editing capabilities then
-	$ ./configure --with-multilayer
+	$ ./configure --enable-type3
 
 More complex installations
     "make install" will also install a few other things which are not part of
