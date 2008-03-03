@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 3-Feb-2008 -->
+  <!-- AP: Last modified: 2-Mar-2008 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -46,6 +46,303 @@
     </TABLE>
   </BLOCKQUOTE>
   <UL>
+    <LI>
+      2-Mar-2008
+      <UL>
+	<LI>
+	  <B><BIG>Layers</BIG></B>
+	  <P>
+	  The big change is this release is that every font database can now contain
+	  multiple layers. Before this all layers in a font used the same type of splines
+	  and there were only 2 or 3 of them.
+	  <UL>
+	    <LI>
+	      Guideline semi-layer -- where all the glyphs of the font shared the same
+	      set of outlines, to which points would snap if desired.
+	    <LI>
+	      A background layer -- which could contain outlines and also images which
+	      could be autotraced into the foreground layer.
+	    <LI>
+	      A foreground layer -- which was what the font really looked like, and what
+	      went into generated fonts
+	  </UL>
+	  <P>
+	  Now there may be any number of layers, and each layer can contain different
+	  types of splines -- so one database can contain both quadratic and cubic
+	  data and can be store data for both PostScript and TrueType fonts.
+	  <P>
+	  In a normal font all glyphs have the same number of layers (this is not true
+	  in a type3 font, which each glyph may have it's own set of layers). You may
+	  set the number, names and types of layers width the <CODE>Element-&gt;Font
+	  Info-&gt;Layers</CODE> pane.
+	  <P>
+	  In the font view you can select which layer is active (and displayed) with
+	  the <CODE>View-&gt;Layers</CODE> menu item. You can copy selected glyphs
+	  of one layer to another (automagically adjusting the spline type if needed)
+	  with <CODE>Edit-&gt;Copy Layer To Layer</CODE>. You can compare to layers
+	  for differences with <CODE>Element-&gt;Compare Layers...</CODE>.
+	  <P>
+	  In the character view the Layers palette has changed. The things which controlled
+	  the visibility of hints have moved to the <CODE>View-&gt;Show</CODE> menu
+	  (as have some other entries that used to be in the top level
+	  <CODE>View</CODE> menu). The layers palette solely displays the glyph's layers
+	  and controls which layer is active.
+	  <P>
+	  The <CODE>File-&gt;Generate Fonts...</CODE> dialog allows you to specify
+	  which layer is to go into the font. Note that many things remain common:
+	  the hints and truetype instructions apply to all layers. GPOS, GSUB, kern,
+	  and morx information is common all layers. The outlines may differ in detail,
+	  but outlines from which a font will be generated should have the same shape.
+	  <P>
+	  Add new python stuff to handle layers:
+	  <DL>
+	    <DT>
+	      fontforge.activeLayer()
+	    <DD>
+	      Returns the currently active layer
+	    <DT>
+	      font.layer_cnt
+	    <DD>
+	      Returns the number of layers in the font
+	    <DT>
+	      font.layers
+	    <DD>
+	      A dictionary like object which can be indexed either by an integer between
+	      0 (inclusive) and layer_cnt (exclusive) or by the name of a layer. After
+	      indexing it returns a LayerInfo object. LayerInfo objects have no independant
+	      existance, and contain a layer's name and a boolean indicating whether the
+	      layer is_quadratic.
+	      <BLOCKQUOTE>
+		<PRE>font.layers[1].name = "Foreground"
+font.layers[0].is_quadratic = TRUE
+</PRE>
+	      </BLOCKQUOTE>
+	      <DL>
+		<DT>
+		  You may delete a layer
+		<DD>
+		  <CODE>del font.layers["Extra layer"]</CODE>
+		<DT>
+		  You may add a new layer
+		<DD>
+		  <CODE>font.layers.add("name",is_quadratic)</CODE>
+	      </DL>
+	      <P>
+	      (this object has an iterator which returns the names of all layers)
+	    <DT>
+	      glyph.layer_cnt
+	    <DD>
+	      Returns the number of layers in the glyph (this is the same as the number
+	      in the font, except for type3 fonts).
+	    <DT>
+	      glyph.layers
+	    <DD>
+	      Returns a dictionary like object which may be indexed by layer name or an
+	      integer [0,layer_cnt) as above. The result is a standard layer object. (this
+	      object has an iterator which returns the names of all layers)
+	    <DT>
+	      glyph.reflayers
+	    <DD>
+	      Returns a dictionary like object which may be indexed by layer name or an
+	      integer [0,layer_cnt) as above. The result is a standard list of references.
+	      (this object has an iterator which returns the names of all layers)
+	    <DT>
+	      layer.export
+	    <DD>
+	      It is now possible to export the contours of a layer (before only glyphs
+	      could be exported)
+	    <DT>
+	      glyph.export
+	    <DD>
+	      Slight change to the semantics. When outputting an outline file, there is
+	      now an optional second argument which specifies the layer to output. (again
+	      integer or layer name).
+	    <DT>
+	      font.generate
+	    <DD>
+	      Has a new keyword argument "layer" to specify which layer should be output.
+	  </DL>
+	<LI>
+	  M.P. Suzuki requests a way to load the entire 'glyf' table of a ttc. Actually
+	  he would like to load all 'glyf' tables of a ttc, but that would cause all
+	  kinds of problems (multiple fpgm, prep, maxp, cvt tables, trying to fix up
+	  GIDs in GPOS/GSUB/kern/* tables, dealing with fonts with so many glyphs they
+	  could not be generated, ...)
+	  <P>
+	  So the command line now takes an --allglyphs argument, and the scripting
+	  open commands now take a value of 4 for the openflags argument to mean this.
+	<LI>
+	  Add a command Points-&gt;Make Arc, which is similar to Points-&gt;Make Line
+	  except that it connects the two points with an elliptical arc rather than
+	  a straight line. The ellipse is choosen to run through the two points (obviously)
+	  and to be tangent to the slope of those points. This isn't enough information
+	  to determine an ellipse uniquely (three points and two tangents being required)
+	  so in general there will be an infinite number of solutions (and it is possible
+	  to provide contradictory input so that no ellipse can be found). FontForge
+	  may not choose the ellipse you had your heart set on. FF will first attempt
+	  to find an ellipse so that one of the points lies on an axis of the ellipse
+	  (this will find a circle if there is a circle which satisfies the constraints
+	  above). If that fails it will look more generally for ellipses.
+	  <P>
+	  (If you hold down the <Alt> key when you select the menu item, FF will leave
+	  the ellipse it calculated in the background layer. That was a debugging technique
+	  but I thought it was kind of interesting and left it in.)
+	<LI>
+	  Further improvements in calculating active zones for curved segments for
+	  autohinging: if the spline is closer to the opposed stem edge at the given
+	  point, don't extend the active zone any longer.
+	  <P>
+	  If a line's unit vector is close enough to the font's italic slant, then
+	  prefer the unit vector based on the italic slant instead.
+	  <P>
+	  Added an experimental mode which allows to build glyph data based on a
+	  preexisting hint layout and extend it with additional stems.
+	<LI>
+	  The rotate tool in char view didn't show the angle of rotation.
+	<LI>
+	  Fixed various uninitialized values
+	<LI>
+	  Make sure the first character in marlett is 0xf020.
+	<LI>
+	  Reinstate the behavior of the symbol encoding that the wine developers depend
+	  on.
+	<LI>
+	  Add a scripting flag so that script writers can control whether a font has
+	  a symbol encoding without having to use a funky extension. (Wine people don't
+	  like having to say ".sym.ttf").
+	<LI>
+	  When building a ligature, ff would mark the first letter with use_my_metrics.
+	  That should only happen when building accented glyphs.
+	<LI>
+	  Put in a way for the user to leap easily from Font Info-&gt;Unicode Ranges
+	  to Font Info-&gt;OS/2-&gt;Charsets-&gt;Unicode Ranges.
+	<LI>
+	  python scripting font.sfnt_names would sometimes crash.
+	<LI>
+	  When a matrixedit is initialized its last visible column (especially if followed
+	  by hidden columns) may not be at the edge of the matrixedit. This lead to
+	  drawing spurious lines which annoyed Alexej.
+	<LI>
+	  When running simplify on a quadratic contour and the contour doubles back
+	  on itself, FF would do an optimization which only worked for cubics.
+	<LI>
+	  Werner tells me that if bit 1 of the 'head'.flags field is clear then I should
+	  adjust so that the left side bearing is what is specified in the 'hmtx' table.
+	<LI>
+	  Pdf filter decode didn't work if given an array of filters (not even in the
+	  array contain only a single filter).
+	<LI>
+	  FontForge doesn't support pdf encryption which seems to require a license
+	  from RSA. Before we'd just announce failure for no reason, now announce that
+	  the file is encrypted and we can't read it.
+	<LI>
+	  Improper test for point matching in references (in tt).
+	<LI>
+	  In an un instructed font, the [Default] button in FontInfo-&gt;Grid Fitting
+	  produces the wrong result (and has since I added support for the new gasp
+	  features of ClearType.
+	<LI>
+	  Doing hint modifications caused errant pointers to be used. Often crashing.
+	<LI>
+	  Math strings weren't getting initialized in math kern.
+	<LI>
+	  One of the math constants had the wrong friendly name.
+	<LI>
+	  Michal points out that tooltips in the math window don't get translated.
+	<LI>
+	  TopLeft/TopRight etc. in math kerning weren't translated.
+	<LI>
+	  The transform menu item seems to have lost its shortcut. Put it back.
+	<LI>
+	  When selecting a control point in the outline view, we would always select
+	  the next point if both next and prev were in the same place (ie, on the base
+	  point itself). But when the point is at the end of an open contour, the one
+	  which should be selected is the one which controls a spline (which need not
+	  be the next one).
+	<LI>
+	  Oh dear. My original method for storing background layers didn't allow for
+	  references (because I didn't put them in the background). But I need them
+	  now.
+	<LI>
+	  Label some of the horizontal metrics lines
+	<LI>
+	  Trying to move the top accent line resulted in a crash.
+	<LI>
+	  Drat. FF really wants to set the latin1 codepage bit, even if the user explicitly
+	  provides the codepage settings. The wine people don't like that.
+	<LI>
+	  If we have two fonts open, a type3 (multilayered) one and a normal outline,
+	  and we have outline glyph windows open from each font, and we move the focus
+	  between the glyph windows, then the layers palette will get left behind when
+	  focus moves to the other font. (and other more complex senarios when switching
+	  between multilayered and outline).
+	<LI>
+	  When loading a feature file, ff would complain if a mark appeared in two
+	  anchor classes -- even if those classes were in separate lookups. This meant
+	  it got unhappy about a mark which was in both a mark 2 mark lookup and in
+	  a mark to base lookup.
+	<LI>
+	  I had intended not to give warning messages about names like "nine.oldstyle"
+	  (defined in Adobe's obsolete PUA mapping) when loading a tt font, if such
+	  a glyph had a different unicode mapping (or none) than the one Adobe used
+	  ages ago. But I screwed up and was generating messages anyway.
+	<LI>
+	  When converting cubics to quadratics, if we had a curved spline where one
+	  of the endpoints of the spline had no control point, then we'd get a slope
+	  at that point of 0/0. This meant that we tried to put a quadratic control
+	  point on top of that endpoint which looked confusing and seemed unnecessary.
+	<LI>
+	  Typo in glyph compare. Caused another crash when comparing lookups.
+	<LI>
+	  Didn't handle NULL tokens properly when reading in a feature file.
+	<LI>
+	  Make it easier to select control points when the alt key is down.
+	<LI>
+	  Add a mechanism for getting default values for private dict entries in python
+	  scripts.
+	  <P>
+	  (Also provide default values now when [Add]ing private entries in Font Info.
+	<LI>
+	  Making class0 editable broke the ability to create a context chaining class
+	  lookup.
+	<LI>
+	  The encapsulation for creating libfontforge broke importing a lookup from
+	  one font to another.
+	<LI>
+	  Feature file generation omitted a semicolon after (some) contextual lookup
+	  rules.
+	<LI>
+	  Nasty bug with references in ApplySubstitutions scripting command.
+	<LI>
+	  Mark classes didn't work.
+	<LI>
+	  Michal N. points out that "Really Use Typo Metrics" should be moved above
+	  the typo metrics (or below) but should not be in the middle of them.
+	  <P>
+	  He also tells me that the internationalized weight classes don't get parsed
+	  properly.
+	<LI>
+	  Someone handed me a font with a SJIS encoding cmap. The cmap mapped a glyph
+	  to SJIS 128, which isn't a valid SJIS code point. FF got an insane result
+	  when trying to convert to unicode and crashed. Add a check against bad code
+	  points.
+	<LI>
+	  Add two proposed features from the pre-draft of OT 1.6
+	  <UL>
+	    <LI>
+	      Drop Caps
+	    <LI>
+	      Character Variants 00-99
+	  </UL>
+	<LI>
+	  Werner wants to be able to select text in the warnings window to paste elsewhere.
+	  And he points out some scrolling flaws as well.
+	<LI>
+	  Could not attach lookups to mac feature settings.
+	<LI>
+	  Clean up some display problems in the type3 layers palette and layer info
+	  dlg.
+      </UL>
     <LI>
       3-Feb-2008
       <UL>
