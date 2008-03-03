@@ -1029,10 +1029,12 @@ Optional Features:
   --enable-fast-install[=PKGS]
                           optimize for fast installation [default=yes]
   --disable-libtool-lock  avoid locking (might break parallel builds)
+  --enable-debug-raw-points   Add a raw mode to the points window of the debugger
   --enable-libff          disable/enable building shared fontforge library
   --enable-pyextension    disable/enable installing libfontforge as a python
                           extension plugin
-  --enable-multilayer   Control whether we build with support for type3/svg fonts containing multilayered drawing with strokes, fills, images, etc.
+  --enable-type3   Control whether we build with support for type3/svg fonts containing multilayered drawing with strokes, fills, images, etc.
+  --enable-multilayer   Control whether we build with support for type3/svg fonts containing multilayered drawing with strokes, fills, images, etc. (deprecated. Use --enable-type3 instead)
   --enable-devicetables   Control whether we build with support for device
                           tables which allow fine control of kerning (etc.) at
                           small point sizes
@@ -1040,6 +1042,12 @@ Optional Features:
                           (normally it uses floats)
   --enable-longdouble     Control whether fontforge uses long doubles
                           internally (normally it uses floats)
+  --enable-pasteafter     Control whether fontforge has a paste after command
+                          (Useful for making words?)
+  --enable-gb12345        Control whether fontforge understands the gb12345
+                          encoding
+  --enable-tilepath       Control whether fontforge has a tile path command (a
+                          variant of expand stroke)
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -1051,7 +1059,6 @@ Optional Packages:
   --with-tags[=TAGS]
                           include additional configurations [automatic]
   --with-capslock-for-alt   Control whether to use capslock rather than alt/meta to alter behavior of tools in outline/bitmap windows
-  --with-debug-raw-points   Add a raw mode to the points window of the debugger
   --without-iconv   Don't use the system's iconv(3) routines, use fontforge's instead
   --without-python   Don't include a python interpreter
   --with-python-headers   Specify the directory containing the python headers
@@ -3491,7 +3498,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 3494 "configure"' > conftest.$ac_ext
+  echo '#line 3501 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -4981,7 +4988,7 @@ fi
 
 
 # Provide some information about the compiler.
-echo "$as_me:4984:" \
+echo "$as_me:4991:" \
      "checking for Fortran 77 compiler version" >&5
 ac_compiler=`set X $ac_compile; echo $2`
 { (eval echo "$as_me:$LINENO: \"$ac_compiler --version </dev/null >&5\"") >&5
@@ -6048,11 +6055,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:6051: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:6058: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:6055: \$? = $ac_status" >&5
+   echo "$as_me:6062: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -6320,11 +6327,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:6323: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:6330: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:6327: \$? = $ac_status" >&5
+   echo "$as_me:6334: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -6424,11 +6431,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:6427: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:6434: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:6431: \$? = $ac_status" >&5
+   echo "$as_me:6438: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -8769,7 +8776,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 8772 "configure"
+#line 8779 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -8869,7 +8876,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 8872 "configure"
+#line 8879 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11215,11 +11222,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:11218: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:11225: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:11222: \$? = $ac_status" >&5
+   echo "$as_me:11229: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -11319,11 +11326,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:11322: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:11329: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:11326: \$? = $ac_status" >&5
+   echo "$as_me:11333: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -12893,11 +12900,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:12896: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:12903: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:12900: \$? = $ac_status" >&5
+   echo "$as_me:12907: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -12997,11 +13004,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:13000: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:13007: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:13004: \$? = $ac_status" >&5
+   echo "$as_me:13011: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -15204,11 +15211,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:15207: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:15214: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:15211: \$? = $ac_status" >&5
+   echo "$as_me:15218: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -15476,11 +15483,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:15479: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:15486: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:15483: \$? = $ac_status" >&5
+   echo "$as_me:15490: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -15580,11 +15587,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:15583: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:15590: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:15587: \$? = $ac_status" >&5
+   echo "$as_me:15594: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -18269,12 +18276,11 @@ _ACEOF
 
 fi
 
+# Check whether --enable-debug-raw-points or --disable-debug-raw-points was given.
+if test "${enable_debug_raw_points+set}" = set; then
+  enableval="$enable_debug_raw_points"
 
-# Check whether --with-debug-raw-points or --without-debug-raw-points was given.
-if test "${with_debug_raw_points+set}" = set; then
-  withval="$with_debug_raw_points"
-
-   if test "$withval" \!= "no" ; then
+   if test "$enableval" \!= "no" ; then
      cat >>confdefs.h <<\_ACEOF
 #define FONTFORGE_CONFIG_SHOW_RAW_POINTS 1
 _ACEOF
@@ -24937,11 +24943,25 @@ fi
 esac
 fi
 
+# Check whether --enable-type3 or --disable-type3 was given.
+if test "${enable_type3+set}" = set; then
+  enableval="$enable_type3"
+
+    if test "$enableval" != "no" >/dev/null 2>&1 ; then
+	cat >>confdefs.h <<\_ACEOF
+#define FONTFORGE_CONFIG_TYPE3 1
+_ACEOF
+
+    fi
+
+else
+  :
+fi;
 # Check whether --enable-multilayer or --disable-multilayer was given.
 if test "${enable_multilayer+set}" = set; then
   enableval="$enable_multilayer"
 
-    if test "$withval" != "no" >/dev/null 2>&1 ; then
+    if test "$enableval" != "no" >/dev/null 2>&1 ; then
 	cat >>confdefs.h <<\_ACEOF
 #define FONTFORGE_CONFIG_TYPE3 1
 _ACEOF
@@ -24956,7 +24976,7 @@ fi;
 if test "${enable_devicetables+set}" = set; then
   enableval="$enable_devicetables"
 
-    if test "$withval" != "no" >/dev/null 2>&1 ; then
+    if test "$enableval" != "no" >/dev/null 2>&1 ; then
 	cat >>confdefs.h <<\_ACEOF
 #define FONTFORGE_CONFIG_DEVICETABLES 1
 _ACEOF
@@ -24974,7 +24994,7 @@ fi;
 if test "${enable_double+set}" = set; then
   enableval="$enable_double"
 
-    if test "$withval" != "no" >/dev/null 2>&1 ; then
+    if test "$enableval" != "no" >/dev/null 2>&1 ; then
 	cat >>confdefs.h <<\_ACEOF
 #define FONTFORGE_CONFIG_USE_DOUBLE 1
 _ACEOF
@@ -24988,9 +25008,51 @@ fi;
 if test "${enable_longdouble+set}" = set; then
   enableval="$enable_longdouble"
 
-    if test "$withval" != "no" >/dev/null 2>&1 ; then
+    if test "$enableval" != "no" >/dev/null 2>&1 ; then
 	cat >>confdefs.h <<\_ACEOF
 #define FONTFORGE_CONFIG_USE_LONGDOUBLE 1
+_ACEOF
+
+    fi
+
+else
+  :
+fi;
+# Check whether --enable-pasteafter or --disable-pasteafter was given.
+if test "${enable_pasteafter+set}" = set; then
+  enableval="$enable_pasteafter"
+
+    if test "$enableval" != "no" >/dev/null 2>&1 ; then
+	cat >>confdefs.h <<\_ACEOF
+#define FONTFORGE_CONFIG_PASTEAFTER 1
+_ACEOF
+
+    fi
+
+else
+  :
+fi;
+# Check whether --enable-gb12345 or --disable-gb12345 was given.
+if test "${enable_gb12345+set}" = set; then
+  enableval="$enable_gb12345"
+
+    if test "$enableval" != "no" >/dev/null 2>&1 ; then
+	cat >>confdefs.h <<\_ACEOF
+#define FONTFORGE_CONFIG_GB12345 1
+_ACEOF
+
+    fi
+
+else
+  :
+fi;
+# Check whether --enable-tilepath or --disable-tilepath was given.
+if test "${enable_tilepath+set}" = set; then
+  enableval="$enable_tilepath"
+
+    if test "$enableval" != "no" >/dev/null 2>&1 ; then
+	cat >>confdefs.h <<\_ACEOF
+#define FONTFORGE_CONFIG_TILEPATH 1
 _ACEOF
 
     fi

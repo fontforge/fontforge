@@ -848,27 +848,38 @@ if test -n "$ac_init_help"; then
 Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
-  --enable-multilayer     Control whether we build with support for type3/svg
+  --enable-debug-raw-points   Add a raw mode to the points window of the debugger
+  --enable-type3          Control whether we build with support for type3/svg
                           fonts containing multilayered drawing with strokes,
                           fills, images, etc.
+  --enable-multilayer     Control whether we build with support for type3/svg
+                          fonts containing multilayered drawing with strokes,
+                          fills, images, etc. (Deprecated. Use --enable-type3
+                          instead)
   --enable-devicetables   Control whether we build with support for device
                           tables which allow fine control of kerning (etc.) at
                           small point sizes
+  --enable-double         Control whether fontforge uses doubles internally
+                          (normally it uses floats)
+  --enable-longdouble     Control whether fontforge uses long doubles
+                          internally (normally it uses floats)
+  --enable-pasteafter     Control whether fontforge has a paste after command
+                          (Useful for making words?)
+  --enable-gb12345        Control whether fontforge understands the gb12345
+                          encoding
+  --enable-tilepath       Control whether fontforge has a tile path command (a
+                          variant of expand stroke)
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-capslock-for-alt   Control whether to use capslock rather than alt/meta to alter behavior of tools in outline/bitmap windows
-  --with-debug-raw-points   Add a raw mode to the points window of the debugger
   --without-iconv   Don't use the system's iconv(3) routines, use fontforge's instead
   --without-python   Don't include a python interpreter
   --without-native-script   Don't include a legacy fontforge scripting interpreter
   --with-freetype-bytecode   Control whether we build with the bytecode interpreter
   --with-freetype-src=dir   Specify freetype source directory
   --with-x                use the X Window System
-  --with-gtk   Control whether we build using the gtk toolkit (does not work yet)
-  --with-gdraw   Control whether we build using fontforge's traditional toolkit (gdraw)
-  --with-noui   Control whether we build without any ui, just the ability to run scripts
 
 Some influential environment variables:
   CC          C compiler command
@@ -2793,12 +2804,11 @@ _ACEOF
 
 fi
 
+# Check whether --enable-debug-raw-points or --disable-debug-raw-points was given.
+if test "${enable_debug_raw_points+set}" = set; then
+  enableval="$enable_debug_raw_points"
 
-# Check whether --with-debug-raw-points or --without-debug-raw-points was given.
-if test "${with_debug_raw_points+set}" = set; then
-  withval="$with_debug_raw_points"
-
-   if test "$withval" \!= "no" ; then
+   if test "$enableval" \!= "no" ; then
      cat >>confdefs.h <<\_ACEOF
 #define FONTFORGE_CONFIG_SHOW_RAW_POINTS 1
 _ACEOF
@@ -8863,11 +8873,25 @@ fi
  fi
 fi
 
+# Check whether --enable-type3 or --disable-type3 was given.
+if test "${enable_type3+set}" = set; then
+  enableval="$enable_type3"
+
+    if test "$enableval" != "no" >/dev/null 2>&1 ; then
+	cat >>confdefs.h <<\_ACEOF
+#define FONTFORGE_CONFIG_TYPE3 1
+_ACEOF
+
+    fi
+
+else
+  :
+fi;
 # Check whether --enable-multilayer or --disable-multilayer was given.
 if test "${enable_multilayer+set}" = set; then
   enableval="$enable_multilayer"
 
-    if test "$withval" != "no" >/dev/null 2>&1 ; then
+    if test "$enableval" != "no" >/dev/null 2>&1 ; then
 	cat >>confdefs.h <<\_ACEOF
 #define FONTFORGE_CONFIG_TYPE3 1
 _ACEOF
@@ -8882,7 +8906,7 @@ fi;
 if test "${enable_devicetables+set}" = set; then
   enableval="$enable_devicetables"
 
-    if test "$withval" != "no" >/dev/null 2>&1 ; then
+    if test "$enableval" != "no" >/dev/null 2>&1 ; then
 	cat >>confdefs.h <<\_ACEOF
 #define FONTFORGE_CONFIG_DEVICETABLES 1
 _ACEOF
@@ -8896,30 +8920,13 @@ _ACEOF
 
 fi;
 
+# Check whether --enable-double or --disable-double was given.
+if test "${enable_double+set}" = set; then
+  enableval="$enable_double"
 
-# Check whether --with-gtk or --without-gtk was given.
-if test "${with_gtk+set}" = set; then
-  withval="$with_gtk"
-
-    if test "$withval" != "no" >/dev/null 2>&1 ; then
+    if test "$enableval" != "no" >/dev/null 2>&1 ; then
 	cat >>confdefs.h <<\_ACEOF
-#define FONTFORGE_CONFIG_GTK 1
-_ACEOF
-
-	echo "Configuring with gtk does not work. Please don't use this option."
-    fi
-
-else
-  :
-fi;
-
-# Check whether --with-gdraw or --without-gdraw was given.
-if test "${with_gdraw+set}" = set; then
-  withval="$with_gdraw"
-
-    if test "$withval" != "no" >/dev/null 2>&1 ; then
-	cat >>confdefs.h <<\_ACEOF
-#define FONTFORGE_CONFIG_GDRAW 1
+#define FONTFORGE_CONFIG_USE_DOUBLE 1
 _ACEOF
 
     fi
@@ -8927,14 +8934,55 @@ _ACEOF
 else
   :
 fi;
+# Check whether --enable-longdouble or --disable-longdouble was given.
+if test "${enable_longdouble+set}" = set; then
+  enableval="$enable_longdouble"
 
-# Check whether --with-noui or --without-noui was given.
-if test "${with_noui+set}" = set; then
-  withval="$with_noui"
-
-    if test "$withval" != "no" >/dev/null 2>&1 ; then
+    if test "$enableval" != "no" >/dev/null 2>&1 ; then
 	cat >>confdefs.h <<\_ACEOF
-#define FONTFORGE_CONFIG_NO_WINDOWING_UI 1
+#define FONTFORGE_CONFIG_USE_LONGDOUBLE 1
+_ACEOF
+
+    fi
+
+else
+  :
+fi;
+# Check whether --enable-pasteafter or --disable-pasteafter was given.
+if test "${enable_pasteafter+set}" = set; then
+  enableval="$enable_pasteafter"
+
+    if test "$enableval" != "no" >/dev/null 2>&1 ; then
+	cat >>confdefs.h <<\_ACEOF
+#define FONTFORGE_CONFIG_PASTEAFTER 1
+_ACEOF
+
+    fi
+
+else
+  :
+fi;
+# Check whether --enable-gb12345 or --disable-gb12345 was given.
+if test "${enable_gb12345+set}" = set; then
+  enableval="$enable_gb12345"
+
+    if test "$enableval" != "no" >/dev/null 2>&1 ; then
+	cat >>confdefs.h <<\_ACEOF
+#define FONTFORGE_CONFIG_GB12345 1
+_ACEOF
+
+    fi
+
+else
+  :
+fi;
+# Check whether --enable-tilepath or --disable-tilepath was given.
+if test "${enable_tilepath+set}" = set; then
+  enableval="$enable_tilepath"
+
+    if test "$enableval" != "no" >/dev/null 2>&1 ; then
+	cat >>confdefs.h <<\_ACEOF
+#define FONTFORGE_CONFIG_TILEPATH 1
 _ACEOF
 
     fi
