@@ -385,8 +385,15 @@ fi
  fi
 fi
 
+AC_ARG_ENABLE(type3,
+ AS_HELP_STRING([--enable-type3], [Control whether we build with support for type3/svg fonts containing multilayered drawing with strokes, fills, images, etc.]),
+ [
+    if test "$enableval" != "no" >/dev/null 2>&1 ; then
+	AC_DEFINE(FONTFORGE_CONFIG_TYPE3)
+    fi
+ ], : )
 AC_ARG_ENABLE(multilayer,
- AS_HELP_STRING([--enable-multilayer], [Control whether we build with support for type3/svg fonts containing multilayered drawing with strokes, fills, images, etc.]),
+ AS_HELP_STRING([--enable-multilayer], [Control whether we build with support for type3/svg fonts containing multilayered drawing with strokes, fills, images, etc. (Deprecated. Use --enable-type3 instead)]),
  [
     if test "$enableval" != "no" >/dev/null 2>&1 ; then
 	AC_DEFINE(FONTFORGE_CONFIG_TYPE3)
