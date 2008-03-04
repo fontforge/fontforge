@@ -2530,6 +2530,9 @@ void CVChangeSC(CharView *cv, SplineChar *sc ) {
     int i;
     int old_layer = CVLayer((CharViewBase *) cv);
 
+    if ( old_layer>=sc->layer_cnt )
+	old_layer = ly_fore;		/* Can happen in type3 fonts where each glyph has a different layer cnt */
+
     CVDebugFree(cv->dv);
 
     if ( cv->expandedge != ee_none ) {
