@@ -2849,7 +2849,14 @@ return;
     if ( !cv->info_within )
 return;
 
-    if ( xdiff>=1000 || xdiff<=-1000 || ydiff>=1000 || ydiff<=-1000 )
+    if ( cv->active_tool==cvt_scale ) {
+	xdiff = 100.0 + (cv->info.x-cv->p.cx)/(4*cv->scale);
+	ydiff = 100.0 + (cv->info.y-cv->p.cy)/(4*cv->scale);
+	if ( xdiff>=100 || xdiff<=-100 || ydiff>=100 || ydiff<=-100 )
+	    sprintf(buffer,"%d%%%s%d%%", (int) xdiff, coord_sep, (int) ydiff );
+	else
+	    sprintf(buffer,"%.3g%%%s%.3g%%", (double) xdiff, coord_sep, (double) ydiff );
+    } else if ( xdiff>=1000 || xdiff<=-1000 || ydiff>=1000 || ydiff<=-1000 )
 	sprintf(buffer,"%d%s%d", (int) xdiff, coord_sep, (int) ydiff );
     else
 	sprintf(buffer,"%.4g%s%.4g", (double) xdiff, coord_sep, (double) ydiff );
