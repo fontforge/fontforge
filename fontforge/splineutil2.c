@@ -3471,7 +3471,7 @@ return;
 	if ( base->pointtype == pt_hvcurve )
 	    BP_HVForce(&unit);
     } else if ( base->pointtype == pt_corner ) {
-	if ( next->pointtype != pt_curve ) {
+	if ( next->pointtype != pt_curve && next->pointtype != pt_hvcurve ) {
 	    base->nonextcp = true;
 	}
     } else /* tangent */ {
@@ -3575,7 +3575,7 @@ return;
 	if ( base->pointtype == pt_hvcurve )
 	    BP_HVForce(&unit);
     } else if ( base->pointtype == pt_corner ) {
-	if ( prev->pointtype != pt_curve ) {
+	if ( prev->pointtype != pt_curve && prev->pointtype != pt_hvcurve ) {
 	    base->noprevcp = true;
 	}
     } else /* tangent */ {
