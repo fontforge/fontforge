@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 26-Oct-2005 -->
-  <!-- AP: Last modified: 10-Dec-2007 -->
+  <!-- AP: Last modified: 2-Mar-2008 -->
   <TITLE>Building FontForge from source</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -38,7 +38,8 @@
 	<LI>
 	  <A HREF="#src-Building">Building &amp; installing it</A>
 	<LI>
-	  <A HREF="#src-installs">More complicated installs</A>
+	  <A HREF="#src-installs">More complicated installs</A> (some configuration
+	  options)
 	<LI>
 	  <A HREF="plugins.html">Building Plugins</A>
 	<LI>
@@ -275,7 +276,8 @@ CVS password:
   If you don't want to install X11 on your system, you can use fontforge as
   a command line tool which can execute scripts to manipulate fonts. FontForge's
   scripting language is described in detail <A HREF="scripting.html">in the
-  section on scripting.</A>
+  section on scripting</A>, or the <A HREF="python.html">section on python
+  scripting</A>.
   <BLOCKQUOTE id="shell">
     <PRE><FONT COLOR="Gray">$ </FONT>./configure --without-x
 </PRE>
@@ -288,7 +290,7 @@ CVS password:
   to give you access to more drawing modes than are generally available in
   fonts.
   <BLOCKQUOTE id="shell">
-    <PRE><FONT COLOR="Gray">$ </FONT>./configure --with-multilayer
+    <PRE><FONT COLOR="Gray">$ </FONT>./configure --enable-type3
 </PRE>
   </BLOCKQUOTE>
   <H4>
@@ -298,7 +300,28 @@ CVS password:
   If you do want to create device tables (which allow you to fix up kerning
   data at a specific pixel size) in OpenType fonts
   <BLOCKQUOTE id="shell">
-    <PRE><FONT COLOR="Gray">$ </FONT>./configure --with-devicetables
+    <PRE><FONT COLOR="Gray">$ </FONT>./configure --enable-devicetables
+</PRE>
+  </BLOCKQUOTE>
+  <H4>
+    Building fontforge to use higher precision internally
+  </H4>
+  <P>
+  FontForge generally uses floats to represent coordinates. If you need greater
+  accuracy...
+  <BLOCKQUOTE id="shell">
+    <PRE><FONT COLOR="Gray">$ </FONT>./configure --enable-double
+</PRE>
+  </BLOCKQUOTE>
+  <H4>
+    Building fontforge with the tile path command available
+  </H4>
+  <P>
+  FontForge has a command which lets you tile a pattern along a path. Generally
+  this is disabled as it isn't what most fonts will use, but for some decorative
+  fonts it can be useful.
+  <BLOCKQUOTE id="shell">
+    <PRE><FONT COLOR="Gray">$ </FONT>./configure --enable-tilepath
 </PRE>
   </BLOCKQUOTE>
   <H4>
