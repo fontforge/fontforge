@@ -147,7 +147,8 @@ static int svg_outfontheader(FILE *file, SplineFont *sf,int layer) {
 return( defwid );
 }
 
-static int svg_pathdump(FILE *file, SplineSet *spl, int lineout, int forceclosed) {
+static int svg_pathdump(FILE *file, SplineSet *spl, int lineout,
+	int forceclosed, int do_clips) {
     BasePoint last;
     char buffer[60];
     int closed=false;
@@ -158,6 +159,7 @@ static int svg_pathdump(FILE *file, SplineSet *spl, int lineout, int forceclosed
 
     last.x = last.y = 0;
     while ( spl!=NULL ) {
+      if ( (do_clips && spl->is_clip_path) || (!do_clips && !spl->is_clip_path)) {
 	sprintf( buffer, "M%g %g", (double) spl->first->me.x, (double) spl->first->me.y );
 	if ( lineout+strlen(buffer)>=255 ) { putc('\n',file); lineout = 0; }
 	fputs( buffer,file );
@@ -210,7 +212,8 @@ static int svg_pathdump(FILE *file, SplineSet *spl, int lineout, int forceclosed
 	    putc('z',file);
 	    ++lineout;
 	}
-	spl = spl->next;
+      }
+      spl = spl->next;
     }
 return( lineout );
 }
@@ -400,6 +403,7 @@ static void svg_scpathdump(FILE *file, SplineChar *sc,char *endpath,int layer) {
     int lineout;
 #ifdef FONTFORGE_CONFIG_TYPE3
     int i,j;
+    int needs_defs=0;
     SplineSet *transed;
     ImageList *images;
 #endif
@@ -412,27 +416,46 @@ static void svg_scpathdump(FILE *file, SplineChar *sc,char *endpath,int layer) {
 	/* Can't be done with a path, requires nested elements (I think) */
 	fprintf(file,">\n  <g stroke=\"currentColor\" stroke-width=\"%g\" fill=\"none\">\n", (double) sc->parent->strokewidth );
 	fprintf( file,"    <path d=\"");
-	lineout = svg_pathdump(file,sc->layers[layer].splines,3,false);
+	lineout = svg_pathdump(file,sc->layers[layer].splines,3,false,false);
 	for ( ref= sc->layers[layer].refs; ref!=NULL; ref=ref->next )
-	    lineout = svg_pathdump(file,ref->layers[0].splines,lineout,false);
+	    lineout = svg_pathdump(file,ref->layers[0].splines,lineout,false,false);
 	if ( lineout>=255-4 ) putc('\n',file );
 	putc('"',file);
 	fputs(" />\n  </g>\n",file);
 	fputs(endpath,file);
     } else if ( !sc->parent->multilayer ) {
 	fprintf( file,"d=\"");
-	lineout = svg_pathdump(file,sc->layers[layer].splines,3,true);
+	lineout = svg_pathdump(file,sc->layers[layer].splines,3,true,false);
 	for ( ref= sc->layers[layer].refs; ref!=NULL; ref=ref->next )
-	    lineout = svg_pathdump(file,ref->layers[0].splines,lineout,true);
+	    lineout = svg_pathdump(file,ref->layers[0].splines,lineout,true,false);
 	if ( lineout>=255-4 ) putc('\n',file );
 	putc('"',file);
 	fputs(" />\n",file);
     } else {
 	putc('>',file);
 #ifdef FONTFORGE_CONFIG_TYPE3
+	for ( i=ly_fore; i<sc->layer_cnt && !needs_defs ; ++i ) {
+	    if ( SSHasClip(sc->layers[i].splines))
+		needs_defs = true;
+	}
+	if ( needs_defs ) {
+	    fprintf(file, "  <defs>\n" );
+	    for ( i=ly_fore; i<sc->layer_cnt ; ++i ) {
+		if ( SSHasClip(sc->layers[i].splines)) {
+		    fprintf( file, "    <clipPath id=\"%s-ly%d-clip\">\n", sc->name, i );
+		    fprintf(file, "      <path d=\"\n");
+		    svg_pathdump(file,sc->layers[i].splines,16,true,true);
+		    fprintf(file, "\"/>\n" );
+		    fprintf( file, "    </clipPath>\n" );
+		}
+	    }
+	    fprintf(file, "  </defs>\n" );
+	}
 	for ( i=ly_fore; i<sc->layer_cnt ; ++i ) {
-	    if ( sc->layers[i].splines!=NULL ) {
+	    if ( SSHasDrawn(sc->layers[i].splines) ) {
 		fprintf(file, "  <g " );
+		if ( SSHasClip(sc->layers[i].splines))
+		    fprintf( file, "clip-path=\"url(#%s-ly%d-clip)\" ", sc->name, i );
 		transed = sc->layers[i].splines;
 		if ( sc->layers[i].dostroke ) {
 		    svg_dumpstroke(file,&sc->layers[i].stroke_pen,NULL);
@@ -440,8 +463,8 @@ static void svg_scpathdump(FILE *file, SplineChar *sc,char *endpath,int layer) {
 		}
 		svg_dumpfill(file,&sc->layers[i].fill_brush,NULL,sc->layers[i].dofill);
 		fprintf( file, ">\n" );
-		fprintf(file, "  <path d=\"\n");
-		svg_pathdump(file,transed,12,!sc->layers[i].dostroke);
+		fprintf(file, "    <path d=\"\n");
+		svg_pathdump(file,transed,12,!sc->layers[i].dostroke,false);
 		fprintf(file, "\"/>\n" );
 		if ( transed!=sc->layers[i].splines )
 		    SplinePointListsFree(transed);
@@ -458,7 +481,7 @@ static void svg_scpathdump(FILE *file, SplineChar *sc,char *endpath,int layer) {
 		    svg_dumpfill(file,&ref->layers[j].fill_brush,&sc->layers[i].fill_brush,ref->layers[j].dofill);
 		    fprintf( file, ">\n" );
 		    fprintf(file, "  <path d=\"\n");
-		    svg_pathdump(file,transed,12,!ref->layers[j].dostroke);
+		    svg_pathdump(file,transed,12,!ref->layers[j].dostroke,false);
 		    fprintf(file, "\"/>\n" );
 		    if ( transed!=ref->layers[j].splines )
 			SplinePointListsFree(transed);
@@ -974,6 +997,20 @@ return( xml );
 return( ret );
     }
 return( NULL );
+}
+
+static xmlNodePtr XmlFindURI(xmlNodePtr xml, char *name) {
+    xmlNodePtr ret;
+    char *pt, ch;
+
+    if ( strncmp(name,"url(#",5)!=0 )
+return( NULL );
+    name += 5;
+    for ( pt=name; *pt!=')' && *pt!='\0'; ++pt );
+    ch = *pt; *pt = '\0';
+    ret = XmlFindID(xml,name);
+    *pt = ch;
+return( ret );
 }
 
 /* We want to look for "font" nodes within "svg" nodes. Since "svg" nodes may */
@@ -1714,6 +1751,7 @@ struct svg_state {
     enum linejoin lj;
     real transform[6];
     DashType dashes[DASH_MAX];
+    SplineSet *clippath;
 };
 
 static void SVGFigureTransform(struct svg_state *st,char *name) {
@@ -2088,6 +2126,7 @@ static Entity *EntityCreate(SplinePointList *head,struct svg_state *state) {
     ent->u.splines.fill.opacity = state->fillopacity;
     ent->u.splines.stroke.opacity = state->strokeopacity;
     memcpy(ent->u.splines.transform,state->transform,6*sizeof(real));
+    ent->clippath = SplinePointListCopy(state->clippath);
 return( ent );
 }
 
@@ -2104,6 +2143,7 @@ static Entity *_SVGParseSVG(xmlNodePtr svg, xmlNodePtr top,
 return( NULL );
 
     st = *inherit;
+    st.clippath = SplinePointListCopy(st.clippath);
   tail_recurse:
     name = _xmlGetProp(svg,(xmlChar *) "display");
     if ( name!=NULL ) {
@@ -2180,6 +2220,27 @@ return( NULL );
 	SVGFigureTransform(&st,(char *) name);
 	_xmlFree(name);
     }
+    name = _xmlGetProp(svg,(xmlChar *) "clip-path");
+    if ( name!=NULL ) {
+	xmlNodePtr clip = XmlFindURI(top,name);
+	_xmlFree(name);
+	if ( clip!=NULL && _xmlStrcmp(clip->name,(xmlChar *) "clipPath")==0) {
+	    const xmlChar *temp = clip->name;
+	    struct svg_state null_state;
+	    memset(&null_state,0,sizeof(null_state));
+	    null_state.isvisible = true;
+	    null_state.transform[0] = null_state.transform[3] = 1;
+	    clip->name = (xmlChar *) "g";
+	    eret = _SVGParseSVG(clip,top,&null_state);
+	    clip->name = temp;
+	    if ( eret!=NULL && eret->type == et_splines ) {
+		SplinePointListFree(st.clippath);	/* I really should do an intersect of the old clippath with the new !!!! */
+		st.clippath = eret->u.splines.splines;
+		eret->u.splines.splines = NULL;
+	    }
+	    free(eret);
+	}
+    }
 
     if ( (treat_symbol_as_g && _xmlStrcmp(svg->name,(xmlChar *) "symbol")==0) ||
 	    _xmlStrcmp(svg->name,(xmlChar *) "svg")==0 ||
@@ -2197,6 +2258,7 @@ return( NULL );
 		elast = eret;
 	    }
 	}
+	SplinePointListFree(st.clippath);
 return( ehead );
     } else if ( _xmlStrcmp(svg->name,(xmlChar *) "use")==0 ) {
 	name = _xmlGetProp(svg,(xmlChar *) "href");
@@ -2211,6 +2273,7 @@ return( ehead );
 	    _xmlFree(name);
 	if ( svg!=NULL )
   goto tail_recurse;
+	SplinePointListFree(st.clippath);
 return( NULL );
     }
 
@@ -2238,7 +2301,9 @@ return( NULL );
     } else if ( _xmlStrcmp(svg->name,(xmlChar *) "polygon")==0 ) {
 	head = SVGParsePoly(svg,1);		/* points */
     } else if ( _xmlStrcmp(svg->name,(xmlChar *) "image")==0 ) {
-return( SVGParseImage(svg));
+	eret = SVGParseImage(svg);
+	eret->clippath = st.clippath;
+return( eret );
     } else
 return( NULL );
     if ( head==NULL )
@@ -2246,8 +2311,9 @@ return( NULL );
 
     SPLCatagorizePoints(head);
 
-return( EntityCreate(SplinePointListTransform(head,st.transform,true),
-	    &st));
+    eret = EntityCreate(SplinePointListTransform(head,st.transform,true), &st);
+    SplinePointListFree(st.clippath);
+return( eret );
 }
 
 static Entity *SVGParseSVG(xmlNodePtr svg,int em_size,int ascent) {
@@ -2981,6 +3047,7 @@ static void EntSetOrder(Entity *ent,int order2) {
     while ( ent!=NULL ) {
 	if ( ent->type == et_splines )
 	    SPLSetOrder(ent->u.splines.splines,order2);
+	SPLSetOrder(ent->clippath,order2);
 	ent = ent->next;
     }
 }

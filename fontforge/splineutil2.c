@@ -3988,7 +3988,7 @@ SplineSet *SplineSetsCorrect(SplineSet *base,int *changed) {
 	es.interesting = gcalloc(es.cnt,sizeof(char));
 	es.sc = NULL;
 	es.major = 1; es.other = 0;
-	FindEdgesSplineSet(base,&es);
+	FindEdgesSplineSet(base,&es,false);
 
 	check_cnt = 0;
 	for ( i=0; i<es.cnt && check_cnt<sscnt; ++i ) {

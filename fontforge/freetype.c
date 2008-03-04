@@ -809,7 +809,7 @@ return( ret );
 }
 
 static void FillOutline(SplineSet *spl,FT_Outline *outline,int *pmax,int *cmax,
-	real scale, DBounds *bb, int order2) {
+	real scale, DBounds *bb, int order2, int ignore_clip) {
     int k;
     int pcnt,ccnt;
     SplinePoint *sp;
@@ -819,6 +819,8 @@ static void FillOutline(SplineSet *spl,FT_Outline *outline,int *pmax,int *cmax,
 	for ( k=0; k<2; ++k ) {
 	    pcnt = ccnt = 0;
 	    for ( ss = spl ; ss!=NULL; ss=ss->next ) if ( ss->first->prev!=NULL ) {
+		if ( ignore_clip && ss->is_clip_path )
+	    continue;
 		for ( sp=ss->first; ; ) {
 		    if ( k ) {
 			outline->points[pcnt].x = rint(sp->me.x*scale)-bb->minx;
@@ -1027,7 +1029,7 @@ BDFChar *SplineCharFreeTypeRasterizeNoHints(SplineChar *sc,int layer,
     FT_Outline outline;
     FT_Bitmap bitmap, temp;
 #ifdef FONTFORGE_CONFIG_TYPE3
-    int i, last, first;
+    int i;
 #endif
     int cmax, pmax;
     real scale = pixelsize*(1<<6)/(double) (sc->parent->ascent+sc->parent->descent);
@@ -1083,7 +1085,7 @@ return( NULL );
     bitmap.buffer = gcalloc(bitmap.pitch*bitmap.rows,sizeof(uint8));
     memset(&temp,0,sizeof(temp));
 #ifdef FONTFORGE_CONFIG_TYPE3
-    if ( sc->parent->multilayer && !(sc->layer_cnt==1 &&
+    if ( sc->parent->multilayer && !(sc->layer_cnt==2 &&
 	    !sc->layers[ly_fore].dostroke &&
 	    sc->layers[ly_fore].dofill &&
 	    sc->layers[ly_fore].refs==NULL &&
@@ -1101,7 +1103,7 @@ return( NULL );
 	SplineSet *stroked = StrokeOutline(&sc->layers[layer],sc);
 	memset(temp.buffer,0,temp.pitch*temp.rows);
 	FillOutline(stroked,&outline,&pmax,&cmax,
-		scale,&b,sc->layers[layer].order2);
+		scale,&b,sc->layers[layer].order2,false);
 	err |= (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&bitmap);
 	SplinePointListsFree(stroked);
     } else 
@@ -1109,7 +1111,7 @@ return( NULL );
     {
 	all = LayerAllOutlines(&sc->layers[layer]);
 	FillOutline(all,&outline,&pmax,&cmax,
-		scale,&b,sc->layers[layer].order2);
+		scale,&b,sc->layers[layer].order2,false);
 	err = (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&bitmap);
 	if ( sc->layers[layer].splines!=all )
 	    SplinePointListsFree(all);
@@ -1118,23 +1120,19 @@ return( NULL );
     if ( temp.buffer==NULL ) {
 	all = LayerAllOutlines(&sc->layers[layer]);
 	FillOutline(all,&outline,&pmax,&cmax,
-		scale,&b,sc->layers[layer].order2);
+		scale,&b,sc->layers[layer].order2,false);
 	err = (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&bitmap);
 	if ( sc->layers[layer].splines!=all )
 	    SplinePointListsFree(all);
     } else {
 	int j; RefChar *r;
+	/* Can only get here if multilayer */
 	err = 0;
-	if ( sc->parent->multilayer ) {
-	    first = ly_fore;
-	    last = sc->layer_cnt-1;
-	} else
-	    first = last = layer;
-	for ( i=ly_fore; i<=last; ++i ) {
+	for ( i=ly_fore; i<sc->layer_cnt; ++i ) {
 	    if ( sc->layers[i].dofill ) {
 		memset(temp.buffer,0,temp.pitch*temp.rows);
 		FillOutline(sc->layers[i].splines,&outline,&pmax,&cmax,
-			scale,&b,sc->layers[i].order2);
+			scale,&b,sc->layers[i].order2,true);
 		err |= (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&temp);
 		MergeBitmaps(&bitmap,&temp,sc->layers[i].fill_brush.col);
 	    }
@@ -1142,7 +1140,7 @@ return( NULL );
 		SplineSet *stroked = StrokeOutline(&sc->layers[i],sc);
 		memset(temp.buffer,0,temp.pitch*temp.rows);
 		FillOutline(stroked,&outline,&pmax,&cmax,
-			scale,&b,sc->layers[i].order2);
+			scale,&b,sc->layers[i].order2,true);
 		err |= (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&temp);
 		MergeBitmaps(&bitmap,&temp,sc->layers[i].stroke_pen.brush.col);
 		SplinePointListsFree(stroked);
@@ -1152,7 +1150,7 @@ return( NULL );
 		    if ( r->layers[j].dofill ) {
 			memset(temp.buffer,0,temp.pitch*temp.rows);
 			FillOutline(r->layers[j].splines,&outline,&pmax,&cmax,
-				scale,&b,sc->layers[i].order2);
+				scale,&b,sc->layers[i].order2,true);
 			err |= (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&temp);
 			MergeBitmaps(&bitmap,&temp,r->layers[j].fill_brush.col);
 		    }
@@ -1160,7 +1158,7 @@ return( NULL );
 			SplineSet *stroked = RStrokeOutline(&r->layers[j],sc);
 			memset(temp.buffer,0,temp.pitch*temp.rows);
 			FillOutline(stroked,&outline,&pmax,&cmax,
-				scale,&b,sc->layers[i].order2);
+				scale,&b,sc->layers[i].order2,true);
 			err |= (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&temp);
 			MergeBitmaps(&bitmap,&temp,r->layers[j].stroke_pen.brush.col);
 			SplinePointListsFree(stroked);

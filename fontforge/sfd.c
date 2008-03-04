@@ -651,6 +651,9 @@ static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
 	    SFDDumpUTF7Str(sfd,spl->contour_name);
 	    putc('\n',sfd);
 	}
+	if ( spl->is_clip_path!=NULL ) {
+	    fprintf( sfd, "  PathFlags: %d\n", spl->is_clip_path );
+	}
     }
     fprintf( sfd, "EndSplineSet\n" );
 }
@@ -3083,6 +3086,19 @@ static SplineSet *SFDGetSplineSet(SplineFont *sf,FILE *sfd,int order2) {
 	    getc(sfd);		/* : */
 	    cur->contour_name = SFDReadUTF7Str(sfd);
     continue;
+	} else if ( ch=='P' ) {
+	    int flags;
+	    getc(sfd);		/* a */
+	    getc(sfd);		/* t */
+	    getc(sfd);		/* h */
+	    getc(sfd);		/* F */
+	    getc(sfd);		/* l */
+	    getc(sfd);		/* a */
+	    getc(sfd);		/* g */
+	    getc(sfd);		/* s */
+	    getc(sfd);		/* : */
+	    getint(sfd,&flags);
+	    cur->is_clip_path = flags&1;
 	}
 	pt = NULL;
 	if ( ch=='l' || ch=='m' ) {

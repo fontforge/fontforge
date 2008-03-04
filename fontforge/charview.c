@@ -113,6 +113,7 @@ static Color guideoutlinecol = 0x808080;
 static Color gridfitoutlinecol = 0x009800;
 static Color backoutlinecol = 0x009800;
 static Color foreoutlinecol = 0x000000;
+static Color clippathcol = 0x0000ff;
 static Color backimagecol = 0x707070;
 static Color fillcol = 0x707070;
 static Color tracecol = 0x008000;
@@ -163,6 +164,7 @@ static void CVColInit( void ) {
 	{ "GridFitOutlineColor", rt_color, &gridfitoutlinecol },
 	{ "BackgroundOutlineColor", rt_color, &backoutlinecol },
 	{ "ForegroundOutlineColor", rt_color, &foreoutlinecol },
+	{ "ClipPathColor", rt_color, &clippathcol },
 	{ "BackgroundImageColor", rt_color, &backimagecol },
 	{ "FillColor", rt_color, &fillcol },
 	{ "TraceColor", rt_color, &tracecol },
@@ -948,7 +950,7 @@ void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 	    }
 	}
 	for ( cur=gpl; cur!=NULL; cur=cur->next )
-	    GDrawDrawPoly(pixmap,cur->gp,cur->cnt,fg);
+	    GDrawDrawPoly(pixmap,cur->gp,cur->cnt,spl->is_clip_path ? clippathcol : fg);
 	GPLFree(gpl);
 	if (( cv->markextrema || cv->markpoi ) && dopoints && !cv->b.sc->inspiro )
 	    CVMarkInterestingLocations(cv,pixmap,spl);
@@ -7659,6 +7661,36 @@ static void _CVCenterCP(CharView *cv) {
 static void CVMenuCenterCP(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     _CVCenterCP(cv);
+}
+
+void CVMakeClipPath(CharView *cv) {
+    SplineSet *ss;
+    SplinePoint *sp;
+    int sel;
+    int changed=false;
+
+    for ( ss=cv->b.layerheads[cv->b.drawmode]->splines; ss!=NULL; ss=ss->next ) {
+	sel = false;
+	for ( sp=ss->first; ; ) {
+	    if ( sp->selected ) {
+		sel = true;
+	break;
+	    }
+	    if ( sp->next==NULL )
+	break;
+	    sp = sp->next->to;
+	    if ( sp==ss->first )
+	break;
+	}
+	if ( sel!=ss->is_clip_path ) {
+	    if ( !changed )
+		CVPreserveState((CharViewBase *) cv);
+	    changed = true;
+	    ss->is_clip_path = sel;
+	}
+    }
+    if ( changed )
+	CVCharChangedUpdate((CharViewBase *) cv);
 }
 
 void CVAddAnchor(CharView *cv) {

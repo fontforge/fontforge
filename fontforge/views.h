@@ -773,6 +773,7 @@ extern int  SCUsedBySubs(SplineChar *sc);
 extern void SCSubBy(SplineChar *sc);
 extern void SCRefBy(SplineChar *sc);
 extern void ApGetInfo(CharView *cv, AnchorPoint *ap);
+extern void CVMakeClipPath(CharView *cv);
 extern void CVAddAnchor(CharView *cv);
 extern AnchorClass *AnchorClassUnused(SplineChar *sc,int *waslig);
 extern void FVSetWidth(FontView *fv,enum widthtype wtype);

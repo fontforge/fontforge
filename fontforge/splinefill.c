@@ -431,20 +431,23 @@ return;		/* Horizontal line, ignore it */
     }
 }
 
-void FindEdgesSplineSet(SplinePointList *spl, EdgeList *es) {
+void FindEdgesSplineSet(SplinePointList *spl, EdgeList *es, int ignore_clip) {
     Spline *spline, *first;
 
-    for ( ; spl!=NULL; spl = spl->next ) if ( spl->first->prev!=NULL && spl->first->prev->from!=spl->first ) {
-	first = NULL;
-	es->last = es->splinesetfirst = NULL;
-	/* Set so there is no previous point!!! */
-	for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
-	    AddSpline(es,spline);
-	    if ( first==NULL ) first = spline;
-	}
-	if ( es->last!=NULL ) {
-	    es->splinesetfirst->before = es->last;
-	    es->last->after = es->splinesetfirst;
+    for ( ; spl!=NULL; spl = spl->next ) {
+	if ( spl->first->prev!=NULL && spl->first->prev->from!=spl->first &&
+		(!ignore_clip || !spl->is_clip_path)) {
+	    first = NULL;
+	    es->last = es->splinesetfirst = NULL;
+	    /* Set so there is no previous point!!! */
+	    for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
+		AddSpline(es,spline);
+		if ( first==NULL ) first = spline;
+	    }
+	    if ( es->last!=NULL ) {
+		es->splinesetfirst->before = es->last;
+		es->last->after = es->splinesetfirst;
+	    }
 	}
     }
 }
@@ -453,9 +456,9 @@ static void FindEdges(SplineChar *sc, EdgeList *es) {
     RefChar *rf;
 
     for ( rf=sc->layers[es->layer].refs; rf!=NULL; rf = rf->next )
-	FindEdgesSplineSet(rf->layers[0].splines,es);
+	FindEdgesSplineSet(rf->layers[0].splines,es,false);
 
-    FindEdgesSplineSet(sc->layers[es->layer].splines,es);
+    FindEdgesSplineSet(sc->layers[es->layer].splines,es,false);
 }
 
 Edge *ActiveEdgesInsertNew(EdgeList *es, Edge *active,int i) {
@@ -1265,7 +1268,7 @@ static void ProcessLayer(uint8 *bytemap,EdgeList *es,Layer *layer,
 	StrokePaths(bytemap,es,layer,alt);
     if ( layer->dofill ) {
 	memset(es->bitmap,0,es->cnt*es->bytes_per_line);
-	FindEdgesSplineSet(layer->splines,es);
+	FindEdgesSplineSet(layer->splines,es,true);
 	FillChar(es);
 	SetByteMapToGrey(bytemap,es,layer,alt);
 	_FreeEdgeList(es);
