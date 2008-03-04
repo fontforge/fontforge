@@ -651,7 +651,7 @@ static void SFDDumpSplineSet(FILE *sfd,SplineSet *spl) {
 	    SFDDumpUTF7Str(sfd,spl->contour_name);
 	    putc('\n',sfd);
 	}
-	if ( spl->is_clip_path!=NULL ) {
+	if ( spl->is_clip_path ) {
 	    fprintf( sfd, "  PathFlags: %d\n", spl->is_clip_path );
 	}
     }
@@ -1161,6 +1161,23 @@ return( PyFF_UnPickleMeToObjects(buf));
 #ifdef FONTFORGE_CONFIG_TYPE3
 static char *joins[] = { "miter", "round", "bevel", "inher", NULL };
 static char *caps[] = { "butt", "round", "square", "inher", NULL };
+static char *spreads[] = { "pad", "reflect", "repeat", NULL };
+
+static void SFDDumpGradient(FILE *sfd, char *keyword, struct gradient *gradient) {
+    int i;
+
+    fprintf( sfd, "%s %g,%g %g,%g %g %s %d ", keyword,
+	    gradient->start.x, gradient->start.y,
+	    gradient->stop.x, gradient->stop.y,
+	    gradient->radius,
+	    spreads[gradient->sm],
+	    gradient->stop_cnt );
+    for ( i=0 ; i<gradient->stop_cnt; ++i ) {
+	fprintf( sfd, "{%g %06x %g} ", gradient->grad_stops[i].offset,
+		gradient->grad_stops[i].col, gradient->grad_stops[i].opacity );
+    }
+    putc('\n',sfd);
+}
 #endif
 
 static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
@@ -1251,6 +1268,14 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
 		    fprintf( sfd,"%d ", sc->layers[i].stroke_pen.dashes[j]);
 		fprintf(sfd,"]\n");
 	    }
+	    if ( sc->layers[i].fill_brush.gradient!=NULL )
+		SFDDumpGradient(sfd,"FillGradient:", sc->layers[i].fill_brush.gradient );
+	    else if ( sc->layers[i].fill_brush.pattern!=NULL )
+		fprintf( sfd, "FillPattern: %s\n", sc->layers[i].fill_brush.pattern );
+	    if ( sc->layers[i].stroke_pen.brush.gradient!=NULL )
+		SFDDumpGradient(sfd,"StrokeGradient:", sc->layers[i].stroke_pen.brush.gradient );
+	    else if ( sc->layers[i].stroke_pen.brush.pattern!=NULL )
+		fprintf( sfd, "StrokePattern: %s\n", sc->layers[i].stroke_pen.brush.pattern );
 	} else
 #endif
 	{
@@ -3765,6 +3790,41 @@ static void SFDParseVertexKern(FILE *sfd, struct mathkernvertex *vertex) {
 #endif
     }
 }
+
+#ifdef FONTFORGE_CONFIG_TYPE3
+static struct gradient *SFDParseGradient(FILE *sfd,char *tok) {
+    struct gradient *grad = chunkalloc(sizeof(struct gradient));
+    int ch, i;
+
+    getreal(sfd,&grad->start.x);
+    while ( isspace(ch=getc(sfd)));
+    if ( ch!=',' ) ungetc(ch,sfd);
+    getreal(sfd,&grad->start.y);
+
+    getreal(sfd,&grad->stop.x);
+    while ( isspace(ch=getc(sfd)));
+    if ( ch!=',' ) ungetc(ch,sfd);
+    getreal(sfd,&grad->stop.y);
+
+    getreal(sfd,&grad->radius);
+
+    getname(sfd,tok);
+    for ( i=0; spreads[i]!=NULL; ++i )
+	if ( strmatch(spreads[i],tok)==0 )
+    break;
+    if ( spreads[i]==NULL ) i=0;
+
+    getint(sfd,&grad->stop_cnt);
+    grad->grad_stops = gcalloc(grad->stop_cnt,sizeof(struct grad_stops));
+    for ( i=0; i<grad->stop_cnt; ++i ) {
+	getreal( sfd, &grad->grad_stops[i].offset );
+	gethex( sfd, &grad->grad_stops[i].col );
+	getreal( sfd, &grad->grad_stops[i].opacity );
+    }
+return( grad );
+}
+#endif
+
 static int orig_pos;
 
 static SplineChar *SFDGetChar(FILE *sfd,SplineFont *sf) {
@@ -4091,6 +4151,18 @@ return( NULL );
 	    current_layer = layer;
 	    lasti = NULL;
 	    lastr = NULL;
+#ifdef FONTFORGE_CONFIG_TYPE3
+	} else if ( strmatch(tok,"FillGradient:")==0 ) {
+	    sc->layers[current_layer].fill_brush.gradient = SFDParseGradient(sfd,tok);
+	} else if ( strmatch(tok,"FillPattern:")==0 ) {
+	    if ( getname(sfd,tok)==1 )
+		sc->layers[current_layer].fill_brush.pattern = copy(tok);
+	} else if ( strmatch(tok,"StrokeGradient:")==0 ) {
+	    sc->layers[current_layer].stroke_pen.brush.gradient = SFDParseGradient(sfd,tok);
+	} else if ( strmatch(tok,"StrokePattern:")==0 ) {
+	    if ( getname(sfd,tok)==1 )
+		sc->layers[current_layer].stroke_pen.brush.pattern = copy(tok);
+#endif
 	} else if ( strmatch(tok,"SplineSet")==0 ) {
 	    sc->layers[current_layer].splines = SFDGetSplineSet(sf,sfd,sc->layers[current_layer].order2);
 	} else if ( strmatch(tok,"Ref:")==0 || strmatch(tok,"Refer:")==0 ) {

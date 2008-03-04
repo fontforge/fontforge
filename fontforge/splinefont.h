@@ -68,6 +68,37 @@
 #define MmMax		16	/* PS says at most this many instances for type1/2 mm fonts */
 #define AppleMmMax	26	/* Apple sort of has a limit of 4095, but we only support this many */
 
+typedef struct ipoint {
+    int x;
+    int y;
+} IPoint;
+
+typedef struct basepoint {
+    real x;
+    real y;
+} BasePoint;
+
+typedef struct dbasepoint {
+    bigreal x;
+    bigreal y;
+} DBasePoint;
+
+typedef struct tpoint {
+    real x;
+    real y;
+    real t;
+} TPoint;
+
+typedef struct dbounds {
+    real minx, maxx;
+    real miny, maxy;
+} DBounds;
+
+typedef struct ibounds {
+    int minx, maxx;
+    int miny, maxy;
+} IBounds;
+
 typedef struct val {
     enum val_type { v_int, v_real, v_str, v_unicode, v_lval, v_arr, v_arrfree,
 	    v_int32pt, v_int16pt, v_int8pt, v_void } type;
@@ -109,12 +140,28 @@ enum linecap {
     lc_square,		/* Extend lines by radius, then join them */
     lc_inherited
 };
+enum spreadMethod {
+    sm_pad, sm_reflect, sm_repeat
+};
 #define COLOR_INHERITED	0xfffffffe
+struct gradient {
+    BasePoint start;	/* focal of a radial gradient, start of a linear */
+    BasePoint stop;	/* center of a radial gradient, end of a linear */
+    real radius;	/* 0=>linear gradient, else radius of a radial gradient */
+    enum spreadMethod sm;
+    int stop_cnt;
+    struct grad_stops {
+	real offset;
+	uint32 col;
+	real opacity;
+    } *grad_stops;
+};
+
 struct brush {
     uint32 col;
-    /*void *pattern;*/		/* Don't know how to deal with these yet */
-    /*void *gradient;*/
-    float opacity;		/* number between [0,1], only for svg */
+    float opacity;		/* number between [0,1], only for svg/pdf */
+    char *pattern;		/* The name of a glyph in the font */
+    struct gradient *gradient;
 };
 #define WIDTH_INHERITED	(-1)
 #define DASH_INHERITED	255	/* if the dashes[0]==0 && dashes[1]==DASH_INHERITED */
@@ -175,37 +222,6 @@ struct simplifyinfo {
     int set_as_default;
     int check_selected_contours;
 };
-
-typedef struct ipoint {
-    int x;
-    int y;
-} IPoint;
-
-typedef struct basepoint {
-    real x;
-    real y;
-} BasePoint;
-
-typedef struct dbasepoint {
-    bigreal x;
-    bigreal y;
-} DBasePoint;
-
-typedef struct tpoint {
-    real x;
-    real y;
-    real t;
-} TPoint;
-
-typedef struct dbounds {
-    real minx, maxx;
-    real miny, maxy;
-} DBounds;
-
-typedef struct ibounds {
-    int minx, maxx;
-    int miny, maxy;
-} IBounds;
 
 typedef struct bluedata {
     real xheight, xheighttop;		/* height of "x" and "o" (u,v,w,x,y,z) */
@@ -2874,5 +2890,9 @@ extern char **SFScriptLangs(SplineFont *sf,struct lang_frequencies ***freq);
 
 extern int SSHasClip(SplineSet *ss);
 extern int SSHasDrawn(SplineSet *ss);
+extern struct gradient *GradientCopy(struct gradient *old);
+extern void GradientFree(struct gradient *grad);
+extern void BrushCopy(struct brush *into, struct brush *from);
+extern void PenCopy(struct pen *into, struct pen *from);
 
 #endif

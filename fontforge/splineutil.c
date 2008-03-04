@@ -392,6 +392,10 @@ return;
     for ( i=0; i<ref->layer_cnt; ++i ) {
 	SplinePointListsFree(ref->layers[i].splines);
 	ImageListsFree(ref->layers[i].images);
+	GradientFree(ref->layers[i].fill_brush.gradient);
+	GradientFree(ref->layers[i].stroke_pen.brush.gradient);
+	free(ref->layers[i].fill_brush.pattern);
+	free(ref->layers[i].stroke_pen.brush.pattern);
     }
     free(ref->layers);
 #else
@@ -2096,12 +2100,12 @@ return;
 	}
 	for ( i=ly_fore; i<rsc->layer_cnt; ++i ) {
 	    topref->layers[i-ly_fore+lbase].splines = SplinePointListTransform(SplinePointListCopy(rsc->layers[i].splines),transform,true);
-	    topref->layers[i-ly_fore+lbase].fill_brush = rsc->layers[i].fill_brush;
-	    topref->layers[i-ly_fore+lbase].stroke_pen = rsc->layers[i].stroke_pen;
+	    BrushCopy(&topref->layers[i-ly_fore+lbase].fill_brush, &rsc->layers[i].fill_brush);
+	    PenCopy(&topref->layers[i-ly_fore+lbase].stroke_pen, &rsc->layers[i].stroke_pen);
 	    topref->layers[i-ly_fore+lbase].dofill = rsc->layers[i].dofill;
 	    topref->layers[i-ly_fore+lbase].dostroke = rsc->layers[i].dostroke;
 	    topref->layers[i-ly_fore+lbase].fillfirst = rsc->layers[i].fillfirst;
-	    /* ??? and images? Can't read images yet, so not a problem yet */
+	    /* ??? and images?  */
 	}
     } else {
 	if ( topref->layer_cnt==0 ) {
@@ -2812,8 +2816,8 @@ return( sf );
 
 #ifdef FONTFORGE_CONFIG_TYPE3
 static void LayerToRefLayer(struct reflayer *rl,Layer *layer) {
-    rl->fill_brush = layer->fill_brush;
-    rl->stroke_pen = layer->stroke_pen;
+    BrushCopy(&rl->fill_brush, &layer->fill_brush);
+    PenCopy(&rl->stroke_pen, &layer->stroke_pen);
     rl->dofill = layer->dofill;
     rl->dostroke = layer->dostroke;
     rl->fillfirst = layer->fillfirst;
@@ -2856,8 +2860,13 @@ void SCReinstanciateRefChar(SplineChar *sc,RefChar *rf,int layer) {
     SplineChar *rsc = rf->sc;
     real extra=0,e;
 
-    for ( i=0; i<rf->layer_cnt; ++i )
+    for ( i=0; i<rf->layer_cnt; ++i ) {
 	SplinePointListsFree(rf->layers[i].splines);
+	GradientFree(rf->layers[i].fill_brush.gradient);
+	free(rf->layers[i].fill_brush.pattern);
+	GradientFree(rf->layers[i].stroke_pen.brush.gradient);
+	free(rf->layers[i].stroke_pen.brush.pattern);
+    }
     free( rf->layers );
     rf->layers = NULL;
     rf->layer_cnt = 0;
@@ -3063,8 +3072,8 @@ void SCRefToSplines(SplineChar *sc,RefChar *rf,int layer) {
 	    sc->layers[sc->layer_cnt+rlayer].refs = NULL;
 	    sc->layers[sc->layer_cnt+rlayer].undoes = NULL;
 	    sc->layers[sc->layer_cnt+rlayer].redoes = NULL;
-	    sc->layers[sc->layer_cnt+rlayer].fill_brush = rf->layers[rlayer].fill_brush;
-	    sc->layers[sc->layer_cnt+rlayer].stroke_pen = rf->layers[rlayer].stroke_pen;
+	    BrushCopy(&sc->layers[sc->layer_cnt+rlayer].fill_brush, &rf->layers[rlayer].fill_brush);
+	    PenCopy(&sc->layers[sc->layer_cnt+rlayer].stroke_pen, &rf->layers[rlayer].stroke_pen);
 	    sc->layers[sc->layer_cnt+rlayer].dofill = rf->layers[rlayer].dofill;
 	    sc->layers[sc->layer_cnt+rlayer].dostroke = rf->layers[rlayer].dostroke;
 	    sc->layers[sc->layer_cnt+rlayer].fillfirst = rf->layers[rlayer].fillfirst;
@@ -5530,8 +5539,47 @@ void SplineCharListsFree(struct splinecharlist *dlist) {
     }
 }
 
+struct gradient *GradientCopy(struct gradient *old) {
+    struct gradient *grad = chunkalloc(sizeof(struct gradient));
+
+    if ( old==NULL )
+return( NULL );
+
+    grad = chunkalloc(sizeof(struct gradient));
+
+    *grad = *old;
+    grad->grad_stops = galloc(old->stop_cnt*sizeof(struct grad_stops));
+    memcpy(grad->grad_stops,old->grad_stops,old->stop_cnt*sizeof(struct grad_stops));
+return( grad );
+}
+
+void GradientFree(struct gradient *grad) {
+    if ( grad==NULL )
+return;
+    free(grad->grad_stops);
+    chunkfree(grad,sizeof(struct gradient));
+}
+
+void BrushCopy(struct brush *into, struct brush *from) {
+    *into = *from;
+    into->gradient = GradientCopy(from->gradient);
+    into->pattern = copy(from->pattern);
+}
+
+void PenCopy(struct pen *into, struct pen *from) {
+    *into = *from;
+    into->brush.gradient = GradientCopy(from->brush.gradient);
+    into->brush.pattern = copy(from->brush.pattern);
+}
+
 void LayerFreeContents(SplineChar *sc,int layer) {
     SplinePointListsFree(sc->layers[layer].splines);
+#ifdef FONTFORGE_CONFIG_TYPE3
+    GradientFree(sc->layers[layer].fill_brush.gradient);
+    free(sc->layers[layer].fill_brush.pattern);
+    GradientFree(sc->layers[layer].stroke_pen.brush.gradient);
+    free(sc->layers[layer].stroke_pen.brush.pattern);
+#endif
     RefCharsFree(sc->layers[layer].refs);
     ImageListsFree(sc->layers[layer].images);
     /* image garbage collection????!!!! */
