@@ -1297,13 +1297,13 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
     char *oldloc;
     int warned = 0;
     struct garbage tofrees;
+    SplineSet *clippath = NULL;
 #if !defined(FONTFORGE_CONFIG_TYPE3)
     char tokbuf[100];
     const int tokbufsize = 100;
 #else
     char *tokbuf;
     const int tokbufsize = 2*65536+10;
-    SplineSet *clippath = NULL;
 
     tokbuf = galloc(tokbufsize);
 #endif
