@@ -219,7 +219,8 @@ return( lineout );
 }
 
 #ifdef FONTFORGE_CONFIG_TYPE3
-static void svg_dumpstroke(FILE *file, struct pen *cpen, struct pen *fallback) {
+static void svg_dumpstroke(FILE *file, struct pen *cpen, struct pen *fallback,
+	SplineChar *sc, SplineChar *nested, int layer) {
     static char *joins[] = { "miter", "round", "bevel", "inherit", NULL };
     static char *caps[] = { "butt", "round", "square", "inherit", NULL };
     struct pen pen;
@@ -235,13 +236,20 @@ static void svg_dumpstroke(FILE *file, struct pen *cpen, struct pen *fallback) {
 	    memcpy(pen.dashes,fallback->dashes,sizeof(pen.dashes));
     }
 
-    if ( pen.brush.col!=COLOR_INHERITED )
-	fprintf( file, "stroke=\"#%02x%02x%02x\" ",
-		COLOR_RED(pen.brush.col), COLOR_GREEN(pen.brush.col), COLOR_BLUE(pen.brush.col));
-    else
-	fprintf( file, "stroke=\"currentColor\" " );
-    if ( pen.brush.opacity>=0 )
-	fprintf( file, "stroke-opacity=\"%g\" ", pen.brush.opacity);
+    if ( pen.brush.gradient!=NULL ) {
+	fprintf( file, "stroke=\"url(#%s", sc->name );
+	if ( nested!=NULL )
+	    fprintf( file, "-%s", nested->name );
+	fprintf( file, "-ly%d-stroke-grad\" ", layer );
+    } else {
+	if ( pen.brush.col!=COLOR_INHERITED )
+	    fprintf( file, "stroke=\"#%02x%02x%02x\" ",
+		    COLOR_RED(pen.brush.col), COLOR_GREEN(pen.brush.col), COLOR_BLUE(pen.brush.col));
+	else
+	    fprintf( file, "stroke=\"currentColor\" " );
+	if ( pen.brush.opacity>=0 )
+	    fprintf( file, "stroke-opacity=\"%g\" ", pen.brush.opacity);
+    }
     if ( pen.width!=WIDTH_INHERITED )
 	fprintf( file, "stroke-width=\"%g\" ", pen.width );
     if ( pen.linecap!=lc_inherited )
@@ -269,7 +277,7 @@ static void svg_dumpstroke(FILE *file, struct pen *cpen, struct pen *fallback) {
 }
 
 static void svg_dumpfill(FILE *file, struct brush *cbrush, struct brush *fallback,
-	int dofill) {
+	int dofill, SplineChar *sc, SplineChar *nested, int layer) {
     struct brush brush;
 
     if ( !dofill ) {
@@ -283,13 +291,20 @@ return;
 	if ( brush.opacity<0 ) brush.opacity = fallback->opacity;
     }
 
-    if ( brush.col!=COLOR_INHERITED )
-	fprintf( file, "fill=\"#%02x%02x%02x\" ",
-		COLOR_RED(brush.col), COLOR_GREEN(brush.col), COLOR_BLUE(brush.col));
-    else
-	fprintf( file, "fill=\"currentColor\" " );
-    if ( brush.opacity>=0 )
-	fprintf( file, "fill-opacity=\"%g\" ", brush.opacity);
+    if ( brush.gradient!=NULL ) {
+	fprintf( file, "fill=\"url(#%s", sc->name );
+	if ( nested!=NULL )
+	    fprintf( file, "-%s", nested->name );
+	fprintf( file, "-ly%d-fill-grad\" ", layer );
+    } else {
+	if ( brush.col!=COLOR_INHERITED )
+	    fprintf( file, "fill=\"#%02x%02x%02x\" ",
+		    COLOR_RED(brush.col), COLOR_GREEN(brush.col), COLOR_BLUE(brush.col));
+	else
+	    fprintf( file, "fill=\"currentColor\" " );
+	if ( brush.opacity>=0 )
+	    fprintf( file, "fill-opacity=\"%g\" ", brush.opacity);
+    }
 }
 
 static SplineSet *TransBy(SplineSet *ss, real trans[4] ) {
@@ -396,6 +411,85 @@ static void DataURI_ImageDump(FILE *file,struct gimage *img) {
     }
     fclose(imgf);
 }
+
+static void svg_dumpgradient(FILE *file,struct gradient *gradient,
+	SplineChar *base,SplineChar *nested,int layer,int is_fill) {
+    int i;
+    Color csame; float osame;
+
+    fprintf( file, "    <%s ", gradient->radius==0 ? "linearGradient" : "radialGradient" );
+    if ( nested==NULL )
+	fprintf( file, " id=\"%s-ly%d-%s-grad", base->name, layer, is_fill ? "fill" : "stroke" );
+    else
+	fprintf( file, " id=\"%s-%s-ly%d-%s-grad", base->name, nested->name, layer, is_fill ? "fill" : "stroke" );
+    fprintf(file, "\n\tgradientUnits=\"userSpaceOnUse\"" );
+    if ( gradient->radius==0 ) {
+	fprintf( file, "\n\tx1=\"%g\" y1=\"%g\" x2=\"%g\" y2=\"%g\"",
+		(double) gradient->start.x, (double) gradient->start.y,
+		(double) gradient->stop.x, (double) gradient->stop.y );
+    } else {
+	if ( gradient->start.x==gradient->stop.x && gradient->start.y==gradient->stop.y )
+	    fprintf( file, "\n\tcx=\"%g\" cy=\"%g\" r=\"%g\"",
+		(double) gradient->stop.x, (double) gradient->stop.y,
+		(double) gradient->radius );
+	else
+	    fprintf( file, "\n\tfx=\"%g\" fy=\"%g\" cx=\"%g\" cy=\"%g\" r=\"%g\"",
+		(double) gradient->start.x, (double) gradient->start.y,
+		(double) gradient->stop.x, (double) gradient->stop.y,
+		(double) gradient->radius );
+    }
+    fprintf(file, "\n\tspreadMethod=\"%s\">\n",
+		gradient->sm == sm_pad ? "pad" :
+		gradient->sm == sm_reflect ? "reflect" :
+		"repeat" );
+
+    csame = -1; osame = -1;
+    for ( i=0; i<gradient->stop_cnt; ++i ) {
+	if ( csame==-1 )
+	    csame = gradient->grad_stops[i].col;
+	else if ( csame!=gradient->grad_stops[i].col )
+	    csame = -2;
+	if ( osame==-1 )
+	    osame = gradient->grad_stops[i].opacity;
+	else if ( osame!=gradient->grad_stops[i].opacity )
+	    osame = -2;
+    }
+    for ( i=0; i<gradient->stop_cnt; ++i ) {
+	fprintf( file, "      <stop offset=\"%g\"", (double) gradient->grad_stops[i].offset );
+	if ( csame<0 ) {
+	    if ( gradient->grad_stops[i].col==COLOR_INHERITED )
+		fprintf( file, " stop-color=\"inherit\"" );
+	    else
+		fprintf( file, " stop-color=\"#%06x\"", gradient->grad_stops[i].col );
+	}
+	if ( osame<0 ) {
+	    if ( gradient->grad_stops[i].opacity==COLOR_INHERITED )
+		fprintf( file, " stop-opacity=\"inherit\"" );
+	    else
+		fprintf( file, " stop-opacity=\"%g\"", (double) gradient->grad_stops[i].opacity );
+	}
+	fprintf( file, ">\n" );
+    }
+    fprintf( file, "    </%s>\n", gradient->radius==0 ? "linearGradient" : "radialGradient" );
+}
+
+static void svg_layer_defs(FILE *file, SplineSet *splines,struct brush *fill_brush,struct pen *stroke_pen,
+	SplineChar *sc, SplineChar *nested, int layer ) {
+    if ( SSHasClip(splines)) {
+	if ( nested==NULL )
+	    fprintf( file, "    <clipPath id=\"%s-ly%d-clip\">\n", sc->name, layer );
+	else
+	    fprintf( file, "    <clipPath id=\"%s-%s-ly%d-clip\">\n", sc->name, nested->name, layer );
+	fprintf(file, "      <path d=\"\n");
+	svg_pathdump(file,sc->layers[layer].splines,16,true,true);
+	fprintf(file, "\"/>\n" );
+	fprintf( file, "    </clipPath>\n" );
+    }
+    if ( fill_brush->gradient!=NULL )
+	svg_dumpgradient(file,fill_brush->gradient,sc,nested,layer,true);
+    if ( stroke_pen->brush.gradient!=NULL )
+	svg_dumpgradient(file,stroke_pen->brush.gradient,sc,nested,layer,false);
+}
 #endif
 
 static void svg_scpathdump(FILE *file, SplineChar *sc,char *endpath,int layer) {
@@ -437,16 +531,33 @@ static void svg_scpathdump(FILE *file, SplineChar *sc,char *endpath,int layer) {
 	for ( i=ly_fore; i<sc->layer_cnt && !needs_defs ; ++i ) {
 	    if ( SSHasClip(sc->layers[i].splines))
 		needs_defs = true;
+	    else if ( sc->layers[i].fill_brush.pattern!=NULL ||
+		    sc->layers[i].fill_brush.gradient!=NULL ||
+		    sc->layers[i].stroke_pen.brush.pattern!=NULL ||
+		    sc->layers[i].stroke_pen.brush.gradient!=NULL )
+		needs_defs = true;
+	    for ( ref=sc->layers[i].refs ; ref!=NULL; ref = ref->next ) {
+		for ( j=0; j<ref->layer_cnt; ++j ) if ( ref->layers[j].splines!=NULL ) {
+		    if ( SSHasClip(ref->layers[j].splines))
+			needs_defs = true;
+		    else if ( ref->layers[j].fill_brush.pattern!=NULL ||
+			    ref->layers[j].fill_brush.gradient!=NULL ||
+			    ref->layers[j].stroke_pen.brush.pattern!=NULL ||
+			    ref->layers[j].stroke_pen.brush.gradient!=NULL )
+			needs_defs = true;
+		}
+	    }
 	}
 	if ( needs_defs ) {
 	    fprintf(file, "  <defs>\n" );
 	    for ( i=ly_fore; i<sc->layer_cnt ; ++i ) {
-		if ( SSHasClip(sc->layers[i].splines)) {
-		    fprintf( file, "    <clipPath id=\"%s-ly%d-clip\">\n", sc->name, i );
-		    fprintf(file, "      <path d=\"\n");
-		    svg_pathdump(file,sc->layers[i].splines,16,true,true);
-		    fprintf(file, "\"/>\n" );
-		    fprintf( file, "    </clipPath>\n" );
+		svg_layer_defs(file,sc->layers[i].splines,&sc->layers[i].fill_brush,&sc->layers[i].stroke_pen,
+			sc,NULL,i);
+		for ( ref=sc->layers[i].refs ; ref!=NULL; ref = ref->next ) {
+		    for ( j=0; j<ref->layer_cnt; ++j ) if ( ref->layers[j].splines!=NULL ) {
+			svg_layer_defs(file,ref->layers[j].splines,&ref->layers[j].fill_brush,&ref->layers[j].stroke_pen,
+				sc,ref->sc,j);
+		    }
 		}
 	    }
 	    fprintf(file, "  </defs>\n" );
@@ -458,10 +569,10 @@ static void svg_scpathdump(FILE *file, SplineChar *sc,char *endpath,int layer) {
 		    fprintf( file, "clip-path=\"url(#%s-ly%d-clip)\" ", sc->name, i );
 		transed = sc->layers[i].splines;
 		if ( sc->layers[i].dostroke ) {
-		    svg_dumpstroke(file,&sc->layers[i].stroke_pen,NULL);
+		    svg_dumpstroke(file,&sc->layers[i].stroke_pen,NULL,sc,NULL,i);
 		    transed = TransBy(transed,sc->layers[i].stroke_pen.trans);
 		}
-		svg_dumpfill(file,&sc->layers[i].fill_brush,NULL,sc->layers[i].dofill);
+		svg_dumpfill(file,&sc->layers[i].fill_brush,NULL,sc->layers[i].dofill,sc,NULL,i);
 		fprintf( file, ">\n" );
 		fprintf(file, "    <path d=\"\n");
 		svg_pathdump(file,transed,12,!sc->layers[i].dostroke,false);
@@ -474,11 +585,13 @@ static void svg_scpathdump(FILE *file, SplineChar *sc,char *endpath,int layer) {
 		for ( j=0; j<ref->layer_cnt; ++j ) if ( ref->layers[j].splines!=NULL ) {
 		    fprintf(file, "   <g " );
 		    transed = ref->layers[j].splines;
+		    if ( SSHasClip(transed))
+			fprintf( file, "clip-path=\"url(#%s-%s-ly%d-clip)\" ", sc->name, ref->sc->name, j );
 		    if ( ref->layers[j].dostroke ) {
-			svg_dumpstroke(file,&ref->layers[j].stroke_pen,&sc->layers[i].stroke_pen);
+			svg_dumpstroke(file,&ref->layers[j].stroke_pen,&sc->layers[i].stroke_pen,sc,ref->sc,j);
 			transed = TransBy(transed,ref->layers[j].stroke_pen.trans);
 		    }
-		    svg_dumpfill(file,&ref->layers[j].fill_brush,&sc->layers[i].fill_brush,ref->layers[j].dofill);
+		    svg_dumpfill(file,&ref->layers[j].fill_brush,&sc->layers[i].fill_brush,ref->layers[j].dofill,sc,ref->sc,j);
 		    fprintf( file, ">\n" );
 		    fprintf(file, "  <path d=\"\n");
 		    svg_pathdump(file,transed,12,!ref->layers[j].dostroke,false);

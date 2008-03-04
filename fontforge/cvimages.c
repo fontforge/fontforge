@@ -59,6 +59,7 @@ return;
 		sc->layers[pos].dofill = true;		/* If unspecified, assume an implied fill in BuildGlyph */
 	    sc->layers[pos].fill_brush.col = e->u.splines.fill.col==0xffffffff ?
 		    COLOR_INHERITED : e->u.splines.fill.col;
+	    /*!!!!!! gradient? pattern? */
 	    sc->layers[pos].stroke_pen.brush.col = e->u.splines.stroke.col==0xffffffff ? COLOR_INHERITED : e->u.splines.stroke.col;
 	    sc->layers[pos].stroke_pen.width = e->u.splines.stroke_width;
 	    sc->layers[pos].stroke_pen.linejoin = e->u.splines.join;

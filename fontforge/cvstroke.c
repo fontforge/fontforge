@@ -988,6 +988,12 @@ return( true );
 		GGadgetIsChecked(GWidgetGetControl(gw,CID_RoundJoin))?lj_round:
 		GGadgetIsChecked(GWidgetGetControl(gw,CID_MiterJoin))?lj_miter:
 			lj_inherited;
+#ifdef FONTFORGE_CONFIG_TYPE3
+	GradientFree(ld->layer->fill_brush.gradient);
+	free(ld->layer->fill_brush.pattern);
+	GradientFree(ld->layer->stroke_pen.brush.gradient);
+	free(ld->layer->stroke_pen.brush.pattern);
+#endif
 	ld->done = ld->ok = true;
 	ld->layer->stroke_pen = temp.stroke_pen;
 	ld->layer->fill_brush = temp.fill_brush;
