@@ -155,7 +155,7 @@ enum pstoks { pt_eof=-1, pt_moveto, pt_rmoveto, pt_curveto, pt_rcurveto,
     pt_setgray, pt_currentgray, pt_sethsbcolor, pt_currenthsbcolor,
     pt_setrgbcolor, pt_currentrgbcolor, pt_setcmykcolor, pt_currentcmykcolor,
     pt_currentpoint,
-    pt_fill, pt_stroke,
+    pt_fill, pt_stroke, pt_clip,
 
     pt_imagemask,
 
@@ -200,7 +200,7 @@ static char *toknames[] = { "moveto", "rmoveto", "curveto", "rcurveto",
 	"setgray", "currentgray", "sethsbcolor", "currenthsbcolor",
 	"setrgbcolor", "currentrgbcolor", "setcmykcolor", "currentcmykcolor",
 	"currentpoint",
-	"fill", "stroke",
+	"fill", "stroke", "clip",
 
 	"imagemask",
 
@@ -617,6 +617,7 @@ static void ECCatagorizePoints( EntityChar *ec ) {
 
     for ( ent=ec->splines; ent!=NULL; ent=ent->next ) if ( ent->type == et_splines ) {
 	SPLCatagorizePoints( ent->u.splines.splines );
+	SPLCatagorizePoints( ent->clippath );
     }
 }
 
@@ -983,7 +984,7 @@ return(nsp);
 }
 
 static Entity *EntityCreate(SplinePointList *head,int linecap,int linejoin,
-	real linewidth, real *transform) {
+	real linewidth, real *transform, SplineSet *clippath) {
     Entity *ent = gcalloc(1,sizeof(Entity));
     ent->type = et_splines;
     ent->u.splines.splines = head;
@@ -994,6 +995,7 @@ static Entity *EntityCreate(SplinePointList *head,int linecap,int linejoin,
     ent->u.splines.stroke.col = 0xffffffff;
     ent->u.splines.fill.opacity = 1.0;
     ent->u.splines.stroke.opacity = 1.0;
+    ent->clippath = SplinePointListCopy(clippath);
     memcpy(ent->u.splines.transform,transform,6*sizeof(real));
 return( ent );
 }
@@ -1280,6 +1282,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 	int linecap, linejoin;
 	Color fore;
 	DashType dashes[DASH_MAX];
+	SplineSet *clippath;
     } gsaves[30];
     int gsp = 0;
     int ccnt=0;
@@ -1300,6 +1303,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 #else
     char *tokbuf;
     const int tokbufsize = 2*65536+10;
+    SplineSet *clippath = NULL;
 
     tokbuf = galloc(tokbufsize);
 #endif
@@ -2044,6 +2048,9 @@ printf( "-%s-\n", toknames[tok]);
 	    }
 	  break;
 	  case pt_newpath:
+	    SplinePointListsFree(head);
+	    head = NULL;
+	    cur = NULL;
 	  break;
 	  case pt_lineto: case pt_rlineto:
 	  case pt_moveto: case pt_rmoveto:
@@ -2435,7 +2442,7 @@ printf( "-%s-\n", toknames[tok]);
 		    memcpy(ent->u.splines.transform,transform,sizeof(transform));
 		}
 	    } else {
-		ent = EntityCreate(head,linecap,linejoin,linewidth,transform);
+		ent = EntityCreate(head,linecap,linejoin,linewidth,transform,clippath);
 		ent->next = ec->splines;
 		ec->splines = ent;
 	    }
@@ -2445,7 +2452,16 @@ printf( "-%s-\n", toknames[tok]);
 		ent->u.splines.stroke.col = fore;
 	    head = NULL; cur = NULL;
 	  break;
-
+	  case pt_clip:
+	    /* I really should intersect the old clip path with the new, but */
+	    /*  I don't trust my intersect routine, crashes too often */
+	    SplinePointListsFree(clippath);
+	    clippath = SplinePointListCopy(head);
+	    if ( clippath!=NULL && clippath->first!=clippath->last ) {
+		SplineMake3(clippath->last,clippath->first);
+		clippath->last = clippath->first;
+	    }
+	  break;
 	  case pt_imagemask:
 #ifdef FONTFORGE_CONFIG_TYPE3
 	    i = PSAddImagemask(ec,stack,sp,transform,fore);
@@ -2480,6 +2496,7 @@ printf( "-%s-\n", toknames[tok]);
 		gsaves[gsp].linecap = linecap;
 		gsaves[gsp].linejoin = linejoin;
 		gsaves[gsp].fore = fore;
+		gsaves[gsp].clippath = SplinePointListCopy(clippath);
 		++gsp;
 		/* I should be saving the "current path" too, but that's too hard */
 	    }
@@ -2498,6 +2515,8 @@ printf( "-%s-\n", toknames[tok]);
 		linecap = gsaves[gsp].linecap;
 		linejoin = gsaves[gsp].linejoin;
 		fore = gsaves[gsp].fore;
+		SplinePointListsFree(clippath);
+		clippath = gsaves[gsp].clippath;
 	    }
 	  break;
 	  case pt_null:
@@ -2827,10 +2846,15 @@ printf( "-%s-\n", toknames[tok]);
     }
     freestuff(stack,sp,&dict,&gb,&tofrees);
     if ( head!=NULL ) {
-	ent = EntityCreate(head,linecap,linejoin,linewidth,transform);
+	ent = EntityCreate(head,linecap,linejoin,linewidth,transform,clippath);
 	ent->next = ec->splines;
 	ec->splines = ent;
     }
+    while ( gsp>=0 ) {
+	SplinePointListsFree(gsaves[gsp].clippath);
+	--gsp;
+    }
+    SplinePointListsFree(clippath);
     ECCatagorizePoints(ec);
     if ( ec->width == UNDEFINED_WIDTH )
 	ec->width = wrapper->advance_width;
@@ -3071,6 +3095,7 @@ static void EntityCharCorrectDir(EntityChar *ec) {
 		for ( ss=ent->u.splines.splines; ss!=NULL; ss=ss->next )
 		    SplineSetReverse(ss);
 	    }
+	    SplineSetsCorrect(ent->clippath,&changed);
 	}
     }
 }
@@ -3116,6 +3141,7 @@ SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags,int is_stroked)
 	    for ( ent=ec->splines; ent!=NULL; ent = ent->next ) {
 		if ( ent->type == et_splines &&
 			(ent->u.splines.fill.col==0xffffff ||
+			 /*ent->u.splines.clippath!=NULL ||*/
 			 (ent->u.splines.stroke_width!=0 && ent->u.splines.stroke.col!=0xffffffff))) {
 		    ask = true;
 	    break;
@@ -3212,6 +3238,7 @@ SplinePointList *SplinesFromEntityChar(EntityChar *ec,int *flags,int is_stroked)
 		    for ( last = new; last->next!=NULL; last=last->next );
 	    }
 	}
+	SplinePointListsFree(ent->clippath);
 	free(ent);
     }
 return( head );

@@ -138,6 +138,7 @@ static SplinePointList *localSplinesFromEntities(Entity *ent, Color bgcol, int i
 		}
 	    }
 	}
+	SplinePointListsFree(ent->clippath);
 	free(ent);
     }
 

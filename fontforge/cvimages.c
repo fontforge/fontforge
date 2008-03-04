@@ -37,6 +37,7 @@ void SCAppendEntityLayers(SplineChar *sc, Entity *ent) {
     int cnt, pos;
     Entity *e, *enext;
     Layer *old = sc->layers;
+    SplineSet *ss;
 
     for ( e=ent, cnt=0; e!=NULL; e=e->next, ++cnt );
     pos = sc->layer_cnt;
@@ -82,6 +83,13 @@ return;
 	    ilist->bb.maxy = ilist->yoff;
 	    ilist->bb.maxx = ilist->xoff + base->width*ilist->xscale;
 	    ilist->bb.miny = ilist->yoff - base->height*ilist->yscale;
+	}
+	if ( e->clippath ) {
+	    for ( ss=e->clippath; ss->next!=NULL; ss=ss->next )
+		ss->is_clip_path = true;
+	    ss->is_clip_path = true;
+	    ss->next = sc->layers[pos].splines;
+	    sc->layers[pos].splines = e->clippath;
 	}
 	free(e);
     }

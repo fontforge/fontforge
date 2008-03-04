@@ -2069,6 +2069,9 @@ static void CVPopupSelectInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
       case 2:
 	CVAddAnchor(cv);
       break;
+      case 3:
+	CVMakeClipPath(cv);
+      break;
     }
 }
 
@@ -2122,6 +2125,15 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
 		( j==0 && cv->p.spline!=NULL ) ||
 		( j==1 && cv->p.ref==NULL ))
 	    mi[i].ti.disabled = true;
+	mi[i].ti.fg = COLOR_DEFAULT;
+	mi[i].ti.bg = COLOR_DEFAULT;
+	mi[i].mid = j;
+	mi[i].invoke = CVPopupSelectInvoked;
+    }
+
+    if ( cv->b.sc->parent->multilayer ) {
+	mi[i].ti.text = (unichar_t *) _("Make Clip Path");
+	mi[i].ti.text_is_1byte = true;
 	mi[i].ti.fg = COLOR_DEFAULT;
 	mi[i].ti.bg = COLOR_DEFAULT;
 	mi[i].mid = j;

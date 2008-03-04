@@ -75,6 +75,7 @@ typedef struct entity {
 	    struct entity *group;
 	} group;
     } u;
+    SplineSet *clippath;
     DBounds bb;
     struct entity *next;
 } Entity;

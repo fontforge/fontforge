@@ -913,6 +913,7 @@ SplineSet *SSPSApprox(SplineSet *ss) {
 	    ret->last = ret->first;
 	}
     }
+    ret->is_clip_path = ss->is_clip_path;
 return( ret );
 }
 

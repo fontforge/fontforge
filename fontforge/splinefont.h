@@ -913,8 +913,11 @@ typedef struct splinepointlist {
     struct splinepointlist *next;
     spiro_cp *spiros;
     uint16 spiro_cnt, spiro_max;
+	/* These could be bit fields, but bytes are easier to access and we */
+	/*  don't need the space (yet) */
     uint8 ticked;
     uint8 beziers_need_optimizer;	/* If the spiros have changed in spiro mode, then reverting to bezier mode might, someday, run a simplifier */
+    uint8 is_clip_path;			/* In type3/svg fonts */
     char *contour_name;
 } SplinePointList, SplineSet;
 
@@ -2868,4 +2871,8 @@ extern char *RandomParaFromScriptLang(uint32 script, uint32 lang, SplineFont *sf
 extern char *RandomParaFromScript(uint32 script, uint32 *lang, SplineFont *sf);
 extern int   SF2Scripts(SplineFont *sf,uint32 scripts[100]);
 extern char **SFScriptLangs(SplineFont *sf,struct lang_frequencies ***freq);
+
+extern int SSHasClip(SplineSet *ss);
+extern int SSHasDrawn(SplineSet *ss);
+
 #endif

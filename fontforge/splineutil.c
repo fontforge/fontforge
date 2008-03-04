@@ -1220,6 +1220,7 @@ SplinePointList *SplinePointListCopy1(const SplinePointList *spl) {
     Spline *spline;
 
     cur = chunkalloc(sizeof(SplinePointList));
+    cur->is_clip_path = spl->is_clip_path;
 
     for ( pt=spl->first; ;  ) {
 	cpt = chunkalloc(sizeof(SplinePoint));
@@ -6532,4 +6533,22 @@ return( false );
 	if ( sp2==ss->first )
 return( false );
     }
+}
+
+int SSHasClip(SplineSet *ss) {
+    while ( ss!=NULL ) {
+	if ( ss->is_clip_path )
+return( true );
+	ss = ss->next;
+    }
+return( false );
+}
+
+int SSHasDrawn(SplineSet *ss) {
+    while ( ss!=NULL ) {
+	if ( !ss->is_clip_path )
+return( true );
+	ss = ss->next;
+    }
+return( false );
 }

@@ -2022,15 +2022,15 @@ return;
     }
 
     sf->glyphs[sc->orig_pos] = NULL;
-    SplineCharFree(sc);
 
-    for ( bdf=sc->parent->bitmaps; bdf!=NULL; bdf = bdf->next ) {
+    for ( bdf=sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
 	if ( sc->orig_pos<bdf->glyphcnt && (bfc = bdf->glyphs[sc->orig_pos])!= NULL ) {
 	    bdf->glyphs[sc->orig_pos] = NULL;
 	    BDFCharFree(bfc);
 	}
     }
 
+    SplineCharFree(sc);
     GlyphHashFree(sf);
 }
 
