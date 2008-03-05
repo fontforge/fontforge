@@ -5616,7 +5616,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
 		    if ( fv->showhmetrics&fvm_origin )
 			GDrawDrawLine(pixmap,x0,i*fv->cbh+fv->lab_height+yorg-3,x0,
 				i*fv->cbh+fv->lab_height+yorg+2,METRICS_ORIGIN);
-		    x1 = x0 + bdfc->width;
+		    x1 = x0 + fv->magnify*bdfc->width;
 		    if ( fv->showhmetrics&fvm_advanceat )
 			GDrawDrawLine(pixmap,x1,i*fv->cbh+fv->lab_height+1,x1,
 				(i+1)*fv->cbh-1,METRICS_ADVANCE);
@@ -5655,7 +5655,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
     }
     if ( fv->showhmetrics&fvm_baseline ) {
 	for ( i=0; i<=fv->rowcnt; ++i )
-	    GDrawDrawLine(pixmap,0,i*fv->cbh+fv->lab_height+fv->show->ascent+1,fv->width,i*fv->cbh+fv->lab_height+fv->show->ascent+1,METRICS_BASELINE);
+	    GDrawDrawLine(pixmap,0,i*fv->cbh+fv->lab_height+fv->magnify*fv->show->ascent+1,fv->width,i*fv->cbh+fv->lab_height+fv->magnify*fv->show->ascent+1,METRICS_BASELINE);
     }
     GDrawPopClip(pixmap,&old);
     GDrawSetDither(NULL, true);
