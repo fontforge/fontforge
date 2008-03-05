@@ -3153,7 +3153,7 @@ SplineFont *SplineFontBlank(int charcnt) {
     sf->fullname = copy(sf->fontname);
     sf->familyname = copy(sf->fontname);
     sprintf( buffer, "%s.sfd", sf->fontname);
-    sf->origname = copy(buffer);
+    sf->origname = ToAbsolute(buffer);
     sf->weight = copy("Medium");
     if ( author!=NULL )
 	sprintf( buffer, "Created by %.50s with FontForge 2.0 (http://fontforge.sf.net)", author );
