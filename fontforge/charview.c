@@ -6062,7 +6062,7 @@ static void CVDoClear(CharView *cv) {
 	SCRemoveSelectedMinimumDistances(cv->b.sc,2);
     cv->b.layerheads[cv->b.drawmode]->splines = SplinePointListRemoveSelected(cv->b.sc,
 	    cv->b.layerheads[cv->b.drawmode]->splines);
-    for ( refs=cv->b.sc->layers[layer].refs; refs!=NULL; refs = rnext ) {
+    for ( refs=cv->b.layerheads[cv->b.drawmode]->refs; refs!=NULL; refs = rnext ) {
 	rnext = refs->next;
 	if ( refs->selected )
 	    SCRemoveDependent(cv->b.sc,refs,layer);
