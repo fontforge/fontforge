@@ -137,7 +137,7 @@ static int cmpuint16(const void *u1, const void *u2) {
 return( ((int) *((const uint16 *) u1)) - ((int) *((const uint16 *) u2)) );
 }
 
-static char *GlyphsToNames(struct ttfinfo *info,uint16 *glyphs) {
+static char *GlyphsToNames(struct ttfinfo *info,uint16 *glyphs,int make_uniq) {
     int i, j, len, off;
     char *ret, *pt;
 
@@ -146,16 +146,18 @@ return( copy(""));
 
     /* Adobe produces coverage tables containing duplicate glyphs in */
     /*  GaramondPremrPro.otf. We want unique glyphs, so enforce that */
-    for ( i=0 ; glyphs[i]!=0xffff; ++i );
-    qsort(glyphs,i,sizeof(uint16),cmpuint16);
-    for ( i=0; glyphs[i]!=0xffff; ++i ) {
-	if ( glyphs[i+1]==glyphs[i] ) {
-	    for ( j=i+1; glyphs[j]==glyphs[i]; ++j );
-	    off = j-i -1;
-	    for ( j=i+1; ; ++j ) {
-		glyphs[j] = glyphs[j+off];
-		if ( glyphs[j]==0xffff )
-	    break;
+    if ( make_uniq ) {
+	for ( i=0 ; glyphs[i]!=0xffff; ++i );
+	qsort(glyphs,i,sizeof(uint16),cmpuint16);
+	for ( i=0; glyphs[i]!=0xffff; ++i ) {
+	    if ( glyphs[i+1]==glyphs[i] ) {
+		for ( j=i+1; glyphs[j]==glyphs[i]; ++j );
+		off = j-i -1;
+		for ( j=i+1; ; ++j ) {
+		    glyphs[j] = glyphs[j+off];
+		    if ( glyphs[j]==0xffff )
+		break;
+		}
 	    }
 	}
     }
@@ -1074,7 +1076,7 @@ static void g___ContextSubTable1(FILE *ttf, int stoffset,
 
 	cnt = 0;
 	for ( i=0; i<rcnt; ++i ) for ( j=0; j<rules[i].scnt; ++j ) {
-	    rule[cnt].u.glyph.names = GlyphsToNames(info,rules[i].subrules[j].glyphs);
+	    rule[cnt].u.glyph.names = GlyphsToNames(info,rules[i].subrules[j].glyphs,false);
 	    rule[cnt].lookup_cnt = rules[i].subrules[j].scnt;
 	    rule[cnt].lookups = rules[i].subrules[j].sl;
 	    rules[i].subrules[j].sl = NULL;
@@ -1222,9 +1224,9 @@ return;
 
 	cnt = 0;
 	for ( i=0; i<rcnt; ++i ) for ( j=0; j<rules[i].scnt; ++j ) {
-	    rule[cnt].u.glyph.back = GlyphsToNames(info,rules[i].subrules[j].bglyphs);
-	    rule[cnt].u.glyph.names = GlyphsToNames(info,rules[i].subrules[j].glyphs);
-	    rule[cnt].u.glyph.fore = GlyphsToNames(info,rules[i].subrules[j].fglyphs);
+	    rule[cnt].u.glyph.back = GlyphsToNames(info,rules[i].subrules[j].bglyphs,false);
+	    rule[cnt].u.glyph.names = GlyphsToNames(info,rules[i].subrules[j].glyphs,false);
+	    rule[cnt].u.glyph.fore = GlyphsToNames(info,rules[i].subrules[j].fglyphs,false);
 	    rule[cnt].lookup_cnt = rules[i].subrules[j].scnt;
 	    rule[cnt].lookups = rules[i].subrules[j].sl;
 	    rules[i].subrules[j].sl = NULL;
@@ -1593,7 +1595,7 @@ return;
 	rule->u.coverage.ncovers = galloc(gcnt*sizeof(char **));
 	for ( i=0; i<gcnt; ++i ) {
 	    glyphs =  getCoverageTable(ttf,stoffset+coverage[i],info);
-	    rule->u.coverage.ncovers[i] = GlyphsToNames(info,glyphs);
+	    rule->u.coverage.ncovers[i] = GlyphsToNames(info,glyphs,true);
 	    free(glyphs);
 	}
 	rule->lookup_cnt = scnt;
@@ -1680,7 +1682,7 @@ return;
 	rule->u.coverage.bcovers = galloc(bcnt*sizeof(char **));
 	for ( i=0; i<bcnt; ++i ) {
 	    glyphs =  getCoverageTable(ttf,stoffset+bcoverage[i],info);
-	    rule->u.coverage.bcovers[i] = GlyphsToNames(info,glyphs);
+	    rule->u.coverage.bcovers[i] = GlyphsToNames(info,glyphs,true);
 	    free(glyphs);
 	}
 
@@ -1688,7 +1690,7 @@ return;
 	rule->u.coverage.ncovers = galloc(gcnt*sizeof(char **));
 	for ( i=0; i<gcnt; ++i ) {
 	    glyphs =  getCoverageTable(ttf,stoffset+coverage[i],info);
-	    rule->u.coverage.ncovers[i] = GlyphsToNames(info,glyphs);
+	    rule->u.coverage.ncovers[i] = GlyphsToNames(info,glyphs,true);
 	    free(glyphs);
 	}
 
@@ -1696,7 +1698,7 @@ return;
 	rule->u.coverage.fcovers = galloc(fcnt*sizeof(char **));
 	for ( i=0; i<fcnt; ++i ) {
 	    glyphs =  getCoverageTable(ttf,stoffset+fcoverage[i],info);
-	    rule->u.coverage.fcovers[i] = GlyphsToNames(info,glyphs);
+	    rule->u.coverage.fcovers[i] = GlyphsToNames(info,glyphs,true);
 	    free(glyphs);
 	}
 
@@ -2170,18 +2172,18 @@ return;		/* Don't understand this format type */
 	rule->u.rcoverage.ncovers = galloc(sizeof(char *));
 	rule->u.rcoverage.bcovers = galloc(bcnt*sizeof(char *));
 	rule->u.rcoverage.fcovers = galloc(fcnt*sizeof(char *));
-	rule->u.rcoverage.replacements = GlyphsToNames(info,sglyphs);
+	rule->u.rcoverage.replacements = GlyphsToNames(info,sglyphs,false);
 	glyphs = getCoverageTable(ttf,stoffset+coverage,info);
-	rule->u.rcoverage.ncovers[0] = GlyphsToNames(info,glyphs);
+	rule->u.rcoverage.ncovers[0] = GlyphsToNames(info,glyphs,false);
 	free(glyphs);
 	for ( i=0; i<bcnt; ++i ) {
 	    glyphs = getCoverageTable(ttf,stoffset+bcoverage[i],info);
-	    rule->u.rcoverage.bcovers[i] = GlyphsToNames(info,glyphs);
+	    rule->u.rcoverage.bcovers[i] = GlyphsToNames(info,glyphs,true);
 	    free(glyphs);
 	}
 	for ( i=0; i<fcnt; ++i ) {
 	    glyphs = getCoverageTable(ttf,stoffset+fcoverage[i],info);
-	    rule->u.rcoverage.fcovers[i] = GlyphsToNames(info,glyphs);
+	    rule->u.rcoverage.fcovers[i] = GlyphsToNames(info,glyphs,true);
 	    free(glyphs);
 	}
 	rule->lookup_cnt = 0;		/* substitution lookups needed for reverse chaining */
