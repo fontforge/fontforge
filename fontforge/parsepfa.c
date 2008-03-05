@@ -2489,9 +2489,15 @@ static void realdecrypt(struct fontparse *fp,FILE *in, FILE *temp) {
 	if ( strstr(buffer, "Blend")!=NULL )
 	    saw_blend = true;
 	if ( first && buffer[0]=='\200' ) {
+	    int len = strlen( buffer );
 	    hassectionheads = 1;
 	    fp->fd->wasbinary = true;
-	    parseline(fp,buffer+6,in);
+	    /* if there were a newline in the section header (in the length word)*/
+	    /*  we would stop at it, and not read the full header */
+	    if ( len<6 )	/* eat the header */
+		while ( len<6 ) { getc(in); ++len; }
+	    else	/* Otherwise parse anything else on the line */
+		parseline(fp,buffer+6,in);
 	} else if ( strstr(buffer,"CharProcs")!=NULL && strstr(buffer,"begin")!=NULL ) {
 	    parsetype3(fp,in);
 return;
