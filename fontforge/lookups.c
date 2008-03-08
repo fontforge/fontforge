@@ -2731,7 +2731,7 @@ static int ContextualMatch(struct lookup_subtable *sub,struct lookup_data *data,
     int i, cpos, retpos, r;
     FPST *fpst = sub->fpst;
     int lookup_flags = sub->lookup->lookup_flags;
-    char *pt, *start;
+    char *pt;
 
     /* If we should skip the current glyph then don't try for a match here */
     cpos = skipglyphs(lookup_flags,data,pos);
@@ -2743,41 +2743,35 @@ return( 0 );
 	for ( i=pos; i<data->cnt; ++i )
 	    data->str[i].context_pos = -1;
 
-/* Handle backtrack */
+/* Handle backtrack (backtrace in the rule is stored in reverse textual order) */
 	if ( fpst->type == pst_chainpos || fpst->type == pst_chainsub ) {
 	    if ( fpst->format==pst_glyphs ) {
 		pt = rule->u.glyph.back;
-		start = strrchr(pt,' ');
-		if ( start==NULL ) start = pt-1;
 		for ( i=bskipglyphs(lookup_flags,data,pos-1), cpos=0; i>=0; i = bskipglyphs(lookup_flags,data,i-1)) {
 		    char *name = data->str[i].sc->name;
 		    int len = strlen( name );
-		    if ( strncmp(name,start,len)!=0 || (start[len]!='\0' && start[len]!=' '))
+		    if ( strncmp(name,pt,len)!=0 || (pt[len]!='\0' && pt[len]!=' '))
 		break;
-		    while ( start>=pt && *start==' ' ) --start;
-		    if ( start<pt ) {
-			pt = NULL;
-		break;
-		    }
-		    while ( start>=pt && *start!=' ' ) --start;
+		    pt += len;
+		    while ( *pt==' ' ) ++pt;
 		}
 		if ( *pt!='\0' )
     continue;		/* didn't match */
 	    } else if ( fpst->format==pst_class ) {
-		for ( i=bskipglyphs(lookup_flags,data,pos-1), cpos=rule->u.class.bcnt-1; i>=0 && cpos>=0; i = bskipglyphs(lookup_flags,data,i-1)) {
+		for ( i=bskipglyphs(lookup_flags,data,pos-1), cpos=0; i>=0 && cpos<rule->u.class.bcnt; i = bskipglyphs(lookup_flags,data,i-1)) {
 		    if ( !GlyphNameInClass(data->str[i].sc->name,fpst->bclass[rule->u.class.bclasses[cpos]]) )
 		break;
-		    --cpos;
+		    ++cpos;
 		}
-		if ( cpos>=0 )
+		if ( cpos!=rule->u.class.bcnt )
     continue;		/* didn't match */
 	    } else if ( fpst->format==pst_coverage ) {
-		for ( i=bskipglyphs(lookup_flags,data,pos-1), cpos=rule->u.coverage.bcnt-1; i>=0 && cpos>=0; i = bskipglyphs(lookup_flags,data,i-1)) {
+		for ( i=bskipglyphs(lookup_flags,data,pos-1), cpos=0; i>=0 && cpos<rule->u.coverage.bcnt; i = bskipglyphs(lookup_flags,data,i-1)) {
 		    if ( !GlyphNameInClass(data->str[i].sc->name,rule->u.coverage.bcovers[cpos]) )
 		break;
-		    --cpos;
+		    ++cpos;
 		}
-		if ( cpos>=0 )
+		if ( cpos<rule->u.coverage.bcnt )
     continue;		/* didn't match */
 	    }
 	}
