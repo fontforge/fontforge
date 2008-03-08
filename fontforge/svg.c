@@ -240,7 +240,12 @@ static void svg_dumpstroke(FILE *file, struct pen *cpen, struct pen *fallback,
 	fprintf( file, "stroke=\"url(#%s", sc->name );
 	if ( nested!=NULL )
 	    fprintf( file, "-%s", nested->name );
-	fprintf( file, "-ly%d-stroke-grad\" ", layer );
+	fprintf( file, "-ly%d-stroke-grad)\" ", layer );
+    } else if ( pen.brush.pattern!=NULL ) {
+	fprintf( file, "stroke=\"url(#%s", sc->name );
+	if ( nested!=NULL )
+	    fprintf( file, "-%s", nested->name );
+	fprintf( file, "-ly%d-stroke-pattern)\" ", layer );
     } else {
 	if ( pen.brush.col!=COLOR_INHERITED )
 	    fprintf( file, "stroke=\"#%02x%02x%02x\" ",
@@ -295,7 +300,12 @@ return;
 	fprintf( file, "fill=\"url(#%s", sc->name );
 	if ( nested!=NULL )
 	    fprintf( file, "-%s", nested->name );
-	fprintf( file, "-ly%d-fill-grad\" ", layer );
+	fprintf( file, "-ly%d-fill-grad)\" ", layer );
+    } else if ( brush.pattern!=NULL ) {
+	fprintf( file, "fill=\"url(#%s", sc->name );
+	if ( nested!=NULL )
+	    fprintf( file, "-%s", nested->name );
+	fprintf( file, "-ly%d-fill-pattern)\" ", layer );
     } else {
 	if ( brush.col!=COLOR_INHERITED )
 	    fprintf( file, "fill=\"#%02x%02x%02x\" ",
@@ -419,9 +429,9 @@ static void svg_dumpgradient(FILE *file,struct gradient *gradient,
 
     fprintf( file, "    <%s ", gradient->radius==0 ? "linearGradient" : "radialGradient" );
     if ( nested==NULL )
-	fprintf( file, " id=\"%s-ly%d-%s-grad", base->name, layer, is_fill ? "fill" : "stroke" );
+	fprintf( file, " id=\"%s-ly%d-%s-grad\"", base->name, layer, is_fill ? "fill" : "stroke" );
     else
-	fprintf( file, " id=\"%s-%s-ly%d-%s-grad", base->name, nested->name, layer, is_fill ? "fill" : "stroke" );
+	fprintf( file, " id=\"%s-%s-ly%d-%s-grad\"", base->name, nested->name, layer, is_fill ? "fill" : "stroke" );
     fprintf(file, "\n\tgradientUnits=\"userSpaceOnUse\"" );
     if ( gradient->radius==0 ) {
 	fprintf( file, "\n\tx1=\"%g\" y1=\"%g\" x2=\"%g\" y2=\"%g\"",
@@ -456,7 +466,7 @@ static void svg_dumpgradient(FILE *file,struct gradient *gradient,
     }
     for ( i=0; i<gradient->stop_cnt; ++i ) {
 	fprintf( file, "      <stop offset=\"%g\"", (double) gradient->grad_stops[i].offset );
-	if ( csame<0 ) {
+	if ( csame==-2 ) {
 	    if ( gradient->grad_stops[i].col==COLOR_INHERITED )
 		fprintf( file, " stop-color=\"inherit\"" );
 	    else
@@ -468,10 +478,39 @@ static void svg_dumpgradient(FILE *file,struct gradient *gradient,
 	    else
 		fprintf( file, " stop-opacity=\"%g\"", (double) gradient->grad_stops[i].opacity );
 	}
-	fprintf( file, ">\n" );
+	fprintf( file, "/>\n" );
     }
     fprintf( file, "    </%s>\n", gradient->radius==0 ? "linearGradient" : "radialGradient" );
 }
+
+#if 0
+static void svg_dumppattern(FILE *file,struct pattern *pattern,
+	SplineChar *base,SplineChar *nested,int layer,int is_fill) {
+
+    fprintf( file, "    <pattern " );
+    if ( nested==NULL )
+	fprintf( file, " id=\"%s-ly%d-%s-pattern\"", base->name, layer, is_fill ? "fill" : "stroke" );
+    else
+	fprintf( file, " id=\"%s-%s-ly%d-%s-pattern\"", base->name, nested->name, layer, is_fill ? "fill" : "stroke" );
+    fprintf(file, "\n\tpatternUnits=\"userSpaceOnUse\"" );
+    fprintf( file, "\n\tviewBox=\"%g %g %g %g\"",
+	    (double) pattern->bbox.minx, (double) pattern->bbox.miny,
+	    (double) pattern->bbox.maxx-pattern->bbox.minx,
+	    (double) pattern->bbox.maxy-pattern->bbox.miny );
+    fprintf( file, "\n\twidth=\"%g\" height=\"%g\"",
+	    (double) pattern->width, (double) pattern->height );
+    if ( pattern->transform[0]!=1 || pattern->transform[1]!=0 ||
+	    pattern->transform[2]!=0 || pattern->transform[3]!=1 ||
+	    pattern->transform[4]!=0 || pattern->transform[5]!=0 ) {
+	fprintf( file, "\n\tpatternTransform=\"matrix(%g %g %g %g %g %g)\"",
+		pattern->transform[0], pattern->transform[1],
+		pattern->transform[2], pattern->transform[3],
+		pattern->transform[4], pattern->transform[5] );
+    }
+    /* Output the pattern....!!!!! */
+    fprintf( file, "    </pattern>\n" );
+}
+#endif
 
 static void svg_layer_defs(FILE *file, SplineSet *splines,struct brush *fill_brush,struct pen *stroke_pen,
 	SplineChar *sc, SplineChar *nested, int layer ) {
@@ -526,7 +565,7 @@ static void svg_scpathdump(FILE *file, SplineChar *sc,char *endpath,int layer) {
 	putc('"',file);
 	fputs(" />\n",file);
     } else {
-	putc('>',file);
+	fputs(">\n",file);
 #ifdef FONTFORGE_CONFIG_TYPE3
 	for ( i=ly_fore; i<sc->layer_cnt && !needs_defs ; ++i ) {
 	    if ( SSHasClip(sc->layers[i].splines))

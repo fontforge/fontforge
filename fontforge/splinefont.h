@@ -157,11 +157,18 @@ struct gradient {
     } *grad_stops;
 };
 
+struct pattern {
+    char *pattern;
+    real width, height;		/* Pattern is scaled to be repeated every width/height (in user coordinates) */
+    DBounds bbox;		/* Size of the pattern in pattern coords. */
+    real transform[6];
+};
+
 struct brush {
     uint32 col;
     float opacity;		/* number between [0,1], only for svg/pdf */
-    char *pattern;		/* The name of a glyph in the font */
-    struct gradient *gradient;
+    struct pattern *pattern;	/* A pattern to be tiled */
+    struct gradient *gradient;	/* A gradient fill */
 };
 #define WIDTH_INHERITED	(-1)
 #define DASH_INHERITED	255	/* if the dashes[0]==0 && dashes[1]==DASH_INHERITED */
@@ -2067,6 +2074,8 @@ extern void BCRegularizeBitmap(BDFChar *bdfc);
 extern void BCRegularizeGreymap(BDFChar *bdfc);
 extern void BCPasteInto(BDFChar *bc,BDFChar *rbc,int ixoff,int iyoff, int invert, int cleartoo);
 extern void BCRotateCharForVert(BDFChar *bc,BDFChar *from, BDFFont *frombdf);
+extern int GradientHere(double scale,DBounds *bbox,int iy,int ix,struct gradient *grad,
+	int defgrey);
 extern BDFChar *SplineCharRasterize(SplineChar *sc, int layer, double pixelsize);
 extern BDFFont *SplineFontToBDFHeader(SplineFont *_sf, int pixelsize, int indicate);
 extern BDFFont *SplineFontRasterize(SplineFont *sf, int layer, int pixelsize, int indicate);
@@ -2892,6 +2901,8 @@ extern int SSHasClip(SplineSet *ss);
 extern int SSHasDrawn(SplineSet *ss);
 extern struct gradient *GradientCopy(struct gradient *old);
 extern void GradientFree(struct gradient *grad);
+extern struct pattern *PatternCopy(struct pattern *old);
+extern void PatternFree(struct pattern *pat);
 extern void BrushCopy(struct brush *into, struct brush *from);
 extern void PenCopy(struct pen *into, struct pen *from);
 

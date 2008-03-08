@@ -394,8 +394,8 @@ return;
 	ImageListsFree(ref->layers[i].images);
 	GradientFree(ref->layers[i].fill_brush.gradient);
 	GradientFree(ref->layers[i].stroke_pen.brush.gradient);
-	free(ref->layers[i].fill_brush.pattern);
-	free(ref->layers[i].stroke_pen.brush.pattern);
+	PatternFree(ref->layers[i].fill_brush.pattern);
+	PatternFree(ref->layers[i].stroke_pen.brush.pattern);
     }
     free(ref->layers);
 #else
@@ -2863,9 +2863,9 @@ void SCReinstanciateRefChar(SplineChar *sc,RefChar *rf,int layer) {
     for ( i=0; i<rf->layer_cnt; ++i ) {
 	SplinePointListsFree(rf->layers[i].splines);
 	GradientFree(rf->layers[i].fill_brush.gradient);
-	free(rf->layers[i].fill_brush.pattern);
+	PatternFree(rf->layers[i].fill_brush.pattern);
 	GradientFree(rf->layers[i].stroke_pen.brush.gradient);
-	free(rf->layers[i].stroke_pen.brush.pattern);
+	PatternFree(rf->layers[i].stroke_pen.brush.pattern);
     }
     free( rf->layers );
     rf->layers = NULL;
@@ -5539,6 +5539,26 @@ void SplineCharListsFree(struct splinecharlist *dlist) {
     }
 }
 
+struct pattern *PatternCopy(struct pattern *old) {
+    struct pattern *pat = chunkalloc(sizeof(struct pattern));
+
+    if ( old==NULL )
+return( NULL );
+
+    pat = chunkalloc(sizeof(struct pattern));
+
+    *pat = *old;
+    pat->pattern = copy( old->pattern );
+return( pat );
+}
+
+void PatternFree(struct pattern *pat) {
+    if ( pat==NULL )
+return;
+    free(pat->pattern);
+    chunkfree(pat,sizeof(struct pattern));
+}
+
 struct gradient *GradientCopy(struct gradient *old) {
     struct gradient *grad = chunkalloc(sizeof(struct gradient));
 
@@ -5563,22 +5583,22 @@ return;
 void BrushCopy(struct brush *into, struct brush *from) {
     *into = *from;
     into->gradient = GradientCopy(from->gradient);
-    into->pattern = copy(from->pattern);
+    into->pattern = PatternCopy(from->pattern);
 }
 
 void PenCopy(struct pen *into, struct pen *from) {
     *into = *from;
     into->brush.gradient = GradientCopy(from->brush.gradient);
-    into->brush.pattern = copy(from->brush.pattern);
+    into->brush.pattern = PatternCopy(from->brush.pattern);
 }
 
 void LayerFreeContents(SplineChar *sc,int layer) {
     SplinePointListsFree(sc->layers[layer].splines);
 #ifdef FONTFORGE_CONFIG_TYPE3
     GradientFree(sc->layers[layer].fill_brush.gradient);
-    free(sc->layers[layer].fill_brush.pattern);
+    PatternFree(sc->layers[layer].fill_brush.pattern);
     GradientFree(sc->layers[layer].stroke_pen.brush.gradient);
-    free(sc->layers[layer].stroke_pen.brush.pattern);
+    PatternFree(sc->layers[layer].stroke_pen.brush.pattern);
 #endif
     RefCharsFree(sc->layers[layer].refs);
     ImageListsFree(sc->layers[layer].images);

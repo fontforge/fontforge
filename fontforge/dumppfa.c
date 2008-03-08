@@ -509,9 +509,99 @@ return( true );
 }
 
 #ifdef FONTFORGE_CONFIG_TYPE3
+static void dumpGradient(void (*dumpchar)(int ch,void *data), void *data,
+	struct gradient *grad, SplineChar *nested, int layer, int pdfopers, int isstroke ) {
+
+    if ( pdfopers ) {
+	dumpf(dumpchar,data,"/Pattern %s\n", isstroke ? "CS" : "cs" );
+	if ( nested==NULL )
+	    dumpf(dumpchar,data,"/ly%d_%s_grad %s\n", layer, isstroke ? "stroke":"fill",
+		    isstroke ? "SCN" : "scn" );
+	else
+	    dumpf(dumpchar,data,"/ref_%s_ly%d_%s_grad %s\n", nested->name, layer,
+		    isstroke ? "stroke":"fill",
+		    isstroke ? "SCN" : "scn" );
+	/* PDF output looks much simpler than postscript. It isn't. It's just */
+	/*  that the equivalent pdf dictionaries need to be created as objects*/
+	/*  and can't live in the content stream, so they are done elsewhere */
+    } else {
+	dumpf(dumpchar,data, "<<\n  /PatternType 2\n  /Shading <<\n" );
+	dumpf(dumpchar,data, "    /ShadingType %d\n", grad->radius==0?2:3 );
+	dumpf(dumpchar,data, "    /ColorSpace /DeviceRGB\n" );
+	if ( grad->radius==0 ) {
+	    dumpf(dumpchar,data, "    /Coords [%g %g %g %g]\n",
+		    grad->start.x, grad->start.y, grad->stop.x, grad->stop.y);
+	} else {
+	    dumpf(dumpchar,data, "    /Coords [%g %g 0 %g %g %g]\n",
+		    grad->start.x, grad->start.y, grad->stop.x, grad->stop.y,
+		    grad->radius );
+	}
+	dumpf(dumpchar,data, "    /Extend [true true]\n" );	/* implies pad */
+	dumpf(dumpchar,data, "    /Function <<\n" );
+	dumpf(dumpchar,data, "      /FunctionType 0\n" );	/* Iterpolation between samples */
+	dumpf(dumpchar,data, "      /Domain [%g %g]\n", grad->grad_stops[0].offset,
+		grad->grad_stops[grad->stop_cnt-1].offset );
+	dumpf(dumpchar,data, "      /Range [0 1.0 0 1.0 0 1.0]\n" );
+	dumpf(dumpchar,data, "      /Size [%d]\n", grad->stop_cnt==2?2:101 );
+	dumpf(dumpchar,data, "      /BitsPerSample 8\n" );
+	dumpf(dumpchar,data, "      /Decode [0 1.0 0 1.0 0 1.0]\n" );
+	dumpf(dumpchar,data, "      /DataSource <" );
+	if ( grad->stop_cnt==2 ) {
+	    int col = grad->grad_stops[0].col;
+	    if ( col==COLOR_INHERITED ) col = 0x000000;
+	    dumpf(dumpchar,data,"%02x",(col>>16)&0xff);
+	    dumpf(dumpchar,data,"%02x",(col>>8 )&0xff);
+	    dumpf(dumpchar,data,"%02x",(col    )&0xff);
+	    col = grad->grad_stops[1].col;
+	    dumpf(dumpchar,data,"%02x",(col>>16)&0xff);
+	    dumpf(dumpchar,data,"%02x",(col>>8 )&0xff);
+	    dumpf(dumpchar,data,"%02x",(col    )&0xff);
+	} else {
+	    int i,j;
+	    /* Rather than try and figure out the minimum common divisor */
+	    /*  off all the offsets, I'll just assume they are all percent*/
+	    (dumpchar)('\n',data);
+	    for ( i=0; i<=100; ++i ) {
+		int col;
+		double t = grad->grad_stops[0].offset +
+			(grad->grad_stops[grad->stop_cnt-1].offset-
+			 grad->grad_stops[0].offset)* i/100.0;
+		for ( j=0; j<grad->stop_cnt; ++j )
+		    if ( t<=grad->grad_stops[j].offset )
+		break;
+		if ( j==grad->stop_cnt )
+		    col = grad->grad_stops[j-1].col;
+		else if ( t==grad->grad_stops[j].offset )
+		    col = grad->grad_stops[j].col;
+		else {
+		    double percent = (t-grad->grad_stops[j-1].offset)/ (grad->grad_stops[j].offset-grad->grad_stops[i-1].offset);
+		    uint32 col1 = grad->grad_stops[j-1].col;
+		    uint32 col2 = grad->grad_stops[j  ].col;
+		    if ( col1==COLOR_INHERITED ) col1 = 0x000000;
+		    if ( col2==COLOR_INHERITED ) col2 = 0x000000;
+		    int red   = ((col1>>16)&0xff)*(1-percent) + ((col2>>16)&0xff)*percent;
+		    int green = ((col1>>8 )&0xff)*(1-percent) + ((col2>>8 )&0xff)*percent;
+		    int blue  = ((col1    )&0xff)*(1-percent) + ((col2    )&0xff)*percent;
+		    col = (red<<16) | (green<<8) | blue;
+		}
+		if ( col==COLOR_INHERITED ) col = 0x000000;
+		dumpf(dumpchar,data,"%02x",(col>>16)&0xff);
+		dumpf(dumpchar,data,"%02x",(col>>8 )&0xff);
+		dumpf(dumpchar,data,"%02x",(col    )&0xff);
+	    }
+	}
+	dumpf(dumpchar,data,">\n");
+	dumpf(dumpchar,data, "    >>\n" );
+	dumpf(dumpchar,data, "  >>\n" );
+	dumpf(dumpchar,data, ">> matrix makepattern setpattern\n" );
+    }
+}
+
 static void dumpbrush(void (*dumpchar)(int ch,void *data), void *data,
-	struct brush *brush, int pdfopers ) {
-    if ( brush->col!=COLOR_INHERITED ) {
+	struct brush *brush, SplineChar *nested, int layer, int pdfopers ) {
+    if ( brush->gradient!=NULL )
+	dumpGradient(dumpchar,data,brush->gradient,nested,layer,pdfopers,false);
+    else if ( brush->col!=COLOR_INHERITED ) {
 	int r, g, b;
 	r = (brush->col>>16)&0xff;
 	g = (brush->col>>8 )&0xff;
@@ -526,8 +616,10 @@ static void dumpbrush(void (*dumpchar)(int ch,void *data), void *data,
 
 /* Grumble. PDF uses different operators for colors for stroke and fill */
 static void dumppenbrush(void (*dumpchar)(int ch,void *data), void *data,
-	struct brush *brush, int pdfopers ) {
-    if ( brush->col!=COLOR_INHERITED ) {
+	struct brush *brush, SplineChar *nested, int layer, int pdfopers ) {
+    if ( brush->gradient!=NULL )
+	dumpGradient(dumpchar,data,brush->gradient,nested,layer,pdfopers,true);
+    else if ( brush->col!=COLOR_INHERITED ) {
 	int r, g, b;
 	r = (brush->col>>16)&0xff;
 	g = (brush->col>>8 )&0xff;
@@ -541,8 +633,8 @@ static void dumppenbrush(void (*dumpchar)(int ch,void *data), void *data,
 }
 
 static void dumppen(void (*dumpchar)(int ch,void *data), void *data,
-	struct pen *pen, int pdfopers) {
-    dumppenbrush(dumpchar,data,&pen->brush,pdfopers);
+	struct pen *pen, SplineChar *nested, int layer, int pdfopers) {
+    dumppenbrush(dumpchar,data,&pen->brush,nested,layer,pdfopers);
 
     if ( pen->width!=WIDTH_INHERITED )
 	dumpf(dumpchar,data,(pdfopers ? "%g w\n": "%g setlinewidth\n"), pen->width );
@@ -807,22 +899,33 @@ static void PSDrawImg(void (*dumpchar)(int ch,void *data), void *data,
 }
 
 static void dumpimage(void (*dumpchar)(int ch,void *data), void *data,
-	ImageList *imgl, int use_imagemask, int pdfopers ) {
+	ImageList *imgl, int use_imagemask, int pdfopers,
+	int layer, int icnt, SplineChar *nested ) {
     GImage *image = imgl->image;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
-    if ( pdfopers )		/* I'm not supporting images yet */
-return;
 
-    dumpf( dumpchar, data, "  gsave %g %g translate %g %g scale\n",
-	    (double) imgl->xoff, (double) (imgl->yoff-imgl->yscale*base->height),
-	    (double) (imgl->xscale*base->width), (double) (imgl->yscale*base->height) );
-    if ( base->image_type==it_mono ) {
-	PSDrawMonoImg(dumpchar,data,base,use_imagemask);
+    if ( pdfopers ) {
+	dumpf( dumpchar, data, "  q 1 0 0 1 %g %g cm %g 0 0 %g 0 0 cm\n",
+		(double) imgl->xoff, (double) (imgl->yoff-imgl->yscale*base->height),
+		(double) (imgl->xscale*base->width), (double) (imgl->yscale*base->height) );
+	if ( nested==NULL )
+	    dumpf( dumpchar, data, "/ly%d_%d_image", layer, icnt );
+	else
+	    dumpf( dumpchar, data, "/ref_%s_ly%d_%d_image", nested->name, layer, icnt );
+	dumpf( dumpchar, data, " Do " );	/* I think I use this for imagemasks too... */
+	dumpstr(dumpchar,data,"Q\n");
     } else {
-	/* Just draw the image, ignore the complexity of transparent images */
-	PSDrawImg(dumpchar,data,base);
+	dumpf( dumpchar, data, "  gsave %g %g translate %g %g scale\n",
+		(double) imgl->xoff, (double) (imgl->yoff-imgl->yscale*base->height),
+		(double) (imgl->xscale*base->width), (double) (imgl->yscale*base->height) );
+	if ( base->image_type==it_mono ) {
+	    PSDrawMonoImg(dumpchar,data,base,use_imagemask);
+	} else {
+	    /* Just draw the image, ignore the complexity of transparent images */
+	    PSDrawImg(dumpchar,data,base);
+	}
+	dumpstr(dumpchar,data,"grestore\n");
     }
-    dumpstr(dumpchar,data,"grestore\n");
 }
 #endif
 
@@ -856,27 +959,27 @@ void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
 			false);
 		if ( sc->layers[i].dofill && sc->layers[i].dostroke ) {
 		    if ( pdfopers ) {
-			dumpbrush(dumpchar,data, &sc->layers[i].fill_brush,pdfopers);
-			dumppen(dumpchar,data, &sc->layers[i].stroke_pen,pdfopers);
+			dumpbrush(dumpchar,data, &sc->layers[i].fill_brush,NULL,i,pdfopers);
+			dumppen(dumpchar,data, &sc->layers[i].stroke_pen,NULL,i,pdfopers);
 			dumpstr(dumpchar,data, "B " );
 		    } else if ( sc->layers[i].fillfirst ) {
 			dumpstr(dumpchar,data, "gsave " );
-			dumpbrush(dumpchar,data, &sc->layers[i].fill_brush,pdfopers);
+			dumpbrush(dumpchar,data, &sc->layers[i].fill_brush,NULL,i,pdfopers);
 			dumpstr(dumpchar,data,"fill grestore " );
-			dumppen(dumpchar,data, &sc->layers[i].stroke_pen,pdfopers);
+			dumppen(dumpchar,data, &sc->layers[i].stroke_pen,NULL,i,pdfopers);
 			dumpstr(dumpchar,data,"stroke " );
 		    } else {
 			dumpstr(dumpchar,data, "gsave " );
-			dumppen(dumpchar,data, &sc->layers[i].stroke_pen,pdfopers);
+			dumppen(dumpchar,data, &sc->layers[i].stroke_pen,NULL,i,pdfopers);
 			dumpstr(dumpchar,data,"stroke grestore " );
-			dumpbrush(dumpchar,data, &sc->layers[i].fill_brush,pdfopers);
+			dumpbrush(dumpchar,data, &sc->layers[i].fill_brush,NULL,i,pdfopers);
 			dumpstr(dumpchar,data,"fill " );
 		    }
 		} else if ( sc->layers[i].dofill ) {
-		    dumpbrush(dumpchar,data, &sc->layers[i].fill_brush,pdfopers);
+		    dumpbrush(dumpchar,data, &sc->layers[i].fill_brush,NULL,i,pdfopers);
 		    dumpstr(dumpchar,data,pdfopers ? "f ": "fill " );
 		} else if ( sc->layers[i].dostroke ) {
-		    dumppen(dumpchar,data, &sc->layers[i].stroke_pen,pdfopers);
+		    dumppen(dumpchar,data, &sc->layers[i].stroke_pen,NULL,i,pdfopers);
 		    dumpstr(dumpchar,data, pdfopers ? "S ": "stroke " );
 		}
 		dumpstr(dumpchar,data,pdfopers ? "Q\n" : "grestore\n" );
@@ -891,7 +994,7 @@ void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
 	    if ( sc->parent->multilayer ) {
 		dumpstr(dumpchar,data,pdfopers ? "q " : "gsave " );
 		if ( sc->layers[i].dofill )
-		    dumpbrush(dumpchar,data, &sc->layers[i].fill_brush, pdfopers);
+		    dumpbrush(dumpchar,data, &sc->layers[i].fill_brush, NULL, i, pdfopers);
 	    }
 #endif
 	    if ( refs_to_splines ) {
@@ -907,27 +1010,27 @@ void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
 				    false);
 			    if ( ref->layers[j].dofill && ref->layers[j].dostroke ) {
 				if ( pdfopers ) {
-				    dumpbrush(dumpchar,data, &ref->layers[j].fill_brush,pdfopers);
-				    dumppen(dumpchar,data, &ref->layers[j].stroke_pen,pdfopers);
+				    dumpbrush(dumpchar,data, &ref->layers[j].fill_brush,ref->sc,j,pdfopers);
+				    dumppen(dumpchar,data, &ref->layers[j].stroke_pen,ref->sc,j,pdfopers);
 				    dumpstr(dumpchar,data, "B " );
 				} else if ( ref->layers[j].fillfirst ) {
 				    dumpstr(dumpchar,data, "gsave " );
-				    dumpbrush(dumpchar,data, &ref->layers[j].fill_brush,pdfopers);
+				    dumpbrush(dumpchar,data, &ref->layers[j].fill_brush,ref->sc,j,pdfopers);
 				    dumpstr(dumpchar,data,"fill grestore " );
-				    dumppen(dumpchar,data, &ref->layers[j].stroke_pen,pdfopers);
+				    dumppen(dumpchar,data, &ref->layers[j].stroke_pen,ref->sc,j,pdfopers);
 				    dumpstr(dumpchar,data,"stroke " );
 				} else {
 				    dumpstr(dumpchar,data, "gsave " );
-				    dumppen(dumpchar,data, &ref->layers[j].stroke_pen,pdfopers);
+				    dumppen(dumpchar,data, &ref->layers[j].stroke_pen,ref->sc,j,pdfopers);
 				    dumpstr(dumpchar,data,"stroke grestore " );
-				    dumpbrush(dumpchar,data, &ref->layers[j].fill_brush,pdfopers);
+				    dumpbrush(dumpchar,data, &ref->layers[j].fill_brush,ref->sc,j,pdfopers);
 				    dumpstr(dumpchar,data,"fill " );
 				}
 			    } else if ( ref->layers[j].dofill ) {
-				dumpbrush(dumpchar,data, &ref->layers[j].fill_brush,pdfopers);
+				dumpbrush(dumpchar,data, &ref->layers[j].fill_brush,ref->sc,j,pdfopers);
 				dumpstr(dumpchar,data,pdfopers ? "f ": "fill " );
 			    } else if ( ref->layers[j].dostroke ) {
-				dumppen(dumpchar,data, &ref->layers[j].stroke_pen,pdfopers);
+				dumppen(dumpchar,data, &ref->layers[j].stroke_pen,ref->sc,j,pdfopers);
 				dumpstr(dumpchar,data, pdfopers ? "S ": "stroke " );
 			    }
 			    dumpstr(dumpchar,data,pdfopers ? "Q\n" : "grestore\n" );
@@ -972,13 +1075,13 @@ void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
 #endif
 	}
 #ifdef FONTFORGE_CONFIG_TYPE3
-	if ( sc->layers[i].images!=NULL && !pdfopers ) { ImageList *img;
-	    dumpstr(dumpchar,data,"gsave " );
+	if ( sc->layers[i].images!=NULL  ) { ImageList *img; int icnt=0;
+	    dumpstr(dumpchar,data,pdfopers ? "q\n" : "gsave\n" );
 	    if ( sc->layers[i].dofill )
-		dumpbrush(dumpchar,data, &sc->layers[i].fill_brush,pdfopers);
-	    for ( img = sc->layers[i].images; img!=NULL; img=img->next )
-		dumpimage(dumpchar,data,img,sc->layers[i].dofill,pdfopers);
-	    dumpstr(dumpchar,data,"grestore\n" );
+		dumpbrush(dumpchar,data, &sc->layers[i].fill_brush,NULL,i,pdfopers);
+	    for ( img = sc->layers[i].images; img!=NULL; img=img->next, ++icnt )
+		dumpimage(dumpchar,data,img,sc->layers[i].dofill,pdfopers,i,icnt,NULL);
+	    dumpstr(dumpchar,data,pdfopers ? "Q\n" : "grestore\n" );
 	}
 #endif
     }
@@ -993,7 +1096,11 @@ static int SCSetsColor(SplineChar *sc) {
     for ( l=ly_fore ; l<sc->layer_cnt; ++l ) {
 	if ( sc->layers[l].fill_brush.col != COLOR_INHERITED )
 return( true );
+	if ( sc->layers[l].fill_brush.gradient != NULL || sc->layers[l].fill_brush.pattern != NULL )
+return( true );
 	if ( sc->layers[l].stroke_pen.brush.col != COLOR_INHERITED )
+return( true );
+	if ( sc->layers[l].stroke_pen.brush.gradient != NULL || sc->layers[l].stroke_pen.brush.pattern != NULL )
 return( true );
 	for ( img = sc->layers[l].images; img!=NULL; img=img->next ) {
 	    GImage *image = img->image;

@@ -49,7 +49,7 @@ struct printdefaults pdefs[] = { { &custom, pt_fontdisplay }, { &custom, pt_char
 /* ***************************** Printing Stuff ***************************** */
 /* ************************************************************************** */
 
-static void pdf_addobject(PI *pi) {
+static int pdf_addobject(PI *pi) {
     if ( pi->next_object==0 ) {
 	pi->max_object = 100;
 	pi->object_offsets = galloc(pi->max_object*sizeof(int));
@@ -60,6 +60,7 @@ static void pdf_addobject(PI *pi) {
     }
     pi->object_offsets[pi->next_object] = ftell(pi->out);
     fprintf( pi->out, "%d 0 obj\n", pi->next_object++ );
+return( pi->next_object-1 );
 }
 
 static void pdf_addpage(PI *pi) {
@@ -393,14 +394,244 @@ static void pdf_dump_type1(PI *pi,int sfid) {
     sfbit->twobyte = false;
 }
 
+struct glyph_res {
+    int pattern_cnt, pattern_max;
+    char **pattern_names;
+    int *pattern_objs;
+    int image_cnt, image_max;
+    char **image_names;
+    int *image_objs;
+};
+
+#ifdef FONTFORGE_CONFIG_TYPE3
+static void pdf_BrushCheck(PI *pi,struct glyph_res *gr,struct gradient *grad,
+	int isfill,int layer,SplineChar *nested) {
+    char buffer[400];
+    int function_obj, shade_obj;
+    int i,j;
+
+    if ( grad==NULL )
+return;
+    function_obj = pdf_addobject(pi);
+    fprintf( pi->out, "<<\n" );
+    fprintf( pi->out, "  /FunctionType 0\n" );	/* Iterpolation between samples */
+    fprintf( pi->out, "  /Domain [%g %g]\n", grad->grad_stops[0].offset,
+	    grad->grad_stops[grad->stop_cnt-1].offset );
+    fprintf( pi->out, "  /Range [0 1.0 0 1.0 0 1.0]\n" );
+    fprintf( pi->out, "  /Size [%d]\n", grad->stop_cnt==2?2:101 );
+    fprintf( pi->out, "  /BitsPerSample 8\n" );
+    fprintf( pi->out, "  /Decode [0 1.0 0 1.0 0 1.0]\n" );
+    fprintf( pi->out, "  /Length %d\n", 3*(grad->stop_cnt==2?2:101) );
+    fprintf( pi->out, ">>\n" );
+    fprintf( pi->out, "stream\n" );
+    if ( grad->stop_cnt==2 ) {
+	int col = grad->grad_stops[0].col;
+	if ( col==COLOR_INHERITED ) col = 0x000000;
+	putc((col>>16)&0xff,pi->out);
+	putc((col>>8 )&0xff,pi->out);
+	putc((col    )&0xff,pi->out);
+	col = grad->grad_stops[1].col;
+	if ( col==COLOR_INHERITED ) col = 0x000000;
+	putc((col>>16)&0xff,pi->out);
+	putc((col>>8 )&0xff,pi->out);
+	putc((col    )&0xff,pi->out);
+    } else {
+	/* Rather than try and figure out the minimum common divisor */
+	/*  off all the offsets, I'll just assume they are all percent*/
+	for ( i=0; i<=100; ++i ) {
+	    int col;
+	    double t = grad->grad_stops[0].offset +
+		    (grad->grad_stops[grad->stop_cnt-1].offset-
+		     grad->grad_stops[0].offset)* i/100.0;
+	    for ( j=0; j<grad->stop_cnt; ++j )
+		if ( t<=grad->grad_stops[j].offset )
+	    break;
+	    if ( j==grad->stop_cnt )
+		col = grad->grad_stops[j-1].col;
+	    else if ( t==grad->grad_stops[j].offset )
+		col = grad->grad_stops[j].col;
+	    else {
+		double percent = (t-grad->grad_stops[j-1].offset)/ (grad->grad_stops[j].offset-grad->grad_stops[i-1].offset);
+		uint32 col1 = grad->grad_stops[j-1].col;
+		uint32 col2 = grad->grad_stops[j  ].col;
+		if ( col1==COLOR_INHERITED ) col1 = 0x000000;
+		if ( col2==COLOR_INHERITED ) col2 = 0x000000;
+		int red   = ((col1>>16)&0xff)*(1-percent) + ((col2>>16)&0xff)*percent;
+		int green = ((col1>>8 )&0xff)*(1-percent) + ((col2>>8 )&0xff)*percent;
+		int blue  = ((col1    )&0xff)*(1-percent) + ((col2    )&0xff)*percent;
+		col = (red<<16) | (green<<8) | blue;
+	    }
+	    if ( col==COLOR_INHERITED ) col = 0x000000;
+	    putc((col>>16)&0xff,pi->out);
+	    putc((col>>8 )&0xff,pi->out);
+	    putc((col    )&0xff,pi->out);
+	}
+    }
+    fprintf( pi->out, "\nendstream\n" );
+    fprintf( pi->out, "endobj\n" );
+
+    shade_obj = pdf_addobject(pi);
+    fprintf( pi->out, "<<\n" );
+    fprintf( pi->out, "  /ShadingType %d\n", grad->radius==0?2:3 );
+    fprintf( pi->out, "  /ColorSpace /DeviceRGB\n" );
+    if ( grad->radius==0 ) {
+	fprintf( pi->out, "  /Coords [%g %g %g %g]\n",
+		grad->start.x, grad->start.y, grad->stop.x, grad->stop.y);
+    } else {
+	fprintf( pi->out, "  /Coords [%g %g 0 %g %g %g]\n",
+		grad->start.x, grad->start.y, grad->stop.x, grad->stop.y,
+		grad->radius );
+    }
+    fprintf( pi->out, "  /Function %d 0 R\n", function_obj );
+    fprintf( pi->out, "  /Extend [true true]\n" );	/* implies pad */
+    fprintf( pi->out, ">>\n" );
+    fprintf( pi->out, "endobj\n" );
+
+    if ( gr->pattern_cnt>=gr->pattern_max ) {
+	gr->pattern_names = grealloc(gr->pattern_names,(gr->pattern_max+=100)*sizeof(char *));
+	gr->pattern_objs  = grealloc(gr->pattern_objs ,(gr->pattern_max     )*sizeof(int   ));
+    }
+    if ( nested==NULL )
+	sprintf( buffer, "ly%d_%s_grad", layer, isfill?"fill":"stroke" );
+    else
+	sprintf( buffer, "ref_%s_ly%d_%s_grad", nested->name, layer, isfill?"fill":"stroke" );
+    gr->pattern_names[gr->pattern_cnt  ] = copy(buffer);
+    gr->pattern_objs [gr->pattern_cnt++] = pdf_addobject(pi);
+    fprintf( pi->out, "<<\n" );
+    fprintf( pi->out, "  /Type /Pattern\n" );
+    fprintf( pi->out, "  /PatternType 2\n" );
+    fprintf( pi->out, "  /Shading %d 0 R\n", shade_obj );
+    fprintf( pi->out, ">>\n" );
+    fprintf( pi->out, "endobj\n" );
+}
+
+static void pdf_ImageCheck(PI *pi,struct glyph_res *gr,ImageList *images,
+	int layer,SplineChar *nested) {
+    char buffer[400];
+    int icnt=0;
+    GImage *img;
+    struct _GImage *base;
+    int i;
+
+    while ( images!=NULL ) {
+	img = images->image;
+	base = img->list_len==0 ? img->u.image : img->u.images[1];
+
+	if ( gr->image_cnt>=gr->image_max ) {
+	    gr->image_names = grealloc(gr->image_names,(gr->image_max+=100)*sizeof(char *));
+	    gr->image_objs  = grealloc(gr->image_objs ,(gr->image_max     )*sizeof(int   ));
+	}
+	if ( nested==NULL )
+	    sprintf( buffer, "ly%d_%d_image", layer, icnt );
+	else
+	    sprintf( buffer, "ref_%s_ly%d_%d_image", nested->name, layer, icnt );
+	gr->image_names[gr->image_cnt  ] = copy(buffer);
+	gr->image_objs [gr->image_cnt++] = pdf_addobject(pi);
+	++icnt;
+
+	fprintf( pi->out, "<<\n" );
+	fprintf( pi->out, "  /Type /XObject\n" );
+	fprintf( pi->out, "  /Subtype /Image\n" );
+	fprintf( pi->out, "  /Width %d\n", base->width );
+	fprintf( pi->out, "  /Height %d\n", base->height );
+	if ( base->image_type == it_mono ) {
+	    fprintf( pi->out, "  /BitsPerComponent 1\n" );
+	    fprintf( pi->out, "  /ImageMask true\n" );
+	    fprintf( pi->out, "  /Length %d\n", base->height*base->bytes_per_line );
+	} else if ( base->image_type == it_true ) {
+	    fprintf( pi->out, "  /BitsPerComponent 8\n" );
+	    fprintf( pi->out, "  /ColorSpace /DeviceRGB\n" );
+	    fprintf( pi->out, "  /Length %d\n", base->height*base->width*3 );
+	} else if ( base->image_type == it_index ) {
+	    fprintf( pi->out, "  /BitsPerComponent 8\n" );
+	    fprintf( pi->out, "  /ColorSpace [/Indexed /DeviceRGB %d\n<",
+		    base->clut->clut_len );
+	    for ( i=0; i<base->clut->clut_len; ++i )
+		fprintf( pi->out, "%06x ", base->clut->clut[i] );
+	    fprintf( pi->out, ">\n" );
+	    fprintf( pi->out, "  /Length %d\n", base->height*base->width );
+	}
+	fprintf( pi->out, ">>\n" );
+	fprintf( pi->out, "stream\n" );
+	if ( base->image_type!=it_true ) {
+	    fwrite(base->data,1,base->height*base->bytes_per_line,pi->out);
+	} else {
+	    /* My image representation of colors includes a pad byte, pdf's does not */
+	    uint32 *pt = (uint32 *) base->data;
+	    for ( i=0; i<base->width*base->height; ++i, ++pt ) {
+		int red   = (*pt>>16)&0xff;
+		int green = (*pt>>8 )&0xff;
+		int blue  = (*pt    )&0xff;
+		putc(red,pi->out);
+		putc(green,pi->out);
+		putc(blue,pi->out);
+	    }
+	}
+	fprintf( pi->out, "\nendstream\n" );
+	fprintf( pi->out, "endobj\n" );
+	images = images->next;
+    }
+}
+#endif
+
+int PdfDumpGlyphResources(PI *pi,SplineChar *sc) {
+    int resobj;
+    struct glyph_res gr = { 0 };
+#ifdef FONTFORGE_CONFIG_TYPE3
+    int layer, i;
+    RefChar *ref;
+
+    SFUntickAll(sc->parent);
+
+    for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+	pdf_BrushCheck(pi,&gr,sc->layers[layer].fill_brush.gradient,true,layer,NULL);
+	pdf_BrushCheck(pi,&gr,sc->layers[layer].stroke_pen.brush.gradient,false,layer,NULL);
+	pdf_ImageCheck(pi,&gr,sc->layers[layer].images,layer,NULL);
+	for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next ) if ( !ref->sc->ticked ) {
+	    ref->sc->ticked = true;
+	    for ( i=0; i<ref->layer_cnt; ++i ) {
+		pdf_BrushCheck(pi,&gr,ref->layers[i].fill_brush.gradient,true,i,ref->sc);
+		pdf_BrushCheck(pi,&gr,ref->layers[i].stroke_pen.brush.gradient,false,i,ref->sc);
+		pdf_ImageCheck(pi,&gr,ref->layers[layer].images,i,ref->sc);
+	    }
+	}
+    }
+#endif
+    resobj = pdf_addobject(pi);
+    fprintf(pi->out,"<<\n" );
+    if ( gr.pattern_cnt!=0 ) {
+	fprintf( pi->out, "  /Pattern <<\n" );
+	for ( i=0; i<gr.pattern_cnt; ++i ) {
+	    fprintf( pi->out, "    /%s %d 0 R\n", gr.pattern_names[i], gr.pattern_objs[i] );
+	    free(gr.pattern_names[i]);
+	}
+	free(gr.pattern_names); free(gr.pattern_objs);
+	fprintf( pi->out, "  >>\n");
+    }
+    if ( gr.image_cnt!=0 ) {
+	fprintf( pi->out, "  /XObject <<\n" );
+	for ( i=0; i<gr.image_cnt; ++i ) {
+	    fprintf( pi->out, "    /%s %d 0 R\n", gr.image_names[i], gr.image_objs[i] );
+	    free(gr.image_names[i]);
+	}
+	free(gr.image_names); free(gr.image_objs);
+	fprintf( pi->out, "  >>\n");
+    }
+    fprintf( pi->out, ">>\n" );
+    fprintf( pi->out, "endobj\n\n" );
+return( resobj );
+}
+
 static int pdf_charproc(PI *pi, SplineChar *sc) {
     int ret = pi->next_object;
 #ifdef FONTFORGE_CONFIG_TYPE3
-    long streamstart, streamlength;
-    int i,last;
+    long streamstart, streamlength, respos;
+    int i,last,resobj;
 
     pdf_addobject(pi);
-    fprintf( pi->out, "<< /Length %d 0 R >>\n", pi->next_object );
+    fprintf( pi->out, "<< /Length %d 0 R /Resources ", pi->next_object );
+    respos = ftell(pi->out);
+    fprintf( pi->out, "000000 0 R>>\n" );
     fprintf( pi->out, "stream\n" );
     streamstart = ftell(pi->out);
 
@@ -408,10 +639,36 @@ static int pdf_charproc(PI *pi, SplineChar *sc) {
     last = ly_fore;
     if ( sc->parent->multilayer )
 	last = sc->layer_cnt-1;
-    for ( i=ly_fore; i<=last; ++i )
-	if ( (sc->layers[i].dofill && sc->layers[i].fill_brush.col!=COLOR_INHERITED) ||
-		(sc->layers[i].dostroke && sc->layers[i].stroke_pen.brush.col!=COLOR_INHERITED))
+    for ( i=ly_fore; i<=last; ++i ) {
+	ImageList *img;
+	RefChar *ref;
+	int j;
+	if ( (sc->layers[i].dofill && (sc->layers[i].fill_brush.col!=COLOR_INHERITED || sc->layers[i].fill_brush.gradient!=NULL || sc->layers[i].fill_brush.pattern!=NULL)) ||
+		(sc->layers[i].dostroke && (sc->layers[i].stroke_pen.brush.col!=COLOR_INHERITED|| sc->layers[i].stroke_pen.brush.gradient!=NULL || sc->layers[i].stroke_pen.brush.pattern!=NULL)) )
     break;
+	for ( img=sc->layers[i].images; img!=NULL; img=img->next )
+	    if ( img->image->u.image->image_type != it_mono )
+	break;
+	if ( img!=NULL )
+    break;
+	for ( ref=sc->layers[i].refs; ref!=NULL; ref=ref->next ) {
+	    for ( j=0; j<ref->layer_cnt; ++j ) {
+		if ( (ref->layers[j].dofill && (ref->layers[j].fill_brush.col!=COLOR_INHERITED || ref->layers[j].fill_brush.gradient!=NULL || ref->layers[j].fill_brush.pattern!=NULL)) ||
+			(ref->layers[j].dostroke && (ref->layers[j].stroke_pen.brush.col!=COLOR_INHERITED|| ref->layers[j].stroke_pen.brush.gradient!=NULL || ref->layers[j].stroke_pen.brush.pattern!=NULL)) )
+	    break;
+		for ( img=ref->layers[j].images; img!=NULL; img=img->next )
+		    if ( img->image->u.image->image_type != it_mono )
+		break;
+		if ( img!=NULL )
+	    break;
+	    }
+	    if ( j!=ref->layer_cnt )
+	break;
+	}
+	if ( ref!=NULL )
+    break;
+    }
+	    
     if ( i==sc->layer_cnt ) {
 	/* We never set the color, use d1 to specify metrics */
 	DBounds b;
@@ -431,6 +688,11 @@ static int pdf_charproc(PI *pi, SplineChar *sc) {
     pdf_addobject(pi);
     fprintf( pi->out, " %ld\n", streamlength );
     fprintf( pi->out, "endobj\n\n" );
+
+    resobj = PdfDumpGlyphResources(pi,sc);
+    fseek(pi->out,respos,SEEK_SET);
+    fprintf(pi->out,"%06d", resobj );
+    fseek(pi->out,0,SEEK_END);
 #else
     IError("This should never get called");
 #endif
@@ -482,7 +744,7 @@ return;			/* Nothing in this range */
     /* Widths array */
     pdf_addobject(pi);
     fprintf( pi->out, "  [\n" );
-    for ( i=base+first; i<base+last; ++i )
+    for ( i=base+first; i<=base+last; ++i )
 	if ( (gid=map->map[i])!=-1 && SCWorthOutputting(sf->glyphs[gid]))
 	    fprintf( pi->out, "    %d\n", sf->glyphs[gid]->width );
 	else
@@ -495,7 +757,7 @@ return;			/* Nothing in this range */
     fprintf( pi->out, "  <<\n" );
     fprintf( pi->out, "    /Type /Encoding\n" );
     fprintf( pi->out, "    /Differences [ %d\n", first );
-    for ( i=base+first; i<base+last; ++i )
+    for ( i=base+first; i<=base+last; ++i )
 	if ( (gid=map->map[i])!=-1 && SCWorthOutputting(sf->glyphs[gid]))
 	    fprintf( pi->out, "\t/%s\n", sf->glyphs[gid]->name );
 	else
@@ -760,7 +1022,7 @@ static void dump_pdftrailer(PI *pi) {
     fprintf( pi->out, "  /Count %d\n", pi->next_page );
     fprintf( pi->out, "  /MediaBox [0 0 %d %d]\n", pi->pagewidth, pi->pageheight );
     fprintf( pi->out, "  /Resources <<\n" );
-    /* In case we have a type3 font, include the images */
+    /* In case we have a type3 font, include the image procsets */
     fprintf( pi->out, "    /ProcSet [/PDF /Text /ImageB /ImageC /ImageI]\n" );
     fprintf( pi->out, "    /Font <<\n" );
     fprintf( pi->out, "      /FTB %d 0 R\n", pi->next_object );
@@ -948,7 +1210,7 @@ return;
 	    fprintf( pi->out, "\n%%%%EndResource\n" );
 	    if ( sfbit->iscid )
 		DumpIdentCMap(pi,sfid);
-	    if ( pi->printtype!=pt_fontsample ) {
+	    if ( pi->pt!=pt_fontsample ) {
 		sprintf(sfbit->psfontname,"%s__%d", sfbit->sf->fontname, pi->pointsize );
 		if ( !sfbit->iscid )
 		    fprintf(pi->out,"/%s /%s findfont %d scalefont def\n",
@@ -969,7 +1231,7 @@ return;
 		    int gid = sfbit->map->map[i];
 		    if ( gid!=-1 && SCWorthOutputting(sfbit->sf->glyphs[gid]) ) {
 			base = i&~0xff;
-			if ( pi->printtype!=pt_fontsample )
+			if ( pi->pt!=pt_fontsample )
 			    fprintf( pi->out, "/%s-%x__%d /%s-%x /%s%s findfont [\n",
 				    sfbit->sf->fontname, base>>8, pi->pointsize,
 				    sfbit->sf->fontname, base>>8,
@@ -987,7 +1249,7 @@ return;
 			}
 			for ( ;j<0x100; ++j )
 			    fprintf( pi->out, "\t/.notdef\n" );
-			if ( pi->printtype!=pt_fontsample )
+			if ( pi->pt!=pt_fontsample )
 			    fprintf( pi->out, " ] font_remap definefont %d scalefont def\n",
 				    pi->pointsize );
 			else

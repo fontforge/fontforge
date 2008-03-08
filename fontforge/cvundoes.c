@@ -398,9 +398,9 @@ void UndoesFree(Undoes *undo) {
 	    AnchorPointsFree(undo->u.state.anchor);
 #ifdef FONTFORGE_CONFIG_TYPE3
 	    GradientFree(undo->u.state.fill_brush.gradient);
-	    free(undo->u.state.fill_brush.pattern);
+	    PatternFree(undo->u.state.fill_brush.pattern);
 	    GradientFree(undo->u.state.stroke_pen.brush.gradient);
-	    free(undo->u.state.stroke_pen.brush.pattern);
+	    PatternFree(undo->u.state.stroke_pen.brush.pattern);
 #endif
 	  break;
 	  case ut_bitmap:
@@ -486,8 +486,6 @@ return(NULL);
 #ifdef FONTFORGE_CONFIG_TYPE3
     BrushCopy(&undo->u.state.fill_brush,&cv->layerheads[cv->drawmode]->fill_brush);
     PenCopy(&undo->u.state.stroke_pen,&cv->layerheads[cv->drawmode]->stroke_pen);
-    undo->u.state.stroke_pen.brush.gradient = GradientCopy(cv->layerheads[cv->drawmode]->stroke_pen.brush.gradient);
-    undo->u.state.stroke_pen.brush.pattern = copy(cv->layerheads[cv->drawmode]->stroke_pen.brush.pattern);
     undo->u.state.dofill = cv->layerheads[cv->drawmode]->dofill;
     undo->u.state.dostroke = cv->layerheads[cv->drawmode]->dostroke;
     undo->u.state.fillfirst = cv->layerheads[cv->drawmode]->fillfirst;
@@ -909,9 +907,9 @@ void _CVUndoCleanup(CharViewBase *cv,PressedOn *p) {
 	    for ( i=0; i<uref->layer_cnt; ++i ) {
 		SplinePointListsFree(uref->layers[i].splines);
 		GradientFree(uref->layers[i].fill_brush.gradient);
-		free(uref->layers[i].fill_brush.pattern);
+		PatternFree(uref->layers[i].fill_brush.pattern);
 		GradientFree(uref->layers[i].stroke_pen.brush.gradient);
-		free(uref->layers[i].stroke_pen.brush.pattern);
+		PatternFree(uref->layers[i].stroke_pen.brush.pattern);
 	    }
 	    free(uref->layers);
 	    uref->layers = NULL;
@@ -1003,9 +1001,9 @@ void CopyBufferFree(void) {
 	ImageListsFree(copybuffer.u.state.images);
 #ifdef FONTFORGE_CONFIG_TYPE3
 	GradientFree(copybuffer.u.state.fill_brush.gradient);
-	free(copybuffer.u.state.fill_brush.pattern);
+	PatternFree(copybuffer.u.state.fill_brush.pattern);
 	GradientFree(copybuffer.u.state.stroke_pen.brush.gradient);
-	free(copybuffer.u.state.stroke_pen.brush.pattern);
+	PatternFree(copybuffer.u.state.stroke_pen.brush.pattern);
 #endif
       break;
       case ut_bitmapsel:
@@ -2016,9 +2014,9 @@ static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastei
 	    }
 #ifdef FONTFORGE_CONFIG_TYPE3
 	    GradientFree(sc->layers[layer].fill_brush.gradient); sc->layers[layer].fill_brush.gradient = NULL;
-	    free(sc->layers[layer].fill_brush.pattern); sc->layers[layer].fill_brush.pattern = NULL;
+	    PatternFree(sc->layers[layer].fill_brush.pattern); sc->layers[layer].fill_brush.pattern = NULL;
 	    GradientFree(sc->layers[layer].stroke_pen.brush.gradient); sc->layers[layer].stroke_pen.brush.gradient = NULL;
-	    free(sc->layers[layer].stroke_pen.brush.pattern); sc->layers[layer].stroke_pen.brush.pattern = NULL;
+	    PatternFree(sc->layers[layer].stroke_pen.brush.pattern); sc->layers[layer].stroke_pen.brush.pattern = NULL;
 #endif
 	    was_empty = true;
 #ifdef FONTFORGE_CONFIG_PASTEAFTER
@@ -2209,9 +2207,9 @@ static void PasteToSC(SplineChar *sc,int layer,Undoes *paster,FontViewBase *fv,
 		SCRemoveLayerDependents(sc,layer);
 #ifdef FONTFORGE_CONFIG_TYPE3
 		GradientFree(sc->layers[layer].fill_brush.gradient); sc->layers[layer].fill_brush.gradient = NULL;
-		free(sc->layers[layer].fill_brush.pattern); sc->layers[layer].fill_brush.pattern = NULL;
+		PatternFree(sc->layers[layer].fill_brush.pattern); sc->layers[layer].fill_brush.pattern = NULL;
 		GradientFree(sc->layers[layer].stroke_pen.brush.gradient); sc->layers[layer].stroke_pen.brush.gradient = NULL;
-		free(sc->layers[layer].stroke_pen.brush.pattern); sc->layers[layer].stroke_pen.brush.pattern = NULL;
+		PatternFree(sc->layers[layer].stroke_pen.brush.pattern); sc->layers[layer].stroke_pen.brush.pattern = NULL;
 #endif
 	    }
 	} else
