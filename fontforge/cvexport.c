@@ -34,6 +34,7 @@
 #include "ustring.h"
 #include "gio.h"
 #include "gicons.h"
+#include "print.h"	/* For pdf output routines */
 #include <utype.h>
 
 static void EpsGeneratePreview(FILE *eps,SplineChar *sc,int layer,DBounds *b) {
@@ -136,7 +137,8 @@ int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
     struct tm *tm;
     int ret;
     char *oldloc;
-    uint32 objlocs[8], xrefloc, streamstart, streamlength;
+    int _objlocs[8], xrefloc, streamstart, streamlength, resid, nextobj;
+    int *objlocs = _objlocs;
     const char *author = GetAuthor();
     int i;
 
@@ -154,7 +156,12 @@ int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
     fprintf( pdf, "3 0 obj\n" );
     fprintf( pdf, " << /Type /Page\n" );
     fprintf( pdf, "    /Parent 2 0 R\n" );
-    fprintf( pdf, "    /Resources << >>\n" );
+    fprintf( pdf, "    /Resources " );
+    if ( sc->parent->multilayer ) {
+	resid = ftell(pdf);
+	fprintf( pdf, "000000 0 R\n" );
+    } else
+	fprintf( pdf, "<< >>\n" );
     SplineCharLayerFindBounds(sc,layer,&b);
     fprintf( pdf, "    /MediaBox [%g %g %g %g]\n", (double) b.minx, (double) b.miny, (double) b.maxx, (double) b.maxy );
     fprintf( pdf, "    /Contents 4 0 R\n" );
@@ -207,23 +214,43 @@ int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
     if ( author!=NULL )
 	fprintf( pdf, "    /Author (%s)\n", author );
     fprintf( pdf, " >>\n" );
-    fprintf( pdf, "endobj\n" );
+
+    nextobj = 7;
+    if ( sc->parent->multilayer ) {
+	PI pi;
+	int resobj;
+	memset(&pi,0,sizeof(pi));
+	pi.out = pdf;
+	pi.max_object = 100;
+	pi.object_offsets = galloc(pi.max_object*sizeof(int));
+	memcpy(pi.object_offsets,objlocs,nextobj*sizeof(int));
+	pi.next_object = nextobj;
+	resobj = PdfDumpGlyphResources(&pi,sc);
+	nextobj = pi.next_object;
+	objlocs = pi.object_offsets;
+	fseek(pdf,resid,SEEK_SET);
+	fprintf(pdf,"%06d", resobj );
+	fseek(pdf,0,SEEK_END);
+    }
 
     xrefloc = ftell(pdf);
     fprintf( pdf, "xref\n" );
-    fprintf( pdf, " 0 7\n" );
+    fprintf( pdf, " 0 %d\n", nextobj );
     fprintf( pdf, "0000000000 65535 f \n" );
-    for ( i=1; i<7; ++i )
+    for ( i=1; i<nextobj; ++i )
 	fprintf( pdf, "%010d %05d n \n", (int) objlocs[i], 0 );
     fprintf( pdf, "trailer\n" );
     fprintf( pdf, " <<\n" );
-    fprintf( pdf, "    /Size 7\n" );
+    fprintf( pdf, "    /Size %d\n", nextobj );
     fprintf( pdf, "    /Root 1 0 R\n" );
     fprintf( pdf, "    /Info 6 0 R\n" );
     fprintf( pdf, " >>\n" );
     fprintf( pdf, "startxref\n" );
     fprintf( pdf, "%d\n", (int) xrefloc );
     fprintf( pdf, "%%%%EOF\n" );
+
+    if ( objlocs!=_objlocs )
+	free(objlocs);
 
     ret = !ferror(pdf);
     setlocale(LC_NUMERIC,oldloc);

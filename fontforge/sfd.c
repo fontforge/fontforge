@@ -1166,17 +1166,28 @@ static char *spreads[] = { "pad", "reflect", "repeat", NULL };
 static void SFDDumpGradient(FILE *sfd, char *keyword, struct gradient *gradient) {
     int i;
 
-    fprintf( sfd, "%s %g,%g %g,%g %g %s %d ", keyword,
+    /* Use ";" as a coord separator because we treat "," as a potential decimal point */
+    fprintf( sfd, "%s %g;%g %g;%g %g %s %d ", keyword,
 	    gradient->start.x, gradient->start.y,
 	    gradient->stop.x, gradient->stop.y,
 	    gradient->radius,
 	    spreads[gradient->sm],
 	    gradient->stop_cnt );
     for ( i=0 ; i<gradient->stop_cnt; ++i ) {
-	fprintf( sfd, "{%g %06x %g} ", gradient->grad_stops[i].offset,
+	fprintf( sfd, "{%g #%06x %g} ", gradient->grad_stops[i].offset,
 		gradient->grad_stops[i].col, gradient->grad_stops[i].opacity );
     }
     putc('\n',sfd);
+}
+
+static void SFDDumpPattern(FILE *sfd, char *keyword, struct pattern *pattern) {
+
+    fprintf( sfd, "%s %s %g,%g [%g %g %g %g %g %g]\n", keyword,
+	    pattern->pattern,
+	    pattern->width, pattern->height,
+	    pattern->transform[0], pattern->transform[1],
+	    pattern->transform[2], pattern->transform[3],
+	    pattern->transform[4], pattern->transform[5] );
 }
 #endif
 
@@ -1271,11 +1282,11 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
 	    if ( sc->layers[i].fill_brush.gradient!=NULL )
 		SFDDumpGradient(sfd,"FillGradient:", sc->layers[i].fill_brush.gradient );
 	    else if ( sc->layers[i].fill_brush.pattern!=NULL )
-		fprintf( sfd, "FillPattern: %s\n", sc->layers[i].fill_brush.pattern );
+		SFDDumpPattern(sfd,"FillPattern:", sc->layers[i].fill_brush.pattern );
 	    if ( sc->layers[i].stroke_pen.brush.gradient!=NULL )
 		SFDDumpGradient(sfd,"StrokeGradient:", sc->layers[i].stroke_pen.brush.gradient );
 	    else if ( sc->layers[i].stroke_pen.brush.pattern!=NULL )
-		fprintf( sfd, "StrokePattern: %s\n", sc->layers[i].stroke_pen.brush.pattern );
+		SFDDumpPattern(sfd,"StrokePattern:", sc->layers[i].stroke_pen.brush.pattern );
 	} else
 #endif
 	{
@@ -3798,12 +3809,12 @@ static struct gradient *SFDParseGradient(FILE *sfd,char *tok) {
 
     getreal(sfd,&grad->start.x);
     while ( isspace(ch=getc(sfd)));
-    if ( ch!=',' ) ungetc(ch,sfd);
+    if ( ch!=';' ) ungetc(ch,sfd);
     getreal(sfd,&grad->start.y);
 
     getreal(sfd,&grad->stop.x);
     while ( isspace(ch=getc(sfd)));
-    if ( ch!=',' ) ungetc(ch,sfd);
+    if ( ch!=';' ) ungetc(ch,sfd);
     getreal(sfd,&grad->stop.y);
 
     getreal(sfd,&grad->radius);
@@ -3813,15 +3824,45 @@ static struct gradient *SFDParseGradient(FILE *sfd,char *tok) {
 	if ( strmatch(spreads[i],tok)==0 )
     break;
     if ( spreads[i]==NULL ) i=0;
+    grad->sm = i;
 
     getint(sfd,&grad->stop_cnt);
     grad->grad_stops = gcalloc(grad->stop_cnt,sizeof(struct grad_stops));
     for ( i=0; i<grad->stop_cnt; ++i ) {
+	while ( isspace(ch=getc(sfd)));
+	if ( ch!='{' ) ungetc(ch,sfd);
 	getreal( sfd, &grad->grad_stops[i].offset );
 	gethex( sfd, &grad->grad_stops[i].col );
 	getreal( sfd, &grad->grad_stops[i].opacity );
+	while ( isspace(ch=getc(sfd)));
+	if ( ch!='}' ) ungetc(ch,sfd);
     }
 return( grad );
+}
+
+static struct pattern *SFDParsePattern(FILE *sfd,char *tok) {
+    struct pattern *pat = chunkalloc(sizeof(struct pattern));
+    int ch;
+
+    getname(sfd,tok);
+    pat->pattern = copy(tok);
+
+    getreal(sfd,&pat->width);
+    while ( isspace(ch=getc(sfd)));
+    if ( ch!=',' ) ungetc(ch,sfd);
+    getreal(sfd,&pat->height);
+
+    while ( isspace(ch=getc(sfd)));
+    if ( ch!='[' ) ungetc(ch,sfd);
+    getreal(sfd,&pat->transform[0]);
+    getreal(sfd,&pat->transform[1]);
+    getreal(sfd,&pat->transform[2]);
+    getreal(sfd,&pat->transform[3]);
+    getreal(sfd,&pat->transform[4]);
+    getreal(sfd,&pat->transform[5]);
+    while ( isspace(ch=getc(sfd)));
+    if ( ch!=']' ) ungetc(ch,sfd);
+return( pat );
 }
 #endif
 
@@ -4156,12 +4197,12 @@ return( NULL );
 	    sc->layers[current_layer].fill_brush.gradient = SFDParseGradient(sfd,tok);
 	} else if ( strmatch(tok,"FillPattern:")==0 ) {
 	    if ( getname(sfd,tok)==1 )
-		sc->layers[current_layer].fill_brush.pattern = copy(tok);
+		sc->layers[current_layer].fill_brush.pattern = SFDParsePattern(sfd,tok);
 	} else if ( strmatch(tok,"StrokeGradient:")==0 ) {
 	    sc->layers[current_layer].stroke_pen.brush.gradient = SFDParseGradient(sfd,tok);
 	} else if ( strmatch(tok,"StrokePattern:")==0 ) {
 	    if ( getname(sfd,tok)==1 )
-		sc->layers[current_layer].stroke_pen.brush.pattern = copy(tok);
+		sc->layers[current_layer].stroke_pen.brush.pattern = SFDParsePattern(sfd,tok);
 #endif
 	} else if ( strmatch(tok,"SplineSet")==0 ) {
 	    sc->layers[current_layer].splines = SFDGetSplineSet(sf,sfd,sc->layers[current_layer].order2);

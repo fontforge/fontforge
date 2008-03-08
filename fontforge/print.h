@@ -90,7 +90,7 @@ typedef struct printinfo {
     } *sfbits;
     long start_cur_page;
     int lastfont, intext;
-    LayoutInfo *sample;
+    struct layoutinfo *sample;
     int wassfid, wasfn, wasps;
     int lastx, lasty;
 } PI, DI;
@@ -105,3 +105,4 @@ extern struct printdefaults {
 
 extern void PI_Init(PI *pi,FontViewBase *fv,SplineChar *sc);
 extern void DoPrinting(PI *pi,char *filename);
+extern int PdfDumpGlyphResources(PI *pi,SplineChar *sc);

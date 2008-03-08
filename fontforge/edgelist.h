@@ -70,11 +70,12 @@ typedef struct edgelist {
     int layer;
     char *interesting;
     int major, other;
-    unsigned int genmajoredges: 1;	/* generate a list of edges parrallel to the major axis */
+    unsigned int genmajoredges: 1;	/* generate a list of edges parallel to the major axis */
     Edge *majors;		/* ordered so that lowest edge is first */
     Edge *majorhold;		/* to hold major edges as we pass them and they become useless */
     Hints *hhints, *vhints;
     int is_overlap;
+    DBounds bbox;		/* Not always set. {m,o}{min,max} a provide scaled bbox, this is in glyph units */
 } EdgeList;
 
 extern void FreeEdges(EdgeList *es);

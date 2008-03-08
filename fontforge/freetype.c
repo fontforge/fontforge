@@ -819,7 +819,7 @@ static void FillOutline(SplineSet *spl,FT_Outline *outline,int *pmax,int *cmax,
 	for ( k=0; k<2; ++k ) {
 	    pcnt = ccnt = 0;
 	    for ( ss = spl ; ss!=NULL; ss=ss->next ) if ( ss->first->prev!=NULL ) {
-		if ( ignore_clip && ss->is_clip_path )
+		if (( ignore_clip==1 && ss->is_clip_path ) || ( ignore_clip==2 && !ss->is_clip_path ))
 	    continue;
 		for ( sp=ss->first; ; ) {
 		    if ( k ) {
@@ -996,29 +996,43 @@ static SplineSet *RStrokeOutline(struct reflayer *layer,SplineChar *sc) {
 return( SSStroke(layer->splines,&si,sc));
 }
 
-static void MergeBitmaps(FT_Bitmap *bitmap,FT_Bitmap *newstuff,uint32 col) {
+static void MergeBitmaps(FT_Bitmap *bitmap,FT_Bitmap *newstuff,struct brush *brush,
+	uint8 *clipmask,double scale,DBounds *bbox) {
     int i, j;
+    uint32 col = brush->col;
 
     if ( col == COLOR_INHERITED ) col = 0x000000;
     col = 3*((col>>16)&0xff) + 6*((col>>8)&0xff) + 1*(col&0xff);
     col = 0xff - col;
 
     if ( bitmap->num_grays == 256 ) {
+	if ( clipmask!=NULL ) {
+	    for ( i=0; i<bitmap->rows; ++i ) for ( j=0; j<bitmap->pitch; ++j )
+		newstuff->buffer[i*bitmap->pitch+j] *= clipmask[i*bitmap->pitch+j];
+	}
 	for ( i=0; i<bitmap->rows; ++i ) for ( j=0; j<bitmap->pitch; ++j ) {
 	    bitmap->buffer[i*bitmap->pitch+j] =
-		    (newstuff->buffer[i*bitmap->pitch+j]*col +
+		    (newstuff->buffer[i*bitmap->pitch+j]*GradientHere(scale,bbox,i,j,brush->gradient,col) +
 		     (255-newstuff->buffer[i*bitmap->pitch+j])*bitmap->buffer[i*bitmap->pitch+j] +
 		     127)/255;
 	}
-    } else if ( col>=0x80 ) {
-	/* Bitmap set */
-	for ( i=0; i<bitmap->rows; ++i ) for ( j=0; j<bitmap->pitch; ++j ) {
-	    bitmap->buffer[i*bitmap->pitch+j] |=  newstuff->buffer[i*bitmap->pitch+j];
-	}
     } else {
-	/* Bitmap clear */
-	for ( i=0; i<bitmap->rows; ++i ) for ( j=0; j<bitmap->pitch; ++j ) {
-	    bitmap->buffer[i*bitmap->pitch+j] &= ~newstuff->buffer[i*bitmap->pitch+j];
+	if ( clipmask!=NULL ) {
+	    for ( i=0; i<bitmap->rows; ++i ) for ( j=0; j<bitmap->pitch; ++j )
+		newstuff->buffer[i*bitmap->pitch+j] &= clipmask[i*bitmap->pitch+j];
+	}
+	/* A gradient makes no sense on a bitmap, so don't even check */
+	/*  (unless we were doing dithering, which we aren't) */
+	if ( col>=0x80 ) {
+	    /* Bitmap set */
+	    for ( i=0; i<bitmap->rows; ++i ) for ( j=0; j<bitmap->pitch; ++j ) {
+		bitmap->buffer[i*bitmap->pitch+j] |=  newstuff->buffer[i*bitmap->pitch+j];
+	    }
+	} else {
+	    /* Bitmap clear */
+	    for ( i=0; i<bitmap->rows; ++i ) for ( j=0; j<bitmap->pitch; ++j ) {
+		bitmap->buffer[i*bitmap->pitch+j] &= ~newstuff->buffer[i*bitmap->pitch+j];
+	    }
 	}
     }
 }
@@ -1032,7 +1046,8 @@ BDFChar *SplineCharFreeTypeRasterizeNoHints(SplineChar *sc,int layer,
     int i;
 #endif
     int cmax, pmax;
-    real scale = pixelsize*(1<<6)/(double) (sc->parent->ascent+sc->parent->descent);
+    real rscale = pixelsize/(double) (sc->parent->ascent+sc->parent->descent);
+    real scale = rscale*(1<<6);
     BDFChar *bdfc;
     int err = 0;
     DBounds b;
@@ -1129,12 +1144,21 @@ return( NULL );
 	/* Can only get here if multilayer */
 	err = 0;
 	for ( i=ly_fore; i<sc->layer_cnt; ++i ) {
+	    uint8 *clipmask = NULL;
+	    if ( SSHasClip(sc->layers[i].splines)) {
+		memset(temp.buffer,0,temp.pitch*temp.rows);
+		FillOutline(sc->layers[i].splines,&outline,&pmax,&cmax,
+			scale,&b,sc->layers[i].order2,2);
+		err |= (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&temp);
+		clipmask = galloc(bitmap.pitch*bitmap.rows);
+		memcpy(clipmask,temp.buffer,bitmap.pitch*bitmap.rows);
+	    }
 	    if ( sc->layers[i].dofill ) {
 		memset(temp.buffer,0,temp.pitch*temp.rows);
 		FillOutline(sc->layers[i].splines,&outline,&pmax,&cmax,
 			scale,&b,sc->layers[i].order2,true);
 		err |= (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&temp);
-		MergeBitmaps(&bitmap,&temp,sc->layers[i].fill_brush.col);
+		MergeBitmaps(&bitmap,&temp,&sc->layers[i].fill_brush,clipmask,rscale,&b);
 	    }
 	    if ( sc->layers[i].dostroke ) {
 		SplineSet *stroked = StrokeOutline(&sc->layers[i],sc);
@@ -1142,7 +1166,7 @@ return( NULL );
 		FillOutline(stroked,&outline,&pmax,&cmax,
 			scale,&b,sc->layers[i].order2,true);
 		err |= (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&temp);
-		MergeBitmaps(&bitmap,&temp,sc->layers[i].stroke_pen.brush.col);
+		MergeBitmaps(&bitmap,&temp,&sc->layers[i].stroke_pen.brush,clipmask,rscale,&b);
 		SplinePointListsFree(stroked);
 	    }
 	    for ( r = sc->layers[i].refs; r!=NULL; r=r->next ) {
@@ -1152,7 +1176,7 @@ return( NULL );
 			FillOutline(r->layers[j].splines,&outline,&pmax,&cmax,
 				scale,&b,sc->layers[i].order2,true);
 			err |= (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&temp);
-			MergeBitmaps(&bitmap,&temp,r->layers[j].fill_brush.col);
+			MergeBitmaps(&bitmap,&temp,&r->layers[j].fill_brush,clipmask,rscale,&b);
 		    }
 		    if ( r->layers[j].dostroke ) {
 			SplineSet *stroked = RStrokeOutline(&r->layers[j],sc);
@@ -1160,11 +1184,12 @@ return( NULL );
 			FillOutline(stroked,&outline,&pmax,&cmax,
 				scale,&b,sc->layers[i].order2,true);
 			err |= (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&temp);
-			MergeBitmaps(&bitmap,&temp,r->layers[j].stroke_pen.brush.col);
+			MergeBitmaps(&bitmap,&temp,&r->layers[j].stroke_pen.brush,clipmask,rscale,&b);
 			SplinePointListsFree(stroked);
 		    }
 		}
 	    }
+	    free(clipmask);
 	}
 	free(temp.buffer);
     }
