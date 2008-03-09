@@ -72,7 +72,7 @@ return( x );
     fd = ((struct fontlist *) (osc->fl))->fd;
 
     x += osc->vr.xoff;
-    y += osc->vr.yoff;
+    y -= osc->vr.yoff;
 
     gid = sc->orig_pos;
     if ( gid!=-1 && fd->bdf->glyphs[gid]==NULL )
