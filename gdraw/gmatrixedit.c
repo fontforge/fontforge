@@ -2076,6 +2076,14 @@ void GMatrixEditScrollToRowCol(GGadget *g,int r, int c) {
 	}
     }
     if ( needs_expose ) {
+	int hend = gme->col_data[gme->cols-1].x + gme->col_data[gme->cols-1].width;
+	GRect size;
+	GDrawGetSize(gme->nested,&size);
+
+	if ( gme->off_left>hend-size.width )
+	    gme->off_left = hend-size.width;
+	if ( gme->off_left<0 )
+	    gme->off_left = 0;
 	GScrollBarSetPos(gme->hsb,gme->off_left);
 	GScrollBarSetPos(gme->vsb,gme->off_top);
 	GGadgetRedraw(&gme->g);
