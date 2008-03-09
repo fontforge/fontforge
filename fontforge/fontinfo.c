@@ -10739,12 +10739,13 @@ void FontInfoInit(void) {
 	panfamily, panserifs, panweight, panprop, pancontrast, panstrokevar,
 	panarmstyle, panletterform, panmidline, panxheight, mslanguages,
 	ttfnameids, interpretations, gridfit, antialias, os2versions,
-	codepagenames, unicoderangenames,
+	codepagenames, unicoderangenames, symsmooth, gfsymsmooth, splineorder,
 	NULL
     };
     static char **needswork2[] = { texparams, texpopups,
 	mathparams, mathpopups, extparams, extpopups,
     NULL };
+    static struct col_init *needswork3[] = { ci, gaspci, layersci, NULL };
 
     if ( done )
 return;
@@ -10758,15 +10759,10 @@ return;
 	    needswork2[j][i] = _(needswork2[j][i]);
     }
 
-    ci[0].title = S_(ci[0].title);
-    ci[1].title = S_(ci[1].title);
-    ci[2].title = S_(ci[2].title);
-
-    gaspci[0].title = S_(gaspci[0].title);
-    gaspci[1].title = S_(gaspci[1].title);
-    gaspci[2].title = S_(gaspci[2].title);
-    gaspci[3].title = S_(gaspci[3].title);
-    gaspci[4].title = S_(gaspci[4].title);
+    for ( j=0; needswork3[j]!=NULL; ++j ) {
+	for ( i=0; needswork3[j][i].title!=NULL; ++i )
+	    needswork3[j][i].title = S_(needswork3[j][i].title);
+    }
 
     LookupUIInit();
     LookupInit();

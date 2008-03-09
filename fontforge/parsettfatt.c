@@ -529,15 +529,15 @@ return;
     vf1 = getushort(ttf);
     vf2 = getushort(ttf);
     r2l = 0;
-    if ( (vf1==0x0088 || vf1==0x0008) && vf2==0x0000 )
+    if ( vf1==0x0008 && vf2==0x0000 )
 	isv = 1;		/* Top to bottom */
-    else if ( vf1==0x0000 && (vf2==0x0044 || vf2==0x0004)) {
+    else if ( vf1==0x0000 && vf2==0x0004 && (l->flags&pst_r2l)) {
 	isv = 0;		/* Right to left */
 	r2l = 1;
-    } else if ( (vf1==0x0044 || vf1==0x0004) && vf2==0x0000 )
+    } else if ( vf1==0x0004 && vf2==0x0000 && !(l->flags&pst_r2l) )
 	isv = 0;		/* Left to right */
     else
-	isv = 2;
+	isv = 2;		/* Can't optimize, store all 8 settings */
     if ( format==1 ) {
 	subtable->per_glyph_pst_or_kern = true;
 	cnt = getushort(ttf);
