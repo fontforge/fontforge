@@ -7512,7 +7512,7 @@ void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
     const struct tm *tm;
     struct matrixinit mi, gaspmi, layersmi;
     int ltype;
-    GBox small_blue_box;
+    static GBox small_blue_box;
     extern GBox _GGadget_button_box;
 
     FontInfoInit();
