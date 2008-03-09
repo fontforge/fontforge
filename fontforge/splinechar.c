@@ -774,6 +774,10 @@ void SCRound2Int(SplineChar *sc,int layer, real factor) {
 	    RefCharFindBounds(r);
 	}
     }
+    if ( sc->parent->multilayer )
+	layer = ly_fore;
+    else
+	--layer;
 
     for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
 	ap->me.x = rint(ap->me.x*factor)/factor;
