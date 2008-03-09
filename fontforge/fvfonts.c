@@ -1442,15 +1442,21 @@ static void LayerInterpolate(Layer *to,Layer *base,Layer *other,real amount,Spli
     if ( base->fill_brush.gradient!=NULL || other->fill_brush.gradient!=NULL ||
 	    base->stroke_pen.brush.gradient!=NULL || other->stroke_pen.brush.gradient!=NULL )
 	LogError( "I can't even imagine how to attempt to interpolate gradients in layer %d of %s\n", lc, sc->name );
+#if 0
     if ( base->fill_brush.pattern!=NULL && other->fill_brush.pattern!=NULL &&
 	    strcmp(base->fill_brush.pattern,other->fill_brush.pattern)==0 )
 	to->fill_brush.pattern = copy(base->fill_brush.pattern);
-    else if ( base->fill_brush.pattern!=NULL || other->fill_brush.pattern!=NULL )
+    else
+#endif
+    if ( base->fill_brush.pattern!=NULL || other->fill_brush.pattern!=NULL )
 	LogError( "Different fill patterns in layer %d of %s\n", lc, sc->name );
+#if 0
     if ( base->stroke_pen.brush.pattern!=NULL && other->stroke_pen.brush.pattern!=NULL &&
 	    strcmp(base->stroke_pen.brush.pattern,other->stroke_pen.brush.pattern)==0 )
 	to->stroke_pen.brush.pattern = copy(base->stroke_pen.brush.pattern);
-    else if ( base->stroke_pen.brush.pattern!=NULL || other->stroke_pen.brush.pattern!=NULL )
+    else
+#endif
+    if ( base->stroke_pen.brush.pattern!=NULL || other->stroke_pen.brush.pattern!=NULL )
 	LogError( "Different stroke patterns in layer %d of %s\n", lc, sc->name );
 
     to->splines = SplineSetsInterpolate(base->splines,other->splines,amount,sc);
