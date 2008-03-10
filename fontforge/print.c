@@ -577,8 +577,9 @@ static void pdf_ImageCheck(PI *pi,struct glyph_res *gr,ImageList *images,
 int PdfDumpGlyphResources(PI *pi,SplineChar *sc) {
     int resobj;
     struct glyph_res gr = { 0 };
+    int i;
 #ifdef FONTFORGE_CONFIG_TYPE3
-    int layer, i;
+    int layer;
     RefChar *ref;
 
     SFUntickAll(sc->parent);
