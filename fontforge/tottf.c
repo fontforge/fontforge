@@ -4718,12 +4718,13 @@ static void dumpcmap(struct alltabs *at, SplineFont *sf,enum fontformat format) 
     }
 
     format4  = NeedsUCS2Table(sf,&ucs2len,map,modformat==ff_ttfsym);
+    apple2 = NULL;
     if ( modformat!=ff_ttfsym ) {
 	format12 = NeedsUCS4Table(sf,&ucs4len,map);
 	format2  = Needs816Enc(sf,&cjklen,map,&apple2,&applecjklen);
 	format14 = NeedsVariationSequenceTable(sf,&vslen,map);
     } else
-	format12 = format2 = format14 = NULL;
+	format12 = format2 = format14 = apple2 = NULL;
 
     /* Two/Three/Four encoding table pointers, one for ms, one for mac */
     /*  usually one for mac big, just a copy of ms */
