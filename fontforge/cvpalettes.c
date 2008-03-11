@@ -122,7 +122,7 @@ static GWindow CreatePalette(GWindow w, GRect *pos, int (*eh)(GWindow,GEvent *),
     wattrs->border_color = GDrawGetDefaultForeground(NULL);
 
     newpos.x = pt.x; newpos.y = pt.y; newpos.width = pos->width; newpos.height = pos->height;
-    wattrs->mask |= wam_positioned;
+    wattrs->mask|= wam_positioned;
     wattrs->positioned = true;
     gw = GDrawCreateTopWindow(NULL,&newpos,eh,user_data,wattrs);
     if ( palettes_docked )
@@ -1250,12 +1250,12 @@ static void CVLayer2Invoked(GWindow v, GMenuItem *mi, GEvent *e) {
 
     switch ( mi->mid ) {
       case MID_LayerInfo:
-	if ( !LayerDialog(cv->b.layerheads[cv->b.drawmode]))
+	if ( !LayerDialog(cv->b.layerheads[cv->b.drawmode],cv->b.sc->parent))
 return;
       break;
       case MID_NewLayer:
 	LayerDefault(&temp);
-	if ( !LayerDialog(&temp))
+	if ( !LayerDialog(&temp,cv->b.sc->parent))
 return;
 	sc->layers = grealloc(sc->layers,(sc->layer_cnt+1)*sizeof(Layer));
 	sc->layers[sc->layer_cnt] = temp;
@@ -1423,7 +1423,7 @@ return(true);
 	    if ( event->u.mouse.button==3 )
 		Layer2Menu(cv,event,cv->b.drawmode!=dm_fore);
 	    else if ( event->u.mouse.clicks==2 && cv->b.drawmode==dm_fore ) {
-		if ( LayerDialog(cv->b.layerheads[cv->b.drawmode]))
+		if ( LayerDialog(cv->b.layerheads[cv->b.drawmode],cv->b.sc->parent))
 		    CVCharChangedUpdate(&cv->b);
 	    }
 	}
@@ -2211,13 +2211,13 @@ void _CVPaletteActivate(CharView *cv,int force) {
 #ifdef FONTFORGE_CONFIG_TYPE3
     if ( layers2_active!=-1 && layers2_active!=cv->b.sc->parent->multilayer ) {
 	if ( !cvvisible[0] ) {
-	    GDrawSetVisible(cvlayers2,false);
-	    GDrawSetVisible(cvlayers,false);
+	    if ( cvlayers2!=NULL ) GDrawSetVisible(cvlayers2,false);
+	    if ( cvlayers !=NULL ) GDrawSetVisible(cvlayers,false);
 	} else if ( layers2_active && cvlayers!=NULL ) {
-	    GDrawSetVisible(cvlayers2,false);
+	    if ( cvlayers2!=NULL ) GDrawSetVisible(cvlayers2,false);
 	    GDrawSetVisible(cvlayers,true);
 	} else if ( !layers2_active && cvlayers2!=NULL ) {
-	    GDrawSetVisible(cvlayers,false);
+	    if ( cvlayers !=NULL ) GDrawSetVisible(cvlayers,false);
 	    GDrawSetVisible(cvlayers2,true);
 	}
     }

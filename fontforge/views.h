@@ -469,6 +469,35 @@ extern void TPDChar(TilePathDlg *tpd, GEvent *event);
 extern void TPDCharViewInits(TilePathDlg *tpd, int cid);
 #endif		/* Tile Path */
 
+# ifdef FONTFORGE_CONFIG_TYPE3
+
+typedef struct gradientdlg {
+    struct cvcontainer base;
+    FontView dummy_fv;
+    SplineFont dummy_sf;
+    LayerInfo layerinfo[2];
+    SplineChar sc_grad;
+    SplineChar *chars[1];
+    EncMap dummy_map;
+    int32 map[1], backmap[1];
+    uint8 sel[1];
+    CharView cv_grad;
+/* ****** */
+    GWindow gw;
+    GGadget *mb;
+    GFont *plain, *bold;
+    int mbh;
+    int fh, as;
+    int mid_space, cv_y;
+    int cv_width, cv_height;
+/* ****** */
+    uint8 done, oked;
+    struct gradient *active;
+} GradientDlg;
+extern void GDDChar(GradientDlg *tpd, GEvent *event);
+extern void GDDCharViewInits(GradientDlg *gdd,int cid);
+#endif		/* Tile Path */
+
 struct lkdata {
     int cnt, max;
     int off_top, off_left;
@@ -949,7 +978,7 @@ extern void GFI_SMDEnd(struct gfi_data *d);
 extern void MMChangeBlend(MMSet *mm,FontView *fv,int tonew);
 extern void MMWizard(MMSet *mm);
 
-extern int LayerDialog(Layer *layer);
+extern int LayerDialog(Layer *layer,SplineFont *sf);
 extern void CVLayerChange(CharView *cv);
 
 extern int PointOfViewDlg(struct pov_data *pov,SplineFont *sf,int flags);
