@@ -87,8 +87,8 @@ extern int autohint_before_generate;
 #define MDRP_min_white          (0xca)
 #define MDRP_min_rnd_black      (0xcd)
 #define MDRP_rp0_rnd_white      (0xd6)
+#define MDRP_rp0_min_rnd_grey   (0xdc)
 #define MDRP_rp0_min_rnd_black  (0xdd)
-#define MDRP_rp0_min_rnd_white  (0xde)
 #define MIRP_min_black          (0xe9)
 #define MIRP_min_rnd_black      (0xed)
 #define MIRP_rp0_min_black      (0xf9)
@@ -2554,7 +2554,7 @@ static void geninstrs(InstrCt *ct, StemInfo *hint) {
 	    ct->rp0 = ct->edge.refpt;
 	}
 
-	finish_stem(hint, use_rp1, !hint->hasconflicts || hint->startdone, ct);
+	finish_stem(hint, use_rp1, hint->enddone, ct);
     }
     else {
 	if (!ct->xdir) { /* will be simply put in place, just rounded */
@@ -2573,22 +2573,23 @@ static void geninstrs(InstrCt *ct, StemInfo *hint) {
 
 	init_edge(ct, hbase, ALL_CONTOURS);
 	if (ct->edge.refpt == -1) return;
-	else ct->rp0 = ct->edge.refpt; /* not yet rp0. */
+	
+	ct->rp0 = ct->edge.refpt; /* not yet rp0. */
 
 	if (!first && hint->hasconflicts) {
 	    ct->pt = pushpoint(ct->pt, ct->rp0);
 	    *(ct->pt)++ = MDRP_rp0_rnd_white;
-	    finish_stem(hint, use_rp2, !hint->hasconflicts, ct);
+	    finish_stem(hint, use_rp2, keep_old_rp0, ct);
 	}
 	else if (!ct->xdir) {
 	    ct->pt = pushpoint(ct->pt, ct->rp0);
 	    *(ct->pt)++ = MDAP_rnd;
-	    finish_stem(hint, use_rp1, !hint->hasconflicts, ct);
+	    finish_stem(hint, use_rp1, keep_old_rp0, ct);
 	}
 	else if (hint == firsthint) {
 	    ct->pt = pushpoint(ct->pt, ct->rp0);
 	    *(ct->pt)++ = MDRP_rp0_rnd_white;
-	    finish_stem(hint, use_rp2, !hint->hasconflicts, ct);
+	    finish_stem(hint, use_rp2, keep_old_rp0, ct);
 	}
 	else {
             if (ct->gic->fpgm_done) {
@@ -2597,10 +2598,10 @@ static void geninstrs(InstrCt *ct, StemInfo *hint) {
 	    }
 	    else {
 	        ct->pt = pushpoint(ct->pt, ct->rp0);
-	        *(ct->pt)++ = MDRP_rp0_min_rnd_white;
+	        *(ct->pt)++ = MDRP_rp0_min_rnd_grey;
 	    }
 
-	    finish_stem(hint, use_rp2, !hint->hasconflicts, ct);
+	    finish_stem(hint, use_rp2, keep_old_rp0, ct);
 	}
     }
 }
@@ -2712,7 +2713,7 @@ static void VStemGeninst(InstrCt *ct) {
 
     if (ct->rp0 != ct->ptcnt) {
 	ct->pt = pushpoint(ct->pt, ct->ptcnt);
-	*(ct->pt)++ = SRP0;
+	*(ct->pt)++ = MDAP_rnd;
 	ct->rp0 = ct->ptcnt;
     }
 
@@ -2722,10 +2723,8 @@ static void VStemGeninst(InstrCt *ct) {
 
     /* instruct right sidebearing */
     if (ct->sc->width != 0) {
-	ct->pt = pushpoint(ct->pt, ct->ptcnt+1);
-	*(ct->pt)++ = DUP;
-	*(ct->pt)++ = MDRP_min_white;
-	*(ct->pt)++ = MDAP_rnd;
+	ct->pt = push2nums(ct->pt, ct->ptcnt+1, 1);
+	*(ct->pt)++ = CALL;
 	ct->rp0 = ct->ptcnt+1;
     }
 }
