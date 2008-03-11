@@ -883,12 +883,681 @@ void FreeHandStrokeDlg(StrokeInfo *si) {
 #define CID_DashesTxt		2015
 #define CID_DashesInherit	2016
 
+#define CID_FillGradAdd		2100
+#define CID_FillGradEdit	2101
+#define CID_FillGradDelete	2102
+#define CID_StrokeGradAdd	2110
+#define CID_StrokeGradEdit	2111
+#define CID_StrokeGradDelete	2112
+
 struct layer_dlg {
     int done;
     int ok;
     Layer *layer;
+    SplineFont *sf;
     GWindow gw;
+    struct gradient *fillgrad, *strokegrad;
 };
+
+#define CID_Gradient	1001
+#define CID_Stops	1002
+#define CID_Pad		1003
+#define	CID_Repeat	1004
+#define CID_Reflect	1005
+#define CID_Linear	1006
+#define CID_Radial	1007
+#define CID_GradStops	1008
+
+static void GDDSubResize(GradientDlg *gdd, GEvent *event) {
+    int width, height;
+    int i;
+
+    if ( !event->u.resize.sized )
+return;
+
+    width = event->u.resize.size.width;
+    height = event->u.resize.size.height;
+    if ( width!=gdd->cv_width || height!=gdd->cv_height ) {
+	gdd->cv_width = width; gdd->cv_height = height;
+	for ( i=0; i<4; ++i ) {
+	    CharView *cv = (&gdd->cv_grad);
+	    GDrawResize(cv->gw,width,height);
+	}
+    }
+
+    GDrawSync(NULL);
+    GDrawProcessPendingEvents(NULL);
+}
+
+static void GDDDraw(GradientDlg *gdd, GWindow pixmap, GEvent *event) {
+    GRect r,pos;
+
+    GGadgetGetSize(GWidgetGetControl(gdd->gw,CID_Gradient),&pos);
+    r.x = pos.x-1; r.y = pos.y-1;
+    r.width = pos.width+1; r.height = pos.height+1;
+    GDrawDrawRect(pixmap,&r,0);
+}
+
+static void GDDMakeActive(GradientDlg *gdd,CharView *cv) {
+
+    if ( gdd==NULL )
+return;
+    cv->inactive = false;
+    GDrawSetUserData(gdd->gw,cv);
+    GDrawRequestExpose(cv->v,NULL,false);
+    GDrawRequestExpose(gdd->gw,NULL,false);
+}
+
+void GDDChar(GradientDlg *gdd, GEvent *event) {
+    CVChar((&gdd->cv_grad),event);
+}
+
+static void GDD_DoClose(struct cvcontainer *cvc) {
+    GradientDlg *gdd = (GradientDlg *) cvc;
+
+     {
+	SplineChar *msc = &gdd->sc_grad;
+	SplinePointListsFree(msc->layers[0].splines);
+	SplinePointListsFree(msc->layers[1].splines);
+	free( msc->layers );
+    }
+
+    gdd->done = true;
+}
+
+static int gdd_sub_e_h(GWindow gw, GEvent *event) {
+    GradientDlg *gdd = (GradientDlg *) ((CharViewBase *) GDrawGetUserData(gw))->container;
+
+    switch ( event->type ) {
+      case et_resize:
+	if ( event->u.resize.sized )
+	    GDDSubResize(gdd,event);
+      break;
+      case et_char:
+	GDDChar(gdd,event);
+      break;
+      case et_mouseup: case et_mousedown: case et_mousemove:
+return( false );
+      break;
+    }
+return( true );
+}
+
+static int gdd_e_h(GWindow gw, GEvent *event) {
+    GradientDlg *gdd = (GradientDlg *) ((CharViewBase *) GDrawGetUserData(gw))->container;
+
+    switch ( event->type ) {
+      case et_expose:
+	GDDDraw(gdd, gw, event);
+      break;
+      case et_char:
+	GDDChar(gdd,event);
+      break;
+      case et_close:
+	GDD_DoClose((struct cvcontainer *) gdd);
+      break;
+      case et_create:
+      break;
+      case et_map:
+	 {
+	    CharView *cv = (&gdd->cv_grad);
+	    if ( !cv->inactive ) {
+		if ( event->u.map.is_visible )
+		    CVPaletteActivate(cv);
+		else
+		    CVPalettesHideIfMine(cv);
+	    }
+	}
+	/* gdd->isvisible = event->u.map.is_visible; */
+      break;
+    }
+return( true );
+}
+
+static int Gradient_Cancel(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GradientDlg *gdd = (GradientDlg *) (((CharViewBase *) GDrawGetUserData(GGadgetGetWindow(g)))->container);
+	GDD_DoClose(&gdd->base);
+    }
+return( true );
+}
+
+static int orderstops(const void *_md1, const void *_md2) {
+    const struct matrix_data *md1 = _md1, *md2 = _md2;
+
+    if ( md1->u.md_real>md2->u.md_real )
+return( 1 );
+    else if ( md1->u.md_real==md2->u.md_real )
+return( 0 );
+    else
+return( -1 );
+}
+
+static int Gradient_OK(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GradientDlg *gdd = (GradientDlg *) (((CharViewBase *) GDrawGetUserData(GGadgetGetWindow(g)))->container);
+	struct gradient *gradient = gdd->active;
+	BasePoint start, end, offset;
+	real radius;
+	int pad, linear;
+	SplineSet *ss, *ss2;
+	int i, rows, cols = GMatrixEditGetColCnt(GWidgetGetControl(gdd->gw,CID_GradStops));
+	struct matrix_data *md = GMatrixEditGet(GWidgetGetControl(gdd->gw,CID_GradStops), &rows);
+
+	if ( rows<2 ) {
+	    ff_post_error(_("Bad Gradient"),_("There must be at least 2 gradient stops"));
+return( true );
+	}
+	for ( i=0; i<rows; ++i ) {
+	    if ( md[cols*i+0].u.md_real<0 || md[cols*i+0].u.md_real>100.0 ) {
+		ff_post_error(_("Bad Gradient"),_("Bad offset on line %d, must be between 0% and 100%."), i );
+return( true );
+	    }
+	    if ( md[cols*i+1].u.md_ival<0 || md[cols*i+1].u.md_ival>0xffffff ) {
+		ff_post_error(_("Bad Gradient"),_("Bad color on line %d, must be between 000000 and ffffff."), i );
+return( true );
+	    }
+	    if ( md[cols*i+2].u.md_real<0 || md[cols*i+2].u.md_real>1.0 ) {
+		ff_post_error(_("Bad Gradient"),_("Bad opacity on line %d, must be between 0.0 and 1.0."), i );
+return( true );
+	    }
+	}
+
+	linear = GGadgetIsChecked(GWidgetGetControl(gdd->gw,CID_Linear));
+	if ( GGadgetIsChecked(GWidgetGetControl(gdd->gw,CID_Pad)) )
+	    pad = sm_pad;
+	else if ( GGadgetIsChecked(GWidgetGetControl(gdd->gw,CID_Repeat)) )
+	    pad = sm_repeat;
+	else
+	    pad = sm_reflect;
+	ss = gdd->sc_grad.layers[ly_fore].splines;
+	if ( ss==NULL || gdd->sc_grad.layers[ly_fore].refs!=NULL ||
+		(linear && ss->next!=NULL) ||
+		(!linear && ss->next!=NULL && ss->next->next!=NULL)) {
+	    ff_post_error(_("Bad Gradient"),_("You must draw a line"));
+return( true );
+	}
+	ss2 = NULL;
+	if ( !linear && ss->next!=NULL ) {
+	    if ( ss->first->next==NULL ) {
+		ss2 = ss;
+		ss = ss2->next;
+	    } else {
+		ss2 = ss->next;
+		if ( ss2->first->next!=NULL ) {
+		    ff_post_error(_("Bad Gradient"),_("You must draw a line, with at most one additional point"));
+return( true );
+		}
+	    }
+	}
+	if ( (ss->first->next==NULL || ss->first==ss->last ||
+		ss->first->next->to->next!=NULL ) ||
+		!ss->first->next->islinear ) {
+	    ff_post_error(_("Bad Gradient"),_("You must draw a line"));
+return( true );
+	}
+
+	if ( linear ) {
+	    start = ss->first->me;
+	    end = ss->last->me;
+	    radius = 0;
+	} else {
+	    end = ss->first->me;
+	    offset.x = ss->last->me.x-end.x;
+	    offset.y = ss->last->me.y-end.y;
+	    radius = sqrt(offset.x*offset.x + offset.y*offset.y);
+	    if ( ss2!=NULL )
+		start = ss2->first->me;
+	    else
+		start = end;
+	}
+	if ( gradient==NULL )
+	    gdd->active = gradient = chunkalloc(sizeof(struct gradient));
+	gradient->start = start;
+	gradient->stop = end;
+	gradient->radius = radius;
+	gradient->sm = pad;
+
+	/* Stops must be stored in ascending order */
+	qsort(md,rows,cols*sizeof(struct matrix_data),orderstops);
+	gradient->grad_stops = grealloc(gradient->grad_stops,rows*sizeof(struct grad_stops));
+	gradient->stop_cnt = rows;
+	for ( i=0; i<rows; ++i ) {
+	    gradient->grad_stops[i].offset  = md[cols*i+0].u.md_real/100.0;
+	    gradient->grad_stops[i].col     = md[cols*i+1].u.md_ival;
+	    gradient->grad_stops[i].opacity = md[cols*i+2].u.md_real;
+	}
+
+	GDD_DoClose(&gdd->base);
+	gdd->oked = true;
+    }
+return( true );
+}
+
+static int GDD_Can_Navigate(struct cvcontainer *cvc, enum nav_type type) {
+return( false );
+}
+
+static int GDD_Can_Open(struct cvcontainer *cvc) {
+return( false );
+}
+
+static SplineFont *SF_Of_GDD(struct cvcontainer *foo) {
+return( NULL );
+}
+
+struct cvcontainer_funcs gradient_funcs = {
+    cvc_gradient,
+    (void (*) (struct cvcontainer *cvc,CharViewBase *cv)) GDDMakeActive,
+    (void (*) (struct cvcontainer *cvc,void *)) GDDChar,
+    GDD_Can_Navigate,
+    NULL,
+    GDD_Can_Open,
+    GDD_DoClose,
+    SF_Of_GDD
+};
+
+
+static void GDDInit(GradientDlg *gdd,SplineFont *sf,Layer *ly,struct gradient *grad) {
+
+    memset(gdd,0,sizeof(*gdd));
+    gdd->base.funcs = &gradient_funcs;
+
+    {
+	SplineChar *msc = (&gdd->sc_grad);
+	CharView *mcv = (&gdd->cv_grad);
+	msc->orig_pos = 0;
+	msc->unicodeenc = -1;
+	msc->name = "Gradient";
+	msc->parent = &gdd->dummy_sf;
+	msc->layer_cnt = 2;
+	msc->layers = gcalloc(2,sizeof(Layer));
+	LayerDefault(&msc->layers[0]);
+	LayerDefault(&msc->layers[1]);
+	gdd->chars[0] = msc;
+
+	mcv->b.sc = msc;
+	mcv->b.layerheads[dm_fore] = &msc->layers[ly_fore];
+	mcv->b.layerheads[dm_back] = &msc->layers[ly_back];
+	mcv->b.layerheads[dm_grid] = &gdd->dummy_sf.grid;
+	mcv->b.drawmode = dm_fore;
+	mcv->b.container = (struct cvcontainer *) gdd;
+	mcv->inactive = false;
+    }
+    gdd->dummy_sf.glyphs = gdd->chars;
+    gdd->dummy_sf.glyphcnt = gdd->dummy_sf.glyphmax = 4;
+    gdd->dummy_sf.pfminfo.fstype = -1;
+    gdd->dummy_sf.fontname = gdd->dummy_sf.fullname = gdd->dummy_sf.familyname = "dummy";
+    gdd->dummy_sf.weight = "Medium";
+    gdd->dummy_sf.origname = "dummy";
+    gdd->dummy_sf.ascent = sf->ascent;
+    gdd->dummy_sf.descent = sf->descent;
+    gdd->dummy_sf.layers = gdd->layerinfo;
+    gdd->dummy_sf.layer_cnt = 2;
+    gdd->layerinfo[ly_back].order2 = sf->layers[ly_back].order2;
+    gdd->layerinfo[ly_back].name = _("Back");
+    gdd->layerinfo[ly_fore].order2 = sf->layers[ly_fore].order2;
+    gdd->layerinfo[ly_fore].name = _("Fore");
+    gdd->dummy_sf.grid.order2 = sf->grid.order2;
+    gdd->dummy_sf.anchor = NULL;
+
+    gdd->dummy_sf.fv = (FontViewBase *) &gdd->dummy_fv;
+    gdd->dummy_fv.b.active_layer = ly_fore;
+    gdd->dummy_fv.b.sf = &gdd->dummy_sf;
+    gdd->dummy_fv.b.selected = gdd->sel;
+    gdd->dummy_fv.cbw = gdd->dummy_fv.cbh = default_fv_font_size+1;
+    gdd->dummy_fv.magnify = 1;
+
+    gdd->dummy_fv.b.map = &gdd->dummy_map;
+    gdd->dummy_map.map = gdd->map;
+    gdd->dummy_map.backmap = gdd->backmap;
+    gdd->dummy_map.enccount = gdd->dummy_map.encmax = gdd->dummy_map.backmax = 4;
+    gdd->dummy_map.enc = &custom;
+
+    if ( grad!=NULL ) {
+	SplineSet *ss1, *ss2;
+	SplinePoint *sp1, *sp2, *sp3;
+	ss1 = chunkalloc(sizeof(SplineSet));
+	sp2 = SplinePointCreate(grad->stop.x,grad->stop.y);
+	if ( grad->radius==0 ) {
+	    sp1 = SplinePointCreate(grad->start.x,grad->start.y);
+	    SplineMake(sp1,sp2,sf->layers[ly_fore].order2);
+	    ss1->first = sp1; ss1->last = sp2;
+	} else {
+	    sp3 = SplinePointCreate(grad->start.x+grad->radius,grad->start.y);
+	    SplineMake(sp2,sp3,sf->layers[ly_fore].order2);
+	    ss1->first = sp2; ss1->last = sp3;
+	    if ( grad->start.x!=grad->stop.x || grad->start.y!=grad->stop.y ) {
+		ss2 = chunkalloc(sizeof(SplineSet));
+		sp1 = SplinePointCreate(grad->start.x,grad->start.y);
+		ss2->first = ss2->last = sp1;
+		ss1->next = ss2;
+	    }
+	}
+	gdd->sc_grad.layers[ly_fore].splines = ss1;
+    }
+
+    gdd->sc_grad.layers[ly_back]. splines = SplinePointListCopy( LayerAllSplines(ly));
+    LayerUnAllSplines(ly);
+}
+
+static struct col_init stopci[] = {
+    { me_real , NULL, NULL, NULL, N_("Offset") },
+    { me_hex, NULL, NULL, NULL, N_("Color") },
+    { me_real, NULL, NULL, NULL, N_("Opacity") }
+    };
+
+static int Grad_CanDelete(GGadget *g,int row) {
+    int rows;
+    struct matrix_data *md = GMatrixEditGet(g, &rows);
+    if ( md==NULL )
+return( false );
+
+    /* There must always be at least two entries in the table */
+return( rows>2 );
+}
+
+static void StopMatrixInit(struct matrixinit *mi,struct gradient *grad) {
+    int i;
+    struct matrix_data *md;
+
+    memset(mi,0,sizeof(*mi));
+    mi->col_cnt = 3;
+    mi->col_init = stopci;
+
+    if ( grad==NULL ) {
+	md = gcalloc(2*mi->col_cnt,sizeof(struct matrix_data));
+	md[3*0+0].u.md_real = 0;
+	md[3*0+1].u.md_ival = 0x000000;
+	md[3*0+2].u.md_real = 1;
+	md[3*1+0].u.md_real = 100;
+	md[3*1+1].u.md_ival = 0xffffff;
+	md[3*1+2].u.md_real = 1;
+	mi->initial_row_cnt = 2;
+    } else {
+	md = gcalloc(3*grad->stop_cnt,sizeof(struct matrix_data));
+	for ( i=0; i<grad->stop_cnt; ++i ) {
+	    md[3*i+0].u.md_real = grad->grad_stops[i].offset*100.0;
+	    md[3*i+1].u.md_ival = grad->grad_stops[i].col;
+	    md[3*i+2].u.md_real = grad->grad_stops[i].opacity;
+	}
+	mi->initial_row_cnt = grad->stop_cnt;
+    }
+    mi->matrix_data = md;
+
+    mi->candelete = Grad_CanDelete;
+}
+
+static struct gradient *GradientEdit(struct layer_dlg *ld,struct gradient *active) {
+    GradientDlg gdd;
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[14], boxes[5], *harray[8], *varray[10],
+	*rharray[5], *gtarray[5];
+    GTextInfo label[14];
+    int j,k;
+    struct matrixinit stopmi;
+
+    GDDInit( &gdd,ld->sf,ld->layer,active );
+    gdd.active = active;
+
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_isdlg|wam_restrict|wam_undercursor|wam_utf8_wtitle;
+    wattrs.is_dlg = true;
+    wattrs.restrict_input_to_me = 1;
+    wattrs.undercursor = 1;
+    wattrs.event_masks = -1;
+    wattrs.cursor = ct_pointer;
+    wattrs.utf8_window_title = _("Gradient");
+    pos.width = 600;
+    pos.height = 300;
+    gdd.gw = gw = GDrawCreateTopWindow(NULL,&pos,gdd_e_h,&gdd.cv_grad,&wattrs);
+
+    memset(&label,0,sizeof(label));
+    memset(&gcd,0,sizeof(gcd));
+    memset(&boxes,0,sizeof(boxes));
+
+    k = j = 0;
+    gcd[k].gd.flags = gg_visible|gg_enabled ;		/* This space is for the menubar */
+    gcd[k].gd.pos.height = 18; gcd[k].gd.pos.width = 20;
+    gcd[k++].creator = GSpacerCreate;
+    varray[j++] = &gcd[k-1];
+
+    label[k].text = (unichar_t *) _(
+	"  A linear gradient is represented by a line drawn\n"
+	"from it start point to its end point.\n"
+	"  A radial gradient is represented by a line drawn\n"
+	"from its center whose length is the ultimate radius.\n"
+	"If there is a single additional point, that point\n"
+	"represents the gradient's focus, if omitted the focus\n"
+	"is the same as the radius." );
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLabelCreate;
+    varray[j++] = &gcd[k-1];
+
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    label[k].text = (unichar_t *) _("Linear");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.popup_msg = (unichar_t *) _(
+	    "The gradient will be a linear gradient,\n"
+	    "With the color change happening along\n"
+	    "the line drawn in the view" );
+    gcd[k].gd.cid = CID_Linear;
+    gcd[k++].creator = GRadioCreate;
+    gtarray[0] = &gcd[k-1];
+
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    label[k].text = (unichar_t *) _("Radial");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.popup_msg = (unichar_t *) _(
+	    "The gradient will be a radial gradient,\n"
+	    "With the color change happening in circles\n"
+	    "starting at the focus (if specified) and\n"
+	    "extending outward until it reaches the\n"
+	    "specified radius." );
+    gcd[k].gd.cid = CID_Radial;
+    gcd[k++].creator = GRadioCreate;
+    gtarray[1] = &gcd[k-1]; gtarray[2] = GCD_Glue; gtarray[3] = NULL;
+
+    boxes[4].gd.flags = gg_enabled|gg_visible;
+    boxes[4].gd.u.boxelements = gtarray;
+    boxes[4].creator = GHBoxCreate;
+    varray[j++] = &boxes[4];
+
+    gcd[k].gd.pos.width = gcd[k].gd.pos.height = 200;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.cid = CID_Gradient;
+    gcd[k].gd.u.drawable_e_h = gdd_sub_e_h;
+    gcd[k++].creator = GDrawableCreate;
+    varray[j++] = &gcd[k-1];
+
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    label[k].text = (unichar_t *) _("_Pad");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.popup_msg = (unichar_t *) _("Beyond the endpoints, the gradient takes on the color at the end-points\n"
+		"This does not work for PostScript linear gradients");
+    gcd[k].gd.cid = CID_Pad;
+    gcd[k++].creator = GRadioCreate;
+    rharray[0] = &gcd[k-1];
+
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    label[k].text = (unichar_t *) _("Repeat");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.popup_msg = (unichar_t *) _("Beyond the endpoints the gradient repeats itself\n"
+	    "This does not work for PostScript gradients." );
+    gcd[k].gd.cid = CID_Repeat;
+    gcd[k++].creator = GRadioCreate;
+    rharray[1] = &gcd[k-1];
+
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    label[k].text = (unichar_t *) _("Reflect");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.popup_msg = (unichar_t *) _("Beyond the endpoint the gradient repeats itself, but reflected.\n"
+	    "This does not work for PostScript gradients");
+    gcd[k].gd.cid = CID_Reflect;
+    gcd[k++].creator = GRadioCreate;
+    rharray[2] = &gcd[k-1];
+    rharray[3] = GCD_Glue; rharray[4] = NULL;
+
+    boxes[2].gd.flags = gg_enabled|gg_visible;
+    boxes[2].gd.u.boxelements = rharray;
+    boxes[2].creator = GHBoxCreate;
+    varray[j++] = &boxes[2];
+
+    label[k].text = (unichar_t *) _(
+	    "Specify the color (& opacity) at stop points\n"
+	    "along the line drawn above. The offset is a\n"
+	    "percentage of the distance from the start to\n"
+	    "the end of the line. The color is a 6 (hex)\n"
+	    "digit number expressing an RGB color.");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLabelCreate;
+    varray[j++] = &gcd[k-1];
+
+    StopMatrixInit(&stopmi,active);
+
+    gcd[k].gd.pos.width = 300; gcd[k].gd.pos.height = 200;
+    gcd[k].gd.flags = gg_enabled | gg_visible | gg_utf8_popup;
+    gcd[k].gd.cid = CID_GradStops;
+    gcd[k].gd.u.matrix = &stopmi;
+    gcd[k++].creator = GMatrixEditCreate;
+    varray[j++] = &gcd[k-1];
+
+    label[k].text = (unichar_t *) _("_OK");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_but_default;
+    gcd[k].gd.handle_controlevent = Gradient_OK;
+    gcd[k++].creator = GButtonCreate;
+
+    label[k].text = (unichar_t *) _("_Cancel");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_but_cancel;
+    gcd[k].gd.handle_controlevent = Gradient_Cancel;
+    gcd[k++].creator = GButtonCreate;
+
+    harray[0] = GCD_Glue; harray[1] = &gcd[k-2]; harray[2] = GCD_Glue;
+    harray[3] = GCD_Glue; harray[4] = &gcd[k-1]; harray[5] = GCD_Glue;
+    harray[6] = NULL;
+
+    boxes[3].gd.flags = gg_enabled|gg_visible;
+    boxes[3].gd.u.boxelements = harray;
+    boxes[3].creator = GHBoxCreate;
+    varray[j++] = &boxes[3];
+    varray[j] = NULL;
+
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = varray;
+    boxes[0].creator = GVBoxCreate;
+
+    GGadgetsCreate(gw,boxes);
+
+    GDDCharViewInits(&gdd,CID_Gradient);
+
+    GHVBoxSetExpandableRow(boxes[0].ret,3);
+    GHVBoxSetExpandableCol(boxes[2].ret,gb_expandgluesame);
+    GHVBoxSetExpandableRow(boxes[3].ret,gb_expandgluesame);
+    GGadgetResize(boxes[0].ret,pos.width,pos.height);
+
+    if ( active!=NULL ) {
+	GGadgetSetChecked(GWidgetGetControl(gw,CID_Linear),active->radius==0);
+	GGadgetSetChecked(GWidgetGetControl(gw,CID_Radial),active->radius!=0);
+	GGadgetSetChecked(GWidgetGetControl(gw,CID_Pad),active->sm==sm_pad);
+	GGadgetSetChecked(GWidgetGetControl(gw,CID_Reflect),active->sm==sm_reflect);
+	GGadgetSetChecked(GWidgetGetControl(gw,CID_Repeat),active->sm==sm_repeat);
+    } else {
+	GGadgetSetChecked(GWidgetGetControl(gw,CID_Linear),true);
+	GGadgetSetChecked(GWidgetGetControl(gw,CID_Pad),true);
+    }
+
+    GDDMakeActive(&gdd,&gdd.cv_grad);
+
+    GDrawResize(gw,400,768);		/* Force a resize event */
+
+    GDrawSetVisible(gdd.gw,true);
+
+    while ( !gdd.done )
+	GDrawProcessOneEvent(NULL);
+
+    {
+	CharView *cv = &gdd.cv_grad;
+	if ( cv->backimgs!=NULL ) {
+	    GDrawDestroyWindow(cv->backimgs);
+	    cv->backimgs = NULL;
+	}
+    }
+    GDrawDestroyWindow(gdd.gw);
+return( gdd.active );
+}
+
+static void Layer_GradSet(struct layer_dlg *ld) {
+    GGadgetSetEnabled(GWidgetGetControl(ld->gw,CID_FillGradAdd),ld->fillgrad==NULL);
+    GGadgetSetEnabled(GWidgetGetControl(ld->gw,CID_FillGradEdit),ld->fillgrad!=NULL);
+    GGadgetSetEnabled(GWidgetGetControl(ld->gw,CID_FillGradDelete),ld->fillgrad!=NULL);
+    GGadgetSetEnabled(GWidgetGetControl(ld->gw,CID_StrokeGradAdd),ld->strokegrad==NULL);
+    GGadgetSetEnabled(GWidgetGetControl(ld->gw,CID_StrokeGradEdit),ld->strokegrad!=NULL);
+    GGadgetSetEnabled(GWidgetGetControl(ld->gw,CID_StrokeGradDelete),ld->strokegrad!=NULL);
+}
+
+static int Layer_FillGradDelete(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct layer_dlg *ld = GDrawGetUserData(GGadgetGetWindow(g));
+	GradientFree(ld->fillgrad);
+	ld->fillgrad=NULL;
+	Layer_GradSet(ld);
+    }
+return( true );
+}
+
+static int Layer_FillGradAddEdit(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct layer_dlg *ld = GDrawGetUserData(GGadgetGetWindow(g));
+	ld->fillgrad = GradientEdit(ld,ld->fillgrad);
+	Layer_GradSet(ld);
+    }
+return( true );
+}
+
+static int Layer_StrokeGradDelete(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct layer_dlg *ld = GDrawGetUserData(GGadgetGetWindow(g));
+	GradientFree(ld->strokegrad);
+	ld->strokegrad=NULL;
+	Layer_GradSet(ld);
+    }
+return( true );
+}
+
+static int Layer_StrokeGradAddEdit(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct layer_dlg *ld = GDrawGetUserData(GGadgetGetWindow(g));
+	ld->strokegrad = GradientEdit(ld,ld->strokegrad);
+	Layer_GradSet(ld);
+    }
+return( true );
+}
 
 static uint32 getcol(GGadget *g,int *err) {
     const unichar_t *ret=_GGadgetGetTitle(g);
@@ -988,18 +1657,21 @@ return( true );
 		GGadgetIsChecked(GWidgetGetControl(gw,CID_RoundJoin))?lj_round:
 		GGadgetIsChecked(GWidgetGetControl(gw,CID_MiterJoin))?lj_miter:
 			lj_inherited;
-#ifdef FONTFORGE_CONFIG_TYPE3
+
 	GradientFree(ld->layer->fill_brush.gradient);
 	PatternFree(ld->layer->fill_brush.pattern);
 	GradientFree(ld->layer->stroke_pen.brush.gradient);
 	PatternFree(ld->layer->stroke_pen.brush.pattern);
-#endif
+
 	ld->done = ld->ok = true;
 	ld->layer->stroke_pen = temp.stroke_pen;
 	ld->layer->fill_brush = temp.fill_brush;
 	ld->layer->dofill = temp.dofill;
 	ld->layer->dostroke = temp.dostroke;
 	ld->layer->fillfirst = temp.fillfirst;
+
+	ld->layer->fill_brush.gradient = ld->fillgrad;
+	ld->layer->stroke_pen.brush.gradient = ld->strokegrad;
     }
 return( true );
 }
@@ -1036,15 +1708,17 @@ return( false );
 return( true );
 }
 
-int LayerDialog(Layer *layer) {
+int LayerDialog(Layer *layer,SplineFont *sf) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[41];
-    GTextInfo label[41];
+    GGadgetCreateData gcd[51], boxes[10];
+    GGadgetCreateData *barray[10], *varray[4], *fhvarray[14], *shvarray[34],
+	    *lcarray[6], *ljarray[6], *fgarray[5], *sgarray[5];
+    GTextInfo label[51];
     struct layer_dlg ld;
     int yoff=0;
-    int gcdoff, fill_gcd;
+    int gcdoff, fill_gcd, stroke_gcd, k, j;
     char widthbuf[20], fcol[12], scol[12], fopac[30], sopac[30], transbuf[150],
 	    dashbuf[60];
     int i;
@@ -1052,6 +1726,7 @@ int LayerDialog(Layer *layer) {
 
     memset(&ld,0,sizeof(ld));
     ld.layer = layer;
+    ld.sf    = sf;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
@@ -1065,11 +1740,14 @@ int LayerDialog(Layer *layer) {
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,LY_Width));
     pos.height = GDrawPointsToPixels(NULL,LY_Height);
     ld.gw = gw = GDrawCreateTopWindow(NULL,&pos,layer_e_h,&ld,&wattrs);
+    ld.fillgrad = GradientCopy(layer->fill_brush.gradient);
+    ld.strokegrad = GradientCopy(layer->stroke_pen.brush.gradient);
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
+    memset(&boxes,0,sizeof(boxes));
 
-    gcdoff = 0;
+    gcdoff = k = 0;
 
     label[gcdoff].text = (unichar_t *) _("Fi_ll");
     label[gcdoff].text_is_1byte = true;
@@ -1081,10 +1759,6 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff++].creator = GCheckBoxCreate;
 
     fill_gcd = gcdoff;
-    gcd[gcdoff].gd.pos.x = 2; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+6;
-    gcd[gcdoff].gd.pos.width = LY_Width-4; gcd[gcdoff].gd.pos.height = 65;
-    gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
-    gcd[gcdoff++].creator = GGroupCreate;
 
     label[gcdoff].text = (unichar_t *) _("Color:");
     label[gcdoff].text_is_1byte = true;
@@ -1092,6 +1766,7 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+12;
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
     gcd[gcdoff++].creator = GLabelCreate;
+    fhvarray[k++] = &gcd[gcdoff-1];
 
     sprintf( fcol, "#%06x", layer->fill_brush.col );
     label[gcdoff].text = (unichar_t *) fcol;
@@ -1106,6 +1781,7 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.pos.width = 80;
     gcd[gcdoff].gd.cid = CID_FillColor;
     gcd[gcdoff++].creator = GTextFieldCreate;
+    fhvarray[k++] = &gcd[gcdoff-1];
 
     label[gcdoff].text = (unichar_t *) _("Inherited");
     label[gcdoff].text_is_1byte = true;
@@ -1116,6 +1792,8 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.cid = CID_FillCInherit;
     gcd[gcdoff].gd.handle_controlevent = Layer_Inherit;
     gcd[gcdoff++].creator = GCheckBoxCreate;
+    fhvarray[k++] = &gcd[gcdoff-1];
+    fhvarray[k++] = NULL;
 
     label[gcdoff].text = (unichar_t *) _("Opacity:");
     label[gcdoff].text_is_1byte = true;
@@ -1123,6 +1801,7 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+25;
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
     gcd[gcdoff++].creator = GLabelCreate;
+    fhvarray[k++] = &gcd[gcdoff-1];
 
     sprintf( fopac, "%g", layer->fill_brush.opacity );
     label[gcdoff].text = (unichar_t *) fopac;
@@ -1137,6 +1816,7 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.pos.width = 80;
     gcd[gcdoff].gd.cid = CID_FillOpacity;
     gcd[gcdoff++].creator = GTextFieldCreate;
+    fhvarray[k++] = &gcd[gcdoff-1];
 
     label[gcdoff].text = (unichar_t *) _("Inherited");
     label[gcdoff].text_is_1byte = true;
@@ -1147,6 +1827,62 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.cid = CID_FillOInherit;
     gcd[gcdoff].gd.handle_controlevent = Layer_Inherit;
     gcd[gcdoff++].creator = GCheckBoxCreate;
+    fhvarray[k++] = &gcd[gcdoff-1];
+    fhvarray[k++] = NULL;
+
+    label[gcdoff].text = (unichar_t *) _("Gradient:");
+    label[gcdoff].text_is_1byte = true;
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+25;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+    gcd[gcdoff++].creator = GLabelCreate;
+    fhvarray[k++] = &gcd[gcdoff-1];
+
+    gcd[gcdoff].gd.flags = layer->fill_brush.gradient==NULL ? (gg_visible | gg_enabled) : gg_visible;
+    label[gcdoff].text = (unichar_t *) _("Add");
+    label[gcdoff].text_is_1byte = true;
+    label[gcdoff].text_in_resource = true;
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.handle_controlevent = Layer_FillGradAddEdit;
+    gcd[gcdoff].gd.cid = CID_FillGradAdd;
+    gcd[gcdoff++].creator = GButtonCreate;
+    fgarray[0] = &gcd[gcdoff-1];
+
+    gcd[gcdoff].gd.flags = layer->fill_brush.gradient!=NULL ? (gg_visible | gg_enabled) : gg_visible;
+    label[gcdoff].text = (unichar_t *) _("Edit");
+    label[gcdoff].text_is_1byte = true;
+    label[gcdoff].text_in_resource = true;
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.handle_controlevent = Layer_FillGradAddEdit;
+    gcd[gcdoff].gd.cid = CID_FillGradEdit;
+    gcd[gcdoff++].creator = GButtonCreate;
+    fgarray[1] = &gcd[gcdoff-1];
+
+    gcd[gcdoff].gd.flags = layer->fill_brush.gradient!=NULL ? (gg_visible | gg_enabled) : gg_visible;
+    label[gcdoff].text = (unichar_t *) _("Delete");
+    label[gcdoff].text_is_1byte = true;
+    label[gcdoff].text_in_resource = true;
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.handle_controlevent = Layer_FillGradDelete;
+    gcd[gcdoff].gd.cid = CID_FillGradDelete;
+    gcd[gcdoff++].creator = GButtonCreate;
+    fgarray[2] = &gcd[gcdoff-1];
+    fgarray[3] = GCD_Glue;
+    fgarray[4] = NULL;
+
+    boxes[7].gd.flags = gg_enabled|gg_visible;
+    boxes[7].gd.u.boxelements = fgarray;
+    boxes[7].creator = GHBoxCreate;
+    fhvarray[k++] = &boxes[7];
+    fhvarray[k++] = GCD_ColSpan;
+    fhvarray[k++] = NULL;
+    fhvarray[k++] = NULL;
+
+    boxes[2].gd.pos.x = boxes[2].gd.pos.y = 2;
+    boxes[2].gd.flags = gg_enabled|gg_visible;
+    boxes[2].gd.u.boxelements = fhvarray;
+    boxes[2].gd.label = (GTextInfo *) &gcd[fill_gcd-1];
+    boxes[2].creator = GHVGroupCreate;
 
     label[gcdoff].text = (unichar_t *) _("Stroke");
     label[gcdoff].text_is_1byte = true;
@@ -1157,10 +1893,8 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.cid = CID_Stroke;
     gcd[gcdoff++].creator = GCheckBoxCreate;
 
-    gcd[gcdoff].gd.pos.x = 2; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+6;
-    gcd[gcdoff].gd.pos.width = LY_Width-4; gcd[gcdoff].gd.pos.height = 206;
-    gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
-    gcd[gcdoff++].creator = GGroupCreate;
+    stroke_gcd = gcdoff;
+    k = 0;
 
     label[gcdoff].text = (unichar_t *) _("Color:");
     label[gcdoff].text_is_1byte = true;
@@ -1168,6 +1902,7 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+12;
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
     gcd[gcdoff++].creator = GLabelCreate;
+    shvarray[k++] = &gcd[gcdoff-1];
 
     sprintf( scol, "#%06x", layer->stroke_pen.brush.col );
     label[gcdoff].text = (unichar_t *) scol;
@@ -1182,6 +1917,7 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.pos.width = 80;
     gcd[gcdoff].gd.cid = CID_StrokeColor;
     gcd[gcdoff++].creator = GTextFieldCreate;
+    shvarray[k++] = &gcd[gcdoff-1];
 
     label[gcdoff].text = (unichar_t *) _("Inherited");
     label[gcdoff].text_is_1byte = true;
@@ -1192,6 +1928,8 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.cid = CID_StrokeCInherit;
     gcd[gcdoff].gd.handle_controlevent = Layer_Inherit;
     gcd[gcdoff++].creator = GCheckBoxCreate;
+    shvarray[k++] = &gcd[gcdoff-1];
+    shvarray[k++] = NULL;
 
     label[gcdoff].text = (unichar_t *) _("Opacity:");
     label[gcdoff].text_is_1byte = true;
@@ -1200,6 +1938,7 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+25;
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
     gcd[gcdoff++].creator = GLabelCreate;
+    shvarray[k++] = &gcd[gcdoff-1];
 
     sprintf( sopac, "%g", layer->stroke_pen.brush.opacity );
     label[gcdoff].text = (unichar_t *) sopac;
@@ -1214,6 +1953,7 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.pos.width = 80;
     gcd[gcdoff].gd.cid = CID_StrokeOpacity;
     gcd[gcdoff++].creator = GTextFieldCreate;
+    shvarray[k++] = &gcd[gcdoff-1];
 
     label[gcdoff].text = (unichar_t *) _("Inherited");
     label[gcdoff].text_is_1byte = true;
@@ -1224,6 +1964,55 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.cid = CID_StrokeOInherit;
     gcd[gcdoff].gd.handle_controlevent = Layer_Inherit;
     gcd[gcdoff++].creator = GCheckBoxCreate;
+    shvarray[k++] = &gcd[gcdoff-1];
+    shvarray[k++] = NULL;
+
+    label[gcdoff].text = (unichar_t *) _("Gradient:");
+    label[gcdoff].text_is_1byte = true;
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+25;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+    gcd[gcdoff++].creator = GLabelCreate;
+    shvarray[k++] = &gcd[gcdoff-1];
+
+    gcd[gcdoff].gd.flags = layer->stroke_pen.brush.gradient==NULL ? (gg_visible | gg_enabled) : gg_visible;
+    label[gcdoff].text = (unichar_t *) _("Add");
+    label[gcdoff].text_is_1byte = true;
+    label[gcdoff].text_in_resource = true;
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.handle_controlevent = Layer_StrokeGradAddEdit;
+    gcd[gcdoff].gd.cid = CID_StrokeGradAdd;
+    gcd[gcdoff++].creator = GButtonCreate;
+    sgarray[0] = &gcd[gcdoff-1];
+
+    gcd[gcdoff].gd.flags = layer->stroke_pen.brush.gradient!=NULL ? (gg_visible | gg_enabled) : gg_visible;
+    label[gcdoff].text = (unichar_t *) _("Edit");
+    label[gcdoff].text_is_1byte = true;
+    label[gcdoff].text_in_resource = true;
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.handle_controlevent = Layer_StrokeGradAddEdit;
+    gcd[gcdoff].gd.cid = CID_StrokeGradEdit;
+    gcd[gcdoff++].creator = GButtonCreate;
+    sgarray[1] = &gcd[gcdoff-1];
+
+    gcd[gcdoff].gd.flags = layer->stroke_pen.brush.gradient!=NULL ? (gg_visible | gg_enabled) : gg_visible;
+    label[gcdoff].text = (unichar_t *) _("Delete");
+    label[gcdoff].text_is_1byte = true;
+    label[gcdoff].text_in_resource = true;
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.handle_controlevent = Layer_StrokeGradDelete;
+    gcd[gcdoff].gd.cid = CID_StrokeGradDelete;
+    gcd[gcdoff++].creator = GButtonCreate;
+    sgarray[2] = &gcd[gcdoff-1];
+    sgarray[3] = GCD_Glue;
+    sgarray[4] = NULL;
+
+    boxes[8].gd.flags = gg_enabled|gg_visible;
+    boxes[8].gd.u.boxelements = sgarray;
+    boxes[8].creator = GHBoxCreate;
+    shvarray[k++] = &boxes[8];
+    shvarray[k++] = GCD_ColSpan;
+    shvarray[k++] = NULL;
 
     label[gcdoff].text = (unichar_t *) _("Stroke _Width:");
     label[gcdoff].text_is_1byte = true;
@@ -1234,6 +2023,7 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
     gcd[gcdoff].gd.cid = CID_WidthTxt;
     gcd[gcdoff++].creator = GLabelCreate;
+    shvarray[k++] = &gcd[gcdoff-1];
 
     sprintf( widthbuf, "%g", layer->stroke_pen.width );
     label[gcdoff].text = (unichar_t *) widthbuf;
@@ -1248,6 +2038,7 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.pos.width = 80;
     gcd[gcdoff].gd.cid = CID_Width;
     gcd[gcdoff++].creator = GTextFieldCreate;
+    shvarray[k++] = &gcd[gcdoff-1];
 
     label[gcdoff].text = (unichar_t *) _("Inherited");
     label[gcdoff].text_is_1byte = true;
@@ -1258,6 +2049,8 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.cid = CID_StrokeWInherit;
     gcd[gcdoff].gd.handle_controlevent = Layer_Inherit;
     gcd[gcdoff++].creator = GCheckBoxCreate;
+    shvarray[k++] = &gcd[gcdoff-1];
+    shvarray[k++] = NULL;
 
     label[gcdoff].text = (unichar_t *) _("Dashes");
     label[gcdoff].text_is_1byte = true;
@@ -1267,6 +2060,7 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.cid = CID_DashesTxt;
     gcd[gcdoff].gd.popup_msg = (unichar_t *) _("This specifies the dash pattern for a line.\nLeave this field blank for a solid line.\nOtherwise specify a list of up to 8 integers\n(between 0 and 255) which give the dash pattern\nin em-units. So \"10 10\" will draw the first\n10 units of a line, leave the next 10 blank,\ndraw the next 10, and so on.");
     gcd[gcdoff++].creator = GLabelCreate;
+    shvarray[k++] = &gcd[gcdoff-1];
 
     pt = dashbuf; dashbuf[0] = '\0';
     for ( i=0; i<DASH_MAX && layer->stroke_pen.dashes[i]!=0; ++i ) {
@@ -1286,6 +2080,7 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.pos.width = 80;
     gcd[gcdoff].gd.cid = CID_Dashes;
     gcd[gcdoff++].creator = GTextFieldCreate;
+    shvarray[k++] = &gcd[gcdoff-1];
 
     label[gcdoff].text = (unichar_t *) _("Inherited");
     label[gcdoff].text_is_1byte = true;
@@ -1300,6 +2095,8 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.handle_controlevent = Layer_Inherit;
     gcd[gcdoff].gd.popup_msg = (unichar_t *) _("This specifies the dash pattern for a line.\nLeave this field blank for a solid line.\nOtherwise specify a list of up to 8 integers\n(between 0 and 255) which give the dash pattern\nin em-units. So \"10 10\" will draw the first\n10 units of a line, leave the next 10 blank,\ndraw the next 10, and so on.");
     gcd[gcdoff++].creator = GCheckBoxCreate;
+    shvarray[k++] = &gcd[gcdoff-1];
+    shvarray[k++] = NULL;
 
     label[gcdoff].text = (unichar_t *) _("_Transform Pen:");
     label[gcdoff].text_in_resource = true;
@@ -1308,6 +2105,7 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+25;
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
     gcd[gcdoff++].creator = GLabelCreate;
+    shvarray[k++] = &gcd[gcdoff-1];
 
     sprintf( transbuf, "[%.4g %.4g %.4g %.4g]", layer->stroke_pen.trans[0],
 	    layer->stroke_pen.trans[1], layer->stroke_pen.trans[2],
@@ -1320,7 +2118,11 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
     gcd[gcdoff].gd.cid = CID_Trans;
     gcd[gcdoff++].creator = GTextFieldCreate;
+    shvarray[k++] = &gcd[gcdoff-1];
+    shvarray[k++] = GCD_ColSpan;
+    shvarray[k++] = NULL;
 
+    j = 0;
     label[gcdoff].text = (unichar_t *) _("Line Cap");
     label[gcdoff].text_is_1byte = true;
     gcd[gcdoff].gd.label = &label[gcdoff];
@@ -1328,11 +2130,6 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
     gcd[gcdoff].gd.cid = CID_LineCapTxt;
     gcd[gcdoff++].creator = GLabelCreate;
-
-    gcd[gcdoff].gd.pos.x = 6; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+6;
-    gcd[gcdoff].gd.pos.width = LY_Width-12; gcd[gcdoff].gd.pos.height = 25;
-    gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
-    gcd[gcdoff++].creator = GGroupCreate;
 
     label[gcdoff].text = (unichar_t *) _("_Butt");
     label[gcdoff].text_is_1byte = true;
@@ -1344,6 +2141,7 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (layer->stroke_pen.linecap==lc_butt?gg_cb_on:0);
     gcd[gcdoff].gd.cid = CID_ButtCap;
     gcd[gcdoff++].creator = GRadioCreate;
+    lcarray[j++] = &gcd[gcdoff-1];
 
     label[gcdoff].text = (unichar_t *) _("_Round");
     label[gcdoff].text_is_1byte = true;
@@ -1355,6 +2153,7 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (layer->stroke_pen.linecap==lc_round?gg_cb_on:0);
     gcd[gcdoff].gd.cid = CID_RoundCap;
     gcd[gcdoff++].creator = GRadioCreate;
+    lcarray[j++] = &gcd[gcdoff-1];
 
     label[gcdoff].text = (unichar_t *) _("S_quare");
     label[gcdoff].text_is_1byte = true;
@@ -1366,6 +2165,7 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (layer->stroke_pen.linecap==lc_square?gg_cb_on:0);
     gcd[gcdoff].gd.cid = CID_SquareCap;
     gcd[gcdoff++].creator = GRadioCreate;
+    lcarray[j++] = &gcd[gcdoff-1];
 
     label[gcdoff].text = (unichar_t *) _("Inherited");
     label[gcdoff].text_is_1byte = true;
@@ -1374,7 +2174,21 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (layer->stroke_pen.linecap==lc_inherited?gg_cb_on:0);
     gcd[gcdoff].gd.cid = CID_InheritCap;
     gcd[gcdoff++].creator = GRadioCreate;
+    lcarray[j++] = &gcd[gcdoff-1];
+    lcarray[j++] = NULL;
+    lcarray[j++] = NULL;
 
+    boxes[3].gd.pos.x = boxes[3].gd.pos.y = 2;
+    boxes[3].gd.flags = gg_enabled|gg_visible;
+    boxes[3].gd.u.boxelements = lcarray;
+    boxes[3].gd.label = (GTextInfo *) &gcd[gcdoff-5];
+    boxes[3].creator = GHVGroupCreate;
+    shvarray[k++] = &boxes[3];
+    shvarray[k++] = GCD_ColSpan;
+    shvarray[k++] = GCD_ColSpan;
+    shvarray[k++] = NULL;
+
+    j=0;
     label[gcdoff].text = (unichar_t *) _("Line Join");
     label[gcdoff].text_is_1byte = true;
     gcd[gcdoff].gd.label = &label[gcdoff];
@@ -1382,11 +2196,6 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
     gcd[gcdoff].gd.cid = CID_LineJoinTxt;
     gcd[gcdoff++].creator = GLabelCreate;
-
-    gcd[gcdoff].gd.pos.x = gcd[gcdoff-6].gd.pos.x; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+6;
-    gcd[gcdoff].gd.pos.width = LY_Width-12; gcd[gcdoff].gd.pos.height = 25;
-    gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
-    gcd[gcdoff++].creator = GGroupCreate;
 
     label[gcdoff].text = (unichar_t *) _("_Miter");
     label[gcdoff].text_is_1byte = true;
@@ -1398,6 +2207,7 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (layer->stroke_pen.linejoin==lj_miter?gg_cb_on:0);
     gcd[gcdoff].gd.cid = CID_MiterJoin;
     gcd[gcdoff++].creator = GRadioCreate;
+    ljarray[j++] = &gcd[gcdoff-1];
 
     label[gcdoff].text = (unichar_t *) _("Ro_und");
     label[gcdoff].text_is_1byte = true;
@@ -1409,6 +2219,7 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (layer->stroke_pen.linejoin==lj_round?gg_cb_on:0);
     gcd[gcdoff].gd.cid = CID_RoundJoin;
     gcd[gcdoff++].creator = GRadioCreate;
+    ljarray[j++] = &gcd[gcdoff-1];
 
     label[gcdoff].text = (unichar_t *) _("Be_vel");
     label[gcdoff].text_is_1byte = true;
@@ -1420,6 +2231,7 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (layer->stroke_pen.linejoin==lj_bevel?gg_cb_on:0);
     gcd[gcdoff].gd.cid = CID_BevelJoin;
     gcd[gcdoff++].creator = GRadioCreate;
+    ljarray[j++] = &gcd[gcdoff-1];
 
     label[gcdoff].text = (unichar_t *) _("Inherited");
     label[gcdoff].text_is_1byte = true;
@@ -1429,6 +2241,26 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.flags = gg_enabled | gg_visible | (layer->stroke_pen.linejoin==lj_inherited?gg_cb_on:0);
     gcd[gcdoff].gd.cid = CID_InheritCap;
     gcd[gcdoff++].creator = GRadioCreate;
+    ljarray[j++] = &gcd[gcdoff-1];
+    ljarray[j++] = NULL;
+    ljarray[j++] = NULL;
+
+    boxes[4].gd.pos.x = boxes[4].gd.pos.y = 2;
+    boxes[4].gd.flags = gg_enabled|gg_visible;
+    boxes[4].gd.u.boxelements = ljarray;
+    boxes[4].gd.label = (GTextInfo *) &gcd[gcdoff-5];
+    boxes[4].creator = GHVGroupCreate;
+    shvarray[k++] = &boxes[4];
+    shvarray[k++] = GCD_ColSpan;
+    shvarray[k++] = GCD_ColSpan;
+    shvarray[k++] = NULL;
+    shvarray[k++] = NULL;
+
+    boxes[5].gd.pos.x = boxes[5].gd.pos.y = 2;
+    boxes[5].gd.flags = gg_enabled|gg_visible;
+    boxes[5].gd.u.boxelements = shvarray;
+    boxes[5].gd.label = (GTextInfo *) &gcd[stroke_gcd-1];
+    boxes[5].creator = GHVGroupCreate;
 
 
     gcd[gcdoff].gd.pos.x = 30-3; gcd[gcdoff].gd.pos.y = LY_Height-30-3;
@@ -1440,6 +2272,7 @@ int LayerDialog(Layer *layer) {
     gcd[gcdoff].gd.label = &label[gcdoff];
     gcd[gcdoff].gd.handle_controlevent = Layer_OK;
     gcd[gcdoff++].creator = GButtonCreate;
+    barray[0] = GCD_Glue; barray[1] = &gcd[gcdoff-1]; barray[2] = GCD_Glue; barray[3] = GCD_Glue;
 
     gcd[gcdoff].gd.pos.x = -30; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+3;
     gcd[gcdoff].gd.pos.width = -1;
@@ -1449,9 +2282,26 @@ int LayerDialog(Layer *layer) {
     label[gcdoff].text_in_resource = true;
     gcd[gcdoff].gd.label = &label[gcdoff];
     gcd[gcdoff].gd.handle_controlevent = Layer_Cancel;
-    gcd[gcdoff].creator = GButtonCreate;
+    gcd[gcdoff++].creator = GButtonCreate;
+    barray[4] = GCD_Glue; barray[5] = &gcd[gcdoff-1]; barray[6] = GCD_Glue; barray[7] = NULL;
 
-    GGadgetsCreate(gw,gcd);
+    boxes[6].gd.flags = gg_enabled|gg_visible;
+    boxes[6].gd.u.boxelements = barray;
+    boxes[6].creator = GHBoxCreate;
+
+    varray[0] = &boxes[2]; varray[1] = &boxes[5]; varray[2] = &boxes[6]; varray[3] = NULL;
+
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = varray;
+    boxes[0].creator = GVBoxCreate;
+
+    GGadgetsCreate(gw,boxes);
+    GHVBoxSetExpandableCol(boxes[2].ret,2);
+    GHVBoxSetExpandableCol(boxes[5].ret,2);
+    GHVBoxSetExpandableCol(boxes[6].ret,gb_expandgluesame);
+    GHVBoxSetExpandableCol(boxes[7].ret,gb_expandgluesame);
+    GHVBoxSetExpandableCol(boxes[8].ret,gb_expandgluesame);
+    GHVBoxFitWindow(boxes[0].ret);
 
     GWidgetHidePalettes();
     /*GWidgetIndicateFocusGadget(GWidgetGetControl(ld.gw,CID_Width));*/
@@ -1459,6 +2309,10 @@ int LayerDialog(Layer *layer) {
     while ( !ld.done )
 	GDrawProcessOneEvent(NULL);
     GDrawDestroyWindow(ld.gw);
+    if ( !ld.ok ) {
+	GradientFree(ld.fillgrad);
+	GradientFree(ld.strokegrad);
+    }
 return( ld.ok );
 }
 #endif		/* TYPE3 */

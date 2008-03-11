@@ -987,7 +987,7 @@ static void TPDInit(TilePathDlg *tpd,SplineFont *sf) {
 	mcv->b.sc = msc;
 	mcv->b.layerheads[dm_fore] = &msc->layers[ly_fore];
 	mcv->b.layerheads[dm_back] = &msc->layers[ly_back];
-	mcv->b.layerheads[dm_grid] = NULL;
+	mcv->b.layerheads[dm_grid] = &tpd->dummy_sf.grid;
 	msc->layers[ly_fore].splines = last_tiles[i];
 	mcv->b.drawmode = dm_fore;
 	mcv->b.container = (struct cvcontainer *) tpd;
@@ -1106,7 +1106,7 @@ static int TileAsk(struct tiledata *td,SplineFont *sf) {
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.popup_msg = (unichar_t *) _("The tile (in the clipboard) should be placed to the left of the path\nas the path is traced from its start point to its end");
+    gcd[k].gd.popup_msg = (unichar_t *) _("The tiles should be placed to the left of the path\nas the path is traced from its start point to its end");
     gcd[k].gd.cid = CID_Left;
     gcd[k++].creator = GRadioCreate;
     rhvarray[0][0] = &gcd[k-1];
@@ -1118,7 +1118,7 @@ static int TileAsk(struct tiledata *td,SplineFont *sf) {
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.popup_msg = (unichar_t *) _("The tile (in the clipboard) should be centered on the path");
+    gcd[k].gd.popup_msg = (unichar_t *) _("The tiles should be centered on the path");
     gcd[k].gd.cid = CID_Center;
     gcd[k++].creator = GRadioCreate;
     rhvarray[0][1] = &gcd[k-1];
@@ -1130,7 +1130,7 @@ static int TileAsk(struct tiledata *td,SplineFont *sf) {
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.popup_msg = (unichar_t *) _("The tile (in the clipboard) should be placed to the right of the path\nas the path is traced from its start point to its end");
+    gcd[k].gd.popup_msg = (unichar_t *) _("The tiles should be placed to the right of the path\nas the path is traced from its start point to its end");
     gcd[k].gd.cid = CID_Right;
     gcd[k++].creator = GRadioCreate;
     rhvarray[0][2] = &gcd[k-1];

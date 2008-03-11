@@ -9980,6 +9980,78 @@ void TPDCharViewInits(TilePathDlg *tpd, int cid) {
 }
 #endif		/* TilePath */
 
+#ifdef FONTFORGE_CONFIG_TYPE3		/* And gradients */
+static int gdd_cv_e_h(GWindow gw, GEvent *event) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+
+    switch ( event->type ) {
+      case et_expose:
+	InfoExpose(cv,gw,event);
+	CVLogoExpose(cv,gw,event);
+      break;
+      case et_char:
+	GDDChar((GradientDlg *) (cv->b.container),event);
+      break;
+      case et_charup:
+	CVCharUp(cv,event);
+      break;
+      case et_controlevent:
+	switch ( event->u.control.subtype ) {
+	  case et_scrollbarchange:
+	    if ( event->u.control.g == cv->hsb )
+		CVHScroll(cv,&event->u.control.u.sb);
+	    else
+		CVVScroll(cv,&event->u.control.u.sb);
+	  break;
+	}
+      break;
+      case et_map:
+	if ( event->u.map.is_visible )
+	    CVPaletteActivate(cv);
+	else
+	    CVPalettesHideIfMine(cv);
+      break;
+      case et_resize:
+	if ( event->u.resize.sized )
+	    CVResize(cv);
+      break;
+      case et_mouseup: case et_mousedown:
+	GGadgetEndPopup();
+	CVPaletteActivate(cv);
+      break;
+    }
+return( true );
+}
+
+void GDDCharViewInits(GradientDlg *gdd, int cid) {
+    GGadgetData gd;
+    GWindowAttrs wattrs;
+    GRect pos, gsize;
+
+    CharViewInit();
+
+    memset(&gd,0,sizeof(gd));
+    gd.flags = gg_visible | gg_enabled;
+    helplist[0].invoke = CVMenuContextualHelp;
+    gd.u.menu2 = mblist_nomm;
+    gdd->mb = GMenu2BarCreate( gdd->gw, &gd, NULL);
+    GGadgetGetSize(gdd->mb,&gsize);
+    gdd->mbh = gsize.height;
+
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor;
+    wattrs.event_masks = -1;
+    wattrs.cursor = ct_mypointer;
+
+    pos.y = 1; pos.height = 220;
+    pos.width = pos.height; pos.x = 0;
+    gdd->cv_grad.gw = GWidgetCreateSubWindow(
+	    GDrawableGetWindow(GWidgetGetControl(gdd->gw,cid)),
+	    &pos,gdd_cv_e_h,&gdd->cv_grad,&wattrs);
+    _CharViewCreate(&gdd->cv_grad, &gdd->sc_grad, &gdd->dummy_fv, 0);
+}
+#endif			/* Gradients (TYPE3) */
+
 static void SC_CloseAllWindows(SplineChar *sc) {
     CharViewBase *cv, *next;
     BitmapView *bv, *bvnext;
