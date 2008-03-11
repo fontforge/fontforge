@@ -2175,6 +2175,9 @@ static char *RandomPara(struct lang_frequencies *lf,
     char parabuf[PARA_MAX];
     char *pt = parabuf;
 
+    if ( lf==NULL && chrs->cnt==0 )
+return( copy(""));
+
     for ( i=0 ; i<len; ++i ) {
 	if ( lf!=NULL )
 	    strcpy(pt,RandomWord(lf,sf));
@@ -2278,7 +2281,9 @@ int SF2Scripts(SplineFont *sf,uint32 scripts[100]) {
     do {
 	subsf = sf->subfontcnt==0 ? sf : sf->subfonts[k];
 	for ( gid = 0 ; gid<subsf->glyphcnt; ++gid ) if ( SCWorthOutputting(sc=subsf->glyphs[gid]) ) {
-	    if ( sc->unicodeenc==-1 || !isideoalpha(sc->unicodeenc ) )
+	    if ( sc->unicodeenc==-1 || (sc->unicodeenc<0x10000 && !isideoalpha(sc->unicodeenc )) )
+	continue;
+	    if ( sc->unicodeenc<0x10000 && isupper(sc->unicodeenc ))
 	continue;
 	    for ( pst=sc->possub; pst!=NULL; pst=pst->next )
 		if ( pst->type == pst_ligature )

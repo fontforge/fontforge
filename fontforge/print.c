@@ -771,7 +771,7 @@ return;			/* Nothing in this range */
     pdf_addobject(pi);
     fprintf( pi->out, "  <<\n" );
     fprintf( pi->out, "\t/.notdef %d 0 R\n", notdefproc );
-    for ( i=base+first; i<base+last; ++i )
+    for ( i=base+first; i<=base+last; ++i )
 	if ( (gid=map->map[i])!=-1 && SCWorthOutputting(sf->glyphs[gid]))
 	    fprintf( pi->out, "\t/%s %d 0 R\n", sf->glyphs[gid]->name, charprocs[i-base] );
     fprintf( pi->out, "  >>\n" );

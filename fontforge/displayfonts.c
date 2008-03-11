@@ -822,14 +822,15 @@ static void DSP_ChangeFontCallback(void *context,SplineFont *sf,enum sftf_fontty
 	tags = SFFeaturesInScriptLang(sf,-2,script,DEFAULT_LANG);
     }
     for ( cnt=0; tags[cnt]!=0; ++cnt );
-    for ( i=0; feats[i]!=0; ++i ) {
-	for ( j=0; tags[j]!=0; ++j ) {
-	    if ( feats[i]==tags[j] )
-	break;
+    if ( feats!=NULL )
+	for ( i=0; feats[i]!=0; ++i ) {
+	    for ( j=0; tags[j]!=0; ++j ) {
+		if ( feats[i]==tags[j] )
+	    break;
+	    }
+	    if ( tags[j]==0 )
+		++cnt;
 	}
-	if ( tags[j]==0 )
-	    ++cnt;
-    }
     ti = galloc((cnt+2)*sizeof(GTextInfo *));
     for ( i=0; tags[i]!=0; ++i ) {
 	ti[i] = gcalloc( 1,sizeof(GTextInfo));
@@ -849,21 +850,22 @@ static void DSP_ChangeFontCallback(void *context,SplineFont *sf,enum sftf_fontty
 	}
     }
     cnt = i;
-    for ( i=0; feats[i]!=0; ++i ) {
-	for ( j=0; tags[j]!=0; ++j ) {
-	    if ( feats[i]==tags[j] )
-	break;
+    if ( feats!=NULL )
+	for ( i=0; feats[i]!=0; ++i ) {
+	    for ( j=0; tags[j]!=0; ++j ) {
+		if ( feats[i]==tags[j] )
+	    break;
+	    }
+	    if ( tags[j]==0 ) {
+		ti[cnt] = gcalloc( 1,sizeof(GTextInfo));
+		ti[cnt]->bg = COLOR_DEFAULT;
+		ti[cnt]->fg = COLOR_CREATE(0x70,0x70,0x70);
+		ti[cnt]->selected = true;
+		buf[0] = feats[i]>>24; buf[1] = feats[i]>>16; buf[2] = feats[i]>>8; buf[3] = feats[i]; buf[4] = 0;
+		ti[cnt]->text = uc_copy(buf);
+		ti[cnt++]->userdata = (void *) (intpt) feats[i];
+	    }
 	}
-	if ( tags[j]==0 ) {
-	    ti[cnt] = gcalloc( 1,sizeof(GTextInfo));
-	    ti[cnt]->bg = COLOR_DEFAULT;
-	    ti[cnt]->fg = COLOR_CREATE(0x70,0x70,0x70);
-	    ti[cnt]->selected = true;
-	    buf[0] = feats[i]>>24; buf[1] = feats[i]>>16; buf[2] = feats[i]>>8; buf[3] = feats[i]; buf[4] = 0;
-	    ti[cnt]->text = uc_copy(buf);
-	    ti[cnt++]->userdata = (void *) (intpt) feats[i];
-	}
-    }
     ti[cnt] = gcalloc(1,sizeof(GTextInfo));
     /* These will become ordered because the list widget will do that */
     GGadgetSetList(GWidgetGetControl(di->gw,CID_Features),ti,false);
