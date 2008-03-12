@@ -1331,15 +1331,15 @@ void FVAddUnencoded(FontViewBase *fv, int cnt) {
     if ( fv->cidmaster ) {
 	SplineFont *sf = fv->sf;
 	FontViewBase *fvs;
-	if ( sf->glyphcnt+cnt<sf->glyphmax )
+	if ( sf->glyphcnt+cnt>=sf->glyphmax )
 	    sf->glyphs = grealloc(sf->glyphs,(sf->glyphmax = sf->glyphcnt+cnt+10)*sizeof(SplineChar *));
 	memset(sf->glyphs+sf->glyphcnt,0,cnt*sizeof(SplineChar *));
 	for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
 	    EncMap *map = fvs->map;
 	    if ( map->enccount+cnt>=map->encmax )
 		map->map = grealloc(map->map,(map->encmax += cnt+10)*sizeof(int));
-	    if ( sf->glyphcnt+cnt<map->backmax )
-		map->backmap = grealloc(map->map,(map->backmax += cnt+10)*sizeof(int));
+	    if ( sf->glyphcnt+cnt>=map->backmax )
+		map->backmap = grealloc(map->backmap,(map->backmax += cnt+10)*sizeof(int));
 	    for ( i=map->enccount; i<map->enccount+cnt; ++i )
 		map->map[i] = map->backmap[i] = i;
 	    fvs->selected = grealloc(fvs->selected,(map->enccount+cnt));
