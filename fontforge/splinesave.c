@@ -3428,6 +3428,7 @@ struct pschars *CID2ChrsSubrs2(SplineFont *cidmaster,struct fd2data *fds,
     gi.gb = gcalloc(cnt,sizeof(struct glyphbits));
     gi.pmax = 3*cnt;
     gi.psubrs = galloc(gi.pmax*sizeof(struct potentialsubrs));
+    gi.layer = layer;
 
     for ( cid = cnt = 0; cid<max; ++cid ) {
 	sf = NULL;
