@@ -1778,6 +1778,7 @@ static void dumpfontcomments(void (*dumpchar)(int ch,void *data), void *data,
     if ( format==ff_cid || format==ff_cffcid || format==ff_type42cid ||
 	    format==ff_cff || format==ff_type42 )
 	dumpf(dumpchar,data, "%%%%LanguageLevel: 3\n" );
+#ifdef FONTFORGE_CONFIG_TYPE3
     else if ( sf->multilayer && format==ff_ptype3 ) {
 	int gid, ly;
 	SplineChar *sc;
@@ -1797,6 +1798,7 @@ static void dumpfontcomments(void (*dumpchar)(int ch,void *data), void *data,
 	else if ( had_pat )
 	    dumpf(dumpchar,data, "%%%%LanguageLevel: 2\n" );
     }
+#endif
 
     if ( sf->copyright!=NULL ) {
 	char *pt, *strt=sf->copyright, *npt;
