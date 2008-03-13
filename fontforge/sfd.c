@@ -1385,6 +1385,14 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
     }
     if ( sc->color!=COLOR_DEFAULT )
 	fprintf( sfd, "Colour: %x\n", (int) sc->color );
+#ifdef FONTFORGE_CONFIG_TYPE3
+    if ( sc->parent->multilayer ) {
+	if ( sc->tile_extra!=0 )
+	    fprintf( sfd, "TileExtra: %g\n", (double) sc->tile_extra );
+	else if ( sc->tile_bounds.minx!=0 || sc->tile_bounds.maxx!=0 )
+	    fprintf( sfd, "TileBounds: %g %g %g %g\n", (double) sc->tile_bounds.minx, (double) sc->tile_bounds.miny, (double) sc->tile_bounds.maxx, (double) sc->tile_bounds.maxy );
+    }
+#endif
     fprintf(sfd,"EndChar\n" );
 }
 
@@ -4481,6 +4489,15 @@ exit(1);
 	    sc->color = temp;
 	} else if ( strmatch(tok,"Comment:")==0 ) {
 	    sc->comment = SFDReadUTF7Str(sfd);
+#ifdef FONTFORGE_CONFIG_TYPE3
+	} else if ( strmatch(tok,"TileExtra:")==0 ) {
+	    getreal(sfd,&sc->tile_extra);
+	} else if ( strmatch(tok,"TileBounds:")==0 ) {
+	    getreal(sfd,&sc->tile_bounds.minx);
+	    getreal(sfd,&sc->tile_bounds.miny);
+	    getreal(sfd,&sc->tile_bounds.maxx);
+	    getreal(sfd,&sc->tile_bounds.maxy);
+#endif
 	} else if ( strmatch(tok,"EndChar")==0 ) {
 	    if ( sc->orig_pos<sf->glyphcnt )
 		sf->glyphs[sc->orig_pos] = sc;

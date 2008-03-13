@@ -2147,6 +2147,19 @@ void _CVMenuMakeLine(CharViewBase *cv,int do_arc,int ellipse_to_back) {
 	CVCharChangedUpdate(cv);
 }
 
+#ifdef FONTFORGE_CONFIG_TYPE3
+void PatternSCBounds(SplineChar *sc, DBounds *b) {
+    if ( sc==NULL )
+	memset(b,0,sizeof(DBounds));
+    else if ( sc->tile_extra!=0 || (sc->tile_bounds.minx==0 && sc->tile_bounds.maxx==0) ) {
+	SplineCharFindBounds(sc,b);
+	b->minx -= sc->tile_extra; b->miny -= sc->tile_extra;
+	b->maxx += sc->tile_extra; b->maxy += sc->tile_extra;
+    } else
+	*b = sc->tile_bounds;
+}
+#endif
+
 
 
 static void SCUpdateNothing(SplineChar *sc) {
