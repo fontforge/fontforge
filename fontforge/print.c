@@ -405,7 +405,7 @@ struct glyph_res {
 
 #ifdef FONTFORGE_CONFIG_TYPE3
 static void pdf_BrushCheck(PI *pi,struct glyph_res *gr,struct gradient *grad,
-	int isfill,int layer,SplineChar *nested) {
+	int isfill,int layer,SplineChar *sc) {
     char buffer[400];
     int function_obj, shade_obj;
     int i,j;
@@ -491,10 +491,7 @@ return;
 	gr->pattern_names = grealloc(gr->pattern_names,(gr->pattern_max+=100)*sizeof(char *));
 	gr->pattern_objs  = grealloc(gr->pattern_objs ,(gr->pattern_max     )*sizeof(int   ));
     }
-    if ( nested==NULL )
-	sprintf( buffer, "ly%d_%s_grad", layer, isfill?"fill":"stroke" );
-    else
-	sprintf( buffer, "ref_%s_ly%d_%s_grad", nested->name, layer, isfill?"fill":"stroke" );
+    sprintf( buffer, "%s_ly%d_%s_grad", sc->name, layer, isfill?"fill":"stroke" );
     gr->pattern_names[gr->pattern_cnt  ] = copy(buffer);
     gr->pattern_objs [gr->pattern_cnt++] = pdf_addobject(pi);
     fprintf( pi->out, "<<\n" );
@@ -506,7 +503,7 @@ return;
 }
 
 static void pdf_ImageCheck(PI *pi,struct glyph_res *gr,ImageList *images,
-	int layer,SplineChar *nested) {
+	int layer,SplineChar *sc) {
     char buffer[400];
     int icnt=0;
     GImage *img;
@@ -521,10 +518,7 @@ static void pdf_ImageCheck(PI *pi,struct glyph_res *gr,ImageList *images,
 	    gr->image_names = grealloc(gr->image_names,(gr->image_max+=100)*sizeof(char *));
 	    gr->image_objs  = grealloc(gr->image_objs ,(gr->image_max     )*sizeof(int   ));
 	}
-	if ( nested==NULL )
-	    sprintf( buffer, "ly%d_%d_image", layer, icnt );
-	else
-	    sprintf( buffer, "ref_%s_ly%d_%d_image", nested->name, layer, icnt );
+	sprintf( buffer, "%s_ly%d_%d_image", sc->name, layer, icnt );
 	gr->image_names[gr->image_cnt  ] = copy(buffer);
 	gr->image_objs [gr->image_cnt++] = pdf_addobject(pi);
 	++icnt;
@@ -585,9 +579,9 @@ int PdfDumpGlyphResources(PI *pi,SplineChar *sc) {
     SFUntickAll(sc->parent);
 
     for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
-	pdf_BrushCheck(pi,&gr,sc->layers[layer].fill_brush.gradient,true,layer,NULL);
-	pdf_BrushCheck(pi,&gr,sc->layers[layer].stroke_pen.brush.gradient,false,layer,NULL);
-	pdf_ImageCheck(pi,&gr,sc->layers[layer].images,layer,NULL);
+	pdf_BrushCheck(pi,&gr,sc->layers[layer].fill_brush.gradient,true,layer,sc);
+	pdf_BrushCheck(pi,&gr,sc->layers[layer].stroke_pen.brush.gradient,false,layer,sc);
+	pdf_ImageCheck(pi,&gr,sc->layers[layer].images,layer,sc);
 	for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next ) if ( !ref->sc->ticked ) {
 	    ref->sc->ticked = true;
 	    for ( i=0; i<ref->layer_cnt; ++i ) {
@@ -623,16 +617,60 @@ int PdfDumpGlyphResources(PI *pi,SplineChar *sc) {
 return( resobj );
 }
 
+static int PdfDumpSFResources(PI *pi,SplineFont *sf) {
+    int resobj;
+    struct glyph_res gr = { 0 };
+    int i;
+#ifdef FONTFORGE_CONFIG_TYPE3
+    int layer, gid;
+    SplineChar *sc;
+
+    for ( gid=0; gid<sf->glyphcnt; ++gid) if ( (sc=sf->glyphs[gid])!=NULL ) {
+	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
+	    pdf_BrushCheck(pi,&gr,sc->layers[layer].fill_brush.gradient,true,layer,sc);
+	    pdf_BrushCheck(pi,&gr,sc->layers[layer].stroke_pen.brush.gradient,false,layer,sc);
+	    pdf_ImageCheck(pi,&gr,sc->layers[layer].images,layer,sc);
+	}
+    }
+#endif
+    resobj = pdf_addobject(pi);
+    fprintf(pi->out,"<<\n" );
+    if ( gr.pattern_cnt!=0 ) {
+	fprintf( pi->out, "  /Pattern <<\n" );
+	for ( i=0; i<gr.pattern_cnt; ++i ) {
+	    fprintf( pi->out, "    /%s %d 0 R\n", gr.pattern_names[i], gr.pattern_objs[i] );
+	    free(gr.pattern_names[i]);
+	}
+	free(gr.pattern_names); free(gr.pattern_objs);
+	fprintf( pi->out, "  >>\n");
+    }
+    if ( gr.image_cnt!=0 ) {
+	fprintf( pi->out, "  /XObject <<\n" );
+	for ( i=0; i<gr.image_cnt; ++i ) {
+	    fprintf( pi->out, "    /%s %d 0 R\n", gr.image_names[i], gr.image_objs[i] );
+	    free(gr.image_names[i]);
+	}
+	free(gr.image_names); free(gr.image_objs);
+	fprintf( pi->out, "  >>\n");
+    }
+    fprintf( pi->out, ">>\n" );
+    fprintf( pi->out, "endobj\n\n" );
+return( resobj );
+}
+
 static int pdf_charproc(PI *pi, SplineChar *sc) {
     int ret = pi->next_object;
 #ifdef FONTFORGE_CONFIG_TYPE3
-    long streamstart, streamlength, respos;
-    int i,last,resobj;
+    long streamstart, streamlength;
+    int i,last;
 
     pdf_addobject(pi);
-    fprintf( pi->out, "<< /Length %d 0 R /Resources ", pi->next_object );
-    respos = ftell(pi->out);
-    fprintf( pi->out, "000000 0 R>>\n" );
+    /* Now page 96 of the PDFReference.pdf manual claims that Resource dicas */
+    /*  for type3 fonts should reside in the content stream dictionary. This */
+    /*  isn't very meaningful because type3 fonts are not content streams. I */
+    /*  assumed it meant in the stream dictionary for each glyph (which is a */
+    /*  content stream) but that is not the case. It's in the font dictionary*/
+    fprintf( pi->out, "<< /Length %d 0 R >>", pi->next_object );
     fprintf( pi->out, "stream\n" );
     streamstart = ftell(pi->out);
 
@@ -689,11 +727,6 @@ static int pdf_charproc(PI *pi, SplineChar *sc) {
     pdf_addobject(pi);
     fprintf( pi->out, " %ld\n", streamlength );
     fprintf( pi->out, "endobj\n\n" );
-
-    resobj = PdfDumpGlyphResources(pi,sc);
-    fseek(pi->out,respos,SEEK_SET);
-    fprintf(pi->out,"%06d", resobj );
-    fseek(pi->out,0,SEEK_END);
 #else
     IError("This should never get called");
 #endif
@@ -706,6 +739,7 @@ static void dump_pdf3_encoding(PI *pi,int sfid, int base,DBounds *bb, int notdef
     struct sfbits *sfbit = &pi->sfbits[sfid];
     SplineFont *sf = sfbit->sf;
     EncMap *map = sfbit->map;
+    int respos, resobj;
 
     for ( i=base; i<base+256 && i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 ) {
 	if ( SCWorthOutputting(sf->glyphs[gid]) && strcmp(sf->glyphs[gid]->name,".notdef")!=0 ) {
@@ -739,6 +773,9 @@ return;			/* Nothing in this range */
     fprintf( pi->out, "    /Widths %d 0 R\n", pi->next_object );
     fprintf( pi->out, "    /Encoding %d 0 R\n", pi->next_object+1 );
     fprintf( pi->out, "    /CharProcs %d 0 R\n", pi->next_object+2 );
+    fprintf( pi->out, "    /Resources " );
+    respos = ftell(pi->out);
+    fprintf( pi->out, "000000 0 R\n" );
     fprintf( pi->out, "  >>\n" );
     fprintf( pi->out, "endobj\n" );
 
@@ -776,6 +813,12 @@ return;			/* Nothing in this range */
 	    fprintf( pi->out, "\t/%s %d 0 R\n", sf->glyphs[gid]->name, charprocs[i-base] );
     fprintf( pi->out, "  >>\n" );
     fprintf( pi->out, "endobj\n" );
+
+
+    resobj = PdfDumpSFResources(pi,sf);
+    fseek(pi->out,respos,SEEK_SET);
+    fprintf(pi->out,"%06d", resobj );
+    fseek(pi->out,0,SEEK_END);
 }
 
 static void pdf_gen_type3(PI *pi,int sfid) {
