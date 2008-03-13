@@ -95,6 +95,7 @@ int _ExportEPS(FILE *eps,SplineChar *sc, int layer, int preview) {
     tm = localtime(&now);
     fprintf( eps, "%%%%CreationDate: %d:%02d %d-%d-%d\n", tm->tm_hour, tm->tm_min,
 	    tm->tm_mday, tm->tm_mon+1, 1900+tm->tm_year );
+#ifdef FONTFORGE_CONFIG_TYPE3
     if ( sc->parent->multilayer ) {
 	int ly, had_grad=0, had_pat=0;
 	for ( ly=ly_fore; ly<sc->layer_cnt; ++ly ) {
@@ -110,6 +111,7 @@ int _ExportEPS(FILE *eps,SplineChar *sc, int layer, int preview) {
 	else if ( had_pat )
 	    fprintf( eps, "%%%%LanguageLevel: 2\n" );
     }
+#endif
     fprintf( eps, "%%%%EndComments\n" );
     if ( preview )
 	EpsGeneratePreview(eps,sc,layer,&b);
