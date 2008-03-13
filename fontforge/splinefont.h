@@ -160,7 +160,6 @@ struct gradient {
 struct pattern {
     char *pattern;
     real width, height;		/* Pattern is scaled to be repeated every width/height (in user coordinates) */
-    DBounds bbox;		/* Size of the pattern in pattern coords. */
     real transform[6];
 };
 
@@ -1284,6 +1283,16 @@ typedef struct splinechar {
     void *python_temporary;
 #endif
     void *python_persistent;		/* If python this will hold a python object, if not python this will hold a string containing a pickled object. We do nothing with it (if not python) except save it back out unchanged */
+#ifdef FONTFORGE_CONFIG_TYPE3
+	/* If the glyph is used as a tile pattern, then the next two values */
+	/*  determine the amount of white space around the tile. If extra is*/
+	/*  non-zero then we add it to the max components of the bbox and   */
+	/*  subtract it from the min components. If extra is 0 then tile_bounds*/
+	/*  will be used. If tile_bounds is all zeros then the glyph's bbox */
+	/*  will be used. */
+    real tile_extra;			/* If the glyph is used as a tile */
+    DBounds tile_bounds;
+#endif
 } SplineChar;
 
 #define TEX_UNDEF 0x7fff
@@ -2905,5 +2914,6 @@ extern struct pattern *PatternCopy(struct pattern *old);
 extern void PatternFree(struct pattern *pat);
 extern void BrushCopy(struct brush *into, struct brush *from);
 extern void PenCopy(struct pen *into, struct pen *from);
+extern void PatternSCBounds(SplineChar *sc,DBounds *b);
 
 #endif

@@ -220,7 +220,7 @@ return( lineout );
 
 #ifdef FONTFORGE_CONFIG_TYPE3
 static void svg_dumpstroke(FILE *file, struct pen *cpen, struct pen *fallback,
-	SplineChar *sc, SplineChar *nested, int layer) {
+	char *scname, SplineChar *nested, int layer, int istop) {
     static char *joins[] = { "miter", "round", "bevel", "inherit", NULL };
     static char *caps[] = { "butt", "round", "square", "inherit", NULL };
     struct pen pen;
@@ -237,12 +237,12 @@ static void svg_dumpstroke(FILE *file, struct pen *cpen, struct pen *fallback,
     }
 
     if ( pen.brush.gradient!=NULL ) {
-	fprintf( file, "stroke=\"url(#%s", sc->name );
+	fprintf( file, "stroke=\"url(#%s", scname );
 	if ( nested!=NULL )
 	    fprintf( file, "-%s", nested->name );
 	fprintf( file, "-ly%d-stroke-grad)\" ", layer );
-    } else if ( pen.brush.pattern!=NULL ) {
-	fprintf( file, "stroke=\"url(#%s", sc->name );
+    } else if ( pen.brush.pattern!=NULL && istop ) {
+	fprintf( file, "stroke=\"url(#%s", scname );
 	if ( nested!=NULL )
 	    fprintf( file, "-%s", nested->name );
 	fprintf( file, "-ly%d-stroke-pattern)\" ", layer );
@@ -282,7 +282,7 @@ static void svg_dumpstroke(FILE *file, struct pen *cpen, struct pen *fallback,
 }
 
 static void svg_dumpfill(FILE *file, struct brush *cbrush, struct brush *fallback,
-	int dofill, SplineChar *sc, SplineChar *nested, int layer) {
+	int dofill, char *scname, SplineChar *nested, int layer, int istop ) {
     struct brush brush;
 
     if ( !dofill ) {
@@ -297,12 +297,12 @@ return;
     }
 
     if ( brush.gradient!=NULL ) {
-	fprintf( file, "fill=\"url(#%s", sc->name );
+	fprintf( file, "fill=\"url(#%s", scname );
 	if ( nested!=NULL )
 	    fprintf( file, "-%s", nested->name );
 	fprintf( file, "-ly%d-fill-grad)\" ", layer );
-    } else if ( brush.pattern!=NULL ) {
-	fprintf( file, "fill=\"url(#%s", sc->name );
+    } else if ( brush.pattern!=NULL && istop ) {
+	fprintf( file, "fill=\"url(#%s", scname );
 	if ( nested!=NULL )
 	    fprintf( file, "-%s", nested->name );
 	fprintf( file, "-ly%d-fill-pattern)\" ", layer );
@@ -423,15 +423,15 @@ static void DataURI_ImageDump(FILE *file,struct gimage *img) {
 }
 
 static void svg_dumpgradient(FILE *file,struct gradient *gradient,
-	SplineChar *base,SplineChar *nested,int layer,int is_fill) {
+	char *scname,SplineChar *nested,int layer,int is_fill) {
     int i;
     Color csame; float osame;
 
     fprintf( file, "    <%s ", gradient->radius==0 ? "linearGradient" : "radialGradient" );
     if ( nested==NULL )
-	fprintf( file, " id=\"%s-ly%d-%s-grad\"", base->name, layer, is_fill ? "fill" : "stroke" );
+	fprintf( file, " id=\"%s-ly%d-%s-grad\"", scname, layer, is_fill ? "fill" : "stroke" );
     else
-	fprintf( file, " id=\"%s-%s-ly%d-%s-grad\"", base->name, nested->name, layer, is_fill ? "fill" : "stroke" );
+	fprintf( file, " id=\"%s-%s-ly%d-%s-grad\"", scname, nested->name, layer, is_fill ? "fill" : "stroke" );
     fprintf(file, "\n\tgradientUnits=\"userSpaceOnUse\"" );
     if ( gradient->radius==0 ) {
 	fprintf( file, "\n\tx1=\"%g\" y1=\"%g\" x2=\"%g\" y2=\"%g\"",
@@ -483,20 +483,33 @@ static void svg_dumpgradient(FILE *file,struct gradient *gradient,
     fprintf( file, "    </%s>\n", gradient->radius==0 ? "linearGradient" : "radialGradient" );
 }
 
-#if 0
+static void svg_dumpscdefs(FILE *file,SplineChar *sc,char *name,int istop);
+static void svg_dumptype3(FILE *file,SplineChar *sc,char *name,int istop);
+
 static void svg_dumppattern(FILE *file,struct pattern *pattern,
-	SplineChar *base,SplineChar *nested,int layer,int is_fill) {
+	char *scname, SplineChar *base,SplineChar *nested,int layer,int is_fill) {
+    SplineChar *pattern_sc = SFGetChar(base->parent,-1,pattern->pattern);
+    char *patsubname = NULL;
+
+    if ( pattern_sc!=NULL ) {
+	patsubname = strconcat3(scname,"-",pattern->pattern);
+	svg_dumpscdefs(file,pattern_sc,patsubname,false);
+    } else
+	LogError("No glyph named %s, used as a pattern in %s\n", pattern->pattern, scname);
 
     fprintf( file, "    <pattern " );
     if ( nested==NULL )
-	fprintf( file, " id=\"%s-ly%d-%s-pattern\"", base->name, layer, is_fill ? "fill" : "stroke" );
+	fprintf( file, " id=\"%s-ly%d-%s-pattern\"", scname, layer, is_fill ? "fill" : "stroke" );
     else
-	fprintf( file, " id=\"%s-%s-ly%d-%s-pattern\"", base->name, nested->name, layer, is_fill ? "fill" : "stroke" );
+	fprintf( file, " id=\"%s-%s-ly%d-%s-pattern\"", scname, nested->name, layer, is_fill ? "fill" : "stroke" );
     fprintf(file, "\n\tpatternUnits=\"userSpaceOnUse\"" );
-    fprintf( file, "\n\tviewBox=\"%g %g %g %g\"",
-	    (double) pattern->bbox.minx, (double) pattern->bbox.miny,
-	    (double) pattern->bbox.maxx-pattern->bbox.minx,
-	    (double) pattern->bbox.maxy-pattern->bbox.miny );
+    if ( pattern_sc!=NULL ) {
+	DBounds b;
+	PatternSCBounds(pattern_sc,&b);
+	fprintf( file, "\n\tviewBox=\"%g %g %g %g\"",
+		(double) b.minx, (double) b.miny,
+		(double) b.maxx-b.minx, (double) b.maxy-b.miny );
+    }
     fprintf( file, "\n\twidth=\"%g\" height=\"%g\"",
 	    (double) pattern->width, (double) pattern->height );
     if ( pattern->transform[0]!=1 || pattern->transform[1]!=0 ||
@@ -507,27 +520,108 @@ static void svg_dumppattern(FILE *file,struct pattern *pattern,
 		pattern->transform[2], pattern->transform[3],
 		pattern->transform[4], pattern->transform[5] );
     }
-    /* Output the pattern....!!!!! */
+    if ( pattern_sc!=NULL )
+	svg_dumpscdefs(file,pattern_sc,patsubname,false);
     fprintf( file, "    </pattern>\n" );
+    free(patsubname);
 }
-#endif
 
 static void svg_layer_defs(FILE *file, SplineSet *splines,struct brush *fill_brush,struct pen *stroke_pen,
-	SplineChar *sc, SplineChar *nested, int layer ) {
+	SplineChar *sc, char *scname, SplineChar *nested, int layer, int istop ) {
     if ( SSHasClip(splines)) {
 	if ( nested==NULL )
-	    fprintf( file, "    <clipPath id=\"%s-ly%d-clip\">\n", sc->name, layer );
+	    fprintf( file, "    <clipPath id=\"%s-ly%d-clip\">\n", scname, layer );
 	else
-	    fprintf( file, "    <clipPath id=\"%s-%s-ly%d-clip\">\n", sc->name, nested->name, layer );
+	    fprintf( file, "    <clipPath id=\"%s-%s-ly%d-clip\">\n", scname, nested->name, layer );
 	fprintf(file, "      <path d=\"\n");
 	svg_pathdump(file,sc->layers[layer].splines,16,true,true);
 	fprintf(file, "\"/>\n" );
 	fprintf( file, "    </clipPath>\n" );
     }
     if ( fill_brush->gradient!=NULL )
-	svg_dumpgradient(file,fill_brush->gradient,sc,nested,layer,true);
+	svg_dumpgradient(file,fill_brush->gradient,scname,nested,layer,true);
+    else if ( fill_brush->pattern!=NULL && istop )
+	svg_dumppattern(file,fill_brush->pattern,scname,sc,nested,layer,true);
     if ( stroke_pen->brush.gradient!=NULL )
-	svg_dumpgradient(file,stroke_pen->brush.gradient,sc,nested,layer,false);
+	svg_dumpgradient(file,stroke_pen->brush.gradient,scname,nested,layer,false);
+    else if ( stroke_pen->brush.pattern!=NULL && istop )
+	svg_dumppattern(file,stroke_pen->brush.pattern,scname,sc,nested,layer,false);
+}
+
+static void svg_dumpscdefs(FILE *file,SplineChar *sc,char *name,int istop) {
+    int i, j;
+    RefChar *ref;
+
+    for ( i=ly_fore; i<sc->layer_cnt ; ++i ) {
+	svg_layer_defs(file,sc->layers[i].splines,&sc->layers[i].fill_brush,&sc->layers[i].stroke_pen,
+		sc,name,NULL,i,istop);
+	for ( ref=sc->layers[i].refs ; ref!=NULL; ref = ref->next ) {
+	    for ( j=0; j<ref->layer_cnt; ++j ) if ( ref->layers[j].splines!=NULL ) {
+		svg_layer_defs(file,ref->layers[j].splines,&ref->layers[j].fill_brush,&ref->layers[j].stroke_pen,
+			sc,name,ref->sc,j,istop);
+	    }
+	}
+    }
+}
+
+static void svg_dumptype3(FILE *file,SplineChar *sc,char *name,int istop) {
+    int i, j;
+    RefChar *ref;
+    ImageList *images;
+    SplineSet *transed;
+
+    for ( i=ly_fore; i<sc->layer_cnt ; ++i ) {
+	if ( SSHasDrawn(sc->layers[i].splines) ) {
+	    fprintf(file, "  <g " );
+	    if ( SSHasClip(sc->layers[i].splines))
+		fprintf( file, "clip-path=\"url(#%s-ly%d-clip)\" ", name, i );
+	    transed = sc->layers[i].splines;
+	    if ( sc->layers[i].dostroke ) {
+		svg_dumpstroke(file,&sc->layers[i].stroke_pen,NULL,name,NULL,i,istop);
+		transed = TransBy(transed,sc->layers[i].stroke_pen.trans);
+	    }
+	    svg_dumpfill(file,&sc->layers[i].fill_brush,NULL,sc->layers[i].dofill,name,NULL,i,istop);
+	    fprintf( file, ">\n" );
+	    fprintf(file, "    <path d=\"\n");
+	    svg_pathdump(file,transed,12,!sc->layers[i].dostroke,false);
+	    fprintf(file, "\"/>\n" );
+	    if ( transed!=sc->layers[i].splines )
+		SplinePointListsFree(transed);
+	    fprintf(file, "  </g>\n" );
+	}
+	for ( ref=sc->layers[i].refs ; ref!=NULL; ref = ref->next ) {
+	    for ( j=0; j<ref->layer_cnt; ++j ) if ( ref->layers[j].splines!=NULL ) {
+		fprintf(file, "   <g " );
+		transed = ref->layers[j].splines;
+		if ( SSHasClip(transed))
+		    fprintf( file, "clip-path=\"url(#%s-%s-ly%d-clip)\" ", name, ref->sc->name, j );
+		if ( ref->layers[j].dostroke ) {
+		    svg_dumpstroke(file,&ref->layers[j].stroke_pen,&sc->layers[i].stroke_pen,sc->name,ref->sc,j,istop);
+		    transed = TransBy(transed,ref->layers[j].stroke_pen.trans);
+		}
+		svg_dumpfill(file,&ref->layers[j].fill_brush,&sc->layers[i].fill_brush,ref->layers[j].dofill,sc->name,ref->sc,j,istop);
+		fprintf( file, ">\n" );
+		fprintf(file, "  <path d=\"\n");
+		svg_pathdump(file,transed,12,!ref->layers[j].dostroke,false);
+		fprintf(file, "\"/>\n" );
+		if ( transed!=ref->layers[j].splines )
+		    SplinePointListsFree(transed);
+		fprintf(file, "   </g>\n" );
+	    }
+	}
+	for ( images=sc->layers[i].images ; images!=NULL; images = images->next ) {
+	    struct _GImage *base;
+	    fprintf(file, "      <image\n" );
+	    base = images->image->list_len==0 ? images->image->u.image :
+		    images->image->u.images[0];
+	    fprintf(file, "\twidth=\"%g\"\n\theight=\"%g\"\n",
+		    base->width*images->xscale, base->height*images->yscale );
+	    fprintf(file, "\tx=\"%g\"\n\ty=\"%g\"\n", images->xoff, images->yoff );
+	    fprintf(file, "\txlink:href=\"data:" );
+	    DataURI_ImageDump(file,images->image);
+	    fprintf(file, "\" />\n" );
+	}
+    }
 }
 #endif
 
@@ -537,8 +631,6 @@ static void svg_scpathdump(FILE *file, SplineChar *sc,char *endpath,int layer) {
 #ifdef FONTFORGE_CONFIG_TYPE3
     int i,j;
     int needs_defs=0;
-    SplineSet *transed;
-    ImageList *images;
 #endif
 
     if ( !svg_sc_any(sc,layer) ) {
@@ -589,70 +681,10 @@ static void svg_scpathdump(FILE *file, SplineChar *sc,char *endpath,int layer) {
 	}
 	if ( needs_defs ) {
 	    fprintf(file, "  <defs>\n" );
-	    for ( i=ly_fore; i<sc->layer_cnt ; ++i ) {
-		svg_layer_defs(file,sc->layers[i].splines,&sc->layers[i].fill_brush,&sc->layers[i].stroke_pen,
-			sc,NULL,i);
-		for ( ref=sc->layers[i].refs ; ref!=NULL; ref = ref->next ) {
-		    for ( j=0; j<ref->layer_cnt; ++j ) if ( ref->layers[j].splines!=NULL ) {
-			svg_layer_defs(file,ref->layers[j].splines,&ref->layers[j].fill_brush,&ref->layers[j].stroke_pen,
-				sc,ref->sc,j);
-		    }
-		}
-	    }
+	    svg_dumpscdefs(file,sc,sc->name,true);
 	    fprintf(file, "  </defs>\n" );
 	}
-	for ( i=ly_fore; i<sc->layer_cnt ; ++i ) {
-	    if ( SSHasDrawn(sc->layers[i].splines) ) {
-		fprintf(file, "  <g " );
-		if ( SSHasClip(sc->layers[i].splines))
-		    fprintf( file, "clip-path=\"url(#%s-ly%d-clip)\" ", sc->name, i );
-		transed = sc->layers[i].splines;
-		if ( sc->layers[i].dostroke ) {
-		    svg_dumpstroke(file,&sc->layers[i].stroke_pen,NULL,sc,NULL,i);
-		    transed = TransBy(transed,sc->layers[i].stroke_pen.trans);
-		}
-		svg_dumpfill(file,&sc->layers[i].fill_brush,NULL,sc->layers[i].dofill,sc,NULL,i);
-		fprintf( file, ">\n" );
-		fprintf(file, "    <path d=\"\n");
-		svg_pathdump(file,transed,12,!sc->layers[i].dostroke,false);
-		fprintf(file, "\"/>\n" );
-		if ( transed!=sc->layers[i].splines )
-		    SplinePointListsFree(transed);
-		fprintf(file, "  </g>\n" );
-	    }
-	    for ( ref=sc->layers[i].refs ; ref!=NULL; ref = ref->next ) {
-		for ( j=0; j<ref->layer_cnt; ++j ) if ( ref->layers[j].splines!=NULL ) {
-		    fprintf(file, "   <g " );
-		    transed = ref->layers[j].splines;
-		    if ( SSHasClip(transed))
-			fprintf( file, "clip-path=\"url(#%s-%s-ly%d-clip)\" ", sc->name, ref->sc->name, j );
-		    if ( ref->layers[j].dostroke ) {
-			svg_dumpstroke(file,&ref->layers[j].stroke_pen,&sc->layers[i].stroke_pen,sc,ref->sc,j);
-			transed = TransBy(transed,ref->layers[j].stroke_pen.trans);
-		    }
-		    svg_dumpfill(file,&ref->layers[j].fill_brush,&sc->layers[i].fill_brush,ref->layers[j].dofill,sc,ref->sc,j);
-		    fprintf( file, ">\n" );
-		    fprintf(file, "  <path d=\"\n");
-		    svg_pathdump(file,transed,12,!ref->layers[j].dostroke,false);
-		    fprintf(file, "\"/>\n" );
-		    if ( transed!=ref->layers[j].splines )
-			SplinePointListsFree(transed);
-		    fprintf(file, "   </g>\n" );
-		}
-	    }
-	    for ( images=sc->layers[i].images ; images!=NULL; images = images->next ) {
-		struct _GImage *base;
-		fprintf(file, "      <image\n" );
-		base = images->image->list_len==0 ? images->image->u.image :
-			images->image->u.images[0];
-		fprintf(file, "\twidth=\"%g\"\n\theight=\"%g\"\n",
-			base->width*images->xscale, base->height*images->yscale );
-		fprintf(file, "\tx=\"%g\"\n\ty=\"%g\"\n", images->xoff, images->yoff );
-		fprintf(file, "\txlink:href=\"data:" );
-		DataURI_ImageDump(file,images->image);
-		fprintf(file, "\" />\n" );
-	    }
-	}
+	svg_dumptype3(file,sc,sc->name,true);
 #endif
 	fputs(endpath,file);
     }
