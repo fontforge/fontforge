@@ -4895,6 +4895,7 @@ return( true );
 #define MID_NameContour	2318
 #define MID_AcceptableExtrema 2319
 #define MID_MakeArc	2320
+#define MID_ClipPath	2321
 
 #define MID_AutoHint	2400
 #define MID_ClearHStem	2401
@@ -6651,6 +6652,9 @@ static void cv_ptlistcheck(CharView *cv,struct gmenuitem *mi,GEvent *e) {
 	  case MID_NameContour:
 	    mi->ti.disabled = onlysel==NULL || onlysel == (SplineSet *) -1;
 	  break;
+	  case MID_ClipPath:
+	    mi->ti.disabled = !cv->b.sc->parent->multilayer;
+	  break;
 	  case MID_InsertPtOnSplineAt:
 	    mi->ti.disabled = spline_selected!=1;
 	  break;
@@ -7698,6 +7702,11 @@ void CVMakeClipPath(CharView *cv) {
     }
     if ( changed )
 	CVCharChangedUpdate((CharViewBase *) cv);
+}
+
+static void CVMenuClipPath(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    CVMakeClipPath(cv);
 }
 
 void CVAddAnchor(CharView *cv) {
@@ -8832,7 +8841,7 @@ static GMenuItem2 ptlist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("Can Be _Interpolated"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Can Be Interpolated|No Shortcut"), NULL, NULL, CVMenuImplicit, MID_ImplicitPt },
     { { (unichar_t *) N_("Can't _Be Interpolated"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 1, 0, 0, 0, 1, 1, 0, 'T' }, H_("Can't Be Interpolated|No Shortcut"), NULL, NULL, CVMenuImplicit, MID_NoImplicitPt },
-    { { (unichar_t *) N_("Center _Between Control Points"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Center Between Control Points|No Shortcut"), NULL, NULL, CVMenuCenterCP, MID_CenterCP },
+    { { (unichar_t *) N_("Center Bet_ween Control Points"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Center Between Control Points|No Shortcut"), NULL, NULL, CVMenuCenterCP, MID_CenterCP },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
     { { (unichar_t *) N_("_Add Anchor"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'A' }, H_("Add Anchor|Ctl+0"), NULL, NULL, CVMenuAddAnchor, MID_AddAnchor },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 1, 0, 0, }},
@@ -8842,6 +8851,9 @@ static GMenuItem2 ptlist[] = {
     { { (unichar_t *) N_("Make A_rc"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Make Arc|No Shortcut"), NULL, NULL, CVMenuMakeLine, MID_MakeArc },
     { { (unichar_t *) N_("Insert Point On _Spline At..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Insert Point On Spline At...|No Shortcut"), NULL, NULL, CVMenuInsertPt, MID_InsertPtOnSplineAt },
     { { (unichar_t *) N_("_Name Contour"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Name Contour|No Shortcut"), NULL, NULL, CVMenuNameContour, MID_NameContour },
+#ifdef FONTFORGE_CONFIG_TYPE3
+    { { (unichar_t *) N_("Make Clip _Path"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Make Clip Path|No Shortcut"), NULL, NULL, CVMenuClipPath, MID_ClipPath },
+#endif
     { NULL }
 };
 
