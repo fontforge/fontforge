@@ -1766,6 +1766,7 @@ static void dumpfontcomments(void (*dumpchar)(int ch,void *data), void *data,
 	dumpf(dumpchar,data, "%%%%Title: (%s %s %s %d)\n",
 		sf->fontname, sf->cidregistry, sf->ordering, sf->supplement );
 	dumpf(dumpchar,data, "%%%%Version: %g 0\n", sf->cidversion );
+	/* CID keyed fonts are language level 3 */
     } else {
 	dumpf(dumpchar,data,"%%%%Title: %s\n", sf->fontname);
 	dumpf(dumpchar,data,"%%Version: %s\n", sf->version);
@@ -1773,6 +1774,30 @@ static void dumpfontcomments(void (*dumpchar)(int ch,void *data), void *data,
     dumpf(dumpchar,data,"%%%%CreationDate: %s", ctime(&now));
     if ( author!=NULL )
 	dumpf(dumpchar,data,"%%%%Creator: %s\n", author);
+
+    if ( format==ff_cid || format==ff_cffcid || format==ff_type42cid ||
+	    format==ff_cff || format==ff_type42 )
+	dumpf(dumpchar,data, "%%%%LanguageLevel: 3\n" );
+    else if ( sf->multilayer && format==ff_ptype3 ) {
+	int gid, ly;
+	SplineChar *sc;
+	int had_pat=0, had_grad=0;
+	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL ) {
+	    for ( ly=ly_fore; ly<sc->layer_cnt; ++ly ) {
+		if ( sc->layers[ly].fill_brush.gradient!=NULL || sc->layers[ly].stroke_pen.brush.gradient!=NULL ) {
+		    had_grad = true;
+	    break;
+		}
+		if ( sc->layers[ly].fill_brush.gradient!=NULL || sc->layers[ly].stroke_pen.brush.gradient!=NULL )
+		    had_pat = true;
+	    }
+	}
+	if ( had_grad )
+	    dumpf(dumpchar,data, "%%%%LanguageLevel: 3\n" );
+	else if ( had_pat )
+	    dumpf(dumpchar,data, "%%%%LanguageLevel: 2\n" );
+    }
+
     if ( sf->copyright!=NULL ) {
 	char *pt, *strt=sf->copyright, *npt;
 	while ( *strt!='\0' ) {

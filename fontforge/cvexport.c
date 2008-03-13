@@ -95,6 +95,21 @@ int _ExportEPS(FILE *eps,SplineChar *sc, int layer, int preview) {
     tm = localtime(&now);
     fprintf( eps, "%%%%CreationDate: %d:%02d %d-%d-%d\n", tm->tm_hour, tm->tm_min,
 	    tm->tm_mday, tm->tm_mon+1, 1900+tm->tm_year );
+    if ( sc->parent->multilayer ) {
+	int ly, had_grad=0, had_pat=0;
+	for ( ly=ly_fore; ly<sc->layer_cnt; ++ly ) {
+	    if ( sc->layers[ly].fill_brush.gradient!=NULL || sc->layers[ly].stroke_pen.brush.gradient!=NULL ) {
+		had_grad = true;
+	break;
+	    }
+	    if ( sc->layers[ly].fill_brush.gradient!=NULL || sc->layers[ly].stroke_pen.brush.gradient!=NULL )
+		had_pat = true;
+	}
+	if ( had_grad )
+	    fprintf( eps, "%%%%LanguageLevel: 3\n" );
+	else if ( had_pat )
+	    fprintf( eps, "%%%%LanguageLevel: 2\n" );
+    }
     fprintf( eps, "%%%%EndComments\n" );
     if ( preview )
 	EpsGeneratePreview(eps,sc,layer,&b);
