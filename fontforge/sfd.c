@@ -1387,8 +1387,8 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
 	fprintf( sfd, "Colour: %x\n", (int) sc->color );
 #ifdef FONTFORGE_CONFIG_TYPE3
     if ( sc->parent->multilayer ) {
-	if ( sc->tile_extra!=0 )
-	    fprintf( sfd, "TileExtra: %g\n", (double) sc->tile_extra );
+	if ( sc->tile_margin!=0 )
+	    fprintf( sfd, "TileMargin: %g\n", (double) sc->tile_margin );
 	else if ( sc->tile_bounds.minx!=0 || sc->tile_bounds.maxx!=0 )
 	    fprintf( sfd, "TileBounds: %g %g %g %g\n", (double) sc->tile_bounds.minx, (double) sc->tile_bounds.miny, (double) sc->tile_bounds.maxx, (double) sc->tile_bounds.maxy );
     }
@@ -4488,8 +4488,8 @@ exit(1);
 	} else if ( strmatch(tok,"Comment:")==0 ) {
 	    sc->comment = SFDReadUTF7Str(sfd);
 #ifdef FONTFORGE_CONFIG_TYPE3
-	} else if ( strmatch(tok,"TileExtra:")==0 ) {
-	    getreal(sfd,&sc->tile_extra);
+	} else if ( strmatch(tok,"TileMargin:")==0 ) {
+	    getreal(sfd,&sc->tile_margin);
 	} else if ( strmatch(tok,"TileBounds:")==0 ) {
 	    getreal(sfd,&sc->tile_bounds.minx);
 	    getreal(sfd,&sc->tile_bounds.miny);

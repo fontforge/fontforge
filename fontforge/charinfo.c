@@ -102,6 +102,14 @@ typedef struct charinfo {
 #define CID_ExtItalicDev	2002
 #define CID_ExtensionList	2003
 
+#define CID_IsTileMargin	3001
+#define CID_TileMargin		3002
+#define CID_IsTileBBox		3003
+#define CID_TileBBoxMinX	3004
+#define CID_TileBBoxMinY	3005
+#define CID_TileBBoxMaxX	3006
+#define CID_TileBBoxMaxY	3007
+
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
 #define SIM_DX		1
 #define SIM_DY		3
@@ -1202,6 +1210,10 @@ static int _CI_OK(CharInfo *ci) {
 #ifdef FONTFORGE_CONFIG_DEVICETABLES
     int low,high;
 #endif
+#ifdef FONTFORGE_CONFIG_TYPE3
+    real tile_margin=0;
+    DBounds tileb;
+#endif
 
     if ( !CI_ValidateAltUnis(ci))
 return( false );
@@ -1219,6 +1231,22 @@ return( false );
     vic = GetInt8(ci->gw,CID_ExtItalicCor+0*100,_("Vertical Extension Italic Correction"),&err);
     if ( err )
 return( false );
+
+#ifdef FONTFORGE_CONFIG_TYPE3
+    memset(&tileb,0,sizeof(tileb));
+    if ( ci->sc->parent->multilayer ) {
+	if ( GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_IsTileMargin)))
+	    tile_margin = GetReal8(ci->gw,CID_TileMargin,_("Tile Margin"),&err);
+	else {
+	    tileb.minx = GetReal8(ci->gw,CID_TileBBoxMinX,_("Tile Min X"),&err);
+	    tileb.miny = GetReal8(ci->gw,CID_TileBBoxMinY,_("Tile Min Y"),&err);
+	    tileb.maxx = GetReal8(ci->gw,CID_TileBBoxMaxX,_("Tile Max X"),&err);
+	    tileb.maxy = GetReal8(ci->gw,CID_TileBBoxMaxY,_("Tile Max Y"),&err);
+	}
+	if ( err )
+return( false );
+    }
+#endif
 
     if ( ci->lc_seen ) {
 	lc_cnt = GetInt8(ci->gw,CID_LCCount,_("Ligature Caret Count"),&err);
@@ -1326,6 +1354,12 @@ return( false );
 	    pst->u.lcaret.cnt = lc_cnt;
 	}
     }
+
+#ifdef FONTFORGE_CONFIG_TYPE3
+    ci->sc->tile_margin = tile_margin;
+    ci->sc->tile_bounds = tileb;
+#endif
+
 return( ret );
 }
 
@@ -1341,6 +1375,38 @@ static int CI_OK(GGadget *g, GEvent *e) {
     }
 return( true );
 }
+
+#ifdef FONTFORGE_CONFIG_TYPE3
+static void CI_BoundsToMargin(CharInfo *ci) {
+    int err=false;
+    real margin = GetCalmReal8(ci->gw,CID_TileMargin,NULL,&err);
+    DBounds b;
+    char buffer[40];
+
+    if ( err )
+return;
+    SplineCharFindBounds(ci->sc,&b);
+    sprintf( buffer, "%g", b.minx-margin );
+    GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_TileBBoxMinX),buffer);
+    sprintf( buffer, "%g", b.miny-margin );
+    GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_TileBBoxMinY),buffer);
+    sprintf( buffer, "%g", b.maxx+margin );
+    GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_TileBBoxMaxX),buffer);
+    sprintf( buffer, "%g", b.maxy+margin );
+    GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_TileBBoxMaxY),buffer);
+}
+
+static int CI_TileMarginChange(GGadget *g, GEvent *e) {
+    CharInfo *ci = GDrawGetUserData(GGadgetGetWindow(g));
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textfocuschanged &&
+	    e->u.control.u.tf_focus.gained_focus )
+	GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_IsTileMargin),true);
+    else if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged )
+	CI_BoundsToMargin(ci);
+return( true );
+}
+#endif
 
 static char *LigDefaultStr(int uni, char *name, int alt_lig ) {
     const unichar_t *alt=NULL, *pt;
@@ -3534,6 +3600,30 @@ static void CIFillup(CharInfo *ci) {
 	GV_ToMD(g, gv);
     }
     GA_ToMD(GWidgetGetControl(ci->gw,CID_AltUni), sc);
+
+#ifdef FONTFORGE_CONFIG_TYPE3
+    if ( ci->sc->parent->multilayer ) {
+	int margined = sc->tile_margin!=0 || (sc->tile_bounds.minx==0 && sc->tile_bounds.maxx==0);
+	char buffer[40];
+
+	GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_IsTileMargin),margined);
+	if ( margined ) {
+	    sprintf( buffer, "%g", sc->tile_margin );
+	    GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_TileMargin),buffer);
+	    CI_BoundsToMargin(ci);
+	} else {
+	    GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_TileMargin),"0");
+	    sprintf( buffer, "%g", sc->tile_bounds.minx );
+	    GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_TileBBoxMinX),buffer);
+	    sprintf( buffer, "%g", sc->tile_bounds.miny );
+	    GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_TileBBoxMinY),buffer);
+	    sprintf( buffer, "%g", sc->tile_bounds.maxx );
+	    GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_TileBBoxMaxX),buffer);
+	    sprintf( buffer, "%g", sc->tile_bounds.maxy );
+	    GGadgetSetTitle8(GWidgetGetControl(ci->gw,CID_TileBBoxMaxY),buffer);
+	}
+    }
+#endif
 }
 
 static int CI_NextPrev(GGadget *g, GEvent *e) {
@@ -3620,8 +3710,13 @@ void SCCharInfo(SplineChar *sc,int deflayer, EncMap *map,int enc) {
     GGadgetCreateData tbox[3], *thvarray[36], *tbarray[4];
     GGadgetCreateData lcbox[2], *lchvarray[3][4];
     GGadgetCreateData varbox[2][2], *varhvarray[2][5][4];
+#ifdef FONTFORGE_CONFIG_TYPE3
+    GGadgetCreateData tilegcd[16], tilebox[4];
+    GTextInfo tilelabel[16];
+    GGadgetCreateData *tlvarray[6], *tlharray[4], *tlhvarray[4][5];
+#endif
     int i;
-    GTabInfo aspects[16];
+    GTabInfo aspects[17];
     static GBox smallbox = { bt_raised, bs_rect, 2, 1, 0, 0, 0,0,0,0, COLOR_DEFAULT,COLOR_DEFAULT };
     static int boxset=0;
     FontRequest rq;
@@ -4233,6 +4328,117 @@ return;
 	    varbox[i][0].creator = GHVBoxCreate;
 	}
 
+#ifdef FONTFORGE_CONFIG_TYPE3
+	memset(&tilegcd,0,sizeof(tilegcd));
+	memset(&tilebox,0,sizeof(tilebox));
+	memset(&tilelabel,0,sizeof(tilelabel));
+
+	i=0;
+	tilelabel[i].text = (unichar_t *) _(
+	    "If this glyph is used as a pattern to tile\n"
+	    "some other glyph then it is useful to specify\n"
+	    "the amount of whitespace surrounding the tile.\n"
+	    "Either specify a margin to extend the bounding\n"
+	    "box of the contents, or specify the bounds\n"
+	    "explicitly.");
+	tilelabel[i].text_is_1byte = true;
+	tilelabel[i].text_in_resource = true;
+	tilegcd[i].gd.label = &tilelabel[i];
+	tilegcd[i].gd.flags = gg_enabled|gg_visible;
+	tilegcd[i++].creator = GLabelCreate;
+	tlvarray[0] = &tilegcd[i-1];
+
+	tilelabel[i].text = (unichar_t *) _("Tile Margin:");
+	tilelabel[i].text_is_1byte = true;
+	tilelabel[i].text_in_resource = true;
+	tilegcd[i].gd.label = &tilelabel[i];
+	tilegcd[i].gd.flags = gg_enabled|gg_visible;
+	tilegcd[i].gd.cid = CID_IsTileMargin;
+	tilegcd[i++].creator = GRadioCreate;
+	tlharray[0] = &tilegcd[i-1];
+
+	tilegcd[i].gd.pos.width = 60;
+	tilegcd[i].gd.flags = gg_enabled|gg_visible;
+	tilegcd[i].gd.cid = CID_TileMargin;
+	tilegcd[i].gd.handle_controlevent = CI_TileMarginChange;
+	tilegcd[i++].creator = GTextFieldCreate;
+	tlharray[1] = &tilegcd[i-1]; tlharray[2] = GCD_Glue; tlharray[3] = NULL;
+
+	tilebox[2].gd.flags = gg_enabled|gg_visible;
+	tilebox[2].gd.u.boxelements = tlharray;
+	tilebox[2].creator = GHBoxCreate;
+	tlvarray[1] = &tilebox[2];
+
+	tilelabel[i].text = (unichar_t *) _("Tile Bounding Box:");
+	tilelabel[i].text_is_1byte = true;
+	tilelabel[i].text_in_resource = true;
+	tilegcd[i].gd.label = &tilelabel[i];
+	tilegcd[i].gd.flags = gg_enabled|gg_visible;
+	tilegcd[i].gd.cid = CID_IsTileBBox;
+	tilegcd[i++].creator = GRadioCreate;
+	tlvarray[2] = &tilegcd[i-1];
+
+	tlhvarray[0][0] = GCD_Glue;
+
+	tilelabel[i].text = (unichar_t *) _("  X");
+	tilelabel[i].text_is_1byte = true;
+	tilegcd[i].gd.label = &tilelabel[i];
+	tilegcd[i].gd.flags = gg_enabled|gg_visible;
+	tilegcd[i++].creator = GLabelCreate;
+	tlhvarray[0][1] = &tilegcd[i-1];
+
+	tilelabel[i].text = (unichar_t *) _("  Y");
+	tilelabel[i].text_is_1byte = true;
+	tilegcd[i].gd.label = &tilelabel[i];
+	tilegcd[i].gd.flags = gg_enabled|gg_visible;
+	tilegcd[i++].creator = GLabelCreate;
+	tlhvarray[0][2] = &tilegcd[i-1]; tlhvarray[0][3] = GCD_Glue; tlhvarray[0][4] = NULL;
+
+	tilelabel[i].text = (unichar_t *) _("Min");
+	tilelabel[i].text_is_1byte = true;
+	tilegcd[i].gd.label = &tilelabel[i];
+	tilegcd[i].gd.flags = gg_enabled|gg_visible;
+	tilegcd[i++].creator = GLabelCreate;
+	tlhvarray[1][0] = &tilegcd[i-1];
+
+	tilegcd[i].gd.flags = gg_enabled|gg_visible;
+	tilegcd[i].gd.cid = CID_TileBBoxMinX;
+	tilegcd[i++].creator = GTextFieldCreate;
+	tlhvarray[1][1] = &tilegcd[i-1];
+
+	tilegcd[i].gd.flags = gg_enabled|gg_visible;
+	tilegcd[i].gd.cid = CID_TileBBoxMinY;
+	tilegcd[i++].creator = GTextFieldCreate;
+	tlhvarray[1][2] = &tilegcd[i-1]; tlhvarray[1][3] = GCD_Glue; tlhvarray[1][4] = NULL;
+
+	tilelabel[i].text = (unichar_t *) _("Max");
+	tilelabel[i].text_is_1byte = true;
+	tilegcd[i].gd.label = &tilelabel[i];
+	tilegcd[i].gd.flags = gg_enabled|gg_visible;
+	tilegcd[i++].creator = GLabelCreate;
+	tlhvarray[2][0] = &tilegcd[i-1];
+
+	tilegcd[i].gd.flags = gg_enabled|gg_visible;
+	tilegcd[i].gd.cid = CID_TileBBoxMaxX;
+	tilegcd[i++].creator = GTextFieldCreate;
+	tlhvarray[2][1] = &tilegcd[i-1];
+
+	tilegcd[i].gd.flags = gg_enabled|gg_visible;
+	tilegcd[i].gd.cid = CID_TileBBoxMaxY;
+	tilegcd[i++].creator = GTextFieldCreate;
+	tlhvarray[2][2] = &tilegcd[i-1]; tlhvarray[2][3] = GCD_Glue; tlhvarray[2][4] = NULL;
+	tlhvarray[3][0] = NULL;
+
+	tilebox[3].gd.flags = gg_enabled|gg_visible;
+	tilebox[3].gd.u.boxelements = tlhvarray[0];
+	tilebox[3].creator = GHVBoxCreate;
+	tlvarray[3] = &tilebox[3]; tlvarray[4] = GCD_Glue; tlvarray[5] = NULL;
+
+	tilebox[0].gd.flags = gg_enabled|gg_visible;
+	tilebox[0].gd.u.boxelements = tlvarray;
+	tilebox[0].creator = GVBoxCreate;
+#endif
+
 	memset(&mgcd,0,sizeof(mgcd));
 	memset(&mbox,0,sizeof(mbox));
 	memset(&mlabel,0,sizeof(mlabel));
@@ -4320,7 +4526,16 @@ return;
 	aspects[i].nesting = 1;
 	aspects[i++].gcd = varbox[1];
 
-	aspects[last_gi_aspect].selected = true;
+#ifdef FONTFORGE_CONFIG_TYPE3
+	if ( sc->parent->multilayer ) {
+	    aspects[i].text = (unichar_t *) U_("Tile Size");
+	    aspects[i].text_is_1byte = true;
+	    aspects[i++].gcd = tilebox;
+	}
+#endif
+
+	if ( last_gi_aspect<i )
+	    aspects[last_gi_aspect].selected = true;
 
 	mgcd[0].gd.pos.x = 4; mgcd[0].gd.pos.y = 6;
 	mgcd[0].gd.u.tabs = aspects;
@@ -4439,6 +4654,14 @@ return;
 
 	GHVBoxSetExpandableRow(varbox[0][0].ret,3);
 	GHVBoxSetExpandableRow(varbox[1][0].ret,3);
+
+#ifdef FONTFORGE_CONFIG_TYPE3
+	if ( sc->parent->multilayer ) {
+	    GHVBoxSetExpandableRow(tilebox[0].ret,gb_expandglue);
+	    GHVBoxSetExpandableCol(tilebox[2].ret,gb_expandglue);
+	    GHVBoxSetExpandableCol(tilebox[3].ret,gb_expandglue);
+	}
+#endif
 
 	GHVBoxFitWindow(mbox[0].ret);
 	
