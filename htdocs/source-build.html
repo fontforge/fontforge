@@ -603,6 +603,7 @@ CVS password:
 password: ******
 <FONT COLOR="Gray"># </FONT>mkdir -p /usr/local/share/doc/fontforge
 <FONT COLOR="Gray"># </FONT>mv fontforge_htdocs*.tar.bz2 /usr/local/share/doc/fontforge
+<FONT COLOR="Gray"># </FONT>cd /usr/local/share/doc/fontforge
 <FONT COLOR="Gray"># </FONT>tar xfj fontforge_htdocs*.tar.bz2
 <FONT COLOR="Gray"># </FONT>rm fontforge_htdocs*.tar.bz2
 </PRE>
@@ -611,6 +612,19 @@ password: ******
   After doing this fontforge will be able to find the docs on your system when
   you press the [F1] (or [Help]) key. If you don't do this fontforge will attempt
   to find documentation online.
+  <P>
+  (on some strict unix systems you may need to do the following instead)
+  <BLOCKQUOTE id="shell">
+    <PRE><FONT COLOR="Gray">$ </FONT>su
+password: ******
+<FONT COLOR="Gray"># </FONT>mkdir -p /usr/local/share/doc/fontforge
+<FONT COLOR="Gray"># </FONT>mv fontforge_htdocs*.tar.bz2 /usr/local/share/doc/fontforge
+<FONT COLOR="Gray"># </FONT>cd /usr/local/share/doc/fontforge
+<FONT COLOR="Gray"># </FONT>bunzip2 fontforge_htdocs*.tar.bz2
+<FONT COLOR="Gray"># </FONT>tar xf fontforge_htdocs*.tar
+<FONT COLOR="Gray"># </FONT>rm fontforge_htdocs*.tar
+</PRE>
+  </BLOCKQUOTE>
   <P>
     <HR>
   <UL>
