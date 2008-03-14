@@ -161,6 +161,10 @@ struct pattern {
     char *pattern;
     real width, height;		/* Pattern is scaled to be repeated every width/height (in user coordinates) */
     real transform[6];
+    /* Used during rasterization process */
+    struct bdfchar *pat;
+    real invtrans[6];
+    int bminx, bminy, bwidth, bheight;	/* of the pattern at bdfchar scale */
 };
 
 struct brush {
@@ -2083,8 +2087,9 @@ extern void BCRegularizeBitmap(BDFChar *bdfc);
 extern void BCRegularizeGreymap(BDFChar *bdfc);
 extern void BCPasteInto(BDFChar *bc,BDFChar *rbc,int ixoff,int iyoff, int invert, int cleartoo);
 extern void BCRotateCharForVert(BDFChar *bc,BDFChar *from, BDFFont *frombdf);
-extern int GradientHere(double scale,DBounds *bbox,int iy,int ix,struct gradient *grad,
-	int defgrey);
+extern int GradientHere(double scale,DBounds *bbox,int iy,int ix,
+	struct gradient *grad,struct pattern *pat, int defgrey);
+extern void PatternPrep(SplineChar *sc,struct brush *brush,double scale);
 extern BDFChar *SplineCharRasterize(SplineChar *sc, int layer, double pixelsize);
 extern BDFFont *SplineFontToBDFHeader(SplineFont *_sf, int pixelsize, int indicate);
 extern BDFFont *SplineFontRasterize(SplineFont *sf, int layer, int pixelsize, int indicate);

@@ -1182,7 +1182,7 @@ static void SFDDumpGradient(FILE *sfd, char *keyword, struct gradient *gradient)
 
 static void SFDDumpPattern(FILE *sfd, char *keyword, struct pattern *pattern) {
 
-    fprintf( sfd, "%s %s %g,%g [%g %g %g %g %g %g]\n", keyword,
+    fprintf( sfd, "%s %s %g;%g [%g %g %g %g %g %g]\n", keyword,
 	    pattern->pattern,
 	    pattern->width, pattern->height,
 	    pattern->transform[0], pattern->transform[1],
@@ -3857,7 +3857,7 @@ static struct pattern *SFDParsePattern(FILE *sfd,char *tok) {
 
     getreal(sfd,&pat->width);
     while ( isspace(ch=getc(sfd)));
-    if ( ch!=',' ) ungetc(ch,sfd);
+    if ( ch!=';' ) ungetc(ch,sfd);
     getreal(sfd,&pat->height);
 
     while ( isspace(ch=getc(sfd)));
@@ -4204,13 +4204,11 @@ return( NULL );
 	} else if ( strmatch(tok,"FillGradient:")==0 ) {
 	    sc->layers[current_layer].fill_brush.gradient = SFDParseGradient(sfd,tok);
 	} else if ( strmatch(tok,"FillPattern:")==0 ) {
-	    if ( getname(sfd,tok)==1 )
-		sc->layers[current_layer].fill_brush.pattern = SFDParsePattern(sfd,tok);
+	    sc->layers[current_layer].fill_brush.pattern = SFDParsePattern(sfd,tok);
 	} else if ( strmatch(tok,"StrokeGradient:")==0 ) {
 	    sc->layers[current_layer].stroke_pen.brush.gradient = SFDParseGradient(sfd,tok);
 	} else if ( strmatch(tok,"StrokePattern:")==0 ) {
-	    if ( getname(sfd,tok)==1 )
-		sc->layers[current_layer].stroke_pen.brush.pattern = SFDParsePattern(sfd,tok);
+	    sc->layers[current_layer].stroke_pen.brush.pattern = SFDParsePattern(sfd,tok);
 #endif
 	} else if ( strmatch(tok,"SplineSet")==0 ) {
 	    sc->layers[current_layer].splines = SFDGetSplineSet(sf,sfd,sc->layers[current_layer].order2);

@@ -593,10 +593,51 @@ static void dumpGradient(void (*dumpchar)(int ch,void *data), void *data,
     }
 }
 
+static void dumpPattern(void (*dumpchar)(int ch,void *data), void *data,
+	struct pattern *pat, SplineChar *sc, int layer, int pdfopers, int isstroke ) {
+    SplineChar *pattern_sc = SFGetChar(sc->parent,-1,pat->pattern);
+    DBounds b;
+    real scale[6], result[6];
+
+    if ( pdfopers ) {
+	dumpf(dumpchar,data,"/Pattern %s\n", isstroke ? "CS" : "cs" );
+	dumpf(dumpchar,data,"/%s_ly%d_%s_pattern %s\n", sc->name, layer,
+		    isstroke ? "stroke":"fill",
+		    isstroke ? "SCN" : "scn" );
+	/* PDF output looks much simpler than postscript. It isn't. It's just */
+	/*  that the equivalent pdf dictionaries need to be created as objects*/
+	/*  and can't live in the content stream, so they are done elsewhere */
+    } else {
+	if ( pattern_sc==NULL )
+	    LogError("No glyph named %s, used as a pattern in %s\n", pat->pattern, sc->name);
+	PatternSCBounds(pattern_sc,&b);
+
+	dumpf(dumpchar,data, "<<\n" );
+	dumpf(dumpchar,data, "  /PatternType 1\n" );
+	dumpf(dumpchar,data, "  /PaintType 1\n" );		/* The intricacies of uncolored tiles are not something into which I wish to delve */
+	dumpf(dumpchar,data, "  /TilingType 1\n" );
+	dumpf(dumpchar,data, "  /BBox [%g %g %g %g]\n", b.minx, b.miny, b.maxx, b.maxy );
+	dumpf(dumpchar,data, "  /XStep %g\n", b.maxx-b.minx );
+	dumpf(dumpchar,data, "  /YStep %g\n", b.maxy-b.miny );
+	dumpf(dumpchar,data, "  /PaintProc { begin\n" );	/* The begin pops the pattern dictionary off the stack. Don't really use it, but do need the pop */
+	SC_PSDump(dumpchar,data, pattern_sc, true, false, ly_all );
+	dumpf(dumpchar,data, "  end }\n" );
+	memset(scale,0,sizeof(scale));
+	scale[0] = pat->width/(b.maxx-b.minx);
+	scale[3] = pat->height/(b.maxy-b.miny);
+	MatMultiply(scale,pat->transform, result);
+	dumpf(dumpchar,data, ">> [%g %g %g %g %g %g] makepattern setpattern\n",
+		result[0], result[1], result[2],
+		result[3], result[4], result[5]);
+    }
+}
+
 static void dumpbrush(void (*dumpchar)(int ch,void *data), void *data,
 	struct brush *brush, SplineChar *sc, int layer, int pdfopers ) {
     if ( brush->gradient!=NULL )
 	dumpGradient(dumpchar,data,brush->gradient,sc,layer,pdfopers,false);
+    else if ( brush->pattern!=NULL )
+	dumpPattern(dumpchar,data,brush->pattern,sc,layer,pdfopers,false);
     else if ( brush->col!=COLOR_INHERITED ) {
 	int r, g, b;
 	r = (brush->col>>16)&0xff;
@@ -615,6 +656,8 @@ static void dumppenbrush(void (*dumpchar)(int ch,void *data), void *data,
 	struct brush *brush, SplineChar *sc, int layer, int pdfopers ) {
     if ( brush->gradient!=NULL )
 	dumpGradient(dumpchar,data,brush->gradient,sc,layer,pdfopers,true);
+    else if ( brush->pattern!=NULL )
+	dumpPattern(dumpchar,data,brush->pattern,sc,layer,pdfopers,true);
     else if ( brush->col!=COLOR_INHERITED ) {
 	int r, g, b;
 	r = (brush->col>>16)&0xff;
@@ -929,6 +972,8 @@ void SC_PSDump(void (*dumpchar)(int ch,void *data), void *data,
     int i,j, last, first;
     SplineSet *temp;
 
+    if ( sc==NULL )
+return;
     last = first = layer;
     if ( layer==ly_all )
 	first = last = ly_fore;

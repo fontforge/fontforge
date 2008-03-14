@@ -1180,15 +1180,48 @@ static void StrokePaths(uint8 *bytemap,EdgeList *es,Layer *layer,Layer *alt,
     StrokeSS(bytemap,es,width,grey,layer->splines,clipmask);
 }
 
-int GradientHere(double scale,DBounds *bbox,int iy,int ix,struct gradient *grad,
+static int PatternHere(double scale,DBounds *bbox,int iy,int ix,
+	struct pattern *pat) {
+    real x,y,tempx;
+    int grey;
+    BDFChar *bdfc;
+
+    if ( pat==NULL || pat->pat==NULL )
+return( 0 );
+
+    x = (ix+.5)/scale + bbox->minx;
+    y = bbox->maxy-(iy-.5)/scale;
+    tempx = pat->invtrans[0]*x + pat->invtrans[2]*y + pat->invtrans[4];
+    y     = pat->invtrans[1]*x + pat->invtrans[3]*y + pat->invtrans[5];
+    x = tempx;
+    if ( (x = fmod(x,pat->width))<0 ) x+=pat->width;
+    if ( (y = fmod(y,pat->height))<0 ) y+=pat->height;
+    bdfc = pat->pat;
+    ix = pat->bminx + rint(x*pat->bwidth/pat->width);
+    iy = pat->bminy + rint(y*pat->bheight/pat->height);
+    ix -= bdfc->xmin;
+    iy = bdfc->ymax-1-iy;
+    if ( ix<0 || iy<0 || ix>=bdfc->xmax || iy>=bdfc->ymax )
+return( 0 );
+	/* bdfc has a 4bit grey, convert to 8bit grey by multiplying by 17 */
+    grey = 17*bdfc->bitmap[ iy*bdfc->bytes_per_line + ix];
+return( grey );
+}
+
+int GradientHere(double scale,DBounds *bbox,int iy,int ix,
+	struct gradient *grad, struct pattern *pat,
 	int defgrey) {
     real x,y;
     BasePoint unit, offset;
     double len, relpos;
     int i, col, grey;
 
-    if ( grad==NULL )
+    if ( grad==NULL ) {
+	if ( pat!=NULL && pat->pat!=NULL )
+return( PatternHere(scale,bbox,iy,ix,pat));
+	else
 return( defgrey );
+    }
 
     x = (ix+.5)/scale + bbox->minx;
     y = bbox->maxy-(iy-.5)/scale;
@@ -1245,12 +1278,43 @@ return ( defgrey );
 return( 255-grey );
 }
 	
+void PatternPrep(SplineChar *sc,struct brush *brush,double scale) {
+    SplineChar *psc;
+    int pixelsize;
+    SplineFont *sf;
+    struct pattern *pattern;
+    DBounds b;
+
+    if ( brush->gradient!=NULL )
+return;
+    if ( (pattern = brush->pattern)==NULL )
+return;
+    if ( pattern->pat!=NULL )		/* Recursive pattern? */
+return;
+
+    sf = sc->parent;
+    psc = SFGetChar(sf,-1,pattern->pattern);
+    if ( psc==NULL )
+return;
+    PatternSCBounds(psc,&b);
+    pixelsize = rint(scale*pattern->height*(sf->ascent+sf->descent)/(b.maxy-b.miny));
+    if ( pixelsize<=1 )		/* Pattern too small to show anything */
+return;
+    pattern->bheight = rint(scale*pattern->height);
+    pattern->bwidth = rint(scale*pattern->width*(b.maxx-b.minx)/(b.maxy-b.miny));
+    pattern->bminx = rint(scale*b.minx*pattern->width/(b.maxx-b.minx));
+    pattern->bminy = rint(scale*b.miny*pattern->height/(b.maxy-b.miny));
+    pattern->pat = SplineCharAntiAlias(psc,ly_fore,pixelsize,4);
+    MatInverse(pattern->invtrans,pattern->transform);
+}
+
 static void SetByteMapToGrey(uint8 *bytemap,EdgeList *es,Layer *layer,Layer *alt,
-	uint8 *clipmask) {
+	uint8 *clipmask,SplineChar *sc) {
     uint32 col;
     int grey,i,j;
     uint8 *pt, *bpt, *cpt;
     struct gradient *grad = layer->fill_brush.gradient;
+    struct pattern *pat  = layer->fill_brush.pattern;
 
     if ( layer->fill_brush.col!=COLOR_INHERITED )
 	col = layer->fill_brush.col;
@@ -1261,6 +1325,7 @@ static void SetByteMapToGrey(uint8 *bytemap,EdgeList *es,Layer *layer,Layer *alt
     grey = ( ((col>>16)&0xff)*3 + ((col>>8)&0xff)*6 + (col&0xff) )/ 10;
     /* but our internal greymap convention is backwards */
     grey = 255-grey;
+    PatternPrep(sc,&layer->fill_brush,es->scale);
 
     for ( i=0; i<es->cnt; ++i ) {
 	bpt = es->bitmap + i*es->bytes_per_line;
@@ -1269,9 +1334,13 @@ static void SetByteMapToGrey(uint8 *bytemap,EdgeList *es,Layer *layer,Layer *alt
 	for ( j=0; j<8*es->bytes_per_line; ++j ) {
 	    if ( clipmask==NULL || (cpt[j>>3]&(0x80>>(j&7))) )
 		if ( bpt[j>>3]&(0x80>>(j&7)) ) {
-		    pt[j] = GradientHere(es->scale,&es->bbox,i,j,grad,grey);
+		    pt[j] = GradientHere(es->scale,&es->bbox,i,j,grad,pat,grey);
 		}
 	}
+    }
+    if ( pat!=NULL ) {
+	BDFCharFree(pat->pat);
+	pat->pat = NULL;
     }
 }
 
@@ -1339,7 +1408,7 @@ static void FillImages(uint8 *bytemap,EdgeList *es,ImageList *img,Layer *layer,
 }
 
 static void ProcessLayer(uint8 *bytemap,EdgeList *es,Layer *layer,
-	Layer *alt, uint8 *clipmask) {
+	Layer *alt, uint8 *clipmask,SplineChar *sc) {
     ImageList *img;
 
     if ( !layer->fillfirst && layer->dostroke )
@@ -1348,7 +1417,7 @@ static void ProcessLayer(uint8 *bytemap,EdgeList *es,Layer *layer,
 	memset(es->bitmap,0,es->cnt*es->bytes_per_line);
 	FindEdgesSplineSet(layer->splines,es,true);
 	FillChar(es);
-	SetByteMapToGrey(bytemap,es,layer,alt, clipmask);
+	SetByteMapToGrey(bytemap,es,layer,alt, clipmask,sc);
 	_FreeEdgeList(es);
     }
     for ( img = layer->images; img!=NULL; img=img->next )
@@ -1439,12 +1508,12 @@ return( NULL );
 		RefChar *rf;
 		for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
 		    uint8 *clipmask = ProcessClipMask(&es,&sc->layers[layer]);
-		    ProcessLayer(bytemap,&es,&sc->layers[layer],NULL,clipmask);
+		    ProcessLayer(bytemap,&es,&sc->layers[layer],NULL,clipmask,sc);
 
 		    for ( rf=sc->layers[layer].refs; rf!=NULL; rf = rf->next ) {
 			for ( i=0; i<rf->layer_cnt; ++i ) {
 			    ProcessLayer(bytemap,&es,(Layer *) (&rf->layers[i]),
-				    &sc->layers[layer],clipmask);
+				    &sc->layers[layer],clipmask,sc);
 			}
 		    }
 		    free(clipmask);
