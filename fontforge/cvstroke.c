@@ -890,6 +890,13 @@ void FreeHandStrokeDlg(StrokeInfo *si) {
 #define CID_StrokeGradEdit	2111
 #define CID_StrokeGradDelete	2112
 
+#define CID_FillPatAdd		2200
+#define CID_FillPatEdit		2201
+#define CID_FillPatDelete	2202
+#define CID_StrokePatAdd	2210
+#define CID_StrokePatEdit	2211
+#define CID_StrokePatDelete	2212
+
 struct layer_dlg {
     int done;
     int ok;
@@ -897,6 +904,10 @@ struct layer_dlg {
     SplineFont *sf;
     GWindow gw;
     struct gradient *fillgrad, *strokegrad;
+    struct pattern  *fillpat,  *strokepat;
+
+    int pat_done;
+    struct pattern *curpat;
 };
 
 #define CID_Gradient	1001
@@ -1242,7 +1253,7 @@ static void GDDInit(GradientDlg *gdd,SplineFont *sf,Layer *ly,struct gradient *g
 }
 
 static struct col_init stopci[] = {
-    { me_real , NULL, NULL, NULL, N_("Offset") },
+    { me_real , NULL, NULL, NULL, N_("Offset %") },
     { me_hex, NULL, NULL, NULL, N_("Color") },
     { me_real, NULL, NULL, NULL, N_("Opacity") }
     };
@@ -1559,6 +1570,528 @@ static int Layer_StrokeGradAddEdit(GGadget *g, GEvent *e) {
 return( true );
 }
 
+#define CID_PatternName	1001
+#define CID_Skew	1002
+#define CID_Rotate	1003
+#define	CID_TransX	1004
+#define CID_TransY	1005
+#define CID_Transform	1006
+#define CID_Aspect	1007
+#define CID_TWidth	1008
+#define CID_THeight	1009
+
+static int Pat_WidthChanged(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent &&
+	    (e->u.control.subtype == et_textchanged ||
+	     e->u.control.subtype == et_radiochanged)) {
+	GWindow gw = GGadgetGetWindow(g);
+	struct layer_dlg *ld = GDrawGetUserData(gw);
+	char *name = GGadgetGetTitle8(GWidgetGetControl(gw,CID_PatternName));
+	SplineChar *patternsc = SFGetChar(ld->sf,-1,name);
+	DBounds b;
+	int err = false;
+	real height, width;
+	char buffer[50];
+
+	free(name);
+	if ( patternsc==NULL )
+return( true );
+	if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_Aspect)))
+return( true );
+	width = GetCalmReal8(gw,CID_TWidth,_("Width"),&err);
+	if ( err )
+return( true );
+	PatternSCBounds(patternsc,&b);
+	height = width * (b.maxy - b.miny)/(b.maxx - b.minx);
+	sprintf( buffer, "%g", height );
+	GGadgetSetTitle8(GWidgetGetControl(gw,CID_THeight), buffer);
+    }
+return( true );
+}
+
+static int Pat_HeightChanged(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
+	GWindow gw = GGadgetGetWindow(g);
+	struct layer_dlg *ld = GDrawGetUserData(gw);
+	char *name = GGadgetGetTitle8(GWidgetGetControl(gw,CID_PatternName));
+	SplineChar *patternsc = SFGetChar(ld->sf,-1,name);
+	DBounds b;
+	int err = false;
+	real height, width;
+	char buffer[50];
+
+	free(name);
+	if ( patternsc==NULL )
+return( true );
+	if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_Aspect)))
+return( true );
+	width = GetCalmReal8(gw,CID_THeight,_("Height"),&err);
+	if ( err )
+return( true );
+	PatternSCBounds(patternsc,&b);
+	width = height * (b.maxx - b.minx)/(b.maxy - b.miny);
+	sprintf( buffer, "%g", width );
+	GGadgetSetTitle8(GWidgetGetControl(gw,CID_TWidth), buffer);
+    }
+return( true );
+}
+
+static int Pat_TransformChanged(GGadget *g, GEvent *e) {
+
+    if ( e==NULL ||
+	    (e->type==et_controlevent && e->u.control.subtype == et_textchanged )) {
+	GWindow gw = GGadgetGetWindow(g);
+	double trans[6];
+	char *name = GGadgetGetTitle8(g);
+	double c, s, t;
+	char buffer[50];
+
+	if ( sscanf( name, "[%lg %lg %lg %lg %lg %lg]", &trans[0], &trans[1], &trans[2],
+		&trans[3], &trans[4], &trans[5])!=6 ) {
+	    free(name );
+return( true );
+	}
+	free(name );
+
+	c = trans[0]; s = trans[1];
+	if ( c!=0 )
+	    t = (trans[2]+s)/c;
+	else if ( s!=0 )
+	    t = (trans[3]-c)/s;
+	else
+	    t = 9999;
+	if ( RealWithin(c*c+s*s,1,.005) && RealWithin(t*c-s,trans[2],.01) && RealWithin(t*s+c,trans[3],.01)) {
+	    double skew = atan(t)*180/3.1415926535897932;
+	    double rot  = atan2(s,c)*180/3.1415926535897932;
+	    sprintf( buffer, "%g", skew );
+	    GGadgetSetTitle8(GWidgetGetControl(gw,CID_Skew), buffer);
+	    sprintf( buffer, "%g", rot );
+	    GGadgetSetTitle8(GWidgetGetControl(gw,CID_Rotate), buffer);
+	    sprintf( buffer, "%g", trans[4] );
+	    GGadgetSetTitle8(GWidgetGetControl(gw,CID_TransX), buffer);
+	    sprintf( buffer, "%g", trans[5] );
+	    GGadgetSetTitle8(GWidgetGetControl(gw,CID_TransY), buffer);
+	} else {
+	    GGadgetSetTitle8(GWidgetGetControl(gw,CID_Skew), "");
+	    GGadgetSetTitle8(GWidgetGetControl(gw,CID_Rotate), "");
+	    GGadgetSetTitle8(GWidgetGetControl(gw,CID_TransX), "");
+	    GGadgetSetTitle8(GWidgetGetControl(gw,CID_TransY), "");
+	}
+    }
+return( true );
+}
+
+static int Pat_AnglesChanged(GGadget *g, GEvent *e) {
+
+    if ( e==NULL ||
+	    (e->type==et_controlevent && e->u.control.subtype == et_textchanged )) {
+	GWindow gw = GGadgetGetWindow(g);
+	double rotate, skew, x, y;
+	double c, s, t;
+	char buffer[340];
+	int err=false;
+
+	skew   = GetCalmReal8(gw,CID_Skew,_("Skew"),&err)*3.1415926535897932/180;
+	rotate = GetCalmReal8(gw,CID_Rotate,_("Rotate"),&err)*3.1415926535897932/180;
+	x      = GetCalmReal8(gw,CID_TransX,_("Translation in X"),&err);
+	y      = GetCalmReal8(gw,CID_TransY,_("Translation in Y"),&err);
+	if ( err )
+return( true );
+	t = tan(skew);
+	c = cos(rotate); s = sin(rotate);
+	sprintf( buffer, "[%g %g %g %g %g %g]", c, s, t*c-s, t*s+c, x, y );
+	GGadgetSetTitle8(GWidgetGetControl(gw,CID_Transform),buffer );
+    }
+return( true );
+}
+
+static unichar_t **Pat_GlyphNameCompletion(GGadget *t,int from_tab) {
+    struct layer_dlg *ld = GDrawGetUserData(GGadgetGetWindow(t));
+
+return( SFGlyphNameCompletion(ld->sf,t,from_tab,false));
+}
+
+static int Pat_OK(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GWindow gw = GGadgetGetWindow(g);
+	struct layer_dlg *ld = GDrawGetUserData(gw);
+	char *transstring = GGadgetGetTitle8(GWidgetGetControl(gw,CID_Transform));
+	char *name;
+	double width, height;
+	double trans[6];
+	int i;
+	SplineChar *patternsc;
+	int err;
+
+	if ( sscanf( transstring, "[%lg %lg %lg %lg %lg %lg]", &trans[0], &trans[1], &trans[2],
+		&trans[3], &trans[4], &trans[5])!=6 ) {
+	    free( transstring );
+	    ff_post_error(_("Bad Transformation matrix"),_("Bad Transformation matrix"));
+return( true );
+	}
+	free(transstring);
+
+	name = GGadgetGetTitle8(GWidgetGetControl(gw,CID_PatternName));
+	patternsc = SFGetChar(ld->sf,-1,name);
+	if ( patternsc==NULL ) {
+	    ff_post_error(_("No Glyph"),_("This font does not contain a glyph named \"%.40s\""), name);
+	    free(name);
+return( true );
+	}
+
+	err = false;
+	width = GetReal8(gw,CID_TWidth,_("Width"),&err);
+	height = GetReal8(gw,CID_THeight,_("Height"),&err);
+	if ( err )
+return( true );
+
+	if ( ld->curpat == NULL )
+	    ld->curpat = chunkalloc(sizeof(struct pattern));
+	free( ld->curpat->pattern );
+	ld->curpat->pattern = name;
+	for ( i=0; i<6; ++i )
+	    ld->curpat->transform[i] = trans[i];
+	ld->curpat->width = width;
+	ld->curpat->height = height;
+	ld->pat_done = true;
+    }
+return( true );
+}
+
+static int Pat_Cancel(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	GWindow gw = GGadgetGetWindow(g);
+	struct layer_dlg *ld = GDrawGetUserData(gw);
+	ld->pat_done = true;
+    }
+return( true );
+}
+
+static int pat_e_h(GWindow gw, GEvent *event) {
+    struct layer_dlg *ld = GDrawGetUserData(gw);
+
+    switch ( event->type ) {
+      case et_char:
+return( false );
+      break;
+      case et_close:
+	ld->pat_done = true;
+      break;
+    }
+return( true );
+}
+
+static struct pattern *PatternEdit(struct layer_dlg *ld,struct pattern *active) {
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[25], boxes[5], *harray[8], *varray[10],
+	*hvarray[42];
+    GTextInfo label[25];
+    int j,k;
+    char *name;
+    char width[50], height[50], transform[340];
+    int aspect_fixed = true;
+
+    ld->pat_done = false;
+    ld->curpat = active;
+
+    name = "";
+    width[0] = height[0] = '\0';
+    strcpy(transform,"[1 0 0 1 0 0]");
+    aspect_fixed = true;
+    if ( active!=NULL ) {
+	SplineChar *patternsc = SFGetChar(ld->sf,-1,active->pattern);
+	name = active->pattern;
+	sprintf( width, "%g", active->width );
+	sprintf( height, "%g", active->height );
+	sprintf( transform, "[%g %g %g %g %g %g]",
+		active->transform[0], active->transform[1],
+		active->transform[2], active->transform[3],
+		active->transform[4], active->transform[5]);
+	if ( patternsc!=NULL ) {
+	    DBounds b;
+	    PatternSCBounds(patternsc,&b);
+	    aspect_fixed = RealNear(active->width*(b.maxy-b.miny),active->height*(b.maxx-b.minx));
+	}
+    }
+
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_isdlg|wam_restrict|wam_undercursor|wam_utf8_wtitle;
+    wattrs.is_dlg = true;
+    wattrs.restrict_input_to_me = 1;
+    wattrs.undercursor = 1;
+    wattrs.event_masks = -1;
+    wattrs.cursor = ct_pointer;
+    wattrs.utf8_window_title = _("Tile Pattern");
+    pos.width = 600;
+    pos.height = 300;
+    gw = GDrawCreateTopWindow(NULL,&pos,pat_e_h,ld,&wattrs);
+
+    memset(&label,0,sizeof(label));
+    memset(&gcd,0,sizeof(gcd));
+    memset(&boxes,0,sizeof(boxes));
+
+    k = j = 0;
+
+    label[k].text = (unichar_t *) _(
+	"The pattern itself should be drawn in another glyph\n"
+	"of the current font. Specify a glyph name:");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLabelCreate;
+    varray[j++] = &gcd[k-1];
+
+    label[k].text = (unichar_t *) name;
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[k].gd.handle_controlevent = Pat_WidthChanged;		/* That will make sure the aspect ratio stays correct */
+    gcd[k].gd.cid = CID_PatternName;
+    gcd[k++].creator = GTextCompletionCreate;
+    varray[j++] = &gcd[k-1];
+
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_utf8_popup;
+    if ( aspect_fixed )
+	gcd[k].gd.flags |= gg_cb_on;
+    label[k].text = (unichar_t *) _("Aspect Ratio same as Tile Glyph");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_Aspect;
+    gcd[k].gd.handle_controlevent = Pat_WidthChanged;		/* That will make sure the aspect ratio stays correct */
+    gcd[k++].creator = GCheckBoxCreate;
+    varray[j++] = &gcd[k-1];
+
+    label[k].text = (unichar_t *) _("Width:");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLabelCreate;
+    hvarray[0] = &gcd[k-1];
+
+    label[k].text = (unichar_t *) width;
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[k].gd.handle_controlevent = Pat_WidthChanged;
+    gcd[k].gd.cid = CID_TWidth;
+    gcd[k++].creator = GTextFieldCreate;
+    hvarray[1] = &gcd[k-1]; hvarray[2] = GCD_Glue; hvarray[3] = NULL;
+
+    label[k].text = (unichar_t *) _("Height:");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLabelCreate;
+    hvarray[4] = &gcd[k-1];
+
+    label[k].text = (unichar_t *) height;
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[k].gd.handle_controlevent = Pat_HeightChanged;
+    gcd[k].gd.cid = CID_THeight;
+    gcd[k++].creator = GTextFieldCreate;
+    hvarray[5] = &gcd[k-1]; hvarray[6] = GCD_Glue; hvarray[7] = NULL;
+
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLineCreate;
+    hvarray[8] = &gcd[k-1];
+    hvarray[9] = GCD_ColSpan; hvarray[10] = GCD_Glue; hvarray[11] = NULL;
+
+    label[k].text = (unichar_t *) _("Rotate:");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLabelCreate;
+    hvarray[12] = &gcd[k-1];
+
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[k].gd.handle_controlevent = Pat_AnglesChanged;
+    gcd[k].gd.cid = CID_Rotate;
+    gcd[k++].creator = GTextFieldCreate;
+    hvarray[13] = &gcd[k-1]; hvarray[14] = GCD_Glue; hvarray[15] = NULL;
+
+    label[k].text = (unichar_t *) _("Skew:");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLabelCreate;
+    hvarray[16] = &gcd[k-1];
+
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[k].gd.handle_controlevent = Pat_AnglesChanged;
+    gcd[k].gd.cid = CID_Skew;
+    gcd[k++].creator = GTextFieldCreate;
+    hvarray[17] = &gcd[k-1]; hvarray[18] = GCD_Glue; hvarray[19] = NULL;
+
+    label[k].text = (unichar_t *) _("Translate By");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLabelCreate;
+    hvarray[20] = &gcd[k-1];
+    hvarray[21] = GCD_ColSpan; hvarray[22] = GCD_Glue; hvarray[23] = NULL;
+
+    label[k].text = (unichar_t *) _("X:");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLabelCreate;
+    hvarray[24] = &gcd[k-1];
+
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[k].gd.handle_controlevent = Pat_AnglesChanged;
+    gcd[k].gd.cid = CID_TransX;
+    gcd[k++].creator = GTextFieldCreate;
+    hvarray[25] = &gcd[k-1]; hvarray[26] = GCD_Glue; hvarray[27] = NULL;
+
+    label[k].text = (unichar_t *) _("Y:");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLabelCreate;
+    hvarray[28] = &gcd[k-1];
+
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[k].gd.handle_controlevent = Pat_AnglesChanged;
+    gcd[k].gd.cid = CID_TransY;
+    gcd[k++].creator = GTextFieldCreate;
+    hvarray[29] = &gcd[k-1]; hvarray[30] = GCD_Glue; hvarray[31] = NULL;
+
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLineCreate;
+    hvarray[32] = &gcd[k-1];
+    hvarray[33] = GCD_ColSpan; hvarray[34] = GCD_Glue; hvarray[35] = NULL;
+
+    label[k].text = (unichar_t *) _("Transform:");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled | gg_visible;
+    gcd[k++].creator = GLabelCreate;
+    hvarray[36] = &gcd[k-1];
+
+    label[k].text = (unichar_t *) transform;
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
+    gcd[k].gd.handle_controlevent = Pat_TransformChanged;
+    gcd[k].gd.cid = CID_Transform;
+    gcd[k++].creator = GTextFieldCreate;
+    hvarray[37] = &gcd[k-1]; hvarray[38] = GCD_ColSpan; hvarray[39] = NULL;
+    hvarray[40] = NULL;
+
+    boxes[2].gd.flags = gg_enabled|gg_visible;
+    boxes[2].gd.u.boxelements = hvarray;
+    boxes[2].creator = GHVBoxCreate;
+    varray[j++] = &boxes[2];
+
+    label[k].text = (unichar_t *) _("_OK");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_but_default;
+    gcd[k].gd.handle_controlevent = Pat_OK;
+    gcd[k++].creator = GButtonCreate;
+
+    label[k].text = (unichar_t *) _("_Cancel");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_but_cancel;
+    gcd[k].gd.handle_controlevent = Pat_Cancel;
+    gcd[k++].creator = GButtonCreate;
+
+    harray[0] = GCD_Glue; harray[1] = &gcd[k-2]; harray[2] = GCD_Glue;
+    harray[3] = GCD_Glue; harray[4] = &gcd[k-1]; harray[5] = GCD_Glue;
+    harray[6] = NULL;
+
+    boxes[3].gd.flags = gg_enabled|gg_visible;
+    boxes[3].gd.u.boxelements = harray;
+    boxes[3].creator = GHBoxCreate;
+    varray[j++] = &boxes[3];
+    varray[j++] = GCD_Glue;
+    varray[j] = NULL;
+
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = varray;
+    boxes[0].creator = GVBoxCreate;
+
+    GGadgetsCreate(gw,boxes);
+
+    GHVBoxSetExpandableRow(boxes[0].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(boxes[2].ret,2);
+    GHVBoxSetExpandableRow(boxes[3].ret,gb_expandgluesame);
+    GHVBoxFitWindow(boxes[0].ret);
+
+
+    Pat_TransformChanged(GWidgetGetControl(gw,CID_Transform),NULL);
+    GCompletionFieldSetCompletion(gcd[1].ret,Pat_GlyphNameCompletion);
+
+    GDrawSetVisible(gw,true);
+
+    while ( !ld->pat_done )
+	GDrawProcessOneEvent(NULL);
+
+    GDrawDestroyWindow(gw);
+return( ld->curpat );
+}
+
+static void Layer_PatSet(struct layer_dlg *ld) {
+    GGadgetSetEnabled(GWidgetGetControl(ld->gw,CID_FillPatAdd),ld->fillpat==NULL);
+    GGadgetSetEnabled(GWidgetGetControl(ld->gw,CID_FillPatEdit),ld->fillpat!=NULL);
+    GGadgetSetEnabled(GWidgetGetControl(ld->gw,CID_FillPatDelete),ld->fillpat!=NULL);
+    GGadgetSetEnabled(GWidgetGetControl(ld->gw,CID_StrokePatAdd),ld->strokepat==NULL);
+    GGadgetSetEnabled(GWidgetGetControl(ld->gw,CID_StrokePatEdit),ld->strokepat!=NULL);
+    GGadgetSetEnabled(GWidgetGetControl(ld->gw,CID_StrokePatDelete),ld->strokepat!=NULL);
+}
+
+static int Layer_FillPatDelete(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct layer_dlg *ld = GDrawGetUserData(GGadgetGetWindow(g));
+	PatternFree(ld->fillpat);
+	ld->fillpat=NULL;
+	Layer_PatSet(ld);
+    }
+return( true );
+}
+
+static int Layer_FillPatAddEdit(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct layer_dlg *ld = GDrawGetUserData(GGadgetGetWindow(g));
+	ld->fillpat = PatternEdit(ld,ld->fillpat);
+	Layer_PatSet(ld);
+    }
+return( true );
+}
+
+static int Layer_StrokePatDelete(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct layer_dlg *ld = GDrawGetUserData(GGadgetGetWindow(g));
+	PatternFree(ld->strokepat);
+	ld->strokepat=NULL;
+	Layer_PatSet(ld);
+    }
+return( true );
+}
+
+static int Layer_StrokePatAddEdit(GGadget *g, GEvent *e) {
+
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	struct layer_dlg *ld = GDrawGetUserData(GGadgetGetWindow(g));
+	ld->strokepat = PatternEdit(ld,ld->strokepat);
+	Layer_PatSet(ld);
+    }
+return( true );
+}
+
 static uint32 getcol(GGadget *g,int *err) {
     const unichar_t *ret=_GGadgetGetTitle(g);
     unichar_t *end;
@@ -1672,6 +2205,8 @@ return( true );
 
 	ld->layer->fill_brush.gradient = ld->fillgrad;
 	ld->layer->stroke_pen.brush.gradient = ld->strokegrad;
+	ld->layer->fill_brush.pattern = ld->fillpat;
+	ld->layer->stroke_pen.brush.pattern = ld->strokepat;
     }
 return( true );
 }
@@ -1712,10 +2247,11 @@ int LayerDialog(Layer *layer,SplineFont *sf) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[51], boxes[10];
-    GGadgetCreateData *barray[10], *varray[4], *fhvarray[14], *shvarray[34],
-	    *lcarray[6], *ljarray[6], *fgarray[5], *sgarray[5];
-    GTextInfo label[51];
+    GGadgetCreateData gcd[59], boxes[12];
+    GGadgetCreateData *barray[10], *varray[4], *fhvarray[18], *shvarray[38],
+	    *lcarray[6], *ljarray[6], *fgarray[5], *fparray[5], *sgarray[5],
+	    *sparray[5];
+    GTextInfo label[59];
     struct layer_dlg ld;
     int yoff=0;
     int gcdoff, fill_gcd, stroke_gcd, k, j;
@@ -1740,8 +2276,11 @@ int LayerDialog(Layer *layer,SplineFont *sf) {
     pos.width = GGadgetScale(GDrawPointsToPixels(NULL,LY_Width));
     pos.height = GDrawPointsToPixels(NULL,LY_Height);
     ld.gw = gw = GDrawCreateTopWindow(NULL,&pos,layer_e_h,&ld,&wattrs);
+
     ld.fillgrad = GradientCopy(layer->fill_brush.gradient);
     ld.strokegrad = GradientCopy(layer->stroke_pen.brush.gradient);
+    ld.fillpat = PatternCopy(layer->fill_brush.pattern);
+    ld.strokepat = PatternCopy(layer->stroke_pen.brush.pattern);
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
@@ -1876,7 +2415,55 @@ int LayerDialog(Layer *layer,SplineFont *sf) {
     fhvarray[k++] = &boxes[7];
     fhvarray[k++] = GCD_ColSpan;
     fhvarray[k++] = NULL;
+
+    label[gcdoff].text = (unichar_t *) _("Pattern:");
+    label[gcdoff].text_is_1byte = true;
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+25;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+    gcd[gcdoff++].creator = GLabelCreate;
+    fhvarray[k++] = &gcd[gcdoff-1];
+
+    gcd[gcdoff].gd.flags = layer->fill_brush.pattern==NULL ? (gg_visible | gg_enabled) : gg_visible;
+    label[gcdoff].text = (unichar_t *) _("Add");
+    label[gcdoff].text_is_1byte = true;
+    label[gcdoff].text_in_resource = true;
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.handle_controlevent = Layer_FillPatAddEdit;
+    gcd[gcdoff].gd.cid = CID_FillPatAdd;
+    gcd[gcdoff++].creator = GButtonCreate;
+    fparray[0] = &gcd[gcdoff-1];
+
+    gcd[gcdoff].gd.flags = layer->fill_brush.pattern!=NULL ? (gg_visible | gg_enabled) : gg_visible;
+    label[gcdoff].text = (unichar_t *) _("Edit");
+    label[gcdoff].text_is_1byte = true;
+    label[gcdoff].text_in_resource = true;
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.handle_controlevent = Layer_FillPatAddEdit;
+    gcd[gcdoff].gd.cid = CID_FillPatEdit;
+    gcd[gcdoff++].creator = GButtonCreate;
+    fparray[1] = &gcd[gcdoff-1];
+
+    gcd[gcdoff].gd.flags = layer->fill_brush.pattern!=NULL ? (gg_visible | gg_enabled) : gg_visible;
+    label[gcdoff].text = (unichar_t *) _("Delete");
+    label[gcdoff].text_is_1byte = true;
+    label[gcdoff].text_in_resource = true;
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.handle_controlevent = Layer_FillPatDelete;
+    gcd[gcdoff].gd.cid = CID_FillPatDelete;
+    gcd[gcdoff++].creator = GButtonCreate;
+    fparray[2] = &gcd[gcdoff-1];
+    fparray[3] = GCD_Glue;
+    fparray[4] = NULL;
+
+    boxes[8].gd.flags = gg_enabled|gg_visible;
+    boxes[8].gd.u.boxelements = fparray;
+    boxes[8].creator = GHBoxCreate;
+    fhvarray[k++] = &boxes[8];
+    fhvarray[k++] = GCD_ColSpan;
     fhvarray[k++] = NULL;
+    fhvarray[k++] = NULL;
+
 
     boxes[2].gd.pos.x = boxes[2].gd.pos.y = 2;
     boxes[2].gd.flags = gg_enabled|gg_visible;
@@ -2007,10 +2594,57 @@ int LayerDialog(Layer *layer,SplineFont *sf) {
     sgarray[3] = GCD_Glue;
     sgarray[4] = NULL;
 
-    boxes[8].gd.flags = gg_enabled|gg_visible;
-    boxes[8].gd.u.boxelements = sgarray;
-    boxes[8].creator = GHBoxCreate;
-    shvarray[k++] = &boxes[8];
+    boxes[9].gd.flags = gg_enabled|gg_visible;
+    boxes[9].gd.u.boxelements = sgarray;
+    boxes[9].creator = GHBoxCreate;
+    shvarray[k++] = &boxes[9];
+    shvarray[k++] = GCD_ColSpan;
+    shvarray[k++] = NULL;
+
+    label[gcdoff].text = (unichar_t *) _("Pattern:");
+    label[gcdoff].text_is_1byte = true;
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.pos.x = 5; gcd[gcdoff].gd.pos.y = gcd[gcdoff-1].gd.pos.y+25;
+    gcd[gcdoff].gd.flags = gg_enabled | gg_visible;
+    gcd[gcdoff++].creator = GLabelCreate;
+    shvarray[k++] = &gcd[gcdoff-1];
+
+    gcd[gcdoff].gd.flags = layer->stroke_pen.brush.pattern==NULL ? (gg_visible | gg_enabled) : gg_visible;
+    label[gcdoff].text = (unichar_t *) _("Add");
+    label[gcdoff].text_is_1byte = true;
+    label[gcdoff].text_in_resource = true;
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.handle_controlevent = Layer_StrokePatAddEdit;
+    gcd[gcdoff].gd.cid = CID_StrokePatAdd;
+    gcd[gcdoff++].creator = GButtonCreate;
+    sparray[0] = &gcd[gcdoff-1];
+
+    gcd[gcdoff].gd.flags = layer->stroke_pen.brush.pattern!=NULL ? (gg_visible | gg_enabled) : gg_visible;
+    label[gcdoff].text = (unichar_t *) _("Edit");
+    label[gcdoff].text_is_1byte = true;
+    label[gcdoff].text_in_resource = true;
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.handle_controlevent = Layer_StrokePatAddEdit;
+    gcd[gcdoff].gd.cid = CID_StrokePatEdit;
+    gcd[gcdoff++].creator = GButtonCreate;
+    sparray[1] = &gcd[gcdoff-1];
+
+    gcd[gcdoff].gd.flags = layer->stroke_pen.brush.pattern!=NULL ? (gg_visible | gg_enabled) : gg_visible;
+    label[gcdoff].text = (unichar_t *) _("Delete");
+    label[gcdoff].text_is_1byte = true;
+    label[gcdoff].text_in_resource = true;
+    gcd[gcdoff].gd.label = &label[gcdoff];
+    gcd[gcdoff].gd.handle_controlevent = Layer_StrokePatDelete;
+    gcd[gcdoff].gd.cid = CID_StrokePatDelete;
+    gcd[gcdoff++].creator = GButtonCreate;
+    sparray[2] = &gcd[gcdoff-1];
+    sparray[3] = GCD_Glue;
+    sparray[4] = NULL;
+
+    boxes[10].gd.flags = gg_enabled|gg_visible;
+    boxes[10].gd.u.boxelements = sparray;
+    boxes[10].creator = GHBoxCreate;
+    shvarray[k++] = &boxes[10];
     shvarray[k++] = GCD_ColSpan;
     shvarray[k++] = NULL;
 
@@ -2301,6 +2935,8 @@ int LayerDialog(Layer *layer,SplineFont *sf) {
     GHVBoxSetExpandableCol(boxes[6].ret,gb_expandgluesame);
     GHVBoxSetExpandableCol(boxes[7].ret,gb_expandgluesame);
     GHVBoxSetExpandableCol(boxes[8].ret,gb_expandgluesame);
+    GHVBoxSetExpandableCol(boxes[9].ret,gb_expandgluesame);
+    GHVBoxSetExpandableCol(boxes[10].ret,gb_expandgluesame);
     GHVBoxFitWindow(boxes[0].ret);
 
     GWidgetHidePalettes();
@@ -2312,6 +2948,8 @@ int LayerDialog(Layer *layer,SplineFont *sf) {
     if ( !ld.ok ) {
 	GradientFree(ld.fillgrad);
 	GradientFree(ld.strokegrad);
+	PatternFree(ld.fillpat);
+	PatternFree(ld.strokepat);
     }
 return( ld.ok );
 }

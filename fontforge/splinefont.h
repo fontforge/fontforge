@@ -1294,7 +1294,7 @@ typedef struct splinechar {
 	/*  subtract it from the min components. If extra is 0 then tile_bounds*/
 	/*  will be used. If tile_bounds is all zeros then the glyph's bbox */
 	/*  will be used. */
-    real tile_extra;			/* If the glyph is used as a tile */
+    real tile_margin;			/* If the glyph is used as a tile */
     DBounds tile_bounds;
 #endif
 } SplineChar;

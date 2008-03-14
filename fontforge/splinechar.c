@@ -2151,10 +2151,10 @@ void _CVMenuMakeLine(CharViewBase *cv,int do_arc,int ellipse_to_back) {
 void PatternSCBounds(SplineChar *sc, DBounds *b) {
     if ( sc==NULL )
 	memset(b,0,sizeof(DBounds));
-    else if ( sc->tile_extra!=0 || (sc->tile_bounds.minx==0 && sc->tile_bounds.maxx==0) ) {
+    else if ( sc->tile_margin!=0 || (sc->tile_bounds.minx==0 && sc->tile_bounds.maxx==0) ) {
 	SplineCharFindBounds(sc,b);
-	b->minx -= sc->tile_extra; b->miny -= sc->tile_extra;
-	b->maxx += sc->tile_extra; b->maxy += sc->tile_extra;
+	b->minx -= sc->tile_margin; b->miny -= sc->tile_margin;
+	b->maxx += sc->tile_margin; b->maxy += sc->tile_margin;
     } else
 	*b = sc->tile_bounds;
     if ( b->minx>=b->maxx )
