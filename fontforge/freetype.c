@@ -997,7 +997,7 @@ return( SSStroke(layer->splines,&si,sc));
 }
 
 static void MergeBitmaps(FT_Bitmap *bitmap,FT_Bitmap *newstuff,struct brush *brush,
-	uint8 *clipmask,double scale,DBounds *bbox) {
+	uint8 *clipmask,double scale,DBounds *bbox,SplineChar *sc) {
     int i, j;
     uint32 col = brush->col;
 
@@ -1010,11 +1010,16 @@ static void MergeBitmaps(FT_Bitmap *bitmap,FT_Bitmap *newstuff,struct brush *bru
 	    for ( i=0; i<bitmap->rows; ++i ) for ( j=0; j<bitmap->pitch; ++j )
 		newstuff->buffer[i*bitmap->pitch+j] *= clipmask[i*bitmap->pitch+j];
 	}
+	PatternPrep(sc,brush,scale);
 	for ( i=0; i<bitmap->rows; ++i ) for ( j=0; j<bitmap->pitch; ++j ) {
 	    bitmap->buffer[i*bitmap->pitch+j] =
-		    (newstuff->buffer[i*bitmap->pitch+j]*GradientHere(scale,bbox,i,j,brush->gradient,col) +
+		    (newstuff->buffer[i*bitmap->pitch+j]*GradientHere(scale,bbox,i,j,brush->gradient,brush->pattern,col) +
 		     (255-newstuff->buffer[i*bitmap->pitch+j])*bitmap->buffer[i*bitmap->pitch+j] +
 		     127)/255;
+	}
+	if ( brush->pattern!=NULL ) {
+	    BDFCharFree(brush->pattern->pat);
+	    brush->pattern->pat = NULL;
 	}
     } else {
 	if ( clipmask!=NULL ) {
@@ -1158,7 +1163,7 @@ return( NULL );
 		FillOutline(sc->layers[i].splines,&outline,&pmax,&cmax,
 			scale,&b,sc->layers[i].order2,true);
 		err |= (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&temp);
-		MergeBitmaps(&bitmap,&temp,&sc->layers[i].fill_brush,clipmask,rscale,&b);
+		MergeBitmaps(&bitmap,&temp,&sc->layers[i].fill_brush,clipmask,rscale,&b,sc);
 	    }
 	    if ( sc->layers[i].dostroke ) {
 		SplineSet *stroked = StrokeOutline(&sc->layers[i],sc);
@@ -1166,7 +1171,7 @@ return( NULL );
 		FillOutline(stroked,&outline,&pmax,&cmax,
 			scale,&b,sc->layers[i].order2,true);
 		err |= (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&temp);
-		MergeBitmaps(&bitmap,&temp,&sc->layers[i].stroke_pen.brush,clipmask,rscale,&b);
+		MergeBitmaps(&bitmap,&temp,&sc->layers[i].stroke_pen.brush,clipmask,rscale,&b,sc);
 		SplinePointListsFree(stroked);
 	    }
 	    for ( r = sc->layers[i].refs; r!=NULL; r=r->next ) {
@@ -1176,7 +1181,7 @@ return( NULL );
 			FillOutline(r->layers[j].splines,&outline,&pmax,&cmax,
 				scale,&b,sc->layers[i].order2,true);
 			err |= (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&temp);
-			MergeBitmaps(&bitmap,&temp,&r->layers[j].fill_brush,clipmask,rscale,&b);
+			MergeBitmaps(&bitmap,&temp,&r->layers[j].fill_brush,clipmask,rscale,&b,sc);
 		    }
 		    if ( r->layers[j].dostroke ) {
 			SplineSet *stroked = RStrokeOutline(&r->layers[j],sc);
@@ -1184,7 +1189,7 @@ return( NULL );
 			FillOutline(stroked,&outline,&pmax,&cmax,
 				scale,&b,sc->layers[i].order2,true);
 			err |= (_FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&temp);
-			MergeBitmaps(&bitmap,&temp,&r->layers[j].stroke_pen.brush,clipmask,rscale,&b);
+			MergeBitmaps(&bitmap,&temp,&r->layers[j].stroke_pen.brush,clipmask,rscale,&b,sc);
 			SplinePointListsFree(stroked);
 		    }
 		}

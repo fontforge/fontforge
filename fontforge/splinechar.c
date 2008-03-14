@@ -2157,6 +2157,10 @@ void PatternSCBounds(SplineChar *sc, DBounds *b) {
 	b->maxx += sc->tile_extra; b->maxy += sc->tile_extra;
     } else
 	*b = sc->tile_bounds;
+    if ( b->minx>=b->maxx )
+	b->maxx = b->minx+1;
+    if ( b->miny>=b->maxy )
+	b->maxy = b->miny+1;
 }
 #endif
 

@@ -404,102 +404,156 @@ struct glyph_res {
 };
 
 #ifdef FONTFORGE_CONFIG_TYPE3
-static void pdf_BrushCheck(PI *pi,struct glyph_res *gr,struct gradient *grad,
+static void pdf_BrushCheck(PI *pi,struct glyph_res *gr,struct brush *brush,
 	int isfill,int layer,SplineChar *sc) {
     char buffer[400];
     int function_obj, shade_obj;
     int i,j;
+    struct gradient *grad = brush->gradient;
+    struct pattern *pat;
 
-    if ( grad==NULL )
-return;
-    function_obj = pdf_addobject(pi);
-    fprintf( pi->out, "<<\n" );
-    fprintf( pi->out, "  /FunctionType 0\n" );	/* Iterpolation between samples */
-    fprintf( pi->out, "  /Domain [%g %g]\n", grad->grad_stops[0].offset,
-	    grad->grad_stops[grad->stop_cnt-1].offset );
-    fprintf( pi->out, "  /Range [0 1.0 0 1.0 0 1.0]\n" );
-    fprintf( pi->out, "  /Size [%d]\n", grad->stop_cnt==2?2:101 );
-    fprintf( pi->out, "  /BitsPerSample 8\n" );
-    fprintf( pi->out, "  /Decode [0 1.0 0 1.0 0 1.0]\n" );
-    fprintf( pi->out, "  /Length %d\n", 3*(grad->stop_cnt==2?2:101) );
-    fprintf( pi->out, ">>\n" );
-    fprintf( pi->out, "stream\n" );
-    if ( grad->stop_cnt==2 ) {
-	int col = grad->grad_stops[0].col;
-	if ( col==COLOR_INHERITED ) col = 0x000000;
-	putc((col>>16)&0xff,pi->out);
-	putc((col>>8 )&0xff,pi->out);
-	putc((col    )&0xff,pi->out);
-	col = grad->grad_stops[1].col;
-	if ( col==COLOR_INHERITED ) col = 0x000000;
-	putc((col>>16)&0xff,pi->out);
-	putc((col>>8 )&0xff,pi->out);
-	putc((col    )&0xff,pi->out);
-    } else {
-	/* Rather than try and figure out the minimum common divisor */
-	/*  off all the offsets, I'll just assume they are all percent*/
-	for ( i=0; i<=100; ++i ) {
-	    int col;
-	    double t = grad->grad_stops[0].offset +
-		    (grad->grad_stops[grad->stop_cnt-1].offset-
-		     grad->grad_stops[0].offset)* i/100.0;
-	    for ( j=0; j<grad->stop_cnt; ++j )
-		if ( t<=grad->grad_stops[j].offset )
-	    break;
-	    if ( j==grad->stop_cnt )
-		col = grad->grad_stops[j-1].col;
-	    else if ( t==grad->grad_stops[j].offset )
-		col = grad->grad_stops[j].col;
-	    else {
-		double percent = (t-grad->grad_stops[j-1].offset)/ (grad->grad_stops[j].offset-grad->grad_stops[i-1].offset);
-		uint32 col1 = grad->grad_stops[j-1].col;
-		uint32 col2 = grad->grad_stops[j  ].col;
-		if ( col1==COLOR_INHERITED ) col1 = 0x000000;
-		if ( col2==COLOR_INHERITED ) col2 = 0x000000;
-		int red   = ((col1>>16)&0xff)*(1-percent) + ((col2>>16)&0xff)*percent;
-		int green = ((col1>>8 )&0xff)*(1-percent) + ((col2>>8 )&0xff)*percent;
-		int blue  = ((col1    )&0xff)*(1-percent) + ((col2    )&0xff)*percent;
-		col = (red<<16) | (green<<8) | blue;
-	    }
+    if ( grad!=NULL ) {
+	function_obj = pdf_addobject(pi);
+	fprintf( pi->out, "<<\n" );
+	fprintf( pi->out, "  /FunctionType 0\n" );	/* Iterpolation between samples */
+	fprintf( pi->out, "  /Domain [%g %g]\n", grad->grad_stops[0].offset,
+		grad->grad_stops[grad->stop_cnt-1].offset );
+	fprintf( pi->out, "  /Range [0 1.0 0 1.0 0 1.0]\n" );
+	fprintf( pi->out, "  /Size [%d]\n", grad->stop_cnt==2?2:101 );
+	fprintf( pi->out, "  /BitsPerSample 8\n" );
+	fprintf( pi->out, "  /Decode [0 1.0 0 1.0 0 1.0]\n" );
+	fprintf( pi->out, "  /Length %d\n", 3*(grad->stop_cnt==2?2:101) );
+	fprintf( pi->out, ">>\n" );
+	fprintf( pi->out, "stream\n" );
+	if ( grad->stop_cnt==2 ) {
+	    int col = grad->grad_stops[0].col;
 	    if ( col==COLOR_INHERITED ) col = 0x000000;
 	    putc((col>>16)&0xff,pi->out);
 	    putc((col>>8 )&0xff,pi->out);
 	    putc((col    )&0xff,pi->out);
+	    col = grad->grad_stops[1].col;
+	    if ( col==COLOR_INHERITED ) col = 0x000000;
+	    putc((col>>16)&0xff,pi->out);
+	    putc((col>>8 )&0xff,pi->out);
+	    putc((col    )&0xff,pi->out);
+	} else {
+	    /* Rather than try and figure out the minimum common divisor */
+	    /*  off all the offsets, I'll just assume they are all percent*/
+	    for ( i=0; i<=100; ++i ) {
+		int col;
+		double t = grad->grad_stops[0].offset +
+			(grad->grad_stops[grad->stop_cnt-1].offset-
+			 grad->grad_stops[0].offset)* i/100.0;
+		for ( j=0; j<grad->stop_cnt; ++j )
+		    if ( t<=grad->grad_stops[j].offset )
+		break;
+		if ( j==grad->stop_cnt )
+		    col = grad->grad_stops[j-1].col;
+		else if ( t==grad->grad_stops[j].offset )
+		    col = grad->grad_stops[j].col;
+		else {
+		    double percent = (t-grad->grad_stops[j-1].offset)/ (grad->grad_stops[j].offset-grad->grad_stops[i-1].offset);
+		    uint32 col1 = grad->grad_stops[j-1].col;
+		    uint32 col2 = grad->grad_stops[j  ].col;
+		    if ( col1==COLOR_INHERITED ) col1 = 0x000000;
+		    if ( col2==COLOR_INHERITED ) col2 = 0x000000;
+		    int red   = ((col1>>16)&0xff)*(1-percent) + ((col2>>16)&0xff)*percent;
+		    int green = ((col1>>8 )&0xff)*(1-percent) + ((col2>>8 )&0xff)*percent;
+		    int blue  = ((col1    )&0xff)*(1-percent) + ((col2    )&0xff)*percent;
+		    col = (red<<16) | (green<<8) | blue;
+		}
+		if ( col==COLOR_INHERITED ) col = 0x000000;
+		putc((col>>16)&0xff,pi->out);
+		putc((col>>8 )&0xff,pi->out);
+		putc((col    )&0xff,pi->out);
+	    }
 	}
-    }
-    fprintf( pi->out, "\nendstream\n" );
-    fprintf( pi->out, "endobj\n" );
+	fprintf( pi->out, "\nendstream\n" );
+	fprintf( pi->out, "endobj\n" );
 
-    shade_obj = pdf_addobject(pi);
-    fprintf( pi->out, "<<\n" );
-    fprintf( pi->out, "  /ShadingType %d\n", grad->radius==0?2:3 );
-    fprintf( pi->out, "  /ColorSpace /DeviceRGB\n" );
-    if ( grad->radius==0 ) {
-	fprintf( pi->out, "  /Coords [%g %g %g %g]\n",
-		grad->start.x, grad->start.y, grad->stop.x, grad->stop.y);
-    } else {
-	fprintf( pi->out, "  /Coords [%g %g 0 %g %g %g]\n",
-		grad->start.x, grad->start.y, grad->stop.x, grad->stop.y,
-		grad->radius );
-    }
-    fprintf( pi->out, "  /Function %d 0 R\n", function_obj );
-    fprintf( pi->out, "  /Extend [true true]\n" );	/* implies pad */
-    fprintf( pi->out, ">>\n" );
-    fprintf( pi->out, "endobj\n" );
+	shade_obj = pdf_addobject(pi);
+	fprintf( pi->out, "<<\n" );
+	fprintf( pi->out, "  /ShadingType %d\n", grad->radius==0?2:3 );
+	fprintf( pi->out, "  /ColorSpace /DeviceRGB\n" );
+	if ( grad->radius==0 ) {
+	    fprintf( pi->out, "  /Coords [%g %g %g %g]\n",
+		    grad->start.x, grad->start.y, grad->stop.x, grad->stop.y);
+	} else {
+	    fprintf( pi->out, "  /Coords [%g %g 0 %g %g %g]\n",
+		    grad->start.x, grad->start.y, grad->stop.x, grad->stop.y,
+		    grad->radius );
+	}
+	fprintf( pi->out, "  /Function %d 0 R\n", function_obj );
+	fprintf( pi->out, "  /Extend [true true]\n" );	/* implies pad */
+	fprintf( pi->out, ">>\n" );
+	fprintf( pi->out, "endobj\n" );
 
-    if ( gr->pattern_cnt>=gr->pattern_max ) {
-	gr->pattern_names = grealloc(gr->pattern_names,(gr->pattern_max+=100)*sizeof(char *));
-	gr->pattern_objs  = grealloc(gr->pattern_objs ,(gr->pattern_max     )*sizeof(int   ));
+	if ( gr->pattern_cnt>=gr->pattern_max ) {
+	    gr->pattern_names = grealloc(gr->pattern_names,(gr->pattern_max+=100)*sizeof(char *));
+	    gr->pattern_objs  = grealloc(gr->pattern_objs ,(gr->pattern_max     )*sizeof(int   ));
+	}
+	sprintf( buffer, "%s_ly%d_%s_grad", sc->name, layer, isfill?"fill":"stroke" );
+	gr->pattern_names[gr->pattern_cnt  ] = copy(buffer);
+	gr->pattern_objs [gr->pattern_cnt++] = pdf_addobject(pi);
+	fprintf( pi->out, "<<\n" );
+	fprintf( pi->out, "  /Type /Pattern\n" );
+	fprintf( pi->out, "  /PatternType 2\n" );
+	fprintf( pi->out, "  /Shading %d 0 R\n", shade_obj );
+	fprintf( pi->out, ">>\n" );
+	fprintf( pi->out, "endobj\n" );
+    } else if ( (pat=brush->pattern)!=NULL ) {
+	SplineChar *pattern_sc = SFGetChar(sc->parent,-1,pat->pattern);
+	DBounds b;
+	real scale[6], result[6];
+	int respos, resobj;
+	int lenpos, lenstart, len;
+
+	if ( pattern_sc==NULL )
+	    LogError("No glyph named %s, used as a pattern in %s\n", pat->pattern, sc->name);
+	PatternSCBounds(pattern_sc,&b);
+
+	if ( gr->pattern_cnt>=gr->pattern_max ) {
+	    gr->pattern_names = grealloc(gr->pattern_names,(gr->pattern_max+=100)*sizeof(char *));
+	    gr->pattern_objs  = grealloc(gr->pattern_objs ,(gr->pattern_max     )*sizeof(int   ));
+	}
+	sprintf( buffer, "%s_ly%d_%s_pattern", sc->name, layer, isfill?"fill":"stroke" );
+	gr->pattern_names[gr->pattern_cnt  ] = copy(buffer);
+	gr->pattern_objs [gr->pattern_cnt++] = pdf_addobject(pi);
+	fprintf( pi->out, "<<\n" );
+	fprintf( pi->out, "  /Type /Pattern\n" );
+	fprintf( pi->out, "  /PatternType 1\n" );
+	fprintf( pi->out, "  /PaintType 1\n" );		/* The intricacies of uncolored tiles are not something into which I wish to delve */
+	fprintf( pi->out, "  /TilingType 1\n" );
+	fprintf( pi->out, "  /BBox [%g %g %g %g]\n", b.minx, b.miny, b.maxx, b.maxy );
+	fprintf( pi->out, "  /XStep %g\n", b.maxx-b.minx );
+	fprintf( pi->out, "  /YStep %g\n", b.maxy-b.miny );
+	memset(scale,0,sizeof(scale));
+	scale[0] = pat->width/(b.maxx-b.minx);
+	scale[3] = pat->height/(b.maxy-b.miny);
+	MatMultiply(scale,pat->transform, result);
+	fprintf( pi->out, "  /Matrix [%g %g %g %g %g %g]\n", result[0], result[1],
+		result[2], result[3], result[4], result[5]);
+	fprintf( pi->out, "    /Resources " );
+	respos = ftell(pi->out);
+	fprintf( pi->out, "000000 0 R\n" );
+	fprintf( pi->out, "    /Length " );
+	lenpos = ftell(pi->out);
+	fprintf( pi->out, "00000000\n" );
+	fprintf( pi->out, ">>\n" );
+	fprintf( pi->out, " stream \n" );
+	lenstart = ftell(pi->out);
+	SC_PSDump((void (*)(int,void *)) fputc,pi->out,pattern_sc,true,true,ly_all);
+	len = ftell(pi->out)-lenstart;
+	fprintf( pi->out, " endstream\n" );
+	fprintf( pi->out, "endobj\n" );
+
+	resobj = PdfDumpGlyphResources(pi,pattern_sc);
+	fseek(pi->out,respos,SEEK_SET);
+	fprintf(pi->out,"%6d", resobj );
+	fseek(pi->out,lenpos,SEEK_SET);
+	fprintf(pi->out,"%8d", len );
+	fseek(pi->out,0,SEEK_END);
     }
-    sprintf( buffer, "%s_ly%d_%s_grad", sc->name, layer, isfill?"fill":"stroke" );
-    gr->pattern_names[gr->pattern_cnt  ] = copy(buffer);
-    gr->pattern_objs [gr->pattern_cnt++] = pdf_addobject(pi);
-    fprintf( pi->out, "<<\n" );
-    fprintf( pi->out, "  /Type /Pattern\n" );
-    fprintf( pi->out, "  /PatternType 2\n" );
-    fprintf( pi->out, "  /Shading %d 0 R\n", shade_obj );
-    fprintf( pi->out, ">>\n" );
-    fprintf( pi->out, "endobj\n" );
 }
 
 static void pdf_ImageCheck(PI *pi,struct glyph_res *gr,ImageList *images,
@@ -576,17 +630,15 @@ int PdfDumpGlyphResources(PI *pi,SplineChar *sc) {
     int layer;
     RefChar *ref;
 
-    SFUntickAll(sc->parent);
-
     for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
-	pdf_BrushCheck(pi,&gr,sc->layers[layer].fill_brush.gradient,true,layer,sc);
-	pdf_BrushCheck(pi,&gr,sc->layers[layer].stroke_pen.brush.gradient,false,layer,sc);
+	pdf_BrushCheck(pi,&gr,&sc->layers[layer].fill_brush,true,layer,sc);
+	pdf_BrushCheck(pi,&gr,&sc->layers[layer].stroke_pen.brush,false,layer,sc);
 	pdf_ImageCheck(pi,&gr,sc->layers[layer].images,layer,sc);
 	for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next ) if ( !ref->sc->ticked ) {
 	    ref->sc->ticked = true;
 	    for ( i=0; i<ref->layer_cnt; ++i ) {
-		pdf_BrushCheck(pi,&gr,ref->layers[i].fill_brush.gradient,true,i,ref->sc);
-		pdf_BrushCheck(pi,&gr,ref->layers[i].stroke_pen.brush.gradient,false,i,ref->sc);
+		pdf_BrushCheck(pi,&gr,&ref->layers[i].fill_brush,true,i,ref->sc);
+		pdf_BrushCheck(pi,&gr,&ref->layers[i].stroke_pen.brush,false,i,ref->sc);
 		pdf_ImageCheck(pi,&gr,ref->layers[layer].images,i,ref->sc);
 	    }
 	}
@@ -627,8 +679,8 @@ static int PdfDumpSFResources(PI *pi,SplineFont *sf) {
 
     for ( gid=0; gid<sf->glyphcnt; ++gid) if ( (sc=sf->glyphs[gid])!=NULL ) {
 	for ( layer=ly_fore; layer<sc->layer_cnt; ++layer ) {
-	    pdf_BrushCheck(pi,&gr,sc->layers[layer].fill_brush.gradient,true,layer,sc);
-	    pdf_BrushCheck(pi,&gr,sc->layers[layer].stroke_pen.brush.gradient,false,layer,sc);
+	    pdf_BrushCheck(pi,&gr,&sc->layers[layer].fill_brush,true,layer,sc);
+	    pdf_BrushCheck(pi,&gr,&sc->layers[layer].stroke_pen.brush,false,layer,sc);
 	    pdf_ImageCheck(pi,&gr,sc->layers[layer].images,layer,sc);
 	}
     }
