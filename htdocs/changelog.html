@@ -47,6 +47,33 @@
   </BLOCKQUOTE>
   <UL>
     <LI>
+      9-Mar-2008
+      <UL>
+	<LI>
+	  Undefined value in the martlett patch.
+	<LI>
+	  A variable was placed on the stack in font info which needed a longer
+	  lifetime. This would probably mean that after several remetrickings
+	  of that window the jump to OS/2 Unicode ranges in the Unicode ranges
+	  pane would appear in a strange color and oddly shaped. I never saw
+	  it happen, but it should have. The variable is now static.
+	<LI>
+	  When ff read in a contextual subs by glyphs it would reorder each
+	  glyph list (backtrack, lookahead and normal) so that the glyphs were
+	  in GID order. So "a b c" would probably come out fine in the
+	  lookahead list, but would be reversed in the backtrack, while
+	  "c b a" would be reversed in the lookahead). Ug.
+	<LI>
+	  The code which decided on whether to apply a chaining lookup
+	  approached backtrack data in the wrong order (so only lookups with
+	  either 0 or 1 backtrack entries worked. Which was all I used to test).
+	<LI>
+	  New fonts were created with relative filenames, this screwed up some
+	  font searches. Make 'em absolute.
+	<LI>
+	  Deleting something in the guidelines layer probably caused a crash.
+      </UL>
+    <LI>
       2-Mar-2008
       <UL>
 	<LI>

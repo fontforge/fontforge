@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 30-Sep-2007 -->
+  <!-- AP: Last modified: 14-Mar-2008 -->
   <TITLE>Char Info</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -43,6 +43,8 @@
       <A HREF="#TeX">TeX &amp; Math</A>
     <LI>
       <A HREF="#Variants">Variants</A>
+    <LI>
+      <A HREF="#TileSize">Tile Size</A>
   </UL>
   <P>
   <A NAME="Unicode">This dialog </A>allows you to set the name and unicode
@@ -231,6 +233,24 @@
   several component glyphs. See the description of this in the
   <A HREF="math.html#GlyphConstruction">MATH Info dialog </A>for more
   details.<BR CLEAR="ALL">
+  <H3>
+    <A NAME="TileSize"><IMG SRC="charinfo-tilesize.png" WIDTH="445" HEIGHT="374"
+	ALIGN="Right">Tile Size</A>
+  </H3>
+  <P>
+  This only applies when editing type3 fonts. Even then it is only meaningful
+  if the current glyph is used as a
+  <A HREF="multilayer.html#Patterns">pattern</A> in some other glyph.
+  <P>
+  When a glyph is used as a pattern, the size of the pattern tile defaults
+  to the bounding box of the glyph used. This means there will be no whitespace
+  around the tile. Sometimes that is desireable (if the tiles are to looks
+  as though they touch), sometimes it is not. This provides control over the
+  whitespace that surrounds the drawn region of the tile.
+  <P>
+  You can specify that you want a constant margin of white space around all
+  edges of the tile, or you can specify explicitly the coordinates of the
+  tile.<BR CLEAR="ALL">
   <P>
   The Next and Prev buttons allow you to move from one glyph to the next (if,
   for example, you need to enter encodings for a range of glyphs).
