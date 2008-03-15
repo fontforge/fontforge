@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 11-Dec-2000 -->
-  <!-- AP: Last modified: 24-Feb-2008 -->
+  <!-- AP: Last modified: 14-Mar-2008 -->
   <TITLE>The Point Menu</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -113,6 +113,8 @@
       <A HREF="#CenterCP">Center Between Control Points</A>
     <LI>
       <A HREF="#NameContour">Name Contour</A>
+    <LI>
+      <A HREF="#ClipPath">Make Clip Path</A>
   </UL>
   <P>
   <DL>
@@ -210,7 +212,14 @@
     <DD>
       A contour may be named. This is designed for use in the Guide line (and
       Background) layer. You can attach a mnemonic name to a guide line (like
-      "X-Height" or "Cap-Height" or whatever strikes your fancy).<BR CLEAR=ALL>
+      "X-Height" or "Cap-Height" or whatever strikes your fancy).
+    <DT>
+      <A NAME="ClipPath">Make Clip Path</A>
+    <DD>
+      Only meaningful in Type3 fonts. For a more complete description see the section
+      on <A HREF="multilayer.html#ClipPath">Type3 editing</A>. The clipping path
+      will be set to any selected contour(s) in the glyph. If no contour is selected
+      then there will be no clipping path.<BR CLEAR=ALL>
   </DL>
   <P>
   <H2>
