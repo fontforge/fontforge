@@ -1936,6 +1936,7 @@ struct svg_state {
     real transform[6];
     DashType dashes[DASH_MAX];
     SplineSet *clippath;
+    uint8 free_clip;
 };
 
 static void SVGFigureTransform(struct svg_state *st,char *name) {
@@ -2067,7 +2068,222 @@ return;
     }
 }
 
-static int xmlParseColor(xmlChar *name,uint32 *color) {
+static real parseGCoord(xmlChar *prop,int bb_units,real bb_low, real bb_high) {
+    char *end;
+    double val = strtod((char *) prop,&end);
+
+    if ( *end=='%' )
+	val /= 100.0;
+
+    if ( bb_units )
+	val = bb_low + val*(bb_high-bb_low);
+return( val );
+}
+
+static int xmlParseColor(xmlChar *name,uint32 *color, char **url);
+
+static void xmlParseColorSource(xmlNodePtr top,char *name,DBounds *bbox,
+	struct gradient **_grad,struct epattern **_epat) {
+    xmlNodePtr colour_source = XmlFindURI(top,name);
+    int islinear;
+    xmlChar *prop;
+    xmlNodePtr kid;
+    int scnt;
+
+    *_grad = NULL; *_epat = NULL;
+    if ( colour_source==NULL )
+	LogError("Could not find Color Source with id %s.", name );
+    else if ( (islinear = _xmlStrcmp(colour_source->name,(xmlChar *) "linearGradient")==0) ||
+	    _xmlStrcmp(colour_source->name,(xmlChar *) "radialGradient")==0 ) {
+	struct gradient *grad = chunkalloc(sizeof(struct gradient));
+	int bbox_units;
+	*_grad = grad;
+
+	prop = _xmlGetProp(colour_source,(xmlChar *) "gradientUnits");
+	if ( prop!=NULL ) {
+	    bbox_units = _xmlStrcmp(prop,(xmlChar *) "userSpaceOnUse")!=0;
+	    _xmlFree(prop);
+	} else
+	    bbox_units = true;
+
+	prop = _xmlGetProp(colour_source,(xmlChar *) "gradientTransform");
+	/* I don't support this currently */
+	if ( prop!=NULL )
+	    _xmlFree(prop);
+
+	grad->sm = sm_pad;
+	prop = _xmlGetProp(colour_source,(xmlChar *) "spreadMethod");
+	if ( prop!=NULL ) {
+	    if ( _xmlStrcmp(prop,(xmlChar *) "reflect")==0 )
+		grad->sm = sm_reflect;
+	    else if ( _xmlStrcmp(prop,(xmlChar *) "repeat")==0 )
+		grad->sm = sm_repeat;
+	    _xmlFree(prop);
+	}
+
+	if ( islinear ) {
+	    grad->start.x = bbox->minx; grad->start.y = bbox->miny;
+	    grad->stop.x  = bbox->maxx; grad->stop.y  = bbox->maxy;
+
+	    prop = _xmlGetProp(colour_source,(xmlChar *) "x1");
+	    if ( prop!=NULL ) {
+		grad->start.x = parseGCoord((char *) prop,bbox_units,bbox->minx,bbox->maxx);
+		_xmlFree(prop);
+	    }
+
+	    prop = _xmlGetProp(colour_source,(xmlChar *) "x2");
+	    if ( prop!=NULL ) {
+		grad->stop.x   = parseGCoord((char *) prop,bbox_units,bbox->minx,bbox->maxx);
+		_xmlFree(prop);
+	    }
+
+	    prop = _xmlGetProp(colour_source,(xmlChar *) "y1");
+	    if ( prop!=NULL ) {
+		grad->start.y = parseGCoord((char *) prop,bbox_units,bbox->miny,bbox->maxy);
+		_xmlFree(prop);
+	    }
+
+	    prop = _xmlGetProp(colour_source,(xmlChar *) "y2");
+	    if ( prop!=NULL ) {
+		grad->stop.y   = parseGCoord((char *) prop,bbox_units,bbox->miny,bbox->maxy);
+		_xmlFree(prop);
+	    }
+
+	    grad->radius = 0;
+	} else {
+	    double offx = (bbox->maxx-bbox->minx)/2;
+	    double offy = (bbox->maxy-bbox->miny)/2;
+	    grad->stop.x = (bbox->minx+bbox->maxx)/2;
+	    grad->stop.y = (bbox->minx+bbox->maxy)/2;
+	    grad->radius = sqrt(offx*offx + offy*offy);
+
+	    prop = _xmlGetProp(colour_source,(xmlChar *) "cx");
+	    if ( prop!=NULL ) {
+		grad->stop.x = parseGCoord((char *) prop,bbox_units,bbox->minx,bbox->maxx);
+		_xmlFree(prop);
+	    }
+
+	    prop = _xmlGetProp(colour_source,(xmlChar *) "cy");
+	    if ( prop!=NULL ) {
+		grad->stop.y = parseGCoord((char *) prop,bbox_units,bbox->miny,bbox->maxy);
+		_xmlFree(prop);
+	    }
+
+	    prop = _xmlGetProp(colour_source,(xmlChar *) "radius");
+	    if ( prop!=NULL ) {
+		grad->radius = parseGCoord((char *) prop,bbox_units,0,sqrt(4*(offx*offx + offy*offy)));
+		_xmlFree(prop);
+	    }
+
+	    grad->start = grad->stop;
+	    prop = _xmlGetProp(colour_source,(xmlChar *) "fx");
+	    if ( prop!=NULL ) {
+		grad->start.x = parseGCoord((char *) prop,bbox_units,bbox->minx,bbox->maxx);
+		_xmlFree(prop);
+	    }
+
+	    prop = _xmlGetProp(colour_source,(xmlChar *) "fy");
+	    if ( prop!=NULL ) {
+		grad->start.y = parseGCoord((char *) prop,bbox_units,bbox->miny,bbox->maxy);
+		_xmlFree(prop);
+	    }
+	}
+
+	scnt = 0;
+	for ( kid = colour_source->children; kid!=NULL; kid=kid->next ) if ( _xmlStrcmp(kid->name,(xmlChar *) "stop")==0 )
+	    ++scnt;
+
+	grad->stop_cnt = scnt;
+	grad->grad_stops = gcalloc(scnt,sizeof(struct grad_stops));
+	scnt = 0;
+	for ( kid = colour_source->children; kid!=NULL; kid=kid->next ) if ( _xmlStrcmp(kid->name,(xmlChar *) "stop")==0 ) {
+	    prop = _xmlGetProp(kid,(xmlChar *) "offset");
+	    if ( prop!=NULL ) {
+		grad->grad_stops[scnt].offset = parseGCoord((char *) prop,false,0,1.0);
+		_xmlFree(prop);
+	    }
+
+	    prop = _xmlGetProp(kid,(xmlChar *) "stop-color");
+	    if ( prop!=NULL ) {
+		xmlParseColor(prop, &grad->grad_stops[scnt].col, NULL);
+		_xmlFree(prop);
+	    }
+
+	    prop = _xmlGetProp(kid,(xmlChar *) "stop-opacity");
+	    if ( prop!=NULL ) {
+		grad->grad_stops[scnt].opacity = strtod((char *) prop,NULL);
+		_xmlFree(prop);
+	    } else
+		grad->grad_stops[scnt].opacity = 1.0;
+
+	    ++scnt;
+	}
+    } else if ( _xmlStrcmp(colour_source->name,(xmlChar *) "pattern")==0 ) {
+	LogError("FontForge does not currently parse pattern Color Sources (%s).",
+		name );
+    } else {
+	LogError("Color Source with id %s had an unexpected type %s.",
+		name, (char *) colour_source->name );
+    }
+}
+
+/* Annoyingly we can't parse the colour source until we have parsed the contents */
+/*  because the colour source needs to know the bounding box of the total item */
+/*  This means that for something like <g> we must now go back and figure out */
+/*  which components get this gradient/pattern, and which have their own source*/
+/*  that overrides the inherited one */
+static void xmlApplyColourSources(xmlNodePtr top,Entity *head,
+	char *fill_colour_source,char *stroke_colour_source) {
+    DBounds b, ssb;
+    Entity *e;
+    struct gradient *grad;
+    struct epattern *epat;
+
+    memset(&b,0,sizeof(b));
+    for ( e=head; e!=NULL; e=e->next ) if ( e->type==et_splines ) {
+	SplineSetFindBounds(e->u.splines.splines,&ssb);
+	if ( b.minx==0 && b.miny==0 && b.maxx==0 && b.maxy==0 )
+	    b = ssb;
+	else {
+	    if ( b.minx>ssb.minx ) b.minx = ssb.minx;
+	    if ( b.maxx>ssb.maxx ) b.maxx = ssb.maxx;
+	    if ( b.miny>ssb.miny ) b.miny = ssb.miny;
+	    if ( b.maxy>ssb.maxy ) b.maxy = ssb.maxy;
+	}
+    }
+    if ( b.minx==b.maxx ) b.maxx = b.minx+1;
+    if ( b.miny==b.maxy ) b.maxy = b.maxy+1;
+
+    if ( fill_colour_source!=NULL ) {
+	xmlParseColorSource(top,fill_colour_source,&b,&grad,&epat);
+	free(fill_colour_source);
+	for ( e=head; e!=NULL; e=e->next ) if ( e->type==et_splines ) {
+	    if ( e->u.splines.fill.grad==NULL && e->u.splines.fill.tile==NULL &&
+		    e->u.splines.fill.col == COLOR_INHERITED ) {
+		e->u.splines.fill.grad = GradientCopy(grad);
+		/*e->u.splines.fill.tile = EPatternCopy(epat);*/
+	    }
+	}
+	GradientFree(grad);
+	/*EPatternFree(epat);*/
+    }
+
+    if ( stroke_colour_source!=NULL ) {
+	xmlParseColorSource(top,stroke_colour_source,&b,&grad,&epat);
+	free(stroke_colour_source);
+	for ( e=head; e!=NULL; e=e->next ) if ( e->type==et_splines ) {
+	    if ( e->u.splines.stroke.grad==NULL && e->u.splines.stroke.tile==NULL &&
+		    e->u.splines.stroke.col == COLOR_INHERITED ) {
+		e->u.splines.stroke.grad = GradientCopy(grad);
+		/*e->u.splines.stroke.tile = EPatternCopy(epat);*/
+	    }
+	}
+	GradientFree(grad);
+	/*EPatternFree(epat);*/
+    }
+}
+
+static int xmlParseColor(xmlChar *name,uint32 *color, char **url) {
     int doit, i;
     static struct { char *name; uint32 col; } stdcols[] = {
 	{ "red", 0xff0000 },
@@ -2105,8 +2321,9 @@ static int xmlParseColor(xmlChar *name,uint32 *color) {
 	else if ( _xmlStrcmp(name,(xmlChar *) "currentColor")==0 )
 	    *color = COLOR_INHERITED;
 	else if ( name[0]=='#' ) {
-	    unsigned int temp;
-	    sscanf( (char *) name, "#%x", &temp );
+	    unsigned int temp=0;
+	    if ( sscanf( (char *) name, "#%x", &temp )!=1 )
+		LogError( _("Bad hex color spec: %s\n"), (char *) name );
 	    if ( strlen( (char *) name)==4 ) {
 		*color = (((temp&0xf00)*0x11)<<8) |
 			 (((temp&0x0f0)*0x11)<<4) |
@@ -2116,8 +2333,9 @@ static int xmlParseColor(xmlChar *name,uint32 *color) {
 	    } else
 		*color = COLOR_INHERITED;
 	} else if ( strncmp( (char *) name, "rgb(",4)==0 ) {
-	    float r,g,b;
-	    sscanf((char *)name + 4, "%g,%g,%g", &r, &g, &b );
+	    float r=0,g=0,b=0;
+	    if ( sscanf((char *)name + 4, "%g,%g,%g", &r, &g, &b )!=3 )
+		LogError( _("Bad RGB color spec: %s\n"), (char *) name );
 	    if ( strchr((char *) name,'.')!=NULL ) {
 		if ( r>=1 ) r = 1; else if ( r<0 ) r=0;
 		if ( g>=1 ) g = 1; else if ( g<0 ) g=0;
@@ -2133,6 +2351,9 @@ static int xmlParseColor(xmlChar *name,uint32 *color) {
 			 ( ((int) g)<<8  ) |
 			 ( ((int) b)     );
 	    }
+	} else if ( url!=NULL && strncmp( (char *) name, "url(#",5)==0 ) {
+	    *url = copy( (char *) name);
+	    *color = COLOR_INHERITED;
 	} else {
 	    LogError( _("Failed to parse color %s\n"), (char *) name );
 	    *color = COLOR_INHERITED;
@@ -2314,6 +2535,11 @@ static Entity *EntityCreate(SplinePointList *head,struct svg_state *state) {
 return( ent );
 }
 
+static void SvgStateFree(struct svg_state *st) {
+    if ( st->free_clip )
+	SplinePointListFree(st->clippath);
+}
+
 static Entity *_SVGParseSVG(xmlNodePtr svg, xmlNodePtr top,
 	struct svg_state *inherit) {
     struct svg_state st;
@@ -2322,12 +2548,13 @@ static Entity *_SVGParseSVG(xmlNodePtr svg, xmlNodePtr top,
     Entity *ehead, *elast, *eret;
     SplineSet *head;
     int treat_symbol_as_g = false;
+    char *fill_colour_source = NULL, *stroke_colour_source = NULL;
 
     if ( svg==NULL )
 return( NULL );
 
     st = *inherit;
-    st.clippath = SplinePointListCopy(st.clippath);
+    st.free_clip = false;
   tail_recurse:
     name = _xmlGetProp(svg,(xmlChar *) "display");
     if ( name!=NULL ) {
@@ -2344,7 +2571,7 @@ return( NULL );
     }
     name = _xmlGetProp(svg,(xmlChar *) "fill");
     if ( name!=NULL ) {
-	st.dofill = xmlParseColor(name,&st.fillcol);
+	st.dofill = xmlParseColor(name,&st.fillcol,&fill_colour_source);
 	_xmlFree(name);
     }
     name = _xmlGetProp(svg,(xmlChar *) "fill-opacity");
@@ -2354,7 +2581,7 @@ return( NULL );
     }
     name = _xmlGetProp(svg,(xmlChar *) "stroke");
     if ( name!=NULL ) {
-	st.dostroke = xmlParseColor(name,&st.strokecol);
+	st.dostroke = xmlParseColor(name,&st.strokecol,&stroke_colour_source);
 	_xmlFree(name);
     }
     name = _xmlGetProp(svg,(xmlChar *) "stroke-opacity");
@@ -2407,7 +2634,6 @@ return( NULL );
     name = _xmlGetProp(svg,(xmlChar *) "clip-path");
     if ( name!=NULL ) {
 	xmlNodePtr clip = XmlFindURI(top,name);
-	_xmlFree(name);
 	if ( clip!=NULL && _xmlStrcmp(clip->name,(xmlChar *) "clipPath")==0) {
 	    const xmlChar *temp = clip->name;
 	    struct svg_state null_state;
@@ -2418,17 +2644,19 @@ return( NULL );
 	    eret = _SVGParseSVG(clip,top,&null_state);
 	    clip->name = temp;
 	    if ( eret!=NULL && eret->type == et_splines ) {
-		SplinePointListFree(st.clippath);	/* I really should do an intersect of the old clippath with the new !!!! */
 		st.clippath = eret->u.splines.splines;
 		eret->u.splines.splines = NULL;
 	    }
 	    free(eret);
-	}
+	} else
+	    LogError("Could not find clippath named %s.", name );
+	_xmlFree(name);
     }
 
     if ( (treat_symbol_as_g && _xmlStrcmp(svg->name,(xmlChar *) "symbol")==0) ||
 	    _xmlStrcmp(svg->name,(xmlChar *) "svg")==0 ||
 	    _xmlStrcmp(svg->name,(xmlChar *) "glyph")==0 ||
+	    _xmlStrcmp(svg->name,(xmlChar *) "pattern")==0 ||
 	    _xmlStrcmp(svg->name,(xmlChar *) "g")==0 ) {
 	ehead = elast = NULL;
 	for ( kid = svg->children; kid!=NULL; kid=kid->next ) {
@@ -2442,7 +2670,9 @@ return( NULL );
 		elast = eret;
 	    }
 	}
-	SplinePointListFree(st.clippath);
+	SvgStateFree(&st);
+	if ( fill_colour_source!=NULL || stroke_colour_source!=NULL )
+	    xmlApplyColourSources(top,ehead,fill_colour_source,stroke_colour_source);
 return( ehead );
     } else if ( _xmlStrcmp(svg->name,(xmlChar *) "use")==0 ) {
 	name = _xmlGetProp(svg,(xmlChar *) "href");
@@ -2457,12 +2687,14 @@ return( ehead );
 	    _xmlFree(name);
 	if ( svg!=NULL )
   goto tail_recurse;
-	SplinePointListFree(st.clippath);
+	SvgStateFree(&st);
 return( NULL );
     }
 
-    if ( !st.isvisible )
+    if ( !st.isvisible ) {
+	SvgStateFree(&st);
 return( NULL );
+    }
 
     /* basic shapes */
     head = NULL;
@@ -2496,7 +2728,9 @@ return( NULL );
     SPLCatagorizePoints(head);
 
     eret = EntityCreate(SplinePointListTransform(head,st.transform,true), &st);
-    SplinePointListFree(st.clippath);
+    SvgStateFree(&st);
+    if ( fill_colour_source!=NULL || stroke_colour_source!=NULL )
+	xmlApplyColourSources(top,eret,fill_colour_source,stroke_colour_source);
 return( eret );
 }
 

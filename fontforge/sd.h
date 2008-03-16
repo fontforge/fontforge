@@ -33,9 +33,17 @@
 
 #include "splinefont.h"
 
+struct epattern {
+    struct entity *tile;
+    real width, height;
+    DBounds bbox;
+    real transform[6];
+};
+
 typedef struct entpen {
     Color col;
-    struct tile *tile;
+    struct gradient *grad;
+    struct epattern *tile;
     float scale;
     float opacity;
 } Pen;
