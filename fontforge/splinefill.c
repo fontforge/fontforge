@@ -1835,7 +1835,12 @@ BDFFont *SplineFontPieceMeal(SplineFont *sf,int layer,int pixelsize,int flags,vo
 
     if ( flags&pf_bbsized ) {
 	DBounds bb;
-	SplineFontQuickConservativeBounds(sf,&bb);
+	if ( sf->multilayer )
+	    /* Quick bounds doesn't handle clipping paths, and we want that */
+	    /*  handled for type3 */
+	    SplineFontFindBounds(sf,&bb);
+	else
+	    SplineFontQuickConservativeBounds(sf,&bb);
 	if ( bb.maxy<sf->ascent ) bb.maxy = sf->ascent;
 	if ( bb.miny>-sf->descent ) bb.miny = -sf->descent;
 	/* Ignore absurd values */

@@ -705,9 +705,63 @@ static void _SplineSetFindBounds(const SplinePointList *spl, DBounds *bounds) {
     }
 }
 
+#ifdef FONTFORGE_CONFIG_TYPE3
+static void _SplineSetFindClippedBounds(const SplinePointList *spl, DBounds *bounds,DBounds *clipb) {
+    Spline *spline, *first;
+    /* Ignore contours consisting of a single point (used for hinting, anchors */
+    /*  for mark to base, etc. */
+
+    for ( ; spl!=NULL; spl = spl->next ) if ( spl->first->next!=NULL && spl->first->next->to != spl->first ) {
+	first = NULL;
+	if ( !spl->is_clip_path ) {
+	    if ( bounds->minx==0 && bounds->maxx==0 && bounds->miny==0 && bounds->maxy == 0 ) {
+		bounds->minx = bounds->maxx = spl->first->me.x;
+		bounds->miny = bounds->maxy = spl->first->me.y;
+	    } else {
+		if ( spl->first->me.x<bounds->minx ) bounds->minx = spl->first->me.x;
+		if ( spl->first->me.x>bounds->maxx ) bounds->maxx = spl->first->me.x;
+		if ( spl->first->me.y<bounds->miny ) bounds->miny = spl->first->me.y;
+		if ( spl->first->me.y>bounds->maxy ) bounds->maxy = spl->first->me.y;
+	    }
+	    for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
+		SplineFindBounds(spline,bounds);
+		if ( first==NULL ) first = spline;
+	    }
+	} else {
+	    if ( clipb->minx==0 && clipb->maxx==0 && clipb->miny==0 && clipb->maxy == 0 ) {
+		clipb->minx = clipb->maxx = spl->first->me.x;
+		clipb->miny = clipb->maxy = spl->first->me.y;
+	    } else {
+		if ( spl->first->me.x<clipb->minx ) clipb->minx = spl->first->me.x;
+		if ( spl->first->me.x>clipb->maxx ) clipb->maxx = spl->first->me.x;
+		if ( spl->first->me.y<clipb->miny ) clipb->miny = spl->first->me.y;
+		if ( spl->first->me.y>clipb->maxy ) clipb->maxy = spl->first->me.y;
+	    }
+	    for ( spline = spl->first->next; spline!=NULL && spline!=first; spline=spline->to->next ) {
+		SplineFindBounds(spline,clipb);
+		if ( first==NULL ) first = spline;
+	    }
+	}
+    }
+}
+#endif
+
 void SplineSetFindBounds(const SplinePointList *spl, DBounds *bounds) {
+#ifdef FONTFORGE_CONFIG_TYPE3
+    DBounds clipb;
+    memset(bounds,'\0',sizeof(*bounds));
+    memset(&clipb,'\0',sizeof(clipb));
+    _SplineSetFindClippedBounds(spl, bounds,&clipb);
+    if ( clipb.minx!=0 || clipb.miny!=0 || clipb.maxx!=0 || clipb.maxy!=0 ) {
+	if ( bounds->minx<clipb.minx ) bounds->minx = clipb.minx;
+	if ( bounds->miny<clipb.miny ) bounds->miny = clipb.miny;
+	if ( bounds->maxx>clipb.maxx ) bounds->maxx = clipb.maxx;
+	if ( bounds->maxy>clipb.maxy ) bounds->maxy = clipb.maxy;
+    }
+#else
     memset(bounds,'\0',sizeof(*bounds));
     _SplineSetFindBounds(spl,bounds);
+#endif
 }
 
 #ifdef FONTFORGE_CONFIG_TYPE3
@@ -728,7 +782,7 @@ static void _SplineCharLayerFindBounds(SplineChar *sc,int layer, DBounds *bounds
 #ifdef FONTFORGE_CONFIG_TYPE3
     ImageList *img;
     real e;
-    DBounds b;
+    DBounds b, clipb;
 #endif
 
     for ( rf=sc->layers[layer].refs; rf!=NULL; rf = rf->next ) {
@@ -743,7 +797,8 @@ static void _SplineCharLayerFindBounds(SplineChar *sc,int layer, DBounds *bounds
     }
 #ifdef FONTFORGE_CONFIG_TYPE3
     memset(&b,0,sizeof(b));
-    _SplineSetFindBounds(sc->layers[layer].splines,&b);
+    memset(&clipb,0,sizeof(clipb));
+    _SplineSetFindClippedBounds(sc->layers[layer].splines,&b,&clipb);
     for ( img=sc->layers[layer].images; img!=NULL; img=img->next )
 	_ImageFindBounds(img,bounds);
     if ( sc->layers[layer].dostroke ) {
@@ -753,6 +808,12 @@ static void _SplineCharLayerFindBounds(SplineChar *sc,int layer, DBounds *bounds
 	    e = sc->layers[layer].stroke_pen.trans[0];
 	b.minx -= e; b.maxx += e;
 	b.miny -= e; b.maxy += e;
+    }
+    if ( clipb.minx!=0 || clipb.miny!=0 || clipb.maxx!=0 || clipb.maxy!=0 ) {
+	if ( b.minx<clipb.minx ) b.minx = clipb.minx;
+	if ( b.miny<clipb.miny ) b.miny = clipb.miny;
+	if ( b.maxx>clipb.maxx ) b.maxx = clipb.maxx;
+	if ( b.maxy>clipb.maxy ) b.maxy = clipb.maxy;
     }
     if ( bounds->minx==0 && bounds->maxx==0 && bounds->miny==0 && bounds->maxy == 0 )
 	*bounds = b;
