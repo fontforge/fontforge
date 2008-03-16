@@ -1337,7 +1337,7 @@ static struct gradient *GradientEdit(struct layer_dlg *ld,struct gradient *activ
 
     label[k].text = (unichar_t *) _(
 	"  A linear gradient is represented by a line drawn\n"
-	"from it start point to its end point.\n"
+	"from its start point to its end point.\n"
 	"  A radial gradient is represented by a line drawn\n"
 	"from its center whose length is the ultimate radius.\n"
 	"If there is a single additional point, that point\n"
