@@ -825,7 +825,12 @@ static void TPD_DoClose(struct cvcontainer *cvc) {
 }
 
 static int tpd_sub_e_h(GWindow gw, GEvent *event) {
-    TilePathDlg *tpd = (TilePathDlg *) ((CharViewBase *) GDrawGetUserData(gw))->container;
+    TilePathDlg *tpd;
+
+    if ( event->type==et_destroy )
+return( true );
+
+    tpd = (TilePathDlg *) ((CharViewBase *) GDrawGetUserData(gw))->container;
 
     switch ( event->type ) {
       case et_resize:
@@ -840,9 +845,13 @@ return( true );
 }
 
 static int tpd_e_h(GWindow gw, GEvent *event) {
-    TilePathDlg *tpd = (TilePathDlg *) ((CharViewBase *) GDrawGetUserData(gw))->container;
+    TilePathDlg *tpd;
     int i;
 
+    if ( event->type == et_destroy )
+return( true );
+
+    tpd = (TilePathDlg *) ((CharViewBase *) GDrawGetUserData(gw))->container;
     switch ( event->type ) {
       case et_expose:
 	TPDDraw(tpd, gw, event);
