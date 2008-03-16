@@ -55,6 +55,9 @@ struct ttfinfo {
     int *ttcoffsets;		/* Offsets to font headers */
 
     int numtables;
+    		/* BASE  */
+    int base_start;
+    int base_length;
     		/* CFF  */
     int cff_start;
     int cff_length;
@@ -317,6 +320,10 @@ exit(0);
 	     checksum, filecheck(util,offset,length), checksum-filecheck(util,offset,length),
 	     offset, length );
 	switch ( tag ) {
+	  case CHR('B','A','S','E'):
+	    info->base_start = offset;
+	    info->base_length = length;
+	  break;
 	  case CHR('C','F','F',' '):
 	    info->cff_start = offset;
 	    info->cff_length = length;
@@ -6339,6 +6346,186 @@ return( 0 );
 return( 1 );
 }
 
+static void readttfbaseminmax(FILE *ttf,uint32 offset,struct ttfinfo *info,
+	uint32 script_tag,uint32 lang_tag) {
+    int min, max;
+    int j,feat_cnt;
+
+    fseek(ttf,offset,SEEK_SET);
+    min = (short) getushort(ttf);
+    max = (short) getushort(ttf);
+    if ( lang_tag == 0 )
+	printf( "\t   min extent=%d  max extent=%d for script '%c%c%c%c'\n",
+		min, max,
+		script_tag>>24, script_tag>>16, script_tag>>8, script_tag );
+    else
+	printf( "\t    min extent=%d  max extent=%d for language '%c%c%c%c' in script '%c%c%c%c'\n",
+		min, max,
+		lang_tag>>24, lang_tag>>16, lang_tag>>8, lang_tag,
+		script_tag>>24, script_tag>>16, script_tag>>8, script_tag );
+    feat_cnt = getushort(ttf);
+    for ( j=0; j<feat_cnt; ++j ) {
+	uint32 feat_tag = getlong(ttf);
+	min = (short) getushort(ttf);
+	max = (short) getushort(ttf);
+	if ( lang_tag == 0 )
+	    printf( "\t    min extent=%d  max extent=%d in feature '%c%c%c%c' of script '%c%c%c%c'\n",
+		    min, max,
+		    feat_tag>>24, feat_tag>>16, feat_tag>>8, feat_tag,
+		    script_tag>>24, script_tag>>16, script_tag>>8, script_tag );
+	else
+	    printf( "\t     min extent=%d  max extent=%d in feature '%c%c%c%c' of language '%c%c%c%c' in script '%c%c%c%c'\n",
+		    min, max,
+		    feat_tag>>24, feat_tag>>16, feat_tag>>8, feat_tag,
+		    lang_tag>>24, lang_tag>>16, lang_tag>>8, lang_tag,
+		    script_tag>>24, script_tag>>16, script_tag>>8, script_tag );
+    }
+}
+
+static int readttfbase(FILE *ttf,FILE *util, struct ttfinfo *info) {
+    int version;
+    uint32 axes[2];
+    uint32 basetags, basescripts;
+    int basetagcnt, basescriptcnt;
+    uint32 *tags;
+    struct tagoff { uint32 tag; uint32 offset; } *bs;
+    int axis,i,j;
+
+    fseek(ttf,info->base_start,SEEK_SET);
+    printf( "\nBASE table (at %d)\n", info->base_start);
+    printf( "\tVersion: 0x%08x\n", version = getlong(ttf));
+    if ( version!=0x00010000 )
+	fprintf( stderr, "!> Bad version number for BASE table.\n" );
+    axes[0] = getushort(ttf);	/* Horizontal */
+    axes[1] = getushort(ttf);	/* Vertical */
+
+    for ( axis=0; axis<2; ++axis ) {
+	if ( axes[axis]==0 ) {
+	    printf("\tNO %s axis data\n", axis==0 ? "Horizontal": "Vertical" );
+    continue;
+	}
+	printf("\t%s axis data\n", axis==0 ? "Horizontal": "Vertical" );
+	fseek(ttf,info->base_start+axes[axis],SEEK_SET);
+	basetags    = getushort(ttf);
+	basescripts = getushort(ttf);
+	if ( basetags==0 ) {
+	    printf("\t NO %s base tags data\n", axis==0 ? "Horizontal": "Vertical" );
+	    basetagcnt = 0;
+	    tags = NULL;
+	} else {
+	    fseek(ttf,info->base_start+axes[axis]+basetags,SEEK_SET);
+	    basetagcnt = getushort(ttf);
+	    tags = calloc(basetagcnt,sizeof(uint32));
+	    for ( i=0; i<basetagcnt; ++i )
+		tags[i] = getlong(ttf);
+	    printf( "\t %d Baseline tags for %s\n", basetagcnt, axis==0 ? "Horizontal": "Vertical" );
+	    for ( i=0; i<basetagcnt; ++i )
+		printf( "\t  '%c%c%c%c'\n", tags[i]>>24, tags[i]>>16, tags[i]>>8, tags[i]);
+	}
+	if ( basescripts==0 )
+	    printf("\t NO %s base script data\n", axis==0 ? "Horizontal": "Vertical" );
+	else {
+	    fseek(ttf,info->base_start+axes[axis]+basescripts,SEEK_SET);
+	    basescriptcnt = getushort(ttf);
+	    bs = calloc(basescriptcnt,sizeof(struct tagoff));
+	    for ( i=0; i<basescriptcnt; ++i ) {
+		bs[i].tag    = getlong(ttf);
+		bs[i].offset = getushort(ttf);
+		if ( bs[i].offset != 0 )
+		    bs[i].offset += info->base_start+axes[axis]+basescripts;
+	    }
+	    for ( i=0; i<basescriptcnt; ++i ) if ( bs[i].offset!=0 ) {
+		int basevalues, defminmax;
+		int langsyscnt;
+		struct tagoff *ls;
+		printf("\t %s baseline data for '%c%c%c%c' script\n",
+			axis==0 ? "Horizontal": "Vertical",
+			bs[i].tag>>24, bs[i].tag>>16, bs[i].tag>>8, bs[i].tag );
+		fseek(ttf,bs[i].offset,SEEK_SET);
+		basevalues = getushort(ttf);
+		defminmax  = getushort(ttf);
+		langsyscnt = getushort(ttf);
+		ls = calloc(langsyscnt,sizeof(struct tagoff));
+		for ( j=0; j<langsyscnt; ++j ) {
+		    ls[j].tag    = getlong(ttf);
+		    ls[j].offset = getushort(ttf);
+		}
+		if ( basevalues==0 )
+		    printf("\t  No %s baseline positions for '%c%c%c%c' script\n",
+			    axis==0 ? "Horizontal": "Vertical",
+			    bs[i].tag>>24, bs[i].tag>>16, bs[i].tag>>8, bs[i].tag );
+		else {
+		    int defbl, coordcnt;
+		    int *coords;
+
+		    fseek( ttf,bs[i].offset+basevalues,SEEK_SET);
+		    defbl = getushort(ttf);
+		    coordcnt = getushort(ttf);
+		    printf("\t  The default baseline for '%c%c%c%c' script is '%c%c%c%c'\n",
+			    bs[i].tag>>24, bs[i].tag>>16, bs[i].tag>>8, bs[i].tag,
+			    tags[defbl]>>24, tags[defbl]>>16, tags[defbl]>>8, tags[defbl]);
+		    if ( coordcnt!=basetagcnt )
+			fprintf( stderr, "!!!!! Coord count (%d) for '%c%c%c%c' script does not match base tag count (%d) in 'BASE' table\n",
+				coordcnt,
+				bs[i].tag>>24, bs[i].tag>>16, bs[i].tag>>8, bs[i].tag,
+				basetagcnt );
+		    coords = calloc(coordcnt,sizeof(int));
+		    for ( j=0; j<coordcnt; ++j )
+			coords[j] = getushort(ttf);
+		    for ( j=0; j<coordcnt; ++j ) if ( coords[j]!=0 ) {
+			int format, coord, gid, pt, devtab_off;
+			fseek( ttf,bs[i].offset+basevalues+coords[j],SEEK_SET);
+			format = getushort(ttf);
+			coord  = (short) getushort(ttf);
+			if ( format==3 ) {
+			    devtab_off = getushort(ttf);
+			    printf("\t   Baseline '%c%c%c%c' in script '%c%c%c%c' is at %d, with device table\n",
+				    tags[j]>>24, tags[j]>>16, tags[j]>>8, tags[j],
+				    bs[i].tag>>24, bs[i].tag>>16, bs[i].tag>>8, bs[i].tag,
+			            coord );
+			} else if ( format==2 ) {
+			    gid = getushort(ttf);
+			    pt  = getushort(ttf);
+			    printf("\t   Baseline '%c%c%c%c' in script '%c%c%c%c' is at %d, modified by point %d in glyph %d\n",
+				    tags[j]>>24, tags[j]>>16, tags[j]>>8, tags[j],
+				    bs[i].tag>>24, bs[i].tag>>16, bs[i].tag>>8, bs[i].tag,
+			            coord, pt, gid );
+			} else {
+			    printf("\t   Baseline '%c%c%c%c' in script '%c%c%c%c' is at %d\n",
+				    tags[j]>>24, tags[j]>>16, tags[j]>>8, tags[j],
+				    bs[i].tag>>24, bs[i].tag>>16, bs[i].tag>>8, bs[i].tag,
+			            coord );
+			    if ( format!=1 )
+				fprintf( stderr, "!!!!! Bad Base Coord format (%d) for '%c%c%c%c' in '%c%c%c%c' script in 'BASE' table\n",
+					format,
+					    tags[j]>>24, tags[j]>>16, tags[j]>>8, tags[j],
+					bs[i].tag>>24, bs[i].tag>>16, bs[i].tag>>8, bs[i].tag );
+			}
+		    }
+		    free(coords);
+		}
+		if ( defminmax==0 )
+		    printf("\t  No %s min/max extents for '%c%c%c%c' script\n",
+			    axis==0 ? "Horizontal": "Vertical",
+			    bs[i].tag>>24, bs[i].tag>>16, bs[i].tag>>8, bs[i].tag );
+		else
+		    readttfbaseminmax(ttf,bs[i].offset+defminmax,info,bs[i].tag,0);
+		if ( langsyscnt==0 )
+		    printf("\t  No %s min/max extents for specific langs in '%c%c%c%c' script\n",
+			    axis==0 ? "Horizontal": "Vertical",
+			    bs[i].tag>>24, bs[i].tag>>16, bs[i].tag>>8, bs[i].tag );
+		else
+		    for ( j=0; j<langsyscnt; ++j ) if ( ls[j].offset!=0 )
+			readttfbaseminmax(ttf,bs[i].offset+ls[j].offset,info,bs[i].tag,ls[j].tag);
+		free(ls);
+	    }
+	}
+	free(bs);
+	free(tags);
+    }
+return( 1 );
+}
+
 static void readit(FILE *ttf, FILE *util) {
     struct ttfinfo info;
     int i;
@@ -6384,6 +6571,8 @@ return;
 	readttfkern(ttf,util,&info);
     if ( info.gdef_start!=0 )
 	readttfgdef(ttf,util,&info);
+    if ( info.base_start!=0 )
+	readttfbase(ttf,util,&info);
     if ( info.bitmaploc_start!=0 && info.bitmapdata_start!=0 )
 	readttfbitmaps(ttf,util,&info);
     if ( info.bitmapscale_start!=0 )
