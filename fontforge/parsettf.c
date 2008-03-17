@@ -472,6 +472,8 @@ static struct tablenames { uint32 tag; char *name; } stdtables[] = {
     { CHR('L','T','S','H'), N_("linear threshold table") },
     { CHR('M','A','T','H'), N_("math table") },
     { CHR('m','a','x','p'), N_("maximum profile table") },
+    { CHR('M','M','S','D'), N_("Multi-Master table, obsolete") },
+    { CHR('M','M','F','X'), N_("Multi-Master table, obsolete") },
     { CHR('m','o','r','t'), N_("metamorphosis table") },
     { CHR('m','o','r','x'), N_("extended metamorphosis table") },
     { CHR('n','a','m','e'), N_("name table") },
@@ -540,6 +542,9 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
  printf( "%c%c%c%c\n", tag>>24, (tag>>16)&0xff, (tag>>8)&0xff, tag&0xff );
 #endif
 	switch ( tag ) {
+	  case CHR('B','A','S','E'):
+	    info->base_start = offset;
+	  break;
 	  case CHR('C','F','F',' '):
 	    info->cff_start = offset;
 	    info->cff_length = length;
@@ -618,9 +623,6 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	  break;
 	  case CHR('v','m','t','x'):
 	    info->vmetrics_start = offset;
-	  break;
-	  case CHR('V','O','R','G'):
-	    info->vorg_start = offset;
 	  break;
 	  case CHR('M','A','T','H'):
 	    info->math_start = offset;
@@ -3598,20 +3600,6 @@ static void readttfvwidths(FILE *ttf,struct ttfinfo *info) {
 	    info->chars[j]->vwidth = lastvwidth;
     }
 
-    /* for truetype fonts the vertical offset is found by adding the ymax of a */
-    /*  character to the top side bearing. I set the font wide value to the */
-    /*  average of them all */
-    /* But opentype doesn't give us the ymax easily, and rather than compute */
-    /*  the bounding box I'll just punt and pick a reasonable value */
-    /* Of course I hope it will be over riden by the VORG table */
-    if ( cnt!=0 )
-	info->vertical_origin = (voff+cnt/2)/cnt;
-    if ( info->vertical_origin==0 )
-	info->vertical_origin = info->ascent;
-    if ( info->vorg_start!=0 ) {
-	fseek(ttf,info->vorg_start+4,SEEK_SET);
-	info->vertical_origin = (short) getushort(ttf);
-    }
 }
 
 static int modenc(int enc,int modtype) {
@@ -4996,6 +4984,8 @@ return( 0 );
 	if ( info->lcar_start!=0 )
 	    readttflcar(ttf,info);
     }
+    if ( info->base_start!=0 )
+	readttfbase(ttf,info);
     if ( info->gasp_start!=0 )
 	readttfgasp(ttf,info);
     /* read the cvt table before reading variation data */
@@ -5233,7 +5223,6 @@ static SplineFont *SFFromTuple(SplineFont *basesf,struct variations *v,int tuple
     sf->upos = basesf->upos;
     sf->uwidth = basesf->uwidth;
     sf->ascent = basesf->ascent;
-    sf->vertical_origin = basesf->vertical_origin;
     sf->hasvmetrics = basesf->hasvmetrics;
     sf->descent = basesf->descent;
     sf->kerns = v->tuples[tuple].khead;
@@ -5553,7 +5542,6 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->upos = info->upos;
     sf->uwidth = info->uwidth;
     sf->ascent = info->ascent;
-    sf->vertical_origin = info->vertical_origin;
     if ( info->vhea_start!=0 && info->vmetrics_start!=0 )
 	sf->hasvmetrics = true;
     sf->descent = info->descent;
@@ -5612,6 +5600,8 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     sf->cidversion = info->cidfontversion;
     sf->bitmaps = info->bitmaps;
     sf->grid = info->guidelines;
+    sf->horiz_base = info->horiz_base;
+    sf->vert_base = info->vert_base;
     for ( bdf = info->bitmaps; bdf!=NULL; bdf = bdf->next ) {
 	bdf->sf = sf;
     }
@@ -5638,7 +5628,6 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 	free(info->chars);		/* This is the GID->char index, don't need it now */
 	for ( i=0; i<sf->subfontcnt; ++i ) {
 	    sf->subfonts[i]->cidmaster = sf;
-	    sf->subfonts[i]->vertical_origin = sf->vertical_origin;
 	    sf->subfonts[i]->hasvmetrics = sf->hasvmetrics;
 	}
     }

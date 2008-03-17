@@ -8543,7 +8543,6 @@ ff_gs_real(strokewidth)
 
 ff_gs_int(ascent)
 ff_gs_int(descent)
-ff_gs_int(vertical_origin)
 ff_gs_int(uniqueid)
 ff_gs_int(supplement)
 ff_gs_int2(macstyle)
@@ -8590,6 +8589,15 @@ ff_gs_bit(use_typo_metrics)
 ff_gs_bit(weight_width_slope_only)
 ff_gs_bit(onlybitmaps)
 ff_gs_bit(hasvmetrics)
+
+static PyObject *PyFF_Font_get_vertical_origin(PyFF_Font *self,void *closure) {
+return( Py_BuildValue("i", 0 ));
+}
+
+static int PyFF_Font_set_vertical_origin(PyFF_Font *self,PyObject *value,void *closure) {
+    PyErr_Format(PyExc_NotImplementedError, "No longer supported");
+return( -1 );
+}
 
 static PyObject *PyFF_Font_get_os2codepages(PyFF_Font *self,void *closure) {
     SplineFont *sf = self->fv->sf;
@@ -9327,7 +9335,7 @@ static PyGetSetDef PyFF_Font_getset[] = {
 	 "Em size", NULL},
     {"vertical_origin",
 	 (getter)PyFF_Font_get_vertical_origin, (setter)PyFF_Font_set_vertical_origin,
-	 "Vertical Origin", NULL},
+	 "Vertical Origin (No longer supported, use BASE table instead)", NULL},
     {"uniqueid",
 	 (getter)PyFF_Font_get_uniqueid, (setter)PyFF_Font_set_uniqueid,
 	 "PostScript Unique ID", NULL},

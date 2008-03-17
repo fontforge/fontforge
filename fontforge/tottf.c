@@ -636,7 +636,7 @@ static void ttfdumpmetrics(SplineChar *sc,struct glyphinfo *gi,DBounds *b) {
     if ( sc->parent->hasvmetrics ) {
 	if ( sc->ttf_glyph<=gi->lastvwidth )
 	    putshort(gi->vmtx,sc->vwidth);
-	putshort(gi->vmtx,sc->parent->vertical_origin-b->maxy);
+	putshort(gi->vmtx,/*sc->parent->vertical_origin-*/b->maxy);
     }
     if ( sc->ttf_glyph==gi->lasthwidth )
 	gi->hfullcnt = sc->ttf_glyph+1;
@@ -930,7 +930,7 @@ static void dumpmissingglyph(SplineFont *sf,struct glyphinfo *gi,int fixedwidth)
     putshort(gi->hmtx,stem);
     if ( sf->hasvmetrics ) {
 	putshort(gi->vmtx,sf->ascent+sf->descent);
-	putshort(gi->vmtx,sf->vertical_origin-gh.ymax);
+	putshort(gi->vmtx,/*sf->vertical_origin-*/gh.ymax);
     }
 }
 
@@ -2369,7 +2369,7 @@ static int dumpcffhmtx(struct alltabs *at,SplineFont *sf,int bitmaps) {
 	putshort(at->gi.hmtx,b.minx);
 	if ( dovmetrics ) {
 	    putshort(at->gi.vmtx,sf->glyphs[at->gi.bygid[0]]->vwidth);
-	    putshort(at->gi.vmtx,sf->vertical_origin-b.miny);
+	    putshort(at->gi.vmtx,/*sf->vertical_origin-*/b.miny);
 	}
     } else {
 	putshort(at->gi.hmtx,width==-1?(sf->ascent+sf->descent)/2:width);
@@ -2407,7 +2407,7 @@ static int dumpcffhmtx(struct alltabs *at,SplineFont *sf,int bitmaps) {
 	    if ( dovmetrics ) {
 		if ( i<=at->gi.lastvwidth )
 		    putshort(at->gi.vmtx,sc->vwidth);
-		putshort(at->gi.vmtx,sf->vertical_origin-b.maxy);
+		putshort(at->gi.vmtx,/*sf->vertical_origin-*/b.maxy);
 	    }
 	    ++cnt;
 	    if ( i==at->gi.lasthwidth )
@@ -2458,7 +2458,7 @@ static void dumpcffcidhmtx(struct alltabs *at,SplineFont *_sf) {
 	    if ( dovmetrics ) {
 		if ( sc->ttf_glyph<=at->gi.lastvwidth )
 		    putshort(at->gi.vmtx,sc->vwidth);
-		putshort(at->gi.vmtx,sf->vertical_origin-b.maxy);
+		putshort(at->gi.vmtx,/*sf->vertical_origin-*/b.maxy);
 	    }
 	    ++cnt;
 	    if ( sc->ttf_glyph==at->gi.lasthwidth )
@@ -2797,13 +2797,6 @@ static void sethhead(struct hhead *hhead,struct hhead *vhead,struct alltabs *at,
 
     hhead->numMetrics = at->gi.hfullcnt;
     vhead->numMetrics = at->gi.vfullcnt;
-}
-
-static void setvorg(struct vorg *vorg, SplineFont *sf) {
-    vorg->majorVersion = 1;
-    vorg->minorVersion = 0;
-    vorg->defaultVertOriginY = sf->vertical_origin;
-    vorg->numVertOriginYMetrics = 0;
 }
 
 static void OS2WeightCheck(struct pfminfo *pfminfo,char *weight) {
@@ -3451,19 +3444,6 @@ static void redohhead(struct alltabs *at,int isv) {
 	if ( (at->vheadlen&2)!=0 )
 	    putshort(f,0);
     }
-}
-
-static void redovorg(struct alltabs *at) {
-
-    at->vorgf = tmpfile();
-    putshort(at->vorgf,at->vorg.majorVersion);
-    putshort(at->vorgf,at->vorg.minorVersion);
-    putshort(at->vorgf,at->vorg.defaultVertOriginY);
-    putshort(at->vorgf,at->vorg.numVertOriginYMetrics);
-
-    at->vorglen = ftell(at->vorgf);
-    if ( (at->vorglen&2)!=0 )
-	putshort(at->vorgf,0);
 }
 
 static void redomaxp(struct alltabs *at,enum fontformat format) {
@@ -5220,7 +5200,6 @@ return( false );
 
     sethead(&at->head,sf,at);
     sethhead(&at->hhead,&at->vhead,at,sf);
-    setvorg(&at->vorg,sf);
     setos2(&at->os2,at,sf,format);	/* should precede kern/ligature output */
     if ( at->gi.glyph_len<0x20000 )
 	at->head.locais32 = 0;
@@ -5234,7 +5213,6 @@ return( false );
 	redohhead(at,false);
     if ( sf->hasvmetrics ) {
 	redohhead(at,true);
-	redovorg(at);		/* I know, VORG is only meaningful in a otf font and I dump it out in ttf too. Well, it will help ME read the font back in, and it won't bother anyone else. So there. */
     }
     redomaxp(at,format);
     ttf_fftm_dump(sf,at);
@@ -5245,6 +5223,7 @@ return( false );
 	    otf_dumpgpos(at,sf);
 	    otf_dumpgsub(at,sf);
 	    otf_dumpgdef(at,sf);
+	    otf_dumpbase(at,sf);
 	    otf_dump_math(at,sf);	/* Not strictly OpenType yet */
 	}
 	if ( at->dovariations )
@@ -5300,6 +5279,12 @@ return( false );
     }
 
     i = 0;
+
+    if ( at->base!=NULL ) {
+	at->tabdir.tabs[i].tag = CHR('B','A','S','E');
+	at->tabdir.tabs[i].data = at->base;
+	at->tabdir.tabs[i++].length = at->baselen;
+    }
 
     if ( at->bdf!=NULL ) {
 	at->tabdir.tabs[i].tag = CHR('B','D','F',' ');
@@ -5381,7 +5366,7 @@ return( false );
 	at->tabdir.tabs[i++].length = at->mathlen;
     }
 
-    if ( at->vorgf!=NULL ) {
+    if ( at->vorgf!=NULL ) {		/* No longer generated */
 	at->tabdir.tabs[i].tag = CHR('V','O','R','G');
 	at->tabdir.tabs[i].data = at->vorgf;
 	at->tabdir.tabs[i++].length = at->vorglen;

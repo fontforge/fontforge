@@ -2443,11 +2443,9 @@ return;
 	    scbase = sf->cidmaster->subfonts[SFHasCID(sf,cid)]->glyphs[cid];
     }
 
-    if ( scbase->parent->vertical_origin==0 )
-	scbase->parent->vertical_origin = scbase->parent->ascent;
     transform[0] = transform[3] = 0;
     transform[1] = -1; transform[2] = 1;
-    transform[4] = scbase->parent->descent; transform[5] = scbase->parent->vertical_origin;
+    transform[4] = scbase->parent->descent; transform[5] = /*scbase->parent->vertical_origin*/ scbase->parent->ascent;
 
     sc->layers[layer].splines = SplinePointListTransform(SplinePointListCopy(scbase->layers[layer].splines),
 	    transform, true );

@@ -124,6 +124,8 @@ struct ttfinfo {
     char *inuse;		/* What glyphs are used by this font in the ttc */
 
     int numtables;
+    		/* BASE  */
+    uint32 base_start;		/* Offset from sof to start of 'BASE' table */
     		/* CFF  */
     uint32 cff_start;		/* Offset from sof to start of postscript compact font format */
     uint32 cff_length;
@@ -291,6 +293,7 @@ struct ttfinfo {
     unsigned int bad_gx: 1;
     unsigned int bad_ot: 1;
     Layer guidelines;
+    struct Base *horiz_base, *vert_base;
 };
 
 enum gsub_inusetype { git_normal, git_justinuse, git_findnames };
@@ -586,6 +589,8 @@ struct alltabs {
     int os2len;
     FILE *math;
     int mathlen;
+    FILE *base;
+    int baselen;
     FILE *cvtf;
     int cvtlen;
     FILE *fpgmf;		/* Copied from an original ttf file and dumped out. Never generated */
@@ -820,6 +825,8 @@ extern void readttfgsubUsed(FILE *ttf,struct ttfinfo *info);
 extern void GuessNamesFromGSUB(FILE *ttf,struct ttfinfo *info);
 extern void readttfgpossub(FILE *ttf,struct ttfinfo *info,int gpos);
 extern void readttfgdef(FILE *ttf,struct ttfinfo *info);
+extern void readttfbase(FILE *ttf,struct ttfinfo *info);
+extern void otf_dumpbase(struct alltabs *at, SplineFont *sf);
 
 extern void VariationFree(struct ttfinfo *info);
 extern void readttfvariations(struct ttfinfo *info, FILE *ttf);

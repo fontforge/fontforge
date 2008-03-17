@@ -5988,6 +5988,38 @@ void MarkClassFree(int cnt,char **classes,char **names) {
     free( names );
 }
 
+void BaseLangFree(struct baselangextent *extent) {
+    struct baselangextent *next;
+
+    while ( extent!=NULL ) {
+	next = extent->next;
+	BaseLangFree(extent->features);
+	chunkfree(extent,sizeof(struct baselangextent));
+	extent = next;
+    }
+}
+
+void BaseScriptFree(struct basescript *bs) {
+    struct basescript *next;
+
+    while ( bs!=NULL ) {
+	next = bs->next;
+	free(bs->baseline_pos);
+	BaseLangFree(bs->langs);
+	chunkfree(bs,sizeof(struct basescript));
+	bs = next;
+    }
+}
+	
+void BaseFree(struct Base *base) {
+    if ( base==NULL )
+return;
+
+    free(base->baseline_tags);
+    BaseScriptFree(base->scripts);
+    chunkfree(base,sizeof(struct Base));
+}
+
 void SplineFontFree(SplineFont *sf) {
     int i;
     BDFFont *bdf, *bnext;
@@ -6047,6 +6079,8 @@ return;
 #else
     PyFF_FreeSF(sf);
 #endif
+    BaseFree(sf->horiz_base);
+    BaseFree(sf->vert_base);
     free(sf);
 }
 

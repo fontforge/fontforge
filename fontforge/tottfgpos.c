@@ -4063,3 +4063,221 @@ return;
     if ( ftell(mathf)&2 )
 	putshort(mathf,0);
 }
+
+struct taglist {
+    uint32 tag;
+    struct taglist *next;
+};
+
+static int taglistcompar(const void *_cv1, const void *_cv2) {
+    const struct taglist *const *tl1 = _cv1, *const *tl2 = _cv2;
+
+    if ( (*tl1)->tag==(*tl2)->tag )
+return( 0 );
+    if ( (*tl1)->tag>(*tl2)->tag )
+return( 1 );
+
+return( -1 );
+}
+
+static int langlistcompar(const void *_cv1, const void *_cv2) {
+    const struct taglist *const *tl1 = _cv1, *const *tl2 = _cv2;
+
+    if ( (*tl1)->tag==(*tl2)->tag )
+return( 0 );
+    if ( (*tl1)->tag == DEFAULT_LANG )
+return( -1 );
+    if ( (*tl2)->tag == DEFAULT_LANG )
+return( 1 );
+    if ( (*tl1)->tag>(*tl2)->tag )
+return( 1 );
+
+return( -1 );
+}
+
+static struct taglist *sorttaglist(struct taglist *list,int (*compar)(const void *,const void*)) {
+    struct taglist *t, **array;
+    int i,cnt;
+
+    if ( list==NULL || list->next==NULL )
+return( list );
+
+    for ( t=list, cnt=0; t!=NULL; t=t->next, ++cnt );
+    array = galloc(cnt*sizeof(struct taglist *));
+    for ( t=list, cnt=0; t!=NULL; t=t->next, ++cnt )
+	array[cnt] = t;
+    qsort(array,cnt,sizeof(struct taglist *),compar);
+    for ( i=1; i<cnt; ++i )
+	array[i-1]->next = array[i];
+    array[cnt-1]->next = NULL;
+    list = array[0];
+    free( array );
+return( list );
+}
+
+static void _base_sort(struct Base *base) {
+    /* Sort the base lines. Which can reorder the def_baseline index in the */
+    /*  script, and the baseline_pos lists */
+    /* Sort the script list */
+    /* Sort the language lists in each script */
+    /* Sort the feature lists in each language */
+    int i,j,pos, tag;
+    struct basescript *bs;
+    struct baselangextent *langs;
+
+    if ( base==NULL )
+return;
+
+    if ( base->baseline_cnt!=0 ) {
+	for ( i=0; i<base->baseline_cnt; ++i )
+	    for ( j=i+1; j<base->baseline_cnt; ++j ) {
+		if ( base->baseline_tags[i]>base->baseline_tags[j] ) {
+		    tag = base->baseline_tags[i];
+		    base->baseline_tags[i] = base->baseline_tags[j];
+		    base->baseline_tags[j] = tag;
+		    for ( bs=base->scripts ; bs!=NULL; bs=bs->next ) {
+			if ( bs->def_baseline==i )
+			    bs->def_baseline = j;
+			else if ( bs->def_baseline==j )
+			    bs->def_baseline = i;
+			pos = bs->baseline_pos[i];
+			bs->baseline_pos[i] = bs->baseline_pos[j];
+			bs->baseline_pos[j] = pos;
+		    }
+		}
+	    }
+    }
+    base->scripts = (struct basescript *) sorttaglist((struct taglist *) base->scripts,taglistcompar);
+    for ( bs=base->scripts ; bs!=NULL; bs=bs->next ) {
+	bs->langs = (struct baselangextent *) sorttaglist((struct taglist *) bs->langs,langlistcompar);
+	for ( langs = bs->langs; langs!=NULL; langs = langs->next )
+	    langs->features = (struct baselangextent *) sorttaglist((struct taglist *) langs->features,taglistcompar);
+    }
+}
+
+void SFBaseSort(SplineFont *sf) {
+    _base_sort(sf->horiz_base);
+    _base_sort(sf->vert_base);
+}
+
+static void dump_minmax(FILE *basef,struct baselangextent *bl) {
+    struct baselangextent *fl;
+    int fcnt;
+
+    putshort(basef,bl->descent);
+    putshort(basef,bl->ascent);
+    for ( fl=bl->features, fcnt=0; fl!=NULL; fl=fl->next, ++fcnt );
+    putshort(basef,fcnt);
+    for ( fl=bl->features; fl!=NULL; fl=fl->next ) {
+	putlong(basef,fl->lang);	/* feature tag really */
+	putshort(basef,fl->descent);
+	putshort(basef,fl->ascent);
+    }
+}
+
+void otf_dumpbase(struct alltabs *at, SplineFont *sf) {
+    FILE *basef;
+    int i,j, cnt, lcnt;
+    uint32 here, bsl;
+    struct basescript *bs;
+    struct baselangextent *bl, *dflt;
+    int offset;
+
+    if ( sf->horiz_base==NULL && sf->vert_base==NULL )
+return;
+
+    SFBaseSort(sf);
+
+    at->base = basef = tmpfile();
+
+    putlong(basef,  0x00010000 );		/* Version 1 */
+    putshort(basef,  0 );			/* offset to horizontal baselines, fill in later */
+    putshort(basef,  0 );			/* offset to vertical baselines, fill in later */
+
+    for ( i=0; i<2; ++i ) {
+	struct Base *base = i==0 ? sf->horiz_base : sf->vert_base;
+	if ( base==NULL )
+    continue;
+	here = ftell(basef);
+	fseek(basef,4+2*i,SEEK_SET);
+	putshort(basef,here-0);
+	fseek(basef,here,SEEK_SET);
+
+	/* axis table */
+	putshort(basef,base->baseline_cnt==0 ? 0 : 4 );
+	putshort(basef,base->baseline_cnt==0 ? 4 :
+			4+2+4*base->baseline_cnt );
+
+	if ( base->baseline_cnt!=0 ) {
+	/* BaseTagList table */
+	    putshort(basef,base->baseline_cnt);
+	    for ( j=0; j<base->baseline_cnt; ++j )
+		putlong(basef,base->baseline_tags[j]);
+	}
+
+	/* BaseScriptList table */
+	bsl = ftell(basef);
+	for ( bs=base->scripts, cnt=0; bs!=NULL; bs=bs->next, ++cnt );
+	putshort(basef,cnt);
+	for ( bs=base->scripts; bs!=NULL; bs=bs->next ) {
+	    putlong(basef,bs->script);
+	    putshort(basef,0);
+	}
+
+	/* BaseScript table */
+	for ( bs=base->scripts, cnt=0; bs!=NULL; bs=bs->next, ++cnt ) {
+	    uint32 bst = ftell(basef);
+	    fseek(basef,bsl+2+6*cnt+4,SEEK_SET);
+	    putshort(basef,bst-bsl);
+	    fseek(basef,bst,SEEK_SET);
+
+	    for ( bl=bs->langs, dflt=NULL, lcnt=0; bl!=NULL; bl=bl->next ) {
+		if ( bl->lang==DEFAULT_LANG )
+		    dflt = bl;
+		else
+		    ++lcnt;
+	    }
+	    offset = 6+6*lcnt;
+	    putshort(basef,base->baseline_cnt==0?0:offset);
+	    if ( base->baseline_cnt!=0 )
+		offset += 4+2*base->baseline_cnt+4*base->baseline_cnt;
+	    putshort(basef,dflt==NULL ? 0 : offset);
+	    putshort(basef,lcnt);
+	    for ( bl=bs->langs; bl!=NULL; bl=bl->next ) if ( bl->lang!=DEFAULT_LANG ) {
+		putlong(basef,bl->lang);
+		putshort(basef,0);
+	    }
+
+	    /* Base Values table */
+	    if ( base->baseline_cnt!=0 ) {
+		offset = 4+2*base->baseline_cnt;
+		putshort(basef,bs->def_baseline);
+		putshort(basef,base->baseline_cnt);
+		for ( j=0; j<base->baseline_cnt; ++j ) {
+		    putshort(basef,offset);
+		    offset += 2*2;
+		}
+		for ( j=0; j<base->baseline_cnt; ++j ) {
+		    putshort(basef,1);		/* format 1 */
+		    putshort(basef,bs->baseline_pos[j]);
+		}
+	    }
+
+	    if ( dflt!=NULL )
+		dump_minmax(basef,dflt);
+	    for ( bl=bs->langs, dflt=NULL, lcnt=0; bl!=NULL; bl=bl->next ) if ( bl->lang!=DEFAULT_LANG ) {
+		uint32 here = ftell(basef);
+		fseek(basef,bst+6+6*lcnt+4,SEEK_SET);
+		putshort(basef,here-bst);
+		fseek(basef,here,SEEK_SET);
+		dump_minmax(basef,bl);
+	    }
+	}
+    }
+
+    at->baselen = ftell(basef);
+    if ( ftell(basef)&1 )
+	putc('\0',basef);
+    if ( ftell(basef)&2 )
+	putshort(basef,0);
+}

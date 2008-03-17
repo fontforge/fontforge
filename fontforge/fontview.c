@@ -5285,7 +5285,7 @@ static void FVExpose(FontView *fv,GWindow pixmap,GEvent *event) {
     int styles, laststyles=0;
     GImage *rotated=NULL;
     int em = fv->b.sf->ascent+fv->b.sf->descent;
-    int yorg = fv->magnify*(fv->show->ascent-fv->b.sf->vertical_origin*fv->show->pixelsize/em);
+    int yorg = fv->magnify*(fv->show->ascent);
     Color bg, def_fg;
 
     def_fg = GDrawGetDefaultForeground(NULL);
