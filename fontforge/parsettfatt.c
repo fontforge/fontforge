@@ -5236,3 +5236,152 @@ void otf_read_math_used(FILE *ttf,struct ttfinfo *info) {
 void GuessNamesFromMATH(FILE *ttf,struct ttfinfo *info) {
     _otf_read_math(ttf,info,git_findnames);
 }
+
+static struct baselangextent *readttfbaseminmax(FILE *ttf,uint32 offset,struct ttfinfo *info,
+	uint32 script_tag,uint32 lang_tag) {
+    int j,feat_cnt;
+    struct baselangextent *lang, *cur, *last;
+
+    fseek(ttf,offset,SEEK_SET);
+    last = chunkalloc(sizeof(struct baselangextent));
+    last->lang = lang_tag;
+    last->descent = (short) getushort(ttf);
+    last->ascent  = (short) getushort(ttf);
+
+    feat_cnt = getushort(ttf);
+    last = NULL;
+    for ( j=0; j<feat_cnt; ++j ) {
+	cur = chunkalloc(sizeof(struct baselangextent));
+	if ( last==NULL )
+	    lang->features = cur;
+	else
+	    last->next = cur;
+	last = cur;
+	cur->lang = getlong(ttf);		/* Actually feature tag here */
+	cur->descent = (short) getushort(ttf);
+	cur->ascent  = (short) getushort(ttf);
+    }
+return( lang );
+}
+
+void readttfbase(FILE *ttf,struct ttfinfo *info) {
+    int version;
+    uint32 axes[2];
+    uint32 basetags, basescripts;
+    int basescriptcnt;
+    struct tagoff { uint32 tag; uint32 offset; } *bs;
+    int axis,i,j, tot;
+    struct Base *curBase;
+    struct basescript *curScript, *last;
+    struct baselangextent *cur, *lastLang;
+    
+    if ( info->base_start==0 )
+return;
+    fseek(ttf,info->base_start,SEEK_SET);
+
+    version = getlong(ttf);
+    if ( version!=0x00010000 )
+return;
+    axes[0] = getushort(ttf);	/* Horizontal */
+    axes[1] = getushort(ttf);	/* Vertical */
+
+    for ( axis=0; axis<2; ++axis ) {
+	if ( axes[axis]==0 )
+    continue;
+	fseek(ttf,info->base_start+axes[axis],SEEK_SET);
+	curBase = chunkalloc(sizeof(struct Base));
+	if ( axis==0 ) info->horiz_base = curBase; else info->vert_base = curBase;
+	basetags    = getushort(ttf);
+	basescripts = getushort(ttf);
+	if ( basetags==0 ) {
+	    curBase->baseline_cnt = 0;
+	    curBase->baseline_tags = NULL;
+	} else {
+	    fseek(ttf,info->base_start+axes[axis]+basetags,SEEK_SET);
+	    curBase->baseline_cnt = getushort(ttf);
+	    curBase->baseline_tags = gcalloc(curBase->baseline_cnt,sizeof(uint32));
+	    for ( i=0; i<curBase->baseline_cnt; ++i )
+		curBase->baseline_tags[i] = getlong(ttf);
+	}
+	if ( basescripts!=0 ) {
+	    fseek(ttf,info->base_start+axes[axis]+basescripts,SEEK_SET);
+	    basescriptcnt = getushort(ttf);
+	    bs = gcalloc(basescriptcnt,sizeof(struct tagoff));
+	    for ( i=0; i<basescriptcnt; ++i ) {
+		bs[i].tag    = getlong(ttf);
+		bs[i].offset = getushort(ttf);
+		if ( bs[i].offset != 0 )
+		    bs[i].offset += info->base_start+axes[axis]+basescripts;
+	    }
+	    last = NULL;
+	    for ( i=0; i<basescriptcnt; ++i ) if ( bs[i].offset!=0 ) {
+		int basevalues, defminmax;
+		int langsyscnt;
+		struct tagoff *ls;
+		fseek(ttf,bs[i].offset,SEEK_SET);
+		basevalues = getushort(ttf);
+		defminmax  = getushort(ttf);
+		langsyscnt = getushort(ttf);
+		ls = gcalloc(langsyscnt,sizeof(struct tagoff));
+		for ( j=0; j<langsyscnt; ++j ) {
+		    ls[j].tag    = getlong(ttf);
+		    ls[j].offset = getushort(ttf);
+		}
+		curScript = chunkalloc(sizeof(struct basescript));
+		if ( last==NULL )
+		    curBase->scripts = curScript;
+		else
+		    last->next = curScript;
+		last = curScript;
+		curScript->script = bs[i].tag;
+		if ( basevalues!=0 ) {
+		    int coordcnt;
+		    int *coords;
+
+		    fseek( ttf,bs[i].offset+basevalues,SEEK_SET);
+		    curScript->def_baseline = getushort(ttf);
+		    tot = coordcnt = getushort(ttf);
+		    if ( coordcnt!=curBase->baseline_cnt ) {
+			LogError( "!!!!! Coord count (%d) for '%c%c%c%c' script does not match base tag count (%d) in 'BASE' table\n",
+				coordcnt,
+				bs[i].tag>>24, bs[i].tag>>16, bs[i].tag>>8, bs[i].tag,
+				curBase->baseline_cnt );
+			if ( tot<curBase->baseline_cnt )
+			    tot = curBase->baseline_cnt;
+		    }
+		    coords = gcalloc(coordcnt,sizeof(int));
+		    curScript->baseline_pos = gcalloc(tot,sizeof(int16));
+		    for ( j=0; j<coordcnt; ++j )
+			coords[j] = getushort(ttf);
+		    for ( j=0; j<coordcnt; ++j ) if ( coords[j]!=0 ) {
+			int format;
+			fseek( ttf,bs[i].offset+basevalues+coords[j],SEEK_SET);
+			format = getushort(ttf);
+			curScript->baseline_pos[j]  = (short) getushort(ttf);
+			if ( format!=1 && format!=2 && format!=3 )
+			    LogError("!!!!! Bad Base Coord format (%d) for '%c%c%c%c' in '%c%c%c%c' script in 'BASE' table\n",
+					format,
+					curBase->baseline_tags[j]>>24, curBase->baseline_tags[j]>>16, curBase->baseline_tags[j]>>8, curBase->baseline_tags[j],
+					bs[i].tag>>24, bs[i].tag>>16, bs[i].tag>>8, bs[i].tag );
+		    }
+		    free(coords);
+		}
+		lastLang = NULL;
+		if ( defminmax!=0 )
+		    curScript->langs = lastLang = readttfbaseminmax(ttf,bs[i].offset+defminmax,info,bs[i].tag,DEFAULT_LANG);
+		if ( langsyscnt!=0 ) {
+		    for ( j=0; j<langsyscnt; ++j ) if ( ls[j].offset!=0 ) {
+			cur = readttfbaseminmax(ttf,bs[i].offset+ls[j].offset,info,bs[i].tag,ls[j].tag);
+			if ( last==NULL )
+			    curScript->langs = cur;
+			else
+			    lastLang->next = cur;
+			lastLang = cur;
+		    }
+		}
+		free(ls);
+	    }
+	}
+	free(bs);
+    }
+}

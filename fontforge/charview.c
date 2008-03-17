@@ -2004,7 +2004,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	}
 	if ( cv->showvmetrics ) {
 	    DrawLine(cv,pixmap,(sf->ascent+sf->descent)/2,-8096,(sf->ascent+sf->descent)/2,8096,coordcol);
-	    DrawLine(cv,pixmap,-8096,sf->vertical_origin,8096,sf->vertical_origin,coordcol);
+	    /*DrawLine(cv,pixmap,-8096,sf->vertical_origin,8096,sf->vertical_origin,coordcol);*/
 	}
 
 	DrawSelImageList(cv,pixmap,cv->b.layerheads[cv->b.drawmode]->images);
@@ -2098,9 +2098,9 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		    NULL,_("TopAccent"));
     }
     if ( cv->showvmetrics ) {
-	int len, y = -cv->yoff + cv->height - rint((sf->vertical_origin-cv->b.sc->vwidth)*cv->scale);
-	DrawLine(cv,pixmap,-32768,sf->vertical_origin-cv->b.sc->vwidth,
-			    32767,sf->vertical_origin-cv->b.sc->vwidth,
+	int len, y = -cv->yoff + cv->height - rint((/*sf->vertical_origin*/-cv->b.sc->vwidth)*cv->scale);
+	DrawLine(cv,pixmap,-32768,/*sf->vertical_origin*/-cv->b.sc->vwidth,
+			    32767,/*sf->vertical_origin*/-cv->b.sc->vwidth,
 		(!cv->inactive && cv->vwidthsel)?widthselcol:widthcol);
 	if ( y>-40 && y<cv->height+40 ) {
 	    dtos( buf, cv->b.sc->vwidth);

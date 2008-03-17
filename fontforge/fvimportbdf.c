@@ -2085,7 +2085,7 @@ return( NULL );
 	map->enc = enc;
 	if ( defs.metricsset!=0 ) {
 	    sf->hasvmetrics = true;
-	    sf->vertical_origin = defs.vertical_origin==0?sf->ascent:defs.vertical_origin;
+	    /*sf->vertical_origin = defs.vertical_origin==0?sf->ascent:defs.vertical_origin;*/
 	}
 	sf->display_size = pixelsize;
 	if ( comments[0]!='\0' ) {

@@ -1333,8 +1333,6 @@ static struct langstyle *stylelist[] = {regs, meds, books, demibolds, bolds, hea
 #define CID_Version	1011
 #define CID_UniqueID	1012
 #define CID_HasVerticalMetrics	1013
-#define CID_VOriginLab	1014
-#define CID_VOrigin	1015
 #define CID_Fontname	1016
 #define CID_Em		1017
 #define CID_Scale	1018
@@ -2167,17 +2165,7 @@ return( true );
 static int GFI_VMetricsCheck(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
 	GWindow gw = GGadgetGetWindow(g);
-	const unichar_t *vo = _GGadgetGetTitle(GWidgetGetControl(gw,CID_VOrigin));
 	int checked = GGadgetIsChecked(g);
-	if ( checked && *vo=='\0' ) {
-	    struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	    char space[10]; unichar_t uspace[10];
-	    sprintf( space, "%d", d->sf->ascent );
-	    uc_strcpy(uspace,space);
-	    GGadgetSetTitle(GWidgetGetControl(gw,CID_VOrigin),uspace);
-	}
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_VOrigin),checked);
-	GGadgetSetEnabled(GWidgetGetControl(gw,CID_VOriginLab),checked);
 	GGadgetSetEnabled(GWidgetGetControl(GDrawGetParentWindow(gw),CID_VLineGap),checked);
 	GGadgetSetEnabled(GWidgetGetControl(GDrawGetParentWindow(gw),CID_VLineGapLab),checked);
     }
@@ -4326,7 +4314,7 @@ static int GFI_OK(GGadget *g, GEvent *e) {
 	real ia, cidversion;
 	const unichar_t *txt, *fond; unichar_t *end;
 	int i,j, mcs;
-	int vmetrics, vorigin, namechange, guideorder2;
+	int vmetrics, namechange, guideorder2;
 	int xuidchanged = false;
 	GTextInfo *pfmfam, *ibmfam, *fstype, *nlitem;
 	int32 len;
@@ -4421,8 +4409,6 @@ return( true );
 	    if ( err )
 return(true);
 	}
-	if ( vmetrics )
-	    vorigin = GetInt8(gw,CID_VOrigin,_("Vertical _Origin:"),&err);
 	os2version = sf->os2_version;
 	if ( d->ttf_set ) {
 	    char *os2v = GGadgetGetTitle8(GWidgetGetControl(gw,CID_OS2Version));
@@ -4658,11 +4644,6 @@ return(true);
 	_sf->hasvmetrics = vmetrics;
 	for ( j=0; j<_sf->subfontcnt; ++j )
 	    _sf->subfonts[j]->hasvmetrics = vmetrics;
-	if ( vmetrics ) {
-	    _sf->vertical_origin = vorigin;
-	    for ( j=0; j<_sf->subfontcnt; ++j )
-		_sf->subfonts[j]->vertical_origin = vorigin;
-	}
 
 	if ( d->private!=NULL ) {
 	    PSDictFree(sf->private);
@@ -7495,7 +7476,7 @@ void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
     GTextInfo *namelistnames;
     struct gfi_data *d;
     char iabuf[20], upbuf[20], uwbuf[20], asbuf[20], dsbuf[20],
-	    vbuf[20], uibuf[12], vorig[20], embuf[20];
+	    vbuf[20], uibuf[12], embuf[20];
     char dszbuf[20], dsbbuf[20], dstbuf[21], sibuf[20], swbuf[20];
     char ranges[40], codepages[40];
     int i,j,k,g, psrow;
@@ -7949,28 +7930,7 @@ return;
 	psgcd[14].gd.flags |= gg_cb_on;
     psgcd[14].gd.handle_controlevent = GFI_VMetricsCheck;
     psgcd[14].creator = GCheckBoxCreate;
-
-    psgcd[15].gd.pos.x = 12; psgcd[15].gd.pos.y = psgcd[14].gd.pos.y+22;
-    pslabel[15].text = (unichar_t *) _("Vertical _Origin:");
-    pslabel[15].text_is_1byte = true;
-    pslabel[15].text_in_resource = true;
-    psgcd[15].gd.label = &pslabel[15];
-    psgcd[15].gd.flags = sf->hasvmetrics ? (gg_visible | gg_enabled) : gg_visible;
-    psgcd[15].gd.cid = CID_VOriginLab;
-    psgcd[15].creator = GLabelCreate;
-
-    psgcd[16].gd.pos.x = psgcd[7].gd.pos.x; psgcd[16].gd.pos.y = psgcd[15].gd.pos.y-4; psgcd[16].gd.pos.width = psgcd[15].gd.pos.width;
-    psgcd[16].gd.flags = sf->hasvmetrics ? (gg_visible | gg_enabled) : gg_visible;
-    pslabel[16].text = (unichar_t *) "";
-    pslabel[16].text_is_1byte = true;
-    if ( sf->vertical_origin!=0 || sf->hasvmetrics ) {
-	sprintf( vorig, "%d", sf->vertical_origin );
-	pslabel[16].text = (unichar_t *) vorig;
-    }
-    psgcd[16].gd.label = &pslabel[16];
-    psgcd[16].gd.cid = CID_VOrigin;
-    psgcd[16].creator = GTextFieldCreate;
-    k = 17;
+    k = 15;
 
     psgcd[k].gd.pos.x = psgcd[k-2].gd.pos.x; psgcd[k].gd.pos.y = psgcd[k-1].gd.pos.y+32;
     psgcd[k].gd.flags = gg_visible | gg_enabled;

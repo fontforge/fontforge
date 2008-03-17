@@ -98,11 +98,13 @@ static void BDFDumpChar(FILE *file,BDFFont *font,BDFChar *bdfc,int enc,
 	    fprintf( file, "SWIDTH1 %d 0\n", bdfc->sc->vwidth*1000/em );
 	if ( !(defs->metricssets&MS_Vert) || bdfc->vwidth!=defs->dwidth1 )
 	    fprintf( file, "DWIDTH1 %d 0\n", bdfc->vwidth );
+#if 0
 	if ( 	/* For CID fonts */
 		font->sf->vertical_origin!=bdfc->sc->parent->vertical_origin ) {
 		fprintf( file, "VVECTOR %d,%d\n", 500, 1000*bdfc->sc->parent->vertical_origin/
 			(bdfc->sc->parent->ascent+bdfc->sc->parent->descent)  );
 	}
+#endif
     }
     fprintf( file, "BBX %d %d %d %d\n", bdfc->xmax-bdfc->xmin+1, bdfc->ymax-bdfc->ymin+1,
 	    bdfc->xmin, bdfc->ymin );

@@ -1510,6 +1510,31 @@ typedef struct layerinfo {
     unsigned int ticked: 1;
 } LayerInfo;
 
+/* Baseline data from the 'BASE' table */
+struct baselangextent {
+    uint32 lang;		/* also used for feature tag */
+    struct baselangextent *next;
+    int16 ascent, descent;
+    struct baselangextent *features;
+};
+
+struct basescript {
+    uint32 script;
+    struct basescript *next;
+    int    def_baseline;	/* index [0-baseline_cnt) */
+    int16 *baseline_pos;	/* baseline_cnt of these */
+    struct baselangextent *langs;	/* Language specific extents (may be NULL) */
+				/* The default one has the tag DEFAULT_LANG */
+};
+
+struct Base {
+    int baseline_cnt;
+    uint32 *baseline_tags;
+    /* A font does not need to provide info on all baselines, but if one script */
+    /*  talks about a baseline, then all must. So the set of baselines is global*/
+    struct basescript *scripts;
+};
+
 typedef struct splinefont {
     char *fontname, *fullname, *familyname, *weight;
     char *copyright;
@@ -1518,7 +1543,6 @@ typedef struct splinefont {
     char *version;
     real italicangle, upos, uwidth;		/* In font info */
     int ascent, descent;
-    int vertical_origin;			/* height of vertical origin in character coordinate system */
     int uniqueid;				/* Not copied when reading in!!!! */
     int glyphcnt, glyphmax;			/* allocated size of glyphs array */
     SplineChar **glyphs;
@@ -1685,6 +1709,7 @@ typedef struct splinefont {
     LayerInfo *layers;
     int layer_cnt;
     int display_layer;
+    struct Base *horiz_base, *vert_base;
 } SplineFont;
 
 /* I am going to simplify my life and not encourage intermediate designs */
@@ -2024,6 +2049,10 @@ extern EncMap *EncMapCopy(EncMap *map);
 extern void SFExpandGlyphCount(SplineFont *sf, int newcnt);
 extern void ScriptLangListFree(struct scriptlanglist *sl);
 extern void FeatureScriptLangListFree(FeatureScriptLangList *fl);
+extern void SFBaseSort(SplineFont *sf);
+extern void BaseLangFree(struct baselangextent *extent);
+extern void BaseScriptFree(struct basescript *bs);
+extern void BaseFree(struct Base *base);
 extern void SplineFontFree(SplineFont *sf);
 extern void MATHFree(struct MATH *math);
 extern struct MATH *MathTableNew(SplineFont *sf);

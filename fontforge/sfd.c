@@ -1641,6 +1641,46 @@ return;
     fprintf( sfd,"EndMacFeatures\n" );
 }
 
+static void SFDDumpBaseLang(FILE *sfd,struct baselangextent *bl) {
+
+    if ( bl->lang==0 )
+	fprintf( sfd, " { %d %d", bl->descent, bl->ascent );
+    else
+	fprintf( sfd, " { '%c%c%c%c' %d %d",
+		bl->lang>>24, bl->lang>>16, bl->lang>>8, bl->lang,
+		bl->descent, bl->ascent );
+    for ( bl=bl->features; bl!=NULL; bl=bl->next )
+	SFDDumpBaseLang(sfd,bl);
+    putc('}',sfd);
+}
+
+static void SFDDumpBase(FILE *sfd,char *keyword,struct Base *base) {
+    int i;
+    struct basescript *bs;
+    struct baselangextent *bl;
+
+    fprintf( sfd, "%s %d", keyword, base->baseline_cnt );
+    for ( i=0; i<base->baseline_cnt; ++i ) {
+	fprintf( sfd, " '%c%c%c%c'",
+		base->baseline_tags[i]>>24,
+		base->baseline_tags[i]>>16,
+		base->baseline_tags[i]>>8,
+		base->baseline_tags[i]);
+    }
+    putc('\n',sfd);
+
+    for ( bs=base->scripts; bs!=NULL; bs=bs->next ) {
+	fprintf( sfd, "BaseScript: '%c%c%c%c' %d ",
+		bs->script>>24, bs->script>>16, bs->script>>8, bs->script,
+		bs->def_baseline );
+	for ( i=0; i<base->baseline_cnt; ++i )
+	    fprintf( sfd, " %d", bs->baseline_pos[i]);
+	for ( bl=bs->langs; bl!=NULL; bl=bl->next )
+	    SFDDumpBaseLang(sfd,bl);
+	putc('\n',sfd);
+    }
+}
+
 static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 	int todir, char *dirname) {
     int i, j, realcnt;
@@ -1704,14 +1744,16 @@ static int SFD_Dump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
 	fprintf(sfd, "StrokedFont: %d\n", sf->strokedfont );
     else if ( sf->multilayer )
 	fprintf(sfd, "MultiLayer: %d\n", sf->multilayer );
-    if ( sf->hasvmetrics )
-	fprintf(sfd, "VerticalOrigin: %d\n", sf->vertical_origin );
     if ( sf->changed_since_xuidchanged )
 	fprintf(sfd, "NeedsXUIDChange: 1\n" );
     if ( sf->xuid!=NULL )
 	fprintf(sfd, "XUID: %s\n", sf->xuid );
     if ( sf->uniqueid!=0 )
 	fprintf(sfd, "UniqueID: %d\n", sf->uniqueid );
+    if ( sf->horiz_base!=NULL )
+	SFDDumpBase(sfd,"BaseHoriz:",sf->horiz_base);
+    if ( sf->vert_base!=NULL )
+	SFDDumpBase(sfd,"BaseVert:",sf->vert_base);
     if ( sf->pfminfo.fstype!=-1 )
 	fprintf(sfd, "FSType: %d\n", sf->pfminfo.fstype );
     fprintf(sfd, "OS2Version: %d\n", sf->os2_version );
@@ -2547,6 +2589,19 @@ static int getname(FILE *sfd, char *tokbuf) {
 return( getprotectedname(sfd,tokbuf));
 }
 
+static uint32 gettag(FILE *sfd) {
+    int ch, quoted;
+    uint32 tag;
+
+    while ( (ch=getc(sfd))==' ' );
+    if ( (quoted = (ch=='\'')) ) ch = getc(sfd);
+    tag = (ch<<24)|(getc(sfd)<<16);
+    tag |= getc(sfd)<<8;
+    tag |= getc(sfd);
+    if ( quoted ) (void) getc(sfd);
+return( tag );
+}
+
 static int getint(FILE *sfd, int *val) {
     char tokbuf[100]; int ch;
     char *pt=tokbuf, *end = tokbuf+100-2;
@@ -2887,7 +2942,7 @@ static void SFDGetTtInstrs(FILE *sfd, SplineChar *sc) {
 static struct ttf_table *SFDGetTtfTable(FILE *sfd, SplineFont *sf,struct ttf_table *lasttab[2]) {
     /* We've read the TtfTable token, it is followed by a tag and a byte count */
     /* and then the instructions in enc85 format */
-    int i,len, ch;
+    int i,len;
     int which;
     struct enc85 dec;
     struct ttf_table *tab = chunkalloc(sizeof(struct ttf_table));
@@ -2895,10 +2950,7 @@ static struct ttf_table *SFDGetTtfTable(FILE *sfd, SplineFont *sf,struct ttf_tab
     memset(&dec,'\0', sizeof(dec)); dec.pos = -1;
     dec.sfd = sfd;
 
-    while ( (ch=getc(sfd))==' ' );
-    tab->tag = (ch<<24)|(getc(sfd)<<16);
-    tab->tag |= getc(sfd)<<8;
-    tab->tag |= getc(sfd);
+    tab->tag = gettag(sfd);
 
     if ( tab->tag==CHR('f','p','g','m') || tab->tag==CHR('p','r','e','p') ||
 	    tab->tag==CHR('c','v','t',' ') || tab->tag==CHR('m','a','x','p'))
@@ -2930,10 +2982,7 @@ static struct ttf_table *SFDGetShortTable(FILE *sfd, SplineFont *sf,struct ttf_t
     int which, iscvt, started;
     struct ttf_table *tab = chunkalloc(sizeof(struct ttf_table));
 
-    while ( (ch=getc(sfd))==' ' );
-    tab->tag = (ch<<24)|(getc(sfd)<<16);
-    tab->tag |= getc(sfd)<<8;
-    tab->tag |= getc(sfd);
+    tab->tag = gettag(sfd);
 
     if ( tab->tag==CHR('f','p','g','m') || tab->tag==CHR('p','r','e','p') ||
 	    tab->tag==CHR('c','v','t',' ') || tab->tag==CHR('m','a','x','p'))
@@ -2984,10 +3033,7 @@ static struct ttf_table *SFDGetTtTable(FILE *sfd, SplineFont *sf,struct ttf_tabl
     char *buf=NULL, *pt=buf, *end=buf;
     int backlen = strlen(end_tt_instrs);
 
-    while ( (ch=getc(sfd))==' ' );
-    tab->tag = (ch<<24)|(getc(sfd)<<16);
-    tab->tag |= getc(sfd)<<8;
-    tab->tag |= getc(sfd);
+    tab->tag = gettag(sfd);
 
     if ( tab->tag==CHR('f','p','g','m') || tab->tag==CHR('p','r','e','p') ||
 	    tab->tag==CHR('c','v','t',' ') || tab->tag==CHR('m','a','x','p'))
@@ -3964,10 +4010,8 @@ return( NULL );
             if ( ch=='\n' || ch=='\r' )
                 script = 0;
             else {
-                script = ch<<24;
-                script |= (getc(sfd)<<16);
-                script |= (getc(sfd)<<8);
-                script |= getc(sfd);
+		ungetc(ch,sfd);
+		script = gettag(sfd);
             }
 	} else if ( strmatch(tok,"Width:")==0 ) {
 	    getsint(sfd,&sc->width);
@@ -4386,10 +4430,7 @@ exit(1);
 		    ((PST1 *) pst)->script_lang_index = SFFindBiggestScriptLangIndex(sf,
 			    script!=0?script:SCScriptFromUnicode(sc),DEFAULT_LANG);
 		if ( ch=='\'' ) {
-		    ((PST1 *) pst)->tag = getc(sfd)<<24;
-		    ((PST1 *) pst)->tag |= getc(sfd)<<16;
-		    ((PST1 *) pst)->tag |= getc(sfd)<<8;
-		    ((PST1 *) pst)->tag |= getc(sfd);
+		    ((PST1 *) pst)->tag = gettag(sfd);
 		    getc(sfd);	/* Final quote */
 		} else if ( ch=='<' ) {
 		    getint(sfd,&temp);
@@ -5077,10 +5118,7 @@ return( NULL );
 	if ( ch!='\'' )
 return( NULL );
 
-	tag = getc(sfd)<<24;
-	tag |= getc(sfd)<<16;
-	tag |= getc(sfd)<<8;
-	tag |= getc(sfd);
+	tag = gettag(sfd);
 	getc(sfd);		/* final quote */
 return( (OTLookup *) (intpt) tag );
     } else {
@@ -5134,10 +5172,7 @@ static void SFDParseChainContext(FILE *sfd,SplineFont *sf,FPST *fpst, char *tok,
 	}
 	while ( (ch=getc(sfd))==' ' || ch=='\t' );
 	if ( ch=='\'' ) {
-	    ((FPST1 *) fpst)->tag = getc(sfd)<<24;
-	    ((FPST1 *) fpst)->tag |= getc(sfd)<<16;
-	    ((FPST1 *) fpst)->tag |= getc(sfd)<<8;
-	    ((FPST1 *) fpst)->tag |= getc(sfd);
+	    ((FPST1 *) fpst)->tag = gettag(sfd);
 	    getc(sfd);	/* Final quote */
 	} else
 	    ungetc(ch,sfd);
@@ -5619,7 +5654,6 @@ static void SFDParseLookup(FILE *sfd,SplineFont *sf,OTLookup *otl) {
     FeatureScriptLangList *fl, *lastfl;
     struct scriptlanglist *sl, *lastsl;
     int i, lcnt, lmax=0;
-    int ch1, ch2, ch3, ch4;
     uint32 *langs=NULL;
     char *subname;
 
@@ -5688,8 +5722,7 @@ static void SFDParseLookup(FILE *sfd,SplineFont *sf,OTLookup *otl) {
 		fl->ismac = true;
 		fl->featuretag = (ft<<16) | fs;
 	    } else if ( ch=='\'' ) {
-		ch1 = getc(sfd); ch2 = getc(sfd); ch3=getc(sfd); ch4=getc(sfd);
-		fl->featuretag = (ch1<<24)|(ch2<<16)|(ch3<<8)|ch4;
+		fl->featuretag = gettag(sfd);
 		(void) getc(sfd);
 	    }
 	    while ( (ch=getc(sfd))==' ' );
@@ -5706,8 +5739,7 @@ static void SFDParseLookup(FILE *sfd,SplineFont *sf,OTLookup *otl) {
 			lastsl->next = sl;
 		    lastsl = sl;
 		    if ( ch=='\'' ) {
-			ch1 = getc(sfd); ch2 = getc(sfd); ch3=getc(sfd); ch4=getc(sfd);
-			sl->script = (ch1<<24)|(ch2<<16)|(ch3<<8)|ch4;
+			sl->script = gettag(sfd);
 			(void) getc(sfd);
 		    }
 		    while ( (ch=getc(sfd))==' ' );
@@ -5718,10 +5750,9 @@ static void SFDParseLookup(FILE *sfd,SplineFont *sf,OTLookup *otl) {
 			    if ( ch=='>' )
 			break;
 			    if ( ch=='\'' ) {
-				ch1 = getc(sfd); ch2 = getc(sfd); ch3=getc(sfd); ch4=getc(sfd);
 			        if ( lcnt>=lmax )
 				    langs = grealloc(langs,(lmax+=10)*sizeof(uint32));
-				langs[lcnt++] = (ch1<<24)|(ch2<<16)|(ch3<<8)|ch4;
+				langs[lcnt++] = gettag(sfd);
 				(void) getc(sfd);
 			    }
 			}
@@ -5771,6 +5802,83 @@ static void SFDParseMathItem(FILE *sfd,SplineFont *sf,char *tok) {
     }
 }
 
+static struct baselangextent *ParseBaseLang(FILE *sfd) {
+    struct baselangextent *bl;
+    struct baselangextent *cur, *last;
+    int ch;
+
+    while ( (ch=getc(sfd))==' ' );
+    if ( ch=='{' ) {
+	bl = chunkalloc(sizeof(struct baselangextent));
+	while ( (ch=getc(sfd))==' ' );
+	ungetc(ch,sfd);
+	if ( ch=='\'' )
+	    bl->lang = gettag(sfd);		/* Lang or Feature tag, or nothing */
+	getsint(sfd,&bl->descent);
+	getsint(sfd,&bl->ascent);
+	last = NULL;
+	while ( (ch=getc(sfd))==' ' );
+	while ( ch=='{' ) {
+	    ungetc(ch,sfd);
+	    cur = ParseBaseLang(sfd);
+	    if ( last==NULL )
+		bl->features = cur;
+	    else
+		last->next = cur;
+	    last = cur;
+	    while ( (ch=getc(sfd))==' ' );
+	}
+	if ( ch!='}' ) ungetc(ch,sfd);
+return( bl );
+    }
+return( NULL );
+}
+
+static struct basescript *SFDParseBaseScript(FILE *sfd,struct Base *base,char *tok) {
+    struct basescript *bs;
+    int i, ch;
+    struct baselangextent *last, *cur;
+
+    if ( base==NULL )
+return(NULL);
+
+    bs = chunkalloc(sizeof(struct basescript));
+
+    bs->script = gettag(sfd);
+    getint(sfd,&bs->def_baseline);
+    if ( base->baseline_cnt!=0 ) {
+	bs->baseline_pos = gcalloc(base->baseline_cnt,sizeof(int16));
+	for ( i=0; i<base->baseline_cnt; ++i )
+	    getsint(sfd, &bs->baseline_pos[i]);
+    }
+    while ( (ch=getc(sfd))==' ' );
+    last = NULL;
+    while ( ch=='{' ) {
+	ungetc(ch,sfd);
+	cur = ParseBaseLang(sfd);
+	if ( last==NULL )
+	    bs->langs = cur;
+	else
+	    last->next = cur;
+	last = cur;
+	while ( (ch=getc(sfd))==' ' );
+    }
+return( bs );
+}
+
+static struct Base *SFDParseBase(FILE *sfd) {
+    struct Base *base = chunkalloc(sizeof(struct Base));
+    int i;
+
+    getint(sfd,&base->baseline_cnt);
+    if ( base->baseline_cnt!=0 ) {
+	base->baseline_tags = galloc(base->baseline_cnt*sizeof(uint32));
+	for ( i=0; i<base->baseline_cnt; ++i )
+	    base->baseline_tags[i] = gettag(sfd);
+    }
+return( base );
+}
+
 static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
 	int fromdir, char *dirname, int sfdversion) {
     SplineFont *sf;
@@ -5789,6 +5897,8 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
     int hadtimes=false, haddupenc;
     int old;
     int old_style_order2 = false;
+    struct Base *last_base = NULL;
+    struct basescript *last_base_script = NULL;
 
     orig_pos = 0;		/* Only used for compatibility with extremely old sfd files */
 
@@ -6042,8 +6152,27 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
 	    getint(sfd,&temp);
 	    sf->changed_since_xuidchanged = temp;
 	} else if ( strmatch(tok,"VerticalOrigin:")==0 ) {
-	    getint(sfd,&sf->vertical_origin);
+	    int temp;
+	    getint(sfd,&temp);
 	    sf->hasvmetrics = true;
+	} else if ( strmatch(tok,"BaseHoriz:")==0 ) {
+	    sf->horiz_base = SFDParseBase(sfd);
+	    last_base = sf->horiz_base;
+	    last_base_script = NULL;
+	} else if ( strmatch(tok,"BaseVert:")==0 ) {
+	    sf->vert_base = SFDParseBase(sfd);
+	    last_base = sf->vert_base;
+	    last_base_script = NULL;
+	} else if ( strmatch(tok,"BaseScript:")==0 ) {
+	    struct basescript *bs = SFDParseBaseScript(sfd,last_base,tok);
+	    if ( last_base==NULL ) {
+		BaseScriptFree(bs);
+		bs = NULL;
+	    } else if ( last_base_script!=NULL )
+		last_base_script->next = bs;
+	    else
+		last_base->scripts = bs;
+	    last_base_script = bs;
 	} else if ( strmatch(tok,"FSType:")==0 ) {
 	    getsint(sfd,&sf->pfminfo.fstype);
 	} else if ( strmatch(tok,"OS2Version:")==0 ) {
@@ -6122,20 +6251,12 @@ exit(1);
 		((SplineFont1 *) sf)->script_lang[i] = galloc((jmax+1)*sizeof(struct script_record));
 		((SplineFont1 *) sf)->script_lang[i][jmax].script = 0;
 		for ( j=0; j<jmax; ++j ) {
-		    while ( (ch=getc(sfd))==' ' || ch=='\t' );
-		    ((SplineFont1 *) sf)->script_lang[i][j].script = ch<<24;
-		    ((SplineFont1 *) sf)->script_lang[i][j].script |= getc(sfd)<<16;
-		    ((SplineFont1 *) sf)->script_lang[i][j].script |= getc(sfd)<<8;
-		    ((SplineFont1 *) sf)->script_lang[i][j].script |= getc(sfd);
+		    ((SplineFont1 *) sf)->script_lang[i][j].script = gettag(sfd);
 		    getint(sfd,&kmax);
 		    ((SplineFont1 *) sf)->script_lang[i][j].langs = galloc((kmax+1)*sizeof(uint32));
 		    ((SplineFont1 *) sf)->script_lang[i][j].langs[kmax] = 0;
 		    for ( k=0; k<kmax; ++k ) {
-			while ( (ch=getc(sfd))==' ' || ch=='\t' );
-			((SplineFont1 *) sf)->script_lang[i][j].langs[k] = ch<<24;
-			((SplineFont1 *) sf)->script_lang[i][j].langs[k] |= getc(sfd)<<16;
-			((SplineFont1 *) sf)->script_lang[i][j].langs[k] |= getc(sfd)<<8;
-			((SplineFont1 *) sf)->script_lang[i][j].langs[k] |= getc(sfd);
+			((SplineFont1 *) sf)->script_lang[i][j].langs[k] = gettag(sfd);
 		    }
 		}
 	    }
@@ -6414,21 +6535,15 @@ exit(1);
 		IError("Table ordering specified in version 2 sfd file.\n" );
 exit( 1 );
 	    }
-	    while ((ch=getc(sfd))==' ' );
 	    ord = chunkalloc(sizeof(struct table_ordering));
-	    ord->table_tag = (ch<<24) | (getc(sfd)<<16);
-	    ord->table_tag |= getc(sfd)<<8;
-	    ord->table_tag |= getc(sfd);
+	    ord->table_tag = gettag(sfd);
 	    getint(sfd,&temp);
 	    ord->ordered_features = galloc((temp+1)*sizeof(uint32));
 	    ord->ordered_features[temp] = 0;
 	    for ( i=0; i<temp; ++i ) {
 		while ( isspace((ch=getc(sfd))) );
 		if ( ch=='\'' ) {
-		    ch = getc(sfd);
-		    ord->ordered_features[i] = (ch<<24) | (getc(sfd)<<16);
-		    ord->ordered_features[i] |= (getc(sfd)<<8);
-		    ord->ordered_features[i] |= getc(sfd);
+		    ord->ordered_features[i] = gettag(sfd);
 		    if ( (ch=getc(sfd))!='\'') ungetc(ch,sfd);
 		} else if ( ch=='<' ) {
 		    int f,s;
