@@ -1485,7 +1485,13 @@ return( NULL );
 	es.bytes_per_line = 1;
 	is_aa = false;
     } else {
-	SplineCharFindBounds(sc,&es.bbox);
+#ifdef FONTFORGE_CONFIG_TYPE3
+	if ( sc->parent->multilayer )
+	    /* I need to include the clipping path, FindBounds excludes it */
+	    SplineCharQuickConservativeBounds(sc,&es.bbox);
+	else
+#endif
+	    SplineCharFindBounds(sc,&es.bbox);
 	es.scale = (pixelsize-.1) / (real) (sc->parent->ascent+sc->parent->descent);
 	es.mmin = floor(es.bbox.miny*es.scale);
 	es.mmax = ceil(es.bbox.maxy*es.scale);
