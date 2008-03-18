@@ -1514,6 +1514,7 @@ static struct gradient *GradientEdit(struct layer_dlg *ld,struct gradient *activ
 	    GDrawDestroyWindow(cv->backimgs);
 	    cv->backimgs = NULL;
 	}
+	CVPalettesHideIfMine(cv);
     }
     GDrawDestroyWindow(gdd.gw);
 return( gdd.active );

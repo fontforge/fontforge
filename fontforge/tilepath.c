@@ -1262,6 +1262,7 @@ static int TileAsk(struct tiledata *td,SplineFont *sf) {
 	    GDrawDestroyWindow(cv->backimgs);
 	    cv->backimgs = NULL;
 	}
+	CVPalettesHideIfMine(cv);
     }
     GDrawDestroyWindow(tpd.gw);
 return( tpd.oked );
