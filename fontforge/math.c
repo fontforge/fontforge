@@ -2105,6 +2105,7 @@ void MathKernDialog(SplineChar *sc,int def_layer) {
 	    GDrawDestroyWindow(cv->backimgs);
 	    cv->backimgs = NULL;
 	}
+	CVPalettesHideIfMine(cv);
     }
     GDrawDestroyWindow(mkd.gw);
 }
