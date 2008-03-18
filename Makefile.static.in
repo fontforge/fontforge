@@ -44,7 +44,7 @@ distclean cleaner:
 	( cd Unicode ; $(MAKE) distclean )
 	( cd gutils ; $(MAKE) distclean )
 	( cd gdraw ; $(MAKE) distclean )
-	-rm Makefile config.cache config.log config.status libtool fontforge.pc systemspecific
+	-rm Makefile config.cache config.log config.status libtool fontforge.pc systemspecific inc/config.h
 
 install_libs: libs
 

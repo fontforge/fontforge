@@ -7704,10 +7704,12 @@ void CVMakeClipPath(CharView *cv) {
 	CVCharChangedUpdate((CharViewBase *) cv);
 }
 
+#ifdef FONTFORGE_CONFIG_TYPE3
 static void CVMenuClipPath(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     CVMakeClipPath(cv);
 }
+#endif
 
 void CVAddAnchor(CharView *cv) {
     int waslig;
