@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Mar-2001 -->
-  <!-- AP: Last modified: 3-Mar-2008 -->
+  <!-- AP: Last modified: 18-Mar-2008 -->
   <TITLE>Frequently Asked Questions</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -780,7 +780,9 @@
 	      On the mac<BR>
 	      The line spacing is set by the ascender and descender values of the 'hhea'
 	      table. These in turn are set to the bounding box values of the font. Not
-	      a good choice.
+	      a good choice. You can control these values from
+	      <A HREF="fontinfo.html#TTF-Metrics" TARGET="_top">Element-&gt;Font
+	      Info-&gt;OS/2-&gt;Metrics</A>.
 	    <LI>
 	      On windows<BR>
 	      Line spacing is supposed to be set to the Typo Ascent/Typo Desent values
@@ -790,7 +792,9 @@
 	      rule, and instead base linespacing on the Win Ascent/Descent values of the
 	      OS/2 table. These values are supposed to specify a clipping region for the
 	      font (not line spacing). The clipping region should be as big as the font's
-	      bounding box, but in some cases needs to be bigger.
+	      bounding box, but in some cases needs to be bigger. Again these may be set
+	      from <A HREF="fontinfo.html#TTF-Metrics" TARGET="_top">Element-&gt;Font
+	      Info-&gt;OS/2-&gt;Metrics</A>.
 	      <P>
 	      (The clipping region should be bigger than the bounding box if a GPOS lookup
 	      could move a glyph so that it extended beyond the bounding box (mark to base
@@ -808,6 +812,21 @@
 	      use one of the above methods.
 	  </UL>
       </UL>
+      <P>
+      Actually this is not a very useful question any more. Modern fonts tend to
+      have several different scripts in them and the different scripts may have
+      different line spacing requirements. Even within one script there may be
+      differences (English uses no (or extremely few) accented letters, while most
+      other European languages use accents, thus English could be set more densely
+      than German).
+      <P>
+      Instead of having one global measurement which controls the line spacing
+      for all uses of the font, it is better to have more specific measures which
+      control the line spacing dependent on conditions. The OpenType
+      <A HREF="baseline.html" TARGET="_top">'BASE' table </A>does this. It allows
+      you to specify extent data depending on script, language and active feature
+      (for example, a 'mkmk' feature might increase the line spacing). I don't
+      know whether any applications actually make use of these data
     <DT>
       <A NAME="em-units"><B>How big will my glyphs be?</B></A>
     <DD>
