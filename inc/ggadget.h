@@ -384,6 +384,7 @@ void GMatrixEditSetOtherButtonEnable(GGadget *g, void (*sob)(GGadget *g, int r, 
 void GMatrixEditSetMouseMoveReporter(GGadget *g, void (*rmm)(GGadget *g, int r, int c));
 void GMatrixEditSetTextChangeReporter(GGadget *g, void (*tcr)(GGadget *g, int r, int c, GGadget *text));
 void GMatrixEditSetValidateStr(GGadget *g, char *(*validate)(GGadget *g, int r, int c, int wasnew, char *str));
+void GMatrixEditSetBeforeDelete(GGadget *g, void (*predelete)(GGadget *g, int r));
 void GMatrixEditUp(GGadget *g);
 void GMatrixEditDown(GGadget *g);
 void GMatrixEditSetUpDownVisible(GGadget *g, int enabled);

@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 17-Feb-2008 -->
+  <!-- AP: Last modified: 17-Mar-2008 -->
   <TITLE>Spline Font Database File Format</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -14,7 +14,7 @@
   </H1>
   <P>
   <FONT COLOR="Red"><STRONG>This page is often grievously out of date. I thought
-  it was a correct on 17 Feb 2008.</STRONG></FONT> Even if out of date it should
+  it was a correct on 17 Mar 2008.</STRONG></FONT> Even if out of date it should
   be helpful, but if you really need to know the current format look at
   <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/fontforge/sfd.c">sfd.c</A>
   and see what it parses. Some descriptions of esoteric features are not complete,
@@ -376,6 +376,23 @@ Lookup: 258 0 0 "'kern' Horizontal Kerning in Latin lookup 0"  {"'kern' Horizont
 -145 {12-13 -1,1} -145 {} -130 {8-9 -1,-1} ...
 </PRE>
   </BLOCKQUOTE>
+  <P>
+  If your font has any baseline data
+  <BLOCKQUOTE>
+    <PRE>BaseHoriz: 3 'hang' 'ideo' 'romn'
+BaseScript: 'cyrl' 2  1405 -288 0
+BaseScript: 'grek' 2  1405 -288 0
+BaseScript: 'latn' 2  1405 -288 0 { 'dflt' -576 1913} { 'ENG ' -576 1482} { 'VIT ' -578 2150}
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  The BaseHoriz (or BaseVert) line indicates how many and which baselines are
+  active for this axis (Horizontal or Vertical). There is one BaseScript line
+  for each script. The first number after it indicates which baseline is the
+  default baseline for this script, subsequent numbers indicate how other baselines
+  are configured with respect to the default one. Language specific information
+  appears inside {} pairs. (feature specific information would be in {} pairs
+  inside the language specific curly braces).
   <P>
   If the font contains ttf hinting, then the file may contain truetype tables,
   these may be stored in several formats depending on the table. For containting
@@ -1257,18 +1274,26 @@ TopRightVertex: 2 0,0{13-15 1,0,1} 100,10
   (these are only supported if FontForge has been configured for multi-layered
   editing)
   <P>
-  Instead of having a single "Fore"ground layer, multilayered fonts have
+  Instead of having a single "Fore"ground layer, multilayered type3 fonts have
   (potentially) several layers, each one introduced by a Layer line which specifies
-  things like filling and stroking info for this layer, within each layer are
-  a splineset, a list of references and a list of images (any or all may be
-  omitted). The syntax for these is the same as in the normal case above.
+  things like filling and stroking info for this layer. Then within each layer
+  you may find a splineset, a list of references and a list of images (any
+  or all may be omitted). The syntax for these is the same as in the normal
+  case above.
   <BLOCKQUOTE>
     <PRE>LayerCount: 3
 Layer: 1  1 1 1  #fffffffe 1  #fffffffe 1 40 round round [1 0 0 1] []
+FillGradient: 220;260 490;450 0 pad 2 {0 #808080 1} {1 #000000 1} 
 SplineSet
 ...
 EndSplineSet
 Layer: 2  1 0 1  #00ff00 1  #0000ff 1 19 miter butt [0.5 0 0 1] [10 5]
+FillGradient: 400;400 400;400 400 repeat 2 {0 #ffffff 1} {1 #808080 1} 
+SplineSet
+...
+EndSplineSet
+Layer: 3  1 0 1  #00ff00 1  #0000ff 1 19 miter butt [0.5 0 0 1] [10 5]
+FillPattern: E 200;200 [0.707 0.707 -0.707 0.707 0 0]
 SplineSet
 ...
 EndSplineSet
@@ -1294,6 +1319,54 @@ EndSplineSet
   <P>
   Any SplineSet, Ref, Images between this Layer and the next (or the end of
   the character) are part of this layer.
+  <P>
+  The FillGradient lines allow you to specify linear or radial gradient fills
+  (or StrokeGradient lets you specify a gradient for the strokes). It is followed
+  by two points, the start and end points of a linear gradient, the focus and
+  center of a radial gradient. Then a radius (if this is 0 then we have a linear
+  gradient, otherwise a radial one). A keyword which specifies how the gradient
+  should behave outside the region specified by the start and end points. Finally
+  there is a number which gives the number of "stop-points". Each stop point
+  is in curly braces and contains three numbers, one between 0 and 1 (indicating
+  the location from the start of the gradient to it's end), one a hex colour,
+  and one the opacity, also between 0 and 1.
+  <P>
+  The FillPattern line allows you to specify a pattern tiled instead of more
+  traditional single colour fills (or StrokePattern lets you specify a pattern
+  for the strokes). It is followed by the name of a glyph (which contains the
+  pattern), the size of the pattern (width, height) in the current coordinate
+  system (so the pattern glyph will be scaled until it is this size). And a
+  transformation matrix to be applied after the pattern has been tiled across
+  the plain (the one here rotates the tiles by 45 degrees).
+  <P>
+  If a glyph is used as a tile it may have one of the following additional
+  keywords:
+  <BLOCKQUOTE>
+    <PRE>TileMargin: 20
+TileBounds: -20 -220 1020 820
+</PRE>
+  </BLOCKQUOTE>
+  <P>
+  If neither of these is specified the tile's size will be its bounding box.
+  If TileBounds is specified, the size is taken from the box information specified
+  there (minx, miny, maxx, maxy). If TileMargin is specified then the bounding
+  box will be extended by this amount (to provide a whitespace margin around
+  the tile).
+  <P>
+  Inside a SplineSet a contour may be modified by a PathFlags keyword (output
+  after the contour has been completed). Currently there is only one flag (1)
+  which indicates the that contour is part of the cliping path of the glyph.
+  <BLOCKQUOTE>
+    <PRE>SplineSet
+102 699 m 5
+ 1176 699 l 5
+ 1176 -120 l 5
+ 102 -120 l 5
+ 102 699 l 5
+  PathFlags: 1
+EndSplineSet
+</PRE>
+  </BLOCKQUOTE>
   <H3>
     <A NAME="Bitmap-Fonts">Bitmap Fonts</A>
   </H3>

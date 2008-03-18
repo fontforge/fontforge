@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 23-Feb-2004 -->
-  <!-- AP: Last modified: 14-Mar-2008 -->
+  <!-- AP: Last modified: 16-Mar-2008 -->
   <TITLE>Multi Layered Editing of Type3 and SVG fonts</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -193,16 +193,16 @@ $ make install
   may also be filled or stroked with a tiled pattern. That is a pattern is
   repeatedly layed down until it covers the entire area to be filled.
   <P ALIGN=Center>
-  <IMG SRC="TiledPattern.png" WIDTH="206" HEIGHT="154">
+  <IMG SRC="TiledPattern.png" WIDTH="212" HEIGHT="157">
   <P ALIGN=Left>
   In the example above the tile <IMG SRC="Tile.png" WIDTH="83" HEIGHT="78">
   has been scaled and replicated. The example at right is a bit more complex.
   Not only is the pattern replicated, but after that it is rotated through
   45 degrees
   <P ALIGN=Center>
-  <IMG SRC="TiledPattern45.png" WIDTH="206" HEIGHT="155">
+  <IMG SRC="TiledPattern45.png" WIDTH="213" HEIGHT="157">
   <P ALIGN=Left>
-  The pattern must be drawn in another glyph in the same font. By default the
+  The pattern is defined in another glyph in the same font. By default the
   bounding box of that glyph will be used to describe the pattern's extent
   (You may change change that with
   <A HREF="charinfo.html#TileSize">Element-&gt;Glyph Info-&gt;Tile Size</A>).
@@ -212,7 +212,8 @@ $ make install
   <P>
   FontForge's rasterization leaves much to be desired. It does not support
   full color (rounding everything to a shade of grey), and its stroking algorithm
-  is quite poor (it does not rasterize dashes).
+  is quite poor (it does not rasterize dashes), it does not support the full
+  complexity of radial gradients...
   <P>
   <P ALIGN=Center>
   -- <A HREF="charview.html">Back</A> -- <A HREF="overview.html">TOC</A> --
