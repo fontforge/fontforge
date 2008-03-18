@@ -60,7 +60,7 @@ distclean cleaner:
 	-( cd po ; rm *.mo Makefile* )
 	-( cd pyhook ; rm -rf build dist setup.py )
 	-rm -rf .libs
-	-rm Makefile config.cache config.log config.status libtool fontforge.pc systemspecific
+	-rm Makefile config.cache config.log config.status libtool fontforge.pc systemspecific inc/config.h
 
 install_libs: libs
 # You may need to be root to do the install
