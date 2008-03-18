@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 24-Mar-2007 -->
+  <!-- AP: Last modified: 17-Mar-2008 -->
   <TITLE>Advanced Typography tables</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -33,14 +33,17 @@
       <A HREF="non-standard.html">FontForge's non-standard extensions</A>
   </UL>
   <H2>
-    The <B><CODE>GPOS,</CODE></B> <B><CODE>GSUB</CODE></B> and
-    <B><CODE>GDEF</CODE></B> <A NAME="opentype">opentype</A> tables
+    The <B><CODE>GPOS,</CODE></B> <B><CODE>GSUB,</CODE></B>
+    <B><CODE>GDEF</CODE></B> and <CODE>BASE</CODE>
+    <A NAME="opentype">opentype</A> tables
   </H2>
   <P>
-  These two tables are used for positioning and substituting glyphs. The GPOS
-  table can control things like: kerning, accent positioning, cursive joining,
-  etc. The GSUB table can control things like: ligatures, arabic forms, vertical
-  rotation, conversion to small caps, indic glyph rearrangement, etc.
+  The first two tables are used for positioning and substituting glyphs. The
+  GPOS table can control things like: kerning, accent positioning, cursive
+  joining, etc. The GSUB table can control things like: ligatures, arabic forms,
+  vertical rotation, conversion to small caps, indic glyph rearrangement, etc.
+  GDEF contains some rather esoteric glyph information, ligature carets, etc.
+  BASE contains information on baseline placement and line heights.
   <P>
   This page assumes basic familiarity with the abilities of the tables, for
   more information on them read, study and inwardly digest the opentype docs
@@ -59,6 +62,9 @@
       <A HREF="http://partners.adobe.com/public/developer/opentype/index_table_formats5.html">The
       GDEF table</A>, for classifying glyphs and for providing a ligature caret
       table
+    <LI>
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_base.html">The
+      BASE table</A>, for baseline placement
     <LI>
       <A HREF="http://partners.adobe.com/public/developer/opentype/index_tag3.html">The
       list of feature tags supported by opentype</A>
@@ -1144,9 +1150,7 @@
       FontForge does not provide an attachment list subtable nor a MarkAttachClassDef
       subtable of the GDEF table.
     <LI>
-      FontForge does not support the BASE and JUST tables
-    <LI>
-      FontForge has minimal support for VORG
+      FontForge does not support the VORG and JUST tables
   </UL>
   <P>
   <A HREF="TrueOpenTables.html">See here for a complete list of supported
