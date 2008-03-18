@@ -7457,7 +7457,7 @@ void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
 	    mcbox[3], mfbox[3], szbox[6], tnboxes[4], gaspboxes[3],
 	    lkbox[7], cbox[6], lbox[8];
     GGadgetCreateData *marray[7], *marray2[9], *narray[26], *narray2[7], *narray3[3],
-	*xuarray[13], *psarray[10], *psarray2[21], *psarray3[3], *psarray4[10],
+	*xuarray[13], *psarray[10], *psarray2[21], *psarray4[10],
 	*ppbuttons[5], *pparray[6], *vradio[5], *varray[38], *metarray[46],
 	*pp2buttons[7], *ssarray[58], *panarray[38], *comarray[3], *flogarray[3],
 	*mkarray[6], *mkarray2[4], *txarray[5], *txarray2[30],
@@ -7992,9 +7992,8 @@ return;
 
     psarray[0] = &psb2[0];
     psarray[1] = &psgcd[14];
-    psarray[2] = &psb2[1];
-    j=3;
-    psarray[j++] = &psb2[2];
+    j=2;
+    psarray[j++] = &psb2[1];
     psrow = j;
     psarray[j++] = GCD_Glue;
     psarray[j++] = NULL;
@@ -8004,8 +8003,6 @@ return;
     psarray2[10] = &psgcd[8]; psarray2[11] = &psgcd[7]; psarray2[12] = &psgcd[9]; psarray2[13] = GCD_ColSpan; psarray2[14] = NULL;
     psarray2[15] = &psgcd[11]; psarray2[16] = &psgcd[10]; psarray2[17] = &psgcd[12]; psarray2[18] = &psgcd[13]; psarray2[19] = NULL;
     psarray2[20] = NULL;
-
-    psarray3[0] = &psgcd[15]; psarray3[1] = &psgcd[16]; psarray3[2] = NULL;
 
     psarray4[0] = &psgcd[k-4]; psarray4[1] = &psgcd[k-3]; psarray4[2] = NULL;
     psarray4[3] = &psgcd[k-2]; psarray4[4] = &psgcd[k-1]; psarray4[5] = NULL;
@@ -8022,12 +8019,8 @@ return;
     psb2[0].creator = GHVBoxCreate;
 
     psb2[1].gd.flags = gg_enabled|gg_visible;
-    psb2[1].gd.u.boxelements = psarray3;
-    psb2[1].creator = GHBoxCreate;
-
-    psb2[2].gd.flags = gg_enabled|gg_visible;
-    psb2[2].gd.u.boxelements = psarray4;
-    psb2[2].creator = GHVBoxCreate;
+    psb2[1].gd.u.boxelements = psarray4;
+    psb2[1].creator = GHVBoxCreate;
 /******************************************************************************/
 
     memset(&llabel,0,sizeof(llabel));
@@ -10568,7 +10561,6 @@ return;
     GHVBoxSetExpandableRow(psb[0].ret,psrow);
     GHVBoxSetExpandableCol(psb2[0].ret,3);
     GHVBoxSetExpandableCol(psb2[1].ret,1);
-    GHVBoxSetExpandableCol(psb2[2].ret,1);
 
     GHVBoxSetExpandableRow(ppbox[0].ret,0);
     GHVBoxSetExpandableCol(ppbox[2].ret,gb_samesize);
