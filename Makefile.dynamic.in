@@ -37,7 +37,7 @@ pos:
 	( cd po ; $(MAKE) )
 
 fontforgegtk: fontforge
-	( cd gtkui ; make )
+	( cd gtkui ; $(MAKE) )
 
 clean:
 	( cd fontforge ; $(MAKE) clean )
@@ -92,7 +92,7 @@ install_docs:
 	-$(INSTALL_DATA) $(srcdir)/htdocs/ja/* $(DESTDIR)$(docdir)/ja
 
 install_po:
-	( cd po ; make install )
+	( cd po ; $(MAKE) install )
 
 install_prog:
 	mkdir -p $(DESTDIR)$(bindir)
@@ -130,7 +130,7 @@ install_py: $(DESTDIR)$(sharedir) all install_libs install_incs install_po insta
 	-(cd pyhook ; python setup.py bdist --formats=gztar ; cp dist/fontforge-*.tar.gz $(DESTDIR)/tmp )
 
 install_gtk: fontforgegtk
-	(cd gtkui ; make install )
+	(cd gtkui ; $(MAKE) install )
 
 uninstall:
 	-rm $(DESTDIR)$(bindir)/fontforge
