@@ -823,6 +823,8 @@ static void GME_DeleteActive(GMatrixEdit *gme) {
 	GDrawBeep(NULL);
 return;
     }
+    if ( gme->predelete!=NULL )
+	(gme->predelete)((GGadget *) gme, gme->active_row );
 
     gme->edit_active = false;
     GGadgetSetVisible(gme->tf,false);
@@ -2096,4 +2098,10 @@ void GMatrixEditSetColumnCompletion(GGadget *g, int col,
     GMatrixEdit *gme = (GMatrixEdit *) g;
 
     gme->col_data[col].completer = completion;
+}
+
+void GMatrixEditSetBeforeDelete(GGadget *g, void (*predelete)(GGadget *g, int r)) {
+    GMatrixEdit *gme = (GMatrixEdit *) g;
+
+    gme->predelete = predelete;
 }

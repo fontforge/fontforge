@@ -32,10 +32,10 @@ fontforge_LIBOBJECTS = asmfpst.o autohint.o autosave.o autotrace.o autowidth.o \
  stamp.o stemdb.o svg.o tottfaat.o tottfgpos.o tottf.o \
  tottfvar.o ttfinstrs.o ttfspecial.o ufo.o unicoderange.o utils.o \
  winfonts.o zapfnomen.o groups.o langfreq.o
-fontforge_UIOBJECTS = alignment.o anchorsaway.o autowidthdlg.o bdfinfo.o \
- bitmapdlg.o bitmapview.o charinfo.o charview.o clipui.o combinations.o \
- contextchain.o cursors.o cvaddpoints.o cvdebug.o cvdgloss.o cvexportdlg.o \
- cvfreehand.o cvgetinfo.o cvgridfit.o cvhand.o cvhints.o \
+fontforge_UIOBJECTS = alignment.o anchorsaway.o autowidthdlg.o basedlg.o \
+ bdfinfo.o bitmapdlg.o bitmapview.o charinfo.o charview.o clipui.o \
+ combinations.o contextchain.o cursors.o cvaddpoints.o cvdebug.o cvdgloss.o \
+ cvexportdlg.o cvfreehand.o cvgetinfo.o cvgridfit.o cvhand.o cvhints.o \
  cvimportdlg.o cvknife.o cvpalettes.o cvpointer.o cvruler.o cvshapes.o \
  cvstroke.o cvtranstools.o displayfonts.o effectsui.o encodingui.o \
  fontinfo.o fontview.o freetypeui.o fvfontsdlg.o fvmetricsdlg.o gotodlg.o \

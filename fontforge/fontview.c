@@ -1735,6 +1735,16 @@ return;
 	SFBdfProperties(fv->b.sf,fv->b.map,NULL);
 }
 
+static void FVMenuBaseHoriz(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    fv->b.sf->horiz_base = SFBaselines(fv->b.sf,fv->b.sf->horiz_base,false);
+}
+
+static void FVMenuBaseVert(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    FontView *fv = (FontView *) GDrawGetUserData(gw);
+    fv->b.sf->vert_base = SFBaselines(fv->b.sf,fv->b.sf->vert_base,true);
+}
+
 static void FVMenuMassRename(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     FVMassGlyphRename(fv);
@@ -3758,6 +3768,8 @@ static GMenuItem2 rndlist[] = {
 static GMenuItem2 infolist[] = {
     { { (unichar_t *) N_("_MATH Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("MATH Info...|No Shortcut"), NULL, NULL, FVMenuMATHInfo },
     { { (unichar_t *) N_("_BDF Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("BDF Info...|No Shortcut"), NULL, NULL, FVMenuBDFInfo, MID_StrikeInfo },
+    { { (unichar_t *) N_("_Horizontal Baselines..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Horizontal Baselines...|No Shortcut"), NULL, NULL, FVMenuBaseHoriz },
+    { { (unichar_t *) N_("_Vertical Baselines..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Vertical Baselines...|No Shortcut"), NULL, NULL, FVMenuBaseVert },
     { { (unichar_t *) N_("Show _Dependent"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, NULL, delist, delistcheck },
     { { (unichar_t *) N_("Mass Glyph _Rename..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Mass Glyph Rename...|No Shortcut"), NULL, NULL, FVMenuMassRename, MID_MassRename },
     { NULL }

@@ -2050,6 +2050,7 @@ extern void SFExpandGlyphCount(SplineFont *sf, int newcnt);
 extern void ScriptLangListFree(struct scriptlanglist *sl);
 extern void FeatureScriptLangListFree(FeatureScriptLangList *fl);
 extern void SFBaseSort(SplineFont *sf);
+extern struct baselangextent *BaseLangCopy(struct baselangextent *extent);
 extern void BaseLangFree(struct baselangextent *extent);
 extern void BaseScriptFree(struct basescript *bs);
 extern void BaseFree(struct Base *base);

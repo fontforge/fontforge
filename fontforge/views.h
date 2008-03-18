@@ -1055,4 +1055,6 @@ extern struct cidmap *AskUserForCIDMap(void);
 
 extern void DefineGroups(struct fontview *fv);
 extern void DisplayGroups(struct fontview *fv);
+
+extern struct Base *SFBaselines(SplineFont *sf,struct Base *old,int is_vertical);
 #endif	/* _VIEWS_H */
