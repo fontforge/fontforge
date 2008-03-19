@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 2-Sep-2002 -->
-  <!-- AP: Last modified: 9-Nov-2007 -->
+  <!-- AP: Last modified: 19-Mar-2008 -->
   <TITLE>Preferences Dialog</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -141,8 +141,19 @@
       A string containing a list of 4 letter table tags separated by commas. When
       loading an SFNT (ttf/otf) file, any table in the font with one of these tags
       will be preserved without interpretation. (Note: If FontForge thinks it
-      understands the table it will parse it rather than preserving
-      it).<BR CLEAR=ALL>
+      understands the table it will parse it rather than preserving it).
+    <DT>
+      SeekCharacter
+    <DD>
+      A unicode character (or a hex name for a unicode character, so either "A"
+      or "U+0041"), fontforge will attempt to scroll the display to this character
+      when it opens a font.
+    <DT>
+      CompactOnOpen
+    <DD>
+      Whether fontforge should make a font compact when it opens one (does not
+      apply to openning an sfd file which already knows whether it should be compact
+      or not).<BR CLEAR=ALL>
   </DL>
   <P>
   <IMG SRC="prefs-navigation.png" WIDTH="502" HEIGHT="339" ALIGN="Right">
