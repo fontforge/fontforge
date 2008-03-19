@@ -45,6 +45,7 @@ char *script_filenames[SCRIPT_MENU_MAX];
 extern int onlycopydisplayed, copymetadata, copyttfinstr;
 extern struct compressors compressors[];
 int home_char='A';
+int compact_font_on_open=0;
 
 #define XOR_COLOR	0x505050
 #define	FV_LAB_HEIGHT	15
@@ -6587,6 +6588,14 @@ static FontView *__FontViewCreate(SplineFont *sf) {
 
     if ( ps>200 ) ps = 128;
 
+    /* Filename != NULL if we opened an sfd file. Sfd files know whether */
+    /*  the font is compact or not and should not depend on a global flag */
+    /* If a font is new, then compaction will make it vanish completely */
+    if ( sf->fv==NULL && compact_font_on_open && sf->filename==NULL && !sf->new ) {
+	sf->compacted = true;
+	for ( i=0; i<sf->subfontcnt; ++i )
+	    sf->subfonts[i]->compacted = true;
+    }
     fv->b.nextsame = sf->fv;
     fv->b.active_layer = sf->display_layer;
     sf->fv = (FontViewBase *) fv;
@@ -6621,6 +6630,10 @@ static FontView *__FontViewCreate(SplineFont *sf) {
 	sf = fv->b.sf;
 	if ( fv->b.nextsame==NULL ) { EncMapFree(sf->map); sf->map = NULL; }
 	fv->b.map = EncMap1to1(sf->glyphcnt);
+	if ( sf->compacted ) {
+	    fv->b.normal = sf->map;
+	    fv->b.map = CompactEncMap(EncMapCopy(sf->map),sf);
+	}
     }
     fv->b.selected = gcalloc(fv->b.map->enccount,sizeof(char));
     fv->user_requested_magnify = -1;
