@@ -44,6 +44,7 @@ unichar_t *script_menu_names[SCRIPT_MENU_MAX];
 char *script_filenames[SCRIPT_MENU_MAX];
 extern int onlycopydisplayed, copymetadata, copyttfinstr;
 extern struct compressors compressors[];
+int home_char='A';
 
 #define XOR_COLOR	0x505050
 #define	FV_LAB_HEIGHT	15
@@ -5892,7 +5893,7 @@ static void FVChar(FontView *fv,GEvent *event) {
 	    if ( fv->b.sf->top_enc!=-1 && fv->b.sf->top_enc<fv->b.map->enccount )
 		pos = fv->b.sf->top_enc;
 	    else {
-		pos = SFFindSlot(fv->b.sf,fv->b.map,'A',NULL);
+		pos = SFFindSlot(fv->b.sf,fv->b.map,home_char,NULL);
 		if ( pos==-1 ) pos = 0;
 	    }
 	  break;
@@ -6257,7 +6258,7 @@ static void FVResize(FontView *fv,GEvent *event) {
 	topchar = fv->b.sf->top_enc;
     else {
 	/* Position on 'A' if it exists */
-	topchar = SFFindSlot(fv->b.sf,fv->b.map,'A',NULL);
+	topchar = SFFindSlot(fv->b.sf,fv->b.map,home_char,NULL);
 	if ( topchar==-1 ) {
 	    for ( topchar=0; topchar<fv->b.map->enccount; ++topchar )
 		if ( fv->b.map->map[topchar]!=-1 && fv->b.sf->glyphs[fv->b.map->map[topchar]]!=NULL )

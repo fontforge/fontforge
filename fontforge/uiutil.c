@@ -113,6 +113,33 @@ int GetInt8(GWindow gw,int cid,char *name,int *err) {
 return( val );
 }
 
+int GetUnicodeChar8(GWindow gw,int cid,char *name,int *err) {
+    char *txt, *end, *pt;
+    int val;
+    unichar_t *utxt;
+
+    utxt = _GGadgetGetTitle(GWidgetGetControl(gw,cid));
+    if ( u_strlen(utxt)==1 )
+return( utxt[0] );
+
+    txt = GGadgetGetTitle8(GWidgetGetControl(gw,cid));
+    val = strtol(txt,&end,16);
+    if ( *end!='\0' ) {
+	for ( pt=txt; *pt==' '; ++pt );
+	if ( (*pt=='U' || *pt=='u') && pt[1]=='+' ) {	/* Unicode notation */
+	    pt += 2;
+	    val = strtol(pt,&end,16);
+	    if ( *end!='\0' ) {
+		GTextFieldSelect(GWidgetGetControl(gw,cid),0,-1);
+		Protest8(name);
+		*err = true;
+	    }
+	}
+    }
+    free(txt);
+return( val );
+}
+
 #if __CygWin
 /* Try to find the default browser by looking it up in the windows registry */
 /* The registry is organized as a tree. We are interested in the subtree */
