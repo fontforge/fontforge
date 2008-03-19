@@ -740,7 +740,7 @@ struct Base *SFBaselines(SplineFont *sf,struct Base *old,int is_vertical) {
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
     gcd[i].gd.flags = gg_enabled|gg_visible|gg_utf8_popup;
-    gcd[i].gd.popup_msg = (unichar_t *) _("Tibetan hanging baseline");
+    gcd[i].gd.popup_msg = (unichar_t *) _("Indic (& Tibetan) hanging baseline");
     gcd[i].gd.cid = CID_BaseHang;
     gcd[i].gd.handle_controlevent = Base_ChangeBase;
     gcd[i].creator = GCheckBoxCreate;

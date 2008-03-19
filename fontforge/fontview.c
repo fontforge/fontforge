@@ -1739,12 +1739,16 @@ return;
 
 static void FVMenuBaseHoriz(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    fv->b.sf->horiz_base = SFBaselines(fv->b.sf,fv->b.sf->horiz_base,false);
+    SplineFont *sf = fv->b.cidmaster == NULL ? fv->b.sf : fv->b.cidmaster;
+    sf->horiz_base = SFBaselines(sf,sf->horiz_base,false);
+    SFBaseSort(sf);
 }
 
 static void FVMenuBaseVert(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    fv->b.sf->vert_base = SFBaselines(fv->b.sf,fv->b.sf->vert_base,true);
+    SplineFont *sf = fv->b.cidmaster == NULL ? fv->b.sf : fv->b.cidmaster;
+    sf->vert_base = SFBaselines(sf,sf->vert_base,false);
+    SFBaseSort(sf);
 }
 
 static void FVMenuMassRename(GWindow gw,struct gmenuitem *mi,GEvent *e) {
