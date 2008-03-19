@@ -140,6 +140,7 @@ static int clear_tt_instructions_when_needed = true;
 static int old_validate = true;
 static int old_fontlog = false;
 static int home_char = 'A';
+static int compact_font_on_open=0;
 
 enum pref_types { pr_int, pr_real, pr_bool, pr_enum, pr_encoding, pr_string,
 	pr_file, pr_namelist };
@@ -270,6 +271,7 @@ static struct prefs_list {
 	{ "GridFitPointSize", pr_real, &gridfit_pointsize, NULL, NULL, '\0', NULL, 1 },
 	{ "DefaultFontFilterIndex", pr_int, &default_font_filter_index, NULL, NULL, '\0', NULL, 1 },
 	{ "SeekChar", pr_int, &home_char, NULL, NULL, '\0', NULL, 1 },
+	{ "CompactOnOpen", pr_bool, &compact_font_on_open, NULL, NULL, '\0', NULL, 1 },
 	NULL
 },
  *prefs_list[] = { core_list, extras, NULL };
