@@ -136,6 +136,7 @@ extern int center_out[2];			/* from cvpalettes.c */
 extern float rr_radius;				/* from cvpalettes.c */
 extern int ps_pointcnt;				/* from cvpalettes.c */
 extern float star_percent;			/* from cvpalettes.c */
+extern int home_char;				/* from fontview.c */
 
 extern NameList *force_names_when_opening;
 extern NameList *force_names_when_saving;
@@ -207,7 +208,7 @@ return( false );
 
 /* don't use mnemonics 'C' or 'O' (Cancel & OK) */
 enum pref_types { pr_int, pr_real, pr_bool, pr_enum, pr_encoding, pr_string,
-	pr_file, pr_namelist };
+	pr_file, pr_namelist, pr_unicode };
 struct enums { char *name; int value; };
 
 struct enums fvsize_enums[] = { {NULL} };
@@ -244,6 +245,7 @@ static struct prefs_list {
 	{ N_("PreferCJKEncodings"), pr_bool, &prefer_cjk_encodings, NULL, NULL, 'C', NULL, 0, N_("When loading a truetype or opentype font which has both a unicode\nand a CJK encoding table, use this flag to specify which\nshould be loaded for the font.") },
 	{ N_("AskUserForCMap"), pr_bool, &ask_user_for_cmap, NULL, NULL, 'O', NULL, 0, N_("When loading a font in sfnt format (TrueType, OpenType, etc.),\nask the user to specify which cmap to use initially.") },
 	{ N_("PreserveTables"), pr_string, &SaveTablesPref, NULL, NULL, 'P', NULL, 0, N_("Enter a list of 4 letter table tags, separated by commas.\nFontForge will make a binary copy of these tables when it\nloads a True/OpenType font, and will output them (unchanged)\nwhen it generates the font. Do not include table tags which\nFontForge thinks it understands.") },
+	{ N_("SeekCharacter"), pr_unicode, &home_char, NULL, NULL, '\0', NULL, 0, N_("When fontforge opens a (non-sfd) font it will try to display this unicode character in the fontview.")},
 	{ NULL }
 },
   navigation_list[] = {
@@ -417,7 +419,7 @@ static int PrefsUI_GetPrefs(char *name,Val *val) {
     for ( i=0; prefs_list[i]!=NULL; ++i ) for ( j=0; prefs_list[i][j].name!=NULL; ++j ) {
 	if ( strcmp(prefs_list[i][j].name,name)==0 ) {
 	    struct prefs_list *pf = &prefs_list[i][j];
-	    if ( pf->type == pr_bool || pf->type == pr_int ) {
+	    if ( pf->type == pr_bool || pf->type == pr_int || pf->type == pr_unicode ) {
 		val->type = v_int;
 		val->u.ival = *((int *) (pf->val));
 	    } else if ( pf->type == pr_string || pf->type == pr_file ) {
@@ -470,7 +472,7 @@ static int PrefsUI_SetPrefs(char *name,Val *val1, Val *val2) {
     for ( i=0; prefs_list[i]!=NULL; ++i ) for ( j=0; prefs_list[i][j].name!=NULL; ++j ) {
 	if ( strcmp(prefs_list[i][j].name,name)==0 ) {
 	    struct prefs_list *pf = &prefs_list[i][j];
-	    if ( pf->type == pr_bool || pf->type == pr_int ) {
+	    if ( pf->type == pr_bool || pf->type == pr_int || pf->type == pr_unicode ) {
 		if ( (val1->type!=v_int && val1->type!=v_unicode) || val2!=NULL )
 return( -1 );
 		*((int *) (pf->val)) = val1->u.ival;
@@ -902,6 +904,11 @@ static void PrefsUI_LoadPrefs(void) {
 	      case pr_bool: case pr_int:
 		sscanf( pt, "%d", (int *) pl->val );
 	      break;
+	      case pr_unicode:
+		if ( sscanf( pt, "U+%x", (int *) pl->val )!=1 )
+		    if ( sscanf( pt, "u+%x", (int *) pl->val )!=1 )
+			sscanf( pt, "%x", (int *) pl->val );
+	      break;
 	      case pr_real:
 		sscanf( pt, "%f", (float *) pl->val );
 	      break;
@@ -956,6 +963,9 @@ return;
 	  break;
 	  case pr_bool: case pr_int:
 	    fprintf( p, "%s:\t%d\n", pl->name, *(int *) (pl->val) );
+	  break;
+	  case pr_unicode:
+	    fprintf( p, "%s:\tU+%04x\n", pl->name, *(int *) (pl->val) );
 	  break;
 	  case pr_real:
 	    fprintf( p, "%s:\t%g\n", pl->name, (double) *(float *) (pl->val) );
@@ -1436,8 +1446,10 @@ return( true );
 	continue;
 	    if ( pl->type==pr_int ) {
 		GetInt8(gw,j*CID_PrefsOffset+CID_PrefsBase+i,pl->name,&err);
-	    } else if ( pl->type==pr_int ) {
+	    } else if ( pl->type==pr_real ) {
 		GetReal8(gw,j*CID_PrefsOffset+CID_PrefsBase+i,pl->name,&err);
+	    } else if ( pl->type==pr_unicode ) {
+		GetUnicodeChar8(gw,j*CID_PrefsOffset+CID_PrefsBase+i,pl->name,&err);
 	    }
 	}
 	if ( err )
@@ -1450,6 +1462,9 @@ return( true );
 	    switch( pl->type ) {
 	      case pr_int:
 	        *((int *) (pl->val)) = GetInt8(gw,j*CID_PrefsOffset+CID_PrefsBase+i,pl->name,&err);
+	      break;
+	      case pr_unicode:
+	        *((int *) (pl->val)) = GetUnicodeChar8(gw,j*CID_PrefsOffset+CID_PrefsBase+i,pl->name,&err);
 	      break;
 	      case pr_bool:
 	        *((int *) (pl->val)) = GGadgetIsChecked(GWidgetGetControl(gw,j*CID_PrefsOffset+CID_PrefsBase+i));
@@ -1858,6 +1873,15 @@ void DoPrefs(void) {
 		hvarray[si++] = GCD_Glue; hvarray[si++] = GCD_Glue;
 		y += 26;
 	      break;
+	      case pr_unicode:
+		/*sprintf(buf,"U+%04x", *((int *) pl->val));*/
+		{ char *pt; pt = buf; pt = utf8_idpb(pt, *((int *) pl->val)); *pt='\0'; }
+		plabel[gc].text = (unichar_t *) copy( buf );
+		pgcd[gc++].creator = GTextFieldCreate;
+		hvarray[si++] = &pgcd[gc-1];
+		hvarray[si++] = GCD_Glue; hvarray[si++] = GCD_Glue;
+		y += 26;
+	      break;
 	      case pr_real:
 		sprintf(buf,"%g", *((float *) pl->val));
 		plabel[gc].text = (unichar_t *) copy( buf );
@@ -2116,7 +2140,7 @@ void DoPrefs(void) {
 	  case pr_namelist:
 	    free(gcd[gc+1].gd.u.list);
 	  break;
-	  case pr_string: case pr_file: case pr_int: case pr_real:
+	  case pr_string: case pr_file: case pr_int: case pr_real: case pr_unicode:
 	    free(plabels[k][gc+1].text);
 	    if ( pl->type==pr_file )
 		++gc;
