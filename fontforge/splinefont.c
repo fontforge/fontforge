@@ -512,6 +512,25 @@ static void SFScalePrivate(SplineFont *sf,double scale) {
     }
 }
 
+static void ScaleBase(struct Base *base, double scale) {
+    struct basescript *bs;
+    struct baselangextent *bl, *feat;
+    int i;
+
+    for ( bs=base->scripts; bs!=NULL; bs=bs->next ) {
+	for ( i=0 ; i<base->baseline_cnt; ++i )
+	    bs->baseline_pos[i] = (int) rint(bs->baseline_pos[i]*scale);
+	for ( bl = bs->langs; bl!=NULL; bl=bl->next ) {
+	    bl->ascent  = (int) rint( scale*bl->ascent );
+	    bl->descent = (int) rint( scale*bl->descent );
+	    for ( feat = bl->features; feat!=NULL; feat = feat->next ) {
+		feat->ascent  = (int) rint( scale*feat->ascent );
+		feat->descent = (int) rint( scale*feat->descent );
+	    }
+	}
+    }
+}
+
 int SFScaleToEm(SplineFont *sf, int as, int des) {
     double scale;
     real transform[6];
@@ -544,6 +563,10 @@ int SFScaleToEm(SplineFont *sf, int as, int des) {
 
     if ( sf->private!=NULL )
 	SFScalePrivate(sf,scale);
+    if ( sf->horiz_base!=NULL )
+	ScaleBase(sf->horiz_base, scale);
+    if ( sf->vert_base!=NULL )
+	ScaleBase(sf->vert_base, scale);
 
     if ( as+des == sf->ascent+sf->descent ) {
 	if ( as!=sf->ascent && des!=sf->descent ) {
