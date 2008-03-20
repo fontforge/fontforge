@@ -612,6 +612,7 @@ struct opentype_str {
     void *fl;
     unsigned int line_break_after: 1;
     unsigned int r2l: 1;
+    int16 bsln_off;
 };
 
 struct macname {
