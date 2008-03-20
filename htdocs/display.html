@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Sep-2002 -->
-  <!-- AP: Last modified: 22-Jul-2007 -->
+  <!-- AP: Last modified: 19-Mar-2008 -->
   <TITLE>Display Fonts</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -21,7 +21,7 @@
   The textarea should behave like any of FontForge's textarea's (except this
   one is a lot slower to respond than others), it also allows you to select
   any piece of text in it and change the font, point size and what OpenType
-  features should be applied to thattext.
+  features should be applied to that text.
   <P>
   First make a selection (or type ^A to select everything), then choose which
   font you want and how you want it dsplayed.
@@ -58,6 +58,10 @@
   have to change it manually -- FontForge expects you to set the script explicitly.
   On the upper left is a list of OpenType features (and Apple feature/settings)
   which will be applied to the selected text.
+  <P>
+  Unlike the metrics view, fontforge will attempt to do baseline alignment
+  if the font being displayed has <A HREF="elementmenu.html#HBase">horizontal
+  baseline information.</A>
   <P>
   FontForge tries to guess the appropriate dots per inch for your display --
   it may not get it right (X doesn't always know it either). If it doesn't
