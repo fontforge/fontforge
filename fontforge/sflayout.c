@@ -72,7 +72,7 @@ return( x );
     fd = ((struct fontlist *) (osc->fl))->fd;
 
     x += osc->vr.xoff;
-    y -= osc->vr.yoff;
+    y -= osc->vr.yoff + osc->bsln_off;
 
     gid = sc->orig_pos;
     if ( gid!=-1 && fd->bdf->glyphs[gid]==NULL )
@@ -217,22 +217,90 @@ static struct opentype_str **LineFromPara(struct opentype_str **str, int *_pos) 
 return( ret );
 }
 
+static struct basescript *FindBS(struct Base *base,struct opentype_str *ch,LayoutInfo *li) {
+    uint32 script = SCScriptFromUnicode(ch->sc);
+    struct basescript *bs;
+    if ( script == DEFAULT_SCRIPT ) {
+	struct fontlist *fl = ch->fl;
+	SplineChar *sc = fl->sctext[ch->orig_index];
+	script = SCScriptFromUnicode(sc);
+    }
+    for ( bs=base->scripts; bs!=NULL && bs->script!=script; bs=bs->next );
+return( bs );
+}
+
+static uint32 FigureBaselineTag(struct opentype_str *ch,LayoutInfo *li,
+	struct Base *cur_base,struct Base *start_base) {
+    struct basescript *bs;
+
+    bs = FindBS(cur_base,ch,li);
+    if ( bs!=NULL )
+return( cur_base->baseline_tags[bs->def_baseline] );
+
+    bs = FindBS(start_base,ch,li);
+    if ( bs!=NULL )
+return( start_base->baseline_tags[bs->def_baseline] );
+
+return( 0 );
+}
+
+static int BaselineOffset(struct Base *base, struct basescript *bs,uint32 cur_bsln_tag) {
+    int i;
+
+    for ( i=0; i<base->baseline_cnt; ++i )
+	if ( base->baseline_tags[i]==cur_bsln_tag )
+    break;
+    if ( i==base->baseline_cnt )	/* No info on this baseline in this font */
+return( 0 );
+
+return( bs->baseline_pos[i] );
+}
+
 static void LIFigureLineHeight(LayoutInfo *li,int l,int p) {
     int i;
     struct opentype_str **line = li->lines[l];
     int as=0, ds=0;
     int width=0;
+    if ( line[0]!=NULL ) {
+	FontData *start_fd = ((struct fontlist *) (line[0]->fl))->fd;
+	struct Base *start_base=start_fd->sf->horiz_base;
+	struct basescript *start_bs = NULL;
+	uint32 start_bsln_tag = 0;
 
+	for ( i=0; line[i]!=NULL; ++i )
+	    line[i]->bsln_off = 0;
+
+	/* Do baseline processing (if we can figure out a baseline for the first */
+	/*  glyph on the line, line the rest up with it) */
+	if ( start_base!=NULL )
+	    start_bs = FindBS(start_base,line[0],li);
+	if ( start_bs!=NULL )
+	    start_bsln_tag = FigureBaselineTag(line[0],li,start_base,start_base);
+	if ( start_bsln_tag!=0 ) {
+	    double scale = start_fd->pointsize*li->dpi/(72.0*(start_fd->sf->ascent+start_fd->sf->descent));
+	    for ( i=1; line[i]!=NULL; ++i ) {
+		FontData *fd = ((struct fontlist *) (line[i]->fl))->fd;
+		struct Base *base = fd->sf->horiz_base;
+		uint32 cur_bsln_tag;
+		cur_bsln_tag = FigureBaselineTag(line[i],li,base,start_base);
+		if ( cur_bsln_tag==start_bsln_tag )
+	    continue;		/* Same baseline, offset 0 already set */
+		line[i]->bsln_off = rint(scale*BaselineOffset(start_base,start_bs,cur_bsln_tag));
+	    }
+	}
+    }
+	
     for ( i=0; line[i]!=NULL; ++i ) {
 	FontData *fd = ((struct fontlist *) (line[i]->fl))->fd;
 	BDFFont *bdf = fd->bdf;
+	int off = line[i]->bsln_off;
 	if ( bdf!=NULL ) {
-	    if ( as<bdf->ascent ) as = bdf->ascent;
-	    if ( ds<bdf->descent ) ds = bdf->descent;
+	    if ( as<bdf->ascent+off ) as = bdf->ascent+off;
+	    if ( ds<bdf->descent-off ) ds = bdf->descent-off;
 	} else {
 	    double scale = fd->pointsize*li->dpi/(72.0*(fd->sf->ascent+fd->sf->descent));
-	    if ( as<scale*fd->sf->ascent ) as = scale*fd->sf->ascent;
-	    if ( ds<scale*fd->sf->descent ) ds = scale*fd->sf->descent;
+	    if ( as<scale*fd->sf->ascent+off ) as = scale*fd->sf->ascent+off;
+	    if ( ds<scale*fd->sf->descent-off ) ds = scale*fd->sf->descent-off;
 	}
 	width += line[i]->advance_width + line[i]->vr.h_adv_off;
     }
