@@ -5243,10 +5243,10 @@ static struct baselangextent *readttfbaseminmax(FILE *ttf,uint32 offset,struct t
     struct baselangextent *lang, *cur, *last;
 
     fseek(ttf,offset,SEEK_SET);
-    last = chunkalloc(sizeof(struct baselangextent));
-    last->lang = lang_tag;
-    last->descent = (short) getushort(ttf);
-    last->ascent  = (short) getushort(ttf);
+    lang = chunkalloc(sizeof(struct baselangextent));
+    lang->lang = lang_tag;
+    lang->descent = (short) getushort(ttf);
+    lang->ascent  = (short) getushort(ttf);
 
     feat_cnt = getushort(ttf);
     last = NULL;
