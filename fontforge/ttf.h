@@ -205,6 +205,7 @@ struct ttfinfo {
     uint32 feat_start;
     uint32 mort_start;
     uint32 morx_start;
+    uint32 bsln_start;
 
 		/* MATH Table */
     uint32 math_start;
@@ -237,6 +238,7 @@ struct ttfinfo {
     OTLookup *mort_subs_lookup, *mort_pos_lookup2;
     int mort_r2l, mort_tag_mac, mort_feat, mort_setting, mort_is_nested;
     uint16 *morx_classes;
+    uint16 *bsln_values;
 
     int mort_max;
 
@@ -632,6 +634,8 @@ struct alltabs {
     int featlen;
     FILE *morx;
     int morxlen;
+    FILE *bsln;
+    int bslnlen;
     FILE *pfed;
     int pfedlen;
     FILE *tex;
@@ -743,6 +747,7 @@ extern void aat_dumplcar(struct alltabs *at, SplineFont *sf);
 extern void aat_dumpmorx(struct alltabs *at, SplineFont *sf);
 extern void aat_dumpopbd(struct alltabs *at, SplineFont *sf);
 extern void aat_dumpprop(struct alltabs *at, SplineFont *sf);
+extern void aat_dumpbsln(struct alltabs *at, SplineFont *sf);
 extern int LookupHasDefault(OTLookup *otl);
 extern int scriptsHaveDefault(struct scriptlanglist *sl);
 extern int FPSTisMacable(SplineFont *sf, FPST *fpst);
@@ -821,6 +826,7 @@ extern void readttfmort(FILE *ttf,struct ttfinfo *info);
 extern void readttfopbd(FILE *ttf,struct ttfinfo *info);
 extern void readttflcar(FILE *ttf,struct ttfinfo *info);
 extern void readttfprop(FILE *ttf,struct ttfinfo *info);
+extern void readttfbsln(FILE *ttf,struct ttfinfo *info);
 extern void readttfgsubUsed(FILE *ttf,struct ttfinfo *info);
 extern void GuessNamesFromGSUB(FILE *ttf,struct ttfinfo *info);
 extern void readttfgpossub(FILE *ttf,struct ttfinfo *info,int gpos);

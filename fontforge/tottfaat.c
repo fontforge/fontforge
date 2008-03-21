@@ -2184,6 +2184,191 @@ return;
 }
 
 /* ************************************************************************** */
+/* *************************    The 'bsln' table    ************************* */
+/* ************************************************************************** */
+
+static int BslnFromTag(uint32 tag) {
+    switch ( tag ) {
+      case CHR('r','o','m','n'):
+return( 0 );
+    /* Apple has a centered ideographic baseline, while OT has a top ideo bsln*/
+    /* no way to get Apple's baseline #1 */
+      case CHR('i','d','e','o'):
+return( 2 );
+      case CHR('h','a','n','g'):
+return( 3 );
+      case CHR('m','a','t','h'):
+return( 4 );
+      default:
+return( 0xffff );
+    }
+}
+
+static int16 *PerGlyphDefBaseline(SplineFont *sf,int *def_baseline) {
+    int16 *baselines = galloc(sf->glyphcnt*sizeof(uint16));
+    int gid, bsln, i, any;
+    SplineChar *sc;
+    int counts[32];		/* Apple supports a max of 32 baselines, but only 5 are defined */
+    struct Base *base = sf->horiz_base;
+    struct basescript *bs;
+    int bestbsln, bestcnt;
+
+    memset(counts,0,sizeof(counts));
+
+    for ( gid = 0; gid<sf->glyphcnt; ++gid ) if ( (sc = sf->glyphs[gid])!=NULL ) {
+	uint32 script = SCScriptFromUnicode(sc);
+	for ( bs= base->scripts; bs!=NULL; bs=bs->next )
+	    if ( bs->script==script )
+	break;
+	if ( bs==NULL )
+	    bsln = 0xffff;
+	else
+	    bsln = BslnFromTag( base->baseline_tags[bs->def_baseline] );
+/* This if is duplicated (almost) in basedlg.c:Base_FinishEdit */
+	if ( bsln==0xffff ) {
+	    if ( script==CHR('k','a','n','a') || script==CHR('h','a','n','g') ||
+		    script==CHR('h','a','n','i') || script==CHR('b','o','p','o') ||
+		    script==CHR('j','a','m','o') || script==CHR('y','i',' ',' '))
+		bsln = 2;
+	    else if ( script==CHR('t','i','b','t' ) ||
+		    script == CHR('b','e','n','g' ) || script == CHR('b','n','g','2') ||
+		    script == CHR('d','e','v','a' ) || script == CHR('d','e','v','2') ||
+		    script == CHR('g','u','j','r' ) || script == CHR('g','j','r','2') ||
+		    script == CHR('g','u','r','u' ) || script == CHR('g','u','r','2') ||
+		    script == CHR('k','n','d','a' ) || script == CHR('k','n','d','2') ||
+		    script == CHR('m','l','y','m' ) || script == CHR('m','l','y','2') ||
+		    script == CHR('o','r','y','a' ) || script == CHR('o','r','y','2') ||
+		    script == CHR('t','a','m','l' ) || script == CHR('t','m','l','2') ||
+		    script == CHR('t','e','l','u' ) || script == CHR('t','e','l','2'))
+		bsln = 3;
+	    else if ( script==CHR('m','a','t','h') )
+		bsln = 4;
+	    else
+		bsln = 0;
+	}
+	baselines[gid] = bsln;
+	if ( bsln!=0xffff )
+	    ++counts[bsln];
+    }
+    
+    bestbsln = 0;
+    bestcnt = 0;
+    any = 0;
+    for ( i=0; i<32 ; ++i ) {
+	if ( counts[i]>bestcnt ) {
+	    bestbsln = i;
+	    bestcnt = counts[i];
+	    ++any;
+	}
+    }
+    *def_baseline = bestbsln | (any<=1 ? 0x100 : 0 );
+return( baselines );
+}
+
+static void FigureBaseOffsets(SplineFont *sf,int def_bsln,int offsets[32]) {
+    struct Base *base = sf->horiz_base;
+    struct basescript *bs = base->scripts;
+    int i;
+
+    memset( offsets,0xff,32*sizeof(int));
+    for ( i=0; i<base->baseline_cnt; ++i ) {
+	int bsln = BslnFromTag(base->baseline_tags[i]);
+	if ( bsln!=0xffff )
+	    offsets[bsln] = bs->baseline_pos[i];
+    }
+    if ( offsets[def_bsln]!=-1 ) {
+	for ( i=0; i<32; ++i ) {
+	    if ( offsets[i]!=-1 )
+		offsets[i] -= offsets[def_bsln];
+	}
+    }
+    /* I suspect baseline 1 is the standard baseline for CJK glyphs on the mac*/
+    /*  (because baseline 2 is often the same as baseline 1, which is wrong for 2) */
+    /* OT doesn't have a centered ideographic baseline, so guestimate */
+    /* And I don't want to base it on the actual ideo baseline (go up half an em?) */
+    /*  because in my small sample of 'bsln' tables baseline 2 has been wrong */
+    /*  most of the time, and it is wrong in the example in the docs. */
+    /* (I know it is wrong because it has the same value as baseline 1, but */
+    /*  is supposed to be below baseline 1 ) */
+    if ( offsets[1]==-1 )
+	offsets[1] = (sf->ascent+sf->descent)/2 - sf->descent;
+    for ( i=0; i<32; ++i )
+	if ( offsets[i]==-1 )
+	    offsets[i] = 0;
+}
+
+void aat_dumpbsln(struct alltabs *at, SplineFont *sf) {
+    int def_baseline;
+    int offsets[32];
+    int16 *baselines;
+    int i, j, bsln, cnt;
+
+    if ( sf->horiz_base==NULL || sf->horiz_base->baseline_cnt==0 ||
+	    sf->horiz_base->scripts==NULL )
+return;
+
+    baselines = PerGlyphDefBaseline(sf,&def_baseline);
+
+    at->bsln = tmpfile();
+    putlong(at->bsln,0x00010000);	/* Version */
+    if ( def_baseline & 0x100 )		/* Only one baseline in the font */
+	putshort(at->bsln,0);		/* distanced based (no control point), no per-glyph info */
+    else
+	putshort(at->bsln,1);		/* distanced based (no cp info) with per-glyph info */
+    putshort(at->bsln,def_baseline&0x1f);/* Default baseline when no info specified for glyphs */
+
+    /* table of 32 int16 (the docs say uint16, but that must be wrong) giving */
+    /*  the offset of the nth baseline from the default baseline. */
+    /* 0 => Roman, 1=> centered ideo, 2=>low ideo (same as OTF ideo) 3=>hang, 4=>Math */
+    /* values 5-31 undefined, set to 0 */
+    FigureBaseOffsets(sf,def_baseline&0x1f,offsets);
+
+    for ( i=0; i<32; ++i )
+	putshort(at->bsln,offsets[i]);
+
+    if ( !(def_baseline&0x100) ) {
+	def_baseline &= 0x1f;
+
+	putshort(at->bsln,2);	/* Lookup format 2, segmented array w/ single value */
+
+	cnt = 0;
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( baselines[i]!=-1 && baselines[i]!=def_baseline ) {
+	    bsln = baselines[i];
+	    for ( j=i; j<sf->glyphcnt && baselines[j]==bsln ; ++j );
+	    i = j-1;
+	    ++cnt;
+	}
+
+	/* Dump out a binary search header */
+	putshort(at->bsln,6);		/* size of each item */
+	putshort(at->bsln,cnt);		/* number of items */
+	for ( j=1, i=0; cnt<=j; j<<=1, ++i );
+	putshort(at->bsln,6*j/2);	/* j is a power of 2 too big */
+	putshort(at->bsln,i-1);
+	putshort(at->bsln,6*(cnt-(j>>1)) );
+
+	for ( i=0; i<sf->glyphcnt; ++i ) if ( baselines[i]!=-1 && baselines[i]!=def_baseline ) {
+	    bsln = baselines[i];
+	    for ( j=i; j<sf->glyphcnt && baselines[j]==bsln ; ++j );
+	    putshort(at->bsln,j-1);
+	    putshort(at->bsln,i);
+	    putshort(at->bsln,bsln);
+	    i = j-1;
+	}
+
+	putshort(at->bsln,0xffff);		/* Final eof marker */
+	putshort(at->bsln,0xffff);
+	putshort(at->bsln,0x0000);
+    }
+
+    at->bslnlen = ftell(at->bsln);
+    /* Only contains 2 & 4 byte quantities, can't have an odd number of bytes */
+    if ( at->bslnlen&2 )
+	putshort(at->bsln,0);
+    free(baselines);
+}
+	
+/* ************************************************************************** */
 /* *************************    utility routines    ************************* */
 /* ************************************************************************** */
 

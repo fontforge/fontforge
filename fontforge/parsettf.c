@@ -545,6 +545,9 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	  case CHR('B','A','S','E'):
 	    info->base_start = offset;
 	  break;
+	  case CHR('b','s','l','n'):
+	    info->bsln_start = offset;
+	  break;
 	  case CHR('C','F','F',' '):
 	    info->cff_start = offset;
 	    info->cff_length = length;
@@ -731,6 +734,8 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
 	LogError( _("This font contains both a 'kern' table and a 'GPOS' table.\n  The 'kern' table will only be read if there is no 'kern' feature in 'GPOS'.\n"));
     if ( (info->mort_start!=0 || info->morx_start!=0) && info->gsub_start!=0 )
 	LogError( _("This font contains both a 'mor[tx]' table and a 'GSUB' table.\n  FF will only read feature/settings in 'morx' which do not match features\n  found in 'GSUB'.\n"));
+    if ( info->base_start!=0 && info->bsln_start!=0 )
+	LogError( _("This font contains both a 'BASE' table and a 'bsln' table.\n  FontForge will only read one of them ('BASE').\n"));
 return( true );
 }
 
@@ -4986,6 +4991,8 @@ return( 0 );
     }
     if ( info->base_start!=0 )
 	readttfbase(ttf,info);
+    else if ( info->bsln_start!=0 )
+	readttfbsln(ttf,info);
     if ( info->gasp_start!=0 )
 	readttfgasp(ttf,info);
     /* read the cvt table before reading variation data */
