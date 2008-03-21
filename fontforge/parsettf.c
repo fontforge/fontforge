@@ -1699,7 +1699,7 @@ static SplineChar *readttfglyph(FILE *ttf,struct ttfinfo *info,int start, int en
 
     sc->unicodeenc = -1;
     sc->vwidth = info->emsize;
-    /* sc->manualhints = 1; */ /* But only when I know how to read them in!!!! */
+    sc->orig_pos = gid;
 
     if ( end>info->glyph_length ) {
 	if ( !info->complainedbeyondglyfend )
@@ -1720,7 +1720,6 @@ return( sc );
     /* ymin = */ getushort(ttf);
     /* xmax = */ getushort(ttf);
     /* ymax = */ sc->lsidebearing = getushort(ttf);
-    sc->orig_pos = gid;
     if ( path_cnt>=0 )
 	readttfsimpleglyph(ttf,info,sc,path_cnt);
     else
@@ -3496,7 +3495,7 @@ static void readttfwidths(FILE *ttf,struct ttfinfo *info) {
     fseek(ttf,info->hmetrics_start,SEEK_SET);
     for ( i=0; i<info->width_cnt && i<info->glyph_cnt; ++i ) {
 	lastwidth = getushort(ttf);
-	lsb = getushort(ttf);
+	lsb = (short) getushort(ttf);
 	if ( (sc = info->chars[i])!=NULL ) {	/* can happen in ttc files */
 	    if ( check_width_consistency && sc->width!=lastwidth ) {
 		if ( info->fontname!=NULL && sc->name!=NULL )
