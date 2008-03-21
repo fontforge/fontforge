@@ -434,11 +434,21 @@ static void Base_FinishEdit(GGadget *g, int r, int c, int wasnew) {
 	uint32 bsln;
 	int i,j,k;
 
+/* This if is duplicated (almost) in tottfaat.c: PerGlyphDefBaseline */
 	if ( script==CHR('k','a','n','a') || script==CHR('h','a','n','g') ||
 		script==CHR('h','a','n','i') || script==CHR('b','o','p','o') ||
 		script==CHR('j','a','m','o') || script==CHR('y','i',' ',' '))
 	    bsln = CHR('i','d','e','o');
-	else if ( script==CHR('t','i','b','t') )
+	else if ( script==CHR('t','i','b','t' ) ||
+		script == CHR('b','e','n','g' ) || script == CHR('b','n','g','2') ||
+		script == CHR('d','e','v','a' ) || script == CHR('d','e','v','2') ||
+		script == CHR('g','u','j','r' ) || script == CHR('g','j','r','2') ||
+		script == CHR('g','u','r','u' ) || script == CHR('g','u','r','2') ||
+		script == CHR('k','n','d','a' ) || script == CHR('k','n','d','2') ||
+		script == CHR('m','l','y','m' ) || script == CHR('m','l','y','2') ||
+		script == CHR('o','r','y','a' ) || script == CHR('o','r','y','2') ||
+		script == CHR('t','a','m','l' ) || script == CHR('t','m','l','2') ||
+		script == CHR('t','e','l','u' ) || script == CHR('t','e','l','2'))
 	    bsln = CHR('h','a','n','g');
 	else if ( script==CHR('m','a','t','h') )
 	    bsln = CHR('m','a','t','h');

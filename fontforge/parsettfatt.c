@@ -5385,3 +5385,123 @@ return;
 	free(bs);
     }
 }
+
+static void bsln_apply_values(struct ttfinfo *info, int gfirst, int glast,FILE *ttf) {
+    int i;
+
+    for ( i=gfirst; i<=glast; ++i )
+	info->bsln_values[i]= getushort(ttf);
+}
+
+static void bsln_apply_value(struct ttfinfo *info, int gfirst, int glast,FILE *ttf) {
+    int i;
+    int bsln;
+
+    bsln = getushort(ttf);
+    for ( i=gfirst; i<=glast; ++i )
+	info->bsln_values[i]= bsln;
+}
+
+static void bsln_apply_default(struct ttfinfo *info, int gfirst, int glast,void *def) {
+    int def_bsln, i;
+
+    def_bsln = (intpt) def;
+    for ( i=gfirst; i<=glast; ++i )
+	info->bsln_values[i]= def_bsln;
+}
+
+void readttfbsln(FILE *ttf,struct ttfinfo *info) {
+    int def, ap_def, version, format;
+    uint16 *values;
+    int offsets[32];
+    SplineChar *sc;
+    BasePoint pos;
+    int mapping[32];
+    int i;
+    struct Base *base;
+    struct basescript *bs;
+
+    fseek(ttf,info->bsln_start,SEEK_SET);
+    version = getlong(ttf);
+    if ( version!=0x00010000 )
+return;
+    format = getushort(ttf);
+    def = getushort(ttf);
+    if ( format==0 || format==1 ) {
+	for ( i=0; i<32; ++i )
+	    offsets[i] = (int16) getushort(ttf);
+    } else if ( format==2 || format==3 ) {
+	int stdGID = getushort(ttf);
+	int ptnum;
+	if ( stdGID>=info->glyph_cnt || (sc = info->chars[stdGID])==NULL )
+return;
+	for ( i=0; i<32; ++i ) {
+	    ptnum = getushort(ttf);
+	    if ( ttfFindPointInSC(sc,ly_fore,ptnum,&pos,NULL)!=-1 )
+return;
+	    offsets[i] = pos.y;
+	}
+    }
+
+    if ( format&1 ) {
+	info->bsln_values = values = gcalloc(info->glyph_cnt,sizeof(uint16));
+	readttf_applelookup(ttf,info,
+		bsln_apply_values,bsln_apply_value,
+		bsln_apply_default,(void *) (intpt) def, false);
+    } else
+	values = NULL;
+
+    for ( i=1; i<32; ++i ) mapping[i] = 3;		/* Roman */
+
+    info->horiz_base = base = chunkalloc(sizeof(struct Base));
+    base->baseline_cnt = 4;
+    base->baseline_tags = galloc(4*sizeof(uint32));
+    base->baseline_tags[0] = CHR('h','a','n','g');	/* Apple 3 */
+    if ( offsets[1]!= offsets[2] ) {
+	base->baseline_tags[1] = CHR('i','d','e','o');	/* Apple 2 */
+	base->baseline_tags[2] = CHR('m','a','t','h');	/* Apple 4 */
+	base->baseline_tags[3] = CHR('r','o','m','n');	/* Apple 0 */
+
+	/* Map from Apple's baseline indeces, to OT tag positions */
+	mapping[3] = 0;
+	mapping[2] = 1;
+	mapping[4] = 2;
+	mapping[0] = 3;
+	/* Apple baseline 1 does not map to an OT tag */
+	/* I assume baseline 1 is the normal baseline for CJK on Macs */
+	/* (because baseline 2 often (and wrongly) contains the same value */
+    } else {
+	/* baseline 1 (centered ideographic) and baseline 2 (low ideographic) */
+	/*  are documented to be different. Yet most of the fonts I have looked*/
+	/*  at (and I've only got about 4 test cases) have the low ideographic*/
+	/*  baseline set to the centered baseline. If I were to copy that to  */
+	/*  OT it would be really bad. So even though baseline data is provided*/
+	/*  I shall ignore it if it looks WRONG! */
+	base->baseline_cnt = 3;
+	base->baseline_tags[1] = CHR('m','a','t','h');	/* Apple 4 */
+	base->baseline_tags[2] = CHR('r','o','m','n');	/* Apple 0 */
+	mapping[3] = 0;
+	mapping[4] = 1;
+	mapping[0] = 2;
+    }
+
+    for ( i=0; i<info->glyph_cnt; ++i ) if ( (sc=info->chars[i])!=NULL ) {
+	uint32 script = SCScriptFromUnicode(sc);
+	if ( script==DEFAULT_SCRIPT )
+    continue;
+	for ( bs=base->scripts; bs!=NULL && bs->script!=script; bs=bs->next );
+	if ( bs!=NULL )
+    continue;
+	bs = chunkalloc(sizeof(struct basescript));
+	bs->script = script;
+	ap_def = def;
+	if ( values!=NULL )
+	    ap_def = values[i];
+	bs->def_baseline = mapping[ap_def];
+	bs->baseline_pos = galloc(base->baseline_cnt*sizeof(int16));
+	for ( i=0; i<5; ++i ) if ( i!=1 )
+	    bs->baseline_pos[mapping[i]] = offsets[i] - offsets[ap_def];
+	bs->next = base->scripts;
+	base->scripts = bs;
+    }
+}

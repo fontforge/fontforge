@@ -5236,6 +5236,7 @@ return( false );
 	    aat_dumpmorx(at,sf);		/* Sets the feat table too */
 	    aat_dumpopbd(at,sf);
 	    aat_dumpprop(at,sf);
+	    aat_dumpbsln(at,sf);
 	}
 	if ( !at->applemode && (!at->opentypemode || (at->gi.flags&ttf_flag_oldkern)) )
 	    ttf_dumpkerns(at,sf);		/* everybody supports a mimimal kern table */
@@ -5284,6 +5285,12 @@ return( false );
 	at->tabdir.tabs[i].tag = CHR('B','A','S','E');
 	at->tabdir.tabs[i].data = at->base;
 	at->tabdir.tabs[i++].length = at->baselen;
+    }
+
+    if ( at->bsln!=NULL ) {
+	at->tabdir.tabs[i].tag = CHR('b','s','l','n');
+	at->tabdir.tabs[i].data = at->bsln;
+	at->tabdir.tabs[i++].length = at->bslnlen;
     }
 
     if ( at->bdf!=NULL ) {
