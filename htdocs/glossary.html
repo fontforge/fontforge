@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 28-Oct-2002 -->
-  <!-- AP: Last modified: 24-Mar-2007 -->
+  <!-- AP: Last modified: 21-Mar-2008 -->
   <TITLE>Glossary of (some) typographical terms</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -77,11 +77,13 @@
 	  <DT>
 	    <A NAME="baseline">Baseline</A>
 	  <DD>
-	    The baseline is the horizontal line on which the (latin, greek, cyrillic)
-	    letters sit. The baseline will probably be in a different place for different
-	    scripts. In Indic scripts most letters descend below the baseline. In CJK
-	    scripts there is also a vertical baseline usually in the middle of the
-	    glyph.<BR>
+	    The <A HREF="overview.html#Baseline">baseline</A> is the horizontal line
+	    on which the (latin, greek, cyrillic) letters sit. The baseline will probably
+	    be in a different place for different scripts. In Indic scripts most letters
+	    descend below the baseline. In CJK scripts there is also a vertical baseline
+	    usually in the middle of the glyph. The <A HREF="baseline.html">BASE and
+	    bsln </A>tables allow you to specify how the baselines of different scripts
+	    should be aligned with respect to each other.<BR>
 	    See also <A HREF="#x-height">X-height</A>,
 	    <A HREF="#cap-height">Cap-height</A>, <A HREF="#ascender">Ascender</A>,
 	    <A HREF="#descender">Descender</A>, <A HREF="#overshoot">Overshoot</A>
@@ -124,9 +126,10 @@
 	    <IMG SRC="boustrophedon.png" WIDTH="86" HEIGHT="54" ALIGN="Right"><A NAME="Boustrophedon">Boustrophedon</A>
 	  <DD>
 	    Writing "as the ox plows", that is alternating between left to right and
-	    right to left. Early alphabets (Old Canaanite, and the very early greek writings
-	    (and, surprisingly, <A HREF="#Futhark">fu&thorn;ark</A>)) used this. Often
-	    the right to left glyphs would be mirrors of the left to right ones.
+	    right to left writing directions. Early alphabets (Old Canaanite, and the
+	    very early greek writings (and, surprisingly,
+	    <A HREF="#Futhark">fu&thorn;ark</A>)) used this. Often the right to left
+	    glyphs would be mirrors of the left to right ones.
 	</DL>
       </TD>
     </TR>
@@ -165,7 +168,7 @@
 	  <DT>
 	    <A NAME="CID">CID</A>
 	  <DD>
-	    In some <A HREF="glossary.html#CJK">CJK</A>
+	    Character Identifier, a number. In some <A HREF="glossary.html#CJK">CJK</A>
 	    <A HREF="#postscript">PostScript</A> fonts the glyphs are not named but are
 	    refered to by a CID number.
 	  <DT>
@@ -286,7 +289,7 @@
 	  <DD>
 	    The old germanic letter "&eth;" for the voiced (English) "th" sound (the
 	    sound in "this" -- most English speakers aren't even aware that "th" in English
-	    has two sounds associated with it, but it does see also
+	    has two sounds associated with it, but it does, see also
 	    <A HREF="#Thorn">Thorn</A>)
 	  <DT>
 	    <A NAME="Even-Odd">Even-Odd </A>Fill rule
@@ -419,9 +422,9 @@
 	    Graphite tables
 	  <DD>
 	    <A HREF="http://scripts.sil.org/cms/scripts/page.php?site_id=nrsi&amp;cat_id=RenderingGraphite">Graphite</A>
-	    is an extension to TrueType which embeds a table into a font containing rules
-	    for contextual shaping, ligatures, reordering, split glyphs, bidirectionality,
-	    stacking diacritics, complex positioning, etc.
+	    is an extension to TrueType which embeds several tables into a font containing
+	    rules for contextual shaping, ligatures, reordering, split glyphs,
+	    bidirectionality, stacking diacritics, complex positioning, etc.
 	    <P>
 	    This sounds rather like OpenType -- except that OpenType depends on the text
 	    layout routines knowing a lot about the glyphs involved. This means that
@@ -555,6 +558,12 @@
 	    large table which specifies kerning for every possible combination of classes.
 	    Generally this will be smaller than the equivalent set of kerning pairs because
 	    each class will usually contain several glyphs.
+	  <DT>
+	    Knuth, Donald
+	  <DD>
+	    A mathematician who got so fed up with bad typesetting back in the 1970&amp;80s
+	    that he created his own font design system and typographical layout program
+	    called, respectively, MetaFont and <A HREF="#TeX">TeX</A>.
 	</DL>
       </TD>
     </TR>
@@ -1031,6 +1040,10 @@ $ make install
       <TD BGCOLOR=yellow><A NAME="T">T</A></TD>
       <TD><DL>
 	  <DT>
+	    <A NAME="TeX">TeX</A>
+	  <DD>
+	    <A HREF="http://www.ctan.org/">A typesetting package</A>.
+	  <DT>
 	    <A NAME="Thorn">Thorn</A>
 	  <DD>
 	    The germanic letter "&thorn;" used for the unvoiced (English) "th" sound
@@ -1087,8 +1100,8 @@ $ make install
 	    <A NAME="Unicode">Unicode</A>
 	  <DD>
 	    An encoding character set/encoding which tries to contain all the characters
-	    used in the world. See the <A HREF="http://www.unicode.org/">Unicode
-	    consortium</A>.
+	    currently used in the world, and many historical ones as well. See the
+	    <A HREF="http://www.unicode.org/">Unicode consortium</A>.
 	    <UL>
 	      <LI>
 		<A HREF="#BMP">BMP</A> -- Basic Multilingual Plane (0x00000-0x0FFFF)

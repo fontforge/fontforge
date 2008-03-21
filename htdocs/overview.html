@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Dec-2000 -->
-  <!-- AP: Last modified: 17-Feb-2008 -->
+  <!-- AP: Last modified: 21-Mar-2008 -->
   <TITLE>FontForge -- An outline font editor for PostScript&reg;, TrueType
   and OpenType fonts</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
@@ -115,6 +115,8 @@
 	  <A HREF="overview.html#Glyph-names">Glyph names &amp; Namelists</A>
 	<LI>
 	  <A HREF="#Anchors">Anchor Points and Classes</A>
+	<LI>
+	  <A HREF="#Baseline">Baselines</A>
 	<LI>
 	  <A HREF="#FontView">Font View</A>
 	<LI>
@@ -496,10 +498,11 @@
   <P>
   All of these points (both the end points and the control points) are described
   mathematically. Each point is positioned on a cartesian coordinate system
-  which has its origin on the glyph's base line (the line on which letters
-  without descenders rest). Most font formats expect coordinates to be integers
-  between -32768 and 32767, FontForge uses real numbers internally but (usually)
-  rounds to the nearest integer when generating a font file.
+  which has its origin on the glyph's <A HREF="#Baseline">baseline</A> (the
+  line on which letters without descenders rest). Most font formats expect
+  coordinates to be integers between -32768 and 32767, FontForge uses real
+  numbers internally but (usually) rounds to the nearest integer when generating
+  a font file.
   <P>
   Generally it is a good idea to restrict yourself to integral coordinates.
   TrueType fonts can only contain integral coordinates so if you use a non-integral
@@ -517,14 +520,14 @@
   points, so an em was the size of the metal.).
   <P>
   When designing an outline font, you can no longer think in terms of points
-  -- these fonts are scalable and can be any point-size. You must think in
-  terms of the em and fractions of the em. When you create a font you choose
-  how many internal units (called "em-units") to use to represent 1 em -- this
+  -- these fonts are scalable and can be any pointsize. You must think in terms
+  of the em and fractions of the em. When you create a font you choose how
+  many internal units (called "em-units") to use to represent 1 em -- this
   number is called the "em-size". In most PostScript fonts there are 1000 units
   to the em, TrueType fonts often have either 1024 or 2048 units to the em
   (TrueType recommends that you use a power of two). But you can choose any
-  number you like (well, as long as it is less than 32767), the numbers above
-  are conventions not requirements).
+  (positive) number you like (well, as long as it is less than 32767), the
+  numbers above are conventions not requirements).
   <P>
   Suppose you have a dash in a PostScript font, and that dash is 500 units
   long, and the font has 1000 units to the em. Suppose a someone displays that
@@ -533,20 +536,22 @@
   one point, the dash will be 6 pixels long.
   <P>
   <IMG SRC="sidebearings.png" WIDTH="111" HEIGHT="191" ALIGN="Right">Every
-  glyph has its own co&ouml;rdinate system. The font's baseline (the line upon
-  which most latin glyphs will rest) is 0 in the vertical direction. The horizontal
-  origin is where the glyph will start being drawn (what is "drawn" will usually
-  be empty space for a short while -- as there is usually some space between
-  the origin and the edge of the glyph). This horizontal distance between the
-  origin and the leftmost edge of the glyph is called the left side bearing
-  (it may be negative, positive or zero). All glyphs have a width (sometimes
-  called an advance width), this is the distance from the origin of the current
-  glyph to the origin of the next. The distance between the right edge of the
-  glyph and the width is called the right side bearing.
+  glyph has its own co&ouml;rdinate system. The font's
+  <A HREF="#Baseline">baseline</A> (the line upon which most latin glyphs will
+  rest) is 0 in the vertical direction. The horizontal origin is where the
+  glyph will start being drawn (what is "drawn" will usually be empty space
+  for a short while -- as there is usually some space between the origin and
+  the edge of the glyph). This horizontal distance between the origin and the
+  leftmost edge of the glyph is called the left side bearing (it may be negative,
+  positive or zero). All glyphs have a width (sometimes called an advance width),
+  this is the distance from the origin of the current glyph to the origin of
+  the next. The distance between the right edge of the glyph and the width
+  is called the right side bearing.
   <P>
   CJK text (Chinese, Japanese or Korean) can be written either vertically or
   horizontally, and so CJK fonts usually have a vertical advance width as well
-  as the more common horizontal advance.
+  as the more common horizontal advance (and concomittant top and bottom side
+  bearings).
   <P>
   A glyph like "g" or "y" extends below the baseline, this is called a descender,
   while a glyph like "k" or "l" extends above the x-height, this is called
@@ -886,8 +891,8 @@
   </H3>
   <P>
   A script is a collection of letter shapes and rules for putting letters together.
-  For instance latin is a script consisting for the letters A-Z, written left
-  to right, along with a transformation from upper to lower case, a few ligatures
+  For instance the latin script consists of the letters A-Z, written left to
+  right, along with a transformation from upper to lower case, a few ligatures
   and rules for generating accents. Arabic is a script consisting of its own
   character set, written right to left, along with transformations for initial,
   medial, final and isolated forms, many ligatures and rules for placing vowel
@@ -909,7 +914,8 @@
   Adobe's standard provides reasonably mnemonic names for most latin and greek
   glyphs (to English speakers anyway), some rather incomprehensible names for
   cyrillic and hebrew (afiiXXXXX) and identifies most other glyphs by unicode
-  code point (uniXXXX).
+  code point (uniXXXX or uXXXXX where "X" represents a hex digit and XXXX is
+  the unicode code point in hex).
   <P>
   If you are an english speaker and you are working with latin glyphs this
   is fine and dandy. But if you are French you might wish that "adieresis"
@@ -918,9 +924,9 @@
   you might prefer more mnemonic names for the code block you are working on.
   <P>
   FontForge has a concept called a
-  <A HREF="encodingmenu.html#namelist">namelist</A> each of which is simply
+  <A HREF="encodingmenu.html#namelist">namelist</A>, each of which is simply
   a mapping from unicode code point to name. Several namelists may be defined,
-  different lists may apply to different fonts and a font may be have all its
+  different lists may apply to different fonts and a font may have all its
   glyphs renamed from one namelist to another.
   <P>
   Namelists can also help navigating in a font. Even if a list does not apply
@@ -933,7 +939,7 @@
   in ASCII characters. Syntactically postscript permits a wider range of glyph
   names, but if you use non-ASCII characters some rasterizers might have problems.
   Best to keep non-ASCII names within fontforge (and rename glyphs to adobe's
-  standard names before generating).
+  standard names before generating a font).
   <H3>
     <A NAME="Lookups">Lookups,</A> Features, Scripts and Languages
   </H3>
@@ -953,7 +959,8 @@
   <P>
   A Feature is a tagged collection of lookups. The tags are all 4 letter sequences
   (like 'liga') with standardized meanings. The 'liga' tag means standard
-  ligatures. The 'dlig' tag means discretionary ligatures. There are many others.
+  ligatures. The 'dlig' tag means discretionary ligatures, and 'kern' means
+  kerning. There are many others.
   <P>
   Every script (latin, cyrillic, han ideographs, ...) will have its own set
   of features that are meaningful to it. Sometimes things will be even more
@@ -1005,10 +1012,9 @@
     <TR>
       <TD>lookup for ct and st</TD>
       <TD>Lookups may even be shared by a different feature type, so for English
-	and Spanish <BR>
-	ct might count as a discretionary ligature, one rarely used, while in German
-	it mght be<BR>
-	more common and be part of the standard ligature set.</TD>
+	and Spanish ct might count as a discretionary ligature, one rarely used,
+	while in German it mght be more common and be part of the standard ligature
+	set.</TD>
     </TR>
   </TABLE>
   <P>
@@ -1213,6 +1219,46 @@
   macron so that its TopMark anchor point is where "diaeresis"'s is.
   <P>
   Anchor points may be selected, dragged, transformed, cut, copied and pasted.
+  <H3>
+    <A NAME="Baseline">Baseline</A>s
+  </H3>
+  <P>
+  To a user of the latin alphabet it makes sense for the vertical origin of
+  a glyph to be the baseline on which most letters
+  rest<IMG SRC="latinBaseline.png" WIDTH="93" HEIGHT="45">. This means that
+  if you change the pointsize of a glyph it will still line up
+  properly<IMG SRC="latinNormalBaseline.png" WIDTH="91" HEIGHT="21">. This
+  is so obvious we don't even think about it. But if you put the vertical origin
+  at the top of the letter then the letters will be aligned quite differently,
+  and to our eyes,
+  unexpectedly<IMG SRC="latinHangBaseline.png" WIDTH="90" HEIGHT="21">.
+  <P>
+  Different scripts have different expectations of how glyphs should be aligned.
+  In latin (cyrillic, greek, arabic, hebrew, etc.) the alignment point, the
+  baseline, is somewhere in the middle of the possible extent of a glyph --
+  that is the script has both ascenders above the baseline and descenders below
+  it.
+  <P>
+  But not all scripts are like that. In Devanagari the alignment point is near
+  the top of the glyph -- indeed most glyphs even draw in the baseline
+  explicitly<IMG SRC="devaBaseline.png" WIDTH="97" HEIGHT="46">. If you change
+  the pointsize you want glyphs to line up on this
+  line<IMG SRC="devaHangBaseline.png" WIDTH="82" HEIGHT="21">, and not down
+  at the bottom of the glyph
+  <IMG SRC="devaLatinBaseline.png" WIDTH="76" HEIGHT="18">.
+  <P>
+  In CJK ideographs the baseline is usually drawn at the bottom edge of the
+  square which contains the glyph.
+  <P>
+  However if you try and typeset these different scripts together with their
+  baselines in the same place you get a mess:
+  <IMG SRC="misalignedBaselines.png" WIDTH="65" HEIGHT="38">. It would be much
+  nicer if it were possible to say that these different scripts have their
+  baselines in different places so that the glyphs can fit together
+  reasonably:<IMG SRC="alignedBaselines.png" WIDTH="65" HEIGHT="23">. Both
+  Apple Typography and OpenType allow for this. There is a
+  <A HREF="baseline.html">baseline table </A>which says how the baselines for
+  each script (or each glyph) should be aligned with respect to other baselines.
   <H3>
     <A NAME="FontView">Font View</A>
   </H3>
