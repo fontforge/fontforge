@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 29-Dec-2002 -->
-  <!-- AP: Last modified: 17-Mar-2008 -->
+  <!-- AP: Last modified: 20-Mar-2008 -->
   <TITLE>Advanced Typography tables</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -74,6 +74,9 @@
     <LI>
       <A HREF="http://partners.adobe.com/public/developer/opentype/index_tag2.html">The
       list of language tags supported by opentype</A>
+    <LI>
+      <A HREF="http://partners.adobe.com/public/developer/opentype/index_tag4.html">The
+      list of baseline tags supported by opentype</A>
   </UL>
   <P>
   The basic idea of the GPOS and GSUB tables is that each script (or language
@@ -333,6 +336,9 @@
   information see Apple's docs:
   <UL>
     <LI>
+      <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6bsln.html">The
+      'bsln' (baseline) table</A>
+    <LI>
       <A HREF="http://developer.apple.com/fonts/TTRefMan/RM06/Chap6kern.html">The
       'kern' table</A>
     <LI>
@@ -363,8 +369,28 @@
       'prop' (glyph properties) table</A>
   </UL>
   <P>
-  FontForge will current read and produce (if Apple mode is set in font generation)
-  the following tables:
+  FontForge will currently read and produce (if Apple mode is set in font
+  generation) the following tables:
+  <TABLE BORDER CELLPADDING="2">
+    <CAPTION>
+      Apple tables corresponding vaguely to BASE
+    </CAPTION>
+    <TR>
+      <TH>tag</TH>
+      <TH>name</TH>
+      <TH>Reading support</TH>
+      <TH>Writing support</TH>
+    </TR>
+    <TR>
+      <TD><CODE>'bsln'</CODE></TD>
+      <TD>baseline table</TD>
+      <TD>FontForge will read baseline data (except for Apple's ideographic centered
+	baseline, for which there is no OpenType equivalent)</TD>
+      <TD>FontForge will produce this table if the user has specified baseline
+	data which apple supports</TD>
+    </TR>
+  </TABLE>
+  <P>
   <TABLE BORDER CELLPADDING="2">
     <CAPTION>
       Apple tables corresponding vaguely to <A HREF="#GDEF">GDEF</A>
@@ -519,6 +545,19 @@
       <TD>The ligature caret information in both 'GDEF' and 'lcar' is essentially
 	identical and FontForge has no trouble reading both and converting from one
 	to the other.</TD>
+    </TR>
+    <TR>
+      <TD VALIGN="Top"><P ALIGN=Center>
+	BASE</TD>
+      <TD VALIGN="Top"><P ALIGN=Center>
+	bsln</TD>
+      <TD>There is slightly different baseline data in the two formats. 'bsln'
+	does not provide extent information. 'bsln' provides a baseline for every
+	glyph, while 'BASE' provides a baseline for every script -- one hopes all
+	glyphs in a script will have the same baseline, but it isn't guaranteed.
+	Finally 'bsln' and 'BASE' provide a slightly different set of baseline tags,
+	and FontForge only supports the OpenType ones. In particular Apple's ideographic
+	centered baseline will be lost.</TD>
     </TR>
     <TR>
       <TD><P ALIGN=Center>
