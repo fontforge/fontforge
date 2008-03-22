@@ -35,6 +35,7 @@ typedef struct glyphdata {
     SplineChar *sc;
     int layer;
     int emsize;
+    int order2;
     int has_slant;
     BasePoint slant_unit;
     int ccnt;
@@ -69,6 +70,8 @@ typedef struct glyphdata {
 typedef struct pointdata {
     SplinePoint *sp;
     SplineSet *ss;
+    int ttfindex;                               /* normally same as sp->ttfindex, but needed for offcurve points */
+    BasePoint base;                             /* normally same as sp->me, but needed for offcurve points */
     BasePoint nextunit, prevunit;		/* unit vectors pointing in the next/prev directions */
     struct linedata *nextline, *prevline;	/* any other points lying on approximately the same line */
     Spline *nextedge, *prevedge;		/* There should always be a matching spline, which may end up as part of a stem, and may not */
@@ -94,6 +97,7 @@ typedef struct pointdata {
     unsigned int newpos_set: 2;		/* Holds three values: 0 (not), 1 (positioned by 1 stem), 2 (2 stems) */
     unsigned int next_is_l: 1;
     unsigned int prev_is_l: 1;
+    unsigned int ticked: 1;
     uint8 x_extr, y_extr;
     uint8 x_corner, y_corner;
     BasePoint newpos;
