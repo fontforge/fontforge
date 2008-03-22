@@ -185,15 +185,32 @@ return( true );
 static int IsSplinePeak( struct glyphdata *gd,struct pointdata *pd,int outer,int is_x,int flags );
 
 static void PointInit(struct glyphdata *gd,SplinePoint *sp, SplineSet *ss) {
-    struct pointdata *pd;
+    struct pointdata *pd, *prevpd=NULL, *nextpd=NULL;
     double len, same;
 
-    if ( sp->ttfindex==0xffff || sp->ttfindex==0xfffe )
+    if ( sp->ttfindex >= gd->pcnt )
 return;
     pd = &gd->points[sp->ttfindex];
     pd->sp = sp;
     pd->ss = ss;
     pd->x_extr = pd->y_extr = 0;
+    pd->base = sp->me;
+    pd->ttfindex = sp->ttfindex;
+    
+    if ( !sp->nonextcp && gd->order2 ) {
+        nextpd = &gd->points[sp->nextcpindex];
+        nextpd->ss = ss;
+        nextpd->x_extr = nextpd->y_extr = 0;
+        nextpd->base = sp->nextcp;
+        nextpd->ttfindex = sp->nextcpindex;
+    }
+    if ( !sp->noprevcp && gd->order2 ) {
+        nextpd = &gd->points[sp->prev->from->nextcpindex];
+        nextpd->ss = ss;
+        nextpd->x_extr = nextpd->y_extr = 0;
+        nextpd->base = sp->prevcp;
+        nextpd->ttfindex = sp->prev->from->nextcpindex;
+    }
 
     if ( sp->next==NULL ) {
 	pd->nextunit.x = ss->first->me.x - sp->me.x;
@@ -226,6 +243,11 @@ return;
 	}
 	if ( pd->nextunit.y==0 ) pd->next_hor = true;
 	else if ( pd->nextunit.x==0 ) pd->next_ver = true;
+	
+	if ( nextpd != NULL ) {
+	    nextpd->prevunit.x = -pd->nextunit.x;
+	    nextpd->prevunit.y = -pd->nextunit.y;
+	}
     }
 
     if ( sp->prev==NULL ) {
@@ -259,6 +281,11 @@ return;
 	}
 	if ( pd->prevunit.y==0 ) pd->prev_hor = true;
 	else if ( pd->prevunit.x==0 ) pd->prev_ver = true;
+
+	if ( prevpd != NULL ) {
+	    prevpd->nextunit.x = -pd->prevunit.x;
+	    prevpd->nextunit.y = -pd->prevunit.y;
+	}
     }
     {
 	same = pd->prevunit.x*pd->nextunit.x + pd->prevunit.y*pd->nextunit.y;
@@ -1166,8 +1193,8 @@ static struct stem_chunk *AddToStem( struct stemdata *stem,struct pointdata *pd1
     }
         
     if ( pd1!=NULL ) {
-        loff =  ( pd1->sp->me.x - stem->left.x ) * stem->unit.y -
-                ( pd1->sp->me.y - stem->left.y ) * stem->unit.x;
+        loff =  ( pd1->sp->me.x - stem->left.x ) * stem->l_to_r.x +
+                ( pd1->sp->me.y - stem->left.y ) * stem->l_to_r.y;
 	if ( is_next1==1 ) {
 	    if ( pd1->nextstem == NULL || !is_potential1 ) {
 		pd1->nextstem = stem;
@@ -1185,8 +1212,8 @@ static struct stem_chunk *AddToStem( struct stemdata *stem,struct pointdata *pd1
 	}
     }
     if ( pd2!=NULL ) {
-        roff =  ( pd2->sp->me.x - stem->right.x ) * stem->unit.y -
-                ( pd2->sp->me.y - stem->right.y ) * stem->unit.x;
+        roff =  ( pd2->sp->me.x - stem->right.x ) * stem->l_to_r.x +
+                ( pd2->sp->me.y - stem->right.y ) * stem->l_to_r.y;
 	if ( is_next2==1 ) {
 	    if ( pd2->nextstem == NULL || !is_potential2 ) {
 		pd2->nextstem = stem;
@@ -1351,6 +1378,34 @@ return( true );
 return( false );
 }
 
+static void RecalcStemOffsets( struct stemdata *stem,int left,int right ) {
+    double off;
+    double lmin=0, lmax=0, rmin=0, rmax=0;
+    struct stem_chunk *chunk;
+    int i;
+    
+    if ( !left && !right )
+return;
+
+    if ( stem->chunk_cnt > 1 ) for ( i=0; i<stem->chunk_cnt; i++ ) {
+        chunk = &stem->chunks[i];
+        if ( left && chunk->l != NULL ) {
+            off =  ( chunk->l->sp->me.x - stem->left.x )*stem->l_to_r.x +
+                   ( chunk->l->sp->me.y - stem->left.y )*stem->l_to_r.y;
+            if ( off < lmin ) lmin = off;
+            else if ( off > lmax ) lmax = off;
+        }
+        if ( right && chunk->r != NULL ) {
+            off =  ( chunk->r->sp->me.x - stem->right.x )*stem->l_to_r.x +
+                   ( chunk->r->sp->me.y - stem->right.y )*stem->l_to_r.y;
+            if ( off < rmin ) rmin = off;
+            else if ( off > rmax ) rmax = off;
+        }
+    }
+    stem->lmin = lmin; stem->lmax = lmax;
+    stem->rmin = rmin; stem->rmax = rmax;
+}
+
 static void SetStemUnit( struct stemdata *stem,BasePoint dir ) {
     double width;
     
@@ -1372,6 +1427,9 @@ static void SetStemUnit( struct stemdata *stem,BasePoint dir ) {
 	stem->l_to_r.x = -stem->l_to_r.x;
 	stem->l_to_r.y = -stem->l_to_r.y;
     }
+    
+    /* Recalculate left/right offsets relatively to new vectors */
+    RecalcStemOffsets( stem,true,true );
 }
 
 static struct stemdata *FindStem( struct glyphdata *gd,struct pointdata *pd,
@@ -2585,6 +2643,7 @@ static int WalkSpline( struct glyphdata *gd, struct pointdata *pd,int gonext,
     BasePoint *base, *nunit, pos, good;
     SplinePoint *sp, *nsp;
     struct pointdata *npd;
+    struct stemdata *nstem;
 
     err = ( IsVectorHV( &stem->unit,0,true )) ? dist_error_hv : dist_error_diag;
     width = stem->width;
@@ -2598,8 +2657,9 @@ static int WalkSpline( struct glyphdata *gd, struct pointdata *pd,int gonext,
     
     s = ( gonext ) ? sp->next : sp->prev;
     nsp = ( gonext ) ? s->to : s->from;
-    nunit = ( gonext )? &gd->points[nsp->ttfindex].prevunit :
-                        &gd->points[nsp->ttfindex].nextunit;
+    npd   = &gd->points[nsp->ttfindex];
+    nunit = ( gonext ) ? &npd->prevunit : &npd->nextunit;
+    nstem = ( gonext ) ? npd->prevstem : npd->nextstem;
     good = sp->me;
     
     off   = ( nsp->me.x - base->x )*stem->l_to_r.x +
@@ -2615,7 +2675,8 @@ static int WalkSpline( struct glyphdata *gd, struct pointdata *pd,int gonext,
     /* fonts with quadratic splines). So now we consider a spline "flat"
     /* only if it never deviates too far from the hint's edge and both 
     /* its terminal points are snappable to the same hint */
-    curved= ( off < min || off > max || !UnitsParallel( &stem->unit,nunit,true ));
+    curved = ( nstem != stem &&
+        ( off < min || off > max || !UnitsParallel( &stem->unit,nunit,true )));
 
     /* If a spline does deviate from the edge too far to consider it flat,
     /* then we calculate the extent where the spline and the edge are still
@@ -2668,11 +2729,7 @@ static int WalkSpline( struct glyphdata *gd, struct pointdata *pd,int gonext,
 	incr/=2;
     }
     *res = good;
-
-    if ( curved )
-return( true );		/* Treat as curved */
-
-return( false );	/* Treat as a funny line */
+return( curved );
 }
 
 static int AdjustForImperfectSlopeMatch( SplinePoint *sp,BasePoint *pos,
@@ -3549,7 +3606,6 @@ static void FindRefPointsNew( struct glyphdata *gd,struct stemdata *stem ) {
                 chunk->l->value++;
         }
 
-        rlen = prevrlen = 0;
         if ( chunk->rtick ) {
             sp = chunk->r->sp;
             pos = ((real *) &sp->me.x)[!is_x];
@@ -3616,7 +3672,7 @@ static void FindRefPointsNew( struct glyphdata *gd,struct stemdata *stem ) {
 static void NormalizeStem( struct glyphdata *gd,struct stemdata *stem ) {
     int i;
     int is_x, lval, rval, val, lset, rset, best;
-    double loff, roff;
+    double loff=0, roff=0;
     BasePoint lold, rold;
     SplinePoint *lbest, *rbest;
     struct stem_chunk *chunk;
@@ -3707,8 +3763,13 @@ static void NormalizeStem( struct glyphdata *gd,struct stemdata *stem ) {
                 lu = chunk->lnext ? &chunk->l->nextunit : &chunk->l->prevunit;
                 ru = chunk->rnext ? &chunk->r->nextunit : &chunk->r->prevunit;
                 if ( UnitsParallel( lu,ru,true )) {
+                    loff =  ( chunk->l->sp->me.x - stem->left.x )*stem->l_to_r.x +
+                            ( chunk->l->sp->me.y - stem->left.y )*stem->l_to_r.y;
+                    roff =  ( chunk->r->sp->me.x - stem->right.x )*stem->l_to_r.x +
+                            ( chunk->r->sp->me.y - stem->right.y )*stem->l_to_r.y;
                     stem->left = chunk->l->sp->me;
                     stem->right = chunk->r->sp->me;
+                    RecalcStemOffsets( stem,loff != 0,roff != 0 );
         break;
                 }
             }
@@ -3718,15 +3779,21 @@ static void NormalizeStem( struct glyphdata *gd,struct stemdata *stem ) {
         if ( i == stem->chunk_cnt ) for ( i=0; i<stem->chunk_cnt; ++i ) {
             chunk = &stem->chunks[i];
             if ( !lset && chunk->l != NULL ) {
+                loff =  ( chunk->l->sp->me.x - stem->left.x )*stem->l_to_r.x +
+                        ( chunk->l->sp->me.y - stem->left.y )*stem->l_to_r.y;
                 stem->left = chunk->l->sp->me;
                 lset = true;
             }
             if ( !rset && chunk->r != NULL ) {
+                roff =  ( chunk->r->sp->me.x - stem->right.x )*stem->l_to_r.x +
+                        ( chunk->r->sp->me.y - stem->right.y )*stem->l_to_r.y;
                 stem->right = chunk->r->sp->me;
                 rset = true;
             }
-            if ( lset && rset )
+            if ( lset && rset ) {
+                RecalcStemOffsets( stem,loff != 0,roff != 0 );
         break;
+            }
         }
     }
 }
@@ -4279,6 +4346,8 @@ return( NULL );
     gd->sc = sc;
     gd->sf = sc->parent;
     gd->emsize = em_size;
+    gd->order2 = ( sc->parent != NULL ) ? sc->parent->layers[layer].order2 : false;
+    
     dist_error_hv = .0035*gd->emsize;
     dist_error_diag = .0065*gd->emsize;
     dist_error_curve = .022*gd->emsize;
@@ -4469,10 +4538,8 @@ return( gd );
     }
     /* Normalize stems before calculating active zones (as otherwise
     /* we don't know exact positions of stem edges */
-    for ( i=0; i<gd->stemcnt; ++i ) {
-        stem = &gd->stems[i];
-        NormalizeStem( gd,stem );
-    }
+    for ( i=0; i<gd->stemcnt; ++i )
+        NormalizeStem( gd,&gd->stems[i] );
     GDNormalizeStubs( gd );
 
     /* Figure out active zones at the first order (as they are needed to
@@ -4532,6 +4599,8 @@ return( gd );
 
 void GlyphDataFree(struct glyphdata *gd) {
     int i;
+    if ( gd == NULL )
+return;
 
     FreeMonotonics(gd->ms);	gd->ms = NULL;
     free(gd->space);		gd->space = NULL;
