@@ -97,6 +97,8 @@ struct ttfinfo {
     int hhea_start;
 		/* hmtx */
     int hmetrics_start;
+		/* JSFT */
+    int JSTF_start;
 		/* kern */
     int kern_start;
 
@@ -409,8 +411,8 @@ exit(0);
 	  case CHR('k','e','r','n'):
 	    info->kern_start = offset;
 	  break;
-	  case CHR('l','c','a','r'):
-	    info->lcar_start = offset;
+	  case CHR('J','S','T','F'):
+	    info->JSTF_start = offset;
 	  break;
 	  case CHR('l','o','c','a'):
 	    info->glyphlocations_start = offset;
@@ -2695,9 +2697,115 @@ static void gsubContextSubTable(FILE *ttf, int which, int stoffset, struct ttfin
 static void gsubChainingContextSubTable(FILE *ttf, int which, int stoffset, struct ttfinfo *info) {
 }
 
+static void showgpossublookup(FILE *ttf,int base, int lkoffset,
+	struct ttfinfo *info, int gpos ) {
+    int lu_type, flags, cnt, j, st, is_exten_lu;
+    uint16 *st_offsets;
+
+    fseek(ttf,base+lkoffset,SEEK_SET);
+    lu_type = getushort(ttf);
+    flags = getushort(ttf);
+    cnt = getushort(ttf);
+    if ( gpos ) {
+	printf( "\t  Type=%d %s\n", lu_type,
+		lu_type==1?"Single adjustment":
+		lu_type==2?"Pair adjustment":
+		lu_type==3?"Cursive attachment":
+		lu_type==4?"MarkToBase attachment":
+		lu_type==5?"MarkToLigature attachment":
+		lu_type==6?"MarkToMark attachment":
+		lu_type==7?"Context positioning":
+		lu_type==8?"Chained Context positioning":
+		lu_type==9?"Extension positioning":
+		    "Reserved");
+	is_exten_lu = lu_type==9;
+    } else {
+	printf( "\t  Type=%d %s\n", lu_type,
+		lu_type==1?"Single":
+		lu_type==2?"Multiple":
+		lu_type==3?"Alternate":
+		lu_type==4?"Ligature":
+		lu_type==5?"Context":
+		lu_type==6?"Chaining Context":
+		lu_type==7?"Extension":
+		lu_type==8?"Reverse chaining":
+		    "Reserved");
+	is_exten_lu = lu_type==7;
+    }
+    printf( "\t  Flags=0x%x %s|%s|%s|%s\n", flags,
+	    (flags&0x1)?"RightToLeft":"LeftToRight",
+	    (flags&0x2)?"IgnoreBaseGlyphs":"",
+	    (flags&0x4)?"IgnoreLigatures":"",
+	    (flags&0x8)?"IgnoreCombiningMarks":"");
+    printf( "\t  Sub Table Count=%d\n", cnt);
+    st_offsets = malloc(cnt*sizeof(uint16));
+    for ( j=0; j<cnt; ++j )
+	printf( "\t   Sub Table Offsets[%d]=%d\n", j, st_offsets[j] = getushort(ttf));
+    for ( j=0; j<cnt; ++j ) {
+	fseek(ttf,st = base+lkoffset+st_offsets[j],SEEK_SET);
+	if ( gpos ) {
+	    if ( is_exten_lu ) {	/* Extension lookup */
+		int format = getushort(ttf);
+		int subtype = getushort(ttf);
+		int offset = getlong(ttf);
+		printf( "\t    (extension format)=%d\n", format );
+		lu_type = subtype;
+		printf( "\t    (extension type)=%d %s\n", lu_type,
+			lu_type==1?"Single adjustment":
+			lu_type==2?"Pair adjustment":
+			lu_type==3?"Cursive attachment":
+			lu_type==4?"MarkToBase attachment":
+			lu_type==5?"MarkToLigature attachment":
+			lu_type==6?"MarkToMark attachment":
+			lu_type==7?"Context positioning":
+			lu_type==8?"Chained Context positioning":
+			lu_type==9?"Extension !!! Illegal here !!!":
+			    "Reserved");
+		printf( "\t    (extension offset)=%d\n", offset );
+		st += offset;
+		fseek(ttf,st,SEEK_SET);
+	    }
+	    switch ( lu_type ) {
+	      case 2: gposPairSubTable(ttf,j,st,info); break;
+	      case 4: gposMarkToBaseSubTable(ttf,j,st,info,true); break;
+	      case 6: gposMarkToBaseSubTable(ttf,j,st,info,false); break;
+	    }
+	} else {
+	    if ( is_exten_lu ) {	/* Extension lookup */
+		int format = getushort(ttf);
+		int subtype = getushort(ttf);
+		int offset = getlong(ttf);
+		printf( "\t    (extension format)=%d\n", format );
+		lu_type = subtype;
+		printf( "\t    (extension type)=%d %s\n", lu_type,
+			lu_type==1?"Single":
+			lu_type==2?"Multiple":
+			lu_type==3?"Alternate":
+			lu_type==4?"Ligature":
+			lu_type==5?"Context":
+			lu_type==6?"Chaining Context":
+			lu_type==7?"Extension !!! Illegal here !!!":
+			lu_type==8?"Reverse chaining":
+			    "Reserved");
+		st += offset;
+		fseek(ttf,st,SEEK_SET);
+	    }
+	    switch ( lu_type ) {
+	      case 1: gsubSingleSubTable(ttf,j,st,info); break;
+	      case 2: gsubMultipleSubTable(ttf,j,st,info); break;
+	      case 3: gsubAlternateSubTable(ttf,j,st,info); break;
+	      case 4: gsubLigatureSubTable(ttf,j,st,info); break;
+	      case 5: gsubContextSubTable(ttf,j,st,info); break;
+	      case 6: gsubChainingContextSubTable(ttf,j,st,info); break;
+	    }
+	}
+    }
+    free(st_offsets);
+}
+
 static void showgpossublookups(FILE *ttf,int lookup_start, struct ttfinfo *info, int gpos ) {
-    int i, lu_cnt, lu_type, flags, cnt, j, st, is_exten_lu;
-    uint16 *lu_offsets, *st_offsets;
+    int i, lu_cnt;
+    uint16 *lu_offsets;
 
     fseek(ttf,lookup_start,SEEK_SET);
     printf( "\t%s Lookup List Table\n", gpos?"GPOS":"GSUB" );
@@ -2707,106 +2815,8 @@ static void showgpossublookups(FILE *ttf,int lookup_start, struct ttfinfo *info,
 	printf( "\t Lookup Offset[%d]=%d\n", i, lu_offsets[i] = getushort(ttf));
     printf( "\t--\n");
     for ( i=0; i<lu_cnt; ++i ) {
-	fseek(ttf,lookup_start+lu_offsets[i],SEEK_SET);
-	lu_type = getushort(ttf);
-	flags = getushort(ttf);
-	cnt = getushort(ttf);
 	printf( "\t Lookup Table[%d]\n", i );
-	if ( gpos ) {
-	    printf( "\t  Type=%d %s\n", lu_type,
-		    lu_type==1?"Single adjustment":
-		    lu_type==2?"Pair adjustment":
-		    lu_type==3?"Cursive attachment":
-		    lu_type==4?"MarkToBase attachment":
-		    lu_type==5?"MarkToLigature attachment":
-		    lu_type==6?"MarkToMark attachment":
-		    lu_type==7?"Context positioning":
-		    lu_type==8?"Chained Context positioning":
-		    lu_type==9?"Extension positioning":
-			"Reserved");
-	    is_exten_lu = lu_type==9;
-	} else {
-	    printf( "\t  Type=%d %s\n", lu_type,
-		    lu_type==1?"Single":
-		    lu_type==2?"Multiple":
-		    lu_type==3?"Alternate":
-		    lu_type==4?"Ligature":
-		    lu_type==5?"Context":
-		    lu_type==6?"Chaining Context":
-		    lu_type==7?"Extension":
-		    lu_type==8?"Reverse chaining":
-			"Reserved");
-	    is_exten_lu = lu_type==7;
-	}
-	printf( "\t  Flags=0x%x %s|%s|%s|%s\n", flags,
-		(flags&0x1)?"RightToLeft":"LeftToRight",
-		(flags&0x2)?"IgnoreBaseGlyphs":"",
-		(flags&0x4)?"IgnoreLigatures":"",
-		(flags&0x8)?"IgnoreCombiningMarks":"");
-	printf( "\t  Sub Table Count=%d\n", cnt);
-	st_offsets = malloc(cnt*sizeof(uint16));
-	for ( j=0; j<cnt; ++j )
-	    printf( "\t   Sub Table Offsets[%d]=%d\n", j, st_offsets[j] = getushort(ttf));
-	for ( j=0; j<cnt; ++j ) {
-	    fseek(ttf,st = lookup_start+lu_offsets[i]+st_offsets[j],SEEK_SET);
-	    if ( gpos ) {
-		if ( is_exten_lu ) {	/* Extension lookup */
-		    int format = getushort(ttf);
-		    int subtype = getushort(ttf);
-		    int offset = getlong(ttf);
-		    printf( "\t    (extension format)=%d\n", format );
-		    lu_type = subtype;
-		    printf( "\t    (extension type)=%d %s\n", lu_type,
-			    lu_type==1?"Single adjustment":
-			    lu_type==2?"Pair adjustment":
-			    lu_type==3?"Cursive attachment":
-			    lu_type==4?"MarkToBase attachment":
-			    lu_type==5?"MarkToLigature attachment":
-			    lu_type==6?"MarkToMark attachment":
-			    lu_type==7?"Context positioning":
-			    lu_type==8?"Chained Context positioning":
-			    lu_type==9?"Extension !!! Illegal here !!!":
-				"Reserved");
-		    printf( "\t    (extension offset)=%d\n", offset );
-		    st += offset;
-		    fseek(ttf,st,SEEK_SET);
-		}
-		switch ( lu_type ) {
-		  case 2: gposPairSubTable(ttf,j,st,info); break;
-		  case 4: gposMarkToBaseSubTable(ttf,j,st,info,true); break;
-		  case 6: gposMarkToBaseSubTable(ttf,j,st,info,false); break;
-		}
-	    } else {
-		if ( is_exten_lu ) {	/* Extension lookup */
-		    int format = getushort(ttf);
-		    int subtype = getushort(ttf);
-		    int offset = getlong(ttf);
-		    printf( "\t    (extension format)=%d\n", format );
-		    lu_type = subtype;
-		    printf( "\t    (extension type)=%d %s\n", lu_type,
-			    lu_type==1?"Single":
-			    lu_type==2?"Multiple":
-			    lu_type==3?"Alternate":
-			    lu_type==4?"Ligature":
-			    lu_type==5?"Context":
-			    lu_type==6?"Chaining Context":
-			    lu_type==7?"Extension !!! Illegal here !!!":
-			    lu_type==8?"Reverse chaining":
-				"Reserved");
-		    st += offset;
-		    fseek(ttf,st,SEEK_SET);
-		}
-		switch ( lu_type ) {
-		  case 1: gsubSingleSubTable(ttf,j,st,info); break;
-		  case 2: gsubMultipleSubTable(ttf,j,st,info); break;
-		  case 3: gsubAlternateSubTable(ttf,j,st,info); break;
-		  case 4: gsubLigatureSubTable(ttf,j,st,info); break;
-		  case 5: gsubContextSubTable(ttf,j,st,info); break;
-		  case 6: gsubChainingContextSubTable(ttf,j,st,info); break;
-		}
-	    }
-	}
-	free(st_offsets);
+	showgpossublookup(ttf,lookup_start, lu_offsets[i], info, gpos);
     }
     free(lu_offsets);
 }
@@ -6382,13 +6392,15 @@ static void readttfbaseminmax(FILE *ttf,uint32 offset,struct ttfinfo *info,
     }
 }
 
+struct tagoff { uint32 tag; uint32 offset; };
+
 static int readttfbase(FILE *ttf,FILE *util, struct ttfinfo *info) {
     int version;
     uint32 axes[2];
     uint32 basetags, basescripts;
     int basetagcnt, basescriptcnt;
     uint32 *tags;
-    struct tagoff { uint32 tag; uint32 offset; } *bs;
+    struct tagoff *bs;
     int axis,i,j;
 
     fseek(ttf,info->base_start,SEEK_SET);
@@ -6526,6 +6538,154 @@ static int readttfbase(FILE *ttf,FILE *util, struct ttfinfo *info) {
 return( 1 );
 }
 
+static void readttfjustmax(char *label,FILE *ttf,int base,int offset, struct ttfinfo *info) {
+    int lcnt,i;
+    int *offsets;
+
+    if ( offset==0 ) {
+	printf( "\t    No %s data\n", label );
+return;
+    }
+    base += offset;
+    fseek(ttf,base,SEEK_SET);
+    lcnt = getushort(ttf);
+    offsets = malloc(lcnt*sizeof(int));
+    printf( "\t    %d lookup%s for %s\n", lcnt, lcnt==1? "" : "s", label );
+    for ( i=0; i<lcnt; ++i )
+	printf( "\t\tOffset to lookup %d\n", offsets[i] = getushort(ttf));
+    for ( i=0; i<lcnt; ++i )
+	showgpossublookup(ttf,base, offsets[i], info, true);
+    free(offsets);
+}
+
+static void readttfjustlookups(char *label,FILE *ttf,int base,int offset) {
+    int lcnt,i;
+
+    if ( offset==0 ) {
+	printf( "\t    No %s data\n", label );
+return;
+    }
+    base += offset;
+    fseek(ttf,base,SEEK_SET);
+    lcnt = getushort(ttf);
+    printf( "\t    %d lookup%s for %s\n", lcnt, lcnt==1? "" : "s", label );
+    for ( i=0; i<lcnt; ++i )
+	printf( "\t\tLookup %d\n", getushort(ttf));
+}
+
+static void readttfjustlangsys(FILE *ttf,int offset,uint32 stag, uint32 ltag, struct ttfinfo *info) {
+    int pcnt,j;
+    int *offsets;
+    int shrinkenablesub, shrinkenablepos, shrinkdisablesub, shrinkdisablepos;
+    int extendenablesub, extendenablepos, extenddisablesub, extenddisablepos;
+    int shrinkmax, extendmax;
+
+    fseek(ttf,offset,SEEK_SET);
+    printf("\t  Justification priority data for '%c%c%c%c' script, '%c%c%c%c' lang.\n",
+	    stag>>24, stag>>16, stag>>8, stag,
+	    ltag>>24, ltag>>16, ltag>>8, ltag );
+    pcnt = getushort(ttf);
+    offsets = malloc(pcnt*sizeof(int));
+    for ( j=0; j<pcnt; ++j )
+	offsets[j] = getushort(ttf);
+    printf( "\t  %d Priority level%s\n", pcnt, pcnt==1 ? "" : "s" );
+    for ( j=0; j<pcnt; ++j ) {
+	if ( offsets[j]==0 ) {
+	    printf( "\t   No data for priority level %d\n", j );
+    continue;
+	}
+	printf( "\t   Priority level %d\n", j );
+	fseek(ttf,offset+offsets[j],SEEK_SET);
+	shrinkenablesub = getushort(ttf);
+	shrinkdisablesub = getushort(ttf);
+	shrinkenablepos = getushort(ttf);
+	shrinkdisablepos = getushort(ttf);
+	shrinkmax = getushort(ttf);
+	extendenablesub = getushort(ttf);
+	extenddisablesub = getushort(ttf);
+	extendenablepos = getushort(ttf);
+	extenddisablepos = getushort(ttf);
+	extendmax = getushort(ttf);
+	readttfjustlookups("ShrinkageEnableGSUB",ttf,offset+offsets[j],shrinkenablesub);
+	readttfjustlookups("ShrinkageDisableGSUB",ttf,offset+offsets[j],shrinkdisablesub);
+	readttfjustlookups("ShrinkageEnableGPOS",ttf,offset+offsets[j],shrinkenablepos);
+	readttfjustlookups("ShrinkageDisableGPOS",ttf,offset+offsets[j],shrinkdisablepos);
+	readttfjustmax("ShrinkageMax",ttf,offset+offsets[j],shrinkmax,info);
+	readttfjustlookups("ExtensionEnableGSUB",ttf,offset+offsets[j],extendenablesub);
+	readttfjustlookups("ExtensionDisableGSUB",ttf,offset+offsets[j],extenddisablesub);
+	readttfjustlookups("ExtensionEnableGPOS",ttf,offset+offsets[j],extendenablepos);
+	readttfjustlookups("ExtensionDisableGPOS",ttf,offset+offsets[j],extenddisablepos);
+	readttfjustmax("ExtensionMax",ttf,offset+offsets[j],extendmax,info);
+    }
+    free(offsets);
+}
+
+static void readttfjstf(FILE *ttf,FILE *util, struct ttfinfo *info) {
+    int version;
+    int i,j,cnt, lcnt, lmax=0;
+    struct tagoff *scripts, *langs=NULL;
+    int extenderOff, defOff;
+
+    fseek(ttf,info->JSTF_start,SEEK_SET);
+    printf( "\nJSTF table (at %d)\n", info->JSTF_start);
+    printf( "\tVersion: 0x%08x\n", version = getlong(ttf));
+    if ( version!=0x00010000 )
+	fprintf( stderr, "!> Bad version number for BASE table.\n" );
+    cnt = getushort(ttf);		/* Script count */
+    printf( "\t %d scripts\n", cnt );
+    scripts = malloc(cnt*sizeof(struct tagoff));
+    for ( i=0; i<cnt; ++i ) {
+	scripts[i].tag = getlong(ttf);
+	scripts[i].offset = getushort(ttf);
+    }
+
+    for ( i=0; i<cnt; ++i ) {
+	printf("\t Justification data for '%c%c%c%c' script\n",
+		scripts[i].tag>>24, scripts[i].tag>>16, scripts[i].tag>>8, scripts[i].tag );
+	if ( scripts[i].offset==0 ) {
+	    printf("\t  Nothing for this script\n" );
+    continue;
+	}
+	fseek(ttf,info->JSTF_start+scripts[i].offset,SEEK_SET);
+	extenderOff = getushort(ttf);
+	defOff      = getushort(ttf);
+	lcnt        = getushort(ttf);
+	if ( lcnt>lmax )
+	    langs = realloc(langs,(lmax = lcnt+20)*sizeof(struct tagoff));
+	for ( j=0; j<lcnt; ++j ) {
+	    langs[j].tag = getlong(ttf);
+	    langs[j].offset = getushort(ttf);
+	}
+	if ( extenderOff==0 )
+	    printf( "\t  No extension glyphs.\n" );
+	else {
+	    int gcnt;
+	    fseek(ttf,info->JSTF_start+scripts[i].offset+extenderOff,SEEK_SET);
+	    gcnt = getushort(ttf);
+	    printf( "\t  %d extension glyph%s.\n", gcnt, gcnt==1?"":"s" );
+	    for ( j=0; j<gcnt; ++j ) {
+		int gid = getushort(ttf);
+		printf( "\t   Extension Glyph %d (%s)\n", gid,
+			gid>=info->glyph_cnt ? "!!! Bad glyph !!!" :
+			info->glyph_names == NULL ? "" : info->glyph_names[gid]);
+	    }
+	}
+	if ( defOff==0 )
+	    printf( "\t  No default just language system table\n" );
+	else
+	    readttfjustlangsys(ttf,info->JSTF_start+scripts[i].offset+defOff,
+		    scripts[i].tag, CHR('d','f','l','t'),info);
+	printf( "\t  %d langsys table%s.\n", lcnt, lcnt==1?"":"s" );
+	for ( j=0; j<lcnt; ++j ) {
+	    readttfjustlangsys(ttf,info->JSTF_start+scripts[i].offset+langs[j].offset,
+		    scripts[i].tag, langs[j].tag,info);
+	}
+    }
+    free( langs );
+    free( scripts );
+}
+
+
 static void readit(FILE *ttf, FILE *util) {
     struct ttfinfo info;
     int i;
@@ -6573,6 +6733,8 @@ return;
 	readttfgdef(ttf,util,&info);
     if ( info.base_start!=0 )
 	readttfbase(ttf,util,&info);
+    if ( info.JSTF_start!=0 )
+	readttfjstf(ttf,util,&info);
     if ( info.bitmaploc_start!=0 && info.bitmapdata_start!=0 )
 	readttfbitmaps(ttf,util,&info);
     if ( info.bitmapscale_start!=0 )
