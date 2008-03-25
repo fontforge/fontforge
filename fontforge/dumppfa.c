@@ -570,14 +570,15 @@ static void dumpGradient(void (*dumpchar)(int ch,void *data), void *data,
 		else if ( t==grad->grad_stops[j].offset )
 		    col = grad->grad_stops[j].col;
 		else {
-		    double percent = (t-grad->grad_stops[j-1].offset)/ (grad->grad_stops[j].offset-grad->grad_stops[i-1].offset);
+		    double percent = (t-grad->grad_stops[j-1].offset)/ (grad->grad_stops[j].offset-grad->grad_stops[j-1].offset);
 		    uint32 col1 = grad->grad_stops[j-1].col;
 		    uint32 col2 = grad->grad_stops[j  ].col;
+		    int red, green, blue;
 		    if ( col1==COLOR_INHERITED ) col1 = 0x000000;
 		    if ( col2==COLOR_INHERITED ) col2 = 0x000000;
-		    int red   = ((col1>>16)&0xff)*(1-percent) + ((col2>>16)&0xff)*percent;
-		    int green = ((col1>>8 )&0xff)*(1-percent) + ((col2>>8 )&0xff)*percent;
-		    int blue  = ((col1    )&0xff)*(1-percent) + ((col2    )&0xff)*percent;
+		    red   = ((col1>>16)&0xff)*(1-percent) + ((col2>>16)&0xff)*percent;
+		    green = ((col1>>8 )&0xff)*(1-percent) + ((col2>>8 )&0xff)*percent;
+		    blue  = ((col1    )&0xff)*(1-percent) + ((col2    )&0xff)*percent;
 		    col = (red<<16) | (green<<8) | blue;
 		}
 		if ( col==COLOR_INHERITED ) col = 0x000000;
