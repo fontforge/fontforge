@@ -4430,8 +4430,8 @@ exit(1);
 		    ((PST1 *) pst)->script_lang_index = SFFindBiggestScriptLangIndex(sf,
 			    script!=0?script:SCScriptFromUnicode(sc),DEFAULT_LANG);
 		if ( ch=='\'' ) {
+		    ungetc(ch,sfd);
 		    ((PST1 *) pst)->tag = gettag(sfd);
-		    getc(sfd);	/* Final quote */
 		} else if ( ch=='<' ) {
 		    getint(sfd,&temp);
 		    ((PST1 *) pst)->tag = temp<<16;
@@ -5118,8 +5118,8 @@ return( NULL );
 	if ( ch!='\'' )
 return( NULL );
 
+	ungetc(ch,sfd);
 	tag = gettag(sfd);
-	getc(sfd);		/* final quote */
 return( (OTLookup *) (intpt) tag );
     } else {
 	ungetc(ch,sfd);
@@ -5172,8 +5172,8 @@ static void SFDParseChainContext(FILE *sfd,SplineFont *sf,FPST *fpst, char *tok,
 	}
 	while ( (ch=getc(sfd))==' ' || ch=='\t' );
 	if ( ch=='\'' ) {
+	    ungetc(ch,sfd);
 	    ((FPST1 *) fpst)->tag = gettag(sfd);
-	    getc(sfd);	/* Final quote */
 	} else
 	    ungetc(ch,sfd);
     } else {
@@ -5722,8 +5722,8 @@ static void SFDParseLookup(FILE *sfd,SplineFont *sf,OTLookup *otl) {
 		fl->ismac = true;
 		fl->featuretag = (ft<<16) | fs;
 	    } else if ( ch=='\'' ) {
+		ungetc(ch,sfd);
 		fl->featuretag = gettag(sfd);
-		(void) getc(sfd);
 	    }
 	    while ( (ch=getc(sfd))==' ' );
 	    if ( ch=='(' ) {
@@ -5739,8 +5739,8 @@ static void SFDParseLookup(FILE *sfd,SplineFont *sf,OTLookup *otl) {
 			lastsl->next = sl;
 		    lastsl = sl;
 		    if ( ch=='\'' ) {
+			ungetc(ch,sfd);
 			sl->script = gettag(sfd);
-			(void) getc(sfd);
 		    }
 		    while ( (ch=getc(sfd))==' ' );
 		    if ( ch=='<' ) {
@@ -5750,10 +5750,10 @@ static void SFDParseLookup(FILE *sfd,SplineFont *sf,OTLookup *otl) {
 			    if ( ch=='>' )
 			break;
 			    if ( ch=='\'' ) {
+				ungetc(ch,sfd);
 			        if ( lcnt>=lmax )
 				    langs = grealloc(langs,(lmax+=10)*sizeof(uint32));
 				langs[lcnt++] = gettag(sfd);
-				(void) getc(sfd);
 			    }
 			}
 			sl->lang_cnt = lcnt;
@@ -6543,8 +6543,8 @@ exit( 1 );
 	    for ( i=0; i<temp; ++i ) {
 		while ( isspace((ch=getc(sfd))) );
 		if ( ch=='\'' ) {
+		    ungetc(ch,sfd);
 		    ord->ordered_features[i] = gettag(sfd);
-		    if ( (ch=getc(sfd))!='\'') ungetc(ch,sfd);
 		} else if ( ch=='<' ) {
 		    int f,s;
 		    fscanf(sfd,"%d,%d>", &f, &s );
