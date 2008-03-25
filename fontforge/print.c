@@ -452,7 +452,7 @@ static void pdf_BrushCheck(PI *pi,struct glyph_res *gr,struct brush *brush,
 		else if ( t==grad->grad_stops[j].offset )
 		    col = grad->grad_stops[j].col;
 		else {
-		    double percent = (t-grad->grad_stops[j-1].offset)/ (grad->grad_stops[j].offset-grad->grad_stops[i-1].offset);
+		    double percent = (t-grad->grad_stops[j-1].offset)/ (grad->grad_stops[j].offset-grad->grad_stops[j-1].offset);
 		    uint32 col1 = grad->grad_stops[j-1].col;
 		    uint32 col2 = grad->grad_stops[j  ].col;
 		    if ( col1==COLOR_INHERITED ) col1 = 0x000000;
