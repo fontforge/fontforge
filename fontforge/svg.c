@@ -2127,25 +2127,25 @@ static void xmlParseColorSource(xmlNodePtr top,char *name,DBounds *bbox,
 
 	    prop = _xmlGetProp(colour_source,(xmlChar *) "x1");
 	    if ( prop!=NULL ) {
-		grad->start.x = parseGCoord((char *) prop,bbox_units,bbox->minx,bbox->maxx);
+		grad->start.x = parseGCoord( prop,bbox_units,bbox->minx,bbox->maxx);
 		_xmlFree(prop);
 	    }
 
 	    prop = _xmlGetProp(colour_source,(xmlChar *) "x2");
 	    if ( prop!=NULL ) {
-		grad->stop.x   = parseGCoord((char *) prop,bbox_units,bbox->minx,bbox->maxx);
+		grad->stop.x   = parseGCoord( prop,bbox_units,bbox->minx,bbox->maxx);
 		_xmlFree(prop);
 	    }
 
 	    prop = _xmlGetProp(colour_source,(xmlChar *) "y1");
 	    if ( prop!=NULL ) {
-		grad->start.y = parseGCoord((char *) prop,bbox_units,bbox->miny,bbox->maxy);
+		grad->start.y = parseGCoord( prop,bbox_units,bbox->miny,bbox->maxy);
 		_xmlFree(prop);
 	    }
 
 	    prop = _xmlGetProp(colour_source,(xmlChar *) "y2");
 	    if ( prop!=NULL ) {
-		grad->stop.y   = parseGCoord((char *) prop,bbox_units,bbox->miny,bbox->maxy);
+		grad->stop.y   = parseGCoord( prop,bbox_units,bbox->miny,bbox->maxy);
 		_xmlFree(prop);
 	    }
 
@@ -2159,32 +2159,32 @@ static void xmlParseColorSource(xmlNodePtr top,char *name,DBounds *bbox,
 
 	    prop = _xmlGetProp(colour_source,(xmlChar *) "cx");
 	    if ( prop!=NULL ) {
-		grad->stop.x = parseGCoord((char *) prop,bbox_units,bbox->minx,bbox->maxx);
+		grad->stop.x = parseGCoord( prop,bbox_units,bbox->minx,bbox->maxx);
 		_xmlFree(prop);
 	    }
 
 	    prop = _xmlGetProp(colour_source,(xmlChar *) "cy");
 	    if ( prop!=NULL ) {
-		grad->stop.y = parseGCoord((char *) prop,bbox_units,bbox->miny,bbox->maxy);
+		grad->stop.y = parseGCoord( prop,bbox_units,bbox->miny,bbox->maxy);
 		_xmlFree(prop);
 	    }
 
 	    prop = _xmlGetProp(colour_source,(xmlChar *) "radius");
 	    if ( prop!=NULL ) {
-		grad->radius = parseGCoord((char *) prop,bbox_units,0,sqrt(4*(offx*offx + offy*offy)));
+		grad->radius = parseGCoord( prop,bbox_units,0,sqrt(4*(offx*offx + offy*offy)));
 		_xmlFree(prop);
 	    }
 
 	    grad->start = grad->stop;
 	    prop = _xmlGetProp(colour_source,(xmlChar *) "fx");
 	    if ( prop!=NULL ) {
-		grad->start.x = parseGCoord((char *) prop,bbox_units,bbox->minx,bbox->maxx);
+		grad->start.x = parseGCoord( prop,bbox_units,bbox->minx,bbox->maxx);
 		_xmlFree(prop);
 	    }
 
 	    prop = _xmlGetProp(colour_source,(xmlChar *) "fy");
 	    if ( prop!=NULL ) {
-		grad->start.y = parseGCoord((char *) prop,bbox_units,bbox->miny,bbox->maxy);
+		grad->start.y = parseGCoord( prop,bbox_units,bbox->miny,bbox->maxy);
 		_xmlFree(prop);
 	    }
 	}
@@ -2199,7 +2199,7 @@ static void xmlParseColorSource(xmlNodePtr top,char *name,DBounds *bbox,
 	for ( kid = colour_source->children; kid!=NULL; kid=kid->next ) if ( _xmlStrcmp(kid->name,(xmlChar *) "stop")==0 ) {
 	    prop = _xmlGetProp(kid,(xmlChar *) "offset");
 	    if ( prop!=NULL ) {
-		grad->grad_stops[scnt].offset = parseGCoord((char *) prop,false,0,1.0);
+		grad->grad_stops[scnt].offset = parseGCoord( prop,false,0,1.0);
 		_xmlFree(prop);
 	    }
 
@@ -2633,7 +2633,7 @@ return( NULL );
     }
     name = _xmlGetProp(svg,(xmlChar *) "clip-path");
     if ( name!=NULL ) {
-	xmlNodePtr clip = XmlFindURI(top,name);
+	xmlNodePtr clip = XmlFindURI(top,(char *) name);
 	if ( clip!=NULL && _xmlStrcmp(clip->name,(xmlChar *) "clipPath")==0) {
 	    const xmlChar *temp = clip->name;
 	    struct svg_state null_state;
