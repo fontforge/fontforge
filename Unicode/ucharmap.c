@@ -424,7 +424,7 @@ static int BytesNormal(iconv_t latin1_2_unicode) {
     } u[8];
 #endif
     char *from = "A", *to = &u[0].c[0];
-    int in_left = 1, out_left = sizeof(u);
+    size_t in_left = 1, out_left = sizeof(u);
     memset(u,0,sizeof(u));
     iconv( latin1_2_unicode, (iconv_arg2_t) &from, &in_left, &to, &out_left);
     if ( u[0].s=='A' )
