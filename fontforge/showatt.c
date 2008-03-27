@@ -90,6 +90,11 @@ return;
 
 static int node_alphabetize(const void *_n1, const void *_n2) {
     const struct node *n1 = _n1, *n2 = _n2;
+    int ret;
+
+    ret = strcasecmp(n1->label,n2->label);
+    if ( ret!=0 )
+return( ret );
 
 return( strcmp(n1->label,n2->label));
 }
