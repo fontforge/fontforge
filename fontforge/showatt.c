@@ -2100,8 +2100,8 @@ return( NULL );
 	if ( *pt=='<' ) isliga = true;
 	++pt;
     }
-    if ( *pt=='\0' )
-return( NULL );
+    if ( !isalpha(*pt))		/* If alphabetic, then show the glyph names that follow too. Otherwise show nothing for gpos lookups */
+	pt = "";
 return( NameList_GetImage(att->sf,sc,att->def_layer,pt,isliga));
 }
 
@@ -2151,10 +2151,12 @@ return;
 	GDrawRequestExpose(att->v,&r,false);
     } else if ( event->type == et_mousemove ) {
 	GGadgetEndPopup();
+#if 0
 	if ( node!=NULL && (strstr(node->label," => ")!=NULL ||
-			    strstr(node->label," <= ")!=NULL )) {
+			    strstr(node->label," <= ")!=NULL ) ||
+			    strstr(node->label," ∆x=")!=NULL )) {
+#endif
 	    ATTStartPopup(att,node);
-	}
     }
 }
 
