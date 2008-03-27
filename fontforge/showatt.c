@@ -88,6 +88,12 @@ return;
     free(node);
 }
 
+static int node_alphabetize(const void *_n1, const void *_n2) {
+    const struct node *n1 = _n1, *n2 = _n2;
+
+return( strcmp(n1->label,n2->label));
+}
+
 static void BuildMarkedLigatures(struct node *node,struct att_dlg *att) {
     SplineChar *sc = node->u.sc;
     struct lookup_subtable *sub = node->parent->parent->u.sub;
@@ -147,6 +153,7 @@ static void BuildMarkedChars(struct node *node,struct att_dlg *att) {
 	    node->children[j++].parent = node;
 	}
     }
+    qsort(node->children,j,sizeof(struct node), node_alphabetize);
     node->cnt = j;
 }
 
@@ -172,6 +179,7 @@ static void BuildBase(struct node *node,SplineChar **bases,enum anchor_type at, 
 	    node->children[i].u.sc = bases[i];
 	    node->children[i].build = at==at_baselig?BuildMarkedLigatures:BuildMarkedChars;
 	}
+	qsort(node->children,node->cnt,sizeof(struct node), node_alphabetize);
     }
 }
 
@@ -199,6 +207,7 @@ static void BuildMark(struct node *node,SplineChar **marks,AnchorClass *ac, stru
 	    node->children[i].label = copy(buf);
 	    node->children[i].parent = node;
 	}
+	qsort(node->children,node->cnt,sizeof(struct node), node_alphabetize);
     }
 }
 
@@ -256,6 +265,7 @@ static void BuildAnchorLists(struct node *node,struct att_dlg *att) {
 		    ++i;
 		}
 	    }
+	    qsort(node->children,node->cnt,sizeof(struct node), node_alphabetize);
 	}
 	free(entryexit);
     } else {
@@ -731,12 +741,6 @@ static void BuildASM(struct node *node,struct att_dlg *att) {
     free(used);
 }
 
-static int node_alphabetize(const void *_n1, const void *_n2) {
-    const struct node *n1 = _n1, *n2 = _n2;
-
-return( strcmp(n1->label,n2->label));
-}
-
 static void BuildKern2(struct node *node,struct att_dlg *att) {
     struct lookup_subtable *sub = node->parent->u.sub;
     SplineChar *base = node->u.sc;
@@ -872,7 +876,8 @@ static void BuildKern(struct node *node,struct att_dlg *att) {
 	if ( !doit ) {
 	    node->children = lines = gcalloc(cnt+1,sizeof(struct node));
 	    node->cnt = cnt;
-	}
+	} else
+	    qsort(lines,cnt,sizeof(struct node), node_alphabetize);
     }
 }
 
@@ -938,7 +943,8 @@ static void BuildPST(struct node *node,struct att_dlg *att) {
 	    lbuf = galloc(maxl*sizeof(unichar_t));
 	    node->children = lines = gcalloc(cnt+1,sizeof(struct node));
 	    node->cnt = cnt;
-	}
+	} else
+	    qsort(lines,cnt,sizeof(struct node), node_alphabetize);
     }
     free(lbuf);
 }
@@ -1196,6 +1202,8 @@ static void BuildLcar(struct node *node,struct att_dlg *att) {
 	node->children = glyphs = gcalloc(lcnt+1,sizeof(struct node));
 	node->cnt = lcnt;
     }
+    if ( glyphs!=NULL )
+	qsort(glyphs,lcnt,sizeof(struct node), node_alphabetize);
 }
 
 static void BuildGdefs(struct node *node,struct att_dlg *att) {
