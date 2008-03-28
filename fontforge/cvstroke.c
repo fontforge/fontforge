@@ -1268,6 +1268,15 @@ return( false );
 return( rows>2 );
 }
 
+static void Grad_NewRow(GGadget *g,int row) {
+    int rows;
+    struct matrix_data *md = GMatrixEditGet(g, &rows);
+    if ( md==NULL )
+return;
+
+    md[3*row+2].u.md_real = 1.0;
+}
+
 static void StopMatrixInit(struct matrixinit *mi,struct gradient *grad) {
     int i;
     struct matrix_data *md;
@@ -1296,6 +1305,7 @@ static void StopMatrixInit(struct matrixinit *mi,struct gradient *grad) {
     }
     mi->matrix_data = md;
 
+    mi->initrow = Grad_NewRow;
     mi->candelete = Grad_CanDelete;
 }
 
