@@ -2850,9 +2850,9 @@ printf( "-%s-\n", toknames[tok]);
 	ent->next = ec->splines;
 	ec->splines = ent;
     }
-    while ( gsp>=0 ) {
-	SplinePointListsFree(gsaves[gsp].clippath);
+    while ( gsp>0 ) {
 	--gsp;
+	SplinePointListsFree(gsaves[gsp].clippath);
     }
     SplinePointListsFree(clippath);
     ECCatagorizePoints(ec);
