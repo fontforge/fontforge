@@ -8647,6 +8647,255 @@ static PyObject *PyFF_Font_get_privatevalidation_state(PyFF_Font *self,void *clo
 return( Py_BuildValue("i", ValidatePrivate(self->fv->sf)));
 }
 
+static PyObject *PyFF_Font_get_baseline(PyFF_Font *self,void *closure,struct Base *base) {
+    PyObject *ret, *scripts, *langs, *features, *tags, *script, *poses, *lang, *feature;
+    int cnt,i,j,k;
+    struct basescript *bs;
+    struct baselangextent *bl, *feat;
+
+    if ( base==NULL )
+Py_RETURN_NONE;
+
+    ret  = PyTuple_New(2);
+    tags = PyTuple_New(base->baseline_cnt);
+    PyTuple_SetItem(ret,0,tags);
+    for ( i=0; i<base->baseline_cnt; ++i )
+	PyTuple_SetItem(tags,i,TagToPyString(base->baseline_tags[i],false));
+
+    for ( bs=base->scripts, cnt=0; bs!=NULL; bs=bs->next, ++cnt );
+    scripts = PyTuple_New(cnt);
+    PyTuple_SetItem(ret,1,scripts);
+    for ( bs=base->scripts, i=0; bs!=NULL; bs=bs->next, ++i ) {
+	script = PyTuple_New(4);
+	PyTuple_SetItem(scripts,i,script);
+	PyTuple_SetItem(script,0,TagToPyString(bs->script,false));
+	if ( base->baseline_cnt==0 ) {
+	    Py_INCREF(Py_None); Py_INCREF(Py_None);
+	    PyTuple_SetItem(script,1,Py_None);
+	    PyTuple_SetItem(script,2,Py_None);
+	} else {
+	    PyTuple_SetItem(script,1,TagToPyString(base->baseline_tags[bs->def_baseline],false));
+	    poses = PyTuple_New(base->baseline_cnt);
+	    for ( j=0; j<base->baseline_cnt; ++j )
+		PyTuple_SetItem(poses,j,PyInt_FromLong(bs->baseline_pos[j]));
+	    PyTuple_SetItem(script,2,poses);
+	}
+	for ( j=0, bl=bs->langs; bl!=NULL; bl=bl->next, ++j );
+	langs = PyTuple_New(j);
+	PyTuple_SetItem(script,3,langs);
+	for ( j=0, bl=bs->langs; bl!=NULL; bl=bl->next, ++j ) {
+	    lang = PyTuple_New(4);
+	    PyTuple_SetItem(langs,j,lang);
+	    PyTuple_SetItem(lang,0,TagToPyString(bl->lang,false));
+	    PyTuple_SetItem(lang,1,PyInt_FromLong(bl->descent));
+	    PyTuple_SetItem(lang,2,PyInt_FromLong(bl->ascent));
+	    for ( k=0, feat=bl->features; feat!=NULL; feat=feat->next, ++k );
+	    features = PyTuple_New(k);
+	    PyTuple_SetItem(lang,3,features);
+	    for ( k=0, feat=bl->features; feat!=NULL; feat=feat->next, ++k ) {
+		feature = PyTuple_New(3);
+		PyTuple_SetItem(features,k,feature);
+		PyTuple_SetItem(feature,0,TagToPyString(feat->lang,false));
+		PyTuple_SetItem(feature,1,PyInt_FromLong(feat->descent));
+		PyTuple_SetItem(feature,2,PyInt_FromLong(feat->ascent));
+	    }
+	}
+    }
+return( ret );    
+}
+
+static PyObject *PyFF_Font_get_horizontal_baseline(PyFF_Font *self,void *closure) {
+return( PyFF_Font_get_baseline(self,closure,self->fv->sf->horiz_base));
+}
+
+static PyObject *PyFF_Font_get_vertical_baseline(PyFF_Font *self,void *closure) {
+return( PyFF_Font_get_baseline(self,closure,self->fv->sf->vert_base));
+}
+
+static int PyFF_Font_set_baseline(PyFF_Font *self,PyObject *value,void *closure,struct Base **basep) {
+    PyObject *basetags, *scripts;
+    int basecnt,i;
+    struct Base *base;
+    int scriptcnt,langcnt,featcnt,j,k;
+    struct basescript *bs, *lastbs;
+    struct baselangextent *ln, *lastln;
+    struct baselangextent *ft, *lastft;
+
+    if ( value==Py_None ) {
+	BaseFree(*basep);
+	*basep = NULL;
+return( 0 );
+    }
+    if ( !PyArg_ParseTuple(value,"OO", &basetags, &scripts))
+return( -1 );
+    if ( basetags==Py_None )
+	basecnt = 0;
+    else {
+	basecnt = PyTuple_Size(basetags);
+	if ( basecnt<0 )
+return( -1 );
+    }
+    base = chunkalloc(sizeof( struct Base));
+    base->baseline_cnt = basecnt;
+    base->baseline_tags = galloc(basecnt*sizeof(uint32));
+    for ( i=0; i<basecnt; ++i ) {
+	PyObject *str = PyTuple_GetItem(basetags,i);
+	if ( !PyString_Check(str) ) {
+	    PyErr_Format(PyExc_TypeError, "Baseline tag must be a 4 character string" );
+	    BaseFree(base);
+return( -1 );
+	}
+	base->baseline_tags[i] = StrToTag(PyString_AsString(str),NULL);
+	if ( base->baseline_tags[i]==0xffffffff )
+return( -1 );
+    }
+
+    lastbs = NULL;
+    scriptcnt = PyTuple_Size(scripts);
+    if ( scriptcnt<0 ) {
+	BaseFree(base);
+return( -1 );
+    }
+    for ( j=0; j<scriptcnt; ++j ) {
+	PyObject *script = PyTuple_GetItem(scripts,j);
+	char *scripttag, *def_baseln;
+	PyObject *offsets, *langs;
+
+	if ( !PyArg_ParseTuple(script,"szOO",&scripttag,&def_baseln,&offsets,&langs)) {
+	    BaseFree(base);
+return( -1 );
+	}
+	bs = chunkalloc(sizeof(struct basescript));
+	if ( lastbs==NULL )
+	    base->scripts = bs;
+	else
+	    lastbs->next = bs;
+	lastbs = bs;
+	bs->script = StrToTag(scripttag,NULL);
+	if ( bs->script == 0xffffffff ) {
+	    BaseFree(base);
+return( -1 );
+	}
+	if ( basecnt==0 && (def_baseln==NULL && offsets==NULL))
+	    /* That's reasonable */;
+	else if ( basecnt!=0 && (def_baseln!=NULL && offsets!=NULL)) {
+	    /* Also reasonable */;
+	    uint32 tag = StrToTag(def_baseln,NULL);
+	    if ( tag==0xffffffff ) {
+		BaseFree(base);
+return( -1 );
+	    }
+	    if ( PyTuple_Size(offsets)!=basecnt ) {
+		PyErr_Format(PyExc_TypeError, "There must be as many baseline positions as there are baslines, in a script" );
+		BaseFree(base);
+return( -1 );
+	    }
+	    for ( i=0; i<basecnt && base->baseline_tags[i]!=tag; ++i );
+	    if ( i==basecnt ) {
+		PyErr_Format(PyExc_TypeError, "A script's default baseline must be one of the baselines specified" );
+		BaseFree(base);
+return( -1 );
+	    }
+	    bs->def_baseline = i;
+	    bs->baseline_pos = galloc(basecnt*sizeof(int16));
+	    for ( i=0; i<basecnt; ++i ) {
+		if ( !PyInt_Check(PyTuple_GetItem(offsets,i))) {
+		    PyErr_Format(PyExc_TypeError, "Baseline positions must be integers");
+		    BaseFree(base);
+return( -1 );
+		}
+		bs->baseline_pos[i] = PyInt_AsLong(PyTuple_GetItem(offsets,i));
+	    }
+	} else {
+	    BaseFree(base);
+	    if ( basecnt==0 )
+		PyErr_Format(PyExc_TypeError, "You did not specify any baselines, so you may not specify a default baseline, nor offsets in a script" );
+	    else
+		PyErr_Format(PyExc_TypeError, "You must specify a default baseline and offsets in a script" );
+return( -1 );
+	}
+
+	if ( langs==Py_None )
+    continue;			/* That's ok */
+	if ( !PyTuple_Check(langs)) {
+	    PyErr_Format(PyExc_TypeError, "The languages must be specified by a tuple");
+	    BaseFree(base);
+return( -1 );
+	}
+	lastln = NULL;
+	langcnt = PyTuple_Size(langs);
+	for ( i=0; i<langcnt; ++i ) {
+	    PyObject *lang = PyTuple_GetItem(langs,i);
+	    char *tag;
+	    int min,max;
+	    PyObject *features;
+
+	    if ( !PyArg_ParseTuple(lang,"siiO",&tag,&min,&max,&features)) {
+		BaseFree(base);
+return( -1 );
+	    }
+	    ln = chunkalloc(sizeof(struct baselangextent));
+	    if ( lastln==NULL )
+		bs->langs = ln;
+	    else
+		lastln->next = ln;
+	    lastln = ln;
+	    ln->lang = StrToTag(tag,NULL);
+	    if ( ln->lang == 0xffffffff ) {
+		PyErr_Format(PyExc_TypeError, "A language tag must be a 4 character string");
+		BaseFree(base);
+return( -1 );
+	    }
+	    ln->descent = min;
+	    ln->ascent  = max;
+
+	    if ( features==Py_None )
+	continue;			/* That's ok */
+	    if ( !PyTuple_Check(features)) {
+		PyErr_Format(PyExc_TypeError, "The features must be specified by a tuple");
+		BaseFree(base);
+return( -1 );
+	    }
+	    lastft = NULL;
+	    featcnt = PyTuple_Size(features);
+	    for ( k=0; k<featcnt; ++k ) {
+		PyObject *feat = PyTuple_GetItem(features,k);
+		char *tag;
+		int min,max;
+    
+		if ( !PyArg_ParseTuple(feat,"sii",&tag,&min,&max)) {
+		    BaseFree(base);
+return( -1 );
+		}
+		ft = chunkalloc(sizeof(struct baselangextent));
+		if ( lastft==NULL )
+		    ln->features = ft;
+		else
+		    lastft->next = ft;
+		lastln = ln;
+		ft->lang = StrToTag(tag,NULL);
+		if ( ft->lang == 0xffffffff ) {
+		    BaseFree(base);
+return( -1 );
+		}
+		ft->descent = min;
+		ft->ascent  = max;
+	    }
+	}
+    }
+    BaseFree(*basep);
+    *basep = base;
+return( 0 );
+}
+
+static int PyFF_Font_set_horizontal_baseline(PyFF_Font *self,PyObject *value,void *closure) {
+return( PyFF_Font_set_baseline(self,value,closure,&self->fv->sf->horiz_base));
+}
+
+static int PyFF_Font_set_vertical_baseline(PyFF_Font *self,PyObject *value,void *closure) {
+return( PyFF_Font_set_baseline(self,value,closure,&self->fv->sf->vert_base));
+}
+
 static PyObject *PyFF_Font_get_path(PyFF_Font *self,void *closure) { \
     if ( self->fv->sf->origname==NULL )
 Py_RETURN_NONE;
@@ -9255,6 +9504,12 @@ static PyGetSetDef PyFF_Font_getset[] = {
     {"gsub_lookups",
 	 (getter)PyFF_Font_get_gsub_lookups, (setter)PyFF_cant_set,
 	 "The names of all lookups in the font's GSUB table (readonly)", NULL},
+    {"horizontalBaseline",
+	 (getter)PyFF_Font_get_horizontal_baseline, (setter)PyFF_Font_set_horizontal_baseline,
+	 "Horizontal baseline data, if any", NULL},
+    {"verticalBaseline",
+	 (getter)PyFF_Font_get_vertical_baseline, (setter)PyFF_Font_set_vertical_baseline,
+	 "Vertical baseline data, if any", NULL},
     {"private",
 	 (getter)PyFF_Font_get_private, (setter)PyFF_cant_set,
 	 "The font's PostScript private dictionary (readonly)", NULL},

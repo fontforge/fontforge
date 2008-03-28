@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 6-Apr-2007 -->
-  <!-- AP: Last modified: 1-Mar-2008 -->
+  <!-- AP: Last modified: 28-Mar-2008 -->
   <TITLE>Writing python scripts to change fonts in FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -2451,6 +2451,69 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TD><CODE>hhea_linegap</CODE></TD>
     </TR>
     <TR>
+      <TD><CODE><A NAME="horizontal-baseline">horizontalBaseline</A></CODE></TD>
+      <TD COLSPAN=2>Returns a tuple of tuples containing the horizontal baseline
+	information in the font (the 'BASE' table). If there is no information NONE
+	will be returned, otherwise the format of the tuple is:<BR>
+	<CODE>((tuple of baseline tags used), (tuple of script information))</CODE>
+	<BR>
+	The <CODE>(tuple of baseline tags used)</CODE> is simply a tuple of 4 letter
+	strings as <CODE>("hang", "ideo", "romn")</CODE> these are standard baseline
+	tag names as defined in the opentype spec. The number of entries here, and
+	their order is important as there will be subsequent tuples (in the script
+	tuple) which use the same ordering.
+	<P>
+	The <CODE>(tuple of script information)</CODE> is again a tuple of <CODE>script
+	information</CODE> tuples.
+	<P>
+	A <CODE>script information</CODE> tuple looks like<BR>
+	<CODE>(script-tag,default-baseline-tag, (tuple of baseline positions), (tuple
+	of language extents))</CODE><BR>
+	If there are no baseline tags defined (an empty tuple), then the
+	<CODE>default-baseline-tag</CODE> and the <CODE>(tuple of baseline
+	positions)</CODE> will be NONE. Otherwise both tags will be 4 character strings,
+	and the <CODE>(tuple of baseline positions)</CODE> will be a tuple of numbers
+	(in the same order as the <CODE>(tuple of baseline tags used)</CODE> above)
+	specifying the relative positions of each baseline for this script.
+	<P>
+	A <CODE>(tuple of language extents)</CODE> is a tuple of <CODE>language
+	extent</CODE> tuples.
+	<P>
+	A <CODE>language extent</CODE> tuple is<BR>
+	<CODE>(language-tag,min-extent,max-extent, (tuple of feature
+	extents))</CODE><BR>
+	<CODE>language-tag</CODE> is a 4 letter string specifying an opentype
+	language,<CODE>min</CODE>/<CODE>max-extent</CODE> are numbers specifying
+	how far above and below the baseline characters go in this script/language.
+	<P>
+	A <CODE>(tuple of feature extents&gt;</CODE> is a tuple of <CODE>feature
+	extent</CODE> tuples.
+	<P>
+	A <CODE>feature extent</CODE> tuple is<BR>
+	<CODE>(feature-tag,min-extent,max-extent, (tuple of feature
+	extents))</CODE><BR>
+	<CODE>feature-tag</CODE> is a 4 letter string specifying an opentype (GPOS
+	or GSUB) feature tag,<CODE>min</CODE>/<CODE>max-extent</CODE> are numbers
+	specifying how far above and below the baseline characters go in this
+	script/language with the feature applied.
+	<P>
+	<B>Example:</B>
+	<BLOCKQUOTE>
+	  <PRE>(("hang","ideo","romn"),
+  (("cyrl","romn",(1405,-288,0),()),
+   ("grek","romn",(1405,-288,0),()),
+   ("latn","romn",(1405,-288,0),
+    ("dflt",-576,1913,
+     ("NoAc",-576,1482))
+    ("ENG ",-576,1482,())
+   )
+  )
+)
+</PRE>
+	</BLOCKQUOTE>
+      </TD>
+    </TR>
+    <TR>
       <TD><CODE>is_quadratic</CODE></TD>
       <TD colspan=2>Deprecated. Whether the contours should be interpretted as
 	a set of quadratic or cubic splines. Setting this value has the side effect
@@ -2888,7 +2951,13 @@ pen = None;				# Finalize the pen. This tells FontForge
       <TD colspan=2>PostScript font version string</TD>
     </TR>
     <TR>
+      <TD><CODE>verticalBaseline</CODE></TD>
+      <TD COLSPAN=2>Same format as
+	<A HREF="#horizontal-baseline">horizontal_baseline</A>, which see.</TD>
+    </TR>
+    <TR>
       <TD><CODE>vertical_origin</CODE></TD>
+      <TD COLSPAN=2>deprecated</TD>
     </TR>
     <TR>
       <TD><CODE>vhea_linegap</CODE></TD>
