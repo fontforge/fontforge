@@ -2204,8 +2204,8 @@ return( 0xffff );
     }
 }
 
-static int16 *PerGlyphDefBaseline(SplineFont *sf,int *def_baseline) {
-    int16 *baselines = galloc(sf->glyphcnt*sizeof(uint16));
+int16 *PerGlyphDefBaseline(SplineFont *sf,int *def_baseline) {
+    int16 *baselines = galloc(sf->glyphcnt*sizeof(int16));
     int gid, bsln, i, any;
     SplineChar *sc;
     int counts[32];		/* Apple supports a max of 32 baselines, but only 5 are defined */
@@ -2265,7 +2265,7 @@ static int16 *PerGlyphDefBaseline(SplineFont *sf,int *def_baseline) {
 return( baselines );
 }
 
-static void FigureBaseOffsets(SplineFont *sf,int def_bsln,int offsets[32]) {
+void FigureBaseOffsets(SplineFont *sf,int def_bsln,int offsets[32]) {
     struct Base *base = sf->horiz_base;
     struct basescript *bs = base->scripts;
     int i;
@@ -2290,8 +2290,12 @@ static void FigureBaseOffsets(SplineFont *sf,int def_bsln,int offsets[32]) {
     /*  most of the time, and it is wrong in the example in the docs. */
     /* (I know it is wrong because it has the same value as baseline 1, but */
     /*  is supposed to be below baseline 1 ) */
-    if ( offsets[1]==-1 )
-	offsets[1] = (sf->ascent+sf->descent)/2 - sf->descent;
+    if ( offsets[1]==-1 ) {
+	if ( offsets[2]!=-1 )
+	    offsets[1] = offsets[2]+(sf->ascent+sf->descent)/2;
+	else
+	    offsets[1] = (sf->ascent+sf->descent)/2 - sf->descent;
+    }
     for ( i=0; i<32; ++i )
 	if ( offsets[i]==-1 )
 	    offsets[i] = 0;
@@ -2301,7 +2305,7 @@ void aat_dumpbsln(struct alltabs *at, SplineFont *sf) {
     int def_baseline;
     int offsets[32];
     int16 *baselines;
-    int i, j, bsln, cnt;
+    int i, gid, j, bsln, cnt;
 
     if ( sf->horiz_base==NULL || sf->horiz_base->baseline_cnt==0 ||
 	    sf->horiz_base->scripts==NULL )
@@ -2332,11 +2336,13 @@ return;
 	putshort(at->bsln,2);	/* Lookup format 2, segmented array w/ single value */
 
 	cnt = 0;
-	for ( i=0; i<sf->glyphcnt; ++i ) if ( baselines[i]!=-1 && baselines[i]!=def_baseline ) {
-	    bsln = baselines[i];
-	    for ( j=i; j<sf->glyphcnt && baselines[j]==bsln ; ++j );
-	    i = j-1;
-	    ++cnt;
+	for ( i=0; i<at->gi.gcnt; ++i ) if ( (gid=at->gi.bygid[i])!=-1 ) {
+	    if ( baselines[gid]!=-1 && baselines[gid]!=def_baseline ) {
+		bsln = baselines[gid];
+		for ( j=i; j<at->gi.gcnt && baselines[at->gi.bygid[i]]==bsln; ++j );
+		i = j-1;
+		++cnt;
+	    }
 	}
 
 	/* Dump out a binary search header */
@@ -2347,13 +2353,15 @@ return;
 	putshort(at->bsln,i-1);
 	putshort(at->bsln,6*(cnt-(j>>1)) );
 
-	for ( i=0; i<sf->glyphcnt; ++i ) if ( baselines[i]!=-1 && baselines[i]!=def_baseline ) {
-	    bsln = baselines[i];
-	    for ( j=i; j<sf->glyphcnt && baselines[j]==bsln ; ++j );
-	    putshort(at->bsln,j-1);
-	    putshort(at->bsln,i);
-	    putshort(at->bsln,bsln);
-	    i = j-1;
+	for ( i=0; i<at->gi.gcnt; ++i ) if ( (gid=at->gi.bygid[i])!=-1 ) {
+	    if ( baselines[gid]!=-1 && baselines[gid]!=def_baseline ) {
+		bsln = baselines[gid];
+		for ( j=i; j<at->gi.gcnt && baselines[at->gi.bygid[i]]==bsln; ++j );
+		putshort(at->bsln,j-1);
+		putshort(at->bsln,i);
+		putshort(at->bsln,bsln);
+		i = j-1;
+	    }
 	}
 
 	putshort(at->bsln,0xffff);		/* Final eof marker */
