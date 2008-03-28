@@ -4281,3 +4281,27 @@ return;
     if ( ftell(basef)&2 )
 	putshort(basef,0);
 }
+
+void otf_dump_dummydsig(struct alltabs *at, SplineFont *sf) {
+    FILE *dsigf;
+
+    /* I think the DSIG table is a big crock. At best the most it can do is */
+    /*  tell you that the font hasn't changed since it was signed. It gives */
+    /*  no guarantee that the data are reasonable. I think it's stupid. */
+    /* I think it is even more stupid that MS choses this useless table as a*/
+    /*  mark of whether a ttf font is OpenType or not. */
+    /* But users want their fonts to show up as OpenType under MS. And I'm  */
+    /*  told an empty DSIG table works for that. So... a truely pointless   */
+    /*  instance of a pointless table. I suppose that's a bit ironic. */
+
+    at->dsigf = dsigf = tmpfile();
+    putlong(dsigf,0x00000001);		/* Standard version (and why isn't it 0x10000 like everything else?) */
+    putshort(dsigf,0);			/* No signatures in my signature table*/
+    putshort(dsigf,0);			/* No flags */
+
+    at->dsiglen = ftell(dsigf);
+    if ( ftell(dsigf)&1 )
+	putc('\0',dsigf);
+    if ( ftell(dsigf)&2 )
+	putshort(dsigf,0);
+}

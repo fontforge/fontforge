@@ -92,6 +92,7 @@ static int nfnt_warned = false, post_warned = false;
 #define CID_TTF_PfEdGuides	1114
 #define CID_TTF_PfEdLayers	1115
 #define CID_FontLog		1116
+#define CID_TTF_DummyDSIG	1117
 
 #ifdef HAVE_PTHREAD_H
 #include <pthread.h>
@@ -323,6 +324,8 @@ return( false );
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_OldKern)) &&
 			!(d->ttf_flags&ttf_flag_applemode) )
 		    d->ttf_flags |= ttf_flag_oldkern;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_DummyDSIG)) )
+		    d->ttf_flags |= ttf_flag_dummyDSIG;
 #if 0
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_BrokenSize)) )
 		    d->ttf_flags |= ttf_flag_brokensize;
@@ -356,6 +359,8 @@ return( false );
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_OldKern)) &&
 			!(d->otf_flags&ttf_flag_applemode) )
 		    d->otf_flags |= ttf_flag_oldkern;
+		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_DummyDSIG)) )
+		    d->otf_flags |= ttf_flag_dummyDSIG;
 #if 0
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_BrokenSize)) )
 		    d->otf_flags |= ttf_flag_brokensize;
@@ -485,6 +490,7 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
 #endif
     GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_OldKern),
 	    (flags&ttf_flag_oldkern) && !GGadgetIsChecked(GWidgetGetControl(gw,CID_TTF_AppleMode)));
+    GGadgetSetChecked(GWidgetGetControl(gw,CID_TTF_DummyDSIG),flags&ttf_flag_dummyDSIG);
     GGadgetSetChecked(GWidgetGetControl(gw,CID_FontLog),flags&ps_flag_outputfontlog);
 
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Hints),which!=1);
@@ -509,6 +515,7 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_AppleMode),which!=0 && which!=3);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_OpenTypeMode),which!=0 && which!=3);
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_OldKern),which!=0 );
+    GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_DummyDSIG),which!=0 );
 #if 0
     GGadgetSetEnabled(GWidgetGetControl(gw,CID_TTF_BrokenSize),which!=0 );
 #endif
@@ -534,10 +541,10 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     int k,fontlog_k,group,group2;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[31];
-    GTextInfo label[31];
+    GGadgetCreateData gcd[32];
+    GTextInfo label[32];
     GRect pos;
-    GGadgetCreateData *hvarray1[21], *hvarray2[36], *harray[7], *varray[11];
+    GGadgetCreateData *hvarray1[21], *hvarray2[42], *harray[7], *varray[11];
     GGadgetCreateData boxes[5];
 
     d->sod_done = false;
@@ -741,6 +748,19 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k++].creator = GCheckBoxCreate;
     hvarray2[20] = GCD_HPad10; hvarray2[21] = &gcd[k-1];
 
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x+4; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
+    gcd[k].gd.flags = gg_visible | gg_utf8_popup;
+    label[k].text = (unichar_t *) _("Dummy 'DSIG'");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.popup_msg = (unichar_t *) _(
+	"MS uses the presence of a 'DSIG' table to determine whether to use an OpenType\n"
+	"icon for the tt font. FontForge can't generate a useful 'DSIG' table, but it can\n"
+	"generate an empty one with no signature info. A pointless table.");
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_TTF_DummyDSIG;
+    gcd[k++].creator = GCheckBoxCreate;
+    hvarray2[25] = GCD_HPad10; hvarray2[26] = &gcd[k-1];
+
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
     gcd[k].gd.flags = gg_visible | gg_utf8_popup;
     label[k].text = (unichar_t *) _("Output Glyph Map");
@@ -749,7 +769,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_GlyphMap;
     gcd[k++].creator = GCheckBoxCreate;
-    hvarray2[25] = &gcd[k-1]; hvarray2[26] = GCD_ColSpan;
+    hvarray2[30] = &gcd[k-1]; hvarray2[31] = GCD_ColSpan;
 
     gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+14;
     gcd[k].gd.flags = gg_visible | gg_utf8_popup;
@@ -759,7 +779,7 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.cid = CID_TTF_OFM;
     gcd[k++].creator = GCheckBoxCreate;
-    hvarray2[30] = &gcd[k-1]; hvarray2[31] = GCD_ColSpan;
+    hvarray2[35] = &gcd[k-1]; hvarray2[36] = GCD_ColSpan;
 
     gcd[k].gd.pos.x = gcd[group+6].gd.pos.x; gcd[k].gd.pos.y = gcd[k-5].gd.pos.y;
     gcd[k].gd.flags = gg_visible | gg_utf8_popup;
@@ -833,7 +853,8 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     gcd[k].gd.cid = CID_TTF_TeXTable;
     gcd[k++].creator = GCheckBoxCreate;
     hvarray2[32] = &gcd[k-1]; hvarray2[33] = GCD_ColSpan; hvarray2[34] = NULL;
-    hvarray2[35] = NULL;
+    hvarray2[37] = GCD_Glue; hvarray2[38] = GCD_Glue; hvarray2[39] = NULL;
+    hvarray2[40] = NULL;
 
     boxes[3].gd.flags = gg_enabled|gg_visible;
     boxes[3].gd.u.boxelements = hvarray2;
