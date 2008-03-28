@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Sep-2002 -->
-  <!-- AP: Last modified: 14-Feb-2008 -->
+  <!-- AP: Last modified: 28-Mar-2008 -->
   <TITLE>Generate Font Dialog</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -157,7 +157,7 @@
       None
   </UL>
   <P>
-  <IMG SRC="GenerateOptions.png" WIDTH="320" HEIGHT="376" ALIGN="Right">The
+  <IMG SRC="GenerateOptions.png" WIDTH="320" HEIGHT="395" ALIGN="Right">The
   <A NAME="Options">options</A> dialog provides the following check boxes.
   Not all are enabled at all times.
   <UL>
@@ -233,6 +233,10 @@
       this a bad idea (some applications may add the kerning values from both tables
       they say), but it may be helpful for applications which don't support 'GPOS'
       kerning.
+    <LI>
+      [] Dummy DSIG -- On MS Windows, a font with extension "ttf" will be marked
+      with an OpenType icon if it contains a 'DSIG' table. FontForge can't generate
+      a useful 'DSIG' table, but it can generate a useless, empty and valid one.
     <LI>
       [] Save Comments -- I have added my own table
       ('<A HREF="non-standard.html#PfEd">PfEd</A>') in the truetype format in which
