@@ -43,6 +43,7 @@ struct node {
     unsigned int used: 1;
     unsigned int macfeat: 1;
     unsigned int monospace: 1;
+    unsigned int horizontal: 1;
     uint16 cnt;
     struct node *children, *parent;
     void (*build)(struct node *,struct att_dlg *);
@@ -53,6 +54,7 @@ struct node {
 	int index;
 	OTLookup *otl;
 	struct lookup_subtable *sub;
+	struct baselangextent *langs;
     } u;
     int lpos;
 };
@@ -1326,6 +1328,118 @@ static void BuildGDEF(struct node *node,struct att_dlg *att) {
     }
 }
 
+static void BuildBaseLangs(struct node *node,struct att_dlg *att) {
+    struct baselangextent *bl = node->u.langs, *lf;
+    int cnt;
+    struct node *langs;
+    char buffer[300];
+
+    for ( lf = bl, cnt=0; lf!=NULL; lf=lf->next, ++cnt );
+
+    node->children = langs = gcalloc(cnt+1,sizeof(struct node));
+    node->cnt = cnt;
+
+    for ( lf = bl, cnt=0; lf!=NULL; lf=lf->next, ++cnt ) {
+	sprintf( buffer, _("%c%c%c%c  Min Extent=%d, Max Extent=%d"),
+		lf->lang>>24, lf->lang>>16, lf->lang>>8, lf->lang,
+		lf->descent, lf->ascent );
+	langs[cnt].label = copy(buffer);
+	langs[cnt].parent = node;
+	if ( lf->features!=NULL ) {
+	    langs[cnt].build = BuildBaseLangs;
+	    langs[cnt].u.langs = lf->features;
+	}
+    }
+}
+
+static void BuildBASE(struct node *node,struct att_dlg *att) {
+    SplineFont *_sf = att->sf;
+    struct Base *base = node->horizontal ? _sf->horiz_base : _sf->vert_base;
+    struct basescript *bs;
+    int cnt, i;
+    struct node *scripts;
+    char buffer[300];
+
+    for ( bs=base->scripts, cnt=0; bs!=NULL; bs=bs->next, ++cnt );
+
+    node->children = scripts = gcalloc(cnt+1,sizeof(struct node));
+    node->cnt = cnt;
+
+    for ( bs=base->scripts, cnt=0; bs!=NULL; bs=bs->next, ++cnt ) {
+	if ( base->baseline_cnt!=0 ) {
+	    i = bs->def_baseline;
+	    sprintf( buffer, _("Script '%c%c%c%c' on %c%c%c%c "),
+		    bs->script>>24, bs->script>>16, bs->script>>8, bs->script,
+		    base->baseline_tags[i]>>24, base->baseline_tags[i]>>16,
+		    base->baseline_tags[i]>>8, base->baseline_tags[i] );
+	    for ( i=0; i<base->baseline_cnt; ++i )
+		sprintf(buffer+strlen(buffer), " %c%c%c%c: %d ",
+			base->baseline_tags[i]>>24, base->baseline_tags[i]>>16,
+			base->baseline_tags[i]>>8, base->baseline_tags[i],
+			bs->baseline_pos[i]);
+	} else
+	    sprintf( buffer, _("Script '%c%c%c%c' "),
+		    bs->script>>24, bs->script>>16, bs->script>>8, bs->script );
+	scripts[cnt].label = copy(buffer);
+	scripts[cnt].parent = node;
+	if ( bs->langs!=NULL ) {
+	    scripts[cnt].build = BuildBaseLangs;
+	    scripts[cnt].u.langs = bs->langs;
+	}
+    }
+}
+
+static void BuildBsLnTable(struct node *node,struct att_dlg *att) {
+    SplineFont *_sf = att->sf;
+    int def_baseline;
+    int offsets[32];
+    int16 *baselines;
+    char buffer[300];
+    struct node *glyphs;
+    int gid,i;
+    SplineChar *sc;
+
+    baselines = PerGlyphDefBaseline(_sf,&def_baseline);
+    FigureBaseOffsets(_sf,def_baseline&0x1f,offsets);
+
+    node->children = gcalloc(3+1,sizeof(struct node));
+    node->cnt = 3;
+
+    sprintf( buffer, _("Default Baseline: '%s'"),
+	    (def_baseline&0x1f)==0 ? "romn" :
+	    (def_baseline&0x1f)==1 ? "idcn" :
+	    (def_baseline&0x1f)==2 ? "ideo" :
+	    (def_baseline&0x1f)==3 ? "hang" :
+	    (def_baseline&0x1f)==4 ? "math" : "????" );
+    node->children[0].label = copy(buffer);
+    node->children[0].parent = node;
+    sprintf( buffer, _("Offsets from def. baseline:  romn: %d  idcn: %d  ideo: %d  hang: %d  math: %d"),
+	    offsets[0], offsets[1], offsets[2], offsets[3], offsets[4] );
+    node->children[1].label = copy(buffer);
+    node->children[1].parent = node;
+    if ( def_baseline&0x100 ) {
+	node->children[2].label = copy(_("All glyphs have the same baseline"));
+	node->children[2].parent = node;
+    } else {
+	node->children[2].label = copy(_("Per glyph baseline data"));
+	node->children[2].parent = node;
+	node->children[2].children_checked = true;
+	node->children[2].children = glyphs = gcalloc(_sf->glyphcnt+1,sizeof(struct node));
+	for ( gid=i=0; gid<_sf->glyphcnt; ++gid ) if ( (sc=_sf->glyphs[gid])!=NULL ) {
+	    sprintf( buffer, "%s: %s", sc->name,
+		    (baselines[gid])==0 ? "romn" :
+		    (baselines[gid])==1 ? "idcn" :
+		    (baselines[gid])==2 ? "ideo" :
+		    (baselines[gid])==3 ? "hang" :
+		    (baselines[gid])==4 ? "math" : "????" );
+	    glyphs[i].label = copy(buffer);
+	    glyphs[i++].parent = &node->children[2];
+	}
+	node->children[2].cnt = i;
+    }
+    free(baselines);
+}
+
 static void BuildOpticalBounds(struct node *node,struct att_dlg *att) {
     SplineFont *sf, *_sf = att->sf;
     int i, cmax, l,j, ccnt;
@@ -1598,8 +1712,8 @@ return;
 
 static void BuildTop(struct att_dlg *att) {
     SplineFont *sf, *_sf = att->sf;
-    int hasgsub=0, hasgpos=0, hasgdef=0;
-    int hasmorx=0, haskern=0, hasvkern=0, haslcar=0, hasprop=0, hasopbd=0;
+    int hasgsub=0, hasgpos=0, hasgdef=0, hasbase=0;
+    int hasmorx=0, haskern=0, hasvkern=0, haslcar=0, hasprop=0, hasopbd=0, hasbsln=0;
     int haskc=0, hasvkc=0;
     int feat, set;
     struct node *tables;
@@ -1609,6 +1723,7 @@ static void BuildTop(struct att_dlg *att) {
     AnchorClass *ac;
     OTLookup *otl;
     FeatureScriptLangList *fl;
+    char buffer[200];
 
     SFFindClearUnusedLookupBits(_sf);
 
@@ -1671,51 +1786,82 @@ static void BuildTop(struct att_dlg *att) {
     }
     if ( ac!=NULL )
 	hasgdef = true;
-#if 0
-    for ( fpst = sf->possub; fpst!=NULL; fpst=fpst->next ) {
-	if ( sf->sm==NULL && FPSTisMacable(sf,fpst,true))
-	    hasmorx = true;
-    }
-#endif
+    hasbase = ( _sf->horiz_base!=NULL || _sf->vert_base!=NULL );
+    hasbsln = ( _sf->horiz_base!=NULL && _sf->horiz_base->baseline_cnt!=0 );
 
-    if ( hasgsub+hasgpos+hasgdef+hasmorx+haskern+haslcar+hasopbd+hasprop==0 ) {
+    if ( hasgsub+hasgpos+hasgdef+hasmorx+haskern+haslcar+hasopbd+hasprop+hasbase==0 ) {
 	tables = gcalloc(2,sizeof(struct node));
 	tables[0].label = copy(_("No Advanced Typography"));
     } else {
-	tables = gcalloc((hasgsub||hasgpos||hasgdef)+
-	    (hasmorx||haskern||haslcar||hasopbd||hasprop)+1,sizeof(struct node));
+	tables = gcalloc((hasgsub||hasgpos||hasgdef||hasbase)+
+	    (hasmorx||haskern||haslcar||hasopbd||hasprop||hasbsln)+1,sizeof(struct node));
 	i=0;
-	if ( hasgsub || hasgpos || hasgdef) {
+	if ( hasgsub || hasgpos || hasgdef || hasbase ) {
 	    tables[i].label = copy(_("OpenType Tables"));
 	    tables[i].children_checked = true;
-	    tables[i].children = gcalloc(hasgsub+hasgpos+hasgdef+1,sizeof(struct node));
-	    tables[i].cnt = hasgsub + hasgpos + hasgdef;
-	    if ( hasgdef ) {
-		tables[i].children[0].label = copy(_("'GDEF' Glyph Definition Table"));
-		tables[i].children[0].tag = CHR('G','D','E','F');
-		tables[i].children[0].build = BuildGDEF;
+	    tables[i].children = gcalloc(hasgsub+hasgpos+hasgdef+hasbase+1,sizeof(struct node));
+	    tables[i].cnt = hasgsub + hasgpos + hasgdef + hasbase;
+	    if ( hasbase ) {
+		int sub_cnt= (sf->horiz_base!=NULL) + (sf->vert_base!=NULL), j=0;
+		tables[i].children[0].label = copy(_("'BASE' Baseline Table"));
+		tables[i].children[0].tag = CHR('B','A','S','E');
 		tables[i].children[0].parent = &tables[i];
+		tables[i].children[0].children_checked = true;
+		tables[i].children[0].children = gcalloc(sub_cnt+1,sizeof(struct node));
+		tables[i].children[0].cnt = sub_cnt;
+		if ( _sf->horiz_base!=NULL ) {
+		    snprintf(buffer,sizeof(buffer),
+			    P_("Horizontal: %d baseline","Horizontal: %d baselines",_sf->horiz_base->baseline_cnt),
+			    _sf->horiz_base->baseline_cnt );
+		    tables[i].children[0].children[j].label = copy(buffer);
+		    tables[i].children[0].children[j].horizontal = true;
+		    tables[i].children[0].children[j].parent = &tables[i].children[0];
+		    tables[i].children[0].children[j].build = BuildBASE;
+		    ++j;
+		}
+		if ( _sf->vert_base!=NULL ) {
+		    snprintf(buffer,sizeof(buffer),
+			    P_("Vertical: %d baseline","Vertical: %d baselines",_sf->vert_base->baseline_cnt),
+			    _sf->vert_base->baseline_cnt );
+		    tables[i].children[0].children[j].label = copy(buffer);
+		    tables[i].children[0].children[j].horizontal = false;
+		    tables[i].children[0].children[j].parent = &tables[i].children[0];
+		    tables[i].children[0].children[j].build = BuildBASE;
+		    ++j;
+		}
+	    }
+	    if ( hasgdef ) {
+		tables[i].children[hasbase].label = copy(_("'GDEF' Glyph Definition Table"));
+		tables[i].children[hasbase].tag = CHR('G','D','E','F');
+		tables[i].children[hasbase].build = BuildGDEF;
+		tables[i].children[hasbase].parent = &tables[i];
 	    }
 	    if ( hasgpos ) {
-		tables[i].children[hasgdef].label = copy(_("'GPOS' Glyph Positioning Table"));
-		tables[i].children[hasgdef].tag = CHR('G','P','O','S');
-		tables[i].children[hasgdef].build = BuildTable;
-		tables[i].children[hasgdef].parent = &tables[i];
+		tables[i].children[hasgdef+hasbase].label = copy(_("'GPOS' Glyph Positioning Table"));
+		tables[i].children[hasgdef+hasbase].tag = CHR('G','P','O','S');
+		tables[i].children[hasgdef+hasbase].build = BuildTable;
+		tables[i].children[hasgdef+hasbase].parent = &tables[i];
 	    }
 	    if ( hasgsub ) {
-		tables[i].children[hasgdef+hasgpos].label = copy(_("'GSUB' Glyph Substitution Table"));
-		tables[i].children[hasgdef+hasgpos].tag = CHR('G','S','U','B');
-		tables[i].children[hasgdef+hasgpos].build = BuildTable;
-		tables[i].children[hasgdef+hasgpos].parent = &tables[i];
+		tables[i].children[hasgdef+hasgpos+hasbase].label = copy(_("'GSUB' Glyph Substitution Table"));
+		tables[i].children[hasgdef+hasgpos+hasbase].tag = CHR('G','S','U','B');
+		tables[i].children[hasgdef+hasgpos+hasbase].build = BuildTable;
+		tables[i].children[hasgdef+hasgpos+hasbase].parent = &tables[i];
 	    }
 	    ++i;
 	}
-	if ( hasmorx || haskern || haslcar || hasopbd || hasprop ) {
+	if ( hasmorx || haskern || haslcar || hasopbd || hasprop || hasbsln ) {
 	    int j = 0;
 	    tables[i].label = copy(_("Apple Advanced Typography"));
 	    tables[i].children_checked = true;
-	    tables[i].children = gcalloc(hasmorx+haskern+haslcar+hasopbd+hasprop+hasvkern+haskc+hasvkc+1,sizeof(struct node));
-	    tables[i].cnt = hasmorx+haskern+hasopbd+hasprop+haslcar+hasvkern+haskc+hasvkc;
+	    tables[i].children = gcalloc(hasmorx+haskern+haslcar+hasopbd+hasprop+hasvkern+haskc+hasvkc+hasbsln+1,sizeof(struct node));
+	    tables[i].cnt = hasmorx+haskern+hasopbd+hasprop+haslcar+hasvkern+haskc+hasvkc+hasbsln;
+	    if ( hasbsln ) {
+		tables[i].children[j].label = copy(_("'bsln' Horizontal Baseline Table"));
+		tables[i].children[j].tag = CHR('b','s','l','n');
+		tables[i].children[j].build = BuildBsLnTable;
+		tables[i].children[j++].parent = &tables[i];
+	    }
 	    if ( haskern ) {
 		tables[i].children[j].label = copy(_("'kern' Horizontal Kerning Table"));
 		tables[i].children[j].tag = CHR('k','e','r','n');
