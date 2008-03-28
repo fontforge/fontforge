@@ -5225,6 +5225,8 @@ return( false );
 	    otf_dumpgdef(at,sf);
 	    otf_dumpbase(at,sf);
 	    otf_dump_math(at,sf);	/* Not strictly OpenType yet */
+	    if ( at->gi.flags & ttf_flag_dummyDSIG )
+		otf_dump_dummydsig(at,sf);
 	}
 	if ( at->dovariations )
 	    ttf_dumpvariations(at,sf);
@@ -5303,6 +5305,13 @@ return( false );
 	at->tabdir.tabs[i].tag = CHR('C','F','F',' ');
 	at->tabdir.tabs[i].length = at->cfflen;
 	at->tabdir.tabs[i++].data = at->cfff;
+    }
+
+    if ( at->dsigf!=NULL ) {
+	ebdtpos = i;
+	at->tabdir.tabs[i].tag = CHR('D','S','I','G');
+	at->tabdir.tabs[i].length = at->dsiglen;
+	at->tabdir.tabs[i++].data = at->dsigf;
     }
 
     if ( at->bdat!=NULL && (at->msbitmaps || at->otbbitmaps)) {

@@ -652,6 +652,8 @@ struct alltabs {
     int avarlen;
     FILE *fftmf;
     int fftmlen;
+    FILE *dsigf;
+    int dsiglen;
     int defwid, nomwid;
     int sidcnt;
     int lenpos;
@@ -738,6 +740,8 @@ extern int ttfFixupRef(SplineChar **chars,int i);
 extern void otf_dumpgpos(struct alltabs *at, SplineFont *sf);
 extern void otf_dumpgsub(struct alltabs *at, SplineFont *sf);
 extern void otf_dumpgdef(struct alltabs *at, SplineFont *sf);
+extern void otf_dumpbase(struct alltabs *at, SplineFont *sf);
+extern void otf_dump_dummydsig(struct alltabs *at, SplineFont *sf);
 extern int gdefclass(SplineChar *sc);
 
     /* Apple Advanced Typography Tables */
@@ -834,7 +838,6 @@ extern void GuessNamesFromGSUB(FILE *ttf,struct ttfinfo *info);
 extern void readttfgpossub(FILE *ttf,struct ttfinfo *info,int gpos);
 extern void readttfgdef(FILE *ttf,struct ttfinfo *info);
 extern void readttfbase(FILE *ttf,struct ttfinfo *info);
-extern void otf_dumpbase(struct alltabs *at, SplineFont *sf);
 
 extern void VariationFree(struct ttfinfo *info);
 extern void readttfvariations(struct ttfinfo *info, FILE *ttf);
