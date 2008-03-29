@@ -1,15 +1,15 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as FontForge.
-# Apostolos Syropoulos <asyropoulos@yahoo.com>, 2006.
+# Apostolos Syropoulos <asyropoulos@yahoo.com>, 2008.
 #
-#, fuzzy
+#, fuzz
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "POT-Creation-Date: 2006-10-09 13:00-0700\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"PO-Revision-Date: 2008-02-13 09:00+EET\n"
+"Last-Translator: Apostolos Syropoulos <asyropoulos@yahoo.com>\n"
 "Language-Team: LANGUAGE <gr.c@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -20,7 +20,7 @@ msgstr ""
 #: cvhints.c:491 cvhints.c:678 cvhints.c:776 displayfonts.c:339
 #: displayfonts.c:543
 msgid "_Size:"
-msgstr "_Μέγεθος:"
+msgstr "_Μέγεθος:" 
 
 #: alignment.c:335
 msgid "Space Regions..."
@@ -128,7 +128,7 @@ msgstr "Εκτός ορίων"
 msgid "Corrections must be between -128 and 127 (and should be smaller)"
 msgstr ""
 "Οι διορθώσεις πρέπει να είναι μεταξύ -128 και 127 (και θα πρέπει να είναι "
-"μικρότερεςr)"
+"μικρότερες)"
 
 #: anchorsaway.c:835
 msgid "Anchor Control..."
@@ -137,7 +137,7 @@ msgstr "Έλεγχος ακραίων σημείων καμπύλης Bézier"
 #. GT: Short for: Magnification
 #: anchorsaway.c:875
 msgid "Mag:"
-msgstr "Μέγ:"
+msgstr "Μεγέθυνσ.:"
 
 #. GT: Short for Correction
 #: anchorsaway.c:910 anchorsaway.c:950
@@ -251,7 +251,7 @@ msgstr "Αδύνατο το άνοιγμα του αρχείου"
 #: palmfonts.c:394
 #, c-format
 msgid "Couldn't open file %.200s"
-msgstr "Αδύνατο το άνοιγμα του αρχείου υπ᾽ αριθμόν %.200"
+msgstr "Αδύνατο το άνοιγμα του αρχείου %.200s"
 
 #: autowidth.c:1470
 msgid "No Kern Pairs"
@@ -260,7 +260,7 @@ msgstr "Δεν υπάρχουν ζεύγη «υποσκαφής»"
 #: autowidth.c:1470
 #, c-format
 msgid "No kerning pairs found in %.200s"
-msgstr "Δεν υπάρχουν ζεύγη «υποσκαφής» στο αρχείο υπ. αρθμ. %.200"
+msgstr "Δεν υπάρχουν ζεύγη «υποσκαφής» στο αρχείο %.200s"
 
 #: autowidth.c:1488 autowidth.c:1676
 msgid "Spacing"
@@ -318,7 +318,7 @@ msgid ""
 msgstr ""
 "Ψάξτε για ένα αρχείο που να περιέχει ένα κατάλογο ζευγών «υποσκαφής»,\n"
 "δύο χαρακτήρες ανά γραμμή. Το FontForge θα θεωρήσει μόνο\n"
-"αυτά τα ζεύγη για ως πληροφορίες «υποσκαφής»."
+"αυτά τα ζεύγη ως πληροφορίες «υποσκαφής»."
 
 #: bdfinfo.c:1010
 msgid "Not ASCII"
@@ -408,7 +408,7 @@ msgstr "Προσπάθεια επαναδημιουργίας μεγέθους p
 
 #: bitmapdlg.c:426 bitmapdlg.c:744
 msgid "Pixel Sizes:"
-msgstr "Μεγέθη pixel:"
+msgstr "Μεγέθη εικονοστοιχείων:"
 
 #: bitmapdlg.c:539 bitmapdlg.c:704
 msgid "Point sizes on a 75 dpi screen"
@@ -440,7 +440,8 @@ msgstr "Επαναδημιουργία χαρτογραφικών γραφικώ
 
 #: bitmapdlg.c:629
 msgid "The list of current pixel bitmap sizes"
-msgstr "Κατάλογος τρεχόντων μεγεθών pixel χαρτογραφικών γραφικών"
+msgstr "Κατάλογος τρεχόντων μεγεθών εικονοστοιχείων "
+"χαρτογραφικών γραφικών"
 
 #: bitmapdlg.c:636
 msgid " Removing a size will delete it."
@@ -448,7 +449,8 @@ msgstr " Αφαίρεση ενός μεγέθος σημαίνει διαγρα�
 
 #: bitmapdlg.c:644
 msgid  " Adding a size will create it by scaling."
-msgstr " Προσθεση ενός μεγέθους σημαίνει τη δημιουργία του μέσω αλλαγής διαστάσεων."
+msgstr " Προσθεση ενός μεγέθους σημαίνει τη δημιουργία "
+"του μέσω κλιμάκωσης."
 
 #: bitmapdlg.c:646
 msgid " Adding a size will create it."
@@ -456,7 +458,8 @@ msgstr " Πρόσθεση ενός μεγέθους συνεπάγεται τη 
 
 #: bitmapdlg.c:654
 msgid "Specify bitmap sizes to be regenerated"
-msgstr "Καθορίστε τα μεγέθη χαρτογραφικών αρχείων που πρέπει να επαναδημιουργηθούν"
+msgstr "Καθορίστε τα μεγέθη χαρτογραφικών αρχείων "
+"που πρέπει να επαναδημιουργηθούν"
 
 #. GT: X is a coordinate
 #: bitmapdlg.c:675 cvpointer.c:1249
@@ -529,7 +532,7 @@ msgstr "Στρέβλωση..."
 #: metricsview.c:2644 openfontdlg.c:678
 #, fuzzy
 msgid "Font|_New"
-msgstr "Γραμματοσειρά|_Νέο"
+msgstr "Γραμματοσειρά|_Νέα"
 
 #: bitmapview.c:1680 charview.c:7586 charview.c:8704 fontview.c:6417
 #: metricsview.c:2645 ../gdraw/gtextfield.c:793
@@ -539,7 +542,7 @@ msgstr "_Άνοιγμα"
 #: bitmapview.c:1681 charview.c:7587 charview.c:8705 fontview.c:6418
 #: metricsview.c:2646
 msgid "Recen_t"
-msgstr "Πρόσφα_το"
+msgstr "Πρόσφα_τη"
 
 #: bitmapview.c:1682 charview.c:7588 charview.c:8706 fontview.c:6419
 #: metricsview.c:2647
@@ -717,7 +720,7 @@ msgstr "Πή_γαινε"
 
 #: bitmapview.c:1755 charview.c:7918 metricsview.c:2836
 msgid "Find In Font _View"
-msgstr ""
+msgstr "Ανεύρεση στην _θεάση γραμματοσειράς"
 
 #: bitmapview.c:1757
 msgid "_Bigger Pixel Size"
@@ -754,7 +757,7 @@ msgstr "_Επεξεργασία"
 #: bitmapview.c:1773 charview.c:8090 charview.c:8105 charview.c:8813
 #: fontview.c:7734 metricsview.c:3095
 msgid "E_lement"
-msgstr "_Εργαλεία"
+msgstr "_Στοιχείο"
 
 #: bitmapview.c:1774 charview.c:8025 charview.c:8092 charview.c:8107
 #: charview.c:8814 fontview.c:7737 metricsview.c:3096
@@ -778,7 +781,7 @@ msgstr "_Βοήθεια"
 
 #: bitmapview.c:1889
 msgid "Recalculate Bitmaps"
-msgstr "Ξαναυπολόγισε τα χαρτογραφικά"
+msgstr "Επαναϋπολογισμός χαρτογραφικών"
 
 #: bvedit.c:39
 msgid "Skew"
@@ -786,7 +789,7 @@ msgstr "Στρέβλωση"
 
 #: bvedit.c:39
 msgid "Skew Ratio"
-msgstr ""
+msgstr "Λόγος στρέβλωσης"
 
 #: charinfo.c:82 fontinfo.c:208 fontinfo.c:8539
 msgid "Automatic"
@@ -798,11 +801,11 @@ msgstr "Δεν υπάρχει η κλάση"
 
 #: charinfo.c:84 cvgetinfo.c:1391
 msgid "Base Glyph"
-msgstr ""
+msgstr "Βασικός γλύφος"
 
 #: charinfo.c:85 cvgetinfo.c:1402
 msgid "Base Lig"
-msgstr ""
+msgstr "Βασικό πολλ. στοιχείο"
 
 #: charinfo.c:86 charview.c:1288 cvgetinfo.c:1380 showatt.c:1507
 msgid "Mark"
@@ -810,11 +813,11 @@ msgstr ""
 
 #: charinfo.c:87
 msgid "Component"
-msgstr ""
+msgstr "Τμήμα                        "
 
 #: charinfo.c:92 fontview.c:6456
 msgid "Color|Default"
-msgstr ""
+msgstr "Χρώμα|«Εξ ορισμού»"
 
 #. GT: See the long comment at "Property|New"
 #. GT: The msgstr should contain a translation of "Arabic", ignore "Script|"
@@ -886,7 +889,7 @@ msgstr ""
 
 #: charinfo.c:124
 msgid "Script|Cherokee"
-msgstr ""
+msgstr "Τσερόκι"
 
 #: charinfo.c:125
 msgid "Cirth"
@@ -915,11 +918,11 @@ msgstr "Κυριλλική"
 
 #: charinfo.c:131
 msgid "Script|Default"
-msgstr ""
+msgstr "«Εξ ορισμού»"
 
 #: charinfo.c:132
 msgid "Deseret (Mormon)"
-msgstr ""
+msgstr "Deseret (Μορμονική)"
 
 #: charinfo.c:133
 msgid "Devanagari"
@@ -1003,7 +1006,7 @@ msgstr "Lang|Kannada"
 
 #: charinfo.c:163
 msgid "Script|Khmer"
-msgstr ""
+msgstr "Χμερ"
 
 #: charinfo.c:164
 #, fuzzy
@@ -1012,7 +1015,7 @@ msgstr "Khasi"
 
 #: charinfo.c:165
 msgid "Script|Lao"
-msgstr ""
+msgstr "Λαοτιανή"
 
 #: charinfo.c:166
 msgid "Script|Latin"
@@ -1056,7 +1059,7 @@ msgstr ""
 
 #: charinfo.c:181
 msgid "Old Italic (Etruscan, Oscan, etc.)"
-msgstr "Αρχαία ιταλικά (ετρούσκικα κ.λπ.)"
+msgstr "Αρχαία ιταλικά (ετρουσκικά κ.λπ.)"
 
 #: charinfo.c:182
 msgid "Script|Old Permic"
@@ -1065,7 +1068,7 @@ msgstr ""
 #: charinfo.c:183
 #, fuzzy
 msgid "Old Persian cuneiform"
-msgstr "Αρχαία περσική, σφηνοειδής"
+msgstr "Αρχαία περσική σφηνοειδής"
 
 #: charinfo.c:184
 msgid "Script|Oriya"
@@ -1106,7 +1109,7 @@ msgstr ""
 
 #: charinfo.c:193 unicoderange.c:89
 msgid "Runic"
-msgstr ""
+msgstr "Ρουνική"
 
 #: charinfo.c:194 unicoderange.c:219
 msgid "Shavian"
@@ -1147,11 +1150,11 @@ msgstr "Tai Le"
 
 #: charinfo.c:203
 msgid "Script|Tamil"
-msgstr ""
+msgstr "Ταμίλ"
 
 #: charinfo.c:204
 msgid "Script|Tamil2"
-msgstr ""
+msgstr "Ταμίλ2"
 
 #: charinfo.c:205
 msgid "Script|Telugu"
@@ -1171,7 +1174,7 @@ msgstr ""
 
 #: charinfo.c:209 parsettf.c:3557
 msgid "Script|Thai"
-msgstr "Τάυλανδέζικη"
+msgstr "Ταυλανδέζικη"
 
 #: charinfo.c:210
 msgid "Script|Tibetan"
@@ -1191,7 +1194,7 @@ msgstr ""
 
 #: charinfo.c:215
 msgid "Cuneiform, Ugaritic"
-msgstr ""
+msgstr "Σφοινοειδής, Ugaritic"
 
 #: charinfo.c:216
 msgid "Script|Yi"
@@ -1265,7 +1268,7 @@ msgstr ""
 
 #: charinfo.c:243
 msgid "Azeri"
-msgstr ""
+msgstr "Αζερική"
 
 #: charinfo.c:244
 msgid "Badaga"
@@ -1285,7 +1288,7 @@ msgstr ""
 
 #: charinfo.c:248
 msgid "Lang|Berber"
-msgstr ""
+msgstr "Βερβερική"
 
 #: charinfo.c:249
 msgid "Bench"
@@ -1293,7 +1296,7 @@ msgstr ""
 
 #: charinfo.c:250
 msgid "Bible Cree"
-msgstr ""
+msgstr "Cree της Βίβλου"
 
 #: charinfo.c:251
 msgid "Belarussian"
@@ -1329,7 +1332,7 @@ msgstr ""
 
 #: charinfo.c:259
 msgid "Blackfoot"
-msgstr ""
+msgstr "Μαυροπόδαροι"
 
 #: charinfo.c:260
 msgid "Balochi"
@@ -1437,7 +1440,7 @@ msgstr ""
 
 #: charinfo.c:286
 msgid "Church Slavonic"
-msgstr ""
+msgstr "Εκκλησιαστική Σλαβονική"
 
 #: charinfo.c:287 fontinfo.c:652 macenc.c:2254
 msgid "Czech"
@@ -1454,7 +1457,7 @@ msgstr ""
 #: charinfo.c:290
 #, fuzzy
 msgid "Lang|Default"
-msgstr "Καθορισμός προεπιλογής σε όλα"
+msgstr "Εξ ορισμού"
 
 #: charinfo.c:291
 msgid "Woods Cree"
@@ -1498,7 +1501,7 @@ msgstr ""
 
 #: charinfo.c:301
 msgid "Eastern Cree"
-msgstr ""
+msgstr "Ανατολική Cree"
 
 #: charinfo.c:302 fontinfo.c:657
 msgid "Edo"
@@ -1546,11 +1549,11 @@ msgstr ""
 
 #: charinfo.c:313
 msgid "French Antillean"
-msgstr ""
+msgstr "Γαλλική Αντιλλών"
 
 #: charinfo.c:314 fontinfo.c:677
 msgid "Lang|Farsi"
-msgstr ""
+msgstr "Φαρσί"
 
 #: charinfo.c:315 fontinfo.c:679 macenc.c:2227
 msgid "Finnish"
@@ -1562,7 +1565,7 @@ msgstr ""
 
 #: charinfo.c:317 macenc.c:2250
 msgid "Flemish"
-msgstr ""
+msgstr "Φλαμανδική "
 
 #: charinfo.c:318
 msgid "Forest Nenets"
@@ -1602,7 +1605,7 @@ msgstr ""
 
 #: charinfo.c:327
 msgid "Gaelic"
-msgstr ""
+msgstr "Γαελική"
 
 #: charinfo.c:328
 msgid "Gagauz"
@@ -1734,7 +1737,7 @@ msgstr ""
 
 #: charinfo.c:360 fontinfo.c:719 macenc.c:2326
 msgid "Inuktitut"
-msgstr ""
+msgstr "«Εσκιμώικη»"
 
 #: charinfo.c:361
 msgid "Irish"
@@ -1814,7 +1817,7 @@ msgstr ""
 
 #: charinfo.c:380
 msgid "Khutsuri Georgian"
-msgstr ""
+msgstr "Γεωργιανά Khutsuri"
 
 #: charinfo.c:381
 msgid "Khakass"
@@ -1826,7 +1829,7 @@ msgstr ""
 
 #: charinfo.c:383 fontinfo.c:727 macenc.c:2294
 msgid "Lang|Khmer"
-msgstr ""
+msgstr "Χμερ"
 
 #: charinfo.c:384
 msgid "Khanty-Shurishkar"
@@ -1846,7 +1849,7 @@ msgstr ""
 
 #: charinfo.c:388 fontinfo.c:728 macenc.c:2270
 msgid "Kirghiz"
-msgstr ""
+msgstr "Κιργιζική"
 
 #: charinfo.c:389
 msgid "Kisii"
@@ -1990,7 +1993,7 @@ msgstr ""
 
 #: charinfo.c:424 macenc.c:2295
 msgid "Lang|Lao"
-msgstr ""
+msgstr "Λαοτινή"
 
 #: charinfo.c:425 fontinfo.c:734 macenc.c:2314
 msgid "Lang|Latin"
@@ -2110,7 +2113,7 @@ msgstr ""
 
 #: charinfo.c:454 fontinfo.c:737 macenc.c:2259
 msgid "Macedonian"
-msgstr "Σκοπιανή"
+msgstr "Σλαβομακεδονική"
 
 #: charinfo.c:455
 msgid "Male"
@@ -2170,7 +2173,7 @@ msgstr "Μαροκινή"
 
 #: charinfo.c:469 fontinfo.c:743
 msgid "Maori"
-msgstr ""
+msgstr "Μαορί"
 
 #: charinfo.c:470
 msgid "Maithili"
@@ -2178,7 +2181,7 @@ msgstr ""
 
 #: charinfo.c:471 fontinfo.c:741 macenc.c:2230
 msgid "Maltese"
-msgstr ""
+msgstr "Μαλτέζικη"
 
 #: charinfo.c:472
 msgid "Mundari"
@@ -2210,7 +2213,7 @@ msgstr ""
 
 #: charinfo.c:479 fontinfo.c:747 macenc.c:2280
 msgid "Nepali"
-msgstr ""
+msgstr "Νεπαλέζικη"
 
 #: charinfo.c:480
 msgid "Newari"
@@ -2246,19 +2249,19 @@ msgstr "Νορβηγική"
 
 #: charinfo.c:488
 msgid "Northern Sami"
-msgstr ""
+msgstr "Σάμι του Βορρά"
 
 #: charinfo.c:489
 msgid "Northern Tai"
-msgstr ""
+msgstr "Βόρεια Ταϋλανδική"
 
 #: charinfo.c:490 macenc.c:2310
 msgid "Esperanto"
-msgstr ""
+msgstr "Εσπεράντο"
 
 #: charinfo.c:491
 msgid "Nynorsk"
-msgstr "Νέο νορβηγική"
+msgstr "Νέα νορβηγική"
 
 #: charinfo.c:492
 msgid "Oji-Cree"
@@ -2282,7 +2285,7 @@ msgstr ""
 
 #: charinfo.c:497
 msgid "Palestinian Aramaic"
-msgstr "Παλαιστινικά αραμαϊκά"
+msgstr "Παλαιστινιακά αραμαϊκά"
 
 #: charinfo.c:498
 msgid "Pali"
@@ -2306,7 +2309,7 @@ msgstr "Πολυτονική ελληνική"
 
 #: charinfo.c:503
 msgid "Pilipino"
-msgstr ""
+msgstr "Φιλιπινέζικη"
 
 #: charinfo.c:504
 msgid "Palaung"
@@ -2338,7 +2341,7 @@ msgstr ""
 
 #: charinfo.c:511
 msgid "Russian Buriat"
-msgstr ""
+msgstr "Ρωσσικά Μπουριάτ"
 
 #: charinfo.c:512
 msgid "Riang"
@@ -2362,7 +2365,7 @@ msgstr ""
 
 #: charinfo.c:517
 msgid "Ruanda"
-msgstr ""
+msgstr "Ρουάντα"
 
 #: charinfo.c:518 fontinfo.c:766 macenc.c:2248
 msgid "Russian"
@@ -2418,7 +2421,7 @@ msgstr ""
 
 #: charinfo.c:531 fontinfo.c:776 macenc.c:2255
 msgid "Slovak"
-msgstr "Σλαβακική"
+msgstr "Σλοβακική"
 
 #: charinfo.c:532
 msgid "Slavey"
@@ -2430,7 +2433,7 @@ msgstr "Σλοβενική"
 
 #: charinfo.c:534 macenc.c:2304
 msgid "Somali"
-msgstr ""
+msgstr "Σομαλική"
 
 #: charinfo.c:535
 msgid "Samoan"
@@ -2482,7 +2485,7 @@ msgstr ""
 
 #: charinfo.c:547
 msgid "Southern Sami"
-msgstr ""
+msgstr "Νότια Sami"
 
 #: charinfo.c:548
 msgid "Suri"
@@ -2502,11 +2505,11 @@ msgstr ""
 
 #: charinfo.c:552 macenc.c:2305
 msgid "Swahili"
-msgstr ""
+msgstr "Σουαχίλι"
 
 #: charinfo.c:553
 msgid "Swazi"
-msgstr ""
+msgstr "Σουάζι"
 
 #: charinfo.c:554 fontinfo.c:801
 msgid "Sutu"
@@ -2514,7 +2517,7 @@ msgstr ""
 
 #: charinfo.c:555 fontinfo.c:805
 msgid "Lang|Syriac"
-msgstr ""
+msgstr "Συριακή"
 
 #: charinfo.c:556
 msgid "Tabasaran"
@@ -2526,7 +2529,7 @@ msgstr "Τατζίκικη"
 
 #: charinfo.c:558 fontinfo.c:810 macenc.c:2290
 msgid "Lang|Tamil"
-msgstr ""
+msgstr "Ταμίλ"
 
 #: charinfo.c:559 macenc.c:2318
 msgid "Tatar"
@@ -2554,7 +2557,7 @@ msgstr ""
 
 #: charinfo.c:565 fontinfo.c:813 macenc.c:2236
 msgid "Lang|Thai"
-msgstr "Τάυλανδική"
+msgstr "Ταϋλανδική"
 
 #: charinfo.c:566
 msgid "Tahitian"
@@ -2566,7 +2569,7 @@ msgstr "Θιβετιανή"
 
 #: charinfo.c:568 fontinfo.c:821 macenc.c:2272
 msgid "Turkmen"
-msgstr "Τουρκμένικη"
+msgstr "Τουρκμενική"
 
 #: charinfo.c:569
 msgid "Temne"
@@ -2574,7 +2577,7 @@ msgstr ""
 
 #: charinfo.c:570 fontinfo.c:819
 msgid "Tswana"
-msgstr ""
+msgstr "Τσουανά"
 
 #: charinfo.c:571
 msgid "Tundra Nenets"
@@ -2710,7 +2713,7 @@ msgstr "Ζουλού"
 
 #: charinfo.c:608
 msgid "Ancient Ligatures"
-msgstr "Αρχαία πολλλαπλά στοιχεία"
+msgstr "Αρχαία πολλαπλά στοιχεία"
 
 #: charinfo.c:609 fontview.c:6524
 msgid "Discretionary Ligatures"
@@ -2726,7 +2729,7 @@ msgstr "Απαραίτητα πολλαπλά στοιχεία"
 
 #: charinfo.c:612 fontview.c:6521
 msgid "Standard Ligatures"
-msgstr "Κοινά πολλαλά στοιχεία"
+msgstr "Κοινά πολλαπλά στοιχεία"
 
 #: charinfo.c:613 charinfo.c:678 fontview.c:6525
 msgid "Diagonal Fractions"
@@ -2738,7 +2741,7 @@ msgstr "Κάθετα κλάσματα"
 
 #: charinfo.c:615
 msgid "Above Base Substitutions"
-msgstr "Αντικαταστέσεις πάνω από τη βάση"
+msgstr "Αντικαταστάσεις πάνω από τη βάση"
 
 #: charinfo.c:616
 msgid "Below Base Forms"
@@ -2746,7 +2749,7 @@ msgstr "Φόρμες κάτω από τη βάση"
 
 #: charinfo.c:617
 msgid "Below Base Substitutions"
-msgstr "Αντικαταστέσεις κάτω από τη βάση"
+msgstr "Αντικαταστάσεις κάτω από τη βάση"
 
 #: charinfo.c:618
 msgid "Akhand"
@@ -2754,7 +2757,7 @@ msgstr ""
 
 #: charinfo.c:619 charinfo.c:752
 msgid "Glyph Composition/Decomposition"
-msgstr "Σύνθεση/Αποσύνθεση Γλύφου"
+msgstr "Σύνθεση/Διάσπαση Γλύφου"
 
 #: charinfo.c:620
 msgid "Half Forms"
@@ -2794,11 +2797,11 @@ msgstr "Αντικαταστάσεις πρό βάσης"
 
 #: charinfo.c:629
 msgid "Post Base Forms"
-msgstr "Μοφές μετά βάσης"
+msgstr "Μοφές μετά τη βάση"
 
 #: charinfo.c:630
 msgid "Post Base Substitutions"
-msgstr "Αντικαταστάσεις μετά βάσης"
+msgstr "Αντικαταστάσεις μετά τη βάση"
 
 #: charinfo.c:631
 msgid "Reph Form"
@@ -2806,13 +2809,13 @@ msgstr "Μορφή Reph"
 
 #: charinfo.c:632
 msgid "Vattu Variants"
-msgstr "Εναλλακτική μορφή Vattu"
+msgstr "Εναλλακτικές μορφές Vattu"
 
 #: charinfo.c:634 charinfo.c:656 charinfo.c:665 charinfo.c:728 charinfo.c:747
 #: charinfo.c:756 charinfo.c:766 charinfo.c:777 charinfo.c:785 charinfo.c:793
 #: charinfo.c:800 charinfo.c:808
 msgid "Required feature"
-msgstr "Απαραίτητο χαρακτηριτικό"
+msgstr "Απαραίτητο χαρακτηριστικό"
 
 #: charinfo.c:639 charinfo.c:672
 msgid "Case-Sensitive Forms"
@@ -2820,147 +2823,147 @@ msgstr "Μορφές διαχωρισμού κεφαλαίων-πεζών"
 
 #: charinfo.c:640
 msgid "Capital Spacing"
-msgstr ""
+msgstr "«Αραίωση» Κεφαλαίων"
 
 #: charinfo.c:641 charinfo.c:679 fontview.c:6537
 msgid "Full Widths"
-msgstr ""
+msgstr "Πλήρη πλάτη"
 
 #: charinfo.c:642
 msgid "Alternative Half Widths"
-msgstr ""
+msgstr "Εναλλακτικά μισά πλάτη"
 
 #: charinfo.c:643 charinfo.c:683 fontview.c:6538
 msgid "Half Widths"
-msgstr ""
+msgstr "Μισά πλάτη"
 
 #: charinfo.c:644 fontview.c:6544
 msgid "Left Bounds"
-msgstr ""
+msgstr "Δεξιά όρια"
 
 #: charinfo.c:645
 msgid "Optical Bounds"
-msgstr ""
+msgstr "Οπτικά όρια"
 
 #: charinfo.c:646
 msgid "Proportional Alternate Metrics"
-msgstr ""
+msgstr "Αναλογικές εναλλακτικές μετρικές"
 
 #: charinfo.c:647 charinfo.c:701
 msgid "Quarter Widths"
-msgstr ""
+msgstr "Τέταρτα πλατών"
 
 #: charinfo.c:648 fontview.c:6545
 msgid "Right Bounds"
-msgstr ""
+msgstr "Δεξιά όρια"
 
 #: charinfo.c:649 charinfo.c:721
 msgid "Third Widths"
-msgstr ""
+msgstr "Τρίτα πλατών"
 
 #: charinfo.c:650
 msgid "Alternate Vertical Metrics"
-msgstr ""
+msgstr "Εναλλακτικές κάθετες μετρικές"
 
 #: charinfo.c:651
 msgid "Alternate Vertical Half Metrics"
-msgstr ""
+msgstr "Εναλλακτικές κάθετες μισές μετρικές"
 
 #: charinfo.c:652
 msgid "Proportional Alternate Vertical Metrics"
-msgstr ""
+msgstr "Αναλογικές εναλλακτικές κάθετες μετρικές"
 
 #: charinfo.c:654
 msgid "Italic Correction"
-msgstr ""
+msgstr "Ιταλική διόρθωση"
 
 #: charinfo.c:661
 msgid "Distance"
-msgstr ""
+msgstr "Απόσταση"
 
 #: charinfo.c:662 charinfo.c:805
 msgid "Horizontal Kerning"
-msgstr ""
+msgstr "Οριζόντια «υποσκαφή»"
 
 #: charinfo.c:663 charinfo.c:806
 msgid "Vertical Kerning"
-msgstr ""
+msgstr "Κάθετη «υποσκαφή»"
 
 #: charinfo.c:670 charinfo.c:733
 msgid "Access All Alternates"
-msgstr ""
+msgstr "Πρόσβαση σε όλα τα εναλλακτικά"
 
 #: charinfo.c:671
 msgid "Above Base Forms"
-msgstr ""
+msgstr "Μορφές πάνω από τη βάση"
 
 #: charinfo.c:673
 msgid "Capitals to Petite Capitals"
-msgstr ""
+msgstr "Κεφαλαία σε μικρά κεφαλαία"
 
 #: charinfo.c:674 fontview.c:6531
 msgid "Capitals to Small Capitals"
-msgstr ""
+msgstr "Κεφαλαία σε πεζά κεφαλαία"
 
 #: charinfo.c:675
 msgid "Denominators"
-msgstr ""
+msgstr "Παρανομαστές"
 
 #: charinfo.c:676
 msgid "Expert Forms"
-msgstr ""
+msgstr "Μορφές Expert"
 
 #: charinfo.c:677 fontview.c:6541
 msgid "Terminal Forms"
-msgstr ""
+msgstr "Τερματικές μορφές"
 
 #: charinfo.c:680
 msgid "Historical Forms"
-msgstr ""
+msgstr "Ιστορικές μορφές"
 
 #: charinfo.c:681
 msgid "Horizontal Kana Alternatives"
-msgstr ""
+msgstr "Εναλλακτικά οριζόντια Kana"
 
 #: charinfo.c:682 charinfo.c:735
 msgid "Hanja to Hangul"
-msgstr ""
+msgstr "Hanja προς Hangul"
 
 #: charinfo.c:684 fontview.c:6539
 msgid "Initial Forms"
-msgstr ""
+msgstr "Αρχικές μορφές"
 
 #: charinfo.c:685 fontview.c:6542
 msgid "Isolated Forms"
-msgstr ""
+msgstr "Μεμονομένες μορφές"
 
 #: charinfo.c:686
 msgid "Italics"
-msgstr ""
+msgstr "Πλάγια καλλιγραφικά"
 
 #: charinfo.c:687 charinfo.c:737
 msgid "JIS78 Forms"
-msgstr ""
+msgstr "Μορφές JIS78"
 
 #: charinfo.c:688
 msgid "JIS83 Forms"
-msgstr ""
+msgstr "Μορφές JIS83"
 
 #: charinfo.c:689
 msgid "JIS90 Forms"
-msgstr ""
+msgstr "Μορφές JIS90"
 
 #: charinfo.c:690
 msgid "Lining Figures"
-msgstr ""
+msgstr "Γραμμικά σχήματα"
 
 #: charinfo.c:691
 msgid "Localized Forms"
-msgstr ""
+msgstr "Τοπικές μορφές"
 
 #: charinfo.c:692 fontview.c:6540
 msgid "Medial Forms"
-msgstr ""
+msgstr "Μεσαίες μορφές"
 
 #: charinfo.c:693
 msgid "Mathematical Greek"
@@ -2968,43 +2971,43 @@ msgstr "Ελληνικά μαθηματικά"
 
 #: charinfo.c:694 charinfo.c:738
 msgid "Alternate Annotation Forms"
-msgstr ""
+msgstr "Εναλλακτικές μορφές σχολιασμού"
 
 #: charinfo.c:695
 msgid "Numerators"
-msgstr ""
+msgstr "Αριθμητές"
 
 #: charinfo.c:696 fontview.c:6532
 msgid "Oldstyle Figures"
-msgstr ""
+msgstr "Ψηφιά παλιάς μορφής"
 
 #: charinfo.c:697 charinfo.c:739
 msgid "Ornaments"
-msgstr ""
+msgstr "Διακοσμητικά"
 
 #: charinfo.c:698
 msgid "Lowercase to Petite Capitals"
-msgstr ""
+msgstr "Πεζά σε μικρά κεφαλαία"
 
 #: charinfo.c:699
 msgid "Proportional Numbers"
-msgstr ""
+msgstr "Αναλογική αριθμοί"
 
 #: charinfo.c:700 fontview.c:6536
 msgid "Proportional Width"
-msgstr ""
+msgstr "Αναλογικό πλάτος"
 
 #: charinfo.c:702 fontview.c:6528
 msgid "Right to Left Alternates"
-msgstr ""
+msgstr "Δεξιές σε αριστερές εναλλακτικές"
 
 #: charinfo.c:703
 msgid "Ruby Notational Forms"
-msgstr ""
+msgstr "Σχηματικές μορφές Ruby"
 
 #: charinfo.c:704 charinfo.c:741
 msgid "Stylistic Alternatives"
-msgstr ""
+msgstr "Στυλιστικές εναλλακτικές"
 
 #: charinfo.c:705
 msgid "Scientific Inferiors"
@@ -3012,51 +3015,51 @@ msgstr ""
 
 #: charinfo.c:706 fontview.c:6530
 msgid "Lowercase to Small Capitals"
-msgstr ""
+msgstr "Πεζά σε πεζά κεφαλαία"
 
 #: charinfo.c:707
 msgid "Simplified Forms"
-msgstr ""
+msgstr "Απλοποιημένες μορφές"
 
 #: charinfo.c:708
 msgid "Style Set 1"
-msgstr ""
+msgstr "Στυλιστικό σύνολο 1"
 
 #: charinfo.c:709
 msgid "Style Set 2"
-msgstr ""
+msgstr "Στυλίστικό σύνολο 2"
 
 #: charinfo.c:710
 msgid "Style Set 3"
-msgstr ""
+msgstr "Στυλιστικό σύνολο 3"
 
 #: charinfo.c:711
 msgid "Style Set 4"
-msgstr ""
+msgstr "Στυλιστικό σύνολο 4"
 
 #: charinfo.c:712
 msgid "Style Set 5"
-msgstr ""
+msgstr "Στυλιστικό σύνολο 5"
 
 #: charinfo.c:714 fontinfo.c:5173 fontinfo.c:7469 fontview.c:6534
 msgid "Subscript"
-msgstr ""
+msgstr "Δείκτης"
 
 #: charinfo.c:715 fontinfo.c:5175 fontinfo.c:7547 fontview.c:6533
 msgid "Superscript"
-msgstr ""
+msgstr "Εκθέτης"
 
 #: charinfo.c:716 charinfo.c:742 fontview.c:6535
 msgid "Swash"
-msgstr ""
+msgstr "«Καλλιτεχνικά»"
 
 #: charinfo.c:717
 msgid "Titling"
-msgstr ""
+msgstr "Κεφαλαία τίτλων"
 
 #: charinfo.c:718
 msgid "Traditional Name Forms"
-msgstr ""
+msgstr "Παραδοσιακές μορφές ονομάτων"
 
 #: charinfo.c:719
 msgid "Tabular Numbers"
@@ -3064,7 +3067,7 @@ msgstr ""
 
 #: charinfo.c:720 charinfo.c:743
 msgid "Traditional Forms"
-msgstr ""
+msgstr "Παραδοσιακές μορφές"
 
 #: charinfo.c:722
 msgid "Unicase"
@@ -3080,15 +3083,15 @@ msgstr ""
 
 #: charinfo.c:725
 msgid "Vertical Kana Alternates"
-msgstr ""
+msgstr "Εναλλακτικά κάθετα Kana"
 
 #: charinfo.c:726
 msgid "Slashed Zero"
-msgstr ""
+msgstr "Μηδέν με πλάγια"
 
 #: charinfo.c:734
 msgid "Final Glyph On Line"
-msgstr ""
+msgstr "Τελικός γλύφος σε αράδα"
 
 #: charinfo.c:736
 msgid "Justification Alternatives"
@@ -3096,15 +3099,15 @@ msgstr ""
 
 #: charinfo.c:740
 msgid "Randomize"
-msgstr ""
+msgstr "Τυχαιοποίησε"
 
 #: charinfo.c:745
 msgid "TeX Glyphlist"
-msgstr ""
+msgstr "Κατάλογος γλύφων TeX"
 
 #: charinfo.c:754
 msgid "TeX Extension List"
-msgstr ""
+msgstr "Επεκτεταμένος κατάλογος TeX"
 
 #: charinfo.c:761
 msgid "Above Base Mark"
@@ -3128,15 +3131,15 @@ msgstr ""
 
 #: charinfo.c:771
 msgid "Terminal Forms #2"
-msgstr ""
+msgstr "Τερματικές μορφές #2"
 
 #: charinfo.c:772
 msgid "Terminal Forms #3"
-msgstr ""
+msgstr "Τερματικές μορφές #3"
 
 #: charinfo.c:773
 msgid "Medial Forms 2"
-msgstr ""
+msgstr "Μέσες μορφές 2"
 
 #: charinfo.c:774
 msgid "Mark Positioning via Substitution"
@@ -3176,7 +3179,7 @@ msgstr ""
 
 #: charinfo.c:832
 msgid "New Ligature"
-msgstr ""
+msgstr "Νέο πολ/πλο στοιχείο"
 
 #: charinfo.c:833
 msgid "Edit Position Variant"
@@ -3200,15 +3203,15 @@ msgstr ""
 
 #: charinfo.c:835
 msgid "Edit Ligature"
-msgstr ""
+msgstr "Επεξεργασία πολ/πλου στοιχείου"
 
 #: charinfo.c:1121
 msgid "Any Script"
-msgstr "εναλλακτική μορφή"
+msgstr "Οποιαδήποτε γραφή"
 
 #: charinfo.c:1121
 msgid " -- Default --"
-msgstr ""
+msgstr " -- «Εξ ορισμού» --"
 
 #: charinfo.c:1121
 msgid " -- Nested --"
@@ -3216,7 +3219,7 @@ msgstr ""
 
 #: charinfo.c:1121
 msgid " -- Edit Script & Lang List --"
-msgstr ""
+msgstr " -- Επεξ. Γραφής & Κατάλ. Γλωσ. --"
 
 #: charinfo.c:1235 charinfo.c:1243 charinfo.c:1272
 msgid "Cant Parse Scripts"
@@ -3239,11 +3242,11 @@ msgstr ""
 
 #: charinfo.c:1365
 msgid "Language List"
-msgstr ""
+msgstr "Κατάλογος γλωσσών"
 
 #: charinfo.c:1383 charinfo.c:1454
 msgid "Language Missing"
-msgstr ""
+msgstr "Άγνωστη γλώσσα"
 
 #: charinfo.c:1383
 #, fuzzy, c-format
@@ -3273,7 +3276,7 @@ msgstr "Κατάλογος γραφών"
 
 #: charinfo.c:1652 charinfo.c:1681
 msgid "Script Missing"
-msgstr "Μη-υπάρχουσα γραφή"
+msgstr "Άγνωστη γραφή"
 
 #: charinfo.c:1652
 #, fuzzy, c-format
@@ -3334,7 +3337,7 @@ msgstr ""
 
 #: charinfo.c:2483 charinfo.c:6286
 msgid "Components"
-msgstr "Στοιχεία"
+msgstr "Τμήματα"
 
 #: charinfo.c:2507 charinfo.c:3156 charinfo.c:6813 contextchain.c:1585
 #: prefs.c:1266 typofeatures.c:1213
@@ -3343,7 +3346,7 @@ msgstr ""
 
 #: charinfo.c:2534 charinfo.c:3176 typofeatures.c:1234
 msgid "_Script & Languages:"
-msgstr ""
+msgstr "_Γραφή & Γλώσσα"
 
 #: charinfo.c:2574 charinfo.c:3217 kernclass.c:2123 kernclass.c:2254
 #: statemachine.c:2983 typofeatures.c:1271
@@ -3356,7 +3359,7 @@ msgstr ""
 
 #: charinfo.c:2592 charinfo.c:3233 kernclass.c:2270 typofeatures.c:1287
 msgid "Ignore Ligatures"
-msgstr "Αγνόησε τα πολλαπλά στοιχέια"
+msgstr "Αγνόησε τα πολλαπλά στοιχεία"
 
 #: charinfo.c:2601 charinfo.c:3241 kernclass.c:2278 typofeatures.c:1295
 msgid "Ignore Combining Marks"
@@ -3474,18 +3477,19 @@ msgstr ""
 
 #: charinfo.c:3690
 msgid "A ligature may not be made up of itself"
-msgstr ""
+msgstr "Ένα πολλαπλό στοιχείο δεν μπορεί να αποτελείται από τον εαυτό του"
 
 #: charinfo.c:3690
 msgid "This substitution is self-referential"
-msgstr ""
+msgstr "Αυτή η αντικατάσταση κάνει αναφορά στον εαυτό της"
 
 #: charinfo.c:3696
 #, c-format
 msgid ""
 "The component \"%.20s\" is not in this font.\n"
 "Is that what you want?"
-msgstr ""
+msgstr "Το εξάρτημα «%.20s» δεν είναι σε αυτή τη\n"
+"γραμματοσειρά. Αυτό θέλετε;"
 
 #. GT: We have a tag that appears twice and that's bad.
 #: charinfo.c:3850 charinfo.c:3968
@@ -3494,18 +3498,19 @@ msgstr ""
 
 #: charinfo.c:3888
 msgid "Too Many Components"
-msgstr ""
+msgstr "Πάρα πολλά εξαρτήματα"
 
 #: charinfo.c:3888
 msgid ""
 "A simple substitution takes exactly one component, but you have provided "
 "several"
-msgstr ""
+msgstr "Μια απλή αντικατάσταση παίρνει ακριβώς ένα εξάρτηαμα, ενώ εσείς έχετε "
+"προσδιορίσει αρκετά"
 
 #: charinfo.c:4105 charinfo.c:4267 charinfo.c:4343 charinfo.c:4349
 #: charinfo.c:4400
 msgid "Bad GPOS/GSUB"
-msgstr ""
+msgstr "Εσφαλμένος GPOS/GSUB"
 
 #: charinfo.c:4161 charinfo.c:4558 charview.c:6815 contextchain.c:836
 #: cvgetinfo.c:953 cvpalettes.c:1171 cvpointer.c:1114 cvundoes.c:1862
@@ -3514,7 +3519,7 @@ msgstr ""
 #: mm.c:3216 parsettfbmf.c:443 prefs.c:1167 problems.c:2304 savefontdlg.c:2329
 #: tottf.c:4382
 msgid "_No"
-msgstr ""
+msgstr "Ό_χι"
 
 #: charinfo.c:4165
 #, c-format
@@ -14733,7 +14738,8 @@ msgstr ""
 
 #: prefs.c:1978
 msgid "Prefs|App|to alter that behavior you may set an environment"
-msgstr ""
+msgstr "Επιλογ.|Εφάρμ.|για να μεταβάλλεται αυτή την συμπεριφορά δώστε τιμή "
+"σε μία μεταβλητή περιβάλλοντος"
 
 #: prefs.c:1979
 msgid "Prefs|App|variable giving the full path spec of the application."
@@ -14741,43 +14747,43 @@ msgstr ""
 
 #: prefs.c:1980
 msgid "Prefs|App|FontForge recognizes BROWSER, MF and AUTOTRACE."
-msgstr ""
+msgstr "Επιλογ.|Εφάρμ.|Το FontForge αναγνωρίζει την BROWSER, MF και AUTOTRACE."
 
 #: prefs.c:1981
 msgid "Prefs|App| "
-msgstr ""
+msgstr "Επιλογ.|Εφαρμ. "
 
 #: prefs.c:2012
 msgid "Features"
-msgstr ""
+msgstr "Χαρακτηριστικά"
 
 #: print.c:1113 print.c:2832 print.c:3773
 msgid "Failed to open temporary output file"
-msgstr ""
+msgstr "Αποτυχία ανοίγματος παρωδικού αρχείου εξόδου"
 
 #: print.c:1116
 msgid "Printing Font"
-msgstr ""
+msgstr "Εκτύπωση γραμματοσειράς"
 
 #: print.c:1117
 msgid "Generating Postscript Font"
-msgstr ""
+msgstr "Δημιουργία γραμματοσειράς Postscript"
 
 #: print.c:1140
 msgid "Failed to generate postscript font"
-msgstr ""
+msgstr "Αποτυχία δημιουργίας γραμματοσειράς postscript"
 
 #: print.c:1383 print.c:2745 print.c:2750 print.c:2824 print.c:3766
 msgid "Print Failed"
-msgstr ""
+msgstr "Αποτυχία εκτύπωσης"
 
 #: print.c:1383 tottf.c:4374
 msgid "Warning: Font contained no glyphs"
-msgstr ""
+msgstr "Προειδοποίηση: Η γραμματοσειρά δεν περιέχει γλύφους"
 
 #: print.c:2229 print.c:2542
 msgid "_Copies:"
-msgstr ""
+msgstr "_Αντίγραφα"
 
 #: print.c:2235
 msgid "No Command Specified"
@@ -14789,11 +14795,11 @@ msgstr ""
 
 #: print.c:2457
 msgid "To _File"
-msgstr ""
+msgstr "Σε _αρχείο"
 
 #: print.c:2468
 msgid "To P_DF File"
-msgstr ""
+msgstr "Σε αρχείο P_DF"
 
 #: print.c:2479 savefontdlg.c:1151 savefontdlg.c:1232
 msgid "_Other"
@@ -14804,85 +14810,90 @@ msgid ""
 "Any other command with all its arguments.\n"
 "The command must expect to deal with a postscript\n"
 "file which it will find by reading its standard input."
-msgstr ""
+msgstr "Οποιαδήποτε άλλη εντολή με όλα τα ορίσματά της.\n"
+"Η εντολή πρέπει να μπορεί να διαχειριστεί ένα αρχείο\n"
+"postscript το οποίο θα βρει διαβάζοντας δεδομένα από την\n"
+"τυποποιημένη είσοδο (πληκτρολόγιο)."
 
 #: print.c:2507
 msgid "Page_Size:"
-msgstr ""
+msgstr "Μέγεθος_σελίδας"
 
 #: print.c:2564
 msgid "_Printer:"
-msgstr ""
+msgstr "_Εκτυπωτής"
 
 #: print.c:2745 print.c:2750
 #, c-format
 msgid "Failed to generate postscript in file %s"
-msgstr ""
+msgstr "Αποτυχία δημιουργίας κώδικα postscript στο αρχείο %s"
 
 #: print.c:2805
 msgid "Invalid point size"
-msgstr ""
+msgstr "Μη-έγκυρο μέγεθος"
 
 #: print.c:2816
 msgid "Print To File..."
-msgstr ""
+msgstr "Εκτύπωση σε αρχείο..."
 
 #: print.c:2824 print.c:3766
 #, c-format
 msgid "Failed to open file %s for output"
-msgstr ""
+msgstr "Αποτυχία ανοίγματος του αρχείου %s για έξοδο δεδομένων"
 
 #: print.c:3531
 msgid "Print..."
-msgstr ""
+msgstr "Εκτύπωση..."
 
 #: print.c:3540
 msgid "_Full Font Display"
-msgstr ""
+msgstr "_Πλήρης εμφάνιση γραμματοσειράς"
 
 #: print.c:3549
 msgid ""
 "Displays all the glyphs in the font on a rectangular grid at the given point "
 "size"
-msgstr ""
+msgstr "Εμφανίζει όλους τους γλύφους της γραμματοσειράς σε ένα ορθογώνιο πλέγμα "
+"στο δοσμένο μέγεθος" 
 
 #: print.c:3557
 msgid "Full Pa_ge Glyph"
-msgstr ""
+msgstr "Γλύφος πλήρους σε_λίδας"
 
 #: print.c:3557
 msgid "Full Pa_ge Glyphs"
-msgstr ""
+msgstr "Γλύφοι πλήρους σε_λίδας"
 
 #: print.c:3566
 msgid ""
 "Displays all the selected characters, each on its own page, at an extremely "
 "large point size"
-msgstr ""
+msgstr "Εμφανίζει όλους τους επιλεγμένους χαρακτήρες, τον καθένα σε μία ξεχωριστή "
+"σελίδα σε εξαιρετικά μεγάλο μέγεθος"
 
 #: print.c:3569
 msgid "_Multi Size Glyph"
-msgstr ""
+msgstr "Γλύφος _πολλαπλών μεγεθών"
 
 #: print.c:3569
 msgid "_Multi Size Glyphs"
-msgstr ""
+msgstr "Γλύφοι _πολλαπλών μεγεθών"
 
 #: print.c:3578
 msgid "Displays all the selected characters, at several different point sizes"
-msgstr ""
+msgstr "Εμφανίζει όλους τους επιλεγμένους χαρακτήρες σε διάφορα μεγέθη"
 
 #: print.c:3581
 msgid "_Sample Text"
-msgstr ""
+msgstr "_Δείγμα κειμένου"
 
 #: print.c:3590
 msgid "Prints the text below at the specified point size(s)"
-msgstr ""
+msgstr "Εκτυπώνει το κείμενο παρακάτω στο προσδιορισμένο μέγεθος"
 
 #: print.c:3621
 msgid "Sample _Text:"
-msgstr ""
+msgstr "Δείγμα _κειμένου:"
 
 #: print.c:3646
 msgid "S_etup"
@@ -14911,7 +14922,7 @@ msgstr ""
 
 #: problems.c:268 problems.c:515 problems.c:1040
 msgid "The x coord of the selected point is near the specified value"
-msgstr ""
+msgstr "Η x συντεταγμένη του επιλεγμένου σημείου είναι κοντά στη προσδιορισμένη τιμή"
 
 #: problems.c:268 problems.c:515 problems.c:1371
 msgid "The selected point is near a vertical stem hint"
@@ -14919,7 +14930,7 @@ msgstr ""
 
 #: problems.c:273 problems.c:516 problems.c:1065
 msgid "The y coord of the selected point is near the specified value"
-msgstr ""
+msgstr "Η y συντεταγμένη του επιλεγμένου σημείου είναι κοντά στη προσδιορισμένη τιμή"
 
 #: problems.c:273 problems.c:516 problems.c:1371
 msgid "The selected point is near a horizontal stem hint"
@@ -14927,71 +14938,71 @@ msgstr ""
 
 #: problems.c:274 problems.c:518 problems.c:1096
 msgid "The y coord of the selected point is near the baseline"
-msgstr ""
+msgstr "Η y συντεταγμένη του επιλεγμένου σημείου είναι κοντά στη γραμμή βάσης"
 
 #: problems.c:274 problems.c:518 problems.c:1099
 msgid "The y coord of the selected point is near the xheight"
-msgstr ""
+msgstr "Η y συντεταγμένη του επιλεγμένου σημείου είναι κοντά στο x-height της γραμματοσειράς"
 
 #: problems.c:275 problems.c:519 problems.c:1102
 msgid "The y coord of the selected point is near the cap height"
-msgstr ""
+msgstr "Η y συντεταγμένη του επιλεγμένου σημείου είναι κοντά στο ύψος κεφαλαίων της γραμματοσειράς"
 
 #: problems.c:275 problems.c:519 problems.c:1105
 msgid "The y coord of the selected point is near the ascender height"
-msgstr ""
+msgstr "Η y συντεταγμένη του επιλεγμένου σημείου είναι κοντά στο ύψος γραμματοσειράς"
 
 #: problems.c:276 problems.c:520 problems.c:1108
 msgid "The y coord of the selected point is near the descender height"
-msgstr ""
+msgstr "Η y συντεταγμένη του επιλεγμένου σημείου είναι κοντά στο βάθος γραμματοσειράς"
 
 #: problems.c:281 problems.c:521 problems.c:664
 msgid "The selected line segment is nearly horizontal"
-msgstr ""
+msgstr "Το επιλεγμένο ευθύγραμμο τμήμα είναι σχεδόν οριζόντιο"
 
 #: problems.c:293 problems.c:522 problems.c:665
 msgid "The control point above the selected point is nearly horizontal"
-msgstr ""
+msgstr "Το σημείο ελέγχου πάνω από το επιλεγμένο σημείο είναι σχεδόν οριζόντιο"
 
 #: problems.c:293 problems.c:522 problems.c:666
 msgid "The control point below the selected point is nearly horizontal"
-msgstr ""
+msgstr "Το σημείο ελέγχου κάτω από το επιλεγμένο σημείο είναι σχεδόν οριζόντιο"
 
 #: problems.c:294 problems.c:523 problems.c:667
 msgid "The control point right of the selected point is nearly horizontal"
-msgstr ""
+msgstr "Το σημείο ελέγχου στα δεξιά του επιλεγμένου σημείου είναι σχεδόν οριζόντιο"
 
 #: problems.c:294 problems.c:523 problems.c:668
 msgid "The control point left of the selected point is nearly horizontal"
-msgstr ""
+msgstr "Το σημείο ελέγχου στα αριστερά του επιλεγμένου σημείου είναι σχεδόν οριζόντιο"
 
 #: problems.c:318 problems.c:521 problems.c:671
 msgid "The selected line segment is nearly vertical"
-msgstr ""
+msgstr "Το επιλεγμένο ευθύγραμμο τμήμα είναι σχεδόν κάθετο"
 
 #: problems.c:330 problems.c:524 problems.c:672
 msgid "The control point above the selected point is nearly vertical"
-msgstr ""
+msgstr "Το σημείο ελέγχου πάνω από το επιλεγμένο σημείο είναι σχεδόν κάθετο"
 
 #: problems.c:330 problems.c:524 problems.c:673
 msgid "The control point below the selected point is nearly vertical"
-msgstr ""
+msgstr "Το σημείο ελέγχου κάτω από το επιλεγμένο σημείο είναι σχεδόν κάθετο"
 
 #: problems.c:331 problems.c:525 problems.c:674
 msgid "The control point right of the selected point is nearly vertical"
-msgstr ""
+msgstr "Το σημείο ελέγχου στα δεξιά του επιλεγμένου σημείου είναι σχεδόν κάθετο"
 
 #: problems.c:331 problems.c:525 problems.c:675
 msgid "The control point left of the selected point is nearly vertical"
-msgstr ""
+msgstr "Το σημείο ελέγχου στα αριστερά του επιλεγμένου σημείου είναι σχεδόν κάθετο"
 
 #: problems.c:355 problems.c:526 problems.c:1444
 msgid "This path should have been drawn in a counter-clockwise direction"
-msgstr ""
+msgstr "Αυτή η καμπύλη θα έπρεπε να είχε σχεδιασθεί με φορά αντίθετη προς αυτή των δεικτών του ρολογιού"
 
 #: problems.c:355 problems.c:526 problems.c:1446
 msgid "This path should have been drawn in a clockwise direction"
-msgstr ""
+msgstr "Η καμπύλη θα έπρεπε να είχε σχεδιασθεί κατά τη φορά των δεικτών του ρολογιού"
 
 #: problems.c:357 problems.c:517 problems.c:1252
 msgid ""
@@ -15001,23 +15012,23 @@ msgstr ""
 
 #: problems.c:439
 msgid "Problem explanation"
-msgstr ""
+msgstr "Επεξήγηση προβλήματος"
 
 #: problems.c:462 problems.c:2040
 msgid "Ignore this problem in the future"
-msgstr ""
+msgstr "Εφεξής αγνόησε αυτό το πρόβλημα"
 
 #: problems.c:472
 msgid "_Next"
-msgstr ""
+msgstr "_Επόμενο"
 
 #: problems.c:483 ../gdraw/gprogress.c:241
 msgid "_Stop"
-msgstr ""
+msgstr "_Σταμάτησε"
 
 #: problems.c:499
 msgid "Fix"
-msgstr ""
+msgstr "Διόρθωσε"
 
 #: problems.c:531 problems.c:564 problems.c:1644
 msgid ""
@@ -15028,11 +15039,11 @@ msgstr ""
 #: problems.c:533
 #, c-format
 msgid "'%2$c%3$c%4$c%5$c' refers to an empty character \"%1$.20s\""
-msgstr ""
+msgstr "'%2$c%3$c%4$c%5$c' αναφέρεται σε ένα κενό χαρακτήρα \"%1$.20s\""
 
 #: problems.c:535 problems.c:1668
 msgid "This glyph has the same unicode code point as the glyph named"
-msgstr ""
+msgstr "Αυτός ο γλύφος έχει τον ίδια θέση στο unicode όπως ο γλύφος που ονομάζεται"
 
 #: problems.c:536
 #, c-format
@@ -15041,7 +15052,7 @@ msgstr ""
 
 #: problems.c:537 problems.c:1683
 msgid "This glyph has the same name as the glyph at encoding"
-msgstr ""
+msgstr "Αυτός ο γλύφος έχει το ίδιο όνομα με τον γλύφο στην κωδικοποίηση"
 
 #: problems.c:538
 #, c-format
@@ -15051,7 +15062,7 @@ msgstr ""
 #: problems.c:542
 #, c-format
 msgid "Found %1$.4g, expected %2$.4g"
-msgstr ""
+msgstr "Βρέθηκε %1$.4g, ενώ αναμενόταν %2$.4g"
 
 #: problems.c:678
 msgid "The selected line segment is near the italic angle"
@@ -15114,15 +15125,15 @@ msgstr ""
 
 #: problems.c:949
 msgid "The two selected points are the endpoints of an open path"
-msgstr ""
+msgstr "Τα δύο επιλεγμένα σημεία είναι τερματικά σημεία μιας ανοικτής καμπύλης"
 
 #: problems.c:999
 msgid "The paths that make up this glyph intersect one another"
-msgstr ""
+msgstr "Οι καμπύλες που αποτελούν αυτό τον γλύφο τέμνουν η μία την άλλη"
 
 #: problems.c:1017
 msgid "The selected points are too close to each other"
-msgstr ""
+msgstr "Τα επιλεγμένα σημεία είναι πολύ κοντά το ένα στο άλλο"
 
 #: problems.c:1289 problems.c:1318
 msgid "This hint does not control any points"
@@ -15164,7 +15175,7 @@ msgstr ""
 
 #: problems.c:1576
 msgid "There are more points in this glyph than the maximum allowed"
-msgstr ""
+msgstr "Υπάρχουν περισσότερα σημεία σε αυτό τον γλύφο από μέγιστο επιτρεπτό αριθμό"
 
 #: problems.c:1590
 msgid "There are more hints in this glyph than the maximum allowed"
@@ -15176,23 +15187,23 @@ msgstr ""
 
 #: problems.c:1707
 msgid "This glyph is defined in more than one of the CID subfonts"
-msgstr ""
+msgstr "Αυτός ο γλύφος έχει οριστεί σε περισσότερες από μία υπο-γραμματοσειρές CID"
 
 #: problems.c:1712
 msgid "This glyph is not defined in any of the CID subfonts"
-msgstr ""
+msgstr "Αυτός ο γλύφος δεν είναι ορισμένος σε καμία από της υπο-γραμματοσειρές CID"
 
 #: problems.c:1903
 msgid "position"
-msgstr ""
+msgstr "θέση"
 
 #: problems.c:1903
 msgid "pair"
-msgstr ""
+msgstr "ζεύγος"
 
 #: problems.c:1903
 msgid "substitution"
-msgstr ""
+msgstr "αντικατάσταση"
 
 #: problems.c:1904
 msgid "alternate subs"
@@ -15203,7 +15214,7 @@ msgid "multiple subs"
 msgstr ""
 
 #: problems.c:1904
-msgid "ligature"
+msgid "πολλαπλό στοιχείο"
 msgstr ""
 
 #: problems.c:1905
@@ -15241,7 +15252,7 @@ msgstr ""
 #: problems.c:1931
 #, c-format
 msgid "Glyph %1$.50s with a %2$s with feature <%3$d,%4$d>"
-msgstr ""
+msgstr """Found %1$.4g, expected %2$.4g"
 
 #: problems.c:1936
 #, c-format
@@ -19312,7 +19323,7 @@ msgstr "European Number"
 
 #: unicoderange.c:212
 msgid "Ancient Greek Numbers"
-msgstr ""
+msgstr "Αρχαία Ελληνικά ψηφία"
 
 #: unicoderange.c:213
 msgid "Alphabetic and syllabic LTR scripts"
@@ -19410,15 +19421,15 @@ msgstr "Ruby Notational Forms"
 #: unicoderange.c:236
 #, fuzzy
 msgid "Byzantine Musical Symbols"
-msgstr "Byzantine Music"
+msgstr "Βυζαντινά μουσικά σύμβολα"
 
 #: unicoderange.c:237
 msgid "Musical Symbols"
-msgstr ""
+msgstr "Μουσικά σύμβολα"
 
 #: unicoderange.c:238
 msgid "Ancient Greek Musical Notation"
-msgstr ""
+msgstr "Αρχαία Ελληνικά μουσικά σύμβολα"
 
 #: unicoderange.c:239
 msgid "Tai Xuan Jing Symbols"
@@ -19484,38 +19495,40 @@ msgstr "Size of Points"
 msgid ""
 "At pixelsize %d the character %s either starts before the origin or extends "
 "beyond the advance width.\n"
-msgstr ""
+msgstr "Όταν το μέγεθος εικονοστοιχείου είναι %d ο χαρακτήρας %s είτε ξεκινάει πριν " 
+"την αρχή αξόνων ή εκτίνεται πέραν του πλάτους advance.\n"
 
 #: winfonts.c:594
 #, fuzzy
 msgid "Internal error in creating FNT. File offset wrong\n"
-msgstr "Internal error in creating FNT. file offset wrong\n"
-
+msgstr "Εσωτερικό λάθος κατά τη δημιουργία του FNT. Η θέση στο αρχείο είναι λάθος "
+"στα χαρτογραφικά δεδομένα\n"
 #: winfonts.c:622
 #, fuzzy
 msgid "Internal error in creating FNT. File offset wrong in bitmap data\n"
-msgstr "Internal error in creating FNT. file offset wrong in bitmap data\n"
+msgstr "Εσωτερικό λάθος κατά τη δημιουργία του FNT. Η θέση στο αρχείο είναι λάθος "
+"στα χαρτογραφικά δεδομένα\n"
 
 #: winfonts.c:930
 #, c-format
 msgid "Could not open output file: %s"
-msgstr ""
+msgstr "Αδύνατο το άνοιγμα του αρχείου εξόδου"
 
 #: ../gdraw/gaskdlg.c:1293
 msgid "_None"
-msgstr ""
+msgstr "_Κανένα"
 
 #: ../gdraw/gfilechooser.c:638
 msgid "Show Hidden Files"
-msgstr ""
+msgstr "Εμφάνιση κρυφών αρχείων"
 
 #: ../gdraw/gfilechooser.c:639
 msgid "Refresh File List"
-msgstr ""
+msgstr "Ανανέωση καταλόγου αρχείων"
 
 #: ../gdraw/gmatrixedit.c:1000
 msgid "Row|New"
-msgstr ""
+msgstr "Γραμμή|Νέα"
 
 #: ../gdraw/gsavefiledlg.c:138
 #, c-format
@@ -19523,15 +19536,17 @@ msgid ""
 "Couldn't create directory: %1$s\n"
 "%2$s\n"
 "%3$s"
-msgstr ""
+msgstr "Αδύνατη η δημιουργία του φακέλου: %1$s\n"
+"%2$s\n"
+"%3$s"
 
 #: ../gdraw/gtextfield.c:952
 msgid "_Save in UTF8"
-msgstr ""
+msgstr "_Αποθήκευση σε UTF8"
 
 #: ../gdraw/gtextfield.c:953
 msgid "Save in _UCS2"
-msgstr ""
+msgstr "Αποθήκευση σε _UCS2"
 
 #. GT: This is an unusual string. It is used to get around a limitation in
 #. GT: FontForge's widget set. You should put a number here (do NOT translate
@@ -19541,7 +19556,7 @@ msgstr ""
 #. GT: (in their translated forms of course).
 #: ../gdraw/gtextinfo.c:513
 msgid "GGadget|ButtonSize|55"
-msgstr ""
+msgstr "100"
 
 #. GT: This is an unusual string. It is used to get around a limitation in
 #. GT: FontForge's widget set. You should put a number here (do NOT translate
@@ -19553,7 +19568,7 @@ msgstr ""
 #. GT: might be 116*100/67 = 173
 #: ../gdraw/gtextinfo.c:525
 msgid "GGadget|ScaleFactor|100"
-msgstr ""
+msgstr "200"
 
 # This file (or this section of the main file) contains the
 #  fontforge messages which use non-ASCII characters.
@@ -19590,16 +19605,16 @@ msgstr ""
 #. CW means clockwise
 #: bitmapview.c
 msgid "_Rotate 90° CW"
-msgstr ""
+msgstr "_Περιστροφή +90°"
 
 #. CCW means counter clockwise
 #: bitmapview.c
 msgid "Rotate _90° CCW"
-msgstr ""
+msgstr "Περιστροφή -_90°"
 
 #: bitmapview.c
 msgid "Rotate _180°"
-msgstr ""
+msgstr "Περιστροφή _180°"
 
 #: charinfo.c
 msgid "Brāhmī"
@@ -19662,29 +19677,30 @@ msgstr ""
 
 #: fontinfo.c
 msgid "French Côte d'Ivoire"
-msgstr ""
+msgstr "Γαλλικά Ακτής Ελεφαντοστού"
 
 #: fontinfo.c
 msgid "ΤεΧ Text"
-msgstr ""
+msgstr "Κείμενο ΤεΧ"
 
 #: fontinfo.c
 msgid "ΤεΧ Math"
-msgstr ""
+msgstr "Μαθηματικά ΤεΧ"
 
 #: fontinfo.c
 msgid "ΤεΧ Math Ext"
-msgstr ""
+msgstr "Επεκτεταμένα Μαθηματικά ΤεΧ"
 
 #: fontview.c
 msgid "Replace Å"
-msgstr ""
+msgstr "Αντικατέστησε το Å"
 
 #: fontview.c
 msgid ""
 "Are you sure you want to replace Å?\n"
 "The ring will not join to the A."
-msgstr ""
+msgstr "Είστε σίγουροι ότι θέλετε να αντικαταστήσεται το Å;\n"
+"Το δακτυλίδι δεν θα ενώνεται με το A."
 
 #: openfontdlg.c
 #, fuzzy
@@ -19713,45 +19729,49 @@ msgstr ""
 
 #: problems.c
 msgid "¹ \"_Near\" means within"
-msgstr ""
+msgstr "¹ «_Κοντά» σημαίνει μέσα"
 
 #: savefontdlg.c
 msgid ""
 "The AFM file contains metrics information that many word-processors will "
 "read when using a PostScript® font."
 msgstr ""
+"Το αρχείο AFM περιέχει τις μετρικές των γλύφων τις οποίες πολλοί επεξεργαστές κειμένου "
+"θα «διαβάσουν» όταν χρησιμοποιούν μια γραμματοσειρά PostScript®."
 
 #: savefontdlg.c
 msgid ""
 "The PFM file contains information Windows needs to install a PostScript® "
 "font."
-msgstr ""
+msgstr "Το αρχείο PFM περιέχει πληροφορίες τις οποίες χρειάζονται τα Windows "
+"για να εγκαταστήσουν μια γραμματοσειρά PostScript®."
 
 #: savefontdlg.c
 msgid ""
 "The tfm and enc files contain information TeX needs to install a PostScript® "
 "font."
-msgstr ""
+msgstr "Τα αρχεία tfm και enc περιέχουν πληροφορίες τις οποίες χρειάζεται το TeX για να " 
+"εγκαταστήσει μια γραμματοσειρά PostScript®."
 
 #: statemachine.c
 msgid "_Up↑"
-msgstr ""
+msgstr "_Πάνω↑"
 
 #: statemachine.c
 msgid "←_Left"
-msgstr ""
+msgstr "←_Αριστερά"
 
 #: statemachine.c
 msgid "_Right→"
-msgstr ""
+msgstr "_Δεξιά→"
 
 #: statemachine.c
 msgid "↓_Down"
-msgstr ""
+msgstr "↓_Κάτω"
 
 #: transform.c
 msgid "° Clockwise"
-msgstr ""
+msgstr "° Κατά τη φορά των δεικτών του ρολογιού"
 
 #. Sometimes spelled Widdershins. An old word which means counter clockwise.
 #. I used it because "counter clockwise" took too much space.
@@ -19768,7 +19788,7 @@ msgstr ""
 #.   pfaedit@users.sourceforge.net
 #: glyphcomp.c
 msgid "Glyph “%s” differs\n"
-msgstr ""
+msgstr "Ο γλύφος “%s” διαφέρει\n"
 
 #: glyphcomp.c
 msgid "Glyph “%s” contains a reference to %s in %s\n"
@@ -19829,19 +19849,19 @@ msgstr ""
 
 #: glyphcomp.c
 msgid "Glyph “%s” in %s has no truetype instructions\n"
-msgstr ""
+msgstr "Ο γλύφος “%s” στο/στη %s δεν έχει εντολές truetype\n"
 
 #: glyphcomp.c
 msgid "Glyph “%s” has different truetype instructions\n"
-msgstr ""
+msgstr "Ο γλύφος “%s” έχει διαφορετικές εντολές truetype\n"
 
 #: glyphcomp.c
 msgid "Glyph “%s” missing from %s\n"
-msgstr ""
+msgstr "Ο γλύφος “%s” δεν συμπεριλαμβάνεται στο %s\n"
 
 #: glyphcomp.c
 msgid "Glyph “%s” missing from %s at %d@%d\n"
-msgstr ""
+msgstr "Glyph “%s” missing from %s at %d@%d\n"
 
 #: glyphcomp.c
 msgid "Glyph “%s” differs at %d@%d\n"
