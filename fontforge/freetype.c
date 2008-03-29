@@ -74,11 +74,11 @@ return( NULL );
 }
 
 SplineSet *FreeType_GridFitChar(void *single_glyph_context,
-	int enc, real ptsize, int dpi, uint16 *width, SplineChar *sc) {
+	int enc, real ptsize, int dpi, uint16 *width, SplineChar *sc, int depth) {
 return( NULL );
 }
 
-BDFChar *SplineCharFreeTypeRasterizeNoHints(SplineChar *sc,
+BDFChar *SplineCharFreeTypeRasterizeNoHints(SplineChar *sc,int layer,
 	int pixelsize,int depth) {
 return( NULL );
 }
