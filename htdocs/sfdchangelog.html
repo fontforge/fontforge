@@ -1,0 +1,139 @@
+<HTML>
+<HEAD>
+  <!-- Created with AOLpress/2.0 -->
+  <!-- AP: Created on: 30-Mar-2009 -->
+  <!-- AP: Last modified: 30-Mar-2008 -->
+  <TITLE>Change log for FontForge's sfd format</TITLE>
+  <LINK REL="icon" href="ffanvil16.png">
+  <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
+</HEAD>
+<BODY>
+<DIV id="in">
+  <H1 ALIGN=Center>
+    <A NAME="change-log">Changes</A> to the sfd format
+  </H1>
+  <P>
+  FontForge's <A HREF="sfdformat.html">sfd (spline font database) format</A>
+  changes over time as fontforge supports more things. I have only started
+  keeping track of these changes recently, so older changes are not listed
+  here.
+  <UL>
+    <LI>
+      30-Mar-2008
+      <UL>
+	<LI>
+	  Bump the sfd version number to 3. This is a bit late, but better late than
+	  never. It should have happened with the Layers release on 2-Mar.
+	<LI>
+	  Support for BASE table, new keywords
+	  <UL>
+	    <LI>
+	      BaseHoriz
+	    <LI>
+	      BaseVert
+	    <LI>
+	      BaseScript
+	  </UL>
+	  <P>
+	  This also involved removing the old vertical origin keyword which is (I hope)
+	  a subset of the BASEline information.
+	<LI>
+	  Support for Gradient and Pattern Fills in Type3 fonts, new keywords
+	  <UL>
+	    <LI>
+	      FillGradient
+	    <LI>
+	      StrokeGradient
+	    <LI>
+	      FillPattern
+	    <LI>
+	      StrokePattern
+	  </UL>
+	<LI>
+	  Added support for clipping paths in Type3 fonts, new keyword
+	  <UL>
+	    <LI>
+	      PathFlags
+	  </UL>
+      </UL>
+    <LI>
+      2-Mar-2008
+      <UL>
+	<LI>
+	  <B><BIG>Layers</BIG></B><BR>
+	  <FONT COLOR="RED">This turned out to be a change which was backwards
+	  incompatible. I did not realize that at the time</FONT>
+	  <P>
+	  All fonts may now have multiple layers (before only Type3 fonts could). The
+	  Type3 format has not changed so the discussion that follows concentrates
+	  on normal fonts and should be understood not to refer to type3 fonts.
+	  <P>
+	  All glyphs in a given (non-type3) font have the same number of layers so
+	  there is a LayerCount keyword in the font which provides that (there is also
+	  a LayerCount keyword now in each glyph. This provides redundant information,
+	  it should be the same as the font's layer count (for non type3 fonts).
+	  <P>
+	  Before this the foreground and background and Guide layers all had the same
+	  spline type (quadratic or cubic), now that can vary from layer to layer.
+	  There is a font level keyword "Layer" which provides the spline order and
+	  name of each layer. The old "Order2" keyword has been removed.
+	  <P>
+	  Previously only the foreground layer of a glyph could contain references,
+	  now any layer can. Before the "Refer" keyword could appear with no layer
+	  name preceding it (as this unambiguously meant that the references would
+	  go into the foreground layer), now there must be a layer name preceding a
+	  "Refer" keyword.
+	  <P>
+	  Each layer output is preceded by one of "Fore", "Back" or "Layer: d" (where
+	  "d" is the layer number).
+	  <P>
+	  Before the SplineSet keyword was not needed (and was usually omitted) after
+	  a "Fore" or "Back" layer name. It is now required, and this seems to render
+	  new sfd files incompatible with old.
+	  <P>
+	  (If there is no layer tag before a Refer keyword then the parser will apply
+	  it to the foreground layer)
+	  <P>
+	  Previously the validation status applied only to the foreground layer. Now
+	  every layer can have its own status, so again the "Validated" keyword must
+	  now be tagged with a layer.
+	  <P>
+	  There is a font level keyword "DisplayFont" which indicates what layer should
+	  be displayed in the font view by default.
+	  <P>
+	  There is a font level keyword "GridOrder2" which may appear before the "Grid"
+	  layer name in the font to set the spline order of the guideline semi-layer.
+      </UL>
+    <LI>
+      3-Feb-2008
+      <UL>
+	<LI>
+	  The point flags bitmap in a SplineSet has been extended by<BR>
+	  0x200 -- Any extrema on the preceding spline are marked as acceptable to
+	  the validator
+	<LI>
+	  Some sfnt tables are now output in text instead of binary.
+	  <UL>
+	    <LI>
+	      cvt,maxp -- output as decimal numbers (with possibly with comments for cvt)
+	    <LI>
+	      prep,fpgm -- output as ASCII instructions
+	  </UL>
+	<LI>
+	  Get diagonal hints working again
+	<LI>
+	  Add a FontLog field
+      </UL>
+    <LI>
+      9-Nov-2007
+      <UL>
+	<LI>
+	  Add support for Raph Levien's spiro curves.
+	<LI>
+	  Add the ability to name contours
+      </UL>
+    <LI>
+      ...
+  </UL>
+</DIV>
+</BODY></HTML>
