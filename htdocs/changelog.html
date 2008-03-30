@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 27-Aug-2002 -->
-  <!-- AP: Last modified: 2-Mar-2008 -->
+  <!-- AP: Last modified: 29-Mar-2008 -->
   <TITLE>Change log for FontForge</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -47,29 +47,120 @@
   </BLOCKQUOTE>
   <UL>
     <LI>
+      29-Mar-2008
+      <UL>
+	<LI>
+	  Add support for the OpenType 'BASE' table, and to a lesser extent for Apple's
+	  'bsln' table.
+	  <P>
+	  Add python scripting (font.horizontalBaseline, font.verticalBaseline) too.
+	  <P>
+	  Add support under Show ATT.
+	  <P>
+	  Remove the old vertical origin field.
+	<LI>
+	  Add the ability to create a dummy 'DSIG' table (one containing no signatures)
+	  so that Windows will show an opentype icon for a font with extension 'ttf'
+	<LI>
+	  Add support for gradient and pattern fills to type3 fonts (only if
+	  <CODE>./configure --enable-type3</CODE> is specified, of course.
+	  <P>
+	  Also add support for cliping paths
+	  <P>
+	  Make fonts containing images work in pdf output.
+	<LI>
+	  Apostolos points out that compiling on systems without freetype (Solaris
+	  boxes) was broken after last months layers patch.
+	<LI>
+	  Werner suggested various improvements to Show ATT:
+	  <UL>
+	    <LI>
+	      Lookups should be sorted
+	    <LI>
+	      Glyph images should be drawn in more cases (before, just for substitutions)
+	  </UL>
+	<LI>
+	  Patch from Alexey, for better handling conflicts between diagonal and H/V
+	  stems.
+	<LI>
+	  Do a more consistent job of handlong curved stem segments. Also collect point
+	  data for off-curve points too (may be useful in future for TTF hinting).
+	<LI>
+	  Last month I put in a patch to make sure the lsb as stored in the 'hmtx'
+	  table was really the glyph's lsb if bit 1 of the head.flags field were set.
+	  Unfortunately I read in the lsb as an unsigned number which shifted negative
+	  lsbs off to around 65535. FF sometimes refused to rasterize them. Of course
+	  when the font was generated they got truncated back to negatives in the output.
+	<LI>
+	  Add a preference item so that fonts will be automagically compacted when
+	  they are opened.
+	<LI>
+	  Add a new preference item (SeekCharacter) to allow users to control which
+	  character will be displayed when opening a new font. Normally FontForge displays
+	  'A', but that's a bit latin-alphabet-centric.
+	<LI>
+	  If palettes were not docked, the a complicated series of events could lead
+	  to a crash after closing a TilePath (Math kerning, Gradient Fill, etc.) dialog.
+	<LI>
+	  Was not outputting the %%LanguageLevel DSC comment.
+	<LI>
+	  Generating a CID-keyed otf font was broken by the layers patch. (Only the
+	  background layer was output).
+	<LI>
+	  Encoding-&gt;Add Encoding Slots didn't work for CID-keyed fonts.
+	<LI>
+	  Autoinstructor does more consistent vertical stem placement for mono and
+	  grayscale. Advance width scales much better. One downside: letters tend to
+	  'glue' at small ppems.
+	<LI>
+	  When FF read in a pairwise positioning lookup with no change to the pos of
+	  the first glyph, and an x change to the second glyph it treated that as a
+	  r2l kern pair even if the lookup was l2r. This lead to problems.
+	<LI>
+	  In the Print/Display window all vertical GPOS positioning was diametrically
+	  opposed to the direction it should have gone (there was a sign error).
+	<LI>
+	  Print managed to break itself somehow. Print of a font display to ps file
+	  (or was it pdf) didn't work. Type3 pdf fonts were broken, last glyph omitted.
+	<LI>
+	  In the fontview the horizontal advance and baseline metrics lines were drawn
+	  as if bitmap magnification were 1 (so if bitmap mag&gt;1 they were in the
+	  wrong place).
+	<LI>
+	  In the char view, when the active tool is the scale tool, show the scale
+	  factors on the info line.
+	<LI>
+	  The default set for control points of a corner point before/after an hv curve
+	  point was to have no control point. Make it be the same as a normal curve.
+	<LI>
+	  layers patch broke type3 editing in that: in a type3 font glyphs don't have
+	  the same number of layers so it is possible to move from one glyph to another
+	  in the char view and have the current layer become invalid.
+      </UL>
+    <LI>
       9-Mar-2008
       <UL>
 	<LI>
 	  Undefined value in the martlett patch.
 	<LI>
-	  A variable was placed on the stack in font info which needed a longer
-	  lifetime. This would probably mean that after several remetrickings
-	  of that window the jump to OS/2 Unicode ranges in the Unicode ranges
-	  pane would appear in a strange color and oddly shaped. I never saw
-	  it happen, but it should have. The variable is now static.
+	  A variable was placed on the stack in font info which needed a longer lifetime.
+	  This would probably mean that after several remetrickings of that window
+	  the jump to OS/2 Unicode ranges in the Unicode ranges pane would appear in
+	  a strange color and oddly shaped. I never saw it happen, but it should have.
+	  The variable is now static.
 	<LI>
-	  When ff read in a contextual subs by glyphs it would reorder each
-	  glyph list (backtrack, lookahead and normal) so that the glyphs were
-	  in GID order. So "a b c" would probably come out fine in the
-	  lookahead list, but would be reversed in the backtrack, while
-	  "c b a" would be reversed in the lookahead). Ug.
+	  When ff read in a contextual subs by glyphs it would reorder each glyph list
+	  (backtrack, lookahead and normal) so that the glyphs were in GID order. So
+	  "a b c" would probably come out fine in the lookahead list, but would be
+	  reversed in the backtrack, while "c b a" would be reversed in the lookahead).
+	  Ug.
 	<LI>
-	  The code which decided on whether to apply a chaining lookup
-	  approached backtrack data in the wrong order (so only lookups with
-	  either 0 or 1 backtrack entries worked. Which was all I used to test).
+	  The code which decided on whether to apply a chaining lookup approached backtrack
+	  data in the wrong order (so only lookups with either 0 or 1 backtrack entries
+	  worked. Which was all I used to test).
 	<LI>
-	  New fonts were created with relative filenames, this screwed up some
-	  font searches. Make 'em absolute.
+	  New fonts were created with relative filenames, this screwed up some font
+	  searches. Make 'em absolute.
 	<LI>
 	  Deleting something in the guidelines layer probably caused a crash.
       </UL>
