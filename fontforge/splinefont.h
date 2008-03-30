@@ -1699,7 +1699,7 @@ typedef struct splinefont {
 	uint16 flags;
     } *gasp;
     struct MATH *MATH;
-    uint8 sfd_version;			/* Used only when reading in an sfd file */
+    float sfd_version;			/* Used only when reading in an sfd file */
     struct gfi_data *fontinfo;
     struct val_data *valwin;
 #if !defined(_NO_PYTHON)

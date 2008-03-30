@@ -1191,6 +1191,15 @@ static void SFDDumpPattern(FILE *sfd, char *keyword, struct pattern *pattern) {
 }
 #endif
 
+static int AllAscii(char *name) {
+    while ( *name ) {
+	if ( *name<' ' || *name>=0x7f )
+return( false );
+	++name;
+    }
+return( true );
+}
+
 static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
     ImageList *img;
     KernPair *kp;
@@ -1198,7 +1207,13 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids) {
     int i, v;
     struct altuni *altuni;
 
-    fprintf(sfd, "\nStartChar: %s\n", sc->name );
+    if ( AllAscii(sc->name))
+	fprintf(sfd, "\nStartChar: %s\n", sc->name );
+    else {
+	fprintf(sfd, "\nStartChar: " );
+	SFDDumpUTF7Str(sfd,sc->name );
+	putc('\n',sfd);
+    }
     if ( map->backmap[sc->orig_pos]>=map->enccount ) {
 	IError("Bad reverse encoding");
 	map->backmap[sc->orig_pos] = -1;
@@ -2348,7 +2363,7 @@ static int SFDDump(FILE *sfd,SplineFont *sf,EncMap *map,EncMap *normal,
     ff_progress_start_indicator(10,_("Saving..."),_("Saving Spline Font Database"),_("Saving Outlines"),
 	    realcnt,i+1);
     ff_progress_enable_stop(false);
-    fprintf(sfd, "SplineFontDB: %.1f\n", 2.0 );
+    fprintf(sfd, "SplineFontDB: %.1f\n", 3.0 );
     if ( sf->mm != NULL )
 	err = SFD_MMDump(sfd,sf->mm->normal,map,normal,todir,dirname);
     else
@@ -3922,7 +3937,7 @@ return( pat );
 
 static int orig_pos;
 
-static SplineChar *SFDGetChar(FILE *sfd,SplineFont *sf) {
+static SplineChar *SFDGetChar(FILE *sfd,SplineFont *sf, int had_sf_layer_cnt) {
     SplineChar *sc;
     char tok[2000], ch;
     RefChar *lastr=NULL, *ref;
@@ -3942,11 +3957,22 @@ static SplineChar *SFDGetChar(FILE *sfd,SplineFont *sf) {
 return( NULL );
     if ( strcmp(tok,"StartChar:")!=0 )
 return( NULL );
-    if ( getname(sfd,tok)!=1 )
-return( NULL );
-
+    while ( isspace(ch=getc(sfd)));
+    ungetc(ch,sfd);
     sc = SFSplineCharCreate(sf);
-    sc->name = copy(tok);
+    if ( ch!='"' ) {
+	if ( getname(sfd,tok)!=1 ) {
+	    SplineCharFree(sc);
+return( NULL );
+	}
+	sc->name = copy(tok);
+    } else {
+	sc->name = SFDReadUTF7Str(sfd);
+	if ( sc->name==NULL ) {
+	    SplineCharFree(sc);
+return( NULL );
+	}
+    }
     sc->vwidth = sf->ascent+sf->descent;
     sc->parent = sf;
     while ( 1 ) {
@@ -4257,7 +4283,13 @@ return( NULL );
 	} else if ( strmatch(tok,"SplineSet")==0 ) {
 	    sc->layers[current_layer].splines = SFDGetSplineSet(sf,sfd,sc->layers[current_layer].order2);
 	} else if ( strmatch(tok,"Ref:")==0 || strmatch(tok,"Refer:")==0 ) {
-	    if ( oldback ) current_layer = ly_fore;
+	    /* I should be depending on the version number here, but I made */
+	    /*  a mistake and bumped the version too late. So the version is */
+	    /*  not an accurate mark, but the presence of a LayerCount keyword*/
+	    /*  in the font is an good mark. Before the LayerCount was added */
+	    /*  (version 2) only the foreground layer could have references */
+	    /*  after that (eventually version 3) any layer could. */
+	    if ( oldback || !had_sf_layer_cnt ) current_layer = ly_fore;
 	    ref = SFDGetRef(sfd,strmatch(tok,"Ref:")==0);
 	    if ( sc->layers[current_layer].refs==NULL )
 		sc->layers[current_layer].refs = ref;
@@ -4752,7 +4784,7 @@ return( 0 );
 		gsfd = fopen(name,"r");
 		if ( gsfd!=NULL ) {
 		    if ( getname(gsfd,tok) && strcmp(tok,"BDFChar:")==0)
-			SFDGetChar(gsfd,sf);
+			SFDGetBitmapChar(gsfd,bdf);
 		    fclose(gsfd);
 		    ff_progress_next();
 		}
@@ -5473,10 +5505,10 @@ static void SFDSizeMap(EncMap *map,int glyphcnt,int enccnt) {
 }
 
 static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
-	int fromdir, char *dirname, int sfdversion);
+	int fromdir, char *dirname, float sfdversion);
 
 static SplineFont *SFD_FigureDirType(SplineFont *sf,char *tok, char *dirname,
-	Encoding *enc, struct remap *remap) {
+	Encoding *enc, struct remap *remap,int had_layer_cnt) {
     /* In a sfdir a directory will either contain glyph files */
     /*                                            subfont dirs */
     /*                                            instance dirs */
@@ -5529,7 +5561,7 @@ return( sf );
 		sprintf(name,"%s/%s", dirname, ent->d_name);
 		gsfd = fopen(name,"r");
 		if ( gsfd!=NULL ) {
-		    SFDGetChar(gsfd,sf);
+		    SFDGetChar(gsfd,sf,had_layer_cnt);
 		    ff_progress_next();
 		    fclose(gsfd);
 		}
@@ -5880,7 +5912,7 @@ return( base );
 }
 
 static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
-	int fromdir, char *dirname, int sfdversion) {
+	int fromdir, char *dirname, float sfdversion) {
     SplineFont *sf;
     int realcnt, i, eof, mappos=-1, ch;
     struct table_ordering *lastord = NULL;
@@ -5899,6 +5931,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
     int old_style_order2 = false;
     struct Base *last_base = NULL;
     struct basescript *last_base_script = NULL;
+    int had_layer_cnt=false;
 
     orig_pos = 0;		/* Only used for compatibility with extremely old sfd files */
 
@@ -6119,6 +6152,7 @@ static SplineFont *SFD_GetFont(FILE *sfd,SplineFont *cidmaster,char *tok,
 	    getint(sfd,&o2);
 	    sf->grid.order2 = o2;
 	} else if ( strmatch(tok,"LayerCount:")==0 ) {
+	    had_layer_cnt = true;
 	    getint(sfd,&sf->layer_cnt);
 	    if ( sf->layer_cnt>2 ) {
 		sf->layers = grealloc(sf->layers,sf->layer_cnt*sizeof(LayerInfo));
@@ -6692,7 +6726,7 @@ exit( 1 );
     }
 
     if ( fromdir )
-	sf = SFD_FigureDirType(sf,tok,dirname,enc,remap);
+	sf = SFD_FigureDirType(sf,tok,dirname,enc,remap,had_layer_cnt);
     else if ( sf->subfontcnt!=0 ) {
 	ff_progress_change_stages(2*sf->subfontcnt);
 	for ( i=0; i<sf->subfontcnt; ++i ) {
@@ -6724,7 +6758,7 @@ exit( 1 );
 	    sf->map = map;
 	}
     } else {
-	while ( SFDGetChar(sfd,sf)!=NULL ) {
+	while ( SFDGetChar(sfd,sf,had_layer_cnt)!=NULL ) {
 	    ff_progress_next();
 	}
 	ff_progress_next_stage();
@@ -6764,7 +6798,7 @@ void SFTimesFromFile(SplineFont *sf,FILE *file) {
     }
 }
 
-static int SFDStartsCorrectly(FILE *sfd,char *tok) {
+static double SFDStartsCorrectly(FILE *sfd,char *tok) {
     real dval;
     int ch;
 
@@ -6772,13 +6806,13 @@ static int SFDStartsCorrectly(FILE *sfd,char *tok) {
 return( -1 );
     if ( strcmp(tok,"SplineFontDB:")!=0 )
 return( -1 );
-    if ( getreal(sfd,&dval)!=1 || (dval!=0 && dval!=1 && dval!=2.0))
+    if ( getreal(sfd,&dval)!=1 || (dval!=0 && dval!=1 && dval!=2.0 && dval!=3.0))
 return( -1 );
     ch = getc(sfd); ungetc(ch,sfd);
     if ( ch!='\r' && ch!='\n' )
 return( -1 );
 
-return( floor(dval) );
+return( dval );
 }
 
 static SplineFont *SFD_Read(char *filename,int fromdir) {
@@ -6786,7 +6820,7 @@ static SplineFont *SFD_Read(char *filename,int fromdir) {
     SplineFont *sf=NULL;
     char *oldloc;
     char tok[2000];
-    int version;
+    double version;
 
     if ( fromdir ) {
 	snprintf(tok,sizeof(tok),"%s/" FONT_PROPS, filename );
@@ -6842,7 +6876,8 @@ SplineChar *SFDReadOneChar(SplineFont *cur_sf,const char *name) {
     uint32 pos;
     SplineFont sf;
     LayerInfo layers[2];
-    int version;
+    double version;
+    int had_layer_cnt=false;
 
     if ( cur_sf->save_to_dir ) {
 	snprintf(tok,sizeof(tok),"%s/" FONT_PROPS,cur_sf->filename);
@@ -6869,7 +6904,7 @@ return( NULL );
 	    if ( strcmp(tok,"StartChar:")==0 ) {
 		if ( getname(sfd,tok)==1 && strcmp(tok,name)==0 ) {
 		    fseek(sfd,pos,SEEK_SET);
-		    sc = SFDGetChar(sfd,&sf);
+		    sc = SFDGetChar(sfd,&sf,had_layer_cnt);
 	break;
 		}
 	    } else if ( strmatch(tok,"Order2:")==0 ) {
@@ -6879,6 +6914,7 @@ return( NULL );
 		sf.layers[ly_back].order2 = order2;
 		sf.layers[ly_fore].order2 = order2;
 	    } else if ( strmatch(tok,"LayerCount:")==0 ) {
+		had_layer_cnt = true;
 		getint(sfd,&sf.layer_cnt);
 		if ( sf.layer_cnt>2 ) {
 		    sf.layers = gcalloc(sf.layer_cnt,sizeof(LayerInfo));
@@ -6913,7 +6949,7 @@ return( NULL );
 	snprintf(tok,sizeof(tok),"%s/%s" GLYPH_EXT,cur_sf->filename,name);
 	sfd = fopen(tok,"r");
 	if ( sfd!=NULL ) {
-	    sc = SFDGetChar(sfd,&sf);
+	    sc = SFDGetChar(sfd,&sf,had_layer_cnt);
 	    fclose(sfd);
 	}
     }
@@ -7011,7 +7047,7 @@ return(false);
 	    sf->glyphs[i] = NULL;
 	sf->glyphcnt = sf->glyphmax = cnt;
     }
-    while ( (sc = SFDGetChar(asfd,&temp))!=NULL ) {
+    while ( (sc = SFDGetChar(asfd,&temp,true))!=NULL ) {
 	ssf = sf;
 	for ( k=0; k<sf->subfontcnt; ++k ) {
 	    if ( sc->orig_pos<sf->subfonts[k]->glyphcnt ) {
@@ -7223,7 +7259,7 @@ char **NamesReadSFD(char *filename) {
     if ( sfd==NULL )
 return( NULL );
     oldloc = setlocale(LC_NUMERIC,"C");
-    if ( SFDStartsCorrectly(sfd,tok) ) {
+    if ( SFDStartsCorrectly(sfd,tok)!=-1 ) {
 	while ( !feof(sfd)) {
 	    if ( (eof = getname(sfd,tok))!=1 ) {
 		if ( eof==-1 )
