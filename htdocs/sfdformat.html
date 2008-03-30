@@ -2,7 +2,7 @@
 <HEAD>
   <!-- Created with AOLpress/2.0 -->
   <!-- AP: Created on: 7-Dec-2000 -->
-  <!-- AP: Last modified: 17-Mar-2008 -->
+  <!-- AP: Last modified: 30-Mar-2008 -->
   <TITLE>Spline Font Database File Format</TITLE>
   <LINK REL="icon" href="ffanvil16.png">
   <LINK REL="stylesheet" TYPE="text/css" HREF="FontForge.css">
@@ -13,19 +13,23 @@
     Spline Font Database
   </H1>
   <P>
-  <FONT COLOR="Red"><STRONG>This page is often grievously out of date. I thought
-  it was a correct on 17 Mar 2008.</STRONG></FONT> Even if out of date it should
-  be helpful, but if you really need to know the current format look at
+  <FONT COLOR="Red"><STRONG>This page is often out of date. I thought it was
+  a correct on 17 Mar 2008.</STRONG></FONT> A
+  <A HREF="sfdchangelog.html">changelog</A> file is available. Even if out
+  of date it should be helpful, but if you really need to know the current
+  format look at
   <A HREF="http://cvs.sourceforge.net/viewcvs.py/fontforge/fontforge/fontforge/sfd.c">sfd.c</A>
   and see what it parses. Some descriptions of esoteric features are not complete,
   but I hope they give you enough hints that you can figure the format out
   (especially after looking it up in sfd.c)
   <P>
   The sfd format evolves over time. I hope the current parser can handle old
-  sfd formats. Most changes have been small, but in March of 2007 the way fontforge
-  handled lookups and features changed radically (and I bumped the SFD file
-  version number for the first time) and sfd files created before then are
-  better understood if you look at an
+  sfd formats. Most changes have been small, but in Feb 2008 I allowed multiple
+  layers in fonts and this turned out to be an incompatible change and I raised
+  the sfd version number to 3, and in March of 2007 the way fontforge handled
+  lookups and features changed radically (and I bumped the SFD file version
+  number for the first time) and sfd files created before then are better
+  understood if you look at an
   <A href="http://fontforge.cvs.sourceforge.net/fontforge/fontforge/htdocs/sfdformat.html?revision=1.22&amp;view=markup">older
   version of this document</A>.
   <P>
@@ -77,7 +81,7 @@
   <P>
   Here is an example of what the first few lines look like:
   <BLOCKQUOTE>
-    <PRE>SplineFontDB: 2.0
+    <PRE>SplineFontDB: 3.0
 FontName: Ambrosia
 FullName: Ambrosia
 FamilyName: Ambrosia
@@ -117,12 +121,12 @@ DEI: 0
   </BLOCKQUOTE>
   <P>
   The first line just identifies the file as an sfd file and provides a version
-  number. IT MUST BE FIRST. The rest of the file is basically a set of keyword
-  value pairs. Within a given section, order is largely irrelevant. The next
-  few lines give the various different names that postscript allows fonts to
-  have. Then some fairly self-explanatory items (if they don't make sense,
-  look them up in the <A HREF="fontinfo.html">font info</A> dlg). A few things
-  need some explanation:
+  number. IT MUST BE FIRST in the file. The rest of the file is basically a
+  set of keyword value pairs. Within a given section, order is largely irrelevant.
+  The next few lines give the various different names that postscript allows
+  fonts to have. Then some fairly self-explanatory items (if they don't make
+  sense, look them up in the <A HREF="fontinfo.html">font info</A> dlg). A
+  few things need some explanation:
   <DL>
     <DT>
       Comments
@@ -730,7 +734,9 @@ EndChar
 </PRE>
   </BLOCKQUOTE>
   <P>
-  The first line names the character, the next line gives the encoding, first
+  The first line names the character. If you are using a non-standard glyph
+  namelist with utf8 names rather than ASCII names, the name will be UTF7 encoded
+  and included in quotation marks. The next line gives the encoding, first
   in the current font, then in unicode, and finally the original position (GID).
   Then the advance width.
   <P>
