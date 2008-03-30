@@ -345,33 +345,46 @@ AC_CHECK_HEADERS([stdint.h])
 
 dnl many systems have freetype on /usr/X11R6/lib which isn't in the standard search path
 
-AC_CHECK_LIB(freetype, FT_New_Memory_Face, : , [
- gww_save_LDFLAGS="$LDFLAGS"
- LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
- dnl Avoid configure's cache.
-
- unset ac_cv_lib_freetype_FT_New_Memory_Face
- echo "${ac_cv_lib_freetype_FT_New_Memory_Face+set}"  set
- AC_CHECK_LIB(freetype, FT_New_Memory_Face,[
-   gww_rpath="$gww_rpath -rpath /usr/X11R6/lib"
-  ] , [
-   LDFLAGS=$gww_save_LDFLAGS
-   AC_DEFINE(_NO_FREETYPE)
-  ])
-])
-
+gww_use_freetype="yes"
 gww_hasbytecode="no"
-if test "$ac_cv_lib_freetype_FT_New_Memory_Face" = "yes" ; then
- AC_ARG_WITH(freetype-bytecode,
-  [  --with-freetype-bytecode   Control whether we build with the bytecode interpreter],
+AC_ARG_ENABLE(freetype,
+  [  --disable-freetype   Control whether we build with freetype],
   [
-     gww_hasbytecode="$withval"
-  ],
-  [
-    echo checking for bytecode interpreter in freetype...
-    AC_CHECK_LIB(freetype, TT_RunIns, gww_hasbytecode="yes", : )
+    if test "$enableval" = "no" >/dev/null 2>&1 ; then
+       AC_DEFINE(_NO_FREETYPE)
+       gww_use_freetype="no"
+    fi
   ])
+  
+if test "$gww_use_freetype" != "no" >/dev/null 2>&1 ; then
+ AC_CHECK_LIB(freetype, FT_New_Memory_Face, : , [
+  gww_save_LDFLAGS="$LDFLAGS"
+  LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
+  dnl Avoid configure's cache.
+
+  unset ac_cv_lib_freetype_FT_New_Memory_Face
+  echo "${ac_cv_lib_freetype_FT_New_Memory_Face+set}"  set
+  AC_CHECK_LIB(freetype, FT_New_Memory_Face,[
+    gww_rpath="$gww_rpath -rpath /usr/X11R6/lib"
+   ] , [
+    LDFLAGS=$gww_save_LDFLAGS
+    AC_DEFINE(_NO_FREETYPE)
+   ])
+ ])
+
+ if test "$ac_cv_lib_freetype_FT_New_Memory_Face" = "yes" ; then
+  AC_ARG_WITH(freetype-bytecode,
+   [  --with-freetype-bytecode   Control whether we build with the bytecode interpreter],
+   [
+      gww_hasbytecode="$withval"
+   ],
+   [
+     echo checking for bytecode interpreter in freetype...
+     AC_CHECK_LIB(freetype, TT_RunIns, gww_hasbytecode="yes", : )
+   ])
+ fi
 fi
+
 if test "$gww_hasbytecode" = "yes" ; then
   AC_CHECK_LIB(pthread, pthread_create, LIBS="$LIBS -lpthread", gww_hasbytecode="no")
   AC_CHECK_HEADERS([pthread.h], : , gww_hasbytecode="no")

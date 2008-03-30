@@ -1033,6 +1033,7 @@ Optional Features:
   --enable-libff          disable/enable building shared fontforge library
   --enable-pyextension    disable/enable installing libfontforge as a python
                           extension plugin
+  --disable-freetype   Control whether we build with freetype
   --enable-type3   Control whether we build with support for type3/svg fonts containing multilayered drawing with strokes, fills, images, etc.
   --enable-multilayer   Control whether we build with support for type3/svg fonts containing multilayered drawing with strokes, fills, images, etc. (deprecated. Use --enable-type3 instead)
   --enable-devicetables   Control whether we build with support for device
@@ -3498,7 +3499,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 3501 "configure"' > conftest.$ac_ext
+  echo '#line 3502 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -4988,7 +4989,7 @@ fi
 
 
 # Provide some information about the compiler.
-echo "$as_me:4991:" \
+echo "$as_me:4992:" \
      "checking for Fortran 77 compiler version" >&5
 ac_compiler=`set X $ac_compile; echo $2`
 { (eval echo "$as_me:$LINENO: \"$ac_compiler --version </dev/null >&5\"") >&5
@@ -6055,11 +6056,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:6058: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:6059: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:6062: \$? = $ac_status" >&5
+   echo "$as_me:6063: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -6327,11 +6328,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:6330: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:6331: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:6334: \$? = $ac_status" >&5
+   echo "$as_me:6335: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -6431,11 +6432,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:6434: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:6435: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:6438: \$? = $ac_status" >&5
+   echo "$as_me:6439: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -8776,7 +8777,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 8779 "configure"
+#line 8780 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -8876,7 +8877,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<EOF
-#line 8879 "configure"
+#line 8880 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11222,11 +11223,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:11225: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:11226: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:11229: \$? = $ac_status" >&5
+   echo "$as_me:11230: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -11326,11 +11327,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:11329: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:11330: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:11333: \$? = $ac_status" >&5
+   echo "$as_me:11334: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -12900,11 +12901,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:12903: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:12904: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:12907: \$? = $ac_status" >&5
+   echo "$as_me:12908: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -13004,11 +13005,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:13007: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:13008: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:13011: \$? = $ac_status" >&5
+   echo "$as_me:13012: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -15211,11 +15212,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:15214: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:15215: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:15218: \$? = $ac_status" >&5
+   echo "$as_me:15219: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -15483,11 +15484,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:15486: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:15487: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:15490: \$? = $ac_status" >&5
+   echo "$as_me:15491: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -15587,11 +15588,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:15590: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:15591: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:15594: \$? = $ac_status" >&5
+   echo "$as_me:15595: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -21266,7 +21267,24 @@ done
 
 
 
-echo "$as_me:$LINENO: checking for FT_New_Memory_Face in -lfreetype" >&5
+gww_use_freetype="yes"
+gww_hasbytecode="no"
+# Check whether --enable-freetype or --disable-freetype was given.
+if test "${enable_freetype+set}" = set; then
+  enableval="$enable_freetype"
+
+    if test "$enableval" = "no" >/dev/null 2>&1 ; then
+       cat >>confdefs.h <<\_ACEOF
+#define _NO_FREETYPE 1
+_ACEOF
+
+       gww_use_freetype="no"
+    fi
+
+fi;
+
+if test "$gww_use_freetype" != "no" >/dev/null 2>&1 ; then
+ echo "$as_me:$LINENO: checking for FT_New_Memory_Face in -lfreetype" >&5
 echo $ECHO_N "checking for FT_New_Memory_Face in -lfreetype... $ECHO_C" >&6
 if test "${ac_cv_lib_freetype_FT_New_Memory_Face+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -21334,12 +21352,12 @@ if test $ac_cv_lib_freetype_FT_New_Memory_Face = yes; then
   :
 else
 
- gww_save_LDFLAGS="$LDFLAGS"
- LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
+  gww_save_LDFLAGS="$LDFLAGS"
+  LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
 
- unset ac_cv_lib_freetype_FT_New_Memory_Face
- echo "${ac_cv_lib_freetype_FT_New_Memory_Face+set}"  set
- echo "$as_me:$LINENO: checking for FT_New_Memory_Face in -lfreetype" >&5
+  unset ac_cv_lib_freetype_FT_New_Memory_Face
+  echo "${ac_cv_lib_freetype_FT_New_Memory_Face+set}"  set
+  echo "$as_me:$LINENO: checking for FT_New_Memory_Face in -lfreetype" >&5
 echo $ECHO_N "checking for FT_New_Memory_Face in -lfreetype... $ECHO_C" >&6
 if test "${ac_cv_lib_freetype_FT_New_Memory_Face+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -21405,12 +21423,12 @@ echo "$as_me:$LINENO: result: $ac_cv_lib_freetype_FT_New_Memory_Face" >&5
 echo "${ECHO_T}$ac_cv_lib_freetype_FT_New_Memory_Face" >&6
 if test $ac_cv_lib_freetype_FT_New_Memory_Face = yes; then
 
-   gww_rpath="$gww_rpath -rpath /usr/X11R6/lib"
+    gww_rpath="$gww_rpath -rpath /usr/X11R6/lib"
 
 else
 
-   LDFLAGS=$gww_save_LDFLAGS
-   cat >>confdefs.h <<\_ACEOF
+    LDFLAGS=$gww_save_LDFLAGS
+    cat >>confdefs.h <<\_ACEOF
 #define _NO_FREETYPE 1
 _ACEOF
 
@@ -21421,19 +21439,18 @@ fi
 fi
 
 
-gww_hasbytecode="no"
-if test "$ac_cv_lib_freetype_FT_New_Memory_Face" = "yes" ; then
+ if test "$ac_cv_lib_freetype_FT_New_Memory_Face" = "yes" ; then
 
 # Check whether --with-freetype-bytecode or --without-freetype-bytecode was given.
 if test "${with_freetype_bytecode+set}" = set; then
   withval="$with_freetype_bytecode"
 
-     gww_hasbytecode="$withval"
+      gww_hasbytecode="$withval"
 
 else
 
-    echo checking for bytecode interpreter in freetype...
-    echo "$as_me:$LINENO: checking for TT_RunIns in -lfreetype" >&5
+     echo checking for bytecode interpreter in freetype...
+     echo "$as_me:$LINENO: checking for TT_RunIns in -lfreetype" >&5
 echo $ECHO_N "checking for TT_RunIns in -lfreetype... $ECHO_C" >&6
 if test "${ac_cv_lib_freetype_TT_RunIns+set}" = set; then
   echo $ECHO_N "(cached) $ECHO_C" >&6
@@ -21505,7 +21522,9 @@ fi
 
 
 fi;
+ fi
 fi
+
 if test "$gww_hasbytecode" = "yes" ; then
   echo "$as_me:$LINENO: checking for pthread_create in -lpthread" >&5
 echo $ECHO_N "checking for pthread_create in -lpthread... $ECHO_C" >&6
