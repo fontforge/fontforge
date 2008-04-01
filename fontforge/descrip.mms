@@ -52,7 +52,8 @@ fontforge_OBJECTS10=asmfpst.obj,sflayout.obj,searchview.obj,\
 	fvmetricsdlg.obj,clipnoui.obj,autowidthdlg.obj,macencui.obj,\
 	savefont.obj,mmdlg.obj,effectsui.obj,langfreq.obj,ttfinstrsui.obj
 
-fontforge_OBJECTS11=libstamp.obj,exelibstamp.obj,clipui.obj,layer2layer.obj
+fontforge_OBJECTS11=libstamp.obj,exelibstamp.obj,clipui.obj,layer2layer.obj,\
+	basedlg.obj
 
 fontforge.exe : startui.obj lff.opt xlib.opt [-.libs]libfontforge.exe
         link/exec=fontforge.exe startui,lff/opt,xlib.opt/opt
@@ -274,3 +275,4 @@ exelibstamp.obj : exelibstamp.pre
 	delete exelibstamp.c;*
 clipui.obj : clipui.c
 layer2layer.obj : layer2layer.c
+basedlg.obj : basedlg.c
