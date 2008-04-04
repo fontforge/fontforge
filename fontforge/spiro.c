@@ -229,8 +229,26 @@ return;
 
     SplineSetBeziersClear(spl);
     temp = SpiroCP2SplineSet(spl->spiros);
-    spl->first = temp->first;
-    spl->last = temp->last;
-    chunkfree(temp,sizeof(SplineSet));
+    if ( temp!=NULL ) {
+	spl->first = temp->first;
+	spl->last = temp->last;
+	chunkfree(temp,sizeof(SplineSet));
+    } else {
+	/* didn't converge... or something */
+	int i;
+	SplinePoint *sp, *last;
+	last = spl->first = SplinePointCreate(spl->spiros[0].x, spl->spiros[0].y);
+	for ( i=1; i<spl->spiro_cnt; ++i ) {
+	    sp = SplinePointCreate(spl->spiros[i].x, spl->spiros[i].y);
+	    SplineMake3(last,sp);
+	    last = sp;
+	}
+	if ( SPIRO_SPL_OPEN(spl))
+	    spl->last = last;
+	else {
+	    SplineMake3(last,spl->first);
+	    spl->last = spl->first;
+	}
+    }
     spl->beziers_need_optimizer = true;
 }
