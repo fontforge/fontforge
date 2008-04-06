@@ -2119,7 +2119,8 @@ static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastei
 	    double scale = PasteFigureScale(sc->parent,paster->copied_from);
 	    for ( refs = paster->u.state.refs; refs!=NULL; refs=refs->next ) {
 		if ( sc->views!=NULL && sc->views->container!=NULL ) {
-		    if ( sc->views->container->funcs->type == cvc_searcher )
+		    if ( sc->views->container->funcs->type == cvc_searcher ||
+			    sc->views->container->funcs->type == cvc_multiplepattern )
 			rsc = FindCharacter((sc->views->container->funcs->sf_of_container)(sc->views->container),
 				paster->copied_from,refs,NULL);
 		    else {
@@ -2711,7 +2712,8 @@ return;
 			ff_post_error(_("Self-referential character"),_("Attempt to make a character that refers to itself"));
 			sc = (SplineChar *) -1;
 		    }
-		} else if ( cv->container->funcs->type == cvc_searcher )
+		} else if ( cv->container->funcs->type == cvc_searcher ||
+			cv->container->funcs->type == cvc_multiplepattern )
 		    sc = FindCharacter((cv->container->funcs->sf_of_container)(cv->container),paster->copied_from,refs,NULL);
 		else
 		    sc = (SplineChar *) -1;
@@ -2745,7 +2747,8 @@ return;
 	    for ( refs = paster->u.state.refs; refs!=NULL; refs=refs->next ) {
 		if ( cv->container==NULL )
 		    sc = FindCharacter(cvsc->parent,paster->copied_from,refs,NULL);
-		else if ( cv->container->funcs->type == cvc_searcher )
+		else if ( cv->container->funcs->type == cvc_searcher ||
+			cv->container->funcs->type == cvc_multiplepattern )
 		    sc = FindCharacter((cv->container->funcs->sf_of_container)(cv->container),paster->copied_from,refs,NULL);
 		else
 		    sc = NULL;

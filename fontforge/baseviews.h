@@ -119,7 +119,7 @@ struct cvcontainer {
 enum nav_type { nt_prevdef, nt_prev, nt_goto, nt_next, nt_nextdef };
 struct cvcontainer_funcs {
     enum cv_container_type { cvc_searcher, cvc_mathkern, cvc_tilepath,
-	cvc_gradient } type;
+	cvc_gradient, cvc_multiplepattern } type;
     void (*activateMe)(struct cvcontainer *cvc,struct charviewbase *cv);
     void (*charEvent)(struct cvcontainer *cvc,void *event);
     int (*canNavigate)(struct cvcontainer *cvc,enum nav_type type);

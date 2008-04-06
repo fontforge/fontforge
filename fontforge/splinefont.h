@@ -2017,6 +2017,7 @@ extern void LayerDefault(Layer *);
 extern SplineChar *SplineCharCreate(int layer_cnt);
 extern SplineChar *SFSplineCharCreate(SplineFont *sf);
 extern RefChar *RefCharCreate(void);
+extern RefChar *RefCharsCopy(RefChar *ref);	/* Still needs to be instanciated and have the dependency list adjusted */
 extern void SCAddRef(SplineChar *sc,SplineChar *rsc,int layer, real xoff, real yoff);
 extern void _SCAddRef(SplineChar *sc,SplineChar *rsc,int layer, real transform[6]);
 extern KernClass *KernClassCopy(KernClass *kc);
