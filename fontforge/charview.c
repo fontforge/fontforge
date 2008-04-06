@@ -2033,7 +2033,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		CVDrawLayerSplineSet(cv,pixmap,&cv->b.sc->layers[layer],
 			!sf->multilayer || layer==ly_back ? backoutlinecol : foreoutlinecol,
 			false,&clip);
-		for ( rf=cv->b.sc->layers[ly_back].refs; rf!=NULL; rf = rf->next ) {
+		for ( rf=cv->b.sc->layers[layer].refs; rf!=NULL; rf = rf->next ) {
 		    if ( cv->b.drawmode==dm_back )
 			CVDrawRefName(cv,pixmap,rf,0);
 		    for ( rlayer=0; rlayer<rf->layer_cnt; ++rlayer )
@@ -6946,6 +6946,11 @@ static void CVMenuTilePath(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     CVTile(cv);
 }
+
+static void CVMenuPatternTile(GWindow gw,struct gmenuitem *mi,GEvent *e) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    CVPatternTile(cv);
+}
 #endif
 
 static void _CVMenuOverlap(CharView *cv,enum overlap_type ot) {
@@ -9020,6 +9025,7 @@ static GMenuItem2 ellist[] = {
     { { (unichar_t *) N_("_Expand Stroke..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'E' }, H_("Expand Stroke...|Ctl+Shft+E"), NULL, NULL, CVMenuStroke, MID_Stroke },
 #ifdef FONTFORGE_CONFIG_TILEPATH
     { { (unichar_t *) N_("Tile _Path..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Tile Path...|No Shortcut"), NULL, NULL, CVMenuTilePath, MID_TilePath },
+    { { (unichar_t *) N_("Tile Pattern..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Tile Pattern...|No Shortcut"), NULL, NULL, CVMenuPatternTile },
 #endif
     { { (unichar_t *) N_("O_verlap"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'v' }, NULL, rmlist, NULL, NULL, MID_RmOverlap },
     { { (unichar_t *) N_("_Simplify"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 1, 0, 'S' }, NULL, smlist, smlistcheck, NULL, MID_Simplify },
@@ -9990,6 +9996,37 @@ void TPDCharViewInits(TilePathDlg *tpd, int cid) {
 	(&tpd->cv_first)[i].gw = GWidgetCreateSubWindow(GDrawableGetWindow(GWidgetGetControl(tpd->gw,cid+i)),
 		&pos,tpd_cv_e_h,(&tpd->cv_first)+i,&wattrs);
 	_CharViewCreate((&tpd->cv_first)+i, (&tpd->sc_first)+i, &tpd->dummy_fv, i);
+    }
+}
+
+void PTDCharViewInits(TilePathDlg *tpd, int cid) {
+    GGadgetData gd;
+    GWindowAttrs wattrs;
+    GRect pos, gsize;
+
+    CharViewInit();
+
+    memset(&gd,0,sizeof(gd));
+    gd.flags = gg_visible | gg_enabled;
+    helplist[0].invoke = CVMenuContextualHelp;
+    gd.u.menu2 = mblist_nomm;
+    tpd->mb = GMenu2BarCreate( tpd->gw, &gd, NULL);
+    GGadgetGetSize(tpd->mb,&gsize);
+    tpd->mbh = gsize.height;
+
+    tpd->mid_space = 20;
+     {
+	pos.y = 0; pos.height = 220;	/* Size doesn't matter, adjusted later */
+	pos.width = pos.height; pos.x = 0;
+	tpd->cv_y = pos.y;
+	tpd->cv_height = pos.height; tpd->cv_width = pos.width;
+	memset(&wattrs,0,sizeof(wattrs));
+	wattrs.mask = wam_events|wam_cursor;
+	wattrs.event_masks = -1;
+	wattrs.cursor = ct_mypointer;
+	tpd->cv_first.gw = GWidgetCreateSubWindow(GDrawableGetWindow(GWidgetGetControl(tpd->gw,cid)),
+		&pos,tpd_cv_e_h,&tpd->cv_first,&wattrs);
+	_CharViewCreate(&tpd->cv_first, &tpd->sc_first, &tpd->dummy_fv, 0);
     }
 }
 #endif		/* TilePath */
