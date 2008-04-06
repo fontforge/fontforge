@@ -30,7 +30,7 @@
 #include "gfile.h"
 #include "chardata.h"
 
-static RefChar *RefCharsCopy(RefChar *ref) {
+RefChar *RefCharsCopy(RefChar *ref) {
     RefChar *rhead=NULL, *last=NULL, *cur;
 
     while ( ref!=NULL ) {

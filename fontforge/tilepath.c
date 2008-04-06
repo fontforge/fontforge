@@ -92,6 +92,10 @@ typedef struct tiledata {
     /*   then lay down n of them */
 
     int doallpaths;
+
+    BasePoint patternSize;		/* Last 3 fields used only for patterns */
+    IPoint repeatCnt;			/*  And not for tilepath */
+    Layer *pattern;
 } TD;
 enum whitespace_type { ws_include=0x1, ws_but_not_first=0x2 };
 
@@ -976,6 +980,7 @@ static void TPDInit(TilePathDlg *tpd,SplineFont *sf) {
 
     memset(tpd,0,sizeof(*tpd));
     tpd->base.funcs = &tilepath_funcs;
+    tpd->base_sf = sf;
 
     for ( i=0; i<4; ++i ) {
 	SplineChar *msc = &(&tpd->sc_first)[i];
@@ -997,7 +1002,7 @@ static void TPDInit(TilePathDlg *tpd,SplineFont *sf) {
 	mcv->b.layerheads[dm_fore] = &msc->layers[ly_fore];
 	mcv->b.layerheads[dm_back] = &msc->layers[ly_back];
 	mcv->b.layerheads[dm_grid] = &tpd->dummy_sf.grid;
-	msc->layers[ly_fore].splines = last_tiles[i];
+	msc->layers[ly_fore].splines = SplinePointListCopy(last_tiles[i]);
 	mcv->b.drawmode = dm_fore;
 	mcv->b.container = (struct cvcontainer *) tpd;
 	mcv->inactive = i!=0;
@@ -1269,6 +1274,10 @@ return( tpd.oked );
 }
 
 static void TDFree(struct tiledata *td) {
+    int i;
+
+    for ( i=0 ; i<4; ++i )
+	SplinePointListFree( last_tiles[0]);
 
     last_tiles[0] = td->firsttile;
     last_tiles[1] = td->basetile;
@@ -1338,4 +1347,645 @@ return;
     TDFree(&td);
 }
 
+/* ************************************************************************** */
+/* ****************************** Tile Pattern ****************************** */
+/* ************************************************************************** */
+
+static void SCTilePattern(SplineChar *sc, int layer, Layer *pattern,
+	BasePoint *size, IPoint *cnt) {
+    Layer *ly;
+    SplineSet *ss, *lastss;
+    RefChar *ref, *lastref, *r;
+    real transform[6];
+    int i,j;
+
+    if ( pattern==NULL || cnt->x<=0 || cnt->y<=0 || size->x<=0 || size->y<=0 ||
+	    (pattern->splines==NULL && (pattern->refs==NULL || layer==ly_grid )))
+return;
+
+    SCPreserveLayer(sc,layer,false);
+
+    if ( layer==ly_grid )
+	ly = &sc->parent->grid;
+    else if ( layer<0 )
+	ly = &sc->layers[ly_fore];
+    else
+	ly = &sc->layers[layer];
+
+    memset(transform,0,sizeof(transform));
+    transform[0] = transform[3] = 1.0;
+
+    if ( ly->splines==NULL )
+	lastss = NULL;
+    else
+	for ( lastss=ly->splines; lastss->next!=NULL; lastss=lastss->next );
+    if ( ly->refs==NULL )
+	lastref = NULL;
+    else
+	for ( lastref=ly->refs; lastref->next!=NULL; lastref=lastref->next );
+
+    for ( i=0; i<cnt->x; ++i ) for ( j=0; j<cnt->y; ++j ) {
+	transform[4] = i*size->x; transform[5] = j*size->y;
+	if ( pattern->splines!=NULL ) {
+	    ss = SplinePointListTransform(SplinePointListCopy(pattern->splines),transform,true);
+	    if ( lastss!=NULL )
+		lastss->next = ss;
+	    else
+		ly->splines = ss;
+	    for ( ; ss->next!=NULL; ss=ss->next );
+	    lastss = ss;
+	}
+	if ( pattern->refs!=NULL ) {
+	    ref = RefCharsCopy(pattern->refs);
+	    ref->transform[4] += transform[4];
+	    ref->transform[5] += transform[5];
+	    if ( lastref!=NULL )
+		lastref->next = ref;
+	    else
+		ly->refs = ref;
+	    for ( r=ref; r!=NULL; r=r->next ) {
+		SCMakeDependent(sc,r->sc);
+		SCReinstanciateRefChar(sc,r,layer);
+		lastref = r;
+	    }
+	}
+    }
+    SCCharChangedUpdate(sc,layer);
+}
+
+static SplineSet *last_pattern=NULL;
+static BasePoint patternSize;
+static IPoint patternRepeat = { 10, 10 };
+
+#define	CID_Tile	1011		/* Same as above */
+#define CID_PatternWidth	1012
+#define CID_PatternHeight	1013
+#define CID_XRepeat	1014
+#define CID_YRepeat	1015
+
+static void PTDSubResize(TilePathDlg *tpd, GEvent *event) {
+    int width, height;
+
+    if ( !event->u.resize.sized )
+return;
+
+    width = event->u.resize.size.width;
+    height = event->u.resize.size.height;
+    if ( width!=tpd->cv_width || height!=tpd->cv_height ) {
+	tpd->cv_width = width; tpd->cv_height = height;
+	 {
+	    CharView *cv = &tpd->cv_first;
+	    GDrawResize(cv->gw,width,height);
+	}
+    }
+
+    GDrawSync(NULL);
+    GDrawProcessPendingEvents(NULL);
+}
+
+static void PTDDraw(TilePathDlg *tpd, GWindow pixmap, GEvent *event) {
+    GRect r,pos;
+
+    GDrawSetLineWidth(pixmap,0);
+
+    GGadgetGetSize(GWidgetGetControl(tpd->gw,CID_Tile),&pos);
+    r.x = pos.x; r.y = pos.y-1;
+    r.width = pos.width+1; r.height = pos.height+1;
+    GDrawDrawRect(pixmap,&r,0);
+}
+
+static void PTDMakeActive(TilePathDlg *ptd,CharView *cv) {
+
+    if ( ptd==NULL )
+return;
+    cv->inactive = false;
+    GDrawSetUserData(ptd->gw,cv);
+}
+
+void PTDChar(TilePathDlg *ptd, GEvent *event) {
+
+    CVChar(&ptd->cv_first,event);
+}
+
+static void PTD_DoClose(struct cvcontainer *cvc) {
+    TilePathDlg *ptd = (TilePathDlg *) cvc;
+    SplineChar *msc = &ptd->sc_first;
+
+    SplinePointListsFree(msc->layers[0].splines);
+    RefCharsFree(msc->layers[0].refs);
+    SplinePointListsFree(msc->layers[1].splines);
+    RefCharsFree(msc->layers[1].refs);
+    free( msc->layers );
+
+    ptd->done = true;
+}
+
+static int ptd_sub_e_h(GWindow gw, GEvent *event) {
+    TilePathDlg *ptd;
+
+    if ( event->type==et_destroy )
+return( true );
+
+    ptd = (TilePathDlg *) ((CharViewBase *) GDrawGetUserData(gw))->container;
+
+    switch ( event->type ) {
+      case et_resize:
+	if ( event->u.resize.sized )
+	    PTDSubResize(ptd,event);
+      break;
+      case et_char:
+	PTDChar(ptd,event);
+      break;
+    }
+return( true );
+}
+
+static int ptd_e_h(GWindow gw, GEvent *event) {
+    TilePathDlg *ptd;
+
+    if ( event->type == et_destroy )
+return( true );
+
+    ptd = (TilePathDlg *) ((CharViewBase *) GDrawGetUserData(gw))->container;
+    switch ( event->type ) {
+      case et_expose:
+	PTDDraw(ptd, gw, event);
+      break;
+      case et_char:
+	PTDChar(ptd,event);
+      break;
+      case et_close:
+	PTD_DoClose((struct cvcontainer *) ptd);
+      break;
+      case et_timer: {
+	SplineSet *ss;
+	char buffer[32];
+	int err;
+
+	for ( ss = ptd->sc_first.layers[ly_back].splines; ss!=NULL; ss=ss->next ) {
+	    if ( ss->first->prev!=NULL || ss->first->next==NULL || ss->first->next->to!=ss->last )
+	continue;
+	    err = 0;
+	    if ( ss->first->me.x==ss->last->me.x ) {
+		/* Don't make the change if they are the same (or there's an */
+		/*  error) as the user might be busy editing and that would */
+		/*  lose his/her work */
+		if ( !RealNear(GetCalmReal8(ptd->gw,CID_PatternWidth,_("Width"),&err),
+			ss->first->me.x) && !err ) {
+		    sprintf( buffer,"%g",ss->first->me.x);
+		    GGadgetSetTitle8(GWidgetGetControl(ptd->gw,CID_PatternWidth),buffer);
+		}
+	    } else if ( ss->first->me.y==ss->last->me.y ) {
+		if ( !RealNear(GetCalmReal8(ptd->gw,CID_PatternHeight,_("Height"),&err),
+			ss->first->me.y) && !err ) {
+		    sprintf( buffer,"%g",ss->first->me.y);
+		    GGadgetSetTitle8(GWidgetGetControl(ptd->gw,CID_PatternHeight),buffer);
+		}
+	    }
+	}
+#if 0
+	if ( GetCalmInt8(ptd->gw,CID_PatternWidth,_("Width"),&err)!=ptd->sc_first.width &&
+		!err ) {
+	    sprintf( buffer,"%d",ptd->sc_first.width);
+	    GGadgetSetTitle8(GWidgetGetControl(ptd->gw,CID_PatternWidth),buffer);
+	}
+#endif
+      } break;
+      case et_map:
+	{
+	    CharView *cv = &ptd->cv_first;
+	    if ( !cv->inactive ) {
+		if ( event->u.map.is_visible )
+		    CVPaletteActivate(cv);
+		else
+		    CVPalettesHideIfMine(cv);
+	break;
+	    }
+	}
+	/* ptd->isvisible = event->u.map.is_visible; */
+      break;
+    }
+return( true );
+}
+
+static int PTD_RefigureBackground(GGadget *g, GEvent *e) {
+    if ( e==NULL || (e->type==et_controlevent && e->u.control.subtype == et_textchanged )) {
+	TilePathDlg *ptd = (TilePathDlg *) (((CharViewBase *) GDrawGetUserData(GGadgetGetWindow(g)))->container);
+	int hsize, vsize;
+	int err = 0;
+	SplinePoint *sp1, *sp2;
+	SplineSet *ss;
+
+	hsize = GetCalmReal8(ptd->gw,CID_PatternWidth,_("Width"),&err);
+	vsize = GetCalmReal8(ptd->gw,CID_PatternHeight,_("Height"),&err);
+	if ( err )
+return( true );
+	ptd->sc_first.width = hsize;
+	SplinePointListFree(ptd->sc_first.layers[ly_back].splines);
+	sp1 = SplinePointCreate(-1000,vsize);
+	sp2 = SplinePointCreate(2000,vsize);
+	SplineMake(sp1,sp2,ptd->sc_first.layers[ly_back].order2);
+	ss = chunkalloc(sizeof(SplineSet));
+	ss->first = sp1; ss->last = sp2;
+	ptd->sc_first.layers[ly_back].splines = ss;
+	sp1 = SplinePointCreate(hsize,-1000);
+	sp2 = SplinePointCreate(hsize,2000);
+	SplineMake(sp1,sp2,ptd->sc_first.layers[ly_back].order2);
+	ss = chunkalloc(sizeof(SplineSet));
+	ss->first = sp1; ss->last = sp2;
+	ptd->sc_first.layers[ly_back].splines->next = ss;
+	GDrawRequestExpose(ptd->cv_first.v,NULL,false);
+    }
+return( true );
+}
+
+static int PTD_Cancel(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	TilePathDlg *ptd = (TilePathDlg *) (((CharViewBase *) GDrawGetUserData(GGadgetGetWindow(g)))->container);
+	PTD_DoClose(&ptd->base);
+    }
+return( true );
+}
+
+static int PTD_OK(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+	TilePathDlg *ptd = (TilePathDlg *) (((CharViewBase *) GDrawGetUserData(GGadgetGetWindow(g)))->container);
+	struct tiledata *td = ptd->td;
+	int err = 0;
+
+	td->patternSize.x = GetReal8(ptd->gw,CID_PatternWidth,_("Width"),&err);
+	td->patternSize.y = GetReal8(ptd->gw,CID_PatternHeight,_("Height"),&err);
+
+	td->repeatCnt.x = GetInt8(ptd->gw,CID_XRepeat,_("X Repeat Count"),&err);
+	td->repeatCnt.y = GetInt8(ptd->gw,CID_YRepeat,_("Y Repeat Count"),&err);
+	if ( err )
+return( true );
+	if ( td->patternSize.x<=0 || td->patternSize.y<=0 ) {
+	    ff_post_error(_("Bad Pattern Size"),_("The pattern size (width & height) must be a positive number"));
+return( true );
+	}
+	if ( td->repeatCnt.x<=0 || td->repeatCnt.y<=0 || td->repeatCnt.x>2000 || td->repeatCnt.y>2000 ) {
+	    ff_post_error(_("Bad Pattern Size"),_("The repeat counts must be positive numbers"));
+return( true );
+	}
+
+	td->pattern = gcalloc(1,sizeof(Layer));
+	td->pattern->splines = SplinePointListCopy(ptd->sc_first.layers[ly_fore].splines);
+	td->pattern->refs = RefCharsCopy(ptd->sc_first.layers[ly_fore].refs);
+	
+	if ( td->pattern->splines==NULL && td->pattern->refs==NULL ) {
+	    ff_post_error(_("Bad Patter"),_("You must specify a pattern"));
+return( true );
+	}
+
+	PTD_DoClose(&ptd->base);
+	ptd->oked = true;
+    }
+return( true );
+}
+
+static int PTD_Can_Navigate(struct cvcontainer *cvc, enum nav_type type) {
+return( false );
+}
+
+static int PTD_Can_Open(struct cvcontainer *cvc) {
+return( false );
+}
+
+static SplineFont *SF_Of_PTD(struct cvcontainer *cvc) {
+    TilePathDlg *ptd = (TilePathDlg *) cvc;
+return( ptd->base_sf );
+}
+
+struct cvcontainer_funcs tilepattern_funcs = {
+    cvc_multiplepattern,
+    (void (*) (struct cvcontainer *cvc,CharViewBase *cv)) PTDMakeActive,
+    (void (*) (struct cvcontainer *cvc,void *)) PTDChar,
+    PTD_Can_Navigate,
+    NULL,
+    PTD_Can_Open,
+    PTD_DoClose,
+    SF_Of_PTD
+};
+
+
+static void PTDInit(TilePathDlg *ptd,SplineFont *sf) {
+
+    memset(ptd,0,sizeof(*ptd));
+    ptd->base.funcs = &tilepattern_funcs;
+    ptd->base_sf = sf;
+
+    {
+	SplineChar *msc = &ptd->sc_first;
+	CharView *mcv = &ptd->cv_first;
+	msc->orig_pos = 0;
+	msc->unicodeenc = -1;
+	msc->name = "Pattern";
+	msc->parent = &ptd->dummy_sf;
+	msc->layer_cnt = 2;
+	msc->layers = gcalloc(2,sizeof(Layer));
+	LayerDefault(&msc->layers[0]);
+	LayerDefault(&msc->layers[1]);
+	ptd->chars[0] = msc;
+
+	mcv->b.sc = msc;
+	mcv->b.layerheads[dm_fore] = &msc->layers[ly_fore];
+	mcv->b.layerheads[dm_back] = &msc->layers[ly_back];
+	mcv->b.layerheads[dm_grid] = &ptd->dummy_sf.grid;
+	msc->layers[ly_fore].splines = SplinePointListCopy(last_pattern);
+	mcv->b.drawmode = dm_fore;
+	mcv->b.container = (struct cvcontainer *) ptd;
+	mcv->inactive = false;
+    }
+    ptd->dummy_sf.glyphs = ptd->chars;
+    ptd->dummy_sf.glyphcnt = ptd->dummy_sf.glyphmax = 1;
+    ptd->dummy_sf.pfminfo.fstype = -1;
+    ptd->dummy_sf.fontname = ptd->dummy_sf.fullname = ptd->dummy_sf.familyname = "dummy";
+    ptd->dummy_sf.weight = "Medium";
+    ptd->dummy_sf.origname = "dummy";
+    ptd->dummy_sf.ascent = sf->ascent;
+    ptd->dummy_sf.descent = sf->descent;
+    ptd->dummy_sf.layers = ptd->layerinfo;
+    ptd->dummy_sf.layer_cnt = 2;
+    ptd->layerinfo[ly_back].order2 = sf->layers[ly_back].order2;
+    ptd->layerinfo[ly_back].name = _("Size");
+    ptd->layerinfo[ly_fore].order2 = sf->layers[ly_fore].order2;
+    ptd->layerinfo[ly_fore].name = _("Pattern");
+    ptd->dummy_sf.grid.order2 = sf->grid.order2;
+    ptd->dummy_sf.anchor = NULL;
+
+    ptd->dummy_sf.fv = (FontViewBase *) &ptd->dummy_fv;
+    ptd->dummy_fv.b.active_layer = ly_fore;
+    ptd->dummy_fv.b.sf = &ptd->dummy_sf;
+    ptd->dummy_fv.b.selected = ptd->sel;
+    ptd->dummy_fv.cbw = ptd->dummy_fv.cbh = default_fv_font_size+1;
+    ptd->dummy_fv.magnify = 1;
+
+    ptd->dummy_fv.b.map = &ptd->dummy_map;
+    ptd->dummy_map.map = ptd->map;
+    ptd->dummy_map.backmap = ptd->backmap;
+    ptd->dummy_map.enccount = ptd->dummy_map.encmax = ptd->dummy_map.backmax = 1;
+    ptd->dummy_map.enc = &custom;
+}
+
+static int TilePatternAsk(struct tiledata *td,SplineFont *sf) {
+    TilePathDlg ptd;
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[24], boxes[5], *harray1[8], *harray2[8], *varray[10],
+	*harray[8];
+    GTextInfo label[24];
+    int k;
+    char width[30], height[30], xr[30], yr[30];
+
+    PTDInit( &ptd,sf );
+    ptd.td = td;
+    memset(td,0,sizeof(*td));
+
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_isdlg|wam_restrict|wam_undercursor|wam_utf8_wtitle;
+    wattrs.is_dlg = true;
+    wattrs.restrict_input_to_me = 1;
+    wattrs.undercursor = 1;
+    wattrs.event_masks = -1;
+    wattrs.cursor = ct_pointer;
+    wattrs.utf8_window_title = _("Tile Pattern");
+    pos.width = 600;
+    pos.height = 300;
+    ptd.gw = gw = GDrawCreateTopWindow(NULL,&pos,ptd_e_h,&ptd.cv_first,&wattrs);
+
+    memset(&label,0,sizeof(label));
+    memset(&gcd,0,sizeof(gcd));
+    memset(&boxes,0,sizeof(boxes));
+
+    k = 0;
+    gcd[k].gd.flags = gg_visible|gg_enabled ;		/* This space is for the menubar */
+    gcd[k].gd.pos.height = 18; gcd[k].gd.pos.width = 20;
+    gcd[k++].creator = GSpacerCreate;
+    varray[0] = &gcd[k-1];
+
+    gcd[k].gd.pos.width = gcd[k].gd.pos.height = 200;
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.cid = CID_Tile;
+    gcd[k].gd.u.drawable_e_h = ptd_sub_e_h;
+    gcd[k++].creator = GDrawableCreate;
+    varray[1] = &gcd[k-1];
+
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    label[k].text = (unichar_t *) _("Pattern Size:");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k++].creator = GLabelCreate;
+    varray[2] = &gcd[k-1];
+
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    label[k].text = (unichar_t *) _("Width:");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k++].creator = GLabelCreate;
+    harray1[0] = &gcd[k-1];
+
+    if ( last_pattern==NULL )
+	sprintf( width, "%d", sf->ascent+sf->descent );
+    else
+	sprintf( width, "%g", patternSize.x );
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    label[k].text = (unichar_t *) width;
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_PatternWidth;
+    gcd[k].gd.handle_controlevent = PTD_RefigureBackground;
+    gcd[k++].creator = GTextFieldCreate;
+    harray1[1] = &gcd[k-1];
+
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    label[k].text = (unichar_t *) _("Height:");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k++].creator = GLabelCreate;
+    harray1[2] = &gcd[k-1];
+
+    if ( last_pattern==NULL )
+	sprintf( height, "%d", sf->ascent+sf->descent );
+    else
+	sprintf( height, "%g", patternSize.y );
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    label[k].text = (unichar_t *) height;
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_PatternHeight;
+    gcd[k].gd.handle_controlevent = PTD_RefigureBackground;
+    gcd[k++].creator = GTextFieldCreate;
+    harray1[3] = &gcd[k-1]; harray1[4] = NULL;
+
+    boxes[2].gd.flags = gg_enabled|gg_visible;
+    boxes[2].gd.u.boxelements = harray1;
+    boxes[2].creator = GHBoxCreate;
+    varray[3] = &boxes[2];
+
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    label[k].text = (unichar_t *) _("Repeat Counts:");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k++].creator = GLabelCreate;
+    varray[4] = &gcd[k-1];
+
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    label[k].text = (unichar_t *) _("X:");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k++].creator = GLabelCreate;
+    harray2[0] = &gcd[k-1];
+
+    sprintf( xr, "%d", patternRepeat.x );
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    label[k].text = (unichar_t *) xr;
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_XRepeat;
+    gcd[k++].creator = GTextFieldCreate;
+    harray2[1] = &gcd[k-1];
+
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    label[k].text = (unichar_t *) _("Y:");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k++].creator = GLabelCreate;
+    harray2[2] = &gcd[k-1];
+
+    sprintf( yr, "%d", patternRepeat.y );
+    gcd[k].gd.flags = gg_visible | gg_enabled;
+    label[k].text = (unichar_t *) yr;
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.cid = CID_YRepeat;
+    gcd[k++].creator = GTextFieldCreate;
+    harray2[3] = &gcd[k-1]; harray2[4] = NULL;
+
+    boxes[3].gd.flags = gg_enabled|gg_visible;
+    boxes[3].gd.u.boxelements = harray2;
+    boxes[3].creator = GHBoxCreate;
+    varray[5] = &boxes[3];
+
+
+    label[k].text = (unichar_t *) _("_OK");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_but_default;
+    gcd[k].gd.handle_controlevent = PTD_OK;
+    gcd[k++].creator = GButtonCreate;
+
+    label[k].text = (unichar_t *) _("_Cancel");
+    label[k].text_is_1byte = true;
+    label[k].text_in_resource = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.flags = gg_enabled|gg_visible|gg_but_cancel;
+    gcd[k].gd.handle_controlevent = PTD_Cancel;
+    gcd[k++].creator = GButtonCreate;
+
+    harray[0] = GCD_Glue; harray[1] = &gcd[k-2]; harray[2] = GCD_Glue;
+    harray[3] = GCD_Glue; harray[4] = &gcd[k-1]; harray[5] = GCD_Glue;
+    harray[6] = NULL;
+
+    boxes[4].gd.flags = gg_enabled|gg_visible;
+    boxes[4].gd.u.boxelements = harray;
+    boxes[4].creator = GHBoxCreate;
+    varray[6] = &boxes[4]; varray[7] = NULL;
+
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = varray;
+    boxes[0].creator = GVBoxCreate;
+
+    GGadgetsCreate(gw,boxes);
+
+    PTDCharViewInits(&ptd,CID_Tile);
+
+    GHVBoxSetExpandableRow(boxes[0].ret,1);
+    GHVBoxSetExpandableCol(boxes[4].ret,gb_expandgluesame);
+    GGadgetResize(boxes[0].ret,pos.width,pos.height);
+
+    PTD_RefigureBackground(GWidgetGetControl(ptd.gw,CID_PatternWidth),NULL);
+
+    PTDMakeActive(&ptd,&ptd.cv_first);
+
+    GDrawResize(gw,400,400);		/* Force a resize event */
+
+    GDrawSetVisible(ptd.gw,true);
+    GDrawRequestTimer(ptd.gw,1000,1000,NULL);
+
+    while ( !ptd.done )
+	GDrawProcessOneEvent(NULL);
+
+    {
+	CharView *cv = &ptd.cv_first;
+	if ( cv->backimgs!=NULL ) {
+	    GDrawDestroyWindow(cv->backimgs);
+	    cv->backimgs = NULL;
+	}
+	CVPalettesHideIfMine(cv);
+    }
+    GDrawDestroyWindow(ptd.gw);
+return( ptd.oked );
+}
+
+static void TPFree(struct tiledata *td) {
+
+    SplinePointListFree(last_pattern);
+    last_pattern = td->pattern->splines;
+    RefCharsFree(td->pattern->refs);
+    free(td->pattern);
+    patternSize = td->patternSize;
+    patternRepeat = td->repeatCnt;
+}
+
+void CVPatternTile(CharView *cv) {
+    struct tiledata td;
+
+    if ( !TilePatternAsk(&td,cv->b.sc->parent))
+return;
+
+    SCTilePattern(cv->b.sc,CVLayer((CharViewBase *) cv),td.pattern, &td.patternSize, &td.repeatCnt);
+    TPFree(&td);
+    cv->lastselpt = NULL;
+}
+
+#if 0
+void SCPatternTile(SplineChar *sc,int layer) {
+    struct tiledata td;
+
+    if ( !TilePatternAsk(&td,sc->parent))
+return;
+
+    SCTilePattern(sc,layer,td.pattern, &td.patternSize, &td.repeatCnt);
+    TPFree(&td);
+}
+#endif
+
+void FVPatternTile(FontView *fv) {
+    struct tiledata td;
+    SplineChar *sc;
+    int i, gid;
+    int layer = fv->b.active_layer;
+
+    for ( i=0; i<fv->b.map->enccount; ++i )
+	if ( fv->b.selected[i] && (gid=fv->b.map->map[i])!=-1 &&
+		(sc=fv->b.sf->glyphs[gid])!=NULL )
+    break;
+    if ( i==fv->b.map->enccount )
+return;
+
+    if ( !TilePatternAsk(&td,fv->b.sf))
+return;
+
+    SFUntickAll(fv->b.sf);
+    for ( i=0; i<fv->b.map->enccount; ++i )
+	if ( fv->b.selected[i] && (gid=fv->b.map->map[i])!=-1 &&
+		(sc=fv->b.sf->glyphs[gid])!=NULL && !sc->ticked  ) {
+	    sc->ticked = true;
+	    SCTilePattern(sc,layer,td.pattern, &td.patternSize, &td.repeatCnt);
+	}
+    TPFree(&td);
+}
 #endif 		/* FONTFORGE_CONFIG_TILEPATH */

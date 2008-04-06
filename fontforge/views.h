@@ -463,10 +463,13 @@ typedef struct tilepathdlg {
     int cv_width, cv_height;
 /* ****** */
     struct tiledata *td;
+    SplineFont *base_sf;
     uint8 done, oked;
 } TilePathDlg;
 extern void TPDChar(TilePathDlg *tpd, GEvent *event);
 extern void TPDCharViewInits(TilePathDlg *tpd, int cid);
+extern void PTDChar(TilePathDlg *tpd, GEvent *event);
+extern void PTDCharViewInits(TilePathDlg *tpd, int cid);
 #endif		/* Tile Path */
 
 # ifdef FONTFORGE_CONFIG_TYPE3
@@ -782,6 +785,8 @@ extern void OutlineDlg(FontView *fv, CharView *cv,MetricsView *mv,int isinline);
 extern void ShadowDlg(FontView *fv, CharView *cv,MetricsView *mv,int wireframe);
 extern void CVTile(CharView *cv);
 extern void FVTile(FontView *fv);
+extern void CVPatternTile(CharView *cv);
+extern void FVPatternTile(FontView *fv);
 extern void SCCharInfo(SplineChar *sc,int deflayer,EncMap *map,int enc);
 extern void CharInfoDestroy(struct charinfo *ci);
 extern SplineChar *SuffixCheck(SplineChar *sc,char *suffix);
