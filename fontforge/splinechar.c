@@ -750,7 +750,7 @@ void SCRound2Int(SplineChar *sc,int layer, real factor) {
 	stems->width = rint(stems->width*factor)/factor;
 	new = stems->start+stems->width;
 	if ( old!=new )
-	    SplineSetsChangeCoord(sc->layers[ly_fore].splines,old,new,true,sc->inspiro);
+	    SplineSetsChangeCoord(sc->layers[ly_fore].splines,old,new,true,sc->inspiro && hasspiro());
     }
     for ( stems = sc->vstem; stems!=NULL; stems=stems->next ) {
 	old = stems->start+stems->width;
@@ -758,7 +758,7 @@ void SCRound2Int(SplineChar *sc,int layer, real factor) {
 	stems->width = rint(stems->width*factor)/factor;
 	new = stems->start+stems->width;
 	if ( old!=new )
-	    SplineSetsChangeCoord(sc->layers[ly_fore].splines,old,new,false,sc->inspiro);
+	    SplineSetsChangeCoord(sc->layers[ly_fore].splines,old,new,false,sc->inspiro && hasspiro());
     }
 
     if ( sc->parent->multilayer ) {
@@ -767,7 +767,7 @@ void SCRound2Int(SplineChar *sc,int layer, real factor) {
     } else
 	first = last = layer;
     for ( layer = first; layer<=last; ++layer ) {
-	SplineSetsRound2Int(sc->layers[layer].splines,factor,sc->inspiro,false);
+	SplineSetsRound2Int(sc->layers[layer].splines,factor,sc->inspiro && hasspiro(),false);
 	for ( r=sc->layers[layer].refs; r!=NULL; r=r->next ) {
 	    r->transform[4] = rint(r->transform[4]*factor)/factor;
 	    r->transform[5] = rint(r->transform[5]*factor)/factor;

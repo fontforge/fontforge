@@ -253,7 +253,7 @@ static void FakeShapeEvents(CharView *cv) {
     real trans[6];
 
     cv->active_tool = rectelipse ? cvt_elipse : cvt_rect;
-    if ( cv->b.sc->inspiro ) {
+    if ( cv->b.sc->inspiro && hasspiro() ) {
 	GDrawSetCursor(cv->v,spirotools[cv->active_tool]);
 	GDrawSetCursor(cvtools,spirotools[cv->active_tool]);
     } else {
@@ -833,7 +833,7 @@ void CVToolsSetCursor(CharView *cv, int state, char *device) {
 	shouldshow = cvt_minify;
     if ( shouldshow!=cv->showing_tool ) {
 	CPEndInfo(cv);
-	if ( cv->b.sc->inspiro ) {
+	if ( cv->b.sc->inspiro && hasspiro()) {
 	    GDrawSetCursor(cv->v,spirotools[shouldshow]);
 	    if ( cvtools!=NULL )	/* Might happen if window owning docked palette destroyed */
 		GDrawSetCursor(cvtools,spirotools[shouldshow]);
@@ -897,7 +897,12 @@ static void CVChangeSpiroMode(CharView *cv) {
 	    SCCheckForSSToOptimize(cv->b.sc,cv->b.layerheads[cv->b.drawmode]->splines);
 	GDrawRequestExpose(cvtools,NULL,false);
 	SCUpdateAll(cv->b.sc);
-    }
+    } else
+#ifdef _NO_LIBSPIRO
+	ff_post_error(_("You may not use spiros"),_("This version of fontforge was not linked with the spiro library, so you may not use them."));
+#else
+	ff_post_error(_("You may not use spiros"),_("FontForge was unable to load libspiro, spiros are not available for use."));
+#endif
 }
 
 static void ToolsMouse(CharView *cv, GEvent *event) {
@@ -958,7 +963,7 @@ return;			/* Not available in order2 spline mode */
 	if ( cv->pressed_tool==cvt_none && pos!=cvt_none ) {
 	    /* Not pressed */
 	    char *msg = _(popupsres[pos]);
-	    if ( cv->b.sc->inspiro ) {
+	    if ( cv->b.sc->inspiro && hasspiro()) {
 		if ( pos==cvt_spirog2 )
 		    msg = _("Add a g2 curve point");
 		else if ( pos==cvt_spiroleft )
@@ -2083,7 +2088,7 @@ void CVToolsPopup(CharView *cv, GEvent *event) {
     memset(mi,'\0',sizeof(mi));
     for ( i=0;i<=cvt_skew; ++i ) {
 	char *msg = _(popupsres[i]);
-	if ( cv->b.sc->inspiro ) {
+	if ( cv->b.sc->inspiro && hasspiro()) {
 	    if ( i==cvt_spirog2 )
 		msg = _("Add a g2 curve point");
 	    else if ( i==cvt_spiroleft )

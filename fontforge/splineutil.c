@@ -1631,7 +1631,7 @@ SplinePointList *SplinePointListRemoveSelected(SplineChar *sc,SplinePointList *b
     for ( ; base!=NULL; base = next ) {
 	next = base->next;
 	anysel = false; allsel = true;
-	if ( !sc->inspiro ) {
+	if ( !sc->inspiro || !hasspiro()) {
 	    first = NULL;
 	    for ( pt=base->first; pt!=NULL && pt!=first; pt = pt->next->to ) {
 		if ( pt->selected ) anysel = true;
@@ -1653,7 +1653,7 @@ SplinePointList *SplinePointListRemoveSelected(SplineChar *sc,SplinePointList *b
 	    SplinePointListMDFree(sc,base);
     continue;
 	}
-	if ( !sc->inspiro || !anysel ) {
+	if ( !sc->inspiro || !anysel || !hasspiro()) {
 	    if ( head==NULL )
 		head = base;
 	    else
