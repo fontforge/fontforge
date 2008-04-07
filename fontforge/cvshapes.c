@@ -348,7 +348,7 @@ return;
 	    }
 	}
     }
-    if ( cv->b.sc->inspiro ) {
+    if ( cv->b.sc->inspiro && hasspiro()) {
 	free(cv->active_shape->spiros);
 	cv->active_shape->spiros = SplineSet2SpiroCP(cv->active_shape,&cv->active_shape->spiro_cnt);
 	cv->active_shape->spiro_max = cv->active_shape->spiro_cnt;

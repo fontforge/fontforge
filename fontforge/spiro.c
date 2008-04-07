@@ -89,6 +89,8 @@ return;
 }
 
 int hasspiro(void) {
+    if ( has_spiro )
+return( true );
     initSpiro();
 return(has_spiro);
 }
@@ -225,6 +227,8 @@ void SSRegenerateFromSpiros(SplineSet *spl) {
     SplineSet *temp;
 
     if ( spl->spiro_cnt<=1 )
+return;
+    if ( !has_spiro && !hasspiro())
 return;
 
     SplineSetBeziersClear(spl);

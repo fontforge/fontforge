@@ -1512,7 +1512,7 @@ void CopySelected(CharViewBase *cv,int doanchors) {
     copybuffer.was_order2 = cv->layerheads[cv->drawmode]->order2;
     copybuffer.u.state.width = cv->sc->width;
     copybuffer.u.state.vwidth = cv->sc->vwidth;
-    if ( cv->sc->inspiro )
+    if ( cv->sc->inspiro && hasspiro())
 	copybuffer.u.state.splines = SplinePointListCopySpiroSelected(cv->layerheads[cv->drawmode]->splines);
     else
 	copybuffer.u.state.splines = SplinePointListCopySelected(cv->layerheads[cv->drawmode]->splines);

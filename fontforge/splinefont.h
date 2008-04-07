@@ -1576,7 +1576,8 @@ typedef struct splinefont {
     unsigned int head_optimized_for_cleartype: 1;/* Bit in the 'head' flags field, if unset "East Asian fonts in the Windows Presentation Framework (Avalon) will not be hinted" */
     unsigned int ticked: 1;
     unsigned int internal_temp: 1;		/* Internal temporary font to be passed to freetype for rasterizing. Don't complain about oddities */
-	/* 5 bits left */
+    unsigned int complained_about_spiros: 1;
+	/* 4 bits left */
     struct fontviewbase *fv;
     struct metricsview *metrics;
     enum uni_interp uni_interp;

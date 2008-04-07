@@ -44,7 +44,7 @@ int CVOneThingSel(CharView *cv, SplinePoint **sp, SplinePointList **_spl,
     *sp = NULL; *_spl=NULL; *ref=NULL; *img = NULL; *scp = NULL;
     if ( ap ) *ap = NULL;
     for ( spl= cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl=spl->next ) {
-	if ( !cv->b.sc->inspiro ) {
+	if ( !cv->b.sc->inspiro || !hasspiro()) {
 	    if ( spl->first->selected ) {
 		if ( found!=NULL )
 return( 0 );			/* At least two points */
@@ -121,7 +121,7 @@ int CVOneContourSel(CharView *cv, SplinePointList **_spl,
 
     *_spl=NULL; *ref=NULL; *img = NULL;
     for ( spl= cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl=spl->next ) {
-	if ( !cv->b.sc->inspiro ) {
+	if ( !cv->b.sc->inspiro || !hasspiro()) {
 	    if ( spl->first->selected ) {
 		if ( found!=NULL && found!=spl )
 return( 0 );			/* At least two contours */
@@ -185,7 +185,7 @@ SplinePointList *CVAnySelPointList(CharView *cv) {
     int i;
 
     for ( spl= cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl=spl->next ) {
-	if ( cv->b.sc->inspiro ) {
+	if ( cv->b.sc->inspiro && hasspiro()) {
 	    for ( i = 0; i<spl->spiro_cnt-1; ++i ) {
 		if ( SPIRO_SELECTED(&spl->spiros[i])) {
 		    /* Only interesting if the single selection is at the */
@@ -231,7 +231,7 @@ int CVAnySelPoint(CharView *cv,SplinePoint **sp, spiro_cp **cp) {
     int i;
 
     *sp = NULL; *cp = NULL;
-    if ( cv->b.sc->inspiro ) {
+    if ( cv->b.sc->inspiro && hasspiro()) {
 	for ( spl= cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl=spl->next ) {
 	    for ( i=0; i<spl->spiro_cnt-1; ++i )
 		if ( SPIRO_SELECTED( &spl->spiros[i]) ) {
@@ -449,7 +449,7 @@ void CVMouseDownPoint(CharView *cv, GEvent *event) {
     cv->active_spl = NULL;
     cv->active_sp = NULL;
 
-    if ( cv->b.sc->inspiro ) {
+    if ( cv->b.sc->inspiro && hasspiro()) {
 	CVMouseDownSpiroPoint(cv, event);
 return;
     }
@@ -712,7 +712,7 @@ void CVMouseMovePoint(CharView *cv, PressedOn *p) {
     SplinePoint *active = cv->active_sp, *merge = p->sp;
     SplineSet *activess = cv->active_spl;
 
-    if ( cv->b.sc->inspiro ) {
+    if ( cv->b.sc->inspiro && hasspiro()) {
 	CVMouseMoveSpiroPoint(cv,p);
 return;
     }
@@ -740,7 +740,7 @@ void CVMouseMovePen(CharView *cv, PressedOn *p, GEvent *event) {
     int order2_style = (order2 && !(event->u.mouse.state&ksm_alt)) ||
 		    (!order2 && (event->u.mouse.state&ksm_alt));
 
-    if ( cv->b.sc->inspiro ) {
+    if ( cv->b.sc->inspiro && hasspiro()) {
 	CVMouseMoveSpiroPoint(cv,p);
 return;
     }

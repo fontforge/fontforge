@@ -40,7 +40,7 @@ int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi, int *anya) {
     int i;
 
     for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL && !anypoints; spl = spl->next ) {
-	if ( cv->b.sc->inspiro ) {
+	if ( cv->b.sc->inspiro && hasspiro()) {
 	    for ( i=0; i<spl->spiro_cnt-1; ++i )
 		if ( SPIRO_SELECTED(&spl->spiros[i])) {
 		    anypoints = true;
@@ -78,7 +78,7 @@ int CVAnySelPoints(CharView *cv) {
     int i;
 
     for ( spl= cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl=spl->next ) {
-	if ( cv->b.sc->inspiro ) {
+	if ( cv->b.sc->inspiro && hasspiro()) {
 	    for ( i=0; i<spl->spiro_cnt-1; ++i )
 		if ( SPIRO_SELECTED(&spl->spiros[i]))
 return( true );
@@ -145,7 +145,7 @@ int CVSetSel(CharView *cv,int mask) {
 
     cv->lastselpt = NULL; cv->lastselcp = NULL;
     if ( mask&1 ) {
-	if ( !cv->b.sc->inspiro ) {
+	if ( !cv->b.sc->inspiro || !hasspiro()) {
 	    for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl = spl->next ) {
 		if ( !spl->first->selected ) { needsupdate = true; spl->first->selected = true; }
 		first = NULL;
@@ -200,7 +200,7 @@ void CVInvertSel(CharView *cv) {
     cv->lastselpt = NULL; cv->lastselcp = NULL;
 
     for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl = spl->next ) {
-	if ( cv->b.sc->inspiro ) {
+	if ( cv->b.sc->inspiro && hasspiro()) {
 	    for ( i=0; i<spl->spiro_cnt-1; ++i )
 		spl->spiros[i].ty ^= 0x80;
 	} else {
@@ -233,7 +233,7 @@ int CVAllSelected(CharView *cv) {
     int i;
 
     for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl = spl->next ) {
-	if ( cv->b.sc->inspiro ) {
+	if ( cv->b.sc->inspiro && hasspiro()) {
 	    for ( i=0; i<spl->spiro_cnt-1; ++i )
 		if ( !SPIRO_SELECTED(&spl->spiros[i]))
 return( false );
@@ -306,7 +306,7 @@ void CVFindCenter(CharView *cv, BasePoint *bp, int nosel) {
     ImageList *img;
 
     b.minx = b.miny = b.maxx = b.maxy = 0;
-    SplineSetFindSelBounds(cv->b.layerheads[cv->b.drawmode]->splines,&b,nosel,cv->b.sc->inspiro);
+    SplineSetFindSelBounds(cv->b.layerheads[cv->b.drawmode]->splines,&b,nosel,cv->b.sc->inspiro&& hasspiro());
     if ( cv->b.drawmode==dm_fore ) {
 	RefChar *rf;
 	for ( rf=cv->b.layerheads[cv->b.drawmode]->refs; rf!=NULL; rf=rf->next ) {
@@ -616,7 +616,7 @@ return;
 	} else if ( fs->p->spiro!=NULL ) {
 	    if ( !SPIRO_SELECTED(fs->p->spiro) ) needsupdate = true;
 	    SPIRO_SELECT( fs->p->spiro );
-	} else if ( fs->p->spline!=NULL && !cv->b.sc->inspiro ) {
+	} else if ( fs->p->spline!=NULL && (!cv->b.sc->inspiro || !hasspiro())) {
 	    if ( !fs->p->spline->to->selected &&
 		    !fs->p->spline->from->selected ) needsupdate = true;
 	    fs->p->spline->to->selected = true;
@@ -640,7 +640,7 @@ return;
 	} else if ( fs->p->spiro!=NULL ) {
 	    needsupdate = true;
 	    fs->p->spiro->ty ^= 0x80;
-	} else if ( fs->p->spline!=NULL && !cv->b.sc->inspiro ) {
+	} else if ( fs->p->spline!=NULL && (!cv->b.sc->inspiro || !hasspiro())) {
 	    needsupdate = true;
 	    fs->p->spline->to->selected = !fs->p->spline->to->selected;
 	    fs->p->spline->from->selected = !fs->p->spline->from->selected;
@@ -657,7 +657,7 @@ return;
     } else if ( event->u.mouse.clicks==2 ) {
 	CPEndInfo(cv);
 	if ( fs->p->spl!=NULL ) {
-	    if ( cv->b.sc->inspiro ) {
+	    if ( cv->b.sc->inspiro && hasspiro()) {
 		for ( i=0; i<fs->p->spl->spiro_cnt-1; ++i ) {
 		    if ( !SPIRO_SELECTED(&fs->p->spl->spiros[i])) {
 			needsupdate = true;
@@ -778,7 +778,7 @@ static int CVRectSelect(CharView *cv, real newx, real newy) {
     }
 
     for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL; spl = spl->next ) {
-	if ( !cv->b.sc->inspiro ) {
+	if ( !cv->b.sc->inspiro || !hasspiro()) {
 	    first = NULL;
 	    if ( spl->first->prev==NULL ) {
 		bp = &spl->first->me;
@@ -997,7 +997,7 @@ static int CVCheckMerges(CharView *cv ) {
     int cnt= -1;
     int firstsel, lastsel;
     int mfirstsel, mlastsel;
-    int inspiro = cv->b.sc->inspiro;
+    int inspiro = cv->b.sc->inspiro && hasspiro();
 
   restart:
     ++cnt;
@@ -1071,7 +1071,7 @@ int CVMoveSelection(CharView *cv, real dx, real dy, uint32 input_state) {
     if ( transform[4]==0 && transform[5]==0 )
 return(false);
     for ( spl=cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL && !outlinechanged; spl=spl->next ) {
-	if ( cv->b.sc->inspiro ) {
+	if ( cv->b.sc->inspiro && hasspiro()) {
 	    for ( i=0; i<spl->spiro_cnt-1; ++i )
 		if ( SPIRO_SELECTED(&spl->spiros[i])) {
 		    outlinechanged = true;
@@ -1092,7 +1092,7 @@ return(false);
 	}
     }
 
-    if ( cv->b.sc->inspiro )
+    if ( cv->b.sc->inspiro && hasspiro())
 	SplinePointListSpiroTransform(cv->b.layerheads[cv->b.drawmode]->splines,transform,false);
     else
 	SplinePointListTransform(cv->b.layerheads[cv->b.drawmode]->splines,transform,false);
@@ -1246,7 +1246,7 @@ return( false );
 	CVAdjustControl(cv,&cv->p.sp->prevcp,&cv->info);
 	CPUpdateInfo(cv,event);
 	needsupdate = true;
-    } else if ( cv->p.spline!=NULL && !cv->b.sc->inspiro ) {
+    } else if ( cv->p.spline!=NULL && (!cv->b.sc->inspiro || !hasspiro())) {
 	if ( !cv->recentchange ) CVPreserveState(&cv->b);
 	CVAdjustSpline(cv);
 	CVSetCharChanged(cv,true);
@@ -1349,7 +1349,7 @@ static int SelectPointsWithin(CharView *cv, BasePoint *base, double fuzz, BasePo
     spiro_cp *anycp = NULL;
 
     CVClearSel(cv);
-    if ( cv->b.sc->inspiro ) {
+    if ( cv->b.sc->inspiro && hasspiro()) {
 	for ( ss= cv->b.layerheads[cv->b.drawmode]->splines; ss!=NULL; ss=ss->next ) {
 	    for ( i=0; i<ss->spiro_cnt-1; ++i ) {
 		spiro_cp *cp = &ss->spiros[i];
