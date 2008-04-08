@@ -1916,6 +1916,8 @@ static const unichar_t str_2a74[] = { 0x003a, 0x003a, 0x003d, 0 };
 static const unichar_t str_2a75[] = { 0x003d, 0x003d, 0 };
 static const unichar_t str_2a76[] = { 0x003d, 0x003d, 0x003d, 0 };
 static const unichar_t str_2adc[] = { 0x2add, 0x0338, 0 };
+static const unichar_t str_2c7c[] = { 0x006a, 0 };
+static const unichar_t str_2c7d[] = { 0x0056, 0 };
 static const unichar_t str_2d6f[] = { 0x2d61, 0 };
 static const unichar_t str_2e9f[] = { 0x6bcd, 0 };
 static const unichar_t str_2ef3[] = { 0x9f9f, 0 };
@@ -2810,6 +2812,7 @@ static const unichar_t str_33fc[] = { 0x0032, 0x0039, 0x65e5, 0 };
 static const unichar_t str_33fd[] = { 0x0033, 0x0030, 0x65e5, 0 };
 static const unichar_t str_33fe[] = { 0x0033, 0x0031, 0x65e5, 0 };
 static const unichar_t str_33ff[] = { 0x0067, 0x0061, 0x006c, 0 };
+static const unichar_t str_a770[] = { 0xa76f, 0 };
 static const unichar_t str_f900[] = { 0x8c48, 0 };
 static const unichar_t str_f901[] = { 0x66f4, 0 };
 static const unichar_t str_f902[] = { 0x8eca, 0 };
@@ -6353,6 +6356,11 @@ str_2a76,
 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_2adc,
 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
+static const unichar_t * const tab_2c[] = {
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_2c7c,
+str_2c7d,
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+
 static const unichar_t * const tab_2d[] = {
 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_2d6f,
 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -7267,6 +7275,10 @@ str_33fd,
 str_33fe,
 str_33ff,
 0};
+
+static const unichar_t * const tab_a7[] = {
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_a770,
+0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
 static const unichar_t * const tab_f9[] = {
 str_f900,
@@ -8854,14 +8866,16 @@ tab_25,
 tab_26,
 tab_27,
 up_allzeros, up_allzeros, tab_2a,
-up_allzeros, up_allzeros, tab_2d,
+up_allzeros, tab_2c,
+tab_2d,
 tab_2e,
 tab_2f,
 tab_30,
 tab_31,
 tab_32,
 tab_33,
-up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, tab_f9,
+up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, tab_a7,
+up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, tab_f9,
 tab_fa,
 tab_fb,
 tab_fc,
