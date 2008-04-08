@@ -52,8 +52,8 @@ char *cjk[] = { "JIS0208.TXT", "JIS0212.TXT", "BIG5.TXT", "GB2312.TXT",
 	"HANGUL.TXT", "Big5HKSCS.txt", NULL };
 /* I'm only paying attention to Wansung encoding (in HANGUL.TXT) which is 94x94 */
 /* I used to look at OLD5601, but that maps to Unicode 1.0, and Hangul's moved*/
-char *adobecjk[] = { "aj15cid2code.txt", "aj20cid2code.txt", "ac14cid2code.txt",
-	"ag14cid2code.txt", "ak12cid2code.txt", NULL };
+char *adobecjk[] = { "aj16cid2code.txt", "aj20cid2code.txt", "ac15cid2code.txt",
+	"ag15cid2code.txt", "ak12cid2code.txt", NULL };
 /* I'm told that most of the mappings provided on the Unicode site go to */
 /*  Unicode 1.* and that CJK have been moved radically since. So instead */
 /*  of the unicode site's files, try using adobe's which claim they are */
