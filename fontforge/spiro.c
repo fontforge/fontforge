@@ -31,6 +31,8 @@
 /* See http://www.levien.com/spiro/ */
 
 #ifdef _NO_LIBSPIRO
+static int has_spiro = false;
+
 int hasspiro(void) {
 return(false);
 }
@@ -46,6 +48,7 @@ return( NULL );
 # include "bezctx_ff.h"
 # if defined(_STATIC_LIBSPIRO) || defined(NODYNAMIC)
 #  define _TaggedSpiroCPsToBezier TaggedSpiroCPsToBezier
+static int has_spiro = true;
 
 int hasspiro(void) {
 return(true);
