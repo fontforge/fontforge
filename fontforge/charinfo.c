@@ -2988,7 +2988,7 @@ return( NULL );
 		for ( x=ICON_WIDTH-8; x<ICON_WIDTH-1; ++x )
 		    base->data[(y+j*(ICON_WIDTH-4-x))*base->bytes_per_line + (x+width)] = pixel;
 	    }
-	} else {
+	} else if ( isliga>0 ) {
 	    for ( j = -1; j<2; j+=2 ) {
 		y = 1+ymax/2 + j*2;
 		for ( x=5; x<ICON_WIDTH-1; ++x )

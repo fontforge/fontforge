@@ -2233,7 +2233,7 @@ static GImage *_ATT_PopupImage(const void *_att) {
 
     if ( att->popup_node==NULL || att->popup_node->label==NULL )
 return( NULL );
-    for ( start=att->popup_node->label; *start==' '; ++start );
+    for ( start=att->popup_node->label; *start==' ' || isdigit(*start); ++start );
     for ( pt=start; *pt!='\0' && *pt!=' '; ++pt );
     ch = *pt; *pt = '\0';
     sc = SFGetChar(att->sf,-1,start);
@@ -2241,9 +2241,10 @@ return( NULL );
     if ( sc==NULL )
 return( NULL );
 
-    isliga = false;
+    isliga = -1;
     while ( *pt==' ' || *pt=='=' || *pt=='>' || *pt=='<' ) {
 	if ( *pt=='<' ) isliga = true;
+	if ( *pt=='>' ) isliga = false;
 	++pt;
     }
     if ( !isalpha(*pt))		/* If alphabetic, then show the glyph names that follow too. Otherwise show nothing for gpos lookups */
